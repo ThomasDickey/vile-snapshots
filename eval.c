@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.258 1999/11/25 01:00:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.259 1999/12/03 01:00:09 tom Exp $
  *
  */
 
@@ -548,6 +548,8 @@ path_quote(TBUFF **result, char *path)
 #endif
 }
 
+#define MAXARGS 3
+
 /*
  * execute a builtin function
  */
@@ -556,15 +558,13 @@ run_func(int fnum)
 {
 	static TBUFF *result;		/* function result */
 
-	TBUFF *args[3];
-	char  *arg[3];			/* function arguments */
+	TBUFF *args[MAXARGS];
+	char  *arg[MAXARGS];		/* function arguments */
 	char *cp;
-	int nums[3];
-	int bools[3];
+	int nums[MAXARGS];
+	int bools[MAXARGS];
 	int i, nargs;
 	int args_numeric, args_boolean, ret_numeric, ret_boolean;
-
-	tb_init(&result, EOS);
 
 	nargs = vl_ufuncs[fnum].f_code & NARGMASK;
 	args_numeric = vl_ufuncs[fnum].f_code & NUM;
@@ -583,12 +583,15 @@ run_func(int fnum)
 		args[i] = 0;
 		if ((arg[i] = mac_tokval(&args[i])) == 0)
 			return error_val;
+		tb_free(&result); /* in case mac_tokval() called us */
 		TRACE(("...arg[%d] = '%s'\n", i, arg[i]))
 		if (args_numeric)
 			nums[i] = scan_int(arg[i]);
 		else if (args_boolean)
 			bools[i] = scan_bool(arg[i]);
 	}
+
+	tb_init(&result, EOS);
 
 	switch (fnum) {
 	case UFADD:

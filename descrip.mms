@@ -5,7 +5,7 @@
 # estruct.h to make sure the correct one is #defined as "1", and the others
 # all as "0".
 #
-# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.41 1999/09/19 18:15:43 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.42 1999/12/03 03:04:29 tom Exp $
 
 # Editor Configuration Note
 # -------------------------
@@ -15,27 +15,33 @@
 #   $ mms clean
 #
 
+.IFDEF __XMVILE__
+
+# for building the Motif version (untested):
+SCREEN = x11
+TARGET = xvile.exe
+SCRDEF = "MOTIF_WIDGETS","XTOOLKIT","DISP_X11","scrn_chosen"
+MENUS  = menu.obj,
+
+.ELSE
 .IFDEF __XVILE__
 
 # for building the X-toolkit version:
 SCREEN = x11
-LIBS = #-lX11
 TARGET = xvile.exe
 SCRDEF = "NO_WIDGETS","XTOOLKIT","DISP_X11","scrn_chosen"
-
-# for building the Motif version (untested):
-#SCREEN = x11
-#LIBS = #-lX11
-#TARGET = xvile.exe
-#SCRDEF = "MOTIF_WIDGETS","XTOOLKIT","DISP_X11","scrn_chosen"
+MENUS  =
 
 .ELSE
+
 # for regular vile, use these:
 SCREEN = vmsvt
-LIBS =
 TARGET = vile.exe
 SCRDEF = "DISP_VMSVT","scrn_chosen"
-.ENDIF
+MENUS  =
+
+.ENDIF # __XVILE__
+.ENDIF # __XMVILE__
 
 LINKFLAGS = /MAP=$(MMS$TARGET_NAME)/CROSS_REFERENCE/EXEC=$(MMS$TARGET_NAME).EXE
 
@@ -97,7 +103,7 @@ SRC =	main.c \
 	word.c \
 	wordmov.c
 
-OBJ =	main.obj,\
+OBJ =	$(MENUS)main.obj,\
 	$(SCREEN).obj,\
 	basic.obj,\
 	bind.obj,\
@@ -123,7 +129,6 @@ OBJ =	main.obj,\
 	isearch.obj,\
 	line.obj,\
 	map.obj, \
-	menu.obj,\
 	modes.obj,\
 	msgs.obj,\
 	npopen.obj,\

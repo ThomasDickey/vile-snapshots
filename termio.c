@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.176 1999/11/15 23:58:15 Ryan.Murray Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.177 1999/12/03 02:40:21 cmorgan Exp $
  *
  */
 #include	"estruct.h"
@@ -836,12 +836,14 @@ ttclose(void)
 void
 ttclean(int f)
 {
+#if !DISP_X11
 	if (f)
 		kbd_openup();
 
 	term.flush();
 	term.close();
 	term.kclose();
+#endif
 	was_clean = TRUE;
 }
 

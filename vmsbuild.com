@@ -1,4 +1,4 @@
-$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.30 1999/11/08 11:29:55 tom Exp $
+$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.31 1999/12/03 03:14:52 tom Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
 $! Screen Configurations
@@ -46,7 +46,6 @@ $ write optf "itbuff.obj"
 $ write optf "isearch.obj"
 $ write optf "line.obj"
 $ write optf "map.obj"
-$ write optf "menu.obj"
 $ write optf "modes.obj"
 $ write optf "msgs.obj"
 $ write optf "npopen.obj"
@@ -120,10 +119,10 @@ $   TARGET := vile
 $   SCRDEF := "DISP_VMSVT,scrn_chosen"
 $   mmstar = "__vile__=1"
 $ else
-$! for building the Motif version (untested):
+$! for building the X toolkit version:
 $   SCREEN := x11
 $   TARGET := xvile
-$   SCRDEF := "MOTIF_WIDGETS,XTOOLKIT,DISP_X11,scrn_chosen"
+$   SCRDEF = "NO_WIDGETS,XTOOLKIT,DISP_X11,scrn_chosen"
 $   mmstar = "__xvile__=1"
 $!
 $!  Find out which X-Version we're running.  This will fail for older
@@ -138,13 +137,19 @@ $     write optf "Sys$share:DECW$DWTLIBSHR.EXE/Share"
 $   endif
 $   if f$extract(4,3,decw$version).eqs."1.1"
 $   then
+$     write optf "menu.obj"
 $     write optf "sys$share:decw$xmlibshr.exe/share"
 $     write optf "sys$share:decw$xtshr.exe/share"
+$     SCRDEF := "MOTIF_WIDGETS,XTOOLKIT,DISP_X11,scrn_chosen"
+$     mmstar = "__xmvile__=1"
 $   endif
 $   if f$extract(4,3,decw$version).eqs."1.2"
 $   then
+$     write optf "menu.obj"
 $     write optf "sys$share:decw$xmlibshr12.exe/share"
 $     write optf "sys$share:decw$xtlibshrr5.exe/share"
+$     SCRDEF := "MOTIF_WIDGETS,XTOOLKIT,DISP_X11,scrn_chosen"
+$     mmstar = "__xmvile__=1"
 $   endif
 $   GoTo MAIN
 $!
@@ -156,16 +161,6 @@ $!
 $   write optf "sys$share:decw$xlibshr.exe/share"
 $ endif
 $ close optf
-$! for building the X version, xvile, use these:
-$!SCREEN == x11simp
-$!TARGET == xvile
-$!SCRDEF == "DISP_X11,scrn_chosen"
-$
-$! for building the X-toolkit version:
-$!SCREEN := x11
-$!TARGET := xvile
-$!SCRDEF := "NO_WIDGETS,XTOOLKIT,DISP_X11,scrn_chosen"
-$
 $
 $! used /G_FLOAT with vaxcrtlg/share in vms_link.opt
 $! can also use /Debug /Listing, /Show=All
@@ -213,7 +208,7 @@ $	call make itbuff
 $	call make isearch
 $	call make line
 $	call make map
-$	call make menu
+$	if "''mmstar'" .eqs. "__xmvile__=1" then call make menu
 $	call make modes
 $	call make msgs
 $	call make npopen

@@ -1,5 +1,23 @@
 Changes for vile 9.1 (released ??? ??? ??, 1999)
 
+ (tom) 991202 (c)
+	+ modified vmsbuild.com and descrip.mms (untested) to build the Motif
+	  version with menus, the X toolkit version without (based on discussion
+	  with Clark Morgan and Jonathan Ridler).
+ 	+ fix ttclean() function for xvile on VMS (Clark Morgan, from problem
+	  report by Jonathan Ridler <JONATHAN@rubens.its.unimelb.edu.au>).
+	+ add .Xdefaults to xresmode.
+ 	+ add backslashes as needed to digraph.rc, to work with the new single
+	  quote interpretation (reported by Paul Fox).
+ 	+ correct a place where expression evaluation result was overwritten
+	  with the nested result in a complex expression from 8.3d (reported
+	  by George Eccles).
+ 	+ highlight whitespace in makefiles between backspace and newline as
+	  an error.
+	+ define "Error" class for syntax filters.
+	+ correct make filter's handling of escaped newline: '.' does not match
+	  newline.
+
  (tom) 991127 (b)
  	+ add "case" and "do" groups to m4mode.
  	+ add ".ms" and ".me" suffixes for nrmode.
