@@ -1,14 +1,14 @@
 /* These functions perform vi's on-this-line character scanning functions.
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/csrch.c,v 1.26 1996/03/24 13:38:16 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/csrch.c,v 1.27 1997/08/30 01:11:01 tom Exp $
  *
 */
 
 #include "estruct.h"
 #include "edef.h"
 
-static short lstscan;
+static USHORT lstscan;
 static int   lstchar;
 #define BACK 0
 #define FORW 1
@@ -168,7 +168,7 @@ int
 rep_csrch(int f, int n)
 {
 	int s;
-	int ls = lstscan;
+	USHORT ls = lstscan;
 
 	if ((ls & DIREC) == FORW) {
 		s = fscan(f,n,lstchar);

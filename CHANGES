@@ -1,5 +1,34 @@
 Changes for vile 7.2 (released ??? ??? ??, 1997)
 
+(tom)	970829 (h)
+	+ correct initialization of $palstr on OS/2.
+	+ correct some of the signed/unsigned warnings from IBM CSet compiler.
+	+ remove obsolete autoconf fallback macros.
+	+ correct handling of ":abbr res RES", ":abbr wres WRES" combination by
+	  forcing matches on these to check that the beginning of the match is
+	  an identifier boundary (reported by Paul Laub <P_Laub@fccc.edu>).
+	+ correct assignment in maplookup() which caused a -1 returned when no
+	  more characters were available for matching to be converted to the
+	  0xFF character.
+	+ modify fopen-for-write calls on VMS to add "0" argument, which makes
+	  the new file get the user's default protection (requested by Brian
+	  Reed <bdreed1@lucent.com>).
+	+ correct logic that allowed repeated definition of submodes (reported
+	  by Duncan Sargeant).
+	+ allow submode names to begin with "no", assuming they are booleans
+	  (reported by Duncan Sargeant).
+	+ corrected lookup of hyphenated submodes, e.g., c-tabstop (reported
+	  by Duncan Sargeant <dunc@ucc.gu.uwa.edu.au>).
+	+ allow define-submode to accept an '=' between the submode and its
+	  value.
+	+ modify define-mode and remove-mode to suppress warning message if
+	  the mode does not exist, since this produces unnecessary warnings
+	  when re-sourcing .vilerc
+	+ include <windows.h> only where it is needed, halving the build time
+	  (patch by Clark Morgan).
+	+ modify configure script to work with CLIX old-style shared libraries
+	  (e.g., -lc_s) needed for xvile.
+
 (tom)	970816 (g)
 	+ correct type mismatch in filec.c when sizeof(size_t) !=
 	  sizeof(unsigned) (reported by Larry Gensch <gensch@zk3.dec.com>).

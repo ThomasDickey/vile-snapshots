@@ -3,7 +3,7 @@
  * Modified from a really old version of "borland.c" (before the VIO
  * stuff went in there.)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.11 1997/05/26 13:41:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.13 1997/08/30 01:22:42 tom Exp $
  */
 
 #include "estruct.h"
@@ -32,7 +32,7 @@
 #define	NPAUSE	200			/* # times thru update to pause */
 #define	SPACE	32			/* space character		*/
 
-#define	AttrColor(b, f)	(((ctrans[b] & 15) << 4) | (ctrans[f] & 15))
+#define	AttrColor(b, f)	((((UINT)ctrans[b] & 15) << 4) | ((UINT)ctrans[f] & 15))
 
 static	void	vio_move   (int,int);
 static	void	vio_eeol   (void);
@@ -409,7 +409,7 @@ vio_open(void)
 	}
 
 #if OPT_COLOR
-	set_ctrans(initpalettestr);
+	set_palette(initpalettestr);
 	vio_fcol(gfcolor);
 	vio_bcol(gbcolor);
 #endif

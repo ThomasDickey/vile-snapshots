@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.312 1997/08/15 23:57:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.316 1997/08/30 01:10:01 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -218,9 +218,6 @@
 #define IBM_VIDEO 	(SYS_MSDOS || SYS_OS2 || SYS_WINNT)
 #define CRLF_LINES 	(SYS_MSDOS || SYS_OS2 || SYS_WINNT)
 
-#if SYS_WINNT
-#include <windows.h>
-#endif 
 #include <stdio.h>
 #include <sys/types.h>
 #if SYS_VMS
@@ -525,8 +522,8 @@ extern	char *	sys_errlist[];
 #define	set_errno(code)	errno = code
 
 	/* bit-mask definitions */
-#define	lBIT(n)	(1L<<(n))
-#define	iBIT(n) (1 <<(n))
+#define	lBIT(n)	((ULONG)(1L<<(n)))
+#define	iBIT(n) ((UINT)(1 <<(n)))
 
 /* use 'size_t' if we have it ... for unix systems, the configuration script
    will define size_t if it wasn't available in sys/types.h. */
@@ -624,6 +621,15 @@ extern char *rindex (const char *s, int c);
 #define FOPEN_UPDATE	"w+"
 #endif
 
+/* special hack for VMS, to use VAX-style default protection rather than
+ * Unix-ized form.
+ */
+#if SYS_VMS
+# if !defined(__DECC) || !defined(__HIDE_FORBIDDEN_NAMES)
+#undef  FOPEN_WRITE
+#define FOPEN_WRITE	"wb","0"
+#endif
+#endif
 
 #if OPT_MSDOS_PATH	/* DOS path / to \ conversions */
 # define is_slashc(c) (c == '\\' || c == '/')
@@ -764,8 +770,8 @@ extern char *rindex (const char *s, int c);
 #define YESREMAP 0x1000		/* override noremap */
 #define REMAPFLAGS (NOREMAP|YESREMAP)
 
-#define kcod2key(c)	(c & (N_chars-1)) /* strip off the above prefixes */
-#define	isspecial(c)	(c & ~(N_chars-1))
+#define kcod2key(c)	((c) & (UINT)(N_chars-1)) /* strip off the above prefixes */
+#define	isspecial(c)	(((UINT)(c) & (UINT)~(N_chars-1)) != 0)
 
 #define	char2int(c)	((int)(c & 0xff)) /* mask off sign-extension, etc. */
 
@@ -977,11 +983,11 @@ typedef enum {
 
 #define	screen_to_bname(buf)\
 	screen_string(buf,sizeof(buf),(CHARTYPE)(_pathn|_scrtch|_shpipe))
-typedef	long CHARTYPE;
+typedef	ULONG CHARTYPE;
 #else
 #define	screen_to_bname(buf)\
 	screen_string(buf,sizeof(buf),(CHARTYPE)(_pathn))
-typedef short CHARTYPE;
+typedef USHORT CHARTYPE;
 #endif
 
 #if SYS_WINNT
@@ -999,7 +1005,7 @@ typedef short CHARTYPE;
 
 /* these intentionally match the ctypes.h definitions, except that
 	they force the char to valid range first */
-#define istype(sometype,c) ((_chartypes_[(c)&(N_chars-1)] & (sometype))!=0)
+#define istype(m,c) ((_chartypes_[((UINT)(c))&((UINT)(N_chars-1))] & (m)) != 0)
 #define islower(c)	istype(_lower, c)
 #define isupper(c)	istype(_upper, c)
 #define isdigit(c)	istype(_digit, c)
@@ -1269,14 +1275,14 @@ typedef struct	{
 	C_NUM	r_rightcol;		/* Rightmost column. 		*/
 	B_COUNT	r_size; 		/* Length in characters.	*/
 #if OPT_SELECTIONS
-	unsigned short	r_attr_id;	/* id of corresponding display  */
+	USHORT	r_attr_id;		/* id of corresponding display  */
 #endif
 }	REGION;
 
 #if OPT_COLOR || DISP_X11 || OPT_HILITEMATCH
-typedef unsigned short VIDEO_ATTR;	/* assumption: short is at least 16 bits */
+typedef USHORT VIDEO_ATTR;		/* assume short is at least 16 bits */
 #else
-typedef unsigned char VIDEO_ATTR;
+typedef UCHAR VIDEO_ATTR;
 #endif
 
 #define VACURS	0x01			/* cursor -- this is intentionally
@@ -1313,7 +1319,7 @@ typedef unsigned char VIDEO_ATTR;
 #define VACOL_F (VASPCOL+0xF)
 
 #define VCOLORNUM(attr) (((attr) & VACOLOR) >> 12)
-#define VCOLORATTR(num) ((num) << 12)
+#define VCOLORATTR(num) ((UINT)(num) << 12)
 
 /* who owns an attributed region -- so we can delete them independently */
 #define VOWNER(attr)	((attr) & VAOWNER)
@@ -1328,10 +1334,10 @@ typedef unsigned char VIDEO_ATTR;
 
 #if OPT_PSCREEN
 #define VADIRTY	0x01			/* cell needs to be written out */
-#define VATTRIB(attr) ((attr) & ~(VAOWNER|VADIRTY))
+#define VATTRIB(attr) ((attr) & (VIDEO_ATTR) ~(VAOWNER|VADIRTY))
 #else
 #define VADIRTY 0x0			/* nop for all others */
-#define VATTRIB(attr) ((attr) & ~(VAOWNER))
+#define VATTRIB(attr) ((attr) & (VIDEO_ATTR) ~(VAOWNER))
 #endif
 
 /* grow (or initially allocate) a vector of newsize types, pointed to by
@@ -1558,7 +1564,7 @@ typedef struct	BUFFER {
 	LINEPTR	b_ulinep;		/* pointer at 'Undo' line	*/
 	int	b_active;		/* window activated flag	*/
 	UINT	b_nwnd;		        /* Count of windows on buffer   */
-	int	b_flag;		        /* Flags 		        */
+	UINT	b_flag;		        /* Flags 		        */
 	short	b_acount;		/* auto-save count	        */
 	char	*b_fname;		/* File name			*/
 	int	b_fnlen;		/* length of filename		*/
@@ -1581,7 +1587,7 @@ typedef struct	BUFFER {
 	int	b_created;
 	int	b_last_used;
 #if OPT_HILITEMATCH
-	short	b_highlight;
+	USHORT	b_highlight;
 #endif
 }	BUFFER;
 
@@ -1650,14 +1656,14 @@ typedef struct	BUFFER {
 #endif
 
 /* values for b_flag */
-#define BFINVS     0x01			/* Internal invisible buffer	*/
-#define BFCHG      0x02			/* Changed since last write	*/
-#define BFSCRTCH   0x04			/* scratch -- gone on last close */
-#define BFARGS     0x08			/* set for ":args" buffers */
-#define BFIMPLY    0x010		/* set for implied-# buffers */
-#define BFSIZES    0x020		/* set if byte/line counts current */
-#define BFUPBUFF   0x040		/* set if buffer should be updated */
-#define BFRCHG     0x080		/* Changed since last reset of this flag*/
+#define BFINVS     iBIT(0)	/* Internal invisible buffer	*/
+#define BFCHG      iBIT(1)	/* Changed since last write	*/
+#define BFSCRTCH   iBIT(2)	/* scratch -- gone on last close */
+#define BFARGS     iBIT(3)	/* set for ":args" buffers */
+#define BFIMPLY    iBIT(4)	/* set for implied-# buffers */
+#define BFSIZES    iBIT(5)	/* set if byte/line counts current */
+#define BFUPBUFF   iBIT(6)	/* set if buffer should be updated */
+#define BFRCHG     iBIT(7)	/* Changed since last reset of this flag*/
 
 /* macros for manipulating b_flag */
 #define b_is_implied(bp)        ((bp)->b_flag & (BFIMPLY))
@@ -1759,7 +1765,7 @@ typedef struct	WINDOW {
 	int	w_toprow;	        /* Origin 0 top row of window   */
 	int	w_ntrows;	        /* # of rows of text in window  */
 	int	w_force; 	        /* If non-zero, forcing row.    */
-	int	w_flag;		        /* Flags.		        */
+	USHORT	w_flag;		        /* Flags.		        */
 	ULONG	w_split_hist;		/* how to recombine deleted windows */
 #ifdef WMDRULER
 	int	w_ruler_line;
@@ -1948,7 +1954,7 @@ typedef	struct {
 	CmdFunc  c_func;	/* function name is bound to */
 	CMDFLAGS c_flags;	/* what sort of command is it? */
 #if OPT_ONLINEHELP
-	char	*c_help;	/* short help message for the command */
+	const char *c_help;	/* short help message for the command */
 #endif
 }	CMDFUNC;
 

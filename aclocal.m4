@@ -1,18 +1,16 @@
-dnl
 dnl Local definitions for autoconf.
-dnl ------------------------
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.24 1997/03/15 15:24:39 tom Exp $
+dnl
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.25 1997/08/29 10:04:30 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
-dnl
 dnl VC_PREREQ_COMPARE(MAJOR1, MINOR1, TERNARY1, MAJOR2, MINOR2, TERNARY2,
 dnl                   PRINTABLE2, not FOUND, FOUND)
 define(VC_PREREQ_COMPARE,
 [ifelse(builtin([eval], [$3 < $6]), 1,
 ifelse([$8], , ,[$8]),
 ifelse([$9], , ,[$9]))])dnl
-dnl
+dnl ---------------------------------------------------------------------------
 dnl Conditionally generate script according to whether we're using the release
 dnl version of autoconf, or a patched version (using the ternary component as
 dnl the patch-version).
@@ -20,45 +18,6 @@ define(VC_AC_PREREQ,
 [VC_PREREQ_COMPARE(
 AC_PREREQ_CANON(AC_PREREQ_SPLIT(AC_ACVERSION)),
 AC_PREREQ_CANON(AC_PREREQ_SPLIT([$1])), [$1], [$2], [$3])])dnl
-dnl
-dnl ---------------------------------------------------------------------------
-dnl Modifications/extensions to autoconf
-dnl ---------------------------------------------------------------------------
-dnl
-dnl AC_MSG_CHECKING(FEATURE-DESCRIPTION)
-define(AC_MSG_CHECKING,
-[echo $ac_n "checking $1""... $ac_c" 1>&AC_FD_MSG
-echo "configure:__oline__: checking $1" >&AC_FD_CC])dnl
-dnl
-dnl AC_CHECKING(FEATURE-DESCRIPTION)
-define(AC_CHECKING,
-[echo "checking $1" 1>&AC_FD_MSG
-echo "configure:__oline__: checking $1" >&AC_FD_CC])dnl
-dnl
-define([AC_FUNC_SETPGRP],
-[AC_CACHE_CHECK(whether setpgrp takes no argument, ac_cv_func_setpgrp_void,
-AC_TRY_RUN([
-/*
- * If this system has a BSD-style setpgrp, which takes arguments, exit
- * successfully.
- */
-main()
-{
-    if (setpgrp(1,1) == -1)
-	exit(0);
-    else
-	exit(1);
-}
-], ac_cv_func_setpgrp_void=no, ac_cv_func_setpgrp_void=yes,
-   AC_MSG_ERROR(cannot check setpgrp if cross compiling))
-)
-if test $ac_cv_func_setpgrp_void = yes; then
-  AC_DEFINE(SETPGRP_VOID)
-fi
-])dnl
-dnl
-dnl ---------------------------------------------------------------------------
-dnl Vile-specific macros
 dnl ---------------------------------------------------------------------------
 dnl This is adapted from the macros 'fp_PROG_CC_STDC' and 'fp_C_PROTOTYPES'
 dnl in the sharutils 4.2 distribution.
@@ -103,7 +62,7 @@ choices:
 elif test ".$vc_cv_ansi_cc" != ".-DCC_HAS_PROTOS"; then
 	CC="$CC $vc_cv_ansi_cc"
 fi
-])
+])dnl
 dnl ---------------------------------------------------------------------------
 dnl Test if we should use ANSI-style prototype for qsort's compare-function
 AC_DEFUN([VC_ANSI_QSORT],
@@ -161,7 +120,7 @@ AC_CACHE_VAL(vc_cv_extern_errno,[
 	])
 AC_MSG_RESULT($vc_cv_extern_errno)
 test $vc_cv_extern_errno = yes && AC_DEFINE(HAVE_EXTERN_ERRNO)
-])
+])dnl
 dnl ---------------------------------------------------------------------------
 dnl Test for availability of useful gcc __attribute__ directives to quiet
 dnl compiler warnings.  Though useful, not all are supported -- and contrary

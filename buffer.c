@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.158 1997/08/11 23:37:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.159 1997/08/30 00:51:54 tom Exp $
  *
  */
 
@@ -997,7 +997,7 @@ killbuffer(int f, int n)
 		DOT     = save_DOT;
 		DOT.o   = getgoal(DOT.l);
 		curwp->w_line = save_TOP;
-		curwp->w_flag &= ~WFMOVE;
+		curwp->w_flag &= (USHORT) ~WFMOVE;
 	}
 #endif
 	return s;
@@ -1793,7 +1793,7 @@ bsizes(BUFFER *bp)
  * Mark a buffer 'changed'
  */
 void
-chg_buff(register BUFFER *bp, register int flag)
+chg_buff(register BUFFER *bp, register USHORT flag)
 {
 	register WINDOW *wp;
 
@@ -1826,7 +1826,7 @@ chg_buff(register BUFFER *bp, register int flag)
  * Mark a buffer 'unchanged'
  */
 void
-unchg_buff(register BUFFER *bp, register int flag)
+unchg_buff(register BUFFER *bp, register USHORT flag)
 {
 	register WINDOW *wp;
 

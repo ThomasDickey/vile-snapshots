@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.251 1997/08/13 00:19:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.252 1997/08/30 00:51:49 tom Exp $
  *
  */
 
@@ -128,8 +128,8 @@ extern BUFFER *bfind (const char *bname, int bflag);
 BUFFER *make_bp (const char *fname, int flags);
 extern int bclear (BUFFER *bp);
 extern int bsizes (BUFFER *bp);
-extern void chg_buff (BUFFER *bp, int flag);
-extern void unchg_buff (BUFFER *bp, int flag);
+extern void chg_buff (BUFFER *bp, USHORT flag);
+extern void unchg_buff (BUFFER *bp, USHORT flag);
 extern BUFFER *getfile2bp (const char *fname, int ok_to_ask, int cmdline);
 
 /* crypt.c */

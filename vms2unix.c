@@ -3,7 +3,7 @@
  *
  *	Miscellaneous routines for UNIX/VMS compatibility.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.28 1997/06/09 22:39:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.29 1997/08/29 10:36:55 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -671,11 +671,17 @@ vms2unix_path(char *dst, const char *src)
  *
  * %CC-W-CVTDIFTYPES, In this statement, "&short_fpro" of type "pointer to short",
  * is being converted to "unsigned int".
+ *
+ * 1997/8/26 - Brian Reed pointed out (and I checked with VAX C) that using the
+ * 3rd parameter to fopen produces the desired behavior.  So this is disabled,
+ * except for the case where vile is built with DEC C in ANSI mode, which
+ * (according to DEC C's headers) defines __HIDE_FORBIDDEN_NAMES.
  */
 #define UGLY_CAST (unsigned int)
 
 int	vms_fix_umask (const char *filespec)
 {
+#if defined(__DECC) && defined(__HIDE_FORBIDDEN_NAMES)
 	struct	FAB	fab;
 	struct	NAM	nam;		/* used in wildcard parsing	*/
 
@@ -817,6 +823,7 @@ int	vms_fix_umask (const char *filespec)
 			}
 		}
 	}
+#endif
 	return 0;
 }
 #endif /* SYS_VMS */

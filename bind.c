@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.157 1997/08/15 23:50:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.158 1997/08/24 23:01:35 tom Exp $
  *
  */
 
@@ -1293,6 +1293,8 @@ char *buffer)
 void
 kbd_alarm(void)
 {
+	TRACE(("BEEP\n"))
+
 	if (global_g_val(GMDERRORBELLS)) {
 		TTbeep();
 		TTflush();

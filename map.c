@@ -3,8 +3,8 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.73 1997/08/15 23:52:18 tom Exp $
- * 
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.75 1997/08/29 10:31:37 tom Exp $
+ *
  */
 
 #include "estruct.h"
@@ -87,8 +87,9 @@ static	int	mapgetc (void);
 
 typedef	int (*AvailFunc) (void);
 typedef	int (*GetFunc) (void);
+typedef	int (*StartFunc) (void);
 
-static	int	maplookup(int c, ITBUFF **outp, struct maprec *mp, GetFunc get, AvailFunc avail);
+static	int	maplookup(int c, ITBUFF **outp, struct maprec *mp, GetFunc get, AvailFunc avail, StartFunc start, int suffix);
 
 #if !OPT_UPBUFF
 #define relist_mappings(name)
@@ -360,7 +361,7 @@ unmap_common(struct maprec **mpp, const char *bufname)
     relist_mappings(bufname);
     return TRUE;
 }
-    
+
 /* addtosysmap is used to initialize the system default function key map
 */
 void
@@ -483,8 +484,6 @@ static ITBUFF *sysmappedchars = NULL;
 
 /* these two wrappers are provided because at least one pcc-based
 	compiler balks at passing TTgetc or TTtypahead as a function pointer */
-static int normal_getc (void);
-static int normal_typeahead (void);
 
 static int
 normal_getc(void)
@@ -497,7 +496,13 @@ normal_getc(void)
 static int
 normal_typeahead(void)
 {
-      return(TTtypahead());
+	return(TTtypahead());
+}
+
+static int
+normal_start(void)
+{
+	return TRUE;
 }
 
 #define NUMKEYSTR (KBLOCK / 2)
@@ -566,8 +571,8 @@ sysmapped_c(void)
     	return c;
 
     /* will push back on sysmappedchars successful, or not */
-    (void)maplookup(c, &sysmappedchars, map_syskey, 
-    		normal_getc, normal_typeahead);
+    (void)maplookup(c, &sysmappedchars, map_syskey,
+    		normal_getc, normal_typeahead, normal_start, TRUE);
 
     return itb_last(sysmappedchars);
 }
@@ -624,6 +629,12 @@ mapped_c_avail(void)
     return mapgetc_ungotcnt > 0 || tgetc_avail();
 }
 
+static int
+mapped_c_start(void)
+{
+    return TRUE;
+}
+
 int
 mapped_c(int remap, int raw)
 {
@@ -632,7 +643,7 @@ mapped_c(int remap, int raw)
     struct maprec *mp;
     int speckey = FALSE;
     static ITBUFF *mappedchars = NULL;
-    
+
     /* still some pushback left? */
     mapgetc_raw_flag = raw;
     c = mapgetc();
@@ -646,7 +657,7 @@ mapped_c(int remap, int raw)
     	mp = 0;
     else if (insertmode)
     	mp = map_insert;
-    else 
+    else
     	mp = map_command;
 
     /* if we got a function key from the lower layers, turn it into '#c'
@@ -660,7 +671,7 @@ mapped_c(int remap, int raw)
     do {
 	(void)itb_init(&mappedchars, abortc);
 
-	matched = maplookup(c, &mappedchars, mp, mapgetc, mapped_c_avail);
+	matched = maplookup(c, &mappedchars, mp, mapgetc, mapped_c_avail, mapped_c_start, TRUE);
 
 
 	while(itb_more(mappedchars))
@@ -683,7 +694,7 @@ mapped_c(int remap, int raw)
 
 	speckey = FALSE;
 
-    } while (matched && 
+    } while (matched &&
     	((remap && !(c & NOREMAP)) || (c & YESREMAP)) );
 
     return c & ~REMAPFLAGS;
@@ -698,12 +709,33 @@ abbr_getc(void)
 {
     if (abbr_curr_off <= abbr_search_lim)
     	return -1; /* won't match anything in the tree */
-    return lgetc(DOT.l, --abbr_curr_off);
+    return lgetc(DOT.l, --abbr_curr_off) & 0xff;
 }
 
 static int
 abbr_c_avail(void)
 {
+    return TRUE;
+}
+
+static int
+abbr_c_start(void)
+{
+    if (abbr_curr_off > abbr_search_lim) {
+	/* we need to check the char in front of the match.
+	   if it's a similar type to the first char of the match,
+	   i.e. both idents, or both non-idents, we do nothing.
+	   if whitespace precedes either ident or non-ident, the
+	   match is good.
+	 */
+	char first, prev;
+	first = lgetc(DOT.l,abbr_curr_off);
+	prev = lgetc(DOT.l,abbr_curr_off-1);
+	if ((isident(first) && isident(prev)) ||
+	    (!isident(first) && !(isident(prev) || isspace(prev)))) {
+		return FALSE;
+	}
+    }
     return TRUE;
 }
 
@@ -720,27 +752,15 @@ abbr_check(int *backsp_limit_p)
     abbr_search_lim = *backsp_limit_p;
     (void)itb_init(&abbr_chars, abortc);
     matched = maplookup(abbr_getc(), &abbr_chars, abbr_map,
-    	abbr_getc, abbr_c_avail);
+    	abbr_getc, abbr_c_avail, abbr_c_start, FALSE);
 
 
     if (matched) {
 	    /* there are still some conditions that have to be met by
 	       the preceding chars, if any */
-	    if (abbr_curr_off > abbr_search_lim) {
-		/* we need to check the char in front of the match.
-		   if it's a similar type to the first char of the match, 
-		   i.e. both idents, or both non-idents, we do nothing.
-		   if whitespace precedes either ident or non-ident, the
-		   match is good.
-		 */
-		char first, prev;
-		first = lgetc(DOT.l,abbr_curr_off);
-		prev = lgetc(DOT.l,abbr_curr_off-1);
-		if ((isident(first) && isident(prev)) ||
-		    (!isident(first) && !(isident(prev) || isspace(prev)))) {
-		    	itb_free(&abbr_chars);
-		    	return;
-		}
+	    if (!abbr_c_start()) {
+		itb_free(&abbr_chars);
+	    	return;
 	    }
 	    DOT.o -= matched;
 	    ldelete((B_COUNT)matched, FALSE);
@@ -765,15 +785,18 @@ maplookup(
     ITBUFF **outp,
     struct maprec *mp,
     GetFunc get,
-    AvailFunc avail)
+    AvailFunc avail,
+    StartFunc start,
+    int suffix)
 {
     struct maprec *rmp = NULL;
     ITBUFF *unmatched = 0;
     int matchedcnt;
     int use_sys_timing;
+    int had_start = FALSE;
     register int count = 0;	/* index into 'unmatched[]' */
 
-    /* 
+    /*
      * we don't want to delay for a user-specified :map!  starting with
      * poundc since it's likely that the mapping is happening on behalf of
      * a function key.  (it's so the user can ":map! #1 foobar" but still be
@@ -801,8 +824,12 @@ maplookup(
 		 * which is a subset of the other.  vi matches the shorter
 		 * one.
 		 */
-	        if (!global_g_val(GMDMAPLONGER))
-		    break;
+	        if ((*start)()) {
+		    had_start = TRUE;
+		    if (!global_g_val(GMDMAPLONGER)) {
+			break;
+		    }
+		}
 	    }
 
 	    mp = mp->dlink;
@@ -835,7 +862,10 @@ maplookup(
 		    break;
 	    }
 
-	    itb_append(&unmatched, c = (*get)() & ~REMAPFLAGS);
+	    if ((c = (*get)()) < 0)
+		break;
+
+	    itb_append(&unmatched, c & ~REMAPFLAGS);
 	    count++;
 
 	}
@@ -843,9 +873,9 @@ maplookup(
 	    mp = mp->flink;
     }
 
-    if (rmp) {
+    if (had_start && (rmp != 0)) {
 	/* unget the unmatched suffix */
-	while (count > 0)
+	while (suffix && (count > 0))
 	    (void)itb_append(outp, itb_values(unmatched)[--count]);
 	/* unget the mapping and elide correct number of recorded chars */
 	if (rmp->srv) {

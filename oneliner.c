@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.85 1997/03/15 15:51:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.86 1997/08/30 01:07:31 tom Exp $
  */
 
 #include	"estruct.h"
@@ -24,7 +24,7 @@ static	int	lines_changed,
  * put lines in a popup window
  */
 static int
-pregion(int flag)
+pregion(UINT flag)
 {
 	register WINDOW *wp;
 	register BUFFER *bp;

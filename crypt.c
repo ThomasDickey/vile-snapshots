@@ -1,7 +1,7 @@
 /*	Crypt:	Encryption routines for MicroEMACS
  *		written by Dana Hoggatt and Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/crypt.c,v 1.17 1997/03/15 15:44:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/crypt.c,v 1.18 1997/08/30 01:09:39 tom Exp $
  *
  */
 
@@ -161,7 +161,7 @@ register ALLOC_T len)	/* number of characters in the buffer */
 {
 	register int cc;	/* current character being considered */
 
-	static long key = 0;	/* 29 bit encipherment key */
+	static ULONG key = 0;	/* 29 bit encipherment key */
 	static int salt = 0;	/* salt to spice up key with */
 
 	if (!bptr) {		/* is there anything here to encrypt? */

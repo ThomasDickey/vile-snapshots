@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.57 $)
+AC_REVISION($Revision: 1.58 $)
 AC_PREREQ(2.12)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.57 1997/06/19 23:31:48 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.58 1997/08/24 19:00:08 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -206,14 +206,33 @@ changequote([,])dnl
 		# libraries.  The resultant failures cascade...
 		# 	(tested on Solaris 2.5 w/ X11R6)
 		SYSTEM_NAME=`echo "$system_name"|tr ' ' -`
+		cf_have_X_LIBS=no
 		case $SYSTEM_NAME in
 		IRIX-5*) ;;
+		CLIX*)
+			# FIXME: modify the library lookup in autoconf to
+			# allow _s.a suffix ahead of .a
+			AC_CHECK_LIB(c_s,open,
+				[LIBS="-lc_s $LIBS"
+			AC_CHECK_LIB(bsd,gethostname,
+				[LIBS="-lbsd $LIBS"
+			AC_CHECK_LIB(nsl_s,gethostname,
+				[LIBS="-lnsl_s $LIBS"
+			AC_CHECK_LIB(X11_s,XOpenDisplay,
+				[LIBS="-lX11_s $LIBS"
+			AC_CHECK_LIB(Xt_s,XtAppInitialize,
+				[LIBS="-lXt_s $LIBS"
+				 cf_have_X_LIBS=Xt
+				]) ]) ]) ]) ])
+			;;
 		*)
 			AC_CHECK_LIB(socket,socket)
 			AC_CHECK_LIB(nsl,gethostname)
 			;;
 		esac
-		AC_PATH_XTRA
+		if test $cf_have_X_LIBS = no ; then
+			AC_PATH_XTRA
+		fi
 		# GNU autoconf-1.9 does not give me everything I need for
 		# X_CFLAGS.  The following test will (hopefully) find the
 		# additional flags needed to make it through X11/Xos.h.
@@ -241,16 +260,19 @@ EOF
 		AC_DEFINE(DISP_X11)
 		AC_DEFINE(XTOOLKIT)
 		AC_CHECK_HEADERS(X11/IntrinsicI.h)
-# FIXME: determine if we still need our own test for -lXt -lX11
-		AC_CHECK_LIB(X11,XOpenDisplay,
-			[LIBS="-lX11 $LIBS"],,
-			[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
-		AC_CHECK_LIB(Xt, XtAppInitialize,
-			[AC_DEFINE(HAVE_LIBXT) LIBS="-lXt $X_PRE_LIBS $LIBS"],
-			AC_WARN(
+		# FIXME: determine if we still need our own test for -lXt -lX11
+		if test $cf_have_X_LIBS = no ; then
+			AC_CHECK_LIB(X11,XOpenDisplay,
+				[LIBS="-lX11 $LIBS"],,
+				[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
+			AC_CHECK_LIB(Xt, XtAppInitialize,
+				[AC_DEFINE(HAVE_LIBXT)
+				 LIBS="-lXt $X_PRE_LIBS $LIBS"],
+				AC_WARN(
 [Unable to successfully link X Toolkit library (-lXt) with test program.
 You will have to check and add the proper libraries by hand to makefile.]),
-			[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
+				[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
+		fi
 	;;
 esac
 
@@ -290,10 +312,14 @@ case "$screen" in
 		AC_CHECK_LIB(Xmu, XmuClientWindow)
 		AC_CHECK_LIB(Xext,XextCreateExtension,
 			[LIBS="-lXext $LIBS"])
-		AC_CHECK_LIB(Xaw, XawSimpleMenuAddGlobalActions, [LIBS="-lXaw $LIBS"],
+		AC_CHECK_LIB(Xmu_s, XmuClientWindow)
+		AC_CHECK_LIB(Xaw, XawSimpleMenuAddGlobalActions,
+			[LIBS="-lXaw $LIBS"],[
+		AC_CHECK_LIB(Xaw_s, XawSimpleMenuAddGlobalActions,
+			[LIBS="-lXaw_s $LIBS"],
 			AC_ERROR(
 [Unable to successfully link Athena library (-lXaw) with test program]),
-			[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
+			[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])])
 	 	EXTRAOBJS="$EXTRAOBJS menu.o"
 	;;
 changequote(,)dnl
