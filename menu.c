@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.7 1997/04/30 01:22:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.8 1997/04/30 19:42:42 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -84,6 +84,12 @@ menu_filename(void)
         return flook(menurc, FL_ANYWHERE|FL_READABLE);
 }
 
+static const char *
+startup_filename(void)
+{
+        return flook(startup_file, FL_ANYWHERE|FL_READABLE);
+}
+
 /************************************************************************/
 /* All the Common Action are pointed to this function                   */
 /************************************************************************/
@@ -106,14 +112,12 @@ static void common_action ( char *action )
     if (!strcmp(action, "edit_rc"))
     {
         splitwind(FALSE, 1);
-        sprintf(str, "%s/.vilerc", getenv ("HOME"));
-        getfile (str, TRUE);
+        getfile (startup_filename(), TRUE);
     }
     else
     if (!strcmp(action, "parse_rc"))
     {
-        sprintf(str, "%s/.vilerc", getenv ("HOME"));
-        dofile (str);
+        dofile (startup_filename());
     }
     else
     if (!strcmp(action, "edit_mrc"))
@@ -144,7 +148,7 @@ is_action ( char *action )
 /************************************************************************/
 /* Return the function pointer associated with the action name          */
 /************************************************************************/
-static const ActionFunc
+static ActionFunc
 get_action_fonc ( char *action )
 {
     int i;
@@ -200,6 +204,7 @@ int parse_menu ( const char *rc_filename )
 
         switch (*ptr_tok)
         {
+        case ';': /* FALLTHRU */
         case '#':
                 continue;
 
@@ -354,7 +359,7 @@ static Widget do_cascade ( Widget menub, char *nom, int the_class )
     char        str [50];
 
     sprintf(str, "%sMenu", nom);
-    pm = XmCreatePulldownMenu (menub, str, NULL, 0);
+    pm = (Widget) XmCreatePulldownMenu (menub, str, NULL, 0);
 
     xms = XmStringCreateSimple (nom);
 
@@ -407,7 +412,8 @@ static Widget do_button ( Widget pm, char *nom, char *accel, int the_class )
 {
 #if MOTIF_WIDGETS
     Widget      w;
-    XmString    xms;
+    XmString    xms_accl;
+    XmString    xms_name;
     WidgetClass wc;
 
     switch (the_class) {
@@ -420,18 +426,20 @@ static Widget do_button ( Widget pm, char *nom, char *accel, int the_class )
     }
 
     if (accel != NULL)
-        xms = XmStringCreateSimple (accel);
+        xms_accl = XmStringCreateSimple (accel);
     else
-        xms = XmStringCreateSimple ("");
+        xms_accl = XmStringCreateSimple ("");
 
+    xms_name = XmStringCreateSimple (nom);
     w = XtVaCreateManagedWidget ("menuEntry",
                 wc, 
                 pm,
-                XmNacceleratorText,     xms,
-                XmNlabelString,         nom,
+                XmNacceleratorText,     xms_accl,
+                XmNlabelString,         xms_name,
                 NULL);
 
-    XmStringFree (xms);
+    XmStringFree (xms_accl);
+    XmStringFree (xms_name);
 
     return w;
 #endif /* MOTIF_WIDGETS */

@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.305 1997/04/30 01:12:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.306 1997/05/01 00:04:27 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -1117,6 +1117,12 @@ typedef	long		B_COUNT;	/* byte-count */
 #define one_time while(malloc(1)==0)
 #else
 #define one_time while(0)
+#endif
+
+	/* Some lint's do, many don't like this */
+#ifdef lint
+#undef  HAVE_LOSING_SWITCH_WITH_STRUCTURE_OFFSET
+#define HAVE_LOSING_SWITCH_WITH_STRUCTURE_OFFSET 1
 #endif
 
 /*

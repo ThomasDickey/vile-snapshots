@@ -1,9 +1,14 @@
 Changes for vile 7.1 (released ??? ??? ??, 1997)
 
+(tom)	970430 (k)
+	+ modify lookup of .vilerc to use startup-file search rules (menu.c)
+	+ correct missing XmString conversion (menu.c)
+	+ add configure check for -lXext to support Athena build on X11R4.
+
 (tom)	970429 (j)
 	+ use im_waiting() function to reset "working..." state after executing
 	  a menu-command (menu.c).
-	+ modify lookup of .vilemenu use startup-file search rules.
+	+ modify lookup of .vilemenu to use startup-file search rules.
 	+ corrections for porting Xaw version to SunOS, etc., with X11R4 and
 	  X11R5 (x11.c, configure.in)
 
