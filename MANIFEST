@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_4l
+MANIFEST for vile, version v9_4m
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -329,6 +329,7 @@ macros/palettes.rc              sample color schemes
 macros/pictmode.rc              macros to support "picture-mode" editing
 macros/search.rc                find a file in one of several locations
 macros/shifts.rc                macros to shift words left/right
+macros/showeach.rc              show-each-buffer
 macros/vile-pager               use vile as a pager
 macros/vileinit.rc              sample initialization file
 macros/vilemenu.rc              sample menu for xvile

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.392 2004/12/06 00:14:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.394 2004/12/10 23:44:22 tom Exp $
  *
  */
 
@@ -828,7 +828,7 @@ mk_to_vcol(MARK mark, int expanded, BUFFER *bp, int col, int adjust)
     LINEPTR lp;
     int extra = ((!global_g_val(GMDALTTABPOS) && !insertmode) ? 1 : 0);
 
-    TRACE((T_CALLED "mk_to_vcol(mark.o=%d, col=%d, adjust=%d) extra %d\n",
+    TRACE2((T_CALLED "mk_to_vcol(mark.o=%d, col=%d, adjust=%d) extra %d\n",
 	   mark.o, col, adjust, extra));
 
     if (i < 0) {
@@ -854,7 +854,7 @@ mk_to_vcol(MARK mark, int expanded, BUFFER *bp, int col, int adjust)
     }
     if (extra && (col != 0) && (mark.o < llength(lp)))
 	col--;
-    returnCode(col);
+    return2Code(col);
 }
 
 /*
@@ -879,7 +879,7 @@ dot_to_vcol(WINDOW *wp)
     int check;
 #endif
 
-    TRACE((T_CALLED "dot_to_vcol(%s)\n", bp->b_bname));
+    TRACE2((T_CALLED "dot_to_vcol(%s)\n", bp->b_bname));
 
 #if OPT_TRACE && OPT_DEBUG
     TRACE(("HAVE: dot.o %d, left_dot %d+%d, left_col %d\n",
@@ -1024,7 +1024,7 @@ dot_to_vcol(WINDOW *wp)
 #else
     result = mk_to_vcol(wp->w_dot, w_val(wp, WMDLIST), bp, 0, 0);
 #endif
-    returnCode(result);
+    return2Code(result);
 }
 
 /*
@@ -3898,6 +3898,57 @@ bprintf(const char *fmt,...)
     va_end(ap);
 }
 
+/*
+ * Print into the given internal buffer, returning a pointer to the line
+ * written.
+ */
+LINE *
+b2vprintf(BUFFER *bp, const char *fmt, va_list ap)
+{
+    LINE *result = 0;
+    WINDOW *save_wp;
+    BUFFER *save_bp = curbp;
+    W_TRAITS save_w_traits;
+    OutFunc save_outfn;
+
+    if ((save_wp = push_fake_win(bp)) != 0) {
+
+	save_outfn = dfoutfn;
+	dfoutfn = bputc;
+
+	save_w_traits = curwp->w_traits;
+
+	(void) gotoeob(FALSE, 1);
+	(void) gotoeol(FALSE, 1);
+
+	dofmt(fmt, &ap);
+
+	result = lback(DOT.l);
+
+	b_clr_changed(bp);
+	curwp->w_traits = save_w_traits;
+
+	pop_fake_win(save_wp, save_bp);
+	dfoutfn = save_outfn;
+    }
+    return result;
+}
+
+/*
+ * Write text (not necessarily a whole line) to the given buffer.
+ */
+LINE *
+b2printf(BUFFER *bp, const char *fmt,...)
+{
+    LINE *result = 0;
+    va_list ap;
+
+    va_start(ap, fmt);
+    result = b2vprintf(bp, fmt, ap);
+    va_end(ap);
+    return result;
+}
+
 #if OPT_EVAL || OPT_DEBUGMACROS
 /* printf into [Trace] */
 void
@@ -3905,37 +3956,20 @@ tprintf(const char *fmt,...)
 {
     static int nested;
 
-    WINDOW *save_wp;
     BUFFER *bp;
-    BUFFER *save_bp = curbp;
-    W_TRAITS save_w_traits;
-    OutFunc save_outfn;
+    LINE *line;
+    va_list ap;
 
     if (!nested
-	&& (bp = make_ro_bp(TRACE_BufName, BFINVS)) != 0
-	&& (save_wp = push_fake_win(bp)) != 0) {
-	va_list ap;
-
+	&& (bp = make_ro_bp(TRACE_BufName, BFINVS)) != 0) {
 	nested = TRUE;
 
-	save_outfn = dfoutfn;
-	dfoutfn = bputc;
-
-	save_w_traits = curwp->w_traits;
-	DOT.l = lback(buf_head(curbp));
-	DOT.o = 0;
-
 	va_start(ap, fmt);
-	dofmt(fmt, &ap);
+	line = b2vprintf(bp, fmt, ap);
 	va_end(ap);
 
-	TRACE(("tprintf {%.*s}\n", llength(lback(DOT.l)), lback(DOT.l)->l_text));
+	TRACE(("tprintf {%.*s}\n", llength(line), line->l_text));
 
-	b_clr_changed(bp);
-	curwp->w_traits = save_w_traits;
-
-	pop_fake_win(save_wp, save_bp);
-	dfoutfn = save_outfn;
 	nested = FALSE;
     }
 }

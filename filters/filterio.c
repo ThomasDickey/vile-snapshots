@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.22 2003/05/24 15:52:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.23 2004/12/10 00:13:50 tom Exp $
  *
  */
 
@@ -10,6 +10,8 @@
 
 static FILE *my_out;
 static FILE *my_in;
+static int my_line;
+static int my_col;
 
 /******************************************************************************
  * Private functions                                                          *
@@ -119,6 +121,15 @@ void
 flt_putc(int ch)
 {
     fputc(ch, my_out);
+
+    if (ch == '\n') {
+	++my_line;
+	my_col = 0;
+    } else {
+	++my_col;
+    }
+
+    /* markers come out in flt_puts */
     if (ch == CTL_A)
 	fputc('?', my_out);
 }
@@ -132,6 +143,24 @@ flt_puts(const char *string, int length, const char *marker)
 	while (length-- > 0)
 	    flt_putc(*string++);
     }
+}
+
+int
+flt_get_line(void)
+{
+    return my_line;
+}
+
+int
+flt_get_col(void)
+{
+    return my_col;
+}
+
+void
+flt_error(const char *fmt,...)
+{
+    (void) fmt;
 }
 
 char *
@@ -229,6 +258,8 @@ main(int argc, char **argv)
 
     my_in = stdin;
     my_out = stdout;
+    my_col = 0;
+    my_line = 1;
 
     memset(flt_options, 0, sizeof(flt_options));
 

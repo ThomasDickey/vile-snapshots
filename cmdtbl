@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.230 2004/12/07 01:28:55 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.233 2004/12/14 20:18:42 tom Exp $
 #
 #
 
@@ -625,7 +625,7 @@ finderrbuf	NONE			OPT_FINDERR
 firstbuffer	NONE
 	"rewind"
 	"rew!"
-	<go to first buffer in buffer list.  (does nothing if \"autobuffer\" set>
+	<go to first buffer in buffer list>
 firstnonwhite	MOTION|MINIBUF
 	"first-nonwhite"		!FEWNAMES
 	'^'
@@ -1686,13 +1686,22 @@ usebuffer	NONE
 edit_buffer	NONE
 	"B"
 	"edit-buffer"			!FEWNAMES
-	<make or switch to the given buffer; will not look for a file by that name>
+	<make or switch to the given buffer>
+popup_buffer	NONE			!SMALLER
+	"popup-buffer"
+	"open-window"			!FEWNAMES
+	<open window for the given buffer>
+popdown_buffer	NONE			!SMALLER
+	"popdown-buffer"
+	"close-windows"			!FEWNAMES
+	<open all windows for the given buffer>
 usekreg		REDO
 	"use-register"			!FEWNAMES
 	'"'
 	<name a register, for use with a following command which references it>
 userbeep	NONE			!SMALLER
 	"beep"
+	'FN-b'				KEY_BackTab
 	<force the terminal to ring (or flash, if \"set flash\" is active)>
 visual		NONE
 	"visual"

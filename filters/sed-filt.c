@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.19 2002/12/17 02:03:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.20 2004/12/10 00:39:11 tom Exp $
  *
  * Filter to add vile "attribution" sequences to sed scripts.
  */
@@ -339,6 +339,7 @@ do_filter(FILE * input GCC_UNUSED)
 		    flt_puts(s++, 1, Action_attr);
 		    next = LeadingBlanks;
 		} else {
+		    flt_error("unexpected char");
 		    flt_puts(s++, 1, Error_attr);
 		}
 		if (*s == 0)

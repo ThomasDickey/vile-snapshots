@@ -5,7 +5,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.7 2004/11/24 01:01:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.8 2004/12/10 00:34:04 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
@@ -111,10 +111,12 @@ SECTION		%{IDENT}
 			    }
 			    save_here(yytext, yyleng);
 			    push_state(HEREDOC);
-			    BeginQuote(HEREDOC,
-				(strchr(yytext, '\n') != 0)
-				? Error_attr
-				: String_attr);
+			    if (strchr(yytext, '\n') != 0) {
+				flt_error("unexpected end of line");
+				BeginQuote(HEREDOC, Error_attr);
+			    } else {
+				BeginQuote(HEREDOC, String_attr);
+			    }
 			    flt_bfr_begin(String_attr);
 			}
 <HEREDOC>\\\$		{ flt_bfr_append(yytext, yyleng); }
@@ -215,8 +217,10 @@ got_here(char *text, int length)
     for (pass = 0; pass < 2; pass++) {
 	for (j = k = 0; j < length; j++) {
 	    if (isQuote(text[j])) {
-		if (pass)
+		if (pass) {
+		    flt_error("unexpected quote");
 		    flt_bfr_embed(text + j, 1, Error_attr);
+		}
 	    } else {
 		if (text[j] != here_tag[k++])
 		    return 0;

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.14 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.15 2004/12/10 00:49:51 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an X resource file.
  */
@@ -60,9 +60,12 @@ KEYWORD		({NAME}|<{NAME}>)
 
 <NORMAL>{COMMENT}	{ WriteToken(Comment_attr); }
 
-<NORMAL>^{SPACE}*#{SPACE}*{NAME} { if (!preprocessor(yytext, yyleng)) {
-				    WriteToken(Error_attr);
-				} }
+<NORMAL>^{SPACE}*#{SPACE}*{NAME} {
+			    if (!preprocessor(yytext, yyleng)) {
+				flt_error("unknown directive");
+				WriteToken(Error_attr);
+			    }
+			}
 
 %%
 

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.18 2004/11/11 00:19:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.19 2004/12/10 00:26:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile keyword file.  It's
  * done best in C because the delimiters may change as a result of processing
@@ -45,6 +45,7 @@ color_of(char *s)
 		result = Literal_attr;
 	    } else if (strchr("RUBI", *s) == 0) {
 		if (*s++ != 'C' || !isxdigit(CharOf(*s))) {
+		    flt_error("unexpected color code");
 		    result = Error_attr;
 		    break;
 		}
@@ -108,7 +109,12 @@ ExecTable(char *param)
 {
     char *t = skip_ident(param);
     flt_puts(param, t - param, Literal_attr);
-    flt_puts(t, strlen(t), *t == '\n' ? "" : Error_attr);
+    if (*t == '\n') {
+	flt_puts(t, strlen(t), "");
+    } else {
+	flt_error("unexpected tokens");
+	flt_puts(t, strlen(t), Error_attr);
+    }
 }
 
 static int
@@ -147,6 +153,7 @@ parse_directive(char *line)
 		}
 	    }
 	}
+	flt_error("unknown directive");
 	flt_puts(line, strlen(line), Error_attr);
     }
     return 0;

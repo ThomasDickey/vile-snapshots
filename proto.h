@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.532 2004/12/07 00:46:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.535 2004/12/12 17:18:55 tom Exp $
  *
  */
 
@@ -224,6 +224,8 @@ void update_scratch (const char *name, UpBuffFunc func);
 /* csrch.c */
 
 /* display.c */
+extern LINE *b2printf(BUFFER *bp, const char *fmt, ...) VILE_PRINTF(2,3);
+extern LINE *b2vprintf(BUFFER *bp, const char *fmt, va_list ap);
 extern char *lsprintf (char *buf, const char *fmt, ...) VILE_PRINTF(2,3);
 extern int col_limit (WINDOW *wp);
 extern int im_waiting (int flag);
@@ -234,7 +236,7 @@ extern int update (int force);
 extern int video_alloc (VIDEO **vpp);
 extern int vtinit (void);
 extern void bottomleft (void);
-extern void bprintf (const char *fmt, ...) VILE_PRINTF(1,2);
+extern void bprintf (/*@observer@*/ const char *fmt, ...) VILE_PRINTF(1,2);
 extern void bputc (int c);
 extern void dbgwrite (const char *fmt, ...) VILE_PRINTF(1,2);
 extern void hilite (int row, int colfrom, int colto, int on);
@@ -737,16 +739,18 @@ extern int adjvalueset (const char *cp, int defining, int setting, int global, V
 extern int choice_to_code (const FSM_CHOICES *choices, const char *name, size_t len);
 extern int combine_choices (const FSM_CHOICES *choices, const char *string);
 extern int find_mode (BUFFER *bp, const char *mode, int global, VALARGS *args);
-extern int getfillcol(BUFFER *bp);
-extern int len_record_sep(BUFFER *bp);
-extern int lookup_valnames(const char *rp, const struct VALNAMES *table);
+extern int find_mode_class (BUFFER *bp, const char *mode, int global, VALARGS * args, MODECLASS mode_class);
+extern int find_submode (BUFFER *bp, const char *mode, int global, VALARGS * args);
+extern int getfillcol (BUFFER *bp);
+extern int len_record_sep (BUFFER *bp);
+extern int lookup_valnames (const char *rp, const struct VALNAMES *table);
 extern int mode_eol (EOL_ARGS);
 extern int set_mode_value (BUFFER *bp, const char *cp, int defining, int setting, int global, VALARGS *args, const char *rp);
 extern int string_to_number (const char *from, int *np);
 extern void copy_mvals (int maximum, struct VAL *dst, struct VAL *src);
 extern void free_local_vals (const struct VALNAMES *names, struct VAL *gbl, struct VAL *val);
-extern void set_record_sep(BUFFER *bp, RECORD_SEP value);
-extern void set_winflags(int glob_vals, USHORT flags);
+extern void set_record_sep (BUFFER *bp, RECORD_SEP value);
+extern void set_winflags (int glob_vals, USHORT flags);
 
 #if OPT_COLOR_SCHEMES
 extern void init_scheme(void);
@@ -1098,6 +1102,7 @@ TBUFF *	tb_bappend (TBUFF **p, const char *s, size_t len);
 TBUFF *	tb_copy (TBUFF **d, TBUFF *s);
 TBUFF *	tb_dequote (TBUFF **p);
 TBUFF *	tb_enquote (TBUFF **p);
+TBUFF * tb_error (TBUFF **p);
 TBUFF *	tb_init (TBUFF **p, int c);
 TBUFF *	tb_insert (TBUFF **p, size_t n, int c);
 TBUFF *	tb_put (TBUFF **p, size_t n, int c);

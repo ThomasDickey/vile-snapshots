@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.191 2004/08/08 18:15:13 Mark.Robinson Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.194 2004/12/15 01:22:08 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -195,6 +195,7 @@ MACRO_SRC = \
 	$(srcdir)/macros/pictmode.rc \
 	$(srcdir)/macros/search.rc \
 	$(srcdir)/macros/shifts.rc \
+	$(srcdir)/macros/showeach.rc \
 	$(srcdir)/macros/vileinit.rc \
 	$(srcdir)/macros/vileperl.rc \
 	$(srcdir)/macros/which.rc
@@ -253,12 +254,11 @@ SRC = $(SCREEN).c $(VILESRC)
 
 MKTBLS = ./mktbls$x
 
-# these headers are built by the mktbls program from the information in cmdtbl
-# and in modetbl
-BUILTHDRS = nebind.h neproto.h neexec.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nefsms.h
+# Generated header-files, e.g., nemodes.h
+BUILTHDRS = @BUILTHDRS@
 
-# built from perl.xs
-BUILTSRCS = perl.c
+# Generated source-files, e.g., perl.c
+BUILTSRCS = @BUILTSRCS@
 
 # built-in filters, if any
 BUILTLIBS = @BUILTLIBS@
@@ -291,6 +291,8 @@ ALL =	$(TARGET)
 @MAKE_FILTERS@	cd filters && $(MAKE) $(MAKE_RECUR) $@
 
 all ::	$(ALL)
+
+sources : $(BUILTHDRS)
 
 filters/@LIB_PREFIX@vlflt.a :
 	cd filters && $(MAKE) $(MAKE_RECUR) @LIB_PREFIX@vlflt.a
@@ -353,6 +355,7 @@ INSTALL_MACRO_FILES = \
 	$(DATADIR)/pictmode.rc \
 	$(DATADIR)/search.rc \
 	$(DATADIR)/shifts.rc \
+	$(DATADIR)/showeach.rc \
 	$(DATADIR)/vileinit.rc \
 	$(DATADIR)/vileperl.rc \
 	$(DATADIR)/which.rc
@@ -668,6 +671,8 @@ $(DATADIR)/search.rc:		$(srcdir)/macros/search.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/search.rc $@
 $(DATADIR)/shifts.rc:		$(srcdir)/macros/shifts.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/shifts.rc $@
+$(DATADIR)/showeach.rc:		$(srcdir)/macros/showeach.rc
+	$(INSTALL_DATA)		$(srcdir)/macros/showeach.rc $@
 $(DATADIR)/vileinit.rc:		$(srcdir)/macros/vileinit.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/vileinit.rc $@
 $(DATADIR)/vileperl.rc:		$(srcdir)/macros/vileperl.rc

@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/gnugpg.rc,v 1.2 2001/09/18 09:10:38 cmorgan Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/gnugpg.rc,v 1.3 2004/12/16 00:37:09 tom Exp $
 
 ; included below is a collection of macros that use GNU's gpg
 ; encryption package in a win32 or Unix environment.
@@ -19,6 +19,9 @@
 ; in a scratch buffer that will be forgotten when the editor exits.
 ; --------
 store-procedure decrypt-file file="GPG-encrypted-file? "
+    ~if &seq '' $1
+        ~return
+    ~endif
     ~local %tmpbuf %tmpfile %cmd %phrase
     setv %phrase  &qpasswd "GPG PassPhrase? "
     ~if &error %phrase
@@ -82,6 +85,9 @@ store-procedure decrypt-buffer
 
 ; use gpg to symmetrically encrypt the current buffer
 store-procedure encrypt-buffer file="Destination filename? "
+    ~if &seq '' $1
+        ~return
+    ~endif
     ~local %cmd %phrase1 %phrase2
     setv %phrase1  &qpasswd "GPG PassPhrase? "
     ~if &error %phrase1

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.77 2004/08/08 20:36:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.78 2004/12/10 00:31:02 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -1214,6 +1214,7 @@ do_filter(FILE *input GCC_UNUSED)
 		if ((ok = end_BACKTIC(s)) != 0) {
 		    s = put_embedded(s, ok, "");
 		} else {
+		    flt_error("missing backtic");
 		    s = put_remainder(s, Error_attr, 0);
 		}
 		if (*s == BQUOTE) {
@@ -1291,7 +1292,12 @@ do_filter(FILE *input GCC_UNUSED)
 		    clearOp();
 		} else if ((ok = is_NUMBER(s, &err)) != 0) {
 		    clearOp();
-		    flt_puts(s, ok, err ? Error_attr : Number_attr);
+		    if (err) {
+			flt_error("illegal number");
+			flt_puts(s, ok, Error_attr);
+		    } else {
+			flt_puts(s, ok, Number_attr);
+		    }
 		    s += ok;
 		} else if ((ok = is_KEYWORD(s)) != 0) {
 		    if ((s != the_file)
@@ -1335,9 +1341,19 @@ do_filter(FILE *input GCC_UNUSED)
 		} else if ((ok = is_String(s, &err)) != 0) {
 		    clearOp();
 		    if (*s == DQUOTE) {
-			s = put_embedded(s, ok, err ? Error_attr : String_attr);
+			if (err) {
+			    flt_error("unexpected quote");
+			    s = put_embedded(s, ok, Error_attr);
+			} else {
+			    s = put_embedded(s, ok, String_attr);
+			}
 		    } else {
-			flt_puts(s, ok, err ? Error_attr : String_attr);
+			if (err) {
+			    flt_error("missing quote");
+			    flt_puts(s, ok, Error_attr);
+			} else {
+			    flt_puts(s, ok, String_attr);
+			}
 			s += ok;
 		    }
 		} else {

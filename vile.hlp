@@ -137,6 +137,11 @@ Buffer manipulation commands
 		necessary when visiting buffers numbered higher than '9'.  For
 		example, one would type "13_" to visit buffer 13 in the list.
 
+		Use tab (or back-tab if supported) to scroll the list of
+		9 buffers right/left.  Pressing '_' will select the first
+		listed buffer; the 1-9 digits also work as expected when the
+		list is scrolled.
+
 		[ See the note under "Differences", below, for comments on
 		vi's use of '_'.]
 
@@ -1441,6 +1446,12 @@ Editor modes
 		column at which autowrapping and region formatting will
 		break lines.  If zero, use the wrapmargin.  If negative,
 		count from the right margin.  (B)
+
+	filtermsgs (fm)  A few syntax errors are detected and highlighted by
+		the syntax-highlighting filters.  If set, this mode directs
+		vile to write into the [Filter Messages] buffer the associated
+		error messages, which can be used with the error-buffer command
+		to step through the errors.  (B)
 
 	filtername (fn)  Specify a syntax-highlighting filter, for a given
 		majormode.  This is used in the filters.rc file, to handle
@@ -2823,6 +2834,7 @@ Programmed procedures (aka macros)
 	&cat		2	concatenate string
 	&cclass		1	character class (see "show-printable")
 	&chr		1	integer to char conversion
+	&classof	1	inverse of &isa, returns classes for param
 	&cmatch		2	caseless match regular-expression value
 	&date		2	format 2nd param with 1st, like strftime.
 	&default	1	initial/default value for mode or state variable
@@ -2841,6 +2853,7 @@ Programmed procedures (aka macros)
 	&gtkey		0	get 1 character
 	&gtsequence	0	get keycode sequence, e.g., #1
 	&indirect	1	evaluate indirect value
+	&isa		2	check if the second param is a member of first
 	&left		2	left string(string, len)
 	&length		1	string length
 	&leq		2	numeric less than or equal
@@ -2850,6 +2863,7 @@ Programmed procedures (aka macros)
 	&lower		1	lower case string
 	&lt		2	numeric less than
 	&match		2	match regular-expression value
+	&mclass		1	returns the mode's class, e.g., buffer or Major
 	&middle		3	mid string(string, pos, len)
 	&modulo		2	modulus
 	&negate		1	negate
@@ -6124,4 +6138,4 @@ Problems
 
 Copyright 1995-2003 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.591 2004/11/06 00:28:09 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.593 2004/12/12 20:11:54 tom Exp $

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.77 2004/10/20 01:02:15 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.78 2004/12/15 18:15:44 tom Exp $
  *
  */
 
@@ -580,6 +580,27 @@ ntkclose(void)
 #endif
 }
 
+#define isModified(state) (state & \
+		(LEFT_CTRL_PRESSED \
+		 | RIGHT_CTRL_PRESSED \
+		 | LEFT_ALT_PRESSED \
+		 | RIGHT_ALT_PRESSED \
+		 | SHIFT_PRESSED))
+
+static int
+modified_key(int key, DWORD state)
+{
+    key |= mod_KEY;
+    if (state & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED))
+	key |= mod_CTRL;
+    if (state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED))
+	key |= mod_ALT;
+    if (state & SHIFT_PRESSED)
+	key |= mod_SHIFT;
+
+    return key;
+}
+
 static struct {
     int windows;
     int vile;
@@ -649,9 +670,16 @@ decode_key_event(INPUT_RECORD * irp)
 	   irp->Event.KeyEvent.wVirtualScanCode,
 	   irp->Event.KeyEvent.dwControlKeyState));
 
-    if ((key = (UCHAR) irp->Event.KeyEvent.uChar.AsciiChar) != 0)
+    if ((key = (UCHAR) irp->Event.KeyEvent.uChar.AsciiChar) != 0) {
+	if (isCntrl(key)) {
+	    DWORD cstate = state & ~(LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED);
+	    if (isModified(cstate))
+		key = modified_key(key, cstate);
+	}
 	return key;
+    }
 
+    key = irp->Event.KeyEvent.wVirtualKeyCode;
     if ((state & (RIGHT_CTRL_PRESSED | LEFT_CTRL_PRESSED)) != 0
 	&& (state & (RIGHT_CTRL_PRESSED
 		     | LEFT_CTRL_PRESSED
@@ -659,9 +687,9 @@ decode_key_event(INPUT_RECORD * irp)
 	/*
 	 * Control-shift-6 is control/^, control/~ or control/`.
 	 */
-	if (irp->Event.KeyEvent.wVirtualKeyCode == '6'
-	    || irp->Event.KeyEvent.wVirtualKeyCode == '^'
-	    || irp->Event.KeyEvent.wVirtualKeyCode == '\036') {
+	if (key == '6'
+	    || key == '^'
+	    || key == '\036') {
 	    TRACE(("...decode_key_event ^^\n"));
 	    return '\036';
 	}
@@ -677,17 +705,8 @@ decode_key_event(INPUT_RECORD * irp)
 	     * pageup/pagedown and arrow key bindings that would be lost if we
 	     * used the Win32-only definition.
 	     */
-	    if (state &
-		(LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED
-		 | LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED
-		 | SHIFT_PRESSED)) {
-		key = mod_KEY | keyxlate[i].vile;
-		if (state & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED))
-		    key |= mod_CTRL;
-		if (state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED))
-		    key |= mod_ALT;
-		if (state & SHIFT_PRESSED)
-		    key |= mod_SHIFT;
+	    if (isModified(state)) {
+		key = modified_key(keyxlate[i].vile, state);
 		if (keyxlate[i].vile == '2') {
 		    if ((key & mod_CTRL) && ((key & mod_ALT) == 0)) {
 			/* either ^2 or ^@, => nul char */

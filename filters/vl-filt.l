@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.4 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.5 2004/12/10 01:29:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VeriLog
  * program.
@@ -43,11 +43,25 @@ DSTRING		\"(\\.|[^"\\])*\"
 %%
 
 <CODE>{ESCNAME}		{ WriteToken(keyword_attr(yytext)); }
-<CODE>{SYSNAME}		{ WriteToken(keyword_attr(yytext) ? keyword_attr(yytext) : Error_attr); }
+<CODE>{SYSNAME}		{ char *attr = keyword_attr(yytext);
+			  if (attr != 0) {
+			      WriteToken(attr);
+			  } else {
+			      flt_error("unknown sysname");
+			      WriteToken(Error_attr);
+			  }
+			}
 <CODE>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
 
 <CODE>`define{SPACE}+{IDENT} { do_define(yytext); }
-<CODE>{DIRECTIVE}	{ WriteToken(keyword_attr(yytext) ? keyword_attr(yytext) : Error_attr); }
+<CODE>{DIRECTIVE}	{ char *attr = keyword_attr(yytext);
+			  if (attr != 0) {
+			      WriteToken(attr);
+			  } else {
+			      flt_error("unknown directive");
+			      WriteToken(Error_attr);
+			  }
+			}
 
 <CODE>{INTEGER}		{ WriteToken(Number_attr); }
 

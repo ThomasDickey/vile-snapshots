@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.229 2004/11/03 00:05:55 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.232 2004/12/14 01:40:22 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -100,6 +100,7 @@ bool							# MD prefix
 	"cmode"		CMOD		chgd_major_w	!OPT_MAJORMODE # C indentation and fence match
 	"crypt"		CRYPT		chgd_major	OPT_ENCRYPT	# encrytion mode active
 	"dos"		DOS		chgd_major_w	# "dos" mode -- lines end in crlf
+	"FilterMsgs"	FILTERMSGS	0		OPT_MAJORMODE&&OPT_FILTER # Name of syntax-filter
 	"HighLight"	HILITE		chgd_filter	OPT_MAJORMODE # true if we enable syntax highlighting
 	"IgnoreCase"	IGNCASE		chgd_hilite	# Exact matching for searches
 	"loading"	LOADING		0		# Are we asynchronously loading a file?
@@ -310,6 +311,7 @@ string
 "cat"		CAT		2|STR|SRET	# concatenate string
 "cclass"	CCLASS		1|STR|SRET	# character-class
 "chr"		CHR		1|NUM		# integer to char conversion
+"classof"	CLASSOF		1|STR|SRET	# class of (various types)
 "cmatch"	CMATCH		2|STR|BRET	# caseless regular expression check
 "date"		DATE		2|NUM|SRET	# formatted date/timestamp
 "default"	DEFAULT		1|STR|SRET	# return initial/default value for mode or state-variable
@@ -328,6 +330,7 @@ string
 "gtkey"		GTKEY		0		# get 1 character
 "gtsequence"	GTSEQ		0		# get keyboard-sequence (characters)
 "indirect"	INDIRECT	1|STR|SRET	# evaluate indirect value
+"isa"		ISA		2|STR|BRET	# test classification of an identifier
 "left"		LEFT		2|STR|SRET	# left string(string, len)
 "length"	LENGTH		1|NRET		# string length
 "leq"		LEQ		2|NUM|BRET	# logical less than or equal
@@ -337,6 +340,7 @@ string
 "lower"		LOWER		1|STR|SRET	# lower case string
 "lt"		LT		2|NUM|BRET	# logical less than (lessthan)
 "match"		MATCH		2|STR|BRET	# regular expression check
+"mclass"	MCLASS		1|STR|SRET	# mode-class
 "middle"	MID		3|STR|SRET	# mid string(string, pos, len)
 "modulo"	MOD		2|NUM|NRET	# modulo
 "negate"	NEG		1|NUM|NRET	# negate
@@ -354,15 +358,15 @@ string
 "register"	REGISTER	1|STR|SRET	# register, e.g. "a"
 "right"		RIGHT		2|STR|SRET	# right string(string, pos)
 "rnd"		RND		1|NUM|NRET	# get a random number
-"sequal"	SEQUAL		2|BRET		# string logical equality check
-"sgeq"		SGEQ		2|NUM|BRET	# string greater than or equal
-"sgreater"	SGREAT		2|BRET		# string logical greater than
-"sgt"		SGT		2|BRET		# string logical greater than (sgreater)
+"sequal"	SEQUAL		2|STR|BRET	# string logical equality check
+"sgeq"		SGEQ		2|STR|BRET	# string greater than or equal
+"sgreater"	SGREAT		2|STR|BRET	# string logical greater than
+"sgt"		SGT		2|STR|BRET	# string logical greater than (sgreater)
 "sindex"	SINDEX		2|NRET		# find the index of one string in another
-"sleq"		SLEQ		2|NUM|BRET	# string less than or equal
-"sless"		SLESS		2|BRET		# string logical less than
-"slt"		SLT		2|BRET		# string logical less than (sless)
-"sneq"		SNEQ		2|NUM|BRET	# string not equal
+"sleq"		SLEQ		2|STR|BRET	# string less than or equal
+"sless"		SLESS		2|STR|BRET	# string logical less than
+"slt"		SLT		2|STR|BRET	# string logical less than (sless)
+"sneq"		SNEQ		2|STR|BRET	# string not equal
 "stime"		STIME		0|NRET		# system-timestamp
 "stoken"	STOKEN		3|BRET		# find a token in a string, given delims
 "subtract"	SUB		2|NUM|NRET	# subtraction

@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.72 2004/05/14 23:29:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.73 2004/12/10 00:21:07 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  *
@@ -121,6 +121,7 @@ write_comment(char *s, int len, int begin)
 	t += 2;
     while ((nested = strstr(t, "/*")) != 0 && (nested - s) < len) {
 	flt_puts(s, nested - s, Comment_attr);
+	flt_error("nested comment");
 	flt_puts(nested, 2, Error_attr);
 	len -= (nested + 2 - s);
 	s = t = nested + 2;
@@ -288,6 +289,7 @@ write_number(char *s)
 	    && !strncmp(base, "...", 3)) {
 	    attr = "";
 	} else {
+	    flt_error("illegal number");
 	    attr = Error_attr;
 	}
     } else {
@@ -304,7 +306,12 @@ write_literal(char *s, int *literal, int escaped)
 	c_length = strlen(s);
     else
 	*literal = 0;
-    flt_puts(s, c_length, escaped ? Literal_attr : Error_attr);
+    if (escaped) {
+	flt_puts(s, c_length, Literal_attr);
+    } else {
+	flt_error("expected an escape");
+	flt_puts(s, c_length, Error_attr);
+    }
     s += c_length;
     if (!*literal)
 	flt_putc(*s++);
@@ -320,7 +327,12 @@ write_wchar(char *s)
 	if (!isxdigit(CharOf(s[n])))
 	    break;
     }
-    flt_puts(s, n, n == 6 ? Literal_attr : Error_attr);
+    if (n == 6) {
+	flt_puts(s, n, Literal_attr);
+    } else {
+	flt_error("expected 6 chars after escape");
+	flt_puts(s, n, Error_attr);
+    }
     return s + n;
 }
 
@@ -379,6 +391,7 @@ parse_prepro(char *s, int *literal)
 	    flt_puts(s, ss - s, Preproc_attr);
 	    flt_puts(ss, tt - ss, Number_attr);
 	} else {
+	    flt_error("unknown preprocessor directive");
 	    flt_puts(s, tt - s, Error_attr);
 	}
 	s = tt;
@@ -504,6 +517,7 @@ do_filter(FILE *input GCC_UNUSED)
 		     */
 		    s = write_wchar(s);
 		} else {
+		    flt_error("illegal escape");
 		    s = write_escape(s, Error_attr);
 		}
 		was_eql = 0;

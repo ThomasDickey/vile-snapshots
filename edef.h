@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.318 2004/12/03 00:20:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.319 2004/12/09 22:43:21 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -436,6 +436,9 @@ decl_init_const( char TAGSTACK_BufName[],	"[Tag Stack]");
 #endif
 #if OPT_TAGS
 decl_init_const( char TAGFILE_BufName[],	"[Tags %d]");
+#endif
+#ifdef MDFILTERMSGS
+decl_init_const( char FLTMSGS_BufName[],	"[Filter Messages]");
 #endif
 
 /* defined in nebind.h and nename.h */

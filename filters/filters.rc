@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.196 2004/11/03 21:02:24 tom Exp $
+; $Id: filters.rc,v 1.198 2004/12/12 23:15:40 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -120,16 +120,38 @@ bind-key HighlightClear ^X-Q
 
 store-procedure set-highlighting ma 'Set a majormode and invoke highlighting'
 	; show-variables
-	~if &seq 'mode' &right $1 &sub &len $1 3
-		; 9.4e
-		write-message $1
-		~force setl $1
-	~else
-		; pre-9.4e
-		write-message &cat $1 mode
-		~force setl &cat $1 mode
-	~endif
+	write-message $1
+	~force setl $1
 	HighlightFilter
+~endm
+
+; Normally filtermsgs is off since it would slow down autocolor.  This macro
+; turns it on temporarily to create an error-buffer which can be used to walk
+; through the syntax errors.
+store-procedure show-filtermsgs 'Show syntax-filter error messages for current buffer'
+	~local $filtermsgs $highlight
+	set highlight
+	~if &not $highlight
+		write-message 'Cannot setup highlighting'
+	~elseif &seq $majormode ''
+		write-message 'No majormode is associated with this buffer'
+	~elseif &filter $majormode
+		set filtermsgs
+		; make sure there are no prior results to confuse us
+		~if &isa buffer '[Filter Messages]'
+			~quiet ~hidden kill-buffer '[Filter Messages]'
+		~endif
+		HighlightFilter
+		~if &isa buffer '[Filter Messages]'
+			popup-buffer '[Filter Messages]'
+			goto-beginning-of-file
+			error-buffer '[Filter Messages]'
+		~else
+			write-message 'No messages found'
+		~endif
+	~else
+		write-message 'This only works for built-in filters'
+	~endif
 ~endm
 
 ; If we have built-in filters, and colors are available, simply turn on

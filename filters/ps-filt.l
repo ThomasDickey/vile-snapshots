@@ -4,7 +4,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ps-filt.l,v 1.4 2004/11/24 01:01:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ps-filt.l,v 1.5 2004/12/10 00:32:04 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PostScript
  * files.
@@ -58,7 +58,8 @@ NUMBER		{INTEGER}|{REAL}|{RADIX}
 
 <NORMAL>"<"		{ BeginQuote(HEX_TEXT, String_attr); }
 <HEX_TEXT>[0-9A-Fa-f]+	{ flt_bfr_append(yytext, yyleng); }
-<HEX_TEXT>[^>0-9A-Fa-f]+ { flt_bfr_embed(yytext, yyleng, Error_attr); }
+<HEX_TEXT>[^>0-9A-Fa-f]+ { flt_error("expected a number");
+			  flt_bfr_embed(yytext, yyleng, Error_attr); }
 <HEX_TEXT>">"		{ FinishQuote(NORMAL); }
 
 %%

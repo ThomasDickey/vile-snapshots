@@ -774,7 +774,7 @@ Functions
 	    &mod    "N1" "N2"       Divide the "N1" by "N2", return remainder.
 	    &negate "N"             Return -(N).
 	    &ascii  "S"	            Return the ASCII code of the first
-					    character in "S"
+				    character in "S"
 	    &random "N"
 	    &rnd    "N"		    Random number between 1 and N
 	    &abs    "N"		    Absolute value of "N"
@@ -791,12 +791,12 @@ Functions
 	  The rest return strings:
 
 	    &bind   "S"		    Return the function name bound to the
-					key sequence "S".
+				    key sequence "S".
 	    &cat    "S1" "S2"	    Concatenate S1 and string "S".
 	    &chr    "N"		    Converts numeric "N" to an ASCII character.
 	    &cclass "S"		    Character class (see "show-printable")
 	    &env    "S"		    Return the value of the user's environment
-					variable named "S".
+				    variable named "S".
 	    &gtkey		    Get a single raw keystroke from the user.
 	    &gtsequence		    Get a complete vile key sequence from user.
 	    &left   "S" "N"	    Extract first "N" characters from "S"
@@ -805,8 +805,8 @@ Functions
 	    &middle "S" "N1" "N2"   Extract "N2" chars at position "N1".
 	    &upper  "S"		    Return uppercase version of "S".
 	    &trim   "S"		    Remove whitespace at either end of "S",
-					reduce multiple spaces within "S"
-					to just one space each.
+				    reduce multiple spaces within "S"
+				    to just one space each.
 
 	Boolean/logical functions --
 
@@ -820,6 +820,9 @@ Functions
 	    &geq    "N1" "N2"	    Is "N1" numerically not less than "N2"?
 	    &greater "N1" "N2"	    Is "N1" numerically greater than "N2"?
 	    &gt	    "N1" "N2"	    (same as &greater)
+	    &isa    "C"  "N"        Is "N" a member of class "C".  Classes
+				    include: buffer, color, mode, submode,
+				    Majormode.
 	    &leq    "N1" "N2"	    Is "N1" numerically not greater than "N2"?
 	    &lessthan "N1" "N2"     Is "N1" numerically less than "N2"?
 	    &lt	    "N1" "N2"	    (same as &lessthan)
@@ -860,19 +863,26 @@ Functions
 
 	  These all return string values:
 
+	    &classof "N"	    Retrieves the class(es) to which the given
+	    			    name may return.  Usually this is a single
+				    name, e.g., one of those checked by &isa.
+				    If multiple matches are found, the result
+				    contains each classname separated by a
+				    space.
+
 	    &default "MODENAME"     Retrieves initial/default value for the
-					given mode or state variable.
+				    given mode or state variable.
 
 	    &global "MODENAME"	    Retrieves universal/global mode setting.
 
-	    &indirect "S"	    Evaluate value of "S" as a
-					macro language variable itself.
-					Thus if %foo has value "HOME",
-					then &env &indirect %foo will
-					return the home directory pathname.
+	    &indirect "S"	    Evaluate value of "S" as a macro language
+				    variable itself.  Thus if %foo has value
+				    "HOME", then
+					&env &indirect %foo
+				    will return the home directory pathname.
 
 	    &local  "MODENAME"	    Retrieves local mode setting (for
-					current buffer).
+				    current buffer).
 
 	    &lookup   "N" "P"	    The "N" keyword tells which field to use
 				    looking for the file "P":
@@ -890,25 +900,31 @@ Functions
 				    bin, startup, path, libdir.  Note that
 				    the directory lists may overlap.
 
+	    &mclass "M"		    Retrieve the class to which the given
+	    			    mode belongs.  This is different from
+				    &mclass since it distinguishes the modes
+				    Return values include:  universal buffer
+				    window submode Majormode.
+
 	    &qpasswd  "S"	    Present "S" to the user and return their
-					response.  Each typed character is
-					echoed as '*'.  The response is not
-					recallable via the editor's history
-					mechanism.
+				    response.  Each typed character is
+				    echoed as '*'.  The response is not
+				    recallable via the editor's history
+				    mechanism.
 
 	    &query  "S"		    Present "S" to the user, and return
-					their typed response.
+				    their typed response.
 
 	    &date "F" "T"	    If strftime() is found, format the time "T"
-					using the "F" format.  Otherwise, use
-					ctime() to format the time.  Times are
-					numbers (see &ftime and &stime).
+				    using the "F" format.  Otherwise, use
+				    ctime() to format the time.  Times are
+				    numbers (see &ftime and &stime).
 
 	    &dquery  "S" "D"	    Present "S" to the user, and return
-					their typed response.  If "D" is given,
-					use that as the default response.
-					Otherwise use the previous response
-					as the default.
+				    their typed response.  If "D" is given,
+				    use that as the default response.
+				    Otherwise use the previous response
+				    as the default.
 
 	    &path   "N" "P"	    The "N" keyword tells which field to extract
 				    from the pathname "P":
@@ -1055,7 +1071,6 @@ Directives
     ------
 	The ~break directive allows early termination of an enclosing
 	while-loop.  Extending the above example:
-
 
 	       ; count the occurrences of a pattern in all buffers
 	       set nowrapscan
@@ -1465,6 +1480,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.93 2004/10/20 22:47:38 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.94 2004/12/12 20:29:24 tom Exp $
 -----------------------------------
 

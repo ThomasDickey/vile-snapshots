@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.11 2003/05/24 00:49:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.12 2004/12/10 00:38:11 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -858,12 +858,22 @@ do_filter(FILE *input GCC_UNUSED)
 		} else if ((ok = is_CHAR(s, &err)) != 0) {
 		    DPRINTF(("...CHAR: %d\n", ok));
 		    had_op = 0;
-		    flt_puts(s, ok, err ? Error_attr : Number_attr);
+		    if (err) {
+			flt_error("not a number");
+			flt_puts(s, ok, Error_attr);
+		    } else {
+			flt_puts(s, ok, Number_attr);
+		    }
 		    s += ok;
 		} else if ((ok = is_NUMBER(s, &err)) != 0) {
 		    DPRINTF(("...NUMBER: %d\n", ok));
 		    had_op = 0;
-		    flt_puts(s, ok, err ? Error_attr : Number_attr);
+		    if (err) {
+			flt_error("not a number");
+			flt_puts(s, ok, Error_attr);
+		    } else {
+			flt_puts(s, ok, Number_attr);
+		    }
 		    s += ok;
 		} else if ((ok = is_KEYWORD(s)) != 0) {
 		    DPRINTF(("...KEYWORD: %d\n", ok));
@@ -874,9 +884,19 @@ do_filter(FILE *input GCC_UNUSED)
 		} else if ((ok = is_String(s, &err)) != 0) {
 		    had_op = 0;
 		    if (*s == DQUOTE) {
-			s = put_embedded(s, ok, err ? Error_attr : String_attr);
+			if (err) {
+			    flt_error("unexpected quote");
+			    s = put_embedded(s, ok, Error_attr);
+			} else {
+			    s = put_embedded(s, ok, String_attr);
+			}
 		    } else {
-			flt_puts(s, ok, err ? Error_attr : String_attr);
+			if (err) {
+			    flt_error("unterminated string");
+			    flt_puts(s, ok, Error_attr);
+			} else {
+			    flt_puts(s, ok, String_attr);
+			}
 			s += ok;
 		    }
 		} else {

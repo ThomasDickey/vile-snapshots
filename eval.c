@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.334 2004/12/02 01:51:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.338 2004/12/14 16:08:33 tom Exp $
  *
  */
 
@@ -731,6 +731,105 @@ dequoted_parameter(TBUFF **tok)
     return (0);
 }
 
+#define UNI_CLASSNAME "universal"
+#define BUF_CLASSNAME "buffer"
+#define WIN_CLASSNAME "window"
+#define SUB_CLASSNAME "submode"
+#define MAJ_CLASSNAME "Majormode"
+
+#define COLOR_CLASSNAME "color"
+#define MODES_CLASSNAME "mode"
+
+/*
+ * Check if the given value is an instance of the given class.  That's easier
+ * to work with in scripts than trying to use a feature and (then) trying to
+ * recover if it doesn't exist.
+ *
+ * Note:  The classnames are chosen to allow single character abbreviations.
+ */
+static int
+test_isa_class(const char *classname, const char *value)
+{
+    VALARGS args;
+    int result = FALSE;
+    size_t len = strlen(classname);
+
+    if (!strncmp(classname, BUF_CLASSNAME, len)) {
+	result = (find_b_name(value) != 0);
+    } else if (!strncmp(classname, COLOR_CLASSNAME, len)) {
+#if OPT_COLOR_CHOICES
+	result = (choice_to_code(fsm_color_choices, value, len) != ENUM_ILLEGAL);
+#endif
+    } else if (!strncmp(classname, MODES_CLASSNAME, len)) {
+	if (find_mode_class(curbp, value, TRUE, &args, UNI_MODE)
+	    || find_mode_class(curbp, value, TRUE, &args, BUF_MODE)
+	    || find_mode_class(curbp, value, TRUE, &args, WIN_MODE))
+	    result = TRUE;
+#if OPT_MAJORMODE
+    } else if (!strncmp(classname, SUB_CLASSNAME, len)) {
+	result = find_mode_class(curbp, value, TRUE, &args, SUB_MODE);
+    } else if (!strncmp(classname, MAJ_CLASSNAME, len)) {
+	result = find_mode_class(curbp, value, TRUE, &args, MAJ_MODE);
+#endif
+    }
+    return result;
+}
+
+/*
+ * Reverse of the "&isa" operator.
+ */
+static void
+find_classof(TBUFF **result, const char *value)
+{
+    static const char *table[] =
+    {
+	BUF_CLASSNAME,
+	COLOR_CLASSNAME,
+	MODES_CLASSNAME,
+	SUB_CLASSNAME,
+	MAJ_CLASSNAME
+    };
+    size_t n;
+    int found = FALSE;
+
+    tb_init(result, EOS);
+    for (n = 0; n < TABLESIZE(table); ++n) {
+	if (test_isa_class(table[n], value)) {
+	    found = TRUE;
+	    if (tb_length(*result))
+		tb_sappend0(result, " ");
+	    tb_sappend0(result, table[n]);
+	    break;
+	}
+    }
+    if (!found)
+	tb_error(result);
+}
+
+/*
+ * Find the mode's class (universal, buffer, window, major).
+ */
+static void
+find_modeclass(TBUFF **result, const char *value)
+{
+    VALARGS args;
+
+    if (find_mode_class(curbp, value, TRUE, &args, UNI_MODE))
+	tb_scopy(result, UNI_CLASSNAME);
+    else if (find_mode_class(curbp, value, TRUE, &args, BUF_MODE))
+	tb_scopy(result, BUF_CLASSNAME);
+    else if (find_mode_class(curbp, value, TRUE, &args, WIN_MODE))
+	tb_scopy(result, WIN_CLASSNAME);
+#if OPT_MAJORMODE
+    else if (find_mode_class(curbp, value, TRUE, &args, SUB_MODE))
+	tb_scopy(result, SUB_CLASSNAME);
+    else if (find_mode_class(curbp, value, TRUE, &args, MAJ_MODE))
+	tb_scopy(result, MAJ_CLASSNAME);
+#endif
+    else
+	tb_error(result);
+}
+
 #define MAXARGS 3
 
 /*
@@ -744,6 +843,7 @@ run_func(int fnum)
     REGEXVAL *exp;
     BUFFER *bp;
     TBUFF *args[MAXARGS];
+    TBUFF *juggle = 0;
     char *arg[MAXARGS];		/* function arguments */
     char *cp;
     const char *sp;
@@ -825,6 +925,15 @@ run_func(int fnum)
     case UFCAT:
 	tb_scopy(&result, arg[0]);
 	tb_sappend0(&result, arg[1]);
+	break;
+    case UFISA:
+	value = test_isa_class(arg[0], arg[1]);
+	break;
+    case UFCLASSOF:
+	find_classof(&result, arg[0]);
+	break;
+    case UFMCLASS:
+	find_modeclass(&result, arg[0]);
 	break;
     case UFCCLASS:
 	show_charclass(&result, arg[0]);
@@ -1050,14 +1159,19 @@ run_func(int fnum)
 		    tb_scopy(&result, SL_TO_BSL(cp));
 		break;
 	    case PATH_FULL:
-		tb_scopy(&result, arg[1]);
-		tb_alloc(&result, NFILEN);
-		SL_TO_BSL(lengthen_path(tb_values(result)));
-		tb_setlen(&result, -1);
+		if (tb_scopy(&juggle, arg[1])
+		    && tb_alloc(&juggle, NFILEN)) {
+		    lengthen_path(tb_values(juggle));
+		    tb_setlen(&juggle, -1);
+		    tb_scopy(&result, SL_TO_BSL(tb_values(juggle)));
+		} else {
+		    is_error = TRUE;
+		}
 		break;
 	    case PATH_HEAD:
-		SL_TO_BSL(path_head(&result, arg[1]));
-		tb_setlen(&result, -1);
+		path_head(&juggle, arg[1]);
+		tb_setlen(&juggle, -1);
+		tb_scopy(&result, SL_TO_BSL(tb_values(juggle)));
 		break;
 	    case PATH_ROOT:
 		tb_scopy(&result, SL_TO_BSL(pathleaf(arg[1])));
@@ -1067,10 +1181,14 @@ run_func(int fnum)
 		}
 		break;
 	    case PATH_SHORT:
-		tb_scopy(&result, arg[1]);
-		tb_alloc(&result, NFILEN);
-		SL_TO_BSL(shorten_path(tb_values(result), FALSE));
-		tb_setlen(&result, -1);
+		if (tb_scopy(&juggle, arg[1])
+		    && tb_alloc(&juggle, NFILEN)) {
+		    shorten_path(tb_values(juggle), FALSE);
+		    tb_setlen(&juggle, -1);
+		    tb_scopy(&result, SL_TO_BSL(tb_values(juggle)));
+		} else {
+		    is_error = TRUE;
+		}
 		break;
 	    case PATH_TAIL:
 		tb_scopy(&result, pathleaf(arg[1]));
@@ -1082,9 +1200,10 @@ run_func(int fnum)
 	}
 	break;
     case UFPATHCAT:
-	tb_alloc(&result, NFILEN);
-	SL_TO_BSL(pathcat(tb_values(result), arg[0], arg[1]));
-	tb_setlen(&result, -1);
+	tb_alloc(&juggle, NFILEN);
+	pathcat(tb_values(juggle), arg[0], arg[1]);
+	tb_setlen(&juggle, -1);
+	tb_scopy(&result, SL_TO_BSL(tb_values(juggle)));
 	break;
     case UFPATHQUOTE:
 	path_quote(&result, SL_TO_BSL(arg[0]));
@@ -1138,6 +1257,7 @@ run_func(int fnum)
 	     is_error ? "*" : "",
 	     is_error ? error_val : tb_values(result)));
 
+    tb_free(&juggle);
     for (i = 0; i < nargs; i++) {
 	tb_free(&args[i]);
     }
@@ -1257,7 +1377,6 @@ FindVar(char *var, VWRAP * vd)
 	}
 	break;
     }
-
 }
 
 /*
@@ -1344,7 +1463,7 @@ PromptAndSet(const char *name, int f, int n)
 	    (void) lsprintf(prompt, "Value of %s: ", var);
 	    status = mlreply2(prompt, &tmp);
 	    if (status == ABORT)
-		tmp->tb_errs = TRUE;
+		tb_error(&tmp);
 	    else if (status != TRUE)
 		returnCode(status);
 	}
@@ -2151,8 +2270,9 @@ save_arguments(BUFFER *bp)
 	    if (ok) {
 		status = read_argument(&(p->all_args[num_args]),
 				       &(cmd->c_args[num_args - 1]));
-		if (status == ABORT)
+		if (status == ABORT) {
 		    break;
+		}
 		ok = (status == TRUE);
 	    }
 	    if (ok) {
@@ -2402,6 +2522,8 @@ tokval(char *tokn)
 	int toknum = toktyp(tokn);
 	if (toknum < 0 || toknum > MAXTOKTYPE)
 	    result = error_val;
+	else if (toknum == TOK_DIRECTIVE || toknum == TOK_LABEL)
+	    result = tokn;
 	else
 	    result = (*eval_func[toknum]) (tokn);
 	TRACE2(("tokval(%s) = %s\n", TRACE_NULL(tokn), TRACE_NULL(result)));
@@ -2445,6 +2567,27 @@ is_falsem(const char *val)
 }
 
 #if OPT_EVAL
+/*
+ * Check if the next token will be something that we can evaluate, i.e.,
+ * a function.
+ */
+static int
+can_evaluate(void)
+{
+    int result = FALSE;
+    int type;
+    char *save = execstr;
+    TBUFF *tok = 0;
+
+    if (mac_token(&tok)) {
+	type = toktyp(tb_values(tok));
+	result = (type == TOK_FUNCTION);
+    }
+    tb_free(&tok);
+    execstr = save;
+    return result;
+}
+
 int
 evaluate(int f, int n)
 {
@@ -2459,11 +2602,20 @@ evaluate(int f, int n)
 	    old = execstr;
 	    execstr = tb_values(params);
 	    TRACE(("EVAL %s\n", execstr));
-	    while ((tmp = mac_tokval(&tok)) != 0) {
-		if (tb_length(cmd))
-		    tb_sappend0(&cmd, " ");
-		tb_sappend0(&cmd, tmp);
-		TRACE(("...token {%s}\n", tmp));
+	    for (;;) {
+		if (can_evaluate()) {
+		    if ((tmp = mac_tokval(&tok)) != 0) {
+			if (tb_length(cmd))
+			    tb_sappend0(&cmd, " ");
+			tb_sappend0(&cmd, tmp);
+		    }
+		} else if (mac_token(&tok)) {
+		    if (tb_length(cmd))
+			tb_sappend0(&cmd, " ");
+		    tb_sappend0(&cmd, tb_values(tok));
+		} else {
+		    break;
+		}
 	    }
 	    if ((tmp = tb_values(cmd)) != 0) {
 		execstr = tmp;

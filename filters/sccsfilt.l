@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.10 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.11 2004/12/10 00:38:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to SCCS files.
  */
@@ -32,7 +32,8 @@ UNEXPANDED	"%"[A-Z]"%"
 %%
 
 <INSERT,DELETE>{UNEXPANDED}	{ WriteToken(String_attr); }
-<INSERT,DELETE>{EXPANDED}	{ WriteToken(Error_attr); }
+<INSERT,DELETE>{EXPANDED}	{ flt_error("expanded keywords");
+				  WriteToken(Error_attr); }
 
 {MARKED}	{ flt_putc('\001');
 		    WriteToken2((yytext[1] == 'c')

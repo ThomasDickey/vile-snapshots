@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/au3-filt.l,v 1.2 2004/09/03 00:33:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/au3-filt.l,v 1.3 2004/12/10 00:17:13 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of AutoIt
  * input text.
@@ -63,10 +63,12 @@ NUMBER		{HEX}|{INTEGER}|{REAL}
 <NORMAL>{IDENT}			{
 				  char *attr = ci_keyword_attr(yytext);
 				  if (attr == 0) {
-				      if (yytext[0] == '$')
+				      if (yytext[0] == '$') {
 					  attr = Ident2_attr;
-				      else if (yytext[0] == '@')
+				      } else if (yytext[0] == '@') {
 					  attr = Error_attr;
+					  flt_error("unexpected '@'");
+				      }
 				  }
 				  WriteToken(attr);
 				}
