@@ -1,25 +1,57 @@
-%x NORMAL COMMENT QUOTE1 QUOTE2
+%x NORMAL COMMENT QUOTE1 QUOTE2 CCOMMENT
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.39 2000/10/11 00:38:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.4 2000/10/11 00:38:52 tom Exp $
  *
- * Filter to add vile "attribution" sequences to selected bits of Makefile
+ * Filter to add vile "attribution" sequences to selected bits of Imakefile
  *
- * This was based on a filter written by Pierre Dittgen (dittgen@univ-mlv.fr)
- * - T.Dickey
+ * This is based on makefile.l
  */
 
 #include <filters.h>
 
-DefineFilter("make");
+DefineFilter("imake");
 
 static char *Comment_attr;
 static char *Error_attr;
 static char *Ident2_attr;
 static char *Keyword_attr;
+static char *Prepro_attr;
 static char *String_attr;
+
+static char *
+skip_name(char *text)
+{
+    while (isalnum(*text) || *text == '_')
+	text++;
+    return text;
+}
+
+static int
+preprocessor(char *text, int size)
+{
+    char *s = skip_blanks(text);
+    char *t;
+    char *attr = 0;
+    int save;
+
+    if (set_symbol_table("cpre")) {
+	s = skip_blanks(s + 1);	/* points to name */
+	t = skip_name(s);
+	save = *t;
+	*t = 0;
+	attr = keyword_attr(s);
+	*t = save;
+	set_symbol_table(filter_def.filter_name);
+    }
+    if (attr != 0) {
+	flt_puts(text, size, Prepro_attr);
+	return 1;
+    }
+    return 0;
+}
 
 static void
 write_keyword(char *text, int size)
@@ -73,6 +105,11 @@ write_delimited_unit(char *text, char **attr, char **gaps)
     panchor = ptoken = pwhite;
     while (*ptoken && (! isspace(*ptoken)))
         ptoken++;
+    if ((ptoken - panchor) == 5
+     && !strncmp(panchor, "XCOMM", 5)) {
+	*attr = Comment_attr;
+	*gaps = Comment_attr;
+    }
     flt_puts(panchor, ptoken - panchor, *attr);
     if (isspace(*ptoken))
     {
@@ -142,6 +179,7 @@ do_filter(FILE *input)
     Error_attr   = class_attr(NAME_ERROR);
     Ident2_attr  = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
+    Prepro_attr  = class_attr(NAME_PREPROC);
     String_attr  = class_attr(NAME_LITERAL);
 
     BEGIN(NORMAL);
@@ -194,3 +232,15 @@ MACRO		([$]?\$\{{ID}\}|[$]?\${ID}|[$]?\$[A-Za-z@!%^&*?<]|\${SPACE}*\([^\)]+\))
 <QUOTE2>\"			{ FinishQuote(NORMAL); }
 
 <QUOTE1,QUOTE2>[\n]		{ missing_quote(yytext, yyleng); }
+
+<NORMAL>^{SPACE}*"XCOMM"$	{ WriteToken(Comment_attr); }
+<NORMAL>^{SPACE}*"XCOMM"[^A-Za-z0-9_] { BeginQuote(COMMENT, Comment_attr); }
+
+<NORMAL>\\[/]			{ WriteToken(String_attr); }
+<NORMAL>"/*"			{ BeginQuote(CCOMMENT, Comment_attr); }
+<CCOMMENT>("*"[^/]|\n|[^*\n])*	{ flt_bfr_append(yytext, yyleng); }
+<CCOMMENT>"*/"			{ FinishQuote(NORMAL); }
+
+<NORMAL>^{SPACE}*#{SPACE}*{NAME} { if (!preprocessor(yytext, yyleng)) {
+				    BeginQuote(COMMENT, Comment_attr);
+				} }

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.205 2000/10/01 22:16:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.206 2000/10/10 19:03:35 tom Exp $
  *
  */
 
@@ -1536,7 +1536,10 @@ set_fsm_choice(const char *name, const FSM_CHOICES *choices)
 #if OPT_TRACE
 	Trace("set_fsm_choices %s\n", name);
 	for (n = 0; choices[n].choice_name != 0; n++)
-		Trace("   [%d] %s = %d\n", n, choices[n].choice_name, choices[n].choice_code);
+		Trace("   [%d] %s = %d (%#x)\n", n,
+			choices[n].choice_name,
+			choices[n].choice_code,
+			choices[n].choice_code);
 #endif
 	for (n = 0; n < TABLESIZE(fsm_tbl); n++) {
 		if (!strcmp(name, fsm_tbl[n].mode_name)) {
@@ -3518,6 +3521,7 @@ set_current_scheme(PALETTES *p)
 {
 	PALETTES *q = find_scheme_by_code(current_scheme);
 
+	TRACE(("set_current_scheme\n"));
 	current_scheme = p->code;
 
 	if (p->fcol != q->fcol
@@ -3526,7 +3530,7 @@ set_current_scheme(PALETTES *p)
 	 || p->attr != q->attr
 	 || !same_string(p->list, q->list)) {
 
-		if (p->list != 0)
+		if (p->list != 0 && p->list[0] != 0)
 			set_palette(p->list);
 
 		set_global_g_val(GVAL_FCOLOR,p->fcol);
@@ -3540,8 +3544,10 @@ set_current_scheme(PALETTES *p)
 
 		set_global_g_val(GVAL_VIDEO,p->attr);
 
+		TRACE(("...set_current_scheme (changed)\n"));
 		return TRUE;
 	}
+	TRACE(("...set_current_scheme (no change)\n"));
 	return FALSE;
 }
 
@@ -3707,6 +3713,7 @@ prompt_scheme_value(PALETTES *p)
 		status = kbd_string(name, respbuf, sizeof(respbuf), eolchar,
 				KBD_NORMAL, complete);
 		if (status == TRUE) {
+			mktrimmed(respbuf);
 			if (*name == *s_video_attrs) {
 				status = set_scheme_color(fp, &(p->attr), respbuf);
 			} else if (*name == *s_bcolor) {

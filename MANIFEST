@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_1y
+MANIFEST for vile, version v9_1z
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -184,6 +184,7 @@ filters/genmake.mak             makefile template-data for genmake.awk
 filters/html.key                keywords for vile-html-filt
 filters/htmlfilt.l              HTML syntax filter for vile
 filters/imake.key               keywords for imake-filter
+filters/imakeflt.l              syntax filter for Imakefile's
 filters/java.key                java keywords
 filters/js.key                  javascript keywords
 filters/key-filt.c              syntax filter for vile keyword files

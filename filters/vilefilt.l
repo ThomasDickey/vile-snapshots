@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.19 2000/09/14 11:12:22 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.20 2000/10/05 22:48:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -91,8 +91,8 @@ NAME		[a-zA-Z_][a-zA-Z_0-9]*(-[a-zA-Z_0-9]+)*
 PREPROC		\~[a-z]+
 
 SEMICMT		;.*
-QUOTECMT1	^[ \t]*\".*
-QUOTECMT2	\"[^"]*$
+QUOTECMT1	^[ \t]*\"[^\n]*
+QUOTECMT2	\"[^"\n]*$
 
 CTRLA		\001
 CTRLV		\026
