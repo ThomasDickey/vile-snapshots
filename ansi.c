@@ -4,7 +4,7 @@
  * "termio.c". It compiles into nothing if not an ANSI device.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.29 1997/11/07 11:03:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.31 1997/11/10 01:14:45 tom Exp $
  */
 
 
@@ -50,7 +50,7 @@ static	void	ansieeol   (void);
 static	void	ansieeop   (void);
 static	void	ansibeep   (void);
 static	void	ansiopen   (void);
-static	void	ansirev    (int state);
+static	void	ansirev    (UINT state);
 static	void	ansiclose  (void);
 static	void	ansikopen  (void);
 static	void	ansikclose (void);
@@ -190,10 +190,10 @@ force_colors(int fc, int bc)
 		oak.oakland.edu, or any simtel mirror. */
 static void
 ansirev(	/* change reverse video state */
-int state)	/* TRUE = reverse, FALSE = normal */
+UINT state)	/* TRUE = reverse, FALSE = normal */
 {
 #if	!OPT_COLOR
-	static int revstate = -1;
+	static UINT revstate = SORTOFTRUE;
 	if (state == revstate)
 		return;
 	revstate = state;
@@ -230,9 +230,9 @@ int state)	/* TRUE = reverse, FALSE = normal */
 
 static void
 ansirev(	/* change reverse video state */
-int state)	/* TRUE = reverse, FALSE = normal */
+UINT state)	/* TRUE = reverse, FALSE = normal */
 {
-	static int revstate = -1;
+	static UINT revstate = SORTOFTRUE;
 	if (state == revstate)
 		return;
 	revstate = state;
@@ -250,7 +250,7 @@ int state)	/* TRUE = reverse, FALSE = normal */
 static int
 ansicres(char *flag)	/* change screen resolution */
 {
-	return(TRUE);
+	return(FALSE);
 }
 
 static void
@@ -287,7 +287,7 @@ ansiscroll(int from, int to, int n)
 			ttputc('M');
 		}
 	}
-	ansiscrollregion(0, term.t_mrow);
+	ansiscrollregion(0, term.t_mrow-1);
 
 #else /* use insert and delete line */
 #if OPT_PRETTIER_SCROLL

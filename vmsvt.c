@@ -7,7 +7,7 @@
  *  Author:  Curtis Smith
  *  Last Updated: 07/14/87
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.30 1997/06/07 18:14:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.31 1997/11/10 00:48:54 tom Exp $
  *
  */
 
@@ -35,7 +35,7 @@ static	void	vmsmove (int row, int col);
 static	void	vmseeol	(void);
 static	void	vmseeop	(void);
 static	void	vmsbeep	(void);
-static	void	vmsrev	(int);
+static	void	vmsrev	(UINT);
 static	int	vmscres	(char *);
 
 extern	int	eolexist, revexist;
@@ -179,7 +179,7 @@ vmsmove (int row, int col)
  *  Nothing returned
  ***/
 static void
-vmsrev(int status)
+vmsrev(UINT status)
 {
 	if (status)
 		ttputs(begin_reverse);

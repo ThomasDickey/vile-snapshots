@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.259 1997/11/08 01:59:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.260 1997/11/09 22:54:54 tom Exp $
  *
  */
 
@@ -217,7 +217,7 @@ extern	void	psc_flush	(void);
 extern	void	psc_move	(int row, int col);
 extern	void	psc_eeol	(void);
 extern	void	psc_eeop	(void);
-extern	void	psc_rev		(int huh);
+extern	void	psc_rev		(UINT huh);
 #endif	/* OPT_PSCREEN */
 
 /* eval.c */
@@ -702,7 +702,7 @@ extern void winit (int screen);
 extern int reposition (int f, int n);
 extern int resize (int f, int n);
 #endif
-#if DISP_X11 || SYS_WINNT || OPT_PERL
+#if OPT_SEL_YANK || OPT_PERL
 extern WINDOW * push_fake_win(BUFFER *bp);
 extern BUFFER * pop_fake_win(WINDOW *oldwp);
 #endif
@@ -1089,7 +1089,7 @@ extern	int	sel_begin	(void);
 extern	int	sel_extend	(int wiping, int include_dot);
 extern	void	sel_release	(void);
 extern	void	sel_reassert_ownership (BUFFER *bp);
-#if (DISP_X11 && XTOOLKIT) || SYS_WINNT
+#if OPT_SEL_YANK
 extern	int	sel_yank	(int reg);
 extern	int	sel_attached	(void);
 extern	BUFFER *sel_buffer	(void);

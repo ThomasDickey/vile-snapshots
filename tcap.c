@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.97 1997/11/05 23:40:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.98 1997/11/09 22:58:09 tom Exp $
  *
  */
 
@@ -252,9 +252,9 @@ static void tcapspal ( const char *s );
 #endif
 
 #if OPT_VIDEO_ATTRS
-static void tcapattr ( int attr );
+static void tcapattr ( UINT attr );
 #else
-static void tcaprev  ( int state );
+static void tcaprev  ( UINT state );
 #endif
 
 TERM term = {
@@ -899,19 +899,19 @@ tcapspal(const char *thePalette)	/* reset the palette registers */
  * In rxvt (2.12), setting _any_ attribute seems to clobber the color settings. 
  */
 static void
-tcapattr(int attr)
+tcapattr(UINT attr)
 {
 	static	const	struct	{
 		char	**start;
 		char	**end;
-		int	mask;
+		UINT	mask;
 	} tbl[] = {
 		{ &SO, &SE, VASEL|VAREV },
 		{ &US, &UE, VAUL },
 		{ &US, &UE, VAITAL },
 		{ &MD, &ME, VABOLD },
 	};
-	static	int last;
+	static	UINT last;
 
 	attr = VATTRIB(attr);
 	attr &= ~(VAML|VAMLFOC);
@@ -919,7 +919,7 @@ tcapattr(int attr)
 	if (attr != last) {
 		register SIZE_T n;
 		register char *s;
-		int	diff = attr ^ last;
+		UINT	diff = attr ^ last;
 		int	ends = FALSE;
 
 		/* turn OFF old attributes */
@@ -967,7 +967,7 @@ tcapattr(int attr)
 
 static void
 tcaprev(		/* change reverse video status */
-int state)		/* FALSE = normal video, TRUE = reverse video */
+UINT state)		/* FALSE = normal video, TRUE = reverse video */
 {
 	static int revstate = -1;
 	if (state == revstate)

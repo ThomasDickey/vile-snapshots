@@ -9,7 +9,7 @@
  * Note: Visual flashes are not yet supported.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.21 1997/11/06 01:53:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.22 1997/11/09 22:51:42 tom Exp $
  *
  */
 
@@ -49,7 +49,7 @@ static  void	boreeol   (void);
 static  void	boreeop   (void);
 static  void	borbeep   (void);
 static  void    boropen   (void);
-static	void	borrev    (int);
+static	void	borrev    (UINT);
 static	int	borcres   (char *);
 static	void	borclose  (void);
 static	void	borputc   (int);
@@ -265,7 +265,7 @@ boreeop(void)
 }
 
 static void
-borrev(int reverse)		/* change reverse video state */
+borrev(UINT reverse)		/* change reverse video state */
 {
 	borflush();
 	if (reverse) {

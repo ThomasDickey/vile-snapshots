@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.238 1997/11/08 01:56:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.239 1997/11/09 22:55:15 tom Exp $
  *
  */
 
@@ -500,6 +500,9 @@ vtmove(int row, int col)
 static void
 vtputc(int c)
 {
+	/* since we don't allow wrapping on the message line, we only need
+	 * to evaluate this once.  */
+	int lastcol = vtrow == term.t_nrow-1 ?  term.t_ncol-1 : term.t_ncol;
 	register VIDEO *vp;	/* ptr to line being updated */
 
 #ifdef WMDLINEWRAP
@@ -517,28 +520,28 @@ vtputc(int c)
 #endif
 	 vp = vscreen[vtrow];
 
-	if (isPrint(c) && vtcol >= 0 && vtcol < term.t_ncol) {
+	if (isPrint(c) && vtcol >= 0 && vtcol < lastcol) {
 		VideoText(vp)[vtcol++] = (c & (N_chars-1));
 #ifdef WMDLINEWRAP
 		if ((allow_wrap != 0)
-		 && (vtcol == term.t_ncol)
+		 && (vtcol == lastcol)
 		 && (vtrow <  allow_wrap)) {
 			vtcol = 0;
 			if (++vtrow >= 0)
 				vscreen[vtrow]->v_flag |= VFCHG;
-			taboff += term.t_ncol;
+			taboff += lastcol;
 		}
 #endif
 		return;
 	}
 
-	if (vtcol >= term.t_ncol) {
-		VideoText(vp)[term.t_ncol - 1] = MRK_EXTEND_RIGHT;
+	if (vtcol >= lastcol) {
+		VideoText(vp)[lastcol - 1] = MRK_EXTEND_RIGHT;
 	} else if (c == '\t') {
 		do {
 			vtputc(' ');
 		} while (((vtcol + taboff)%curtabval) != 0 
-		          && vtcol < term.t_ncol);
+		          && vtcol < lastcol);
 	} else if (c == '\n') {
 		return;
 	} else if (isPrint(c)) {
@@ -2214,8 +2217,8 @@ int	colto)		/* first column on screen */
 	register VIDEO_ATTR *ap2 = VideoAttr(vp2);
 	VIDEO_ATTR Blank = 0;	/* FIXME: Color? */
 #else
-	int rev;		/* reverse video flag */
-	int req;		/* reverse video request flag */
+	UINT rev;		/* reverse video flag */
+	UINT req;		/* reverse video request flag */
 #endif
 
 #if !OPT_VIDEO_ATTRS
@@ -3477,7 +3480,7 @@ psc_eeop(void)
 
 /* ARGSUSED */
 void
-psc_rev(int huh GCC_UNUSED)
+psc_rev(UINT huh GCC_UNUSED)
 {
     /* do nothing */
 }

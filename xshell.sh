@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Header: /users/source/archives/vile.vcs/RCS/xshell.sh,v 1.2 1997/10/08 23:32:03 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/xshell.sh,v 1.4 1997/11/10 01:28:07 tom Exp $
 #
 # This script is designed to be used from xvile to support the $xshell variable.
 # If you wish to have shell commands of the form
@@ -15,6 +15,10 @@ if test $# != 0 ; then
 		;;
 	esac
 fi
-eval $@
-echo Press return to exit
-read reply
+if test $# != 0 ; then
+	eval $@
+	echo Press return to exit
+	read reply
+else
+	eval ${SHELL-/bin/sh}
+fi

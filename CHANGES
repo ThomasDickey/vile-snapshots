@@ -1,5 +1,13 @@
 Changes for vile 7.3 (released ??? ??? ??, 1997)
 
+ (tom)	971109 (o)
+ 	+ correct range of scrolling region in ansi.c
+ 	+ correct treatment in xshell.sh for no-arguments.
+ 	+ change TTrev() / TTattr() parameter to unsigned.
+ 	+ implement mouse and flash in OS/2 VIO driver (os2vio.c).
+ 	+ correct logic in vtputc() to prevent minibuffer from writing into the
+	  lower-right corner of the screen.
+
  (tom)	971108 (n)
  	+ more CSet unsigned/signed compiler warning fixes (estruct.h)
  	+ don't reopen terminal in ansi.c if it is already open.

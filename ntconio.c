@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.24 1997/10/03 21:16:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.25 1997/11/09 22:52:36 tom Exp $
  *
  */
 
@@ -26,7 +26,7 @@ static	void	nteeol		(void);
 static	void	nteeop		(void);
 static	void	ntbeep		(void);
 static	void	ntopen		(void);
-static	void	ntrev		(int);
+static	void	ntrev		(UINT);
 static	int	ntcres		(char *);
 static	void	ntclose		(void);
 static	void	ntputc		(int);
@@ -304,7 +304,7 @@ nteeop(void)
 }
 
 static void
-ntrev(int reverse)		/* change reverse video state */
+ntrev(UINT reverse)		/* change reverse video state */
 {
 	scflush();
 	if (reverse) {

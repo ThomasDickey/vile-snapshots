@@ -18,7 +18,7 @@
  * transfering the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.56 1997/10/13 13:06:48 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.57 1997/11/09 22:26:32 tom Exp $
  *
  */
 
@@ -360,7 +360,7 @@ sel_reassert_ownership(BUFFER *bp)
     }
 }
 
-#if DISP_X11 && XTOOLKIT || SYS_WINNT
+#if OPT_SEL_YANK
 /* 
  * Yank the selection.  Return TRUE if selection could be yanked, FALSE
  * otherwise.  Note that this code will work even if the buffer being
@@ -409,7 +409,7 @@ sel_buffer(void)
 {
     return (startbufp != NULL) ? startbufp : selbufp;
 }
-#endif  /* DISP_X11 && XTOOLKIT || SYS_WINNT */
+#endif  /* OPT_SEL_YANK */
 
 int
 sel_setshape(REGIONSHAPE shape)
