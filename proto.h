@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.302 1998/09/09 00:59:43 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.303 1998/09/22 23:00:24 tom Exp $
  *
  */
 
@@ -548,7 +548,7 @@ extern void ltextfree (LINEPTR lp, BUFFER *bp);
 
 #if OPT_EVAL
 extern char * getctext (CHARTYPE type);
-extern int putctext (const char *iline);
+extern int putctext (CHARTYPE type, const char *iline);
 #endif
 
 #if SMALLER	/* cancel neproto.h */

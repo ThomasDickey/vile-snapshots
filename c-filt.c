@@ -5,7 +5,7 @@
  * Modifications:  kevin buettner and paul fox  2/95
  * 		string literal ("Literal") support --  ben stoltz
  *
- * $Header: /users/source/archives/vile.vcs/RCS/c-filt.c,v 1.11 1998/07/02 01:32:42 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/c-filt.c,v 1.12 1998/09/22 10:50:30 Gary.Ross Exp $
  *
  * Features:
  * 	- Reads the keyword file ".vile.keywords" from the home directory.
@@ -191,7 +191,7 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 #define MAX_KEYWORD_LENGTH 80
 #define HASH_LENGTH 256
 #define MAX_LINELENGTH 256
-#define MAX_ATTR_LENGTH 3
+#define MAX_ATTR_LENGTH 6
 
 #ifdef _WIN32
 static char *keyword_file="vile.keywords";
@@ -373,9 +373,7 @@ read_keywords(char *filename)
 
     if ((kwfile = open_keywords(filename)) != NULL) {
 	fgets(line,MAX_LINELENGTH,kwfile);
-	items = sscanf(line,"%[#a-zA-Z0-9_]:%[IUBR]",ident,attribute);
-	if (items != 2)
-	    items = sscanf(line,"%[#a-zA-Z0-9_]:%[C0-9ABCDEF]",ident,attribute);
+	items = sscanf(line,"%[#a-zA-Z0-9_]:%[IURC0-9A-F]",ident,attribute);
 	while (! feof(kwfile) ) {
 #ifdef DEBUG
 	    fprintf(stderr,"read_keywords: Items %i, kw = %s, attr = %s\n",items,ident,attribute);
@@ -383,9 +381,7 @@ read_keywords(char *filename)
 	    if (items == 2)
 		insert_keyword(ident,attribute);
 	    fgets(line,MAX_LINELENGTH,kwfile);
-	    items = sscanf(line,"%[#a-zA-Z0-9_]:%[IUBR]",ident,attribute);
-	    if (items != 2)
-		items = sscanf(line,"%[#a-zA-Z0-9_]:%[C0-9ABCDEF]",ident,attribute);
+	    items = sscanf(line,"%[#a-zA-Z0-9_]:%[IURC0-9A-F]",ident,attribute);
 	}
 	fclose(kwfile);
     }

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.30 1998/09/10 10:39:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.31 1998/09/23 01:23:32 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -116,6 +116,7 @@ static	HCURSOR	hglass_cursor;
 static	HCURSOR	arrow_cursor;
 static	int	nLineHeight = 10;
 static	int	nCharWidth = 8;
+static	int	caret_disabled = FALSE;
 static	int	caret_visible = 0;
 static	int	caret_exists = 0;
 static	int	vile_in_getfkey = 0;
@@ -254,16 +255,29 @@ message2s(unsigned code)
 	} table[] = {
 		{ WM_ACTIVATE,		"WM_ACTIVATE" },
 		{ WM_ACTIVATEAPP,	"WM_ACTIVATEAPP" },
+		{ WM_CANCELMODE,	"WM_CANCELMODE" },
 		{ WM_CAPTURECHANGED,	"WM_CAPTURECHANGED" },
+		{ WM_CLOSE,		"WM_CLOSE" },
 		{ WM_CREATE,		"WM_CREATE" },
 		{ WM_CTLCOLORSCROLLBAR,	"WM_CTLCOLORSCROLLBAR" },
+		{ WM_ENABLE,		"WM_ENABLE" },
+		{ WM_ENTERIDLE,		"WM_ENTERIDLE" },
+		{ WM_ENTERMENULOOP,	"WM_ENTERMENULOOP" },
+		{ WM_ENTERSIZEMOVE,	"WM_ENTERSIZEMOVE" },
 		{ WM_ERASEBKGND,	"WM_ERASEBKGND" },
+		{ WM_EXITMENULOOP,	"WM_EXITMENULOOP" },
+		{ WM_EXITSIZEMOVE,	"WM_EXITSIZEMOVE" },
 		{ WM_GETMINMAXINFO,	"WM_GETMINMAXINFO" },
 		{ WM_GETTEXT,		"WM_GETTEXT" },
+		{ WM_KILLFOCUS,		"WM_KILLFOCUS" },
+		{ WM_INITMENU,		"WM_INITMENU" },
+		{ WM_INITMENUPOPUP,	"WM_INITMENUPOPUP" },
 		{ WM_KEYDOWN,		"WM_KEYDOWN" },
 		{ WM_KEYUP,		"WM_KEYUP" },
+		{ WM_MENUSELECT,	"WM_MENUSELECT" },
 		{ WM_MOUSEACTIVATE,	"WM_MOUSEACTIVATE" },
 		{ WM_MOVE,		"WM_MOVE" },
+		{ WM_MOVING,		"WM_MOVING" },
 		{ WM_NCACTIVATE,	"WM_NCACTIVATE" },
 		{ WM_NCCALCSIZE,	"WM_NCCALCSIZE" },
 		{ WM_NCCREATE,		"WM_NCCREATE" },
@@ -688,10 +702,13 @@ static int fhide_cursor(void)
 	return 0;
 }
 
-static int fshow_cursor(void)
+static void fshow_cursor(void)
 {
 	int x, y;
 	POINT z;
+
+	if (caret_disabled)
+		return;
 
 	TRACE(("fshow_cursor (visible:%d, exists:%d)\n", caret_visible, caret_exists))
 	x = ColToPixel(ttcol) + 1;
@@ -711,7 +728,6 @@ static int fshow_cursor(void)
 		ShowCaret(cur_win->text_hwnd);
 		caret_visible = 1;
 	}
-	return 0;
 }
 
 static void
@@ -853,6 +869,9 @@ static void set_font(void)
 	HDC		hDC;
 	CHOOSEFONT	choose;
 
+	TRACE(("set_font\n"))
+	fhide_cursor();
+	caret_disabled = TRUE;
 	memset(&choose, 0, sizeof(choose));
 	choose.lStructSize = sizeof(choose);
 	choose.hwndOwner   = cur_win->text_hwnd;
@@ -875,7 +894,10 @@ static void set_font(void)
 	if (ChooseFont(&choose)) {
 		TRACE(("ChooseFont '%s'\n", vile_logfont.lfFaceName))
 		if (new_font(&vile_logfont)) {
+			int saverow = ttrow;
+			int savecol = ttcol;
 			mlwrite("[Set font to %s]", vile_logfont.lfFaceName);
+			movecursor(saverow, savecol);
 			use_font(vile_font, FALSE);
 			vile_refresh(FALSE,0);
 		} else {
@@ -885,7 +907,9 @@ static void set_font(void)
 		mlforce("[No font selected]");
 	}
 
-	TRACE(("LOGFONT Facename:%s\n", vile_logfont.lfFaceName))
+	caret_disabled = FALSE;
+	fshow_cursor();
+	TRACE(("...set_font, LOGFONT Facename:%s\n", vile_logfont.lfFaceName))
 }
 
 static int
@@ -1610,7 +1634,7 @@ ntgetch(void)
 			break;
 
 		default:
-			TRACE(("GETC:default(%#lx)\n", msg.message))
+			TRACE(("GETC:default(%s)\n", message2s(msg.message)))
 		case WM_COMMAND:
 		case WM_KEYUP:
 		case WM_NCHITTEST:

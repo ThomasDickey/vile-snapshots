@@ -11,26 +11,22 @@
 # all as "0".  If you use tcap.c, you'll need libtermcap.a too.  If you use
 # x11.c, you'll need libX11.a too.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.35 1997/11/26 16:16:06 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.36 1998/09/21 11:03:58 tom Exp $
 
-# for building the X version, xvile, use these:
-#SCREEN = x11simp
-#LIBS = #-lX11
-#TARGET = xvile.exe
-#SCRDEF = "DISP_X11","scrn_chosen"
+.IFDEF __XVILE__
 
 # for building the X-toolkit version:
-#SCREEN = x11
-#LIBS = #-lX11
-#TARGET = xvile.exe
-#SCRDEF = "NO_WIDGETS","XTOOLKIT","DISP_X11","scrn_chosen"
-
-# for building the Motif version (untested):
-.IFDEF __XVILE__
 SCREEN = x11
 LIBS = #-lX11
 TARGET = xvile.exe
-SCRDEF = "MOTIF_WIDGETS","XTOOLKIT","DISP_X11","scrn_chosen"
+SCRDEF = "NO_WIDGETS","XTOOLKIT","DISP_X11","scrn_chosen"
+
+# for building the Motif version (untested):
+#SCREEN = x11
+#LIBS = #-lX11
+#TARGET = xvile.exe
+#SCRDEF = "MOTIF_WIDGETS","XTOOLKIT","DISP_X11","scrn_chosen"
+
 .ELSE
 # for regular vile, use these:
 SCREEN = vmsvt
@@ -93,6 +89,7 @@ SRC =	main.c \
 	version.c \
 	vms2unix.c \
 	vmspipe.c \
+	watch.c \
 	window.c \
 	word.c \
 	wordmov.c
@@ -144,6 +141,7 @@ OBJ =	main.obj,\
 	version.obj, \
 	vms2unix.obj,\
 	vmspipe.obj,\
+	watch.obj,\
 	window.obj,\
 	word.obj,\
 	wordmov.obj

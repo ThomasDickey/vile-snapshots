@@ -2064,6 +2064,8 @@ Programmed procedures and macros
 	variables, and mode values).  The environment variables are:
 
 	$abufname	alternate buffer name (i.e. last visited)
+	$bchars		number of characters in current buffer	(read only)
+	$blines		number of lines in current buffer	(read only)
 	$buffer-hook	name of procedure to run when switching to a buffer
 	$cbufname	current buffer name
 	$cd-hook	name of procedure to run when changing directories
@@ -2106,7 +2108,7 @@ Programmed procedures and macros
 	$pending	typeahead pending flag			(read only)
 	$pid		returns vile's process-id		(read only)
 	$progname	returns "vile" or "xvile" or "winvile".	(read only)
-	$qidentifier	current qualified name (as with C++ ::)	(read only)
+	$qidentifier	current qualified name (as with C++ ::)
 	$read-hook	name of procedure to run after a file is read
 	$replace	replacement pattern
 	$search		search pattern
@@ -2117,7 +2119,7 @@ Programmed procedures and macros
 	$title		current window title (X11 version only)
 	$tpause		length to pause for paren matching (PC versions)
 	$version	current version number			(read only)
-	$wline		number of lines in current window
+	$wlines		number of lines in current window
 	$word		current "word"
 	$write-hook	name of procedure to run before a file is written
 	$xdisplay	the value to set $DISPLAY when running $xshell.
@@ -2888,10 +2890,10 @@ Filtering C programs
 		do:C3
 		typedef:I
 		struct:I
-	(The "Comments" keyword is a pseudo-keyword which determines the
+	The "Comments" keyword is a pseudo-keyword which determines the
 	attribute given to C and C++ style comments.  "Literal" applies to
-	string literals. "Cpp" applies to C preprocessor lines, e.g. #if,
-	etc.)
+	string literals. "Cpp" applies to C preprocessor lines, e.g., #if,
+	etc.
 
 	An alternative filter, written using "flex", is available in
 	c-filt.flx.  It might suit your needs better, or be a better
@@ -3888,4 +3890,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.367 1998/09/03 22:43:21 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.368 1998/09/23 00:25:29 tom Exp $

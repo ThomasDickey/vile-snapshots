@@ -6,7 +6,7 @@
  * =======
  * -- This code has not been tested with NT 3.51 .
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.8 1998/09/09 00:59:54 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.9 1998/09/23 00:14:01 tom Exp $
  */
 
 #include <windows.h>
@@ -36,7 +36,7 @@ static char  saved_title[256];
 
 /* ------------------------------------------------------------------ */
 
-#ifdef DISP_NTWIN
+#if DISP_NTWIN
 int
 stdin_data_available(void)
 {
@@ -326,7 +326,7 @@ w32_system(const char *cmd)
 
 
 
-#ifdef DISP_NTWIN
+#if DISP_NTWIN
 /*
  * FUNCTION
  *   w32_system_winvile(const char *cmd)
@@ -585,7 +585,7 @@ disp_win32_error(ULONG errcode, void *hwnd)
 
 
 
-#ifdef DISP_NTWIN
+#if DISP_NTWIN
 /*
  * FUNCTION
  *   parse_font_str(const char *fontstr, FONTSTR_OPTIONS *results)
