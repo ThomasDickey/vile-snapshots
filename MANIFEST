@@ -1,4 +1,4 @@
-MANIFEST for vile, version v7_2h
+MANIFEST for vile, version v7_2i
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -83,8 +83,10 @@ os2pipe.c                       OS/2 pipe support
 os2vio.c                        OS/2 video terminal driver
 patchlev.h                      patch-level
 path.c                          functions that manipulate pathnames
+perl.xs                         Perl/C interface wrapper
 pictmode.rc                     macros to support "picture-mode" editing
 proto.h                         function prototypes
+ptypemap                        perl-interface type map
 random.c                        miscellaneous functions
 regexp.c                        regular expression functions
 region.c                        region-manipulation
