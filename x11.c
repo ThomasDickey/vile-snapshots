@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.146 1997/04/08 00:39:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.148 1997/04/29 01:14:04 tom Exp $
  *
  */
 
@@ -12,6 +12,7 @@
  * You must have exactly one of the following defined
  *
  *    NO_WIDGETS	-- Use only Xlib and X toolkit
+ *    ATHENA_WIDGETS	-- Use only Xlib X toolkit (Xt) and Xaw
  *    MOTIF_WIDGETS	-- Use Xlib, Xt, and Motif widget set
  *    OL_WIDGETS	-- Use Xlib, Xt, and Openlook widget set
  */
@@ -85,7 +86,7 @@
 
 #define PANE_WIDTH_MAX 200
 
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
 # define PANE_WIDTH_DEFAULT 15
 # define PANE_WIDTH_MIN 7
 #else
@@ -94,6 +95,8 @@
 #  define PANE_WIDTH_MIN 10
 # endif
 #endif
+
+#define MENUBAR_HEIGHT 40
 
 #define MINCOLS	30
 #define MINROWS MINWLNS
@@ -132,14 +135,19 @@ extern VIDEO **pscreen;
 
 static Display *dpy;
 
-#if MOTIF_WIDGETS
 #if OPT_MENUS
+#if ATHENA_WIDGETS
+#include <X11/Xaw/SimpleMenu.h>
+#include <X11/Xaw/Form.h>
+#include <X11/Xaw/Paned.h>
+#endif
+#if MOTIF_WIDGETS
 #include <Xm/RowColumn.h>
+#endif
     Widget	menub;
 #endif
-#endif
 
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
 typedef struct _scroll_info {
     int		top;		/* top of "thumb" */
     int		bot;		/* bottom of "thumb" */
@@ -155,7 +163,11 @@ typedef struct _text_win {
     		app_context;	/* application context */
     Widget	top_widget;	/* top level widget */
     Widget	screen;		/* screen widget */
-    Widget	form_widget;	/* form widget */
+#if ATHENA_WIDGETS
+    Widget	pane_widget;	/* pane widget, actually a form */
+    Widget	menu_widget;	/* menu-bar widget, actually a form */
+#endif
+    Widget	form_widget;	/* form enclosing text-display + scrollbars */
     Widget	pane;		/* panes in which scrollbars live */
     int		maxscrollbars;	/* how many scrollbars, sliders, etc. */
     Widget	*scrollbars;
@@ -164,7 +176,7 @@ typedef struct _text_win {
 #if OL_WIDGETS
     Widget	*sliders;
 #endif
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
     Pixel	scrollbar_fg;
     Pixel	scrollbar_bg;
     Bool	slider_is_solid;
@@ -187,6 +199,7 @@ typedef struct _text_win {
     int		base_width;	/* width with screen widgets' width zero */
     int		base_height;
     UINT	pane_width;	/* full width of scrollbar pane */
+    UINT	menu_height;	/* height of menu-bar */
     Dimension	top_width;	/* width of top widget as of last resize */
     Dimension	top_height;	/* height of top widget as of last resize */
 
@@ -273,7 +286,7 @@ typedef struct _text_win {
 
     /* Special translations */
     XtTranslations my_scrollbars_trans;
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
     XtTranslations my_resizeGrip_trans;
 #endif
 }           TextWindowRec, *TextWindow;
@@ -302,7 +315,7 @@ static	Atom	atom_MULTIPLE;
 static	Atom	atom_TIMESTAMP;
 static	Atom	atom_TEXT;
 
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
 static	Cursor	curs_sb_v_double_arrow;
 static	Cursor	curs_sb_up_arrow;
 static	Cursor	curs_sb_down_arrow;
@@ -362,7 +375,7 @@ static	void	x_key_press (Widget w, XtPointer unused, XEvent *ev,
 			Boolean *continue_to_dispatch);
 static	void	x_wm_delwin (Widget w, XtPointer unused, XEvent *ev,
 			Boolean *continue_to_dispatch);
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
 static	Boolean	too_light_or_too_dark (Pixel pixel);
 static	Boolean	alloc_shadows (Pixel pixel, Pixel *light, Pixel *dark);
 #endif
@@ -389,7 +402,7 @@ static	void	pane_button (Widget w, XtPointer unused, XEvent *ev,
 #if OL_WIDGETS
 static	void	grip_moved (Widget slider, XtPointer closure, XtPointer call_data);
 #else
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
 static	void	x_expose_scrollbar (Widget w, XtPointer unused, XEvent *ev,
 			Boolean *continue_to_dispatch);
 static	void	repeat_scroll (XtPointer count, XtIntervalId  *id);
@@ -452,7 +465,7 @@ TERM        term = {
 
 
 
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
 /* We define our own little bulletin board widget here...if this gets
  * too unwieldly, we should move it to another file.
  */
@@ -578,7 +591,7 @@ static void set_pointer(Window win, Cursor cursor)
     XRecolorCursor (dpy, cursor, colordefs, colordefs+1);
 }
 
-#if !NO_WIDGETS
+#if !NO_WIDGETS && !ATHENA_WIDGETS
 static int dont_update_sb = FALSE;
 
 static void
@@ -858,7 +871,7 @@ update_scrollbar_sizes(void)
 }
 
 #else
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
 static void
 update_scrollbar_sizes(void)
 {
@@ -1350,7 +1363,7 @@ update_scrollbar(
     int i;
     int lnum, lcnt;
 
-#if !NO_WIDGETS
+#if !NO_WIDGETS && !ATHENA_WIDGETS
     if (dont_update_sb)
 	return;
 #endif /* !NO_WIDGETS */
@@ -1391,7 +1404,7 @@ update_scrollbar(
 	    XtNsliderValue,	lnum,
 	    NULL);
 #else
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
     {
 	int top, len;
 	lcnt  = max(lcnt, 1);
@@ -1426,7 +1439,7 @@ update_scrollbar(
 #define XtCMultiClickTime	"MultiClickTime"
 #define XtNcharClass		"charClass"
 #define XtCCharClass		"CharClass"
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
 #define	XtNscrollRepeatTimeout	"scrollRepeatTimeout"
 #define	XtCScrollRepeatTimeout	"ScrollRepeatTimeout"
 #endif
@@ -1524,7 +1537,7 @@ update_scrollbar(
 #define XtCBcolorF		"Bcolor15"
 
 static XtResource resources[] = {
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
     {
 	XtNscrollRepeatTimeout,
 	XtCScrollRepeatTimeout,
@@ -1962,7 +1975,7 @@ static XtResource color_resources[] = {
     },
 };
 
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
 static XtResource scrollbar_resources[] = {
     {
 	XtNforeground,
@@ -2208,7 +2221,7 @@ x_preparse_args(
 	NULL
     };
 #else
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
     static XtActionsRec new_actions[] = {
 	{ "ConfigureBar", configure_bar },
 	{ "DoScroll", do_scroll },
@@ -2287,7 +2300,7 @@ x_preparse_args(
 	cur_win->bg = WhitePixel(dpy,DefaultScreen(dpy));
 
 
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
     XtGetSubresources(
 	    cur_win->top_widget,
 	    (XtPointer)cur_win,
@@ -2420,7 +2433,40 @@ x_preparse_args(
 	    cur_win->top_widget,
 	    NULL);
 #else
-#if NO_WIDGETS
+#if ATHENA_WIDGETS && OPT_MENUS
+    cur_win->pane_widget = XtVaCreateManagedWidget(
+	    "pane",
+	    panedWidgetClass,
+	    cur_win->top_widget,
+	    NULL);
+    cur_win->menu_widget = XtVaCreateManagedWidget(
+	    "menubar",
+	    formWidgetClass,
+	    cur_win->pane_widget,
+	    XtNheight,			1,
+	    XtNwidth,			1,
+	    XtNtop,			XawChainTop,
+	    XtNleft,			XawChainLeft,
+	    XtNright,			XawChainRight,
+	    XtNvertDistance,		0,
+	    XtNshowGrip,		False,
+	    NULL);
+    cur_win->form_widget = XtVaCreateManagedWidget(
+	    "form",
+	    bbWidgetClass,
+	    cur_win->pane_widget,
+	    XtNwidth,			x_width(cur_win)
+	    					+ cur_win->pane_width + 2,
+	    XtNheight,			x_height(cur_win),
+	    XtNbackground,		cur_win->bg,
+	    XtNbottom,			XawChainBottom,
+	    XtNleft,			XawChainLeft,
+	    XtNright,			XawChainRight,
+	    XtNfromVert,		cur_win->menu_widget,
+	    XtNvertDistance,		0,
+	    NULL);
+#else
+#if NO_WIDGETS || ATHENA_WIDGETS
     cur_win->form_widget = XtVaCreateManagedWidget(
 	    "form",
 	    bbWidgetClass,
@@ -2431,17 +2477,21 @@ x_preparse_args(
 	    XtNbackground,		cur_win->bg,
 	    NULL);
 #endif /* NO_WIDGETS */
+#endif /* ATHENA_WIDGETS */
 #endif /* OL_WIDGETS */
 #endif /* MOTIF_WIDGETS */
 
-#if MOTIF_WIDGETS
 #if OPT_MENUS
+#if ATHENA_WIDGETS
+	do_menu ( cur_win->menu_widget );
+#endif
+#if MOTIF_WIDGETS
 	menub = XmCreateMenuBar (cur_win->form_widget, "menub", NULL, 0);
 
 	XtVaSetValues (menub,
 			XmNtopAttachment,	XmATTACH_FORM,
 			XmNleftAttachment,	XmATTACH_FORM,
-			XmNbottomAttachment,XmATTACH_NONE,
+			XmNbottomAttachment,	XmATTACH_NONE,
 			XmNrightAttachment,	XmATTACH_FORM,
 			NULL);
 	XtManageChild (menub);
@@ -2480,7 +2530,7 @@ x_preparse_args(
 	    XtNxAddWidth,		TRUE,
 	    XtNyAddHeight,		TRUE,
 #else
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
 	    XtNx,			cur_win->scrollbar_on_left
 					    ? cur_win->pane_width+2
 					    : 0,
@@ -2624,7 +2674,7 @@ x_preparse_args(
 		gcmask, &gcvals);
     }
 
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
 
     if (cur_win->scrollbar_bg == cur_win->scrollbar_fg) {
 	cur_win->scrollbar_bg = cur_win->bg;
@@ -2759,7 +2809,7 @@ x_preparse_args(
 	    XtNlayout,			OL_IGNORE,
 	    NULL);
 #else
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
     cur_win->my_resizeGrip_trans = XtParseTranslationTable(resizeGrip_translations);
     cur_win->pane = XtVaCreateManagedWidget(
 	    "scrollPane",
@@ -2785,7 +2835,7 @@ x_preparse_args(
 #endif	/* OL_WIDGETS */
 #endif	/* MOTIF_WIDGETS */
 
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
     cur_win->nscrollbars = 0;
 #else
     cur_win->nscrollbars = -1;
@@ -2908,7 +2958,7 @@ check_visuals(void)
 #endif
 
 
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
 static Boolean
 too_light_or_too_dark(
     Pixel pixel)
@@ -3293,7 +3343,7 @@ x_open(void)
 {
     kqinit(cur_win);
     cur_win->scrollbars = NULL;
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
     cur_win->scrollinfo = NULL;
     cur_win->grips = NULL;
 #endif
@@ -4619,12 +4669,19 @@ x_configure_window(
 		XtNwidth,	&cur_win->top_width,
 		NULL);
 
+#if ATHENA_WIDGETS
+	XtVaGetValues(cur_win->menu_widget,
+		XtNheight,	&cur_win->menu_height,
+		XtNwidth,	&new_width,
+		NULL);
+#endif
 	XtVaGetValues(cur_win->screen,
 		XtNheight,	&new_height,
 		XtNwidth,	&new_width,
 		NULL);
 	cur_win->base_width = cur_win->top_width - new_width;
-	cur_win->base_height = cur_win->base_height;
+	cur_win->base_height = cur_win->menu_height;
+
 	XtVaSetValues(cur_win->top_widget,
 #if XtSpecificationRelease >= 4
 		XtNbaseHeight,	cur_win->base_height,
@@ -4665,7 +4722,7 @@ x_configure_window(
 	XtUnmanageChildren(children, nchildren);
     }
 #else
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
     XtVaSetValues(cur_win->form_widget,
 	    XtNwidth,		new_width + cur_win->pane_width + 2,
 	    XtNheight,		new_height,
@@ -4675,12 +4732,12 @@ x_configure_window(
     XtVaSetValues(cur_win->screen,
 	    XtNheight,	new_height,
 	    XtNwidth,	new_width,
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
 	    XtNx,	cur_win->scrollbar_on_left ? cur_win->pane_width+2 : 0,
 #endif
 	    NULL);
     XtVaSetValues(cur_win->pane,
-#if !NO_WIDGETS
+#if !NO_WIDGETS && !ATHENA_WIDGETS
 	    XtNwidth,	cur_win->pane_width,
 #if OL_WIDGETS
 	    XtNheight,	new_height,
@@ -4766,7 +4823,7 @@ int check_scrollbar_allocs(void)
 #if OL_WIDGETS
 		GROW(cur_win->sliders, Widget, oldmax, newmax);
 #endif
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
 		GROW(cur_win->scrollinfo, ScrollInfo, oldmax, newmax);
 		GROW(cur_win->grips, Widget, oldmax, newmax);
 #endif
@@ -5037,7 +5094,7 @@ static void
 x_set_watch_cursor(int onflag)
 {
     static int watch_is_on = FALSE;
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
     int i;
 #endif
 
@@ -5048,7 +5105,7 @@ x_set_watch_cursor(int onflag)
 
     if (onflag) {
 	set_pointer(XtWindow(cur_win->screen), cur_win->watch_pointer);
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
 	for (i=0; i<cur_win->nscrollbars; i++) {
 	    set_pointer(
 		    XtWindow(cur_win->scrollbars[i]), cur_win->watch_pointer);
@@ -5060,7 +5117,7 @@ x_set_watch_cursor(int onflag)
     }
     else {
 	set_pointer(XtWindow(cur_win->screen), cur_win->normal_pointer);
-#if NO_WIDGETS
+#if NO_WIDGETS || ATHENA_WIDGETS
 	for (i=0; i<cur_win->nscrollbars; i++) {
 	    set_pointer(
 		    XtWindow(cur_win->scrollbars[i]),

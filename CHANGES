@@ -1,5 +1,13 @@
 Changes for vile 7.1 (released ??? ??? ??, 1997)
 
+(tom)	970428 (i)
+	+ implement Xaw (Athena widget) version of menus.  Simplified buffer
+	  lookup function for menus, align/document resource names (menu.c,
+	  x11.c, configure script).
+	+ correct minor memory leaks during initialization (main.c)
+	+ correct array-indexing error that caused core dump when selecting
+	  line-wrapped text, moving cursor up (display.c).
+
 (tom)	970422 (h)
 	+ improved example of menus for xvile (Philippe Chassany).
 	+ correct mistyped index in c-filt.c, which was a char (patch by Ian

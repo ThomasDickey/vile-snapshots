@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.303 1997/04/11 11:16:15 jrs Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.304 1997/04/23 10:38:47 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -455,7 +455,7 @@
 #define OPT_MOUSE       (DISP_X11 || OPT_XTERM || OPT_MS_MOUSE || SYS_WINNT)
 
 	/* menus */
-#define	OPT_MENUS	(DISP_X11 && MOTIF_WIDGETS)
+#define	OPT_MENUS	(DISP_X11 && (MOTIF_WIDGETS||ATHENA_WIDGETS))
 
 /*
  * If selections will be used to communicate between vile and other

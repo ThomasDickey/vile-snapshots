@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.228 1997/04/12 00:22:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.229 1997/04/24 17:12:38 tom Exp $
  *
  */
 
@@ -1509,11 +1509,16 @@ updattrs(WINDOW *wp)
 	    row = lmap[lnum - start_wlnum];
 #ifdef WMDLINEWRAP
 	    if (w_val(wp,WMDLINEWRAP))
-		for (col = start_col; col <= end_col; col++)
-		    vscreen[row + col / term.t_ncol]->v_attrs[col % term.t_ncol] =
-			(vscreen[row + col / term.t_ncol]->v_attrs[col % term.t_ncol]
-			 | (attr & ~VAREV))
-			^ (attr & VAREV);
+		for (col = start_col; col <= end_col; col++) {
+		    int x = row + col / term.t_ncol;
+		    if (x < term.t_nrow) {
+			    int y = col % term.t_ncol;
+			    vscreen[x]->v_attrs[y] =
+				(vscreen[x]->v_attrs[y]
+				 | (attr & ~VAREV))
+				^ (attr & VAREV);
+		    }
+		}
 	    else
 #endif
 	    {

@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.292 1997/03/30 21:53:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.293 1997/04/24 17:22:31 tom Exp $
  *
  */
 
@@ -996,21 +996,21 @@ global_val_init(void)
 
 	if ((s = getenv("VILE_STARTUP_FILE")) == 0) {
 #if	SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT || SYS_VMS
-		s = strmalloc("vile.rc");
+		s = "vile.rc";
 #else	/* SYS_UNIX */
-		s = strmalloc(".vilerc");
+		s = ".vilerc";
 #endif
 	}
 	startup_file = strmalloc(s);
 
 	if ((s = getenv("VILE_STARTUP_PATH")) == 0) {
 #if	SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
-		s = strmalloc("\\sys\\public\\;\\usr\\bin\\;\\bin\\;\\");
+		s = "\\sys\\public\\;\\usr\\bin\\;\\bin\\;\\";
 #else
 #if	SYS_VMS
-		s = strmalloc("sys$login;sys$sysdevice:[vmstools];sys$library");
+		s = "sys$login;sys$sysdevice:[vmstools];sys$library";
 #else	/* SYS_UNIX */
-		s = strmalloc("/usr/local/lib/:/usr/local/:/usr/lib/");
+		s = "/usr/local/lib/:/usr/local/:/usr/lib/";
 #endif
 #endif
 	}

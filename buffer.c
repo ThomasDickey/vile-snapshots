@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.154 1997/03/30 22:46:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.155 1997/04/29 00:36:13 tom Exp $
  *
  */
 
@@ -23,12 +23,10 @@ static	void	run_buffer_hook (void);
 #endif
 
 static	BUFFER *find_BufferList (void);
-static	BUFFER *find_b_hist ( int number );
 static	BUFFER *find_b_number ( const char *number  );
 static	BUFFER *find_latest (void);
 static	BUFFER *find_nth_created ( int n );
 static	BUFFER *find_nth_used ( int n );
-static	char *	hist_lookup ( int c );
 static	int	cmode_active ( BUFFER *bp );
 static	int	countBuffers (void);
 static	int	hist_show (void);
@@ -151,7 +149,7 @@ find_b_file(const char *fname)
 /*
  * Look for a specific buffer number
  */
-static BUFFER *
+BUFFER *
 find_b_hist(int number)
 {
 	register BUFFER *bp;
@@ -323,7 +321,7 @@ TrackAlternate(BUFFER *newbp)
 }
 
 /* c is an index (counting only visible/nonscratch) into buffer list */
-static char *
+char *
 hist_lookup(int c)
 {
 	register BUFFER *bp = find_b_hist(c);

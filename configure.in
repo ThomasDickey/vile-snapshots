@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.52 $)
+AC_REVISION($Revision: 1.53 $)
 AC_PREREQ(2.12)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.52 1997/04/08 00:39:47 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.53 1997/04/23 10:38:47 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -198,7 +198,7 @@ fi
 
 case "$screen" in
 changequote(,)dnl
-	openlook | OpenLook | motif | Motif | [xX] | [xX][tT]* | [xX]11 )
+	openlook | OpenLook | motif | Motif | [xX] | athena | Athena | [xX][atT]* | [xX]11 )
 changequote([,])dnl
 		# We need to check for -lsocket and -lnsl here in order
 		# to work around an autoconf bug.  autoconf-2.12 is not checking
@@ -282,6 +282,15 @@ case "$screen" in
 		AC_CHECK_LIB(Xm, XmProcessTraversal, [LIBS="-lXm $LIBS"],
 			AC_ERROR(
 [Unable to successfully link Motif library (-lXm) with test program]),
+			[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
+	 	EXTRAOBJS="$EXTRAOBJS menu.o"
+	;;
+	athena* | Athena* | Xaw* )
+		AC_DEFINE(ATHENA_WIDGETS)
+		AC_CHECK_HEADERS(Xaw/SimpleMenu.h)
+		AC_CHECK_LIB(Xaw, XawSimpleMenuAddGlobalActions, [LIBS="-lXaw $LIBS"],
+			AC_ERROR(
+[Unable to successfully link Athena library (-lXaw) with test program]),
 			[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
 	 	EXTRAOBJS="$EXTRAOBJS menu.o"
 	;;
