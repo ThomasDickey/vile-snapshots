@@ -1,6 +1,6 @@
-revlist for vile, version v9_2
+revlist for vile, version 9_2a
 --------------------------------------------------------------------------------
-CHANGES	1.628
+CHANGES	1.629
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -13,7 +13,7 @@ MANIFEST	none
 README	1.82
 README.PC	1.25
 README.VMS	1.5
-aclocal.m4	1.90
+aclocal.m4	1.91
 ansi.c	1.40
 api.c	1.28
 api.h	1.12
@@ -22,15 +22,15 @@ bind.c	1.236
 borland.c	1.30
 btree.c	1.11
 btree.h	1.3
-buffer.c	1.224
-buglist	1.385
+buffer.c	1.225
+buglist	1.386
 builtflt.c	1.18
 chgdfunc.h	1.11
 cmdtbl	1.208
 config.emx	1.2
 config_h.in	1.2
 configure	none
-configure.in	1.146
+configure.in	1.149
 csrch.c	1.30
 curses.c	1.12
 descrip.mms	1.42
@@ -46,7 +46,7 @@ externs.c	1.7
 fences.c	1.76
 file.c	1.272
 filec.c	1.95
-fileio.c	1.146
+fileio.c	1.147
 finderr.c	1.95
 glob.c	1.71
 globals.c	1.46
@@ -85,21 +85,21 @@ opers.c	1.71
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.27
-patchlev.h	1.249
+patchlev.h	1.250
 path.c	1.103
 perl.xs	1.74
-proto.h	1.440
+proto.h	1.441
 pscreen.h	1.1
 ptypemap	1.7
-random.c	1.239
+random.c	1.240
 regexp.c	1.70
 region.c	1.103
-revlist	v9_2
+revlist	9_2a
 search.c	1.119
 select.c	1.129
 sinstall.sh	1.1
 spawn.c	1.160
-statevar.c	1.38
+statevar.c	1.39
 tags.c	1.110
 tbuff.c	1.38
 tcap.c	1.138
@@ -109,7 +109,7 @@ trace.c	1.18
 trace.h	1.11
 ucrypt.c	1.14
 undo.c	1.77
-version.c	1.48
+version.c	1.49
 vile-9.2.spec	1.1
 vile.1	1.25
 vile.hlp	1.505
@@ -141,7 +141,7 @@ xshell.sh	1.4
 xvile.wmconfig	1.1
 doc/Vileserv.doc	1.1
 doc/config.doc	1.4
-doc/dir.doc	1.2
+doc/dir.doc	1.3
 doc/filters.doc	1.21
 doc/indent.pro	1.3
 doc/macros.doc	1.63
@@ -204,11 +204,11 @@ filters/makefile.in	1.70
 filters/makefile.wnt	1.28
 filters/makefilt.l	1.39
 filters/manfilt.c	1.27
-filters/mk-0th.awk	1.4
+filters/mk-0th.awk	1.5
 filters/mk-0th.bat	1.6
-filters/mk-1st.awk	1.6
+filters/mk-1st.awk	1.7
 filters/mk-1st.bat	1.6
-filters/mk-2nd.awk	1.7
+filters/mk-2nd.awk	1.8
 filters/mk-2nd.bat	1.6
 filters/mk-key.awk	1.2
 filters/mms-filt.l	1.6
@@ -230,7 +230,7 @@ filters/rexxfilt.l	1.5
 filters/sccs.key	1.1
 filters/sccsfilt.l	1.8
 filters/sed-filt.c	1.10
-filters/sh-filt.l	1.37
+filters/sh-filt.l	1.38
 filters/sh.key	1.4
 filters/sml-filt.l	1.2
 filters/sml.key	1.1

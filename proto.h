@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.440 2000/10/01 22:19:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.441 2000/10/27 01:56:30 tom Exp $
  *
  */
 
@@ -818,7 +818,7 @@ extern void set_rdonly (BUFFER *bp, const char *name, int mode);
 
 #if OPT_EVAL
 extern B_COUNT char_no (BUFFER *the_buffer, MARK the_mark);
-extern B_COUNT getcchar (void);
+extern B_COUNT vl_getcchar (void);
 extern L_NUM getcline (void);
 extern char * previous_directory (void);
 #endif

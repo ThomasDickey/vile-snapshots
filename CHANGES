@@ -1,5 +1,28 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20001026 (a)
+	> Clark Morgan:
+	+ expanded description of 00-10-11 item in buglist (:!ls in winvile)
+	> Tom Dickey:
+	+ minor fix to sh-filt.l, adding default action for <HEREDOC>, which
+	  is needed to match $'s.
+	+ rename getcchar() to vl_getcchar() to avoid conflict with X/Open
+	  curses function.
+	+ correct change to imply_buf (9.1x), which resulted in reading each
+	  file twice if implybuf was set true.  Only files that are being
+	  written should be reread.
+	+ update config.guess, config.sub to reflect changes at
+	  subversions.gnu.org
+	+ update some details in doc/dir.doc to reflect renaming, etc (reported
+	  by Kevin Luu <kevin@islanddata.com>).
+	+ correct substitution of path to filters source-directory in
+	  mk-2nd.awk, which did not take in account that 'configure' might be
+	  invoked with an absolute path, so the $top_srcdir value also would
+	  be absolute (reported by Kevin Buettner).
+	+ correct regular expressions for configure script's option value of
+	  --with-builtin-filters, probably broken in 9.1p when changing
+	  genmake.mak to 3-column format (reported by Michael Finken).
+
 Changes for vile 9.2 (released Tue Oct 17 2000)
 
  20001015 (za)

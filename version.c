@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.48 2000/07/10 02:50:34 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.49 2000/10/27 01:22:15 tom Exp $
  *
  */
 
@@ -86,7 +86,8 @@ print_usage (void)
 #endif
 	"-V             for version info",
 	"-I             use vileinit.rc to initialize",
-	"use @cmdfile to run cmdfile as commands (this will suppress .vilerc)"
+	"use @cmdfile to run cmdfile as commands (this will suppress .vilerc)",
+	"single-letter options usually are case-independent"
 	};
 	register SIZE_T	j;
 

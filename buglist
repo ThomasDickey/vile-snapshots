@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.385 2000/10/16 02:33:24 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.386 2000/10/27 00:49:30 cmorgan Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1573,6 +1573,28 @@ track down.
     <winvile exits (eek)>
 
     duplicated on NT and 98, using various shells
+
+    Looking at this under the DevStudio debugger, the current behavior is
+    apparently a Win32 kernel bug/feature.  The situation is like so:
+
+        +---------------------+
+        | winvile process     |        +---------+
+        | waiting for Alloc'd |<======>| console |
+        | console thread to   |        +---------+
+        | exit                |
+        +---------------------+
+
+    Apparently the alloc'd console and winvile process share critical
+    kernel resources.  Consquently, when the console close button is
+    clicked and the console is destroyed, the kernel simply rolls up
+    winvile.  I tried working around this with a try/catch loop, to no
+    avail.  The problem can be avoided in the parent by calling
+    FreeConsole() after spawning the child.  But then the console handles
+    saved away by the parent are worthless and it's not possible to write a
+    "press any key to continue" message in the console window.
+    
+    I suspect that problems like these caused the vim team to rely on
+    vimrun.exe for its shell and pipe I/O.
 
 -- 00-10-15 (tom)
 
