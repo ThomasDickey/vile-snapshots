@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.72 2003/12/15 01:42:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.76 2004/06/15 21:14:16 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -7,6 +7,7 @@
 
 #include <filters.h>
 
+#define DEBUG
 #ifdef DEBUG
 DefineOptFilter("perl", "d");
 #else
@@ -235,29 +236,33 @@ is_QIDENT(char *s)
     return s - base;
 }
 
+/*
+ * If double-quoted, look for variables after a "$", "%" or "@".
+ * If not double-quoted, look also for syntax such as $foo'bar
+ */
 static int
-is_NORMALVARS(char *s)
+is_NORMALVARS(char *s, int dquoted)
 {
     char *base = s;
     int ch;
-    int quoted = 0;
+    int squoted = 0;
     int part1 = 0;
     int part2 = 0;
 
     while (MORE(s)) {
 	ch = CharOf(*s);
 	if (s == base) {
-	    if (strchr("$%@", ch) == 0) {
+	    if (strchr(dquoted ? "$" : "$%@", ch) == 0) {
 		break;
 	    }
-	} else if (quoted) {
+	} else if (squoted && !dquoted) {
 	    if (isalnum(ch))
 		part2 = 1;
 	    else
 		break;
 	} else {
-	    if (ch == SQUOTE) {
-		quoted = 1;
+	    if (ch == SQUOTE && !dquoted) {
+		squoted = 1;
 	    } else if (isalnum(ch) || ch == '_') {
 		part1 = 1;
 	    } else {
@@ -266,7 +271,7 @@ is_NORMALVARS(char *s)
 	}
 	s++;
     }
-    return (part1 && (quoted == part2)) ? (s - base) : 0;
+    return (part1 && (dquoted || (squoted == part2))) ? (s - base) : 0;
 }
 
 static int
@@ -400,11 +405,11 @@ is_NUMBER(char *s, int *err)
 }
 
 static int
-is_IDENT(char *s)
+is_IDENT(char *s, int quoted)
 {
     int found;
 
-    if ((found = is_NORMALVARS(s)) == 0)
+    if ((found = is_NORMALVARS(s, quoted)) == 0)
 	found = is_OTHERVARS(s);
     return found;
 }
@@ -667,7 +672,7 @@ is_QUOTE(char *s, int *delims)
 	    test = 0;
 	if ((test == 0) || (strchr(QUOTE_DELIMS, test) == 0))
 	    s = base;
-	DPRINTF(("is_QUOTE(%.*s)",
+	DPRINTF(("is_QUOTE(%.*s)\n",
 		 (s != base) ? (s - base) : 1,
 		 (s != base) ? base : ""));
     }
@@ -888,6 +893,28 @@ is_String(char *s, int *err)
     return found;
 }
 
+/*
+ * FIXME: this only handles subscripts that consist of a single identifier,
+ * with no expressions.
+ */
+static int
+is_Subscript(char *s, int len, char *delimp)
+{
+    if (delimp != 0) {
+	int delim = *delimp;
+	int delim2 = delim;
+	char *next;
+
+	if (delim != 0 && (next = strchr(LOOKUP_TERM, delim)) != 0) {
+	    delim2 = next[5];
+
+	    if (s[len] == delim2)
+		return 1;
+	}
+    }
+    return 0;
+}
+
 static char *
 put_newline(char *s)
 {
@@ -917,7 +944,7 @@ put_embedded(char *s, int len, char *attr)
 
     for (j = k = 0; j < len; j++) {
 	if ((j == 0 || (s[j - 1] != BACKSLASH))
-	    && (id = is_IDENT(s + j)) != 0) {
+	    && (id = is_IDENT(s + j, 1)) != 0) {
 	    if (var_embedded(s + j)) {
 		if (j != k)
 		    flt_puts(s + k, j - k, attr);
@@ -987,12 +1014,11 @@ check_keyword(char *s, int ok, AfterKey * state)
  * Identifier may be a keyword, or a user identifier.
  */
 static char *
-put_IDENT(char *s, int ok, int *had_op, AfterKey * if_wrd)
+put_IDENT(char *s, int ok, AfterKey * if_wrd)
 {
     char *attr = 0;
     char save = s[ok];
 
-    *had_op = 0;
     s[ok] = '\0';
     attr = keyword_attr(s);
     s[ok] = save;
@@ -1005,12 +1031,11 @@ put_IDENT(char *s, int ok, int *had_op, AfterKey * if_wrd)
  * Identifier must be a user identifier.
  */
 static char *
-put_NOKEYWORD(char *s, int ok, int *had_op, AfterKey * if_wrd)
+put_NOKEYWORD(char *s, int ok, AfterKey * if_wrd)
 {
     char *attr = 0;
     char save = s[ok];
 
-    *had_op = 0;
     s[ok] = '\0';
     attr = keyword_attr(s);
     s[ok] = save;
@@ -1092,6 +1117,12 @@ init_filter(int before GCC_UNUSED)
 {
 }
 
+#define opRightArrow() (had_op != 0 && old_op == had_op - 1 && *old_op == '-' && *had_op == '>')
+#define opBeforePattern() (had_op != 0 && strchr("{(|&=~!", *had_op) != 0)
+
+#define saveOp(p) { DPRINTF(("\nsaveOp @%d\n", __LINE__)); old_op = had_op; had_op = p; }
+#define clearOp() { DPRINTF(("\nclearOp @%d\n", __LINE__)); old_op = had_op = 0; }
+
 static void
 do_filter(FILE *input GCC_UNUSED)
 {
@@ -1104,7 +1135,8 @@ do_filter(FILE *input GCC_UNUSED)
     char *marker = 0;
     char *s;
     int err;
-    int had_op = 0;
+    char *had_op = 0;
+    char *old_op = 0;
     int ignore;
     int in_line = -1;
     int in_stmt = 0;
@@ -1160,8 +1192,12 @@ do_filter(FILE *input GCC_UNUSED)
 	    }
 	    if_old = if_wrd;
 	    if_wrd = nullKey;
-	    DPRINTF(("(%s(%c) line:%d.%d(%d) if:%d op:%d)\n",
-		     stateName(state), *s, in_line, in_stmt, parens, if_wrd, had_op));
+	    DPRINTF(("(%s(%c) line:%d.%d(%d) if:%d.%d op:%c%c)\n",
+		     stateName(state), *s, in_line, in_stmt, parens,
+		     if_wrd.may_have_pattern,
+		     if_wrd.has_no_pattern,
+		     old_op ? *old_op : ' ',
+		     had_op ? *had_op : ' '));
 	    switch (state) {
 	    case eBACKTIC:
 		if ((ok = end_BACKTIC(s)) != 0) {
@@ -1199,6 +1235,7 @@ do_filter(FILE *input GCC_UNUSED)
 		} else if ((ok = begin_PATTERN(s)) != 0) {
 		    flt_puts(s, ok, "");
 		    s += ok;
+		    DPRINTF(("\nePATTERN:%d\n", __LINE__));
 		    state = ePATTERN;
 		} else if (in_line < 0
 			   && (ok = begin_POD(s))) {
@@ -1220,68 +1257,72 @@ do_filter(FILE *input GCC_UNUSED)
 		    s += ok;
 		    if_wrd = if_old;
 		} else if ((if_old.may_have_pattern
-			    || had_op
+			    || opBeforePattern()
 			    || (in_stmt == 1))
 			   && isPattern(*s)) {
+		    DPRINTF(("\nePATTERN:%d\n", __LINE__));
 		    state = ePATTERN;
 		} else if (*s == L_CURLY) {
-		    had_op = 1;
+		    saveOp(s);
 		    flt_putc(*s++);
 		} else if (*s == L_PAREN) {
 		    parens++;
-		    had_op = 1;
+		    saveOp(s);
 		    flt_putc(*s++);
 		    if (isPattern(*s)) {
+			DPRINTF(("\nePATTERN:%d\n", __LINE__));
 			state = ePATTERN;
 		    }
 		} else if (*s == R_PAREN) {
 		    if (--parens < 0)
 			parens = 0;
 		    flt_putc(*s++);
-		    had_op = 0;
+		    clearOp();
 		} else if ((ok = is_NUMBER(s, &err)) != 0) {
-		    had_op = 0;
+		    clearOp();
 		    flt_puts(s, ok, err ? Error_attr : Number_attr);
 		    s += ok;
 		} else if ((ok = is_KEYWORD(s)) != 0) {
 		    if ((s != the_file)
 			&& (s[-1] == '*')) {	/* typeglob */
-			s = put_IDENT(s, ok, &had_op, &if_wrd);
-			break;
-		    }
-		    if ((s != the_file)
-			&& (if_old.has_no_pattern)) {
-			s = put_NOKEYWORD(s, ok, &had_op, &if_wrd);
-			break;
-		    }
-		    if (is_QUOTE(s, &ignore)) {
+			s = put_IDENT(s, ok, &if_wrd);
+			clearOp();
+		    } else if ((s != the_file)
+			       && (if_old.has_no_pattern)) {
+			s = put_NOKEYWORD(s, ok, &if_wrd);
+			clearOp();
+		    } else if (!opRightArrow()
+			       && !is_Subscript(s, ok, had_op)
+			       && is_QUOTE(s, &ignore)) {
+			DPRINTF(("\nePATTERN:%d\n", __LINE__));
 			state = ePATTERN;
-			break;
+		    } else {
+			if (is_FORMAT(s, ok)) {
+			    quoted = 0;
+			    state = eHERE;
+			    mark_len = 0;
+			    marker = strcpy(do_alloc(0, 2, &mark_len), ".");
+			}
+			save = s[ok];
+			s[ok] = 0;
+			if (!strcmp(s, "__END__") || !strcmp(s, "__DATA__"))
+			    state = eIGNORED;
+			clearOp();
+			flt_puts(s, ok, keyword_attr(s));
+			check_keyword(s, ok, &if_wrd);
+			s[ok] = save;
+			s += ok;
 		    }
-		    if (is_FORMAT(s, ok)) {
-			quoted = 0;
-			state = eHERE;
-			mark_len = 0;
-			marker = strcpy(do_alloc(0, 2, &mark_len), ".");
-		    }
-		    save = s[ok];
-		    s[ok] = 0;
-		    if (!strcmp(s, "__END__") || !strcmp(s, "__DATA__"))
-			state = eIGNORED;
-		    had_op = 0;
-		    flt_puts(s, ok, keyword_attr(s));
-		    check_keyword(s, ok, &if_wrd);
-		    s[ok] = save;
-		    s += ok;
 		} else if ((ok = is_Option(s)) != 0) {
-		    had_op = 0;
+		    clearOp();
 		    flt_puts(s, ok, Keyword_attr);
 		    check_keyword(s, ok, &if_wrd);
 		    s += ok;
-		} else if ((ok = is_IDENT(s)) != 0) {
-		    s = put_IDENT(s, ok, &had_op, &if_wrd);
+		} else if ((ok = is_IDENT(s, 0)) != 0) {
+		    s = put_IDENT(s, ok, &if_wrd);
+		    clearOp();
 		} else if ((ok = is_String(s, &err)) != 0) {
-		    had_op = 0;
+		    clearOp();
 		    if (*s == DQUOTE) {
 			s = put_embedded(s, ok, err ? Error_attr : String_attr);
 		    } else {
@@ -1290,15 +1331,18 @@ do_filter(FILE *input GCC_UNUSED)
 		    }
 		} else {
 		    if (parens) {
-			if (strchr("|&=~!", *s) != 0)
-			    had_op = 1;
-			else if (!isspace(CharOf(*s)))
-			    had_op = 0;
+			if (strchr("|&=~!", *s) != 0) {
+			    saveOp(s);
+			} else if (!isspace(CharOf(*s))) {
+			    clearOp();
+			}
 		    } else {
-			if (*s == ';')
+			if (*s == ';') {
 			    in_stmt = 0;
-			if (strchr("|&=~!", *s) != 0)
-			    had_op = 1;
+			}
+			if (strchr("|&=~!->", *s) != 0) {
+			    saveOp(s);
+			}
 		    }
 		    flt_putc(*s++);
 		}
@@ -1321,15 +1365,17 @@ do_filter(FILE *input GCC_UNUSED)
 		s = skip_BLANKS(s);
 		if (MORE(s)) {
 		    if ((ok = is_NAME(s)) != 0 && !is_QUOTE(s, &ignore)) {
-			s = put_IDENT(s, ok, &had_op, &if_wrd);
-		    } else if ((ok = is_IDENT(s)) != 0 && !is_QUOTE(s, &ignore)) {
-			s = put_IDENT(s, ok, &had_op, &if_wrd);
+			s = put_IDENT(s, ok, &if_wrd);
+			clearOp();
+		    } else if ((ok = is_IDENT(s, 0)) != 0 && !is_QUOTE(s, &ignore)) {
+			s = put_IDENT(s, ok, &if_wrd);
+			clearOp();
 		    } else if ((ok = add_to_PATTERN(s)) != 0) {
 			s = write_PATTERN(s, ok);
 		    } else {
 			flt_putc(*s++);
 		    }
-		    had_op = 0;
+		    clearOp();
 		    state = eCODE;
 		}
 		break;

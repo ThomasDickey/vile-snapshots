@@ -5,7 +5,7 @@
  *	included in main.c
  *
  *	Copyright (c) 1990 by Paul Fox
- *	Copyright (c) 1995-2003 by Paul Fox and Thomas Dickey
+ *	Copyright (c) 1995-2004 by Paul Fox and Thomas Dickey
  *
  *	See the file "cmdtbl" for input data formats, and "estruct.h" for
  *	the output structures.
@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.130 2003/05/27 00:54:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.131 2004/05/28 20:22:45 tom Exp $
  *
  */
 
@@ -1745,7 +1745,7 @@ init_ufuncs(void)
 	"",
 	"typedef struct UFUNC {",
 	"\tconst char *f_name;\t/* name of function */",
-	"\tUFuncCode f_code;",
+	"\tunsigned f_code;",
 	"} UFUNC;",
 	"",
 	"#define NARGMASK	0x000f",
@@ -1802,7 +1802,7 @@ dump_ufuncs(void)
 	    init_ufuncs();
 	Sprintf(temp, "\t{\"%s\",", p->Name);
 	(void) PadTo(15, temp);
-	Sprintf(temp + strlen(temp), "(UFuncCode)(%s)},", p->Data);
+	Sprintf(temp + strlen(temp), "(unsigned)(%s)},", p->Data);
 	if (p->Note[0]) {
 	    (void) PadTo(32, temp);
 	    Sprintf(temp + strlen(temp), "/* %s */", p->Note);

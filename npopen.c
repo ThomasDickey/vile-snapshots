@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.89 2002/11/02 16:41:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.90 2004/06/09 01:04:53 tom Exp $
  *
  */
 
@@ -69,7 +69,7 @@ npopen(char *cmd, const char *type)
 
 #if SYS_UNIX
 int
-inout_popen(FILE ** fr, FILE ** fw, char *cmd)
+inout_popen(FILE **fr, FILE **fw, char *cmd)
 {
     int rp[2];
     int wp[2];
@@ -145,7 +145,7 @@ inout_popen(FILE ** fr, FILE ** fw, char *cmd)
 }
 
 void
-npclose(FILE * fp)
+npclose(FILE *fp)
 {
     int child;
     (void) fflush(fp);
@@ -348,7 +348,7 @@ deleteTemp(void)
 }
 
 static void
-closePipe(FILE *** pp)
+closePipe(FILE ***pp)
 {
     if (*pp != 0) {
 	if (**pp != 0) {
@@ -443,7 +443,7 @@ npopen(char *cmd, const char *type)
  * on SYS_MSDOS, we don't need both at the same instant.
  */
 int
-inout_popen(FILE ** fr, FILE ** fw, char *cmd)
+inout_popen(FILE **fr, FILE **fw, char *cmd)
 {
     char *type = (fw != 0) ? "w" : "r";
     static FILE *pp[2] =
@@ -503,7 +503,7 @@ npflush(void)
 }
 
 void
-npclose(FILE * fp)
+npclose(FILE *fp)
 {
 #if SYS_MSDOS
     if (myWrtr != 0 && myPipe == 0)

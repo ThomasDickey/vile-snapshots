@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.37 2004/03/18 01:16:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.38 2004/06/09 01:03:34 tom Exp $
  *
  */
 
@@ -446,7 +446,7 @@ flt_start(char *name)
 static TBUFF *filter_list;
 
 int
-var_FILTER_LIST(TBUFF ** rp, const char *vp)
+var_FILTER_LIST(TBUFF **rp, const char *vp)
 {
     int n;
 

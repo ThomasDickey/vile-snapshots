@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.274 2004/04/11 23:53:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.275 2004/05/29 14:37:14 tom Exp $
  *
  */
 
@@ -2770,7 +2770,7 @@ get_sm_vals(MAJORMODE * ptr)
 	else
 	    ptr->sm = p;
     }
-    TRACE2(("...get_sm_vals(%s:%s)\n", ptr->name, p->sm_name));
+    TRACE2(("...get_sm_vals(%s:%s)\n", ptr->shortname, p->sm_name));
     return &(p->sm_vals.bv[0]);
 }
 

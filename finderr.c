@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2003 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.118 2003/07/27 17:07:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.120 2004/06/15 22:12:52 tom Exp $
  *
  */
 
@@ -234,7 +234,7 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
     char *last = first + want;
 
     (void) memset(errp, 0, sizeof(*errp));
-    TPRINTF(("error-pattern %*S\n", want, first));
+    TPRINTF(("error-pattern %.*s\n", want, first));
 
     /* In the first pass, find the number of fields we'll substitute.
      * Then allocate a new string that's a genuine regular expression
@@ -546,6 +546,22 @@ decode_exp(ERR_PATTERN * exp)
     return failed;
 }
 
+#define set_tabstop_val(bp,value) set_b_val(bp, VAL_TAB, value)
+
+static void
+goto_column(void)
+{
+    int saved_tabstop = tabstop_val(curbp);
+
+    if (error_tabstop > 0)
+	set_tabstop_val(curbp, error_tabstop);
+
+    gocol(fe_colm ? fe_colm - cC_base : 0);
+
+    if (error_tabstop > 0)
+	set_tabstop_val(curbp, saved_tabstop);
+}
+
 /* Edits the file and goes to the line pointed at by the next compiler error in
  * the "[output]" window.  It unfortunately doesn't mark the lines for you, so
  * adding lines to the file throws off the later numbering.  Solutions to this
@@ -746,7 +762,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 	mlforce("%s", errtext);
 	len = strlen(errtext);
     } else {
-	mlforce("Error: %*S", dotp->l_used, dotp->l_text);
+	mlforce("Error: %.*s", dotp->l_used, dotp->l_text);
 	errtext = dotp->l_text;
 	len = dotp->l_used;
     }
@@ -760,7 +776,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 	status = gotoeob(f, n);
     else
 	status = gotoline(TRUE, -(curbp->b_lines_on_disk - fe_line + lL_base));
-    gocol(fe_colm ? fe_colm - cC_base : 0);
+    goto_column();
 
     oerrline = fe_line;
     (void) tb_scopy(&oerrfile, errfile);
@@ -860,12 +876,12 @@ make_err_regex_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 	    if (j >= exp_count)
 		break;
 	    bprintf("\n%7d ", j);
-	    bprintf("%*S\n", llength(lp), lp->l_text);
-	    bprintf("%*S%s", ERR_PREFIX, " ", exp_table[j].exp_text);
+	    bprintf("%.*s\n", llength(lp), lp->l_text);
+	    bprintf("%.*s%s", ERR_PREFIX, " ", exp_table[j].exp_text);
 	    for (k = 0; k < W_LAST; k++) {
 		if (exp_table[j].words[k] != 0) {
 		    if (first) {
-			bprintf("\n%*S", ERR_PREFIX, " ");
+			bprintf("\n%.*s", ERR_PREFIX, " ");
 			first = FALSE;
 		    } else {
 			bprintf(", ");

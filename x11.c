@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.272 2003/10/08 20:57:58 Mark.Robinson Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.273 2004/06/09 01:06:39 tom Exp $
  *
  */
 
@@ -4703,7 +4703,7 @@ set_character_class(char *s)
  * Copy a single character into the paste-buffer, quoting it if necessary
  */
 static int
-add2paste(TBUFF ** p, int c)
+add2paste(TBUFF **p, int c)
 {
     if (c == '\n' || isBlank(c))
 	/*EMPTY */ ;
@@ -4725,7 +4725,7 @@ add2paste(TBUFF ** p, int c)
 #define OLD_PASTE 0
 
 static int
-copy_paste(TBUFF ** p, char *value, size_t length)
+copy_paste(TBUFF **p, char *value, size_t length)
 {
     WINDOW *wp = row2window(ttrow);
     BUFFER *bp = valid_window(wp) ? wp->w_bufp : 0;

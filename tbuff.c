@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.44 2003/07/27 17:04:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.47 2004/06/11 11:22:15 tom Exp $
  *
  */
 
@@ -29,7 +29,7 @@ static TB_LIST *all_tbuffs;
 #define	FreedBuffer(q)		tb_forget(q)
 
 static void
-tb_remember(TBUFF * p)
+tb_remember(TBUFF *p)
 {
     TB_LIST *q;
 
@@ -40,7 +40,7 @@ tb_remember(TBUFF * p)
 }
 
 static void
-tb_forget(TBUFF * p)
+tb_forget(TBUFF *p)
 {
     TB_LIST *q, *r;
 
@@ -79,7 +79,7 @@ tb_leaks(void)
  * ensure that the given temp-buff has as much space as specified
  */
 TBUFF *
-tb_alloc(TBUFF ** p, size_t n)
+tb_alloc(TBUFF **p, size_t n)
 {
     TBUFF *q = *p;
 
@@ -104,7 +104,7 @@ tb_alloc(TBUFF ** p, size_t n)
  * (re)initialize a temp-buff
  */
 TBUFF *
-tb_init(TBUFF ** p, int c)
+tb_init(TBUFF **p, int c)
 {
     TBUFF *q = *p;
     if (q == 0)
@@ -120,7 +120,7 @@ tb_init(TBUFF ** p, int c)
  * deallocate a temp-buff
  */
 void
-tb_free(TBUFF ** p)
+tb_free(TBUFF **p)
 {
     TBUFF *q = *p;
 
@@ -140,7 +140,7 @@ tb_free(TBUFF ** p)
  * put a character c at the nth position of the temp-buff
  */
 TBUFF *
-tb_put(TBUFF ** p, size_t n, int c)
+tb_put(TBUFF **p, size_t n, int c)
 {
     TBUFF *q;
 
@@ -157,7 +157,7 @@ tb_put(TBUFF ** p, size_t n, int c)
  *  it's sort of the opposite of tb_peek
  */
 void
-tb_stuff(TBUFF * p, int c)
+tb_stuff(TBUFF *p, int c)
 {
     if (p->tb_last < p->tb_used)
 	p->tb_data[p->tb_last] = c;
@@ -170,7 +170,7 @@ tb_stuff(TBUFF * p, int c)
  * append a character to the temp-buff
  */
 TBUFF *
-tb_append(TBUFF ** p, int c)
+tb_append(TBUFF **p, int c)
 {
     TBUFF *q = *p;
     size_t n = (q != 0) ? q->tb_used : 0;
@@ -182,7 +182,7 @@ tb_append(TBUFF ** p, int c)
  * insert a character into the temp-buff
  */
 TBUFF *
-tb_insert(TBUFF ** p, size_t n, int c)
+tb_insert(TBUFF **p, size_t n, int c)
 {
     size_t m = tb_length(*p);
     TBUFF *q = tb_append(p, c);
@@ -201,7 +201,7 @@ tb_insert(TBUFF ** p, size_t n, int c)
  * Copy one temp-buff to another
  */
 TBUFF *
-tb_copy(TBUFF ** d, TBUFF * s)
+tb_copy(TBUFF **d, TBUFF *s)
 {
     TBUFF *p;
 
@@ -217,7 +217,7 @@ tb_copy(TBUFF ** d, TBUFF * s)
  * append a binary data to the temp-buff
  */
 TBUFF *
-tb_bappend(TBUFF ** p, const char *s, size_t len)
+tb_bappend(TBUFF **p, const char *s, size_t len)
 {
     TBUFF *q = *p;
     size_t n = (q != 0) ? q->tb_used : 0;
@@ -236,7 +236,7 @@ tb_bappend(TBUFF ** p, const char *s, size_t len)
  * append a string to the temp-buff
  */
 TBUFF *
-tb_sappend(TBUFF ** p, const char *s)
+tb_sappend(TBUFF **p, const char *s)
 {
     if (s != 0)
 	(void) tb_bappend(p, s, strlen(s));
@@ -248,7 +248,7 @@ tb_sappend(TBUFF ** p, const char *s)
  * target which is removed.
  */
 TBUFF *
-tb_sappend0(TBUFF ** p, const char *s)
+tb_sappend0(TBUFF **p, const char *s)
 {
     if (s != 0) {
 	TBUFF *q = *p;
@@ -267,7 +267,7 @@ tb_sappend0(TBUFF ** p, const char *s)
  * copy a string to the temp-buff, including a null
  */
 TBUFF *
-tb_scopy(TBUFF ** p, const char *s)
+tb_scopy(TBUFF **p, const char *s)
 {
     (void) tb_init(p, EOS);
     (void) tb_sappend(p, s);
@@ -291,7 +291,7 @@ tb_string(const char *s)
  * get the nth character from the temp-buff
  */
 int
-tb_get(TBUFF * p, size_t n)
+tb_get(TBUFF *p, size_t n)
 {
     int c = esc_c;
 
@@ -305,7 +305,7 @@ tb_get(TBUFF * p, size_t n)
  * undo the last 'tb_put'
  */
 void
-tb_unput(TBUFF * p)
+tb_unput(TBUFF *p)
 {
     if (p != 0
 	&& p->tb_used != 0)
@@ -319,7 +319,7 @@ tb_unput(TBUFF * p)
  * Reset the iteration-count
  */
 void
-tb_first(TBUFF * p)
+tb_first(TBUFF *p)
 {
     if (p != 0)
 	p->tb_last = 0;
@@ -331,7 +331,7 @@ tb_first(TBUFF * p)
  * Returns true iff the iteration-count has not gone past the end of temp-buff.
  */
 int
-tb_more(TBUFF * p)
+tb_more(TBUFF *p)
 {
     return (p != 0) ? (p->tb_last < p->tb_used) : FALSE;
 }
@@ -340,7 +340,7 @@ tb_more(TBUFF * p)
  * get the next character from the temp-buff
  */
 int
-tb_next(TBUFF * p)
+tb_next(TBUFF *p)
 {
     if (p != 0)
 	return tb_get(p, p->tb_last++);
@@ -353,7 +353,7 @@ tb_next(TBUFF * p)
  * undo a tb_next
  */
 void
-tb_unnext(TBUFF * p)
+tb_unnext(TBUFF *p)
 {
     if (p == 0)
 	return;
@@ -365,7 +365,7 @@ tb_unnext(TBUFF * p)
  * get the next character from the temp-buff w/o incrementing index
  */
 int
-tb_peek(TBUFF * p)
+tb_peek(TBUFF *p)
 {
     if (p != 0)
 	return tb_get(p, p->tb_last);
@@ -373,13 +373,110 @@ tb_peek(TBUFF * p)
 }
 #endif /* NEEDED */
 
+/*******(evaluation)***********************************************************/
+/*
+ * Strip single- or double-quotes from the content, adjusting the size.
+ */
+TBUFF *
+tb_dequote(TBUFF **p)
+{
+    char *value = tb_values(*p);
+
+    TRACE2(("tb_dequote %s\n", tb_visible(*p)));
+    if (value != error_val) {
+	int escaped = FALSE;
+	UINT delim = CharOf(value[0]);
+	UINT j, k, ch;
+	UINT have = tb_length(*p);
+	UINT used = have - 1;
+
+	if (delim == SQUOTE) {
+	    for (j = 0, k = 1; k < have; ++k) {
+		ch = CharOf(value[j] = value[k]);
+		if (escaped) {
+		    escaped = FALSE;
+		    ++j;
+		} else if (ch == BACKSLASH && CharOf(value[k + 1]) == delim) {
+		    escaped = TRUE;
+		    --used;
+		} else if (ch == delim) {
+		    --used;
+		} else {
+		    ++j;
+		}
+	    }
+	    (*p)->tb_used = used;
+	    TRACE2(("...tb_dequote 1: %s\n", tb_visible(*p)));
+	} else if (delim == DQUOTE) {
+	    for (j = 0, k = 1; k < have; ++k) {
+		ch = CharOf(value[j] = value[k]);
+		if (escaped) {
+		    escaped = FALSE;
+		    ++j;
+		} else if (ch == BACKSLASH) {
+		    escaped = TRUE;
+		    --used;
+		} else if (ch == delim) {
+		    --used;
+		} else {
+		    ++j;
+		}
+	    }
+	    (*p)->tb_used = used;
+	    TRACE2(("...tb_dequote 2: %s\n", tb_visible(*p)));
+	} else {
+	    TRACE2(("...tb_dequote OOPS: %s\n", tb_visible(*p)));
+	}
+    }
+    return *p;
+}
+
+/*
+ * Quote the content.  We prefer single-quotes since they're simpler.
+ */
+TBUFF *
+tb_enquote(TBUFF **p)
+{
+    char *value = tb_values(*p);
+
+    TRACE2(("tb_enquote %s\n", tb_visible(*p)));
+    if (value != error_val && tb_length(*p)) {
+	UINT j;
+	UINT have = tb_length(*p) - 1;
+	UINT need = 2 + have;
+
+	for (j = 0; j < have; ++j) {
+	    if (value[j] == SQUOTE) {
+		++need;
+	    }
+	}
+	tb_alloc(p, need + 1);
+	(*p)->tb_used = need + 1;
+
+	value[need] = EOS;
+	value[need - 1] = SQUOTE;
+	for (j = 0; j < have; ++j) {
+	    UINT i = have - j - 1;
+	    UINT k = need - j - 2;
+	    UINT ch = CharOf(value[k] = value[i]);
+	    if (ch == SQUOTE) {
+		--need;
+		value[k - 1] = BACKSLASH;
+	    }
+	}
+	value[0] = SQUOTE;
+	TRACE2(("...tb_enquote %s\n", tb_visible(*p)));
+    }
+    return *p;
+}
+
 /*******(bulk-data)************************************************************/
 
 /*
  * returns a pointer to data, assumes it is one long string
  */
 char *
-tb_values(TBUFF * p)
+tb_values(TBUFF *p)
 {
     char *result = 0;
 
@@ -397,7 +494,7 @@ tb_values(TBUFF * p)
  * returns the length of the data
  */
 size_t
-tb_length(TBUFF * p)
+tb_length(TBUFF *p)
 {
     size_t result = 0;
 

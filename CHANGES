@@ -1,5 +1,92 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20040617 (g)
+	> Clark Morgan:
+	+ modify manpage.rc and color-ls.rc to avoid showing their guts if
+	  aborted.
+	+ vile.hlp changes:
+	  + add discussion of mode-pathname and mode-filename to the section
+	    on Majormodes.
+	  + add notes about optimizing suffixes for C versus C++ editing.
+	> Fabien Coutant:
+	+ add experimental plugin support and example.
+ 	> Tom Dickey:
+	+ indent'd ansi.c
+	+ configure-script fixes:
+	  + change prerequisite to autoconf 2.13.20030927 patch, mainly for
+	    OS/2 EMX. Other systems use the 2.52-generated configure script.
+	  + modify --with-Xaw3d, --with-neXtaw and --with-XawPlus options to
+	    avoid being confused by options such as --without-Xaw3d.
+	  + several fixes to accommodate quoted string definitions introduced
+	    in some imake configurations, which did not work with the
+	    CF_ADD_CFLAGS macro's parsing.
+	  + modify CF_X_TOOLKIT to remove the checks for clix (obsolete) and
+	    move the call to AC_PATH_XTRA to the beginning - which it
+	    essentially was anyway.  Now it simply calls AC_PATH_XTRA and
+	    ensures that I can get -lXt and -lX11.  Reading the code, it seems
+	    that the IRIX6/IRIX5 issue was taken care of in autoconf 2.13.
+	  + modify CF_NCURSES_LIBS to only look for -lmytinfo when building
+	    with ncurses.  This works around FreeBSD's broken linker semantics
+	    when configuring for ncursesw.
+	+ add $error-tabstop variable, to allow changing the tabstop value
+	  used when interpreting %C results in the error finder.  Most programs
+	  assume 8, and that does not work well when editing buffers with other
+	  tabstops such as 4.
+	+ correct perl highlighting of subscripts which happen to be the same
+	  as quote-operator names, e.g.,
+		$foo{y}
+	  (report by Daniel L Ashbrook).
+	+ correct perl highlighting of variables within double quotes, ignoring
+	  single-quotes which may happen to follow, e.g.,
+		"foo = '$foo'"
+	  (report by Daniel L Ashbrook).
+	+ correct logic in vl_lookup_func(), which did not allow match on
+	  "&gt", since that appeared to conflict with "&gtseq" (report by
+	  Clark Morgan).
+	+ change TPRINTF() macro so that if debugging trace is turned on, the
+	  same text that would be written to [Trace] is also written to the
+	  Trace.out file.
+	+ modify dofmt() to handle "%*.*s" and "%.*s" formats, removed "%*S"
+	  format.
+	+ replace doc/indent.pro with ncu-indent, a script which allows preview
+	  of the indent changes.  Note that preview relies on bug-fixes which
+	  are not in "official" indent.  See the indent section in
+		http://invisible-island.net/gnu-patches/gnu-patches.html
+	+ modify needQuotes() to return true only if both conditions apply
+	  (the token needs quoting and it is not the first token) rather than either.
+	  This makes [History] show things like
+		set tags=foo
+		set tags="foo bar"
+	  rather than
+		set "tags"="foo"
+		set "tags"="foo bar"
+	+ revise quoting of strings returned by run_func(), using new
+	  functions tb_enquote() and tb_dequote(). This fixes case such as
+		set tags=''
+		write-message &cat "tags: " $tags
+	  which lost one of the single-quotes when the "set" command was
+	  interactive (report by Clark Morgan).
+	+ modify cppmode's suffixes to look for .C, .H and .CC only on systems
+	  where filenames are case-sensitive.
+	+ call attrib_matches() at the end of attribute_directly() to restore
+	  highlighting due to visual-matches.  This fixes a bug where autocolor
+	  might wipe that highlighting away (report by Clark Morgan).
+	+ modify pattern for logmode to allow filenames such as gmake.out
+	+ modify latexflt.l to not color "|" in TEXT state.
+	+ add map's for newer XFree86 xterm shifted cursor-keys (see
+	+ improve label-expression in dcl-filt.l
+	+ modify dcl-filt.l to recognize $DECK / $EOD literal lines.
+	+ modify c-filt.c to recognize Java double suffix, e.g., 1.0e1d
+	+ revise/extend js.key based on ECMA-262 and other online information.
+	+ add a mode-pathname setting for cppmode, so files under (for example)
+	  /usr/include/g++ will be treated as C++.  Newer C++ headers have
+	  no suffixes.
+	+ add ".hpp" to suffixes for cppmode.
+	+ add ".el" to suffixes for lispmode.
+	+ add an "-s" option to c-filt.c, for JavaScript (to support jsmode). 
+	  Use this to control whether to allow regular expressions in certain
+	  cases.
+
  20040411 (f)
 	> Clark Morgan:
 	+ modify vilemode, adding "sections" expression.

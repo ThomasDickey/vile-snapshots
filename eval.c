@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.324 2004/04/11 17:18:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.330 2004/06/11 11:20:34 tom Exp $
  *
  */
 
@@ -283,7 +283,7 @@ charclass_of(const char *arg)
  * Make display of the intersection of the character classes in the argument.
  */
 static void
-show_charclass(TBUFF ** result, const char *arg)
+show_charclass(TBUFF **result, const char *arg)
 {
     CHARTYPE k = charclass_of(arg);
 #if OPT_SHOW_CTYPE
@@ -387,7 +387,7 @@ show_VariableList(BUFFER *bp GCC_UNUSED)
     register char *v;
     register const char *vv;
     static const char fmt[] =
-    {"$%s = %*S\n"};
+    {"$%s = %.*s\n"};
     const char *const *Names;
     int showall;
     int rc = FALSE;
@@ -471,6 +471,7 @@ vl_lookup_func(const char *name)
 	for (n = 0; n < NFUNCS; n++) {
 	    if (!strncmp(downcased, vl_ufuncs[n].f_name, m)) {
 		if ((n + 1 >= NFUNCS
+		     || m == strlen(vl_ufuncs[n].f_name)
 		     || strncmp(downcased, vl_ufuncs[n + 1].f_name, m)))
 		    fnum = n;
 		break;
@@ -505,7 +506,7 @@ search_token(const char *token, const char *delims, const char *string)
  * result only if we run past the end of the number of tokens.
  */
 static void
-extract_token(TBUFF ** result, const char *count, const char *delims, const char *string)
+extract_token(TBUFF **result, const char *count, const char *delims, const char *string)
 {
     int num = scan_int(count);
 
@@ -524,7 +525,7 @@ extract_token(TBUFF ** result, const char *count, const char *delims, const char
  * Translate string 'from' 'to'.
  */
 static void
-translate_string(TBUFF ** result, const char *from, const char *to, const char *string)
+translate_string(TBUFF **result, const char *from, const char *to, const char *string)
 {
     int len_to = strlen(to);
     char *s, *t;
@@ -568,7 +569,7 @@ path_trim(char *path)
  * Extract the head of the given path
  */
 static char *
-path_head(TBUFF ** result, const char *path)
+path_head(TBUFF **result, const char *path)
 {
     char *temp;
     if ((temp = tb_values(tb_scopy(result, path))) != error_val) {
@@ -583,7 +584,7 @@ path_head(TBUFF ** result, const char *path)
  * simply copy it.
  */
 static void
-path_quote(TBUFF ** result, const char *path)
+path_quote(TBUFF **result, const char *path)
 {
 #if SYS_VMS
     tb_scopy(result, path);	/* no point in quoting here */
@@ -612,7 +613,7 @@ path_quote(TBUFF ** result, const char *path)
 }
 
 static void
-render_date(TBUFF ** result, char *format, time_t stamp)
+render_date(TBUFF **result, char *format, time_t stamp)
 {
 #ifdef HAVE_STRFTIME
     struct tm *tm = localtime(&stamp);
@@ -634,7 +635,7 @@ render_date(TBUFF ** result, char *format, time_t stamp)
 }
 
 static void
-default_mode_value(TBUFF ** result, char *name)
+default_mode_value(TBUFF **result, char *name)
 {
     VALARGS args;
     VWRAP vd;
@@ -674,64 +675,62 @@ default_mode_value(TBUFF ** result, char *name)
     }
 }
 
-#define MAXARGS 3
-
-/* quote string, so toktyp() will know what it is */
-static void
-render_string(TBUFF ** rp)
+/*
+ * Based on mac_tokval(), but unlike that, strips quotes which came from
+ * evaluating via run_func().
+ */
+static char *
+dequoted_parameter(TBUFF **tok)
 {
-    char *value = tb_values(*rp);
+    char *previous;
+    const char *newvalue;
+    int strip;
 
-    if (value != error_val
-	&& *value != EOS
-	&& toktyp(value) != TOK_LITSTR
-	&& toktyp(value) != TOK_QUOTSTR) {
-	UINT j;
-	UINT have = strlen(value);	/* FIXME: assumes we used EOS */
-	UINT need = 2 + have;
+    if (mac_token(tok) != 0) {
+	previous = tb_values(*tok);
 
-	for (j = 0; j < have; ++j) {
-	    if (value[j] == SQUOTE
-		|| value[j] == BACKSLASH) {
-		++need;
+	switch (toktyp(previous)) {
+	default:
+	case TOK_NULL:
+	case TOK_QUERY:
+	case TOK_BUFLINE:
+	case TOK_TEMPVAR:
+	case TOK_DIRECTIVE:
+	case TOK_LABEL:
+	case TOK_LITSTR:
+	    newvalue = tokval(previous);
+	    strip = FALSE;
+	    break;
+	case TOK_FUNCTION:
+	    newvalue = tokval(previous);
+	    strip = (toktyp(newvalue) == TOK_QUOTSTR);
+	    break;
+	case TOK_QUOTSTR:
+	    strip = TRUE;
+	    newvalue = previous;
+	    break;
+	}
+
+	if (newvalue == (const char *) error_val) {
+	    return error_val;
+	} else if (strip) {
+	    if (((const char *) previous) != newvalue) {
+		TBUFF *fix = 0;
+		tb_scopy(&fix, newvalue);
+		tb_free(tok);
+		*tok = fix;
 	    }
+	    tb_dequote(tok);
+	} else if (((const char *) previous) != newvalue) {
+	    tb_scopy(tok, newvalue);
 	}
-	tb_alloc(rp, need + 1);
-	(*rp)->tb_used = need + 1;
-#if 0
-	/*
-	 * FIXME:  We _should_ quote the result just as if it had come from a
-	 * file.  But some inputs come from a prompt, which does not (yet)
-	 * quote its input.  Taking out the check for empty string above, the
-	 * following loop would quote the string "properly".  But returning ''
-	 * would break for various reasons.
-	 */
-	value[need] = EOS;
-	value[need - 1] = SQUOTE;
-	for (j = 0; j < have; ++j) {
-	    UINT i = have - j - 1;
-	    UINT k = need - j - 2;
-	    value[k] = value[i];
-	    if (value[k] == SQUOTE
-		|| value[k] == BACKSLASH) {
-		--need;
-		value[k - 1] = BACKSLASH;
-	    }
-	}
-#else
-	/*
-	 * What we actually do is simpler: put a quote character at the front
-	 * of the data so it will be treated as a string.
-	 */
-	value[have + 1] = EOS;
-	for (j = 0; j < have; ++j) {
-	    UINT i = have - j;
-	    value[i] = value[i - 1];
-	}
-#endif
-	value[0] = SQUOTE;
+	return (tb_values(*tok));
     }
+    tb_free(tok);
+    return (0);
 }
+
+#define MAXARGS 3
 
 /*
  * execute a builtin function
@@ -754,7 +753,7 @@ run_func(int fnum)
     long value = 0;
     long nums[MAXARGS];
 
-    TRACE((T_CALLED "run_func(%d)\n", fnum));
+    TRACE((T_CALLED "run_func(%d:%s)\n", fnum, vl_ufuncs[fnum].f_name));
 
     nargs = vl_ufuncs[fnum].f_code & NARGMASK;
     args_numeric = vl_ufuncs[fnum].f_code & NUM;
@@ -763,24 +762,29 @@ run_func(int fnum)
     ret_numeric = vl_ufuncs[fnum].f_code & NRET;
     ret_boolean = vl_ufuncs[fnum].f_code & BRET;
 
-    TPRINTF(("** evaluate '%s' (0x%x), %d args\n",
+    TPRINTF(("** evaluate '%s' (0x%x), %d %s args returning %s\n",
 	     vl_ufuncs[fnum].f_name,
 	     vl_ufuncs[fnum].f_code,
-	     nargs));
+	     nargs,
+	     (args_numeric
+	      ? "numeric"
+	      : (args_boolean
+		 ? "boolean"
+		 : "string")),
+	     (ret_numeric
+	      ? "numeric"
+	      : (ret_boolean
+		 ? "boolean"
+		 : "string"))));
 
     /* fetch required arguments */
     for (i = 0; i < nargs; i++) {
 	args[i] = 0;
-	if ((arg[i] = mac_tokval(&args[i])) == 0
+	if ((arg[i] = dequoted_parameter(&args[i])) == 0
 	    || (arg[i] == error_val)
 	    || (args[i]->tb_errs)) {
 	    arg[i] = error_val;
 	    is_error = TRUE;
-	} else if (arg[i][0] == SQUOTE) {
-	    /* trim leading quote from recursive result from this function */
-	    for (cp = arg[i] + 1; (cp[-1] = cp[0]) != EOS; ++cp) {
-		;
-	    }
 	}
 	tb_free(&result);	/* in case mac_tokval() called us */
 	TPRINTF(("...arg[%d] = '%s'\n", i, arg[i]));
@@ -1121,9 +1125,9 @@ run_func(int fnum)
     else if (ret_boolean)
 	render_boolean(&result, value);
     else
-	render_string(&result);
+	tb_enquote(&result);
 
-    TPRINTF(("-> %s'%s'\n",
+    TPRINTF(("-> %s%s\n",
 	     is_error ? "*" : "",
 	     is_error ? error_val : tb_values(result)));
 
@@ -1278,7 +1282,7 @@ vars_complete(DONE_ARGS)
 }
 
 static int
-PromptForVariableName(TBUFF ** result)
+PromptForVariableName(TBUFF **result)
 {
     int status;
     static TBUFF *var;
@@ -1734,7 +1738,7 @@ set_palette(const char *value)
 
 /* represent integer as string */
 char *
-render_int(TBUFF ** rp, int i)
+render_int(TBUFF **rp, int i)
 {
     char *p, *q;
 
@@ -1746,7 +1750,7 @@ render_int(TBUFF ** rp, int i)
 
 /* represent long integer as string */
 char *
-render_long(TBUFF ** rp, long i)
+render_long(TBUFF **rp, long i)
 {
     char *p, *q;
 
@@ -1760,7 +1764,7 @@ render_long(TBUFF ** rp, long i)
 
 /* represent boolean as string */
 char *
-render_boolean(TBUFF ** rp, int val)
+render_boolean(TBUFF **rp, int val)
 {
     static char *bools[] =
     {"FALSE", "TRUE"};
@@ -1770,7 +1774,7 @@ render_boolean(TBUFF ** rp, int val)
 #if (SYS_WINNT||SYS_VMS)
 /* unsigned to hex */
 char *
-render_hex(TBUFF ** rp, unsigned i)
+render_hex(TBUFF **rp, unsigned i)
 {
     char *p, *q;
 
@@ -1981,7 +1985,7 @@ complete_vars(DONE_ARGS)
 }
 
 static int
-read_argument(TBUFF ** paramp, const PARAM_INFO * info)
+read_argument(TBUFF **paramp, const PARAM_INFO * info)
 {
     int status = TRUE;
     char *prompt;
@@ -2612,7 +2616,7 @@ must_quote_token(const char *values, unsigned last)
  * Appends the buffer, with quotes
  */
 void
-append_quoted_token(TBUFF ** dst, const char *values, unsigned last)
+append_quoted_token(TBUFF **dst, const char *values, unsigned last)
 {
     unsigned n;
 

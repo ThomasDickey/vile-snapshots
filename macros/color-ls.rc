@@ -1,4 +1,4 @@
-; $Id: color-ls.rc,v 1.1 2000/04/27 23:46:11 tom Exp $
+; $Id: color-ls.rc,v 1.2 2004/06/11 11:51:23 tom Exp $
 ; Use this macro to render the output of "color ls" into a vile buffer.
 store-procedure ShowColorLS "Prompt for, and display a color-ls"
 	;~trace on
@@ -8,8 +8,8 @@ store-procedure ShowColorLS "Prompt for, and display a color-ls"
 		write-message "[Cannot find manpage-filter]"
 		~return
 	~endif
-	set-variable %options &query "options? "
-	~if &or &seq %options "ERROR" &seq %options ""
+	~force set-variable %options &query "options? "
+	~if &or &error %options &seq %options ""
 		~return
 	~endif
 	set-variable %lsbuffer &cat "<ls " &cat %options ">"

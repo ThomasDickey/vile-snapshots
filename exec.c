@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.261 2004/04/11 23:10:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.264 2004/06/09 20:59:35 tom Exp $
  *
  */
 
@@ -12,8 +12,6 @@
 #include "edef.h"
 #include "nefunc.h"
 #include "nefsms.h"
-
-#define isSPorTAB(c) ((c) == ' ' || (c) == '\t')
 
 static int rangespec(const char *specp, LINEPTR * fromlinep, LINEPTR *
 		     tolinep, CMDFLAGS * flagp);
@@ -555,7 +553,7 @@ parse_linespec(const char *s, LINEPTR * markptr)
 	    s++;
 
 	/* skip leading spaces */
-	while (isSPorTAB(*s))
+	while (isBlank(*s))
 	    s++;
 
 	/* dot means current position */
@@ -676,7 +674,7 @@ rangespec(const char *specp, LINEPTR * fromlinep, LINEPTR * tolinep,
     }
 
     /* permit extra colons at the start of the line */
-    while (isSPorTAB(*specp) || *specp == ':') {
+    while (isBlank(*specp) || *specp == ':') {
 	specp++;
     }
 
@@ -717,7 +715,7 @@ rangespec(const char *specp, LINEPTR * fromlinep, LINEPTR * tolinep,
 	*flagp |= DFLALL;
 
     /* skip whitespace */
-    while (isSPorTAB(*scan))
+    while (isBlank(*scan))
 	scan++;
 
     if (*scan) {
@@ -926,7 +924,7 @@ execute(const CMDFUNC * execfunc, int f, int n)
  * actually found.
  */
 char *
-get_token(char *src, TBUFF ** tok, int eolchar, int *actual)
+get_token(char *src, TBUFF **tok, int eolchar, int *actual)
 {
     tb_init(tok, EOS);
     return get_token2(src, tok, eolchar, actual);
@@ -937,7 +935,7 @@ get_token(char *src, TBUFF ** tok, int eolchar, int *actual)
  * re-gluing a "!" to a quoted string from kbd_reply().
  */
 char *
-get_token2(char *src, TBUFF ** tok, int eolchar, int *actual)
+get_token2(char *src, TBUFF **tok, int eolchar, int *actual)
 {
     int quotef = EOS;		/* nonzero iff the current string quoted */
     int c, i, d, chr;
@@ -950,7 +948,7 @@ get_token2(char *src, TBUFF ** tok, int eolchar, int *actual)
 	return src;
 
     /* first scan past any whitespace in the source string */
-    while (isSPorTAB(*src))
+    while (isBlank(*src))
 	++src;
 
     /* scan through the source string, which may be quoted */
@@ -1046,14 +1044,14 @@ get_token2(char *src, TBUFF ** tok, int eolchar, int *actual)
 		if (c == eolchar) {
 		    if (actual != 0)
 			*actual = *src;
-		    if (!isSPorTAB(c))
+		    if (!isBlank(c))
 			src++;
 		    break;
 		} else if (c == DQUOTE) {
 		    quotef = c;
 		    /* note that leading quote
 		       is included */
-		} else if (isSPorTAB(c)) {
+		} else if (isBlank(c)) {
 		    if (actual != 0)
 			*actual = *src;
 		    break;
@@ -1072,7 +1070,7 @@ get_token2(char *src, TBUFF ** tok, int eolchar, int *actual)
     }
 
     /* scan past any whitespace remaining in the source string */
-    while (isSPorTAB(*src))
+    while (isBlank(*src))
 	++src;
     token_ended_line = isreturn(*src) || *src == EOS;
 
@@ -1091,7 +1089,7 @@ get_token2(char *src, TBUFF ** tok, int eolchar, int *actual)
  * commands are multiple tokens.
  */
 int
-macroize(TBUFF ** p, TBUFF * src, int skip)
+macroize(TBUFF **p, TBUFF *src, int skip)
 {
     register int c;
     char *ref = tb_values(src);	/* FIXME */
@@ -1139,7 +1137,7 @@ mac_tokens(void)
 
 /* fetch and isolate the next token from execstr */
 int
-mac_token(TBUFF ** tok)
+mac_token(TBUFF **tok)
 {
     int savcle;
     const char *oldstr = execstr;
@@ -1156,7 +1154,7 @@ mac_token(TBUFF ** tok)
 
 /* fetch and isolate and evaluate the next token from execstr */
 char *
-mac_tokval(TBUFF ** tok)
+mac_tokval(TBUFF **tok)
 {
     if (mac_token(tok) != 0) {
 	char *previous = tb_values(*tok);
@@ -1177,6 +1175,7 @@ mac_tokval(TBUFF ** tok)
 	    } else {
 		(void) tb_scopy(tok, newvalue);
 	    }
+	    tb_dequote(tok);
 	}
 	return (tb_values(*tok));
     }
@@ -1188,7 +1187,7 @@ mac_tokval(TBUFF ** tok)
  * get a macro line argument
  */
 int
-mac_literalarg(TBUFF ** tok)
+mac_literalarg(TBUFF **tok)
 {				/* buffer to place argument */
     /* grab everything on this line, literally */
     (void) tb_scopy(tok, execstr);
@@ -1202,7 +1201,7 @@ mac_literalarg(TBUFF ** tok)
  * Parameter info is given as a keyword, optionally followed by a prompt string.
  */
 static int
-decode_parameter_info(TBUFF * tok, PARAM_INFO * result)
+decode_parameter_info(TBUFF *tok, PARAM_INFO * result)
 {
     char name[NSTRING];
     char text[NSTRING];
@@ -1236,7 +1235,7 @@ decode_parameter_info(TBUFF * tok, PARAM_INFO * result)
 #endif
 
 static int
-setup_macro_buffer(TBUFF * name, int flag)
+setup_macro_buffer(TBUFF *name, int flag)
 {
 #if OPT_MACRO_ARGS || OPT_ONLINEHELP
     static TBUFF *temp;

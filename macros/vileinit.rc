@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.21 2002/09/02 16:43:46 tom Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.22 2004/05/15 15:26:53 tom Exp $
 ; This is a sample which may be installed as .vilerc (or vile.rc for non-Unix
 ; systems), or source'd as-is to provide quick initialization of some useful
 ; macros and settings.
@@ -65,7 +65,8 @@ bind-cmdmode-key goto-eol FN-E
 	map r r
 	map k k
 	; Shifted arrow-keys from XFree86 xterm, mapped to next-row and
-	; previous-row
+	; previous-row.  They are available when the sunKeyboard resource
+	; is false.  Old flavor (see modifyCursorKeys in manpage):
 	map [2A 
 	map O2A 
 	map [2B 
@@ -74,6 +75,11 @@ bind-cmdmode-key goto-eol FN-E
 	map O2C #C
 	map [2D #D
 	map O2D #D
+	; These are the newer flavor:
+	map [1;2A 
+	map [1;2B 
+	map [1;2C #C
+	map [1;2D #D
 	; You may have a back-tab (map it to previous-window)
 	map [Z O
 ~endif

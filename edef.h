@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.313 2003/08/04 22:34:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.314 2004/06/15 21:54:23 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -384,6 +384,7 @@ decl_init_const( char TRACE_BufName[],		"[Trace]");
 decl_init( TBUFF *filename_expr, 0 );
 decl_init( TBUFF *error_expr, 0 );
 decl_init( TBUFF *error_match, 0 );
+decl_init( int error_tabstop, 8 );
 decl_init_const( char ERRORS_BufName[],		"[Error Expressions]");
 decl_init_const( char ERR_REGEX_BufName[],	"[Error Patterns]");
 #endif

@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.127 2003/11/12 01:56:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.128 2004/06/09 01:04:59 tom Exp $
  *
  */
 
@@ -1031,7 +1031,7 @@ typedef struct {
 } ENCODEREG;
 
 static void
-encode_one_attribute(TBUFF ** result, int count, char *hypercmd, VIDEO_ATTR attr)
+encode_one_attribute(TBUFF **result, int count, char *hypercmd, VIDEO_ATTR attr)
 {
     char temp[80];
 

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_4f
+MANIFEST for vile, version v9_4g
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -87,6 +87,8 @@ os2vio.c                        OS/2 video terminal driver
 patchlev.h                      patch-level
 path.c                          functions that manipulate pathnames
 perl.xs                         Perl/C interface wrapper
+plugin.c                        command interface to plugins
+plugin.h                        interface of plugin.c
 proto.h                         function prototypes
 pscreen.h                       interface for PSCREEN struct
 ptypemap                        perl-interface type map
@@ -145,10 +147,10 @@ doc/Vileserv.doc                overview of Vileserv and vileget scripts
 doc/config.doc                  configuration-instructions for VILE
 doc/dir.doc                     description of perl directory-browser
 doc/filters.doc                 overview of syntax filter programs
-doc/indent.pro                  sample 'indent' profile for vile
 doc/macros.doc                  documentation for VILE macros
 doc/menus.doc                   description of xvile (Xm and Xaw) menus
 doc/modes.doc                   overview of modes/majormodes
+doc/ncu-indent                  copy of ncu-indent
 doc/oleauto.doc                 document Winvile OLE
 doc/perl.doc                    notes about perl interface to vile
 doc/visvile.doc                 document visvile.dll
@@ -356,6 +358,10 @@ perl/shell.pm                   Perl: spawn a shell via a pty
 perl/spell.pm                   Perl: interactive spelling checker/corrector
 perl/vileget                    pass file-edit request to xvile session running Vileserv
 perl/winops.pm                  window-operations for testing the Perl5 interface
+plugins                         subdirectory
+plugins/Makefile                makefile for plugin samples
+plugins/test.c                  example of a plugin
+plugins/test.rc                 script to exercise plugin sample
 visvile                         subdirectory
 visvile/commands.cpp            implement commands for visvile.dll
 visvile/commands.h              implement commands for visvile.dll

@@ -7,7 +7,7 @@
  *
  * original author: D. R. Banks 9-May-86
  *
- * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.59 2004/03/21 17:18:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.60 2004/06/09 01:04:27 tom Exp $
  *
  */
 
@@ -35,7 +35,7 @@ static int cmd_reexecute = -1;	/* > 0 if re-executing command */
  */
 static int
 scanmore(			/* search forward or back for a pattern */
-	    TBUFF * patrn,	/* string to scan for */
+	    TBUFF *patrn,	/* string to scan for */
 	    int dir)		/* direction to search */
 {
     int sts;			/* current search status */

@@ -483,6 +483,11 @@ State Variables
 	$error-match	Text from the current buffer which which was matched
 			in the most recent find-next-error command.
 
+	$error-tabstop	Tabstop value to use when computing the column that
+			a "%C" pattern will produce.  If zero or negative,
+			use the current buffer's tabstop, otherwise use the
+			given value.  The default is 8.
+
 	$exec-path      [READ ONLY] Where to find vile.
 
 	$exec-suffix	[READ ONLY] suffix, if any, for execable programs.
@@ -981,7 +986,7 @@ Directives
 
     ~quiet
     ------
-    	Rather than suppress all screen updates, you may suppress any messages
+	Rather than suppress all screen updates, you may suppress any messages
 	that are written as the command progresses.
 
     ~if, ~elseif, ~else, and ~endif
@@ -1456,6 +1461,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.91 2004/04/11 17:20:38 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.92 2004/06/15 22:12:03 tom Exp $
 -----------------------------------
 

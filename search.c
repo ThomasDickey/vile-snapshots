@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.134 2003/05/25 23:34:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.135 2004/06/09 01:05:06 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -719,7 +719,7 @@ scrsearchpat(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 readpattern(
 	       const char *prompt,
-	       TBUFF ** apat,
+	       TBUFF **apat,
 	       regexp ** srchexpp,
 	       int c,
 	       int fromscreen)
