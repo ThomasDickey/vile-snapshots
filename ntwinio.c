@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.35 1998/10/24 15:11:21 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.36 1998/11/05 01:05:10 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -1381,7 +1381,7 @@ ntkclose(void)	/* close the keyboard */
 {
 }
 
-static struct {
+static struct keyxlate_struct {
 	int	windows;
 	int	vile;
 } keyxlate[] = {
@@ -1431,8 +1431,8 @@ static int saveCount = 0;
 static int
 decode_key_event(KEY_EVENT_RECORD *irp)
 {
-    int key;
-    int i;
+    int i, key;
+    struct keyxlate_struct *keyp;
 
     if ((key = (unsigned char) irp->uChar.AsciiChar) != 0)
         return key;
@@ -1445,20 +1445,25 @@ decode_key_event(KEY_EVENT_RECORD *irp)
     }
 #endif
 
-    for (i = 0; i < TABLESIZE(keyxlate); i++)
+    for (i = 0, keyp = keyxlate; i < TABLESIZE(keyxlate); i++, keyp++)
     {
-        if (keyxlate[i].windows == irp->wVirtualKeyCode)
+        if (keyp->windows == irp->wVirtualKeyCode)
         {
 	    DWORD state = irp->dwControlKeyState;
 
 	    /*
-	     * This is a combination from the window menu which is caught when
-	     * we've grabbed focus.  Just ignore it here, and it will be
-	     * processed properly.
+	     * There are two special keys that we must deal with here on an
+	     * ad hoc basis:  ALT+F4 and SHIFT+6 .  The former should _never_
+	     * be remapped by any user (nor messed with by vile) and the
+	     * latter is actually '^' -- leave it alone as well.
 	     */
-	    if (keyxlate[i].windows == VK_F4
-	    && (state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)))
+	    if ((keyp->windows == VK_F4 &&
+			(state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)))
+			        ||
+		(keyp->windows == '6' && (state & SHIFT_PRESSED)))
+	    {
 		break;
+	    }
 
 	    /*
 	     * If this key is modified in some way, we'll prefer to use the
@@ -1473,7 +1478,7 @@ decode_key_event(KEY_EVENT_RECORD *irp)
 		| LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED
 		| SHIFT_PRESSED))
             {
-                key = W32_KEY | keyxlate[i].windows;
+                key = W32_KEY | keyp->windows;
                 if (state & (LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED))
                     key |= W32_CTRL;
                 if (state & (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED))
@@ -1482,7 +1487,7 @@ decode_key_event(KEY_EVENT_RECORD *irp)
                     key |= W32_SHIFT;
             }
             else
-                key = keyxlate[i].vile;
+                key = keyp->vile;
             TRACE(("... %#x -> %#x\n", irp->wVirtualKeyCode, key))
             break;
         }

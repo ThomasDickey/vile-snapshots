@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.103 1998/11/01 23:57:11 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.104 1998/11/05 00:42:52 cmorgan Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -212,7 +212,7 @@ regex							# MVAL_ prefix
 "startup-path"	STARTUP_PATH		# where to find the startup-file (e.g., .)
 "status"	STATUS			# returns the status of the last command
 "tpause"	TPAUSE			# length to pause for paren matching
-"title"		TITLE		DISP_X11	# window title
+"title"		TITLE		DISP_X11||SYS_WINNT	# window title
 "version"	VERSION			# current version number
 "wlines"	WLINES			# # of lines in current window
 "word"		WORD			# current word

@@ -29,6 +29,19 @@ Installing after a build
 2) copy all resultant executables and the file vile.hlp to a directory
    in your PATH.
 
+Creating a startup file
+-----------------------
+most users will configure the editor.  this is accomplished by creating a
+startup file, called "vile.rc", and adding various settings and macros as
+described in vile.hlp .  vile searches for the startup file in these
+locations (and in the order listed):
+
+    current working directory
+    the directory specify by $HOME
+    the vile executable directory
+    any directory specified in the $VILE_STARTUP_PATH env var
+    any directory in $PATH
+
 the remainder of this file describes build requirements for various PC
 environments.
 
@@ -218,5 +231,5 @@ tom dickey, dickey@clark.net
 paul fox, pgf@foxharp.boston.ma.us (home)
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.17 1998/10/30 01:43:51 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.18 1998/11/05 00:42:52 cmorgan Exp $
 ------------------------

@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.80 1998/10/03 02:08:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.83 1998/11/06 11:14:31 tom Exp $
  *
  */
 
@@ -42,6 +42,7 @@ extern REGION *haveregion;
 
 static	void	detach_attrib (BUFFER *bp, AREGION *arp);
 static	int	attribute_cntl_a_sequences (void);
+static	int	attribute_from_filter (void);
 
 /*
  * startbufp and startregion are used to represent the start of a selection
@@ -65,7 +66,7 @@ static AREGION	startregion;
 static BUFFER *	selbufp = NULL;
 static AREGION	selregion;
 #if OPT_HYPERTEXT
-static char *	hypercmd;
+static TBUFF *	hypercmd;
 #endif
 
 typedef enum { ORIG_FIXED, END_FIXED, UNFIXED } WHICHEND;
@@ -986,7 +987,7 @@ attributeregion(void)
 	if ((status = getregion(&region)) == TRUE) {
 	    if (VATTRIB(videoattribute) != 0
 #if OPT_HYPERTEXT
-		|| hypercmd != 0)
+		|| tb_length(hypercmd) != 0)
 #endif
 	    {
 		/* add new attribute-region */
@@ -998,8 +999,11 @@ attributeregion(void)
 		arp->ar_vattr = videoattribute; /* include ownership */
 		arp->ar_shape = regionshape;
 #if OPT_HYPERTEXT
-		arp->ar_hypercmd = hypercmd;	/* already malloc'd for us */
-		hypercmd = 0;			/* reset it for future calls */
+		arp->ar_hypercmd = 0;
+		if (tb_length(hypercmd)) {
+			arp->ar_hypercmd = strmalloc(tb_values(hypercmd));
+			tb_init(&hypercmd, 0);
+		}
 #endif
 		attach_attrib(curbp, arp);
 	    } else { /* purge attributes in this region */
@@ -1129,7 +1133,7 @@ attributeregion_in_region(REGION *rp,
     regionshape = shape;	/* Not that the following actually cares */
     videoattribute = vattr;
 #if OPT_HYPERTEXT
-    hypercmd = hc;
+    tb_scopy(&hypercmd, hc);
 #endif /* OPT_HYPERTEXT */
     return attributeregion();
 }
@@ -1198,7 +1202,7 @@ attributehyperregion(void)
     if (status != TRUE)
 	return status;
 
-    hypercmd = strmalloc(line);
+    tb_scopy(&hypercmd, line);
     return attributeregion();
 }
 
@@ -1290,9 +1294,18 @@ int
 operattrcaseq(int f, int n)
 {
       opcmd = OPOTHER;
-      videoattribute = VAUL | VOWN_CTLA;
+      videoattribute = 0;
       return vile_op(f,n,attribute_cntl_a_sequences,
 		      "Attribute ^A sequences");
+}
+
+int
+operattrfilter(int f, int n)
+{
+      opcmd = OPOTHER;
+      videoattribute = 0;
+      return vile_op(f,n,attribute_from_filter,
+		      "Attribute ^A sequences from filter");
 }
 
 int
@@ -1305,6 +1318,117 @@ attribute_cntl_a_seqs_in_region(REGION *rp, REGIONSHAPE shape)
 	MK.l = lback(MK.l);
     regionshape = shape;	/* Not that the following actually cares */
     return attribute_cntl_a_sequences();
+}
+
+/*
+ * Setup for iteration over region to attribute, ensure that DOT < MK.
+ */
+LINEPTR
+setup_region(void)
+{
+    register LINEPTR pastline;	/* pointer to line just past EOP */
+
+    if (!sameline(MK, DOT)) {
+	REGION region;
+	if (getregion(&region) != TRUE)
+	    return 0;
+	if (sameline(region.r_orig, MK))
+	    swapmark();
+    }
+    pastline = MK.l;
+    if (pastline != win_head(curwp))
+	    pastline = lforw(pastline);
+    DOT.o = 0;
+    regionshape = EXACT;
+
+    return pastline;
+}
+
+/*
+ * Parse a cntl_a sequence, returning the number of characters processed.
+ * Set videoattribute and hypercmd as side-effects.
+ */
+static int
+parse_attribute(char *text, int length, int offset, int *countp)
+{
+	register int c;		/* current char during scan */
+	int count = 0;
+	int found;
+#if OPT_HYPERTEXT
+	int save_offset;
+#endif
+
+	while (text[offset] == CONTROL_A) {
+		found = FALSE;
+		count = 0;
+		offset++;
+		while (offset < length) {
+			c = text[offset];
+			if (isDigit(c)) {
+				count = count * 10 + c - '0';
+				offset++;
+			}
+			else
+				break;
+		}
+		if (count == 0)
+			count = 1;
+		videoattribute = VOWN_CTLA;
+		while (offset < length
+		 && (c = text[offset]) != CONTROL_A
+		 && !found) {
+			switch (c) {
+			case 'C' :
+				/* We have color. Get color value */
+				offset++;
+				c = text[offset];
+				if (isDigit(c))
+					videoattribute |= VCOLORATTR(c - '0');
+				else if ('A' <= c && c <= 'F')
+					videoattribute |= VCOLORATTR(c - 'A' + 10);
+				else if ('a' <= c && c <= 'f')
+					videoattribute |= VCOLORATTR(c - 'a' + 10);
+				else
+					offset--; /* Invalid attribute */
+				break;
+
+			case 'U' : videoattribute |= VAUL;   break;
+			case 'B' : videoattribute |= VABOLD; break;
+			case 'R' : videoattribute |= VAREV;  break;
+			case 'I' : videoattribute |= VAITAL; break;
+#if OPT_HYPERTEXT
+			case 'H' :
+				save_offset = offset;
+				offset++;
+				while (offset < length
+				 && text[offset] != EOS)
+					offset++;
+
+				if (offset < length) {
+					tb_init(&hypercmd, EOS);
+					tb_bappend(&hypercmd,
+						&text[save_offset+1],
+						offset - save_offset);
+					tb_append(&hypercmd, EOS);
+				} else { /* skip bad hypertext string */
+					offset = save_offset;
+				}
+				break;
+#endif
+			case ':' :
+				found = TRUE;
+				break;
+
+			default  :
+				offset--;
+				found = TRUE;
+				break;
+			}
+			offset++;
+		}
+	}
+	*countp = count;
+	return offset;
 }
 
 /*
@@ -1330,9 +1454,9 @@ attribute_cntl_a_seqs_in_region(REGION *rp, REGIONSHAPE shape)
 static int
 attribute_cntl_a_sequences(void)
 {
-    register int c;		/* current char during scan */
-    register LINEPTR pastline;	/* pointer to line just past EOP */
+    LINEPTR pastline;
     C_NUM offset;		/* offset in cur line of place to attribute */
+    int count;
 
 #if EFFICIENCY_HACK
     AREGION *orig_attribs;
@@ -1340,87 +1464,13 @@ attribute_cntl_a_sequences(void)
     orig_attribs = new_attribs = curbp->b_attribs;
 #endif
 
-    if (!sameline(MK, DOT)) {
-	REGION region;
-	if (getregion(&region) != TRUE)
-	    return FALSE;
-	if (sameline(region.r_orig, MK))
-	    swapmark();
-    }
-    pastline = MK.l;
-    if (pastline != win_head(curwp))
-	    pastline = lforw(pastline);
-    DOT.o = 0;
-    regionshape = EXACT;
+    if ((pastline = setup_region()) == 0)
+    	return FALSE;
+
     while (DOT.l != pastline) {
 	while (DOT.o < llength(DOT.l)) {
 	    if (char_at(DOT) == CONTROL_A) {
-		int count = 0;
-		offset = DOT.o+1;
-start_scan:
-		while (offset < llength(DOT.l)) {
-		    c = lgetc(DOT.l, offset);
-		    if (isDigit(c)) {
-			count = count * 10 + c - '0';
-			offset++;
-		    }
-		    else
-			break;
-		}
-		if (count == 0)
-		    count = 1;
-		videoattribute = VOWN_CTLA;
-		while (offset < llength(DOT.l)) {
-		    c = lgetc(DOT.l, offset);
-		    switch (c) {
-			case 'C' :
-			    /* We have color. Get color value */
-			    offset++;
-			    c = lgetc(DOT.l, offset);
-			    if (isDigit(c))
-				videoattribute |= VCOLORATTR(c - '0');
-			    else if ('A' <= c && c <= 'F')
-				videoattribute |= VCOLORATTR(c - 'A' + 10);
-			    else if ('a' <= c && c <= 'f')
-				videoattribute |= VCOLORATTR(c - 'a' + 10);
-			    else
-				offset--; /* Invalid attribute */
-			    break;
-			case 'U' : videoattribute |= VAUL;   break;
-			case 'B' : videoattribute |= VABOLD; break;
-			case 'R' : videoattribute |= VAREV;  break;
-			case 'I' : videoattribute |= VAITAL; break;
-#if OPT_HYPERTEXT
-			case 'H' : {
-			    int save_offset = offset;
-			    offset++;
-			    while (offset < llength(DOT.l)
-				&& lgetc(DOT.l,offset) != 0)
-				offset++;
-			    if (offset < llength(DOT.l)) {
-				hypercmd = strmalloc(&DOT.l->l_text[save_offset+1]);
-			    }
-			    else {
-				/* Bad hypertext string... skip it */
-				offset = save_offset;
-			    }
-
-			    break;
-			}
-#endif
-			case ':' : offset++;
-			    if (offset < llength(DOT.l)
-			     && lgetc(DOT.l, offset) == CONTROL_A) {
-				count = 0;
-				offset++;
-				goto start_scan; /* recover from filter-err */
-			    }
-			    /* FALLTHROUGH */
-			default  : goto attribute_found;
-		    }
-		    offset++;
-		}
-attribute_found:
+		offset = parse_attribute(DOT.l->l_text, llength(DOT.l), DOT.o, &count);
 #if EFFICIENCY_HACK
 		new_attribs = curbp->b_attribs;
 		curbp->b_attribs = orig_attribs;
@@ -1440,6 +1490,56 @@ attribute_found:
 	}
 	DOT.l = lforw(DOT.l);
 	DOT.o = 0;
+    }
+    return TRUE;
+}
+
+/*
+ * Apply attributes from a filtering command on the current buffer.  The
+ * buffer is not modified.
+ */
+static int
+attribute_from_filter(void)
+{
+    LINEPTR pastline;
+    int skip;
+    int nbytes;
+    int done;
+    int n;
+    int s;
+
+    if ((pastline = setup_region()) == 0)
+	return FALSE;
+
+    if (open_region_filter()) {
+
+	while (DOT.l != pastline) {
+
+	    if ((s=ffgetline(&nbytes)) > FIOSUC)
+		break;
+
+	    DOT.o = 0;
+	    for (n = 0; n < nbytes && DOT.o < llength(DOT.l); n++) {
+		if (fline[n] == CONTROL_A) {
+		    MK = DOT;
+		    done = parse_attribute(fline, nbytes, n, &skip);
+		    if (done) {
+			n = (done + skip - 1);
+			MK.o += skip;
+			if (MK.o > llength(DOT.l))
+			    MK.o = llength(DOT.l);
+			if (VATTRIB(videoattribute)
+			 || hypercmd != 0) {
+				(void) attributeregion();
+			}
+			DOT = MK;
+		    }
+		}
+		DOT.o += 1;
+	    }
+	    DOT.l = lforw(DOT.l);
+	}
+	(void)ffclose();		/* Ignore errors.	*/
     }
     return TRUE;
 }

@@ -64,7 +64,7 @@ Creating, executing, storing macros
 	xvile executes this startup file fragment:
 
 	        ~if &sequal $progname "xvile"
-	            set title $cbufname
+	            set-variable $title $cbufname
 	        ~endif
 
 	then the editor's X window titlebar changes.  However, "standard"
@@ -410,16 +410,16 @@ Environmental Variables
 
 	$startup-path	where to find the startup file
 
-	$status 	[READ  ONLY] Status of the success of the last
+	$status 	[READ ONLY] Status of the success of the last
 			command (TRUE or FALSE).  This is usually used with
 			~force to check on the success of a search, or a
 			file operation.
 
-	$title		Under X11, the current window title.
+	$title		The current window title (X11, win32 versions only).
 
 	$tpause 	On a PC, time to pause for paren matching.
 
-	$version	[READ  ONLY] Contains the current vile version number.
+	$version	[READ ONLY] Contains the current vile version number.
 
 	$wline		Number of display lines in current window.
 
@@ -1050,5 +1050,5 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.5 1998/11/02 00:57:37 cmorgan Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.6 1998/11/05 00:42:52 cmorgan Exp $
 -----------------------------------
