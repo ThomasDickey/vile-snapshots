@@ -1,5 +1,23 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (pgf)	980218 (e)
+	+ added "crypt-til" operator (bound to ^X-C) which will
+	  encrypt/decrypt an arbitrary region.  the main goal was to make
+	  it easy to read a previously encrypted file and decrypt it for
+	  reading, or to read a clear file, and quickly encrypt it before
+	  writing it.  i find crypt mode to be cumbersome at best -- i find
+	  the explicit command to be more useful.
+	+ modified crypt.c to allow building it as standalone utility. 
+	  this gets built as vile-crypt, and it's compatible with the crypt
+	  command inside of vile (if used over an entire buffer).  usage
+	  is:
+	    vile-crypt [-m] [-k crypt-key ] [file ...]
+	  if '-k crypt-key' is omitted you will be prompted instead, and
+	  '-m' leaves text to the first blank-line intact, which i find
+	  useful for encrypting individually stored mail messages.  the
+	  en/decrypted text appears on stdout.
+	+ attempted to document vile's encryption features in vile.hlp.
+
  (tom)	980208 (d)
  	+ reformatted proto.h, ordering prototypes alphabetically.
  	+ make column shown by ^G the same as for the ruler (reported by David
