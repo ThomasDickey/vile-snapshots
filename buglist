@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.315 1996/10/17 10:44:58 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.316 1996/10/22 00:31:01 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -248,16 +248,6 @@ works fine, except that the process is in the foreground.
 apply Alistair's min/max regexp patch
 
 -------------------------------------------------------------------------
-
-Is there any way to use termcap to define 
-all of the window parameters, but still use ANSI escapes for colors?  Elvis
-allows me to do this under Linux on the terminal screen and a couple of
-systems allow Elvis to change the foreground and background colors under an
-xterm.  If I tell Vile to compile using ANSI instead of termcap it works
-but it doesn't seem to recognize any of my termcap variables (which means
-it doesn't get the right screen size or exits with incorrect colors).
-
------------------------------
 
 With vim 1.27 you can configure its behaviour regarding backspace using
 the 'backspace' variable. From the help file:
@@ -749,12 +739,6 @@ that it is measured from the left.  this prevents line length from changing
 when the screen is resized, a drawback of wrapmargin.  i propose eliminating
 fillcol, and introducing textwidth.
 ------------
-
-While writing a macro, it's possible to save off the current search string,
-it's in the variable $search.  However, it's not possible to save off the
-current search direction so you can restore it later.
-
--------------
 
   If there is a file called XVile in /usr/X11/lib/X11/app-defaults
   then the scroll bar in the xvile(build the --with-screen=x11) does

@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.102 1996/10/19 11:50:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.103 1996/10/22 01:23:54 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -484,7 +484,8 @@ int	*wrappedp)
 					mlforce("BUG: prev. match no good");
 					return FALSE;
 				}
-			} else if (last < llength(curpos.l))
+			} else if (llength(curpos.l) <= 0
+			   || last < llength(curpos.l))
 				last--;
 			next = (C_NUM)(got - txt);
 			if (next != last) {

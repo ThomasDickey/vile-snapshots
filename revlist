@@ -1,6 +1,6 @@
-revlist for vile, version v6_2a
+revlist for vile, version v6_2b
 --------------------------------------------------------------------------------
-CHANGES	1.14
+CHANGES	1.15
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -16,7 +16,7 @@ basic.c	1.92
 bind.c	1.140
 borland.c	1.17
 buffer.c	1.150
-buglist	1.315
+buglist	1.316
 c-filt.c	1.1
 c-filt.flx	1.1
 chgdfunc.h	1.4
@@ -35,7 +35,7 @@ dumbterm.c	1.8
 edef.h	1.201
 epath.h	1.20
 estruct.h	1.291
-eval.c	1.134
+eval.c	1.135
 exec.c	1.130
 externs.c	1.5
 fences.c	1.39
@@ -71,11 +71,11 @@ map.c	1.67
 mkdirs.sh	1.2
 mktbls.c	1.74
 modes.c	1.78
-modetbl	1.72
+modetbl	1.73
 msgs.c	1.14
 npopen.c	1.53
 ntconio.c	1.17
-oneliner.c	1.80
+oneliner.c	1.81
 opers.c	1.56
 os2pipe.c	1.1
 os2vio.c	1.8
@@ -86,8 +86,8 @@ proto.h	1.229
 random.c	1.182
 regexp.c	1.60
 region.c	1.79
-revlist	v6_2a
-search.c	1.102
+revlist	v6_2b
+search.c	1.103
 select.c	1.51
 spawn.c	1.114
 tags.c	1.78
@@ -98,7 +98,7 @@ tipc.c	1.1
 undo.c	1.65
 version.c	1.33
 vile.1	1.15
-vile.hlp	1.302
+vile.hlp	1.303
 vms2unix.c	1.18
 vmsbuild.com	1.11
 vmspipe.c	1.12

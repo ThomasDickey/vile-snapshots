@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.80 1996/04/30 20:08:07 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.81 1996/10/22 01:24:09 tom Exp $
  */
 
 #include	"estruct.h"
@@ -239,7 +239,7 @@ substreg1(int needpats, int use_opts)
 	return TRUE;
 }
 
-/* show the pattern we've matched */
+/* show the pattern we've matched (at least one space, even for empty-string) */
 static void
 showpat(regexp *rp, int on)
 {
@@ -253,7 +253,8 @@ showpat(regexp *rp, int on)
 
 	hilite(row,
 		offs2col(curwp, lp, DOT.o),
-		offs2col(curwp, lp, (C_NUM)(DOT.o + rp->mlen)), on);
+		offs2col(curwp, lp, (C_NUM)(DOT.o + rp->mlen)) + (rp->mlen == 0),
+		on);
 }
 
 static int

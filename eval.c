@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.134 1996/10/03 01:02:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.135 1996/10/22 00:42:41 tom Exp $
  *
  */
 
@@ -444,6 +444,7 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 		ElseIf( EVDISINP )	value = ltos(disinp);
 		ElseIf( EVWLINE )	value = l_itoa(curwp->w_ntrows);
 		ElseIf( EVCWLINE )	value = l_itoa(getwpos());
+		ElseIf( EVFWD_SEARCH )	value = ltos(last_srch_direc == FORWARD);
 		ElseIf( EVSEARCH )	value = pat;
 		ElseIf( EVREPLACE )	value = rpat;
 		ElseIf( EVMATCH )	value = (patmatch == NULL) ? 
@@ -844,6 +845,9 @@ char *value)	/* value to set to */
 			SetEnv(&modeline_format, value);
 			upmode();
 #endif
+
+		ElseIf( EVFWD_SEARCH )
+			last_srch_direc = stol(value) ? FORWARD : REVERSE;
 
 		ElseIf( EVSEARCH )
 			(void)strcpy(pat, value);

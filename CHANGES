@@ -1,5 +1,11 @@
 Changes for vile 6.3 (released ??? ??? ??, 1996)
 
+(tom)	961022 (b)
+	+ modify 'showpat()' to show at least one highlighted space even if the
+	  pattern is null, e.g., a '$' matching the end of line (oneliner.c).
+	+ implement $forward-search variable (modetbl, eval.c).
+	+ corrected "^$" pattern-matching broken in 6.2a (search.c).
+
 (tom)	961019 (a)
 	+ corrected logic of ~else/~elseif broken in 6.1a (exec.c), reported by
 	  Timothy Phan <tphan@asl.dl.nec.com>.
