@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.283 1998/05/22 01:17:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.284 1998/05/27 10:32:25 tom Exp $
  *
  */
 
@@ -22,6 +22,7 @@ extern "C" {
 extern SIGT catchintr (int ACTUAL_SIG_ARGS);
 extern char *strend (const char *s);
 extern char *strncpy0 (char *t, const char *f, SIZE_T l);
+extern int call_cmdfunc(const CMDFUNC *p, int f, int n);
 extern int no_memory (const char *s);
 extern int rdonly (void);
 extern int writeall (int f, int n, int promptuser, int leaving, int autowriting);
@@ -30,7 +31,6 @@ extern void do_repeats (int *cp, int *fp, int *np);
 extern void not_interrupted (void);
 extern void setup_handler (int sig, void (*disp) (int ACTUAL_SIG_ARGS));
 extern void tidy_exit (int code);
-extern int call_cmdfunc(const CMDFUNC *p, int f, int n);
 
 #ifndef interrupted
 extern int interrupted (void);
@@ -100,7 +100,6 @@ extern int kbd_engl_stat (const char *prompt, char *buffer, int stated);
 extern int kbd_length (void);
 extern int kcod2escape_seq (int c, char *ptr);
 extern int no_such_function (const char *fname);
-extern int startup (char *sfname);
 extern void kbd_alarm (void);
 extern void kbd_erase (void);
 extern void kbd_erase_to_end (int column);
@@ -311,6 +310,7 @@ extern void set_ctrans (const char *value);
 #endif
 
 /* exec.c */
+extern int do_source (char *fname, int n);
 extern int dobuf (BUFFER *bp);
 extern int docmd (char *cline, int execflag, int f, int n);
 extern int dofile (char *fname);

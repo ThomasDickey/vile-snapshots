@@ -1,12 +1,13 @@
 /* 
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
+ * Written by Clark Morgan for vile (may 1998).
  *
  * Caveats  
  * =======
  * -- This code has not been tested with NT 3.51 .
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.1 1998/05/15 18:38:00 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.2 1998/05/27 10:16:56 tom Exp $
  */
 
 #include <windows.h>

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.178 1998/05/23 21:41:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.179 1998/05/27 10:45:23 tom Exp $
  *
  */
 
@@ -1056,33 +1056,6 @@ const char *sub)	/* substring to look for */
 
 #endif /* OPT_REBIND */
 
-
-/* execute the startup file */
-
-int
-startup(
-char *sfname)			/* name of startup file  */
-{
-	char *fname;		/* resulting file name to execute */
-
-	/* look up the startup file */
-	fname = flook(sfname,
-#if SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
-		FL_ANYWHERE | FL_READABLE
-#else
-		FL_HERE | FL_HOME | FL_READABLE
-#endif
-		);
-
-	/* if it isn't around, don't sweat it */
-	if (fname == NULL) {
-		mlforce("[Can't find startup file %s]",sfname);
-		return(TRUE);
-	}
-
-	/* otherwise, execute the sucker */
-	return(dofile(fname));
-}
 
 /*	Look up the existence of a file along the normal or PATH
 	environment variable. Look first in the HOME directory if

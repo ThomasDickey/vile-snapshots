@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.110 1998/04/28 10:18:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.111 1998/05/27 00:34:46 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -477,11 +477,12 @@ int	*wrappedp)
 				last++;
 				while (testit(curpos.l, exp, &end, srchlim)) {
 					got = exp->startp[0];
-					/* guard against infinite loop: "?$" */
+					/* guard against infinite loop:  "?$"
+					 * or "?.*"
+					 */
 					if (tst == got)
 						break;
-					else if (tst == 0)
-						tst = got;
+					tst = got;
 				}
 				if (end)
 					last++;
