@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.499 2003/03/08 15:51:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.501 2003/03/17 23:12:21 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -34,6 +34,7 @@
 #include	"nefsms.h"
 
 #include	<assert.h>
+#include	<ctype.h>
 
 #if OPT_LOCALE
 #include	<locale.h>
@@ -49,7 +50,6 @@
 #define sys_isupper(n)  iswupper(n)
 #define sys_isxdigit(n) iswxdigit(n)
 #else
-#include	<ctype.h>
 #define sys_iscntrl(n)  iscntrl(n)
 #define sys_isdigit(n)  isdigit(n)
 #define sys_islower(n)  islower(n)
@@ -964,7 +964,7 @@ no_memory(const char *s)
 #define setTxtValue(vp, value) vp->v.p = strmalloc(value)
 
 #define setINT(name,value)  case name: setIntValue(d,value); break
-#define setPAT(name,value)  case name: setPatValue(d,value); break;
+#define setPAT(name,value)  case name: setPatValue(d,value); break
 #define setTXT(name,value)  case name: setTxtValue(d,value); break
 
 #define DFT_FENCE_BEGIN "/\\*"
@@ -2213,6 +2213,8 @@ charinit(void)
 	if (sys_isxdigit(c))
 	    vl_chartypes_[c] |= vl_xdigit;
 #endif
+	vl_uppercase[c] = toupper(c);
+	vl_lowercase[c] = tolower(c);
     }
 #else /* ! OPT_LOCALE */
     (void) memset((char *) vl_chartypes_, 0, sizeof(vl_chartypes_));
@@ -2240,6 +2242,21 @@ charinit(void)
     for (c = 0xf8; c <= 0xff; c++)
 	vl_chartypes_[c] |= vl_upper;
 #endif
+
+    /*
+     * If you want to do this properly, compile-in locale support.
+     */
+    for (c = 0; c < N_chars; c++) {
+	vl_uppercase[c] = c;
+	vl_lowercase[c] = c;
+	if (isAlpha(c)) {
+	    if (isUpper(c)) {
+		vl_lowercase[c] = (c ^ DIFCASE);
+	    } else {
+		vl_uppercase[c] = (c ^ DIFCASE);
+	    }
+	}
+    }
 
     /* digits */
     for (c = '0'; c <= '9'; c++)

@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.344 2003/02/21 15:08:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.345 2003/03/17 23:23:38 tom Exp $
  */
 
 #include "estruct.h"
@@ -1296,7 +1296,7 @@ quickreadf(BUFFER *bp, int *nlinep)
     L_NUM lineno = 0;
     L_NUM nlines;
     RECORD_SEP rscode;
-    UCHAR *buffer;
+    UCHAR *buffer = 0;
     int rc = FIOSUC;
 
     TRACE((T_CALLED "quickreadf(buffer=%s, file=%s)\n", bp->b_bname, bp->b_fname));

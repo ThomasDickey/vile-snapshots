@@ -2,7 +2,7 @@
  * w32reg.c:  Winvile OLE registration code (currently only used for OLE
  *            automation).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32reg.c,v 1.7 2002/02/26 23:37:11 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32reg.c,v 1.8 2003/03/11 19:53:25 tom Exp $
  */
 
 #include "estruct.h"
@@ -550,7 +550,7 @@ static void
 make_editor_name(char *name /* must be long enough to hold result */)
 {
     strcpy(name, prognam);
-    *name = (char) toupper(*name);
+    *name = toUpper(*name);
 }
 
 

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.527 2003/02/23 20:32:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.529 2003/03/17 23:27:53 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1416,13 +1416,12 @@ typedef USHORT CHARTYPE;
    control characters.	They are xor-able values.  */
 #define	DIFCASE		0x20
 #define	DIFCNTRL	0x40
-#define toUpper(c)	((c)^DIFCASE)
-#define toLower(c)	((c)^DIFCASE)
+#define toUpper(c)	vl_uppercase[CharOf(c)]
+#define toLower(c)	vl_lowercase[CharOf(c)]
 #define tocntrl(c)	((c)^DIFCNTRL)
 #define toalpha(c)	((c)^DIFCNTRL)
 
-#define nocase_eq(bc,pc)	((bc) == (pc) || \
-			(isAlpha(bc) && (((bc) ^ DIFCASE) == (pc))))
+#define nocase_eq(bc,pc)	((bc) == (pc) || (toUpper(bc) == toUpper(pc)))
 
 #define ESC		tocntrl('[')
 #define BEL		tocntrl('G')	/* ascii bell character		*/
@@ -2705,7 +2704,7 @@ extern void _exit (int code);
 #define TYPECAST(type,ptr) (type*)((long)(ptr))
 
 /* structure-allocate, for linting */
-#ifdef	lint
+#if	0 /* this was useful for K&R lint, but we don't use it anymore */
 #define	castalloc(cast,nbytes)		((cast *)0)
 #define	castrealloc(cast,ptr,nbytes)	((ptr)+(nbytes))
 #define	typecalloc(cast)		((cast *)0)

@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.396 2002/05/15 01:15:42 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.397 2003/03/18 12:53:48 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1594,3 +1594,11 @@ characters that normally aren't part of filenames.
 The perl filter does not handle nested quote-like operators (see Perl's CPAN.pm
 for example).  Doing this would require making the xxx_PATTERN code recursive,
 on regions.  vim does not (I think cannot) handle this.
+
+-- 03-03-18 (tom)
+
+Recent improvements allow search/replace for strings with null characters, but
+the related variables $search and $replacepat assume strings are terminated by
+nulls.  It would be nice to reimplement those - doing this is a little
+complicated since it may impact the use of error_val for propagating error
+conditions in expression evaluation.

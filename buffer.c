@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.259 2003/02/16 17:23:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.260 2003/03/17 23:25:40 tom Exp $
  *
  */
 
@@ -851,7 +851,7 @@ nextbuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 		returnCode(swbuffer(bp));
 	}
     } else {			/* go forward thru args-list */
-	if ((stopatbp = curbp) == 0)
+	if (curbp == 0)
 	    (void) find_nth_created(1);
 	if (last_bp == 0)
 	    last_bp = find_b_hist(0);
@@ -890,9 +890,9 @@ prevbuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 		returnCode(swbuffer(bp));
 	}
     } else {			/* go backward thru args-list */
-	if ((stopatbp = curbp) == 0)
+	if (curbp == 0)
 	    (void) find_nth_created(1);
-	else if ((bp = find_nth_created(curbp->b_created - 1)) == 0)
+	else if (find_nth_created(curbp->b_created - 1) == 0)
 	    mlforce("[No more files to edit]");
 	returnCode(FALSE);
     }

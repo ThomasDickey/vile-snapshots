@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.371 2003/03/09 14:37:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.372 2003/03/17 23:14:21 tom Exp $
  *
  */
 
@@ -3689,8 +3689,9 @@ dbgwrite(const char *fmt,...)
     mlmsg(temp, &ap);
     va_end(ap);
     beginDisplay();
-    while (term.getch() != '\007')
-	/* EMPTY */ ;
+    while (term.getch() != '\007') {
+	;
+    }
     endofDisplay();
 }
 

@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.118 2003/03/11 00:21:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.119 2003/03/11 20:01:33 tom Exp $
  *
  */
 
@@ -773,7 +773,7 @@ static int
 _to_lower(int c)
 {
     if (isUpper(c))
-	return c ^ DIFCASE;
+	return toLower(c);
     return -1;
 }
 
@@ -781,15 +781,19 @@ static int
 _to_upper(int c)
 {
     if (isLower(c))
-	return c ^ DIFCASE;
+	return toUpper(c);
     return -1;
 }
 
 static int
 _to_caseflip(int c)
 {
-    if (isAlpha(c))
-	return c ^ DIFCASE;
+    if (isAlpha(c)) {
+	if (isUpper(c))
+	    return toLower(c);
+	else
+	    return toUpper(c);
+    }
     return -1;
 }
 

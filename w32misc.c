@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.40 2002/12/23 02:10:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.41 2003/03/11 19:53:02 tom Exp $
  */
 
 #include "estruct.h"
@@ -209,8 +209,8 @@ mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
     shell        = get_shell();
     len          = strlen(shell);
     bourne_shell = (len >= 2 &&
-                    tolower(shell[len - 2]) == 's' &&
-                    tolower(shell[len - 1]) == 'h')
+                    toLower(shell[len - 2]) == 's' &&
+                    toLower(shell[len - 1]) == 'h')
                            ||
                    (len >= SHEXE_LEN &&
                     stricmp(shell + len - SHEXE_LEN, SHEXE) == 0);
@@ -221,7 +221,7 @@ mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
         /* Now check for csh lookalike. */
         bourne_shell = ! (
                            (len >= 3 &&
-                           tolower(shell[len - 3]) == 'c')
+                           toLower(shell[len - 3]) == 'c')
                                     ||
                            (len >= CSHEXE_LEN &&
                             stricmp(shell + len - CSHEXE_LEN, CSHEXE) == 0)
