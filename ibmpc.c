@@ -6,7 +6,7 @@
  * Modified by Pete Ruczynski (pjr) for auto-sensing and selection of
  * display type.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.95 2000/01/15 01:01:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.96 2001/02/13 23:48:06 tom Exp $
  *
  */
 
@@ -45,8 +45,8 @@
 
 #if CC_DJGPP
 #define FAR_POINTER(s,o) (0xe0000000 + s*16 + o)
-#define FP_SEG(a)	((unsigned long)(a) >> 4L)
-#define FP_OFF(a)	((unsigned long)(a) & 0x0fL)
+#define FP_SEG(a)	((ULONG)(a) >> 4L)
+#define FP_OFF(a)	((ULONG)(a) & 0x0fL)
 #define	MONOADDR	0xb000		/* MONO screen memory */
 #define	OTHERADDR	0xb800		/* CGA,EGA,VGA screen memory */
 #endif
@@ -718,10 +718,10 @@ ibmopen(void)
 			}
 			driver->rows = buffer.num_rows;
 #if CC_DJGPP
-			{ u_long staticinfop;
+			{ ULONG staticinfop;
 			static_VGA_info static_info;
-			staticinfop = ((u_long)buffer.static_info & 0xffffL);
-			staticinfop += (((u_long)buffer.static_info >> 12) &
+			staticinfop = ((ULONG)buffer.static_info & 0xffffL);
+			staticinfop += (((ULONG)buffer.static_info >> 12) &
 						0xffff0L);
 			dosmemget( staticinfop, sizeof(static_info),
 					&static_info);
@@ -731,8 +731,8 @@ ibmopen(void)
 			{
 			static_VGA_info __far *staticinfop;
 			staticinfop = MK_FP (
-			((unsigned long)(buffer.static_info) >> 16) & 0xffffL,
-			((unsigned long)(buffer.static_info)      ) & 0xffffL
+				((ULONG)(buffer.static_info) >> 16) & 0xffffL,
+				((ULONG)(buffer.static_info)      ) & 0xffffL
 				);
 			allowed_vres = staticinfop->text_scanlines;
 			}

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.460 2001/01/21 23:07:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.465 2001/02/14 01:10:10 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -395,8 +395,19 @@
 				   ']]' and '[[' be stuttered?  they must be
 				   stuttered in real vi, I prefer them not
 				   to be */
-#define OPT_ICURSOR	0	/* use an insertion cursor if possible */
 #define OPT_W32PIPES    SYS_WINNT /* Win32 pipes */
+
+/*
+ * use an insertion cursor if possible
+ *
+ * NOTE:  OPT_ICURSOR is _only_ supported by borland.c for a PC build and
+ * for either win32 flavor.
+ */
+#if SYS_WINNT
+# define OPT_ICURSOR    1
+#else
+# define OPT_ICURSOR    0
+#endif
 
 #ifndef OPT_EXEC_MACROS		/* total numbered macros (see mktbls.c) */
 #if SMALLER
@@ -405,10 +416,7 @@
 #define OPT_EXEC_MACROS 40
 #endif
 #endif
-				/* force buffers to be unique */
 
-  /* NOTE:  OPT_ICURSOR is _only_ supported by borland.c for a PC build
-     and ntconio.c for a win32 build!! */
 #define OPT_TITLE	(SYS_WINNT | SYS_UNIX)	/* use a window title */
 
 /* the "working..." message -- we must have the alarm() syscall, and
@@ -1031,8 +1039,8 @@ typedef UINT WATCHTYPE;
 /*
  * directions for the scan routines.
  */
-#define	FORWARD	0
-#define REVERSE	1
+#define	FORWARD	TRUE
+#define REVERSE	FALSE
 
 	/* nonfatal codes */
 #define FIOBAD  -1			/* File I/O, truncation		*/
@@ -1177,6 +1185,7 @@ typedef enum {
 #define vl_scrtch   chrBIT(vl_SCRTCH)	/* legal in scratch-buffer names */
 #define vl_shpipe   chrBIT(vl_SHPIPE)	/* legal in shell/pipe-buffer names */
 #define vl_xdigit   chrBIT(vl_XDIGIT)	/* hex digit */
+#define isXDigit(c)	istype(vl_xdigit, c)
 
 #define	SCREEN_STRING (vl_pathn|vl_scrtch|vl_shpipe)
 typedef	ULONG CHARTYPE;
@@ -1201,11 +1210,11 @@ typedef USHORT CHARTYPE;
 #define isPunct(c)	istype(vl_punct, c)
 #define isSpace(c)	istype(vl_space, c)
 #define isUpper(c)	istype(vl_upper, c)
-#define isXDigit(c)	istype(vl_xdigit, c)
 
 #define isbackspace(c)	(istype(vl_bspace, c) || (c) == backspc)
 #define isfence(c)	istype(vl_fence, c)
 #define isident(c)	istype(vl_ident, c)
+#define isqident(c)	istype(vl_qident, c)
 #define islinespecchar(c)	istype(vl_linespec, c)
 #define ispath(c)	istype(vl_pathn, c)
 #define iswild(c)	istype(vl_wild, c)
@@ -1314,8 +1323,8 @@ typedef	struct	vl_itbuff	{
 typedef	int		L_NUM;		/* line-number */
 typedef	int		C_NUM;		/* column-number */
 typedef	struct {
-    unsigned short flgs;
-    unsigned short cook;
+    USHORT flgs;
+    USHORT cook;
 } L_FLAG;		/* LINE-flags */
 
 typedef	ULONG		CMDFLAGS;	/* CMDFUNC flags */
@@ -1383,7 +1392,7 @@ typedef struct	LINE {
 	    L_FLAG	l_flg;		/* flags for undo ops		*/
 	} l;
 #if OPT_LINE_ATTRS
-	unsigned char  *l_attrs;	/* indexes into the line_attrs
+	UCHAR  *l_attrs;	/* indexes into the line_attrs
 	                                   hash table */
 #endif
 }	LINE;

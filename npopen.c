@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.82 2000/05/29 20:53:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.83 2001/02/16 22:33:59 tom Exp $
  *
  */
 
@@ -88,6 +88,8 @@ static void append_libdir_to_path(void)
 			lsprintf(tmp, "PATH=%s", env);
 			putenv(tmp);
 			TRACE(("putenv %s\n", tmp));
+		} else {
+			free(env);
 		}
 	}
 }

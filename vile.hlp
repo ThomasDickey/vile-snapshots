@@ -368,6 +368,13 @@ Shell Access
 
 	On systems supporting job control, ^Z (or ":stop") will suspend vile.
 
+	The "set-environment-variable" (or "setenv") command can be used to
+	export new or changed environment values to spawned programs.
+	(Note that this might or might not affect the operation of vile
+	features that are themselves controlled by environment variables,
+	since those variables may only be checked once at the time that
+	vile is started.)
+
 	The :cd and :pwd commands are of course supported.  Unlike vi,
 	filenames will track their directory of origin, so you can't simply
 	edit a file in one directory, cd to another, and write it.  You
@@ -1477,8 +1484,6 @@ Editor modes
 		is made in forming a completion.  "delayed" will cause vile
 		to wait until TAB is pressed a second time before popping
 		up the completion choices.  (U)
-
-	popup-menu Enables/disables the popup menu in winvile.  (U)
 
 	popup-msgs (pm) When enabled, vile pops up the [Messages] buffer
 		showing the text that was written to the message line.
@@ -3536,7 +3541,9 @@ Syntax coloring
 
 	Users should take these additional steps:
 
-	1) add "source filters.rc" to their $HOME/.vilerc startup files.
+	1) add the following to their $HOME/.vilerc startup files:
+
+	    source "filters.rc"
 
 	2) execute these shell commands (as necessary):
 
@@ -3562,7 +3569,9 @@ Syntax coloring
 
 	These additional steps are required:
 
-	1) add "source filters.rc" to the $HOME/.vilerc startup file.
+	1) add the following to the $HOME/.vilerc startup files:
+
+	    source "filters.rc"
 
 	2) execute these shell commands (as necessary):
 
@@ -3637,7 +3646,7 @@ Syntax coloring
 
 	6) edit your startup file (vile.rc or .vilerc) and add this line:
 
-		source filters.rc
+		source "filters.rc"
 
 	7) copy filters/vile.key to COLORDIR/vile.keywords (note name change).
 
@@ -3814,7 +3823,7 @@ Syntax coloring
 	- copy filters/vile-spell-filt to COLORDIR
 	- add this line to your startup file:
 
-		source COLORDIR/filters.rc
+		source "COLORDIR/filters.rc"
 
 	Spell.rc installs ^X-i as the keybinding that initiates spell
 	checking.
@@ -3841,7 +3850,7 @@ Filtering "man" pages
 	manpage.rc may be either incorporated verbatim into your .vilerc
 	file or may be read from your .vilerc as follows:
 
-		source ~/manpage.rc
+		source "~/manpage.rc"
 
 	This assumes that you have moved the manpage.rc file to your home
 	directory.  If you do all of this but use vile rather than xvile,
@@ -4910,6 +4919,36 @@ Win32 specifics
 			Note:  this mode is applicable only when w32pipes
 			is set.  (U)
 
+	icursor		denotes a string that configures the characteristics
+			of an insertion cursor.
+
+			With respect to console vile, this string either
+			specifies a fixed, block cursor height or else sets
+			the block cursor heights in the editor's insertion
+			and command modes.  Argument syntax:
+
+			    "<fixed_block_height>"
+				    or
+			    "<insmode_height>,<cmdmode_height>"
+
+			The valid range of <fixed_block_cursor_height> is
+			0-100 (%).  Specifying 0 reverts to the cursor
+			height in effect at editor invocation.  The valid
+			range of <insmode_height> and <cmdmode_height> is
+			1-100.
+
+			With respect to winvile, this string specifies an
+			integer in the range 0-2, which selects one of the
+			following styles:
+
+			    0 -> fixed block cursor
+			    1 -> cmd mode = block cursor
+				 ins mode = vertical bar
+			    2 -> cmd mode = vertical bar
+		                 ins mode = block cursor (U)
+
+	popup-menu	Enables/disables the popup menu in winvile.  (U)
+
 	scroll-pause	An integer indicating the time in milliseconds to
 			wait after scrolling the display.  A value of zero,
 			the default, disables this mode.  This mode is
@@ -4919,11 +4958,33 @@ Win32 specifics
 			HW).  Typical values, if required, are 20-80
 			(msec).  (U)
 
+	swap-title	If set, the editor displays its title as:
+			    <current buffer name> - <editor name>
+			The swapped order is especially useful under limited
+			screen real estate conditions. (U)
+
 	w32pipes	See discussion of pipes above.  (U)
+
+	Configuring both editors
+	------------------------
+	Some vile commands and modes apply only to winvile and some only to
+	console vile.  If you plan to run both winvile and console vile in
+	the context of a single startup file, you'll need to include code
+	similar to this in vile.rc:
+
+	    ~if &sequal $progname "winvile"
+		set-variable $font "r_ansi,8"
+		setv $pagelen=39
+		set icursor="1"
+		; etc
+	    ~else
+		set icursor="35,100"
+		; etc
+	    ~endif
 
 	Windows 95/98 Considerations
 	----------------------------
-	Refer to the file doc\w32modes.doc for a discussion of the optimum
+	Refer to the file doc/w32modes.doc for a discussion of the optimum
 	settings of force-console and w32pipes.
 
 
@@ -5208,6 +5269,6 @@ Problems
 		announce-request@vile.cx
 		vile-announce-request@foxharp.boston.ma.us
 
-Copyright 1995-2000 by Paul Fox, Tom Dickey, and Kevin Buettner
+Copyright 1995-2001 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.511 2001/01/21 23:07:22 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.513 2001/02/16 21:23:46 pgf Exp $

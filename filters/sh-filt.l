@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.40 2001/01/19 23:39:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.41 2001/01/28 23:47:06 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -179,18 +179,18 @@ INTEGER		[-+]?([0-9]+)
 			    }
 			}
 <HEREDOC>^[\t]*{QIDENT}$ {
+			    int used = 0;
 			    if (strip_tabs) {
 				char *next = skip_blanks(yytext);
 				flt_puts(yytext, next - yytext, "");
-				yyleng -= (next - yytext);
-				yytext = next;
+				used = (next - yytext);
 			    }
-			    if (got_here(yytext, yyleng)) {
+			    if (got_here(yytext + used, yyleng - used)) {
 				flt_bfr_finish();
 				BEGIN(NORMAL);
 				strip_tabs = 0;
 			    } else {
-				flt_bfr_append(yytext, yyleng);
+				flt_bfr_append(yytext + used, yyleng - used);
 			    }
 			}
 <HEREDOC>[^\n\$]+	{ flt_bfr_append(yytext, yyleng); }

@@ -57,7 +57,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.23 2000/11/04 11:24:06 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.25 2001/02/18 00:33:28 tom Exp $
  */
 
 #include <windows.h>
@@ -262,7 +262,7 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
                 }
                 handles[0] = (HANDLE) _get_osfhandle(tmpin_fd);
             }
-            if (! (*fr = fdopen(rp[0], "r")))
+            if ((*fr = fdopen(rp[0], "r")) == 0)
                 break;
         }
         if (fw)
@@ -283,7 +283,7 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
             wp[0] = BAD_FD;
             if (! fr)
                 handles[1] = handles[2] = GetStdHandle(STD_OUTPUT_HANDLE);
-            if (! (*fw = fdopen(wp[1], "w")))
+            if ((*fw = fdopen(wp[1], "w")) == 0)
                 break;
         }
         rc = (exec_shell(cmd,
@@ -359,7 +359,7 @@ w32_npclose(FILE *fp)
     (void) fclose(fp);
     if (proc_handle != BAD_PROC_HANDLE)
     {
-        (void) _cwait(&term_status, (int) proc_handle, 0);
+        (void) cwait(&term_status, (int) proc_handle, 0);
         (void) CloseHandle(proc_handle);
         proc_handle = BAD_PROC_HANDLE;
     }

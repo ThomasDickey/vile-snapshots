@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.140 2000/12/06 11:38:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.141 2001/02/13 23:55:03 tom Exp $
  *
  */
 
@@ -24,7 +24,7 @@
 #include	"estruct.h"
 #include	"edef.h"
 
-#define roundlenup(n) ((n+NBLOCK-1) & (unsigned)~(NBLOCK-1))
+#define roundlenup(n) ((n+NBLOCK-1) & (UINT)~(NBLOCK-1))
 
 static	int	doput(int f, int n, int after, REGIONSHAPE shape);
 static	int	ldelnewline (void);
@@ -382,7 +382,7 @@ linsert(int n, int c)
 		(void)memset(&ntext[doto],   c, (SIZE_T)n);
 		if (lp1->l_text) {
 #if OPT_LINE_ATTRS
-			unsigned char *l_attrs = lp1->l_attrs;
+			UCHAR *l_attrs = lp1->l_attrs;
 			lp1->l_attrs = 0;	/* momentarily detach */
 #endif
 			(void)memcpy(&ntext[doto+n], &lp1->l_text[doto],

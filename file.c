@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.273 2001/01/06 12:43:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.275 2001/02/18 00:49:48 tom Exp $
  */
 
 #include	"estruct.h"
@@ -13,6 +13,10 @@
 
 #if SYS_WINNT
 #include	<io.h>			/* for mktemp */
+#include	<direct.h>		/* for mkdir */
+#define	vl_mkdir(path,mode) mkdir(path)
+#else
+#define	vl_mkdir(path,mode) mkdir(path,mode)
 #endif
 
 static	int	bp2swbuffer(BUFFER *bp, int ask_rerun, int lockfl);
@@ -561,8 +565,8 @@ const char *fname,		/* file name to find */
 int ok_to_ask,
 int cmdline)
 {
-	register BUFFER *bp = 0;
-	register int	s;
+	BUFFER *bp;
+	int	s;
 	char bname[NBUFN];	/* buffer name to put file */
 	char nfname[NFILEN];	/* canonical form of 'fname' */
 	FUID fuid;
@@ -633,6 +637,8 @@ int cmdline)
 		ch_fname(bp, nfname);
 		if (have_fuid)
 			fileuid_set(bp, &fuid);
+	} else {
+		bp = 0;
 	}
 	return bp;
 }
@@ -706,7 +712,7 @@ getfile(
 char *fname,		/* file name to find */
 int lockfl)		/* check the file for locks? */
 {
-	register BUFFER *bp = 0;
+	BUFFER *bp;
 
 	if (fname == 0 || *fname == EOS)
 		return no_file_found();
@@ -2081,7 +2087,7 @@ create_save_dir(char *dirnam)
 		    (void)pathcat(dirnam, tbl[n], "vileDXXXXXX");
 		    (void)mktemp(dirnam);
 		    /* on failure, keep going */
-		    if(mkdir(dirnam,0700) == 0)
+		    if (vl_mkdir(dirnam, 0700) == 0)
 			    return TRUE;
 	    }
     }

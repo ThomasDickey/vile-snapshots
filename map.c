@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.89 1999/12/24 00:59:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.90 2001/02/15 23:15:06 tom Exp $
  *
  */
 
@@ -109,7 +109,7 @@ static void
 makemaplist(int dummy GCC_UNUSED, void *mapp)
 {
     TBUFF *lhsstr = 0;
-    struct maprec **lhsstack = 0;
+    struct maprec **lhsstack;
     struct maprec *mp = (struct maprec *) mapp;
     int footnote = 0;
     ALLOC_T depth = 0;

@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.148 2001/01/03 23:40:24 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.149 2001/02/16 10:30:58 tom Exp $
  *
  */
 
@@ -350,7 +350,7 @@ ffwopen(char *fn, int forced)
 int
 ffaccess(char *fn, int mode)
 {
-	int status = FALSE;
+	int status;
 #if HAVE_ACCESS
 	/* these were chosen to match the SYSV numbers, but we'd rather use
 	 * the symbols for portability.
@@ -519,17 +519,17 @@ ffexists(char *p)
 int
 ffread(char *buf, long len)
 {
-	int result = 0;
+	int result;
 #if SYS_VMS
+	int got;
 	/*
 	 * If the input file is record-formatted (as opposed to stream-lf, a
 	 * single read won't get the whole file.
 	 */
-	while (len > 0) {
-		int	this = read(fileno(ffp), buf+result, len-result);
-		if (this <= 0)
+	for (result = 0; len > 0; result += got) {
+		got = read(fileno(ffp), buf+result, len-result);
+		if (got <= 0)
 			break;
-		result += this;
 	}
 	fseek (ffp, len, 1);	/* resynchronize stdio */
 #else

@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.161 2001/01/06 12:34:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.163 2001/02/18 00:20:00 tom Exp $
  *
  */
 
@@ -166,11 +166,11 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 		 * or else was launched as a true Win32 app (has no console
 		 * env).  The latter case requires that CreateProcess() is
 		 * called in such a way that a console is guaranteed to be
-		 * allocated in the editor's behalf.  
+		 * allocated in the editor's behalf.
 		 *
 		 * The net result of the following call to w32_CreateProcess()
 		 * is that the spawned shell runs in its own process, while
-		 * winvile regains control immediately (i.e., there is no 
+		 * winvile regains control immediately (i.e., there is no
 		 * wait for the spawned shell to exit).
 		 */
 		w32_CreateProcess(shell, TRUE);
@@ -728,7 +728,7 @@ filterregion(void)
 	     * region to write pipe.
 	     */
 
-	    if (_beginthread(write_kreg_to_pipe, 0, fw) == -1)
+	    if (_beginthread(write_kreg_to_pipe, 0, fw) == (unsigned long) -1)
 	    {
 		mlforce("[Can't create Win32 write pipe]");
 		(void) fclose(fw);
@@ -800,7 +800,7 @@ open_region_filter(void)
 	     * region to write pipe.
 	     */
 
-	    if (_beginthread(write_region_to_pipe, 0, fw) == -1)
+	    if (_beginthread(write_region_to_pipe, 0, fw) == (unsigned long) -1)
 	    {
 		mlforce("[Can't create Win32 write pipe]");
 		(void) fclose(fw);
@@ -964,5 +964,29 @@ vms_system(register char *cmd)
 	if ((substatus&STS$M_SUCCESS) == 0)	/* Command failed.	*/
 		return (FALSE);
 	return AfterShell();
+}
+#endif
+
+#if HAVE_PUTENV
+int
+set_envvar(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+	static TBUFF *var, *val;
+	char *both;
+	int rc;
+
+	if ((rc = mlreply2("Environment variable: ", &var)) == ABORT)
+	    return (rc);
+
+	if ((rc = mlreply2("Value: ", &val)) == ABORT)
+	    return (rc);
+
+	both = typeallocn(char, tb_length(var) + tb_length(val));
+
+	lsprintf(both, "%s=%s", tb_values(var), tb_values(val));
+
+	putenv(both);  /* this will leak.  i think it has to. */
+
+	return TRUE;
 }
 #endif

@@ -1,11 +1,83 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20010217 (g)
+	> Clark Morgan:
+	+ rewrote much of the internals of winprint() and associated functions
+	  were for better clarity and documentation (for the next person who
+	  wanders through this code).  Corrected bugs and many FIXME's.
+	+ text selection printing is now supported.
+	+ if a formfeed is encountered in the text, the current page is
+	  ejected.
+	+ the "copies" and "collation" print dialog box options are now
+	  supported regardless of the associated printer driver's capabilities
+	  (or lack thereof).  The one exception is that uncollated text
+	  selection copies are not permitted unless the printer driver provides
+	  "native" multiple copy support.  In the event it's not possible to
+	  print uncollated text selection copies, a message box is displayed
+	  that notes the restriction and then offers a chance to continue with
+	  collated copies.
+	+ finish win32 copyright updates for 2001.
+	+ if winvile's ntgetch() ignores a WM_TIMER message, dispatch the
+	  message to a window proc that "cares".
+	+ noticed that when incanting ":!ls | less" from within winvile, the
+	  spawned console's close button is _not_ disabled if the shell
+	  modifies the console title (a la bash).  Fixed for win9x hosts.  I
+	  assume that the fix applies equally to NT and W2K.
+	+ added bulletproof "string to [unsigned] long" conversion routines to
+	  random.c (vl_atol and vl_atoul).
+	+ substantially changed the implementation of vile's insertion cursor
+	  interface.  Insertion cursor state changes are now handled in
+	  update().
+	+ added icursor (insertion cursor) mode for win32 hosts.
+	+ added a boolean swap-title mode (win32 only).  If set, the editor's
+	  title is displayed as "<buffer_name> - <editor_name>" instead of the
+	  usual "<editor_name> - <buffer_name>".  The former conforms with the
+	  behavior of many win32 apps and is also much more useful (from a
+	  screen real estate point of view) when many apps are resident in the
+	  task bar.
+	> Juan Carlos Gil Montoro <jcgil@gmv.es>
+	+ modify store_tag() function in tags.c to accept tags with qident
+	  class rather than ident, that is, including colons as part of the
+	  identifier.
+	> Paul Fox:
+	+ add setenv (set-environment-variable) command.
+	> Tom Dickey:
+	+ make current_undo_cookie have the same type as LINE.l_undo_cookie to
+	  avoid spurious matches.
+	+ add checks to finderr.c to ensure that line and column number are
+	  actually numbers.
+	+ correct logic in finderr.c which did not work properly if pattern
+	  contained \( and \) delimiters.
+	+ add pattern to finderr.c for Solaris lex.
+	+ add patterns to finderr.c for Borland C++ (reported by Manish Bhobe
+	  <mjbhobe@vsnl.com>).
+	+ fix various minor things to make vile and winvile compile with
+	  Borland C++ 5.5
+	+ fix several unused-assignments reported by Borland C++ 5.5
+	+ make statevar.c more compact using new functions any_rw_BOOL(),
+	  any_ro_BOOL(), any_ro_INT() and any_ro_STR().
+	+ change ifdef's for vl_atol() and vl_atoul() to make them independent
+	  of __STDC__ value.
+	+ indent'd undo.c
+	+ reindented ntconio.c, ntwinio.c, random.c undo.c
+	+ change most instances of 'unsigned long' to ULONG, etc., for
+	  consistency.
+	+ workaround in configure script macros to allow testing with autoconf
+	  2.49c, which has broken the changequote() feature.
+	+ fix a check in CF_CURSES_LIBS which caused the configure script to
+	  assume it had found ncurses when it had not.
+	+ update config.guess/config.sub to subversions version, which finally
+	  includes OS/2 EMX.
+	+ fix sh-filt.l to compile with lex that uses yytext array rather
+	  than char* pointer, e.g., SCO OpenServer.
+
  20010122 (f)
 	> Tom Dickey:
 	+ several related changes to regexp.c:
 	  + add first cut of logic for bounds (but see buglist).
-	  + implement POSIX character classes and analogous escapes like \d
-	    to make them more vile-like.
+	  + implement POSIX character classes and analogous escapes like \d to
+	    make them more vile-like (prompted by discussion with George
+	    Eccles).
 	  + remove fallback for strcspn().
 	  + indent'd
 	+ work around NetBSD 1.5's use of MK symbol in curses.h (reported by

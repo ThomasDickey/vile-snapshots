@@ -564,7 +564,7 @@ api_motion(VileBuf *vbp, char *mstr)
     char *mp;
     int   c, f, n, s;
     int status;
-    int saved_clexec, saved_no_echo, saved_no_msgs, saved_isnamedcmd;
+    int saved_clexec, saved_vl_echo, saved_vl_msgs, saved_isnamedcmd;
 
     if (mstr == NULL)
 	return FALSE;
@@ -572,13 +572,13 @@ api_motion(VileBuf *vbp, char *mstr)
     status  = TRUE;
 
     saved_clexec     = clexec;
-    saved_no_msgs    = no_msgs;
-    saved_no_echo    = no_echo;
+    saved_vl_msgs    = vl_msgs;
+    saved_vl_echo    = vl_echo;
     saved_isnamedcmd = isnamedcmd;
 
     clexec     = FALSE;		/* Not executing a command line */
-    no_msgs    = TRUE;		/* Don't display commands / arg counts */
-    no_echo    = TRUE;		/* Don't display input */
+    vl_msgs    = FALSE;		/* Don't display commands / arg counts */
+    vl_echo    = FALSE;		/* Don't display input */
     isnamedcmd = FALSE;		/* Not a named command */
 
 
@@ -628,8 +628,8 @@ api_motion(VileBuf *vbp, char *mstr)
     }
 
     clexec     = saved_clexec;
-    no_msgs    = saved_no_msgs;
-    no_echo    = saved_no_echo;
+    vl_msgs    = saved_vl_msgs;
+    vl_echo    = saved_vl_echo;
     isnamedcmd = saved_isnamedcmd;
 
     return status;

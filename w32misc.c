@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.29 2001/01/03 23:17:53 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.33 2001/02/18 01:19:50 tom Exp $
  */
 
 #include <windows.h>
@@ -25,7 +25,7 @@
 #define SHEXE_LEN        (sizeof(SHEXE) - 1)
 #define SHELL_C_LEN      (sizeof(" -c ") - 1)
 
-#undef  RECT			     /* FIXME: symbol conflict */
+#undef  RECT                         /* FIXME: symbol conflict */
 
 extern REGION *haveregion;
 
@@ -204,7 +204,7 @@ char *
 mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
 {
     int         alloc_len,
-                bourne_shell = 0, /* Boolean, T if user's shell has
+                bourne_shell,     /* Boolean, T if user's shell has
                                    * appearances of a Unix lookalike
                                    * bourne shell (e.g., sh, ksh, bash).
                                    */
@@ -349,7 +349,7 @@ w32_CreateProcess(char *cmd, int no_wait)
         {
             /* wait for shell process to exit */
 
-            (void) _cwait(&rc, (int) pi.hProcess, 0);
+            (void) cwait(&rc, (int) pi.hProcess, 0);
         }
         (void) CloseHandle(pi.hProcess);
         (void) CloseHandle(pi.hThread);
@@ -539,7 +539,8 @@ w32_system_winvile(const char *cmd, int *pressret)
 #define PRESS_ANY_KEY "\n[Press any key to continue]"
 
     char                 *cmdstr;
-    int                  no_shell, freestr, rc = -1;
+    HWND                 hwnd;
+    int                  no_shell, freestr, close_disabled = FALSE, rc = -1;
     PROCESS_INFORMATION  pi;
     SECURITY_ATTRIBUTES  sa;
     STARTUPINFO          si;
@@ -593,6 +594,28 @@ w32_system_winvile(const char *cmd, int *pressret)
 
         /* don't let signal in dynamic console kill winvile */
         ignore_signals();
+
+        /*
+         * If the spawned console's close button is pressed, both the
+         * console _and_ winvile are killed.  Not good.  Try to disable
+         * console close button before shell process is started, while the
+         * console title is still intact.  Once the shell starts running,
+         * it is free to change the console's title, and many will do so
+         * (e.g., bash).
+         */
+        Sleep(0);     /* yield processor so GDI can create console frame */
+        if ((hwnd = FindWindow(NULL, cmd)) != NULL)
+        {
+            /*
+             * Disable console close button using code borrowed from
+             * Charles Petzold.
+             */
+
+            (void) EnableMenuItem(GetSystemMenu(hwnd, FALSE),
+                                  SC_CLOSE,
+                                  MF_GRAYED);
+            close_disabled = TRUE;
+        }
     }
     if (CreateProcess(NULL,
                       cmdstr,
@@ -608,30 +631,31 @@ w32_system_winvile(const char *cmd, int *pressret)
         /* Success */
 
         DWORD        dummy;
-        HWND         hwnd;
-        int          i;
         INPUT_RECORD ir;
 
-        for (i = 0; i < 5; i++)
+        if (! close_disabled)
         {
-            if ((hwnd = FindWindow(NULL, cmd)) != NULL)
-            {
-                /*
-                 * If the spawned console's close button is pressed, both
-                 * the console _and_ winvile are killed.  Not good.
-                 * Prevent that using code borrowed from Charles Petzold.
-                 */
+            int i;
 
-                (void) EnableMenuItem(GetSystemMenu(hwnd, FALSE),
-                                      SC_CLOSE,
-                                      MF_GRAYED);
-                break;
+            /*
+             * If the spawned console's close button is pressed, both the
+             * console _and_ winvile are killed.  Not good.
+             */
+            for (i = 0; i < 5; i++)
+            {
+                if ((hwnd = FindWindow(NULL, cmd)) != NULL)
+                {
+                    (void) EnableMenuItem(GetSystemMenu(hwnd, FALSE),
+                                          SC_CLOSE,
+                                          MF_GRAYED);
+                    break;
+                }
+                Sleep(200);
             }
-            Sleep(200);
         }
         if (! no_shell)
         {
-            (void) _cwait(&rc, (int) pi.hProcess, 0);
+            (void) cwait(&rc, (int) pi.hProcess, 0);
             restore_signals();
             if (*pressret)
             {
@@ -877,7 +901,7 @@ parse_font_str(const char *fontstr, FONTSTR_OPTIONS *results)
 {
     const char    *cp, *tmp;
     char          *endnum, *facep;
-    unsigned long size;
+    ULONG          size;
 
     memset(results, 0, sizeof(*results));
     size  = 0;
@@ -1152,8 +1176,8 @@ void
 w32_center_window(HWND child_hwnd, HWND parent_hwnd)
 {
     int  w, h;
-    RECT crect,			/* child rect */
-         prect;			/* parent rect */
+    RECT crect,                 /* child rect */
+         prect;                 /* parent rect */
 
     GetWindowRect(parent_hwnd, &prect);
     GetWindowRect(child_hwnd, &crect);

@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.211 2001/01/06 12:28:57 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.212 2001/02/16 21:21:04 pgf Exp $
 #
 #
 
@@ -1420,6 +1420,10 @@ setfillcol	NONE
 	"set-fill-column"
 	'^X-f'
 	<set the fillcol setting to CNT.  same as \"set fillcol=NN\">
+set_envvar	NONE			HAVE_PUTENV
+	"setenv"
+	"set-environment-variable"
+	<set and export a process environment variable>
 multimotion	MOTION|NOMINI		OPT_SELECTIONS
 	"quoted-motion"			!FEWNAMES
 	'q'

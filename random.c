@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.243 2000/11/04 17:47:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.250 2001/02/18 00:19:40 tom Exp $
  *
  */
 
@@ -55,7 +55,7 @@
 static int display_dirstack(int);
 static int pushd_popd_active, dirs_add_active;
 
-/* 
+/*
  * Implement "dirstack" with an extensible array of pointers to char
  *
  * The top element of the stack is always understood to be <cwd>, but is
@@ -550,7 +550,7 @@ int
 forceblank(int f, int n)
 {
     register LINE *lp1;
-    register LINE *lp2 = 0;
+    register LINE *lp2;
     B_COUNT nld;
     B_COUNT n_arg;
     C_NUM nchar;
@@ -951,7 +951,7 @@ current_directory(int force)
 
 /* convert drive index to _letter_ */
 static int
-drive2char(unsigned d)
+drive2char(UINT d)
 {
     if (d >= 26) {
 	mlforce("[Illegal drive index %d]", d);
@@ -961,7 +961,7 @@ drive2char(unsigned d)
 }
 
 /* convert drive _letter_ to index */
-static unsigned
+static UINT
 char2drive(int d)
 {
     if (isAlpha(d)) {
@@ -980,7 +980,7 @@ curdrive(void)
 {
     int result;
 #if SYS_OS2
-    unsigned d;
+    UINT d;
 # if CC_CSETPP
     d = _getdrive();
 # else
@@ -1002,7 +1002,7 @@ setdrive(int d)
 # if CC_CSETPP
 	_chdrive(char2drive(d) + 1);
 # else
-	unsigned maxdrives;
+	UINT maxdrives;
 	_dos_setdrive(char2drive(d) + 1, &maxdrives);	/* 1 based */
 # endif
 #else
@@ -1151,7 +1151,7 @@ set_directory(const char *dir)
 #define CHANGE_FAILED "[Couldn't change to \"%s\"]"
 
     char exdir[NFILEN], *exdp, cdpathdir[NFILEN], tmp[NFILEN];
-    const char *cdpath = 0;
+    const char *cdpath;
 #if SYS_MSDOS || SYS_OS2
     int curd = curdrive();
 #endif
@@ -1440,7 +1440,7 @@ autocolor(void)
 #if OPT_SHELL
 
 /*
- * provide a mechanism to prevent set_directory() from updating 
+ * provide a mechanism to prevent set_directory() from updating
  * dirstack wdw/buffer.
  */
 static int
@@ -1831,7 +1831,7 @@ vl_dirs_add(int f GCC_UNUSED, int n GCC_UNUSED)
     } else
 	newdir[0] = '\0';
     if (rc == TRUE && newdir[0]) {
-	/* 
+	/*
 	 * add new dir to dir stack -- assuming it is a directory, which
 	 * might be accessible via CDPATH
 	 */
@@ -1855,3 +1855,100 @@ vl_dirs_add(int f GCC_UNUSED, int n GCC_UNUSED)
 }
 
 #endif /* OPT_SHELL */
+
+/*
+ * if ANSI C compiler available, convert a string to a long, trapping all
+ * possible conversion errors.
+ */
+long
+vl_atol(char *str, int base, int *failed)
+{
+    *failed = FALSE;
+
+#if defined(EDOM) && defined(ERANGE)
+    {
+	char *prem;
+	long rslt = 0;
+
+	str = skip_blanks(str);
+	if (!*str)
+	    *failed = TRUE;
+	else {
+	    set_errno(0);
+	    rslt = strtol(str, &prem, base);
+	    if (errno == EDOM || errno == ERANGE)
+		*failed = TRUE;
+	    else {
+		if (*(prem = skip_blanks(prem)) != EOS)
+		    *failed = TRUE;	/* trailing garbage */
+	    }
+	}
+	return (rslt);
+    }
+#else
+    /*
+     * too bad, so sad.  if this routine must be implemented using K&R,
+     * it should be doable with sscanf().
+     */
+    return atoi(str);
+#endif
+}
+
+/*
+ * if ANSI C compiler available, convert a string to an unsigned long,
+ * trapping all possible conversion errors.
+ */
+ULONG
+vl_atoul(char *str, int base, int *failed)
+{
+    *failed = FALSE;
+
+#if defined(EDOM) && defined(ERANGE)
+    {
+	char *prem;
+	ULONG rslt = 0;
+
+	str = skip_blanks(str);
+	if (!*str || *str == '+' || *str == '-')
+	    *failed = TRUE;
+	else {
+	    set_errno(0);
+	    rslt = strtoul(str, &prem, base);
+	    if (errno == EDOM || errno == ERANGE)
+		*failed = TRUE;
+	    else {
+		if (*(prem = skip_blanks(prem)) != EOS)
+		    *failed = TRUE;	/* trailing garbage */
+	    }
+	}
+	return (rslt);
+    }
+#else
+    /*
+     * too bad, so sad.  if this routine must be implemented using K&R,
+     * it should be doable with sscanf().
+     */
+    return atoi(str);
+#endif
+}
+
+#ifndef vl_stricmp
+/*
+ * Compare two strings ignoring case
+ */
+int
+vl_stricmp(const char *a, const char *b)
+{
+    int ch1, ch2, cmp;
+
+    for (;;) {
+	ch1 = CharOf(*a++);
+	ch2 = CharOf(*b++);
+	if (isLower(ch1)) ch1 = toUpper(ch1);
+	if (isLower(ch2)) ch2 = toUpper(ch2);
+	cmp = ch1 - ch2;
+	if (cmp != 0 || ch1 == EOS || ch2 == EOS)
+	    return cmp;
+    }
+}
+#endif

@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.64 2000/10/01 20:38:17 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.65 2001/02/18 00:26:52 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -62,7 +62,7 @@ CFG=vile
 !ENDIF
 
 # remove the "#" to get debugging info (and a larger executable)
-CC_DEBUG     = #$(cdebug)
+CC_DEBUG     = -W3 #$(cdebug)
 LD_DEBUG     = #$(ldebug)
 
 # Other vars

@@ -17,12 +17,12 @@
  * distributable status.  This version of vile is distributed under the
  * terms of the GNU Public License (see COPYING).
  *
- * Copyright (c) 1992-2000 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1992-2001 by Paul Fox and Thomas Dickey
  *
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.440 2001/01/21 23:07:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.443 2001/02/18 00:48:40 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -396,6 +396,7 @@ MainProgram(int argc, char *argv[])
 #endif
 	{
 
+#if !SYS_WINNT
 #if !DISP_X11
 #if SYS_UNIX
 		char	*tty = "/dev/tty";
@@ -404,6 +405,7 @@ MainProgram(int argc, char *argv[])
 		int	fd;
 #endif /* SYS_UNIX */
 #endif /* DISP_X11 */
+#endif /* !SYS_WINNT */
 		BUFFER	*lastbp = havebp;
 		int	nline = 0;
 
@@ -984,6 +986,12 @@ global_val_init(void)
 #ifdef GMDW32PIPES
 	set_global_g_val(GMDW32PIPES,	is_winnt()); /* use native pipes? */
 #endif
+#if SYS_WINNT && OPT_TITLE
+	set_global_g_val(GMDSWAPTITLE, FALSE);
+#endif
+#if OPT_ICURSOR
+	set_global_g_val_ptr(GVAL_ICURSOR, "0"); /* no insertion cursor */
+#endif
 #if SYS_WINNT && defined(DISP_NTWIN)
 	/* Allocate console before spawning piped process? */
 	set_global_g_val(GMDFORCE_CONSOLE, is_win95());
@@ -1269,7 +1277,7 @@ global_val_init(void)
 	append_to_path_list(&startup_path, HELP_LOC);
 #endif
 
-	if (!(s = getenv("VILE_LIBDIR_PATH")))
+	if ((s = getenv("VILE_LIBDIR_PATH")) == 0)
 	{
 #ifdef VILE_LIBDIR_PATH
 	    s = VILE_LIBDIR_PATH;

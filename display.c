@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.337 2000/12/04 11:35:56 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.341 2001/02/17 22:22:54 tom Exp $
  *
  */
 
@@ -13,6 +13,12 @@
 #include	"edef.h"
 #include	"pscreen.h"
 #include	"nefsms.h"
+
+#if OPT_TRACE > 1
+#define TRACE2(params) TRACE(params)
+#else
+#define TRACE2(params) /*nothing*/
+#endif
 
 #define vMAXINT ((int)((unsigned)(~0)>>1))	/* 0x7fffffff */
 #define vMAXNEG (-vMAXINT)			/* 0x80000001 */
@@ -146,10 +152,10 @@ right_num (char *buffer, int len, long value)
 static int
 dfputsn(OutFunc outfunc, const char *s, int n)
 {
-	register int c = 0;
-	register int l = 0;
+	int c;
+	int l = 0;
 
-	TRACE(("...str=%s\n", visible_buff(s, n, TRUE)));
+	TRACE2(("...str=%s\n", visible_buff(s, n, TRUE)));
 	if (s != 0) {
 		while ((n-- != 0) && ((c = *s++) != EOS)) {
 			(*outfunc)(c);
@@ -174,7 +180,7 @@ dfputi(OutFunc outfunc, UINT i, UINT r)
 {
 	int q;
 
-	TRACE(("...int=%d\n", i));
+	TRACE2(("...int=%d\n", i));
 
 	q = (i >= r) ? dfputi(outfunc, i/r, r) : 0;
 
@@ -190,7 +196,7 @@ dfputli(OutFunc outfunc, ULONG l, UINT r)
 {
 	int q;
 
-	TRACE(("...long=%ld\n", l));
+	TRACE2(("...long=%ld\n", l));
 
 	q = (l >= r) ? dfputli(outfunc, (l/r), r) : 0;
 
@@ -242,7 +248,7 @@ dofmt(const char *fmt, va_list *app)
 	UINT radix;
 	OutFunc outfunc = dfoutfn;  /* local copy, for recursion */
 
-	TRACE(("dofmt fmt='%s'\n", fmt));
+	TRACE2(("dofmt fmt='%s'\n", fmt));
 	while ((c = *fmt++) != 0 ) {
 		if (c != '%') {
 			(*outfunc)(c);
@@ -631,7 +637,7 @@ vtlistc(int c)
 static void
 vtputsn(const char *s, int n)
 {
-	int c = 0;
+	int c;
 	while (n-- > 0 && (c = *s++) != EOS)
 		vtputc(c);
 }
@@ -1106,8 +1112,7 @@ TypeAhead(int force)
  * screens the same.
  */
 int
-update(
-int force)	/* force update past type ahead? */
+update(int force  /* force update past type ahead? */)
 {
 	register WINDOW *wp;
 	int origrow, origcol;
@@ -1249,6 +1254,16 @@ int force)	/* force update past type ahead? */
 
 	if (updated)
 		term.cursorvis(TRUE);
+#if OPT_ICURSOR
+    {
+        static int old_insertmode = -1;
+
+        if (insertmode != old_insertmode) {
+            old_insertmode = insertmode;
+            term.icursor(insertmode);
+        }
+    }
+#endif
 	term.flush();
 	endofDisplay();
 	i_displayed = TRUE;
@@ -2873,9 +2888,7 @@ mlfs_skipfix(char **fsp)
 #endif
 
 static int
-modeline_modes(
-BUFFER *bp,
-char	**msptr)
+modeline_modes(BUFFER *bp, char **msptr)
 {
 	register char *ms = msptr ? *msptr : 0;
 	register SIZE_T mcnt = 0;
@@ -2920,9 +2933,7 @@ char	**msptr)
 }
 
 static int
-modeline_show(
-WINDOW *wp,
-int lchar)
+modeline_show(WINDOW *wp, int lchar)
 {
 	register int ic = lchar;
 	register BUFFER *bp = wp->w_bufp;
@@ -2945,9 +2956,6 @@ int lchar)
 				ic = 'O';
 		}
 #endif /* !defined(insertmode) */
-#if OPT_ICURSOR
-		term.icursor(ic != lchar);
-#endif
 	}
 	return ic;
 }
@@ -3020,8 +3028,8 @@ special_formatter(TBUFF **result, char *fs, WINDOW *wp)
     int fc;
     int lchar;
     int need_eighty_column_indicator;
-    int right_len = 0;
-    register int n;
+    int right_len;
+    int n;
 
     tb_init(result, EOS);
 
@@ -3081,7 +3089,8 @@ special_formatter(TBUFF **result, char *fs, WINDOW *wp)
 		    break;
 		case 'f' :
 		case 'F' : {
-		    char *p = 0;
+		    char *p;
+
 		    if (bp->b_fname != 0
 		     && (p = shorten_path(strcpy(temp,bp->b_fname), FALSE)) != 0
 		     && *p
@@ -3528,7 +3537,7 @@ void
 mlwrite(const char *fmt, ...)
 {
 	va_list ap;
-	if (global_b_val(MDTERSE) || kbd_replaying(FALSE) || no_msgs) {
+	if (global_b_val(MDTERSE) || kbd_replaying(FALSE) || !vl_msgs) {
 		if (!clhide)
 			bottomleft();
 		return;
@@ -3557,7 +3566,7 @@ mlprompt(const char *fmt, ...)
 {
 	va_list ap;
 	int osgarbf = sgarbf;
-	if (no_msgs) {
+	if (!vl_msgs) {
 		bottomleft();
 		return;
 	}
@@ -3803,6 +3812,8 @@ tprintf(const char *fmt, ...)
 		va_start(ap,fmt);
 		dofmt(fmt,&ap);
 		va_end(ap);
+
+		TRACE(("tprintf %.*s\n", llength(lback(DOT.l)), lback(DOT.l)->l_text));
 
 		b_clr_changed(bp);
 		curwp->w_traits = save_w_traits;

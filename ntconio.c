@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.59 2000/11/15 11:27:42 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.64 2001/02/18 00:48:58 tom Exp $
  *
  */
 
@@ -18,6 +18,8 @@
  */
 #undef DONT_USE_ON_WIN95
 
+#define MAX_CURBLK_HEIGHT 100	/* max cursor block height (%)  */
+
 #define NROW	128		/* Max Screen size.             */
 #define NCOL    256		/* Edit if you want to.         */
 #define	NPAUSE	200		/* # times thru update to pause */
@@ -29,7 +31,13 @@ static HANDLE hConsoleOutput;	/* handle to the console display */
 static HANDLE hOldConsoleOutput;	/* handle to the old console display */
 static HANDLE hConsoleInput;
 static CONSOLE_SCREEN_BUFFER_INFO csbi;
+static CONSOLE_CURSOR_INFO origcci;
+static BOOL origcci_ok;
 static WORD originalAttribute;
+static int icursor;		/* T -> enable insertion cursor       */
+static int icursor_cmdmode;	/* cmd mode cursor height             */
+static int icursor_insmode;	/* insertion mode  cursor height      */
+static int chgd_cursor;		/* must restore cursor height on exit */
 
 static int cfcolor = -1;	/* current forground color */
 static int cbcolor = -1;	/* current background color */
@@ -87,21 +95,11 @@ nticursor(int cmode)
 {
     CONSOLE_CURSOR_INFO cci;
 
-    switch (cmode) {
-    case -1:
-	cci.dwSize = 0;
-	cci.bVisible = FALSE;
-	break;
-    case 0:
-	cci.dwSize = 20;
+    if (icursor) {
 	cci.bVisible = TRUE;
-	break;
-    case 1:
-	cci.dwSize = 100;
-	cci.bVisible = TRUE;
-	break;
+	cci.dwSize = (cmode == 0) ? icursor_cmdmode : icursor_insmode;
+	SetConsoleCursorInfo(hConsoleOutput, &cci);
     }
-    SetConsoleCursorInfo(hConsoleOutput, &cci);
 }
 #endif
 
@@ -139,11 +137,12 @@ scflush(void)
 	coordCursor.X = ccol;
 	coordCursor.Y = crow;
 	WriteConsoleOutputCharacter(
-	    hConsoleOutput, linebuf, bufpos, coordCursor, &written
+				       hConsoleOutput, linebuf, bufpos,
+				       coordCursor, &written
 	    );
 	FillConsoleOutputAttribute(
-	    hConsoleOutput, AttrColor(cbcolor, cfcolor),
-	    bufpos, coordCursor, &written
+				      hConsoleOutput, AttrColor(cbcolor, cfcolor),
+				      bufpos, coordCursor, &written
 	    );
 	ccol += bufpos;
 	bufpos = 0;
@@ -180,11 +179,13 @@ nteeol(void)
     coordCursor.X = ccol;
     coordCursor.Y = crow;
     FillConsoleOutputCharacter(
-	hConsoleOutput, ' ', csbi.dwMaximumWindowSize.X - ccol,
-	coordCursor, &written);
+				  hConsoleOutput, ' ',
+				  csbi.dwMaximumWindowSize.X - ccol,
+				  coordCursor, &written);
     FillConsoleOutputAttribute(
-	hConsoleOutput, AttrColor(cbcolor, cfcolor),
-	csbi.dwMaximumWindowSize.X - ccol, coordCursor, &written);
+				  hConsoleOutput, AttrColor(cbcolor, cfcolor),
+				  csbi.dwMaximumWindowSize.X - ccol,
+				  coordCursor, &written);
 }
 
 /*
@@ -256,10 +257,11 @@ ntscroll(int from, int to, int n)
 	}
 	cnt *= csbi.dwMaximumWindowSize.X;
 	FillConsoleOutputCharacter(
-	    hConsoleOutput, ' ', cnt, coordCursor, &written);
+				      hConsoleOutput, ' ', cnt, coordCursor, &written);
 	FillConsoleOutputAttribute(
-	    hConsoleOutput, AttrColor(cbcolor, cfcolor), cnt,
-	    coordCursor, &written);
+				      hConsoleOutput, AttrColor(cbcolor,
+				      cfcolor), cnt,
+				      coordCursor, &written);
     }
 #endif
 }
@@ -365,11 +367,12 @@ nteeop(void)
 	+ (csbi.dwMaximumWindowSize.Y - crow - 1)
 	* csbi.dwMaximumWindowSize.X;
     FillConsoleOutputCharacter(
-	hConsoleOutput, ' ', cnt, coordCursor, &written
+				  hConsoleOutput, ' ', cnt, coordCursor, &written
 	);
     FillConsoleOutputAttribute(
-	hConsoleOutput, AttrColor(cbcolor, cfcolor), cnt,
-	coordCursor, &written
+				  hConsoleOutput, AttrColor(cbcolor,
+				  cfcolor), cnt,
+				  coordCursor, &written
 	);
 }
 
@@ -420,8 +423,8 @@ nthandler(DWORD ctrl_type)
 static void
 ntopen(void)
 {
-    CONSOLE_CURSOR_INFO oldcci, newcci;
-    BOOL oldcci_ok, newcci_ok;
+    CONSOLE_CURSOR_INFO newcci;
+    BOOL newcci_ok;
 
     TRACE(("ntopen\n"));
 
@@ -430,28 +433,38 @@ ntopen(void)
 
     hOldConsoleOutput = 0;
     hConsoleOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+    origcci_ok = GetConsoleCursorInfo(hConsoleOutput, &origcci);
+    if (origcci_ok && origcci.dwSize == MAX_CURBLK_HEIGHT) {
+	/*
+	 * if a 100% block height is fed back into the win32 console routines
+	 * on a win9x/winme host, the cursor is turned off.  win32 bug?
+	 */
+
+	origcci.dwSize--;
+    }
     GetConsoleScreenBufferInfo(hConsoleOutput, &csbi);
     if (csbi.dwMaximumWindowSize.Y !=
 	csbi.srWindow.Bottom - csbi.srWindow.Top + 1
 	|| csbi.dwMaximumWindowSize.X !=
 	csbi.srWindow.Right - csbi.srWindow.Left + 1) {
 	hOldConsoleOutput = hConsoleOutput;
-	oldcci_ok = GetConsoleCursorInfo(hConsoleOutput, &oldcci);
 	hConsoleOutput = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE,
-	    0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+						   0, NULL,
+						   CONSOLE_TEXTMODE_BUFFER, NULL);
 	SetConsoleActiveScreenBuffer(hConsoleOutput);
 	GetConsoleScreenBufferInfo(hConsoleOutput, &csbi);
 	newcci_ok = GetConsoleCursorInfo(hConsoleOutput, &newcci);
-	if (newcci_ok && oldcci_ok && newcci.dwSize != oldcci.dwSize) {
+	if (newcci_ok && origcci_ok && newcci.dwSize != origcci.dwSize) {
 	    /*
 	     * Ensure that user's cursor size prefs are carried forward
 	     * in the newly created console.
 	     */
 
-	    newcci.dwSize = oldcci.dwSize;
+	    newcci.dwSize = origcci.dwSize;
 	    (void) SetConsoleCursorInfo(hConsoleOutput, &newcci);
 	}
     }
+
     originalAttribute = csbi.wAttributes;
 
     crow = csbi.dwCursorPosition.Y;
@@ -469,6 +482,11 @@ static void
 ntclose(void)
 {
     TRACE(("ntclose\n"));
+    if (chgd_cursor) {
+	/* restore cursor */
+
+	(void) SetConsoleCursorInfo(hConsoleOutput, &origcci);
+    }
     scflush();
     ntmove(term.rows - 1, 0);
     nteeol();
@@ -572,7 +590,7 @@ decode_key_event(INPUT_RECORD * irp)
     if (!irp->Event.KeyEvent.bKeyDown)
 	return (NOKYMAP);
 
-    if ((key = (unsigned char) irp->Event.KeyEvent.uChar.AsciiChar) != 0)
+    if ((key = (UCHAR) irp->Event.KeyEvent.uChar.AsciiChar) != 0)
 	return key;
 
     for (i = 0; i < TABLESIZE(keyxlate); i++) {
@@ -589,8 +607,8 @@ decode_key_event(INPUT_RECORD * irp)
 	     */
 	    if (state &
 		(LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED
-		    | LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED
-		    | SHIFT_PRESSED)) {
+		 | LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED
+		 | SHIFT_PRESSED)) {
 		key = W32_KEY | keyxlate[i].windows;
 		if (state & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED))
 		    key |= W32_CTRL;
@@ -657,9 +675,9 @@ adjust_window(WINDOW *wp, COORD * current, COORD * latest)
  * understanding that the cursor might not be in the client rect (due to a
  * captured mouse).  The right way to do this is to call GetCursorPos() and
  * convert that info to a character cell location by performing some simple
- * computations based on the current font geometry, as is done in ntwinio.c . 
+ * computations based on the current font geometry, as is done in ntwinio.c .
  * However, I've not found a way to obtain the font used in a command
- * prompt's (aka DOS box's) client area (yes, I did try GetTextMetrics()). 
+ * prompt's (aka DOS box's) client area (yes, I did try GetTextMetrics()).
  * Without font info, other mechanisms are required.
  *
  * Note: GetMousePos() only returns accurate Y coordinate info, because
@@ -675,14 +693,14 @@ GetMousePos(POINT * result)
     ScreenToClient(hwnd, result);
     if (result->y < client_rect.top) {
 	/*
-	 * mouse is above the editor's client area, return a suitable 
+	 * mouse is above the editor's client area, return a suitable
 	 * character cell location that properly triggers autoscroll
 	 */
 
 	result->y = -1;
     } else if (result->y > client_rect.bottom) {
 	/*
-	 * mouse is below the editor's client area, return a suitable 
+	 * mouse is below the editor's client area, return a suitable
 	 * character cell location that properly triggers autoscroll
 	 */
 
@@ -691,7 +709,7 @@ GetMousePos(POINT * result)
 	/*
 	 * dragged mouse out of client rectangle on either the left or
 	 * right side.  don't know where the cursor really is, but it's
-	 * easy to forestall autoscroll by returning a legit mouse 
+	 * easy to forestall autoscroll by returning a legit mouse
 	 * coordinate within the current editor window.
 	 */
 
@@ -834,7 +852,7 @@ autoscroll_thread(void *unused)
  *   1) This function will not be called unless the LMB is down and the
  *      cursor is not being used to drage the mode line (enforced by caller).
  *   2) a LMB move within the current editor window selects a region of text.
- *      Later, when the user releases the LMB, that text is yanked to the 
+ *      Later, when the user releases the LMB, that text is yanked to the
  *      unnamed register (the yank code is not handled in this function).
  *
  * RETURNS
@@ -842,10 +860,10 @@ autoscroll_thread(void *unused)
  */
 static void
 mousemove(int *sel_pending,
-    COORD * first,
-    COORD * current,
-    MARK * lmbdn_mark,
-    int rect_rgn)
+	  COORD * first,
+	  COORD * current,
+	  MARK * lmbdn_mark,
+	  int rect_rgn)
 {
     int dummy;
 
@@ -871,7 +889,7 @@ mousemove(int *sel_pending,
 	    }
 	}
 	if (mouse_wp != row2window(current->Y)) {
-	    /* 
+	    /*
 	     * mouse moved into a different editor window or row2window()
 	     * returned a NULL ptr.
 	     */
@@ -889,7 +907,7 @@ mousemove(int *sel_pending,
 	    (void) update(TRUE);
 	(void) ReleaseMutex(hAsMutex);
     }
-    /* 
+    /*
      * Else either the worker thread abandonded the mutex (not possible as
      * currently coded) or timed out.  If the latter, something is
      * hung--don't do anything.
@@ -906,7 +924,7 @@ handle_mouse_event(MOUSE_EVENT_RECORD mer)
     COORD current, first, latest;
     MARK lmbdn_mark;		/* left mouse button down here */
     int sel_pending, state;
-    DWORD thisclick, status;
+    DWORD thisclick;
     UINT clicktime = GetDoubleClickTime();
 
     buttondown = FALSE;
@@ -985,8 +1003,8 @@ handle_mouse_event(MOUSE_EVENT_RECORD mer)
 			     */
 
 			    if (_beginthread(autoscroll_thread,
-				    0,
-				    NULL) == -1) {
+					     0,
+					     NULL) == (unsigned long) -1) {
 				(void) CloseHandle(hAsMutex);
 				mlforce("[Can't create autoscroll thread]");
 			    } else
@@ -1033,10 +1051,10 @@ handle_mouse_event(MOUSE_EVENT_RECORD mer)
 		}
 	    } else {
 		mousemove(&sel_pending,
-		    &first,
-		    &current,
-		    &lmbdn_mark,
-		    (mer.dwControlKeyState & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED))
+			  &first,
+			  &current,
+			  &lmbdn_mark,
+			  (mer.dwControlKeyState & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED))
 		    );
 	    }
 	    break;
@@ -1120,8 +1138,8 @@ ntgetch(void)
 
 	case WINDOW_BUFFER_SIZE_EVENT:
 	    newscreensize(
-		ir.Event.WindowBufferSizeEvent.dwSize.Y,
-		ir.Event.WindowBufferSizeEvent.dwSize.X
+			     ir.Event.WindowBufferSizeEvent.dwSize.Y,
+			     ir.Event.WindowBufferSizeEvent.dwSize.X
 		);
 	    GetConsoleScreenBufferInfo(hConsoleOutput, &csbi);
 	    continue;
@@ -1206,6 +1224,133 @@ ntcons_reopen(void)
 	newscreensize(temp.dwMaximumWindowSize.Y, temp.dwMaximumWindowSize.X);
     }
 }
+
+#if OPT_ICURSOR
+
+/* supported syntax is described in chgd_icursor() */
+static int
+parse_icursor_string(char *str, int *revert_cursor)
+{
+    int failed, rc = TRUE, tmp;
+    char *pinsmode, *pcmdmode;
+
+    *revert_cursor = FALSE;
+    pinsmode = str;
+    if ((pcmdmode = strchr(pinsmode, ',')) != NULL) {
+	/* vl_atoul won't like the delimiter... */
+
+	tmp = *pcmdmode;
+	*pcmdmode = '\0';
+    }
+    icursor_insmode = (int) vl_atoul(pinsmode, 10, &failed);
+    if (pcmdmode)
+	*pcmdmode = tmp;	/* delimiter  restored */
+    if (failed)
+	return (FALSE);
+    if (pcmdmode) {
+	icursor_cmdmode = (int) vl_atoul(pcmdmode + 1, 10, &failed);
+	if (failed)
+	    return (FALSE);
+    } else {
+	/* block mode syntax */
+
+	icursor_cmdmode = icursor_insmode;
+    }
+
+    /* semantic chks */
+    if (icursor_insmode == 0) {
+	if (!pcmdmode)
+	    *revert_cursor = TRUE;
+	else
+	    rc = FALSE;		/* 0% insmode cursor block heights not valid */
+	return (rc);
+    }
+    if (icursor_cmdmode == 0)
+	rc = FALSE;		/* 0% cmdmode cursor block heights not valid */
+    else {
+	if (icursor_cmdmode > MAX_CURBLK_HEIGHT ||
+	    icursor_insmode > MAX_CURBLK_HEIGHT) {
+	    rc = FALSE;
+	} else {
+	    /*
+	     * If a cursor height of 100 is selected, the Win32 console
+	     * routines turn off the cursor (at least they do on
+	     * win9x/winme hosts).
+	     */
+
+	    if (icursor_cmdmode == MAX_CURBLK_HEIGHT)
+		icursor_cmdmode--;
+	    if (icursor_insmode == MAX_CURBLK_HEIGHT)
+		icursor_insmode--;
+	}
+    }
+    return (rc);
+}
+
+/*
+ * user changed icursor mode
+ *
+ * Insertion cursor mode is a string that may be used to either set a fixed
+ * block cursor height or set the block cursor heights in insertion and
+ * command mode.  Supported syntax:
+ *
+ *     "<fixed_block_height>"
+ *
+ *              or
+ *
+ *     "<insmode_height>,<cmdmode_height>"
+ *
+ * The valid range of <fixed_block_cursor_height> is 0-100.  Specifying 0
+ * forces the editor to revert to the cursor height in effect when the
+ * editor was invoked.
+ *
+ * The valid range of <insmode_height> and <cmdmode_height> is 1-100.
+ */
+int
+chgd_icursor(VALARGS * args, int glob_vals, int testing)
+{
+    if (!testing) {
+	int revert_cursor;
+	char *val = args->global->vp->p;
+
+	if (!parse_icursor_string(val, &revert_cursor)) {
+	    mlforce("invalid icursor syntax");
+	    return (FALSE);
+	}
+	if (!revert_cursor) {
+	    chgd_cursor = TRUE;
+	    icursor = (icursor_insmode != icursor_cmdmode);
+	    if (icursor)
+		term.icursor(insertmode);
+	    else {
+		/* just set a block cursor */
+
+		CONSOLE_CURSOR_INFO cci;
+		cci.bVisible = TRUE;
+		cci.dwSize = icursor_cmdmode;
+		(void) SetConsoleCursorInfo(hConsoleOutput, &cci);
+	    }
+	} else {
+	    /*
+	     * user wants to disable previous changes made to cursor,
+	     * thereby reverting to cursor height in effect when the editor
+	     * was invoked.
+	     */
+
+	    if (chgd_cursor) {
+		/*
+		 * NB -- don't reset "chgd_cursor" here.  special cleanup
+		 * is required in ntclose().
+		 */
+
+		if (origcci_ok)
+		    (void) SetConsoleCursorInfo(hConsoleOutput, &origcci);
+	    }
+	}
+    }
+    return (TRUE);
+}
+#endif
 
 /*
  * Standard terminal interface dispatch table. None of the fields point into

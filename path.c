@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.103 2000/09/22 11:16:26 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.104 2001/02/15 23:00:34 tom Exp $
  *
  *
  */
@@ -277,7 +277,7 @@ unix_pathleaf(char *path)
 	register char *s = last_slash(path);
 	if (s == 0) {
 #if OPT_MSDOS_PATH
-		if (!(s = is_msdos_drive(path)))
+		if ((s = is_msdos_drive(path)) == 0)
 #endif
 		s = path;
 	} else
@@ -1967,7 +1967,7 @@ slconv(const char *f, char *t, char oc, char nc)
 		f++;
 		t++;
 	}
-	*t-- = EOS;
+	*t = EOS;
 
 	return retp;
 }

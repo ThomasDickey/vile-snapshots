@@ -16,7 +16,7 @@
  *
  *		ted, 01/01
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.76 2001/01/23 01:14:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.78 2001/02/15 23:01:42 tom Exp $
  *
  */
 
@@ -192,7 +192,7 @@ typedef enum {
 #ifdef isXDigit
 #define is_XDIGIT(c) isXDigit(c)
 #else
-#define is_XDIGIT(c) (isDigit(c) || isLower(c) && (c) - 'a' < 6 || isUpper(c) && (c) - 'A' < 6)
+#define is_XDIGIT(c) (isDigit(c) || (isLower(c) && (c) - 'a' < 6) || (isUpper(c) && (c) - 'A' < 6))
 #endif
 
 /*
@@ -670,7 +670,7 @@ regpiece(int *flagp, int at_bop)
     } else if (op == '?') {
 	encode_zero_or_one(ret);
     } else if (op == L_CURL) {
-	int lo = 0, hi = 0, value = 0, comma = 0;
+	int lo = 0, hi, value = 0, comma = 0;
 	while (*++regparse) {
 	    if (*regparse == R_CURL)
 		break;

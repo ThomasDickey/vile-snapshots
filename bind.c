@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.237 2000/11/11 01:49:13 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.239 2001/02/15 22:41:54 tom Exp $
  *
  */
 
@@ -412,7 +412,7 @@ key_to_bind(const CMDFUNC * kcmd)
     if (c >= 0) {
 	/* change it to something we can print as well */
 	outseq[0] = EOS;
-	if (!no_msgs)
+	if (vl_msgs)
 	    kbd_puts(kcod2prc(c, outseq));
 	hst_append_s(outseq, FALSE);
     } else {
@@ -458,7 +458,6 @@ unbindchar(BINDINGS * bs, int c)
     }
 
     /* nope, check special codes */
-    skbp = 0;
     for (skbp = 0; kbp->k_cmd; kbp++) {
 	if (!skbp && kbp->k_code == c)
 	    skbp = kbp;
@@ -506,7 +505,7 @@ unbind_any_key(BINDINGS * bs)
 	}
     }
 
-    if (!no_msgs)
+    if (vl_msgs)
 	kbd_puts(kcod2prc(c, outseq));
 
     if (unbindchar(bs, c) == FALSE) {
@@ -1909,7 +1908,7 @@ kbd_erase(void)
     WINDOW *savewp;
     MARK savemk;
 
-    if (no_echo || clhide)
+    if (!vl_echo || clhide)
 	return;
 
     beginDisplay();
@@ -1939,7 +1938,7 @@ kbd_erase_to_end(int column)
     WINDOW *savewp;
     MARK savemk;
 
-    if (no_echo || clhide)
+    if (!vl_echo || clhide)
 	return;
 
     beginDisplay();
@@ -2736,7 +2735,7 @@ rename_namebst(const char *oldname, const char *newname)
     char name[NBUFN];
 
     /* not a named procedure */
-    if (!(prior = btree_search(&namebst, oldname)))
+    if ((prior = btree_search(&namebst, oldname)) == 0)
 	return TRUE;
 
     /* remove the entry if the new name is not a procedure (bracketed) */

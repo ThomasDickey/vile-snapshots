@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.98 2001/01/04 23:56:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.103 2001/02/18 01:14:36 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -27,6 +27,8 @@
 
 #define FIXME_POSCHANGING 1	/* this doesn't seem to help */
 #define FIXME_RECUR_SB 0	/* I'm not sure this is needed */
+
+#define MAX_CURSOR_STYLE 2
 
 #if OPT_TRACE
 #define IGN_PROC(tag,name) \
@@ -102,6 +104,12 @@ static UINT nIDTimer = 0;
 static int nLineHeight = 10;
 static int vile_in_getfkey = 0;
 static int vile_resizing = FALSE;	/* rely on repaint_window if true */
+static int icursor,		/* T -> enable insertion cursor   */
+  icursor_style;		/* 1 -> cmdmode = block,
+				 *      insmode = vertical bar
+				 * 2 -> cmdmode = vertical bar
+				 *      insmode = block
+				 */
 
 #ifdef VILE_OLE
 static OLEAUTO_OPTIONS oa_opts;
@@ -295,14 +303,14 @@ TraceWindowRect(HWND hwnd)
     cols = RectToCols(wrect);
     rows = RectToRows(wrect);
     TRACE(("... (%3d,%3d) (%3d,%3d), window is %dx%d cells (%dx%d pixels)%s\n",
-	    wrect.top, wrect.left,
-	    wrect.bottom, wrect.right,
-	    rows,
-	    cols,
-	    RowToPixel(rows),
-	    ColToPixel(cols),
-	    IsZoomed(hwnd) ? " zoomed" : ""
-	));
+	   wrect.top, wrect.left,
+	   wrect.bottom, wrect.right,
+	   rows,
+	   cols,
+	   RowToPixel(rows),
+	   ColToPixel(cols),
+	   IsZoomed(hwnd) ? " zoomed" : ""
+	  ));
 }
 
 static void
@@ -315,13 +323,13 @@ TraceClientRect(HWND hwnd)
     cols = RectToCols(crect);
     rows = RectToRows(crect);
     TRACE(("... (%3d,%3d) (%3d,%3d), client is %dx%d cells (%dx%d pixels)\n",
-	    crect.top, crect.left,
-	    crect.bottom, crect.right,
-	    rows,
-	    cols,
-	    RowToPixel(rows),
-	    ColToPixel(cols)
-	));
+	   crect.top, crect.left,
+	   crect.bottom, crect.right,
+	   rows,
+	   cols,
+	   RowToPixel(rows),
+	   ColToPixel(cols)
+	  ));
 }
 
 #else
@@ -397,27 +405,27 @@ gui_resize(int cols, int rows)
 #endif
 
     TRACE(("... gui_resize -> (%d,%d) (%d,%d) main %dx%d, text %dx%d\n",
-	    wrect.top,
-	    wrect.left,
-	    wrect.bottom,
-	    wrect.right,
-	    main_high,
-	    main_wide,
-	    text_high,
-	    text_wide));
+	   wrect.top,
+	   wrect.left,
+	   wrect.bottom,
+	   wrect.right,
+	   main_high,
+	   main_wide,
+	   text_high,
+	   text_wide));
 
     MoveWindow(cur_win->main_hwnd,
-	wrect.left,
-	wrect.top,
-	main_wide,
-	main_high,
-	TRUE);
+	       wrect.left,
+	       wrect.top,
+	       main_wide,
+	       main_high,
+	       TRUE);
     MoveWindow(cur_win->text_hwnd,
-	0,
-	0,
-	text_wide,
-	text_high,
-	TRUE);
+	       0,
+	       0,
+	       text_wide,
+	       text_high,
+	       TRUE);
 
     TraceWindowRect(cur_win->main_hwnd);
     TraceClientRect(cur_win->main_hwnd);
@@ -463,9 +471,9 @@ AdjustPosChanging(HWND hwnd, WINDOWPOS * pos)
 	int high = AdjustedHeight(pos->cy);
 
 	TRACE(("...%s position %d,%d, resize from %d,%d to %d,%d\n",
-		IsZoomed(hwnd) ? " zoomed" : "",
-		pos->y, pos->x,
-		pos->cy, pos->cx, high, wide));
+	       IsZoomed(hwnd) ? " zoomed" : "",
+	       pos->y, pos->x,
+	       pos->cy, pos->cx, high, wide));
 	pos->cx = wide;
 	pos->cy = high;
     }
@@ -486,9 +494,9 @@ AdjustResizing(HWND hwnd, WPARAM fwSide, RECT * rect)
     int adjY = high - AdjustedHeight(high);
 
     TRACE(("AdjustResizing now (%d,%d) (%d,%d) (%dx%d pixels)\n",
-	    rect->top, rect->left, rect->bottom, rect->right,
-	    rect->bottom - rect->top,
-	    rect->right - rect->left));
+	   rect->top, rect->left, rect->bottom, rect->right,
+	   rect->bottom - rect->top,
+	   rect->right - rect->left));
 
     TraceWindowRect(hwnd);
     TraceClientRect(hwnd);
@@ -498,8 +506,8 @@ AdjustResizing(HWND hwnd, WPARAM fwSide, RECT * rect)
 	|| fwSide == WMSZ_BOTTOMLEFT)
 	rect->left += adjX;
     else if (fwSide == WMSZ_RIGHT
-	    || fwSide == WMSZ_TOPRIGHT
-	|| fwSide == WMSZ_BOTTOMRIGHT)
+	     || fwSide == WMSZ_TOPRIGHT
+	     || fwSide == WMSZ_BOTTOMRIGHT)
 	rect->right -= adjX;
 
     if (fwSide == WMSZ_TOP
@@ -507,13 +515,13 @@ AdjustResizing(HWND hwnd, WPARAM fwSide, RECT * rect)
 	|| fwSide == WMSZ_TOPRIGHT)
 	rect->top += adjY;
     else if (fwSide == WMSZ_BOTTOM
-	    || fwSide == WMSZ_BOTTOMLEFT
-	|| fwSide == WMSZ_BOTTOMRIGHT)
+	     || fwSide == WMSZ_BOTTOMLEFT
+	     || fwSide == WMSZ_BOTTOMRIGHT)
 	rect->bottom -= adjY;
 
     TRACE(("... AdjustResizing (%d,%d) (%d,%d) adjY:%d, adjX:%d\n",
-	    rect->top, rect->left, rect->bottom, rect->right,
-	    adjY, adjX));
+	   rect->top, rect->left, rect->bottom, rect->right,
+	   adjY, adjX));
 
     return TRUE;
 }
@@ -568,7 +576,7 @@ ResizeClient(void)
 	TRACE(("...ResizeClient %dx%d\n", h, w));
     } else {
 	TRACE(("ResizeClient ignored (h=%d, w=%d, vs %d x %d)\n",
-		h, w, term.rows, term.cols));
+	       h, w, term.rows, term.cols));
     }
 
     gui_resize(w, h);
@@ -596,14 +604,14 @@ SetRGBPalette(int f, int n)
     char prompt[NLINE + 1];
     char tstring[NLINE + 1];	/* string to add */
     const FSM_CHOICES *fp = name_to_choices("fcolor");
-    int code, red, green, blue;
+    int code;
     int count = 0;
     int status;			/* status return code */
     long value;
 
     *tstring = EOS;
     status = kbd_string("Color: ", tstring, sizeof(tstring), ' ',
-	KBD_NORMAL, fsm_complete);
+			KBD_NORMAL, fsm_complete);
     if (status != TRUE)
 	return (status);
 
@@ -645,9 +653,9 @@ int
 ResetRGBPalette(int f, int n)
 {
     int code;
-    int red = 0, green = 0, blue = 0;
+    int red, green, blue;
     int first = f ? n : 0;
-    int last = f ? n+1 : NCOLORS;
+    int last = f ? n + 1 : NCOLORS;
 
     for (code = first; code < last && code < NCOLORS; code++) {
 	red = green = blue = 0;
@@ -682,7 +690,6 @@ ResetRGBPalette(int f, int n)
 static COLORREF
 color_of(int code)
 {
-    COLORREF result = 0;
     code = ctrans[code & (NCOLORS - 1)];
 
     return PALETTERGB(RedValue[code], GreenValue[code], BlueValue[code]);
@@ -744,18 +751,11 @@ nt_set_colors(HDC hdc, VIDEO_ATTR attr)
     SetBkColor(hdc, bcolor);
 }
 
-#if OPT_ICURSOR
-static void
-nticursor(int cmode)
-{
-}
-#endif
-
 static int
 fhide_cursor(void)
 {
     TRACE(("fhide_cursor pos %#lx,%#lx (visible:%d, exists:%d)\n", ttrow,
-	    ttcol, caret_visible, caret_exists));
+	   ttcol, caret_visible, caret_exists));
     if (caret_visible) {
 	HideCaret(cur_win->text_hwnd);
 	caret_visible = 0;
@@ -770,7 +770,7 @@ fhide_cursor(void)
 static void
 fshow_cursor(void)
 {
-    int x, y;
+    int x, y, width;
     POINT z;
 
     if (caret_disabled		/* reject display during font-dialog */
@@ -779,7 +779,7 @@ fshow_cursor(void)
 	return;
 
     TRACE(("fshow_cursor pos %#lx,%#lx (visible:%d, exists:%d)\n", ttrow,
-	    ttcol, caret_visible, caret_exists));
+	   ttcol, caret_visible, caret_exists));
     x = ColToPixel(ttcol) + 1;
     y = RowToPixel(ttrow) + 1;
     if (caret_exists) {
@@ -790,8 +790,28 @@ fshow_cursor(void)
     }
 
     if (!caret_exists) {
+	width = nCharWidth;	/* assume block cursor */
+#if OPT_ICURSOR
+	if (icursor) {
+	    int vertbar = FALSE;
+
+	    if (insertmode) {
+		if (icursor_style == 1)
+		    vertbar = TRUE;
+	    } else {		/* command mode */
+		if (icursor_style == 2)
+		    vertbar = TRUE;
+	    }
+	    if (vertbar) {
+		if (width < 5)
+		    width = 2;
+		else
+		    width = 3;
+	    }
+	}
+#endif
 	TRACE(("...CreateCaret(%d,%d)\n", ttrow, ttcol));
-	CreateCaret(cur_win->text_hwnd, (HBITMAP) 0, nCharWidth, nLineHeight);
+	CreateCaret(cur_win->text_hwnd, (HBITMAP) 0, width, nLineHeight);
 	caret_exists = 1;
 	SetCaretPos(x, y);
 	ShowCaret(cur_win->text_hwnd);
@@ -799,15 +819,26 @@ fshow_cursor(void)
     }
 }
 
+#if OPT_ICURSOR
+static void
+nticursor(int unused)
+{
+    if (icursor && caret_visible) {
+	fhide_cursor();		/* Kill the old caret        */
+	fshow_cursor();		/* And bring it back to life */
+    }
+}
+#endif
+
 static void
 get_borders(void)
 {
     SystemParametersInfo(SPI_GETWORKAREA, 0, &cur_win->xy_limit, 0);
     TRACE(("WORKAREA: %d,%d %d,%d\n",
-	    cur_win->xy_limit.top,
-	    cur_win->xy_limit.left,
-	    cur_win->xy_limit.right,
-	    cur_win->xy_limit.bottom));
+	   cur_win->xy_limit.top,
+	   cur_win->xy_limit.left,
+	   cur_win->xy_limit.right,
+	   cur_win->xy_limit.bottom));
     cur_win->x_border = GetSystemMetrics(SM_CXSIZEFRAME);
     cur_win->y_border = GetSystemMetrics(SM_CYSIZEFRAME);
     cur_win->y_titles = GetSystemMetrics(SM_CYCAPTION);
@@ -828,10 +859,10 @@ get_borders(void)
  */
 static int CALLBACK
 enumerate_fonts(
-    const LOGFONT * lpelf,
-    const TEXTMETRIC * lpntm,
-    DWORD FontType,
-    LPARAM lParam)
+		   const LOGFONT * lpelf,
+		   const TEXTMETRIC * lpntm,
+		   DWORD FontType,
+		   LPARAM lParam)
 {
     int code = 2;
     const LOGFONT *src = lpelf;
@@ -1013,15 +1044,16 @@ last_w32_error(int use_msg_box)
  *
  *    winvile's windows and default font (vile_font) created.
  *
+ * Set use_mb (Boolean):
+ *	T -> errors reported via MessageBox.
+ *	F -> errors reported via message line.
+ *
  * Returns: T -> all is well, F -> failure.
  */
 int
 ntwinio_font_frm_str(
-    const char *fontstr,
-    int        use_mb  /* Boolean, T -> errors reported via MessageBox.
-                        *          F -> errors reported via message line.
-                        */
-)
+			const char *fontstr,
+			int use_mb)
 {
     int face_specified;
     HDC hdc;
@@ -1042,7 +1074,7 @@ ntwinio_font_frm_str(
     }
     hwnd = cur_win->text_hwnd;
     face_specified = (str_rslts.face[0] != '\0');
-    if (!((hdc = GetDC(hwnd)) && SelectObject(hdc, vile_font))) {
+    if (!((hdc = GetDC(hwnd)) != 0 && SelectObject(hdc, vile_font))) {
 	(void) last_w32_error(use_mb);
 	if (hdc)
 	    ReleaseDC(hwnd, hdc);
@@ -1062,15 +1094,15 @@ ntwinio_font_frm_str(
     memset(&logfont, 0, sizeof(logfont));
     logfont.lfWeight = (str_rslts.bold) ? FW_BOLD : FW_NORMAL;
     logfont.lfHeight = -MulDiv(str_rslts.size,
-	GetDeviceCaps(hdc, LOGPIXELSY),
-	72);
+			       GetDeviceCaps(hdc, LOGPIXELSY),
+			       72);
     if (str_rslts.italic)
 	logfont.lfItalic = TRUE;
     logfont.lfCharSet = DEFAULT_CHARSET;
     logfont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
     strncpy(logfont.lfFaceName, str_rslts.face, LF_FACESIZE - 1);
     logfont.lfFaceName[LF_FACESIZE - 1] = '\0';
-    if (!((hfont = CreateFontIndirect(&logfont)) && SelectObject(hdc, hfont))) {
+    if (!((hfont = CreateFontIndirect(&logfont)) != 0 && SelectObject(hdc, hfont))) {
 	(void) last_w32_error(use_mb);
 	if (hfont)
 	    DeleteObject(hfont);
@@ -1142,14 +1174,14 @@ ntwinio_current_font(void)
 
     if (!buf) {
 	buf = castalloc(char,
-	    sizeof("bold-italic") +
-	    LF_FACESIZE +
-	    16);		/* space for delimiters and point size */
+			sizeof("bold-italic") +
+			LF_FACESIZE +
+			16);	/* space for delimiters and point size */
 	if (!buf)
 	    return ("out of memory");
     }
     hwnd = cur_win->text_hwnd;
-    if (!((hdc = GetDC(hwnd)) && SelectObject(hdc, vile_font))) {
+    if (!((hdc = GetDC(hwnd)) != 0 && SelectObject(hdc, vile_font))) {
 	char *msg = NULL;
 
 	if (hdc)
@@ -1168,14 +1200,14 @@ ntwinio_current_font(void)
     else
 	style = NULL;
     size = MulDiv(labs(vile_logfont.lfHeight),
-	72,
-	GetDeviceCaps(hdc, LOGPIXELSY));
+		  72,
+		  GetDeviceCaps(hdc, LOGPIXELSY));
     sprintf(buf,
-	"%s,%ld%s%s",
-	vile_logfont.lfFaceName,
-	size,
-	(style) ? "," : "",
-	(style) ? style : "");
+	    "%s,%ld%s%s",
+	    vile_logfont.lfFaceName,
+	    size,
+	    (style) ? "," : "",
+	    (style) ? style : "");
     ReleaseDC(hwnd, hdc);
     return (buf);
 }
@@ -1195,16 +1227,16 @@ scflush(void)
 	HDC hdc;
 
 	TRACE(("PUTC:flush %2d (%2d,%2d) (%.*s)\n", cur_pos, crow, ccol,
-		cur_pos, &CELL_TEXT(crow, ccol)));
+	       cur_pos, &CELL_TEXT(crow, ccol)));
 
 	hdc = GetDC(cur_win->text_hwnd);
 	SelectObject(hdc, GetMyFont());
 	nt_set_colors(hdc, cur_atr);
 
 	TextOut(hdc,
-	    ColToPixel(ccol),
-	    RowToPixel(crow),
-	    &CELL_TEXT(crow, ccol), cur_pos);
+		ColToPixel(ccol),
+		RowToPixel(crow),
+		&CELL_TEXT(crow, ccol), cur_pos);
 
 	ReleaseDC(cur_win->text_hwnd, hdc);
     }
@@ -1343,25 +1375,25 @@ ntscroll(int from, int to, int n)
     }
 
     TRACE(("ScrollWindowEx from=%d, to=%d, n=%d  (%d,%d)/(%d,%d)\n",
-	    from, to, n,
-	    region.left, region.top,
-	    region.right, region.bottom));
+	   from, to, n,
+	   region.left, region.top,
+	   region.right, region.bottom));
 
     ScrollWindowEx(
-	cur_win->text_hwnd,	/* handle of window to scroll */
-	0,			/* amount of horizontal scrolling */
-	RowToPixel(to - from),	/* amount of vertical scrolling */
-	&region,		/* address of structure with scroll rectangle */
-	&region,		/* address of structure with clip rectangle */
-	NULL,			/* handle of update region */
-	&tofill,		/* invalidated rectangle */
-	0			/* scrolling flags */
+		      cur_win->text_hwnd,	/* handle of window to scroll */
+		      0,	/* amount of horizontal scrolling */
+		      RowToPixel(to - from),	/* amount of vertical scrolling */
+		      &region,	/* address of structure with scroll rectangle */
+		      &region,	/* address of structure with clip rectangle */
+		      NULL,	/* handle of update region */
+		      &tofill,	/* invalidated rectangle */
+		      0		/* scrolling flags */
 	);
 
     /* Erase invalidated rectangle */
     TRACE(("ntscroll tofill: (%d,%d)/(%d,%d)\n",
-	    tofill.left, tofill.top,
-	    tofill.right, tofill.bottom));
+	   tofill.left, tofill.top,
+	   tofill.right, tofill.bottom));
     hDC = GetDC(cur_win->text_hwnd);
     nt_set_colors(hDC, cur_atr);
     brush = Background(hDC);
@@ -1445,14 +1477,12 @@ nteeop(void)
 
     scflush();
 
-    x0 = ccol;
     TRACE(("NTEEOP %d,%d, atr %#x\n", crow, ccol, cur_atr));
     for (y = crow; y < term.rows; y++) {
 	for (x = 0; x < term.cols; x++) {
 	    CELL_TEXT(y, x) = ' ';
 	    CELL_ATTR(y, x) = cur_atr;
 	}
-	x0 = 0;
     }
 
     rect.left = ColToPixel(ccol);
@@ -1576,7 +1606,7 @@ decode_key_event(KEY_EVENT_RECORD * irp)
     int i, key;
     struct keyxlate_struct *keyp;
 
-    if ((key = (unsigned char) irp->uChar.AsciiChar) != 0)
+    if ((key = (UCHAR) irp->uChar.AsciiChar) != 0)
 	return key;
 
 #if VILE_OLE
@@ -1597,7 +1627,7 @@ decode_key_event(KEY_EVENT_RECORD * irp)
 	     * latter is actually '^' -- leave it alone as well.
 	     */
 	    if ((keyp->windows == VK_F4 &&
-		    (state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)))
+		 (state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)))
 		||
 		(keyp->windows == '6' && (state & SHIFT_PRESSED))) {
 		break;
@@ -1613,10 +1643,10 @@ decode_key_event(KEY_EVENT_RECORD * irp)
 	     */
 	    if (state &
 		(LEFT_CTRL_PRESSED
-		    | RIGHT_CTRL_PRESSED
-		    | LEFT_ALT_PRESSED
-		    | RIGHT_ALT_PRESSED
-		    | SHIFT_PRESSED)) {
+		 | RIGHT_CTRL_PRESSED
+		 | LEFT_ALT_PRESSED
+		 | RIGHT_ALT_PRESSED
+		 | SHIFT_PRESSED)) {
 		key = W32_KEY | keyp->windows;
 		if (state & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED))
 		    key |= W32_CTRL;
@@ -1656,14 +1686,13 @@ enable_popup_menu(void)
     enable_popup = !enable_popup;
     set_global_g_val(GMDPOPUPMENU, enable_popup);
     CheckMenuItem(vile_menu,
-	IDM_MENU,
-	MF_BYCOMMAND | (enable_popup ? MF_CHECKED : MF_UNCHECKED));
+		  IDM_MENU,
+		  MF_BYCOMMAND | (enable_popup ? MF_CHECKED : MF_UNCHECKED));
     DrawMenuBar(cur_win->main_hwnd);
 }
 
-typedef struct popup_menu_info_struct
-{
-    int  menu_id;
+typedef struct popup_menu_info_struct {
+    int menu_id;
     char *menu_name;
     char *vile_cmdname;
 
@@ -1671,15 +1700,18 @@ typedef struct popup_menu_info_struct
 
 static POPUP_MENU_INFO popup_menu_tbl[] =
 {
-    { IDM_OPEN,       "&Open...",     "winopen" },
-    { IDM_SAVE_AS,    "&Save As...",  "winsave" },
-    { IDM_UNDO,       "&Undo",        "undo-changes-backward" },
-    { IDM_REDO,       "&Redo",        "redo-changes-forward" },
-    { IDM_CUT,        "Cu&t",         "cut-to-clipboard" },
-    { IDM_COPY,       "&Copy",        "copy-unnamed-reg-to-clipboard" },
-    { IDM_PASTE,      "&Paste",       "paste-from-clipboard" },
-    { IDM_DELETE,     "&Delete",      "delete-text-selection" },
-    { IDM_SELECT_ALL, "Select &All",  "select-all" },
+    /* *INDENT-OFF* */
+    {IDM_OPEN,		"&Open...",	"winopen"},
+    {IDM_SAVE_AS,	"&Save As...",	"winsave"},
+    {IDM_UNDO,		"&Undo",	"undo-changes-backward"},
+    {IDM_REDO,		"&Redo",	"redo-changes-forward"},
+    {IDM_CUT,		"Cu&t",		"cut-to-clipboard"},
+    {IDM_COPY,		"&Copy",	"copy-unnamed-reg-to-clipboard"},
+    {IDM_PASTE,		"&Paste",	"paste-from-clipboard"},
+    {IDM_DELETE,	"&Delete",	"delete-text-selection"},
+    {IDM_SELECT_ALL,	"Select &All",	"select-all"},
+    /* *INDENT-ON* */
+
 };
 
 static void
@@ -1689,14 +1721,14 @@ invoke_popup_menu(MSG msg)
     AREGION ar;
     BUFFER *bp;
     const CMDFUNC *cmd;
-    int   i, limit, flag, seltxt, samebuf;
+    int i, limit, flag, seltxt, samebuf;
     POINT point;
     POPUP_MENU_INFO *ptbl;
 
     TRACE(("invoke_popup_menu\n"));
     if (popup_menu == NULL) {
 	popup_menu = LoadMenu(vile_hinstance,
-	    "WinvilePopMenu");
+			      "WinvilePopMenu");
 	popup_menu = GetSubMenu(popup_menu, 0);
     }
     CheckMenuItem(popup_menu, IDM_MENU, MF_BYCOMMAND | MF_CHECKED);
@@ -1705,9 +1737,8 @@ invoke_popup_menu(MSG msg)
     limit = sizeof(popup_menu_tbl) / sizeof(popup_menu_tbl[0]);
     for (i = 0, ptbl = popup_menu_tbl; i < limit; i++, ptbl++) {
 	if ((cmd = engl2fnc(ptbl->vile_cmdname)) != NULL) {
-	    int code;
 
-	    if ((code = fnc2kcod(cmd)) != -1) {
+	    if (fnc2kcod(cmd) != -1) {
 		/* cmd has a binding */
 
 		(void) kcod2prc(fnc2kcod(cmd), accel);
@@ -1726,9 +1757,9 @@ invoke_popup_menu(MSG msg)
     }
 
     /* Can't undo/redo if not applicable. */
-    flag = (undo_ok()) ? MF_ENABLED : MF_GRAYED;
+    flag = (undo_ok())? MF_ENABLED : MF_GRAYED;
     EnableMenuItem(popup_menu, IDM_UNDO, MF_BYCOMMAND | flag);
-    flag = (redo_ok()) ? MF_ENABLED : MF_GRAYED;
+    flag = (redo_ok())? MF_ENABLED : MF_GRAYED;
     EnableMenuItem(popup_menu, IDM_REDO, MF_BYCOMMAND | flag);
 
     /* Can't "select all" in empty buffer. */
@@ -1761,12 +1792,12 @@ invoke_popup_menu(MSG msg)
     point.y = HIWORD(msg.lParam);
     ClientToScreen(msg.hwnd, &point);
     TrackPopupMenu(popup_menu,
-	0,
-	point.x,
-	point.y,
-	0,
-	msg.hwnd,
-	NULL);
+		   0,
+		   point.x,
+		   point.y,
+		   0,
+		   msg.hwnd,
+		   NULL);
     TRACE(("...invoke_popup_menu\n"));
 }
 
@@ -1790,10 +1821,10 @@ AboutBoxProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	/* talk about copyright */
 	hwnd = GetDlgItem(hDlg, IDM_ABOUT_COPYRIGHT);
 	sprintf(buf,
-	    "\nCopyright \xA9 Tom Dickey 1997-2000\n\n"
-	    "%s is free software, distributed under the terms of the GNU "
-	    "Public License (see COPYING).",
-	    prognam);
+		"\nCopyright \xA9 Tom Dickey 1997-2001\n\n"
+		"%s is free software, distributed under the terms of the GNU "
+		"Public License (see COPYING).",
+		prognam);
 	SetWindowText(hwnd, buf);
 	w32_center_window(hDlg, cur_win->main_hwnd);
 	return (TRUE);
@@ -1852,7 +1883,7 @@ handle_builtin_menu(WPARAM code)
 	break;
     case IDM_PASTE:
 	/* it's okay to paste into minibuffer if reading msg line data */
-	if ((! reading_msg_line) && b_val(curbp, MDVIEW))
+	if ((!reading_msg_line) && b_val(curbp, MDVIEW))
 	    return rdonly();
 	mayneedundo();
 	fhide_cursor();
@@ -2069,11 +2100,11 @@ adjust_window(WINDOW *wp, POINT * current, POINT * latest)
  */
 static void
 mousemove(int *sel_pending,
-    int onmode,
-    POINT * first,
-    POINT * latest,
-    MARK * lmbdn_mark,
-    WINDOW *wp)
+	  int onmode,
+	  POINT * first,
+	  POINT * latest,
+	  MARK * lmbdn_mark,
+	  WINDOW *wp)
 {
     POINT current;
     int dummy;
@@ -2141,7 +2172,7 @@ check_scrollbar_allocs(void)
 	GROW(cur_win->scrollbars, SBDATA, oldmax, newmax);
 	cur_win->maxscrollbars = newmax;
 	TRACE(("GROW scrollbars=%p, oldmax=%d, newmax=%d\n",
-		cur_win->scrollbars, oldmax, newmax));
+	       cur_win->scrollbars, oldmax, newmax));
     }
     return TRUE;
 }
@@ -2158,17 +2189,17 @@ new_scrollbar(void)
     result.r.right = -1;
 
     result.w = CreateWindow(
-	SCRL_CLASS,
-	"scrollbar",
-	WS_CHILD | SBS_VERT | WS_CLIPSIBLINGS,
-	0,			/* x */
-	0,			/* y */
-	SbWidth,		/* width */
-	1,			/* height */
-	cur_win->main_hwnd,
-	(HMENU) 0,
-	vile_hinstance,
-	(LPVOID) 0
+			       SCRL_CLASS,
+			       "scrollbar",
+			       WS_CHILD | SBS_VERT | WS_CLIPSIBLINGS,
+			       0,	/* x */
+			       0,	/* y */
+			       SbWidth,		/* width */
+			       1,	/* height */
+			       cur_win->main_hwnd,
+			       (HMENU) 0,
+			       vile_hinstance,
+			       (LPVOID) 0
 	);
     return result;
 }
@@ -2197,7 +2228,7 @@ set_scrollbar_range(int n, WINDOW *wp)
     lcnt = max(lcnt, 1) + wp->w_ntrows - 1;
 
     TRACE(("set_scrollbar_range(%d, %s) %d:%d\n",
-	    n, wp->w_bufp->b_bname, lnum, lcnt));
+	   n, wp->w_bufp->b_bname, lnum, lcnt));
 
     info.cbSize = sizeof(info);
     info.fMask = SIF_POS | SIF_RANGE | SIF_PAGE;
@@ -2215,10 +2246,10 @@ set_scrollbar_range(int n, WINDOW *wp)
  */
 LONG FAR PASCAL
 GripWndProc(
-    HWND hWnd,
-    UINT message,
-    WPARAM wParam,
-    LONG lParam)
+	       HWND hWnd,
+	       UINT message,
+	       WPARAM wParam,
+	       LONG lParam)
 {
     PAINTSTRUCT ps;
     HBRUSH brush;
@@ -2229,17 +2260,17 @@ GripWndProc(
     case WM_PAINT:
 	BeginPaint(hWnd, &ps);
 	TRACE(("...painting (%d,%d) (%d,%d)\n",
-		ps.rcPaint.top,
-		ps.rcPaint.left,
-		ps.rcPaint.bottom,
-		ps.rcPaint.right));
+	       ps.rcPaint.top,
+	       ps.rcPaint.left,
+	       ps.rcPaint.bottom,
+	       ps.rcPaint.right));
 	brush = CreateSolidBrush(GetSysColor(COLOR_SCROLLBAR));
 	SelectObject(ps.hdc, brush);
 	Rectangle(ps.hdc,
-	    ps.rcPaint.left,
-	    ps.rcPaint.top,
-	    ps.rcPaint.right,
-	    ps.rcPaint.bottom);
+		  ps.rcPaint.left,
+		  ps.rcPaint.top,
+		  ps.rcPaint.right,
+		  ps.rcPaint.bottom);
 	DeleteObject(brush);
 	EndPaint(hWnd, &ps);
 	return (0);
@@ -2286,17 +2317,17 @@ update_scrollbar_sizes(void)
 	    || cur_win->scrollbars[i].r.bottom != high
 	    || cur_win->scrollbars[i].r.right != wide) {
 	    MoveWindow(cur_win->scrollbars[i].w,
-		cur_win->scrollbars[i].r.left = left,
-		cur_win->scrollbars[i].r.top = top,
-		cur_win->scrollbars[i].r.right = wide,
-		cur_win->scrollbars[i].r.bottom = high,
-		TRUE);
+		       cur_win->scrollbars[i].r.left = left,
+		       cur_win->scrollbars[i].r.top = top,
+		       cur_win->scrollbars[i].r.right = wide,
+		       cur_win->scrollbars[i].r.bottom = high,
+		       TRUE);
 	    TRACE(("... adjusted %s to (%d,%d) (%d,%d)\n",
-		    which_window(cur_win->scrollbars[i].w),
-		    left,
-		    top,
-		    SbWidth,
-		    high));
+		   which_window(cur_win->scrollbars[i].w),
+		   left,
+		   top,
+		   SbWidth,
+		   high));
 	}
 	if (cur_win->nscrollbars == i + 1)
 	    set_scrollbar_range(i, wp);
@@ -2317,37 +2348,38 @@ update_scrollbar_sizes(void)
 
     if (cur_win->size_box.w == 0) {
 	cur_win->size_box.w = CreateWindow(
-	    GRIP_CLASS,
-	    "sizebox",
-	    WS_CHILD
-	    | WS_VISIBLE
-	    | WS_CLIPSIBLINGS,
-	    cur_win->size_box.r.left = left,
-	    cur_win->size_box.r.top = top,
-	    cur_win->size_box.r.right = SbWidth + 1,
-	    cur_win->size_box.r.bottom = nLineHeight,
-	    cur_win->main_hwnd,
-	    (HMENU) 0,
-	    vile_hinstance,
-	    (LPVOID) 0
+					      GRIP_CLASS,
+					      "sizebox",
+					      WS_CHILD
+					      | WS_VISIBLE
+					      | WS_CLIPSIBLINGS,
+					      cur_win->size_box.r.left = left,
+					      cur_win->size_box.r.top = top,
+					      cur_win->size_box.r.right =
+					      SbWidth + 1,
+					      cur_win->size_box.r.bottom = nLineHeight,
+					      cur_win->main_hwnd,
+					      (HMENU) 0,
+					      vile_hinstance,
+					      (LPVOID) 0
 	    );
 	cur_win->size_grip.w = CreateWindow(
-	    "SCROLLBAR",
-	    "sizebox",
-	    WS_CHILD
-	    | WS_VISIBLE
-	    | SB_CTL
-	    | SBS_SIZEGRIP
-	    | WS_CLIPSIBLINGS
-	    | SBS_SIZEBOXBOTTOMRIGHTALIGN,
-	    cur_win->size_box.r.left = 0,
-	    cur_win->size_box.r.top = 0,
-	    cur_win->size_box.r.right = SbWidth,
-	    cur_win->size_box.r.bottom = nLineHeight,
-	    cur_win->size_box.w,
-	    (HMENU) 0,
-	    vile_hinstance,
-	    (LPVOID) 0
+					       "SCROLLBAR",
+					       "sizebox",
+					       WS_CHILD
+					       | WS_VISIBLE
+					       | SB_CTL
+					       | SBS_SIZEGRIP
+					       | WS_CLIPSIBLINGS
+					       | SBS_SIZEBOXBOTTOMRIGHTALIGN,
+					       cur_win->size_box.r.left = 0,
+					       cur_win->size_box.r.top = 0,
+					       cur_win->size_box.r.right = SbWidth,
+					       cur_win->size_box.r.bottom = nLineHeight,
+					       cur_win->size_box.w,
+					       (HMENU) 0,
+					       vile_hinstance,
+					       (LPVOID) 0
 	    );
 	TRACE(("... made SIZEGRIP %x at %d,%d\n", cur_win->size_box.w, left, top));
     } else {
@@ -2358,13 +2390,13 @@ update_scrollbar_sizes(void)
 	    || cur_win->size_box.r.right != SbWidth
 	    || cur_win->size_box.r.bottom != nLineHeight) {
 	    ok = MoveWindow(cur_win->size_box.w,
-		cur_win->size_box.r.left = left,
-		cur_win->size_box.r.top = top,
-		cur_win->size_box.r.right = SbWidth,
-		cur_win->size_box.r.bottom = nLineHeight,
-		TRUE);
+			    cur_win->size_box.r.left = left,
+			    cur_win->size_box.r.top = top,
+			    cur_win->size_box.r.right = SbWidth,
+			    cur_win->size_box.r.bottom = nLineHeight,
+			    TRUE);
 	    TRACE(("... move SIZE_BOX %d:%x to %d,%d\n",
-		    ok, cur_win->size_box.w, left, top));
+		   ok, cur_win->size_box.w, left, top));
 	}
 
 	left = 0;
@@ -2374,13 +2406,13 @@ update_scrollbar_sizes(void)
 	    || cur_win->size_grip.r.right != SbWidth
 	    || cur_win->size_grip.r.bottom != nLineHeight) {
 	    ok = MoveWindow(cur_win->size_grip.w,
-		cur_win->size_grip.r.left = left,
-		cur_win->size_grip.r.top = top,
-		cur_win->size_grip.r.right = SbWidth,
-		cur_win->size_grip.r.bottom = nLineHeight,
-		TRUE);
+			    cur_win->size_grip.r.left = left,
+			    cur_win->size_grip.r.top = top,
+			    cur_win->size_grip.r.right = SbWidth,
+			    cur_win->size_grip.r.bottom = nLineHeight,
+			    TRUE);
 	    TRACE(("... move SIZEGRIP %d:%x to %d,%d\n",
-		    ok, cur_win->size_grip.w, left, top));
+		   ok, cur_win->size_grip.w, left, top));
 	}
     }
 }
@@ -2529,9 +2561,9 @@ ntgetch(void)
 #endif
     vile_in_getfkey = 1;
     if (GetFocus() == cur_win->main_hwnd) {
-	    fshow_cursor();
+	fshow_cursor();
     } else {
-	    fhide_cursor();
+	fhide_cursor();
     }
     while (!result) {
 #ifdef VAL_AUTOCOLOR
@@ -2599,8 +2631,8 @@ ntgetch(void)
 	    ker.dwControlKeyState = get_keyboard_state();
 	    result = decode_key_event(&ker);
 	    TRACE(("GETC:%sKEYDOWN:%#x ->%#x\n",
-		    (msg.message == WM_SYSKEYDOWN) ? "SYS" : "",
-		    msg.wParam, result));
+		   (msg.message == WM_SYSKEYDOWN) ? "SYS" : "",
+		   msg.wParam, result));
 	    if (result == NOKYMAP) {
 		DispatchMessage(&msg);
 		result = 0;
@@ -2623,6 +2655,8 @@ ntgetch(void)
 		     */
 
 		    AutoScroll(that_wp);
+		} else {
+		    DispatchMessage(&msg);
 		}
 	    }
 	    break;
@@ -2652,8 +2686,7 @@ ntgetch(void)
 			disp_win32_error(W32_SYS_ERROR, cur_win->text_hwnd);
 			ReleaseCapture();
 			mouse_captured = FALSE;
-		    }
-		    else {
+		    } else {
 			AutoScroll(that_wp);
 		    }
 		}
@@ -2785,11 +2818,11 @@ ntgetch(void)
 	case WM_MOUSEMOVE:
 	    if (buttondown) {
 		mousemove(&sel_pending,
-		    onmode,
-		    &first,
-		    &latest,
-		    &lmbdn_mark,
-		    that_wp);
+			  onmode,
+			  &first,
+			  &latest,
+			  &lmbdn_mark,
+			  that_wp);
 	    } else {
 		DispatchMessage(&msg);
 	    }
@@ -2857,10 +2890,10 @@ repaint_window(HWND hWnd)
     brush = Background(ps.hdc);
 
     TRACE(("...painting (%d,%d) (%d,%d)\n",
-	    ps.rcPaint.top,
-	    ps.rcPaint.left,
-	    ps.rcPaint.bottom,
-	    ps.rcPaint.right));
+	   ps.rcPaint.top,
+	   ps.rcPaint.left,
+	   ps.rcPaint.bottom,
+	   ps.rcPaint.right));
 
     y0 = (ps.rcPaint.top) / nLineHeight;
     x0 = (ps.rcPaint.left) / nCharWidth;
@@ -2892,10 +2925,10 @@ repaint_window(HWND hWnd)
 		if (new_atr != old_atr) {
 		    nt_set_colors(ps.hdc, old_atr);
 		    TextOut(ps.hdc,
-			ColToPixel(old_col),
-			RowToPixel(row),
-			&CELL_TEXT(row, old_col),
-			col - old_col);
+			    ColToPixel(old_col),
+			    RowToPixel(row),
+			    &CELL_TEXT(row, old_col),
+			    col - old_col);
 		    old_atr = new_atr;
 		    old_col = col;
 		}
@@ -2903,10 +2936,10 @@ repaint_window(HWND hWnd)
 	    if (old_col < x1) {
 		nt_set_colors(ps.hdc, old_atr);
 		TextOut(ps.hdc,
-		    ColToPixel(old_col),
-		    RowToPixel(row),
-		    &CELL_TEXT(row, old_col),
-		    x1 - old_col);
+			ColToPixel(old_col),
+			RowToPixel(row),
+			&CELL_TEXT(row, old_col),
+			x1 - old_col);
 	    }
 	}
     }
@@ -2954,10 +2987,10 @@ HandleClose(HWND hWnd)
 
 LONG FAR PASCAL
 TextWndProc(
-    HWND hWnd,
-    UINT message,
-    WPARAM wParam,
-    LONG lParam)
+	       HWND hWnd,
+	       UINT message,
+	       WPARAM wParam,
+	       LONG lParam)
 {
     TRACE(("TEXT:%s, %s\n", message2s(message), which_window(hWnd)));
 
@@ -2980,10 +3013,10 @@ TextWndProc(
 
 LONG FAR PASCAL
 MainWndProc(
-    HWND hWnd,
-    UINT message,
-    WPARAM wParam,
-    LONG lParam)
+	       HWND hWnd,
+	       UINT message,
+	       WPARAM wParam,
+	       LONG lParam)
 {
     static int resize_pending;	/* a resize, not a move */
 
@@ -3047,9 +3080,9 @@ MainWndProc(
 
     case WM_SYSCOMMAND:
 	TRACE(("MAIN:WM_SYSCOMMAND %s at %d,%d\n",
-		syscommand2s(LOWORD(wParam)),
-		HIWORD(lParam),
-		LOWORD(lParam)));
+	       syscommand2s(LOWORD(wParam)),
+	       HIWORD(lParam),
+	       LOWORD(lParam)));
 	handle_builtin_menu(wParam);
 	return (DefWindowProc(hWnd, message, wParam, lParam));
 
@@ -3103,17 +3136,17 @@ InitInstance(HINSTANCE hInstance)
     hAccTable = LoadAccelerators(vile_hinstance, "VileAcc");
 
     cur_win->main_hwnd = CreateWindow(
-	MAIN_CLASS,
-	MY_APPLE,
-	WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
-	CW_USEDEFAULT,
-	CW_USEDEFAULT,
-	1,
-	1,
-	(HWND) 0,
-	(HMENU) 0,
-	hInstance,
-	(LPVOID) 0
+					 MAIN_CLASS,
+					 MY_APPLE,
+					 WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
+					 CW_USEDEFAULT,
+					 CW_USEDEFAULT,
+					 1,
+					 1,
+					 (HWND) 0,
+					 (HMENU) 0,
+					 hInstance,
+					 (LPVOID) 0
 	);
     TRACE(("CreateWindow(main) -> %#lx\n", cur_win->main_hwnd));
     if (!cur_win->main_hwnd)
@@ -3137,17 +3170,17 @@ InitInstance(HINSTANCE hInstance)
     TRACE(("Registered(%s)\n", TEXT_CLASS));
 
     cur_win->text_hwnd = CreateWindow(
-	TEXT_CLASS,
-	"text",
-	WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS,
-	CW_USEDEFAULT,
-	CW_USEDEFAULT,
-	1,
-	1,
-	cur_win->main_hwnd,
-	(HMENU) 0,
-	hInstance,
-	(LPVOID) 0
+					 TEXT_CLASS,
+					 "text",
+					 WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS,
+					 CW_USEDEFAULT,
+					 CW_USEDEFAULT,
+					 1,
+					 1,
+					 cur_win->main_hwnd,
+					 (HMENU) 0,
+					 hInstance,
+					 (LPVOID) 0
 	);
     TRACE(("CreateWindow(text) -> %#lx\n", cur_win->text_hwnd));
     if (!cur_win->text_hwnd)
@@ -3207,12 +3240,12 @@ InitInstance(HINSTANCE hInstance)
 
 int WINAPI
 WinMain(
-    HINSTANCE hInstance,
-    HINSTANCE hPrevInstance,
-    LPSTR lpCmdLine,
-    int nCmdShow)
+	   HINSTANCE hInstance,
+	   HINSTANCE hPrevInstance,
+	   LPSTR lpCmdLine,
+	   int nCmdShow)
 {
-    int argc = 0;
+    int argc;
     int n;
     int maxargs = (strlen(lpCmdLine) + 1) / 2;
     char **argv = typeallocn(char *, maxargs);
@@ -3299,7 +3332,7 @@ WinMain(
 		    eat = 2;
 		}
 	    } else if (strcmp(argv[n], "-font") == 0 ||
-		strcmp(argv[n], "-fn") == 0) {
+		       strcmp(argv[n], "-fn") == 0) {
 		fontstr = argv[n + 1];
 		eat = 2;
 	    }
@@ -3354,9 +3387,9 @@ WinMain(
 	/* tsk tsk */
 
 	MessageBox(cur_win->main_hwnd,
-	    "-Oa and -Or are mutually exclusive",
-	    prognam,
-	    MB_OK | MB_ICONSTOP);
+		   "-Oa and -Or are mutually exclusive",
+		   prognam,
+		   MB_OK | MB_ICONSTOP);
 	ExitProgram(BADEXIT);
     }
     if (oa_reg) {
@@ -3457,11 +3490,11 @@ winvile_start(void)
 		    /* editor's title bar won't be shifted offscreen. */
 
 		    MoveWindow(cur_win->main_hwnd,
-			vile.left,
-			vile.top - diff,
-			vile.right - vile.left,
-			vile.bottom - vile.top,
-			FALSE);
+			       vile.left,
+			       vile.top - diff,
+			       vile.right - vile.left,
+			       vile.bottom - vile.top,
+			       FALSE);
 		    moved_window = 1;
 		}
 	    }
@@ -3480,11 +3513,11 @@ winvile_start(void)
 		/* editor's title bar won't be shifted offscreen. */
 
 		MoveWindow(cur_win->main_hwnd,
-		    vile.left,
-		    vile.top - diff,
-		    vile.right - vile.left,
-		    vile.bottom - vile.top,
-		    FALSE);
+			   vile.left,
+			   vile.top - diff,
+			   vile.right - vile.left,
+			   vile.bottom - vile.top,
+			   FALSE);
 	    }
 	}
     }
@@ -3501,16 +3534,15 @@ winvile_start(void)
  * pretty good job, at that).  However, there are times when the editor
  * makes display changes that require an external "override".
  *
+ * Set queue_change (Boolean) true to defer cursor change until winvile next
+ * reads its message queue).
+ *
  * Returns:  Boolean (previous cursor visibility state).
  */
 int
 winvile_cursor_state(
-    int visible,		/* Boolean, T -> cursor on */
-    int queue_change		/* Boolean, change cursor state using a windows
-				 * message (i.e., defer cursor change until winvile
-				 * next reads its message queue).
-				 */
-)
+			int visible,	/* Boolean, T -> cursor on */
+			int queue_change)
 {
     int rc = caret_visible;
 
@@ -3521,9 +3553,9 @@ winvile_cursor_state(
 	    fhide_cursor();
     } else {
 	PostMessage(winvile_hwnd(),
-	    (visible) ? WM_WVILE_CURSOR_ON : WM_WVILE_CURSOR_OFF,
-	    0,
-	    0);
+		    (visible) ? WM_WVILE_CURSOR_ON : WM_WVILE_CURSOR_OFF,
+		    0,
+		    0);
     }
     return (rc);
 }
@@ -3536,11 +3568,10 @@ void
 winvile_cleanup(void)
 {
     if (cur_win->main_hwnd)
-        DragAcceptFiles(cur_win->main_hwnd, FALSE);
-    if (popup_menu)
-    {
-        DestroyMenu(popup_menu);
-        popup_menu = NULL;   /* be re-entrant */
+	DragAcceptFiles(cur_win->main_hwnd, FALSE);
+    if (popup_menu) {
+	DestroyMenu(popup_menu);
+	popup_menu = NULL;	/* be re-entrant */
     }
 }
 
@@ -3564,11 +3595,62 @@ ntwinio_redirect_hwnd(int redirect)
  * Handle changes to "popup-menu" global setting.
  */
 int
-chgd_popupmenu(VALARGS *args, int glob_vals, int testing)
+chgd_popupmenu(VALARGS * args, int glob_vals, int testing)
 {
-    if (!testing) enable_popup_menu();
+    if (!testing)
+	enable_popup_menu();
     return TRUE;
 }
+
+#if OPT_ICURSOR
+
+/* supported syntax is described in chgd_icursor() */
+static int
+parse_icursor_string(char *str)
+{
+    int failed, rc = TRUE;
+    ULONG style;
+
+    style = vl_atoul(str, 10, &failed);
+    if (failed || style > MAX_CURSOR_STYLE)
+	rc = FALSE;
+    else {
+	icursor_style = style;
+	icursor = (style > 0);
+    }
+    return (rc);
+}
+
+/*
+ * user changed icursor mode
+ *
+ * Insertion cursor mode is a string that specifies one of three values:
+ *
+ *     0 -> disable insertion cursor
+ *     1 -> insert mode displays vertical bar, cmd mode displays block cursor
+ *     2 -> cmd mode displays vertical bar, insert mode displays block cursor
+ */
+int
+chgd_icursor(VALARGS * args, int glob_vals, int testing)
+{
+    int rc = TRUE;
+
+    if (!testing) {
+	char *val = args->global->vp->p;
+
+	if (!parse_icursor_string(val)) {
+	    mlforce("invalid icursor syntax");
+	    rc = FALSE;
+	} else {
+	    if (caret_visible) {
+		fhide_cursor();	/* Kill the old caret        */
+		fshow_cursor();	/* And bring it back to life */
+	    }
+	}
+    }
+    return (rc);
+}
+#endif /* OPT_ICURSOR */
 
 /*
  * Split the version-message to allow us to format with tabs, so the

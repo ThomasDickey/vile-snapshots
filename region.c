@@ -5,7 +5,7 @@
  * commands. Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.103 2000/02/27 21:48:21 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.104 2001/02/13 23:43:18 tom Exp $
  *
  */
 
@@ -713,7 +713,7 @@ getregion(register REGION *rp)
 	}
 
 #if OPT_SELECTIONS
-	rp->r_attr_id = (unsigned short) assign_attr_id();
+	rp->r_attr_id = (USHORT) assign_attr_id();
 #endif
 
 	if (MK.l == NULL) {
