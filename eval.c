@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.286 2001/03/04 01:47:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.287 2001/04/03 19:34:28 tom Exp $
  *
  */
 
@@ -519,7 +519,7 @@ path_trim(char *path)
 /*
  * Extract the head of the given path
  */
-static void
+static char *
 path_head(TBUFF ** result, const char *path)
 {
     char *temp;
@@ -527,6 +527,7 @@ path_head(TBUFF ** result, const char *path)
 	*pathleaf(temp) = EOS;
 	path_trim(temp);
     }
+    return temp;
 }
 
 /*
@@ -765,32 +766,32 @@ run_func(int fnum)
 	break;
     case UFLOOKUP:
 	if ((i = combine_choices(fsm_lookup_choices, arg[0])) > 0)
-	    tb_scopy(&result, cfg_locate(arg[1], i));
+	    tb_scopy(&result, SL_TO_BSL(cfg_locate(arg[1], i)));
 	break;
     case UFPATH:
 	switch (choice_to_code(fsm_path_choices, arg[0], strlen(arg[0]))) {
 	case PATH_END:
 	    cp = pathleaf(arg[1]);
 	    if ((cp = strchr(cp, '.')) != 0)
-		tb_scopy(&result, cp);
+		tb_scopy(&result, SL_TO_BSL(cp));
 	    break;
 	case PATH_FULL:
 	    tb_scopy(&result, arg[1]);
 	    tb_alloc(&result, NFILEN);
-	    lengthen_path(tb_values(result));
+	    SL_TO_BSL(lengthen_path(tb_values(result)));
 	    break;
 	case PATH_HEAD:
-	    path_head(&result, arg[1]);
+	    SL_TO_BSL(path_head(&result, arg[1]));
 	    break;
 	case PATH_ROOT:
-	    tb_scopy(&result, pathleaf(arg[1]));
+	    tb_scopy(&result, SL_TO_BSL(pathleaf(arg[1])));
 	    if ((cp = strchr(tb_values(result), '.')) != 0)
 		*cp = EOS;
 	    break;
 	case PATH_SHORT:
 	    tb_scopy(&result, arg[1]);
 	    tb_alloc(&result, NFILEN);
-	    shorten_path(tb_values(result), FALSE);
+	    SL_TO_BSL(shorten_path(tb_values(result), FALSE));
 	    break;
 	case PATH_TAIL:
 	    tb_scopy(&result, pathleaf(arg[1]));
@@ -802,10 +803,10 @@ run_func(int fnum)
 	break;
     case UFPATHCAT:
 	tb_alloc(&result, NFILEN);
-	pathcat(tb_values(result), arg[0], arg[1]);
+	SL_TO_BSL(pathcat(tb_values(result), arg[0], arg[1]));
 	break;
     case UFPATHQUOTE:
-	path_quote(&result, arg[0]);
+	path_quote(&result, SL_TO_BSL(arg[0]));
 	break;
     case UFTOKEN:
 	extract_token(&result, arg[0], arg[1], arg[2]);

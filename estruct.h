@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.471 2001/03/23 00:54:58 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.474 2001/04/07 12:17:54 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -422,7 +422,7 @@
  * These restrictions make a port to DOS or VMS problematic.
  */
 #if (SYS_WINNT || SYS_UNIX) && defined(OPT_SHELL)
-# define OPT_FINDPATH   1
+# define OPT_FINDPATH   OPT_SHELL&&!SMALLER
 #else
 # define OPT_FINDPATH   0
 #endif
@@ -2674,6 +2674,12 @@ extern void _exit (int code);
 /* Normally defined in "trace.h" */
 #ifndef TRACE
 #define TRACE(p) /* nothing */
+#endif
+
+#if OPT_TRACE > 1
+#define TRACE2(params) TRACE(params)
+#else
+#define TRACE2(params) /*nothing*/
 #endif
 
 #if OPT_EVAL || OPT_DEBUGMACROS

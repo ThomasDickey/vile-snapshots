@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.344 2001/03/05 00:23:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.345 2001/04/07 12:17:58 tom Exp $
  *
  */
 
@@ -13,12 +13,6 @@
 #include	"edef.h"
 #include	"pscreen.h"
 #include	"nefsms.h"
-
-#if OPT_TRACE > 1
-#define TRACE2(params) TRACE(params)
-#else
-#define TRACE2(params) /*nothing*/
-#endif
 
 #define vMAXINT ((int)((unsigned)(~0)>>1))	/* 0x7fffffff */
 #define vMAXNEG (-vMAXINT)			/* 0x80000001 */

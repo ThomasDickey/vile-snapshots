@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.65 2001/03/23 00:41:27 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.67 2001/04/07 15:54:48 tom Exp $
  *
  */
 
@@ -25,7 +25,9 @@
 #define	NPAUSE	200		/* # times thru update to pause */
 #define NOKYMAP (-1)
 
-#define	AttrColor(b,f)	((WORD)(((ctrans[b] & 15) << 4) | (ctrans[f] & 15)))
+#define ForeColor(b)	(ctrans[((f) < 0 ? C_WHITE : (f))] & (NCOLORS-1))
+#define BackColor(b)	(ctrans[((b) < 0 ? C_BLACK : (b))] & (NCOLORS-1))
+#define AttrColor(b,f)	((WORD)((BackColor(b) << 4) | ForeColor(f)))
 
 static HANDLE hConsoleOutput;	/* handle to the console display */
 static HANDLE hOldConsoleOutput;	/* handle to the old console display */
@@ -70,8 +72,6 @@ static WINDOW *mouse_wp;	/* vile window ptr during mouse operations. */
 static int row_height;		/* pixels per row within client_rect        */
 #define AS_TMOUT 2000		/* hAsMutex timeout period (2 sec) */
 
-static void scflush(void);
-
 #ifdef GVAL_VIDEO
 static WORD
 AttrVideo(int b, int f)
@@ -111,6 +111,30 @@ nttitle(const char *title)
 }
 #endif
 
+static void
+scflush(void)
+{
+    if (bufpos) {
+	COORD coordCursor;
+	DWORD written;
+
+	coordCursor.X = ccol;
+	coordCursor.Y = crow;
+	TRACE2(("scflush %04x [%d,%d]%.*s\n",
+		AttrColor(cbcolor, cfcolor), crow, ccol, bufpos, linebuf));
+	WriteConsoleOutputCharacter(
+				       hConsoleOutput, linebuf, bufpos,
+				       coordCursor, &written
+	    );
+	FillConsoleOutputAttribute(
+				      hConsoleOutput, AttrColor(cbcolor, cfcolor),
+				      bufpos, coordCursor, &written
+	    );
+	ccol += bufpos;
+	bufpos = 0;
+    }
+}
+
 #if OPT_COLOR
 static void
 ntfcol(int color)
@@ -126,28 +150,6 @@ ntbcol(int color)
     nbcolor = cbcolor = color;
 }
 #endif
-
-static void
-scflush(void)
-{
-    if (bufpos) {
-	COORD coordCursor;
-	DWORD written;
-
-	coordCursor.X = ccol;
-	coordCursor.Y = crow;
-	WriteConsoleOutputCharacter(
-				       hConsoleOutput, linebuf, bufpos,
-				       coordCursor, &written
-	    );
-	FillConsoleOutputAttribute(
-				      hConsoleOutput, AttrColor(cbcolor, cfcolor),
-				      bufpos, coordCursor, &written
-	    );
-	ccol += bufpos;
-	bufpos = 0;
-    }
-}
 
 static void
 ntflush(void)
@@ -309,48 +311,54 @@ ntbeep(void)
 static void
 ntputc(int ch)
 {
-    /* This is an optimization for the most common case. */
     if (ch >= ' ') {
+
+	/* This is an optimization for the most common case. */
 	linebuf[bufpos++] = ch;
-	return;
+
+    } else {
+
+	switch (ch) {
+
+	case '\b':
+	    scflush();
+	    if (ccol)
+		ccol--;
+	    break;
+
+	case '\a':
+	    ntbeep();
+	    break;
+
+	case '\t':
+	    scflush();
+	    do {
+		linebuf[bufpos++] = ' ';
+		if (bufpos >= sizeof(linebuf))
+		    scflush();
+	    } while ((ccol + bufpos) % 8 != 0);
+	    break;
+
+	case '\r':
+	    scflush();
+	    ccol = 0;
+	    break;
+
+	case '\n':
+	    scflush();
+	    if (crow < csbi.dwMaximumWindowSize.Y - 1)
+		crow++;
+	    else
+		ntscroll(1, 0, csbi.dwMaximumWindowSize.Y - 1);
+	    break;
+
+	default:
+	    linebuf[bufpos++] = ch;
+	    break;
+	}
     }
-
-    switch (ch) {
-
-    case '\b':
+    if (bufpos >= sizeof(linebuf))
 	scflush();
-	if (ccol)
-	    ccol--;
-	break;
-
-    case '\a':
-	ntbeep();
-	break;
-
-    case '\t':
-	scflush();
-	do
-	    linebuf[bufpos++] = ' ';
-	while ((ccol + bufpos) % 8 != 0);
-	break;
-
-    case '\r':
-	scflush();
-	ccol = 0;
-	break;
-
-    case '\n':
-	scflush();
-	if (crow < csbi.dwMaximumWindowSize.Y - 1)
-	    crow++;
-	else
-	    ntscroll(1, 0, csbi.dwMaximumWindowSize.Y - 1);
-	break;
-
-    default:
-	linebuf[bufpos++] = ch;
-	break;
-    }
 }
 
 static void
@@ -382,21 +390,31 @@ ntrev(UINT attr)
     scflush();
     cbcolor = nbcolor;
     cfcolor = nfcolor;
+    attr &= (VASPCOL|VACOLOR|VABOLD|VAITAL|VASEL|VAREV);
     if (attr) {
 	if (attr & VASPCOL)
 	    cfcolor = (VCOLORNUM(attr) & (NCOLORS - 1));
-	else if (attr == VABOLD)
-	    cfcolor |= FOREGROUND_INTENSITY;
-	else if (attr == VAITAL)
-	    cbcolor |= BACKGROUND_INTENSITY;
 	else if (attr & VACOLOR)
 	    cfcolor = ((VCOLORNUM(attr)) & (NCOLORS - 1));
+
+	if (cfcolor == ENUM_UNKNOWN)
+	    cfcolor = C_WHITE;
+	if (cbcolor == ENUM_UNKNOWN)
+	    cbcolor = C_BLACK;
 
 	if (attr & (VASEL | VAREV)) {	/* reverse video? */
 	    int temp = cfcolor;
 	    cfcolor = cbcolor;
 	    cbcolor = temp;
 	}
+
+	if (attr == VABOLD) {
+	    cfcolor |= FOREGROUND_INTENSITY;
+	}
+	if (attr == VAITAL) {
+	    cbcolor |= BACKGROUND_INTENSITY;
+	}
+	TRACE2(("ntrev(%04x) f=%4x, b=%4x\n", attr, cfcolor, cbcolor));
     }
 }
 
@@ -584,18 +602,47 @@ static int saveCount = 0;
 static int
 decode_key_event(INPUT_RECORD * irp)
 {
+    DWORD state = irp->Event.KeyEvent.dwControlKeyState;
     int key;
     int i;
 
     if (!irp->Event.KeyEvent.bKeyDown)
 	return (NOKYMAP);
 
+    TRACE(("decode_key_event(%c=%02x, Virtual=%#x,%#x, State=%#x)\n",
+	irp->Event.KeyEvent.uChar.AsciiChar,
+	irp->Event.KeyEvent.uChar.AsciiChar,
+	irp->Event.KeyEvent.wVirtualKeyCode,
+	irp->Event.KeyEvent.wVirtualScanCode,
+	irp->Event.KeyEvent.dwControlKeyState));
+
     if ((key = (UCHAR) irp->Event.KeyEvent.uChar.AsciiChar) != 0)
 	return key;
 
+    if ((state & (RIGHT_CTRL_PRESSED | LEFT_CTRL_PRESSED)) != 0
+     && (state & (RIGHT_CTRL_PRESSED | LEFT_CTRL_PRESSED | SHIFT_PRESSED)) == state) {
+	/*
+	 * Control-shift-6 is control/^, control/~ or control/`.
+	 */
+	if (irp->Event.KeyEvent.wVirtualKeyCode == '6'
+	 || irp->Event.KeyEvent.wVirtualKeyCode == '^'
+	 || irp->Event.KeyEvent.wVirtualKeyCode == '\036') {
+	    TRACE(("...decode_key_event ^^\n"));
+	    return '\036';
+	}
+	/*
+	 * Control-shift-2 is control/@, or null.
+	 */
+	if (irp->Event.KeyEvent.wVirtualKeyCode == '2'
+	 || irp->Event.KeyEvent.wVirtualKeyCode == '@') {
+	    TRACE(("...decode_key_event null\n"));
+	    return 0;
+	}
+    }
+
+    key = NOKYMAP;
     for (i = 0; i < TABLESIZE(keyxlate); i++) {
 	if (keyxlate[i].windows == irp->Event.KeyEvent.wVirtualKeyCode) {
-	    DWORD state = irp->Event.KeyEvent.dwControlKeyState;
 
 	    /*
 	     * If this key is modified in some way, we'll prefer to use the
@@ -618,11 +665,10 @@ decode_key_event(INPUT_RECORD * irp)
 		    key |= W32_SHIFT;
 	    } else
 		key = keyxlate[i].vile;
+	    TRACE(("... %#x -> %#x\n", irp->Event.KeyEvent.wVirtualKeyCode, key));
 	    break;
 	}
     }
-    if (key == 0)
-	return (NOKYMAP);
 
     return key;
 }

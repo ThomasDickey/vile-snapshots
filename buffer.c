@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.232 2001/03/22 22:52:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.233 2001/04/08 00:35:29 tom Exp $
  *
  */
 
@@ -21,6 +21,36 @@ static	int	show_all,	/* true iff we show all buffers */
 		updating_list;
 
 /*--------------------------------------------------------------------------*/
+
+int
+buffer_in_use(BUFFER *bp)
+{
+	if (bp->b_inuse) {
+		mlforce("[Buffer '%s' is in use]", bp->b_bname);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+int
+buffer_is_visible(BUFFER *bp)
+{
+	if (bp->b_nwnd != 0) {			/* Error if on screen.	*/
+		mlforce("[Buffer '%s' is being displayed]", bp->b_bname);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+int
+buffer_is_solo(BUFFER *bp)
+{
+	if ((curbp == bp) && (find_alt() == 0)) {
+		mlforce("[Can't kill buffer '%s']", bp->b_bname);
+		return TRUE;
+	}
+	return FALSE;
+}
 
 /*
  * Returns the buffer-list pointer, if it exists.
@@ -1105,12 +1135,11 @@ kill_that_buffer(BUFFER *bp)
 	int s;
 	char bufn[NFILEN];
 
-	if ((curbp == bp) && (find_alt() == 0)) {
-		mlforce("[Can't kill that buffer]");
+	(void)strcpy(bufn, bp->b_bname); /* ...for info-message */
+	if (buffer_is_solo(bp)) {
 		return FALSE;
 	}
 
-	(void)strcpy(bufn, bp->b_bname); /* ...for info-message */
 	if (bp->b_nwnd != 0)  { /* then it's on the screen somewhere */
 		(void)zotwp(bp);
 		if (find_bp(bp) == 0) { /* delwp must have zotted us */
@@ -1284,12 +1313,12 @@ zotbuf(register BUFFER *bp)	/* kill the buffer pointed to by bp */
 
 	TRACE(("zotbuf(%s)\n", bp->b_bname));
 
+	if (buffer_in_use(bp))
+		return FALSE;
 #define no_del
 #ifdef no_del
-	if (bp->b_nwnd != 0) {			/* Error if on screen.	*/
-		mlforce("[Buffer is being displayed]");
-		return (FALSE);
-	}
+	if (buffer_is_visible(bp))	/* Error if on screen.	*/
+		return FALSE;
 	if (is_fake_window(wheadp))  {
 		WINDOW *wp;
 		WINDOW dummy;
@@ -1307,8 +1336,7 @@ zotbuf(register BUFFER *bp)	/* kill the buffer pointed to by bp */
 #else
 	if (curbp == bp) {
 		didswitch = TRUE;
-		if (find_alt() == 0) {
-			mlforce("[Can't kill that buffer]");
+		if (buffer_is_solo(bp)) {
 			return FALSE;
 		}
 	}

@@ -1,5 +1,39 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20010407 (k)
+	> Clark Morgan:
+	+ update note in README.PC about problems with ActivePerl.
+	> Tom Dickey
+	+ add a check in zotbuf() to prevent a buffer from being deleted while
+	  it is being executed as a macro (report by Paul Fox).
+	+ fix a potential overflow of linebuf[] in ntconio.c
+	+ fixes for ntwinio.c and ntconio.c to handle default color codes
+	  properly.  The logic did not mask out unrelated bits from the
+	  attribute field, did not apply bold and italic codes in the right
+	  order to work with default colors.
+	+ make manpage.rc work on win32, etc., assuming cawf is available as
+	  a substitute for nroff.
+	+ check imakemode before defmode.
+	+ modify ntconio.c so control/@ is translated to ^@ on insertions
+	  (reported by Clark Morgan).
+	+ use SL_TO_BSL() to convert path separators to native form on DOS
+	  and similar systems in the return values of builtin functions such
+	  as &lookup, needed this to port manpage.rc
+	+ improve bas-filt.l's rules for hexadecimal constants, add action
+	  highlight for "_" used as a continuation marker, and show #date#
+	  constructs as a string.
+	+ accept ".cmd" as a suffix for batmode, resolving conflict with OS/2
+	  by making it specific to the system.
+	+ modify bat-filt.l to highlight the portion labels past 8 characters.
+	  Only the first 8 are significant.
+	+ modify bat-filt.l to handle '@' before any command, e.g., @rem.
+	+ adjust ifdef's for OPT_FINDPATH to build with configure
+	  --disable-extensions.
+	+ modify ntwinio.c to recognize control/@ or control/2 as ^@.
+	+ add ".exp" to tclmode, for 'expect' scripts.
+	+ refine suffixes for rcmode to avoid conflict with names such as
+	  .lynxrc
+
  20010322 (j)
 	> Clark Morgan:
 	+ added $findpath and $find-cmd state variables.

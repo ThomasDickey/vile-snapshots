@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.233 2001/03/01 23:42:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.234 2001/04/08 00:32:38 tom Exp $
  *
  */
 
@@ -1236,8 +1236,7 @@ setup_macro_buffer(TBUFF * name, int flag)
 	mlforce("[Cannot create procedure]");
 	return FALSE;
     }
-    if (bp->b_inuse) {
-	mlforce("[Currently executing this procedure]");
+    if (buffer_in_use(bp)) {
 	return FALSE;
     }
 
@@ -1422,8 +1421,7 @@ execbuf(int f, int n)
 	return status;
 
     /* find the pointer to that buffer */
-    if ((bp = find_b_name(bufn)) == NULL) {
-	mlforce("[No such buffer \"%s\"]", bufn);
+    if ((bp = find_any_buffer(bufn)) == NULL) {
 	return FALSE;
     }
 
