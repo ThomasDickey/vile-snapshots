@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.105 1998/11/30 10:30:01 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.106 1998/12/29 23:50:03 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -151,6 +151,11 @@ int							# VAL_ prefix
 regex							# MVAL_ prefix
 	"PREamble"	PREAMBLE	0		# match against file header to turn on mode
 	"SUFfixes"	SUFFIXES	0		# match against filenames to turn on mode
+
+.qualifier
+string
+	"name"		NAME		0
+	"group"		GROUP		0
 
 #
 # The "environment" variables are similar to modes, but are not so neatly

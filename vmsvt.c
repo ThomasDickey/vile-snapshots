@@ -7,7 +7,7 @@
  *  Author:  Curtis Smith
  *  Last Updated: 07/14/87
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.38 1998/11/30 10:31:30 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.39 1999/01/15 01:35:45 cmorgan Exp $
  *
  */
 
@@ -302,19 +302,6 @@ UINT state)		/* FALSE = normal video, TRUE = reverse video */
 #endif	/* OPT_VIDEO_ATTRS */
 
 /***
- *  vmscres  -  Change screen resolution (which it doesn't)
- *
- *  Nothing returned
- ***/
-static int
-vmscres(const char *res)
-{
-	/* But it could.  For vt100/vt200s, one could switch from
-	80 and 132 columns modes */
-	return 0;
-}
-
-/***
  *  vmseeol  -  Erase to end of line
  *
  *  Nothing returned
@@ -579,7 +566,7 @@ vmsopen(void)
 	}
 
 	/* Set resolution */
-	(void)strcpy(sres, "NORMAL");
+	(void)strcpy(sres, (term.t_ncol != 132) ? "NORMAL" : "WIDE");
 
 	/* Open terminal I/O drivers */
 	ttopen();
@@ -680,6 +667,51 @@ vmsscrollregion(int top, int bot)
 	putpad_tgoto(SMG$K_SET_SCROLL_REGION, top+1, bot+1);
 }
 
+/***
+ *  vmscres  -  Change screen resolution
+ *
+ *  support these values:   WIDE -> 132 columns, NORMAL -> 80 columns
+ *
+ *  T -> if resolution successfully changed, F otherwise.
+ ***/
+static int
+vmscres(const char *res)
+{
+#define COLS_132 "\033[?3h"
+#define COLS_80  "\033[?3l"
+
+    char buf[NLINE];
+    int  rc = FALSE;
+
+    if (tc.t_type == TT$_VT52)
+    {
+        mlforce("[sres not supported for VT52-style terminals]");
+        return (rc);
+    }
+
+    strcpy(buf, res);
+    mkupper(buf);
+    if (strcmp(buf, "WIDE") == 0)
+    {
+        ttputs(COLS_132);
+        term.t_ncol = 132;
+        rc          = TRUE;
+    }
+    else if (strcmp(buf, "NORMAL") == 0)
+    {
+        ttputs(COLS_80);
+        term.t_ncol = 80;
+        rc          = TRUE;
+    }
+    else
+        mlforce("[invalid sres value (use NORMAL or WIDE)]");
+    if (rc)
+        newwidth(1, term.t_ncol);
+    return (rc);
+
+#undef COLS_132
+#undef COLS_80
+}
 
 #else
 

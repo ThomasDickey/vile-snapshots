@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.85 1998/10/24 20:12:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.87 1999/01/15 02:06:41 tom Exp $
  *
  *
  */
@@ -190,8 +190,12 @@ int	option)		/* true:directory, false:file, -true:don't care */
 				next = VMSPATH_END_DIR;
 			break;
 		case '.':
-			if (this >= VMSPATH_BEGIN_TYP)
-				return FALSE;
+			if (this >= VMSPATH_BEGIN_TYP) {
+				if (this >= VMSPATH_BEGIN_VER)
+					return FALSE;
+				next = VMSPATH_BEGIN_VER;
+				break;
+			}
 			next = (this >= VMSPATH_END_DIR)
 				? VMSPATH_BEGIN_TYP
 				: (this >= VMSPATH_BEGIN_DIR
@@ -1909,13 +1913,32 @@ slconv(const char *f, char *t, char oc, char nc)
 
 #if OPT_VMS_PATH
 /*
+ * Locate the version in a VMS filename.  Usually it is the ';', but a '.' also
+ * is accepted.  However, a '.' may appear in the directory part, or as the
+ * suffix delimiter.
+ */
+char *
+version_of(char *fname)
+{
+	char *s = strchr(fname, ';');
+	if (s == 0) {
+		fname = pathleaf(fname);
+		if ((s = strchr(fname, '.')) == 0
+		 || (*++s == EOS)
+		 || (s = strchr(fname, '.')) == 0)
+			s = skip_string(fname);
+	}
+	return s;
+}
+
+/*
  * Strip the VMS version number, so the resulting path implicitly applies to
  * the current version.
  */
 char *
 strip_version(char *path)
 {
-	char *verp = strrchr(path, ';');
+	char *verp = version_of(path);
 	if (verp != 0)
 		*verp = EOS;
 	return path;

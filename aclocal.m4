@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.61 1998/11/24 11:57:05 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.63 1999/01/24 23:58:53 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -1204,8 +1204,8 @@ dnl ---------------------------------------------------------------------------
 dnl Look for termcap libraries, or the equivalent in terminfo.
 AC_DEFUN([CF_TERMCAP_LIBS],
 [
-AC_CACHE_VAL(cf_cv_lib_termcap,[
-cf_cv_lib_termcap=none
+AC_CACHE_VAL(cf_cv_termlib,[
+cf_cv_termlib=none
 AC_TRY_LINK([],[char *x=(char*)tgoto("",0,0)],
 [AC_TRY_LINK([],[int x=tigetstr("")],
 	[cf_cv_termlib=terminfo],
@@ -1220,25 +1220,25 @@ if test "$1" = ncurses; then
 fi
 ])
 # HP-UX 9.x terminfo has setupterm, but no tigetstr.
-if test "$termlib" = none; then
-	AC_CHECK_LIB(termlib, tigetstr, [LIBS="$LIBS -ltermlib" cf_cv_lib_termcap=terminfo])
+if test "$cf_cv_termlib" = none; then
+	AC_CHECK_LIB(termlib, tigetstr, [LIBS="$LIBS -ltermlib" cf_cv_termlib=terminfo])
 fi
-if test "$cf_cv_lib_termcap" = none; then
-	AC_CHECK_LIB(termlib, tgoto, [LIBS="$LIBS -ltermlib" cf_cv_lib_termcap=termcap])
+if test "$cf_cv_termlib" = none; then
+	AC_CHECK_LIB(termlib, tgoto, [LIBS="$LIBS -ltermlib" cf_cv_termlib=termcap])
 fi
-if test "$cf_cv_lib_termcap" = none; then
+if test "$cf_cv_termlib" = none; then
 	# allow curses library for broken AIX system.
-	AC_CHECK_LIB(curses, initscr, [LIBS="$LIBS -lcurses" cf_cv_lib_termcap=termcap])
-	AC_CHECK_LIB(termcap, tgoto, [LIBS="$LIBS -ltermcap" cf_cv_lib_termcap=termcap])
+	AC_CHECK_LIB(curses, initscr, [LIBS="$LIBS -lcurses" cf_cv_termlib=termcap])
+	AC_CHECK_LIB(termcap, tgoto, [LIBS="$LIBS -ltermcap" cf_cv_termlib=termcap])
 fi
-if test "$cf_cv_lib_termcap" = none; then
-	AC_CHECK_LIB(termcap, tgoto, [LIBS="$LIBS -ltermcap" cf_cv_lib_termcap=termcap])
+if test "$cf_cv_termlib" = none; then
+	AC_CHECK_LIB(termcap, tgoto, [LIBS="$LIBS -ltermcap" cf_cv_termlib=termcap])
 fi
-if test "$cf_cv_lib_termcap" = none; then
-	AC_CHECK_LIB(ncurses, tgoto, [LIBS="$LIBS -lncurses" cf_cv_lib_termcap=ncurses])
+if test "$cf_cv_termlib" = none; then
+	AC_CHECK_LIB(ncurses, tgoto, [LIBS="$LIBS -lncurses" cf_cv_termlib=ncurses])
 fi
 ])
-if test "$cf_cv_lib_termcap" = none; then
+if test "$cf_cv_termlib" = none; then
 	AC_ERROR([Can't find -ltermlib, -lcurses, or -ltermcap])
 fi
 ])])dnl
@@ -1339,11 +1339,11 @@ AC_ARG_WITH(neXtaw,
 
 AC_CHECK_HEADERS(X11/$cf_x_athena/SimpleMenu.h)
 
-AC_CHECK_LIB(Xmu, XmuClientWindow,,[
-AC_CHECK_LIB(Xmu_s, XmuClientWindow)])
-
 AC_CHECK_LIB(Xext,XextCreateExtension,
 	[LIBS="-lXext $LIBS"])
+
+AC_CHECK_LIB(Xmu, XmuClientWindow,,[
+AC_CHECK_LIB(Xmu_s, XmuClientWindow)])
 
 AC_CHECK_LIB($cf_x_athena, XawSimpleMenuAddGlobalActions,
 	[LIBS="-l$cf_x_athena $LIBS"],[

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.2 1998/12/28 01:33:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.4 1999/01/05 03:06:58 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
@@ -18,6 +18,8 @@ static char *Number_attr;
 static char *Keyword_attr;
 static char *Ident_attr;
 static char *String_attr;
+
+static int commented;
 
 static char *
 check_name(char *name)
@@ -57,6 +59,7 @@ do_filter(FILE *input, FILE *output)
 BLANK		[ \t]
 CAPCHAR		[^# \t\n:=]
 CAPNAME		{CAPCHAR}{CAPCHAR}
+DOTNAME		(\.)+{CAPNAME}
 
 ALIAS		[a-zA-Z0-9-]+
 
@@ -69,7 +72,8 @@ STRING		(\\[:]|[^:])*
 
 ^({ALIAS}"|")*			{ WriteToken(Ident_attr); BEGIN(DESC); }
 <DESC>[^:\n]*			{ WriteToken(Comment_attr); BEGIN(GAPS); }
-<GAPS,VALS>(:|:\\\n\t)*		{ ECHO; BEGIN(CAPS); }
+<GAPS,VALS>(:|:\\\n\t)*		{ commented=0; ECHO; BEGIN(CAPS); }
 <CAPS>{CAPNAME}			{ WriteToken(check_name(yytext)); BEGIN(VALS); }
-<VALS>{NUMBER}			{ WriteToken(Number_attr); BEGIN(GAPS); }
-<VALS>{STRING}			{ WriteString(String_attr); BEGIN(GAPS); }
+<CAPS>{DOTNAME}			{ WriteToken(Comment_attr); commented = 1; BEGIN(VALS); }
+<VALS>{NUMBER}			{ WriteToken(commented ? Comment_attr : Number_attr); BEGIN(GAPS); }
+<VALS>{STRING}			{ WriteString(commented ? Comment_attr : String_attr); BEGIN(GAPS); }

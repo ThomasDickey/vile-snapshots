@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_2j
+MANIFEST for vile, version v8_2k
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -161,6 +161,7 @@ filters/html.key                keywords for vile-html-filt
 filters/htmlfilt.l              HTML syntax filter for vile
 filters/java.key                java keywords
 filters/js.key                  javascript keywords
+filters/latex.key               latex keywords
 filters/latexflt.l              LaTeX syntax filter for vile
 filters/lex-filt.l              lex syntax filter for vile
 filters/lex.key                 keywords for lex + c

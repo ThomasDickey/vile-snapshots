@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.159 1998/11/11 21:57:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.160 1999/01/25 01:23:46 cmorgan Exp $
  *
  */
 #include	"estruct.h"
@@ -746,31 +746,10 @@ void
 ttopen(void)
 {
 #if	SYS_VMS
-	struct	dsc$descriptor	idsc;
-	struct	dsc$descriptor	odsc;
-	char	oname[40];
 	QIO_SB	iosb;
 	int	status;
+	$DESCRIPTOR(odsc, "SYS$COMMAND");
 
-	odsc.dsc$a_pointer = "TT";
-	odsc.dsc$w_length  = strlen(odsc.dsc$a_pointer);
-	odsc.dsc$b_dtype	= DSC$K_DTYPE_T;
-	odsc.dsc$b_class	= DSC$K_CLASS_S;
-	idsc.dsc$b_dtype	= DSC$K_DTYPE_T;
-	idsc.dsc$b_class	= DSC$K_CLASS_S;
-	do {
-		idsc.dsc$a_pointer = odsc.dsc$a_pointer;
-		idsc.dsc$w_length  = odsc.dsc$w_length;
-		odsc.dsc$a_pointer = &oname[0];
-		odsc.dsc$w_length  = sizeof(oname);
-		status = lib$sys_trnlog(&idsc, &odsc.dsc$w_length, &odsc);
-		if (status!=SS$_NORMAL && status!=SS$_NOTRAN)
-			tidy_exit(status);
-		if (oname[0] == 0x1B) {
-			odsc.dsc$a_pointer += 4;
-			odsc.dsc$w_length  -= 4;
-		}
-	} while (status == SS$_NORMAL);
 	status = sys$assign(&odsc, &iochan, 0, 0);
 	if (status != SS$_NORMAL)
 		tidy_exit(status);

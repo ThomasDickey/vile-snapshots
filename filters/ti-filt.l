@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.2 1998/12/29 15:51:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.5 1999/01/05 03:10:44 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of terminfo
  */
@@ -19,12 +19,18 @@ static char *Keyword_attr;
 static char *Ident_attr;
 static char *String_attr;
 
+static int commented;
+
 static void
 echo_vals(char *text, int size, char *attr)
 {
-    fputc(*text, yyout);
-    text++;
-    size--;
+    if (commented) {
+	attr = Comment_attr;
+    } else {
+	fputc(*text, yyout);
+	text++;
+	size--;
+    }
     write_string(yyout, text, size, attr);
 }
 
@@ -63,9 +69,15 @@ do_filter(FILE *input, FILE *output)
 
 %}
 
+SPACE		[ \t]
+
 CAPNAME		[a-zA-Z][a-zA-Z0-9_]*
+DOTNAME		\.{CAPNAME}
 
 ALIAS		[a-zA-Z0-9+-]+
+
+COMMA		[,]
+ESCNL		{COMMA}{SPACE}*\\\n\t
 
 NUMBER		"#"[0-9]+
 STRING		"="(\\[,]|[^,]|\t)*
@@ -76,8 +88,9 @@ STRING		"="(\\[,]|[^,]|\t)*
 
 ^({ALIAS}"|")+			{ WriteToken(Ident_attr); BEGIN(DESC); }
 <DESC>[^,\n]*			{ WriteToken(Comment_attr); BEGIN(GAPS); }
-<GAPS,VALS>(,|,\\\n\t)*		{ ECHO; BEGIN(CAPS); }
+<GAPS,VALS>({COMMA}|{ESCNL})*	{ commented = 0; ECHO; BEGIN(CAPS); }
 <CAPS>{CAPNAME}			{ WriteToken(check_name(yytext)); BEGIN(VALS); }
+<CAPS>{DOTNAME}			{ WriteToken(Comment_attr); commented = 1; BEGIN(VALS); }
 <VALS>'@'			{ WriteToken(Action_attr); BEGIN(GAPS); }
 <VALS>{NUMBER}			{ echo_vals(yytext, yyleng, Number_attr); BEGIN(GAPS); }
 <VALS>{STRING}			{ echo_vals(yytext, yyleng, String_attr); BEGIN(GAPS); }

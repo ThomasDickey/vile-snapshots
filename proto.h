@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.321 1998/12/17 03:12:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.325 1999/01/23 13:42:37 tom Exp $
  *
  */
 
@@ -612,11 +612,14 @@ extern const char *const * list_of_modes (void);
 #endif
 
 #if OPT_MAJORMODE
+extern char * get_submode_name(BUFFER *bp, int n);
 extern int alloc_mode(const char *name, int predef);
+extern struct VAL *get_submode_vals(BUFFER *bp, int n);
+extern struct VAL *get_submode_valx(BUFFER *bp, int n, int *m);
 extern void set_majormode_rexp(const char *name, int n, const char *pat);
 extern void set_submode_val(const char *name, int n, int value);
-extern void setm_by_suffix (BUFFER *bp);
 extern void setm_by_preamble (BUFFER *bp);
+extern void setm_by_suffix (BUFFER *bp);
 #else
 #define setm_by_suffix(bp) fix_cmode(bp, (global_b_val(MDCMOD) && has_C_suffix(bp)))
 #define setm_by_preamble(bp) /* nothing */
@@ -694,6 +697,7 @@ extern int is_case_preserving (const char *name);
 #if OPT_VMS_PATH
 extern char * strip_version (char *path);
 extern char * unix_pathleaf (char *path);
+extern char * version_of (char *fname);
 extern char * vms_pathleaf (char *path);
 extern int is_vms_pathname (const char *path, int option);
 #endif

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.12 1998/12/29 01:27:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.13 1999/01/12 22:50:01 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -122,7 +122,7 @@ STRINGS		({SSTRING}|{DSTRING})
 			  BEGIN(HTMLNOTE);           }
 <HTMLNOTE>[^-]+		{ WriteString(Comment_attr); }
 <HTMLNOTE>"-"+[^->]*	{ WriteString(Comment_attr); }
-<HTMLNOTE>"-->"		{ WriteToken(Comment_attr);
+<HTMLNOTE>"-"+"->"	{ WriteToken(Comment_attr);
 			  BEGIN(INITIAL);            }
 
 <HTMLCODE>{STRING}	{ WriteString(String_attr); }

@@ -1,5 +1,51 @@
 Changes for vile 8.3 (released ??? ??? ??, 1998)
 
+ (tom) 990124 (k)
+	+ modify VMS logic in ttopen to use "SYS$COMMAND" rather than "TT:"
+	  since the latter does not work with the PIPE command added in VMS 7.x
+	  to mimics unix cmdline pipe functionality.  Vile couldn't use this
+	  command, though.  For example: 
+		$ pipe dir | vile 
+	  failed with an "illegal i/o function" error.  This change allows vile
+	  to read from the pipe stream as well as retaining its ability to read
+	  from a redirected stdin (patch by Clark Morgan). 
+	+ reset eofflag in inout_popen, since attribute_from_filter may
+	  otherwise see the EOF from the previous file reading operation, e.g.,
+	  if the file did not end with a newline.  Likewise set fileispipe,
+	  just in case it would be needed.
+ 	+ correct inconsistent spelling of cache variable in CF_TERMCAP_LIBS,
+	  which caused the configure script to ignore a predefined termcap or
+	  terminfo library.
+ 	+ correct order of -lXmu vs -lXext in Athena-widget configure test.
+ 	+ resync configure scripts against autoconf 2.13 + patches
+	+ modify is_vms_pathname(), is_version() to accept a '.' to delimit
+	  version number (reported by Clark Morgan).
+ 	+ implement $sres, i.e., 80/132 column switching for vmsvt.c (patch
+	  by Clark Morgan).
+ 	+ update version number for Vileserv, missed in 8.2j
+ 	+ rename some operators that accept a range to end with "-til", for
+	  consistency (reported by Paul Fox, Clark Morgan).
+	+ other improvements to perlfilt.l, e.g., underscores in numbers,
+	  a POD-format,, suggested by Brendan O'Dea.
+	+ simplify HighlightFilter macro - there is no need to report if no
+	  filter exists, after all.  This required renaming nroffmode to nrmode
+	  and pascalmode to pasmode (adapted from example by Brendan O'Dea).
+	+ apply "group" feature to complex fences, i.e., fence-if, ...,
+	  fence-fi.  This allows vile to match both while{...} and if{...}
+	  blocks, for a test-case by Kuntal M Daftary.  It works, but is very
+	  slow when choosing between patterns that are ambiguous, e.g., the
+	  different groups of patterns all end with a "}".
+	+ add "group" feature to majormodes, which allows user to define new
+	  instances of certain submodes.
+	+ ensure GCC_UNUSED is defined in filters.h for platforms that do not
+	  use the configure script (reported by Brian Moore).
+	+ minor fix to listvalueset() to avoid getting a double-newline.
+	+ improve makefilt.l, making it read keyword file.
+	+ add latexflt.l to install rule; various improvements to that
+	  filter.
+	+ improved perlfilt.l symbol table and symbol-parsing based on
+	  vile-pfilt.pl (John P Cavanaugh <cavanaug@elwom4.ecn.purdue.edu>).
+
  (tom) 981229 (j)
  	+ modify majormode preamble logic to set ignorecase if the majormode
 	  sets ignorecase.
