@@ -1,4 +1,8 @@
-Changes for vile 6.1 (released ???)
+Changes for vile 6.1 (released Tue Sep 10, 1996)
+(pgf) 960910
+	+ added text to README and vile.hlp regarding possibility of
+	  tom's taking over the source tree.  not completely firmed
+	  up yet, but likely.  thanks tom!!!!
 
 (tom) 960903 (d)
 	+ adapted patch by Larry Schwimmer's (schwim@cyclone.stanford.edu)
@@ -60,4 +64,3 @@ Changes for vile 6.1 (released ???)
 	+ fix usage message. (version.c)
 
 This change log started on Friday Jun 28, 1996.
-Changes for vile 6.0 (released Tue Jun 18, 1996)

@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.198 1996/09/05 01:20:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.199 1996/09/10 12:36:57 pgf Exp $
  */
 
 /* I know this declaration stuff is really ugly, and I probably won't ever
@@ -31,7 +31,7 @@ decl_init( const char prognam[], "xvile");
 decl_init( const char prognam[], "vile");
 #endif
 
-decl_init( const char version[], "version 6.0");
+decl_init( const char version[], "version 6.1");
 
 #ifdef SYSTEM_NAME
 decl_init( const char opersys[], SYSTEM_NAME);

@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.312 1996/07/29 16:35:55 pgf Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.314 1996/09/05 01:59:02 pgf Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1021,4 +1021,16 @@ the Xt link fails in configure.
 Global "cmode" is on.  Edit a new (empty) buffer.  "cmode" is off for that
 buffer.  Do a ":unsetl cmode".  This should have no affect.  What it actually
 does is turn "cmode" on!
+
+-----------------
+
+"visual-matches" mode should be conditional on file size, or perhaps
+on time taken to do the search...
+
+-----------------
+ > It seems that some files were in the zipfile vil60dos.zip with the read
+ > only paramater set.  I unzipped them with infozip's unzipper instead
+ > of pkunzip, and this became a read-only attribute on the vile.hlp
+ > file.  If this is set, vile.exe can't find it.
+      
 

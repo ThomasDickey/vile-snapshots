@@ -1,5 +1,5 @@
 
-Getting along with vile						(version 6.0)
+Getting along with vile						(version 6.1)
 -----------------------						-------------
 
 	Use Ctrl-D and Ctrl-U to scroll through this help information.
@@ -3337,12 +3337,14 @@ Notes on TERM types and Scrolling
 Credits
 -------
 
+	[ As of version 6.1, I think Tom Dickey may be taking over the
+	"official" source tree, and release responsibilities.  This
+	hasn't completely firmed up yet... ]
+
 	This code has been written by a _lot_ of people, with help from a
-	lot more sending in bug reports, fixes, and suggestions.  But bug
-	reports should be sent to Paul Fox, pgf@foxharp.boston.ma.us, since
-	I'm (still) (principally) responsible for this thing.  My
-	co-authors are Tom Dickey (dickey@clark.net) and Kevin Buettner
-	(kev@primenet.com).
+	lot more sending in bug reports, fixes, and suggestions.  The
+	authors of vile are Tom Dickey (dickey@clark.net) and Kevin Buettner
+	(kev@primenet.com), and Paul Fox (pgf@foxharp.boston.ma.us).
 
 	Names appearing within comments in the micro-Emacs source code are:
 	Dave Conroy, Daniel Lawrence, John Gamble, Roger Ove, Dana Hoggatt,
@@ -3365,17 +3367,19 @@ Credits
 	'notgnu' editor, by Julie Melbin.  Patches to support OS/2 and
 	Windows/NT came from Charles Moschel and Joe Greer, respectively.
 	Clark Morgan and Greg McFarlane seem to run full regression tests
-	on each new release, and always seem to find something to report.
-	The reference.doc file supplied with Bram Moolenaar's excellent Vim
-	editor was useful in unravelling some of the less obvious parts of
-	:map functionality.  In addition, his implementation of digraph
-	insertion was used directly in the creation of digraphs.rc.  Thanks
-	to Jukka Keto for contributing the c-filt.c code.
+	on each new release, and always seem to find something to report. 
+	Sean Ahern is also always dependable for finding a bug or two per
+	release.  The reference.doc file supplied with Bram Moolenaar's
+	excellent Vim editor was useful in unravelling some of the less
+	obvious parts of :map functionality.  In addition, his
+	implementation of digraph insertion was used directly in the
+	creation of digraphs.rc.  Thanks to Jukka Keto for contributing the
+	c-filt.c code. 
 
 	The initial changes to create vile from micro-Emacs were all done
-	by Paul Fox, who can be reached at home at pgf@foxharp.boston.ma.us.
-	(By the way, he is not the Paul D. Fox that wrote the Crisp editor.)
+	by Paul Fox (pgf@foxharp.boston.ma.us).  (By the way, he is not the
+	Paul D. Fox that wrote the Crisp editor.)
 
-Copyright 1995 by Paul Fox, Tom Dickey, and Kevin Buettner
+Copyright 1995,1996 by Paul Fox, Tom Dickey, and Kevin Buettner
 -----------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.296 1996/06/18 21:14:56 pgf Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.297 1996/09/10 12:32:57 pgf Exp $
