@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.355 1998/05/25 16:56:39 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.356 1998/05/27 00:54:37 kev Exp $
  */
 
 #ifndef _estruct_h
@@ -1789,15 +1789,15 @@ extern MARK *api_mark_iterator(BUFFER *bp, int *iter);
 #else /* OPT_VIDEO_ATTRS */
 #define do_mark_iterate(mp, statement)			\
     do {						\
+	struct MARK *mp;				\
 	if (curbp->b_nmmarks != NULL) {			\
-	    struct MARK *mp;				\
 	    int dmi_idx;				\
 	    for (dmi_idx=0; dmi_idx < 26; dmi_idx++) {	\
 		mp = &(curbp->b_nmmarks[dmi_idx]);	\
 		statement				\
 	    }						\
-	    api_do_mark_iterate_helper(mp, statement)	\
 	}						\
+	api_do_mark_iterate_helper(mp, statement)	\
     } one_time
 #endif /* OPT_VIDEO_ATTRS */
 

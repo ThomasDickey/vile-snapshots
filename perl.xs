@@ -1,18 +1,19 @@
 /*
  * perl.xs		-- perl interface for vile.
  *
- * Author: Kevin Buettner
+ * Author: Kevin Buettner, Brendan O'Dea
  *
  * (with acknowledgments to the authors of the nvi perl interface as
- * well as Brendan O'Dea and Sean Ahern who both contributed snippets
- * of code here and there and many valuable suggestions.)
+ * Sean Ahern who has contributed snippets of code here and there and
+ * many valuable suggestions.)
+ *
  * Created: Fall, 1997
  *
  * Description: The following code provides an interface to Perl from
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.22 1998/05/25 16:11:24 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.23 1998/05/27 00:54:37 kev Exp $
  */
 
 /*#
@@ -1610,8 +1611,14 @@ int
 command(cline)
     char *cline
 
+    PREINIT:
+    	int old_discmd;
+
     CODE:
+	old_discmd = discmd;
+	discmd = FALSE;
 	RETVAL = docmd(cline, TRUE, FALSE, 1);
+	discmd = old_discmd;
 
     OUTPUT:
 	RETVAL
@@ -2752,9 +2759,13 @@ command(vbp,cline)
 
     PREINIT:
 	int status;
+	int old_discmd;
     PPCODE:
+	old_discmd = discmd;
+	discmd = FALSE;
 	api_setup_fake_win(vbp, TRUE);
 	status = docmd(cline, TRUE, FALSE, 1);
+	discmd = old_discmd;
 	if (status) {
 	    XPUSHs(ST(0));		/* return buffer object */
 	}

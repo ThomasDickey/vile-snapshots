@@ -1,5 +1,17 @@
 Changes for vile 7.5/8.0 (released ??? ??? ?, 1998)
 
+ (kev) 980525 (m)
+ 	+ estruct.h (do_mark_iterate): Restore location of
+	  api_do_mark_iterate_helper to its pre-"l" position.  Moved
+	  declaration of mp so that it's available for expansion of
+	  api_do_mark_iterate_helper.
+	+ perl.xs: Added Brendan O'Dea as an author.
+	  (Vile::command, Vile::Buffer::command): Set discmd so that
+	  prompts are not displayed.
+	+ perl/search.pl: New file.
+	+ makefile.in (search.pl): Added to PERL_SRC and INSTALL_PERL
+	  variables.  Added install target.
+
  (tom) 980523 (l)
  	+ remove _WIN32 ifdef's from perl.xs, so that $VILE_LIBRARY_PATH
 	  is supported on Unix as well.
