@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.9 2000/11/04 20:29:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.13 2001/01/05 20:27:02 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -439,8 +439,6 @@ add_to_PATTERN(char *s)
 		escaped = 1;
 	    } else {
 		if (!escaped) {
-		    if (*s == '\n')	/* FIXME: can patterns span a line? */
-			break;
 		    if (*s == delim) {
 			if (--need == 0) {
 			    s++;
@@ -453,8 +451,6 @@ add_to_PATTERN(char *s)
 	    s++;
 	}
 	while (s != the_last) {
-	    if (*s == '\n')	/* FIXME: can patterns span a line? */
-		break;
 	    if (!isalpha(CharOf(*s))
 		|| *s == ';')
 		break;
@@ -463,6 +459,62 @@ add_to_PATTERN(char *s)
 	return (s - base);
     }
     return 0;
+}
+
+/*
+ * FIXME: revisit 9.2e's test-case and determine how to handle /x modifier.
+ */
+static char *
+write_PATTERN(char *s, int len)
+{
+    int x_modifier = 0;
+    int n;
+
+    for (n = len - 1; n > 0; n--) {
+	if (isalpha(s[n])) {
+	    if (s[n] == 'x') {
+		x_modifier = 1;
+		break;
+	    }
+	} else {
+	    break;
+	}
+    }
+
+    if (x_modifier) {		/* handle whitespace and comments */
+	int first;
+	int comment = 0;
+	int escaped = 0;
+
+	for (n = first = 0; n < len; n++) {
+	    if (escaped) {
+		escaped = 0;
+	    } else if (s[n] == ESC) {
+		escaped = 1;
+	    } else if ((s[n] == ' ' || s[n] == '\t') && !comment) {
+		flt_puts(s + first, (n - first - 0), String_attr);
+		flt_putc(s[n]);
+		first = n + 1;
+	    } else if (s[n] == '\n') {
+		if (comment) {
+		    flt_puts(s + first, (n - first + 1), Comment_attr);
+		    comment = 0;
+		    first = n + 1;
+		}
+	    } else if (s[n] == '#') {
+		if (!comment) {
+		    flt_puts(s + first, (n - first - 1), String_attr);
+		    comment = 1;
+		    first = n + 0;
+		}
+	    }
+	}
+	flt_puts(s, (len - first), comment ? Comment_attr : String_attr);
+    } else {
+	flt_puts(s, len, String_attr);
+    }
+    s += len;
+    return s;
 }
 
 static int
@@ -699,8 +751,9 @@ do_filter(FILE * input GCC_UNUSED)
 		break;
 	    case ePATTERN:
 		if ((ok = add_to_PATTERN(s)) != 0) {
-		    flt_puts(s, ok, String_attr);
-		    s += ok;
+		    s = write_PATTERN(s, ok);
+		} else {
+		    flt_putc(*s++);
 		}
 		state = eCODE;
 		break;

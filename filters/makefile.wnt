@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.28 2000/08/20 23:18:58 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.29 2001/01/03 01:38:06 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -167,12 +167,12 @@ vile-manfilt$x : manfilt$o
 !endif # "$(RECUR_FILTERS)" == ""
 
 clean:
-	del lex.*.c
-	del *.bak
-	del *.tmp
-	del *$x
-	del *$o
-	del *.lib
+	- del lex.*.c
+	- del *.bak
+	- del *.tmp
+	- del *$x
+	- del *$o
+	- del *.lib
 
 distclean: clean
-	del *.zip
+	- del *.zip

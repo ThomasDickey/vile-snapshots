@@ -1,14 +1,14 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.12 2000/11/04 20:22:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.13 2001/01/04 00:48:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of NROFF
  */
 
 #include <filters.h>
 
-DefineFilter("nroff");
+DefineFilter("nr");
 
 static char *Action_attr;
 static char *Comment_attr;

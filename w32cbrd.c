@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.18 2000/11/04 11:24:06 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.19 2001/01/03 23:18:02 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -26,10 +26,6 @@
 #define  CLIPBOARD_COPYING   "[Copying...]"
 #define  CLIPBOARD_COPY_FAIL "[Clipboad copy failed]"
 #define  CLIPBOARD_COPY_MEM  "[Insufficient memory for copy operation]"
-#define  PASS_HIGH(c)        ((int)(c) <= print_high && (int)(c) >= print_low)
-#define  _SPC_               ' '
-#define  _TAB_               '\t'
-#define  _TILDE_             '~'
 
 typedef struct rgn_cpyarg_struct
 {
@@ -37,8 +33,7 @@ typedef struct rgn_cpyarg_struct
     unsigned char *dst;
 } RGN_CPYARG;
 
-static char ctrl_lookup[] = "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_";
-static int  print_low, print_high;
+static int print_low, print_high;
 
 /* ------------------------------------------------------------------ */
 
@@ -202,7 +197,7 @@ cbrd_copy_and_xlate(int len, unsigned char **cbrd_ptr, unsigned char *src)
         else if (c < _SPC_)
         {
             *dst++ = '^';
-            *dst++ = ctrl_lookup[c];
+            *dst++ = ctrldigits[c];
         }
         else
         {
@@ -480,7 +475,7 @@ map_compare(const void *elem1, const void *elem2)
 
 
 static int
-map_cbrd_char(unsigned c, unsigned char mapped_rslt[MAX_MAPPED_STR]) 
+map_cbrd_char(unsigned c, unsigned char mapped_rslt[MAX_MAPPED_STR])
 {
     MAP  key, *rslt_p;
     int  nmapped = 0;
@@ -519,7 +514,7 @@ paste_to_minibuffer(unsigned char *cbrddata)
         {
             eol = cp;
 
-            /* 
+            /*
              * Don't allow more than one line of data to be pasted into the
              * minibuffer (to protect the user from seriously bad side
              * effects when s/he pastes in the wrong buffer).  We don't

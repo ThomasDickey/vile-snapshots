@@ -17,7 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.12 1999/06/07 21:56:24 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.14 2001/01/06 12:34:10 tom Exp $
  */
 
 #include <windows.h>
@@ -239,11 +239,6 @@ LoadTypeInfo(ITypeInfo **pptinfo, REFCLSID clsid)
 static int
 ole_err_to_msgline(HRESULT hr, char *msg)
 {
-#define  PASS_HIGH(c)        ((c) <= print_high && (c) >= print_low)
-#define  _SPC_               ' '
-#define  _TAB_               '\t'
-#define  _TILDE_             '~'
-
     char          *lclbuf = NULL, tmp[256], outstr[256];
     unsigned char *src, *dst;
     int           print_high, print_low;
@@ -275,11 +270,6 @@ ole_err_to_msgline(HRESULT hr, char *msg)
     mlforce(outstr);
     LocalFree(lclbuf);
     return (FALSE);
-
-#undef PASS_HIGH
-#undef _SPC_
-#undef _TAB_
-#undef _TILDE_
 }
 
 /* ------------------------ Class Factory -------------------------- */
@@ -1159,7 +1149,7 @@ execute_action(int action)
 
     if (action & FLUSH_BUFFERS)
     {
-        rc = writeall(FALSE, 1, FALSE, FALSE, FALSE);
+        rc = writeall(FALSE, 1, FALSE, FALSE, FALSE, FALSE);
         update(FALSE);  /* move cursor out of mini-buffer */
 
         /*

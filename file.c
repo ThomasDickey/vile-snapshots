@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.272 2000/09/22 11:16:26 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.273 2001/01/06 12:43:58 tom Exp $
  */
 
 #include	"estruct.h"
@@ -688,6 +688,16 @@ int
 no_file_found(void)
 {
 	mlforce("[No file found]");
+	return FALSE;
+}
+
+int
+no_file_name(const char *fname)
+{
+	if (is_internalname(fname)) {
+		mlwarn("[No filename]");
+		return TRUE;
+	}
 	return FALSE;
 }
 
@@ -1575,10 +1585,8 @@ filesave(int f, int n)
 	register int	s;
 	int forced = (f && n == SPECIAL_BANG_ARG); /* then it was :w! */
 
-	if (curbp->b_fname[0] == EOS) {		/* Must have a name.	*/
-		mlwarn("[No file name]");
+	if (no_file_name(curbp->b_fname))
 		return FALSE;
-	}
 
 	if ((s=writeout(curbp->b_fname,curbp,forced,TRUE)) == TRUE)
 		unchg_buff(curbp, 0);
@@ -1659,8 +1667,7 @@ int	forced)
 	int	whole_file = (rp->r_orig.l == lforw(buf_head(bp)))
 			  && (rp->r_end.l == buf_head(bp));
 
-	if (is_internalname(given_fn)) {
-		mlwarn("[No filename]");
+	if (no_file_name(given_fn)) {
 		return FALSE;
 	}
 

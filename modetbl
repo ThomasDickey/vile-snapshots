@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.184 2000/11/04 17:40:51 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.185 2001/01/04 00:36:31 Mark.Robinson Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -38,6 +38,7 @@ bool							# GMD prefix
 	"pin-tagstack"	PIN_TAGSTACK	0		# tagstack push/pop ops are pinned to curwin
 	"Popup-Choices"	POPUP_CHOICES	0		OPT_POPUPCHOICE&&!OPT_ENUM_MODES # popup buffer showing file-completion choices
 	"Popup-Msgs"	POPUP_MSGS	0		OPT_POPUP_MSGS	# popup buffer when multiple messages emitted
+	"popup-menu"	POPUPMENU	chgd_popupmenu	SYS_WINNT&&defined(DISP_NTWIN) # enable popup menu (win32)
 	"ReadOnly-on-ReadOnly" RONLYRONLY	0	# set readonly mode for readonly files
 	"remap"		REMAP		0		# should mappings be reapplied
 	"remapfirst"	REMAPFIRST	0		# should 1st char of a map be remapped?

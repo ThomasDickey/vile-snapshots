@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.435 2000/11/04 21:06:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.439 2001/01/06 12:33:55 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -244,7 +244,7 @@ MainProgram(int argc, char *argv[])
 #if DISP_NTCONS
 			case 'c':
 				if (strcmp(param, "console") == 0) {
-				    /* 
+				    /*
 				     * start editor in a new console env if
 				     * stdin is redirected.  if this option
 				     * is not set when stdin is redirected,
@@ -398,11 +398,7 @@ MainProgram(int argc, char *argv[])
 
 #if !DISP_X11
 #if SYS_UNIX
-# if HAVE_TTYNAME
-		char	*tty = ttyname(fileno(stderr));
-# else
 		char	*tty = "/dev/tty";
-# endif
 #else
 		FILE	*in;
 		int	fd;
@@ -418,6 +414,9 @@ MainProgram(int argc, char *argv[])
 		ffp = fdopen(dup(fileno(stdin)), "r");
 #if !DISP_X11
 # if SYS_UNIX
+# if defined(HAVE_TTYNAME) && !defined(HAVE_DEV_TTY)
+		tty = ttyname(fileno(stderr));
+# endif
 		/*
 		 * Note: On Linux, the low-level close/dup operation
 		 * doesn't work, since something hangs, apparently
@@ -899,6 +898,9 @@ tidy_exit(int code)
 #if OPT_PERL
 	perl_exit();
 #endif
+#if DISP_NTWIN
+	winvile_cleanup();
+#endif
 #if DISP_X11
 	term.close(); /* need this if $xshell left subprocesses */
 #endif
@@ -989,6 +991,9 @@ global_val_init(void)
 #if SYS_WINNT && defined(VILE_OLE)
 	set_global_g_val_ptr(GVAL_REDIRECT_KEYS,
 			     strmalloc("F5::S,F10::S,F11::S,F7::F,F5:C:,F9::Y"));
+#endif
+#if SYS_WINNT && defined(DISP_NTWIN)
+	set_global_g_val(GMDPOPUPMENU,	TRUE); /* enable popup menu */
 #endif
 #ifdef GMDHISTORY
 	set_global_g_val(GMDHISTORY,	TRUE);
@@ -1606,7 +1611,7 @@ zzquit(int f, int n)
 				return FALSE;
 		}
 
-		if (writeall(f,n,FALSE,TRUE,FALSE) != TRUE) {
+		if (writeall(f,n,FALSE,TRUE,FALSE,FALSE) != TRUE) {
 			return FALSE;
 		}
 
@@ -1625,7 +1630,7 @@ int
 quickexit(int f, int n)
 {
 	register int status;
-	if ((status = writeall(f,n,FALSE,TRUE,FALSE)) == TRUE)
+	if ((status = writeall(f,n,FALSE,TRUE,FALSE,FALSE)) == TRUE)
 		status = quithard(f, n);  /* conditionally quit	*/
 	return status;
 }

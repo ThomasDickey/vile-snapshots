@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.78 2000/11/04 20:14:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.79 2001/01/03 23:08:01 Joachim.Schimpf Exp $
  *
  */
 
@@ -237,7 +237,7 @@ OpenKeywords(char *classname)
 #endif
     if (path != 0) {
 	int n = 0, m;
-	name = do_alloc(name, strlen(path), &have);
+	name = do_alloc(name, strlen(path) + strlen(fname) + 2, &have);
 	while (path[n] != 0) {
 	    for (m = n; path[m] != 0 && path[m] != PATHCHR; m++)
 		/*LOOP */ ;
@@ -425,9 +425,9 @@ flt_free_keywords(char *classname)
 	    free(p->name);
 	    free(p->data);
 	    if (q != 0)
-	    	q->next = p->next;
+		q->next = p->next;
 	    else
-	    	classes = p->next;
+		classes = p->next;
 	    free(p);
 	    break;
 	}

@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.147 2000/10/27 01:39:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.148 2001/01/03 23:40:24 cmorgan Exp $
  *
  */
 
@@ -47,8 +47,8 @@ copy_file (const char *src, const char *dst)
 	int	chr;
 	int	ok = FALSE;
 
-	if ((ifp = fopen(src, FOPEN_READ)) != 0) {
-		if ((ofp = fopen(dst, FOPEN_WRITE)) != 0) {
+	if ((ifp = fopen(SL_TO_BSL(src), FOPEN_READ)) != 0) {
+		if ((ofp = fopen(SL_TO_BSL(dst), FOPEN_WRITE)) != 0) {
 			ok = TRUE;
 			for_ever {
 				chr = getc(ifp);
@@ -104,7 +104,7 @@ write_backup_file(const char *orig, char *backup)
 #endif
 
 		/* remove it */
-		if (unlink(backup) != 0)
+		if (unlink(SL_TO_BSL(backup)) != 0)
 			return FALSE;
 	}
 
@@ -134,9 +134,9 @@ write_backup_file(const char *orig, char *backup)
 	    buf[0].tv_usec = 0;
 	    buf[1].tv_sec = ostat.st_mtime;
 	    buf[1].tv_usec = 0;
-	    s = utimes(backup, buf);
+	    s = utimes(SL_TO_BSL(backup), buf);
 	    if (s != 0) {
-		    (void)unlink(backup);
+		    (void)unlink(SL_TO_BSL(backup));
 		    return FALSE;
 	    }
 	}
@@ -146,9 +146,9 @@ write_backup_file(const char *orig, char *backup)
 	    struct utimbuf buf;
 	    buf.actime = ostat.st_atime;
 	    buf.modtime = ostat.st_mtime;
-	    s = utime(backup, &buf);
+	    s = utime(SL_TO_BSL(backup), &buf);
 	    if (s != 0) {
-		    (void)unlink(backup);
+		    (void)unlink(SL_TO_BSL(backup));
 		    return FALSE;
 	    }
 	}
@@ -156,12 +156,12 @@ write_backup_file(const char *orig, char *backup)
 #endif
 
 #if SYS_OS2 && CC_CSETPP
-	s = chmod(backup, ostat.st_mode & (S_IREAD | S_IWRITE));
+	s = chmod(SL_TO_BSL(backup), ostat.st_mode & (S_IREAD | S_IWRITE));
 #else
-	s = chmod(backup, ostat.st_mode & 0777);
+	s = chmod(SL_TO_BSL(backup), ostat.st_mode & 0777);
 #endif
 	if (s != 0) {
-		(void)unlink(backup);
+		(void)unlink(SL_TO_BSL(backup));
 		return FALSE;
 	}
 
@@ -253,7 +253,7 @@ ffropen(char *fn)
 		mlerror("opening directory");
 		return (FIOERR);
 
-	} else if ((ffp=fopen(fn, FOPEN_READ)) == NULL) {
+	} else if ((ffp=fopen(SL_TO_BSL(fn), FOPEN_READ)) == NULL) {
 		if (errno != ENOENT
 #if SYS_OS2 && CC_CSETPP
 		 && errno != ENOTEXIST
@@ -317,7 +317,7 @@ ffwopen(char *fn, int forced)
 			}
 		}
 #endif
-		if ((ffp = fopen(fn, mode)) == NULL) {
+		if ((ffp = fopen(SL_TO_BSL(fn), mode)) == NULL) {
 			mlerror("opening for write");
 			return (FIOERR);
 		}

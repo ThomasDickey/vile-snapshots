@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.225 2000/10/27 01:52:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.226 2001/01/06 12:50:16 tom Exp $
  *
  */
 
@@ -950,7 +950,7 @@ swbuffer_lfl(register BUFFER *bp, int lockfl, int this_window)
 			undispbuff(curwp->w_bufp, curwp);
 		else
 			copy_traits(&(curwp->w_bufp->b_wtraits),
-			            &(curwp->w_traits));
+				    &(curwp->w_traits));
 
 		/* Initialize the window using the saved buffer traits
 		 * if possible.  If they don't pass a sanity check,
@@ -2103,7 +2103,7 @@ make_ro_bp(const char *bname, UINT flags)
 	if ((bp = bfind(bname, flags)) != 0) {
 		b_set_invisible(bp);
 		b_clr_scratch(bp); /* make it nonvolatile */
- 		bp->b_active = TRUE;
+		bp->b_active = TRUE;
 		set_rdonly(bp, non_filename(), MDVIEW);
 	}
 	return bp;
@@ -2305,11 +2305,17 @@ unmark(int f GCC_UNUSED, int n GCC_UNUSED)	/* unmark the current buffers change 
 int
 writeallchanged(int f, int n)
 {
-	return writeall(f,n,!f,FALSE,FALSE);
+	return writeall(f,n,!f,FALSE,FALSE,FALSE);
 }
 
 int
-writeall(int f, int n, int promptuser, int leaving, int autowriting)
+writeallbuffers(int f, int n)
+{
+	return writeall(f,n,!f,FALSE,FALSE,TRUE);
+}
+
+int
+writeall(int f, int n, int promptuser, int leaving, int autowriting, int all)
 {
 	register BUFFER *bp;	/* scanning pointer to buffers */
 	register BUFFER *oldbp; /* original current buffer */
@@ -2325,7 +2331,9 @@ writeall(int f, int n, int promptuser, int leaving, int autowriting)
 			continue;
 		if (b_val(bp,MDREADONLY))	/* ignore read-only buffer */
 			continue;
-		if (b_is_changed(bp) && !b_is_invisible(bp)) {
+		if (((all && !is_internalname(bp->b_fname))
+		  || b_is_changed(bp))
+		 && !b_is_invisible(bp)) {
 			make_current(bp);
 			if (dirtymsgline && (promptuser || leaving)) {
 				mlforce("\n");
@@ -2344,7 +2352,9 @@ writeall(int f, int n, int promptuser, int leaving, int autowriting)
 				outlen = (term.cols - 1) -
 					 (sizeof(SAVE_FAILED_FMT) - 3);
 				mlforce(SAVE_FAILED_FMT,
-					path_trunc(bp->b_fname,
+					path_trunc(is_internalname(bp->b_fname)
+							? bp->b_bname
+							: bp->b_fname,
 						   outlen,
 						   tmp,
 						   sizeof(tmp)));

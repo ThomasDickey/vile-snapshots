@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.95 2000/11/15 11:27:42 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.98 2001/01/04 23:56:30 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -84,7 +84,7 @@ static HANDLE vile_hinstance;
 static HCURSOR arrow_cursor;
 static HCURSOR hglass_cursor;
 static HFONT vile_font;
-static HMENU vile_menu;
+static HMENU vile_menu, popup_menu;
 static LOGFONT vile_logfont;
 static int ac_active = FALSE;	/* AutoColor active? */
 static int caret_disabled = TRUE;
@@ -1018,9 +1018,9 @@ last_w32_error(int use_msg_box)
 int
 ntwinio_font_frm_str(
     const char *fontstr,
-    int use_mb			/* Boolean, T -> errors reported via MessageBox.
-				 *          F -> errors reported via message line.
-				 */
+    int        use_mb  /* Boolean, T -> errors reported via MessageBox.
+                        *          F -> errors reported via message line.
+                        */
 )
 {
     int face_specified;
@@ -1043,16 +1043,18 @@ ntwinio_font_frm_str(
     hwnd = cur_win->text_hwnd;
     face_specified = (str_rslts.face[0] != '\0');
     if (!((hdc = GetDC(hwnd)) && SelectObject(hdc, vile_font))) {
+	(void) last_w32_error(use_mb);
 	if (hdc)
 	    ReleaseDC(hwnd, hdc);
-	return (last_w32_error(use_mb));
+	return (FALSE);
     }
     if (!face_specified) {
 	/* user didn't specify a face name, get current name. */
 
 	if ((GetTextFace(hdc, sizeof(str_rslts.face), str_rslts.face)) == 0) {
+	    (void) last_w32_error(use_mb);
 	    ReleaseDC(hwnd, hdc);
-	    return (last_w32_error(use_mb));
+	    return (FALSE);
 	}
     }
 
@@ -1069,10 +1071,11 @@ ntwinio_font_frm_str(
     strncpy(logfont.lfFaceName, str_rslts.face, LF_FACESIZE - 1);
     logfont.lfFaceName[LF_FACESIZE - 1] = '\0';
     if (!((hfont = CreateFontIndirect(&logfont)) && SelectObject(hdc, hfont))) {
+	(void) last_w32_error(use_mb);
 	if (hfont)
 	    DeleteObject(hfont);
 	ReleaseDC(hwnd, hdc);
-	return (last_w32_error(use_mb));
+	return (FALSE);
     }
 
     /*
@@ -1083,9 +1086,10 @@ ntwinio_font_frm_str(
     if (face_specified) {
 	if ((GetTextFace(hdc, sizeof(font_mapper_face), font_mapper_face))
 	    == 0) {
+	    (void) last_w32_error(use_mb);
 	    ReleaseDC(hwnd, hdc);
 	    DeleteObject(hfont);
-	    return (last_w32_error(use_mb));
+	    return (FALSE);
 	}
 	if (stricmp(font_mapper_face, str_rslts.face) != 0) {
 	    ReleaseDC(hwnd, hdc);
@@ -1101,9 +1105,10 @@ ntwinio_font_frm_str(
 
     /* Next, font must be fixed pitch. */
     if (!GetTextMetrics(hdc, &metrics)) {
+	(void) last_w32_error(use_mb);
 	ReleaseDC(hwnd, hdc);
 	DeleteObject(hfont);
-	return (last_w32_error(use_mb));
+	return (FALSE);
     }
     if ((metrics.tmPitchAndFamily & TMPF_FIXED_PITCH) != 0) {
 	/* Misnamed constant! */
@@ -1649,6 +1654,7 @@ static void
 enable_popup_menu(void)
 {
     enable_popup = !enable_popup;
+    set_global_g_val(GMDPOPUPMENU, enable_popup);
     CheckMenuItem(vile_menu,
 	IDM_MENU,
 	MF_BYCOMMAND | (enable_popup ? MF_CHECKED : MF_UNCHECKED));
@@ -1679,7 +1685,6 @@ static POPUP_MENU_INFO popup_menu_tbl[] =
 static void
 invoke_popup_menu(MSG msg)
 {
-    static HMENU hmenu;
     char accel[NSTRING], buf[NSTRING * 2];
     AREGION ar;
     BUFFER *bp;
@@ -1689,12 +1694,12 @@ invoke_popup_menu(MSG msg)
     POPUP_MENU_INFO *ptbl;
 
     TRACE(("invoke_popup_menu\n"));
-    if (hmenu == NULL) {
-	hmenu = LoadMenu(vile_hinstance,
+    if (popup_menu == NULL) {
+	popup_menu = LoadMenu(vile_hinstance,
 	    "WinvilePopMenu");
-	hmenu = GetSubMenu(hmenu, 0);
+	popup_menu = GetSubMenu(popup_menu, 0);
     }
-    CheckMenuItem(hmenu, IDM_MENU, MF_BYCOMMAND | MF_CHECKED);
+    CheckMenuItem(popup_menu, IDM_MENU, MF_BYCOMMAND | MF_CHECKED);
 
     /* add accelerators (key bindings) to RMB */
     limit = sizeof(popup_menu_tbl) / sizeof(popup_menu_tbl[0]);
@@ -1712,7 +1717,7 @@ invoke_popup_menu(MSG msg)
 
 		strcpy(buf, ptbl->menu_name);
 	    }
-	    ModifyMenu(hmenu,
+	    ModifyMenu(popup_menu,
 		       ptbl->menu_id,
 		       MF_BYCOMMAND | MF_STRING,
 		       ptbl->menu_id,
@@ -1722,17 +1727,17 @@ invoke_popup_menu(MSG msg)
 
     /* Can't undo/redo if not applicable. */
     flag = (undo_ok()) ? MF_ENABLED : MF_GRAYED;
-    EnableMenuItem(hmenu, IDM_UNDO, MF_BYCOMMAND | flag);
+    EnableMenuItem(popup_menu, IDM_UNDO, MF_BYCOMMAND | flag);
     flag = (redo_ok()) ? MF_ENABLED : MF_GRAYED;
-    EnableMenuItem(hmenu, IDM_REDO, MF_BYCOMMAND | flag);
+    EnableMenuItem(popup_menu, IDM_REDO, MF_BYCOMMAND | flag);
 
     /* Can't "select all" in empty buffer. */
     flag = (curbp->b_bytecount > 0) ? MF_ENABLED : MF_GRAYED;
-    EnableMenuItem(hmenu, IDM_SELECT_ALL, MF_BYCOMMAND | flag);
+    EnableMenuItem(popup_menu, IDM_SELECT_ALL, MF_BYCOMMAND | flag);
 
     /* Can't paste data from clipboard if not TEXT. */
     flag = (IsClipboardFormatAvailable(CF_TEXT)) ? MF_ENABLED : MF_GRAYED;
-    EnableMenuItem(hmenu, IDM_PASTE, MF_BYCOMMAND | flag);
+    EnableMenuItem(popup_menu, IDM_PASTE, MF_BYCOMMAND | flag);
 
     /* Do we have a text selection? */
     if ((bp = get_selection_buffer_and_region(&ar)) != NULL)
@@ -1747,15 +1752,15 @@ invoke_popup_menu(MSG msg)
 	samebuf = MF_GRAYED;
 
     /* Modify menu items that depend on seltxt and samebuf flags. */
-    EnableMenuItem(hmenu, IDM_COPY, MF_BYCOMMAND | seltxt);
-    EnableMenuItem(hmenu, IDM_CUT, MF_BYCOMMAND | samebuf);
-    EnableMenuItem(hmenu, IDM_DELETE, MF_BYCOMMAND | samebuf);
+    EnableMenuItem(popup_menu, IDM_COPY, MF_BYCOMMAND | seltxt);
+    EnableMenuItem(popup_menu, IDM_CUT, MF_BYCOMMAND | samebuf);
+    EnableMenuItem(popup_menu, IDM_DELETE, MF_BYCOMMAND | samebuf);
 
     /* Show popup menu. */
     point.x = LOWORD(msg.lParam);
     point.y = HIWORD(msg.lParam);
     ClientToScreen(msg.hwnd, &point);
-    TrackPopupMenu(hmenu,
+    TrackPopupMenu(popup_menu,
 	0,
 	point.x,
 	point.y,
@@ -1768,11 +1773,8 @@ invoke_popup_menu(MSG msg)
 static BOOL CALLBACK
 AboutBoxProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
-    RECT arect,			/* About box */
-      vrect;			/* vile main window */
     char buf[512];
     HWND hwnd;
-    int w, h;
 
     switch (iMsg) {
     case WM_INITDIALOG:
@@ -1793,21 +1795,7 @@ AboutBoxProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	    "Public License (see COPYING).",
 	    prognam);
 	SetWindowText(hwnd, buf);
-
-	/*
-	 * Center dialog box in editor's main window.  This is gross.
-	 * There ought to be some way to tell Windows to do this.
-	 */
-	GetWindowRect(cur_win->main_hwnd, &vrect);
-	GetWindowRect(hDlg, &arect);
-	w = arect.right - arect.left;
-	h = arect.bottom - arect.top;
-	MoveWindow(hDlg,
-	    vrect.left + ((vrect.right - vrect.left) / 2 - w / 2),
-	    vrect.top + ((vrect.bottom - vrect.top) / 2 - h / 2),
-	    w,
-	    h,
-	    TRUE);
+	w32_center_window(hDlg, cur_win->main_hwnd);
 	return (TRUE);
     case WM_COMMAND:
 	switch (LOWORD(wParam)) {
@@ -1833,6 +1821,14 @@ handle_builtin_menu(WPARAM code)
 	break;
     case IDM_OPEN:
 	winopen_dir(NULL);
+	update(FALSE);
+	break;
+    case IDM_PRINT:
+	winprint(0, 0);
+	update(FALSE);
+	break;
+    case IDM_PAGE_SETUP:
+	winpg_setup(0, 0);
 	update(FALSE);
 	break;
     case IDM_FAVORITES:
@@ -1878,7 +1874,7 @@ handle_builtin_menu(WPARAM code)
 	 * text to unnamed register.  In most cases this won't be necessary,
 	 * especially if mouse is used to navigate and make selections.
 	 * However, there are cases where the user might select some text
-	 * (causes automatic yank to unnamed register), do something to 
+	 * (causes automatic yank to unnamed register), do something to
 	 * clobber the unnamed register, and then use the menu system to
 	 * attempt to copy selected text.
 	 */
@@ -2584,7 +2580,6 @@ ntgetch(void)
 	switch (msg.message) {
 	case WM_DESTROY:
 	    TRACE(("GETC:DESTROY\n"));
-	    DragAcceptFiles(cur_win->main_hwnd, FALSE);
 	    PostQuitMessage(0);
 	    continue;
 
@@ -3003,9 +2998,6 @@ MainWndProc(
 	    wParam = IDC_button_x;
 	    PostMessage(hWnd, message, wParam, lParam);
 	    break;
-	case IDM_EXIT:
-	    DestroyWindow(hWnd);
-	    break;
 	}
 #endif
 	break;
@@ -3021,7 +3013,6 @@ MainWndProc(
 	break;
 
     case WM_DESTROY:
-	DragAcceptFiles(cur_win->main_hwnd, FALSE);
 	PostQuitMessage(0);
 	break;
 
@@ -3196,6 +3187,9 @@ InitInstance(HINSTANCE hInstance)
     AppendMenu(vile_menu, MF_STRING, IDM_FONT, "&Font...");
     AppendMenu(vile_menu, MF_STRING, IDM_ABOUT, "&About...");
     AppendMenu(vile_menu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(vile_menu, MF_STRING, IDM_PAGE_SETUP, "Page Set&up...");
+    AppendMenu(vile_menu, MF_STRING, IDM_PRINT, "&Print...");
+    AppendMenu(vile_menu, MF_SEPARATOR, 0, NULL);
     AppendMenu(vile_menu, MF_STRING | MF_CHECKED, IDM_MENU, "&Menu");
 
 #if OPT_SCROLLBARS
@@ -3232,7 +3226,7 @@ WinMain(
 
     TRACE(("Starting ntvile, CmdLine:%s\n", lpCmdLine));
 
-    argv[argc++] = "VILE";
+    argv[argc = 0] = "VILE";
 
     for (ptr = lpCmdLine; *ptr != '\0';) {
 	char delim = ' ';
@@ -3240,13 +3234,14 @@ WinMain(
 	while (*ptr == ' ')
 	    ptr++;
 
-	if (*ptr == '\''
-	    || *ptr == '"'
-	    || *ptr == ' ') {
+	if (*ptr == '"') {
 	    delim = *ptr++;
 	}
-	TRACE(("argv[%d]:%s\n", argc, ptr));
-	argv[argc++] = ptr;
+	if (*argv[argc]) {
+	    TRACE(("argv[%d]:%s\n", argc, argv[argc]));
+	    ++argc;
+	}
+	argv[argc] = ptr;
 	if (argc + 1 >= maxargs) {
 	    break;
 	}
@@ -3254,6 +3249,10 @@ WinMain(
 	    ptr++;
 	if (*ptr == delim)
 	    *ptr++ = '\0';
+    }
+    if (*argv[argc]) {
+	TRACE(("argv[%d]:%s\n", argc, argv[argc]));
+	++argc;
     }
     fontstr = argv[argc] = 0;
 
@@ -3411,6 +3410,7 @@ WinMain(
     return MainProgram(argc, argv);
 }
 
+/* return winvile's main window handle */
 void *
 winvile_hwnd(void)
 {
@@ -3429,6 +3429,8 @@ winvile_start(void)
     RECT desktop, vile, tray;
     int moved_window = 0;
     HWND tray_hwnd, desktop_hwnd;
+
+    enable_popup = global_g_val(GMDPOPUPMENU);
 
     /*
      * Before displaying the main window, see if its bottom border lies
@@ -3526,6 +3528,22 @@ winvile_cursor_state(
     return (rc);
 }
 
+/*
+ * winvile doesn't exit via a traditional event loop.  provide a hook
+ * to cleanup allocated resources.
+ */
+void
+winvile_cleanup(void)
+{
+    if (cur_win->main_hwnd)
+        DragAcceptFiles(cur_win->main_hwnd, FALSE);
+    if (popup_menu)
+    {
+        DestroyMenu(popup_menu);
+        popup_menu = NULL;   /* be re-entrant */
+    }
+}
+
 #ifdef VILE_OLE
 void
 ntwinio_oleauto_reg(void)
@@ -3541,6 +3559,16 @@ ntwinio_redirect_hwnd(int redirect)
     redirect_keys = redirect;
 }
 #endif
+
+/*
+ * Handle changes to "popup-menu" global setting.
+ */
+int
+chgd_popupmenu(VALARGS *args, int glob_vals, int testing)
+{
+    if (!testing) enable_popup_menu();
+    return TRUE;
+}
 
 /*
  * Split the version-message to allow us to format with tabs, so the

@@ -1,5 +1,110 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20010106 (e)
+	> Clark Morgan:
+	+ workaround for a bug in wvwrap observed on win96/winme.  wvwrap uses
+	  COM to send this stream of commands to winvile:
+		:cd <path>\n:e <file>\n
+	  Playing with this a bit, I found that I could reproduce this problem
+	  using these commands (sans wvwrap):
+		[win]vile
+		:cd \\remote_node\share_drive_name
+		:e autoexec.bat           ; for example
+	  [win]vile could not "open" the specified file and treated it as a new
+	  file.  The problem persists even if forward slashes are used as an
+	  argument to the cd command.  I don't know if this problem exists on
+	  NT or W2K.  The fix is to pass filenames to fopen() in canonical
+	  Win32/DOS format (i.e., paths include backslash delimiters).  I've
+	  heard several developers say that the win32 version of fopen()
+	  supports both forward and backward slashes.  Well, using VC5.0++
+	  (SP3), I know of at least one case where that assertion is false.  In
+	  addition, it was also necessary to ripple SL_TO_BSL() changes through
+	  various system calls in write_backup_file(), due to the same observed
+	  behavior.
+	+ modify sh-filt.l to avoid coloring the white space that precedes the
+	  ':' command.
+	+ added basic win32 printing for winvile via these two new commands:
+	       winprint winpage-setup
+	  This feature is not currently available for console vile.  _Missing_
+	  printing features include:   
+	  + ability to set printing font (distinct from display font),
+	  + header/footer strings (footer currently hardwired as centered page #)
+	  + printing of current selection
+	  + collation for printer drivers that don't support this feature
+	  + N copies for printer drivers that don't support this feature
+	  + color and visual attributes
+	  Tested on Win98/95 using an HP LJ4Plus and an HP DJ870CSe.
+	+ added  "Print..." and "Page setup..." selections to winvile system
+	  menu.
+	+ when win32 common open/save dialog boxes are dismissed during a
+	  console vile editing session, attempt to re-establish window focus
+	  for the editor.
+	+ found a way to disable a spawned console's close button (significant
+	  winvile hole closed).  Thank you, Mr. Petzold.
+	+ clean out a couple of bugs in buglist that were fixed long ago.
+	+ in ntwinio_font_frm_str(), report win32 error(s) before making another
+	  win32 API call (doh).
+	+ in the remarks section of a number of Win32 API calls, I noticed
+	  verbiage similar to this:
+	      "Resources associated with a menu that is assigned to a window
+	      are freed automatically.  If the menu is not assigned to a
+	      window, an application must free system resources associated with
+	      the menu before closing.  An application frees menu resources by
+	      calling the DestroyMenu function."
+	  Since winvile's popup menu is not assigned to a window, I added code
+	  to clean it up.  If the verbiage above is to be believed, then
+	  apparently "modern" Windows apps (i.e., post-Win 3.11) can still leak
+	  system resources.  Oh my.
+	> Tom Dickey:
+	+ make check in filesave() for missing filename consistent with
+	  writereg, which checked for internal filenames rather than simply a
+	  missing name.
+	+ add check in writeall() for attempt to write internal buffer such
+	  as [unnamed], and show the buffer name rather than the empty filename
+	  in the resulting warning message.
+	+ add write-all-buffers command, to attempt to write all buffers
+	  whether or not modified (request by Clark Morgan).
+	+ modify adjvalueset() to allow users to set strings and patterns to an
+	  empty value with 'unset'.  Previously, an 'unset' would always prompt
+	  for a value, which had the effect of treating an empty response as
+	  keeping the current global buffer or window value.  Note that
+	  'unsetl' is unaffected.
+	+ modify var_LCOLS() to avoid having the sideways value subtracted from
+	  $lcols.  This is used in ^G (reported by Clark Morgan).
+	+ change several entries in dcl.key to shorter abbreviations.
+	+ add configure check for existence of /dev/tty, to work around broken
+	  pty implementation on QNX: if one su's from root, /dev/tty is usable
+	  while the pty (which ttyname() cites) is not.
+	+ implement x-modifier parsing for perl expressions.  According to the
+	  perl documentation, the '#' markers in Jim Crigler's example would be
+	  treated as comments if there was a /x modifier.  vim does not check
+	  for this.
+	+ fix an infinite loop in pl-filt.c when parsing this example:
+	    $rest =~ /^1\s+              # first action
+		      (\S+)\s+           # date
+		      (\S+)\s+           # time
+		      ((?:\w|\s)+)\b\s+
+	  The code was expecting the first "\s" on the last line to be
+	  followed by a "+" sign or other meta character, and dithered between
+	  eCODE and ePATTERN cases (reported by Jim Crigler).
+	+ correct winvile command-line parsing:  single-quotes should
+	  be considered part of the parameter.  Also, ignore empty
+	  parameters, to allow scripts to use double-quoted
+	  parameters, though note that SendTo under W2K automatically
+	  double-quotes pathnames that require this.
+	+ correct filtername compiled into vile-nr-filt, which did not match
+	  nrmode.
+	+ add popup-menu mode for winvile (patch by Mark Robinson
+	  <Mrobinson@baltimore.com>).
+	+ modify value for bindir in filters/makefile to exclude paths past
+	  the first in $VILE_LIBDIR_PATH (reported by Chris Green
+	  <chris@areti.co.uk>).
+	+ apply $CFLAGS/$CPPFLAGS change to CF_X_TOOLKIT configure macro.
+	+ correct allocation size in OpenKeywords(), which was not long enough
+	  (patch by Joachim Schimpf <j.schimpf@icparc.ic.ac.uk>).
+	+ fixes to build on Windows 2000 (win2k) with perl 5.6.0, Visual C++
+	  5.0 (mkprlenv.wnt, filters/makefile.wnt).      
+
  20001206 (d)
 	> Kevin Buettner:
 	+ change default for $XSHELLFLAGS from "-c" to "-e", which matches the

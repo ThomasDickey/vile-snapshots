@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.92 2000/11/04 12:31:27 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.94 2001/01/06 01:51:51 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -25,8 +25,14 @@ AC_DEFUN([CF_ADD_CFLAGS],
 for cf_add_cflags in $1
 do
 	case $cf_add_cflags in #(vi
-	-I*|-D*|-U*|-E|-P|-C) #(vi
-		CPPFLAGS="$CPPFLAGS $cf_add_cflags"
+	-undef|-nostdinc*|-I*|-D*|-U*|-E|-P|-C) #(vi
+		case "$CPPFLAGS" in
+		*$cf_add_cflags)
+			;;
+		*)
+			CPPFLAGS="$CPPFLAGS $cf_add_cflags"
+			;;
+		esac
 		;;
 	*)
 		CFLAGS="$CFLAGS $cf_add_cflags"
@@ -103,7 +109,7 @@ AC_MSG_RESULT($cf_cv_ansi_cc)
 
 if test "$cf_cv_ansi_cc" != "no"; then
 if test ".$cf_cv_ansi_cc" != ".-DCC_HAS_PROTOS"; then
-	CFLAGS="$CFLAGS $cf_cv_ansi_cc"
+	CF_ADD_CFLAGS($cf_cv_ansi_cc)
 else
 	AC_DEFINE(CC_HAS_PROTOS)
 fi
@@ -185,6 +191,23 @@ cf_cv_init_unions,[
 	[cf_cv_init_unions=no])
 	])
 test $cf_cv_init_unions = no && AC_DEFINE(CC_CANNOT_INIT_UNIONS)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check for existence of the given character-device
+AC_DEFUN([CF_CHAR_DEVICE],
+[
+AC_MSG_CHECKING(for /dev/tty)
+if test -c $1 ; then
+	cf_result=yes
+else
+	cf_result=no
+fi
+AC_MSG_RESULT($cf_result)
+if test "$cf_result" = yes ; then
+	cf_result=`echo $1 | sed -e s@/@_@g`
+	CF_UPPER(cf_result,$cf_result)
+	AC_DEFINE_UNQUOTED(HAVE$cf_result)
+fi
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check if we're accidentally using a cache from a different machine.
@@ -1378,6 +1401,17 @@ else
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl Provide a value for the $PATH and similar separator
+AC_DEFUN([CF_PATHSEP],
+[
+	case $cf_cv_system_name in
+	os2)	PATHSEP=';'  ;;
+	*)	PATHSEP=':'  ;;
+	esac
+ifelse($1,,,[$1=$PATHSEP])
+	AC_SUBST(PATHSEP)
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl Compute $PROG_EXT, used for non-Unix ports, such as OS/2 EMX.
 AC_DEFUN([CF_PROG_EXT],
 [
@@ -1953,7 +1987,7 @@ esac
 if test $cf_have_X_LIBS = no ; then
 	AC_PATH_XTRA
 	LDFLAGS="$LDFLAGS $X_LIBS"
-	CFLAGS="$CFLAGS $X_CFLAGS"
+	CF_ADD_CFLAGS($X_CFLAGS)
 	AC_CHECK_LIB(X11,XOpenDisplay,
 		[LIBS="-lX11 $LIBS"],,
 		[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
@@ -1964,7 +1998,7 @@ if test $cf_have_X_LIBS = no ; then
 		[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
 else
 	LDFLAGS="$LDFLAGS $X_LIBS"
-	CFLAGS="$CFLAGS $X_CFLAGS"
+	CF_ADD_CFLAGS($X_CFLAGS)
 fi
 
 if test $cf_have_X_LIBS = no ; then
