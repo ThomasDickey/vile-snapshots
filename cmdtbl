@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.176 1999/07/03 12:00:52 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.177 1999/07/05 23:40:54 tom Exp $
 #
 #
 
@@ -164,6 +164,11 @@ backpage	MOTION
 	'^B'
 	'FN-p'				KEY_Prior
 	<move up CNT full screens>
+back_row	GOAL|MOTION
+	'^X-^U'
+	"backward-row"			!FEWNAMES
+	"previous-row"			!FEWNAMES
+	<move up CNT rows on the screen>
 backword	MOTION
 	"previous-word"			!FEWNAMES
 	"back-word"			!FEWNAMES
@@ -616,6 +621,11 @@ forwpage	MOTION
 	'^F'
 	'FN-n'				KEY_Next
 	<move down CNT full screens>
+forw_row	GOAL|MOTION
+	'^X-^D'
+	"forward-row"			!FEWNAMES
+	"next-row"			!FEWNAMES
+	<move down CNT rows on the screen>
 forwline	GOAL|MOTION|FL
 	"forward-line"			!FEWNAMES
 	"next-line"			!FEWNAMES

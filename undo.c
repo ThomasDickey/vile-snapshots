@@ -3,7 +3,7 @@
  *
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.71 1999/03/19 11:15:01 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.72 1999/07/06 00:47:06 tom Exp $
  *
  */
 
@@ -729,7 +729,7 @@ undoworker(int stkindx)
 
 	b_clr_counted(curbp);	/* don't know the size! */
 	if (lispurestacksep(lp))
-		unchg_buff(curbp, 0);
+		unchg_buff(curbp, WFHARD);
 	else
 		chg_buff(curbp, WFHARD|WFINS|WFKILLS);
 

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.216 1999/07/02 10:16:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.218 1999/07/04 21:19:02 tom Exp $
  *
  */
 
@@ -1016,7 +1016,7 @@ save_arguments(BUFFER *bp)
  * Pop the list of arguments off our stack
  */
 void
-restore_arguments(BUFFER *bp)
+restore_arguments(BUFFER *bp GCC_UNUSED)
 {
     PROC_ARGS *p = arg_stack;
 

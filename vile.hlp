@@ -2718,7 +2718,7 @@ Invocation
 	work for you out-of-the-box, since your shell's initialization file
 	(e.g., ".cshrc") may set $PATH.  One solution (other than adding
 	/usr/local/lib/vile to $PATH) is to set the vile variable $shell to
-	/bin/sh, assuming you have no Bourne shell ".profile" to set $PATH. 
+	/bin/sh, assuming you have no Bourne shell ".profile" to set $PATH.
 	Then vile's modification of $PATH affects the filter process and
 	also runs faster.
 
@@ -4138,4 +4138,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.422 1999/07/03 02:52:36 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.423 1999/07/06 01:08:48 tom Exp $
