@@ -1,6 +1,4 @@
 
-                             Written June 2, 1998
-
 
 Setting Win32-Specific Modes
 ============================
@@ -27,8 +25,8 @@ bugfix called OSR2.  However, OSR2 is only available from OEM's (e.g.,
 Dell, Gateway, etc.) for distribution with a new PC.  It's not known if any
 of command.com's anonymous pipe bugs were fixed in that release of the OS.
 
-And, of course, Windows 98 will be released in a matter of days, which
-may or may not solve command.com's problems.
+And, of course, Windows 98 was released in the summer of 1998.
+Unfortunately, it appears that command.com did not change much.
 
 
 w32pipes
@@ -62,7 +60,7 @@ safely be set in that case (assuming, of course, that the editor's $shell
 state variable specifies the path of the replacement shell).
 
 If using winvile, w32pipes and force-console _must_ be set for all shells
-and versions of Win95 tested to date.  If w32pipes is not set, _all_ pipe
+and versions of Win95/98 tested to date.  If w32pipes is not set, _all_ pipe
 operations will fail and if force-console is not set, the editor will hang.
 However, if w32pipes is set and command.com is used as the shell, the
 floppy will be accessed during each pipe operation.  Additionally,
@@ -73,7 +71,7 @@ briefly pop up and pop down a black, background console.  Got that :-) ?
 Configuring Winvile and Vile via Vile.rc
 ========================================
 ~if &not &sequal "Windows_NT" &env "OS"
-    ; Assume host is win95
+    ; Assume host is win95/98
     ~if &sequal $progname "winvile"
         set force-console
         set w32pipes
@@ -101,7 +99,7 @@ NT     any 32-bit      set        N/A         no problems
 Win95  command.com     unset      N/A         no write pipes
 Win95  Thomp Toolkit   set        N/A         no problems
 OSR2      ?             ?         N/A             ?
-Win98     ?             ?         N/A             ?
+Win98  command.com     unset      N/A         no write pipes
 
 
 Optimum Winvile Settings
@@ -117,4 +115,4 @@ NT     any 32-bit      set        unset       no problems
 Win95  command.com     set        set         floppy grinds, transient console
 Win95  Thomp Toolkit   set        set         transient console
 OSR2      ?             ?          ?              ?
-Win98     ?             ?          ?              ?
+Win98  command.com     set        set         floppy grinds, transient console
