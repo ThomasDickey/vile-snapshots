@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.202 1997/02/09 17:56:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.203 1997/02/27 20:47:47 pgf Exp $
  *
  */
 
@@ -1772,11 +1772,20 @@ out:
 	return (s != FIOERR);
 }
 
+static char *mailcmds[] = {
+	"/usr/lib/sendmail",
+	"/sbin/sendmail",
+	"/usr/sbin/sendmail",
+	"/bin/mail",
+	(char *)0
+};
+
 /* called on hangups, interrupts, and quits */
 /* This code is definitely not production quality, or probably very
 	robust, or probably very secure.  I whipped it up to save
 	myself while debugging...		pgf */
-/* on the other hand, it has worked for well over two years now :-) */
+/* on the other hand, it has limped along for well over six years now :-/ */
+
 SIGT
 imdying(int ACTUAL_SIG_ARGS)
 {
@@ -1798,7 +1807,7 @@ imdying(int ACTUAL_SIG_ARGS)
 	char filnam[NFILEN];
 	BUFFER *bp;
 #if SYS_UNIX
-	char cmd[80];
+	char cmd[200];
 	char *np;
 #endif
 	static int wrote = 0;
@@ -1852,29 +1861,46 @@ imdying(int ACTUAL_SIG_ARGS)
 	}
 #if SYS_UNIX
 	if (wrote) {
-		if ((np = getenv("LOGNAME")) != 0
-		 || (np = getenv("USER")) != 0) {
+		char **mailcmdp;
+		struct stat sb;
+		/* choose the first mail sender we can find.
+		   it used to be you could rely on /bin/mail being
+		   a simple mailer, but no more.  and sendmail has
+		   been moving around too. */
+		for (mailcmdp = mailcmds; *mailcmdp != 0; mailcmdp++) {
+			if (stat(*mailcmdp, &sb) == 0)
+				break;
+		}
+		if (*mailcmdp && 
+			((np = getenv("LOGNAME")) != 0 ||
+				(np = getenv("USER")) != 0)) {
 #if HAVE_GETHOSTNAME
 			char hostname[128];
 			if (gethostname(hostname, sizeof(hostname)) < 0)
 				(void)strcpy(hostname, "unknown");
 			hostname[sizeof(hostname)-1] = EOS;
 #endif
-			(void)lsprintf(cmd, "%s%s;%s%d;%s%s;%s%s%s%s%s",
-			"(echo To: ", np,
-			"echo Subject: vile died with signal ", signo,
-			"echo Files saved in directory ", dirnam,
+			(void)lsprintf(cmd,
+			 "( %s%s; %s; %s; %s%d; %s%s; %s%s; %s%s%s ) | %s %s",
+			"echo To: ", np,
+			"echo Subject: vile died, files saved",
+			"echo ",
+			"echo vile died due to signal ", signo,
 #if HAVE_GETHOSTNAME
-			" on host ", hostname,
+			"echo on host ", hostname,
 #else
-			", host unknown", "",
+			"echo ", "",
 #endif
+			"echo the following files were saved in directory ",
+			dirnam,
 #if HAVE_MKDIR
-			"ls -a ", dirnam, " | sort -r)",
+			/* reverse sort so '.' comes last, in case it
+			 * terminates the mail message early */
+			"ls -a ", dirnam, " | sort -r",
 #else
-			"ls ", dirnam, "/V* )",
+			"ls ", dirnam, "/V*",
 #endif
-			" | /bin/mail ", np);
+			*mailcmdp, np);
 			(void)system(cmd);
 		}
 	}
