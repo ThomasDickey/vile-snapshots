@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.155 1997/04/29 00:36:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.156 1997/05/13 00:45:48 tom Exp $
  *
  */
 
@@ -881,7 +881,11 @@ has_C_suffix(register BUFFER *bp)
 {
 	int s;
 	int save = ignorecase;
+#if OPT_CASELESS
+	ignorecase = TRUE;
+#else
 	ignorecase = FALSE;
+#endif
 	s =  regexec(global_g_val_rexp(GVAL_CSUFFIXES)->reg,
 			bp->b_fname, (char *)0, 0, -1);
 	ignorecase = save;

@@ -1,4 +1,4 @@
-$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.11 1996/09/05 01:59:48 pgf Exp $
+$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.12 1997/05/13 00:32:14 tom Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
 $! Tested with:
@@ -16,7 +16,7 @@ $!
 $!      Build the option-file
 $!
 $ open/write optf vms_link.opt
-$ write optf "Identification=""Vile 6.0"""
+$ write optf "Identification=""Vile 7.1"""
 $ write optf "basic.obj"
 $ write optf "bind.obj"
 $ write optf "buffer.obj"
@@ -41,6 +41,7 @@ $ write optf "itbuff.obj"
 $ write optf "isearch.obj"
 $ write optf "line.obj"
 $ write optf "map.obj"
+$ write optf "menu.obj"
 $ write optf "modes.obj"
 $ write optf "msgs.obj"
 $ write optf "npopen.obj"
@@ -204,6 +205,7 @@ $	call make itbuff
 $	call make isearch
 $	call make line
 $	call make map
+$	call make menu
 $	call make modes
 $	call make msgs
 $	call make npopen

@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.9 1997/05/07 10:44:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.10 1997/05/12 09:44:15 bod Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -393,7 +393,6 @@ static Widget do_cascade ( Widget menub, char *nom, int the_class )
     cascade = XtVaCreateManagedWidget ("menuHeader",
         menuButtonWidgetClass,
         menub,
-        XtNwidth,                       4,
         XtNheight,                      x_menu_height(),
         XtNlabel,                       nom,
         XtNfromHoriz,                   last,

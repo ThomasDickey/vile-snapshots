@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.153 1997/05/09 01:21:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.154 1997/05/12 09:44:15 bod Exp $
  *
  */
 
@@ -145,6 +145,7 @@ static Display *dpy;
 #if OPT_MENUS
 #if ATHENA_WIDGETS
 #include <X11/Xaw/SimpleMenu.h>
+#include <X11/Xaw/Box.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/Paned.h>
 #endif
@@ -172,7 +173,7 @@ typedef struct _text_win {
     Widget	screen;		/* screen widget */
 #if ATHENA_WIDGETS
     Widget	pane_widget;	/* pane widget, actually a form */
-    Widget	menu_widget;	/* menu-bar widget, actually a form */
+    Widget	menu_widget;	/* menu-bar widget, actually a box */
 #endif
     Widget	form_widget;	/* form enclosing text-display + scrollbars */
     Widget	pane;		/* panes in which scrollbars live */
@@ -2459,14 +2460,8 @@ x_preparse_args(
 	    NULL);
     cur_win->menu_widget = XtVaCreateManagedWidget(
 	    "menubar",
-	    formWidgetClass,
+	    boxWidgetClass,
 	    cur_win->pane_widget,
-	    XtNheight,			1,
-	    XtNwidth,			1,
-	    XtNtop,			XtChainTop,
-	    XtNleft,			XtChainLeft,
-	    XtNright,			XtChainRight,
-	    XtNvertDistance,		0,
 	    XtNshowGrip,		False,
 	    NULL);
     cur_win->form_widget = XtVaCreateManagedWidget(
