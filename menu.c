@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.10 1997/05/12 09:44:15 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.11 1997/05/13 10:10:30 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -16,6 +16,8 @@
 /* Vile includes */
 #include "estruct.h"
 #include "edef.h"
+
+#if DISP_X11
 
 #if MOTIF_WIDGETS
 #include <Xm/MainW.h>
@@ -674,3 +676,5 @@ void do_menu ( Widget menub )
         pm_buffer[i] = NULL;
 }
 /************************************************************************/
+
+#endif /* DISP_X11 */

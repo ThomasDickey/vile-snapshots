@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.208 1997/03/30 23:53:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.209 1997/05/15 01:15:54 tom Exp $
  *
  */
 
@@ -612,6 +612,7 @@ guess_dosmode(BUFFER *bp)
 		}
 	}
 	bp->b_bytecount -= doslines;
+	TRACE(("guess_dosmode %d\n", b_val(bp, MDDOS)))
 }
 
 /*
@@ -1020,6 +1021,7 @@ slowreadf(register BUFFER *bp, int *nlinep)
 	 * There might be some pre-existing lines if quickreadf
 	 * read part of the file and then left the rest up to us.
 	 */
+	make_local_b_val(bp, MDDOS);	/* keep it local, if not */
 	if (global_b_val(MDDOS)) {
 		register LINE   *lp;
 		for_each_line(lp,bp) {

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.21 1997/03/20 18:03:04 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.22 1997/05/14 20:44:59 tom Exp $
  *
  */
 
@@ -345,9 +345,37 @@ ntcres(char *res)	/* change screen resolution */
 	return 0;
 }
 
+#if	OPT_FLASH
+static void
+flash_display()
+{
+	DWORD length = term.t_ncol * term.t_nrow;
+	DWORD got;
+	WORD *buf1 = malloc(sizeof(*buf1)*length);
+	WORD *buf2 = malloc(sizeof(*buf2)*length);
+	static COORD origin;
+	ReadConsoleOutputAttribute(hConsoleOutput, buf1, length, origin, &got);
+	ReadConsoleOutputAttribute(hConsoleOutput, buf2, length, origin, &got);
+	for (got = 0; got < length; got++) {
+		buf2[got] ^= (FOREGROUND_INTENSITY|BACKGROUND_INTENSITY);
+	}
+	WriteConsoleOutputAttribute(hConsoleOutput, buf2, length, origin, &got);
+	Sleep(200);
+	WriteConsoleOutputAttribute(hConsoleOutput, buf1, length, origin, &got);
+	free(buf1);
+	free(buf2);
+}
+#endif
+
 static void
 ntbeep(void)
 {
+#if	OPT_FLASH
+	if (global_g_val(GMDFLASH)) {
+		flash_display();
+		return;
+	}
+#endif
 	MessageBeep(0xffffffff);
 }
 
