@@ -1,5 +1,5 @@
 .\" obligatory man page for vile
-.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.14 1996/05/01 20:52:08 pgf Exp $
+.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.15 1996/09/10 02:51:07 pgf Exp $
 .TH VILE 1
 .SH NAME
 vile, xvile \- \fBVI L\fRike\fR \fBE\fRmacs
@@ -46,7 +46,8 @@ will execute an initial search for the given pattern.
 will edit the correct file and move the cursor to the location of the tag.
 This requires a tagsfile created with the 
 .IR ctags (1)
-command.
+command.  The option -T is equivalent, and can be used when X11 option
+parsing eats the -t.
 .IP -h
 Invokes
 .I vile

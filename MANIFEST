@@ -1,4 +1,4 @@
-MANIFEST for vile, version v6_0d
+MANIFEST for vile, version v6_1
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -26,6 +26,7 @@ configure.in                    used by 'autoconf' to generate 'configure'
 crypt.c                         encryption (from uEmacs)
 csrch.c                         current-line character-scanning commands
 descrip.mms                     VAX/VMS MMS build-script
+digraphs.rc                     macros for inserting digraphs
 dirstuff.h                      interfaces for UNIX-like directory functions
 display.c                       message & screen formatting & display
 djhandl.c                       CTL/C & interrupt handling for DJGCC
@@ -105,3 +106,4 @@ window.c                        window-management functions
 word.c                          commands that operate upon words or paragraphs
 wordmov.c                       cursor-movement commands (e.g., word, spaces)
 x11.c                           X11 (Xt, Motif or Openlook) terminal driver
+z100bios.asm                    obsolete z100 bios
