@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.254 2002/12/18 00:03:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.255 2003/02/23 17:22:29 tom Exp $
  *
  */
 
@@ -609,7 +609,7 @@ new_regexval(const char *pattern, int magic)
     beginDisplay();
     if ((rp = typealloc(REGEXVAL)) != 0) {
 	rp->pat = strmalloc(pattern);
-	if ((rp->reg = regcomp(rp->pat, magic)) == 0)
+	if ((rp->reg = regcomp(rp->pat, strlen(rp->pat), magic)) == 0)
 	    rp = free_regexval(rp);
     }
     endofDisplay();

@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.99 2003/02/17 11:44:28 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.100 2003/02/25 00:44:28 tom Exp $
  */
 
 #include	"estruct.h"
@@ -161,7 +161,6 @@ substreg1(int needpats, int use_opts, int is_globalsub)
     REGION region;
     LINEPTR oline;
     int getopts = FALSE;
-    char tpat[NPAT];
 
     if ((status = get_fl_region(&region)) != TRUE) {
 	return (status);
@@ -169,7 +168,7 @@ substreg1(int needpats, int use_opts, int is_globalsub)
 
     if (calledbefore == FALSE && needpats) {
 	c = kbd_delimiter();
-	if ((status = readpattern("substitute pattern: ", &searchpat[0],
+	if ((status = readpattern("substitute pattern: ", &searchpat,
 				  &gregexp, c, FALSE)) != TRUE) {
 	    if (status != ABORT)
 		mlforce("[No pattern.]");
@@ -183,11 +182,9 @@ substreg1(int needpats, int use_opts, int is_globalsub)
 			  (size_t) gregexp->size);
 	}
 
-	tpat[0] = 0;
+	tb_init(&replacepat, EOS);
 	status = readpattern("replacement string: ",
-			     &tpat[0], (regexp **) 0, c, FALSE);
-
-	(void) tb_scopy(&replacepat, tpat);
+			     &replacepat, (regexp **) 0, c, FALSE);
 	if (status == ABORT)
 	    /* if false, the pattern is null, which is okay... */
 	    return status;

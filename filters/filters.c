@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.86 2002/12/15 21:54:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.87 2003/02/26 22:40:56 tom Exp $
  *
  */
 
@@ -562,9 +562,9 @@ hash_function(const char *id)
      * Build more elaborate hashing scheme. If you want one.
      */
     if ((id[0] == 0) || (id[1] == 0))
-	return ((int) id[0]);
+	return (CharOf(id[0]));
 
-    return (((int) id[0] ^ ((int) id[1] << 3) ^ ((int) id[2] >> 1)) & 0xff);
+    return ((CharOf(id[0]) ^ (CharOf(id[1]) << 3) ^ (CharOf(id[2]) >> 1)) & 0xff);
 }
 
 void
@@ -724,7 +724,7 @@ parse_keyword(char *name, int classflag)
 }
 
 char *
-readline(FILE * fp, char **ptr, unsigned *len)
+readline(FILE *fp, char **ptr, unsigned *len)
 {
     char *buf = *ptr;
     unsigned used = 0;

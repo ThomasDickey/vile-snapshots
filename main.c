@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.497 2002/12/23 01:14:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.498 2003/02/25 00:44:28 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -681,7 +681,7 @@ MainProgram(int argc, char *argv[])
 	}
     } else if (search_exp) {
 	FreeIfNeeded(gregexp);
-	(void) strncpy0(searchpat, search_exp->pat, NPAT);
+	searchpat = tb_string(search_exp->pat);
 	gregexp = search_exp->reg;
 	(void) forwhunt(FALSE, 0);
 #if OPT_TAGS

@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.309 2002/12/23 00:15:31 Mark.Robinson Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.310 2003/02/26 14:39:19 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -128,7 +128,7 @@ decl_uninit( TBUFF *tb_save_shell[2] );	/* last ":!" or ^X-!  command	*/
 decl_uninit( char screen_desc[NBUFN] );	/* rough description of screen  */
 
 decl_init( TBUFF *mlsave, 0 );		/* last message, if postponed	*/
-decl_uninit( char searchpat[NPAT] );	/* Search pattern		*/
+decl_init( TBUFF *searchpat, 0 );	/* Search pattern		*/
 decl_init( TBUFF *replacepat, 0 );	/* replacement pattern		*/
 decl_uninit( int  last_srch_direc );	/* Direction of last search */
 decl_uninit( regexp *gregexp );		/* compiled version of searchpat */

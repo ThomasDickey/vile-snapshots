@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.253 2003/02/17 12:08:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.254 2003/02/19 00:04:22 tom Exp $
  *
  */
 
@@ -1264,7 +1264,8 @@ editMinibuffer(TBUFF ** buf, unsigned *cpos, int c, int margin, int quoted)
     /* Use editc (normally ^G) to toggle insert/command mode */
     if (c == editc && !quoted) {
 	miniedit = !miniedit;
-    } else if (miniedit && (cfp != 0) && (cfp->c_flags & MINIBUF) != 0) {
+    } else if ((miniedit || isSpecial(c))
+	       && (cfp != 0) && (cfp->c_flags & MINIBUF) != 0) {
 	int first = *cpos + margin;
 	int old_clexec = clexec;
 	int old_named = isnamedcmd;

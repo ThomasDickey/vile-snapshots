@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.264 2002/12/23 00:22:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.265 2003/02/26 23:20:13 tom Exp $
  *
  */
 
@@ -2138,8 +2138,6 @@ kbd_putc(int c)
 	} else {
 	    (void) linsert(1, c);
 	}
-	if (!is_header_line(DOT, curbp) && !is_at_end_of_line(DOT))
-	    forwchar(TRUE, 1);	/* END OF LINE HACK */
 #ifdef VILE_DEBUG
 	TRACE(("mini:%2d:%s\n", llength(DOT.l), lp_visible(DOT.l)));
 #endif

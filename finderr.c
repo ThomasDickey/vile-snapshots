@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2002 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.113 2002/12/15 20:14:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.114 2003/02/23 17:22:29 tom Exp $
  *
  */
 
@@ -350,7 +350,7 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 		   get_token_name(word)));
 #endif
 	TPRINTF(("-> %s\n", temp));
-	exp = regcomp(temp, TRUE);
+	exp = regcomp(temp, strlen(temp), TRUE);
     }
     errp->exp_text = temp;
     errp->exp_comp = exp;
