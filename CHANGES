@@ -1,5 +1,42 @@
 Changes for vile 9.1 (released ??? ??? ??, 1999)
 
+ (kev) 991231 (m)
+	+ doc/macros.doc, macros/vileperl.rc, perl.xs, vile.hlp:  Fix hgrep
+	  references; hgrep.pl is now hgrep.pm.  Also, fixed usage examples.
+	+ makefile.in:  Added perl modules Glob2re.pm, Vile/Manual.pm,
+	  Visit.pm, dirlist.pm.  Removed glob2re.pl and visit.pl.
+	+ perl/Glob2re.pm, perl/Visit.pm:  Renamed and revised from the .pl
+	  versions.
+	+ perl/glob2re.pl, perl/visit.pl: Removed these files.
+	+ perl/Vile/Manual.pm: New file for displaying embedded POD
+	  documentation.
+	+ perl/dirlist.pm:  New file; creates a flat hierarchical directory
+	  listing.
+	+ perl/hgrep.pm:  Moved introductory comments to end of file and
+	  rewrote in POD format.  Added binding hgrep-help which will display
+	  the POD documenation.  Fixed problem with backslashes in the buffer
+	  name given to the error-buffer command.
+	+ perl.xs:
+	  + (newVBrv):  Revert change in "l" which was supposed to prevent
+	    circular structure from being created.
+	  + (perl_free_handle):  Instead, break circular structure here so
+	    handle will get freed properly.  [Analysis by Brendan O'Dea.]
+	> Brendan O'Dea:
+	+ Vileserv now also works for vile.
+	+ registration commands are a bit more efficient when the module is
+	  already loaded.
+	+ hgrep now sets error-buffer internally.
+	+ add perl "use capture".
+	> Tom Dickey:
+	+ modify Vile::get() method to accept functions, needed to replace use
+	  of `pwd` in perl scripts to make them portable to win32.  Lack of
+	  a getcwd replacement is an odd omission for perl.
+	+ modify directory.pm and dirlist.pm to make them work on win32, i.e.,
+	  by not executing portions that will not work (such as mime types) and
+	  using vile's builtin functions to workaround deficiencies in perl.
+	+ add check in vileperl.rc to avoid registering scripts that will not
+	  work on win32.
+
  (tom) 991229 (l)
  	+ save/restore selection highlighting in attribute-from-filter, so that
 	  autocolor does not clear the current selection.

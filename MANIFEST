@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_0l
+MANIFEST for vile, version v9_0m
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -91,7 +91,6 @@ ptypemap                        perl-interface type map
 random.c                        miscellaneous functions
 regexp.c                        regular expression functions
 region.c                        region-manipulation
-revlist                         revision-list for VILE
 search.c                        functions for search-commands
 select.c                        selection-handling functions
 sinstall.sh                     wrapper for installing perl-scripts
@@ -260,14 +259,17 @@ macros/vileinit.rc              sample initialization file
 macros/vilemenu.rc              sample menu for xvile
 macros/vileperl.rc              sample initialization for perl scripts
 perl                            subdirectory
+perl/Glob2re.pm                 perl: convert wildcard (glob) to regular expression
 perl/Vile.pm                    utility functions for perl scripts
 perl/Vile                       subdirectory
 perl/Vile/Exporter.pm           provides an import method for vile's Perl5 extensions
+perl/Vile/Manual.pm             display perl (pod) documentation like a manual-page
 perl                            subdirectory
 perl/Vileserv.pm                provides file-load server capability for xvile
+perl/Visit.pm                   perl: utility for visiting files
 perl/capture.pm                 Perl script that improves on vile's capture-command
 perl/directory.pm               directory-browser extension
-perl/glob2re.pl                 utility-script for vile's hypertext
+perl/dirlist.pm                 perl: create a flat directory listing
 perl/hgrep.pm                   Perl utility: recursive grep, makes hypertext links
 perl/lock.pm                    Perl: screen-lock script
 perl/mime.pl                    mime-aware file viewer support
@@ -276,7 +278,6 @@ perl/search.pm                  Perl: lookalike for vile's search commands
 perl/shell.pm                   Perl: spawn a shell via a pty
 perl/spell.pm                   Perl: interactive spelling checker/corrector
 perl/vileget                    pass file-edit request to xvile session running Vileserv
-perl/visit.pl                   utility-script for vile's hypertext
 perl/winops.pm                  window-operations for testing the Perl5 interface
 visvile                         subdirectory
 visvile/commands.cpp            implement commands for visvile.dll

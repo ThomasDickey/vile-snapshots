@@ -3156,7 +3156,7 @@ Writing your own filters
 	Filters may be written as either an external program or with
 	the Perl interface.  Both the manual page filter and the C
 	program colorizer are examples of external programs which do
-	the filtering.  The hgrep.pl perl script is an example of a
+	the filtering.  The hgrep.pm perl script is an example of a
 	filter which uses the vile's interface to Perl.
 
 	Regardless, the goal of the filter is to embed in the text
@@ -3992,7 +3992,7 @@ Win32 specifics
 	   scripts to same.  The list of scripts known to work in a Win32
 	   environment includes:
 
-		hgrep.pl glob2re.pl visit.pl search.pl hilite.pl syntax.pl
+		hgrep.pm Glob2re.pm Visit.pm search.pm
 
 	Commands
 	--------
@@ -4305,4 +4305,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.460 1999/12/22 11:22:14 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.461 1999/12/31 12:36:20 kev Exp $

@@ -39,8 +39,8 @@ sub getpat {
     }
     else {
 	$direction = $ldirection;
-	$pat = Vile::mlreply_no_opts($direction eq 'forward' 
-	                               ? 'Perl search: ' 
+	$pat = Vile::mlreply_no_opts($direction eq 'forward'
+	                               ? 'Perl search: '
 				       : 'Reverse perl search: ',
                                      scalar Vile::get('search'));
     }
@@ -76,7 +76,7 @@ sub fixbackreferences {
 
 sub fsearch {
     my $pat = getpat(shift, 'forward');
-    
+
     return 0 unless defined($pat);
 
     my $wrap       = 0;
@@ -111,7 +111,7 @@ sub fsearch {
 	    if ($wrap) {
 		@dot = $cb->current_position;
 		if ($start_dot[0] == $dot[0] and $start_dot[1] == $dot[1]) {
-		    print "Only one occurence of pattern";
+		    print "Only one occurrence of pattern";
 		}
 		else {
 		    print "[Search wrapped past end of buffer]";
@@ -188,7 +188,7 @@ sub rsearch {
 	    if ($wrap) {
 		@dot = $cb->current_position;
 		if ($start_dot[0] == $dot[0] and $start_dot[1] == $dot[1]) {
-		    print "Only one occurence of pattern";
+		    print "Only one occurrence of pattern";
 		}
 		else {
 		    print "[Search wrapped past end of buffer]";

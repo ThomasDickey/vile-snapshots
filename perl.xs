@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.63 1999/12/29 14:21:46 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.65 1999/12/31 15:15:50 tom Exp $
  */
 
 /*#
@@ -263,7 +263,11 @@ newVBrv(SV *rv, VileBuf *sp)
 	sp->perl_handle = newGVgen("Vile::Buffer");
 	GvSV((GV*)sp->perl_handle) = newSV(0);
 	sv_setiv(GvSV((GV*)sp->perl_handle), (IV) sp);
-	sv_magic(sp->perl_handle, NULL, 'q', Nullch, 0);
+	/* The following line would be preferable, but does not work in
+	 * older versions of perl:
+	 *  sv_magic(sp->perl_handle, NULL, 'q', Nullch, 0);
+	 */
+	sv_magic(sp->perl_handle, rv, 'q', Nullch, 0);
 	gv_IOadd((GV*)sp->perl_handle);
 	IoLINES(GvIO((GV*)sp->perl_handle)) = 0;	/* initialise $. */
     }
@@ -299,6 +303,10 @@ getVB(SV *sv, char **croakmessage_ptr)
 void
 perl_free_handle(void *handle)
 {
+    /* Remove the magic from the handle.  This should break the
+       circular structure which would otherwise prevent the handle
+       from getting freed. */
+    sv_unmagic(handle, 'q');
 #if PDEBUG
     fprintf(stderr, "In perl_free_handle: ");
     sv_dump((SV*)handle);
@@ -1635,7 +1643,28 @@ FindMode(char *mode, int isglobal, VALARGS *args)
 	    vl_strncpy(new_mode+1, mode, sizeof(new_mode)-1);
 	    value = (char *)tokval(new_mode);
 	} else {
-	    value = (char *)tokval(mode);
+	    /*
+	     * A function should be legal anywhere a variable value is.
+	     */
+	    if (toktyp(mode) == TOK_FUNCTION) {
+		TBUFF *temp = 0;
+		char *save_str = execstr;
+		int save_flag = clexec;
+
+		temp = tb_scopy(&temp, mode);
+		execstr = skip_text(tb_values(temp));
+		clexec = FALSE;
+		if (isSpace(*execstr)) {
+		    *execstr++ = 0;
+		}
+		value = (char *)tokval(tb_values(temp));
+		tb_free(&temp);
+
+		execstr = save_str;
+		clexec = save_flag;
+	    } else {
+		value = (char *)tokval(mode);
+	    }
 	}
     }
 
@@ -1735,19 +1764,10 @@ PROTOTYPES: DISABLE
   #
   # It is also possible to use vile's builtin macro language to
   # load perl modules and call them.  The hgrep.pl module comes
-  # with the I<vile> distribution.  You may want to put this
-  # macro in your F<.vilerc> file:
+  # with the I<vile> distribution.  You may want to put the following
+  # line in your F<.vilerc> file:
   #
-  #     store-procedure hgrep
-  #         perl "require 'hgrep.pl'"
-  #         perl hgrep
-  #         error-buffer $cbufname
-  #     ~endm
-  #
-  # Notice that there are two perl commands in the above macro.
-  # The first will make sure that the script hgrep.pl is loaded.
-  # The second will actually call the main subroutine of the
-  # script.
+  #	perl "use hgrep"
   #
   # See also the Vile::C<register> functions.
   #
