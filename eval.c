@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.178 1998/11/14 17:22:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.181 1999/02/11 22:05:42 tom Exp $
  *
  */
 
@@ -572,6 +572,9 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 		ElseIf( EVFONT )	value = ntwinio_current_font();
 #endif
 #if OPT_SHELL
+#if HAVE_PUTENV
+		ElseIf( EVLIBDIR_PATH )	value = libdir_path;
+#endif
 #if DISP_X11
 		ElseIf( EVFONT )	value = x_current_fontname();
 		ElseIf( EVTITLE )	value = x_get_window_name();
@@ -1010,6 +1013,9 @@ const char *value)	/* value to set to */
 		ElseIf( EVFONT ) status = ntwinio_font_frm_str(value, FALSE);
 #endif
 #if OPT_SHELL
+#if HAVE_PUTENV
+		ElseIf( EVLIBDIR_PATH ) SetEnv(&libdir_path, value);
+#endif
 #if DISP_X11
 		ElseIf( EVFONT ) status = x_setfont(value);
 		ElseIf( EVTITLE ) x_set_window_name(value);

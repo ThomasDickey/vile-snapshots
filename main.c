@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.352 1999/02/01 01:50:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.355 1999/02/11 23:24:32 tom Exp $
  *
  */
 
@@ -826,6 +826,7 @@ global_val_init(void)
 	set_global_g_val(GMDERRORBELLS, TRUE);	/* alarms are noticeable */
 #if OPT_FLASH
 	set_global_g_val(GMDFLASH,  	FALSE);	/* beeps beep by default */
+	set_global_g_val(GVAL_VTFLASH,	VTFLASH_OFF); /* hardwired flash off */
 #endif
 #ifdef GMDW32PIPES
 	set_global_g_val(GMDW32PIPES,  	is_winnt()); /* use native pipes? */
@@ -993,6 +994,9 @@ global_val_init(void)
 
 	set_global_b_val_ptr(VAL_TAGS, strmalloc("tags")); /* tags filename */
 	set_global_b_val_ptr(VAL_FENCES, strmalloc("{}()[]")); /* fences */
+#if OPT_MAJORMODE
+	set_global_b_val(VAL_FENCE_LIMIT, 100);	/* fences iteration limit */
+#endif
 
 #if SYS_VMS
 #define	DEFAULT_CSUFFIX	"\\.\\(\\([CHIS]\\)\\|CC\\|CXX\\|HXX\\)\\(;[0-9]*\\)\\?$"
@@ -1110,6 +1114,14 @@ global_val_init(void)
 			startup_path = s;
 		}
 	}
+#endif
+#if HAVE_PUTENV
+#ifdef VILE_LIBDIR_PATH
+	s = VILE_LIBDIR_PATH;
+#else
+	s = "";
+#endif
+	libdir_path = strmalloc(s);
 #endif
 }
 

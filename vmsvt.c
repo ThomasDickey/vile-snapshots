@@ -7,7 +7,7 @@
  *  Author:  Curtis Smith
  *  Last Updated: 07/14/87
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.40 1999/01/31 23:48:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.42 1999/02/11 11:32:52 cmorgan Exp $
  *
  */
 
@@ -153,10 +153,10 @@ struct vmskeyseqs vt100seqs[] =
 	{ "\233B",    KEY_Down },
 	{ "\233C",    KEY_Right },
 	{ "\233D",    KEY_Left },
-	{ "\217OP",   KEY_KP_F1 },
-	{ "\217OQ",   KEY_KP_F2 },
-	{ "\217OR",   KEY_KP_F3 },
-	{ "\217OS",   KEY_KP_F4 },
+	{ "\217P",    KEY_KP_F1 },
+	{ "\217Q",    KEY_KP_F2 },
+	{ "\217R",    KEY_KP_F3 },
+	{ "\217S",    KEY_KP_F4 },
 	/* vt220 keys (F1-F5 do not transmit control sequences) include vt100 */
 	{ "\23317~",  KEY_F6 },
 	{ "\23318~",  KEY_F7 },
@@ -375,26 +375,6 @@ static void
 vmseeop(void)
 {
 	ttputs(erase_whole_display);
-}
-
-
-/***
- *  vmsbeep  -  Ring the bell
- *
- *  Nothing returned
- ***/
-static void
-vmsbeep(void)
-{
-#if OPT_FLASH
-	if (global_g_val(GMDFLASH)
-	 && dark_off != NULL
-	 && dark_on != NULL) {
-		ttputs(dark_off);
-		ttputs(dark_on);
-	} else
-#endif
-	ttputc(BEL);
 }
 
 
@@ -764,6 +744,53 @@ vmscres(const char *res)
 
 #undef COLS_132
 #undef COLS_80
+}
+
+
+
+/***
+ *  vmsbeep  -  Ring the bell
+ *
+ *  Nothing returned
+ ***/
+static void
+vmsbeep(void)
+{
+#if OPT_FLASH
+	int hit = 0;
+
+	if (global_g_val(GMDFLASH) && dark_off != NULL && dark_on != NULL)
+	{
+		hit = 1;
+		ttputs(dark_off);
+		ttputs(dark_on);
+	}
+	if (! hit && tc.t_type != TT$_VT52)
+	{
+		static char *seq[][2] =
+		{
+			{ NULL, NULL },                /* vtflash = off */
+			{ VTFLASH_NORMSEQ, VTFLASH_REVSEQ }, /* reverse */
+			{ VTFLASH_REVSEQ, VTFLASH_NORMSEQ }, /* normal  */
+		};
+		char *str1, *str2;
+		int  val;
+
+		val  = global_g_val(GVAL_VTFLASH);
+		str1 = seq[val][0];
+		if (str1)
+		{
+			str2 = seq[val][1];
+			ttputs(str1);
+			TTflush();
+			catnap(150, FALSE);
+			ttputs(str2);
+			hit = 1;
+		}
+	}
+	if (! hit)
+#endif
+	ttputc(BEL);
 }
 
 #else

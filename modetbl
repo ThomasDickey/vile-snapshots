@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.108 1999/02/01 02:46:07 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.111 1999/02/11 23:25:11 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -57,6 +57,7 @@ enum
 	"mcolor"	MCOLOR		chgd_hilite	OPT_HILITEMATCH # modeline color
 	"Mini-Hilite"   MINI_HILITE	0		# highlight minibuffer when using vi-commands
 	"Popup-Choices"	POPUP_CHOICES	0		OPT_POPUPCHOICE&&OPT_ENUM_MODES # popup buffer showing file-completion choices
+	"vtflash"	VTFLASH		0		OPT_FLASH # flash using DEC VT esc sequences
 int							# VAL_ prefix
 	"maplength"	MAPLENGTH	0		# maximum length of :map string
 	"printing-low"	PRINT_LOW	chgd_charset	# low end of high-bit-set printable range
@@ -108,6 +109,7 @@ int							# VAL_ prefix
 	"AutoSaveCNT"	ASAVECNT	0		# how often auto-saves occur
 	"C-ShiftWidth"	C_SWIDTH	0		!OPT_MAJORMODE # shift-width for C buffers
 	"C-TabStop"	C_TAB		chgd_major_w	!OPT_MAJORMODE # tab spacing for C buffers
+	"fence-limit"	FENCE_LIMIT	0		OPT_MAJORMODE # fence iteration-limit
 	"FillCol"	FILL		0		# column for paragraph reformat, and line break
 	"record-length" RECORD_LENGTH	0		SYS_VMS	# specify record-length to use
 	"ShiftWidth"	SWIDTH		0		# shiftwidth for ^T/^D/<</>>
@@ -190,6 +192,7 @@ string
 "identifier"	IDENTIF			# current identifier
 "kill"		KILL			# kill buffer (read only)
 "lastkey"	LASTKEY			# last keyboard char struck
+"libdir-path"	LIBDIR_PATH		# library directory(s)
 "line"		LINE			# text of current line
 "llength"	LLENGTH			# length of current line
 "majormode"	MAJORMODE	OPT_MAJORMODE # current majormode, if any
@@ -340,3 +343,8 @@ string
 "stm"		FAB$C_STM
 "stmlf"		FAB$C_STMLF
 "stmcr"		FAB$C_STMCR
+
+.table vtflashseq
+"off"		VTFLASH_OFF	OPT_FLASH
+"reverse"	VTFLASH_REVERSE	OPT_FLASH
+"normal"	VTFLASH_NORMAL	OPT_FLASH

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.40 1998/11/11 21:56:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.41 1999/02/12 11:38:00 tom Exp $
  *
  */
 
@@ -143,7 +143,7 @@ nticursor(int cmode)
 		cci.bVisible = FALSE;
 		break;
 	case 0:
-		cci.dwSize = 1;
+		cci.dwSize = 20;
 		cci.bVisible = TRUE;
 		break;
 	case 1:

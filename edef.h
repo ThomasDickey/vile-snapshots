@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.233 1998/11/14 03:46:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.236 1999/02/11 22:05:55 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -299,6 +299,10 @@ decl_uninit( char *helpfile );
 
 decl_uninit( char *startup_file );
 decl_uninit( char *startup_path );
+
+#if HAVE_PUTENV && OPT_SHELL
+decl_uninit( char *libdir_path );
+#endif
 
 decl_init_const( char hexdigits[], "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 

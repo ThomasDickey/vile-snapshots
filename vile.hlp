@@ -1169,18 +1169,20 @@ Editor modes
 		Currently only terminfo/termcap, OS/2 and PC's (Win32, DOS) can
 		do color, although the X11 version (xvile) can be given colors
 		at startup or via .Xdefaults.  See notes about the color
-		palette down below, under DOS specifics.
+		palette down below, under DOS specifics.  (U)
 
 	fence-begin
 	fence-end Respectively, the regular expressions for balancing simple
-		(character-oriented, non-nestable) fences.
+		(character-oriented, non-nestable) fences.  (B)
 
 	fence-if
 	fence-elif
 	fence-else
 	fence-fi Respectively, the regular expressions for balancing
 		line-oriented, nested fences, e.g., as C-preprocessor lines
-		(the default).
+		(the default).  (B)
+
+	fence-limit  Iteration limit for complex fences.  (B)
 
 	fence-pairs  Each pair of characters in this string is taken to be
 		a set of "fences", which should be matched with the '%'
@@ -1196,7 +1198,8 @@ Editor modes
 
 	flash   If your terminal can, will flash the screen rather than
 		beeping on errors.  No audible or visible indication will
-		occur at all if "errorbells" mode is not set on.  (U)
+		occur at all if "errorbells" mode is not set on.  See also
+		the vtflash mode (described below).  (U)
 
 	glob	Controls how wildcard characters (e.g., '*' and '?') are
 		treated in prompts for filenames.  Set glob to 'off' to
@@ -1525,6 +1528,24 @@ Editor modes
 		occurring patterns are used, since vile will need to scan
 		the entire buffer for matches on any change to the buffer.
 		(B)
+
+	vtflash If your terminal does not support a visual flash feature,
+		but does support the DECSCNM control sequences that toggle
+		normal/inverse screen video (a feature available with
+		vt100 and later terminals), then a visual bell effect may
+		be achieved using this mode.
+
+			Mode Value   Mode Semantics
+
+			off 	     feature disabled (default)
+			reverse      on err -> switch screen to normal then
+			                       reverse video.
+			normal       on err -> switch screen to reverse then
+			                       normal video.
+
+		As is true with "flash" mode, no audible or visible
+		indication will occur at all if "errorbells" mode is not
+		set on.  (U)
 
 	warn-rename  When using ":e" to find a file that has the same name
 		as another buffer, vile will normally offer for you to edit
@@ -2099,6 +2120,7 @@ Programmed procedures and macros
 	$disinp		display command line input characters (boolean)
 	$end-of-cmd	true if user ended the cmd with <CR>
 	$exit-hook	name of procedure to run when quitting
+	$fence-limit	iteration limit for complex fences
 	$flicker	set true to suppress CGA flicker on a PC.  ugh.
 	$font		current font name (X11/winvile versions only)
 	$forward-search	search direction, true=forward
@@ -2107,6 +2129,7 @@ Programmed procedures and macros
 	$identifier	current punctuated word
 	$kill		some of the kill register		(read only)
 	$lastkey	last keyboard char struck
+	$libdir-path	appended to $PATH when running filters
 	$line		text of current line
 	$llength	length of current line			(read only)
 	$majormode	current majormode, if any		(read only)
@@ -2622,6 +2645,9 @@ Invocation
 
 	VILE_HELP_FILE
 		override the name of the help file, normally "vile.hlp".
+	VILE_LIBDIR_FILE
+		override the search path for filter programs, normally
+		the library-directory on UNIX systems.
 	VILE_STARTUP_FILE
 		override the name of the startup file, normally ".vilerc"
 		(or "vile.rc" for non-UNIX systems).
@@ -3499,9 +3525,11 @@ DOS specifics
 VMS specifics
 -------------
 
-	Vile recognizes either VMS- or Unix-style pathnames.  However, filename
-	completion only works for Unix-style pathnames, since those allow us
-	to implement directory and filenames in the same syntax.
+	Vile recognizes either VMS- or Unix-style pathnames and '~' is
+	supported as a shortcut for SYS$LOGIN (e.g., :e ~/login.com).
+	However, filename completion only works for Unix-style pathnames,
+	since those allow us to implement directory and filenames in the
+	same syntax.
 
 	Reading from a pipe works; writing to a pipe is not implemented.
 
@@ -3510,6 +3538,12 @@ VMS specifics
 	allversions	Show all versions of files in response to filename
 			completion or wildcards on the command line.  Normally
 			this is off.  (U)
+
+	flash		This feature is implemented by setting the screen
+			video to reverse color and then normal.  If this
+			sequence of changes is incompatible with your
+			terminal preferences, avoid this mode and use
+			vtflash instead.
 
 	record-format   Specify format of files that vile writes.  If undefined,
 			vile will attempt to use the format of an older version
@@ -3524,6 +3558,19 @@ VMS specifics
 	$sres		Switch between 80- and 132-column screen resolutions
 			by setting this variable to either NORMAL or WIDE
 			(e.g., :setv $sres=wide).
+
+	Default key maps
+	----------------
+	With respect to VT100 and later terminal types, the editor assumes
+	a vt220 keyboard and maps special keys to their closest vile
+	counterpart (e.g., "Remove" mapped to vile's "Delete").  Some vt220
+	keyboard special keys have no obvious counterpart, in which case,
+	these mappings apply:
+
+		PF1-PF4  =>  F1-F4,
+		Help     =>  F15,
+		DO       =>  F16.
+
 
 
 Win32 specifics
@@ -3938,4 +3985,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.388 1999/02/01 22:33:42 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.393 1999/02/11 22:08:47 tom Exp $

@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.5 1998/12/28 22:16:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.6 1999/02/12 11:25:45 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of NROFF
  */
@@ -65,7 +65,7 @@ do_filter(FILE *input, FILE *output)
 COMMAND		^(\.[a-zA-Z0-9]+([ \t][^\n]+)?|'\\\"[^\n]+)
 COMMENT		^\.\\\"
 
-ENIT		\\[e *\n\\]
+ENIT		\\[e *\n\\-]
 
 FONT		\\f[A-Z1-3]
 

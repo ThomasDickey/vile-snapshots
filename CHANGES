@@ -1,5 +1,38 @@
 Changes for vile 8.3 (released ??? ??? ??, 1998)
 
+ (tom) 990212 (n)
+ 	+ increase size of underline cursor for OPT_ICURSOR in ntconio.c
+ 	+ correct dcl-filt.l to handle inline comments
+ 	+ add bash-specific keywords to sh.key (reported by Paul Fox).
+ 	+ add missing assignment to save pre_op_dot in fences.c (reported by
+	  Clark Morgan, from VC++ 6.0 warnings)
+ 	+ correct check for return-value of open_region_filter(), which did
+	  not look for abort of command, resulting in hanging while trying
+	  to close a pipe that was not open (reported by Paul Fox).
+	+ change cast in CF_CC_OFFSETOF_CASES to 'long', to accommodate SGI's
+	  64-bit compiler.
+	+ restore "perldo" cmdtbl entry, for compatibility (Paul Fox).
+	+ relax iteration limit for complex fences a little, using new mode
+	  fence-limit times the buffer length as the hard limit.  This is
+	  still proportional to the buffer length, rather than allowing
+	  geometric increase with the fences groups.
+ 	+ add configure option --with-libdir-path to allow override of the
+	  default $(libdir)/vile.  Make this alterable with new variable
+	  $libdir-path.
+ 	+ change install-directory for filter programs to $(libdir)/vile, to
+	  avoid clutter (suggested by Paul Fox).
+ 	+ modify some filters to avoid incrementing yytext since it may be an
+	  array.
+ 	+ add configure-check for state support in lex/flex, so we do not
+	  try to compile with programs that will not succeed.
+	+ correct limit-check in dname_to_dirnum(), missed a case when fixing
+	  for 8.2l, which caused pictmode.rc to not read properly.
+	> patches by Clark Morgan:
+	+ correct codes for 8-bit PF1-PF4 in vmsvt.c
+	+ update vile.hlp for vmsvt.c's function key definitions, as well as
+	  a note about tilde-expansion on VMS.
+	+ add vtflash mode, for tcap.c and vmsvt.c
+
  (tom) 990202 (m)
 	+ suppress TTtypahead() call in sysmapped_c_avail() when we have made
 	  characters available in mapungetc().  This fixes a problem where

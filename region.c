@@ -5,7 +5,7 @@
  * commands. Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.91 1998/10/24 15:56:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.92 1999/02/12 10:37:45 tom Exp $
  *
  */
 
@@ -1066,5 +1066,5 @@ int	ll, int	rr)		/* offsets of of chars to be processed */
 DORGNLINES
 get_do_lines_rgn(void)
 {
-    return (do_lines_in_region);
+    return (DORGNLINES)(do_lines_in_region);
 }

@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.65 1999/01/25 01:10:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.66 1999/02/11 00:47:44 tom Exp $
  *
  */
 
@@ -64,6 +64,26 @@ npopen (char *cmd, const char *type)
 
 #if SYS_UNIX
 
+#if HAVE_PUTENV
+/*
+ * Put the libdir in our path so we do not have to install the filters in the
+ * regular $PATH.
+ */
+static void append_libdir_to_path(void)
+{
+	char *env, *tmp;
+
+	if (libdir_path != 0
+	 && (env = getenv("PATH")) != 0
+	 && (tmp = malloc(strlen(env) + strlen(libdir_path) + 8)) != 0) {
+		lsprintf(tmp, "PATH=%s%c%s", env, PATHCHR, libdir_path);
+		putenv(tmp);
+	}
+}
+#else
+#define append_libdir_to_path() /*nothing*/
+#endif
+
 int
 inout_popen(FILE **fr, FILE **fw, char *cmd)
 {
@@ -108,6 +128,7 @@ inout_popen(FILE **fr, FILE **fw, char *cmd)
 
 	} else {			/* child */
 
+		append_libdir_to_path();
 		if (fw) {
 			(void)close (0);
 			if (dup (wp[0]) != 0) {

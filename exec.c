@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.174 1999/01/30 03:45:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.175 1999/02/06 12:45:03 tom Exp $
  *
  */
 
@@ -1509,7 +1509,7 @@ dname_to_dirnum(const char *eline, size_t length)
 		for (n = 0; n < TABLESIZE(dname); n++) {
 			m = strlen(dname[n].name);
 			if (length >= m
-			 && !isAlnum(eline[m])
+			 && (length == m || !isAlnum(eline[m]))
 			 && memcmp(eline, dname[n].name, m) == 0) {
 				dirnum = dname[n].type;
 				break;

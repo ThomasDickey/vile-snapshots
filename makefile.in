@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.121 1998/12/21 00:27:31 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.122 1999/02/11 00:23:47 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -60,6 +60,7 @@ exec_prefix	= @exec_prefix@
 
 manext		= 1
 bindir		= @bindir@
+libdir		= @libdir@
 datadir		= @datadir@/vile
 perldir		= $(datadir)/perl
 mandir		= @mandir@/man$(manext)
@@ -69,7 +70,9 @@ mandir		= @mandir@/man$(manext)
 SHELL		= /bin/sh
 RM              = rm -f
 
-QUOTDEFS	= -DVILE_STARTUP_PATH=\"@VILE_STARTUP_PATH@\"
+QUOTDEFS	= \
+		-DVILE_LIBDIR_PATH=\"@VILE_LIBDIR_PATH@\"
+		-DVILE_STARTUP_PATH=\"@VILE_STARTUP_PATH@\"
 CPPFLAGS	= -I. -I$(srcdir) $(X_CFLAGS) \
 		-DHAVE_CONFIG_H @CPPFLAGS@
 

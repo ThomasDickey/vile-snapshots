@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.63 1999/01/24 23:58:53 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.65 1999/02/11 11:40:50 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -177,8 +177,8 @@ AC_CACHE_CHECK(if switch cases work with structure offsets,
 cf_cv_case_offsetof,[
 	AC_TRY_COMPILE([],
 	[struct foo {int a,b;};
-	 extern getpid();
-	 switch(getpid()){case ((int) &(((struct foo *)0)->b)) : printf("foo"); } ],
+	 extern long longfunc();
+	 switch(longfunc()){case ((long) &(((struct foo *)0)->b)) : printf("foo"); } ],
 	[cf_cv_case_offsetof=yes],
 	[cf_cv_case_offsetof=no])
 	])
@@ -759,6 +759,32 @@ main()
 )])
 AC_MSG_RESULT($cf_cv_need_killpg)
 test $cf_cv_need_killpg = yes && AC_DEFINE(HAVE_KILLPG)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check if the lex/flex program accepts states, i.e., %s and %x.  Older
+dnl implementations do not support these.
+AC_DEFUN([CF_LEX_STATES],[
+AC_MSG_CHECKING(if $LEX supports states)
+cat >conftest.l <<CF_EOF
+%s X Y Z
+%x A B C
+%%
+nothing	ECHO;
+CF_EOF
+cf_lex_states="$LEX conftest.l 1>&AC_FD_CC"
+if AC_TRY_EVAL(cf_lex_states); then
+cf_lex_states=yes
+else
+cf_lex_states=no
+fi
+AC_MSG_RESULT($cf_lex_states)
+rm -f conftest.* $LEX_OUTPUT_ROOT.c
+MAKE_LEX=
+if test "$cf_lex_states" != yes ; then
+	AC_WARN(Your $LEX program does not support states.  Get flex.)
+	MAKE_LEX="#"
+fi
+AC_SUBST(MAKE_LEX)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Construct a search-list for a nonstandard library-file
