@@ -1,4 +1,4 @@
-MANIFEST for vile, version v7_0g
+MANIFEST for vile, version v7_0h
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -87,6 +87,7 @@ proto.h                         function prototypes
 random.c                        miscellaneous functions
 regexp.c                        regular expression functions
 region.c                        region-manipulation
+revlist                         revision-list for VILE
 search.c                        functions for search-commands
 select.c                        selection-handling functions
 spawn.c                         functions for spawning subprocesses

@@ -5,7 +5,7 @@
  * Modifications:  kevin buettner and paul fox  2/95
  * 		string literal ("Literal") support --  ben stoltz
  * 
- * $Header: /users/source/archives/vile.vcs/RCS/c-filt.c,v 1.3 1997/03/20 18:03:04 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/c-filt.c,v 1.4 1997/04/16 10:20:13 ianj Exp $
  *
  * Features:
  * 	- Reads the keyword file ".vile.keywords" from the home directory.
@@ -341,7 +341,7 @@ read_keywords(void)
 static int
 has_endofcomment(char *s)
 {
-    char i=0;
+    int i=0;
     while (*s) {
 	if (*s == '*' && *(s+1) == '/') {
 	    return(i+2);
@@ -355,7 +355,7 @@ has_endofcomment(char *s)
 static int
 has_endofliteral(char *s)	/* points to '"' */
 {
-    char i=0;
+    int i=0;
     while (*s) {
 	if (*s == '\"')
 	    return (i);
@@ -390,7 +390,7 @@ main(int argc, char **argv)
 	s = line;
 	s = skip_white(s);
 	while (*s) {
-	    if (*s == '/' && *(s+1) == '*') {
+	    if (!comment && *s == '/' && *(s+1) == '*') {
 		c_length = has_endofcomment(s);
 		if (c_length == 0) { /* Comment continues to the next line */
 		    c_length = strlen(s);
@@ -399,12 +399,12 @@ main(int argc, char **argv)
 		printf("\001%i%s:%.*s",c_length,comment_attr,c_length,s);
 		s = s + c_length ;
 	    } 
-	    if (*s == '/' && *(s+1) == '/') { /* C++ comments */
+	    if (!comment && *s == '/' && *(s+1) == '/') { /* C++ comments */
 	        c_length = strlen(s);
 		printf("\001%i%s:%.*s",c_length,comment_attr,c_length,s);
 	      break;
 	    } 
-	    if (*s == '#' && s == line ) {
+	    if (!comment && *s == '#' && s == line ) {
 		c_length = strlen(s);
 		printf("\001%i%s:%.*s",c_length,cpp_attr,c_length,s);
 		break;

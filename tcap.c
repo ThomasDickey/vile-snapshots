@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.88 1997/03/30 21:03:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.89 1997/04/23 01:42:55 tom Exp $
  *
  */
 
@@ -275,7 +275,7 @@ TERM term = {
 	null_t_title,
 };
 
-#define	XtermPos()	keystroke() - 040
+#define	XtermPos()	((unsigned)(keystroke() - 040))
 
 #if OPT_XTERM >= 3
 # define XTERM_ENABLE_TRACKING   "\033[?1001h"	/* mouse hilite tracking */

@@ -1,4 +1,4 @@
--- $Header: /users/source/archives/vile.vcs/RCS/README.MENU,v 1.2 1997/04/12 00:34:10 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/RCS/README.MENU,v 1.3 1997/04/14 13:05:38 phil Exp $
 
 Philippe Chassany (20/02/1997)
 
@@ -24,20 +24,36 @@ but it's easy to bypass the menubar creation in this case.
 
 Part of the menurc file:
 
-C:Xvile					-> Cascade
-B:New:new_xvile				-> Common Action (compiled)
-B:Edit .vilerc:edit_rc			-> Idem
-B:Parse .vilerc:parse_rc		-> Idem
-B:Quit:quit				-> Vile Internal Action
-#					-> Comment
-C:Edition				
-B:Search Forward...:search-forward
-B:Search Backward...:search-reverse	-> Vile Internal Action
-B:Grep for...:34			-> Vile Macro from .vilerc file
-S					-> Separator
-B:Manual for...:2
+C:Xvile
+B:New:new_xvile
+B:Edit .vilerc:edit_rc
+B:Parse .vilerc:parse_rc
+B:Edit .menurc:edit_mrc
+B:Quit:quit
 #
-C:Help:help				-> Help Cascade
+C:Edition
+B:Search Forward...:search-forward
+B:Search Backward...:search-reverse
+S
+B:Manual for...:2
+B:Word Manual:8
+S
+B:Indent Level...:31
+B:Window Title...:35
+B:Font...:36
+#
+C:Buffers
+B:Toggle Show:toggle-buffer
+L:list_buff
+#
+C:Attributes
+B:C/C++:17
+B:Tk/Tcl:22
+B:HTML:24
+B:Makefile:32
+B:ProC:33
+#
+C:Help:help
 B:General:help
 B:Bindings:describe-bindings
 B:Motions:describe-motions
