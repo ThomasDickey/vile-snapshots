@@ -1,4 +1,70 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
+ (kev) 980320 (j) 
+ 	+ api.c (linsert_chars): Rewritten both for efficiency and 
+	  so that the MARK at the end of the region stays put when 
+	  doing something like: 
+ 
+		$curscr->inplace_edit(1); 
+		while (<$curscr>) { s/foo/bar/g; print; } 
+ 
+	  (setup_fake_win): No longer static.  Renamed to 
+	  api_setup_fake_win.  Also set DOT here to the beginning of 
+	  the region. 
+	  (api_mark_iterator): New function. 
+	  (api_gotoline): No longer static.  Also renamed from 
+	  _api_gotoline.  Fixed all callers. 
+	  (api_dotinsert, api_dotgline): New functions. 
+	  (api_bp2sp): Initialize the region beginning and end 
+	  to point to something valid. 
+	+ api.h (SCR): Added new fields region, regionshape, and 
+	  inplace_edit. 
+	  (api_dotinsert, api_dotgline, api_gotoline, api_setup_fake_win): 
+	  Added declarations. 
+	+ cmdtbl (perldo): New command. 
+	+ estruct.h (api_do_mark_iterate_helper): New macro. 
+	  (do_mark_iterate): Invoke api_do_mark_iterate_helper in order 
+	  fix the the marks in the SCR structure region. 
+	+ perl.xs (newVIrv): Make the references to SCR objects that 
+	  we give perl refer to globs instead of a scalar.  Bury 
+	  the scalar in the scalar portion of the glob.  The reason 
+	  we do this is so that these references may be used as 
+	  filehandles as well as objects. 
+	  (perl_free_handle): Slight change to account for extra 
+	  levels of indirection to get to the thing we really have 
+	  to zero out. 
+	  (perl): Added calls to hst_flush() and hst_init() in order 
+	  to prevent user input from a perl command from being added 
+	  to the history line for the perl command.  (It was simply 
+	  getting appended on the end.)  Unfortunately, this input 
+	  doesn't seem to be recorded in the history any longer, but 
+	  at least it doesn't mess up the perl command. 
+	    Also rewrote the code for setting up a region, making sure 
+	  that the new fields in the SCR structure are initialized 
+	  appropriatedly. 
+	  (replace_line, perldo): New functions. 
+	  (perl_init): Tie STDIN to read from the minibuffer.  Modified 
+	  other tie statements (calls to sv_magic()) slightly to do 
+	  the same thing. 
+	  (Msg): No longer an alias for PRINT. 
+	  (PRINT): New method which handles both buffers and STDOUT 
+	  and STDERR. 
+	  (READLINE): New method which will either read a line from 
+	  a buffer or fetch input from the user via mlreply_no_opts(). 
+	  When it reads from a buffer, it has the potential to read 
+	  multiple lines if used in an array context. 
+	  (VileCommand): New method which runs an arbitrary vile 
+	  command.  I'll probably rename this one -- don't like 
+	  the caps. 
+	  (inplace_edit, setregion): New methods which set/get fields 
+	  from the SCR structure. 
+	  (GetUserInput): Will probably go away.  This was my first 
+	  attempt at a mechanism for fetching user input. 
+	  (mlreply, mlreply_no_opts, mlreply_file, mlreply_dir): Various 
+	  methods for fetching user input from the message line. 
+	+ ptypemap (T_VI): Account for the fact that our objects may 
+	  also now be considered as filehandles.  (The references now 
+	  refer to globs instead of scalars.  The scalar is still there, 
+	  but it's just stuck inside the glob.) 
 
  (tom) 980317 (i)
 	+ remove binding of quote-next-character to ^V (reported by Keith

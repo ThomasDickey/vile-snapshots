@@ -15,6 +15,7 @@ static WINDOW *curwp_after;
 static int
 linsert_chars(char *s, int len)
 {
+#if 0 
     int nlcount = 0;
     while (len-- > 0) {
 	if (*s == '\n') {
@@ -26,6 +27,55 @@ linsert_chars(char *s, int len)
 	s++;
     }
     return nlcount;
+#else 
+    /* I wrote the code this way both for efficiency reasons and 
+       so that the MARK denoting the end of the range wouldn't 
+       be moved to one of the newly inserted lines. 
+ 
+       I have no doubt it could be made much more efficient still 
+       by moving it into line.c and rewriting it to insert chunks 
+       of characters en masse. 
+    */ 
+    int nlcount = 0; 
+    int nlatend = 0; 
+ 
+    if (len <= 0) 
+	return 0; 
+ 
+    if (s[len-1] == '\n') { 
+	if (!is_empty_buf(curbp)) { 
+ 
+	    /* We implicitly get a newline by inserting anything into 
+	       an empty buffer.  If we insert a newline into an empty 
+	       buffer, we'll end up getting two of them. */ 
+ 
+	    lnewline(); 
+	    nlcount++; 
+	    DOT.l = lback(DOT.l);		/* back up DOT to the newly */ 
+	    DOT.o = 0;			/* inserted line */ 
+	} 
+	nlatend = 1; 
+	len--; 
+    } 
+ 
+    while (len-- > 0) { 
+	if (*s == '\n') { 
+	    lnewline(); 
+	    nlcount++; 
+	} 
+	else 
+	    linsert(1, *s); 
+	s++; 
+    } 
+ 
+    if (nlatend) { 
+	/* Advance DOT to where it's supposed to be */ 
+	DOT.l = lforw(DOT.l); 
+	DOT.o = 0; 
+    } 
+ 
+    return nlcount; 
+#endif 
 }
 
 /* Another candidate for line.c */
@@ -86,8 +136,8 @@ lreplace(char *s, int len)
     return TRUE;
 }
 
-static void
-setup_fake_win(SCR *sp)
+void 
+api_setup_fake_win(SCR *sp) 
 {
     if (curwp_after == 0)
 	curwp_after = curwp;
@@ -99,12 +149,72 @@ setup_fake_win(SCR *sp)
 	(void) push_fake_win(sp->bp);
 	sp->fwp = curwp;
 	sp->changed = 0;
+ 
+ 
+	DOT = sp->region.r_orig;	/* set DOT to beginning of region */ 
+ 
     }
 
     /* Should be call make_current() for this? */
     curbp = curwp->w_bufp;
 }
 
+/* I considered three possible solutions for preventing stale 
+   regions from being used.  Here they are: 
+ 
+    1) Validate the region in question.  I.e, make sure that 
+       the region start and end lines are still in the buffer. 
+       Set the region to reasonable defaults if not. 
+ 
+       The problem with this approach is that we need something 
+       else to hold the end marker of the region while we're 
+       working on it.  One possible solution is to use the 
+       per-buffer w_lastdot field.  But I'm not entirely sure 
+       this is safe. 
+ 
+    2) Make the region and attributed region and put it on 
+       the attribute list.  The marks representing the 
+       ends of the region will certainly be updated correctly 
+       if this is done.  The downside is that we'd have to 
+       beef up the code which deals with attributes to allow 
+       external pointers to the attributes.  It wouldn't 
+       do for one of the attribute lists to be freed up with 
+       one of our SCR structures still pointer to one of the 
+       structures. 
+ 
+    3) Make line.c and undo.c aware of the SCR regions. 
+       This solution has no serious downside aside from 
+       further bulking up the files in question. 
+ 
+    I chose option 3 since I was able to bury the work 
+    inside do_mark_iterate (see estruct.h).  The following 
+    function (api_mark_iterator) is the helper function 
+    found in do_mark_iterate. 
+*/ 
+ 
+MARK * 
+api_mark_iterator(BUFFER *bp, int *iterp) 
+{ 
+    MARK *mp = NULL; 
+    SCR  *sp = bp2sp(bp); 
+ 
+    if (sp != NULL) { 
+	switch (*iterp) { 
+	    case 0: 
+		mp = &sp->region.r_orig; 
+		break; 
+	    case 1: 
+		mp = &sp->region.r_end; 
+		break; 
+	    default: 
+		break; 
+	} 
+	(*iterp)++; 
+    } 
+ 
+    return mp; 
+} 
+ 
 /*
  * This is a variant of gotoline in basic.c.  It differs in that
  * it attempts to use the line number information to more efficiently
@@ -112,8 +222,8 @@ setup_fake_win(SCR *sp)
  * of the line.
  *
  */
-static int
-_api_gotoline(SCR *sp, int lno)
+int 
+api_gotoline(SCR *sp, int lno) 
 {
 #if !SMALLER
     int count;
@@ -154,10 +264,10 @@ _api_gotoline(SCR *sp, int lno)
 int
 api_aline(SCR *sp, int lno, char *line, int len)
 {
-    setup_fake_win(sp);
+    api_setup_fake_win(sp); 
 
     if (lno >= 0 && lno < line_count(sp->bp)) {
-	_api_gotoline(sp, lno+1);
+	api_gotoline(sp, lno+1); 
 	linsert_chars(line, len);
 	lnewline();
     }
@@ -172,16 +282,23 @@ api_aline(SCR *sp, int lno, char *line, int len)
 }
 
 int
+api_dotinsert(SCR *sp, char *text, int len) { 
+    api_setup_fake_win(sp); 
+    linsert_chars(text, len); 
+    return TRUE; 
+} 
+ 
+int 
 api_dline(SCR *sp, int lno)
 {
     int status = TRUE;
 
-    setup_fake_win(sp);
+    api_setup_fake_win(sp); 
 
     if (lno > 0 && lno <= line_count(sp->bp)) {
-	_api_gotoline(sp, lno);
+	api_gotoline(sp, lno); 
 	gotobol(TRUE,TRUE);
-	ldelete(llength(DOT.l) + 1, TRUE);
+	ldelete(llength(DOT.l) + 1, FALSE); 
     }
     else
 	status = FALSE;
@@ -194,10 +311,10 @@ api_gline(SCR *sp, int lno, char **linep, int *lenp)
 {
     int status = TRUE;
 
-    setup_fake_win(sp);
+    api_setup_fake_win(sp); 
 
     if (lno > 0 && lno <= line_count(sp->bp)) {
-	_api_gotoline(sp, lno);
+	api_gotoline(sp, lno); 
 	*linep = DOT.l->l_text;
 	*lenp = llength(DOT.l);
 	if (*lenp == 0) {
@@ -216,14 +333,67 @@ api_gline(SCR *sp, int lno, char **linep, int *lenp)
 }
 
 int
+api_dotgline(SCR *sp, char **linep, int *lenp) 
+{ 
+ 
+    api_setup_fake_win(sp); 
+ 
+    /* FIXME: Handle rectangular regions. */ 
+ 
+    if (   is_header_line(DOT, curbp)  
+        || (   DOT.l == sp->region.r_end.l  
+	    && (   sp->regionshape == FULLLINE 
+	        || (   sp->regionshape == EXACT 
+		    && DOT.o >= sp->region.r_end.o)))) 
+    { 
+	return FALSE; 
+    } 
+ 
+    *linep = DOT.l->l_text + DOT.o; 
+    *lenp = llength(DOT.l) - DOT.o; 
+ 
+    if (sp->regionshape == EXACT && DOT.l == sp->region.r_end.l) { 
+	*lenp -= llength(DOT.l) - sp->region.r_end.o; 
+    } 
+ 
+    if (*lenp < 0) 
+	*lenp = 0;	/* Make sure return length is non-negative */ 
+ 
+    if (*lenp == 0) { 
+	*linep = "";	/* Make sure we pass back a zero length, 
+			       null terminated value when the length 
+			       is zero.  Otherwise perl gets confused. 
+			       (It thinks it should calculate the length 
+			       when given a zero length.) 
+			     */ 
+    } 
+ 
+    if (sp->inplace_edit) { 
+	if (sp->regionshape == EXACT && DOT.l == sp->region.r_end.l) 
+	    ldelete(*lenp, TRUE); 
+	else 
+	    ldelete(*lenp + 1, TRUE); 
+    } 
+    else { 
+	if (sp->regionshape == EXACT && DOT.l == sp->region.r_end.l) 
+	    DOT.o += *lenp; 
+	else { 
+	    DOT.l = lforw(DOT.l); 
+	    DOT.o = 0; 
+	} 
+    } 
+    return TRUE; 
+} 
+ 
+int 
 api_sline(SCR *sp, int lno, char *line, int len)
 {
     int status = TRUE;
 
-    setup_fake_win(sp);
+    api_setup_fake_win(sp); 
 
     if (lno > 0 && lno <= line_count(sp->bp)) {
-	_api_gotoline(sp, lno);
+	api_gotoline(sp, lno); 
 	if (   DOT.l->l_text != line 
 	    && (   llength(DOT.l) != len
 	        || memcmp(line, DOT.l->l_text, len) != 0)) {
@@ -278,7 +448,7 @@ api_edit(SCR *sp, char *fname, SCR **retspp, int newscreen)
 	return 1;
     }
     *retspp = api_bp2sp(bp);
-    setup_fake_win(*retspp);
+    api_setup_fake_win(*retspp); 
     return !swbuffer_lfl(bp, FALSE);
 }
 
@@ -350,6 +520,9 @@ api_bp2sp(BUFFER *bp)
 	if (sp != 0) {
 	    bp->b_api_private = sp;
 	    sp->bp = bp;
+	    sp->regionshape = FULLLINE; 
+	    sp->region.r_orig = DOT; 
+	    sp->region.r_end  = DOT; 
 	}
     }
     return sp;

@@ -1,12 +1,15 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.3 1997/12/03 23:35:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.4 1998/03/20 10:48:45 kev Exp $
  */
 typedef struct {
-	BUFFER * bp;
-	WINDOW * fwp;			/* fake window pointer */
-	int      changed;		/* Were any changes done? */
+	BUFFER    * bp; 
+	WINDOW    * fwp;		/* fake window pointer */ 
+	REGION      region;		/* Region to traverse */ 
+	REGIONSHAPE regionshape; 
+	int         inplace_edit;	/* Delete after get? */ 
+	int         changed;		/* Were any changes done? */ 
 #if OPT_PERL
-	void   * perl_handle;		/* perl visible handle to this
+	void      * perl_handle;	/* perl visible handle to this 
 					   data structure */
 #endif
 } SCR;
@@ -22,6 +25,10 @@ extern	int	api_swscreen(SCR *, SCR *);
 extern	SCR *	api_fscreen(int, char *);
 extern	SCR *	api_bp2sp(BUFFER *bp);
 extern	void	api_command_cleanup(void);
+extern	int	api_dotinsert(SCR *sp, char *text, int len); 
+extern	int	api_dotgline(SCR *, char **, int *); 
+extern	int	api_gotoline(SCR *sp, int lno); 
+extern	void	api_setup_fake_win(SCR *sp); 
 
 #define sp2bp(sp) (((SCR *)(sp))->bp)
 #define bp2sp(bp) ((SCR *) (bp)->b_api_private)
