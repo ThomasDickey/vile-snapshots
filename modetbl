@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.182 2000/09/26 01:34:09 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.183 2000/10/01 20:38:17 cmorgan Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -212,6 +212,7 @@ string
 "exec-path"	EXEC_PATH		# directory where vile's executable is found
 "exec-suffix"	EXEC_SUFFIX		# suffix to append when looking for execable programs
 "exit-hook"	EXITHOOK	OPT_HOOKS	# procedure to run when quitting
+"favorites"	FAVORITES	SYS_WINNT	# path to favorites directory
 "filename-expr"	FILENAME_EXPR	OPT_FINDERR	# regular expression for %F
 "filename-ic"	FILENAME_IC		# true if we set OPT_CASELESS
 "filter-list"	FILTER_LIST	OPT_FILTER	# list of builtin-filters

@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Borland C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.12 2000/04/20 10:10:57 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.13 2000/10/05 10:58:56 cmorgan Exp $
 #
 #
 
@@ -33,7 +33,7 @@ SRC = 	main.c ntconio.c basic.c bind.c btree.c buffer.c \
 	path.c random.c regexp.c \
 	region.c search.c select.c spawn.c statevar.c \
 	tags.c tbuff.c termio.c ucrypt.c undo.c \
-	version.c w32cbrd.c w32misc.c w32pipe.c \
+	version.c w32cbrd.c w32misc.c w32oo.cpp w32pipe.c \
 	window.c word.c wordmov.c map.c
 
 OBJ = 	main.obj ntconio.obj basic.obj bind.obj btree.obj buffer.obj \
@@ -45,10 +45,13 @@ OBJ = 	main.obj ntconio.obj basic.obj bind.obj btree.obj buffer.obj \
 	path.obj random.obj regexp.obj \
 	region.obj search.obj select.obj spawn.obj statevar.obj \
 	tags.obj tbuff.obj termio.obj ucrypt.obj undo.obj \
-	version.obj w32cbrd.obj w32misc.obj w32pipe.obj \
+	version.obj w32cbrd.obj w32misc.obj w32oo.obj w32pipe.obj \
 	window.obj word.obj wordmov.obj map.obj
 
 .c.obj:
+	$(CC) $(CFLAGS) -c $<
+
+.cpp.obj:
 	$(CC) $(CFLAGS) -c $<
 
 vile.exe: 	$(BUILTHDRS) $(OBJ)

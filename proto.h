@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.438 2000/09/22 11:16:26 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.440 2000/10/01 22:19:55 tom Exp $
  *
  */
 
@@ -99,7 +99,7 @@ extern char *kcod2pstr (int c, char *seq);
 extern const CMDFUNC *engl2fnc (const char *fname);
 extern const CMDFUNC *kcod2fnc (BINDINGS *bs, int c);
 extern int fnc2kcod (const CMDFUNC *);
-extern int kbd_complete (int case_insensitive, int c, char *buf, unsigned *pos, const char *table, SIZE_T size_entry);
+extern int kbd_complete (unsigned flags, int c, char *buf, unsigned *pos, const char *table, SIZE_T size_entry);
 extern int kbd_engl_stat (const char *prompt, char *buffer, int stated);
 extern int kbd_length (void);
 extern int kcod2escape_seq (int c, char *ptr);
@@ -1091,6 +1091,7 @@ typedef struct oleauto_options_struct
 
 extern void disp_win32_error(ULONG errcode, void *hwnd);
 extern char *fmt_win32_error(ULONG errcode, char **buf, ULONG buflen);
+extern const char *get_favorites(void);
 extern int  is_win95(void);
 extern int  is_winnt(void);
 extern char *mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc);
@@ -1116,8 +1117,10 @@ extern void w32_npclose(FILE *fp);
 extern int  w32_system(const char *cmd);
 extern int  w32_system_winvile(const char *cmd, int *pressret);
 extern char *w32_wdw_title();
+extern int  winopen_dir(const char *dir);
+extern int  winsave_dir(const char *dir);
 extern int  winvile_cursor(int visible, int queue_change);
-extern int	winvile_cursor_state(int visible, int queue_change);
+extern int  winvile_cursor_state(int visible, int queue_change);
 extern void *winvile_hwnd(void);
 extern void winvile_start(void);
 #endif

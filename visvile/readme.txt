@@ -2,7 +2,7 @@
 Visual Studio - Vile Integration
 ================================
 
-Copyright (C) 1998-1999 Clark Morgan
+Copyright (C) 1998-2000 Clark Morgan
 
 VisVile is a Visual Studio add-in that permits Winvile to replace the
 default text editor in certain situations.  Complete documentation of this

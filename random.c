@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.235 2000/08/26 16:38:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.236 2000/10/01 20:38:17 cmorgan Exp $
  *
  */
 
@@ -1043,7 +1043,7 @@ vl_chdir(int f GCC_UNUSED, int n GCC_UNUSED)
     char cdirname[NFILEN];
 
     status = mlreply_dir("Change to directory: ", &last, cdirname);
-#if SYS_UNIX || SYS_VMS
+#if SYS_UNIX || SYS_VMS || SYS_WINNT
     if (status == FALSE) {	/* empty reply, go HOME */
 	(void) strcpy(cdirname, "~");
 	status = TRUE;
@@ -1108,13 +1108,14 @@ previous_directory(void)
 int
 set_directory(const char *dir)
 {
-    char exdir[NFILEN];
+#define CHANGE_FAILED "[Couldn't change to \"%s\"]"
+
+    char  exdir[NFILEN], *exdp, cdpathdir[NFILEN], tmp[NFILEN];
     const char *cdpath = 0;
-    char cdpathdir[NFILEN];
-    char *exdp;
 #if SYS_MSDOS || SYS_OS2
-    int curd = curdrive();
+    int   curd = curdrive();
 #endif
+    int   outlen;
 
     upmode();
 
@@ -1256,8 +1257,12 @@ set_directory(const char *dir)
     setdrive(curd);
     current_directory(TRUE);
 #endif
-    mlforce("[Couldn't change to \"%s\"]", exdir);
+
+    outlen = (term.cols - 1) - (sizeof(CHANGE_FAILED) - 3);
+    mlforce(CHANGE_FAILED, path_trunc(exdir, outlen, tmp, sizeof(tmp)));
     return FALSE;
+
+#undef CHANGE_FAILED
 }
 
 void

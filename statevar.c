@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.37 2000/05/15 09:46:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.38 2000/10/01 20:38:17 cmorgan Exp $
  */
 
 #include	"estruct.h"
@@ -656,6 +656,23 @@ int var_EXEC_SUFFIX(TBUFF **rp, const char *vp)
 int var_EXITHOOK(TBUFF **rp, const char *vp)
 {
 	return any_HOOK(rp, vp, &exithook);
+}
+#endif
+
+#if SYS_WINNT
+int var_FAVORITES(TBUFF **rp, const char *vp)
+{
+	if (rp) {
+		const char *pfavdir = get_favorites();
+
+		if (pfavdir) {
+			tb_scopy(rp, pfavdir);
+			return TRUE;
+		}
+	} else if (vp) {
+		return ABORT;  /* read-only */
+	}
+	return FALSE;
 }
 #endif
 

@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.227 2000/09/26 09:16:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.228 2000/10/02 01:34:23 tom Exp $
  *
  */
 
@@ -1435,6 +1435,21 @@ read_quoted(int count, int inscreen)
 	return (i > 0) ? (num & 0xff) : -1;
 }
 
+static int
+may_complete(TBUFF *data, UINT options)
+{
+	int result = ABORT;
+
+	if ((options & KBD_MAYBEC) != 0) {
+		result = SORTOFTRUE;
+	} else if ((options & KBD_MAYBEC2) != 0
+	 && tb_length(data) != 0
+	 && (*tb_values(data) == '%')) {
+		result = SORTOFTRUE;
+	}
+	return result;
+}
+
 /*
  * Same as 'kbd_string()', except for adding the 'endfunc' parameter.
  *
@@ -1461,8 +1476,8 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 	int	margin;
 	ALLOC_T	save_len;
 
-	register int quotef;	/* are we quoting the next char? */
-	register UINT backslashes; /* are we quoting the next expandable char? */
+	int quotef;		/* are we quoting the next char? */
+	UINT backslashes;	/* are we quoting the next expandable char? */
 	UINT dontmap = (options & KBD_NOMAP);
 	int firstch = TRUE;
 	int lastch;
@@ -1502,9 +1517,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 				if ((*complete)(NAMEC, tbreserve(extbuf), &newpos)) {
 					StrToBuff(*extbuf);
 				} else {
-					status = (options & KBD_MAYBEC)
-						? SORTOFTRUE
-						: ABORT;
+					status = may_complete(*extbuf, options);
 					tb_put(extbuf, cpos, EOS);
 				}
 			}
@@ -1614,7 +1627,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 			shell = editingShellCmd(tb_values(buf),options);
 			if (done && (options & KBD_NULLOK) && cpos == 0)
 				/*EMPTY*/;
-			else if ((done && !(options & KBD_MAYBEC))
+			else if ((done && (may_complete(buf, options) == ABORT))
 			 || (!EscOrQuo
 			  && !(shell && isPrint(c))
 			  && (c == TESTC || c == NAMEC))) {

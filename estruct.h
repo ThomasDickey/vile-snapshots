@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.452 2000/09/25 09:40:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.454 2000/10/01 22:57:37 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1002,6 +1002,8 @@ typedef enum {
 #define KBD_EXPPAT	iBIT(10) /* expand ~ to last replacement */
 #define KBD_0CHAR	iBIT(11) /* string can have embedded nulls */
 #define KBD_STATED	iBIT(12) /* erasing buffer returns for prev-state */
+#define KBD_CASELESS	iBIT(13) /* name-completion ignores case */
+#define KBD_MAYBEC2	iBIT(14) /* completion optional if user-variable */
 
 /* default option for 'mlreply' (used in modes.c also) */
 #if !(SYS_MSDOS || SYS_OS2 || SYS_WINNT)

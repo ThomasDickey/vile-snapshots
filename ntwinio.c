@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.90 2000/08/26 16:38:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.92 2000/10/05 10:55:30 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -1804,11 +1804,15 @@ handle_builtin_menu(WPARAM code)
 	DialogBox(vile_hinstance, "AboutBox", cur_win->main_hwnd, AboutBoxProc);
 	break;
     case IDM_OPEN:
-	winopen(0, 0);
+	winopen_dir(NULL);
+	update(FALSE);
+	break;
+    case IDM_FAVORITES:
+	winopen_dir(get_favorites());
 	update(FALSE);
 	break;
     case IDM_SAVE_AS:
-	winsave(0, 0);
+	winsave_dir(NULL);
 	update(FALSE);
 	break;
     case IDM_FONT:
@@ -1819,7 +1823,8 @@ handle_builtin_menu(WPARAM code)
 	update(FALSE);
 	break;
     case IDM_PASTE:
-	if (b_val(curbp, MDVIEW))
+	/* it's okay to paste into minibuffer if reading msg line data */
+	if ((! reading_msg_line) && b_val(curbp, MDVIEW))
 	    return rdonly();
 	mayneedundo();
 	fhide_cursor();
@@ -3162,6 +3167,7 @@ InitInstance(HINSTANCE hInstance)
     AppendMenu(vile_menu, MF_SEPARATOR, 0, NULL);
     AppendMenu(vile_menu, MF_STRING, IDM_OPEN, "&Open...");
     AppendMenu(vile_menu, MF_STRING, IDM_SAVE_AS, "&Save As...");
+    AppendMenu(vile_menu, MF_STRING, IDM_FAVORITES, "Fa&vorites...");
     AppendMenu(vile_menu, MF_STRING, IDM_FONT, "&Font...");
     AppendMenu(vile_menu, MF_STRING, IDM_ABOUT, "&About...");
     AppendMenu(vile_menu, MF_SEPARATOR, 0, NULL);

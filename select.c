@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.128 2000/08/26 16:30:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.129 2000/10/01 20:29:30 tom Exp $
  *
  */
 
@@ -48,9 +48,9 @@ static void detach_attrib(BUFFER *bp, AREGION * arp);
 static int attribute_cntl_a_sequences(void);
 static void free_line_attribs(BUFFER *bp);
 static int add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs,
-    VIDEO_ATTR vattr, TBUFF * hypercmd);
+			   VIDEO_ATTR vattr, TBUFF * hypercmd);
 static void purge_line_attribs(BUFFER *bp, REGION * rp, REGIONSHAPE rs,
-    int owner);
+			       int owner);
 
 /*
  * startbufp and startregion are used to represent the start of a selection
@@ -205,11 +205,11 @@ show_selection_position(int yanked)
 #ifdef WMDTERSELECT
     if (!w_val(curwp, WMDTERSELECT)) {
 	mlwrite("(%d,%d) thru (%d,%d) %s",
-	    line_no(selbufp, selregion.ar_region.r_orig.l),
-	    getcol(selregion.ar_region.r_orig, FALSE) + 1,
-	    line_no(selbufp, selregion.ar_region.r_end.l),
-	    getcol(selregion.ar_region.r_end, FALSE),
-	    yanked ? "yanked" : "selected");
+		line_no(selbufp, selregion.ar_region.r_orig.l),
+		getcol(selregion.ar_region.r_orig, FALSE) + 1,
+		line_no(selbufp, selregion.ar_region.r_end.l),
+		getcol(selregion.ar_region.r_end, FALSE),
+		yanked ? "yanked" : "selected");
 
     }
 #endif /* WMDTERSELECT */
@@ -761,7 +761,7 @@ on_mouse_click(int button, int y, int x)
 	    TRACE(("MOUSE cannot move msg-line\n"));
 	    status = FALSE;
 	} else if (insertmode
-	    && (this_wp != curwp || that_wp != curwp)) {
+		   && (this_wp != curwp || that_wp != curwp)) {
 	    TRACE(("MOUSE cannot move from window while inserting\n"));
 	    kbd_alarm();
 	    status = ABORT;
@@ -789,7 +789,7 @@ on_mouse_click(int button, int y, int x)
 			MK = DOT;
 			status = SEL_BEGIN;
 			TRACE(("MOUSE setting SEL_BEGIN MK %d.%d\n",
-				line_no(curbp, MK.l), MK.o));
+			       line_no(curbp, MK.l), MK.o));
 		    }
 		    break;
 		case BTN_PASTE:
@@ -800,8 +800,8 @@ on_mouse_click(int button, int y, int x)
 		    (void) setcursor(y, x);
 		    status = SEL_EXTEND;
 		    TRACE(("MOUSE setting SEL_EXTEND DOT %d.%d MK %d.%d\n",
-			    line_no(curbp, MK.l), MK.o,
-			    line_no(curbp, DOT.l), DOT.o));
+			   line_no(curbp, MK.l), MK.o,
+			   line_no(curbp, DOT.l), DOT.o));
 		    break;
 		}
 	    } else {
@@ -900,8 +900,8 @@ multimotion(int f, int n)
 	sel_extend(TRUE, (regionshape != RECTANGLE && sweephack));
 	savedot = MK;
 	TRACE(("MOUSE BEGIN DOT: %d.%d MK %d.%d\n",
-		line_no(curbp, DOT.l), DOT.o,
-		line_no(curbp, MK.l), MK.o));
+	       line_no(curbp, DOT.l), DOT.o,
+	       line_no(curbp, MK.l), MK.o));
 	break;
     case FALSE:
 	if (doingsweep != TRUE) {
@@ -944,15 +944,15 @@ multimotion(int f, int n)
 	    wassweephack = sweephack;
 	    sweephack = FALSE;
 	    TRACE(("MOUSE TEST DOT: %d.%d MK %d.%d\n",
-		    line_no(curbp, DOT.l), DOT.o,
-		    line_no(curbp, MK.l), MK.o));
+		   line_no(curbp, DOT.l), DOT.o,
+		   line_no(curbp, MK.l), MK.o));
 	    testdot = DOT;
 
 	    s = execute(cfp, f, n);
 	    switch (s) {
 	    case SEL_RELEASE:
 		TRACE(("MOUSE SEL_RELEASE %d.%d\n",
-			line_no(curbp, DOT.l), DOT.o));
+		       line_no(curbp, DOT.l), DOT.o));
 		return release_selection(TRUE);
 
 	    case SEL_PASTE:
@@ -965,8 +965,8 @@ multimotion(int f, int n)
 
 	    case SORTOFTRUE:
 		TRACE(("MOUSE selection pending %d.%d -> %d.%d\n",
-			line_no(curbp, realdot.l), realdot.o,
-			line_no(curbp, testdot.l), testdot.o));
+		       line_no(curbp, realdot.l), realdot.o,
+		       line_no(curbp, testdot.l), testdot.o));
 		realdot = testdot;
 		break;
 
@@ -977,8 +977,8 @@ multimotion(int f, int n)
 
 	    case SEL_EXTEND:
 		TRACE(("MOUSE SEL_EXTEND from %d.%d to %d.%d\n",
-			line_no(curbp, savedot.l), savedot.o,
-			line_no(curbp, DOT.l), DOT.o));
+		       line_no(curbp, savedot.l), savedot.o,
+		       line_no(curbp, DOT.l), DOT.o));
 		/*FALLTHRU */
 
 	    case TRUE:
@@ -991,16 +991,16 @@ multimotion(int f, int n)
 		(void) sel_begin();
 		DOT = realdot;
 		TRACE(("MOUSE LOOP save: %d.%d real %d.%d, mark %d.%d\n",
-			line_no(curbp, savedot.l), savedot.o,
-			line_no(curbp, realdot.l), realdot.o,
-			line_no(curbp, MK.l), MK.o));
+		       line_no(curbp, savedot.l), savedot.o,
+		       line_no(curbp, realdot.l), realdot.o,
+		       line_no(curbp, MK.l), MK.o));
 		(void) sel_setshape(shape);
 		/* we sometimes want to include DOT.o in the
 		   selection (unless it's a rectangle, in
 		   which case it's taken care of elsewhere)
 		 */
 		sel_extend(TRUE, (regionshape != RECTANGLE &&
-			sweephack));
+				  sweephack));
 		break;
 
 	    default:
@@ -1024,8 +1024,8 @@ multimotion(int f, int n)
     savemark = MK;
     DOT = realdot;
     TRACE(("MOUSE SAVE DOT: %d.%d MK %d.%d\n",
-	    line_no(curbp, DOT.l), DOT.o,
-	    line_no(curbp, MK.l), MK.o));
+	   line_no(curbp, DOT.l), DOT.o,
+	   line_no(curbp, MK.l), MK.o));
     if ((regionshape != RECTANGLE) && sweephack) {
 	if (dot_vs_mark() < 0)
 	    MK.o += 1;
@@ -1074,7 +1074,7 @@ apply_attribute(void)
 {
     return (VATTRIB(videoattribute) != 0
 #if OPT_HYPERTEXT
-	|| tb_length(hypercmd) != 0
+	    || tb_length(hypercmd) != 0
 #endif
 	);
 }
@@ -1090,9 +1090,9 @@ attributeregion(void)
 	if (apply_attribute()) {
 	    if (add_line_attrib(curbp, &region, regionshape, videoattribute,
 #if OPT_HYPERTEXT
-		    hypercmd
+				hypercmd
 #else
-		    0
+				0
 #endif
 		))
 		return TRUE;
@@ -1221,9 +1221,9 @@ attributeregion(void)
 
 int
 attributeregion_in_region(REGION * rp,
-    REGIONSHAPE shape,
-    VIDEO_ATTR vattr,
-    char *hc)
+			  REGIONSHAPE shape,
+			  VIDEO_ATTR vattr,
+			  char *hc)
 {
     haveregion = rp;
     DOT = rp->r_orig;
@@ -1397,7 +1397,7 @@ operattrcaseq(int f, int n)
     opcmd = OPOTHER;
     videoattribute = 0;
     return vile_op(f, n, attribute_cntl_a_sequences,
-	"Attribute ^A sequences");
+		   "Attribute ^A sequences");
 }
 
 int
@@ -1466,8 +1466,8 @@ parse_attribute(char *text, int length, int offset, int *countp)
 	    count = 1;
 	videoattribute = VOWN_CTLA;
 	while (offset < length
-	    && (c = text[offset]) != CONTROL_A
-	    && !found) {
+	       && (c = text[offset]) != CONTROL_A
+	       && !found) {
 	    switch (c) {
 	    case 'C':
 		/* We have color. Get color value */
@@ -1500,14 +1500,14 @@ parse_attribute(char *text, int length, int offset, int *countp)
 		save_offset = offset;
 		offset++;
 		while (offset < length
-		    && text[offset] != EOS)
+		       && text[offset] != EOS)
 		    offset++;
 
 		if (offset < length) {
 		    tb_init(&hypercmd, EOS);
 		    tb_bappend(&hypercmd,
-			&text[save_offset + 1],
-			offset - save_offset);
+			       &text[save_offset + 1],
+			       offset - save_offset);
 		    tb_append(&hypercmd, EOS);
 		} else {	/* skip bad hypertext string */
 		    offset = save_offset;
@@ -1605,7 +1605,7 @@ attribute_cntl_a_sequences(void)
 	while (DOT.o < llength(DOT.l)) {
 	    if (char_at(DOT) == CONTROL_A) {
 		offset = parse_attribute(DOT.l->l_text, llength(DOT.l),
-		    DOT.o, &count);
+					 DOT.o, &count);
 #if EFFICIENCY_HACK
 		new_attribs = curbp->b_attribs;
 		curbp->b_attribs = orig_attribs;
@@ -1718,7 +1718,7 @@ operattrfilter(int f, int n)
     opcmd = OPOTHER;
     videoattribute = 0;
     return vile_op(f, n, attribute_from_filter,
-	"Attribute ^A sequences from filter");
+		   "Attribute ^A sequences from filter");
 }
 #endif /*  OPT_SHELL */
 
@@ -1747,7 +1747,7 @@ operattrdirect(int f, int n)
     opcmd = OPOTHER;
     videoattribute = 0;
     return vile_op(f, n, attribute_directly,
-	"Attribute directly with internal filter");
+		   "Attribute directly with internal filter");
 }
 #endif
 
@@ -1895,7 +1895,7 @@ free_line_attribs(BUFFER *bp)
 
 static int
 add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
-    TBUFF * hypercmdp)
+		TBUFF * hypercmdp)
 {
 #if OPT_LINE_ATTRS
     LINEPTR lp;
@@ -1916,7 +1916,7 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
 	/* Make sure the line attribute is long enough */
 	if (len < rp->r_end.o) {
 	    lp->l_attrs = castrealloc(unsigned char,
-		lp->l_attrs, rp->r_end.o + 1);
+				      lp->l_attrs, rp->r_end.o + 1);
 	    if (lp->l_attrs == NULL)
 		return FALSE;	/* Let someone else deal with the
 				   problem of running out of memory */
@@ -1967,27 +1967,29 @@ purge_line_attribs(BUFFER *bp, REGION * rp, REGIONSHAPE rs, int owner)
     int i;
     int do_update = 0;
 
-    for (lp = ls; lp != lforw(le); lp = lforw(lp)) {
-	if (lp->l_attrs == 0)
-	    continue;
-	for (i = 0; i < llength(lp); i++) {
-	    if (lp->l_attrs[i] == 0)
-		break;		/* at end of attrs */
-	    if (lp->l_attrs[i] == 1)
-		continue;	/* normal, so proceed to next one */
-	    if (rs != FULLLINE) {
-		if ((rs == RECTANGLE || lp == ls) && i < os)
-		    continue;
-		if ((rs == RECTANGLE || lp == le) && i >= oe)
-		    break;
+    for (lp = ls; lp != buf_head(curbp); lp = lforw(lp)) {
+	if (lp->l_attrs != 0) {
+	    for (i = 0; i < llength(lp); i++) {
+		if (lp->l_attrs[i] == 0)
+		    break;	/* at end of attrs */
+		if (lp->l_attrs[i] == 1)
+		    continue;	/* normal, so proceed to next one */
+		if (rs != FULLLINE) {
+		    if ((rs == RECTANGLE || lp == ls) && i < os)
+			continue;
+		    if ((rs == RECTANGLE || lp == le) && i >= oe)
+			break;
+		}
+		if (owner == 0
+		    || owner == VOWNER(line_attr_tbl[lp->l_attrs[i]].vattr)) {
+		    /* If we get here, set it back to normal */
+		    lp->l_attrs[i] = 1;
+		    do_update = 1;
+		}
 	    }
-	    if (owner != 0
-		&& owner != VOWNER(line_attr_tbl[lp->l_attrs[i]].vattr))
-		continue;
-	    /* If we get here, set it back to normal */
-	    lp->l_attrs[i] = 1;
-	    do_update = 1;
 	}
+	if (lp == le)
+	    break;
     }
     if (do_update) {
 	WINDOW *wp;

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.204 2000/08/16 22:04:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.205 2000/10/01 22:16:23 tom Exp $
  *
  */
 
@@ -940,7 +940,7 @@ fsm_complete(int c, char *buf, unsigned *pos)
 	    unkeystroke(c);
 	return isSpace(c);
     }
-    return kbd_complete(FALSE, c, buf, pos,
+    return kbd_complete(0, c, buf, pos,
 			(const char *)(fsm_tbl[fsm_idx].choices),
 			sizeof (FSM_CHOICES) );
 }
@@ -1189,7 +1189,7 @@ mode_complete(DONE_ARGS)
 {
 	init_my_mode_list();
 
-	return kbd_complete(FALSE, c, buf, pos,
+	return kbd_complete(0, c, buf, pos,
 		(const char *)&my_mode_list[0], sizeof(my_mode_list[0]));
 }
 
@@ -2424,7 +2424,7 @@ check_majormode_name(const char *name, int defining)
 int
 major_complete(DONE_ARGS)
 {
-	return kbd_complete(FALSE, c, buf, pos, (const char *)&my_majormodes[0],
+	return kbd_complete(0, c, buf, pos, (const char *)&my_majormodes[0],
 		sizeof(my_majormodes[0]));
 }
 
@@ -2464,7 +2464,7 @@ prompt_majormode(char **result, int defining)
 static int
 submode_complete(int c, char *buf, unsigned *pos)
 {
-	return kbd_complete(FALSE, c, buf, pos, (const char *)&all_submodes[0],
+	return kbd_complete(0, c, buf, pos, (const char *)&all_submodes[0],
 		sizeof(all_submodes[0]));
 }
 
@@ -3617,7 +3617,7 @@ alloc_scheme(const char *name)
 static int
 scheme_complete(int c, char *buf, unsigned *pos)
 {
-	return kbd_complete(FALSE, c, buf, pos, (const char *)&my_schemes[0],
+	return kbd_complete(0, c, buf, pos, (const char *)&my_schemes[0],
 		sizeof(my_schemes[0]));
 }
 
@@ -3661,7 +3661,7 @@ static const struct VALNAMES scheme_values[] = {
 static int
 scheme_value_complete(int c, char *buf, unsigned *pos)
 {
-	return kbd_complete(FALSE, c, buf, pos,
+	return kbd_complete(0, c, buf, pos,
 		(const char *)&scheme_values[0],
 		sizeof(scheme_values[0]));
 }
