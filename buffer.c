@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.228 2001/02/15 23:03:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.230 2001/03/03 17:19:53 pgf Exp $
  *
  */
 
@@ -868,7 +868,7 @@ suckitin (BUFFER *bp, int copy, int lockfl)
 	}
 #ifdef MDCHK_MODTIME
 	else
-		(void)check_modtime( bp, bp->b_fname );
+		(void)check_file_changed( bp, bp->b_fname );
 #endif
 	updatelistbuffers();
 	run_buffer_hook();
@@ -989,7 +989,7 @@ swbuffer_lfl(register BUFFER *bp, int lockfl, int this_window)
 		curwp = wp;
 		upmode();
 #ifdef MDCHK_MODTIME
-		(void)check_modtime( bp, bp->b_fname );
+		(void)check_file_changed( bp, bp->b_fname );
 #endif
 #if OPT_UPBUFF
 		if (bp != find_BufferList())
@@ -2402,21 +2402,23 @@ writeall(int f, int n, int promptuser, int leaving, int autowriting, int all)
 void
 set_editor_title(void)
 {
-	char title[NBUFN + NFILEN];
-	if (auto_set_title)
-	{
-#if SYS_WINNT
-		int swap;
+	static TBUFF *title;
+	char *format;
 
-		swap = global_g_val(GMDSWAPTITLE);
-		sprintf(title,
-			"%s - %s",
-			(swap) ? curbp->b_bname : prognam,
-			(swap) ? prognam : curbp->b_bname);
-#else
-		sprintf(title, "%s - %s", prognam, curbp->b_bname);
-#endif
-		term.set_title(title);
+	if (auto_set_title) {
+
+		/*
+		 * We don't use "%b" for current buffer since the current
+		 * window may not correspond, depending on how we're invoked.
+		 */
+		if (tb_length(title_format) != 0)
+			format = tb_values(title_format);
+		else
+			format = global_g_val(GMDSWAPTITLE)
+				? "%{$cbufname} - %{$progname}"
+				: "%{$progname} - %{$cbufname}";
+		special_formatter(&title, format, curwp);
+		term.set_title(tb_values(title));
 	}
 }
 #endif

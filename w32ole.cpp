@@ -17,7 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.14 2001/01/06 12:34:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.15 2001/03/04 17:11:38 tom Exp $
  */
 
 #include <windows.h>
@@ -1207,7 +1207,7 @@ execute_action(int action)
 static int
 build_keylist(void)
 {
-    char      *codestr, *redirlist, *tmp;
+    char      *redirlist, *tmp;
     REDIR_KEY *lcl_tbl;
 
     if (cache_tbl)

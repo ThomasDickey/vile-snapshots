@@ -128,7 +128,7 @@ Creating, executing, storing macros
 
 	where:
 
-	unique-name    is an alpha-numeric identifier that does not conflict
+	unique-name   is an alpha-numeric identifier that does not conflict
 		      with the name of any existing editor command (the
 		      show-commands command generates a list of all existing
 		      commands).
@@ -139,7 +139,7 @@ Creating, executing, storing macros
 		      Instead, use either a hyphen ('-') or mixed case
 		      alphabetics.
 
-	help-string    is an optional description of the macro.  This string
+	help-string   is an optional description of the macro.  This string
 		      is displayed in the listing created by show-commands.
 
 	A stored procedure is executed by simply referencing its name.  To
@@ -186,6 +186,7 @@ Creating, executing, storing macros
 	may be abbreviated) include
 
 		bool
+		directory
 		enum		(see below)
 		file
 		integer
@@ -605,10 +606,22 @@ State Variables
 
 	$title          The current window title (X11, win32 versions only).
 
+	$title-format	The format for the window title (X11, win32 versions).
+			If this variable is not set, the title is the program
+			name and the current buffer, separated by a dash, e.g.,
+				%{$progname} - %{$cbufname}
+			Use the swap-title mode to control the order of those
+			strings.  If $title-format is set, swap-title has no
+			effect.  See "Mode line customization" in the vile
+			help file.
+
 	$tpause         On a PC, the amount of time to pause for showmatch
 			mode parenthesis matching.
 
 	$version        [READ ONLY] Contains vile's version string.
+
+	$with-prefix	[READ ONLY] String which is set by "~with" directive
+			in macros.  If no prefix was set, this returns ERROR.
 
 	$wlines         Height of current window.
 
@@ -1068,8 +1081,9 @@ Editor commands
 	successive releases of the editor.  Fortunately, most editor
 	commands include short help strings that describe their purpose.
 	To winnow the list to a particular area of interest, use the
-	"apropos" command (e.g., "apropos append").  The format of the
-	"apropos" and "show-commands" listing is as follows:
+	"apropos" command (e.g., "apropos append").  To determine the 
+	command bound to a specific key, use "describe-key".  The format of
+	the apropos, describe-key, and show-commands listing is as follows:
 
 		command-name             optional-key-binding(s)
 		optional-command-name-aliases
@@ -1353,6 +1367,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.66 2000/12/05 11:34:44 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.69 2001/03/04 23:18:25 cmorgan Exp $
 -----------------------------------
 

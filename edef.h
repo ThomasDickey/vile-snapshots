@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.279 2001/02/24 20:16:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.281 2001/03/03 17:55:18 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -123,12 +123,12 @@ decl_uninit( TBUFF *tb_save_shell[2] );	/* last ":!" or ^X-!  command	*/
 
 decl_uninit( char screen_desc[NBUFN] );	/* rough description of screen  */
 
-decl_uninit( char mlsave[NSTRING] );	/* last message, if postponed	*/
+decl_init( TBUFF *mlsave, 0 );		/* last message, if postponed	*/
 decl_uninit( char searchpat[NPAT] );	/* Search pattern		*/
-decl_uninit( TBUFF *replacepat );	/* replacement pattern		*/
+decl_init( TBUFF *replacepat, 0 );	/* replacement pattern		*/
 decl_uninit( int  last_srch_direc );	/* Direction of last search */
 decl_uninit( regexp *gregexp );		/* compiled version of searchpat */
-decl_uninit( TBUFF *tb_matched_pat);	/* text that scan found */
+decl_init( TBUFF *tb_matched_pat, 0);	/* text that scan found */
 
 
 #if OPT_HOOKS
@@ -196,6 +196,7 @@ decl_init( int rgb_bright, 255 );
 
 #if OPT_TITLE
 decl_init( int auto_set_title, TRUE );	/* automatically set title	*/
+decl_init ( TBUFF * title_format, 0 );	/* format, if any		*/
 #endif
 
 /* Special characters, used in keyboard control (some values are set on
@@ -207,7 +208,7 @@ decl_init( int cntl_a, tocntrl('A') );	/* rebindable control-A prefix	*/
 decl_init( int cntl_x, tocntrl('X') );	/* rebindable control-X prefix	*/
 decl_init( int reptc, 'K' );		/* rebindable "repeat" arg	*/
 decl_init( int esc_c, tocntrl('[') );	/* rebindable vi esc char	*/
-decl_init( int poundc, '#' );		/* pseudo function key prefi	 */
+decl_init( int poundc, '#' );		/* pseudo function key prefix	*/
 
 /* rebindable via the "set-terminal" interface */
 decl_init( int editc, tocntrl('G') );	/* toggle edit-mode in minibuffer */
@@ -233,6 +234,7 @@ decl_uninit( int warnings );		/* from 'mlwarn()', for reporting */
 
 #if !SMALLER
 decl_uninit( WINDOW *swindow );		/* saved window pointer		*/
+decl_init( TBUFF *with_prefix, 0);	/* prefix set by "~with"	*/
 #endif
 
 #if OPT_ENCRYPT
@@ -352,9 +354,9 @@ decl_init_const( char OUTPUT_BufName[],		"[Output]");
 decl_init_const( char TRACE_BufName[],		"[Trace]");
 #endif
 #if OPT_FINDERR
-decl_uninit( TBUFF *filename_expr );
-decl_uninit( TBUFF *error_expr );
-decl_uninit( TBUFF *error_match );
+decl_init( TBUFF *filename_expr, 0 );
+decl_init( TBUFF *error_expr, 0 );
+decl_init( TBUFF *error_match, 0 );
 decl_init_const( char ERRORS_BufName[],		"[Error Expressions]");
 #endif
 #if OPT_HISTORY

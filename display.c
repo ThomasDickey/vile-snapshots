@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.341 2001/02/17 22:22:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.344 2001/03/05 00:23:33 tom Exp $
  *
  */
 
@@ -2801,7 +2801,7 @@ int	colto)		/* first column on screen */
  * formatted.  You can change the modeline format by hacking at this
  * routine.  Called by "update" any time there is a dirty window.
  */
-#if OPT_MLFORMAT || OPT_POSFORMAT
+#if OPT_MLFORMAT || OPT_POSFORMAT || OPT_TITLE
 static void
 mlfs_prefix(
     char **fsp,
@@ -2989,7 +2989,7 @@ rough_position(WINDOW *wp)
 	return msg;
 }
 
-#if OPT_MLFORMAT || OPT_POSFORMAT
+#if OPT_MLFORMAT || OPT_POSFORMAT || OPT_TITLE
 
 #define L_CURL '{'
 #define R_CURL '}'
@@ -3298,6 +3298,10 @@ modeline(WINDOW *wp)
     vtputsn(tb_values(result), tb_length(result));
 #else	/* hard-coded format */
     bp = wp->w_bufp;
+    if (bp == 0)
+	bp = curbp;
+    if (bp == 0)
+	bp = bminip;
     if (wp == curwp) {				/* current buffer shows as = */
 	lchar = '=';
     } else {
@@ -3515,15 +3519,10 @@ mlerase(void)
 	}
 }
 
-static char *mlsavep;
-
 void
 mlsavec(int c)
 {
-	if (mlsavep - mlsave < NSTRING-1) {
-		*mlsavep++ = (char)c;
-		*mlsavep = EOS;
-	}
+	tb_append(&mlsave, c);
 }
 
 /*
@@ -3632,7 +3631,7 @@ mlmsg(const char *fmt, va_list *app)
 	} else if (sgarbf) {
 		/* then we'll lose the message on the next update(),
 		 * so save it now */
-		mlsavep = mlsave;
+		tb_init(&mlsave, EOS);
 #if	OPT_POPUP_MSGS
 		if (global_g_val(GMDPOPUP_MSGS) || (curwp == 0)) {
 			TRACE(("mlmsg popup_msgs #1 for '%s'\n", fmt));
@@ -3651,7 +3650,7 @@ mlmsg(const char *fmt, va_list *app)
 		if (global_g_val(GMDPOPUP_MSGS)) {
 			TRACE(("mlmsg popup_msgs #2 for '%s'\n", fmt));
 			popup_msgs();
-			if (mlsave[0] == EOS) {
+			if (tb_length(mlsave) == 0) {
 				msg_putc('\n');
 				dfoutfn = msg_putc;
 			} else {
@@ -3669,7 +3668,7 @@ mlmsg(const char *fmt, va_list *app)
 			/* if we can, erase to the end of screen */
 			end_at = wminip->w_dot.o;
 			kbd_erase_to_end(end_at);
-			mlsave[0] = EOS;
+			tb_init(&mlsave, EOS);
 			kbd_flush();
 		}
 		if (do_crlf) {

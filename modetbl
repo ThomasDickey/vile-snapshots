@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.186 2001/02/13 22:21:35 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.188 2001/03/03 19:32:54 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -42,12 +42,12 @@ bool							# GMD prefix
 	"ReadOnly-on-ReadOnly" RONLYRONLY	0	# set readonly mode for readonly files
 	"remap"		REMAP		0		# should mappings be reapplied
 	"remapfirst"	REMAPFIRST	0		# should 1st char of a map be remapped?
-	"resolve-links"	RESOLVE_LINKS	0		HAVE_SYMLINK # cache/resolve directory names (can be slow if NFS times-out)
+	"resolve-links"	RESOLVE_LINKS	0		HAVE_SYMLINK	# cache/resolve directory names (can be slow if NFS times-out)
 	"ShowRam"	HEAPSIZE	0		OPT_HEAPSIZE	# show heap usage
 	"SameBangs"	SAMEBANGS	0		# use same "!!" data for ^X-!
-	"swap-title"	SWAPTITLE	chgd_swaptitle	OPT_TITLE&&SYS_WINNT # title -> 'buffer - prognam'
-	"working"	WORKING		chgd_working	OPT_WORKING # "working" message
-	"usefilelock"	USEFILELOCK	0		OPT_LCKFILES # okay use filelocks
+	"swap-title"	SWAPTITLE	chgd_swaptitle	OPT_TITLE	# title -> 'buffer - prognam'
+	"working"	WORKING		chgd_working	OPT_WORKING	# "working" message
+	"usefilelock"	USEFILELOCK	0		OPT_LCKFILES	# okay use filelocks
 	"unique-buffers" UNIQ_BUFS	chgd_uniqbuf	# only one buffer per file
 	"VIEW-on-ReadOnly" RONLYVIEW	0		# set view mode for readonly files
 	"w32pipes"	W32PIPES	0		OPT_W32PIPES
@@ -262,9 +262,11 @@ string
 "startup-file"	STARTUP_FILE		# the name of the startup-file (e.g., .vilerc)
 "startup-path"	STARTUP_PATH		# where to find the startup-file (e.g., .)
 "status"	STATUS			# returns the status of the last command
-"title"		TITLE		DISP_X11||SYS_WINNT	# window title
+"title"		TITLE		OPT_TITLE	# window title
+"title-format"	TITLEFORMAT	OPT_TITLE	# window title format
 "tpause"	TPAUSE			# length to pause for paren matching
 "version"	VERSION			# current version number
+"with-prefix"	WITHPREFIX	OPT_EVAL	# current "~with" prefix
 "wlines"	WLINES			# # of lines in current window
 "word"		WORD			# current word
 "write-hook"	WRHOOK		OPT_HOOKS	# procedure to run when writing
@@ -443,6 +445,7 @@ string
 
 .table paramtypes
 "bool"		PT_BOOL
+"directory"	PT_DIR
 "enum"		PT_ENUM
 "file"		PT_FILE
 "integer"	PT_INT

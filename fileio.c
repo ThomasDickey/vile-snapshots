@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.149 2001/02/16 10:30:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.150 2001/03/03 17:19:53 pgf Exp $
  *
  */
 
@@ -592,8 +592,8 @@ ffclose(void)
 		mlwrite("[Read %d lines%s]",
 			count_fline,
 			interrupted() ? "- Interrupted" : "");
-#ifdef	MDCHK_MODTIME
-		(void)check_visible_modtimes();
+#ifdef MDCHK_MODTIME
+		(void)check_visible_files_changed();
 #endif
 	} else
 #endif

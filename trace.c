@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.19 2000/11/11 11:40:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.20 2001/03/04 01:26:31 tom Exp $
  *
  */
 
@@ -104,6 +104,14 @@ visible_buff(const char *buffer, int length, int eos)
 	result[k] = 0;
 	endofDisplay();
 	return result;
+}
+
+char *
+str_visible(char *s)
+{
+	if (s == 0)
+		return "(null)";
+	return visible_buff(s, strlen(s), TRUE);
 }
 
 char *

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.284 2001/02/18 00:05:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.286 2001/03/04 01:47:40 tom Exp $
  *
  */
 
@@ -43,11 +43,12 @@ typedef struct PROC_ARGS {
 
 static PROC_ARGS *arg_stack;
 
-static SIZE_T s2size(const char *s);
-static const char *s2offset(const char *s, const char *n);
 static char **init_vars_cmpl(void);
-static int SetVarValue(VWRAP * var, const char *name, const char *value);
+static char *get_statevar_val (int vnum);
+static const char *s2offset(const char *s, const char *n);
 static int lookup_statevar(const char *vname);
+static int SetVarValue(VWRAP * var, const char *name, const char *value);
+static SIZE_T s2size(const char *s);
 #endif
 
 /*--------------------------------------------------------------------------*/
@@ -876,7 +877,7 @@ lookup_statevar(const char *name)
 }
 
 /* get a state variable's value */
-char *
+static char *
 get_statevar_val(int vnum)
 {
     static TBUFF *result;
@@ -1638,16 +1639,21 @@ read_argument(TBUFF ** paramp, const PARAM_INFO * info)
     char *prompt;
     TBUFF *temp;
     int (*complete) (DONE_ARGS) = no_completion;
+    int save_clexec;
+    int save_isnamed;
+    char *save_execstr;
     UINT flags = 0;		/* no expansion, etc. */
 
-    if (clexec == FALSE
-	|| mac_tokval(paramp) == 0) {
+    if (mac_tokval(paramp) == 0) {
 	prompt = "String";
 	if (info != 0) {
 	    switch (info->pi_type) {
 	    case PT_BOOL:
 		prompt = "Boolean";
 		complete = complete_boolean;
+		break;
+	    case PT_DIR:
+		prompt = "Directory";
 		break;
 #if OPT_ENUM_MODES
 	    case PT_ENUM:
@@ -1692,10 +1698,29 @@ read_argument(TBUFF ** paramp, const PARAM_INFO * info)
 	tb_scopy(&temp, prompt);
 	tb_sappend0(&temp, ": ");
 
+	save_clexec = clexec;
+	save_execstr = execstr;
+	save_isnamed = isnamedcmd;
+
+	/*
+	 * If we've run out of parameters on the command-line, force this
+	 * to be interactive.
+	 */
+	if (execstr == 0 || !*skip_blanks(execstr)) {
+		clexec = FALSE;
+		isnamedcmd = TRUE;
+		execstr = "";
+	}
+
 	if (info->pi_type == PT_FILE) {
 	    char fname[NFILEN];
 	    status = mlreply_file(tb_values(temp), (TBUFF **) 0,
 				  FILEC_UNKNOWN, fname);
+	    if (status != ABORT)
+		tb_scopy(paramp, fname);
+	} else if (info->pi_type == PT_DIR) {
+	    char fname[NFILEN];
+	    status = mlreply_dir(tb_values(temp), (TBUFF **) 0, fname);
 	    if (status != ABORT)
 		tb_scopy(paramp, fname);
 	} else {
@@ -1706,6 +1731,9 @@ read_argument(TBUFF ** paramp, const PARAM_INFO * info)
 			       flags,	/* no expansion, etc. */
 			       complete);
 	}
+	clexec = save_clexec;
+	execstr = save_execstr;
+	isnamedcmd = save_isnamed;
 
 	tb_free(&temp);
     }
@@ -1733,7 +1761,7 @@ save_arguments(BUFFER *bp)
     } else {
 	max_args = 0;
     }
-    TRACE(("save_arguments(%s)\n", bp->b_bname));
+    TRACE(("save_arguments(%s) max_args=%d\n", bp->b_bname, max_args));
 
     p->nxt_args = arg_stack;
     arg_stack = p;

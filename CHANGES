@@ -1,5 +1,51 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20010304 (i)
+	> Clark Morgan:
+	+ elaborated on "apropos" and "describe-key" in macros.doc
+	> Paul Fox:
+	+ extended check-modtimes mode, necessitated by an interaction between
+	  the new unique-buffers mode and check-modtimes.  The problem is this: 
+	  my current project lives in a tree that makes copious use of
+	  symlinks.  This means that the name by which I edit a file may not
+	  match the name by which "make" refers to the file when it reports an
+	  error.  "unique-buffers" normally guarantees that I won't edit the
+	  file twice in this case.  but if the file gets replaced, for example
+	  with ":!co -l file.c"), then the inode will change on disk, but
+	  vile's notion of the inode will not change.  this causes vile to
+	  create a new buffer the next time make reports an error on it (with a
+	  different pathname).  With this patch, if check-modtimes is on, then
+	  when the file is reread, the inode (fileuid) info is updated, and
+	  vile is again in-sync with the filesystem.
+	> Tom Dickey:
+	+ add/use code FILEC_WRITE2 to use in mlreply_file() to avoid getting
+	  prompted about overwriting a file when using ":w! filename".
+	+ add definitions so winvile.exe and vile.exe use utime() to set the
+	  proper date on backup files.
+	+ modify writereg() so that if the user specifies ":w!", and the file
+	  is not writable, it will (try to) temporarily chmod the file for
+	  writable access.  Note that the view-only mode overrides this
+	  behavior, unlike vim (request by Igor Schein <igor@txc.com>).
+	+ modify logic of read_argument() to force interactive input of
+	  parameters which have not been specified in the command.  This allows
+	  a user to write a macro which can be bound to a function key and
+	  still prompt for parameter values.  Unlike the '@' response token,
+	  parameters can be something more than an untyped string, e.g.,
+	  file/directory completion (report by <rick_wessell@email.com>).
+	+ add a "directory" parameter type.
+	+ change mlsave to a TBUFF, so popup-msgs will not show messages
+	  truncated to NSTRING (143) columns.
+	+ add $with-prefix variable which shows the prefix string in effect
+	  from a "~with" or "~elsewith" directive.
+	+ add $title-format variable which can be used to specify a customized
+	  title for xvile or winvile.
+	+ make swap-title option apply to any platform that sets window-title.
+	+ modify makefile.wnt to check PROGNAME variable, which can be set
+	  to override the target name, and the $progname state variable.
+	+ add missing braces around a chunk of logic in api_command_cleanup(),
+	  reported by antic.
+	+ add ".vile" to suffixes for vilemode.
+
  20010224 (h)
 	> Clark Morgan:
 	+ fix some compiler warnings highlighted by change in 9.2g to use -W3
