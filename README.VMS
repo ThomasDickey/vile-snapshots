@@ -2,22 +2,22 @@
                           Running vile on VMS
                           -------------------
 
-vile can be built using either the VAXC or DECC compiler.  if your host
-includes the mms utility, then build vile using this command:
+vile can be built using either the VAXC or DECC compiler.  use vmsbuild.com
+as the build script, which accepts this syntax:
 
-    $ mms
+          $ @vmsbuild [vile [<compiler> [<bldtarget>]]]      ! builds vile
+          $ @vmsbuild xvile [<compiler> [<bldtarget>]]       ! builds xvile
 
-otherwise, use this canned build script:
+where:
+          <compiler> :== { decc | vaxc }
+          <target>   :== build target, generally used by developers
 
-    $ @vmsbuild
+the default compiler on VAX hosts is vaxc, else decc (Alpha hosts).  
 
-in either case, before building the editor, edit descrip.mms or
-vmsbuild.com to specify the compiler of your choice.
+when choosing a compiler, carefully read the "warning" section below.  if
+building _both_ vile and xvile from the _same_ directory, refer to the
+"Configuration Note" at the top of vmsbuild.com.
 
-to build xvile, use this command (which dynamically configures
-the X build environment):
-
-    $ @vmsbuild xvile
 
 Tested systems
 --------------

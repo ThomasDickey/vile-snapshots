@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.8 1999/04/14 00:05:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.9 1999/12/12 02:00:04 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of terminfo
  */
@@ -74,7 +74,7 @@ SPACE		[ \t]
 CAPNAME		[a-zA-Z][a-zA-Z0-9_]*
 DOTNAME		\.{CAPNAME}
 
-ALIAS		[a-zA-Z0-9+-]+
+ALIAS		[a-zA-Z_\.0-9+-]+
 
 COMMA		[,]
 ESCNL		{COMMA}{SPACE}*\\\n\t

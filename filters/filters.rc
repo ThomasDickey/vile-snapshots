@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.98 1999/12/10 01:05:43 tom Exp $
+; $Id: filters.rc,v 1.99 1999/12/12 22:58:54 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -438,6 +438,12 @@ define-mode yacc
 
 store-procedure HighlightFilter 'Invoke syntax-highlighting filter on the current buffer'
     ~if &not &seq $majormode ''
+	~if &seq $progname "winvile"
+	    ~if &not $w32pipes	
+		write-message "Sorry - you must set w32pipes to use external filters"
+		~return
+	    ~endif
+        ~endif
 	~local $curcol $curline
 	~local %filtername %filterpath %filteropts
 	~hidden goto-beginning-of-file

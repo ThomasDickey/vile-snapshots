@@ -1,6 +1,6 @@
-revlist for vile, version v9_0d
+revlist for vile, version v9_0e
 --------------------------------------------------------------------------------
-CHANGES	1.503
+CHANGES	1.506
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -12,8 +12,8 @@ INSTALL	1.6
 MANIFEST	none
 README	1.77
 README.PC	1.22
-README.VMS	1.4
-aclocal.m4	1.81
+README.VMS	1.5
+aclocal.m4	1.82
 ansi.c	1.40
 api.c	1.21
 api.h	1.11
@@ -23,7 +23,7 @@ borland.c	1.30
 btree.c	1.6
 btree.h	1.3
 buffer.c	1.206
-buglist	1.369
+buglist	1.370
 chgdfunc.h	1.9
 cmdtbl	1.189
 config.emx	1.1
@@ -36,17 +36,17 @@ dirstuff.h	1.23
 display.c	1.317
 djhandl.c	1.6
 dumbterm.c	1.17
-edef.h	1.260
-estruct.h	1.433
+edef.h	1.261
+estruct.h	1.434
 eval.c	1.260
 exec.c	1.213
 externs.c	1.7
 fences.c	1.75
-file.c	1.261
+file.c	1.263
 filec.c	1.91
-fileio.c	1.140
+fileio.c	1.141
 finderr.c	1.84
-glob.c	1.67
+glob.c	1.68
 globals.c	1.45
 gppconio.c	1.2
 history.c	1.52
@@ -58,7 +58,7 @@ isearch.c	1.52
 itbuff.c	1.13
 lckfiles.c	1.8
 line.c	1.130
-main.c	1.413
+main.c	1.414
 makefile.blc	1.11
 makefile.djg	1.30
 makefile.emx	1.5
@@ -75,7 +75,7 @@ mktbls.c	1.106
 modes.c	1.187
 modetbl	1.160
 msgs.c	1.19
-npopen.c	1.78
+npopen.c	1.80
 ntconio.c	1.49
 ntwinio.c	1.63
 oneliner.c	1.94
@@ -83,20 +83,20 @@ opers.c	1.68
 os2keys.h	1.1
 os2pipe.c	1.4
 os2vio.c	1.26
-patchlev.h	1.204
-path.c	1.99
+patchlev.h	1.205
+path.c	1.100
 perl.xs	1.56
-proto.h	1.403
+proto.h	1.404
 pscreen.h	1.1
 ptypemap	1.5
 random.c	1.215
 regexp.c	1.66
 region.c	1.101
-revlist	v9_0d
+revlist	v9_0e
 search.c	1.119
 select.c	1.105
 sinstall.sh	1.1
-spawn.c	1.150
+spawn.c	1.151
 statevar.c	1.29
 tags.c	1.104
 tbuff.c	1.36
@@ -113,12 +113,12 @@ vile.1	1.24
 vile.hlp	1.454
 vile.wmconfig	1.1
 vms2unix.c	1.34
-vmsbuild.com	1.31
+vmsbuild.com	1.32
 vmspipe.c	1.12
 vmsvt.c	1.52
 w32cbrd.c	1.13
-w32cmd.c	1.1
-w32misc.c	1.17
+w32cmd.c	1.2
+w32misc.c	1.18
 w32ole.cpp	1.12
 w32ole.h	1.5
 w32ole.rc	1.2
@@ -130,7 +130,7 @@ window.c	1.91
 winvile.h	1.4
 winvile.odl	1.5
 winvile.rc	1.6
-word.c	1.70
+word.c	1.71
 wordmov.c	1.21
 wvwrap.cpp	1.3
 x11.c	1.234
@@ -155,7 +155,7 @@ filters/awk-filt.l	1.7
 filters/awk.key	1.2
 filters/bat-filt.l	1.5
 filters/bat.key	1.3
-filters/c-filt.c	1.37
+filters/c-filt.c	1.39
 filters/c-filt.flx	1.1
 filters/c.key	1.5
 filters/cfg-filt.l	1.1
@@ -171,7 +171,7 @@ filters/fdl-filt.l	1.3
 filters/fdl.key	1.3
 filters/filters.c	1.58
 filters/filters.h	1.31
-filters/filters.rc	1.98
+filters/filters.rc	1.99
 filters/html.key	1.6
 filters/htmlfilt.l	1.18
 filters/imake.key	1.2
@@ -199,7 +199,7 @@ filters/nr-filt.l	1.8
 filters/nr.key	1.1
 filters/pas-filt.c	1.9
 filters/pas.key	1.1
-filters/perl.key	1.4
+filters/perl.key	1.5
 filters/perlfilt.l	1.22
 filters/pot.key	1.1
 filters/py-filt.l	1.4
@@ -222,7 +222,7 @@ filters/tc-filt.l	1.9
 filters/tc.key	1.2
 filters/tcl-filt.l	1.6
 filters/tcl.key	1.9
-filters/ti-filt.l	1.8
+filters/ti-filt.l	1.9
 filters/ti.key	1.2
 filters/txt-filt.l	1.7
 filters/vile.key	1.8

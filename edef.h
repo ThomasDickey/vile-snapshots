@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.260 1999/11/16 00:28:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.261 1999/12/10 23:15:32 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -56,9 +56,6 @@ decl_init( char opersys[], "vms");
 #endif
 #if SYS_MSDOS
 decl_init( char opersys[], "dos");
-#endif
-#if SYS_WIN31
-decl_init( char opersys[], "windows 3.1");
 #endif
 #if SYS_OS2
 decl_init( char opersys[], "os/2");

@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.81 1999/11/12 02:30:19 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.82 1999/12/12 12:47:32 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -77,7 +77,7 @@ for cf_arg in "-DCC_HAS_PROTOS" \
 	"" \
 	-qlanglvl=ansi \
 	-std1 \
-	"-Aa -D_HPUX_SOURCE +e" \
+	-Ae \
 	"-Aa -D_HPUX_SOURCE" \
 	-Xc
 do

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.403 1999/12/04 18:51:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.404 1999/12/10 23:18:56 tom Exp $
  *
  */
 
@@ -412,7 +412,7 @@ extern B_COUNT ffsize (void);
 extern void ffdocrypt (int crypting);
 #endif
 
-#if !(SYS_MSDOS || SYS_WIN31)
+#if ! SYS_MSDOS
 extern int ffread (char *buf, long len);
 extern void ffseek (long n);
 extern void ffrewind (void);
@@ -684,7 +684,7 @@ extern const char *vms_record_format(int code);
 #endif
 
 /* npopen.c */
-#if SYS_UNIX || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
+#if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
 extern FILE * npopen (char *cmd, const char *type);
 extern void npclose (FILE *fp);
 extern int inout_popen (FILE **fr, FILE **fw, char *cmd);
@@ -695,7 +695,7 @@ extern int softfork (void);
 extern int system_SHELL (char *cmd);
 #endif
 
-#if SYS_MSDOS || SYS_WIN31 || SYS_WINNT || (SYS_OS2 && CC_CSETPP) || TEST_DOS_PIPES
+#if SYS_MSDOS || SYS_WINNT || (SYS_OS2 && CC_CSETPP) || TEST_DOS_PIPES
 extern void npflush (void);
 #endif
 

@@ -6,7 +6,7 @@
  * 		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.37 1999/12/09 02:30:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.39 1999/12/13 01:56:32 tom Exp $
  *
  * Features:
  * 	- Reads the keyword file ".vile.keywords" from the home directory.
@@ -221,10 +221,6 @@ write_escape(FILE * fp, char *s, char *attr)
     return s;
 }
 
-#define Exponent(ch)  ((ch) == 'e' || (ch) == 'E')
-#define SuffixInt(ch) ((ch) == 'l' || (ch) == 'L' || (ch) == 'U' || (ch) == 'U')
-#define SuffixFlt(ch) ((ch) == 'l' || (ch) == 'L' || (ch) == 'f' || (ch) == 'F')
-
 static char *
 write_number(FILE * fp, char *s)
 {
@@ -232,6 +228,10 @@ write_number(FILE * fp, char *s)
     int radix = (*s == '0') ? ((s[1] == 'x' || s[1] == 'X') ? 16 : 8) : 10;
     int state = 0;
     int done = 0;
+    int found = isdigit(*s) && (radix != 16);
+    int num_f = 0;
+    int num_u = 0;
+    int num_l = 0;
 
     if (radix == 16 || (*s == '.'))
 	s++;
@@ -248,18 +248,25 @@ write_number(FILE * fp, char *s)
 	    done = !isxdigit(*s);
 	    break;
 	}
+	found += !done;
     }
     if (radix == 10) {
 	while (state >= 0) {
+	    int ch = isalpha(*s) ? toupper(*s) : *s;
 	    switch (state) {
 	    case 0:
-		if (*s == '.') {
+		if (ch == '.') {
 		    state = 1;
-		} else if (Exponent(*s)) {
+		} else if (ch == 'E') {
 		    state = 2;
-		} else if (SuffixFlt(*s)) {
+		} else if (ch == 'F') {
+		    num_f++;
 		    state = 3;
-		} else if (SuffixInt(*s)) {
+		} else if (ch == 'L') {
+		    num_l++;
+		    state = 4;
+		} else if (ch == 'U') {
+		    num_u++;
 		    state = 4;
 		} else {
 		    state = -1;
@@ -269,35 +276,64 @@ write_number(FILE * fp, char *s)
 		while (isdigit(*s))
 		    s++;
 		state = -1;
-		if (Exponent(*s))
+		if (ch == 'E') {
 		    state = 2;
-		else if (SuffixFlt(*s))
+		} else if (ch == 'F') {
+		    num_f++;
 		    state = 3;
+		} else if (ch == 'L') {
+		    num_l++;
+		    state = 3;
+		}
 		break;
 	    case 2:		/* after exponent letter */
-		if (*s == '+' || *s == '-')
+		if (ch == '+' || ch == '-')
 		    s++;
 		while (isdigit(*s))
 		    s++;
 		/* FALLTHRU */
 	    case 3:
-		state = -1;
-		if (SuffixFlt(*s))
-		    state = 3;
+		if (ch == 'F') {
+		    if (++num_f > 1)
+			state = -1;
+		} else if (ch == 'L') {
+		    if (++num_l > 1)
+			state = -1;
+		} else {
+		    state = -1;
+		}
 		break;
 	    case 4:
-		state = -1;
-		if (SuffixInt(*s))
-		    state = 4;
+		if (ch == 'L') {
+		    if (++num_l > 2)
+			state = -1;
+		} else if (ch == 'U') {
+		    if (++num_u > 1)
+			state = -1;
+		} else {
+		    state = -1;
+		}
 		break;
 	    }
 	    if (state >= 0)
 		s++;
 	}
-    } else if (SuffixInt(*s)) {
-	s++;
+    } else {
+	for (;;) {
+	    int ch = isalpha(*s) ? toupper(*s) : *s;
+	    if (ch == 'L') {
+		if (++num_l > 2)
+		    break;
+	    } else if (ch == 'U') {
+		if (++num_u > 1)
+		    break;
+	    } else {
+		break;
+	    }
+	    s++;
+	}
     }
-    if (isNamex(*s)) {		/* something is run-on to a number */
+    if (!found || isNamex(*s)) {	/* something is run-on to a number */
 	while (isNamex(*s))
 	    s++;
 	write_string(fp, base, s - base, Error_attr);
@@ -453,7 +489,8 @@ do_filter(FILE * input, FILE * output)
 		char *t = s;
 		while (*s == '#')
 		    s++;
-		write_string(output, t, s - t, ((s - t) > 2) ? Error_attr : Preproc_attr);
+		write_string(output, t, s - t, ((s - t) > 2) ?
+		    Error_attr : Preproc_attr);
 	    } else {
 		fputc(*s++, output);
 	    }

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.433 1999/11/24 22:09:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.434 1999/12/10 23:16:34 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -37,10 +37,8 @@
 
 /* non-unix flavors */
 #undef SYS_MSDOS
-#undef SYS_WIN31
 
 #define SYS_MSDOS       0       /* MS-DOS                       */
-#define SYS_WIN31       0       /* Windows 3.1                  */
 #define SYS_OS2         0       /* son of DOS                   */
 #define SYS_OS2_EMX     0       /* Unix'ed OS2                  */
 #define SYS_WINNT       0       /* Windows/NT                   */
@@ -58,13 +56,8 @@
 #  undef SYS_WINNT
 #  define SYS_WINNT  1
 # else
-#  ifdef _Windows	/* predefined in TurboC for Windows */
-#   undef SYS_WIN31
-#   define SYS_WIN31  1
-#  else
-#   undef SYS_MSDOS
-#   define SYS_MSDOS  1
-#  endif
+#  undef SYS_MSDOS
+#  define SYS_MSDOS  1
 # endif
 # undef CC_TURBO
 # define CC_TURBO  1
@@ -200,9 +193,6 @@
 #endif
 #ifndef SYS_OS2
 # define SYS_OS2 0
-#endif
-#ifndef SYS_WIN31
-# define SYS_WIN31 0
 #endif
 #ifndef SYS_WINNT
 # define SYS_WINNT	0
@@ -433,7 +423,7 @@
 #endif
 
 /* systems with MSDOS-like filename syntax */
-#define OPT_MSDOS_PATH  (SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT || SYS_OS2_EMX)
+#define OPT_MSDOS_PATH  (SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_OS2_EMX)
 #define OPT_CASELESS	(SYS_WINNT || SYS_OS2 || SYS_OS2_EMX)
 #define OPT_UNC_PATH	(SYS_WINNT)
 
@@ -661,7 +651,7 @@ extern char *rindex (const char *s, int c);
 
 /* on MS-DOS we have to open files in binary mode to see the ^Z characters. */
 
-#if SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
+#if SYS_MSDOS || SYS_OS2 || SYS_WINNT
 #define FOPEN_READ	"rb"
 #define FOPEN_WRITE	"wb"
 #define FOPEN_APPEND	"ab"
@@ -779,7 +769,7 @@ extern int MainProgram(int argc, char *argv[]);
 
 /*	internal constants	*/
 
-#if SYS_MSDOS || SYS_WIN31
+#if SYS_MSDOS
 #define	BITS_PER_INT	16
 #endif
 
@@ -983,7 +973,7 @@ typedef enum {
 
 /* These are the chief ways we use the cfg_locate options: */
 
-#if SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
+#if SYS_MSDOS || SYS_OS2 || SYS_WINNT
 #define LOCATE_SOURCE FL_ANYWHERE | FL_READABLE
 #else
 #define LOCATE_SOURCE FL_CDIR | FL_HOME | FL_STARTPATH | FL_READABLE
@@ -1011,7 +1001,7 @@ typedef enum {
 #define KBD_STATED	iBIT(12) /* erasing buffer returns for prev-state */
 
 /* default option for 'mlreply' (used in modes.c also) */
-#if !(SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT)
+#if !(SYS_MSDOS || SYS_OS2 || SYS_WINNT)
 #define	KBD_NORMAL	KBD_EXPAND|KBD_QUOTES
 #else
 #define	KBD_NORMAL	KBD_EXPAND
@@ -2521,7 +2511,7 @@ extern void _exit (int code);
  * We will make the default unix globbing code use 'echo' rather than our
  * internal globber if we do not configure the 'glob' string-mode.
  */
-#if SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
+#if SYS_MSDOS || SYS_OS2 || SYS_WINNT
 # define UNIX_GLOBBING OPT_GLOB_ENVIRON
 #endif
 

@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.1 1999/12/07 14:35:00 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.2 1999/12/12 23:05:21 tom Exp $
  */
 
 #include <windows.h>
@@ -268,7 +268,6 @@ commdlg_save_file(int chdir_allowed)
      *       :w
      */
     /* ------------ begin :f ------------ */
-    make_global_b_val(curbp, MDVIEW); /* lcl buffer reverts to glbl view mode */
 #if OPT_LCKFILES
     if ( global_g_val(GMDUSEFILELOCK) ) {
         if (!b_val(curbp,MDLOCKED) && !b_val(curbp,MDVIEW))

@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.99 1999/11/08 11:03:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.100 1999/12/10 23:18:39 tom Exp $
  *
  *
  */
@@ -36,7 +36,7 @@
 # define S_ISDIR(m)  (((m) & S_IFMT) == S_IFDIR)
 #endif
 
-#if (SYS_WIN31 && CC_TURBO) || SYS_WINNT
+#if SYS_WINNT
 # include <direct.h>
 # define curdrive() (_getdrive() + ('A' - 1))
 # define curr_dir_on_drive(d) _getdcwd(toUpper(d) - ('A' - 1), temp, sizeof(temp))

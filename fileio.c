@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.140 1999/11/24 19:50:39 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.141 1999/12/10 23:17:21 tom Exp $
  *
  */
 
@@ -500,7 +500,7 @@ ffexists(char *p)
 	}
 #endif
 
-#if SYS_MSDOS || SYS_WIN31
+#if SYS_MSDOS
 
 	if (!isInternalName(p)
 	 && ffropen(SL_TO_BSL(p)) == FIOSUC) {
@@ -583,7 +583,7 @@ ffclose(void)
 
 	free_fline();
 
-#if SYS_UNIX || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
+#if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
 #if OPT_SHELL
 	if (fileispipe) {
 		npclose(ffp);
