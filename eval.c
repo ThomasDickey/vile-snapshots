@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.153 1997/12/17 01:37:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.154 1998/02/07 14:22:06 tom Exp $
  *
  */
 
@@ -18,7 +18,7 @@
 #define	MODE_NUM	-2
 #define	USER_NUM	-3
 
-#if SYS_OS2 || defined(__EMX__)
+#if SYS_OS2 || SYS_OS2_EMX
 #  define SHELL_NAME "COMSPEC"
 #  define SHELL_PATH "cmd.exe"
 #else

@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.217 1997/12/06 00:50:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.218 1998/02/07 17:38:45 tom Exp $
  *
  */
 
@@ -1174,7 +1174,7 @@ makename(char *bname, const char *fname)
 	}
 #endif
 	/* trim trailing whitespace */
-	while (fcp != temp && (isblank(fcp[-1])
+	while (fcp != temp && (isBlank(fcp[-1])
 #if SYS_UNIX || OPT_MSDOS_PATH	/* trim trailing slashes as well */
 					 || is_slashc(fcp[-1])
 #endif
@@ -1182,7 +1182,7 @@ makename(char *bname, const char *fname)
                 *(--fcp) = EOS;
 	fcp = temp;
 	/* trim leading whitespace */
-	while (isblank(*fcp))
+	while (isBlank(*fcp))
 		fcp++;
 
 #if     SYS_UNIX || SYS_MSDOS || SYS_WIN31 || SYS_VMS || SYS_OS2 || SYS_WINNT

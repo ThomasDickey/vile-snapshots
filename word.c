@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file. 
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.58 1997/10/07 13:37:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.59 1998/02/07 17:38:43 tom Exp $
  *
  */
 
@@ -516,7 +516,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 			}
 
 			/* if not a separator, just add it in */
-			if (!isblank(c)) {
+			if (!isBlank(c)) {
 				/* was it the end of a "sentence"? */
 				sentence = ((c == '.' || c == '?' ||
 						c == ':' || c == '!') &&

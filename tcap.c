@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.99 1997/12/02 11:11:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.100 1998/02/07 14:21:57 tom Exp $
  *
  */
 
@@ -156,7 +156,7 @@ static const struct {
     { CAPNAME("FP","kf35"),	KEY_F35 }
 };
 
-#ifdef __EMX__
+#if SYS_OS2_EMX
 #include "os2keys.h"
 #endif
 
@@ -465,7 +465,7 @@ tcapopen(void)
 	}
 #endif
 
-#ifdef __EMX__
+#if SYS_OS2_EMX
 	for (i = TABLESIZE(VIO_KeyMap); i--; ) {
 		addtosysmap(VIO_KeyMap[i].seq, 2, VIO_KeyMap[i].code);
 	}

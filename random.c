@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.189 1997/12/02 00:12:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.190 1998/02/08 22:09:53 tom Exp $
  *
  */
 
@@ -179,10 +179,10 @@ showcpos(int f GCC_UNUSED, int n GCC_UNUSED)
 	}
 
 	/* Get real column and end-of-line column. */
-	col = getccol(FALSE);
+	col = mk_to_vcol(DOT, FALSE, 0);
 	savepos = DOT.o;
 	DOT.o = llength(DOT.l);
-	ecol = getccol(FALSE);
+	ecol = mk_to_vcol(DOT, FALSE, 0);
 	DOT.o = savepos;
 
 	ratio = 0;		/* Ratio before dot. */

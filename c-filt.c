@@ -5,7 +5,7 @@
  * Modifications:  kevin buettner and paul fox  2/95
  * 		string literal ("Literal") support --  ben stoltz
  * 
- * $Header: /users/source/archives/vile.vcs/RCS/c-filt.c,v 1.5 1997/10/07 10:40:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/c-filt.c,v 1.6 1998/02/07 20:53:57 tom Exp $
  *
  * Features:
  * 	- Reads the keyword file ".vile.keywords" from the home directory.
@@ -138,6 +138,9 @@ extern	int	printf	( const char *fmt, ... );
 extern	int	sscanf	( const char *src, const char *fmt, ... );
 #endif
 
+#if OPT_LOCALE
+#include <locale.h>
+#endif
 #include <ctype.h>
 
 #define MAX_KEYWORD_LENGTH 80
@@ -382,6 +385,11 @@ main(int argc, char **argv)
     char line[MAX_LINELENGTH+1];
     char *s;
     int comment,c_length,literal;
+
+#if OPT_LOCALE
+    setlocale(LC_CTYPE, "");
+#endif
+
     comment = 0;
     literal = 0;
     inithash();

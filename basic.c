@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.95 1997/10/06 23:30:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.96 1998/02/07 17:39:01 tom Exp $
  *
  */
 
@@ -431,7 +431,7 @@ int
 firstchar(LINE *lp)
 {
 	int off = w_left_margin(curwp);
-	while ( off < llength(lp) && isblank(lgetc(lp, off)) )
+	while ( off < llength(lp) && isBlank(lgetc(lp, off)) )
 		off++;
 	if (off == llength(lp))
 		return -1;

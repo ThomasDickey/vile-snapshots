@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.241 1997/11/27 00:46:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.242 1998/02/08 21:26:51 tom Exp $
  *
  */
 
@@ -745,8 +745,8 @@ upscreen(int f GCC_UNUSED, int n GCC_UNUSED)
 static	UINT	scrflags;
 
 /* line to virtual column */
-static int
-l_to_vcol (WINDOW *wp, int base)
+int
+mk_to_vcol (MARK mark, int expanded, int base)
 {
 	int	col = 0;
 	int	i = base;
@@ -754,15 +754,15 @@ l_to_vcol (WINDOW *wp, int base)
 	int	lim;
 	LINEPTR lp;
 
-	lp = wp->w_dot.l;
-	lim = wp->w_dot.o 
+	lp = mark.l;
+	lim = mark.o 
 		+ ((!global_g_val(GMDALTTABPOS) && !insertmode) ? 1 : 0);
 	if (lim > llength(lp))
 		lim = llength(lp);
 
 	while (i < lim) {
 		c = lgetc(lp, i++);
-		if (c == '\t' && !w_val(wp,WMDLIST)) {
+		if (c == '\t' && !expanded) {
 			col += curtabval - (col%curtabval);
 		} else {
 			if (!isPrint(c)) {
@@ -774,7 +774,7 @@ l_to_vcol (WINDOW *wp, int base)
 	}
 	col += base;
 	if (!global_g_val(GMDALTTABPOS) && !insertmode &&
-			col != 0 && wp->w_dot.o < llength(lp))
+			col != 0 && mark.o < llength(lp))
 		col--;
 	return col;
 }
@@ -927,7 +927,7 @@ int force)	/* force update past type ahead? */
 	for_each_window(wp) {
 		if (w_val(wp,WMDRULER)) {
 			int	line  = line_no(wp->w_bufp, wp->w_dot.l);
-			int	col   = l_to_vcol(wp, 0) + 1;
+			int	col   = mk_to_vcol(wp->w_dot, w_val(wp,WMDLIST), 0) + 1;
 
 			if (line != wp->w_ruler_line
 			 || col  != wp->w_ruler_col) {
@@ -1322,7 +1322,7 @@ int *screencolp)
 	}
 
 	/* find the current column */
-	col = l_to_vcol(curwp, w_left_margin(curwp));
+	col = mk_to_vcol(DOT, w_val(curwp,WMDLIST), w_left_margin(curwp));
 
 #ifdef WMDLINEWRAP
 	if (w_val(curwp,WMDLINEWRAP)) {

@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.331 1997/12/17 00:02:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.332 1998/02/08 23:12:48 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -36,6 +36,7 @@
 #define SYS_MSDOS	0			/* MS-DOS			*/
 #define SYS_WIN31	0			/* Windows 3.1			*/
 #define SYS_OS2		0			/* son of DOS			*/
+#define SYS_OS2_EMX	0			/* Unix'ed OS2			*/
 #define SYS_WINNT	0			/* Windows/NT			*/
 
 /*	Compiler definitions			*/
@@ -88,6 +89,10 @@
 #undef SYS_MSDOS
 #define SYS_OS2    1
 #define SYS_MSDOS  0
+#endif
+
+#ifdef __EMX__
+#define SYS_OS2_EMX 1
 #endif
 
 #ifdef __GO32__  	/* DJ's GCC version 1.09 */
@@ -359,6 +364,10 @@
 #define OPT_SHELL 1	/* we'll disable this only as an exercise */
 #endif
 
+#ifndef OPT_LOCALE
+#define OPT_LOCALE 0
+#endif
+
 /* various color stuff */
 #define	OPT_COLOR (DISP_ANSI || IBM_VIDEO || DISP_TERMCAP)
 #define	OPT_16_COLOR (IBM_VIDEO || DISP_TERMCAP)
@@ -417,7 +426,7 @@
 
 /* systems with MSDOS-like filename syntax */
 #define OPT_MSDOS_PATH  (SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT)
-#define OPT_CASELESS	(SYS_WINNT || SYS_OS2 || defined(__EMX__))
+#define OPT_CASELESS	(SYS_WINNT || SYS_OS2 || SYS_OS2_EMX)
 #define OPT_UNC_PATH	(SYS_WINNT)
 
 /* individual features that are (normally) controlled by SMALLER */
@@ -448,6 +457,7 @@
 #define OPT_WIDE_CTYPES !SMALLER		/* extra char-types tests */
 
 /* "show" commands for the optional features */
+#define OPT_SHOW_CTYPE	!SMALLER		/* "show-printable" */
 #define OPT_SHOW_EVAL   !SMALLER && OPT_EVAL	/* "show-variables" */
 #define OPT_SHOW_MAPS   !SMALLER 		/* display mapping for ":map" */
 #define OPT_SHOW_REGS   !SMALLER		/* "show-registers" */
@@ -1016,7 +1026,7 @@ typedef USHORT CHARTYPE;
 #define	isreturn(c)	((c == '\r') || (c == '\n'))
 
 /* macro for whitespace (non-return) */
-#define	isblank(c)      ((c == '\t') || (c == ' '))
+#define	isBlank(c)      ((c == '\t') || (c == ' '))
 
 /* DIFCASE represents the difference between upper
    and lower case letters, DIFCNTRL the difference between upper case and
