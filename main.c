@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.319 1998/05/01 00:48:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.320 1998/05/19 11:08:39 cmorgan Exp $
  *
  */
 
@@ -774,6 +774,25 @@ global_val_init(void)
 #endif
 #ifdef GMDW32PIPES
 	set_global_g_val(GMDW32PIPES,  	is_winnt()); /* use native pipes? */
+#endif
+#if SYS_WINNT && defined(DISP_NTWIN)
+	/* Allocate console before spawning piped process? */
+    if (is_win95())
+    {
+#define WHACKED_SHELL  "command.com"
+#define WHACKED_LEN    (sizeof(WHACKED_SHELL) - 1)
+
+        char *shell = get_shell();
+        int  sh_len = strlen(shell);
+
+        if (sh_len >= WHACKED_LEN && 
+                    stricmp(shell + sh_len - WHACKED_LEN, WHACKED_SHELL) == 0)
+        {
+            set_global_g_val(GMDFORCE_CONSOLE, 1);
+        }
+#undef  WHACKED_LEN
+#undef  WHACKED_SHELL
+    }
 #endif
 #ifdef GMDHISTORY
 	set_global_g_val(GMDHISTORY,	TRUE);

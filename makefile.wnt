@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.23 1998/04/08 06:55:00 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.24 1998/05/19 11:05:55 cmorgan Exp $
 #
 #
 !include <ntwin32.mak>
@@ -9,54 +9,82 @@
 !IF "$(CFG)" == ""
 CFG=vile
 !MESSAGE No configuration (CFG) specified.  Defaulting to vile (console)
-!ENDIF 
+!ENDIF
 
-!IF "$(CFG)" != "vile" && "$(CFG)" != "winvile"
+!IF "$(CFG)" != "vile" && "$(CFG)" != "winvile"  && \
+    "$(CFG)" != "vile-with-perl" && "$(CFG)" != "winvile-with-perl"
 !MESSAGE Invalid configuration "$(CFG)" specified.
 !MESSAGE You can specify a configuration when running NMAKE on this makefile
 !MESSAGE by defining the macro CFG on the command line.  For example:
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "makefile.wnt" CFG="winvile"
-!MESSAGE 
+!MESSAGE
 !MESSAGE Possible choices for configuration are:
-!MESSAGE 
-!MESSAGE "vile   - console"
-!MESSAGE "winvile - gui"
-!MESSAGE 
+!MESSAGE
+!MESSAGE vile              - console
+!MESSAGE vile-with-perl    - console and embedded perl
+!MESSAGE winvile           - gui
+!MESSAGE winvile-with-perl - gui and embedded perl
+!MESSAGE
+!MESSAGE The 'with-perl' configurations have two preconditions which must be
+!MESSAGE met prior to initiating the build.  Refer to the file "mkprlenv.wnt"
+!MESSAGE for more details.
+!MESSAGE
 !ERROR An invalid configuration is specified.
-!ENDIF 
+!ENDIF
 
 # remove the "#" to get debugging info (and a larger executable)
-CC_DEBUG = #$(cdebug)
-LD_DEBUG = #$(ldebug)
-CON_LDFLAGS = -nologo -pdb:none
+CC_DEBUG     = #$(cdebug)
+LD_DEBUG     = #$(ldebug)
 
-!IF  "$(CFG)" == "vile"
-TARGET  = vile.exe
-UTILS   = vile-c-filt.exe
-CFLAGS  = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
-          -Dscrn_chosen -DDISP_NTCONS	
-LDFLAGS = -nologo -pdb:none
-SCREEN  = ntconio
-LIBS    = $(LD_DEBUG) $(conlflags) $(conlibsmt) user32.lib
+# Other vars
+CON_LDFLAGS  = -nologo -pdb:none
+DEVNULL      = nul
+PERLCFG      = $(DEVNULL)
+THE_PERLCFG  = perl_env.inc
+
+!IF EXIST("$(THE_PERLCFG)")
+!INCLUDE "$(THE_PERLCFG)"
+!ENDIF
+
+!IF  "$(CFG)" == "vile" || "$(CFG)" == "vile-with-perl"
+TARGET   = vile.exe
+UTILS    = vile-c-filt.exe
+CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
+           -Dscrn_chosen -DDISP_NTCONS $(PERLOPTS)
+LDFLAGS  = -nologo -pdb:none
+SCREEN   = ntconio
+LIBS     = $(LD_DEBUG) $(conlflags) $(conlibsmt) user32.lib $(VILE_PERL_LIB)
 !endif
 
-!IF  "$(CFG)" == "winvile"
-TARGET  = winvile.exe
-UTILS   =
-CFLAGS  = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
-          -Dscrn_chosen -DDISP_NTWIN	
-LDFLAGS = -nologo /nologo /subsystem:windows /incremental:no -pdb:none
-SCREEN  = ntwinio
-LIBS    = $(LD_DEBUG) $(guilflags) $(guilibsmt)
+!IF  "$(CFG)" == "winvile" || "$(CFG)" == "winvile-with-perl"
+TARGET   = winvile.exe
+UTILS    = vile-c-filt.exe
+CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
+           -Dscrn_chosen -DDISP_NTWIN $(PERLOPTS)
+LDFLAGS  = -nologo /nologo /subsystem:windows /incremental:no -pdb:none
+SCREEN   = ntwinio
+LIBS     = $(LD_DEBUG) $(guilflags) $(guilibsmt) $(VILE_PERL_LIB)
 !endif
+
+!IF "$(CFG)" == "winvile-with-perl" || "$(CFG)" == "vile-with-perl"
+PERLOPTS = -DOPT_PERL=1 -I$(VILE_PERL_INC)
+PERLOBJS = api.obj perl.obj watch.obj
+PERLSRCS = api.c perl.c watch.c
+PERLCFG  = $(THE_PERLCFG)
+#
+# These perl scripts work under win32
+#
+PERL_SCRIPTS = glob2re.pl visit.pl hgrep.pl
+!ENDIF
 
 # these are normal editable headers
 HDRS = estruct.h edef.h proto.h dirstuff.h
 
 # these headers are built by the mktbls program from the information in cmdtbl
 # and in modetbl
-BUILTHDRS = nebind.h neproto.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nefsms.h
+BUILTHDRS = nebind.h neproto.h nefunc.h nemode.h nename.h nevars.h \
+            nefkeys.h nefsms.h
 
 SRC = 	main.c $(SCREEN).c \
 	basic.c bind.c btree.c buffer.c crypt.c \
@@ -69,7 +97,7 @@ SRC = 	main.c $(SCREEN).c \
 	region.c search.c select.c spawn.c \
 	tags.c tbuff.c termio.c undo.c \
 	version.c window.c word.c wordmov.c map.c \
-	w32cbrd.c w32pipe.c 
+	w32cbrd.c w32misc.c w32pipe.c $(PERLSRCS)
 
 OBJ = 	main.obj $(SCREEN).obj \
 	basic.obj bind.obj btree.obj buffer.obj crypt.obj \
@@ -82,15 +110,19 @@ OBJ = 	main.obj $(SCREEN).obj \
 	region.obj search.obj select.obj spawn.obj \
 	tags.obj tbuff.obj termio.obj undo.obj \
 	version.obj window.obj word.obj wordmov.obj map.obj \
-	w32cbrd.obj w32pipe.obj 
+	w32cbrd.obj w32misc.obj w32pipe.obj $(PERLOBJS)
 
-.c.obj:	
-	$(cc) $(CFLAGS) -c $< -Fo$@ 
+.c.obj:
+	$(cc) $(CFLAGS) -c $< -Fo$@
 
-all:  $(TARGET) $(UTILS)
+all: $(PERLCFG) $(TARGET) $(UTILS)
 
 $(TARGET): 	$(BUILTHDRS) $(OBJ)
 	$(link) $(LDFLAGS) $(OBJ) $(LIBS) -out:$(TARGET)
+
+# collect some perl environment info
+$(PERLCFG): mkprlenv.wnt
+!INCLUDE "mkprlenv.wnt"
 
 $(OBJ):	estruct.h
 
@@ -106,6 +138,10 @@ nefsms.h \
 nemode.h:	modetbl mktbls.exe
 	mktbls.exe modetbl
 
+perl.c: perl.xs ptypemap
+    perl $(VILE_PERL_UTILS)\xsubpp -typemap $(VILE_PERL_UTILS)\typemap \
+        -typemap ptypemap perl.xs > $@
+
 mktbls.exe:  mktbls.c
 	$(cc) $(CFLAGS) mktbls.c -Fomktbls -link $(CON_LDFLAGS)
 
@@ -114,9 +150,11 @@ vile-c-filt.exe: c-filt.c
     -Fovile-c-filt -link $(CON_LDFLAGS)
 
 clean:
-	del *.exe
-	del *.obj
-	del ne*.h
+    del *.exe
+    del *.obj
+    del ne*.h
+    -del $(THE_PERLCFG)
+    -del perl.c
 
 bind.obj:	nefunc.h
 eval.obj:	nevars.h

@@ -1641,7 +1641,8 @@ Editing the Minibuffer
 	The minibuffer (i.e., the last line on the screen, aka the :-prompt)
 	can be edited using arrow keys, the delete character, or by toggling to
 	vi-mode with the ^G (mini-edit) character.  In mini-edit mode, you may
-	use commands that do not move the cursor to a different line.
+	use commands that do not move the cursor to a different line, as well
+	as the following editing commands: i, a, I, A.
 
 	Vile treats the minibuffer specially.  Completed lines are written
 	to the history buffer.  When scrolling up/down in the command history,
@@ -3530,9 +3531,42 @@ Win32 specifics
 	comments within the source file c-filt.c that describe minor
 	porting changes, as well as providing example usage that leverages
 	the editor's 16-color palette.
- 
+
+	Perl
+	----
+	At the user's discretion, vile may be built with an embedded perl
+	interpreter.  To date, only the perl [binary] distribution at the
+	following URL is supported:
+
+	    http://www.perl.com/CPAN-local/ports/win32/Standard/x86/
+
+	If you acquire (i.e., do not personally build) a copy of 
+	"perl-embedded" vile, these external configuration steps are 
+	necessary:
+
+	1) Obtain the [binary] perl distribution from the aforementioned
+	   URL and install it.  Included in this distribution, among many
+	   other items, is a required DLL and the usual perl packages.
+
+	2) [Optional] To invoke vile-based perl scripts distributed with the
+	   editor, copy the scripts to a directory of your choice and create
+	   an exported environment variable called VILE_LIBRARY_PATH that 
+	   points to same.  The list of scripts known to work in a Win32 
+	   environment includes:
+
+		hgrep.pl glob2re.pl visit.pl
+
 	Modes 
 	----- 
+	force-console   Boolean indicating whether or not winvile forces 
+			console creation prior to initiating a native read 
+			pipe or filter region operation.  Must be set when the
+			host shell doesn't properly communicate with consoles
+			created as a side effect of the CreateProcess() API.
+			Reset by default unless Win95's command.com is the
+			current shell.  Note:  this mode is applicable only
+			when w32pipes is set. (U)
+
 	scroll-pause	An integer indicating the time in milliseconds to  
 			wait after scrolling the display.  A value of zero, 
 			the default, disables this mode.  This mode is 
@@ -3782,4 +3816,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.351 1998/05/13 00:50:15 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.352 1998/05/19 11:08:40 cmorgan Exp $

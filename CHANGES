@@ -1,9 +1,40 @@
 Changes for vile 7.5/8.0 (released ??? ??? ?, 1998)
 
+ (tom) 980519 (h)
+ 	+ correct const-cast warnings for x_set_icon_name() and
+	  x_set_window_name().
+ 	+ correct fallback prototype for mktemp, which should not have a 'const'
+	  parameter.
+	+ vile-pas-filt should treat '_' as an identifier character
+	  (reported by Radek Liboska).
+	> patches by Clark Morgan for Win32 and Perl configurations (tested on
+	  WinNT 4.0 and Win95):
+	+ Winvile's read pipe and region filter operations now create implicit,
+	  hidden console windows (i.e., black console windows don't pop up and
+	  disappear anymore).  Exception:  Win95's command.com hangs if it
+	  attempts to communicate with implicitly created consoles. 
+	  Consequently, a new boolean mode (called "force-console") has been
+	  created which specifies whether or not consoles are created
+	  explicitly prior to creating a child process or implicitly when the
+	  child process is exec'd.  By default force-console is only set when
+	  the host is win95 and the current shell is command.com
+	+ Prevent ^C/^Break in a console subshell from kernel faulting win95.
+	+ If the user's shell is a unix clone derived from the Bourne shell,
+	  add an extra layer of quoting that preserves Unix argument semantics.
+	  For more details, refer to the function mk_shell_cmd_str() in the
+	  file w32misc.c
+	+ new file w32misc.c + some common win32 code in w32pipe.c moved to
+	  w32misc.c
+	+ modify makefile.wnt to add two new build configurations to the Win32
+	  env:  vile-with-perl and winvile-with-perl.
+	+ add VILE_LIBRARY_PATH environment variable to perl.xs to locate
+	  the help file.
+	+ add new file mkprlenv.wnt, which is included by makefile.wnt
+
  (tom) 980515 (g)
  	+ modify quote() function to show the accumulated number for ^Vnnn.
  	+ change 'value' parameter of SetVarValue() to eliminate a const-cast
-	  warning, which in turn led to applying const to TTrez interface.   
+	  warning, which in turn led to applying const to TTrez interface.
  	+ change category of 'sideways' mode to allow setting it for internal
 	  buffers, such as [Help].
 	+ add a range-test for rows and columns in movecursor() to avoid
