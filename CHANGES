@@ -1,4 +1,8 @@
 Changes for vile 7.1 (released ??? ??? ??, 1997)
+(kev)	970407 (e)
+	+ fileio.c (isready_c): Small tweak to the ifdefs for mklinux w/
+	  shared libraries.  This'll probably be needed for other systems
+	  with the up and coming GNU libc as well.
 
 (tom)	970330 (d)
 	+ correct missing ']' on generated buffer name for shell output, e.g.,
