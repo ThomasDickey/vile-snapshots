@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.257 2001/09/18 09:49:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.258 2001/12/06 00:59:49 cmorgan Exp $
  *
  */
 
@@ -1320,15 +1320,23 @@ void
 ch_fname(BUFFER *bp, const char *fname)
 {
     int len;
-    char nfilen[NFILEN];
     char *np;
     char *holdp = NULL;
 
-    np = strcpy(nfilen, fname);
+    /*
+     * ch_fname() can receive a very long filename string from capturecmd().
+     */
+    if ((np = castalloc(char, strlen(fname) + NFILEN)) == NULL) {
+	bp->b_fname = out_of_mem;
+	bp->b_fnlen = strlen(bp->b_fname);
+	no_memory("ch_fname");
+	return;
+    }
+    strcpy(np, fname);
 
     /* produce a full pathname, unless already absolute or "internal" */
     if (!isInternalName(np))
-	(void) lengthen_path(nfilen);
+	(void) lengthen_path(np);
 
     len = strlen(np) + 1;
 
@@ -1347,6 +1355,8 @@ ch_fname(BUFFER *bp, const char *fname)
 	    if (!bp->b_fname) {
 		bp->b_fname = out_of_mem;
 		bp->b_fnlen = strlen(bp->b_fname);
+		no_memory("ch_fname");
+		(void) free(np);
 		return;
 	    }
 	    bp->b_fnlen = len;
@@ -1364,6 +1374,7 @@ ch_fname(BUFFER *bp, const char *fname)
     bp->b_modtime_at_warn = 0;
 #endif
     fileuid_set_if_valid(bp, fname);
+    (void) free(np);
 }
 
 #if OPT_HOOKS

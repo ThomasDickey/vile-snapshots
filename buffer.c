@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.238 2001/09/23 17:14:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.239 2001/12/06 00:59:49 cmorgan Exp $
  *
  */
 
@@ -558,7 +558,10 @@ imply_alt(char *fname, int copy, int lockfl)
     if ((stripped = is_appendname(fname)) != 0)
 	fname = stripped;
 
-    (void) lengthen_path(strcpy(nfname, fname));
+    /* if fname is a pipe cmd, it can be arbitrarily long */
+    strncpy(nfname, fname, sizeof(nfname) - 1);
+    nfname[sizeof(nfname) - 1] = '\0';
+    (void) lengthen_path(nfname);
     if (global_g_val(GMDIMPLYBUFF)
 	&& curbp != 0
 	&& curbp->b_fname != 0

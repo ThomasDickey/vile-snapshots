@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.16 2001/09/18 09:49:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.17 2001/11/20 19:01:04 tom Exp $
  */
 
 #include "estruct.h"
@@ -695,7 +695,7 @@ handle_page_dflts(HWND hwnd)
 /*
  * Handles two chores:
  *
- *   1) converts all user-specified margin values to thousands of inches,
+ *   1) converts all user-specified margin values to thousandths of inches,
  *      if required, prior to rationalizing.
  *
  *   2) rationalizes user's margin settings with respect to the printer's
@@ -718,7 +718,7 @@ compute_printrect(int  xdpi,    /* dots (pixels) per inch in x axis */
 
     if (pgsetup->Flags & PSD_INHUNDREDTHSOFMILLIMETERS)
     {
-        /* convert user's margings to thousandths of inches */
+        /* convert user's margins to thousandths of inches */
 
         u.top    = (int) (1000.0 * u.top / 2500.0);
         u.bottom = (int) (1000.0 * u.bottom / 2500.0);

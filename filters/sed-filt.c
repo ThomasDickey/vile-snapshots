@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.13 2001/08/22 00:01:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.14 2001/12/06 01:55:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to sed scripts.
  */
@@ -269,7 +269,6 @@ do_filter(FILE * input GCC_UNUSED)
     static char *line;
 
     char *s;
-    int literal;
     int addresses;
     int escaped_newline;
     States state = LeadingBlanks;
@@ -281,8 +280,6 @@ do_filter(FILE * input GCC_UNUSED)
     Ident2_attr = class_attr(NAME_IDENT2);
     Literal_attr = class_attr(NAME_LITERAL);
     Number_attr = class_attr(NAME_NUMBER);
-
-    literal = 0;
 
     while (flt_gets(&line, &used) != NULL) {
 	size_t len = strlen(s = line);
@@ -358,7 +355,7 @@ do_filter(FILE * input GCC_UNUSED)
 	    case ExpectSubsParams:
 	    case ExpectTransParams:
 		s = SkipTwoPatterns(s, state == ExpectSubsParams);
-		next = AfterCommandChar;
+		next = (*s != '\0') ? AfterCommandChar : LeadingBlanks;
 		break;
 	    case ExpectLabel:
 		s = SkipRemaining(s, Ident2_attr);

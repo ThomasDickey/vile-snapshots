@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.49 2000/10/27 01:22:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.50 2001/11/27 19:07:36 tom Exp $
  *
  */
 
@@ -89,7 +89,6 @@ print_usage (void)
 	"use @cmdfile to run cmdfile as commands (this will suppress .vilerc)",
 	"single-letter options usually are case-independent"
 	};
-	register SIZE_T	j;
 
 	ttclean(TRUE);
 #if DISP_NTWIN
@@ -97,8 +96,11 @@ print_usage (void)
 #else
 	(void)fprintf(stderr, "usage: %s [-flags] [@cmdfile] files...\n",
 		prog_arg);
-	for (j = 0; j < TABLESIZE(options); j++)
-		(void)fprintf(stderr, "\t%s\n", options[j]);
+	{
+		unsigned j;
+		for (j = 0; j < TABLESIZE(options); j++)
+			(void)fprintf(stderr, "\t%s\n", options[j]);
+	}
 #endif
 	ExitProgram(BADEXIT);
 }

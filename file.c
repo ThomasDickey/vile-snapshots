@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.290 2001/09/18 09:49:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.291 2001/12/06 00:59:49 cmorgan Exp $
  */
 
 #include	"estruct.h"
@@ -1432,9 +1432,14 @@ slowreadf(register BUFFER *bp, int *nlinep)
 static void
 readlinesmsg(int n, int s, const char *f, int rdo)
 {
-    char fname[NFILEN];
+    char fname[NFILEN], *short_f;
     const char *m;
-    char *short_f = shorten_path(strcpy(fname, f), TRUE);
+
+    /* if "f" is a pipe cmd, it can be arbitrarily long */
+    strncpy(fname, f, sizeof(fname) - 1);
+    fname[sizeof(fname) - 1] = '\0';
+
+    short_f = shorten_path(fname, TRUE);
     switch (s) {
     case FIOBAD:
 	m = "Incomplete line, ";

@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-#   vileget (version 1.2) - Pass file edit requests to a XVile session
+#   vileget (version 1.3) - Pass file edit requests to a Vile session
 #                           running Vileserv.
 #
 #   Copyright (C) 1998  J. Chris Coppick
@@ -35,12 +35,20 @@ the Vileserv perl module.  (See the Vileserv documentation for more
 detail.)
 
 By default, if vileget cannot connect to a running instance of the
-editor it tries to start a new one (XVile).  This will only work
+editor it tries to start a new one.  This will only work
 correctly if you have configured Vile to start Vileserv automatically.
+(Vileget will try to find an XVile binary first, then look for
+a Vile binary.)
 
 Vileget looks for the Vileserv socket in the user's home directory
 (I<$HOME/.vilesock>) by default.  This can be changed by setting
 the B<VILESOCK> environment variable, or by using the B<-s> option.
+
+If vileget is handed a directory name, it trys to get the target Vile
+to load the B<directory.pm> module and popup the appropriate directory
+listing.  This only works for the first directory mentioned on the
+command line, and it only works if the target Vile is configured
+to accept remote commands (see the B<-c/-C> options).
 
 =head1 COMMAND-LINE OPTIONS
 
@@ -54,20 +62,13 @@ addition to loading any requested files.
 
 =item B<-n>
 
-This tells vileget NOT to try starting a new instance of XVile if
-necessary.  If vileget cannot connect to a running XVile, it will just
+This tells vileget NOT to try starting a new instance of Vile if
+necessary.  If vileget cannot connect to a running Vile, it will just
 die with a connection error instead.
 
 =item B<-w>
 
 Vileget waits for given file(s) to be written by Vile before exiting.
-To use this option, you must use an appropriate writehook procedure in
-Vile.  Here's an example:
-
-	store-procedure wh
-	   perl &cat &cat "Vileserv::writehook '" $cfilname "'"
-	~endm
-	set write-hook wh
 
 =item B<-s> I<socket-path>
 
@@ -80,7 +81,7 @@ the default and the environment variable B<VILESOCK>.
 =item B<-C> I<command>
 
 The B<-c> and B<-C> options can be used to pass arbitrary Vile commands
-to a running instance of XVile.  These can be used at the same time
+to a running instance of Vile.  These can be used at the same time
 that file edits are being requested, or without giving any files at all.
 When file arguments are used, the B<-c> option can be used to execute
 a Vile command I<before> the requested files are loaded.  The B<-C> option
@@ -115,7 +116,7 @@ singularities, or, as a matter of fact, for anything else.
 
 =head1 SEE ALSO
 
-vileserv(3), xvile(1)
+vileserv(3), vile(1)
 
 =head1 AUTHOR
 
@@ -126,7 +127,8 @@ S<J. Chris Coppick, 1998 (last updated: July 26, 2000)>
 use Socket;
 use Getopt::Std;
 
-$vile = 'xvile';
+$vile1 = 'xvile';
+$vile2 = 'vile';
 $esc = '+++';
 
 getopts('ndws:c:C:') || &usage;
@@ -157,7 +159,7 @@ if (!connect(SOCK, sockaddr_un($rendezvous))) {
       open(STDOUT, ">&1") || die "$0: reopening STDOUT: $!";
       open(STDERR, ">&2") || die "$0: reopening STDERR: $!";
       $ENV{'VILESOCK'} = $opt_s if (defined($opt_s));
-      exec $vile || die "$0: exec: $!";
+      exec $vile1 or exec $vile2 or die "$0: exec: $!";
 
    }
 
@@ -195,11 +197,19 @@ while ($f = shift @ARGV) {
       $f = "$cwd/$f";
    }
 
-   if (defined($opt_w)) {
-      print $esc . "waiton ";
-   }
+   if (-d "$f") {
 
-   print "$f\n";
+      print $esc . "do directory $f\n";
+      print $esc . 'do perl "use directory\n"';
+
+   } else {
+
+      if (defined($opt_w)) {
+	 print $esc . "waiton ";
+      }
+
+      print "$f\n";
+   }
 }
 
 if (defined($opt_c)) {
@@ -221,12 +231,12 @@ sub usage {
 
    print <<EOD;
 Usage:  vileget [-n] [-c] [-w] file [file ...]
-   -n = do NOT try to start xvile if needed
-   -d = set cwd of xvile to cwd of vileget
-   -w = wait for file(s) to be written by xvile before exiting
-   -s socket-path = rendezvous with xvile at given socket-path
-   -c command = pass command to xvile before loading any files
-   -C command = pass command to xvile after loading any files
+   -n = do NOT try to start Vile if needed
+   -d = set cwd of Vile to cwd of vileget
+   -w = wait for file(s) to be written by Vile before exiting
+   -s socket-path = rendezvous with Vile at given socket-path
+   -c command = pass command to Vile before loading any files
+   -C command = pass command to Vile after loading any files
 
 EOD
    exit 1;

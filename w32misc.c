@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.34 2001/09/18 09:49:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.35 2001/12/06 00:52:25 cmorgan Exp $
  */
 
 #include "estruct.h"
@@ -320,7 +320,7 @@ w32_CreateProcess(char *cmd, int no_wait)
     STARTUPINFO          si;
 
     memset(&si, 0, sizeof(si));
-    si.cb          = sizeof(si);
+    si.cb = sizeof(si);
     if (! no_wait)
     {
         /* command requires a shell, so hookup console I/O */
@@ -463,12 +463,26 @@ get_console_handles(STARTUPINFO *psi, SECURITY_ATTRIBUTES *psa)
      *              in MSDN.  Additionally, the CYGWIN shells will create
      *              stderr if it doesn't exist.
      *
-     * Numero Dos:  a dynamically console created in the context of a CYGWIN
+     * Numero Dos:  a dynamically created console in the context of a CYGWIN
      *              shell sets its foreground and background colors to the
      *              same value (usually black).  Not so easy to read the
      *              text :-( . Workaround: force contrasting colors (white
      *              text on black bgrnd).  Someday we ought to let the users
      *              choose the colors via a win32-specific mode.
+     *
+     * And it should be noted that the above techniques do not work on
+     * a Win2K host using the latest version of bash.  Sigh.  So, if you
+     * use bash as your shell, invoke winvile from the command line
+     * and type:
+     *
+     *    :sh
+     *
+     * or
+     *
+     *    :!bash
+     *
+     * the spawned bash shell will hang.  No known workaround.  Does not
+     * occur if winvile is launched by windows explorer.
      */
     if ((psi->hStdInput = CreateFile("CONIN$",
                                      GENERIC_READ,
@@ -612,6 +626,15 @@ w32_system_winvile(const char *cmd, int *pressret)
                                   SC_CLOSE,
                                   MF_GRAYED);
             close_disabled = TRUE;
+
+            /*
+             * On a Win2K host, the console is often created as a
+             * background window, which means that the user must press
+             * ALT+TAB to bring it to the foreground to interact with the
+             * shell.  Ugh.  This call to SetForegroundWindow() should
+             * work, even on 2K / 98.
+             */
+            (void) SetForegroundWindow(hwnd);
         }
     }
     if (CreateProcess(NULL,
@@ -649,6 +672,7 @@ w32_system_winvile(const char *cmd, int *pressret)
                 }
                 Sleep(200);
             }
+            (void) SetForegroundWindow(hwnd);
         }
         if (! no_shell)
         {

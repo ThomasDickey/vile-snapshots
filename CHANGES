@@ -1,5 +1,50 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20011205 (q)
+	> Clark Morgan:
+	+ fix:  the new builtin find feature makes it relatively easy to
+	  construct arbitarily long pipe commands.  Such long commands could
+	  overflow a number of vile's internal temp vars.
+	+ Some win2k cleanups:
+	  - on a win2k host, if $shell is bogus, read pipes don't display an
+	    error message.  Instead, the editor would just hang.
+	  - on a win2k host, the shell process spawned via ":!cmd" was usually
+	    not executed in the foreground window.
+	+ add a pattern to finderr.c to handle this case:  When using visvile
+	  under developer studio, the compiler can generate (HTML-based)
+	  messages have leading tabs before the filename.
+	+ doc/config.doc - numbered macros noted as an anachronism
+	+ doc/macros.doc - mention that numbered macros are allocated from fixed
+	  pool and describe their (as far as I can tell) single
+	  advantage.
+        + vile.hlp:
+	  + fix typo where #-<c> binding was attempted in insertmode.
+          + reorganize discussion of macros to mimic (in a very
+	    abbreviated form) the key information from
+	    doc/macros.doc .
+	> J Chris Coppick:
+	+ various fixes to Vileserv.pm:
+	  + various code and documentation tweaks
+	  + Vileserv now automatically installs a $write-hook
+	    (for "vileget -w"), unless you tell it not to (details in the doc).
+	  + Vileget used to start xvile if needed.  Now it tries 'xvile', then
+	    'vile'.
+	  + If you hand Vileget a directory name, it will try to do something
+	    useful with it.
+	  + handle old Vileserv sockets more gracefully, in theory...
+	+ minor fixes to Breadcrumbs.pm
+	+ add perl/Help.pm
+	+ add perl/CaptHook.pm, which provides useful wrappers for Vile's
+	  "hook" variables.
+	> Tom Dickey:
+	+ correct a state in sed-filt.c after parsing a substitute command,
+	  which caused alternate lines to not be highlighted.
+	+ indent'd trace.c
+	+ modify trace.c to make Trace() thread-safe on win32.
+	+ correct small bug in ntwinio.c which would allow repaint_window() to
+	  be called for a scrollbar.  This normally will not occur because of
+	  the way the event queue is processed, but was apparent in debugging.
+
  20010925 (p)
 	> Clark Morgan:
 	+ Removed an ugly wart from win32 vile (dated September 11).  Tested on
