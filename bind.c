@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.202 1999/09/04 15:16:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.204 1999/09/06 21:50:13 tom Exp $
  *
  */
 
@@ -14,6 +14,7 @@
 #include	"estruct.h"
 #include	"edef.h"
 #include	"nefunc.h"
+#include	"nefsms.h"
 
 #define BI_DATA NBST_DATA
 #include	"btree.h"
@@ -738,6 +739,42 @@ convert_kcode(int c, char *buffer)
 	(void)kcod2prc(c, to_tabstop(buffer));
 }
 
+#if OPT_ONLINEHELP
+static int show_onlinehelp(const CMDFUNC *cmd)
+{
+    char outseq[NLINE];	/* output buffer for text */
+
+    if (cmd->c_help && cmd->c_help[0])
+	    (void)lsprintf(outseq,"  (%s %s )",
+	    (cmd->c_flags & MOTION) ? " motion: " :
+		    (cmd->c_flags & OPER) ? " operator: " : "",
+	    cmd->c_help);
+    else
+	    (void)lsprintf(outseq,"  ( no help for this command )");
+    if (!addline(curbp,outseq,-1))
+	    return FALSE;
+    if (cmd->c_flags & GLOBOK) {
+	    if (!addline(curbp,"  (may follow global command)",-1))
+		    return FALSE;
+    }
+#if OPT_MACRO_ARGS
+    if (cmd->c_args != 0) {
+	int i;
+	for (i = 0; cmd->c_args[i].pi_type != PT_UNKNOWN; i++) {
+	    (void)lsprintf(outseq, "  ( $%d = %s )", i+1,
+		(cmd->c_args[i].pi_text != 0)
+		? cmd->c_args[i].pi_text
+		: choice_to_name(fsm_paramtypes_choices,
+				 cmd->c_args[i].pi_type));
+	    if (!addline(curbp, outseq, -1))
+		return FALSE;
+	}
+    }
+#endif
+    return TRUE;
+}
+#endif
+
 #if OPT_NAMEBST
 struct bindlist_data {
     UINT mask;		/* oper/motion mask */
@@ -775,7 +812,7 @@ static int
 addsynonym_func(BI_NODE *node, const void *d)
 {
     const CMDFUNC *func = (const CMDFUNC *)d;
-    static char outseq[NLINE];	/* output buffer for text */
+    char outseq[NLINE];		/* output buffer for text */
 
     if (node->value.n_cmd == func &&
 	!(node->value.n_flags & NBST_DONE))
@@ -846,20 +883,8 @@ makebind_func(BI_NODE *node, const void *d)
     btree_walk(&namebst.head, addsynonym_func, cmd);
 
 #if OPT_ONLINEHELP
-    if (cmd->c_help && *cmd->c_help)
-	lsprintf(outseq, "  (%s %s )",
-	    (cmd->c_flags & MOTION) ? "motion: " :
-	    (cmd->c_flags & OPER)   ? "operator: " : "",
-	    cmd->c_help);
-	else
-	    lsprintf(outseq, "  ( no help for this command )");
-
-    if (!addline(curbp, outseq, -1))
-	return 1;
-
-    if (cmd->c_flags & GLOBOK)
-	if (!addline(curbp, "  (may follow global command)", -1))
-	    return 1;
+    if (!show_onlinehelp(cmd))
+	return FALSE;
 #endif
     /* blank separator */
     if (!addline(curbp, "", -1))
@@ -952,19 +977,8 @@ makefuncdesc(int j, char *listed)
 	}
 
 #if OPT_ONLINEHELP
-	if (cmd->c_help && cmd->c_help[0])
-		(void)lsprintf(outseq,"  (%s %s )",
-		(cmd->c_flags & MOTION) ? "motion: " :
-			(cmd->c_flags & OPER) ? "operator: " : "",
-		cmd->c_help);
-	else
-		(void)lsprintf(outseq,"  ( no help for this command )");
-	if (!addline(curbp,outseq,-1))
-		return FALSE;
-	if (cmd->c_flags & GLOBOK) {
-		if (!addline(curbp,"  (may follow global command)",-1))
-			return FALSE;
-	}
+    if (!show_onlinehelp(cmd))
+	return FALSE;
 #endif
 	/* blank separator */
 	if (!addline(curbp,"",-1))

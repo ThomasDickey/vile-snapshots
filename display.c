@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.296 1999/09/04 00:25:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.297 1999/09/06 13:04:19 tom Exp $
  *
  */
 
@@ -3609,7 +3609,7 @@ imworking (int ACTUAL_SIG_ARGS GCC_UNUSED)
 
 	signal_was = SIGALRM;	/* remember this was an alarm */
 
-	if (no_working) /* brute force, for debugging */
+	if (vile_is_busy)	/* brute force, for debugging */
 		return;
 
 	/* (if GMDWORKING is _not_ set, or MDTERSE is set, we're allowed

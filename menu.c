@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.32 1999/08/18 22:27:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.34 1999/09/06 13:04:12 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -528,6 +528,11 @@ static void proc_back ( Widget w GCC_UNUSED, XtPointer arg, XtPointer call  GCC_
 
     TRACE(("Macro/Action=%s\n", macro_action));
 
+#if OPT_WORKING
+    if (vile_is_busy)
+        return;
+#endif
+
     if ((s = is_cmd(macro_action)) != 0)
     {
         macro_action = s;
@@ -573,6 +578,9 @@ static void list_proc_back ( Widget w, XtPointer bname, XtPointer call GCC_UNUSE
 #if ATHENA_WIDGETS
     num_buff = (int)bname;
 #endif
+
+    if (vile_is_busy)
+        return;
 
     (void)histbuff(TRUE, num_buff);
     (void)im_waiting(oldflag);

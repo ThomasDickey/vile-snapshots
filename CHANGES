@@ -1,5 +1,28 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+(tom) 990907 (r)
+	+ correct oversight in 'eval' command, which evaluated only the first
+	  token.
+	+ revised macro-parameter logic to rely on parameter template in the
+	  store-procedure command rather than accepting unsolicited parameter
+	  lists.  This works better with command-completion (fixes a problem
+	  reported by Duncan Sargeant).
+	+ set txtmode in manpage buffers to simplify further optional
+	  highlighting
+	+ corrected problem in perl.xs introduced by changes for definition of
+	  VILE_LIBDIR_PATH which dropped the trailing '/', by modifying logic
+	  in perl.xs to use pathcat() function.  This also avoids modifying the
+	  corresponding environment variable.
+	+ modify lock.pl to work when the system uses shadow passwords.  Also,
+	  modify menu.c and x11.c to ignore mouse operations while the editor is
+	  locked.
+	+ add &register function, so the contents of an internal register may
+	  be manipulated in macros (request by Otavio Exel).
+	+ add configure check for <sys/socket.h>, needed for SCO which defines
+	  FIONREAD there.  This fixes screen output, avoiding the fcntl bug,
+	  but still does not make arrow keys work since the FIONREAD ioctl does
+	  not work on SCO.  Using select or poll makes it much slower.
+
 (tom) 990904 (q)
 	+ modify check for curses/termcap library for FreeBSD to exclude
 	  curses library, preferring either ncurses or termcap.

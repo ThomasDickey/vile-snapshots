@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.239 1999/09/03 11:00:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.251 1999/09/08 01:54:59 tom Exp $
  *
  */
 
@@ -266,11 +266,11 @@ charclass_of(char *arg)
 static void
 show_charclass(TBUFF **result, char *arg)
 {
-	UINT j;
 	CHARTYPE k = charclass_of(arg);
+#if OPT_SHOW_CTYPE
+	UINT j;
 	const char *s;
 
-#if OPT_SHOW_CTYPE
 	for (j = 0; j != vl_UNUSED; j++) {
 		if (((1 << j) & k) != 0
 		 && (s = choice_to_name(fsm_charclass_choices, j)) != 0) {
@@ -772,6 +772,20 @@ run_func(int fnum)
 	case UFWORD:
 		extract_token(&result, arg[0], "\t ", arg[1]);
 		break;
+	case UFREGISTER:
+		i = reg2index(*arg[0]);
+		if ((i = index2ukb(i)) < NKREGS
+		 && i >= 0) {
+			KILL *kp = kbs[i].kbufh;
+			while (kp != 0) {
+				tb_bappend(&result,
+					   (char *)(kp->d_chunk),
+					   KbSize(i,kp));
+				kp = kp->d_next;
+			}
+			tb_append(&result, EOS);
+			break;
+		}
 	default:
 		tb_scopy(&result, error_val);
 		break;
@@ -1352,26 +1366,191 @@ const char *tokn)
 #endif
 }
 
-#if OPT_EVAL
+/*--------------------------------------------------------------------------*/
 
-static void
-read_execstr(TBUFF **paramp)
+#if OPT_MACRO_ARGS
+
+static int
+complete_integer(DONE_ARGS GCC_UNUSED)
 {
-    *paramp = 0;
-    if (execstr == 0
-     && more_named_cmd()) {
-	kbd_putc(' ');
-	if (kbd_reply( (char *)0,	/* no-prompt => splice */
+    char *tmp;
+    (void)strtol(buf, &tmp, 0);
+    if ((tmp != 0) && (tmp != buf) && (*tmp == 0) && isSpace(c)) {
+	if (c != NAMEC) 		/* put it back (cf: kbd_complete) */
+	    unkeystroke(c);
+	return TRUE;
+    }
+    return FALSE;
+}
+
+static int
+complete_FSM(DONE_ARGS, const FSM_CHOICES *choices)
+{
+    int status;
+
+    if (isDigit(*buf)) {		/* allow numbers for colors */
+	status = complete_integer(c, buf, pos);
+    } else if (choices != 0) {
+	status = kbd_complete(FALSE, c, buf, pos,
+				(const char *)choices,
+				sizeof (FSM_CHOICES) );
+    } else {
+	status = FALSE;
+    }
+
+    return status;
+}
+
+static int
+complete_boolean(DONE_ARGS)
+{
+    return complete_FSM(c, buf, pos, fsm_bool_choices);
+}
+
+#if OPT_ENUM_MODES
+static const FSM_CHOICES *complete_enum_ptr;
+
+static int
+complete_enum(DONE_ARGS)
+{
+    return complete_FSM(c, buf, pos, complete_enum_ptr);
+}
+#endif
+
+static int
+complete_mode(DONE_ARGS)
+{
+    return kbd_complete(FALSE, c, buf, pos,
+			(const char *)list_of_modes(),
+			sizeof(char *));
+}
+
+static int
+qs_vars_cmp(const void *a, const void *b)
+{
+	return strcmp(*(const char *const*)a, (* (const char *const*) b));
+}
+
+static char **
+init_vars_cmpl(void)
+{
+    int pass;
+    UVAR *p;
+    unsigned count;
+    char **list = 0;
+
+    for (pass = 0; pass < 2; pass++) {
+	count = 0;
+	for (p = temp_vars; p != 0; p = p->next) {
+	    if (pass != 0)
+		list[count] = p->u_name;
+	    count++;
+	}
+	if (pass == 0)
+		list = typeallocn(char *, count + 1);
+    }
+
+    if (list != 0) {
+	list[count] = 0;
+	qsort(list, count, sizeof(char *), qs_vars_cmp);
+    }
+
+    return list;
+}
+
+static int
+complete_vars(DONE_ARGS)
+{
+    int status = FALSE;
+    char **nptr;
+
+    if ((nptr = init_vars_cmpl()) != 0) {
+	status = kbd_complete(FALSE, c, buf, pos,
+			(const char *)nptr,
+			sizeof(char *));
+	free(nptr);
+    }
+    return status;
+}
+
+static int
+read_argument(TBUFF **paramp, PARAM_INFO *info)
+{
+    int status = TRUE;
+    char *prompt;
+    TBUFF *temp;
+    int (*complete)(DONE_ARGS) = no_completion;
+    UINT flags = 0;		/* no expansion, etc. */
+
+    if (clexec == FALSE
+     || mac_token(paramp) == 0) {
+	prompt = "String";
+	if (info != 0) {
+	    switch (info->pi_type) {
+	    case PT_BOOL:
+		prompt = "Boolean";
+		complete = complete_boolean;
+		break;
+#if OPT_ENUM_MODES
+	    case PT_ENUM:
+		prompt = "Enum";
+		flags = KBD_NOEVAL|KBD_LOWERC;
+		complete = complete_enum;
+		complete_enum_ptr = info->pi_choice;
+		break;
+#endif
+	    case PT_FILE:
+		prompt = "Filename";
+		break;
+	    case PT_INT:
+		prompt = "Integer";
+		complete = complete_integer;
+		break;
+	    case PT_MODE:
+		prompt = "Mode";
+		flags = KBD_NOEVAL|KBD_LOWERC;
+		complete = complete_mode;
+		break;
+#if OPT_MAJORMODE
+	    case PT_MAJORMODE:
+		prompt = "Majormode";
+		flags = KBD_NOEVAL|KBD_LOWERC;
+		complete = major_complete;
+		break;
+#endif
+	    case PT_VAR:
+		prompt = "Variable";
+		complete = complete_vars;
+		flags = KBD_NOEVAL|KBD_LOWERC|KBD_MAYBEC;
+		break;
+	    default:
+		break;
+	    }
+	    if (info->pi_text != 0)
+		prompt = info->pi_text;
+	}
+
+	temp = 0;
+	tb_scopy(&temp, prompt);
+	tb_sappend0(&temp, ": ");
+
+	if (info->pi_type == PT_FILE) {
+	    char fname[NFILEN];
+	    status = mlreply_file(tb_values(temp), (TBUFF **)0, FILEC_UNKNOWN, fname);
+	    if (status != ABORT)
+		tb_scopy(paramp, fname);
+	} else {
+	    status = kbd_reply(tb_values(temp),
 			paramp,		/* in/out buffer */
 			eol_history,
 			'\n',		/* expect a newline or return */
-			0,		/* no expansion, etc. */
-			no_completion) == TRUE) {
-	    execstr = tb_values(*paramp);
+			flags,		/* no expansion, etc. */
+			complete);
 	}
+
+	tb_free(&temp);
     }
-    if (execstr == 0)
-	execstr = "";
+    return status;
 }
 
 /*
@@ -1383,33 +1562,37 @@ save_arguments(BUFFER *bp)
 {
     PROC_ARGS *p = typealloc(PROC_ARGS);
     int num_args = 0;
-    int max_args = 2;
-    const char *temp;
-    char *oldexec = execstr;
-    TBUFF *params;
+    int max_args;
+    char temp[NBUFN];
+    const CMDFUNC *cmd = engl2fnc(strip_brackets(temp, bp->b_bname));
+    int ok = TRUE;
 
-    read_execstr(&params);
-    TRACE(("save_arguments(%s)%s\n", bp->b_bname, execstr))
-    for (temp = execstr; *temp; temp++) {
-	if (isSpace(*temp))
-	    max_args++;
+    if (cmd != 0 && cmd->c_args != 0) {
+	for (max_args = 0; cmd->c_args[max_args].pi_type != PT_UNKNOWN; max_args++)
+	    ;
+    } else {
+	max_args = 0;
     }
+    TRACE(("save_arguments(%s)\n", bp->b_bname))
+
     p->nxt_args = arg_stack;
     arg_stack   = p;
     p->all_args = typecallocn(TBUFF *, max_args + 1);
     tb_scopy(&(p->all_args[num_args++]), bp->b_bname);
 
-    while (num_args < max_args
-      && mac_token(&(p->all_args[num_args]))) {
-	tb_scopy(&(p->all_args[num_args]),
-	    tokval(tb_values(p->all_args[num_args])));
+    while (num_args < max_args+1) {
+	if (ok)
+	    ok = (read_argument(&(p->all_args[num_args]), &(cmd->c_args[num_args-1])) == TRUE);
+	if (ok)
+	    tb_scopy(&(p->all_args[num_args]),
+		tokval(tb_values(p->all_args[num_args])));
+	else
+	    tb_scopy(&(p->all_args[num_args]), "");
 	TRACE(("...ARG%d:%s\n", num_args, tb_values(p->all_args[num_args])))
 	num_args++;
     }
 
     p->num_args = num_args - 1;
-    execstr = oldexec;
-    tb_free(&params);
 
     updatelistvariables();
 }
@@ -1490,6 +1673,12 @@ get_argument(const char *name)
     }
     return result;
 }
+
+#endif /* OPT_MACRO_ARGS */
+
+/*--------------------------------------------------------------------------*/
+
+#if OPT_EVAL
 
 /* the argument simply represents itself */
 static char *
@@ -1643,11 +1832,11 @@ is_truem(const char *val)
 {
 	char	temp[8];
 	(void)mklower(strncpy0(temp, val, sizeof(temp)));
-	return (!strcmp(temp, "yes")
-	   ||   !strcmp(temp, "true")
-	   ||   !strcmp(temp, "t")
-	   ||   !strcmp(temp, "y")
-	   ||   !strcmp(temp, "on"));
+#if OPT_BOOL_CHOICES
+	return choice_to_code(fsm_bool_choices, temp, strlen(temp)) == TRUE;
+#else
+	return !strncmp(temp, "true", strlen(temp));
+#endif
 }
 
 /*
@@ -1659,32 +1848,42 @@ is_falsem(const char *val)
 {
 	char	temp[8];
 	(void)mklower(strncpy0(temp, val, sizeof(temp)));
-	return (!strcmp(temp, "no")
-	   ||   !strcmp(temp, "false")
-	   ||   !strcmp(temp, "f")
-	   ||   !strcmp(temp, "n")
-	   ||   !strcmp(temp, "off"));
+#if OPT_BOOL_CHOICES
+	return choice_to_code(fsm_bool_choices, temp, strlen(temp)) == FALSE;
+#else
+	return !strncmp(temp, "false", strlen(temp));
+#endif
 }
 
 #if OPT_EVAL
 int
 evaluate(int f, int n)
 {
-	TBUFF *params, *temp = 0;
-	char *oldexec = execstr;
-	char *cmd;
+	static PARAM_INFO info = { PT_STR, "Expression", 0 };
+	TBUFF *params = 0, *tok = 0, *cmd = 0;
+	char *old, *tmp;
 	int code = FALSE;
 
-	read_execstr(&params);
-
-	TRACE(("EVAL %s\n", tb_values(params)))
-	if ((cmd = mac_tokval(&temp)) != 0) {
-	    TRACE(("...docmd %s\n", cmd))
-	    code = docmd(cmd, TRUE, f, n);
-	    tb_free(&temp);
+	if (read_argument(&params, &info) == TRUE) {
+	    old = execstr;
+	    execstr = tb_values(params);
+	    TRACE(("EVAL %s\n", execstr))
+	    while ((tmp = mac_tokval(&tok)) != 0) {
+		if (tb_length(cmd))
+		    tb_sappend0(&cmd, " ");
+		tb_sappend0(&cmd, tmp);
+	    }
+	    if ((tmp = tb_values(cmd)) != 0) {
+		execstr = tmp;
+		TRACE(("...docmd %s{%s}\n", tmp, execstr))
+		code = docmd(tmp, TRUE, f, n);
+	    }
+	    execstr = old;
 	}
+	tb_free(&cmd);
+	tb_free(&tok);
 	tb_free(&params);
-	execstr = oldexec;
+	TRACE(("...EVAL ->%d\n", code))
 	return code;
 }
 

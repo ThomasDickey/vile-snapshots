@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.167 1999/08/31 00:00:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.169 1999/09/05 23:49:16 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -81,17 +81,23 @@ static void ttmiscinit (void);
 # endif
 #endif
 
+#if !defined(FIONREAD) && HAVE_SYS_SOCKET_H	/* SCO OpenServer v5 */
+# include <sys/socket.h>
+#endif
+
 #if DISP_X11	/* don't use either one */
 # undef USE_FCNTL
 # undef USE_FIONREAD
 #else
 # if defined(FIONREAD)
-  /* there seems to be a bug in someone's implementation of fcntl -- it
-   * causes output to be flushed if you change to ndelay input while output
-   * is pending.  for these systems, we use FIONREAD instead, if possible.
-   * In fact, if try and use FIONREAD in any case if present.  If you have
+  /* there seems to be a bug in someone's implementation of fcntl -- it causes
+   * output to be flushed if you change to ndelay input while output is
+   * pending.  (In some instances, the fcntl sets O_NDELAY on the output!).
+   *
+   * For these systems, we use FIONREAD instead, if possible.
+   * In fact, try to use FIONREAD in any case if present.  If you have
    * the problem with fcntl, you'll notice that the screen doesn't always
-   * refresh correctly, as if the fcntl is interfering with the output drain
+   * refresh correctly, as if the fcntl is interfering with the output drain.
    */
 #  undef USE_FCNTL
 #  define USE_FIONREAD 1
@@ -327,7 +333,7 @@ ttunclean(void)
 /* original terminal characteristics and characteristics to use inside */
 struct	termio	otermio, ntermio;
 
-#ifdef AVAILABLE  /* setbuffer() isn't on most termio systems */
+#if HAVE_SETBUFFER		/* setbuffer() isn't on most termio systems */
 char tobuf[TBUFSIZ];		/* terminal output buffer */
 #endif
 
@@ -336,7 +342,7 @@ ttopen(void)
 {
 
 	ioctl(0, TCGETA, (char *)&otermio);	/* save old settings */
-#if defined(AVAILABLE) && !DISP_X11
+#if HAVE_SETBUFFER && !DISP_X11
 	setbuffer(stdout, tobuf, TBUFSIZ);
 #endif
 

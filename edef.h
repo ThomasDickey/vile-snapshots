@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.255 1999/09/01 00:35:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.256 1999/09/06 13:04:52 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -247,8 +247,8 @@ decl_uninit( int tracemacros );		/* macro tracing flag		*/
 decl_uninit( B_COUNT max_working );	/* 100% value for slowreadf	*/
 decl_uninit( B_COUNT cur_working );	/* current-value for slowreadf	*/
 decl_uninit( B_COUNT old_working );	/* previous-value for slowreadf	*/
-decl_uninit( int no_working );		/* disabling flag */
 #endif
+decl_uninit( int vile_is_busy );	/* disabling flag, e.g., working */
 decl_uninit( int signal_was );		/* what was the last signal */
 
 	/* These pointers are nonnull only while animating a given buffer or

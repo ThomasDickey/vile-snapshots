@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.198 1999/09/04 15:16:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.202 1999/09/07 23:56:21 tom Exp $
  *
  */
 
@@ -1053,6 +1053,26 @@ int	skip)
 	return FALSE;
 }
 
+/* estimate maximum number of macro tokens, for allocating arrays */
+unsigned
+mac_tokens(void)
+{
+    const char *s = execstr;
+    unsigned result = 0;
+
+    while (s != 0 && *s != EOS) {
+	if (isSpace(*s)) {
+	    while(isSpace(*s))
+		s++;
+	} else if (*s != EOS) {
+	    result++;
+	    while(*s != EOS && !isSpace(*s))
+		s++;
+	}
+    }
+    return result;
+}
+
 /* fetch and isolate the next token from execstr */
 int
 mac_token(TBUFF **tok)
@@ -1095,11 +1115,52 @@ TBUFF **tok)	/* buffer to place argument */
 	return TRUE;
 }
 
+#if OPT_MACRO_ARGS
+/*
+ * Parameter info is given as a keyword, optionally followed by a prompt string.
+ */
+static int
+decode_parameter_info(TBUFF *tok, PARAM_INFO *result)
+{
+	char name[NSTRING];
+	char text[NSTRING];
+	char *s = vl_strncpy(name, tb_values(tok), sizeof(name));
+
+	if ((s = strchr(s, '=')) != 0) {
+	    strcpy(text, tokval(s+1));
+	    *s = EOS;
+	} else {
+	    text[0] = EOS;
+	}
+	if ((s = strchr(name, ':')) != 0)
+	    *s++ = EOS;
+
+	result->pi_type = choice_to_code(fsm_paramtypes_choices,
+					 name, strlen(name));
+	if (result->pi_type != PT_UNKNOWN) {
+	    result->pi_text = *text ? strmalloc(text) : 0;
+#if OPT_ENUM_MODES
+	    if (s != 0)
+		result->pi_choice = name_to_choices (s);
+	    else
+		result->pi_choice = 0;
+#endif
+	    return TRUE;
+	}
+	return FALSE;
+}
+#endif
+
 static int
 setup_macro_buffer(TBUFF *name, int flag)
 {
+#if OPT_MACRO_ARGS || OPT_ONLINEHELP
+	static TBUFF *temp;
+	unsigned limit = mac_tokens();
+	unsigned count = 0;
+#endif
 #if OPT_ONLINEHELP
-	static TBUFF *helpstring;	/* optional help string */
+	TBUFF *helpstring = 0;		/* optional help string */
 #endif
 #if OPT_MAJORMODE
 	VALARGS args;
@@ -1129,31 +1190,54 @@ setup_macro_buffer(TBUFF *name, int flag)
 	/* save this into the list of : names */
 #if OPT_NAMEBST
 	if (flag < 0) {
-	    CMDFUNC *cf = typealloc(CMDFUNC);
+	    CMDFUNC *cf = typecalloc(CMDFUNC);
 
 	    if (!cf)
 		return no_memory("registering procedure name");
 
-#if OPT_ONLINEHELP
-	    /* get optional help string */
-	    if (!token_ended_line)
-	    {
-		tb_scopy(&helpstring, "");
-		if ((status = kbd_reply("help info: ", &helpstring,
-		    eol_history, '\n', KBD_NORMAL, no_completion)) != TRUE)
-			return status;
-	    }
-	    else
-		tb_scopy(&helpstring, "User-defined procedure");
-#endif
 #if CC_CANNOT_INIT_UNIONS
 	    cf->c_union = (void *)bp;
 #else
 	    cf->cu.c_buff = bp;
 #endif
 	    cf->c_flags = UNDO|REDO|CMD_PROC|VIEWOK;
+
+#if OPT_MACRO_ARGS || OPT_ONLINEHELP
+	    if (limit != 0) {
+		while (mac_token(&temp) == TRUE) {
+		    switch(toktyp(tb_values(temp))) {
 #if OPT_ONLINEHELP
-	    cf->c_help = strmalloc(tb_values(helpstring));
+		    case TOK_QUOTSTR:
+			tb_copy(&helpstring, temp);
+			break;
+#endif
+#if OPT_MACRO_ARGS
+		    case TOK_LITSTR:
+			if (cf->c_args == 0) {
+			    cf->c_args = typeallocn(PARAM_INFO, limit + 1);
+			    if (cf->c_args == 0)
+				return no_memory("Allocating parameter info");
+			}
+			if (decode_parameter_info(temp, &(cf->c_args[count]))) {
+			    cf->c_args[++count].pi_type = PT_UNKNOWN;
+			    break;
+			}
+			/* FALLTHRU */
+#endif
+		    default:
+			mlforce("[Unexpected token '%s']", tb_values(temp));
+			return FALSE;
+		    }
+		}
+	    }
+#endif
+
+#if OPT_ONLINEHELP
+	    if (helpstring == 0)
+		cf->c_help = "User-defined procedure";
+	    else
+		cf->c_help = strmalloc(tb_values(helpstring));
+	    tb_free(&helpstring);
 #endif
 
 	    if (insert_namebst(tb_values(name), cf, FALSE) != TRUE)

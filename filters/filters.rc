@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.79 1999/09/03 23:37:08 tom Exp $
+; $Id: filters.rc,v 1.82 1999/09/08 02:02:08 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -372,6 +372,7 @@ define-mode txt
 define-mode xs
 ~with define-submode xs
 	suf "\\.xs$"
+	cindent
 ~endwith
 
 define-mode yacc
@@ -412,8 +413,9 @@ store-procedure HighlightClear
 ~endm
 bind-key HighlightClear ^X-Q
 
-store-procedure set-highlighting "Set a majormode and invoke highlighting"
+store-procedure set-highlighting ma "Set a majormode and invoke highlighting"
 	; show-variables
-	setl $1
+	write-message &cat $1 mode
+	setl &cat $1 mode
 	HighlightFilter
 ~endm

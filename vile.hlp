@@ -2263,6 +2263,7 @@ Programmed procedures and macros
 	&random		1	get a random number from 1 to n
 	&rd		1	is a file readable
 	&readable	1	is a file readable
+	&register	1	value of register (1-character name)
 	&right		2	right string(string, pos)
 	&rnd		1	get a random number from 1 to n
 	&sequal		2	string logical equality check
@@ -4179,4 +4180,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.438 1999/09/03 23:18:00 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.439 1999/09/05 22:55:52 tom Exp $
