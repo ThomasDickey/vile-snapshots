@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.61 1998/04/28 10:19:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.62 1998/04/30 23:49:21 tom Exp $
  *
  */
 
@@ -345,7 +345,7 @@ comment_prefix (void)
 	regexp *expP = b_val_rexp(curbp,VAL_CMT_PREFIX)->reg;
 	int result = -1;
 	if (lregexec(expP, DOT.l, 0, llength(DOT.l))) {
-		result = (expP->endp[0] - DOT.l->l_text);
+		result = (int)(expP->endp[0] - DOT.l->l_text);
 	}
 	return result;
 }

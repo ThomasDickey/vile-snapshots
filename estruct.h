@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.347 1998/04/29 00:02:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.348 1998/04/30 23:49:21 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -867,11 +867,11 @@ typedef enum {
 #define	KBD_NORMAL	KBD_EXPAND
 #endif
 
-typedef enum {
-    WATCHREAD   = iBIT(0),
-    WATCHWRITE  = iBIT(1),
-    WATCHEXCEPT = iBIT(2)
-} WATCHTYPE;
+/* This was an enum, but did not compile with TurboC */
+#define WATCHREAD   iBIT(0)
+#define WATCHWRITE  iBIT(1)
+#define WATCHEXCEPT iBIT(2)
+typedef UINT WATCHTYPE;
 
 /* reserve space for ram-usage option */
 #if OPT_RAMSIZE

@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.177 1998/04/28 10:19:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.178 1998/04/30 22:16:40 tom Exp $
  *
  */
 
@@ -6077,7 +6077,7 @@ watched_input_callback(XtPointer fd,
     dowatchcallback((int) fd);
 }
 
-int
+static int
 x_watchfd(int fd, WATCHTYPE type, long *idp)
 {
     *idp = (long) XtAppAddInput(
@@ -6091,7 +6091,7 @@ x_watchfd(int fd, WATCHTYPE type, long *idp)
     return TRUE;
 }
 
-void
+static void
 x_unwatchfd(int fd GCC_UNUSED, long id)
 {
     XtRemoveInput((XtInputId) id);

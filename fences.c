@@ -8,7 +8,7 @@
  * Extensions for vile by Paul Fox
  * Revised to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.46 1998/04/28 10:14:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.47 1998/05/01 00:48:17 tom Exp $
  *
  */
 
@@ -36,8 +36,8 @@
 #define PAIRED_FENCE_CH   -2
 #define UNKNOWN_FENCE_CH  -1
 
-#define S_COL(exp) (exp->startp[0] - DOT.l->l_text)
-#define E_COL(exp) (exp->endp[0]   - DOT.l->l_text)
+#define S_COL(exp) (C_NUM)(exp->startp[0] - DOT.l->l_text)
+#define E_COL(exp) (C_NUM)(exp->endp[0]   - DOT.l->l_text)
 
 #define BlkBegin b_val_rexp(curbp, VAL_FENCE_BEGIN)->reg
 #define BlkEnd   b_val_rexp(curbp, VAL_FENCE_END)->reg
@@ -50,20 +50,21 @@
 static int
 match_complex(LINE *lp)
 {
-	static	const	struct	{
-		int	mode;
-		int	code;
-	} modes[] = {
-		{ VAL_FENCE_IF,    CPP_IF },
-		{ VAL_FENCE_ELIF,  CPP_ELIF },
-		{ VAL_FENCE_ELSE,  CPP_ELSE },
-		{ VAL_FENCE_FI,    CPP_ENDIF }
-	};
-	size_t n;
+	static int modes[] = { CPP_IF, CPP_ELIF, CPP_ELSE, CPP_ENDIF };
+	size_t j, k;
 
-	for (n = 0; n < TABLESIZE(modes); n++)
-		if (lregexec(b_val_rexp(curbp, modes[n].mode)->reg, lp, 0, llength(lp)))
-			return modes[n].code;
+	for (j = 0; j < TABLESIZE(modes); j++) {
+		/* fix for HAVE_LOSING_SWITCH_WITH_STRUCTURE_OFFSET */
+		switch (modes[j]) {
+		case CPP_IF:		k = VAL_FENCE_IF;	break;
+		case CPP_ELIF:		k = VAL_FENCE_ELIF;	break;
+		case CPP_ELSE:		k = VAL_FENCE_ELSE;	break;
+		case CPP_ENDIF:		k = VAL_FENCE_FI;	break;
+		default:					continue;
+		}
+		if (lregexec(b_val_rexp(curbp, k)->reg, lp, 0, llength(lp)))
+			return modes[j];
+	}
 
 	return CPP_UNKNOWN;
 }
@@ -75,8 +76,8 @@ match_complex(LINE *lp)
 static int
 match_simple(void)
 {
-	int first = 0;
-	int last = llength(DOT.l);
+	C_NUM first = 0;
+	C_NUM last = llength(DOT.l);
 
 	for (first = 0; first < last; first = S_COL(BlkBegin) + 1) {
 		if (!lregexec(BlkBegin, DOT.l, first, last))
@@ -229,7 +230,7 @@ comment_fence(int sdir)
 {
 	/* avoid overlapping match between begin/end patterns */
 	if (sdir == FORWARD) {
-		SIZE_T off = (DOT.o - S_COL(BlkBegin));
+		SIZE_T off = (SIZE_T)(DOT.o - S_COL(BlkBegin));
 		if (BlkEnd->mlen > off)
 			forwchar(TRUE, BlkEnd->mlen - off);
 	}

@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.85 1998/04/28 10:19:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.86 1998/04/30 23:49:21 tom Exp $
  *
  */
 
@@ -109,7 +109,7 @@ extern	void	free	( char *ptr );
 
 #define MAX_BIND        4	/* maximum # of key-binding types */
 #define	MAX_PARSE	5	/* maximum # of tokens on line */
-#define	LEN_BUFFER	50	/* nominal buffer-length */
+#define	LEN_BUFFER	60	/* nominal buffer-length */
 #define	MAX_BUFFER	(LEN_BUFFER*10)
 #define	LEN_CHRSET	256	/* total # of chars in set (ascii) */
 

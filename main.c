@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.318 1998/04/29 00:32:27 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.319 1998/05/01 00:48:17 tom Exp $
  *
  */
 
@@ -735,39 +735,7 @@ global_val_init(void)
 {
 	static const char expand_chars[] =
 		{ EXPC_THIS, EXPC_THAT, EXPC_SHELL, EXPC_TOKEN, EXPC_RPAT, 0 };
-	static const struct {
-		int mode;
-		const char *value;
-	} buffer_regexps[] = {
-
-		{ VAL_FENCE_BEGIN, "/\\*" },
-		{ VAL_FENCE_END,   "\\*/" },
-
-		{ VAL_FENCE_IF,    "^\\s*#\\s*if" },
-		{ VAL_FENCE_ELIF,  "^\\s*#\\s*elif\\>" },
-		{ VAL_FENCE_ELSE,  "^\\s*#\\s*else\\>" },
-		{ VAL_FENCE_FI,    "^\\s*#\\s*endif\\>" },
-
-		/* where do paragraphs start? */
-		{ VAL_PARAGRAPHS, "^\\.[ILPQ]P\\>\\|^\\.P\\>\\|\
-^\\.LI\\>\\|^\\.[plinb]p\\>\\|^\\.\\?\\s*$" },
-
-		/* where do comments start and end, for formatting them */
-		{ VAL_COMMENTS, "^\\s*/\\?\\(\\s*[#*>]\\)\\+/\\?\\s*$" },
-
-		{ VAL_CMT_PREFIX, "^\\s*\\(\\s*[#*>]\\)\\+" },
-
-		/* where do sections start? */
-		{ VAL_SECTIONS, "^[{\014]\\|^\\.[NS]H\\>\\|^\\.HU\\?\\>\\|\
-^\\.[us]h\\>\\|^+c\\>" },	/* }vi */
-
-		/* where do sentences start? */
-		{ VAL_SENTENCES, "[.!?][])\"']* \\?$\\|[.!?][])\"']*  \\|\
-^\\.[ILPQ]P\\>\\|^\\.P\\>\\|^\\.LI\\>\\|^\\.[plinb]p\\>\\|^\\.\\?\\s*$" },
-	};
-
 	register int i;
-	register size_t n;
 	char *s;
 
 	/* set up so the global value pointers point at the global
@@ -975,11 +943,33 @@ global_val_init(void)
 			TRUE));
 #endif
 
-	for (n = 0; n < TABLESIZE(buffer_regexps); n++)
-		set_global_b_val_rexp(buffer_regexps[n].mode,
-			new_regexval(
-				buffer_regexps[n].value,
-				TRUE));
+#define B_REGEXP(mode,value) \
+		set_global_b_val_rexp(mode, new_regexval(value, TRUE));
+
+	B_REGEXP( VAL_FENCE_BEGIN, "/\\*" );
+	B_REGEXP( VAL_FENCE_END,   "\\*/" );
+
+	B_REGEXP( VAL_FENCE_IF,    "^\\s*#\\s*if" );
+	B_REGEXP( VAL_FENCE_ELIF,  "^\\s*#\\s*elif\\>" );
+	B_REGEXP( VAL_FENCE_ELSE,  "^\\s*#\\s*else\\>" );
+	B_REGEXP( VAL_FENCE_FI,    "^\\s*#\\s*endif\\>" );
+
+		/* where do paragraphs start? */
+	B_REGEXP( VAL_PARAGRAPHS, "^\\.[ILPQ]P\\>\\|^\\.P\\>\\|\
+^\\.LI\\>\\|^\\.[plinb]p\\>\\|^\\.\\?\\s*$" );
+
+		/* where do comments start and end, for formatting them */
+	B_REGEXP( VAL_COMMENTS, "^\\s*/\\?\\(\\s*[#*>]\\)\\+/\\?\\s*$" );
+
+	B_REGEXP( VAL_CMT_PREFIX, "^\\s*\\(\\s*[#*>]\\)\\+" );
+
+		/* where do sections start? */
+	B_REGEXP( VAL_SECTIONS, "^[{\014]\\|^\\.[NS]H\\>\\|^\\.HU\\?\\>\\|\
+^\\.[us]h\\>\\|^+c\\>" );	/* }vi */
+
+		/* where do sentences start? */
+	B_REGEXP( VAL_SENTENCES, "[.!?][])\"']* \\?$\\|[.!?][])\"']*  \\|\
+^\\.[ILPQ]P\\>\\|^\\.P\\>\\|^\\.LI\\>\\|^\\.[plinb]p\\>\\|^\\.\\?\\s*$" );
 
 	/*
 	 * Window-mode defaults
