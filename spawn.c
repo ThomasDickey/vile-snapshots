@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.168 2001/09/18 09:10:38 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.169 2001/12/13 00:30:20 pgf Exp $
  *
  */
 
@@ -269,8 +269,12 @@ void
 pressreturn(void)
 {
 	int c;
+	int osgarbf;
 
+	osgarbf = sgarbf;
+	sgarbf = FALSE;
 	mlforce("[Press return to continue]");
+	sgarbf = osgarbf;
 	/* loop for a CR, a space, or a : to do another named command */
 	reading_msg_line = TRUE;
 	while ((c = keystroke()) != '\r' &&

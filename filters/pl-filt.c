@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.20 2001/08/22 00:13:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.21 2001/12/13 00:00:42 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -704,6 +704,8 @@ do_filter(FILE * input GCC_UNUSED)
     int quoted = 0;
     int parens = 0;
     int had_op = 0;
+    int if_wrd = 0;
+    int if_old = 0;
 
     Comment_attr = class_attr(NAME_COMMENT);
     Error_attr = class_attr(NAME_ERROR);
@@ -738,12 +740,15 @@ do_filter(FILE * input GCC_UNUSED)
 	the_last = the_file + the_size;
 
 	s = the_file;
+	if_old = if_wrd = 0;
 	while (s != the_last) {
 	    if (*s == '\n') {
 		in_line = -1;
 	    } else {
 		in_line++;
 	    }
+	    if_old = if_wrd;
+	    if_wrd = 0;
 	    switch (state) {
 	    case eCODE:
 		if ((marker = begin_HERE(s, &quoted)) != 0) {
@@ -765,10 +770,12 @@ do_filter(FILE * input GCC_UNUSED)
 		} else if ((ok = is_COMMENT(s)) != 0) {
 		    flt_puts(s, ok, Comment_attr);
 		    s += ok;
+		    if_wrd = if_old;
 		} else if ((ok = is_BLANK(s)) != 0) {
 		    flt_puts(s, ok, "");
 		    s += ok;
-		} else if (had_op && parens && (*s == '/')) {
+		    if_wrd = if_old;
+		} else if ((if_old || (had_op && parens)) && (*s == '/')) {
 		    state = ePATTERN;
 		} else if (*s == L_PAREN) {
 		    parens++;
@@ -801,15 +808,18 @@ do_filter(FILE * input GCC_UNUSED)
 		    }
 		    had_op = 0;
 		    flt_puts(s, ok, keyword_attr(s));
+		    if_wrd = (ok == 2 && !strncmp(s, "if", ok));
 		    s[ok] = save;
 		    s += ok;
 		} else if ((ok = is_Option(s)) != 0) {
 		    had_op = 0;
 		    flt_puts(s, ok, Keyword_attr);
+		    if_wrd = (ok == 2 && !strncmp(s, "if", ok));
 		    s += ok;
 		} else if ((ok = is_IDENT(s)) != 0) {
 		    had_op = 0;
 		    flt_puts(s, ok, Ident2_attr);
+		    if_wrd = (ok == 2 && !strncmp(s, "if", ok));
 		    s += ok;
 		} else if ((ok = is_String(s, &err)) != 0) {
 		    had_op = 0;

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_2q
+MANIFEST for vile, version v9_2r
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -93,6 +93,7 @@ ptypemap                        perl-interface type map
 random.c                        miscellaneous functions
 regexp.c                        regular expression functions
 region.c                        region-manipulation
+revlist                         revision-list for VILE
 search.c                        functions for search-commands
 select.c                        selection-handling functions
 sinstall.sh                     wrapper for installing perl-scripts

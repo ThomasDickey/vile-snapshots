@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.68 2001/09/18 10:01:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.69 2001/12/14 12:30:47 tom Exp $
  *
  */
 
@@ -22,7 +22,7 @@
 #define	NPAUSE	200		/* # times thru update to pause */
 #define NOKYMAP (-1)
 
-#define ForeColor(b)	(ctrans[((f) < 0 ? C_WHITE : (f))] & (NCOLORS-1))
+#define ForeColor(f)	(ctrans[((f) < 0 ? C_WHITE : (f))] & (NCOLORS-1))
 #define BackColor(b)	(ctrans[((b) < 0 ? C_BLACK : (b))] & (NCOLORS-1))
 #define AttrColor(b,f)	((WORD)((BackColor(b) << 4) | ForeColor(f)))
 
@@ -33,6 +33,7 @@ static CONSOLE_SCREEN_BUFFER_INFO csbi;
 static CONSOLE_CURSOR_INFO origcci;
 static BOOL origcci_ok;
 static WORD originalAttribute;
+static WORD currentAttribute;
 static int icursor;		/* T -> enable insertion cursor       */
 static int icursor_cmdmode;	/* cmd mode cursor height             */
 static int icursor_insmode;	/* insertion mode  cursor height      */
@@ -86,16 +87,37 @@ AttrVideo(int b, int f)
 #define AttrColor(b,f) AttrVideo(b,f)
 #endif
 
+static void
+set_current_attr(void)
+{
+    currentAttribute = AttrColor(cbcolor, cfcolor);
+}
+
+static void
+show_cursor(BOOL visible, int percent)
+{
+    CONSOLE_CURSOR_INFO cci;
+
+    /*
+     * if a 100% block height is fed back into the win32 console routines
+     * on a win9x/winme host, the cursor is turned off.  win32 bug?
+     */
+    if (percent < 0)
+	percent = 0;
+    if (percent >= MAX_CURBLK_HEIGHT)
+	percent = (MAX_CURBLK_HEIGHT - 1);
+
+    cci.bVisible = visible;
+    cci.dwSize = percent;
+    SetConsoleCursorInfo(hConsoleOutput, &cci);
+}
+
 #if OPT_ICURSOR
 static void
 nticursor(int cmode)
 {
-    CONSOLE_CURSOR_INFO cci;
-
     if (icursor) {
-	cci.bVisible = TRUE;
-	cci.dwSize = (cmode == 0) ? icursor_cmdmode : icursor_insmode;
-	SetConsoleCursorInfo(hConsoleOutput, &cci);
+	show_cursor(TRUE, (cmode == 0) ? icursor_cmdmode : icursor_insmode);
     }
 }
 #endif
@@ -118,13 +140,13 @@ scflush(void)
 	coordCursor.X = (SHORT) ccol;
 	coordCursor.Y = (SHORT) crow;
 	TRACE2(("scflush %04x [%d,%d]%.*s\n",
-		AttrColor(cbcolor, cfcolor), crow, ccol, bufpos, linebuf));
+		currentAttribute, crow, ccol, bufpos, linebuf));
 	WriteConsoleOutputCharacter(
 				       hConsoleOutput, linebuf, bufpos,
 				       coordCursor, &written
 	    );
 	FillConsoleOutputAttribute(
-				      hConsoleOutput, AttrColor(cbcolor, cfcolor),
+				      hConsoleOutput, currentAttribute,
 				      bufpos, coordCursor, &written
 	    );
 	ccol += bufpos;
@@ -138,6 +160,7 @@ ntfcol(int color)
 {				/* set the current output color */
     scflush();
     nfcolor = cfcolor = color;
+    set_current_attr();
 }
 
 static void
@@ -145,6 +168,7 @@ ntbcol(int color)
 {				/* set the current background color */
     scflush();
     nbcolor = cbcolor = color;
+    set_current_attr();
 }
 #endif
 
@@ -182,7 +206,7 @@ nteeol(void)
 				  csbi.dwMaximumWindowSize.X - ccol,
 				  coordCursor, &written);
     FillConsoleOutputAttribute(
-				  hConsoleOutput, AttrColor(cbcolor, cfcolor),
+				  hConsoleOutput, currentAttribute,
 				  csbi.dwMaximumWindowSize.X - ccol,
 				  coordCursor, &written);
 }
@@ -216,7 +240,7 @@ ntscroll(int from, int to, int n)
     }
 #endif
     fill.Char.AsciiChar = ' ';
-    fill.Attributes = AttrColor(cbcolor, cfcolor);
+    fill.Attributes = currentAttribute;
 
     sRect.Left = 0;
     sRect.Top = (SHORT) from;
@@ -258,8 +282,7 @@ ntscroll(int from, int to, int n)
 	FillConsoleOutputCharacter(
 				      hConsoleOutput, ' ', cnt, coordCursor, &written);
 	FillConsoleOutputAttribute(
-				      hConsoleOutput, AttrColor(cbcolor,
-								cfcolor), cnt,
+				      hConsoleOutput, currentAttribute, cnt,
 				      coordCursor, &written);
     }
 #endif
@@ -375,8 +398,7 @@ nteeop(void)
 				  hConsoleOutput, ' ', cnt, coordCursor, &written
 	);
     FillConsoleOutputAttribute(
-				  hConsoleOutput, AttrColor(cbcolor,
-							    cfcolor), cnt,
+				  hConsoleOutput, currentAttribute, cnt,
 				  coordCursor, &written
 	);
 }
@@ -413,6 +435,7 @@ ntrev(UINT attr)
 	}
 	TRACE2(("ntrev(%04x) f=%4x, b=%4x\n", attr, cfcolor, cbcolor));
     }
+    set_current_attr();
 }
 
 static int
@@ -449,19 +472,12 @@ ntopen(void)
     hOldConsoleOutput = 0;
     hConsoleOutput = GetStdHandle(STD_OUTPUT_HANDLE);
     origcci_ok = GetConsoleCursorInfo(hConsoleOutput, &origcci);
-    if (origcci_ok && origcci.dwSize == MAX_CURBLK_HEIGHT) {
-	/*
-	 * if a 100% block height is fed back into the win32 console routines
-	 * on a win9x/winme host, the cursor is turned off.  win32 bug?
-	 */
-
-	origcci.dwSize--;
-    }
     GetConsoleScreenBufferInfo(hConsoleOutput, &csbi);
     if (csbi.dwMaximumWindowSize.Y !=
 	csbi.srWindow.Bottom - csbi.srWindow.Top + 1
 	|| csbi.dwMaximumWindowSize.X !=
 	csbi.srWindow.Right - csbi.srWindow.Left + 1) {
+	TRACE(("..creating alternate screen buffer\n"));
 	hOldConsoleOutput = hConsoleOutput;
 	hConsoleOutput = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE,
 						   0, NULL,
@@ -474,9 +490,7 @@ ntopen(void)
 	     * Ensure that user's cursor size prefs are carried forward
 	     * in the newly created console.
 	     */
-
-	    newcci.dwSize = origcci.dwSize;
-	    (void) SetConsoleCursorInfo(hConsoleOutput, &newcci);
+	    show_cursor(TRUE, origcci.dwSize);
 	}
     }
 
@@ -487,6 +501,7 @@ ntopen(void)
 
     nfcolor = cfcolor = gfcolor;
     nbcolor = cbcolor = gbcolor;
+    set_current_attr();
 
     newscreensize(csbi.dwMaximumWindowSize.Y, csbi.dwMaximumWindowSize.X);
     hConsoleInput = GetStdHandle(STD_INPUT_HANDLE);
@@ -499,15 +514,18 @@ ntclose(void)
     TRACE(("ntclose\n"));
     if (chgd_cursor) {
 	/* restore cursor */
-
-	(void) SetConsoleCursorInfo(hConsoleOutput, &origcci);
+	show_cursor(TRUE, origcci.dwSize);
     }
     scflush();
     ntmove(term.rows - 1, 0);
+    currentAttribute = originalAttribute;
     nteeol();
     ntflush();
+    set_current_attr();
+
     SetConsoleTextAttribute(hConsoleOutput, originalAttribute);
     if (hOldConsoleOutput) {
+	TRACE(("...restoring screen buffer\n"));
 	SetConsoleActiveScreenBuffer(hOldConsoleOutput);
 	CloseHandle(hConsoleOutput);
     }
@@ -522,8 +540,9 @@ ntkopen(void)
     TRACE(("ntkopen (open:%d, was-closed:%d)\n", keyboard_open, keyboard_was_closed));
     if (keyboard_open)
 	return;
-    if (hConsoleOutput)
+    if (hConsoleOutput) {
 	SetConsoleActiveScreenBuffer(hConsoleOutput);
+    }
     keyboard_open = TRUE;
 #ifdef DONT_USE_ON_WIN95
     SetConsoleCtrlHandler(NULL, TRUE);
@@ -539,8 +558,9 @@ ntkclose(void)
 	return;
     keyboard_open = FALSE;
     keyboard_was_closed = TRUE;
-    if (hOldConsoleOutput)
+    if (hOldConsoleOutput) {
 	SetConsoleActiveScreenBuffer(hOldConsoleOutput);
+    }
 #ifdef DONT_USE_ON_WIN95
     SetConsoleCtrlHandler(NULL, FALSE);
 #endif
@@ -617,8 +637,9 @@ decode_key_event(INPUT_RECORD * irp)
 	return key;
 
     if ((state & (RIGHT_CTRL_PRESSED | LEFT_CTRL_PRESSED)) != 0
-	&& (state & (RIGHT_CTRL_PRESSED | LEFT_CTRL_PRESSED |
-	SHIFT_PRESSED)) == state) {
+	&& (state & (RIGHT_CTRL_PRESSED
+		     | LEFT_CTRL_PRESSED
+		     | SHIFT_PRESSED)) == state) {
 	/*
 	 * Control-shift-6 is control/^, control/~ or control/`.
 	 */
@@ -1315,17 +1336,6 @@ parse_icursor_string(char *str, int *revert_cursor)
 	if (icursor_cmdmode > MAX_CURBLK_HEIGHT ||
 	    icursor_insmode > MAX_CURBLK_HEIGHT) {
 	    rc = FALSE;
-	} else {
-	    /*
-	     * If a cursor height of 100 is selected, the Win32 console
-	     * routines turn off the cursor (at least they do on
-	     * win9x/winme hosts).
-	     */
-
-	    if (icursor_cmdmode == MAX_CURBLK_HEIGHT)
-		icursor_cmdmode--;
-	    if (icursor_insmode == MAX_CURBLK_HEIGHT)
-		icursor_insmode--;
 	}
     }
     return (rc);
@@ -1368,11 +1378,7 @@ chgd_icursor(VALARGS * args, int glob_vals, int testing)
 		term.icursor(insertmode);
 	    else {
 		/* just set a block cursor */
-
-		CONSOLE_CURSOR_INFO cci;
-		cci.bVisible = TRUE;
-		cci.dwSize = icursor_cmdmode;
-		(void) SetConsoleCursorInfo(hConsoleOutput, &cci);
+		show_cursor(TRUE, icursor_cmdmode);
 	    }
 	} else {
 	    /*
@@ -1388,7 +1394,7 @@ chgd_icursor(VALARGS * args, int glob_vals, int testing)
 		 */
 
 		if (origcci_ok)
-		    (void) SetConsoleCursorInfo(hConsoleOutput, &origcci);
+		    show_cursor(TRUE, origcci.dwSize);
 	    }
 	}
     }
