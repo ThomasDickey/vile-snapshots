@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.337 1998/03/20 11:06:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.338 1998/03/21 13:19:10 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -387,9 +387,7 @@
 #define	OPT_REVSTA	1	/* Status line appears in reverse video       */
 #define	OPT_CFENCE	1	/* do fence matching in CMODE		      */
 #define	OPT_LCKFILES	0	/* create lock files (file.lck style) 	      */
-#define	OPT_ENCRYPT	!SMALLER/* file encryption (not crypt(1) compatible!) */
 #define	OPT_TAGS	1	/* tags support  			      */
-#define	OPT_WORDCOUNT	!SMALLER/* "count-words" command"		      */
 #define	OPT_PROCEDURES	1	/* named procedures			      */
 #define	OPT_PATHLOOKUP	1	/* search $PATH for startup and help files    */
 #define	OPT_SCROLLCODE	1	/* code in display.c for scrolling the screen.
@@ -408,6 +406,7 @@
 				   stuttered in real vi, I prefer them not
 				   to be */
 #define OPT_ICURSOR	0	/* use an insertion cursor if possible */
+#define OPT_W32PIPES    0	/* SYS_WINNT: pipes (experimental) */
 
 #ifndef OPT_EXEC_MACROS		/* total numbered macros (see mktbls.c) */
 #if SMALLER
@@ -437,6 +436,7 @@
 /* individual features that are (normally) controlled by SMALLER */
 #define OPT_AEDIT       !SMALLER		/* advanced editing options: e.g. en/detabbing	*/
 #define OPT_B_LIMITS    !SMALLER		/* left-margin */
+#define OPT_ENCRYPT     !SMALLER /* file encryption (not crypt(1) compatible!) */
 #define OPT_ENUM_MODES  !SMALLER		/* fixed-string modes */
 #define OPT_EVAL        !SMALLER		/* expression-evaluation */
 #define OPT_FILEBACK    !SMALLER && !SYS_VMS	/* file backup style */
@@ -460,6 +460,7 @@
 #define OPT_TERMCHRS    !SMALLER		/* set/show-terminal */
 #define OPT_UPBUFF      !SMALLER		/* animated buffer-update */
 #define OPT_WIDE_CTYPES !SMALLER		/* extra char-types tests */
+#define OPT_WORDCOUNT   !SMALLER		/* "count-words" command" */
 
 /* "show" commands for the optional features */
 #define OPT_SHOW_CTYPE	!SMALLER		/* "show-printable" */

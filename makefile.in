@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.97 1998/02/21 22:23:32 pgf Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.98 1998/03/21 16:04:05 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -55,20 +55,22 @@ prefix		= @prefix@
 exec_prefix	= @exec_prefix@
 
 manext		= 1
-bindir		= $(exec_prefix)/bin
-libdir		= $(exec_prefix)/lib
-mandir		= $(prefix)/man/man$(manext)
+bindir		= @bindir@
+datadir		= @datadir@/vile
+mandir		= @mandir@/man$(manext)
 
 #### End of system configuration section. ####
 
 SHELL		= /bin/sh
 RM              = rm -f
 
-CPPFLAGS	= -I. -I$(srcdir) -DHAVE_CONFIG_H $(X_CFLAGS) @CPPFLAGS@
+CPPFLAGS	= -I. -I$(srcdir) $(X_CFLAGS) \
+		-DVILE_STARTUP_PATH=\"@VILE_STARTUP_PATH@\" \
+		-DHAVE_CONFIG_H @CPPFLAGS@
 
 LDFLAGS		= 
 
-INSTALL_DIRS    = $(bindir) $(libdir) $(mandir)
+INSTALL_DIRS    = $(bindir) $(datadir) $(mandir)
 
 .SUFFIXES: .c .i .o
 
@@ -77,7 +79,7 @@ INSTALL_DIRS    = $(bindir) $(libdir) $(mandir)
 	@ECHO_CC@$(CPP) -C $(CPPFLAGS) $< >$@
 .c.o:
 @RULE_CC@
-	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(CFLAGS) -DHELP_LOC=\"$(libdir)/\" $<
+	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(CFLAGS) -DHELP_LOC=\"$(datadir)/\" $<
 
 # All of the makefiles which should be preserved and distributed
 UNIXMAKIN = makefile.in				# for use with configure
@@ -244,7 +246,7 @@ install: $(INSTALL_DIRS) \
 	$(bindir)/vile-c-filt \
 	$(bindir)/vile-crypt \
 	$(mandir)/$(TARGET).$(manext) \
-	$(libdir)/vile.hlp
+	$(datadir)/vile.hlp
 	@echo 'Completed installation.'
 
 installdirs: $(INSTALL_DIRS)
@@ -255,7 +257,7 @@ uninstall:
 		$(bindir)/vile-c-filt \
 		$(bindir)/vile-crypt \
 		$(mandir)/$(TARGET).$(manext) \
-		$(libdir)/vile.hlp
+		$(datadir)/vile.hlp
 
 # The makefile is technically dependent upon the config.status file, but
 # gmake gets overly ambitious and remakes the makefile too often.
@@ -498,12 +500,15 @@ $(bindir)/vile-c-filt:     vile-c-filt
 	$(INSTALL_PROGRAM) vile-c-filt $@
 $(bindir)/vile-crypt:     vile-crypt 
 	$(INSTALL_PROGRAM) vile-crypt $@
+
 $(mandir)/vile.$(manext):  $(srcdir)/vile.1 
 	$(INSTALL_DATA)    $(srcdir)/vile.1 $@
 $(mandir)/xvile.$(manext): $(srcdir)/vile.1 
 	$(INSTALL_DATA)    $(srcdir)/vile.1 $@
-$(libdir)/vile.hlp:        $(srcdir)/vile.hlp 
+
+$(datadir)/vile.hlp:       $(srcdir)/vile.hlp 
 	$(INSTALL_DATA)    $(srcdir)/vile.hlp $@
+
 $(INSTALL_DIRS):
 	$(SHELL) ${srcdir}/mkdirs.sh $@
 

@@ -1,11 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.81 $)
+AC_REVISION($Revision: 1.82 $)
 AC_PREREQ(2.12.971222)
+rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.81 1998/02/21 22:23:32 pgf Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.82 1998/03/21 14:41:34 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -51,6 +52,15 @@ elif test -z "$CFLAGS" ; then
 	CFLAGS="-O"
 fi
 AC_MSG_RESULT($cflags)
+
+AC_MSG_CHECKING(for startup path)
+AC_ARG_WITH(startup-path,
+[  --with-startup-path=PATH specify locations to search for vile.hlp, etc.],
+[VILE_STARTUP_PATH=$withval],
+[test -z "$VILE_STARTUP_PATH" &&\
+	VILE_STARTUP_PATH='$(exec_prefix)/lib:/usr/local/lib/:/usr/local/:/usr/lib/'])
+AC_MSG_RESULT($VILE_STARTUP_PATH)
+AC_SUBST(VILE_STARTUP_PATH)
 
 AC_PATH_PROGS(perl_bin_path, perl5 perl, no)
 AC_ARG_WITH(perl,
@@ -254,6 +264,7 @@ changequote([,])dnl
 		AC_CHECK_HEADERS(X11/IntrinsicI.h Xm/XmP.h)
 		AC_CHECK_LIB(gen,regcmp)
 		AC_CHECK_LIB(Xmu,XmuClientWindow)
+		AC_CHECK_LIB(Xp,XpStartDoc,,,[$LIBS $X_EXTRA_LIBS])
 		AC_CHECK_LIB(Xext,XextCreateExtension,
 			[LIBS="-lXext $LIBS"])
 		AC_CHECK_LIB(Xpm, XpmCreatePixmapFromXpmImage,

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.91 1998/02/23 11:27:49 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.92 1998/03/21 13:19:24 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -42,7 +42,7 @@ bool							# GMD prefix
 	"working"	WORKING		chgd_working	OPT_WORKING # "working" message
 	"usefilelock"	USEFILELOCK	0		OPT_LCKFILES # okay use filelocks
 	"VIEW-on-ReadOnly" RONLYVIEW	0		# set view mode for readonly files
-	"w32pipes"	W32PIPES	0		SYS_WINNT
+	"w32pipes"	W32PIPES	0		OPT_W32PIPES
 	"warn-unread"	WARNUNREAD	0		# warn if quitting with unread buffers
 	"warn-reread"	WARNREREAD	0		# warn before rereading a buffer
 	"warn-rename"	WARNRENAME	0		# warn before renaming a buffer

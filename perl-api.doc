@@ -1,0 +1,287 @@
+-- $Header: /users/source/archives/vile.vcs/RCS/perl-api.doc,v 1.1 1998/03/21 16:37:38 tom Exp $
+
+Some notes on the Perl api in vile, from
+	Kevin Buettner
+	Brendan O'Dea
+	Sean Ahern.
+
+
+Date: Thu, 9 Oct 1997 00:56:06 -0700 (Kevin)
+
+Here are the rudiments of a perl interface.  There's a lot more work to
+be done on it.
+
+To try this stuff out, make sure you have perl-5.4 installed (I think
+5.3 will also work) and configure with the --with-perl option.  Then
+run make as normal.
+
+Once you've done that, you won't be able to do much with it; but here's
+what you can do:
+
+	:perl print "Hello there\n"
+	:perl $a=4; $b=6
+	:perl print "$a+$b=", $a+$b, "\n"
+	:perl VI::Msg "Hello"
+
+The 1st and 3rd statements should output to stdout (which for me is
+my xterm window, since I'm running xvile).  The last statement should
+print Hello to the message line.  You can also express it as
+
+	:perl VI::Msg("Hello")
+
+Why did I choose VI as the package name instead of VILE?  Because, I
+essentially copied the nvi interface up to this point.  It seems to me
+that at least initially we'll be better off using the same API as nvi. 
+That way we can immediately use stuff written for use with nvi.  I'm
+trying to figure out what nvi's Screen data structure maps to in vile. 
+It seems to me that an nvi screen should be a vile window, but vile
+can have buffers that have no visible windows.  In order to keep the
+interface the same, I'm considering creating a dummy window when using
+buffers which don't have a (visible) window.  I think we did something
+like this somewhere else in vile too, but I don't offhand remember
+where.
+
+
+Date: Mon, 13 Oct 1997 04:24:02 -0700 (Kevin)
+
+Here are some more perl related changes.
+
+I'm able to run three (out of four) of the sample scripts from nvi's
+perl_scripts directory.  I'm able to run forall.pl, tk.pl, and wc.pl. 
+make.pl is the other one, but I'm not able to run it yet since I don't
+have everything it needs implmented.
+
+I'm going for depth right now instead of breadth.  In particular, I've
+spent a lot of time working on SetLine (api_sline) and GetLine
+(api_gline) since these will be used heavily to filter regions.  (See
+wc.pl and forall.pl for an example.) Early Sunday morning, I got a
+naive implementation of these two completed but found out that they
+were unusably slow.  It took over twenty seconds (on a P100) to use
+perl to do a word count on two copies of x11.c.  SetLine was also slow
+for many of the same reasons.  I have some fairly fast versions in
+place now, but I had to delve into the internals of the line and
+buffer structure somewhat.  (See api.c for more on this.)
+
+Anyway, to use it, follow the instructions that I gave in the "i"
+patch for building it.  To try the nvi examples, move them to your
+current directory (or put them in some other appropriate place)
+and do the following (from within vile):
+
+	perl require 'wc.pl'
+	perl wc
+
+The first statement will load the wc.pl script.  The second statement
+will run it over the entire buffer.  You can specify a range of lines
+(but only lines; no exact ranges or rectangular ranges yet) like this:
+
+	4,5perl wc
+
+The forall.pl script executes a particular perl statement for
+each line in a range of lines.  It can be used like this:
+
+	perl require 'forall.pl'
+	perl forall(sub { s/a/A/g })
+
+Again, the first line loads the script, the second performs a
+substitution on all lines in the range, replacing all occurrences
+of 'a' with 'A'.  You can also do things like:
+
+	perl forall(sub { $_ = 'hi' })
+
+The above will cause all lines in the range to be replaced with the
+word hi.  (I.e, if you have N lines in the range, you'll have N lines
+with the word 'hi' on it after you're done.)
+
+AppendLine, InsertLine, and DeleteLine (which don't occur in the
+examples) also work.  But they're not optimized yet and are likely to
+be slow.  (It'd help if we had constant time access to a particular
+line via a line number.)
+
+nvi has two perl commands, one called perl (which I've implemented)
+and another called perldo which runs a single perl statement over a
+range of lines (much like the above example using forall).  I'll
+implement perldo at some point, but have not gotten around to it yet. 
+You can find out more about what the API should look like by looking
+at the .pod files in nvi's perl_api directory.
+
+
+Date: Wed, 3 Dec 1997 13:04:47 -0700 (Kevin)
+
+This patch incorporates some changes from Brendan O'Dea (thanks Brendan!)
+as well as some perl related changes that I've been working on.
+
+I've added a new function called GetLines() which is quite a bit faster
+than getting lines individually with GetLine().  It can be used like
+this:
+
+
+===== wc2.pl =====
+sub wc2 {
+    my $words;
+    my @lines = @{ VI::GetLines($VI::ScreenId,
+                                $VI::StartLine,
+				$VI::StopLine - $VI::StartLine + 1) };
+    foreach (@lines) {
+	$words += split;
+    }
+
+    undef @lines;
+    undef $_;
+
+    $curscr->Msg("$words words");
+}
+
+1;
+===== end wc2.pl =====
+
+GetLines is experimental.  If I think of a better way of doing things,
+I'll probably take it out.
+
+I've also implemented Edit, FindScreen, and SwitchScreen which can be
+used to visit other files/buffers.
+
+And lastly, errors and warnings will be displayed in on the message
+line.  (It might be a good idea to set popup-msgs when using perl.)
+
+
+Date: Fri, 20 Mar 1998 15:50:26 +1100 (Brendan) 
+ 
+The interface is presently very simple: 
+ 
+    :[range]perl <whatever> 
+ 
+where <whatever> is a string to be `eval'ed by the Perl interpreter. 
+ 
+The API functions (VI::*) provide methods to communicate with vile: 
+ 
+    $ fgrep Usage: perl.xs 
+    # Usage: VI::Msg screenId text 
+    [snip--UTSL] 
+ 
+and some variables: 
+ 
+    $VI::StartLine	# first line of range (or 1) 
+    $VI::StopLine	# last line of range (or last line of buffer) 
+    $VI::ScreenId 
+    $curscr		# alias for $VI::ScreenId 
+ 
+$VI::ScreenId is an object of class `VI' which means that any VI::  
+subroutine taking `screenId' as the first argument may be called with 
+any of: 
+ 
+    VI::Msg $VI::ScreenId, "text";  # subroutine 
+    Msg $VI::ScreenId "text";	    # indirect object 
+    $VI::ScreenId->Msg("text");	    # C++-ish syntax 
+ 
+You can of course substitute $curscr for $VI::ScreenId in any of these: 
+ 
+    $curscr->Msg("text"); 
+ 
+Anything larger than can be keyed into the minibuffer (such as the wc 
+example given, will probably need to be put into a file somewhere and 
+either run using `do <file>', or included with `require' or `use'. 
+So for the wc example, create a file called wc.pl containing the 
+script above (note that you will have to add a final line containing: 
+ 
+    1; 
+     
+to make require happy) and stick it into a directory somewhere. 
+ 
+You can then load the subroutine with: 
+ 
+    :perl require '<somepath>/wc.pl' 
+ 
+and use it with: 
+ 
+    :perl wc 
+    :'a,'b perl wc 
+ 
+Note that you only have to require it once (although it doesn't hurt to 
+do so more often), and may then use it as many times as necessary.  The 
+require may be done from .vilerc if you like: 
+ 
+    perl "require '<somepath>/wc.pl'" 
+ 
+This might be overkill if you only use `wc' once in a blue moon, since 
+the interpreter must parse it every time you start vile. 
+ 
+I don't know exactly what Kevin has in mind with regard to paths, but 
+the nvi implementation prepends `/usr/local/lib/vi/perl' (or whatever) 
+into Perl's @INC, allowing a shared location for common subroutines. 
+ 
+You can't presently bind a Perl subroutine to a keystroke directly (see 
+the ``Binding keys to strings to execute...'' thread for more about 
+this), however you can use a macro wrapper: 
+ 
+    perl "use lib '<somepath>'" 
+    1 store-macro 
+	perl "require 'wc.pl'; wc" 
+    ~endm 
+    bind-key execute-macro-1 M-w 
+ 
+I will be interested to see Kevin's new work, which from his message 
+looks rather interesting. 
+
+
+Date: Thu, 19 Mar 1998 18:07:11 -0800 (Sean)
+
+Here are the pieces of vile that you can interface to using perl, as far as I  
+can glean.  Maybe start the README with this? 
+ 
+Variables accessible from perl as called from vile: 
+    VI::StartLine 
+        The first line number of the region. 
+        (I'm not sure how to have this other than 0.) 
+ 
+    VI::StopLine 
+        The last line number of the region. 
+        (I'm not sure how to have this other than $VI::LastLine.) 
+ 
+    VI::ScreenId 
+        The screenId of the current window. 
+ 
+    VI::curscr 
+        The screenId, accessible as an object. 
+ 
+Methods callable from perl as called from vile: 
+ 
+    VI::Msg text 
+        Sets the message line to "text". 
+ 
+    VI::AppendLine lineNumber text 
+        Appends the string "text" after the line in "lineNumber". 
+ 
+    VI::DelLine lineNum 
+        Deletes the line "lineNum". 
+ 
+    string VI::GetLine lineNum 
+        Gets the text in the line "lineNum". 
+ 
+    array_ref VI::GetLines lineNum count 
+        Returns a reference to an array containing "count" lines, starting with 
+        "linNum".  No lines are terminated with a "\n"; 
+ 
+I don't know if changing this array will change what is in the buffer.   
+ 
+    VI::SetLine lineNumber text 
+        Sets "lineNumber" to "text". 
+ 
+    VI::InsertLine lineNumber text 
+        Inserts the string "text" before the line "lineNumber". 
+ 
+    int VI::LastLine  
+        Returns the number of the last line. 
+ 
+    int VI::Edit [file] 
+        Creates a new screen.  If a filename is specified then the screen is  
+        opened with that file.  Returns the new screenId, (I think). 
+ 
+    int FindScreen file 
+        Returns the associated with the filename. 
+ 
+    VI::SwitchScreen screenId 
+        Changes the current focus to screenId 
+ 
+    VI::Warn text 
+        Prints out a warning. 
+ 
