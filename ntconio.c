@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.47 1999/09/20 10:59:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.49 1999/09/27 00:29:54 tom Exp $
  *
  */
 
@@ -579,7 +579,50 @@ decode_key_event(INPUT_RECORD *irp)
     return key;
 }
 
-#define CLICK 1000
+static int
+MouseClickSetPos(COORD *result, int *onmode)
+{
+	WINDOW *wp;
+
+	TRACE(("GETC:setcursor(%d, %d)\n", result->Y, result->X))
+
+	/*
+	 * If we're getting a button-down in a window, allow it to begin a
+	 * selection.  A button-down on its modeline will allow resizing the
+	 * window.
+	 */
+	*onmode = FALSE;
+	if ((wp = row2window(result->Y)) != 0) {
+		if (result->Y == mode_row(wp)) {
+			*onmode = TRUE;
+			sel_release();
+			return TRUE;
+		}
+		return setcursor(result->Y, result->X);
+	}
+	sel_release();
+	return FALSE;
+}
+
+/*
+ * Shrink a window by dragging the modeline
+ */
+static int
+adjust_window(WINDOW *wp, COORD *current, COORD *latest)
+{
+	if (latest->Y == mode_row(wp)) {
+		if (current->Y != latest->Y) {
+			WINDOW *save_wp = curwp;
+			set_curwp(wp);
+			shrinkwind(FALSE, latest->Y - current->Y);
+			set_curwp(save_wp);
+			update(TRUE);
+		}
+		*latest = *current;
+		return TRUE;
+	}
+	return FALSE;
+}
 
 static void
 handle_mouse_event(MOUSE_EVENT_RECORD mer)
@@ -588,19 +631,22 @@ handle_mouse_event(MOUSE_EVENT_RECORD mer)
 	static int clicks = 0;
 
 	int buttondown = FALSE;
-	COORD first, current, last;
+	int onmode = FALSE;
+	COORD current, latest;
 	int state;
 	DWORD thisclick;
+	WINDOW *that_wp;
+	UINT clicktime = GetDoubleClickTime();
 
 	for_ever {
 		current = mer.dwMousePosition;
 		switch (mer.dwEventFlags) {
 		case 0:
 			state = mer.dwButtonState;
-			if (state == 0) {
+			if (state == 0) {	/* button released */
 				thisclick = GetTickCount();
 				TRACE(("CLICK %d/%d\n", lastclick, thisclick))
-					if (thisclick - lastclick < CLICK) {
+					if (thisclick - lastclick < clicktime) {
 					clicks++;
 					TRACE(("MOUSE CLICKS %d\n", clicks))
 				} else {
@@ -618,45 +664,54 @@ handle_mouse_event(MOUSE_EVENT_RECORD mer)
 				}
 
 				if (buttondown) {
+					if (MouseClickSetPos(&current, &onmode))
+						sel_yank(0);
 					buttondown = FALSE;
-					(void)setcursor(current.Y, current.X);
-					sel_yank(0);
+					onmode = FALSE;
 				}
 				return;
 			}
-			if (!setcursor(current.Y, current.X))
-				return;
 			if (state & FROM_LEFT_1ST_BUTTON_PRESSED) {
-				if (buttondown) {
-					if (state & RIGHTMOST_BUTTON_PRESSED) {
-						sel_release();
-						(void)update(TRUE);
-						return;
-					}
-					break;
+				if (MouseClickSetPos(&current, &onmode)) {
+					buttondown = TRUE;
+					latest = current;
+					that_wp = row2window(latest.Y);
+					(void)sel_begin();
+					(void)update(TRUE);
 				}
-				buttondown = TRUE;
-				first = current;
-				if (!setcursor(current.Y, current.X))
-					return;
-				(void)sel_begin();
-				(void)update(TRUE);
-			} else if (state & (FROM_LEFT_2ND_BUTTON_PRESSED
-					   |RIGHTMOST_BUTTON_PRESSED)) {
-				sel_yank(0);
-				sel_release();
-				paste_selection();
-				(void)update(TRUE);
+			} else if (state & FROM_LEFT_2ND_BUTTON_PRESSED) {
+				if (MouseClickSetPos(&current, &onmode)
+				 && !onmode) {
+					sel_yank(0);
+					sel_release();
+					paste_selection();
+					(void)update(TRUE);
+				}
 				return;
+			} else {
+				if (MouseClickSetPos(&current, &onmode)
+				 && onmode) {
+					sel_release();
+					update(TRUE);
+				} else {
+					kbd_alarm();
+				}
 			}
 			break;
 
 		case MOUSE_MOVED:
 			if (!buttondown)
 				return;
+
+			if (onmode
+			 && adjust_window(that_wp, &current, &latest))
+				break;
+
+			if (that_wp != row2window(current.Y))
+				break;
 			if (!setcursor(current.Y, current.X))
 				break;
-			last = current;
+
 			if (mer.dwControlKeyState &
 			                (LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED))
 			{

@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.256 1999/09/19 21:53:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.257 1999/09/22 21:32:21 tom Exp $
  */
 
 #include	"estruct.h"
@@ -978,7 +978,7 @@ quickreadf(register BUFFER *bp, int *nlinep)
 #endif
 
 #if SYS_VMS
-	/* 
+	/*
 	 * Note that this routine uses fseek() to position a file, which
 	 * doesn't work on VMS _unless_ the the file type is stream-access
 	 * or fixed-length record with no carriage control.  If the

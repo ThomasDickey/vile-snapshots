@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.77 1999/09/04 15:29:11 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.78 1999/09/22 21:35:57 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -901,7 +901,7 @@ AC_DEFUN([CF_MAKEFLAGS],
 AC_MSG_CHECKING([for makeflags variable])
 AC_CACHE_VAL(cf_cv_makeflags,[
 	cf_cv_makeflags=''
-	for cf_option in '-$(MAKEFLAGS)' '$(MFLAGS)' 
+	for cf_option in '-$(MAKEFLAGS)' '$(MFLAGS)'
 	do
 		cat >cf_makeflags.tmp <<CF_EOF
 all :
@@ -1188,9 +1188,9 @@ dnl ---------------------------------------------------------------------------
 dnl Check for Perl, given the minimum version, to ensure that required features
 dnl are present.
 dnl $1 = the minimum version
-changequote() 
-define(U_TURN_BACK, ]) 
-changequote([, ]) 
+changequote()
+define(U_TURN_BACK, ])
+changequote([, ])
 
 AC_DEFUN([CF_PROG_PERL],
 [# find perl binary

@@ -17,5 +17,7 @@ WinvilePopMenu MENU
     POPUP ""
     {
         MENUITEM "&Open...",           IDM_OPEN
+        MENUITEM "&Font...",           IDM_FONT
+        MENUITEM "&Menu...",           IDM_MENU
     }
 }

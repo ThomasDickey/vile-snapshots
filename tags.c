@@ -5,7 +5,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.100 1999/09/10 11:04:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.101 1999/09/22 21:46:47 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -80,6 +80,7 @@ old_tags (BI_NODE *a)
 	free(TYPECAST(char,a));
 }
 
+/*ARGSUSED*/
 static void
 dpy_tags (BI_NODE *a GCC_UNUSED, int level GCC_UNUSED)
 {

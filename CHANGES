@@ -1,12 +1,43 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
-(tom) 990920 (t)
+ (tom) 990926 (u)
+ 	+ allow adjustment of window size in win32 versions (vile, winvile) by
+	  dragging the modeline.  Clicking on a modeline clears the selection.
+	+ modify drag/drop logic in winvile to set the current working
+	  directory to the last dropped file.
+	+ add alarm on attempt to paste selection into a readonly buffer
+	  (reported by Clark Morgan).
+	+ correct logic in glob_match_leaf(), which did not allow a pattern
+	  to end with '*', e.g,. ":e make*in*" would not match makefile.in
+	  (reported by Clark Morgan).
+	+ add fallback definitions for cursor keys in tcap.c.  When running
+	  'screen' 3.7.6 on Redhat 6.0, which is linked with ncurses, screen
+	  makes a bogus $TERMCAP from the terminfo entry, which doesn't
+	  necessarily correspond with the actual termcap entry.  I found that
+	  my cursor-down was not recognized since the $TERMCAP said it would
+	  not be provided, while 'screen' actually delivered <esc>OB.
+	+ integrated winvile's popup menu with the system menu, adding an entry
+	  to enable/disable the popup menu so that the right mouse button can
+	  be used for copying selections to the clipboard.
+	+ improve vile-make-filt by coloring variables in strings.
+	+ minor fix for single-quoted strings in vile-sh-filt, to handle
+	  escaped newlines, which are not needed, but terminated the pattern
+	  early.
+	+ correct handling of default color in color-schemes; it was being
+	  internally set to the actual color rather than the special code for
+	  'default', so one could not reset the colors automatically.
+	+ correct a typo in setting color schemes that used the background
+	  color where the cursor color was intended.
+	+ fix for ccolor mode in xvile, for 8-bit displays: the cursor is not
+	  necessarily colorable if we do not allocate enough GC's.
+
+ (tom) 990920 (t)
 	+ implement drag/drop for winvile.
 	+ ensure that win32 and termcap versions do not allow paste into buffer
 	  that is marked 'view'.
 	+ correct background in os2vio.c (the 980930 change for blink versus
 	  bright does not apply to OS/2 full-screen windows, but only the
-	  stand-alone mode). 
+	  stand-alone mode).
 	+ modify dummy functions for setting fcolor, bcolor, ccolor to restore
 	  the default value rather than allow setting misleading value to be
 	  set when the corresponding mode is not really supported.
@@ -37,7 +68,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	  to caution installers to delete generated headers and object files
 	  between building vile.exe and xvile.exe (patch by Clark Morgan).
 
-(tom) 990914 (s)
+ (tom) 990914 (s)
 	+ modify list mode to show the actual record separator rather than ^J.
 	+ correction to change in 8.3q, to writereg() and getregion(), to
 	  account for length of recordseparator when it is crlf.  This also
@@ -72,7 +103,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	+ correct typo in PutModename() call that shows recordseparator,
 	  which caused GPF on NT.
 
-(tom) 990907 (r)
+ (tom) 990907 (r)
 	+ correct oversight in 'eval' command, which evaluated only the first
 	  token.
 	+ revised macro-parameter logic to rely on parameter template in the
@@ -95,7 +126,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	  but still does not make arrow keys work since the FIONREAD ioctl does
 	  not work on SCO.  Using select or poll makes it much slower.
 
-(tom) 990904 (q)
+ (tom) 990904 (q)
 	+ modify check for curses/termcap library for FreeBSD to exclude
 	  curses library, preferring either ncurses or termcap.
 	+ rename isspecial to isSpecial because FreeBSD 3.1's ctype.h conflicts
@@ -126,7 +157,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	  the cursor and function keys work.
 	+ modify catnap() to use its select/poll logic for tty type-ahead tests.
 
-(tom) 990829 (p)
+ (tom) 990829 (p)
 	+ modify test for terminfo/termcap library support to look for curses
 	  library first.  SCO's native termlib does not support color, though
 	  the UDK's termlib does.
@@ -143,7 +174,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	  allow '.' and '_' in alias names.
 	+ correct typo in suffix expression for cshmode.
 
-(tom) 990822 (o)
+ (tom) 990822 (o)
 	+ add &pquote function to simplify use of &lookup when the result might
 	  contain spaces, and $exec-suffix variable.
 	+ add &cclass function, and set-char-class, unset-char-class and
@@ -170,19 +201,19 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	+ add check for menufile-not-found in do_menu, to avoid passing a null
 	  pointer to fopen (reported by Graeme Miller).
 
-(tom) 990817 (n)
+ (tom) 990817 (n)
 	+ if .vilemenu is not found, return status to main.c so we can popup
 	  appropriate message.
 	+ remove const qualifiers from some functions whose data really are
 	  modifiable: next_buffer_line(), get_token(), tokval (), user_reply().
 	+ BeOS has nonworking 'select()', and no corresponding fd_set
-	  declaration.  Add CF_TYPE_FD_SET configure check to handle this. 
+	  declaration.  Add CF_TYPE_FD_SET configure check to handle this.
 	  (I'll write some BeOS-specific code to make cursor-keys work).
 	+ BeOS does not define O_NDELAY; undef'd USE_FCNTL in this case.
 	+ correct ifdef for ttyname(), was HAS_TTYNAME, to use this on BeOS.
 	+ add fdl syntax highlighter.
 
-(tom) 990805 (m)
+ (tom) 990805 (m)
 	+ add vile-perl-filt to makefile.wnt
 	+ minor improvement to txt-filt.l, to reset quoted mode when a blank
 	  line is found.
@@ -206,7 +237,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	  bug causing it to emit a lot of warnings when it saw a missing const
 	  in the qsort comparison functions.
 
-(tom) 990717 (l)
+ (tom) 990717 (l)
 	+ turn off OPT_CACHE_VCOL, still too experimental.
 	+ correct flag that would force window repainting in set-dos-mode
 	  command, lost by optimization in 8.3k.
@@ -232,7 +263,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	  function from reading it in one call (patch by Clark Morgan, reported
 	  by Adam Denton).
 
-(tom) 990705 (k)
+ (tom) 990705 (k)
 	+ correct logic of read_quoted() from 8.3j, which no longer accepted
 	  nondigits after a control/V, e.g., ^V^D.
 	+ add commands to move the cursor up/down by rows on the screen, ignoring
@@ -253,7 +284,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	+ modify calls to mk_to_vcol() so we show the effective column
 	  consistently in [Registers], which has a left margin.
 
-(tom) 990703 (j)
+ (tom) 990703 (j)
 	+ implement set-window command (request by Adam Denton).
 	+ implement show-marks command.
 	+ rename 'quote()' to 'quote_next()', split-out 'read_quoted()' to
@@ -289,7 +320,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	  hand editing on continuations and comment alignment.
 	+ modify vilefilt.l to accept hyphens in identifiers
 
-(tom) 990621 (i)
+ (tom) 990621 (i)
 	+ add vile-pager to install rule.
 	+ add macros (e.g., manpage.rc) to install rule.
 	+ implement $(DESTDIR) variable in Unix makefiles to simplify packaging
@@ -330,8 +361,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	  match that of other Vile commands, e.g., mini-buffer editing is not
 	  supported and TAB-completion behavior is different.
 
-
-(tom) 990614 (h)
+ (tom) 990614 (h)
 	+ updated example in menus.doc, dropping references to macros not in
 	  our source distribution.
 	+ add no_errs flag to suppress bells when ~force is in effect.
@@ -361,7 +391,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	  (i.e., obsolete) Imakefile's that rely on pre-ANSI cpp's.
 	+ suppress blank messages in perl.xs
 
-(tom) 990607 (g)
+ (tom) 990607 (g)
 	+ add distinct prefixes to warnings written in perl.xs with write_message
 	  to aid in debugging.
 	+ restore ability of Vile::get to return values of internal variables
@@ -399,7 +429,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	  + press F9 (standard DevStudio shortcut that sets/clears a
 	    breakpoint).
 
-(tom) 990602 (f)
+ (tom) 990602 (f)
 	+ implement fcolor and bcolor options for xvile.
 	+ add missing case for VALTYPE_ENUM in listvalueset(), which caused
 	  very long enum values to be run-on in [Settings].
@@ -425,7 +455,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	+ improve makefile.l, handling escaped newlines in quoted strings and
 	  in target lists.
 
-(tom) 990523 (e)
+ (tom) 990523 (e)
 	+ add/use new function restore_dot() to guard against restoring DOT to
 	  a value which no longer points into the current buffer, e.g., after
 	  modifying it.  This fixes a core dump in xvile when selecting in the
@@ -471,7 +501,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	  when VileKeys() "drives" the editor because all of winvile's commands
 	  are serialized via a Windows message queue.
 
-(tom) 990519 (d)
+ (tom) 990519 (d)
 	+ remove fragment of code in c-filt.c which left it incorrectly parsing
 	  "string1""string2" (reported by Alex Wetmore).
 	+ implement $palette for xvile, allowing colors to be permuted.
@@ -497,7 +527,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	  [ Note: wvwrap.exe is Ed Henderson's brainchild and he wrote the
 	    original version of the program.  Thanks, Ed! ]
 
-(tom) 990510 (c)
+ (tom) 990510 (c)
 	+ fix an overlooked reset of lines read if we are reading via
 	  attribute-from-filter
 	+ add logic to pathname completion to supply slash if given an
@@ -524,7 +554,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	+ added a new resource XVile.wheelScrollAmount to set the number of
 	  lines scrolled for each occurrence of these events.  (Default is 3).
 
-(tom) 990503 (b)
+ (tom) 990503 (b)
 	+ correction to SSTRING and DSTRING symbols in perl, other syntax
 	  highlighters.  The backslash character was not given as part of the
 	  excluded character range, making escaped quotes and escaped
@@ -540,7 +570,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	+ rename sccsmode to SCCSmode, to workaround majormode's name
 	  resolution; suffixes are done alphabetically.
 
-(tom) 990429 (a)
+ (tom) 990429 (a)
 	+ minor tweak to c-filt.c so it can be used on gcov output:  the GNU
 	  coverage tool puts a count down the left margin to show lines
 	  executed, and "######" where they're not.  c-filt.c did not expect
@@ -562,11 +592,11 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 
 Changes for vile 8.3 (released Fri Apr 23, 1998)
 
-(tom) 990420 (v)
+ (tom) 990420 (v)
 	+ modify winvile.rc to use VILE_ICON definition, overlooked in previous
 	  patch.
 
-(tom) 990420 (u)
+ (tom) 990420 (u)
 	+ add 32x32 monochome versions of the .ico files, for completeness
 	  because automatically generated versions do not work well for color
 	  icons.
@@ -575,7 +605,7 @@ Changes for vile 8.3 (released Fri Apr 23, 1998)
 	  8.2s changes (reported by Ed Henderson).
 	+ correct missing return in var_TITLE() on win32 (Clark Morgan).
 
-(tom) 990418 (t)
+ (tom) 990418 (t)
 	+ add configure option --with-xpm, to support color icons in xvile.
 	  Not all window managers support xpm icons.
 	+ remove configure test and ifdef's for CC_CANNOT_OFFSET_CASES, since
@@ -600,7 +630,7 @@ Changes for vile 8.3 (released Fri Apr 23, 1998)
 	+ add syntax filter difffilt.l for diff output
 	+ use "seed" in ucrypt.c rather than rand().
 
-(tom) 990414 (s)
+ (tom) 990414 (s)
 	+ add "DBG=" option to makefile.wnt to simplify building with OPT_TRACE.
 	+ add VILE_LIBDIR_PATH to $PATH on WinNT, as on Unix to find syntax
 	  filters more simply.
@@ -661,8 +691,7 @@ Changes for vile 8.3 (released Fri Apr 23, 1998)
 	+ add second %% line to lex "states" check -- it hangs on solaris
 	  otherwise.  (aclocal.m4)
 
-
-(tom) 990404 (r)
+ (tom) 990404 (r)
 	+ add filters/mms-filt.l
 	+ change filters/makefile.in to work when configuring with --srcdir
 	  (patch by Brendan O'Dea).
@@ -678,7 +707,7 @@ Changes for vile 8.3 (released Fri Apr 23, 1998)
 	  the read-hook does not cause vile to report confusing total number
 	  of lines read, i.e., the actual file plus the highlighting.
 
-(tom) 990327 (q)
+ (tom) 990327 (q)
 	+ add filtername mode, to handle special filter cases for java, js, csh
 	  majormodes.
 	+ modify makefiles to allow vile to compile on *IX systems with the gnu
@@ -748,7 +777,7 @@ Changes for vile 8.3 (released Fri Apr 23, 1998)
 	+ quoting fix in macros/pic.rc
 	+ supporting changes:  estruct.h, makefile.in, vile.hlp.
 
-(tom) 990320 (p)
+ (tom) 990320 (p)
 	+ add an install-rule to filters/makefile.wnt
 	+ eliminate restriction on number of command-line arguments in winvile
 	  (reported by Ed Henderson).

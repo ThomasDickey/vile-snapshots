@@ -1,7 +1,9 @@
+%x NORMAL QUOTE1 QUOTE2
+
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.22 1999/05/25 01:33:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.23 1999/09/24 02:11:47 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -50,6 +52,38 @@ write_keyword(char *text, int size)
 	fputc(':', yyout);
 }
 
+static void
+write_delimited(char *text, int size, char *attr)
+{
+    write_string(yyout, text, size-1, attr);
+    write_string(yyout, text+size-2, 1, "");
+}
+
+/*
+ * Buffer text for quoted strings, since most characters are attributed
+ * as string, which would be a lot of overhead to mark it up.
+ */
+static char    *save_bfr;
+static unsigned save_max;
+static unsigned save_len;
+
+static void
+add_to_quoted(char *text, int length)
+{
+    save_bfr = do_alloc(save_bfr, save_len + length, &save_max);
+    strncpy(save_bfr + save_len, text, length);
+    save_len += length;
+}
+
+static void
+flush_quoted(void)
+{
+    if (save_len) {
+	write_token(yyout, save_bfr, save_len, String_attr);
+	save_len = 0;
+    }
+}
+
 void
 init_filter(int before GCC_UNUSED)
 {
@@ -66,6 +100,7 @@ do_filter(FILE *input, FILE *output)
     Keyword_attr = class_attr(NAME_KEYWORD);
     String_attr  = class_attr(NAME_LITERAL);
 
+    BEGIN(NORMAL);
     while (yylex() > 0) {
     }
 }
@@ -74,28 +109,40 @@ do_filter(FILE *input, FILE *output)
 
 SPACE		[ \t]
 
-SSTRING		\'(\\.|[^'\\]|\\\n)*\'
-DSTRING		\"(\\.|[^"\\]|\\\n)*\"
-STRINGS		({SSTRING}|{DSTRING})
-
+ID		[a-zA-Z_][a-zA-Z_0-9]+
 NAME		[a-zA-Z_][a-zA-Z_0-9.-]+
+
+MACRO		([$]?\$\{{ID}\}|[$]?\${ID}|[$]?\$[A-Za-z@!%^&*?<]|\${SPACE}*\([^\)]+\))
 
 %%
 
-^{SPACE}*(.)?include{SPACE}*	{ write_keyword(yytext, yyleng); }	
+<NORMAL>^{SPACE}*(.)?include{SPACE}*	{ write_keyword(yytext, yyleng); }	
 
-^{SPACE}*[\.!]{NAME}{SPACE}*:	{ write_keyword(yytext, yyleng); }
+<NORMAL>^{SPACE}*[\.!]{NAME}{SPACE}*:	{ write_keyword(yytext, yyleng); }
 
-^({SPACE}*{NAME}{SPACE}*|\\\n)+: { WriteString(Keyword_attr); }
+<NORMAL>^({SPACE}*{NAME}{SPACE}*|\\\n)+: { write_delimited(yytext, yyleng, Keyword_attr); }
 
-^{SPACE}*{NAME}{SPACE}*=	{ WriteToken(Ident2_attr); }
+<NORMAL>^{SPACE}*{NAME}{SPACE}*=	{ write_delimited(yytext, yyleng, Ident2_attr); }
 
-\$\{{NAME}\}			|
-\$\${NAME}			|
-\$[A-Za-z@!%^&*?<]		|
-\${SPACE}*\([^\)]+\)		{ WriteToken(Ident2_attr); }
+<NORMAL>{MACRO}		{ WriteToken(Ident2_attr); }
 
-\\.				|
-{STRINGS}			{ WriteString(String_attr); }
+<NORMAL>^{SPACE}\@	{ WriteString(String_attr); }
+<NORMAL>\\["'\n]	{ WriteString(String_attr); }
+<NORMAL>\'		{ add_to_quoted(yytext, yyleng); BEGIN(QUOTE1); }
+<NORMAL>\"		{ add_to_quoted(yytext, yyleng); BEGIN(QUOTE2); }
 
-"#".*$				{ WriteToken(Comment_attr); }
+<NORMAL>"#".*$		{ WriteToken(Comment_attr); }
+
+<QUOTE1>{MACRO}		{ flush_quoted(); WriteToken(Ident2_attr); }
+<QUOTE1>(\\.|[^\n\'])	{ add_to_quoted(yytext, yyleng); }
+<QUOTE1>\'		{ add_to_quoted(yytext, yyleng);
+			  flush_quoted();
+			  BEGIN(NORMAL);
+			}
+
+<QUOTE2>{MACRO}		{ flush_quoted(); WriteToken(Ident2_attr); }
+<QUOTE2>(\\.|[^\n\"])	{ add_to_quoted(yytext, yyleng); }
+<QUOTE2>\"		{ add_to_quoted(yytext, yyleng);
+			  flush_quoted();
+			  BEGIN(NORMAL);
+			}

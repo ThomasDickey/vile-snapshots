@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.180 1999/09/19 19:58:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.183 1999/09/23 01:41:06 tom Exp $
  *
  */
 
@@ -2864,7 +2864,7 @@ do_a_submode(int defining)
 	if (status == TRUE
 	 && !qualifier) {
 		if (defining && found_per_submode(name, j)) {
-			TRACE(("submode names for %d present\n", j))
+			TRACE(("submode names for %d present\n", j));
 		} else if (defining) {
 			TRACE(("construct submode names for %d\n", j))
 			k = extend_mode_list(2);
@@ -3190,13 +3190,13 @@ set_current_scheme(PALETTES *p)
 			set_palette(p->list);
 
 		set_global_g_val(GVAL_FCOLOR,p->fcol);
-		term.setfore(gfcolor);
+		term.setfore(p->fcol);
 
 		set_global_g_val(GVAL_BCOLOR,p->bcol);
-		term.setback(gbcolor);
+		term.setback(p->bcol);
 
 		set_global_g_val(GVAL_CCOLOR,p->ccol);
-		term.setback(gccolor);
+		term.setccol(p->ccol);
 
 		set_global_g_val(GVAL_VIDEO,p->attr);
 
@@ -3395,6 +3395,7 @@ prompt_scheme_value(PALETTES *p)
 }
 
 #if OPT_UPBUFF
+/*ARGSUSED*/
 static int
 update_schemelist(BUFFER *bp GCC_UNUSED)
 {
@@ -3412,9 +3413,9 @@ init_scheme(void)
 	PALETTES *p = alloc_scheme(s_default);
 	char *list = tb_values(tb_curpalette);
 
-	p->fcol = gfcolor;
-	p->bcol = gbcolor;
-	p->ccol = gccolor;
+	p->fcol = -1;
+	p->bcol = -1;
+	p->ccol = -1;
 	if (list != 0)
 		p->list = strmalloc(list);
 }
@@ -3424,6 +3425,7 @@ init_scheme(void)
  *	define-color-scheme {name} [fcolor={value}|bcolor={value}|{value}]
  * where the {value}'s are all color names or constants 0..NCOLORS-1.
  */
+/*ARGSUSED*/
 int
 define_scheme(int f GCC_UNUSED, int n GCC_UNUSED)
 {
@@ -3442,6 +3444,7 @@ define_scheme(int f GCC_UNUSED, int n GCC_UNUSED)
 /*
  * Remove a color scheme
  */
+/*ARGSUSED*/
 int
 remove_scheme(int f GCC_UNUSED, int n GCC_UNUSED)
 {
@@ -3457,6 +3460,7 @@ remove_scheme(int f GCC_UNUSED, int n GCC_UNUSED)
 	return status;
 }
 
+/*ARGSUSED*/
 static void
 makeschemelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 {
@@ -3479,6 +3483,7 @@ makeschemelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 	}
 }
 
+/*ARGSUSED*/
 int
 desschemes(int f GCC_UNUSED, int n GCC_UNUSED)
 {

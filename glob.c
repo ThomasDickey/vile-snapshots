@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.63 1999/08/04 10:22:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.64 1999/09/26 19:34:58 tom Exp $
  *
  */
 
@@ -223,6 +223,19 @@ cs_char(int ch)
 #define cs_char(ch) (ch)
 #endif
 
+static int
+only_multi(char *pattern)
+{
+	int result = TRUE;
+	while (*pattern != 0) {
+		if (*pattern++ != GLOB_MULTI) {
+			result = FALSE;
+			break;
+		}
+	}
+	return result;
+}
+
 /*
  * This is the heart of the wildcard matching.  We are given a directory
  * leaf and a pointer to the leaf that contains wildcards that we must
@@ -282,7 +295,7 @@ glob_match_leaf(char *leaf, char *pattern)
 		} else if (cs_char(*pattern++) != cs_char(*leaf++))
 			return FALSE;
 	}
-	return (*leaf == EOS && *pattern == EOS);
+	return (*leaf == EOS && only_multi(pattern));
 }
 
 #if !SYS_OS2
@@ -404,8 +417,9 @@ char	*pattern)
 			}
 		}
 		(void)closedir(dp);
-	} else
+	} else {
 		result = SORTOFTRUE;	/* at least we didn't run out of memory */
+	}
 
 	if (next != 0)
 		next[-1] = save;
@@ -616,8 +630,9 @@ glob_from_pipe(const char *pattern)
 				 }
 			}
 		}
-		if (*old != EOS)
+		if (*old != EOS) {
 			result = record_a_match(old);
+		}
 		npclose(cf);
 	} else
 		result = FALSE;
@@ -793,8 +808,9 @@ expand_pattern (char *item)
 			qsort((char *)&myVec[first], myLen-first,
 						sizeof(*myVec), compar);
 		}
-	} else
+	} else {
 		result = record_a_match(pattern);
+	}
 	}
 #endif				/* UNIX-style globbing */
 #if (SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT) && !UNIX_GLOBBING
