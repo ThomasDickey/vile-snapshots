@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.185 1998/07/08 09:56:02 Chris.Sherman Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.186 1998/09/01 20:41:00 tom Exp $
  *
  */
 
@@ -143,7 +143,7 @@ unsigned *pos)
 
 	for (base = len; base > first; ) {
 		base--;
-		if (isSpace(buf[base])) {
+		if (isSpace(buf[base]) && first) {
 			base++;
 			break;
 		} else if (buf[base] == '$') {

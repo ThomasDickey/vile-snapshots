@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.254 1998/09/01 01:37:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.255 1998/09/02 10:53:57 tom Exp $
  *
  */
 
@@ -47,6 +47,13 @@ static	int	mpresf;			/* zero if message-line empty */
 static	int	im_timing;
 #endif
 
+/*
+ * MARK2COL may be greater than mark2col if the mark does not point to the end
+ * of the line, and if it points to a nonprinting character.  We use that value
+ * when setting visible attributes, to keep tabs and other nonprinting
+ * characters looking 'right'.
+ */
+#define MARK2COL(wp, mk)  offs2col(wp, mk.l, mk.o + 1) - 1
 #define mark2col(wp, mk)  offs2col(wp, mk.l, mk.o)
 
 #ifdef WMDLINEWRAP
@@ -1581,13 +1588,19 @@ updattrs(WINDOW *wp)
 	end_lnum = (end_rlnum < end_wlnum) ? end_rlnum : end_wlnum;
 	attr = ap->ar_vattr;
 	if (ap->ar_shape == RECTANGLE) {
+	    int n;
 	    rect_start_col = mark2col(wp, ap->ar_region.r_orig);
 	    rect_end_col   = mark2col(wp, ap->ar_region.r_end);
 	    if (rect_end_col < rect_start_col) {
 		    C_NUM col = rect_end_col;
 		    rect_end_col = rect_start_col;
 		    rect_start_col = col;
+		    n = MARK2COL(wp, ap->ar_region.r_orig);
+	    } else {
+		    n = MARK2COL(wp, ap->ar_region.r_end);
 	    }
+	    if (rect_end_col < n)
+	    	rect_end_col = n;
 	}
 	for (lnum = start_lnum; lnum <= end_lnum; lnum++, lp = lforw(lp)) {
 	    int row, col;
@@ -1607,8 +1620,10 @@ updattrs(WINDOW *wp)
 	    if (ap->ar_shape == RECTANGLE) {
 		end_col = rect_end_col;
 	    } else if (lnum == end_rlnum) {
-		end_col = offs2col(wp, ap->ar_region.r_end.l,
-				   ap->ar_region.r_end.o - 1);
+		int n = MARK2COL(wp, ap->ar_region.r_end);
+		end_col = mark2col(wp, ap->ar_region.r_end);
+		if (end_col < n)
+			end_col = n;
 	    } else {
 		end_col = offs2col(wp, lp, llength(lp));
 #ifdef WMDLINEWRAP
@@ -1620,6 +1635,7 @@ updattrs(WINDOW *wp)
 	    row = lmap[lnum - start_wlnum];
 #ifdef WMDLINEWRAP
 	    if (w_val(wp,WMDLINEWRAP))
+	    {
 		for (col = start_col; col <= end_col; col++) {
 		    int x = row + col / term.t_ncol;
 		    if  (x < 0)
@@ -1633,6 +1649,7 @@ updattrs(WINDOW *wp)
 		    else
 			break;
 		}
+	    }
 	    else
 #endif
 	    {
