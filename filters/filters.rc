@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.55 1999/04/27 21:25:42 tom Exp $
+; $Id: filters.rc,v 1.57 1999/04/30 00:18:05 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -223,14 +223,24 @@ define-mode perl
 	fence-fi       "^\\s*}"
 ~endwith
 
-define-mode sccs
-~with define-submode sccs
+; I capitalized the majormode RCS/SCCS names because matches are made in
+; alphabetic order (usually not a problem, but conflicting with other modes,
+; such as "makemode").
+define-mode RCS
+~with define-submode RCS
+	suf ",v$"
+	filtername "vile-rcs-filt"
+~endwith
+
+define-mode SCCS
+~with define-submode SCCS
 	suf "\\<s\\."
 	pre "^\h"
-~elsewith define-submode sccs group "delete"
+	filtername "vile-sccs-filt"
+~elsewith define-submode SCCS group "delete"
 	fence-if       "^\D\\s\\+\\(\d\\+\\)$"
 	fence-fi       "^\E\\s\\+\\(\d\\+\\)$"
-~elsewith define-submode sccs group "insert"
+~elsewith define-submode SCCS group "insert"
 	fence-if       "^\I\\s\\+\\(\d\\+\\)$"
 	fence-fi       "^\E\\s\\+\\(\d\\+\\)$"
 ~endwith

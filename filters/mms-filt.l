@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.1 1999/04/05 00:10:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.2 1999/05/01 02:53:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VMS mms script
  * - T.Dickey
@@ -72,8 +72,8 @@ do_filter(FILE *input, FILE *output)
 
 SPACE		[ \t]
 
-SSTRING		\''((\\.)|[^\'])*\'
-DSTRING		\"((\\\.)|[^\"])*\"
+SSTRING		\'\'(\\.|[^'\\])*\'
+DSTRING		\"(\\.|[^"\\])*\"
 STRINGS		({SSTRING}|{DSTRING})
 
 IDENT		[$a-zA-Z_][$a-zA-Z0-9_]*

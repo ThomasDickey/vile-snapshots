@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.273 1999/04/18 18:41:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.274 1999/04/30 10:31:00 cmorgan Exp $
  *
  */
 
@@ -3170,10 +3170,19 @@ void
 mlerror(const char *s)
 {
 #if HAVE_STRERROR
+#ifndef VMS
 	if (errno > 0)
 		mlwarn("[Error %s: %s]", s, strerror(errno));
 	else
 		mlwarn("[Error %s: unknown system error %d]", s, errno);
+#else
+	if (errno == EVMSERR)
+		mlwarn("[Error %s: %s]", s, strerror(errno, vaxc$errno));
+	else if (errno > 0)
+		mlwarn("[Error %s: %s]", s, strerror(errno));
+	else
+		mlwarn("[Error %s: unknown system error %d]", s, errno);
+#endif /* VMS */
 #else
 #if HAVE_SYS_ERRLIST
 	if (errno > 0 && errno < sys_nerr)

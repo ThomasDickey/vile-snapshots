@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.22 1999/04/14 01:28:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.23 1999/05/01 02:32:58 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -90,7 +90,7 @@ do_filter(FILE *input, FILE *output)
 
 SPACE		[ \t]
 
-SSTRING		\'((\\.)|[^\'])*\'
+SSTRING		\'(\\.|[^'\\])*\'
 
 NAME		[a-zA-Z0-9_]
 

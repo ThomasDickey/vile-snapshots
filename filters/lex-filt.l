@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.13 1999/03/07 19:17:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.14 1999/05/01 02:53:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -88,8 +88,8 @@ IDENT		[a-zA-Z_][a-zA-Z_0-9]*
 
 INTEGER		[-+]?([0-9]+)
 
-SSTRING		\'((\\.)|[^\'])*\'
-DSTRING		\"((\\.)|[^\"])*\"
+SSTRING		\'(\\.|[^'\\])*\'
+DSTRING		\"(\\.|[^"\\])*\"
 STRINGS		({SSTRING}|{DSTRING})
 
 PATTERN		(\\\.|[^ \t\n])+

@@ -1,5 +1,21 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+(tom) 990503 (b)
+	+ correction to SSTRING and DSTRING symbols in perl, other syntax
+	  highlighters.  The backslash character was not given as part of the
+	  excluded character range, making escaped quotes and escaped
+	  backslashes handled improperly.
+	+ improve mlerror() function for VMS.  Any errno with the special value
+	  EVMSERR requires special translation.  This translation was not being
+	  one by vile, which caused the editor to occasionally display an
+	  "unknown error" message.  Example:
+		  $ vile x.y.z    ! invalid file syntax not flagged by vile
+	  (patch by Clark Morgan).
+	+ add RCS majormode and syntax filter.
+	+ add SCCS syntax filter.
+	+ rename sccsmode to SCCSmode, to workaround majormode's name
+	  resolution; suffixes are done alphabetically.
+
 (tom) 990429 (a)
 	+ minor tweak to c-filt.c so it can be used on gcov output:  the GNU
 	  coverage tool puts a count down the left margin to show lines
