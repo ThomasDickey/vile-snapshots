@@ -21,12 +21,15 @@ Except for MS-DOS, the suffix is ".keywords"; on that platform it is ".key".
 You can specify the root name to search, otherwise they search for "vile" and
 the filter name, e.g., "c".
 
-Defined keyword classes include (but may not be used in specific filters):
+Predefined keyword classes include (but may not necessarily be used in specific
+filters):
 
 	Action
 	Comment
 	Ident
+	Ident2
 	Keyword
+	Keyword2
 	Literal
 	Number
 	Preproc
@@ -35,45 +38,57 @@ Defined keyword classes include (but may not be used in specific filters):
 Each line in the keyword file consists of two strings separated by a colon (:).
 If the first string is empty, the line is treated as a comment.  The second
 string is used as the highlighting attributes for the first string.  An
-empty attribute string implies "Keyword".
+empty attribute string implies "Keyword".  If the second string matches
+a keyword class (or in fact, any other keyword), the highlighting attributes
+of that keyword are used.
 
-Tell how the new filters search along ., $HOME, $HOME/vile and startup path.
-You can override the behavior, but otherwise they search for both "vile"
-and the specific language keywords, if any.
+The keyword file reader supports a limited include facility.  If a line
+begins with "::", it reads from the given keyword file.  A few filters
+(such as html) require multiple symbol tables; these include using ":+".
+In either case, the parameter of the include is the root name of the
+keyword file, e.g., "c" for "c.key".
+
+You can modify the behavior slightly, by giving an absolute pathname with
+the -k option, but otherwise they search for both "vile" and the specific
+language keywords, if any.
 
 PROGRAMS
 --------
 
 The following are implemented:
 
+	vile-ada-filt	(Ada95)
+	vile-awk-filt	(awk)
+	vile-bat-filt	(DOS batchfiles)
 	vile-c-filt	(C language)
 	vile-cweb-filt	(CWEBx)
-	vile-html-filt	(HTML)
+	vile-dcl-filt	(VMS DCL batchfiles)
+	vile-html-filt	(HTML with embedded JavaScript)
 	vile-latex-filt	(LaTeX or TeX)
 	vile-lex-filt	(lex)
+	vile-mail-filt	(mail folders)
 	vile-make-filt	(make)
 	vile-manfilt	(manpage)
+	vile-nr-filt	(nroff)
 	vile-pas-filt	(Pascal)
 	vile-perl-filt	(Perl)
 	vile-sh-filt	(sh/ksh/csh)
+	vile-sql-filt	(SQL scripts)
+	vile-tc-filt	(termcap)
+	vile-tcl-filt	(TCL/TK)
+	vile-ti-filt	(terminfo)
 	vile-vile-filt	(Vile's macros)
+	vile-yacc-filt	(yacc)
 
-BUGS (1998/12/21)
+BUGS (1998/12/29)
 ----
 
 Not all filters use a keywords file (yet).
 
-The filters make inconsistent use of implicit linking in the keywords file,
-e.g.,
-	Keyword:B
-	if:Keyword
-
-is the design, which is not always implemented (yet).
-
 No check is made to exclude identifiers with leading capitals from the
 highlighting.
 
-The lex filters have been tested only with flex, which treats newlines
-differently.  Older versions of lex also do not support the %x states.
+The lex filters have been well tested only with flex, which treats newlines
+differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.1 1998/12/21 11:51:42 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.2 1998/12/29 15:34:20 tom Exp $

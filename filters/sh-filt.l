@@ -1,26 +1,23 @@
-%x CODE HERE
+%x NORMAL HEREDOC QUOTED
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.14 1998/12/22 03:08:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.20 1998/12/29 13:37:31 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
 
 #include <filters.h>
 
-#include <stdio.h>
-#include <string.h>
-
 char *filter_name = "sh";
 
 #define isIdent(ch) (isalnum(ch) || ch == '_')
 
-static char *Comment_attr;
 static char *Action_attr;
+static char *Comment_attr;
 static char *Ident_attr;
-static char *String_attr;
 static char *Number_attr;
+static char *String_attr;
 
 static char *here_tag;
 static unsigned here_len;
@@ -51,7 +48,7 @@ static unsigned save_max;
 static unsigned save_len;
 
 static void
-add_to_here(char *text, int length)
+add_to_quoted(char *text, int length)
 {
     save_bfr = do_alloc(save_bfr, save_len + length, &save_max);
     strncpy(save_bfr + save_len, text, length);
@@ -59,7 +56,7 @@ add_to_here(char *text, int length)
 }
 
 static void
-flush_here(void)
+flush_quoted(void)
 {
     if (save_len) {
 	write_token(yyout, save_bfr, save_len, String_attr);
@@ -68,7 +65,7 @@ flush_here(void)
 }
 
 void
-init_filter(void)
+init_filter(int before GCC_UNUSED)
 {
 }
 
@@ -77,13 +74,14 @@ do_filter(FILE *input, FILE *output)
 {
     yyin = input;
     yyout = output;
-    Comment_attr = keyword_attr(NAME_COMMENT);
-    Action_attr  = keyword_attr(NAME_ACTION);
-    Ident_attr   = keyword_attr(NAME_IDENT2);
-    String_attr  = keyword_attr(NAME_LITERAL);
-    Number_attr  = keyword_attr(NAME_NUMBER);
 
-    BEGIN(CODE);
+    Action_attr  = keyword_attr(NAME_ACTION);
+    Comment_attr = keyword_attr(NAME_COMMENT);
+    Ident_attr   = keyword_attr(NAME_IDENT2);
+    Number_attr  = keyword_attr(NAME_NUMBER);
+    String_attr  = keyword_attr(NAME_LITERAL);
+
+    BEGIN(NORMAL);
     while (yylex() > 0) {
     }
 }
@@ -91,66 +89,84 @@ do_filter(FILE *input, FILE *output)
 %}
 
 SPACE		[ \t]
-STRING1		\'([^\\']|\\[^'])*\'
-STRING2		\"([^"]|\\.)*\"
+
+SSTRING		\'((\\.)|[^\'])*\'
+
+NAME		[a-zA-Z0-9_]
+
+WILDCARD	(\?|\*)
+WILDNAME	({NAME}|{WILDCARD})
+FILENAME	(([./]{WILDNAME}+)|({WILDNAME}+[./]{WILDNAME}*)|({NAME}*{WILDCARD})|\.+\/+)+
 
 ACTION		[\.`{}]
-IDENT		[a-zA-Z_][a-zA-Z_0-9]*
-QIDENT		[a-zA-Z_0-9"']+
-IDENT1		\$[a-zA-Z_0-9]+
+IDENT		[a-zA-Z_]{NAME}*
+QIDENT		[a-zA-Z_0-9"'\\]+
+IDENT1		\${NAME}+
 IDENT2		\$\{[^\}]*\}
-IDENTEQLS	[a-zA-Z_][a-zA-Z_0-9]*=
+IDENTEQLS	[a-zA-Z_]{NAME}*=
 IDENTX		\$[\*@#\?\$!-]
 
 INTEGER		[-+]?([0-9]+)
 
 %%
 
-<CODE>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
+<NORMAL>{FILENAME}	{ ECHO; /* exclude from other classes */ }
 
-<CODE>\\.		{ WriteToken(String_attr); }
+<NORMAL>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
 
-<CODE>"#".*$		{ write_string(yyout, yytext, yyleng, Comment_attr); }
+<NORMAL>"#"[^\n]*	{ WriteString(Comment_attr); }
 
-<CODE>{ACTION}		{ WriteToken(Action_attr); }
+<NORMAL>{ACTION}	{ WriteToken(Action_attr); }
 
-<CODE>{INTEGER}		{ WriteToken(Number_attr); }
+<NORMAL>{INTEGER}	{ WriteToken(Number_attr); }
 
-<CODE>{IDENT1}		{ WriteToken(Ident_attr); }
+<NORMAL>{IDENT1}	|
+<NORMAL>{IDENT2}	|
+<NORMAL>{IDENTX}	{ WriteToken(Ident_attr); }
 
-<CODE>{IDENT2}		{ WriteToken(Ident_attr); }
+<NORMAL>{IDENTEQLS}	{ write_string(yyout, yytext, yyleng-1, Ident_attr); fprintf(yyout, "="); }
 
-<CODE>{IDENTX}		{ WriteToken(Ident_attr); }
+<NORMAL>\\.		|
+<NORMAL>{SSTRING}	{ WriteString(String_attr); }
+<NORMAL>\"		{ add_to_quoted(yytext, yyleng); BEGIN(QUOTED); }
 
-<CODE>{IDENTEQLS}	{ write_string(yyout, yytext, yyleng-1, Ident_attr); fprintf(yyout, "="); }
-
-<CODE>{STRING1}		{ write_string(yyout, yytext, yyleng, String_attr); }
-
-<CODE>{STRING2}		{ write_string(yyout, yytext, yyleng, String_attr); }
-
-<CODE>\<\<{SPACE}*{QIDENT} {
-			    BEGIN(HERE);
+<NORMAL>\<\<{SPACE}*{QIDENT} {
+			    BEGIN(HEREDOC);
 			    save_here(yytext, yyleng);
-			    add_to_here(yytext, yyleng);
+			    add_to_quoted(yytext, yyleng);
 			}
-<HERE>\\\$		{ add_to_here(yytext, yyleng); }
-<HERE>{IDENT1}		{
+<HEREDOC>\\\$		{ add_to_quoted(yytext, yyleng); }
+<HEREDOC>{IDENT1}	{
 			    if (here_exp) {
-				flush_here();
+				flush_quoted();
 				WriteToken(Ident_attr);
 			    } else {
-				add_to_here(yytext, yyleng);
+				add_to_quoted(yytext, yyleng);
 			    }
 			}
-<HERE>^{QIDENT}		{
-			    add_to_here(yytext, yyleng);
+<HEREDOC>^{QIDENT}	{
+			    add_to_quoted(yytext, yyleng);
 			    if (!strcmp(here_tag, yytext)) {
-				flush_here();
-				BEGIN(CODE);
+				flush_quoted();
+				BEGIN(NORMAL);
 			    }
 			}
-<HERE>[^\n]		{ add_to_here(yytext, yyleng); }
-<HERE>\n		{
-			    flush_here();
+<HEREDOC>[^\n]		{ add_to_quoted(yytext, yyleng); }
+<HEREDOC>\n		{
+			    flush_quoted();
 			    fputc(yytext[0], yyout);
+			}
+
+<QUOTED>\\.		{ add_to_quoted(yytext, yyleng); }
+<QUOTED>{IDENT1}	{ flush_quoted();
+			  WriteToken(Ident_attr);
+			}
+<QUOTED>[^\n\"]		{ add_to_quoted(yytext, yyleng); }
+<QUOTED>\n		{
+			    flush_quoted();
+			    fputc(yytext[0], yyout);
+			}
+<QUOTED>\"		{ add_to_quoted(yytext, yyleng);
+			  flush_quoted();
+			  BEGIN(NORMAL);
 			}

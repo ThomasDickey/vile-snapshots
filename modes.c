@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.122 1998/11/30 10:29:31 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.123 1998/12/29 16:57:34 tom Exp $
  *
  */
 
@@ -2493,6 +2493,17 @@ remove_mode(int f GCC_UNUSED, int n GCC_UNUSED)
 }
 
 /*
+ * For the given majormode (by index into my_majormodes[]), return the
+ * corresponding buffer mode value.
+ */
+static int
+get_mm_b_val(int n, int m)
+{
+	struct VAL *bv = my_majormodes[n].data->mb.bv;
+	return (bv[m].vp->i);
+}
+
+/*
  * Returns the regular expression for the given indices, checking that the
  * pattern is non-null.
  */
@@ -2567,15 +2578,15 @@ setm_by_preamble(register BUFFER *bp)
 	 && my_majormodes != 0) {
 		size_t n = 0;
 		int savecase = ignorecase;
-#if OPT_CASELESS
-		ignorecase = TRUE;
-#else
-		ignorecase = FALSE;
-#endif
 
 		for (n = 0; my_majormodes[n].name != 0; n++) {
 			if (my_majormodes[n].flag) {
 				regexp *exp = get_mm_rexp(n, MVAL_PREAMBLE);
+#if OPT_CASELESS
+				ignorecase = TRUE;
+#else
+				ignorecase = get_mm_b_val(n, MDIGNCASE);
+#endif
 				if (exp != 0
 				 && lregexec(exp, lp, 0, llength(lp))) {
 					attach_mmode(bp, my_majormodes[n].name);

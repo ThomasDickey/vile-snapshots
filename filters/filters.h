@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.13 1998/12/22 03:00:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.21 1998/12/29 00:31:01 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -75,6 +75,7 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 #define ATTR_IDENT   ""
 #define ATTR_IDENT2  "C6"
 #define ATTR_KEYWORD "B"	/* was C3 */
+#define ATTR_KEYWRD2 "B"
 #define ATTR_LITERAL "UC5"	/* was C4 */
 #define ATTR_NUMBER  "C6"	/* was C5 */
 #define ATTR_PREPROC "C2"
@@ -88,6 +89,7 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 #define NAME_IDENT   "Ident"
 #define NAME_IDENT2  "Ident2"
 #define NAME_KEYWORD "Keyword"
+#define NAME_KEYWRD2 "Keyword2"
 #define NAME_LITERAL "Literal"
 #define NAME_NUMBER  "Number"
 #define NAME_PREPROC "Preproc"
@@ -123,6 +125,8 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 #define HAVE_LONG_FILE_NAMES 1
 #endif
 
+typedef void (*EachKeyword)(const char *name, int size, const char *attr);
+
 /*
  * lex should declare these:
  */
@@ -136,22 +140,22 @@ extern int yylex(void);
 extern char *filter_name;
 
 extern int is_ident(int ch);
-extern void init_filter(void);
+extern void init_filter(int before);
 extern void do_filter(FILE *input, FILE *output);
 
 /*
  * Declared in the filters.c file.
  */
+extern char *ci_keyword_attr(char *name);
 extern char *do_alloc(char *ptr, unsigned need, unsigned *have);
 extern char *keyword_attr(char *name);
+extern char *lowercase_of(char *name);
 extern char *readline(FILE *fp, char **ptr, unsigned *len);
 extern char *strmalloc(const char *src);
-extern int is_ci_keyword(char *text);
-extern int is_keyword(char *name);
-extern long hash_function(char *id);
-extern void closehash(void);
-extern void inithash(void);
-extern void insert_keyword(char *ident, char *attribute);
+extern int set_symbol_table(const char *classname);
+extern long hash_function(const char *id);
+extern void for_each_keyword(EachKeyword func);
+extern void insert_keyword(const char *ident, const char *attribute);
 extern void write_string(FILE *fp, char *string, int length, char *attribute);
 extern void write_token(FILE *fp, char *string, int length, char *attribute);
 

@@ -1,11 +1,12 @@
 %x MATH MATHC
 
 %{
-/* LaTeX Filter......................................................... */
-/* Filter to add vile "attribution" sequences to selected bits of LaTeX  */
-/* input text.								 */
-
 /*
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.6 1998/12/26 01:20:37 tom Exp $
+ *
+ * Filter to add vile "attribution" sequences to selected bits of LaTeX input
+ * text.
+ *
  * First version written by Pierre Dittgen (dittgen@univ-mlv.fr)
  * modified by Vanessa Conchodon (conchodo@univ-mlv.fr)
  */
@@ -30,12 +31,14 @@ static char *String_attr;
 static char *Subsection_attr;	/* section */
 
 void
-init_filter(void)
+init_filter(int before GCC_UNUSED)
 {
-    insert_keyword(NAME_MATH,    ATTR_LITERAL);
-    insert_keyword(NAME_MATH_C,  ATTR_LITERAL);
-    insert_keyword(NAME_SECTION, ATTR_IDENT);
-    insert_keyword(NAME_SUBSECTION,ATTR_IDENT);
+    if (before) {
+	insert_keyword(NAME_MATH,    ATTR_LITERAL);
+	insert_keyword(NAME_MATH_C,  ATTR_LITERAL);
+	insert_keyword(NAME_SECTION, ATTR_IDENT);
+	insert_keyword(NAME_SUBSECTION,ATTR_IDENT);
+    }
 }
 
 void
@@ -69,7 +72,7 @@ REAL		[-+]?([0-9]*\.[0-9]+)([eE][+-]?[0-9]+)?
 \\"subsection"	{ WriteToken(Subsection_attr); }
 
 \\[a-zA-Z][a-zA-Z]* { WriteToken(Keyword_attr); }
-\\[^\a-zA-z][ a-zA-Z] { WriteToken(Keyword_attr); }
+\\[^\\a-zA-z][ a-zA-Z] { WriteToken(Keyword_attr); }
 
 
 \\.[^ ] 	{ write_token(yyout, yytext, yyleng-1, Ident_attr); fprintf(yyout, "%c", yytext[yyleng-1]); }

@@ -1,8 +1,8 @@
-%s RULES RULE1 RULEX ACTIONS ACTION1 ACTION2 ACTION3 CODE COMMENT
+%s RULES RULE1 RULEX ACTIONS ACTION2 ACTION3 CODE COMMENT
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.5 1998/12/22 03:03:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.12 1998/12/28 21:48:51 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -40,8 +40,24 @@ set_rules(void)
 	set_state();
 }
 
+/* For some reason, I cannot get flex to yield the substrings for <STATES>
+ * and {PATTERN}, so I merged the two in the actions and split them here.
+ */
+static void
+write_states(char *text, int len)
+{
+    int n;
+    if (text[0] == '<') {	/* only happens if we have {STATES} */
+	n = 1 + strchr(text, '>') - text;
+	write_token(yyout, text, n, Keyword_attr);
+	text += n;
+	len -= n;
+    }
+    write_token(yyout, text, len, String_attr);
+}
+
 void
-init_filter(void)
+init_filter(int before GCC_UNUSED)
 {
 }
 
@@ -72,12 +88,13 @@ IDENT		[a-zA-Z_][a-zA-Z_0-9]*
 
 INTEGER		[-+]?([0-9]+)
 
-SSTRING		\'(\\\.|[^\'])*\'
-DSTRING		\"(\\\.|[^\"])*\"
+SSTRING		\'((\\.)|[^\'])*\'
+DSTRING		\"((\\.)|[^\"])*\"
 STRINGS		({SSTRING}|{DSTRING})
 
-STATES		<({IDENT}|\,)+>
-PATTERN		(\\\.|[^ \t])+
+PATTERN		(\\\.|[^ \t\n])+
+STATES		(<({IDENT}|\,)+>)
+MATCH		{STATES}?{PATTERN}
 
 %%
 
@@ -103,21 +120,20 @@ PATTERN		(\\\.|[^ \t])+
 <RULE1>{SPACE}+		{ ECHO; BEGIN(RULEX); }
 <RULEX>.*		{ WriteToken(String_attr); BEGIN(RULES); }
 
-<ACTIONS>^{STATES}?	{ WriteToken(Keyword_attr); BEGIN(ACTION1); }
-<ACTION1>{PATTERN}	{ WriteToken(String_attr); BEGIN(ACTION2); }
+<ACTIONS>^{MATCH}	{ write_states(yytext, yyleng); BEGIN(ACTION2); }
 <ACTION2>{SPACE}+	{ ECHO; BEGIN(ACTION3); }
 <ACTION3>\{		{ ECHO; nesting = 1; BEGIN(CODE); }
 <ACTION3>[^\{].*$	{ ECHO; BEGIN(ACTIONS); }
 
 <CODE>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
-<CODE>{STRINGS}		{ WriteToken(String_attr); }
+<CODE>{STRINGS}		{ WriteString(String_attr); }
 <CODE>{INTEGER}		{ WriteToken(Number_attr); }
 <CODE>\{		{ ECHO; nesting++; }
 <CODE>\}		{ ECHO; if (--nesting <= 0) { nesting = 0; set_rules(); } }
 
 <CODE>"/*"		{ WriteToken(Comment_attr); BEGIN(COMMENT); }
-<COMMENT>[^*]*		{ WriteToken(Comment_attr); }
-<COMMENT>"*"+[^*/]*	{ WriteToken(Comment_attr); }
+<COMMENT>[^*]*		{ WriteString(Comment_attr); }
+<COMMENT>"*"+[^*/]*	{ WriteString(Comment_attr); }
 <COMMENT>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(CODE); }
 
 <CODE>^{SPACE}*#{SPACE}*{IDENT}({SPACE}+(\<[^>]+\>|\"[^"]+\"))? { WriteToken(Preproc_attr); }

@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.237 1998/12/01 12:00:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.238 1998/12/25 00:33:10 tom Exp $
  *
  */
 
@@ -376,18 +376,22 @@ fileread(int f GCC_UNUSED, int n GCC_UNUSED)
 		if ((s = mlreply_file("Replace with file: ", (TBUFF **)0,
 				FILEC_REREAD, fname)) != TRUE)
 			return s;
-	}
-	else if (!global_g_val(GMDWARNREREAD)
+	} else if (b_is_temporary(curbp)) {
+		mlforce("[Cannot reread]");
+		return FALSE;
+	} else if (!(global_g_val(GMDWARNREREAD) || curbp->b_fname[0] == EOS)
 		 || ((s = mlyesno("Reread current buffer")) == TRUE)) {
 		(void)strcpy(fname, curbp->b_fname);
-		/* Check if we are rereading the unnamed-buffer if it is not
+		/* Check if we are rereading an unnamed-buffer if it is not
 		 * associated with a file.
 		 */
 		if (curbp->b_fname[0] == EOS
-		   && eql_bname(curbp, UNNAMED_BufName)) {
+		   && (eql_bname(curbp, STDIN_BufName)
+		    || eql_bname(curbp, UNNAMED_BufName))) {
 			s = bclear(curbp);
 			if (s == TRUE)
 				mlerase();
+			curwp->w_flag |= WFMODE|WFHARD;
 			return s;
 		}
 	} else {

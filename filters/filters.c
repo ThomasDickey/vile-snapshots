@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.18 1998/12/22 02:46:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.34 1998/12/29 02:05:46 tom Exp $
  *
  */
 
@@ -27,6 +27,8 @@
 #define DOT_TO_HIDE_IT ""
 #endif
 
+#define	typecallocn(cast,ntypes)	(cast *)calloc(sizeof(cast),ntypes)
+
 #define HASH_LENGTH 256
 
 typedef struct _keyword KEYWORD;
@@ -38,14 +40,38 @@ struct _keyword {
     KEYWORD *next;
 };
 
-static KEYWORD *hashtable[HASH_LENGTH];
+typedef struct _classes CLASS;
+
+struct _classes {
+    char *name;
+    KEYWORD **data;
+    CLASS *next; 
+};
+
+static KEYWORD **hashtable;
+static CLASS *classes;
+
+static void RemoveList(KEYWORD *k);
 
 /******************************************************************************
  * Private functions                                                          *
  ******************************************************************************/
 
+static void
+CreateSymbolTable(char *classname)
+{
+    if (!set_symbol_table(classname)) {
+	CLASS *p = typecallocn(CLASS, 1);
+	p->name = strmalloc(classname);
+	p->data = typecallocn(KEYWORD*, HASH_LENGTH);
+	p->next = classes;
+	classes = p;
+	hashtable = p->data;
+    }
+}
+
 static KEYWORD *
-FindIdentifier(char *name)
+FindIdentifier(const char *name)
 {
 	unsigned size = strlen(name);
 	KEYWORD *hash_id;
@@ -81,7 +107,7 @@ Free (char *ptr)
  * hides them.
  */
 static FILE *
-OpenKeywords(char *filename)
+OpenKeywords(char *classname)
 {
 #define OPEN_IT(p) if ((fp = fopen(p, "r")) != 0) { TRACE(("Opened %s\n", p)) return fp; }
 #define FIND_IT(p) sprintf p; OPEN_IT(name)
@@ -89,10 +115,17 @@ OpenKeywords(char *filename)
     static char *name;
     static unsigned have;
 
+    static char *filename;
+    static unsigned have2;
+    static char suffix[] = KEYFILE_SUFFIX;
+
     FILE *fp;
     char *path;
     unsigned need;
     char leaf[20];
+
+    filename = do_alloc(filename, sizeof(suffix) + strlen(classname) + 2, &have2);
+    sprintf(filename, "%s%s", classname, suffix);
 
     if (strchr(filename, PATHSEP) != 0) {
 	OPEN_IT(filename);
@@ -135,27 +168,28 @@ OpenKeywords(char *filename)
 		n = m+1;
 	    else
 		n = m;
-	    }
+	}
     }
 
     return 0;
 }
 
 static void
-ReadKeywords(char *filename)
+ReadKeywords(char *classname)
 {
     FILE *kwfile;
     char *attrs = 0;
     char *line  = 0;
     char *names = 0;
+    char *args;
     char *s;
-    int  items;
+    int  marker = ':';
     unsigned attr_len = 0;
     unsigned line_len = 0;
     unsigned name_len = 0;
 
-    TRACE(("ReadKeywords(%s)\n", filename))
-    if ((kwfile = OpenKeywords(filename)) != NULL) {
+    TRACE(("ReadKeywords(%s)\n", classname))
+    if ((kwfile = OpenKeywords(classname)) != NULL) {
 	while (readline(kwfile, &line, &line_len) != 0) {
 	    unsigned len = strlen(line);
 
@@ -165,26 +199,43 @@ ReadKeywords(char *filename)
 		if (!len)
 		    continue;
 
+	    if (*line == marker || *line == 0) {
+		/* A line beginning "::" denotes an inclusion */
+		if (!strncmp(line, "::", 2)) {
+		    ReadKeywords(line+2);
+		} else if (!strncmp(line, ":+", 2)) {
+		    CreateSymbolTable(line+2);
+		    ReadKeywords(MY_NAME);
+		    ReadKeywords(line+2);
+		    set_symbol_table(filter_name);
+		}
+		continue;
+	    }
+
+	    args = 0;
+	    if ((s = strchr(line, marker)) != 0) {
+		*s++ = 0;
+		if (*s != 0)
+		    args = s;
+	    }
+
 	    names = do_alloc(names, line_len, &name_len);
 	    attrs = do_alloc(attrs, line_len, &attr_len);
-	    items = sscanf(line,
-			    "%[^:]:%[IURC0-9A-F]",
-			    names,
-			    attrs);
-	    TRACE(("ReadKeywords: Items %i, name=%s, attr=%s\n",
-		    items, names, attrs))
-	    if (items == 2 && *names && *attrs)
+	    strcpy(names, line);
+	    if ((args == 0)
+	     || sscanf(args, "%[IURC0-9A-F]", attrs) != 1
+	     || strcmp(args, attrs)) {
+		*attrs = 0;
+	    }
+
+	    TRACE(("ReadKeywords: name=%s, attr=%s (%s)\n",
+		    names, attrs, line))
+
+	    if (*names && *attrs) {
 		insert_keyword(names, attrs);
-	    else if (items == 1 && *names) {
-		items = sscanf(line,
-				"%[^:]:%s",
-				names,
-				attrs);
-		if (items == 2 && *attrs && (s = keyword_attr(attrs)) != 0) {
+	    } else if (*names) {
+		if ((s = keyword_attr(args ? args : NAME_KEYWORD)) != 0)
 		    insert_keyword(names, s);
-		} else if ((s = keyword_attr(NAME_KEYWORD)) != 0) {
-		    insert_keyword(names, s);
-		}
 	    }
 	}
 	fclose(kwfile);
@@ -208,14 +259,10 @@ RemoveList(KEYWORD *k)
  * Public functions                                                           *
  ******************************************************************************/
 
-void
-closehash(void)
+char *
+ci_keyword_attr(char *text)
 {
-    int i;
-    for (i = 0; i < HASH_LENGTH; i++) {
-	RemoveList(hashtable[i]);
-	hashtable[i] = NULL; /* For unseen future i do this */
-    }
+    return keyword_attr(lowercase_of(text));
 }
 
 char *
@@ -232,50 +279,26 @@ do_alloc(char *ptr, unsigned need, unsigned *have)
     return ptr;
 }
 
+/*
+ * Iterate over the names in the hash table, not ordered.  This assumes that
+ * the called function does not remove any entries from the table.  It is okay
+ * to add names, since that will not alter the hash links.
+ */
 void
-inithash(void)
+for_each_keyword(EachKeyword func)
 {
     int i;
-    for (i = 0; i< HASH_LENGTH; i++)
-	hashtable[i] = NULL;
-}
+    KEYWORD *ptr;
 
-char *
-keyword_attr(char *name)
-{
-    KEYWORD *hash_id;
-    if ((hash_id = FindIdentifier(name)) != 0)
-	return hash_id->kw_attr;
-    return 0;
-}
-
-char *
-readline(FILE *fp, char **ptr, unsigned *len)
-{
-    char *buf = *ptr;
-    unsigned used = 0;
-
-    if (buf == 0)
-	buf = (char *)malloc(*len = BUFSIZ);
-    while (!feof(fp)) {
-	int ch = fgetc(fp);
-	if (ch == EOF || feof(fp) || ferror(fp)) {
-	    break;
+    for (i = 0; i < HASH_LENGTH; i++) {
+	for (ptr = hashtable[i]; ptr != 0; ptr = ptr->next) {
+	    (*func)(ptr->kw_name, ptr->kw_size, ptr->kw_attr);
 	}
-	if (used+2 >= *len) {
-	    *len = 3 * (*len) / 2;
-	    buf = realloc(buf, *len);
-	}
-	buf[used++] = ch;
-	if (ch == '\n')
-	    break;
     }
-    buf[used] = '\0';
-    return used ? (*ptr = buf) : 0;
 }
 
 long
-hash_function(char *id)
+hash_function(const char *id)
 {
     /*
      * Build more elaborate hashing scheme. If you want one.
@@ -287,7 +310,7 @@ hash_function(char *id)
 }
 
 void
-insert_keyword(char *ident, char *attribute)
+insert_keyword(const char *ident, const char *attribute)
 {
     KEYWORD *first;
     KEYWORD *nxt;
@@ -319,11 +342,17 @@ insert_keyword(char *ident, char *attribute)
 	nxt->next))
 }
 
-/*
- * We've parsed a string that is a case-independent name.
- */
-int
-is_ci_keyword(char *text)
+char *
+keyword_attr(char *name)
+{
+    KEYWORD *hash_id;
+    if ((hash_id = FindIdentifier(name)) != 0)
+	return hash_id->kw_attr;
+    return 0;
+}
+
+char *
+lowercase_of(char *text)
 {
     static char *name;
     static unsigned used;
@@ -337,18 +366,45 @@ is_ci_keyword(char *text)
 	    name[n] = text[n];
     }
     name[n] = 0;
-    return is_keyword(name);
+    return (name);
 }
 
-/*
- * Lookup keywords in a table to avoid having flex pick out partial names,
- * e.g., "eval" from "eval_string".
- */
-int
-is_keyword(char *name)
+char *
+readline(FILE *fp, char **ptr, unsigned *len)
 {
-    char *attr = keyword_attr(name);
-    return (attr != 0 && (*attr == 0 || !strcmp(name, NAME_KEYWORD)));
+    char *buf = *ptr;
+    unsigned used = 0;
+
+    if (buf == 0)
+	buf = (char *)malloc(*len = BUFSIZ);
+    while (!feof(fp)) {
+	int ch = fgetc(fp);
+	if (ch == EOF || feof(fp) || ferror(fp)) {
+	    break;
+	}
+	if (used+2 >= *len) {
+	    *len = 3 * (*len) / 2;
+	    buf = realloc(buf, *len);
+	}
+	buf[used++] = ch;
+	if (ch == '\n')
+	    break;
+    }
+    buf[used] = '\0';
+    return used ? (*ptr = buf) : 0;
+}
+
+int
+set_symbol_table(const char *classname)
+{
+    CLASS *p;
+    for (p = classes; p != 0; p = p->next) {
+	if (!strcmp(classname, p->name)) {
+	    hashtable = p->data;
+	    return 1;
+	}
+    }
+    return 0;
 }
 
 char *
@@ -408,27 +464,30 @@ main(int argc, char **argv)
     setlocale(LC_CTYPE, "");
 #endif
 
-    inithash();
+    CreateSymbolTable(filter_name);
 
     insert_keyword(NAME_ACTION,  ATTR_ACTION);
     insert_keyword(NAME_COMMENT, ATTR_COMMENT);
     insert_keyword(NAME_IDENT,   ATTR_IDENT);
     insert_keyword(NAME_IDENT2,  ATTR_IDENT2);
     insert_keyword(NAME_KEYWORD, ATTR_KEYWORD);
+    insert_keyword(NAME_KEYWRD2, ATTR_KEYWRD2);
     insert_keyword(NAME_LITERAL, ATTR_LITERAL);
     insert_keyword(NAME_NUMBER,  ATTR_NUMBER);
     insert_keyword(NAME_PREPROC, ATTR_PREPROC);
     insert_keyword(NAME_TYPES,   ATTR_TYPES);
 
-    init_filter();
+    init_filter(1);
+    ReadKeywords(MY_NAME);
 
     for (n = 1; n < argc; n++) {
 	char *s = argv[n];
 	if (*s == '-') {
 	    while (*++s) {
+		char *value = s[1] ? s+1 : ((n < argc) ? argv[++n] : "");
 		switch(*s) {
 		case 'k':
-		    ReadKeywords(argv[n]);
+		    ReadKeywords(value);
 		    k_used++;
 		    break;
 		default:
@@ -441,16 +500,12 @@ main(int argc, char **argv)
 	}
     }
     if (!k_used) {
-	char name[80];
-
-	sprintf(name, "%s%s", MY_NAME, KEYFILE_SUFFIX);
-	ReadKeywords(name);
-
 	if (strcmp(MY_NAME, filter_name)) {
-	    sprintf(name, "%s%s", filter_name, KEYFILE_SUFFIX);
-	    ReadKeywords(name);
+	    ReadKeywords(filter_name);
 	}
     }
+    init_filter(0);
+
     if (n < argc) {
 	char *name = argv[n++];
 	FILE *fp = fopen(name, "r");
@@ -461,7 +516,5 @@ main(int argc, char **argv)
     } else {
 	do_filter(stdin, stdout);
     }
-    closehash();
-
     exit(0);
 }

@@ -1,10 +1,10 @@
-; $Id: filters.rc,v 1.13 1998/12/22 10:28:52 tom Exp $
+; $Id: filters.rc,v 1.25 1998/12/29 02:02:12 tom Exp $
 
 define-mode ada
 ~with define-submode ada
 	suf "\\.\\(\\<ada\\>\\|\\<ads\\>\\|\\<adb\\>\\)$"
 	comment-prefix "^\\s*/\\?--"
-	comments   "^\\s*?--\\s.*$"
+	comments   "^\\s*--\\s.*$"
 	fence-if   "^\\s*\\(\\<begin\\>\\|\\<if\\>\\)"
 	fence-elif "^\\s*\\<elsif\\>"
 	fence-else "^\\s*\\(\\<exception\\>|\\<else\\>\\)"
@@ -12,26 +12,76 @@ define-mode ada
 	ignorecase
 ~endwith
 
+define-mode awk
+~with define-submode awk
+	suf "\\.awk$"
+	pre "^#!\\s*\\/.*awk\\>\\(\\s*-[a-z]\\+\\)*$"
+	comment-prefix "^\\s*#"
+	comments   "^\\s*#\\s\\+\\s*$"
+~endwith
+
+define-mode bat
+~with define-submode bat
+	suf "\\.bat$"
+	pre "\\s*(@)\\?echo\\s*(on|off)\\?$"
+	dos
+	comment-prefix "^\\s*rem\>"
+	comments   "^\\s*rem\>\\s\\+\\s*$"
+~endwith
+
 define-mode cweb
 ~with define-submode cweb
 	suf "\\(\\.w\\|\\.web\\)$"
 ~endwith
 
+define-mode csh
+~with define-submode csh
+	suf "\\.csh*"
+	pre "^#!\\s*\\/.*csh\\>\\(\\s*-[a-z]\\+\\)*$"
+	comment-prefix	"^\\s*#"
+	fence-if	"^\\s*\\<if\\>.*\\<then\\>"
+	fence-elif	"^\\s*\\<else\\s*if\\>"
+	fence-else	"^\\s*\\<else\\>"
+	fence-fi	"^\\s*\\<endif\\>"
+~endwith
+
 define-mode dcl
 ~with define-submode dcl
 	suf "\\.com$"
-	comment-prefix "^\\s*/\\?\\$!"
-	comments   "^\\s*/\\?\\$!\\s*/\\?\\s*$"
+	comment-prefix	"^\\s*/\\?\\$!"
+	comments	"^\\s*/\\?\\$!\\s*/\\?\\s*$"
 	ignorecase
 ~endwith
 
 define-mode html
 ~with define-submode html
 	suf "\\.\\(html\\|htm\\)$"
-	fence-pairs "<>()[]{}"
+	pre "\\(<html>\\|<script>\\)"
+	fence-pairs	"<>()[]{}"
+	fence-begin	"<--"
+	fence-end	"-->"
+	fence-if	"^\\s*<server>$"
+	fence-fi	"^\\s*</server>$"
 	ignorecase
-	comment-prefix "^\\s*--"
-	comments "^\\s*$"
+	comment-prefix	"^\\s*--"
+	comments	"^\\s*$"
+~endwith
+
+define-mode java
+~with define-submode java
+	suf "\\.java$"
+~endwith
+
+define-mode js
+~with define-submode js
+	suf "\\.js$"
+~endwith
+
+define-mode key
+~with define-submode key
+	suf "\\.\\(key\\|keywords\\)$"
+	comment-prefix	"^\\s*/\\?:"
+	comments	"^\\s*/\\?:\\s*/\\?\\s*$"
 ~endwith
 
 define-mode latex
@@ -57,6 +107,12 @@ define-mode m4
 	fence-fi   "^\\s*\\<fi\\>"
 ~endwith
 
+define-mode mail
+~with define-submode mail
+	suf "\\([Mm]ail\\>\\|\\<mbox$\\)"
+	pre "^From "
+~endwith
+
 define-mode make
 ~with define-submode make
 	suf "\\([Mm]akefile\\|\\.mak$\\|\\.mk$\\)"
@@ -75,6 +131,12 @@ define-mode mms
 	fence-fi   "^\\s*\\.\\<endif\\>"
 ~endwith
 
+define-mode nroff
+~with define-submode nroff
+	suf "\\.\\(\\([1-9ln][a-z]\\?\\)\\|man\\)$"
+	pre "^\\.\\\\\""
+~endwith
+
 define-mode pascal
 ~with define-submode pascal
 	suf "\\.\\(p|pas\\)$"
@@ -82,7 +144,7 @@ define-mode pascal
 
 define-mode perl
 ~with define-submode perl
-	preamble "^#\\s*!\\s*\\/.*perl\\>"
+	pre "^#\\s*!\\s*\\/.*perl\\>"
 	suf "\\.pl$"
 	comment-prefix "^\\s*#"
 	comments       "^\\s*/\\?#\\s*/\\?\\s*$"
@@ -98,7 +160,7 @@ define-mode perl
 define-mode sh
 ~with define-submode sh
 	suf "\\.sh$"
-	pre "^#!\\s*\\/.*sh\\>$"
+	pre "^#!\\s*\\/.*sh\\>\\(\\s*-[a-z]\\+\\)*$"
 	comment-prefix "^\\s*[:#]"
 	comments   "^\\s*[:#]\\s\\+\\s*$"
 	fence-if   "^\\s*\\<if\\>"
@@ -107,11 +169,40 @@ define-mode sh
 	fence-fi   "^\\s*\\<fi\\>"
 ~endwith
 
+define-mode sql
+~with define-submode sql
+	suf "\\.sql$"
+	pre "^\\s*\\remark\\>$"
+	ignorecase
+~endwith
+
+define-mode tc
+~with define-submode tc
+	suf "\\(\\.tc\\|\\<termcap[^/]*\\)$"
+	comment-prefix "^\\s*[:#]"
+	comments   "^\\s*[:#]\\s\\+\\s*$"
+~endwith
+
+define-mode tcl
+~with define-submode tcl
+	suf "\\(\\.tcl\\)$"
+	pre "^#!\\s*\\/.*wish\\>\\(\\s*-[a-z]\\+\\)*$"
+	comment-prefix "^\\s*[:#]"
+	comments   "^\\s*[:#]\\s\\+\\s*$"
+~endwith
+
+define-mode ti
+~with define-submode ti
+	suf "\\(\\.ti\\|\\<terminfo[^/]*\\)$"
+	comment-prefix "^\\s*[:#]"
+	comments   "^\\s*[:#]\\s\\+\\s*$"
+~endwith
+
 define-mode txt
 ~with define-submode txt
 	suf "\\.\\(txt\\|doc\\)$"
 	comment-prefix "^\\s*/\\?--"
-	comments "^\\s*/\\?--\\s+/\\?\\s*$"
+	comments	"^\\s*/\\?--\\s+/\\?\\s*$"
 ~endwith
 
 define-mode vile
@@ -124,39 +215,83 @@ define-mode vile
 	fence-fi	"\\s*~endif"
 ~endwith
 
+define-mode yacc
+~with define-submode yacc
+	suf "\\.\\(y\\|yacc\\)$"
+~endwith
+
 store-procedure HighlightFilter
 	~local $curcol $curline
 	~hidden goto-beginning-of-file
 	~if &sin $majormode "sh"
 		~hidden attribute-from-filter end-of-file "vile-sh-filt"
 		write-message "[Attaching Shell attributes...]"
+	~elseif &seq $majormode "ada"
+		~hidden attribute-from-filter end-of-file "vile-ada-filt"
+		write-message "[Attaching Ada attributes...]"
+	~elseif &seq $majormode "awk"
+		~hidden attribute-from-filter end-of-file "vile-awk-filt"
+		write-message "[Attaching Awk attributes...]"
+	~elseif &seq $majormode "bat"
+		~hidden attribute-from-filter end-of-file "vile-bat-filt"
+		write-message "[Attaching DOS-Batchfile attributes...]"
 	~elseif &seq $majormode "c"
 		~hidden attribute-from-filter end-of-file "vile-c-filt"
 		write-message "[Attaching C/C++ attributes...]"
+	~elseif &seq $majormode "dcl"
+		~hidden attribute-from-filter end-of-file "vile-dcl-filt"
+		write-message "[Attaching DCL attributes...]"
 	~elseif &seq $majormode "cweb"
 		~hidden attribute-from-filter end-of-file "vile-cweb-filt"
 		write-message "[Attaching CWEBx attributes...]"
 	~elseif &seq $majormode "html"
 		~hidden attribute-from-filter end-of-file "vile-html-filt"
 		write-message "[Attaching HTML attributes...]"
+	~elseif &seq $majormode "java"
+		~hidden attribute-from-filter end-of-file "vile-c-filt -k java"
+		write-message "[Attaching Java attributes...]"
+	~elseif &seq $majormode "js"
+		~hidden attribute-from-filter end-of-file "vile-c-filt -k js"
+		write-message "[Attaching JavaScript attributes...]"
 	~elseif &seq $majormode "latex"
 		~hidden attribute-from-filter end-of-file "vile-latex-filt"
 		write-message "[Attaching LaTeX attributes...]"
 	~elseif &seq $majormode "lex"
 		~hidden attribute-from-filter end-of-file "vile-lex-filt"
 		write-message "[Attaching LEX attributes...]"
+	~elseif &seq $majormode "mail"
+		~hidden attribute-from-filter end-of-file "vile-mail-filt"
+		write-message "[Attaching Mail attributes...]"
 	~elseif &seq $majormode "make"
 		~hidden attribute-from-filter end-of-file "vile-make-filt"
 		write-message "[Attaching Makefile attributes...]"
+	~elseif &seq $majormode "nroff"
+		~hidden attribute-from-filter end-of-file "vile-nr-filt"
+		write-message "[Attaching NROFF attributes...]"
 	~elseif &seq $majormode "pascal"
 		~hidden attribute-from-filter end-of-file "vile-pas-filt"
 		write-message "[Attaching Pascal attributes...]"
 	~elseif &seq $majormode "perl"
 		~hidden attribute-from-filter end-of-file "vile-perl-filt"
 		write-message "[Attaching Perl attributes...]"
+	~elseif &seq $majormode "sql"
+		~hidden attribute-from-filter end-of-file "vile-sql-filt"
+		write-message "[Attaching SQL attributes...]"
+	~elseif &seq $majormode "tc"
+		~hidden attribute-from-filter end-of-file "vile-tc-filt"
+		write-message "[Attaching Termcap attributes...]"
+	~elseif &seq $majormode "tcl"
+		~hidden attribute-from-filter end-of-file "vile-tcl-filt"
+		write-message "[Attaching TCL/TK attributes...]"
+	~elseif &seq $majormode "ti"
+		~hidden attribute-from-filter end-of-file "vile-ti-filt"
+		write-message "[Attaching Terminfo attributes...]"
 	~elseif &seq $majormode "vile"
 		~hidden attribute-from-filter end-of-file "vile-vile-filt"
 		write-message "[Attaching Vile attributes...]"
+	~elseif &seq $majormode "yacc"
+		~hidden attribute-from-filter end-of-file "vile-yacc-filt"
+		write-message "[Attaching YACC attributes...]"
 	~else
 		write-message &cat "[No filter defined for majormode '" &cat $majormode "']"
 	~endif

@@ -1,5 +1,28 @@
 Changes for vile 8.3 (released ??? ??? ??, 1998)
 
+ (tom) 981229 (j)
+ 	+ modify majormode preamble logic to set ignorecase if the majormode
+	  sets ignorecase.
+ 	+ modify tcap.c to use no_color_video capability to avoid overwriting
+	  colors with nonfunctioning video attributes.
+ 	+ modify html syntax filter to handle embedded JavaScript.
+	+ add filters for ada, awk, DOS batchfile, VAX DCL, Java, JavsScript,
+	  mail, nroff, sql, tcl/tk, termcap, terminfo, yacc
+	+ correct dependencies in filters/makefile.in for keywords files, which
+	  live in $(srcdir) (report by Brendan O'Dea, patch by Kevin Buettner).
+	+ workaround a parsing problem in lex-filt.l so that STATES and PATTERN
+	  can be distinguished.
+	+ various fixes to "e!", which did not prompt or repaint properly if
+	  the current buffer was from standard input, the unnamed buffer, or a
+	  temporary buffer.
+	+ correct a missing pointer increment in rewritten c-filt.c, which
+	  caused an infinite loop in some cases after '#'.
+	+ correct a couple of places where missing '\' character in lex files
+	  was interpreted as \a rather than \\a.
+	+ correct comparison in is_keyword (filters.c) which caused html
+	  keywords to not be highlighted.
+	+ add csh mode to filters.rc
+
  (tom) 981222 (i)
  	+ modify expand_pattern() to handle Unix-style wildcards on VMS (reported
 	  by Clark Morgan).

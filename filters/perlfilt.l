@@ -1,10 +1,12 @@
 %x CODE HERE
 
 %{
-/* Filter to add vile "attribution" sequences to selected bits of PERL */
-/* input text. */
-
 /*
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.6 1998/12/25 21:33:49 tom Exp $
+ *
+ * Filter to add vile "attribution" sequences to selected bits of PERL input
+ * text.
+ *
  * This was based on a version written by Pierre Dittgen (dittgen@univ-mlv.fr)
  * - T.Dickey
  */
@@ -68,7 +70,7 @@ flush_here(void)
 }
 
 void
-init_filter(void)
+init_filter(int before GCC_UNUSED)
 {
 }
 
