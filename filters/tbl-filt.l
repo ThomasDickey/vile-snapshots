@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tbl-filt.l,v 1.2 1999/11/20 14:41:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tbl-filt.l,v 1.3 2000/01/31 00:21:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile mktbls datafile.
  */
@@ -38,7 +38,7 @@ static void
 flush_quoted(void)
 {
     if (save_len) {
-	write_string(yyout, save_bfr, save_len, String_attr);
+	write_token(yyout, save_bfr, save_len, String_attr);
 	save_len = 0;
     }
 }

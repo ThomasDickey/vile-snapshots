@@ -1,8 +1,8 @@
 /*
- * w32ole.cpp:  Winvile OLE registration code (currently only used
- *              for OLE automation).
+ * w32reg.c:  Winvile OLE registration code (currently only used for OLE
+ *            automation).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32reg.c,v 1.4 1999/03/19 10:53:12 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32reg.c,v 1.5 2000/01/30 20:43:19 cmorgan Exp $
  */
 
 #include <windows.h>

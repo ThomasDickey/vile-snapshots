@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.18 1999/11/09 23:15:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.19 2000/01/31 00:22:36 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -122,22 +122,22 @@ ESCAPED		&{IDENT};
 
 <INITIAL>"<!--"		{ WriteToken(Comment_attr);
 			  BEGIN(HTMLNOTE);           }
-<HTMLNOTE>[^-]+		{ WriteString(Comment_attr); }
-<HTMLNOTE>"-"+[^->]*	{ WriteString(Comment_attr); }
+<HTMLNOTE>[^-]+		{ WriteToken(Comment_attr); }
+<HTMLNOTE>"-"+[^->]*	{ WriteToken(Comment_attr); }
 <HTMLNOTE>"-"+"->"	{ WriteToken(Comment_attr);
 			  BEGIN(INITIAL);            }
 
 <INITIAL>{ESCAPED}	|
-<HTMLCODE>{STRING}	{ WriteString(String_attr); }
+<HTMLCODE>{STRING}	{ WriteToken(String_attr); }
 
 <JAVACODE>{IDENT}	{ WriteToken(keyword_attr(yytext)); }
-<JAVACODE>{STRINGS}	{ WriteString(String_attr); }
+<JAVACODE>{STRINGS}	{ WriteToken(String_attr); }
 <JAVACODE>{INTEGER}	{ WriteToken(Number_attr); }
 <JAVACODE>"//"[^\n]*	{ WriteToken(Comment_attr); }
 
 <JAVACODE>^{SPACE}*"<"{SPACE}*(\/)?{IDENT}{SPACE}*">" { may_resume_html(yytext); }
 
 <JAVACODE>"/*"		{ WriteToken(Comment_attr); BEGIN(JAVANOTE); }
-<JAVANOTE>[^*]*		{ WriteString(Comment_attr); }
-<JAVANOTE>"*"+[^*/]*	{ WriteString(Comment_attr); }
+<JAVANOTE>[^*]*		{ WriteToken(Comment_attr); }
+<JAVANOTE>"*"+[^*/]*	{ WriteToken(Comment_attr); }
 <JAVANOTE>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(JAVACODE); }

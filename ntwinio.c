@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.77 2000/01/15 01:02:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.81 2000/01/30 23:33:19 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -84,6 +84,7 @@ static HCURSOR hglass_cursor;
 static HFONT vile_font;
 static HMENU vile_menu;
 static LOGFONT vile_logfont;
+static int ac_active = FALSE;	/* AutoColor active? */
 static int caret_disabled = TRUE;
 static int caret_exists = 0;
 static int caret_visible = 0;
@@ -1220,7 +1221,6 @@ ntscroll(int from, int to, int n)
     HDC hDC;
     HBRUSH brush;
     RECT region;
-    RECT tofill;
 
     scflush();
     if (to == from)
@@ -1258,19 +1258,9 @@ ntscroll(int from, int to, int n)
 	&region,		/* address of structure with scroll rectangle */
 	&region,		/* address of structure with clip rectangle */
 	(HRGN) 0,		/* handle of update region */
-	&tofill,		/* address of structure for update rectangle */
-	SW_ERASE		/* scrolling flags */
+	NULL,			/* address of structure for update rectangle */
+	SW_ERASE | SW_INVALIDATE	/* scrolling flags */
 	);
-    TRACE(("fill: (%d,%d)/(%d,%d)\n",
-	    tofill.left, tofill.top,
-	    tofill.right, tofill.bottom));
-
-    hDC = GetDC(cur_win->text_hwnd);
-    nt_set_colors(hDC, cur_atr);
-    brush = Background(hDC);
-    FillRect(hDC, &tofill, brush);
-    DeleteObject(brush);
-    ReleaseDC(cur_win->text_hwnd, hDC);
 }
 
 /*
@@ -1952,6 +1942,7 @@ GripWndProc(
 	    ps.rcPaint.bottom);
 	DeleteObject(brush);
 	EndPaint(hWnd, &ps);
+	return (0);
 	break;
     }
     return (DefWindowProc(hWnd, message, wParam, lParam));
@@ -2149,6 +2140,7 @@ static void
 handle_scrollbar(HWND hWnd, int msg, int nPos)
 {
     int snum = find_scrollbar(hWnd);
+    int upd = TRUE;		/* do an update() if T */
 
     TRACE(("handle_scrollbar msg=%d, nPos=%d\n", msg, nPos));
 
@@ -2162,9 +2154,6 @@ handle_scrollbar(HWND hWnd, int msg, int nPos)
     case SB_BOTTOM:
 	TRACE(("-> SB_BOTTOM\n"));
 	gotoline(FALSE, 1);
-	break;
-    case SB_ENDSCROLL:
-	TRACE(("-> SB_ENDSCROLL\n"));
 	break;
     case SB_LINEDOWN:
 	TRACE(("-> SB_LINEDOWN\n"));
@@ -2194,12 +2183,21 @@ handle_scrollbar(HWND hWnd, int msg, int nPos)
 	TRACE(("-> SB_TOP\n"));
 	gotoline(TRUE, 1);
 	break;
+    case SB_ENDSCROLL:
+	TRACE(("-> SB_ENDSCROLL\n"));
+	/* Fall through */
+    default:
+	upd = FALSE;
+	break;
     }
-    (void) update(TRUE);
-    set_scrollbar_range(snum, curwp);
+    if (upd) {
+	(void) update(TRUE);
+	set_scrollbar_range(snum, curwp);
+    }
     fshow_cursor();
 }
 #endif /* OPT_SCROLLBARS */
+
 static int
 ntgetch(void)
 {
@@ -2268,8 +2266,11 @@ ntgetch(void)
 	    Sleep(20);		/* sleep a bit, but be responsive to all events */
 	    milli_ac -= 20;
 	}
-	if (orig_milli_ac && milli_ac <= 0)
+	if (orig_milli_ac && milli_ac <= 0) {
+	    ac_active = TRUE;
 	    autocolor();
+	    ac_active = FALSE;
+	}
 #endif
 	if (GetMessage(&msg, (HWND) 0, 0, 0) != TRUE) {
 	    PostQuitMessage(1);
@@ -2342,14 +2343,15 @@ ntgetch(void)
 		    latest = first;
 		    that_wp = row2window(first.y);
 		    (void) update(TRUE);	/* for wdw change */
-		}
-		// Check to see if the mouse is currently captured...
-		// If not, then capture it to our window handle
-		if (!GetCapture()) {
-		    SetCapture(cur_win->text_hwnd);
-		    // Set a 100ms timer for handling auto-scroll.
-		    nIDTimer = SetTimer(cur_win->text_hwnd, 1, 25, 0);
-		    AutoScroll(that_wp);
+
+		    // Check to see if the mouse is currently captured...
+		    // If not, then capture it to our window handle
+		    if (!GetCapture()) {
+			SetCapture(cur_win->text_hwnd);
+			// Set a 25 timer for handling auto-scroll.
+			nIDTimer = SetTimer(cur_win->text_hwnd, 1, 25, 0);
+			AutoScroll(that_wp);
+		    }
 		}
 	    } else {
 		DispatchMessage(&msg);
@@ -2388,11 +2390,29 @@ ntgetch(void)
 		}
 
 		if (buttondown) {
-		    if (MouseClickSetPos(&latest, &onmode))
+		    int dummy;
+
+		    /* 
+		     * Update editor's current cursor position, if that
+		     * position is still within cur_win->text_hwnd .
+		     */
+		    (void) MouseClickSetPos(&latest, &dummy);
+
+		    if (!onmode) {
+			/*
+			 * The LMB is down and non-modeline mouse movement
+			 * just terminated within a vile window.  Note
+			 * however that, due to autoscroll, the cursor
+			 * might not now be positioned within
+			 * cur_win->main_hwnd--but that doesn't matter. 
+			 * If the user selected at least one char of
+			 * text, yank it to the unnamed register.
+			 */
+
 			sel_yank(0);
-		    buttondown = FALSE;
-		    onmode = FALSE;
+		    }
 		}
+		onmode = buttondown = FALSE;
 		(void) update(TRUE);
 		fshow_cursor();
 	    } else {
@@ -2500,20 +2520,29 @@ ntgetch(void)
     return result;
 }
 
-/*
- * The function `kbhit' returns true if there are *any* input records
- * available.  We need to define our own type ahead routine because
- * otherwise events which we will discard (like pressing or releasing
- * the Shift key) can block screen updates because `ntgetch' won't
- * return until a ordinary key event occurs.
- */
-
 static int
 nttypahead(void)
 {
-#if FIXME
+    MSG msg;
+
+#ifdef VAL_AUTOCOLOR
+    if (ac_active) {
+	/*
+	 * Came here during an autocolor operation.  Do nothing, in an
+	 * attempt to avoid a keyboard lockup (editor loop) that occurs on
+	 * rare occasions (not reproducible).
+	 */
+
+	return (0);
+    }
 #endif
-    return 0;
+    if (saveCount > 0)
+	return (1);
+    if (PeekMessage(&msg, (HWND) 0, WM_KEYDOWN, WM_KEYDOWN, PM_NOREMOVE))
+	return (1);
+    if (PeekMessage(&msg, (HWND) 0, WM_SYSKEYDOWN, WM_SYSKEYDOWN, PM_NOREMOVE))
+	return (1);
+    return (PeekMessage(&msg, (HWND) 0, WM_CHAR, WM_CHAR, PM_NOREMOVE));
 }
 
 static void
@@ -2620,28 +2649,9 @@ receive_dropped_files(HDROP hDrop)
     DragFinish(hDrop);
 }
 
-static int khit = 0;
-
-int
-kbhit(void)
-{
-    MSG msg;
-    int hit;
-
-    if (PeekMessage(&msg, (HWND) 0, (UINT) 0, (UINT) 0, PM_REMOVE)) {
-	TranslateMessage(&msg);
-	DispatchMessage(&msg);
-    }
-
-    hit = khit;
-    khit = 0;
-    return hit;
-}
-
 static void
 HandleClose(HWND hWnd)
 {
-
     quit(FALSE, 1);
 }
 
@@ -2663,13 +2673,6 @@ TextWndProc(
 	    return (DefWindowProc(hWnd, message, wParam, lParam));
 	}
 	break;
-
-    case WM_KEYDOWN:
-    case WM_LBUTTONDOWN:
-    case WM_RBUTTONDOWN:
-    case WM_SYSKEYDOWN:
-	khit = 1;
-	/* FALLTHRU */
     default:
 	return (DefWindowProc(hWnd, message, wParam, lParam));
 
@@ -2697,7 +2700,6 @@ MainWndProc(
 #if FIXME
 	switch (wParam) {
 	case IDC_button:
-	    khit = 1;
 	    wParam = IDC_button_x;
 	    PostMessage(hWnd, message, wParam, lParam);
 	    break;
@@ -2775,15 +2777,9 @@ MainWndProc(
 #if OPT_SCROLLBARS
     case WM_VSCROLL:
 	handle_scrollbar((HWND) lParam, LOWORD(wParam), HIWORD(wParam));
-	return (DefWindowProc(hWnd, message, wParam, lParam));
+	return (0);
 #endif
 
-    case WM_KEYDOWN:
-    case WM_LBUTTONDOWN:
-    case WM_RBUTTONDOWN:
-    case WM_SYSKEYDOWN:
-	khit = 1;
-	/* FALLTHRU */
     default:
 	return (TextWndProc(hWnd, message, wParam, lParam));
 

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.11 1999/12/29 17:48:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.12 2000/01/31 00:23:31 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
@@ -120,9 +120,9 @@ STRING		(\\[:]|\\\n|[^:\n])*
 
 <DESC>[^:\n]*			{ WriteToken(Comment_attr); BEGIN(GAPS); }
 <GAPS,VALS>(:|:\\\n\t)+		{ commented=0; ECHO; BEGIN(CAPS); }
-<GAPS,CAPS>\n(\t)+		{ WriteString(Error_attr); }
+<GAPS,CAPS>\n(\t)+		{ WriteToken(Error_attr); }
 <CAPS>{CAPNAME}			{ write_capname(yytext, yyleng); begin_value(yytext); }
 <CAPS>{DOTNAME}			{ WriteToken(Comment_attr); commented = 1; begin_value(yytext); }
 <VALS>{NUMBER}			{ WriteToken(commented ? Comment_attr : Number_attr); BEGIN(GAPS); }
-<VALS>{STRING}			{ WriteString(commented ? Comment_attr : String_attr); BEGIN(GAPS); }
-<LINK>{STRING}			{ WriteString(commented ? Comment_attr : Ident_attr); BEGIN(GAPS); }
+<VALS>{STRING}			{ WriteToken(commented ? Comment_attr : String_attr); BEGIN(GAPS); }
+<LINK>{STRING}			{ WriteToken(commented ? Comment_attr : Ident_attr); BEGIN(GAPS); }

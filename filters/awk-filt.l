@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.7 1999/12/04 19:27:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.8 2000/01/31 00:22:24 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of awk
  * input text.
@@ -82,4 +82,4 @@ PATTERN		"/"(\\\.|[^ /\n])*"/"
 
 {IDENT}			{ WriteToken(Ident_attr); }
 
-{DSTRING}		{ WriteString(String_attr); }
+{DSTRING}		{ WriteToken(String_attr); }

@@ -90,7 +90,7 @@ sub terminal_emulation {
 	    }
 	    $buf = $2;
 	    $b->dotq(@dot);
-	    
+
 	    if ($b->setregion(@dot, $dot[0], '$')->fetch =~ /^\s+$/) {
 		# Delete 'til end of line if all spaces
 		$b->delete;
@@ -133,16 +133,12 @@ sub terminal_emulation {
 	    $buf = $2;
 	    set_position($b, $te_state, \@dot, $lnum, 1)
 	}
-	elsif ($buf =~ /^\e\[(\d*)A(.*)$/s) {
+	elsif ($buf =~ /^\e\[(\d*)([AB])(.*)$/s) {
 	    # ESC [ Pn A				-- up n lines
-	    my $digs = $1 ? $1 : 1;
-	    $buf = $2;
-	    cursor_down($b, $te_state, \@dot, -$digs);
-	}
-	elsif ($buf =~ /^\e\[(\d*)A(.*)$/s) {
 	    # ESC [ Pn B				-- down n lines
 	    my $digs = $1 ? $1 : 1;
-	    $buf = $2;
+	    $digs = -$digs	if $2 eq 'A';
+	    $buf = $3;
 	    cursor_down($b, $te_state, \@dot, $digs);
 	}
 	elsif ($buf =~ /^\e\[(\d*)([CD])(.*)$/s) {
@@ -232,7 +228,7 @@ sub terminal_emulation {
 		$buf = '';
 	    }
 	    elsif ($buf =~ /^(\032\032?)(.*)$/s) { # should always match
-		# Error in annotation  
+		# Error in annotation
 		#    (or perhaps an annotation level higher than 1)
 		# Write out the control-Z(s) and let the chips
 		# fall where they may
@@ -348,7 +344,7 @@ sub maybe_extend_line {
 }
 
 # Erase in Display
-#   $how values:	
+#   $how values:
 # 	0 - From cursor to end of screen (including cursor)
 #	1 - From beginning of screen to cursor (including cursor)
 #	2 - Everything.  Cursor does not move, however.
@@ -642,7 +638,7 @@ sub find_window_for_buffer {
 
     # Well, try to create one then
     $w = Vile::Window->new;
-    
+
     # But if that doesn't work either, just use the first one.
     $w = Vile::window_at(0)		unless defined $w;
 
@@ -779,7 +775,7 @@ sub shell
 	    #hexdump($buf);
 
 	    if ($buf =~ /[\x01-\x08\x0b-\x1f]/
-		|| $mydot[0] != $enddot[0] 
+		|| $mydot[0] != $enddot[0]
 		|| $mydot[1] != $enddot[1]
 		|| must_emulate($te_state))
 	    {
@@ -821,8 +817,8 @@ sub shell
     # Stow away a reference to the character getting subroutine.
     # We use it immediately below and when we want character input
     # to be directed to the shell.  (I.e, when resume_shell is called.)
-    my $resume_sub = # Work-around for a perl bug. This line should not be needed!
-    $shells{$bufid}{RESUME_SUB} = 
+    $resume_sub{$bufid} = # Work-around for a perl bug. This line should not be needed!
+    $shells{$bufid}{RESUME_SUB} =
 	sub {
 	    my ($escape, $quote) = @_;
 	    my $w = find_window_for_buffer($b, @mydot);
@@ -899,6 +895,7 @@ sub shell
     }
     else {
 	&{$shells{$bufid}{RESUME_SUB}}("\e", "\cV");	# Run the above loop
+	clean_resume_sub();			# Workaround for a perl bug
     }
 }
 
@@ -919,10 +916,19 @@ sub resume_shell {
 
     # Run the keyboard character fetching loop
     &{$shells{$bufid}{RESUME_SUB}}("\e", "\cV");
+    clean_resume_sub();			# Workaround for a perl bug
+}
+
+# The following is only used to work around a segfaulting perl bug
+sub clean_resume_sub {
+    my ($bufid) = @_;
+    delete $resume_sub{$bufid} 		if defined($bufid)
+					&& !defined($shells{$bufid});
 }
 
 # See if a shell is dead
 sub dead {
+    my ($bufid) = @_;
     return !defined($bufid) || !defined($shells{$bufid}{PTY_HANDLE});
 }
 

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.5 1999/11/20 14:40:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.6 2000/01/31 00:23:43 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Perl/C
  * extension source
@@ -43,14 +43,14 @@ comment_or_preproc(char *text)
 	if (!strncmp(tbl[j], text, k)
 	 && !isalnum(text[k])) {
 	    text += k;
-	    write_string(yyout, base, text-base, Preproc_attr);
+	    write_token(yyout, base, text-base, Preproc_attr);
 	    /* FIXME: this can't handle inline comment or a continuation line */
-	    write_string(yyout, text, strlen(text), "");
+	    write_token(yyout, text, strlen(text), "");
 	    return;
 	}
     }
-    write_string(yyout, base, text-base, "");
-    write_string(yyout, text, strlen(text), Comment_attr);
+    write_token(yyout, base, text-base, "");
+    write_token(yyout, text, strlen(text), Comment_attr);
 }
 
 void
@@ -106,14 +106,14 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 			}
 
 <CODE,PERLXS>"/*"	{ WriteToken(Comment_attr); BEGIN(COMMENT); }
-<COMMENT>[^*]*		{ WriteString(Comment_attr); }
-<COMMENT>"*"+[^*/]*	{ WriteString(Comment_attr); }
-<COMMENT>"*"+"/"	{ WriteString(Comment_attr); BEGIN(my_state); }
+<COMMENT>[^*]*		{ WriteToken(Comment_attr); }
+<COMMENT>"*"+[^*/]*	{ WriteToken(Comment_attr); }
+<COMMENT>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(my_state); }
 
 <CODE>"//".*$		{ WriteToken(Comment_attr); }
 
-<CODE,PERLXS>{STRINGS}	{ WriteString(String_attr); }
+<CODE,PERLXS>{STRINGS}	{ WriteToken(String_attr); }
 
-<CODE,PERLXS>{NUMBER}	{ WriteString(Number_attr); }
+<CODE,PERLXS>{NUMBER}	{ WriteToken(Number_attr); }
 
 <PERLXS>^{BLANK}#.*$	{ comment_or_preproc(yytext); }

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.413 2000/01/12 02:52:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.414 2000/01/30 23:16:29 kev Exp $
  *
  */
 
@@ -901,6 +901,10 @@ extern	BUFFER *get_selection_buffer_and_region(AREGION *arp);
 extern	int	sel_yank	(int reg);
 extern	int	sel_attached	(void);
 extern	BUFFER *sel_buffer	(void);
+#endif
+
+#if OPT_LINE_ATTRS
+extern	void	lattr_shift	(BUFFER *bp, LINEPTR lp, int doto, int shift);
 #endif
 
 #else

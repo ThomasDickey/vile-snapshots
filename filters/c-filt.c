@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.52 2000/01/12 12:29:57 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.53 2000/01/31 00:21:19 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  */
@@ -132,7 +132,7 @@ write_escape(FILE * fp, char *s, char *attr)
 	s++;
 	want--;
     }
-    write_string(fp, base, s - base, attr);
+    write_token(fp, base, s - base, attr);
     return s;
 }
 
@@ -322,10 +322,10 @@ parse_prepro(FILE * fp, char *s)
     if ((attr = keyword_attr(ss)) == 0) {
 	char *dst = 0;
 	if (strtol(ss, &dst, 10) != 0 && dst != 0 && *dst == 0) {
-	    write_string(fp, s, ss - s, Preproc_attr);
-	    write_string(fp, ss, tt - ss, Number_attr);
+	    write_token(fp, s, ss - s, Preproc_attr);
+	    write_token(fp, ss, tt - ss, Number_attr);
 	} else {
-	    write_string(fp, s, tt - s, Error_attr);
+	    write_token(fp, s, tt - s, Error_attr);
 	}
 	s = tt;
     }
@@ -352,7 +352,7 @@ parse_prepro(FILE * fp, char *s)
 	}
     }
     c_length = tt - s;
-    write_string(fp, s, c_length, Preproc_attr);
+    write_token(fp, s, c_length, Preproc_attr);
     return tt;
 }
 
@@ -444,7 +444,7 @@ do_filter(FILE * input, FILE * output)
 		char *t = s;
 		while (*s == '#')
 		    s++;
-		write_string(output, t, s - t, ((s - t) > 2) ?
+		write_token(output, t, s - t, ((s - t) > 2) ?
 		    Error_attr : Preproc_attr);
 	    } else {
 		fputc(*s++, output);

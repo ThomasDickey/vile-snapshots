@@ -3,7 +3,7 @@
  *
  * written for vile: Copyright (c) 1990, 1995-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.74 1999/12/16 23:46:57 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.75 2000/01/30 23:16:29 kev Exp $
  *
  */
 
@@ -834,6 +834,9 @@ lineundo(int f GCC_UNUSED, int n GCC_UNUSED)
 			if (mp->l == lp)
 				mp->o = b_left_margin(curbp);
 	);
+#if OPT_LINE_ATTRS
+	FreeAndNull(lp->l_attrs);
+#endif
 
 	chg_buff(curbp, WFEDIT|WFKILLS|WFINS);
 
@@ -884,6 +887,9 @@ repointstuff(register LINEPTR nlp, register LINEPTR olp)
 					mp->o = _min(mp->o, llength(point));
 			}
 	);
+#if OPT_LINE_ATTRS
+	FreeAndNull(olp->l_attrs);
+#endif
 
 	/* reset the uline */
 	if ((ulp = curbp->b_ulinep) != NULL

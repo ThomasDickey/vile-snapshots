@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.4 1999/11/20 14:39:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.5 2000/01/31 00:21:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a Python script
  */
@@ -37,7 +37,7 @@ static void
 flush_quoted(void)
 {
     if (save_len) {
-	write_string(yyout, save_bfr, save_len, String_attr);
+	write_token(yyout, save_bfr, save_len, String_attr);
 	save_len = 0;
     }
 }

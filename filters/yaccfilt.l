@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.10 1999/05/01 02:54:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.11 2000/01/31 00:23:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
@@ -144,10 +144,10 @@ PATTERN		(\\\.|[^ \t\n])+
 <CODE>\}		{ ECHO; if (--brace_level <= 0) { brace_level = 0; pop_state(); } }
 
 "/*"			{ WriteToken(Comment_attr); push_state(COMMENT); }
-<COMMENT>[^*]*		{ WriteString(Comment_attr); }
-<COMMENT>"*"+[^*/]*	{ WriteString(Comment_attr); }
+<COMMENT>[^*]*		{ WriteToken(Comment_attr); }
+<COMMENT>"*"+[^*/]*	{ WriteToken(Comment_attr); }
 <COMMENT>"*"+"/"	{ WriteToken(Comment_attr); pop_state(); }
 
-^{SPACE}*#{SPACE}*{IDENT}({SPACE}+(\<[^>]+\>|\"[^"]+\"))? { WriteString(Preproc_attr); }
+^{SPACE}*#{SPACE}*{IDENT}({SPACE}+(\<[^>]+\>|\"[^"]+\"))? { WriteToken(Preproc_attr); }
 {QIDENT}		{ WriteToken(Ident2_attr); }
-{STRINGS}		{ WriteString(String_attr); }
+{STRINGS}		{ WriteToken(String_attr); }

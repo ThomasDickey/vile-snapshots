@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.438 2000/01/15 13:38:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.439 2000/01/30 23:16:29 kev Exp $
  */
 
 #ifndef _estruct_h
@@ -472,6 +472,7 @@
 #define OPT_VIDEO_ATTRS (!SMALLER || XTOOLKIT)
 #define OPT_SELECTIONS  OPT_VIDEO_ATTRS
 #define OPT_HYPERTEXT	OPT_VIDEO_ATTRS
+#define OPT_LINE_ATTRS	OPT_VIDEO_ATTRS
 
 /* OPT_PSCREEN permits a direct interface to the pscreen data structure
  * in display.c. This allows us to avoid storing the screen data on the
@@ -1369,6 +1370,10 @@ typedef struct	LINE {
 	    LINEPTR	l_stklnk;	/* Link for undo stack		*/
 	    L_FLAG	l_flg;		/* flags for undo ops		*/
 	} l;
+#if OPT_LINE_ATTRS
+	unsigned char  *l_attrs;	/* indexes into the line_attrs
+	                                   hash table */
+#endif
 }	LINE;
 
 #define l_size		l_s_fo.l_sze
@@ -1571,6 +1576,12 @@ typedef struct vl_aregion {
 	char *		ar_hypercmd;
 #endif
 }	AREGION;
+
+/* Hash table entry for line attribute indices. */
+typedef struct vl_line_attr_entry {
+    	VIDEO_ATTR	vattr;
+	char		in_use;
+}	LINE_ATTR_ENTRY;
 
 typedef	struct {
 	char *pat;

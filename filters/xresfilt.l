@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.5 1999/11/20 14:07:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.6 2000/01/31 00:23:47 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an X resource file.
  */
@@ -44,7 +44,7 @@ static void
 flush_quoted(void)
 {
     if (save_len) {
-	write_string(yyout, save_bfr, save_len, String_attr);
+	write_token(yyout, save_bfr, save_len, String_attr);
 	save_len = 0;
     }
 }
@@ -55,7 +55,7 @@ quoted_name(char *text, int length)
     char *attr = keyword_attr(lowercase_of(text));
     if (attr != 0) {
 	flush_quoted();
-	write_string(yyout, text, length, attr);
+	write_token(yyout, text, length, attr);
     } else {
 	add_to_quoted(text, length);
     }
@@ -111,7 +111,7 @@ KEYWORD		({NAME}|<{NAME}>)
 
 <RESVALUE>{NUMBER}	{ flush_quoted(); WriteToken(Number_attr); }
 <RESVALUE>{KEYWORD}	{ quoted_name(yytext, yyleng); }
-<RESVALUE>![^\\\n]*	{ flush_quoted(); WriteString(Comment_attr); }
+<RESVALUE>![^\\\n]*	{ flush_quoted(); WriteToken(Comment_attr); }
 <RESVALUE>\\\n		{ add_to_quoted(yytext, yyleng); }
 <RESVALUE>({ESCAPED}|.)	{ add_to_quoted(yytext, yyleng); }
 <RESVALUE>\n		{ flush_quoted(); ECHO; BEGIN(NORMAL); }

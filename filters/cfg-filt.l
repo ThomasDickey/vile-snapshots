@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/cfg-filt.l,v 1.1 1999/12/05 23:18:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/cfg-filt.l,v 1.2 2000/01/31 00:22:24 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an ordinary Lynx config-file
  */
@@ -71,7 +71,7 @@ URL		[A-Za-z]+"://"[0-9a-zA-Z%/.~_-]+
 
 %%
 
-^\.[^\n]*$	{ WriteString(String_attr); }
+^\.[^\n]*$	{ WriteToken(String_attr); }
 
 {KEYWORD}	{ WriteToken(mixedcase(yytext) ? "" : Keyword_attr); }
 

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.14 1999/05/01 02:53:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.15 2000/01/31 00:22:49 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -126,14 +126,14 @@ MATCH		{STATES}?{PATTERN}
 <ACTION3>[^\{].*$	{ ECHO; BEGIN(ACTIONS); }
 
 <CODE>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
-<CODE>{STRINGS}		{ WriteString(String_attr); }
+<CODE>{STRINGS}		{ WriteToken(String_attr); }
 <CODE>{INTEGER}		{ WriteToken(Number_attr); }
 <CODE>\{		{ ECHO; nesting++; }
 <CODE>\}		{ ECHO; if (--nesting <= 0) { nesting = 0; set_rules(); } }
 
 <CODE>"/*"		{ WriteToken(Comment_attr); BEGIN(COMMENT); }
-<COMMENT>[^*]*		{ WriteString(Comment_attr); }
-<COMMENT>"*"+[^*/]*	{ WriteString(Comment_attr); }
+<COMMENT>[^*]*		{ WriteToken(Comment_attr); }
+<COMMENT>"*"+[^*/]*	{ WriteToken(Comment_attr); }
 <COMMENT>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(CODE); }
 
 <CODE>^{SPACE}*#{SPACE}*{IDENT}({SPACE}+(\<[^>]+\>|\"[^"]+\"))? { WriteToken(Preproc_attr); }

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.14 1999/12/17 23:01:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.15 2000/01/31 00:23:35 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -88,13 +88,13 @@ VARIABLE	[$%]{NAME}
 {VARIABLE}	|
 {FUNCTION}	{ WriteToken(Ident2_attr); }
 
-{NUMBER}	{ WriteString(Number_attr); }
+{NUMBER}	{ WriteToken(Number_attr); }
 
 \r		|
 \\.		|
 {CONTROL}	|
 {BINDING}	|
 {SSTRING}	|
-{DSTRING}	{ WriteString(String_attr); }
+{DSTRING}	{ WriteToken(String_attr); }
 
 {COMMENT}	{ WriteToken(Comment_attr); }

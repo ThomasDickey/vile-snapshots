@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.63 2000/01/15 13:50:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.64 2000/01/31 00:21:44 tom Exp $
  *
  */
 
@@ -704,39 +704,6 @@ strmalloc(const char *src)
     return ns;
 }
 
-/*
- * The string may contain newlines, but vile processes the length only until
- * the end of line.
- */
-void
-write_string(FILE * fp, char *src, int length, char *marker)
-{
-    if (marker == 0 || *marker == 0) {
-	write_token(fp, src, length, marker);
-    } else {
-	while (length > 0) {
-	    int n;
-	    for (n = 0; n < length && src[n] != 0 && src[n] != '\n'; n++)
-		/*LOOP */ ;
-	    if (n == 0) {
-		if (src[n])
-		    fputc(src[n], fp);
-	    } else {
-		write_token(fp, src,
-		    ((n < length) && (src[n] == '\n'))
-		    ? (n + 1) : n, marker);
-	    }
-	    if (src[n] || (n == 0 && length > 0))
-		n++;
-	    length -= n;
-	    src += n;
-	}
-    }
-}
-
-/*
- * Use this when you do not expect to handle embedded newlines.
- */
 void
 write_token(FILE * fp, char *string, int length, char *marker)
 {

@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.266 2000/01/15 19:35:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.267 2000/01/30 23:16:29 kev Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -90,6 +90,10 @@ decl_uninit( REGIONSHAPE regionshape );	/* shape of region		*/
 decl_uninit( VIDEO_ATTR videoattribute );
 					/* attribute to set in call to
 					   attributeregion()		*/
+#endif
+#if OPT_LINE_ATTRS
+decl_uninit( LINE_ATTR_ENTRY line_attr_tbl[N_chars] );
+					/* Line attribute hash table	*/
 #endif
 decl_uninit( int doingopcmd );		/* operator command in progress */
 decl_uninit( int doingsweep );		/* operator command in progress */

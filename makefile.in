@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.158 2000/01/11 23:30:07 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.159 2000/01/30 23:24:15 kev Exp $
 #
 
 #### Start of system configuration section. ####
@@ -163,6 +163,7 @@ PERL_SRC = \
 	$(srcdir)/perl/capture.pm \
 	$(srcdir)/perl/directory.pm \
 	$(srcdir)/perl/dirlist.pm \
+	$(srcdir)/perl/gdb.pm \
 	$(srcdir)/perl/hgrep.pm \
 	$(srcdir)/perl/lock.pm \
 	$(srcdir)/perl/mime.pl \
@@ -328,6 +329,7 @@ INSTALL_PERL_FILES = \
 	$(PERLDIR)/capture.pm \
 	$(PERLDIR)/directory.pm \
 	$(PERLDIR)/dirlist.pm \
+	$(PERLDIR)/gdb.pm \
 	$(PERLDIR)/hgrep.pm \
 	$(PERLDIR)/lock.pm \
 	$(PERLDIR)/mime.pl \
@@ -661,6 +663,8 @@ $(PERLDIR)/directory.pm:	$(srcdir)/perl/directory.pm
 	$(INSTALL_DATA)		$(srcdir)/perl/directory.pm $@
 $(PERLDIR)/dirlist.pm:		$(srcdir)/perl/dirlist.pm
 	$(INSTALL_DATA)		$(srcdir)/perl/dirlist.pm $@
+$(PERLDIR)/gdb.pm:		$(srcdir)/perl/gdb.pm
+	$(INSTALL_DATA)		$(srcdir)/perl/gdb.pm $@
 $(PERLDIR)/hgrep.pm:		$(srcdir)/perl/hgrep.pm
 	$(INSTALL_DATA)		$(srcdir)/perl/hgrep.pm $@
 $(PERLDIR)/lock.pm:		$(srcdir)/perl/lock.pm

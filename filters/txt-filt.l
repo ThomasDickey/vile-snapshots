@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.7 1999/12/05 23:12:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.8 2000/01/31 00:21:07 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an ordinary text file
  */
@@ -37,7 +37,7 @@ static void
 flush_quoted(void)
 {
     if (save_len) {
-	write_string(yyout, save_bfr, save_len, String_attr);
+	write_token(yyout, save_bfr, save_len, String_attr);
 	save_len = 0;
     }
 }

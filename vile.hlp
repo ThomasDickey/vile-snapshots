@@ -105,8 +105,8 @@ Command Prefixes
 
 
 
-Buffer manipulation commands:
------------------------------
+Buffer manipulation commands
+----------------------------
 	vile stores buffers in a sorted list.  Depending on the
 	setting of the "autobuffer" mode, this list is either sorted
 	in "most-recently-used" order (this is the vile default), or in a
@@ -159,6 +159,20 @@ Buffer manipulation commands:
 		buffer name will change to match it.  This command is not as
 		necessary in vile as it is in vi, since multiple buffers may
 		have outstanding unwritten changes.
+
+	^X-_	Identical to '_', except that the selected buffer is placed
+		in the current window (windows are described in the next
+		help topic).  This is most useful when:
+
+		- two windows show a different view of the same buffer
+		  (for illustration's sake, call the views "A" and "B").
+		- :e is used to open a new buffer (call this view "C"),
+		  which obscures "A".
+		- eventually, you decide to return to "A" and "B".
+
+		^X-_1 does the trick (reverts to views "A" and "B"), but _1
+		simply moves the cursor into B's window, retaining views
+		"C" and "B".
 
 	:n	Go to the next buffer.  "Next" means "least recently used"
 		in autobuffer mode.  In noautobuffer mode, "next" means
@@ -223,8 +237,8 @@ Buffer manipulation commands:
 
 
 
-Window manipulation commands:
------------------------------
+Window manipulation commands
+----------------------------
 	^X-2	Make Two windows.  Splits the current window in half. This
 		is the usual way to create a new window.
 	^K or ^X-0	Get rid of (Kill) this window.
@@ -2201,8 +2215,7 @@ Programmed procedures and macros
 	"state" variables, and mode values).  The state variables are:
 
 	$abufname	alternate buffer name (i.e. last visited) (read only)
-	$autocolor-hook	name of the hook to run when attempting to do
-			automatic syntax coloring
+	$autocolor-hook	name of the hook that runs when autocolor is enabled
 	$bchars		number of characters in current buffer	(read only)
 	$bflags		status flags for current buffer (read only)
 			a	autobuffer caused this to be created
@@ -2239,6 +2252,7 @@ Programmed procedures and macros
 	$discmd		display commands on command line (boolean)
 	$disinp		display command line input characters (boolean)
 	$end-of-cmd	true if user ended the cmd with <CR>
+	$error-buffer   buffer name assigned to the error-buffer
 	$exec-suffix	suffix, if any, for execable programs	(read only)
 	$exit-hook	name of procedure to run when quitting
 	$fence-limit	iteration limit for complex fences
@@ -2753,18 +2767,18 @@ Regular Expressions
 
 Command files
 -------------
-	On startup (in the absence of '@' arguments -- see Invocation
-	below), vile will attempt to read the file ".vilerc" in the current
+	On startup, in the absence of '@' arguments, vile attempts to read
+	the file ".vilerc" ("vile.rc" on non-Unix hosts) in the current
 	directory, then in $HOME, and then in several host-specific
-	locations (this file is called "vile.rc" on non-UNIX hosts).  If
-	found, vile executes the commands found therein.  It is possible to
-	nest such executions.  For example, you might keep your general
-	default settings in your home directory, and put the following
-	lines in a .vilerc in a directory in which you prefer tabs be set
-	to 4 spaces:
+	locations (see the "Invocation" topic below for complete details).
+	If found, vile executes the startup file's commands.  It is
+	possible to nest such executions.  For example, you might keep your
+	general default settings in your home directory, and put the
+	following lines in a .vilerc in a directory in which you prefer
+	tabs be set to 4 spaces:
 
 		source "$HOME/.vilerc"
-		set tabstop 8
+		set tabstop 4
 
 	The quotes surrounding the filename are necessary to protect the
 	name from interpretation as a vile variable, since it starts with
@@ -2786,38 +2800,26 @@ Command files
 
 Invocation
 ----------
-	vile searches for a startup file in these locations (and in the
-	order listed):
+	vile searches for a startup or command file in these locations (and
+	in the order listed):
 
-		current working directory
-		the directory specify by $HOME
-		the vile executable directory
-		if $VILE_STARTUP_PATH exists
-			if host is UNIX
-				search each colon-delimited directory
-				          specified by this env var
-			else if host is PC
-				search each semi-colon-delimited directory
-				          specified by this env var
-			else /* host is VMS */
-				search each comma-delimited directory
-				          specified by this symbol
-			end if
-		else
-			if host is UNIX
-				search /usr/local/lib:/usr/local:/usr/lib
-			else if host is PC
-				search \sys\public;\usr\bin;\bin;\
-			else /* host is VMS */
-				search sys$login,sys$device:[vmstools],
-					sys$library
-			end if
-		end if
-		if host != VMS
-			search each directory in $PATH
-		else
-			search sys$system,sys$library
-		end if
+		1 - current working directory
+		2 - directory specified by $HOME
+		3 - if host is not Unix
+			vile executable directory
+		    fi
+		4 - each directory specified in $VILE_STARTUP_PATH.  If
+		    this environment variable is not set, the following
+		    host-specific defaults are internally assumed:
+
+		    Unix:  /usr/local/lib:/usr/local:/usr/lib
+		    VMS:   sys$login,sys$sysdevice:[vmstools],sys$library
+		    DOS/OS/2/Win32:  /sys/public;/usr/bin;/bin;/
+
+		5 - if host is not Unix, each directory specified in:
+			$PATH
+			$VILE_LIBDIR_PATH
+		    fi
 
 	If the variable VILEINIT is set in the environment, it is used as a
 	set of vile commands to initialize the editor.  As a
@@ -2925,12 +2927,33 @@ Crash Recovery
 	The "vi -r" option, used to recover an edited buffer after a system
 	crash, is not present in vile.  If vile itself crashes (usually
 	(though infrequently :-) due to a bug, but perhaps due to an
-	externally applied signal), it will attempt to save any modified
-	buffers in a directory under /tmp, and send mail to the user to
-	that affect.  If system crashes are frequent on your system, you
-	should stop using it.  You might also consider the "autosave" and
-	"autowrite" options, which will cause more frequent saves of your
-	work.
+	externally applied signal), it attempts to save any modified
+	buffers in a temporary directory and, on a Unix host, sends mail to
+	the user to that affect.  The selection of the temporary directory
+	is host-specific, as follows:
+
+	    Unix (in priority order)
+	    ------------------------
+	    $TMPDIR/vileDXXXXXX
+	    /var/tmp/vileDXXXXX
+	    /usr/tmp/vileDXXXXX
+	    /tmp/vileDXXXXXX
+	    ./vileDXXXXXX
+
+	    DOS and OS/2
+	    ------------
+	    Saved buffers are written to disk using the path ./V<buffername> .
+
+	    All other hosts (in priority order)
+	    -----------------------------------
+	    $TMPDIR/vileDXXXXXX
+	    ./vileDXXXXXX
+
+	where "XXXXXX" is a unique suffix created by mktemp().
+
+	If system crashes are frequent on your system, you should stop
+	using it.  You might also consider the "autosave" and "autowrite"
+	options, which will cause more frequent saves of your work.
 
 
 
@@ -3078,7 +3101,7 @@ Color basics
 
 	Show-colors command
 	-------------------
-	The show-colors command (.i.e., ":show-colors") displays the
+	The show-colors command (i.e., ":show-colors") displays the
 	editor's current color and attribute mappings.
 
 	Xterms, terminfo, and termcap (Unix hosts only)
@@ -3094,7 +3117,7 @@ Color basics
 	b) vile is compiled and linked with the terminfo library.
 
 	Hint 1:  On linux hosts, the "xterm" terminal type supports 8
-	colors (e.g., ensure that "export TERM=xterm" or csh equiv is
+	colors (i.e., ensure that "export TERM=xterm" or csh equiv is
 	included in your shell startup file).
 
 	Hint 2:  To determine if the editor was compiled with terminfo,
@@ -3698,6 +3721,42 @@ Hypertext
 	command is associated with the text under the cursor, the
 	default action of selecting the word under the cursor will
 	occur instead.
+
+
+
+Debugging features
+------------------
+	popup-msgs	vile's popup-msgs mode (:se pm) pops up a buffer
+			that displays all text written to the editor's
+			message line.  This mode, when used in conjunction
+			with the write-message command, provides an
+			effective mechanism for debugging macros.  Type
+			":se nopm" to disable popup-msgs.
+
+	which-exec <file>   displays the full path that the editor's shell
+			will use to exec <file> .
+
+			Note 1:  The list of possible paths is taken from
+			all directories specified in $PATH + $libdir-path.
+
+			Note 2:  On non-Unix hosts, a file suffix is
+			required (e.g., ":which-exec copy.exe", not
+			"which-exec copy").
+
+			Note 3:  Specify a numeric argument > 1 to force vile
+			to popup a buffer that displays all possible paths
+			(e.g., "2:which-exec fmt").
+
+	which-source <file>   displays the full path that will be used to
+			source <file>.
+
+			Note 1:  The list of possible paths is taken from
+			the same directory hierarchy described in the
+			"Invocation" help topic.
+
+			Note 2:  Specify a numeric argument > 1 to force vile
+			to popup a buffer that displays all possible paths
+			(e.g., "2:which-source mymacros.rc").
 
 
 
@@ -4427,8 +4486,8 @@ Win32 specifics
 	Perl
 	----
 	At the user's discretion, vile may be built with an embedded perl
-	interpreter.  To date, only the perl [binary] distribution at the
-	following URL is supported:
+	interpreter.  To date, only the perl distribution at the following
+	URL is supported:
 
 	    http://www.perl.com/CPAN-local/ports/win32/Standard/x86/
 
@@ -4436,7 +4495,7 @@ Win32 specifics
 	"perl-embedded" vile, these external configuration steps are
 	necessary:
 
-	1) Obtain the [binary] perl distribution from the aforementioned
+	1) Obtain a complete perl distribution[*] from the aforementioned
 	   URL and install it.  Included in this distribution, among many
 	   other items, is a required DLL and the usual perl packages.
 
@@ -4448,6 +4507,11 @@ Win32 specifics
 	   environment includes:
 
 		hgrep.pm Glob2re.pm Visit.pm search.pm
+
+	[*] Choose either a precompiled version of perl or build it
+	    yourself from source.  In this context, a "complete"
+	    distribution includes the perl interpreter and all "standard"
+	    modules and libraries.
 
 	Commands
 	--------
@@ -4731,22 +4795,23 @@ Credits (last updated Jan, 2000)
 	from Joe Greer and Clark Morgan.  Ed Henderson gave us wvwrap, as
 	well as several other useful patches.  Chris Coppick created
 	Vileserv.  Alex Wetmore contributed stored procedures and vile's
-	initial btree interface (later rewritten by Tom).  Brendan O'Dea
-	closely monitors the Perl API, as well as contributing Perl updates.
-	Brendan also added the machinery for binding vile commands to Perl
-	subroutines.  Better still, he also found a way to bind operators
-	and motions to same.  Kuntal Daftary added several Perl modules.
-	Clark Morgan and Greg McFarlane seem to run full regression tests on
-	each new release, and always seem to find something to report.  In
-	addition, Clark regularly updates and corrects the documention left
-	as an afterthought by the rest of us.  Sean Ahern is also always
-	dependable for finding a bug or two per release.  The reference.doc
-	file supplied with Bram Moolenaar's excellent Vim editor was useful
-	in unraveling some of the less obvious parts of :map functionality.
-	In addition, his implementation of digraph insertion was used
-	directly in the creation of digraphs.rc.  Thanks to Jukka Keto for
-	contributing the c-filt.c code, which served as the precursor for
-	vile's current syntax coloring implementation.
+	initial btree interface (the latter later rewritten by Tom).
+	Brendan O'Dea closely monitors the Perl API, as well as
+	contributing Perl updates.  Brendan also added the machinery for
+	binding vile commands to Perl subroutines.  Better still, he also
+	found a way to bind operators and motions to same.  Kuntal Daftary
+	added several Perl modules.  Clark Morgan and Greg McFarlane seem
+	to run full regression tests on each new release, and always seem
+	to find something to report.  In addition, Clark regularly updates
+	and corrects the documention left as an afterthought by the rest of
+	us.  Sean Ahern is also always dependable for finding a bug or two
+	per release.  The reference.doc file supplied with Bram Moolenaar's
+	excellent Vim editor was useful in unraveling some of the less
+	obvious parts of :map functionality.  In addition, his
+	implementation of digraph insertion was used directly in the
+	creation of digraphs.rc.  Thanks to Jukka Keto for contributing the
+	c-filt.c code, which served as the precursor for vile's current
+	syntax coloring implementation.
 
 	The initial changes to create vile from micro-Emacs were all done
 	by Paul Fox (pgf@foxharp.boston.ma.us).  (By the way, he is not the
@@ -4784,4 +4849,4 @@ Problems
 
 Copyright 1995-2000 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.472 2000/01/15 19:35:35 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.473 2000/01/30 22:01:36 cmorgan Exp $
