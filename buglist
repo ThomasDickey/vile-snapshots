@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.325 1997/03/30 22:04:44 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.326 1997/05/01 00:01:56 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1171,15 +1171,6 @@ modify os2vio.c to support colored-attributes.
 should cut-down the special-case for VMS $PATH, possibly merging with
 $search-path.
 
--- 97-01-11 (tom)
-
-WinNT version's mouse works until I run ^X!dir (this is the pre-built one on
-the ftp site).
-
-when I recompile ntconio version with Visual C++ 4.0, piping to vile doesn't
-work (this is because the logic that attempts to reopen stdin doesn't talk to
-the WinNT console functions).
-
 -- 97-01-15 (tom)
 
 allow modelines to be colored (i.e., separately from the window contents)
@@ -1233,8 +1224,7 @@ least when running in gdb).
 
 -- 97-02-09 (tom)
 
-should add gcc's -Wcast-qual, -Wwrite-strings warnings, and make (like ncurses)
-checks for __attribute__((unused)).
+should add gcc's -Wwrite-strings warnings
 
 -- 97-02-10 (tom)
 
@@ -1259,3 +1249,40 @@ ifdef'd it with FIXME_VM):
 
 	+ it won't work properly with the name-completion logic, since the
 	  extended table isn't sorted.
+
+[I'm holding more changes for 7.2, so I can autogenerate the table - tom]
+
+-- 97-04-02 (Clark Morgan <cmorgan@aracnet.com>)
+
+type this command (use path approp for your version of win95):
+
+	:w !c:\windows\command\find "string"
+
+...  vile should write the results of the find command to the bottom of the
+screen and then print a [Press return to continue] prompt.  But instead, vile
+writes no output to the bottom of the screen and does not prompt for user
+input.  It's as if the entire pipe operation was discarded.
+
+[What's happening is that there's a "Broken pipe" message that should be
+visible, but is not, since the "Read xx lines" message overwrites it, the fix
+would be to propagate the error up better - tom]
+
+-- 97-04-02 (Philippe Chassany <phil@cln46ks.der.edf.fr>)
+
+Pressing tab directly after a :e command, the message
+
+	[Bad pattern: NULL parameter] appears !!!
+
+[I'm not able to duplicate this - tom]
+
+-- 97-04-21 (Joseph F. Garvey <garvey@garveys.raleigh.ibm.com>)
+
+There needs to be a mode (":set tagignorecase", ":set tagnoignorecase") to turn
+case sensitivity on/off when matching tags in column one of a tags file.
+
+[Perhaps for 7.2 - tom]
+
+-- 97-04-30 (tom)
+
+Piping to vile in WinNT console works, but the mouse doesn't work after
+reopening the console.

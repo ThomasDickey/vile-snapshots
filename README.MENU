@@ -1,4 +1,4 @@
--- $Header: /users/source/archives/vile.vcs/RCS/README.MENU,v 1.4 1997/04/30 01:40:03 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/RCS/README.MENU,v 1.5 1997/04/30 13:58:46 tom Exp $
 -- adapted from description by Philippe Chassany (20/02/1997)
 -- e-mail: phil@cln46ks.der.edf.fr
 
@@ -48,7 +48,7 @@ C:Xvile
 B:New:new_xvile
 B:Edit .vilerc:edit_rc
 B:Parse .vilerc:parse_rc
-B:Edit .menurc:edit_mrc
+B:Edit .vilemenu:edit_mrc
 B:Quit:quit
 #
 C:Edition
