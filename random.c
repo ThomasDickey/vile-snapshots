@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.212 1999/10/17 23:38:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.213 1999/10/24 16:38:39 tom Exp $
  *
  */
 
@@ -755,7 +755,7 @@ catnap(int milli, int watchinput)
 	 */
 	if (watchinput) {
 		bigtime_t d;
-		bigtime_t useconds = milli * 1000;
+		bigtime_t useconds = (milli ? milli : 1) * 1000;
 		int n, howmany;
 
 		for (d = 0; d < useconds; d += 5000) {
@@ -764,9 +764,10 @@ catnap(int milli, int watchinput)
 			if (howmany >= 0 && n > 0) {
 				return TRUE;
 			}
-			snooze(5000);
+			if (milli > 0)
+				snooze(5000);
 		}
-	} else {
+	} else if (milli > 0) {
 		snooze(milli * 1000);
 	}
 #   else

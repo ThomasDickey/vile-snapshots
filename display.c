@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.308 1999/10/19 10:54:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.310 1999/10/30 01:35:13 tom Exp $
  *
  */
 
@@ -851,14 +851,30 @@ dot_to_vcol(WINDOW *wp)
 #ifdef WMDLINEWRAP
 	if (w_val(wp,WMDLINEWRAP)) {
 		int lo = wt->w_left_dot.o;
-		int hi = lo + term.cols;
+		int hi = lo + term.cols; /* estimate (may be lower) */
+		int row;
+		int col = wt->w_left_col;
+		int tmp = (nu_width(wp) + w_left_margin(wp));
 
-		if ((wp->w_dot.o <  lo
-		  || wp->w_dot.o >= hi) ) {
-			wt->w_left_dot.o = wp->w_dot.o - (term.cols / 2);
-			if (wt->w_left_dot.o < 0)
-				wt->w_left_dot.o = 0;
-			need_col = TRUE;
+		if (wp->w_dot.o < lo
+		 || wp->w_dot.o >= hi) {
+			col = offs2col(wp, wt->w_left_dot.l, wp->w_dot.o);
+			TRACE(("offs2col(%d)) = %d\n", wp->w_dot.o, col))
+			TRACE(("...in row %d\n", col % term.cols))
+			row = col / term.cols;
+			col = row * term.cols;
+			if (row != 0)
+				col -= (nu_width(wp) + w_left_margin(wp));
+			TRACE(("...row %d ends with col %d\n", row, col))
+		}
+		if (wt->w_left_col != col) {
+			TRACE(("left_col %d vs %d\n", wt->w_left_col, col))
+			wt->w_left_col = col;
+			wt->w_left_dot.o = col2offs(wp, wt->w_left_dot.l, col + tmp);
+
+			col -= (offs2col(wp, wt->w_left_dot.l, wt->w_left_dot.o) - tmp);
+			TRACE(("...adjust:%d\n", col))
+			wt->w_left_col -= col;
 		}
 		if (wt->w_left_dot.o)
 			use_off = 0;
@@ -866,10 +882,18 @@ dot_to_vcol(WINDOW *wp)
 #endif
 	if (wt->w_left_col != shift) {
 		int base = nu_width(wp) + w_left_margin(wp) - 1;
+		int col;
+
 		TRACE(("...change w_left_col from %d to %d, base %d\n",
 			wt->w_left_col, shift, base))
+
 		wt->w_left_col = shift;
 		wt->w_left_dot.o = col2offs(wp, wt->w_left_dot.l, base);
+		if ((col = offs2col(wp, wt->w_left_dot.l, wt->w_left_dot.o)) < base) {
+			/* if there was a multi-column character at the left
+			 * side of the shifted screen, adjust */
+			wt->w_left_col -= (base - col);
+		}
 		if (wt->w_left_dot.o > wp->w_dot.o) {
 			need_col = TRUE; /* dot is inconsistent with shift */
 		} else {

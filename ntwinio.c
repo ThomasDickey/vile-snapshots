@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.59 1999/10/18 09:42:24 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.60 1999/10/29 00:57:30 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -1578,6 +1578,7 @@ invoke_popup_menu(MSG msg)
 				 "WinvilePopMenu");
 		hmenu = GetSubMenu(hmenu, 0);
 	}
+	CheckMenuItem(hmenu, IDM_MENU, MF_BYCOMMAND|MF_CHECKED);
 	point.x = LOWORD(msg.lParam);
 	point.y = HIWORD(msg.lParam);
 	ClientToScreen(msg.hwnd, &point);

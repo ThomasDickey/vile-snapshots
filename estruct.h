@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.426 1999/10/19 00:05:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.427 1999/10/29 01:14:40 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -376,7 +376,7 @@
 #define OPT_DUMBTERM (DISP_TERMCAP || DISP_VMSVT)
 
 /* Feature turnon/turnoff */
-#define OPT_CACHE_VCOL  0	/* cache mk_to_vcol() starting point          */
+#define OPT_CACHE_VCOL  1	/* cache mk_to_vcol() starting point          */
 #define	OPT_DOSFILES	1	/* turn on code for DOS mode (lines that
 				   end in crlf).  use DOSFILES, for instance,
 				   if you edit DOS-created files under UNIX   */

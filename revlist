@@ -1,6 +1,6 @@
-revlist for vile, version v8_3x
+revlist for vile, version v8_3y
 --------------------------------------------------------------------------------
-CHANGES	1.465
+CHANGES	1.467
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -32,11 +32,11 @@ configure.in	1.120
 csrch.c	1.29
 descrip.mms	1.41
 dirstuff.h	1.23
-display.c	1.308
+display.c	1.310
 djhandl.c	1.6
 dumbterm.c	1.17
 edef.h	1.258
-estruct.h	1.426
+estruct.h	1.427
 eval.c	1.255
 exec.c	1.206
 externs.c	1.7
@@ -76,22 +76,22 @@ modetbl	1.157
 msgs.c	1.19
 npopen.c	1.77
 ntconio.c	1.49
-ntwinio.c	1.59
+ntwinio.c	1.60
 oneliner.c	1.91
 opers.c	1.67
 os2keys.h	1.1
 os2pipe.c	1.4
 os2vio.c	1.26
-patchlev.h	1.195
+patchlev.h	1.196
 path.c	1.98
 perl.xs	1.55
 proto.h	1.394
 pscreen.h	1.1
 ptypemap	1.5
-random.c	1.212
+random.c	1.213
 regexp.c	1.65
 region.c	1.100
-revlist	v8_3x
+revlist	v8_3y
 search.c	1.117
 select.c	1.104
 sinstall.sh	1.1
@@ -126,7 +126,7 @@ watch.c	1.3
 window.c	1.91
 winvile.h	1.2
 winvile.odl	1.5
-winvile.rc	1.4
+winvile.rc	1.5
 word.c	1.70
 wordmov.c	1.20
 wvwrap.cpp	1.3
@@ -144,7 +144,7 @@ doc/modes.doc	1.5
 doc/oleauto.doc	1.6
 doc/perl.doc	1.2
 doc/visvile.doc	1.6
-doc/w32modes.doc	1.4
+doc/w32modes.doc	1.5
 filters/ada-filt.l	1.5
 filters/ada.key	1.1
 filters/awk-filt.l	1.6

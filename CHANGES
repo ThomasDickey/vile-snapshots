@@ -1,5 +1,18 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+ (tom) 991030 (y)
+ 	+ correct logic for OPT_CACHE_VCOL which accounts for the starting
+	  point when it may be a nonprinting character, i.e., rendered as
+	  multiple columns.
+	+ fix an error in BeOS version of catnap, exposed by change for SCO;
+	  the code did not handle a zero delay time while watching for input.
+	> patches by Clark Morgan:
+	+ modify ntwinio.c so popup menu's check-marks match those in the
+	  system menu.
+	+ modify the label of the popup menu "Menu" selection, remove trailing
+	  "..." because this cmd does not invoke a dialog box. 
+ 	+ update doc/w32modes.doc to cover Windows 98
+
  (tom) 991019 (x)
  	+ minor fixes for OPT_CACHE_VCOL, to take into account list and number
 	  modes.
