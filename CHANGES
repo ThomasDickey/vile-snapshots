@@ -1,4 +1,665 @@
-Changes for vile 9.4 (released ??? ??? ?? ????)
+Changes for vile 9.5 (released ??? ??? ?? ????)
+
+ 20031102 (b)
+	> Brendan O'Dea:
+	+ add code to support dynamic loading of syntax filters which are
+	  compiled as a shared object.
+ 	> Tom Dickey:
+	+ modify is_ESCAPED() in pl-filt.c to not treat backslash before
+	  double-quote specially.  This fixes man2html, which contains a line
+		  *bs = \"\b";
+	+ modify latexflt.l to recognize strings such as "\def$", which begin
+	  a redefinition of "$".
+	+ remove suffix conflict between latex and tex modes.
+	+ modify check in set_vilemode() so that buffers other than the current
+	  one can be set, provided that they are not scratch buffers.  A
+	  change in 20030630 had suppressed set_vilemode() for buffers other
+	  than the current one, from noting odd error messages when the current
+	  buffer was [Buffer List], which is a scratch buffer and therefore
+	  cannot have a majormode assigned to it.
+	+ add "--with-loadable-filters" option to configure script and modified
+	  related files to integrate Brendan O'Dea's patch for dynamic loading.
+	  Timed filtering of vile's larger source-files to compare the three
+	  schemes.  Loadable filters ran about 50% slower than the builtin
+	  filters, while external filters ran about 5 times slower (ymmv).
+	+ use AC_EXEEXT in configure script.
+	+ modify configure script check for imake's $CFLAGS to ensure that 
+	  imake or xmkmf was found.
+
+ 20031008 (a)
+	> Daniel L Ashbrook:
+	+ add lispmode, to use vile-lisp-filt.
+	> Mark Robinson:
+	+ add cygwin to OPT_CASELESS
+	+ modify xvile's wheelScrollAmount resource to scroll by pages if the
+	  resource value is negative.
+ 	> Tom Dickey:
+	+ correct suffix pattern for xresmode, which did not match ".Xdefaults"
+	  (see 9.2p).
+	+ add macro "which-menu" to which.rc, which shows the locations that
+	  xvile checks for a menu-file.
+	+ revise lookup for xvile's menu file to look for dotnames in the
+	  current and home-directories, while non-dotnames may be found there
+	  and in $HOME/.vile and on $startup-path.  Combine this with changing
+	  the default for $menu-file back to ".vilemenu" as documented rather
+	  than "vilemenu.rc".  The latter name is used in the non-dotname
+	  locations if $menu-file is a dot-name (report by Alf Pearce noted
+	  that the default for $menu-file no longer matched the documented
+	  ".vilemenu").
+	+ change order of charinit() and global_val_init() so that mkupper()
+	  works, e.g., for use in computing the value of $XVILE_MENU (report by
+	  Alf Pearce <alfp@unimelb.edu.au> noted that the environment variable
+	  did not work).
+	+ improve lisp syntax highlighting (reports by Daniel L Ashbrook,
+	  used the HyperSpec for reference):
+	  + recognize "#|"..."|#" comments.
+	  + revise patterns for numbers.
+	  + allow decimal digits embedded in identifiers
+	+ change makefile.djg to use zip rather than pkzip, and go32-v2.exe
+	  rather than go32.exe
+	+ improve configure check for <term.h>, which may be <ncursesw/term.h>.
+	+ correct highlighting of sh construct
+		${#variable}
+	  (report by Michael Finken).
+
+Changes for vile 9.4 (released Mon Aug 04 2003)
+
+ 20030727 (v)
+ 	> Kevin Buettner, Paul Fox:
+	+ fix include-path in filters/makefile.in to allow compiling with
+	  separate src/build trees.
+	> Tom Dickey:
+	+ set regionshape to EXACT in editMiniBuffer() before executing
+	  editing commands.
+	+ review/fix several places where a negative value could be converted
+	  to unsigned, or a zero value might be used as a malloc-size (report
+	  by Paul Fox dealt with a negative length passed to tb_bappend).
+	+ add "profile$" and "\.bash_[a-z]\+$" to shmode suffixes.
+	+ modify print_usage() to exit with non-error status if only the usage
+	  message was requested.
+
+ 20030708 (u)
+	> Tom Dickey:
+	+ modify parsing of here-document tags in sh-filt.l to allow '-', '<'
+	  and '>' characters if the tag is quoted.  This is used in some recent
+	  shar-files, e.g., cone.shar
+	+ modify filters.h to allow HP's lex program to be used:
+	  + put declarations for yylex() and yywrap() in gcc-specific ifdef
+	  + add definition of YYCHAR_ARRAY to prevent redefinition of yytext[]
+	    which caused failure to compile because HP's compiler refused to
+	    compare char* and unsigned char* pointers.
+	+ correct a missing dependency for neproto.h in descrip.mms
+
+ 20030630 (t)
+	> Tom Dickey:
+	+ add VMS to the OPT_CASELESS ifdef's, allowing majormodes to be
+	  recognized.
+	+ reorganized vmsbuild.com to allow the first parameter to be used as
+	  a goto-target (which it was originally).  VMS DCL does not allow a
+	  goto target to match when within an if-then-else block.
+	+ restore selection-highlighting at the end of attribute-directly.
+	+ add a check in update() to avoid calling newscreensize() when it
+	  would not really be able to adjust the screensize.  Otherwise,
+	  update's while-loop would not terminate.
+	+ guard vtinit() against interrupt to ensure that a SIGWINCH does not
+	  cause newscreensize() to recur into it.
+	+ set "vilemode" for [History] buffer.
+	+ modify vilefilt.l to highlight shell commands.
+	+ fix an ifdef in main.c so valid_buffer() and valid_window() compile
+	  with Visual C++.
+
+ 20030618 (s)
+	> Tom Dickey:
+	+ modify detach_attrib() to ensure that its parameter is still a valid
+	  buffer pointer.
+	+ add debug functions valid_buffer() and valid_window() and non-debug
+	  macros to replace null-pointer checks on BUFFER* and WINDOW* pointers
+	  with more extensive sanity checking.
+
+ 20030611 (r)
+	> Tom Dickey:
+	+ add a dummy entry to table in siginit() for VMS, which has no signal
+	  handlers.
+	+ correct a sign-extension problem with SAME() macro in regexp.c, which
+	  made searches for upper-128 characters fail.
+
+ 20030526 (q)
+	> Danny Zerkel:
+	+ revert part of regexp.c changes in regmatch(), which caused pattern
+		"^ *case"
+	  to not match lines with more than one blank.
+	> Paul Fox:
+	+ modify ansi.c to get screensize from system.
+	+ modify display.c to ensure default $modeline-format is interpreted
+	  when building with SMALLER.
+	> Tom Dickey:
+	+ correct logic in hst_display(), which did not check for the case
+	  where a shell command was being appended to an empty result.  The
+	  code only checked if the result was not a shell command before
+	  splitting the source into tokens.  This would happen for a sequence
+	  of commands such as
+		:!ls foo
+		:!mv bar foo
+		:e!
+		:!<uparrow>
+	  Then scrolling back through history would show only "!mv" and "!ls"
+	  rather than the complete command.
+	+ indent'd termio.c
+	+ removed ifdef's for SYS_APOLLO.
+	+ minor fix to imdying(), shows the list of files only if 'wrote' was
+	  set, just in case none could be written.
+	+ modify imdying() so email is always sent on a failure if
+	  VILE_ERROR_ABORT is defined.  This helps distinguish accidentally
+	  typing 'Q' versus a failure.
+	+ modify ExitProgram() to reset fatal-error signals back to default,
+	  so abort() will work properly, i.e., make a core dump.  Modify
+	  imdying() so that if VILE_ERROR_ABORT is defined, ExitProgram()
+	  is called rather than abort().  The latter calls abort() if the
+	  environment variable $VILE_ERROR_ABORT is set.
+	+ add cases for 'u', 'U', 'x' and 'X' to RegStrChr2(), making the
+	  [:upper:] and [:xdigit:] regular expression character classes work.
+	+ modify configure script to suppress -Winline if using gcc 3.3, since
+	  that feature is broken.
+	+ tested with gcc 3.3 and g++ 3.3, modifying several interfaces to use
+	  'const'.  gcc 3.x also introduces more nonstandard name-pollution.
+	+ add configure check/warning for flex 2.5.31, which has broken support
+	  for the "-P" option used for built-in filters.
+	+ reorder lex-based filters to allow building with flex 2.5.31, which
+	  introduces several incompatibilities with respect to flex 2.5.4
+	  and lex (report by Brendan O'Dea).
+	+ add makefile rules to generate test-programs for btree.c, regexp.c
+
+ 20030510 (p)
+	> Danny Zerkel:
+	+ revert 9.3o change for pl-filt.c, since "!" should be allowed as
+	  a pattern delimiter.
+	+ add a limit check in pl-filt.c
+	> Tom Dickey:
+	+ modify manpage.rc to check if the current buffer is perl, and if so,
+	  to render contents using pod2man or pod2text.
+	+ several fixes for pl-filt.c (vile-perl-filt):
+	  + check for a leading POD area, i.e., the first line is "=head",
+	    with no preceding blank lines.
+	  + allow floating-point numbers without a decimal point.
+	  + add "@", ";", "=" to QUOTE_DELIMS
+	  + add preprocessor keywords such as __END__ to perl.key
+	  + check for __DATA__ keyword, which ends the script like __END__.
+	  + add "grep", "unless", "until", "while" to the keywords which may
+	    have a pattern following not in parenthesis.
+	  + improve logic in is_QIDENT, testing for a quoted string in addition
+	    to an identifier for here-document marker.
+	  + check for identifier after "$#".
+	  + check for typeglob, i.e, a "*" preceding an identifier, e.g,. "*x".
+	  + add check in add_to_PATTERN() for nested parenthesis, e.g., when
+	    parenthesis are the pattern delimiters.
+	  + modify add_to_PATTERN() to accommodate multiple delimiters in a
+	    substitute command, e.g., "s{a}(b)".
+	  + check for pattern immediately after a left curly-brace.
+	  + modify check for operators to allow "||", etc., not within
+	    parentheses.
+	  + make buffer-checks more readable with macros MORE() and ATLEAST().
+	  + check for "..." in pattern, which makes a range of expressions.
+	  + parse backtic expressions.
+	  + parse file glob expressions.
+	  + parse format-statements.
+	  + suppress highlighting of variables inside single-quotes.
+	  + show variables highlighted inside double-quoted here-documents.
+	  + correct count returned from is_ESCAPED(), which did not count the
+	    character after the backslash if it was a quote character.
+	+ correct logic in encode_attributes(), which did not recompute region
+	  size for a buffer attribute that started on the current line, but did
+	  not end there.
+	+ add un-filters (atr2ansi, atr2html, atr2text) which convert encoded
+	  control/A text to different forms.
+	+ modify "decode-attributes-til" to allow multiple regions to start
+	  at the same point.
+	+ modify "encode-attributes-til" to set local nohighlight mode on the
+	  modified buffer (was global).
+	+ modify a limit-check in add_line_attrib(), in case an external
+	  filter provides a region that extends beyond the line.  In that
+	  case, it continued to set attributes beyond the allocated space.
+	+ modify "encode-attributes-til" to render selected text with "R"
+	  attribute.  It would be more consistent to use "S", but there would
+	  be no proper way to read the attribute back into vile.
+	+ rename a 'lvalue' variable in display.c to avoid conflict with macro
+	  preventing compile with unproto on SunOS 4.1.
+
+ 20030504 (o)
+	> Danny Zerkel:
+	+ modify perl filters to disallow a blank between "<<" and the
+	  identifier for a here-document.
+	> Tom Dickey:
+	+ fix for pl-filt.c, make it treat "!" as an operator rather than a
+	  pattern delimiter.
+	+ modify support for ^X-e to make it use the whole line if the current
+	  buffer is a directory.
+	+ use realpath() rather than resolve_directory() if it is available,
+	  and "$VILE_PWD" environment variable rather than "." as parameter to
+	  getcwd() if it is valid, to speed up operation on quasi-filesystems
+	  such as ClearCase (adapted from patch by Danny Zerkel).
+	+ add ".PL" to suffixes for perl mode, e.g., for Makefile.PL
+	+ add no_minimsgs variable, check in mlmsg() to allow editMiniBuffer()
+	  to keep editing commands from overwriting the minibuffer with a
+	  message.
+	+ improved editMiniBuffer(), correcting treatment of commands which
+	  would modify the result.  Overlooked in 9.3k, this copies the result
+	  from calls on execute() back to the TBUFF passed to editMiniBuffer().
+	+ use insert-mode bindings in editMiniBuffer() when mini-edit mode is
+	  active.  Use insert-key to toggle, rather than set mini-edit mode
+	  (adapted from patch by Mark Robinson).
+	+ modify latexflt.l to suppress treatment of "|" as a quoting character
+	  when within curly braces (report by Paul van Tilburg).
+	+ correct highlighting of "+=" in makefilt.l
+	+ move a comment out of the pattern section of latexflt.l to work
+	  around bug in HPUX lex (report by Adam Denton).
+	+ increase output- and state transitions-limits for latexflt.l,
+	  rpm-filt.l, sh-filt.l and vilefilt.l to compile with Solaris and HPUX
+	  lex programs (report by Adam Denton).
+	+ make configure check for flex's version contingent on ensuring that
+	  it is really flex (report by Adam Denton indicates that HPUX lex
+	  is confused by "--version", and requires further input).
+	+ modify vile-manfilt to decode UTF-8 emitted by groff 1.18
+
+ 20030318 (n)
+	> Tom Dickey:
+	+ fix typo in CF_WCTYPE macro, needed to add "-lw" to $LIBS.
+	+ workaround for bug in autoconf 2.52 which made it not show help
+	  text for "--with-locale" option, since it was quoted to pass it as
+	  a parameter to CF_LOCALE.
+	+ modify delins() to work with text that contains nulls.
+	+ fixes to make replacepat (the variable that holds the value supplied
+	  as a replacement pattern, e.g., when "~" is typed) work with embedded
+	  nulls.
+	+ move upper/lower case-conversion into tables vl_uppercase[] and
+	  vl_lowercase[], so that locale support can replace the DIFCASE
+	  variable.
+	+ fix an infinite loop in c-filt.c, from 9.3k changes (-j option).
+
+ 20030310 (m)
+	> Tom Dickey:
+	+ revise lgettext() and screen_string() to use TBUFF's directly, fixing
+	  the ^X-, macro broken in 9.3k.
+	+ fixes to avoid adding a trailing null to the "$search" variable.
+	+ correct parenthesis in dfputf(), which truncated "%f" format used to
+	  display "count-words" result.
+	+ implement logic for hypertext commands in "encode-attributes-til".
+	+ fix misplaced ":" appended in "encode-attributes-til".
+	+ add mode overlap-matches, to control whether highlighting for the
+	  visual-matches mode should skip to the next character, or past the
+	  current match when checking.
+	+ correct comparison in EXACTLY case of regrepeat(), which broke logic
+	  for "  *$" pattern - two blanks (reported by Danny Zerkel).
+	+ correct limit check in regrepeat(), which must account for the
+	  operand size directly since it is no longer null-terminated.
+	  Fixes match for patterns such as "X*$" (reported by Danny Zerkel).
+
+ 20030226 (l)
+	> Tom Dickey:
+	+ remove special check in kbd_putc() to advance the cursor, since fix
+	  in 9.3k using after_linsert() function duplicated this, making the
+	  cursor move twice for each character inserted in the minibuffer.
+	+ fix a sign-extension in hash_function() (filters.c), which could make
+	  a negative hash code.
+	+ modify regexp.c and callers to pass length into regcomp(), making
+	  its interface not rely upon whether the pattern is a null-terminated
+	  string (prompted by recent change for KBD_0CHAR, which dated from
+	  980312).
+	+ add more keywords for js.key
+	+ correct handling of backtic in here-document by sh-filt.l when
+	  command-substitution happens to be disabled.
+	+ modify imdying() to always exit with an error status.
+	+ amend changes to editMiniBuffer(), which did not allow arrow-key
+	  movement unless the ^G toggle was used.
+
+ 20030217 (k)
+	> Clark Morgan:
+	+ make ^X-s reflect the documentation in vile.hlp by implementing a
+	  new command substitute-all-til.
+	> Paul van Tilburg
+	+ add Ruby syntax filter (rb-filt.l, rb.key).
+	> Tom Dickey:
+	+ add -j option to c-filt.c, to implement some java-specific features
+	  such as "$" as part of an identifier, and \u escapes.
+	+ fix: java has no 'operator' keyword.
+	+ suppress KBD_0CHAR flag in kbd_string() function, since it is only
+	  designed to handle null-terminated strings.  This plugs a hole which
+	  would allow
+		:%s/^@/!/g
+	  to have unexpected results (report by Clark Morgan).
+	+ correct return from kbd_reply() used in scripts; sometimes it would
+	  add an extra null to the result.
+	+ correct an overlap between bits used to denote NOMINI (now MINIBUF)
+	  and FROM (part of RANGE) which caused some commands to be incorrectly
+	  treated as minibuffer editing commands when logic was changed to
+	  allow MINIBUF to be treated this way.
+	+ implement a few new editing commands in the minibuffer:  r, ~, x, X.
+	  Other editing commands such as R would require special handling;
+	  these are implemented by setting the appropriate flag in cmdtbl.
+	+ change cmdtbl to use MINIBUF rather than NOMINI, to implement
+	  encoding of editing commands which are limited to the minibuffer.
+	+ modify buffer- and filename-completion on Unix to escape backslashes
+	  which are stored in the [Completions] buffer.  Doing this allows one
+	  to complete a buffer or filename containing a backslash (Debian
+	  #164593).
+	+ add configure check for -lw library, needed for Solaris <wctype.h>
+	  functions.
+	+ correct logic of CF_X_ATHENA_LIBS, which did not really add extra X
+	  libraries.
+	+ use CF_LOCALE, CF_WITH_DBMALLOC and CF_DMALLOC macros to simplify
+	  configure.in
+	+ use fltstack.h in sccs filter.
+	+ highlight expanded and unexpanded sccs keywords in sccs files.
+	+ add texmode, as a variation of latexmode.
+	+ add .ltx, .sty suffixes for latexmode.
+	+ review/revise latex filter (reports by Daniel L Ashbrook
+	  <njiro@cc.gatech.edu>).  It still does not implement \[ \] and \( \)
+	  toggles for math mode, but is improved.
+	+ cleanup display of whitespace in key-filt.c using new functions
+	  chop_newline() and flt_put_blanks() (report by Clark Morgan).
+	+ add case for "abbrev" to key-filt.c
+	+ improve state stacking in yacc highlighting filter, correcting some
+	  problems introduced by fltstack.h changes.
+	+ modify lex syntax filter to accept C-style comments in the RULES
+	  state; apparently flex allows this.
+	+ add a C version of Ruby syntax filter.
+	+ add new commands encode-attributes-til and write-encoded-til to
+	  convert the syntax highlighting in a region back to control/A
+	  sequences, or to write the corresponding data to a file.  Added a
+	  corresponding alias decode-attributes-til for
+	  attribute-cntl_a-sequences-til.
+	+ change lrepltext() to use a given length rather than assume its
+	  parameter is null-terminated.
+
+ 20030102 (j)
+	> Clark Morgan:
+	+ fix a couple of compile-problems.
+	> Tom Dickey:
+	+ correct operation of chgreg() when no text is present in the buffer
+	  before inserting the replacement.  This makes a command such as
+	  	1GcG<esc>
+	  work properly (report by Paul Fox).
+	+ modify tracing code to show names of CMDFUNC's.
+	+ modify ifile() to mark a buffer changed only if data were read from
+	  the inserted file.  Otherwise an error was reported when trying to
+	  undo the modified state.
+	+ modify getregion() to check if the buffer is empty, and in that case
+	  return an empty region with status indicating there is a region.
+	  That allows filtering of empty buffers (report by Paul Fox).
+	+ trim a leading quote from internal arguments in run_func(), to make
+	  this type of construct work properly:
+		setv %w='*.[Cchis] llib-l*'
+		use-reg f load-reg &cat "^X!grep -n -w : " &cat %w "^M"
+	+ modify sh-filt.l to handle escaped newlines within quotes.
+	+ change some quoted includes in filters to bracketed form (report by
+	  Paul Fox).
+	+ more fixes to ncurses configure-script check.
+	+ add a configure option for XawPlus (see homepage
+	  http://people.freenet.de/kra/XawPlus/)
+
+ 20021223 (i)
+ 	> Adam Denton:
+	+ implement xml-filter based on html-filter.
+	> Clark Morgan:
+	+ fix: if winvile is in insert mode when wvwrap opens a new file, the
+	  "remote" editing commands used to open said file were inserted into
+	  curbuf.  This is a bug in the original implementation.
+	+ update doc/filters.doc for 9.3h
+	> Mark Robinson:
+	+ modify perform_dobuf() to allow multiple occurrences of directives
+	  such as "~force" on a line.
+	> Paul Fox:
+	+ add mode parameter to open() call in ffwopen() used by imdying().
+	> Tom Dickey:
+	+ add configure check for wctype functions, to work around defect in
+	  glibc's ctype functions: in UTF-8 locale, the latter return useless
+	  information on character classes.  This works on Solaris.
+	+ add configure option --with-screen=ncursesw to allow building the
+	  curses driver using the wide-character version of ncurses.
+	+ in UTF-8 locale, adjust termcap driver to use UTF-8 to display codes
+	  in the 160-255 range, setting vile's locale to non-UTF-8 locale.
+	  (yes, this is a short-term fix).
+	+ modify logic in set_mode_value() to fix a memory leak of changes to
+	  global mode values (see 9.2o, which made those consistently
+	  allocated rather than some constants).
+	+ modified filters.h and some filters to include estruct.h, thereby
+	  using definitions for no-leaks checking in trace.h
+	+ add more beginDisplay/endofDisplay macros to work with the assertions
+	  in trace.c (basic.c, finderr.c, modes.c, select.c, tags.c).
+	+ split-out fltstack.h to simplify state-stacks in filters.
+	+ modify yaccfilt.l to use %keywords in yacc.key
+	+ modify xml-filt.l to handle CDATA and inline DTD's.  Add some other
+	  features based on patch from Mark Robinson.
+	+ change term.set_title() calls so they are only executed in update(),
+	  to make it more efficient, e.g., when [Buffer List] is visible, the
+	  internal buffer-switching for that was causing 2 title updates for
+	  each character modified in the current buffer.
+	+ implement xterm-title mode.
+	+ correct a "&" to "&&" in ifdef's generated by mktbls
+	+ remove 'termdef' symbol, since it was redundant.
+	+ change typeallocplus() to use calloc().
+	+ add configure option --with-curses-dir
+	+ altered search-lists for configure script to find ncurses in more
+	  unusual places, such as the user's home directory.
+	+ change default for --with-locale option to yes.  Note that this
+	  option is only tested if locale support is found, and it is becoming
+	  less common to encounter systems with broken locale support.
+	+ update config.guess, config.sub
+	+ add ".S" to asmode suffixes.
+	+ add ".C" and ".cc" to cppmode suffixes.
+	+ add "locale" to the $cfgopts variable if vile is compiled with
+	  locale support.
+
+ 20021105 (h)
+	> Clark Morgan:
+	+ change home_dir() function to check for $HOME before $HOMEPATH, etc.,
+	  on win32.  Otherwise home_dir() may return something like
+	  c:\/usr/cmorgan, which performs badly.
+	> Danny Zerkel:
+	+ add a few Perl 5.6 reserved words, highlight binary values, and
+	  version numbers.
+	> Tom Dickey:
+	+ modify logic of compute_majormodes_order() to avoid skipping items
+	  in the list of majormodes.  This fixes the relative ordering of
+	  "rc" versus "vile" modes.  Because some items were skipped, the
+		"nr" after "sh"
+	  	"rc" after "vile"
+	  rules caused the second one to be ignored (reported by Clark Morgan).
+	+ modify pathcat() so the MS-DOS configuration will not attempt to
+	  supply an extra slash when concatenating strings such as "c:" and
+	  "/usr/cmorgan" (report by Clark Morgan).
+	+ correct allocation size of argv in ntwinio.c, which did not allow
+	  enough space.
+	+ correct handling of escaped backtic in sh-filt.l
+	+ add syntax filters and corresponding modes for assembler (GNU and M$),
+	  info and texinfo.
+	+ add beginDisplay/endofDisplay macros in several places to work with
+	  the assertions in trace.c
+	+ add assertions to trace.c in doalloc/dofree to check for places where
+	  beginDisplay/endofDisplay should be used to prevent the OPT_WORKING
+	  code from interrupting malloc/free calls.
+	+ improve error-checking for numbers in perl filter.
+	+ implement pot-filt.l, to highlight ".po" files.  Using sh-filt.l was
+	  not satisfactory since the quoting rules were not close enough.
+	+ modify configure script to fix existence-style ifdef's for crypt,
+	  setbuffer, strerror.
+
+ 20021027 (g)
+	> Tom Dickey:
+	+ improve perl filter by recognizing q[] and q() quote-like operators.
+	+ improve rpm filter to avoid exiting text area on embedded "%" names,
+	  added several keywords to rpm.key
+	+ modify suffix rule for terminfo (timode) to allow nrmode to pick up
+	  ncurses' terminfo.tail, and corrected preamble for nrmode, which used
+	  the wrong quote character.
+	+ add yankmotion mode, to control whether the cursor should be moved
+	  as in vi after yanking text (discussion with George Eccles and Paul
+	  Fox).
+	+ modify ifdef's to allow builtin-filters to be tested with the
+	  configure --no-leaks code.
+	+ improved perl filter by recognizing a pattern at the beginning of
+	  a statement, or after the word "split" (the latter was reported by
+	  Duncan Sargeant).
+	+ fix a place where 9.3f changes quoted a token which was already a
+	  quoted string (report by George Eccles).
+
+ 20021023 (f)
+	> Clark Morgan:
+	+ update list of filters in config.doc
+	> Tom Dickey:
+	+ correct a check in builtflt.c that had the effect of making some
+	  keyword files only work if the -v option was given in the filtername
+	  string (broken in 9.2y).
+	+ small fix to argument parsing in builtflt.c, to avoid going past the
+	  end of the string (found with valgrind).
+	+ documented the filtername majormode value in modes.doc
+	+ correct initialization of which.rc, so it can be run more than once.
+	+ improve/complete XtArgVal casts using macros Nval() and Sval().
+	+ modify x11.c to make scrolling always use mvupwind() - one place used
+	  forwline(), and to fix some cases where horizontal resizing would
+	  change the width of the Xaw scrollbar (patch by D J Hawkey Jr).
+	+ modify run_func() to quote string-results, to ensure that they are
+	  not mistaken for other token types such as directives.  This change
+	  is needed to make "which.rc" work on win32.
+	+ implemented tilde-expansion on win32.  Actually it was present, but
+	  globbing did not work, and the environment variables did not match
+	  the Windows 2000 configuration.
+	+ modify debug traces to allow Trace() to make an indented listing,
+	  according to the function-nesting level.  This is done (from ncurses)
+	  by prefixing the format string with T_CALLED or T_RETURN strings.
+	  Used this feature to help debug changes for which.rc on win32.  Not
+	  all functions are traced this way, but all that call swbuffer() are,
+	  as well as some others that were useful.
+	+ adjust ifdef's so VILE_ERROR_ABORT and VILE_OLE can be defined at
+	  the same time.
+
+ 20021016 (e)
+	> Clark Morgan:
+	+ correction to 9.3d change:  @<register> was busted (command mode) and
+	  :write-message "@stuff" caused vile to complain when '@' was pressed.
+	+ I noticed recently that I could not use vile's file/directory
+	  traversal feature (on linux) to find the value of an errno.h macro
+	  (e.g., EINVAL).  As it turns out, linux puts these definitions in a
+	  directory that's referenced via a symbolic link resident within
+	  /usr/include (other features such as the X11 includes files are
+	  handled similarly).  Seems that GNU's find won't traverse symbolic
+	  links without specifying an explicit option (it appears SunOS 5.7
+	  exhibits similar behavior and uses the exact same option name).  The
+	  enclosed patch adds "-follow" as an optional parameter to vile's
+	  file/directory traversal repertoire.
+	> Duncan Sargeant:
+	+ fix a small bug in the perl filter where pod code starting with
+	  "=cut" would not be filtered (it's a valid start and end marker for
+	  pod).
+	> Paul Fox:
+	+ make filters/makefile.in's LDFLAGS variable the same as in the
+	  top-level makefile to fix a case where flex libraries were not found
+	  in a nonstandard location.
+	> Tom Dickey:
+	+ add b_procname field to BUFFER, use that to save the given procedure
+	  name when storing a macro.  This fixes a problem when removing
+	  procedures whose name is longer than NBUFN-2, which could leave the
+	  key binding table pointing to a non-existent buffer, e.g., ^X-, for
+	  next-cur-identifier.
+	+ documented ~elsewith in doc/modes.doc (report by Adam Denton).
+	+ correct handling of "uc" keyword for perl filter in this line:
+		if ($diagType =~ uc $widgetType)
+	  It was being treated as a pattern delimiter.
+	+ add several short-named relational operators "&geq", "&gt", "&leq",
+	  "&lt", "&neq", "&sgeq", "&sgt", "&sleq", "&slt", "&sneq" to reduce
+	  the need for "&not" (suggested by Adam Denton).
+	+ change UFxxx variables to an enum, using this to check for unhandled
+	  cases in eval.c
+	+ repair missing mktemp() call in imydying(), broken in 9.3d changes
+	  (reports by George Eccles and Paul Fox).
+	+ add syntax filter for rpm ".spec" files.
+	+ add syntax filter for PostScript ".ps" files.
+	+ add syntax filter for enscript ".st" files.
+	+ make cursor-movement on a yank command match vi's, tested for various
+	  left/up motions such as yk, yh, yH, y1G, y0, y-, yb (report by
+	  George Eccles).
+	+ correct order of initialization in operyank() from 9.3b changes,
+	  which could cause a core dump (reported by George Eccles).
+	+ modify check for renaming the unnamed-buffer when writing it; do not
+	  rename it if the write was to a pipe (report by Paul Fox).
+	+ add definition for OWTOOLKIT_WARNING_DISABLED to x11.c, without which
+	  the Xol version cannot be compiled under Solaris 8.
+	+ add -Wundef flag for gcc warnings, modified ifdef's to make SYS_xxx,
+	  CC_xxx, DISP_xxx variables always defined as 0/1, and use #ifdef to
+	  check for the HAVE_xxx and similar variables rather than #if.
+	+ modify configure check for Athena (Xaw, etc) libraries to include
+	  Xpm, on which XFree86 4.x Xaw depends.  That allows xvile to be
+	  built on cygwin.
+	+ modify logic of pop_fake_win() to allow for the possibility that the
+	  current buffer is not related to the current window.  This can/did
+	  happen in tprintf(), for example, but could happen in one of the
+	  other calls.  In particular, if ~trace was enabled, that resulted in
+	  making ":ww" fail to write files which had no current window.
+	+ add pattern for hexadecimal character codes in htmlfilt.l
+	+ modify configure script to use '%' consistently as sed delimiter,
+	  rather than sometimes '@', to avoid problems with AFS.
+	+ update config.guess, config.sub
+
+ 20020902 (d)
+	> Brendan O'Dea:
+	+ updates to allow vile to build with perl 5.8.0 (ifdef's checked for
+	  5.6.1, 5.5.3 and 5.4.5).
+	> Clark Morgan:
+	+ modify ntconio.c and ntwinio.c to recognize control/@ as a null,
+	  to allow inserting null characters.
+	+ config.doc:
+	  - correct erroneous statement; namely, vile build only creates as many
+	    external filters as necessary, not all filters.
+	  - restructure doc/config.doc's builtin-filter prose for improved clarity.
+	+ vile.hlp:
+	  - fix ispell macro so that users avoid a "warn-reread" prompt.
+	  - remove ShowManpage macro from vile.hlp; it's long and complex.
+	    Interested readers can read the macro directly by browsing
+	    manpage.rc .
+	  - documented builtin filters.  One of the more notable changes here
+	    is that I dumped the description of how to optimally build vile on
+	    a Unix host when disk space is limited.  I don't think that's much
+	    of an issue these days and it substantially simplifies the prose.
+	> Tom Dickey:
+	+ add which-keywords, as a macro.
+	+ add $pathname-separator variable.
+	+ implement edit-buffer command, to simplify which-keywords macro.
+	  In turn, this required modifying readin() to allow us to treat
+	  an empty filename as a non-error condition, and adding the KBD_OPTIONS
+	  flags to the DONE_ARGS to propagate this down to kbd_complete(),
+	  to make the code which does name-completion of buffer-names allow
+	  a partial match.
+	+ put nrmode after shmode to allow scripts such as "with-perl-5.8.0".
+	+ reorganize decode_prefix() to allow parsing of bindings such as
+	  ^X-#-a (report by Christian Neumann <jarva@t-online.de>)
+	+ reset, if possible, real uid/gid values to match effective uid/gid
+	  values, to appease Perl's check for setuid scripts.  This fixes a
+	  problem where vileperl.rc would stop during initialization because
+	  fcron's fcrontab program would run the editor process with the group
+	  id's not matching (reported by Clemens Fischer).
+	+ change test in fscan(), aka forward-char-scan to an inequality to
+	  allow for the case where the line is empty (report by Adam Denton).
+	+ correct logic of label2bp(), which did not skip leading blanks on the
+	  line before checking for a label.  This happened to work until 9.2u
+	  indented macros as they are stored (reportd by Adam Denton).
+	+ modify built-in spell filter to work with encrypted files.
+	+ improve check for flex's version (patch by Danny Zerkel
+	  <dzerkel@cas.org>).
+	+ correct check for mkdtemp() in create_save_dir() (reported by
+	  D J Hawkey Jr <hawkeyd@visi.com>).
+	+ add vile's patches to RPM spec (patch by Mark Milhollan
+	  <mlm@mlm.ath.cx>).
+	+ correct parsing of '+' in prc2kcod(), so one can bind that key
+	  to a command, e.g.,
+		bind-key next-buffer +
+	  (patch by Brian T. Schellenberger <bts@babbleon.org>).
+	+ add x11menu to descrip.mms and vmsbuild.com (patch by Jouk Jansen
+	  <joukj@hrem.stm.tudelft.nl>).
+	+ use XtArgVal casts on data passed by XtVaSetValues() calls.  This is
+	  needed to make xvile run reliably on an LP64 platform, since Xt
+	  uses a long for this value.
+	+ add an #error in perl.xs to flag instances where patchlevel.h is
+	  included from places other than Perl's directory (report by Clemens
+	  Fischer).
 
  20020704 (c)
 	> Tom Dickey:

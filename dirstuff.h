@@ -4,7 +4,7 @@
  *	Definitions to interface to unix-like DIRECTORY(3) procedures.
  *	Include this after "estruct.h"
  *
- * $Header: /users/source/archives/vile.vcs/RCS/dirstuff.h,v 1.23 1996/11/07 02:00:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/dirstuff.h,v 1.24 2002/10/09 19:43:50 tom Exp $
  *
  */
 
@@ -16,14 +16,14 @@
 #define USE_LS_FOR_DIRS 0
 #define OLD_STYLE_DIRS 0	/* e.g., pre-SysV.2 14-char names */
 
-#if DIRNAMES_NOT_NULL_TERMINATED
+#ifdef DIRNAMES_NOT_NULL_TERMINATED
 /* rumor has it that some early readdir implementations didn't null-terminate
    the d_name array, and on those you _have_ to use d_namlen to get
    the length.  most modern dirent structs are null-terminated, however. */
 #define USE_D_NAMLEN 1
 #endif
 
-#if _POSIX_VERSION || HAVE_DIRENT_H || CC_TURBO || CC_WATCOM || CC_DJGPP || SYS_OS2
+#if _POSIX_VERSION || defined(HAVE_DIRENT_H) || CC_TURBO || CC_WATCOM || CC_DJGPP || SYS_OS2
 # if CC_WATCOM || CC_CSETPP
 #   include <direct.h>
 # else
@@ -33,13 +33,13 @@
 #else	/* apollo & other old bsd's */
 # define	DIRENT	struct direct
 # define USE_D_NAMLEN 1
-# if HAVE_SYS_NDIR_H
+# ifdef HAVE_SYS_NDIR_H
 #  include <sys/ndir.h>
 # else
-#  if HAVE_SYS_DIR_H
+#  ifdef HAVE_SYS_DIR_H
 #   include <sys/dir.h>
 #  else
-#   if HAVE_NDIR_H
+#   ifdef HAVE_NDIR_H
 #    include <ndir.h>
 #   else
 #    if SYS_WINNT

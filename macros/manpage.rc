@@ -3,7 +3,7 @@
 ;;
 ;; Author: Kevin Buettner
 ;;
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.17 2001/05/19 00:22:17 tom Exp $
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.18 2003/05/10 00:53:59 tom Exp $
 ;;
 
 store-procedure ShowManpage "Prompt for, and display a manual-page"
@@ -64,6 +64,12 @@ store-procedure ShowFormatted "Render the current buffer with nroff -man or -ms"
 	~if &or &seq $majormode "html" \
 		&seq $majormode "xml"
 		edit-file &cat "!lynx -force_html -with_backspaces -dump -width=" &cat $pagewid &cat " " &cat &pquote $cfilname &cat " | " %filter
+	~elseif &seq $majormode "perl"
+		~if &seq $pathlist-separator ":"
+			edit-file &cat "!pod2man " &cat &pquote $cfilname &cat " | tbl | nroff -man | " %filter
+		~else
+			edit-file &cat "!pod2text " &cat &pquote $cfilname &cat " | " %filter
+		~endif
 	~elseif &seq $pathlist-separator ":"
 		~if &seq %type ".ms"
 			edit-file &cat "!tbl " &cat &pquote $cfilname &cat " | nroff -ms | " %filter

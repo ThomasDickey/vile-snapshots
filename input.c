@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.241 2002/05/01 00:01:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.261 2003/07/27 19:06:52 tom Exp $
  *
  */
 
@@ -110,8 +110,12 @@ TempDot(int init)
  */
 /*ARGSUSED*/
 int
-no_completion(int c GCC_UNUSED, char *buf GCC_UNUSED, unsigned *pos GCC_UNUSED)
+no_completion(DONE_ARGS)
 {
+    (void) flags;
+    (void) c;
+    (void) buf;
+    (void) pos;
     return FALSE;
 }
 
@@ -125,9 +129,7 @@ no_completion(int c GCC_UNUSED, char *buf GCC_UNUSED, unsigned *pos GCC_UNUSED)
 #if COMPLETE_FILES
 static int doing_shell;
 int
-shell_complete(int c,
-	       char *buf,
-	       unsigned *pos)
+shell_complete(DONE_ARGS)
 {
     int status;
     unsigned len = *pos;
@@ -148,7 +150,7 @@ shell_complete(int c,
 	}
     }
     len -= base;
-    status = path_completion(c, buf + base, &len);
+    status = path_completion(flags, c, buf + base, &len);
     *pos = len + base;
 
     return status;
@@ -160,7 +162,6 @@ shell_complete(int c,
  * ABORT. The ABORT status is returned if the user bumps out of the question
  * with an esc_c. Used any time a confirmation is required.
  */
-
 int
 mlyesno(const char *prompt)
 {
@@ -197,7 +198,6 @@ mlyesno(const char *prompt)
  * Ask a simple question in the message line.  Return the single char response
  * if it was one of the valid responses.
  */
-
 int
 mlquickask(const char *prompt, const char *respchars, int *cp)
 {
@@ -308,13 +308,12 @@ mlreply_reg_count(int state,	/* negative=register, positive=count, zero=either *
 }
 
 /*
- * Write a prompt into the message line, then read back a response. Keep
- * track of the physical position of the cursor. If we are in a keyboard
- * macro throw the prompt away, and return the remembered response. This
- * lets macros run at full speed. The reply is always terminated by a carriage
- * return. Handle erase, kill, and abort keys.
+ * Write a prompt into the message line, then read back a response.  Keep track
+ * of the physical position of the cursor.  If we are in a keyboard macro throw
+ * the prompt away, and return the remembered response.  This lets macros run
+ * at full speed.  The reply is always terminated by a carriage return.  Handle
+ * erase, kill, and abort keys.
  */
-
 int
 mlreply(const char *prompt, char *buf, UINT bufn)
 {
@@ -473,13 +472,13 @@ unkeystroke(int c)
 int
 mapped_keystroke(void)
 {
-    return lastkey = mapped_c(DOMAP, NOQUOTED);
+    return lastkey = mapped_c(DOMAP, MAP_UNQUOTED);
 }
 
 int
 keystroke(void)
 {
-    return lastkey = mapped_c(NODOMAP, NOQUOTED);
+    return lastkey = mapped_c(NODOMAP, MAP_UNQUOTED);
 }
 
 int
@@ -487,7 +486,7 @@ keystroke8(void)
 {
     int c;
     for_ever {
-	c = mapped_c(NODOMAP, NOQUOTED);
+	c = mapped_c(NODOMAP, MAP_UNQUOTED);
 	if ((c & ~0xff) == 0)
 	    return lastkey = c;
 	kbd_alarm();
@@ -499,7 +498,7 @@ keystroke_raw8(void)
 {
     int c;
     for_ever {
-	c = mapped_c(NODOMAP, QUOTED);
+	c = mapped_c(NODOMAP, MAP_QUOTED);
 	if ((c & ~0xff) == 0)
 	    return lastkey = c;
 	kbd_alarm();
@@ -509,7 +508,7 @@ keystroke_raw8(void)
 static int
 mapped_keystroke_raw(void)
 {
-    return lastkey = mapped_c(DOMAP, QUOTED);
+    return lastkey = mapped_c(DOMAP, MAP_QUOTED);
 }
 
 int
@@ -550,7 +549,7 @@ tgetc(int quoted)
 	if (setjmp(read_jmp_buf)) {
 	    c = kcod2key(intrc);
 	    TRACE(("setjmp/getc:%c (%#x)\n", c, c));
-#if defined(BUG_LINUX_2_0_INTR) && defined(DISP_TERMCAP)
+#if defined(BUG_LINUX_2_0_INTR) && DISP_TERMCAP
 	    /*
 	     * Linux bug (observed with kernels 1.2.13 & 2.0.0):
 	     * when interrupted, the _next_ character that
@@ -586,11 +585,10 @@ tgetc(int quoted)
     return c;
 }
 
-/*	KBD_SEQ:	Get a command sequence (multiple keystrokes) from
-		the keyboard.
-		Process all applicable prefix keys.
-		Set lastcmd for commands which want stuttering.
-*/
+/*
+ * Get a command sequence (multiple keystrokes) from the keyboard.  Process all
+ * applicable prefix keys.  Set lastcmd for commands which want stuttering.
+ */
 int
 kbd_seq(void)
 {
@@ -632,14 +630,45 @@ kbd_seq_nomap(void)
 int
 screen_string(char *buf, int bufn, CHARTYPE inclchartype)
 {
-    register int i = 0;
-    MARK mk;
+    static TBUFF *temp;
+    int rc;
+    int len;
 
-    mk = DOT;
+    if ((rc = screen2tbuff(&temp, inclchartype)) == TRUE) {
+	if ((len = tb_length(temp)) >= bufn)
+	    len = bufn - 1;
+	strncpy0(buf, tb_values(temp), len + 1);
+    } else {
+	*buf = EOS;
+    }
+    return rc;
+}
 
+/* get a string consisting of inclchartype characters from the current
+	position.  if inclchartype is 0, return everything to eol */
+int
+screen2tbuff(TBUFF ** result, CHARTYPE inclchartype)
+{
+    int i = 0;
+    MARK save_dot;
+    int first = -1;
+    int last = -1;
+    int whole_line = 0;
+
+    save_dot = DOT;
+
+    tb_init(result, EOS);
     /* if from gototag(), grab from the beginning of the string */
     if (b_val(curbp, MDTAGWORD)
-	&& inclchartype == vl_ident
+	&& inclchartype == vl_ident) {
+	whole_line = 1;
+    } else if (b_is_directory(curbp)
+	       && inclchartype == SCREEN_STRING) {
+	whole_line = 1;
+	inclchartype = (CHARTYPE) ~ 0;
+    }
+
+    if (whole_line
 	&& DOT.o > 0
 	&& istype(inclchartype, char_at(DOT))) {
 	while (DOT.o > 0) {
@@ -650,16 +679,18 @@ screen_string(char *buf, int bufn, CHARTYPE inclchartype)
 	    }
 	}
     }
-    while (i < (bufn - 1) && !is_at_end_of_line(DOT)) {
-	buf[i] = (char) char_at(DOT);
+    while (!is_at_end_of_line(DOT)) {
+	last = CharOf(char_at(DOT));
+	if (first < 0)
+	    first = last;
 #if OPT_WIDE_CTYPES
 	if (i == 0) {
 	    if (inclchartype & vl_scrtch) {
-		if (buf[0] != SCRTCH_LEFT[0])
+		if (first != SCRTCH_LEFT[0])
 		    inclchartype &= ~vl_scrtch;
 	    }
 	    if (inclchartype & vl_shpipe) {
-		if (buf[0] != SHPIPE_LEFT[0])
+		if (first != SHPIPE_LEFT[0])
 		    inclchartype &= ~vl_shpipe;
 	    }
 	}
@@ -667,26 +698,26 @@ screen_string(char *buf, int bufn, CHARTYPE inclchartype)
 	/* allow "[!command]" */
 	if ((inclchartype & vl_scrtch)
 	    && (i == 1)
-	    && (buf[1] == SHPIPE_LEFT[0])) {
+	    && (last == SHPIPE_LEFT[0])) {
 	    /*EMPTY */ ;
 	    /* guard against things like "[Buffer List]" on VMS */
 	} else if ((inclchartype & vl_pathn)
-		   && !ispath(buf[i])
+		   && !ispath(last)
 		   && (inclchartype == vl_pathn)) {
 	    break;
 	} else
 #endif
-	if (inclchartype && !istype(inclchartype, buf[i]))
+	if (inclchartype && !istype(inclchartype, last))
 	    break;
+	tb_append(result, last);
 	DOT.o++;
 	i++;
 #if OPT_WIDE_CTYPES
 	if (inclchartype & vl_scrtch) {
-	    if ((i < bufn)
-		&& (inclchartype & vl_pathn)
+	    if ((inclchartype & vl_pathn)
 		&& ispath(char_at(DOT)))
 		continue;
-	    if (buf[i - 1] == SCRTCH_RIGHT[0])
+	    if (last == SCRTCH_RIGHT[0])
 		break;
 	}
 #endif
@@ -699,15 +730,14 @@ screen_string(char *buf, int bufn, CHARTYPE inclchartype)
     } else
 #endif
     if (inclchartype & vl_scrtch) {
-	if (buf[i - 1] != SCRTCH_RIGHT[0])
-	    i = 0;
+	if (last != SCRTCH_RIGHT[0])
+	    tb_init(result, EOS);
     }
 #endif
 
-    buf[i] = EOS;
-    DOT = mk;
+    DOT = save_dot;
 
-    return buf[0] != EOS;
+    return tb_length(*result) != 0;
 }
 
 /*
@@ -751,6 +781,29 @@ kbd_delimiter(void)
 	    c = d;
     }
     return c;
+}
+
+/*
+ * If we are NOT processing MSDOS pathnames, we may have literal backslashes in
+ * pathnames and buffer names.  Escape those by doubling them.
+ */
+char *
+add_backslashes(char *text)
+{
+    static TBUFF *temp = 0;
+    int n;
+
+    if (strchr(text, BACKSLASH) != 0) {
+	temp = tb_init(&temp, EOS);
+	for (n = 0; text[n] != EOS; ++n) {
+	    if (text[n] == BACKSLASH)
+		temp = tb_append(&temp, BACKSLASH);
+	    temp = tb_append(&temp, text[n]);
+	}
+	temp = tb_append(&temp, EOS);
+	text = tb_values(temp);
+    }
+    return text;
 }
 
 /*
@@ -1074,12 +1127,11 @@ kbd_is_pushed_back(void)
     return clexec && pushed_back;
 }
 
-/* A generalized prompt/reply function which allows the caller to
- * specify an additional terminator as well as '\n'.  Both are
- * accepted.  Assumes the buffer already contains a valid (possibly
- * null) string to use as the default response.
+/* A generalized prompt/reply function which allows the caller to specify an
+ * additional terminator as well as '\n'.  Both are accepted.  Assumes the
+ * buffer already contains a valid (possibly null) string to use as the default
+ * response.
  */
-
 int
 kbd_string(const char *prompt,	/* put this out first */
 	   char *extbuf,	/* the caller's (possibly full) buffer */
@@ -1090,6 +1142,8 @@ kbd_string(const char *prompt,	/* put this out first */
 {
     int code;
     static TBUFF *temp;
+
+    options &= ~KBD_0CHAR;	/* this func is for null-terminated strings! */
     tb_scopy(&temp, extbuf);
     code = kbd_reply(prompt, &temp, eol_history, eolchar, options, complete);
     if (bufn > tb_length(temp))
@@ -1132,11 +1186,10 @@ user_reply(const char *prompt, const char *dft_val)
 	ptb = &replbuf;
     else {
 	/* 
-	 * Querying user for a password.  Store result in an alternate
-	 * buffer, the value of which is _not_ reused (so that it can't
-	 * be recalled via &query or &dquery or an @ var).
+	 * Querying user for a password.  Store result in an alternate buffer,
+	 * the value of which is _not_ reused (so that it can't be recalled via
+	 * &query or &dquery or an @ var).
 	 */
-
 	if (passwdbuf)
 	    tb_free(&passwdbuf);
 	ptb = &passwdbuf;
@@ -1163,7 +1216,7 @@ user_reply(const char *prompt, const char *dft_val)
 	return tb_values(*ptb);
 }
 
-#define isMiniMotion(f) (((f) & MOTION) && !((f) & (ABSM|FL|NOMINI)))
+#define isMiniMotion(f) (((f) & MOTION) && ((f) & (MINIBUF)))
 
 /*
  * We use the editc character to toggle between insert/command mode in the
@@ -1172,15 +1225,10 @@ user_reply(const char *prompt, const char *dft_val)
 static int
 isMiniEdit(int c)
 {
-    if (c == editc)
-	return TRUE;
-    if (miniedit) {
-	const CMDFUNC *cfp = CommandKeyBinding(c);
-	if ((cfp != 0)
-	    && isMiniMotion(cfp->c_flags))
-	    return TRUE;
-    }
-    return FALSE;
+    const CMDFUNC *cfp = ((miniedit)
+			  ? CommandKeyBinding(c)
+			  : InsertKeyBinding(c));
+    return ((c == editc) || ((cfp != 0) && isMiniMotion(cfp->c_flags)));
 }
 
 /*
@@ -1220,11 +1268,19 @@ shiftMiniBuffer(int offs)
 }
 
 static int
+fakeKeyCode(const CMDFUNC * f)
+{
+    return (miniedit
+	    ? fnc2kcod(f)
+	    : fnc2kins(f));
+}
+
+static int
 editMinibuffer(TBUFF ** buf, unsigned *cpos, int c, int margin, int quoted)
 {
     int edited = FALSE;
-    const CMDFUNC *cfp = CommandKeyBinding(c);
-    int savedexecmode = insertmode;
+    const CMDFUNC *cfp;
+    int save_insertmode = insertmode;
     BUFFER *savebp;
     WINDOW *savewp;
     MARK savemk;
@@ -1235,87 +1291,100 @@ editMinibuffer(TBUFF ** buf, unsigned *cpos, int c, int margin, int quoted)
     curbp = bminip;
     curwp = wminip;
     savemk = MK;
+    ++no_minimsgs;
 
-    TRACE(("editMiniBuffer(%d:%s) called with c=%#x, miniedit=%d, dot=%d\n",
+    TRACE((T_CALLED
+	   "editMiniBuffer(%d:%s) called with c=%#x, miniedit=%d, dot=%d\n",
 	   *cpos, tb_visible(*buf),
 	   c, miniedit, DOT.o));
+
+    cfp = ((miniedit)
+	   ? CommandKeyBinding(c)
+	   : InsertKeyBinding(c));
 
     /* Use editc (normally ^G) to toggle insert/command mode */
     if (c == editc && !quoted) {
 	miniedit = !miniedit;
-    } else if (isSpecial(c)
-	       || (miniedit && cfp != 0 && isMiniMotion(cfp->c_flags))) {
+    } else if ((miniedit || isSpecial(c))
+	       && (cfp != 0) && (cfp->c_flags & MINIBUF) != 0) {
+	int first = *cpos + margin;
+	int old_clexec = clexec;
+	int old_named = isnamedcmd;
+	int old_margin = b_left_margin(bminip);
+	int old_shape = regionshape;
 
-	/* If we're allowed to honor SPEC bindings, then see if it's
-	 * bound to something, and execute it.
+	/*
+	 * Reset flags that might cause a recursion into the prompt/reply
+	 * code.
 	 */
-	if (cfp) {
-	    int first = *cpos + margin;
-	    int old_clexec = clexec;
-	    int old_named = isnamedcmd;
+	clexec = 0;
+	isnamedcmd = 0;
 
-	    /*
-	     * Reset flags that might cause a recursion into the
-	     * prompt/reply code.
-	     */
-	    clexec = 0;
-	    isnamedcmd = 0;
+	/*
+	 * Set limits so we don't edit the prompt, and allow us to move the
+	 * cursor with the arrow keys just past the end of line.
+	 */
+	b_set_left_margin(bminip, margin);
+	DOT.o = llength(DOT.l);
+	linsert(1, ' ');	/* pad the line so we can move */
 
-	    /*
-	     * Set limits so we don't edit the prompt, and allow us
-	     * to move the cursor with the arrow keys just past the
-	     * end of line.
-	     */
-	    b_set_left_margin(bminip, margin);
+	DOT.o = first;
+	MK = DOT;
+	curwp->w_line = DOT;
+	regionshape = EXACT;	/* operdel(), etc., do not set this */
+	(void) execute(cfp, FALSE, 1);
+	insertmode = save_insertmode;
+	edited = TRUE;
+
+	llength(DOT.l) -= 1;	/* strip the padding */
+	b_set_left_margin(bminip, old_margin);
+
+	clexec = old_clexec;
+	isnamedcmd = old_named;
+	regionshape = old_shape;
+
+	/*
+	 * Cheat a little, since we may have used an alias for
+	 * '$', which can set the offset just past the end of
+	 * line.
+	 */
+	if (DOT.o > llength(DOT.l)) {
 	    DOT.o = llength(DOT.l);
-	    linsert(1, ' ');	/* pad the line so we can move */
+	}
+	*cpos = DOT.o - margin;
 
-	    DOT.o = first;
-	    MK = DOT;
-	    curwp->w_line = DOT;
-	    (void) execute(cfp, FALSE, 1);
-	    insertmode = savedexecmode;
-	    edited = TRUE;
-	    *cpos = DOT.o - margin;
-
-	    llength(DOT.l) -= 1;	/* strip the padding */
-	    b_set_left_margin(bminip, 0);
-
-	    clexec = old_clexec;
-	    isnamedcmd = old_named;
-
-	    /*
-	     * Cheat a little, since we may have used an alias for
-	     * '$', which can set the offset just past the end of
-	     * line.
-	     */
-	    if (DOT.o > llength(DOT.l))
-		DOT.o = llength(DOT.l);
-
-	} else
-	    kbd_alarm();
-	/* FIXME: Below are some hacks for making it appear that we're
-	 * doing the right thing for certain non-motion commands...
+	/*
+	 * Copy the data back from the minibuffer into our working TBUFF.
 	 */
-    } else if (miniedit && cfp == &f_insert) {
-	miniedit = FALSE;
+	tb_init(buf, EOS);
+	if (llength(DOT.l) > margin)
+	    tb_bappend(buf, lvalue(DOT.l) + margin, llength(DOT.l) - margin);
+
+	/*
+	 * Below are some workarounds for making it appear that we're doing the
+	 * right thing for certain non-motion commands.  They allow us to revert to
+	 * insert-mode (the default), moving the cursor first as expected.
+	 */
+    } else if (cfp == &f_insert) {
+	miniedit = !miniedit;
     } else if (miniedit && cfp == &f_insertbol) {
-	edited = editMinibuffer(buf, cpos, fnc2kcod(&f_firstnonwhite),
+	edited = editMinibuffer(buf, cpos, fakeKeyCode(&f_firstnonwhite),
 				margin, quoted);
 	miniedit = FALSE;
     } else if (miniedit && cfp == &f_appendeol) {
-	edited = editMinibuffer(buf, cpos, fnc2kcod(&f_gotoeol),
+	edited = editMinibuffer(buf, cpos, fakeKeyCode(&f_gotoeol),
 				margin, quoted);
 	miniedit = FALSE;
     } else if (miniedit && cfp == &f_append) {
-	edited = editMinibuffer(buf, cpos, fnc2kcod(&f_forwchar_to_eol),
+	edited = editMinibuffer(buf, cpos, fakeKeyCode(&f_forwchar_to_eol),
 				margin, quoted);
 	miniedit = FALSE;
-	/* FIXME:  reject non-motion commands for now, since we haven't
-	 * resolved what to do with the minibuffer if someone inserts a
-	 * newline.
+	/*
+	 * Reject other non-motion commands for now.  We haven't a good way to
+	 * update the minibuffer if someone inserts a newline, so we couldn't
+	 * implement insert except as a special case (see above).
 	 */
-    } else if (miniedit && cfp != 0) {
+    } else if (isSpecial(c) || (miniedit && (cfp != 0))) {
 	kbd_alarm();
     } else {
 	LINE *lp = DOT.l;
@@ -1328,8 +1397,7 @@ editMinibuffer(TBUFF ** buf, unsigned *cpos, int c, int margin, int quoted)
 	} else if (llength(lp) >= margin) {
 	    show1Char(c);
 	    tb_init(buf, EOS);
-	    tb_bappend(buf, lp->l_text + margin,
-		       llength(lp) - margin);
+	    tb_bappend(buf, lvalue(lp) + margin, llength(lp) - margin);
 	}
 	*cpos += 1;
 	edited = TRUE;
@@ -1344,13 +1412,14 @@ editMinibuffer(TBUFF ** buf, unsigned *cpos, int c, int margin, int quoted)
 	   *cpos, tb_visible(*buf),
 	   edited, miniedit, DOT.o));
 
+    --no_minimsgs;
     curbp = savebp;
     curwp = savewp;
     MK = savemk;
     kbd_flush();
     endofDisplay();
 
-    return edited;
+    returnCode(edited);
 }
 
 /*
@@ -1494,12 +1563,13 @@ kbd_reply(const char *prompt,	/* put this out first */
     int lastch;
     unsigned newpos;
     TBUFF *buf = 0;
-    char *result;
+    const char *result;
 
-    TRACE(("kbd_reply(prompt=%s, extbuf=%s, options=%#x)\n\tclexec=%d,\n\tpushed_back=%d\n",
+    TRACE((T_CALLED "kbd_reply(prompt=%s, extbuf=%s, options=%#x)\n",
 	   TRACE_NULL(prompt),
 	   tb_visible(*extbuf),
-	   options, clexec, pushed_back));
+	   options));
+    TRACE(("clexec=%d, pushed_back=%d\n", clexec, pushed_back));
 
     miniedit = FALSE;
     set_end_string(EOS);	/* ...in case we don't set it elsewhere */
@@ -1509,17 +1579,17 @@ kbd_reply(const char *prompt,	/* put this out first */
 	int actual;
 
 	/*
-	 * A "^W!cat" (control/W followed by a shell command) will
-	 * arrive at this point with "!" in extbuf, and the command in
-	 * execstr.  Glue the two back together so they're seen as a
-	 * shell command which should not be name-completed.
+	 * A "^W!cat" (control/W followed by a shell command) will arrive at
+	 * this point with "!" in extbuf, and the command in execstr.  Glue the
+	 * two back together so they're seen as a shell command which should
+	 * not be name-completed.
 	 */
 	if (tb_length(*extbuf) == 1
 	    && isShellOrPipe(tb_values(*extbuf)))
 	    options |= KBD_REGLUE | KBD_SHPIPE;
 
 	tbreserve(extbuf);
-	TRACE(("...getting token from: %s\n", str_visible(execstr)));
+	TRACE(("...getting token from: %s\n", str_visible0(execstr)));
 	execstr = ((options & KBD_REGLUE) != 0 && pushed_back)
 	    ? get_token2(execstr, extbuf, eolchar, &actual)
 	    : get_token(execstr, extbuf, eolchar, &actual);
@@ -1538,10 +1608,27 @@ kbd_reply(const char *prompt,	/* put this out first */
 		buf = tb_copy(&buf, *extbuf);
 		tb_append(&buf, EOS);	/* FIXME: for tokval() */
 		result = tokval(tb_values(buf));
+
+		/*
+		 * Check for special return values from tokval().  It may be
+		 * the result of an expression.  If an error was detected
+		 * during evaluation, we will see the magic error_val.  That's
+		 * a reason to stop here.
+		 *
+		 * If the result is a string, tokval() will return a quoted
+		 * version of it, to avoid confusing recursive calls of
+		 * run_func().  But we do not want quotes here, just the
+		 * contents.  Dequote it if we started with a function and got
+		 * a quoted string.
+		 */
 		if (result == error_val) {
 		    result = "";
 		    status = ABORT;
+		} else if (toktyp(tb_values(buf)) == TOK_FUNCTION &&
+			   toktyp(result) == TOK_QUOTSTR) {
+		    ++result;
 		}
+
 		(void) tb_scopy(extbuf, result);
 		tb_free(&buf);
 		tb_unput(*extbuf);	/* trim the null */
@@ -1550,7 +1637,12 @@ kbd_reply(const char *prompt,	/* put this out first */
 		&& !editingShellCmd(tb_values(*extbuf), options)) {
 		cpos =
 		    newpos = tb_length(*extbuf);
-		if ((*complete) (NAMEC, tbreserve(extbuf), &newpos)) {
+		if ((options & KBD_MAYBEC2)
+		    && tb_length(*extbuf) > 1
+		    && (*tb_values(*extbuf) == '%')) {
+		    status = TRUE;
+		    tb_put(extbuf, cpos, EOS);
+		} else if ((*complete) (options, NAMEC, tbreserve(extbuf), &newpos)) {
 		    StrToBuff(*extbuf);
 		} else {
 		    status = may_complete(*extbuf, options);
@@ -1576,8 +1668,13 @@ kbd_reply(const char *prompt,	/* put this out first */
 	    }
 #endif
 	}
-	tb_append(extbuf, EOS);	/* FIXME */
-	return status;
+	if (tb_length(*extbuf) == 0
+	    || tb_values(*extbuf)[tb_length(*extbuf) - 1] != EOS)
+	    tb_append(extbuf, EOS);	/* FIXME */
+	TRACE(("reply1:(status=%d, length=%d):%s\n", status,
+	       (int) tb_length(*extbuf),
+	       tb_visible(*extbuf)));
+	returnCode(status);
     }
 
     quotef = FALSE;
@@ -1623,10 +1720,10 @@ kbd_reply(const char *prompt,	/* put this out first */
 	else
 	    c = keystroke();
 
-	/* Ignore nulls if the calling function is not prepared to
-	 * process them.  We want to be able to search for nulls, but
-	 * must not use them in filenames, for example.  (We don't
-	 * support name-completion with embedded nulls, either).
+	/* Ignore nulls if the calling function is not prepared to process
+	 * them.  We want to be able to search for nulls, but must not use them
+	 * in filenames, for example.  (We don't support name-completion with
+	 * embedded nulls, either).
 	 */
 	if ((c == 0 && c != esc_c) && !(options & KBD_0CHAR))
 	    continue;
@@ -1646,9 +1743,8 @@ kbd_reply(const char *prompt,	/* put this out first */
 	 * If they hit the line terminator (i.e., newline or unescaped
 	 * eolchar), finish up.
 	 *
-	 * Don't allow newlines in the string -- they cause real
-	 * problems, especially when searching for patterns
-	 * containing them -pgf
+	 * Don't allow newlines in the string -- they cause real problems,
+	 * especially when searching for patterns containing them -pgf
 	 */
 	done = FALSE;
 	if (c == '\n') {
@@ -1672,11 +1768,10 @@ kbd_reply(const char *prompt,	/* put this out first */
 			 && !(shell && isPrint(c))
 			 && (c == TESTC || c == NAMEC))) {
 		/*
-		 * If we're going to force name completion, put
-		 * the cursor at the end of the line so the
-		 * name completion code works properly.  Do
-		 * this by erasing the remainder of the line
-		 * and reentering it.
+		 * If we're going to force name completion, put the cursor at
+		 * the end of the line so the name completion code works
+		 * properly.  Do this by erasing the remainder of the line and
+		 * reentering it.
 		 */
 		if (cpos < tb_length(buf)) {
 		    kbd_erase_to_end(wminip->w_dot.o);
@@ -1686,7 +1781,7 @@ kbd_reply(const char *prompt,	/* put this out first */
 		}
 		if (shell && isreturn(c)) {
 		    /*EMPTY */ ;
-		} else if ((*complete) (c, tbreserve(&buf), &cpos)) {
+		} else if ((*complete) (options, c, tbreserve(&buf), &cpos)) {
 		    done = TRUE;
 		    StrToBuff(buf);	/* FIXME */
 		    if (c != NAMEC)	/* cancel the unget */
@@ -1695,7 +1790,8 @@ kbd_reply(const char *prompt,	/* put this out first */
 		    StrToBuff(buf);	/* FIXME */
 		    if (done) {	/* stay til matched! */
 			kbd_unquery();
-			(void) ((*complete) (TESTC, tbreserve(&buf), &cpos));
+			(void) ((*complete) (options, TESTC,
+					     tbreserve(&buf), &cpos));
 		    }
 		    firstch = FALSE;
 		    continue;
@@ -1713,11 +1809,10 @@ kbd_reply(const char *prompt,	/* put this out first */
 	    (void) tb_copy(extbuf, buf);
 	    status = (tb_length(*extbuf) != 0);
 
-	    /* If this is a shell command, push-back the actual
-	     * text to separate the "!" from the command.  Note
-	     * that the history command tries to do this already,
-	     * but cannot for some special cases, e.g., the user
-	     * types
+	    /* If this is a shell command, push-back the actual text to
+	     * separate the "!" from the command.  Note that the history
+	     * command tries to do this already, but cannot for some special
+	     * cases, e.g., the user types
 	     *      :execute-named-command !ls -l
 	     * which is equivalent to
 	     *      :!ls -l
@@ -1773,10 +1868,9 @@ kbd_reply(const char *prompt,	/* put this out first */
 	    kbd_kill_response(buf, &cpos, c);
 
 	    /*
-	     * If we backspaced to erase the buffer, it's ok to
-	     * return to the caller, who would be the :-line
-	     * parser, so we can do something reasonable with the
-	     * address specification.
+	     * If we backspaced to erase the buffer, it's ok to return to the
+	     * caller, who would be the :-line parser, so we can do something
+	     * reasonable with the address specification.
 	     */
 	    if (cpos == 0
 		&& isbackspace(c)
@@ -1834,7 +1928,7 @@ kbd_reply(const char *prompt,	/* put this out first */
 	   (int) tb_length(*extbuf),
 	   tb_visible(*extbuf)));
     tb_append(extbuf, EOS);	/* FIXME */
-    return status;
+    returnCode(status);
 }
 
 /*
@@ -1932,7 +2026,7 @@ kbd_replaying(int match)
 	 * only one character to display.
 	 */
 	if (match
-	    && insertmode == INSERT
+	    && insertmode == INSMODE_INS
 	    && b_val(curbp, MDSHOWMAT)
 	    && KbdStack == 0
 	    && (dotcmd->itb_last + 1 >= dotcmd->itb_used)) {

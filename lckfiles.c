@@ -20,7 +20,7 @@
  *		buffer will be marked readonly.  the .lck file will be
  *		deleted at most of the appropriate times.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/lckfiles.c,v 1.10 2002/04/30 23:28:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/lckfiles.c,v 1.11 2002/10/09 19:06:58 tom Exp $
  *
  */
 
@@ -29,7 +29,7 @@
 
 #if OPT_LCKFILES
 
-#if ! HAVE_LONG_FILE_NAMES
+#ifndef HAVE_LONG_FILE_NAMES
 You probably would not want this code:
   there are no checks on filename length when adding.lck to the end.
 #endif

@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.82 2002/06/30 19:34:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.88 2003/05/24 00:49:25 tom Exp $
  *
  */
 
@@ -9,7 +9,7 @@
 
 #define QUOTE '\''
 
-#if HAVE_LONG_FILE_NAMES
+#ifdef HAVE_LONG_FILE_NAMES
 #define KEYFILE_SUFFIX ".keywords"
 #else
 #define KEYFILE_SUFFIX ".key"
@@ -21,10 +21,8 @@
 #define DOT_TO_HIDE_IT ""
 #endif
 
-#define VERBOSE(level,params)		if (flt_options['v'] >= level) mlforce params
-#define NONNULL(s)			((s) != 0) ? (s) : "<null>"
-
-#define	typecallocn(cast,ntypes)	(cast *)calloc(sizeof(cast),ntypes)
+#define VERBOSE(level,params)	if (FltOptions('v') >= level) mlforce params
+#define NONNULL(s)		((s) != 0) ? (s) : "<null>"
 
 #define HASH_LENGTH 256
 
@@ -63,11 +61,19 @@ static char *flt_bfr_attr = "";
 static unsigned flt_bfr_used = 0;
 static unsigned flt_bfr_size = 0;
 
+/*
+ * OpenKeywords() function data
+ */
+static char *str_keyword_name = 0;
+static char *str_keyword_file = 0;
+static unsigned len_keyword_name = 0;
+static unsigned len_keyword_file = 0;
+
 /******************************************************************************
  * Private functions                                                          *
  ******************************************************************************/
 
-static char *
+static const char *
 AttrsOnce(KEYWORD * entry)
 {
     entry->kw_used = 999;
@@ -188,13 +194,8 @@ OpenKeywords(char *classname)
 #define OPEN_IT(p) if ((fp = fopen(p, "r")) != 0) { \
 			VERBOSE(1,("Opened %s", p)); return fp; } else { \
 			VERBOSE(2,("..skip %s", p)); }
-#define FIND_IT(p) sprintf p; OPEN_IT(name)
+#define FIND_IT(p) sprintf p; OPEN_IT(str_keyword_name)
 
-    static char *name;
-    static unsigned have;
-
-    static char *fname;
-    static unsigned have2;
     static char suffix[] = KEYFILE_SUFFIX;
 
     FILE *fp;
@@ -202,33 +203,28 @@ OpenKeywords(char *classname)
     unsigned need;
     char leaf[20];
 
-    fname = do_alloc(fname, sizeof(suffix) + strlen(classname) + 2, &have2);
-    sprintf(fname, "%s%s", classname, suffix);
+    need = sizeof(suffix) + strlen(classname) + 2;
+    str_keyword_file = do_alloc(str_keyword_file, need, &len_keyword_file);
+    sprintf(str_keyword_file, "%s%s", classname, suffix);
 
-    if (strchr(fname, PATHSEP) != 0) {
-	OPEN_IT(fname);
+    if (strchr(str_keyword_file, PATHSEP) != 0) {
+	OPEN_IT(str_keyword_file);
     }
 
     if ((path = home_dir()) == 0)
 	path = "";
 
     need = strlen(path)
-	+ strlen(fname)
+	+ strlen(str_keyword_file)
 	+ 20;
 
-    name = do_alloc(name, need, &have);
+    str_keyword_name = do_alloc(str_keyword_name, need, &len_keyword_name);
 
-#if DOT_HIDES_FILE
-    FIND_IT((name, "%s%c.%s", PATHDOT, PATHSEP, fname));
-    FIND_IT((name, "%s%c.%s", path, PATHSEP, fname));
-    sprintf(leaf, ".%s%c", MY_NAME, PATHSEP);
-#else
-    FIND_IT((name, "%s%c%s", PATHDOT, PATHSEP, fname));
-    FIND_IT((name, "%s%c%s", path, PATHSEP, fname));
-    sprintf(leaf, "%s%c", MY_NAME, PATHSEP);
-#endif
+    FIND_IT((str_keyword_name, "%s%c%s%s", PATHDOT, PATHSEP, DOT_TO_HIDE_IT, str_keyword_file));
+    FIND_IT((str_keyword_name, "%s%c%s%s", path, PATHSEP, DOT_TO_HIDE_IT, str_keyword_file));
+    sprintf(leaf, "%s%s%c", DOT_TO_HIDE_IT, MY_NAME, PATHSEP);
 
-    FIND_IT((name, "%s%c%s%s", path, PATHSEP, leaf, fname));
+    FIND_IT((str_keyword_name, "%s%c%s%s", path, PATHSEP, leaf, str_keyword_file));
 
     path = getenv("VILE_STARTUP_PATH");
 #ifdef VILE_STARTUP_PATH
@@ -237,11 +233,13 @@ OpenKeywords(char *classname)
 #endif
     if (path != 0) {
 	int n = 0, m;
-	name = do_alloc(name, strlen(path) + strlen(fname) + 2, &have);
+
+	need = strlen(path) + strlen(str_keyword_file) + 2;
+	str_keyword_name = do_alloc(str_keyword_name, need, &len_keyword_name);
 	while (path[n] != 0) {
 	    for (m = n; path[m] != 0 && path[m] != PATHCHR; m++)
 		/*LOOP */ ;
-	    FIND_IT((name, "%.*s%c%s", m - n, path + n, PATHSEP, fname));
+	    FIND_IT((str_keyword_name, "%.*s%c%s", m - n, path + n, PATHSEP, str_keyword_file));
 	    if (path[m])
 		n = m + 1;
 	    else
@@ -334,15 +332,16 @@ class_attr(char *name)
     return result;
 }
 
-char *
-do_alloc(char *ptr, unsigned need, unsigned *have)
+void *
+flt_alloc(void *ptr, unsigned need, unsigned *have, unsigned size)
 {
-    need += 2;			/* allow for trailing null */
+    need += (2 * size);		/* allow for trailing null, etc */
     if (need > *have) {
+	need *= 2;
 	if (ptr != 0)
-	    ptr = (char *) realloc(ptr, need);
+	    ptr = realloc(ptr, need);
 	else
-	    ptr = (char *) malloc(need);
+	    ptr = malloc(need);
 	*have = need;
     }
     return ptr;
@@ -460,7 +459,7 @@ flt_initialize(void)
     abbr_ch = '*';
     meta_ch = '.';
     eqls_ch = ':';
-    flt_options['v'] = 0;
+    FltOptions('v') = 0;
 
     flt_free_symtab();
 }
@@ -563,9 +562,9 @@ hash_function(const char *id)
      * Build more elaborate hashing scheme. If you want one.
      */
     if ((id[0] == 0) || (id[1] == 0))
-	return ((int) id[0]);
+	return (CharOf(id[0]));
 
-    return (((int) id[0] ^ ((int) id[1] << 3) ^ ((int) id[2] >> 1)) & 0xff);
+    return ((CharOf(id[0]) ^ (CharOf(id[1]) << 3) ^ (CharOf(id[2]) >> 1)) & 0xff);
 }
 
 void
@@ -725,7 +724,7 @@ parse_keyword(char *name, int classflag)
 }
 
 char *
-readline(FILE * fp, char **ptr, unsigned *len)
+readline(FILE *fp, char **ptr, unsigned *len)
 {
     char *buf = *ptr;
     unsigned used = 0;
@@ -781,3 +780,14 @@ yywrap(void)
 {
     return 1;
 }
+
+#if NO_LEAKS
+void
+filters_leaks(void)
+{
+    FreeAndNull(str_keyword_name);
+    FreeAndNull(str_keyword_file);
+    len_keyword_name = 0;
+    len_keyword_file = 0;
+}
+#endif

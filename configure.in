@@ -1,12 +1,14 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.168 $)
-AC_PREREQ(2.12.971222)
+AC_REVISION($Revision: 1.199 $)
+AC_PREREQ(2.13.20020210)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.168 2002/01/20 15:54:01 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.199 2003/11/02 23:00:35 tom Exp $
+
+define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
 dnl
 AC_INIT(mktbls.c)
@@ -21,9 +23,10 @@ AC_PROG_CPP
 AC_GCC_TRADITIONAL
 AC_PROG_INSTALL
 
+AC_PROG_MAKE_SET
 AC_PROG_AWK
 AC_PROG_RANLIB
-AC_DECL_YYTEXT
+case $host_os in hpux*) CPPFLAGS="-DYYCHAR_ARRAY $CPPFLAGS";; esac; AC_DECL_YYTEXT
 
 CF_SUBST(archiver,AR,ar)
 CF_SUBST(archiver options,AR_OPTS,rv)
@@ -102,67 +105,143 @@ MAKE_FILTERS=
 AC_SUBST(MAKE_FILTERS)
 
 if test "$with_filters" = yes ; then
+
+# allow user to preset these environment variables:
+: ${VILE_BUILT_IN_FILTERS=none}
+: ${VILE_LOADABLE_FILTERS=none}
+: ${VILE_EXTERNAL_FILTERS=all}
+
 AC_MSG_CHECKING(if you want built-in syntax filters)
 AC_ARG_WITH(builtin-filters,
-[  --with-builtin-filters=XX specify filters to compile built-in vs external
-                          Give an option value to specify only certain filters.
+[  --with-builtin-filters=XX specify filters to compile built-in vs external.
+                          Give an option value to specify only certain filters,
+			  i.e., a comma-separated list of filter-names.
                           The default, if no value is given is 'all'.
                           The default if the option is not given is 'none'],
-[test "$withval" = yes && withval=all; VILE_BUILTIN_FILTERS="$withval"],
+[test "$withval" = yes && withval=all; VILE_BUILT_IN_FILTERS="$withval"],
 
-[VILE_BUILTIN_FILTERS=none])
-test -z "$VILE_BUILTIN_FILTERS" && VILE_BUILTIN_FILTERS=none
-AC_MSG_RESULT($VILE_BUILTIN_FILTERS)
+[VILE_BUILT_IN_FILTERS=none])
+test "$VILE_BUILT_IN_FILTERS" = no && VILE_BUILT_IN_FILTERS=none
+AC_MSG_RESULT($VILE_BUILT_IN_FILTERS)
 
-if test "$VILE_BUILTIN_FILTERS" != none ; then
-	AC_MSG_CHECKING(if any filters require flex)
-	cf_save_IFS="$IFS"
-	cf_found=
-	cf_lexed=
-	cf_missed=
-	IFS=",$IFS"
-	for cf_name in $VILE_BUILTIN_FILTERS
+AC_MSG_CHECKING(if you want loadable syntax filters)
+AC_ARG_WITH(loadable-filters,
+[  --with-loadable-filters=XX specify filters to dynamially load at runtime.
+                          Give an option value to specify only certain filters,
+			  i.e., a comma-separated list of filter-names.
+                          The default, if no value is given is 'all'.
+                          The default if the option is not given is 'none'],
+[test "$withval" = yes && withval=all; VILE_LOADABLE_FILTERS="$withval"],
+
+[VILE_LOADABLE_FILTERS=none])
+test "$VILE_LOADABLE_FILTERS" = no && VILE_LOADABLE_FILTERS=none
+AC_MSG_RESULT($VILE_LOADABLE_FILTERS)
+
+# If both "--with-builtin-filters" and "--with-loadable-filters" were given,
+# the user must provide an explicit list since we cannot build both at once.
+if test "$VILE_BUILT_IN_FILTERS" != none && test "$VILE_LOADABLE_FILTERS" != none
+then
+	builtins=`MAKELIST lc "$VILE_BUILT_IN_FILTERS"`
+	test "$builtins" = "." && exit 1
+	loadable=`MAKELIST lc "$VILE_LOADABLE_FILTERS"`
+	test "$loadable" = "." && exit 1
+
+	for cf_b in $builtins
 	do
-		if test "$cf_name" = all ; then
-			cf_found=all
-			break
-		else
-			if (grep "^$cf_name	[[	]]*[[^	]]*	[[	]]*l$" $srcdir/filters/genmake.mak 2>/dev/null >/dev/null )
+		for cf_l in $loadable
+		do
+			if test "$cf_b" = "$cf_l"
 			then
-				cf_lexed="$cf_lexed $cf_name"
-				cf_found="$cf_found $cf_name"
-			elif (grep "^$cf_name	[[	]]*[[^	]]*	[[	]]*c$" $srcdir/filters/genmake.mak 2>/dev/null >/dev/null )
-			then
-				cf_found="$cf_found $cf_name"
+				AC_MSG_ERROR(Cannot overlap built-in and loadable filter lists)
+			fi
+		done
+	done
+fi
+
+# Anything that is neither a built-in or a loadable filter is an external
+# filter.  We could have 3 options, but resolving inconsistencies would be
+# a lot more work.
+if test "$VILE_BUILT_IN_FILTERS" = none && test "$VILE_LOADABLE_FILTERS" = none
+then
+	VILE_EXTERNAL_FILTERS=all
+elif test "$VILE_BUILT_IN_FILTERS" = all || test "$VILE_LOADABLE_FILTERS" = all
+then
+	VILE_EXTERNAL_FILTERS=none
+else
+	complete=`MAKELIST lc all`
+	VILE_EXTERNAL_FILTERS=
+	for cf_a in $complete
+	do
+		found=no
+		for cf_b in $builtins $loadable
+		do
+			if test $cf_b = $cf_a ; then
+				found=yes
+				break
+			fi
+		done
+		if test $found = no ; then
+			if test -z "$VILE_EXTERNAL_FILTERS" ; then
+				VILE_EXTERNAL_FILTERS=$cf_a
 			else
-				cf_missed="$cf_missed $cf_name"
+				VILE_EXTERNAL_FILTERS="$VILE_EXTERNAL_FILTERS,$cf_a"
 			fi
 		fi
 	done
-	IFS="$cf_save_IFS"
-	AC_MSG_RESULT($cf_lexed)
-
-	VILE_BUILTIN_FILTERS="$cf_found"
-	if test -n "$cf_lexed" ; then
-		AC_MSG_CHECKING(version of $LEX)
-		LEX_VERSION=`$LEX --version 2>&1 | sed -e 's/^[[^0-9]]*//'`
-		if test -z "$LEX_VERSION"
-		then
-			AC_MSG_ERROR(You need flex to compile builtin filters)
-		elif ( expr $LEX_VERSION \< 2.5 >/dev/null )
-		then
-			AC_MSG_ERROR(Sorry - your version of flex is too old: $LEX_VERSION)
-		fi
-		AC_MSG_RESULT($LEX_VERSION)
-	fi
-	test -n "$cf_missed" && AC_MSG_ERROR(Not all filter names were found: $cf_missed)
+	test -z "$VILE_EXTERNAL_FILTERS" && VILE_EXTERNAL_FILTERS=none
 fi
+
+AC_MSG_CHECKING(if any filters require flex)
+
+builtins=`MAKELIST l "$VILE_BUILT_IN_FILTERS"`
+loadable=`MAKELIST l "$VILE_LOADABLE_FILTERS"`
+
+if test -n "$builtins" ; then
+	cf_needflex=yes
+elif test -n "$loadable" ; then
+	cf_needflex=yes
 else
-	VILE_BUILTIN_FILTERS=none
+	cf_needflex=no
+fi
+AC_MSG_RESULT($cf_needflex)
+
+if test "$cf_needflex" = yes ; then
+	CF_LEX_VERSION
+	if test -z "$LEX_VERSION"
+	then
+		AC_MSG_ERROR(You need flex to compile builtin filters)
+	elif ( expr $LEX_VERSION \< 2.5 >/dev/null )
+	then
+		AC_MSG_ERROR(Sorry - your version of flex is too old: $LEX_VERSION)
+	elif ( expr $LEX_VERSION \>= 2.6 >/dev/null )
+	then
+		AC_MSG_ERROR(Sorry - your version of flex is too unstable: $LEX_VERSION)
+	else
+		LEX_SUBVERSION=`echo "$LEX_VERSION" | sed -e 's/^2.5.//'`
+		if test -z "$LEX_SUBVERSION"
+		then
+			AC_MSG_ERROR(This version of flex cannot compile builtin filters)
+		elif test $LEX_SUBVERSION = 4a
+		then
+			CF_VERBOSE(good)
+		elif ( expr $LEX_SUBVERSION \> 4 >/dev/null )
+		then
+			AC_MSG_ERROR(This version of flex cannot compile builtin filters)
+		fi
+	fi
+fi
+
+# "--disable-filters" was given.
+else
+	VILE_BUILT_IN_FILTERS=none
+	VILE_LOADABLE_FILTERS=none
+	VILE_EXTERNAL_FILTERS=none
 	MAKE_FILTERS="#"
 fi
 
-AC_SUBST(VILE_BUILTIN_FILTERS)
+dnl These substitutions are used in makefile.in to build builtflt.h
+AC_SUBST(VILE_BUILT_IN_FILTERS)
+AC_SUBST(VILE_LOADABLE_FILTERS)
 
 AC_MSG_CHECKING(for library path)
 CF_WITH_PATHLIST(libdir-path,
@@ -213,7 +292,7 @@ dnl: why this? AC_DYNIX_SEQ
 AC_CHECK_FUNC(getpwnam,,AC_CHECK_LIB(sun,getpwnam))
 
 # check for a lint program.
-AC_CHECK_PROGS(LINT, lint alint lclint, [])
+AC_CHECK_PROGS(LINT, lint alint splint lclint, [])
 if test -n "$LINT"
 then
 	AC_DEFINE(SYSTEM_HAS_LINT_PROG)
@@ -280,6 +359,7 @@ AC_STRUCT_TM
 CF_HEADER_RESOURCE
 CF_SIZECHANGE
 CF_FP_ISREADY
+CF_WCTYPE
 
 ###	checks for system services and user specified options
 AC_LONG_FILE_NAMES
@@ -317,8 +397,8 @@ AC_MSG_CHECKING(for screen type)
 AC_ARG_WITH(screen,
 [  --with-screen=value     specify terminal driver.  The default is tcap, for
                           the termcap/terminfo driver.  Other values include
-                          curses, ncurses, X11, OpenLook, Motif, Athena, Xaw,
-                          Xaw3d, neXtaw and ansi.],
+                          curses, ncurses, ncursesw, X11, OpenLook, Motif,
+			  Athena, Xaw, Xaw3d, neXtaw and ansi.],
 [screen=$withval])
 
 if test -z "$screen"; then
@@ -334,7 +414,7 @@ AC_MSG_RESULT($screen)
 
 : See if this is any type of xvile configuration:
 case "$screen" in
-	[[Oo]]pen[[Ll]]ook | [[Mm]]otif* | [[xX]] | [[Aa]]thena | [[xX]][[atTmMoO]]* | [[xX]]11 | neXtaw )
+	[[Oo]]pen[[Ll]]ook | [[Mm]]otif* | [[xX]] | [[Aa]]thena | [[xX]][[atTmMoO]]* | [[xX]]11 | neXtaw | XawPlus )
 		EXTRA_INSTALL_FILES="$EXTRA_INSTALL_FILES \$(INSTALL_X_FILES)"
 		CF_X_TOOLKIT
 		CF_IMAKE_CFLAGS
@@ -362,7 +442,7 @@ case "$screen" in
 	 	test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS x11menu.o menu.o"
 	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select.o"
 	;;
-	[[Aa]]thena* | [[Xx]]aw* | neXtaw )
+	[[Aa]]thena* | [[Xx]]aw* | neXtaw | XawPlus )
 		AC_DEFINE(ATHENA_WIDGETS)
 		case $screen in #(vi
 		*aw*)
@@ -396,6 +476,13 @@ case "$screen" in
 		AC_DEFINE(DISP_CURSES)
 		CF_NCURSES_CPPFLAGS
 		CF_NCURSES_LIBS
+	;;
+	ncursesw)
+		SCREEN=curses
+		TARGET=vile
+		AC_DEFINE(DISP_CURSES)
+		CF_NCURSES_CPPFLAGS(ncursesw)
+		CF_NCURSES_LIBS(ncursesw)
 	;;
 	* )
 		SCREEN=tcap
@@ -443,7 +530,10 @@ CF_CHECK_FD_SET
 AC_HAVE_FUNCS( \
 access \
 alarm \
+crypt \
 getcwd \
+getegid \
+geteuid \
 gethostname \
 getpass \
 getwd \
@@ -452,13 +542,18 @@ mkdir \
 mkdtemp \
 poll \
 putenv \
+realpath \
 select \
+setbuffer \
+setgid \
 setitimer \
 setsid \
+setuid \
 setvbuf \
 sigaction \
 sigprocmask \
 strchr \
+strerror \
 strftime \
 strrchr \
 strtoul \
@@ -470,6 +565,7 @@ utime \
 utimes \
 waitpid $cf_tc_funcs \
 )
+
 CF_ANSI_QSORT
 CF_MKSTEMP
 
@@ -542,31 +638,20 @@ test "$cf_exec_macros" != no && AC_DEFINE_UNQUOTED(OPT_EXEC_MACROS,$cf_exec_macr
 
 # I don't know of a reliable test for working locale, but we can at least check
 # that it is available before offering it as an option.
-AC_CHECK_FUNC(setlocale,[
-AC_CHECK_HEADER(locale.h,[
+CF_LOCALE
+if test $cf_cv_locale = yes ; then
 AC_MSG_CHECKING(if you want to use i18n locale support)
 AC_ARG_WITH(locale,
 	[  --with-locale           use i18n support for character-types],
 	[cf_locale="$withval"],
-	[cf_locale=no])
+	[cf_locale=yes])
 AC_MSG_RESULT($cf_locale)
 test "$cf_locale" != no && AC_DEFINE(OPT_LOCALE)
-])])
+fi
 
 ###	Debugging/development options
-AC_ARG_WITH(dbmalloc,
-	[  --with-dbmalloc         test: use Conor Cahill's dbmalloc library],
-	[AC_DEFINE(USE_DBMALLOC)
-	 LIBS="$LIBS -ldbmalloc"
-	 with_dbmalloc=yes],
-	[with_dbmalloc=])
-
-AC_ARG_WITH(dmalloc,
-	[  --with-dmalloc          test: use Gray Watson's dmalloc library],
-	[AC_DEFINE(USE_DMALLOC)
-	 LIBS="$LIBS -ldmalloc"
-	 with_dmalloc=yes],
-	[with_dmalloc=])
+CF_WITH_DBMALLOC
+CF_WITH_DMALLOC
 
 AC_ARG_WITH(purify,
 	[  --with-purify           test: use Purify],
@@ -583,7 +668,11 @@ AC_ARG_WITH(fakevms,
 AC_ARG_WITH(no-leaks,
 	[  --with-no-leaks         test: free permanent memory, analyze leaks],
 	[AC_DEFINE(NO_LEAKS)
-	 test -z "${with_dmalloc}${with_dbmalloc}${with_purify}" && AC_DEFINE(DOALLOC,10000)
+	 cf_doalloc=".${with_dmalloc}${with_dbmalloc}${with_purify}"
+	 case ${cf_doalloc} in #(vi
+	 *yes*) ;;
+	 *) AC_DEFINE(DOALLOC,10000) ;;
+	 esac
 	 with_no_leaks=yes],
 	[with_no_leaks=])
 
@@ -595,14 +684,7 @@ AC_ARG_WITH(trace,
 
 test -n "${with_trace}${with_no_leaks}" && EXTRAOBJS="$EXTRAOBJS trace.o"
 
-AC_ARG_WITH(warnings,
-	[  --with-warnings         test: turn on GCC compiler warnings],
-	[with_warnings="$withval"])
-if test -n "$with_warnings"
-then
-	CF_GCC_ATTRIBUTES
-	CF_GCC_WARNINGS
-fi
+CF_WITH_WARNINGS
 
 ###	Do these last, since they rely on a properly constructed config.h
 
@@ -645,12 +727,9 @@ if test -n "$with_warnings"
 then
 CHECK_DECL_HDRS="$VILE_CHECK_HDRS"
 CF_MISSING_EXTERN( \
-_filbuf \
-_flsbuf \
 access \
 alarm \
 atoi \
-bzero \
 chdir \
 close \
 crypt \
@@ -677,7 +756,6 @@ longjmp \
 lstat \
 memset \
 mkdir \
-mktemp \
 open \
 perror \
 pipe \
@@ -715,13 +793,25 @@ ioctl \
 )
 fi
 
-if test "$VILE_BUILTIN_FILTERS" != none ; then
+if test "$VILE_BUILT_IN_FILTERS" != none ; then
+	cf_filter_libs=yes
+elif test "$VILE_LOADABLE_FILTERS" != none ; then
+	cf_filter_libs=yes
+else
+	cf_filter_libs=no
+fi
+
+if test "$cf_filter_libs" = yes ; then
 	EXTRAOBJS="$EXTRAOBJS builtflt.o"
 	CFLAGS="-I\$(srcdir)/filters $CFLAGS"
 	FILTER_LIBS="-Lfilters -lvlflt"
 	LIBBUILTFLT="${LIB_PREFIX}vlflt.a"
 	BUILTLIBS="$BUILTLIBS filters/$LIBBUILTFLT"
 	AC_DEFINE(OPT_FILTER)
+else
+	BUILTLIBS=
+	FILTER_LIBS=
+	LIBBUILTFLT=
 fi
 
 AC_SUBST(EXTRAOBJS)
@@ -729,30 +819,51 @@ AC_SUBST(BUILTLIBS)
 AC_SUBST(FILTER_LIBS)
 AC_SUBST(LIBBUILTFLT)
 
+if test "$VILE_LOADABLE_FILTERS" != none ; then
+	AC_CHECK_LIB(dl,dlsym,[
+		LIBS="-ldl $LIBS"
+		test "$GCC" = yes && CFLAGS="-rdynamic $CFLAGS"
+	AC_TRY_LINK([#include <dlfcn.h>],[
+		void *obj;
+		if ((obj = dlopen("filename", RTLD_NOW)) != 0) {
+			if (dlsym(obj, "symbolname") == 0) {
+			dlclose(obj);
+			}
+		}],[
+		AC_DEFINE(HAVE_LIBDL)],[
+		AC_MSG_ERROR(Cannot link test program for libdl)])
+	],[AC_MSG_ERROR(Cannot find libdl)])
+fi
+
 AC_CHECK_PROGS(SPELL_PROG, ispell spell, [])
 case .$SPELL_PROG in
 .ispell) AC_DEFINE(ISPELL_PROG);;
 .spell) AC_DEFINE(SPELL_PROG);;
 esac
 
-filters_bindir=`echo "$VILE_LIBDIR_PATH" | sed -e 's@'$PATHSEP'.*@@'`
+filters_bindir=`echo "$VILE_LIBDIR_PATH" | sed -e 's%'$PATHSEP'.*%%'`
 echo "Computing location to install filter programs: $filters_bindir"
 AC_SUBST(filters_bindir)
 
 ###	output makefile and config.h
 AC_OUTPUT(makefile filters/makefile filters/makefile.tmp:filters/makefile.2nd,
 {
-echo "Checking for built-in filters: $VILE_BUILTIN_FILTERS"
 test -n "$ac_top_srcdir" && top_srcdir="$ac_top_srcdir"
 if test "$top_srcdir" = ".."
 then
 	cf_srcdir=.
 else
-	cf_srcdir=`echo $top_srcdir |sed -e 's@^../@@'`
+	cf_srcdir=`echo $top_srcdir |sed -e 's%^../%%'`
 fi
 
-$AWK -f $cf_srcdir/filters/mk-1st.awk <$cf_srcdir/filters/genmake.mak mode=built-in list="$VILE_BUILTIN_FILTERS" >>filters/makefile
-$AWK -f $cf_srcdir/filters/mk-1st.awk <$cf_srcdir/filters/genmake.mak mode=external list="$VILE_BUILTIN_FILTERS" >>filters/makefile
+echo "Checking for built-in filters: $VILE_BUILT_IN_FILTERS"
+$AWK -f $cf_srcdir/filters/mk-1st.awk <$cf_srcdir/filters/genmake.mak mode=built-in list="$VILE_BUILT_IN_FILTERS" >>filters/makefile
+
+echo "Checking for external filters: $VILE_EXTERNAL_FILTERS"
+$AWK -f $cf_srcdir/filters/mk-1st.awk <$cf_srcdir/filters/genmake.mak mode=external list="$VILE_EXTERNAL_FILTERS" >>filters/makefile
+
+echo "Checking for loadable filters: $VILE_LOADABLE_FILTERS"
+$AWK -f $cf_srcdir/filters/mk-1st.awk <$cf_srcdir/filters/genmake.mak mode=loadable list="$VILE_LOADABLE_FILTERS" >>filters/makefile
 
 cat   filters/makefile.tmp >>filters/makefile
 rm -f filters/makefile.tmp
@@ -766,8 +877,9 @@ case $cf_srcdir in #(vi
 	;;
 esac
 
-$AWK -f $cf_srcdir/filters/mk-2nd.awk <$cf_srcdir/filters/genmake.mak from=$cf_SRCDIR/filters linking="$ECHO_LD" compiling="$RULE_CC" show="$ECHO_CC" mode=built-in list="$VILE_BUILTIN_FILTERS" >>filters/makefile
-$AWK -f $cf_srcdir/filters/mk-2nd.awk <$cf_srcdir/filters/genmake.mak from=$cf_SRCDIR/filters linking="$ECHO_LD" compiling="$RULE_CC" show="$ECHO_CC" mode=external list="$VILE_BUILTIN_FILTERS" >>filters/makefile
+$AWK -f $cf_srcdir/filters/mk-2nd.awk <$cf_srcdir/filters/genmake.mak from=$cf_SRCDIR/filters linking="$ECHO_LD" compiling="$RULE_CC" show="$ECHO_CC" mode=built-in list="$VILE_BUILT_IN_FILTERS" >>filters/makefile
+$AWK -f $cf_srcdir/filters/mk-2nd.awk <$cf_srcdir/filters/genmake.mak from=$cf_SRCDIR/filters linking="$ECHO_LD" compiling="$RULE_CC" show="$ECHO_CC" mode=external list="$VILE_EXTERNAL_FILTERS" >>filters/makefile
+$AWK -f $cf_srcdir/filters/mk-2nd.awk <$cf_srcdir/filters/genmake.mak from=$cf_SRCDIR/filters linking="$ECHO_LD" compiling="$RULE_CC" show="$ECHO_CC" mode=loadable list="$VILE_LOADABLE_FILTERS" >>filters/makefile
 
 (for i in $cf_srcdir/filters/*.key;do echo $i;done) | $AWK -f $cf_srcdir/filters/mk-key.awk from=$cf_srcdir >>filters/makefile
 },
@@ -777,6 +889,8 @@ ECHO_LD='$ECHO_LD'
 ECHO_CC='$ECHO_CC'
 MAKE_LEX='$MAKE_LEX'
 AWK="$AWK"
-VILE_BUILTIN_FILTERS='$VILE_BUILTIN_FILTERS'
+VILE_BUILT_IN_FILTERS='$VILE_BUILT_IN_FILTERS'
+VILE_LOADABLE_FILTERS='$VILE_LOADABLE_FILTERS'
+VILE_EXTERNAL_FILTERS='$VILE_EXTERNAL_FILTERS'
 },
 sort)

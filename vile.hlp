@@ -1,5 +1,5 @@
 
-Getting along with vile						(version 9.3)
+Getting along with vile						(version 9.4)
 -----------------------						-------------
 
 	Use Ctrl-D and Ctrl-U to scroll through this help information.
@@ -1487,6 +1487,14 @@ Editor modes
 		For more information, see the section describing the ":map"
 		command, below.  (U)
 
+	overlap-matches Modifies the highlighting shown by visual-matches to
+		control whether overlapping matches are shown.  For some
+		conditions, setting this to false will present a more natural
+		view, e.g., "\a+", which would match sequences of alphabetic
+		characters.  In the normal case (show overlap), each time a new
+		match begins vile will toggle the highlighting and produce an
+		irregular effect.  (B)
+
 	paragraphs A regular expression defining where the "next-paragraph"
 		('}') and "previous-paragraph" ('{') commands will go. (B)
 
@@ -1554,7 +1562,7 @@ Editor modes
 	recordseparator (rs) Specify format of files that vile reads and
 		writes.  Formats are lf (for Unix), crlf (for DOS), cr (for
 		Macintosh).  When reading from a file, vile determines the file
-		format automatically, and sets a local value for this mode. 
+		format automatically, and sets a local value for this mode.
 		When reading from a pipe, it uses the global value of
 		recordseparator to decide how to split lines.  Files created
 		within vile do not automatically have a local recordseparator
@@ -1615,7 +1623,7 @@ Editor modes
 		shown in the status line.  Values are "always", "differs" to
 		show when the local mode differs from the global, "local" to
 		show whenever a local mode is set, "foreign" to show when the
-		recordseparator differs from the native default and "never". 
+		recordseparator differs from the native default and "never".
 		On Unix, the native recordseparator is a line-feed, on DOS it
 		is carriage-return/line-feed.  (B)
 
@@ -1860,8 +1868,16 @@ Editor modes
 		Since this mode overrides xterm's cut & paste, you will
 		need to use the Shift key when pressing the mouse buttons
 		to cut and paste between X windows.  Your TERM variable's
-		termcap entry must contain the string "xterm" for this to
+		termcap entry should contain the string "xterm" for this to
 		work.  (U)
+
+	xterm-title Enables titlebar updates if you are running within an
+		xterm.  Each time you switch to a different buffer, vile
+		can update the title.  This uses the same tests of the
+		TERM variable as the xterm-mouse mode. (U)
+
+	yankmotion (ym) Yanking text will cause cursor movement (just like
+		vi) if the motion is left or up.  (B)
 
 
 
@@ -2545,6 +2561,7 @@ Programmed procedures (aka macros)
 
 			athena      -> xvile built with Athena widgets
 			curses      -> editor uses curses terminal driver
+			locale      -> editor uses system's LC_CTYPE locale
 			motif       -> xvile built with Motif libraries
 			nextaw      -> xvile built with Athena widgets (NeXtaw)
 			noshell     -> shell commands are disabled
@@ -2615,6 +2632,7 @@ Programmed procedures (aka macros)
 	$patchlevel	current patch-level (empty for release)	(read only)
 	$pathlist-separator separator for lists of pathnames, e.g., $PATH
 	$pathname	current path-like word
+	$pathname-separator separator for levels of pathnames, e.g., '/'
 	$pending	typeahead pending flag			(read only)
 	$pid		returns vile's process-id		(read only)
 	$position-format format of ^G command.  see "Mode line customization".
@@ -2673,32 +2691,37 @@ Programmed procedures (aka macros)
 	&ascii		1	char to integer conversion
 	&bind		1	lookup what function name is bound to key
 	&cat		2	concatenate string
-	&chr		1	integer to char conversion
 	&cclass		1	character class (see "show-printable")
+	&chr		1	integer to char conversion
 	&date		2	format 2nd param with 1st, like strftime.
 	&default	1	initial/default value for mode or state variable
 	&divide		2	division
 	&dquery		2	prompt user for input, given default value
 	&env		1	retrieve a system environment variable
-	&error		1	true if the parameter was ERROR
 	&equal		2	logical equality
+	&error		1	true if the parameter was ERROR
 	&execable	1	is a file exec'able
 	&filter		1	true if the given majormode's filter is builtin
 	&ftime		1	modification-time of the given file, as a number
+	&geq		2	logical greater than or equal
 	&global		1	retrieves global mode setting
 	&greater	2	logical greater than
+	&gt		2	logical greater than
 	&gtkey		0	get 1 character
 	&gtsequence	0	get keycode sequence, e.g., #1
 	&indirect	1	evaluate indirect value
 	&left		2	left string(string, len)
 	&length		1	string length
-	&less		2	logical less than
+	&leq		2	logical less than or equal
+	&lessthan	2	logical less than
 	&local		1	retrieves local mode setting
 	&lookup		2	look for filename (see below for arguments)
 	&lower		1	lower case string
+	&lt		2	logical less than
 	&middle		3	mid string(string, pos, len)
 	&modulo		2	modulus
 	&negate		1	negate
+	&neq		2	logical inequality
 	&not		1	logical not
 	&or		2	logical or
 	&path		2	extract/translate pathname (see below for args)
@@ -2713,9 +2736,14 @@ Programmed procedures (aka macros)
 	&right		2	right string(string, pos)
 	&rnd		1	get a random number from 1 to n
 	&sequal		2	string logical equality check
+	&sgeq		2	string greater than or equal
 	&sgreater	2	string logical greater than
+	&sgt		2	string greater than
 	&sindex		2	find the index of second string in first
+	&sleq		2	string less than or equal
 	&sless		2	string logical less than
+	&slt		2	string less than
+	&sneq		2	string inequality
 	&stime		1	system-time, as a number
 	&stoken		3	true if token found in string, given delims
 	&subtract	2	subtraction
@@ -2763,7 +2791,8 @@ Programmed procedures (aka macros)
 	~return		Return (terminating current macro)
 	~goto label	Jump to a label in the current macro
 	~force		Force macro to continue...even if command fails
-	~hidden		Force macro to continue, do not update screen
+	~hidden		Do not update screen while the macro executes.
+	~quiet		Suppress messages while the macro executes.
 	~while cond	Execute a loop if the condition is true
 	~break
 	~endwhile
@@ -2814,6 +2843,7 @@ Programmed procedures (aka macros)
 	$buffer-hook		run when switching to a buffer
 	$cd-hook		run when changing directories
 	$exit-hook		run when quitting
+	$majormode-hook         procedure to overrride suffix/preamble rules
 	$read-hook		run after a file is read
 	$write-hook		run before a file is written
 
@@ -2960,7 +2990,7 @@ Programmed procedures (aka macros)
 	store-procedure underline-currline
 	  write-message "enter underline char now..."
 	  set-variable %linechar &gtkey
-	  write-message "" 
+	  write-message ""
 	  ; don't underline trailing whitespace (trivial)
 	  trim-lines-til end-of-line
 	  ; don't underline leading whitespace (nontrivial)
@@ -2999,7 +3029,7 @@ Programmed procedures (aka macros)
 	  insert-string %ustring
 	  ~force next-line
 	  goto-bol
-	~endm  
+	~endm
 	bind-key underline-currline #-
 
 	; macro 14 - grep for the word under the cursor, and put the result
@@ -3251,6 +3281,9 @@ Invocation
 		library-directory on UNIX systems.  This sets the
 		$libdir-path variable, which is appended to your $PATH
 		variable when running filter commands on UNIX and Win32.
+	VILE_PWD
+		if set, assume invoking shell's "$PWD" variable is valid,
+		and use that rather than an initial getcwd() call.
 	VILE_STARTUP_FILE
 		override the name of the startup file, normally ".vilerc"
 		(or "vile.rc" for non-UNIX systems).
@@ -3396,6 +3429,7 @@ Mode line customization
 		%c	column number if "ruler" is set
 		%p	line number as percentage of number of lines if
 			"ruler" is set
+		%P	line number as percentage of number of lines
 		%S	rough position of window with respect to buffer (top,
 			bot, all, emp, mid) when ruler not set (or ruler is
 			set, but buffer is empty).
@@ -3641,7 +3675,8 @@ Color basics
 
 	Note 1:  vile's filter mechanism blocks (hangs) when processing
 		 "large" buffers.  Consequently, syntax coloring is not
-		 recommended.
+		 recommended, except if one could use the builtin-filters
+		 configuration.
 
 	Note 2:  Requires a terminfo terminal type that supports color.
 
@@ -3653,37 +3688,53 @@ Color basics
 
 Syntax coloring
 ---------------
-	vile's source distribution includes an extensive set of external
-	filter programs that color many varieties of text, including (but
-	not limited to):
+	vile's source distribution includes an extensive set of filters
+	that color many languages and text file formats, including (but not
+	limited to):
 
-	    C source, Perl source, HTML, shell scripts
+	    C/C++, Java, Perl, HTML, shell scripts
 
-	A filter is typically named "vile-xxx-filt", where "xxx" denotes
-	the type of text being filtered, and is also usually the same name
-	of the corresponding vile "majormode".  This table lists example
+	Filters come in two flavors:  builtin and external.  Builtin
+	filters are bound directly into the editor and invoked via function
+	calls.  External filters are standalone executables invoked via a
+	pipe and typically named "vile-xxx-filt", where "xxx" denotes the
+	target text/language.  Note that "xxx" is usually the same name
+	assigned to vile's corresponding builtin filter and "majormode"
+	(there are some exceptions).  The following table lists example
 	paired filter and majormode names:
 
-	    Language                    Majormode
-	    Name       Filter Name      Name
-	    --------   -----------      --------
-	    C          vile-c-filt      cmode
-	    HTML       vile-html-filt   htmlmode
-	    Perl       vile-perl-filt   perlmode
-	    sh         vile-sh-filt     shmode
+	    Language   Builtin       External          Majormode
+	    Name       Filter Name   Filter Name [1]   Name [2]
+	    --------   -----------   ---------------   ---------
+	    C          c             vile-c-filt       cmode
+	    HTML       html          vile-html-filt    htmlmode
+	    Perl       pl            vile-pl-filt      perlmode
+	    sh         sh            vile-sh-filt      shmode
 
-	[ Majormodes are an interesting subject in their own right, but
-	  won't be discussed much here.  For more info, refer to the help
-	  topic "Editor modes" in this help file, as well as the file
-	  doc/modes.doc. ]
+	For a complete listing of all filters and supported languages and
+	text file formats, refer to the file doc/config.doc in the editor's
+	source distribution.
 
-	Take note that previous releases of vile utilized a syntax
-	filtering system that actually applied color attributes to a target
-	buffer, thereby damaging the editor's undo history.  vile version
-	8.3 (and later) utilizes a new command, called
-	"attribute-from-filter-til", which applies coloring information
-	directly from the filter's output stream without modifying the
-	affected buffer.
+	[1] Whether the editor uses builtin or external filters depends
+	    solely upon configuration options specified when the editor is
+	    compiled and linked (see doc/config.doc for details).  As you
+	    might expect, builtin filters offer faster syntax coloring at
+	    the cost of a larger editor executable.  For the purposes of
+	    this document, it's assumed that the editor is bound with
+	    builtin filters.
+
+	[2] Majormodes are an interesting subject in their own right, but
+	    won't be discussed much here.  For more info, refer to the help
+	    topic "Editor modes" in this help file, as well as the file
+	    doc/modes.doc .
+
+	[3] Previous releases of vile utilized a syntax filtering system
+	    that actually applied color attributes to a target buffer,
+	    thereby damaging the editor's undo history.  vile version 8.3
+	    (and later) utilizes a new command, called
+	    "attribute-from-filter-til", which applies coloring information
+	    directly from the filter's output stream without modifying the
+	    affected buffer.
 
 	The remainder of this section of the help file includes a
 	step-by-step description of syntax coloring configuration, as well
@@ -3725,17 +3776,17 @@ Syntax coloring
 	Configuration
 	-------------
 	There are three configuration recipes, each dependent on the target
-	host, available disk space, and the user's privilege level.
+	host and/or the user's privilege level.
 
 	Unix install recipe -- root privileges available
 	------------------------------------------------
 	The simplest install copies the editor to a directory in the system
-	PATH (we'll assume /usr/local/bin), copies all syntax coloring data
-	and macro files to /usr/local/share/vile, and copies all filters to
-	/usr/local/lib/vile .  The following commands accomplish that task:
+	PATH (we'll assume /usr/local/bin), and copies all syntax coloring
+	data and macro files to /usr/local/share/vile.  The following
+	commands accomplish that task:
 
 	    unset VILE_STARTUP_PATH VILE_LIBDIR_PATH
-	    make clean; ./configure; make
+	    make clean; ./configure --with-builtin-filters; make
 	    make install
 
 	Users should take these additional steps:
@@ -3753,17 +3804,18 @@ Syntax coloring
 	then pay attention again when you hit the topic entitled "Testing
 	the configuration".  With regard to the remainder of this
 	discussion, the term "COLORDIR" refers collectively to the
-	directories $HOME/.vile, /usr/local/share/vile, or
-	/usr/local/lib/vile, as appropriate.
+	directories $HOME/.vile or /usr/local/share/vile as appropriate.
 
 	Unix install recipe -- no privileges
 	------------------------------------
-	The simplest install copies the editor, all filters, data and
-	macros file to a writable directory tree (we'll assume
-	$HOME/local).  This syntax does the job:
+	The simplest install copies the editor and all data and macros file
+	to a writable directory tree (we'll assume $HOME/local).  This
+	syntax does the job:
 
 	    unset VILE_STARTUP_PATH VILE_LIBDIR_PATH
-	    make clean; ./configure --prefix=$HOME/local; make
+	    make clean
+	    ./configure --prefix=$HOME/local --with-builtin-filters
+	    make
 	    make install
 
 	These additional steps are required:
@@ -3783,79 +3835,56 @@ Syntax coloring
 	then pay attention again when you hit the topic entitled "Testing
 	the configuration".  With regard to the remainder of this
 	discussion, the term "COLORDIR" refers collectively to the
-	directories $HOME/.vile, $HOME/local/share/vile, or
-	$HOME/local/lib/vile, as appropriate.
+	directories $HOME/.vile or $HOME/local/share/vile as appropriate.
 
-	Manual Recipe -- Win32 host or Unix user with limited disk space
-	----------------------------------------------------------------
-	In general, vile's Unix install script configures 90% of the
-	editor's syntax coloring mechanism.  However, this script copies
-	many filters (small executables) and keyword files to disk.  In a
-	situation where disk space is tight (e.g., an ISP shell account),
-	the end user will probably copy only those filters that apply to
-	the required programming/editing tasks.
-
-	On the other hand, there is no Win32 install/setup program.
-	Consequently, all Win32 users must resort to manual configuration.
-
-	Here then, is the manual configuration recipe.
+	Manual Recipe -- Win32 host
+	---------------------------
+	There is no Win32 install/setup program.  Consequently, all Win32
+	users must resort to manual configuration.  For the purposes of
+	this discussion, it is assumed that the editor is not built from
+	sources, but instead obtained from precompiled binaries, as
+	described next.
 
 	1) create a directory (hereafter referred to as COLORDIR) to store
-	   the editor's external color filters and keyword files.  If you
-	   use csh (or clone) as your Unix shell, add COLORDIR to your
-	   PATH.  In this procedure, COLORDIR is a full pathname, e.g.,
+	   the editor's external color keyword and macro files.  Example
+	   COLORDIR name:  c:\util\vcolor
 
-		/home/stevie
+	2) obtain these two distributions:
 
-	2) list all available filters in the vile source directory using
-	   one of these commands:
+		ftp://invisible-island.net/vile/filters.zip
+		ftp://invisible-island.net/vile/vile-w32.zip
 
-		$ ls filters/vile*filt
-		$ dir filters\vile*filt.exe
+	3) extract the contents of filters.zip into COLORDIR.
 
-	   If you use a win32 host and have elected to use precompiled
-	   binaries, unzip the filters archive and list its contents.
-	   Henceforth, use this archive to satisfy any recipe step that
-	   requires files from the source distribution's "filters"
-	   subdirectory.
+	4) extract the contents of vile-w32.zip into a temp directory.
+	   From within this temp directory:
 
-	3) select the filters that suit your needs and copy them to
-	   COLORDIR.
+	   a) copy *.rc to COLORDIR.  Note that the most important of these
+	      files is filters.rc .
 
-	4) most, but not all, filters are paired with language-specific
-	   keywords files, which are stored in the filters subdirectory and
-	   use this naming convention:
+	   b) copy vile.exe, vile.hlp, and winvile.exe to a directory
+	      in your PATH.  Note that vile.exe and winvile.exe are
+	      both bound with _all_ of the editor's builtin filters.
 
-		<filter_name>.key
-
-	   Examples:
-		c.key    => C language keywords, which is read by vile-c-filt
-		html.key => HTML keywords, which is read by vile-html-filt
-
-	   For each filter selected in step 3 above, if a paired keywords
-	   file exists, then copy:
-
-		<filter_name>.key to COLORDIR/<filter_name>.keywords .
-
-	   You may have noticed that some of the filter names are rather
-	   cryptic (e.g., what language does vile-tc-filt parse?).  Look at
-	   the comments in the first few lines of the language-specific
-	   keywords file to determine the filter's purpose.
-
-	5) copy filters/filters.rc to COLORDIR.  Filters.rc creates major
-	   modes for all supported syntax filters.
-
-	6) edit your startup file (vile.rc or .vilerc) and add this line:
+	5) edit your startup file (vile.rc) and add this line:
 
 		source "filters.rc"
 
-	7) copy filters/vile.key to COLORDIR/vile.keywords (note name change).
-
-	8) export these environment variable settings:
+	6) export these environment variable settings:
 
 		VILE_STARTUP_PATH=COLORDIR
 		VILE_LIBDIR_PATH=COLORDIR
 
+	   Example entries in Win9x/ME's autoexec.bat:
+
+		SET VILE_LIBDIR_PATH=c:\util\vcolor
+		SET VILE_STARTUP_PATH=c:\util\vcolor
+
+	   On a Win/NT/2K host, env vars are initialized via a control
+	   panel applet.  WinXP uses a different mechanism.
+
+	Testing the configuration
+	-------------------------
 	Basic configuration is now complete.  Filters.rc installs several
 	stored procedures, including:
 
@@ -3866,9 +3895,7 @@ Syntax coloring
 	    HighlightClear       ^X-Q    Clears the current buffer's color
 					 attributes.
 
-	Testing the configuration
-	-------------------------
-	Assuming vile-c-filt was selected as a filter, do:
+	For a simple go/no-go test, do:
 
 	- edit a C source file
 	- examine the editor's modeline and ensure that "cmode" is in effect
@@ -3976,6 +4003,19 @@ Syntax coloring
 	"flex".  It is not expected that users will need or want to edit
 	these files.
 
+	Caution: vile.keywords is a precious file
+	-----------------------------------------
+	From time to time, users upgrade to the latest release of vile.  If
+	the above syntax coloring configuration and installation
+	instructions are blindly repeated during an upgrade, your copy of
+	vile.keywords will be overwritten with the corresponding file from
+	vile's distribution.  This is not a happy event if you've spent
+	time tweaking this file to suit your tastes (the author speaks from
+	experience).  Word to the wise:
+
+	    Once vile.keywords is edited to your satisfaction, make a
+	    backup copy and/or save it under version control!
+
 	Troubleshooting
 	---------------
 	Try this checklist when syntax coloring doesn't work:
@@ -3985,26 +4025,8 @@ Syntax coloring
 	  colors/attributes appear to be missing, reread the "Color basics"
 	  topic in this help file.
 
-	- Select a filter and invoke it from the command line, like so:
-
-		$ COLORDIR/<filter_name> -vq
-
-	  The filter should show that it opened vile.keywords and an
-	  associated language-specific keywords file (if it exists).
-	  Here's an example taken from a Unix host:
-
-		$ .vile/vile-c-filt -vq
-		CreateSymbolTable(c)
-		ReadKeywords(vile)
-		Opened /home/user1/.vile/vile.keywords  <---- good
-		ReadKeywords(c)
-		Opened /home/user1/.vile/c.keywords     <---- good
-		CreateSymbolTable(cpre)
-
-	  If the filter can't find the required keyword file(s), syntax
-	  coloring configuration is incomplete.
-
-	- Ensure these environent vars are properly initialized:
+	- Win32 users should ensure that these environent vars are properly
+	  initialized:
 
 		VILE_STARTUP_PATH
 		VILE_LIBDIR_PATH
@@ -4019,10 +4041,6 @@ Syntax coloring
 	- Some users have made the mistake of explicitly specifying
 	  a filter via the filtername mode.  Don't do that.
 
-	- If everything looks legit, but coloring still doesn't work, try
-	  adding COLORDIR to your PATH (required by some shells, but not
-	  others).
-
 	Man pages
 	---------
 	It's also possible to syntax color Unix man pages, although the
@@ -4034,13 +4052,9 @@ Syntax coloring
 	The editor is capable of spell checking the current buffer (with
 	ispell) and subsequently highlighting all misspelled words in the
 	Keyword class color (as specified in vile.keywords).  If this
-	feature sounds useful, then:
+	feature sounds useful, then add this line to your startup file:
 
-	- copy filters/spell.rc to COLORDIR
-	- copy filters/vile-spell-filt to COLORDIR
-	- add this line to your startup file:
-
-		source "COLORDIR/filters.rc"
+		source "spell.rc"
 
 	Spell.rc installs ^X-i as the keybinding that initiates spell
 	checking.
@@ -4067,12 +4081,14 @@ Filtering "man" pages
 	manpage.rc may be either incorporated verbatim into your .vilerc
 	file or may be read from your .vilerc as follows:
 
-		source "~/manpage.rc"
+		source "manpage.rc"
 
-	This assumes that you have moved the manpage.rc file to your home
-	directory.  If you do all of this but use vile rather than xvile,
-	you will still end up with a legible man page, albeit without the
-	spiffy formatting.
+	This assumes that you have moved the manpage.rc file to a directory
+	known to vile (automatically handled by "make install" on Unix or,
+	alternatively, by pointing the VILE_STARTUP_PATH env var to the
+	directory where this file resides).  If you do all of this but use
+	vile rather than xvile, you will still end up with a legible man
+	page, albeit without the spiffy formatting.
 
 	The manual page filtering program may also be used to look at other
 	text formatted with nroff.  From the vile source directory, for
@@ -4092,44 +4108,6 @@ Filtering "man" pages
 	attributed text into one which is more pleasing to look at.
 
 		^A-AG
-
-	Here is the macro from macros/manpage.rc:
-
-	;; Macros for obtaining manual pages and then attributing them.
-	;;
-	;; Author: Kevin Buettner
-	store-procedure ShowManpage "Prompt for, and display a manual-page"
-	    ~local %filter %manpage %manpagebuf $error-buffer
-	    set-variable %filter &lookup e+l+p &cat vile-manfilt $exec-suffix
-	    ~if &seq %filter ""
-		write-message "[Cannot find manpage-filter]"
-		~return
-	    ~endif
-	    set-variable %manpage &query "man page? "
-	    ~if &or &seq %manpage "ERROR" &seq %manpage ""
-		~return
-	    ~endif
-	    set-variable %manpagebuf &cat "<" &cat %manpage ">"
-	    set terse
-	    ~force select-buffer %manpagebuf
-	    ~if &not $status
-		edit-file &cat "!man " &cat %manpage &cat " | " %filter
-		setl txtmode
-		setl autocolor=0
-		~force rename-buffer %manpagebuf
-		~force error-buffer %manpagebuf
-		write-message "[Attaching bold and underline attributes...]"
-		goto-beginning-of-file
-		setl noview
-		attribute-cntl_a-sequences-til end-of-file
-		unmark-buffer
-		setl view
-		goto-beginning-of-file
-		write-message "[Done formatting manual page.]"
-	    ~endif
-	    set noterse
-	~endm
-	bind-key ShowManpage ^X-m
 
 	Note that macros/manpage.rc also provides a macro that attaches
 	attributes to any man page displayed in the editor's current buffer.
@@ -4274,7 +4252,7 @@ Working in a project hierarchy
 	Next, use find-cfg mode to enable the traversal feature.  This
 	mode's string argument syntax is as follows:
 
-	    [<recursive_token>][,<nonrecursive_token>[,<option>]]
+	    [<recursive_token>][,<nonrecursive_token>[,<option>...]]
 
 	    where:
 	       <recursive_token> := an ascii character that triggers a
@@ -4288,11 +4266,15 @@ Working in a project hierarchy
 				       semantic restrictions as the
 				       recursive token.
 
-	       <option>          := d
+	       <option>          := {d | f}
 
 
 	Note 1:  The "d" option specifies that find should restrict its
-	search solely to files of type "d" (i.e., directories).
+	search solely to files of type "d" (i.e., directories).  The "f"
+	option adds a "-follow" operand to the commandline, which directs
+	find to follow symbolic links.  Note that -follow is appropriate 
+	for the GNU tool chain, SunOS v5.7, and possibly other hosts.
+	Check your local find (1) man page for compatibility.
 
 	Note 2:  An empty string argument disables find-cfg mode.
 
@@ -5606,14 +5588,15 @@ Sample .vilerc
 	; spelling keystroke: write the buffer, invoke ispell, and force
 	;	it to be read back in.
 	2 store-macro
+		~local $warn-reread
 		write-file
 		; suppress "press return" with "1" argument to shell-command
 		1 shell-command &cat "ispell " $cfilname
+		; suppress reread warning
+		set nowarn-reread
 		replace-with-file $cfilname
 	~endm
-	bind-key execute-macro-2 =
-
-
+	bind-key execute-macro-2 #I
 
 	; the next three give more mnemonic window commands
 	bind-key next-window ^N
@@ -5697,7 +5680,7 @@ Credits (last updated Jan, 2000)
 
 	This code has been written by a _lot_ of people, with help from a
 	lot more sending in bug reports, fixes, and suggestions.  The
-	authors of vile are Tom Dickey (dickey@herndon4.his.com) and Kevin
+	authors of vile are Tom Dickey (dickey@invisible-island.net) and Kevin
 	Buettner (kev@primenet.com), and Paul Fox (pgf@foxharp.boston.ma.us).
 
 	Names appearing within comments in the micro-Emacs source code are:
@@ -5785,6 +5768,6 @@ Problems
 	Requests to be put on the announcement list should go to
 		announce-request@vile.cx
 
-Copyright 1995-2002 by Paul Fox, Thomas Dickey, and Kevin Buettner
+Copyright 1995-2003 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.551 2002/07/03 00:32:10 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.568 2003/08/04 22:46:30 tom Exp $

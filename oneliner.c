@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.97 2002/02/03 21:02:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.102 2003/03/18 02:20:27 tom Exp $
  */
 
 #include	"estruct.h"
@@ -13,9 +13,9 @@
 #define PLIST	0x01
 #define PNUMS	0x02
 
-static int delins(regexp * exp, char *sourc);
+static int delins(regexp * exp, char *sourc, int lensrc);
 static int substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp);
-static int substreg1(int needpats, int use_opts);
+static int substreg1(int needpats, int use_opts, int is_globalsub);
 
 static int lines_changed, total_changes;
 
@@ -114,13 +114,19 @@ static regexp *substexp;
 int
 substregion(void)
 {
-    return substreg1(TRUE, TRUE);
+    return substreg1(TRUE, TRUE, FALSE);
 }
 
 int
 subst_again_region(void)
 {
-    return substreg1(FALSE, TRUE);
+    return substreg1(FALSE, TRUE, FALSE);
+}
+
+int
+subst_all_region(void)
+{
+    return substreg1(TRUE, TRUE, TRUE);
 }
 
 /* traditional vi & command */
@@ -137,7 +143,7 @@ subst_again(int f GCC_UNUSED, int n GCC_UNUSED)
     MK.l = DOT.l;
     DOT.o = 0;
     MK.o = llength(MK.l);
-    s = substreg1(FALSE, FALSE);
+    s = substreg1(FALSE, FALSE, FALSE);
     if (s != TRUE) {
 	mlforce("[No match.]");
 	DOT = curpos;
@@ -148,14 +154,14 @@ subst_again(int f GCC_UNUSED, int n GCC_UNUSED)
 }
 
 static int
-substreg1(int needpats, int use_opts)
+substreg1(int needpats, int use_opts, int is_globalsub)
 {
     int c, status;
     static int printit, globally, nth_occur, confirm;
     REGION region;
     LINEPTR oline;
     int getopts = FALSE;
-    char tpat[NPAT];
+    TBUFF *newpattern;
 
     if ((status = get_fl_region(&region)) != TRUE) {
 	return (status);
@@ -163,7 +169,7 @@ substreg1(int needpats, int use_opts)
 
     if (calledbefore == FALSE && needpats) {
 	c = kbd_delimiter();
-	if ((status = readpattern("substitute pattern: ", &searchpat[0],
+	if ((status = readpattern("substitute pattern: ", &searchpat,
 				  &gregexp, c, FALSE)) != TRUE) {
 	    if (status != ABORT)
 		mlforce("[No pattern.]");
@@ -177,14 +183,18 @@ substreg1(int needpats, int use_opts)
 			  (size_t) gregexp->size);
 	}
 
-	tpat[0] = 0;
+	newpattern = 0;
+	if (tb_length(replacepat) != 0)
+	    tb_copy(&newpattern, replacepat);
 	status = readpattern("replacement string: ",
-			     &tpat[0], (regexp **) 0, c, FALSE);
-
-	(void) tb_scopy(&replacepat, tpat);
-	if (status == ABORT)
+			     &newpattern, (regexp **) 0, c, FALSE);
+	if (status == ABORT) {
 	    /* if false, the pattern is null, which is okay... */
+	    tb_free(&newpattern);
 	    return status;
+	}
+	tb_free(&replacepat);
+	replacepat = newpattern;
 
 	nth_occur = -1;
 	confirm = printit = globally = FALSE;
@@ -239,6 +249,9 @@ substreg1(int needpats, int use_opts)
 	    nth_occur = -1;
     }
 
+    if (is_globalsub)
+	globally = TRUE;
+
     lines_changed =
 	total_changes = 0;
     DOT.l = region.r_orig.l;	/* Current line.        */
@@ -288,10 +301,14 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
     int matched_at_eol = FALSE;
     int yes, c, skipped;
 
+    TRACE((T_CALLED
+	   "substline(exp=%p, nth_occur=%d, printit=%d, globally=%d, confirmp=%p)\n",
+	   exp, nth_occur, printit, globally, confirmp));
+
     /* if the "magic number" hasn't been set yet... */
     if (!exp || UCHAR_AT(exp->program) != REGEXP_MAGIC) {
 	mlforce("[No pattern set yet]");
-	return FALSE;
+	returnCode(FALSE);
     }
 
     ignorecase = window_b_val(curwp, MDIGNCASE);
@@ -349,7 +366,7 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
 		    break;
 		case 'q':
 		    mlerase();
-		    return (FALSE);
+		    returnCode(FALSE);
 		case 'a':
 		    yes = TRUE;
 		    *confirmp = FALSE;
@@ -360,9 +377,9 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
 		yes = TRUE;
 	    }
 	    if (yes) {
-		s = delins(exp, tb_values(replacepat));
+		s = delins(exp, tb_values(replacepat), tb_length(replacepat));
 		if (s != TRUE)
-		    return s;
+		    returnCode(s);
 		if (!again++)
 		    lines_changed++;
 		total_changes++;
@@ -377,7 +394,7 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
 	} else {		/* non-overlapping matches */
 	    s = forwchar(TRUE, (int) (exp->mlen));
 	    if (s != TRUE)
-		return s;
+		returnCode(s);
 	}
     } while (globally && sameline(scanboundpos, DOT));
     if (foundit && printit) {
@@ -385,13 +402,13 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
 	(void) setmark();
 	s = plineregion();
 	if (s != TRUE)
-	    return s;
+	    returnCode(s);
 	/* back to our buffer */
 	swbuffer(wp->w_bufp);
     }
     if (*confirmp)
 	mlerase();
-    return TRUE;
+    returnCode(TRUE);
 }
 
 /*
@@ -422,12 +439,12 @@ static UINT len_delins;
  - delins - perform substitutions after a regexp match
  */
 static int
-delins(regexp * exp, char *sourc)
+delins(regexp * exp, char *sourc, int lensrc)
 {
-    register char *src;
-    register size_t dlength;
-    register int c;
-    register int no;
+    size_t dlength;
+    int c;
+    int no;
+    int j;
     int s;
 #define NO_CASE	0
 #define UPPER_CASE 1
@@ -462,16 +479,16 @@ delins(regexp * exp, char *sourc)
 	mlforce("[Error while deleting]");
 	return FALSE;
     }
-    src = sourc;
     case_next = case_all = NO_CASE;
-    while ((c = *src++) != EOS) {
+    for (j = 0; j < lensrc; ++j) {
+	c = sourc[j];
 	no = 0;
 	s = TRUE;
 	switch (c) {
 	case BACKSLASH:
-	    c = *src++;
-	    if (c == EOS)
+	    if (j + 1 >= lensrc)
 		return TRUE;
+	    c = sourc[++j];
 	    if (!isDigit(c)) {
 		/* here's where the \U \E \u \l \t etc.
 		   special escapes should be implemented */

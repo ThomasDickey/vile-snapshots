@@ -2,7 +2,7 @@
  *	matching lines, then for each such line, an action is performed.
  *	written for vile: Copyright (c) 1990-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/globals.c,v 1.46 2000/08/26 16:37:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/globals.c,v 1.47 2003/02/25 00:44:28 tom Exp $
  *
  */
 
@@ -40,7 +40,7 @@ globber(int f GCC_UNUSED, int n GCC_UNUSED, int g_or_v)
 	int	save_report;
 
 	c = kbd_delimiter();
-	if ((status = readpattern("global pattern: ", searchpat,
+	if ((status = readpattern("global pattern: ", &searchpat,
 				&gregexp, c, FALSE)) != TRUE) {
 		mlforce("[No pattern.]");
 		return status;

@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.71 2001/01/04 00:12:47 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.75 2003/11/02 22:56:23 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -29,6 +29,7 @@ LEX_OUTPUT_ROOT	= @LEX_OUTPUT_ROOT@
 
 x		= @PROG_EXT@
 o		= .o
+so		= .so
 
 SCREEN		= @SCREEN@
 TARGET		= @TARGET@$x
@@ -36,7 +37,7 @@ TARGET		= @TARGET@$x
 prefix		= @prefix@
 exec_prefix	= @exec_prefix@
 
-libdir		= @libdir@
+libdir		= @libdir@/vile
 bindir		= @filters_bindir@
 datadir		= @datadir@/vile
 
@@ -46,17 +47,18 @@ SHELL		= /bin/sh
 RM              = rm -f
 
 QUOTDEFS	= -DVILE_STARTUP_PATH=\"@VILE_STARTUP_PATH@\"
-CPPFLAGS	= -I. -I.. -I$(srcdir) -DHAVE_CONFIG_H @CPPFLAGS@
+CPPFLAGS	= -I. -I.. -I$(srcdir) -I$(top_srcdir) -DHAVE_CONFIG_H @CPPFLAGS@
 
-LDFLAGS		= @IMAKE_LOADFLAGS@
+LDFLAGS		= @IMAKE_LOADFLAGS@ @LDFLAGS@
 
 DESTDIR		=
 BINDIR		= $(DESTDIR)$(bindir)
+LIBDIR		= $(DESTDIR)$(libdir)
 DATADIR		= $(DESTDIR)$(datadir)
 
 INSTALL_DIRS    = $(BINDIR) $(DATADIR)
 
-.SUFFIXES: .l .c .i $o
+.SUFFIXES: .l .c .i $o $(so)
 
 LF_DEPS = filterio$o filters$o
 LF_ARGS = $(LF_DEPS) $(LEXLIB)

@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.168 2002/07/04 22:59:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.172 2002/12/03 01:42:49 pgf Exp $
  *
  */
 
@@ -18,7 +18,7 @@
 #include <fcntl.h>
 #endif
 
-#if HAVE_SYS_IOCTL_H
+#ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
 #endif
 
@@ -35,8 +35,10 @@
 static void
 free_fline(void)
 {
+    beginDisplay();
     FreeAndNull(fflinebuf);
     fflinelen = 0;
+    endofDisplay();
 }
 
 #if OPT_FILEBACK
@@ -80,7 +82,7 @@ copy_file(const char *src, const char *dst)
  */
 
 #if SYS_UNIX
-# if ! HAVE_LONG_FILE_NAMES
+# ifndef HAVE_LONG_FILE_NAMES
 #  define MAX_FN_LEN 14
 # else
 #  define MAX_FN_LEN 255
@@ -125,7 +127,7 @@ write_backup_file(const char *orig, char *backup)
 	return s;
 
     /* change date and permissions to match original */
-#if HAVE_UTIMES
+#ifdef HAVE_UTIMES
     /* we favor utimes over utime, since not all implementations (i.e.
        older ones) declare the utimbuf argument.  NeXT, for example,
        declares it as an array of two timevals instead.  we think
@@ -145,7 +147,7 @@ write_backup_file(const char *orig, char *backup)
 	}
     }
 #else
-#if HAVE_UTIME
+#ifdef HAVE_UTIME
     {
 	struct utimbuf buf;
 	buf.actime = ostat.st_atime;
@@ -194,7 +196,7 @@ make_backup(char *fname)
 #if SYS_UNIX
 	} else if (strcmp(gvalfileback, "tilde") == 0) {
 	    t = skip_string(s);
-#if ! HAVE_LONG_FILENAMES
+#ifndef HAVE_LONG_FILE_NAMES
 	    if (t - s >= MAX_FN_LEN) {
 		if (t - s == MAX_FN_LEN &&
 		    s[MAX_FN_LEN - 2] == '.')
@@ -203,7 +205,7 @@ make_backup(char *fname)
 	    }
 #endif
 	    (void) strcpy(t, "~");
-#if SOMEDAY
+#if VILE_SOMEDAY
 	} else if (strcmp(gvalfileback, "tilde_N_existing")) {
 	    /* numbered backups if one exists, else simple */
 	} else if (strcmp(gvalfileback, "tilde_N")) {
@@ -358,7 +360,7 @@ ffwopen(char *fn, int forced)
     TRACE(("ffwopen(fn=%s, forced=%d)\n", fn, forced));
     ffstatus = file_is_closed;
     if (i_am_dead) {
-	if ((ffd = open(SL_TO_BSL(fn), O_WRONLY | O_CREAT)) < 0) {
+	if ((ffd = open(SL_TO_BSL(fn), O_WRONLY | O_CREAT, 0600)) < 0) {
 	    return (FIOERR);
 	}
 	ffstatus = file_is_unbuffered;
@@ -436,7 +438,7 @@ int
 ffaccess(char *fn, UINT mode)
 {
     int status;
-#if HAVE_ACCESS
+#ifdef HAVE_ACCESS
     /* these were chosen to match the SYSV numbers, but we'd rather use
      * the symbols for portability.
      */
@@ -768,17 +770,30 @@ ffputc(int c)
 
 /* "Small" exponential growth - EJK */
 static int
-realloc_linebuf(void)
+alloc_linebuf(unsigned needed)
 {
-    size_t growth = (fflinelen >> 3) + NSTRING;
-    fflinelen += growth;
-    fflinebuf = castrealloc(char, fflinebuf, fflinelen);
-    if (!fflinebuf) {
-	fflinelen = 0;
-	return (FALSE);
+    beginDisplay();
+    needed += 2;
+    if (needed < NSTRING)
+	needed = NSTRING;
+
+    if (fflinebuf == 0) {
+	fflinelen = needed;
+	fflinebuf = castalloc(char, fflinelen);
+    } else if (needed >= fflinelen) {
+	fflinelen = needed + (needed >> 3);
+	fflinebuf = castrealloc(char, fflinebuf, fflinelen);
     }
-    return (TRUE);
+
+    if (fflinebuf == 0)
+	fflinelen = 0;
+    endofDisplay();
+    return (fflinebuf != 0);
 }
+
+#define ALLOC_LINEBUF(i) \
+	    if (i >= fflinelen && !alloc_linebuf(i)) \
+		return (FIOMEM)
 
 /*
  * Read a line from a file, and store the bytes in an allocated buffer.
@@ -786,7 +801,6 @@ realloc_linebuf(void)
  * Check for I/O errors. Return status.  The final length is returned via
  * the 'lenp' parameter.
  */
-
 int
 ffgetline(int *lenp)
 {
@@ -797,11 +811,7 @@ ffgetline(int *lenp)
     if (fileeof)
 	return (FIOEOF);
 
-    /* be sure there's a buffer */
-    if (!fflinebuf)
-	fflinebuf = castalloc(char, fflinelen = NSTRING);
-    if (!fflinebuf)
-	return (FIOMEM);
+    ALLOC_LINEBUF(NSTRING);
 
     i = 0;
 #if COMPLETE_FILES || COMPLETE_DIRS
@@ -812,13 +822,14 @@ ffgetline(int *lenp)
 	    return (FIOEOF);
 	}
 	if (llength(ffcursor) > 0) {
-	    i = fflinelen = llength(ffcursor);
-	    if (!realloc_linebuf())
-		return (FIOMEM);
+	    i = llength(ffcursor);
+	    ALLOC_LINEBUF(i);
 	    memcpy(fflinebuf, ffcursor->l_text, i);
 	}
-	fflinebuf[i] = EOS;
 	ffcursor = lforw(ffcursor);
+
+	ALLOC_LINEBUF(i);
+	fflinebuf[i] = EOS;
 	*lenp = i;		/* return the length, not including final null */
     } else
 #endif
@@ -839,16 +850,14 @@ ffgetline(int *lenp)
 		*lenp = 0;
 		return FIOABRT;
 	    }
+	    ALLOC_LINEBUF(i);
 	    fflinebuf[i++] = (char) c;
-	    /* grow our buffer -- be sure it grows fast enough */
-	    if (i >= fflinelen
-		&& !realloc_linebuf())
-		return (FIOMEM);
 #if OPT_WORKING
 	    cur_working++;
 #endif
 	}
 
+	ALLOC_LINEBUF(i);
 	*lenp = i;		/* return the length, not including final null */
 	fflinebuf[i] = EOS;
 

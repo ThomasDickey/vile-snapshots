@@ -2,12 +2,13 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.19 2000/08/10 01:30:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.22 2003/05/20 20:38:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
 
 #include <filters.h>
+#include <fltstack.h>
 
 DefineFilter("lex");
 
@@ -21,15 +22,81 @@ static char *String_attr;
 static int section = 0;
 static int nesting = 0;
 
+static void set_rules(void);
+static void set_state(void);
+static void write_states(char *text, int len);
+
+%}
+
+SPACE		[ \t]
+
+DIRECTIVE	^%[^ \t]
+
+IDENT		[a-zA-Z_][a-zA-Z_0-9]*
+
+INTEGER		[-+]?([0-9]+)
+
+SSTRING		\'(\\.|[^'\\])*\'
+DSTRING		\"(\\.|[^"\\])*\"
+STRINGS		({SSTRING}|{DSTRING})
+
+PATTERN		(\\.|\[(\\.|.)*\]|[^ \t\n])+
+STATES		(<({IDENT}|\,)+>)
+MATCH		{STATES}?{PATTERN}
+
+%%
+
+<INITIAL,RULES,ACTIONS,CODE>{DIRECTIVE}	{
+		    WriteToken(Keyword_attr);
+		    switch(yytext[1]) {
+		    case '%':
+		    	section++;
+			set_state();
+			break;
+		    case '{':
+		    	new_state(CODE);
+			break;
+		    case '}':
+			set_state();
+			break;
+		    default:
+			break;
+		    }
+		}
+
+<RULES>^{IDENT}		{ WriteToken(Ident_attr); new_state(RULE1); }
+<RULE1>{SPACE}+		{ ECHO; new_state(RULEX); }
+<RULEX>.*		{ WriteToken(String_attr); new_state(RULES); }
+
+<ACTIONS>^{MATCH}	{ write_states(yytext, yyleng); new_state(ACTION2); }
+<ACTION2>{SPACE}+	{ ECHO; new_state(ACTION3); }
+<ACTION3>\{		{ ECHO; nesting = 1; new_state(CODE); }
+<ACTION3>[^\{].*$	{ ECHO; new_state(ACTIONS); }
+
+<CODE>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
+<CODE>{STRINGS}		{ WriteToken(String_attr); }
+<CODE>{INTEGER}		{ WriteToken(Number_attr); }
+<CODE>\{		{ ECHO; nesting++; }
+<CODE>\}		{ ECHO; if (--nesting <= 0) { nesting = 0; set_rules(); } }
+
+<CODE,RULES>"/*"	{ PushQuote(COMMENT, Comment_attr); }
+<COMMENT>[^*]*		{ flt_bfr_append(yytext, yyleng); }
+<COMMENT>"*"+[^*/]*	{ flt_bfr_append(yytext, yyleng); }
+<COMMENT>"*"+"/"	{ PopQuote(); }
+
+<CODE>^{SPACE}*#{SPACE}*{IDENT}({SPACE}+(\<[^>]+\>|\"[^"]+\"))? { WriteToken(Preproc_attr); }
+
+%%
+
 static void
 set_state(void)
 {
     if (section >= 2) {
-	BEGIN(CODE);
+	new_state(CODE);
     } else if (section >= 1) {
-	BEGIN(ACTIONS);
+	new_state(ACTIONS);
     } else {
-	BEGIN(RULES);
+	new_state(RULES);
     }
 }
 
@@ -62,9 +129,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input)
+do_filter(FILE *inputs)
 {
-    yyin = input;
+    yyin = inputs;
     section = 0;
     nesting = 0;
     Comment_attr = class_attr(NAME_COMMENT);
@@ -74,67 +141,8 @@ do_filter(FILE *input)
     Preproc_attr = class_attr(NAME_PREPROC);
     String_attr  = class_attr(NAME_LITERAL);
 
-    BEGIN(RULES);
+    begin_state(RULES);
     while (yylex() > 0) {
     }
+    end_state();
 }
-
-%}
-
-SPACE		[ \t]
-
-DIRECTIVE	^%[^ \t]
-
-IDENT		[a-zA-Z_][a-zA-Z_0-9]*
-
-INTEGER		[-+]?([0-9]+)
-
-SSTRING		\'(\\.|[^'\\])*\'
-DSTRING		\"(\\.|[^"\\])*\"
-STRINGS		({SSTRING}|{DSTRING})
-
-PATTERN		(\\.|\[(\\.|.)*\]|[^ \t\n])+
-STATES		(<({IDENT}|\,)+>)
-MATCH		{STATES}?{PATTERN}
-
-%%
-
-<INITIAL,RULES,ACTIONS,CODE>{DIRECTIVE}	{
-		    WriteToken(Keyword_attr);
-		    switch(yytext[1]) {
-		    case '%':
-		    	section++;
-			set_state();
-			break;
-		    case '{':
-		    	BEGIN(CODE);
-			break;
-		    case '}':
-			set_state();
-			break;
-		    default:
-			break;
-		    }
-		}
-
-<RULES>^{IDENT}		{ WriteToken(Ident_attr); BEGIN(RULE1); }
-<RULE1>{SPACE}+		{ ECHO; BEGIN(RULEX); }
-<RULEX>.*		{ WriteToken(String_attr); BEGIN(RULES); }
-
-<ACTIONS>^{MATCH}	{ write_states(yytext, yyleng); BEGIN(ACTION2); }
-<ACTION2>{SPACE}+	{ ECHO; BEGIN(ACTION3); }
-<ACTION3>\{		{ ECHO; nesting = 1; BEGIN(CODE); }
-<ACTION3>[^\{].*$	{ ECHO; BEGIN(ACTIONS); }
-
-<CODE>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
-<CODE>{STRINGS}		{ WriteToken(String_attr); }
-<CODE>{INTEGER}		{ WriteToken(Number_attr); }
-<CODE>\{		{ ECHO; nesting++; }
-<CODE>\}		{ ECHO; if (--nesting <= 0) { nesting = 0; set_rules(); } }
-
-<CODE>"/*"		{ WriteToken(Comment_attr); BEGIN(COMMENT); }
-<COMMENT>[^*]*		{ WriteToken(Comment_attr); }
-<COMMENT>"*"+[^*/]*	{ WriteToken(Comment_attr); }
-<COMMENT>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(CODE); }
-
-<CODE>^{SPACE}*#{SPACE}*{IDENT}({SPACE}+(\<[^>]+\>|\"[^"]+\"))? { WriteToken(Preproc_attr); }

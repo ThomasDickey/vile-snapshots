@@ -10,7 +10,7 @@
  * Note:  A great deal of the code included in this file is copied
  * (almost verbatim) from other vile modules.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.6 2002/02/26 23:33:49 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.7 2002/12/04 02:00:38 cmorgan Exp $
  */
 
 #include "w32vile.h"
@@ -143,8 +143,8 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
     size_t       dynbuf_len, dynbuf_idx;
     HRESULT      hr;
     HWND         hwnd;
+    VARIANT_BOOL insert_mode, minimized;
     char         *lclbuf = NULL, tmp[512], *dynbuf;
-    VARIANT_BOOL minimized;
     OLECHAR      *olestr;
     LPUNKNOWN    punk;
     IVileAuto    *pVileAuto;
@@ -199,6 +199,7 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
         return (1);
     }
     pVileAuto->put_Visible(VARIANT_TRUE);  // May not be necessary
+    pVileAuto->get_InsertMode(&insert_mode);
     if (argc > 0)
     {
         char *cp;
@@ -212,17 +213,23 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
         cp = strrchr(*argv, '\\');
         if (cp)
         {
-            int add_delim;
+            int add_delim, offset = 0;
 
             *cp = '\0';
             if (cp == *argv)
             {
                 /* filename is of the form:  \<leaf> .  handle this. */
 
-                strcpy(dynbuf, ":cd \\\n");
+                strcpy(dynbuf, (insert_mode) ? "\033" : "");
+                strcat(dynbuf, ":cd \\\n");
             }
             else
             {
+                if (insert_mode)
+                {
+                    dynbuf[0] = '\033';
+                    offset    = 1;
+                }
                 add_delim = (isalpha((*argv)[0]) &&
                                        (*argv)[1] == ':' &&
                                                   (*argv)[2] == '\0');
@@ -233,7 +240,10 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
                  * cd'ing to <drive>:  on a DOS/WIN32 host has special
                  * semantics (which we don't want).
                  */
-                sprintf(dynbuf, ":cd %s%s\n", *argv, (add_delim) ? "\\" : "");
+                sprintf(dynbuf + offset,
+                        ":cd %s%s\n",
+                        *argv,
+                        (add_delim) ? "\\" : "");
             }
             dynbuf_idx = strlen(dynbuf);
             *cp        = '\\';

@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.53 2002/04/30 11:52:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.55 2003/07/27 15:19:17 tom Exp $
  *
  */
 
@@ -12,20 +12,20 @@
 static char version_string[NSTRING];
 
 void
-print_usage(void)
+print_usage(int code)
 {
     static const char *const options[] =
     {
 	"-h             to get help on startup",
 	"-gNNN          or simply +NNN to go to line NNN",
-#if SYS_WINNT && defined(DISP_NTWIN)
+#if SYS_WINNT && DISP_NTWIN
 	"-fn fontspec   to change font",
 	"-geometry CxR  to set initial size to R rows and C columns",
 #endif
-#if SYS_WINNT && defined(DISP_NTCONS)
+#if SYS_WINNT && DISP_NTCONS
 	"-console       if stdin is not a tty, start editor in a new console",
 #endif
-#if SYS_WINNT && defined(VILE_OLE) && defined(DISP_NTWIN)
+#if SYS_WINNT && defined(VILE_OLE) && DISP_NTWIN
 	"-Oa            invoke as an OLE Automation server",
 	"-Or            register ole automation interface and exit",
 	"-Ou            unregister ole automation interface and exit",
@@ -94,7 +94,7 @@ print_usage(void)
 	    (void) fprintf(stderr, "\t%s\n", options[j]);
     }
 #endif
-    ExitProgram(BADEXIT);
+    ExitProgram(code);
 }
 
 const char *

@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.259 2002/04/30 11:43:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.272 2003/10/08 20:57:58 Mark.Robinson Exp $
  *
  */
 
@@ -24,8 +24,6 @@
  *    OPT_KEV_SCROLLBARS
  */
 
-#define	termdef	1		/* don't define "term" external */
-
 #define NEED_X_INCLUDES 1
 #include	"estruct.h"
 #include	"edef.h"
@@ -34,9 +32,12 @@
 
 #include	<X11/cursorfont.h>
 
-#if defined(lint) && HAVE_X11_INTRINSICI_H
+#if defined(lint) && defined(HAVE_X11_INTRINSICI_H)
 #include	<X11/IntrinsicI.h>
 #endif
+
+#define Nval(name,value) name, (XtArgVal)(value)
+#define Sval(name,value) name, (value)
 
 #if XtSpecificationRelease < 4
 #define XtPointer caddr_t
@@ -71,24 +72,32 @@
 #ifndef OPT_KEV_SCROLLBARS
 # if NO_WIDGETS
 #  define OPT_KEV_SCROLLBARS 1
+# else
+#  define OPT_KEV_SCROLLBARS 0
 # endif
 #endif
 
 #ifndef OPT_KEV_DRAGGING
 # if NO_WIDGETS
 #  define OPT_KEV_DRAGGING 1
+# else
+#  define OPT_KEV_DRAGGING 0
 # endif
 #endif
 
 #ifndef KEV_WIDGETS
 # if NO_WIDGETS || OPT_KEV_SCROLLBARS
 #  define KEV_WIDGETS 1
+# else
+#  define KEV_WIDGETS 0
 # endif
 #endif
 
 #ifndef OPT_XAW_SCROLLBARS
 # if ATHENA_WIDGETS && !OPT_KEV_SCROLLBARS
 #  define OPT_XAW_SCROLLBARS 1
+# else
+#  define OPT_XAW_SCROLLBARS 0
 # endif
 #endif
 
@@ -104,17 +113,22 @@
 #undef strrchr
 
 #if ATHENA_WIDGETS
-#if HAVE_LIB_XAW
+#ifdef HAVE_LIB_XAW
 #include	<X11/Xaw/Form.h>
 #include	<X11/Xaw/Grip.h>
 #include	<X11/Xaw/Scrollbar.h>
 #endif
-#if HAVE_LIB_XAW3D
+#ifdef HAVE_LIB_XAW3D
 #include	<X11/Xaw3d/Form.h>
 #include	<X11/Xaw3d/Grip.h>
 #include	<X11/Xaw3d/Scrollbar.h>
 #endif
-#if HAVE_LIB_NEXTAW
+#ifdef HAVE_LIB_XAWPLUS
+#include	<X11/XawPlus/Form.h>
+#include	<X11/XawPlus/Grip.h>
+#include	<X11/XawPlus/Scrollbar.h>
+#endif
+#ifdef HAVE_LIB_NEXTAW
 #include	<X11/neXtaw/Form.h>
 #include	<X11/neXtaw/Grip.h>
 #include	<X11/neXtaw/Scrollbar.h>
@@ -123,6 +137,7 @@
 
 #if OL_WIDGETS
 #undef BANG
+#define OWTOOLKIT_WARNING_DISABLED
 #include	<Xol/OpenLook.h>
 #include	<Xol/Form.h>
 #include	<Xol/BulletinBo.h>
@@ -139,13 +154,13 @@
 #include	<Xm/PanedW.h>
 #include	<Xm/ScrollBar.h>
 #include	<Xm/SashP.h>
-#if defined(lint) && HAVE_XM_XMP_H
+#if defined(lint) && defined(HAVE_XM_XMP_H)
 #include	<Xm/XmP.h>
 #endif
 #endif /* MOTIF_WIDGETS */
 
 #if OPT_X11_ICON
-#if HAVE_LIBXPM
+#ifdef HAVE_LIBXPM
 #include <X11/xpm.h>
 #endif
 #endif
@@ -211,8 +226,6 @@
 
 /* Keyboard queue size */
 #define KQSIZE 64
-
-static Display *dpy;
 
 #if OPT_MENUS
 #if ATHENA_WIDGETS
@@ -396,6 +409,8 @@ typedef struct _text_win {
     XtTranslations my_resizeGrip_trans;
 #endif
 } TextWindowRec, *TextWindow;
+
+static Display *dpy;
 
 static TextWindowRec cur_win_rec;
 static TextWindow cur_win = &cur_win_rec;
@@ -800,7 +815,7 @@ update_scrollbar_sizes(void)
 	    cur_win->scrollbars[i] = XtVaCreateWidget("scrollbar",
 						      scrollbarWidgetClass,
 						      cur_win->pane,
-						      XtNtranslations, cur_win->my_scrollbars_trans,
+						      Nval(XtNtranslations, cur_win->my_scrollbars_trans),
 						      NULL);
 	    XtAddCallback(cur_win->scrollbars[i],
 			  XtNsliderMoved, JumpProc, (XtPointer) i);
@@ -826,25 +841,26 @@ update_scrollbar_sizes(void)
     for_each_visible_window(wp) {
 	new_height = wp->w_ntrows * cur_win->char_height;
 	XtVaSetValues(cur_win->scrollbars[i],
-		      XtNy, wp->w_toprow * cur_win->char_height,
-		      XtNheight, new_height,
-		      XtNsliderMin, 1,
-		      XtNsliderMax, 200,
-		      XtNproportionLength, 2,
-		      XtNsliderValue, 3,
+		      Nval(XtNy, wp->w_toprow * cur_win->char_height),
+		      Nval(XtNheight, new_height),
+		      Nval(XtNsliderMin, 1),
+		      Nval(XtNsliderMax, 200),
+		      Nval(XtNproportionLength, 2),
+		      Nval(XtNsliderValue, 3),
 		      NULL);
 	if (wp->w_wndp) {
 	    XtVaSetValues(cur_win->sliders[i],
-			  XtNy, wp->w_toprow * cur_win->char_height,
-			  XtNheight, (wp->w_ntrows + wp->w_wndp->w_ntrows + 1)
-			  * cur_win->char_height,
-			  XtNsliderMax, 0,
-			  XtNsliderMin, -(wp->w_ntrows + wp->w_wndp->w_ntrows),
-			  XtNsliderValue, -wp->w_ntrows,
-			  XtNstopPosition, OL_GRANULARITY,
-			  XtNendBoxes, FALSE,
-			  XtNdragCBType, OL_RELEASE,
-			  XtNbackground, cur_win->fg,
+			  Nval(XtNy, wp->w_toprow * cur_win->char_height),
+			  Nval(XtNheight, ((wp->w_ntrows
+					    + wp->w_wndp->w_ntrows + 1)
+					   * cur_win->char_height)),
+			  Nval(XtNsliderMax, 0),
+			  Nval(XtNsliderMin, -(wp->w_ntrows + wp->w_wndp->w_ntrows)),
+			  Nval(XtNsliderValue, -wp->w_ntrows),
+			  Nval(XtNstopPosition, OL_GRANULARITY),
+			  Nval(XtNendBoxes, FALSE),
+			  Nval(XtNdragCBType, OL_RELEASE),
+			  Nval(XtNbackground, cur_win->fg),
 			  NULL);
 	}
 	wp->w_flag &= ~WFSBAR;
@@ -921,12 +937,12 @@ update_scrollbar_sizes(void)
 		XtVaCreateWidget("scrollbar",
 				 xmScrollBarWidgetClass,
 				 cur_win->pane,
-				 XmNsliderSize, 1,
-				 XmNvalue, 1,
-				 XmNminimum, 1,
-				 XmNmaximum, 2,		/* so we don't get warning */
-				 XmNorientation, XmVERTICAL,
-				 XmNtranslations, cur_win->my_scrollbars_trans,
+				 Nval(XmNsliderSize, 1),
+				 Nval(XmNvalue, 1),
+				 Nval(XmNminimum, 1),
+				 Nval(XmNmaximum, 2),	/* so we don't get warning */
+				 Nval(XmNorientation, XmVERTICAL),
+				 Nval(XmNtranslations, cur_win->my_scrollbars_trans),
 				 NULL);
 	    XtAddCallback(cur_win->scrollbars[i],
 			  XmNvalueChangedCallback, JumpProc, (XtPointer) i);
@@ -950,22 +966,22 @@ update_scrollbar_sizes(void)
     for_each_visible_window(wp) {
 	new_height = wp->w_ntrows * cur_win->char_height;
 	XtVaSetValues(cur_win->scrollbars[i],
-		      XmNallowResize, TRUE,
-		      XmNheight, new_height,
-		      XmNpaneMinimum, 1,
-		      XmNpaneMaximum, DisplayHeight(dpy, DefaultScreen(dpy)),
-		      XmNshowArrows, wp->w_ntrows > 3 ? TRUE : FALSE,
+		      Nval(XmNallowResize, TRUE),
+		      Nval(XmNheight, new_height),
+		      Nval(XmNpaneMinimum, 1),
+		      Nval(XmNpaneMaximum, DisplayHeight(dpy, DefaultScreen(dpy))),
+		      Nval(XmNshowArrows, wp->w_ntrows > 3 ? TRUE : FALSE),
 		      NULL);
 	wp->w_flag &= ~WFSBAR;
 	gui_update_scrollbar(wp);
 	i++;
     }
     XtVaSetValues(cur_win->scrollbars[i],
-		  XmNheight, cur_win->char_height - 1,
-		  XmNallowResize, FALSE,
-		  XmNpaneMinimum, cur_win->char_height - 1,
-		  XmNpaneMaximum, cur_win->char_height - 1,
-		  XmNshowArrows, FALSE,
+		  Nval(XmNheight, cur_win->char_height - 1),
+		  Nval(XmNallowResize, FALSE),
+		  Nval(XmNpaneMinimum, cur_win->char_height - 1),
+		  Nval(XmNpaneMaximum, cur_win->char_height - 1),
+		  Nval(XmNshowArrows, FALSE),
 		  NULL);
 
     /* Manage the current set of scrollbars */
@@ -1018,7 +1034,7 @@ ScrollProc(Widget scrollbar GCC_UNUSED,
 
     if (value < cur_win->nscrollbars) {
 	set_scroll_window(value);
-	forwline(TRUE, (position / cur_win->char_height));
+	mvupwind(TRUE, -(position / cur_win->char_height));
 	(void) update(TRUE);
     }
 }
@@ -1043,10 +1059,10 @@ update_scrollbar_sizes(void)
 		XtVaCreateWidget("scrollbar",
 				 scrollbarWidgetClass,
 				 cur_win->pane,
-				 XtNforeground, cur_win->scrollbar_fg,
-				 XtNbackground, cur_win->scrollbar_bg,
-				 XtNthumb, cur_win->thumb_bm,
-				 XtNtranslations, cur_win->my_scrollbars_trans,
+				 Nval(XtNforeground, cur_win->scrollbar_fg),
+				 Nval(XtNbackground, cur_win->scrollbar_bg),
+				 Nval(XtNthumb, cur_win->thumb_bm),
+				 Nval(XtNtranslations, cur_win->my_scrollbars_trans),
 				 NULL);
 #if !OPT_KEV_DRAGGING
 	    XtAddCallback(cur_win->scrollbars[i],
@@ -1061,11 +1077,17 @@ update_scrollbar_sizes(void)
 	    XtVaCreateWidget("resizeGrip",
 			     gripWidgetClass,
 			     cur_win->pane,
-			     XtNbackground, cur_win->modeline_bg,
-			     XtNborderWidth, 0,
-			     XtNheight, 1,
-			     XtNwidth, 1,
-			     XtNtranslations, cur_win->my_resizeGrip_trans,
+			     Nval(XtNbackground, cur_win->modeline_bg),
+			     Nval(XtNborderWidth, 0),
+			     Nval(XtNheight, 1),
+			     Nval(XtNwidth, 1),
+			     Sval(XtNleft, ((cur_win->scrollbar_on_left)
+					    ? XtChainLeft
+					    : XtChainRight)),
+			     Sval(XtNright, ((cur_win->scrollbar_on_left)
+					     ? XtChainLeft
+					     : XtChainRight)),
+			     Nval(XtNtranslations, cur_win->my_resizeGrip_trans),
 			     NULL);
     }
 
@@ -1084,11 +1106,12 @@ update_scrollbar_sizes(void)
 	new_height = wp->w_ntrows * cur_win->char_height;
 	cur_win->scrollinfo[i].totlen = new_height;
 	XtVaSetValues(cur_win->scrollbars[i],
-		      XtNy, wp->w_toprow * cur_win->char_height,
-		      XtNheight, new_height,
-		      XtNorientation, XtorientVertical,
-		      XtNvertDistance, wp->w_toprow * cur_win->char_height,
-		      XtNhorizDistance, 1,
+		      Nval(XtNy, wp->w_toprow * cur_win->char_height),
+		      Nval(XtNheight, new_height),
+		      Nval(XtNwidth, cur_win->pane_width - 1),
+		      Nval(XtNorientation, XtorientVertical),
+		      Nval(XtNvertDistance, wp->w_toprow * cur_win->char_height),
+		      Nval(XtNhorizDistance, 1),
 		      NULL);
 	XawScrollbarSetThumb(cur_win->scrollbars[i],
 			     ((float) (thumb - 1)) / max(total, 1),
@@ -1097,14 +1120,14 @@ update_scrollbar_sizes(void)
 	gui_update_scrollbar(wp);
 	if (wp->w_wndp) {
 	    XtVaSetValues(cur_win->grips[i],
-			  XtNx, 1,
-			  XtNy, ((wp->w_wndp->w_toprow - 1)
-				 * cur_win->char_height),
-			  XtNheight, cur_win->char_height,
-			  XtNwidth, cur_win->pane_width,
-			  XtNvertDistance, ((wp->w_wndp->w_toprow - 1)
-					    * cur_win->char_height),
-			  XtNhorizDistance, 1,
+			  Nval(XtNx, 1),
+			  Nval(XtNy, ((wp->w_wndp->w_toprow - 1)
+				      * cur_win->char_height) + 2),
+			  Nval(XtNheight, cur_win->char_height - 3),
+			  Nval(XtNwidth, cur_win->pane_width - 1),
+			  Nval(XtNvertDistance, ((wp->w_wndp->w_toprow - 1)
+						 * cur_win->char_height) + 2),
+			  Nval(XtNhorizDistance, 1),
 			  NULL);
 	}
 	i++;
@@ -1146,22 +1169,22 @@ update_scrollbar_sizes(void)
 		XtVaCreateWidget("scrollbar",
 				 coreWidgetClass,
 				 cur_win->pane,
-				 XtNbackgroundPixmap, cur_win->trough_pixmap,
-				 XtNborderWidth, 0,
-				 XtNheight, 1,
-				 XtNwidth, 1,
-				 XtNtranslations, cur_win->my_scrollbars_trans,
+				 Nval(XtNbackgroundPixmap, cur_win->trough_pixmap),
+				 Nval(XtNborderWidth, 0),
+				 Nval(XtNheight, 1),
+				 Nval(XtNwidth, 1),
+				 Nval(XtNtranslations, cur_win->my_scrollbars_trans),
 				 NULL);
 	} else {
 	    cur_win->scrollbars[i] =
 		XtVaCreateWidget("scrollbar",
 				 coreWidgetClass,
 				 cur_win->pane,
-				 XtNbackground, cur_win->scrollbar_bg,
-				 XtNborderWidth, 0,
-				 XtNheight, 1,
-				 XtNwidth, 1,
-				 XtNtranslations, cur_win->my_scrollbars_trans,
+				 Nval(XtNbackground, cur_win->scrollbar_bg),
+				 Nval(XtNborderWidth, 0),
+				 Nval(XtNheight, 1),
+				 Nval(XtNwidth, 1),
+				 Nval(XtNtranslations, cur_win->my_scrollbars_trans),
 				 NULL);
 	}
 
@@ -1177,11 +1200,11 @@ update_scrollbar_sizes(void)
 	    XtVaCreateWidget("resizeGrip",
 			     coreWidgetClass,
 			     cur_win->pane,
-			     XtNbackground, cur_win->modeline_bg,
-			     XtNborderWidth, 0,
-			     XtNheight, 1,
-			     XtNwidth, 1,
-			     XtNtranslations, cur_win->my_resizeGrip_trans,
+			     Nval(XtNbackground, cur_win->modeline_bg),
+			     Nval(XtNborderWidth, 0),
+			     Nval(XtNheight, 1),
+			     Nval(XtNwidth, 1),
+			     Nval(XtNtranslations, cur_win->my_resizeGrip_trans),
 			     NULL);
 
     /* Set sizes and positions on scrollbars and grips */
@@ -1189,20 +1212,20 @@ update_scrollbar_sizes(void)
     for_each_visible_window(wp) {
 	new_height = wp->w_ntrows * cur_win->char_height;
 	XtVaSetValues(cur_win->scrollbars[i],
-		      XtNx, cur_win->slider_is_3D ? 0 : 1,
-		      XtNy, wp->w_toprow * cur_win->char_height,
-		      XtNheight, new_height,
-		      XtNwidth, cur_win->pane_width
-		      + (cur_win->slider_is_3D ? 2 : 0),
+		      Nval(XtNx, cur_win->slider_is_3D ? 0 : 1),
+		      Nval(XtNy, wp->w_toprow * cur_win->char_height),
+		      Nval(XtNheight, new_height),
+		      Nval(XtNwidth, cur_win->pane_width
+			   + (cur_win->slider_is_3D ? 2 : -1)),
 		      NULL);
 	cur_win->scrollinfo[i].totlen = new_height;
 	if (wp->w_wndp) {
 	    XtVaSetValues(cur_win->grips[i],
-			  XtNx, 1,
-			  XtNy, ((wp->w_wndp->w_toprow - 1)
-				 * cur_win->char_height),
-			  XtNheight, cur_win->char_height,
-			  XtNwidth, cur_win->pane_width,
+			  Nval(XtNx, 1),
+			  Nval(XtNy, ((wp->w_wndp->w_toprow - 1)
+				      * cur_win->char_height) + 2),
+			  Nval(XtNheight, cur_win->char_height - 3),
+			  Nval(XtNwidth, cur_win->pane_width - 1),
 			  NULL);
 	}
 	i++;
@@ -1632,19 +1655,21 @@ gui_update_scrollbar(WINDOW *uwp)
 #if MOTIF_WIDGETS
     lcnt += 1;
     XtVaSetValues(cur_win->scrollbars[i],
-		  XmNmaximum, lcnt + wp->w_ntrows,
-		  XmNsliderSize, wp->w_ntrows,
-		  XmNvalue, lnum,
-		  XmNpageIncrement, wp->w_ntrows > 1 ? wp->w_ntrows - 1 : 1,
+		  Nval(XmNmaximum, lcnt + wp->w_ntrows),
+		  Nval(XmNsliderSize, wp->w_ntrows),
+		  Nval(XmNvalue, lnum),
+		  Nval(XmNpageIncrement, ((wp->w_ntrows > 1)
+					  ? wp->w_ntrows - 1
+					  : 1)),
 		  NULL);
 #else
 #if OL_WIDGETS
     lcnt += 1;
     XtVaSetValues(cur_win->scrollbars[i],
-		  XtNsliderMin, 1,
-		  XtNsliderMax, lcnt + wp->w_ntrows,
-		  XtNproportionLength, wp->w_ntrows,
-		  XtNsliderValue, lnum,
+		  Nval(XtNsliderMin, 1),
+		  Nval(XtNsliderMax, lcnt + wp->w_ntrows),
+		  Nval(XtNproportionLength, wp->w_ntrows),
+		  Nval(XtNsliderValue, lnum),
 		  NULL);
 #else
 #if OPT_XAW_SCROLLBARS
@@ -1825,7 +1850,7 @@ static XtResource resources[] =
 	sizeof(String *),
 	XtOffset(TextWindow, geometry),
 	XtRImmediate,
-	"80x36"
+	(XtPointer) "80x36"
     },
     {
 	XtNfont,
@@ -1834,7 +1859,7 @@ static XtResource resources[] =
 	sizeof(String *),
 	XtOffset(TextWindow, starting_fontname),
 	XtRImmediate,
-	XtDefaultFont		/* used to be FONTNAME */
+	(XtPointer) XtDefaultFont	/* used to be FONTNAME */
     },
     {
 	XtNforeground,
@@ -1844,9 +1869,9 @@ static XtResource resources[] =
 	XtOffset(TextWindow, fg),
 	XtRString,
 #if OLD_RESOURCES
-	XtDefaultForeground
+	(XtPointer) XtDefaultForeground
 #else
-	"#c71bc30bc71b"
+	(XtPointer) "#c71bc30bc71b"
 #endif				/* OLD_RESOURCES */
     },
     {
@@ -1857,9 +1882,9 @@ static XtResource resources[] =
 	XtOffset(TextWindow, bg),
 	XtRString,
 #if OLD_RESOURCES
-	XtDefaultBackground
+	(XtPointer) XtDefaultBackground
 #else
-	"#c71bc30bc71b"
+	(XtPointer) "#c71bc30bc71b"
 #endif
     },
     {
@@ -1896,7 +1921,7 @@ static XtResource resources[] =
 	sizeof(String *),
 	XtOffset(TextWindow, multi_click_char_class),
 	XtRImmediate,
-	NULL
+	(XtPointer) NULL
     },
     {
 	XtNscrollbarOnLeft,
@@ -1944,7 +1969,7 @@ static XtResource resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, menubar_fg),
 	XtRString,
-	XtDefaultForeground
+	(XtPointer) XtDefaultForeground
     },
     {
 	XtNmenuBackground,
@@ -1953,7 +1978,7 @@ static XtResource resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, menubar_bg),
 	XtRString,
-	XtDefaultBackground
+	(XtPointer) XtDefaultBackground
     },
 #endif
     {
@@ -2493,7 +2518,7 @@ static void
 my_error_handler(String message)
 {
     fprintf(stderr, "%s: %s\n", prog_arg, message);
-    print_usage();
+    print_usage(BADEXIT);
 }
 
 #define MIN_UDIFF  0x1000
@@ -2790,8 +2815,8 @@ x_preparse_args(int *pargc, char ***pargv)
 					    options, XtNumber(options),
 					    pargc, *pargv,
 					    fallback_resources,
-					    XtNgeometry, NULL,
-					    XtNinput, TRUE,
+					    Nval(XtNgeometry, NULL),
+					    Nval(XtNinput, TRUE),
 					    NULL);
     XtSetErrorHandler((XtErrorHandler) 0);
     dpy = XtDisplay(cur_win->top_widget);
@@ -2948,7 +2973,7 @@ x_preparse_args(int *pargc, char ***pargv)
 	    gp++;		/* skip over width and height */
 	if (*gp)
 	    XtVaSetValues(cur_win->top_widget,
-			  XtNgeometry, gp,
+			  Nval(XtNgeometry, gp),
 			  NULL);
     }
 
@@ -2979,7 +3004,7 @@ x_preparse_args(int *pargc, char ***pargv)
 	XtVaCreateManagedWidget("menubar",
 				boxWidgetClass,
 				cur_win->pane_widget,
-				XtNshowGrip, False,
+				Nval(XtNshowGrip, False),
 				NULL);
     cur_win->form_widget =
 	XtVaCreateManagedWidget("form",
@@ -2989,16 +3014,16 @@ x_preparse_args(int *pargc, char ***pargv)
 				formWidgetClass,
 #endif
 				cur_win->pane_widget,
-				XtNwidth, (x_width(cur_win)
-					   + cur_win->pane_width
-					   + 2),
-				XtNheight, x_height(cur_win),
-				XtNbackground, cur_win->bg,
-				XtNbottom, XtChainBottom,
-				XtNleft, XtChainLeft,
-				XtNright, XtChainRight,
-				XtNfromVert, cur_win->menu_widget,
-				XtNvertDistance, 0,
+				Nval(XtNwidth, (x_width(cur_win)
+						+ cur_win->pane_width
+						+ 2)),
+				Nval(XtNheight, x_height(cur_win)),
+				Nval(XtNbackground, cur_win->bg),
+				Sval(XtNbottom, XtChainBottom),
+				Sval(XtNleft, XtChainLeft),
+				Sval(XtNright, XtChainRight),
+				Nval(XtNfromVert, cur_win->menu_widget),
+				Nval(XtNvertDistance, 0),
 				NULL);
 #else
 #if ATHENA_WIDGETS
@@ -3025,11 +3050,11 @@ x_preparse_args(int *pargc, char ***pargv)
 	XtVaCreateManagedWidget("form",
 				bbWidgetClass,
 				cur_win->top_widget,
-				XtNwidth, (x_width(cur_win)
-					   + cur_win->pane_width
-					   + 2),
-				XtNheight, x_height(cur_win),
-				XtNbackground, cur_win->bg,
+				Nval(XtNwidth, (x_width(cur_win)
+						+ cur_win->pane_width
+						+ 2)),
+				Nval(XtNheight, x_height(cur_win)),
+				Nval(XtNbackground, cur_win->bg),
 				NULL);
 #endif /* NO_WIDGETS */
 #endif /* ATHENA_WIDGETS */
@@ -3043,10 +3068,10 @@ x_preparse_args(int *pargc, char ***pargv)
 					   NULL, 0);
 
     XtVaSetValues(cur_win->menu_widget,
-		  XmNtopAttachment, XmATTACH_FORM,
-		  XmNleftAttachment, XmATTACH_FORM,
-		  XmNbottomAttachment, XmATTACH_NONE,
-		  XmNrightAttachment, XmATTACH_FORM,
+		  Nval(XmNtopAttachment, XmATTACH_FORM),
+		  Nval(XmNleftAttachment, XmATTACH_FORM),
+		  Nval(XmNbottomAttachment, XmATTACH_NONE),
+		  Nval(XmNrightAttachment, XmATTACH_FORM),
 		  NULL);
     XtManageChild(cur_win->menu_widget);
 #endif
@@ -3061,34 +3086,38 @@ x_preparse_args(int *pargc, char ***pargv)
 				coreWidgetClass,
 #endif
 				cur_win->form_widget,
-				XtNwidth, x_width(cur_win),
-				XtNheight, x_height(cur_win),
-				XtNborderWidth, 0,
-				XtNbackground, cur_win->bg,
+				Nval(XtNwidth, x_width(cur_win)),
+				Nval(XtNheight, x_height(cur_win)),
+				Nval(XtNborderWidth, 0),
+				Nval(XtNbackground, cur_win->bg),
 #if MOTIF_WIDGETS
-				XmNresizable, TRUE,
-				XmNbottomAttachment, XmATTACH_FORM,
+				Nval(XmNresizable, TRUE),
+				Nval(XmNbottomAttachment, XmATTACH_FORM),
 #if OPT_MENUS
-				XmNtopAttachment, XmATTACH_WIDGET,
-				XmNtopWidget, cur_win->menu_widget,
-				XmNtopOffset, 2,
+				Nval(XmNtopAttachment, XmATTACH_WIDGET),
+				Nval(XmNtopWidget, cur_win->menu_widget),
+				Nval(XmNtopOffset, 2),
 #else
-				XmNtopAttachment, XmATTACH_FORM,
+				Nval(XmNtopAttachment, XmATTACH_FORM),
 #endif
-				XmNleftAttachment, XmATTACH_FORM,
-				XmNrightAttachment, XmATTACH_NONE,
+				Nval(XmNleftAttachment, XmATTACH_FORM),
+				Nval(XmNrightAttachment, XmATTACH_NONE),
 #else
 #if OL_WIDGETS
-				XtNyAttachBottom, TRUE,
-				XtNyVaryOffset, FALSE,
-				XtNxAddWidth, TRUE,
-				XtNyAddHeight, TRUE,
+				Nval(XtNyAttachBottom, TRUE),
+				Nval(XtNyVaryOffset, FALSE),
+				Nval(XtNxAddWidth, TRUE),
+				Nval(XtNyAddHeight, TRUE),
 #else
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
-				XtNx, (cur_win->scrollbar_on_left
-				       ? cur_win->pane_width + 2
-				       : 0),
-				XtNy, 0,
+#if !OPT_KEV_SCROLLBARS
+				Sval(XtNleft, XtChainLeft),
+				Sval(XtNright, XtChainRight),
+#endif
+				Nval(XtNx, (cur_win->scrollbar_on_left
+					    ? cur_win->pane_width + 2
+					    : 0)),
+				Nval(XtNy, 0),
 #endif /* OPT_KEV_SCROLLBARS */
 #endif /* OL_WIDGETS */
 #endif /* MOTIF_WIDGETS */
@@ -3137,11 +3166,9 @@ x_preparse_args(int *pargc, char ***pargv)
     TRACE(("colors_fg/colors_bg pixel values:\n"));
     for (i = 0; i < NCOLORS; i++) {
 	ctrans[i] = i;
-	TRACE(("   [%2d]", i));
-	TRACE((" %#8lx %s", cur_win->colors_fg[i],
-	       ColorsOf(cur_win->colors_fg[i])));
-	TRACE((" %#8lx %s\n", cur_win->colors_bg[i],
-	       ColorsOf(cur_win->colors_bg[i])));
+	TRACE(("   [%2d] %#8lx %s %#8lx %s\n", i,
+	       cur_win->colors_fg[i], ColorsOf(cur_win->colors_fg[i]),
+	       cur_win->colors_bg[i], ColorsOf(cur_win->colors_bg[i])));
     }
     reset_color_gcs();
 
@@ -3337,25 +3364,24 @@ x_preparse_args(int *pargc, char ***pargv)
 	XtVaCreateManagedWidget("scrollPane",
 				xmPanedWindowWidgetClass,
 				cur_win->form_widget,
-				XtNwidth, cur_win->pane_width,
-				XmNbottomAttachment, XmATTACH_FORM,
-				XmNtraversalOn, False,	/* Added by gdr */
+				Nval(XtNwidth, cur_win->pane_width),
+				Nval(XmNbottomAttachment, XmATTACH_FORM),
+				Nval(XmNtraversalOn, False),	/* Added by gdr */
 #if OPT_MENUS
-				XmNtopAttachment, XmATTACH_WIDGET,
-				XmNtopWidget, cur_win->menu_widget,
+				Nval(XmNtopAttachment, XmATTACH_WIDGET),
+				Nval(XmNtopWidget, cur_win->menu_widget),
 #else
-				XmNtopAttachment, XmATTACH_FORM,
+				Nval(XmNtopAttachment, XmATTACH_FORM),
 #endif
-				XmNleftAttachment, XmATTACH_WIDGET,
-				XmNleftWidget, cur_win->screen,
-				XmNrightAttachment, XmATTACH_FORM,
-				XmNspacing, cur_win->char_height,
-				XmNsashIndent, 2,
-				XmNsashWidth,
-				cur_win->pane_width - 4,
-				XmNmarginHeight, 0,
-				XmNmarginWidth, 0,
-				XmNseparatorOn, FALSE,
+				Nval(XmNleftAttachment, XmATTACH_WIDGET),
+				Nval(XmNleftWidget, cur_win->screen),
+				Nval(XmNrightAttachment, XmATTACH_FORM),
+				Nval(XmNspacing, cur_win->char_height),
+				Nval(XmNsashIndent, 2),
+				Nval(XmNsashWidth, cur_win->pane_width - 4),
+				Nval(XmNmarginHeight, 0),
+				Nval(XmNmarginWidth, 0),
+				Nval(XmNseparatorOn, FALSE),
 				NULL);
 #else
 #if OL_WIDGETS
@@ -3363,14 +3389,14 @@ x_preparse_args(int *pargc, char ***pargv)
 	XtVaCreateManagedWidget("scrollPane",
 				bulletinBoardWidgetClass,
 				cur_win->form_widget,
-				XtNwidth, cur_win->pane_width,
-				XtNheight, x_height(cur_win),
-				XtNxRefWidget, cur_win->screen,
-				XtNyAttachBottom, TRUE,
-				XtNyVaryOffset, FALSE,
-				XtNxAddWidth, TRUE,
-				XtNyAddHeight, TRUE,
-				XtNlayout, OL_IGNORE,
+				Nval(XtNwidth, cur_win->pane_width),
+				Nval(XtNheight, x_height(cur_win)),
+				Nval(XtNxRefWidget, cur_win->screen),
+				Nval(XtNyAttachBottom, TRUE),
+				Nval(XtNyVaryOffset, FALSE),
+				Nval(XtNxAddWidth, TRUE),
+				Nval(XtNyAddHeight, TRUE),
+				Nval(XtNlayout, OL_IGNORE),
 				NULL);
 #else
 #if OPT_XAW_SCROLLBARS
@@ -3379,24 +3405,29 @@ x_preparse_args(int *pargc, char ***pargv)
 	XtVaCreateManagedWidget("scrollPane",
 				formWidgetClass,
 				cur_win->form_widget,
-				XtNwidth, cur_win->pane_width + 2,
-				XtNheight, (x_height(cur_win)
-					    - cur_win->char_height),
-				XtNx, (cur_win->scrollbar_on_left
-				       ? 0
-				       : x_width(cur_win)),
-				XtNy, 0,
-				XtNborderWidth, 0,
-				XtNbackground, cur_win->modeline_bg,
-				XtNfromHoriz,
-				(cur_win->scrollbar_on_left
-				 ? NULL
-				 : cur_win->screen),
-				XtNhorizDistance, 0,
+				Nval(XtNwidth, cur_win->pane_width + 2),
+				Nval(XtNheight, (x_height(cur_win)
+						 - cur_win->char_height)),
+				Nval(XtNx, (cur_win->scrollbar_on_left
+					    ? 0
+					    : x_width(cur_win))),
+				Nval(XtNy, 0),
+				Nval(XtNborderWidth, 0),
+				Nval(XtNbackground, cur_win->modeline_bg),
+				Nval(XtNfromHoriz, (cur_win->scrollbar_on_left
+						    ? NULL
+						    : cur_win->screen)),
+				Nval(XtNhorizDistance, 0),
+				Sval(XtNleft, ((cur_win->scrollbar_on_left)
+					       ? XtChainLeft
+					       : XtChainRight)),
+				Sval(XtNright, ((cur_win->scrollbar_on_left)
+						? XtChainLeft
+						: XtChainRight)),
 				NULL);
     if (cur_win->scrollbar_on_left)
 	XtVaSetValues(cur_win->screen,
-		      XtNfromHoriz, cur_win->pane,
+		      Nval(XtNfromHoriz, cur_win->pane),
 		      NULL);
 #else
 #if OPT_KEV_SCROLLBARS
@@ -3405,15 +3436,15 @@ x_preparse_args(int *pargc, char ***pargv)
 	XtVaCreateManagedWidget("scrollPane",
 				bbWidgetClass,
 				cur_win->form_widget,
-				XtNwidth, cur_win->pane_width + 2,
-				XtNheight, (x_height(cur_win)
-					    - cur_win->char_height),
-				XtNx, (cur_win->scrollbar_on_left
-				       ? 0
-				       : x_width(cur_win)),
-				XtNy, 0,
-				XtNborderWidth, 0,
-				XtNbackground, cur_win->modeline_bg,
+				Nval(XtNwidth, cur_win->pane_width + 2),
+				Nval(XtNheight, (x_height(cur_win)
+						 - cur_win->char_height)),
+				Nval(XtNx, (cur_win->scrollbar_on_left
+					    ? 0
+					    : x_width(cur_win))),
+				Nval(XtNy, 0),
+				Nval(XtNborderWidth, 0),
+				Nval(XtNbackground, cur_win->modeline_bg),
 				NULL);
 #endif /* OPT_KEV_SCROLLBARS */
 #endif /* OPT_XAW_SCROLLBARS */
@@ -3442,21 +3473,21 @@ x_preparse_args(int *pargc, char ***pargv)
     if (cur_win->scrollbar_on_left) {
 #if MOTIF_WIDGETS
 	XtVaSetValues(cur_win->pane,
-		      XmNleftAttachment, XmATTACH_FORM,
-		      XmNrightAttachment, XmATTACH_WIDGET,
-		      XmNrightWidget, cur_win->screen,
+		      Nval(XmNleftAttachment, XmATTACH_FORM),
+		      Nval(XmNrightAttachment, XmATTACH_WIDGET),
+		      Nval(XmNrightWidget, cur_win->screen),
 		      NULL);
 	XtVaSetValues(cur_win->screen,
-		      XmNleftAttachment, XmATTACH_NONE,
-		      XmNrightAttachment, XmATTACH_FORM,
+		      Nval(XmNleftAttachment, XmATTACH_NONE),
+		      Nval(XmNrightAttachment, XmATTACH_FORM),
 		      NULL);
 #else /* !MOTIF_WIDGETS */
 # if OL_WIDGETS
 	XtVaSetValues(cur_win->pane,
-		      XtNxRefWidget, cur_win->form_widget,
+		      Nval(XtNxRefWidget, cur_win->form_widget),
 		      NULL);
 	XtVaSetValues(cur_win->screen,
-		      XtNxRefWidget, cur_win->pane,
+		      Nval(XtNxRefWidget, cur_win->pane),
 		      NULL);
 # else
 	/* EMPTY */ ;
@@ -3563,15 +3594,15 @@ x_preparse_args(int *pargc, char ***pargv)
 
 	XtVaSetValues(cur_win->top_widget,
 #if XtSpecificationRelease >= 4
-		      XtNbaseHeight, cur_win->base_height,
-		      XtNbaseWidth, cur_win->base_width,
+		      Nval(XtNbaseHeight, cur_win->base_height),
+		      Nval(XtNbaseWidth, cur_win->base_width),
 #endif
-		      XtNminHeight, cur_win->base_height
-		      + MINROWS * cur_win->char_height,
-		      XtNminWidth, cur_win->base_width
-		      + MINCOLS * cur_win->char_width,
-		      XtNheightInc, cur_win->char_height,
-		      XtNwidthInc, cur_win->char_width,
+		      Nval(XtNminHeight, (cur_win->base_height
+					  + MINROWS * cur_win->char_height)),
+		      Nval(XtNminWidth, (cur_win->base_width
+					 + MINCOLS * cur_win->char_width)),
+		      Nval(XtNheightInc, cur_win->char_height),
+		      Nval(XtNwidthInc, cur_win->char_width),
 		      NULL);
     }
     /* According to the docs, this should map the widget too... */
@@ -3590,13 +3621,13 @@ x_preparse_args(int *pargc, char ***pargv)
 #ifdef VILE_ICON
 # include VILE_ICON
 #else
-# if HAVE_LIBXPM
+# ifdef HAVE_LIBXPM
 #  include <icons/vile.xpm>
 # else
-#  ifndef VMS
-#   include <icons/vile.xbm>
-#  else
+#  if SYS_VMS
 #   include "icons/vile.xbm"
+#  else
+#   include <icons/vile.xbm>
 #  endif
 # endif
 #endif
@@ -3606,7 +3637,7 @@ x_preparse_args(int *pargc, char ***pargv)
 
 	if (hints) {
 	    hints->flags = IconPixmapHint;
-#if HAVE_LIBXPM
+#ifdef HAVE_LIBXPM
 	    XpmCreatePixmapFromData(dpy, DefaultRootWindow(dpy),
 				    vile, &hints->icon_pixmap, 0, 0
 		);
@@ -4052,12 +4083,12 @@ x_setfont(const char *fname)
 	    /* if size changed, resize it, otherwise refresh */
 	    if (oldw != x_width(cur_win) || oldh != x_height(cur_win)) {
 		XtVaSetValues(cur_win->top_widget,
-			      XtNminHeight, cur_win->base_height
-			      + MINROWS * cur_win->char_height,
-			      XtNminWidth, cur_win->base_width
-			      + MINCOLS * cur_win->char_width,
-			      XtNheightInc, cur_win->char_height,
-			      XtNwidthInc, cur_win->char_width,
+			      Nval(XtNminHeight, (cur_win->base_height
+						  + MINROWS * cur_win->char_height)),
+			      Nval(XtNminWidth, (cur_win->base_width
+						 + MINCOLS * cur_win->char_width)),
+			      Nval(XtNheightInc, cur_win->char_height),
+			      Nval(XtNwidthInc, cur_win->char_width),
 			      NULL);
 		update_scrollbar_sizes();
 		XClearWindow(dpy, cur_win->win);
@@ -4697,15 +4728,15 @@ static int
 copy_paste(TBUFF ** p, char *value, size_t length)
 {
     WINDOW *wp = row2window(ttrow);
-    BUFFER *bp = (wp != 0) ? wp->w_bufp : 0;
+    BUFFER *bp = valid_window(wp) ? wp->w_bufp : 0;
     int status;
 
-    if (bp != 0 && b_val(bp, MDVIEW))
+    if (valid_buffer(bp) && b_val(bp, MDVIEW))
 	return FALSE;
 
     status = TRUE;
 
-    if (bp != 0 && (b_val(bp, MDCINDENT) || b_val(bp, MDAIND))) {
+    if (valid_buffer(bp) && (b_val(bp, MDCINDENT) || b_val(bp, MDAIND))) {
 
 #if OLD_PASTE
 	/*
@@ -4782,7 +4813,7 @@ x_get_selection(Widget w GCC_UNUSED,
 	    && ((s = fnc2pstr(&f_insert_no_aindent)) != NULL);
 
 	if (tb_init(&PasteBuf, esc_c)) {
-	    if ((do_ins && !tb_bappend(&PasteBuf, s + 1, (size_t) *s))
+	    if ((do_ins && !tb_bappend(&PasteBuf, s + 1, (size_t) CharOf(*s)))
 		|| !copy_paste(&PasteBuf, (char *) value, (size_t) *length)
 		|| (do_ins && !tb_append(&PasteBuf, esc_c)))
 		tb_free(&PasteBuf);
@@ -5410,11 +5441,17 @@ x_process_event(Widget w GCC_UNUSED,
 	    extend_selection(cur_win, nr, nc, False);
 	    break;
 	case Button4:
-	    mvupwind(TRUE, cur_win->wheel_scroll_amount);
+	    if (cur_win->wheel_scroll_amount < 0)
+		backpage(FALSE, 1);
+	    else
+		mvupwind(TRUE, cur_win->wheel_scroll_amount);
 	    (void) update(TRUE);
 	    break;
 	case Button5:
-	    mvdnwind(TRUE, cur_win->wheel_scroll_amount);
+	    if (cur_win->wheel_scroll_amount < 0)
+		forwpage(FALSE, 1);
+	    else
+		mvdnwind(TRUE, cur_win->wheel_scroll_amount);
 	    (void) update(TRUE);
 	    break;
 	}
@@ -5491,7 +5528,7 @@ x_configure_window(Widget w GCC_UNUSED,
     }
 #if MOTIF_WIDGETS
     XtVaSetValues(cur_win->form_widget,
-		  XmNresizePolicy, XmRESIZE_NONE,
+		  Nval(XmNresizePolicy, XmRESIZE_NONE),
 		  NULL);
     {
 	WidgetList children;
@@ -5505,29 +5542,37 @@ x_configure_window(Widget w GCC_UNUSED,
 #else
 #if NO_WIDGETS || ATHENA_WIDGETS
     XtVaSetValues(cur_win->form_widget,
-		  XtNwidth, new_width + cur_win->pane_width + 2,
-		  XtNheight, new_height,
+		  Nval(XtNwidth, new_width + cur_win->pane_width + 2),
+		  Nval(XtNheight, new_height),
+#if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
+		  Nval(XtNx, (cur_win->scrollbar_on_left
+			      ? (cur_win->pane_width + 2)
+			      : 0)),
+#endif
 		  NULL);
 #endif /* NO_WIDGETS */
 #endif /* MOTIF_WIDGETS */
     XtVaSetValues(cur_win->screen,
-		  XtNheight, new_height,
-		  XtNwidth, new_width,
+		  Nval(XtNheight, new_height),
+		  Nval(XtNwidth, new_width),
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
-		  XtNx, cur_win->scrollbar_on_left ? cur_win->pane_width + 2
-		  : 0,
+		  Nval(XtNx, (cur_win->scrollbar_on_left
+			      ? cur_win->pane_width + 2
+			      : 0)),
 #endif
 		  NULL);
     XtVaSetValues(cur_win->pane,
 #if !OPT_KEV_SCROLLBARS && !OPT_XAW_SCROLLBARS
-		  XtNwidth, cur_win->pane_width,
+		  Nval(XtNwidth, cur_win->pane_width),
 #if OL_WIDGETS
-		  XtNheight, new_height,
+		  Nval(XtNheight, new_height),
 #endif /* OL_WIDGETS */
 #else /* OPT_KEV_SCROLLBARS */
-		  XtNx, cur_win->scrollbar_on_left ? 0 : new_width,
-		  XtNwidth, cur_win->pane_width + 2,
-		  XtNheight, new_height - cur_win->char_height,
+		  Nval(XtNx, (cur_win->scrollbar_on_left
+			      ? 0
+			      : new_width)),
+		  Nval(XtNwidth, cur_win->pane_width + 2),
+		  Nval(XtNheight, new_height - cur_win->char_height),
 #endif /* OPT_KEV_SCROLLBARS */
 		  NULL);
 #if MOTIF_WIDGETS
@@ -5541,7 +5586,7 @@ x_configure_window(Widget w GCC_UNUSED,
 	XtManageChildren(children, nchildren);
     }
     XtVaSetValues(cur_win->form_widget,
-		  XmNresizePolicy, XmRESIZE_ANY,
+		  Nval(XmNresizePolicy, XmRESIZE_ANY),
 		  NULL);
 #endif /* MOTIF_WIDGETS */
 
@@ -5769,7 +5814,7 @@ x_wm_delwin(Widget w GCC_UNUSED,
  * Return true if we want to disable reports of the cursor position because the
  * cursor really should be on the message-line.
  */
-#if UNUSED
+#if VILE_NEVER
 int
 x_on_msgline(void)
 {
@@ -6539,7 +6584,7 @@ x_bcol(int color)
     reset_color_gcs();
 
     XtVaSetValues(cur_win->screen,
-		  XtNbackground, cur_win->bg,
+		  Nval(XtNbackground, cur_win->bg),
 		  NULL);
 
     x_touch(cur_win, 0, 0, cur_win->cols, cur_win->rows);
@@ -6666,7 +6711,9 @@ x_set_window_name(const char *name)
 
 	XSetWMName(dpy, XtWindow(cur_win->top_widget), &Prop);
 #else
-	XtVaSetValues(cur_win->top_widget, XtNtitle, name, NULL);
+	XtVaSetValues(cur_win->top_widget,
+		      Nval(XtNtitle, name),
+		      NULL);
 #endif
     }
 }

@@ -258,11 +258,11 @@ internal perl API--older versions won't link/compile and newer versions
 crash the editor.
 
 --------------------------------------------------------
-tom dickey, dickey@herndon4.his.com
+tom dickey, dickey@invisible-island.net
 
 --------------------------------------------------------
 paul fox, pgf@foxharp.boston.ma.us (home)
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.30 2002/06/30 20:27:52 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.31 2003/08/04 22:46:30 tom Exp $
 ------------------------

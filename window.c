@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.102 2002/07/03 00:02:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.105 2003/06/18 21:45:36 tom Exp $
  *
  */
 
@@ -33,6 +33,27 @@ unlink_window(WINDOW *thewp)
 		wheadp = p->w_wndp;
 	    break;
 	}
+}
+
+static WINDOW *
+alloc_WINDOW(void)
+{
+    WINDOW *wp;
+
+    beginDisplay();
+    if ((wp = typecalloc(WINDOW)) == NULL) {
+	(void) no_memory("WINDOW");
+    }
+    endofDisplay();
+    return wp;
+}
+
+static void
+free_WINDOW(WINDOW *wp)
+{
+    beginDisplay();
+    free(wp);
+    endofDisplay();
 }
 
 /*
@@ -390,7 +411,7 @@ mvleftwind(int f, int n)
 int
 onlywind(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    register WINDOW *wp;
+    WINDOW *wp;
 
     wp = wheadp;
     while (wp != NULL) {
@@ -400,7 +421,7 @@ onlywind(int f GCC_UNUSED, int n GCC_UNUSED)
 	    if (--wp->w_bufp->b_nwnd == 0)
 		undispbuff(wp->w_bufp, wp);
 	    unlink_window(wp);
-	    free((char *) wp);
+	    free_WINDOW(wp);
 	}
 	wp = nwp;
     }
@@ -513,7 +534,7 @@ delwp(WINDOW *thewp)
 	curwp = wp;
 	make_current(curwp->w_bufp);
     }
-    free((char *) thewp);
+    free_WINDOW(thewp);
     if (visible) {
 	upmode();
 	wp->w_flag |= WFSBAR | WFHARD;
@@ -540,6 +561,7 @@ save_window_modes(BUFFER *bp)
     UINT n;
 
     if (bp->b_nwnd != 0) {
+	beginDisplay();
 	result = typecallocn(W_VALUES, bp->b_nwnd);
 	if (result != 0) {
 	    n = 0;
@@ -551,6 +573,7 @@ save_window_modes(BUFFER *bp)
 		}
 	    }
 	}
+	endofDisplay();
     }
     return result;
 }
@@ -562,6 +585,7 @@ restore_window_modes(BUFFER *bp, W_VALUES * saved)
 	WINDOW *wp;
 	UINT n = 0;
 
+	beginDisplay();
 	for_each_window(wp) {
 	    if (wp->w_bufp == bp) {
 		copy_mvals(NUM_W_VALUES, wp->w_values.wv, saved[n].wv);
@@ -570,6 +594,7 @@ restore_window_modes(BUFFER *bp, W_VALUES * saved)
 	    }
 	}
 	free(saved);
+	endofDisplay();
     }
 }
 
@@ -595,89 +620,89 @@ splitw(int f, int n)
 	mlforce("[Cannot split a %d line window]", curwp->w_ntrows);
 	return NULL;
     }
+
+    beginDisplay();
     /* set everything to 0's unless we want nonzero */
-    if ((wp = typecalloc(WINDOW)) == NULL) {
-	(void) no_memory("WINDOW");
-	return NULL;
-    }
-    ++curwp->w_bufp->b_nwnd;	/* Displayed twice.     */
-    wp->w_bufp = curwp->w_bufp;
-    copy_traits(&(wp->w_traits), &(curwp->w_traits));
-    ntru = (curwp->w_ntrows - 1) / 2;	/* Upper size           */
-    ntrl = (curwp->w_ntrows - 1) - ntru;	/* Lower size           */
+    if ((wp = alloc_WINDOW()) != NULL) {
+	++curwp->w_bufp->b_nwnd;	/* Displayed twice.     */
+	wp->w_bufp = curwp->w_bufp;
+	copy_traits(&(wp->w_traits), &(curwp->w_traits));
+	ntru = (curwp->w_ntrows - 1) / 2;	/* Upper size           */
+	ntrl = (curwp->w_ntrows - 1) - ntru;	/* Lower size           */
 
-    lp = curwp->w_line.l;
-    ntrd = 0;
-    while (lp != DOT.l) {
-	ntrd += line_height(wp, lp);
-	lp = lforw(lp);
-    }
+	lp = curwp->w_line.l;
+	ntrd = 0;
+	while (lp != DOT.l) {
+	    ntrd += line_height(wp, lp);
+	    lp = lforw(lp);
+	}
 
-    /* ntrd is now the row containing dot */
-    if (((f == FALSE) && (ntrd <= ntru)) || ((f == TRUE) && (n == 1))) {
-	/* Old is upper window. */
-	/* Adjust the top line if necessary */
-	if (ntrd == ntru) {	/* Hit mode line.       */
-	    if (ntrl > 1) {
-		ntru++;
-		ntrl--;
-	    } else {
-		curwp->w_line.l = lforw(curwp->w_line.l);
-		curwp->w_line.o = 0;
+	/* ntrd is now the row containing dot */
+	if (((f == FALSE) && (ntrd <= ntru)) || ((f == TRUE) && (n == 1))) {
+	    /* Old is upper window. */
+	    /* Adjust the top line if necessary */
+	    if (ntrd == ntru) {	/* Hit mode line.       */
+		if (ntrl > 1) {
+		    ntru++;
+		    ntrl--;
+		} else {
+		    curwp->w_line.l = lforw(curwp->w_line.l);
+		    curwp->w_line.o = 0;
+		}
 	    }
+	    curwp->w_ntrows = ntru;	/* new size */
+	    /* insert new window after curwp in window list */
+	    wp->w_wndp = curwp->w_wndp;
+	    curwp->w_wndp = wp;
+	    /* set new window's position and size */
+	    wp->w_toprow = curwp->w_toprow + ntru + 1;
+	    wp->w_ntrows = ntrl;
+	    /* try to keep lower from reframing */
+	    wp->w_line.l = adjust_forw(wp, wp->w_line.l, ntru + 1);
+	    wp->w_line.o = 0;
+	    wp->w_dot.l = wp->w_line.l;
+	    wp->w_dot.o = 0;
+	    /* update the split history */
+	    curwp->w_split_hist <<= 1;
+	    wp->w_split_hist = curwp->w_split_hist | 1;
+	} else {
+	    /* Old is lower window  */
+	    wp1 = NULL;
+	    wp2 = wheadp;
+	    while (wp2 != curwp) {
+		wp1 = wp2;
+		wp2 = wp2->w_wndp;
+	    }
+	    if (wp1 == NULL)
+		wheadp = wp;
+	    else
+		wp1->w_wndp = wp;
+	    wp->w_wndp = curwp;
+	    wp->w_toprow = curwp->w_toprow;
+	    wp->w_ntrows = ntru;
+	    ++ntru;		/* Mode line.           */
+	    curwp->w_toprow += ntru;
+	    curwp->w_ntrows = ntrl;
+	    wp->w_dot.l = wp->w_line.l;
+	    /* move upper window dot to bottom line of upper */
+	    wp->w_dot.l = adjust_forw(wp, wp->w_dot.l, ntru - 2);
+	    wp->w_dot.o = 0;
+	    /* adjust lower window topline */
+	    curwp->w_line.l = adjust_forw(curwp, curwp->w_line.l, ntru);
+	    curwp->w_line.o = 0;
+	    /* update the split history */
+	    wp->w_split_hist <<= 1;
+	    curwp->w_split_hist = wp->w_split_hist | 1;
 	}
-	curwp->w_ntrows = ntru;	/* new size */
-	/* insert new window after curwp in window list */
-	wp->w_wndp = curwp->w_wndp;
-	curwp->w_wndp = wp;
-	/* set new window's position and size */
-	wp->w_toprow = curwp->w_toprow + ntru + 1;
-	wp->w_ntrows = ntrl;
-	/* try to keep lower from reframing */
-	wp->w_line.l = adjust_forw(wp, wp->w_line.l, ntru + 1);
-	wp->w_line.o = 0;
-	wp->w_dot.l = wp->w_line.l;
-	wp->w_dot.o = 0;
-	/* update the split history */
-	curwp->w_split_hist <<= 1;
-	wp->w_split_hist = curwp->w_split_hist | 1;
-    } else {
-	/* Old is lower window  */
-	wp1 = NULL;
-	wp2 = wheadp;
-	while (wp2 != curwp) {
-	    wp1 = wp2;
-	    wp2 = wp2->w_wndp;
-	}
-	if (wp1 == NULL)
-	    wheadp = wp;
-	else
-	    wp1->w_wndp = wp;
-	wp->w_wndp = curwp;
-	wp->w_toprow = curwp->w_toprow;
-	wp->w_ntrows = ntru;
-	++ntru;			/* Mode line.           */
-	curwp->w_toprow += ntru;
-	curwp->w_ntrows = ntrl;
-	wp->w_dot.l = wp->w_line.l;
-	/* move upper window dot to bottom line of upper */
-	wp->w_dot.l = adjust_forw(wp, wp->w_dot.l, ntru - 2);
-	wp->w_dot.o = 0;
-	/* adjust lower window topline */
-	curwp->w_line.l = adjust_forw(curwp, curwp->w_line.l, ntru);
-	curwp->w_line.o = 0;
-	/* update the split history */
-	wp->w_split_hist <<= 1;
-	curwp->w_split_hist = wp->w_split_hist | 1;
-    }
-    curwp->w_flag |= WFMODE | WFHARD | WFSBAR;
-    wp->w_flag |= WFMODE | WFHARD;
+	curwp->w_flag |= WFMODE | WFHARD | WFSBAR;
+	wp->w_flag |= WFMODE | WFHARD;
 
 #if OPT_PERL || OPT_TCL
-    wp->w_id = w_id_next;
-    ++w_id_next;
+	wp->w_id = w_id_next;
+	++w_id_next;
 #endif
-
+    }
+    endofDisplay();
     return wp;
 }
 
@@ -977,7 +1002,7 @@ newlength(int f, int n)
 		    }
 		    /* free this window */
 		    nextwp = wp->w_wndp;
-		    free((char *) wp);
+		    free_WINDOW(wp);
 		    wp = nextwp;
 		}
 
@@ -1052,7 +1077,7 @@ getlinerow(void)
 void
 init_window(WINDOW *wp, BUFFER *bp)
 {
-    if (bp != 0) {
+    if (valid_buffer(bp)) {
 	wp->w_line.l = lforw(buf_head(bp));
 	wp->w_line.o = 0;
 	wp->w_dot.l = lforw(buf_head(bp));
@@ -1152,52 +1177,59 @@ winit(int screen)
  * curwp is set to the new fake window.  A pointer to the old curwp is returned
  * for a later call to pop_fake_win() which will restore curwp.
  */
-
 WINDOW *
 push_fake_win(BUFFER *bp)
 {
-    WINDOW *oldwp = curwp;
+    WINDOW *oldwp = 0;
     WINDOW *wp;
-    if ((wp = typecalloc(WINDOW)) == NULL) {
-	(void) no_memory("WINDOW");
-	return NULL;
-    }
-    curwp = wp;
-    curwp->w_bufp = bp;
-    if ((wp = bp2any_wp(bp)) == NULL)
-	copy_traits(&(curwp->w_traits), &(bp->b_wtraits));
-    else
-	copy_traits(&(curwp->w_traits), &(wp->w_traits));
-    curwp->w_flag = 0;
-    curwp->w_force = 0;
-    curwp->w_toprow = wheadp->w_toprow - 2;	/* should be negative */
-    curwp->w_ntrows = 1;
-    curwp->w_wndp = wheadp;
+
+    if (valid_buffer(bp)) {
+	if ((wp = alloc_WINDOW()) != NULL) {
+	    oldwp = curwp;
+	    curwp = wp;
+	    curwp->w_bufp = bp;
+	    if ((wp = bp2any_wp(bp)) == NULL)
+		copy_traits(&(curwp->w_traits), &(bp->b_wtraits));
+	    else
+		copy_traits(&(curwp->w_traits), &(wp->w_traits));
+	    curwp->w_flag = 0;
+	    curwp->w_force = 0;
+	    curwp->w_toprow = wheadp->w_toprow - 2;	/* should be negative */
+	    curwp->w_ntrows = 1;
+	    curwp->w_wndp = wheadp;
 #if OPT_PERL || OPT_TCL
-    curwp->w_id = FAKE_WINDOW_ID;
+	    curwp->w_id = FAKE_WINDOW_ID;
 #endif
-    wheadp = curwp;
-    curbp = curwp->w_bufp;
+	    wheadp = curwp;
+	    curbp = curwp->w_bufp;
+	}
+    }
     return oldwp;
 }
 
 /*
  * kill top fake window allocated by alloc_fake_win;
  *
- * Set curwp to the oldwp parameter.
+ * Set curwp to the oldwp parameter.  We may have saved curbp in oldbp, so try
+ * to restore curbp to that value.  But we may not, so try restoring it to the
+ * buffer associated with the new curwp.  In either case, check that the buffer
+ * still exists in case the bracketed code clobbered the buffer.
  *
  * Return 0 if no fake window popped, else return the buffer pointer
  * of the popped window.
  *
  */
 BUFFER *
-pop_fake_win(WINDOW *oldwp)
+pop_fake_win(WINDOW *oldwp, BUFFER *oldbp)
 {
     WINDOW *wp;
     BUFFER *bp;
 
     curwp = oldwp;
-    curbp = oldwp->w_bufp;
+    if (find_bp(oldbp) != 0)
+	curbp = oldbp;
+    else if (find_bp(oldwp->w_bufp) != 0)
+	curbp = oldwp->w_bufp;
 
     wp = wheadp;
     if (wp->w_toprow >= 0)
@@ -1206,7 +1238,7 @@ pop_fake_win(WINDOW *oldwp)
     bp = wp->w_bufp;
     /* unlink and free the fake window */
     wheadp = wp->w_wndp;
-    free((char *) wp);
+    free_WINDOW(wp);
     return bp;
 }
 
@@ -1278,9 +1310,9 @@ wp_leaks(void)
 
     while ((wp = wheadp) != 0) {
 	wp = wp->w_wndp;
-	free((char *) wheadp);
+	free_WINDOW(wheadp);
 	wheadp = wp;
     }
-    free((char *) wminip);
+    free_WINDOW(wminip);
 }
 #endif

@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.61 2002/04/30 23:48:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.75 2003/07/27 17:11:36 tom Exp $
  */
 
 #include	"estruct.h"
@@ -36,8 +36,8 @@ static char *x_shellflags;	/* flags separating "$xshell" from command */
 static char *cdpath;		/* $CDPATH environment is "$cdpath" state variable. */
 #endif
 
-static char *
-DftEnv(char *name, char *dft)
+static const char *
+DftEnv(const char *name, const char *dft)
 {
 #if OPT_EVAL && OPT_SHELL
     name = vile_getenv(name);
@@ -50,10 +50,12 @@ DftEnv(char *name, char *dft)
 static void
 SetEnv(char **namep, const char *value)
 {
+    beginDisplay();
 #if OPT_EVAL && OPT_SHELL
     FreeIfNeeded(*namep);
 #endif
     *namep = strmalloc(value);
+    endofDisplay();
 }
 
 static int
@@ -134,9 +136,11 @@ any_rw_EXPR(TBUFF ** rp, const char *vp, TBUFF ** value)
 	    return TRUE;
 	}
     } else if (vp) {
-	regexp *exp = regcomp(vp, TRUE);
+	regexp *exp = regcomp(vp, strlen(vp), TRUE);
 	if (exp != 0) {
+	    beginDisplay();
 	    free(exp);
+	    endofDisplay();
 	    tb_scopy(value, vp);
 	    return TRUE;
 	}
@@ -158,6 +162,19 @@ any_rw_TXT(TBUFF ** rp, const char *vp, char **value)
     }
 }
 
+static int
+any_REPL(TBUFF ** rp, const char *vp, CHARTYPE type)
+{
+    if (rp) {
+	lgrabtext(rp, type);
+	return TRUE;
+    } else if (vp && curbp) {
+	return lrepltext(type, vp, strlen(vp));
+    } else {
+	return FALSE;
+    }
+}
+
 #if OPT_HOOKS
 static int
 any_HOOK(TBUFF ** rp, const char *vp, HOOK * hook)
@@ -174,8 +191,8 @@ any_HOOK(TBUFF ** rp, const char *vp, HOOK * hook)
 }
 #endif
 
-char *
-vile_getenv(char *s)
+const char *
+vile_getenv(const char *s)
 {
 #if OPT_EVAL && OPT_SHELL
     register char *v = getenv(s);
@@ -267,8 +284,7 @@ getkill(TBUFF ** rp)
     tb_init(rp, EOS);
     if (kbs[0].kbufh != 0) {
 	int n = index2ukb(0);
-	tb_bappend(rp, (char *) (kbs[n].kbufh->d_chunk),
-		   kbs[n].kused);
+	tb_bappend(rp, (char *) (kbs[n].kbufh->d_chunk), kbs[n].kused);
     }
     tb_append(rp, EOS);
 
@@ -312,6 +328,9 @@ cfgopts(void)
 #if SYS_WINNT && defined(VILE_OLE)
 	"oleauto",
 #endif
+#if OPT_LOCALE
+	"locale",
+#endif
 #if OPT_PERL
 	"perl",
 #endif
@@ -334,13 +353,13 @@ cfgopts(void)
 # endif
 # ifdef ATHENA_WIDGETS
 	"athena",
-#  if HAVE_LIB_XAW
+#  ifdef HAVE_LIB_XAW
 	"xaw",
 #  endif
-#  if HAVE_LIB_XAW3D
+#  ifdef HAVE_LIB_XAW3D
 	"xaw3d",
 #  endif
-#  if HAVE_LIB_NEXTAW
+#  ifdef HAVE_LIB_NEXTAW
 	"nextaw",
 #  endif
 # endif
@@ -545,9 +564,10 @@ var_CRYPTKEY(TBUFF ** rp, const char *vp)
 	tb_scopy(rp, WRITE_ONLY);
 	return TRUE;
     } else if (vp) {
-	if (cryptkey != 0)
-	    free(cryptkey);
+	beginDisplay();
+	FreeIfNeeded(cryptkey);
 	cryptkey = (char *) malloc(NKEYLEN);
+	endofDisplay();
 	vl_make_encrypt_key(cryptkey, vp);
 	return TRUE;
     } else {
@@ -791,7 +811,7 @@ var_FINDCMD(TBUFF ** rp, const char *vp)
 int
 var_FONT(TBUFF ** rp, const char *vp)
 {
-#if SYS_WINNT && defined(DISP_NTWIN)
+#if SYS_WINNT && DISP_NTWIN
     if (rp) {
 	tb_scopy(rp, ntwinio_current_font());
 	return TRUE;
@@ -845,14 +865,7 @@ var_ICONNAM(TBUFF ** rp, const char *vp)
 int
 var_IDENTIF(TBUFF ** rp, const char *vp)
 {
-    if (rp) {
-	lgrabtext(rp, vl_ident);
-	return TRUE;
-    } else if (vp && curbp) {
-	return lrepltext(vl_ident, vp);
-    } else {
-	return FALSE;
-    }
+    return any_REPL(rp, vp, vl_ident);
 }
 
 int
@@ -929,14 +942,7 @@ var_LIBDIR_PATH(TBUFF ** rp, const char *vp)
 int
 var_LINE(TBUFF ** rp, const char *vp)
 {
-    if (rp) {
-	lgrabtext(rp, (CHARTYPE) 0);
-	return TRUE;
-    } else if (vp && curbp) {
-	return lrepltext((CHARTYPE) 0, vp);
-    } else {
-	return FALSE;
-    }
+    return any_REPL(rp, vp, (CHARTYPE) 0);
 }
 
 int
@@ -1078,6 +1084,24 @@ var_PAGELEN(TBUFF ** rp, const char *vp)
     }
 }
 
+/* separator for lists of pathnames */
+int
+var_PATHCHR(TBUFF ** rp, const char *vp)
+{
+    if (rp) {
+	tb_append(rp, vl_pathchr);
+	tb_append(rp, EOS);
+	return TRUE;
+    } else if (vp) {
+	if (strlen(vp) == 1) {
+	    vl_pathchr = *vp;
+	    return TRUE;
+	}
+    }
+    return FALSE;
+}
+
+/* separator for levels of pathnames */
 int
 var_PATHSEP(TBUFF ** rp, const char *vp)
 {
@@ -1155,14 +1179,7 @@ var_PATCHLEVEL(TBUFF ** rp, const char *vp)
 int
 var_PATHNAME(TBUFF ** rp, const char *vp)
 {
-    if (rp) {
-	lgrabtext(rp, vl_pathn);
-	return TRUE;
-    } else if (vp && curbp) {
-	return lrepltext(vl_pathn, vp);
-    } else {
-	return FALSE;
-    }
+    return any_REPL(rp, vp, vl_pathn);
 }
 
 int
@@ -1209,14 +1226,7 @@ var_PROMPT(TBUFF ** rp, const char *vp)
 int
 var_QIDENTIF(TBUFF ** rp, const char *vp)
 {
-    if (rp) {
-	lgrabtext(rp, vl_qident);
-	return TRUE;
-    } else if (vp && curbp) {
-	return lrepltext(vl_qident, vp);
-    } else {
-	return FALSE;
-    }
+    return any_REPL(rp, vp, vl_qident);
 }
 
 #if OPT_HOOKS
@@ -1227,30 +1237,42 @@ var_RDHOOK(TBUFF ** rp, const char *vp)
 }
 #endif
 
+/*
+ * Note that replacepat is stored without a trailing null.
+ */
 int
 var_REPLACE(TBUFF ** rp, const char *vp)
 {
     if (rp) {
-	tb_scopy(rp, tb_values(replacepat));
+	tb_copy(rp, replacepat);
 	return TRUE;
     } else if (vp) {
-	tb_scopy(&replacepat, vp);
+	(void) tb_init(&replacepat, EOS);
+	(void) tb_sappend(&replacepat, vp);
 	return TRUE;
     } else {
 	return FALSE;
     }
 }
 
+/*
+ * Note that searchpat is stored without a trailing null.
+ */
 int
 var_SEARCH(TBUFF ** rp, const char *vp)
 {
     if (rp) {
-	tb_scopy(rp, searchpat);
+	tb_copy(rp, searchpat);
 	return TRUE;
     } else if (vp && curbp) {
-	(void) strcpy(searchpat, vp);
+	(void) tb_init(&searchpat, EOS);
+	(void) tb_sappend(&searchpat, vp);
+	beginDisplay();
 	FreeIfNeeded(gregexp);
-	gregexp = regcomp(searchpat, b_val(curbp, MDMAGIC));
+	endofDisplay();
+	gregexp = regcomp(tb_values(searchpat),
+			  tb_length(searchpat),
+			  b_val(curbp, MDMAGIC));
 	return TRUE;
     } else {
 	return FALSE;
@@ -1341,7 +1363,7 @@ var_TITLE(TBUFF ** rp, const char *vp)
 	return TRUE;
 #endif
     } else if (vp) {
-	term.set_title(vp);
+	tb_scopy(&request_title, vp);
 	return TRUE;
     }
     return FALSE;
@@ -1396,14 +1418,7 @@ var_WLINES(TBUFF ** rp, const char *vp)
 int
 var_WORD(TBUFF ** rp, const char *vp)
 {
-    if (rp) {
-	lgrabtext(rp, vl_nonspace);
-	return TRUE;
-    } else if (vp && curbp) {
-	return lrepltext(vl_nonspace, vp);
-    } else {
-	return FALSE;
-    }
+    return any_REPL(rp, vp, vl_nonspace);
 }
 
 #if OPT_HOOKS

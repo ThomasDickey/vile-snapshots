@@ -1,7 +1,7 @@
 /*
  * Configurable headers used by termcap/terminfo driver for vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.h,v 1.7 2002/01/12 16:53:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.h,v 1.9 2002/12/22 17:19:16 tom Exp $
  */
 
 #ifndef VILE_TCAP_H
@@ -18,27 +18,38 @@ extern "C" {
 #undef MK
 #define MK other_MK	/* workaround for bug in NetBSD 1.5 curses */
 
-#if NEED_CURSES_H
-#  if HAVE_NCURSES_NCURSES_H
-#    include <ncurses/ncurses.h>
+/* _XOPEN_SOURCE_EXTENDED is needed for the wide-character X/Open functions */
+#ifdef NCURSES
+#  ifndef _XOPEN_SOURCE_EXTENDED
+#    define _XOPEN_SOURCE_EXTENDED 1
+#  endif
+#endif
+
+#ifdef NEED_CURSES_H
+#  ifdef HAVE_NCURSESW_NCURSES_H
+#    include <ncursesw/ncurses.h>
 #  else
-#    if HAVE_NCURSES_H
-#      include <ncurses.h>
+#    ifdef HAVE_NCURSES_NCURSES_H
+#      include <ncurses/ncurses.h>
 #    else
-#      include <curses.h>
+#      ifdef HAVE_NCURSES_H
+#        include <ncurses.h>
+#      else
+#        include <curses.h>
+#      endif
 #    endif
 #  endif
 #endif
 
-#if HAVE_NCURSES_TERM_H
+#ifdef HAVE_NCURSES_TERM_H
 #  include <ncurses/term.h>
 #else
-#  if HAVE_TERM_H
+#  ifdef HAVE_TERM_H
 #    include <term.h>
 #  endif
 #endif
 
-#if NEED_TERMCAP_H
+#ifdef NEED_TERMCAP_H
 #  include <termcap.h>
 #endif
 
@@ -56,17 +67,19 @@ extern "C" {
 #  define FALSE 0
 #endif
 
+#undef USE_TERMCAP
+
 #if USE_TERMINFO
+#  define USE_TERMCAP 0
 #  define TGETSTR(name, bufp) tigetstr(name)
 #  define TGETNUM(name)       tigetnum(name) /* may be tigetint() */
 #  define TGETFLAG(name)      tigetflag(name)
 #  define CAPNAME(a,b)        b
 #  define NO_CAP(s)           (s == 0 || s == (char *)-1)
-#  if !HAVE_TIGETNUM && HAVE_TIGETINT
+#  if !defined(HAVE_TIGETNUM) && defined(HAVE_TIGETINT)
 #    define tigetnum tigetint
 #  endif
 #else /* USE_TERMCAP */
-#  undef USE_TERMCAP
 #  define USE_TERMCAP 1
 #  define TGETSTR(name, bufp) tgetstr(name, bufp)
 #  define TGETNUM(name)       tgetnum(name)
@@ -75,32 +88,32 @@ extern "C" {
 #  define NO_CAP(s)           (s == 0)
 #endif /* USE_TERMINFO */
 
-#if HAVE_EXTERN_TCAP_PC
+#ifdef HAVE_EXTERN_TCAP_PC
 extern char PC;			/* used in 'tputs()' */
 #endif
 
-#if MISSING_EXTERN_TGETENT
+#ifdef MISSING_EXTERN_TGETENT
 extern	int	tgetent (char *buffer, char *termtype);
 #endif
-#if MISSING_EXTERN_TGETFLAG || MISSING_EXTERN_TIGETFLAG
+#if defined(MISSING_EXTERN_TGETFLAG) || defined(MISSING_EXTERN_TIGETFLAG)
 extern	int	TGETFLAG (char *name);
 #endif
-#if MISSING_EXTERN_TGETNUM || MISSING_EXTERN_TIGETNUM
+#if defined(MISSING_EXTERN_TGETNUM) || defined(MISSING_EXTERN_TIGETNUM)
 extern	int	TGETNUM (char *name);
 #endif
-#if MISSING_EXTERN_TGETSTR || MISSING_EXTERN_TIGETSTR
+#if defined(MISSING_EXTERN_TGETSTR) || defined(MISSING_EXTERN_TIGETSTR)
 extern	char *	TGETSTR(const char *name, char **area);
 #endif
-#if MISSING_EXTERN_TGOTO
+#ifdef MISSING_EXTERN_TGOTO
 extern	char *	tgoto (const char *cstring, int hpos, int vpos);
 #endif
-#if MISSING_EXTERN_TPARAM
+#ifdef MISSING_EXTERN_TPARAM
 extern	char *	tparam (char *cstring, char *buf, int size, ...);
 #endif
-#if MISSING_EXTERN_TPARM
+#ifdef MISSING_EXTERN_TPARM
 extern	char *	tparm (const char *fmt, ...);
 #endif
-#if MISSING_EXTERN_TPUTS
+#ifdef MISSING_EXTERN_TPUTS
 extern	int	tputs (char *string, int nlines, OUTC_DCL (*_f)(OUTC_ARGS) );
 #endif
 

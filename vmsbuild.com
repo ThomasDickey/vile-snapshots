@@ -1,4 +1,4 @@
-$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.36 2002/06/26 00:23:58 tom Exp $
+$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.39 2003/08/04 22:35:00 tom Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
 $! Screen Configurations
@@ -30,29 +30,13 @@ $ if "''hlp'" .eqs. "HELP" .or. -
         "''hlp'" .eqs. "-H" .or. -
                 "''hlp'" .eqs. "-?" .or. -
                         "''hlp'" .eqs. "?" then gosub usage
-$ goto start
-$!
-$ vaxc_config:
-$    comp       = "__vaxc__=1"
-$    CFLAGS     = "/VAXC"
-$    DEFS       = ",HAVE_STRERROR"
-$    using_vaxc = 1
-$    if f$trnlnm("SYS") .eqs. "" then define sys sys$library:
-$    return
-$!
-$ decc_config:
-$    comp   = "__decc__=1"
-$    CFLAGS = "/DECC/prefix=all"
-$    DEFS   = ",HAVE_ALARM,HAVE_STRERROR"
-$    if f$trnlnm("SYS") .eqs."" then define sys decc$library_include:
-$    return
-$!
-$ usage:
-$    write sys$output "usage: "
-$    write sys$output "      $ @vmsbuild [vile [{decc | vaxc} [<bldtarget>]]]"
-$    write sys$output "                   or"
-$    write sys$output "      $ @vmsbuild xvile [{decc | vaxc} [<bldtarget>]]"
-$    exit 2
+$ if "''hlp'" .eqs. "" .or. -
+     "''hlp'" .eqs. "VILE" .or. -
+     "''hlp'" .eqs. "VILE.EXE" .or. -
+     "''hlp'" .eqs. "XVILE" .or. -
+     "''hlp'" .eqs. "XVILE.EXE" then goto start
+$ gosub 'p1
+$ exit
 $!
 $ start:
 $! -----------------------------------------------------------
@@ -80,7 +64,7 @@ $! -----------------------------------------------------------
 $!      Build the option-file
 $!
 $ open/write optf vms_link.opt
-$ write optf "Identification=""Vile 9.3"""
+$ write optf "Identification=""Vile 9.4"""
 $ write optf "basic.obj"
 $ write optf "bind.obj"
 $ write optf "btree.obj"
@@ -195,6 +179,7 @@ $   endif
 $   if f$extract(4,3,decw$version).eqs."1.1"
 $   then
 $     write optf "menu.obj"
+$     write optf "x11menu.obj"
 $     write optf "sys$share:decw$xmlibshr.exe/share"
 $     write optf "sys$share:decw$xtshr.exe/share"
 $     SCRDEF := "MOTIF_WIDGETS,XTOOLKIT,DISP_X11,scrn_chosen"
@@ -203,6 +188,7 @@ $   endif
 $   if f$extract(4,3,decw$version).eqs."1.2"
 $   then
 $     write optf "menu.obj"
+$     write optf "x11menu.obj"
 $     write optf "sys$share:decw$xmlibshr12.exe/share"
 $     write optf "sys$share:decw$xtlibshrr5.exe/share"
 $     SCRDEF := "MOTIF_WIDGETS,XTOOLKIT,DISP_X11,scrn_chosen"
@@ -222,7 +208,7 @@ $ close optf
 $! -------------- vms_link.opt is created -------------
 $ if f$edit("''p1'", "UPCASE") .eqs. "VMS_LINK.OPT"
 $ then
-$!  mms called this script to build vms_ink.opt.  all done
+$!  mms called this script to build vms_link.opt.  all done
 $   exit
 $ endif
 $!
@@ -232,10 +218,17 @@ $!  can also use /Debug /Listing, /Show=All
 $
 $   CFLAGS := 'CFLAGS/Diagnostics /Define=("os_chosen","''SCRDEF'''DEFS'") /Include=([])
 $
-$  	if "''p3'" .nes. "" then goto 'p3
+$  	if "''p3'" .nes. "" then gosub 'p3
+$  	if "''p3'" .nes. "" then exit 1
 $!
+$	gosub all
 $!
-$ all :
+$  else
+$   mms/ignore=warning/macro=('comp','mmstar','arch') 'p3
+$  endif
+$ exit
+$!
+$ all:
 $	if f$search("mktbls.exe") .eqs. ""
 $	then
 $		call make mktbls
@@ -271,6 +264,7 @@ $	call make isearch
 $	call make line
 $	call make map
 $	if "''mmstar'" .eqs. "__xmvile__=1" then call make menu
+$	if "''mmstar'" .eqs. "__xmvile__=1" then call make x11menu
 $	call make modes
 $	call make msgs
 $	call make npopen
@@ -298,19 +292,24 @@ $	call make word
 $	call make wordmov
 $!
 $	link /exec='target/map/cross main.obj, 'SCREEN.obj, vms_link/opt
-$	goto build_last
+$	gosub build_last
+$	return
 $!
-$ install :
+$ install:
 $	WRITE SYS$ERROR "** no rule for install"
-$	goto build_last
+$	gosub build_last
+$	return
 $!
 $ clobber :
+$	write sys$output "clobbering build products"
 $	if f$search("vile.com") .nes. "" then delete vile.com;*
 $	if f$search("xvile.com") .nes. "" then delete xvile.com;*
 $	if f$search("*.exe") .nes. "" then delete *.exe;*
-$! fallthru
+$	gosub clean
+$	return
 $!
-$ clean :
+$ clean:
+$	write sys$output "cleaning build by-products"
 $	if f$search("*.obj") .nes. "" then delete *.obj;*
 $	if f$search("*.bak") .nes. "" then delete *.bak;*
 $	if f$search("*.lis") .nes. "" then delete *.lis;*
@@ -319,7 +318,8 @@ $	if f$search("*.map") .nes. "" then delete *.map;*
 $	if f$search("*.opt") .nes. "" then delete *.opt;*
 $	if f$search("ne*.h") .nes. "" then delete ne*.h;
 $	if f$search("$(MKTBLS)") .nes. "" then delete $(MKTBLS);
-$! fallthru
+$	gosub build_last
+$	return
 $!
 $ build_last :
 $	if f$search("*.dia") .nes. "" then delete *.dia;*
@@ -329,7 +329,7 @@ $	if f$search("*.map") .nes. "" then purge *.map
 $	if f$search("*.opt") .nes. "" then purge *.opt
 $	if f$search("*.exe") .nes. "" then purge *.exe
 $	if f$search("*.log") .nes. "" then purge *.log
-$! fallthru
+$	return
 $!
 $ vms_link_opt :
 $	exit 1
@@ -349,7 +349,7 @@ $	write test_script "$ define/user_mode sys$output sys$command"
 $	write test_script "$ vile 'p1 'p2 'p3 'p4 'p5 'p6 'p7 'p8"
 $	close test_script
 $	write sys$output "** made vile.com"
-$	exit
+$	return
 $!
 $! Runs XVILE from the current directory (used for testing)
 $ xvile_com :
@@ -367,12 +367,8 @@ $	write test_script "$ define/user_mode sys$output sys$command"
 $	write test_script "$ xvile 'p1 'p2 'p3 'p4 'p5 'p6 'p7 'p8"
 $	close test_script
 $	write sys$output "** made xvile.com"
-$	exit
+$	return
 $!
-$  else
-$   mms/ignore=warning/macro=('comp','mmstar','arch') 'p3
-$  endif
-$ exit
 $ make: subroutine
 $	if f$search("''p1'.obj") .eqs. ""
 $	then
@@ -383,3 +379,24 @@ $	endif
 $exit
 $	return
 $ endsubroutine
+$ vaxc_config:
+$    comp       = "__vaxc__=1"
+$    CFLAGS     = "/VAXC"
+$    DEFS       = ",HAVE_STRERROR"
+$    using_vaxc = 1
+$    if f$trnlnm("SYS") .eqs. "" then define sys sys$library:
+$    return
+$!
+$ decc_config:
+$    comp   = "__decc__=1"
+$    CFLAGS = "/DECC/prefix=all"
+$    DEFS   = ",HAVE_ALARM,HAVE_STRERROR"
+$    if f$trnlnm("SYS") .eqs."" then define sys decc$library_include:
+$    return
+$!
+$ usage:
+$    write sys$output "usage: "
+$    write sys$output "      $ @vmsbuild [vile [{decc | vaxc} [<bldtarget>]]]"
+$    write sys$output "                   or"
+$    write sys$output "      $ @vmsbuild xvile [{decc | vaxc} [<bldtarget>]]"
+$    exit 2

@@ -1,9 +1,13 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.59 2002/06/30 17:38:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.81 2003/10/29 00:03:56 bod Exp $
  */
 
 #ifndef FILTERS_H
 #define FILTERS_H 1
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifndef _estruct_h
 
@@ -15,12 +19,37 @@
 # define HAVE_STRING_H 1
 #endif
 
+#ifndef OPT_FILTER
+#define OPT_FILTER 0
+#endif
+
+#ifndef OPT_LOCALE
+#define OPT_LOCALE 0
+#endif
+
+/* If we are using built-in filters, we can use many definitions from estruct.h
+ * that may resolve to functions in ../vile
+ */
+#if OPT_FILTER
+
+#include <estruct.h>
+
+#else
+
+#ifndef NO_LEAKS
+#define NO_LEAKS 0
+#endif
+
+#ifndef OPT_TRACE
+#define OPT_TRACE 0
+#endif
+
 #include <sys/types.h>		/* sometimes needed to get size_t */
 
-#if HAVE_STDLIB_H
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #else
-# if !defined(HAVE_CONFIG_H) || MISSING_EXTERN_MALLOC
+# if !defined(HAVE_CONFIG_H) || defined(MISSING_EXTERN_MALLOC)
 extern	char *	malloc	( size_t len );
 # endif
 #endif
@@ -35,37 +64,34 @@ extern	char *	malloc	( size_t len );
 #include <string.h>
 #endif
 
-#if MISSING_EXTERN__FILBUF
+#ifdef MISSING_EXTERN__FILBUF
 extern	int	_filbuf	( FILE *fp );
 #endif
 
-#if MISSING_EXTERN__FLSBUF
+#ifdef MISSING_EXTERN__FLSBUF
 extern	int	_flsbuf	( int len, FILE *fp );
 #endif
 
-#if MISSING_EXTERN_FCLOSE
+#ifdef MISSING_EXTERN_FCLOSE
 extern	int	fclose	( FILE *fp );
 #endif
 
-#if MISSING_EXTERN_FPRINTF
+#ifdef MISSING_EXTERN_FPRINTF
 extern	int	fprintf	( FILE *fp, const char *fmt, ... );
 #endif
 
-#if MISSING_EXTERN_FPUTS
+#ifdef MISSING_EXTERN_FPUTS
 extern	int	fputs	( const char *s, FILE *fp );
 #endif
 
-#if MISSING_EXTERN_PRINTF
+#ifdef MISSING_EXTERN_PRINTF
 extern	int	printf	( const char *fmt, ... );
 #endif
 
-#if MISSING_EXTERN_SSCANF
+#ifdef MISSING_EXTERN_SSCANF
 extern	int	sscanf	( const char *src, const char *fmt, ... );
 #endif
 
-#if OPT_LOCALE
-#include <locale.h>
-#endif
 
 #if defined(VMS)
 #include	<stsdef.h>
@@ -85,19 +111,30 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 #define GCC_UNUSED /*nothing*/
 #endif
 
+#define BACKSLASH '\\'
+
+#define isBlank(c)   ((c) == ' ' || (c) == '\t')
+
+#define	typecallocn(cast,ntypes)	(cast *)calloc(sizeof(cast),ntypes)
+#define	typereallocn(cast,ptr,ntypes)	(cast *)realloc((char *)(ptr),\
+							(ntypes)*sizeof(cast))
+
 extern	char *home_dir(void);
 
-#ifndef _estruct_h
 typedef enum { D_UNKNOWN = -1, D_KNOWN = 0 } DIRECTIVE;
-extern DIRECTIVE dname_to_dirnum(const char *cmdp, size_t length);
-#endif
+extern DIRECTIVE dname_to_dirnum(char **cmdp, int length);
 
 typedef struct { int dummy; } CMDFUNC;
 extern const CMDFUNC * engl2fnc(const char *fname);
 
 extern int vl_lookup_func(const char *name);
 
+#endif /* OPT_FILTER */
 #endif /* _estruct_h */
+
+#if OPT_LOCALE
+#include <locale.h>
+#endif
 
 #include <ctype.h>
 #define CharOf(c)   ((unsigned char)(c))
@@ -144,6 +181,22 @@ extern int vl_lookup_func(const char *name);
 #define CTL_A	'\001'
 
 /*
+ * Useful character definitions
+ */
+#define BQUOTE  '`'
+#define SQUOTE  '\''
+#define DQUOTE  '"'
+
+#define L_ANGLE '<'
+#define R_ANGLE '>'
+#define L_CURLY '{'
+#define R_CURLY '}'
+#define L_PAREN '('
+#define R_PAREN ')'
+#define L_BLOCK '['
+#define R_BLOCK ']'
+
+/*
  * Pathname definitions
  */
 #if defined(VMS) || defined(__VMS) /* predefined by DEC's VMS compilers */
@@ -171,16 +224,11 @@ extern int vl_lookup_func(const char *name);
 typedef void (*EachKeyword)(const char *name, int size, const char *attr);
 
 /*
- * lex should declare these:
- */
-extern FILE *yyin;
-extern int yylex(void);
-
-/*
  * Declared in the language-specific lex file
  */
 typedef struct {
 	char *filter_name;
+	int loaded;
 	void (*InitFilter)(int before);
 	void (*DoFilter)(FILE *in);
 	char *options;
@@ -198,16 +246,57 @@ extern FILTER_DEF filter_def;
 #define DefineOptFilter(name,options) \
 static void init_filter(int before); \
 static void do_filter(FILE *Input); \
-FILTER_DEF filter_def = { name, init_filter, do_filter, options }
+FILTER_DEF filter_def = { name, 1, init_filter, do_filter, options }
 
 #define DefineFilter(name) DefineOptFilter(name,0)
 
-#if defined(FLEX_SCANNER) && defined(filter_def)
+#if defined(FLEX_SCANNER)
+#if defined(filter_def)
 #undef yywrap
 #define ECHO flt_echo(yytext, yyleng);
 #define YY_INPUT(buf,result,max_size) result = flt_input(buf,max_size)
-#define YY_NEVER_INTERACTIVE 1
 #define YY_FATAL_ERROR(msg) flt_failed(msg);
+#endif
+/* quiet "gcc -Wunused" warnings */
+#define YY_NEVER_INTERACTIVE 1
+#define YY_ALWAYS_INTERACTIVE 0
+#define YY_MAIN 0
+#define YY_NO_UNPUT 1
+#define YY_STACK_USED 0
+#endif
+
+/*
+ * lex should declare these:
+ */
+extern FILE *yyin;
+
+#if defined(__GNUC__)
+extern int yylex(void);
+#ifndef yywrap
+extern int yywrap(void);
+#endif
+#endif /* __GNUC__ */
+
+/*
+ * 2003/5/20 - "new" flex 2.5.31:
+ * workaround for "developers" who don't use compiler-warnings...
+ * perhaps by the time "new" flex merits the term "beta", they'll fix this:
+ */
+#if defined(FLEX_BETA)
+#define YY_NO_INPUT 1		/* get rid of 'input()' function */
+extern FILE *yyget_in (void);
+extern FILE *yyget_out (void);
+extern char *yyget_text (void);
+extern int yyget_debug (void);
+extern int yyget_leng (void);
+extern int yyget_lineno (void);
+extern int yylex_destroy (void);
+extern void yyset_debug (int bdebug);
+extern void yyset_in (FILE * in_str);
+extern void yyset_lineno (int line_number);
+extern void yyset_out (FILE * out_str);
+/* there's also warnings for unused 'yyunput()', but I don't see a fix */
+/* flex's skeleton includes <unistd.h> - no particular reason apparent */
 #endif
 
 /*
@@ -217,16 +306,18 @@ FILTER_DEF filter_def = { name, init_filter, do_filter, options }
 typedef struct _keyword KEYWORD;
 
 extern char *default_attr;
+extern int abbr_ch;
 extern int eqls_ch;
 extern int meta_ch;
 extern int vile_keywords;
 extern int flt_options[256];
 
+#define FltOptions(c) flt_options[CharOf(c)]
+
 extern KEYWORD *is_class(char *name);
 extern KEYWORD *is_keyword(char *name);
 extern char *ci_keyword_attr(char *name);
 extern char *class_attr(char *name);
-extern char *do_alloc(char *ptr, unsigned need, unsigned *have);
 extern char *get_symbol_table(void);
 extern char *keyword_attr(char *name);
 extern char *lowercase_of(char *name);
@@ -235,6 +326,7 @@ extern char *skip_ident(char *src);
 extern int flt_bfr_length(void);
 extern int set_symbol_table(const char *classname);
 extern long hash_function(const char *id);
+extern void *flt_alloc(void *ptr, unsigned need, unsigned *have, unsigned size);
 extern void flt_bfr_append(char *text, int length);
 extern void flt_bfr_begin(char *attr);
 extern void flt_bfr_embed(char *text, int length, char *attr);
@@ -249,21 +341,25 @@ extern void for_each_keyword(EachKeyword func);
 extern void insert_keyword(const char *ident, const char *attribute, int classflag);
 extern void parse_keyword(char *name, int classflag);
 
+#define type_alloc(type, ptr, need, have) (type*)flt_alloc(ptr, need, have, sizeof(type))
+#define do_alloc(ptr, need, have) type_alloc(char, ptr, need, have)
+
 /*
  * Declared in filterio.c and/or builtflt.c
  */
 extern char *flt_gets(char **ptr, unsigned *len);
-extern char *flt_list(void);
-extern char *flt_name(void);
+extern const char *flt_name(void);
+extern char *flt_put_blanks(char *string);
 extern char *skip_blanks(char *src);
+extern int chop_newline(char *s);
 extern int flt_input(char *buffer, int max_size);
 extern int flt_lookup(char *name);
 extern int flt_start(char *name);
-extern void flt_echo(char *string, int length);
+extern void flt_echo(const char *string, int length);
 extern void flt_failed(const char *msg);
 extern void flt_finish(void);
 extern void flt_putc(int ch);
-extern void flt_puts(char *string, int length, char *attribute);
+extern void flt_puts(const char *string, int length, const char *attribute);
 extern void mlforce(const char *fmt, ...);
 
 #ifndef strmalloc
@@ -282,5 +378,24 @@ extern char *strmalloc(const char *src);
 			flt_bfr_append(yytext, yyleng);\
 			flt_bfr_finish();\
 			BEGIN(state)
+
+/* see fltstack.h */
+#define PushQuote(state, attr) \
+			push_state(state); \
+			flt_bfr_begin(attr); \
+			flt_bfr_append(yytext, yyleng)
+
+#define PopQuote() \
+			flt_bfr_append(yytext, yyleng);\
+			flt_bfr_finish();\
+			pop_state()
+
+#if NO_LEAKS
+#include <trace.h>
+#endif
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FILTERS_H */

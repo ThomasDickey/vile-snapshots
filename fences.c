@@ -9,7 +9,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.80 2002/04/30 23:40:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.82 2002/10/20 12:53:13 tom Exp $
  *
  */
 
@@ -212,7 +212,7 @@ match_simple(void)
     return BLK_UNKNOWN;
 }
 
-#define TRACE_COMPLEX TRACE(("complex_fence(%d:%d:%d) @%d ", level, group, count, line_no(curbp, DOT.l)))
+#define TRACE_COMPLEX TRACE(("complex_fence(%d:%d:%d) @%d\n", level, group, count, line_no(curbp, DOT.l)))
 
 static int
 complex_fence(int sdir, int key, int group, int level, int *newkey)
@@ -707,7 +707,7 @@ fmatch(int rch)
 	if (!backcharfailed)
 	    forwchar(FALSE, 1);
 	if (update(SORTOFTRUE) == TRUE) {
-#ifdef DISP_NTWIN
+#if DISP_NTWIN
 	    /*
 	     * For all flavors of the editor except winvile,
 	     * update() has made the cursor visible.  Winvile,

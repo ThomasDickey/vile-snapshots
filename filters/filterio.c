@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.16 2002/07/04 14:57:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.22 2003/05/24 15:52:45 tom Exp $
  *
  */
 
@@ -44,7 +44,7 @@ ProcessArgs(int argc, char *argv[], int flag)
 	s = argv[n];
 	if (*s == '-') {
 	    while (*++s) {
-		flt_options[CharOf(*s)] += 1;
+		FltOptions(*s) += 1;
 		switch (*s) {
 		case 'k':
 		    value = ParamValue(&s, &n, argc, argv);
@@ -54,8 +54,8 @@ ProcessArgs(int argc, char *argv[], int flag)
 		    break;
 		case 't':
 		    value = ParamValue(&s, &n, argc, argv);
-		    if ((flt_options['t'] = atoi(value)) <= 0)
-			flt_options['t'] = 8;
+		    if ((FltOptions('t') = atoi(value)) <= 0)
+			FltOptions('t') = 8;
 		    break;
 		default:
 		    if (((filter_def.options != 0
@@ -79,16 +79,40 @@ ProcessArgs(int argc, char *argv[], int flag)
  * Public functions                                                           *
  ******************************************************************************/
 
+/*
+ * Trim newline from the string, returning true if it was found.
+ */
+int
+chop_newline(char *s)
+{
+    size_t len = strlen(s);
+
+    if (len != 0 && s[len - 1] == '\n') {
+	s[--len] = '\0';
+	return 1;
+    }
+    return 0;
+}
+
 char *
 flt_gets(char **ptr, unsigned *len)
 {
     return readline(my_in, ptr, len);
 }
 
-char *
+const char *
 flt_name(void)
 {
     return filter_def.filter_name;
+}
+
+char *
+flt_put_blanks(char *string)
+{
+    char *result = skip_blanks(string);
+    if (result != string)
+	flt_puts(string, result - string, "");
+    return result;
 }
 
 void
@@ -100,7 +124,7 @@ flt_putc(int ch)
 }
 
 void
-flt_puts(char *string, int length, char *marker)
+flt_puts(const char *string, int length, const char *marker)
 {
     if (length > 0) {
 	if (marker != 0 && *marker != 0 && *marker != 'N')
@@ -171,7 +195,7 @@ strmalloc(const char *src)
  */
 /* ARGSUSED */
 DIRECTIVE
-dname_to_dirnum(const char *s GCC_UNUSED, size_t len GCC_UNUSED)
+dname_to_dirnum(char **s GCC_UNUSED, int length GCC_UNUSED)
 {
     return 0;
 }
@@ -210,7 +234,7 @@ main(int argc, char **argv)
 
     /* get verbose option */
     (void) ProcessArgs(argc, argv, 0);
-    verbose = flt_options[CharOf('v')];
+    verbose = FltOptions('v');
 
     flt_make_symtab(filter_def.filter_name);
 
@@ -220,9 +244,9 @@ main(int argc, char **argv)
 
     flt_read_keywords(MY_NAME);
     n = ProcessArgs(argc, argv, 1);
-    flt_options[CharOf('v')] = verbose;
+    FltOptions('v') = verbose;
 
-    if ((vile_keywords = !flt_options['k']) != 0) {
+    if ((vile_keywords = !FltOptions('k')) != 0) {
 	if (strcmp(MY_NAME, filter_def.filter_name)) {
 	    flt_read_keywords(filter_def.filter_name);
 	}
@@ -231,7 +255,7 @@ main(int argc, char **argv)
 
     filter_def.InitFilter(0);
 
-    if (flt_options['q']) {
+    if (FltOptions('q')) {
 	/*
 	 * When the filter is called, we want to force it to print out its
 	 * class info and then immediately exit.  Easiest way to do this
