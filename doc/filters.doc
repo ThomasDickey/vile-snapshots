@@ -23,28 +23,40 @@ directories are hidden using a "." prefix.  Except for MS-DOS, the suffix is
 files are ".key", to keep them compatible with MS-DOS 8.3 filename lengths.
 
 You can specify the root name to search, otherwise they search for "vile" and
-the compiled-in filter name.  For example, the C filter (vile-c-filt) will
-search first for
+the compiled-in filter name.  For example, on a Unix host, the C filter
+(vile-c-filt) searches first here:
 
 	./.vile.keywords
 	$HOME/.vile.keywords
-	$HOME/vile/vile.keywords
+	$HOME/.vile/vile.keywords
 	$VILE_STARTUP_PATH/vile.keywords
 
-and then
+and then here:
 
 	./.c.keywords
 	$HOME/.c.keywords
+	$HOME/.vile/c.keywords
+	$VILE_STARTUP_PATH/c.keywords
+
+In each case, vile-c-filt stops as soon as it finds the desired file.  On a
+non-Unix host, the search looks like this:
+
+	./vile.keywords
+	$HOME/vile.keywords
+	$HOME/vile/vile.keywords
+	$VILE_STARTUP_PATH/vile.keywords
+
+	./c.keywords
+	$HOME/c.keywords
 	$HOME/vile/c.keywords
 	$VILE_STARTUP_PATH/c.keywords
 
-in each case stopping as soon as it has found a corresponding file.  The
-leading '.' for the filename is used only to hide the file; there is no
-distinction made about the contents of the files.  The vile.keywords file
-contains color information for the most common classes.  The c.keywords file
-contains the actual keywords to be highlighted, referenced to the classes which
-are in turn colored.  You can see the search for keyword files by running the
-filter with a -v option, repeating the option to get more verbose traces.
+
+The vile.keywords file contains color information for the most common
+classes.  The c.keywords file contains the actual keywords to be
+highlighted, referenced to the classes which are in turn colored.  You can
+see the search for keyword files by running the filter with a -v option,
+repeating the option (-vv) to obtain more verbose traces.
 
 Predefined keyword classes include (but may not necessarily be used in specific
 filters):
@@ -170,4 +182,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.17 1999/12/27 02:30:26 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.18 2000/01/11 02:43:37 cmorgan Exp $

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.262 2000/01/09 23:30:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.264 2000/01/12 12:11:07 tom Exp $
  *
  */
 
@@ -1220,7 +1220,9 @@ makecolorlist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 
 	bprintf("--- Color palette %*P\n", term.cols-1, '-');
 	bprintf("\nColor name       Internal  $palette   Examples\n");
-	for (j = -1; j < ncolors; j++) {
+	for (j = -1; j < NCOLORS; j++) {
+		if (!is_color_code(j))
+			continue;
 		k = j >= 0 ? ctrans[j] : j;
 		bprintf("\n%16s ", get_color_name(j));
 
@@ -1272,6 +1274,12 @@ update_colorlist(BUFFER *bp GCC_UNUSED)
 {
 	return descolors(FALSE, 1);
 }
+
+void
+relist_descolor(void)
+{
+	update_scratch(PALETTE_COLORS_BufName, update_colorlist);
+}
 #endif	/* OPT_UPBUFF */
 
 #endif	/* OPT_SHOW_COLORS */
@@ -1288,9 +1296,7 @@ set_palette(const char *value)
 	if (term.setpal == nullterm_setpal)
 		return FALSE;
 
-#if OPT_SHOW_COLORS
-	update_scratch(PALETTE_COLORS_BufName, update_colorlist);
-#endif
+	relist_descolor();
 	term.setpal(tb_values(tb_curpalette));
 	vile_refresh(FALSE,0);
 #endif
@@ -1809,8 +1815,8 @@ qstring_arg_eval(char *argp)
 static char *
 directive_arg_eval(char *argp)
 {
-#if SYS_UNIX
 	static TBUFF *tkbuf;
+#if SYS_UNIX
 	/* major hack alert -- the directives start with '~'.  on
 	 * unix, we'd also like to be able to expand ~user as
 	 * a home directory.  handily, these two uses don't
@@ -1818,6 +1824,13 @@ directive_arg_eval(char *argp)
 	tb_alloc(&tkbuf, NFILEN + strlen(argp));
 	return lengthen_path(strcpy(tb_values(tkbuf), argp));
 #else
+	/*
+	 * For other systems, we can usually expand our own "home" directory.
+	 */
+	if (!strncmp("~/", argp, 2)) {
+		tb_alloc(&tkbuf, NFILEN + strlen(argp));
+		return lengthen_path(strcpy(tb_values(tkbuf), argp));
+	}
 	return error_val;
 #endif
 }

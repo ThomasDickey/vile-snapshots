@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.134 2000/01/09 23:36:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.136 2000/01/12 02:13:41 tom Exp $
  *
  */
 
@@ -73,7 +73,7 @@ static char *vb;	/* visible-bell */
  */
 
 #define NO_COLOR (-1)
-#define	Num2Color(n) ((n >= 0) ? ctrans[(n) & (ncolors-1)] : NO_COLOR)
+#define	Num2Color(n) ((n >= 0) ? ctrans[(n) & (NCOLORS-1)] : NO_COLOR)
 
 static	char	*AF;
 static	char	*AB;
@@ -377,6 +377,8 @@ tcapopen(void)
 #if OPT_COLOR
 	if ((j = TGETNUM(CAPNAME("Co","colors"))) > 0)
 		set_colors(j);
+	else
+		set_colors(2);	/* white/black */
 #endif
 
 	/* are we probably an xterm?  */

@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.68 2000/01/07 01:42:46 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.70 2000/01/13 00:31:53 kev Exp $
  */
 
 /*#
@@ -211,7 +211,7 @@ require(char *file, int optional)
 	/* this error is OK for optional files */
 	SV *tmp = newSVpv("Can't locate ", 0);
 	char const *check;
-	int sz;
+	STRLEN sz;
 	int not_found;
 
 	sv_catpv(tmp, file);
@@ -2765,7 +2765,7 @@ READLINE(vbp)
 	    struct MARK old_DOT;
 	    int (*f)(SV**,VileBuf*,char*,int);
 	    char *rsstr;
-	    int rslen;
+	    STRLEN rslen;
 #ifdef HAVE_BROKEN_PERL_RS
 	    /* The input record separator, or $/ Normally, this is
 	     * available via the rs macro, but apparently perl5.00402

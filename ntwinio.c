@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.74 2000/01/10 01:21:49 evhendrs Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.76 2000/01/11 23:14:11 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -1635,10 +1635,17 @@ GetMousePos(POINT * result)
 static void
 AutoScroll(WINDOW *wp)
 {
+#define DVSR    10
+#define INCR    6
+#define TRIGGER (DVSR + INCR)
+
     POINT current;
     int Scroll = 0;
-    static int ScrollCount = 0;
+    static int ScrollCount = 0, Throttle = INCR;
     GetMousePos(&current);
+
+    if (wp == 0)
+	return;
 
     // Determine if we are above or below the window,
     // and if so, how far...
@@ -1662,20 +1669,26 @@ AutoScroll(WINDOW *wp)
 	    row = mode_row(wp) - 1;
 	}
 
-	// Scroll the pre-determined amount..
-	// ScrollScale is signed, so it will
-	// be negative if we want to scroll down.
-	mvupwind(TRUE, Scroll * ScrollCount / 10);
+	// Scroll the pre-determined amount, ensuring at least one line of
+	// window movement per timer tick.  Note also that ScrollScale is
+	// signed, so it will be negative if we want to scroll down.
+	mvupwind(TRUE, Scroll * max(ScrollCount, TRIGGER) / (Throttle + DVSR));
 
 	// Set the cursor. Column doesn't really matter, it will
 	// get updated as soon as we get back into the window...
 	setcursor(row, 0) && sel_extend(TRUE, TRUE);
 	(void) update(TRUE);
 	ScrollCount++;
+	if (ScrollCount > TRIGGER && Throttle > 0 && ScrollCount % INCR == 0)
+	    Throttle--;
     } else {
-	// Reset counter
+	// Reset counters
+	Throttle = INCR;
 	ScrollCount = 0;
     }
+#undef DVSR
+#undef INCR
+#undef TRIGGER
 }
 
 static int
@@ -2195,7 +2208,6 @@ ntgetch(void)
     // Save the timer ID so we can kill it.
     static UINT nIDTimer = 0;
 
-    DWORD dword;
     DWORD thisclick;
     int buttondown = FALSE;
     int sel_pending = FALSE;	/* Selection pending */
@@ -2206,7 +2218,6 @@ ntgetch(void)
     MSG msg;
     POINT first;
     POINT latest;
-    POINTS points;
     UINT clicktime = GetDoubleClickTime();
     WINDOW *that_wp = 0;
 #ifdef VAL_AUTOCOLOR
@@ -2591,7 +2602,6 @@ receive_dropped_files(HDROP hDrop)
     UINT inx = 0xFFFFFFFF;
     UINT limit = DragQueryFile(hDrop, inx, name, sizeof(name));
     BUFFER *bp = 0;
-    char *leaf;
 
     TRACE(("receiving %d dropped files\n", limit));
     while (++inx < limit) {

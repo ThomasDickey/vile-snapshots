@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.411 1999/12/24 20:31:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.413 2000/01/12 02:52:38 tom Exp $
  *
  */
 
@@ -344,6 +344,12 @@ extern void save_arguments(BUFFER *bp);
 #define save_arguments(cfp) /*nothing*/
 #endif
 
+#if OPT_SHOW_COLORS && OPT_UPBUFF
+extern void relist_descolor(void);
+#else
+#define relist_descolor() /*nothing*/
+#endif
+
 #if (SYS_WINNT||SYS_VMS)
 extern char *render_hex(TBUFF **rp, unsigned i);
 #endif
@@ -673,6 +679,7 @@ extern void setm_by_suffix (BUFFER *bp);
 #endif
 
 #if OPT_SHOW_COLORS
+extern int is_color_code(int n);
 extern const char *get_color_name(int n);
 #endif
 
@@ -1048,6 +1055,7 @@ extern int  is_win95(void);
 extern int  is_winnt(void);
 extern char *mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc);
 extern char *ntwinio_current_font(void);
+extern int	winvile_cursor_state(int visible, int queue_change);
 extern int  ntwinio_font_frm_str(const char *fontstr, int use_mb);
 extern void ntwinio_oleauto_reg(void);
 extern void ntwinio_redirect_hwnd(int redirect);

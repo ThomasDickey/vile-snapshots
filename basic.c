@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.111 1999/07/06 01:07:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.112 2000/01/13 01:01:04 tom Exp $
  *
  */
 
@@ -761,15 +761,19 @@ gotoeosent(int f, int n)
 				exp->startp[0] - DOT.l->l_text == DOT.o)) {
 		if (findpat(f, n, exp, FORWARD) != TRUE) {
 			DOT = curbp->b_line;
-			return TRUE;
-		} else {
-			if (!empty && is_at_end_of_line(DOT))
-				return TRUE;
+		} else if (empty || !is_at_end_of_line(DOT)) {
+			s = forwchar(TRUE, RegexpLen(exp));
+			while (s && (is_at_end_of_line(DOT) || isSpace(char_at(DOT)))) {
+				LINEPTR lp = DOT.l;
+				s = forwchar(TRUE,1);
+				if (lp != DOT.l)
+					break;
+			}
 		}
-	}
-	s = forwchar(TRUE, RegexpLen(exp));
-	while (s && (is_at_end_of_line(DOT) || isSpace(char_at(DOT)))) {
-		s = forwchar(TRUE,1);
+	} else {
+		s = forwchar(TRUE, RegexpLen(exp));
+		while (s && (is_at_end_of_line(DOT) || isSpace(char_at(DOT))))
+			s = forwchar(TRUE,1);
 	}
 	return TRUE;
 }

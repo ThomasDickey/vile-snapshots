@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.3 1999/12/24 13:02:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.4 2000/01/11 18:53:14 tom Exp $
  */
 
 #include <windows.h>
@@ -214,10 +214,11 @@ winopen(int f, int n)
 static int
 commdlg_save_file(int chdir_allowed)
 {
-    int   chdir_mask, i, len, rc = TRUE;
+    int   chdir_mask, rc = TRUE;
     DWORD errcode;
-    char  filebuf[FILENAME_MAX], oldcwd[FILENAME_MAX], 
-          newcwd[FILENAME_MAX], *leaf, *tmp;
+    char  filebuf[FILENAME_MAX];
+    char  oldcwd[FILENAME_MAX];
+    char  newcwd[FILENAME_MAX];
 
     oldcwd[0]  = newcwd[0] = filebuf[0] = '\0';
     chdir_mask = (chdir_allowed) ? 0 : OFN_NOCHANGEDIR;

@@ -1,5 +1,62 @@
 Changes for vile 9.1 (released ??? ??? ??, 1999)
 
+ 20000112 (r)
+ 	> Kevin Buettner:
+	+ correct two variables in perl.xs which were incorrectly typed as
+	  'int', and passed by reference which is a problem on Tru64 Unix 5.0
+	  (Alpha) where the prototype specified 'unsigned long' (reported by
+	  Larry Gensch <larry.gensch@compaq.com>)
+	> Clark Morgan:
+	+ update credits in vile.hlp (with additions from Paul Fox).
+	+ updated w32modes.doc
+	+ remove very stale documentation/comment from c-filt.c .
+	+ add -q switch to filters.c, which forces the filter to exit as soon
+	  as it reads its first line of input.  Useful in conjunction with -v
+	  and -vv switches.  Necessary for Unix vile (but not win32 vile) if
+	  you want to do this:
+	      ^X-!~/.vile/vile-c-filt -vvq
+	  without hanging the editor's keyboard and forcing the user to type ^C
+	  to kill the child process.
+	+ fix a 250 millisecond dead spot built into the winvile autoscrolling
+	  computations, and also throttle back the initial rate of scrolling so
+	  that the user has a chance to read the text as it moves up/down the
+	  screen.
+	+ reword/correct the description of searching for .keywords files in
+	  doc/filters.doc
+	> Tom Dickey:
+	+ modify ins_anytime(), allowing undoable commands to be executed
+	  within an insertion (Clark Morgan stated that the winvile
+	  paste-from-clipboard used to work in insertion mode).
+	+ correct logic of gotoeosent(), which would skip past the end of the
+	  current sentence (which ended at the end of a line), over following
+	  blank lines, to the end of the next text line.  Now it skips into the
+	  beginning of the first line following the sentence.  A following call
+	  will skip the blank lines to the beginning of the next text line
+	  (reported by Clark Morgan).
+	+ add README*, CHANGES*, ChangeLog* and COPYING to txtmode suffix
+	  qualifier.
+	+ modify makefilt.l to flag as an error lines that start a quote but
+	  do not end it.  Some make programs allow this.
+	+ modify suffix qualifiers for imake, mail, make, vile majormodes to ensure
+	  they do not match directory names such as /mail/.
+	+ modify directive_arg_eval() to expand "~/" expressions for non-UNIX
+	  systems, making "so ~/vile.rc" work within a source'd file on WinNT
+	  (reported by Clark Morgan).
+	+ modify install rule for Vileserv.pm to ensure we update the path
+	  of the perl program embedded in that script.
+	+ modify vileperl.rc so the terminfo/termcap version does not start
+	  the edit-server.
+	+ add a null-pointer check for wp in AutoScroll().
+	+ modify previndent() to refrain from copying previous indent over a
+	  line beginning with '#' if cindent is disabled (reported by Clark
+	  Morgan).
+	+ change show-colors command to reflect limited number of colors if
+	  $ncolors is set to 2, 8 or 16.
+	+ modify set_colors() to allow initializing to white/black if termcap
+	  or terminfo has no color specified.  This makes the list shown for
+	  visual-matches limited to the available colors (reported by Clark
+	  Morgan).
+
  20000109 (q)
 	> Ed Henderson <evhendrs@micron.net>:
 	+ implement autoscrolling feature for winvile, which makes the buffer

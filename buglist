@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.373 2000/01/04 00:07:33 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.376 2000/01/13 00:24:02 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1573,3 +1573,14 @@ winvile.exe was using.
 even if I remove the -B option that imake provides, the SunOS unproto
 wrapper does not build xvile because the compiler does not understand
 	#include VILE_ICON
+
+-- 00-01-12 (tom)
+
+Users can change $ncolors from its initial value, i.e., the maximum number of
+colors that the terminal can display.  However, not all windows (e.g., those
+that are syntax-highlighted) will be repainted to restrict them to the limited
+number of colors.
+
+Even on a monochrome terminal, users can set the fcolor and bcolor modes
+to black and white if vile is able to use color.  The actual screen colors
+are not updated.

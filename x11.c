@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.242 2000/01/02 23:05:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.243 2000/01/12 23:53:50 tom Exp $
  *
  */
 
@@ -3859,6 +3859,13 @@ x_setfont(
 static void
 x_open(void)
 {
+#if OPT_COLOR
+    static const char *initpalettestr = "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15";
+
+    set_colors(NCOLORS);
+    set_ctrans(initpalettestr);	/* should be set_palette() */
+#endif
+
     kqinit(cur_win);
     cur_win->scrollbars = NULL;
     cur_win->maxscrollbars = 0;

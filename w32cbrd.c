@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.13 1998/11/24 11:02:05 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.14 2000/01/11 18:55:00 tom Exp $
  */
 
 #include <windows.h>
@@ -25,7 +25,7 @@
 #define  CLIPBOARD_COPYING   "[Copying...]"
 #define  CLIPBOARD_COPY_FAIL "Clipboad copy failed"
 #define  CLIPBOARD_COPY_MEM  "Insufficient memory for copy operation"
-#define  PASS_HIGH(c)        ((c) <= print_high && (c) >= print_low)
+#define  PASS_HIGH(c)        ((int)(c) <= print_high && (int)(c) >= print_low)
 #define  _SPC_               ' '
 #define  _TAB_               '\t'
 #define  _TILDE_             '~'

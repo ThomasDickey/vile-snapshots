@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.26 1999/12/15 00:43:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.27 2000/01/13 00:06:39 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -86,6 +86,17 @@ flush_quoted(void)
     }
 }
 
+static void
+missing_quote(char *text, int length)
+{
+    char *save = String_attr;
+    String_attr = Error_attr;
+    add_to_quoted(text, length);
+    flush_quoted();
+    BEGIN(NORMAL);
+    String_attr = save;
+}
+
 void
 init_filter(int before GCC_UNUSED)
 {
@@ -156,3 +167,5 @@ MACRO		([$]?\$\{{ID}\}|[$]?\${ID}|[$]?\$[A-Za-z@!%^&*?<]|\${SPACE}*\([^\)]+\))
 			  flush_quoted();
 			  BEGIN(NORMAL);
 			}
+
+<QUOTE1,QUOTE2>[\n]	{ missing_quote(yytext, yyleng); }
