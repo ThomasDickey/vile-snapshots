@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.89 $)
+AC_REVISION($Revision: 1.90 $)
 AC_PREREQ(2.12.971222)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.89 1998/07/07 23:57:36 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.90 1998/07/17 09:41:53 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -219,7 +219,7 @@ AC_MSG_RESULT($screen)
 : See if this is any type of xvile configuration:
 case "$screen" in
 changequote(,)dnl
-	[Oo]pen[Ll]ook | [Mm]otif | [xX] | [Aa]thena | [xX][atTmMoO]* | [xX]11 | neXtaw )
+	[Oo]pen[Ll]ook | [Mm]otif* | [xX] | [Aa]thena | [xX][atTmMoO]* | [xX]11 | neXtaw )
 changequote([,])dnl
 		CF_X_TOOLKIT
 		CF_IMAKE_CFLAGS
@@ -251,7 +251,9 @@ changequote([,])dnl
 			AC_ERROR(
 [Unable to successfully link OpenLook library (-lXol) with test program]))
 	;;
-	motif* | Motif* | [Xx]m )
+changequote(,)dnl
+	[mM]otif* | [Xx]m )
+changequote([,])dnl
 		AC_DEFINE(MOTIF_WIDGETS)
 		AC_CHECK_HEADERS(X11/IntrinsicI.h Xm/XmP.h)
 		AC_CHECK_LIB(gen,regcmp)

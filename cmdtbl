@@ -17,7 +17,7 @@
 # The entries are functions within the editor.  They _must_ match the
 #  functions' names.  On the same line as the name is the set of flags
 #  describing that function.
-# Also accompanying each function is a list of english names  for the 
+# Also accompanying each function is a list of english names  for the
 #  command, in double quotes, and a list of keys bound to the command,
 #  in single quotes.  These are the default key bindings -- they can change
 #  at runtime.  English names must be all lowercase.
@@ -27,7 +27,7 @@
 #  the names and keys listed with it will be conditional also.
 # The names and keys must be preceded by a tab character.
 # Blank lines must be completely empty.
-# For convenience only, this table is kept in roughly alphabetical order, 
+# For convenience only, this table is kept in roughly alphabetical order,
 #  by first character of function name.
 #
 # For example, consider the following entry:
@@ -59,7 +59,7 @@
 #	UNDO means the undo stacks should be cleared, in preparation for
 #		an undoable command.
 #	OPER means the command is an "operator", that is, it acts on a region
-#		demarcated by the current cursor position and the cursor 
+#		demarcated by the current cursor position and the cursor
 #		position following a subsequent motion command.
 #	MOTION means this command moves dot, and specifically is compatible
 #		with the operator commands.
@@ -69,7 +69,7 @@
 #		i.e. not relative to the current position or screen.  It causes
 #		the "lastdotmark", ldmark to be set to dot before the move
 #		takes place.
-#	GOAL signifies a motion that will attempt to retain the 
+#	GOAL signifies a motion that will attempt to retain the
 #		current column position after the motion.
 #	GLOBOK says the function can follow a global command
 #		(e.g. the 'd' in "g/pattern/d")
@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.158 1998/04/29 00:02:53 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.159 1998/07/17 09:54:39 tom Exp $
 #
 #
 
@@ -200,11 +200,11 @@ bktoshell	NONE|(BANG)		OPT_SHELL
 cbrdcpy_unnamed NONE 			SYS_WINNT
 	"copy-unnamed-reg-to-clipboard"
 	'FN-\255'			KEY_F33
-	<copies the unnamed register selection to the windows clipboard> 
+	<copies the unnamed register selection to the windows clipboard>
 cbrdpaste REDO|UNDO			SYS_WINNT
 	"paste-from-clipboard"
 	'FN-\257'			KEY_F35
-	<paste the windows clipboard contents> 
+	<paste the windows clipboard contents>
 cd		NONE			OPT_SHELL
 	"cd"
 	"change-directory"
@@ -245,10 +245,10 @@ consearch	ABSM|MOTION
 wordcount	RANGE			OPT_WORDCOUNT
 	"count-words"
 	<count words, lines, and chars in the region>
-opercbrdcpy	NONE 			SYS_WINNT
+opercbrdcpy	OPER|(RANGE|NOMOVE)	SYS_WINNT
 	"copy-to-clipboard"
 	'FN-\256'			KEY_F34
-	<copies the specified region to the windows clipboard> 
+	<copies the specified region to the windows clipboard>
 opercopy	OPER|(RANGE|EXTRA)
 	"copy-til"
 	"c"
@@ -509,12 +509,12 @@ execfile	NONE			!SMALLER
 	"execute-file"			!FEWNAMES
 	"source"
 	<run the given file as a script>
-exechypercmd	NONE			OPT_HYPERTEXT 
-	"execute-hypertext-command"	!FEWNAMES 
-	<run the hypertext command attached to the region under the cursor> 
-showhypercmd	NONE			OPT_HYPERTEXT 
-	"show-hypertext-command"	!FEWNAMES 
-	<show the hypertext command attached to the region under the cursor> 
+exechypercmd	NONE			OPT_HYPERTEXT
+	"execute-hypertext-command"	!FEWNAMES
+	<run the hypertext command attached to the region under the cursor>
+showhypercmd	NONE			OPT_HYPERTEXT
+	"show-hypertext-command"	!FEWNAMES
+	<show the hypertext command attached to the region under the cursor>
 execkreg	REDO|UNDO|VIEWOK
 	"execute-register"
 	'@'
@@ -783,7 +783,7 @@ gotoline	ABSM|MOTION|FL|(RANGE)
 	"goto-line"			!FEWNAMES
 	'G'
 	<go to the CNT'th line.  unspecified CNT means end of buffer>
-# golinenmmark and goexactnmmark are special cases--	
+# golinenmmark and goexactnmmark are special cases--
 # 	no ABSM even though they are absolute, since these are the commands
 #	that use the last-dot-mark
 golinenmmark	MOTION|FL
@@ -1010,10 +1010,10 @@ operattrcaseq	REDO|UNDO|OPER|GLOBOK|RANGE	OPT_SELECTIONS
 	"attribute-cntl_a-sequences-til"	!FEWNAMES
 	'^A-A'
 	<display text as given by ^A sequences in the region>
-operattrhc	OPER|GLOBOK|RANGE	OPT_HYPERTEXT 
-	"attribute-hypertext-til"	!FEWNAMES 
-	'^A-H' 
-	<attach hypertext command to region> 
+operattrhc	OPER|GLOBOK|RANGE	OPT_HYPERTEXT
+	"attribute-hypertext-til"	!FEWNAMES
+	'^A-H'
+	<attach hypertext command to region>
 operattrital	OPER|GLOBOK|RANGE	OPT_SELECTIONS
 	"attribute-italic-til"		!FEWNAMES
 	'^A-I'
@@ -1081,7 +1081,7 @@ operflip	OPER|REDO|UNDO|GLOBOK|(RANGE)
 	"~"
 	'^A-~'
 	<exchange upper and lowercase on characters in the region>
-# RANGE commented out, since it's not done.... 
+# RANGE commented out, since it's not done....
 operglobals	(/*RANGE|*/BANG|EXTRA|DFLALL)
 	"global"
 	"g"
@@ -1179,16 +1179,20 @@ onlywind	NONE
 	'^O'
 	'^X-1'
 	<eliminate all windows except the current>
-perl		OPER|REDO|UNDO|GLOBOK|RANGE|DFLNONE|VIEWOK	OPT_PERL 
+perl		OPER|REDO|UNDO|GLOBOK|RANGE|DFLNONE|VIEWOK	OPT_PERL
 	"perl"
 	<run a perl command>
-perldo		OPER|REDO|UNDO|GLOBOK|RANGE|EXTRA		OPT_PERL  
-	"perldo" 
-	<run a perl command on each line in a range> 
+perldo		OPER|REDO|UNDO|GLOBOK|RANGE|EXTRA		OPT_PERL
+	"perldo"
+	<run a perl command on each line in a range>
 poswind		NONE
 	"position-window"		!FEWNAMES
 	'z'
 	<reframe with cursor at center (.,M,m), top (CR,H,t), or bottom (-,L,b)>
+prevbuffer	NONE|(BANG|NAMEDFS)	!SMALLER
+	"P"
+	"previous-buffer"		!FEWNAMES
+	<switch to previous buffer (or the most-recently-visited, if \"autobuffer\" on>
 prevwind	NONE
 	"previous-window"		!FEWNAMES
 	'^X-O'
@@ -1533,10 +1537,10 @@ mouse_motion	ABSM|MOTION		OPT_XTERM||DISP_X11
 	<dummy command to support mouse movements internally>
 copy_to_clipboard NONE 			DISP_X11
 	"copy-to-clipboard"
-	<copies the currently highlighted selection to the cut buffer> 
+	<copies the currently highlighted selection to the cut buffer>
 paste_from_clipboard REDO|UNDO 		DISP_X11
 	"paste-from-clipboard"
-	<pastes the contents of the cut buffer> 
+	<pastes the contents of the cut buffer>
 xterm_mouse_t	NONE			(OPT_XTERM>=3)
 	'FN-t'				KEY_text
 	<dummy command to support xterm mouse operation>

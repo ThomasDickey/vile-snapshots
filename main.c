@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.328 1998/07/08 01:03:20 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.329 1998/07/17 10:16:12 tom Exp $
  *
  */
 
@@ -551,6 +551,7 @@ MainProgram(int argc, char *argv[])
 	if (global_g_val(GMDPOPUP_MSGS) && (startstat != TRUE)) {
 		bp = bfind(MESSAGES_BufName, BFSCRTCH);
 		bsizes(bp);
+		TRACE(("Checking size of popup messages: %d\n", bp->b_linecount))
 		if (bp->b_linecount > 1) {
 			popup_msgs();
 			*mlsave = EOS;
