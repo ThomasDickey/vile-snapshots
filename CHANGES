@@ -1,5 +1,32 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20020511 (zb)
+	> Clark Morgan:
+	+ more documentation tweaks.
+	+ add example macro underline-currline to vile.hlp, based on submission
+	  from Daniel L Ashbrook.
+	> Tom Dickey:
+	+ updated buglist
+	+ add Help.pm and CaptHook.pm to makefile.wnt
+	+ add a check to prevent runaway recursion in a case where a dynamic
+	  buffer such as [Variables] was visible when a $buffer-hook is used.
+	  When reading from a pipe, the buffer hook would activate and then
+	  attempt to switch back to [Output], which was not yet marked active.
+	  So it would attempt to re-read the pipe, which then repeated the
+	  whole process indefinitely.  The check uses a new flag BFISREAD,
+	  and macro b_is_reading().
+	+ more fixes for pl-filt.c
+	  + add 'grep' to the quote-like operator list, and in doing so make
+	    is_QUOTE() simpler.
+	  + modify check for blank lines in begin_POD() to allow for DOS-style
+	    line endings.
+	  + correct computation of number of blanks before a comment
+	  + add/use isBlank() macro to treat tabs and spaces more alike, e.g.,
+	    before embedded comments in a quoted list.
+	  + modify test for end-delimiter of a quoted list which specified
+	    a curly-brace to allow the square bracket and parenthesis pairs
+	    that Perl recognizes.
+
  20020507 (za)
 	> Clark Morgan:
 	+ remove pointers to foxharp host.

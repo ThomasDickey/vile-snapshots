@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.503 2002/02/18 00:42:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.504 2002/05/11 00:15:06 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2033,24 +2033,28 @@ typedef struct	BUFFER {
 #define BFSIZES    iBIT(7)	/* set if byte/line counts current */
 #define BFUPBUFF   iBIT(8)	/* set if buffer should be updated */
 #define BFRCHG     iBIT(9)	/* Changed since last reset of this flag*/
+#define BFISREAD   iBIT(10)	/* set if we are reading data into buffer */
 
 /* macros for manipulating b_flag */
-#define b_is_argument(bp)         ((bp)->b_flag & (BFARGS))
-#define b_is_changed(bp)          ((bp)->b_flag & (BFCHG))
-#define b_is_counted(bp)          ((bp)->b_flag & (BFSIZES))
-#define b_is_directory(bp)        ((bp)->b_flag & (BFDIRS))
-#define b_is_implied(bp)          ((bp)->b_flag & (BFIMPLY))
-#define b_is_invisible(bp)        ((bp)->b_flag & (BFINVS))
-#define b_is_obsolete(bp)         ((bp)->b_flag & (BFUPBUFF))
-#define b_is_recentlychanged(bp)  ((bp)->b_flag & (BFRCHG))
-#define b_is_scratch(bp)          ((bp)->b_flag & (BFSCRTCH))
-#define b_is_temporary(bp)        ((bp)->b_flag & (BFINVS|BFSCRTCH))
+#define b_is_set(bp,flags)        (((bp)->b_flag & (flags)) != 0)
+#define b_is_argument(bp)         b_is_set(bp, BFARGS)
+#define b_is_changed(bp)          b_is_set(bp, BFCHG)
+#define b_is_counted(bp)          b_is_set(bp, BFSIZES)
+#define b_is_directory(bp)        b_is_set(bp, BFDIRS)
+#define b_is_implied(bp)          b_is_set(bp, BFIMPLY)
+#define b_is_invisible(bp)        b_is_set(bp, BFINVS)
+#define b_is_obsolete(bp)         b_is_set(bp, BFUPBUFF)
+#define b_is_reading(bp)          b_is_set(bp, BFISREAD)
+#define b_is_recentlychanged(bp)  b_is_set(bp, BFRCHG)
+#define b_is_scratch(bp)          b_is_set(bp, BFSCRTCH)
+#define b_is_temporary(bp)        b_is_set(bp, BFINVS|BFSCRTCH)
 
 #define b_set_flags(bp,flags)     (bp)->b_flag |= (flags)
 #define b_set_changed(bp)         b_set_flags(bp, BFCHG)
 #define b_set_counted(bp)         b_set_flags(bp, BFSIZES)
 #define b_set_invisible(bp)       b_set_flags(bp, BFINVS)
 #define b_set_obsolete(bp)        b_set_flags(bp, BFUPBUFF)
+#define b_set_reading(bp)         b_set_flags(bp, BFISREAD)
 #define b_set_recentlychanged(bp) b_set_flags(bp, BFRCHG)
 #define b_set_scratch(bp)         b_set_flags(bp, BFSCRTCH)
 
@@ -2059,6 +2063,7 @@ typedef struct	BUFFER {
 #define b_clr_counted(bp)         b_clr_flags(bp, BFSIZES)
 #define b_clr_invisible(bp)       b_clr_flags(bp, BFINVS)
 #define b_clr_obsolete(bp)        b_clr_flags(bp, BFUPBUFF)
+#define b_clr_reading(bp)         b_clr_flags(bp, BFISREAD)
 #define b_clr_recentlychanged(bp) b_clr_flags(bp, BFRCHG)
 #define b_clr_scratch(bp)         b_clr_flags(bp, BFSCRTCH)
 

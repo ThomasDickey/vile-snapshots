@@ -1,17 +1,17 @@
 %s VERB ARGS
 
-/*
-Solaris 2.7's lex:
-251/1000 nodes(%e), 757/2500 positions(%p), 85/500 (%n), 5443 transitions,
-301/10000 packed char classes(%k),  2015/2500 packed transitions(%a),  2605/3000 output slots(%o)
-*/
 %a 2500
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.11 2000/09/07 10:06:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.12 2002/05/11 18:04:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TCL/TK script.
+ *
+ * note -
+ * Solaris 2.7's lex:
+ * 251/1000 nodes(%e), 757/2500 positions(%p), 85/500 (%n), 5443 transitions,
+ * 301/10000 packed char classes(%k),  2015/2500 packed transitions(%a),  2605/3000 output slots(%o)
  */
 
 #include <filters.h>

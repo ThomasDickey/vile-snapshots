@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.249 2002/02/17 23:06:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.250 2002/05/11 00:32:04 tom Exp $
  *
  */
 
@@ -366,6 +366,7 @@ static void
 run_buffer_hook(void)
 {
     if (!reading_msg_line
+	&& curbp != 0
 	&& curwp != 0
 	&& curwp->w_bufp == curbp) {
 	run_a_hook(&bufhook);
@@ -934,7 +935,8 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 	&& DOT.l != 0
 	&& curwp->w_bufp == bp) {	/* no switching to be done */
 
-	if (!bp->b_active)	/* on second thought, yes there is */
+	if (!b_is_reading(bp) &&
+	    !bp->b_active)	/* on second thought, yes there is */
 	    s = suckitin(bp, TRUE, lockfl);
 
 	return s;

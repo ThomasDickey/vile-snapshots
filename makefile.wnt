@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.71 2002/05/07 00:27:50 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.72 2002/05/11 11:46:15 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -150,9 +150,11 @@ PERLCFG  = $(THE_PERLCFG)
 # known to work under win32:
 #
 PERL_SCRIPTS = \
-	perl/Vile/exporter.pm \
-	perl/Vile/Manual.pm \
+	perl/Breadcrumbs.pm \
+	perl/CaptHook.pm \
 	perl/Glob2re.pm \
+	perl/Vile/Manual.pm \
+	perl/Vile/exporter.pm \
 	perl/Visit.pm \
 	perl/directory.pm \
 	perl/dirlist.pm \

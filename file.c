@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.329 2002/05/07 11:08:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.330 2002/05/11 00:28:51 tom Exp $
  */
 
 #include "estruct.h"
@@ -1586,6 +1586,7 @@ slowreadf(BUFFER *bp, int *nlinep)
 	return s;
 #endif
     b_set_counted(bp);		/* make 'addline()' do the counting */
+    b_set_reading(bp);
     make_local_b_val(bp, MDDOS);	/* keep it local, if not */
     bp->b_lines_on_disk = 0;
     while ((s = ffgetline(&len)) <= FIOSUC) {
@@ -1664,6 +1665,7 @@ slowreadf(BUFFER *bp, int *nlinep)
     }
 #endif
     init_b_traits(bp);
+    b_clr_reading(bp);
     return s;
 }
 

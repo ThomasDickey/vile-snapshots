@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.30 2002/05/05 19:45:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.31 2002/05/10 00:55:23 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -20,11 +20,12 @@ DefineFilter("perl");
 #define L_BLOCK '['
 #define R_BLOCK ']'
 
-#define PAREN_SLASH "(/"	/* FIXME: (/pattern/) could be composite */
-
 #define QUOTE_DELIMS "#:/?|!:%`',{}"
+/* from Perl's S_scan_str() */
+#define LOOKUP_TERM "([{< )]}> )]}>"
 
 #define isIdent(c) (isalnum(CharOf(c)) || c == '_')
+#define isBlank(c)  ((c) == ' ' || (c) == '\t')
 
 #if 0
 #define DPRINTF(params) if(0)printf params
@@ -63,7 +64,7 @@ static int
 is_BLANK(char *s)
 {
     int found = 0;
-    while ((s != the_last) && ((*s == ' ') || (*s == '\t'))) {
+    while ((s != the_last) && isBlank(*s)) {
 	found++;
 	s++;
     }
@@ -391,11 +392,17 @@ end_marker(char *s, char *marker, int only)
 static int
 begin_POD(char *s)
 {
-    return (the_last - s > 3
-	    && s[0] == '\n'
-	    && s[1] == '\n'
-	    && s[2] == '='
-	    && isalpha(CharOf(s[3])));
+    int skip = 0;
+    while (skip < 2 && s != the_last) {
+	if (*s == '\n')
+	    ++skip;
+	else if (*s != '\r')
+	    return 0;
+	++s;
+    }
+    return (the_last - s > 2
+	    && s[0] == '='
+	    && isalpha(CharOf(s[1])));
 }
 
 static int
@@ -495,53 +502,47 @@ begin_PATTERN(char *s)
 
 /*
  * If we're pointing to a quote-like operator, return its length.
+ * As a side-effect, set the number of delimiters (assuming '/') it needs.
  */
 static int
 is_QUOTE(char *s, int *delims)
 {
     char *base = s;
+    size_t len;
 
     *delims = 0;
-    switch (*s++) {
-    case 'm':
-	*delims = 2;
-	if (isIdent(*s))
-	    s = base;
-	break;
-    case 't':
-	*delims = 3;
-	if (*s++ != 'r' || isIdent(*s))
-	    s = base;
-	break;
-    case 's':			/* FALLTHRU */
-    case 'y':
-	*delims = 3;
-	if (isIdent(*s))
-	    s = base;
-	break;
-    case 'q':
-	*delims = 2;
-	if (isIdent(*s)) {
-	    switch (*s) {
-	    case 'q':
-	    case 'x':
-	    case 'w':
-	    case 'r':
-		*delims = 2;
-		++s;
-		if (isIdent(*s))
-		    s = base;
-		break;
-	    default:
-		s = base;
-		break;
-	    }
-	}
-	break;
-    default:
-	s = base;
-	break;
+    while ((s != the_last) && isIdent(*s)) {
+	++s;
     }
+    if ((len = (s - base)) != 0) {
+	switch (len) {
+	case 1:
+	    if (*base == 'm') {
+		*delims = 2;
+	    } else if (*base == 's' || *base == 'y') {
+		*delims = 3;
+	    }
+	    break;
+	case 2:
+	    if (!strncmp(base, "tr", 2)) {
+		*delims = 3;
+	    } else if (!strncmp(base, "qq", 2) ||
+		       !strncmp(base, "qx", 2) ||
+		       !strncmp(base, "qw", 2) ||
+		       !strncmp(base, "qr", 2)) {
+		*delims = 2;
+	    }
+	    break;
+	case 4:
+	    if (!strncmp(base, "grep", 2)) {
+		*delims = 2;
+	    }
+	    break;
+	}
+    }
+    if (*delims == 0)
+	s = base;
+
     if (s != base) {
 	int test = after_blanks(s);
 	DPRINTF(("is_Quote(%.*s:%c)", s - base, base, test));
@@ -583,9 +584,9 @@ add_to_PATTERN(char *s)
 	}
 	if (delim == 0)
 	    return 0;
-	if (delim == L_CURLY) {
-	    delim = R_CURLY;
-	}
+	/* from Perl's S_scan_str() */
+	if (delim != 0 && (next = strchr(LOOKUP_TERM, delim)) != 0)
+	    delim = next[5];
 	DPRINTF(("need(%c:%d)", delim, need));
 	need--;
 	next = s;
@@ -664,7 +665,7 @@ write_PATTERN(char *s, int len)
 	    escaped = 0;
 	} else if (s[n] == ESC) {
 	    escaped = 1;
-	} else if ((s[n] == ' ' || s[n] == '\t') && !escaped && !comment &&
+	} else if (isBlank(s[n]) && !escaped && !comment &&
 		   (leading || after_blanks(s + n) == '#')) {
 	    flt_puts(s + first, (n - first - 0), String_attr);
 	    flt_putc(s[n]);
@@ -683,7 +684,7 @@ write_PATTERN(char *s, int len)
 	    } else if ((s[n] == R_BLOCK) && range) {
 		range = 0;
 	    } else if ((s[n] == '#')
-		       && (delimiter == L_CURLY || (n > 0 && s[n - 1] == '\t'))
+		       && (delimiter == L_CURLY || (n > 0 && isBlank(s[n - 1])))
 		       && !range) {
 		if (!comment) {
 		    flt_puts(s + first, (n - first - 1), String_attr);
@@ -902,7 +903,9 @@ do_filter(FILE * input GCC_UNUSED)
 		    flt_puts(s, ok, Preproc_attr);
 		    s += ok;
 		} else if ((ok = is_COMMENT(s)) != 0) {
-		    ok -= (skip_BLANKS(s) - s);
+		    int skip = (skip_BLANKS(s) - s);
+		    ok -= skip;
+		    s += skip;
 		    flt_puts(s, ok, Comment_attr);
 		    s += ok;
 		    if_wrd = if_old;

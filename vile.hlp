@@ -2948,6 +2948,55 @@ Programmed procedures (aka macros)
 	~endm
 	use-register d load-register ":cdcur^M"
 
+	;; Underline current line with user-specified char.  Ex:
+	;;        blah blah blah blah   <-- curr line
+	;;        +++++++++++++++++++   <-- underline with +
+	;; from Daniel L. Ashbrook .
+	store-procedure underline-currline
+	  write-message "enter underline char now..."
+	  set-variable %linechar &gtkey
+	  write-message "" 
+	  ; don't underline trailing whitespace (trivial)
+	  trim-lines-til end-of-line
+	  ; don't underline leading whitespace (nontrivial)
+	  goto-bol
+	  setv %ldspace=&equ $char &ascii ' '
+	  setv %ldtab=&equ $char &ascii "\t"
+	  setv %ldwhite=&or %ldspace %ldtab
+	  ~if %ldwhite
+	      ~force substitute-til next-punctuated-word '^\b\b*' ''
+	  ~endif
+	  ; compute length sans lead/trail whitespace
+	  set-variable %linelength $llength
+	  ~if %ldwhite
+	      ; put leading whitespace back
+	      undo-change
+	      ; it's not possible to disable the screen clutter of
+	      ; visual-matches mode (following a substitution)
+	      ; for all buffers from within a macro. so substitute
+	      ; for an improbable char (which achieves desired effect)
+	      ~force substitute-til next-punctuated-word &chr \xff &chr \xff
+	      ~force clear-visual-matches
+	  ~endif
+	  unset-variable %ustring
+	  set-variable %i 0
+	  ; build underline string in memory and insert with a
+	  ; single operation (optimizes undo)
+	  ~while &less %i %linelength
+	    set-variable %ustring &cat %ustring %linechar
+	    set-variable %i &add %i 1
+	  ~endwhile
+	  ; force ustring to align with prev line
+	  ~local $autoindent
+	  setv $autoindent=true
+	  goto-eol
+	  append-string &chr 13  ; 13 -> CR
+	  insert-string %ustring
+	  ~force next-line
+	  goto-bol
+	~endm  
+	bind-key underline-currline #-
+
 	; macro 14 - grep for the word under the cursor, and put the result
 	;	in a buffer named after that word.  set the error-buffer,
 	;	so that ^X-^X may be used to visit the lines found by grep.
@@ -5711,12 +5760,10 @@ Problems
 --------
 	Send bug reports to
 		bugs@vile.cx
-		vile-bugs@foxharp.boston.ma.us
 
 	Requests to be put on the announcement list should go to
 		announce-request@vile.cx
-		vile-announce-request@foxharp.boston.ma.us
 
 Copyright 1995-2002 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.547 2002/05/07 00:27:50 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.548 2002/05/11 01:01:34 cmorgan Exp $
