@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.141 1999/03/24 11:44:14 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.142 1999/04/04 23:01:47 tom Exp $
  *
  */
 
@@ -2746,7 +2746,7 @@ setm_by_suffix(register BUFFER *bp)
 	if (my_majormodes != 0) {
 		size_t n = 0;
 		int savecase = ignorecase;
-#if OPT_CASELESS
+#if OPT_CASELESS || SYS_VMS
 		ignorecase = TRUE;
 #else
 		ignorecase = FALSE;
@@ -2794,7 +2794,7 @@ setm_by_preamble(register BUFFER *bp)
 		for (n = 0; my_majormodes[n].name != 0; n++) {
 			if (my_majormodes[n].flag) {
 				regexp *exp = get_mm_rexp(n, MVAL_PREAMBLE);
-#if OPT_CASELESS
+#if OPT_CASELESS || SYS_VMS
 				ignorecase = TRUE;
 #else
 				ignorecase = get_mm_b_val(n, MDIGNCASE);

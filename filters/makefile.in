@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.37 1999/03/27 16:00:52 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.39 1999/04/05 00:03:56 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -54,10 +54,9 @@ INSTALL_DIRS    = $(bindir) $(datadir)
 
 .l.o:
 @RULE_CC@
-	@ECHO_CC@$(LEX) -t $< > $<.c
-	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(CFLAGS) $<.c
-	@mv $<.o $@
-	- @$(RM) $<.c
+	@ECHO_CC@$(LEX) -t $< > $*.c
+	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(CFLAGS) $*.c
+	-$(RM) $*.c
 .c.i:
 @RULE_CC@
 	@ECHO_CC@$(CPP) -C $(CPPFLAGS) $(QUOTDEFS) $< >$@
@@ -90,6 +89,7 @@ LEX_ALL = \
 	vile-lex-filt$x \
 	vile-mail-filt$x \
 	vile-make-filt$x \
+	vile-mms-filt$x \
 	vile-nr-filt$x \
 	vile-perl-filt$x \
 	vile-sh-filt$x \
@@ -142,6 +142,9 @@ vile-mail-filt$x : mailfilt.o $(LF_DEPS)
 
 vile-make-filt$x : makefilt.o $(LF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ makefilt.o $(LF_ARGS)
+
+vile-mms-filt$x : mms-filt.o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ mms-filt.o $(LF_ARGS)
 
 vile-nr-filt$x : nr-filt.o $(LF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ nr-filt.o $(LF_ARGS)
@@ -196,6 +199,7 @@ INSTALL_LEX = \
 	$(bindir)/vile-lex-filt$x \
 	$(bindir)/vile-mail-filt$x \
 	$(bindir)/vile-make-filt$x \
+	$(bindir)/vile-mms-filt$x \
 	$(bindir)/vile-nr-filt$x \
 	$(bindir)/vile-perl-filt$x \
 	$(bindir)/vile-sh-filt$x \
@@ -285,6 +289,7 @@ $(bindir)/vile-lex-filt$x :	vile-lex-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-mail-filt$x :	vile-mail-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-make-filt$x :	vile-make-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-manfilt$x :	vile-manfilt$x		; $(INSTALL_PROGRAM) $? $@
+$(bindir)/vile-mms-filt$x :	vile-mms-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-nr-filt$x :	vile-nr-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-pas-filt$x :	vile-pas-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-perl-filt$x :	vile-perl-filt$x	; $(INSTALL_PROGRAM) $? $@

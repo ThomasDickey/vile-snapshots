@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.386 1999/03/26 10:53:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.388 1999/04/04 23:34:39 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -498,6 +498,9 @@
 	/* menus */
 #define	OPT_MENUS	(!SMALLER && DISP_X11 && (MOTIF_WIDGETS||ATHENA_WIDGETS))
 #define OPT_MENUS_COLORED 0	/* (MOTIF_WIDGETS && OPT_MENUS) */
+
+	/* icons */
+#define OPT_X11_ICON	DISP_X11 /* use compiled-in X icon */
 
 /*
  * If selections will be used to communicate between vile and other
@@ -1132,6 +1135,14 @@ typedef struct regexp {
 #endif
 
 /* end of regexp stuff */
+
+/*
+ * Data for read/write/etc, hooks
+ */
+typedef struct {
+	char proc[NBUFN];
+	int latch;
+} HOOK;
 
 /*
  * Definitions for 'tbuff.c' (temporary/dynamic char-buffers)

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.189 1999/03/27 14:20:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.190 1999/04/04 23:06:39 cmorgan Exp $
  *
  */
 
@@ -296,7 +296,7 @@ run_func(int fnum)
 		i = ourstrstr(arg[0], arg[1], FALSE);
 		break;
 	case UFENV:
-		strcpy(result, GetEnv(arg[0]));
+		strcpy(result, vile_getenv(arg[0]));
 		break;
 	case UFBIND:
 		strcpy(result, prc2engl(arg[0]));

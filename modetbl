@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.117 1999/03/27 15:05:30 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.118 1999/04/04 22:28:03 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -82,6 +82,7 @@ bool							# MD prefix
 	"AutoWrite"	AUTOWRITE	0		# auto-write when shelling out
 	"BackspaceLimit" BACKLIMIT	0		# backspace limited in insert mode
 	"check-modtime" CHK_MODTIME	0		!SMALLER # check buffer-modtime
+	"CIndent"	CINDENT		0		# c-style indent
 	"cmode"		CMOD		chgd_major_w	!OPT_MAJORMODE # C indentation and fence match
 	"crypt"		CRYPT		chgd_major	OPT_ENCRYPT	# encrytion mode active
 	"dos"		DOS		chgd_major_w	# "dos" mode -- lines end in crlf

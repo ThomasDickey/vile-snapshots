@@ -16,7 +16,7 @@
  *	maintained by tom dickey.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.367 1999/03/27 15:05:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.369 1999/04/04 22:30:43 tom Exp $
  *
  */
 
@@ -961,6 +961,7 @@ global_val_init(void)
 	 * Buffer-mode defaults
 	 */
 	set_global_b_val(MDAIND,	FALSE); /* auto-indent */
+	set_global_b_val(MDCINDENT,	FALSE);	/* C-style indent */
 	set_global_b_val(MDASAVE,	FALSE);	/* auto-save */
 	set_global_b_val(MDBACKLIMIT,	TRUE);	/* limit backspacing to
 							insert point */
@@ -1015,6 +1016,7 @@ global_val_init(void)
 #if OPT_MAJORMODE
 	set_submode_val("c", VAL_SWIDTH, 8);	/* C file shiftwidth */
 	set_submode_val("c", VAL_TAB,	8);	/* C file tab stop */
+	set_submode_val("c", MDCINDENT,	TRUE);	/* C-style indent */
 #else
 	set_global_b_val(VAL_C_SWIDTH,	8);	/* C file shiftwidth */
 	set_global_b_val(VAL_C_TAB,	8);	/* C file tab stop */
@@ -1493,16 +1495,7 @@ quit(int f, int n GCC_UNUSED)
 	BUFFER *bp;
 	const char *sadj, *sverb;
 
-#if OPT_PROCEDURES
-	{
-	    static int exithooking;
-	    if (!exithooking && *exithook) {
-		    exithooking = TRUE;
-		    run_procedure(exithook);
-		    exithooking = FALSE;
-	    }
-	}
-#endif
+	run_a_hook(&exithook);
 
 	if (f == FALSE) {
 		cnt = any_changed_buf(&bp);

@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.239 1999/03/20 16:32:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.240 1999/04/04 21:18:49 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -131,11 +131,11 @@ decl_uninit( char rpat[NPAT] );		/* replacement pattern		*/
 decl_uninit( int  last_srch_direc );	/* Direction of last search */
 
 #if OPT_PROCEDURES
-decl_uninit( char cdhook[NBUFN] );	/* proc to run when change dir */
-decl_uninit( char readhook[NBUFN] );	/* proc to run when read file  */
-decl_uninit( char writehook[NBUFN] );	/* proc to run when write file */
-decl_uninit( char bufhook[NBUFN] );	/* proc to run when change buf */
-decl_uninit( char exithook[NBUFN] );	/* proc to run when exiting */
+decl_uninit( HOOK cdhook );		/* proc to run when change dir */
+decl_uninit( HOOK readhook );		/* proc to run when read file  */
+decl_uninit( HOOK writehook );		/* proc to run when write file */
+decl_uninit( HOOK bufhook );		/* proc to run when change buf */
+decl_uninit( HOOK exithook );		/* proc to run when exiting */
 #endif
 
 decl_uninit( regexp *gregexp );		/* compiled version of pat */
@@ -282,6 +282,9 @@ decl_uninit( int kbd_expand );		/* -1 kbd_putc shows tab as space */
 decl_uninit( FILE *ffp );		/* File pointer, all functions. */
 decl_uninit( char *fflinebuf );		/* current buffer for file reads */
 decl_uninit( ALLOC_T fflinelen );	/* fflinebuf length */
+decl_uninit( int count_fline );		/* # of lines read with 'ffgetline()' */
+
+/*--------------------------------------------------------------------------*/
 
 decl_uninit( int fileispipe );
 decl_uninit( int fileeof );		/* found eof */

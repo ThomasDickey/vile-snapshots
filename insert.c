@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.113 1999/03/19 11:57:35 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.114 1999/04/04 22:40:27 tom Exp $
  *
  */
 
@@ -125,7 +125,7 @@ openup(int f, int n)
 
 	/* if we are in C mode and this is a default <NL> */
 	if (allow_aindent && n == 1 &&
-		(is_c_mode(curbp) || b_val(curbp,MDAIND)) &&
+		(b_val(curbp,MDCINDENT) || b_val(curbp,MDAIND)) &&
 				    !is_header_line(DOT,curbp)) {
 		s = indented_newline_above();
 		if (s != TRUE) return (s);
@@ -771,11 +771,11 @@ inschar(int c, int *backsp_limit_p)
 	}
 
 	/* do the appropriate insertion */
-	if (allow_aindent && is_c_mode(curbp)) {
+	if (allow_aindent && b_val(curbp,MDCINDENT)) {
 	    int dir;
 	    if (is_user_fence(c, &dir) && dir == REVERSE) {
 		    return insbrace(1, c);
-	    } else if (c == '#') {
+	    } else if (c == '#' && is_c_mode(curbp)) {
 		    return inspound();
 	    }
 	}
@@ -873,7 +873,7 @@ newline(int f, int n)
 	/* if we are in C or auto-indent modes and this is a default <NL> */
 	if (allow_aindent
 	 && (n == 1)
-	 && (is_c_mode(curbp) || b_val(curbp,MDAIND))
+	 && (b_val(curbp,MDCINDENT) || b_val(curbp,MDAIND))
 	 && !is_header_line(DOT,curbp))
 		return indented_newline();
 
@@ -890,7 +890,7 @@ newline(int f, int n)
 static int
 indented_newline(void)
 {
-	int cmode = allow_aindent && is_c_mode(curbp);
+	int cmode = allow_aindent && b_val(curbp,MDCINDENT);
 	register int indentwas; /* indent to reproduce */
 	int bracef; /* was there a brace at the end of line? */
 
@@ -910,7 +910,7 @@ indented_newline(void)
 static int
 indented_newline_above(void)
 {
-	int cmode = allow_aindent && is_c_mode(curbp);
+	int cmode = allow_aindent && b_val(curbp,MDCINDENT);
 	register int indentwas;	/* indent to reproduce */
 	int bracef; /* was there a brace at the beginning of line? */
 

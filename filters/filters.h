@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.24 1999/03/07 19:03:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.25 1999/04/04 22:51:12 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -145,7 +145,7 @@ extern char *filter_name;
 
 extern int is_ident(int ch);
 extern void init_filter(int before);
-extern void do_filter(FILE *input, FILE *output);
+extern void do_filter(FILE *Input, FILE *Output);
 
 /*
  * Declared in the filters.c file.

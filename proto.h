@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.335 1999/03/26 10:28:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.337 1999/04/04 23:06:07 cmorgan Exp $
  *
  */
 
@@ -257,7 +257,7 @@ extern int did_hard_error_occur (void);
 #endif
 
 /* statevar.c */
-extern char * GetEnv(char *s);
+extern char * vile_getenv(char *s);
 
 /* eval.c */
 extern char *get_shell(void);
@@ -734,6 +734,16 @@ extern void set_rdonly (BUFFER *bp, const char *name, int mode);
 #if OPT_EVAL
 extern L_NUM getcline (void);
 extern char * previous_directory (void);
+#endif
+
+#if OPT_PROCEDURES
+extern int run_a_hook(HOOK *hook);
+#define DisableHook(hook) (hook)->latch += 1
+#define EnableHook(hook)  (hook)->latch -= 1
+#else
+#define run_a_hook(hook)  /*nothing*/
+#define DisableHook(hook) /*nothing*/
+#define EnableHook(hook)  /*nothing*/
 #endif
 
 #if SYS_MSDOS || SYS_OS2 || SYS_WINNT
