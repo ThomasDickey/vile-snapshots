@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.192 1996/06/28 20:39:04 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.193 1996/08/09 10:10:49 tom Exp $
  *
  */
 
@@ -950,7 +950,8 @@ quickreadf(register BUFFER *bp, int *nlinep)
 				lp->l_size = *textp + 1;
 				lp->l_text = (char *)textp + 1;
 				set_lforw(lp, lp + 1);
-				set_lback(lp, lp - 1);
+				if (lp != bp->b_LINEs)
+					set_lback(lp, lp - 1);
 				lsetclear(lp);
 				lp->l_nxtundo = null_ptr;
 				lp++;
@@ -1003,6 +1004,23 @@ slowreadf(register BUFFER *bp, int *nlinep)
 	time_t	last_updated = time((time_t *)0);
 #endif
 	b_set_counted(bp);	/* make 'addline()' do the counting */
+#if OPT_DOSFILES
+	/*
+	 * There might be some pre-existing lines if quickreadf
+	 * read part of the file and then left the rest up to us.
+	 */
+	if (global_b_val(MDDOS)) {
+		register LINE   *lp;
+		for_each_line(lp,bp) {
+			if (llength(lp) > 0 &&
+				  lgetc(lp, llength(lp)-1) == '\r') {
+				doslines++;
+			} else {
+				unixlines++;
+			}
+		}
+	}
+#endif
         while ((s = ffgetline(&len)) <= FIOSUC) {
 #if OPT_DOSFILES
 		/*
@@ -1411,7 +1429,8 @@ int	forced)
 	if (msgf == TRUE)
 		mlwrite("[Writing...]");
 
-	CleanToPipe();
+	if (isShellOrPipe(given_fn))
+		CleanToPipe();
 
         lp = rp->r_orig.l;
         nline = 0;                              /* Number of lines     */
@@ -1478,7 +1497,8 @@ int	forced)
 			bp->b_lines_on_disk = nline;
 	}
 
-	CleanAfterPipe(TRUE);
+	if (isShellOrPipe(given_fn))
+		CleanAfterPipe(TRUE);
 
         if (s != FIOSUC)                        /* Some sort of error.  */
                 return FALSE;

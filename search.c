@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.100 1996/03/24 13:38:16 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.101 1996/08/13 02:10:07 pgf Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -504,6 +504,18 @@ int	*wrappedp)
 
 #if OPT_HILITEMATCH
 static int hilite_suppressed;
+static char savepat[NPAT];
+static int save_igncase;
+static int save_magic;
+static BUFFER *save_curbp;
+static VIDEO_ATTR save_vattr;
+
+void
+clobber_save_curbp(BUFFER *bp)
+{
+	if (save_curbp == bp)
+		save_curbp = NULL;
+}
 
 /* keep track of enough state to give us a hint as to whether
 	we need to redo the visual matches */
@@ -511,11 +523,6 @@ static int
 need_to_rehilite(void)
 {
 	/* save static copies of state that affects the search */
-	static char savepat[NPAT];
-	static int save_igncase;
-	static int save_magic;
-	static BUFFER *save_curbp;
-	static VIDEO_ATTR save_vattr;
 
 	if ((curbp->b_highlight & (HILITE_ON|HILITE_DIRTY)) == 
 				  (HILITE_ON|HILITE_DIRTY) ||

@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.1 1996/06/19 04:16:00 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.2 1996/08/09 10:10:49 tom Exp $
  *
  *
  */
@@ -322,9 +322,9 @@ last_slash(const char *fn)
 	register char *s;
 
 	if (*fn != EOS)
-		for (s = strend(fn) - 1; s >= fn; s--)
-			if (is_slashc(*s))
-				return s;
+		for (s = strend(fn); s > fn; s--)
+			if (is_slashc(s[-1]))
+				return s - 1;
 	return 0;
 }
 

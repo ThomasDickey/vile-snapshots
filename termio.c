@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.143 1996/04/14 23:37:50 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.144 1996/08/13 02:10:07 pgf Exp $
  *
  */
 #include	"estruct.h"
@@ -925,9 +925,7 @@ ttgetc(void)
 			read_vms_tty(1);
 	}
 	return (ibuf[ibufi++] & 0xFF);	  /* Allow multinational  */
-#endif
-
-#if SYS_MSDOS || SYS_OS2
+#elif SYS_MSDOS || SYS_OS2
 	/*
 	 * If we've got a mouse, poll waiting for mouse movement and mouse
 	 * clicks until we've got a character to return.
@@ -962,7 +960,10 @@ ttgetc(void)
 	return(c & 0xff);
 	}
 #endif
-#endif	/* SYS_MSDOS */
+#else
+	/* Not used. */
+	return 0;
+#endif
 
 }
 

@@ -1,6 +1,32 @@
 
 Changes for vile 6.1 (released ???)
 
+(jrs)	960809 (b)
+
+	+ on NT reset the console input mode after a shell escape to fix
+	  the problem reported by paul with ^C.  (ntconio.c)
+
+	+ fixed a file corrupting bug caused by reading in a <CR><LF> file
+	  which contained lines longer than 255 characters by accounting
+	  for the possible fall-through of fastreadf into slowreadf in that
+	  case.  (file.c)
+
+	+ don't reset the keyboard when simply writing a file since it
+	  causes an annoying screen flash with the new NT screen buffer
+	  handling.  (file.c)
+
+	+ some minor changes to prevent us accessing (not even dereferencing)
+	  dangling pointers.  (buffer.c, file.c, itbuff.c, tbuff.c, path.c,
+	  search.c)
+
+	+ fix leak of the minibuffer window structure.  (window.c) 
+
+	+ make sure ttgetc returns something on all platforms, even if
+	  it isn't used.  (termio.c)
+
+	+ make nthandler return a value (in case it ever gets called :-).
+	  (ntconio.c)
+
 (pgf)	960717 (a)
 
 	+ applied rick's changes for proper operation in an NT command
