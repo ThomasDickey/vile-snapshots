@@ -1,6 +1,6 @@
-revlist for vile, version v9_2zd
+revlist for vile, version v9_2ze
 --------------------------------------------------------------------------------
-CHANGES	1.686
+CHANGES	1.687
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -10,8 +10,8 @@ CHANGES.R8	1.1
 COPYING	1.3
 INSTALL	1.6
 MANIFEST	none
-README	1.85
-README.PC	1.27
+README	1.87
+README.PC	1.28
 README.VMS	1.5
 aclocal.m4	1.108
 ansi.c	1.40
@@ -60,15 +60,15 @@ isearch.c	1.54
 itbuff.c	1.15
 lckfiles.c	1.10
 line.c	1.151
-main.c	1.478
+main.c	1.479
 makefile.blc	1.17
 makefile.djg	1.30
 makefile.emx	1.5
 makefile.icc	1.13
-makefile.in	1.179
+makefile.in	1.180
 makefile.tbc	1.24
 makefile.wat	1.26
-makefile.wnt	1.72
+makefile.wnt	1.73
 map.c	1.95
 menu.c	1.42
 mkdirs.sh	1.5
@@ -85,7 +85,7 @@ opers.c	1.78
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.29
-patchlev.h	1.279
+patchlev.h	1.280
 path.c	1.123
 perl.xs	1.84
 proto.h	1.493
@@ -94,7 +94,7 @@ ptypemap	1.7
 random.c	1.262
 regexp.c	1.80
 region.c	1.107
-revlist	v9_2zd
+revlist	v9_2ze
 search.c	1.126
 select.c	1.137
 sinstall.sh	1.1
@@ -112,7 +112,7 @@ undo.c	1.83
 version.c	1.53
 vile-9.2.spec	1.1
 vile.1	1.30
-vile.hlp	1.548
+vile.hlp	1.549
 vile.wmconfig	1.1
 vms2unix.c	1.36
 vmsbuild.com	1.35
@@ -285,6 +285,7 @@ macros/color-ls.rc	1.1
 macros/dates.rc	1.2
 macros/digraphs.rc	1.2
 macros/gnugpg.rc	1.2
+macros/loaderrs.rc	1.1
 macros/manpage.rc	1.17
 macros/palettes.rc	1.7
 macros/pictmode.rc	1.3

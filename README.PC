@@ -2,9 +2,9 @@
                           Running vile on a PC
                           --------------------
 
-vile can be built for DOS, OS/2, Windows/NT or Win95/98.  additionally,
-precompiled binaries are available at vile's ftp sites (refer to the
-README file for URL's).
+vile can be built for DOS, OS/2, Windows NT/2K/XP or Win9x/ME. 
+additionally, precompiled binaries are available at vile's ftp sites
+(refer to the README file for URLs).
 
 the precompiled binaries have an obvious advantage:  you don't build vile,
 which avoids the hassle of acquiring an "exotic" and/or expensive compiler.
@@ -49,6 +49,12 @@ locations (and in the order listed):
 
 		$PATH
 		$VILE_LIBDIR_PATH
+
+Syntax coloring
+---------------
+syntax coloring works well on win32 hosts and everyone wants it :-) .
+configuration of this feature is described step-by-step in these vile.hlp
+topics:  "Color basics" and "Syntax coloring" .
 
 the remainder of this file describes build requirements for various PC
 environments.
@@ -141,8 +147,8 @@ the termcap library distributed with EMX does not work well.  use ncurses:
 
 	+ use '$TERM=ansi', or start customizing from that.
 
-WIN32 information (Windows NT and 95/98)
-----------------------------------------
+WIN32 information (Windows NT/2K/XP and 9x/ME)
+----------------------------------------------
 either Visual C++ (4.x or later) or the Borland compiler can be used.  use
 makefile.wnt with VC++ and makefile.blc with Borland's compiler.  with
 respect to the console-mode port (vile.exe), the screen driver is
@@ -257,5 +263,5 @@ tom dickey, dickey@herndon4.his.com
 paul fox, pgf@foxharp.boston.ma.us (home)
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.27 2001/09/18 09:03:22 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.28 2002/06/25 11:30:16 cmorgan Exp $
 ------------------------

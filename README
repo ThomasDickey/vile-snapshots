@@ -1,5 +1,5 @@
 
-README for vile, version 9.2
+README for vile, version 9.3
 -----------------------------
 
 vile is a text editor which is extremely compatible with vi in terms
@@ -525,6 +525,108 @@ Oct, 2000
 
     + added pushd, popd, dirs commands with accompanying [DirStack].
 
+June, 2002
+    vile 9.3 is released.  Highlights since 9.2 (aside from bug fixes):
+
+    + add dirs-clear and dirs-add commands
+
+    + added select-all and selection-clear commands.
+
+    + change default for $XSHELLFLAGS from "-c" to "-e", which matches the
+      documentation for $xshell-flags.
+
+    + add write-all-buffers command; writes all buffers whether modified or not
+
+    + add setenv (set-environment-variable) command.
+
+    + added a swap-title mode and $title-format variable.
+
+    + if the user specifies ":w!", and the file is not writable, vile will
+      (try to) temporarily chmod the file for writable access.
+
+    + added $findpath and $find-cmd state variables and, on win32 and unix
+      hosts, modified capturecmd (aka ^X-!) to support find operations that
+      span directory tree(s).
+
+    + reimplement ":args" command to accept a filename expression. 
+
+    + add commands "ww!" and "wall!", to respectively write all changed
+      buffers and write all buffers, using the "w!" behavior of ignoring
+      readonly file permissions.
+
+    + implement three functions for working with timestamps: &ftime, &stime,
+      and &date, respectively for file modification time, system time, and
+      formatted date/time.
+
+    + extend insert-exec to allow ^A and ^X prefixes to be interpreted
+      in insert mode
+
+    + implemented support for reading/writing Macintosh files, i.e.,
+      recordseparator=cr.  New commands set-rs-cr, set-rs-lf, set-rs-crlf
+      extend the set-unix-mode and set-dos-mode commands to include Mac's.
+
+    + add &stoken function, which searches for a token in a string, e.g.,
+      "perl" in $cfgopts by
+        &stoken  "perl"  ","  $cfgopts
+
+    + add &translate function, e.g.,
+        &trans   ","     " "  "a,b"
+      to change commas to spaces
+
+    + add commands leading-detab-til and leading-entab-til, binding those
+      to ^X-' ' and ^X-^I.  Most of the logic was available internally.
+
+    + implemented '< and '> marks, which denote the limits of the
+      selection.
+
+    Perl Interface:
+
+    + add a new command to shell.pm called "xterm", which starts a shell in one
+      of vile's buffers just as "start-shell" already does, but also starts an
+      xterm through which one may (also) interact with the shell.  The shell
+      output (and echoed input) is displayed in both the xterm and a vile
+      buffer.
+
+    + implement perl/Breadcrumbs.pm
+
+    + add perl/Help.pm
+
+    + add perl/CaptHook.pm, which provides useful wrappers for Vile's
+      "hook" variables.
+
+    Win32-Specific:
+
+    + added basic win32 printing for winvile
+
+    + modify ntconio.c so that default fcolor is 7
+
+    + change paste in winvile to insert at DOT rather than after.  Also,
+      when pasting in insert mode, set DOT to the end of the inserted
+      text.
+
+    + improve paste-by-right-mouse-click operation in winvile by NOT
+      setting the insertion point at the position where the mouse happens
+      to be when executing the right-click, but rather pasting at the
+      current DOT (i.e.  right-mouse-click never sets DOT).
+
+    + when popup-menu is inactive, if text is selected, right-click copies
+      to w32clipboard; otherwise right-click pastes from w32clipboard.
+
+    + added icursor (insertion cursor) mode.
+
+    Syntax Filters:
+
+    + add Verlog and ECLiPSe (Prolog dialect) filters
+
+    + add syntax filter for BASIC, and majormodes basicmode and 
+      Visual Basic (vbmode).
+
+    Other Changes:
+
+    + add 'mouse' mode for OS/2 (CSet), to disable mouse when not wanted.
+
+    + add $prompt variable, to allow changing the command-line prompt.
+
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.85 2002/05/07 00:39:42 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.87 2002/06/25 11:39:01 tom Exp $
 -------------------------------

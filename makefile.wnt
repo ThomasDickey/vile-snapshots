@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.72 2002/05/11 11:46:15 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.73 2002/06/25 11:17:57 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -322,8 +322,13 @@ SCRIPTS	= \
 	filters\filters.rc \
 	macros\dates.rc \
 	macros\digraphs.rc \
+	macros\gnugpg.rc \
+	macros\loaderrs.rc \
+	macros\manpage.rc \
 	macros\palettes.rc \
 	macros\pictmode.rc \
+	macros\search.rc \
+	macros\shifts.rc \
 	macros\vileinit.rc \
 	macros\vileperl.rc
 
