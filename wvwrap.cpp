@@ -10,7 +10,7 @@
  * Note:  A great deal of the code included in this file is copied
  * (almost verbatim) from other vile modules.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.3 1999/06/06 20:31:41 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.4 2001/02/24 17:20:10 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -139,7 +139,7 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
   )
 {
     BSTR      bstr;
-    int       dynbuf_len, dynbuf_idx;
+    size_t    dynbuf_len, dynbuf_idx;
     HRESULT   hr;
     char      *lclbuf = NULL, tmp[512], *dynbuf;
     OLECHAR   *olestr;
@@ -237,7 +237,7 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
         }
         while (argc--)
         {
-            int len = strlen(*argv);
+            size_t len = strlen(*argv);
 
             if (dynbuf_idx + len + sizeof(":e \n") >= dynbuf_len)
             {

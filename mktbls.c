@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.109 2001/02/15 22:41:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.110 2001/02/24 17:20:10 cmorgan Exp $
  *
  */
 
@@ -38,7 +38,7 @@
 # endif
 
 	/* pc-stuff */
-# if defined(__TURBOC__) || defined(__WATCOMC__) || defined(__GO32__) || defined(__IBMC__)
+# if defined(__TURBOC__) || defined(__WATCOMC__) || defined(__GO32__) || defined(__IBMC__) || defined(_WIN32)
 #  define HAVE_STDLIB_H 1
 # endif
 
@@ -61,15 +61,6 @@ extern	char *	malloc	( unsigned int len );
 # if !defined(HAVE_CONFIG_H) || MISSING_EXTERN_FREE
 extern	void	free	( char *ptr );
 # endif
-#endif
-
-/*----------------------------------------------------------------------------*/
-#ifdef	main	/* we're trying to intercept it, e.g., for Windows wrapper */
-#define	ReturnFromMain return
-#endif
-
-#ifndef	ReturnFromMain
-#define ReturnFromMain exit
 #endif
 
 /*----------------------------------------------------------------------------*/
@@ -1972,7 +1963,7 @@ main(int argc, char *argv[])
 	func[0] = flags[0] = fcond[0] = old_fcond[0] = modetype[0] = EOS;
 
 	if (setjmp(my_top))
-		ReturnFromMain(BADEXIT);
+		return(BADEXIT);
 
 	if (argc != 2) {
 		Fprintf(stderr, "usage: mktbls cmd-file\n");
@@ -2225,6 +2216,5 @@ main(int argc, char *argv[])
 	}
 
 	free_mktbls();
-	ReturnFromMain(GOODEXIT);
-	/*NOTREACHED*/
+	return(GOODEXIT);
 }

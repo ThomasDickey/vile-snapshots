@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.212 2001/02/16 21:21:04 pgf Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.213 2001/02/24 21:58:48 tom Exp $
 #
 #
 
@@ -1420,7 +1420,7 @@ setfillcol	NONE
 	"set-fill-column"
 	'^X-f'
 	<set the fillcol setting to CNT.  same as \"set fillcol=NN\">
-set_envvar	NONE			HAVE_PUTENV
+set_envvar	NONE			OPT_SHELL&&HAVE_PUTENV
 	"setenv"
 	"set-environment-variable"
 	<set and export a process environment variable>

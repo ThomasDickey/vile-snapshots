@@ -8,7 +8,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32oo.cpp,v 1.1 2000/09/25 07:08:57 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32oo.cpp,v 1.2 2001/02/24 17:20:10 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -35,7 +35,6 @@ get_favorites(void)
     LPMALLOC     pMalloc = NULL;
     static       char *path;
     LPITEMIDLIST pidl = NULL;
-    int          rc;
     HRESULT      hr;
 
     if (! path)

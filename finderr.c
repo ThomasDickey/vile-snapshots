@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2000 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.102 2001/02/17 21:40:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.103 2001/02/24 16:19:45 tom Exp $
  *
  */
 
@@ -79,6 +79,7 @@ static const
 char *const predefined[] =
 {
     "^\"%[^\" \t]\", line %L:%T",	/* various C compilers */
+    "^%F:\\s*%L:%C:\\s*%T",	/* antic */
     "^%F:\\s*%L:\\s*%T",	/* "grep -n" */
 
 #if SYS_VMS
@@ -736,7 +737,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
     /* it's an absolute move */
     curwp->w_lastdot = DOT;
     status = gotoline(TRUE, -(curbp->b_lines_on_disk - fe_line + lL_base));
-    DOT.o = fe_colm ? fe_colm - cC_base : 0;
+    gocol(fe_colm ? fe_colm - cC_base : 0);
 
     oerrline = fe_line;
     (void) tb_scopy(&oerrfile, errfile);
