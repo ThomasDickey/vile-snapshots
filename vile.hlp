@@ -2619,6 +2619,20 @@ Encryption
 	the current key.  Note that crypting two adjacent regions
 	separately will _not_ produce the same result as crypting their
 	single equivalent region once.
+
+	vile's encryption algorithm is also available externally, via the
+	"vile-crypt" program built from the same sources.  vile-crypt will 
+	encrypt/decrypt a file using vile's crypt algorithm.  You can use 
+	"-k key" to supply the key on the commandline, and "-m" to treat 
+	the file as a mail message -- in that case, only text after the 
+	first blank line will be crypted.  Text to be encrypted can be 
+	specified as filenames on the command line, or provided as the 
+	standard input.  All output appears on stdout.  On systems with 
+	a getpass() library routine, the user will be prompted for the 
+	encryption key if it is not given on the command line.  To 
+	accomodate systems (such as linux) where the getpass() library 
+	routine is not interruptible from the keyboard, entering a 
+	crypt-key password which ends in ^C will cause the program to quit. 
 	
 
 Crash Recovery
@@ -3561,4 +3575,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.339 1998/02/23 11:27:58 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.340 1998/03/15 21:29:40 pgf Exp $

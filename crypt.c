@@ -1,7 +1,7 @@
 /*	Crypt:	Encryption routines for MicroEMACS
  *		written by Dana Hoggatt and Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/crypt.c,v 1.19 1998/02/21 22:23:32 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/crypt.c,v 1.20 1998/03/15 21:28:52 pgf Exp $ 
  *
  */
 
@@ -126,6 +126,15 @@ main(int argc, char **argv)
 	    key[sizeof(key)-1] = '\0';
 	    argc -= 2;
 	    argv += 2;
+	} if (argc > 1 && argv[1][0] == '-') { 
+	    fprintf(stderr, 
+		"usage: %s [-m] [-k crypt-key] [file ...]\n" 
+		"  where crypt-key will be prompted for if not specified\n" 
+		"  and -m will force \"mail-mode\", which leaves text before\n" 
+		"  the first empty line of a file (i.e. headers) intact.\n", 
+		prog 
+	    ); 
+	    exit(1); 
 	} else {
 #if HAVE_GETPASS
 	    char *userkey;
@@ -148,7 +157,9 @@ main(int argc, char **argv)
 #else
 	    fprintf(stderr,
 		"usage: %s [-m] -k crypt-key [file ...]\n"
-		"  where '-k crypt-key' must be specified on this system\n",
+		"  where '-k crypt-key' must be specified on this system\n" 
+		"  and -m will force \"mail-mode\", which leaves text before\n" 
+		"  the first empty line of a file (i.e. headers) intact.\n", 
 		prog
 	    );
 	    exit(1);
