@@ -149,10 +149,6 @@ api_setup_fake_win(SCR *sp)
 	(void) push_fake_win(sp->bp);
 	sp->fwp = curwp;
 	sp->changed = 0;
- 
- 
-	DOT = sp->region.r_orig;	/* set DOT to beginning of region */ 
- 
     }
 
     /* Should be call make_current() for this? */
@@ -337,6 +333,10 @@ api_dotgline(SCR *sp, char **linep, int *lenp)
 { 
  
     api_setup_fake_win(sp); 
+    if (sp->dot_inited) { 
+	DOT = sp->region.r_orig;	/* set DOT to beginning of region */ 
+	sp->dot_inited = 1; 
+    } 
  
     /* FIXME: Handle rectangular regions. */ 
  
@@ -480,6 +480,7 @@ api_command_cleanup(void)
     while ((bp = pop_fake_win(curwp_after)) != NULL) {
 	if (bp2sp(bp) != NULL)
 	    bp2sp(bp)->fwp = 0;
+	    bp2sp(bp)->dot_inited = 0;		/* for next time */ 
 	    if (bp2sp(bp)->changed) {
 		chg_buff(bp, WFHARD);
 		bp2sp(bp)->changed = 0;
@@ -521,8 +522,11 @@ api_bp2sp(BUFFER *bp)
 	    bp->b_api_private = sp;
 	    sp->bp = bp;
 	    sp->regionshape = FULLLINE; 
-	    sp->region.r_orig = DOT; 
-	    sp->region.r_end  = DOT; 
+	    sp->region.r_orig.l = 
+	    sp->region.r_end.l  = buf_head(bp); 
+	    sp->region.r_orig.o = 
+	    sp->region.r_end.o  = 0; 
+	    sp->dot_inited = 0; 
 	}
     }
     return sp;

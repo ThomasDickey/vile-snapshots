@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.152 1998/03/20 10:48:45 kev Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.154 1998/03/22 20:34:31 tom Exp $
 #
 #
 
@@ -1509,6 +1509,12 @@ yankline	NONE
 mouse_motion	ABSM|MOTION		OPT_XTERM||DISP_X11
 	'FN-M'				KEY_Mouse
 	<dummy command to support mouse movements internally>
+copy_to_clipboard NONE 			DISP_X11
+	"copy-to-clipboard"
+	<copies the currently highlighted selection to the cut buffer> 
+paste_from_clipboard REDO|UNDO 		DISP_X11
+	"paste-from-clipboard"
+	<pastes the contents of the cut buffer> 
 xterm_mouse_t	NONE			(OPT_XTERM>=3)
 	'FN-t'				KEY_text
 	<dummy command to support xterm mouse operation>

@@ -1,5 +1,31 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (kev) 980321 (l) 
+ 	+ api.c (api_setup_fake_win, api_dotgline, api_command_cleanup, 
+	  api_bp2sp):  Rearranged initialization of DOT so that it will 
+	  be done conditionally in api_dotgline.  This fixes a nasty 
+	  bug in which lines could get added to the wrong buffer.  It 
+	  also allows perl functions to be written which look at the 
+	  current location of DOT and possibly do something with it. 
+	  Before, we were always setting it to the start of the region 
+	  (which may not have a lot of relevance). 
+	+ api.h (SCR): New field dot_inited. 
+	+ perl.xs (setregion): Set dot_inited field. 
+	+ x11.c (atom_CLIPBOARD, x_preparse_args): New atom; initialize. 
+	  (x_get_selection, x_paste_selection, x_get_clipboard_text, 
+	  x_convert_selection, x_lose_selection, own_selection, 
+	  x_own_selection, copy_to_clipboard, paste_from_clipboard, 
+	  x_process_event): Handle CLIPBOARD selections as well as 
+	  primary selections. 
+	+ cmdtbl (copy_to_clipboard, paste_from_clipboard): New 
+	  commands. 
+	+ estruct.h (CLIP_KREG): New kill register. 
+	  (NKREGS, SEL_KREG, KEYST_KREG): Renumbered to account for 
+	  new kill register, CLIP_KREG. 
+	+ line.c (index2reg): Represent the clipboard kill register 
+	  with a ';'. 
+	+ vile.hlp: New documentation about X11 CLIPBOARD selections. 
+ 
  (tom) 980321 (k)
 	+ correct logic in tcap.c so that visual-matches works for a specific
 	  color (reported by Kuntal M. Daftary).
