@@ -1,5 +1,14 @@
 Changes for vile 7.0 (released ??? Feb ??, 1997)
 
+(tom)	970227 (d)
+	+ ifdef'd function-key change to x11.c from 6.4d (reported by Graeme
+	  Miller).
+	+ add environment-variables VILE_HELP_FILE, VILE_STARTUP_FILE and
+	  VILE_STARTUP_PATH to allow user to override default configuration.
+	  (suggested by Andy Harper <A.HARPER@kcl.ac.uk>).
+	+ correct unused build-definition HELP_LOC from changes in 6.4c by
+	  prepending it to $startup-path on initialization.
+
 (tom)	970226 (c)
 	+ fix additional nits for ffwopen() (reported by Graeme Miller and
 	  Andy Harper).

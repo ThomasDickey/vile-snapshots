@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.320 1997/02/26 11:53:27 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.321 1997/02/27 11:34:04 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1268,12 +1268,6 @@ on VMS, we don't get filename completion with "~", since that's not processed
 in glob.c
 
 -- 97-02-26 (Andy Harper <A.HARPER@kcl.ac.uk>)
-
-	Under VMS, the location of the HELP file should not be hardwired to a
-	specific set of directories; rather it is better to use a logical name,
-	such as VILE_HELP, to point to it.
-
-[or an environment variable, in *NIX terms - tom]
 
 	Under VMS, the location of the package should be in a rooted directory
 	tree, let's say VILE_ROOT:[000000], with subdirectories for VAX

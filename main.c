@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.286 1997/02/09 20:11:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.287 1997/02/27 11:58:48 tom Exp $
  *
  */
 
@@ -735,6 +735,8 @@ global_val_init(void)
 	static const char expand_chars[] =
 		{ EXPC_THIS, EXPC_THAT, EXPC_SHELL, EXPC_TOKEN, EXPC_RPAT, 0 };
 	register int i;
+	char *s;
+
 	/* set up so the global value pointers point at the global
 		values.  we never actually use the global pointers
 		directly, but when buffers get a copy of the
@@ -928,7 +930,7 @@ global_val_init(void)
 	set_global_b_val_rexp(VAL_SECTIONS,
 		new_regexval(
 			"^[{\014]\\|^\\.[NS]H\\>\\|^\\.HU\\?\\>\\|\
-^\\.[us]h\\>\\|^+c\\>",
+^\\.[us]h\\>\\|^+c\\>",	/* }vi */
 			TRUE));
 
 	/* where do sentences start? */
@@ -953,22 +955,53 @@ global_val_init(void)
 
 	set_global_w_val(WVAL_SIDEWAYS,	0);	/* list-mode */
 
-	helpfile = strmalloc("vile.hlp");
+	if ((s = getenv("VILE_HELP_FILE")) == 0)
+		s = "vile.hlp";
+	helpfile = strmalloc(s);
 
+	if ((s = getenv("VILE_STARTUP_FILE")) == 0) {
 #if	SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT || SYS_VMS
-	startup_file = strmalloc("vile.rc");
+		s = strmalloc("vile.rc");
 #else	/* SYS_UNIX */
-	startup_file = strmalloc(".vilerc");
+		s = strmalloc(".vilerc");
 #endif
+	}
+	startup_file = strmalloc(".vilerc");
 
+	if ((s = getenv("VILE_STARTUP_PATH")) == 0) {
 #if	SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
-	startup_path = strmalloc("\\sys\\public\\;\\usr\\bin\\;\\bin\\;\\");
+		s = strmalloc("\\sys\\public\\;\\usr\\bin\\;\\bin\\;\\");
 #else
 #if	SYS_VMS
-	startup_path = strmalloc("sys$login;sys$sysdevice:[vmstools];sys$library");
+		s = strmalloc("sys$login;sys$sysdevice:[vmstools];sys$library");
 #else	/* SYS_UNIX */
-	startup_path = strmalloc("/usr/local/lib/:/usr/local/:/usr/lib/");
+		s = strmalloc("/usr/local/lib/:/usr/local/:/usr/lib/");
 #endif
+#endif
+	}
+	startup_path = strmalloc(s);
+
+#ifdef	HELP_LOC
+	/*
+	 * *NIX install will define this
+	 */
+	{
+		char temp[NFILEN];
+		int found = FALSE;
+
+		s = startup_path;
+		while ((s = parse_pathlist(s, temp)) != 0) {
+			if (!strcmp(temp, HELP_LOC)) {
+				found = TRUE;
+				break;
+			}
+		}
+		if (!found) {
+			s = malloc(strlen(HELP_LOC) + 2 + strlen(startup_path));
+			lsprintf(s, "%s%c%s", HELP_LOC, PATHCHR, startup_path);
+			startup_path = s;
+		}
+	}
 #endif
 }
 

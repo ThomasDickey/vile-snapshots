@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.143 1997/02/20 20:01:37 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.144 1997/02/27 11:09:57 tom Exp $
  *
  */
 
@@ -5398,6 +5398,7 @@ x_key_press(
 	{XK_F18,     KEY_F18},
 	{XK_F19,     KEY_F19},
 	{XK_F20,     KEY_F20},
+#if defined(XK_F21) && defined(KEY_F21)
 	{XK_F21,     KEY_F21},
 	{XK_F22,     KEY_F22},
 	{XK_F23,     KEY_F23},
@@ -5413,6 +5414,7 @@ x_key_press(
 	{XK_F33,     KEY_F33},
 	{XK_F34,     KEY_F34},
 	{XK_F35,     KEY_F35},
+#endif
 	/* keypad function keys */
 	{XK_KP_F1,   KEY_KP_F1},
 	{XK_KP_F2,   KEY_KP_F2},

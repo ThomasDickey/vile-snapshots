@@ -1,6 +1,6 @@
-revlist for vile, version v6_5c
+revlist for vile, version v6_5d
 --------------------------------------------------------------------------------
-CHANGES	1.42
+CHANGES	1.43
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -16,7 +16,7 @@ basic.c	1.92
 bind.c	1.146
 borland.c	1.18
 buffer.c	1.152
-buglist	1.320
+buglist	1.321
 c-filt.c	1.1
 c-filt.flx	1.1
 chgdfunc.h	1.4
@@ -55,11 +55,11 @@ itbuff.c	1.10
 lckfiles.c	1.7
 line.c	1.103
 macros.doc	1.12
-main.c	1.286
+main.c	1.287
 makefile.blc	1.5
 makefile.djg	1.20
 makefile.icc	1.5
-makefile.in	1.75
+makefile.in	1.76
 makefile.tbc	1.20
 makefile.wat	1.22
 makefile.wnt	1.13
@@ -85,7 +85,7 @@ proto.h	1.236
 random.c	1.183
 regexp.c	1.62
 region.c	1.79
-revlist	v6_5c
+revlist	v6_5d
 search.c	1.106
 select.c	1.53
 spawn.c	1.114
@@ -107,5 +107,5 @@ vmsvt.c	1.29
 window.c	1.72
 word.c	1.54
 wordmov.c	1.17
-x11.c	1.143
+x11.c	1.144
 z100bios.asm	1.4
