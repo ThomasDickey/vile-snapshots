@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.258 1998/09/29 01:12:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.259 1998/10/03 01:40:37 tom Exp $
  *
  */
 
@@ -1647,8 +1647,6 @@ updattrs(WINDOW *wp)
 				   ap->ar_region.r_end.o - 1);
 		if (end_col < n)
 			end_col = n;
-		if (end_col < 0)
-			end_col = 0;
 	    } else {
 		end_col = offs2col(wp, lp, llength(lp));
 #ifdef WMDLINEWRAP

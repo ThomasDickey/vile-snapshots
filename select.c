@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.79 1998/10/01 09:26:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.80 1998/10/03 02:08:48 tom Exp $
  *
  */
 
@@ -624,6 +624,15 @@ on_mouse_click(int button, int y, int x)
 	if (button > 0) {
 		if ((this_wp = row2window(y)) != 0
 		 && (y != mode_row(this_wp))) {
+			/*
+			 * If we get a click on the "<" marking the left side
+			 * of a shifted window, force the screen right. This
+			 * makes it more consistent if there's a tab.
+			 */
+			if (w_val(this_wp, WVAL_SIDEWAYS)
+			 && x == 0) {
+				mvleftwind(FALSE, 1);
+			}
 			if (!doingsweep) {
 				if (button == BTN_EXTEND) {
 					first_x = offs2col(this_wp, this_wp->w_dot.l, this_wp->w_dot.o);
