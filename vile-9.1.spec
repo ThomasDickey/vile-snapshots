@@ -1,11 +1,11 @@
 Summary: VILE VI Like Emacs editor
 Name: vile
-Version: 9.0
+Version: 9.1
 Release: 1
 Copyright: GPL
 Group: Applications/Editors
 URL: ftp://ftp.clark.net/pub/dickey/vile
-Source0: vile-9.0.tgz
+Source0: vile-9.1.tgz
 Packager: Thomas Dickey <dickey@clark.net>
 
 %description
@@ -15,7 +15,7 @@ notably multi-file editing and viewing, syntax highlighting, key
 rebinding, and real X window system support.
 
 %prep
-%setup -q -n vile-9.0
+%setup -q -n vile-9.1
 #%patch1 -p1
 
 %build
