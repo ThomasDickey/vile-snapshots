@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_2v
+MANIFEST for vile, version v8_3
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -106,7 +106,7 @@ trace.h                         development: trace to logfile
 ucrypt.c                        interface to Unix crypt(1)
 undo.c                          support for "undo"
 version.c                       version & usage messages
-vile-8.2.spec                   rpm spec file (sample)
+vile-8.3.spec                   RedHat rpm specification for vile 8.3
 vile.1                          man-page for VILE
 vile.hlp                        help-file
 vms2unix.c                      VMS/UNIX compatibility support functions
