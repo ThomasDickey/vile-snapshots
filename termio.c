@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.164 1999/05/10 23:41:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.165 1999/08/06 12:05:00 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -96,6 +96,10 @@ static void ttmiscinit (void);
 #  undef USE_FCNTL
 #  define USE_FIONREAD 1
 # endif
+#endif
+
+#ifndef O_NDELAY
+#undef USE_FCNTL
 #endif
 
 #if USE_FCNTL

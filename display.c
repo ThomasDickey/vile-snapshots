@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.291 1999/07/17 21:57:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.292 1999/08/18 00:11:27 tom Exp $
  *
  */
 
@@ -2896,7 +2896,7 @@ special_formatter(TBUFF **result, char *fs, WINDOW *wp)
 
 		    if (fs != save_fs) {
 			int flag = clexec;
-			const char *save_execstr;
+			char *save_execstr;
 			TBUFF *tok = 0;
 
 			save_execstr = execstr;

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_3m
+MANIFEST for vile, version v8_3n
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -162,6 +162,8 @@ filters/dcl.key                 dcl keywords
 filters/diff.key                keywords for 'diff' syntax filter
 filters/difffilt.l              syntax filter for 'diff' output
 filters/ecrypt.c                uemacs-derived encryption
+filters/fdl-filt.l              syntax filter for forms-definition
+filters/fdl.key                 keywords for forms-definition
 filters/filters.c               common utilities for filtering
 filters/filters.h               interface/definitions for filtering utilities
 filters/filters.rc              sample majormodes, and corresponding filters

@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.30 1999/05/18 01:47:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.31 1999/08/18 00:49:36 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -681,7 +681,7 @@ static void post_buffer_list ( Widget w GCC_UNUSED, XtPointer client GCC_UNUSED,
 /* Main function : Take the MotifBar as argument and create all the     */
 /* Cascades, PullDowns Menus and Buttons read from the rc file          */
 /************************************************************************/
-void do_menu ( Widget menub )
+int do_menu ( Widget menub )
 {
     int     i, n = 0;
     char    *arg, *accel, *macro;
@@ -693,7 +693,7 @@ void do_menu ( Widget menub )
     if ((rc = parse_menu (menurc)) != TRUE)
     {
         mlforce("Error parsing menu-file");
-        return;
+        return FALSE;
     }
 #if OPT_TRACE
     print_token();
@@ -746,6 +746,7 @@ void do_menu ( Widget menub )
             break;
         }
     }
+    return TRUE;
 }
 /************************************************************************/
 

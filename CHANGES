@@ -1,5 +1,17 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+(tom) 990817 (n)
+	+ if .vilemenu is not found, return status to main.c so we can popup
+	  appropriate message.
+	+ remove const qualifiers from some functions whose data really are
+	  modifiable: next_buffer_line(), get_token(), tokval (), user_reply().
+	+ BeOS has nonworking 'select()', and no corresponding fd_set
+	  declaration.  Add CF_TYPE_FD_SET configure check to handle this. 
+	  (I'll write some BeOS-specific code to make cursor-keys work).
+	+ BeOS does not define O_NDELAY; undef'd USE_FCNTL in this case.
+	+ correct ifdef for ttyname(), was HAS_TTYNAME, to use this on BeOS.
+	+ add fdl syntax highlighter.
+
 (tom) 990805 (m)
 	+ add vile-perl-filt to makefile.wnt
 	+ minor improvement to txt-filt.l, to reset quoted mode when a blank

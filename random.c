@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.202 1999/07/16 10:10:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.203 1999/08/17 11:08:20 tom Exp $
  *
  */
 
@@ -697,7 +697,7 @@ catnap(int milli, int watchinput)
 #endif
     {
 #if SYS_UNIX
-# if HAVE_SELECT
+# if HAVE_SELECT && HAVE_TYPE_FD_SET
 
 	struct timeval tval;
 	fd_set read_bits;

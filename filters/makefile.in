@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.52 1999/06/21 23:46:34 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.53 1999/08/17 09:49:50 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -87,6 +87,7 @@ LEX_ALL = \
 	vile-cweb-filt$x \
 	vile-dcl-filt$x \
 	vile-diff-filt$x \
+	vile-fdl-filt$x \
 	vile-html-filt$x \
 	vile-latex-filt$x \
 	vile-lex-filt$x \
@@ -139,6 +140,9 @@ vile-dcl-filt$x : dcl-filt.o $(CF_DEPS)
 
 vile-diff-filt$x : difffilt.o $(CF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ difffilt.o $(LF_ARGS)
+
+vile-fdl-filt$x : fdl-filt.o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ fdl-filt.o $(LF_ARGS)
 
 vile-html-filt$x : htmlfilt.o $(LF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ htmlfilt.o $(LF_ARGS)
@@ -224,6 +228,7 @@ INSTALL_LEX_BIN = \
 	$(BINDIR)/vile-awk-filt$x \
 	$(BINDIR)/vile-bat-filt$x \
 	$(BINDIR)/vile-dcl-filt$x \
+	$(BINDIR)/vile-fdl-filt$x \
 	$(BINDIR)/vile-diff-filt$x \
 	$(BINDIR)/vile-html-filt$x \
 	$(BINDIR)/vile-latex-filt$x \
@@ -254,6 +259,7 @@ INSTALL_LEX_TXT = \
 	$(DATADIR)/csh.keywords \
 	$(DATADIR)/dcl.keywords \
 	$(DATADIR)/diff.keywords \
+	$(DATADIR)/fdl.keywords \
 	$(DATADIR)/html.keywords \
 	$(DATADIR)/imake.keywords \
 	$(DATADIR)/java.keywords \
@@ -332,6 +338,7 @@ $(BINDIR)/vile-c-filt$x :	vile-c-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-crypt$x :	vile-crypt$x		; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-dcl-filt$x :	vile-dcl-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-diff-filt$x :	vile-diff-filt$x	; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-fdl-filt$x :	vile-fdl-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-html-filt$x :	vile-html-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-latex-filt$x :	vile-latex-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-lex-filt$x :	vile-lex-filt$x		; $(INSTALL_PROGRAM) $? $@
@@ -367,6 +374,7 @@ $(DATADIR)/c.keywords :		$(srcdir)/c.key		; $(INSTALL_DATA) $? $@
 $(DATADIR)/csh.keywords :	$(srcdir)/csh.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/dcl.keywords :	$(srcdir)/dcl.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/diff.keywords :	$(srcdir)/diff.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/fdl.keywords :	$(srcdir)/fdl.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/html.keywords :	$(srcdir)/html.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/imake.keywords :	$(srcdir)/imake.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/java.keywords :	$(srcdir)/java.key	; $(INSTALL_DATA) $? $@

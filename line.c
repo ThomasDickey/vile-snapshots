@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.123 1999/05/17 23:59:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.124 1999/08/18 00:00:43 tom Exp $
  *
  */
 
@@ -1718,7 +1718,7 @@ relist_registers(void)
 #if NO_LEAKS
 void	kbs_leaks(void)
 {
-	for (ukb = 0; ukb < TABLESIZE(kbs); ukb++) {
+	for (ukb = 0; ukb < (int) TABLESIZE(kbs); ukb++) {
 		ksetup();
 		kdone();
 	}

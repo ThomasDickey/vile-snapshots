@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.195 1999/08/04 10:15:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.196 1999/08/18 00:17:39 tom Exp $
  *
  */
 
@@ -1730,7 +1730,7 @@ int	len)
 /*
  * return lines of a named buffer in sequence, starting at DOT
  */
-const char *
+char *
 next_buffer_line(const char *bname)
 {
 	WINDOW *wp = NULL;

@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.201 1999/07/06 00:54:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.202 1999/08/18 00:16:26 tom Exp $
  *
  */
 
@@ -1035,7 +1035,7 @@ eol_history(const char * buffer GCC_UNUSED, unsigned cpos GCC_UNUSED, int c, int
  */
 static	int	pushed_back;
 static	int	pushback_flg;
-static	const char * pushback_ptr;
+static	char *	pushback_ptr;
 
 void
 kbd_pushback(TBUFF *buf, int skip)
@@ -1090,8 +1090,8 @@ int (*complete)(DONE_ARGS)) /* handles completion */
 /*
  * this one is called for @"interactive" variables, and the &query function
  */
-const char *
-user_reply(const char *prompt)
+char *
+user_reply(char *prompt)
 {
 	static TBUFF *replbuf;
 	int save_no_msgs;

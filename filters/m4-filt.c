@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.8 1999/06/13 14:57:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.9 1999/08/06 21:45:44 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4 
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -35,7 +35,7 @@ static char *Number_attr;
 /* changequote */
 typedef struct {
     char *text;
-    size_t used, have;
+    unsigned used, have;
 } Quote;
 
 #define isQuote(s,n) (n.used && !strncmp(s, n.text, n.used))
