@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.250 2001/02/18 00:19:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.251 2001/02/24 17:18:24 tom Exp $
  *
  */
 
@@ -1859,6 +1859,10 @@ vl_dirs_add(int f GCC_UNUSED, int n GCC_UNUSED)
 /*
  * if ANSI C compiler available, convert a string to a long, trapping all
  * possible conversion errors.
+ *
+ * Note: strtol() and strtoul() appear on all of the systems we've seen within
+ * recent memory; so the ifdef checks if this code will compile and leaves the
+ * detail of errno values in a don't-care mode.
  */
 long
 vl_atol(char *str, int base, int *failed)

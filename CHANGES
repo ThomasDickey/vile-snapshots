@@ -1,5 +1,24 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20010224 (h)
+	> Clark Morgan:
+	+ fix some compiler warnings highlighted by change in 9.2g to use -W3
+	  warning level in makefile.wnt (mktbls.c, ntwinio.c, w32oo.cpp,
+	  wvwrap.cpp).
+	+ fix bug introduced in getfile2bp() in 9.2g by compiler-warning
+	  cleanup which broke ^X-e command.
+	> Tom Dickey:
+	+ modify definition of $progname so it can be redefined at build time,
+	  allowing multiple versions of winvile to coexist.
+	+ minor tweak to Clark's fix for getfile2bp() to fix the compiler
+	  warning too.
+	+ improved expressions for $filename-expr to avoid picking up ':'
+	  unnecessarily.
+	+ add an error expression for 'antic', which uses line and column
+	  numbers, and correct column placement to account for tabs.  The
+	  other expressions using columns were applied to listing files with
+	  tabs already converted.
+
  20010217 (g)
 	> Clark Morgan:
 	+ rewrote much of the internals of winprint() and associated functions
@@ -81,7 +100,7 @@ Changes for vile 9.3 (released ??? ??? ?? 2000)
 	  + remove fallback for strcspn().
 	  + indent'd
 	+ work around NetBSD 1.5's use of MK symbol in curses.h (reported by
-	  Matthias Buelow).   
+	  Matthias Buelow).
 	+ add syntax filter for ECLiPSe, a dialect of Prolog (from Joachim
 	  Schimpf <j.schimpf@icparc.ic.ac.uk>).
 	+ modify sh-filt.l to recognize "<<-" marker beginning a here-document.
@@ -122,7 +141,7 @@ Changes for vile 9.3 (released ??? ??? ?? 2000)
 	+ added basic win32 printing for winvile via these two new commands:
 	       winprint winpage-setup
 	  This feature is not currently available for console vile.  _Missing_
-	  printing features include:   
+	  printing features include:
 	  + ability to set printing font (distinct from display font),
 	  + header/footer strings (footer currently hardwired as centered page #)
 	  + printing of current selection
@@ -199,7 +218,7 @@ Changes for vile 9.3 (released ??? ??? ?? 2000)
 	+ correct allocation size in OpenKeywords(), which was not long enough
 	  (patch by Joachim Schimpf <j.schimpf@icparc.ic.ac.uk>).
 	+ fixes to build on Windows 2000 (win2k) with perl 5.6.0, Visual C++
-	  5.0 (mkprlenv.wnt, filters/makefile.wnt).      
+	  5.0 (mkprlenv.wnt, filters/makefile.wnt).
 
  20001206 (d)
 	> Kevin Buettner:
@@ -254,7 +273,7 @@ Changes for vile 9.3 (released ??? ??? ?? 2000)
 	+ improve performance for very long syntax-highlighted lines
 	  essentially converts a quadratic algorithm into a linear one.  It
 	  also fixes the crasher you get when you change from linewrap mode to
-	  nolinewrap mode where the first line won't fit on the screen. 
+	  nolinewrap mode where the first line won't fit on the screen.
 	  (report by Clark Morgan).
 	+ fix related problem where VASPCOL code was interpreted incorrectly as
 	  VASPCOL | VASEL | VAREV, making add_line_attribute() consider this to
@@ -275,7 +294,7 @@ Changes for vile 9.3 (released ??? ??? ?? 2000)
 	  + yanking all of vile.hlp with yG, then putting (p) into an empty
 	    buffer would put an empty line on the end, but remove the initial
 	    empty line (reported by Clark Morgan).
-	  + restore DOT to the original location after putting the text. 
+	  + restore DOT to the original location after putting the text.
 	+ modify treatment of pushed_back flag in kbd_reply() so it will force
 	  the given partial result to be glued to the pushed-back string.
 	  This fixes a problem using ^R to read the result of a shell command
@@ -309,7 +328,7 @@ Changes for vile 9.3 (released ??? ??? ?? 2000)
 	  "[write only]" rather than the ERROR token.
 	+ if last element is popped off dirstack and [DirStack] is the only
 	  visible buffer, be sure to update [DirStack].
-	+ add consistent error message delimiters for modules that I regularly 
+	+ add consistent error message delimiters for modules that I regularly
 	  modify.
 	+ when winvile spawns a dynamic console, the parent process ignores all
 	  win32-supported signals until the console exits.  This prevents a

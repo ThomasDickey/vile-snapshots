@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.278 2001/02/14 01:38:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.279 2001/02/24 20:16:10 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -33,16 +33,19 @@ extern "C" {
 decl_uninit( char *prog_arg );		/* argv[0] from main.c */
 decl_init( char *exec_pathname, ".");	/* replaced at runtime with path-head of argv[0] */
 
-#if DISP_X11
-decl_init( char prognam[], "xvile");
-#else
-# if DISP_NTWIN
-decl_init( char prognam[], "winvile");
+#ifndef PROGRAM_NAME
+# if DISP_X11
+# define PROGRAM_NAME "xvile"
 # else
-decl_init( char prognam[], "vile");
+#  if DISP_NTWIN
+# define PROGRAM_NAME "winvile"
+#  else
+# define PROGRAM_NAME "vile"
+#  endif
 # endif
-#endif
+#endif /* PROGRAM_NAME */
 
+decl_init( char prognam[], PROGRAM_NAME);
 decl_init( char version[], "version 9.2");
 
 #ifdef SYSTEM_NAME

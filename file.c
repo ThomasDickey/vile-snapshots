@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.275 2001/02/18 00:49:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.276 2001/02/24 12:35:34 tom Exp $
  */
 
 #include	"estruct.h"
@@ -565,7 +565,7 @@ const char *fname,		/* file name to find */
 int ok_to_ask,
 int cmdline)
 {
-	BUFFER *bp;
+	BUFFER *bp = cmdline ? NULL : find_b_name(fname);
 	int	s;
 	char bname[NBUFN];	/* buffer name to put file */
 	char nfname[NFILEN];	/* canonical form of 'fname' */
@@ -573,8 +573,7 @@ int cmdline)
 	int have_fuid = FALSE;
 
 	/* user may have renamed buffer to look like filename */
-	if (cmdline
-	 || (bp = find_b_name(fname)) == NULL
+	if (bp == NULL
 	 || (strlen(fname) > (SIZE_T)NBUFN-1)) {
 
 		/* It's not already here by that buffer name.
@@ -637,8 +636,6 @@ int cmdline)
 		ch_fname(bp, nfname);
 		if (have_fuid)
 			fileuid_set(bp, &fuid);
-	} else {
-		bp = 0;
 	}
 	return bp;
 }

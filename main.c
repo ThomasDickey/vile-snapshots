@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.443 2001/02/18 00:48:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.445 2001/02/24 19:38:26 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -1302,11 +1302,26 @@ global_val_init(void)
  (%P%%) char is 0x%{$char}x or 0%{$char}o"
 	);
 #endif
+	/*
+	 * The $filename-expr expression is used with a trailing '*' to repeat
+	 * the last field.  Otherwise it is complete.
+	 *
+	 * Limitations - the expressions are used in the error finder, which
+	 * has to choose the first pattern which matches a filename embedded
+	 * in other text.  UNIX-style pathnames could have embedded blanks,
+	 * but it's not common.  It is common on win32, but is not often a
+	 * problem with grep, etc., since the full pathname of the file is not
+	 * usually given.
+	 */
 #if OPT_FINDERR
 #if	OPT_MSDOS_PATH
-	set_state_variable(s_filename_expr__, "\\([a-zA-Z]:\\)\\?[^ \t\":]");
+	set_state_variable(s_filename_expr__, "\\([a-zA-Z]:\\)\\?[^ \t\":*?<>|]");
 #else
-	set_state_variable(s_filename_expr__, "[^ \t\"]");
+#if	OPT_VMS_PATH
+	set_state_variable(s_filename_expr__, "[-/\\w.;\[\]<>$:]");
+#else	/* UNIX-style */
+	set_state_variable(s_filename_expr__, "[-/\\w.~]");
+#endif
 #endif
 #endif
 	/*

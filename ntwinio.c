@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.103 2001/02/18 01:14:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.105 2001/02/24 18:38:34 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -1473,7 +1473,7 @@ nteeop(void)
     HDC hDC;
     HBRUSH brush;
     RECT rect;
-    int y, x, x0;
+    int y, x;
 
     scflush();
 
@@ -3353,7 +3353,7 @@ WinMain(
 		     * cmdline parser has an opportunity
 		     * to flag misspelled OLE options.
 		     *
-		     * Ex:  winvile -Or -mutiple
+		     * Ex:  winvile -Or -multiple
 		     */
 
 		    oa_reg = TRUE;
