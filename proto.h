@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.278 1998/04/30 09:19:03 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.279 1998/05/11 09:54:27 kev Exp $
  *
  */
 
@@ -786,6 +786,9 @@ extern	int	sel_yank	(int reg);
 extern	int	sel_attached	(void);
 extern	BUFFER *sel_buffer	(void);
 #endif
+#if OPT_PERL || OPT_TCL
+extern	BUFFER *get_selection_buffer_and_region(AREGION *arp);
+#endif /* OPT_PERL || OPT_TCL */
 #endif /* OPT_SELECTIONS */
 
 /* spawn.c */

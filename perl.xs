@@ -126,6 +126,14 @@ static MGVTBL svcurbuf_accessors = {
 	NULL, svcurbuf_set, NULL, NULL, NULL
 };
 
+static SV *svrs;		/* The input record separator, or $/
+                                 * Normally, this is available via the
+				 * rs macro, but apparently perl5.00402
+				 * on win32 systems don't export the
+				 * necessary symbol from the DLL.  So
+				 * we have our own...
+				 */
+
 static int perl_init(void);
 static void xs_init(void);
 static void perl_eval(char *string);
@@ -781,6 +789,10 @@ perl_init(void)
     mg_find(svcurbuf, '~')->mg_virtual = &svcurbuf_accessors;
     SvMAGICAL_on(svcurbuf);
 
+    /* Get sv for $/, the input record separator.  See comment
+       above (where svrs is declared) for why we don't use rs.  */
+    svrs = perl_get_sv("main::/", FALSE);
+
     /* Some things are better (or easier) to do in perl... */
     perl_eval("sub Vile::Buffer::PRINTF { \
                    my $fh=shift; my $fmt=shift;\
@@ -1365,8 +1377,8 @@ PROTOTYPES: DISABLE
   #         error-buffer $cbufname
   #     ~endm
   #
-  # Notice that there are two perl commands in the above macro. 
-  # The first will make sure that the script hgrep.pl is loaded. 
+  # Notice that there are two perl commands in the above macro.
+  # The first will make sure that the script hgrep.pl is loaded.
   # The second will actually call the main subroutine of the
   # script.
   #
@@ -1669,6 +1681,105 @@ mlreply_no_opts(prompt, ...)
 	RETVAL
 
  #
+ # =item selection_buffer
+ #
+ # =item selection_buffer BUFOBJ
+ #
+ # =item Vile::Buffer::set_selection BUFOBJ
+ #
+ # Gets or sets the buffer associated with the current selection.
+ #
+ # When getting the selection, the buffer object that has the current
+ # selection is returned and its region is set to be the same region
+ # as is occupied by the selection.  If there is no current selection, undef
+ # is returned.
+ #
+ # When setting the selection, a buffer object must be passed in.  The
+ # editor's selection is set to the region associated with the buffer object.
+ # If successful, the buffer object is returned; otherwise undef will be
+ # returned.
+ #
+ # Examples:
+ #
+ #      $sel = Vile->selection_buffer->fetch;
+ #                                      # Put the current selection in $sel
+ #
+ #      Vile->selection_buffer($Vile::current_buffer);
+ #                                      # Set the selection to the region
+ #                                      # contained in the current buffer
+ #
+ # Vile::Buffer::set_selection is an alias for Vile::selection_buffer, but
+ # can only function as a setter.  It may be used like this:
+ #
+ #      Vile->current_buffer->set_region('w')->set_selection;
+ #                                      # set the selection to be the word
+ #                                      # starting at the current position
+ #                                      # in the current buffer
+ #
+ #      Vile->current_buffer->motion('?\/\*' . "\n")
+ #                          ->set_region('%')
+ #                          ->set_selection();
+ #                                      # set the selection to be the nearest
+ #                                      # C-style comment above or at the
+ #                                      # current position.
+ #
+
+void
+selection_buffer(...)
+
+    ALIAS:
+	Vile::Buffer::set_selection = 1
+
+    PREINIT:
+	int argno;
+
+    PPCODE:
+	argno = 0;
+
+	if (strcmp(SvPV(ST(argno), na), "Vile") == 0)
+	    argno++;
+
+	if (items - argno == 0) { /* getter */
+	    BUFFER *bp;
+	    AREGION aregion;
+
+	    bp = get_selection_buffer_and_region(&aregion);
+	    if (bp != NULL) {
+		VileBuf *vbp = api_bp2vbp(bp);
+		vbp->region = aregion.ar_region;
+		vbp->regionshape =  aregion.ar_shape;
+		XPUSHs(sv_2mortal(newVBrv(newSV(0), vbp)));
+	    }
+	    else {
+		XPUSHs(&sv_undef);
+	    }
+	}
+	else if (items - argno == 1) { /* setter */
+	    VileBuf *vbp;
+	    char *croakmess;
+	    /* Need a buffer object */
+	    vbp = getVB(ST(argno), &croakmess);
+
+	    if (vbp == 0)
+		croak("Vile::%sselection: %s",
+		      ix == 1 ? "Buffer::" : "",
+		      croakmess);
+	    api_setup_fake_win(vbp, TRUE);
+	    DOT = vbp->region.r_orig;
+	    sel_begin();
+	    DOT = vbp->region.r_end;
+	    if (sel_extend(FALSE, FALSE) == TRUE) {
+		XPUSHs(ST(argno));
+	    }
+	    else {
+		XPUSHs(&sv_undef);
+	    }
+	}
+	else {
+	    croak("Vile::selection: Incorrect number of arguments");
+	}
+
+ #
  # =item set PAIRLIST
  #
  # =item get LIST
@@ -1742,6 +1853,7 @@ set(...)
 		croak("Vile::Buffer::set: %s", croakmess);
 
 	    isglobal = 0;
+	    api_setup_fake_win(vbp, TRUE);
 	}
 	else {
 	    /* We're in the Vile package.  See if we're called via
@@ -2028,7 +2140,7 @@ MODULE = Vile	PACKAGE = Vile::Buffer
   # When used in an array context, returns the rest of the lines (or
   # portions thereof) in the current region.
   #
-  # The current region is either set with setregion or set by default
+  # The current region is either set with set_region or set by default
   # for you when perl is invoked from vile.  This region will either
   # be the region that the user specified or the whole buffer if not
   # user specified.  Unless you know for sure that the region is set
@@ -2049,7 +2161,7 @@ MODULE = Vile	PACKAGE = Vile::Buffer
   #     # Example 1: Put all lines of the current buffer into
   #     #            an array
   #
-  #     $Vile::current_buffer->setregion(1,'$$');
+  #     $Vile::current_buffer->set_region(1,'$$');
   #                                     # Set the region to be the
   #                                     # entire buffer.
   #     my @lines = <$Vile::current_buffer>;
@@ -2116,13 +2228,13 @@ READLINE(vbp)
 	    char *rsstr;
 	    int rslen;
 
-	    if (RsSNARF(rs)) {
+	    if (RsSNARF(svrs)) {
 		f = svgetregion;
 		rsstr = 0;
 		rslen = 0;
 	    }
 	    else {
-		rsstr = SvPV(rs, rslen);
+		rsstr = SvPV(svrs, rslen);
 		if (rslen == 1 && *rsstr == '\n')
 		    f = svgetline;
 		else
@@ -2266,7 +2378,7 @@ attribute(vbp, ...)
   #
   # Causes the editor to attach attributes to the <Ctrl>A
   # sequences found in the buffer for the current region (which
-  # may be set via setregion).
+  # may be set via set_region).
   #
   # Returns the buffer object.
   #
@@ -2544,7 +2656,7 @@ delete(vbp)
   #                                     # back one character.
   #
   #     $cb->inplace_edit(1);
-  #     $cb->setregion(scalar($cb->dot), $cb->dot+5);
+  #     $cb->set_region(scalar($cb->dot), $cb->dot+5);
   #     @lines = <$cb>;
   #     $cb->dot($cb->dot - 1);
   #     print $cb @lines;
@@ -2605,7 +2717,7 @@ dot(vbp, ...)
   #
   # Example:
   #
-  #     $word = $Vile::current_buffer->setregion('w')->fetch;
+  #     $word = $Vile::current_buffer->set_region('w')->fetch;
   #                             # Fetch the next word and put it in $word
   #
 
@@ -2687,7 +2799,7 @@ inplace_edit(vbp, ...)
   #
   # When used in an array context, returns a 4-tuple containing
   # the beginning and ending positions.  This 4-tuple is suitable
-  # for passing to C<setregion>.
+  # for passing to C<set_region>.
   #
   # When used in a scalar context, returns the buffer object that
   # it was called with.
@@ -2704,10 +2816,10 @@ inplace_edit(vbp, ...)
   #     # "foo".
   #
   #     my $cb = $Vile::current_buffer;
-  #     $cb->setregion($cb->motion("2b"))->delete;
+  #     $cb->set_region($cb->motion("2b"))->delete;
   #                     # delete the previous two words
   #
-  #     $cb->setregion("2b")->delete;
+  #     $cb->set_region("2b")->delete;
   #                     # another way to delete the previous
   #                     # two words
   #
@@ -2927,17 +3039,17 @@ PRINT(vbp, ...)
 	}
 
   #
-  # =item setregion BUFOBJ
+  # =item set_region BUFOBJ
   #
-  # =item setregion BUFOBJ MOTIONSTR
+  # =item set_region BUFOBJ MOTIONSTR
   #
-  # =item setregion BUFOBJ STARTLINE, ENDLINE
+  # =item set_region BUFOBJ STARTLINE, ENDLINE
   #
-  # =item setregion BUFOBJ STARTLINE, STARTOFFSET, ENDLINE, ENDOFFSET
+  # =item set_region BUFOBJ STARTLINE, STARTOFFSET, ENDLINE, ENDOFFSET
   #
-  # =item setregion BUFOBJ STARTLINE, STARTOFFSET, ENDLINE, ENDOFFSET, 'rectangle'
+  # =item set_region BUFOBJ STARTLINE, STARTOFFSET, ENDLINE, ENDOFFSET, 'rectangle'
   #
-  # =item setregion BUFOBJ STARTLINE, STARTOFFSET, ENDLINE, ENDOFFSET, 'exact'
+  # =item set_region BUFOBJ STARTLINE, STARTOFFSET, ENDLINE, ENDOFFSET, 'exact'
   #
   # Sets the region upon which certain other methods will operate and
   # sets DOT to the beginning of the region.
@@ -2963,12 +3075,12 @@ PRINT(vbp, ...)
   # When used in a scalar context, returns the buffer object so that
   # cascading method calls may be performed, i.e,
   #
-  #     $Vile::current_buffer->setregion(3,4)
+  #     $Vile::current_buffer->set_region(3,4)
   #                          ->attribute_cntl_a_sequences;
   #
-  # There is a special form of setregion which may be used as follows:
+  # There is a special form of set_region which may be used as follows:
   #
-  #     $Vile::current_buffer->setregion('j2w');
+  #     $Vile::current_buffer->set_region('j2w');
   #
   # The above statement will set the region beginning at the current
   # location of DOT and ending at the location arrived at by moving
@@ -2976,15 +3088,26 @@ PRINT(vbp, ...)
   # shorthand way of expressing the following (somewhat cumbersome)
   # statement:
   #
-  #     $Vile::current_buffer->setregion(
+  #     $Vile::current_buffer->set_region(
   #             $Vile::current_buffer->motion('j2w'));
   #
-  # Note: rectangular regions are not implemented yet.
+  # Notes:
+  #
+  # =item 1
+  #
+  # rectangular regions are not implemented yet.
+  #
+  # =item 2
+  #
+  # setregion is an alias for set_region.
   #
 
 void
-setregion(vbp, ...)
+set_region(vbp, ...)
     VileBuf *vbp
+
+    ALIAS:
+	setregion = 1
 
     PREINIT:
 	I32 gimme;
@@ -3008,7 +3131,7 @@ setregion(vbp, ...)
 		    regionshape = EXACT;
 		}
 		else {
-		    croak("setregion: Invalid motion");
+		    croak("set_region: Invalid motion");
 		}
 		break;
 	    }
@@ -3022,7 +3145,7 @@ setregion(vbp, ...)
 	    case 5:
 		/* Set up an exact region */
 		regionshape = EXACT;
-		goto setregion_common;
+		goto set_region_common;
 		break;
 	    case 6:
 		/* Set up any kind of region (exact, fullline, or rectangle) */
@@ -3036,7 +3159,7 @@ setregion(vbp, ...)
 		else {
 		    croak("Region shape argument not one of \"exact\", \"fullline\", or \"rectangle\"");
 		}
-	    setregion_common:
+	    set_region_common:
 		api_gotoline(vbp, sv2linenum(ST(3)));
 		DOT.o = sv2offset(ST(4));
 		MK = DOT;
@@ -3044,12 +3167,12 @@ setregion(vbp, ...)
 		DOT.o = sv2offset(ST(2));
 		break;
 	    default:
-		croak("Invalid number of arguments to setregion");
+		croak("Invalid number of arguments to set_region");
 		break;
 	}
 	haveregion = NULL;
 	if (getregion(&vbp->region) != TRUE) {
-	    croak("setregion: Unable to set the region");
+	    croak("set_region: Unable to set the region");
 	}
 	vbp->regionshape = regionshape;
 	DOT = vbp->region.r_orig;

@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.181 1998/05/07 01:40:47 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.182 1998/05/11 09:54:27 kev Exp $
  *
  */
 
@@ -1230,9 +1230,15 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 		kbd_alarm();
 	} else {
 		miniedit = FALSE;
-		show1Char(c);
-		tb_init(buf, EOS);
-		tb_bappend(buf, DOT.l->l_text + margin, llength(DOT.l) - margin);
+		if (disinp) {
+			show1Char(c);
+			tb_init(buf, EOS);
+			tb_bappend(buf, DOT.l->l_text + margin,
+				   llength(DOT.l) - margin);
+		}
+		else {
+			tb_bappend(buf, &c, 1);
+		}
 		*cpos += 1;
 		edited = TRUE;
 	}
