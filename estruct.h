@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.423 1999/09/19 19:51:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.424 1999/10/02 01:22:49 cmorgan Exp $
  */
 
 #ifndef _estruct_h
@@ -2386,6 +2386,7 @@ typedef struct KILLREG {
 #include <unixio.h>
 #include <unixlib.h>
 #include <file.h>	/* aka <sys/file.h> */
+#include <rms.h>	/* required to compile nefsms.h */
 #endif
 
 #if HAVE_STDDEF_H

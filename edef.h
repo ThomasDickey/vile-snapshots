@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.256 1999/09/06 13:04:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.257 1999/09/30 20:18:38 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -250,6 +250,10 @@ decl_uninit( B_COUNT old_working );	/* previous-value for slowreadf	*/
 #endif
 decl_uninit( int vile_is_busy );	/* disabling flag, e.g., working */
 decl_uninit( int signal_was );		/* what was the last signal */
+
+#if OPT_SHELL
+decl_init ( int cd_on_open, FALSE );
+#endif
 
 	/* These pointers are nonnull only while animating a given buffer or
 	 * window.  They are used to obtain local mode-values.

@@ -1,9 +1,14 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.14 1999/07/17 18:06:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.15 1999/10/02 12:49:40 tom Exp $
  *
  */
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include "estruct.h"
 #include <ctype.h>
 
@@ -123,6 +128,15 @@ Elapsed(char *msg)
 	if (!init++)
 		tv0 = tv1;
 	Trace("%10.3f %s\n", SECS(tv1) - SECS(tv0), msg);
+	tv0 = tv1;
+#endif
+#if SYS_WINNT
+	static	DWORD	tv0;
+	static	int	init;
+	DWORD	tv1 = GetTickCount();
+	if (!init++)
+		tv0 = tv1;
+	Trace("%10.3f %s\n", (tv1 - tv0) / 1000.0, msg);
 	tv0 = tv1;
 #endif
 }

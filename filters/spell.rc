@@ -1,6 +1,6 @@
-; $Id: spell.rc,v 1.1 1999/04/17 14:14:47 tom Exp $
+; $Id: spell.rc,v 1.2 1999/10/03 20:00:29 tom Exp $
 
-store-procedure SpellFilter
+store-procedure SpellFilter "Highlight misspelled words in the current buffer"
 	~local $curcol $curline
 	~local %filtername
 	~hidden goto-beginning-of-file

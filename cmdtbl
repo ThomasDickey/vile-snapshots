@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.185 1999/09/01 00:46:22 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.187 1999/10/03 23:00:45 tom Exp $
 #
 #
 
@@ -225,9 +225,6 @@ chgtoeol	REDO|UNDO
 	"delete-to-eol-and-insert-chars" !FEWNAMES
 	'C'
 	<insert text to replace the rest of the line>
-clear_any_attrs	OPER|GLOBOK|RANGE	OPT_SELECTIONS
-	"clear-attributes-til"
-	<clear video-attributes and other highlighting>
 clear_match_attrs	NONE		OPT_HILITEMATCH
 	"clear-visual-matches"
 	'='
@@ -1028,6 +1025,7 @@ operattrital	OPER|GLOBOK|RANGE	OPT_SELECTIONS
 	<display text in italics in the region>
 operattrno	OPER|GLOBOK|RANGE	OPT_SELECTIONS
 	"attribute-normal-til"		!FEWNAMES
+	"clear-attributes-til"
 	'^A-N'
 	<display text normally in the region>
 operattrrev	OPER|GLOBOK|RANGE	OPT_SELECTIONS
@@ -1469,6 +1467,9 @@ subst_again	REDO|UNDO|GLOBOK
 syncfile	NONE			SYS_WINNT&&defined(VILE_OLE)
 	"sync-file"
 	<synchronize the current buffer's file in DevStudio's editor>
+swapcbrdkeys	NONE			SYS_WINNT
+	"swap-clipboard-keys"
+	<swap clipboard insert key mappings>
 togglelistbuffers	NONE
 	"*"
 	"toggle-buffer-list"		!FEWNAMES

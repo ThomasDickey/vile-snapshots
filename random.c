@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.207 1999/09/14 01:11:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.210 1999/10/03 21:15:10 tom Exp $
  *
  */
 
@@ -874,6 +874,7 @@ current_directory(int force)
 			*s = EOS;
 	}
 #if OPT_MSDOS_PATH
+	bsl_to_sl_inplace(cwd);
 	lengthen_path(cwd);
 #if !OPT_CASELESS
 	mklower(cwd);
@@ -1165,6 +1166,22 @@ set_directory(const char *dir)
     mlforce("[Couldn't change to \"%s\"]", exdir);
     return FALSE;
 }
+
+void
+set_directory_from_file(BUFFER *bp)
+{
+	if (!isInternalName(bp->b_fname)) {
+		char name[NFILEN];
+		char * leaf = pathleaf(strcpy(name, bp->b_fname));
+		if (leaf != 0
+		 && leaf != name) {
+			*leaf = EOS;
+			bsl_to_sl_inplace(name);
+			set_directory(name);
+		}
+	}
+}
+
 #endif /* OPT_SHELL */
 
 void
@@ -1227,5 +1244,18 @@ run_a_hook(HOOK *hook)
 		return TRUE;
 	}
 	return FALSE;
+}
+
+int
+run_readhook(void)
+{
+	int result = FALSE;
+	if (!b_is_temporary(curbp)) {
+		int save = count_fline;	/* read-hook may run a filter - ignore */
+		count_fline = 0;
+		result = run_a_hook(&readhook);
+		count_fline = save;
+	}
+	return result;
 }
 #endif

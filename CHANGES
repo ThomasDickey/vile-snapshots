@@ -1,5 +1,57 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+ (tom) 991004 (v)
+ 	+ remove the VT52-style fallback_arrows[] entry, from 8.3u, since it is
+	  too easy to confuse it with type-ahead (reported by Clark Morgan).
+ 	+ change testing order in configure script for 'const', to build on
+	  HP-UX (reported by Michael Finken <finkenm@hotmail.com>).
+	+ make functions attributeregion() attribute_cntl_a_sequences() and
+	  attribute_from_filter() interruptible.
+	+ correct limits of ^X-Q using goto-char function; it was not clearing
+	  the last line since the region-shape is set to EXACT unless
+	  overridden.
+	+ merge clear-attributes-til with attribute-normal-til.
+ 	+ fix (partly) the lack of syntax highlighting when editing filters.rc
+	  or other initialization file by reevaluating the majormode of the
+	  current buffer after all buffers are loaded during initialization.
+ 	+ change a typealloc(CMDFUNC) to use typecalloc, so the c_args pointer
+	  is initialized.
+ 	+ change ifdef in tgetc() which relates to older Linux kernels (up to
+	  early 2.0) to BUG_LINUX_2_0_INTR, so it is disabled.  This does not
+	  appear to malfunction with 2.0.36, so we can enter quoted ^C's.
+	+ remove ABORTED() check from read_quoted(), since that prevents us
+	  from entered an escape or similar character (such as intr) when
+	  quoted (see 8.3k).
+ 	+ change sysmapped_c() to return early if term.getch() returns a -1,
+	  since we don't want to try to map that: an indefinite stream of
+	  EOF's can come out of ttgetc in at least one instance on Linux.
+ 	+ eliminate use of yytext in local functions of filters, since that does
+	  not work with SCO's lex (fdl-filt.l, xs-filt.l).
+ 	+ add vile-txt-filt, vile-xs-filt to makefile.wnt
+ 	+ modify makefile.wnt to set related $(cdebug) and $(ldebug) when
+	  DBG symbol is set.
+	+ modify expansion of tilde by winvile to take into account $HOMEDRIVE,
+	  used on WinNT to denote the drive on which a user's desktop is
+	  located.
+	+ add mode 'cd-on-open', to set working directory to a given file when
+	  reading it into a buffer.  Use related logic to make winvile cd to
+	  the directory of the last-specified file when invoked, so it is
+	  consistent with drag/drop behavior.
+	> patches by Clark Morgan:
+	+ sever vile/winvile's dependence on $COMSPEC and additionally permit
+	  launching apps that are neither blocked by the editor nor launched by
+	  a shell. 
+	+ add command to swap the Ctrl+Insert and Alt+Insert bindings.  Patch
+	  triggered by Alex Wetmore's comments (many months ago) that he felt
+	  the current clipboard bindings were not optimal for use: 
+	  a) with the left mouse button (which always copies text to the
+	     unnamed buffer), and
+	  b) by experienced Windows users who will expect Ctrl+Insert (a
+	     Windows Standard key binding) to copy data to the clipboard
+	     without being prompted for a region. 
+	+ include rms.h from estruct.h to make nefsms.h compiler properly on
+	  VMS (fixes a problem introduced by restructuring of modetbl in 8.3o).
+
  (tom) 990926 (u)
  	+ allow adjustment of window size in win32 versions (vile, winvile) by
 	  dragging the modeline.  Clicking on a modeline clears the selection.

@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.50 1999/09/21 01:20:06 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.52 1999/10/02 12:15:40 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -67,15 +67,18 @@ THE_PERLCFG  = perl_env.inc
 
 !IF  "$(DBG)" != ""
 DBGOBJS  = trace.obj
-DBGOPTS  = -DOPT_TRACE
+MY_CCOPT = $(cdebug) -DOPT_TRACE
+MY_LDOPT = $(ldebug)
+!else
+MY_LDOPT = -pdb:none
 !endif
 
 !IF  "$(CFG)" == "vile" || "$(CFG)" == "vile-with-perl"
 DISP_DEF = -DDISP_NTCONS
 TARGET   = vile.exe
 CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
-           -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(DBGOPTS)
-LDFLAGS  = -nologo -pdb:none
+           -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(MY_CCOPT)
+LDFLAGS  = -nologo $(MY_LDOPT)
 SCREEN   = ntconio
 LIBS     = $(LD_DEBUG) $(conlflags) $(conlibsmt) user32.lib comdlg32.lib \
            $(VILE_PERL_LIB)
@@ -85,8 +88,8 @@ LIBS     = $(LD_DEBUG) $(conlflags) $(conlibsmt) user32.lib comdlg32.lib \
 DISP_DEF = -DDISP_NTWIN
 TARGET   = winvile.exe
 CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
-           -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(DBGOPTS)
-LDFLAGS  = -nologo /subsystem:windows /incremental:no -pdb:none
+           -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(MY_CCOPT)
+LDFLAGS  = -nologo /subsystem:windows /incremental:no $(MY_LDOPT)
 SCREEN   = ntwinio
 LIBS     = $(LD_DEBUG) $(guilflags) $(guilibsmt) $(VILE_PERL_LIB) $(OLELIBS) shell32.lib
 EXTRA    = winvile.res
@@ -221,6 +224,7 @@ clean ::
     -del $(THE_PERLCFG)
     -del perl.c
     -del winviletlb.h
+    -del winvile_i.c
     -del *.tlb
     -del *.res
 
