@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.130 1998/11/13 10:23:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.131 1998/11/23 22:59:15 tom Exp $
  *
  */
 
@@ -356,6 +356,7 @@ ffwopen(char *fn, int forced)
 int
 ffaccess(char *fn, int mode)
 {
+	int status = FALSE;
 #if HAVE_ACCESS
 	/* these were chosen to match the SYSV numbers, but we'd rather use
 	 * the symbols for portability.
@@ -373,8 +374,8 @@ ffaccess(char *fn, int mode)
 	if (mode & FL_EXECABLE)  n |= X_OK;
 	if (mode & FL_WRITEABLE) n |= W_OK;
 	if (mode & FL_READABLE)  n |= R_OK;
-	return (!isInternalName(fn)
-	   &&   access(SL_TO_BSL(fn), n) == 0);
+	status = (!isInternalName(fn)
+	    &&   access(SL_TO_BSL(fn), n) == 0);
 #else
 	int	fd;
 	switch (mode) {
@@ -383,118 +384,119 @@ ffaccess(char *fn, int mode)
 	case FL_READABLE:
 		if (ffropen(fn) == FIOSUC) {
 			ffclose();
-			return TRUE;
+			status = TRUE;
+		} else {
+        		status = FALSE;
 		}
-        	return FALSE;
+		break;
 	case FL_WRITEABLE:
 	        if ((fd=open(SL_TO_BSL(fn), O_WRONLY|O_APPEND)) < 0) {
-	                return FALSE;
+	                status = FALSE;
+		} else {
+			(void)close(fd);
+			status = TRUE;
 		}
-		(void)close(fd);
-		return TRUE;
+		break;
 	default:
-		return ffexists(fn);
+		status = ffexists(fn);
+		break;
 	}
 #endif
+	TRACE(("ffaccess(fn=%s, mode=%d) = %d\n", fn, mode, status))
+	return (status);
 }
 
 /* is the file read-only?  true or false */
 int
 ffronly(char *fn)
 {
+	int status;
 	if (isShellOrPipe(fn)) {
-		return TRUE;
+		status = TRUE;
 	} else {
-		return !ffaccess(fn, FL_WRITEABLE);
+		status = !ffaccess(fn, FL_WRITEABLE);
 	}
+	TRACE(("ffronly(fn=%s) = %d\n", fn, status))
+	return status;
 }
+
+B_COUNT
+ffsize(void)
+{
+	long result = -1L;
 
 #if SYS_WINNT
 
-off_t
-ffsize(void)
-{
-	int flen, prev;
+	long prev;
 	prev = ftell(ffp);
-	if (fseek(ffp, 0, 2) < 0)
-		return -1L;
-	flen = ftell(ffp);
-	fseek(ffp, prev, 0);
-	return flen;
-}
+	if (fseek(ffp, 0, 2) >= 0) {
+		result = ftell(ffp);
+		fseek(ffp, prev, 0);
+	}
 
 #else
 #if SYS_UNIX || SYS_VMS || SYS_OS2
-off_t
-ffsize(void)
-{
+
 	struct stat statbuf;
 	if (fstat(fileno(ffp), &statbuf) == 0) {
-		return (long)statbuf.st_size;
+		result = (B_COUNT)statbuf.st_size;
 	}
-        return -1L;
-}
-#endif
-#endif
 
+#else
 #if SYS_MSDOS
 #if CC_DJGPP
 
-off_t
-ffsize(void)
-{
-	int flen, prev;
+	long prev;
 	prev = ftell(ffp);
-	if (fseek(ffp, 0, 2) < 0)
-		return -1L;
-	flen = ftell(ffp);
-	fseek(ffp, prev, 0);
-	return flen;
-}
+	if (fseek(ffp, 0, 2) >= 0) {
+		result = ftell(ffp);
+		fseek(ffp, prev, 0);
+	}
 
 #else
 
-off_t
-ffsize(void)
-{
 	int fd = fileno(ffp);
-	if (fd < 0)
-		return -1L;
-	return  filelength(fd);
+	if (fd >= 0)
+	result = filelength(fd);
+
+#endif /* CC_DJGPP */
+#endif /* SYS_MSDOS */
+#endif /* SYS_UNIX || SYS_VMS || SYS_OS2 */
+#endif /* SYS_WINNT */
+
+	TRACE(("ffsize = %ld\n", result))
+	return result;
 }
 
-#endif
-#endif
+int
+ffexists(char *p)
+{
+	int status = FALSE;
 
 #if SYS_UNIX || SYS_VMS || SYS_OS2 || SYS_WINNT
 
-int
-ffexists(char *p)
-{
 	struct stat statbuf;
 	if (!isInternalName(p)
 	 && stat(SL_TO_BSL(p), &statbuf) == 0) {
-		return TRUE;
+		status = TRUE;
 	}
-        return FALSE;
-}
 
-#endif
+#else
 
 #if SYS_MSDOS || SYS_WIN31
 
-int
-ffexists(char *p)
-{
 	if (!isInternalName(p)
 	 && ffropen(SL_TO_BSL(p)) == FIOSUC) {
 		ffclose();
-		return TRUE;
+		status = TRUE;
 	}
-        return FALSE;
-}
 
 #endif
+#endif
+
+	TRACE(("fexists(fn=%s) = %d\n", p, status))
+	return (status);
+}
 
 #if !SYS_MSDOS
 int

@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.366 1998/11/14 17:50:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.367 1998/11/23 22:54:48 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -118,12 +118,6 @@
 # define HAVE_GETCWD 1
 #else
 # define CC_NEWDOSCC 0
-#endif
-
-#if CC_TURBO
-# if !SYS_WINNT
-#  define off_t long		/* missing in TurboC 3.1 */
-# endif
 #endif
 
 #if CC_CSETPP
@@ -237,7 +231,7 @@
 
 #include <stdio.h>
 #include <sys/types.h>
-#include <sys/stat.h>	/* defines off_t */
+#include <sys/stat.h>
 
 #if HAVE_LIBC_H
 #include <libc.h>

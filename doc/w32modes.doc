@@ -97,7 +97,7 @@ list:  vile-bugs@foxharp.boston.ma.us .
 
        shell         w32pipes  force-console  trade-offs
 
-NT4.0  any 32-bit      set        N/A         no problems
+NT     any 32-bit      set        N/A         no problems
 Win95  command.com     unset      N/A         no write pipes
 Win95  Thomp Toolkit   set        N/A         no problems
 OSR2      ?             ?         N/A             ?
@@ -113,7 +113,7 @@ list:  vile-bugs@foxharp.boston.ma.us .
 
        shell         w32pipes  force-console  trade-offs
 
-NT4.0  any 32-bit      set        unset       no problems
+NT     any 32-bit      set        unset       no problems
 Win95  command.com     set        set         floppy grinds, transient console
 Win95  Thomp Toolkit   set        set         transient console
 OSR2      ?             ?          ?              ?

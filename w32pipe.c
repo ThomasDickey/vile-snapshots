@@ -1,6 +1,5 @@
 /*
  * w32pipe:  win32 clone of npopen.c, utilizes native pipes (not temp files).
- * Written by Clark Morgan for vile (december 1997).
  *
  * Background
  * ==========
@@ -25,9 +24,6 @@
  *
  * Caveats
  * =======
- *
- * -- This code has not been tested with NT 3.51 .
- *
  * -- The MSDN Knowledge Base has example code that uses anonymous pipes
  *    to redirect a spawned process's stdin, stdout, and stderr.  Don't go
  *    there.
@@ -59,7 +55,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.15 1998/09/23 00:13:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.16 1998/11/24 11:01:25 cmorgan Exp $
  */
 
 #include <windows.h>

@@ -7,7 +7,7 @@
  *  Author:  Curtis Smith
  *  Last Updated: 07/14/87
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.35 1998/11/11 21:56:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.37 1998/11/23 22:31:39 tom Exp $
  *
  */
 
@@ -35,7 +35,11 @@ static	void	vmsmove (int row, int col);
 static	void	vmseeol	(void);
 static	void	vmseeop	(void);
 static	void	vmsbeep	(void);
-static	void	vmsrev	(UINT);
+#if OPT_VIDEO_ATTRS
+static	void	vmsattr ( UINT attr );
+#else
+static	void	vmsrev  ( UINT state );
+#endif
 static	int	vmscres	(const char *);
 
 extern	int	eolexist, revexist;
@@ -44,8 +48,8 @@ extern	char	sres[];
 /** SMG stuff (just like termcap) */
 static	int	initialized;
 static	int	termtype;
-static	char *	begin_reverse;
-static	char *	end_reverse;
+static	char *	tc_SO;	/* begin standout (reverse) */
+static	char *	tc_SE;	/* end standout (reverse) */
 static	char *	erase_to_end_line;
 static	char *	erase_whole_display;
 
@@ -54,6 +58,18 @@ static	char *	insert_line;
 static	char *	scroll_forw;
 static	char *	scroll_back;
 static	char *	scroll_regn;
+
+#if OPT_VIDEO_ATTRS
+static	char *	tc_MD;		/* begin bold */
+static	char *	tc_ME;		/* end bold */
+static	char *	tc_US;		/* begin underscore */
+static	char *	tc_UE;		/* end underscore */
+#endif
+
+#if OPT_FLASH
+static	char *	dark_on;
+static	char *	dark_off;
+#endif
 
 /* Dispatch table. All hard fields just point into the terminal I/O code. */
 TERM	term	= {
@@ -76,7 +92,11 @@ TERM	term	= {
 	vmseeol,			/* Erase to end of line		*/
 	vmseeop,			/* Erase to end of page		*/
 	vmsbeep,			/* Beep				*/
+#if OPT_VIDEO_ATTRS
+	vmsattr,			/* Set attribute video state	*/
+#else
 	vmsrev,				/* Set reverse video state	*/
+#endif
 	vmscres,			/* Change screen resolution	*/
 	null_t_setfor,			/* N/A: Set foreground color	*/
 	null_t_setback,			/* N/A: Set background color	*/
@@ -176,19 +196,95 @@ vmsmove (int row, int col)
 	putpad_tgoto(SMG$K_SET_CURSOR_ABS, row+1, col+1);
 }
 
-/***
- *  vmsrev  -  Set the reverse video status
- *
- *  Nothing returned
- ***/
+#if OPT_VIDEO_ATTRS
 static void
-vmsrev(UINT status)
+vmsattr(UINT attr)
 {
-	if (status)
-		ttputs(begin_reverse);
-	else
-		ttputs(end_reverse);
+#define VA_SGR (VASEL|VAREV|VAUL|VAITAL|VABOLD)
+	static	const	struct	{
+		char	**start;
+		char	**end;
+		UINT	mask;
+	} tbl[] = {
+		{ &tc_SO, &tc_SE, VASEL|VAREV },
+		{ &tc_US, &tc_UE, VAUL },
+		{ &tc_US, &tc_UE, VAITAL },
+		{ &tc_MD, &tc_ME, VABOLD },
+	};
+	static	UINT last;
+
+	attr = VATTRIB(attr);
+	if (attr & VASPCOL) {
+		attr = VCOLORATTR((attr & (NCOLORS - 1)));
+	} else {
+		attr &= ~(VAML|VAMLFOC);
+	}
+
+	if (attr != last) {
+		register SIZE_T n;
+		register char *s;
+		UINT	diff = attr ^ last;
+		int	ends = FALSE;
+
+		/* turn OFF old attributes */
+		for (n = 0; n < TABLESIZE(tbl); n++) {
+			if ((tbl[n].mask & diff) != 0
+			 && (tbl[n].mask & attr) == 0
+			 && (s = *(tbl[n].end))  != 0) {
+				ttputs(s);
+#if OPT_COLOR
+				if (!ends)	/* do this once */
+					reinitialize_colors();
+#endif
+				ends = TRUE;
+				diff &= ~(tbl[n].mask);
+			}
+		}
+
+		/* turn ON new attributes */
+		for (n = 0; n < TABLESIZE(tbl); n++) {
+			if ((tbl[n].mask & diff)  != 0
+			 && (tbl[n].mask & attr)  != 0
+			 && (s = *(tbl[n].start)) != 0) {
+				ttputs(s);
+				diff &= ~(tbl[n].mask);
+			}
+		}
+
+		if (tc_SO != 0 && tc_SE != 0) {
+			if (ends && (attr & (VAREV|VASEL))) {
+				ttputs(tc_SO);
+			} else if (diff & VA_SGR) {  /* we didn't find it */
+				ttputs(tc_SE);
+			}
+		}
+#if OPT_COLOR
+		if (attr & VACOLOR)
+			tcapfcol(VCOLORNUM(attr));
+		else if (given_fcolor != gfcolor)
+			tcapfcol(gfcolor);
+#endif
+		last = attr;
+	}
 }
+
+#else	/* highlighting is a minimum attribute */
+
+static void
+tcaprev(		/* change reverse video status */
+UINT state)		/* FALSE = normal video, TRUE = reverse video */
+{
+	static int revstate = -1;
+	if (state == revstate)
+		return;
+	revstate = state;
+	if (state)
+		ttputs(tc_SO);
+	else
+		ttputs(tc_SE);
+}
+
+#endif	/* OPT_VIDEO_ATTRS */
 
 /***
  *  vmscres  -  Change screen resolution (which it doesn't)
@@ -235,6 +331,14 @@ vmseeop(void)
 static void
 vmsbeep(void)
 {
+#if OPT_FLASH
+	if (global_g_val(GMDFLASH)
+	 && dark_off != NULL
+	 && dark_on != NULL) {
+		ttputs(dark_off);
+		ttputs(dark_on);
+	} else
+#endif
 	ttputc(BEL);
 }
 
@@ -369,6 +473,31 @@ vmsgtty(void)
 static void
 vmsopen(void)
 {
+	static struct {
+		int	smg_code;
+		char **	string;
+	} tcaps[] = {
+		{ SMG$K_BEGIN_REVERSE,		&tc_SO	},
+		{ SMG$K_END_REVERSE,		&tc_SE	},
+#if OPT_VIDEO_ATTRS
+		{ SMG$K_BEGIN_BOLD,		&tc_MD	},
+		{ SMG$K_END_BOLD,		&tc_ME	},
+		{ SMG$K_BEGIN_UNDERSCORE,	&tc_US	},
+		{ SMG$K_END_UNDERSCORE,		&tc_UE	},
+#endif
+#if OPT_FLASH
+		{ SMG$K_DARK_SCREEN,		&dark_on	},
+		{ SMG$K_LIGHT_SCREEN,		&dark_off	},
+#endif
+		{ SMG$K_ERASE_TO_END_LINE,	&erase_to_end_line },
+		{ SMG$K_ERASE_WHOLE_DISPLAY,	&erase_whole_display },
+		{ SMG$K_INSERT_LINE,		&insert_line	},	/* al */
+		{ SMG$K_DELETE_LINE,		&delete_line	},	/* dl */
+		{ SMG$K_SCROLL_FORWARD,		&scroll_forw	},	/* SF */
+		{ SMG$K_SCROLL_REVERSE,		&scroll_back	},	/* SR */
+		{ SMG$K_SET_SCROLL_REGION,	&scroll_regn	},	/* CS */
+	};
+
 	int	i;
 
 	/* Get terminal type */
@@ -397,21 +526,14 @@ vmsopen(void)
 		term.t_mcol = term.t_ncol;
 
 	/* Get some capabilities */
-	begin_reverse	= vmsgetstr(SMG$K_BEGIN_REVERSE);
-	end_reverse	= vmsgetstr(SMG$K_END_REVERSE);
-	revexist	= begin_reverse	!= NULL
-		&&	  end_reverse	!= NULL;
+	for (i = 0; i < sizeof(tcaps)/sizeof(tcaps[0]); i++) {
+		*(tcaps[i].string) = vmsgetstr(tcaps[i].smg_code);
+	}
 
-	erase_to_end_line = vmsgetstr(SMG$K_ERASE_TO_END_LINE);
+	revexist	= tc_SO	!= NULL
+		&&	  tc_SE	!= NULL;
+
 	eolexist = erase_whole_display != NULL;
-
-	erase_whole_display = vmsgetstr(SMG$K_ERASE_WHOLE_DISPLAY);
-
-	insert_line	= vmsgetstr(SMG$K_INSERT_LINE);		/* al */
-	delete_line	= vmsgetstr(SMG$K_DELETE_LINE);		/* dl */
-	scroll_forw	= vmsgetstr(SMG$K_SCROLL_FORWARD);	/* SF */
-	scroll_back	= vmsgetstr(SMG$K_SCROLL_REVERSE);	/* SR */
-	scroll_regn	= vmsgetstr(SMG$K_SET_SCROLL_REGION);	/* CS */
 
 	/*
 	 * I tried 'vmsgetstr()' for a VT100 terminal and it had no codes

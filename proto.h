@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.316 1998/11/11 22:11:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.318 1998/11/23 23:04:52 tom Exp $
  *
  */
 
@@ -20,7 +20,6 @@ extern "C" {
 #endif
 
 extern SIGT catchintr (int ACTUAL_SIG_ARGS);
-extern char *strend (const char *s);
 extern char *strncpy0 (char *t, const char *f, SIZE_T l);
 extern int call_cmdfunc(const CMDFUNC *p, int f, int n);
 extern int no_memory (const char *s);
@@ -386,7 +385,7 @@ extern int ffputline (const char *buf, int nbuf, const char *ending);
 extern int ffronly (char *fn);
 extern int ffropen (char *fn);
 extern int ffwopen (char *fn, int forced);
-extern off_t ffsize (void);
+extern B_COUNT ffsize (void);
 
 #if !(SYS_MSDOS || SYS_WIN31)
 extern int ffread (char *buf, long len);

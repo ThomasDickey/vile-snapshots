@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.60 1998/08/30 22:46:51 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.61 1998/11/24 11:57:05 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -640,9 +640,10 @@ esac
 # If it's installed properly, imake (or its wrapper, xmkmf) will point to the
 # config directory.
 if mkdir conftestdir; then
+	cf_makefile=`cd $srcdir;pwd`/Imakefile
 	cd conftestdir
 	echo >./Imakefile
-	test -f ../Imakefile && cat ../Imakefile >>./Imakefile
+	test -f $cf_makefile && cat $cf_makefile >>./Imakefile
 	cat >> ./Imakefile <<'CF_EOF'
 findstddefs:
 	@echo 'IMAKE_CFLAGS="${ALLDEFINES} ifelse($1,,,$1)"'

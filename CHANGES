@@ -1,10 +1,33 @@
 Changes for vile 8.3 (released ??? ??? ??, 1998)
 
+ (tom) 981124 (f)
+	+ updated CF_IMAKE_CFLAGS macro for configure script, fixes a problem
+	  configuring with --srcdir.
+	+ updated config.guess, config.sub from Lynx, adds cases for os390 and
+	  clix.
+ 	+ update documentation to indicate that vile has been tested on NT 3.51
+	  (patch by Clark Morgan).
+	+ correct path separator in default $startup-path for VMS, which would
+	  prevent vile from reading vile.rc from a system directory (patch by
+	  Clark Morgan).
+	+ remove definitions for off_t, making ffsize() return B_COUNT.
+	+ modify fileio.c to trace return value from ffaccess(), ffexists(),
+	  ffronly(), ffropen() and ffsize().
+	+ modify vmsvt.c to support video attributes bold, underline and
+	  flash (initiated/tested by Clark Morgan).
+	> new version of vileget from J Chris Coppick:
+	+ Vileserv now checks for the existence of ~/.vilesock, but not for the
+	  file type.  May be more portable.
+	+ Vileget has a -w option that causes it to wait until the given
+	  file(s) are written by xvile before it exits.  This could be used in
+	  conjunction with a mail program for instance.  To use this option,
+	  you have to set up a write-hook procedure.  See the doc for vileget.
+
  (tom) 981114 (e)
  	+ corrected TTcursor logic interaction with xterm-mouse so the cursor
 	  does not remain invisible after extending a selection.
 	+ modify so that xvile can be build with --disable-extensions
-	+ correct ifdef for SYS_VMS which was hiding ifdefs for setsid  
+	+ correct ifdef for SYS_VMS which was hiding ifdefs for setsid
 	+ add sinstall.sh script to fix perl-path when installing scripts such
 	  as vileget.
 	+ document 'sentences' mode in vile.hlp (patch by Clark Morgan).
