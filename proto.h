@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.491 2002/02/03 23:17:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.492 2002/02/17 18:20:11 tom Exp $
  *
  */
 
@@ -1286,15 +1286,6 @@ extern	void	x_set_window_name	(const char *name);
 
 #if XTOOLKIT
 extern	void	own_selection		(void);
-#else	/* !XTOOLKIT */
-extern	void	x_set_rv		(void);
-extern	void	x_setname		(char *name);
-extern	void	x_set_wm_title		(char *name);
-extern	void	x_setforeground		(char *colorname);
-extern	void	x_setbackground		(char *colorname);
-extern  void	x_set_geometry		(char *g);
-extern	void	x_set_dpy		(char *dn);
-extern	int	x_key_events_ready	(void);
 #endif	/* !XTOOKIT */
 
 #if OPT_MENUS

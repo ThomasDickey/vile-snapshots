@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.118 2002/02/04 00:30:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.119 2002/02/15 00:58:54 tom Exp $
  *
  *
  */
@@ -34,6 +34,14 @@
 
 #if !defined(S_ISREG) && defined(S_IFMT) && defined(S_IFREG)
 # define S_ISREG(m)  (((m) & S_IFMT) == S_IFREG)
+#endif
+
+#ifndef S_IFCHR
+#define S_IFCHR S_IFREG
+#endif
+
+#if !defined(S_ISCHR) && defined(S_IFMT) && defined(S_IFCHR)
+# define S_ISCHR(m)  (((m) & S_IFMT) == S_IFCHR)
 #endif
 
 #if SYS_WINNT
@@ -309,7 +317,7 @@ pathcat(char *dst, const char *path, char *leaf)
     path = vl_strncpy(save_path, path, NFILEN);		/* in case path is in dst */
 
 #if OPT_MSDOS_PATH
-    if (is_msdos_drive((char *)path) != 0
+    if (is_msdos_drive((char *) path) != 0
 	&& is_msdos_drive(leaf) == 0) {
 	have = strlen(strcpy(dst, path));
 	if (have + strlen(leaf) + 2 < NFILEN) {
@@ -1790,6 +1798,12 @@ is_directory(char *path)
     return ((file_stat(path, &sb) >= 0) && S_ISDIR(sb.st_mode));
 }
 
+static int
+is_filemode(struct stat *sb)
+{
+    return (S_ISREG(sb->st_mode) || S_ISCHR(sb->st_mode));
+}
+
 /*
  * Test if the given path is a regular file, i.e., one that we might open.
  */
@@ -1798,7 +1812,7 @@ is_file(char *path)
 {
     struct stat sb;
 
-    return ((file_stat(path, &sb) >= 0) && S_ISREG(sb.st_mode));
+    return ((file_stat(path, &sb) >= 0) && is_filemode(&sb));
 }
 
 /*
@@ -1809,7 +1823,7 @@ is_nonfile(char *path)
 {
     struct stat sb;
 
-    return ((file_stat(path, &sb) >= 0) && !S_ISREG(sb.st_mode));
+    return ((file_stat(path, &sb) >= 0) && !is_filemode(&sb));
 }
 
 /*

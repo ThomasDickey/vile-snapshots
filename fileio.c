@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.161 2002/01/12 13:47:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.164 2002/02/18 01:29:52 tom Exp $
  *
  */
 
@@ -11,6 +11,11 @@
 
 #if SYS_VMS
 #include <file.h>
+#endif
+
+#if SYS_WINNT
+#include <io.h>
+#include <fcntl.h>
 #endif
 
 #if HAVE_SYS_IOCTL_H
@@ -344,6 +349,12 @@ ffwopen(char *fn, int forced)
 
     TRACE(("ffwopen(fn=%s, forced=%d)\n", fn, forced));
     ffstatus = file_is_closed;
+    if (i_am_dead) {
+	if ((ffd = open(SL_TO_BSL(fn), O_WRONLY | O_CREAT)) < 0) {
+	    return (FIOERR);
+	}
+	ffstatus = file_is_unbuffered;
+    } else
 #if OPT_SHELL
     if (isShellOrPipe(fn)) {
 	if ((ffp = npopen(fn + 1, mode)) == NULL) {
@@ -388,7 +399,7 @@ ffwopen(char *fn, int forced)
 	ffstatus = file_is_external;
     }
 #else
-#if     SYS_VMS
+#if SYS_VMS
     char temp[NFILEN];
     int fd;
     strip_version(fn = strcpy(temp, fn));
@@ -648,34 +659,42 @@ ffclose(void)
 {
     int s = 0;
 
-    free_fline();
+    if (ffstatus == file_is_unbuffered) {
+	if (fflinelen) {
+	    write(ffd, fflinebuf, fflinelen);
+	    fflinelen = 0;
+	}
+	close(ffd);
+    } else {
+	free_fline();
 
-    if (ffp != 0) {
+	if (ffp != 0) {
 #if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
 #if OPT_SHELL
-	if (ffstatus == file_is_pipe) {
-	    npclose(ffp);
-	    mlwrite("[Read %d lines%s]",
-		    count_fline,
-		    interrupted()? "- Interrupted" : "");
+	    if (ffstatus == file_is_pipe) {
+		npclose(ffp);
+		mlwrite("[Read %d lines%s]",
+			count_fline,
+			interrupted()? "- Interrupted" : "");
 #ifdef MDCHK_MODTIME
-	    (void) check_visible_files_changed();
+		(void) check_visible_files_changed();
 #endif
-	} else
+	    } else
 #endif
-	{
-	    s = fclose(ffp);
-	}
-	if (s != 0) {
-	    mlerror("closing");
-	    return (FIOERR);
-	}
+	    {
+		s = fclose(ffp);
+	    }
+	    if (s != 0) {
+		mlerror("closing");
+		return (FIOERR);
+	    }
 #else
-	(void) fclose(ffp);
+	    (void) fclose(ffp);
 #endif
+	}
+	ffp = 0;
+	ffbuffer = 0;
     }
-    ffp = 0;
-    ffbuffer = 0;
     ffstatus = file_is_closed;
     return (FIOSUC);
 }
@@ -698,7 +717,7 @@ ffputline(const char *buf, int nbuf, const char *ending)
 	ending++;
     }
 
-    if (ferror(ffp)) {
+    if (ffp != 0 && ferror(ffp)) {
 	mlerror("writing");
 	return (FIOERR);
     }
@@ -719,11 +738,19 @@ ffputc(int c)
     if (ffcrypting && (ffstatus != file_is_pipe))
 	d = vl_encrypt_char(d);
 #endif
-    putc(d, ffp);
+    if (i_am_dead) {
+	fflinebuf[fflinelen++] = d;
+	if (fflinelen >= NSTRING) {
+	    write(ffd, fflinebuf, fflinelen);
+	    fflinelen = 0;
+	}
+    } else {
+	putc(d, ffp);
 
-    if (ferror(ffp)) {
-	mlerror("writing");
-	return (FIOERR);
+	if (ferror(ffp)) {
+	    mlerror("writing");
+	    return (FIOERR);
+	}
     }
 
     return (FIOSUC);

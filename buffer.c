@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.248 2002/02/04 01:26:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.249 2002/02/17 23:06:28 tom Exp $
  *
  */
 
@@ -1722,6 +1722,7 @@ show_BufferList(BUFFER *bp GCC_UNUSED)
 void
 updatelistbuffers(void)
 {
+    show_mark_is_set(0);
     update_scratch(BUFFERLIST_BufName, show_BufferList);
 }
 

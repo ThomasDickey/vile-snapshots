@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.325 2002/02/04 00:36:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.327 2002/02/17 22:53:38 tom Exp $
  */
 
 #include "estruct.h"
@@ -220,52 +220,67 @@ set_modtime(BUFFER *bp, char *fn)
 }
 #endif /* MDCHK_MODTIME */
 
+/*
+ * Utility functions for preparing-for, and cleanup-from a pipe.  We have to
+ * switch back to cooked I/O mode while the pipe is running, in case it is
+ * interactive, e.g.,
+ *	:w !more
+ * as well as remember to repaint the screen, if we wrote a pipe rather than
+ * reading it.
+ */
+static int must_clean_pipe;	/* copy of ffstatus (it is reset in ffclose) */
+static int writing_to_pipe;	/* if writing, we disable 'working...' */
+
+static void
+CleanToPipe(int writing)
+{
+    must_clean_pipe = (ffstatus == file_is_pipe);
+    writing_to_pipe = writing;
+
+    if (must_clean_pipe) {
+	if (writing) {
+	    beginDisplay();
+	}
 #if SYS_UNIX || SYS_MSDOS
-#define CleanToPipe() if (ffstatus == file_is_pipe) ttclean(TRUE)
+	ttclean(TRUE);
+#else
+#ifdef GMDW32PIPES
+	kbd_erase_to_end(0);
+	kbd_flush();
+#endif
+	term.kclose();
+#endif
+    }
+}
 
 static void
 CleanAfterPipe(int Wrote)
 {
-    if (ffstatus == file_is_pipe) {
+    if (must_clean_pipe) {
+#if SYS_UNIX || SYS_MSDOS
 	ttunclean();		/* may clear the screen as a side-effect */
 	term.flush();
 	if (Wrote)
 	    pressreturn();
 	sgarbf = TRUE;
-    }
-}
-
-#else /* !SYS_UNIX */
-#ifdef GMDW32PIPES
-
-static void
-CleanToPipe(void)
-{
-    if (ffstatus == file_is_pipe) {
-	kbd_erase_to_end(0);
-	kbd_flush();
-	term.kclose();
-    }
-}
-
-static void
-CleanAfterPipe(int Wrote)
-{
-    if (ffstatus == file_is_pipe) {
+#else
 	term.kopen();
+#ifdef GMDW32PIPES
 	if (global_g_val(GMDW32PIPES)) {
 	    if (Wrote)
 		pressreturn();
 	    sgarbf = TRUE;
 	}
+#endif
+#endif
+	must_clean_pipe = FALSE;
+
+	if (writing_to_pipe) {
+	    writing_to_pipe = FALSE;
+	    endofDisplay();
+	}
     }
 }
-
-#else /* !GMDW32PIPES */
-#define	CleanToPipe()		term.kclose()
-#define	CleanAfterPipe(f)	term.kopen()
-#endif
-#endif /* SYS_UNIX */
 
 /*
  * On faster machines, a pipe-writer will tend to keep the pipe full. This
@@ -803,7 +818,7 @@ kifile(char *fname)
 #endif
     {
 	mlwrite("[Reading...]");
-	CleanToPipe();
+	CleanToPipe(FALSE);
 	while ((s = ffgetline(&nbytes)) <= FIOSUC) {
 	    for (i = 0; i < nbytes; ++i)
 		if (!kinsert(fflinebuf[i]))
@@ -1861,8 +1876,8 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced)
     C_NUM offset = rp->r_orig.o;
 
     /* this is adequate as long as we cannot write parts of lines */
-    int whole_file = (rp->r_orig.l == lforw(buf_head(bp)))
-    && (rp->r_end.l == buf_head(bp));
+    int whole_file = ((rp->r_orig.l == lforw(buf_head(bp)))
+		      && (rp->r_end.l == buf_head(bp)));
 
 #if OPT_HOOKS
     if (run_a_hook(&writehook)) {
@@ -1897,10 +1912,7 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced)
     if (msgf == TRUE)
 	mlwrite("[Writing...]");
 
-    if (isShellOrPipe(fn)) {
-	beginDisplay();
-	CleanToPipe();
-    }
+    CleanToPipe(TRUE);
 
     lp = rp->r_orig.l;
     nline = 0;			/* Number of lines     */
@@ -1954,10 +1966,7 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced)
 	    bp->b_lines_on_disk = nline;
     }
 
-    if (isShellOrPipe(fn)) {
-	CleanAfterPipe(TRUE);
-	endofDisplay();
-    }
+    CleanAfterPipe(TRUE);
 
     if (s != FIOSUC)		/* Some sort of error.      */
 	return FALSE;
@@ -1970,7 +1979,8 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced)
      * If we've written the unnamed-buffer, rename it according to the file.
      * FIXME: maybe we should do this to all internal-names?
      */
-    if (whole_file
+    if (!i_am_dead
+	&& whole_file
 	&& eql_bname(bp, UNNAMED_BufName)
 	&& find_b_file(fn) == 0) {
 	ch_fname(bp, fn);
@@ -2221,7 +2231,7 @@ ifile(char *fname, int belowthisline, FILE * haveffp)
 	    return s;
 #endif
 	mlwrite("[Inserting...]");
-	CleanToPipe();
+	CleanToPipe(FALSE);
 
     } else {			/* we already have the file pointer */
 	ffp = haveffp;
@@ -2320,13 +2330,18 @@ create_save_dir(char *dirnam)
     } else {
 	n = 1;
     }
+
     for (; n < TABLESIZE(tbl); n++) {
 	if (is_directory(tbl[n])) {
 	    int omask = vl_umask(0077);
 	    (void) pathcat(dirnam, tbl[n], "vileDXXXXXX");
-	    (void) vl_mkdtemp(dirnam);
+
 	    /* on failure, keep going */
+#if defined(HAVE_MKSTEMP) && defined(HAVE_MKDTEMP)
+	    result = (vl_mkdtemp(dirnam) == 0);
+#else
 	    result = (vl_mkdir(dirnam, 0700) == 0);
+#endif
 	    (void) vl_umask(omask);
 	    if (result)
 		break;
@@ -2358,7 +2373,6 @@ imdying(int ACTUAL_SIG_ARGS)
 {
     static char dirnam[NSTRING] = "";
     static int wrote = 0;
-    static int i_am_dead;
     char filnam[NFILEN];
     BUFFER *bp;
     int bad_karma = FALSE;
@@ -2367,6 +2381,7 @@ imdying(int ACTUAL_SIG_ARGS)
 #endif
     static int created = FALSE;
     char temp[NFILEN];
+    char my_buffer[NSTRING];
 
 #if SYS_APOLLO
     extern char *getlogin(void);
@@ -2378,6 +2393,16 @@ imdying(int ACTUAL_SIG_ARGS)
 
     if (i_am_dead++)		/* prevent recursive faults */
 	_exit(signo);
+
+    /*
+     * Buffered I/O would do things that we can't rely upon in a signal
+     * handler.  Force unbuffered I/O in ffopen/.../ffclose.
+     */
+    beginDisplay();
+    fflinebuf = my_buffer;
+    fflinelen = 0;
+    ffp = 0;
+    ffd = -1;
 
 #if SYS_APOLLO
     (void) lsprintf(cmd,
@@ -2470,6 +2495,7 @@ imdying(int ACTUAL_SIG_ARGS)
 	    (void) system(cmd);
 	}
     }
+    term.cursorvis(TRUE);	/* ( this might work ;-) */
     if (signo > 2) {
 	ttclean(FALSE);
 	abort();

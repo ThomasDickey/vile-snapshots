@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.149 2002/02/12 22:45:15 tom Exp $
+; $Id: filters.rc,v 1.150 2002/02/17 23:13:43 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -56,7 +56,7 @@ define-mode cfg
 define-mode cpp
 ~with define-submode cpp
 	before "c"
-	suf '\(\.\(\|CC\|cpp\|cxx\|hxx\|hh\)$\)'
+	suf '\(\.\(CC\|cpp\|cxx\|hxx\|hh\)$\)'
 	cindent
 	filtername	'vile-c-filt -k cpp'
 ~endwith

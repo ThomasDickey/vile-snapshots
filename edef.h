@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.299 2002/01/20 20:49:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.300 2002/02/15 00:02:06 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -74,7 +74,8 @@ decl_uninit(int nowait_pipe_cmd);	/* if set, don't slowreadf() this pipe
 					 */
 #endif
 
-decl_uninit( int am_interrupted );	/* have we been interrupted/ */
+decl_uninit( int am_interrupted );	/* have we been interrupted */
+decl_init( int i_am_dead, 0 );		/* have we been burned? */
 
 
 decl_init( int autoindented , -1);	/* how many chars (not cols) indented */
@@ -300,6 +301,7 @@ decl_uninit( int kbd_expand );		/* -1 kbd_putc shows tab as space */
 
 decl_init( FFType ffstatus, file_is_closed );
 decl_init( FILE *ffp, 0 );		/* File pointer, all functions. */
+decl_init( int ffd, -1 );		/* file descriptor if unbuffered */
 decl_uninit( BUFFER *ffbuffer );	/* buffer to read from */
 decl_uninit( LINE *ffcursor );		/* ...and current line read */
 decl_uninit( char *fflinebuf );		/* current buffer for file reads */

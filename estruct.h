@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.501 2002/02/03 23:21:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.503 2002/02/18 00:42:40 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1049,6 +1049,7 @@ typedef enum {
 	SF_NEVER = 0
 	, SF_ALWAYS
 	, SF_DIFFERS
+	, SF_FOREIGN
 	, SF_LOCAL
 } SHOW_FORMAT;
 
@@ -2484,6 +2485,7 @@ typedef struct {
 /* definitions for fileio.c's ffXXX() functions */
 typedef enum {
 	file_is_closed
+	,file_is_unbuffered
 	,file_is_external
 	,file_is_pipe
 	,file_is_internal 	

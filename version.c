@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.51 2001/12/30 20:32:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.52 2002/02/17 18:35:10 tom Exp $
  *
  */
 
@@ -34,7 +34,7 @@ print_usage(void)
 #endif
 	"-sstring       or +/string to search for \"string\"",
 #if OPT_TAGS
-#if DISP_X11 && XTOOLKIT
+#if DISP_X11		/* because -title is predefined */
 	"-Ttagname      to look up a tag",
 #else
 	"-ttagname      to look up a tag",
@@ -46,7 +46,6 @@ print_usage(void)
 	"-kcryptkey     for encrypted files (same as -K)",
 #endif
 #if DISP_X11
-#if XTOOLKIT
 	"-name name     to change program name for X resources",
 	"-title name    to set name in title bar",
 	"-fg color      to change foreground color",
@@ -60,17 +59,6 @@ print_usage(void)
 	"-xrm Resource  to change an xvile resource",
 	"-leftbar       Put scrollbar(s) on left",
 	"-rightbar      Put scrollbar(s) on right (default)",
-#else				/* obsolete */
-	"-name name     to change program name for X resources",
-	"-wm name       to set name in title bar",
-	"-fg color      to change foreground color",
-	"-bg color      to change background color",
-	"-fn fontname   to change font",
-	"-fork          to spawn xvile immediately on startup",
-	"+fork          to force xvile to not spawn on startup",
-	"-display       displayname to change the default display",
-	"-rv            for reverse video",
-#endif
 #endif
 #if DISP_IBMPC || DISP_BORLAND
 	"-2             25-line mode",
@@ -84,6 +72,9 @@ print_usage(void)
 #if SYS_VMS
 	"-80            80-column mode",
 	"-132           132-column mode",
+#endif
+#if OPT_EVAL || OPT_DEBUGMACROS
+	"-D             trace macros into [Trace] buffer",
 #endif
 	"-V             for version info",
 	"-I             use vileinit.rc to initialize",

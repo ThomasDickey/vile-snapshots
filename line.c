@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.148 2002/02/03 21:28:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.150 2002/02/17 20:52:11 tom Exp $
  *
  */
 
@@ -160,68 +160,55 @@ ltextfree(register LINE *lp, register BUFFER *bp)
 void
 lremove(register BUFFER *bp, register LINEPTR lp)
 {
-    register WINDOW *wp;
-    register LINEPTR point;
+    WINDOW *wp;
+    LINEPTR line_after;
+    MARK mark_after;
 
     if (lp == buf_head(bp))
 	return;
 
-    point = lforw(lp);
+    line_after = lforw(lp);
+    mark_after.l = line_after;
+    mark_after.o = 0;
 
 #if !WINMARK
-    if (MK.l == lp) {
-	MK.l = point;
-	MK.o = 0;
-    }
+    if (MK.l == lp)
+	MK = mark_after;
 #endif
     for_each_window(wp) {
 	if (wp->w_line.l == lp)
-	    wp->w_line.l = point;
-	if (wp->w_dot.l == lp) {
-	    wp->w_dot.l = point;
-	    wp->w_dot.o = 0;
-	}
+	    wp->w_line.l = line_after;
+	if (wp->w_dot.l == lp)
+	    wp->w_dot = mark_after;
 #if WINMARK
-	if (wp->w_mark.l == lp) {
-	    wp->w_mark.l = point;
-	    wp->w_mark.o = 0;
-	}
+	if (wp->w_mark.l == lp)
+	    wp->w_mark = mark_after;
 #endif
 #if 0
-	if (wp->w_lastdot.l == lp) {
-	    wp->w_lastdot.l = point;
-	    wp->w_lastdot.o = 0;
-	}
+	if (wp->w_lastdot.l == lp)
+	    wp->w_lastdot = mark_after;
 #endif
     }
     if (bp->b_nwnd == 0) {
-	if (bp->b_dot.l == lp) {
-	    bp->b_dot.l = point;
-	    bp->b_dot.o = 0;
-	}
+	if (bp->b_wline.l == lp)
+	    bp->b_wline = mark_after;
+	if (bp->b_dot.l == lp)
+	    bp->b_dot = mark_after;
 #if WINMARK
-	if (bp->b_mark.l == lp) {
-	    bp->b_mark.l = point;
-	    bp->b_mark.o = 0;
-	}
+	if (bp->b_mark.l == lp)
+	    bp->b_mark = mark_after;
 #endif
 #if 0
-	if (bp->b_lastdot.l == lp) {
-	    bp->b_lastdot.l = point;
-	    bp->b_lastdot.o = 0;
-	}
+	if (bp->b_lastdot.l == lp)
+	    bp->b_lastdot = mark_after;
 #endif
     }
 #if 0
     if (bp->b_nmmarks != NULL) {	/* fix the named marks */
 	int i;
-	struct MARK *mp;
 	for (i = 0; i < NMARKS; i++) {
-	    mp = &(bp->b_nmmarks[i]);
-	    if (mp->p == lp) {
-		mp->p = point;
-		mp->o = 0;
-	    }
+	    if (bp->b_nmmarks[i].l == lp)
+		bp->b_nmmarks[i] = nullmark;
 	}
     }
 #endif
@@ -236,8 +223,7 @@ lremove(register BUFFER *bp, register LINEPTR lp)
 		ap = ap->ar_next;
 		free_attrib(bp, tofree);
 	    } else if (samestart) {
-		ap->ar_region.r_orig.l = point;
-		ap->ar_region.r_orig.o = 0;
+		ap->ar_region.r_orig = mark_after;
 		ap = ap->ar_next;
 	    } else if (sameend) {
 		ap->ar_region.r_end.l = lback(lp);
@@ -252,7 +238,7 @@ lremove(register BUFFER *bp, register LINEPTR lp)
     set_lback(lforw(lp), lback(lp));
 
     /*
-     * If we've disable undo stack, we'll have to free the line to avoid
+     * If we've disabled undo stack, we'll have to free the line to avoid
      * a memory leak.
      */
     if (!b_val(bp, MDUNDOABLE)) {
@@ -509,10 +495,10 @@ lnewline(void)
 	tmp = lp1;
 	cp1 = tmp->l_text;	/* Shuffle text around  */
 	cp2 = lp2->l_text;
-	while (cp1 != &tmp->l_text[doto])
+	while (cp1 < &tmp->l_text[doto])
 	    *cp2++ = *cp1++;
 	cp2 = tmp->l_text;
-	while (cp1 != &tmp->l_text[tmp->l_used])
+	while (cp1 < &tmp->l_text[tmp->l_used])
 	    *cp2++ = *cp1++;
 	tmp->l_used -= doto;
     }

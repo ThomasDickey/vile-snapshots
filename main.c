@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.472 2002/02/04 00:32:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.474 2002/02/18 00:43:32 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -69,17 +69,33 @@ static void start_debug_log(int ac, char **av);
 extern const int nametblsize;
 
 /*--------------------------------------------------------------------------*/
-#define	GetArgVal(param)	if (!*(++param))\
-					param = argv[++carg];\
-				if (param == 0)\
-					print_usage()
+
+/*
+ * Get the argument parameter.  The 'param' points to the option flag.  Set it
+ * to a 1-character string to force the next entry from argv[] to be fetched.
+ */
+static char *
+get_argvalue(char *param, char *argv[], int *argcp)
+{
+    if (!*(++param)) {
+	*argcp += 1;
+	param = argv[*argcp];
+    }
+    if (param == 0)
+	print_usage();
+    return param;
+}
+
+#define	GetArgVal(param)	get_argvalue(param, argv, &carg)
+
+/*--------------------------------------------------------------------------*/
 
 int
 MainProgram(int argc, char *argv[])
 {
     int tt_opened;
-    register BUFFER *bp;
-    register int carg;		/* current arg to scan */
+    BUFFER *bp;
+    int carg;			/* current arg to scan */
     char *vileinit = NULL;	/* the startup file or VILEINIT var */
     int startstat = TRUE;	/* result of running startup */
     BUFFER *havebp = NULL;	/* initial buffer to read */
@@ -94,9 +110,6 @@ MainProgram(int argc, char *argv[])
 #endif
 #ifdef VILE_OLE
     int ole_register = FALSE;
-#endif
-#if DISP_X11 && !XTOOLKIT
-    int do_newgroup = FALSE;	/* do we spawn at start? */
 #endif
 #if OPT_TAGS
     int didtag = FALSE;		/* look up a tag to start? */
@@ -145,6 +158,7 @@ MainProgram(int argc, char *argv[])
 	    startstat = FALSE;
     }
 #endif
+
     /*
      * Allow for I/O to the command-line before we initialize the screen
      * driver.
@@ -163,13 +177,7 @@ MainProgram(int argc, char *argv[])
 
     /* Parse the passed in parameters */
     for (carg = 1; carg < argc; ++carg) {
-	register char *param = argv[carg];
-#if DISP_X11 && !XTOOLKIT
-	if (*param == '=') {
-	    x_set_geometry(param);
-	    continue;
-	}
-#endif
+	char *param = argv[carg];
 
 	/* evaluate switches */
 	if (*param == '-') {
@@ -192,51 +200,6 @@ MainProgram(int argc, char *argv[])
 	    } else
 #endif /* DISP_IBMPC */
 		switch (*param) {
-#if DISP_X11 && !XTOOLKIT
-		case 'd':
-		    if ((param = argv[++carg]) != 0)
-			x_set_dpy(param);
-		    else
-			print_usage();
-		    break;
-		case 'r':
-		    x_set_rv();
-		    break;
-		case 'f':
-		    if (argv[++carg] != 0) {
-			if (strcmp(param, "foreground") == 0
-			    || strcmp(param, "fg") == 0)
-			    x_setforeground(argv[carg]);
-			else if (!strcmp(param, "fork"))
-			    do_newgroup = TRUE;
-			else
-			    x_setfont(argv[carg]);
-		    } else
-			print_usage();
-		    break;
-		case 'b':
-		    if (argv[++carg] != 0) {
-			if (strcmp(param, "background") == 0
-			    || strcmp(param, "bg") == 0)
-			    x_setbackground(argv[carg]);
-		    } else
-			print_usage();
-		    break;
-		case 'n':
-		    if (strcmp(param, "name") == 0
-			&& argv[++carg] != 0)
-			x_setname(argv[carg]);
-		    else
-			print_usage();
-		    break;
-		case 'w':
-		    if (strcmp(param, "wm") == 0
-			&& argv[++carg] != 0)
-			x_set_wm_title(argv[carg]);
-		    else
-			print_usage();
-		    break;
-#endif /* DISP_X11 */
 #if DISP_NTCONS
 		case 'c':
 		    if (strcmp(param, "console") == 0) {
@@ -247,12 +210,16 @@ MainProgram(int argc, char *argv[])
 			 * console vile's mouse features are
 			 * unavailable (bug).
 			 */
-
 			new_console = TRUE;
 		    } else
 			print_usage();
 		    break;
 #endif /* DISP_NTCONS */
+#if OPT_EVAL || OPT_DEBUGMACROS
+		case 'D':
+		    tracemacros = TRUE;
+		    break;
+#endif
 		case 'e':	/* -e for Edit file */
 		case 'E':
 		    set_global_b_val(MDVIEW, FALSE);
@@ -260,7 +227,7 @@ MainProgram(int argc, char *argv[])
 		case 'g':	/* -g for initial goto */
 		case 'G':
 		    gotoflag = TRUE;
-		    GetArgVal(param);
+		    param = GetArgVal(param);
 		    gline = atoi(param);
 		    break;
 		case 'h':	/* -h for initial help */
@@ -283,7 +250,7 @@ MainProgram(int argc, char *argv[])
 #if OPT_ENCRYPT
 		case 'k':	/* -k<key> for code key */
 		case 'K':
-		    GetArgVal(param);
+		    param = GetArgVal(param);
 		    vl_make_encrypt_key(startkey, param);
 		    break;
 #endif
@@ -298,14 +265,14 @@ MainProgram(int argc, char *argv[])
 		case 's':	/* -s <pattern> */
 		case 'S':
 		  dosearch:
-		    GetArgVal(param);
+		    param = GetArgVal(param);
 		    search_exp = new_regexval(param,
 					      global_b_val(MDMAGIC));
 		    break;
 #if OPT_TAGS
 		case 't':	/* -t for initial tag lookup */
 		case 'T':
-		    GetArgVal(param);
+		    param = GetArgVal(param);
 		    tname = param;
 		    break;
 #endif
@@ -481,11 +448,6 @@ MainProgram(int argc, char *argv[])
 	}
 #endif
     }
-#endif
-
-#if DISP_X11 && !XTOOLKIT
-    if (do_newgroup)
-	(void) newprocessgroup(TRUE, 1);
 #endif
 
     if (!tt_opened)
@@ -1140,7 +1102,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setINT(MDWRAP, FALSE);	/* wrap */
 	    setINT(VAL_ASAVECNT, 256);	/* autosave count */
 	    setINT(VAL_RECORD_SEP, RS_DEFAULT);
-	    setINT(VAL_SHOW_FORMAT, SF_LOCAL);
+	    setINT(VAL_SHOW_FORMAT, SF_FOREIGN);
 	    setINT(VAL_SWIDTH, 8);	/* shiftwidth */
 	    setINT(VAL_TAB, 8);	/* tab stop */
 	    setINT(VAL_TAGLEN, 0);	/* significant tag length */

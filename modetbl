@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.206 2002/01/20 21:11:18 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.207 2002/02/18 00:36:36 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -508,6 +508,7 @@ string
 .table showformat
 "always"	SF_ALWAYS
 "differs"	SF_DIFFERS
+"foreign"	SF_FOREIGN
 "local"		SF_LOCAL
 "never"		SF_NEVER
 

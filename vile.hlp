@@ -1601,7 +1601,10 @@ Editor modes
 	showformat (sf) Controls when/whether recordseparator information is
 		shown in the status line.  Values are "always", "differs" to
 		show when the local mode differs from the global, "local" to
-		show whenever a local mode is set and "never".  (B)
+		show whenever a local mode is set, "foreign" to show when the
+		recordseparator differs from the native default and "never". 
+		On Unix, the native recordseparator is a line-feed, on DOS it
+		is carriage-return/line-feed.  (B)
 
 	showmatch (sm) During insert, if a closing "fence" character
 		(usually '}', ']', or ')', but may be changed by setting
@@ -5706,4 +5709,4 @@ Problems
 
 Copyright 1995-2001 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.542 2002/02/03 23:43:01 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.543 2002/02/18 00:38:49 tom Exp $
