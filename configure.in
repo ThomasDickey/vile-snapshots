@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.145 $)
+AC_REVISION($Revision: 1.146 $)
 AC_PREREQ(2.12.971222)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.145 2000/06/09 09:58:08 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.146 2000/08/20 18:03:03 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -365,6 +365,12 @@ changequote([,])dnl
 		SCREEN=tcap
 		TARGET=vile
 		AC_DEFINE(DISP_TERMCAP)
+		AC_MSG_CHECKING(if you want to use ncurses)
+		AC_ARG_WITH(ncurses,
+			[  --with-ncurses          use ncurses rather than termcap/terminfo],
+			[screen=ncurses],
+			[withval=no])
+		AC_MSG_RESULT($withval)
 		CF_TERMCAP_LIBS($screen)
 	;;
 esac
@@ -702,7 +708,7 @@ rm -f filters/makefile.tmp
 $AWK -f $cf_srcdir/filters/mk-2nd.awk <$cf_srcdir/filters/genmake.mak from=../$cf_srcdir/filters linking="$ECHO_LD" compiling="$RULE_CC" show="$ECHO_CC" mode=built-in list="$VILE_BUILTIN_FILTERS" >>filters/makefile
 $AWK -f $cf_srcdir/filters/mk-2nd.awk <$cf_srcdir/filters/genmake.mak from=../$cf_srcdir/filters linking="$ECHO_LD" compiling="$RULE_CC" show="$ECHO_CC" mode=external list="$VILE_BUILTIN_FILTERS" >>filters/makefile
 
-find $cf_srcdir/filters -type f -name '*.key' -print | awk -f $cf_srcdir/filters/mk-key.awk from=$cf_srcdir >>filters/makefile
+(for i in $cf_srcdir/filters/*.key;do echo $i;done) | awk -f $cf_srcdir/filters/mk-key.awk from=$cf_srcdir >>filters/makefile
 },
 {
 RULE_CC='$RULE_CC'

@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.125 2000/08/16 00:50:00 tom Exp $
+; $Id: filters.rc,v 1.126 2000/08/20 17:30:54 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -370,7 +370,7 @@ define-mode sh
 	fence-fi   '^\s*\<fi\>'
 ~elsewith define-submode sh group 'case'
 	fence-if   '^\s*\<case\>.*\<in\>'
-	fence-elif '^\s*[^)]\+)'
+	fence-elif '^\s*[^ 	)]\+)'
 	fence-else '^\s*\*)'
 	fence-fi   '^\s*\<esac\>'
 ~elsewith define-submode sh group 'do'

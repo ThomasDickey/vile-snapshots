@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.27 2000/08/08 23:58:20 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.28 2000/08/20 23:18:58 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -33,6 +33,7 @@ TMPINCS	= \
 	mk-2nd.tmp
 
 MAKEDEPS = $(TMPINCS) makefile.wnt
+GENDEPS = makefile.wnt genmake.exe genmake.mak
 
 !if "$(RECUR_FILTERS)" == ""
 # list these on separate lines, otherwise nmake does the last only.
@@ -42,18 +43,18 @@ install :: $(TMPINCS)
 uninstall :: $(TMPINCS)
 
 !if "$(FLT)" == ""
-mk-1st.tmp : makefile.wnt mk-1st.bat genmake.mak
-	mk-1st.bat genmake.mak extern >$@
-mk-2nd.tmp : makefile.wnt mk-2nd.bat genmake.mak
-	mk-2nd.bat genmake.mak extern >$@
+mk-1st.tmp : $(GENDEPS) mk-1st.bat
+	mk-1st.bat genmake.mak extern $@
+mk-2nd.tmp : $(GENDEPS) mk-2nd.bat
+	mk-2nd.bat genmake.mak extern $@
 !else
-mk-1st.tmp : makefile.wnt mk-1st.bat genmake.mak
-	mk-1st.bat genmake.mak intern >$@
-mk-2nd.tmp : makefile.wnt mk-2nd.bat genmake.mak
-	mk-2nd.bat genmake.mak intern >$@
+mk-1st.tmp : $(GENDEPS) mk-1st.bat
+	mk-1st.bat genmake.mak intern $@
+mk-2nd.tmp : $(GENDEPS) mk-2nd.bat
+	mk-2nd.bat genmake.mak intern $@
 !endif
 
-RECUR_OPTS = RECUR_FILTERS=yes FLT=$(FLT) -f makefile.wnt $@ -$(MAKEFLAGS)
+RECUR_OPTS = RECUR_FILTERS=yes FLT=$(FLT) LEX=$(LEX) -f makefile.wnt $@ -$(MAKEFLAGS)
 
 all ::
 	$(MAKE) $(RECUR_OPTS)

@@ -1,5 +1,25 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000820 (s)
+	> Clark Morgan:
+	+ make Ian Jamison's change to w32pipe.c the default on all hosts,
+	  tested in W95 and NT.
+	> Tom Dickey:
+	+ minor fixes to IDENT and VARIABLE definitions in bat-filt.l
+	+ modify win32 scripts to eliminate redirecting standard output as
+	  part of generating portions of makefiles, since that simply does
+	  not work on w95 (reported by Clark Morgan).
+	+ modify configure script to avoid using 'find', since OS/2 EMX's
+	  'find' utility is a different program altogether (like grep).
+	+ add configure --with-ncurses option, mainly for OS/2 EMX which has
+	  an unusable termcap library.
+	+ updated config.guess, config.sub from lynx 2.8.4dev.7 (now on my
+	  ftp area as autoconf 2.13 patch 200000819, since I resync'd the
+	  OS/2 EMX patch as well).
+	+ refine fence-elif expression in shmode's "case" group, which allowed
+	  a right parenthesis with only spaces before it to match (reported by
+	  Clark Morgan).
+
  20000816 (r)
 	> Tom Dickey:
 	+ add logic to m4-filt.c to handle argument lists that span multiple

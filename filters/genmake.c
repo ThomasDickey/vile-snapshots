@@ -2,7 +2,7 @@
  * Generate fragments of filters/makefile (for platforms without useful
  * shell scripting tools)
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.c,v 1.2 2000/08/16 09:59:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.c,v 1.3 2000/08/20 19:13:04 tom Exp $
  *
  */
 #include <stdlib.h>
@@ -95,11 +95,13 @@ main(int argc, char *argv[])
     char output[BUFSIZ];
     char *list[MAXFIELD];
     char *data[BUFSIZ];
+    FILE *fp = stdout;
     int use_c = 0;
     int use_l = 0;
     int count = 0;
     int filter = 1;
     int verbose = 0;
+    char *redir = 0;
     char *s;
     char *d;
 
@@ -118,6 +120,14 @@ main(int argc, char *argv[])
 		case 'n':
 		    filter = 0;	/* don't substitute */
 		    break;
+		case 'o':
+		    if (*++s == 0 || (fp = fopen(s, "a")) == 0) {
+			fprintf(stderr, "Cannot open output %s\n", s);
+			exit(EXIT_FAILURE);
+		    }
+		    redir = s;
+		    s += strlen(s) - 1;
+		    break;
 		case 'x':
 		    if ((program = ++s) == 0)
 			program = "";
@@ -132,9 +142,9 @@ main(int argc, char *argv[])
 	    data[count++] = s;
 	    if (!filter) {
 		substitute(output, s, list);
-		printf("%s\n", output);
+		fprintf(fp, "%s\n", output);
 	    } else if (verbose)
-		printf("$ %s\n", s);
+		fprintf(fp, "$ %s\n", s);
 	}
     }
 
@@ -146,11 +156,11 @@ main(int argc, char *argv[])
 
 	while (fgets(input, sizeof(input), stdin) != 0) {
 	    if (verbose)
-		printf(">%s", input);
+		fprintf(fp, ">%s", input);
 	    if (parse(input, list)) {
 		if (verbose)
 		    for (n = 0; n < MAXFIELD; n++)
-			printf("\t%d '%s'\n", n, list[n]);
+			fprintf(fp, "\t%d '%s'\n", n, list[n]);
 		if (!use_c && !strcmp(list[SELFIELD], "c"))
 		    continue;
 		if (!use_l && !strcmp(list[SELFIELD], "l"))
@@ -158,15 +168,21 @@ main(int argc, char *argv[])
 		for (n = 0; n < count; n++) {
 		    substitute(output, data[n], list);
 		    if (*program != 0) {
+			if (redir != 0)
+			    fclose(fp);
+			fprintf(stderr, "%% %s\n", output);
 			system(output);	/* won't work on VMS */
 			fflush(stdout);
+			if (redir != 0)
+			    fp = fopen(redir, "a");
 		    } else {
-			puts(output);
+			fprintf(fp, "%s\n", output);
 		    }
 		}
 	    }
 	}
     }
-    fflush(stdout);
+    fflush(fp);
+    fclose(fp);
     exit(EXIT_SUCCESS);
 }

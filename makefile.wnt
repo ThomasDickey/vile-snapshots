@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.62 2000/08/09 00:18:54 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.63 2000/08/20 23:16:32 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -226,12 +226,12 @@ builtflt.obj : builtflt.h
 builtflt.h :
 	cd filters
 	$(MAKE) -f makefile.wnt genmake.exe -$(MAKEFLAGS)
-	mk-0th.bat genmake.mak > ..\$@
+	mk-0th.bat genmake.mak ..\$@
 	cd ..
 
 $(FLTLIB) :
 	cd filters
-	$(MAKE) -f makefile.wnt all FLT=$(FLT) -$(MAKEFLAGS)
+	$(MAKE) -f makefile.wnt all FLT=$(FLT) LEX=$(LEX) -$(MAKEFLAGS)
 	cd ..
 
 nebind.h \
