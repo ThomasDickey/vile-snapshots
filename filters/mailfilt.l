@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.12 2000/04/21 11:07:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.13 2001/03/26 14:18:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mail
  */
@@ -58,7 +58,7 @@ NAME		[a-zA-Z0-9_+.#-]+
 ADDRESS		({NAME}|\.)+
 EMAIL		{NAME}@{ADDRESS}
 
-URL		[A-Za-z]+"://"[0-9a-zA-Z%/.~_#-]+
+URL		[A-Za-z]+"://"[0-9a-zA-Z%/.~_#?=-]+
 
 %%
 

@@ -233,9 +233,8 @@ search for the symbol HAVE_BROKEN_PERL_RS in makefile.wnt to see if your
 version of perl is affected.
 
 note 2: the ActiveState port of perl is not compatible with vile's
-internal perl API.  See this URL for more details:
-
-    http://www.activestate.com/ActivePerl/docs/Perl-Win32/perlwin32faq10.html
+internal perl API--older versions won't link/compile and newer versions
+crash the editor.
 
 --------------------------------------------------------
 tom dickey, dickey@herndon4.his.com
@@ -244,5 +243,5 @@ tom dickey, dickey@herndon4.his.com
 paul fox, pgf@foxharp.boston.ma.us (home)
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.25 2000/06/17 02:44:25 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.26 2001/04/08 00:59:11 cmorgan Exp $
 ------------------------

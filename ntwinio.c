@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.106 2001/03/23 00:41:27 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.108 2001/04/07 15:37:11 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -118,7 +118,6 @@ static int redirect_keys;
 
 static int nfcolor = -1;	/* normal foreground color */
 static int nbcolor = -1;	/* normal background color */
-static int ninvert = FALSE;	/* normal colors inverted? */
 static int crow = -1;		/* current row */
 static int ccol = -1;		/* current col */
 
@@ -695,31 +694,64 @@ color_of(int code)
     return PALETTERGB(RedValue[code], GreenValue[code], BlueValue[code]);
 }
 
-static void
+/*
+ * Translate the attribute into indices into the color table.
+ */
+static int
 attr_to_colors(VIDEO_ATTR attr, int *fcolor, int *bcolor)
 {
+    int ninvert = FALSE;	/* normal colors inverted? */
+
     *fcolor = nfcolor;
     *bcolor = nbcolor;
-    ninvert = FALSE;
 
+    attr &= (VASPCOL|VACOLOR|VABOLD|VAITAL|VASEL|VAREV);
     if (attr) {
+	ninvert = ((attr & (VASEL | VAREV)) == VASEL
+		|| (attr & (VASEL | VAREV)) == VAREV);
+
 	if (attr & VASPCOL)
 	    *fcolor = (VCOLORNUM(attr) & (NCOLORS - 1));
-	else if (attr == VABOLD)
-	    *fcolor |= FOREGROUND_INTENSITY;
-	else if (attr == VAITAL)
-	    *bcolor |= BACKGROUND_INTENSITY;
 	else if (attr & VACOLOR)
 	    *fcolor = ((VCOLORNUM(attr)) & (NCOLORS - 1));
 
-	if ((attr & (VASEL | VAREV)) == VASEL
-	    || (attr & (VASEL | VAREV)) == VAREV) {
+	/* FIXME: we're faking bold/italic by changing color intensity */
+	if (attr & VABOLD) {
+	    if (*fcolor >= 0)
+		*fcolor |= (NCOLORS >> 1);
+	    else
+		*fcolor = ENUM_FCOLOR;
+	}
+	if (attr & VAITAL) {
+	    if (*bcolor >= 0)
+		*bcolor |= (NCOLORS >> 1);
+	    else
+		*bcolor = ENUM_FCOLOR;
+	}
+
+	if (ninvert) {
 	    int temp = *bcolor;
 	    *bcolor = *fcolor;
 	    *fcolor = temp;
-	    ninvert = TRUE;
 	}
+	TRACE2(("attr_to_colors(%04x) fg=%2d, bg=%2d %s\n", attr, *fcolor, *bcolor, ninvert ? "INVERT" : ""));
     }
+    return ninvert;
+}
+
+static int
+fake_color(int current, int nominal)
+{
+    int x = nominal;
+    if (current == ENUM_FCOLOR) {
+	int r = GetRValue(nominal) ^ 0x40;
+	int g = GetGValue(nominal) ^ 0x40;
+	int b = GetBValue(nominal) ^ 0x40;
+	x = PALETTERGB(r, g, b);
+    }
+    TRACE2(("fake_color(%d, %#x) = %#x\n", current, nominal, x));
+    nominal = x;
+    return nominal;
 }
 
 static void
@@ -727,23 +759,24 @@ nt_set_colors(HDC hdc, VIDEO_ATTR attr)
 {
     int fcolor;
     int bcolor;
+    int ninvert;
 
 #ifdef GVAL_VIDEO
     attr ^= global_g_val(GVAL_VIDEO);
 #endif
-    attr_to_colors(attr, &fcolor, &bcolor);
+    ninvert = attr_to_colors(attr, &fcolor, &bcolor);
 
     if (fcolor < 0)
 	fcolor = ninvert
-	    ? default_bcolor
-	    : default_fcolor;
+	    ? fake_color(fcolor, default_fcolor)
+	    : fake_color(fcolor, default_bcolor);
     else
 	fcolor = color_of(fcolor);
 
     if (bcolor < 0)
 	bcolor = ninvert
-	    ? default_fcolor
-	    : default_bcolor;
+	    ? fake_color(bcolor, default_bcolor)
+	    : fake_color(bcolor, default_fcolor);
     else
 	bcolor = color_of(bcolor);
 
@@ -1593,6 +1626,9 @@ static struct keyxlate_struct {
     { VK_F20,		KEY_F20 },
     /* Allow ^-6 to invoke the alternate-buffer command, a la Unix.  */
     { '6',		'6' },
+    /* A couple of possibilities for ^@ */
+    { '2',		'2' },
+    { '@',		'@' },
     /* *INDENT-ON* */
 
 };
@@ -1621,15 +1657,21 @@ decode_key_event(KEY_EVENT_RECORD * irp)
 	    DWORD state = irp->dwControlKeyState;
 
 	    /*
-	     * There are two special keys that we must deal with here on an
-	     * ad hoc basis:  ALT+F4 and SHIFT+6 .  The former should _never_
-	     * be remapped by any user (nor messed with by vile) and the
-	     * latter is actually '^' -- leave it alone as well.
+	     * There are a few special keys that we must deal with here on an
+	     * ad hoc basis:
+	     *
+	     * ALT+F4 - This should _never_ be remapped by any user (nor
+	     * messed with by vile).
+	     *
+	     * SHIFT+6 - This is actually '^^' -- leave it alone.
+	     * SHIFT+2 - This is actually '^@' -- leave it alone.
 	     */
 	    if ((keyp->windows == VK_F4 &&
 		 (state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)))
-		||
-		(keyp->windows == '6' && (state & SHIFT_PRESSED))) {
+		|| (keyp->windows == '6' && (state & SHIFT_PRESSED))
+		|| (keyp->windows == '@' && (state & SHIFT_PRESSED))
+		|| (keyp->windows == '2' && (state & SHIFT_PRESSED))) {
+		TRACE(("decode_key_event - special\n"));
 		break;
 	    }
 
@@ -2541,7 +2583,7 @@ ntgetch(void)
     int buttondown = FALSE;
     int sel_pending = FALSE;	/* Selection pending */
     MARK lmbdn_mark;		/* left mouse button down here */
-    int result = 0;
+    int result = -1;
     KEY_EVENT_RECORD ker;
     MSG msg;
     POINT first;
@@ -2565,7 +2607,7 @@ ntgetch(void)
     } else {
 	fhide_cursor();
     }
-    while (!result) {
+    while (result < 0) {
 #ifdef VAL_AUTOCOLOR
 	milli_ac = orig_milli_ac;
 	while (milli_ac > 0) {
@@ -2635,13 +2677,13 @@ ntgetch(void)
 		   msg.wParam, result));
 	    if (result == NOKYMAP) {
 		DispatchMessage(&msg);
-		result = 0;
+		result = -1;
 #ifdef VILE_OLE
 	    } else if (result == KYREDIR) {
-		result = 0;	/* keystroke sent elsewhere */
+		result = -1;	/* keystroke sent elsewhere */
 #endif
 	    } else if (result == (int) msg.wParam) {
-		result = 0;	/* we'll get a WM_CHAR next */
+		result = -1;	/* we'll get a WM_CHAR next */
 	    }
 	    break;
 
@@ -2924,6 +2966,7 @@ repaint_window(HWND hWnd)
 		new_atr = CELL_ATTR(row, col);
 		if (new_atr != old_atr) {
 		    nt_set_colors(ps.hdc, old_atr);
+		    TRACE2(("TextOut [%3d,%3d]%.*s\n", row, old_col, col - old_col, &CELL_TEXT(row, old_col)));
 		    TextOut(ps.hdc,
 			    ColToPixel(old_col),
 			    RowToPixel(row),
@@ -2935,6 +2978,7 @@ repaint_window(HWND hWnd)
 	    }
 	    if (old_col < x1) {
 		nt_set_colors(ps.hdc, old_atr);
+		TRACE2(("TextOut [%3d,%3d]%.*s\n", row, old_col, x1 - old_col, &CELL_TEXT(row, old_col)));
 		TextOut(ps.hdc,
 			ColToPixel(old_col),
 			RowToPixel(row),

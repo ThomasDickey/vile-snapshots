@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.16 2000/11/15 23:14:42 tom Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.17 2001/04/03 19:39:46 tom Exp $
 ; This is a sample which may be installed as .vilerc (or vile.rc for non-Unix
 ; systems), or source'd as-is to provide quick initialization of some useful
 ; macros and settings.
@@ -176,7 +176,10 @@ set autocolor=5000
 setv $autocolor-hook HighlightFilter
 ~endif
 
-~if &seq $pathlist-separator ":"
+~if &not &seq $os "vms"
 	source manpage.rc
+~endif
+
+~if &seq $pathlist-separator ":"
 	source spell.rc
 ~endif

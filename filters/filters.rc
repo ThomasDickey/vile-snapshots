@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.136 2001/03/23 00:05:55 tom Exp $
+; $Id: filters.rc,v 1.140 2001/04/07 17:06:11 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -38,7 +38,7 @@ define-mode basic
 
 define-mode bat
 ~with define-submode bat
-	suf '\.bat$'
+	suf '\.\(bat\|cmd\)$'
 	pre '\s*\(@\)\?echo\s*\(on\|off\)\?$'
 	dos
 	ignorecase
@@ -190,6 +190,7 @@ define-mode html
 
 define-mode imake
 ~with define-submode imake
+	before "def"
 	suf 'I[Mm]akefile[^/]*$'
 	pre '^\s*\(XCOMM\>\|\/\*\*\/#\)'
 ~endwith
@@ -350,8 +351,8 @@ define-mode py
 
 define-mode rc
 ~with define-submode rc
-after "vile"
-	suf '\(rc\d*\)$'
+	after "vile"
+	suf '\.rc\d*$'
 	preamble '^\s*[^;"]'
 	qualifiers=all
 	comment-prefix	'^\s*//'
@@ -362,6 +363,9 @@ define-mode rexx
 ~with define-submode rexx
 	pre '^#\s*!\s*\.*\/.*\(rexx\|regina\|rxcurses\)\>'
 	suf '\.\(cmd\|rexx\)$'
+	~if &not &seq $os "win32"
+		before "bat"
+	~endif
 	comment-prefix '^\s*#'
 	comments   '^\s*#\s\+\s*$'
 ~endwith
@@ -459,7 +463,7 @@ define-mode tc
 
 define-mode tcl
 ~with define-submode tcl
-	suf '\(\.tcl\)$'
+	suf '\.\(tcl\|exp\)$'
 	pre '^#!\s*\/.*wish[0-9.]*\>\(\s*-[a-z]\+\)*\s*$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'

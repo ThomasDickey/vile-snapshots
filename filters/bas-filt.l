@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.3 2001/03/23 00:25:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.4 2001/03/27 21:51:34 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Basic 
  * input text.
@@ -16,6 +16,7 @@
 
 DefineFilter("basic");
 
+static char *Action_attr;
 static char *Comment_attr;
 static char *Number_attr;
 static char *String_attr;
@@ -51,6 +52,7 @@ do_filter(FILE *input)
 {
     yyin = input;
 
+    Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
     Number_attr  = class_attr(NAME_NUMBER);
     String_attr  = class_attr(NAME_LITERAL);
@@ -62,15 +64,17 @@ do_filter(FILE *input)
 }
 %}
 
-HEX		[A-F0-9]+
+TYPES		[%&!#$]?
+HEX		[A-Fa-z0-9]+
 UUID		"{"{HEX}(-{HEX})*"}"
 INTEGER		[-+]?([0-9]+)
 REAL		[-+]?([0-9]*\.[0-9]+)([eE][+-]?[0-9]+)?
-IDENT		[a-zA-Z][a-zA-Z_0-9]*[%&!#$]?
+IDENT		[a-zA-Z][a-zA-Z_0-9]*{TYPES}
 
+DATE		"#"[ 0-9A-Za-z,:./]+"#"
 STRING		\"([^"]|(""))*\"
 
-NUMBER		{INTEGER}|{REAL}|{UUID}|({INTEGER}{HEX})
+NUMBER		{INTEGER}|{REAL}|{UUID}|({INTEGER}{HEX}|("&[Hh]"|\$){HEX}){TYPES}
 
 %%
 
@@ -84,6 +88,8 @@ NUMBER		{INTEGER}|{REAL}|{UUID}|({INTEGER}{HEX})
 				    BEGIN(COMMENT);
 				  }
 				}
+<NORMAL>"_"$			{ WriteToken(Action_attr); }
+<NORMAL>{DATE}			|
 <NORMAL>{STRING}		{ WriteToken(String_attr); }
 <NORMAL>{NUMBER}		{ WriteToken(Number_attr); }
 <NORMAL>"'"[^\n]*		{ WriteToken(Comment_attr); }

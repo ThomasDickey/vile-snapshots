@@ -2444,6 +2444,7 @@ Programmed procedures and macros
 	$line		text of current line starting with cursor
 	$llength	length of current line			(read only)
 	$majormode	current majormode, if any		(read only)
+	$majormode-hook	procedure to overrride suffix/preamble rules
 	$match		last matched magic pattern		(read only)
 	$mode		current mode ("command","insert","overwrite") (rd. o.)
 	$modeline-format format of mode lines.  see "Mode line customization".
@@ -4050,7 +4051,7 @@ Working in a project hierarchy
 	arbitrarily complex hierarchy.  This feature requires a small
 	amount of configuration before it can be used.
 	
-	To begin with, specify a directory hierarchy using the $findpath
+	To begin with, specify a directory hierarchy via the $findpath
 	state variable using this syntax:
 
 	    setv $findpath="<dir>[<delim><dir>]..."
@@ -4175,7 +4176,7 @@ Working in a project hierarchy
 	  large number of fully functional GNU tools.  Cygwin can be
 	  obtained from Redhat at http://sources.redhat.com/cygwin.
 
-	+ The last file/directory traversal shell command created via
+	+ The most recent file/directory traversal shell command created via
 	  capture-command is stored in the $find-cmd state variable.  This
 	  can be a useful debugging aid.
 
@@ -5531,4 +5532,4 @@ Problems
 
 Copyright 1995-2001 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.517 2001/03/23 01:02:34 pgf Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.519 2001/04/08 00:59:11 cmorgan Exp $

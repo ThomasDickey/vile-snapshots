@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.25 2000/11/04 20:19:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.26 2001/03/26 13:36:08 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -104,7 +104,7 @@ SPACE		[ \t]
 
 INTEGER		[-+]?([0-9]+)
 REAL		[-+]?([0-9]*\.[0-9]+)([eE][+-]?[0-9]+)?
-IDENT		[a-zA-Z_][a-zA-Z_0-9]*
+IDENT		[a-zA-Z_][a-zA-Z_0-9-]*
 NOSTRBRK	"\\\""
 STRING		\"([^"]|{NOSTRBRK})*\"
 

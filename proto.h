@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.460 2001/03/23 00:57:55 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.462 2001/04/08 00:38:21 tom Exp $
  *
  */
 
@@ -151,9 +151,9 @@ extern BUFFER *make_bp (const char *fname, UINT flags);
 extern BUFFER *make_ro_bp(const char *bname, UINT flags);
 extern WINDOW *bp2any_wp (BUFFER *bp);
 extern char *add_brackets(char *dst, const char *src);
-extern char *hist_lookup ( int c );
-extern char *strip_brackets(char *dst, const char *src);
+extern char *hist_lookup (int c);
 extern char *next_buffer_line(const char *bname);
+extern char *strip_brackets(char *dst, const char *src);
 extern int add_line_at (BUFFER *bp, LINEPTR prevp, const char *text, int len);
 extern int addline (BUFFER *bp, const char *text, int len);
 extern int any_changed_buf (BUFFER **bpp);
@@ -161,10 +161,12 @@ extern int any_unread_buf (BUFFER **bpp);
 extern int ask_for_bname(char *prompt, char *bufn, size_t len);
 extern int bclear (BUFFER *bp);
 extern int bsizes (BUFFER *bp);
+extern int buffer_in_use (BUFFER *bp);
+extern int buffer_is_solo (BUFFER *bp);
+extern int buffer_is_visible (BUFFER *bp);
 extern int delink_bp (BUFFER *bp);
 extern int popupbuff (BUFFER *bp);
 extern int renamebuffer(BUFFER *rbp, char *bufname);
-extern void set_editor_title(void);
 extern int shiftwid_val (BUFFER *bp);
 extern int swbuffer (BUFFER *bp);
 extern int swbuffer_lfl (BUFFER *bp, int lockfl, int this_window);
@@ -176,6 +178,7 @@ extern void chg_buff (BUFFER *bp, USHORT flag);
 extern void imply_alt (char *fname, int copy, int lockfl);
 extern void make_current (BUFFER *nbp);
 extern void set_bname (BUFFER *bp, const char *name);
+extern void set_editor_title(void);
 extern void sortlistbuffers (void);
 extern void unchg_buff (BUFFER *bp, USHORT flag);
 extern void undispbuff (BUFFER *bp, WINDOW *wp);
@@ -275,15 +278,16 @@ extern int did_hard_error_occur (void);
 #endif
 
 /* statevar.c */
-extern char * get_findpath (void);
 extern char * vile_getenv(char *s);
 
 #if OPT_EVAL
 extern char * get_cdpath (void);
+extern char * get_findpath (void);
 extern char * get_shell (void);
 extern void setcmdstatus(int s);
 #else
 #define get_cdpath() getenv("CDPATH")
+#define get_findpath() getenv("VILE_FINDPATH")
 #define get_shell()  getenv("SHELL")
 #define setcmdstatus(s) /*nothing*/
 #endif

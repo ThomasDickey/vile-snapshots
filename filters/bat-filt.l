@@ -1,9 +1,9 @@
-%s ECHOING QUOTED
+%s ECHOING QUOTED COMMENT
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.14 2000/09/14 01:00:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.15 2001/03/26 14:17:04 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DOS (and
  * similar, such as W95, NT) batch file.
@@ -15,6 +15,7 @@ DefineFilter("bat");
 
 static char *Action_attr;
 static char *Comment_attr;
+static char *Error_attr;
 static char *Ident2_attr;
 static char *String_attr;
 
@@ -33,6 +34,20 @@ variable_attr(char *text)
 	attr = Ident2_attr;
     }
     return attr;
+}
+
+#define LABEL 8	/* labels are unique to only 8 chars */
+
+static void
+write_label(char *text, int length)
+{
+    char *next = skip_blanks(skip_blanks(text)+1);
+    unsigned len = strlen(next);
+    unsigned limit = (len <= LABEL) ? length : (LABEL + next - text);
+
+    flt_puts(text, limit, Ident2_attr);
+    if (len > LABEL)
+	flt_puts(next + LABEL, strlen(next + LABEL), Error_attr);
 }
 
 static void
@@ -54,6 +69,7 @@ do_filter(FILE *input)
     setting = 0;
     Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
+    Error_attr   = class_attr(NAME_ERROR);
     Ident2_attr  = class_attr(NAME_IDENT2);
     String_attr  = class_attr(NAME_LITERAL);
 
@@ -68,11 +84,7 @@ do_filter(FILE *input)
 TEXT		[^\r\n]
 BLANK		[ \t\r]
 
-REM		[rR][eE][mM]
-SET		[sS][eE][tT]
-ECHO		([eE][cC][hH][oO])(\.?)
-
-IDENT		[a-zA-Z_][a-zA-Z_0-9]*
+IDENT		[a-zA-Z_.][a-zA-Z_0-9.]*
 
 PARAM		%[0-9]
 VARIABLE	%%{IDENT}|%{IDENT}%
@@ -83,25 +95,33 @@ IDENT2		({PARAM}|{VARIABLE})
 <INITIAL>^{BLANK}*@		{ WriteToken(Action_attr); }
 <INITIAL>\032			{ WriteToken(Action_attr); }
 
-<INITIAL>{ECHO}			{ WriteToken(ci_keyword_attr(yytext)); BEGIN(ECHOING); }
 <ECHOING>[^\n]*			{ WriteToken(String_attr); BEGIN(INITIAL); }
 <ECHOING>\n			{ ECHO; BEGIN(INITIAL); }
 
-<INITIAL>{SET}			{ WriteToken(ci_keyword_attr(yytext)); setting = 1; }
 <INITIAL>=			{ ECHO; setting=0; }
 <INITIAL>\"			{ BEGIN(QUOTED);
 				  flt_bfr_begin(String_attr);
 				  flt_bfr_append(yytext, yyleng);
 				}
 
-<INITIAL>^{BLANK}*:{BLANK}*{IDENT} { WriteToken(Ident2_attr); }
+<INITIAL>^{BLANK}*:{BLANK}*{IDENT} { write_label(yytext, yyleng); }
 
-<INITIAL>{IDENT}		{ write_variable(yytext, yyleng); }
+<INITIAL>{IDENT}		{ char *temp = lowercase_of(yytext);
+				  char *attr = keyword_attr(temp);
+				  if (!strcmp(temp, "echo")) {
+					BEGIN(ECHOING);
+				  } else if (!strcmp(temp, "rem")) {
+					BEGIN(COMMENT);
+				  } else if (!strcmp(temp, "set")) {
+					setting = 1;
+				  }
+				  WriteToken(attr);
+				}
 
 <INITIAL>({IDENT2})		{ WriteToken(Ident2_attr); }
 
-<INITIAL>^{BLANK}*{REM}$	|
-<INITIAL>^{BLANK}*{REM}({BLANK}+{TEXT}*)? { WriteToken(Comment_attr); }
+<COMMENT>{TEXT}*		{ WriteToken(Comment_attr); }
+<COMMENT>\n			{ ECHO; BEGIN(INITIAL); }
 
 <INITIAL>\n			{ ECHO; setting = 0; }
 
