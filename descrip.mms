@@ -11,7 +11,7 @@
 # all as "0".  If you use tcap.c, you'll need libtermcap.a too.  If you use
 # x11.c, you'll need libX11.a too.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.33 1997/01/10 11:07:43 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.34 1997/05/13 00:31:46 tom Exp $
 
 # for building the X version, xvile, use these:
 #SCREEN = x11simp
@@ -72,6 +72,7 @@ SRC =	main.c \
 	isearch.c \
 	line.c \
 	map.c \
+	menu.c \
 	modes.c \
 	msgs.c \
 	npopen.c \
@@ -121,6 +122,7 @@ OBJ =	main.obj,\
 	isearch.obj,\
 	line.obj,\
 	map.obj, \
+	menu.obj,\
 	modes.obj,\
 	msgs.obj,\
 	npopen.obj,\

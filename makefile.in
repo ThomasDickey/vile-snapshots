@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.77 1997/03/13 11:49:48 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.78 1997/05/13 00:44:20 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -348,6 +348,8 @@ release_warnings:
 	@sed -n -e '/version/s/^/	/p' -e '3q' README
 	@echo 'or in vile.hlp?  it has:'
 	@sed -n -e '/.*Getting along with vile	*/s//	/p' -e '5q' vile.hlp
+	@echo 'or in vmsbuild.com?  it has:'
+	@sed -n -e '/Identification=/s/^.*Vile \([^"]*\)["]*/	\1/p' vmsbuild.com
 	@echo 'did you reset patchlev.h?'
 	@sed -n -e 's/^/	/' -e '/PATCH/p' patchlev.h
 	@echo -n "Hit return to continue..."

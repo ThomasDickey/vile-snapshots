@@ -1,3 +1,15 @@
+Changes for vile 7.2 (released ??? ??? ??, 1997)
+
+(tom)	970512 (a)
+	+ modify has_C_suffix() to ignore case on platforms where filename
+	  case should be ignored (reported by Emil Rojas <emil@lapel.com>).
+	+ add version in vmsbuild.com to release_warnings
+	+ remove unnecessary test for Xaw/SimpleMenu.h (configure.in).
+	+ improve geometry of Xaw menus using Box (patch by Brendan O'Dea
+	  <bod@compusol.com.au>)
+	+ add menu.c to the modules for xvile on VMS (reported by Graeme
+	  Miller).
+
 Changes for vile 7.1 (released Wed May 8, 1997)
 
 (tom)	970508 (none)
