@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.230 1996/12/09 01:18:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.231 1997/01/04 00:57:03 tom Exp $
  *
  */
 
@@ -1013,4 +1013,5 @@ extern	char *	unix2vms_path   (char *dst, const char *src);
 extern	char *	vms2unix_path   (char *dst, const char *src);
 extern	char *	vms_path2dir    (const char *src);
 extern	void	vms_dir2path	(char *path);
+extern	int	vms_fix_umask	(char *filespec);
 #endif

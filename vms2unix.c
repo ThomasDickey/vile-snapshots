@@ -3,7 +3,7 @@
  *
  *	Miscellaneous routines for UNIX/VMS compatibility.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.18 1996/06/19 04:16:00 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.19 1996/12/23 21:58:56 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -616,3 +616,165 @@ vms2unix_path(char *dst, const char *src)
 	return mklower(output);
 }
 #endif	/* OPT_VMS_PATH */
+
+/*
+ * Function:	When creating a file, try to copy the protection mask from
+ *		previous version to the new version.  This makes writing to a
+ *		file have the expected effect (i.e., just like UNIX).
+ */
+#include	<string.h>
+
+#include	<starlet.h>
+#include	<iodef.h>
+#include	<ssdef.h>
+#include	<atrdef.h>
+#include	<fibdef.h>
+#include	<stsdef.h>
+
+#define	QIO(func) sys$qiow (0, chnl, func, &iosb, 0, 0, &fibDSC, 0,0,0, atr,0)
+
+int	vms_fix_umask (char *filespec)
+{
+	struct	FAB	fab;
+	struct	NAM	nam;		/* used in wildcard parsing	*/
+
+	struct	XABPRO	xabpro;		/* Protection attribute block	*/
+
+	char	prevspec[NAM$C_MAXRSS],	/* filename string area	*/
+		rsa[NAM$C_MAXRSS],	/* resultant string area	*/
+		esa[NAM$C_MAXRSS],	/* expanded string area (search)*/
+		*s;
+
+	unsigned status;
+
+	struct	{
+		short sts;
+		short unused;
+		int   jobstat;
+	} iosb;
+	short	chnl;
+	struct fibdef fib;
+	struct atrdef atr[4];
+	short	short_fpro = 0;
+	int	ok = FALSE;
+
+	static $DESCRIPTOR(DSC_name,"");
+	struct	dsc$descriptor	fibDSC;
+
+	TRACE(("vms_fix_umask(%s)\n", filespec))
+
+	/*
+	 * Strip the version, look for previous one.  This isn't quite right
+	 * if the user is going to write a new version in the middle of a range,
+	 * but is close enough.
+	 */
+	if ((s = strchr(strcpy(prevspec, filespec), ';')))
+		*s = EOS;
+	strcat(prevspec, ";-1");
+
+	fab = cc$rms_fab;
+	fab.fab$l_fop = FAB$M_NAM;
+	fab.fab$l_nam = &nam;
+	fab.fab$l_fna = prevspec;
+	fab.fab$b_fns = strlen(prevspec);
+
+	nam = cc$rms_nam;
+	nam.nam$b_ess = NAM$C_MAXRSS;
+	nam.nam$l_esa = esa;
+	nam.nam$b_rss = NAM$C_MAXRSS;
+	nam.nam$l_rsa = rsa;
+
+	xabpro		= cc$rms_xabpro;
+	fab.fab$l_xab	= (char *)&xabpro;
+
+	/*
+	 * Lookup the previous file
+	 */
+	if ($VMS_STATUS_SUCCESS(sys$parse(&fab))
+	 && $VMS_STATUS_SUCCESS(sys$search(&fab)))
+	{
+		TRACE(("...found %.*s\n", nam.nam$b_rsl, rsa))
+		if (nam.nam$l_fnb & NAM$M_NODE)	/* Via DECNET ?	*/
+		{
+			fab.fab$w_ifi = 0;
+			if ($VMS_STATUS_SUCCESS(sys$open(&fab)))
+			{
+				short_fpro = xabpro.xab$w_pro;
+				sys$close(&fab);
+				ok = TRUE;
+				TRACE(("...got mask:%#x\n", short_fpro))
+			}
+		}
+		else
+		{
+			DSC_name.dsc$a_pointer = rsa;
+			DSC_name.dsc$w_length = nam.nam$b_rsl;
+			status = sys$assign (&DSC_name, &chnl, 0, 0);
+
+			fibDSC.dsc$w_length = sizeof(fib);
+			fibDSC.dsc$a_pointer = (char *)&fib;
+			memset (&fib, 0, sizeof(fib));
+			memcpy (fib.fib$r_fid_overlay.fib$w_fid, nam.nam$w_fid, 6);
+
+			atr[0].atr$w_type = ATR$C_FPRO;
+			atr[0].atr$w_size = ATR$S_FPRO;
+			atr[0].atr$l_addr = (char *)&short_fpro;
+			atr[1].atr$w_size = atr[1].atr$w_type = 0;
+
+			status = QIO(IO$_ACCESS);
+			sys$dassgn (chnl);
+
+			if ($VMS_STATUS_SUCCESS(status)
+			 && iosb.sts != SS$_NOPRIV)
+			{
+				ok = TRUE;
+				TRACE(("...got mask:%#x\n", short_fpro))
+			}
+		}
+	}
+
+	/*
+	 * Apply the protection mask to the new version
+	 */
+	if (ok)
+	{
+		fab = cc$rms_fab;
+		fab.fab$l_fop = FAB$M_NAM;
+		fab.fab$l_nam = &nam;
+		fab.fab$l_fna = filespec;
+		fab.fab$b_fns = strlen(filespec);
+
+		nam = cc$rms_nam;
+		nam.nam$b_ess = NAM$C_MAXRSS;
+		nam.nam$l_esa = esa;
+		nam.nam$b_rss = NAM$C_MAXRSS;
+		nam.nam$l_rsa = rsa;
+
+		if ($VMS_STATUS_SUCCESS(sys$parse(&fab))
+		 && $VMS_STATUS_SUCCESS(sys$search(&fab)))
+		{
+			TRACE(("...found %.*s\n", nam.nam$b_rsl, rsa))
+
+			DSC_name.dsc$a_pointer = nam.nam$l_rsa;
+			DSC_name.dsc$w_length = nam.nam$b_rsl;
+
+			fibDSC.dsc$w_length = sizeof(fib);
+			fibDSC.dsc$a_pointer = (char *)&fib;
+			memset (&fib, 0, sizeof(fib));
+			fib.fib$r_acctl_overlay.fib$l_acctl = FIB$M_WRITECK;
+			memcpy (fib.fib$r_fid_overlay.fib$w_fid, nam.nam$w_fid, 6);
+
+			atr[0].atr$w_type = ATR$C_FPRO;
+			atr[0].atr$w_size = ATR$S_FPRO;
+			atr[0].atr$l_addr = (char *)&short_fpro;
+			atr[1].atr$w_size = atr[1].atr$w_type = 0;
+
+			if ($VMS_STATUS_SUCCESS(sys$assign(&DSC_name, &chnl, 0, 0))) {
+				QIO(IO$_MODIFY);
+				sys$dassgn(chnl);
+				TRACE(("...set mask\n"))
+			}
+		}
+	}
+	return 0;
+}

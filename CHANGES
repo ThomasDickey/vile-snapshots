@@ -1,3 +1,13 @@
+Changes for vile 7.0 (released ??? ??? ??, 1997)
+
+(tom)	970103 (a)
+	+ correct an off-by-one in kbd_erase() that resulted in display
+	  glitch in filename completion when the prompt-text was a very long
+	  filename (bind.c).
+	+ modify ffwopen() on VMS to propagate existing file permissions when
+	  creating a new version of an existing file (requested by Robert J
+	  Wright R.Wright@curtin.edu.au)
+
 Changes for vile 6.4 (released Sun Dec 22, 1996)
 
 (tom)	961216 (c)

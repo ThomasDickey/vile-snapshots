@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.141 1996/12/17 11:41:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.142 1997/01/04 00:35:32 tom Exp $
  *
  */
 
@@ -1345,7 +1345,7 @@ kbd_erase(void)
 {
 	beginDisplay;
 	if (ttcol > 0) {
-		if (--ttcol < term.t_ncol) {
+		if (--ttcol < term.t_ncol-1) {
 			TTputc('\b');
 			TTputc(' ');
 			TTputc('\b');
