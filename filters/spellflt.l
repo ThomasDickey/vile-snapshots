@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.4 2000/02/28 12:00:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.5 2000/07/26 00:23:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -18,6 +18,7 @@ init_filter(int before GCC_UNUSED)
 static void
 do_filter(FILE *input)
 {
+#ifndef WIN32
     FILE *fp;
     char *name = tmpnam((char *)0);
     char buffer[BUFSIZ];
@@ -47,6 +48,7 @@ do_filter(FILE *input)
     }
 
     remove(name);	/* works on Unix, to remove file before closing */
+#endif
 }
 
 %}

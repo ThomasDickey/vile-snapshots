@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-1st.awk,v 1.5 2000/03/17 23:42:58 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-1st.awk,v 1.6 2000/07/26 23:53:12 tom Exp $
 #
 # Generate makefile lists for vile's external and built-in filters.  We will
 # build each filter only one way (external _or_ built-in).  This script uses
@@ -36,12 +36,12 @@ BEGIN	{
 				}
 			}
 			if (found) {
-				if ( NF > 2 )
-					prog[count] = $3 "$x";
+				if ( NF > 3 )
+					prog[count] = $4 "$x";
 				else
 					prog[count] = "vile-" $1 "-filt$x";
-				file[count] = $2;
-				root[count] = substr($2, 1, index($2,".")-1);
+				file[count] = sprintf("%s.%s", $2, $3);
+				root[count] = $2;
 				count = count + 1;
 			}
 			if ((first == 1) && (found == Opt)) {

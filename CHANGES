@@ -1,5 +1,17 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000728 (p)
+	> Tom Dickey:
+	+ adds a mode for the Standard ML language.  There is also a minor
+	  tweak to cpp.key (patch by Felix Advantage <felixadv@access.net.au>).
+	+ modify builtflt.c to treat record separators as newlines, consistent
+	  with filter logic.
+	+ rewrote filters/makefile.wnt to generate lists and rules using
+	  scripts reading genmake.mak, to facilitate building internal or
+	  external filters.
+	+ change 1-or-more blanks in one of the error-finder expresssions to
+	  0-or-more to make this work with weblint.
+
  20000725 (o)
 	> Clark Morgan:
 	+ add example macro to vile.hlp from this-file-dir by Richard Hussong

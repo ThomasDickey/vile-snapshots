@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_1o
+MANIFEST for vile, version v9_1p
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -203,8 +203,11 @@ filters/makefile.wnt            makefile for filters with Visual C++
 filters/makefilt.l              makefile syntax filter for vile
 filters/manfilt.c               manpage-filter
 filters/mk-0th.awk              construct builtflt.h
+filters/mk-0th.bat              generate builtflt.h from genmake.mak
 filters/mk-1st.awk              script to generate lists of built-in/external filters
+filters/mk-1st.bat              generate lists for makefile.wnt
 filters/mk-2nd.awk              script to generate rules for building filters
+filters/mk-2nd.bat              generate rules for makefile.wnt
 filters/mk-key.awk              generate install/uninstall rules for keyword files
 filters/mms-filt.l              mms syntax filter for vile
 filters/nr-filt.l               nroff syntax highlighting filter for vile
@@ -224,6 +227,8 @@ filters/sccs.key                keywords for SCCS syntax filter
 filters/sccsfilt.l              syntax filter for SCCS files.
 filters/sh-filt.l               a sh/ksh/csh syntax filter for vile
 filters/sh.key                  keywords for "sh" syntax filter
+filters/sml-filt.l              filter for Standard ML
+filters/sml.key                 keywords for Standard ML
 filters/spell.rc                defines a filter for spell-checking
 filters/spellflt.l              ispell filter to highlight misspelled words
 filters/sql-filt.l              sql syntax highlighting filter for vile

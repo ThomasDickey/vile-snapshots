@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.11 2000/06/09 01:29:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.12 2000/07/27 01:12:18 tom Exp $
  *
  */
 
@@ -141,7 +141,7 @@ flt_gets(char **ptr, unsigned *len)
     if (need >= 0
 	&& tb_init(&gets_data, 0) != 0
 	&& tb_bappend(&gets_data, mark_in.l->l_text, need) != 0
-	&& tb_sappend(&gets_data, get_record_sep(curbp)) != 0
+	&& tb_sappend(&gets_data, "\n") != 0
 	&& tb_append(&gets_data, EOS) != 0) {
 	*ptr = tb_values(gets_data);
 	*len = need + len_record_sep(curbp);
@@ -166,7 +166,7 @@ flt_gets(char **ptr, unsigned *len)
 int
 flt_input(char *buffer, int max_size)
 {
-    char *separator = get_record_sep(curbp);
+    char *separator = "\n";
     int need = strlen(separator);
     int used = 0;
 
