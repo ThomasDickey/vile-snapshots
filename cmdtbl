@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.192 1999/12/18 02:29:57 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.193 1999/12/20 21:16:56 kev Exp $
 #
 #
 
@@ -1604,6 +1604,9 @@ copy_to_clipboard NONE			DISP_X11
 paste_from_clipboard REDO|UNDO		DISP_X11
 	"paste-from-clipboard"
 	<pastes the contents of the cut buffer>
+paste_from_primary REDO|UNDO		DISP_X11
+	"paste-from-primary"
+	<pastes the contents of the primary selection>
 xterm_mouse_t	NONE			(OPT_XTERM>=3)
 	'FN-t'				KEY_text
 	<dummy command to support xterm mouse operation>

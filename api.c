@@ -373,6 +373,7 @@ api_dotinsert(VileBuf *vbp, char *text, int len) {
 	    set_b_val(curbp, MDNEWLINE, FALSE);
 	}
     }
+    vbp->changed = 1;
     return TRUE;
 }
 
@@ -793,8 +794,14 @@ api_command_cleanup(void)
 	    bp2vbp(bp)->dot_inited = 0;		/* for next time */
 	    bp2vbp(bp)->dot_changed = 0;		/* ditto */
 	    if (bp2vbp(bp)->changed) {
+		int buf_flag_says_changed = b_is_changed(bp);
 		chg_buff(bp, WFHARD);
 		bp2vbp(bp)->changed = 0;
+		/* Make sure results of an unmark get propagated back */
+		if (buf_flag_says_changed)
+		    b_set_changed(bp);
+		else
+		    b_clr_changed(bp);
 	    }
     }
 

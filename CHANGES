@@ -1,5 +1,45 @@
 Changes for vile 9.1 (released ??? ??? ??, 1999)
 
+ (kev) 991220 (h)
+	+ perl/capture.pl: New perl script which implements a perl version
+	  of capture-command.  This version incrementally updates the
+	  window however.
+	+ perl/winops.pl: New perl script which implements various window
+	  related operations.  Good for testing implementation of the
+	  Vile::Window API.
+ 	+ perl.xs: Documentation fixes.
+	  (package Vile::Window):  Documentation and implementation of
+	  Vile::Window API.
+	  (perl_free_callback): Disable deallocation of the coderef since
+	  this causes problems when called from within the subroutine
+	  being deallocated.  Added a FIXME comment noting the problem.
+	  (set_selection, selection_buffer): Fixed croak messages.
+	  (dotq): New Vile::Buffer method.
+	+ api.c (api_dotinsert): Set changed flag.  This fixes a bug
+	  where perl would add characters to the buffer, but they
+	  wouldn't appear until the user did something else to force
+	  a hard update.
+	  (api_command_cleanup): Make sure results of unmark operation
+	  get propagated back to the editor.
+	+ api.h (VileWin): Declare.
+	+ buffer.c (swbuffer_lfl): Don't call undispbuff() unless all
+	  windows associated with the buffer are gone.
+	+ estruct.h (WINDOW): Added w_id as a new field to this structure.
+	+ window.c, proto.h (id2win, win2id, index2win, win2index):
+	  New functions.
+	+ window.c (w_id_next): New static global.
+	  (FAKE_WINDOW_ID): New define.
+	  (splitw, winit, push_fake_win): Set/initialize w_id field in
+	  WINDOW structure.
+	+ ptypemap (T_VileWin): New type in typemap.
+	+ x11.c (x_autocolor_timeout): Send a null message to ourselves
+	  to prevent stalling in the event loop.  This fixes the bug
+	  in which a keypress while the filter was running would
+	  cause the keypress to be noticed at the next X event.
+	  (paste_from_primary): New function.
+	+ cmdtbl (paste-from-primary): New command.  (Requested by Sean
+	  Ahern.)
+
  (kev) 991219 (g)
 	+ cmdtbl, buffer.c:  Added binding / support for ^X-_ aka
 	  "historical-buffer-to-current-window".  [Requested by Mike J.  Bell.]
@@ -14,15 +54,15 @@ Changes for vile 9.1 (released ??? ??? ??, 1999)
 	  the window being replaced even if buffer we're replacing it with is
 	  already on-screen (fixes a core dump in set-window, reported by Clark
 	  Morgan).
-	+ fileio.c (ffclose): Use mlwrite() instead of mlforce(). 
-	+ edef.h (in_autocolor): New variable. 
+	+ fileio.c (ffclose): Use mlwrite() instead of mlforce().
+	+ edef.h (in_autocolor): New variable.
 	+ display.c (mlerase, mlwrite):  Use in_autocolor to determine whether
-	  or not to position the cursor on the message line. 
-	+ random.c (autocolor): Set autocolor as appropriate. 
+	  or not to position the cursor on the message line.
+	+ random.c (autocolor): Set autocolor as appropriate.
 	+ macros/vileinit.rc, vile.hlp:  Revise so that autocolor timeouts are
-	  in milliseconds. 
-	+ termio.c (ttgetc): Likewise. 
-	+ x11.c (x_start_autocolor_timer): Ditto. 
+	  in milliseconds.
+	+ termio.c (ttgetc): Likewise.
+	+ x11.c (x_start_autocolor_timer): Ditto.
 	> Clark Morgan:
 	+ ifdef'd autocolor mode and logic with OPT_COLOR to accommodate VMS,
 	  which does not support syntax highlighting anyway.

@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.56 1999/11/06 21:02:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.57 1999/12/20 21:30:15 kev Exp $
  */
 
 /*#
@@ -69,14 +69,19 @@
   #
   # Subroutines for accessing and controlling vile in general.
   #
+  # =for html <br><br>
+  #
   # =item Vile::Buffer
   #
   # Subroutines and methods for accessing individual buffers.
   #
-  # =back
+  # =for html <br><br>
   #
-  # A Vile::Window package is being contemplated, but has not been
-  # written yet.
+  # =item Vile::Window
+  #
+  # Subroutines and methods for manipulating Vile's windows.
+  #
+  # =back
   #
   # =head2 Calling Perl from Vile
   #
@@ -303,6 +308,45 @@ perl_free_handle(void *handle)
     SvREFCNT_dec(handle);
 }
 
+/*
+ * Create a VileWin object.  This is a good deal simpler than a VileBuf
+ * since we are merely taking a reference to an integer (the windows
+ * id) and blessing it.
+ */
+static SV *
+newVWrv(SV *rv, VileWin vw)
+{
+    sv_upgrade(rv, SVt_RV);
+    SvRV(rv) = newSViv((IV)win2id(vw));
+#if 0
+    /* Is this needed? */
+    SvREFCNT_inc(SvRV(rv));
+#endif
+    SvROK_on(rv);
+    rv = sv_bless(rv, gv_stashpv("Vile::Window", TRUE));
+#define DEBUG_newVWrv 0
+#if DEBUG_newVWrv
+    sv_dump(rv);
+#endif
+    return rv;
+}
+
+static VileWin
+getVW(SV *sv, char **croakmessage_ptr)
+{
+    VileWin vw = 0;
+    if (sv_isa(sv, "Vile::Window")) {
+	vw = id2win((int)SvIV((SV*)SvRV(sv)));
+	if (!vw) {
+	    *croakmessage_ptr = "window no longer exists";
+	}
+    }
+    else {
+	*croakmessage_ptr = "window of wrong type";
+    }
+    return vw;
+}
+
 static int recursecount = 0;
 
 static int
@@ -498,6 +542,8 @@ perl_free_sub(void *data)
   #
   # will cause lines 30 thru 40 to be placed into the @l array.
   #
+  # =for html <br><br>
+  #
  */
 
 int
@@ -553,7 +599,7 @@ static int octal(char **s)
 
 /*#
   #
-  # =item :perldo STMTS E<lt>EnterE<gt> OPTIONS
+  # =item :perldo STMTS <Enter> OPTIONS
   #
   # The I<perldo> command is like the perl command, but it takes
   # various options making it possible to write "one liners" to
@@ -599,6 +645,8 @@ static int octal(char **s)
   #
   # =item perldo options
   #
+  # =for html <br><br>
+  #
   # =over 4
   #
   # =item -n
@@ -607,9 +655,13 @@ static int octal(char **s)
   # (usually lines) of the region.  Each record in the region will
   # be placed in $_.
   #
+  # =for html <br><br>
+  #
   # =item -p
   #
   # Like B<-n>, but do a print (of $_) at the end of the loop.
+  #
+  # =for html <br><br>
   #
   # =item -i
   #
@@ -621,10 +673,14 @@ static int octal(char **s)
   # to specify a backup file.  If you don't like what happens, just hit
   # the 'B<u>' key to undo it.
   #
+  # =for html <br><br>
+  #
   # =item -l
   #
   # Only meaningful when used with either B<-n> or B<-p>.  This will
   # perform an initial chomp on $_ after a record has been read.
+  #
+  # =for html <br><br>
   #
   # =item -0
   #
@@ -636,14 +692,20 @@ static int octal(char **s)
   # the entire region without paying attention to record separators.
   # Normally, $/ is set to '\n' which corresponds to -012
   #
+  # =for html <br><br>
+  #
   # =item -a
   #
   # Turn on autosplit mode.  Upon being read, each record is split
   # into the @F array.
   #
+  # =for html <br><br>
+  #
   # =item -F
   #
   # When used with B<-a>, specify an alternate pattern to split on.
+  #
+  # =for html <br><br>
   #
   # =back
   #
@@ -1071,7 +1133,24 @@ perl_free_callback(char *callback)
 	if (!SvROK(*svp) || SvTYPE(SvRV(*svp)) != SVt_PVCV)
 	    return;	/* Most likely freed already (?) */
 
+/* FIXME: There are problems with doing SvREFCNT_dec when perl_free_callback
+   is called from within the very code (an anonymous subroutine) that is
+   being freed!
+
+   sv_2mortal() is not really the right thing to do either -- in fact,
+   perl will give warnings about attempting to free something too soon,
+   but we do want to do some sort of deferred delete.  Perhaps there's
+   a function not documented on the perlguts page for doing this?  If
+   not, we should probably add the necessary deferred delete cleanup
+   machinery and make sure it gets invoked from api_command_cleanup()
+   in api.c. */
+#if 0
+#if 0
 	SvREFCNT_dec(*svp);	/* This should deallocate it */
+#else
+	sv_2mortal(*svp);	/* Defer deallocation */
+#endif
+#endif
 
 	svfreeCRidx = SvREFCNT_inc(newSViv(freeCRidx));
 	if (av_store(CRarray, (I32) idx, svfreeCRidx) == 0) {
@@ -1630,6 +1709,8 @@ MODULE = Vile	PACKAGE = Vile
   #
   # Print a warning message
   #
+  # =for html <br><br>
+  #
 
 void
 Warn(warning)
@@ -1644,6 +1725,8 @@ Warn(warning)
   #
   # Rings terminal bell (or equivalent).
   #
+  # =for html <br><br>
+  #
 
 void
 beep()
@@ -1654,6 +1737,8 @@ beep()
   # =item buffers
   #
   # Returns a list of the editor's buffers.
+  #
+  # =for html <br><br>
   #
 
 void
@@ -1686,6 +1771,8 @@ buffers(...)
   # lead you to want to use this subroutine, let me know and I will
   # work on suitable facilities.
   #
+  # =for html <br><br>
+  #
 
 int
 command(cline)
@@ -1713,6 +1800,8 @@ command(cline)
   # The optional WAITVAL indicates if the editor should wait for the
   # next keystroke.  When WAITVAL is false, undef will
   # be returned if no input is ready.
+  #
+  # =for html <br><br>
   #
 
 void
@@ -1755,6 +1844,8 @@ keystroke(...)
   # Returns the user's response string.  If the user aborts
   # (via the use of the escape key) the query, an undef is
   # returned.
+  #
+  # =for html <br><br>
   #
 
 void
@@ -1799,6 +1890,8 @@ mlreply(prompt, ...)
   # (via the use of the escape key) the query, an undef is
   # returned.
   #
+  # =for html <br><br>
+  #
 
 void
 mlreply_dir(prompt, ...)
@@ -1842,6 +1935,8 @@ mlreply_dir(prompt, ...)
   # (via the use of the escape key) the query, an undef is
   # returned.
   #
+  # =for html <br><br>
+  #
 
 void
 mlreply_file(prompt, ...)
@@ -1884,6 +1979,8 @@ mlreply_file(prompt, ...)
   # (via the use of the escape key) the query, an undef is
   # returned.
   #
+  # =for html <br><br>
+  #
 
 void
 mlreply_no_opts(prompt, ...)
@@ -1913,49 +2010,51 @@ mlreply_no_opts(prompt, ...)
 		 : &sv_undef);
 
 
- #
- # =item selection_buffer
- #
- # =item selection_buffer BUFOBJ
- #
- # =item Vile::Buffer::set_selection BUFOBJ
- #
- # Gets or sets the buffer associated with the current selection.
- #
- # When getting the selection, the buffer object that has the current
- # selection is returned and its region is set to be the same region
- # as is occupied by the selection.  If there is no current selection, undef
- # is returned.
- #
- # When setting the selection, a buffer object must be passed in.  The
- # editor's selection is set to the region associated with the buffer object.
- # If successful, the buffer object is returned; otherwise undef will be
- # returned.
- #
- # Examples:
- #
- #      $sel = Vile->selection_buffer->fetch;
- #                                      # Put the current selection in $sel
- #
- #      Vile->selection_buffer($Vile::current_buffer);
- #                                      # Set the selection to the region
- #                                      # contained in the current buffer
- #
- # Vile::Buffer::set_selection is an alias for Vile::selection_buffer, but
- # can only function as a setter.  It may be used like this:
- #
- #      Vile->current_buffer->set_region('w')->set_selection;
- #                                      # set the selection to be the word
- #                                      # starting at the current position
- #                                      # in the current buffer
- #
- #      Vile->current_buffer->motion('?\/\*' . "\n")
- #                          ->set_region('%')
- #                          ->set_selection();
- #                                      # set the selection to be the nearest
- #                                      # C-style comment above or at the
- #                                      # current position.
- #
+  #
+  # =item selection_buffer
+  #
+  # =item selection_buffer BUFOBJ
+  #
+  # =item Vile::Buffer::set_selection BUFOBJ
+  #
+  # Gets or sets the buffer associated with the current selection.
+  #
+  # When getting the selection, the buffer object that has the current
+  # selection is returned and its region is set to be the same region
+  # as is occupied by the selection.  If there is no current selection, undef
+  # is returned.
+  #
+  # When setting the selection, a buffer object must be passed in.  The
+  # editor's selection is set to the region associated with the buffer object.
+  # If successful, the buffer object is returned; otherwise undef will be
+  # returned.
+  #
+  # Examples:
+  #
+  #	$sel = Vile->selection_buffer->fetch;
+  #                                     # Put the current selection in $sel
+  #
+  #     Vile->selection_buffer($Vile::current_buffer);
+  #                                     # Set the selection to the region
+  #                                     # contained in the current buffer
+  #
+  # Vile::Buffer::set_selection is an alias for Vile::selection_buffer, but
+  # can only function as a setter.  It may be used like this:
+  #
+  #     Vile->current_buffer->set_region('w')->set_selection;
+  #                                     # set the selection to be the word
+  #                                     # starting at the current position
+  #                                     # in the current buffer
+  #
+  #     Vile->current_buffer->motion('?\/\*' . "\n")
+  #                         ->set_region('%')
+  #                         ->set_selection();
+  #                                     # set the selection to be the nearest
+  #                                     # C-style comment above or at the
+  #                                     # current position.
+  #
+  # =for html <br><br>
+  #
 
 void
 selection_buffer(...)
@@ -1995,8 +2094,8 @@ selection_buffer(...)
 	    vbp = getVB(ST(argno), &croakmess);
 
 	    if (vbp == 0)
-		croak("Vile::%sselection: %s",
-		      ix == 1 ? "Buffer::" : "",
+		croak("Vile::%s: %s",
+		      ix == 1 ? "Buffer::set_selection" : "selection_buffer",
 		      croakmess);
 	    api_setup_fake_win(vbp, TRUE);
 	    DOT = vbp->region.r_orig;
@@ -2010,48 +2109,50 @@ selection_buffer(...)
 	    }
 	}
 	else {
-	    croak("Vile::selection: Incorrect number of arguments");
+	    croak("Vile::selection_buffer: Incorrect number of arguments");
 	}
 #else
 	croak("%s requires vile to be compiled with OPT_SELECTIONS",
 	      GvNAME(CvGV(cv)));
 #endif
 
- #
- # =item set PAIRLIST
- #
- # =item get LIST
- #
- # =item Vile::Buffer::set BUFOBJ PAIRLIST
- #
- # =item Vile::Buffer::get BUFOBJ LIST
- #
- # Provides access to Vile's various modes, buffer and otherwise.
- #
- # For the set methods, PAIRLIST should be a list of key => value
- # pairs, where key is a mode name and value is an appropriate value
- # for that mode.  When used in an array context, the resulting key =>
- # value pairs are returned.  (The value may be a different, but
- # equivalent string than originally specified.) When used in an array
- # context, either the package name or buffer object is returned
- # (depending on how it was invoked) in order that the result may be
- # used as the target of further method calls.
- #
- # When one of the get forms is used, a list of modes should be
- # supplied.  When used in an array context, a list of key => value
- # pairs is returned.  When used in a scalar context, only one mode
- # name may be supplied and the value associated with this mode is
- # returned.
- #
- # The methods in Vile::Buffer attempt to get the local modes
- # associated with the buffer (falling back to the global ones if no
- # specific local mode has been specified up to this point).
- #
- # Note:  Access to certain internal attributes such as the buffer
- # name and file name are not provided via this mechanism yet.  There
- # is no good reason for this other than that vile does not provide
- # access to these attributes via its set command.
- #
+  #
+  # =item set PAIRLIST
+  #
+  # =item get LIST
+  #
+  # =item Vile::Buffer::set BUFOBJ PAIRLIST
+  #
+  # =item Vile::Buffer::get BUFOBJ LIST
+  #
+  # Provides access to Vile's various modes, buffer and otherwise.
+  #
+  # For the set methods, PAIRLIST should be a list of key => value
+  # pairs, where key is a mode name and value is an appropriate value
+  # for that mode.  When used in an array context, the resulting key =>
+  # value pairs are returned.  (The value may be a different, but
+  # equivalent string than originally specified.) When used in an array
+  # context, either the package name or buffer object is returned
+  # (depending on how it was invoked) in order that the result may be
+  # used as the target of further method calls.
+  #
+  # When one of the get forms is used, a list of modes should be
+  # supplied.  When used in an array context, a list of key => value
+  # pairs is returned.  When used in a scalar context, only one mode
+  # name may be supplied and the value associated with this mode is
+  # returned.
+  #
+  # The methods in Vile::Buffer attempt to get the local modes
+  # associated with the buffer (falling back to the global ones if no
+  # specific local mode has been specified up to this point).
+  #
+  # Note:  Access to certain internal attributes such as the buffer
+  # name and file name are not provided via this mechanism yet.  There
+  # is no good reason for this other than that vile does not provide
+  # access to these attributes via its set command.
+  #
+  # =for html <br><br>
+  #
 
 void
 set(...)
@@ -2216,6 +2317,8 @@ set(...)
   # you write an input loop in perl which writes things to some
   # on-screen buffers, but does not return to the editor immediately.
   #
+  # =for html <br><br>
+  #
 
 void
 update()
@@ -2231,6 +2334,8 @@ update()
   # substantial pauses, 0 if disabled.
   #
   # When passed an argument, modifies value of the working message.
+  #
+  # =for html <br><br>
   #
 
 int
@@ -2297,6 +2402,8 @@ working(...)
   #     };
   #
   #     Vile::register_oper 'my-delete-til' => sub { $cb->delete };
+  #
+  # =for html <br><br>
   #
 
 void
@@ -2380,6 +2487,8 @@ register(name, ...)
   # command to execute (good luck) or (more usefully) a Perl subroutine
   # reference.
   #
+  # =for html <br><br>
+  #
 
 void
 watchfd(fd, watchtypestr, ...)
@@ -2422,6 +2531,8 @@ watchfd(fd, watchtypestr, ...)
   #
   # Removes the callback associated with FD and frees up the
   # associated data structures.
+  #
+  # =for html <br><br>
   #
 
 void
@@ -2480,7 +2591,7 @@ MODULE = Vile	PACKAGE = Vile::Buffer
 
 
   #
-  # =item E<lt>BUFOBJE<gt>
+  # =item <BUFOBJ>
   #
   # When used in a scalar context, returns the next line or portion of
   # thereof in the current region.
@@ -2534,6 +2645,8 @@ MODULE = Vile	PACKAGE = Vile::Buffer
   #             print $curbuf $_;       # put it back if we should keep it
   #         }
   #     }
+  #
+  # =for html <br><br>
   #
 
 void
@@ -2654,6 +2767,8 @@ READLINE(vbp)
   # Normal is a special case.  It will override any other arguments
   # passed in and remove all attributes associated with the region.
   #
+  # =for html <br><br>
+  #
 
 void
 attribute(vbp, ...)
@@ -2749,6 +2864,8 @@ attribute(vbp, ...)
   #
   # Returns the buffer object.
   #
+  # =for html <br><br>
+  #
 
 VileBuf *
 attribute_cntl_a_sequences(vbp)
@@ -2772,6 +2889,8 @@ attribute_cntl_a_sequences(vbp)
   #
   # Returns the buffer name associated with BUFOBJ.
   #
+  # =for html <br><br>
+  #
   # =item buffername BUFOBJ BUFNAME
   #
   # Sets the buffer name associated with BUFOBJ to the string
@@ -2785,14 +2904,20 @@ attribute_cntl_a_sequences(vbp)
   # buffer name.  (It will be trimmed of spaces and a length limit
   # is imposed.)
   #
+  # =for html <br><br>
+  #
   # =item filename BUFOBJ
   #
   # Returns the file name associated with BUFOBJ.
+  #
+  # =for html <br><br>
   #
   # =item filename BUFOBJ FILENAME
   #
   # Sets the name of the file associated with BUFOBJ to the string
   # given by FILENAME.
+  #
+  # =for html <br><br>
   #
 
 void
@@ -2831,10 +2956,12 @@ buffername(vbp,...)
   #
   # =item command BUFOBJ CMDLINE
   #
-  # executes the given vile command line (as if it were typed
+  # Executes the given vile command line (as if it were typed
   # on the : line) with BUFOBJ as the current buffer.
   #
   # Returns BUFOBJ if successful, otherwise returns undef.
+  #
+  # =for html <br><br>
   #
 
 void
@@ -2922,6 +3049,8 @@ command(vbp,cline)
   # run which will cause $newbuf to become the new current buffer upon
   # return.)
   #
+  # =for html <br><br>
+  #
 
 VileBuf *
 current_buffer(...)
@@ -2969,6 +3098,8 @@ current_buffer(...)
   #
   # Returns the buffer object if all went well, undef otherwise.
   #
+  # =for html <br><br>
+  #
 
 VileBuf *
 delete(vbp)
@@ -2990,7 +3121,7 @@ delete(vbp)
   # =item dot BUFOBJ LINENUM, OFFSET
   #
   # Returns the current value of dot (which represents the the current
-  # position in the buffer).  When used in a scalar context returns,
+  # position in the buffer).  When used in a scalar context, returns
   # the line number of dot.  When used in an array context, returns
   # the line number and position within the line.
   #
@@ -3044,6 +3175,24 @@ delete(vbp)
   #
   # Note: current_position is an alias for dot.
   #
+  # =for html <br><br>
+  #
+  # =item dotq BUFOBJ
+  #
+  # =item dotq BUFOBJ LINENUM
+  #
+  # =item dotq BUFOBJ LINENUM, OFFSET
+  #
+  # Like B<dot> except that it's "quiet" in its operation in the sense
+  # that it doesn't attempt to propagate the API's concept of where the
+  # current position is back to the editor when control is returned.
+  #
+  # This could be useful in situations where you want your Perl script
+  # to quietly add some text to a buffer without disturbing any of the
+  # user's windows into that buffer.
+  #
+  # =for html <br><br>
+  #
 
 void
 dot(vbp, ...)
@@ -3051,14 +3200,16 @@ dot(vbp, ...)
 
     ALIAS:
 	current_position = 1
+	dotq = 2
 
     PREINIT:
 	I32 gimme;
 
     PPCODE:
 	api_setup_fake_win(vbp, TRUE);
-	if ( items > 3) {
-	    croak("Invalid number of arguments");
+	if (items > 3) {
+	    croak("Vile::Buffer::%s Too many arguments",
+	          ix == 1 ? "current_position" : "dot");
 	}
 	else if (items > 1) {
 	    /* Expect a line number or '$' */
@@ -3071,9 +3222,11 @@ dot(vbp, ...)
 	    /* Don't allow api_dotgline to change dot if dot is explicitly
 	       set.  OTOH, simply querying dot doesn't count. */
 	    vbp->dot_inited = TRUE;
-	    /* Indicate that DOT has been explicitly changed which means
-	       that changes to DOT will be propogated upon return to vile */
-	    vbp->dot_changed = TRUE;
+	    if (ix != 2) {
+		/* Indicate that DOT has been explicitly changed which means
+		   that changes to DOT will be propogated upon return to vile */
+		vbp->dot_changed = TRUE;
+	    }
 	}
 	gimme = GIMME_V;
 	if (gimme == G_SCALAR) {
@@ -3095,6 +3248,8 @@ dot(vbp, ...)
   #
   #     $word = $Vile::current_buffer->set_region('w')->fetch;
   #                             # Fetch the next word and put it in $word
+  #
+  # =for html <br><br>
   #
 
 void
@@ -3154,6 +3309,8 @@ fetch(vbp)
   # Setting it to false (which is its default value) will cause the
   # lines that are read to be left alone.
   #
+  # =for html <br><br>
+  #
 
 int
 inplace_edit(vbp, ...)
@@ -3207,6 +3364,8 @@ inplace_edit(vbp, ...)
   #                     # Make sure DOT gets propogated back.
   #                     # (It won't get propogated unless
   #                     # explicitly set.)
+  #
+  # =for html <br><br>
   #
 
 void
@@ -3306,6 +3465,8 @@ motion(vbp,mstr)
   #     $abuf->current_buffer(Vile::Buffer->new('makefile'));
   #                                     # Same thing
   #
+  # =for html <br><br>
+  #
 
 VileBuf *
 new(...)
@@ -3357,6 +3518,8 @@ new(...)
   #     print $passbuf "joeuser::1000:100:Joe User:/home/joeuser:/bin/bash
   #                                     # Add 'joeuser' to the this buffer
   #     Vile->current_buffer($passbuf); # Make it visible to the user.
+  #
+  # =for html <br><br>
   #
 
 void
@@ -3461,6 +3624,8 @@ PRINT(vbp, ...)
   # =item 2
   #
   # setregion is an alias for set_region.
+  #
+  # =for html <br><br>
   #
 
 void
@@ -3567,6 +3732,8 @@ set_region(vbp, ...)
   #
   # Returns the buffer object.
   #
+  # =for html <br><br>
+  #
 
 VileBuf *
 unmark(vbp)
@@ -3576,6 +3743,548 @@ unmark(vbp)
 	api_setup_fake_win(vbp, TRUE);
 	unmark(0,0);
 	RETVAL = vbp;
+
+    OUTPUT:
+	RETVAL
+
+MODULE = Vile	PACKAGE = Vile::Window
+
+  # =back
+  #
+  # =head2 Package Vile::Window
+  #
+  # The Vile::Window package contains methods for manipulating windows
+  # in various ways.  For the purposes of this discussion, a window is
+  # one of the areas of the screen in which a portion of a buffer may
+  # be viewed by the user.
+  #
+  # This API allows you to do the following things to one of these
+  # windows:
+  #
+  # =over 4
+  #
+  # =item *
+  #
+  # Create new windows (by splitting an existing window)
+  #
+  # =item *
+  #
+  # Delete windows
+  #
+  # =item *
+  #
+  # Obtain the buffer (Vile::Buffer) object associated
+  # with a given window
+  #
+  # =item *
+  #
+  # Change the buffer associated with a window
+  #
+  # =item *
+  #
+  # Obtain list of all windows
+  #
+  # =item *
+  #
+  # Obtain window characteristics (width, height)
+  #
+  # =item *
+  #
+  # Change window characteristics (height)
+  #
+  # =item *
+  #
+  # Get/Set DOT for buffer associated with the window
+  #
+  # =item *
+  #
+  # Get/Set top line
+  #
+  # =back
+  #
+  # In the documentation below, WINOBJ refers to an object of
+  # Vile::Window and BUFOBJ refers to an object of Vile::Buffer.
+  #
+  # =head2 Package Vile::Window Methods
+  #
+  # =over 4
+  #
+
+  #
+  # =item buffer WINOBJ
+  #
+  # Returns the buffer associated with WINOBJ.
+  #
+  # E.g,
+  #
+  #     $buf = Vile::current_window->buffer
+  #
+  # would get you the buffer associated with the current window.
+  #
+  # =for html <br><br>
+  #
+  # =item buffer WINOBJ BUFOBJ
+  #
+  # Sets the buffer associated with WINOBJ to BUFOBJ.  Returns
+  # BUFOBJ.
+  #
+  # =for html <br><br>
+  #
+
+VileBuf *
+buffer(vw, ...)
+    VileWin vw
+
+    CODE:
+	if (items > 2)
+	    croak("Vile::Window::buffer: Too many arguments.");
+	else if (items == 2) {
+	    char *croakmess;
+	    VileBuf *vbp;
+	    WINDOW *savewp = curwp;
+	    vbp = getVB(ST(1), &croakmess);
+	    if (vbp == 0)
+		croak("Vile::Window::buffer: %s", croakmess);
+	    set_curwp(vw);
+	    swbuffer_lfl(vbp2bp(vbp), FALSE, TRUE);
+	    curwp = savewp;
+	    curbp = curwp->w_bufp;
+	}
+
+	RETVAL = api_bp2vbp(vw->w_bufp);
+
+    OUTPUT:
+	RETVAL
+
+  #
+  # =item current_window
+  #
+  # Returns the Vile::Window object representing the current window.
+  #
+  # Note: This method is also in the Vile:: package.
+  #
+  # =for html <br><br>
+  #
+  # =item current_window WINOBJ
+  #
+  # Sets the current window (window with focus) to WINOBJ; Returns
+  # WINOBJ.
+  #
+  # Note:  You'd say
+  #
+  #     $curwin = Vile::current_window;
+  #
+  # to retrieve the current window and
+  #
+  #     $mywin->current_window;
+  #
+  # to set it.
+  #
+  # =for html <br><br>
+  #
+
+VileWin
+current_window(...)
+
+    ALIAS:
+	Vile::current_window = 1
+    PREINIT:
+	int argno;
+
+    CODE:
+	argno = 0;
+
+	if (strcmp(SvPV(ST(argno), na), "Vile") == 0)
+	    argno++;
+
+	if (items - argno == 0) { /* getter */
+	    RETVAL = curwp_visible ? curwp_visible : curwp;
+	}
+	else if (items - argno == 1) { /* setter */
+	    VileWin vw;
+	    char *croakmess;
+	    /* Need a window object */
+	    vw = getVW(ST(argno), &croakmess);
+
+	    if (vw == 0)
+		croak("Vile::%scurrent_window: %s",
+		      ix == 1 ? "Window::" : "",
+		      croakmess);
+	    set_curwp(vw);
+	    curwp_visible = curwp;
+	    RETVAL = curwp;
+	}
+	else {
+	    croak("Vile::%scurrent_window:  Incorrect number of arguments",
+	          ix == 1 ? "Window::" : "");
+	}
+
+    OUTPUT:
+	RETVAL
+
+  #
+  # =item delete WINOBJ
+  #
+  # Removes the window in question.  Screen real estate allocated to
+  # the window will be returned to the window from whence it came.
+  #
+  # Returns 1 if successful, undef otherwise.
+  #
+  # =for html <br><br>
+  #
+
+void
+delete(vw)
+    VileWin vw
+
+    PREINIT:
+	WINDOW *wp;
+	int count;
+
+    PPCODE:
+	/* See how many visible windows remain.  We can't simply test to
+	   see if wheadp->w_wndp is NULL because, there may be some fake
+	   windows pushed for Perl's purposes.  So we actually have to
+	   count them. */
+	count = 0;
+	for_each_visible_window(wp) {
+	    count++;
+	}
+	if (count <= 1 || !delwp(vw)) {
+	    XPUSHs(&sv_undef);
+	}
+	else {
+	    XPUSHs(sv_2mortal(newSViv(1)));
+	}
+
+  #
+  # =item dot WINOBJ
+  #
+  # =item current_position WINOBJ
+  #
+  # Retrieves DOT (the current position) for the current window.
+  # In a scalar context, only the line number is returned.  In
+  # an array context, a list containing both the line number and
+  # offset within the line are returned.
+  #
+  # =for html <br><br>
+  #
+  # =item dot WINOBJ LINENUM, OFFSET
+  #
+  # =item current_position WINOBJ LINENUM, OFFSET
+  #
+  # Sets DOT (the current position) to the indicated values.
+  #
+  # When used in a scalar context, returns the line number.  When
+  # used in a list context, returns both the line number and the
+  # offset with in the line.
+  #
+  # Note: dot and current_position are aliases for each other.  Neither
+  # provides any additional functionality over the other.
+  #
+  # =for html <br><br>
+  #
+
+void
+dot(vw, ...)
+    VileWin vw
+
+    ALIAS:
+	current_position = 1
+
+    PREINIT:
+	I32 gimme;
+
+    PPCODE:
+	if (items > 3) {
+	    croak("Vile::Window::%s: Too many arguments",
+	          ix == 1 ? "current_position" : "dot");
+	}
+	else if (items > 1) {
+	    /* Setter: expect a line spec and possibly an offset */
+	    WINDOW *savewp = curwp;
+	    set_curwp(vw);
+	    gotoline(TRUE, sv2linenum(ST(1)));
+
+	    if (items == 3)
+		DOT.o = sv2offset(ST(2));
+
+	    curwp = savewp;
+	    curbp = curwp->w_bufp;
+	}
+	gimme = GIMME_V;
+	if (gimme == G_SCALAR || gimme == G_ARRAY) {
+	    /* Return line number when in either a scalar or an array context */
+	    XPUSHs(sv_2mortal(newSViv(
+		line_no(vw->w_bufp, vw->w_traits.w_dt.l))));
+	}
+	if (gimme == G_ARRAY) {
+	    /* When in an array context, also return the line offset */
+	    XPUSHs(sv_2mortal(newSViv(vw->w_traits.w_dt.o)));
+	}
+
+  #
+  # =item index WINOBJ
+  #
+  # Returns the index of WINOBJ.  This will be a small integer, with
+  # 0 representing the first (top-most) window, 1 representing the
+  # window below it, and so on.
+  #
+  # =for html <br><br>
+  #
+
+int
+index(win)
+    VileWin win;
+
+    CODE:
+	RETVAL = win2index(win);
+
+    OUTPUT:
+	RETVAL
+
+  #
+  # =item new Vile::Window
+  #
+  # Allocates and returns a new window.  The editor will choose
+  # where the window will be located.  (It will likely choose a
+  # large window to split.)  If a new window could not be allocated,
+  # return undef.
+  #
+  # =for html <br><br>
+  #
+  # =item new Vile::Window BUFOBJ
+  #
+  # Like above, but associate BUFOBJ with the new window.
+  #
+  # =for html <br><br>
+  #
+  # =item new WINOBJ
+  #
+  # Allocate and return a new window, using WINOBJ as the window
+  # to split.  If this cannot be done, return undef.  If the split
+  # is possible, the new window returned will be located below
+  # WINOBJ.
+  #
+  # =for html <br><br>
+  #
+  # =item new WINOBJ BUFOBJ
+  #
+  # Like above, but associate BUFOBJ with the new window.
+  #
+  # =for html <br><br>
+  #
+
+VileWin
+new(...)
+
+    PREINIT:
+	VileBuf *vbp;
+	VileWin vw;
+
+    CODE:
+	if (items == 2) {
+	    char *croakmess;
+	    vbp = getVB(ST(1), &croakmess);
+	    if (!vbp)
+		croak("Vile::Window::new: %s",croakmess);
+	}
+	else
+	    vbp = 0;
+
+	if (items > 2)
+	    croak("Vile::Window::new: Too many arguments.");
+	else if (items < 1)
+	    croak("Vile::Window::new: Too few arguments.");
+	else if (strcmp(SvPV(ST(0),na), "Vile::Window") == 0) {
+	    vw = wpopup();
+	}
+	else if (sv_isa(ST(0), "Vile::Window")) {
+	    char *croakmess;
+	    vw = getVW(ST(0), &croakmess);	/* Fetch window object */
+	    if (vw == 0)
+		croak("Vile::Window::new: %s", croakmess);
+
+	    if (vw->w_ntrows < MINWLNS)
+		vw = NULL;		/* Can't split */
+	    else {
+		WINDOW *save_wp = curwp;
+		set_curwp(vw);
+		splitwind(TRUE, 1);	/* split window forcing new
+					   window to be on bottom */
+		vw = vw->w_wndp;
+		curwp = save_wp;
+		curbp = curwp->w_bufp;
+	    }
+	}
+	else
+	    croak("Vile::Window::new: Incorrect type for first argument");
+
+	if (vw && vbp) {
+	    WINDOW *savewp = curwp;
+	    set_curwp(vw);
+	    swbuffer_lfl(vbp2bp(vbp), FALSE, TRUE);
+	    curwp = savewp;
+	    curbp = curwp->w_bufp;
+	}
+
+	RETVAL = vw;
+
+    OUTPUT:
+	RETVAL
+
+  #
+  # =item size WINOBJ
+  #
+  # In a scalar context, return the height of a window.  In a list
+  # context, return both the height and width.
+  #
+  # =for html <br><br>
+  #
+  # =item size WINOBJ HEIGHT
+  #
+  # Set the height of a window.  It will attempt to change a windows
+  # size by either adding or stealing lines from the window below.
+  # (This means that the bottommost window can't be directly changed
+  # since it doesn't have a window below it.)
+  #
+  # Returns the new size of the window.
+  #
+  # =for html <br><br>
+  #
+  # =item size WINOBJ HEIGHT WIDTH
+  #
+  # Unimplemented.  It is not possible to change the width at the
+  # moment, but if the feature ever becomes available, this method
+  # will do it.
+  #
+  # =for html <br><br>
+  #
+
+void
+size(vw, ...)
+    VileWin vw
+
+    PREINIT:
+	I32 gimme;
+
+    PPCODE:
+	if (items > 2) {
+	    croak("Vile::Window::size: Invalid number of arguments");
+	}
+	else if (items == 2) {
+	    WINDOW *savewp = curwp;
+	    int newheight = SvIV(ST(1));
+	    int maxheight;
+
+	    if (newheight < 1)
+		croak("Vile::Window::size: New height must be 1 or larger");
+	    if (vw->w_wndp == NULL)
+		croak("Vile::Window::size: Can't change bottom window");
+	    maxheight = vw->w_ntrows + vw->w_wndp->w_ntrows - 1;
+	    if (newheight > maxheight)
+		newheight = maxheight;
+
+	    set_curwp(vw);
+	    resize(TRUE, newheight);
+	    curwp = savewp;
+	    curbp = curwp->w_bufp;
+	}
+	gimme = GIMME_V;
+	if (gimme == G_SCALAR) {
+	    XPUSHs(sv_2mortal(newSViv(vw->w_ntrows)));
+	}
+	else if (gimme == G_ARRAY) {
+	    XPUSHs(sv_2mortal(newSViv(vw->w_ntrows)));
+	    XPUSHs(sv_2mortal(newSViv(term.cols)));
+	}
+
+  #
+  # =item topline WINOBJ
+  #
+  # Returns the line number of the top line in the window.
+  #
+  # =for html <br><br>
+  #
+
+int
+topline(vw, ...)
+    VileWin vw
+
+    CODE:
+	if (items > 2) {
+	    croak("Vile::Window::topline: Too many arguments");
+	}
+	else if (items > 1) {
+	    /* Setter: expect a line spec */
+	    WINDOW *savewp = curwp;
+	    int lcur;
+	    set_curwp(vw);
+	    lcur = line_no(curwp->w_bufp, curwp->w_line.l);
+	    mvupwind(TRUE, lcur - sv2linenum(ST(1)));
+	    curwp = savewp;
+	    curbp = curwp->w_bufp;
+	}
+	RETVAL = line_no(vw->w_bufp, vw->w_line.l);
+
+    OUTPUT:
+	RETVAL
+
+  #
+  # =item window_at N
+  #
+  # Returns the Nth (starting at 0 from the top-most window) Vile::Window
+  # object.  If there is no Nth window, undef is returned instead.
+  #
+  # Note: This method also appears in the Vile:: package.
+  #
+  # =for html <br><br>
+  #
+
+VileWin
+window_at(idx)
+    int idx
+
+    ALIAS:
+	Vile::window_at = 1
+
+    CODE:
+	RETVAL = index2win(idx);
+
+    OUTPUT:
+	RETVAL
+
+  #
+  # =item window_count
+  #
+  # Returns number of (visible) windows.
+  #
+  # Note:  Non-visible windows are used to represent buffers
+  # for the perl API.  They are also used for other purposes in
+  # which modification of a buffer is desired, but disturbing
+  # the position of the buffer within one of its windows is
+  # not.
+  #
+  # Note: This method also appears in the Vile:: package.
+  #
+  # =for html <br><br>
+  #
+
+int
+window_count()
+
+    ALIAS:
+	Vile::window_count = 1
+
+    PREINIT:
+	int count;
+	WINDOW *wp;
+
+    CODE:
+	count = 0;
+	for_each_visible_window(wp)
+	    count++;
+	RETVAL = count;
 
     OUTPUT:
 	RETVAL

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.11 1998/07/01 23:52:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.12 1999/12/20 21:23:34 kev Exp $
  */
 
 /*
@@ -38,6 +38,14 @@ typedef struct {
 					   data structure */
 #endif
 } VileBuf;
+
+/*
+ * A VileWin is a good deal simpler.  It is simply a Window *.  But
+ * to perl (and other extension languages as well), the window is
+ * represented by its id.  When the actual window is needed, we use
+ * id2win (see window.c) to convert the id to the window.
+ */
+typedef WINDOW *VileWin;
 
 extern	int	api_aline(VileBuf *, int, char *, int);
 extern	int	api_edit(char *fname, VileBuf **retspp);

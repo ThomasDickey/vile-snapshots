@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.211 1999/12/17 12:13:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.212 1999/12/20 21:23:56 kev Exp $
  *
  */
 
@@ -909,7 +909,11 @@ swbuffer_lfl(register BUFFER *bp, int lockfl, int this_window)
 			return FALSE;
 		if (curwp->w_bufp == bp)
 			return TRUE;
-		undispbuff(curwp->w_bufp, curwp);
+		if (curwp->w_bufp->b_nwnd == 0)
+			undispbuff(curwp->w_bufp, curwp);
+		else
+			copy_traits(&(curwp->w_bufp->b_wtraits),
+			            &(curwp->w_traits));
 
 		/* Initialize the window using the saved buffer traits
 		 * if possible.  If they don't pass a sanity check,
