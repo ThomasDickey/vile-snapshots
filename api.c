@@ -651,7 +651,7 @@ api_edit(char *fname, VileBuf **retvbpp)
 
     *retvbpp = api_bp2vbp(bp);
     api_setup_fake_win(*retvbpp, TRUE);
-    return !swbuffer_lfl(bp, FALSE);
+    return !swbuffer_lfl(bp, FALSE, FALSE);
 }
 
 int

@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.89 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.90 1999/07/03 13:33:16 tom Exp $
  *
  */
 
@@ -996,6 +996,41 @@ getlinerow(void)
 }
 #endif
 
+void
+init_window(WINDOW *wp, BUFFER *bp)
+{
+	if (bp != 0) {
+		wp->w_line.l = lforw(buf_head(bp));
+		wp->w_line.o = 0;
+		wp->w_dot.l = lforw(buf_head(bp));
+		wp->w_dot.o = 0;
+	} else {
+		wp->w_line = nullmark;
+		wp->w_dot = nullmark;
+	}
+#if WINMARK
+	wp->w_mark = nullmark;
+#endif
+	wp->w_lastdot = nullmark;
+	wp->w_values = global_w_values;
+
+	wp->w_flag |= WFMODE|WFHARD;	/* Quite nasty.		*/
+}
+
+void
+clone_window(WINDOW *dst, WINDOW *src)
+{
+	dst->w_line = src->w_line;
+	dst->w_dot = src->w_dot;
+#if WINMARK
+	dst->w_mark = src->w_mark;
+#endif
+	dst->w_lastdot = src->w_lastdot;
+	dst->w_values = src->w_values;
+
+	dst->w_flag |= WFMODE|WFHARD;	/* Quite nasty.		*/
+}
+
 /*
  * Initialize all of the windows.
  */
@@ -1009,20 +1044,14 @@ winit(int screen)
 		ExitProgram(BADEXIT);
 	wheadp = wp;
 	curwp  = wp;
+
+	init_window(wp, (BUFFER *)0);
 	wp->w_wndp  = NULL;			/* Initialize window	*/
-	wp->w_dot  = nullmark;
-	wp->w_line = nullmark;
-#if WINMARK
-	wp->w_mark = nullmark;
-#endif
-	wp->w_lastdot = nullmark;
 	wp->w_toprow = 0;
-	wp->w_values = global_w_values;
 	wp->w_ntrows = screen
 			? term.rows-2		/* "-1" for mode line.  */
 			: 1;			/* command-line		*/
 	wp->w_force = 0;
-	wp->w_flag  = WFMODE|WFHARD;		/* Full.		*/
 	wp->w_bufp  = NULL;
 
 	if (screen) {

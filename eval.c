@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.214 1999/06/21 10:54:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.216 1999/07/02 10:16:34 tom Exp $
  *
  */
 
@@ -976,15 +976,14 @@ save_arguments(BUFFER *bp)
     TRACE(("save_arguments(%s)%s\n", bp->b_bname, execstr))
     if (execstr == 0
      && more_named_cmd()) {
+	kbd_putc(' ');
 	if (kbd_reply( (char *)0,	/* no-prompt => splice */
-			&params,		/* in/out buffer */
+			&params,	/* in/out buffer */
 			eol_history,
-			EOS,		/* may be a conflict */
+			'\n',	/* expect a newline or return */
 			0,		/* no expansion, etc. */
 			no_completion) == TRUE) {
 	    execstr = tb_values(params);
-	} else {
-	    execstr = "";
 	}
     }
     if (execstr == 0)
@@ -995,10 +994,11 @@ save_arguments(BUFFER *bp)
     }
     p->nxt_args = arg_stack;
     arg_stack   = p;
-    p->all_args = typecallocn(TBUFF *, max_args);
+    p->all_args = typecallocn(TBUFF *, max_args + 1);
     tb_scopy(&(p->all_args[num_args++]), bp->b_bname);
 
-    while (mac_token(&(p->all_args[num_args]))) {
+    while (num_args < max_args
+      && mac_token(&(p->all_args[num_args]))) {
 	tb_scopy(&(p->all_args[num_args]),
 	    tokval(tb_values(p->all_args[num_args])));
 	TRACE(("...ARG%d:%s\n", num_args, tb_values(p->all_args[num_args])))

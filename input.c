@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.196 1999/06/14 22:22:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.200 1999/07/03 01:18:29 tom Exp $
  *
  */
 
@@ -1296,6 +1296,100 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 }
 
 /*
+ * Read a character quoted, e.g., by ^V.  If we allow multiple characters (the
+ * normal case), check if the character is the beginning of a number.  Decode
+ * numbers in hex, octal or decimal.  If inscreen, show the progress on the
+ * message line.
+ */
+int
+read_quoted(int count, int inscreen)
+{
+	int  c, digs, base, i, num, delta;
+	const char *str;
+
+	i = digs = 0;
+	num = 0;
+
+	c = keystroke_raw8();
+	if (count <= 0)
+		return c;
+
+	/* accumulate up to 3 digits */
+	if (isDigit(c) || c == 'x') {
+		if (!inscreen) {
+			kbd_putc(c);
+			kbd_flush();
+		}
+		if (c == '0') {
+			digs = 4; /* including the leading '0' */
+			base = 8;
+			str = "octal";
+		} else if (c == 'x') {
+			digs = 3; /* including the leading 'x' */
+			base = 16;
+			c = '0';
+			str = "hex";
+		} else {
+			digs = 3;
+			base = 10;
+			str = "decimal";
+		}
+		do {
+			if (isbackspace(c)) {
+				num /= base;
+				if (--i < 0)
+					break;
+			} else {
+				if ((c >= 'a') && (c <= 'f'))
+					delta = ('a' - 10);
+				else if ((c >= 'A') && (c <= 'F'))
+					delta = ('A' - 10);
+				else if (isDigit(c)
+				   && (c >= '0') && (c <= base + '0'))
+					delta = '0';
+				else
+					break;
+				num = num * base + c - delta;
+				i++;
+			}
+
+			if (inscreen) {
+				mlwrite("Enter %s digits... %d", str, num);
+			} else if (i > 1) {
+				kbd_putc(c);
+				kbd_flush();
+			}
+
+			if (i >= digs)
+				break;
+			(void)update(FALSE);
+			c = keystroke_raw8();
+		} while (isbackspace(c) ||
+			(isDigit(c) && base >= 10) ||
+			(base == 8 && c < '8') ||
+			(base == 16 && (c >= 'a' && c <= 'f')) ||
+			(base == 16 && (c >= 'A' && c <= 'F')));
+	}
+
+	if (inscreen) {
+		mlerase();
+	} else {
+		for (delta = i; delta > 0; delta--)
+			kbd_erase();
+		kbd_flush();
+	}
+
+	if (c > 0) {
+		if (ABORTED(c)) /* ESC gets us out painlessly */
+			return -1;
+		if (i < digs) /* any other character will be pushed back */
+			unkeystroke(c);
+	}
+
+	return (i > 0) ? (num & 0xff) : -1;
+}
+
+/*
  * Same as 'kbd_string()', except for adding the 'endfunc' parameter.
  *
  * Returns:
@@ -1338,7 +1432,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 		execstr = get_token(execstr, extbuf, eolchar);
 		StrToBuff(*extbuf); /* FIXME: token should use TBUFF */
 		status = (tb_length(*extbuf) != 0);
-		if (status) { /* i.e. we got some input */
+		if (status) { 	/* i.e., we got some input */
 #if !SMALLER
 			/* FIXME: may have nulls */
 			if ((options & KBD_LOWERC))
@@ -1372,6 +1466,8 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 			 */
 			if ((last_eolchar = *execstr) != EOS)
 				last_eolchar = ' ';
+			else
+				last_eolchar = '\n';
 		}
 		if (pushed_back && (*execstr == EOS)) {
 			pushed_back = FALSE;
@@ -1416,7 +1512,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 		 * sequences as a single (16-bit) special character.
 		 */
 		if (quotef)
-			c = keystroke_raw8();
+			c = read_quoted(1,FALSE);
 		else if (dontmap)
 			/* this looks wrong, but isn't.  no mapping will happen
 			anyway, since we're on the command line.  we want SPEC

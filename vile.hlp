@@ -121,7 +121,7 @@ Buffer manipulation commands:
 		different ways to get the previous file:
 			__
 			_1	(autobuffer mode on)
-			1_	(    "       "    ")
+			1_	(    "       "     )
 			:e#
 			^^   (ctrl-^)  (but many keyboards can't produce this)
 
@@ -297,7 +297,7 @@ File manipulation commands:
 	In addition, two non-"colon" commands have been added:
 
 	^R	Prompts for a filename, and then reads it in _above_ the
-		current line.  If a register is specified (e.g. "a^R ),
+		current line.  If a register is specified (e.g., "a^R ),
 		the file is read into that named register, but not inserted
 		into the current buffer.
 
@@ -428,7 +428,8 @@ Text manipulation command:
 	sequence "1pu.u.u.u. would successively insert the contents of "1,
 	"2, "3, "4, and "5, allowing you to choose the "correct" register.
 	This sequence no longer works.  You can still put them _all_ back
-	with "1p..... and then delete the ones you _don't_ want. ]
+	with "1p..... ("1p for screen) and then delete the ones you _don't_
+	want. ]
 
 	The number of changes stored in the undo "history" is controlled by
 	the numeric mode "undolimit".  The default history length is 10 --
@@ -866,8 +867,8 @@ New Registers
 	Other versions of vile permit use of '.' and ';' as supplemental
 	register storage.
 
-	The register name '"' is a synonym for the default unnamed register,
-	which is also sometimes referred to as register 0.
+	The register name '"' (" is double-quote) is a synonym for the default
+	unnamed register, which is also sometimes referred to as register 0.
 
 Completion
 ----------
@@ -1021,6 +1022,7 @@ Editor modes
 			[Major Modes]
 			[Map Sequences]
 			[Map! Sequences]
+			[Named Marks]
 			[Registers]
 			[Settings]
 			[Tag Stack]
@@ -1153,7 +1155,7 @@ Editor modes
 		doing binary editing.  (B)
 
 	errorbells (eb) Controls whether a bell sounds (or whether the
-		screen flashes, if "flash" mode is on") when an error
+		screen flashes, if "flash" mode is on) when an error
 		occurs. (U)
 
 	expand-chars Controls the set of characters that are expanded in
@@ -1658,8 +1660,8 @@ Editor modes
 	    ":map!" commands to aid insertion of 8-bit text.  The file
 	    "digraphs.rc" distributed with the vile source contains a set
 	    of mappings which should aid the input of ISO 8859/1 text.  As
-	    examples, the mappings in digraphs.rc allow one to type ^Ku"
-	    to get an umlaut character, ^K12 to get the little '1/2'
+	    examples, the mappings in digraphs.rc allow one to type ^KU" or
+	    ^Ku" to get an umlaut character, ^K12 to get the little '1/2'
 	    symbol, ^KY- to get the Yen currency symbol, or ^K:- to get an
 	    arithmetic division symbol.
 
@@ -2072,7 +2074,8 @@ Recorded macros
 		capability is now a toggle, and requires only one command.
 	^X-&	Execute the keyboard macro.
 	^X-^	Copy recorded keyboard macro to a named register, for saving,
-		or for execution using '@a', as below.  (Type "a^X^ )
+		or for execution using '@a', as below.  (Type "a^X^, where
+		"a means yank into register-a)
 
 	The vi '@' command is present as well, and can be used to execute
 	the contents of a named register as if it were entered at the
@@ -3766,6 +3769,7 @@ Win32 specifics
 
 		4yy<AI>  ;copy 4 lines from unnamed reg to clipboard
 		"a<CI>   ;copy register 'a' to clipboard
+		"b<CI>   ;copy register 'b' to clipboard
 		<CI>3w   ;copy 3 words to clipboard
 
 	OLE Automation
@@ -3957,7 +3961,7 @@ Sample .vilerc
 		filter-til next-paragraph "/usr/ucb/fmt"
 	~endm
 
-	; put 'fprintf(stderr,"\n");" into the file, and
+	; put 'fprintf(stderr,"\n");' into the file, and
 	; position the cursor to add to the string
 	3 store-macro
 		~force next-line
@@ -4134,4 +4138,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.420 1999/06/06 19:32:25 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.422 1999/07/03 02:52:36 tom Exp $

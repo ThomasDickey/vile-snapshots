@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.115 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.117 1999/07/02 10:42:34 tom Exp $
  *
  */
 
@@ -362,7 +362,7 @@ replacechar(int f, int n)
 
 		(void)ldelete((B_COUNT)n, FALSE);
 		if (c == quotec) {
-			t = s = quote(f,n);
+			t = s = quote_next(f,n);
 		} else {
 			if (isreturn(c)) {
 				if (vi_fix)
@@ -647,7 +647,7 @@ inschar(int c, int *backsp_limit_p)
 
 	execfunc = NULL;
 	if (c == quotec) {
-		execfunc = quote;
+		execfunc = quote_next;
 	} else {
 		/*
 		 * If a space was typed, fill column is defined, the
@@ -1217,76 +1217,17 @@ shiftwidth(int f GCC_UNUSED, int n GCC_UNUSED)
  * A character is always read, even if it is inserted 0 times, for regularity.
  */
 int
-quote(int f, int n)
+quote_next(int f, int n)
 {
-	int  s, c, digs, base, i, num, delta;
-	const char *str;
+	int c, s;
 
-	i = digs = 0;
-	num = 0;
-
-	c = keystroke_raw8();
 	if (!f)
 		n = 1;
-	if (n < 0)
-		return FALSE;
-	if (n == 0)
-		return TRUE;
+	c = read_quoted(n, TRUE);
 
-	/* accumulate up to 3 digits */
-	if (isDigit(c) || c == 'x') {
-		if (c == '0') {
-			digs = 4; /* including the leading '0' */
-			base = 8;
-			str = "octal";
-		} else if (c == 'x') {
-			digs = 3; /* including the leading 'x' */
-			base = 16;
-			c = '0';
-			str = "hex";
-		} else {
-			digs = 3;
-			base = 10;
-			str = "decimal";
-		}
-		do {
-			if (isbackspace(c)) {
-				num /= base;
-				if (--i < 0)
-					break;
-			} else {
-				if (c >= 'a' && c <= 'f')
-					delta = ('a' - 10);
-				else if (c >= 'A' && c <= 'F')
-					delta = ('A' - 10);
-				else
-					delta = '0';
-				num = num * base + c - delta;
-				i++;
-			}
-			mlwrite("Enter %s digits... %d", str, num);
-			if (i >= digs)
-				break;
-			(void)update(FALSE);
-			c = keystroke_raw8();
-		} while (isbackspace(c) ||
-			(isDigit(c) && base >= 10) ||
-			(base == 8 && c < '8') ||
-			(base == 16 && (c >= 'a' && c <= 'f')) ||
-			(base == 16 && (c >= 'A' && c <= 'F')));
-	}
-
-	mlerase();
-	/* did we get any digits at all? */
-	if (i > 0) {
-		if (ABORTED(c)) /* ESC gets us out painlessly */
-			return ABORT;
-		if (i < digs) /* any other character will be pushed back */
-			unkeystroke(c);
-		/* the accumulated value gets inserted */
-		c = (num > 255) ? 255 : num;
-	}
-	if (c == '\n') {
+	if (c < 0) {
+		return ABORT;
+	} else if (c == '\n') {
 		do {
 			s = lnewline();
 		} while (s==TRUE && --n);

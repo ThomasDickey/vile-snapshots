@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.189 1999/06/21 01:30:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.190 1999/07/02 00:16:09 tom Exp $
  *
  */
 
@@ -2090,7 +2090,7 @@ dobuf(BUFFER *bp)	/* buffer to execute */
 {
 	int status = FALSE;
 	WHLOOP *whlist;
-	register int save_no_msgs;
+	int save_no_msgs;
 
 	static int dobufnesting; /* flag to prevent runaway recursion */
 

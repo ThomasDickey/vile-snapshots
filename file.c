@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.247 1999/06/20 21:28:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.248 1999/07/03 13:31:26 tom Exp $
  */
 
 #include	"estruct.h"
@@ -599,7 +599,7 @@ bp2swbuffer(BUFFER *bp, int ask_rerun, int lockfl)
 			s = bp2readin(bp, lockfl);
 #endif
 		if (s == TRUE)
-			s = swbuffer_lfl(bp, lockfl);
+			s = swbuffer_lfl(bp, lockfl, FALSE);
 		if (s == TRUE)
 			curwp->w_flag |= WFMODE|WFHARD;
 	}
@@ -899,14 +899,7 @@ int	mflg)		/* print messages? */
 
 	for_each_window(wp) {
 		if (wp->w_bufp == bp) {
-			wp->w_line.l = lforw(buf_head(bp));
-			wp->w_dot.l  = lforw(buf_head(bp));
-			wp->w_dot.o  = 0;
-#if WINMARK
-			wp->w_mark = nullmark;
-#endif
-			wp->w_lastdot = nullmark;
-			wp->w_flag |= WFMODE|WFHARD;
+			init_window(wp, bp);
 		}
 	}
 	imply_alt(fname, FALSE, lockfl);

@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.44 1999/06/11 11:21:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.46 1999/07/01 10:18:25 kev Exp $
  */
 
 /*#
@@ -99,6 +99,7 @@
 #undef main
 #undef regexp
 #undef HUGE
+#undef dofile
 
 /* Some earlier versions of perl don't have GIMME_V or G_VOID. We must
    be careful of the order in which we check things if these defines
@@ -256,6 +257,7 @@ newVBrv(SV *rv, VileBuf *sp)
 
     sv_upgrade(rv, SVt_RV);
     SvRV(rv) = sp->perl_handle;
+    SvREFCNT_inc(SvRV(rv));
 
     SvROK_on(rv);
     return sv_bless(rv, gv_stashpv("Vile::Buffer", TRUE));
@@ -311,7 +313,7 @@ do_perl_cmd(SV *cmd, int inplace)
 	if (recursecount == 0) {
 	    curvbp = api_bp2vbp(curbp);
 
-	    if (getregion(&region) != TRUE) {
+	    if (DOT.l == 0 || MK.l == 0 || getregion(&region) != TRUE) {
 		/* shouldn't ever get here. But just in case... */
 		perl_default_region();
 		if (getregion(&region) != TRUE) {

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.400 1999/06/20 21:35:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.401 1999/07/03 02:11:53 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -470,6 +470,7 @@
 #define OPT_SHOW_CTYPE	!SMALLER		/* "show-printable" */
 #define OPT_SHOW_EVAL   !SMALLER && OPT_EVAL	/* "show-variables" */
 #define OPT_SHOW_MAPS   !SMALLER 		/* display mapping for ":map" */
+#define OPT_SHOW_MARKS  !SMALLER 		/* "show-marks" */
 #define OPT_SHOW_REGS   !SMALLER		/* "show-registers" */
 #define OPT_SHOW_TAGS   !SMALLER && OPT_TAGS	/* ":tags" displays tag-stack */
 
