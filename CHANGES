@@ -1,4 +1,11 @@
-Changes for vile 7.1 (released ??? ??? ??, 1997)
+Changes for vile 7.1 (released Wed May 8, 1997)
+
+(tom)	970508 (none)
+	+ undo a place where I'd dropped an XtVaGetValues() call, since it
+	  appeared redundant, but was not - affects only Xaw build (x11.c).
+	+ ifdef'd a test in newscreensize() that is applicable only when
+	  OPT_WORKING is set; this had broken screen initialization on MS-DOS
+	  (display.c).
 
 (tom)	970507 (l)
 	+ add resource to control menu-height (x11.c, menu.c).

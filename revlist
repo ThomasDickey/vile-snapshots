@@ -1,6 +1,6 @@
-revlist for vile, version v7_0k
+revlist for vile, version v7_1
 --------------------------------------------------------------------------------
-CHANGES	1.61
+CHANGES	1.65
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -8,7 +8,7 @@ CHANGES.R6	1.1
 COPYING	1.1
 INSTALL	1.5
 MANIFEST	none
-README	1.59
+README	1.60
 README.CFG	1.11
 README.MENU	1.5
 README.PC	1.11
@@ -18,7 +18,7 @@ basic.c	1.93
 bind.c	1.150
 borland.c	1.18
 buffer.c	1.155
-buglist	1.326
+buglist	1.327
 c-filt.c	1.4
 c-filt.flx	1.1
 chgdfunc.h	1.4
@@ -31,10 +31,10 @@ csrch.c	1.26
 descrip.mms	1.33
 digraphs.rc	1.2
 dirstuff.h	1.23
-display.c	1.229
+display.c	1.230
 djhandl.c	1.5
 dumbterm.c	1.9
-edef.h	1.208
+edef.h	1.209
 estruct.h	1.306
 eval.c	1.140
 exec.c	1.132
@@ -69,7 +69,7 @@ manfilt.c	1.19
 manfilt.pl	1.1
 manpage.rc	1.2
 map.c	1.70
-menu.c	1.8
+menu.c	1.9
 mkdirs.sh	1.2
 mktbls.c	1.78
 modes.c	1.84
@@ -81,14 +81,14 @@ oneliner.c	1.85
 opers.c	1.58
 os2pipe.c	1.2
 os2vio.c	1.9
-patchlev.h	1.47
+patchlev.h	1.49
 path.c	1.77
 pictmode.rc	1.1
-proto.h	1.242
+proto.h	1.243
 random.c	1.184
 regexp.c	1.63
 region.c	1.80
-revlist	v7_0k
+revlist	v7_1
 search.c	1.107
 select.c	1.54
 spawn.c	1.115
@@ -102,13 +102,13 @@ trace.h	1.2
 undo.c	1.66
 version.c	1.35
 vile.1	1.15
-vile.hlp	1.319
-vms2unix.c	1.25
+vile.hlp	1.321
+vms2unix.c	1.26
 vmsbuild.com	1.11
 vmspipe.c	1.12
 vmsvt.c	1.29
 window.c	1.73
 word.c	1.56
 wordmov.c	1.17
-x11.c	1.151
+x11.c	1.153
 z100bios.asm	1.4
