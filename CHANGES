@@ -1,5 +1,20 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (tom) 980331 (o) 
+ 	+ change logic that determines whether to set dos mode for a file so
+	  that .vilerc (or vile.rc) and source'd files are treated specially. 
+	  For those files, all lines must end with ^M's to set dos mode
+	  automatically when they are read.  This will reduce the chances of
+	  trimming ^M's from map commands.
+	+ modify dofile() function, used to load/execute .vilerc and source'd
+	  files, to check first for buffer with the same filename.  This fixes
+	  a problem which would cause vile to allocate more than one buffer for
+	  .vilerc when an error is encountered.
+	+ use new function tb_insert() rather than tb_put() to insert strings
+	  for expand-chars.  The tb_put() function truncates the buffer at the
+	  location of the new character, and does not work well for inline
+	  editing. 
+
  (kev) 980330 (n) 
  	+ api.c (api_gotoline): Make sure that we can move off of 
 	  buf_head if presently on it.  (This fixes a bug in which 

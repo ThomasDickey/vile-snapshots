@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.268 1998/03/30 10:15:53 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.269 1998/03/31 11:49:42 tom Exp $
  *
  */
 
@@ -760,6 +760,7 @@ void clobber_save_curbp(BUFFER *bp);
 /* select.c */
 #if OPT_SELECTIONS
 extern	int	assign_attr_id	(void);
+extern	int	attribute_cntl_a_sequences_over_region(REGION *rp);
 extern	int	attributeregion (void);
 extern	int	sel_begin	(void);
 extern	int	sel_extend	(int wiping, int include_dot);
@@ -774,7 +775,6 @@ extern	int	sel_yank	(int reg);
 extern	int	sel_attached	(void);
 extern	BUFFER *sel_buffer	(void);
 #endif
-extern	int	attribute_cntl_a_sequences_over_region(REGION *rp); 
 #endif /* OPT_SELECTIONS */
 
 /* spawn.c */
@@ -798,10 +798,11 @@ TBUFF *	tb_append (TBUFF **p, int c);
 TBUFF *	tb_bappend (TBUFF **p, const char *s, ALLOC_T len);
 TBUFF *	tb_copy (TBUFF **d, TBUFF *s);
 TBUFF *	tb_init (TBUFF **p, int c);
+TBUFF *	tb_insert (TBUFF **p, ALLOC_T n, int c);
+TBUFF *	tb_put (TBUFF **p, ALLOC_T n, int c);
 TBUFF *	tb_sappend (TBUFF **p, const char *s);
 TBUFF *	tb_scopy (TBUFF **p, const char *s);
 TBUFF *	tb_string (const char *s);
-TBUFF * tb_put(TBUFF **p, ALLOC_T n, int c);
 char *	tb_values (TBUFF *p);
 int	tb_get (TBUFF *p, ALLOC_T n);
 int	tb_more (TBUFF *p);
@@ -888,7 +889,7 @@ extern int resize (int f, int n);
 #if OPT_SEL_YANK || OPT_PERL
 extern WINDOW * push_fake_win(BUFFER *bp);
 extern BUFFER * pop_fake_win(WINDOW *oldwp);
-extern int	is_fake_win(WINDOW *wp); 
+extern int	is_fake_win(WINDOW *wp);
 #endif
 
 /* word.c */
@@ -1008,7 +1009,7 @@ extern	int	fflush	(FILE *fp);
 #if MISSING_EXTERN_FGETC
 extern	int	fgetc	(FILE *fp);
 #endif
-#if MISSING_EXTERN_FILENO && !defined(fileno) 
+#if MISSING_EXTERN_FILENO && !defined(fileno)
 extern	int	fileno	(FILE *fp);
 #endif
 #if MISSING_EXTERN_FORK
@@ -1035,7 +1036,7 @@ extern	int	fseek	(FILE *fp, long offset, int whence);
 #if MISSING_EXTERN_FWRITE
 extern	int	fwrite	(const char *ptr, SIZE_T size, SIZE_T nmemb, FILE *fp);
 #endif
-#if MISSING_EXTERN_GETCWD && HAVE_GETCWD 
+#if MISSING_EXTERN_GETCWD && HAVE_GETCWD
 extern	char *	getcwd (char *buffer, int len);
 #endif
 #if MISSING_EXTERN_GETENV
@@ -1044,7 +1045,7 @@ extern	char *	getenv	(const char *name);
 #if MISSING_EXTERN_GETPASS
 extern	char *	getpass	(const char *prompt);
 #endif
-#if MISSING_EXTERN_GETHOSTNAME && HAVE_GETHOSTNAME 
+#if MISSING_EXTERN_GETHOSTNAME && HAVE_GETHOSTNAME
 extern	int	gethostname (char *name, int len);
 #endif
 #if MISSING_EXTERN_GETPGRP
@@ -1056,7 +1057,7 @@ extern	int	getpid	(void);
 #if MISSING_EXTERN_GETUID
 extern	int	getuid	(void);
 #endif
-#if MISSING_EXTERN_GETWD && HAVE_GETWD 
+#if MISSING_EXTERN_GETWD && HAVE_GETWD
 extern	char *	getwd	(char *buffer);
 #endif
 #if MISSING_EXTERN_IOCTL
@@ -1068,10 +1069,10 @@ extern	int	isatty	(int fd);
 #if MISSING_EXTERN_KILL
 extern	int	kill	(int pid, int sig);
 #endif
-#if MISSING_EXTERN_KILLPG && HAVE_KILLPG 
+#if MISSING_EXTERN_KILLPG && HAVE_KILLPG
 extern	int	killpg	(int pgrp, int sig);
 #endif
-#if MISSING_EXTERN_LINK && HAVE_LINK 
+#if MISSING_EXTERN_LINK && HAVE_LINK
 extern	int	link	(const char *, const char *);
 #endif
 #if MISSING_EXTERN_LONGJMP
@@ -1083,7 +1084,7 @@ extern	int	lstat (const char *path, struct stat *sb);
 #if MISSING_EXTERN_MEMSET
 extern	void	memset	(char *dst, int ch, int n);
 #endif
-#if MISSING_EXTERN_MKDIR && HAVE_MKDIR 
+#if MISSING_EXTERN_MKDIR && HAVE_MKDIR
 extern	int	mkdir	(const char *path, int mode);
 #endif
 #if MISSING_EXTERN_MKTEMP
@@ -1117,7 +1118,7 @@ extern	int	read	(int fd, char *buffer, SIZE_T size);
 #if MISSING_EXTERN_READLINK
 extern	int	readlink (const char *path, char *buffer, size_t size);
 #endif
-#if MISSING_EXTERN_SELECT && HAVE_SELECT 
+#if MISSING_EXTERN_SELECT && HAVE_SELECT
 extern	int	select	(int numfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
 #endif
 #if MISSING_EXTERN_SETBUF
@@ -1167,10 +1168,10 @@ extern	time_t	time	(time_t *t);
 #if MISSING_EXTERN_UNLINK
 extern	int	unlink	(char *path);
 #endif
-#if MISSING_EXTERN_UTIME && HAVE_UTIME 
+#if MISSING_EXTERN_UTIME && HAVE_UTIME
 extern	int	utime	(const char *path, const struct utimbuf *t);
 #endif
-#if MISSING_EXTERN_UTIMES && HAVE_UTIMES 
+#if MISSING_EXTERN_UTIMES && HAVE_UTIMES
 extern	int	utimes	(const char *path, struct timeval *t);
 #endif
 #if MISSING_EXTERN_WAIT

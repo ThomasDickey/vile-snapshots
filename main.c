@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.309 1998/03/21 14:14:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.310 1998/03/31 23:29:24 tom Exp $
  *
  */
 
@@ -440,7 +440,7 @@ MainProgram(int argc, char *argv[])
 					b_set_changed(obp);
 				}
 
-				if ((vbp=bfind(VILEINIT_BufName, 0))==NULL)
+				if ((vbp=bfind(VILEINIT_BufName, BFEXEC)) == 0)
 					tidy_exit(BADEXIT);
 
 				/* don't want swbuffer to try to read it */

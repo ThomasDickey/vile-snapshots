@@ -11,14 +11,14 @@
  *			sequence.  the routine does have storage, to hold
  *			keystrokes gathered "in error".
  *
- *	tgetc()		fresh, pushed back, or recorded output of result of 
+ *	tgetc()		fresh, pushed back, or recorded output of result of
  *			sysmapped_c() (i.e. dotcmd and the keyboard macros
  *			are recordedand played back at this level).  this is
  *			only called from mapgetc() in map.c
  *
  *	mapped_c()	(map.c) worker routine which will return a mapped
  *			or non-mapped character from the mapping engine.
- *			determines correct map, and uses its own pushback 
+ *			determines correct map, and uses its own pushback
  *			buffers on top of calls to tgetc() (see mapgetc/
  *			mapungetc).
  *
@@ -26,7 +26,7 @@
  *			correct map used depending on mode (insert, command,
  *			message-line).
  *
- *	keystroke()	returns pushback from mappings, the results of 
+ *	keystroke()	returns pushback from mappings, the results of
  *			previous calls to mapped_keystroke().
  *
  *	keystroke8()	as above, but masks off any "wideness", i.e. SPEC bits.
@@ -37,14 +37,14 @@
  *	kbd_seq()	the vile prefix keys (^X,^A,#) are checked for, and
  *			appropriate key pairs are turned into CTLA|c, CTLX|c,
  *			SPEC|c.
- *	
+ *
  *
  *	TTtypahead() 	  true if a key is avail from TTgetc().
  *	sysmapped_c_avail() "  if a key is avail from sysmapped_c() or below.
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.175 1998/03/16 11:25:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.176 1998/03/31 23:07:23 tom Exp $
  *
  */
 
@@ -513,7 +513,7 @@ int
 tgetc_avail(void)
 {
 	return tgetc_ungotcnt > 0 ||
-		get_recorded_char(FALSE) != -1 || 
+		get_recorded_char(FALSE) != -1 ||
 		sysmapped_c_avail();
 }
 
@@ -528,14 +528,14 @@ tgetc(int quoted)
 	}
 
 	if ((c = get_recorded_char(TRUE)) == -1) {
-		/* fetch a character from the terminal driver */ 
+		/* fetch a character from the terminal driver */
 		not_interrupted();
 		if (setjmp(read_jmp_buf)) {
 			c = kcod2key(intrc);
     			TRACE(("setjmp/getc:%c (%#x)\n", c, c))
 #if defined(linux) && defined(DISP_TERMCAP)
 			/*
-			 * Linux bug (observed with kernels 1.2.13 & 2.0.0): 
+			 * Linux bug (observed with kernels 1.2.13 & 2.0.0):
 			 * when interrupted, the _next_ character that
 			 * getchar() returns will be the same as the last
 			 * character before the interrupt.  Eat it.
@@ -561,7 +561,7 @@ tgetc(int quoted)
 }
 
 
-/*	KBD_SEQ:	Get a command sequence (multiple keystrokes) from 
+/*	KBD_SEQ:	Get a command sequence (multiple keystrokes) from
 		the keyboard.
 		Process all applicable prefix keys.
 		Set lastcmd for commands which want stuttering.
@@ -891,7 +891,7 @@ UINT	options)
 
 	if (cp != NULL) {
 		while ((c = *cp++) != EOS) {
-			tb_put(buf, cpos++, c);
+			tb_insert(buf, cpos++, c);
 			showChar(c);
 		}
 		kbd_flush();
@@ -1313,10 +1313,10 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 	 */
 	margin = llength(wminip->w_dot.l);
 	cpos = kbd_show_response(&buf, tb_values(*extbuf), tb_length(*extbuf), eolchar, options);
-	backslashes = 0; /* by definition, there is an even 
+	backslashes = 0; /* by definition, there is an even
 					number of backslashes */
 	for_ever {
-		int	EscOrQuo = ((quotef == TRUE) || 
+		int	EscOrQuo = ((quotef == TRUE) ||
 				((backslashes & 1) != 0));
 
 		/*
@@ -1573,8 +1573,8 @@ dotcmdfinish(void)
 }
 
 
-/* stop recording a dot command, 
-	probably because the command is not re-doable */ 
+/* stop recording a dot command,
+	probably because the command is not re-doable */
 void
 dotcmdstop(void)
 {
