@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.199 2005/02/02 18:44:09 tom Exp $
+; $Id: filters.rc,v 1.200 2005/02/13 15:35:59 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -73,6 +73,11 @@ define-mode tex
 
 define-mode vb
 ~with define-submode vb
+	filtername	'vile-basic-filt -k vb'
+~endwith
+
+define-mode vbs
+~with define-submode vbs
 	filtername	'vile-basic-filt -k vb'
 ~endwith
 

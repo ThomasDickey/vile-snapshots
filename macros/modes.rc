@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.16 2005/02/02 18:39:23 tom Exp $
+; $Id: modes.rc,v 1.18 2005/02/13 15:34:25 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -91,8 +91,8 @@ define-mode awk
 define-mode basic
 ~with define-submode basic
 	suffixes	'\.bas$'
-	comment-prefix '^\s*\''
-	comments   '^\s*\'\s\+\s*$'
+	comment-prefix	"^\\s*'"
+	comments   	"^\\s*'\s\\+\\s*$"
 	ignorecase
 	notabinsert
 ~endwith
@@ -669,10 +669,21 @@ define-mode txt
 
 define-mode vb
 ~with define-submode vb
-	before "basic"
+	before		"basic"
 	suffixes	'\.\(bas\|frm\)$'
-	pre '\(^VERSION\|VB_Name\)'
+	pre		'\(^VERSION\|VB_Name\)'
 	qualifiers=all
+	comment-prefix	"^\\s*'"
+	comments	"^\\s*'\\s\\+\\s*$"
+	dos
+	ignorecase
+	notabinsert
+~endwith
+
+define-mode vbs
+~with define-submode vbs
+	before		"basic"
+	suffixes	'\.\(vbs\)$'
 	comment-prefix	"^\\s*'"
 	comments	"^\\s*'\\s\\+\\s*$"
 	dos
@@ -691,7 +702,7 @@ define-mode vlog
 ~with define-submode vile
 	before "sh"
 	mode-pathname	'\(vile.*/.*rc\)$'
-	mode-filename	'^\(vile.*rc\)$'
+	mode-filename	'^\(\.\?vile.*rc\)$'
 	suffixes	'\.\(exrc\|vile\)$'
 	comment-prefix	'^\s*;'
 	comments	'^\s*;\s*$'

@@ -1,5 +1,48 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 2005021? (q)
+	> Tom Dickey:
+	+ several improvements to rubyfilt.c:
+	  + show variable-expansion within generalized double-quote %Q.
+	  + implement [] ranges in regular expressions.
+	  + fix handling of escaped characters, which were not always ignored.
+	  + correct logic for regular expression options, which used the wrong
+	    location (noticeable if there was a newline nearby).
+	  + add check to distinguish '/' operator from regular expression.
+	  + add parsing for alias statements.
+	  + add parsing for def statements.
+	  + add parsing for class definitions to avoid conflict with
+	    here-documents.
+	  + add parsing for "$1" and similar symbols
+	  + add parsing for "1.upto(n)" and similar operators applied to
+	    constants.
+	+ add vbsmode using ".vbs" suffix based on basmode.
+	+ fix two issues related to rbmode (Debian #292652):
+	  + correct order in flt_lookup(), which tested filtername value after
+	    checking against built-in modes.  Since rbmode should use
+	    vile-ruby-filt, that caused it to use vile-rb-filt instead.
+	  + rb-filt.l (vile-rb-filt) had a "?" in the expression which begins
+	    here-document that applied to the "<<-" string.  It should have
+	    applied to optional whitespace after that.
+	  With the combination of the two, files containing a quoted name were
+	  treated as a here-document.  This bug was exposed by a difference in
+	  order of evaluation that came from quoting the "<<-" to work with an
+	  old version of flex.
+	+ change highlighting for misspelled words to Error class.
+	+ remove "-x" option from fallback definition of SPELL_PIPE, since that
+	  is only useful if ispell happened to be installed as "spell".  For
+	  Solaris, "-x" means something entirely different.
+	+ add environment variable VILE_SPELL_FILT to vile-spell-filt, to allow
+	  overriding the compiled-in program and options used for performing
+	  the lookup.
+	+ move ~local declaration for SpellFilter inside ~if statement where
+	  they are used; otherwise using external filter does not work.
+	+ add limit-check for kcod2escape_seq().
+	+ correct mode-filename for vilemode, which needs an optional "." to
+	  match ".vilerc".
+	+ correct sql-filt.l, which did not restore default symbol table after
+	  processing an token with the sqlplus symbol table.
+
  20050202 (p)
 	> Clark Morgan:
 	+ make ":w! cygwin_rdonly_ntfs-based_file" work.  Tested as follows:

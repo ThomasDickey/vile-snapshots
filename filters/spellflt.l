@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.12 2004/12/11 01:37:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.15 2005/02/12 13:12:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -19,8 +19,8 @@ DefineFilter("spell");
 /* -l	Produce a list of misspelled words */
 /* -x	Don't create a backup file. */
 #define SPELL_PIPE "ispell -x -l"
-#elif defined(SPELL_PROG)
-#define SPELL_PIPE "spell -x -l"
+#else
+#define SPELL_PIPE "spell -l"
 #endif
 
 static FILE *
@@ -48,7 +48,6 @@ init_filter(int before GCC_UNUSED)
 static void
 do_filter(FILE *inputs GCC_UNUSED)
 {
-#ifdef SPELL_PIPE
 #ifdef filter_def
     LINE *lp;
 #else
@@ -57,7 +56,8 @@ do_filter(FILE *inputs GCC_UNUSED)
     char name[256];
     FILE *fp;
     char buffer[BUFSIZ];
-    char *attr = class_attr(NAME_KEYWORD);
+    char *attr = class_attr(NAME_ERROR);
+    char *prog;
 
     if ((fp = open_tempfile(name)) == 0)
 	return;
@@ -80,7 +80,9 @@ do_filter(FILE *inputs GCC_UNUSED)
     ffp = 0;
 #endif
 
-    sprintf(buffer, "%s <%s", SPELL_PIPE, name);
+    if ((prog = getenv("VILE_SPELL_FILT")) == 0)
+    	prog = SPELL_PIPE;
+    sprintf(buffer, "%s <%s", prog, name);
     if ((fp = popen(buffer, "r")) != 0) {
 	while (fgets(buffer, sizeof(buffer), fp)) {
 	    unsigned len  = strlen(buffer);
@@ -97,7 +99,6 @@ do_filter(FILE *inputs GCC_UNUSED)
     }
 
     remove(name);	/* works on Unix, to remove file before closing */
-#endif
 }
 
 %}

@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.46 2005/01/21 19:45:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.47 2005/02/13 01:03:19 tom Exp $
  *
  */
 
@@ -446,6 +446,13 @@ flt_lookup(char *name)
     int n;
 
     TRACE(("flt_lookup(%s)\n", name));
+#if OPT_MAJORMODE
+    if ((n = parse_filtername(name, &current_params)) >= 0) {
+	TRACE(("...%s(%s)\n", builtflt[n]->filter_name, current_params));
+	current_filter = builtflt[n];
+	return TRUE;
+    }
+#endif
     for (n = 0; builtflt[n] != 0; n++) {
 	if (!strcmp(name, builtflt[n]->filter_name)) {
 	    current_filter = builtflt[n];
@@ -454,13 +461,6 @@ flt_lookup(char *name)
 	    return TRUE;
 	}
     }
-#if OPT_MAJORMODE
-    if ((n = parse_filtername(name, &current_params)) >= 0) {
-	TRACE(("...%s(%s)\n", builtflt[n]->filter_name, current_params));
-	current_filter = builtflt[n];
-	return TRUE;
-    }
-#endif
     TRACE(("...not found\n"));
     return FALSE;
 }

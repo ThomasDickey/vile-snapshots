@@ -1,10 +1,14 @@
-; $Id: spell.rc,v 1.4 2004/12/13 00:35:02 tom Exp $
+; $Id: spell.rc,v 1.6 2005/02/12 13:15:08 tom Exp $
 
 store-procedure SpellFilter "Highlight misspelled words in the current buffer"
-	~local $filtername
-	~local $curcol $curline $filtermsgs
-	~local %original
+	; The spell filter uses an external program to lookup misspelled words.
+	; Usually that is "spell -l", but you can override this by setting the
+	; $VILE_SPELL_FILT environment variable.
 	~if &filter "spell"
+		~local $filtername
+		~local $curcol $curline $filtermsgs
+		~local %original
+
 		setv %original=$cbufname
 		~if &isa buffer '[Filter Messages]'
 			~quiet kill-buffer '[Filter Messages]'

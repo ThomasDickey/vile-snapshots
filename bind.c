@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.280 2005/01/23 17:04:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.282 2005/02/09 23:09:59 tom Exp $
  *
  */
 
@@ -1593,9 +1593,9 @@ which_exec(int f, int n)
 
 /* translate a keycode to its binding-string */
 char *
-kcod2pstr(int c, char *seq)
+kcod2pstr(int c, char *seq, int limit)
 {
-    seq[0] = (char) kcod2escape_seq(c, &seq[1]);
+    seq[0] = (char) kcod2escape_seq(c, &seq[1], limit - 1);
     return seq;
 }
 
@@ -1617,15 +1617,21 @@ static const struct {
 };
 #endif
 
+#define ADD_KCODE(src) \
+	if ((ptr - base) + (len = strlen(src)) + 3 < limit) { \
+	    strcpy(ptr, src); \
+	    ptr += len; \
+	}
+
 /* Translate a 16-bit keycode to a string that will replay into the same
  * code.
  */
 int
-kcod2escape_seq(int c, char *ptr)
+kcod2escape_seq(int c, char *ptr, int limit)
 {
     char *base = ptr;
 
-    if (base != 0) {
+    if (base != 0 && limit > 5) {
 	if (c & CTLA)
 	    *ptr++ = (char) cntl_a;
 	else if (c & CTLX)
@@ -1633,11 +1639,11 @@ kcod2escape_seq(int c, char *ptr)
 
 #if OPT_KEY_MODIFY
 	if (c & mod_KEY) {
+	    int len;
 	    unsigned n;
 	    for (n = 0; n < TABLESIZE(key_modifiers); ++n) {
 		if (c & key_modifiers[n].code) {
-		    strcpy(ptr, key_modifiers[n].name);
-		    ptr += strlen(ptr);
+		    ADD_KCODE(key_modifiers[n].name);
 		}
 	    }
 #if SYS_WINNT
@@ -1645,12 +1651,10 @@ kcod2escape_seq(int c, char *ptr)
 #define W32DELETE "Delete"
 	    c &= mod_NOMOD;
 	    if (c == KEY_Insert) {
-		strcpy(ptr, W32INSERT);
-		ptr += sizeof(W32INSERT) - 1;
+		ADD_KCODE(W32INSERT);
 		c = EOS;
 	    } else if (c == KEY_Delete) {
-		strcpy(ptr, W32DELETE);
-		ptr += sizeof(W32DELETE) - 1;
+		ADD_KCODE(W32DELETE);
 		c = EOS;
 	    }
 #endif
@@ -1714,7 +1718,7 @@ kcod2prc(int c, char *seq)
 {
     char temp[NSTRING];
 
-    (void) kcod2pstr(c, temp);
+    (void) kcod2pstr(c, temp, sizeof(temp));
 #if OPT_KEY_MODIFY
     if (c & mod_KEY) {
 	/* Translation is complete, by defn. */
@@ -1785,14 +1789,14 @@ char *
 fnc2pstr(const CMDFUNC * f)
 {
     int c;
-    static char seq[10];
+    static char seq[40];
 
     c = fnc2kcod(f);
 
     if (c == -1)
 	return NULL;
 
-    return kcod2pstr(c, seq);
+    return kcod2pstr(c, seq, sizeof(seq));
 }
 #endif
 

@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.51 2005/01/27 00:45:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.52 2005/02/09 21:42:26 tom Exp $
  *
  */
 
@@ -253,7 +253,7 @@ itb_visible(ITBUFF * p)
 	used = 0;
 	for (pass = 0; pass < 2; ++pass) {
 	    for (n = 0; n < len; ++n) {
-		kcod2escape_seq(vec[n], temp);
+		kcod2escape_seq(vec[n], temp, sizeof(temp));
 		if (used) {
 		    if (pass)
 			strcat(result, ",");
