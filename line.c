@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.135 2000/05/01 00:50:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.137 2000/05/17 22:30:30 tom Exp $
  *
  */
 
@@ -1103,7 +1103,7 @@ usekreg(int f, int n)
 		/* allow second chance for entering counts */
 		do_repeats(&c,&f,&n);
 
-		status = execute(kcod2fnc(c), f, n);
+		status = execute(DefaultKeyBinding(c), f, n);
 	}
 
 	ukb = 0;

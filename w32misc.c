@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.22 2000/03/13 01:44:54 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.24 2000/05/17 22:28:25 tom Exp $
  */
 
 #include <windows.h>
@@ -585,7 +585,7 @@ w32_keybrd_reopen(int pressret)
                 c != ' ' &&
                 !ABORTED(c))
         {
-            if (kcod2fnc(c) == &f_namedcmd)
+            if (DefaultKeyBinding(c) == &f_namedcmd)
             {
                 unkeystroke(c);
                 break;

@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.269 2000/03/14 02:40:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.271 2000/05/17 10:33:24 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -245,10 +245,11 @@ decl_uninit( int dotcmdrep );		/* original dot-command repeat-count */
 
 #if OPT_EVAL
 decl_init( int seed, 123 );		/* random number seed		*/
+decl_init( int cmd_count, 0 );		/* 1..n for procedure execution	*/
 #endif
 
 #if OPT_EVAL || OPT_DEBUGMACROS
-decl_uninit( int tracemacros );		/* macro tracing flag		*/
+decl_init( int tracemacros, FALSE );	/* macro tracing flag		*/
 #endif
 
 #if OPT_WORKING
@@ -390,6 +391,11 @@ decl_init_const( char TAGFILE_BufName[],	"[Tags %d]");
 extern const NTAB nametbl[];
 extern const CMDFUNC *asciitbl[];
 extern KBIND kbindtbl[];
+
+/* defined in bind.c */
+extern BINDINGS dft_bindings;
+extern BINDINGS ins_bindings;
+extern BINDINGS cmd_bindings;
 
 /* vars useful for writing procedures that are : commands */
 decl_uninit(int ev_end_of_cmd);

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_1g
+MANIFEST for vile, version v9_1h
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -31,6 +31,7 @@ config.emx                      configure-ifdefs for EMX (OS/2)
 config_h.in                     template for config.h
 configure.in                    used by 'autoconf' to generate 'configure'
 csrch.c                         current-line character-scanning commands
+curses.c                        terminal driver using curses
 descrip.mms                     VAX/VMS MMS build-script
 dirstuff.h                      interfaces for UNIX-like directory functions
 display.c                       message & screen formatting & display

@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.128 2000/02/28 01:46:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.131 2000/05/18 00:59:57 tom Exp $
  *
  */
 
@@ -393,7 +393,7 @@ replacechar(int f, int n)
  */
 #define can_ins_exec(cfp,c) \
 	((isSpecial(c) || global_g_val(GMDINSEXEC)) \
-	 && cfp != 0 \
+	 && (cfp = InsertKeyBinding(c)) != 0 \
 	 && ((cfp->c_flags & (GOAL|MOTION)) != 0 \
 	  || (cfp->c_flags & (UNDO|REDO)) == (UNDO|REDO))) \
 
@@ -447,6 +447,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 	static ITBUFF *insbuff;
 	static int nested;
 	int osavedmode;
+	const CMDFUNC *cfp;
 
 	/*
 	 * Prevent recursion of insert-chars (it's confusing).
@@ -521,28 +522,15 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 		}
 
 
-		if (isSpecial(c)
-		 || (isCntrl(c)
-		  && (isSpace(c)
-		   || isbackspace(c)
-#if OPT_SHELL && SYS_UNIX && defined(SIGTSTP)	/* job control, ^Z */
-		   || (c == suspc)
-#endif
-		   || (c == tocntrl('D'))
-		   || (c == tocntrl('T'))
-		   || (c == killc)
-		   || (c == wkillc)) == 0)) {
-			/* if we're allowed to honor SPEC bindings,
-				then see if it's bound to something, and
-				execute it */
-			const CMDFUNC *cfp = kcod2fnc(c);
-			if (can_ins_exec(cfp,c)) {
-				backsp_limit = insertion_exec(cfp);
-				continue;
-			} else if (isSpecial(c)) {
-				/* ignore SPEC bindings that we cannot use */
-				continue;
-			}
+		/* if we're allowed to honor SPEC bindings,
+			then see if it's bound to something, and
+			execute it */
+		if (can_ins_exec(cfp,c)) {
+			backsp_limit = insertion_exec(cfp);
+			continue;
+		} else if (isSpecial(c)) {
+			/* ignore SPEC bindings that we cannot use */
+			continue;
 		}
 
 		if (!isident(c))
@@ -585,7 +573,6 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 			/* if we're allowed to honor meta-character bindings,
 				then see if it's bound to something, and
 				insert it if not */
-			const CMDFUNC *cfp = kcod2fnc(c);
 			if (can_ins_exec(cfp,c)) {
 				backsp_limit = insertion_exec(cfp);
 				continue;

@@ -6,8 +6,8 @@
  *
  * the original author of vile is paul fox.  tom dickey and kevin
  * buettner made huge contributions along the way, as did rick
- * sladkey and other people (see all of the CHANGES files for 
- * details).  vile is now principally maintained by tom dickey. 
+ * sladkey and other people (see all of the CHANGES files for
+ * details).  vile is now principally maintained by tom dickey.
  *
  * previous versions of vile were limited to non-commercial use due to
  * their inclusion of code from versions of MicroEMACS which were
@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.422 2000/03/14 10:11:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.427 2000/05/18 01:22:32 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -249,6 +249,7 @@ MainProgram(int argc, char *argv[])
 				helpflag = TRUE;
 				break;
 
+			case 'i':
 			case 'I':
 				vileinit = "vileinit.rc";
 				/*
@@ -545,7 +546,7 @@ MainProgram(int argc, char *argv[])
 				set_rdonly(vbp, vbp->b_fname, MDVIEW);
 
 				/* go execute it! */
-				if (dobuf(vbp) != TRUE) {
+				if (dobuf(vbp, 1) != TRUE) {
 					startstat = FALSE;
 					goto begin;
 				}
@@ -772,7 +773,7 @@ loop(void)
 		calledbefore = FALSE;
 
 		/* convert key code to a function pointer */
-		cfp = kcod2fnc(c);
+		cfp = DefaultKeyBinding(c);
 
 		if (cfp == &f_dotcmdplay &&
 			(last_cfp == &f_undo ||
@@ -1113,7 +1114,7 @@ global_val_init(void)
 #if OPT_MAJORMODE
 	set_global_b_val(VAL_FENCE_LIMIT, 10);	/* fences iteration timeout */
 #endif
-#if OPT_COLOR&&!SMALLER 
+#if OPT_COLOR&&!SMALLER
 	set_global_b_val(VAL_AUTOCOLOR, 0);	/* auto syntax coloring timeout */
 #endif
 
@@ -1248,12 +1249,28 @@ global_val_init(void)
 	);
 #endif
 #if OPT_FINDERR
-#if	OPT_MSDOS_PATH  
+#if	OPT_MSDOS_PATH
 	set_state_variable(s_filename_expr__, "\\([a-zA-Z]:\\)\\?[^ \t:]");
 #else
 	set_state_variable(s_filename_expr__, "[^ \t]");
 #endif
 #endif
+	/*
+	 * Initialize the "normal" bindings for insert and command mode to
+	 * the motion-commands that are safe if insert-exec mode is enabled.
+	 */
+	for (i = 0; i < N_chars; i++) {
+		const CMDFUNC *cfp;
+
+		ins_bindings.kb_normal[i] =
+		cmd_bindings.kb_normal[i] = 0;
+		if (i < 32
+		 && (cfp = dft_bindings.kb_normal[i]) != 0
+		 && (cfp->c_flags & (GOAL|MOTION)) != 0) {
+			ins_bindings.kb_normal[i] =
+			cmd_bindings.kb_normal[i] = cfp;
+		}
+	}
 }
 
 #if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_VMS

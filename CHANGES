@@ -1,5 +1,27 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000517 (h)
+	> Tom Dickey:
+	+ add key binding functions for insert-mode and command-mode, making it
+	  simpler to bind a space or tab to a given function without having it
+	  confused for a function while in insert mode.  New commands: 
+	  bind-cmdmode-key, bind-insmode-key, describe-cmdmode-bindings,
+	  describe-cmdmode-key, describe-insmode-bindings,
+	  describe-insmode-key, rebind-cmdmode-key, rebind-insmode-key,
+	  unbind-cmdmode-key and unbind-insmode-key.  (fixes problems
+	  introduced in 9.1, reported by George Eccles and Sean Ahern)
+	+ implement a curses/ncurses terminal driver.  Use --with-screen=curses
+	  or --with-screen=ncurses to configure this.  No mouse is supported
+	  in this configuration.  This version builds only with SVr4 curses
+	  or ncurses.
+	+ accept -i option as an alias for -I, which has the added benefit of
+	  allowing vile to be used as a $SHELL value for script, since that
+	  passes a -i option to the "shell".
+	+ change logic of dobuf() to implement the repeat-count there, rather
+	  than the callers.
+	+ add variable $cmd-count, which tracks the number of times a macro is
+	  repeated by prefixing it with a repeat-count.
+
  20000501 (g)
  	> Brendan O'Dea:
 	+ prefix the "source ~/.vilerc" in vile-pager with "~force" in case

@@ -2268,6 +2268,7 @@ Programmed procedures and macros
 
 	$cfilname	current file name
 	$char		character under the cursor
+	$cmd-count	repeat-counter for the current macro	(read only)
 	$cryptkey	encryption key				(write only)
 	$curchar	character offset in file
 	$curcol		current column position of cursor
@@ -4978,4 +4979,4 @@ Problems
 
 Copyright 1995-2000 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.485 2000/04/26 09:16:01 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.486 2000/05/12 01:32:44 tom Exp $

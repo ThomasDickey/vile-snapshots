@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.218 2000/04/28 22:52:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.219 2000/05/12 01:22:08 tom Exp $
  *
  */
 
@@ -813,7 +813,7 @@ call_cmdfunc(const CMDFUNC *p, int f, int n)
 #if OPT_NAMEBST
 #if OPT_PROCEDURES
     case CMD_PROC: /* named procedure */
-	return dobuf(CMD_U_BUFF(p));
+	return dobuf(CMD_U_BUFF(p), f ? n : 1);
 #endif
 
 #if OPT_PERL
@@ -1341,29 +1341,6 @@ storeproc(int f, int n)
 	return setup_macro_buffer(name, -1);
 }
 
-static int
-run_procedure(const char *name)
-{
-	register BUFFER *bp;		/* ptr to buffer to execute */
-	register int status;		/* status return */
-	char bufn[NBUFN];		/* name of buffer to execute */
-
-	if (!*name)
-		return FALSE;
-
-	/* construct a name for the procedure buffer */
-	(void)add_brackets(bufn, name);
-
-	/* find the buffer with that name */
-	if ((bp = find_b_name(bufn)) == NULL) {
-		return FALSE;
-	}
-
-	status = dobuf(bp);
-
-	return status;
-}
-
 /*
  * execproc:	Prompt for a procedure name and execute the named procedure
  */
@@ -1372,21 +1349,24 @@ int
 execproc(int f, int n)
 {
 	static char name[NBUFN];
+
 	int status;
+	BUFFER *bp;			/* ptr to buffer to execute */
+	char bufn[NBUFN];		/* name of buffer to execute */
 
 	if ((status = mlreply("Execute procedure: ",
-					name, sizeof(name))) != TRUE) {
+				name, sizeof(name))) != TRUE) {
 		return status;
 	}
 
-	if (!f)
-		n = 1;
+	/* construct a name for the procedure buffer */
+	(void)add_brackets(bufn, name);
 
-	status = TRUE;
-	while (status == TRUE && n--)
-		status = run_procedure(name);
-
-	return status;
+	/* find the buffer with that name */
+	if ((bp = find_b_name(bufn)) == NULL) {
+		return FALSE;
+	}
+	return dobuf(bp, f ? n : 1);
 
 }
 
@@ -1398,12 +1378,10 @@ execproc(int f, int n)
 int
 execbuf(int f, int n)
 {
-	register BUFFER *bp;		/* ptr to buffer to execute */
-	register int status;		/* status return */
-	static char bufn[NBUFN];	/* name of buffer to execute */
+	static char bufn[NBUFN]; /* name of buffer to execute */
 
-	if (!f)
-		n = 1;
+	BUFFER *bp;		/* ptr to buffer to execute */
+	int status;		/* status return */
 
 	/* find out what buffer the user wants to execute */
 	if ((status = ask_for_bname("Execute buffer: ", bufn, sizeof(bufn))) != TRUE)
@@ -1415,12 +1393,7 @@ execbuf(int f, int n)
 		return FALSE;
 	}
 
-	status = TRUE;
-	/* and now execute it as asked */
-	while (n-- > 0 && status == TRUE)
-		status = dobuf(bp);
-
-	return status;
+	return dobuf(bp, f ? n : 1);
 }
 #endif
 
@@ -2159,43 +2132,54 @@ perform_dobuf(BUFFER *bp, WHLOOP *whlist)
  * dobuf:	execute the contents of a buffer
  */
 int
-dobuf(BUFFER *bp)	/* buffer to execute */
+dobuf(BUFFER *bp, int limit)	/* buffer to execute */
 {
 	int status = FALSE;
 	WHLOOP *whlist;
 	int save_no_msgs;
+	int save_cmd_count;
 
 	static int dobufnesting; /* flag to prevent runaway recursion */
-
-	save_arguments(bp);
-	save_no_msgs = no_msgs;
-	no_msgs = TRUE;
 
 	beginDisplay();
 	if (++dobufnesting < 9) {
 
+		save_no_msgs = no_msgs;
+		save_cmd_count = cmd_count;
+
+		/* macro arguments are readonly, so we do this once */
+		save_arguments(bp);
+		no_msgs = TRUE;
+
+		for (cmd_count = 1; cmd_count <= limit; cmd_count++) {
+
 #if ! SMALLER
-		if (setup_dobuf(bp, &whlist) != TRUE) {
-			status = FALSE;
-		} else
+			if (setup_dobuf(bp, &whlist) != TRUE) {
+				status = FALSE;
+			} else
 #else
-		whlist = NULL;
+			whlist = NULL;
 #endif
-		{
-			IFSTK save_ifstk;
-			push_buffer(&save_ifstk);
-			status = perform_dobuf(bp, whlist);
-			pop_buffer(&save_ifstk);
+			{
+				IFSTK save_ifstk;
+				push_buffer(&save_ifstk);
+				status = perform_dobuf(bp, whlist);
+				pop_buffer(&save_ifstk);
+			}
+
+			macrobuffer = NULL;
+			free_all_whiles(whlist);
+
+			if (status != TRUE)
+				break;
 		}
 
-		macrobuffer = NULL;
-		free_all_whiles(whlist);
+		restore_arguments(bp);
+		no_msgs = save_no_msgs;
+		cmd_count = save_cmd_count;
 	}
 	dobufnesting--;
 	endofDisplay();
-
-	no_msgs = save_no_msgs;
-	restore_arguments(bp);
 
 	return status;
 }
@@ -2313,7 +2297,7 @@ char *fname)		/* file name to execute */
 	if ((status = readin(fname, FALSE, bp, TRUE)) == TRUE) {
 
 		/* go execute it! */
-		status = dobuf(bp);
+		status = dobuf(bp, 1);
 
 		/*
 		 * If no errors occurred, and if the buffer isn't displayed,
@@ -2338,11 +2322,8 @@ cbuf(
 int f, int n,	/* default flag and numeric arg */
 int bufnum)	/* number of buffer to execute */
 {
-	register BUFFER *bp;		/* ptr to buffer to execute */
-	register int status;		/* status return */
-	static char bufname[NBUFN];
-
-	if (!f) n = 1;
+	BUFFER *bp;		/* ptr to buffer to execute */
+	char bufname[NBUFN];
 
 	/* make the buffer name */
 	(void)lsprintf(bufname, MACRO_N_BufName, bufnum);
@@ -2353,13 +2334,7 @@ int bufnum)	/* number of buffer to execute */
 		return FALSE;
 	}
 
-	status = TRUE;
-	/* and now execute it as asked */
-	while (n-- > 0 && status == TRUE)
-		status = dobuf(bp);
-
-	return status;
-
+	return dobuf(bp, f ? n : 1);
 }
 
 #include "neexec.h"

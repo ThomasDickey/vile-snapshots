@@ -616,7 +616,7 @@ api_motion(VileBuf *vbp, char *mstr)
 	do_repeats(&c,&f,&n);
 
 	/* and execute the command */
-	cfp = kcod2fnc(c);
+	cfp = DefaultKeyBinding(c);
 	if ( (cfp != NULL) && ((cfp->c_flags & (GOAL|MOTION)) != 0))
 	    s = execute(cfp, f, n);
 	else {

@@ -393,9 +393,13 @@ State Variables
 	$char           Decimal representation of the ASCII character at
 			the cursor location.
 
+	$cmd-count	[READ ONLY] Counts repetition of the current macro,
+			from 1 up to the given repeat count.  If not in a
+			macro, this is zero.
+
 	$cryptkey       [WRITE ONLY] encryption key.
 
-	$curchar        The index of the cursor's in the buffer, in characters
+	$curchar        The index of the cursor in the buffer, in characters
 			(counting from 1).
 
 	$curcol         The cursor's column number (counting from 1).
@@ -1307,6 +1311,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.51 2000/04/28 01:55:34 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.52 2000/05/12 01:31:22 tom Exp $
 -----------------------------------
 

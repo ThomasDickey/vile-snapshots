@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.198 2000/04/25 10:39:20 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.200 2000/05/18 01:29:12 tom Exp $
 #
 #
 
@@ -195,6 +195,14 @@ bindkey		NONE			OPT_REBIND
 	"bind-key"
 	"rebind-key"
 	<bind a keystroke to a function>
+bind_i_key	NONE			OPT_REBIND
+	"bind-insmode-key"
+	"rebind-insmode-key"
+	<bind a keystroke to a function effective in insertion mode>
+bind_c_key	NONE			OPT_REBIND
+	"bind-cmdmode-key"
+	"rebind-cmdmode-key"
+	<bind a keystroke to a function effective in command mode>
 bktoshell	NONE|(BANG)		OPT_SHELL
 	"suspend"
 	"suspend!"
@@ -458,6 +466,14 @@ desbind		NONE			OPT_REBIND
 	"show-commands"
 	"show-bindings"
 	<show a list of all commands>
+des_i_bind	NONE			OPT_REBIND
+	"describe-insmode-bindings"
+	"show-insmode-bindings"
+	<show a list of all commands that may be executed in insert-mode>
+des_c_bind	NONE			OPT_REBIND
+	"describe-cmdmode-bindings"
+	"show-cmdmode-bindings"
+	<show a list of all commands that may be executed in command-editing mode>
 descolors	NONE			OPT_SHOW_COLORS
 	"list-colors"
 	"show-colors"
@@ -489,6 +505,12 @@ desfunc		NONE			OPT_REBIND
 deskey		NONE			OPT_REBIND
 	"describe-key"
 	<show the function bound to a given key>
+des_i_key	NONE			OPT_REBIND
+	"describe-insmode-key"
+	<show the function bound to a given key in insert-mode>
+des_c_key	NONE			OPT_REBIND
+	"describe-cmdmode-key"
+	<show the function bound to a given key in command-mode>
 dotcmdplay	UNDO
 	"repeat-last-cmd"		!FEWNAMES
 	'.'
@@ -1487,6 +1509,12 @@ twiddle		REDO|UNDO		!SMALLER
 unbindkey	NONE			OPT_REBIND
 	"unbind-key"
 	<break the binding between a keystroke and a function>
+unbind_i_key	NONE			OPT_REBIND
+	"unbind-insmode-key"
+	<break the binding between a keystroke and a function in insert-mode>
+unbind_c_key	NONE			OPT_REBIND
+	"unbind-cmdmode-key"
+	<break the binding between a keystroke and a function in command-mode>
 undo		NONE
 	"undo-change"			!FEWNAMES
 	'u'

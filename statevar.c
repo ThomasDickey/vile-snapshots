@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.35 2000/04/26 09:10:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.37 2000/05/15 09:46:09 tom Exp $
  */
 
 #include	"estruct.h"
@@ -191,6 +191,9 @@ cfgopts(void)
 #endif
 #if OPT_PERL
 	"perl",
+#endif
+#if DISP_CURSES
+	"curses",
 #endif
 #if DISP_TERMCAP
 # if USE_TERMINFO
@@ -522,6 +525,18 @@ int var_DIRECTORY(TBUFF **rp, const char *vp)
 	}
 }
 #endif
+
+int var_CMD_COUNT(TBUFF **rp, const char *vp)
+{
+	if (rp) {
+		render_int(rp, cmd_count);
+		return TRUE;
+	} else if (vp) {
+		return ABORT;  /* read-only */
+	} else {
+		return FALSE;
+	}
+}
 
 int var_DISCMD(TBUFF **rp, const char *vp)
 {
