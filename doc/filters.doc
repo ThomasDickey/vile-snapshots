@@ -117,6 +117,11 @@ case, the parameter of the include is the root name of the keyword file, e.g.,
 "c" for "c.key".  Use the ".table" directive to simply switch to a different
 symbol table in the same file with the same effect as ".merge".
 
+Specify abbreviations using a '*' character, e.g.,
+	vi*le
+to match any of vi, vil, vile.  You can change the '*' character using the
+".abbrev" directive.
+
 Use the ".default" directive to change the default class.  The parameter must
 be the name of a class which has already been defined.  Omit the parameter to
 reset the default back to "Keyword".
@@ -190,4 +195,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.19 2000/02/27 20:16:53 cmorgan Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.20 2000/04/21 10:50:37 tom Exp $

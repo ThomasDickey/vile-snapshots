@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.195 2000/02/27 21:48:21 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.198 2000/04/25 10:39:20 tom Exp $
 #
 #
 
@@ -1095,10 +1095,12 @@ operflip	OPER|REDO|UNDO|GLOBOK|(RANGE)
 operglobals	(/*RANGE|*/BANG|EXTRA|DFLALL)
 	"global"
 	"g"
+	"v!"
 	<perform command on all lines containing the given pattern>
 opervglobals	(/*RANGE|*/BANG|EXTRA|DFLALL)
 	"inverse-global"
 	"vglobal"
+	"g!"
 	"v"
 	<perform command on all lines not containing the given pattern>
 operlower	OPER|REDO|UNDO|GLOBOK|(RANGE)
@@ -1572,6 +1574,12 @@ winsave_nocd	NONE			SYS_WINNT
 winsave      	NONE			SYS_WINNT
 	"winsave"
 	<launch Windows common dialog box to save current buffer, CWD changes as side effect>
+ResetRGBPalette	NONE			SYS_WINNT&&DISP_NTWIN
+	"reset-rgb-palette"
+	<reset palette (see set-rgb-palette)>
+SetRGBPalette	NONE			SYS_WINNT&&DISP_NTWIN
+	"set-rgb-palette"
+	<set palette with parameters colornum red green blue>
 wordcount	RANGE			OPT_WORDCOUNT
 	"count-words"
 	<count words, lines, and chars in the region>

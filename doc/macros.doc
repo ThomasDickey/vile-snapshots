@@ -445,6 +445,9 @@ State Variables
 
 	$filename-expr	actual pattern for %F in [Error Expressions]
 
+	$filename-ic	[READ ONLY] Boolean indicating if the host system's
+			filenames are matched ignoring their case.
+
 	$font           Name of the current font (in xvile/winvile only).
 
 	$forward-search Boolean value indicating search direction.
@@ -1298,6 +1301,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.48 2000/03/14 03:16:59 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.49 2000/04/21 09:51:23 tom Exp $
 -----------------------------------
 

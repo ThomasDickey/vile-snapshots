@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.379 2000/02/09 11:27:46 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.380 2000/04/20 10:52:39 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1551,3 +1551,20 @@ it might be too late to change configure (though if solaris, and CC ==
 gcc and perl is included, it would probably be a safe change -- i
 think it's benign if /usr/ccs/bin doesn't exist), but we should at least
 have it in a README/Install/ or something.
+
+-- 00-03-24 (brendan)
+
+Perl 5.6.0 is now out.
+
+The simple change is that now all perl globals need a PL_ prefix (which
+affects `errgv', `na' and `sv_undef' in perl.xs/ptypemap).  The change
+is backward compatible to 5.005 and *should* be to 5.004 although I've
+been unable to test that version.
+
+A bigger problem is that the tied filehandle mechanism appears to have
+changed to some extent, and shell.pm no longer works.
+
+The problem appears to be that Vile::Buffer does not implement an OPEN
+method, and the re-opens of STDIN/STDOUT/STDERR to the pty in the child
+appear to be calling it for some reason I've not yet had a chance to
+track down.

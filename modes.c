@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.195 2000/02/09 11:35:09 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.196 2000/04/25 01:50:20 tom Exp $
  *
  */
 
@@ -169,7 +169,7 @@ combine_choices(const FSM_CHOICES *choices, const char *string)
 
 /*--------------------------------------------------------------------------*/
 
-static void
+void
 set_winflags(int glob_vals, USHORT flags)
 {
 	if (glob_vals) {
@@ -866,10 +866,13 @@ name_to_choices (const char *name)
 {
 	register SIZE_T i;
 
-	for (i = 1; i < TABLESIZE(fsm_tbl); i++)
-		if (strcmp(fsm_tbl[i].mode_name, name) == 0)
+	fsm_idx = -1;
+	for (i = 1; i < TABLESIZE(fsm_tbl); i++) {
+		if (strcmp(fsm_tbl[i].mode_name, name) == 0) {
+			fsm_idx = i;
 			return fsm_tbl[i].choices;
-
+		}
+	}
 	return 0;
 }
 
@@ -932,7 +935,7 @@ legal_fsm(const char *val)
 	return val;
 }
 
-static int
+int
 fsm_complete(int c, char *buf, unsigned *pos)
 {
     if (isDigit(*buf)) {		/* allow numbers for colors */

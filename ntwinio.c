@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.85 2000/03/13 01:50:48 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.87 2000/04/25 10:40:30 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -18,6 +18,7 @@
 #include        "pscreen.h"
 #include        "patchlev.h"
 #include        "winvile.h"
+#include	"nefsms.h"
 
 #undef RECT			/* FIXME: symbol conflict */
 
@@ -572,32 +573,117 @@ ResizeClient(void)
     TRACE(("...ResizeClient finish\n"));
 }
 
+static int RedValue[NCOLORS], GreenValue[NCOLORS], BlueValue[NCOLORS];
+
+/*
+ * Ask for a palette setting string.
+ * Format is "<entry> <red> <green> <blue>"
+ */
+int
+SetRGBPalette(int f, int n)
+{
+#define RGB_DATA(name) { name, 0 }
+    static struct {
+	char *name;
+	int value;
+    } table[3] = {
+	RGB_DATA("red"), RGB_DATA("green"), RGB_DATA("blue")
+    };
+
+    char *next;
+    char prompt[NLINE + 1];
+    char tstring[NLINE + 1];	/* string to add */
+    const FSM_CHOICES *fp = name_to_choices("fcolor");
+    int code, red, green, blue;
+    int count = 0;
+    int status;			/* status return code */
+    long value;
+
+    *tstring = EOS;
+    status = kbd_string("Color: ", tstring, sizeof(tstring), ' ',
+	KBD_NORMAL, fsm_complete);
+    if (status != TRUE)
+	return (status);
+
+    code = choice_to_code(fp, tstring, strlen(tstring));
+    if (code < 0) {
+	next = 0;
+	code = strtol(tstring, &next, 0);
+	if (code < 0 || code >= NCOLORS)
+	    return FALSE;
+    }
+
+    /* ask for setting string */
+    while (count < 3) {
+	*tstring = EOS;
+	lsprintf(prompt, "Palette value (%s): ", table[count].name);
+	status = mlreply(prompt, tstring, sizeof(tstring));
+	if (status != TRUE)
+	    return (status);
+	next = 0;
+	value = strtol(tstring, &next, 0);
+	if (next == 0 || *next)
+	    return FALSE;
+	table[count++].value = value & 255;
+    }
+
+    RedValue[code] = table[0].value;
+    GreenValue[code] = table[1].value;
+    BlueValue[code] = table[2].value;
+
+    set_winflags(TRUE, WFHARD | WFCOLR);
+    vile_refresh(FALSE, 1);
+    return (TRUE);
+}
+
+/*
+ * Set default color map palette
+ */
+int
+ResetRGBPalette(int f, int n)
+{
+    int code;
+    int red = 0, green = 0, blue = 0;
+    int first = f ? n : 0;
+    int last = f ? n+1 : NCOLORS;
+
+    for (code = first; code < last; code++) {
+	red = green = blue = 0;
+	if (code & 1)
+	    red = rgb_normal;
+	if (code & 2)
+	    green = rgb_normal;
+	if (code & 4)
+	    blue = rgb_normal;
+	if (code & 8) {
+	    if (red)
+		red = rgb_bright;
+	    if (green)
+		green = rgb_bright;
+	    if (blue)
+		blue = rgb_bright;
+	    if (code == 8) {
+		red = rgb_gray;
+		green = rgb_gray;
+		blue = rgb_gray;
+	    }
+	}
+	RedValue[code] = red;
+	GreenValue[code] = green;
+	BlueValue[code] = blue;
+    }
+    set_winflags(TRUE, WFHARD | WFCOLR);
+    vile_refresh(FALSE, 1);
+    return TRUE;
+}
+
 static COLORREF
 color_of(int code)
 {
-    int red = 0, green = 0, blue = 0;
     COLORREF result = 0;
     code = ctrans[code & (NCOLORS - 1)];
-    if (code & 1)
-	red = rgb_normal;
-    if (code & 2)
-	green = rgb_normal;
-    if (code & 4)
-	blue = rgb_normal;
-    if (code & 8) {
-	if (red)
-	    red = rgb_bright;
-	if (green)
-	    green = rgb_bright;
-	if (blue)
-	    blue = rgb_bright;
-	if (code == 8) {
-	    red = rgb_gray;
-	    green = rgb_gray;
-	    blue = rgb_gray;
-	}
-    }
-    return PALETTERGB(red, green, blue);
+
+    return PALETTERGB(RedValue[code], GreenValue[code], BlueValue[code]);
 }
 
 static void
@@ -1398,6 +1484,7 @@ ntopen(void)
 
     set_colors(NCOLORS);
     set_palette(initpalettestr);
+    ResetRGBPalette(FALSE, 1);
 }
 
 static int old_title_set = 0;

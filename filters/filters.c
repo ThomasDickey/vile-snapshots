@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.69 2000/03/18 00:34:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.72 2000/04/25 00:06:02 tom Exp $
  *
  */
 
@@ -52,6 +52,7 @@ struct _classes {
 };
 
 char *default_attr;
+int abbr_ch = '*';
 int meta_ch = '.';
 int eqls_ch = ':';
 int verbose_flt;
@@ -68,6 +69,12 @@ AttrsOnce(KEYWORD * entry)
 {
     entry->kw_used = 999;
     return NONNULL(entry->kw_attr);
+}
+
+static void
+ExecAbbrev(char *param)
+{
+    abbr_ch = *param;
 }
 
 static void
@@ -273,6 +280,7 @@ ParseDirective(char *line)
 	void (*func) (char *param);
     } table[] = {
 	/* *INDENT-OFF* */
+	{ "abbrev",  ExecAbbrev   },
 	{ "class",   ExecClass    },
 	{ "default", ExecDefault  },
 	{ "equals",  ExecEquals   },
@@ -352,9 +360,9 @@ do_alloc(char *ptr, unsigned need, unsigned *have)
     need += 2;			/* allow for trailing null */
     if (need > *have) {
 	if (ptr != 0)
-	    ptr = (char *)realloc(ptr, need);
+	    ptr = (char *) realloc(ptr, need);
 	else
-	    ptr = (char *)malloc(need);
+	    ptr = (char *) malloc(need);
 	*have = need;
     }
     return ptr;
@@ -457,6 +465,23 @@ insert_keyword(const char *ident, const char *attribute, int classflag)
     KEYWORD *first;
     KEYWORD *nxt;
     int Index;
+    char *mark;
+
+    if ((mark = strchr(ident, abbr_ch)) != 0
+	&& (mark != ident)) {
+	char *temp = strmalloc(ident);
+
+	mark = temp + (mark - ident);
+	while (*mark == abbr_ch) {
+	    *mark = 0;
+	    insert_keyword(temp, attribute, classflag);
+	    if ((mark[0] = mark[1]) != 0) {
+		*(++mark) = '*';
+	    }
+	}
+	free(temp);
+	return;
+    }
 
     if ((nxt = FindIdentifier(ident)) != 0) {
 	Free(nxt->kw_attr);
@@ -603,7 +628,7 @@ readline(FILE * fp, char **ptr, unsigned *len)
 	}
 	if (used + 2 >= *len) {
 	    *len = 3 * (*len) / 2;
-	    buf = (char *)realloc(buf, *len);
+	    buf = (char *) realloc(buf, *len);
 	}
 	buf[used++] = ch;
 	if (ch == '\n')
