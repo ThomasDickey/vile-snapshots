@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.131 1998/11/23 22:59:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.133 1998/11/30 11:31:40 tom Exp $
  *
  */
 
@@ -326,18 +326,13 @@ ffwopen(char *fn, int forced)
 	}
 #else
 #if     SYS_VMS
-	/*
-	 * Note:  using a '0' protection on VMS C 'open()' tells it to use an
-	 * existing file's protection, or (if the file doesn't exist) the
-	 * user's default protection.
-	 */
 	char	temp[NFILEN];
 	register int	fd;
 	strip_version(fn = strcpy(temp, fn));
 
 	if (is_appendname(fn)
 	||  is_directory(fn)
-	|| (fd=creat(temp, 0, "rfm=var", "rat=cr")) < 0
+	|| (fd=vms_creat(temp)) < 0
 	|| (ffp=fdopen(fd, FOPEN_WRITE)) == NULL) {
 		mlforce("[Cannot open file for writing]");
 		return (FIOERR);
@@ -494,7 +489,7 @@ ffexists(char *p)
 #endif
 #endif
 
-	TRACE(("fexists(fn=%s) = %d\n", p, status))
+	TRACE(("ffexists(fn=%s) = %d\n", p, status))
 	return (status);
 }
 

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.104 1998/11/05 00:42:52 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.105 1998/11/30 10:30:01 cmorgan Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -20,6 +20,7 @@
 # The fourth column (if present) controls conditional compilation of the mode.
 .globals
 bool							# GMD prefix
+	"AllVersions"	ALL_VERSIONS 	0		SYS_VMS # show all versions when globbing
 	"AutoBuffer"	ABUFF 		chgd_autobuf	# auto-buffer (lru)
 	"dirc"		DIRC		0		COMPLETE_DIRS # directory-completion (slow!)
 	"Alt-TabPos"	ALTTABPOS	0		# emacs-style cursor positioning
@@ -100,12 +101,14 @@ bool							# MD prefix
 	"WrapScan"	SWRAP 		0		# wrap-around search mode
 	"WrapWords"	WRAP		0		# word wrap
 enum
+	"record-format" RECORD_FORMAT	0		SYS_VMS	# specify record-format to use
 	"visual-matches"  HILITEMATCH	chgd_hilite	OPT_HILITEMATCH # highlight all search matches
 int							# VAL_ prefix
 	"AutoSaveCNT"	ASAVECNT	0		# how often auto-saves occur
 	"C-ShiftWidth"	C_SWIDTH	0		!OPT_MAJORMODE # shift-width for C buffers
 	"C-TabStop"	C_TAB		chgd_major_w	!OPT_MAJORMODE # tab spacing for C buffers
 	"FillCol"	FILL		0		# column for paragraph reformat, and line break
+	"record-length" RECORD_LENGTH	0		SYS_VMS	# specify record-length to use
 	"ShiftWidth"	SWIDTH		0		# shiftwidth for ^T/^D/<</>>
 	"TabStop"	TAB		chgd_major_w	# tab spacing for most buffers
 	"TagLength"	TAGLEN		0		# required significant length for tag lookups
@@ -322,3 +325,12 @@ regex							# MVAL_ prefix
 "brightmagenta"	VACOL_D		OPT_COLOR&&OPT_16_COLOR
 "brightcyan"	VACOL_E		OPT_COLOR&&OPT_16_COLOR
 "white"		VACOL_F		OPT_COLOR&&OPT_16_COLOR
+
+.table recordformat		SYS_VMS
+"udf"      	FAB$C_UDF
+"fix"  		FAB$C_FIX
+"var"		FAB$C_VAR
+"vfc"		FAB$C_VFC
+"stm"		FAB$C_STM
+"stmlf"		FAB$C_STMLF
+"stmcr"		FAB$C_STMCR

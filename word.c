@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.63 1998/09/03 22:46:33 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.64 1998/11/30 02:06:44 cmorgan Exp $
  *
  */
 
@@ -350,6 +350,15 @@ comment_prefix (void)
 	return result;
 }
 
+#define cplus_comment_start(c) \
+		((c == '/') \
+		&& DOT.o+1 < llength(DOT.l) \
+		&& lgetc(DOT.l,DOT.o+1) == '/')
+
+#define c_comment_start(c) \
+		((c == '/') \
+		&& DOT.o+1 < llength(DOT.l) \
+		&& lgetc(DOT.l,DOT.o+1) == '*')
 
 #define fmt_insert(count,chr) \
 		if ((s = linsert(count,chr)) != TRUE) \
@@ -431,6 +440,12 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 			tb_bappend(cp,
 				DOT.l->l_text + DOT.o,
 				(ALLOC_T)(plength - DOT.o));
+		} else if (cplus_comment_start(c)) {
+			is_comment = TRUE;
+			tb_bappend(cp, "//", 2);
+		} else if (c_comment_start(c)) {
+			is_comment = TRUE;
+			tb_bappend(cp, "*", 1);
 		}
 
 		/* scan through lines, filling words */

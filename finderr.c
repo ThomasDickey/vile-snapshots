@@ -2,7 +2,7 @@
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  * rewritten to use regular expressions, 1995 by T.Dickey (dickey@clark.net)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.71 1998/07/10 10:32:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.72 1998/11/30 11:58:40 tom Exp $
  *
  */
 
@@ -470,15 +470,13 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 	if (moveddot)
 		putdotback(sbp,dotp);
 
-	(void)pathcat(ferrfile, dirs[l], errfile);
+	(void)lengthen_path(pathcat(ferrfile, dirs[l], errfile));
 
-	if (!eql_bname(curbp, ferrfile) &&
-		strcmp(ferrfile,curbp->b_fname)) {
+	if (strcmp(ferrfile, curbp->b_fname)) {
 		/* if we must change windows */
 		WINDOW *wp;
 		for_each_visible_window(wp) {
-			if (eql_bname(wp->w_bufp, ferrfile)
-			 || !strcmp(wp->w_bufp->b_fname,ferrfile))
+			if (!strcmp(wp->w_bufp->b_fname, ferrfile))
 				break;
 		}
 		if (wp) {

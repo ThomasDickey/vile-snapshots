@@ -3490,6 +3490,29 @@ DOS specifics
 
 
 
+VMS specifics
+-------------
+
+	Vile recognizes either VMS- or Unix-style pathnames.  However, filename
+	completion only works for Unix-style pathnames, since those allow us
+	to implement directory and filenames in the same syntax.
+
+	Reading from a pipe works; writing to a pipe is not implemented.
+
+	Modes
+	-----
+	allversions	Show all versions of files in response to filename
+			completion or wildcards on the command line.  Normally
+			this is off.  (U)
+
+	record-format   Specify format of files that vile writes.  If undefined,
+			vile will attempt to use the format of an older version
+			of the file, or "stmlf" if none exists.  (B)
+
+	record-length   Maximum record size, used if record-format is "fixed"
+			or "vfc".  (B)
+
+
 Win32 specifics
 ---------------
 
@@ -3902,4 +3925,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.381 1998/11/14 14:24:02 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.382 1998/11/30 02:15:51 tom Exp $

@@ -3,7 +3,7 @@
  *
  *	Miscellaneous routines for UNIX/VMS compatibility.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.31 1997/10/06 23:33:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.32 1998/11/30 10:30:36 cmorgan Exp $
  *
  */
 #include	"estruct.h"
@@ -39,7 +39,9 @@ opendir(char *filename)
 	zfab = cc$rms_fab;
 	zfab.fab$l_fop = FAB$M_NAM;
 	zfab.fab$l_nam = &znam;		/* FAB => NAM block	*/
-	zfab.fab$l_dna = "*.*;*";	/* Default-selection	*/
+	zfab.fab$l_dna = global_g_val(GMDALL_VERSIONS)
+			? "*.*;*"
+			: "*.*;";
 	zfab.fab$b_dns = strlen(zfab.fab$l_dna);
 
 	zfab.fab$l_fna = filename;
@@ -85,6 +87,76 @@ tempnam(const char *head, const char *tail)
 			pathcat(temp,
 				head,
 				strcat(strcpy(leaf, tail), "XXXXXX"))));
+}
+
+/*
+ * Check if the given file exists.  If so, try to reuse its record-format when
+ * creating a new version.
+ *
+ * Note:  using a '0' protection on VMS C 'open()' tells it to use an existing
+ * file's protection, or (if the file doesn't exist) the user's default
+ * protection.
+ */
+int
+vms_creat(char *filename)
+{
+	char rfm_option[80], len_option[80];
+	struct stat sb;
+	int my_rfm = b_val(curbp, VAL_RECORD_FORMAT);
+	int my_len = b_val(curbp, VAL_RECORD_LENGTH);
+	int fd;
+
+	/*
+	 * Only check for the previous file's record-format if the mode has not
+	 * been specified.
+	 */
+	if (my_rfm == FAB$C_UDF) {
+		if (stat(filename, &sb) == 0) {
+			my_rfm = sb.st_fab_rfm;
+			my_len = sb.st_fab_mrs;
+			/* Ignore the old record attributes, since 'cr' is the
+			 * only one we know anything about.
+			 */
+		}
+		if (my_rfm == FAB$C_UDF)
+			my_rfm = FAB$C_STMLF;
+	}
+
+	lsprintf(rfm_option, "rfm=%s", vms_record_format(my_rfm));
+
+	switch (my_rfm) {
+	case FAB$C_FIX:
+		lsprintf(len_option, "mrs=%d", my_len);
+		fd = creat(filename, 0, rfm_option, len_option, "rat=cr");
+		break;
+	case FAB$C_VFC:
+		/*
+		 * FIXME:  Must specify the fixed-length control field size
+		 * (there's no interface for that at the moment, so I
+		 * hardwired it at two bytes.  Tom, I'm punting this one
+		 * back to you.
+		 *
+		 * C.  Morgan 11/29/1998.
+		 */
+
+		lsprintf(len_option, "mrs=%d", my_len);
+		fd = creat(filename,
+		           0,
+			   rfm_option,
+			   len_option,
+			   "fsz=2",    /* Fixed-length control field size */
+			   "rat=cr");
+		break;
+	default:
+		/*
+		 * The stmlf and var record-formats are really all that is
+		 * required.  Other combinations are experimental.
+		 */
+		fd = creat(filename, 0, rfm_option, "rat=cr");
+		break;
+	}
+
+	return fd;
 }
 #endif
 

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.185 1998/11/10 23:18:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.186 1998/11/30 23:23:31 tom Exp $
  *
  */
 
@@ -86,8 +86,13 @@ new_namebst (BI_DATA *a)
 static void
 old_namebst (BI_NODE *a)
 {
-	if (!(a->value.n_flags & NBST_READONLY))
+	if (!(a->value.n_flags & NBST_READONLY)) {
+#if OPT_ONLINEHELP
+		free(TYPECAST(char,a->value.n_cmd->c_help));
+#endif
+		free(TYPECAST(char,a->value.n_cmd));
 		free(TYPECAST(char,BI_KEY(a)));
+	}
 	free(a);
 }
 

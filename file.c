@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.235 1998/11/23 23:18:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.237 1998/12/01 12:00:19 tom Exp $
  *
  */
 
@@ -613,18 +613,29 @@ bp2swbuffer(BUFFER *bp, int ask_rerun, int lockfl)
 }
 
 int
+no_file_found(void)
+{
+	mlforce("[No file found]");
+	return FALSE;
+}
+
+int
 getfile(
 char *fname,		/* file name to find */
 int lockfl)		/* check the file for locks? */
 {
-        register BUFFER *bp = 0;
+	register BUFFER *bp = 0;
+
+	if (fname == 0 || *fname == EOS)
+		return no_file_found();
 
 	/* if there are no path delimiters in the name, then the user
 		is likely asking for an existing buffer -- try for that
 		first */
-        if ((strlen(fname) > (SIZE_T)NBUFN-1)  /* too big to be a bname */
+	if ((bp = find_b_file(fname)) == 0
+	 && ((strlen(fname) > (SIZE_T)NBUFN-1)	/* too big to be a bname */
 	 || maybe_pathname(fname)  /* looks a lot like a filename */
-	 || (bp = find_b_name(fname)) == NULL) {
+	 || (bp = find_b_name(fname)) == NULL)) {
 		/* oh well.  canonicalize the name, and try again */
 		bp = getfile2bp(fname,!clexec,FALSE);
 		if (!bp)

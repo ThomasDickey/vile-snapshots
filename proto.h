@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.318 1998/11/23 23:04:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.320 1998/11/30 11:21:58 tom Exp $
  *
  */
 
@@ -337,6 +337,7 @@ extern int bp2readin (BUFFER *bp, int lockfl);
 extern int getfile (char *fname, int lockfl);
 extern int ifile (char *fname, int belowthisline, FILE *haveffp);
 extern int kwrite (char *fn, int msgf);
+extern int no_file_found (void);
 extern int no_such_file (const char *fname);
 extern int readin (char *fname, int lockfl, BUFFER *bp, int mflg);
 extern int same_fname (char *fname, BUFFER *bp, int lengthen);
@@ -625,6 +626,10 @@ extern void setm_by_preamble (BUFFER *bp);
 extern void save_vals (int maximum, struct VAL *gbl, struct VAL *dst, struct VAL *src);
 #endif
 
+#if SYS_VMS
+extern const char *vms_record_format(int code);
+#endif
+
 /* npopen.c */
 #if SYS_UNIX || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
 extern FILE * npopen (char *cmd, const char *type);
@@ -896,6 +901,10 @@ extern	char *	unix2vms_path   (char *dst, const char *src);
 extern	char *	vms2unix_path   (char *dst, const char *src);
 extern	char *	vms_path2dir    (const char *src);
 extern	void	vms_dir2path	(char *path);
+#endif
+
+#if SYS_VMS
+extern	int	vms_creat	(char *path);
 #endif
 
 /* vmspipe.c */
