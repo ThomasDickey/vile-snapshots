@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.348 1999/05/23 20:13:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.350 1999/06/01 23:54:34 tom Exp $
  *
  */
 
@@ -313,7 +313,7 @@ extern int   set_state_variable(const char *name, const char *value);
 extern int stol (const char *val);
 #endif
 
-#if OPT_EVAL || OPT_COLOR_PALETTE
+#if OPT_EVAL || OPT_COLOR
 extern int set_palette (const char *value);
 #endif
 
@@ -321,7 +321,7 @@ extern int set_palette (const char *value);
 extern char *mkupper (char *str);
 #endif
 
-#if OPT_COLOR_PALETTE
+#if OPT_COLOR
 extern void set_ctrans (const char *value);
 #endif
 
@@ -616,8 +616,8 @@ extern int string_to_number (const char *from, int *np);
 extern void copy_mvals (int maximum, struct VAL *dst, struct VAL *src);
 extern void free_local_vals (const struct VALNAMES *names, struct VAL *gbl, struct VAL *val);
 
-#if OPT_SHOW_COLORS
-extern const char *get_color_name(int n);
+#if OPT_COLOR_SCHEMES
+extern void init_scheme(void);
 #endif
 
 #if OPT_EVAL || OPT_COLOR
@@ -641,6 +641,10 @@ extern void setm_by_suffix (BUFFER *bp);
 #else
 #define setm_by_suffix(bp) fix_cmode(bp, (global_b_val(MDCMOD) && has_C_suffix(bp)))
 #define setm_by_preamble(bp) /* nothing */
+#endif
+
+#if OPT_SHOW_COLORS
+extern const char *get_color_name(int n);
 #endif
 
 #if OPT_UPBUFF

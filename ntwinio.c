@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.46 1999/05/23 23:24:55 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.47 1999/06/03 01:33:24 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -63,8 +63,6 @@
 
 #define SetCols(value) term.cols = cur_win->cols = value
 #define SetRows(value) term.rows = cur_win->rows = value
-
-#define	AttrColor(b,f)	((WORD)(((ctrans[b] & 15) << 4) | (ctrans[f] & 15)))
 
 #define RowToPixel(n) ((n) * nLineHeight)
 #define ColToPixel(n) ((n) * nCharWidth)
@@ -138,7 +136,7 @@ static int	crow = -1;		/* current row */
 static int	ccol = -1;		/* current col */
 
 /* ansi to ibm color translation table */
-static	const char *initpalettestr = "0 4 2 6 1 5 3 7 8 12 10 14 9 13 11 15";
+static	const char *initpalettestr = "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15";
 /* black, red, green, yellow, blue, magenta, cyan, white   */
 
 static	int	cur_pos = 0;
@@ -648,6 +646,7 @@ color_of (int code)
 {
 	int red = 0, green = 0, blue = 0;
 	COLORREF result = 0;
+	code = ctrans[code & (NCOLORS-1)];
 	if (code & 1)
 		red = NORMAL_COLOR;
 	if (code & 2)
@@ -699,6 +698,9 @@ nt_set_colors (HDC hdc, VIDEO_ATTR attr)
 	int fcolor;
 	int bcolor;
 
+#ifdef GVAL_VIDEO
+	attr ^= global_g_val(GVAL_VIDEO);
+#endif
 	attr_to_colors(attr, &fcolor, &bcolor);
 
 	if (fcolor < 0)

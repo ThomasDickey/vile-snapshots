@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.212 1999/05/23 20:45:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.214 1999/06/01 23:01:39 tom Exp $
  *
  */
 
@@ -316,6 +316,8 @@ typedef struct _text_win {
     GC		colors_bgc[NCOLORS];
     Pixel	fg;
     Pixel	bg;
+    Pixel	default_fg;
+    Pixel	default_bg;
     Pixel	colors_fg[NCOLORS];
     Pixel	colors_bg[NCOLORS];
     Pixel	modeline_fg;
@@ -371,7 +373,7 @@ typedef struct _text_win {
     Bool	was_on_msgline;
     Bool	did_select;
     Bool	pasting;
-    MARK	prevDOT;		/* DOT prior to selection */
+    MARK	prevDOT;	/* DOT prior to selection */
     XtIntervalId sel_scroll_id;
 
     /* key press queue */
@@ -539,8 +541,13 @@ TERM	    term = {
     x_beep,
     x_rev,
     nullterm_setdescrip,
+#if OPT_COLOR
+    x_fcol,
+    x_bcol,
+#else
     nullterm_setfore,
     nullterm_setback,
+#endif
     x_setpal,			/* no palette */
     x_scroll,
     x_flush,
@@ -2609,6 +2616,9 @@ x_preparse_args(
 	cur_win->fg = BlackPixel(dpy,DefaultScreen(dpy));
     if (cur_win->bg == cur_win->fg)
 	cur_win->bg = WhitePixel(dpy,DefaultScreen(dpy));
+
+    cur_win->default_fg = cur_win->fg;
+    cur_win->default_bg = cur_win->bg;
 
 
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
@@ -6139,15 +6149,58 @@ x_rev(UINT state)
 }
 
 
+
 #if OPT_COLOR
 static void
 x_fcol(int color)
 {
+    XGCValues   gcvals;
+    ULONG	gcmask;
+
+    cur_win->fg = (color >= 0 && color < NCOLORS)
+		    ? cur_win->colors_fg[color]
+		    : cur_win->default_fg,
+
+    gcmask = GCForeground;
+    gcvals.foreground = cur_win->fg;
+    XChangeGC(dpy, cur_win->textgc, gcmask, &gcvals);
+
+    gcmask = GCBackground;
+    gcvals.background = cur_win->fg;
+    XChangeGC(dpy, cur_win->reversegc, gcmask, &gcvals);
+
+    XSetForeground(dpy, cur_win->textgc, cur_win->fg);
+
+    x_touch(cur_win, 0, 0, cur_win->cols, cur_win->rows);
+    x_flush();
 }
 
 static void
 x_bcol(int color)
 {
+    XGCValues   gcvals;
+    ULONG	gcmask;
+
+    cur_win->bg = (color >= 0 && color < NCOLORS)
+		    ? ((cur_win->colors_bg[color] == cur_win->default_bg)
+		    	? cur_win->colors_fg[color]
+		    	: cur_win->colors_bg[color])
+		    : cur_win->default_bg,
+
+    gcmask = GCBackground;
+    gcvals.background = cur_win->bg;
+    XChangeGC(dpy, cur_win->textgc, gcmask, &gcvals);
+
+    gcmask = GCForeground;
+    gcvals.foreground = cur_win->bg;
+    XChangeGC(dpy, cur_win->reversegc, gcmask, &gcvals);
+
+    XtVaSetValues(cur_win->screen,
+	    XtNbackground,		cur_win->bg,
+	    NULL);
+
+    x_touch(cur_win, 0, 0, cur_win->cols, cur_win->rows);
+    x_flush();
 }
 
 #endif

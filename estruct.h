@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.393 1999/05/19 00:24:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.396 1999/06/01 23:05:47 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -374,9 +374,8 @@
 #endif
 
 /* various color stuff */
-#define	OPT_COLOR (DISP_ANSI || IBM_VIDEO || DISP_TERMCAP)
-#define	OPT_16_COLOR (IBM_VIDEO || DISP_TERMCAP)
-#define OPT_COLOR_PALETTE (OPT_COLOR || DISP_X11)
+#define	OPT_COLOR (DISP_ANSI || IBM_VIDEO || DISP_TERMCAP || DISP_X11)
+#define	OPT_16_COLOR (IBM_VIDEO || DISP_TERMCAP || DISP_X11)
 
 #define OPT_DUMBTERM (DISP_TERMCAP || DISP_VMSVT)
 
@@ -438,6 +437,7 @@
 
 /* individual features that are (normally) controlled by SMALLER */
 #define OPT_B_LIMITS    !SMALLER		/* left-margin */
+#define OPT_COLOR_SCHEMES !SMALLER && OPT_COLOR
 #define OPT_ENUM_MODES  !SMALLER		/* fixed-string modes */
 #define OPT_EVAL        !SMALLER		/* expression-evaluation */
 #define OPT_FILEBACK    !SMALLER && !SYS_VMS	/* file backup style */
@@ -451,7 +451,7 @@
 #define OPT_LINEWRAP    !SMALLER		/* line-wrap mode */
 #define OPT_MAJORMODE   !SMALLER		/* majormode support */
 #define OPT_MLFORMAT    !SMALLER		/* modeline-format */
-#define OPT_MS_MOUSE    !SMALLER && DISP_IBMPC  /* MsDos-mouse */
+#define OPT_MS_MOUSE    !SMALLER && DISP_IBMPC	/* MsDos-mouse */
 #define OPT_NAMEBST     !SMALLER		/* name's stored in a bst */
 #define OPT_ONLINEHELP  !SMALLER		/* short per-command help */
 #define OPT_POPUPCHOICE !SMALLER		/* popup-choices mode */
@@ -464,7 +464,7 @@
 #define OPT_WORDCOUNT   !SMALLER		/* "count-words" command" */
 
 /* "show" commands for the optional features */
-#define OPT_SHOW_COLORS	!SMALLER && OPT_COLOR_PALETTE /* "show-colors" */
+#define OPT_SHOW_COLORS	!SMALLER && OPT_COLOR	/* "show-colors" */
 #define OPT_SHOW_CTYPE	!SMALLER		/* "show-printable" */
 #define OPT_SHOW_EVAL   !SMALLER && OPT_EVAL	/* "show-variables" */
 #define OPT_SHOW_MAPS   !SMALLER 		/* display mapping for ":map" */
@@ -777,7 +777,7 @@ extern int MainProgram(int argc, char *argv[]);
 #define NKEYLEN	20			/* # of bytes, crypt key	*/
 #define HUGE	(1<<(BITS_PER_INT-2))	/* Huge number			*/
 #define	NLOCKS	100			/* max # of file locks active	*/
-#if DISP_X11 || DISP_TERMCAP || IBM_VIDEO
+#if OPT_16_COLOR
 #define	NCOLORS	16			/* number of supported colors	*/
 #else
 #define	NCOLORS	8			/* number of supported colors	*/
@@ -1333,7 +1333,7 @@ typedef struct	{
 #endif
 }	REGION;
 
-#if OPT_COLOR || DISP_X11 || OPT_HILITEMATCH
+#if OPT_COLOR || OPT_HILITEMATCH
 typedef USHORT VIDEO_ATTR;		/* assume short is at least 16 bits */
 #else
 typedef UCHAR VIDEO_ATTR;
@@ -1858,7 +1858,7 @@ extern MARK *api_mark_iterator(BUFFER *bp, int *iter);
 
 typedef struct	WINDOW {
 	W_TRAITS w_traits;		/* features of the window we should */
-					/*  remember between displays */
+					/* remember between displays	*/
 	struct	WINDOW *w_wndp; 	/* Next window			*/
 	BUFFER	*w_bufp;		/* Buffer displayed in window	*/
 	int	w_toprow;		/* Origin 0 top row of window	*/
@@ -1932,23 +1932,23 @@ typedef struct	WINDOW {
  * one terminal type.
  */
 typedef struct	{
-	int	maxrows;			/* max rows count 		*/
-	int	rows; 		/* current row count		*/
+	int	maxrows;		/* max rows count 		*/
+	int	rows; 			/* current row count		*/
 	int	maxcols; 		/* max column count		*/
-	int	cols; 		/* current column count		*/
+	int	cols; 			/* current column count		*/
 	int	pausecount;		/* # times thru update to pause */
-	void	(*open) (void);	/* Open terminal at the start.	*/
+	void	(*open) (void);		/* Open terminal at the start.	*/
 	void	(*close) (void);	/* Close terminal at end.	*/
 	void	(*kopen) (void);	/* keyboard open		*/
 	void	(*kclose) (void);	/* keyboard close		*/
 	int	(*getch) (void);	/* Get character from keyboard. */
-	OUTC_DCL(*putch) (OUTC_ARGS); /* Put character to display.	*/
+	OUTC_DCL(*putch) (OUTC_ARGS);	/* Put character to display.	*/
 	int	(*typahead) (void);	/* character ready?		*/
 	void	(*flush) (void);	/* Flush output buffers.	*/
 	void	(*curmove) (int row, int col); /* Move the cursor, origin 0. */
-	void	(*eeol) (void);	/* Erase to end of line.	*/
-	void	(*eeop) (void);	/* Erase to end of page.	*/
-	void	(*beep) (void);	/* Beep.			*/
+	void	(*eeol) (void);		/* Erase to end of line.	*/
+	void	(*eeop) (void);		/* Erase to end of page.	*/
+	void	(*beep) (void);		/* Beep.			*/
 	void	(*rev) (UINT f);	/* set reverse video state	*/
 	int	(*setdescrip) (const char *f); /* reset display description */
 	void	(*setfore) (int f);	/* set foreground color		*/

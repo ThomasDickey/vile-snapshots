@@ -1,5 +1,31 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+(tom) 990602 (f)
+	+ implement fcolor and bcolor options for xvile.
+	+ add missing case for VALTYPE_ENUM in listvalueset(), which caused
+	  very long enum values to be run-on in [Settings].
+	+ add mode 'video-attrs', mainly to implement bold text as part of the
+	  color schemes.  I tried implementing reverse, but this is hard to do
+	  in tcap.c
+	+ add color schemes, associating fcolor, bcolor, $palette and an
+	  optional video attribute.  This adds new commands to manipulate the
+	  schemes:
+		define-color-scheme
+		remove-color-scheme
+		show-color-schemes
+	+ allow ':' for first line of Bourne shell
+	+ recognize \f1 and \f4 in nr-filt.l
+	+ modify preamble pattern for tclmode to allow version number, e.g.,
+	  wish4.1 vs wish.
+	+ improve sh-filt.l so that option strings such as "--with-8bit" do not
+	  highlight the "8".
+	+ modify sel_yank() to set curtabval temporarily so tab/offset
+	  computations in yankregion work properly when user has selected a
+	  rectangle in one buffer, then clicks the mouse into a buffer with a
+	  different tabstop setting (reported by Clark Morgan).
+	+ improve makefile.l, handling escaped newlines in quoted strings and
+	  in target lists.
+
 (tom) 990523 (e)
 	+ add/use new function restore_dot() to guard against restoring DOT to
 	  a value which no longer points into the current buffer, e.g., after

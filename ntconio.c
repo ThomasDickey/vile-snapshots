@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.43 1999/05/10 23:41:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.44 1999/06/03 01:19:56 tom Exp $
  *
  */
 
@@ -125,6 +125,23 @@ TERM    term    = {
 	nullterm_cursorvis,
 };
 
+
+#ifdef GVAL_VIDEO
+static WORD
+AttrVideo(int b, int f)
+{
+	WORD result;
+	UINT mask = (global_g_val(GVAL_VIDEO) & VAREV);
+	if (mask ^ VAREV) {
+		result = AttrColor(b,f);
+	} else {
+		result = AttrColor(f,b);
+	}
+	return result;
+}
+#undef AttrColor
+#define AttrColor(b,f) AttrVideo(b,f)
+#endif
 
 
 #if OPT_ICURSOR

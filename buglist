@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.358 1999/05/23 23:21:05 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.359 1999/06/01 23:13:42 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -981,31 +981,6 @@ modify xvile blink_interval to use 2/3 duty-cycle
 it should be possible to recode the tcap.c mouse-motion to use 'select()' to
 check for the user holding down the mouse button, and use _that_ to control a
 fake scrolling in the general direction of the mouse.
-
--- 96-12-04 (Hans J. Greub" <hgreub@teleport.com>)
-
-	I am trying to get vile on nt or xvile on an rs6000 workstation to
-	colorize perl syntax.  I use the color_readhook macro and the perl
-	filter.  Now both on the PC and xvile I can get vile to use italics,
-	but I can not get it to use color just bold face.  For xvile I defined
-	in the .Xdefaults and .Xresources file the following:
-
-		XVile.color.fcolor1: red
-		XVile.color.fcolor2: green
-		etc
-
-	and then used xrdb to read in the new .Xdefaults or .Xresources file
-	but no luck.  Xvile compiler just like a charm.  Do I have to
-	(re)compile xvile with different switches?
-
-	On nt I can set the forground and background color with the set
-	commands.  In xvile I can control the fore/background cursor etc colors
-	through the .Xdefaults or the command line switches.  So on both
-	systems I am able to get fore/background color, but I cann't get the
-	color attributes to work.  Only the boldface and italics attributes
-	work.  Do the color attributes only work with certain fonts or are the
-	default color attributes mapped to bold face?  If this is the case how
-	can I override the the default color attributes?
 
 -- 97-01-10 (tom)
 
