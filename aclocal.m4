@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.78 1999/09/22 21:35:57 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.81 1999/11/12 02:30:19 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -18,6 +18,22 @@ define(CF_AC_PREREQ,
 [CF_PREREQ_COMPARE(
 AC_PREREQ_CANON(AC_PREREQ_SPLIT(AC_ACVERSION)),
 AC_PREREQ_CANON(AC_PREREQ_SPLIT([$1])), [$1], [$2], [$3])])dnl
+dnl ---------------------------------------------------------------------------
+dnl Copy non-preprocessor flags to $CFLAGS, preprocessor flags to $CPPFLAGS
+AC_DEFUN([CF_ADD_CFLAGS],
+[
+for cf_add_cflags in $1
+do
+	case $cf_add_cflags in #(vi
+	-I*|-D*|-U*|-E|-P|-C) #(vi
+		CPPFLAGS="$CPPFLAGS $cf_add_cflags"
+		;;
+	*)
+		CFLAGS="$CFLAGS $cf_add_cflags"
+		;;
+	esac
+done
+])dnl
 dnl ---------------------------------------------------------------------------
 dnl Add an include-directory to $CPPFLAGS.  Don't add /usr/include, since it's
 dnl redundant.  We don't normally need to add -I/usr/local/include for gcc,
@@ -289,6 +305,46 @@ AC_TRY_COMPILE([
 test $cf_cv_macros_fd_set = yes && AC_DEFINE(HAVE_TYPE_FD_SET)
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl Check if we have a working crypt() function
+AC_DEFUN([CF_CRYPT_FUNC],
+[
+AC_CACHE_CHECK(for crypt function,cf_cv_crypt_func,[
+cf_cv_crypt_func=
+AC_TRY_LINK([],[crypt()],[
+	cf_cv_crypt_func=yes],[
+	cf_save_LIBS="$LIBS"
+	LIBS="-lcrypt $LIBS"
+	AC_TRY_LINK([],[crypt()],[
+		cf_cv_crypt_func="-lcrypt"],[
+		cf_cv_crypt_func=no])
+	LIBS="$cf_save_LIBS"
+	])
+])
+if test "$cf_cv_crypt_func" != no ; then
+	cf_save_LIBS="$LIBS"
+	test "$cf_cv_crypt_func" != yes && LIBS="$cf_cv_crypt_func $LIBS"
+AC_CACHE_CHECK(if crypt works,cf_cv_crypt_works,[
+AC_TRY_RUN([
+#include <string.h>
+extern char *crypt();
+int main() {
+	char *s = crypt("vi-crypt", "vi");
+	exit(strcmp("vi6r2tczBYLvM", s) != 0);
+}
+	],[
+	cf_cv_crypt_works=yes],[
+	cf_cv_crypt_works=no],[
+	cf_cv_crypt_works=unknown])
+	LIBS="$cf_save_LIBS"])
+	if test "$cf_cv_crypt_works" != no ; then
+		AC_DEFINE(HAVE_CRYPT)
+		if test "$cf_cv_crypt_func" != yes ; then
+			LIBS="$cf_cv_crypt_func $LIBS"
+		fi
+	fi
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl Check if we should include <curses.h> to pick up prototypes for termcap
 dnl functions.  On terminfo systems, these are normally declared in <curses.h>,
 dnl but may be in <term.h>.  We check for termcap.h as an alternate, but it
@@ -401,7 +457,7 @@ dnl
 AC_DEFUN([CF_DISABLE_ECHO],[
 AC_MSG_CHECKING(if you want to see long compiling messages)
 CF_ARG_DISABLE(echo,
-	[  --disable-echo          test: display "compiling" commands],
+	[  --disable-echo          display "compiling" commands],
 	[
     ECHO_LD='@echo linking [$]@;'
     RULE_CC='	@echo compiling [$]<'
@@ -535,7 +591,7 @@ cat > conftest.i <<EOF
 EOF
 if test -n "$GCC"
 then
-	AC_CHECKING([for gcc __attribute__ directives])
+	AC_CHECKING([for $CC __attribute__ directives])
 	changequote(,)dnl
 cat > conftest.$ac_ext <<EOF
 #line __oline__ "configure"
@@ -562,7 +618,7 @@ EOF
 	do
 		CF_UPPER(CF_ATTRIBUTE,$cf_attribute)
 		cf_directive="__attribute__(($cf_attribute))"
-		echo "checking for gcc $cf_directive" 1>&AC_FD_CC
+		echo "checking for $CC $cf_directive" 1>&AC_FD_CC
 		case $cf_attribute in
 		scanf|printf)
 		cat >conftest.h <<EOF
@@ -608,7 +664,7 @@ then
 int main(int argc, char *argv[]) { return (argv[argc-1] == 0) ; }
 EOF
 	changequote([,])dnl
-	AC_CHECKING([for gcc warning options])
+	AC_CHECKING([for $CC warning options])
 	cf_save_CFLAGS="$CFLAGS"
 	EXTRA_CFLAGS="-W -Wall"
 	cf_warn_CONST=""
@@ -1374,31 +1430,34 @@ if test "$1" = ncurses; then
 fi
 ])
 if test "$cf_cv_termlib" = none; then
-	case $host_os in #(vi
-	freebsd*) #(vi
-		;;
-	*)
-		AC_CHECK_LIB(curses, tgetstr, [LIBS="$LIBS -lcurses" cf_cv_termlib=terminfo])
-		;;
-	esac
-fi
-# HP-UX 9.x terminfo has setupterm, but no tigetstr.
-if test "$cf_cv_termlib" = none; then
-	AC_CHECK_LIB(termlib, tigetstr, [LIBS="$LIBS -ltermlib" cf_cv_termlib=terminfo])
-fi
-if test "$cf_cv_termlib" = none; then
-	AC_CHECK_LIB(termlib, tgoto, [LIBS="$LIBS -ltermlib" cf_cv_termlib=termcap])
+	# FreeBSD's linker gives bogus results for AC_CHECK_LIB, saying that
+	# tgetstr lives in -lcurses when it is only an unsatisfied extern.
+	cf_save_LIBS="$LIBS"
+	for cf_lib in curses ncurses termlib termcap
+	do
+	LIBS="-l$cf_lib $cf_save_LIBS"
+	for cf_func in tigetstr tgetstr
+	do
+		AC_MSG_CHECKING(for $cf_func in -l$cf_lib)
+		AC_TRY_LINK([],[int x=$cf_func("")],[cf_result=yes],[cf_result=no])
+		AC_MSG_RESULT($cf_result)
+		if test "$cf_result" = yes ; then
+			if test "$cf_func" = tigetstr ; then
+				cf_cv_termlib=terminfo
+			else
+				cf_cv_termlib=termcap
+			fi
+			break
+		fi
+	done
+		test "$cf_result" = yes && break
+	done
+	test "$cf_result" = no && LIBS="$cf_save_LIBS"
 fi
 if test "$cf_cv_termlib" = none; then
 	# allow curses library for broken AIX system.
 	AC_CHECK_LIB(curses, initscr, [LIBS="$LIBS -lcurses" cf_cv_termlib=termcap])
 	AC_CHECK_LIB(termcap, tgoto, [LIBS="$LIBS -ltermcap" cf_cv_termlib=termcap])
-fi
-if test "$cf_cv_termlib" = none; then
-	AC_CHECK_LIB(termcap, tgoto, [LIBS="$LIBS -ltermcap" cf_cv_termlib=termcap])
-fi
-if test "$cf_cv_termlib" = none; then
-	AC_CHECK_LIB(ncurses, tgoto, [LIBS="$LIBS -lncurses" cf_cv_termlib=ncurses])
 fi
 ])
 if test "$cf_cv_termlib" = none; then
@@ -1407,22 +1466,31 @@ fi
 ])])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check for the declaration of fd_set.  Some platforms declare it in
-dnl <sys/types.h>, and some in <sys/select.h>, which requires <sys/types.h>
+dnl <sys/types.h>, and some in <sys/select.h>, which requires <sys/types.h>.
+dnl Finally, if we are using this for an X application, Xpoll.h may include
+dnl <sys/select.h>, so we don't want to do it twice.
 AC_DEFUN([CF_TYPE_FD_SET],
 [
-AC_MSG_CHECKING(for declaration of fd_set)
-AC_CACHE_VAL(cf_cv_type_fd_set,[
+AC_CACHE_CHECK(for declaration of fd_set,cf_cv_type_fd_set,
+	[echo "trying sys/types alone" 1>&AC_FD_CC
 AC_TRY_COMPILE([
 #include <sys/types.h>],
 	[fd_set x],
 	[cf_cv_type_fd_set=sys/types.h],
-	[AC_TRY_COMPILE([
+	[echo "trying X11/Xpoll.h" 1>&AC_FD_CC
+AC_TRY_COMPILE([
+#ifdef HAVE_X11_XPOLL_H
+#include <X11/Xpoll.h>
+#endif],
+	[fd_set x],
+	[cf_cv_type_fd_set=X11/Xpoll.h],
+	[echo "trying sys/select.h" 1>&AC_FD_CC
+AC_TRY_COMPILE([
 #include <sys/types.h>
 #include <sys/select.h>],
 	[fd_set x],
 	[cf_cv_type_fd_set=sys/select.h],
-	[cf_cv_type_fd_set=unknown])])])
-AC_MSG_RESULT($cf_cv_type_fd_set)
+	[cf_cv_type_fd_set=unknown])])])])
 if test $cf_cv_type_fd_set = sys/select.h ; then
 	AC_DEFINE(USE_SYS_SELECT_H)
 fi
@@ -1522,21 +1590,77 @@ AC_ARG_WITH(neXtaw,
 	[  --with-neXtaw           link with neXT Athena library],
 	[cf_x_athena=neXtaw])
 
-AC_CHECK_HEADERS(X11/$cf_x_athena/SimpleMenu.h)
 
 AC_CHECK_LIB(Xext,XextCreateExtension,
 	[LIBS="-lXext $LIBS"])
 
-AC_CHECK_LIB(Xmu, XmuClientWindow,,[
-AC_CHECK_LIB(Xmu_s, XmuClientWindow)])
+cf_x_athena_include=""
+cf_x_athena_lib=""
 
-AC_CHECK_LIB($cf_x_athena, XawSimpleMenuAddGlobalActions,
-	[LIBS="-l$cf_x_athena $LIBS"],[
-AC_CHECK_LIB(${cf_x_athena}_s, XawSimpleMenuAddGlobalActions,
-	[LIBS="-l${cf_x_athena}_s $LIBS"],
+for cf_path in default \
+	/usr/contrib/X11R6 \
+	/usr/contrib/X11R5 \
+	/usr/lib/X11R5
+do
+
+	if test -z "$cf_x_athena_include" ; then
+		cf_save="$CFLAGS"
+		cf_test=X11/$cf_x_athena/SimpleMenu.h
+		if test $cf_path != default ; then
+			CFLAGS="-I$cf_path/include $cf_save"
+			AC_MSG_CHECKING(for $cf_test in $cf_path)
+		else
+			AC_MSG_CHECKING(for $cf_test)
+		fi
+		AC_TRY_COMPILE([
+#include <X11/Intrinsic.h>
+#include <$cf_test>],[],
+			[cf_result=yes],
+			[cf_result=no])
+		AC_MSG_RESULT($cf_result)
+		if test "$cf_result" = yes ; then
+			cf_x_athena_include=$cf_path
+		else
+			CFLAGS="$cf_save"
+		fi
+	fi
+
+	for cf_lib in "-l$cf_x_athena -lXmu" "-l${cf_x_athena}_s -lXmu_s"
+	do
+		if test -z "$cf_x_athena_lib" ; then
+			cf_save="$LIBS"
+			cf_test=XawSimpleMenuAddGlobalActions
+			if test $cf_path != default ; then
+				LIBS="-L$cf_path/lib $cf_lib $LIBS"
+				AC_MSG_CHECKING(for $cf_lib in $cf_path)
+			else
+				LIBS="$cf_lib $LIBS"
+				AC_MSG_CHECKING(for $cf_test in $cf_lib)
+			fi
+			AC_TRY_LINK([],[$cf_test()],
+				[cf_result=yes],
+				[cf_result=no],
+				[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
+			AC_MSG_RESULT($cf_result)
+			if test "$cf_result" = yes ; then
+				cf_x_athena_lib="$cf_lib"
+			else
+				LIBS="$cf_save"
+			fi
+		fi
+	done
+done
+
+if test -z "$cf_x_athena_include" ; then
+	AC_MSG_WARN(
+[Unable to successfully find Athena header files with test program])
+fi
+
+if test -z "$cf_x_athena_lib" ; then
 	AC_ERROR(
-[Unable to successfully link Athena library (-l$cf_x_athena) with test program]),
-	[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])])
+[Unable to successfully link Athena library (-l$cf_x_athena) with test program])
+fi
+
 CF_UPPER(CF_X_ATHENA_LIBS,HAVE_LIB_$cf_x_athena)
 AC_DEFINE_UNQUOTED($CF_X_ATHENA_LIBS)
 ])dnl

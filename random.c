@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.213 1999/10/24 16:38:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.214 1999/11/11 02:20:50 tom Exp $
  *
  */
 
@@ -17,6 +17,10 @@
 #include	"estruct.h"
 #include	"edef.h"
 #include	"nefunc.h"
+
+#if DISP_X11 && HAVE_X11_XPOLL_H
+#include <X11/Xpoll.h>
+#endif
 
 #if SYS_UNIX
 #if HAVE_POLL && HAVE_POLL_H

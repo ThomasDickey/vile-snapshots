@@ -2845,20 +2845,6 @@ Encryption
 	file.  (Or, equivalently, create the buffer, set crypt mode, and
 	then insert the file into it (with ":r").
 
-	An alternative vile's encryption algorithm is also available
-	externally, via the "vile-crypt" program.  vile-crypt will
-	encrypt/decrypt a file.  You can use "-k key" to supply the key on
-	the commandline, and "-m" to treat the file as a mail message -- in
-	that case, only text after the first blank line will be encrypted.
-	Text to be encrypted can be specified as filenames on the command
-	line, or provided as the standard input.  All output appears on
-	stdout.  On systems with a getpass() library routine, the user will
-	be prompted for the encryption key if it is not given on the
-	command line.  To accommodate systems (such as linux) where the
-	getpass() library routine is not interruptible from the keyboard,
-	entering a crypt-key password which ends in ^C will cause the
-	program to quit.
-
 
 Crash Recovery
 --------------
@@ -4228,8 +4214,6 @@ Where to Get It
 
 	which is mirrored at
 		ftp://ftp.phred.org/pub/vile/
-		ftp://ftp.ci.uminho.pt/pub/mirrors/vile/
-		http://ciumix.ci.uminho.pt/mirrors/vile/
 
 	Development patches are found at
 		ftp://ftp.clark.net/pub/dickey/vile/patches/
@@ -4249,4 +4233,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.451 1999/11/09 23:37:21 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.453 1999/11/11 11:10:41 tom Exp $

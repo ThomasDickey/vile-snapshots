@@ -1,4 +1,27 @@
-Changes for vile 9.0 (released Thu Nov 10, 1999)
+Changes for vile 9.0 (released Thu Nov 11, 1999)
+
+ (tom) 991111 (b)
+	+ revert 8.3s change that modified inout_popen() to convert pathname
+	  to backslashes on DOS, etc., since it too easily confuses commands
+	  that have genuine slashes (reported by Ed Henderson).
+	+ modify check for curses/termcap library to try linking tgetstr(),
+	  to work around broken linker on FreeBSD, but still detect properly
+	  HPUX curses library that has termcap functions.
+	+ remove pointers to defunct mirrors (reported by Clark Morgan).
+ 	+ remove duplicate description in vile.hlp of vile-crypt; the manpage
+	  covers this topic.
+	+ use new configure macro CF_ADD_CFLAGS to make configure check for
+	  headers (which uses only $CPPFLAGS) work with X_CFLAGS computed by
+	  autoconf's AC_PATH_XTRA.
+ 	+ correct ifdef's for sys/select.h to use USE_SYS_SELECT_H, which takes
+	  into account the configure check for fd_set from 8.3n (reported by
+	  Jens Schleusener).
+ 	+ use newer CF_TYPE_FD_SET configure test, from xterm which checks for
+	  Xpoll.h which may conflict with sys/select.h
+ 	+ use newer CF_X_ATHENA configure test, from xterm which checks for
+	  nonstandard locations of that library on HPUX.
+	+ add configure test to see if -lcrypt is needed in $LIBS to link
+	  crypt() function (reported by Paul Fox).
 
  (tom) 991109 (a)
 	+ correct special case of 'n' command on an empty line at the end of
