@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.126 2000/01/13 02:34:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.128 2000/02/28 01:46:14 tom Exp $
  *
  */
 
@@ -391,8 +391,9 @@ replacechar(int f, int n)
 /*
  * Check if a command is safe to execute within insert-mode.
  */
-#define can_ins_exec(cfp) \
-	(cfp != 0 \
+#define can_ins_exec(cfp,c) \
+	((isSpecial(c) || global_g_val(GMDINSEXEC)) \
+	 && cfp != 0 \
 	 && ((cfp->c_flags & (GOAL|MOTION)) != 0 \
 	  || (cfp->c_flags & (UNDO|REDO)) == (UNDO|REDO))) \
 
@@ -522,7 +523,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 
 		if (isSpecial(c)
 		 || (isCntrl(c)
-		  && (isreturn(c)
+		  && (isSpace(c)
 		   || isbackspace(c)
 #if OPT_SHELL && SYS_UNIX && defined(SIGTSTP)	/* job control, ^Z */
 		   || (c == suspc)
@@ -535,7 +536,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 				then see if it's bound to something, and
 				execute it */
 			const CMDFUNC *cfp = kcod2fnc(c);
-			if (can_ins_exec(cfp)) {
+			if (can_ins_exec(cfp,c)) {
 				backsp_limit = insertion_exec(cfp);
 				continue;
 			} else if (isSpecial(c)) {
@@ -585,7 +586,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 				then see if it's bound to something, and
 				insert it if not */
 			const CMDFUNC *cfp = kcod2fnc(c);
-			if (can_ins_exec(cfp)) {
+			if (can_ins_exec(cfp,c)) {
 				backsp_limit = insertion_exec(cfp);
 				continue;
 			}

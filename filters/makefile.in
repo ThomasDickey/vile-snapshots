@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.67 1999/12/26 22:18:04 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.68 2000/02/28 10:46:04 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -67,11 +67,11 @@ INSTALL_DIRS    = $(BINDIR) $(DATADIR)
 @RULE_CC@
 	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(QUOTDEFS) $(CFLAGS) $<
 
-LF_DEPS = filters$o
-LF_ARGS = filters$o $(LEXLIB)
+LF_DEPS = filterio$o filters$o
+LF_ARGS = $(LF_DEPS) $(LEXLIB)
 
-CF_DEPS = filters$o
-CF_ARGS = filters$o
+CF_DEPS = filterio$o filters$o
+CF_ARGS = $(CF_DEPS)
 
 # filters in "C" are easy to port
 C_ALL	= \

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.16 2000/02/10 11:30:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.17 2000/02/28 12:03:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LaTeX input
  * text.
@@ -64,10 +64,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input, FILE *output)
+do_filter(FILE *input)
 {
     yyin = input;
-    yyout = output;
 
     Comment_attr = class_attr(NAME_COMMENT);
     Keyword_attr = class_attr(NAME_KEYWORD);
@@ -106,7 +105,7 @@ NUMBER		({INTEGER}|{REAL})
 
 \\{NAME}		{ char *attr = keyword_attr(yytext); if (!attr || !*attr) attr = Keyword_attr; WriteToken(attr); }
 
-\\{NONNAME} 		{ write_token(yyout, yytext, yyleng-1, Ident_attr); fprintf(yyout, "%c", yytext[yyleng-1]); }
+\\{NONNAME} 		{ flt_puts(yytext, yyleng-1, Ident_attr); flt_putc(yytext[yyleng-1]); }
 
 <TEXT>\$[^\$] 		{ WriteToken(Math_attr); push_state(MATH);}
 <MATH>[^\$|/\n]+	{ WriteToken(Math_attr); }

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.33 2000/02/10 11:33:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.38 2000/02/28 12:06:03 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -85,6 +85,8 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 #define GCC_UNUSED /*nothing*/
 #endif
 
+#define MY_NAME "vile"
+
 /*
  * Default attributes across all filters
  */
@@ -151,7 +153,6 @@ typedef void (*EachKeyword)(const char *name, int size, const char *attr);
  * lex should declare these:
  */
 extern FILE *yyin;
-extern FILE *yyout;
 extern int yylex(void);
 
 /*
@@ -160,7 +161,7 @@ extern int yylex(void);
 typedef struct {
 	char *filter_name;
 	void (*InitFilter)(int before);
-	void (*DoFilter)(FILE *in, FILE *out);
+	void (*DoFilter)(FILE *in);
 } FILTER_DEF;
 
 extern FILTER_DEF filter_def;
@@ -177,7 +178,7 @@ extern FILTER_DEF filter_def;
  */
 #define DefineFilter(name) \
 static void init_filter(int before); \
-static void do_filter(FILE *Input, FILE *Output); \
+static void do_filter(FILE *Input); \
 FILTER_DEF ActualFilter(name) = { name, init_filter, do_filter }
 
 /*
@@ -186,11 +187,13 @@ FILTER_DEF ActualFilter(name) = { name, init_filter, do_filter }
 
 typedef struct _keyword KEYWORD;
 
+extern char *default_attr;
 extern int eqls_ch;
 extern int meta_ch;
+extern int verbose_flt;
 
-KEYWORD * is_class(char *name);
-KEYWORD * is_keyword(char *name);
+extern KEYWORD * is_class(char *name);
+extern KEYWORD * is_keyword(char *name);
 extern char *ci_keyword_attr(char *name);
 extern char *class_attr(char *name);
 extern char *do_alloc(char *ptr, unsigned need, unsigned *have);
@@ -199,15 +202,23 @@ extern char *lowercase_of(char *name);
 extern char *readline(FILE *fp, char **ptr, unsigned *len);
 extern char *skip_blanks(char *src);
 extern char *skip_ident(char *src);
-extern char *strmalloc(const char *src);
 extern int set_symbol_table(const char *classname);
 extern long hash_function(const char *id);
+extern void flt_make_symtab(char *classname);
+extern void flt_read_keywords(char *classname);
 extern void for_each_keyword(EachKeyword func);
 extern void insert_keyword(const char *ident, const char *attribute, int classflag);
 extern void parse_keyword(char *name, int classflag);
-extern void write_token(FILE *fp, char *string, int length, char *attribute);
 
-#define WriteToken(attr) write_token(yyout, yytext, yyleng, attr)
-#define WriteToken2(attr,len) write_token(yyout, yytext+len, yyleng-len, attr)
+/*
+ * Declared in filterio.c
+ */
+extern char *strmalloc(const char *src);
+extern void mlforce(const char *fmt, ...);
+extern void flt_putc(int ch);
+extern void flt_puts(char *string, int length, char *attribute);
+
+#define WriteToken(attr) flt_puts(yytext, yyleng, attr)
+#define WriteToken2(attr,len) flt_puts(yytext+len, yyleng-len, attr)
 
 #endif /* FILTERS_H */

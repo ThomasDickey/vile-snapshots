@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.4 2000/02/10 11:30:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.5 2000/02/28 11:58:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to RCS archives.
  */
@@ -72,11 +72,11 @@ flush_quoted(void)
 	    if (ident != 0) {
 		char *next = strchr(ident+1, '$');
 		if (ident != base)
-		    write_token(yyout, base, ident - base, String_attr);
+		    flt_puts(base, ident - base, String_attr);
 		base = next + 1;
-		write_token(yyout, ident, base - ident, Ident2_attr);
+		flt_puts(ident, base - ident, Ident2_attr);
 	    } else {
-		write_token(yyout, base, last - base, String_attr);
+		flt_puts(base, last - base, String_attr);
 		break;
 	    }
 	}
@@ -90,10 +90,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input, FILE *output)
+do_filter(FILE *input)
 {
     yyin = input;
-    yyout = output;
 
     Ident2_attr = class_attr(NAME_IDENT2);
     Number_attr = class_attr(NAME_NUMBER);

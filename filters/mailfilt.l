@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.10 2000/02/10 11:30:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.11 2000/02/28 11:58:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mail
  */
@@ -22,8 +22,8 @@ write_label(char *text, int size)
 {
     char *lname = lowercase_of(text);
     lname[--size] = 0;
-    write_token(yyout, text, size, keyword_attr(lname));
-    fputc(':', yyout);
+    flt_puts(text, size, keyword_attr(lname));
+    flt_putc(':');
 }
 
 static void
@@ -32,10 +32,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input, FILE *output)
+do_filter(FILE *input)
 {
     yyin = input;
-    yyout = output;
 
     Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);

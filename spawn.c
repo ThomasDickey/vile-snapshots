@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.151 1999/12/10 23:19:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.152 2000/02/27 21:39:44 cmorgan Exp $
  *
  */
 
@@ -191,16 +191,7 @@ bktoshell(int f, int n)		/* suspend and wait to wake up */
 	return TRUE;
 # else
 	(void)signal_pg(SIGTSTP);
-
-	/*
-	 * Next four lines duplicate spawncli() actions following return
-	 * from shell.	Adding lines 1-3 ensure that vile properly redraws
-	 * its screen when TERM type is vt220 or vt320 and host is linux.
-	 */
-	kbd_openup();
-	ttunclean();
-	sgarbf = TRUE;
-	return AfterShell();
+	return TRUE;
 # endif
 }
 #else
@@ -219,13 +210,13 @@ rtfrmshell(int ACTUAL_SIG_ARGS GCC_UNUSED)
 {
 #if USE_UNIX_JOB_CTL
 	endofDisplay();
+	kbd_openup();
 	ttunclean();
 	sgarbf = TRUE;
 #  if SYS_APOLLO
 	(void)term.getch();	/* have to skip a character */
 	ttunclean();		/* ...so that I can finally suppress echo */
 #  endif
-	term.kopen();
 	setup_handler(SIGCONT,rtfrmshell); /* suspend & restart */
 	(void)update(TRUE);
 #endif

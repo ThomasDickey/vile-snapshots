@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.4 2000/02/10 11:30:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.5 2000/02/28 11:58:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VMS mms script
  * - T.Dickey
@@ -39,13 +39,13 @@ write_keyword(char *text, int size)
 	space++;
     }
 
-    write_token(yyout, text, size, keyword_attr(text));
+    flt_puts(text, size, keyword_attr(text));
 
     if (space)
 	fprintf(yyout, "%*s", space, " ");
 
     if (colon)
-	fputc(':', yyout);
+	flt_putc(':');
 }
 
 static void
@@ -54,10 +54,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input, FILE *output)
+do_filter(FILE *input)
 {
     yyin = input;
-    yyout = output;
 
     Comment_attr = class_attr(NAME_COMMENT);
     Ident2_attr  = class_attr(NAME_IDENT2);

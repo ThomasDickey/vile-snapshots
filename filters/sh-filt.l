@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.29 2000/02/10 11:30:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.30 2000/02/28 11:58:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -59,7 +59,7 @@ static void
 flush_quoted(void)
 {
     if (save_len) {
-	write_token(yyout, save_bfr, save_len, String_attr);
+	flt_puts(save_bfr, save_len, String_attr);
 	save_len = 0;
     }
 }
@@ -70,10 +70,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input, FILE *output)
+do_filter(FILE *input)
 {
     yyin = input;
-    yyout = output;
 
     Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
@@ -127,7 +126,7 @@ INTEGER		[-+]?([0-9]+)
 <NORMAL>{IDENT2}	|
 <NORMAL>{IDENTX}	{ WriteToken(Ident_attr); }
 
-<NORMAL>{IDENTEQLS}	{ write_token(yyout, yytext, yyleng-1, Ident_attr); fprintf(yyout, "="); }
+<NORMAL>{IDENTEQLS}	{ flt_puts(yytext, yyleng-1, Ident_attr); flt_putc('='); }
 
 <NORMAL>\\.		|
 <NORMAL>{SSTRING}	{ WriteToken(String_attr); }
@@ -157,7 +156,7 @@ INTEGER		[-+]?([0-9]+)
 <HEREDOC>[^\n]		{ add_to_quoted(yytext, yyleng); }
 <HEREDOC>\n		{
 			    flush_quoted();
-			    fputc(yytext[0], yyout);
+			    flt_putc(yytext[0]);
 			}
 
 <QUOTED>\\.		{ add_to_quoted(yytext, yyleng); }
@@ -168,7 +167,7 @@ INTEGER		[-+]?([0-9]+)
 <QUOTED>[^\n\"]		{ add_to_quoted(yytext, yyleng); }
 <QUOTED>\n		{
 			    flush_quoted();
-			    fputc(yytext[0], yyout);
+			    flt_putc(yytext[0]);
 			}
 <QUOTED>\"		{ add_to_quoted(yytext, yyleng);
 			  flush_quoted();

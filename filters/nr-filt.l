@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.10 2000/02/10 11:30:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.11 2000/02/28 11:58:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of NROFF
  */
@@ -27,16 +27,16 @@ write_cmd(char *text, int size)
 		cmd = (s - text) + 1;
 	}
     }
-    write_token(yyout, text, cmd, Keyword_attr);
-    write_token(yyout, text+cmd, size-cmd, String_attr);
+    flt_puts(text, cmd, Keyword_attr);
+    flt_puts(text+cmd, size-cmd, String_attr);
 }
 
 static void
 write_font(char *text, int size)
 {
-    write_token(yyout, text, 3, Ident2_attr);
-    write_token(yyout, text+3, size-6, String_attr);
-    write_token(yyout, text + size - 3, 3, Ident2_attr);
+    flt_puts(text, 3, Ident2_attr);
+    flt_puts(text + 3, size-6, String_attr);
+    flt_puts(text + size - 3, 3, Ident2_attr);
 }
 
 static void
@@ -45,10 +45,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input, FILE *output)
+do_filter(FILE *input)
 {
     yyin = input;
-    yyout = output;
 
     Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);

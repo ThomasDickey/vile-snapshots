@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tagsfilt.c,v 1.3 2000/02/10 11:30:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tagsfilt.c,v 1.4 2000/02/28 12:00:47 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a tags file.  It's done best
  * in C because the file consists only of columns of data that are delimited
@@ -30,7 +30,7 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input, FILE *output)
+do_filter(FILE *input)
 {
     static unsigned used;
     static char *line;
@@ -47,21 +47,21 @@ do_filter(FILE *input, FILE *output)
 	s = line;
 	if (*s != '!') {
 	    t = skip_field(s);
-	    write_token(output, s, t-s, Ident_attr);
+	    flt_puts(s, t-s, Ident_attr);
 	    if (*t == '\t') {
-		fputc(*t++, output);
+		flt_putc(*t++);
 	    }
 	    s = t;
 	    t = skip_field(s);
-	    write_token(output, s, t-s, Ident2_attr);
+	    flt_puts(s, t-s, Ident2_attr);
 	    if (*t == '\t') {
-		fputc(*t++, output);
+		flt_putc(*t++);
 	    }
 	    s = t;
 	    if (isdigit(*s)) {
 		while (isdigit(*t))
 		    t++;
-		write_token(output, s, t-s, Number_attr);
+		flt_puts(s, t-s, Number_attr);
 	    } else if (ispunct(*s)) {
 		t++;
 		while (*t != 0 && *t != *s) {
@@ -70,10 +70,10 @@ do_filter(FILE *input, FILE *output)
 		    if (*t != 0)
 			t++;
 		}
-		write_token(output, s, t-s, Literal_attr);
+		flt_puts(s, t-s, Literal_attr);
 	    }
 	    s = t;
 	}
-	write_token(output, s, strlen(s), Comment_attr);
+	flt_puts(s, strlen(s), Comment_attr);
     }
 }

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.20 2000/02/10 11:35:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.21 2000/02/28 11:58:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -33,7 +33,7 @@ html_command(char *text)
     if (change) {
 	set_symbol_table(filter_def.filter_name);
     }
-    write_token(yyout, text, strlen(text), keyword_attr(temp));
+    flt_puts(text, strlen(text), keyword_attr(temp));
 
     if (change) {
      	if (ending) {
@@ -58,12 +58,12 @@ may_resume_html(char *text)
     char *next;
     int save;
 
-    write_token(yyout, text, left - text, "");
-    write_token(yyout, left, 1, Keyword_attr);
+    flt_puts(text, left - text, "");
+    flt_puts(left, 1, Keyword_attr);
     next = ++left;
     while (isspace(*next))
 	next++;
-    write_token(yyout, left, next-left, "");
+    flt_puts(left, next-left, "");
     left = next;
     while (!isspace(*next) && *next != '>')
 	next++;
@@ -71,7 +71,7 @@ may_resume_html(char *text)
     *next = 0;
     html_command(left);
     *next = save;
-    write_token(yyout, next, strlen(next), Keyword_attr);
+    flt_puts(next, strlen(next), Keyword_attr);
     BEGIN(next_state);
 }
 
@@ -81,10 +81,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input, FILE *output)
+do_filter(FILE *input)
 {
     yyin = input;
-    yyout = output;
 
     Comment_attr = class_attr(NAME_COMMENT);
     Ident_attr   = class_attr(NAME_IDENT);

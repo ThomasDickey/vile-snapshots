@@ -1,3 +1,4 @@
+#include <windows.h>
 #include "winvile.h"
 
 //
@@ -16,9 +17,31 @@ WinvilePopMenu MENU
 {
     POPUP ""
     {
-        MENUITEM "&Open...",           IDM_OPEN
-        MENUITEM "&Save As...",        IDM_SAVE_AS
-        MENUITEM "&Font...",           IDM_FONT
-        MENUITEM "&Menu",              IDM_MENU
+        MENUITEM "&Open...",              IDM_OPEN
+        MENUITEM "&Save As...",           IDM_SAVE_AS
+        MENUITEM "&Font...",              IDM_FONT
+        MENUITEM "&Menu",                 IDM_MENU
+        MENUITEM SEPARATOR
+        MENUITEM "&Undo",                 IDM_UNDO  // accelerator filled in
+                                                    // at runtime
+        MENUITEM "&Redo",                 IDM_REDO  // accelerator filled in
+                                                    // at runtime
+        MENUITEM SEPARATOR
+        MENUITEM "Cu&t\tShift+Delete",    IDM_CUT
+        MENUITEM "&Copy",                 IDM_COPY  // accelerator filled in
+                                                    // at runtime
+        MENUITEM "&Paste\tShift+Insert",  IDM_PASTE
+        MENUITEM "&Delete\tAlt+Delete",   IDM_DELETE
     }
 }
+
+AboutBox DIALOG DISCARDABLE  0, 0, 187, 122
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION ""                 // set at runtime
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,132,101,50,14
+    ICON            "VilewIcon",-1,5,7,20,20
+    CTEXT           "",IDM_ABOUT_COPYRIGHT,4,36,180,51,SS_SUNKEN //set @ runtime
+    LTEXT           "",IDM_ABOUT_PROGNAME,32,8,148,18            //set @ runtime
+END

@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.4 2000/01/11 18:53:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.5 2000/02/27 21:48:21 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -299,4 +299,13 @@ int
 winsave_nocd(int f, int n)
 {
     return (commdlg_save_file(FALSE));
+}
+
+/* --------------------------------------------------------------------- */
+/* ------------------ delete current text selection -------------------- */
+/* --------------------------------------------------------------------- */
+int
+windeltxtsel(int f, int n)  /* bound to Alt+Delete */
+{
+    return (w32_del_selection(FALSE));
 }

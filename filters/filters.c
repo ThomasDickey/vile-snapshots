@@ -1,13 +1,11 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.65 2000/02/10 11:35:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.68 2000/02/28 11:30:36 tom Exp $
  *
  */
 
 #include <filters.h>
-
-#define MY_NAME "vile"
 
 #define QUOTE '\''
 
@@ -29,7 +27,7 @@
 #define DOT_TO_HIDE_IT ""
 #endif
 
-#define VERBOSE(level,params)		if (verbose >= level) printf params
+#define VERBOSE(level,params)		if (verbose_flt >= level) mlforce params
 #define NONNULL(s)			((s) != 0) ? (s) : "<null>"
 
 #define	typecallocn(cast,ntypes)	(cast *)calloc(sizeof(cast),ntypes)
@@ -53,20 +51,13 @@ struct _classes {
     CLASS *next;
 };
 
+char *default_attr;
 int meta_ch = '.';
 int eqls_ch = ':';
+int verbose_flt;
 
-static unsigned TrimBlanks(char *src);
-static void ReadKeywords(char *classname);
-static void RemoveList(KEYWORD * k);
-
-static FILE *my_out;
-static FILE *my_in;
 static KEYWORD **hashtable;
 static CLASS *classes;
-static char *Default_attr;
-static int verbose, quit;
-static int k_used;
 
 /******************************************************************************
  * Private functions                                                          *
@@ -77,40 +68,6 @@ AttrsOnce(KEYWORD * entry)
 {
     entry->kw_used = 999;
     return NONNULL(entry->kw_attr);
-}
-
-static void
-CreateSymbolTable(char *classname)
-{
-    if (!set_symbol_table(classname)) {
-	CLASS *p = typecallocn(CLASS, 1);
-	p->name = strmalloc(classname);
-	p->data = typecallocn(KEYWORD *, HASH_LENGTH);
-	p->next = classes;
-	classes = p;
-	hashtable = p->data;
-
-	VERBOSE(1, ("CreateSymbolTable(%s)\n", classname));
-
-	/*
-	 * Mark all of the standard predefined classes when we first create a
-	 * symbol table.  Some filters may define their own special classes,
-	 * and not all filters use all of these classes, but it's a lot simpler
-	 * than putting the definitions into every ".key" file.
-	 */
-	insert_keyword(NAME_ACTION, ATTR_ACTION, 1);
-	insert_keyword(NAME_COMMENT, ATTR_COMMENT, 1);
-	insert_keyword(NAME_ERROR, ATTR_ERROR, 1);
-	insert_keyword(NAME_IDENT, ATTR_IDENT, 1);
-	insert_keyword(NAME_IDENT2, ATTR_IDENT2, 1);
-	insert_keyword(NAME_KEYWORD, ATTR_KEYWORD, 1);
-	insert_keyword(NAME_KEYWRD2, ATTR_KEYWRD2, 1);
-	insert_keyword(NAME_LITERAL, ATTR_LITERAL, 1);
-	insert_keyword(NAME_NUMBER, ATTR_NUMBER, 1);
-	insert_keyword(NAME_PREPROC, ATTR_PREPROC, 1);
-	insert_keyword(NAME_TYPES, ATTR_TYPES, 1);
-
-    }
 }
 
 static void
@@ -129,11 +86,11 @@ ExecDefault(char *param)
     if (!*param)
 	param = NAME_KEYWORD;
     if (is_class(param)) {
-	free(Default_attr);
-	Default_attr = strmalloc(param);
+	free(default_attr);
+	default_attr = strmalloc(param);
     } else {
 	*s = save;
-	VERBOSE(1, ("not a class:%s\n", param));
+	VERBOSE(1, ("not a class:%s", param));
     }
 }
 
@@ -158,9 +115,9 @@ ExecSource(char *param)
     int save_meta = meta_ch;
     int save_eqls = eqls_ch;
 
-    CreateSymbolTable(param);
-    ReadKeywords(MY_NAME);	/* provide default values for this table */
-    ReadKeywords(param);
+    flt_make_symtab(param);
+    flt_read_keywords(MY_NAME);	/* provide default values for this table */
+    flt_read_keywords(param);
     set_symbol_table(filter_def.filter_name);
 
     meta_ch = save_meta;
@@ -174,7 +131,7 @@ ExecSource(char *param)
 static void
 ExecTable(char *param)
 {
-    CreateSymbolTable(param);
+    flt_make_symtab(param);
 }
 
 static KEYWORD *
@@ -215,7 +172,7 @@ home_dir(void)
 #else
     result = getenv("HOME");
 #if defined(_WIN32)
-    if (result != 0) {
+    if (result != 0 && strchr(result, ':') == 0) {
 	static char desktop[256];
 	char *drive = getenv("HOMEDRIVE");
 	if (drive != 0) {
@@ -242,8 +199,8 @@ static FILE *
 OpenKeywords(char *classname)
 {
 #define OPEN_IT(p) if ((fp = fopen(p, "r")) != 0) { \
-			VERBOSE(1,("Opened %s\n", p)); return fp; } else { \
-			VERBOSE(2,("..skip %s\n", p)); }
+			VERBOSE(1,("Opened %s", p)); return fp; } else { \
+			VERBOSE(2,("..skip %s", p)); }
 #define FIND_IT(p) sprintf p; OPEN_IT(name)
 
     static char *name;
@@ -319,7 +276,7 @@ ParseDirective(char *line)
 	{ "class",   ExecClass    },
 	{ "default", ExecDefault  },
 	{ "equals",  ExecEquals   },
-	{ "include", ReadKeywords },
+	{ "include", flt_read_keywords },
 	{ "merge",   ExecSource   },
 	{ "meta",    ExecMeta     },
 	{ "source",  ExecSource   },
@@ -342,73 +299,6 @@ ParseDirective(char *line)
 	return 1;
     }
     return 0;
-}
-
-static int
-ProcessArgs(int argc, char *argv[], int flag)
-{
-    int n;
-    char *s, *value;
-
-    for (n = 1; n < argc; n++) {
-	s = argv[n];
-	if (*s == '-') {
-	    while (*++s) {
-		switch (*s) {
-		case 'k':
-		    value = s[1] ? s + 1 : ((n < argc) ? argv[++n] : "");
-		    if (flag) {
-			ReadKeywords(value);
-			k_used++;
-		    }
-		    break;
-		case 'v':
-		    if (!flag)
-			verbose++;
-		    break;
-		case 'q':
-		    quit = 1;	/* 
-				 * quit before filter parses data.  useful
-				 * in conjunction with -v or -vv.
-				 */
-		    break;
-		default:
-		    fprintf(stderr, "unknown option %c\n", *s);
-		    exit(BADEXIT);
-		}
-	    }
-	} else {
-	    break;
-	}
-    }
-    return n;
-}
-
-static void
-ReadKeywords(char *classname)
-{
-    FILE *kwfile;
-    char *line = 0;
-    char *name;
-    unsigned line_len = 0;
-
-    VERBOSE(1, ("ReadKeywords(%s)\n", classname));
-    if ((kwfile = OpenKeywords(classname)) != NULL) {
-	int linenum = 0;
-	while (readline(kwfile, &line, &line_len) != 0) {
-
-	    name = skip_blanks(line);
-	    if (TrimBlanks(name) == 0)
-		continue;
-	    if (ParseDirective(name))
-		continue;
-
-	    VERBOSE(2, ("line %3d:", ++linenum));
-	    parse_keyword(name, 0);
-	}
-	fclose(kwfile);
-    }
-    Free(line);
 }
 
 static void
@@ -449,7 +339,7 @@ class_attr(char *name)
     char *result = 0;
 
     while ((hash_id = is_class(name)) != 0) {
-	VERBOSE(hash_id->kw_used, ("class_attr(%s) = %s\n",
+	VERBOSE(hash_id->kw_used, ("class_attr(%s) = %s",
 		name, AttrsOnce(hash_id)));
 	name = result = hash_id->kw_attr;
     }
@@ -468,6 +358,67 @@ do_alloc(char *ptr, unsigned need, unsigned *have)
 	*have = need;
     }
     return ptr;
+}
+
+void
+flt_make_symtab(char *classname)
+{
+    if (!set_symbol_table(classname)) {
+	CLASS *p = typecallocn(CLASS, 1);
+	p->name = strmalloc(classname);
+	p->data = typecallocn(KEYWORD *, HASH_LENGTH);
+	p->next = classes;
+	classes = p;
+	hashtable = p->data;
+
+	VERBOSE(1, ("flt_make_symtab(%s)", classname));
+
+	/*
+	 * Mark all of the standard predefined classes when we first create a
+	 * symbol table.  Some filters may define their own special classes,
+	 * and not all filters use all of these classes, but it's a lot simpler
+	 * than putting the definitions into every ".key" file.
+	 */
+	insert_keyword(NAME_ACTION, ATTR_ACTION, 1);
+	insert_keyword(NAME_COMMENT, ATTR_COMMENT, 1);
+	insert_keyword(NAME_ERROR, ATTR_ERROR, 1);
+	insert_keyword(NAME_IDENT, ATTR_IDENT, 1);
+	insert_keyword(NAME_IDENT2, ATTR_IDENT2, 1);
+	insert_keyword(NAME_KEYWORD, ATTR_KEYWORD, 1);
+	insert_keyword(NAME_KEYWRD2, ATTR_KEYWRD2, 1);
+	insert_keyword(NAME_LITERAL, ATTR_LITERAL, 1);
+	insert_keyword(NAME_NUMBER, ATTR_NUMBER, 1);
+	insert_keyword(NAME_PREPROC, ATTR_PREPROC, 1);
+	insert_keyword(NAME_TYPES, ATTR_TYPES, 1);
+
+    }
+}
+
+void
+flt_read_keywords(char *classname)
+{
+    FILE *kwfile;
+    char *line = 0;
+    char *name;
+    unsigned line_len = 0;
+
+    VERBOSE(1, ("flt_read_keywords(%s)", classname));
+    if ((kwfile = OpenKeywords(classname)) != NULL) {
+	int linenum = 0;
+	while (readline(kwfile, &line, &line_len) != 0) {
+
+	    name = skip_blanks(line);
+	    if (TrimBlanks(name) == 0)
+		continue;
+	    if (ParseDirective(name))
+		continue;
+
+	    VERBOSE(2, ("line %3d:", ++linenum));
+	    parse_keyword(name, 0);
+	}
+	fclose(kwfile);
+    }
+    Free(line);
 }
 
 /*
@@ -523,11 +474,11 @@ insert_keyword(const char *ident, const char *attribute, int classflag)
 	    nxt->next = first;
 	    hashtable[Index] = nxt;
 	} else {
-	    VERBOSE(1, ("insert_keyword: cannot allocate\n"));
+	    VERBOSE(1, ("insert_keyword: cannot allocate"));
 	    return;
 	}
     }
-    VERBOSE(3, ("...\tname \"%s\"\tattr \"%s\"\n",
+    VERBOSE(3, ("...\tname \"%s\"\tattr \"%s\"",
 	    nxt->kw_name,
 	    NONNULL(nxt->kw_attr)));
 }
@@ -620,7 +571,7 @@ parse_keyword(char *name, int classflag)
 	TrimBlanks(name);
     }
 
-    VERBOSE(2, ("parsed\tname \"%s\"\tattr \"%s\"%s\n",
+    VERBOSE(2, ("parsed\tname \"%s\"\tattr \"%s\"%s",
 	    name,
 	    NONNULL(args),
 	    (classflag || is_class(name)) ? " - class" : ""));
@@ -630,7 +581,7 @@ parse_keyword(char *name, int classflag)
     } else if (*name) {
 	KEYWORD *hash_id;
 	if (args == 0)
-	    args = Default_attr;
+	    args = default_attr;
 	if ((hash_id = FindIdentifier(args)) != 0) {
 	    insert_keyword(name, hash_id->kw_attr, classflag);
 	}
@@ -669,7 +620,7 @@ set_symbol_table(const char *classname)
     for (p = classes; p != 0; p = p->next) {
 	if (!strcmp(classname, p->name)) {
 	    hashtable = p->data;
-	    VERBOSE(3, ("set_symbol_table:%s\n", classname));
+	    VERBOSE(3, ("set_symbol_table:%s", classname));
 	    return 1;
 	}
     }
@@ -695,93 +646,6 @@ skip_ident(char *src)
 	src++;
     }
     return (src);
-}
-
-char *
-strmalloc(const char *src)
-{
-    register char *ns = (char *) malloc(strlen(src) + 1);
-    if (ns != 0)
-	(void) strcpy(ns, src);
-    return ns;
-}
-
-void
-write_token(FILE * fp, char *string, int length, char *marker)
-{
-    if (length > 0) {
-	if (marker != 0 && *marker != 0 && *marker != 'N')
-	    fprintf(fp, "%c%i%s:", CTL_A, length, marker);
-	fprintf(fp, "%.*s", length, string);
-    }
-}
-
-int
-main(int argc, char **argv)
-{
-    int n;
-
-#if OPT_LOCALE
-    setlocale(LC_CTYPE, "");
-#endif
-
-    my_in = stdin;
-    my_out = stdout;
-
-    /* get verbose option */
-    (void) ProcessArgs(argc, argv, 0);
-
-    CreateSymbolTable(filter_def.filter_name);
-
-    Default_attr = strmalloc(NAME_KEYWORD);
-
-    filter_def.InitFilter(1);
-
-    ReadKeywords(MY_NAME);
-    n = ProcessArgs(argc, argv, 1);
-
-    if (!k_used) {
-	if (strcmp(MY_NAME, filter_def.filter_name)) {
-	    ReadKeywords(filter_def.filter_name);
-	}
-    }
-    set_symbol_table(filter_def.filter_name);
-
-    filter_def.InitFilter(0);
-
-    if (quit) {
-	/* 
-	 * When the filter is called, we want to force it to print out its
-	 * class info and then immediately exit.  Easiest way to do this
-	 * is to connect the filter's input to /dev/null.
-	 *
-	 * To date, syntax filtering only works well/reliably on win32 or
-	 * Unix hosts.   Handle those hosts now.
-	 */
-
-	char *name;
-
-#if defined(_WIN32)
-	name = "NUL";
-#else
-	name = "/dev/null";
-#endif
-	if ((my_in = fopen(name, "r")) != 0) {
-	    filter_def.DoFilter(my_in, my_out);
-	    fclose(my_in);
-	}
-    } else if (n < argc) {
-	char *name = argv[n++];
-	if ((my_in = fopen(name, "r")) != 0) {
-	    filter_def.DoFilter(my_in, my_out);
-	    fclose(my_in);
-	}
-    } else {
-	filter_def.DoFilter(my_in, my_out);
-    }
-    fflush(my_out);
-    fclose(my_out);
-    exit(GOODEXIT);
 }
 
 int

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.11 2000/02/10 11:30:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.12 2000/02/28 11:58:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of terminfo
  */
@@ -27,11 +27,11 @@ echo_vals(char *text, int size, char *attr)
     if (commented) {
 	attr = Comment_attr;
     } else {
-	fputc(*text, yyout);
+	flt_putc(*text);
 	text++;
 	size--;
     }
-    write_token(yyout, text, size, attr);
+    flt_puts(text, size, attr);
 }
 
 static char *
@@ -51,10 +51,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input, FILE *output)
+do_filter(FILE *input)
 {
     yyin = input;
-    yyout = output;
 
     Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
