@@ -793,6 +793,11 @@ Miscellaneous commands
 			compile-error-expressions
 		~endm
 
+		Use the show-error-expressions command to display the contents
+		of the [Error Expressions] buffer, along with the expanded
+		regular expression and annotation for the substitutions.
+		The result is shown in [Error Patterns].
+
 	^X-t	Set or report on the tab-stop width.  To set, the spacing must
 		precede the command, as in "4^X-t".  The "set tabstop"
 		command described below does the same thing.  The status
@@ -1138,6 +1143,7 @@ Editor modes
 			[Color Palette]
 			[Color Schemes]
 			[Error Expressions]
+			[Error Patterns]
 			[Major Modes]
 			[Map Sequences]
 			[Map! Sequences]
@@ -1433,6 +1439,9 @@ Editor modes
 	mini-hilite (mh) When user toggles editing mode in the minibuffer
 		(^G, mini-edit), display the minibuffer with the given
 		attribute.  These are the same as for visual-matches.
+
+	mouse	for OS/2, enable/disable the mouse in the console-window
+		version.
 
 	multibeep If a motion command fails, then vile, like vi, will
 		normally sound the bell.  Turning this mode off prevents
@@ -5543,4 +5552,4 @@ Problems
 
 Copyright 1995-2001 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.521 2001/05/20 21:09:06 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.522 2001/06/13 22:46:54 tom Exp $

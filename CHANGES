@@ -1,5 +1,25 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20010613 (n)
+	> Tom Dickey:
+	+ indent'd modes.c and os2vio.c
+	+ implement show-error-expressions command, which shows more complete
+	  information about the [Error Expressions] buffer.
+	+ modify shmode preamble to accept a line such as
+		#!/bin/sh --
+	+ add a message to stderr in os2vio.c telling how to exit vile.  If the
+	  OS/2 console version is run via telnet, it does not display anything,
+	  and none of the screen-related functions return an error.  A message
+	  is needed to guide a user to gracefully exit vile w/o rebooting the
+	  system.  There is a small flicker when starting normally.
+	+ add 'mouse' mode for OS/2 (CSet), to disable mouse when not wanted. 
+	  Modify logic in os2vio.c to sleep briefly in the loop polling the
+	  keyboard and mouse, thereby reducing CPU time for that (report by
+	  Paul Marwick <paulm@waitrose.com>).
+	+ widened ifdef for CSet error-expression, to make it useful when
+	  building CSet applications with the OS/2 EMX version of vile.
+	+ include <io.h> in file.c to make this build on OS/2 with CSet.
+
  20010523 (m)
 	> Mark Robinson <mark.robinson@baltimore.com>:
 	+ when popup-menu is inactive, if text is selected, right-click copies
