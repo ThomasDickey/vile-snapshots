@@ -1,5 +1,25 @@
 Changes for vile 7.5/8.0 (released ??? ??? ?, 1998)
 
+ (tom) 980523 (l)
+ 	+ remove _WIN32 ifdef's from perl.xs, so that $VILE_LIBRARY_PATH
+	  is supported on Unix as well.
+ 	+ add vile-pager script to macros directory.
+	+ modify makefile.in to install Perl scripts in $(datadir)/perl
+	  (reported by Kevin Buettner).
+	+ correct typo in perl.xs: CODE where PPCODE should have been used
+	  (patch by Kevin Buettner).
+	> patch by Brendan O'Dea:
+	+ some ifdef fixes for OPT_EVAL, OPT_NAMEBST and OPT_SELECTIONS when
+	  extensions are disabled.
+	+ correct placement of api_do_mark_iterate_helper() in do_mark_iterate
+	  macro.
+	+ quiet a warning in the Perl interface when an optional script is
+	  not found for inclusion.
+	> patch by Clark Morgan:
+	+ modify the win32 build environment so that perl scripts are copied
+	  from .\perl to %VILE_LIBRARY_PATH\perl
+	+ modify perl.xs to patch the new library location into @INC
+
  (kev) 980522 (k)
  	+ perl.xs (mlreply, mlreply_dir, mlreply_file, mlreply_no_opts):
 	  Use the PPCODE: directive instead of the CODE: directive.  Get
@@ -26,31 +46,31 @@ Changes for vile 7.5/8.0 (released ??? ??? ?, 1998)
 	> patch by Brendan O'Dea:
 	+ Procedures now behave more like builtin functions--they may be bound
 	  to keystrokes and listed in the [Binding List] pop-up (for which an
-	  optional help string may be supplied):  
-		store-procedure foo "some descriptive text" 
-		... 
-		~endm  
-		bind-key foo ^A-f  
-	  this appears under `:describe-function foo' as:  
-		"foo"                           M-f 
-		  ( some descriptive text )  
-	  Notes/Bugs:  
-	    * describe-key doesn't work yet. 
-	    * setting the MOTION/OPER flag is not implemented for procedures 
-	      --not sure whether it ever could/should be.  
-	    * the method used to update the [Binding List] requires *lots* of 
-	      passes through the tree.  
-	  Perl stuff (strings to eval or coderefs) can also be put into the 
-	  command table under a name--described in the perl.xs comments.  
-		Vile::register grep => 'hgrep', 'recursive grep', 'hgrep.pl';  
-	  the Vile::register_motion and register_oper variants additionally set 
-	  the MOTION or OPER flag:  
-		*cb = \$Vile::current_buffer; 
-		Vile::register_motion 'my-forward-line-at-bol' => sub { 
-			$cb->dot((scalar $cb->dot) + 1, 0); 
-		};  
-		Vile::register_oper 'my-delete-til' => sub { $cb->delete }; 
- 
+	  optional help string may be supplied):
+		store-procedure foo "some descriptive text"
+		...
+		~endm
+		bind-key foo ^A-f
+	  this appears under `:describe-function foo' as:
+		"foo"                           M-f
+		  ( some descriptive text )
+	  Notes/Bugs:
+	    * describe-key doesn't work yet.
+	    * setting the MOTION/OPER flag is not implemented for procedures
+	      --not sure whether it ever could/should be.
+	    * the method used to update the [Binding List] requires *lots* of
+	      passes through the tree.
+	  Perl stuff (strings to eval or coderefs) can also be put into the
+	  command table under a name--described in the perl.xs comments.
+		Vile::register grep => 'hgrep', 'recursive grep', 'hgrep.pl';
+	  the Vile::register_motion and register_oper variants additionally set
+	  the MOTION or OPER flag:
+		*cb = \$Vile::current_buffer;
+		Vile::register_motion 'my-forward-line-at-bol' => sub {
+			$cb->dot((scalar $cb->dot) + 1, 0);
+		};
+		Vile::register_oper 'my-delete-til' => sub { $cb->delete };
+
  (tom) 980520 (i)
 	+ correct force-console entry in modetbl (patch by Clark Morgan)
 
@@ -66,7 +86,7 @@ Changes for vile 7.5/8.0 (released ??? ??? ?, 1998)
 	+ Winvile's read pipe and region filter operations now create implicit,
 	  hidden console windows (i.e., black console windows don't pop up and
 	  disappear anymore).  Exception:  Win95's command.com hangs if it
-	  attempts to communicate with implicitly created consoles. 
+	  attempts to communicate with implicitly created consoles.
 	  Consequently, a new boolean mode (called "force-console") has been
 	  created which specifies whether or not consoles are created
 	  explicitly prior to creating a child process or implicitly when the

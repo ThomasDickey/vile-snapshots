@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.106 1998/05/22 02:05:35 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.110 1998/05/25 16:03:30 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -59,6 +59,7 @@ exec_prefix	= @exec_prefix@
 manext		= 1
 bindir		= @bindir@
 datadir		= @datadir@/vile
+perldir		= $(datadir)/perl
 mandir		= @mandir@/man$(manext)
 
 #### End of system configuration section. ####
@@ -72,7 +73,7 @@ CPPFLAGS	= -I. -I$(srcdir) $(X_CFLAGS) \
 
 LDFLAGS		= @IMAKE_LOADFLAGS@
 
-INSTALL_DIRS    = $(bindir) $(datadir) $(mandir)
+INSTALL_DIRS    = $(bindir) $(datadir) $(perldir) $(mandir)
 
 .SUFFIXES: .c .i .o
 
@@ -284,12 +285,12 @@ check: $(TARGET)
 	@echo Sorry, no batch tests available.
 
 INSTALL_PERL = \
-	$(datadir)/glob2re.pl \
-	$(datadir)/hgrep.pl \
-	$(datadir)/manfilt.pl \
-	$(datadir)/shell.pl \
-	$(datadir)/tailf.pl \
-	$(datadir)/visit.pl
+	$(perldir)/glob2re.pl \
+	$(perldir)/hgrep.pl \
+	$(perldir)/manfilt.pl \
+	$(perldir)/shell.pl \
+	$(perldir)/tailf.pl \
+	$(perldir)/visit.pl
 
 INSTALL_FILES = \
 	$(bindir)/$(TARGET) \
@@ -303,6 +304,8 @@ INSTALL_FILES = \
 install: $(INSTALL_DIRS) \
 	$(INSTALL_FILES)
 	@echo 'Completed installation.'
+
+install-perl : $(INSTALL_PERL)
 
 installdirs: $(INSTALL_DIRS)
 
@@ -334,7 +337,7 @@ distclean: clean
 	-$(RM) makefile config.status config.cache config.log config.h
 
 realclean: distclean
-	-$(RM) tags TAGS
+	-$(RM) tags TAGS vile-perl-api.* pod2html-*
 
 lint: $(BUILTHDRS)
 	$(LINT) $(CPPFLAGS) $(SRC) $(LIBS)
@@ -562,17 +565,17 @@ $(mandir)/xvile.$(manext): $(srcdir)/vile.1
 $(datadir)/vile.hlp:       $(srcdir)/vile.hlp
 	$(INSTALL_DATA)    $(srcdir)/vile.hlp $@
 
-$(datadir)/glob2re.pl:     $(srcdir)/perl/glob2re.pl
+$(perldir)/glob2re.pl:     $(srcdir)/perl/glob2re.pl
 	$(INSTALL_DATA)    $(srcdir)/perl/glob2re.pl $@
-$(datadir)/hgrep.pl:       $(srcdir)/perl/hgrep.pl
+$(perldir)/hgrep.pl:       $(srcdir)/perl/hgrep.pl
 	$(INSTALL_DATA)    $(srcdir)/perl/hgrep.pl $@
-$(datadir)/manfilt.pl:     $(srcdir)/perl/manfilt.pl
+$(perldir)/manfilt.pl:     $(srcdir)/perl/manfilt.pl
 	$(INSTALL_DATA)    $(srcdir)/perl/manfilt.pl $@
-$(datadir)/shell.pl:       $(srcdir)/perl/shell.pl
+$(perldir)/shell.pl:       $(srcdir)/perl/shell.pl
 	$(INSTALL_DATA)    $(srcdir)/perl/shell.pl $@
-$(datadir)/tailf.pl:       $(srcdir)/perl/tailf.pl
+$(perldir)/tailf.pl:       $(srcdir)/perl/tailf.pl
 	$(INSTALL_DATA)    $(srcdir)/perl/tailf.pl $@
-$(datadir)/visit.pl:       $(srcdir)/perl/visit.pl
+$(perldir)/visit.pl:       $(srcdir)/perl/visit.pl
 	$(INSTALL_DATA)    $(srcdir)/perl/visit.pl $@
 
 $(INSTALL_DIRS):

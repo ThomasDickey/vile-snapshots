@@ -11,6 +11,8 @@
  * Description: The following code provides an interface to Perl from
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
+ *
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.22 1998/05/25 16:11:24 bod Exp $
  */
 
 /*#
@@ -185,13 +187,15 @@ require(char *file, int optional)
 	SV *tmp = newSVpv("Can't locate ", 0);
 	char const *check;
 	int sz;
+	int not_found;
 
 	sv_catpv(tmp, file);
 	sv_catpv(tmp, " ");
 	check = SvPV(tmp, sz);
+	not_found = !strncmp(SvPV(GvSV(errgv), na), check, sz);
 	SvREFCNT_dec(tmp);
 
-	if (!strncmp(SvPV(GvSV(errgv), na), check, sz))
+	if (not_found)
 	    return SORTOFTRUE;
     }
 
@@ -356,7 +360,6 @@ do_perl_cmd(SV *cmd, int inplace)
     return FALSE;
 }
 
-#if OPT_NAMEBST
 /*
  * procedures for bindable callbacks: see Vile::register*
  */
@@ -424,7 +427,6 @@ perl_free_sub(void *data)
     AV *av = data;
     av_undef(av);
 }
-#endif
 
 /*
  * Prompt for and execute a perl command.
@@ -884,7 +886,14 @@ perl_init(void)
     SV   *svminibuf;
     AV   *av;
     SV   *sv;
+    int  len;
     char  temp[NFILEN];
+    char *vile_path;
+#ifdef _WIN32
+    const char *perl_subdir = "\\perl";
+#else
+    const char *perl_subdir = "/perl";
+#endif
     static char svcurbuf_name[] = "Vile::current_buffer";
 
     perl_interp = perl_alloc();
@@ -906,18 +915,21 @@ perl_init(void)
     sv_catpv(sv, "perl");
     av_store(av, 1, sv);
 #endif
-#ifdef _WIN32
+    /* Always recognize environment variable */
+    if ((vile_path = getenv("VILE_LIBRARY_PATH")) != 0)
     {
-        char *vile_path = getenv("VILE_LIBRARY_PATH");
-
-        if (vile_path)
-        {
-            av_unshift(av = GvAVn(incgv), 1);
-            sv = newSVpv(vile_path, 0);
-            av_store(av, 0, sv);
-        }
+	/*
+	 * "patch" @INC to look (first) for scripts in the directory
+	 * %VILE_LIBRARY_PATH%\\perl .
+	 */
+	len = strlen(vile_path) - 1;
+	if (len >= 0 && is_slashc(vile_path[len]))
+	    vile_path[len] = '\0'; /* Chop trailing path delim */
+	av_unshift(av = GvAVn(incgv), 1);
+	sv = newSVpv(vile_path, 0);
+	sv_catpv(sv, perl_subdir);
+	av_store(av, 0, sv);
     }
-#endif
 
     /* Obtain handles to specific perl variables, creating them
        if they do not exist. */
@@ -1710,7 +1722,7 @@ mlreply_dir(prompt, ...)
 	static TBUFF *last;
 	int status;
 
-    CODE:
+    PPCODE:
 	if (items == 2) {
 	    tb_scopy(&last, SvPV(ST(1),na));
 	}
@@ -1868,6 +1880,7 @@ selection_buffer(...)
 	int argno;
 
     PPCODE:
+#if OPT_SELECTIONS
 	argno = 0;
 
 	if (strcmp(SvPV(ST(argno), na), "Vile") == 0)
@@ -1912,6 +1925,10 @@ selection_buffer(...)
 	else {
 	    croak("Vile::selection: Incorrect number of arguments");
 	}
+#else
+	croak("%s requires vile to be compiled with OPT_SELECTIONS",
+	      GvNAME(CvGV(cv)));
+#endif
 
  #
  # =item set PAIRLIST
@@ -1969,6 +1986,7 @@ set(...)
 	int nmodenames = 0;
 
     PPCODE:
+#if OPT_EVAL
 	argno    = 0;
 	isglobal = (ix == 0 || ix == 1);
 	issetter = (ix == 0 || ix == 2);
@@ -2108,6 +2126,10 @@ set(...)
 	    }
 	    free(modenames);
 	}
+#else
+	croak("%s requires vile to be compiled with OPT_EVAL",
+	      GvNAME(CvGV(cv)));
+#endif
 
   #
   # =item update
@@ -2154,7 +2176,6 @@ working(...)
     OUTPUT:
 	RETVAL
 
-#if OPT_NAMEBST
   #
   # =item register NAME, [SUB, HELP, REQUIRE]
   #
@@ -2213,10 +2234,10 @@ register(name, ...)
     PREINIT:
 	CMDFUNC *cmd;
 	AV *av;
-	SV *sub;
 	char *p;
 
     PPCODE:
+#if OPT_NAMEBST
 	if (items > 4)
 	    croak("Too many arguments to %s", GvNAME(CvGV(cv)));
 
@@ -2251,8 +2272,8 @@ register(name, ...)
 	    /* push the subroutine */
 	    if (items > 1 && SvTRUE(ST(1)))
 	    {
-		SvREFCNT_inc(sub = ST(1));
-		av_push(av, sub);
+		SvREFCNT_inc(ST(1));
+		av_push(av, ST(1));
 
 		/* push the require */
 		if (items > 3 && SvTRUE(ST(3)))
@@ -2264,7 +2285,9 @@ register(name, ...)
 	    else /* sub = name */
 		av_push(av, newSVpv(name, 0));
 	}
-
+#else
+	croak("%s requires vile to be compiled with OPT_NAMBST",
+	      GvNAME(CvGV(cv)));
 #endif
 
   #
@@ -2545,6 +2568,7 @@ attribute(vbp, ...)
     VileBuf *vbp
 
     PPCODE:
+#if OPT_SELECTIONS
 	if (items <= 1) {
 	    /* Hmm.  What does this mean?  Should we attempt to fetch
 	       the attributes for this region?  Should we turn off all
@@ -2619,6 +2643,10 @@ attribute(vbp, ...)
 	    else
 		XPUSHs(&sv_undef);	/* else return undef */
 	}
+#else
+	croak("%s requires vile to be compiled with OPT_SELECTIONS",
+	      GvNAME(CvGV(cv)));
+#endif
 
   #
   # =item attribute_cntl_a_sequences BUFOBJ
@@ -2635,9 +2663,14 @@ attribute_cntl_a_sequences(vbp)
     VileBuf *vbp
 
     CODE:
+#if OPT_SELECTIONS
 	api_setup_fake_win(vbp, TRUE);
 	attribute_cntl_a_sequences_over_region(&vbp->region, vbp->regionshape);
 	RETVAL = vbp;
+#else
+	croak("%s requires vile to be compiled with OPT_SELECTIONS",
+	      GvNAME(CvGV(cv)));
+#endif
 
     OUTPUT:
 	RETVAL
@@ -3190,7 +3223,7 @@ new(...)
 
     CODE:
 	if (items > 2)
-	    croak("Too many arguments to current_buffer");
+	    croak("Too many arguments to %s", GvNAME(CvGV(cv)));
 
 	name = (items == 1) ? NULL : (char *)SvPV(ST(1),na);
 

@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.157 1998/05/22 00:03:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.159 1998/05/25 17:14:56 bod Exp $
  *
  */
 
@@ -819,6 +819,7 @@ call_cmdfunc(const CMDFUNC *p, int f, int n)
     case CMD_FUNC: /* normal CmdFunc */
 	return (p->cu.c_func)(f, n);
 
+#if OPT_NAMEBST
 #if OPT_PROCEDURES
     case CMD_PROC: /* named procedure */
 	return dobuf(p->cu.c_buff);
@@ -828,6 +829,7 @@ call_cmdfunc(const CMDFUNC *p, int f, int n)
     case CMD_PERL: /* perl subroutine */
 	return perl_call_sub(p->cu.c_perl, p->c_flags & OPER, f, n);
 #endif
+#endif /* OPT_NAMEBST */
     }
 
     mlforce("BUG: invalid CMDFUNC type");

@@ -4,7 +4,14 @@
 # =======
 # A makefile included by makefile.wnt when embedding perl in [win]vile.exe .
 # This particular makefile determines where perl has been installed in the
-# user's Win32 environment.
+# user's Win32 environment and copies win32-compat scripts to a directory
+# "known" to vile.  Scripts are copied from this directory:
+#
+#     .\perl
+#
+# to this directory:
+#
+#     %VILE_LIBRARY_PATH%\perl
 #
 # Preconditions:
 # ==============
@@ -13,15 +20,14 @@
 #         http://www.perl.com/CPAN-local/ports/win32/Standard/x86/
 #
 # 2) The environment variable VILE_LIBRARY_PATH points to a writable
-#    directory where vile's perl scripts will be installed.
+#    "root" directory where vile's perl scripts will be installed.
 #
 # Supported Vile-Based Perl Scripts
 # =================================
-# Consult the macro $(PERL_SCRIPTS) in the file "makefile.wnt" to ascertain
-# the current list of vile-based perl scripts known to work in a Win32
-# environment.
+# Consult the macro $(PERL_SCRIPTS) in the file makefile.wnt to ascertain the
+# current list of vile-based perl scripts known to work in a Win32 environment.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/mkprlenv.wnt,v 1.1 1998/05/12 05:18:00 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/mkprlenv.wnt,v 1.2 1998/05/23 21:21:00 cmorgan Exp $
 #
     perl <<
         foreach $$dir (@INC)
@@ -62,8 +68,8 @@
         }
         print 
  "Checking existence of directory specified by VILE_LIBRARY_PATH env var...\n";
-        $$script_dir=$$ENV{"VILE_LIBRARY_PATH"};
-        if (! $$script_dir)
+        $$root_dir=$$ENV{"VILE_LIBRARY_PATH"};
+        if (! $$root_dir)
         {
             print "error: Environment var VILE_LIBRARY_PATH does not exist\n";
             print "error: Refer to the file 'mkprlenv.wnt' for further info\n";
@@ -71,14 +77,14 @@
         }
         else
         {
-            if (-f $$script_dir)
+            if (-f $$root_dir)
             {
-                print "error: $$script_dir is a file!\n";
+                print "error: $$root_dir is a file!\n";
                 exit(1);
             }
-            elsif (! -d $$script_dir)
+            elsif (! -d $$root_dir)
             {
-                print "error: \"$$script_dir\" is not a directory\n";
+                print "error: \"$$root_dir\" is not a directory\n";
                 exit(1);
             }
             else
@@ -86,15 +92,30 @@
 #               User specified a directory that exists.  First, strip 
 #               trailing dos/unix path delimiters from dir.
 #
-                $$script_dir =~ s!\\$$!!;
-                $$script_dir =~ s!/$$!!;
+                $$root_dir =~ s!\\$$!!;
+                $$root_dir =~ s!/$$!!;
 #
 #               Warp unix path delimiters to backslash (to be compatible
 #               with the DOS COPY command).
 #
-                $$script_dir =~ s@/@\\@g;
-
-#               But is this a writable directory?  The Win32 file
+                $$root_dir =~ s@/@\\@g;
+#
+#               The user's writable directory must have a subdirectory
+#               called "perl".  Create if it doesn't exist.
+                $$script_dir = $$root_dir . "\\perl";
+                if (-f $$script_dir)
+                {
+                    print 
+                "error: script destination directory $$script_dir is a file!\n";
+                    exit(1);
+                }
+                if (! -d $$script_dir && ! mkdir($$script_dir, 0755))
+                {
+                    print "error: can't create \"$$script_dir\": $$!\n";
+                    exit(1);
+                }
+#
+#               And is this a writable directory?  The Win32 file
 #               semantics are so odd that we'll ignore stat() and simply
 #               attempt to create a junk file in this directory as a test
 #               of its accessibility.
@@ -102,7 +123,8 @@
                 $$test_file = "$$script_dir\\vile_perl_tst.txt";
                 if (open(TEST_FD, "> $$test_file") == 0)
                 {
-                    print "error: directory $$script_dir is not writable!\n";
+                    print 
+                         "error: directory \"$$script_dir\" is not writable!\n";
                     exit(1);
                 }
                 close TEST_FD;
@@ -112,7 +134,7 @@
 #
                 if (open(SOME_FD, "> $(PERLCFG)") == 0)
                 {
-                    print "error: creating $(PERLCFG):$$!\n";
+                    print "error: creating $(PERLCFG): $$!\n";
                     exit(1);
                 }
                 print SOME_FD "VILE_PERL_LIB=$$lib\n";
@@ -125,9 +147,10 @@
                 @scripts = split ' ', "$(PERL_SCRIPTS)";
                 foreach $$file (@scripts)
                 {
+                    $$src  = "perl\\" . $$file;
                     $$dest = "$$script_dir\\$$file";
-                    printf "copying $$file -> $$dest...\n";
-                    `copy $$file $$dest`;
+                    printf "copying $$src -> $$dest...\n";
+                    `copy $$src $$dest`;
                 }
             }
         }
