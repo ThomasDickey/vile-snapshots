@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.220 2000/08/26 00:46:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.221 2000/09/05 02:15:14 tom Exp $
  *
  */
 
@@ -1450,7 +1450,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 	TBUFF *buf = 0;
 
 	miniedit = FALSE;
-	last_eolchar = EOS;	/* ...in case we don't set it elsewhere */
+	set_end_string(EOS);	/* ...in case we don't set it elsewhere */
 	tb_unput(*extbuf);	/* FIXME: trim null */
 
 	if (clexec) {
@@ -1490,10 +1490,11 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 			/*
 			 * Splice for multi-part command
 			 */
-			if ((last_eolchar = *execstr) != EOS)
-				last_eolchar = ' ';
-			else
-				last_eolchar = '\n';
+			if (*execstr != EOS) {
+				set_end_string(eolchar ? eolchar : ' ');
+			} else {
+				set_end_string('\n');
+			}
 		}
 		if (pushed_back && (*execstr == EOS)) {
 			pushed_back = FALSE;
@@ -1616,7 +1617,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 		}
 
 		if (done) {
-			last_eolchar = c;
+			set_end_string(c);
 			if (options & KBD_QUOTES)
 				remove_backslashes(buf); /* take out quoters */
 

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.231 2000/08/26 16:35:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.232 2000/09/05 01:51:30 tom Exp $
  *
  */
 
@@ -1835,10 +1835,15 @@ kbd_engl(
 }
 
 /* sound the alarm! */
+#if OPT_TRACE
+void
+trace_alarm(char *file, int line)
+#else
 void
 kbd_alarm(void)
+#endif
 {
-    TRACE(("BEEP\n"));
+    TRACE(("BEEP (%s @%d)\n", file, line));
 
     if (!no_errs
 	&& !clhide
@@ -2447,7 +2452,7 @@ kbd_complete(
 #if OPT_POPUPCHOICE
     cmplcol = 0;
 #endif
-    kbd_alarm();		/* no match */
+    mlwarn("[No match for '%s']", buf);		/* no match */
     buf[*pos = cpos] = EOS;
     return FALSE;
 }

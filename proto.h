@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.433 2000/08/28 10:09:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.434 2000/09/05 01:47:41 tom Exp $
  *
  */
 
@@ -104,7 +104,6 @@ extern int kbd_engl_stat (const char *prompt, char *buffer, int stated);
 extern int kbd_length (void);
 extern int kcod2escape_seq (int c, char *ptr);
 extern int no_such_function (const char *fname);
-extern void kbd_alarm (void);
 extern void kbd_erase (void);
 extern void kbd_erase_to_end (int column);
 extern void kbd_init (void);
@@ -130,6 +129,13 @@ extern int insert_namebst(const char *name, const CMDFUNC *cmd, int ro);
 extern int rename_namebst(const char *oldname, const char *newname);
 extern int search_namebst(const char *name);
 extern void build_namebst(const NTAB *nametbl, int lo, int hi);
+#endif
+
+#if OPT_TRACE
+extern void trace_alarm (char *file, int lineno);
+#define kbd_alarm() trace_alarm(__FILE__, __LINE__);
+#else
+extern void kbd_alarm (void);
 #endif
 
 /* buffer.c */

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.9 2000/02/28 11:58:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.10 2000/09/05 10:54:37 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TCL/TK script.
  */
@@ -13,13 +13,15 @@ DefineFilter("tcl");
 
 #define isIdent(ch) (isalnum(ch) || ch == '_')
 
-static char *Comment_attr;
 static char *Action_attr;
-static char *Ident_attr;
+static char *Braces_attr;
+static char *Comment_attr;
+static char *Error_attr;
 static char *Ident2_attr;
+static char *Ident_attr;
 static char *Keywrd2_attr;
-static char *String_attr;
 static char *Number_attr;
+static char *String_attr;
 
 static void
 init_filter(int before GCC_UNUSED)
@@ -30,13 +32,15 @@ static void
 do_filter(FILE *input)
 {
     yyin = input;
-    Comment_attr = class_attr(NAME_COMMENT);
     Action_attr  = class_attr(NAME_ACTION);
-    Ident_attr   = class_attr(NAME_IDENT);
+    Braces_attr  = class_attr("Braces");
+    Comment_attr = class_attr(NAME_COMMENT);
+    Error_attr   = class_attr(NAME_ERROR);
     Ident2_attr  = class_attr(NAME_IDENT2);
+    Ident_attr   = class_attr(NAME_IDENT);
     Keywrd2_attr = class_attr(NAME_KEYWRD2);
-    String_attr  = class_attr(NAME_LITERAL);
     Number_attr  = class_attr(NAME_NUMBER);
+    String_attr  = class_attr(NAME_LITERAL);
 
     BEGIN(VERB);
     while (yylex() > 0) {
@@ -46,12 +50,16 @@ do_filter(FILE *input)
 %}
 
 SPACE		[ \t]
-STRING1		\'([^\\']|\\[^'])*\'
-STRING2		\"([^"]|\\.)*\"
 
-ACTION		[\.`{}]
-IDENT		[a-zA-Z_-][a-zA-Z_0-9-]*
-IDENT1		\$[a-zA-Z_0-9]+
+SSTRING		\'([^\\'\n]|\\[^'\n])*\'
+DSTRING		\"([^"\n]|\\[^\n])*[\"]?
+STRINGS		({SSTRING}|{DSTRING})
+
+ACTION		([\.`]|\\\n)
+
+BASICIDENT      [a-zA-Z_-][a-zA-Z_0-9-]*
+IDENT           (::)?{BASICIDENT}(::{BASICIDENT})*
+IDENT1		\${IDENT}
 IDENT2		\$\{[^\}]*\}
 IDENTX		\$[\*@#\?\$!-]
 WIDGET		(\.{IDENT})+
@@ -59,20 +67,28 @@ WIDGET		(\.{IDENT})+
 SIGN		[-+]
 DECIMAL		[0-9]+
 OCTAL		0[0-7]+
-HEXADECIMAL	0x[0-9a-f]+
+HEXADECIMAL	0x[0-9a-fA-Z]+
 EXP		[eE]{SIGN}?{DECIMAL}
 REAL		(({DECIMAL}\.{DECIMAL}?)|({DECIMAL}?\.{DECIMAL})){EXP}?
 NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
+NODECIMAL	[0-9]+[g-zG-Z]+
+NOOCTAL      	0[0-7]*([89]+[0-7]*)+
+NOHEXADECIMAL	0X[0-9a-fA-Z]+
+NOREAL		\.?{EXP}
+NONUMBER	{SIGN}?({NODECIMAL}|{NOOCTAL}|{NOHEXADECIMAL}|{NOREAL})
+
 %%
 
+[{}]			{ WriteToken(Braces_attr); }
 {IDENT}			{ WriteToken(keyword_attr(yytext)); BEGIN(ARGS); }
 
-<VERB>"#".*$		{ WriteToken(Comment_attr); }
+<VERB>"#"([^\n]|\\\n)*$	{ WriteToken(Comment_attr); }
 <ARGS>[;\n]		{ ECHO; BEGIN(VERB); }
 
 {ACTION}		{ WriteToken(Action_attr); }
 
+{NONUMBER}		{ WriteToken(Error_attr); }
 {NUMBER}		{ WriteToken(Number_attr); }
 
 {IDENT1}	|
@@ -80,6 +96,8 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 {IDENTX}	|
 {WIDGET}		{ WriteToken(Ident2_attr); }
 
+\{\"\}          |
+\\\"			{ WriteToken(""); }
+
 \\.		|
-{STRING1}	|
-{STRING2}		{ WriteToken(String_attr); }
+{STRINGS}		{ WriteToken(String_attr); }

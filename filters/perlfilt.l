@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.30 2000/08/09 23:45:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.32 2000/09/04 22:28:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PERL input
  * text.
@@ -13,7 +13,7 @@
 
 #include <filters.h>
 
-DefineFilter("perl");
+DefineFilter("pl");
 
 #define isIdent(ch) (isalnum(ch) || ch == '_')
 
@@ -93,7 +93,7 @@ add_to_pattern(char *text)
     if (save_len == 1 && !delim) {
 	if (!isalpha(*text) && !isspace(*text)) {
 	    delim = *text;
-	    need = (first == 's') ? 3 : 2;
+	    need = (first == 's' || first == 'y' || first == 't') ? 3 : 2;
 	}
     }
     if (escaped) {
@@ -153,7 +153,7 @@ DSTRING		\"(\\.|\\\n|[^"\\])*\"
 STRINGS		({SSTRING}|{DSTRING})
 
 KEYWORD		[a-zA-Z_][a-zA-Z_0-9]*
-QIDENT		[a-zA-Z_0-9"']+
+QIDENT		["']?[a-zA-Z_][a-zA-Z_0-9]+["']?
 
 NORMALVARS	[\$%@][a-zA-Z_0-9]+('[a-zA-Z0-9]+)?
 OTHERVARS	(\$[-_.\/,"\\#%=~|\$?&`'+*\[\];!@<>():])|(\$\^[@-\177]?)
