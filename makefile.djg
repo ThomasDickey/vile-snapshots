@@ -3,7 +3,7 @@
 #
 # T.DANG (dang@cogit.ign.fr)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.19 1996/05/02 22:14:26 pgf Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.20 1997/01/10 11:07:43 tom Exp $
 #
 #
 
@@ -25,7 +25,7 @@ CFLAGS= -Wall $(DEBUG) $(OPTIM) -DDISP_BORLAND -Dscrn_chosen
 DISP_SRC = borland.c gppconio.c
 
 # these are normal editable headers
-HDRS = estruct.h epath.h edef.h proto.h dirstuff.h
+HDRS = estruct.h edef.h proto.h dirstuff.h
 
 # these headers are built by the mktbls program from the information in cmdtbl
 # and in modetbl
@@ -94,7 +94,7 @@ clean:
 	rm *.o
 	rm $(BUILTHDRS)
 
-bind.o:		epath.h nefunc.h
+bind.o:		nefunc.h
 eval.o:		nevars.h
 exec.o:		nefunc.h
 externs.o:	nebind.h nename.h neproto.h nefunc.h

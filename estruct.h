@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.294 1996/12/17 11:44:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.295 1997/01/10 11:07:43 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -795,10 +795,6 @@ typedef enum {
 #define FL_PATH      iBIT(7)	/* look along execution-path */
 
 #define FL_ANYWHERE  (FL_HERE|FL_HOME|FL_EXECDIR|FL_TABLE|FL_PATH)
-
-/* indices into pathname[] array (epath.h) */
-#define PATH_STARTUP_NAME	0
-#define PATH_TABLEDIRS		1
 
 /* definitions for name-completion */
 #define	NAMEC		name_cmpl /* char for forcing name-completion */

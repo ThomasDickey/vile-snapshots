@@ -11,7 +11,7 @@
 # all as "0".  If you use tcap.c, you'll need libtermcap.a too.  If you use
 # x11.c, you'll need libX11.a too.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.32 1996/11/07 02:00:25 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.33 1997/01/10 11:07:43 tom Exp $
 
 # for building the X version, xvile, use these:
 #SCREEN = x11simp
@@ -38,11 +38,6 @@ LIBS =
 TARGET = vile.exe
 SCRDEF = "DISP_VMSVT","scrn_chosen"
 .ENDIF
-
-# if you want the help file (vile.hlp) to go somewhere other than your $PATH
-#  or one of the hard-code paths in epath.h  (it goes to the same place vile
-#  does by default)
-HELP_LOC=
 
 LINKFLAGS = /MAP=$(MMS$TARGET_NAME)/CROSS_REFERENCE/EXEC=$(MMS$TARGET_NAME).EXE
 
@@ -203,7 +198,7 @@ clobber : clean
 
 $(OBJ) : estruct.h nemode.h nefkeys.h edef.h proto.h
 
-bind.obj :	epath.h nefunc.h
+bind.obj :	nefunc.h
 eval.obj :	nevars.h
 exec.obj :	nefunc.h
 externs.obj :	nebind.h nename.h neproto.h nefunc.h

@@ -3,7 +3,7 @@
 # based on the original makefile of vile 3.46 (see the original makefile)
 # T.DANG (dang@cogit.ign.fr)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wat,v 1.21 1996/03/24 13:38:16 pgf Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wat,v 1.22 1997/01/10 11:07:43 tom Exp $
 #
 # if you use the watcom version of vile, you may want to "set DOS4G=quiet"
 # to suppress the DOS 4G/W banner that comes up from the Rational Systems
@@ -31,7 +31,7 @@ CC=wcl386/p
 CFLAGS= /d$(SCREENDEF)=1 /dscrn_chosen=1 /ols 
 
 # these are normal editable headers
-HDRS = estruct.h epath.h edef.h proto.h dirstuff.h
+HDRS = estruct.h edef.h proto.h dirstuff.h
 
 # these headers are built by the mktbls program from the information in cmdtbl
 # and in modetbl
@@ -96,7 +96,7 @@ clean:	.SYMBOLIC
 	-del ne*.h
 	-del MKTBLS.EXE
 
-bind.obj:	epath.h nefunc.h
+bind.obj:	nefunc.h
 eval.obj:	nevars.h
 exec.obj:	nefunc.h
 externs.obj:	nebind.h nename.h neproto.h nefunc.h

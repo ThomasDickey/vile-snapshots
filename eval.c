@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.136 1996/12/17 11:41:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.137 1997/01/10 11:07:43 tom Exp $
  *
  */
 
@@ -496,8 +496,11 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 
 		ElseIf( EVHELPFILE )	value = helpfile;
 
-		ElseIf( EVNTILDES )	value = l_itoa(ntildes);
+		ElseIf( EVSTARTUP_FILE ) value = startup_file;
 
+		ElseIf( EVSTARTUP_PATH ) value = startup_path;
+
+		ElseIf( EVNTILDES )	value = l_itoa(ntildes);
 
 		EndIf
 	}
@@ -885,6 +888,12 @@ char *value)	/* value to set to */
 
 		ElseIf( EVHELPFILE )
 			SetEnv(&helpfile, value);
+
+		ElseIf( EVSTARTUP_FILE )
+			SetEnv(&startup_file, value);
+
+		ElseIf( EVSTARTUP_PATH )
+			SetEnv(&startup_path, value);
 
 #if OPT_PROCEDURES
 		ElseIf( EVCDHOOK )     (void)strcpy(cdhook, value);

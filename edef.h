@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.204 1996/12/22 01:19:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.205 1997/01/10 11:07:43 tom Exp $
  */
 
 /* I know this declaration stuff is really ugly, and I probably won't ever
@@ -24,6 +24,7 @@
 #endif
 
 decl_uninit( char *prog_arg );		/* argv[0] from main.c */
+decl_init( char *exec_pathname, ".");	/* replaced at runtime with path-head of argv[0] */
 
 #if DISP_X11
 decl_init( const char prognam[], "xvile");
@@ -266,6 +267,9 @@ decl_uninit( int fileispipe );
 decl_uninit( int eofflag );		/* end-of-file flag */
 decl_init ( L_NUM help_at, -1 );	/* position in help-file */
 decl_uninit( char *helpfile );
+
+decl_uninit( char *startup_file );
+decl_uninit( char *startup_path );
 
 decl_init( const char hexdigits[], "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 

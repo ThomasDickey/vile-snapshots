@@ -1,5 +1,22 @@
 Changes for vile 7.0 (released ??? ??? ??, 1997)
 
+(tom)	970109 (c)
+	+ eliminate epath.h by variables $startup-file and $startup-path.
+	+ disable SIGHUP during normal quit/exit to workaround spurious "vile
+	  died" message when I've spawned vile in an xterm from another process
+	  (e.g., ded) on SunOS 4.x (this happens when doing :q! from vile with
+	  a modified buffer).
+	+ modify "print-prefixed-lines-til" command to print the buffer name
+	  rather than filename, thus allowing any buffer except [p-lines] to be
+	  indexed.
+	+ modify configure.in so that nsl and socket libraries aren't tested
+	  on IRIX 5.x, since those don't work with X11R5.
+
+(kev)	970108 (b)
+	+ configure.in: Added back in the tests for the nsl and socket
+	  libraries which seem to be necessary in order for configure
+	  to work cleanly on Solaris 2.5 with X11R6.
+
 (tom)	970103 (a)
 	+ correct an off-by-one in kbd_erase() that resulted in display
 	  glitch in filename completion when the prompt-text was a very long

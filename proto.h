@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.231 1997/01/04 00:57:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.232 1997/01/10 11:07:43 tom Exp $
  *
  */
 
@@ -125,8 +125,8 @@ extern BUFFER *getfile2bp (const char *fname, int ok_to_ask, int cmdline);
 
 /* crypt.c */
 #if	OPT_ENCRYPT
-extern	int	ue_makekey (char *key, int len);
-extern	void	ue_crypt (char *bptr, int len);
+extern	int	ue_makekey (char *key, ALLOC_T len);
+extern	void	ue_crypt (char *bptr, ALLOC_T len);
 #endif	/* OPT_ENCRYPT */
 
 /* csrch.c */

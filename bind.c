@@ -3,14 +3,12 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.142 1997/01/04 00:35:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.143 1997/01/10 11:07:42 tom Exp $
  *
  */
 
 #include	"estruct.h"
 #include	"edef.h"
-#include	"epath.h"
-
 #include	"nefunc.h"
 
 #define SHORT_CMD_LEN 4	/* command names longer than this are preferred
@@ -844,7 +842,6 @@ int hflag)		/* Look in the HOME environment variable first? */
 #if ENVFUNC && OPT_PATHLOOKUP
 	register const char *path; /* environmental PATH variable */
 #endif
-	register int i;		/* index */
 	static char fspec[NSTRING];	/* full path spec to search */
 #if SYS_VMS
 	register char *sp;	/* pointer into path spec */
@@ -887,9 +884,11 @@ int hflag)		/* Look in the HOME environment variable first? */
 
 	if (hflag & FL_TABLE) {
 		/* then look it up via the table method */
-		for (i = PATH_TABLEDIRS; i < NPNAMES; i++) {
-			if (ffaccess(pathcat(fspec, pathname[i], fname),mode))
+		path = startup_path;
+		while ((path = parse_pathlist(path, fspec)) != 0) {
+			if (ffaccess(pathcat(fspec, fspec, fname), mode)) {
 				return(fspec);
+			}
 		}
 	}
 
