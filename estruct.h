@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.344 1998/04/20 09:54:03 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.345 1998/04/23 09:18:54 kev Exp $
  */
 
 #ifndef _estruct_h
@@ -1827,7 +1827,12 @@ typedef struct	WINDOW {
 #endif
 }	WINDOW;
 
+#define is_visible_window(wp) ((wp)->w_toprow >= 0)
+#define is_fake_window(wp) (!(is_visible_window(wp)))
+
 #define	for_each_window(wp) for (wp = wheadp; wp; wp = wp->w_wndp)
+#define for_each_visible_window(wp) \
+		for_each_window(wp) if (is_visible_window(wp))
 
 #define w_dot     w_traits.w_dt
 #if WINMARK

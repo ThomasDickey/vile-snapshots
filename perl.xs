@@ -2201,15 +2201,28 @@ command(cline)
 void
 keystroke(...)
 
+    PREINIT:
+    	int noget;
     PPCODE:
 	if (items > 1)
 	    croak("Too many arguments to keystroke");
-	else if (items == 1 && !SvTRUE(ST(0))) {
+
+	curwp = curwp_visible ? curwp_visible : curwp;
+	curbp = curwp->w_bufp;
+
+	noget = FALSE;
+
+	if (items == 1 && !SvTRUE(ST(0))) {
 	    if (!sysmapped_c_avail()) {
 		XPUSHs(&sv_undef);
+		noget = TRUE;
 	    }
 	}
-	XPUSHs(sv_2mortal(newSViv(sysmapped_c())));
+
+	if (!noget)
+	    XPUSHs(sv_2mortal(newSViv(sysmapped_c())));
+
+	curwp_visible = curwp;
 
 
 #
@@ -2251,6 +2264,17 @@ void
 update()
     PPCODE:
 	api_update();
+
+#
+# beep
+#
+#	Rings terminal bell (or equivalent)
+#
+
+void
+beep()
+    PPCODE:
+    	kbd_alarm();
 
 #
 # watchfd FD, WATCHTYPE, CALLBACK 

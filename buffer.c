@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.168 1998/04/20 09:54:03 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.169 1998/04/23 09:18:54 kev Exp $
  *
  */
 
@@ -420,7 +420,7 @@ WINDOW *
 bp2any_wp(BUFFER *bp)
 {
 	register WINDOW *wp;
-	for_each_window(wp)
+	for_each_visible_window(wp)
 		if (wp->w_bufp == bp)
 			break;
 	return wp;
@@ -740,7 +740,7 @@ suckitin (BUFFER *bp, int copy, int lockfl)
 		register WINDOW *wp;
 
 		for_each_window(wp) {
-			if (wp->w_bufp == bp)
+			if (wp->w_bufp == bp && (is_visible_window(wp) || bp->b_active != TRUE))
 				copy_traits(&(wp->w_traits), &(bp->b_wtraits));
 		}
 	}
@@ -1157,7 +1157,7 @@ renamebuffer(BUFFER *rbp, char *bufname)
 #endif
 	set_bname(rbp, bufn);	/* copy buffer name to structure */
 
-	for_each_window(wp)
+	for_each_visible_window(wp)
 		if (wp->w_bufp == rbp)
 			wp->w_flag |= WFMODE;
 
@@ -1936,7 +1936,7 @@ chg_buff(register BUFFER *bp, register USHORT flag)
 	if (update_on_chg(bp))
 		updatelistbuffers();
 #endif
-	for_each_window(wp)
+	for_each_visible_window(wp)
 		if (wp->w_bufp == bp) {
 			wp->w_flag |= flag;
 #ifdef WMDLINEWRAP
@@ -1965,7 +1965,7 @@ unchg_buff(register BUFFER *bp, register USHORT flag)
 		b_clr_counted(bp);
 		b_match_attrs_dirty(bp);
 
-		for_each_window(wp) {
+		for_each_visible_window(wp) {
 			if (wp->w_bufp == bp)
 				wp->w_flag |= flag;
 		}

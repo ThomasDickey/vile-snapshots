@@ -8,7 +8,7 @@
  * Modified by Pete Ruczynski (pjr) for auto-sensing and selection of
  * display type.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.85 1998/04/20 09:54:03 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.86 1998/04/23 09:18:54 kev Exp $
  *
  */
 
@@ -612,7 +612,7 @@ copy2nd(int inverted)
 	char *tt;
 	register int	row, col, attr;
 
-	for_each_window(wp) {
+	for_each_visible_window(wp) {
 		for (row = wp->w_toprow; row <= mode_row(wp); row++) {
 			vp = vscreen[row];
 			lp = s2ptr[row];

@@ -63,7 +63,7 @@
  *
  *	Allow left/right scrolling of input lines (when they get too long).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.42 1998/03/12 10:57:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.43 1998/04/23 09:18:54 kev Exp $
  *
  */
 
@@ -294,7 +294,7 @@ hst_flush(void)
 		}
 
 		/* patch: reuse logic from slowreadf()? */
-		for_each_window(wp) {
+		for_each_visible_window(wp) {
 			if (wp->w_bufp == bp) {
 				wp->w_flag |= WFFORCE;
 				if (wp == curwp)

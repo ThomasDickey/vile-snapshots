@@ -18,7 +18,7 @@
  * transfering the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.65 1998/04/20 09:54:03 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.66 1998/04/23 09:18:54 kev Exp $
  *
  */
 
@@ -109,7 +109,7 @@ detach_attrib(BUFFER *bp, AREGION *arp)
     if (bp != NULL) {
 	WINDOW *wp;
 	AREGION **rpp;
-	for_each_window(wp) {
+	for_each_visible_window(wp) {
 	    if (wp->w_bufp == bp)
 		wp->w_flag |= WFHARD;
 	}
@@ -156,7 +156,7 @@ attach_attrib(BUFFER *bp, AREGION *arp)
     WINDOW *wp;
     arp->ar_next = bp->b_attribs;
     bp->b_attribs = arp;
-    for_each_window(wp)
+    for_each_visible_window(wp)
 	if (wp->w_bufp == bp)
 	    wp->w_flag |= WFHARD;
     arp->ar_region.r_attr_id = (unsigned short) assign_attr_id();
@@ -341,7 +341,7 @@ sel_extend(int wiping, int include_dot)
 	}
 
 	selregion.ar_vattr = VASEL | VOWN_SELECT;
-	for_each_window(wp) {
+	for_each_visible_window(wp) {
 		if (wp->w_bufp == selbufp)
 			wp->w_flag |= WFHARD;
 	}

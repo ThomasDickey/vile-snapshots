@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.173 1998/04/20 09:54:03 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.174 1998/04/23 09:18:54 kev Exp $
  *
  */
 
@@ -677,7 +677,7 @@ static void
 set_scroll_window(long n)
 {
     register WINDOW *wp;
-    for_each_window(wp) {
+    for_each_visible_window(wp) {
 	if (n-- == 0)
 	    break;
     }
@@ -717,7 +717,7 @@ grip_moved(
     long i = (long) closure;
     OlScrollbarVerify *cbs = (OlScrollbarVerify *)call_data;
 
-    for_each_window(wp) {
+    for_each_visible_window(wp) {
 	if (i-- == 0)
 	    break;
     }
@@ -725,15 +725,10 @@ grip_moved(
 	return;
     saved_curwp = curwp;
     nlines = - cbs->new_location;
-    if (nlines == 0) {
-	delwp(wp);
-	if (saved_curwp == wp)
-	    saved_curwp = wheadp;
-    }
-    else {
-	curwp = wp;
-	resize(TRUE, nlines);
-    }
+    if (nlines < 1)
+	nlines = 1;
+    curwp = wp;
+    resize(TRUE, nlines);
     set_curwp(saved_curwp);
     (void) update(TRUE);
 }
@@ -746,7 +741,7 @@ update_scrollbar_sizes(void)
     Dimension new_height;
 
     i=0;
-    for_each_window(wp)
+    for_each_visible_window(wp)
 	i++;
     newsbcnt=i;
 
@@ -781,7 +776,7 @@ update_scrollbar_sizes(void)
     /* Set sizes and positions on scrollbars and sliders */
     cur_win->nscrollbars = newsbcnt;
     i=0;
-    for_each_window(wp) {
+    for_each_visible_window(wp) {
 	new_height = wp->w_ntrows * cur_win->char_height;
 	XtVaSetValues(cur_win->scrollbars[i],
 	    XtNy,	wp->w_toprow * cur_win->char_height,
@@ -857,7 +852,7 @@ update_scrollbar_sizes(void)
     int num_children;
     long i=0;
 
-    for_each_window(wp)
+    for_each_visible_window(wp)
 	i++;
     newsbcnt=i;
 
@@ -909,7 +904,7 @@ update_scrollbar_sizes(void)
     /* Set sizes on scrollbars */
     cur_win->nscrollbars = newsbcnt;
     i=0;
-    for_each_window(wp) {
+    for_each_visible_window(wp) {
 	new_height = wp->w_ntrows * cur_win->char_height;
 	XtVaSetValues(cur_win->scrollbars[i],
 	    XmNallowResize,		TRUE,
@@ -997,7 +992,7 @@ update_scrollbar_sizes(void)
     Dimension new_height;
 
     i=0;
-    for_each_window(wp)
+    for_each_visible_window(wp)
 	i++;
     newsbcnt=i;
 
@@ -1042,7 +1037,7 @@ update_scrollbar_sizes(void)
     /* Set sizes and positions on scrollbars and grips */
     cur_win->nscrollbars = newsbcnt;
     i=0;
-    for_each_window(wp) {
+    for_each_visible_window(wp) {
 	L_NUM total = line_count(curwp->w_bufp);
 	L_NUM thumb = line_no(curwp->w_bufp, curwp->w_line.l);
 
@@ -1098,7 +1093,7 @@ update_scrollbar_sizes(void)
     Cardinal nchildren;
 
     i=0;
-    for_each_window(wp)
+    for_each_visible_window(wp)
 	i++;
     newsbcnt=i;
 
@@ -1151,7 +1146,7 @@ update_scrollbar_sizes(void)
 
     /* Set sizes and positions on scrollbars and grips */
     i=0;
-    for_each_window(wp) {
+    for_each_visible_window(wp) {
 	new_height = wp->w_ntrows * cur_win->char_height;
 	XtVaSetValues(cur_win->scrollbars[i],
 	    XtNx,		cur_win->slider_is_3D ? 0 : 1,
@@ -1190,7 +1185,7 @@ update_scrollbar_sizes(void)
     cur_win->nscrollbars = newsbcnt;
 
     i = 0;
-    for_each_window(wp) {
+    for_each_visible_window(wp) {
 	wp->w_flag &= ~WFSBAR;
 	update_scrollbar(wp);
 	i++;
@@ -1400,7 +1395,7 @@ do_scroll(
 
     /* Determine scrollbar number and corresponding vile window */
     i = 0;
-    for_each_window (wp) {
+    for_each_visible_window (wp) {
 	if (cur_win->scrollbars[i] == w)
 	    break;
 	i++;
@@ -1547,7 +1542,7 @@ resize_bar(
 
     /* Determine grip number and corresponding vile window (above grip) */
     i = 0;
-    for_each_window (wp) {
+    for_each_visible_window (wp) {
 	if (cur_win->grips[i] == w)
 	    break;
 	i++;
@@ -1590,7 +1585,7 @@ update_scrollbar(
 #endif /* !OPT_KEV_SCROLLBARS */
 
     i = 0;
-    for_each_window(wp) {
+    for_each_visible_window(wp) {
 	if (wp == uwp)
 	    break;
 	i++;
@@ -5264,21 +5259,16 @@ grip_moved(
     saved_curwp = curwp;
 
     i = 0;
-    for_each_window(wp) {
+    for_each_visible_window(wp) {
 	XtVaGetValues(cur_win->scrollbars[i],
 		XtNheight, &height,
 		NULL);
 	lines = (height+(cur_win->char_height/2)) / cur_win->char_height;
-	if (lines == 0) {
-	    /* Delete the window */
-	    delwp(wp);
-	    if (saved_curwp == wp)
-		saved_curwp = wheadp;
+	if (lines <= 0) {
+	    lines = 1;
 	}
-	else {
-	    curwp = wp;
-	    resize(TRUE, lines);
-	}
+	curwp = wp;
+	resize(TRUE, lines);
 	i++;
     }
     set_curwp(saved_curwp);
@@ -5301,7 +5291,7 @@ configure_bar(
 	return;
 
     i = 0;
-    for_each_window(wp) {
+    for_each_visible_window(wp) {
 	if (cur_win->scrollbars[i] == w) {
 	    if (strcmp(params[0], "Only") == 0) {
 		set_curwp(wp);
@@ -6078,9 +6068,9 @@ x_watchfd(int fd, WATCHTYPE type, long *idp)
     *idp = (long) XtAppAddInput(
 		    cur_win->app_context,
 		    fd,
-		    (type & WATCHREAD)  ? XtInputReadMask :
-		    (type & WATCHWRITE) ? XtInputWriteMask
-					: XtInputExceptMask,
+		    (XtPointer) ((type & WATCHREAD)  ? XtInputReadMask :
+		                 (type & WATCHWRITE) ? XtInputWriteMask
+					             : XtInputExceptMask),
 		    watched_input_callback,
 		    (XtPointer) fd);
     return TRUE;
