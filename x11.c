@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.178 1998/04/30 22:16:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.179 1998/05/14 23:16:54 tom Exp $
  *
  */
 
@@ -414,7 +414,7 @@ static struct eventqueue *evqhead = NULL;
 static struct eventqueue *evqtail = NULL;
 
 static	int	x_getc   (void),
-		x_cres   ( char *flag );
+		x_cres   ( const char *flag );
 
 static	void	x_open   (void),
 		x_close  (void),
@@ -5967,7 +5967,7 @@ x_rev(UINT state)
 /* change screen resolution */
 /*ARGSUSED*/
 static int
-x_cres(char *flag GCC_UNUSED)
+x_cres(const char *flag GCC_UNUSED)
 {
     return TRUE;
 }

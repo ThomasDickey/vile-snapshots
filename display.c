@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.247 1998/04/26 12:40:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.248 1998/05/14 23:02:30 tom Exp $
  *
  */
 
@@ -2965,7 +2965,9 @@ void
 movecursor(int row, int col)
 {
 	beginDisplay();
-	if (row!=ttrow || col!=ttcol)
+	if ((row!=ttrow || col!=ttcol)
+	 && (row >= 0 && row < term.t_nrow)
+	 && (col >= 0 && col < term.t_ncol))
         {
 	        ttrow = row;
 	        ttcol = col;

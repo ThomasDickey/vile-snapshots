@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.105 1998/04/29 00:09:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.106 1998/05/14 23:15:59 tom Exp $
  *
  */
 
@@ -162,7 +162,7 @@ static const struct {
 #endif
 
 static int  colors_are_really_ANSI (void);
-static int  tcapcres (char *cres);
+static int  tcapcres (const char *cres);
 static void putnpad(char *str, int n);
 static void putpad(char *str);
 static void tcapbeep (void);
@@ -659,7 +659,7 @@ tcapeeop(void)
 
 /*ARGSUSED*/
 static int
-tcapcres(char *res GCC_UNUSED)	/* change screen resolution */
+tcapcres(const char *res GCC_UNUSED)	/* change screen resolution */
 {
 	return(TRUE);
 }

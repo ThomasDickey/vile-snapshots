@@ -3,7 +3,7 @@
  * Modified from a really old version of "borland.c" (before the VIO
  * stuff went in there.)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.18 1998/04/28 10:17:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.19 1998/05/14 23:18:12 tom Exp $
  */
 
 #include "estruct.h"
@@ -49,7 +49,7 @@ static	void	vio_attr   (UINT);
 #else
 static	void	vio_rev    (UINT);
 #endif	/* OPT_VIDEO_ATTRS */
-static	int	vio_cres   (char *);
+static	int	vio_cres   (const char *);
 static	void	vio_close  (void);
 static	int	vio_getc   (void);
 static	void	vio_putc   (int);
@@ -406,7 +406,7 @@ vio_rev(UINT reverse)
 #endif	/* OPT_VIDEO_ATTRS */
 
 static int
-vio_cres(char *res)	/* change screen resolution */
+vio_cres(const char *res) /* change screen resolution */
 			/* resolution to change to */
 {
 	return scinit(-1);

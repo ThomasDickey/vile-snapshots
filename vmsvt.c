@@ -7,7 +7,7 @@
  *  Author:  Curtis Smith
  *  Last Updated: 07/14/87
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.33 1998/04/28 10:19:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.34 1998/05/14 23:17:05 tom Exp $
  *
  */
 
@@ -36,7 +36,7 @@ static	void	vmseeol	(void);
 static	void	vmseeop	(void);
 static	void	vmsbeep	(void);
 static	void	vmsrev	(UINT);
-static	int	vmscres	(char *);
+static	int	vmscres	(const char *);
 
 extern	int	eolexist, revexist;
 extern	char	sres[];
@@ -195,7 +195,7 @@ vmsrev(UINT status)
  *  Nothing returned
  ***/
 static int
-vmscres(char *res)
+vmscres(const char *res)
 {
 	/* But it could.  For vt100/vt200s, one could switch from
 	80 and 132 columns modes */

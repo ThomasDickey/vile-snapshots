@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.83 1998/04/28 10:18:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.84 1998/05/14 00:18:13 tom Exp $
  *
  *
  */
@@ -1448,14 +1448,27 @@ lengthen_path(char *path)
 #endif
 	if (!is_slashc(f[0])) {
 #if OPT_MSDOS_PATH
-		cwd = curr_dir_on_drive(drive!=EOS?drive:curdrive());
-		if (!cwd) {
-			temp[0] = drive;
-#if SYS_OS2_EMX
-			(void)strcpy(temp + 1, ":/");
-#else
-			(void)strcpy(temp + 1, ":\\");
+
+#if OPT_UNC_PATH
+		if ( drive == EOS ) {
+			GetCurrentDirectory(sizeof(temp), temp);
+			cwd = temp;
+		}
+		else
 #endif
+		 cwd = curr_dir_on_drive(drive != EOS
+		 		? drive
+				: curdrive());
+
+		if (!cwd) {
+			/* Drive will be unspecified with UNC Paths */
+			if ( (temp[0] = drive) != EOS ) {
+#if SYS_OS2_EMX
+				(void)strcpy(temp + 1, ":/");
+#else
+				(void)strcpy(temp + 1, ":\\");
+#endif
+			}
 			cwd = temp;
 		}
 #else
@@ -1475,10 +1488,13 @@ lengthen_path(char *path)
 	}
 #if OPT_MSDOS_PATH
 	if (is_msdos_drive(path) == 0) { /* ensure that we have drive too */
-		temp[0] = curdrive();
-		temp[1] = ':';
-		(void)strcpy(temp+2, path);
-		(void)strcpy(path, temp);
+		/* UNC paths have no drive */
+		if ( curdrive() != 0 ) {
+			temp[0] = curdrive();
+			temp[1] = ':';
+			(void)strcpy(temp+2, path);
+			(void)strcpy(path, temp);
+		}
 	}
 #endif
 #endif	/* SYS_UNIX || SYS_MSDOS */

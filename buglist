@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.340 1998/04/26 23:19:52 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.341 1998/05/15 00:23:47 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -865,8 +865,6 @@ These are old wishes/bugs:
 
 These date back to 5.4:
 
-	+ correct :.,$<bs> lockup
-
 	+ should next_column() use HIGHBIT test?
 
 	+ ':' expansion doesn't work with ":write-file" because DOT is
@@ -885,10 +883,6 @@ These are pre-6.0 (undated)
 	implement gpm
 
 	vi sets '#' on attempted write; vile doesn't
-
-	split-out ctype.c, use locale to determine isprint, etc.
-
-	fix the ^VNNN to show digits
 
 --------------------------------------------------------------------------------
 
@@ -929,11 +923,6 @@ add 'mouse-hook' command (maybe generalize with "on" command)
 -- 96-10-16 (tom)
 
 implement $title for tcap.c
-
--- 96-10-19 (tom)
-
-implement Vile, Sh, Csh, Dcl modes with keyword-balancing using the C fences
-(different keywords).
 
 -- 96-10-19 (tom)
 
@@ -1113,7 +1102,7 @@ to scroll through the text in a "subshell" and then print a
 writes no output to the bottom of the screen and does not prompt for user 
 input.  It's as if the entire pipe operation was discarded. 
  
-[97-03-17: Fixed when w32pipes mode is enabled.  Otherwise, write pipes 
+[98-03-17: Fixed when w32pipes mode is enabled.  Otherwise, write pipes 
 are badly broken for DOS and all variants of Windows.] 
 
 -- 97-04-23 (Ron Olsen <ronolsen@lucent.com>)
@@ -1134,8 +1123,8 @@ completion.
 
 -- 97-04-30 (tom)
 
-Piping to vile in WinNT console works, but the mouse doesn't work after
-reopening the console.
+Piping to vile from the command line in WinNT console works, but the mouse
+doesn't work after reopening the console.
 
 -- 97-05-16 (Richard A Ward <wardra@nb.rockwell.com>)
 

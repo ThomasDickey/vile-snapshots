@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.349 1998/05/12 22:41:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.350 1998/05/14 23:12:54 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1907,7 +1907,7 @@ typedef struct	{
 	void	(*t_eeop) (void);	/* Erase to end of page.	*/
 	void	(*t_beep) (void);	/* Beep.			*/
 	void	(*t_rev) (UINT f);	/* set reverse video state	*/
-	int	(*t_rez) (char *f);	/* change screen resolution	*/
+	int	(*t_rez) (const char *f); /* change screen resolution	*/
 	void	(*t_setfor) (int f);	/* set foreground color		*/
 	void	(*t_setback) (int b);	/* set background color		*/
 	void	(*t_setpal) (const char *p); /* set color palette	*/

@@ -1,5 +1,16 @@
 Changes for vile 7.5/8.0 (released ??? ??? ?, 1998)
 
+ (tom) 980515 (g)
+ 	+ modify quote() function to show the accumulated number for ^Vnnn.
+ 	+ change 'value' parameter of SetVarValue() to eliminate a const-cast
+	  warning, which in turn led to applying const to TTrez interface.   
+ 	+ change category of 'sideways' mode to allow setting it for internal
+	  buffers, such as [Help].
+	+ add a range-test for rows and columns in movecursor() to avoid
+	  passing negative coordinates to tcapmove when setting the 'sideways'
+	  mode.
+	+ distinguish MS-DOS drives from UNC pathnames (patch by Ed Henderson)
+
  (tom) 980513 (f)
  	+ replace global variable curswval with the corresponding function
 	  calls, make nextsw a function next_sw(), so that shift-width is

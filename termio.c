@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.154 1998/04/20 09:54:03 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.155 1998/05/14 23:17:20 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -1052,7 +1052,7 @@ getscreensize (int *widthp, int *heightp)
  * so that command-line prompting will have something to talk to.
  */
 
-static int  null_cres     (char *res);
+static int  null_cres     (const char *res);
 static int  null_getc     (void);
 static OUTC_DCL null_putc (OUTC_ARGS);
 static int  null_typahead (void);
@@ -1117,7 +1117,7 @@ static void null_beep(void)	{ }
 /*ARGSUSED*/
 static void null_rev(UINT state GCC_UNUSED) { }
 /*ARGSUSED*/
-static int null_cres(char *res GCC_UNUSED) { return(FALSE); }
+static int null_cres(const char *res GCC_UNUSED) { return(FALSE); }
 
 /*
  * These are public, since we'll use them as placeholders for unimplemented

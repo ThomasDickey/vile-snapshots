@@ -9,7 +9,7 @@
  * Note: Visual flashes are not yet supported.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.24 1998/04/28 10:15:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.25 1998/05/14 23:14:25 tom Exp $
  *
  */
 
@@ -50,7 +50,7 @@ static  void	boreeop   (void);
 static  void	borbeep   (void);
 static  void    boropen   (void);
 static	void	borrev    (UINT);
-static	int	borcres   (char *);
+static	int	borcres   (const char *);
 static	void	borclose  (void);
 static	void	borputc   (int);
 static	void	borkopen  (void);
@@ -280,7 +280,7 @@ borrev(UINT reverse)		/* change reverse video state */
 }
 
 static int
-borcres(char *res)	/* change screen resolution */
+borcres(const char *res)	/* change screen resolution */
 {
 	char	*dst;
 	register int i;		/* index */
