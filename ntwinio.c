@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.93 2000/11/04 11:53:18 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.95 2000/11/15 11:27:42 kev Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -96,7 +96,9 @@ static int enable_popup = TRUE;
 static int font_resize_in_progress;
 static int gui_resize_in_progress;
 static int initialized = FALSE;	/* winvile open for business */
+static int mouse_captured = 0;
 static int nCharWidth = 8;
+static UINT nIDTimer = 0;
 static int nLineHeight = 10;
 static int vile_in_getfkey = 0;
 static int vile_resizing = FALSE;	/* rely on repaint_window if true */
@@ -695,7 +697,7 @@ attr_to_colors(VIDEO_ATTR attr, int *fcolor, int *bcolor)
 
     if (attr) {
 	if (attr & VASPCOL)
-	    *fcolor = (attr & (NCOLORS - 1));
+	    *fcolor = (VCOLORNUM(attr) & (NCOLORS - 1));
 	else if (attr == VABOLD)
 	    *fcolor |= FOREGROUND_INTENSITY;
 	else if (attr == VAITAL)
@@ -1653,6 +1655,27 @@ enable_popup_menu(void)
     DrawMenuBar(cur_win->main_hwnd);
 }
 
+typedef struct popup_menu_info_struct
+{
+    int  menu_id;
+    char *menu_name;
+    char *vile_cmdname;
+
+} POPUP_MENU_INFO;
+
+static POPUP_MENU_INFO popup_menu_tbl[] =
+{
+    { IDM_OPEN,       "&Open...",     "winopen" },
+    { IDM_SAVE_AS,    "&Save As...",  "winsave" },
+    { IDM_UNDO,       "&Undo",        "undo-changes-backward" },
+    { IDM_REDO,       "&Redo",        "redo-changes-forward" },
+    { IDM_CUT,        "Cu&t",         "cut-to-clipboard" },
+    { IDM_COPY,       "&Copy",        "copy-unnamed-reg-to-clipboard" },
+    { IDM_PASTE,      "&Paste",       "paste-from-clipboard" },
+    { IDM_DELETE,     "&Delete",      "delete-text-selection" },
+    { IDM_SELECT_ALL, "Select &All",  "select-all" },
+};
+
 static void
 invoke_popup_menu(MSG msg)
 {
@@ -1661,8 +1684,9 @@ invoke_popup_menu(MSG msg)
     AREGION ar;
     BUFFER *bp;
     const CMDFUNC *cmd;
-    int flag, seltxt, samebuf;
+    int   i, limit, flag, seltxt, samebuf;
     POINT point;
+    POPUP_MENU_INFO *ptbl;
 
     TRACE(("invoke_popup_menu\n"));
     if (hmenu == NULL) {
@@ -1672,35 +1696,39 @@ invoke_popup_menu(MSG msg)
     }
     CheckMenuItem(hmenu, IDM_MENU, MF_BYCOMMAND | MF_CHECKED);
 
-    /*
-     * The "copy" menu command (copy unnamed reg to clipbd) does not use
-     * a static key binding.  Find out what binding is assigned and 
-     * dynamically update the accelerator shown on the popup menu.
-     */
-    if ((cmd = engl2fnc("copy-unnamed-reg-to-clipboard")) != NULL) {
-	(void) kcod2prc(fnc2kcod(cmd), accel);
-	strcpy(buf, "&Copy\t");
-	strcat(buf, accel);
-	ModifyMenu(hmenu, IDM_COPY, MF_BYCOMMAND | MF_STRING, IDM_COPY, buf);
+    /* add accelerators (key bindings) to RMB */
+    limit = sizeof(popup_menu_tbl) / sizeof(popup_menu_tbl[0]);
+    for (i = 0, ptbl = popup_menu_tbl; i < limit; i++, ptbl++) {
+	if ((cmd = engl2fnc(ptbl->vile_cmdname)) != NULL) {
+	    int code;
+
+	    if ((code = fnc2kcod(cmd)) != -1) {
+		/* cmd has a binding */
+
+		(void) kcod2prc(fnc2kcod(cmd), accel);
+		sprintf(buf, "%s\t%s", ptbl->menu_name, accel);
+	    } else {
+		/* rewrite menu text to clear out possible unmapped bindings */
+
+		strcpy(buf, ptbl->menu_name);
+	    }
+	    ModifyMenu(hmenu,
+		       ptbl->menu_id,
+		       MF_BYCOMMAND | MF_STRING,
+		       ptbl->menu_id,
+		       buf);
+	}
     }
-    /* Ditto Undo/Redo menu commands. */
-    if ((cmd = engl2fnc("redo-changes-forward")) != NULL) {
-	(void) kcod2prc(fnc2kcod(cmd), accel);
-	strcpy(buf, "&Redo\t");
-	strcat(buf, accel);
-	ModifyMenu(hmenu, IDM_REDO, MF_BYCOMMAND | MF_STRING, IDM_REDO, buf);
-    }
-    if ((cmd = engl2fnc("undo-changes-backward")) != NULL) {
-	(void) kcod2prc(fnc2kcod(cmd), accel);
-	strcpy(buf, "&Undo\t");
-	strcat(buf, accel);
-	ModifyMenu(hmenu, IDM_UNDO, MF_BYCOMMAND | MF_STRING, IDM_UNDO, buf);
-    }
+
     /* Can't undo/redo if not applicable. */
     flag = (undo_ok()) ? MF_ENABLED : MF_GRAYED;
     EnableMenuItem(hmenu, IDM_UNDO, MF_BYCOMMAND | flag);
     flag = (redo_ok()) ? MF_ENABLED : MF_GRAYED;
     EnableMenuItem(hmenu, IDM_REDO, MF_BYCOMMAND | flag);
+
+    /* Can't "select all" in empty buffer. */
+    flag = (curbp->b_bytecount > 0) ? MF_ENABLED : MF_GRAYED;
+    EnableMenuItem(hmenu, IDM_SELECT_ALL, MF_BYCOMMAND | flag);
 
     /* Can't paste data from clipboard if not TEXT. */
     flag = (IsClipboardFormatAvailable(CF_TEXT)) ? MF_ENABLED : MF_GRAYED;
@@ -1815,6 +1843,10 @@ handle_builtin_menu(WPARAM code)
 	winsave_dir(NULL);
 	update(FALSE);
 	break;
+    case IDM_SELECT_ALL:
+	sel_all(0, 0);
+	update(FALSE);
+	break;
     case IDM_FONT:
 	set_font();
 	break;
@@ -1922,6 +1954,7 @@ AutoScroll(WINDOW *wp)
 	Scroll = -1;
     }
 
+    TRACE(("AutoScroll:(%d, %d, %d)\n", Scroll, ScrollCount, Throttle));
     if (Scroll) {
 	int row;
 	if (Scroll > 0) {
@@ -2475,7 +2508,6 @@ ntgetch(void)
     static DWORD lastclick = 0;
     static int clicks = 0, onmode;
     // Save the timer ID so we can kill it.
-    static UINT nIDTimer = 0;
 
     DWORD thisclick;
     int buttondown = FALSE;
@@ -2589,9 +2621,14 @@ ntgetch(void)
 	case WM_TIMER:
 	    TRACE(("Timer fired\n"));
 	    {
-		// perform auto-scroll if the mouse cursor
-		// is above/below the current window.
-		AutoScroll(that_wp);
+		if (msg.wParam == nIDTimer) {
+		    /*
+		     * perform auto-scroll if the mouse cursor
+		     * is above/below the current window.
+		     */
+
+		    AutoScroll(that_wp);
+		}
 	    }
 	    break;
 	case WM_LBUTTONDOWN:
@@ -2608,12 +2645,20 @@ ntgetch(void)
 		    that_wp = row2window(first.y);
 		    (void) update(TRUE);	/* for wdw change */
 
-		    // Check to see if the mouse is currently captured...
-		    // If not, then capture it to our window handle
-		    if (!GetCapture()) {
-			SetCapture(cur_win->text_hwnd);
-			// Set a 25 timer for handling auto-scroll.
-			nIDTimer = SetTimer(cur_win->text_hwnd, 1, 25, 0);
+		    /* we _will_ own the mouse, if win32 API cooperates */
+		    SetCapture(cur_win->text_hwnd);
+		    mouse_captured = TRUE;
+
+		    /* Set a 25 msec timer for handling auto-scroll. */
+		    nIDTimer = SetTimer(cur_win->text_hwnd, 1, 25, 0);
+		    if (nIDTimer == 0) {
+			/* timer resources exhausted */
+
+			disp_win32_error(W32_SYS_ERROR, cur_win->text_hwnd);
+			ReleaseCapture();
+			mouse_captured = FALSE;
+		    }
+		    else {
 			AutoScroll(that_wp);
 		    }
 		}
@@ -2624,15 +2669,16 @@ ntgetch(void)
 
 	case WM_LBUTTONUP:
 	    TRACE(("GETC:LBUTTONUP %s\n", which_window(msg.hwnd)));
-	    if (msg.hwnd == cur_win->text_hwnd) {
-		// If we captured the mouse, then we will release it.
-		if (GetCapture() == cur_win->text_hwnd) {
-		    ReleaseCapture();
-		    KillTimer(cur_win->text_hwnd, nIDTimer);
-		    nIDTimer = 0;
-		}
-		fhide_cursor();
 
+	    /* If we captured the mouse, then we will release it. */
+	    if (mouse_captured) {
+		mouse_captured = FALSE;
+		ReleaseCapture();
+		KillTimer(cur_win->text_hwnd, nIDTimer);
+		nIDTimer = 0;
+	    }
+	    if (msg.hwnd == cur_win->text_hwnd) {
+		fhide_cursor();
 		sel_pending = FALSE;
 		thisclick = GetTickCount();
 		TRACE(("CLICK %d/%d\n", lastclick, thisclick));
@@ -2957,14 +3003,6 @@ MainWndProc(
 	    wParam = IDC_button_x;
 	    PostMessage(hWnd, message, wParam, lParam);
 	    break;
-	case IDM_PRINT:
-	    MessageBox(
-		GetFocus(),
-		"Command not implemented",
-		MY_APPLE,
-		MB_ICONASTERISK | MB_OK);
-	    break;
-
 	case IDM_EXIT:
 	    DestroyWindow(hWnd);
 	    break;

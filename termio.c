@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.187 2000/05/29 22:10:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.189 2000/11/15 02:02:05 tom Exp $
  *
  */
 
@@ -736,6 +736,23 @@ ttunwatchfd(int fd, long id GCC_UNUSED)
 #define val_autocolor() 0
 #endif
 
+#if USE_SELECT || USE_POLL
+static int
+vl_getchar(void)
+{
+    char c;
+    int n;
+
+    n = read(0, &c, 1);
+    if (n <= 0) {
+	    if (n < 0 && errno == EINTR)
+		    return -1;
+	    imdying(SIGINT);
+    }
+    return char2int(c);
+}
+#endif
+
 /*
  * Read a character from the terminal, performing no editing and doing no echo
  * at all.
@@ -744,23 +761,25 @@ int
 ttgetc(void)
 {
 #if USE_SELECT
-    char c;
     for_ever {
 	fd_set read_fds;
 	fd_set write_fds;
+	fd_set except_fds;
 	int fd, status;
 	struct timeval tval;
 	int acmilli = val_autocolor();
 
 	read_fds = watchfd_read_fds;
 	write_fds = watchfd_write_fds;
+	except_fds = watchfd_read_fds;
 
 	tval.tv_sec  = acmilli / 1000;
 	tval.tv_usec = (acmilli % 1000) * 1000;
 	FD_SET(0, &read_fds);	/* add stdin to the set */
+	FD_SET(0, &except_fds);
 
 	status = select(watchfd_maxfd+1,
-			&read_fds, &write_fds, (fd_set *)0,
+			&read_fds, &write_fds, &except_fds,
 			acmilli > 0 ? &tval : NULL);
 	if (status < 0) {	/* Error */
 	    if (errno == EINTR)
@@ -770,18 +789,17 @@ ttgetc(void)
 	} else if (status > 0) { /* process descriptors */
 	    for (fd = watchfd_maxfd; fd > 0; fd--) {
 		if (FD_ISSET(fd, &read_fds) 
-		    || FD_ISSET(fd, &write_fds))
+		    || FD_ISSET(fd, &write_fds)
+		    || FD_ISSET(fd, &except_fds))
 		    dowatchcallback(fd);
 	    }
-	    if (FD_ISSET(0, &read_fds))
+	    if (FD_ISSET(0, &read_fds) || FD_ISSET(0, &except_fds))
 		break;
 	} else {		/* Timeout */
 	    autocolor();
 	}
     }
-    if (read(0, &c, 1) != 1)
-	return -1;
-    return char2int(c);
+    return vl_getchar();
 #else	/* !USE_SELECT */
 #if USE_POLL
     int acmilli = val_autocolor();
@@ -793,13 +811,14 @@ ttgetc(void)
 	for_ever {
 	    watch_fds[watch_max].fd = 0;
 	    watch_fds[watch_max].events = POLLIN;
+	    watch_fds[watch_max].revents = 0;
 	    if ((n = poll(watch_fds, watch_max + 1, acmilli)) > 0) {
 		for (n = 0; n < watch_max; n++) {
-		    if (watch_fds[n].revents & (POLLIN|POLLOUT)) {
+		    if (watch_fds[n].revents & (POLLIN|POLLOUT|POLLERR)) {
 			dowatchcallback(watch_fds[n].fd);
 		    }
 		}
-		if (watch_fds[watch_max].revents & POLLIN)
+		if (watch_fds[watch_max].revents & (POLLIN|POLLERR))
 		    break;
 	    } else if (n == 0 && acmilli != 0) {
 		autocolor();
@@ -808,7 +827,7 @@ ttgetc(void)
 	    }
 	}
     }
-    return getchar();
+    return vl_getchar();
 #else
 #if USE_FCNTL
 	if( ! kbd_char_good ) {

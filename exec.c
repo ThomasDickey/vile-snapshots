@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.228 2000/09/12 10:13:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.229 2000/11/13 01:03:49 tom Exp $
  *
  */
 
@@ -921,10 +921,22 @@ execute(const CMDFUNC * execfunc, int f, int n)
 char *
 get_token(char *src, TBUFF ** tok, int eolchar, int *actual)
 {
+    tb_init(tok, EOS);
+    return get_token2(src, tok, eolchar, actual);
+}
+
+/*
+ * This is split-out from get_token() so we can handle the special case of
+ * re-gluing a "!" to a quoted string from kbd_reply().
+ */
+char *
+get_token2(char *src, TBUFF ** tok, int eolchar, int *actual)
+{
     int quotef = EOS;		/* nonzero iff the current string quoted */
     int c, i, d, chr;
+    int shell = tb_length(*tok) && isShellOrPipe(tb_values(*tok));
+    int first = TRUE;
 
-    tb_init(tok, EOS);
     if (actual != 0)
 	*actual = EOS;
     if (src == 0)
@@ -1043,7 +1055,12 @@ get_token(char *src, TBUFF ** tok, int eolchar, int *actual)
 
 	    chr = *src++;	/* record the character */
 	}
-	tb_append(tok, chr);
+	if (first && shell && chr == DQUOTE) {
+	    ;	/* eat the leading quote if we're re-gluing a shell command */
+	} else {
+	    tb_append(tok, chr);
+	}
+	first = FALSE;
     }
 
     /* scan past any whitespace remaining in the source string */

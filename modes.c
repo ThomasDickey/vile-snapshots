@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.206 2000/10/10 19:03:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.207 2000/11/15 11:27:42 kev Exp $
  *
  */
 
@@ -1647,7 +1647,7 @@ int set_colors(int n)
 			code = my_hilite[d].choice_code;
 			if (code >=0 && (code & VASPCOL) != 0) {
 				if (ncolors > 2
-				 && choosable_color(my_hilite[d].choice_name, code & ~VASPCOL)) {
+				 && choosable_color(my_hilite[d].choice_name, VCOLORNUM(code))) {
 					my_hilite[d].choice_code = (VASPCOL | code);
 					d++;
 				}

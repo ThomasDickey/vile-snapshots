@@ -12,14 +12,14 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.455 2000/11/04 20:08:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.458 2000/11/15 11:27:42 kev Exp $
  */
 
 #ifndef _estruct_h
 #define _estruct_h 1
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include <config.h>
 #endif
 
 #ifndef CHECK_PROTOTYPES
@@ -1004,6 +1004,9 @@ typedef enum {
 #define KBD_STATED	iBIT(12) /* erasing buffer returns for prev-state */
 #define KBD_CASELESS	iBIT(13) /* name-completion ignores case */
 #define KBD_MAYBEC2	iBIT(14) /* completion optional if user-variable */
+#define KBD_REGLUE	iBIT(15) /* glue tokens across calls */
+
+typedef UINT KBD_OPTIONS;	/* big enough to hold bits defined above */
 
 /* default option for 'mlreply' (used in modes.c also) */
 #if !(SYS_MSDOS || SYS_OS2 || SYS_WINNT)
@@ -1505,22 +1508,22 @@ typedef UCHAR VIDEO_ATTR;
 #define VAOWNER ((VIDEO_ATTR)0x0700)	/* owner mask			*/
 #define VASPCOL ((VIDEO_ATTR)0x0800)	/* specific color		*/
 #define VACOLOR ((VIDEO_ATTR)0xf000)	/* color mask			*/
-#define VACOL_0 (VASPCOL)		/* color palette index 0	*/
-#define VACOL_1 (VASPCOL+1)		/* etc.				*/
-#define VACOL_2 (VASPCOL+2)
-#define VACOL_3 (VASPCOL+3)
-#define VACOL_4 (VASPCOL+4)
-#define VACOL_5 (VASPCOL+5)
-#define VACOL_6 (VASPCOL+6)
-#define VACOL_7 (VASPCOL+7)
-#define VACOL_8 (VASPCOL+8)
-#define VACOL_9 (VASPCOL+9)
-#define VACOL_A (VASPCOL+0xA)
-#define VACOL_B (VASPCOL+0xB)
-#define VACOL_C (VASPCOL+0xC)
-#define VACOL_D (VASPCOL+0xD)
-#define VACOL_E (VASPCOL+0xE)
-#define VACOL_F (VASPCOL+0xF)
+#define VACOL_0 (VASPCOL|0x0000)	/* color palette index 0	*/
+#define VACOL_1 (VASPCOL|0x1000)	/* etc.				*/
+#define VACOL_2 (VASPCOL|0x2000)
+#define VACOL_3 (VASPCOL|0x3000)
+#define VACOL_4 (VASPCOL|0x4000)
+#define VACOL_5 (VASPCOL|0x5000)
+#define VACOL_6 (VASPCOL|0x6000)
+#define VACOL_7 (VASPCOL|0x7000)
+#define VACOL_8 (VASPCOL|0x8000)
+#define VACOL_9 (VASPCOL|0x9000)
+#define VACOL_A (VASPCOL|0xA000)
+#define VACOL_B (VASPCOL|0xB000)
+#define VACOL_C (VASPCOL|0xC000)
+#define VACOL_D (VASPCOL|0xD000)
+#define VACOL_E (VASPCOL|0xE000)
+#define VACOL_F (VASPCOL|0xF000)
 
 #define VCOLORNUM(attr) (((attr) & VACOLOR) >> 12)
 #define VCOLORATTR(num) ((UINT)(num) << 12)

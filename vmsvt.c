@@ -14,7 +14,7 @@
  *   -- support wide and narrow screen resolutions,
  *   -- support visual bells.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.53 1999/12/24 01:11:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.54 2000/11/15 11:27:42 kev Exp $
  *
  */
 
@@ -285,7 +285,7 @@ vmsattr(UINT attr)
 
 	attr = VATTRIB(attr);
 	if (attr & VASPCOL) {
-		attr = VCOLORATTR((attr & (NCOLORS - 1)));
+		attr = VCOLORATTR((VCOLORNUM(attr) & (NCOLORS - 1)));
 	} else {
 		attr &= ~(VAML|VAMLFOC);
 	}

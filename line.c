@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.138 2000/08/26 16:37:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.139 2000/11/14 23:44:41 tom Exp $
  *
  */
 
@@ -1349,6 +1349,8 @@ PutChar(int n, REGIONSHAPE shape)
 	int checkpad = FALSE;
 	register char	*sp;	/* pointer into string to insert */
 	KILL *kp;		/* pointer into kill register */
+	MARK save_mark;
+	L_NUM save_loc;
 
 	if (n < 0)
 		return FALSE;
@@ -1361,7 +1363,8 @@ PutChar(int n, REGIONSHAPE shape)
 	before = vl_line_count(curbp);
 	suppressnl = FALSE;
 	wasnl = FALSE;
-
+	save_mark = MK;
+	save_loc = line_no(curbp, DOT.l);
 
 	/* for each time.... */
 	while (n--) {
@@ -1492,6 +1495,8 @@ PutChar(int n, REGIONSHAPE shape)
 				}
 			} else { /* not rectangle */
 			    while (i-- > 0) {
+				if (is_header_line(DOT,curbp))
+				    suppressnl = TRUE;
 				if (*sp == '\n') {
 				    sp++;
 				    if (lnewline() != TRUE) {
@@ -1502,8 +1507,6 @@ PutChar(int n, REGIONSHAPE shape)
 				} else {
 				    register char *dp;
 				    register char *ep = sp+1;
-				    if (is_header_line(DOT,curbp))
-					suppressnl = TRUE;
 				    /* Find end of line or end of kill buffer */
 				    while (i > 0 && *ep != '\n') {
 					i--;
@@ -1548,6 +1551,15 @@ PutChar(int n, REGIONSHAPE shape)
 	}
 	curwp->w_flag |= WFHARD;
 	(void)line_report(before);
+
+	/*
+	 * Actually, even though we saved it in 'save_mark', the line indicated by MK is pushed down by the insertion.
+	 * Recompute the mark by going to the original line number.
+	 */
+	MK = save_mark;
+	swapmark();
+	gotoline(TRUE, save_loc);
+	swapmark();
 	return status;
 }
 

@@ -1,5 +1,69 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20001115 (c)
+	> Clark Morgan:
+	+ minor updates to vile.hlp 
+	+ added select-all and selection-clear commands.  The former command
+	  selects, highlights, and yanks all text in the current buffer to the
+	  unnamed register.  The latter command removes a selection's
+	  highlighted attributes.  Select-all is only available on hosts where
+	  vile provides integrated mouse support.
+	+ added "Select All" to winvile's right-mouse-button menu.
+	+ added text to properly describe win32 bindings that use VK_DELETE
+	  (delete key).  This is a bug fix.
+	+ winvile's right-mouse-button displays the key bindings of all menu
+	  items that are bound to vile commands (previously, only some bindings
+	  were displayed).  The menu's key binding text is synthesized at
+	  runtime.  This synthesis code was modified so that if there is no
+	  binding, winvile displays nothing, rather than garbage (bug fix).
+	+ stub in some commands for win32 printing.
+	+ fixes for this problem reported by Richard Hussong
+	  <rhussong@ciena.com>:
+	    "Winvile sometimes appears to receive and process cursor-motion
+	    events when the cursor is not in the window, even when it does not
+	    have the focus.  The effect is that the Vile window scrolls.  I
+	    have even seen this happen when the cursor was moved from one half
+	    of a split Winvile window to the other - the window that the cursor
+	    had just left started scrolling spontaneously.  Note that this
+	    happens with no mouse buttons pressed."
+	  * implement mouse capture a la Petzold's "Programming Windows 95".
+	  * make sure timer is allocated before starting autoscroll.
+	  * only autoscroll if WM_TIMER timer ID matches that of timer created
+	    during autoscroll init.
+	> Kevin Buettner:
+	+ improve performance for very long syntax-highlighted lines
+	  essentially converts a quadratic algorithm into a linear one.  It
+	  also fixes the crasher you get when you change from linewrap mode to
+	  nolinewrap mode where the first line won't fit on the screen. 
+	  (report by Clark Morgan).
+	+ fix related problem where VASPCOL code was interpreted incorrectly as
+	  VASPCOL | VASEL | VAREV, making add_line_attribute() consider this to
+	  be a selection (due to VASEL being set) and forcing the attribute to
+	  a buffer attribute (which it needs to be for selections.)
+	+ add check in update() to make sure that movements in very long
+	  wrapped lines get updated properly (reported by Clark Morgan).
+	> Paul Fox:
+	+ modify handling of select() in ttgetc() to check for out-of-band
+	  conditions, to avoid looping on errors in stdin.
+	> Tom Dickey:
+	+ add check in vileperl.rc in case the server is still running, to
+	  avoid error message (reported by Bruno Betro <bruno@iami.mi.cnr.it>,
+	  discussion by J Chris Coppick and Clark Morgan).
+	+ make corresponding changes for poll() in ttgetc(), as noted by Paul
+	  Fox.
+	+ fix two quirks of PutChar(), in line.c:
+	  + yanking all of vile.hlp with yG, then putting (p) into an empty
+	    buffer would put an empty line on the end, but remove the initial
+	    empty line (reported by Clark Morgan).
+	  + restore DOT to the original location after putting the text. 
+	+ modify treatment of pushed_back flag in kbd_reply() so it will force
+	  the given partial result to be glued to the pushed-back string.
+	  This fixes a problem using ^R to read the result of a shell command
+	  (reported by George Eccles <gbeccles@a-znet.com>).
+	+ modify form of includes to be consistent, e.g., quoted includes for
+	  vile's source files other than config.h which should always use
+	  brackets (reported by Clark Morgan).
+
  20001104 (b)
 	> Clark Morgan:
 	+ add command dirs-clear, which clears dirstack and kills dirstack

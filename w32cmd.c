@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.8 2000/11/04 11:24:06 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.9 2000/11/11 01:49:13 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -493,3 +493,28 @@ windeltxtsel(int f, int n)  /* bound to Alt+Delete */
 {
     return (w32_del_selection(FALSE));
 }
+
+/* --------------------------------------------------------------------- */
+/* ------------------------- printing support -------------------------- */
+/* --------------------------------------------------------------------- */
+/* - Note that a good deal of this implementation is based on chapter -- */
+/* - 15 of Petzold's "Programming Windows 95". ------------------------- */
+/* --------------------------------------------------------------------- */
+
+#ifdef DISP_NTWIN
+int
+winpg_setup(int f, int n)
+{
+    mlforce("not implemented");
+    return (TRUE);
+}
+
+
+
+int
+winprint(int f, int n)
+{
+    mlforce("not implemented");
+    return (TRUE);
+}
+#endif   /* DISP_NTWIN */

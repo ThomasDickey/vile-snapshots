@@ -23,16 +23,15 @@ WinvilePopMenu MENU
         MENUITEM "&Font...",              IDM_FONT
         MENUITEM "&Menu",                 IDM_MENU
         MENUITEM SEPARATOR
-        MENUITEM "&Undo",                 IDM_UNDO  // accelerator filled in
-                                                    // at runtime
-        MENUITEM "&Redo",                 IDM_REDO  // accelerator filled in
-                                                    // at runtime
+        MENUITEM "&Undo",                 IDM_UNDO
+        MENUITEM "&Redo",                 IDM_REDO
         MENUITEM SEPARATOR
-        MENUITEM "Cu&t\tShift+Delete",    IDM_CUT
-        MENUITEM "&Copy",                 IDM_COPY  // accelerator filled in
-                                                    // at runtime
-        MENUITEM "&Paste\tShift+Insert",  IDM_PASTE
-        MENUITEM "&Delete\tAlt+Delete",   IDM_DELETE
+        MENUITEM "Cu&t",                  IDM_CUT
+        MENUITEM "&Copy",                 IDM_COPY
+        MENUITEM "&Paste",                IDM_PASTE
+        MENUITEM "&Delete",               IDM_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "Select &All",           IDM_SELECT_ALL
     }
 }
 

@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.18 2000/08/25 02:19:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.19 2000/11/11 11:40:36 tom Exp $
  *
  */
 
@@ -9,8 +9,8 @@
 #include <windows.h>
 #endif
 
-#include <estruct.h>
-#include <edef.h>
+#include "estruct.h"
+#include "edef.h"
 #include <ctype.h>
 
 #undef fopen	/* avoid conflict with 'fakevms.c' */
