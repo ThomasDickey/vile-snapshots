@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.398 1999/06/13 22:26:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.400 1999/06/20 21:35:09 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -447,6 +447,7 @@
 #define OPT_FORMAT      !SMALLER		/* region formatting support. */
 #define OPT_HILITEMATCH !SMALLER		/* highlight all matches of a search */
 #define OPT_HISTORY     !SMALLER		/* command-history */
+#define OPT_HOOKS	!SMALLER		/* read/write hooks, etc. */
 #define OPT_ISO_8859    !SMALLER		/* ISO 8859 characters */
 #define OPT_ISRCH       !SMALLER		/* Incremental searches */
 #define OPT_LINEWRAP    !SMALLER		/* line-wrap mode */
@@ -1039,14 +1040,14 @@ typedef UINT WATCHTYPE;
 #define vl_scrtch   chrBIT(15)		/* legal in scratch-buffer names */
 #define vl_shpipe   chrBIT(16)		/* legal in shell/pipe-buffer names */
 
-#define	screen_to_bname(buf)\
-	screen_string(buf,sizeof(buf),(CHARTYPE)(vl_pathn|vl_scrtch|vl_shpipe))
+#define	SCREEN_STRING (vl_pathn|vl_scrtch|vl_shpipe)
 typedef	ULONG CHARTYPE;
 #else
-#define	screen_to_bname(buf)\
-	screen_string(buf,sizeof(buf),(CHARTYPE)(vl_pathn))
+#define	SCREEN_STRING (vl_pathn)
 typedef USHORT CHARTYPE;
 #endif
+
+#define screen_to_bname(buf) screen_string(buf,sizeof(buf),(CHARTYPE)SCREEN_STRING)
 
 /* these parallel the ctypes.h definitions, except that
 	they force the char to valid range first */

@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.12 1999/05/17 22:00:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.14 1999/06/20 21:29:13 tom Exp $
  */
 
 #include	"estruct.h"
@@ -20,7 +20,7 @@ static char *x_shell;	/* $XSHELL environment is "$xshell" state variable */
 #endif
 #endif
 
-#if OPT_PROCEDURES
+#if OPT_HOOKS
 static int
 any_HOOK(TBUFF **rp, const char *vp, HOOK *hook)
 {
@@ -218,7 +218,7 @@ int var_BLINES(TBUFF **rp, const char *vp)
 	}
 }
 
-#if OPT_PROCEDURES
+#if OPT_HOOKS
 int var_BUFHOOK(TBUFF **rp, const char *vp)
 {
 	return any_HOOK(rp, vp, &bufhook);
@@ -241,7 +241,7 @@ int var_CBUFNAME(TBUFF **rp, const char *vp)
 	}
 }
 
-#if OPT_PROCEDURES
+#if OPT_HOOKS
 int var_CDHOOK(TBUFF **rp, const char *vp)
 {
 	return any_HOOK(rp, vp, &cdhook);
@@ -316,7 +316,7 @@ int var_CRYPTKEY(TBUFF **rp, const char *vp)
 	} else if (vp) {
 		if (cryptkey != 0)
 			free(cryptkey);
-		cryptkey = malloc(NKEYLEN);
+		cryptkey = (char *)malloc(NKEYLEN);
 		vl_make_encrypt_key (cryptkey, vp);
 		return TRUE;
 	} else {
@@ -441,7 +441,7 @@ int var_EOC(TBUFF **rp, const char *vp)
 	}
 }
 
-#if OPT_PROCEDURES
+#if OPT_HOOKS
 int var_EXITHOOK(TBUFF **rp, const char *vp)
 {
 	return any_HOOK(rp, vp, &exithook);
@@ -847,7 +847,7 @@ int var_QIDENTIF(TBUFF **rp, const char *vp)
 	}
 }
 
-#if OPT_PROCEDURES
+#if OPT_HOOKS
 int var_RDHOOK(TBUFF **rp, const char *vp)
 {
 	return any_HOOK(rp, vp, &readhook);
@@ -1048,7 +1048,7 @@ int var_WORD(TBUFF **rp, const char *vp)
 	}
 }
 
-#if OPT_PROCEDURES
+#if OPT_HOOKS
 int var_WRHOOK(TBUFF **rp, const char *vp)
 {
 	return any_HOOK(rp, vp, &writehook);

@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.71 1999/04/14 23:44:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.72 1999/06/16 09:42:48 tom Exp $
  *
  */
 
@@ -78,7 +78,7 @@ static void append_libdir_to_path(void)
 		unsigned len = strlen(libdir_path);
 		if (strlen(env) < len + 5
 		 || strcmp(env+strlen(env)-len, libdir_path)) {
-			if ((tmp = malloc(strlen(env) + len + 8)) != 0) {
+			if ((tmp = (char *)malloc(strlen(env) + len + 8)) != 0) {
 				lsprintf(tmp, "PATH=%s%c%s", env, PATHCHR, libdir_path);
 				putenv(tmp);
 			}

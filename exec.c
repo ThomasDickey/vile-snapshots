@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.185 1999/06/14 22:33:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.189 1999/06/21 01:30:21 tom Exp $
  *
  */
 
@@ -1279,6 +1279,29 @@ storeproc(int f, int n)
 	return setup_macro_buffer(name, -1);
 }
 
+static int
+run_procedure(const char *name)
+{
+	register BUFFER *bp;		/* ptr to buffer to execute */
+	register int status;		/* status return */
+	char bufn[NBUFN];		/* name of buffer to execute */
+
+	if (!*name)
+		return FALSE;
+
+	/* construct the buffer name */
+	(void)add_brackets(bufn, name);
+
+	/* find the pointer to that buffer */
+	if ((bp = find_b_name(bufn)) == NULL) {
+		return FALSE;
+	}
+
+	status = dobuf(bp);
+
+	return status;
+}
+
 /*	execproc:	Execute a procedure				*/
 
 int
@@ -1303,28 +1326,6 @@ execproc(int f, int n)
 
 }
 
-int
-run_procedure(const char *name)
-{
-	register BUFFER *bp;		/* ptr to buffer to execute */
-	register int status;		/* status return */
-	char bufn[NBUFN];		/* name of buffer to execute */
-
-	if (!*name)
-		return FALSE;
-
-	/* construct the buffer name */
-	(void)add_brackets(bufn, name);
-
-	/* find the pointer to that buffer */
-	if ((bp = find_b_name(bufn)) == NULL) {
-		return FALSE;
-	}
-
-	status = dobuf(bp);
-
-	return status;
-}
 #endif
 
 #if ! SMALLER
@@ -2029,7 +2030,8 @@ perform_dobuf(BUFFER *bp, WHLOOP *whlist)
 			/* prefix lines with "WITH" value, if any */
 			if (tb_length(line_prefix)) {
 				long adj = cmdp - linebuf;
-				char *temp = malloc(tb_length(line_prefix) +
+				char *temp = (char *)malloc(
+					tb_length(line_prefix) +
 					strlen(cmdp) + 2);
 				(void)lsprintf(temp, "%s %s",
 					tb_values(line_prefix), cmdp);
@@ -2092,6 +2094,7 @@ dobuf(BUFFER *bp)	/* buffer to execute */
 
 	static int dobufnesting; /* flag to prevent runaway recursion */
 
+	save_arguments(bp);
 	save_no_msgs = no_msgs;
 	no_msgs = TRUE;
 
@@ -2119,6 +2122,7 @@ dobuf(BUFFER *bp)	/* buffer to execute */
 	endofDisplay();
 
 	no_msgs = save_no_msgs;
+	restore_arguments(bp);
 
 	return status;
 }

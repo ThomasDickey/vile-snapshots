@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.246 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.247 1999/06/20 21:28:25 tom Exp $
  */
 
 #include	"estruct.h"
@@ -916,7 +916,7 @@ int	mflg)		/* print messages? */
 	if (lockfl && s != FIOERR)
 		grab_lck_file(bp,fname);
 #endif
-#if OPT_PROCEDURES
+#if OPT_HOOKS
 	if (s <= FIOEOF) {
 	    if (!b_is_temporary(bp)) {
 		int save = count_fline;	/* read-hook may run a filter - ignore */
@@ -1520,7 +1520,7 @@ int	forced)
 		return FALSE;
 	}
 
-#if OPT_PROCEDURES
+#if OPT_HOOKS
 	if (run_a_hook(&writehook)) {
 		/*
 		 * The write-hook may have modified the buffer.  Assume

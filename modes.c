@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.155 1999/06/13 20:15:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.156 1999/06/16 09:42:14 tom Exp $
  *
  */
 
@@ -2484,7 +2484,7 @@ makemajorlist(int local, void *ptr GCC_UNUSED)
 				data->mm.mv);
 			for (vals = data->sm; vals != 0; vals = vals->sm_next) {
 				char *group = vals->sm_name;
-				char *name = malloc(80 + strlen(group));
+				char *name = (char *)malloc(80 + strlen(group));
 				if (*group)
 					lsprintf(name, "Buffer (\"%s\" group)", group);
 				else
@@ -3033,7 +3033,7 @@ set_current_scheme(PALETTES *p)
 static int
 free_scheme(char *name)
 {
-	PALETTES *p;
+	PALETTES *p = 0;
 
 	if (strcmp(name, s_default)
 	 && (p = find_scheme(name)) != 0) {

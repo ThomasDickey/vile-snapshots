@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.249 1999/06/14 22:32:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.250 1999/06/20 21:29:21 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -131,7 +131,7 @@ decl_uninit( regexp *gregexp );		/* compiled version of searchpat */
 decl_uninit( TBUFF *tb_matched_pat);	/* text that scan found */
 
 
-#if OPT_PROCEDURES
+#if OPT_HOOKS
 decl_uninit( HOOK cdhook );		/* proc to run when change dir */
 decl_uninit( HOOK readhook );		/* proc to run when read file  */
 decl_uninit( HOOK writehook );		/* proc to run when write file */

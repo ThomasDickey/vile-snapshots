@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.195 1999/05/23 20:59:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.197 1999/06/20 21:27:59 tom Exp $
  *
  */
 
@@ -1113,13 +1113,13 @@ ch_fname(BUFFER *bp, const char *fname)
 #endif
 }
 
-#if OPT_PROCEDURES
+#if OPT_HOOKS
 int
 run_a_hook(HOOK *hook)
 {
 	if (!hook->latch && hook->proc[0]) {
 		DisableHook(hook);
-		run_procedure(hook->proc);
+		docmd(hook->proc,TRUE,FALSE,1);
 		EnableHook(hook);
 		return TRUE;
 	}
