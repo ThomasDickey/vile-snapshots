@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.158 $)
+AC_REVISION($Revision: 1.161 $)
 AC_PREREQ(2.12.971222)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.158 2001/09/23 18:01:29 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.161 2001/12/10 01:23:40 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -23,7 +23,6 @@ AC_PROG_INSTALL
 
 AC_PROG_AWK
 AC_PROG_RANLIB
-AC_PROG_LEX
 AC_DECL_YYTEXT
 
 CF_SUBST(archiver,AR,ar)
@@ -76,7 +75,6 @@ AC_ARG_WITH(builtin-filters,
 test -z "$VILE_BUILTIN_FILTERS" && VILE_BUILTIN_FILTERS=none
 AC_MSG_RESULT($VILE_BUILTIN_FILTERS)
 
-changequote(,)dnl
 if test "$VILE_BUILTIN_FILTERS" != none ; then
 	AC_MSG_CHECKING(if any filters require flex)
 	cf_save_IFS="$IFS"
@@ -90,11 +88,11 @@ if test "$VILE_BUILTIN_FILTERS" != none ; then
 			cf_found=all
 			break
 		else
-			if (grep "^$cf_name	[	]*[^	]*	[	]*l$" $srcdir/filters/genmake.mak 2>/dev/null >/dev/null )
+			if (grep "^$cf_name	[[	]]*[[^	]]*	[[	]]*l$" $srcdir/filters/genmake.mak 2>/dev/null >/dev/null )
 			then
 				cf_lexed="$cf_lexed $cf_name"
 				cf_found="$cf_found $cf_name"
-			elif (grep "^$cf_name	[	]*[^	]*	[	]*c$" $srcdir/filters/genmake.mak 2>/dev/null >/dev/null )
+			elif (grep "^$cf_name	[[	]]*[[^	]]*	[[	]]*c$" $srcdir/filters/genmake.mak 2>/dev/null >/dev/null )
 			then
 				cf_found="$cf_found $cf_name"
 			else
@@ -108,7 +106,7 @@ if test "$VILE_BUILTIN_FILTERS" != none ; then
 	VILE_BUILTIN_FILTERS="$cf_found"
 	if test -n "$cf_lexed" ; then
 		AC_MSG_CHECKING(version of $LEX)
-		LEX_VERSION=`$LEX --version 2>&1 | sed -e 's/^[^0-9]*//'`
+		LEX_VERSION=`$LEX --version 2>&1 | sed -e 's/^[[^0-9]]*//'`
 		if test -z "$LEX_VERSION"
 		then
 			AC_MSG_ERROR(You need flex to compile builtin filters)
@@ -120,7 +118,6 @@ if test "$VILE_BUILTIN_FILTERS" != none ; then
 	fi
 	test -n "$cf_missed" && AC_MSG_ERROR(Not all filter names were found: $cf_missed)
 fi
-changequote([,])dnl
 
 AC_SUBST(VILE_BUILTIN_FILTERS)
 
@@ -128,14 +125,14 @@ AC_MSG_CHECKING(for library path)
 CF_WITH_PATHLIST(libdir-path,
 [  --with-libdir-path=LIST specify locations to search for filters, etc.],
 VILE_LIBDIR_PATH,
-'\[$](libdir)/vile',[],[define])
+"\[$](libdir)/vile",[],[define])
 AC_MSG_RESULT($VILE_LIBDIR_PATH)
 
 AC_MSG_CHECKING(for startup path)
 CF_WITH_PATHLIST(startup-path,
 [  --with-startup-path=LIST specify locations to search for vile.hlp, etc.],
 VILE_STARTUP_PATH,
-'\[$](datadir)',[],[define])
+"\[$](datadir)",[],[define])
 AC_MSG_RESULT($VILE_STARTUP_PATH)
 
 CF_LEX_STATES
@@ -303,9 +300,7 @@ AC_MSG_RESULT($screen)
 
 : See if this is any type of xvile configuration:
 case "$screen" in
-changequote(,)dnl
-	[Oo]pen[Ll]ook | [Mm]otif* | [xX] | [Aa]thena | [xX][atTmMoO]* | [xX]11 | neXtaw )
-changequote([,])dnl
+	[[Oo]]pen[[Ll]]ook | [[Mm]]otif* | [[xX]] | [[Aa]]thena | [[xX]][[atTmMoO]]* | [[xX]]11 | neXtaw )
 		EXTRA_INSTALL_FILES="$EXTRA_INSTALL_FILES \$(INSTALL_X_FILES)"
 		CF_X_TOOLKIT
 		CF_IMAKE_CFLAGS
@@ -721,6 +716,7 @@ AC_SUBST(filters_bindir)
 AC_OUTPUT(makefile filters/makefile filters/makefile.tmp:filters/makefile.2nd,
 {
 echo "Checking for built-in filters: $VILE_BUILTIN_FILTERS"
+test -n "$ac_top_srcdir" && top_srcdir="$ac_top_srcdir"
 if test "$top_srcdir" = ".."
 then
 	cf_srcdir=.

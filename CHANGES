@@ -1,5 +1,41 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20011216 (r)
+	> Paul Fox:
+	+ fix a problem where repeated ":!cmd" invocations (with no intervening
+	  carriage return) cause the "Press return..." message to be
+	  suppressed.  (The problem is that mlforce suppresses its output if
+	  sgarbf is set.  The first shell invocation sets sgarbf, so the prompt
+	  after the second shell command never comes out.)
+	> Tom Dickey:
+	+ change warning level in makefile.wnt to -W4
+	+ modify ntconio.c to use the original attributes when erasing the last
+	  line of the screen when closing the console.  This works around a bug
+	  in w95/.../win-me that would leave vile's color settings in effect
+	  after vile exited (reported by Walter Kennedy
+	  <wkennedy@softintegration.com>).
+	+ modify pl-filt.c to handle pattern immediately after "if" keyword,
+	  e.g.,
+		if /SHLIB_VERSION_NUMBER *"([^"]+)"/; # "
+	+ modify sh-filt.l to handle quotes in substitutions, e.g.,
+		ACLOCAL=${ACLOCAL-"${am_missing_run}aclocal"}
+	+ update config.guess and config.sub from
+		http://subversions.gnu.org/cgi-bin/viewcvs/config/config/
+	+ regenerate configure script with autoconf 2.52, patched with
+		autoconf-2.52-20011201.patch.gz
+	  at
+		ftp://invisible-island.net/autoconf/
+	+ check for $ac_top_srcdir in configure.in, to work with autoconf 2.5x,
+	  which renamed this variable from $top_srcdir in 2.13.
+	+ modify CF_PROG_PERL to work with autoconf 2.5x, which does not permit
+	  unbalanced brackets, using a sed expression to obtain the "$]" token.
+	+ modify configure.in to avoid using changequote(), which is broken
+	  in autoconf 2.5x
+	+ updated install.sh from tin.
+	+ updated some configure script macros from changes for tin/lynx: 
+	  CF_HEADER_PATH, CF_LIBRARY_PATH, CF_MKSTEMP, CF_NCURSES_CPPFLAGS,
+	  CF_NCURSES_LIBS, CF_PATH_SYNTAX.
+
  20011205 (q)
 	> Clark Morgan:
 	+ fix:  the new builtin find feature makes it relatively easy to

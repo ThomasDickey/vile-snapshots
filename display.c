@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.347 2001/12/06 00:59:49 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.348 2001/12/13 23:24:10 tom Exp $
  *
  */
 
@@ -3849,6 +3849,7 @@ sizesignal (int ACTUAL_SIG_ARGS GCC_UNUSED)
 void
 newscreensize (int h, int w)
 {
+	TRACE(("newscreensize(h=%d, w=%d)\n", h, w));
 	/* do the change later */
 	if (im_displaying
 #if OPT_WORKING

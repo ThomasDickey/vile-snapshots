@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.289 2001/09/24 00:03:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.290 2001/12/14 13:00:00 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -320,12 +320,12 @@ decl_init_const( char ctrldigits[], "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_");
 /*--------------------------------------------------------------------------*/
 
 decl_init_const( char HELP_BufName[],		"[Help]");
-#if OPT_REBIND
-decl_init_const( char KEY_NAMES_BufName[],	"[Key Names]");
 decl_init_const( char BINDINGLIST_BufName[],	"[Binding List]");
 decl_init_const( char CMD_BINDINGS_BufName[],	"[Command-Bindings]");
 decl_init_const( char INS_BINDINGS_BufName[],	"[Insert-Bindings]");
 decl_init_const( char SEL_BINDINGS_BufName[],	"[Select-Bindings]");
+#if OPT_REBIND
+decl_init_const( char KEY_NAMES_BufName[],	"[Key Names]");
 # if OPT_TERMCHRS
 decl_init_const( char TERMINALCHARS_BufName[],	"[Terminal Chars]");
 # endif

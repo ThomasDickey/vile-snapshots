@@ -55,7 +55,7 @@
  *	not (yet) correspond to :-commands.  Before implementing, probably will
  *	have to make TESTC a settable mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.70 2001/09/25 23:47:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.71 2001/12/07 00:56:25 tom Exp $
  *
  */
 
@@ -295,7 +295,7 @@ stripQuotes(char *src, int len, int eolchar, int *actual)
 #endif
 
 static void
-glueBufferToResult(TBUFF ** dst, TBUFF * src, int glue)
+glueBufferToResult(TBUFF ** dst, TBUFF * src)
 {
     int shell_cmd = ((tb_length(*dst) != 0 && isShellOrPipe(tb_values(*dst)))
 		     || (tb_length(*dst) != 0 && isShellOrPipe(tb_values(src))));
@@ -364,7 +364,7 @@ hst_append(TBUFF * cmd, int glue)
 	kbd_pushback(cmd, skip);
     }
 
-    glueBufferToResult(&MyText, cmd, glue);
+    glueBufferToResult(&MyText, cmd);
     TRACE(("...MyText        :%d:%s\n", tb_length(MyText), tb_visible(MyText)));
     MyGlue = glue;
 }
@@ -671,7 +671,7 @@ edithistory(
     /* save the original buffer, since we expect to scroll it */
     if (tb_copy(&h_original, MyText)) {
 	/* make 'original' look just like a complete command... */
-	glueBufferToResult(&h_original, *buffer, isreturn(eolchar) ? ' ' : eolchar);
+	glueBufferToResult(&h_original, *buffer);
     }
 
     /* process char-commands */

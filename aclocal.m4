@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.100 2001/09/23 18:26:19 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.103 2001/12/16 23:01:11 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -856,6 +856,10 @@ dnl Construct a search-list for a nonstandard header-file
 AC_DEFUN([CF_HEADER_PATH],
 [$1=""
 
+test "$prefix" != /usr/local && \
+test -d /usr/local && \
+$1="[$]$1 /usr/local/include /usr/local/include/$2 /usr/local/$2/include"
+
 test "$includedir" != NONE && \
 test -d "$includedir" && \
 $1="[$]$1 $includedir $includedir/$2"
@@ -867,10 +871,6 @@ $1="[$]$1 $oldincludedir $oldincludedir/$2"
 test "$prefix" != NONE && \
 test -d "$prefix" && \
 $1="[$]$1 $prefix/include $prefix/include/$2 $prefix/$2/include"
-
-test "$prefix" != /usr/local && \
-test -d /usr/local && \
-$1="[$]$1 /usr/local/include /usr/local/include/$2 /usr/local/$2/include"
 
 test "$prefix" != /usr && \
 $1="[$]$1 /usr/include /usr/include/$2 /usr/$2/include"
@@ -1106,6 +1106,10 @@ dnl Construct a search-list for a nonstandard library-file
 AC_DEFUN([CF_LIBRARY_PATH],
 [$1=""
 
+test "$prefix" != /usr/local && \
+test -d /usr/local && \
+$1="[$]$1 /usr/local/lib /usr/local/lib/$2 /usr/local/$2/lib"
+
 test "$libdir" != NONE && \
 test -d $libdir && \
 $1="[$]$1 $libdir $libdir/$2"
@@ -1118,10 +1122,6 @@ test "$prefix" != NONE && \
 test "$prefix" != "$exec_prefix" && \
 test -d $prefix && \
 $1="[$]$1 $prefix/lib $prefix/lib/$2 $prefix/$2/lib"
-
-test "$prefix" != /usr/local && \
-test -d /usr/local && \
-$1="[$]$1 /usr/local/lib /usr/local/lib/$2 /usr/local/$2/lib"
 
 test "$prefix" != /usr && \
 $1="[$]$1 /usr/lib /usr/lib/$2 /usr/$2/lib"
@@ -1189,7 +1189,7 @@ dnl ---------------------------------------------------------------------------
 dnl
 AC_DEFUN([CF_MISSING_CHECK],
 [
-AC_MSG_CHECKING([for missing "$1" extern])
+AC_MSG_CHECKING([for missing \"$1\" extern])
 AC_CACHE_VAL([cf_cv_func_$1],[
 cf_save_CPPFLAGS="$CPPFLAGS"
 CPPFLAGS="$CPPFLAGS $CHECK_DECL_FLAG"
@@ -1223,7 +1223,8 @@ CF_MISSING_CHECK(${ac_func}, ${ac_tr_func})dnl
 done
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl Check for a working mkstemp
+dnl Check for a working mkstemp.  This creates two files, checks that they are
+dnl successfully created and distinct (AmigaOS apparently fails on the last).
 AC_DEFUN([CF_MKSTEMP],[
 AC_CACHE_CHECK(for working mkstemp, cf_cv_func_mkstemp,[
 rm -f conftest*
@@ -1231,26 +1232,33 @@ AC_TRY_RUN([
 #include <sys/types.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/stat.h>
 int main()
 {
 	char *tmpl = "conftestXXXXXX";
-	char temp[80];
+	char name[2][80];
+	int n;
 	int result = 0;
 	int fd;
 	struct stat sb;
 
 	umask(077);
-	strcpy(temp, tmpl);
-	if ((fd = mkstemp(temp)) >= 0) {
-		if (!strcmp(temp, tmpl)
-		 || stat(temp, &sb) != 0
-		 || (sb.st_mode & S_IFMT) != S_IFREG
-		 || (sb.st_mode & 077) != 0) {
-			result = 1;
+	for (n = 0; n < 2; ++n) {
+		strcpy(name[n], tmpl);
+		if ((fd = mkstemp(name[n])) >= 0) {
+			if (!strcmp(name[n], tmpl)
+			 || stat(name[n], &sb) != 0
+			 || (sb.st_mode & S_IFMT) != S_IFREG
+			 || (sb.st_mode & 077) != 0) {
+				result = 1;
+			}
+			close(fd);
 		}
-		close(fd);
 	}
+	if (result == 0
+	 && !strcmp(name[0], name[1]))
+		result = 1;
 	exit(result);
 }
 ],[cf_cv_func_mkstemp=yes
@@ -1285,14 +1293,16 @@ dnl If the installer has set $CFLAGS or $CPPFLAGS so that the ncurses header
 dnl is already in the include-path, don't even bother with this, since we cannot
 dnl easily determine which file it is.  In this case, it has to be <curses.h>.
 dnl
+dnl The optional parameter gives the root name of the library, in case it is
+dnl not installed as the default curses library.  That is how the
+dnl wide-character version of ncurses is installed.
 AC_DEFUN([CF_NCURSES_CPPFLAGS],
 [
-AC_CACHE_CHECK(for ncurses header in include-path, cf_cv_ncurses_h,[
-	for cf_header in \
-		curses.h \
-		ncurses.h \
-		ncurses/curses.h \
-		ncurses/ncurses.h
+cf_ncuhdr_root=ifelse($1,,ncurses,$1)
+AC_CACHE_CHECK(for $cf_ncuhdr_root header in include-path, cf_cv_ncurses_h,[
+	cf_header_list="$cf_ncuhdr_root/curses.h $cf_ncuhdr_root/ncurses.h"
+	test "$cf_ncuhdr_root" = ncurses && cf_header_list="curses.h ncurses.h $cf_header_list"
+	for cf_header in $cf_header_list
 	do
 	AC_TRY_COMPILE([#include <$cf_header>],[
 #ifdef NCURSES_VERSION
@@ -1313,8 +1323,8 @@ make an error
 if test "$cf_cv_ncurses_h" != no ; then
 	cf_cv_ncurses_header=$cf_cv_ncurses_h
 else
-AC_CACHE_CHECK(for ncurses include-path, cf_cv_ncurses_h2,[
-	CF_HEADER_PATH(cf_search,ncurses)
+AC_CACHE_CHECK(for $cf_ncuhdr_root include-path, cf_cv_ncurses_h2,[
+	CF_HEADER_PATH(cf_search,$cf_ncuhdr_root)
 	test -n "$verbose" && echo
 	for cf_incdir in $cf_search
 	do
@@ -1339,8 +1349,8 @@ AC_CACHE_CHECK(for ncurses include-path, cf_cv_ncurses_h2,[
 	cf_cv_ncurses_header=`basename $cf_cv_ncurses_h2`
 	echo cf_1st_include=$cf_1st_incdir
 	echo cf_2nd_include=$cf_2nd_incdir
-	if test `basename $cf_1st_incdir` = ncurses ; then
-		cf_cv_ncurses_header=ncurses/$cf_cv_ncurses_header
+	if test `basename $cf_1st_incdir` = $cf_ncuhdr_root ; then
+		cf_cv_ncurses_header=$cf_ncuhdr_root/$cf_cv_ncurses_header
 		CF_ADD_INCDIR($cf_2nd_incdir)
 	fi
 	CF_ADD_INCDIR($cf_1st_incdir)
@@ -1360,6 +1370,9 @@ case $cf_cv_ncurses_header in # (vi
 ncurses/curses.h|ncurses/ncurses.h)
 	AC_DEFINE(HAVE_NCURSES_NCURSES_H)
 	;;
+ncursesw/curses.h|ncursesw/ncurses.h)
+	AC_DEFINE(HAVE_NCURSESW_NCURSES_H)
+	;;
 esac
 
 CF_NCURSES_VERSION
@@ -1371,9 +1384,14 @@ dnl Some distributions have gpm linked with (bsd) curses, which makes it
 dnl unusable with ncurses.  However, we don't want to link with gpm unless
 dnl ncurses has a dependency, since gpm is normally set up as a shared library,
 dnl and the linker will record a dependency.
+dnl
+dnl The optional parameter gives the root name of the library, in case it is
+dnl not installed as the default curses library.  That is how the
+dnl wide-character version of ncurses is installed.
 AC_DEFUN([CF_NCURSES_LIBS],
 [AC_REQUIRE([CF_NCURSES_CPPFLAGS])
 
+cf_nculib_root=ifelse($1,,ncurses,$1)
 	# This works, except for the special case where we find gpm, but
 	# ncurses is in a nonstandard location via $LIBS, and we really want
 	# to link gpm.
@@ -1393,13 +1411,13 @@ freebsd*)
 esac
 
 LIBS="$cf_ncurses_LIBS $LIBS"
-CF_FIND_LIBRARY(ncurses,ncurses,
+CF_FIND_LIBRARY($cf_nculib_root,$cf_nculib_root,
 	[#include <${cf_cv_ncurses_header-curses.h}>],
 	[initscr()],
 	initscr)
 
 if test -n "$cf_ncurses_LIBS" ; then
-	AC_MSG_CHECKING(if we can link ncurses without $cf_ncurses_LIBS)
+	AC_MSG_CHECKING(if we can link $cf_nculib_root without $cf_ncurses_LIBS)
 	cf_ncurses_SAVE="$LIBS"
 	for p in $cf_ncurses_LIBS ; do
 		q=`echo $LIBS | sed -e 's/'$p' //' -e 's/'$p'$//'`
@@ -1528,7 +1546,7 @@ case ".[$]$1" in #(vi
   $1=`echo [$]$1 | sed -e s@NONE@$ac_default_prefix@`
   ;;
 *)
-  AC_ERROR([expected a pathname, not \"[$]$1\"])
+  ifelse($2,,[AC_ERROR([expected a pathname, not \"[$]$1\"])],$2)
   ;;
 esac
 ])dnl
@@ -1565,10 +1583,6 @@ dnl ---------------------------------------------------------------------------
 dnl Check for Perl, given the minimum version, to ensure that required features
 dnl are present.
 dnl $1 = the minimum version
-changequote()
-define(U_TURN_BACK, ])
-changequote([, ])
-
 AC_DEFUN([CF_PROG_PERL],
 [# find perl binary
 AC_MSG_CHECKING([for ifelse([$1],,perl,[perl-$1])])
@@ -1581,10 +1595,11 @@ AC_CACHE_VAL(cf_cv_prog_PERL,
     cf_try="perl perl5"
   fi
 
+  cf_version=`echo '[[]]'|sed -e 's/^./$/'`
   for cf_prog in $cf_try; do
     echo "configure:__oline__: trying $cf_prog" >&AC_FD_CC
-    if ($cf_prog -e 'printf "found version %g\n",$]U_TURN_BACK[dnl
-ifelse([$1],,,[;exit($]U_TURN_BACK[<$1)])') 1>&AC_FD_CC 2>&1; then
+    if ($cf_prog -e 'printf "found version %g\n",'$cf_version'][dnl
+ifelse([$1],,,[;exit('$cf_version'<$1)])') 1>&AC_FD_CC 2>&1; then
       cf_cv_prog_PERL=$cf_prog
       break
     fi
@@ -1800,11 +1815,13 @@ AC_TRY_LINK([],[char *x=(char*)tgoto("",0,0)],
 	CF_VERBOSE(using functions in predefined $cf_cv_termlib LIBS)
 ],[
 ifelse([$1],,,[
-if test "$1" = ncurses; then
-	CF_NCURSES_CPPFLAGS
-	CF_NCURSES_LIBS
+case "$1" in # (vi
+ncurses*)
+	CF_NCURSES_CPPFLAGS($1)
+	CF_NCURSES_LIBS($1)
 	cf_cv_termlib=terminfo
-fi
+	;;
+esac
 ])
 if test "$cf_cv_termlib" = none; then
 	# FreeBSD's linker gives bogus results for AC_CHECK_LIB, saying that
@@ -1963,7 +1980,7 @@ dnl
 AC_DEFUN([CF_WITH_PATHLIST],[
 AC_REQUIRE([CF_PATHSEP])
 AC_ARG_WITH($1,[$2 ](default: ifelse($4,,empty,$4)),,
-ifelse($4,,[withval="${$3}"],[withval="${$3-ifelse($5,,$4,$5)}"]))dnl
+ifelse($4,,[withval=${$3}],[withval=${$3-ifelse($5,,$4,$5)}]))dnl
 
 IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${PATHSEP}"
 cf_dst_path=
