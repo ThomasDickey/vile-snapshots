@@ -2074,6 +2074,7 @@ Programmed procedures and macros
 	the following:  (see the file macros.doc for more detail)
 
 	~if cond	conditional execution
+	~elseif cond	conditional execution
 	~else
 	~endif
 	~return		Return (terminating current macro)
@@ -2092,6 +2093,8 @@ Programmed procedures and macros
 	(you would jump to this with:
 		~goto LBL01
 	)
+
+	Lines ending with '\' are joined before interpreting them.
 
 	Procedures vs. Macros
 	---------------------
@@ -3382,4 +3385,4 @@ Credits
 
 Copyright 1995,1996 by Paul Fox, Tom Dickey, and Kevin Buettner
 -----------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.297 1996/09/10 12:32:57 pgf Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.299 1996/09/19 00:48:31 tom Exp $
