@@ -1,5 +1,20 @@
 Changes for vile 7.3 (released ??? ??? ??, 1997)
 
+(kev)	971007 (g)
+	+ x11.c (multi_click): Reimplemented multiclick selections for
+	  lines.  Previously, it was not possible to select the entirety
+	  of a wrapped line by clicking on a row other than the first
+	  row.
+	+ window.c (mvupwind, onlywind, delwp, splitw, enlargewind,
+	  shrinkwind):  Make sure that w_line.o is zero just after
+	  setting w_line.l to a new value.  The lack of this
+	  assignment in mvupwind() was causing a SEGFAULT on my linux
+	  box.  [To test it, create a very long wrapped line with a
+	  bunch of lines (say 100) before it; my test has in excess of
+	  10,000 characters on the long line.  Make sure linewrap mode
+	  is set.  Then say 100^Y.  The SEGFAULT was immediate.  You
+	  can also reproduce it by dragging the scrollbar for awhile.]
+
 (tom)	971006 (f)
 	+ document --with-screen values better in configure --help.
 	+ implement Athena widget scrollbar support in x11.c, using Kevin's

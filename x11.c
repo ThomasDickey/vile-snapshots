@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.158 1997/10/04 14:38:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.159 1997/10/07 09:48:47 kev Exp $
  *
  */
 
@@ -4593,15 +4593,27 @@ multi_click(
 			++p;
 		} while (nc < tw->cols && charClass[*p] == cclass);
 		--nc;
-		break;
+
+		if (setcursor(nr,sc)) {
+			(void)sel_begin();
+			extend_selection(tw, nr, nc, FALSE);
+			(void) setcursor(nr,oc);
+			/* FIXME: Too many updates */
+			(void) update(TRUE);
+		}
+		return;
 	case 3:			/* line (doesn't include trailing newline) */
-		sc = 0;
-		/* nc = tw->cols; */
-		nc = HUGE;
-		break;
-	case 4:			/* screen */
-		/* XXX blow off till we can figure out where screen starts
-		 * and ends */
+		if (setcursor(nr,sc)) {
+			MARK saveDOT = DOT;
+			(void) gotobol(0, 0);
+			(void) sel_begin();
+			(void) gotoeol(FALSE, 0);
+			(void) sel_extend(FALSE,TRUE);
+			DOT = saveDOT;
+			cur_win->did_select = True;
+			(void) update(TRUE);
+		}
+		return;
 	default:
 		/*
 		 * This provides a mechanism for getting rid of the
@@ -4610,13 +4622,6 @@ multi_click(
 		sel_release();
 		(void)update(TRUE);
 		return;
-	}
-	if (setcursor(nr,sc)) {
-	    (void)sel_begin();
-	    extend_selection(tw, nr, nc, FALSE);
-	    (void) setcursor(nr,oc);
-	    /* FIXME: Too many updates */
-	    (void) update(TRUE);
 	}
     }
 }
