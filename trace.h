@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.9 1999/06/13 18:28:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.10 1999/12/24 01:08:22 tom Exp $
  *
  */
 #ifndef	_trace_h
@@ -55,7 +55,7 @@ extern	char *	tb_visible (TBUFF *p);
 
 #undef TRACE
 #if OPT_TRACE
-#define TRACE(p) Trace p;
+#define TRACE(p) Trace p
 #endif
 
 #endif	/* _trace_h */

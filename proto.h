@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.409 1999/12/22 11:04:05 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.411 1999/12/24 20:31:51 tom Exp $
  *
  */
 

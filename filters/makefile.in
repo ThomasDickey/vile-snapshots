@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.62 1999/12/09 00:30:42 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.63 1999/12/23 00:47:51 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -25,6 +25,7 @@ LEXLIB		= @LEXLIB@
 LEX_OUTPUT_ROOT	= @LEX_OUTPUT_ROOT@
 
 x		= @PROG_EXT@
+o		= .o
 
 SCREEN		= @SCREEN@
 TARGET		= @TARGET@$x
@@ -52,9 +53,9 @@ DATADIR		= $(DESTDIR)$(datadir)
 
 INSTALL_DIRS    = $(BINDIR) $(DATADIR)
 
-.SUFFIXES: .l .c .i .o
+.SUFFIXES: .l .c .i $o
 
-.l.o:
+.l$o:
 @RULE_CC@
 	@ECHO_CC@$(LEX) -t $< > $*.c
 	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(CFLAGS) $*.c
@@ -62,15 +63,15 @@ INSTALL_DIRS    = $(BINDIR) $(DATADIR)
 .c.i:
 @RULE_CC@
 	@ECHO_CC@$(CPP) -C $(CPPFLAGS) $(QUOTDEFS) $< >$@
-.c.o:
+.c$o:
 @RULE_CC@
 	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(QUOTDEFS) $(CFLAGS) $<
 
-LF_DEPS = filters.o
-LF_ARGS = filters.o $(LEXLIB)
+LF_DEPS = filters$o
+LF_ARGS = filters$o $(LEXLIB)
 
-CF_DEPS = filters.o
-CF_ARGS = filters.o
+CF_DEPS = filters$o
+CF_ARGS = filters$o
 
 # filters in "C" are easy to port
 C_ALL	= \
@@ -120,119 +121,119 @@ ALL = 	$(C_ALL) @MAKE_LEX@ $(LEX_ALL)
 
 all:	$(ALL)
 
-vile-crypt$x : ecrypt.o
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ ecrypt.o
+vile-crypt$x : ecrypt$o
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ ecrypt$o
 
-vile-manfilt$x : manfilt.o
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ manfilt.o
+vile-manfilt$x : manfilt$o
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ manfilt$o
 
-vile-ada-filt$x : ada-filt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ ada-filt.o $(LF_ARGS)
+vile-ada-filt$x : ada-filt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ ada-filt$o $(LF_ARGS)
 
-vile-awk-filt$x : awk-filt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ awk-filt.o $(LF_ARGS)
+vile-awk-filt$x : awk-filt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ awk-filt$o $(LF_ARGS)
 
-vile-bat-filt$x : bat-filt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ bat-filt.o $(LF_ARGS)
+vile-bat-filt$x : bat-filt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ bat-filt$o $(LF_ARGS)
 
-vile-c-filt$x : c-filt.o $(CF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ c-filt.o $(CF_ARGS)
+vile-c-filt$x : c-filt$o $(CF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ c-filt$o $(CF_ARGS)
 
-vile-cfg-filt$x : cfg-filt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ cfg-filt.o $(LF_ARGS)
+vile-cfg-filt$x : cfg-filt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ cfg-filt$o $(LF_ARGS)
 
-vile-cweb-filt$x : cwebfilt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ cwebfilt.o $(LF_ARGS)
+vile-cweb-filt$x : cwebfilt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ cwebfilt$o $(LF_ARGS)
 
-vile-dcl-filt$x : dcl-filt.o $(CF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ dcl-filt.o $(LF_ARGS)
+vile-dcl-filt$x : dcl-filt$o $(CF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ dcl-filt$o $(LF_ARGS)
 
-vile-diff-filt$x : difffilt.o $(CF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ difffilt.o $(LF_ARGS)
+vile-diff-filt$x : difffilt$o $(CF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ difffilt$o $(LF_ARGS)
 
-vile-fdl-filt$x : fdl-filt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ fdl-filt.o $(LF_ARGS)
+vile-fdl-filt$x : fdl-filt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ fdl-filt$o $(LF_ARGS)
 
-vile-html-filt$x : htmlfilt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ htmlfilt.o $(LF_ARGS)
+vile-html-filt$x : htmlfilt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ htmlfilt$o $(LF_ARGS)
 
-vile-key-filt$x : key-filt.o $(CF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ key-filt.o $(CF_ARGS)
+vile-key-filt$x : key-filt$o $(CF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ key-filt$o $(CF_ARGS)
 
-vile-latex-filt$x : latexflt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ latexflt.o $(LF_ARGS)
+vile-latex-filt$x : latexflt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ latexflt$o $(LF_ARGS)
 
-vile-lex-filt$x : lex-filt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ lex-filt.o $(LF_ARGS)
+vile-lex-filt$x : lex-filt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ lex-filt$o $(LF_ARGS)
 
-vile-m4-filt$x : m4-filt.o $(CF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ m4-filt.o $(CF_ARGS)
+vile-m4-filt$x : m4-filt$o $(CF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ m4-filt$o $(CF_ARGS)
 
-vile-mail-filt$x : mailfilt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ mailfilt.o $(LF_ARGS)
+vile-mail-filt$x : mailfilt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ mailfilt$o $(LF_ARGS)
 
-vile-make-filt$x : makefilt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ makefilt.o $(LF_ARGS)
+vile-make-filt$x : makefilt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ makefilt$o $(LF_ARGS)
 
-vile-mms-filt$x : mms-filt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ mms-filt.o $(LF_ARGS)
+vile-mms-filt$x : mms-filt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ mms-filt$o $(LF_ARGS)
 
-vile-nr-filt$x : nr-filt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ nr-filt.o $(LF_ARGS)
+vile-nr-filt$x : nr-filt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ nr-filt$o $(LF_ARGS)
 
-vile-pas-filt$x : pas-filt.o $(CF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ pas-filt.o $(CF_ARGS)
+vile-pas-filt$x : pas-filt$o $(CF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ pas-filt$o $(CF_ARGS)
 
-vile-perl-filt$x : perlfilt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ perlfilt.o $(LF_ARGS)
+vile-perl-filt$x : perlfilt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ perlfilt$o $(LF_ARGS)
 
-vile-py-filt$x : py-filt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ py-filt.o $(LF_ARGS)
+vile-py-filt$x : py-filt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ py-filt$o $(LF_ARGS)
 
-vile-rcs-filt$x : rcs-filt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ rcs-filt.o $(LF_ARGS)
+vile-rcs-filt$x : rcs-filt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ rcs-filt$o $(LF_ARGS)
 
-vile-sccs-filt$x : sccsfilt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ sccsfilt.o $(LF_ARGS)
+vile-sccs-filt$x : sccsfilt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ sccsfilt$o $(LF_ARGS)
 
-vile-sh-filt$x : sh-filt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ sh-filt.o $(LF_ARGS)
+vile-sh-filt$x : sh-filt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ sh-filt$o $(LF_ARGS)
 
-vile-spell-filt$x : spellflt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ spellflt.o $(LF_ARGS)
+vile-spell-filt$x : spellflt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ spellflt$o $(LF_ARGS)
 
-vile-sql-filt$x : sql-filt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ sql-filt.o $(LF_ARGS)
+vile-sql-filt$x : sql-filt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ sql-filt$o $(LF_ARGS)
 
-vile-tags-filt$x : tagsfilt.o $(CF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ tagsfilt.o $(CF_ARGS)
+vile-tags-filt$x : tagsfilt$o $(CF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ tagsfilt$o $(CF_ARGS)
 
-vile-tbl-filt$x : tbl-filt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ tbl-filt.o $(LF_ARGS)
+vile-tbl-filt$x : tbl-filt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ tbl-filt$o $(LF_ARGS)
 
-vile-tc-filt$x : tc-filt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ tc-filt.o $(LF_ARGS)
+vile-tc-filt$x : tc-filt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ tc-filt$o $(LF_ARGS)
 
-vile-tcl-filt$x : tcl-filt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ tcl-filt.o $(LF_ARGS)
+vile-tcl-filt$x : tcl-filt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ tcl-filt$o $(LF_ARGS)
 
-vile-txt-filt$x : txt-filt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ txt-filt.o $(LF_ARGS)
+vile-ti-filt$x : ti-filt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ ti-filt$o $(LF_ARGS)
 
-vile-ti-filt$x : ti-filt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ ti-filt.o $(LF_ARGS)
+vile-txt-filt$x : txt-filt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ txt-filt$o $(LF_ARGS)
 
-vile-vile-filt$x : vilefilt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ vilefilt.o $(LF_ARGS)
+vile-vile-filt$x : vilefilt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ vilefilt$o $(LF_ARGS)
 
-vile-xres-filt$x : xresfilt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ xresfilt.o $(LF_ARGS)
+vile-xres-filt$x : xresfilt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ xresfilt$o $(LF_ARGS)
 
-vile-xs-filt$x : xs-filt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ xs-filt.o $(LF_ARGS)
+vile-xs-filt$x : xs-filt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ xs-filt$o $(LF_ARGS)
 
-vile-yacc-filt$x : yaccfilt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ yaccfilt.o $(LF_ARGS)
+vile-yacc-filt$x : yaccfilt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ yaccfilt$o $(LF_ARGS)
 
 check: $(TARGET)
 	@echo Sorry, no batch tests available.

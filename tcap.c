@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.131 1999/12/14 11:44:53 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.132 1999/12/24 01:08:23 tom Exp $
  *
  */
 
@@ -412,7 +412,7 @@ tcapopen(void)
 		    TRACE(("TGETSTR(%s) = %s\n", tc_strings[i].name,
 			    (t != 0)
 				? visible_buff(t, strlen(t), FALSE)
-				: "<null>"))
+				: "<null>"));
 		    /* simplify subsequent checks */
 		    if (NO_CAP(t))
 			t = 0;
@@ -523,7 +523,7 @@ tcapopen(void)
 	    if (!NO_CAP(seq)) {
 		int len;
 		TRACE(("TGETSTR(%s) = %s\n", keyseqs[i].capname,
-				visible_buff(seq, strlen(seq), FALSE)))
+				visible_buff(seq, strlen(seq), FALSE)));
 #define DONT_MAP_DEL 1
 #if DONT_MAP_DEL
 		/* NetBSD, FreeBSD, etc. have the kD (delete) function key
@@ -565,7 +565,7 @@ tcapopen(void)
 #endif
 
 #if USE_TERMCAP
-	TRACE(("tcapbuf used %d of %d\n", p - tcapbuf, sizeof(tcapbuf)))
+	TRACE(("tcapbuf used %d of %d\n", p - tcapbuf, sizeof(tcapbuf)));
 	if (p >= &tcapbuf[sizeof(tcapbuf)])
 	{
 		puts("Terminal description too big!\n");
@@ -1063,12 +1063,12 @@ tcapcursor(int flag)
 	 && tc_VE != 0) {
 		if (flag) {
 			if (!++level) {
-				TRACE(("CURSOR ON\n"))
+				TRACE(("CURSOR ON\n"));
 				putpad(tc_VE);
 			}
 		} else {
 			if (!level--) {
-				TRACE(("CURSOR OFF\n"))
+				TRACE(("CURSOR OFF\n"));
 				putpad(tc_VI);
 			}
 		}
@@ -1220,7 +1220,7 @@ xterm_button(int c)
 
 			if (button > 3)
 				button = 0;
-			TRACE(("MOUSE-button event %d -> btn %d loc %d.%d\n", event, button, y, x))
+			TRACE(("MOUSE-button event %d -> btn %d loc %d.%d\n", event, button, y, x));
 			status = on_mouse_click(button, y, x);
 			break;
 #else /* OPT_XTERM >=3, highlighting mode */
@@ -1230,7 +1230,7 @@ xterm_button(int c)
 			y	= XtermPos() + y_origin;
 
 			button	= (event & 3) + 1;
-			TRACE(("MOUSE-button event:%d x:%d y:%d\n", event, x, y))
+			TRACE(("MOUSE-button event:%d x:%d y:%d\n", event, x, y));
 			if (button > 3) {
 				endofDisplay();
 				return TRUE; /* button up */
@@ -1278,7 +1278,7 @@ xterm_button(int c)
 			x = XtermPos();
 			y = XtermPos();
 
-			TRACE(("MOUSE-valid: x:%d y:%d\n", x, y))
+			TRACE(("MOUSE-valid: x:%d y:%d\n", x, y));
 			setwmark(y-1, x-1);
 			yankregion();
 
@@ -1309,7 +1309,7 @@ xterm_button(int c)
 			TRACE(("MOUSE-invalid: start(%d,%d) end(%d,%d) mouse(%d,%d)\n",
 				starty, startx,
 				endy,   endx,
-				mousey, mousex))
+				mousey, mousex));
 			setcursor(starty - 1, startx - 1);
 			setwmark (endy   - 1, endx   - 1);
 			if (MK.o != 0 && !is_at_end_of_line(MK))

@@ -78,41 +78,41 @@ close_pipes(void)
 {
 	if (vile_in != NULL)
 	{
-		TRACE(("close_pipes, vile_in #%d\n", fileno(vile_in)))
+		TRACE(("close_pipes, vile_in #%d\n", fileno(vile_in)));
 		fclose(vile_in);
 		vile_in = NULL;
 		pipe_p_from_c = NULLHANDLE;
 	}
 	else if (pipe_p_from_c != NULLHANDLE)
 	{
-		TRACE(("close_pipes, pipe_p_from_c #%d\n", pipe_p_from_c))
+		TRACE(("close_pipes, pipe_p_from_c #%d\n", pipe_p_from_c));
 		DosClose(pipe_p_from_c);
 		pipe_p_from_c = NULLHANDLE;
 	}
 
 	if (vile_out != NULL)
 	{
-		TRACE(("close_pipes, vile_out #%d\n", fileno(vile_out)))
+		TRACE(("close_pipes, vile_out #%d\n", fileno(vile_out)));
 		fclose(vile_out);
 		vile_out = NULL;
 		pipe_p_to_c = NULLHANDLE;
 	}
 	else if (pipe_p_to_c != NULLHANDLE)
 	{
-		TRACE(("close_pipes, pipe_p_to_c #%d\n", pipe_p_to_c))
+		TRACE(("close_pipes, pipe_p_to_c #%d\n", pipe_p_to_c));
 		DosClose(pipe_p_to_c);
 		pipe_p_to_c = NULLHANDLE;
 	}
 
 	if (pipe_c_to_p != NULLHANDLE)
 	{
-		TRACE(("close_pipes, pipe_c_to_p #%d\n", pipe_c_to_p))
+		TRACE(("close_pipes, pipe_c_to_p #%d\n", pipe_c_to_p));
 		DosClose(pipe_c_to_p);
 		pipe_c_to_p = NULLHANDLE;
 	}
 	if (pipe_c_from_p != NULLHANDLE)
 	{
-		TRACE(("close_pipes, pipe_c_from_p #%d\n", pipe_c_from_p))
+		TRACE(("close_pipes, pipe_c_from_p #%d\n", pipe_c_from_p));
 		DosClose(pipe_c_from_p);
 		pipe_c_from_p = NULLHANDLE;
 	}
@@ -223,13 +223,13 @@ inout_popen(FILE **infile, FILE **outfile, char *command)
 	if (infile != NULL
 		&& (vile_in = *infile = _fdopen(pipe_p_from_c, "r")) == NULL)
 		goto Error;
-	TRACE(("inout_popen, vile_in #%d\n", fileno(vile_in)))
+	TRACE(("inout_popen, vile_in #%d\n", fileno(vile_in)));
 
 	/* Connect the write end of the p_to_c pipe to a stream. */
 	if (outfile != NULL
 		&& (vile_out = *outfile = _fdopen(pipe_p_to_c, "w")) == NULL)
 		goto Error;
-	TRACE(("inout_popen, vile_out #%d\n", fileno(vile_out)))
+	TRACE(("inout_popen, vile_out #%d\n", fileno(vile_out)));
 
 	/* Restore redirected file handles. */
 	if (save_in != NULLHANDLE)
@@ -237,27 +237,27 @@ inout_popen(FILE **infile, FILE **outfile, char *command)
 		fd = 0;
 		DosDupHandle(save_in, &fd);
 		DosClose(save_in);
-		TRACE(("inout_popen, dup 0: #%d, #%d\n", save_in, fd))
+		TRACE(("inout_popen, dup 0: #%d, #%d\n", save_in, fd));
 	}
 	if (save_out != NULLHANDLE)
 	{
 		fd = 1;
 		DosDupHandle(save_out, &fd);
 		DosClose(save_out);
-		TRACE(("inout_popen, dup 1: #%d, #%d\n", save_out, fd))
+		TRACE(("inout_popen, dup 1: #%d, #%d\n", save_out, fd));
 	}
 	if (save_err != NULLHANDLE)
 	{
 		fd = 2;
 		DosDupHandle(save_err, &fd);
 		DosClose(save_err);
-		TRACE(("inout_popen, dup 2: #%d, #%d\n", save_err, fd))
+		TRACE(("inout_popen, dup 2: #%d, #%d\n", save_err, fd));
 	}
 
 	return TRUE;
 
 Error:
-	TRACE(("inout_popen, Error\n"))
+	TRACE(("inout_popen, Error\n"));
 	/* Restore redirected file handles. */
 	if (save_in != NULLHANDLE)
 	{
@@ -290,7 +290,7 @@ npflush(void)
 {
 	if (vile_out != NULL)
 	{
-		TRACE(("npflush, vile_out #%d\n", fileno(vile_out)))
+		TRACE(("npflush, vile_out #%d\n", fileno(vile_out)));
 		fflush(vile_out);
 		fclose(vile_out);
 		vile_out = NULL;

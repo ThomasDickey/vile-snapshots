@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.371 1999/12/21 23:39:47 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.372 1999/12/24 00:32:53 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1583,3 +1583,9 @@ the leak was present, I could "use" ^X-q on the third try of the .bat script.
 It appears that the inherited file-descriptor from vile.exe for the w32pipe
 was "usable" for the winvile.exe process, when it coincided with the one that
 winvile.exe was using.
+
+-- 99-12-23 (tom)
+
+even if I remove the -B option that imake provides, the SunOS unproto
+wrapper does not build xvile because the compiler does not understand
+	#include VILE_ICON

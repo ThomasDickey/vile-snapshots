@@ -1,5 +1,5 @@
 /*
- * $Id: btree.c,v 1.6 1999/10/31 23:25:11 tom Exp $
+ * $Id: btree.c,v 1.9 1999/12/24 13:16:12 tom Exp $
  * Copyright 1997-1999 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
@@ -17,14 +17,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#if defined(DEBUG_BTREE)
 #if !defined(DEBUG_BTREE) && !defined(NDEBUG)
 #define NDEBUG
 #endif
-
-#include <assert.h>
-
-#include "btree.h"
-
 #if defined(OPT_TRACE) || defined(DOALLOC)
 #include "trace.h"
 #endif
@@ -39,6 +35,14 @@
 
 #define castalloc(cast,nbytes) (cast *)malloc(nbytes)
 
+#else
+#include <estruct.h>
+#endif
+
+#include <assert.h>
+
+#include "btree.h"
+
 			/* definitions to make this simple, like Knuth */
 #define	LLINK(p)	BI_LEFT(p)
 #define	RLINK(p)	BI_RIGHT(p)
@@ -52,7 +56,7 @@
 #ifdef DEBUG_BTREE
 # ifndef TRACE
 #  if DEBUG_BTREE > 0
-#   define TRACE(p)	printf p ; fflush(stdout) ;
+#   define TRACE(p)	printf p ; fflush(stdout)
 #  endif
 # endif
 #else
@@ -60,11 +64,11 @@
 #endif
 
 #if DEBUG_BTREE > 1
-#define TRACE_TREE(s,p)	TRACE((s)) btree_printf(p)
+#define TRACE_TREE(s,p)	TRACE((s)); btree_printf(p)
 #endif
 
 #if DEBUG_BTREE > 2
-#define TRACE_SUBTREE(s,h,p)	TRACE(s); dump_nodes(h,p,0)
+#define TRACE_SUBTREE(s,h,p)	TRACE((s)); dump_nodes(h,p,0)
 #endif
 
 #ifndef TRACE
@@ -81,6 +85,7 @@
 
 #ifdef DEBUG_BTREE
 static int btree_verify(BI_TREE *funcs, BI_NODE *p);
+static void dump_nodes(BI_TREE *funcs, BI_NODE * p, int level);
 #endif
 
 /*
@@ -111,7 +116,7 @@ register
 	short	a;
 	BI_DATA	*value = 0;
 
-	TRACE(("inserting '%s'\n", data->bi_key))
+	TRACE(("inserting '%s'\n", data->bi_key));
 	if (p == 0) {
 		RLINK(t) = p = (*funcs->allocat)(data);
 		funcs->depth += 1;
@@ -165,9 +170,9 @@ register
 			} else /* (B(s) == a) */ {
 				assert(B(s) == a);
 				/* ...the tree has gotten out of balance */
-				TRACE(("...must rebalance\n"))
+				TRACE(("...must rebalance\n"));
 				if (B(r) == a) {
-					TRACE(("(A8:Single rotation)\n"))
+					TRACE(("(A8:Single rotation)\n"));
 					p          = r;
 					LINK(a,s)  = LINK(-a,r);
 					LINK(-a,r) = s;
@@ -175,17 +180,17 @@ register
 					B(s) = B(r) = 0;
 				} else /* (B(r) == -a) */ {
 					assert(B(r) == -a);
-					TRACE(("(A9: Double rotation)\n"))
+					TRACE(("(A9: Double rotation)\n"));
 					p          = LINK(-a,r);
 					LINK(-a,r) = LINK(a,p);
 					LINK(a,p)  = r;
 					LINK(a,s)  = LINK(-a,p);
 					LINK(-a,p) = s;
 
-					TRACE(("r=%s\n", KEY(r)))
-					TRACE(("s=%s\n", KEY(s)))
+					TRACE(("r=%s\n", KEY(r)));
+					TRACE(("s=%s\n", KEY(s)));
 					TRACE(("B(%s) = %d vs a = %d\n",
-						KEY(p), B(p), a))
+						KEY(p), B(p), a));
 
 					if (B(p) == a)
 						{ B(s) = -a; B(r) = 0;	}
@@ -217,14 +222,14 @@ parent_of(BI_TREE *funcs, BI_NODE *s)
 		r = p;
 		p = LINK(a,p);
 	}
-	TRACE(("parent of '%s' is '%s'\n", KEY(s), KEY(r)))
+	TRACE(("parent of '%s' is '%s'\n", KEY(s), KEY(r)));
 	return r;
 }
 
 #define MAXSTK 20
 #define PUSH(A,P) { \
 	TRACE(("@%d:push #%d a=%2d, B=%2d, p='%s' -> '%s'\n", __LINE__, \
-		k, A, B(P), P?KEY(P):"", LINK(A,P)?KEY(LINK(A,P)):"")) \
+		k, A, B(P), P?KEY(P):"", LINK(A,P)?KEY(LINK(A,P)):"")); \
 	stack[k].a = A;\
 	stack[k].p = P;\
 	k++; }
@@ -263,24 +268,24 @@ register
 	}
 
 	if (value != 0) {	/* we found the node to delete, in p */
-		TRACE(("deleting node '%s'\n", value))
+		TRACE(("deleting node '%s'\n", value));
 		q = p;
 		p = t;
 		a = (q == RLINK(p)) ? 1 : -1;
 
-		TRACE(("@%d, p='%s'\n", __LINE__, p?KEY(p):""))
-		TRACE(("@%d, q='%s'\n", __LINE__, q?KEY(q):""))
-		TRACE(("@%d, a=%d\n",   __LINE__, a))
+		TRACE(("@%d, p='%s'\n", __LINE__, p?KEY(p):""));
+		TRACE(("@%d, q='%s'\n", __LINE__, q?KEY(q):""));
+		TRACE(("@%d, a=%d\n",   __LINE__, a));
 
 				/* D1: Is RLINK null? */
 		if (RLINK(q) == 0) {
-			TRACE(("D1\n"))
+			TRACE(("D1\n"));
 
 			LINK(a,p) = LLINK(q);
 			s = p;
 #if 0 /* LATER? */
 		} else if (LLINK(q) == 0) { /* D1.5 */
-			TRACE(("D1.5\n"))
+			TRACE(("D1.5\n"));
 			LINK(a,p) = RLINK(q);
 			s = RLINK(q);
 #endif
@@ -288,23 +293,23 @@ register
 			TRACE_SUBTREE("SUBTREE(p)-before\n", funcs, p);
 			r = RLINK(q);
 			if (LLINK(r) == 0) {
-				TRACE(("D2, r='%s', q='%s'\n", KEY(r), KEY(q)))
-				TRACE(("DIFF: %d\n", B(r) - B(q)))
+				TRACE(("D2, r='%s', q='%s'\n", KEY(r), KEY(q)));
+				TRACE(("DIFF: %d\n", B(r) - B(q)));
 
 				LLINK(r) = LLINK(q);
 				LINK(a,p) = r;
 				s = r;
-				TRACE(("(D2) replace balance %2d with %2d, a=%2d\n", B(s), B(q), a))
+				TRACE(("(D2) replace balance %2d with %2d, a=%2d\n", B(s), B(q), a));
 				B(s) = B(q);
 				a = 1;	/* for RLINK(q) */
 
 				TRACE_SUBTREE("SUBTREE(p)-after\n", funcs, p);
-				TRACE(("@%d, p='%s'\n", __LINE__, KEY(p)))
-				TRACE(("@%d, r='%s'\n", __LINE__, KEY(r)))
+				TRACE(("@%d, p='%s'\n", __LINE__, KEY(p)));
+				TRACE(("@%d, r='%s'\n", __LINE__, KEY(r)));
 			} else { /* D3: Find null LLINK */
-				TRACE(("D3: find null LLINK\n"))
+				TRACE(("D3: find null LLINK\n"));
 
-				TRACE(("@%d, r='%s'\n", __LINE__, r?KEY(r):""))
+				TRACE(("@%d, r='%s'\n", __LINE__, r?KEY(r):""));
 				s = r;
 				do {
 					r = s;
@@ -314,11 +319,11 @@ register
 				LLINK(s) = LLINK(q);
 				LLINK(r) = RLINK(s);
 				RLINK(s) = RLINK(q);
-				TRACE(("@%d, p='%s', a=%d\n", __LINE__, KEY(p), a))
-				TRACE(("@%d, r='%s'\n", __LINE__, KEY(r)))
-				TRACE(("@%d, s='%s'\n", __LINE__, KEY(s)))
+				TRACE(("@%d, p='%s', a=%d\n", __LINE__, KEY(p), a));
+				TRACE(("@%d, r='%s'\n", __LINE__, KEY(r)));
+				TRACE(("@%d, s='%s'\n", __LINE__, KEY(s)));
 				LINK(a,p) = s;
-				TRACE(("(D3) replace balance %2d with %2d, a=%2d\n", B(s), B(q), a))
+				TRACE(("(D3) replace balance %2d with %2d, a=%2d\n", B(s), B(q), a));
 				B(s) = B(q);
 				s = r;
 				a = -1;	/* ...since we followed left */
@@ -340,36 +345,36 @@ register
 			TRACE(("Construct stack from '%s' down to '%s', final a=%d\n",
 				q?KEY(q):"",
 				s?KEY(s):"",
-				b))
+				b));
 			while (s != q) {
 				PUSH(a,q);
 				q = LINK(a,q);
 				a = COMPARE(KEY(s), KEY(q));
 			}
 			PUSH(b,q);
-			TRACE(("...done building stack\n"))
+			TRACE(("...done building stack\n"));
 		}
 
 				/* Rebalance the tree */
-		for (;;) {
+		for_ever {
 			if (--k <= 0) {
-				TRACE(("shorten the whole tree\n"))
+				TRACE(("shorten the whole tree\n"));
 				funcs->depth -= 1;
 				break;
 			}
 			p = stack[k].p;
 			a = stack[k].a;
 			TRACE(("processing #%d '%s' B = %d, a = %d (%p)\n",
-				k, KEY(p), B(p), a, LINK(a,p)))
+				k, KEY(p), B(p), a, LINK(a,p)));
 			if (B(p) == a) {
-				TRACE(("Case (i)\n"))
+				TRACE(("Case (i)\n"));
 				B(p) = 0;
 			} else if (B(p) == 0) {
-				TRACE(("Case (ii)\n"))
+				TRACE(("Case (ii)\n"));
 				B(p) = -a;
 				break;
 			} else {
-				TRACE(("Case (iii): Rebalancing needed!\n"))
+				TRACE(("Case (iii): Rebalancing needed!\n"));
 
 				q = LINK(-a,p);
 				assert(q != 0);
@@ -377,18 +382,18 @@ register
 				assert(B(p) == -a);
 
 				t = stack[k-1].p;
-				TRACE(("t:%s, balance:%d\n", KEY(t), B(t)))
-				TRACE(("A:p:%s, balance:%d\n", KEY(p), B(p)))
-				TRACE(("B:q:%s, balance:%d\n", KEY(q), B(q)))
+				TRACE(("t:%s, balance:%d\n", KEY(t), B(t)));
+				TRACE(("A:p:%s, balance:%d\n", KEY(p), B(p)));
+				TRACE(("B:q:%s, balance:%d\n", KEY(q), B(q)));
 				TRACE_TREE("before rebalancing:", funcs);
 
 				if (B(q) == -a) {
-					TRACE(("CASE 1: single rotation\n"))
+					TRACE(("CASE 1: single rotation\n"));
 
 					r          = q;
 
-					TRACE(("link LINK(-a,p) -> LINK( a,q) = '%s'\n", LINK(a,q)?KEY(LINK(a,q)):""))
-					TRACE(("link LINK( a,q) -> p          = '%s'\n", p?KEY(p):""))
+					TRACE(("link LINK(-a,p) -> LINK( a,q) = '%s'\n", LINK(a,q)?KEY(LINK(a,q)):""));
+					TRACE(("link LINK( a,q) -> p          = '%s'\n", p?KEY(p):""));
 
 					LINK(-a,p) = LINK(a,q);
 					LINK(a,q)  = p;
@@ -403,23 +408,23 @@ register
 							? "R"
 							: (p == LLINK(t))
 								? "L" : "?",
-						KEY(t)))
+						KEY(t)));
 
 					t->links[(p == RLINK(t))] = r;
 
 				} else if (B(q) == a) {
-					TRACE(("CASE 2: double rotation\n"))
+					TRACE(("CASE 2: double rotation\n"));
 
 					r          = LINK(a,q);
 #if DEBUG_BTREE > 1
-					TRACE(("a = '%d'\n", a))
-					TRACE(("p = '%s'\n", p?KEY(p):""))
-					TRACE(("q = '%s'\n", q?KEY(q):""))
-					TRACE(("r = '%s'\n", r?KEY(r):""))
-					TRACE(("link LINK( a,q) -> LINK(-a,r) = '%s'\n", LINK(-a,r)?KEY(LINK(-a,r)):""))
-					TRACE(("link LINK(-a,r) -> q          = '%s'\n", KEY(q)))
-					TRACE(("link LINK(-a,p) -> LINK(a,r)  = '%s'\n", LINK(a,r)?KEY(LINK(a,r)):""))
-					TRACE(("link LINK( a,r) -> p          = '%s'\n", KEY(p)))
+					TRACE(("a = '%d'\n", a));
+					TRACE(("p = '%s'\n", p?KEY(p):""));
+					TRACE(("q = '%s'\n", q?KEY(q):""));
+					TRACE(("r = '%s'\n", r?KEY(r):""));
+					TRACE(("link LINK( a,q) -> LINK(-a,r) = '%s'\n", LINK(-a,r)?KEY(LINK(-a,r)):""));
+					TRACE(("link LINK(-a,r) -> q          = '%s'\n", KEY(q)));
+					TRACE(("link LINK(-a,p) -> LINK(a,r)  = '%s'\n", LINK(a,r)?KEY(LINK(a,r)):""));
+					TRACE(("link LINK( a,r) -> p          = '%s'\n", KEY(p)));
 #endif
 					LINK(a,q)  = LINK(-a,r);
 					LINK(-a,r) = q;
@@ -427,7 +432,7 @@ register
 					LINK(a,r)  = p;
 
 					TRACE(("compute balance for '%s', %d vs a=%d\n",
-						KEY(r), B(r), a))
+						KEY(r), B(r), a));
 
 					if (B(r) == -a)
 						{ B(p) = a;  B(q) = 0;	}
@@ -444,12 +449,12 @@ register
 					TRACE(("Finish by linking '%s' to %sLINK(%s)\n",
 						KEY(r),
 						(a>0) ? "R" : "L",
-						KEY(t)))
+						KEY(t)));
 
 					LINK(a,t) = r;
 
 				} else {
-					TRACE(("CASE 3: single rotation, end\n"))
+					TRACE(("CASE 3: single rotation, end\n"));
 
 					r          = q;
 					LINK(-a,p) = LINK(a,q);
@@ -550,11 +555,11 @@ dump_nodes(BI_TREE *funcs, BI_NODE * p, int level)
 #if DEBUG_BTREE > 0
 		if (LLINK(p) != 0
 		 && COMPARE(KEY(LLINK(p)), KEY(p)) > 0)
-			TRACE((" OOPS:L"))
+			TRACE((" OOPS:L"));
 		if (RLINK(p) != 0
 		 && COMPARE(KEY(RLINK(p)), KEY(p)) < 0)
-			TRACE((" OOPS:R"))
-		TRACE((" %d", btree_depth(p)))
+			TRACE((" OOPS:R"));
+		TRACE((" %d", btree_depth(p)));
 #endif
 #if DEBUG_BTREE >= BTREE_DRIVER
 		printf("\n");
@@ -569,7 +574,7 @@ dump_nodes(BI_TREE *funcs, BI_NODE * p, int level)
 void
 btree_printf(BI_TREE * funcs)
 {
-	TRACE(("TREE, depth %d, count %d\n", funcs->depth, funcs->count))
+	TRACE(("TREE, depth %d, count %d\n", funcs->depth, funcs->count));
 	dump_nodes(funcs, RLINK(&(funcs->head)), 0);
 }
 
@@ -677,18 +682,18 @@ btree_parray(BI_TREE *tree, char *name, unsigned len)
 
 int btree_freeup(BI_TREE *funcs)
 {
-	TRACE(("Deleting all nodes...\n"))
+	TRACE(("Deleting all nodes...\n"));
 	TRACE_TREE("INITIAL-", funcs);
 	while (RLINK(&(funcs->head))) {
-		TRACE(("Try to delete '%s'\n", KEY(RLINK(&(funcs->head)))))
+		TRACE(("Try to delete '%s'\n", KEY(RLINK(&(funcs->head)))));
 		if (!btree_delete(funcs, KEY(RLINK(&(funcs->head))))) {
-			TRACE(("Try-delete failed\n"))
+			TRACE(("Try-delete failed\n"));
 			return 0;
 		}
 #ifdef DEBUG_BTREE
 		TRACE_TREE("AFTER-DELETE, ", funcs);
 		if (!btree_verify(funcs, RLINK(&(funcs->head)))) {
-			TRACE(("Try-verify failed\n"))
+			TRACE(("Try-verify failed\n"));
 			return 0;
 		}
 #endif
@@ -718,7 +723,7 @@ btree_verify(BI_TREE *funcs, BI_NODE *p)
 			if (count != funcs->count) {
 				ok = 0;
 				TRACE(("OOPS: Counted %d vs %d in header\n",
-					count, funcs->count))
+					count, funcs->count));
 			}
 		}
 		/* verify the balance factor */
@@ -726,13 +731,13 @@ btree_verify(BI_TREE *funcs, BI_NODE *p)
 			if (balance > 0) {
 				if (balance > 1) {
 					ok = 0;
-					TRACE(("OOPS: '%s' is unbalanced\n", KEY(p)))
+					TRACE(("OOPS: '%s' is unbalanced\n", KEY(p)));
 				}
 				balance = 1;
 			} else {
 				if (balance < -1) {
 					ok = 0;
-					TRACE(("OOPS: '%s' is unbalanced\n", KEY(p)))
+					TRACE(("OOPS: '%s' is unbalanced\n", KEY(p)));
 				}
 				balance = -1;
 			}
@@ -740,7 +745,7 @@ btree_verify(BI_TREE *funcs, BI_NODE *p)
 		if (B(p) != balance) {
 			ok = 0;
 			TRACE(("OOPS: Balance '%s' have %d vs %d\n",
-				KEY(p), B(p), balance))
+				KEY(p), B(p), balance));
 		}
 
 		/* verify that the nodes are in correct order */
@@ -750,7 +755,7 @@ btree_verify(BI_TREE *funcs, BI_NODE *p)
 		if (compare >= 0) {
 			ok = 0;
 			TRACE(("OOPS: Compare %s, have %d vs -1\n",
-				KEY(p), compare))
+				KEY(p), compare));
 		}
 
 		/* recur as needed */

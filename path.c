@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.100 1999/12/10 23:18:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.101 1999/12/24 01:08:23 tom Exp $
  *
  *
  */
@@ -389,7 +389,7 @@ save_user(const char *name, const char *path)
 	if (name != NULL
 	 && path != NULL
 	 && (q = typealloc(UPATH)) != NULL) {
-		TRACE(("save_user(name=%s, path=%s)\n", name, path))
+		TRACE(("save_user(name=%s, path=%s)\n", name, path));
 		if ((q->name = strmalloc(name)) != NULL
 		 && (q->path = strmalloc(path)) != NULL) {
 			q->next = user_paths;
@@ -1092,7 +1092,7 @@ canonpath(char *ss)
 	char *p, *pp;
 	char *s;
 
-	TRACE(("canonpath '%s'\n", ss))
+	TRACE(("canonpath '%s'\n", ss));
 	if ((s = is_appendname(ss)) != 0)
 		return (canonpath(s) != 0) ? ss : 0;
 
@@ -1272,7 +1272,7 @@ canonpath(char *ss)
 	case_correct_path(ss, ss);
 #endif
 
-	TRACE((" -> '%s' canonpath\n", ss))
+	TRACE((" -> '%s' canonpath\n", ss));
 	return ss;
 }
 
@@ -1294,7 +1294,7 @@ shorten_path(char *path, int keep_cwd)
 	if (isInternalName(path))
 		return path;
 
-	TRACE(("shorten '%s'\n", path))
+	TRACE(("shorten '%s'\n", path));
 	if ((f = is_appendname(path)) != 0)
 		return (shorten_path(f, keep_cwd) != 0) ? path : 0;
 
@@ -1305,7 +1305,7 @@ shorten_path(char *path, int keep_cwd)
 	cwd = current_directory(FALSE);
 	ff  = path;
 	dot = 0;
-	TRACE(("current '%s'\n", cwd))
+	TRACE(("current '%s'\n", cwd));
 
 	if ((slp = strchr(cwd, '[')) != 0
 	 && (slp == cwd
@@ -1362,7 +1362,7 @@ shorten_path(char *path, int keep_cwd)
 		*temp = EOS;
 
 	(void) strcpy(path, strcat(temp, ff));
-	TRACE(("     -> '%s' shorten\n", path))
+	TRACE(("     -> '%s' shorten\n", path));
 #else
 # if SYS_UNIX || OPT_MSDOS_PATH
 	cwd = current_directory(FALSE);
@@ -2027,7 +2027,7 @@ find_in_path_list(const char *path_list, char *path)
 		(path_list != 0)
 			? path_list
 			: "(null)",
-		find))
+		find));
 	while ((path_list = parse_pathlist(path_list, temp)) != 0) {
 #if OPT_CASELESS
 		if (!stricmp(temp, find))
@@ -2039,7 +2039,7 @@ find_in_path_list(const char *path_list, char *path)
 			break;
 		}
 	}
-	TRACE(("\t-> %d\n", found))
+	TRACE(("\t-> %d\n", found));
 	return found;
 }
 
@@ -2070,7 +2070,7 @@ prepend_to_path_list(char **path_list, char *path)
 			*path_list = s;
 		}
 	}
-	TRACE(("prepend_to_path_list\n\t%s\n\t%s\n", *path_list, find))
+	TRACE(("prepend_to_path_list\n\t%s\n\t%s\n", *path_list, find));
 }
 
 /*
@@ -2101,7 +2101,7 @@ append_to_path_list(char **path_list, char *path)
 			*path_list = s;
 		}
 	}
-	TRACE(("append_to_path_list\n\t%s\n\t%s\n", *path_list, find))
+	TRACE(("append_to_path_list\n\t%s\n\t%s\n", *path_list, find));
 }
 
 /*

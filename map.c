@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.88 1999/10/03 17:29:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.89 1999/12/24 00:59:16 tom Exp $
  *
  */
 
@@ -542,7 +542,7 @@ static int
 normal_getc(void)
 {
 	int c = term.getch();
-	TRACE(("normal/getc:%c (%#x)\n", c, c))
+	TRACE(("normal/getc:%c (%#x)\n", c, c));
 	save_keystroke(c);
 	return c;
 }
@@ -571,7 +571,7 @@ sysmapped_c(void)
     if ((c = term.getch()) == -1)
 	return c;	/* see comment in ttgetc */
 
-    TRACE(("mapped/getc:%c (%#x)\n", c, c))
+    TRACE(("mapped/getc:%c (%#x)\n", c, c));
 
     save_keystroke(c);
 

@@ -5,7 +5,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.104 1999/11/24 22:12:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.105 1999/12/24 01:08:23 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -180,7 +180,7 @@ init_tags_cmpl (char *buf, unsigned cpos)
 				store_tag(lp);
 		}
 
-		TRACE(("stored %d tags entries\n", tags_tree.count))
+		TRACE(("stored %d tags entries\n", tags_tree.count));
 	}
 
 	return btree_parray(&tags_tree, buf, cpos);
@@ -216,10 +216,10 @@ mark_tag_hit(LINE *tag, LINE *hit)
 {
 	TAGHITS *p;
 
-	TRACE(("mark_tag_hit %s:%d\n", curbp->b_bname, line_no(curbp, hit)))
+	TRACE(("mark_tag_hit %s:%d\n", curbp->b_bname, line_no(curbp, hit)));
 	for (p = tag_hits; p != 0; p = p->link) {
 		if (p->hit == hit) {
-			TRACE(("... mark_tag_hit TRUE\n"))
+			TRACE(("... mark_tag_hit TRUE\n"));
 			return (p->tag == tag) ? ABORT : TRUE;
 		}
 	}
@@ -230,7 +230,7 @@ mark_tag_hit(LINE *tag, LINE *hit)
 	p->hit   = hit;
 	tag_hits = p;
 
-	TRACE(("... mark_tag_hit FALSE\n"))
+	TRACE(("... mark_tag_hit FALSE\n"));
 	return FALSE;
 }
 
@@ -738,7 +738,7 @@ cheap_buffer_scan(BUFFER *bp, char *patrn, int dir)
 
 	TRACE(("cheap_buffer_scan '%s' %s\n",
 		patrn,
-		dir == FORWARD ? "fwd" : "bak"))
+		dir == FORWARD ? "fwd" : "bak"));
 
 	for (lp = dir == FORWARD ? lforw(buf_head(bp)) : lback(buf_head(bp));
 		lp != buf_head(bp);

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.320 1999/12/22 11:04:05 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.321 1999/12/24 01:08:24 tom Exp $
  *
  */
 
@@ -143,7 +143,7 @@ dfputsn(OutFunc outfunc, const char *s, int n)
 	register int c = 0;
 	register int l = 0;
 
-	TRACE(("...str=%s\n", visible_buff(s, n, TRUE)))
+	TRACE(("...str=%s\n", visible_buff(s, n, TRUE)));
 	if (s != 0) {
 		while ((n-- != 0) && ((c = *s++) != EOS)) {
 			(*outfunc)(c);
@@ -168,7 +168,7 @@ dfputi(OutFunc outfunc, UINT i, UINT r)
 {
 	int q;
 
-	TRACE(("...int=%d\n", i))
+	TRACE(("...int=%d\n", i));
 
 	q = (i >= r) ? dfputi(outfunc, i/r, r) : 0;
 
@@ -184,7 +184,7 @@ dfputli(OutFunc outfunc, ULONG l, UINT r)
 {
 	int q;
 
-	TRACE(("...long=%ld\n", l))
+	TRACE(("...long=%ld\n", l));
 
 	q = (l >= r) ? dfputli(outfunc, (l/r), r) : 0;
 
@@ -236,7 +236,7 @@ dofmt(const char *fmt, va_list *app)
 	UINT radix;
 	OutFunc outfunc = dfoutfn;  /* local copy, for recursion */
 
-	TRACE(("dofmt fmt='%s'\n", fmt))
+	TRACE(("dofmt fmt='%s'\n", fmt));
 	while ((c = *fmt++) != 0 ) {
 		if (c != '%') {
 			(*outfunc)(c);
@@ -845,12 +845,12 @@ dot_to_vcol(WINDOW *wp)
 
 #if OPT_TRACE && OPT_DEBUG
 	TRACE(("CHECK left_col %d, shift %d, length %d\n",
-			wt->w_left_col, shift, llength(wp->w_dot.l)))
-	TRACE(("%s\n", lp_visible(wp->w_dot.l)))
+			wt->w_left_col, shift, llength(wp->w_dot.l)));
+	TRACE(("%s\n", lp_visible(wp->w_dot.l)));
 	TRACE(("DOT:%s\n", visible_buff(
 			wp->w_dot.l->l_text + wp->w_dot.o,
 			llength(wp->w_dot.l) - wp->w_dot.o,
-			FALSE)))
+			FALSE)));
 #endif
 
 	/*
@@ -880,21 +880,21 @@ dot_to_vcol(WINDOW *wp)
 		if (wp->w_dot.o < lo
 		 || wp->w_dot.o >= hi) {
 			col = offs2col(wp, wt->w_left_dot.l, wp->w_dot.o);
-			TRACE(("offs2col(%d)) = %d\n", wp->w_dot.o, col))
-			TRACE(("...in row %d\n", col % term.cols))
+			TRACE(("offs2col(%d)) = %d\n", wp->w_dot.o, col));
+			TRACE(("...in row %d\n", col % term.cols));
 			row = col / term.cols;
 			col = row * term.cols;
 			if (row != 0)
 				col -= (nu_width(wp) + w_left_margin(wp));
-			TRACE(("...row %d ends with col %d\n", row, col))
+			TRACE(("...row %d ends with col %d\n", row, col));
 		}
 		if (wt->w_left_col != col) {
-			TRACE(("left_col %d vs %d\n", wt->w_left_col, col))
+			TRACE(("left_col %d vs %d\n", wt->w_left_col, col));
 			wt->w_left_col = col;
 			wt->w_left_dot.o = col2offs(wp, wt->w_left_dot.l, col + tmp);
 
 			col -= (offs2col(wp, wt->w_left_dot.l, wt->w_left_dot.o) - tmp);
-			TRACE(("...adjust:%d\n", col))
+			TRACE(("...adjust:%d\n", col));
 			wt->w_left_col -= col;
 		}
 		if (wt->w_left_dot.o)
@@ -912,10 +912,10 @@ dot_to_vcol(WINDOW *wp)
 			wt->w_left_dot.o,
 			wt->w_left_col,
 			wt->w_left_col + wt->w_left_adj,
-			shift, base))
+			shift, base));
 
 		col = offs2col(wp, wt->w_left_dot.l, wp->w_dot.o) + shift - base;
-		TRACE(("...compare col %d to shift %d\n", col, shift))
+		TRACE(("...compare col %d to shift %d\n", col, shift));
 		if (col < shift) {
 			wt->w_left_col = col;
 		} else {
@@ -924,23 +924,23 @@ dot_to_vcol(WINDOW *wp)
 		wt->w_left_adj = 0;
 
 		wt->w_left_dot.o = col2offs(wp, wt->w_left_dot.l, wt->w_left_col + base - shift);
-		TRACE(("...col2offs(%d) = %d\n", wt->w_left_col, wt->w_left_dot.o))
+		TRACE(("...col2offs(%d) = %d\n", wt->w_left_col, wt->w_left_dot.o));
 
 		TRACE(("...compare w_left_dot.o %d to w_dot.o %d\n",
-			wt->w_left_dot.o, wp->w_dot.o))
+			wt->w_left_dot.o, wp->w_dot.o));
 		if (wt->w_left_dot.o > wp->w_dot.o) {
 			need_col = TRUE; /* dot is inconsistent with shift */
 			wt->w_left_dot.o = wp->w_dot.o;
 		} else {
 			col = offs2col(wp, wt->w_left_dot.l, wt->w_left_dot.o) + shift - base;
-			TRACE(("...offs2col(%d) = %d\n", wt->w_left_dot.o, col))
+			TRACE(("...offs2col(%d) = %d\n", wt->w_left_dot.o, col));
 
 			TRACE(("...compare col %d to w_left_col %d\n",
-				col, wt->w_left_col))
+				col, wt->w_left_col));
 			if (col < wt->w_left_col) {
 				/* if there was a multi-column character at the left
 				 * side of the shifted screen, adjust */
-				TRACE(("...adjust for multi-column character %d\n", col))
+				TRACE(("...adjust for multi-column character %d\n", col));
 				wt->w_left_adj = wt->w_left_col - col;
 				wt->w_left_col = col;
 			}
@@ -955,7 +955,7 @@ dot_to_vcol(WINDOW *wp)
 						    w_val(wp,WMDLIST),
 						    w_left_margin(wp),
 						    0);
-			TRACE(("...cache w_left_col %d\n", wt->w_left_col))
+			TRACE(("...cache w_left_col %d\n", wt->w_left_col));
 		}
 	}
 	result = mk_to_vcol(wp->w_dot,
@@ -965,14 +965,14 @@ dot_to_vcol(WINDOW *wp)
 #if OPT_TRACE
 	check = mk_to_vcol(wp->w_dot, w_val(wp,WMDLIST), w_left_margin(wp), 0);
 	TRACE(("dot_to_vcol result %d check %d (off=%d, shift=%d)\n",
-		result, check, wp->w_dot.o, shift))
+		result, check, wp->w_dot.o, shift));
 	if (check != result) {
 		kbd_alarm();
 		TRACE(("-> OOPS:%s %d vs %d+%d %d\n",
 			wp->w_bufp->b_bname,
 			wp->w_dot.o,
 			wt->w_left_dot.o, use_off,
-			wt->w_left_col))
+			wt->w_left_col));
 	}
 #endif
 	return result;
@@ -1045,7 +1045,7 @@ kbd_flush(void)
 		if (ok) {
 			TRACE(("SHOW:%2d:%s\n",
 				llength(wminip->w_dot.l),
-				lp_visible(wminip->w_dot.l)))
+				lp_visible(wminip->w_dot.l)));
 			lsettrimmed(wminip->w_dot.l);
 			vtset(wminip->w_dot.l, wminip);
 		}
@@ -3484,7 +3484,7 @@ mlmsg(const char *fmt, va_list *app)
 		mlsavep = mlsave;
 #if	OPT_POPUP_MSGS
 		if (global_g_val(GMDPOPUP_MSGS) || (curwp == 0)) {
-			TRACE(("mlmsg popup_msgs #1 for '%s'\n", fmt))
+			TRACE(("mlmsg popup_msgs #1 for '%s'\n", fmt));
 			popup_msgs();
 			msg_putc('\n');
 			dfoutfn = msg_putc;
@@ -3498,7 +3498,7 @@ mlmsg(const char *fmt, va_list *app)
 		kbd_expand = -1;
 #if	OPT_POPUP_MSGS
 		if (global_g_val(GMDPOPUP_MSGS)) {
-			TRACE(("mlmsg popup_msgs #2 for '%s'\n", fmt))
+			TRACE(("mlmsg popup_msgs #2 for '%s'\n", fmt));
 			popup_msgs();
 			if (mlsave[0] == EOS) {
 				msg_putc('\n');

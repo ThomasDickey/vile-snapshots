@@ -14,7 +14,7 @@
  *   -- support wide and narrow screen resolutions,
  *   -- support visual bells.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.52 1999/11/15 23:35:00 Ryan.Murray Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.53 1999/12/24 01:11:07 tom Exp $
  *
  */
 
@@ -512,7 +512,7 @@ vmsopen(void)
 	}
 	else
 	{
-		keyseqs = vt52seqs;;
+		keyseqs = vt52seqs;
 		keyseq_tablesize = TABLESIZE(vt52seqs);
 	}
 

@@ -82,8 +82,13 @@ string is interpreted as follows:
 	  empty attribute string implies the default class, which usually
 	  is "Keyword".
 
-	  If it does not match a keyword, it must be a set of highlighting
-	  attributes, which will be used for the first string.
+	  If the second string does not match a keyword, it must be a set of
+	  highlighting attributes, which will be used for the first string.
+	  A special case is made for a string beginning "N", which is treated
+	  as no-attributes.
+
+	  See "Writing your own filters" in vile.hlp for additional details
+	  about attribute strings.
 
 The keyword file reader supports a limited include facility.  If a line begins
 with ".include", it reads from the given keyword file.  A few filters (such as
@@ -155,4 +160,4 @@ Not all filters use a keywords file (yet).
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.13 1999/12/09 00:29:28 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.15 1999/12/24 14:40:17 tom Exp $

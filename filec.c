@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.91 1999/08/22 23:41:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.92 1999/12/24 00:59:17 tom Exp $
  *
  */
 
@@ -395,7 +395,7 @@ vms2hybrid(char *path)
 	char	*s = strcpy(head, path);
 	char	*t;
 
-	TRACE(("vms2hybrid '%s'\n", path))
+	TRACE(("vms2hybrid '%s'\n", path));
 	(void)strcpy(leaf, s = pathleaf(head));
 	if ((t = is_vms_dirtype(leaf)) != 0)
 		(void)strcpy(t, "/");
@@ -403,7 +403,7 @@ vms2hybrid(char *path)
 	if (s == path)	/* a non-canonical name got here somehow */
 		(void) strcpy(head, current_directory(FALSE));
 	pathcat(path, mkupper(vms2unix_path(head, head)), leaf);
-	TRACE((" -> '%s' (vms2hybrid)\n", path))
+	TRACE((" -> '%s' (vms2hybrid)\n", path));
 }
 
 static void
@@ -413,7 +413,7 @@ hybrid2vms(char *path)
 	char	head[NFILEN];
 	char	*s = strcpy(head, path);
 
-	TRACE(("hybrid2vms '%s'\n", path))
+	TRACE(("hybrid2vms '%s'\n", path));
 	(void)strcpy(leaf, s = pathleaf(head));
 	*s = EOS;
 	if (s == head)	/* a non-canonical name got here somehow */
@@ -425,7 +425,7 @@ hybrid2vms(char *path)
 	} else {
 		unix2vms_path(path, path);
 	}
-	TRACE((" -> '%s' hybrid2vms\n", path))
+	TRACE((" -> '%s' hybrid2vms\n", path));
 }
 
 static void
@@ -435,7 +435,7 @@ hybrid2unix(char *path)
 	char	head[NFILEN];
 	char	*s = strcpy(head, path);
 
-	TRACE(("hybrid2unix '%s'\n", path))
+	TRACE(("hybrid2unix '%s'\n", path));
 	(void)strcpy(leaf, s = pathleaf(head));
 	*s = EOS;
 	if (s == path)	/* a non-canonical name got here somehow */
@@ -456,7 +456,7 @@ hybrid2unix(char *path)
 		*s = '.';	/* this'll be interpreted as version-mark */
 #endif
 	}
-	TRACE((" -> '%s' hybrid2unix\n", path))
+	TRACE((" -> '%s' hybrid2unix\n", path));
 }
 #endif /* OPT_VMS_PATH */
 
@@ -563,7 +563,7 @@ fillMyBuff(char * name)
 #endif
 #endif
 
-	TRACE(("fillMyBuff '%s'\n", name))
+	TRACE(("fillMyBuff '%s'\n", name));
 
 	/**********************************************************************/
 	if (is_environ(name)) {
@@ -617,7 +617,7 @@ fillMyBuff(char * name)
 			(void)bs_find(path, (SIZE_T)strlen(path),
 					MyBuff, (LINEPTR*)0);
 #endif	/* USE_QSORT/!USE_QSORT */
-			TRACE(("> '%s'\n", path))
+			TRACE(("> '%s'\n", path));
 		}
 #if USE_QSORT
 		sortMyBuff();
@@ -718,7 +718,7 @@ fillMyBuff(char * name)
 					(void) force_slash(path);
 			}
 #endif
-			TRACE(("> '%s'\n", path))
+			TRACE(("> '%s'\n", path));
 			if_dots(s,dots) count++;
 			(void)bs_find(path, strlen(path), MyBuff, (LINEPTR*)0);
 
@@ -774,7 +774,7 @@ fillMyBuff(char * name)
 					(void) force_slash(path);
 			}
 #endif
-			TRACE(("> '%s'\n", path))
+			TRACE(("> '%s'\n", path));
 			if_dots(leaf,dots) count++;
 #if USE_QSORT
 #if OPT_VMS_PATH
@@ -797,7 +797,7 @@ fillMyBuff(char * name)
 #endif
 	}
 #endif	/* SYS_OS2/!SYS_OS2 */
-	TRACE(("...fillMyBuff returns %d\n", count))
+	TRACE(("...fillMyBuff returns %d\n", count));
 	return count;
 }
 
@@ -890,7 +890,7 @@ path_completion(int c, char *buf, unsigned *pos)
 	int	count;
 #endif
 
-	TRACE(("path_completion('%c' %d:\"%s\")\n", c, *pos, visible_buff(buf, (int)*pos, TRUE)))
+	TRACE(("path_completion('%c' %d:\"%s\")\n", c, *pos, visible_buff(buf, (int)*pos, TRUE)));
 #if OPT_VMS_PATH
 	if (ignore && action) {		/* resolve scratch-name conflict */
 		if (is_vms_pathname(buf, -TRUE))
@@ -1098,7 +1098,7 @@ path_completion(int c, char *buf, unsigned *pos)
 			code = FALSE;
 		}
 	}
-	TRACE((" -> '%s' path_completion\n", buf))
+	TRACE((" -> '%s' path_completion\n", buf));
 	return code;
 }
 #else	/* no filename-completion */

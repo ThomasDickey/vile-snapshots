@@ -8,7 +8,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.75 1999/11/24 19:44:57 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.76 1999/12/24 01:08:24 tom Exp $
  *
  */
 
@@ -65,7 +65,7 @@
 	 * pre_op_dot
 	 */
 #define start_fence_op(sdir, oldpos, oldpre) \
-	TRACE(("...start_fence_op\n")) \
+	TRACE(("...start_fence_op\n")); \
 	oldpos = DOT; \
 	oldpre = pre_op_dot; \
 	if (doingopcmd && sdir == REVERSE) { \
@@ -75,7 +75,7 @@
 	}
 
 #define test_fence_op(st, oldpos, oldpre) \
-	TRACE(("...test_fence_op, status=%d\n", st)) \
+	TRACE(("...test_fence_op, status=%d\n", st)); \
 	if (st != TRUE) { \
 		DOT = oldpos; \
 		pre_op_dot = oldpre; \
@@ -144,7 +144,7 @@ match_complex(TRACEARG(int group) LINE *lp, struct VAL *vals)
 		}
 		if (lregexec(any_rexp(vals, k)->reg, lp, 0, llength(lp))) {
 			code = modes[j];
-			TRACE(("match_complex(%d) %s\n", group, typeof_complex(code)))
+			TRACE(("match_complex(%d) %s\n", group, typeof_complex(code)));
 			break;
 		}
 	}
@@ -162,13 +162,13 @@ match_simple(void)
 	C_NUM first = 0;
 	C_NUM last = llength(DOT.l);
 
-	TRACE(("match_simple %d:%s\n", line_no(curbp, DOT.l), lp_visible(DOT.l)))
+	TRACE(("match_simple %d:%s\n", line_no(curbp, DOT.l), lp_visible(DOT.l)));
 	for (first = 0; first < last; first = S_COL(BlkBegin) + 1) {
 		if (!lregexec(BlkBegin, DOT.l, first, last))
 			break;
 		if ((S_COL(BlkBegin) <= DOT.o)
 		 && (E_COL(BlkBegin) >  DOT.o)) {
-			TRACE(("...match_simple BLK_BEGIN\n"))
+			TRACE(("...match_simple BLK_BEGIN\n"));
 			return BLK_BEGIN;
 		}
 	}
@@ -178,18 +178,18 @@ match_simple(void)
 			break;
 		if ((S_COL(BlkEnd) <= DOT.o)
 		 && (E_COL(BlkEnd) >  DOT.o)) {
-			TRACE(("...match_simple BLK_END\n"))
+			TRACE(("...match_simple BLK_END\n"));
 			return BLK_END;
 		}
 		if (last >= E_COL(BlkEnd) - 1)
 			break;
 	}
 
-	TRACE(("...match_simple BLK_UNKNOWN\n"))
+	TRACE(("...match_simple BLK_UNKNOWN\n"));
 	return BLK_UNKNOWN;
 }
 
-#define TRACE_COMPLEX TRACE(("complex_fence(%d:%d:%d) @%d ", level, group, count, line_no(curbp, DOT.l)))
+#define TRACE_COMPLEX TRACE(("complex_fence(%d:%d:%d) @%d ", level, group, count, line_no(curbp, DOT.l)));
 
 static int
 complex_fence(int sdir, int key, int group, int level, int *newkey)
@@ -204,7 +204,7 @@ complex_fence(int sdir, int key, int group, int level, int *newkey)
 		group,
 		line_no(curbp, DOT.l),
 		direction_of(sdir),
-		typeof_complex(key)))
+		typeof_complex(key)));
 #if OPT_MAJORMODE
 	if (iterations < 0) {
 		return ABORT;
@@ -231,7 +231,7 @@ complex_fence(int sdir, int key, int group, int level, int *newkey)
 	    savedot = DOT;
 	    savecount = count;
 
-	    TRACE(("complex_fence(%d:%d:%d) %4d:%s\n", level, group, count, line_no(curbp, DOT.l), lp_visible(DOT.l)))
+	    TRACE(("complex_fence(%d:%d:%d) %4d:%s\n", level, group, count, line_no(curbp, DOT.l), lp_visible(DOT.l)));
 
 	    for_each_modegroup(curbp,result,group,vals) {
 		DOT = savedot;
@@ -239,7 +239,7 @@ complex_fence(int sdir, int key, int group, int level, int *newkey)
 		if (((that = match_complex(TRACEARG(result) DOT.l, vals)) != CPP_UNKNOWN)) {
 		    int	done = FALSE;
 
-		TRACE(("for_each_modegroup:%d:%d (line %d, count %d)\n", result, group, line_no(curbp, DOT.l), count))
+		TRACE(("for_each_modegroup:%d:%d (line %d, count %d)\n", result, group, line_no(curbp, DOT.l), count));
 #if OPT_MAJORMODE
 		    if (result != group) {
 			int find = (sdir == FORWARD) ? CPP_IF : CPP_ENDIF;
@@ -248,40 +248,40 @@ complex_fence(int sdir, int key, int group, int level, int *newkey)
 			    find = (sdir == FORWARD) ? CPP_ENDIF : CPP_IF;
 			    do {
 				TRACE_COMPLEX
-				TRACE(("calling find_one_complex(%s)\n", get_submode_name(curbp, result)))
+				TRACE(("calling find_one_complex(%s)\n", get_submode_name(curbp, result)));
 				if ((status = find_one_complex(sdir, level+1, result, &that)) != TRUE) {
 				    TRACE_COMPLEX
-				    TRACE(("done calling find_one_complex (%s)\n", status == ABORT ? "abort" : "fail"))
+				    TRACE(("done calling find_one_complex (%s)\n", status == ABORT ? "abort" : "fail"));
 				    that = CPP_UNKNOWN;
 				    if (status == ABORT)
 					return status;
 				    break;
 				}
 				TRACE_COMPLEX
-				TRACE(("done calling find_one_complex(%s) (ok)\n", get_submode_name(curbp, result)))
+				TRACE(("done calling find_one_complex(%s) (ok)\n", get_submode_name(curbp, result)));
 			    } while (that != find);
 
 			    save = DOT;
 			    if (that != CPP_UNKNOWN) {
 				TRACE_COMPLEX
-				TRACE(("recurring to finish group '%s'\n", get_submode_name(curbp, result)))
+				TRACE(("recurring to finish group '%s'\n", get_submode_name(curbp, result)));
 				if ((status = complex_fence(sdir, key, group, level+1, newkey)) != FALSE) {
 				    TRACE_COMPLEX
-				    TRACE(("done recurring (%s)\n", status == TRUE ? "ok" : "abort"))
+				    TRACE(("done recurring (%s)\n", status == TRUE ? "ok" : "abort"));
 				    return status;
 				}
 				DOT = save;
 			    }
 			}
 			/* improperly nesting? - we missed something */
-			TRACE(("...complex_match mismatch\n"))
+			TRACE(("...complex_match mismatch\n"));
 			continue;
 		    }
 		    *newkey = that;
 #endif
 		    TRACE(("...before %s, count=%d, done=%d\n",
 			   typeof_complex(that),
-			   count, done))
+			   count, done));
 
 		    switch (that) {
 		    case CPP_IF:
@@ -312,7 +312,7 @@ complex_fence(int sdir, int key, int group, int level, int *newkey)
 
 		    TRACE(("...after %s, count=%d, done=%d, level=%d\n",
 			   typeof_complex(that),
-			   count, done, level))
+			   count, done, level));
 
 		    savecount = count;
 		    if ((count <= 0) || done) {
@@ -348,7 +348,7 @@ find_complex(int sdir, int *newkey)
 	/*
 	 * Iterate over the complex fence groups
 	 */
-	TRACE(("find_complex %4d:%s\n", line_no(curbp, DOT.l), lp_visible(DOT.l)))
+	TRACE(("find_complex %4d:%s\n", line_no(curbp, DOT.l), lp_visible(DOT.l)));
 	limit_iterations();
 	for_each_modegroup(curbp,group,0,vals) {
 	    if ((key = match_complex(TRACEARG(group) DOT.l, vals)) != CPP_UNKNOWN) {
@@ -368,7 +368,7 @@ find_complex(int sdir, int *newkey)
 	    }
 	}
 #if OPT_MAJORMODE
-	TRACE(("...find_complex %d (iterations %ld)\n", rc, iterations))
+	TRACE(("...find_complex %d (iterations %ld)\n", rc, iterations));
 #endif
 	return rc;
 }
@@ -389,7 +389,7 @@ find_one_complex(int sdir, int level, int group, int *newkey)
 	/*
 	 * Iterate over the complex fence groups
 	 */
-	TRACE(("find_one_complex %4d:%s\n", line_no(curbp, DOT.l), lp_visible(DOT.l)))
+	TRACE(("find_one_complex %4d:%s\n", line_no(curbp, DOT.l), lp_visible(DOT.l)));
 	if ((key = match_complex(TRACEARG(group) DOT.l, vals)) != CPP_UNKNOWN) {
 	    start_fence_op(sdir, oldpos, oldpre);
 	    if (level == 0)
@@ -514,7 +514,7 @@ int sdir)	/* direction to scan if we're not on a fence to begin with */
 	/* save position */
 	oldpos = DOT;
 
-	TRACE(("getfence, starting at %d.%d\n", line_no(curbp, DOT.l), DOT.o))
+	TRACE(("getfence, starting at %d.%d\n", line_no(curbp, DOT.l), DOT.o));
 
 	if (ch == UNKNOWN_FENCE_CH) {
 		if ((i = firstchar(DOT.l)) < 0)	/* offset of first nonblank */
@@ -577,7 +577,7 @@ int sdir)	/* direction to scan if we're not on a fence to begin with */
 	}
 
 	test_fence_op(s, oldpos, oldpre);
-	TRACE(("...getfence, end at %d.%d (status=%d)\n", line_no(curbp, DOT.l), DOT.o, s))
+	TRACE(("...getfence, end at %d.%d (status=%d)\n", line_no(curbp, DOT.l), DOT.o, s));
 	return(s);
 }
 

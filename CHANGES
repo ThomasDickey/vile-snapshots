@@ -1,5 +1,44 @@
 Changes for vile 9.1 (released ??? ??? ??, 1999)
 
+ (tom) 991224 (j)
+	+ add cygwin to list of platforms that must open text files in binary
+	  mode, to see trailing carriage-returns on a line in vileinit.rc
+	+ restore Kevin's change to main.c, which calls term.close() within
+	  tidy_exit() after perl_exit(), to ensure that ".vilesock" is removed. 
+	  At the same time, call ExitProgram() directly from newprocessgroup()
+	  so that xvile does not exit prematurely when invoked w/o forking
+	  (analysis by Kevin Buettner).
+ 	+ more fixes for special case numbers in c-filt.c, e.g., ".1", "..1"
+	  (err), "0x.p1" (err).
+	+ implement special attribute code 'N' to allow users to disable syntax
+	  highlighting for a given class.
+	+ indent'd random.c
+	+ indent'd ntconio.c and ntwinio.c, reordering some chunks to eliminate
+	  forward-references.
+	+ correct an off-by-one in repaint_window() from 9.0g changes that left
+	  debris after an exposure event (ntwinio.c).
+ 	+ add rules to makefile.wnt for compiling all filters, not merely those
+	  which are normally installed.
+	+ correct a minor formatting error in describe-bindings for command
+	  names longer than 31 characters using new function quote_and_pad().
+	+ change TRACE macro usage to put a ';' on the end, since it works
+	  better that way with 'indent'.
+	+ fix some places where K&R/unproto combination on SunOS could not
+	  compile, e.g., aggregate initialization in bind.c, termio.c.
+	> Kevin Buettner:
+	+ buffer.c (swbuffer_lfl):  Set MK to nullmark.  Since we're switching
+	  buffers here, we want to make sure that MK doesn't refer to a line in
+	  a buffer different than curbp.  This fixes the "BUG:  hit buf end in
+	  getregion" message that would frequently pop up when using the perl
+	  facilities.
+	+ perl.xs (set_curwp0):  New function.  Use this instead of set_curwp()
+	  in many of the Vile::Window methods to prevent the buffer tracking
+	  list from getting updated.  [Reported by Paul Fox.]
+	+ random.c (autocolor):  Save/restore dotcmdactive.  This fixes the bug
+	  with "." (repeat-last-cmd) in which an autocolor() call would shut
+	  off the dot recording.  As a result, "." would replay some earlier
+	  command than the one you thought you were repeating.
+
  (kev) 991222 (i)
 	+ makefile.in (capture.pl, winops.pl): New files/targets.
 	+ perl.xs (perl_exit): Clear perl_interp variable so that

@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.213 1999/11/25 01:03:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.214 1999/12/24 01:08:24 tom Exp $
  *
  */
 
@@ -1063,7 +1063,7 @@ int	skip)
 		ALLOC_T	n, len = tb_length(src);
 		char	*txt = tb_values(src);
 
-		TRACE(("macroizing %s\n", tb_visible(src)))
+		TRACE(("macroizing %s\n", tb_visible(src)));
 		(void)tb_append(p, DQUOTE);
 		for (n = skip; n < len; n++) {
 			c = txt[n];
@@ -1074,7 +1074,7 @@ int	skip)
 			(void)tb_append(p, c);
 		}
 		(void)tb_append(p, DQUOTE);
-		TRACE(("macroized %s\n", tb_visible(*p)))
+		TRACE(("macroized %s\n", tb_visible(*p)));
 		return (tb_append(p, EOS) != 0);
 	}
 	return FALSE;
@@ -1461,7 +1461,7 @@ push_variable(char *name)
 {
 	LOCALS *p;
 
-	TRACE(("push_variable: {%s}%s\n", name, execstr))
+	TRACE(("push_variable: {%s}%s\n", name, execstr));
 
 	switch (toktyp(name)) {
 	case TOK_STATEVAR:
@@ -1506,7 +1506,7 @@ pop_variable(void)
 {
 	LOCALS *p = ifstk.locals;
 	ifstk.locals = p->next;
-	TRACE(("pop_variable(%s) %s\n", p->name, p->value))
+	TRACE(("pop_variable(%s) %s\n", p->name, p->value));
 	if (!strcmp(p->value, error_val)) {
 		rmv_tempvar(p->name);
 	} else {
@@ -2012,7 +2012,7 @@ perform_dobuf(BUFFER *bp, WHLOOP *whlist)
 			bp->b_bname, ifstk.level, ifstk.disabled,
 			ifstk.fired ? '+' : ' ',
 			TRACE_INDENT(ifstk.level, cmdp),
-			cmdp))
+			cmdp));
 #endif
 
 		if (*cmdp == DIRECTIVE_CHAR) {

@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.58 1999/12/22 11:04:05 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.62 1999/12/24 20:37:33 tom Exp $
  */
 
 /*#
@@ -135,6 +135,8 @@
 #define PL_orslen orslen
 #endif
 
+#undef MARK			/* Perl unnecessarily defines this */
+
 /* for vile */
 #include "estruct.h"
 #include "edef.h"
@@ -180,7 +182,7 @@ write_message(char *prefix, SV *sv)
 
 	if (*text)
 	    mlforce("%s%s", prefix, text);
-        else
+	else
 	    mlerase();
 	text = nl;
 	count++;
@@ -386,9 +388,9 @@ do_perl_cmd(SV *cmd, int inplace)
 	/* We set the following stuff up in the event that we call
 	   one of the mlreply methods.  If they are not set up this
 	   way, we won't always be prompted... */
-        clexec = FALSE;
-        save_no_msgs = no_msgs;
-        no_msgs = FALSE;
+	clexec = FALSE;
+	save_no_msgs = no_msgs;
+	no_msgs = FALSE;
 	old_isnamedcmd = isnamedcmd;	/* for mlreply_dir */
 	isnamedcmd = TRUE;
 	recursecount++;
@@ -396,25 +398,25 @@ do_perl_cmd(SV *cmd, int inplace)
 #define PDEBUG 0
 #if PDEBUG
 	printf("\nbefore eval\n");
-        sv_dump(svcurbuf);
+	sv_dump(svcurbuf);
 #endif
 	sv_setpv(GvSV(errgv),"");
 	if (SvROK(cmd) && SvTYPE(SvRV(cmd)) == SVt_PVCV)
 	{
- 	    dSP;
- 	    PUSHMARK(sp);
- 	    PUTBACK;
- 	    perl_call_sv(cmd, G_EVAL|G_VOID|G_DISCARD);
+	    dSP;
+	    PUSHMARK(sp);
+	    PUTBACK;
+	    perl_call_sv(cmd, G_EVAL|G_VOID|G_DISCARD);
 	}
 	else
 	    perl_eval_sv(cmd, G_DISCARD|G_NOARGS|G_KEEPERR);
 #if PDEBUG
 	printf("after eval\n");
-        sv_dump(svcurbuf);
+	sv_dump(svcurbuf);
 #endif
 
 	recursecount--;
-        no_msgs = save_no_msgs;
+	no_msgs = save_no_msgs;
 	isnamedcmd = old_isnamedcmd;
 
 	if (recursecount == 0) {
@@ -955,7 +957,7 @@ svcurbuf_set(SV *sv, MAGIC *mg)
 {
     VileBuf *vbp;
     if (sv_isa(sv, "Vile::Buffer")
-        && (vbp = (VileBuf *) SvIV((SV*)GvSV((GV*)SvRV(sv)))) != NULL)
+	&& (vbp = (VileBuf *) SvIV((SV*)GvSV((GV*)SvRV(sv)))) != NULL)
     {
 	api_swscreen(NULL, vbp);
     }
@@ -975,7 +977,6 @@ perl_init(void)
     SV   *svminibuf;
     AV   *av;
     SV   *sv;
-    int  len;
     char  temp[NFILEN];
     char *vile_path;
     static char svcurbuf_name[] = "Vile::current_buffer";
@@ -1149,10 +1150,10 @@ perl_free_callback(char *callback)
 	SV *svfreeCRidx;
 	svp = av_fetch(CRarray, (I32) idx, 0);
 	if (svp == 0)
-	    return;	/* Something screwy, bail... */
+	    return 0;	/* Something screwy, bail... */
 
 	if (!SvROK(*svp) || SvTYPE(SvRV(*svp)) != SVt_PVCV)
-	    return;	/* Most likely freed already (?) */
+	    return 0;	/* Most likely freed already (?) */
 
 
 	/* I used to have the following line in the code here:
@@ -1200,6 +1201,7 @@ perl_free_callback(char *callback)
 	    freeCRidx = idx;
 	}
     }
+    return 1;
 }
 
 /*
@@ -1296,7 +1298,7 @@ sv2offset(SV *sv)
  */
 
 static int
-svgetline(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
+svgetline(SV **svp, VileBuf *vbp, char *rsstr GCC_UNUSED, int rslen GCC_UNUSED)
 {
     int len;
     int nllen;
@@ -1317,7 +1319,7 @@ svgetline(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
 	len = vbp->region.r_size;
 
     if (   vbp->region.r_size > 0
-        && (   lforw(DOT.l) != buf_head(curbp)
+	&& (   lforw(DOT.l) != buf_head(curbp)
 	    || b_val(curbp, MDNEWLINE)))
     {
 	nllen = len_rs;
@@ -1359,7 +1361,7 @@ svgetline(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
  */
 
 static int
-svgetregion(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
+svgetregion(SV **svp, VileBuf *vbp, char *rsstr GCC_UNUSED, int rslen GCC_UNUSED)
 {
     int len;
     SV *sv;
@@ -1631,8 +1633,23 @@ FindMode(char *mode, int isglobal, VALARGS *args)
 	}
     }
 
-    TRACE(("value of %s(%s) = %s\n", status ? "mode" : "", mode, value))
+    TRACE(("value of %s(%s) = %s\n", status ? "mode" : "", mode, value));
     return value;
+}
+
+/* A version of set_curwp that does nothing but the bare essentials. We
+   use it in this file when we want to temporarily change the current
+   window/buffer being acted upon.  It's important to do it this way so
+   that the buffer tracking list is not affected.  Also, we absolutely
+   don't want to run any of the hooks. */
+static WINDOW *
+set_curwp0(WINDOW *wp)
+{
+    WINDOW *oldwp = curwp;
+
+    curwp = wp;
+    curbp = wp->w_bufp;
+    return oldwp;
 }
 
 
@@ -1770,7 +1787,7 @@ Warn(warning)
 void
 beep()
     CODE:
-    	kbd_alarm();
+	kbd_alarm();
 
   #
   # =item buffers
@@ -1818,7 +1835,7 @@ command(cline)
     char *cline
 
     PREINIT:
-    	int save_no_msgs;
+	int save_no_msgs;
 
     CODE:
 	save_no_msgs = no_msgs;
@@ -1847,7 +1864,7 @@ void
 keystroke(...)
 
     PREINIT:
-    	int noget;
+	int noget;
     PPCODE:
 	if (items > 1)
 	    croak("Too many arguments to keystroke");
@@ -1911,7 +1928,7 @@ mlreply(prompt, ...)
 	    hst_glue('\r');
 #endif
 	XPUSHs((status == TRUE || status == FALSE)
-	         ? sv_2mortal(newSVpv(buf, 0))
+		 ? sv_2mortal(newSVpv(buf, 0))
 		 : &sv_undef);
 
 
@@ -1956,7 +1973,7 @@ mlreply_dir(prompt, ...)
 	    hst_glue('\r');
 #endif
 	XPUSHs((status == TRUE || status == FALSE)
-	         ? sv_2mortal(newSVpv(buf, 0))
+		 ? sv_2mortal(newSVpv(buf, 0))
 		 : &sv_undef);
 
 
@@ -2001,7 +2018,7 @@ mlreply_file(prompt, ...)
 	    hst_glue('\r');
 #endif
 	XPUSHs((status == TRUE || status == FALSE)
-	         ? sv_2mortal(newSVpv(buf, 0))
+		 ? sv_2mortal(newSVpv(buf, 0))
 		 : &sv_undef);
 
 
@@ -2045,7 +2062,7 @@ mlreply_no_opts(prompt, ...)
 	    hst_glue('\r');
 #endif
 	XPUSHs((status == TRUE || status == FALSE)
-	         ? sv_2mortal(newSVpv(buf, 0))
+		 ? sv_2mortal(newSVpv(buf, 0))
 		 : &sv_undef);
 
 
@@ -2259,7 +2276,7 @@ set(...)
 	    mode = SvPV(ST(argno), na);
 	    argno++;
 
-	    TRACE(("Vile::%s(%d:%s)\n", issetter ? "set" : "get", argno, mode))
+	    TRACE(("Vile::%s(%d:%s)\n", issetter ? "set" : "get", argno, mode));
 
 	    /* Look for a mode first */
 	    status = FALSE;
@@ -2562,7 +2579,7 @@ watchfd(fd, watchtypestr, ...)
 	    /* It's just a string (how boring) */
 	    cmd = strdup(SvPV(ST(2),na));
 	}
-        TRACE(("Vile::watchfd(fd=%d, watchtype=%d, cmd=%s)\n", fd, watchtype, cmd))
+	TRACE(("Vile::watchfd(fd=%d, watchtype=%d, cmd=%s)\n", fd, watchtype, cmd));
 	watchfd(fd, watchtype, cmd);
 
   #
@@ -2579,7 +2596,7 @@ unwatchfd(fd)
     int fd
 
     PPCODE:
-        TRACE(("Vile::unwatchfd(fd=%d)\n", fd))
+	TRACE(("Vile::unwatchfd(fd=%d)\n", fd));
 	unwatchfd(fd);
 
 
@@ -2854,7 +2871,7 @@ attribute(vbp, ...)
 			croak("Color attribute not supplied");
 		    }
 		} else if (strcmp(atname, "hyper"    ) == 0
-		        || strcmp(atname, "hypertext") == 0) {
+			|| strcmp(atname, "hypertext") == 0) {
 		    i++;
 		    if (i < items) {
 			if (SvROK(ST(i))
@@ -2882,7 +2899,7 @@ attribute(vbp, ...)
 	    }
 
 	    status = attributeregion_in_region(
-	    		&vbp->region, vbp->regionshape, vattr, hypercmd);
+			&vbp->region, vbp->regionshape, vattr, hypercmd);
 
 	    if (status == TRUE)		/* not the same as "if (status)" */
 		XPUSHs(ST(0));		/* return buffer object */
@@ -2976,7 +2993,7 @@ buffername(vbp,...)
 
 	if (items > 2)
 	    croak("Too many arguments to %s",
-	          ix == 0 ? "buffername" : "filename");
+		  ix == 0 ? "buffername" : "filename");
 	else if (items == 2) {
 	    if (ix == 0)
 		status = renamebuffer(curbp, SvPV(ST(1),na));
@@ -2986,7 +3003,7 @@ buffername(vbp,...)
 
 	if (status == TRUE) {
 	    XPUSHs(sv_2mortal(newSVpv(ix == 0 ?
-	                              curbp->b_bname : curbp->b_fname, 0)));
+				      curbp->b_bname : curbp->b_fname, 0)));
 	}
 	else {
 	    XPUSHs(&sv_undef);		/* return undef */
@@ -3248,7 +3265,7 @@ dot(vbp, ...)
 	api_setup_fake_win(vbp, TRUE);
 	if (items > 3) {
 	    croak("Vile::Buffer::%s Too many arguments",
-	          ix == 1 ? "current_position" : "dot");
+		  ix == 1 ? "current_position" : "dot");
 	}
 	else if (items > 1) {
 	    /* Expect a line number or '$' */
@@ -3419,7 +3436,7 @@ motion(vbp,mstr)
 
     PPCODE:
 	old_DOT = DOT;
-    	status = api_motion(vbp, mstr);
+	status = api_motion(vbp, mstr);
 
 	gimme = GIMME_V;
 	if (!status) {
@@ -3755,12 +3772,12 @@ set_region(vbp, ...)
 	    XPUSHs(sv_2mortal(newSViv(line_no(curbp, vbp->region.r_orig.l))));
 	    XPUSHs(sv_2mortal(newSViv(vbp->region.r_orig.o)));
 	    XPUSHs(sv_2mortal(newSViv(line_no(curbp, vbp->region.r_end.l)
-	                                             - (vbp->regionshape == FULLLINE))));
+						     - (vbp->regionshape == FULLLINE))));
 	    XPUSHs(sv_2mortal(newSViv(vbp->region.r_end.o)));
 	    XPUSHs(sv_2mortal(newSVpv(
 		vbp->regionshape == FULLLINE ? "fullline" :
 		vbp->regionshape == EXACT    ? "exact"
-		                             : "rectangle",  0 )));
+					     : "rectangle",  0 )));
 	}
 
 
@@ -3955,7 +3972,7 @@ current_window(...)
 	}
 	else {
 	    croak("Vile::%scurrent_window:  Incorrect number of arguments",
-	          ix == 1 ? "Window::" : "");
+		  ix == 1 ? "Window::" : "");
 	}
 
     OUTPUT:
@@ -4037,19 +4054,17 @@ dot(vw, ...)
     PPCODE:
 	if (items > 3) {
 	    croak("Vile::Window::%s: Too many arguments",
-	          ix == 1 ? "current_position" : "dot");
+		  ix == 1 ? "current_position" : "dot");
 	}
 	else if (items > 1) {
 	    /* Setter: expect a line spec and possibly an offset */
-	    WINDOW *savewp = curwp;
-	    set_curwp(vw);
+	    WINDOW *savewp = set_curwp0(vw);
 	    gotoline(TRUE, sv2linenum(ST(1)));
 
 	    if (items == 3)
 		DOT.o = sv2offset(ST(2));
 
-	    curwp = savewp;
-	    curbp = curwp->w_bufp;
+	    set_curwp0(savewp);
 	}
 	gimme = GIMME_V;
 	if (gimme == G_SCALAR || gimme == G_ARRAY) {
@@ -4147,24 +4162,20 @@ new(...)
 	    if (vw->w_ntrows < MINWLNS)
 		vw = NULL;		/* Can't split */
 	    else {
-		WINDOW *save_wp = curwp;
-		set_curwp(vw);
+		WINDOW *save_wp = set_curwp0(vw);
 		splitwind(TRUE, 1);	/* split window forcing new
 					   window to be on bottom */
 		vw = vw->w_wndp;
-		curwp = save_wp;
-		curbp = curwp->w_bufp;
+		set_curwp0(save_wp);
 	    }
 	}
 	else
 	    croak("Vile::Window::new: Incorrect type for first argument");
 
 	if (vw && vbp) {
-	    WINDOW *savewp = curwp;
-	    set_curwp(vw);
+	    WINDOW *savewp = set_curwp0(vw);
 	    swbuffer_lfl(vbp2bp(vbp), FALSE, TRUE);
-	    curwp = savewp;
-	    curbp = curwp->w_bufp;
+	    set_curwp0(savewp);
 	}
 
 	RETVAL = vw;
@@ -4212,7 +4223,7 @@ size(vw, ...)
 	    croak("Vile::Window::size: Invalid number of arguments");
 	}
 	else if (items == 2) {
-	    WINDOW *savewp = curwp;
+	    WINDOW *savewp;
 	    int newheight = SvIV(ST(1));
 	    int maxheight;
 
@@ -4224,10 +4235,9 @@ size(vw, ...)
 	    if (newheight > maxheight)
 		newheight = maxheight;
 
-	    set_curwp(vw);
+	    savewp = set_curwp0(vw);
 	    resize(TRUE, newheight);
-	    curwp = savewp;
-	    curbp = curwp->w_bufp;
+	    set_curwp0(savewp);
 	}
 	gimme = GIMME_V;
 	if (gimme == G_SCALAR) {
@@ -4256,13 +4266,11 @@ topline(vw, ...)
 	}
 	else if (items > 1) {
 	    /* Setter: expect a line spec */
-	    WINDOW *savewp = curwp;
+	    WINDOW *savewp = set_curwp0(vw);
 	    int lcur;
-	    set_curwp(vw);
 	    lcur = line_no(curwp->w_bufp, curwp->w_line.l);
 	    mvupwind(TRUE, lcur - sv2linenum(ST(1)));
-	    curwp = savewp;
-	    curbp = curwp->w_bufp;
+	    set_curwp0(savewp);
 	}
 	RETVAL = line_no(vw->w_bufp, vw->w_line.l);
 

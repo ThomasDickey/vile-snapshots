@@ -11,7 +11,7 @@
  *
  *		pgf, 11/91
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.66 1999/11/10 01:32:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.67 1999/12/24 01:03:15 tom Exp $
  *
  */
 
@@ -286,7 +286,7 @@ regcomp(char *origexp, int magic)
 		return NULL;
 	}
 
-	TRACE(("regcomp(%s,%d)\n", origexp, magic))
+	TRACE(("regcomp(%s,%d)\n", origexp, magic));
 
 	len = strlen(origexp)+1;
 	if (explen < 2*len+20) {
@@ -301,7 +301,7 @@ regcomp(char *origexp, int magic)
 	}
 
 	regmassage(origexp, exp, magic);
-	TRACE(("after regmassage: '%s'\n", exp))
+	TRACE(("after regmassage: '%s'\n", exp));
 
 	/* First pass: determine size, legality. */
 	regparse = exp;
@@ -1523,9 +1523,9 @@ regdump(regexp *r)
 		TRACE(("%2d%s", s-r->program, regprop(s))); /* Where, what. */
 		next = regnext(s);
 		if (next == NULL)		/* Next ptr. */
-			TRACE(("(0)"))
+			TRACE(("(0)"));
 		else
-			TRACE(("(%d)", (s-r->program)+(next-s)))
+			TRACE(("(%d)", (s-r->program)+(next-s)));
 		s += 3;
 		if (op == ANYOF || op == ANYBUT || op == EXACTLY) {
 			/* Literal string, where present. */

@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.58 1999/12/09 02:14:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.59 1999/12/24 14:33:59 tom Exp $
  *
  */
 
@@ -691,9 +691,9 @@ write_string(FILE * fp, char *src, int length, char *marker)
 		if (src[n])
 		    fputc(src[n], fp);
 	    } else {
-		fprintf(fp, "%c%i%s:%.*s", CTL_A, n, marker,
+		write_token(fp, src, 
 		    ((n < length) && (src[n] == '\n'))
-		    ? n + 1 : n, src);
+		    ? (n + 1) : n, marker);
 	    }
 	    if (src[n] || (n == 0 && length > 0))
 		n++;
@@ -710,7 +710,7 @@ void
 write_token(FILE * fp, char *string, int length, char *marker)
 {
     if (length > 0) {
-	if (marker != 0 && *marker != 0)
+	if (marker != 0 && *marker != 0 && *marker != 'N')
 	    fprintf(fp, "%c%i%s:", CTL_A, length, marker);
 	fprintf(fp, "%.*s", length, string);
     }

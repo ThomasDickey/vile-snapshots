@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.435 1999/12/20 21:16:56 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.436 1999/12/24 18:07:00 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -651,7 +651,7 @@ extern char *rindex (const char *s, int c);
 
 /* on MS-DOS we have to open files in binary mode to see the ^Z characters. */
 
-#if SYS_MSDOS || SYS_OS2 || SYS_WINNT
+#if SYS_MSDOS || SYS_OS2 || SYS_WINNT || defined(__CYGWIN32__) || defined(__CYGWIN__)
 #define FOPEN_READ	"rb"
 #define FOPEN_WRITE	"wb"
 #define FOPEN_APPEND	"ab"
