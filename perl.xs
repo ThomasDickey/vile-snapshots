@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.23 1998/05/27 00:54:37 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.24 1998/05/27 10:52:16 tom Exp $
  */
 
 /*#
@@ -368,7 +368,7 @@ do_perl_cmd(SV *cmd, int inplace)
 static SV *opsv;
 
 static int
-perl_oper()
+perl_oper(void)
 {
     return do_perl_cmd(opsv, FALSE);
 }

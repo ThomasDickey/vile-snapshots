@@ -1,6 +1,7 @@
 /*
  * w32cbrd:  collection of common clipboard manipulation routines shared by
  *           the Win32 console- and GUI-based vile editor.
+ * Written by Clark Morgan for vile (april 1998).
  *
  * Caveats
  * =======
@@ -13,7 +14,7 @@
  *    Subsequent copies do not show this cursor.  On an NT 4.0 host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.3 1998/04/28 10:19:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.4 1998/05/27 09:52:06 tom Exp $
  */
 
 #include <windows.h>

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v7_4m
+MANIFEST for vile, version v7_4n
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -126,7 +126,7 @@ doc/config.doc                  configuration-instructions for VILE
 doc/macros.doc                  documentation for VILE macros
 doc/menus.doc                   description of xvile (Xm and Xaw) menus
 doc/modes.doc                   overview of modes/majormodes
-doc/perl-api.doc                notes about perl interface to vile
+doc/perl.doc                    notes about perl interface to vile
 macros                          subdirectory
 macros/digraphs.rc              macros for inserting digraphs
 macros/manpage.rc               macros for man-page filtering/display

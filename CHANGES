@@ -1,5 +1,16 @@
 Changes for vile 7.5/8.0 (released ??? ??? ?, 1998)
 
+ (tom) 980527 (n)
+	+ make search rule for startup file and :so consistent - and always
+	  using $VILE_STARTUP_PATH if the file is not found in the current or
+	  $HOME directory - using new function 'do_source()' (reported by
+	  Arnold Robbins).
+	+ add Clark Morgan's name to the modules he wrote (w32cbrd.c, w32misc.c,
+	  w32pipe.c).
+	+ rename perl-api.doc to perl.doc, updated (patch by Brendan O'Dea).
+	+ modify too-restrictive test for infinite loop in scanner() to work
+	  with 'n' command after "?.*" expression (reported by Kevin Buettner). 
+
  (kev) 980525 (m)
  	+ estruct.h (do_mark_iterate): Restore location of
 	  api_do_mark_iterate_helper to its pre-"l" position.  Moved

@@ -1,6 +1,6 @@
-revlist for vile, version v7_4m
+revlist for vile, version v7_4n
 --------------------------------------------------------------------------------
-CHANGES	1.170
+CHANGES	1.171
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -15,7 +15,7 @@ ansi.c	1.32
 api.c	1.14
 api.h	1.10
 basic.c	1.98
-bind.c	1.178
+bind.c	1.179
 borland.c	1.25
 btree.c	1.4
 btree.h	1.3
@@ -39,7 +39,7 @@ dumbterm.c	1.13
 edef.h	1.224
 estruct.h	1.356
 eval.c	1.159
-exec.c	1.159
+exec.c	1.160
 externs.c	1.6
 fences.c	1.48
 file.c	1.226
@@ -58,7 +58,7 @@ isearch.c	1.49
 itbuff.c	1.12
 lckfiles.c	1.8
 line.c	1.111
-main.c	1.322
+main.c	1.324
 makefile.blc	1.7
 makefile.djg	1.25
 makefile.emx	1.2
@@ -78,24 +78,24 @@ modetbl	1.98
 msgs.c	1.17
 npopen.c	1.64
 ntconio.c	1.34
-ntwinio.c	1.9
+ntwinio.c	1.10
 oneliner.c	1.89
 opers.c	1.62
 os2keys.h	1.1
 os2pipe.c	1.4
 os2vio.c	1.19
 pas-filt.c	1.2
-patchlev.h	1.119
+patchlev.h	1.120
 path.c	1.84
-perl.xs	1.23
-proto.h	1.283
+perl.xs	1.24
+proto.h	1.284
 pscreen.h	1.1
 ptypemap	1.5
 random.c	1.191
 regexp.c	1.65
 region.c	1.89
-revlist	v7_4m
-search.c	1.110
+revlist	v7_4n
+search.c	1.111
 select.c	1.69
 spawn.c	1.127
 tags.c	1.89
@@ -113,9 +113,9 @@ vms2unix.c	1.31
 vmsbuild.com	1.18
 vmspipe.c	1.12
 vmsvt.c	1.34
-w32cbrd.c	1.3
-w32misc.c	1.1
-w32pipe.c	1.8
+w32cbrd.c	1.4
+w32misc.c	1.2
+w32pipe.c	1.9
 watch.c	1.2
 window.c	1.81
 word.c	1.62
@@ -126,7 +126,7 @@ doc/config.doc	1.1
 doc/macros.doc	1.1
 doc/menus.doc	1.1
 doc/modes.doc	1.1
-doc/perl-api.doc	1.1
+doc/perl.doc	1.1
 macros/digraphs.rc	1.1
 macros/manpage.rc	1.1
 macros/pictmode.rc	1.1

@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.159 1998/05/25 17:14:56 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.160 1998/05/27 10:47:45 tom Exp $
  *
  */
 
@@ -1957,22 +1957,23 @@ dobuf(BUFFER *bp)	/* buffer to execute */
 }
 
 
-#if ! SMALLER
-/* ARGSUSED */
+/*
+ * Common function for startup-file, and for :so command.
+ */
 int
-execfile(	/* execute a series of commands in a file */
-int f GCC_UNUSED, int n)	/* default flag and numeric arg to pass on to file */
+do_source(char *fname, int n)
 {
 	register int status;	/* return status of name query */
-	char fname[NFILEN];	/* name of file to execute */
 	char *fspec;		/* full file spec */
-	static	TBUFF	*last;
-
-	if ((status = mlreply_file("File to execute: ", &last, FILEC_READ, fname)) != TRUE)
-		return status;
 
 	/* look up the path for the file */
-	fspec = flook(fname, FL_ANYWHERE|FL_READABLE);
+	fspec = flook(fname,
+#if SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
+		FL_ANYWHERE | FL_READABLE
+#else
+		FL_HERE | FL_HOME | FL_TABLE | FL_READABLE
+#endif
+		);
 
 	/* if it isn't around */
 	if (fspec == NULL)
@@ -1984,6 +1985,22 @@ int f GCC_UNUSED, int n)	/* default flag and numeric arg to pass on to file */
 			return status;
 
 	return TRUE;
+}
+
+#if ! SMALLER
+/* ARGSUSED */
+int
+execfile(	/* execute a series of commands in a file */
+int f GCC_UNUSED, int n)	/* default flag and numeric arg to pass on to file */
+{
+	register int status;
+	char fname[NFILEN];	/* name of file to execute */
+	static	TBUFF	*last;
+
+	if ((status = mlreply_file("File to execute: ", &last, FILEC_READ, fname)) != TRUE)
+		return status;
+
+	return do_source(fname, n);
 }
 #endif
 

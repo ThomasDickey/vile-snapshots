@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.322 1998/05/22 00:03:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.324 1998/05/27 11:05:30 tom Exp $
  *
  */
 
@@ -418,7 +418,7 @@ MainProgram(int argc, char *argv[])
 	   command-line startup file, i.e. 'vile @mycmds'
 	 */
 	if (vileinit && *vileinit) {
-		if ((startstat = startup(vileinit)) != TRUE)
+		if ((startstat = do_source(vileinit,1)) != TRUE)
 			goto begin;
 		free(startup_file);
 		startup_file = strmalloc(vileinit);
@@ -468,7 +468,7 @@ MainProgram(int argc, char *argv[])
 				(void)zotbuf(vbp);
 			}
 		} else {  /* find and run .vilerc */
-			startstat = startup(startup_file);
+			startstat = do_source(startup_file, 1);
 			if (startstat != TRUE)
 				goto begin;
 		}

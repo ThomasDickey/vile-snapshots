@@ -1,8 +1,9 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.9 1998/05/14 23:15:26 tom Exp $
- *
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.10 1998/05/27 10:22:41 tom Exp $
+ * Written by T.E.Dickey for vile (october 1997).
+ * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
 
 #include <windows.h>

@@ -1,5 +1,6 @@
 /*
  * w32pipe:  win32 clone of npopen.c, utilizes native pipes (not temp files).
+ * Written by Clark Morgan for vile (december 1997).
  *
  * Background
  * ==========
@@ -56,7 +57,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.8 1998/05/19 06:00:00 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.9 1998/05/27 10:16:41 tom Exp $
  */
 
 #include <windows.h>
