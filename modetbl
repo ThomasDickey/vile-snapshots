@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.101 1998/10/24 15:12:52 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.103 1998/11/01 23:57:11 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -96,6 +96,7 @@ bool							# MD prefix
 	"TagWord"	TAGWORD		0		# apply tag to whole word, not only string at cursor
 	"terse"		TERSE		0		# be terse -- suppress messages
 	"view"		VIEW		chgd_major	# read-only buffer
+	"UndoAble"	UNDOABLE	chgd_undoable	# changes to buffer are undoable (or not)
 	"WrapScan"	SWRAP 		0		# wrap-around search mode
 	"WrapWords"	WRAP		0		# word wrap
 enum

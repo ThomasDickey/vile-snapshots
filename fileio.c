@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.128 1998/09/29 02:22:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.129 1998/10/30 00:20:20 tom Exp $
  *
  */
 
@@ -765,3 +765,10 @@ ffhasdata(void)
 	return FALSE;
 #endif
 }
+
+#if NO_LEAKS
+void fileio_leaks(void)
+{
+	free_fline();
+}
+#endif

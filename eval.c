@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.170 1998/10/24 15:36:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.174 1998/11/02 01:50:16 tom Exp $
  *
  */
 
@@ -66,6 +66,9 @@ static	SIZE_T	s2size ( char *s );
 static	char *	getkill (void);
 static	char *	ltos ( int val );
 static	char *	s2offset ( char *s, char *n );
+#if SYS_WINNT
+static	char *	l_utoh(unsigned i);
+#endif
 static	int	PromptAndSet ( const char *var, int f, int n );
 static	int	SetVarValue ( VDESC *var, const char *value );
 static	int	ernd (void);
@@ -547,6 +550,11 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 		ElseIf( EVPATHNAME )	value = getctext(vl_pathn);
 #if SYS_UNIX
 		ElseIf( EVPROCESSID )	value = l_itoa(getpid());
+#else
+# if SYS_WINNT
+		/* translate pid to hex, because most Win32 PID's are huge */
+		ElseIf( EVPROCESSID )	value = l_utoh((unsigned) getpid());
+# endif
 #endif
 #if OPT_SHELL
 		ElseIf( EVCWD )		value = current_directory(FALSE);
@@ -1170,6 +1178,17 @@ l_itoa(int i)		/* integer to translate to a string */
 	return result;
 }
 
+#if SYS_WINNT
+/* unsigned to hex */
+static char *
+l_utoh(unsigned i)
+{
+	static char result[INTWIDTH+1];	/* resulting string */
+	(void)lsprintf(result,"%x",i);
+	return result;
+}
+#endif
+
 
 /* like strtol, but also allow character constants */
 #if OPT_EVAL
@@ -1232,23 +1251,23 @@ const char *tokn)		/* token to evaluate */
 	register BUFFER *bp;	/* temp buffer pointer */
 	register B_COUNT blen;	/* length of buffer argument */
 	register int distmp;	/* temporary discmd flag */
+
 	int	oclexec;
-	static char buf[NSTRING];/* string buffer for some returns */
+
+	static TBUFF *tkbuf;
+	static TBUFF *tkargbuf;
 
 	switch (toktyp(tokn)) {
 		case TKNUL:	return("");
 
 		case TKARG:	/* interactive argument */
-				{
-				static char tkargbuf[NSTRING];
-
 				oclexec = clexec;
 
 				distmp = discmd;	/* echo it always! */
 				discmd = TRUE;
 				clexec = FALSE;
-				status = kbd_string(tokval(&tokn[1]), tkargbuf,
-						sizeof(buf), '\n',
+				status = kbd_reply(tokval(&tokn[1]), &tkargbuf,
+						eol_history, '\n',
 						KBD_EXPAND|KBD_QUOTES,
 						no_completion);
 				discmd = distmp;
@@ -1256,8 +1275,9 @@ const char *tokn)		/* token to evaluate */
 
 				if (status == ABORT)
 					return(errorm);
-				return(tkargbuf);
-				}
+
+				/* FIXME: assumes EOS added by kbd_reply */
+				return(tb_values(tkargbuf));
 
 		case TKBUF:	/* buffer contents fetch */
 
@@ -1281,12 +1301,12 @@ const char *tokn)		/* token to evaluate */
 					blen -= bp->b_dot.o;
 				else
 					blen = 0;
-				if (blen > NSTRING)
-					blen = NSTRING;
-				(void)strncpy(buf,
+
+				tb_init(&tkbuf, EOS);
+				tb_bappend(&tkbuf, 
 					bp->b_dot.l->l_text + bp->b_dot.o,
 					(SIZE_T)blen);
-				buf[blen] = (char)EOS;
+				tb_append(&tkbuf, EOS);
 
 				/* and step the buffer's line ptr
 					ahead a line */
@@ -1301,14 +1321,16 @@ const char *tokn)		/* token to evaluate */
 				}
 
 				/* and return the spoils */
-				return(buf);
+				return(tb_values(tkbuf));
 
 		case TKVAR:	return(gtusr(tokn+1));
 		case TKENV:	return(gtenv(tokn+1));
 		case TKFUN:	return(gtfun(tokn+1));
 		case TKDIR:
 #if SYS_UNIX
-				return(lengthen_path(strcpy(buf,tokn)));
+				tb_alloc(&tkbuf, NFILEN);
+				return(lengthen_path(strcpy(tb_values(tkbuf),
+							    tokn)));
 #else
 				return(errorm);
 #endif

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.307 1998/10/24 22:28:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.310 1998/11/02 01:59:14 cmorgan Exp $
  *
  */
 
@@ -529,6 +529,7 @@ extern void release_lock (const char *fname);
 
 /* line.c */
 extern LINEPTR lalloc (int used, BUFFER *bp);
+extern int begin_kill (void);
 extern int do_report (L_NUM value);
 extern int index2reg (int c);
 extern int index2ukb (int inx);
@@ -539,6 +540,7 @@ extern int linsert (int n, int c);
 extern int lnewline (void);
 extern int lstrinsert (const char *s, int len);
 extern int reg2index (int c);
+extern void end_kill (void);
 extern void kdone (void);
 extern void kregcirculate (int killing);
 extern void ksetup (void);
@@ -937,7 +939,7 @@ extern int  w32_inout_popen(FILE **fr, FILE **fw, char *cmd);
 extern void w32_keybrd_reopen(int pressret);
 extern void w32_npclose(FILE *fp);
 extern int  w32_system(const char *cmd);
-extern int  w32_system_winvile(const char *cmd);
+extern int  w32_system_winvile(const char *cmd, int pressret);
 extern void *winvile_hwnd(void);
 #endif
 
@@ -1045,6 +1047,7 @@ extern	void	gui_update_scrollbar	(WINDOW *uwp);
 extern	void	bind_leaks (void);
 extern	void	bp_leaks (void);
 extern	void	ev_leaks (void);
+extern	void	fileio_leaks (void);
 extern	void	itb_leaks (void);
 extern	void	kbs_leaks (void);
 extern	void	map_leaks (void);

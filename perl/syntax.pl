@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/syntax.pl,v 1.3 1998/10/01 10:29:26 tom Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/syntax.pl,v 1.4 1998/11/02 02:03:10 Ryan.Murray Exp $
 #
 # See 'hilite.doc' for an overview.  This (with hilite.pl) provide a simple
 # syntax highlighting mode.
@@ -116,7 +116,7 @@ sub syntax {
                         $patt = $rpe;
                         $start = 0;
                     } elsif ( $start == 0 ) {
-                        next if ("$`$&" =~ m!${rskip}$!);
+                        next if (defined ${rskip} and "$`$&" =~ m!${rskip}$!);
                         $rdot[2] = $l;
                         $rdot[3] = length($`) + $hle + 1;
                         $cb->setregion(@rdot);

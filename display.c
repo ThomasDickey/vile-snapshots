@@ -5,13 +5,16 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.259 1998/10/03 01:40:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.260 1998/10/30 02:13:22 tom Exp $
  *
  */
 
 #include	"estruct.h"
 #include        "edef.h"
 #include        "pscreen.h"
+
+#define vMAXINT ((int)((unsigned)(~0)>>1))	/* 0x7fffffff */
+#define vMAXNEG (-vMAXINT)			/* 0x80000001 */
 
 #define	NU_WIDTH 8
 
@@ -148,21 +151,12 @@ dfputs(OutFunc outfunc, const char *s)
 /*
  * Do format an integer, in the specified radix.
  */
-#define vMAXINT ((int)((unsigned)(~0)>>1))	/* 0x7fffffff */
-#define vMAXNEG (-vMAXINT)			/* 0x80000001 */
 static int
-dfputi(OutFunc outfunc, int i, int r)
+dfputi(OutFunc outfunc, UINT i, UINT r)
 {
-	register int q;
+	int q;
 
 	TRACE(("...int=%d\n", i))
-	if (i < 0) {
-		if (i < vMAXNEG) {
-			return dfputs(outfunc,"OVFL");
-		}
-		(*outfunc)('-');
-		return dfputi(outfunc, -i, r) + 1;
-	}
 
 	q = (i >= r) ? dfputi(outfunc, i/r, r) : 0;
 
@@ -174,40 +168,37 @@ dfputi(OutFunc outfunc, int i, int r)
  * do the same except as a long integer.
  */
 static int
-dfputli(OutFunc outfunc, long l, int r)
+dfputli(OutFunc outfunc, ULONG l, UINT r)
 {
-	register int q;
+	int q;
 
 	TRACE(("...long=%ld\n", l))
-	if (l < 0) {
-		(*outfunc)('-');
-		return dfputli(outfunc, -l, r) + 1;
-	}
 
-	q = (l >= r) ? dfputli(outfunc, (long)(l/r), r) : 0;
+	q = (l >= r) ? dfputli(outfunc, (l/r), r) : 0;
 
-	return q + dfputi(outfunc, (int)(l%r), r);
+	return q + dfputi(outfunc, (l%r), r);
 }
 
 /*
  *	Do format a scaled integer with two decimal places
  */
 static int
-dfputf(OutFunc outfunc, int s)
+dfputf(OutFunc outfunc, UINT s)
 {
-	register int i;	/* integer portion of number */
-	register int f;	/* fractional portion of number */
+	int n;
+	UINT i;		/* integer portion of number */
+	UINT f;		/* fractional portion of number */
 
 	/* break it up */
 	i = s / 100;
 	f = s % 100;
 
 	/* send out the integer portion */
-	i = dfputi(outfunc, i, 10);
+	n = dfputi(outfunc, i, 10);
 	(*outfunc)('.');
 	(*outfunc)((f / 10) + '0');
 	(*outfunc)((f % 10) + '0');
-	return i + 3;
+	return n + 3;
 }
 
 /*
@@ -222,7 +213,9 @@ dofmt(const char *fmt, va_list *app)
 	register int n;
 	register int nchars = 0;
 	int islong;
-	int radix;
+	int ivalue;
+	long lvalue;
+	UINT radix;
 	OutFunc outfunc = dfoutfn;  /* local copy, for recursion */
 
 	TRACE(("dofmt fmt='%s'\n", fmt))
@@ -257,38 +250,52 @@ dofmt(const char *fmt, va_list *app)
 
 			case 'd':
 				if (!islong) {
-					n = dfputi(outfunc, va_arg(*app,int), 10);
+					ivalue = va_arg(*app,int);
+					if (ivalue < 0) {
+						if (ivalue < vMAXNEG) {
+							n = dfputs(outfunc,"OVFL");
+							break;
+						}
+						ivalue = -ivalue;
+						(*outfunc)('-');
+					}
+					n = dfputi(outfunc, (UINT)ivalue, 10);
 					break;
 				}
 				/* FALLTHROUGH */
 			case 'D':
-				n = dfputli(outfunc, va_arg(*app,long), 10);
+				lvalue = va_arg(*app,long);
+				if (lvalue < 0) {
+					lvalue = -lvalue;
+					(*outfunc)('-');
+				}
+				n = dfputli(outfunc, (ULONG)lvalue, 10);
 				break;
 
 			case 'o':
-				n = dfputi(outfunc, va_arg(*app,int), 8);
+				n = dfputi(outfunc, va_arg(*app,UINT), 8);
 				break;
 
 			case 'x':
 				if (!islong) {
-					n = dfputi(outfunc, va_arg(*app,int), 16);
+					n = dfputi(outfunc, va_arg(*app,UINT), 16);
 					break;
 				}
 				/* FALLTHROUGH */
 			case 'X':
-				n = dfputli(outfunc, va_arg(*app,long), 16);
+				n = dfputli(outfunc, va_arg(*app,ULONG), 16);
 				break;
 
 			case 'r':
 			case 'R':
-				radix = va_arg(*app, int);
+				radix = va_arg(*app, UINT);
 				if (radix < 2 || radix > 36) radix = 10;
 				if (islong || c == 'R')
 					n = dfputli(outfunc,
-						va_arg(*app,long), radix);
+						va_arg(*app,ULONG), radix);
 				else
 					n = dfputi(outfunc,
-						va_arg(*app,int), radix);
+						va_arg(*app,UINT), radix);
 				break;
 
 			case 's':
@@ -300,7 +307,7 @@ dofmt(const char *fmt, va_list *app)
 				break;
 
 			case 'f':
-				n = dfputf(outfunc, va_arg(*app,int));
+				n = dfputf(outfunc, va_arg(*app,UINT));
 				break;
 
 			case 'P': /* output padding -- pads total output to

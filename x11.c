@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.194 1998/10/24 18:44:40 Stanislav.Meduna Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.195 1998/10/30 11:22:49 tom Exp $
  *
  */
 
@@ -3735,7 +3735,8 @@ x_close(void)
 {
     /* FIXME: Free pixmaps and GCs !!! */
 
-    XtDestroyWidget(cur_win->top_widget);
+    if(cur_win->top_widget)
+    	XtDestroyWidget(cur_win->top_widget);
 }
 
 static void

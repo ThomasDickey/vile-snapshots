@@ -433,7 +433,8 @@ Text manipulation command:
 	The number of changes stored in the undo "history" is controlled by
 	the numeric mode "undolimit".  The default history length is 10 --
 	that is, only 10 changes may be undone.  Set the undolimit to 0 for
-	truly infinite undo.  This can consume a lot of memory.
+	truly infinite undo.  This can consume a lot of memory.  You can turn
+	it completely off (and purge the undo stack) by setting noundoable.
 
 	The cursor position after an undo may not always be the same as it
 	would be in vi.
@@ -1484,6 +1485,10 @@ Editor modes
 		smaller machines, i.e, you will probably want to avoid
 		setting timeoutlen-user larger than 65535.  (U)
 
+	undoable (ua) Controls whether changes are saved on the undo stack.
+		This is normally enabled, but you may wish to disable it to
+		reduce memory overhead when filtering very large files. (B)
+
 	undolimit (ul) Sets a limit on how many undoable buffer-changing
 		commands will be saved.  If set to 0, there is no limit,
 		and all changes are undoable.  The default value is 10. (B)
@@ -2063,19 +2068,19 @@ Programmed procedures and macros
 	character.  There are two types of built-in variables (the environment
 	variables, and mode values).  The environment variables are:
 
-	$abufname	alternate buffer name (i.e. last visited)
+	$abufname	alternate buffer name (i.e. last visited) (read only)
 	$bchars		number of characters in current buffer	(read only)
 	$blines		number of lines in current buffer	(read only)
 	$buffer-hook	name of procedure to run when switching to a buffer
 	$cbufname	current buffer name
 	$cd-hook	name of procedure to run when changing directories
-	$cfilname	current file name
 	$cfgopts	comma-delimited list of "interesting" compiled options
 	                (read only).  Currently tracked options include:
 
 			perl        -> editor includes perl interpreter
 			oleauto     -> editor supports OLE automation.
 
+	$cfilname	current file name
 	$char		character under the cursor
 	$cryptkey	encryption key				(write only)
 	$curcol		current column position of cursor
@@ -2083,9 +2088,9 @@ Programmed procedures and macros
 	$cwd		current directory
 	$cwline		line offset in current window
 	$debug		macro debugging -- set true for line by line tracing
-	$directory	controls location of temp-files
-	$discmd		display commands on command line
-	$disinp		display command line input characters
+	$directory	controls location of temp-files (unused)
+	$discmd		display commands on command line (boolean)
+	$disinp		display command line input characters (boolean)
 	$end-of-cmd	true if user ended the cmd with <CR>
 	$exit-hook	name of procedure to run when quitting
 	$flicker	set true to suppress CGA flicker on a PC.  ugh.
@@ -2102,14 +2107,15 @@ Programmed procedures and macros
 	$match		last matched magic pattern		(read only)
 	$mode		current mode ("command","insert","overwrite") (rd. o.)
 	$modeline-format format of mode lines.  see "Mode line customization".
-	$modified	is current buffer modified or not?
+	$modified	is current buffer modified or not?	(read only)
+	$ncolors	number of displayed colors, must be power of two
 	$ntildes	percent of window filled by ~ chars, at end of buffer
 	$ocwd		previous directory			(read only)
 	$os		"unix", "dos", "vms", "os/2", "win32"	(read only)
 	$pagelen	number of screen lines in use by editor
 	$pagewid	current screen width
 	$palette	current palette string
-	$patchlevel	current patch-level (empty for release)
+	$patchlevel	current patch-level (empty for release)	(read only)
 	$pathname	current path-like word
 	$pending	typeahead pending flag			(read only)
 	$pid		returns vile's process-id		(read only)
@@ -2121,6 +2127,8 @@ Programmed procedures and macros
 	$seed		current random number seed
 	$shell		name of the shell program for spawned commands.
 	$sres		current screen resolution
+	$startup-file	the name of the startup file (e.g. .vilerc)
+	$startup-path	where to find the startup file
 	$status		returns the status of the last command
 	$title		current window title (X11 version only)
 	$tpause		length to pause for paren matching (PC versions)
@@ -3901,4 +3909,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.373 1998/10/25 01:04:37 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.375 1998/11/01 23:58:35 tom Exp $

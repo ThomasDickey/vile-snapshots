@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.340 1998/10/24 15:11:13 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.343 1998/11/02 00:19:50 tom Exp $
  *
  */
 
@@ -978,6 +978,7 @@ global_val_init(void)
 	set_global_b_val(VAL_SWIDTH,	8); 	/* shiftwidth */
 	set_global_b_val(VAL_TAB,	8);	/* tab stop */
 	set_global_b_val(VAL_TAGLEN,	0);	/* significant tag length */
+	set_global_b_val(MDUNDOABLE,	TRUE);	/* undo stack active */
 	set_global_b_val(VAL_UNDOLIM,	10);	/* undo limit */
 
 	set_global_b_val_ptr(VAL_TAGS, strmalloc("tags")); /* tags filename */
@@ -1508,6 +1509,7 @@ quit(int f, int n GCC_UNUSED)
 		vt_leaks();
 		ev_leaks();
 		mode_leaks();
+		fileio_leaks();
 #if DISP_X11
 		x11_leaks();
 #endif
@@ -1516,6 +1518,7 @@ quit(int f, int n GCC_UNUSED)
 		free_local_vals(b_valnames, global_b_values.bv, global_b_values.bv);
 		free_local_vals(w_valnames, global_w_values.wv, global_w_values.wv);
 
+		FreeAndNull(startup_path);
 		FreeAndNull(gregexp);
 		FreeAndNull(patmatch);
 #if	OPT_MLFORMAT
@@ -1526,6 +1529,7 @@ quit(int f, int n GCC_UNUSED)
 		if (strcmp(exec_pathname, "."))
 			FreeAndNull(exec_pathname);
 #endif
+		TTclose();
 		/* whatever is left over must be a leak */
 		show_alloc();
 	}
