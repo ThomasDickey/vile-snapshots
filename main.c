@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.411 1999/11/08 10:52:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.412 1999/11/15 23:35:00 Ryan.Murray Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -158,7 +158,7 @@ MainProgram(int argc, char *argv[])
 #endif
 	 tt_opened = open_terminal(&null_term);
 
-	/* Parse the command line */
+	/* Parse the passed in parameters */
 	for (carg = 1; carg < argc; ++carg) {
 		register char *param = argv[carg];
 #if DISP_X11 && !XTOOLKIT
@@ -168,7 +168,7 @@ MainProgram(int argc, char *argv[])
 		}
 #endif
 
-		/* Process Switches */
+		/* evaluate switches */
 		if (*param == '-') {
 			++param;
 #if DISP_IBMPC || DISP_BORLAND || SYS_VMS
@@ -770,7 +770,7 @@ loop(void)
 			command. */
 		calledbefore = FALSE;
 
-		/* and execute the command */
+		/* convert key code to a function pointer */
 		cfp = kcod2fnc(c);
 
 		if (cfp == &f_dotcmdplay &&
@@ -1771,7 +1771,7 @@ ex(int f, int n)
 }
 
 /* ARGSUSED */
-/* user function that does (almost) NOTHING */
+/* user function that only returns true */
 int
 nullproc(int f GCC_UNUSED, int n GCC_UNUSED)
 {

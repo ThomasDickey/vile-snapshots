@@ -7,7 +7,7 @@
  *
  * original author: D. R. Banks 9-May-86
  *
- * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.51 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.52 1999/11/15 23:35:00 Ryan.Murray Exp $
  *
  */
 
@@ -192,11 +192,12 @@ start_over:
 	/* Top of the per character loop */
 
 	for_ever {		/* ISearch per character loop */
-		/* Check for special characters first: */
-		/* Most cases here change the search */
+		/* Check for special characters, since they might change the
+		 * search to be done
+		 */
 
-		if (ABORTED(c) || c == '\r')	/* Want to quit searching? */
-			return (TRUE);	/* Quit searching now */
+		if (ABORTED(c) || c == '\r')	/* search aborted? */
+			return (TRUE);	/* end the search */
 
 		if (isbackspace(c))
 			c = '\b';
@@ -286,7 +287,7 @@ scanmore(			/* search forward or back for a pattern */
 	char           *patrn,	/* string to scan for */
 	int             dir)	/* direction to search */
 {
-	int             sts;	/* search status */
+	int             sts;	/* current search status */
 
 	FreeIfNeeded(gregexp);
 	gregexp = regcomp(patrn, b_val(curbp, MDMAGIC));
@@ -298,7 +299,7 @@ scanmore(			/* search forward or back for a pattern */
 	sts = scanner(gregexp, (dir < 0) ? REVERSE : FORWARD, FALSE, (int *)0);
 
 	if (!sts)
-		kbd_alarm();	/* Feep if search fails */
+		kbd_alarm();	/* beep the terminal if we fail */
 	return (sts);		/* else, don't even try */
 }
 

@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.129 1999/11/01 01:49:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.130 1999/11/15 23:56:18 Ryan.Murray Exp $
  *
  */
 
@@ -189,7 +189,7 @@ static void tcaprev  ( UINT state );
 static void tcapcursor ( int flag );
 
 TERM term = {
-	0,	/* these four values are set dynamically at open time */
+	0,	/* the first four values are set dynamically */
 	0,
 	0,
 	0,
@@ -411,7 +411,7 @@ tcapopen(void)
 		    t = TGETSTR(tc_strings[i].name, &p);
 		    TRACE(("TGETSTR(%s) = %s\n", tc_strings[i].name,
 			    (t != 0)
-			    	? visible_buff(t, strlen(t), FALSE)
+				? visible_buff(t, strlen(t), FALSE)
 				: "<null>"))
 		    /* simplify subsequent checks */
 		    if (NO_CAP(t))
@@ -523,7 +523,7 @@ tcapopen(void)
 	    if (!NO_CAP(seq)) {
 		int len;
 		TRACE(("TGETSTR(%s) = %s\n", keyseqs[i].capname,
-			    	visible_buff(seq, strlen(seq), FALSE)))
+				visible_buff(seq, strlen(seq), FALSE)))
 #define DONT_MAP_DEL 1
 #if DONT_MAP_DEL
 		/* NetBSD, FreeBSD, etc. have the kD (delete) function key
@@ -1093,7 +1093,7 @@ tcapbeep(void)
 	{
 		static char *seq[][2] =
 		{
-			{ NULL, NULL }, 	       /* vtflash = off */
+			{ NULL, NULL },		       /* vtflash = off */
 			{ VTFLASH_NORMSEQ, VTFLASH_REVSEQ }, /* reverse */
 			{ VTFLASH_REVSEQ, VTFLASH_NORMSEQ }, /* normal  */
 		};

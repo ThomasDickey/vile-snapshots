@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.204 1999/11/05 22:38:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.205 1999/11/16 00:02:16 Ryan.Murray Exp $
  *
  */
 
@@ -1303,7 +1303,7 @@ renamebuffer(BUFFER *rbp, char *bufname)
 #if NEW_NAMEBUFFER
 /* ARGSUSED */
 int
-namebuffer(int f GCC_UNUSED, int n GCC_UNUSED)	/*	Rename the current buffer	*/
+namebuffer(int f GCC_UNUSED, int n GCC_UNUSED)	/* Rename the current buffer */
 {
 	static char bufn[NBUFN];	/* buffer to hold buffer name */
 	const char *prompt = "New name for buffer: ";
@@ -1424,9 +1424,9 @@ sortlistbuffers(void)
  * List all of the active buffers.  First update the special buffer that holds
  * the list.  Next make sure at least 1 window is displaying the buffer list,
  * splitting the screen if this is what it takes.  Lastly, repaint all of the
- * windows that are displaying the list.  A numeric argument forces it to
- * toggle the listing invisible buffers as well (a subsequent argument forces
- * it to a normal listing).
+ * windows that are displaying the list.  A numeric argument causes it to
+ * toggle listing invisible buffers; a subsequent argument forces it to a
+ * normal listing.
  */
 int
 togglelistbuffers(int f, int n)
@@ -1517,13 +1517,13 @@ footnote(int c)
  * This routine rebuilds the text in the buffer that holds the buffer list.  It
  * is called by the list buffers command.  Return TRUE if everything works.
  * Return FALSE if there is an error (if there is no memory).  The variable
- * 'show_all' (set if the command had a repeat-count) indicates whether to list
- * hidden buffers.
+ * 'show_all' (set if the command had a repeat-count) indicates whether
+ * hidden buffers should be on the list.
  */
 /* ARGSUSED */
 static void
 makebufflist(
-	int iflag GCC_UNUSED,	/* list hidden buffer flag */
+	int unused GCC_UNUSED,
 	void *dummy GCC_UNUSED)
 {
 	register BUFFER *bp;

@@ -50,7 +50,7 @@ Installation
    type information in the Win32 registry (on a Win95 host it is not).
    Type registration is accomplished like so:
 
-   a) login to an account with Admin rights,
+   a) login to an account with Administrator rights,
    b) open a dos box,
    c) cd to the destination directory chosen in step 2 above,
    d) execute this command:    regsvr32 visvile.dll
@@ -314,7 +314,7 @@ place, test the winvile redirection feature as follows:
    option is checked.
 3) perform some action that causes DevStudio to invoke winvile (for
    example, double click on a filename in the file view pane).
-4) with window focus directed to winvile, press F7.  If the aformentioned
+4) with window focus directed to winvile, press F7.  If the aforementioned
    configuration is correct, DevStudio will begin building the selected
    project.
 

@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.208 1999/11/01 11:20:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.209 1999/11/15 23:34:59 Ryan.Murray Exp $
  *
  */
 
@@ -135,7 +135,10 @@ more_named_cmd(void)
 	return FALSE;
 }
 
-/* namedcmd:	execute a named command even if it is not bound */
+/*
+ * namedcmd:	execute a named command even if it is not bound
+ */
+
 #if SMALLER
 #define execute_named_command namedcmd
 #else
@@ -743,8 +746,8 @@ int f, int n)
 	const CMDFUNC *cfp;
 
 	set_end_string(EOS);
-	oldestr = execstr;	/* save last ptr to string to execute */
-	execstr = cline;	/* and set this one as current */
+	oldestr = execstr;	/* save ptr to starting command string to execute */
+	execstr = cline;	/* and change execstr to the new one */
 
 	do {
 		if ((token = mac_tokval(&tok)) == 0) { /* grab first token */
@@ -1083,7 +1086,7 @@ mac_token(TBUFF **tok)
 	savcle = clexec;
 	clexec = TRUE;
 
-	/* grab token and advance past */
+	/* get and advance past token */
 	execstr = get_token(execstr, tok, EOS);
 
 	clexec = savcle;
@@ -1096,7 +1099,7 @@ mac_tokval(	/* get a macro line argument */
 TBUFF **tok)	/* buffer to place argument */
 {
 	if (mac_token(tok) != 0) {
-		/* evaluate it */
+		/* evaluate the token */
 		(void)tb_scopy(tok, tokval(tb_values(*tok)));
 		return tb_values(*tok);
 	}
@@ -1168,13 +1171,13 @@ setup_macro_buffer(TBUFF *name, int flag)
 	char bname[NBUFN];		/* name of buffer to use */
 	BUFFER *bp;
 
-	/* construct the macro buffer name */
+	/* construct the buffer name for the macro */
 	if (flag < 0)
 	    (void)add_brackets(bname, tb_values(name));
 	else
 	    (void)lsprintf(bname, MACRO_N_BufName, flag);
 
-	/* set up the new macro buffer */
+	/* set up the buffer for the new macro */
 	if ((bp = bfind(bname, BFINVS)) == NULL) {
 		mlforce("[Cannot create procedure]");
 		return FALSE;
@@ -1324,10 +1327,10 @@ run_procedure(const char *name)
 	if (!*name)
 		return FALSE;
 
-	/* construct the buffer name */
+	/* construct a name for the procedure buffer */
 	(void)add_brackets(bufn, name);
 
-	/* find the pointer to that buffer */
+	/* find the buffer with that name */
 	if ((bp = find_b_name(bufn)) == NULL) {
 		return FALSE;
 	}
@@ -1337,7 +1340,9 @@ run_procedure(const char *name)
 	return status;
 }
 
-/*	execproc:	Execute a procedure				*/
+/*
+ * execproc:	Prompt for a procedure name and execute the named procedure
+ */
 
 int
 execproc(int f, int n)
@@ -1395,7 +1400,9 @@ execbuf(int f, int n)
 }
 #endif
 
-/* free a list of while block pointers */
+/*
+ * free a while block ptr list
+ */
 static void
 free_all_whiles(WHLOOP *wp)	/* head of list */
 {
@@ -2068,7 +2075,7 @@ perform_dobuf(BUFFER *bp, WHLOOP *whlist)
 		}
 #endif
 
-		/* if we are scanning and not executing..go back here */
+		/* if we are only scanning, come back here */
 		if (ifstk.disabled)
 			status = TRUE;
 		else
@@ -2089,7 +2096,7 @@ perform_dobuf(BUFFER *bp, WHLOOP *whlist)
 					wp->w_flag |= WFHARD;
 				}
 			}
-			/* in any case set the buffer's dot */
+			/* set the buffer's dot */
 			bp->b_dot.l = lp;
 			bp->b_dot.o = 0;
 			bp->b_wline.l = lforw(buf_head(bp));
@@ -2163,7 +2170,7 @@ do_source(char *fname, int n, int optional)
 	register int status;	/* return status of name query */
 	char *fspec;		/* full file spec */
 
-	/* look up the path for the file */
+	/* look for the file in the configuration paths */
 	fspec = cfg_locate(fname, LOCATE_SOURCE);
 
 	/* nonexistant */

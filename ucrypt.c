@@ -2,7 +2,7 @@
  * Unix crypt(1)-style interface.
  * Written by T.E.Dickey for vile (March 1999).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.11 1999/04/16 23:08:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.12 1999/11/15 23:35:00 Ryan.Murray Exp $
  *
  */
 
@@ -98,16 +98,16 @@ vl_make_encrypt_key (char *dst, const char *src)
 }
 
 int
-vl_resetkey(		/* reset the encryption key if needed */
+vl_resetkey(		/* set the buffer's encryption key if needed */
 BUFFER	*bp,
 const char *fname)
 {
-    register int s;	/* return status */
+    register int s;	/* temporary return value */
 
-    /* turn off the encryption flag */
+    /* flag the buffer as not having encryption */
     ffdocrypt(FALSE);
 
-    /* if we are in crypt mode */
+    /* if we want to encrypt */
     if (b_val(bp, MDCRYPT)) {
 	char temp[NFILEN];
 

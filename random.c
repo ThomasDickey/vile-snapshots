@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.214 1999/11/11 02:20:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.215 1999/11/16 00:15:52 Ryan.Murray Exp $
  *
  */
 
@@ -332,7 +332,7 @@ getcchar(void)
 }
 
 L_NUM
-getcline(void)	/* get the current line number */
+getcline(void)	/* return the line number the cursor is on */
 {
 	return line_no(curbp, DOT.l);
 }
@@ -458,7 +458,7 @@ C_NUM *rcolp)
 int
 gocol(int n)
 {
-	register int offs;	/* current cursor column   */
+	register int offs;	/* column number the cursor is on */
 
 	offs = getoff(n, (C_NUM *)0);
 
@@ -1148,7 +1148,7 @@ set_directory(const char *dir)
 	 * chdir() failed.  Attempt to match dir using $CDPATH on a VMS
 	 * host.  Note that we can't test using is_pathname() because the
 	 * indirectly referenced is_absolute_pathname() code sez that any
-	 * filespec with an embeded '[' or ':' is absolute--not what we
+	 * filespec with an embedded '[' or ':' is absolute--not what we
 	 * want here.
 	 */
 

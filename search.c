@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.118 1999/11/10 01:54:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.119 1999/11/16 00:14:11 Ryan.Murray Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -42,9 +42,8 @@ scrbacksearch(int f, int n)
 	return rsearch(f,n,FALSE,TRUE);
 }
 
-/*
- * Search forward.  Get a search string from the user, and
- *	search for the string.
+/* forwsearch:  Search forward.  Prompt for a search string from the
+ * user, and search the current buffer for it.
  */
 
 int
@@ -78,10 +77,11 @@ fsearch(int f, int n, int marking, int fromscreen)
 
 	last_srch_direc = FORWARD;
 
-	/* ask the user for the text of a pattern.
-	 * if "marking", then we were called to do line marking for the
-	 *  global command.
+	/* ask the user for a regular expression to search for.  if
+	 * "marking", then we were called to do line marking for the
+	 * global command.
 	 */
+
 	if (!marking) {
 		status = readpattern("Search: ", searchpat, &gregexp,
 				    lastkey, fromscreen);
@@ -173,7 +173,7 @@ forwhunt(int f, int n)
 
 	ignorecase = window_b_val(curwp, MDIGNCASE);
 
-	/* find n'th occurence of pattern
+	/* find n'th occurrence of pattern
 	 */
 	curpos = DOT;
 	scanboundry(wrapok,DOT,FORWARD);
@@ -242,8 +242,8 @@ rsearch(int f, int n, int dummy GCC_UNUSED, int fromscreen)
 
 	last_srch_direc = REVERSE;
 
-	/* ask the user for the text of a pattern, and find
-	 * n'th occurence.
+	/* ask the user for the regular expression to search for, and
+	 * find n'th occurrence.
 	 */
 	status = readpattern("Reverse search: ", searchpat, &gregexp,
 					EOS, fromscreen);
@@ -310,7 +310,7 @@ backhunt(int f, int n)
 
 	ignorecase = window_b_val(curwp, MDIGNCASE);
 
-	/* find n'th occurence of pattern
+	/* find n'th occurrence of pattern
 	 */
 	curpos = DOT;
 	scanboundry(wrapok,DOT,REVERSE);
@@ -404,7 +404,7 @@ int	*wrappedp)
 		return FALSE;
 	}
 
-	/* Setup local scan pointers to global ".".
+	/* Set starting search position to current position
 	 */
 	curpos = DOT;
 
@@ -730,7 +730,7 @@ int	fromscreen)
 }
 
 /*
- * savematch -- We found the pattern?  Let's save it away.
+ * savematch -- We found what we are looking for, so save it.
  */
 
 static void
