@@ -2,7 +2,7 @@
  * w32ole.cpp:  Winvile OLE registration code (currently only used
  *              for OLE automation).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32reg.c,v 1.2 1998/08/27 10:35:00 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32reg.c,v 1.3 1998/09/03 10:15:45 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -271,10 +271,16 @@ oleauto_register(OLEAUTO_OPTIONS *opts)
     val_len = strlen((char *) value);
     if (opts->rows)
     {
-        val_len = sprintf(((char *) value) + val_len,
-                          " -geometry %ux%u",
-                          opts->rows,
-                          opts->cols);
+        val_len += sprintf(((char *) value) + val_len,
+                           " -geometry %ux%u",
+                           opts->cols,
+                           opts->rows);
+    }
+    if (opts->fontstr)
+    {
+        val_len += sprintf(((char *) value) + val_len,
+                           " -fn '%s'",
+                           opts->fontstr);
     }
     if (RegCreateKeyEx(HKEY_CLASSES_ROOT,
                        key,

@@ -1,5 +1,20 @@
 Changes for vile 8.1 (released ??? ??? ??, 1998)
 
+ (tom) 980903 (o)
+	+ correct 8.0n change for highlighting, fixing an off-by-one error in
+	  visual-matches (reported by Alex Wetmore).
+	+ remove SetCursor calls from ntwinio.c, since they obstruct WinNT from
+	  showing the resize-cursor, as well as causing the cursor to flicker
+	  around the window border.
+	> patches by Clark Morgan:
+	+ add the ability to set winvile's font from the command line or via
+	  the environment variable "$font" (a la xvile).
+	+ modify OLE automation registration to accept a font specification,
+	  making it possible to configure both the font and screen geometry of
+	  future instances of winvile OLE automation servers. 
+	+ remove some compiler warnings in ntwinio.c and correct the OLE
+	  registration logic for the "-geometry" switch (file w32reg.c). 
+ 
  (tom) 980902 (n)
 	+ modify updattrs function so that video attributes applied to tabs and
 	  other nonprinting characters will paint all of the cells used to

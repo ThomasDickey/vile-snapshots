@@ -36,6 +36,7 @@ Step b) registers winvile as an OLE automation server that will be launched
 attributes:
 
     - editor geometry is 24 rows by 80 columns
+    - default font is "system fixed", 12-point (crayola-sized :-) )
     - editor visible
     - a single server instance (i.e., no matter how many clients create a
       winvile server object, there will be at most one server instance).
@@ -49,17 +50,40 @@ Registration Options
 ====================
 The complete registration syntax is:
 
-    winvile -Or [-geometry <rows>x<cols>] [-multiple] [-invisible]
+    winvile -Or [-geometry <cols>x<rows>] [-multiple] [-invisible]
+                [{-font|-fn} <font_spec>]
+                
 
 where:
 
-    -geometry <rows>x<cols>   specifies the editor's window geometry.
+    -geometry <cols>x<rows>   specifies the editor's window geometry.
     -invisible                launched server(s) are invisible and must be
                                   made visible via the application's Visible
                                   property.
     -multiple                 each client creates a new, unique server
                                   instance.
+    -font <font_spec>         specifies the editor's font
 
+where:
+              
+    <font_spec>  :== [<face>,]<size>[,<style>]  
+    <face>       :== font-name  
+    <size>       :== point size (as an integer)
+    <style>      :== { bold | italic | bold-italic }
+  
+    Note 1:  if <style> is unspecified, "normal" is assumed.
+    Note 2:  if <face> contains a comma escape it with '\'.
+    Note 3:  if <face> is omitted, the current font is modified.
+    Note 4:  if <face> contains spaces, delimit <font_spec> as appropriate
+             for the current shell/desktop environment.
+    Note 5:  <face> must be fixed pitch.  To obtain a list of all fixed
+             pitch fonts on the current win32 host, invoke winvile and
+             browse the "Font" dialog box accessible from the System menu
+             (accelerator key is ALT+<space bar>+F).
+
+    Example:       -font 'Letter Gothic,8'
+    Example:       -fn r_ansi,8,bold 
+  
 
 Example Automation Client Access
 ================================
