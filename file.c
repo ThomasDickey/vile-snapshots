@@ -5,16 +5,12 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.215 1997/10/07 00:17:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.217 1997/12/06 00:50:51 tom Exp $
  *
  */
 
 #include	"estruct.h"
 #include        "edef.h"
-
-#if SYS_UNIX || defined(MDCHK_MODTIME)
-#include	<sys/stat.h>  /* for mkdir() declaration */
-#endif
 
 static	int	bp2swbuffer(BUFFER *bp, int ask_rerun, int lockfl);
 static	int	kifile(char *fname);
@@ -205,7 +201,7 @@ CleanAfterPipe (int Wrote)
  * function is used by 'slowreadf()' to test if we've not done an update
  * recently even if this is the case.
  */
-#if SYS_UNIX
+#if SYS_UNIX && OPT_SHELL
 static int
 slowtime (time_t *refp)
 {
@@ -1012,7 +1008,7 @@ slowreadf(register BUFFER *bp, int *nlinep)
 	USHORT	flag = 0;
 	int	done_update = FALSE;
 #endif
-#if SYS_UNIX
+#if SYS_UNIX && OPT_SHELL
 	time_t	last_updated = time((time_t *)0);
 #endif
 	b_set_counted(bp);	/* make 'addline()' do the counting */

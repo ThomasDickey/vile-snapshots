@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.58 1997/05/26 13:24:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.59 1997/12/01 00:05:33 tom Exp $
  *
  */
 
@@ -25,6 +25,12 @@
 #define	user_SHELL()	gtenv("shell")
 #else
 #define	user_SHELL()	getenv("SHELL")
+#endif
+
+#ifdef __EMX__
+#define SHELL_C "/c"
+#else
+#define SHELL_C "-c"
 #endif
 
 #define R 0
@@ -63,13 +69,12 @@ inout_popen(FILE **fr, FILE **fw, char *cmd)
 {
 	int rp[2];
 	int wp[2];
-	
 
 	if (pipe(rp))
 		return FALSE;
 	if (pipe(wp))
 		return FALSE;
-		
+
 	pipe_pid = softfork();
 	if (pipe_pid < 0)
 		return FALSE;
@@ -172,7 +177,7 @@ exec_sh_c(char *cmd)
 	}
 
 	if (cmd)
-		(void) execlp (sh, shname, "-c", cmd, 0);
+		(void) execlp (sh, shname, SHELL_C, cmd, 0);
 	else
 		(void) execlp (sh, shname, 0);
 	(void)write(2,"exec failed\r\n",14);

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v7_2r
+MANIFEST for vile, version v7_2s
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -27,6 +27,7 @@ c-filt.c                        VILE attribute-filter for C files
 c-filt.flx                      FLEX filter for C programs
 chgdfunc.h                      prototypes for mode-functions with side-effects
 cmdtbl                          used by 'mktbls' to generate VILE's command-tables
+config.emx                      configure-ifdefs for EMX (OS/2)
 config_h.in                     template for config.h
 configure.in                    used by 'autoconf' to generate 'configure'
 crypt.c                         encryption (from uEmacs)
@@ -63,6 +64,7 @@ macros.doc                      documentation for VILE macros
 main.c                          main program of VILE
 makefile.blc                    makefile for Win32 with Borland C++
 makefile.djg                    makefile for DJGCC
+makefile.emx                    makefile for EMX (OS/2) with gcc and gmake
 makefile.icc                    makefile for C Set++ 2.x (OS/2)
 makefile.in                     used by 'configure' to generate a makefile
 makefile.tbc                    makefile for TurboC (MS-DOS)
@@ -84,6 +86,7 @@ ntconio.c                       Win32 console terminal driver
 ntwinio.c                       GUI terminal driver for WinNT
 oneliner.c                      commands that operate upon single lines
 opers.c                         operator-commands (that use motions)
+os2keys.h                       function-key definitions for OS/2
 os2pipe.c                       OS/2 pipe support
 os2vio.c                        OS/2 video terminal driver
 patchlev.h                      patch-level
@@ -103,6 +106,7 @@ spawn.c                         functions for spawning subprocesses
 tags.c                          support for vi-style "tags"
 tbuff.c                         temporary-buffer management functions
 tcap.c                          TERMCAP terminal driver
+tcap.h                          interface of tcap.c
 termio.c                        low-level terminal I/O support
 trace.c                         development: trace to logfile
 trace.h                         development: trace to logfile

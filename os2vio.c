@@ -3,7 +3,7 @@
  * Modified from a really old version of "borland.c" (before the VIO
  * stuff went in there.)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.14 1997/11/10 00:11:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.15 1997/11/30 23:51:58 tom Exp $
  */
 
 #include "estruct.h"
@@ -127,59 +127,7 @@ TERM term = {
 #endif
 };
 
-/* Extended key prefix macros. */
-#define	KE0(code)		{ 0xe0, code }
-#define	K00(code)		{ 0x00, code }
-
-static struct
-{
-	char seq[2];
-	int code;
-}
-VIO_KeyMap[] =
-{
-	{ KE0('H'), KEY_Up },
-	{ KE0('P'), KEY_Down },
-	{ KE0('K'), KEY_Left },
-	{ KE0('M'), KEY_Right },
-	{ KE0('R'), KEY_Insert },
-	{ KE0('S'), KEY_Delete },
-	{ KE0('G'), KEY_Home },
-	{ KE0('O'), KEY_End },
-	{ KE0('I'), KEY_Prior },
-	{ KE0('Q'), KEY_Next },
-
-	/*
-	 * Unshifted function keys.  The VIO console driver generates
-	 * different scan codes when these keys are pressed with Shift,
-	 * Ctrl, and Alt; those codes are presently unsupported.
-	 */
-	{ K00(';'), KEY_F1 },
-	{ K00('<'), KEY_F2 },
-	{ K00('='), KEY_F3 },
-	{ K00('>'), KEY_F4 },
-	{ K00('?'), KEY_F5 },
-	{ K00('@'), KEY_F6 },
-	{ K00('A'), KEY_F7 },
-	{ K00('B'), KEY_F8 },
-	{ K00('C'), KEY_F9 },
-	{ K00('D'), KEY_F10 },
-	{ K00(133), KEY_F11 },
-	{ K00(134), KEY_F12 },
-
-	/* Keypad codes (with Num Lock off): */
-	{ K00('G'), KEY_Home },
-	{ K00('H'), KEY_Up },
-	{ K00('I'), KEY_Prior },
-	{ K00('K'), KEY_Left },
-	{ K00('L'), KEY_Select },
-	{ K00('M'), KEY_Right },
-	{ K00('O'), KEY_End },
-	{ K00('P'), KEY_Down },
-	{ K00('Q'), KEY_Next },
-	{ K00('R'), KEY_Insert },
-	{ K00('S'), KEY_Delete }
-};
+#include "os2keys.h"
 
 #define	TEXT_BUFFER_SIZE		256
 

@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.39 1997/10/04 14:39:26 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.41 1997/12/05 20:39:23 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -20,7 +20,8 @@ AC_PREREQ_CANON(AC_PREREQ_SPLIT(AC_ACVERSION)),
 AC_PREREQ_CANON(AC_PREREQ_SPLIT([$1])), [$1], [$2], [$3])])dnl
 dnl ---------------------------------------------------------------------------
 dnl Add an include-directory to $CPPFLAGS.  Don't add /usr/include, since it's
-dnl redundant.  Also, don't add /usr/local/include if we're using gcc.
+dnl redundant.  We don't normally need to add -I/usr/local/include for gcc,
+dnl but old versions (and some misinstalled ones) need that.
 AC_DEFUN([CF_ADD_INCDIR],
 [
 for cf_add_incdir in $1
@@ -29,9 +30,6 @@ do
 	do
 		case $cf_add_incdir in
 		/usr/include) # (vi
-			;;
-		/usr/local/include) # (vi
-			test -z "$GCC" && CPPFLAGS="$CPPFLAGS -I$cf_add_incdir"
 			;;
 		*) # (vi
 			CPPFLAGS="$CPPFLAGS -I$cf_add_incdir"
@@ -137,7 +135,7 @@ dnl values.
 dnl
 dnl Parameters:
 dnl $1 = option name
-dnl $2 = help-string 
+dnl $2 = help-string
 dnl $3 = action to perform if option is not default
 dnl $4 = action if perform if option is default
 dnl $5 = default option value (either 'yes' or 'no')
@@ -176,9 +174,50 @@ test -z "$system_name" && system_name="$cf_cv_system_name"
 test -n "$cf_cv_system_name" && AC_MSG_RESULT("Configuring for $cf_cv_system_name")
 
 if test ".$system_name" != ".$cf_cv_system_name" ; then
-	AC_MSG_RESULT("Cached system name does not agree with actual")
+	AC_MSG_RESULT(Cached system name ($system_name) does not agree with actual ($cf_cv_system_name))
 	AC_ERROR("Please remove config.cache and try again.")
 fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check for data that is usually declared in <stdio.h> or <errno.h>
+dnl $1 = the name to check
+AC_DEFUN([CF_CHECK_ERRNO],
+[
+AC_MSG_CHECKING([declaration of $1])
+AC_CACHE_VAL(cf_cv_dcl_$1,[
+    AC_TRY_COMPILE([
+#include <stdio.h>
+#include <sys/types.h>
+#include <errno.h> ],
+    [long x = (long) $1],
+    [eval 'cf_cv_dcl_'$1'=yes'],
+    [eval 'cf_cv_dcl_'$1'=no]')])
+eval 'cf_result=$cf_cv_dcl_'$1
+AC_MSG_RESULT($cf_result)
+
+# It's possible (for near-UNIX clones) that the data doesn't exist
+AC_CACHE_VAL(cf_cv_have_$1,[
+if test $cf_result = no ; then
+    eval 'cf_result=DECL_'$1
+    CF_UPPER(cf_result,$cf_result)
+    AC_DEFINE_UNQUOTED($cf_result)
+    AC_MSG_CHECKING([existence of $1])
+        AC_TRY_LINK([
+#undef $1
+extern long $1;
+],
+            [$1 = 2],
+            [eval 'cf_cv_have_'$1'=yes'],
+            [eval 'cf_cv_have_'$1'=no'])
+        eval 'cf_result=$cf_cv_have_'$1
+        AC_MSG_RESULT($cf_result)
+else
+    eval 'cf_cv_have_'$1'=yes'
+fi
+])
+eval 'cf_result=HAVE_'$1
+CF_UPPER(cf_result,$cf_result)
+eval 'test $cf_cv_have_'$1' = yes && AC_DEFINE_UNQUOTED($cf_result)'
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl SVr4 curses should have term.h as well (where it puts the definitions of
@@ -234,15 +273,7 @@ dnl ---------------------------------------------------------------------------
 dnl Check if 'errno' is declared in <errno.h>
 AC_DEFUN([CF_ERRNO],
 [
-AC_MSG_CHECKING([for errno external decl])
-AC_CACHE_VAL(cf_cv_extern_errno,[
-    AC_TRY_COMPILE([
-#include <errno.h>],
-        [int x = errno],
-        [cf_cv_extern_errno=yes],
-        [cf_cv_extern_errno=no])])
-AC_MSG_RESULT($cf_cv_extern_errno)
-test $cf_cv_extern_errno = no && AC_DEFINE(DECL_ERRNO)
+CF_CHECK_ERRNO(errno)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Look for a non-standard library, given parameters for AC_TRY_LINK.  We
@@ -473,14 +504,15 @@ CF_EOF
 			esac
 		done
 		if test -z "$cf_config" ; then
-			AC_ERROR(Could not find imake config-directory)
-		fi
-		cf_imake_opts="$cf_imake_opts -I$cf_config"
-		if ( $IMAKE -v $cf_imake_opts 2>&AC_FD_CC)
-		then
-			CF_VERBOSE(Using $IMAKE $cf_config)
+			AC_WARN(Could not find imake config-directory)
 		else
-			AC_ERROR(Cannot run $IMAKE)
+			cf_imake_opts="$cf_imake_opts -I$cf_config"
+			if ( $IMAKE -v $cf_imake_opts 2>&AC_FD_CC)
+			then
+				CF_VERBOSE(Using $IMAKE $cf_config)
+			else
+				AC_WARN(Cannot run $IMAKE)
+			fi
 		fi
 	fi
 
@@ -551,176 +583,10 @@ AC_DEFUN([CF_MISSING_CHECK],
 [
 AC_MSG_CHECKING([for missing "$1" extern])
 AC_CACHE_VAL([cf_cv_func_$1],[
+cf_save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $CHECK_DECL_FLAG"
 AC_TRY_LINK([
-#include <stdio.h>
-#include <sys/types.h>
-#include <setjmp.h>
-#include <signal.h>
-#include <errno.h>
-#ifdef HAVE_TYPES_H
-#include <types.h>
-#endif
-#ifdef HAVE_LIBC_H
-#include <libc.h>
-#endif
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-#ifdef HAVE_STDARG_H
-#include <stdarg.h>
-#else
-#ifdef HAVE_VARARGS_H
-#include <varargs.h>
-#endif
-#endif
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-#ifdef HAVE_STDDEF_H
-#include <stddef.h>
-#endif
-#if HAVE_UTIME_H
-# include <utime.h>
-#endif
-
-#if STDC_HEADERS || HAVE_STRING_H
-#include <string.h>
-  /* An ANSI string.h and pre-ANSI memory.h might conflict.  */
-#if !STDC_HEADERS && HAVE_MEMORY_H
-#include <memory.h>
-#endif /* not STDC_HEADERS and HAVE_MEMORY_H */
-#else /* not STDC_HEADERS and not HAVE_STRING_H */
-#if HAVE_STRINGS_H
-#include <strings.h>
-  /* memory.h and strings.h conflict on some systems */
-#endif
-#endif /* not STDC_HEADERS and not HAVE_STRING_H */
-
-#ifdef HAVE_FCNTL_H
-#include <fcntl.h>
-#endif
-
-/* unistd.h defines _POSIX_VERSION on POSIX.1 systems.  */
-#if defined(HAVE_DIRENT_H) || defined(_POSIX_VERSION)
-#include <dirent.h>
-#else /* not (HAVE_DIRENT_H or _POSIX_VERSION) */
-#ifdef HAVE_SYS_NDIR_H
-#include <sys/ndir.h>
-#endif /* HAVE_SYS_NDIR_H */
-#ifdef HAVE_SYS_DIR_H
-#include <sys/dir.h>
-#endif /* HAVE_SYS_DIR_H */
-#ifdef HAVE_NDIR_H
-#include <ndir.h>
-#endif /* HAVE_NDIR_H */
-#endif /* not (HAVE_DIRENT_H or _POSIX_VERSION) */
-
-#ifdef HAVE_SYS_FILE_H
-#include <sys/file.h>
-#endif
-#ifdef HAVE_STAT_H
-#include <stat.h>
-#endif
-#ifdef HAVE_SYS_STAT_H
-#include <sys/stat.h>
-#endif
-#ifdef HAVE_DLFCN_H
-#include <dlfcn.h>
-#endif
-#ifdef HAVE_SIGINFO_H
-#include <siginfo.h>
-#endif
-
-#if HAVE_SYS_TIME_H && ! SYSTEM_LOOKS_LIKE_SCO
-/* on SCO, sys/time.h conflicts with select.h, and we don't need it */
-#include <sys/time.h>
-#ifdef TIME_WITH_SYS_TIME
-# include <time.h>
-#endif
-#else
-#include <time.h>
-#endif
-
-#ifdef HAVE_SYS_TIMES_H
-#include <sys/times.h>
-#endif
-#ifdef HAVE_UCONTEXT_H
-#include <ucontext.h>
-#endif
-#ifdef HAVE_LIBGEN_H
-#include <libgen.h>
-#else
-#ifdef HAVE_BSD_REGEX_H
-#include <bsd/regex.h>
-#endif
-#endif
-#ifdef HAVE_MATH_H
-#include <math.h>
-#endif
-#ifdef HAVE_SYS_SOCKET_H
-#include <sys/socket.h>
-#endif
-#ifdef HAVE_NETINET_IN_H
-#include <netinet/in.h>
-#endif
-#ifdef HAVE_ARPA_INET_H
-#include <arpa/inet.h>
-#endif
-#ifdef HAVE_NETDB_H
-#include <netdb.h>
-#endif
-#ifdef HAVE_SYS_UN_H
-#include <sys/un.h>
-#endif
-#ifdef HAVE_SYS_PARAM_H
-#include <sys/param.h>
-#endif
-#ifdef HAVE_SYS_WAIT_H
-#include <sys/wait.h>
-#endif
-#ifdef HAVE_SYS_IPC_H
-#include <sys/ipc.h>
-#endif
-#ifdef HAVE_SYS_MSG_H
-#include <sys/msg.h>
-#endif
-#ifdef HAVE_SYS_MMAN_H
-#include <sys/mman.h>
-#endif
-#ifdef HAVE_SELECT_H
-#include <select.h>
-#endif
-#ifdef HAVE_SYS_SELECT_H
-#include <sys/select.h>
-#endif
-/* SCO needs resource.h after select.h, to pick up timeval struct */
-#ifdef HAVE_SYS_RESOURCE_H
-#include <sys/resource.h>
-#endif
-#ifdef HAVE_SYS_FILIO_H
-# include <sys/filio.h>
-#endif
-#ifdef HAVE_IOCTL_H
-# include <ioctl.h>
-#else
-# ifdef HAVE_SYS_IOCTL_H
-#  include <sys/ioctl.h>
-# endif
-#endif
-
-#if USE_TERMINFO
-# include <curses.h>
-# if HAVE_TERM_H
-#  include <term.h>
-# endif
-#else
-#if HAVE_TERMCAP_H
-#include <termcap.h>
-#endif
-#endif
+$CHECK_DECL_HDRS
 
 #undef $1
 struct zowie { int a; double b; struct zowie *c; char d; };
@@ -732,7 +598,9 @@ XtToolkitInitialize();
 #endif
 ],
 [eval 'cf_cv_func_'$1'=yes'],
-[eval 'cf_cv_func_'$1'=no'])])
+[eval 'cf_cv_func_'$1'=no'])
+CFLAGS="$cf_save_CFLAGS"
+])
 eval 'cf_result=$cf_cv_func_'$1
 AC_MSG_RESULT($cf_result)
 test $cf_result = yes && AC_DEFINE_UNQUOTED(MISSING_EXTERN_$2)
@@ -770,7 +638,7 @@ AC_CACHE_VAL(cf_cv_ncurses_header,[
 printf("%s\n", NCURSES_VERSION);
 #else
 #ifdef __NCURSES_H
-printf("pre-1.8.7\n");
+printf("old\n");
 #else
 make an error
 #endif
@@ -785,12 +653,14 @@ make an error
 			curses.h \
 			ncurses.h
 		do
-			if egrep "NCURSES" $cf_incdir/$cf_header 1>&5 2>&1; then
-				cf_cv_ncurses_header=$cf_incdir/$cf_header 
-				test -n "$verbose" && echo $ac_n "	... found $ac_c" 1>&6
+changequote(,)dnl
+			if egrep "NCURSES_[VH]" $cf_incdir/$cf_header 1>&AC_FD_CC 2>&1; then
+changequote([,])dnl
+				cf_cv_ncurses_header=$cf_incdir/$cf_header
+				test -n "$verbose" && echo $ac_n "	... found $ac_c" 1>&AC_FD_MSG
 				break
 			fi
-			test -n "$verbose" && echo "	... tested $cf_incdir/$cf_header" 1>&6
+			test -n "$verbose" && echo "	... tested $cf_incdir/$cf_header" 1>&AC_FD_MSG
 		done
 		test -n "$cf_cv_ncurses_header" && break
 	done
@@ -817,6 +687,7 @@ predefined) # (vi
 	CF_ADD_INCDIR($cf_incdir)
 	;;
 esac
+CF_NCURSES_VERSION
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Look for the ncurses library.  This is a little complicated on Linux,
@@ -828,8 +699,15 @@ dnl and the linker will record a dependency.
 AC_DEFUN([CF_NCURSES_LIBS],
 [AC_REQUIRE([CF_NCURSES_CPPFLAGS])
 
+	# This works, except for the special case where we find gpm, but
+	# ncurses is in a nonstandard location via $LIBS, and we really want
+	# to link gpm.
 cf_ncurses_LIBS=""
-AC_CHECK_LIB(gpm,Gpm_Open,[AC_CHECK_LIB(gpm,initscr,,[cf_ncurses_LIBS="-lgpm"])])
+cf_ncurses_SAVE="$LIBS"
+AC_CHECK_LIB(gpm,Gpm_Open,
+	[AC_CHECK_LIB(gpm,initscr,
+		[LIBS="$cf_ncurses_SAVE"],
+		[cf_ncurses_LIBS="-lgpm"])])
 
 case $host_os in #(vi
 freebsd*)
@@ -855,12 +733,68 @@ if test -n "$cf_ncurses_LIBS" ; then
 		fi
 	done
 	AC_TRY_LINK([#include <$cf_cv_ncurses_header>],
-		[initscr(); tgoto((char *)0, 0, 0);],
+		[initscr(); mousemask(0,0); tgoto((char *)0, 0, 0);],
 		[AC_MSG_RESULT(yes)],
 		[AC_MSG_RESULT(no)
 		 LIBS="$cf_ncurses_SAVE"])
 fi
 ])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check for the version of ncurses, to aid in reporting bugs, etc.
+AC_DEFUN([CF_NCURSES_VERSION],
+[AC_MSG_CHECKING(for ncurses version)
+AC_CACHE_VAL(cf_cv_ncurses_version,[
+	cf_cv_ncurses_version=no
+	cf_tempfile=out$$
+	AC_TRY_RUN([
+#include <$cf_cv_ncurses_header>
+int main()
+{
+	FILE *fp = fopen("$cf_tempfile", "w");
+#ifdef NCURSES_VERSION
+# ifdef NCURSES_VERSION_PATCH
+	fprintf(fp, "%s.%d\n", NCURSES_VERSION, NCURSES_VERSION_PATCH);
+# else
+	fprintf(fp, "%s\n", NCURSES_VERSION);
+# endif
+#else
+# ifdef __NCURSES_H
+	fprintf(fp, "old\n");
+# else
+	make an error
+# endif
+#endif
+	exit(0);
+}],[
+	cf_cv_ncurses_version=`cat $cf_tempfile`
+	rm -f $cf_tempfile],,[
+
+	# This will not work if the preprocessor splits the line after the
+	# Autoconf token.  The 'unproto' program does that.
+	cat > conftest.$ac_ext <<EOF
+#include <$cf_cv_ncurses_header>
+#undef Autoconf
+#ifdef NCURSES_VERSION
+Autoconf NCURSES_VERSION
+#else
+#ifdef __NCURSES_H
+Autoconf "old"
+#endif
+;
+#endif
+EOF
+	cf_try="$ac_cpp conftest.$ac_ext 2>&AC_FD_CC | grep '^Autoconf ' >conftest.out"
+	AC_TRY_EVAL(cf_try)
+	if test -f conftest.out ; then
+changequote(,)dnl
+		cf_out=`cat conftest.out | sed -e 's@^Autoconf @@' -e 's@^[^"]*"@@' -e 's@".*@@'`
+changequote([,])dnl
+		test -n "$cf_out" && cf_cv_ncurses_version="$cf_out"
+		rm -f conftest.out
+	fi
+])])
+AC_MSG_RESULT($cf_cv_ncurses_version)
+])
 dnl ---------------------------------------------------------------------------
 dnl Within AC_OUTPUT, check if the given file differs from the target, and
 dnl update it if so.  Otherwise, remove the generated file.
@@ -987,33 +921,15 @@ CF_OUTPUT_IF_CHANGED($cf_config_h,$2)
 rm -f $1 $cf_config_h
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl Check for declaration of sys_errlist in one of stdio.h and errno.h.
-dnl Declaration of sys_errlist on BSD4.4 interferes with our declaration.
-dnl Reported by Keith Bostic.
+dnl Check for declaration of sys_nerr and sys_errlist in one of stdio.h and
+dnl errno.h.  Declaration of sys_errlist on BSD4.4 interferes with our
+dnl declaration.  Reported by Keith Bostic.
 AC_DEFUN([CF_SYS_ERRLIST],
 [
-AC_MSG_CHECKING([declaration of sys_errlist])
-AC_CACHE_VAL(cf_cv_dcl_sys_errlist,[
-    AC_TRY_COMPILE([
-#include <stdio.h>
-#include <sys/types.h>
-#include <errno.h> ],
-    [char *c = (char *) *sys_errlist],
-    [cf_cv_dcl_sys_errlist=yes],
-    [cf_cv_dcl_sys_errlist=no])])
-AC_MSG_RESULT($cf_cv_dcl_sys_errlist)
-
-# It's possible (for near-UNIX clones) that sys_errlist doesn't exist
-if test $cf_cv_dcl_sys_errlist = no ; then
-    AC_DEFINE(DECL_SYS_ERRLIST)
-    AC_MSG_CHECKING([existence of sys_errlist])
-    AC_CACHE_VAL(cf_cv_have_sys_errlist,[
-        AC_TRY_LINK([#include <errno.h>],
-            [char *c = (char *) *sys_errlist],
-            [cf_cv_have_sys_errlist=yes],
-            [cf_cv_have_sys_errlist=no])])
-    AC_MSG_RESULT($cf_cv_have_sys_errlist)
-fi
+for cf_name in sys_nerr sys_errlist
+do
+    CF_CHECK_ERRNO($cf_name)
+done
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check for return and param type of 3rd -- OutChar() -- param of tputs().

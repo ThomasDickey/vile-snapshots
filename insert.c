@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.105 1997/10/16 00:08:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.106 1997/12/01 23:43:11 tom Exp $
  *
  */
 
@@ -548,7 +548,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 		if (c == startc || c == stopc) {  /* ^Q and ^S */
 			continue;
 		}
-#if SYS_UNIX && defined(SIGTSTP)	/* job control, ^Z */
+#if OPT_SHELL && SYS_UNIX && defined(SIGTSTP)	/* job control, ^Z */
 		else if (c == suspc) {
 			status = bktoshell(FALSE,1);
 		}

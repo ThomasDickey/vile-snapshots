@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.87 1997/10/16 10:34:36 Alex.Wetmore Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.88 1997/12/02 00:30:21 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -150,10 +150,10 @@ regex							# MVAL_ prefix
 "cryptkey"	CRYPTKEY	OPT_ENCRYPT # write-only encryption-key
 "curcol"	CURCOL			# current column pos of cursor
 "curline"	CURLINE			# current line in file
-"cwd"		CWD			# current directory
+"cwd"		CWD		OPT_SHELL # current directory
 "cwline"	CWLINE			# current screen line in window
 "debug"		DEBUG			# macro debugging
-"directory"	DIRECTORY		# controls location of temp-files
+"directory"	DIRECTORY	OPT_SHELL # controls location of temp-files
 "discmd"	DISCMD			# display commands on command line
 "disinp"	DISINP			# display command line input characters
 "end-of-cmd"	EOC			# true if they ended the cmd with <CR>
@@ -175,7 +175,7 @@ regex							# MVAL_ prefix
 "modified"	MODIFIED		# is current buffer modified?
 "ncolors"	NCOLORS			# number of colors displayed
 "ntildes"	NTILDES			# number of tildes displayed at eob
-"ocwd"		OCWD			# previous directory
+"ocwd"		OCWD		OPT_SHELL # previous directory
 "os"		OS			# what os are we on?
 "pagelen"	PAGELEN			# number of lines used by editor
 "pagewid"	CURWIDTH		# current screen width
@@ -190,7 +190,7 @@ regex							# MVAL_ prefix
 "replace"	REPLACE			# replacement pattern
 "search"	SEARCH			# search pattern
 "seed"		SEED			# current random number seed
-"shell"		SHELL			# shell-environment variable 
+"shell"		SHELL		OPT_SHELL	# shell-environment variable 
 "sres"		SRES			# current screen resolution
 "startup-file"	STARTUP_FILE		# the name of the startup-file (e.g., .vilerc)
 "startup-path"	STARTUP_PATH		# where to find the startup-file (e.g., .)

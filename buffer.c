@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.166 1997/11/26 19:16:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.167 1997/11/30 21:27:35 tom Exp $
  *
  */
 
@@ -731,6 +731,33 @@ swbuffer(register BUFFER *bp)	/* make buffer BP current */
 	return swbuffer_lfl(bp, TRUE);
 }
 
+static int
+suckitin (BUFFER *bp, int copy, int lockfl)
+{
+	int s = TRUE;
+
+	if (copy) {
+		register WINDOW *wp;
+
+		for_each_window(wp) {
+			if (wp->w_bufp == bp)
+				copy_traits(&(wp->w_traits), &(bp->b_wtraits));
+		}
+	}
+	curwp->w_flag |= WFMODE|WFHARD;		/* Quite nasty.		*/
+
+	if (bp->b_active != TRUE) {		/* buffer not active yet*/
+		s = bp2readin(bp, lockfl);	/* read and activate it */
+	}
+#ifdef MDCHK_MODTIME
+	else
+		(void)check_modtime( bp, bp->b_fname );
+#endif
+	updatelistbuffers();
+	run_buffer_hook();
+	return s;
+}
+
 int
 swbuffer_lfl(register BUFFER *bp, int lockfl)	/* make buffer BP current */
 {
@@ -748,9 +775,9 @@ swbuffer_lfl(register BUFFER *bp, int lockfl)	/* make buffer BP current */
 	 && curwp->w_bufp == bp) {  /* no switching to be done */
 
 		if (!bp->b_active) /* on second thought, yes there is */
-			goto suckitin;
+			s = suckitin(bp, TRUE, lockfl);
 
-		return TRUE;
+		return s;
 	 }
 
 	if (curbp) {
@@ -794,26 +821,7 @@ swbuffer_lfl(register BUFFER *bp, int lockfl)	/* make buffer BP current */
 	/* oh well, suck it into this window */
 
 	curwp->w_bufp  = bp;
-	if (bp->b_nwnd++ == 0) {		/* First use.		*/
-		register WINDOW *wp;
-    suckitin:
-		for_each_window(wp) {
-			if (wp->w_bufp == bp)
-				copy_traits(&(wp->w_traits), &(bp->b_wtraits));
-		}
-	}
-	curwp->w_flag |= WFMODE|WFHARD;		/* Quite nasty.		*/
-
-	if (bp->b_active != TRUE) {		/* buffer not active yet*/
-		s = bp2readin(bp, lockfl);	/* read and activate it */
-	}
-#ifdef MDCHK_MODTIME
-	else
-		(void)check_modtime( bp, bp->b_fname );
-#endif
-	updatelistbuffers();
-	run_buffer_hook();
-	return s;
+	return suckitin(bp, (bp->b_nwnd++ == 0), lockfl);
 }
 
 #if NEEDED

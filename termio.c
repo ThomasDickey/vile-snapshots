@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.151 1997/11/09 22:58:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.152 1997/12/01 23:44:03 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -172,7 +172,7 @@ ttopen(void)
 #endif
 
 	/* this could probably be done more POSIX'ish? */
-#if defined(SIGTSTP) && defined(SIGCONT)
+#if OPT_SHELL && defined(SIGTSTP) && defined(SIGCONT)
 	setup_handler(SIGTSTP,SIG_DFL); 	/* set signals so that we can */
 	setup_handler(SIGCONT,rtfrmshell);	/* suspend & restart */
 #endif
@@ -330,8 +330,10 @@ ttopen(void)
 	ntermio.c_cc[V_DSUSP] = -1;
 #endif
 
+#if OPT_SHELL
 	setup_handler(SIGTSTP,SIG_DFL); 	/* set signals so that we can */
 	setup_handler(SIGCONT,rtfrmshell);	/* suspend & restart */
+#endif
 	setup_handler(SIGTTOU,SIG_IGN); 	/* ignore output prevention */
 
 #else /* no SIGTSTP */
@@ -478,8 +480,10 @@ ttopen(void)
 #endif
 #if ! DISP_X11
 
+#if OPT_SHELL
 	setup_handler(SIGTSTP,SIG_DFL); 	/* set signals so that we can */
 	setup_handler(SIGCONT,rtfrmshell);	/* suspend & restart */
+#endif
 	setup_handler(SIGTTOU,SIG_IGN); 	/* ignore output prevention */
 
 #endif

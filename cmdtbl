@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.146 1997/10/13 13:06:48 kev Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.147 1997/12/02 00:13:06 tom Exp $
 #
 #
 
@@ -190,14 +190,14 @@ bindkey		NONE			OPT_REBIND
 	"bind-key"
 	"rebind-key"
 	<bind a keystroke to a function>
-bktoshell	NONE|(BANG)
+bktoshell	NONE|(BANG)		OPT_SHELL
 	"suspend"
 	"suspend!"
 	"stop"
 	"stop!"
 	'^Z'
 	<suspend the editor>
-cd		NONE
+cd		NONE			OPT_SHELL
 	"cd"
 	"change-directory"
 	<move to a new directory, \"-\" is previous, \"~\" is $HOME>
@@ -542,7 +542,7 @@ filewrite	NONE|BANG
 	"write-file"			!FEWNAMES
 	"write-file!"			!FEWNAMES
 	<write the entire contents of the current buffer to its filename>
-vile_filter	REDO|UNDO
+vile_filter	REDO|UNDO		OPT_SHELL
 	"|"
 	"filter-buffer"			!FEWNAMES
 	<pipe the entire buffer through an external filter command>
@@ -1033,7 +1033,7 @@ operlinedel	OPER|REDO|UNDO|GLOBOK|(RANGE|OPTREG)
 	"d"
 	'^X-d'
 	<delete lines covered by the region>
-operfilter	OPER|REDO|UNDO|(EXRCOK|RANGE|NAMEDFS|DFLNONE|NL)
+operfilter	OPER|REDO|UNDO|(EXRCOK|RANGE|NAMEDFS|DFLNONE|NL) OPT_SHELL
 	"filter-til"			!FEWNAMES
 	"!"
 	'!'
@@ -1157,7 +1157,7 @@ prevwind	NONE
 	"previous-window"		!FEWNAMES
 	'^X-O'
 	<move to the previous window>
-pipecmd		NONE
+pipecmd		NONE			OPT_SHELL
 	"pipe-command"			!FEWNAMES
 	"capture-command"		!FEWNAMES
 	'^X-!'
@@ -1170,7 +1170,7 @@ putbefore	REDO|UNDO
 	"put-before"			!FEWNAMES
 	'P'
 	<insert CNT copies of (un)named register, before cursor>
-pwd		NONE
+pwd		NONE			OPT_SHELL
 	"pwd"
 	"print-directory"
 	<show current directory name>
@@ -1221,7 +1221,7 @@ replacechar	REDO|UNDO
 	"replace-character"		!FEWNAMES
 	'r'
 	<replace CNT characters at the cursor with the given character>
-respawn		NONE
+respawn		NONE			OPT_SHELL
 	"!!"
 	"rerun-shell-command"		!FEWNAMES
 	<rerun the previously entered shell command>
@@ -1277,7 +1277,7 @@ set_termchrs	NONE			OPT_REBIND&&OPT_TERMCHRS
 show_termchrs	NONE			OPT_REBIND&&OPT_TERMCHRS
 	"show-terminal-chars"
 	<show the values of the terminal special characters>
-spawncli	NONE
+spawncli	NONE			OPT_SHELL
 	"sh"
 	"shell"
 	"interactive-shell"		!FEWNAMES
@@ -1375,7 +1375,7 @@ shrinkwind	NONE
 source		NONE|(EXRCOK|NAMEDF)
 	"exsource"
 	<source a file of ex commands>
-spawn		NONE
+spawn		NONE			OPT_SHELL
 	"shell-command"			!FEWNAMES
 	<run a shell command>
 poundc_func	NONE
