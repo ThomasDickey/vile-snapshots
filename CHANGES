@@ -1,5 +1,13 @@
 Changes for vile 7.5/8.0 (released ??? ??? ?, 1998)
 
+ (tom) 980529 (p)
+	+ move mlsave[] into edef.h, updating logic so that the last error
+	  message during initialization will be displayed properly.
+	+ add logic to main.c to popup messages generated during initialization
+	  as per popup-msgs mode (reported by Brendan O'Dea).
+	+ modify logic for do_source() so that no error is reported if the
+	  default .vilerc is not found (reported by Brendan O'Dea).
+
  (tom) 980528 (o)
  	+ fix minor memory leak in free_majormode()
 	+ add a "+fork" option to xvile to override forkOnStartup resource.

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.249 1998/05/22 01:22:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.250 1998/05/29 01:03:01 tom Exp $
  *
  */
 
@@ -1436,8 +1436,6 @@ upddex(void)
 
 /*	updgar:	if the screen is garbage, clear the physical screen and
 		the virtual screen and force a full update		*/
-
-extern char mlsave[];
 
 static void
 updgar(void)
@@ -2996,8 +2994,7 @@ mlerase(void)
 	endofDisplay();
 }
 
-char *mlsavep;
-char mlsave[NSTRING];
+static char *mlsavep;
 
 void
 mlsavec(int c)

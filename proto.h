@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.284 1998/05/27 10:32:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.285 1998/05/29 00:52:14 tom Exp $
  *
  */
 
@@ -310,7 +310,7 @@ extern void set_ctrans (const char *value);
 #endif
 
 /* exec.c */
-extern int do_source (char *fname, int n);
+extern int do_source (char *fname, int n, int optional);
 extern int dobuf (BUFFER *bp);
 extern int docmd (char *cline, int execflag, int f, int n);
 extern int dofile (char *fname);
