@@ -7,13 +7,17 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.121 1998/10/31 17:27:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.122 1998/11/30 10:29:31 cmorgan Exp $
  *
  */
 
 #include	"estruct.h"
 #include	"edef.h"
 #include	"chgdfunc.h"
+
+#if SYS_VMS
+#include <rms.h>
+#endif
 
 #define	NonNull(s)	((s == 0) ? "" : s)
 #define	ONE_COL	(80/3)
@@ -27,6 +31,7 @@
 #define OPT_POPUP_CHOICES	OPT_POPUPCHOICE
 #define OPT_BACKUP_CHOICES	OPT_FILEBACK
 #define OPT_HILITE_CHOICES	OPT_HILITEMATCH
+#define OPT_RECORDFORMAT_CHOICES SYS_VMS
 
 #include "nefsms.h"
 
@@ -722,6 +727,9 @@ struct FSM fsm_tbl[] = {
 	{ "visual-matches",  fsm_hilite_choices },
 #endif
 	{ "mini-hilite",     fsm_hilite_choices },
+#if SYS_VMS
+	{ "record-format",   fsm_recordformat_choices },
+#endif
 };
 
 static int fsm_idx;
@@ -2599,6 +2607,15 @@ set_majormode_rexp(const char *name, int n, const char *r)
 		set_qualifier(m_valnames+n, p->mm.mv + n, r);
 }
 #endif /* OPT_MAJORMODE */
+
+/*--------------------------------------------------------------------------*/
+#if SYS_VMS
+const char *
+vms_record_format(int code)
+{
+	return choice_to_name (fsm_recordformat_choices, code);
+}
+#endif
 
 /*--------------------------------------------------------------------------*/
 

@@ -7,7 +7,7 @@
  *  Author:  Curtis Smith
  *  Last Updated: 07/14/87
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.37 1998/11/23 22:31:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.38 1998/11/30 10:31:30 cmorgan Exp $
  *
  */
 
@@ -110,18 +110,33 @@ TERM	term	= {
 	null_t_cursor,
 };
 
-static	const	struct	{
+struct vmskeyseqs
+{
 	char	*seq;
 	int	code;
-} keyseqs[] = {
-	{ "\33[A",  KEY_Up },    { "\33A", KEY_Up },
-	{ "\33[B",  KEY_Down },  { "\33B", KEY_Down },
-	{ "\33[C",  KEY_Right }, { "\33C", KEY_Right },
-	{ "\33[D",  KEY_Left },  { "\33D", KEY_Left },
-	{ "\33OP",  KEY_KP_F1 }, { "\33P", KEY_KP_F1 },
-	{ "\33OQ",  KEY_KP_F2 }, { "\33Q", KEY_KP_F2 },
-	{ "\33OR",  KEY_KP_F3 }, { "\33R", KEY_KP_F3 },
-	{ "\33OS",  KEY_KP_F4 }, { "\33S", KEY_KP_F4 },
+};
+
+struct vmskeyseqs vt100seqs[] =
+{
+	{ "\33[A",  KEY_Up },
+	{ "\33[B",  KEY_Down },
+	{ "\33[C",  KEY_Right },
+	{ "\33[D",  KEY_Left },
+	{ "\33OP",  KEY_KP_F1 },
+	{ "\33OQ",  KEY_KP_F2 },
+	{ "\33OR",  KEY_KP_F3 },
+	{ "\33OS",  KEY_KP_F4 },
+};
+struct vmskeyseqs vt52seqs[] =
+{
+	{ "\33A", KEY_Up },
+	{ "\33B", KEY_Down },
+	{ "\33C", KEY_Right },
+	{ "\33D", KEY_Left },
+	{ "\33P", KEY_KP_F1 },
+	{ "\33Q", KEY_KP_F2 },
+	{ "\33R", KEY_KP_F3 },
+	{ "\33S", KEY_KP_F4 },
 };
 
 /***
@@ -498,7 +513,9 @@ vmsopen(void)
 		{ SMG$K_SET_SCROLL_REGION,	&scroll_regn	},	/* CS */
 	};
 
-	int	i;
+	int	i, keyseq_tablesize;
+	struct vmskeyseqs *keyseqs;
+
 
 	/* Get terminal type */
 	vmsgtty();
@@ -507,6 +524,16 @@ vmsopen(void)
 		printf("Try set your terminal type with SET TERMINAL/INQUIRE\n");
 		printf("Or get help on SET TERMINAL/DEVICE_TYPE\n");
 		tidy_exit(3);
+	}
+	if (tc.t_type != TT$_VT52)
+	{
+		keyseqs = vt100seqs;
+		keyseq_tablesize = TABLESIZE(vt100seqs);
+	}
+	else
+	{
+		keyseqs = vt52seqs;;
+		keyseq_tablesize = TABLESIZE(vt52seqs);
 	}
 
 	/* Access the system terminal definition table for the		*/
@@ -558,7 +585,7 @@ vmsopen(void)
 	ttopen();
 
 	/* Set predefined keys */
-	for (i = TABLESIZE(keyseqs); i--; ) {
+	for (i = keyseq_tablesize; i--; ) {
 		addtosysmap(keyseqs[i].seq, strlen(keyseqs[i].seq), keyseqs[i].code);
 	}
 	initialized = TRUE;

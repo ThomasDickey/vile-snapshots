@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.350 1998/11/13 10:31:42 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.351 1998/11/30 01:24:12 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -851,11 +851,6 @@ These are old wishes/bugs:
 	we're matching from, if [History] is visible.
 
 	make vile know about different types of tags-files (ctags -s, etags),
-
-	on VMS, elvis writes files with stmlf-cr format.  vile writes files
-	with var-cr format.  the former is a little smaller.  vile ought to
-	remember the input file's format to use in writing new files (if
-	possible).
 
 These date back to 5.4:
 

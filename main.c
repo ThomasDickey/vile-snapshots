@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.347 1998/11/24 03:37:36 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.350 1998/11/30 22:45:17 tom Exp $
  *
  */
 
@@ -39,6 +39,7 @@
 
 #if SYS_VMS
 #include <processes.h>
+#include <rms.h>
 #endif
 
 extern char *exec_pathname;
@@ -967,6 +968,11 @@ global_val_init(void)
 	set_global_b_val(MDLOCKED,	FALSE);	/* LOCKED */
 	set_global_b_val_ptr(VAL_LOCKER, strmalloc("")); /* Name locker */
 #endif
+#if SYS_VMS
+	set_global_g_val(GMDALL_VERSIONS, FALSE);
+	set_global_b_val(VAL_RECORD_FORMAT, FAB$C_UDF);
+	set_global_b_val(VAL_RECORD_LENGTH, 0);
+#endif
 	set_global_g_val(GMDRONLYVIEW,	FALSE);	/* Set view-on-readonly */
 	set_global_g_val(GMDRONLYRONLY,	FALSE);	/* Set readonly-on-readonly */
 
@@ -1505,8 +1511,6 @@ quit(int f, int n GCC_UNUSED)
 		bind_leaks();
 		map_leaks();
 		tags_leaks();
-		itb_leaks();
-		tb_leaks();
 		wp_leaks();
 		bp_leaks();
 		vt_leaks();
@@ -1527,11 +1531,17 @@ quit(int f, int n GCC_UNUSED)
 #if	OPT_MLFORMAT
     		FreeAndNull(modeline_format);
 #endif
+    		FreeAndNull(helpfile);
+		FreeAndNull(startup_file);
 
 #if SYS_UNIX
 		if (strcmp(exec_pathname, "."))
 			FreeAndNull(exec_pathname);
 #endif
+		/* do these last, e.g., for patmatch */
+		itb_leaks();
+		tb_leaks();
+
 		TTclose();
 		/* whatever is left over must be a leak */
 		show_alloc();

@@ -1,5 +1,29 @@
 Changes for vile 8.3 (released ??? ??? ??, 1998)
 
+ (tom) 981201 (g)
+ 	+ fix minor memory-leaks (main.c, bind.c, select.c)
+	+ modify finderr.c to use the given filename and ignore the associated
+	  buffer name when looking for matching buffers in case we have multiple
+	  files with similar names.  Modify getfile() to check first if the
+	  given parameter is a filename, rather than preferring match on a
+	  buffer name.
+ 	+ optimize tb_bappend and tb_sappend using memcpy rather than loop on
+	  tb_put.
+	+ add checks for empty/missing filename to dobuf() and getfile() and
+	  menu.c to prevent core dump when using "Edit .vilerc" menu entry and
+	  no .vilerc exists (reported by John Gotts <jgotts@engin.umich.edu>).
+	+ modify key-mappings in vmsvt.c to avoid defining VT52-style sequences,
+	  which introduce the possibility of confusing <esc>A for an arrow
+	  key (patch by Clark Morgan).
+	+ restore part of logic in C/C++ comment formatting modified in 8.0p;
+	  which introduced the undesired behavior of not formatting the first
+	  line of a comment (patch by Clark Morgan).
+ 	+ implement VMS-specific modes for record-format and record-size
+	  (initiated/tested by Clark Morgan).
+	+ change default search pattern for VMS to include only current
+	  versions of each file, unless mode "allversions" is set (request by
+	  Clark Morgan).
+
  (tom) 981124 (f)
 	+ updated CF_IMAKE_CFLAGS macro for configure script, fixes a problem
 	  configuring with --srcdir.

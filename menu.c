@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.26 1998/11/11 02:57:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.27 1998/11/30 11:33:28 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -98,6 +98,16 @@ startup_filename(void)
         return flook(startup_file, FL_ANYWHERE|FL_READABLE);
 }
 
+static void
+edit_file(char *fname)
+{
+    if (fname != 0 && *fname != EOS && ffexists(fname)) {
+        splitwind(FALSE, 1);
+        getfile (fname, TRUE);
+    } else
+        no_file_found();
+}
+
 /************************************************************************/
 /* All the Common Action are pointed to this function                   */
 /************************************************************************/
@@ -129,8 +139,7 @@ static void common_action ( char *action )
     else
     if (!strcmp(action, "edit_rc"))
     {
-        splitwind(FALSE, 1);
-        getfile (startup_filename(), TRUE);
+        edit_file (startup_filename());
     }
     else
     if (!strcmp(action, "parse_rc"))
@@ -140,9 +149,7 @@ static void common_action ( char *action )
     else
     if (!strcmp(action, "edit_mrc"))
     {
-        splitwind(FALSE, 1);
-
-        getfile (menu_filename(), TRUE);
+        edit_file (menu_filename());
     }
 }
 

@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.169 1998/11/14 12:59:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.171 1998/11/30 22:13:43 tom Exp $
  *
  */
 
@@ -1490,7 +1490,8 @@ static DIRECTIVE
 dname_to_dirnum(const char *eline, size_t length)
 {
 	DIRECTIVE dirnum = D_UNKNOWN;
-	if (*eline++ == DIRECTIVE_CHAR) {
+	if ((--length > 0)
+	 && (*eline++ == DIRECTIVE_CHAR)) {
 		size_t n, m;
 		for (n = 0; n < TABLESIZE(dname); n++) {
 			m = strlen(dname[n].name);
@@ -2192,6 +2193,9 @@ char *fname)		/* file name to execute */
 	register int odiscmd;
 	int clobber = FALSE;
 	int original;
+
+	if (fname == 0 || *fname == EOS)
+		return no_file_found();
 
 	/*
 	 * Check first for the name, assuming it's a filename.  If we don't
