@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.182 1998/05/28 00:05:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.183 1998/05/30 12:26:01 tom Exp $
  *
  */
 
@@ -967,7 +967,7 @@ JumpProc(
         set_scroll_window(value);
         lcur = line_no(curwp->w_bufp, curwp->w_line.l);
 	lmax = line_count(curwp->w_bufp);
-        mvupwind(TRUE, lcur - lmax * (*percent));
+        mvupwind(TRUE, (int)(lcur - lmax * (*percent)));
         (void)update(TRUE);
     }
 }
@@ -4308,15 +4308,15 @@ char	*value,
 SIZE_T	length)
 {
 	WINDOW	*wp = row2window(ttrow);
-	BUFFER	*bp = (wp != NULL) ? wp->w_bufp : NULL;
+	BUFFER	*bp = (wp != 0) ? wp->w_bufp : 0;
 	int	status;
 
-	if (bp != NULL && b_val(bp,MDVIEW))
+	if (bp != 0 && b_val(bp,MDVIEW))
 		return FALSE;
 
 	status = TRUE;
 
-	if (bp != NULL && (is_c_mode(bp) || b_val(bp,MDAIND))) {
+	if (bp != 0 && (is_c_mode(bp) || b_val(bp,MDAIND))) {
 
 #if OLD_PASTE
 		/*
@@ -4333,7 +4333,7 @@ SIZE_T	length)
 			LINE	*lp	= MK.l;
 			int	first   = firstchar(lp);
 			int	last    = lastchar(lp);
-			CMDFUNC	*f = NULL;
+			CMDFUNC	*f = 0;
 
 			/* If the line contains only a single nonwhite,
 			 * we will insert before it.
@@ -4400,7 +4400,7 @@ x_get_selection(
 		 || (do_ins && !tb_append(&PasteBuf, abortc)))
 			tb_free(&PasteBuf);
 	}
-	XtFree(value);
+	XtFree((char *)value);
     }
 }
 
@@ -4440,8 +4440,8 @@ x_get_selected_text(
     UCHAR **datp,
     SIZE_T *lenp)
 {
-    UCHAR	*data;
-    UCHAR	*dp;
+    UCHAR	*data = 0;
+    UCHAR	*dp = 0;
     SIZE_T	length;
     KILL	*kp;		/* pointer into kill register */
 
@@ -4475,8 +4475,8 @@ x_get_clipboard_text(
     UCHAR **datp,
     SIZE_T *lenp)
 {
-    UCHAR	*data;
-    UCHAR	*dp;
+    UCHAR	*data = 0;
+    UCHAR	*dp = 0;
     SIZE_T	length;
     KILL	*kp;		/* pointer into kill register */
 

@@ -63,7 +63,7 @@
  *
  *	Allow left/right scrolling of input lines (when they get too long).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.47 1998/05/22 00:03:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.48 1998/05/30 11:44:55 tom Exp $
  *
  */
 
@@ -268,7 +268,7 @@ hst_remove(const char * cmd)
 void
 hst_flush(void)
 {
-	register BUFFER *bp;
+	register BUFFER *bp = 0;
 	register WINDOW *wp;
 	register LINE	*lp;
 

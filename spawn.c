@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.127 1998/05/19 11:04:47 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.128 1998/05/30 11:46:40 tom Exp $
  *
  */
 
@@ -544,7 +544,7 @@ write_data_to_pipe(void *writefp)
     FILE *fw;
     KILL *kp;       /* pointer into kill register */
 
-    fw = writefp;
+    fw = (FILE *)writefp;
     kregcirculate(FALSE);
     kp = kbs[ukb].kbufh;
     while (kp != NULL)

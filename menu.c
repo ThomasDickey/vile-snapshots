@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.19 1998/04/26 01:49:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.20 1998/05/30 12:23:16 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -488,7 +488,6 @@ static Widget do_button ( Widget pm, char *nom, char *accel, int the_class )
 static void proc_back ( Widget w GCC_UNUSED, XtPointer arg, XtPointer call  GCC_UNUSED)
 {
     char    *macro_action = (char *)arg;
-    const CMDFUNC   *cmd;
     ActionFunc fact;
     int     oldflag = im_waiting(-1);
     int     exec_flag = TRUE;
@@ -684,12 +683,12 @@ void do_menu ( Widget menub )
         case 'B':
             if (Token[i].macro > 0)
             {
-                macro = malloc(50*sizeof(char));
+                macro = castalloc(char,50);
                 sprintf(macro, "execute-macro-%d", Token[i].macro);
                 accel = give_accelerator (macro);
                 pm_w[n] = do_button (pm, Token[i].libelle, accel, Token[i].type);
 
-                arg = malloc(10*sizeof(char));
+                arg = castalloc(char,10);
                 sprintf(arg, "%d", Token[i].macro);
                 add_callback (pm_w[n], proc_back, macro);
             }
