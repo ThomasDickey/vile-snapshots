@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.176 1998/03/31 23:07:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.177 1998/04/23 23:52:14 tom Exp $
  *
  */
 
@@ -592,6 +592,16 @@ kbd_seq(void)
 	return (lastcmd = c);
 }
 
+/*
+ * Get a command-key, suppressing the mapping 
+ */
+int
+kbd_seq_nomap(void)
+{
+	unkeystroke(keystroke());
+	return kbd_seq();
+}
+
 /* get a string consisting of inclchartype characters from the current
 	position.  if inclchartype is 0, return everything to eol */
 int
@@ -1069,14 +1079,15 @@ int (*complete)(DONE_ARGS)) /* handles completion */
  * the minibuffer.
  */
 static int
-isMiniEdit(int c, int mode)
+isMiniEdit(int c)
 {
 	if (isspecial(c)
-	 || (asciitbl[c] == &f_showcpos))
+	 || (c == editc))
 		return TRUE;
-	if (mode) {
+	if (miniedit) {
 		const CMDFUNC *cfp = kcod2fnc(c);
-		if (cfp->c_flags & MOTION)
+		if ((cfp != 0)
+		 && (cfp->c_flags & MOTION) != 0)
 			return TRUE;
 	}
 	return FALSE;
@@ -1119,7 +1130,7 @@ shiftMiniBuffer(int offs)
 }
 
 static int
-editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int *mode, int margin)
+editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 {
 	int edited = FALSE;
 	const CMDFUNC *cfp = kcod2fnc(c);
@@ -1135,10 +1146,12 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int *mode, int margin)
 	curwp  = wminip;
 	savemk = MK;
 
-	/* Use ^G (showcpos) to toggle insert/command mode */
-	if (cfp == &f_showcpos) {
-		*mode = ! (*mode);
-	} else if (isspecial(c) || ((*mode) && cfp->c_flags & MOTION)) {
+	/* Use editc (normally ^G) to toggle insert/command mode */
+	if (c == editc && !quoted) {
+		miniedit = !miniedit;
+	} else if (isspecial(c)
+	  ||  (miniedit && cfp != 0 && cfp->c_flags & MOTION)) {
+
 		/* If we're allowed to honor SPEC bindings, then see if it's
 		 * bound to something, and execute it.
 		 */
@@ -1194,7 +1207,7 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int *mode, int margin)
 		} else
 			kbd_alarm();
 	} else {
-		*mode = FALSE;
+		miniedit = FALSE;
 		show1Char(c);
 		tb_init(buf, EOS);
 		tb_bappend(buf, DOT.l->l_text + margin, llength(DOT.l) - margin);
@@ -1233,7 +1246,6 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 {
 	int	c;
 	int	done;
-	int	mode = FALSE;
 	unsigned cpos;		/* current character position in string */
 	int	status;
 	int	shell;
@@ -1247,6 +1259,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 	unsigned newpos;
 	TBUFF *buf = 0;
 
+	miniedit = FALSE;
 	last_eolchar = EOS;	/* ...in case we don't set it elsewhere */
 	tb_unput(*extbuf);	/* FIXME: trim null */
 
@@ -1316,7 +1329,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 	backslashes = 0; /* by definition, there is an even
 					number of backslashes */
 	for_ever {
-		int	EscOrQuo = ((quotef == TRUE) ||
+		int	EscOrQuo = (quotef ||
 				((backslashes & 1) != 0));
 
 		/*
@@ -1350,7 +1363,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 		}
 
 		/* If it is a <ret>, change it to a <NL> */
-		if (c == '\r' && quotef == FALSE)
+		if (c == '\r' && !quotef)
 			c = '\n';
 
 		/*
@@ -1437,13 +1450,13 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 			continue;
 		} else
 #endif
-		if (ABORTED(c) && quotef == FALSE && !dontmap) {
+		if (ABORTED(c) && !quotef && !dontmap) {
 			tb_init(&buf, abortc);
 			status = esc_func(FALSE, 1);
 			break;
 		} else if ((isbackspace(c) ||
 			c == wkillc ||
-			c == killc) && quotef==FALSE) {
+			c == killc) && !quotef) {
 
 			if (prompt == 0 && c == killc)
 				cpos = 0;
@@ -1463,13 +1476,13 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 			kbd_kill_response(buf, &cpos, c);
 			backslashes = countBackSlashes(buf, cpos);
 
-		} else if (firstch == TRUE && !isMiniEdit(c, mode)) {
+		} else if (firstch == TRUE && !quotef && !isMiniEdit(c)) {
 			/* clean the buffer on the first char typed */
 			unkeystroke(c);
 			kbd_kill_response(buf, &cpos, killc);
 			backslashes = countBackSlashes(buf, cpos);
 
-		} else if (c == quotec && quotef == FALSE) {
+		} else if (c == quotec && !quotef) {
 			quotef = TRUE;
 			show1Char(c);
 			continue;	/* keep firstch==TRUE */
@@ -1491,7 +1504,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 					c = toUpper(c);
 			}
 #endif
-			if (!editMinibuffer(&buf, &cpos, c, &mode, margin))
+			if (!editMinibuffer(&buf, &cpos, c, margin, EscOrQuo))
 				continue;	/* keep firstch==TRUE */
 		}
 		firstch = FALSE;
@@ -1499,6 +1512,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 #if OPT_POPUPCHOICE
 	popdown_completions();
 #endif
+	miniedit = FALSE;
 	reading_msg_line = FALSE;
 	tb_free(&buf);
 	shiftMiniBuffer(0);

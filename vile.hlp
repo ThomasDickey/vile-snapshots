@@ -277,7 +277,12 @@ File manipulation commands:
 	command reads the named file in after the current line.  To read a
 	file before the first line, use ":0r".  File completion works like
 	command completion: using the TAB and '?' keys you can complete or
-	see next character choices.
+	see next character choices.  Additionally, on unix hosts, backquotes 
+	may be used to invoke a shell command that returns the path of a 
+	desired file.  For example: 
+ 
+		:e `which locks`       # csh looks for script called "locks" 
+		:e `type -path locks`  # bash equivalent 
 
 	The commands ":ww" and ":wwq" correspond roughly to ":w" and ":wq",
 	but they each write all modified buffers, rather than just the
@@ -728,6 +733,7 @@ Miscellaneous commands
 		and on "#endif" it will go back up to the "#ifdef"/"#if".
 		If the cursor is on any part of a "/*" or "*/" sequence, it
 		will find the appropriate corresponding C comment endpoint.
+		(See fence-if, fence-pairs to customize this behavior).
 
 	\	Identical to the ` motion, in that the cursor moves to
 		the specified mark (i.e. \a moves to mark 'a').  When
@@ -1160,6 +1166,17 @@ Editor modes
 		at startup or via .Xdefaults.  See notes about the color
 		palette down below, under DOS specifics.
 
+	fence-begin
+	fence-end Respectively, the regular expressions for balancing simple
+		(character-oriented, non-nestable) fences.
+
+	fence-if
+	fence-elif
+	fence-else
+	fence-fi Respectively, the regular expressions for balancing
+		line-oriented, nested fences, e.g., as C-preprocessor lines
+		(the default).
+
 	fence-pairs  Each pair of characters in this string is taken to be
 		a set of "fences", which should be matched with the '%'
 		command.  The default value is "{}()[]", which produces
@@ -1227,6 +1244,10 @@ Editor modes
 		bound to a function, then that function binding will be
 		honored and executed from within insert mode.  Any unbound
 		meta-characters will remain self-inserting.  (B)
+
+	mini-hilite (mh) When user toggles editing mode in the minibuffer
+		(^G, mini-edit), display the minibuffer with the given
+		attribute.  These are the same as for visual-matches.
 
 	multibeep If a motion command fails, then vile, like vi, will
 		normally sound the bell.  Turning this mode off prevents
@@ -1610,6 +1631,20 @@ Command History
 	by using the up- or down-arrow special keys on your keyboard (if
 	your configuration supports it).
 
+Editing the Minibuffer
+----------------------
+
+	The minibuffer (i.e., the last line on the screen, aka the :-prompt)
+	can be edited using arrow keys, the delete character, or by toggling to
+	vi-mode with the ^G (mini-edit) character.  In mini-edit mode, you may
+	use commands that do not move the cursor to a different line.
+
+	Vile treats the minibuffer specially.  Completed lines are written
+	to the history buffer.  When scrolling up/down in the command history,
+	vile displays the data that correspond to the command which you have
+	entered, e.g., a :set command will display the variables entered for
+	preceding :set commands.
+
 Special Character Expansion
 ---------------------------
 
@@ -1928,6 +1963,7 @@ Special "Terminal" Key Rebinding
 	backspace		from tty settings	(DEL or ^H)
 	interrupt		from tty settings	(^C or DEL)
 	line-kill		from tty settings	(^U or @)
+	mini-edit		(^G)
 	name-complete		<tab>
 	quote-next		from tty settings	(^V)
 	start-output		from tty settings	(^Q)
@@ -2134,6 +2170,7 @@ Programmed procedures and macros
 	&asc	1	char to integer conversion
 	&chr	1	integer to char conversion
 	&gtk	0	get 1 character
+	&gts	0	get keycode sequence, e.g., #1
 	&rnd	1	get a random number from 1 to n
 	&abs	1	absolute value of a number
 	&sin	2	find the index of second string in first
@@ -3728,4 +3765,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.346 1998/04/12 14:55:50 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.348 1998/04/24 10:41:55 tom Exp $

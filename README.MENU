@@ -1,4 +1,4 @@
--- $Header: /users/source/archives/vile.vcs/RCS/README.MENU,v 1.5 1997/04/30 13:58:46 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/RCS/README.MENU,v 1.6 1998/04/24 01:10:50 tom Exp $
 -- adapted from description by Philippe Chassany (20/02/1997)
 -- e-mail: phil@cln46ks.der.edf.fr
 
@@ -42,6 +42,10 @@ type of entry, subsequent fields delimited by colon:
 
 Lines beginning with '#' are ignored, as is text after a tab character.
 
+The special keyword "cmd" tells the menu function to invoke the following
+keyword as a :-line command, so that commands which must solicit input
+will work properly.
+
 A sample .vilemenu file:
 
 C:Xvile
@@ -79,6 +83,6 @@ B:Bindings:describe-bindings
 B:Motions:describe-motions
 B:Operators:describe-operators
 S
-B:Apropos...:apropos
-B:On Function...:describe-function
-B:On Key...:describe-key
+B:Apropos...:cmd apropos
+B:On Function...:cmd describe-function
+B:On Key...:describe-key &gts

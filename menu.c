@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.17 1998/04/17 00:16:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.18 1998/04/24 01:12:07 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -191,6 +191,20 @@ is_bind ( char *action )
 }
 
 /************************************************************************/
+/* Test if the action name begins with the keyword "cmd",               */
+/************************************************************************/
+static const char *
+is_cmd ( char *action )
+{
+    char tok[NSTRING];
+    const char *result = token(action, tok, EOS);
+    if (!strcmp(tok, "cmd"))
+        return result;
+
+    return 0;
+}
+
+/************************************************************************/
 /* Main function to parse the rc file                                   */
 /************************************************************************/
 int parse_menu ( const char *rc_filename )
@@ -282,12 +296,9 @@ int parse_menu ( const char *rc_filename )
                         }
                         else
                         {
-                            if (is_action(ptr_tok))
-                            {
-                                strcpy(Token[Nb_Token].action, ptr_tok);
-                            }
-                            else
-                            if (is_bind(ptr_tok))
+                            if (is_action(ptr_tok)
+                             || is_bind(ptr_tok)
+                             || is_cmd(ptr_tok))
                             {
                                 strcpy(Token[Nb_Token].action, ptr_tok);
                             }
@@ -295,6 +306,7 @@ int parse_menu ( const char *rc_filename )
                             {
                                 printf("Error in line %d : '%s' is not an action\n",
                                             nlig, ptr_tok);
+                                strcpy(Token[Nb_Token].action, "beep");
                             }
                         }
                         break;
@@ -479,12 +491,20 @@ static void proc_back ( Widget w GCC_UNUSED, XtPointer arg, XtPointer call  GCC_
     const CMDFUNC   *cmd;
     ActionFunc fact;
     int     oldflag = im_waiting(-1);
+    int     exec_flag = TRUE;
+    char    *s;
 
     TRACE(("Macro/Action=%s\n", macro_action));
 
+    if ((s = is_cmd(macro_action)) != 0)
+    {
+        macro_action = s;
+        exec_flag = FALSE;
+    }
+
     if (is_bind (macro_action))
     {
-        docmd (macro_action, FALSE, FALSE, 1);
+        docmd (macro_action, exec_flag, FALSE, 1);
     }
     else
     {

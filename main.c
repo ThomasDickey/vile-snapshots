@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.315 1998/04/17 01:18:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.316 1998/04/23 11:07:13 tom Exp $
  *
  */
 
@@ -735,7 +735,39 @@ global_val_init(void)
 {
 	static const char expand_chars[] =
 		{ EXPC_THIS, EXPC_THAT, EXPC_SHELL, EXPC_TOKEN, EXPC_RPAT, 0 };
+	static const struct {
+		int mode;
+		const char *value;
+	} buffer_regexps[] = {
+
+		{ VAL_FENCE_BEGIN, "/\\*" },
+		{ VAL_FENCE_END,   "\\*/" },
+
+		{ VAL_FENCE_IF,    "^\\s*#\\s*if" },
+		{ VAL_FENCE_ELIF,  "^\\s*#\\s*elif\\>" },
+		{ VAL_FENCE_ELSE,  "^\\s*#\\s*else\\>" },
+		{ VAL_FENCE_FI,    "^\\s*#\\s*endif\\>" },
+
+		/* where do paragraphs start? */
+		{ VAL_PARAGRAPHS, "^\\.[ILPQ]P\\>\\|^\\.P\\>\\|\
+^\\.LI\\>\\|^\\.[plinb]p\\>\\|^\\.\\?\\s*$" },
+
+		/* where do comments start and end, for formatting them */
+		{ VAL_COMMENTS, "^\\s*/\\?\\(\\s*[#*>]\\)\\+/\\?\\s*$" },
+
+		{ VAL_CMT_PREFIX, "^\\s*\\(\\s*[#*>]\\)\\+" },
+
+		/* where do sections start? */
+		{ VAL_SECTIONS, "^[{\014]\\|^\\.[NS]H\\>\\|^\\.HU\\?\\>\\|\
+^\\.[us]h\\>\\|^+c\\>" },	/* }vi */
+
+		/* where do sentences start? */
+		{ VAL_SENTENCES, "[.!?][])\"']* \\?$\\|[.!?][])\"']*  \\|\
+^\\.[ILPQ]P\\>\\|^\\.P\\>\\|^\\.LI\\>\\|^\\.[plinb]p\\>\\|^\\.\\?\\s*$" },
+	};
+
 	register int i;
+	register size_t n;
 	char *s;
 
 	/* set up so the global value pointers point at the global
@@ -888,6 +920,7 @@ global_val_init(void)
 #if	OPT_HILITEMATCH
 	set_global_b_val(VAL_HILITEMATCH, 0);	/* no hilite */
 #endif
+	set_global_g_val(GVAL_MINI_HILITE, VAREV); /* reverse hilite */
 #if	OPT_UPBUFF
 	set_global_b_val(MDUPBUFF,	TRUE);	/* animated */
 #endif
@@ -938,37 +971,11 @@ global_val_init(void)
 			TRUE));
 #endif
 
-	/* where do paragraphs start? */
-	set_global_b_val_rexp(VAL_PARAGRAPHS,
-		new_regexval(
-			"^\\.[ILPQ]P\\>\\|^\\.P\\>\\|^\\.LI\\>\\|\
-^\\.[plinb]p\\>\\|^\\.\\?\\s*$",
-			TRUE));
-
-	/* where do comments start and end, for formatting them */
-	set_global_b_val_rexp(VAL_COMMENTS,
-		new_regexval(
-			"^\\s*/\\?\\(\\s*[#*>]\\)\\+/\\?\\s*$",
-			TRUE));
-
-	set_global_b_val_rexp(VAL_CMT_PREFIX,
-		new_regexval(
-			"^\\s*\\(\\s*[#*>]\\)\\+",
-			TRUE));
-
-	/* where do sections start? */
-	set_global_b_val_rexp(VAL_SECTIONS,
-		new_regexval(
-			"^[{\014]\\|^\\.[NS]H\\>\\|^\\.HU\\?\\>\\|\
-^\\.[us]h\\>\\|^+c\\>",	/* }vi */
-			TRUE));
-
-	/* where do sentences start? */
-	set_global_b_val_rexp(VAL_SENTENCES,
-		new_regexval(
-	"[.!?][])\"']* \\?$\\|[.!?][])\"']*  \\|^\\.[ILPQ]P\\>\\|\
-^\\.P\\>\\|^\\.LI\\>\\|^\\.[plinb]p\\>\\|^\\.\\?\\s*$",
-			TRUE));
+	for (n = 0; n < TABLESIZE(buffer_regexps); n++)
+		set_global_b_val_rexp(buffer_regexps[n].mode,
+			new_regexval(
+				buffer_regexps[n].value,
+				TRUE));
 
 	/*
 	 * Window-mode defaults

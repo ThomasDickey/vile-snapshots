@@ -1,5 +1,33 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (tom) 980424 (w)
+	+ make xvile menu entries "work" which rely on executing from the
+	  :-line, by using "cmd" prefix for "apropos", and new function
+	  &gts for describe-key.  (The "cmd" is a kludge - we should revisit
+	  this later, since it does not help if we want to process parameters
+	  from the macro before running out & reverting to the :-line).
+	+ modify describe-key so that it prompts for a keycode which is not
+	  mapped.
+	+ add new function &gts, which prompts for a keycode which is not
+	  mapped, e.g., "#1" for function-key-1.
+	+ add note to vile.hlp about the use of backtic in shell expressions
+	  (patch by Clark Morgan).
+	+ revised fences so that the C-preprocessor and C-comment functions
+	  are parameterized in terms of regular expressions, making one mode
+	  per expression.  As such, they are reusable for majormodes.
+	+ remove logic from x11.c for is_color_cursor, to make cursor visible
+	  on reverse-video areas.
+	+ add new mode mini-hilite, which controls the appearance of the :-line
+	  when user toggles into mini-edit mode.
+	+ make ^G toggle in the :-line editing rebindable, as the character
+	  'mini-edit'.
+	+ correct logic for ^G toggle so that user can insert that character
+	  into a reply by quoting it.
+	+ correct core-dump due to vtinit() calling 'imworking()', which was
+	  happening when executing a command such as ":!resize -s 24 80".
+	+ correct core-dump when user types ^G^V in a :-line prompt (reported
+	  by Shawn Halpenny <malachai@iname.com>).
+
  (kev) 980422 (v)
 	+ api.c (curwp_visible): Renamed from curwp_after.  No longer static.
 	  (linsert_chars): Don't suppress the newline when that's the

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.244 1998/04/23 09:18:54 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.246 1998/04/24 10:35:34 tom Exp $
  *
  */
 
@@ -277,7 +277,7 @@ dofmt(const char *fmt, va_list *app)
 				radix = va_arg(*app, int);
 				if (radix < 2 || radix > 36) radix = 10;
 				if (islong || c == 'R')
-					n = dfputli(outfunc, 
+					n = dfputli(outfunc,
 						va_arg(*app,long), radix);
 				else
 					n = dfputi(outfunc,
@@ -376,7 +376,8 @@ vtinit(void)
 #endif
     }
 #if OPT_WORKING
-    imworking(0);
+    if (!i_displayed && !im_displaying)
+	imworking(0);
 #endif
     return TRUE;
 }
@@ -552,7 +553,7 @@ vtputc(int c)
 	} else if (c == '\t') {
 		do {
 			vtputc(' ');
-		} while (((vtcol + taboff)%curtabval) != 0 
+		} while (((vtcol + taboff)%curtabval) != 0
 		          && vtcol < lastcol);
 	} else if (c == '\n') {
 		return;
@@ -755,7 +756,7 @@ mk_to_vcol (MARK mark, int expanded, int base)
 	LINEPTR lp;
 
 	lp = mark.l;
-	lim = mark.o 
+	lim = mark.o
 		+ ((!global_g_val(GMDALTTABPOS) && !insertmode) ? 1 : 0);
 	if (lim > llength(lp))
 		lim = llength(lp);
@@ -849,7 +850,11 @@ kbd_flush(void)
 		}
 
 		vteeol();
-		set_vattrs(row, 0, 0, term.t_ncol);
+		set_vattrs(row, 0,
+			miniedit
+				? global_g_val(GVAL_MINI_HILITE)
+				: 0,
+			term.t_ncol);
 		if (my_overlay[0] != EOS) {
 			int n = term.t_ncol - strlen(my_overlay) - 1;
 			if (n > 0) {
@@ -1508,7 +1513,7 @@ updattrs(WINDOW *wp)
 {
     AREGION *ap;
     int i;
-    
+
     L_NUM start_wlnum, end_wlnum;
     LINEPTR lp;
     int rows;
@@ -1534,7 +1539,7 @@ updattrs(WINDOW *wp)
      * screen row numbers.
      */
     lp = wp->w_line.l;
-    start_wlnum = 
+    start_wlnum =
     end_wlnum = line_no(wp->w_bufp, lp);
     rows = wp->w_ntrows;
     lmap[end_wlnum - start_wlnum] = TopRow(wp);
@@ -1635,7 +1640,7 @@ updattrs(WINDOW *wp)
 		if (end_col >= term.t_ncol)
 		    end_col = term.t_ncol-1;
 		for (col = start_col; col <= end_col; col++)
-		    vscreen[row]->v_attrs[col] = 
+		    vscreen[row]->v_attrs[col] =
 			(vscreen[row]->v_attrs[col] | (attr & ~VAREV))
 			^ (attr & VAREV);
 	    }
@@ -2333,7 +2338,7 @@ int	colto)		/* first column on screen */
 		 ) {
 			--xr;
 			/* Note if any nonblank in right match */
-			if (cp1[xr] != ' ' 
+			if (cp1[xr] != ' '
 #if OPT_VIDEO_ATTRS
 			 || VATTRIB(ap1[xr] != Blank)
 #endif
@@ -2345,7 +2350,7 @@ int	colto)		/* first column on screen */
 
 	/* Erase to EOL ? */
 	if (nbflag == FALSE
-	 && eolexist == TRUE 
+	 && eolexist == TRUE
 #if	OPT_REVSTA && !OPT_VIDEO_ATTRS
 	 && (req != TRUE)
 #endif
@@ -2416,7 +2421,7 @@ int	colto)		/* first column on screen */
 #endif	/* MEMMAP(updateline) */
 
 /*
- * Redisplay the mode line for the window pointed to by the "wp". 
+ * Redisplay the mode line for the window pointed to by the "wp".
  * modeline() is the only routine that has any idea of how the modeline is
  * formatted.  You can change the modeline format by hacking at this
  * routine.  Called by "update" any time there is a dirty window.
@@ -2732,8 +2737,8 @@ modeline(WINDOW *wp)
 		    if (bp->b_fname != 0
 		     && (p = shorten_path(strcpy(temp,bp->b_fname), FALSE)) != 0
 		     && *p
-		     && !eql_bname(bp,p) 
-		     && (fc == 'f' ? !is_internalname(p) 
+		     && !eql_bname(bp,p)
+		     && (fc == 'f' ? !is_internalname(p)
 			           : is_internalname(p))) {
 			mlfs_prefix(&fs, &ms, lchar);
 			for (; *p == ' '; p++);
@@ -2756,7 +2761,7 @@ modeline(WINDOW *wp)
 			    case 'l' : val = wp->w_ruler_line; break;
 			    case 'L' : val = line_count(wp->w_bufp); break;
 			    case 'c' : val = wp->w_ruler_col; break;
-			    case 'p' : val = wp->w_ruler_line*100 
+			    case 'p' : val = wp->w_ruler_line*100
 			                     / line_count(wp->w_bufp); break;
 			}
 			mlfs_prefix(&fs, &ms, lchar);
@@ -3150,7 +3155,7 @@ mlerror(const char *s)
 		mlwarn("[Error %s: %s]", s, strerror(errno));
 	else
 		mlwarn("[Error %s: unknown system error %d]", s, errno);
-	
+
 #else
 	mlwarn("[Error %s, errno=%d]", s, errno);
 #endif

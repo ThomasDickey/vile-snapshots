@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.155 1998/02/21 01:44:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.156 1998/04/24 01:19:04 tom Exp $
  *
  */
 
@@ -353,6 +353,10 @@ const char *fname)	/* name of function to evaluate */
 	case UFGTKEY:
 		result[0] = (char)keystroke_raw8();
 		result[1] = EOS;
+		it = result;
+		break;
+	case UFGTSEQ:
+		(void)kcod2escape_seq(kbd_seq_nomap(), result);
 		it = result;
 		break;
 	case UFRND:
