@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.338 1998/10/01 09:17:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.339 1998/10/05 23:47:05 tom Exp $
  *
  */
 
@@ -2167,10 +2167,10 @@ newprocessgroup(int f GCC_UNUSED, int n GCC_UNUSED)
     int pid;
 
     if (f) {
-#ifndef SYS_VMS
-	    pid = fork();
-#else
+#if SYS_VMS
 	    pid = vfork();	/* VAX C and DEC C have a 'vfork()' */
+#else
+	    pid = fork();
 #endif
 
 	    if (pid > 0)

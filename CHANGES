@@ -1,6 +1,14 @@
+Changes for vile 8.2 (released ??? ??? ??, 1998)
+
+ (tom) 981008 (a)
+	+ add logic to ins_anytime() to prevent recursion or use in minibuffer,
+	  e.g., when pressing the insert-key.
+ 	+ correct an ifdef for SYS_VMS in main.c from 8.0s which left other
+	  platforms using vfork (reported by Ryan Murray).
+
 Changes for vile 8.1 (released Fri Oct 02, 1998)
 
- (tom) 980102 (w)
+ (tom) 981002 (w)
  	+ modify xterm mouse-click handling so that clicking on the left margin
 	  when the window is right-shifted always shifts it left.  Before, if
 	  a tab fell on the left margin, the effective column was still in the
@@ -8,7 +16,7 @@ Changes for vile 8.1 (released Fri Oct 02, 1998)
 	+ back out redundant limit-check in display.c from 8.0u that caused
 	  an extra cell to be highlighted when doing full-line selection.
 
- (tom) 980101 (v)
+ (tom) 981001 (v)
  	+ updated install-rules for perl scripts.
 	+ set was_clean flag in all instances of ttclean(), fixing a problem
 	  where TTkopen() was not invoked on return from :sh command (reported

@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.347 1998/09/30 01:37:55 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.348 1998/10/03 17:07:38 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1595,10 +1595,6 @@ Watcom compiler version 10 has a very nice vi editor.  It allows you to
 scroll the buffer up/down 1 line using the ^E and ^Y while in the editing
 mode, not just the command mode.  I find this very useful.  Vile only
 supports these 2 keys in command mode.  Could you please add this feature?
-
-next-buffer is there, but previous-buffer is missing.  ^^ or :e# goes back
-to last buffer, but that's not quite the opposite of next-buffer.  Please
-add this command too. ;-)
 
 -- 98-06-24 (Clark Morgan)
 
