@@ -1,6 +1,6 @@
-revlist for vile, version 8_0l
+revlist for vile, version v8_0m
 --------------------------------------------------------------------------------
-CHANGES	1.206
+CHANGES	1.209
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -39,11 +39,11 @@ djhandl.c	1.6
 dumbterm.c	1.13
 edef.h	1.229
 estruct.h	1.361
-eval.c	1.163
-exec.c	1.163
+eval.c	1.164
+exec.c	1.164
 externs.c	1.7
 fences.c	1.50
-file.c	1.231
+file.c	1.232
 filec.c	1.81
 fileio.c	1.127
 finderr.c	1.71
@@ -86,24 +86,24 @@ os2keys.h	1.1
 os2pipe.c	1.4
 os2vio.c	1.19
 pas-filt.c	1.2
-patchlev.h	1.134
+patchlev.h	1.135
 path.c	1.84
 perl.xs	1.29
-proto.h	1.297
+proto.h	1.298
 pscreen.h	1.1
 ptypemap	1.5
 random.c	1.191
 regexp.c	1.65
 region.c	1.90
-revlist	8_0l
+revlist	v8_0m
 search.c	1.112
 select.c	1.75
 spawn.c	1.130
-tags.c	1.91
+tags.c	1.92
 tbuff.c	1.31
 tcap.c	1.111
 tcap.h	1.4
-termio.c	1.156
+termio.c	1.157
 trace.c	1.8
 trace.h	1.6
 undo.c	1.69

@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.156 1998/08/30 23:01:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.157 1998/09/01 11:12:10 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -18,6 +18,8 @@
 #include <starlet.h>
 #include <lib$routines.h>
 #endif
+
+static	int	was_clean = FALSE;	/* suppress the first TTkopen */
 
 #if SYS_UNIX
 
@@ -280,7 +282,8 @@ ttunclean(void)
 #if ! DISP_X11
 	tcdrain(1);
 	tcsetattr(0, TCSADRAIN, &ntermios);
-	TTkopen();
+	if (was_clean)
+		TTkopen();
 #endif
 }
 
@@ -394,6 +397,7 @@ ttclean(int f)
 	TTclose();
 	TTkclose();	/* xterm */
 	ioctl(0, TCSETAF, (char *)&otermio);
+	was_clean = TRUE;
 #if USE_FCNTL
 	fcntl(0, F_SETFL, kbd_flags);
 	kbd_is_polled = FALSE;
@@ -531,6 +535,7 @@ ttclean(int f)
 	ioctl(0, TIOCSETN, (char *)&ostate);
 	ioctl(0, TIOCSETC, (char *)&otchars);
 	ioctl(0, TIOCSLTC, (char *)&oltchars);
+	was_clean = TRUE;
 #ifdef	TIOCLSET
 	ioctl(0, TIOCLSET, (char *)&olstate);
 #endif

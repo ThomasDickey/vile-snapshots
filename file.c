@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.231 1998/09/01 01:54:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.232 1998/09/01 09:31:12 cmorgan Exp $
  *
  */
 
@@ -1942,7 +1942,7 @@ imdying(int ACTUAL_SIG_ARGS)
 					}
 				}
 #else
-				strcpy(dirname, "");
+				strcpy(dirnam, "");
 #endif
 				(void)pathcat(dirnam, dirnam, "vileDXXXXXX");
 				(void)mktemp(dirnam);
