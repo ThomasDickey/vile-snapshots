@@ -1,4 +1,4 @@
-revlist for vile, version 8_1c
+revlist for vile, version 8_2
 --------------------------------------------------------------------------------
 CHANGES	1.241
 CHANGES.R3	1.1
@@ -95,7 +95,7 @@ ptypemap	1.5
 random.c	1.191
 regexp.c	1.65
 region.c	1.91
-revlist	8_1c
+revlist	8_2
 search.c	1.112
 select.c	1.80
 spawn.c	1.133
