@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.262 1998/11/11 22:43:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.265 1998/11/14 04:08:26 tom Exp $
  *
  */
 
@@ -943,7 +943,16 @@ int force)	/* force update past type ahead? */
 	origrow = ttrow;
 	origcol = ttcol;
 
-	if (!curbp || !vscreen) /* not initialized */
+	if (clhide)
+		return TRUE;
+	if (!curbp || !vscreen || !curwp) /* not initialized */
+		return FALSE;
+	/* don't try to update if we got called via a read-hook on a window
+	 * that isn't complete.
+	 */
+	if (curwp->w_bufp == 0
+	 || curwp->w_bufp->b_nwnd == 0
+	 || curwp->w_ntrows <= 1)
 		return FALSE;
 	if (TypeAhead(force))
 		return SORTOFTRUE;

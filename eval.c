@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.177 1998/11/11 01:55:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.178 1998/11/14 17:22:21 tom Exp $
  *
  */
 
@@ -79,7 +79,7 @@ static	int	sindex ( const char *sourc, const char *pattern );
 
 /*--------------------------------------------------------------------------*/
 
-#if	ENVFUNC && OPT_EVAL
+#if	ENVFUNC && OPT_EVAL && OPT_SHELL
 static char *
 GetEnv(char *s)
 {

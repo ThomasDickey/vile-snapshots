@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.99 1998/07/03 00:07:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.100 1998/11/14 14:07:03 tom Exp $
  *
  */
 
@@ -716,7 +716,7 @@ gotobosent(int f, int n)
 
 	while (s && (is_at_end_of_line(DOT) || isSpace(char_at(DOT)))) {
 		s = backchar(TRUE,1);
-		if (is_at_end_of_line(DOT) && !empty)
+		if (is_empty_line(DOT) && !empty)
 			return TRUE;
 	}
  top:

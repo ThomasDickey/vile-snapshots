@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.198 1998/11/11 21:56:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.200 1998/11/14 19:14:15 tom Exp $
  *
  */
 
@@ -101,7 +101,7 @@
 #undef strchr
 #undef strrchr
 
-#if OPT_XAW_SCROLLBARS
+#if ATHENA_WIDGETS
 #if HAVE_LIB_XAW
 #include	<X11/Xaw/Form.h>
 #include	<X11/Xaw/Grip.h>
@@ -243,7 +243,7 @@ typedef struct _text_win {
 		app_context;	/* application context */
     Widget	top_widget;	/* top level widget */
     Widget	screen;		/* screen widget */
-#if ATHENA_WIDGETS
+#if ATHENA_WIDGETS && OPT_MENUS
     Widget	pane_widget;	/* pane widget, actually a form */
     Widget	menu_widget;	/* menu-bar widget, actually a box */
 #endif
@@ -2766,6 +2766,24 @@ x_preparse_args(
 	    XtNvertDistance,		0,
 	    NULL);
 #else
+#if ATHENA_WIDGETS
+    cur_win->form_widget = XtVaCreateManagedWidget(
+	    "form",
+#if KEV_WIDGETS	/* FIXME */
+	    bbWidgetClass,
+#else
+	    formWidgetClass,
+#endif
+	    cur_win->top_widget,
+	    XtNwidth,			x_width(cur_win)
+						+ cur_win->pane_width + 2,
+	    XtNheight,			x_height(cur_win),
+	    XtNbackground,		cur_win->bg,
+	    XtNbottom,			XtChainBottom,
+	    XtNleft,			XtChainLeft,
+	    XtNright,			XtChainRight,
+	    NULL);
+#else
 #if NO_WIDGETS
     cur_win->form_widget = XtVaCreateManagedWidget(
 	    "form",
@@ -2778,6 +2796,7 @@ x_preparse_args(
 	    NULL);
 #endif /* NO_WIDGETS */
 #endif /* ATHENA_WIDGETS */
+#endif /* ATHENA_WIDGETS && OPT_MENUS */
 #endif /* OL_WIDGETS */
 #endif /* MOTIF_WIDGETS */
 
@@ -5144,7 +5163,7 @@ x_configure_window(
 		XtNheight,	&cur_win->top_height,
 		XtNwidth,	&cur_win->top_width,
 		NULL);
-#if ATHENA_WIDGETS
+#if ATHENA_WIDGETS && OPT_MENUS
 	XtVaGetValues(cur_win->menu_widget,
 		XtNheight,	&cur_win->menu_height,
 		XtNwidth,	&new_width,

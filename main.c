@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.345 1998/11/11 02:42:22 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.346 1998/11/14 15:46:36 tom Exp $
  *
  */
 
@@ -2192,7 +2192,7 @@ newprocessgroup(int f GCC_UNUSED, int n GCC_UNUSED)
 		tidy_exit(BADEXIT);
 	    }
     }
-# ifndef SYS_VMS
+# if !SYS_VMS
 #  ifdef HAVE_SETSID
      (void)setsid();
 #  else

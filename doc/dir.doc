@@ -1,0 +1,64 @@
+Date: Thu, 12 Nov 1998 02:56:13 -0800 (PST)
+From: "Kuntal M. Daftary" <daftary@cisco.com>
+Subject: directory browser
+
+Here is a directory browser extension for vile written with the perl interface.
+
+The main features of the directory browser are:
+
+1. two panel display for seperate listing of directories and files
+2. configurable color hilighting based on the type of the file
+3. recognizes broken symlinks
+4. hypertext based directory traversal and file viewing
+5. mime aware capabilities to view files using appropriate applications
+6. plugins extension to the mime library to allow to view certain files
+   within vile after passing through a vile based perl filter routine.
+
+The package contains the following three perl files.
+
+1. dir.pl
+2. mime.pl
+3. plugins.pl
+
+Detailed pod documentation is contained within each file.
+
+The package also contains sample files for:
+
+1. ~/.vile/mailcap
+2. ~/.vile/mime.types
+
+To get started off without reading the documentation:
+
+1. put all the three perl files in ~/.vile/perl
+
+2. put the sample mailcap and mime.types files in ~/.vile
+
+3. put the following lines in your .vilerc
+
+
+        22 store-macro
+            ~force execute-hypertext-command
+            ~if &not $status
+                ~force forward-character-to-eol
+            ~endif
+        ~endm
+        bind-key execute-macro-22 ^M
+	perl "Vile::register 'dir', 'dir', 'Dir Browser', 'dir.pl'"
+
+4. open up vile and type
+
+	:dir<RET>
+
+5. Press <RETURN> on directory name to change to that directory and on the file
+   name to view that file.
+
+Finally, i have included a gif image alongwith to give an idea of what the
+directory browser looks like within xvile.
+
+Suggestions, critisism, questions welcome.
+
+Special thanks to Kevin for clearing up (couple of?) bugs that I ran into when
+I started off on this.
+
+Kuntal Daftary
+

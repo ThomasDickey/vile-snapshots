@@ -1,0 +1,150 @@
+#!/usr/bin/perl 
+ 
+#   vileget (version 1.0) - Pass file edit requests to a xvile session 
+#                           running Vileserv. 
+# 
+#   Copyright (C) 1998  J. Chris Coppick 
+# 
+#   This program is free software; you can redistribute it and/or modify 
+#   it under the terms of the GNU General Public License as published by 
+#   the Free Software Foundation; either version 2 of the License, or 
+#   (at your option) any later version. 
+# 
+#   This program is distributed in the hope that it will be useful, 
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of 
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+#   GNU General Public License for more details. 
+# 
+#   You should have received a copy of the GNU General Public License 
+#   along with this program; if not, write to the Free Software 
+#   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. 
+ 
+ 
+=head1 NAME 
+ 
+vileget - Pass file edit requests to a xvile editor running Vileserv. 
+ 
+=head1 SYNOPSIS 
+ 
+vileget [B<-n>] [B<-c>] [I<file> ...] 
+ 
+=head1 DESCRIPTION 
+ 
+Vileget can be used to load files into an already running instance 
+of xvile.  Xvile should have already loaded and 
+started the Vileserv perl module. (See the Vileserv documentation 
+for more detail.) 
+ 
+By default, if vileget cannot connect to a running instance of xvile, 
+it tries to start one under the silly assumption that any xvile it 
+launches will automagically load and start the Vileserv module. 
+ 
+=head1 COMMAND-LINE OPTIONS 
+ 
+=over 5 
+ 
+=item B<-n> 
+ 
+This tells vileget NOT to try starting a new instance of xvile if 
+necessary.  If vileget cannot connect to a running xvile, it will 
+just die with a connection error instead. 
+ 
+=item B<-c> 
+ 
+With this option, vileget will change the current working directory 
+of the running xvile to be the directory in which vileget is being run, 
+in addition to loading any requested files. 
+ 
+=back 
+ 
+=head1 SEE ALSO 
+ 
+vileserv(3), xvile(1) 
+ 
+=head1 AUTHOR 
+ 
+S<J. Chris Coppick, 1998> 
+ 
+=cut 
+ 
+use FileHandle; 
+use Socket; 
+use Carp; 
+use Getopt::Std; 
+ 
+$rendezvous = "$ENV{HOME}/.vilesock"; 
+$vile = 'xvile'; 
+$esc = '+++ '; 
+ 
+getopts('nc') || &usage; 
+(@ARGV > 0) || &usage; 
+ 
+socket(SOCK, PF_UNIX, SOCK_STREAM, 0) || die "$0: socket: $!"; 
+ 
+if (!connect(SOCK, sockaddr_un($rendezvous))) { 
+ 
+   if (defined($opt_n)) { 
+      die "$0: connect: $!"; 
+   } 
+    
+   my $ppid = getppid; 
+   $pid = fork; 
+ 
+   if (!defined($pid)) { 
+      die "$0: fork: $!"; 
+   } 
+ 
+   if (!$pid) { 
+ 
+      open(STDIN, "<&0") || die "$0: reopening STDIN: $!"; 
+      open(STDOUT, ">&1") || die "$0: reopening STDOUT: $!"; 
+      open(STDERR, ">&2") || die "$0: reopening STDERR: $!"; 
+      exec $vile || die "$0: exec: $!"; 
+ 
+   } 
+ 
+   # Try 5 times to connect... 
+   sleep 2; 
+   for ($tries = 0; 
+        !(connect(SOCK, sockaddr_un($rendezvous))) && $tries < 5; 
+	$tries++) { 
+      sleep 2; 
+   } 
+ 
+ 
+   if ($tries == 5) { 
+      die "$0: connect: $!"; 
+   } 
+ 
+} 
+ 
+select(SOCK); 
+$| = 1; 
+ 
+my $cwd = `pwd`; 
+chomp($cwd); 
+ 
+if (defined($opt_c)) { 
+   print $esc . "$cwd\n"; 
+} 
+ 
+while ($f = shift @ARGV) { 
+   if ($f =~ /^\//) { 
+      print "$f\n"; 
+   } else { 
+      print "$cwd/$f\n"; 
+   } 
+} 
+ 
+print "\n"; 
+close SOCK; 
+ 
+exit 0; 
+ 
+ 
+sub usage { 
+ 
+   print "Usage:  vileget [-n] [-c] file [file ...]\n"; 
+   exit 1; 
+ 
+} 

@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.117 1998/10/02 01:04:17 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.119 1998/11/14 15:00:54 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -52,6 +52,8 @@ TARGET		= @TARGET@$x
 
 PERL		= @PERL@
 PERLLIB		= @perl_lib_path@
+INSTALL_SCRIPT	= $(srcdir)/sinstall.sh $(PERL) $(INSTALL_PROGRAM)
+
 
 prefix		= @prefix@
 exec_prefix	= @exec_prefix@
@@ -142,14 +144,19 @@ SCREENS = \
 # other source code, some used in other makefiles, some useful tools,
 #  some possibly obsolete
 PERL_SRC = \
+	$(srcdir)/perl/Vileserv.pm \
+	$(srcdir)/perl/dir.pl \
 	$(srcdir)/perl/glob2re.pl \
 	$(srcdir)/perl/hgrep.pl \
 	$(srcdir)/perl/hilite.pl \
 	$(srcdir)/perl/manfilt.pl \
+	$(srcdir)/perl/mime.pl \
+	$(srcdir)/perl/plugins.pl \
 	$(srcdir)/perl/search.pl \
 	$(srcdir)/perl/shell.pl \
 	$(srcdir)/perl/syntax.pl \
 	$(srcdir)/perl/tailf.pl \
+	$(srcdir)/perl/vileget \
 	$(srcdir)/perl/visit.pl
 
 MACRO_SRC = \
@@ -294,10 +301,15 @@ check: $(TARGET)
 
 INSTALL_PERL_DIRS = $(perldir)
 INSTALL_PERL_FILES = \
+	$(bindir)/vileget \
+	$(perldir)/Vileserv.pm \
+	$(perldir)/dir.pl \
 	$(perldir)/glob2re.pl \
 	$(perldir)/hgrep.pl \
 	$(perldir)/hilite.pl \
 	$(perldir)/manfilt.pl \
+	$(perldir)/mime.pl \
+	$(perldir)/plugins.pl \
 	$(perldir)/search.pl \
 	$(perldir)/shell.pl \
 	$(perldir)/syntax.pl \
@@ -577,14 +589,24 @@ $(mandir)/xvile.$(manext): $(srcdir)/vile.1
 $(datadir)/vile.hlp:       $(srcdir)/vile.hlp
 	$(INSTALL_DATA)    $(srcdir)/vile.hlp $@
 
+$(bindir)/vileget:         $(srcdir)/perl/vileget
+	$(INSTALL_SCRIPT)  $(srcdir)/perl/vileget $@
+$(perldir)/Vileserv.pm:    $(srcdir)/perl/Vileserv.pm
+	$(INSTALL_SCRIPT)  $(srcdir)/perl/Vileserv.pm $@
+$(perldir)/dir.pl:         $(srcdir)/perl/dir.pl
+	$(INSTALL_DATA)    $(srcdir)/perl/dir.pl $@
 $(perldir)/glob2re.pl:     $(srcdir)/perl/glob2re.pl
-	$(INSTALL_DATA)    $(srcdir)/perl/glob2re.pl $@
+	$(INSTALL_SCRIPT)  $(srcdir)/perl/glob2re.pl $@
 $(perldir)/hgrep.pl:       $(srcdir)/perl/hgrep.pl
-	$(INSTALL_DATA)    $(srcdir)/perl/hgrep.pl $@
+	$(INSTALL_SCRIPT)  $(srcdir)/perl/hgrep.pl $@
 $(perldir)/hilite.pl:      $(srcdir)/perl/hilite.pl
 	$(INSTALL_DATA)    $(srcdir)/perl/hilite.pl $@
 $(perldir)/manfilt.pl:     $(srcdir)/perl/manfilt.pl
-	$(INSTALL_DATA)    $(srcdir)/perl/manfilt.pl $@
+	$(INSTALL_SCRIPT)  $(srcdir)/perl/manfilt.pl $@
+$(perldir)/mime.pl:        $(srcdir)/perl/mime.pl
+	$(INSTALL_DATA)    $(srcdir)/perl/mime.pl $@
+$(perldir)/plugins.pl:     $(srcdir)/perl/plugins.pl
+	$(INSTALL_DATA)    $(srcdir)/perl/plugins.pl $@
 $(perldir)/search.pl:      $(srcdir)/perl/search.pl
 	$(INSTALL_DATA)    $(srcdir)/perl/search.pl $@
 $(perldir)/shell.pl:       $(srcdir)/perl/shell.pl

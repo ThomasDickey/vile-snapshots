@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.93 $)
+AC_REVISION($Revision: 1.94 $)
 AC_PREREQ(2.12.971222)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.93 1998/08/30 22:47:25 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.94 1998/11/14 17:53:23 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -27,8 +27,8 @@ CF_PROG_EXT
 CF_ARG_DISABLE(extensions,
 	[  --disable-extensions    test: build only core functions],
 	[AC_DEFINE(SMALLER)
-	 AC_DEFINE(FEWNAMES)],
-	[EXTRAOBJS="$EXTRAOBJS btree.o crypt.o"])
+	 AC_DEFINE(FEWNAMES) cf_extensions=no],
+	[EXTRAOBJS="$EXTRAOBJS btree.o crypt.o"; cf_extensions=yes])
 CF_ARG_DISABLE(shell,
 	[  --disable-shell         test: disable shell/external commands],
 	[AC_DEFINE(OPT_SHELL,0)],
@@ -248,7 +248,7 @@ changequote(,)dnl
 changequote([,])dnl
 		AC_DEFINE(MOTIF_WIDGETS)
 		CF_X_MOTIF
-	 	EXTRAOBJS="$EXTRAOBJS menu.o"
+	 	test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS menu.o"
 	;;
 changequote(,)dnl
 	[Aa]thena* | [Xx]aw* | neXtaw )
@@ -260,7 +260,7 @@ changequote([,])dnl
 			;;
 		esac
 		CF_X_ATHENA
-	 	EXTRAOBJS="$EXTRAOBJS menu.o"
+	 	test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS menu.o"
 	;;
 changequote(,)dnl
 	x | X | [Xx][Tt]* | [Xx]11 )

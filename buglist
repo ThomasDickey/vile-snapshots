@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.349 1998/11/05 01:05:15 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.350 1998/11/13 10:31:42 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -593,15 +593,9 @@ only "reverse" works as a visual-match hilite under DOS.
 
 ---------------
 
-a newly entered search string (even an identical one) should turn highlighting
-back on
-
----------------
-
-It would be nice to make the cursor invisible while doing highlighted selection,
-since xterm cannot blink the cursor, and the selection has an apparent hole.
-visual-match highlighting back on.  this is surprisingly hard, due to the
-layering of readpattern() and kbd_reply.
+a newly entered search string (even an identical one) should turn visual-match
+highlighting back on.  this is surprisingly hard, due to the layering of
+readpattern() and kbd_reply.
 
 ---------------
 
@@ -1218,16 +1212,6 @@ with the focus when it pops up (even if the cursor isn't in the window).  Has
 something changed between the last 6.x version and version 7 that would cause
 this behavior?
 
--- 97-08-18 (Paul Laub <P_Laub@fccc.edu>)
-
-The setting readonly-on-readonly fails to work in dos (vile 7.1).  I want to
-put both
-
-    set readonly-on-readonly
-    set view-on-readonly
-
-in vile.rc and have them work.
-
 -- 97-08-26 (Ed Henderson <Ed.Henderson@micron.com>)
 
 I have been using vile for quite some time now. I use the file/function
@@ -1506,27 +1490,6 @@ won't wrap to the beginning of the buffer.
 BTW, this same behavior occurs for both '^' and '$' as search patterns.  Note
 that both of these are zero width assertions.  Also note that '.*' can match
 the empty string.
-
--- 98-05-30 (Radek Liboska <liboska@tereza.uochb.cas.cz>)
-
-Do you plan to add/(to correct?) support for deadkeys to xvile?
-
-The problem is here:  the usage of latin-2 characters is problematic due to
-impossibility to insert characters like "r acute", "u circle" and many others,
-e.g.  all capitals
-
- (Aacute...) from the keyboard.
-
-I wrote a map that works correctly (r=  =  racute,
-
- R+  =  Rhatchek), it's OK, however the more elegant method
-is to use Xkb, not such keycodes map.
-
-Xvile by default, without the map, reads and displays latin2 characters
-correctly, as they are typed (it's necessary to set setenv LC_CTYPE cs before
-the xvile is started - OK) With one mistake:  the deadkey (=/+) does not acts
-like deadkey.  It inserts ' or hatchek (V) and after then the letter.  (e.g.
-'A instead od Á).  Maybe it is an error in X.  But it must can be solved.
 
 -- 98-06-16 (Jim Crigler <crigler@seo.com>)
 

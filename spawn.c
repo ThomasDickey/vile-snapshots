@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.138 1998/11/11 02:08:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.139 1998/11/14 17:35:33 tom Exp $
  *
  */
 
@@ -55,7 +55,7 @@ extern  short	iochan;				/* In "termio.c"	*/
 #define	AfterShell()	TRUE
 #endif
 
-#if DISP_X11
+#if DISP_X11 && !SMALLER
 static void x_window_SHELL(const char *cmd)
 {
 	TBUFF *tmp = 0;
@@ -103,7 +103,7 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 #define	OK_SPAWN
 	ttclean(TRUE);
 	kbd_openup();
-#if	DISP_X11
+#if	DISP_X11 && !SMALLER
 	(void)x_window_SHELL((char *)0);
 #else
 	(void)system_SHELL((char *)0);
