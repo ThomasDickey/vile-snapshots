@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.59 2002/01/12 17:21:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.60 2002/01/20 20:57:34 tom Exp $
  */
 
 #include	"estruct.h"
@@ -35,6 +35,30 @@ static char *x_shellflags;	/* flags separating "$xshell" from command */
 #if OPT_PATHLOOKUP
 static char *cdpath;	/* $CDPATH environment is "$cdpath" state variable. */
 #endif
+
+static char *
+DftEnv(
+register char	*name,
+register char	*dft)
+{
+#if	OPT_EVAL && OPT_SHELL
+	name = vile_getenv(name);
+	return (*name == EOS) ? dft : name;
+#else
+	return dft;
+#endif
+}
+
+static void
+SetEnv(
+char	**namep,
+const char *value)
+{
+#if	OPT_EVAL && OPT_SHELL
+	FreeIfNeeded(*namep);
+#endif
+	*namep = strmalloc(value);
+}
 
 static int
 any_ro_BOOL(TBUFF **rp, const char *vp, int value)
@@ -124,6 +148,20 @@ any_rw_EXPR(TBUFF **rp, const char *vp, TBUFF **value)
 	return FALSE;
 }
 
+static int
+any_rw_TXT(TBUFF **rp, const char *vp, char **value)
+{
+	if (rp) {
+		tb_scopy(rp, *value);
+		return TRUE;
+	} else if (vp) {
+		SetEnv(value, vp);
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+
 #if OPT_HOOKS
 static int
 any_HOOK(TBUFF **rp, const char *vp, HOOK *hook)
@@ -149,30 +187,6 @@ vile_getenv(char *s)
 #else
 	return "";
 #endif
-}
-
-static char *
-DftEnv(
-register char	*name,
-register char	*dft)
-{
-#if	OPT_EVAL && OPT_SHELL
-	name = vile_getenv(name);
-	return (*name == EOS) ? dft : name;
-#else
-	return dft;
-#endif
-}
-
-static void
-SetEnv(
-char	**namep,
-const char *value)
-{
-#if	OPT_EVAL && OPT_SHELL
-	FreeIfNeeded(*namep);
-#endif
-	*namep = strmalloc(value);
 }
 
 #if OPT_EVAL && OPT_SHELL
@@ -775,15 +789,7 @@ int var_FWD_SEARCH(TBUFF **rp, const char *vp)
 
 int var_HELPFILE(TBUFF **rp, const char *vp)
 {
-	if (rp) {
-		tb_scopy(rp, helpfile);
-		return TRUE;
-	} else if (vp) {
-		SetEnv(&helpfile, vp);
-		return TRUE;
-	} else {
-		return FALSE;
-	}
+	return any_rw_TXT(rp, vp, &helpfile);
 }
 
 #if DISP_X11
@@ -876,15 +882,7 @@ int var_LCOLS(TBUFF **rp, const char *vp)
 
 int var_LIBDIR_PATH(TBUFF **rp, const char *vp)
 {
-	if (rp) {
-		tb_scopy(rp, libdir_path);
-		return TRUE;
-	} else if (vp) {
-		SetEnv(&libdir_path, vp);
-		return TRUE;
-	} else {
-		return FALSE;
-	}
+	return any_rw_TXT(rp, vp, &libdir_path);
 }
 
 int var_LINE(TBUFF **rp, const char *vp)
@@ -922,6 +920,13 @@ int var_MATCH(TBUFF **rp, const char *vp)
 		tb_length(tb_matched_pat)
 					? tb_values(tb_matched_pat) : "");
 }
+
+#if OPT_MENUS
+int var_MENU_FILE(TBUFF **rp, const char *vp)
+{
+	return any_rw_TXT(rp, vp, &menu_file);
+}
+#endif
 
 int var_MODE(TBUFF **rp, const char *vp)
 {
@@ -1221,28 +1226,12 @@ int var_SRES(TBUFF **rp, const char *vp)
 
 int var_STARTUP_FILE(TBUFF **rp, const char *vp)
 {
-	if (rp) {
-		tb_scopy(rp, startup_file);
-		return TRUE;
-	} else if (vp) {
-		SetEnv(&startup_file, vp);
-		return TRUE;
-	} else {
-		return FALSE;
-	}
+	return any_rw_TXT(rp, vp, &startup_file);
 }
 
 int var_STARTUP_PATH(TBUFF **rp, const char *vp)
 {
-	if (rp) {
-		tb_scopy(rp, startup_path);
-		return TRUE;
-	} else if (vp) {
-		SetEnv(&startup_path, vp);
-		return TRUE;
-	} else {
-		return FALSE;
-	}
+	return any_rw_TXT(rp, vp, &startup_path);
 }
 
 static int lastcmdstatus = TRUE;

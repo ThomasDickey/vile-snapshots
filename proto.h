@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.487 2002/01/12 13:49:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.489 2002/01/20 23:41:15 tom Exp $
  *
  */
 
@@ -677,10 +677,17 @@ extern void mapungetc (int c);
 
 /* menu.c */
 #if OPT_MENUS
+extern ActionFunc vlmenu_action_func(char *action);
+extern char * vlmenu_is_cmd (char *action);
+extern int do_menu (void * menubar);
 extern int parse_menu (const char *rc_filename);
-#if NEED_X_INCLUDES
-extern int do_menu ( Widget menub );
-#endif
+extern int vlmenu_is_bind (char *action);
+	/* driver-specific interface */
+extern int gui_create_menus (void);
+extern void * gui_add_menu_item (void * pm, char *nom, char *accel, int the_class);
+extern void * gui_make_menu (void * menubar, char *nom, int the_class);
+extern void gui_add_func_callback (void * w, void * closure);
+extern void gui_add_list_callback (void *pm);
 #endif
 
 /* msgs.c */
@@ -1285,6 +1292,9 @@ extern	int	x_key_events_ready	(void);
 #endif	/* !XTOOKIT */
 
 #if OPT_MENUS
+#if NEED_X_INCLUDES
+extern	Widget	x_menu_widget		(void);
+#endif
 extern	int	x_menu_height		(void);
 #endif
 

@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.106 2002/01/12 17:08:23 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.107 2002/01/13 16:06:53 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -579,7 +579,7 @@ if test "$cf_cv_need_curses_h" != no ; then
 		fi
 	elif test -n "$cf_ok_t_opts" ; then
 		cf_cv_need_curses_h=termcap.h
-	elif test "$cf_cv_have_term_h" != no ; then
+	elif test "$cf_cv_term_header" != no ; then
 		cf_cv_need_curses_h=term.h
 	else
 		cf_cv_need_curses_h=no

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.43 2001/12/12 23:17:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.44 2002/01/18 01:07:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -150,6 +150,7 @@ do_filter(FILE *input)
 SPACE		[ \t]
 
 SSTRING		\'([^']|\n)*\'
+DSTRING		\"([^"]|\n)*\"
 
 NAME		[a-zA-Z0-9_]
 
@@ -159,7 +160,7 @@ FILENAME	(([./]{WILDNAME}+)|({WILDNAME}+[./]{WILDNAME}*)|({NAME}*{WILDCARD})|\.+
 
 ACTION		[\.`{}]
 IDENT		[a-zA-Z_]{NAME}*
-QIDENT		[^ $\t\n]+
+QIDENT		({SSTRING}|{DSTRING}|[^ \"'$\t\n])+
 IDENT0		[-]+[0-9]*[a-zA-Z_-]+[0-9a-zA-Z_-]*
 IDENT1		\${NAME}+
 IDENT2		\$\{{IDENT}\}
@@ -208,7 +209,11 @@ INTEGER		[-+]?([0-9]+)
 			    }
 			    save_here(yytext, yyleng);
 			    push_stk(HEREDOC);
-			    BeginQuote(HEREDOC, String_attr);
+			    BeginQuote(HEREDOC,
+				(strchr(yytext, '\n') != 0)
+				? Error_attr
+				: String_attr);
+			    flt_bfr_begin(String_attr);
 			}
 <HEREDOC>\\\$		{ flt_bfr_append(yytext, yyleng); }
 <HEREDOC>{IDENT1}	|
@@ -216,9 +221,10 @@ INTEGER		[-+]?([0-9]+)
 <HEREDOC>{IDENT2L}	{ embed_or_append(yytext, yyleng); push_stk(SUBST); }
 <HEREDOC>^[\t]*{QIDENT}$ {
 			    int used = 0;
-			    flt_bfr_append(yytext, yyleng);
 			    if (strip_tabs) {
 				used = skip_blanks(yytext) - yytext;
+				if (used != 0)
+				    flt_bfr_append(yytext, used);
 			    }
 			    if (got_here(yytext + used, yyleng - used)) {
 				flt_bfr_finish();

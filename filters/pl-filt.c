@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.23 2001/12/30 15:53:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.24 2002/01/17 01:20:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -679,6 +679,15 @@ put_remainder(char *s, char *attr, int quoted)
     return put_newline(s);
 }
 
+static char *
+put_IDENT(char *s, int ok, int *had_op, int *if_wrd)
+{
+    *had_op = 0;
+    flt_puts(s, ok, Ident2_attr);
+    *if_wrd = (ok == 2 && !strncmp(s, "if", ok));
+    return s + ok;
+}
+
 /******************************************************************************
  ******************************************************************************/
 
@@ -818,10 +827,7 @@ do_filter(FILE * input GCC_UNUSED)
 		    if_wrd = (ok == 2 && !strncmp(s, "if", ok));
 		    s += ok;
 		} else if ((ok = is_IDENT(s)) != 0) {
-		    had_op = 0;
-		    flt_puts(s, ok, Ident2_attr);
-		    if_wrd = (ok == 2 && !strncmp(s, "if", ok));
-		    s += ok;
+		    s = put_IDENT(s, ok, &had_op, &if_wrd);
 		} else if ((ok = is_String(s, &err)) != 0) {
 		    had_op = 0;
 		    s = put_embedded(s, ok, err ? Error_attr : String_attr);
@@ -852,7 +858,9 @@ do_filter(FILE * input GCC_UNUSED)
 		break;
 	    case ePATTERN:
 		s = skip_BLANKS(s);
-		if ((ok = add_to_PATTERN(s)) != 0) {
+		if ((ok = is_IDENT(s)) != 0) {
+		    s = put_IDENT(s, ok, &had_op, &if_wrd);
+		} else if ((ok = add_to_PATTERN(s)) != 0) {
 		    s = write_PATTERN(s, ok);
 		} else {
 		    flt_putc(*s++);

@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.391 2001/09/18 09:10:38 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.392 2002/01/17 00:53:39 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1536,3 +1536,8 @@ by \( and \).
 
 Considered making a configure option to use Henry Spencer's more up-to-date
 regex library, but see that it requires null-terminated strings.
+
+-- 02-01-16 (tom)
+
+The undo-dos-trim mode allows undo of the changes made to the buffer, but
+does not restore the original recordseparator mode when an undo is made.

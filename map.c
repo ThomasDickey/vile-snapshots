@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.93 2002/01/09 00:31:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.94 2002/01/21 21:24:26 tom Exp $
  *
  */
 
@@ -688,7 +688,11 @@ mapped_c(int remap, int raw)
 
     /* if we got a function key from the lower layers, turn it into '#c'
 	and see if the user remapped that */
-    if (c & SPEC) {
+    if ((c & SPEC)
+#if OPT_KEY_MODIFY
+     && !(c & mod_KEY)	/* we don't do this special case */
+#endif
+     ) {
 	mapungetc(kcod2key(c));
 	c = poundc;
 	speckey = TRUE;

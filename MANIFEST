@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_2u
+MANIFEST for vile, version v9_2v
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -137,6 +137,7 @@ word.c                          commands that operate upon words or paragraphs
 wordmov.c                       cursor-movement commands (e.g., word, spaces)
 wvwrap.cpp                      wrapper for winvile, e.g., from NT Explorer
 x11.c                           X11 (Xt, Motif or Openlook) terminal driver
+x11menu.c                       X11-specific part of menu support
 xshell.sh                       wrapper/sample script for xvile
 xvile.wmconfig                  windowmaker config file for xvile
 doc                             subdirectory

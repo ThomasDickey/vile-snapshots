@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.315 2002/01/12 13:36:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.318 2002/01/22 01:11:02 tom Exp $
  */
 
 #include "estruct.h"
@@ -357,7 +357,7 @@ same_fname(const char *fname, BUFFER *bp, int lengthen)
     if (is_vms_pathname(fname, FALSE)) {
 	char *bname = bp->b_fname;
 	char *s = version_of(bname);
-	char *t = version_of((char *)fname);
+	char *t = version_of((char *) fname);
 
 	if ((!explicit_version(s)
 	     || !explicit_version(t))
@@ -460,6 +460,9 @@ set_buffer_name(BUFFER *bp)
     set_bname(bp, bname);
     updatelistbuffers();
     markWFMODE(bp);
+#if OPT_TITLE
+    set_editor_title();
+#endif
 }
 
 static int
@@ -1003,19 +1006,34 @@ strip_if_dosmode(BUFFER *bp)
 	int flag = FALSE;
 
 	TRACE(("stripping CR's for dosmode\n"));
+	if (b_val(bp, MDUNDO_DOS_TRIM))
+	    mayneedundo();
+
 	for_each_line(lp, bp) {
-	    if (llength(lp) > 0
-		&& lgetc(lp, llength(lp) - 1) == '\r') {
-		llength(lp)--;
-		flag = TRUE;
+	    int len = llength(lp);
+	    if (len > 0) {
+		int chr = lgetc(lp, len - 1);
+		if ((chr == '\r')
+		    || (len == 1 && chr == '\032')) {
+		    if (b_val(bp, MDUNDO_DOS_TRIM)) {
+			copy_for_undo(lp);
+		    }
+		    llength(lp)--;
+		    flag = TRUE;
+		}
 	    }
 	}
+
 	/*
 	 * Force the screen to repaint if we changed anything.  This
 	 * operation is not undoable, otherwise we would call chg_buff().
 	 */
-	if (flag)
-	    set_winflags(TRUE, WFHARD);
+	if (flag) {
+	    if (b_val(bp, MDUNDO_DOS_TRIM))
+		chg_buff(bp, WFHARD);
+	    else
+		set_winflags(TRUE, WFHARD);
+	}
     }
 }
 
@@ -1309,7 +1327,6 @@ quickreadf(BUFFER *bp, int *nlinep)
     bp->b_bytecount = length;
     bp->b_linecount = nlines;
     bp->b_LINEs_end = bp->b_LINEs + nlines;
-    b_set_counted(bp);
 
     /* loop through the buffer again, creating
        line data structure for each line */
@@ -1352,6 +1369,7 @@ quickreadf(BUFFER *bp, int *nlinep)
     set_record_sep(bp, rscode);
     strip_if_dosmode(bp);
 
+    b_clr_counted(bp);
     return FIOSUC;
 }
 #endif /* ! SYS_MSDOS */

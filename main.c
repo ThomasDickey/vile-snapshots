@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.469 2002/01/11 21:35:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.471 2002/01/20 21:12:57 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1135,6 +1135,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setINT(MDTAGSRELTIV, FALSE);	/* path relative tag lookups */
 	    setINT(MDTERSE, FALSE);	/* terse messaging */
 	    setINT(MDUNDOABLE, TRUE);	/* undo stack active */
+	    setINT(MDUNDO_DOS_TRIM, FALSE);	/* undo dos trimming */
 	    setINT(MDVIEW, FALSE);	/* view-only */
 	    setINT(MDWRAP, FALSE);	/* wrap */
 	    setINT(VAL_ASAVECNT, 256);	/* autosave count */
@@ -1250,6 +1251,8 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 
 #define DFT_HELP_FILE "vile.hlp"
 
+#define DFT_MENU_FILE "vilemenu.rc"
+
 #ifdef VILE_LIBDIR_PATH
 #define DFT_LIBDIR_PATH VILE_LIBDIR_PATH
 #else
@@ -1288,6 +1291,27 @@ default_libdir_path(void)
 	result = DFT_LIBDIR_PATH;
     return result;
 }
+
+#if OPT_MENUS
+static char *
+default_menu_file(void)
+{
+    static char default_menu[] = DFT_MENU_FILE;
+    char temp[NSTRING];
+    char *menurc = getenv("VILE_MENU");
+
+    if (menurc == NULL || *menurc == EOS) {
+	sprintf(temp, "%.*s_MENU", (int) (sizeof(temp) - 6), prognam);
+	mkupper(temp);
+	menurc = getenv(temp);
+	if (menurc == NULL || *menurc == EOS) {
+	    menurc = default_menu;
+	}
+    }
+
+    return menurc;
+}
+#endif
 
 static char *
 default_startup_file(void)
@@ -1357,6 +1381,11 @@ init_state_value(int which)
     case VAR_LIBDIR_PATH:
 	result = default_libdir_path();
 	break;
+#if OPT_MENUS
+    case VAR_MENU_FILE:
+	result = default_menu_file();
+	break;
+#endif
 #if OPT_MLFORMAT
     case VAR_MLFORMAT:
 	result = DFT_MLFORMAT;
@@ -1484,6 +1513,9 @@ global_val_init(void)
     startup_file = default_startup_file();
     startup_path = default_startup_path();
     libdir_path = default_libdir_path();
+#if OPT_MENUS
+    menu_file = default_menu_file();
+#endif
 #if OPT_MLFORMAT
     modeline_format = strmalloc(DFT_MLFORMAT);
 #endif
@@ -2221,7 +2253,7 @@ charinit(void)
      * buffer which may be repainted and possibly trashing the display.
      */
     if (c == 0
-     && global_g_val(GVAL_PRINT_HIGH) >= 254)
+	&& global_g_val(GVAL_PRINT_HIGH) >= 254)
 	c = 160;
 
     if (c < HIGHBIT)

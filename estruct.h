@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.498 2002/01/12 17:10:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.500 2002/01/20 17:13:40 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -457,6 +457,8 @@
 #endif
 #endif
 
+#define OPT_KEY_MODIFY	(SYS_WINNT | DISP_X11)	/* allow shift/ctrl/alt mods */
+
 #define OPT_TITLE	(SYS_WINNT | DISP_X11)	/* use a window title */
 
 /* the "working..." message -- we must have the alarm() syscall, and
@@ -888,11 +890,14 @@ extern int MainProgram(int argc, char *argv[]);
 #define NOREMAP    0x00800		/* unremappable */
 #define YESREMAP   0x01000		/* override noremap */
 #define REMAPFLAGS (NOREMAP|YESREMAP)
-#define W32_KEY    0x02000		/* special Win32 keys		*/
-#define W32_SHIFT  0x04000		/* shift was held down		*/
-#define W32_CTRL   0x08000		/* control was held down	*/
-#define W32_ALT    0x10000		/* alt was held down		*/
-#define W32_NOMOD  (~(W32_KEY|W32_SHIFT|W32_CTRL|W32_ALT))
+
+#if OPT_KEY_MODIFY
+#define mod_KEY    0x02000		/* special Win32 keys		*/
+#define mod_SHIFT  0x04000		/* shift was held down		*/
+#define mod_CTRL   0x08000		/* control was held down	*/
+#define mod_ALT    0x10000		/* alt was held down		*/
+#define mod_NOMOD  (~(mod_KEY|mod_SHIFT|mod_CTRL|mod_ALT))
+#endif
 
 #define kcod2key(c)	((c) & (UINT)(N_chars-1)) /* strip off the above prefixes */
 #define	isSpecial(c)	(((UINT)(c) & (UINT)~(N_chars-1)) != 0)
@@ -2290,6 +2295,10 @@ typedef struct  VIDEO {
 #define	VFREQ	iBIT(3)			/* reverse video request	*/
 #define	VFCOL	iBIT(4)			/* color change requested	*/
 
+/*
+ * Menus are implemented by passing a string to a given callback function:
+ */
+typedef void (*ActionFunc) (char *);
 
 /* Commands are represented as CMDFUNC structures, which contain a
  *	pointer to the actual function, and flags which help to classify it.

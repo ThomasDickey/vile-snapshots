@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.251 2002/01/11 15:36:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.253 2002/01/19 16:39:24 tom Exp $
  *
  */
 
@@ -408,10 +408,11 @@ key_to_bind(const CMDFUNC * kcmd)
     } else {
 	/* perhaps we only want a single key, not a sequence */
 	/*      (see more comments below) */
-	if (isSpecialCmd(kcmd))
+	if (isSpecialCmd(kcmd)) {
 	    c = keystroke();
-	else
+	} else {
 	    c = kbd_seq();
+	}
     }
 
     if (c >= 0) {
@@ -1557,6 +1558,24 @@ kcod2pstr(int c, char *seq)
     return seq;
 }
 
+#if OPT_KEY_MODIFY
+static const struct {
+    const char *name;
+    int code;
+} key_modifiers[] = {
+
+    {
+	"Alt+", mod_ALT
+    },
+    {
+	"Ctrl+", mod_CTRL
+    },
+    {
+	"Shift+", mod_SHIFT
+    },
+};
+#endif
+
 /* Translate a 16-bit keycode to a string that will replay into the same
  * code.
  */
@@ -1565,45 +1584,38 @@ kcod2escape_seq(int c, char *ptr)
 {
     char *base = ptr;
 
-    /* ...just for completeness */
     if (c & CTLA)
 	*ptr++ = (char) cntl_a;
     else if (c & CTLX)
 	*ptr++ = (char) cntl_x;
-    else if (c & SPEC)
-	*ptr++ = (char) poundc;
+
+#if OPT_KEY_MODIFY
+    if (c & mod_KEY) {
+	unsigned n;
+	for (n = 0; n < TABLESIZE(key_modifiers); ++n) {
+	    if (c & key_modifiers[n].code) {
+		strcpy(ptr, key_modifiers[n].name);
+		ptr += strlen(ptr);
+	    }
+	}
 #if SYS_WINNT
-#define ALTPLUS   "Alt+"
-#define CTRLPLUS  "Ctrl+"
-#define SHIFTPLUS "Shift+"
 #define W32INSERT "Insert"
 #define W32DELETE "Delete"
-    else if (c & W32_KEY) {
-	if (c & W32_SHIFT) {
-	    strcpy(ptr, SHIFTPLUS);
-	    ptr += sizeof(SHIFTPLUS) - 1;
-	}
-	if (c & W32_CTRL) {
-	    strcpy(ptr, CTRLPLUS);
-	    ptr += sizeof(CTRLPLUS) - 1;
-	}
-	if (c & W32_ALT) {
-	    strcpy(ptr, ALTPLUS);
-	    ptr += sizeof(ALTPLUS) - 1;
-	}
-	c &= W32_NOMOD;
-	if (c == VK_INSERT) {
+	c &= mod_NOMOD;
+	if (c == KEY_Insert) {
 	    strcpy(ptr, W32INSERT);
 	    ptr += sizeof(W32INSERT) - 1;
-	} else if (c == VK_DELETE) {
+	    c = EOS;
+	} else if (c == KEY_Delete) {
 	    strcpy(ptr, W32DELETE);
 	    ptr += sizeof(W32DELETE) - 1;
-	} else
-	    *ptr++ = (char) c;	/* Pickup <modifier>+...<single_char> */
-	*ptr = EOS;
-	return (int) (ptr - base);
+	    c = EOS;
+	}
+#endif
     }
 #endif
+    if (c & SPEC)
+	*ptr++ = (char) poundc;
     *ptr++ = (char) c;
     *ptr = EOS;
     return (int) (ptr - base);
@@ -1639,7 +1651,9 @@ bytes2prc(char *dst, char *src, int n)
 	}
 
 	if (tmp != 0) {
-	    while ((*dst++ = *tmp++) != EOS) ;
+	    while ((*dst++ = *tmp++) != EOS) {
+		;
+	    }
 	    dst -= 2;		/* point back to last nonnull */
 	}
 
@@ -1656,16 +1670,18 @@ char *
 kcod2prc(int c, char *seq)
 {
     char temp[NSTRING];
+
     (void) kcod2pstr(c, temp);
-#if SYS_WINNT
-    if (c & W32_KEY) {
+#if OPT_KEY_MODIFY
+    if (c & mod_KEY) {
 	/* Translation is complete, by defn. */
 
 	strcpy(seq, temp + 1);
-	return (seq);
-    }
+    } else
 #endif
-    return bytes2prc(seq, temp + 1, (int) *temp);
+	(void) bytes2prc(seq, temp + 1, (int) *temp);
+    TRACE(("kcod2prc(%#x) ->%s\n", c, seq));
+    return seq;
 }
 #endif
 
@@ -1833,6 +1849,43 @@ engl2fnc(const char *fname)
 #endif /* binary vs linear */
 #endif /* OPT_NAMEBST */
 
+static const char *
+decode_prefix(const char *kk, UINT * prefix)
+{
+    UCHAR ch;
+    size_t len = strlen(kk);
+
+    if (len > 3 && *(kk + 2) == '-') {
+	if (*kk == '^') {
+	    ch = (UCHAR) (kk[1]);
+	    if (isCntrl(cntl_a) && ch == toalpha(cntl_a))
+		*prefix |= CTLA;
+	    if (isCntrl(cntl_x) && ch == toalpha(cntl_x))
+		*prefix |= CTLX;
+	    if (isCntrl(poundc) && ch == toalpha(poundc))
+		*prefix |= SPEC;
+	} else if (!strncmp(kk, "FN", 2)) {
+	    *prefix |= SPEC;
+	}
+	if (*prefix != 0)
+	    kk += 3;
+    } else if (len > 1) {
+	ch = (UCHAR) (kk[0]);
+	if (ch == cntl_a)
+	    *prefix |= CTLA;
+	else if (ch == cntl_x)
+	    *prefix |= CTLX;
+	else if (ch == poundc)
+	    *prefix |= SPEC;
+	if (*prefix != 0) {
+	    kk++;
+	    if (len > 2 && *kk == '-')
+		kk++;
+	}
+    }
+    return kk;
+}
+
 /* prc2kcod: translate printable code to 10 bit keycode */
 #if OPT_EVAL || OPT_REBIND
 static int
@@ -1840,37 +1893,50 @@ prc2kcod(const char *kk)
 {
     UINT kcod;			/* code to return */
     UINT pref = 0;		/* key prefixes */
-    int len = strlen(kk);
-    UCHAR ch;
 
-    if (len > 3 && *(kk + 2) == '-') {
-	if (*kk == '^') {
-	    ch = (UCHAR) (kk[1]);
-	    if (isCntrl(cntl_a) && ch == toalpha(cntl_a))
-		pref = CTLA;
-	    if (isCntrl(cntl_x) && ch == toalpha(cntl_x))
-		pref = CTLX;
-	    if (isCntrl(poundc) && ch == toalpha(poundc))
-		pref = SPEC;
-	} else if (!strncmp(kk, "FN", 2)) {
-	    pref = SPEC;
+    kk = decode_prefix(kk, &pref);
+
+#if OPT_KEY_MODIFY
+    {
+	int found = FALSE;
+	UINT last, len, n;
+	char *s;
+	char temp[NSTRING];
+
+	while ((s = strchr(kk, '+')) != 0) {
+	    if ((len = (s - kk) + 1) >= (int) sizeof(temp))
+		break;
+	    mklower(vl_strncpy(temp, kk, len + 1));
+	    if (isLower(temp[0]))
+		temp[0] = (char) toUpper(temp[0]);
+	    for (n = 0; n < TABLESIZE(key_modifiers); ++n) {
+		if (!strncmp(key_modifiers[n].name, temp, len)) {
+		    found = TRUE;
+		    pref |= (key_modifiers[n].code | mod_KEY);
+		    break;
+		}
+	    }
+	    kk += len;
 	}
-	if (pref != 0)
-	    kk += 3;
-    } else if (len > 1) {
-	ch = (UCHAR) (kk[0]);
-	if (ch == cntl_a)
-	    pref = CTLA;
-	else if (ch == cntl_x)
-	    pref = CTLX;
-	else if (ch == poundc)
-	    pref = SPEC;
-	if (pref != 0) {
-	    kk++;
-	    if (len > 2 && *kk == '-')
-		kk++;
+	/*
+	 * SPEC would be set after a modifier, e.g.,
+	 *      control+#6
+	 *      control+FN-6
+	 * but it would be too confusing to allow
+	 *      control+^A-x
+	 *      FN-control+6
+	 */
+	if (found) {
+	    last = pref;
+	    pref = 0;
+	    kk = decode_prefix(kk, &pref);
+	    if ((pref & (CTLA | CTLX)) != 0
+		|| (last & pref & SPEC) != 0)
+		return -1;
+	    pref |= last;
 	}
     }
+#endif
 
     if (strlen(kk) > 2 && !strncmp(kk, "M-", 2)) {
 	pref |= HIGHBIT;
@@ -1904,11 +1970,11 @@ prc2engl(const char *kk)
 
     kcod = prc2kcod(kk);
     if (kcod < 0)
-	return "ERROR";
+	return error_val;
 
     englname = fnc2engl(DefaultKeyBinding(kcod));
     if (englname == NULL)
-	englname = "ERROR";
+	englname = error_val;
 
     return englname;
 }
@@ -2925,9 +2991,9 @@ swapcbrdkeys(int f GCC_UNUSED, int n GCC_UNUSED)
     int rc = FALSE;
 
     if ((cmd = engl2fnc("copy-unnamed-reg-to-clipboard")) != NULL)
-	if (install_bind(W32_KEY | VK_INSERT | W32_CTRL, cmd, &dft_bindings))
+	if (install_bind(mod_KEY | KEY_Insert | mod_CTRL, cmd, &dft_bindings))
 	    if ((cmd = engl2fnc("copy-to-clipboard-til")) != NULL)
-		if (install_bind(W32_KEY | VK_INSERT | W32_ALT, cmd, &dft_bindings))
+		if (install_bind(mod_KEY | KEY_Insert | mod_ALT, cmd, &dft_bindings))
 		    rc = TRUE;
 
     if (!rc)

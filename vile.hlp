@@ -1717,6 +1717,10 @@ Editor modes
 		smaller machines, i.e, you will probably want to avoid
 		setting timeoutlen-user larger than 65535.  (U)
 
+	undo-dos-trim (udt) Controls whether trimming of carriage returns and
+		control/Z done when converting between Unix and DOS line endings
+		is undoable.
+
 	undoable (ua) Controls whether changes are saved on the undo stack.
 		This is normally enabled, but you may wish to disable it to
 		reduce memory overhead when filtering very large files. (B)
@@ -1965,13 +1969,20 @@ Key Rebinding
 	sequence, e.g. ^A-a or ^X-S.   (A summary of how key-sequences can
 	be represented appears at the end of this section.)
 
+	For configurations that permit it (X and win32, not termcap/terminfo),
+	you may also specify a key modifier, i.e., "alt+", "ctrl+" or "shift+".
+	The modifier follows the ^A or ^X prefix, e.g.,
+		shift+#6
+	for shifted function-key 6.
+
 	Commands can also be bound to meta keys, which are regular ASCII
 	characters with the eighth bit (0x80) bit set.  The "printable"
 	form for these keys is 'M-c'.
 
 	Commands bound to '#-c' or 'FN-c' key sequences are usually also
 	available by using the function keys on the terminal.  Thus the
-	up-arrow function key can be bound to as '#-A' or 'FN-A'.
+	up-arrow function key can be bound to as '#-A' or 'FN-A'.  Use
+	show-key-names to see a complete list of these key sequences.
 
 	Even the ^A and ^X prefix characters can be rebound, using the
 	dummy functions "cntl_a-prefix" and "cntl_x-prefix", and the '#'
@@ -2569,6 +2580,7 @@ Programmed procedures (aka macros)
 	$majormode	current majormode, if any		(read only)
 	$majormode-hook	procedure to overrride suffix/preamble rules
 	$match		last matched magic pattern		(read only)
+	$menu-file	the name of the menu file (e.g. .vilemenu)
 	$mode		current mode ("command","insert","overwrite") (rd. o.)
 	$modeline-format format of mode lines.  see "Mode line customization".
 	$modified	is current buffer modified or not?	(read only)
@@ -5692,4 +5704,4 @@ Problems
 
 Copyright 1995-2001 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.538 2002/01/09 00:13:55 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.541 2002/01/20 23:52:13 tom Exp $

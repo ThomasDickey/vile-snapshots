@@ -1,5 +1,42 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20020121 (v)
+	> Tom Dickey:
+	+ indent'd menu.c, x11.c
+	+ add commands for manipulating menus: hide-menus, show-menus,
+	  load-menus and remove-menus.
+	+ add $menu-file variable.
+	+ modify menu-file lookup to look for $VILE_MENU as well as $XVILE_MENU,
+	  making the latter derived from $progname, to make it more extensible.
+	+ changed install rule for vilemenu to be consistent with other config
+	  files, i.e., as vilemenu.rc rather than .vilemenu -- xvile will still
+	  search for .vilemenu if vilemenu.rc is not found, however.
+	+ split-out X11-specific part of menu support as x11menu.c
+	+ add call to set_editor_title() at the end of set_buffer_name(), so
+	  that if the filename changes as a result of writing to a file, the
+	  window title is updated correspondingly.
+	+ implemented bindings for shift/control/alt modifiers for function
+	  keys in xvile and winvile by extending Clark Morgan's 9.1c changes.
+	  This does not support remapping.
+	+ modify prc2engl() so it may return an error_val, making the &bind
+	  builtin function report any error in this function.
+	+ correct logic in parse_filtername(), which could index out of bounds
+	  when processing a manpage buffer.
+	+ correct/improve highlighting of delimiters for here-documents, by
+	  flagging places where the quoted delimiter includes a newline, and
+	  by eliminating a spurious repeat of the ending delimiter.
+	+ correct highlighting of variable in perl files where a pattern would
+	  be expected, e.g.,
+		if ( $c !~ $DST )
+	+ add undo-dos-trim mode, which when true causes vile to make the
+	  trimming of ^M's done as part of setting dosmode or set-dos, set-unix
+	  commands undoable.  Also, trim ^Z character if it is the last line
+	  in the buffer (suggested by Clark Morgan).
+	+ remove spurious b_set_counted() from rewritten quickreadf(), which
+	  had the effect of making bsizes() count crlf conversion twice.
+	+ correct resync of CF_CURSES_TERMCAP, needed to make curses.h included
+	  in some configurations.
+
  20020112 (u)
 	> Clark Morgan:
 	+ add example of --with-cflags to doc/config.doc
