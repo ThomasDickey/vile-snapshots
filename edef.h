@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.319 2004/12/09 22:43:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.320 2005/03/10 19:54:57 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -15,6 +15,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include "patchlev.h"
 
 /* I know this declaration stuff is really ugly, and I probably won't ever
  *	do it again.  promise.  but it _does_ make it easy to add/change
@@ -46,7 +48,7 @@ decl_init( char *exec_pathname, ".");	/* replaced at runtime with path-head of a
 #endif /* PROGRAM_NAME */
 
 decl_init( char prognam[], PROGRAM_NAME);
-decl_init( char version[], "version 9.4");
+decl_init( char version[], "version " VILE_VERSION);
 
 #ifdef SYSTEM_NAME
 decl_init( char opersys[], SYSTEM_NAME);

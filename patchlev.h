@@ -1,2 +1,3 @@
+#define VILE_VERSION "9.4"
 /* set to "" for no patches */
-#define PATCHLEVEL "q"
+#define VILE_PATCHLEVEL "r"

@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.99 2005/01/22 01:51:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.100 2005/03/13 18:04:25 tom Exp $
  */
 
 /*#
@@ -1090,7 +1090,7 @@ perl_init(void)
     prepend_include(lengthen_path(pathcat(temp, HELP_LOC, "perl")));
 #endif
     /* Always recognize environment variable */
-    if ((vile_path = getenv("VILE_LIBDIR_PATH")) != 0)
+    if ((vile_path = vile_getenv("VILE_LIBDIR_PATH")) != 0)
     {
 	const char *cp = vile_path;
 	char result[NFILEN];

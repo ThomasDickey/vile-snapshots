@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.56 2004/11/19 19:43:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.57 2005/03/10 23:58:52 tom Exp $
  *
  */
 
@@ -110,7 +110,7 @@ getversion(void)
      * compromise.
      */
     (void) lsprintf(version_string, "%s %s%s for %s",
-		    prognam, version, PATCHLEVEL, opersys);
+		    prognam, version, VILE_PATCHLEVEL, opersys);
     {
 	char *s;
 	if ((s = cfg_locate(prog_arg,
@@ -128,7 +128,7 @@ getversion(void)
 # if SYS_MSDOS || SYS_OS2 || SYS_WINNT
 #  if defined(__DATE__) && !SMALLER
     (void) lsprintf(version_string, "%s %s%s for %s, built %s %s with %s",
-		    prognam, version, PATCHLEVEL, opersys, __DATE__, __TIME__,
+		    prognam, version, VILE_PATCHLEVEL, opersys, __DATE__, __TIME__,
 #   if CC_WATCOM
 		    "Watcom C/386"
 #   endif
@@ -220,6 +220,6 @@ non_filename(void)
     static char buf[80];
     if (buf[0] == EOS)
 	(void) lsprintf(buf, "       %s   %s%s",
-			prognam, version, PATCHLEVEL);
+			prognam, version, VILE_PATCHLEVEL);
     return buf;
 }

@@ -1,14 +1,16 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.30 2002/06/30 21:28:26 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.31 2005/03/10 23:45:11 tom Exp $
 #
 #
 !include <ntwin32.mak>
 
-# remove the "#" to get debugging info (and a larger executable)
-CC_DEBUG     = #$(cdebug)
-LD_DEBUG     = #$(ldebug)
+# set DBG=yes to get debugging info (and a larger executable)
+!if "$(DBG)" != ""
+CC_DEBUG     = $(cdebug)
+LD_DEBUG     = $(ldebug)
+!endif
 
 LEX_OUTPUT_ROOT = lex.yy
 
@@ -16,7 +18,7 @@ x	= .exe
 o	= .obj
 
 # Other vars
-CON_LDFLAGS  = -nologo -pdb:none
+CON_LDFLAGS  = $(LD_DEBUG) $(conlflags) $(conlibsmt) user32.lib comdlg32.lib ole32.lib shell32.lib -nologo -pdb:none
 
 UTILS	= \
 	vile-crypt$x \
@@ -26,6 +28,13 @@ SCRIPTS = \
 	filters.rc
 
 CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 -I. -I..
+
+# special definition for spell-filter
+!if "$(SCREEN)" == "ntconio"
+CFLAGS   = $(CFLAGS) -DHAVE_POPEN
+!elseif "$(FLT)" == ""
+CFLAGS   = $(CFLAGS) -DHAVE_POPEN
+!endif
 
 TMPINCS	= \
 	genmake.exe \
@@ -54,7 +63,7 @@ mk-2nd.tmp : $(GENDEPS) mk-2nd.bat
 	mk-2nd.bat genmake.mak intern $@
 !endif
 
-RECUR_OPTS = RECUR_FILTERS=yes FLT=$(FLT) LEX=$(LEX) -f makefile.wnt $@ -$(MAKEFLAGS)
+RECUR_OPTS = RECUR_FILTERS=yes FLT=$(FLT) LEX=$(LEX) SCREEN=$(SCREEN) -f makefile.wnt $@ -$(MAKEFLAGS)
 
 all ::
 	$(MAKE) $(RECUR_OPTS)
@@ -173,6 +182,7 @@ clean:
 	- del *$x
 	- del *$o
 	- del *.lib
+	- del *.map
 
 distclean: clean
 	- del *.zip

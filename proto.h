@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.543 2005/02/09 22:57:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.545 2005/03/13 18:06:02 tom Exp $
  *
  */
 
@@ -23,6 +23,7 @@ extern SIGT catchintr (int ACTUAL_SIG_ARGS);
 extern char *init_state_value(int n);
 extern char *strncpy0 (char *t, const char *f, size_t l);
 extern char *vl_strncpy (char *dest, const char *src, size_t destlen);
+extern char *vile_getenv (const char *name);
 extern int call_cmdfunc (const CMDFUNC *p, int f, int n);
 extern int no_memory (const char *s);
 extern int rdonly (void);
@@ -303,7 +304,7 @@ extern int did_hard_error_occur (void);
 #endif
 
 /* statevar.c */
-extern const char * vile_getenv(const char *s);
+extern const char * safe_getenv(const char *s);
 
 #if OPT_EVAL
 extern char * get_cdpath (void);
@@ -1523,11 +1524,17 @@ extern	int	mkdir	(const char *path, int mode);
 #ifdef MISSING_EXTERN_OPEN
 extern	int	open	(char *path, int flags);
 #endif
+#ifdef MISSING_EXTERN_PCLOSE
+extern	int	pclose	(FILE *s);
+#endif
 #ifdef MISSING_EXTERN_PERROR
 extern	void	perror	(const char *s);
 #endif
 #ifdef MISSING_EXTERN_PIPE
 extern	int	pipe	(int filedes[2]);
+#endif
+#ifdef MISSING_EXTERN_POPEN
+extern	FILE *	popen	(const char *cmd, const char *mode);
 #endif
 #ifdef MISSING_EXTERN_PRINTF
 extern	int	printf	(const char *fmt, ...);

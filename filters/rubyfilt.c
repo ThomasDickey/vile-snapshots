@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.29 2005/02/14 00:25:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.30 2005/02/15 23:54:21 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -626,6 +626,7 @@ is_String(char *s, int *delim, int *err)
 			*delim = SQUOTE;
 		    }
 		    break;
+		case 'x':
 		case 'Q':
 		    found = is_STRINGS(s + 2,
 				       err,
@@ -640,11 +641,11 @@ is_String(char *s, int *delim, int *err)
 		}
 	    }
 	    break;
-	case BQUOTE:
 	case SQUOTE:
 	    if ((found = is_STRINGS(s, err, *s, *s, 1)) != 0)
 		*delim = SQUOTE;
 	    break;
+	case BQUOTE:
 	case DQUOTE:
 	    if ((found = is_STRINGS(s, err, *s, *s, 0)) != 0)
 		*delim = DQUOTE;

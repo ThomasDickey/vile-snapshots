@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.571 2005/01/27 00:53:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.572 2005/03/13 22:56:47 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2819,6 +2819,8 @@ extern void ExitProgram(int code);
 #define	ExitProgram(code)	exit(code)
 #endif
 #endif
+
+#define VILE_SUBKEY "Software\\VI Like Emacs"
 
 /*
  * We cannot define these in config.h, since they require parameters to be

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.89 2005/01/20 19:51:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.90 2005/03/13 22:56:55 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -116,6 +116,8 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 #endif
 
 #define BACKSLASH '\\'
+
+#define VILE_SUBKEY "Software\\VI Like Emacs"
 
 #define NONNULL(s)	((s) != 0) ? (s) : "<null>"
 #define isBlank(c)	((c) == ' ' || (c) == '\t')
@@ -376,6 +378,11 @@ extern void mlforce(const char *fmt, ...);
 #ifndef strmalloc
 extern char *strmalloc(const char *src);
 #endif
+
+/*
+ * declared in main.c or filters.c
+ */
+extern char *vile_getenv(const char *name);
 
 #define WriteToken(attr) flt_puts(yytext, yyleng, attr)
 #define WriteToken2(attr,len) flt_puts(yytext+len, yyleng-len, attr)

@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.24 2004/10/31 21:13:30 tom Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.25 2005/03/11 01:43:31 tom Exp $
 ; This is a sample which may be installed as .vilerc (or vile.rc for non-Unix
 ; systems), or source'd as-is to provide quick initialization of some useful
 ; macros and settings.
@@ -193,6 +193,8 @@ source which.rc
 	source manpage.rc
 ~endif
 
-~if &seq $pathlist-separator ":"
+~if &or \
+	&seq $pathlist-separator ":" \
+	&seq $os "win32"
 	source spell.rc
 ~endif

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rb-filt.l,v 1.11 2005/02/13 14:56:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rb-filt.l,v 1.12 2005/02/15 23:29:32 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a Ruby script
  * based on the Python filter.
@@ -88,7 +88,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL})[L]?|{REAL}
 			    WriteToken(Comment_attr);
 			    new_state(RD);
 			}
-<CODE>"<<-"{BLANK}{QIDENT}	{
+<CODE>"<<"-?{BLANK}{QIDENT}	{
                             if (save_here(yytext, yyleng)) {
 				PushQuote(HERE, String_attr);
 			    } else {

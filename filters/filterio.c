@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.24 2005/01/17 00:42:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.25 2005/03/14 00:47:28 tom Exp $
  *
  */
 
@@ -211,6 +211,49 @@ strmalloc(const char *src)
     if (ns != 0)
 	(void) strcpy(ns, src);
     return ns;
+}
+
+char *
+vile_getenv(const char *name)
+{
+    char *result = getenv(name);
+#if defined(_WIN32)
+    if (result == 0) {
+	static HKEY rootkeys[] =
+	{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE};
+
+	int j;
+	HKEY hkey;
+	DWORD dwSzBuffer;
+	char buffer[256];
+
+	for (j = 0; j < TABLESIZE(rootkeys); ++j) {
+	    if (RegOpenKeyEx(rootkeys[j],
+			     VILE_SUBKEY "\\Environment",
+			     0,
+			     KEY_READ,
+			     &hkey) == ERROR_SUCCESS) {
+		dwSzBuffer = sizeof(buffer);
+		if (RegQueryValueEx(hkey,
+				    name,
+				    NULL,
+				    NULL,
+				    (LPBYTE) buffer,
+				    &dwSzBuffer) == ERROR_SUCCESS
+		    && dwSzBuffer != 0) {
+
+		    buffer[dwSzBuffer - 1] = 0;
+		    result = strmalloc(buffer);
+		    (void) RegCloseKey(hkey);
+		    break;
+		}
+
+		(void) RegCloseKey(hkey);
+	    }
+	}
+    }
+#endif
+    return result;
 }
 
 /******************************************************************************

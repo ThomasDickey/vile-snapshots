@@ -1,6 +1,41 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
- 2005021? (q)
+ 20050313 (r)
+	> Tom Dickey:
+	+ modify environment variable lookup for win32 to look in the registry
+	  for the VILE* environment variables:
+		VILEINIT
+		VILE_HELP_FILE
+		VILE_LIBDIR_PATH
+		VILE_STARTUP_PATH
+		VILE_ERROR_ABORT
+	  This change is made to make it more easily installable; Windows
+	  changes to environment variables apparently do not take effect until
+	  the machine is rebooted.  Registry changes take effect immediately.
+	+ improve checks for _XOPEN_SOURCE, _POSIX_C_SOURCE in configure script.
+	+ improve sql-filt.l's parsing of SQL*PLUS
+	+ modify spellflt.l to allow it to be used in winvile, using npopen,
+	  etc.
+	+ add package script for winvile using Inno Setup.
+	+ rename PATCHLEVEL to VILE_PATCHLEVEL to avoid conflict with Perl's
+	  symbol.
+	+ move the version definition from edef.h to patchlev.h to reduce the
+	  number of places to change.
+	+ modify manpage.rc to check if txtmode exists before attempting to use
+	  it.
+	+ add parsing in rubyfilt.c for %x, like %Q.  Change parsing for
+	  backtic to match %x (report by Paul van Tilburg).
+	+ correct quoting for here-document beginning in rb-filt.l (report by
+	  Paul van Tilburg).
+	+ modify interpretation of ~local, ~with, ~elsewith and ~endwith so
+	  they are within the normal ~if/~endif hierarchy.  This makes the
+	  9.4q change for SpellFilter work as intended.
+	+ fixes for tbuff.c to ensure TBUFF is updated properly when cancelling
+	  a macro prompt, e.g., with ESC (report by Paul Fox).
+	+ add configure check for popen(), use corresponding ifdef's to enable
+	  console version of vile-spell-filt.exe on win32.
+
+ 20050213 (q)
 	> Tom Dickey:
 	+ several improvements to rubyfilt.c:
 	  + show variable-expansion within generalized double-quote %Q.

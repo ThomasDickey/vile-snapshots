@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.536 2005/01/26 23:19:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.537 2005/03/14 00:39:43 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -615,7 +615,7 @@ MainProgram(int argc, char *argv[])
     } else {
 
 	/* else vileinit is the contents of their VILEINIT variable */
-	vileinit = getenv("VILEINIT");
+	vileinit = vile_getenv("VILEINIT");
 	if (vileinit != NULL) {	/* set... */
 	    BUFFER *vbp, *obp;
 	    UINT oflags = 0;
@@ -1384,7 +1384,7 @@ static char *
 default_help_file(void)
 {
     char *result;
-    if ((result = getenv("VILE_HELP_FILE")) == 0)
+    if ((result = vile_getenv("VILE_HELP_FILE")) == 0)
 	result = DFT_HELP_FILE;
     return result;
 }
@@ -1393,7 +1393,7 @@ static char *
 default_libdir_path(void)
 {
     char *result;
-    if ((result = getenv("VILE_LIBDIR_PATH")) == 0)
+    if ((result = vile_getenv("VILE_LIBDIR_PATH")) == 0)
 	result = DFT_LIBDIR_PATH;
     return result;
 }
@@ -1404,7 +1404,7 @@ default_menu_file(void)
 {
     static char default_menu[] = DFT_MENU_FILE;
     char temp[NSTRING];
-    char *menurc = getenv("VILE_MENU");
+    char *menurc = vile_getenv("VILE_MENU");
 
     if (isEmpty(menurc)) {
 	sprintf(temp, "%.*s_MENU", (int) (sizeof(temp) - 6), prognam);
@@ -1423,7 +1423,7 @@ static char *
 default_startup_file(void)
 {
     char *result;
-    if ((result = getenv("VILE_STARTUP_FILE")) == 0)
+    if ((result = vile_getenv("VILE_STARTUP_FILE")) == 0)
 	result = DFT_STARTUP_FILE;
     return result;
 }
@@ -1434,7 +1434,7 @@ default_startup_path(void)
     char *result = 0;
     char *s;
 
-    if ((s = getenv("VILE_STARTUP_PATH")) != 0) {
+    if ((s = vile_getenv("VILE_STARTUP_PATH")) != 0) {
 	append_to_path_list(&result, s);
     } else {
 #if SYS_MSDOS || SYS_OS2 || SYS_WINNT
@@ -2711,6 +2711,53 @@ vl_strncpy(char *dest, const char *src, size_t destlen)
     return strncpy0(dest, src, srclen);
 }
 
+/*
+ * Wrapper for environment variables that tell vile where to find its
+ * components.
+ */
+char *
+vile_getenv(const char *name)
+{
+    char *result = getenv(name);
+#if defined(_WIN32)
+    if (result == 0) {
+	static HKEY rootkeys[] =
+	{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE};
+
+	int j;
+	HKEY hkey;
+	DWORD dwSzBuffer;
+	char buffer[256];
+
+	for (j = 0; j < TABLESIZE(rootkeys); ++j) {
+	    if (RegOpenKeyEx(rootkeys[j],
+			     VILE_SUBKEY "\\Environment",
+			     0,
+			     KEY_READ,
+			     &hkey) == ERROR_SUCCESS) {
+		dwSzBuffer = sizeof(buffer);
+		if (RegQueryValueEx(hkey,
+				    name,
+				    NULL,
+				    NULL,
+				    (LPBYTE) buffer,
+				    &dwSzBuffer) == ERROR_SUCCESS
+		    && dwSzBuffer != 0) {
+
+		    buffer[dwSzBuffer - 1] = 0;
+		    result = strmalloc(buffer);
+		    (void) RegCloseKey(hkey);
+		    break;
+		}
+
+		(void) RegCloseKey(hkey);
+	    }
+	}
+    }
+#endif
+    return result;
+}
+
 #if defined(SA_RESTART)
 /* several systems (SCO, SunOS) have sigaction without SA_RESTART */
 /*
@@ -2917,7 +2964,7 @@ ExitProgram(int code)
 {
     char *env;
     if (code != GOODEXIT
-	&& (env = getenv("VILE_ERROR_ABORT")) != 0
+	&& (env = vile_getenv("VILE_ERROR_ABORT")) != 0
 	&& *env != '\0') {
 	siginit(FALSE);
 	abort();
