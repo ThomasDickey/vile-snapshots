@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file. 
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.59 1998/02/07 17:38:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.60 1998/04/15 17:50:08 tom Exp $
  *
  */
 
@@ -550,8 +550,9 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 					for (i=0; i < tb_length(*cp); i++) {
 						fmt_insert(1, tb_values(*cp)[i]);
 					}
-					if (!fmt_c_preprocessor(cp))
+					if (!fmt_c_preprocessor(cp)) {
 						fmt_insert(1, ' ');
+					}
 				}
 				firstflag = FALSE;
 

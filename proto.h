@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.271 1998/04/12 19:09:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.272 1998/04/17 00:03:10 tom Exp $
  *
  */
 
@@ -303,7 +303,7 @@ extern void set_ctrans (const char *value);
 
 /* exec.c */
 extern int dobuf (BUFFER *bp);
-extern int docmd (char *cline, int f, int n);
+extern int docmd (char *cline, int execflag, int f, int n);
 extern int dofile (char *fname);
 extern int end_named_cmd (void);
 extern int execute (const CMDFUNC *execfunc, int f, int n);
@@ -1086,7 +1086,7 @@ extern	void	longjmp	(jmp_buf env, int val);
 extern	int	lstat (const char *path, struct stat *sb);
 #endif
 #if MISSING_EXTERN_MEMSET
-extern	void	memset	(char *dst, int ch, int n);
+extern	void *	memset	(void *dst, int ch, size_t n);
 #endif
 #if MISSING_EXTERN_MKDIR && HAVE_MKDIR
 extern	int	mkdir	(const char *path, int mode);

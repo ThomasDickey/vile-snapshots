@@ -18,7 +18,7 @@
  * transfering the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.63 1998/04/12 15:21:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.64 1998/04/17 00:03:59 tom Exp $
  *
  */
 
@@ -876,7 +876,7 @@ hyperspray(int (*f)(char *))
 static int
 doexechypercmd(char *cmd)
 {
-    return docmd(cmd,FALSE,1);
+    return docmd(cmd,TRUE,FALSE,1);
 }
 
 int

@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.313 1998/04/14 23:28:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.315 1998/04/17 01:18:34 tom Exp $
  *
  */
 
@@ -673,13 +673,20 @@ get_executable_dir(void)
 	char	temp[NFILEN];
 	char	*s, *t;
 
-	/* if there are no slashes, we have no idea where we came from */
-	if (last_slash(prog_arg) == NULL)
+	if (last_slash(prog_arg) == NULL) {
+		/* If there are no slashes, we can guess where we came from,
+		 */
+		if ((s = flook(prog_arg, FL_PATH|FL_EXECABLE)) != 0)
+			s = strmalloc(s);
+	} else {
+		/* if there _are_ slashes, then argv[0] was either 
+		 * absolute or relative. lengthen_path figures it out.
+		 */
+		s = strmalloc(lengthen_path(strcpy(temp, prog_arg)));
+	}
+	if (s == 0)
 		return;
 
-	/* if there _are_ slashes, then argv[0] was either 
-		absolute or relative. lengthen_path figures it out. */
-	s = strmalloc(lengthen_path(strcpy(temp, prog_arg)));
 	t = pathleaf(s);
 	if (t != s) {
 # if SYS_UNIX	/* 't' points past slash */
