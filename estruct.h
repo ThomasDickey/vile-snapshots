@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.326 1997/11/08 02:07:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.327 1997/11/09 22:45:59 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -393,7 +393,7 @@
 
   /* NOTE:  OPT_ICURSOR is _only_ supported by borland.c for a PC build
      and ntconio.c for a win32 build!! */
-#define OPT_TITLE	(SYS_WINNT)	/* use an window title if possible */
+#define OPT_TITLE	(SYS_WINNT)		/* use a window title */
 
 /* the "working..." message -- we must have the alarm() syscall, and
    system calls must be restartable after an interrupt by default or be
@@ -461,8 +461,11 @@
 #define	OPT_XTERM	0	/* vile doesn't recognize xterm mouse */
 #endif
 
+ 	/* combine select/yank (for mouse support) */
+#define OPT_SEL_YANK    ((DISP_X11 && XTOOLKIT) || SYS_WINNT || SYS_OS2)
+
 	/* any mouse capability */
-#define OPT_MOUSE       (DISP_X11 || OPT_XTERM || OPT_MS_MOUSE || SYS_WINNT)
+#define OPT_MOUSE       (OPT_SEL_YANK || OPT_XTERM || OPT_MS_MOUSE)
 
 	/* menus */
 #define	OPT_MENUS	(DISP_X11 && (MOTIF_WIDGETS||ATHENA_WIDGETS))
@@ -1830,7 +1833,7 @@ typedef struct	{
 	void	(*t_eeol) (void);	/* Erase to end of line.	*/
 	void	(*t_eeop) (void);	/* Erase to end of page.	*/
 	void	(*t_beep) (void);	/* Beep.			*/
-	void	(*t_rev) (int f);	/* set reverse video state	*/
+	void	(*t_rev) (UINT f);	/* set reverse video state	*/
 	int	(*t_rez) (char *f);	/* change screen resolution	*/
 	void	(*t_setfor) (int f);	/* set foreground color		*/
 	void	(*t_setback) (int b);	/* set background color		*/

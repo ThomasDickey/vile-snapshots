@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.76 1997/10/31 00:27:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.77 1997/11/09 22:32:25 tom Exp $
  *
  */
 
@@ -1067,7 +1067,7 @@ void	wp_leaks(void)
  * for a later call to pop_fake_win() which will restore curwp.
  */
 
-#if DISP_X11 || SYS_WINNT || OPT_PERL
+#if OPT_SEL_YANK || OPT_PERL
 WINDOW *
 push_fake_win(BUFFER *bp)
 {

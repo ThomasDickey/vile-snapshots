@@ -8,7 +8,7 @@
  * Modified by Pete Ruczynski (pjr) for auto-sensing and selection of
  * display type.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.83 1997/11/08 00:56:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.84 1997/11/09 22:52:04 tom Exp $
  *
  */
 
@@ -245,7 +245,7 @@ extern  void	ibmeeol   (void);
 extern  void	ibmeeop   (void);
 extern  void	ibmbeep   (void);
 extern  void    ibmopen   (void);
-extern	void	ibmrev    (int);
+extern	void	ibmrev    (UINT);
 extern	int	ibmcres   (char *);
 extern	void	ibmclose  (void);
 extern	void	ibmputc   (int);
@@ -541,7 +541,7 @@ ibmeeop(void)
 
 void
 ibmrev(		/* change reverse video state */
-int state)	/* TRUE = reverse, FALSE = normal */
+UINT state)	/* TRUE = reverse, FALSE = normal */
 {
 	/* This never gets used under the IBM-PC driver */
 }

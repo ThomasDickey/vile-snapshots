@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.166 1997/11/04 00:15:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.168 1997/11/10 01:20:40 tom Exp $
  *
  */
 
@@ -421,7 +421,7 @@ static	void	x_open   (void),
 		x_kopen  (void),
 		x_kclose (void),
 		x_beep   (void),
-		x_rev    ( int state );
+		x_rev    ( UINT state );
 
 #if OPT_COLOR
 static	void	x_fcol   ( int color ),
@@ -5867,7 +5867,7 @@ x_key_press(
  * change reverse video status
  */
 static void
-x_rev(int state)
+x_rev(UINT state)
 {
     cur_win->reverse = state;
 }

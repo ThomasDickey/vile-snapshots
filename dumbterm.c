@@ -1,6 +1,6 @@
 /*	Dumb terminal driver, for I/O before we get into screen mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/dumbterm.c,v 1.10 1997/10/06 23:26:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/dumbterm.c,v 1.11 1997/11/10 00:37:46 tom Exp $
  *
  */
 
@@ -22,7 +22,7 @@ static void dumb_flush    (void);
 static void dumb_kclose   (void);
 static void dumb_kopen    (void);
 static void dumb_move     ( int row, int col );
-static void dumb_rev      ( int state );
+static void dumb_rev      ( UINT state );
 
 static void flush_blanks  (void);
 
@@ -155,7 +155,7 @@ char *	res GCC_UNUSED)
 
 /* ARGSUSED */
 static void
-dumb_rev(int state GCC_UNUSED)
+dumb_rev(UINT state GCC_UNUSED)
 {
 }
 
