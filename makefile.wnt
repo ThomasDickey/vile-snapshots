@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.18 1997/11/06 17:49:54 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.19 1997/11/26 16:15:54 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -11,17 +11,17 @@ CFG=vile
 !MESSAGE No configuration (CFG) specified.  Defaulting to vile (console)
 !ENDIF 
 
-!IF "$(CFG)" != "vile" && "$(CFG)" != "ntvile"
+!IF "$(CFG)" != "vile" && "$(CFG)" != "winvile"
 !MESSAGE Invalid configuration "$(CFG)" specified.
 !MESSAGE You can specify a configuration when running NMAKE on this makefile
 !MESSAGE by defining the macro CFG on the command line.  For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "makefile.wnt" CFG="ntvile"
+!MESSAGE NMAKE /f "makefile.wnt" CFG="winvile"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "vile   - console"
-!MESSAGE "ntvile - gui"
+!MESSAGE "winvile - gui"
 !MESSAGE 
 !ERROR An invalid configuration is specified.
 !ENDIF 
@@ -40,8 +40,8 @@ SCREEN  = ntconio
 LIBS    = $(LD_DEBUG) $(conlflags) $(conlibs) user32.lib
 !endif
 
-!IF  "$(CFG)" == "ntvile"
-TARGET  = ntvile.exe
+!IF  "$(CFG)" == "winvile"
+TARGET  = winvile.exe
 UTILS   =
 CFLAGS  = $(cvars) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 -Dscrn_chosen -DDISP_NTWIN	
 LDFLAGS = -nologo /nologo /subsystem:windows /incremental:no -pdb:none
@@ -59,7 +59,8 @@ HDRS = estruct.h edef.h proto.h dirstuff.h
 # and in modetbl
 BUILTHDRS = nebind.h neproto.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nefsms.h
 
-SRC = 	main.c $(SCREEN).c basic.c bind.c buffer.c crypt.c \
+SRC = 	main.c $(SCREEN).c &
+	basic.c bind.c btree.c buffer.c crypt.c \
 	csrch.c display.c eval.c exec.c externs.c \
 	fences.c file.c filec.c \
 	fileio.c finderr.c glob.c globals.c history.c \
@@ -70,7 +71,8 @@ SRC = 	main.c $(SCREEN).c basic.c bind.c buffer.c crypt.c \
 	tags.c tbuff.c termio.c undo.c \
 	version.c window.c word.c wordmov.c map.c 
 
-OBJ = 	main.obj $(SCREEN).obj basic.obj bind.obj buffer.obj crypt.obj \
+OBJ = 	main.obj $(SCREEN).obj &
+	basic.obj bind.obj btree.obj buffer.obj crypt.obj \
       	csrch.obj display.obj eval.obj exec.obj externs.obj \
 	fences.obj file.obj filec.obj \
 	fileio.obj finderr.obj glob.obj globals.obj history.obj \

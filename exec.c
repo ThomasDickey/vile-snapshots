@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.146 1997/11/08 00:53:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.147 1997/11/27 22:27:39 tom Exp $
  *
  */
 
@@ -1100,9 +1100,6 @@ storeproc(int f, int n)
 	register int status;		/* return status */
 	char bname[NBUFN];		/* name of buffer to use */
 	char given[NBUFN];
-#if OPT_NAMEBST
-	char *procname;
-#endif
 
 	/* a numeric argument means its a numbered macro */
 	if (f == TRUE)
@@ -1115,14 +1112,8 @@ storeproc(int f, int n)
 
 	/* save this into the list of : names */
 #if OPT_NAMEBST
-	procname = castalloc(char, strlen(given) + 1);
-	if (procname == NULL) {
-		mlforce("[Couldn't get memory to add proc to namelist]");
-	} else {
-		strcpy(procname, given);
-		if (insert_namebst(&namebst, procname, NULL, FALSE) != TRUE)
-			return FALSE;
-	}
+	if (insert_namebst(given, NULL, FALSE) != TRUE)
+		return FALSE;
 #endif /* OPT_NAMEBST */
 
 	/* construct the macro buffer name */
@@ -1137,7 +1128,6 @@ storeproc(int f, int n)
 	/* and make sure it is empty */
 	if (!bclear(bp))
 		return FALSE;
-
 
 	set_rdonly(bp, bp->b_fname, MDVIEW);
 
@@ -1594,7 +1584,7 @@ setup_dobuf(BUFFER *bp, WHBLOCK **result)
 		: D_UNKNOWN)
 #endif
 
-#if OPT_TRACE
+#if OPT_TRACE && !SMALLER
 static const char *TraceIndent(int level, const char *eline, size_t length)
 {
 	static	const char indent[] = ".  .  .  .  .  .  .  .  ";

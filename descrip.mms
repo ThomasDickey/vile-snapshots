@@ -11,7 +11,7 @@
 # all as "0".  If you use tcap.c, you'll need libtermcap.a too.  If you use
 # x11.c, you'll need libX11.a too.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.34 1997/05/13 00:31:46 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.35 1997/11/26 16:16:06 tom Exp $
 
 # for building the X version, xvile, use these:
 #SCREEN = x11simp
@@ -50,6 +50,7 @@ SRC =	main.c \
 	$(SCREEN).c \
 	basic.c \
 	bind.c \
+	btree.c \
 	buffer.c \
 	crypt.c \
 	csrch.c \
@@ -100,6 +101,7 @@ OBJ =	main.obj,\
 	$(SCREEN).obj,\
 	basic.obj,\
 	bind.obj,\
+	btree.obj,\
 	buffer.obj,\
 	crypt.obj,\
 	csrch.obj,\

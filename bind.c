@@ -3,13 +3,16 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.165 1997/11/12 14:21:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.166 1997/11/27 22:46:51 tom Exp $
  *
  */
 
 #include	"estruct.h"
 #include	"edef.h"
 #include	"nefunc.h"
+
+#define BI_DATA NBST_DATA
+#include	"btree.h"
 
 #define SHORT_CMD_LEN 4	/* command names longer than this are preferred
 				over those shorter.  e.g. display "quit"
@@ -62,6 +65,40 @@ static	int	prc2kcod ( const char *kk );
 #if OPT_REBIND
 static	KBIND	*KeyBindings = kbindtbl;
 #endif
+
+/*----------------------------------------------------------------------------*/
+
+#if OPT_NAMEBST
+static BI_NODE*
+new_namebst (BI_DATA *a)
+{
+	BI_NODE *p = typecalloc(BI_NODE);
+	p->value = *a;
+	if (!a->n_readonly)
+		BI_KEY(p) = strmalloc(a->bi_key);
+	return p;
+}
+
+static void
+old_namebst (BI_NODE *a)
+{
+	if (!a->value.n_readonly)
+		free((char *)BI_KEY(a));
+	free(a);
+}
+
+static void
+dpy_namebst (BI_NODE *a GCC_UNUSED, int level GCC_UNUSED)
+{
+#if OPT_TRACE
+	while (level-- > 0)
+		TRACE((". "));
+	TRACE(("%p -> %s (%d)\n", a, BI_KEY(a), a->balance));
+#endif
+}
+
+static	BI_TREE namebst = {new_namebst, old_namebst, dpy_namebst};
+#endif /* OPT_NAMEBST */
 
 /*----------------------------------------------------------------------------*/
 
@@ -1155,10 +1192,10 @@ fnc2engl(const CMDFUNC *cfp)
 const CMDFUNC *
 engl2fnc(const char *fname)	/* name to attempt to match */
 {
-	NBST *n = lookup_namebst(-TRUE, namebst, fname);
+	BI_NODE *n = btree_pmatch(BI_RIGHT(&namebst.head), TRUE, fname);
 
 	if (n == NULL) return NULL;
-	else return n->n_cmd;
+	else return n->value.n_cmd;
 }
 #else
 #if BINARY_SEARCH_IS_BROKEN  /* then use the old linear look-up */
@@ -2064,129 +2101,32 @@ char	*buffer)
 
 #if OPT_NAMEBST
 int
-insert_namebst(NBST **head, const char *name, const CMDFUNC *cmd, int ro)
+insert_namebst(const char *name, const CMDFUNC *cmd, int ro)
 {
-	if (*head == NULL) {
-		NBST *n;
+	BI_DATA temp, *p;
 
-		n = castalloc(NBST, sizeof(NBST));
-		if (n == NULL) {
-			return no_memory("NBST");
+	if ((p = btree_search(&namebst, name)) != 0) {
+		if (p->n_readonly && !ro) {
+			mlforce("[Cannot redefine %s]", name);
+			return FALSE;
 		}
-		n->n_name = name;
-		n->n_cmd = cmd;
-		n->n_left = 0;
-		n->n_right = 0;
-		n->n_parent = *head;
-		n->n_readonly = ro;
-		*head = n;
+		p->n_cmd = cmd;
 		return TRUE;
 	} else {
-		NBST *n = *head;
-		int cmp = strcmp(name, n->n_name);
-		if (cmp == 0) {
-			if (n->n_readonly && !ro) {
-				mlforce("[Cannot redefine %s]", name);
-				return FALSE;
-			}
-			/* they are replacing an existing node with new data */
-			n->n_name = name;
-			n->n_cmd = cmd;
-			return TRUE;
-		} else if (cmp < 0) {
-			return insert_namebst(&(n->n_left), name, cmd, ro);
-		} else {
-			return insert_namebst(&(n->n_right), name, cmd, ro);
-		}
+		temp.bi_key     = name;
+		temp.n_cmd      = cmd;
+		temp.n_readonly = ro;
+		return (btree_insert(&namebst, &temp) != 0);
 	}
-}
-
-/*
- * Find any leaf of the given binary-search tree, detach it from the tree.
- */
-static NBST *
-detach_namebst(NBST *child, NBST *parent)
-{
-	if (child != 0) {
-		if (child->n_left != 0)
-			return detach_namebst(child->n_left, child);
-		if (child->n_right != 0)
-			return detach_namebst(child->n_right, child);
-		if (parent != 0) {
-			if (parent->n_left == child) {
-				parent->n_left = 0;
-			} else if (parent->n_right == child) {
-				parent->n_right = 0;
-			}
-		}
-	}
-	return child;
-}
-
-/*
- * De-link the child node from the parent, so we can delete that node and
- * move its children to the parent.  This is probably not the most efficient
- * way to do it, but works.
- */
-static NBST **
-delink_namebst(NBST **child, NBST **parent)
-{
-	NBST *head = (*child);
-
-	if (*parent != 0) {
-		if ((*parent)->n_left == head) {
-			(*parent)->n_left = 0;
-		} else {
-			(*parent)->n_right = 0;
-		}
-	} else {
-		/*
-		 * We're delinking the root-node.  Find a neighbor leaf-node,
-		 * promote that to the root, making its children the tree that
-		 * we found it in.
-		 */
-		if (head->n_left != 0) {
-			*parent	= head->n_left;
-			head->n_left = 0;
-		} else {	/* one-sided, simple detach */
-			*parent	= head->n_right;
-			head->n_right = 0;
-		}
-		*child = *parent;
-	}
-	return parent;
 }
 
 /*
  * Lookup a name in the binary-search tree, remove it if found
  */
 int
-delete_namebst(NBST **child, NBST **parent, const char *name)
+delete_namebst(const char *name)
 {
-	if ((*child) != 0) {
-		NBST *leaf;
-		NBST *head = (*child);
-		int cmp = strcmp(name, head->n_name);
-
-		if (cmp == 0) {
-			parent = delink_namebst(child, parent);
-			while ((leaf = detach_namebst(head,0)) != 0) {
-				if (leaf == head)
-					break;
-				insert_namebst(parent, leaf->n_name, leaf->n_cmd, leaf->n_readonly);
-				free((char *)leaf);
-			}
-			if (!head->n_readonly)
-				free((char *)(head->n_name));
-			free((char *)head);
-			return TRUE;
-		} else if (cmp < 0) {
-			return delete_namebst(&((*child)->n_left), child, name);
-		} else {
-			return delete_namebst(&((*child)->n_right), child, name);
-		}
-	}
-	return FALSE;
+	return btree_delete(&namebst, name);
 }
 
 /*
@@ -2195,22 +2135,21 @@ delete_namebst(NBST **child, NBST **parent, const char *name)
  * name-completions.
  */
 int
-rename_namebst(NBST **head, const char *oldname, const char *newname)
+rename_namebst(const char *oldname, const char *newname)
 {
-	NBST *prior;
+	NBST_DATA *prior;
 	int code = FALSE;
 
 	TRACE(("renaming procedure %s to %s\n", oldname, newname));
-	if ((prior = lookup_namebst(TRUE, *head, oldname)) != 0) {
-		NBST *parent = 0;
+	if ((prior = btree_search(&namebst, oldname)) != 0) {
 		char procname[NBUFN];
 		const CMDFUNC *cmd = prior->n_cmd;
 		int ro = prior->n_readonly;
 
-		if ((code = delete_namebst(head, &parent,
+		if ((code = delete_namebst(
 				strip_brackets(procname, oldname))) == TRUE) {
 			if (is_scratchname(newname)) {
-				code = insert_namebst(head,
+				code = insert_namebst(
 					strip_brackets(procname, newname),
 					cmd, ro);
 			}
@@ -2219,118 +2158,22 @@ rename_namebst(NBST **head, const char *oldname, const char *newname)
 	return code;
 }
 
+int
+search_namebst(const char *name)
+{
+	return (btree_search(&namebst, name) != 0);
+}
+
 /*
  * Build the initial name binary search tree.  Since the nametbl is sorted we
  * do this in a binary-search manner to get a balanced tree.
  */
 void
-build_namebst(NBST **head, const NTAB *nptr, int lo, int hi)
+build_namebst(const NTAB *nptr, int lo, int hi)
 {
-	int cur;
-
-	cur = (lo + hi) >> 1;
-	if (!insert_namebst(head, nptr[cur].n_name, nptr[cur].n_cmd, TRUE)) {
-		tidy_exit(BADEXIT);
-	}
-	if (lo < cur) build_namebst(&((*head)->n_left), nptr, lo, cur - 1);
-	if (cur < hi) build_namebst(&((*head)->n_right), nptr, cur + 1, hi);
-}
-
-#if OPT_TRACE
-void
-trace_namebst(NBST *head, int level, char *tag)
-{
-	if (head != 0) {
-		if (head->n_left)
-			trace_namebst(head->n_left, level+1, "left");
-		if (head->n_name)
-			TRACE(("%*s%s (%s)%s\n", level*2, " ", head->n_name ? head->n_name : "<null>", tag, head->n_parent ? "*" : ""));
-		if (head->n_right)
-			trace_namebst(head->n_right, level+1, "right");
-	}
-}
-#endif
-
-/*
- * Find the the matching entry given a name in the namebst.  If mode is TRUE
- * then the name must completely match.  If it's FALSE then only the first n
- * characters must match and this will return the parent of the subtree that
- * contains these entries (so that an inorder walk can find the other matches).
- *
- * Use -TRUE to force this to return the first of the ordered list of partial
- * matches; we need this behavior for interactive name completion.
- */
-NBST *
-lookup_namebst(const int mode, NBST *head, const char *name)
-{
-	NBST *n;
-	int l = strlen(name);
-
-	n = head;
-	while (n != NULL) {
-		int cmp;
-
-		if (mode == TRUE) {
-			cmp = strcmp(name, n->n_name);
-		} else {
-			cmp = strncmp(name, (const char *) n->n_name, l);
-		}
-
-		if (cmp == 0) {
-			if (mode == -TRUE) {
-				NBST *m = lookup_namebst(mode, n->n_left, name);
-				if (m != 0)
-					n = m;
-			}
-			return n;
-		} else if (cmp < 0) {
-			n = n->n_left;
-		} else {
-			n = n->n_right;
-		}
-	}
-	return NULL;
-}
-
-/*
- * Find the size of the bst with the matching name.
- */
-static int
-count_bst_size(NBST *head, char *matchname, int l)
-{
-	int left = 0, right = 0, me = 0;
-
-	if ((head->n_left != NULL)) {
-		left = count_bst_size(head->n_left, matchname, l);
-	}
-
-	if ((l == 0)
-	 || (strncmp(head->n_name, matchname, l) == 0))
-		me = 1;
-
-	if ((head->n_right != NULL)) {
-		right = count_bst_size(head->n_right, matchname, l);
-	}
-
-	return me + left + right;
-}
-
-static void
-build_nametbl(NBST *head, char *matchname, int l, const char **nptr, int *i)
-{
-	if ((head->n_left != NULL)) {
-		build_nametbl(head->n_left, matchname, l, nptr, i);
-	}
-
-	if ((l == 0)
-	 || (strncmp(head->n_name, matchname, l) == 0)) {
-		nptr[*i] = head->n_name;
-		(*i)++;
-	}
-
-	if ((head->n_right != NULL)) {
-		build_nametbl(head->n_right, matchname, l, nptr, i);
-	}
+	for (; lo < hi; lo++)
+		if (!insert_namebst(nptr[lo].n_name, nptr[lo].n_cmd, TRUE))
+			tidy_exit(BADEXIT);
 }
 
 /*
@@ -2346,30 +2189,16 @@ unsigned *pos)
 {
 	register unsigned cpos = *pos;
 	int status = FALSE;
-	NBST *firstmatch;
+	const char **nptr;
 
 	kbd_init();		/* nothing to erase */
 	buf[cpos] = EOS;	/* terminate it for us */
 
-	firstmatch = lookup_namebst(FALSE, namebst, buf);
-
-	if (firstmatch == NULL) {
-		status = FALSE;
-	} else {
-		int i = 0, cnt = count_bst_size(firstmatch, buf, cpos);
-		const char **nptr;
-		/* build a table that we can pass into kbd_complete */
-		nptr = castalloc(const char *, sizeof(const char *) * (cnt + 1));
-		if (nptr == NULL) {
-			(void) no_memory("NBST");
-			return FALSE;
-		}
-		build_nametbl(firstmatch, buf, cpos, nptr, &i);
-		nptr[i] = 0;
-		/* pass it into kbd_complete to let it do the job */
+	if ((nptr = btree_parray(&namebst, buf, cpos)) != 0) {
 		status = kbd_complete(FALSE, c, buf, pos, (char *)nptr, sizeof(*nptr));
 		free(nptr);
-	}
+	} else
+		kbd_alarm();
 	return status;
 }
 #endif /* OPT_NAMEBST */
@@ -2435,12 +2264,7 @@ bind_leaks(void)
 	}
 #endif
 #if OPT_NAMEBST
-	TRACE(("namebst: %p\n", namebst));
-	while (namebst != 0) {
-		NBST *head = 0;
-		TRACE(("freeing %s\n", namebst->n_name));
-		delete_namebst(&namebst, &head, namebst->n_name);
-	}
+	btree_freeup(&namebst);
 #endif
 }
 #endif	/* NO_LEAKS */

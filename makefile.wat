@@ -3,7 +3,7 @@
 # based on the original makefile of vile 3.46 (see the original makefile)
 # T.DANG (dang@cogit.ign.fr)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wat,v 1.23 1997/05/26 14:56:00 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wat,v 1.24 1997/11/26 16:17:33 tom Exp $
 #
 # if you use the watcom version of vile, you may want to "set DOS4G=quiet"
 # to suppress the DOS 4G/W banner that comes up from the Rational Systems
@@ -37,7 +37,8 @@ HDRS = estruct.h edef.h proto.h dirstuff.h
 # and in modetbl
 BUILTHDRS = nebind.h neproto.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nefsms.h
 
-SRC = 	main.c $(SCREEN).c basic.c bind.c buffer.c crypt.c &
+SRC = 	main.c $(SCREEN).c &
+	basic.c bind.c btree.c buffer.c crypt.c &
 	csrch.c display.c eval.c exec.c externs.c &
 	fences.c file.c filec.c &
 	fileio.c finderr.c glob.c globals.c history.c &
@@ -48,7 +49,8 @@ SRC = 	main.c $(SCREEN).c basic.c bind.c buffer.c crypt.c &
 	tags.c tbuff.c termio.c undo.c &
 	version.c window.c word.c wordmov.c
 
-OBJ = 	main.obj $(SCREEN).obj basic.obj bind.obj buffer.obj crypt.obj &
+OBJ = 	main.obj $(SCREEN).obj &
+	basic.obj bind.obj btree.obj buffer.obj crypt.obj &
       	csrch.obj display.obj eval.obj exec.obj externs.obj &
 	fences.obj file.obj filec.obj &
 	fileio.obj finderr.obj glob.obj globals.obj history.obj &

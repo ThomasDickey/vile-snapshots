@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.25 1997/11/09 22:52:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.26 1997/11/11 20:07:10 tom Exp $
  *
  */
 
@@ -59,6 +59,7 @@ static int	nbcolor = -1;		/* normal background color */
 static int	crow = -1;		/* current row */
 static int	ccol = -1;		/* current col */
 static int	keyboard_open = FALSE;	/* keyboard is open */
+static int	keyboard_was_closed = TRUE;
 
 /* ansi to ibm color translation table */
 static	const char *initpalettestr = "0 4 2 6 1 5 3 7 8 12 10 14 9 13 11 15";
@@ -384,6 +385,7 @@ nthandler(DWORD ctrl_type)
 static void
 ntopen(void)
 {
+	TRACE(("ntopen\n"))
 	set_palette(initpalettestr);
 	hOldConsoleOutput = 0;
 	hConsoleOutput = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -416,8 +418,9 @@ static char orig_title[256];
 static void
 ntclose(void)
 {
+	TRACE(("ntclose\n"))
 	scflush();
-	ntmove(csbi.dwMaximumWindowSize.Y - 1, 0);
+	ntmove(term.t_nrow - 1, 0);
 	nteeol();
 	ntflush();
 	SetConsoleTextAttribute(hConsoleOutput, originalAttribute);
@@ -427,11 +430,13 @@ ntclose(void)
 	}
 	SetConsoleCtrlHandler(nthandler, FALSE);
 	SetConsoleMode(hConsoleInput, ENABLE_LINE_INPUT|ENABLE_ECHO_INPUT|ENABLE_PROCESSED_INPUT);
+	keyboard_open = FALSE;
 }
 
 static void
 ntkopen(void)	/* open the keyboard */
 {
+	TRACE(("ntkopen (open:%d, was-closed:%d)\n", keyboard_open, keyboard_was_closed))
 	if (keyboard_open)
 		return;
 	if (old_title_set)
@@ -445,14 +450,26 @@ ntkopen(void)	/* open the keyboard */
 	keyboard_open = TRUE;
 	SetConsoleCtrlHandler(NULL, TRUE);
 	SetConsoleMode(hConsoleInput, ENABLE_MOUSE_INPUT|ENABLE_WINDOW_INPUT);
+
+	/* If we are coming back from a shell command, pick up the current window
+	 * size, since that may have changed due to a 'mode con' command.
+	 */
+	if (keyboard_was_closed) {
+		CONSOLE_SCREEN_BUFFER_INFO temp;
+		keyboard_was_closed = FALSE;
+		GetConsoleScreenBufferInfo(hConsoleOutput, &temp);
+		newscreensize(temp.dwMaximumWindowSize.Y, temp.dwMaximumWindowSize.X);
+	}
 }
 
 static void
 ntkclose(void)	/* close the keyboard */
 {
+	TRACE(("ntkclose\n"))
 	if (!keyboard_open)
 		return;
 	keyboard_open = FALSE;
+	keyboard_was_closed = TRUE;
 	old_title_set = TRUE;
 	GetConsoleTitle(old_title, sizeof(old_title));
 	if (orig_title_set)

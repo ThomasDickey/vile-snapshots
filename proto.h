@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.260 1997/11/09 22:54:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.261 1997/11/27 15:19:33 tom Exp $
  *
  */
 
@@ -72,12 +72,11 @@ extern char *kcod2pstr (int c, char *seq);
 extern int kcod2escape_seq (int c, char *ptr);
 extern int fnc2kcod (const CMDFUNC *);
 #if OPT_NAMEBST
-extern NBST *lookup_namebst(const int fullmatch, NBST *head, const char *name);
-extern int delete_namebst(NBST **child, NBST **parent, const char *name);
-extern int insert_namebst(NBST **head, const char *name, const CMDFUNC *cmd, int ro);
-extern int rename_namebst(NBST **head, const char *oldname, const char *newname);
-extern void build_namebst(NBST **head, const NTAB *nametbl, int lo, int hi);
-extern void trace_namebst(NBST *head, int level, char *tag);
+extern int delete_namebst(const char *name);
+extern int insert_namebst(const char *name, const CMDFUNC *cmd, int ro);
+extern int rename_namebst(const char *oldname, const char *newname);
+extern int search_namebst(const char *name);
+extern void build_namebst(const NTAB *nametbl, int lo, int hi);
 #endif
 #if DISP_X11
 extern char *fnc2pstr (const CMDFUNC *f);
@@ -787,6 +786,7 @@ extern	void map_leaks (void);
 extern	void mode_leaks (void);
 extern	void onel_leaks (void);
 extern	void path_leaks (void);
+extern	void tags_leaks (void);
 extern	void tb_leaks (void);
 extern	void vt_leaks (void);
 extern	void wp_leaks (void);

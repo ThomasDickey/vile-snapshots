@@ -815,6 +815,8 @@ Miscellaneous commands
 
 	show-history -- displays the user's command line history.
 
+	show-majormodes -- displays the builtin and user-defined major modes.
+
 	show-mapped-chars -- displays the strings mapped for command mode
 		with ":map".  (synonymous with ":map<CR>")
 
@@ -1233,6 +1235,11 @@ Editor modes
 
 	number	(nu) All lines in the buffer will be prefixed by their line
 		number. (W)
+
+	maplength Controls the maximum length of a :map string, to prevent
+		runaway recursion.  This is the total number of characters that
+		can be gotten during a :map expansion; vile pushes characters
+		onto the stack, so this is only a rough measure.  (U)
 
 	maplonger Controls whether the longer or shorter of two "nested"
 		map strings will be favored by the editor.  When set, vile
@@ -3497,4 +3504,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.333 1997/10/27 03:03:47 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.334 1997/11/27 23:08:26 tom Exp $
