@@ -1,10 +1,31 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+(tom) 990705 (k)
+	+ correct logic of read_quoted() from 8.3j, which no longer accepted
+	  nondigits after a control/V, e.g., ^V^D.
+	+ add commands to move the cursor up/down by rows on the screen, ignoring
+	  wrapping: next-row or ^X-^D and previous-row or ^X-^U.
+	+ add a check for negative array index in l_to_vline(), which would
+	  cause a core dump when changing a buffer with very long lines to
+	  linewrap mode and back again.
+	+ make wrapper for the most frequently called form of mk_to_vcol(),
+	  dot_to_vcol() and in that function cache a location on the current
+	  line "close" to DOT, so we can make fewer calls to mk_to_vcol().
+	  Ifdef'd this with OPT_CACHE_VCOL.
+	+ correct sign of shift-parameter in call of mvleftwind() from
+	  gotobol().
+	+ correct test before calling updall(), which was updating the whole
+	  window each time WFMODE was set, e.g., when updating the ruler.
+	+ minor optimization (2-3 times faster) of calls to mk_to_vcol() to
+	  reuse the ruler's column value in updpos() if it is up to date.
+	+ modify calls to mk_to_vcol() so we show the effective column
+	  consistently in [Registers], which has a left margin.
+
 (tom) 990703 (j)
 	+ implement set-window command (request by Adam Denton).
 	+ implement show-marks command.
 	+ rename 'quote()' to 'quote_next()', split-out 'read_quoted()' to
-	  reuse the logic that recognizes ^V followed by a number in input. 
+	  reuse the logic that recognizes ^V followed by a number in input.
 	  Now the minibuffer can accept any character except for nulls
 	  (originally requested by Sean Ahern, but Adam Denton reminded me).
 	+ modify txt-filt.l to highlight strings in double-quotes.
@@ -63,20 +84,20 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	> perl scripts by Kuntal Daftary (from his notes):
 	+ lock.pl is a simplistic extension to allow you to lock your vile
 	  sessions, say while temporarily leaving your terminal or something
-	  like that. 
+	  like that.
 	+ spell.pl is a spell checker within vile that behaves (almost) like
 	  ispell (and in fact does use ispell internally).  This one is
 	  inspired out of recent mail Christian Lindig providing a spell
 	  filter.  Also thanks to Tom for the -a flag :-)
-	+ pod documentation is within the files themselves. just dump all the files in 
-	  your ~/.vile/perl  
+	+ pod documentation is within the files themselves. just dump all the files in
+	  your ~/.vile/perl
 	+ spell.pl also required me to rig up a mlreply_opts command as an
 	  addition to the mlreply_* family of commands already offered in the
 	  Vile package.  Tho the invocation is quite similar to the builtin
 	  mlreply_* commands, the behavior is simplistic, and does not exactly
 	  match that of other Vile commands, e.g., mini-buffer editing is not
-	  supported and TAB-completion behavior is different. 
- 
+	  supported and TAB-completion behavior is different.
+
 
 (tom) 990614 (h)
 	+ updated example in menus.doc, dropping references to macros not in
@@ -101,7 +122,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	  it (request by Alex Wetmore).
 	+ modify c-filt.c to highlight floating point constants.
 	+ modify write_string() function in filters.c to avoid writing a
-	  newline that's beyond the limit of the string passed as parameter. 
+	  newline that's beyond the limit of the string passed as parameter.
 	  This fixes a case in m4-filt.l that would write an extra newline
 	  after comment lines containing only a "#".
 	+ add "/**/#" lines to imakemode preamble pattern, to accommodate old
@@ -135,16 +156,16 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	+ correct ifdef in x11.c to so wheel-mouse support compiles properly
 	  when menus are not used (patch by Kevin Buettner).
 	> patches by Clark Morgan:
-	+ minor patch to forces wvwrap to pop winvile to the foreground 
-	  (convenient when winvile does not currently have focus). 
+	+ minor patch to forces wvwrap to pop winvile to the foreground
+	  (convenient when winvile does not currently have focus).
 	+ a new "sync-file" command enables synchronization of winvile's
 	  current buffer with the DevStudio text editor.  When this command is
 	  used in conjunction with visvile's key redirection feature, it's now
-	  possible to set a breakpoint in DevStudio from winvile like so: 
+	  possible to set a breakpoint in DevStudio from winvile like so:
 	  + use winvile's search capabilities (including tags) to find the
 	    program location where a breakpoint is desired, and
 	  + press F9 (standard DevStudio shortcut that sets/clears a
-	    breakpoint). 
+	    breakpoint).
 
 (tom) 990602 (f)
 	+ implement fcolor and bcolor options for xvile.
@@ -200,23 +221,23 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	  fcolor1 through fcolor15 (patch by Brendan O'Dea).
 	> patches by Clark Morgan:
 	+ removed duplicate winopen and winopen-nocd documentation from
-	  vile.hlp 
-	+ winvile only paints its frame once at startup. 
+	  vile.hlp
+	+ winvile only paints its frame once at startup.
 	+ added logic to ensure the the winvile frame is completely exposed on
-	  the desktop (i.e., not clipped by taskbar or painted offscreen). 
+	  the desktop (i.e., not clipped by taskbar or painted offscreen).
 	+ further changes to permit a winvile user to specify any geometry that
 	  lies within the region bounded by the current desktop screen.
 	+ setting winvile font via dialog box now repaints screen (in all
-	  cases) and flushes status message to mini-buffer. 
+	  cases) and flushes status message to mini-buffer.
 	+ fixed a couple of minor problems with wvwrap when setting winvile's
 	  current working directory.  Wvwrap also makes sure the editor is
-	  visible. 
-	+ finally, a rather big change, I've dumped the oleauto Open method. 
+	  visible.
+	+ finally, a rather big change, I've dumped the oleauto Open method.
 	  As it turns out, this was a bad idea.  I saw cases 2nite where the
 	  editor was "simultaneously" changing its working directory and
 	  opening a file.  Not good.  This kind of race condition is avoided
 	  when VileKeys() "drives" the editor because all of winvile's commands
-	  are serialized via a Windows message queue. 
+	  are serialized via a Windows message queue.
 
 (tom) 990519 (d)
 	+ remove fragment of code in c-filt.c which left it incorrectly parsing
@@ -236,13 +257,13 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	+ hook the winvile right mouse button to the new winopen command.
 	+ Add an Open method to winvile ole automation server, which may be
 	  used to directly open a filename in the editor (thus avoiding the
-	  overhead of VileKeys). 
+	  overhead of VileKeys).
 	+ Added wvwrap.exe to the Win32 distribution.  This utility opens one
 	  or more files in a _single_ winvile instance via a right mouse click
 	  in the Windows Explorer.  For more details, please read
-	  doc/oleauto.doc . 
-	  [ Note: wvwrap.exe is Ed Henderson's brainchild and he wrote the 
-	    original version of the program.  Thanks, Ed! ] 
+	  doc/oleauto.doc .
+	  [ Note: wvwrap.exe is Ed Henderson's brainchild and he wrote the
+	    original version of the program.  Thanks, Ed! ]
 
 (tom) 990510 (c)
 	+ fix an overlooked reset of lines read if we are reading via

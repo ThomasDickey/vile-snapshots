@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.282 1999/06/13 18:15:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.288 1999/07/05 21:22:14 tom Exp $
  *
  */
 
@@ -796,17 +796,16 @@ static	UINT	scrflags;
 
 /* line to virtual column */
 int
-mk_to_vcol (MARK mark, int expanded, int base)
+mk_to_vcol (MARK mark, int expanded, int base, int col)
 {
-	int	col = 0;
 	int	i = base;
 	int	c;
 	int	lim;
 	LINEPTR lp;
+	int	extra = ((!global_g_val(GMDALTTABPOS) && !insertmode) ? 1 : 0);
 
 	lp = mark.l;
-	lim = mark.o
-		+ ((!global_g_val(GMDALTTABPOS) && !insertmode) ? 1 : 0);
+	lim = mark.o + extra;
 	if (lim > llength(lp))
 		lim = llength(lp);
 
@@ -822,11 +821,80 @@ mk_to_vcol (MARK mark, int expanded, int base)
 		}
 
 	}
-	col += base;
-	if (!global_g_val(GMDALTTABPOS) && !insertmode &&
-			col != 0 && mark.o < llength(lp))
+	if (extra && (col != 0) && (mark.o < llength(lp)))
 		col--;
 	return col;
+}
+
+/*
+ * Convert the window's DOT into a virtual column.  This is used both for the
+ * ruler, as well as for updating the cursor position, and for very long lines
+ * can be slow.  So we try to cache a good starting point to allow rapid
+ * movement along the line.
+ */
+static int
+dot_to_vcol(WINDOW *wp)
+{
+#if OPT_CACHE_VCOL
+	W_TRAITS *wt	= &(wp->w_traits);
+	int check;
+	int need_col	= FALSE;
+	int result;
+	int shift	= w_val(wp, WVAL_SIDEWAYS)
+			? w_val(wp, WVAL_SIDEWAYS) - 1
+			: 0;
+	int use_off	= w_left_margin(wp);
+
+	if (wt->w_left_dot.l != wp->w_dot.l) {
+		wt->w_left_dot.l = wp->w_dot.l;
+		wt->w_left_dot.o = 0;
+		need_col = TRUE;
+	}
+
+#ifdef WMDLINEWRAP
+	if (w_val(wp,WMDLINEWRAP)) {
+		int lo = wt->w_left_dot.o;
+		int hi = lo + term.cols;
+
+		if ((wp->w_dot.o <  lo
+		  || wp->w_dot.o >= hi) ) {
+			wt->w_left_dot.o = wp->w_dot.o - (term.cols / 2);
+			if (wt->w_left_dot.o < 0)
+				wt->w_left_dot.o = 0;
+			need_col = TRUE;
+		}
+		if (wt->w_left_dot.o)
+			use_off = 0;
+	} else
+#endif
+	if (wt->w_left_col != shift) {
+		wt->w_left_col = shift;
+		wt->w_left_dot.o = col2offs(wp, wt->w_left_dot.l, -1);
+		need_col = FALSE;
+	}
+
+	if (need_col) {
+		wt->w_left_col = 0;
+		if (wt->w_left_dot.o > 0) {
+			wt->w_left_col = mk_to_vcol(wt->w_left_dot,
+						    w_val(wp,WMDLIST),
+						    w_left_margin(wp),
+						    0);
+		}
+	}
+	result = mk_to_vcol(wp->w_dot,
+			w_val(wp,WMDLIST),
+			wt->w_left_dot.o + use_off,
+			wt->w_left_col);
+#if OPT_TRACE
+	check = mk_to_vcol(wp->w_dot, w_val(wp,WMDLIST), w_left_margin(wp), 0);
+	TRACE(("dot_to_vcol result %d (off=%d)\n", result, wp->w_dot.o))
+	TRACE(("-> %s:%s\n", (check != result) ? "OOPS" : "OK", wp->w_bufp->b_bname))
+#endif
+	return result;
+#else
+	return mk_to_vcol(wp->w_dot, w_val(wp,WMDLIST), w_left_margin(wp), 0);
+#endif
 }
 
 void
@@ -987,6 +1055,10 @@ int force)	/* force update past type ahead? */
 						owp->w_flag |= WFMODE;
 			}
 		}
+#if OPT_CACHE_VCOL
+		if (wp->w_flag & ( WFEDIT | WFHARD | WFMODE | WFKILLS | WFINS ))
+			wp->w_traits.w_left_dot = nullmark;
+#endif
 	}
 
 	/* look for scratch-buffers that should be recomputed.  */
@@ -1001,7 +1073,7 @@ int force)	/* force update past type ahead? */
 	for_each_visible_window(wp) {
 		if (w_val(wp,WMDRULER)) {
 			int	line  = line_no(wp->w_bufp, wp->w_dot.l);
-			int	col   = mk_to_vcol(wp->w_dot, w_val(wp,WMDLIST), 0) + 1;
+			int	col   = dot_to_vcol(wp) + 1;
 
 			if (line != wp->w_ruler_line
 			 || col  != wp->w_ruler_col) {
@@ -1031,7 +1103,7 @@ int force)	/* force update past type ahead? */
 				}
 				if ((wp->w_flag & ~(WFMODE)) == WFEDIT)
 					updone(wp);	/* update EDITed line */
-				else if (wp->w_flag & ~(WFMOVE))
+				else if (wp->w_flag & ~(WFMOVE|WFMODE))
 					updall(wp);	/* update all lines */
 #if OPT_SCROLLBARS
 				if (wp->w_flag & (WFHARD | WFSBAR))
@@ -1337,7 +1409,7 @@ int sline)
 		horscroll = 0;
 	} else
 #endif
-	{
+	if (sline >= 0) {
 		vscreen[sline]->v_flag |= VFCHG;
 		vscreen[sline]->v_flag &= ~VFREQ;
 		if (w_val(wp,WVAL_SIDEWAYS))
@@ -1399,8 +1471,14 @@ int *screencolp)
 		}
 	}
 
-	/* find the current column */
-	col = mk_to_vcol(DOT, w_val(curwp,WMDLIST), w_left_margin(curwp));
+	/*
+	 * Find the current column.  Reuse the ruler column-value if we
+	 * computed it.
+	 */
+	if (w_val(curwp,WMDRULER))
+		col = curwp->w_ruler_col + w_left_margin(curwp) - 1;
+	else
+		col = dot_to_vcol(curwp) + w_left_margin(curwp);
 
 #ifdef WMDLINEWRAP
 	if (w_val(curwp,WMDLINEWRAP)) {

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.358 1999/07/03 13:29:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.359 1999/07/05 11:51:01 tom Exp $
  *
  */
 
@@ -187,7 +187,7 @@ void update_scratch (const char *name, int (*func)(BUFFER *));
 extern char *lsprintf (char *buf, const char *fmt, ...);
 extern int col_limit (WINDOW *wp);
 extern int im_waiting (int flag);
-extern int mk_to_vcol (MARK mark, int expanded, int base);
+extern int mk_to_vcol (MARK mark, int expanded, int base, int col);
 extern int nu_width (WINDOW *wp);
 extern int offs2col (WINDOW *wp, LINEPTR lp, C_NUM offset);
 extern int update (int force);

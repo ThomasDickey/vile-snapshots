@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.106 1999/07/03 14:12:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.111 1999/07/06 01:07:54 tom Exp $
  *
  */
 
@@ -60,7 +60,7 @@ int
 gotobol(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	DOT.o  = w_left_margin(curwp);
-	return mvleftwind(TRUE, -w_val(curwp,WVAL_SIDEWAYS));
+	return mvleftwind(TRUE, w_val(curwp,WVAL_SIDEWAYS));
 }
 
 /*
@@ -957,6 +957,83 @@ backhpage(int f, int n)
 	return status;
 }
 
+/*
+ * Move forward n rows on the screen, staying in the same column.  It's ok to
+ * scroll, too.
+ */
+int
+forw_row(int f, int n)
+{
+	int code = TRUE;
+	int col, next;
+
+	if (f == FALSE) n = 1;
+	if (n < 0) {
+		code = back_row(f, -n);
+	} else if (n > 0) {
+
+		/* set the "goal" column if necessary */
+		if (curgoal < 0)
+			curgoal = getccol(FALSE);
+
+		col = curgoal;
+		next = col;
+
+		while ((n-- > 0) && (code == TRUE)) {
+			int save = next;
+			next += term.cols;
+			if (gotocol(TRUE, next + 1) == FALSE) {
+				curgoal %= term.cols;
+				gotocol(TRUE, save);
+				code = forwline(TRUE, 1);
+			} else {
+				curgoal = next;
+			}
+		}
+	}
+	return code;
+}
+
+/*
+ * Move back n rows on the screen, staying in the same column.  It's ok to
+ * scroll, too.
+ */
+int
+back_row(int f, int n)
+{
+	int code = TRUE;
+	int col, next;
+
+	if (f == FALSE) n = 1;
+	if (n < 0) {
+		code = forw_row(f, -n);
+	} else if (n > 0) {
+
+		/* set the "goal" column if necessary */
+		if (curgoal < 0)
+			curgoal = getccol(FALSE);
+
+		col = curgoal;
+		next = col;
+
+		while ((n-- > 0) && (code == TRUE)) {
+			next -= term.cols;
+			if (next < 0) {
+				if ((code = backline(TRUE, 1)) == TRUE
+				 && llength(DOT.l) >= curgoal) {
+					next = llength(DOT.l) / term.cols;
+					next = (next * term.cols) + curgoal;
+					curgoal = next;
+				}
+			} else {
+				if ((code = gotocol(TRUE, next + 1)) == TRUE)
+					curgoal = next;
+			}
+		}
+	}
+	return code;
+}
+
 #if OPT_SHOW_MARKS
 static int
 show_mark (int count, BUFFER *bp, MARK mark, int name)
@@ -979,7 +1056,7 @@ show_mark (int count, BUFFER *bp, MARK mark, int name)
 		bprintf("\n%c     %8d %8d",
 			name,
 			line_no(bp, mark.l),
-			mk_to_vcol(mark, FALSE, 0) + 1);
+			mk_to_vcol(mark, FALSE, b_left_margin(bp), 0) + 1);
 		if (llength(mark.l) > 0) {
 			bprintf("%*P%*S",
 				stop - DOT.o, ' ',
@@ -1033,7 +1110,7 @@ update_marklist(BUFFER *bp GCC_UNUSED)
 #endif
 
 #endif
- 
+
 /*
  * Implements the vi "m" command.
  *
