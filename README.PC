@@ -18,7 +18,8 @@ if you build with Watcom, you'll need to have both vile.exe and dos4gw.exe
 in your path to run vile.
 
 if you build with DJGPP, you'll need to have both vile.exe and go32.exe
-in your path to run vile.
+in your path to run vile.  newer versions of DJGPP may rely on DPMI, and
+you might need cwsdpmi.exe instead of go32.  experiment.  have fun!
 
 let me know about bugs/oddities when you use vile on a PC -- i probably don't
 use it as much as you do.
@@ -74,5 +75,5 @@ only port.
 paul fox, pgf@foxharp.boston.ma.us (home)
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.1 1996/03/29 16:15:14 pgf Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.11 1996/07/11 15:07:39 pgf Exp $
 ------------------------
