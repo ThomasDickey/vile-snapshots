@@ -306,7 +306,42 @@ Oct, 1998
     improve winvile, which now supports scroll bars and two new
     command-line options that control the editor's geometry and font.
 
+Apr, 1999
+    vile 8.3 is released.  This release includes much enhanced syntax
+    filter capabilities.  The filters are now much faster, mainly because
+    vile uses a new command attribute-from-filter to apply their output
+    directly as attributes to the buffer rather than modifying (and
+    allowing undo).
+
+    The organization of the keyword files for the syntax filters is now
+    associated with majormodes.  Syntax filters are defined for most of the
+    predefined majormodes which include:
+
+        adamode                   jsmode                    perlmode
+        awkmode                   keymode                   sccsmode
+        batmode                   latexmode                 shmode
+        cmode                     lexmode                   sqlmode
+        cshmode                   m4mode                    tcmode
+        cwebmode                  mailmode                  tclmode
+        dclmode                   makemode                  timode
+        diffmode                  mmsmode                   txtmode
+        htmlmode                  nrmode                    vilemode
+        imakemode                 pasmode                   yaccmode
+        javamode
+
+    Other changes of note (this is not an exhaustive list):
+
+    + removed/rewrote code which would prevent us from making vile available
+      under more liberal licensing.
+
+    + winvile and xvile have icons.
+
+    + new macro directives added, including:
+
+      ~local  ~hidden  ~with  ~endwith  ~elsewith
+
+    + many VMS bug fixes and enhancements.  8.3 is a keeper if you use VMS.
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.72 1999/04/13 23:29:34 pgf Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.73 1999/04/28 00:47:05 cmorgan Exp $
 -------------------------------

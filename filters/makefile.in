@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.45 1999/04/17 14:47:58 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.46 1999/04/29 09:55:12 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -268,7 +268,7 @@ config.status: configure
 	$(SHELL) ./config.status --recheck
 
 mostlyclean:
-	-$(RM) *.[oi] o$(TARGET) $(BUILTSRCS) core *~ *.BAK $(LEX_OUTPUT_ROOT).*
+	-$(RM) *.[oi] o$(TARGET) $(BUILTSRCS) core *~ *.BAK $(LEX_OUTPUT_ROOT).* *.bb* *.da *.gcov
 
 clean: mostlyclean
 	-$(RM) $(ALL)

@@ -1,3 +1,25 @@
+Changes for vile 8.4 (released ??? ??? ??, ????)
+
+(tom) 990429 (a)
+	+ minor tweak to c-filt.c so it can be used on gcov output:  the GNU
+	  coverage tool puts a count down the left margin to show lines
+	  executed, and "######" where they're not.  c-filt.c did not expect
+	  the latter, and omitted some of the #'s.
+	+ correct install rule in filters/makefile.wnt, which combined the
+	  rules that should have gone to VILE_STARTUP_PATH with the ones
+	  for VILE_LIBDIR_PATH.
+	+ remove/correct obsolete description in vile.hlp for syntax filters
+	  (reported by Clark Morgan).
+	+ update README to describe 8.3 (patch by Clark Morgan).
+	+ correct use of $(MAKEFLAGS) in makefile.in, which is all of the
+	  makeflags including assignments, not like $(MFLAGS) which was only
+	  the flags without '-'.  This made "make EXTRA_FLAGS=-O" fail
+	  (reported by Jeff Morriss <morriss@pobox.com>).
+	+ add -v option to filters, to show files opened and keywords/classes
+	  defined, for debugging.  Repeat the -v option for more details.
+	+ correct expressions for sccsmode; the ^A characters were given as
+	  \001's.
+
 Changes for vile 8.3 (released Fri Apr 23, 1998)
 
 (tom) 990420 (v)

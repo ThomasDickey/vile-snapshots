@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.54 1999/04/17 15:40:09 tom Exp $
+; $Id: filters.rc,v 1.55 1999/04/27 21:25:42 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -79,7 +79,7 @@ define-mode dcl
 
 define-mode diff
 ~with define-submode diff
-	suf "\\.\\(patch\\|diff\\)$"
+	suf "\\.\\(patch\\|diff\\|rej\\)$"
 	pre "^\\<diff\\>"
 ~endwith
 
@@ -226,13 +226,13 @@ define-mode perl
 define-mode sccs
 ~with define-submode sccs
 	suf "\\<s\\."
-	pre "^\\001h"
+	pre "^\h"
 ~elsewith define-submode sccs group "delete"
-	fence-if       "^\\001D\\s\\+[0-9]\\+$"
-	fence-fi       "^\\001E\\s\\+[0-9]\\+$"
+	fence-if       "^\D\\s\\+\\(\d\\+\\)$"
+	fence-fi       "^\E\\s\\+\\(\d\\+\\)$"
 ~elsewith define-submode sccs group "insert"
-	fence-if       "^\\001I\\s\\+[0-9]\\+$"
-	fence-fi       "^\\001E\\s\\+[0-9]\\+$"
+	fence-if       "^\I\\s\\+\\(\d\\+\\)$"
+	fence-fi       "^\E\\s\\+\\(\d\\+\\)$"
 ~endwith
 
 ; This is matched after "csh", and will pick up /bin/sh, /bin/bash, /bin/ksh

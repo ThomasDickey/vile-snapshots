@@ -9,6 +9,7 @@ highlighting.
 Except for the manpage filter (a special case) all of these can be (and most
 are) implemented using lex.
 
+
 KEYWORDS
 --------
 
@@ -16,10 +17,34 @@ Each filter reads one or more keyword files, which list specific keywords
 and their highlighting attributes, as well as classes of keywords.
 
 The filters search for these files in the current, $HOME, $HOME/vile and
-startup directories.  On Unix, the keyword files are hidden using a "." prefix. 
-Except for MS-DOS, the suffix is ".keywords"; on that platform it is ".key". 
+startup directories.  On Unix, the keyword files in the current and $HOME
+directories are hidden using a "." prefix.  Except for MS-DOS, the suffix is
+".keywords"; on that platform it is ".key".  In the source distribution, these
+files are ".key", to keep them compatible with MS-DOS 8.3 filename lengths.
+
 You can specify the root name to search, otherwise they search for "vile" and
-the filter name, e.g., "c".
+the compiled-in filter name.  For example, the C filter (vile-c-filt) will
+search first for
+
+	./.vile.keywords
+	$HOME/.vile.keywords
+	$HOME/vile/vile.keywords
+	$VILE_STARTUP_PATH/vile.keywords
+
+and then
+
+	./.c.keywords
+	$HOME/.c.keywords
+	$HOME/vile/c.keywords
+	$VILE_STARTUP_PATH/c.keywords
+
+in each case stopping as soon as it has found a corresponding file.  The
+leading '.' for the filename is used only to hide the file; there is no
+distinction made about the contents of the files.  The vile.keywords file
+contains color information for the most common classes.  The c.keywords file
+contains the actual keywords to be highlighted, referenced to the classes which
+are in turn colored.  You can see the search for keyword files by running the
+filter with a -v option, repeating the option to get more verbose traces.
 
 Predefined keyword classes include (but may not necessarily be used in specific
 filters):
@@ -34,6 +59,10 @@ filters):
 	Number
 	Preproc
 	Type
+
+A few filters, e.g., cweb, latex, diff, use additional classes.  The predefined
+classes are a guideline, to implement a common style across the different
+filters.
 
 Each line in the keyword file consists of two strings separated by a colon (:).
 If the first string is empty, the line is treated as a comment.  The second
@@ -51,9 +80,10 @@ case, the parameter of the include is the root name of the keyword file, e.g.,
 You can change the characters assigned to ':' and '.' using ".equals" and
 ".meta" directives, respectively.
 
-You can modify the behavior slightly, by giving an absolute pathname with
-the -k option, but otherwise they search for both "vile" and the specific
+You can modify the behavior slightly, by giving an absolute pathname with the
+-k option, but otherwise the filters search for both "vile" and the specific
 language keywords, if any.
+
 
 PROGRAMS
 --------
@@ -87,6 +117,7 @@ The following are implemented:
 	vile-vile-filt	(Vile's macros)
 	vile-yacc-filt	(yacc)
 
+
 BUGS (1999/3/8)
 ----
 
@@ -95,4 +126,4 @@ Not all filters use a keywords file (yet).
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.5 1999/04/17 14:48:31 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.6 1999/04/29 01:39:59 tom Exp $

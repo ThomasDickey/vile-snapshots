@@ -2984,10 +2984,10 @@ Syntax coloring
 	way of reapplying the coloring after a succession of edits to
 	the buffer.
 
-	The filter programs do their work based on the contents of a
-	.vile.keywords, which contains a set of "keyword class
-	descriptor" pairs.  An example vile.keywords file might
-	contain:
+	The filter programs do their work based on the contents of the file
+	.vile.keywords (or vile.keywords depending on your configuration),
+	which contains a set of "keyword class descriptor" pairs.  An
+	example keyword file might contain:
 
 	    Action:BC1
 	    Comment:C1
@@ -3004,7 +3004,7 @@ Syntax coloring
 	attribute given to a language's comments, which will be given
 	"B"old "C"olor "1".  "Literal" applies to string literals,
 	which will be "U"nderlined "C"olor "5".  "Ident" applies to
-	identifier values ("R"egular), etc.  This file provides the
+	identifier values ("R"everse), etc.  This file provides the
 	global coloring scheme for all the filters.  The association
 	of specific language filters to the generic "keyword classes"
 	are given in language specific mapping files, which are referred
@@ -3777,15 +3777,6 @@ Win32 specifics
 				set-variable $font "courier new,8"
 			~endif
 
-	Utilities
-	---------
-	vile-c-filt has been ported and may be used to statically color
-	source files (refer to the section of this file entitled "Filtering
-	C programs" for further info).  There exist detailed, win32-related
-	comments within the source file c-filt.c that describe minor
-	porting changes, as well as providing example usage that leverages
-	the editor's 16-color palette.
-
 	Perl
 	----
 	At the user's discretion, vile may be built with an embedded perl
@@ -4079,4 +4070,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.407 1999/04/23 12:32:44 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.408 1999/04/29 01:08:10 tom Exp $
