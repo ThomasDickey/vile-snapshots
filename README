@@ -16,7 +16,7 @@ more recent additions to this README appear near the bottom.  that is, most
 of the newest stuff is at the end, not up here where you are.
 
 visit
-	ftp://dickey.his.com/vile
+	ftp://invisible-island.net/vile
 	ftp://ftp.phred.org/pub/vile
 to be sure it's still the latest.
 
@@ -44,13 +44,13 @@ tom dickey, dickey@herndon4.his.com (current maintainer)
 ------------------------------------------------------
 Up-to-date copies of vile, including executables for DOS, Win32 and
 OS/2 are found at
-	ftp://dickey.his.com/vile/
+	ftp://invisible-island.net/vile/
 
 which is mirrored at
 	ftp://ftp.phred.org/pub/vile/
 
 Development patches are found at
-	ftp://dickey.his.com/vile/patches/
+	ftp://invisible-island.net/vile/patches/
 	ftp://ftp.phred.org/pub/vile/patches/
 
 In addition, we have distributed copies at other sites, including
@@ -628,5 +628,5 @@ June, 2002
     + add $prompt variable, to allow changing the command-line prompt.
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.87 2002/06/25 11:39:01 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.88 2002/06/26 00:25:57 tom Exp $
 -------------------------------

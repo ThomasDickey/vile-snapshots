@@ -1,5 +1,5 @@
 
-Getting along with vile						(version 9.2)
+Getting along with vile						(version 9.3)
 -----------------------						-------------
 
 	Use Ctrl-D and Ctrl-U to scroll through this help information.
@@ -3551,7 +3551,7 @@ Color basics
 
 	For additional hints and help, try this URL:
 
-	    http://dickey.his.com/xterm/xterm.faq.html#no_color
+	    http://invisible-island.net/xterm/xterm.faq.html#no_color
 
 	Visual matching (VM)
 	--------------------
@@ -3692,9 +3692,9 @@ Syntax coloring
 	c) if on a Unix host, compile and link the editor from the source
 	   distribution.  This step is optional on a win32 host, as precompiled
 	   binaries (editor and filters) are available from
-	   ftp://dickey.his.com/vile/ .  Note that almost all filters require
-	   preprocessing with flex (not a standard Windows tool) prior to
-	   compilation.
+	   ftp://invisible-island.net/vile/ .  Note that almost all filters
+	   require preprocessing with flex (not a standard Windows tool) prior
+	   to compilation.
 	d) if you currently use the syntax coloring system that existed
 	   prior to vile version 8.3, then find and delete all instances of
 	   these files:
@@ -5758,13 +5758,13 @@ Where to Get It
 ---------------
 	Up-to-date copies of vile, including executables for DOS, Win32 and
 	OS/2 are found at
-		ftp://dickey.his.com/vile/
+		ftp://invisible-island.net/vile/
 
 	which is mirrored at
 		ftp://ftp.phred.org/pub/vile/
 
 	Development patches are found at
-		ftp://dickey.his.com/vile/patches/
+		ftp://invisible-island.net/vile/patches/
 		ftp://ftp.phred.org/pub/vile/patches/
 
 	In addition, we have distributed copies at other sites, including
@@ -5781,6 +5781,6 @@ Problems
 	Requests to be put on the announcement list should go to
 		announce-request@vile.cx
 
-Copyright 1995-2002 by Paul Fox, Tom Dickey, and Kevin Buettner
+Copyright 1995-2002 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.549 2002/06/25 11:31:34 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.550 2002/06/26 00:30:19 tom Exp $
