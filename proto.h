@@ -4,18 +4,19 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.255 1997/10/13 13:06:48 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.257 1997/10/27 11:36:41 tom Exp $
  *
  */
 
 #ifndef VILE_PROTO_H
 #define VILE_PROTO_H 1
 
+extern int main (int argc, char **argv);
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern int main (int argc, char **argv);
 #ifndef strmalloc
 extern char *strmalloc (const char *s);
 #endif
@@ -70,6 +71,13 @@ extern char *flook (char *fname, int hflag);
 extern char *kcod2pstr (int c, char *seq);
 extern int kcod2escape_seq (int c, char *ptr);
 extern int fnc2kcod (const CMDFUNC *);
+#if OPT_NAMEBST
+extern int delete_namebst(NBST **child, NBST **parent, const char *name);
+extern int insert_namebst(NBST **head, const char *name, const CMDFUNC *cmd, int ro);
+extern int rename_namebst(NBST **head, const char *oldname, const char *newname);
+extern void build_namebst(NBST **head, const NTAB *nametbl, int lo, int hi);
+extern void trace_namebst(NBST *head, int level, char *tag);
+#endif
 #if DISP_X11
 extern char *fnc2pstr (const CMDFUNC *f);
 #endif
@@ -110,6 +118,8 @@ extern int shiftwid_val (BUFFER *bp);
 extern int has_C_suffix (BUFFER *bp);
 #endif
 extern int delink_bp (BUFFER *bp);
+extern char *strip_brackets(char *dst, const char *src);
+extern char *add_brackets(char *dst, const char *src);
 extern int zotbuf (BUFFER *bp);
 extern int zotwp (BUFFER *bp);
 extern BUFFER *find_any_buffer (const char *name);

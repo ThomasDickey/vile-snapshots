@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.150 1997/10/07 23:24:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.151 1997/10/16 10:34:32 Alex.Wetmore Exp $
  *
  */
 
@@ -450,6 +450,7 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 		ElseIf( EVMATCH )	value = (patmatch == NULL) ? 
 							"" : patmatch;
 		ElseIf( EVMODE )	value = current_modename();
+		ElseIf( EVEOC )		value = l_itoa(ev_end_of_cmd ? 1 : 0);
 #if OPT_MLFORMAT
 		ElseIf( EVMLFORMAT )
 			if (modeline_format == 0)

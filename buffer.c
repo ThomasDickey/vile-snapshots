@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.162 1997/10/13 13:06:48 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.163 1997/10/25 12:53:06 tom Exp $
  *
  */
 
@@ -294,7 +294,7 @@ FreeBuffer(BUFFER *bp)
 	}
 #endif
 	lfree(buf_head(bp), bp);		/* Release header line. */
-	if (delink_bp(bp)) {
+	if (delink_bp(bp) || bp == bminip) {
 		if (curbp == bp)
 			curbp = NULL;
 
@@ -1034,6 +1034,29 @@ delink_bp(BUFFER *bp)
 	return TRUE;
 }
 
+char *
+strip_brackets(char *dst, const char *src)
+{
+	size_t len;
+
+	if (*src == SCRTCH_LEFT[0])
+		src++;
+	(void) strcpy(dst, src);
+	if ((len = strlen(dst)) != 0
+	 && dst[len-1] == SCRTCH_RIGHT[0]) {
+		dst[--len] = EOS;
+	}
+	return dst;
+}
+
+char *
+add_brackets(char *dst, const char *src)
+{
+	dst[0] = SCRTCH_LEFT[0];
+	(void)strcat(strncpy(&dst[1], src, NBUFN-3), SCRTCH_RIGHT);
+	return dst;
+}
+
 int
 zotbuf(register BUFFER *bp)	/* kill the buffer pointed to by bp */
 {
@@ -1080,6 +1103,14 @@ zotbuf(register BUFFER *bp)	/* kill the buffer pointed to by bp */
 		if (didswitch)
 			(void)swbuffer(bp);
 	} else {
+#if OPT_NAMEBST
+		if (is_scratchname(bp->b_bname)) {
+			char procname[NBUFN];
+			NBST *parent = 0;
+			delete_namebst(&namebst, &parent,
+				strip_brackets(procname, bp->b_bname));
+		}
+#endif
 		FreeBuffer(bp);
 		updatelistbuffers();
 	}
@@ -1106,9 +1137,18 @@ namebuffer(int f GCC_UNUSED, int n GCC_UNUSED)	/*	Rename the current buffer	*/
 			return(FALSE);
 	} while (bp != 0);
 
-	set_bname(curbp, bufn);		/* copy buffer name to structure */
-	curwp->w_flag |= WFMODE;	/* make mode line replot */
-	b_clr_scratch(curbp);		/* if renamed, we must want it */
+#if OPT_NAMEBST
+	if (is_scratchname(curbp->b_bname)) {
+		char procname[NBUFN];
+		if (rename_namebst(&namebst,
+				strip_brackets(procname, curbp->b_bname),
+				bufn) != TRUE)
+			return FALSE;
+	}
+#endif
+	set_bname(curbp, bufn);	/* copy buffer name to structure */
+	curwp->w_flag |= WFMODE;/* make mode line replot */
+	b_clr_scratch(curbp);	/* if renamed, we must want it */
 	mlerase();
 	updatelistbuffers();
 	return(TRUE);

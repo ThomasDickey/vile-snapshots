@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.86 1997/10/07 18:01:38 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.87 1997/10/16 10:34:36 Alex.Wetmore Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -156,6 +156,7 @@ regex							# MVAL_ prefix
 "directory"	DIRECTORY		# controls location of temp-files
 "discmd"	DISCMD			# display commands on command line
 "disinp"	DISINP			# display command line input characters
+"end-of-cmd"	EOC			# true if they ended the cmd with <CR>
 "exit-hook"	EXITHOOK	OPT_PROCEDURES	# procedure to run when quitting
 "flicker"	FLICKER			# flicker suppression
 "font"		FONT		DISP_X11	# current font

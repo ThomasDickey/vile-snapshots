@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.323 1997/10/15 23:22:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.324 1997/10/23 23:14:14 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -431,6 +431,7 @@
 #define OPT_UPBUFF      !SMALLER		/* animated buffer-update */
 #define OPT_WIDE_CTYPES !SMALLER		/* extra char-types tests */
 #define OPT_HILITEMATCH !SMALLER		/* highlight all matches of a search */
+#define OPT_NAMEBST	!SMALLER		/* name's stored in a bst */
 
 /* "show" commands for the optional features */
 #define OPT_SHOW_EVAL   !SMALLER && OPT_EVAL	/* "show-variables" */
@@ -1956,6 +1957,19 @@ typedef struct {
 	char *n_name;
 	const CMDFUNC *n_cmd;
 }	NTAB;
+
+/*
+ * a binary search tree of the above structure.  we use this so that we can
+ * add in procedures as they are created.
+ */
+typedef struct NBST_st {
+	const char *n_name;		/* the name of the command	*/
+	const CMDFUNC *n_cmd;		/* if NULL, stored procedure	*/
+	int n_readonly;			/* original commands readonly	*/
+	struct NBST_st *n_left;		/* left children		*/
+	struct NBST_st *n_right;	/* right children		*/
+	struct NBST_st *n_parent;	/* our parent			*/
+}	NBST;
 
 /* when a command is referenced by bound key (like h,j,k,l, or "dd"), it
  *	is looked up one of two ways: single character 7-bit ascii commands (by
