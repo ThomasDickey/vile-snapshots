@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.160 1997/10/16 00:07:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.162 1997/10/27 12:09:16 tom Exp $
  *
  */
 
@@ -44,8 +44,16 @@ static	int	strinc (char *sourc, char *sub);
 static	int	unbindchar ( int c );
 static	int	update_binding_list ( BUFFER *bp );
 static	void	makebindlist (LIST_ARGS);
-
 #endif	/* OPT_REBIND */
+
+#if OPT_NAMEBST
+static  NBST *lookup_namebst(const int fullmatch, NBST *head, const char *name);
+static int kbd_complete_bst( int case_insensitive, int c, char *buf, int *pos);
+#else
+#define kbd_complete_bst(case_insensitive, c, buf, pos) \
+	kbd_complete(case_insensitive, c, buf, pos, \
+			(const char *)&nametbl[0], sizeof(nametbl[0]))
+#endif	/* OPT_NAMEBST */
 
 #if OPT_EVAL || OPT_REBIND
 static	const NTAB * fnc2ntab ( const CMDFUNC *cfp );
@@ -531,7 +539,7 @@ desfunc(int f GCC_UNUSED, int n GCC_UNUSED)	/* describe-function */
 	/* force an exact match by strinc() later on from makefuncdesc() */
 	described_cmd[0] = '^';
 
-	fnp = kbd_engl("Describe function whose full name is: ", 
+	fnp = kbd_engl("Describe function whose full name is: ",
 							described_cmd+1);
 	if (fnp == NULL || engl2fnc(fnp) == NULL) {
 		return no_such_function(fnp);
@@ -1144,6 +1152,16 @@ fnc2engl(const CMDFUNC *cfp)
  		 return any match or NULL if none
  */
 #define BINARY_SEARCH_IS_BROKEN 0
+#if OPT_NAMEBST
+const CMDFUNC *
+engl2fnc(const char *fname)	/* name to attempt to match */
+{
+	NBST *n = lookup_namebst((*fname == EOS), namebst, fname);
+
+	if (n == NULL) return NULL;
+	else return n->n_cmd;
+}
+#else
 #if BINARY_SEARCH_IS_BROKEN  /* then use the old linear look-up */
 const CMDFUNC *
 engl2fnc(const char *fname)	/* name to attempt to match */
@@ -1181,7 +1199,7 @@ engl2fnc(const char *fname)	/* name to attempt to match */
 		cur = (lo + hi) >> 1;
 		if ((r = strncmp(fname, nametbl[cur].n_name, len)) == 0) {
 			/* Now find earliest matching entry */
-			while (cur > lo 
+			while (cur > lo
 			    && strncmp(fname, nametbl[cur-1].n_name, len) == 0)
 				cur--;
 			return nametbl[cur].n_cmd;
@@ -1195,6 +1213,7 @@ engl2fnc(const char *fname)	/* name to attempt to match */
 	return NULL;
 }
 #endif	/* binary vs linear */
+#endif  /* OPT_NAMEBST */
 
 /* prc2kcod: translate printable code to 10 bit keycode */
 #if OPT_EVAL || OPT_REBIND
@@ -1829,7 +1848,7 @@ SIZE_T	size_entry)
 			else
 				cmplcol = 0;
 # else
-			if (!clexec && gvalpopup_choices 
+			if (!clexec && gvalpopup_choices
 			 && c == NAMEC && *pos == cpos) {
 				show_completions(case_insensitive, buf, cpos, nbp, size_entry);
 				cmplcol = -ttcol;
@@ -1960,8 +1979,7 @@ unsigned *pos)
 			unkeystroke(c);
 #endif
 	} else {
-		status = kbd_complete(FALSE, c, buf, pos,
-			(const char *)&nametbl[0], sizeof(nametbl[0]));
+		status = kbd_complete_bst(FALSE, c, buf, pos);
 	}
 	return status;
 }
@@ -1993,6 +2011,310 @@ char	*buffer)
 	return code;
 }
 
+#if OPT_NAMEBST
+int
+insert_namebst(NBST **head, const char *name, const CMDFUNC *cmd, int ro)
+{
+	if (*head == NULL) {
+		NBST *n;
+
+		n = castalloc(NBST, sizeof(NBST));
+		if (n == NULL) {
+			return no_memory("NBST");
+		}
+		n->n_name = name;
+		n->n_cmd = cmd;
+		n->n_left = 0;
+		n->n_right = 0;
+		n->n_parent = *head;
+		n->n_readonly = ro;
+		*head = n;
+		return TRUE;
+	} else {
+		NBST *n = *head;
+		int cmp = strcmp(name, n->n_name);
+		if (cmp == 0) {
+			if (n->n_readonly && !ro) {
+				mlforce("[Cannot redefine %s]", name);
+				return FALSE;
+			}
+			/* they are replacing an existing node with new data */
+			n->n_name = name;
+			n->n_cmd = cmd;
+			return TRUE;
+		} else if (cmp < 0) {
+			return insert_namebst(&(n->n_left), name, cmd, ro);
+		} else {
+			return insert_namebst(&(n->n_right), name, cmd, ro);
+		}
+	}
+}
+
+/*
+ * Find any leaf of the given binary-search tree, detach it from the tree.
+ */
+static NBST *
+detach_namebst(NBST *child, NBST *parent)
+{
+	if (child != 0) {
+		if (child->n_left != 0)
+			return detach_namebst(child->n_left, child);
+		if (child->n_right != 0)
+			return detach_namebst(child->n_right, child);
+		if (parent != 0) {
+			if (parent->n_left == child) {
+				parent->n_left = 0;
+			} else if (parent->n_right == child) {
+				parent->n_right = 0;
+			}
+		}
+	}
+	return child;
+}
+
+/*
+ * De-link the child node from the parent, so we can delete that node and
+ * move its children to the parent.  This is probably not the most efficient
+ * way to do it, but works.
+ */
+static NBST **
+delink_namebst(NBST **child, NBST **parent)
+{
+	NBST *head = (*child);
+
+	if (*parent != 0) {
+		if ((*parent)->n_left == head) {
+			(*parent)->n_left = 0;
+		} else {
+			(*parent)->n_right = 0;
+		}
+	} else {
+		/*
+		 * We're delinking the root-node.  Find a neighbor leaf-node,
+		 * promote that to the root, making its children the tree that
+		 * we found it in.
+		 */
+		if (head->n_left != 0) {
+			*parent	= head->n_left;
+			head->n_left = 0;
+		} else {	/* one-sided, simple detach */
+			*parent	= head->n_right;
+			head->n_right = 0;
+		}
+		*child = *parent;
+	}
+	return parent;
+}
+
+/*
+ * Lookup a name in the binary-search tree, remove it if found
+ */
+int
+delete_namebst(NBST **child, NBST **parent, const char *name)
+{
+	if ((*child) != 0) {
+		NBST *leaf;
+		NBST *head = (*child);
+		int cmp = strcmp(name, head->n_name);
+
+		if (cmp == 0) {
+			parent = delink_namebst(child, parent);
+			while ((leaf = detach_namebst(head,0)) != 0) {
+				if (leaf == head)
+					break;
+				insert_namebst(parent, leaf->n_name, leaf->n_cmd, leaf->n_readonly);
+				free((char *)leaf);
+			}
+			if (!head->n_readonly)
+				free((char *)(head->n_name));
+			free((char *)head);
+			return TRUE;
+		} else if (cmp < 0) {
+			return delete_namebst(&((*child)->n_left), child, name);
+		} else {
+			return delete_namebst(&((*child)->n_right), child, name);
+		}
+	}
+	return FALSE;
+}
+
+/*
+ * If we're renaming a procedure to another "procedure" name (i.e., bracketed),
+ * rename it in the name-completion table.  Otherwise, simply remove it from the
+ * name-completions.
+ */
+int
+rename_namebst(NBST **head, const char *oldname, const char *newname)
+{
+	NBST *prior;
+	int code = FALSE;
+
+	TRACE(("renaming procedure %s to %s\n", oldname, newname));
+	if ((prior = lookup_namebst(TRUE, *head, oldname)) != 0) {
+		NBST *parent = 0;
+		char procname[NBUFN];
+		const CMDFUNC *cmd = prior->n_cmd;
+		int ro = prior->n_readonly;
+
+		if ((code = delete_namebst(head, &parent,
+				strip_brackets(procname, oldname))) == TRUE) {
+			if (is_scratchname(newname)) {
+				code = insert_namebst(head,
+					strip_brackets(procname, newname),
+					cmd, ro);
+			}
+		}
+	}
+	return code;
+}
+
+/*
+ * Build the initial name binary search tree.  Since the nametbl is sorted we
+ * do this in a binary-search manner to get a balanced tree.
+ */
+void
+build_namebst(NBST **head, const NTAB *nptr, int lo, int hi)
+{
+	int cur;
+
+	cur = (lo + hi) >> 1;
+	if (!insert_namebst(head, nptr[cur].n_name, nptr[cur].n_cmd, TRUE)) {
+		tidy_exit(BADEXIT);
+	}
+	if (lo < cur) build_namebst(&((*head)->n_left), nptr, lo, cur - 1);
+	if (cur < hi) build_namebst(&((*head)->n_right), nptr, cur + 1, hi);
+}
+
+#if OPT_TRACE
+void
+trace_namebst(NBST *head, int level, char *tag)
+{
+	if (head != 0) {
+		if (head->n_left)
+			trace_namebst(head->n_left, level+1, "left");
+		if (head->n_name)
+			TRACE(("%*s%s (%s)%s\n", level*2, " ", head->n_name ? head->n_name : "<null>", tag, head->n_parent ? "*" : ""));
+		if (head->n_right)
+			trace_namebst(head->n_right, level+1, "right");
+	}
+}
+#endif
+
+/*
+ * Find the the matching entry given a name in the namebst.  If fullmatch is
+ * true then the name must completely match.  If it's false then only the first
+ * n characters must match and this will return the parent of the subtree that
+ * contains these entries (so that an inorder walk can find the other matches).
+ */
+NBST *
+lookup_namebst(const int fullmatch, NBST *head, const char *name)
+{
+	NBST *n;
+	int l = strlen(name);
+
+	n = head;
+	while (n != NULL) {
+		int cmp;
+
+		if (fullmatch) {
+			cmp = strcmp(name, n->n_name);
+		} else {
+			cmp = strncmp(name, (const char *) n->n_name, l);
+		}
+
+		if (cmp == 0) {
+			return n;
+		} else if (cmp < 0) {
+			n = n->n_left;
+		} else {
+			n = n->n_right;
+		}
+	}
+	return NULL;
+}
+
+/*
+ * Find the size of the bst with the matching name.
+ */
+static int
+count_bst_size(NBST *head, char *matchname, int l)
+{
+	int left = 0, right = 0, me = 0;
+
+	if ((head->n_left != NULL)) {
+		left = count_bst_size(head->n_left, matchname, l);
+	}
+
+	if ((l == 0)
+	 || (strncmp(head->n_name, matchname, l) == 0))
+		me = 1;
+
+	if ((head->n_right != NULL)) {
+		right = count_bst_size(head->n_right, matchname, l);
+	}
+
+	return me + left + right;
+}
+
+static void
+build_nametbl(NBST *head, char *matchname, int l, const char **nptr, int *i)
+{
+	if ((head->n_left != NULL)) {
+		build_nametbl(head->n_left, matchname, l, nptr, i);
+	}
+
+	if ((l == 0)
+	 || (strncmp(head->n_name, matchname, l) == 0)) {
+		nptr[*i] = head->n_name;
+		(*i)++;
+	}
+
+	if ((head->n_right != NULL)) {
+		build_nametbl(head->n_right, matchname, l, nptr, i);
+	}
+}
+
+/*
+ * This is invoked to find the closest name to complete from the current buffer
+ * contents.
+ */
+static int
+kbd_complete_bst(
+int	case_insensitive GCC_UNUSED,
+int	c,		/* TESTC, NAMEC or isreturn() */
+char	*buf,
+int	*pos)
+{
+	register SIZE_T cpos = *pos;
+	int status = FALSE;
+	NBST *firstmatch;
+
+	kbd_init();		/* nothing to erase */
+	buf[cpos] = EOS;	/* terminate it for us */
+
+	firstmatch = lookup_namebst(FALSE, namebst, buf);
+
+	if (firstmatch == NULL) {
+		status = FALSE;
+	} else {
+		int i = 0, cnt = count_bst_size(firstmatch, buf, cpos);
+		const char **nptr;
+		/* build a table that we can pass into kbd_complete */
+		nptr = castalloc(const char *, sizeof(const char *) * (cnt + 1));
+		if (nptr == NULL) {
+			(void) no_memory("NBST");
+			return FALSE;
+		}
+		build_nametbl(firstmatch, buf, cpos, nptr, &i);
+		nptr[i] = 0;
+		/* pass it into kbd_complete to let it do the job */
+		status = kbd_complete(FALSE, c, buf, pos, (char *)nptr, sizeof(*nptr));
+		free(nptr);
+	}
+	return status;
+}
+#endif /* OPT_NAMEBST */
+
 #if OPT_MENUS
 /* FIXME: reuse logic from makefuncdesc() */
 char *give_accelerator ( char *bname )
@@ -2002,14 +2324,14 @@ char *give_accelerator ( char *bname )
 	const CMDFUNC 	*cmd;
 	static char 	outseq[NLINE];
 
-	for (n=0; nametbl[n].n_name != 0; n++) 
+	for (n=0; nametbl[n].n_name != 0; n++)
 	{
 		if (!strcmp(nametbl[n].n_name, bname))
 		{
 			cmd = nametbl[n].n_cmd;
 
 			outseq[0] = '\0';
-	
+
 			for (i = 0; i < N_chars; i++)
 			{
 				if (asciitbl[i] == cmd)
@@ -2053,6 +2375,13 @@ bind_leaks(void)
 		free((char *)kbp);
 	}
 #endif
+#if OPT_NAMEBST
+	TRACE(("namebst: %p\n", namebst));
+	while (namebst != 0) {
+		NBST *head = 0;
+		TRACE(("freeing %s\n", namebst->n_name));
+		delete_namebst(&namebst, &head, namebst->n_name);
+	}
+#endif
 }
 #endif	/* NO_LEAKS */
-

@@ -2021,6 +2021,7 @@ Programmed procedures and macros
 	$directory	controls location of temp-files
 	$discmd		display commands on command line
 	$disinp		display command line input characters
+	$end-of-cmd	true if user ended the cmd with <CR>
 	$exit-hook	name of procedure to run when quitting
 	$flicker	set true to suppress CGA flicker on a PC.  ugh.
 	$font		current font name (X11 version only)
@@ -3496,4 +3497,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.332 1997/10/08 10:44:56 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.333 1997/10/27 03:03:47 tom Exp $

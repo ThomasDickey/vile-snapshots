@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.144 1997/10/13 13:06:48 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.145 1997/10/25 12:33:56 tom Exp $
  *
  */
 
@@ -298,6 +298,10 @@ execute_named_command(int f, int n)
 			fnp = "";
 		}
 	} else if ((cfp = engl2fnc(fnp)) == NULL) { /* bad function */
+		ev_end_of_cmd = end_of_cmd();
+		if (run_procedure(fnp)) {
+			return TRUE;
+		}
 		return no_such_function(fnp);
 	}
 	flags = cfp->c_flags;
@@ -1095,19 +1099,32 @@ storeproc(int f, int n)
 	register struct BUFFER *bp;	/* pointer to macro buffer */
 	register int status;		/* return status */
 	char bname[NBUFN];		/* name of buffer to use */
+	char given[NBUFN];
+	char *procname;
 
 	/* a numeric argument means its a numbered macro */
 	if (f == TRUE)
 		return storemac(f, n);
 
 	/* get the name of the procedure */
-	bname[1] = EOS;
-	if ((status = mlreply("Procedure name: ", bname+1, (int)sizeof(bname)-2)) != TRUE)
+	given[0] = EOS;
+	if ((status = mlreply("Procedure name: ", given, (int)sizeof(given))) != TRUE)
 		return status;
 
+	/* save this into the list of : names */
+#if OPT_NAMEBST
+	procname = castalloc(char, strlen(given) + 1);
+	if (procname == NULL) {
+		mlforce("[Couldn't get memory to add proc to namelist]");
+	} else {
+		strcpy(procname, given);
+		if (insert_namebst(&namebst, procname, NULL, FALSE) != TRUE)
+			return FALSE;
+	}
+#endif /* OPT_NAMEBST */
+
 	/* construct the macro buffer name */
-	bname[0] = SCRTCH_LEFT[0];
-	(void)strcat(bname, SCRTCH_RIGHT);
+	add_brackets(bname, given);
 
 	/* set up the new macro buffer */
 	if ((bp = bfind(bname, BFINVS)) == NULL) {
@@ -1165,12 +1182,10 @@ run_procedure(const char *name)
 		return FALSE;
 
 	/* construct the buffer name */
-	bufn[0] = SCRTCH_LEFT[0];
-	(void)strcat(strcpy(&bufn[1], name), SCRTCH_RIGHT);
+	add_brackets(bufn, name);
 
 	/* find the pointer to that buffer */
 	if ((bp = find_b_name(bufn)) == NULL) {
-		mlforce("[No such procedure \"%s\"]",bufn);
 		return FALSE;
 	}
 
@@ -1264,14 +1279,15 @@ WHBLOCK *wp)	/* head of structure to free */
 #define DDIR_FORCE       2
 
 static DIRECTIVE
-dname_to_dirnum(const char *eline)
+dname_to_dirnum(const char *eline, size_t length)
 {
 	DIRECTIVE dirnum = D_UNKNOWN;
 	if (*eline++ == DIRECTIVE_CHAR) {
-		SIZE_T n;
+		size_t n, m;
 		for (n = 0; n < TABLESIZE(dname); n++) {
-			if (strncmp(eline, dname[n].name,
-				    strlen(dname[n].name)) == 0) {
+			m = strlen(dname[n].name);
+			if (length >= m
+			 && memcmp(eline, dname[n].name, m) == 0) {
 				dirnum = dname[n].type;
 				break;
 			}
@@ -1283,7 +1299,7 @@ dname_to_dirnum(const char *eline)
 static const char *
 dirnum_to_name(DIRECTIVE dirnum)
 {
-	SIZE_T n;
+	size_t n;
 	for (n = 0; n < TABLESIZE(dname); n++)
 		if (dname[n].type == dirnum)
 			return dname[n].name;
@@ -1409,7 +1425,7 @@ begin_directive(
 		/* .....only if we are currently executing */
 		if (!ifstk.disabled) {
 			int found = FALSE;
-			SIZE_T len;	/* length of line to execute */
+			size_t len;	/* length of line to execute */
 			register LINEPTR glp;	/* line to goto */
 
 			/* grab label to jump to */
@@ -1514,7 +1530,7 @@ setup_dobuf(BUFFER *bp, WHBLOCK **result)
 		if (i <= 0)
 			continue;
 
-		switch (dname_to_dirnum(eline)) {
+		switch (dname_to_dirnum(eline, (size_t)i)) {
 		/* if is a while directive, make a block... */
 		case D_WHILE:
 			if ((scanpt = alloc_WHBLOCK(scanpt, D_WHILE, lp)) == 0) {
@@ -1577,10 +1593,10 @@ setup_dobuf(BUFFER *bp, WHBLOCK **result)
 #endif
 
 #if OPT_TRACE
-static const char *TraceIndent(int level, const char *eline)
+static const char *TraceIndent(int level, const char *eline, size_t length)
 {
 	static	const char indent[] = ".  .  .  .  .  .  .  .  ";
-	switch (dname_to_dirnum(eline)) {
+	switch (dname_to_dirnum(eline, length)) {
 	case D_ELSE:	/* FALLTHRU */
 	case D_ELSEIF:	/* FALLTHRU */
 	case D_ENDIF:
@@ -1595,7 +1611,7 @@ static const char *TraceIndent(int level, const char *eline)
 		level = 0;
 	return &indent[level];
 }
-#define TRACE_INDENT(level, eline) TraceIndent(level, eline)
+#define TRACE_INDENT(level, eline) TraceIndent(level, eline, linlen)
 #else
 #define TRACE_INDENT(level, eline) "" /* nothing */
 #endif
@@ -1607,7 +1623,7 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 	int glue = 0;		/* nonzero to append lines */
 	LINEPTR lp;		/* pointer to line to execute */
 	DIRECTIVE dirnum;	/* directive index */
-	SIZE_T linlen;		/* length of line to execute */
+	size_t linlen;		/* length of line to execute */
 	int force;		/* force TRUE result? */
 	WINDOW *wp;		/* ptr to windows to scan */
 	char *einit = 0;	/* initial value of eline */
@@ -1654,7 +1670,7 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 				src++;
 			while ((*dst++ = *src++) != EOS)
 				;
-			linlen -= (SIZE_T)(src - dst);
+			linlen -= (size_t)(src - dst);
 		}
 
 		/*
@@ -1664,7 +1680,7 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 		if (lforw(lp) != buf_head(bp)
 		 && linlen != 0
 		 && eline[linlen-1] == '\\') {
-			glue = linlen + (SIZE_T)(eline - einit) - 1;
+			glue = linlen + (size_t)(eline - einit) - 1;
 			continue;
 		}
 		eline = einit;
@@ -1727,7 +1743,7 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 		if (*eline == DIRECTIVE_CHAR) {
 
 			/* Find out which directive this is */
-			dirnum = dname_to_dirnum(eline);
+			dirnum = dname_to_dirnum(eline, linlen);
 
 			/* and bitch if it's illegal */
 			if (dirnum == D_UNKNOWN) {

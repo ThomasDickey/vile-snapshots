@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.95 1997/09/18 22:45:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.96 1997/10/17 19:21:06 tom Exp $
  *
  */
 
@@ -13,6 +13,10 @@
 #include	"edef.h"
 
 #if DISP_TERMCAP
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define MARGIN	8
 #define SCRSIZ	64
@@ -74,6 +78,10 @@
 	extern char *tparam (char *cstring, char *buf, int size, ...);
 #    endif
 #  endif
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #if HAVE_TPARM	/* usually terminfo */

@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.302 1997/10/07 00:03:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.303 1997/10/25 12:03:51 Alex.Wetmore Exp $
  *
  */
 
@@ -51,6 +51,8 @@ static	void	siginit (void);
 static	void	start_debug_log(int ac, char **av);
 static	int	cmd_mouse_motion(const CMDFUNC *cfp);
 
+extern const int nametblsize;
+
 /*--------------------------------------------------------------------------*/
 #define	GetArgVal(param)	if (!*(++param))\
 					param = argv[++carg];\
@@ -84,6 +86,9 @@ main(int argc, char *argv[])
 	*ekey = EOS;
 #endif
 
+#if OPT_NAMEBST
+	build_namebst(&namebst, nametbl, 0, nametblsize - 2);
+#endif
 	global_val_init();	/* global buffer values */
 	charinit();	/* character types -- we need these pretty early  */
 	winit(FALSE);		/* command-line */

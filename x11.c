@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.164 1997/10/16 00:52:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.165 1997/10/27 12:17:03 tom Exp $
  *
  */
 
@@ -4544,6 +4544,14 @@ x_lose_selection(
 void
 own_selection(void)
 {
+    /*
+     * Note:  we've been told that the Hummingbird X Server (which runs on a
+     * PC) updates the contents of the clipboard only if we remove the next
+     * line, causing this program to assert the selection on each call.  We
+     * don't do that, however, since it would violate the sense of the ICCCM,
+     * which is minimizing network traffic.
+     */
+    if (!cur_win->have_selection)
     cur_win->have_selection =
 	XtOwnSelection(
 	    cur_win->top_widget,

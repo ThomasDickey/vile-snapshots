@@ -1,5 +1,21 @@
 Changes for vile 7.3 (released ??? ??? ??, 1997)
 
+ (tom)	971027 (l)
+	+ backout change to own_selection, since it doesn't follow ICCCM,
+	  in the sense that it increases X traffic needlessly (pointed out by
+	  Kevin Buettner).  Kept check on return value from XtOwnSelection.
+ 	+ correct out-of-bounds indexing in dname_to_dirnum() by adding a
+	  length parameter, use memcmp.
+ 	+ modify Alex's change so that buffers that are renamed or deleted
+	  update the corresponding entries in the binary-tree.  Also, don't
+	  allow built-in commands to be removed or replaced.  Finally, make the
+	  name-completion work with an empty command.
+	+ add $end-of-cmd variable (patch by Alex Wetmore).
+	+ integrate patch by Alex Wetmore <awetmore@Exchange.Microsoft.com>
+	  that makes stored procedures act just like built-in commands, i.e.,
+	  able to run them from the :  prompt.  This works by building a binary
+	  tree of all of the command and procedure names.
+
  (tom)	971015 (k)
 	+ add configure options --with-Xaw-scrollbars and
 	  --with-drag-extension.  These make it easy to build xvile with
