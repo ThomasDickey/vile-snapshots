@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.31 1998/09/23 01:23:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.33 1998/09/25 09:40:34 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -23,7 +23,7 @@
 #define MIN_ROWS MINWLNS
 #define MIN_COLS 15
 
-#define FIXME_POSCHANGING 0		/* this doesn't seem to help */
+#define FIXME_POSCHANGING 1		/* this doesn't seem to help */
 #define FIXME_RECUR_SB 0		/* I'm not sure this is needed */
 
 #if OPT_TRACE
@@ -357,7 +357,7 @@ TraceWindowRect(HWND hwnd)
 	GetWindowRect(hwnd, &wrect);
 	cols = RectToCols(wrect);
 	rows = RectToRows(wrect);
-	TRACE(("... (%d,%d) (%d,%d), window is %dx%d cells (%dx%d pixels)%s\n",
+	TRACE(("... (%3d,%3d) (%3d,%3d), window is %dx%d cells (%dx%d pixels)%s\n",
 		wrect.top, wrect.left,
 		wrect.bottom, wrect.right,
 		rows,
@@ -377,7 +377,7 @@ TraceClientRect(HWND hwnd)
 	GetClientRect(hwnd, &crect);
 	cols = RectToCols(crect);
 	rows = RectToRows(crect);
-	TRACE(("... (%d,%d) (%d,%d), client is %dx%d cells (%dx%d pixels)\n",
+	TRACE(("... (%3d,%3d) (%3d,%3d), client is %dx%d cells (%dx%d pixels)\n",
 		crect.top, crect.left,
 		crect.bottom, crect.right,
 		rows,
@@ -411,6 +411,8 @@ gui_resize(int cols, int rows)
 
 	level++;
 	TRACE(("gui_resize(%d x %d) begin %d\n", rows, cols, level))
+	TraceWindowRect(cur_win->main_hwnd);
+	TraceClientRect(cur_win->main_hwnd);
 
 	GetClientRect(cur_win->main_hwnd, &crect);
 	GetWindowRect(cur_win->main_hwnd, &wrect);
@@ -475,7 +477,7 @@ AdjustedHeight(int high)
 static int
 AdjustedWidth(int wide)
 {
-	int	extra = SbWidth;
+	int	extra = SbWidth + (2 * cur_win->x_border);
 	int	cols;
 	if (wide > cur_win->xy_limit.right)
 		wide = cur_win->xy_limit.right;
@@ -516,8 +518,11 @@ AdjustResizing(HWND hwnd, WPARAM fwSide, RECT *rect)
 	int	adjX = wide - AdjustedWidth(wide);
 	int	adjY = high - AdjustedHeight(high);
 
-	TRACE(("AdjustResizing now (%d,%d) (%d,%d)\n",
-		rect->top, rect->left, rect->bottom, rect->right))
+	TRACE(("AdjustResizing now (%d,%d) (%d,%d) (%dx%d pixels)\n",
+		rect->top, rect->left, rect->bottom, rect->right,
+		rect->bottom - rect->top,
+		rect->right - rect->left))
+
 	TraceWindowRect(hwnd);
 	TraceClientRect(hwnd);
 
@@ -690,7 +695,7 @@ static void nticursor(int cmode)
 
 static int fhide_cursor(void)
 {
-	TRACE(("fhide_cursor (visible:%d, exists:%d)\n", caret_visible, caret_exists))
+	TRACE(("fhide_cursor pos %#lx,%#lx (visible:%d, exists:%d)\n", ttrow, ttcol, caret_visible, caret_exists))
 	if(caret_visible) {
 		HideCaret(cur_win->text_hwnd);
 		caret_visible = 0;
@@ -707,10 +712,12 @@ static void fshow_cursor(void)
 	int x, y;
 	POINT z;
 
-	if (caret_disabled)
+	if (caret_disabled		/* reject display during font-dialog */
+	 || ttrow > term.t_nrow		/* reject bogus position in init */
+	 || ttcol > term.t_ncol)
 		return;
 
-	TRACE(("fshow_cursor (visible:%d, exists:%d)\n", caret_visible, caret_exists))
+	TRACE(("fshow_cursor pos %#lx,%#lx (visible:%d, exists:%d)\n", ttrow, ttcol, caret_visible, caret_exists))
 	x = ColToPixel(ttcol) + 1;
 	y = RowToPixel(ttrow) + 1;
 	if (caret_exists) {
@@ -741,7 +748,7 @@ get_borders(void)
 		cur_win->xy_limit.bottom))
 	cur_win->x_border = GetSystemMetrics(SM_CXSIZEFRAME);
 	cur_win->y_border = GetSystemMetrics(SM_CYSIZEFRAME);
-	cur_win->y_titles = GetSystemMetrics(SM_CYFRAME);
+	cur_win->y_titles = GetSystemMetrics(SM_CYCAPTION);
 	TRACE(("X border: %d, Y border: %d\n", cur_win->x_border, cur_win->y_border))
 	TRACE(("CYFRAME:   %d\n", GetSystemMetrics(SM_CYFRAME)))
 	TRACE(("CYCAPTION: %d\n", cur_win->y_titles))
@@ -2470,7 +2477,7 @@ WinMain(
 	oa_invoke = oa_reg = FALSE;
 #endif
 
-	TRACE(("Starting ntvile\n"))
+	TRACE(("Starting ntvile, CmdLine:%s\n", lpCmdLine))
 
 	argv[argc++] = "VILE";
 

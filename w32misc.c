@@ -6,7 +6,7 @@
  * =======
  * -- This code has not been tested with NT 3.51 .
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.9 1998/09/23 00:14:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.10 1998/09/23 22:21:14 tom Exp $
  */
 
 #include <windows.h>
@@ -15,6 +15,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <errno.h>
+#include <process.h>
 
 #include "estruct.h"
 #include "edef.h"
