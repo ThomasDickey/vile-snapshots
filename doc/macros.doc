@@ -1078,12 +1078,16 @@ Directives
 	reset to the first column as a side effect.  So we specify that
 	$curcol is restored last.
 
-	~local can save/restore the state of mode variables, user variables
-	and the state variables shown with show-variables.  Note that
-	setting certain variables, such as the cursor position, will have
-	side effects, i.e., modifying the display.  If these are
+	~local can save/restore the state of mode variables [1], user
+	variables and the state variables shown with show-variables.  Note
+	that setting certain variables, such as the cursor position, will
+	have side effects, i.e., modifying the display.  If these are
 	distracting, use ~hidden to suppress display updates until the
 	macro completes.
+
+	[1] Subject to the limitations described above for "Mode
+	variables".  Namely, "global values of the editor modes are not
+	visible to the expression evaluator."
 
     ~with, ~elsewith and ~endwith
     -----------------------------
@@ -1425,6 +1429,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.83 2002/01/20 23:53:12 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.84 2002/05/11 00:58:23 cmorgan Exp $
 -----------------------------------
 

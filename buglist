@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.392 2002/01/17 00:53:39 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.395 2002/05/11 14:35:54 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -868,10 +868,6 @@ implement $title for tcap.c
 getting an error in $buffer-hook can blow away the buffer that's being hooked
 (e.g., if it's a temporary file).
 
--- 96-10-19 (tom)
-
-implement [Mac-style], like [Dos-style].
-
 -- 96-10-25 (Anand Mandapati <anand@ibmoto.com>)
 
 	The behavior of 'yq' doesn't seem to match the behavior of other quoted
@@ -921,11 +917,6 @@ modify xvile blink_interval to use 2/3 duty-cycle
 it should be possible to recode the tcap.c mouse-motion to use 'select()' to
 check for the user holding down the mouse button, and use _that_ to control a
 fake scrolling in the general direction of the mouse.
-
--- 97-01-10 (tom)
-
-should cut-down the special-case for VMS $PATH, possibly merging with
-$search-path.
 
 -- 97-01-17 (tom)
 
@@ -1450,12 +1441,6 @@ There's a remaining problem where re-reading a buffer does not repaint syntax
 highlighting.  That happens when it is not the current buffer, e.g., after
 running a shell command.
 
--- 99-10-04 (tom)
-
-The error-return in ttgetc that's marked for 'linux' also
-applies to Solaris and SCO (perhaps ESPIPE or EINVAL for the errno
-value).
-
 -- 99-11-06 (tom)
 
 The logic I'm using to detach a subprocess for $xshell works properly on
@@ -1537,7 +1522,71 @@ by \( and \).
 Considered making a configure option to use Henry Spencer's more up-to-date
 regex library, but see that it requires null-terminated strings.
 
+-- 01-06-13 (tom)
+
+win32 (both), os/2 and even tcap could use a thread for the 'working' message.
+
+-- 01-06-18 (tom)
+
+spell checker should flag a repeated word if there's no intervening
+punctuation.
+
+-- 01-09-01 (tom)
+
+from discussion with Clark Morgan, it would be nice to accept name-completion
+on motion-operators as a special case for some interactive commands that now
+accept just a few hardcoded items.
+
+-- 01-12-07 (tom)
+
+vile hits diskdrive too much when writing a file under cygwin (recommend
+disabling resolve-links).  It doesn't do that when I run an empty vile.rc (and
+one user complains that win95 vile.exe does something similar.
+
+-- 01-12-30 (tom)
+
+modify hooks so I can pass parameters to them, adding logic to support an
+$open-hook
+
+-- 01-12-30 (tom)
+
+add an unfilter command, to change attributes to ANSI controls and/or
+overstrikes
+
 -- 02-01-16 (tom)
 
-The undo-dos-trim mode allows undo of the changes made to the buffer, but
-does not restore the original recordseparator mode when an undo is made.
+The undo-dos-trim mode allows undo of the changes made to the buffer, but does
+not restore the original recordseparator mode when an undo is made.
+
+-- 02-02-03 (tom)
+
+It would be nice to allow 'p' command in a [p-lines] buffer to generate a new
+buffer such as [p-lines-2].  Also, it would be nice to allow reread of a given
+[p-lines] buffer by remembering the buffer from which it was extracted, and the
+corresponding command which generated it.
+
+-- 02-02-08 (tom)
+
+if we don't have HAVE_ACCESS defined, ffaccess() doesn't handle OR'd bits,
+treats them as existence check.
+
+-- 02-02-15 (tom)
+
+if I have a [Tags x] buffer, and cd to another directory, vile does not pick up
+the tags file from the new directory.
+
+-- 02-02-23 (tom)
+
+nrmode should be able to handle \fRxx\fByy\fIaa\fR
+
+-- 02-05-01 (tom)
+
+:error-buffer doesn't allow us to use finderr pointing into an internal buffer
+such as the <manpage> stuff, since the patterns for buffer names include
+characters that normally aren't part of filenames.
+
+-- 02-05-10 (tom)
+
+The perl filter does not handle nested quote-like operators (see Perl's CPAN.pm
+for example).  Doing this would require making the xxx_PATTERN code recursive,
+on regions.  vim does not (I think cannot) handle this.
