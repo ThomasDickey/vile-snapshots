@@ -2224,6 +2224,9 @@ Programmed procedures and macros
 	~break
 	~endwhile
 
+	~with tokens	prepend tokens to following commands
+	~endwith	stop prepending tokens
+
 	~local vars	save specified variable(s), restore at end of macro
 
 	~endm		End a macro
@@ -2889,7 +2892,7 @@ Filtering C programs
 	might contain:
 		Comments:B
 		Literal:B
-		Cpp:U
+		Preproc:U
 		if:C3
 		else:C3
 		for:C3
@@ -2899,7 +2902,7 @@ Filtering C programs
 		struct:I
 	The "Comments" keyword is a pseudo-keyword which determines the
 	attribute given to C and C++ style comments.  "Literal" applies to
-	string literals. "Cpp" applies to C preprocessor lines, e.g., #if,
+	string literals.  "Preproc" applies to C preprocessor lines, e.g., #if,
 	etc.
 
 	An alternative filter, written using "flex", is available in
@@ -3925,4 +3928,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.382 1998/11/30 02:15:51 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.384 1998/12/21 00:58:54 tom Exp $

@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.35 1998/11/05 00:42:52 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.37 1998/12/21 10:54:12 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -63,7 +63,6 @@ THE_PERLCFG  = perl_env.inc
 !IF  "$(CFG)" == "vile" || "$(CFG)" == "vile-with-perl"
 DISP_DEF = -DDISP_NTCONS
 TARGET   = vile.exe
-UTILS    = vile-c-filt.exe
 CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
            -Dscrn_chosen $(DISP_DEF) $(PERLOPTS)
 LDFLAGS  = -nologo -pdb:none
@@ -74,7 +73,6 @@ LIBS     = $(LD_DEBUG) $(conlflags) $(conlibsmt) user32.lib $(VILE_PERL_LIB)
 !IF  "$(CFG)" == "winvile" || "$(CFG)" == "winvile-with-perl"
 DISP_DEF = -DDISP_NTWIN
 TARGET   = winvile.exe
-UTILS    = vile-c-filt.exe
 CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
            -Dscrn_chosen $(DISP_DEF) $(PERLOPTS)
 LDFLAGS  = -nologo /nologo /subsystem:windows /incremental:no -pdb:none
@@ -155,7 +153,7 @@ OBJ = 	main.obj $(SCREEN).obj \
 .cpp.obj:
 	$(cc) $(CFLAGS) $(CFLAGS) -c $< -Fo$@
 
-all: $(PERLCFG) $(TARGET) $(UTILS)
+all :: $(PERLCFG) $(TARGET)
 
 $(TARGET): 	$(BUILTHDRS) $(OBJ)
 	$(link) $(LDFLAGS) $(OBJ) $(LIBS) -out:$(TARGET)
@@ -195,17 +193,13 @@ vile-perl-api.doc: vile-perl-api.pod
 mktbls.exe:  mktbls.c
 	$(cc) $(CFLAGS) mktbls.c -Fomktbls -link $(CON_LDFLAGS)
 
-vile-c-filt.exe: c-filt.c
-	$(cc) $(CFLAGS) c-filt.c \
-    -Fovile-c-filt -link $(CON_LDFLAGS)
-
 w32ole.res: w32ole.rc winvile.tlb
     $(RC) $(DISP_DEF) -Iicons w32ole.rc
 
 winviletlb.h winvile.tlb: winvile.odl
     midl -h winviletlb.h -tlb winvile.tlb winvile.odl
 
-clean:
+clean ::
     del *.exe
     del *.obj
     del ne*.h
@@ -214,6 +208,10 @@ clean:
     -del winviletlb.h
     -del *.tlb
     -del *.res
+
+all \
+clean ::
+	cd filters && $(MAKE) -f makefile.wnt $@
 
 api.obj:	api.h
 bind.obj:	nefunc.h btree.h

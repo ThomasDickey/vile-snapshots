@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.171 1998/11/30 22:13:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.172 1998/12/15 02:50:50 tom Exp $
  *
  */
 
@@ -29,6 +29,8 @@ typedef	enum {
 	D_FORCE,
 	D_HIDDEN,
 	D_LOCAL,
+	D_WITH,
+	D_ENDWITH,
 #endif
 	D_ENDM
 } DIRECTIVE;
@@ -70,6 +72,8 @@ static	const struct {
 	{ D_FORCE,    "force" },
 	{ D_HIDDEN,   "hidden" },
 	{ D_LOCAL,    "local" },
+	{ D_WITH,     "with" },
+	{ D_ENDWITH,  "endwith" },
 	{ D_ENDM,     "endm" }
 	};
 #endif
@@ -90,6 +94,7 @@ typedef struct {
 	REGIONSHAPE shape;
 	const CMDFUNC *motion;
 	LOCALS *locals;
+	TBUFF *prefix;
 	} IFSTK;
 #else
 typedef struct {
@@ -98,6 +103,7 @@ typedef struct {
 #endif
 
 static IFSTK ifstk;
+static TBUFF *line_prefix;
 
 /*----------------------------------------------------------------------------*/
 
@@ -1469,10 +1475,12 @@ push_buffer(IFSTK *save)
 	*save  = ifstk;
 	save->shape = regionshape;
 	save->motion = havemotion;
+	save->prefix = line_prefix;
 
 	ifstk       = new_ifstk;
 	havemotion  = NULL;
 	regionshape = EXACT;
+	line_prefix = 0;
 }
 
 static void
@@ -1481,9 +1489,12 @@ pop_buffer(IFSTK *save)
 	while (ifstk.locals)
 		pop_variable();
 
+	tb_free(&line_prefix);
+
 	ifstk       = *save;
 	havemotion  = ifstk.motion;
 	regionshape = ifstk.shape;
+	line_prefix = ifstk.prefix;
 }
 
 static DIRECTIVE
@@ -1685,6 +1696,18 @@ begin_directive(
 
 	case D_HIDDEN:	/* HIDDEN directive */
 		status = DDIR_HIDDEN;
+		break;
+
+	case D_WITH:	/* WITH directive */
+		while (isBlank(*execstr))
+			execstr++;
+		tb_scopy(&line_prefix, execstr);
+		status = DDIR_COMPLETE;
+		break;
+
+	case D_ENDWITH:	/* ENDWITH directive */
+		tb_free(&line_prefix);
+		status = DDIR_COMPLETE;
 		break;
 
 	case D_UNKNOWN:
@@ -2020,6 +2043,16 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 			} else if (code == DDIR_HIDDEN) {
 				force = TRUE;
 				clhide = TRUE;
+			}
+		} else if (*eline != DIRECTIVE_CHAR) {
+			/* prefix lines with "WITH" value, if any */
+			if (tb_length(line_prefix)) {
+				int adj = eline - einit;
+				char *temp = malloc(tb_length(line_prefix) + strlen(eline) + 2);
+				(void)lsprintf(temp, "%s %s", tb_values(line_prefix), eline);
+				free(einit);
+				einit = temp;
+				eline = einit + adj;
 			}
 		}
 #endif

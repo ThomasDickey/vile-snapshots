@@ -1,5 +1,26 @@
 Changes for vile 8.3 (released ??? ??? ??, 1998)
 
+ (tom) 981222 (i)
+ 	+ modify expand_pattern() to handle Unix-style wildcards on VMS (reported
+	  by Clark Morgan).
+ 	+ add configure option --with-fakevms, for testing VMS port.
+ 	+ change Cpp keyword in vile-c-filt to Preproc, for consistency.
+ 	+ move filter programs to filters subdirectory.  Split-out the keyfile
+	  and symbol management to new file filters.c, and used that to
+	  enhance the original vile-c-filt so it no longer has line-length
+	  limitations.  Added lex-based filters for cwebx, html, latex, make,
+	  perl, sh and vile macros.
+	+ prevent repeated call to free from old_namebst from memory-leak fix
+	  in 8.2g
+	+ add directives ~with and ~endwith, to simplify majormode expressions.
+	+ minor refinement to gui_isprint()
+	> patches by Clark Morgan:
+	+ add pattern to finderr.c to use with DEC C compilers.
+	+ modify file globbing so that vile can read these two files from the
+	  command line (it already did read them via ":e"):
+		../readme or ~/vile.rc
+	+ documentation updates for README, README.VMS and README.PC
+
  (tom) 981214 (h)
 	+ simplify some trace-code using new functions visible_buff, lp_visible.
 	+ add trace-code for fences.c
@@ -9,7 +30,7 @@ Changes for vile 8.3 (released ??? ??? ??, 1998)
 	> patches by Clark Morgan:
 	+ modify ffsize() for VMS so that it returns a 0 rather than -1 if a
 	  call to 'fstat()' fails to get the size.  The file exists, so a zero
-	  makes vile read if via slowreadf, which works. 
+	  makes vile read if via slowreadf, which works.
 	+ modify estruct.h to build using descrip.mms alone: the vmsbuild.com
 	  script defines logical "SYS" so that <sys/types.h> can be included,
 	  but the descrip.mms script does not do that.

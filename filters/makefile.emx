@@ -1,0 +1,40 @@
+#
+# 'vile' filter utilities makefile for EMX using GNU make (OS/2)
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.emx,v 1.2 1998/12/21 11:32:37 tom Exp $
+#
+
+# 
+# Compiler flags:
+#
+CC = gcc
+
+# Debug options:
+DEBUG_FLAGS = -Wall
+
+# Production options:
+PROD_FLAGS  = -O
+
+#
+CFLAGS = $(DEBUG_FLAGS) -I. -I.. -DHAVE_CONFIG_H
+
+# File extension for object files:
+O = .o
+
+# File extension for executable files:
+E = .exe
+
+TARGET = c-filt$E
+
+all:	$(TARGET)
+
+clean:
+	-del *$O
+	-del *.bak
+
+clobber:	clean
+	-del *$E
+
+FILT_DEPS = c-filt$O filters$O
+
+vile-c-filt$E : $(FILT_DEPS)
+	$(CC) $(CFLAGS) -o $@ $(FILT_DEPS)

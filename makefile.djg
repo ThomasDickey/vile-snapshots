@@ -3,7 +3,7 @@
 #
 # T.DANG (dang@cogit.ign.fr)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.26 1998/07/28 00:10:52 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.27 1998/12/21 10:57:17 tom Exp $
 #
 #
 
@@ -50,11 +50,6 @@ vile : 	$(BUILTHDRS) $(OBJ)
 	$(CC) $(CFLAGS) -o $@ $(OBJ) -lpc
 	coff2exe $@
 	-stubedit vile.exe globbing=no
-
-c-filt : c-filt.o
-	$(CC) $(CFLAGS) -o $@ c-filt.o -lpc
-	coff2exe $@
-	-stubedit $@.exe globbing=no
 
 dist :	vile
 	strip vile

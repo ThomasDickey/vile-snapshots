@@ -1,0 +1,164 @@
+; $Id: filters.rc,v 1.13 1998/12/22 10:28:52 tom Exp $
+
+define-mode ada
+~with define-submode ada
+	suf "\\.\\(\\<ada\\>\\|\\<ads\\>\\|\\<adb\\>\\)$"
+	comment-prefix "^\\s*/\\?--"
+	comments   "^\\s*?--\\s.*$"
+	fence-if   "^\\s*\\(\\<begin\\>\\|\\<if\\>\\)"
+	fence-elif "^\\s*\\<elsif\\>"
+	fence-else "^\\s*\\(\\<exception\\>|\\<else\\>\\)"
+	fence-fi   "^\\s*\\<end\\>"
+	ignorecase
+~endwith
+
+define-mode cweb
+~with define-submode cweb
+	suf "\\(\\.w\\|\\.web\\)$"
+~endwith
+
+define-mode dcl
+~with define-submode dcl
+	suf "\\.com$"
+	comment-prefix "^\\s*/\\?\\$!"
+	comments   "^\\s*/\\?\\$!\\s*/\\?\\s*$"
+	ignorecase
+~endwith
+
+define-mode html
+~with define-submode html
+	suf "\\.\\(html\\|htm\\)$"
+	fence-pairs "<>()[]{}"
+	ignorecase
+	comment-prefix "^\\s*--"
+	comments "^\\s*$"
+~endwith
+
+define-mode latex
+~with define-submode latex
+	suf "\\.\\(latex\\|ltex\\|tex\\)$"
+~endwith
+
+define-mode lex
+~with define-submode lex
+	suf "\\.\\(l\\|lex\\|flex\\|flx\\)$"
+~endwith
+
+; actually, m4 used for autoconf scripts, which is Bourne-shell
+define-mode m4
+~with define-submode m4
+	pre "^\\s*dnl\\>"
+	suf "\\.m4$"
+	comment-prefix "^\\s*/\\?\\(dnl\\|#\\)"
+	comments   "^\\s*/\\?\\(dnl\\|#\\)\\s+/\\?\\s*$"
+	fence-if   "^\\s*\\<if\\>"
+	fence-elif "^\\s*\\<elif\\>"
+	fence-else "^\\s*\\<else\\>"
+	fence-fi   "^\\s*\\<fi\\>"
+~endwith
+
+define-mode make
+~with define-submode make
+	suf "\\([Mm]akefile\\|\\.mak$\\|\\.mk$\\)"
+	comment-prefix "^\\s*/\\?[!#]"
+~endwith
+
+define-mode mms
+~with define-submode mms
+	suf "\\.mms$"
+	comment-prefix "^\\s*/\\?[!#]"
+	comments   "^\\s*/\\?[!#]\\s*/\\?\\s*$"
+	ignorecase
+	fence-if   "^\\s*\\.\\<ifdef\\>"
+	fence-elif "^\\s*\\.\\<elif\\>"
+	fence-else "^\\s*\\.\\<else\\>"
+	fence-fi   "^\\s*\\.\\<endif\\>"
+~endwith
+
+define-mode pascal
+~with define-submode pascal
+	suf "\\.\\(p|pas\\)$"
+~endwith
+
+define-mode perl
+~with define-submode perl
+	preamble "^#\\s*!\\s*\\/.*perl\\>"
+	suf "\\.pl$"
+	comment-prefix "^\\s*#"
+	comments       "^\\s*/\\?#\\s*/\\?\\s*$"
+	fence-pairs    "{}()[]<>"
+	fence-begin    "^\\s*while\\>"
+	fence-end      "^\\s*}\\s*$"
+	fence-if       "^\\s*if\\>"
+	fence-elif     "^\\s*}\\s*elsif\\s*("
+	fence-else     "^\\s*}\\s*else\\s*{"
+	fence-fi       "^\\s*}\\s*$"
+~endwith
+
+define-mode sh
+~with define-submode sh
+	suf "\\.sh$"
+	pre "^#!\\s*\\/.*sh\\>$"
+	comment-prefix "^\\s*[:#]"
+	comments   "^\\s*[:#]\\s\\+\\s*$"
+	fence-if   "^\\s*\\<if\\>"
+	fence-elif "^\\s*\\<elif\\>"
+	fence-else "^\\s*\\<else\\>"
+	fence-fi   "^\\s*\\<fi\\>"
+~endwith
+
+define-mode txt
+~with define-submode txt
+	suf "\\.\\(txt\\|doc\\)$"
+	comment-prefix "^\\s*/\\?--"
+	comments "^\\s*/\\?--\\s+/\\?\\s*$"
+~endwith
+
+define-mode vile
+~with define-submode vile
+	suf "\\(\\.vilerc\\|\\.rc$\\)"
+	comment-prefix "^\\s*;"
+	fence-if	"\\s*~if"
+	fence-elif	"\\s*~elseif"
+	fence-else	"\\s*~else"
+	fence-fi	"\\s*~endif"
+~endwith
+
+store-procedure HighlightFilter
+	~local $curcol $curline
+	~hidden goto-beginning-of-file
+	~if &sin $majormode "sh"
+		~hidden attribute-from-filter end-of-file "vile-sh-filt"
+		write-message "[Attaching Shell attributes...]"
+	~elseif &seq $majormode "c"
+		~hidden attribute-from-filter end-of-file "vile-c-filt"
+		write-message "[Attaching C/C++ attributes...]"
+	~elseif &seq $majormode "cweb"
+		~hidden attribute-from-filter end-of-file "vile-cweb-filt"
+		write-message "[Attaching CWEBx attributes...]"
+	~elseif &seq $majormode "html"
+		~hidden attribute-from-filter end-of-file "vile-html-filt"
+		write-message "[Attaching HTML attributes...]"
+	~elseif &seq $majormode "latex"
+		~hidden attribute-from-filter end-of-file "vile-latex-filt"
+		write-message "[Attaching LaTeX attributes...]"
+	~elseif &seq $majormode "lex"
+		~hidden attribute-from-filter end-of-file "vile-lex-filt"
+		write-message "[Attaching LEX attributes...]"
+	~elseif &seq $majormode "make"
+		~hidden attribute-from-filter end-of-file "vile-make-filt"
+		write-message "[Attaching Makefile attributes...]"
+	~elseif &seq $majormode "pascal"
+		~hidden attribute-from-filter end-of-file "vile-pas-filt"
+		write-message "[Attaching Pascal attributes...]"
+	~elseif &seq $majormode "perl"
+		~hidden attribute-from-filter end-of-file "vile-perl-filt"
+		write-message "[Attaching Perl attributes...]"
+	~elseif &seq $majormode "vile"
+		~hidden attribute-from-filter end-of-file "vile-vile-filt"
+		write-message "[Attaching Vile attributes...]"
+	~else
+		write-message &cat "[No filter defined for majormode '" &cat $majormode "']"
+	~endif
+~endm
+bind-key HighlightFilter ^X-q

@@ -1,0 +1,35 @@
+#
+# makefile for vile filters on WIN32 using Microsoft Visual C++
+#
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.2 1998/12/21 10:10:12 tom Exp $
+#
+#
+!include <ntwin32.mak>
+
+# remove the "#" to get debugging info (and a larger executable)
+CC_DEBUG     = #$(cdebug)
+LD_DEBUG     = #$(ldebug)
+
+# Other vars
+CON_LDFLAGS  = -nologo -pdb:none
+
+UTILS    = vile-c-filt.exe
+CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 -I.
+
+.c.obj:
+	$(cc) $(CFLAGS) -c $< -Fo$@
+
+.cpp.obj:
+	$(cc) $(CFLAGS) $(CFLAGS) -c $< -Fo$@
+
+all: $(UTILS)
+
+CF_DEPS	= filters.obj
+
+vile-c-filt.exe: c-filt.c $(CF_DEPS)
+	$(cc) $(CFLAGS) c-filt.c \
+    -Fovile-c-filt -link $(CON_LDFLAGS) $(CF_DEPS)
+
+clean:
+    del *.exe
+    del *.obj

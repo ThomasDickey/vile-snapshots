@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.320 1998/11/30 11:21:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.321 1998/12/17 03:12:42 tom Exp $
  *
  */
 
@@ -1193,7 +1193,9 @@ extern	void	longjmp	(jmp_buf env, int val);
 extern	int	lstat (const char *path, struct stat *sb);
 #endif
 #if MISSING_EXTERN_MEMSET
+#ifndef memset	/* may be defined by dbmalloc */
 extern	void *	memset	(void *dst, int ch, size_t n);
+#endif
 #endif
 #if MISSING_EXTERN_MKDIR && HAVE_MKDIR
 extern	int	mkdir	(const char *path, int mode);

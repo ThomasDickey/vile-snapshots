@@ -1,0 +1,43 @@
+#
+# 'vile' filters makefile for IBM C Set ++ 2.x (OS/2)
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.icc,v 1.2 1998/12/21 11:33:08 tom Exp $
+#
+
+#
+# Compiler flags:
+#
+CC = icc
+
+# Debug options:
+#DEBUG_FLAGS = /Ti+ /Wpor /Wext /Wuse /Wini /Wuni /Wgot
+#DEBUG_FLAGS = /Ti+ /Wpor /Wext /Wuse /Wini /Wgot
+
+# Production options:
+PROD_FLAGS  = /O+
+
+#
+CFLAGS = /Q /Wpro $(DEBUG_FLAGS) /I.
+
+# File extension for object files:
+O = .obj
+
+# File extension for executable files:
+E = .exe
+
+TARGET = c-filt$E
+
+all:	$(TARGET)
+
+clean:
+	-del *$O
+	-del *.bak
+
+clobber:	clean
+	-del *$E
+
+FILT_DEPS = c-filt$O filters$O
+
+vile-c-filt$E : $(FILT_DEPS)
+  $(CC) $(CFLAGS) $(FILT_DEPS) /Fe$@
+
+c-filt$O:	c-filt.c
