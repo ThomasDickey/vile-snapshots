@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.167 1998/09/09 09:23:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.168 1998/09/22 23:02:21 tom Exp $
  *
  */
 
@@ -452,6 +452,12 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 #endif
 		ElseIf( EVFLICKER )	value = ltos(flickcode);
 		ElseIf( EVCURWIDTH )	value = l_itoa(term.t_ncol);
+		ElseIf( EVBCHARS )
+			bsizes(curbp);
+			value = l_itoa(curbp->b_bytecount);
+		ElseIf( EVBLINES )
+			bsizes(curbp);
+			value = l_itoa(curbp->b_linecount);
 		ElseIf( EVCBUFNAME )	value = curbp->b_bname;
 		ElseIf( EVABUFNAME )	value = ((bp = find_alt()) != 0)
 						? bp->b_bname
@@ -476,7 +482,7 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 		ElseIf( EVOS )		value = opersys;
 		ElseIf( EVSEED )	value = l_itoa(seed);
 		ElseIf( EVDISINP )	value = ltos(disinp);
-		ElseIf( EVWLINE )	value = l_itoa(curwp->w_ntrows);
+		ElseIf( EVWLINES )	value = l_itoa(curwp->w_ntrows);
 		ElseIf( EVCWLINE )	value = l_itoa(getwpos());
 		ElseIf( EVFWD_SEARCH )	value = ltos(last_srch_direc == FORWARD);
 		ElseIf( EVSEARCH )	value = pat;
@@ -888,7 +894,7 @@ const char *value)	/* value to set to */
 		ElseIf( EVDISINP )
 			disinp = stol(value);
 
-		ElseIf( EVWLINE )
+		ElseIf( EVWLINES )
 			status = resize(TRUE, atoi(value));
 
 		ElseIf( EVCWLINE )
@@ -914,13 +920,11 @@ const char *value)	/* value to set to */
 		ElseIf( EVTPAUSE )
 			term.t_pause = atoi(value);
 
-		ElseIf( EVLINE )
-			if (b_val(curbp,MDVIEW))
-				status = rdonly();
-			else {
-				mayneedundo();
-				status = putctext(value);
-			}
+		ElseIf( EVLINE ) 	status = putctext((CHARTYPE)0, value);
+		ElseIf( EVWORD )	status = putctext(vl_nonspace, value);
+		ElseIf( EVIDENTIF )	status = putctext(vl_ident, value);
+		ElseIf( EVQIDENTIF )	status = putctext(vl_qident, value);
+		ElseIf( EVPATHNAME )	status = putctext(vl_pathn, value);
 
 #if SYS_WINNT && defined(DISP_NTWIN)
 		ElseIf( EVFONT ) status = ntwinio_font_frm_str(value, FALSE);
@@ -971,6 +975,7 @@ const char *value)	/* value to set to */
 
 		Otherwise
 			/* EVABUFNAME */
+			/* EVBLENGTH */
 			/* EVPROGNAME */
 			/* EVPATCHLEVEL */
 			/* EVVERSION */

@@ -1,4 +1,4 @@
-$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.20 1998/05/30 20:29:30 tom Exp $
+$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.21 1998/09/21 02:11:38 tom Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
 $! Tested with:
@@ -62,6 +62,7 @@ $ write optf "undo.obj"
 $ write optf "version.obj"
 $ write optf "vms2unix.obj"
 $ write optf "vmspipe.obj"
+$ write optf "watch.obj"
 $ write optf "window.obj"
 $ write optf "word.obj"
 $ write optf "wordmov.obj"
@@ -227,6 +228,7 @@ $	call make undo
 $	call make version
 $	call make vms2unix
 $	call make vmspipe
+$	call make watch
 $	call make window
 $	call make word
 $	call make wordmov

@@ -59,7 +59,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.14 1998/08/17 22:10:48 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.15 1998/09/23 00:13:34 tom Exp $
  */
 
 #include <windows.h>
@@ -99,7 +99,7 @@ global_cleanup(void)
         tmpin_name = NULL;
     }
     restore_console_title();
-#ifdef DISP_NTWIN
+#if DISP_NTWIN
     if (global_g_val(GMDFORCE_CONSOLE))
         FreeConsole();
 #endif
@@ -111,7 +111,7 @@ static HANDLE
 exec_shell(char *cmd, HANDLE *handles, int hide_child)
 {
     char                 *cmdstr;
-#ifdef DISP_NTWIN
+#if DISP_NTWIN
     HWND                 fgnd;
     int                  force_console = global_g_val(GMDFORCE_CONSOLE);
 #endif
@@ -137,7 +137,7 @@ exec_shell(char *cmd, HANDLE *handles, int hide_child)
     si.hStdInput   = handles[0];
     si.hStdOutput  = handles[1];
     si.hStdError   = handles[2];
-#ifdef DISP_NTWIN
+#if DISP_NTWIN
     if (force_console)
     {
         if (hide_child)
@@ -155,7 +155,7 @@ exec_shell(char *cmd, HANDLE *handles, int hide_child)
                       NULL,
                       NULL,
                       TRUE,       /* Inherit handles */
-#ifdef DISP_NTWIN
+#if DISP_NTWIN
                       force_console ? 0 : CREATE_NEW_CONSOLE,
 #else
                       0,
@@ -167,7 +167,7 @@ exec_shell(char *cmd, HANDLE *handles, int hide_child)
     {
         /* Success */
 
-#ifdef DISP_NTWIN
+#if DISP_NTWIN
         if (force_console && hide_child)
             SetForegroundWindow(fgnd);
 #endif

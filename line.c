@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.111 1998/04/28 10:05:42 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.112 1998/09/22 23:45:54 tom Exp $
  *
  */
 
@@ -655,16 +655,34 @@ getctext(CHARTYPE type)
 
 int
 putctext(
+CHARTYPE type,
 const char *iline)	/* contents of new line */
 {
-	register int status;
+	register int status = TRUE;
 
-	/* delete the current line */
-	DOT.o = w_left_margin(curwp); /* start at the beginning of the line */
-	if ((status = deltoeol(TRUE, 1)) != TRUE)
-		return(status);
+	TRACE(("putctext:%s%lx:%s\n", type ? "word" : "line", (ULONG) type, iline))
 
-	/* insert the new line */
+	if (b_val(curbp,MDVIEW))
+		return rdonly();
+
+	mayneedundo();
+
+	if (type != 0) {
+		regionshape = EXACT;
+		while (DOT.o < llength(DOT.l)
+		  && istype(type, char_at(DOT))) {
+			if ((status = forwdelchar(FALSE,1)) != TRUE)
+				return(status);
+		}
+	} else {
+		regionshape = FULLLINE;
+		/* delete the current line */
+		DOT.o = w_left_margin(curwp); /* start at the beginning of the line */
+		if ((status = deltoeol(TRUE, 1)) != TRUE)
+			return(status);
+	}
+
+	/* insert the new text */
 	while (*iline) {
 		if (*iline == '\n') {
 			if (lnewline() != TRUE)
@@ -675,8 +693,10 @@ const char *iline)	/* contents of new line */
 		}
 		++iline;
 	}
-	status = lnewline();
-	(void)backline(TRUE, 1);
+	if (type == 0) {
+		status = lnewline();
+		(void)backline(TRUE, 1);
+	}
 	return(status);
 }
 #endif

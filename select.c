@@ -18,7 +18,7 @@
  * transfering the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.76 1998/09/19 22:52:06 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.77 1998/09/22 10:57:45 Kuntal.Daftary Exp $
  *
  */
 
@@ -994,30 +994,111 @@ attributeregion(void)
 #endif
 		attach_attrib(curbp, arp);
 	    } else { /* purge attributes in this region */
-		L_NUM first = line_no(curbp, region.r_orig.l);
-		L_NUM last  = line_no(curbp, region.r_end.l);
-		AREGION *p, *q;
+		L_NUM rls = line_no(curbp, region.r_orig.l);
+		L_NUM rle = line_no(curbp, region.r_end.l);
+		C_NUM ros = region.r_orig.o;
+		C_NUM roe = region.r_end.o;
+		AREGION *p, *q, *n;
 		int owner;
 
 		owner = VOWNER(videoattribute);
 
 		for (p = curbp->b_attribs, q = 0; p != 0; p = q) {
-		    L_NUM f0, l0;
+		    L_NUM pls, ple;
+		    C_NUM pos, poe;
 
 		    q = p->ar_next;
 
 		    if (owner != 0 && owner != VOWNER(p->ar_vattr))
 			continue;
 
-		    f0 = line_no(curbp, p->ar_region.r_orig.l);
-		    l0 = line_no(curbp, p->ar_region.r_end.l);
+		    pls = line_no(curbp, p->ar_region.r_orig.l);
+		    ple = line_no(curbp, p->ar_region.r_end.l);
+		    pos = p->ar_region.r_orig.o;
+		    poe = p->ar_region.r_end.o;
 
-		    if (l0 < first || f0 > last)
-			continue;	/* no overlap */
+		    /* Earlier the overlapping region check was made based only
+		     * on line numbers and so was right only for FULLINES shape
+		     * changed it to be correct for EXACT and RECTANLGE also
+		     * -kuntal 9/13/98
+		     */
+		    /*
+		     * check for overlap:
+		     * for any shape of region 'p' things are fine as long as
+		     * 'region' is above or below it
+		     */
+		    if (ple < rls || pls > rle)
+			continue;
+		    /*
+		     * for EXACT 'p' region
+		     */
+		    if ( p->ar_shape == EXACT ) {
+			if ( ple == rls && poe-1 < ros )
+				continue;
+			if ( pls == rle && pos > roe )
+				continue;
+		    }
+		    /*
+		     * for RECTANGLE 'p' region
+		     */
+		    if ( p->ar_shape == RECTANGLE )
+			if (poe < ros || pos > roe)
+			    continue;
 
-		    /* FIXME: this removes the whole of an overlapping region;
+		    /*
+		     * FIXME: this removes the whole of an overlapping region;
 		     * we really only want to remove the overlapping portion...
 		     */
+
+		    /*
+		     * we take care of this fix easily as long as neither of
+		     * 'p' or 'region' are RECTANGLE. we will need to create
+		     * at the most one new region in case 'region' is
+		     * completely contained within 'p'
+		     */
+		    if (p->ar_shape != RECTANGLE && regionshape != RECTANGLE) {
+			if ((rls > pls) || (rls == pls && ros > pos)) {
+			    p->ar_shape = EXACT;
+			    if ((rle < ple) || (rle == ple && roe < poe)) {
+				/* open a new region */
+				if ((n = typealloc(AREGION)) == NULL) {
+				    (void)no_memory("AREGION");
+				    return FALSE;
+				}
+				n->ar_region = p->ar_region;
+				n->ar_vattr  = p->ar_vattr;
+				n->ar_shape  = p->ar_shape;
+#if OPT_HYPERTEXT
+				n->ar_hypercmd = p->ar_hypercmd;
+#endif
+				n->ar_region.r_orig.l=(region.r_end.l);
+				n->ar_region.r_orig.o=(region.r_end.o);
+				attach_attrib(curbp, n);
+			    }
+			    p->ar_region.r_end.l = (region.r_orig.l);
+			    p->ar_region.r_end.o = (region.r_orig.o);
+			    /*
+			    if (p->ar_region.r_orig.o == 0 &&
+				p->ar_region.r_end.o
+				  == w_left_margin(curwp) ) {
+				p->ar_shape == FULLLINE;
+			    }
+			    if (n->ar_region.r_orig.o == 0 &&
+				n->ar_region.r_end.o
+				  == w_left_margin(curwp) ) {
+				n->ar_shape == FULLLINE;
+			    }
+			    */
+			    curwp->w_flag |= WFHARD;
+			    continue;
+			} else if ((rle < ple) || (rle == ple && roe < poe)) {
+			    p->ar_region.r_orig.l = (region.r_end.l);
+			    p->ar_region.r_orig.o = (region.r_end.o);
+			    curwp->w_flag |= WFHARD;
+			    continue;
+			}
+		    }
+
 		    detach_attrib(curbp, p);
 		}
 	    }

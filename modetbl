@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.99 1998/09/03 10:30:44 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.100 1998/09/22 22:42:44 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -152,6 +152,8 @@ regex							# MVAL_ prefix
 # organized into groups of universal/buffer/window.
 .environment
 "abufname"	ABUFNAME		# alternate buffer name (i.e. '#')
+"bchars"	BCHARS			# chars in current buffer
+"blines"	BLINES			# lines in current buffer
 "cbufname"	CBUFNAME		# current buffer name
 "buffer-hook"	BUFHOOK		OPT_PROCEDURES	# procedure to run when entering buf
 "cd-hook"	CDHOOK		OPT_PROCEDURES	# procedure to run when cd'ing
@@ -209,7 +211,7 @@ regex							# MVAL_ prefix
 "tpause"	TPAUSE			# length to pause for paren matching
 "title"		TITLE		DISP_X11	# window title
 "version"	VERSION			# current version number
-"wline"		WLINE			# # of lines in current window
+"wlines"	WLINES			# # of lines in current window
 "word"		WORD			# current word
 "write-hook"	WRHOOK		OPT_PROCEDURES	# procedure to run when writing
 "xdisplay"	XDISPLAY	DISP_X11	# X Windows display, etc.

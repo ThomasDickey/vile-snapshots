@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.336 1998/09/07 20:04:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.337 1998/09/23 00:13:02 tom Exp $
  *
  */
 
@@ -37,7 +37,7 @@
 #endif
 #endif
 
-#ifdef VMS
+#if SYS_VMS
 #include <processes.h>
 #endif
 
@@ -323,7 +323,7 @@ MainProgram(int argc, char *argv[])
 	 * file into a buffer.
 	 */
 #if SYS_UNIX || SYS_VMS || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
-#ifdef DISP_NTWIN
+#if DISP_NTWIN
 	if (stdin_data_available())
 #else
 	if (!isatty(fileno(stdin)))
@@ -2166,10 +2166,10 @@ newprocessgroup(int f GCC_UNUSED, int n GCC_UNUSED)
     int pid;
 
     if (f) {
-#ifndef VMS
+#ifndef SYS_VMS
 	    pid = fork();
 #else
-            pid = vfork();
+	    pid = vfork();	/* VAX C and DEC C have a 'vfork()' */
 #endif
 
 	    if (pid > 0)
@@ -2179,7 +2179,7 @@ newprocessgroup(int f GCC_UNUSED, int n GCC_UNUSED)
 		tidy_exit(BADEXIT);
 	    }
     }
-# ifndef VMS
+# ifndef SYS_VMS
 #  ifdef HAVE_SETSID
      (void)setsid();
 #  else
@@ -2189,7 +2189,7 @@ newprocessgroup(int f GCC_UNUSED, int n GCC_UNUSED)
      (void)setpgrp();
 #   endif /* HAVE_BSD_SETPGRP */
 #  endif /* HAVE_SETSID */
-# endif /* VMS */
+# endif /* SYS_VMS */
 #endif /* DISP_X11 */
     return TRUE;
 }
