@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.8 1998/04/26 12:36:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.9 1998/12/14 11:53:40 tom Exp $
  *
  */
 #include "estruct.h"
@@ -59,17 +59,23 @@ Trace(const char *fmt, ...)
 }
 
 char *
-tb_visible(TBUFF *p)
+visible_buff(const char *buffer, int length)
 {
 	static char *result;
-	size_t j, k = 0;
+	int j;
+	unsigned k = 0;
+
+	if (length <= 0)
+		length = 1;
+	if (buffer == 0)
+		buffer = "";
 
 	if (result != 0)
 		free(result);
-	result = malloc(tb_length(p)*4 + 1);
+	result = malloc(length*4 + 1);
 
-	for (j = 0; j < tb_length(p); j++) {
-		int c = tb_values(p)[j] & 0xff;
+	for (j = 0; j < length; j++) {
+		int c = buffer[j] & 0xff;
 		if (isprint(c)) {
 			result[k++] = c;
 		} else {
@@ -84,6 +90,18 @@ tb_visible(TBUFF *p)
 	}
 	result[k] = 0;
 	return result;
+}
+
+char *
+tb_visible(TBUFF *p)
+{
+	return visible_buff(tb_values(p), tb_length(p));
+}
+
+char *
+lp_visible(LINE *p)
+{
+	return visible_buff(p->l_text, llength(p));
 }
 
 #define	SECS(tv)	(tv.tv_sec + (tv.tv_usec / 1.0e6))

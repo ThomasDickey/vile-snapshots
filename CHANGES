@@ -1,5 +1,23 @@
 Changes for vile 8.3 (released ??? ??? ??, 1998)
 
+ (tom) 981214 (h)
+	+ simplify some trace-code using new functions visible_buff, lp_visible.
+	+ add trace-code for fences.c
+	+ correct check for zero-sized window, from 8.2e, which made it
+	  impossible to switch to a window with exactly one line (patch by
+	  Kevin Buettner).
+	> patches by Clark Morgan:
+	+ modify ffsize() for VMS so that it returns a 0 rather than -1 if a
+	  call to 'fstat()' fails to get the size.  The file exists, so a zero
+	  makes vile read if via slowreadf, which works. 
+	+ modify estruct.h to build using descrip.mms alone: the vmsbuild.com
+	  script defines logical "SYS" so that <sys/types.h> can be included,
+	  but the descrip.mms script does not do that.
+	+ update ifdef's to make vile build with VAX C (the 8.0b changes added
+	  CC_CANNOT_INIT_UNIONS, which is needed for that compiler).
+	+ document problem with DEC C, which causes vile to update revision
+	  dates on files even without writing the file.
+
  (tom) 981201 (g)
  	+ fix minor memory-leaks (main.c, bind.c, select.c)
 	+ modify finderr.c to use the given filename and ignore the associated

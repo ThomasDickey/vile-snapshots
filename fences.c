@@ -8,7 +8,7 @@
  * Extensions for vile by Paul Fox
  * Revised to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.50 1998/07/17 01:28:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.52 1998/12/14 12:01:46 tom Exp $
  *
  */
 
@@ -47,12 +47,29 @@
 #define InDirection(sdir) \
  	((sdir == REVERSE) ? backchar(FALSE, 1) : forwchar(FALSE, 1))
 
+#if OPT_TRACE
+static char *typeof_complex(int code)
+{
+	char *s;
+	switch (code) {
+	case CPP_IF:		s = "CPP_IF";		break;
+	case CPP_ELIF:		s = "CPP_ELIF";		break;
+	case CPP_ELSE:		s = "CPP_ELSE";		break;
+	case CPP_ENDIF:		s = "CPP_ENDIF";	break;
+	default: 		s = "CPP_UNKNOWN";	break;
+	}
+	return s;
+}
+#endif
+
 static int
 match_complex(LINE *lp)
 {
 	static int modes[] = { CPP_IF, CPP_ELIF, CPP_ELSE, CPP_ENDIF };
 	size_t j, k;
+	int code = CPP_UNKNOWN;
 
+	TRACE(("match_complex %d:%s\n", line_no(curbp, lp), lp_visible(lp)))
 	for (j = 0; j < TABLESIZE(modes); j++) {
 		/* fix for CC_CANNOT_OFFSET_CASES */
 		switch (modes[j]) {
@@ -62,11 +79,14 @@ match_complex(LINE *lp)
 		case CPP_ENDIF:		k = VAL_FENCE_FI;	break;
 		default:					continue;
 		}
-		if (lregexec(b_val_rexp(curbp, k)->reg, lp, 0, llength(lp)))
-			return modes[j];
+		if (lregexec(b_val_rexp(curbp, k)->reg, lp, 0, llength(lp))) {
+			code = modes[j];
+			break;
+		}
 	}
 
-	return CPP_UNKNOWN;
+	TRACE(("...match_complex %s\n", typeof_complex(code)))
+	return code;
 }
 
 /*
@@ -79,24 +99,30 @@ match_simple(void)
 	C_NUM first = 0;
 	C_NUM last = llength(DOT.l);
 
+	TRACE(("match_simple %d:%s\n", line_no(curbp, DOT.l), lp_visible(DOT.l)))
 	for (first = 0; first < last; first = S_COL(BlkBegin) + 1) {
 		if (!lregexec(BlkBegin, DOT.l, first, last))
 			break;
 		if ((S_COL(BlkBegin) <= DOT.o)
-		 && (E_COL(BlkBegin) >  DOT.o))
+		 && (E_COL(BlkBegin) >  DOT.o)) {
+			TRACE(("...match_simple BLK_BEGIN\n"))
 			return BLK_BEGIN;
+		}
 	}
 
 	for (first = 0; first < last && DOT.o <= last; last = E_COL(BlkEnd) - 1) {
 		if (!lregexec(BlkEnd, DOT.l, first, last))
 			break;
 		if ((S_COL(BlkEnd) <= DOT.o)
-		 && (E_COL(BlkEnd) >  DOT.o))
+		 && (E_COL(BlkEnd) >  DOT.o)) {
+			TRACE(("...match_simple BLK_END\n"))
 			return BLK_END;
+		}
 		if (last >= E_COL(BlkEnd) - 1)
 			break;
 	}
 
+	TRACE(("...match_simple BLK_UNKNOWN\n"))
 	return BLK_UNKNOWN;
 }
 
@@ -268,6 +294,8 @@ int sdir) /* direction to scan if we're not on a fence to begin with */
 	/* save the original cursor position */
 	oldpos = DOT;
 
+	TRACE(("getfence, starting at %d.%d\n", line_no(curbp, DOT.l), DOT.o))
+
 	/* ch may have been passed, if being used internally */
 	if (ch < 0) {
 		if ((i = firstchar(DOT.l)) < 0)	/* offset of first nonblank */
@@ -340,12 +368,12 @@ int sdir) /* direction to scan if we're not on a fence to begin with */
 		s = simple_fence(sdir, ch, ofence);
 	}
 
-	if (s == TRUE)
-		return TRUE;
-
-	/* restore the current position */
-	DOT = oldpos;
-	return(FALSE);
+	if (s != TRUE) {
+		s = FALSE;
+		DOT = oldpos; /* restore the current position */
+	}
+	TRACE(("...getfence, end at %d.%d (status=%d)\n", line_no(curbp, DOT.l), DOT.o, s))
+	return(s);
 }
 
 /*	the cursor is moved to a matching fence */

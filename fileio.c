@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.133 1998/11/30 11:31:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.134 1998/12/14 02:25:01 cmorgan Exp $
  *
  */
 
@@ -436,6 +436,17 @@ ffsize(void)
 	if (fstat(fileno(ffp), &statbuf) == 0) {
 		result = (B_COUNT)statbuf.st_size;
 	}
+#if SYS_VMS
+	if (result == -1)
+	{
+	    /*
+	     * Attempting to read a file size across DECNET via fstat()
+	     * doesn't work using (at least) VAXC and its runtime library.
+	     * So return 0 and let slowreadf() read the file.
+	     */
+	    result = 0;
+	}
+#endif
 
 #else
 #if SYS_MSDOS

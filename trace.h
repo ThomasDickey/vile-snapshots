@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.6 1998/04/26 12:36:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.7 1998/12/14 11:53:45 tom Exp $
  *
  */
 #ifndef	_trace_h
@@ -48,6 +48,8 @@ extern	void	Elapsed ( char * msg);
 extern	void	WalkBack (void);
 
 #ifdef _estruct_h
+extern	char *	visible_buff (const char *p, int length);
+extern	char *	lp_visible (LINE *p);
 extern	char *	tb_visible (TBUFF *p);
 #endif
 

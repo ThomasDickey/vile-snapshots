@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.265 1998/11/14 04:08:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.267 1998/12/14 11:51:17 tom Exp $
  *
  */
 
@@ -133,7 +133,7 @@ dfputsn(OutFunc outfunc, const char *s, int n)
 {
 	register int c = 0;
 	register int l = 0;
-	TRACE(("...str=%.*s\n", n > 0 ? n : (int)strlen(s), s))
+	TRACE(("...str=%s\n", visible_buff(s, n)))
 	while ((n-- != 0) && ((c = *s++) != EOS)) {
 		(*outfunc)(c);
 		l++;
@@ -878,10 +878,9 @@ kbd_flush(void)
 		   && wminip->w_dot.l != 0
 		   && wminip->w_dot.l->l_text != 0);
 		if (ok) {
-			TRACE(("SHOW:%2d:%.*s\n",
+			TRACE(("SHOW:%2d:%s\n",
 				llength(wminip->w_dot.l),
-				llength(wminip->w_dot.l),
-				wminip->w_dot.l->l_text));
+				lp_visible(wminip->w_dot.l)))
 			lsettrimmed(wminip->w_dot.l);
 			vtset(wminip->w_dot.l, wminip);
 		}
@@ -952,7 +951,7 @@ int force)	/* force update past type ahead? */
 	 */
 	if (curwp->w_bufp == 0
 	 || curwp->w_bufp->b_nwnd == 0
-	 || curwp->w_ntrows <= 1)
+	 || curwp->w_ntrows < 1)
 		return FALSE;
 	if (TypeAhead(force))
 		return SORTOFTRUE;
