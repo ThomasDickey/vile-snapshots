@@ -5,7 +5,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.99 1999/08/22 18:28:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.100 1999/09/10 11:04:47 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -865,7 +865,7 @@ maketagslist (int value GCC_UNUSED, void *dummy GCC_UNUSED)
 		taglen = 10;
 
 	bprintf("    %*s FROM line in file\n", taglen, "TO tag");
-	bprintf("    %*p --------- %30p",      taglen, '-', '-');
+	bprintf("    %*Q --------- %30Q",      taglen, '-', '-');
 
 	for (utp = untaghead, n = 0; utp != 0; utp = utp->u_stklink)
 		bprintf("\n %2d %*s %8d  %s",

@@ -1110,6 +1110,10 @@ Editor modes
 		have this feature enabled.  See the section on "Encryption" for
 		more information.  (B)
 
+	color-scheme (cs) An aggregate of fcolor, bcolor, video-attrs and
+		$palette.  Color schemes are defined with the
+		define-color-scheme command.
+
 	comment-prefix A regular expression denoting the portion of a line
 		that is replicated and untouched, except for leading
 		indentation when doing text formatting.  The expression
@@ -1525,7 +1529,7 @@ Editor modes
 		notation.  (B)
 
 	video-attrs  Overlay all text with the given attribute: bold, italic,
-		underline or none.  (U)
+		reverse, underline or none.  (U)
 
 	view	View the file only.  No changes are permitted.  (B)
 
@@ -3484,8 +3488,8 @@ X Window System specifics
 			such as a selection.  This will make the cursor
 			visible no matter where it is.
 
-	color.fcolor1,
-	color.bcolor1, ...,
+	color.fcolor0,
+	color.bcolor0, ...,
 	color.fcolor15,
 	color.bcolor15
 			When doing text attribution with the
@@ -4180,4 +4184,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.439 1999/09/05 22:55:52 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.441 1999/09/13 23:51:59 tom Exp $

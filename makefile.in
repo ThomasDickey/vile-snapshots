@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.143 1999/09/02 10:47:24 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.145 1999/09/12 20:40:40 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -176,6 +176,7 @@ PERL_SRC = \
 MACRO_SRC = \
 	$(srcdir)/macros/digraphs.rc \
 	$(srcdir)/macros/manpage.rc \
+	$(srcdir)/macros/palettes.rc \
 	$(srcdir)/macros/pictmode.rc \
 	$(srcdir)/macros/vileperl.rc
 
@@ -308,6 +309,7 @@ check: $(TARGET)
 INSTALL_MACRO_FILES = \
 	$(DATADIR)/digraphs.rc \
 	$(DATADIR)/manpage.rc \
+	$(DATADIR)/palettes.rc \
 	$(DATADIR)/pictmode.rc \
 	$(DATADIR)/vileperl.rc
 
@@ -607,6 +609,8 @@ $(DATADIR)/digraphs.rc:		$(srcdir)/macros/digraphs.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/digraphs.rc $@
 $(DATADIR)/manpage.rc:		$(srcdir)/macros/manpage.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/manpage.rc $@
+$(DATADIR)/palettes.rc:		$(srcdir)/macros/palettes.rc
+	$(INSTALL_DATA)		$(srcdir)/macros/palettes.rc $@
 $(DATADIR)/pictmode.rc:		$(srcdir)/macros/pictmode.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/pictmode.rc $@
 $(DATADIR)/vileperl.rc:		$(srcdir)/macros/vileperl.rc

@@ -1,0 +1,27 @@
+; $Header: /users/source/archives/vile.vcs/macros/RCS/palettes.rc,v 1.4 1999/09/14 00:37:31 tom Exp $
+; Sample color schemes.
+
+; Note that while the palette strings reference up to 16 colors, you will have
+; only 8 available if vile is linked with termcap.  To get 16 colors, you need
+; terminfo (e.g., ncurses), and a terminal emulator that supports 16 colors.
+
+; on a light background, we don't like to use yellow - map it to blue
+define-color-scheme light \
+	use=default \
+	palette="0 1 2 4 4 5 6 7 8 9 10 12 12 13 14 15"
+
+; on a dark background, we don't like to use blue - map it to yellow
+define-color-scheme dark \
+	use=default \
+	palette="0 1 2 3 3 5 6 7 8 9 10 11 11 13 14 15"
+
+~if &isa color default
+	define-color-scheme light fcolor=default bcolor=default
+	define-color-scheme dark fcolor=default bcolor=default
+~endif
+
+define-color-scheme reverse video-attr=rev
+
+define-color-scheme white use=dark fcolor=white bcolor=black
+
+define-color-scheme black use=light bcolor=white fcolor=black

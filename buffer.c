@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.198 1999/09/03 01:53:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.201 1999/09/14 01:10:25 tom Exp $
  *
  */
 
@@ -1519,7 +1519,7 @@ makebufflist(
 		that_bp = find_alt();
 
 	bprintf("      %7s %*s %s\n", "Size",NBUFN-1,"Buffer name","Contents");
-	bprintf("      %7p %*p %30p\n", '-',NBUFN-1,'-','-');
+	bprintf("      %7Q %*Q %30Q\n", '-', NBUFN-1, '-', '-');
 
 	/* output the list of buffers */
 	for_each_buffer(bp) {
@@ -2061,7 +2061,7 @@ bsizes(BUFFER *bp)
 	LINE	*lp;		/* current line */
 	B_COUNT numchars = 0;	/* # of chars in file */
 	L_NUM   numlines = 0;	/* # of lines in file */
-	L_NUM	ending = strlen(get_record_sep(bp));
+	L_NUM	ending = len_record_sep(bp);
 
 	if (b_is_counted(bp))
 		return FALSE;

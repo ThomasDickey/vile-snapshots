@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.150 1999/09/08 01:50:02 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.151 1999/09/12 17:10:45 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -53,7 +53,7 @@ bool							# GMD prefix
 	"SmoothScroll"	SMOOTH_SCROLL	0		# should we update even if there is typeahead?
 	"Spaces-After-Sentence" SPACESENT	0	# add two spaces after a
 enum
-	"color-scheme"	COLOR_SCHEME	chgd_scheme	OPT_COLOR_SCHEMES # color palette combination
+	"Color-Scheme"	COLOR_SCHEME	chgd_scheme	OPT_COLOR_SCHEMES # color palette combination
 	"fcolor"	FCOLOR		chgd_color	OPT_COLOR	# foreground color
 	"bcolor"	BCOLOR		chgd_color	OPT_COLOR	# background color
 	"mcolor"	MCOLOR		chgd_hilite	OPT_HILITEMATCH # modeline color

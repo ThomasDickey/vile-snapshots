@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.96 1999/09/03 09:18:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.97 1999/09/12 20:26:47 tom Exp $
  *
  *
  */
@@ -1990,7 +1990,12 @@ find_in_path_list(const char *path_list, char *path)
 			: "(null)",
 		find))
 	while ((path_list = parse_pathlist(path_list, temp)) != 0) {
-		if (!strcmp(temp, find)) {
+#if OPT_CASELESS
+		if (!stricmp(temp, find))
+#else
+		if (!strcmp(temp, find))
+#endif
+		{
 			found = TRUE;
 			break;
 		}

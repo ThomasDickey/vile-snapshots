@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.204 1999/09/06 21:50:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.205 1999/09/10 21:52:13 tom Exp $
  *
  */
 
@@ -1216,8 +1216,11 @@ list_which_fname(char *dirname, char *fname, int mode)
 	char fullpath[NFILEN];  /* expanded path */
 
 	if (dirname
-	 && dirname[0] != EOS)
-		list_one_fname(pathcat(fullpath, dirname, fname), mode);
+	 && dirname[0] != EOS) {
+		list_one_fname(SL_TO_BSL(
+				pathcat(fullpath, dirname, fname)),
+			mode);
+	}
 }
 
 static void

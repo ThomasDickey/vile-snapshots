@@ -151,7 +151,7 @@ lreplace(char *s, int len)
 
     DOT.o = 0;
 
-    if (len > lp->l_size) {
+    if (len > (int) lp->l_size) {
 	int nlen;
 	char *ntext;
 

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_3r
+MANIFEST for vile, version v8_3s
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -195,6 +195,7 @@ filters/pas-filt.c              Pascal syntax filter for vile
 filters/pas.key                 keywords for pascal highlighting filter
 filters/perl.key                keywords for perl syntax filter
 filters/perlfilt.l              Perl syntax filter for vile
+filters/pot.key                 keywords for pot (gettext) mode
 filters/rcs-filt.l              syntax filter for RCS archives
 filters/rcs.key                 keywords for RCS syntax filter
 filters/sccs.key                keywords for SCCS syntax filter
@@ -233,6 +234,7 @@ icons/vile.xpm                  sample icon, for xpm library
 macros                          subdirectory
 macros/digraphs.rc              macros for inserting digraphs
 macros/manpage.rc               macros for man-page filtering/display
+macros/palettes.rc              sample color schemes
 macros/pictmode.rc              macros to support "picture-mode" editing
 macros/vile-pager               use vile as a pager
 macros/vileperl.rc              sample initialization for perl scripts

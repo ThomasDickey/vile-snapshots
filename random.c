@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.205 1999/09/03 01:17:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.207 1999/09/14 01:11:26 tom Exp $
  *
  */
 
@@ -199,7 +199,7 @@ showcpos(int f GCC_UNUSED, int n GCC_UNUSED)
 
 	/* summarize and report the info */
 	mlforce(
-"Line %d of %d, Col %d of %d, Char %D of %D (%D%%) char is 0x%x or 0%o",
+"Line %d of %d, Col %d of %d, Char %ld of %ld (%ld%%) char is 0x%x or 0%o",
 		predlines+1, numlines, col+1, ecol,
 		predchars+1, numchars, ratio, curchar, curchar);
 #endif
@@ -343,7 +343,7 @@ gotochr(int f, int n)
 {
 	LINE *lp;
 	int len;
-	int len_nl = strlen(get_record_sep(curbp));
+	int len_rs = len_record_sep(curbp);
 
 	if (!f) {
 		DOT.l = lback(buf_head(curbp));
@@ -351,7 +351,7 @@ gotochr(int f, int n)
 	} else {
 		B_COUNT goal = n;
 		for_each_line(lp, curbp) {
-			len = llength(lp) + len_nl;
+			len = line_length(lp);
 			if ((goal -= len) <= 0) {
 				DOT.l = lp;
 				if ((DOT.o = goal + len - 1) >= llength(lp))

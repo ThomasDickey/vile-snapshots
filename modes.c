@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.175 1999/09/08 01:54:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.179 1999/09/14 01:09:33 tom Exp $
  *
  */
 
@@ -1720,6 +1720,12 @@ chgd_major_w(VALARGS *args, int glob_vals, int testing)
 	return TRUE;
 }
 
+int
+len_record_sep(BUFFER *bp)
+{
+	return strlen(get_record_sep(bp));
+}
+
 char *
 get_record_sep(BUFFER *bp)
 {
@@ -1758,7 +1764,7 @@ chgd_rs(VALARGS *args, int glob_vals, int testing)
 	if (!testing) {
 		if (curbp == 0)
 			return FALSE;
-		set_record_sep(curbp, args->local->vp->i);
+		set_record_sep(curbp, (RECORD_SEP) args->local->vp->i);
 	}
 
 	return chgd_major_w(args, glob_vals, testing);
@@ -3293,6 +3299,7 @@ static const struct VALNAMES scheme_values[] = {
 	{ s_bcolor,      s_bcolor,        VALTYPE_ENUM,     0 },
 	{ s_fcolor,      s_fcolor,        VALTYPE_ENUM,     0 },
 	{ s_palette,     s_palette,       VALTYPE_STRING,   0 },
+	{ "use",         "use",           VALTYPE_ENUM,     0 },
 	{ s_video_attrs, s_video_attrs,   VALTYPE_ENUM,     0 },
 	{ 0,             0,               0,                0 }
 	};
@@ -3309,6 +3316,7 @@ static int
 prompt_scheme_value(PALETTES *p)
 {
 	static TBUFF *cbuf;	/* buffer to receive mode name into */
+	PALETTES *q;
 	int status;
 
 	/* prompt the user and get an answer */
@@ -3329,7 +3337,9 @@ prompt_scheme_value(PALETTES *p)
 		for (code = 0; scheme_values[code].name; code++) {
 			if (!strcmp(name, scheme_values[code].name)) {
 				names = &scheme_values[code];
-				if (is_fsm(names))
+				if (!strcmp("use", scheme_values[code].name))
+					complete = scheme_complete;
+				else if (is_fsm(names))
 					complete = fsm_complete;
 				fp = valname_to_choices(names);
 				break;
@@ -3342,15 +3352,26 @@ prompt_scheme_value(PALETTES *p)
 		*respbuf = EOS;
 		status = kbd_string(name, respbuf, sizeof(respbuf), eolchar,
 				KBD_NORMAL, complete);
-		if (*name == *s_video_attrs) {
-			status = set_scheme_color(fp, &(p->attr), respbuf);
-		} else if (*name == *s_bcolor) {
-			status = set_scheme_color(fp, &(p->bcol), respbuf);
-		} else if (*name == *s_fcolor) {
-			status = set_scheme_color(fp, &(p->fcol), respbuf);
-		} else if (*name == *s_palette) {
-			set_scheme_string(&(p->list), respbuf);
-			return status;
+		if (status == TRUE) {
+			if (*name == *s_video_attrs) {
+				status = set_scheme_color(fp, &(p->attr), respbuf);
+			} else if (*name == *s_bcolor) {
+				status = set_scheme_color(fp, &(p->bcol), respbuf);
+			} else if (*name == *s_fcolor) {
+				status = set_scheme_color(fp, &(p->fcol), respbuf);
+			} else if (*name == *s_palette) {
+				set_scheme_string(&(p->list), respbuf);
+				return status;
+			} else if (*name == 'u'
+			 && (q = find_scheme(respbuf)) != 0) {
+				p->fcol = q->fcol;
+				p->bcol = q->bcol;
+				p->attr = q->attr;
+				if (p->list)
+					FreeAndNull(p->list);
+				if (q->list != 0)
+					p->list = strmalloc(q->list);
+			}
 		}
 		if (status == TRUE)
 			return (end_string() == ' ') ? -1 : TRUE;
@@ -3451,7 +3472,10 @@ int
 chgd_scheme(VALARGS *args, int glob_vals, int testing)
 {
 	if (!testing) {
-		if (set_current_scheme(&my_schemes[args->local->vp->i])) {
+		PALETTES *p = find_scheme_by_code(args->local->vp->i);
+		if (p == 0) {
+			return FALSE;
+		} else if (set_current_scheme(p)) {
 			set_winflags(glob_vals, WFHARD|WFCOLR);
 			vile_refresh(FALSE,0);
 		}

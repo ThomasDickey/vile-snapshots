@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.253 1999/09/03 10:20:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.255 1999/09/14 00:26:22 tom Exp $
  */
 
 #include	"estruct.h"
@@ -734,7 +734,7 @@ modified_dosmode(int flag)
 	explicit_dosmode(flag);
 	guess_dosmode(curbp);
 	explicit_dosmode(flag);	/* ignore the guess - only want to strip CR's */
-	set_record_sep(curbp, b_val(curbp, VAL_RECORD_SEP));
+	set_record_sep(curbp, (RECORD_SEP) b_val(curbp, VAL_RECORD_SEP));
 	curwp->w_flag |= WFMODE|WFHARD;
 	return TRUE;
 }
@@ -1524,6 +1524,7 @@ int	forced)
 	char	fname[NFILEN], *fn;
 	B_COUNT	nchar;
 	const char * ending = get_record_sep(bp);
+	int	len_rs = strlen(ending);
 	C_NUM	offset = rp->r_orig.o;
 
 	/* this is adequate as long as we cannot write parts of lines */
@@ -1600,7 +1601,7 @@ int	forced)
 	nchar = 0;				/* Number of chars     */
 
 	/* first (maybe partial) line and succeeding whole lines */
-	while ((rp->r_size+offset) >= llength(lp)+1) {
+	while ((rp->r_size+offset) >= line_length(lp)) {
 		register C_NUM	len = llength(lp) - offset;
 		register char	*text = lp->l_text + offset;
 
@@ -1608,14 +1609,14 @@ int	forced)
 		 * after the line), allow 'newline' mode to suppress the
 		 * trailing newline.
 		 */
-		if ((rp->r_size -= (len + 1)) <= 0
+		if ((rp->r_size -= line_length(lp)) <= 0
 		 && !b_val(bp,MDNEWLINE))
 			ending = "";
 		if ((s = ffputline(text, len, ending)) != FIOSUC)
 			goto out;
 
 		++nline;
-		nchar += len + 1;
+		nchar += line_length(lp);
 		offset = 0;
 		lp = lforw(lp);
 	}

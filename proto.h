@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.381 1999/09/08 01:54:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.384 1999/09/14 01:09:54 tom Exp $
  *
  */
 
@@ -184,7 +184,7 @@ void update_scratch (const char *name, int (*func)(BUFFER *));
 /* csrch.c */
 
 /* display.c */
-extern char *lsprintf (char *buf, const char *fmt, ...);
+extern char *lsprintf (char *buf, const char *fmt, ...) VILE_PRINTF(2,3);
 extern int col_limit (WINDOW *wp);
 extern int im_waiting (int flag);
 extern int mk_to_vcol (MARK mark, int expanded, int base, int col);
@@ -194,20 +194,20 @@ extern int update (int force);
 extern int video_alloc (VIDEO **vpp);
 extern int vtinit (void);
 extern void bottomleft (void);
-extern void bprintf (const char *fmt, ...);
+extern void bprintf (const char *fmt, ...) VILE_PRINTF(1,2);
 extern void bputc (int c);
-extern void dbgwrite (const char *fmt, ...);
+extern void dbgwrite (const char *fmt, ...) VILE_PRINTF(1,2);
 extern void hilite (int row, int colfrom, int colto, int on);
 extern void kbd_flush (void);
 extern void kbd_openup (void);
 extern void kbd_overlay(const char *s);
 extern void mlerase (void);
 extern void mlerror (const char *s);
-extern void mlforce (const char *fmt, ...);
-extern void mlprompt (const char *fmt, ...);
+extern void mlforce (const char *fmt, ...) VILE_PRINTF(1,2);
+extern void mlprompt (const char *fmt, ...) VILE_PRINTF(1,2);
 extern void mlsavec (int c);
-extern void mlwarn (const char *fmt, ...);
-extern void mlwrite (const char *fmt, ...);
+extern void mlwarn (const char *fmt, ...) VILE_PRINTF(1,2);
+extern void mlwrite (const char *fmt, ...) VILE_PRINTF(1,2);
 extern void movecursor (int row, int col);
 extern void newscreensize (int h, int w);
 extern void upmode (void);
@@ -631,6 +631,7 @@ extern int choice_to_code (const FSM_CHOICES *choices, const char *name, size_t 
 extern int combine_choices (const FSM_CHOICES *choices, const char *string);
 extern int find_mode (BUFFER *bp, const char *mode, int global, VALARGS *args);
 extern int getfillcol(BUFFER *bp);
+extern int len_record_sep(BUFFER *bp);
 extern int mode_eol (EOL_ARGS);
 extern int set_mode_value (BUFFER *bp, const char *cp, int defining, int setting, int global, VALARGS *args, const char *rp);
 extern int string_to_number (const char *from, int *np);
@@ -830,10 +831,6 @@ extern int        trim_region (void);
 extern int        trimline (void *flagp, int l, int r);
 extern int        upperregion (void);
 extern int        yankregion (void);
-
-#if NEEDED
-extern int charprocreg (int (*)(int));
-#endif
 
 /* search.c */
 extern int findpat (int f, int n, regexp *exp, int direc);

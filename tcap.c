@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.120 1999/09/05 18:12:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.122 1999/09/12 20:01:09 tom Exp $
  *
  */
 
@@ -24,7 +24,7 @@
 	static	char tcapbuf[TCAPSLEN];
 #endif
 
-static char *tc_CM, *tc_CE, *tc_CL, *tc_SO, *tc_SE;
+static char *tc_CM, *tc_CE, *tc_CL, *tc_MR, *tc_SO, *tc_SE;
 static char *tc_TI, *tc_TE, *tc_KS, *tc_KE;
 static char *tc_CS, *tc_dl, *tc_al, *tc_DL, *tc_AL, *tc_SF, *tc_SR;
 static char *tc_VI, *tc_VE;
@@ -82,7 +82,7 @@ static	char	*OrigColors;
 static	int	have_bce;
 
 	/* ANSI: black, red, green, yellow, blue, magenta, cyan, white   */
-static	const char ANSI_palette[] = { "0 1 2 3 4 5 6 7" };
+static	const char ANSI_palette[] = { "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15" };
 static	const char UNKN_palette[] = { "0 4 2 6 1 5 3 7 8 12 10 14 9 13 11 15" };
 /*
  * We don't really _know_ what the default colors are set to, so the initial
@@ -303,6 +303,7 @@ tcapopen(void)
 	,{ CAPNAME("se","rmso"),  &tc_SE }	/* end standout-mode */
 	,{ CAPNAME("sf","ind"),   &tc_SF }	/* scroll forward 1 line */
 	,{ CAPNAME("so","smso"),  &tc_SO }	/* start standout-mode */
+	,{ CAPNAME("mr","rev"),   &tc_MR }	/* start reverse-mode */
 	,{ CAPNAME("sr","ri"),    &tc_SR }	/* scroll reverse 1 line */
 	,{ CAPNAME("te","rmcup"), &tc_TE }	/* end cursor-motion program */
 	,{ CAPNAME("ti","smcup"), &tc_TI }	/* initialize cursor-motion program */
@@ -397,7 +398,6 @@ tcapopen(void)
 	p = tcapbuf;
 #endif
 	for (i = 0; i < TABLESIZE(tc_strings); i++) {
-		t = 0;
 		/* allow aliases */
 		if (NO_CAP(*(tc_strings[i].data))) {
 		    t = TGETSTR(tc_strings[i].name, &p);
@@ -405,11 +405,11 @@ tcapopen(void)
 			    (t != 0)
 			    	? visible_buff(t, strlen(t), FALSE)
 				: "<null>"))
+		    /* simplify subsequent checks */
+		    if (NO_CAP(t))
+			t = 0;
+		    *(tc_strings[i].data) = t;
 		}
-		/* simplify subsequent checks */
-		if (NO_CAP(t))
-		    t = 0;
-		*(tc_strings[i].data) = t;
 	}
 
 #if USE_TERMCAP
@@ -420,11 +420,20 @@ tcapopen(void)
 #  endif
 #endif
 
-	if (tc_SO != NULL)
+	/* if start/end sequences are not consistent, ignore them */
+	if ((tc_SO != 0) ^ (tc_SE != 0))
+		tc_SO = tc_SE = 0;
+	if ((tc_MD != 0) ^ (tc_ME != 0))
+		tc_MD = tc_ME = 0;
+	if ((tc_MR != 0) ^ (tc_ME != 0))
+		tc_MR = tc_ME = tc_MD = 0;
+	if ((tc_US != 0) ^ (tc_UE != 0))
+		tc_US = tc_UE = 0;
+
+	if (tc_SO != 0 || tc_MR != 0)
 		revexist = TRUE;
 
-	if(tc_CL == NULL || tc_CM == NULL)
-	{
+	if (tc_CL == NULL || tc_CM == NULL) {
 		puts("Incomplete termcap entry\n");
 		ExitProgram(BADEXIT);
 	}
@@ -465,7 +474,7 @@ tcapopen(void)
 	if (OrigColors == 0)
 		OrigColors = tc_ME;
 #endif
-	if (ncolors == 8 && AF != 0 && AB != 0) {
+	if (ncolors >= 8 && AF != 0 && AB != 0) {
 		Sf = AF;
 		Sb = AB;
 		set_palette(ANSI_palette);
@@ -548,6 +557,8 @@ static void
 tcapclose(void)
 {
 #if OPT_VIDEO_ATTRS
+	if (tc_SE)
+		putpad(tc_SE);
 	if (tc_ME)	/* end special attributes (including color) */
 		putpad(tc_ME);
 #endif
@@ -608,13 +619,31 @@ tcapmove(register int row, register int col)
 	putpad(tgoto(tc_CM, col, row));
 }
 
+static void
+begin_reverse(void)
+{
+	if (tc_MR != 0)
+		putpad(tc_MR);
+	else if (tc_SO != 0)
+		putpad(tc_SO);
+}
+
+static void
+end_reverse(void)
+{
+	if (tc_MR != 0)
+		putpad(tc_ME);
+	else if (tc_SO != 0)
+		putpad(tc_SE);
+}
+
 #ifdef GVAL_VIDEO
 #define REVERSED (global_g_val(GVAL_VIDEO) & VAREV)
 static void
 set_reverse(void)
 {
 	if (REVERSED)
-		putpad(tc_SO);
+		begin_reverse();
 }
 #else
 #define REVERSED 0
@@ -890,6 +919,7 @@ tcapattr(UINT attr)
 		UINT	NC_bit;
 		UINT	mask;
 	} tbl[] = {
+		{ &tc_MR, &tc_ME,  4, VASEL|VAREV }, /* more reliable than standout */
 		{ &tc_SO, &tc_SE,  1, VASEL|VAREV },
 		{ &tc_US, &tc_UE,  2, VAUL },
 		{ &tc_US, &tc_UE,  2, VAITAL },
@@ -916,13 +946,18 @@ tcapattr(UINT attr)
 #if OPT_COLOR
 	/*
 	 * If we have a choice between color and some other attribute, choose
-	 * color, since the other attributes may not be real anyway.
+	 * color, since the other attributes may not be real anyway.  But
+	 * treat VASEL specially, otherwise we won't be able to see selections.
 	 */
 	if (tc_NC != 0
 	 && (attr & VACOLOR) != 0) {
 		for (n = 0; n < TABLESIZE(tbl); n++) {
-			if (tbl[n].NC_bit & tc_NC) {
-				attr &= ~tbl[n].mask;
+			if ((tbl[n].NC_bit & tc_NC) != 0
+			 && (tbl[n].mask & attr) != 0) {
+				if ((attr & VASEL) != 0)
+					attr &= ~VACOLOR;
+				else
+					attr &= ~tbl[n].mask;
 			}
 		}
 	}
@@ -958,12 +993,10 @@ tcapattr(UINT attr)
 			}
 		}
 
-		if (tc_SO != 0 && tc_SE != 0) {
-			if (ends && (attr & (VAREV|VASEL))) {
-				putpad(tc_SO);
-			} else if (diff & VA_SGR) {  /* we didn't find it */
-				putpad(tc_SE);
-			}
+		if (ends && (attr & (VAREV|VASEL))) {
+			begin_reverse();
+		} else if (diff & VA_SGR) {  /* we didn't find it */
+			end_reverse();
 		}
 #if OPT_COLOR
 		if (attr & VACOLOR)
@@ -986,11 +1019,9 @@ UINT state)		/* FALSE = normal video, TRUE = reverse video */
 		return;
 	revstate = state;
 	if (state) {
-		if (tc_SO != NULL)
-			putpad(tc_SO);
+		begin_reverse();
 	} else {
-		if (tc_SE != NULL)
-			putpad(tc_SE);
+		end_reverse();
 	}
 }
 

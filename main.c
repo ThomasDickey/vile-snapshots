@@ -23,7 +23,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.398 1999/09/04 15:16:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.399 1999/09/10 10:59:58 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -2085,7 +2085,7 @@ int
 showmemory(int f, int n)
 {
 	extern	long	coreleft(void);
-	mlforce("Memory left: %D bytes", coreleft());
+	mlforce("Memory left: %ld bytes", coreleft());
 	return TRUE;
 }
 #endif
@@ -2103,7 +2103,7 @@ showmemory(int f, int n)
 int
 showmemory(int f, int n)
 {
-	mlforce("Memory left: %D Kb virtual, %D Kb physical",
+	mlforce("Memory left: %ld Kb virtual, %ld Kb physical",
 			_go32_dpmi_remaining_virtual_memory()/1024,
 			_go32_dpmi_remaining_physical_memory()/1024);
 	return TRUE;

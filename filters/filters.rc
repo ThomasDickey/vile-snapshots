@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.82 1999/09/08 02:02:08 tom Exp $
+; $Id: filters.rc,v 1.83 1999/09/12 20:20:31 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -259,6 +259,14 @@ define-mode perl
 	fence-fi       "^\\s*}"
 ~endwith
 
+define-mode pot
+~with define-submode pot
+	suf "\\.\\(pot\\|po\\)$"
+	filtername "vile-sh-filt -k pot"
+	comment-prefix "^#"
+	comments       "^#\\s*$"
+~endwith
+
 ; I capitalized the majormode RCS/SCCS names because matches are made in
 ; alphabetic order (usually not a problem, but conflicting with other modes,
 ; such as "makemode").
@@ -393,10 +401,11 @@ store-procedure HighlightFilter
 	~endif
 	set-variable %filterpath &word 0 %filtername
 	set-variable %filteropts &right %filtername &add 1 &len %filterpath
-	set-variable %filterpath &lookup e+l+p &cat %filterpath $exec-suffix
+	~if &seq "" &lookup e+p &cat %filterpath $exec-suffix
+		set-variable %filterpath &lookup e+l &cat %filterpath $exec-suffix
+	~endif
 	~if &not &seq %filterpath ""
-		set-variable %filterpath &pquote %filterpath
-		~hidden attribute-from-filter end-of-file &cat %filterpath %filteropts
+		~hidden attribute-from-filter end-of-file &cat &pquote %filterpath %filteropts
 	~endif
     ~endif
 ~endm

@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.54 1999/08/21 14:28:31 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.55 1999/09/11 13:47:27 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -276,6 +276,7 @@ INSTALL_LEX_TXT = \
 	$(DATADIR)/make.keywords \
 	$(DATADIR)/nr.keywords \
 	$(DATADIR)/perl.keywords \
+	$(DATADIR)/pot.keywords \
 	$(DATADIR)/rcs.keywords \
 	$(DATADIR)/sccs.keywords \
 	$(DATADIR)/sh.keywords \
@@ -394,6 +395,7 @@ $(DATADIR)/make.keywords :	$(srcdir)/make.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/nr.keywords :	$(srcdir)/nr.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/pas.keywords :	$(srcdir)/pas.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/perl.keywords :	$(srcdir)/perl.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/pot.keywords :	$(srcdir)/pot.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/rcs.keywords :	$(srcdir)/rcs.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/sccs.keywords :	$(srcdir)/sccs.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/sh.keywords :	$(srcdir)/sh.key	; $(INSTALL_DATA) $? $@

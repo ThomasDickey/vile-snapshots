@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.202 1999/09/07 23:56:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.204 1999/09/10 22:04:43 tom Exp $
  *
  */
 
@@ -277,7 +277,7 @@ execute_named_command(int f, int n)
 
 	/* if range given, and it wasn't "0" and the buffer's empty */
 	if (!(lflag & (DFLALL|ZERO)) && is_empty_buf(curbp)) {
-		mlforce("[No range possible in empty buffer]", fnp);
+		mlforce("[No range possible in empty buffer '%s']", fnp);
 		return FALSE;
 	}
 
@@ -427,7 +427,7 @@ seems like we need one more check here -- is it from a .exrc file?
 			if (that == 2) {
 				if (is_empty_buf(curbp)) {
 				    mlforce(
-			    "[No line count possible in empty buffer]", fnp);
+			    "[No line count possible in empty buffer '%s']", fnp);
 				    return FALSE;
 				}
 				swapmark();
@@ -1135,7 +1135,7 @@ decode_parameter_info(TBUFF *tok, PARAM_INFO *result)
 	if ((s = strchr(name, ':')) != 0)
 	    *s++ = EOS;
 
-	result->pi_type = choice_to_code(fsm_paramtypes_choices,
+	result->pi_type = (PARAM_TYPES) choice_to_code(fsm_paramtypes_choices,
 					 name, strlen(name));
 	if (result->pi_type != PT_UNKNOWN) {
 	    result->pi_text = *text ? strmalloc(text) : 0;
@@ -1490,7 +1490,7 @@ pop_variable(void)
 static void
 push_buffer(IFSTK *save)
 {
-	static const IFSTK new_ifstk = {0,0,0,0,0,0,0}; /* all 0's */
+	static const IFSTK new_ifstk = {0,0,0,EXACT,0,0,0}; /* all 0's */
 
 	*save  = ifstk;
 	save->shape = regionshape;
@@ -1528,7 +1528,8 @@ dname_to_dirnum(const char *cmdp, size_t length)
 			if (!isAlnum(cmdp[n]))
 				length = n;
 		}
-		dirnum = choice_to_code(fsm_directive_choices, cmdp, length);
+		dirnum = (DIRECTIVE) choice_to_code(fsm_directive_choices,
+						cmdp, length);
 	}
 
 	return dirnum;
