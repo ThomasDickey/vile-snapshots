@@ -2860,7 +2860,7 @@ X Window System specifics
 	If you are using xvile under X11, the following additions are
 	available:
 
-	Mouse buttons
+	Mouse Buttons 
 	-------------
 
 	1 -	Sets cursor position and the start of the selection when
@@ -2911,6 +2911,40 @@ X Window System specifics
 	uppercase with ^A-u^S.	Remember that some operators (e.g. the
 	shell-filtering operator, '!') are only capable of working on full
 	lines of text.
+ 
+	Clipboard 
+	--------- 
+ 
+	Data may be exchanged between many X applications via the 
+	PRIMARY selection.  This selection is set and manipulated as 
+	described in the above section entitled "Mouse Buttons". 
+ 
+	Other applications, most notably OpenLook applications, use 
+	the CLIPBOARD selection to exchange data between applications.  
+	On many Sun keyboards, selected text is moved to the clipboard 
+	by pressing the "Copy" key and pasted by pressing the "Paste" 
+	key.  If you find that you can not paste text selected in 
+	xvile in other applications or vice-versa, it may well be that 
+	these applications use the CLIPBOARD selection instead of the 
+	PRIMARY selection.  (The other mechanism used among really old 
+	applications involves the use of a ring of cut buffers.) 
+ 
+	xvile provides two commands for manipulating with the 
+	clipboard.  These are copy-to-clipboard and 
+	paste-from-clipboard.  When copy-to-clipboard is executed, the 
+	contents of the current selection are copied to the special 
+	clipboard kill register (denoted by ';' in the register list).  
+	When an application requests the clipboard selection, xvile 
+	gives it the contents of this kill register.  The 
+	paste-from-clipboard command requests clipboard data from the 
+	current owner of the CLIPBOARD selection. 
+ 
+	Users of Sun systems may want to put the following key 
+	bindings in their .vilerc file in order to make use of the 
+	Copy and Paste keys found on their keyboards: 
+ 
+		bind-key copy-to-clipboard #-^ 
+		bind-key paste-from-clipboard #-* 
 
 	Scrollbars
 	----------
@@ -3576,4 +3610,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.341 1998/03/21 16:19:44 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.342 1998/03/22 12:06:15 kev Exp $

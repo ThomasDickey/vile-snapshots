@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.338 1998/03/21 13:19:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.339 1998/03/22 12:06:15 kev Exp $
  */
 
 #ifndef _estruct_h
@@ -763,12 +763,14 @@ extern int MainProgram(int argc, char *argv[]);
 #define	NKREGS	37			/* number of kill buffers	*/
 #define KEYST_KREG (NKREGS-1)
 #else
-#define NKREGS	38			/* When selections are enabled, we
+#define NKREGS	39			/* When selections are enabled, we 
 					 * allocate an extra kill buffer for
-					 * the current selection.
+					 * the current selection and another 
+					 * for the clipboard. 
 					 */
-#define SEL_KREG (NKREGS-1)
-#define KEYST_KREG (NKREGS-2)
+#define CLIP_KREG (NKREGS-1) 
+#define SEL_KREG (NKREGS-2) 
+#define KEYST_KREG (NKREGS-3) 
 #endif
 #define	NBLOCK	16			/* line block chunk size	*/
 #define MINWLNS	3			/* min # lines, window/screen	*/

@@ -852,6 +852,7 @@ setregion(screen, ...)
 		croak("Invalid number of arguments"); 
 		break; 
 	} 
+	scrp->dot_inited = 1; 
 	gimme = GIMME_V; 
 	if (gimme == G_SCALAR) { 
 	    warn("setregion should only be called in void or array context"); 

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.4 1998/03/20 10:48:45 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.5 1998/03/22 12:06:15 kev Exp $
  */
 typedef struct {
 	BUFFER    * bp; 
@@ -7,6 +7,8 @@ typedef struct {
 	REGION      region;		/* Region to traverse */ 
 	REGIONSHAPE regionshape; 
 	int         inplace_edit;	/* Delete after get? */ 
+	int         dot_inited;		/* Has dot been initialized 
+	                                   for api_dotgline? */ 
 	int         changed;		/* Were any changes done? */ 
 #if OPT_PERL
 	void      * perl_handle;	/* perl visible handle to this 
