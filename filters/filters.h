@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.49 2000/08/28 10:28:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.54 2000/09/14 10:41:11 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -215,18 +215,24 @@ extern int meta_ch;
 extern int verbose_flt;
 extern int vile_keywords;
 
-extern KEYWORD * is_class(char *name);
-extern KEYWORD * is_keyword(char *name);
+extern KEYWORD *is_class(char *name);
+extern KEYWORD *is_keyword(char *name);
 extern char *ci_keyword_attr(char *name);
 extern char *class_attr(char *name);
 extern char *do_alloc(char *ptr, unsigned need, unsigned *have);
-extern char * get_symbol_table(void);
+extern char *get_symbol_table(void);
 extern char *keyword_attr(char *name);
 extern char *lowercase_of(char *name);
 extern char *readline(FILE *fp, char **ptr, unsigned *len);
 extern char *skip_ident(char *src);
+extern int flt_bfr_length(void);
 extern int set_symbol_table(const char *classname);
 extern long hash_function(const char *id);
+extern void flt_bfr_append(char *text, int length);
+extern void flt_bfr_begin(char *attr);
+extern void flt_bfr_embed(char *text, int length, char *attr);
+extern void flt_bfr_error(void);
+extern void flt_bfr_finish(void);
 extern void flt_free_keywords(char *classname);
 extern void flt_free_symtab(void);
 extern void flt_initialize(void);
@@ -256,5 +262,15 @@ extern void mlforce(const char *fmt, ...);
 
 #define WriteToken(attr) flt_puts(yytext, yyleng, attr)
 #define WriteToken2(attr,len) flt_puts(yytext+len, yyleng-len, attr)
+
+#define BeginQuote(state, attr) \
+			BEGIN(state); \
+			flt_bfr_begin(attr); \
+			flt_bfr_append(yytext, yyleng)
+
+#define FinishQuote(state) \
+			flt_bfr_append(yytext, yyleng);\
+			flt_bfr_finish();\
+			BEGIN(state)
 
 #endif /* FILTERS_H */

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.277 2000/08/28 10:10:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.279 2000/09/12 11:11:40 tom Exp $
  *
  */
 
@@ -756,8 +756,12 @@ run_func(int fnum)
 	    tb_scopy(&result, string_mode_val(&vargs));
 	}
 	break;
+    case UFDQUERY:
+	cp = user_reply(arg[0], arg[1]);
+	tb_scopy(&result, cp ? cp : error_val);
+	break;
     case UFQUERY:
-	cp = user_reply(arg[0]);
+	cp = user_reply(arg[0], error_val);
 	tb_scopy(&result, cp ? cp : error_val);
 	break;
     case UFLOOKUP:
@@ -944,7 +948,7 @@ FindVar(char *var, VWRAP * vd)
 	if (vl_lookup_func(var) == UFINDIRECT) {
 	    TBUFF *tok = 0;
 	    /* grab token, and eval it */
-	    execstr = get_token(execstr, &tok, EOS);
+	    execstr = get_token(execstr, &tok, EOS, (int *) 0);
 	    (void) vl_strncpy(var, tokval(tb_values(tok)), NLINE);
 	    FindVar(var, vd);	/* recursive, but probably safe */
 	    tb_free(&tok);
@@ -1833,7 +1837,7 @@ simple_arg_eval(char *argp)
 static char *
 query_arg_eval(char *argp)
 {
-    argp = user_reply(tokval(argp + 1));
+    argp = user_reply(tokval(argp + 1), error_val);
     return argp ? argp : error_val;
 }
 

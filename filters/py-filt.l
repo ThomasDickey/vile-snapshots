@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.8 2000/08/09 23:44:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.10 2000/09/14 02:09:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a Python script
  */
@@ -17,30 +17,6 @@ static char *Ident2_attr;
 static char *Keyword_attr;
 static char *Number_attr;
 static char *String_attr;
-
-/*
- * Buffer text for quoted-strings
- */
-static char    *save_bfr;
-static unsigned save_max;
-static unsigned save_len;
-
-static void
-add_to_quoted(char *text, int length)
-{
-    save_bfr = do_alloc(save_bfr, save_len + length + 1, &save_max);
-    strncpy(save_bfr + save_len, text, length + 1);
-    save_len += length;
-}
-
-static void
-flush_quoted(void)
-{
-    if (save_len) {
-	flt_puts(save_bfr, save_len, String_attr);
-	save_len = 0;
-    }
-}
 
 static void
 init_filter(int before GCC_UNUSED)
@@ -61,7 +37,7 @@ do_filter(FILE *input)
     BEGIN(NORMAL);
     while (yylex() > 0) {
     }
-    flush_quoted();
+    flt_bfr_finish();
 }
 
 %}
@@ -85,21 +61,19 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL})[L]?|{REAL}
 
 <NORMAL>{NUMBER}	{ WriteToken(Number_attr); }
 
-<NORMAL>\'		{ BEGIN(QUOTE1); add_to_quoted(yytext, yyleng); }
-<QUOTE1>\'		{ add_to_quoted(yytext, yyleng); flush_quoted(); BEGIN(NORMAL); }
-<QUOTE1>(\\.|.)		{ add_to_quoted(yytext, yyleng); }
-<QUOTE1>^[\n]		{ flush_quoted(); ECHO; BEGIN(NORMAL); }
-<QUOTE1>[\n]		{ flush_quoted(); ECHO; }
+<NORMAL>\'		{ BeginQuote(QUOTE1, String_attr); }
+<QUOTE1>\'		{ FinishQuote(NORMAL); }
+<QUOTE1>(\\.|.)		{ flt_bfr_append(yytext, yyleng); }
+<QUOTE1>[\n]		{ flt_bfr_append(yytext, yyleng); }
 
-<NORMAL>\"		{ BEGIN(QUOTE2); add_to_quoted(yytext, yyleng); }
-<QUOTE2>\"		{ add_to_quoted(yytext, yyleng); flush_quoted(); BEGIN(NORMAL); }
-<QUOTE2>(\\.|.)		{ add_to_quoted(yytext, yyleng); }
-<QUOTE2>^[\n]		{ flush_quoted(); ECHO; BEGIN(NORMAL); }
-<QUOTE2>[\n]		{ flush_quoted(); ECHO; }
+<NORMAL>\"		{ BeginQuote(QUOTE2, String_attr); }
+<QUOTE2>\"		{ FinishQuote(NORMAL); }
+<QUOTE2>(\\.|.)		{ flt_bfr_append(yytext, yyleng); }
+<QUOTE2>[\n]		{ flt_bfr_append(yytext, yyleng); }
 
-<NORMAL>\"\"\"		{ BEGIN(QUOTE3); add_to_quoted(yytext, yyleng); }
-<QUOTE3>\"\"\"		{ add_to_quoted(yytext, yyleng); flush_quoted(); BEGIN(NORMAL); }
-<QUOTE3>(\\.|.)		{ add_to_quoted(yytext, yyleng); }
-<QUOTE3>[\n]		{ flush_quoted(); ECHO; }
+<NORMAL>\"\"\"		{ BeginQuote(QUOTE3, String_attr); }
+<QUOTE3>\"\"\"		{ FinishQuote(NORMAL); }
+<QUOTE3>(\\.|.)		{ flt_bfr_append(yytext, yyleng); }
+<QUOTE3>[\n]		{ flt_bfr_append(yytext, yyleng); }
 
 <NORMAL>.		{ ECHO; }

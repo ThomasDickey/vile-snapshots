@@ -1,10 +1,53 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000914 (w)
+	> Clark Morgan
+	+ macros.doc:  expand description regarding comment delimiters in
+	  macros.
+	+ fix vilefilt.l:  syntax attributes should not applied to leading
+	  white space that precedes a macro keyword
+	+ fix vilefilt.l:  most cases of trailing comments are rendered in the
+	  "Comment" class attribute (new functionality).  There is one corner
+	  case that's not handled, as described in block comments added to
+	  vilefilt.l .
+	> Tom Dickey
+	+ modify htmlfilt.l to parse comments line-by-line, making it work
+	  properly with Solaris' lex program which does not match newlines in a
+	  pattern.  Solaris lex also is easily confused by RE's that look like
+	  ranges but are not, such as "[^-\n"], and can only apply '+' to a
+	  single-character RE (report by Jenny Brown <jenny@cyberdesic.com>).
+	+ add functions flt_begin(), etc., to filters.c to consolidate logic
+	  in filters for attributing multi-line text as a single region.
+	  Use this to simplify bat, make, perl, py, tbl, txt, xres filters.
+	+ add a check for an empty table in fill_partial() to avoid buffer
+	  overrun if caller provides incorrect parameter.
+	+ correct a case in editMinibuffer() which did not completely restore
+	  the buffer position when an error was found.  This led to passing
+	  an empty buffer with an associated nonzero position to fill_partial(),
+	  which dumped core. 
+	+ add &dquery function which prompts for input with a given default
+	  value (request by George Eccles).
+	+ indent'd exec.c
+	+ modify logic in kbd_reply() a different manner, by adding a parameter
+	  to get_token() which returns the actual eolchar matched, so that for
+	  expressions such as "foo=x", we use '=' rather than 'x' for the
+	  parameter to set_end_string() (reported by Clark Morgan).
+	+ add a check for line length in editMinibuffer(), in case an
+	  unexpected message such as the one in kbd_complete() from 9.1v wipes
+	  out the current minibuffer.  The combination of the two caused a GPF
+	  when typing ":set vis=<return>off<return>" (reported by Pedro Gomes
+	  <Pedro.Gomes@lis2.siemens.pt>.
+	+ modify kbd_complete() to only show the 'No match for ...' message if
+	  it is run via a macro.  Interactive mismatches will just beep,
+	  because a message would get in the way.
+	+ modified bat-filt.l and tcl-filt.l to build with Solaris lex.  The
+	  latter requires a larger tablesize (reported by Jim Crigler).
+
  20000905 (v)
 	> Tom Dickey
 	+ add check in CF_CURSES_LIBS in case $LIBS is already set to something
 	  like "-lcurses -ltermcap".
- 	+ update config.guess, config.sub to 20000819 patch.
+	+ update config.guess, config.sub to 20000819 patch.
 	+ modify tcl-filt.l based on examples by Juan Carlos Gil Montoro
 	  <jcgil@gmv.es>:
 	  + add namespace syntax to IDENT rule, and apply this to the IDENT1
@@ -25,7 +68,7 @@ Changes for vile 9.2 (released ??? ??? ?? 2000)
 		setl autowrite=false
 	  in a macro not work, since 'f' (false) was used (reported by
 	  Clark Morgan).
- 	+ modify kbd_complete() to show a message when it fails to find a
+	+ modify kbd_complete() to show a message when it fails to find a
 	  match.
 	+ relaxed suffix rule for vilemode to ensure that vile.rc is always
 	  interpreted in that mode, even if it does not reside in a directory
@@ -116,7 +159,7 @@ Changes for vile 9.2 (released ??? ??? ?? 2000)
 	+ minor fixes for configure script macro CF_CURSES_LIBS,
 	  CF_CURSES_TERMCAP, CF_SIZECHANGE, CF_TYPE_OUTCHAR, CF_UPPER,
 	  CF_X_ATHENA from lynx, xterm and tin.
- 	+ newer config.guess, config.sub, from lynx 2.8.4dev.7
+	+ newer config.guess, config.sub, from lynx 2.8.4dev.7
 	+ fix starting condition of STRING in tc-filt.l
 	+ add pcmode, for printcap.
 	+ refine xresmode to require that mixed-case names match only in an
@@ -236,12 +279,12 @@ Changes for vile 9.2 (released ??? ??? ?? 2000)
 	  define YYSTATE (on FreeBSD 2.1.5).
 
  20000627 (m)
- 	+ small fix for doc/macros.doc (Clark Morgan).
- 	+ initialize $xshell-flags to empty string since xshell.sh does not
+	+ small fix for doc/macros.doc (Clark Morgan).
+	+ initialize $xshell-flags to empty string since xshell.sh does not
 	  accept a "-c" parameter.
 	+ modify manpage.rc to unset the filename associated with the buffer so
 	  it does not display.  This ensures that the ruler is always visible.
- 	+ add command unset-variable, which resets the given variable to a
+	+ add command unset-variable, which resets the given variable to a
 	  null or default value.  This is useful only for the $-variables,
 	  since modes require a value.
 	+ modify color support in xvile to allow the pre-8.3s color scheme as a
@@ -250,10 +293,10 @@ Changes for vile 9.2 (released ??? ??? ?? 2000)
 	  by bcolor (which is actually taken from the fcolorN resource in this
 	  case).  This uses a new function get_color_gc() to simplify caching
 	  of GC's (report by Dave Turner <turner@ameslab.gov>)
- 	+ remove some logic from x_fcol() from 8.3s (990914) which mirrored
+	+ remove some logic from x_fcol() from 8.3s (990914) which mirrored
 	  x_bcol().  That broke the behavior of "set fcolor" (noted while
 	  investigating Dave Turner's report).
- 	+ adjust filters/mk-0th.awk to work with SGI's nawk.
+	+ adjust filters/mk-0th.awk to work with SGI's nawk.
 	+ fix typo in configure macro CF_CHECK_ERRNO (reported by John Coyne
 	  <John.Coyne@ctbto.org>).
 	+ translate soft hyphens to '-' in manfilt.c
@@ -338,7 +381,7 @@ Changes for vile 9.2 (released ??? ??? ?? 2000)
 	  repeated by prefixing it with a repeat-count.
 
  20000501 (g)
- 	> Brendan O'Dea:
+	> Brendan O'Dea:
 	+ prefix the "source ~/.vilerc" in vile-pager with "~force" in case
 	  a user has no such file.
 	> Tom Dickey:
@@ -367,7 +410,7 @@ Changes for vile 9.2 (released ??? ??? ?? 2000)
 	  functions.
 
  20000425 (f)
- 	> Brendan O'Dea:
+	> Brendan O'Dea:
 	+ fix unquoted '^' character from 9.1e configure script changes.
 	+ mods to build with Perl 5.6.0, which now requires that all perl
 	  globals need a PL_ prefix (which affects `errgv', `na' and `sv_undef'
@@ -415,7 +458,7 @@ Changes for vile 9.2 (released ??? ??? ?? 2000)
 	  changes for 9.1d (reported by Clark Morgan).
 
  20000314 (d)
- 	+ Brendan O'Dea:
+	+ Brendan O'Dea:
 	+ modify perl.xs to allow perl operators to be used with a range.  Also
 	  clears the VIEWOK flag for operators.
 	> Clark Morgan:
@@ -431,7 +474,7 @@ Changes for vile 9.2 (released ??? ??? ?? 2000)
 	> Tom Dickey:
 	+ modify SetVarValue() to make it handle mode values, which were being
 	  ignored.  This makes
-	  	~local report
+		~local report
 	  work properly (reported by Clark Morgan).
 	+ add variable $filename-expr, to specify the actual pattern used for
 	  %F in [Error Expressions].  On DOS and Win32, this is initialized to
