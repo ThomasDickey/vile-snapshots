@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.152 1996/04/17 02:50:40 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.153 1996/11/05 13:42:39 bod Exp $
  *
  */
 
@@ -751,21 +751,30 @@ int	options)
 	register BUFFER *bp;
 	char str[NFILEN];
 	int  shell = editingShellCmd(buf,options);
+	int  expand = ((options & KBD_EXPAND) || shell);
+	int  exppat = (options & KBD_EXPPAT);
 
 	/* Are we allowed to expand anything? */
-	if (!((options & KBD_EXPAND) || shell))
+	if (!(expand || exppat || shell))
 	 	return FALSE;
 
 	/* Is this a character that we know about? */
 	if (strchr(global_g_val_ptr(GVAL_EXPAND_CHARS),c) == 0)
 		return FALSE;
 
-	if (c == EXPC_THIS || c == EXPC_THAT) {
+	switch (c)
+	{
+	case EXPC_THIS:
+	case EXPC_THAT:
+		if (!expand)
+			return FALSE;
+
 		bp = (c == EXPC_THIS) ? curbp : find_alt();
 		if (bp == 0 || b_is_invisible(bp)) {
 			kbd_alarm();	/* complain a little */
 			return FALSE;	/* ...and let the user type it as-is */
 		}
+
 		cp = bp->b_fname;
 		if (isInternalName(cp)) {
 			cp = bp->b_bname;
@@ -777,22 +786,47 @@ int	options)
 				cp = SL_TO_BSL(cp);
 #endif
 		}
-	} else if (c == EXPC_TOKEN) {
+
+		break;
+
+	case EXPC_TOKEN:
+		if (!expand)
+			return FALSE;
+
 		if (screen_string(str, sizeof(str), _pathn))
 			cp = str;
 		else
 			cp = NULL;
-	} else if (shell && (c == EXPC_SHELL)
+
+		break;
+
+	case EXPC_RPAT:
+		if (!exppat)
+			return FALSE;
+
+		if (rpat[0])
+			cp = rpat;
+		else
+			cp = NULL;
+
+		break;
+
+	case EXPC_SHELL:
+		if (!shell)
+			return FALSE;
+
 #ifdef only_expand_first_bang
-			/* without this check, do as vi does -- expand '!'
-			   to previous command anywhere it's typed */
-			&& cpos <= (buf[0] == '!')
+		/* without this check, do as vi does -- expand '!'
+		   to previous command anywhere it's typed */
+		if (cpos > (buf[0] == '!'))
+			return FALSE;
 #endif
-		) {
 		cp = tb_values(save_shell[!isShellOrPipe(buf)]);
 		if (cp != NULL && isShellOrPipe(cp))
 			cp++;	/* skip the '!' */
-	} else {
+		break;
+
+	default:
 		return FALSE;
 	}
 

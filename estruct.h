@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.291 1996/10/05 00:17:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.292 1996/10/30 13:58:58 bod Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -815,6 +815,7 @@ typedef enum {
 #define KBD_EXPCMD	iBIT(7)	/* expand %, #, : only in shell-command */
 #define KBD_SHPIPE	iBIT(8)	/* expand, assuming shell-command */
 #define KBD_NOMAP	iBIT(9) /* don't permit mapping via kbd_key() */
+#define KBD_EXPPAT	iBIT(10) /* expand ~ to last replacement */
 
 /* default option for 'mlreply' (used in modes.c also) */
 #if !(SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT)
@@ -882,6 +883,7 @@ typedef enum {
 #define EXPC_THIS  '%'
 #define EXPC_THAT  '#'
 #define EXPC_SHELL '!'
+#define EXPC_RPAT  '~'
 #if OPT_VMS_PATH || OPT_MSDOS_PATH	/* ':' gets in the way of drives */
 #define EXPC_TOKEN '&'
 #else

@@ -1547,11 +1547,13 @@ Special Character Expansion
 ---------------------------
 
 	As in vi, the % and # characters typed while responding to a prompt
-	will expand to the current or "alternate" filename.  In addition,
-	the colon character (":") expands to the identifier name under the
-	cursor.  Expansion of ! to the last command run is not implemented,
-	except when a shell command is being entered.  These expansions can
-	be suppressed by prefixing with a '\'.
+	will expand to the current or "alternate" filename.  The ~ character
+	will expand (when entering a replacement pattern only) to be the
+	previous replacement pattern.  In addition, the colon character
+	(":") expands to the identifier name under the cursor.  Expansion
+	of !  to the last command run is not implemented, except when a
+	shell command is being entered.  These expansions can be suppressed
+	by prefixing with a '\'.
 
 Key Rebinding
 -------------
@@ -2398,6 +2400,13 @@ Regular Expressions
  \1 \9	substituted for an occurrence of \1 in the replacement pattern.  Up
 	to 9 such substitutions can be made.  The special symbol & will
   &	substitute for the entire match string.
+
+  ~	The tilde (~) character will expand immediately when it is typed
+	to be the contents of the previously entered replacement pattern. 
+	[ Earlier versions of vile made this version of the pattern
+	available immediately, as a default response, but this made it
+	difficult to substitute nothing after previously substituting
+	something.  ]
 
 	The replacement part of the substitution may also contain the
  \U \L	special sequences \U and \L, which cause the replacement to be
@@ -3390,4 +3399,4 @@ Problems
 
 Copyright 1995,1996 by Paul Fox, Tom Dickey, and Kevin Buettner
 ---------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.303 1996/10/22 00:15:44 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.304 1996/10/30 13:58:58 pgf Exp $
