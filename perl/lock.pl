@@ -1,16 +1,30 @@
+sub getpass {
+    local ($text) = @_;
+    print "Enter password to $text: ";
+    undef $word;
+    for (; ($char=Vile::keystroke())!=13; $word.=sprintf "%c",$char) {;}
+    $word;
+}
+
 sub lock {
     my ($word, $pass, $salt);
     my $work = Vile::working(0);
-    $salt = substr($pass = (getpwuid($<))[1], 0, 2);
+    $pass = (getpwuid($<))[1];
+    $salt = substr($pass, 0, 2);
+    if ( $pass == "x" ) {
+	# if the system has shadow passwords, make our own
+	$word = getpass("lock");
+        $salt = substr($word, 0, 2);
+        $pass = crypt ($word, $salt);
+    }
     while (1) {
-        undef $word;
-        print "Enter password to unlock: ";
-        for (; ($char=Vile::keystroke())!=13; $word.=sprintf "%c",$char) {;}
+        sleep 1;
+	$word = getpass("unlock");
         last if (crypt ($word, $salt) eq $pass);
         print "Wrong password!";
-        sleep 1;
      }
      Vile::working($work);
+     print "";
 }
 
 1;

@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.47 1999/09/03 23:34:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.52 1999/09/06 13:03:53 tom Exp $
  */
 
 /*#
@@ -90,6 +90,10 @@
 /* contortions to avoid typedef conflicts */
 #define main perl_main
 #define regexp perl_regexp
+
+#if !(defined(__GNUC__) || defined(__attribute__))
+#define __attribute__(p) /*nothing*/
+#endif
 
 /* for perl */
 #include <EXTERN.h>
@@ -909,11 +913,6 @@ perl_init(void)
     int  len;
     char  temp[NFILEN];
     char *vile_path;
-#ifdef _WIN32
-    const char *perl_subdir = "\\perl";
-#else
-    const char *perl_subdir = "/perl";
-#endif
     static char svcurbuf_name[] = "Vile::current_buffer";
 
     perl_interp = perl_alloc();
@@ -931,9 +930,7 @@ perl_init(void)
 #ifdef HELP_LOC
     av_unshift(av = GvAVn(PL_incgv), 2);
     av_store(av, 0, newSVpv(lengthen_path(strcpy(temp,"~/.vile/perl")),0));
-    sv = newSVpv(HELP_LOC,0);
-    sv_catpv(sv, "perl");
-    av_store(av, 1, sv);
+    av_store(av, 1, newSVpv(lengthen_path(pathcat(temp,HELP_LOC,"perl")),0));
 #endif
     /* Always recognize environment variable */
     if ((vile_path = getenv("VILE_LIBDIR_PATH")) != 0)
@@ -942,12 +939,8 @@ perl_init(void)
 	 * "patch" @INC to look (first) for scripts in the directory
 	 * %VILE_LIBDIR_PATH%\\perl .
 	 */
-	len = strlen(vile_path) - 1;
-	if (len >= 0 && is_slashc(vile_path[len]))
-	    vile_path[len] = '\0'; /* Chop trailing path delim */
 	av_unshift(av = GvAVn(PL_incgv), 1);
-	sv = newSVpv(vile_path, 0);
-	sv_catpv(sv, (char *) perl_subdir);
+	sv = newSVpv(pathcat(temp, vile_path, "perl"), 0);
 	av_store(av, 0, sv);
     }
 
@@ -1603,6 +1596,11 @@ MODULE = Vile	PACKAGE = Vile
   #
   # =over 4
   #
+  #
+  # =item Warn
+  #
+  # Print a warning message
+  #
 
 void
 Warn(warning)
@@ -2210,18 +2208,18 @@ int
 working(...)
 
     CODE:
+#if OPT_WORKING
+	RETVAL = !vile_is_busy;
+#else
+	RETVAL = 0;
+#endif
 	if (items > 1)
 	    croak("Too many arguments to working");
 	else if (items == 1) {
 #if OPT_WORKING
-	    no_working = !SvIV(ST(0));
+	    vile_is_busy = !SvIV(ST(0));
 #endif
 	}
-#if OPT_WORKING
-	RETVAL = !no_working;
-#else
-	RETVAL = 0;
-#endif
     OUTPUT:
 	RETVAL
 

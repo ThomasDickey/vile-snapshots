@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.377 1999/09/03 11:04:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.381 1999/09/08 01:54:44 tom Exp $
  *
  */
 
@@ -271,29 +271,30 @@ extern void setcmdstatus(int s);
 #endif
 
 /* eval.c */
-extern char *get_shell(void);
-extern char *get_xshell(void);
-extern char *get_xdisplay(void);
-extern char *get_directory(void);
-extern char *render_int (TBUFF **rp, int i);
-extern char *render_boolean ( TBUFF **rp, int i);
-extern int scan_bool ( const char *s );
-extern int scan_int ( const char *s );
-extern char *mklower (char *str);
-extern char *mktrimmed (char *str);
+extern char * get_directory(void);
+extern char * get_shell (void);
 extern char * get_token (char *src, TBUFF **tok, int eolchar);
+extern char * get_xdisplay (void);
+extern char * get_xshell (void);
+extern char * mac_tokval (TBUFF **tok);
+extern char * mklower (char *str);
+extern char * mktrimmed (char *str);
+extern char * render_boolean (TBUFF **rp, int i);
+extern char * render_int (TBUFF **rp, int i);
 extern char * tokval (char *tokn);
-extern const char *skip_cblanks (const char *str);
-extern const char *skip_cstring (const char *str);
-extern const char *skip_ctext (const char *str);
+extern const char * skip_cblanks (const char *str);
+extern const char * skip_cstring (const char *str);
+extern const char * skip_ctext (const char *str);
 extern int absol (int x);
 extern int is_falsem (const char *val);
 extern int is_truem (const char *val);
 extern int mac_literalarg (TBUFF **tok);
-extern int mac_token(TBUFF **tok);
-extern char * mac_tokval (TBUFF **tok);
+extern int mac_token (TBUFF **tok);
 extern int macroize (TBUFF **p, TBUFF *src, int skip);
+extern int scan_bool (const char *s );
+extern int scan_int (const char *s );
 extern int toktyp (const char *tokn);
+extern unsigned mac_tokens (void);
 
 #ifdef const
 #define skip_blanks(s) skip_cblanks(s)
@@ -310,12 +311,8 @@ extern LINEPTR label2lp (BUFFER *bp, const char *label);
 extern char *get_statevar_val (int vnum);
 extern int rmv_tempvar(const char *name);
 extern int set_state_variable(const char *name, const char *value);
-extern void restore_arguments(BUFFER *bp);
-extern void save_arguments(BUFFER *bp);
 #else
 #define gtenv(name) getenv(name)
-#define restore_arguments(cfp) /*nothing*/
-#define save_arguments(cfp) /*nothing*/
 #endif
 
 #if OPT_EVAL || DISP_X11
@@ -332,6 +329,14 @@ extern char *mkupper (char *str);
 
 #if OPT_COLOR
 extern void set_ctrans (const char *value);
+#endif
+
+#if OPT_MACRO_ARGS
+extern void restore_arguments(BUFFER *bp);
+extern void save_arguments(BUFFER *bp);
+#else
+#define restore_arguments(cfp) /*nothing*/
+#define save_arguments(cfp) /*nothing*/
 #endif
 
 #if (SYS_WINNT||SYS_VMS)
@@ -619,6 +624,7 @@ extern REGEXVAL * free_regexval (REGEXVAL *rp);
 extern REGEXVAL * new_regexval (const char *pattern, int magic);
 extern char * get_record_sep (BUFFER *bp);
 extern char * string_mode_val (VALARGS *args);
+extern const FSM_CHOICES * name_to_choices (const char *name);
 extern const char * choice_to_name (const FSM_CHOICES *choices, int code);
 extern int adjvalueset (const char *cp, int defining, int setting, int global, VALARGS *args);
 extern int choice_to_code (const FSM_CHOICES *choices, const char *name, size_t len);
@@ -646,12 +652,13 @@ extern const char *const * list_of_modes (void);
 #endif
 
 #if OPT_MAJORMODE
-extern char * get_submode_name(BUFFER *bp, int n);
-extern int alloc_mode(const char *name, int predef);
-extern struct VAL *get_submode_vals(BUFFER *bp, int n);
-extern struct VAL *get_submode_valx(BUFFER *bp, int n, int *m);
-extern void set_majormode_rexp(const char *name, int n, const char *pat);
-extern void set_submode_val(const char *name, int n, int value);
+extern char * get_submode_name (BUFFER *bp, int n);
+extern int alloc_mode (const char *name, int predef);
+extern int major_complete(DONE_ARGS);
+extern struct VAL * get_submode_vals (BUFFER *bp, int n);
+extern struct VAL * get_submode_valx (BUFFER *bp, int n, int *m);
+extern void set_majormode_rexp (const char *name, int n, const char *pat);
+extern void set_submode_val (const char *name, int n, int value);
 extern void setm_by_preamble (BUFFER *bp);
 extern void setm_by_suffix (BUFFER *bp);
 #else

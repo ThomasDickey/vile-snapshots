@@ -179,8 +179,53 @@ Creating, executing, storing macros
 		$0 is the name of the current procedure, not expanded in the
 		lists.
 
-	The indivdual parameters are evaluated when the macro is invoked, and
+	The individual parameters are evaluated when the macro is invoked, and
 	may consist of expressions.  They are stored as strings.
+	
+	The macro interpreter uses a template in the definition to define the
+	types of parameters which are accepted.  For each parameter, a keyword,
+	optionally followed by the prompt string is required.  Keywords (which
+	may be abbreviated) include
+
+		bool
+		enum		(see below)
+		file
+		integer
+		majormode
+		mode
+		string
+		variable
+
+	Unless overridden, the prompt for each parameter is named after the
+	keyword.  Override the prompt by an assignment, e.g.,
+
+		store-procedure Filter f="Input" f="Output"
+
+	to begin a macro 'Filter' with two parameters, in/out, internally
+	referenced by $1 and $2.
+
+	The 'enum' parameter type is special; it requires a second keyword
+	which denotes the symbol table which is used for name-completion.
+	The table name (which cannot be abbreviated) follows the 'enum'
+	after a colon (:), e.g.,
+
+		store-procedure Scheme e:fcolor="Foreground"
+
+	The 'enum' tables correspond to the enumerated modes:
+
+		*bool
+		backup-style
+		bcolor
+		color-scheme
+		fcolor
+		mcolor
+		mini-hilite
+		popup-choices
+		record-format
+		recordseparator
+		video-attrs
+		visual-matches
+		vtflash
 
     Storing macros
     --------------
@@ -680,6 +725,11 @@ Functions
 				    such as space that cannot be passed to the
 				    shell without special handling.
 
+	    &register "S"	    Return contents of register "S".  Only the
+				    first character of "S" is used for the name.
+				    Note that the contents may be more than one
+				    line.
+
 	    &token  "N" "D" "S"     Select N'th token of string "S", given
 				    delimiters "D".
 
@@ -1120,6 +1170,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.28 1999/08/23 00:12:57 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.32 1999/09/08 02:04:52 tom Exp $
 -----------------------------------
 

@@ -3,7 +3,7 @@
 ;;
 ;; Author: Kevin Buettner
 ;;
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.5 1999/08/23 00:05:49 tom Exp $
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.6 1999/09/06 00:13:02 tom Exp $
 ;;
 
 store-procedure ShowManpage
@@ -22,6 +22,7 @@ store-procedure ShowManpage
 	~force select-buffer %manpagebuf
 	~if &not $status
 		edit-file &cat "!man " &cat %manpage &cat " | " %filter
+		setl txtmode
 		~force rename-buffer %manpagebuf
 		~force error-buffer %manpagebuf
 		write-message "[Attaching bold and underline attributes...]"
@@ -62,6 +63,7 @@ store-procedure ShowFormatted
 	~else
 		edit-file &cat "!tbl " &cat $cfilname &cat " | nroff -man | " %filter
 	~endif
+	setl txtmode
 	~force rename-buffer %manpagebuf
 	~force error-buffer %manpagebuf
 	write-message "[Attaching bold and underline attributes...]"

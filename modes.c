@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.172 1999/09/03 23:20:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.175 1999/09/08 01:54:00 tom Exp $
  *
  */
 
@@ -136,7 +136,7 @@ choice_to_name (const FSM_CHOICES *choices, int code)
 	}
 	return name;
 }
-#endif /* OPT_FSM_CHOICES */
+#endif /* OPT_ENUM_MODES || !SMALLER */
 
 #if !SMALLER
 /*
@@ -862,7 +862,7 @@ fsm_size(const FSM_CHOICES *list)
 	return result;
 }
 
-static const FSM_CHOICES *
+const FSM_CHOICES *
 name_to_choices (const char *name)
 {
 	register SIZE_T i;
@@ -2128,8 +2128,8 @@ check_majormode_name(const char *name, int defining)
 	return status;
 }
 
-static int
-major_complete(int c, char *buf, unsigned *pos)
+int
+major_complete(DONE_ARGS)
 {
 	return kbd_complete(FALSE, c, buf, pos, (const char *)&my_majormodes[0],
 		sizeof(my_majormodes[0]));

@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.362 1999/09/04 01:08:16 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.363 1999/09/05 23:01:19 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1510,36 +1510,12 @@ to match the palette - tom]
 (Note to Tom:  We still need to add necessary support to vile so that
 shell.pl will work.  At present, it only works with xvile.)
 
--- 98-08-21 (George <g12345@ibm.net>)
-
-Is there a way to use a register (named or not) as a search key?  As in,
-"aye  - can I search on "a?
-
-[no - one can set the $search variable, but doing it from a register is
-indirect - I should modify the user variables so that %a refers to register a,
-etc.  - tom]
-
 -- 98-08-21 (tom)
 
 the [Registers] buffer "should" update '<' after each keystroke, but doesn't
 seem to unless I do something call calls update(TRUE).
 
 -- 98-09-01 (Otavio Exel <oexel@economatica.com.br>)
-
-1) is there a way to access the registers from inside a store-macro? I
-mean the oposite of load-register; something like:
-
-    setv %myvar $register-a
-
-2) let's say I have the string "s/foo/bar/g" in %myvar; is there a way
-I can "play" this ex-command? something like:
-
-    execute-ex-command %myvar
-
-for some reason I don't want to use..
-
-    load-register a &cat &cat ":" %myvar ^M
-    execute-register a
 
 3) again, from inside a store-macro, how do I find out if there's a
 region defined in the current buffer and, if possible, where the

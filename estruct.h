@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.414 1999/09/04 15:16:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.419 1999/09/08 01:49:00 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -448,6 +448,7 @@
 #define OPT_ISRCH       !SMALLER		/* Incremental searches */
 #define OPT_LINEWRAP    !SMALLER		/* line-wrap mode */
 #define OPT_MAJORMODE   !SMALLER		/* majormode support */
+#define OPT_MACRO_ARGS	(!SMALLER && OPT_EVAL)	/* macro argument parsing */
 #define OPT_MLFORMAT    !SMALLER		/* modeline-format */
 #define OPT_MS_MOUSE    (!SMALLER && DISP_IBMPC)/* MsDos-mouse */
 #define OPT_NAMEBST     !SMALLER		/* name's stored in a bst */
@@ -533,12 +534,13 @@
 #define OPT_COLOR_SCHEMES        (OPT_ENUM_MODES && !SMALLER && OPT_COLOR)
 
 #define OPT_BACKUP_CHOICES	 (OPT_ENUM_MODES && OPT_FILEBACK)
-#define OPT_BOOL_CHOICES	 OPT_ENUM_MODES
+#define OPT_BOOL_CHOICES	 !SMALLER
 #define OPT_CHARCLASS_CHOICES	 OPT_SHOW_CTYPE
 #define OPT_COLOR_CHOICES	 (OPT_ENUM_MODES && OPT_COLOR)
 #define OPT_DIRECTIVE_CHOICES    !SMALLER
 #define OPT_HILITE_CHOICES	 (OPT_ENUM_MODES && OPT_HILITEMATCH)
 #define OPT_LOOKUP_CHOICES       !SMALLER
+#define OPT_PARAMTYPES_CHOICES   OPT_MACRO_ARGS
 #define OPT_PATH_CHOICES         !SMALLER
 #define OPT_POPUP_CHOICES	 (OPT_ENUM_MODES && OPT_POPUPCHOICE)
 #define OPT_RECORDSEP_CHOICES    !SMALLER
@@ -929,6 +931,28 @@ typedef enum {
 	, PATH_SHORT
 	, PATH_TAIL
 } PATH_CHOICES;
+
+typedef enum {
+	PT_UNKNOWN = ENUM_UNKNOWN
+	, PT_BOOL
+	, PT_ENUM
+	, PT_FILE
+	, PT_INT
+	, PT_MODE
+	, PT_STR
+	, PT_VAR
+#if OPT_MAJORMODE
+	, PT_MAJORMODE
+#endif
+} PARAM_TYPES;
+
+typedef struct {
+	PARAM_TYPES pi_type;
+	char *pi_text;		/* prompt, if customized */
+#if OPT_ENUM_MODES
+	const FSM_CHOICES *pi_choice; /* if pi_type==PT_ENUM, points to table */
+#endif
+} PARAM_INFO;
 
 typedef enum {
 	RS_LF = 0		/* unix */
@@ -1744,11 +1768,11 @@ typedef struct	BUFFER {
 	LINEPTR b_udtail;		/* tail of undo backstack	*/
 	LINEPTR b_udlastsep;		/* last stack separator pushed	*/
 	int	b_udcount;		/* how many undo's we can do	*/
-	LINEPTR	b_LINEs;		/* block-malloced LINE structs */
-	LINEPTR b_LINEs_end;		/* end of	"	"	" */
-	LINEPTR b_freeLINEs;		/* list of free "	"	" */
-	UCHAR	*b_ltext;		/* block-malloced text */
-	UCHAR	*b_ltext_end;		/* end of block-malloced text */
+	LINEPTR	b_LINEs;		/* block-malloced LINE structs	*/
+	LINEPTR b_LINEs_end;		/* end of	"	"	*/
+	LINEPTR b_freeLINEs;		/* list of free "	"	*/
+	UCHAR	*b_ltext;		/* block-malloced text		*/
+	UCHAR	*b_ltext_end;		/* end of block-malloced text	*/
 	LINEPTR	b_ulinep;		/* pointer at 'Undo' line	*/
 	int	b_active;		/* window activated flag	*/
 	UINT	b_nwnd; 		/* Count of windows on buffer	*/
@@ -2020,7 +2044,7 @@ typedef struct	WINDOW {
 #define w_left_margin(wp) b_left_margin(wp->w_bufp)
 
 	/* tputs uses a 3rd parameter (a function pointer).  We're stuck with
-	 * making ttputc and TTputc the same type.
+	 * making ttputc and term.putch the same type.
 	 */
 #ifdef OUTC_RETURN
 #define OUTC_DCL int
@@ -2151,6 +2175,9 @@ typedef	struct {
 #define INIT_UNION(n) {n}
 #endif /* CC_CANNOT_INIT_UNIONS */
 	CMDFLAGS c_flags;	/* what sort of command is it? */
+#if OPT_MACRO_ARGS
+	PARAM_INFO *c_args;	/* if nonnull, lists types of parameters */
+#endif
 #if OPT_ONLINEHELP
 	const char *c_help;	/* short help message for the command */
 #endif

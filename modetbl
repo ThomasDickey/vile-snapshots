@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.146 1999/09/02 23:17:08 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.150 1999/09/08 01:50:02 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -280,6 +280,7 @@ string
 "random"	RANDOM		1|NUM|NRET	# get a random number
 "rd"		RD		1|BRET		# is a file readable?
 "readable"	READABLE	1|BRET		# is a file readable?
+"register"	REGISTER	1|STR|SRET	# register, e.g. "a"
 "right"		RIGHT		2|STR|SRET	# right string(string, pos)
 "rnd"		RND		1|NUM|NRET	# get a random number
 "sequal"	SEQUAL		2|BRET		# string logical equality check
@@ -304,6 +305,8 @@ string
 .table bool
 "false"		FALSE
 "true"		TRUE
+"off"		FALSE
+"on"		TRUE
 
 # These names are a little cryptic because I'm squeezing them into an 80-column
 # display for show-printable -TD
@@ -401,6 +404,16 @@ string
 "startup"	FL_STARTPATH
 "path"		FL_PATH
 "libdir"	FL_LIBDIR
+
+.table paramtypes
+"bool"		PT_BOOL
+"enum"		PT_ENUM
+"file"		PT_FILE
+"integer"	PT_INT
+"majormode"	PT_MAJORMODE	OPT_MAJORMODE
+"mode"		PT_MODE
+"string"	PT_STR
+"variable"	PT_VAR
 
 .table path
 "head"		PATH_HEAD

@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.221 1999/09/04 15:16:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.223 1999/09/06 13:04:07 tom Exp $
  *
  */
 
@@ -5087,6 +5087,7 @@ x_process_event(
     XExposeEvent *gev;
     Bool	do_sel;
     WINDOW	*wp;
+    Bool	ignore = vile_is_busy;
 
     switch (ev->type) {
     case Expose:
@@ -5108,6 +5109,8 @@ x_process_event(
 	break;
 
     case MotionNotify:
+	if (ignore)
+	    break;
 	do_sel = cur_win->wipe_permitted;
 	if (!(ev->xmotion.state & (Button1Mask | Button3Mask))) {
 	    if (!cur_win->focus_follows_mouse)
@@ -5151,6 +5154,8 @@ x_process_event(
 	}
 	break;
     case ButtonPress:
+	if (ignore)
+	    break;
 	nc = ev->xbutton.x / cur_win->char_width;
 	nr = ev->xbutton.y / cur_win->char_height;
 	TRACE(("ButtonPress #%d (%d,%d)\n", ev->xbutton.button, nr, nc))
@@ -5193,6 +5198,8 @@ x_process_event(
 	}
 	break;
     case ButtonRelease:
+	if (ignore)
+	    break;
 	TRACE(("ButtonRelease #%d (%d,%d)%s\n",
 		ev->xbutton.button,
 		ev->xbutton.y / cur_win->char_height,

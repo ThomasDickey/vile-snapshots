@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.119 1999/08/30 00:25:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.120 1999/09/05 18:12:27 tom Exp $
  *
  */
 
@@ -278,8 +278,9 @@ tcapopen(void)
 #if USE_TERMCAP
 	char tcbuf[2048];
 	char err_str[72];
-	char *t, *p;
+	char *p;
 #endif
+	char *t;
 	char *tv_stype;
 	SIZE_T i;
 	int j;
@@ -396,17 +397,19 @@ tcapopen(void)
 	p = tcapbuf;
 #endif
 	for (i = 0; i < TABLESIZE(tc_strings); i++) {
+		t = 0;
 		/* allow aliases */
 		if (NO_CAP(*(tc_strings[i].data))) {
-		    *(tc_strings[i].data) = TGETSTR(tc_strings[i].name, &p);
+		    t = TGETSTR(tc_strings[i].name, &p);
 		    TRACE(("TGETSTR(%s) = %s\n", tc_strings[i].name, 
-			    (*(tc_strings[i].data) != 0)
-			    	? *(tc_strings[i].data)
+			    (t != 0)
+			    	? visible_buff(t, strlen(t), FALSE)
 				: "<null>"))
 		}
-		/* simplify subsequence checks */
-		if (NO_CAP(*(tc_strings[i].data)))
-		    *(tc_strings[i].data) = 0;
+		/* simplify subsequent checks */
+		if (NO_CAP(t))
+		    t = 0;
+		*(tc_strings[i].data) = t;
 	}
 
 #if USE_TERMCAP
@@ -530,7 +533,8 @@ tcapopen(void)
 #endif
 
 #if USE_TERMCAP
-	if (p >= &tcapbuf[TCAPSLEN])
+	TRACE(("tcapbuf used %d of %d\n", p - tcapbuf, sizeof(tcapbuf)))
+	if (p >= &tcapbuf[sizeof(tcapbuf)])
 	{
 		puts("Terminal description too big!\n");
 		ExitProgram(BADEXIT);
