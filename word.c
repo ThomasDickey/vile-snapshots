@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.66 1999/03/19 11:56:41 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.70 1999/09/14 00:55:18 tom Exp $
  *
  */
 
@@ -608,12 +608,15 @@ wordcount(int f GCC_UNUSED, int n GCC_UNUSED)
 	register int ch;	/* current character to scan */
 	register int wordflag;	/* are we in a word now? */
 	register int lastflag;	/* were we just in a word? */
+	long nwhite;		/* total # of blanks */
 	long nwords;		/* total # of words */
 	long nchars;		/* total number of chars */
 	int nlines;		/* total number of lines in region */
-	int avgch;		/* average number of chars/word */
+	double avgch;		/* average number of chars/word */
 	int status;		/* status return code */
 	REGION region;		/* region to look at */
+	const char * ending = get_record_sep(curbp);
+	int	len_rs = strlen(ending);
 
 	/* make sure we have a region to count */
 	if ((status = getregion(&region)) != TRUE) {
@@ -625,6 +628,7 @@ wordcount(int f GCC_UNUSED, int n GCC_UNUSED)
 
 	/* count up things */
 	lastflag = FALSE;
+	nwhite = 0L;
 	nchars = 0L;
 	nwords = 0L;
 	nlines = 0;
@@ -632,10 +636,14 @@ wordcount(int f GCC_UNUSED, int n GCC_UNUSED)
 
 		/* get the current character */
 		if (offset == llength(lp)) {	/* end of line */
-			ch = '\n';
+			ch = *ending;
 			lp = lforw(lp);
 			offset = 0;
 			++nlines;
+			if (len_rs > 1) {
+				nwhite += (len_rs - 1);
+				size -= (len_rs - 1);
+			}
 		} else {
 			ch = lgetc(lp, offset);
 			++offset;
@@ -645,17 +653,20 @@ wordcount(int f GCC_UNUSED, int n GCC_UNUSED)
 		if (((wordflag = isident(ch)) != 0) && !lastflag)
 			++nwords;
 		lastflag = wordflag;
-		++nchars;
+		if (isSpace(ch))
+			++nwhite;
+		else
+			++nchars;
 	}
 
 	/* and report on the info */
 	if (nwords > 0L)
-		avgch = (int)((100L * nchars) / nwords);
+		avgch = ((1.0 * nchars) / nwords);
 	else
-		avgch = 0;
+		avgch = 0.0;
 
-	mlforce("lines %d, words %D, chars %D, avg chars/word %f",
-		nlines, nwords, nchars, avgch);
+	mlforce("lines %d, words %ld, chars %ld, avg chars/word %f",
+		nlines, nwords, nchars + nwhite, avgch);
 
 	return(TRUE);
 }

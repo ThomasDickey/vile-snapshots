@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.103 1999/09/06 19:27:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.104 1999/09/14 10:57:27 tom Exp $
  *
  */
 
@@ -1735,7 +1735,7 @@ dump_ufuncs(void)
 		"extern const UFUNC vl_ufuncs[];",
 		"#endif",
 		"",
-		"/* \tand its preprocesor definitions\t\t*/",
+		"/* \tand its preprocessor definitions\t\t*/",
 		"",
 		};
 	char	temp[MAX_BUFFER];
@@ -1782,9 +1782,10 @@ dump_wmodes(void)
 	static const char *top[] = {
 		"",
 		"/* these are the boolean, integer, and pointer value'd settings that are",
-		"\tassociated with a window, and usually settable by a user.  There",
-		"\tis a global set that is inherited into a buffer, and its windows",
-		"\tin turn are inherit the buffer's set. */",
+		" * associated with a window, and usually settable by a user.  There",
+		" * is a global set that is inherited into a buffer, and its windows",
+		" * in turn are inherit the buffer's set.",
+		" */",
 		};
 	static const char *middle[] = {
 		"",

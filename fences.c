@@ -8,7 +8,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.72 1999/08/06 00:08:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.73 1999/09/10 10:53:51 tom Exp $
  *
  */
 
@@ -211,7 +211,7 @@ complex_fence(int sdir, int key, int group, int level, int *newkey)
 	} else if ((++iterations % 200) == 0) { /* roughly once/sec, slow PC */
 	    if (time((time_t *)0) > final_time) {
 		if (iterations >= 0) {
-		    mlforce("[Too many iterations: %D]", iterations);
+		    mlforce("[Too many iterations: %ld]", iterations);
 		    iterations = -1;
 		}
 		return ABORT;

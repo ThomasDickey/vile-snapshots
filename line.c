@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.124 1999/08/18 00:00:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.128 1999/09/14 10:19:46 tom Exp $
  *
  */
 
@@ -554,7 +554,7 @@ lnewline(void)
  */
 int
 ldelete(
-B_COUNT n,	/* # of chars to delete */
+B_COUNT nchars,	/* # of chars to delete */
 int kflag)	/* put killed text in kill buffer flag */
 {
 	register char	*cp1;
@@ -566,9 +566,10 @@ int kflag)	/* put killed text in kill buffer flag */
 	register WINDOW *wp;
 	register int i;
 	register int s = TRUE;
+	int	len_rs = len_record_sep(curbp);
 
 	lines_deleted = 0;
-	while (n > 0) {
+	while (nchars > 0) {
 		dotp = DOT.l;
 		doto = DOT.o;
 		if (dotp == buf_head(curbp)) { /* Hit end of buffer.*/
@@ -576,13 +577,13 @@ int kflag)	/* put killed text in kill buffer flag */
 			break;
 		}
 		chunk = dotp->l_used-doto; /* Size of chunk.	*/
-		if (chunk > (int)n)
-			chunk = (int)n;
+		if (chunk > (int)nchars)
+			chunk = (int)nchars;
 		if (chunk == 0) {		/* End of line, merge.	*/
 			/* first take out any whole lines below this one */
 			nlp = lforw(dotp);
 			while (nlp != buf_head(curbp)
-			   &&  llength(nlp)+1 < n) {
+			   &&  line_length(nlp) < nchars) {
 				if (kflag) {
 					s = kinsert('\n');
 					for (i = 0; i < llength(nlp) &&
@@ -594,7 +595,7 @@ int kflag)	/* put killed text in kill buffer flag */
 				lremove(curbp, nlp);
 				lines_deleted++;
 				toss_to_undo(nlp);
-				n -= llength(nlp)+1;
+				nchars -= line_length(nlp);
 				nlp = lforw(dotp);
 			}
 			if (s != TRUE)
@@ -605,7 +606,7 @@ int kflag)	/* put killed text in kill buffer flag */
 				break;
 			if (kflag && (s = kinsert('\n')) != TRUE)
 				break;
-			--n;
+			nchars -= len_rs;
 			lines_deleted++;
 			continue;
 		}
@@ -664,7 +665,7 @@ int kflag)	/* put killed text in kill buffer flag */
 						mp->o = doto;
 				}
 		);
-		n -= chunk;
+		nchars -= chunk;
 	}
 	return (s);
 }
@@ -1643,7 +1644,7 @@ void *dummy GCC_UNUSED)
 				lsettrimmed(lback(DOT.l));
 			}
 			if (i > 0) {
-				bprintf("%c:%*p",
+				bprintf("%c:%*Q",
 					index2reg(i),
 					REGS_PREFIX-2, ' ');
 			} else {
@@ -1657,7 +1658,7 @@ void *dummy GCC_UNUSED)
 				while (j-- > 0) {
 					if (first) {
 						first = FALSE;
-						bprintf("%*p", REGS_PREFIX, ' ');
+						bprintf("%*Q", REGS_PREFIX, ' ');
 					}
 					c = *p++;
 					if (isPrint(c) || !iflag) {

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.419 1999/09/08 01:49:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.421 1999/09/14 00:18:49 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1409,6 +1409,7 @@ typedef struct	LINE {
 #define lgetc(lp, n)		char2int((lp)->l_text[(n)])
 #define lputc(lp, n, c) 	((lp)->l_text[(n)]=(c))
 #define llength(lp)		((lp)->l_used)
+#define line_length(lp)		(llength(lp)+len_rs) /* counting recordsep */
 
 #define liscopied(lp)		((lp)->l.l_undo_cookie == current_undo_cookie)
 #define lsetcopied(lp)		((lp)->l.l_undo_cookie = current_undo_cookie)
@@ -2458,6 +2459,12 @@ extern void _exit (int code);
 
 #ifndef	GCC_UNUSED
 #define	GCC_UNUSED /* nothing */
+#endif
+
+#if 0				/* requires a patch to gcc */
+#define VILE_PRINTF(fmt,var) GCC_PRINTFLIKE(fmt,var)
+#else
+#define VILE_PRINTF(fmt,var) /*nothing*/
 #endif
 
 #if HAVE_SELECT

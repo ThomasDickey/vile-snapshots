@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.251 1999/09/08 01:54:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.252 1999/09/14 09:56:56 tom Exp $
  *
  */
 
@@ -568,9 +568,10 @@ run_func(int fnum)
 	ret_numeric = vl_ufuncs[fnum].f_code & NRET;
 	ret_boolean = vl_ufuncs[fnum].f_code & BRET;
 
-	TRACE(("evaluate '%s' (%#x)\n",
+	TRACE(("evaluate '%s' (%#x), %d args\n",
 			vl_ufuncs[fnum].f_name,
-			vl_ufuncs[fnum].f_code))
+			vl_ufuncs[fnum].f_code,
+			nargs))
 
 	/* fetch required arguments */
 	for (i = 0; i < nargs; i++) {
@@ -787,6 +788,7 @@ run_func(int fnum)
 			break;
 		}
 	default:
+		TRACE(("unknown function #%d\n", fnum))
 		tb_scopy(&result, error_val);
 		break;
 	}

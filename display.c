@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.297 1999/09/06 13:04:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.303 1999/09/14 10:37:50 tom Exp $
  *
  */
 
@@ -125,7 +125,7 @@ static char *
 right_num (char *buffer, int len, long value)
 {
 	char	temp[NSTRING];
-	register char	*p = lsprintf(temp, "%D", value);
+	register char	*p = lsprintf(temp, "%ld", value);
 	register char	*q = buffer + len;
 
 	*q = EOS;
@@ -192,25 +192,31 @@ dfputli(OutFunc outfunc, ULONG l, UINT r)
 }
 
 /*
- *	Do format a scaled integer with two decimal places
+ * format a floating value with two decimal places
  */
 static int
-dfputf(OutFunc outfunc, UINT s)
+dfputf(OutFunc outfunc, double s)
 {
-	int n;
+	int n = 3;
 	UINT i;		/* integer portion of number */
 	UINT f;		/* fractional portion of number */
 
+	if (s < 0) {
+		(*outfunc)('.');
+		s = -s;
+		n++;
+	}
+
 	/* break it up */
-	i = s / 100;
-	f = s % 100;
+	i = s;
+	f = (s - i) * 100;
 
 	/* send out the integer portion */
-	n = dfputi(outfunc, i, 10);
+	n += dfputi(outfunc, i, 10);
 	(*outfunc)('.');
 	(*outfunc)((f / 10) + '0');
 	(*outfunc)((f % 10) + '0');
-	return n + 3;
+	return n;
 }
 
 /*
@@ -275,8 +281,6 @@ dofmt(const char *fmt, va_list *app)
 					n = dfputi(outfunc, (UINT)ivalue, 10);
 					break;
 				}
-				/* FALLTHROUGH */
-			case 'D':
 				lvalue = va_arg(*app,long);
 				if (lvalue < 0) {
 					lvalue = -lvalue;
@@ -321,7 +325,7 @@ dofmt(const char *fmt, va_list *app)
 				break;
 
 			case 'f':
-				n = dfputf(outfunc, va_arg(*app,UINT));
+				n = dfputf(outfunc, va_arg(*app,double));
 				break;
 
 			case 'P': /* output padding -- pads total output to
@@ -329,7 +333,7 @@ dofmt(const char *fmt, va_list *app)
 				wid -= nchars;
 				/* FALLTHROUGH */
 
-			case 'p': /* field padding -- puts out "wid"
+			case 'Q': /* field padding -- puts out "wid"
 					copies of c */
 				n = 0;
 				c = va_arg(*app,int);
@@ -741,8 +745,11 @@ vtset(LINEPTR lp, WINDOW *wp)
 			/*EMPTY*/;
 		else if (!b_val(bp,MDNEWLINE) && (lforw(lp) == buf_head(bp)))
 			/*EMPTY*/;
-		else
-			vtlistc('\n');
+		else {
+			char *s = get_record_sep(bp);
+			while (*s != EOS)
+				vtlistc(*s++);
+		}
 	}
 #ifdef WMDLINEWRAP
 	allow_wrap = 0;
@@ -2648,8 +2655,8 @@ char	**msptr)
 #endif
 	PutMode(MDDOS,		"dos-style")
 #if OPT_RECORDSEP_CHOICES    
-	if (b_val(bp, MDDOS) ^ (b_val(bp, VAL_RECORD_SEP) == RS_CRLF))
-		PutModename("c%s",
+	if (b_val(bp, MDDOS) ^ ((b_val(bp, VAL_RECORD_SEP) == RS_CRLF)))
+		PutModename("%c%s",
 			choice_to_name(fsm_recordsep_choices,
 					b_val(bp, VAL_RECORD_SEP)));
 #endif
@@ -2777,7 +2784,7 @@ special_formatter(TBUFF **result, char *fs, WINDOW *wp)
     int fc;
     int lchar;
     int need_eighty_column_indicator;
-    int right_len;
+    int right_len = 0;
     register int n;
 
     tb_init(result, EOS);

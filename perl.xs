@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.52 1999/09/06 13:03:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.53 1999/09/14 01:39:39 tom Exp $
  */
 
 /*#
@@ -227,6 +227,7 @@ perl_default_region(void)
     DOT.o = 0;
     MK.l  = lback(buf_head(curbp));
     MK.o  = 0;
+
     regionshape = FULLLINE;
     haveregion = NULL;
     if (getregion(&region)) {
@@ -234,7 +235,7 @@ perl_default_region(void)
 	/* This should really go in getregion(), but other parts of
 	   vile break when we do this. */
 	if (is_header_line(region.r_end, curbp) && !b_val(curbp, MDNEWLINE))
-	    region.r_size--;
+	    region.r_size -= len_record_sep(curbp);
     }
     DOT = save_DOT;
 }
@@ -325,7 +326,7 @@ do_perl_cmd(SV *cmd, int inplace)
 		}
 	    }
 	    if (is_header_line(region.r_end, curbp) && !b_val(curbp, MDNEWLINE))
-		region.r_size--;
+		region.r_size -= len_record_sep(curbp);
 
 	    /* Initialize some of the fields in curvbp */
 	    curvbp->region = region;
@@ -1173,6 +1174,9 @@ svgetline(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
     int nllen;
     char *text;
     SV *sv;
+    char *ending = get_record_sep(curbp);
+    int len_rs = strlen(ending);
+
     if (   is_header_line(DOT, curbp) || vbp->region.r_size <= 0) {
 	*svp = newSVsv(&sv_undef);
 	return FALSE;
@@ -1188,7 +1192,7 @@ svgetline(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
         && (   lforw(DOT.l) != buf_head(curbp)
 	    || b_val(curbp, MDNEWLINE)))
     {
-	nllen = 1;
+	nllen = len_rs;
 	DOT.o = 0;
 	DOT.l = lforw(DOT.l);
     }
@@ -1197,10 +1201,10 @@ svgetline(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
 	DOT.o += len;
     }
 
-    vbp->region.r_size -= len + (nllen != 0);
+    vbp->region.r_size -= len + nllen;
 
     if (vbp->inplace_edit)
-	vbp->ndel += len + (nllen != 0);
+	vbp->ndel += len + nllen;
 
     if (len < 0)
 	len = 0;		/* shouldn't happen */
@@ -1210,10 +1214,10 @@ svgetline(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
     if (len > 0) {
 	sv_setpvn(sv, text, len);
 	if (nllen > 0)
-	    sv_catpvn(sv, "\n", 1);
+	    sv_catpvn(sv, ending, len_rs);
     }
     else if (nllen > 0) {
-	sv_setpvn(sv, "\n", 1);
+	sv_setpvn(sv, ending, len_rs);
     }
     else {
 	sv_setpvn(sv, "", 0);
@@ -1233,6 +1237,8 @@ svgetregion(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
     SV *sv;
     LINEPTR lp;
     int off;
+    char *ending = get_record_sep(curbp);
+    int	len_rs = strlen(ending);
 
     if (is_header_line(DOT, curbp) || vbp->region.r_size <= 0) {
 	*svp = newSVsv(&sv_undef);
@@ -1264,8 +1270,8 @@ svgetregion(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
 
 	if (len > 0) {
 	    if (lforw(lp) != buf_head(curbp) || b_val(curbp, MDNEWLINE))
-		sv_catpvn(sv, "\n", 1);
-	    len--;
+		sv_catpvn(sv, ending, len_rs);
+	    len -= len_rs;
 	    off++;
 	}
 
@@ -1294,7 +1300,8 @@ svgettors(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
     int orig_rslen = rslen;
     LINEPTR lp;
     int off;
-
+    char *ending = get_record_sep(curbp);
+    int	len_rs = strlen(ending);
 
     /* See if we're already at the end of the region and have nothing
        to do. */
@@ -1305,8 +1312,20 @@ svgettors(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
 
     /* Adjust rsstr if need be */
     if (rslen == 0) {
-	rsstr = "\n\n";
-	rslen = 2;
+	switch (b_val(curbp, VAL_RECORD_SEP)) {
+	case RS_CRLF:
+	    rsstr = "\r\n\r\n";
+	    rslen = 4;
+	    break;
+	case RS_CR:
+	    rsstr = "\r\r";
+	    rslen = 2;
+	    break;
+	case RS_LF:
+	    rsstr = "\n\n";
+	    rslen = 2;
+	    break;
+	}
     }
 
     /* Get first separator character */
@@ -1382,7 +1401,7 @@ svgettors(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
 		len += rsidx - 1;
 		goto have_length;
 	    }
-	    if (rsstr[rsidx] == '\n') {
+	    if (isreturn(rsstr[rsidx])) {
 		if (fidx < llength(lp))
 		    break;
 	    }
@@ -1408,7 +1427,7 @@ have_length:
 	while (   ! (lp == buf_head(curbp) || len >= reglen)
 	       && llength(lp) == 0)
 	{
-	    len++;
+	    len += len_rs;
 	    lp = lforw(lp);
 	    off = 0;
 	}
@@ -1445,8 +1464,8 @@ have_length:
 
 	if (len > 0) {
 	    if (lforw(lp) != buf_head(curbp) || b_val(curbp, MDNEWLINE))
-		sv_catpvn(sv, "\n", 1);
-	    len--;
+		sv_catpvn(sv, ending, len_rs);
+	    len -= len_rs;
 	    off++;
 	}
 
@@ -2563,7 +2582,7 @@ READLINE(vbp)
 	    }
 	    else {
 		rsstr = SvPV(svrs, rslen);
-		if (rslen == 1 && *rsstr == '\n')
+		if (rslen == 1 && isreturn(*rsstr))
 		    f = svgetline;
 		else
 		    f = svgettors;
@@ -3508,7 +3527,7 @@ set_region(vbp, ...)
 	}
 	if (is_header_line(vbp->region.r_end, curbp)
 	    && !b_val(curbp, MDNEWLINE))
-		vbp->region.r_size--;
+		vbp->region.r_size -= len_record_sep(curbp);
 	IoLINES(GvIO((GV*)vbp->perl_handle)) = 0;  /* reset $. */
 	vbp->regionshape = regionshape;
 	DOT = vbp->region.r_orig;

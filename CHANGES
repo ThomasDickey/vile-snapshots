@@ -1,5 +1,40 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+(tom) 990914 (s)
+	+ modify list mode to show the actual record separator rather than ^J.
+	+ correction to change in 8.3q, to writereg() and getregion(), to
+	  account for length of recordseparator when it is crlf.  This also
+	  affects (because the r_size value changes) wordcount(), ldelete(),
+	  and several places in perl.xs
+	+ modify text color model in x11.c to work like tcap.c, adding explicit
+	  fcolor0 and bcolor0 resources and changing logic that implements the
+	  fcolor and bcolor modes to update GC's at runtime.
+	+ modify find_in_path_list() to use caseless comparison on systems that
+	  need this.
+	+ modify inout_popen() to convert pathname to backslashes on DOS, etc.
+	+ modify HighlightFilter to check if the filter is found in $PATH before
+	  deciding to build up the pathname.
+	+ modify logic in tcap.c to prefer AF/AB over Sf/Sb even if the number
+	  of colors is greater than 8.  That makes the $palette strings for
+	  xterm-16color easier to work with.
+	+ add "cs" as abbreviation for color-scheme; updated vile.hlp and add
+	  palettes.rc to show examples.  correct expression in chgd_scheme()
+	  for selecting the color-scheme.  Add "use=" clause to color schemes
+	  to simplify construction of black and white schemes.
+	+ convert as needed slashes to backslashes in displayed pathnames in
+	  which-source and which-exec commands.
+	+ modify dofmt() to make its repertoire closer to printf's: remove 'D'
+	  format code, and change 'p' to 'Q', 'u' to 'f'.
+	+ modify logic in tcap.c to use 'reverse' mode in preference to
+	  'standout', and either in preference to color when there is a
+	  conflict.  This works around an error in several termcap entries
+	  (including screen's), which do not mention NC (no_color_video).  This
+	  error made selection highlighting not work.
+	+ correct my recent cleanup of tracing TGETSTR calls in tcap.c, which
+	  broke the merging of similar control sequences.
+	+ correct typo in PutModename() call that shows recordseparator,
+	  which caused GPF on NT.
+
 (tom) 990907 (r)
 	+ correct oversight in 'eval' command, which evaluated only the first
 	  token.

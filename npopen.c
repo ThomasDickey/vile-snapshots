@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.75 1999/09/02 22:39:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.77 1999/09/12 21:13:08 tom Exp $
  *
  */
 
@@ -83,7 +83,7 @@ static void append_libdir_to_path(void)
 			append_to_path_list(&env, buf);
 		}
 		if (strcmp(tmp, env)) {
-			tmp = malloc(6 + strlen(env));
+			tmp = (char *) malloc(6 + strlen(env));
 			lsprintf(tmp, "PATH=%s", env);
 			putenv(tmp);
 			TRACE(("putenv %s\n", tmp))
@@ -457,9 +457,12 @@ inout_popen(FILE **fr, FILE **fw, char *cmd)
 {
 	char		*type = (fw != 0) ? "w" : "r";
 	static FILE	*pp = 0;
+	static TBUFF	*temp;
 	int		fd;
 
+	cmd = tb_values(tb_scopy(&temp, SL_TO_BSL(cmd)));
 	TRACE(("inout_popen(fr=%p, fw=%p, cmd='%s')\n", fr, fw, cmd))
+
 	fileispipe = TRUE;
 	fileeof = FALSE;
 	append_libdir_to_path();

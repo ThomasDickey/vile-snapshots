@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.223 1999/09/06 13:04:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.224 1999/09/13 23:40:25 tom Exp $
  *
  */
 
@@ -548,7 +548,7 @@ TERM	    term = {
     nullterm_setfore,
     nullterm_setback,
 #endif
-    x_setpal,			/* no palette */
+    x_setpal,
     x_scroll,
     x_flush,
     nullterm_icursor,
@@ -1711,10 +1711,10 @@ gui_update_scrollbar(
 #define	XtNfocusForeground	"focusForeground"
 #define	XtNfocusBackground	"focusBackground"
 
-#define XtNfcolor0		XtNforeground
-#define XtCFcolor0		XtCForeground
-#define XtNbcolor0		XtNbackground
-#define XtCBcolor0		XtCBackground
+#define XtNfcolor0		"fcolor0"
+#define XtCFcolor0		"Fcolor0"
+#define XtNbcolor0		"bcolor0"
+#define XtCBcolor0		"Bcolor0"
 
 #define XtNfcolor1		"fcolor1"
 #define XtCFcolor1		"Fcolor1"
@@ -2493,7 +2493,7 @@ x_preparse_args(
     XGCValues   gcvals;
     ULONG	gcmask;
     int		geo_mask, startx, starty, screen_depth;
-    int		i;
+    int		i, j;
     int		status = TRUE;
     Cardinal	start_cols, start_rows;
     static XrmOptionDescRec options[] = {
@@ -2915,10 +2915,12 @@ x_preparse_args(
 	    DefaultRootWindow(dpy),
 	    gcmask, &gcvals);
 
+    if ((j = gbcolor) < 0)
+	j = 0;
     for (i = 0; i < NCOLORS; i++) {
-	ctrans[i] = i;;
+	ctrans[i] = i;
 	if ( screen_depth == 1
-	  || cur_win->colors_fg[i] == cur_win->colors_bg[i]
+	  || cur_win->colors_fg[i] == cur_win->colors_bg[j]
 	  || ( cur_win->colors_fg[i] == cur_win->fg
 	    && cur_win->colors_bg[i] == cur_win->bg )) {
 	    /* Reuse the standard GCs if possible */
@@ -2926,11 +2928,11 @@ x_preparse_args(
 	    cur_win->colors_bgc[i] = cur_win->reversegc;
 	} else {
 	    gcvals.foreground = cur_win->colors_fg[i];
-	    gcvals.background = cur_win->colors_bg[i];
+	    gcvals.background = cur_win->colors_bg[j];
 	    cur_win->colors_fgc[i] = XCreateGC(dpy,
 					       DefaultRootWindow(dpy),
 					       gcmask, &gcvals);
-	    gcvals.foreground = cur_win->colors_bg[i];
+	    gcvals.foreground = cur_win->colors_bg[j];
 	    gcvals.background = cur_win->colors_fg[i];
 	    cur_win->colors_bgc[i] = XCreateGC(dpy,
 					       DefaultRootWindow(dpy),
@@ -3890,6 +3892,7 @@ wait_for_scroll(
 static void
 x_setpal(const char *thePalette)
 {
+	TRACE(("x_setpal(%s)\n", thePalette))
 	set_ctrans(thePalette);
 	x_touch(cur_win, 0, 0, cur_win->cols, cur_win->rows);
 	x_flush();
@@ -3981,7 +3984,7 @@ flush_line(
 	fore_gc = back_gc = cur_win->modeline_gc;
     else if (attr & (VACOLOR)) {
 	fore_gc = cur_win->colors_fgc[ctrans[VCOLORNUM(attr)]];
-	back_gc = cur_win->colors_bgc[ctrans[VCOLORNUM(attr)]];
+	back_gc = cur_win->colors_bgc[ctrans[gbcolor]];
     }
     else {
 	fore_gc = cur_win->textgc;
@@ -6163,7 +6166,9 @@ x_fcol(int color)
 {
     XGCValues   gcvals;
     ULONG	gcmask;
+    int		n;
 
+    TRACE(("x_fcol(%d)\n", color))
     cur_win->fg = (color >= 0 && color < NCOLORS)
 		    ? cur_win->colors_fg[color]
 		    : cur_win->default_fg,
@@ -6171,10 +6176,14 @@ x_fcol(int color)
     gcmask = GCForeground;
     gcvals.foreground = cur_win->fg;
     XChangeGC(dpy, cur_win->textgc, gcmask, &gcvals);
+    for (n = 0; n < NCOLORS; n++)
+	    XChangeGC(dpy, cur_win->colors_bgc[n], gcmask, &gcvals);
 
     gcmask = GCBackground;
     gcvals.background = cur_win->fg;
     XChangeGC(dpy, cur_win->reversegc, gcmask, &gcvals);
+    for (n = 0; n < NCOLORS; n++)
+	    XChangeGC(dpy, cur_win->colors_fgc[n], gcmask, &gcvals);
 
     XSetForeground(dpy, cur_win->textgc, cur_win->fg);
 
@@ -6187,7 +6196,9 @@ x_bcol(int color)
 {
     XGCValues   gcvals;
     ULONG	gcmask;
+    int		n;
 
+    TRACE(("x_bcol(%d)\n", color))
     cur_win->bg = (color >= 0 && color < NCOLORS)
 		    ? ((cur_win->colors_bg[color] == cur_win->default_bg)
 		    	? cur_win->colors_fg[color]
@@ -6197,10 +6208,14 @@ x_bcol(int color)
     gcmask = GCBackground;
     gcvals.background = cur_win->bg;
     XChangeGC(dpy, cur_win->textgc, gcmask, &gcvals);
+    for (n = 0; n < NCOLORS; n++)
+	    XChangeGC(dpy, cur_win->colors_fgc[n], gcmask, &gcvals);
 
     gcmask = GCForeground;
     gcvals.foreground = cur_win->bg;
     XChangeGC(dpy, cur_win->reversegc, gcmask, &gcvals);
+    for (n = 0; n < NCOLORS; n++)
+	    XChangeGC(dpy, cur_win->colors_bgc[n], gcmask, &gcvals);
 
     XtVaSetValues(cur_win->screen,
 	    XtNbackground,		cur_win->bg,

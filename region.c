@@ -5,7 +5,7 @@
  * commands. Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.98 1999/05/26 00:40:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.100 1999/09/14 01:11:39 tom Exp $
  *
  */
 
@@ -669,44 +669,6 @@ upperregion(void)
 	return do_lines_in_region(do_chars_in_line,(void *)NULL, TRUE);
 }
 
-#if NEEDED
-/* this walks a region, char by char, and invokes a function for
-	each.  it does _not_ know about rectangles, which is why it is
-	probably obsolete -- we can do_lines_in_region/do_chars_in_line
-	to get the same effect*/
-int
-charprocreg(int (*func)(int))
-{
-	MARK		m;
-	register int    c,nc;
-	register int    status;
-	REGION		region;
-	int		changed = 0;
-
-	if ((status = getregion(&region)) == TRUE) {
-		m = region.r_orig;
-		while (region.r_size-- > 0) {
-			if (is_at_end_of_line(m)) {
-				m.l = lforw(m.l);
-				m.o = w_left_margin(curwp);
-			} else {
-				c = char_at(m);
-				nc = (func)(c);
-				if (nc != -1) {
-					copy_for_undo(m.l);
-					put_char_at(m, nc);
-					changed++;
-				}
-				++m.o;
-			}
-		}
-	}
-	if (changed)
-	    chg_buff(curbp, WFHARD);
-	return (status);
-}
-#endif
-
 /* finish filling in the left/right column info for a rectangular region */
 static void
 set_rect_columns(register REGION *rp)
@@ -742,6 +704,7 @@ getregion(register REGION *rp)
 	register LINE   *blp;
 	B_COUNT fsize;
 	B_COUNT bsize;
+	int	len_rs = len_record_sep(curbp);
 
 	if (haveregion) {
 		*rp = *haveregion;
@@ -758,7 +721,6 @@ getregion(register REGION *rp)
 		return FALSE;
 	}
 
-#define line_length(lp) (llength(lp)+1)	/* length counting newline */
 	if (sameline(DOT, MK)) {
 		rp->r_orig =
 		rp->r_end  = DOT;
