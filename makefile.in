@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.101 1998/04/30 00:52:33 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.102 1998/05/03 10:22:04 kev Exp $
 #
 
 #### Start of system configuration section. ####
@@ -228,6 +228,18 @@ vile-pas-filt$x : pas-filt.o
 vile-crypt$x : $(srcdir)/crypt.c
 	@ECHO_LD@$(CC) -DSTANDALONE $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) \
 	    -o $@ $(srcdir)/crypt.c
+
+vile-perl-api.pod: perl.xs
+	perl -lne 'print if s/^\s{1,2}#\s{0,1}//' $(srcdir)/perl.xs > $@
+
+vile-perl-api.doc: vile-perl-api.pod
+	pod2text vile-perl-api.pod > $@
+
+vile-perl-api.html: vile-perl-api.pod
+	pod2html vile-perl-api.pod > $@
+
+vile-perl-api.man: vile-perl-api.pod
+	pod2man vile-perl-api.pod > $@
 
 nebind.h \
 nefkeys.h \

@@ -1,3 +1,29 @@
+Changes for vile 7.5/8.0 (released ??? ??? ?, 1998)
+
+ (kev) 980503 (a)
+ 	+ api.c (api_setup_fake_win, api_dotinsert): Set MDNEWLINE to
+	  false when deleting a newline before the end of a file.
+	  (api_dotgline): Unused, #if 0'd out.
+	+ makefile.in (vile-perl-api.pod, vile-perl-api.doc,
+	  vile-perl-api.html, vile-perl-api.man): New targets.  I'm going
+	  to let Tom decide which of these should be installed and where.
+	+ perl.xs: Converted the inline documentation to be almost pod
+	  format.  There is still a preprocessing step needed to convert
+	  to a pod file.  I also rearranged the order of the methods
+	  so that they'd be roughly alphabetical.
+	  (svgetline, svgetregion, svgettors): Don't look at end
+	  marker any more to determine end of region.  Instead,
+	  use the region length to keep track of how many characters
+	  are left in the region.  (I added a comment on the problems
+	  associated with the end-of-region mark to the code just
+	  before svgetline()).
+	  (setregion): Rewritten to call getregion() for setting up
+	  the region.  This way the length gets set right.
+	  (perl_default_region): Make sure the region is really being
+	  computed by getregion().
+	  (do_perl_cmd): Fixed the code so that range specs work
+	  again.
+
 Changes for vile 7.4 (released Fri May 1, 1998)
 
  (tom) 980501
