@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.330 2004/06/11 11:20:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.331 2004/06/19 15:04:50 tom Exp $
  *
  */
 
@@ -926,7 +926,7 @@ run_func(int fnum)
 	break;
     case UFGTSEQ:
 	(void) kcod2escape_seq(kbd_seq_nomap(), tb_values(result));
-	result->tb_used = strlen(tb_values(result));
+	tb_setlen(&result, -1);
 	break;
     case UFCMATCH:
 	if ((exp = new_regexval(arg[0], TRUE)) != 0) {
@@ -1052,19 +1052,24 @@ run_func(int fnum)
 		tb_scopy(&result, arg[1]);
 		tb_alloc(&result, NFILEN);
 		SL_TO_BSL(lengthen_path(tb_values(result)));
+		tb_setlen(&result, -1);
 		break;
 	    case PATH_HEAD:
 		SL_TO_BSL(path_head(&result, arg[1]));
+		tb_setlen(&result, -1);
 		break;
 	    case PATH_ROOT:
 		tb_scopy(&result, SL_TO_BSL(pathleaf(arg[1])));
-		if ((cp = strchr(tb_values(result), '.')) != 0)
+		if ((cp = strchr(tb_values(result), '.')) != 0) {
 		    *cp = EOS;
+		    tb_setlen(&result, -1);
+		}
 		break;
 	    case PATH_SHORT:
 		tb_scopy(&result, arg[1]);
 		tb_alloc(&result, NFILEN);
 		SL_TO_BSL(shorten_path(tb_values(result), FALSE));
+		tb_setlen(&result, -1);
 		break;
 	    case PATH_TAIL:
 		tb_scopy(&result, pathleaf(arg[1]));
@@ -1078,6 +1083,7 @@ run_func(int fnum)
     case UFPATHCAT:
 	tb_alloc(&result, NFILEN);
 	SL_TO_BSL(pathcat(tb_values(result), arg[0], arg[1]));
+	tb_setlen(&result, -1);
 	break;
     case UFPATHQUOTE:
 	path_quote(&result, SL_TO_BSL(arg[0]));

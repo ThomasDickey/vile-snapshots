@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/directory.pm,v 1.8 2002/05/06 23:08:25 tom Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/directory.pm,v 1.9 2004/06/19 17:50:47 tom Exp $
 # (see dir.doc)
 
 package directory;
@@ -48,7 +48,7 @@ sub dir {
 
     do { print "[Aborted]"; Vile::working($work); return; } if (! defined $dir);
     $dir = scalar(Vile->get("&path full $dir"));
-    chdir $dir || do { print "dir: $!\n"; Vile::working($work); return; };
+    chdir $dir || do { print "$dir: $!\n"; Vile::working($work); return; };
 
     # Keep the vile current directory in sync with the directory the browser is
     # displaying.

@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.47 2004/06/11 11:22:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.48 2004/06/19 17:43:37 tom Exp $
  *
  */
 
@@ -15,6 +15,8 @@
 #include "edef.h"
 
 #define	NCHUNK	NLINE
+
+#define ERROR_LEN 6		/* sizeof(ERROR) */
 
 /*******(testing)************************************************************/
 #if NO_LEAKS
@@ -500,10 +502,36 @@ tb_length(TBUFF *p)
 
     if (p != 0) {
 	if (p->tb_errs) {
-	    result = 6;		/* sizeof(ERROR) */
+	    result = ERROR_LEN;
 	} else {
 	    result = p->tb_used;
 	}
     }
     return result;
+}
+
+/*
+ * Set the length of the buffer, increasing it if needed, and accounting for
+ * errors.
+ */
+void
+tb_setlen(TBUFF **p, int n)
+{
+    size_t len;
+
+    if (p != 0) {
+	if (!(*p)->tb_errs) {
+	    if (n < 0) {
+		char *value = tb_values(*p);
+		if (value != 0)
+		    len = strlen(value) + 1;
+		else
+		    len = 0;
+	    } else {
+		len = n;
+		tb_alloc(p, len);
+	    }
+	    (*p)->tb_used = len;
+	}
+    }
 }
