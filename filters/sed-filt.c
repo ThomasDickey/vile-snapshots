@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.10 2000/08/29 01:49:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.11 2000/11/04 20:18:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to sed scripts.
  */
@@ -47,7 +47,7 @@ static char *Number_attr;
 static char *
 SkipBlanks(char *s)
 {
-    while (isspace(*s)) {
+    while (isspace(CharOf(*s))) {
 	flt_putc(*s++);
     }
     return s;
@@ -60,7 +60,7 @@ SkipError(char *s)
     char *base = s;
     size_t len = strlen(s);
 
-    while (len > 0 && isspace(s[len - 1]))
+    while (len > 0 && isspace(CharOf(s[len - 1])))
 	len--;
     flt_puts(base, len, Error_attr);
     return SkipBlanks(base + len);
@@ -114,11 +114,11 @@ SkipLabel(char *s)
 
 	s = SkipBlanks(s);
 	base = s;
-	while (!isspace(*s))	/* FIXME: can a label have punctuation? */
+	while (!isspace(CharOf(*s)))	/* FIXME: can a label have punctuation? */
 	    s++;
 
 	tail = s;
-	while (isspace(*s))
+	while (isspace(CharOf(*s)))
 	    s++;
 
 	if (*s || tail == base) {
@@ -203,8 +203,8 @@ SkipTwoPatterns(char *s, int flags)
 
     if (flags) {
 	base = s;
-	while (*s != 0 && !isspace(*s)) {
-	    if (isdigit(*s)
+	while (*s != 0 && !isspace(CharOf(*s))) {
+	    if (isdigit(CharOf(*s))
 		|| *s == 'g'
 		|| *s == 'p')
 		s++;
@@ -222,7 +222,7 @@ SkipTwoPatterns(char *s, int flags)
 static int
 HaveAddress(char *s)
 {
-    return (isdigit(*s) || *s == '$' || isSlash(*s) || *s == ',');
+    return (isdigit(CharOf(*s)) || *s == '$' || isSlash(*s) || *s == ',');
 }
 
 static char *
@@ -239,8 +239,8 @@ SkipAddress(char *s, int *count)
 	}
     }
 
-    if (isdigit(*s)) {
-	while (isdigit(*s))
+    if (isdigit(CharOf(*s))) {
+	while (isdigit(CharOf(*s)))
 	    s++;
 	flt_puts(base, s - base, Number_attr);
     } else if (*s == '$') {
@@ -332,7 +332,7 @@ do_filter(FILE * input GCC_UNUSED)
 		break;
 	    case CommandChar:
 		next = AfterCommandChar;
-		if (isalpha(*s) || *s == '=') {
+		if (isalpha(CharOf(*s)) || *s == '=') {
 		    switch (*s) {
 		    case 's':
 			next = ExpectSubsParams;

@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.17 2000/10/05 10:55:30 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.18 2000/11/04 11:24:06 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -21,11 +21,11 @@
 #include "estruct.h"
 #include "edef.h"
 
-#define  CLIPBOARD_BUSY      "Clipboard currently busy"
-#define  CLIPBOARD_COPY_MB   "Clipboard copy from minibuffer not supported"
+#define  CLIPBOARD_BUSY      "[Clipboard currently busy]"
+#define  CLIPBOARD_COPY_MB   "[Clipboard copy from minibuffer not supported]"
 #define  CLIPBOARD_COPYING   "[Copying...]"
-#define  CLIPBOARD_COPY_FAIL "Clipboad copy failed"
-#define  CLIPBOARD_COPY_MEM  "Insufficient memory for copy operation"
+#define  CLIPBOARD_COPY_FAIL "[Clipboad copy failed]"
+#define  CLIPBOARD_COPY_MEM  "[Insufficient memory for copy operation]"
 #define  PASS_HIGH(c)        ((int)(c) <= print_high && (int)(c) >= print_low)
 #define  _SPC_               ' '
 #define  _TAB_               '\t'
@@ -275,7 +275,7 @@ cbrd_reg_copy(void)
     /* make sure there is something to put */
     if (kbs[ukb].kbufh == NULL)
     {
-        mlforce("Nothing to copy");
+        mlforce("[Nothing to copy]");
         return (FALSE);     /* not an error, just nothing */
     }
 
@@ -598,7 +598,7 @@ cbrdpaste(int f, int n)
         }
         else
             rc = FALSE;
-        mlforce("Clipboard empty or not TEXT data");
+        mlforce("[Clipboard empty or not TEXT data]");
         return (rc);
     }
     if ((data = GlobalLock(hClipMem)) == NULL)
@@ -611,7 +611,7 @@ cbrdpaste(int f, int n)
         }
         else
             rc = FALSE;
-        mlforce("Can't lock clipboard memory");
+        mlforce("[Can't lock clipboard memory]");
         return (rc);
     }
     if (reading_msg_line)

@@ -5,12 +5,13 @@
  *
  * Copyright (c) 1990-2000 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.95 2000/09/26 01:10:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.96 2000/11/04 18:25:33 tom Exp $
  *
  */
 
 #include "estruct.h"
 #include "edef.h"
+#include "nevars.h"
 
 #if OPT_FINDERR
 
@@ -22,6 +23,7 @@
 #define W_LAST	5
 
 typedef struct {
+    char *exp_text;
     regexp *exp_comp;
     int words[W_LAST];
 } ERR_PATTERN;
@@ -281,8 +283,8 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
     if (temp != 0) {
 	TPRINTF(("-> %s\n", temp));
 	exp = regcomp(temp, TRUE);
-	free(temp);
     }
+    errp->exp_text = temp;
     errp->exp_comp = exp;
 }
 
@@ -293,8 +295,10 @@ static void
 free_patterns(void)
 {
     if (exp_table != 0) {
-	while (exp_count != 0)
-	    free((char *) (exp_table[--exp_count].exp_comp));
+	while (exp_count-- != 0) {
+	    free(exp_table[exp_count].exp_text);
+	    free((char *) (exp_table[exp_count].exp_comp));
+	}
 	free((char *) exp_table);
 	exp_table = 0;
     }
@@ -392,18 +396,18 @@ decode_exp(ERR_PATTERN * exp)
     /*
      * Count the atoms separately from the loop indices because when
      * we do
-     *		setv $filename-expr='\([a-zA-Z]:\)\?[^ ^I\[:]'
+     *          setv $filename-expr='\([a-zA-Z]:\)\?[^ ^I\[:]'
      * the resulting array will have an extra entry with null pointers
      * for the nested atom in the %F expression:
-     *		\([a-zA-Z]:\)
+     *          \([a-zA-Z]:\)
      */
     for (n = m = 1; (n < NSUBEXP); n++) {
 	if (p->startp[n] == 0 || p->endp[n] == 0)
-	    continue;	/* discount nested atom */
+	    continue;		/* discount nested atom */
 	temp = 0;
 	if (tb_bappend(&temp,
-		p->startp[n],
-		(ALLOC_T) (p->endp[n] - p->startp[n])) == 0
+		       p->startp[n],
+		       (ALLOC_T) (p->endp[n] - p->startp[n])) == 0
 	    || tb_append(&temp, EOS) == 0)
 	    return;
 
@@ -434,11 +438,12 @@ decode_exp(ERR_PATTERN * exp)
 int
 finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    register BUFFER *sbp;
-    register int s;
+    BUFFER *sbp;
+    int status;
     LINE *dotp;
     int moveddot = FALSE;
     ERR_PATTERN *exp;
+    ALLOC_T count = 0;
 
     char *errverb;
     char *errfile;
@@ -492,8 +497,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 	while (tdotp != dotp) {
 
 	    if (lisreal(tdotp)) {
-		ALLOC_T count = 0;
-
+		count = 0;
 		while ((exp = next_pattern(count++)) != 0) {
 		    if (exp->words[W_VERB] > 0)
 			if (lregexec(exp->exp_comp, tdotp, 0, llength(tdotp)))
@@ -532,10 +536,9 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 	 * last time.
 	 */
 	if (lisreal(dotp)) {
-	    ALLOC_T count = 0;
-
+	    count = 0;
 	    while ((exp = next_pattern(count++)) != 0
-		&& !lregexec(exp->exp_comp, dotp, 0, llength(dotp))) ;
+		   && !lregexec(exp->exp_comp, dotp, 0, llength(dotp))) ;
 
 	    if (exp != 0) {
 		decode_exp(exp);
@@ -554,7 +557,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 			&& strcmp(tb_values(oerrtext), errtext))
 			break;
 		} else if (errverb != 0
-		    && errfile != 0) {
+			   && errfile != 0) {
 		    if (!strcmp("Entering", errverb)) {
 			if (l < DIRLEVELS) {
 			    dirs[++l] = strmalloc(errfile);
@@ -601,9 +604,9 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 	    make_current(curwp->w_bufp);
 	    upmode();
 	} else {
-	    s = getfile(ferrfile, TRUE);
-	    if (s != TRUE)
-		return s;
+	    status = getfile(ferrfile, TRUE);
+	    if (status != TRUE)
+		return status;
 	}
     }
     if (errtext) {
@@ -620,13 +623,23 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
     }
     /* it's an absolute move */
     curwp->w_lastdot = DOT;
-    s = gotoline(TRUE, -(curbp->b_lines_on_disk - fe_line + lL_base));
+    status = gotoline(TRUE, -(curbp->b_lines_on_disk - fe_line + lL_base));
     DOT.o = fe_colm ? fe_colm - cC_base : 0;
 
     oerrline = fe_line;
     (void) tb_scopy(&oerrfile, errfile);
+    if (status == TRUE) {
+	TBUFF *match = 0;
+	var_ERROR_EXPR((TBUFF **) 0, exp_table[count - 1].exp_text);
+	if (tb_bappend(&match, dotp->l_text, dotp->l_used)
+	    && tb_append(&match, EOS) != 0) {
+	    var_ERROR_MATCH((TBUFF **) 0, tb_values(match));
+	    tb_free(&match);
+	}
+	updatelistvariables();
+    }
 
-    return s;
+    return status;
 }
 
 static LINE *
@@ -678,7 +691,7 @@ finderrbuf(int f GCC_UNUSED, int n GCC_UNUSED)
 
     (void) strcpy(name, febuff);
     if ((s = ask_for_bname("Buffer to scan for \"errors\": ",
-		name, sizeof(name))) == ABORT)
+			   name, sizeof(name))) == ABORT)
 	return s;
     if (s == FALSE) {
 	set_febuff(OUTPUT_BufName);

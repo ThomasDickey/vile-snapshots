@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.35 2000/09/24 22:41:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.36 2000/11/04 20:22:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PERL input
  * text.
@@ -34,7 +34,7 @@ save_here(char *text, int length)
     char *s = here_tag = do_alloc(here_tag, length, &here_len);
     here_exp = 1;
     while (length--) {
-	if (isIdent(*text)) {
+	if (isIdent(CharOf(*text))) {
 	    *s++ = *text;
 	} else if (*text == '\'') {
 	    here_exp = 0;
@@ -59,7 +59,7 @@ add_to_pattern(char *text)
 
     if (!flt_bfr_length()) {
 	first = delim = count = escaped = need = 0;
-	if (isalpha(*text))
+	if (isalpha(CharOf(*text)))
 	    first = *text;
 	else
 	    first = delim = *text;
@@ -67,7 +67,7 @@ add_to_pattern(char *text)
 	    need = 2;
     }
     if (flt_bfr_length() == 1 && !delim) {
-	if (!isalpha(*text) && !isspace(*text)) {
+	if (!isalpha(CharOf(*text)) && !isspace(CharOf(*text))) {
 	    delim = *text;
 	    need = (first == 's' || first == 'y' || first == 't') ? 3 : 2;
 	}
@@ -79,7 +79,7 @@ add_to_pattern(char *text)
 	    escaped = 1;
 	} else {
 	    if (need && (count == need)) {
-		if (!isalpha(*text)) {
+		if (!isalpha(CharOf(*text))) {
 		    return 0;
 		}
 	    } else if (*text == delim) {

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.11 2000/09/14 00:27:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.12 2000/11/04 20:23:45 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an X resource file.
  */
@@ -22,7 +22,7 @@ static char *String_attr;
 static int
 isClass(char *name)
 {
-    return (isalpha(*name) && isupper(*name));
+    return (isalpha(CharOf(*name)) && isupper(CharOf(*name)));
 }
 
 /*

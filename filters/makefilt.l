@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.39 2000/10/11 00:38:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.40 2000/11/04 20:22:38 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -31,7 +31,7 @@ write_keyword(char *text, int size)
     if (colon)
 	text[--size] = 0;
 
-    while (isspace(*text)) {
+    while (isspace(CharOf(*text))) {
 	text++;
 	size--;
 	space++;
@@ -40,7 +40,7 @@ write_keyword(char *text, int size)
 	flt_puts(base, space, "");
 
     space = 0;
-    while (isspace(text[size-1])) {
+    while (isspace(CharOf(text[size-1]))) {
 	size--;
 	space++;
     }
@@ -65,20 +65,20 @@ write_delimited_unit(char *text, char **attr, char **gaps)
     char *pwhite, *ptoken, *panchor, *pnxt_unit;
 
     panchor = pwhite = text;
-    while (isspace(*pwhite)) {
+    while (isspace(CharOf(*pwhite))) {
         pwhite++;
     }
     if (pwhite > panchor)
         flt_puts(panchor, pwhite - panchor, *gaps);
     panchor = ptoken = pwhite;
-    while (*ptoken && (! isspace(*ptoken)))
+    while (*ptoken && (! isspace(CharOf(*ptoken))))
         ptoken++;
     flt_puts(panchor, ptoken - panchor, *attr);
-    if (isspace(*ptoken))
+    if (isspace(CharOf(*ptoken)))
     {
         panchor = ptoken;
         pwhite  = ptoken + 1;  /* advance beyond initial white space byte */
-        while (isspace(*pwhite))
+        while (isspace(CharOf(*pwhite)))
             pwhite++;
         flt_puts(panchor, pwhite - panchor, *gaps);
         pnxt_unit = pwhite;

@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.6 2000/08/23 00:36:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.7 2000/11/04 20:22:35 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VMS mms script
  * - T.Dickey
@@ -25,7 +25,7 @@ write_keyword(char *text, int size)
     if (colon)
 	text[--size] = 0;
 
-    while (isspace(*text)) {
+    while (isspace(CharOf(*text))) {
 	text++;
 	size--;
 	space++;
@@ -34,7 +34,7 @@ write_keyword(char *text, int size)
 	flt_putc(' ');
 
     space = 0;
-    while (isspace(text[size-1])) {
+    while (isspace(CharOf(text[size-1]))) {
 	text[--size] = 0;
 	space++;
     }

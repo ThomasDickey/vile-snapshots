@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.441 2000/10/27 01:56:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.443 2000/11/04 18:22:04 tom Exp $
  *
  */
 
@@ -363,6 +363,12 @@ extern void save_arguments(BUFFER *bp);
 extern void relist_descolor(void);
 #else
 #define relist_descolor() /*nothing*/
+#endif
+
+#if OPT_UPBUFF
+extern void updatelistvariables(void);
+#else
+#define updatelistvariables()	/*nothing */
 #endif
 
 #if (SYS_WINNT||SYS_VMS)
@@ -1149,7 +1155,7 @@ extern int reposition (int f, int n);
 extern int resize (int f, int n);
 #endif
 
-#if OPT_SEL_YANK || OPT_PERL || OPT_COLOR
+#if OPT_SEL_YANK || OPT_PERL || OPT_COLOR || OPT_EVAL || OPT_DEBUGMACROS
 extern WINDOW * push_fake_win(BUFFER *bp);
 extern BUFFER * pop_fake_win(WINDOW *oldwp);
 #endif

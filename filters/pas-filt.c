@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.c,v 1.12 2000/06/07 23:06:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.c,v 1.13 2000/11/04 20:16:25 tom Exp $
  *
  * Markup a Pascal file, for highlighting with vile.
  */
@@ -8,9 +8,9 @@
 
 DefineFilter("pas");
 
-#define isNameBegin(c)   (isalpha(c) || (c) == '_')
-#define isNameExtra(c)   (isalnum(c) || (c) == '_')
-#define isBlank(c)  ((c) == ' ' || (c) == '\t')
+#define isNameBegin(c)   (isalpha(CharOf(c)) || (c) == '_')
+#define isNameExtra(c)   (isalnum(CharOf(c)) || (c) == '_')
+#define isBlank(c)       ((c) == ' ' || (c) == '\t')
 
 #define L_CURL '{'
 #define R_CURL '}'
@@ -36,7 +36,7 @@ extract_identifier(char *s)
 	need = (s - base);
 	name = do_alloc(name, need, &have);
 	for (s = base; isNameExtra(*s); s++) {
-	    name[s-base] = (isalpha(*s) && isupper(*s))
+	    name[s-base] = (isalpha(CharOf(*s)) && isupper(CharOf(*s)))
 			    ? tolower(*s)
 			    : *s;
 	}

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.24 2000/09/14 10:40:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.25 2000/11/04 20:19:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -61,11 +61,11 @@ may_resume_html(char *text)
     flt_puts(text, left - text, "");
     flt_puts(left, 1, Keyword_attr);
     next = ++left;
-    while (isspace(*next))
+    while (isspace(CharOf(*next)))
 	next++;
     flt_puts(left, next-left, "");
     left = next;
-    while (!isspace(*next) && *next != '>')
+    while (!isspace(CharOf(*next)) && *next != '>')
 	next++;
     save = *next;
     *next = 0;

@@ -1,10 +1,10 @@
 .\" obligatory man page for vile
-.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.25 2000/06/17 11:45:37 tom Exp $
+.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.27 2000/11/04 11:50:38 tom Exp $
 .TH VILE 1
 .SH NAME
 vile, xvile \- \fBVI L\fRike \fBE\fRmacs
 .SH SYNOPSIS
-.B "vile [-hVv] [-s\fIpattern\fB] [+\fI/pattern\fB] [-t\fItag\fB] [-g\fINNN\fB] [+\fINNN\fB] [@\fIcmdfile\fB] [\fIfilename\fB]..."
+.B "vile [-hIiRVv] [-s\fIpattern\fB] [+\fI/pattern\fB] [-t\fItag\fB] [-g\fINNN\fB] [-kcryptkey] [+\fINNN\fB] [@\fIcmdfile\fB] [\fIfilename\fB]..."
 .SH DESCRIPTION
 .I vile
 is a text editor.  This man page is fairly terse.  More information can
@@ -52,7 +52,7 @@ parsing eats the -t.
 Invokes
 .I vile
 on the helpfile.
-.IP -I
+.IP -I\ -i
 Tells
 .I vile
 to use
@@ -63,6 +63,9 @@ If you do not have a .vilerc,
 .I vile
 will make a short one that sources
 .I vileinit.rc
+.IP "-k cryptkey | -K cryptkey"
+Specifies an encryption/decryption key.
+See below for further discussion.
 .IP -R
 Invokes
 .I vile
@@ -131,11 +134,11 @@ commands.
 Short descriptions
 of each
 .I vile
-command may be obtained with the ": describe-function" and
-": describe-key" commands.  All commands may be listed with ": show-commands".
+command may be obtained with the ":describe-function" and
+":describe-key" commands.  All commands may be listed with ":show-commands".
 .PP
 Additional documentation on writing macros using the internal scripting
-language can be found in the file "macros.doc", distributed with the vile
+language can be found in the file "doc/macros.doc", distributed with the vile
 source.
 .SH "RELATED PROGRAMS"
 .I vile
@@ -170,7 +173,7 @@ for C,
 which can embolden, underline, or perform coloring on program
 source code.
 Again, see the help file for more information.
-.PP
+.SH "ENCRYPTION"
 The program
 .I vile-crypt
 can be used to encrypt/decrypt files using the same algorithm as
@@ -179,15 +182,18 @@ internal crypt algorithm.
 This program, which uses public domain code written by
 by Dana Hoggatt, is no longer used in vile, though it is provided for
 compatibility.
-(Vile uses the
+.PP
+.I vile
+currently uses the
 .I crypt(3)
-function which is available on most Unix systems, and is able to read and
-write files compatibly with vi).
-The encryption key can be specified on the
-command line with "-k key", and "-m" can be used to treat the file as a
-mail message; in that case, only text after the first blank line will be
-encrypted, leaving the headers intact and only affecting the body of the
-message.  Text to be encrypted can be specified as filenames on the command
+function for encryption/decryption, which is available on most Unix systems.
+This ensures that
+.I vile
+is able to read and write files compatibly with vi
+(but not vim, which uses an different algorithm derived from info-zip).
+The editor's encryption/decryption key can be specified on the
+command line with "-k key".
+Text to be encrypted can be specified as filenames on the command
 line, or provided as the standard input.  On systems with a getpass()
 library routine, the user will be prompted for the encryption key if it is
 not given on the command line.  To accommodate systems (such as linux) where

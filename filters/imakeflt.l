@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.4 2000/10/11 00:38:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.5 2000/11/04 20:22:39 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Imakefile
  *
@@ -24,7 +24,7 @@ static char *String_attr;
 static char *
 skip_name(char *text)
 {
-    while (isalnum(*text) || *text == '_')
+    while (isalnum(CharOf(*text)) || *text == '_')
 	text++;
     return text;
 }
@@ -63,7 +63,7 @@ write_keyword(char *text, int size)
     if (colon)
 	text[--size] = 0;
 
-    while (isspace(*text)) {
+    while (isspace(CharOf(*text))) {
 	text++;
 	size--;
 	space++;
@@ -72,7 +72,7 @@ write_keyword(char *text, int size)
 	flt_puts(base, space, "");
 
     space = 0;
-    while (isspace(text[size-1])) {
+    while (isspace(CharOf(text[size-1]))) {
 	size--;
 	space++;
     }
@@ -97,13 +97,13 @@ write_delimited_unit(char *text, char **attr, char **gaps)
     char *pwhite, *ptoken, *panchor, *pnxt_unit;
 
     panchor = pwhite = text;
-    while (isspace(*pwhite)) {
+    while (isspace(CharOf(*pwhite))) {
         pwhite++;
     }
     if (pwhite > panchor)
         flt_puts(panchor, pwhite - panchor, *gaps);
     panchor = ptoken = pwhite;
-    while (*ptoken && (! isspace(*ptoken)))
+    while (*ptoken && (! isspace(CharOf(*ptoken))))
         ptoken++;
     if ((ptoken - panchor) == 5
      && !strncmp(panchor, "XCOMM", 5)) {
@@ -111,11 +111,11 @@ write_delimited_unit(char *text, char **attr, char **gaps)
 	*gaps = Comment_attr;
     }
     flt_puts(panchor, ptoken - panchor, *attr);
-    if (isspace(*ptoken))
+    if (isspace(CharOf(*ptoken)))
     {
         panchor = ptoken;
         pwhite  = ptoken + 1;  /* advance beyond initial white space byte */
-        while (isspace(*pwhite))
+        while (isspace(CharOf(*pwhite)))
             pwhite++;
         flt_puts(panchor, pwhite - panchor, *gaps);
         pnxt_unit = pwhite;

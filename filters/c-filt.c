@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.58 2000/06/09 01:34:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.59 2000/11/04 20:13:57 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  */
@@ -19,10 +19,10 @@ DefineFilter("c");
 #define DQUOTE '"'
 #define SQUOTE '\''
 
-#define UPPER(c) isalpha(c) ? toupper(c) : c
+#define UPPER(c) isalpha(CharOf(c)) ? toupper(CharOf(c)) : c
 
-#define isIdent(c)  (isalpha(c) || (c) == '_')
-#define isNamex(c)  (isalnum(c) || (c) == '_')
+#define isIdent(c)  (isalpha(CharOf(c)) || (c) == '_')
+#define isNamex(c)  (isalnum(CharOf(c)) || (c) == '_')
 
 #define isBlank(c)  ((c) == ' ' || (c) == '\t')
 #define isQuote(c)  ((c) == DQUOTE || (c) == SQUOTE)
@@ -142,8 +142,8 @@ write_escape(char *s, char *attr)
 }
 
 #define SkipDigit(radix,s) \
-		(radix == 10 && isdigit(*s)) || \
-		(radix == 16 && isxdigit(*s))
+		(radix == 10 && isdigit(CharOf(*s))) || \
+		(radix == 16 && isxdigit(CharOf(*s)))
 
 #define BeginExponent(radix,ch) \
 		(radix == 10 && ch == 'E') || \
@@ -158,10 +158,10 @@ write_number(char *s)
     char *attr = Number_attr;
     int radix = (*s == '0')
     ? ((s[1] == 'x' || s[1] == 'X') ? 16
-	: (!isdigit(s[1])) ? 10 : 8) : 10;
+	: (!isdigit(CharOf(s[1]))) ? 10 : 8) : 10;
     int state = 0;
     int done = 0;
-    int found = isdigit(*s) && (radix != 16);
+    int found = isdigit(CharOf(*s)) && (radix != 16);
     int num_f = 0;
     int num_u = 0;
     int num_l = 0;
@@ -173,13 +173,13 @@ write_number(char *s)
 	s++;
 	switch (radix) {
 	case 8:
-	    done = !isdigit(*s) || (*s == '8') || (*s == '9');
+	    done = !isdigit(CharOf(*s)) || (*s == '8') || (*s == '9');
 	    break;
 	case 10:
-	    done = !isdigit(*s);
+	    done = !isdigit(CharOf(*s));
 	    break;
 	case 16:
-	    done = !isxdigit(*s);
+	    done = !isxdigit(CharOf(*s));
 	    break;
 	}
 	if ((radix == 10 || radix == 16) && *s == '.') {
@@ -191,7 +191,7 @@ write_number(char *s)
     }
     if (radix == 10 || radix == 16) {
 	while (state >= 0) {
-	    int ch = UPPER(*s) ? toupper(*s) : *s;
+	    int ch = UPPER(*s) ? toupper(CharOf(*s)) : *s;
 	    switch (state) {
 	    case 0:
 		if (ch == '.') {
@@ -340,7 +340,7 @@ parse_prepro(char *s)
 	while (isBlank(*tt))
 	    tt++;
 	ss = tt;
-	while (!isspace(*tt) && *tt != 0) {
+	while (!isspace(CharOf(*tt)) && *tt != 0) {
 	    int ch = *tt++;
 	    if (*ss == '<') {
 		if (ch == '>')
@@ -442,8 +442,8 @@ do_filter(FILE * input GCC_UNUSED)
 		}
 	    } else if (isIdent(*s)) {
 		s = extract_identifier(s);
-	    } else if (isdigit(*s)
-		|| (*s == '.' && (isdigit(s[1]) || s[1] == '.'))) {
+	    } else if (isdigit(CharOf(*s))
+		|| (*s == '.' && (isdigit(CharOf(s[1])) || s[1] == '.'))) {
 		s = write_number(s);
 	    } else if (*s == '#') {
 		char *t = s;

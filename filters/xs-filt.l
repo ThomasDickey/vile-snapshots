@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.8 2000/02/28 11:58:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.9 2000/11/04 20:24:26 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Perl/C
  * extension source
@@ -36,12 +36,12 @@ comment_or_preproc(char *text)
     unsigned j, k;
     char *base = text;
     text++;	/* skip "#" */
-    while (isspace(*text))
+    while (isspace(CharOf(*text)))
     	text++;
     for (j = 0; j < sizeof(tbl)/sizeof(tbl[0]); j++) {
 	k = strlen(tbl[j]);
 	if (!strncmp(tbl[j], text, k)
-	 && !isalnum(text[k])) {
+	 && !isalnum(CharOf(text[k]))) {
 	    text += k;
 	    flt_puts(base, text-base, Preproc_attr);
 	    /* FIXME: this can't handle inline comment or a continuation line */

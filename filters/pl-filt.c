@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.8 2000/09/25 00:47:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.9 2000/11/04 20:29:47 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -8,8 +8,6 @@
 #include <filters.h>
 
 DefineFilter("perl");
-
-#define CharOf(c) ((c) & 0xff)
 
 #define ESC     '\\'
 #define SQUOTE  '\''
@@ -115,7 +113,7 @@ is_KEYWORD(char *s)
 		}
 	    } else {
 		if (s + 1 == the_last
-		    || !isalpha(s[1])) {
+		    || !isalpha(CharOf(s[1]))) {
 		    return 0;
 		}
 	    }
@@ -356,7 +354,7 @@ begin_POD(char *s)
 	    && s[0] == '\n'
 	    && s[1] == '\n'
 	    && s[2] == '='
-	    && isalpha(s[3]));
+	    && isalpha(CharOf(s[3])));
 }
 
 static int
@@ -457,7 +455,7 @@ add_to_PATTERN(char *s)
 	while (s != the_last) {
 	    if (*s == '\n')	/* FIXME: can patterns span a line? */
 		break;
-	    if (!isalpha(*s)
+	    if (!isalpha(CharOf(*s))
 		|| *s == ';')
 		break;
 	    s++;
@@ -474,7 +472,7 @@ is_Option(char *s)
 
     if (*s == '-'
 	&& ((s + 1) != the_last)
-	&& isalpha(s[1]))
+	&& isalpha(CharOf(s[1])))
 	found = 2;
     return found;
 }

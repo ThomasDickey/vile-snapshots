@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.282 2000/10/10 19:04:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.283 2000/11/04 18:22:27 tom Exp $
  *
  */
 
@@ -419,14 +419,11 @@ show_VariableList(BUFFER *bp GCC_UNUSED)
  * If the list-variables window is visible, update it after operations that
  * would modify the list.
  */
-static void
+void
 updatelistvariables(void)
 {
     update_scratch(VARIABLES_BufName, show_VariableList);
 }
-
-#else
-#define updatelistvariables()	/*nothing */
 #endif
 
 int

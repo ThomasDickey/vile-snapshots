@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.12 2000/08/28 23:53:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.13 2000/11/04 20:14:06 tom Exp $
  *
  */
 
@@ -128,7 +128,7 @@ mlforce(const char *fmt,...)
 char *
 skip_blanks(char *src)
 {
-    while (isspace(*src))
+    while (isspace(CharOf(*src)))
 	src++;
     return (src);
 }

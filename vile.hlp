@@ -385,12 +385,17 @@ Shell Access
 	internal directory stack:
 
 	    :dirs
-	    :popd  [ {+|-}n ]
-	    :pushd [ dir | {+|-}n ]
+	    :dirs-add   dir
+	    :dirs-clear
+	    :popd       [ {+|-}n ]
+	    :pushd      [ dir | {+|-}n ]
 
 	"dirs" lists the directory stack in a scratch buffer.  Note that the
 	directory stack is zero-based.	Precede this command with an argument
-	to kill the buffer.
+	to kill the buffer.  "dirs-clear" clears the stack and kills the
+	scratch buffer.  "dirs-add" adds a directory to stack[top - 1], 
+	but does not affect cwd, which makes this command useful for
+	initializing the stack from a macro or startup file.
 
 	"popd" removes entries from the directory stack.  With no
 	arguments, removes the top directory from the stack and performs
@@ -2391,6 +2396,8 @@ Programmed procedures and macros
 	$disinp		display command line input characters (boolean)
 	$end-of-cmd	true if user ended the cmd with <CR>
 	$error-buffer   buffer name assigned to the error-buffer
+	$error-expr     regular expression that matched the error-buffer
+	$error-match    text that matched the error-buffer
 	$exec-path	where to find vile			(read only)
 	$exec-suffix	suffix, if any, for execable programs	(read only)
 	$exit-hook	name of procedure to run when quitting
@@ -5156,4 +5163,4 @@ Problems
 
 Copyright 1995-2000 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.505 2000/10/16 10:07:18 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.507 2000/11/04 21:07:53 tom Exp $

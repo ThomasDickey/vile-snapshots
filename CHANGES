@@ -1,5 +1,51 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20001104 (b)
+	> Clark Morgan:
+	+ add command dirs-clear, which clears dirstack and kills dirstack
+	  buffer.
+	+ add command dirs-add, which adds a directory to dirstack[top -1]; cwd
+	  remains unchanged.  This command permits initialization of dirstack
+	  via a macro and/or startup file.
+	+ remove a state variable from ntgetch(), which could conceivably fall
+	  out of sync due to calls to winvile_cursor_state() by other vile
+	  modules.  This appears to fix a bug which would cause winvile's
+	  cursor to vanish.  Switching to a different window would eventually
+	  allow winvile's cursor to reappear (reported by Richard Hussong
+	  <rhussong@ciena.com>).
+	+ update README for 9.2
+	+ add caveat in doc/macros.doc regarding inline comments for commands
+	  that accept optional parameters.
+	+ update vile.1:  Add -i, -R, and -k to invocation switches.  Add a new
+	  encryption section.  Note that vile's encryption is not compatible
+	  with vim.  Remove reference to nonexistent -m switch (which was
+	  supposed to encrypt/decrypt mail messages).
+	+ document that write-file accepts an optional filename argument
+	+ change $crypt variable so attempts to read it return the string
+	  "[write only]" rather than the ERROR token.
+	+ if last element is popped off dirstack and [DirStack] is the only
+	  visible buffer, be sure to update [DirStack].
+	+ add consistent error message delimiters for modules that I regularly 
+	  modify.
+	+ when winvile spawns a dynamic console, the parent process ignores all
+	  win32-supported signals until the console exits.  This prevents a
+	  Ctrl+Break in the console window (for example) from rolling up
+	  winvile.  Patch is based on code I recently noticed in the vim
+	  sources.
+	> Tom Dickey:
+	+ add configure check for ispell or spell program, use that in spell
+	  filter.
+	+ add double-quote character to those not treated as part of a filename
+	  in the default for $filename-expr
+	+ add/use CharOf() macro to suppress sign-extension of char type on
+	  platforms where this is a problem in ctype macros, e.g., Solaris.
+	+ add variables $error-expr and $error-match, which show the last error
+	  expression and the text it matched.
+	+ expand ifdef's for pop_fake_win()/push_fake_win() to include the
+	  tprintf() logic, making 9.2 build on VMS.
+	+ change several configure macros to use $CPPFLAGS consistently for
+	  preprocessor options rather than $CFLAGS.
+
  20001026 (a)
 	> Clark Morgan:
 	+ expanded description of 00-10-11 item in buglist (:!ls in winvile)
@@ -404,8 +450,8 @@ Changes for vile 9.2 (released Tue Oct 17 2000)
  20000725 (o)
 	> Clark Morgan:
 	+ add example macro to vile.hlp from this-file-dir by Richard Hussong
-	  <rhussong@ma.ultranet.com> but renamed to cdcur like Alex Wetmore's
-	  variation as suggested by Paul Fox.
+	  but renamed to cdcur like Alex Wetmore's variation as suggested by
+	  Paul Fox.
 	+ if an NT console's display and buffer geometry are not the same, then
 	  vile.exe's cursor defaults to the minimum size.  Modify so that the
 	  editor's cursor size is inherited from the parent console window.

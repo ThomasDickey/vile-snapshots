@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.96 2000/08/26 16:38:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.97 2000/11/04 12:34:29 tom Exp $
  *
  */
 
@@ -1123,7 +1123,7 @@ void	wp_leaks(void)
 }
 #endif
 
-#if OPT_SEL_YANK || OPT_PERL || OPT_COLOR
+#if OPT_SEL_YANK || OPT_PERL || OPT_COLOR || OPT_EVAL || OPT_DEBUGMACROS
 /*
  * Allocate a fake window so that we can yank a selection even if the buffer
  * containing the selection is not attached to any window.

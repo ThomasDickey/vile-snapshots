@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.18 2000/08/17 00:21:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.19 2000/11/04 20:15:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4 
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -24,8 +24,8 @@ DefineFilter("m4");
 #define L_CMT "#"
 #define R_CMT "\n"
 
-#define isIdent(c)  (isalpha(c) || (c) == '_')
-#define isNamex(c)  (isalnum(c) || (c) == '_')
+#define isIdent(c)  (isalpha(CharOf(c)) || (c) == '_')
+#define isNamex(c)  (isalnum(CharOf(c)) || (c) == '_')
 
 static char *Comment_attr;
 static char *Error_attr;
@@ -55,7 +55,7 @@ static Quote leftcmt, rightcmt;
 static char *
 SkipBlanks(char *src)
 {
-    while (isspace(*src))
+    while (isspace(CharOf(*src)))
 	src++;
     return (src);
 }
@@ -324,13 +324,13 @@ write_number(char *s)
 	s++;
 	switch (radix) {
 	case 8:
-	    done = !isdigit(*s) || (*s == '8') || (*s == '9');
+	    done = !isdigit(CharOf(*s)) || (*s == '8') || (*s == '9');
 	    break;
 	case 10:
-	    done = !isdigit(*s);
+	    done = !isdigit(CharOf(*s));
 	    break;
 	case 16:
-	    done = !isxdigit(*s);
+	    done = !isxdigit(CharOf(*s));
 	    break;
 	}
     }
@@ -451,7 +451,7 @@ do_filter(FILE * input GCC_UNUSED)
 		comment = 0;
 	    } else if (isIdent(*s)) {
 		s = extract_identifier(s, &args, &parens);
-	    } else if (isdigit(*s)) {
+	    } else if (isdigit(CharOf(*s))) {
 		s = write_number(s);
 	    } else {
 		flt_putc(*s++);

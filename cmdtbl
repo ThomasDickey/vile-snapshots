@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.208 2000/10/16 01:54:53 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.209 2000/11/04 11:24:06 cmorgan Exp $
 #
 #
 
@@ -524,9 +524,6 @@ des_c_key	NONE			OPT_REBIND
 des_s_key	NONE			OPT_REBIND
 	"describe-selmode-key"
 	<show the function bound to a given key in selection-mode>
-vl_dirs		NONE			OPT_SHELL
-	"dirs"
-	<list internal directory stack in scratch buffer>
 dotcmdplay	UNDO
 	"repeat-last-cmd"		!FEWNAMES
 	'.'
@@ -602,7 +599,7 @@ filesave	NONE|BANG		!SMALLER
 filewrite	NONE|BANG
 	"write-file"			!FEWNAMES
 	"write-file!"			!FEWNAMES
-	<write the entire contents of the current buffer to its filename>
+	<syntax: \"write-file [name]\" - write contents of current buffer to its filename or to optional \"name\">
 vile_filter	REDO|UNDO		OPT_SHELL
 	"|"
 	"filter-buffer"			!FEWNAMES
@@ -1617,6 +1614,15 @@ vglobals	NONE
 viewfile	NONE
 	"view-file"
 	<bring given file or existing buffer into window, mark it \"view-only\">
+vl_dirs		NONE			OPT_SHELL
+	"dirs"
+	<list internal directory stack in scratch buffer>
+vl_dirs_add 	NONE			OPT_SHELL
+	"dirs-add"
+	<add a dir to DirStack[top - 1]; cwd is unaffected>
+vl_dirs_clear	NONE			OPT_SHELL
+	"dirs-clear"
+	<clear internal directory stack; cwd is unaffected>
 waitfile	NONE			SYS_WINNT&&defined(VILE_OLE)
 	"wait-file"
 	<wait for file to grow larger than 0 bytes, timeout specified as arg>

@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.7 2000/10/05 10:50:12 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.8 2000/11/04 11:24:06 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -43,7 +43,7 @@ ofn_init(void)
 static int
 glob_and_validate_dir(const char *inputdir, char *outputdir)
 {
-#define NOT_A_DIR  "\"%s\" is not a directory"
+#define NOT_A_DIR  "[\"%s\" is not a directory]"
 
     int  outlen, rc;
     char tmp[NFILEN];
@@ -136,7 +136,7 @@ commdlg_open_files(int chdir_allowed, const char *dir)
 
         if ((errcode = CommDlgExtendedError()) != 0)
         {
-            mlforce("CommDlgExtendedError() returns err code %d", errcode);
+            mlforce("[CommDlgExtendedError() returns err code %d]", errcode);
             rc = FALSE;
         }
         else
@@ -378,7 +378,7 @@ commdlg_save_file(int chdir_allowed, const char *dir)
 
         if ((errcode = CommDlgExtendedError()) != 0)
         {
-            mlforce("CommDlgExtendedError() returns err code %d", errcode);
+            mlforce("[CommDlgExtendedError() returns err code %d]", errcode);
             rc = FALSE;
         }
         else
