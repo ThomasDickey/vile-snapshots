@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.12 2000/05/29 20:50:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.13 2001/01/19 01:46:00 tom Exp $
  */
 
 #include	"estruct.h"
@@ -206,12 +206,14 @@ static void
 curs_open(void)
 {
     TRACE(("curs_open\n"));
+    vl_save_tty();
 }
 
 static void
 curs_close(void)
 {
     TRACE(("curs_close\n"));
+    vl_restore_tty();
 }
 
 static int last_key = -1;

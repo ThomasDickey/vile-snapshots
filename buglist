@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.388 2001/01/06 00:40:16 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.390 2001/01/23 00:57:38 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -10,11 +10,6 @@ E	add ":n file"
 	    :n file means go to that specific file - one can specify a
 	    +<cmd> before file to indicate the vi command which should be
 	    executed when entering the command.)
-
-E	now that paragraphs, sections, and sentences are all selectable
-	with regexps, they (and the tabstop value) are prime candidates for
-	moving into a "mode-values" set of values.  A buffer would inherit
-	either the global normal-mode values, or the global c-mode values.
 
 E	:k, to set a mark, won't work as ":ka" or ":kb".  Must use ":k a"
 
@@ -238,9 +233,6 @@ works fine, except that the process is in the foreground.
  > committing suicide, and then blowing away the xterm still exists.
  > For the time being I just remember to run xvile on a different
  > machine.
-
------------------------------
-apply Alistair's min/max regexp patch
 
 -------------------------------------------------------------------------
 
@@ -1155,15 +1147,6 @@ multiple lines.
 can move the cursor around in edit mode, though this is not exactly what
 he's asking for - tom]
 
--- 97-11-12 (tom)
-
-have seen recent references to {min} {,max} and similar in regular expressions
-for POSIX vi.  I want that.
-
-[98-01-19]
-have a partial implementation, will integrate after 8.0 (winvile and minibuffer
-are higher priority).
-
 -- 97-11-12 (Scott Waldon <waldon@engineous.com>)
 
 I was introduced to vile about 2 years ago and am really enjoying using it.
@@ -1549,14 +1532,18 @@ track down.
 
 -- 00-10-15 (tom)
 
-To build on HPUX 11.0, you must define __10_10_COMPAT_CODE, because HP
-has defined a bogus (non-varargs) prototype for tparm().
-
--- 00-10-15 (tom)
-
 The curses.c driver is still experimental.  It has really only been tested
 with ncurses on Linux.  There are some problems displaying on backgrounds
 other than black.  The chief problem however is that under some circumstances
 the terminal modes are not properly saved/restored when executing a shell
 command (and a staircase effect results).  To see this, type
 	:r !date
+
+-- 01-01-22 (tom)
+
+I did the bounds implementation in January 1998, but did not finish it at
+that point.  It does not (yet) handle limits on an expression delineated
+by \( and \).
+
+Considered making a configure option to use Henry Spencer's more up-to-date
+regex library, but see that it requires null-terminated strings.

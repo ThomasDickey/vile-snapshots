@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_2e
+MANIFEST for vile, version v9_2f
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -170,6 +170,8 @@ filters/dcl-filt.l              VAX dcl syntax highlighting filter for vile
 filters/dcl.key                 dcl keywords
 filters/diff.key                keywords for 'diff' syntax filter
 filters/difffilt.l              syntax filter for 'diff' output
+filters/ecl-filt.l              syntax filter for ECLiPSe
+filters/ecl.key                 keywords for ecl-filt.l
 filters/ecrypt.c                uemacs-derived encryption
 filters/esql.key                keywords for embedded SQL with C/C++
 filters/esqlfilt.l              syntax filter for embedded SQL with C/C++
@@ -253,6 +255,8 @@ filters/txt-filt.l              syntax filter for ordinary text
 filters/vile.key                fallback template for highlighting colors
 filters/vilefilt.l              syntax filter for vile macros
 filters/vim.key                 keywords for vim syntax files
+filters/vl-filt.l               Verilog syntax highlighting filter
+filters/vlog.key                verilog keywords, from vgrind definition
 filters/xres.key                keywords for X resource filter
 filters/xresfilt.l              syntax filter for X resource files
 filters/xs-filt.l               syntax filter for Perl extensions

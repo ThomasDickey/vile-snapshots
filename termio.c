@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.189 2000/11/15 02:02:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.190 2001/01/19 01:56:10 tom Exp $
  *
  */
 
@@ -198,25 +198,15 @@ struct termios otermios, ntermios;
 char tobuf[TBUFSIZ];		/* terminal output buffer */
 
 void
-ttopen(void)
+vl_save_tty(void)
 {
 	int s;
+
 	s = tcgetattr(0, &otermios);
 	if (s < 0) {
-		perror("ttopen tcgetattr");
+		perror("vl_save_tty tcgetattr");
 		ExitProgram(BADEXIT);
 	}
-#if !DISP_X11
-#if HAVE_SETVBUF
-# if SETVBUF_REVERSED
-	setvbuf(stdout, _IOFBF, tobuf, TBUFSIZ);
-# else
-	setvbuf(stdout, tobuf, _IOFBF, TBUFSIZ);
-# endif
-#else /* !HAVE_SETVBUF */
-	setbuffer(stdout, tobuf, TBUFSIZ);
-#endif /* !HAVE_SETVBUF */
-#endif /* !DISP_X11 */
 
 	suspc =   otermios.c_cc[VSUSP];
 	intrc =   otermios.c_cc[VINTR];
@@ -229,6 +219,31 @@ ttopen(void)
 #else
 	wkillc =  tocntrl('W');
 #endif
+}
+
+void
+vl_restore_tty(void)
+{
+	tcdrain(1);
+	tcsetattr(0, TCSADRAIN, &otermios);
+}
+
+void
+ttopen(void)
+{
+	vl_save_tty();
+
+#if !DISP_X11
+#if HAVE_SETVBUF
+# if SETVBUF_REVERSED
+	setvbuf(stdout, _IOFBF, tobuf, TBUFSIZ);
+# else
+	setvbuf(stdout, tobuf, _IOFBF, TBUFSIZ);
+# endif
+#else /* !HAVE_SETVBUF */
+	setbuffer(stdout, tobuf, TBUFSIZ);
+#endif /* !HAVE_SETVBUF */
+#endif /* !DISP_X11 */
 
 	/* this could probably be done more POSIX'ish? */
 #if OPT_SHELL && defined(SIGTSTP) && defined(SIGCONT)
@@ -316,8 +331,7 @@ ttclean(int f)
 		kbd_openup();
 
 	(void)fflush(stdout);
-	tcdrain(1);
-	tcsetattr(0, TCSADRAIN, &otermios);
+	vl_restore_tty();
 	term.flush();
 	term.close();
 	term.kclose();
@@ -351,13 +365,9 @@ char tobuf[TBUFSIZ];		/* terminal output buffer */
 #endif
 
 void
-ttopen(void)
+vl_save_tty(void)
 {
-
 	ioctl(0, TCGETA, (char *)&otermio);	/* save old settings */
-#if HAVE_SETBUFFER && !DISP_X11
-	setbuffer(stdout, tobuf, TBUFSIZ);
-#endif
 
 	intrc =   otermio.c_cc[VINTR];
 	killc =   otermio.c_cc[VKILL];
@@ -366,14 +376,36 @@ ttopen(void)
 	backspc = otermio.c_cc[VERASE];
 	wkillc =  tocntrl('W');
 
+#if SIGTSTP
+#ifdef V_SUSP
+	suspc = otermio.c_cc[V_SUSP];
+#else
+	suspc = -1;
+#endif
+#else /* no SIGTSTP */
+	suspc =   tocntrl('Z');
+#endif
+}
+
+void
+vl_restore_tty(void)
+{
+	ioctl(0, TCSETAF, (char *)&otermio);
+}
+
+void
+ttopen(void)
+{
+	vl_save_tty();
+
+#if HAVE_SETBUFFER && !DISP_X11
+	setbuffer(stdout, tobuf, TBUFSIZ);
+#endif
 
 #if SIGTSTP
 /* be careful here -- VSUSP is sometimes out of the range of the c_cc array */
 #ifdef V_SUSP
 	ntermio.c_cc[V_SUSP] = -1;
-	suspc = otermio.c_cc[V_SUSP];
-#else
-	suspc = -1;
 #endif
 #ifdef V_DSUSP
 	ntermio.c_cc[V_DSUSP] = -1;
@@ -385,8 +417,6 @@ ttopen(void)
 #endif
 	setup_handler(SIGTTOU,SIG_IGN);		/* ignore output prevention */
 
-#else /* no SIGTSTP */
-	suspc =   tocntrl('Z');
 #endif
 
 #if ! DISP_X11
@@ -405,7 +435,6 @@ ttopen(void)
 
 	ttmiscinit();
 	ttunclean();
-
 }
 
 /* we disable the flow control chars so we can use ^S as a command, but
@@ -441,7 +470,7 @@ ttclean(int f)
 	term.flush();
 	term.close();
 	term.kclose();	/* xterm */
-	ioctl(0, TCSETAF, (char *)&otermio);
+	vl_restore_tty();
 #if USE_FCNTL
 	set_kbd_polling(FALSE);
 #endif
@@ -477,11 +506,41 @@ struct tchars	otchars;	/* Saved terminal special character set */
 struct tchars	ntchars; /*  = { -1, -1, -1, -1, -1, -1 }; */
 
 void
-ttopen(void)
+vl_save_tty(void)
 {
-	ioctl(0,TIOCGETP,(char *)&ostate);	/* save old state */
+	ioctl(0,TIOCGETP, (char *)&ostate);	/* save old state */
 	killc = ostate.sg_kill;
 	backspc = ostate.sg_erase;
+
+	ioctl(0, TIOCGETC, (char *)&otchars);	/* Save old characters */
+	intrc =  otchars.t_intrc;
+	startc = otchars.t_startc;
+	stopc =  otchars.t_stopc;
+
+	ioctl(0, TIOCGLTC, (char *)&oltchars);	/* Save old characters */
+	wkillc = oltchars.t_werasc;
+	suspc = oltchars.t_suspc;
+
+#ifdef	TIOCLGET
+	ioctl(0, TIOCLGET, (char *)&olstate);
+#endif
+}
+
+void
+vl_restore_tty(void)
+{
+	ioctl(0, TIOCSETN, (char *)&ostate);
+	ioctl(0, TIOCSETC, (char *)&otchars);
+	ioctl(0, TIOCSLTC, (char *)&oltchars);
+#ifdef	TIOCLSET
+	ioctl(0, TIOCLSET, (char *)&olstate);
+#endif
+}
+
+void
+ttopen(void)
+{
+	vl_save_tty();
 
 #if ! DISP_X11
 	nstate = ostate;
@@ -494,11 +553,6 @@ ttopen(void)
 	rnstate.sg_flags &= ~CBREAK;
 	rnstate.sg_flags |= RAW;
 
-	ioctl(0, TIOCGETC, (char *)&otchars);	/* Save old characters */
-	intrc =  otchars.t_intrc;
-	startc = otchars.t_startc;
-	stopc =  otchars.t_stopc;
-
 #if ! DISP_X11
 	ntchars = otchars;
 	ntchars.t_brkc = -1;
@@ -506,36 +560,24 @@ ttopen(void)
 	ntchars.t_startc = -1;
 	ntchars.t_stopc = -1;
 	ioctl(0, TIOCSETC, (char *)&ntchars);	/* Place new character into K */
-#endif
-
-	ioctl(0, TIOCGLTC, (char *)&oltchars);	/* Save old characters */
-	wkillc = oltchars.t_werasc;
-	suspc = oltchars.t_suspc;
-#if ! DISP_X11
 	ioctl(0, TIOCSLTC, (char *)&nltchars);	/* Place new character into K */
-#endif
 
 #ifdef	TIOCLGET
-	ioctl(0, TIOCLGET, (char *)&olstate);
-#if ! DISP_X11
 	nlstate = olstate;
 	nlstate |= LLITOUT;
 	ioctl(0, TIOCLSET, (char *)&nlstate);
 #endif
-#endif
-#if USE_FIONREAD
-	setbuffer(stdout, tobuf, TBUFSIZ);
-#endif
-#if ! DISP_X11
 
 #if OPT_SHELL
 	setup_handler(SIGTSTP,SIG_DFL);		/* set signals so that we can */
 	setup_handler(SIGCONT,rtfrmshell);	/* suspend & restart */
 #endif
 	setup_handler(SIGTTOU,SIG_IGN);		/* ignore output prevention */
-
 #endif
 
+#if USE_FIONREAD
+	setbuffer(stdout, tobuf, TBUFSIZ);
+#endif
 	ttmiscinit();
 }
 
@@ -575,12 +617,7 @@ ttclean(int f)
 	term.flush();
 	term.close();
 	term.kclose();	/* xterm */
-	ioctl(0, TIOCSETN, (char *)&ostate);
-	ioctl(0, TIOCSETC, (char *)&otchars);
-	ioctl(0, TIOCSLTC, (char *)&oltchars);
-#ifdef	TIOCLSET
-	ioctl(0, TIOCLSET, (char *)&olstate);
-#endif
+	vl_restore_tty();
 #if SYS_APOLLO
 	term.flush();
 #endif
@@ -1028,16 +1065,13 @@ ttopen(void)
 	term.cols = newmode[0]>>16;
 
 #endif
-
 	/* make sure backspace is bound to backspace */
 	asciitbl[backspc] = &f_backchar_to_bol;
-
 }
 
 void
 ttclose(void)
 {
-
 #if	SYS_VMS
 	/*
 	 * Note: this code used to check for errors when closing the output,

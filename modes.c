@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.208 2001/01/06 12:25:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.209 2001/01/22 23:33:44 tom Exp $
  *
  */
 
@@ -204,7 +204,9 @@ same_val(const struct VALNAMES *names, struct VAL *tst, struct VAL *ref)
 		  &&	(ref->vp->p != 0)
 		  &&	!strcmp(tst->vp->p, ref->vp->p);
 	case VALTYPE_REGEX:
-		return	(tst->vp->r->pat != 0)
+		return	(tst->vp->r != 0)
+		  &&	(ref->vp->r != 0)
+		  &&   	(tst->vp->r->pat != 0)
 		  &&	(ref->vp->r->pat != 0)
 		  &&	!strcmp(tst->vp->r->pat, ref->vp->r->pat);
 	default:

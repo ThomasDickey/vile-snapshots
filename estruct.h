@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.459 2000/12/04 02:08:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.460 2001/01/21 23:07:22 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1152,6 +1152,7 @@ typedef enum {
 #if OPT_WIDE_CTYPES
 	, vl_SCRTCH
 	, vl_SHPIPE
+	, vl_XDIGIT
 #endif
 	, vl_UNUSED
 } VL_CTYPES;
@@ -1175,6 +1176,7 @@ typedef enum {
 #if OPT_WIDE_CTYPES
 #define vl_scrtch   chrBIT(vl_SCRTCH)	/* legal in scratch-buffer names */
 #define vl_shpipe   chrBIT(vl_SHPIPE)	/* legal in shell/pipe-buffer names */
+#define vl_xdigit   chrBIT(vl_XDIGIT)	/* hex digit */
 
 #define	SCREEN_STRING (vl_pathn|vl_scrtch|vl_shpipe)
 typedef	ULONG CHARTYPE;
@@ -1199,6 +1201,7 @@ typedef USHORT CHARTYPE;
 #define isPunct(c)	istype(vl_punct, c)
 #define isSpace(c)	istype(vl_space, c)
 #define isUpper(c)	istype(vl_upper, c)
+#define isXDigit(c)	istype(vl_xdigit, c)
 
 #define isbackspace(c)	(istype(vl_bspace, c) || (c) == backspc)
 #define isfence(c)	istype(vl_fence, c)
@@ -1255,7 +1258,7 @@ typedef struct regexp {
 	char regstart;		/* Internal use only. */
 	char reganch;		/* Internal use only. */
 	int regmust;		/* Internal use only. */
-	int regmlen;		/* Internal use only. */
+	unsigned regmlen;	/* Internal use only. */
 	SIZE_T size;		/* vile addition -- how big is this */
 	char program[1];	/* Unwarranted chumminess with compiler. */
 } regexp;
