@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.82 1998/07/22 00:54:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.83 1998/07/29 02:07:24 tom Exp $
  *
  */
 
@@ -879,9 +879,9 @@ newlength(int f, int n)	/* resize the screen, re-writing the screen */
 		return(FALSE);
 	}
 
-	if (term.t_nrow == n)
+	if (term.t_nrow == n) {
 		return(TRUE);
-	else if (term.t_nrow < n) {
+	} else if (wheadp != 0 && term.t_nrow < n) {
 
 		/* go to the last window */
 		wp = wheadp;

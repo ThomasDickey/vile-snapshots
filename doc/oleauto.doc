@@ -1,0 +1,130 @@
+                           OLE Automation Support
+                           ======================
+Winvile can be built and configured to execute as an OLE Automation server.
+The following steps are required:
+
+   1) build a version of winvile that supports OLE,
+   2) configure winvile as a server, and
+   3) use an OLE automation client to invoke and manipulate winvile.
+
+
+Build Syntax
+============
+By default, winvile is _not_ built with OLE Automation enabled, but this
+command adds that feature:
+
+    nmake -f makefile.wnt CFG=winvile OPT=ole-auto
+
+Or, if an embedded perl support is desired, use this syntax:
+
+    nmake -f makefile.wnt CFG=winvile-with-perl OPT=ole-auto
+
+
+Minimal Configuration
+=====================
+OLE Automation support is not available until the Windows registry has been
+updated with various configuration information.  The simplest method of
+registration is to:
+
+    a) copy winvile.exe to some directory in your PATH, and then
+    b) execute this command:
+
+            winvile -Or
+
+Step b) registers winvile as an OLE automation server that will be launched
+(by a client) with _no_ command line options, which implies these server
+attributes:
+
+    - editor geometry is 24 rows by 80 columns
+    - editor visible
+    - a single server instance (i.e., no matter how many clients create a
+      winvile server object, there will be at most one server instance).
+
+There are, however, a number of command line options that can be specified
+during registration and which subsequently affect the launched winvile
+server.
+
+
+Registration Options
+====================
+The complete registration syntax is:
+
+    winvile -Or [-geometry <rows>x<cols>] [-multiple] [-invisible]
+
+where:
+
+    -geometry <rows>x<cols>   specifies the editor's window geometry.
+    -invisible                launched server(s) are invisible and must be
+                                  made visible via the application's Visible
+                                  property.
+    -multiple                 each client creates a new, unique server
+                                  instance.
+
+
+Example Automation Client Access
+================================
+Perl Access
+    use Win32::OLE;
+    $vile = new Win32::OLE 'Winvile.Application';
+    $vile->VileKeys(":show-bindings\n");
+    $vile->{Visible} = 1;           # may not be necessary
+    print "sleeping for 3 seconds\n";
+    sleep(3);
+    $vile->VileKeys(":buffer [unnamed]\n");
+    $vile->VileKeys(":r c:/config.sys\n");
+    sleep(3);
+    print "killing vile\n";
+    $vile->Quit();
+    exit
+
+VB Access
+    Private VileObj As Winvile.Application
+
+    Private Sub Form_Load()
+    Set VileObj = New Winvile.Application
+    VileObj.Visible = True           ' may not be necessary
+    VileObj.VileKeys (":help" + vbLf)
+    End Sub
+
+    Private Sub Quit_Click()
+    VileObj.Quit                     ' Kill the server (winvile)
+    End
+    End Sub
+
+
+Server Properties And Methods
+=============================
+Application         -- [out] Returns the application object.
+
+ForegroundWindow()  -- Makes the editor the foreground window.  Note that NT5
+                       has redefined the behavior of SetForegroundWindow().
+
+FullName            -- [out] Returns the path of the application.
+
+Minimize()          -- Minimizes the editor.
+
+Name()              -- [out] Returns the name of the application.
+
+Parent()            -- Returns the parent of the application object.
+
+Quit()              -- Exits the editor.
+
+Restore()           -- Restores the editor's window.
+
+VileKeys([in] keys) -- Sends keystrokes to the editor.  Note that this method
+                       is implemented by using PostMessage() to send a
+                       WM_CHAR message for _each_ character in the "keys"
+                       string.  In other words, this is not an efficient
+                       method and should not be used to create large files.
+
+Visible             -- [in, out] Sets or returns the editor's visibility.
+
+Note:  ForegroundWindow(), Minimize(), and Restore() implicitly force an
+       Invisible server to the Visible state.
+
+
+Unregistering The Server
+========================
+To unregister winvile as an OLE automation server, execute this command:
+
+    winvile -Ou

@@ -1,5 +1,17 @@
 Changes for vile 8.1 (released ??? ??? ??, 1998)
 
+ (tom) 980816 (j)
+
+ 	+ implement a simple usage/popup for winvile.
+ 	+ correct a problem with cursor-droppings in winvile when the mouse
+	  is clicked on the modeline.
+ 	+ implement scrollbars for winvile (ntwinio.c)
+	> patches by Clark Morgan:
+	+ changes to allow winvile to be built as an OLE automation server. 
+	  Included with this patch are several new files, including one called
+	  doc/oleauto.doc, which describes the build process and the relevant
+	  server options/features. 
+
  (tom) 980727 (i)
 	+ modify makefile.djg to use -f option of rm, to work with djgpp 2.x
 	+ updated dependencies in makefile.wnt (patch by Clark Morgan).
