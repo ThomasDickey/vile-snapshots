@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.128 1996/10/03 01:02:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.129 1996/10/15 01:25:02 tom Exp $
  *
  */
 
@@ -51,11 +51,11 @@ typedef struct WHBLOCK {
 /* directive name table:
 	This holds the names of all the directives....	*/
 
+#if !SMALLER
 static	const struct {
 		const DIRECTIVE type;
 		const char *const name;
 	} dname[] = {
-#if ! SMALLER
 	{ D_IF,       "if" },
 	{ D_ELSEIF,   "elseif" },
 	{ D_ELSE,     "else" },
@@ -66,9 +66,9 @@ static	const struct {
 	{ D_ENDWHILE, "endwhile" },
 	{ D_BREAK,    "break" },
 	{ D_FORCE,    "force" },
-#endif
 	{ D_ENDM,     "endm" }
 	};
+#endif
 
 static int token_ended_line;  /* did the last token end at end of line? */
 
@@ -1561,6 +1561,11 @@ setup_dobuf(BUFFER *bp, WHBLOCK **result)
 	}
 	return status;	/* true iff we made it to the end w/o errors */
 }
+#else
+#define dname_to_dirnum(eline) \
+		(eline[0] == DIRECTIVE_CHAR && !strcmp(eline+1, "endm") \
+		? D_ENDM \
+		: D_UNKNOWN)
 #endif
 
 static int
@@ -1617,7 +1622,7 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 				src++;
 			while ((*dst++ = *src++) != EOS)
 				;
-			linlen -= (src - dst);
+			linlen -= (SIZE_T)(src - dst);
 		}
 
 		/*
@@ -1627,7 +1632,7 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 		if (lforw(lp) != buf_head(bp)
 		 && linlen != 0
 		 && eline[linlen-1] == '\\') {
-			glue = linlen + (eline - einit) - 1;
+			glue = linlen + (SIZE_T)(eline - einit) - 1;
 			continue;
 		}
 		eline = einit;

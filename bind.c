@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.139 1996/10/03 01:02:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.140 1996/10/15 01:17:22 tom Exp $
  *
  */
 
@@ -59,6 +59,13 @@ static	KBIND	*KeyBindings = kbindtbl;
 #endif
 
 /*----------------------------------------------------------------------------*/
+
+int
+no_such_function(const char * fnp)
+{
+	mlforce("[No such function \"%s\"]", fnp != 0 ? fnp : "");
+	return FALSE;
+}
 
 /* give me some help!!!! bring up a buffer and read the help file into it */
 /* ARGSUSED */
@@ -241,13 +248,6 @@ char *s)	/* string to output */
 }
 
 /* bindkey:	add a new key to the key binding table		*/
-
-int
-no_such_function(const char * fnp)
-{
-	mlforce("[No such function \"%s\"]", fnp != 0 ? fnp : "");
-	return FALSE;
-}
 
 /* ARGSUSED */
 int

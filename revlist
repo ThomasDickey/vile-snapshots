@@ -1,19 +1,19 @@
-revlist for vile-6.1d, version v6_1d
+revlist for vile, version v6_2
 --------------------------------------------------------------------------------
-CHANGES	1.12
+CHANGES	1.13
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
 COPYING	1.1
 INSTALL	1.5
 MANIFEST	none
-README	1.54
+README	1.55
 README.CFG	1.10
 README.PC	1.11
 aclocal.m4	1.21
 ansi.c	1.28
 basic.c	1.92
-bind.c	1.139
+bind.c	1.140
 borland.c	1.17
 buffer.c	1.149
 buglist	1.314
@@ -32,11 +32,11 @@ dirstuff.h	1.22
 display.c	1.220
 djhandl.c	1.5
 dumbterm.c	1.8
-edef.h	1.200
+edef.h	1.201
 epath.h	1.20
 estruct.h	1.291
 eval.c	1.134
-exec.c	1.128
+exec.c	1.129
 externs.c	1.5
 fences.c	1.39
 file.c	1.197
@@ -79,14 +79,14 @@ oneliner.c	1.80
 opers.c	1.56
 os2pipe.c	1.1
 os2vio.c	1.8
-patchlev.h	1.9
+patchlev.h	1.10
 path.c	1.75
 pictmode.rc	1.1
 proto.h	1.228
 random.c	1.182
 regexp.c	1.59
 region.c	1.79
-revlist	v6_1d
+revlist	v6_2
 search.c	1.101
 select.c	1.51
 spawn.c	1.114
@@ -98,7 +98,7 @@ tipc.c	1.1
 undo.c	1.65
 version.c	1.33
 vile.1	1.15
-vile.hlp	1.300
+vile.hlp	1.301
 vms2unix.c	1.18
 vmsbuild.com	1.11
 vmspipe.c	1.12
