@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.506 2003/05/27 00:33:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.507 2003/06/11 23:37:51 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1690,6 +1690,7 @@ siginit(int enabled)
 	int signo;
 	void (*handler) (int ACTUAL_SIG_ARGS);
     } table[] = {
+	{ 0, 0 },		/* just for VMS */
 #if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
 #if defined(SIGINT)
 	{ SIGINT, catchintr },
@@ -1728,7 +1729,7 @@ siginit(int enabled)
 
     unsigned n;
 
-    for (n = 0; n < TABLESIZE(table); ++n) {
+    for (n = 1; n < TABLESIZE(table); ++n) {
 	if (enabled)
 	    setup_handler(table[n].signo, table[n].handler);
 	else if (table[n].handler == imdying)

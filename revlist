@@ -1,6 +1,6 @@
-revlist for vile, version v9_3q
+revlist for vile, version v9_3r
 --------------------------------------------------------------------------------
-CHANGES	1.722
+CHANGES	1.723
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -39,7 +39,7 @@ display.c	1.377
 djhandl.c	1.6
 dumbterm.c	1.17
 edef.h	1.312
-estruct.h	1.533
+estruct.h	1.534
 eval.c	1.322
 exec.c	1.258
 externs.c	1.8
@@ -60,7 +60,7 @@ isearch.c	1.58
 itbuff.c	1.17
 lckfiles.c	1.11
 line.c	1.159
-main.c	1.506
+main.c	1.507
 makefile.blc	1.17
 makefile.djg	1.31
 makefile.emx	1.5
@@ -85,16 +85,16 @@ opers.c	1.87
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.29
-patchlev.h	1.298
+patchlev.h	1.299
 path.c	1.135
 perl.xs	1.89
 proto.h	1.518
 pscreen.h	1.1
 ptypemap	1.7
 random.c	1.272
-regexp.c	1.106
+regexp.c	1.107
 region.c	1.125
-revlist	v9_3q
+revlist	v9_3r
 search.c	1.134
 select.c	1.144
 sinstall.sh	1.1
@@ -110,7 +110,7 @@ trace.h	1.20
 ucrypt.c	1.15
 undo.c	1.84
 version.c	1.54
-vile-9.3.spec	1.15
+vile-9.3.spec	1.16
 vile.1	1.30
 vile.hlp	1.566
 vile.wmconfig	1.1
