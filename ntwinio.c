@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.37 1998/11/11 21:56:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.39 1999/03/20 18:57:12 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -2485,10 +2485,10 @@ WinMain(
 	LPSTR lpCmdLine,
 	int nCmdShow)
 {
-#define MAXARGS 12
 	int argc = 0;
 	int n;
-	char *argv[MAXARGS];
+	int maxargs = (strlen(lpCmdLine) + 1) / 2;
+	char **argv = typeallocn(char *, maxargs);
 	char *ptr, *fontstr;
 #ifdef VILE_OLE
 	int oa_invoke, oa_reg;
@@ -2514,7 +2514,7 @@ WinMain(
 		}
 		TRACE(("argv%d:%s\n", argc, ptr))
 		argv[argc++] = ptr;
-		if (argc+1 >= MAXARGS) {
+		if (argc+1 >= maxargs) {
 			break;
 		}
 		while (*ptr != delim && *ptr != '\0')

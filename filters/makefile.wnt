@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.3 1999/01/25 19:32:30 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.4 1999/03/20 19:46:44 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -16,12 +16,38 @@ LEX_OUTPUT_ROOT = lex.yy
 CON_LDFLAGS  = -nologo -pdb:none
 
 !IF  "$(LEX)" == ""
-UTILS    = vile-c-filt.exe
+UTILS =	vile-c-filt.exe
+KEYS =	vile.key c.key
 !ELSE
-UTILS    = vile-c-filt.exe \
-	   vile-lex-filt.exe \
-	   vile-make-filt.exe \
-	   vile-vile-filt.exe
+UTILS = \
+	vile-bat-filt.exe \
+	vile-c-filt.exe \
+	vile-lex-filt.exe \
+	vile-make-filt.exe \
+	vile-vile-filt.exe
+KEYS	= \
+	ada.key \
+	awk.key \
+	bat.key \
+	c.key \
+	dcl.key \
+	html.key \
+	java.key \
+	js.key \
+	latex.key \
+	lex.key \
+	mail.key \
+	make.key \
+	nr.key \
+	pas.key \
+	perl.key \
+	sh.key \
+	sql.key \
+	tc.key \
+	tcl.key \
+	ti.key \
+	vile.key \
+	yacc.key
 !endif
 
 CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 -I.
@@ -40,15 +66,35 @@ CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 -I.
 
 all: $(UTILS)
 
+!if "$(VILE_LIBDIR_PATH)" == ""
+install :
+	@ echo Sorry, you have not set VILE_LIBDIR_PATH
+!else
+install :: $(UTILS)
+	echo installing $(UTILS) in $(VILE_LIBDIR_PATH)
+	!copy $** $(VILE_LIBDIR_PATH)\$**
+install :: $(KEYS)
+	echo installing $(KEYS) in $(VILE_LIBDIR_PATH)
+	!copy $** $(VILE_LIBDIR_PATH)\$**words
+uninstall :: $(UTILS)
+	echo uninstalling $(UTILS) in $(VILE_LIBDIR_PATH)
+	!erase $(VILE_LIBDIR_PATH)\$**
+uninstall :: $(KEYS)
+	echo uninstalling $(KEYS) in $(VILE_LIBDIR_PATH)
+	!erase $(VILE_LIBDIR_PATH)\$**words
+!endif
+
 LF_DEPS = filters.obj
 LF_ARGS = filters.obj $(LEXLIB)
 
 CF_DEPS	= filters.obj
 CF_ARGS	= filters.obj
 
+vile-bat-filt.exe : bat-filt.obj $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) bat-filt.obj $(LF_ARGS)
+
 vile-c-filt.exe: c-filt.c $(CF_DEPS)
-	$(cc) $(CFLAGS) c-filt.c \
-    -Fovile-c-filt -link $(CON_LDFLAGS) $(CF_ARGS)
+	$(cc) $(CFLAGS) c-filt.c -Fovile-c-filt -link $(CON_LDFLAGS) $(CF_ARGS)
 
 vile-lex-filt.exe : lex-filt.obj $(LF_DEPS)
 	$(link) -out:$@ $(CON_LDFLAGS) lex-filt.obj $(LF_ARGS)
@@ -60,5 +106,5 @@ vile-vile-filt.exe : vilefilt.obj $(LF_DEPS)
 	$(link) -out:$@ $(CON_LDFLAGS) vilefilt.obj $(LF_ARGS)
 
 clean:
-    del *.exe
-    del *.obj
+	del *.exe
+	del *.obj

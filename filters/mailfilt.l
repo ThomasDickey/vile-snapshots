@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.3 1999/03/07 19:19:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.5 1999/03/20 01:42:47 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mail
  */
@@ -45,7 +45,7 @@ do_filter(FILE *input, FILE *output)
     Ident2_attr  = class_attr(NAME_IDENT2);
     String_attr  = class_attr(NAME_LITERAL);
 
-    BEGIN(BODY);
+    BEGIN(HEADER);
     while (yylex() > 0) {
     }
 }
@@ -69,7 +69,7 @@ URL		"http://"[^ ,\n]+
 <HEADER>{LABEL}		{ write_label(yytext, yyleng); }
 <HEADER>^\n		{ ECHO; BEGIN(BODY); }
 
-<BODY>{BEGIN_HEADER}	{ WriteToken(String_attr); BEGIN(HEADER); }
+<HEADER,BODY>{BEGIN_HEADER}	{ WriteToken(String_attr); BEGIN(HEADER); }
 
 {EMAIL}			{ WriteToken(Ident2_attr); }
 {URL}			{ WriteToken(Comment_attr); }

@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.201 1998/12/15 03:01:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.202 1999/03/19 11:25:12 pgf Exp $
  *
  */
 
@@ -297,8 +297,8 @@ typedef struct _text_win {
     XFontStruct *pfont_bold;
     XFontStruct *pfont_ital;
     XFontStruct *pfont_boldital;
-    GC          textgc;
-    GC          reversegc;
+    GC		textgc;
+    GC		reversegc;
     GC		selgc;
     GC		revselgc;
     int		is_color_cursor;
@@ -318,10 +318,10 @@ typedef struct _text_win {
     Pixel	modeline_focus_bg;
     Pixel	selection_fg;
     Pixel	selection_bg;
-    int         char_width,
-                char_ascent,
+    int 	char_width,
+		char_ascent,
 		char_descent,
-                char_height;
+		char_height;
     Bool	left_ink,	/* font has "ink" past bounding box on left */
 		right_ink;	/* font has "ink" past bounding box on right */
     char       *geometry;
@@ -336,10 +336,10 @@ typedef struct _text_win {
     Bool	selection_sets_DOT;
 
     /* text stuff */
-    Bool        reverse;
+    Bool	reverse;
     unsigned    rows,
-                cols;
-    Bool        show_cursor;
+		cols;
+    Bool	show_cursor;
 
     /* cursor stuff */
     Pixel	cursor_fg;
@@ -356,10 +356,10 @@ typedef struct _text_win {
 
     /* selection stuff */
     String	multi_click_char_class;	/* ?? */
-    Time        lasttime;	/* for multi-click */
-    Time        click_timeout;
-    int         numclicks;
-    Bool        have_selection;
+    Time	lasttime;	/* for multi-click */
+    Time	click_timeout;
+    int 	numclicks;
+    Bool	have_selection;
     Bool	wipe_permitted;
     Bool	was_on_msgline;
     Bool	did_select;
@@ -377,7 +377,7 @@ typedef struct _text_win {
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
     XtTranslations my_resizeGrip_trans;
 #endif
-}           TextWindowRec, *TextWindow;
+}	    TextWindowRec, *TextWindow;
 
 
 static	TextWindowRec cur_win_rec;
@@ -425,8 +425,7 @@ struct eventqueue {
 static struct eventqueue *evqhead = NULL;
 static struct eventqueue *evqtail = NULL;
 
-static	int	x_getc   (void),
-		x_cres   ( const char *flag );
+static	int	x_getc   (void);
 
 static	void	x_open   (void),
 		x_close  (void),
@@ -513,7 +512,7 @@ static	void	evqadd(const XEvent *evp);
 
 #define	FONTNAME	"7x13"
 
-TERM        term = {
+TERM	    term = {
     0,				/* these four values are set dynamically at
 				 * open time */
     0,
@@ -524,8 +523,8 @@ TERM        term = {
     0,
     x_open,
     x_close,
-    x_kopen,
-    x_kclose,
+    null_kopen,
+    null_kclose,
     x_getc,
     psc_putchar,
     tttypahead,
@@ -535,14 +534,9 @@ TERM        term = {
     psc_eeop,
     x_beep,
     x_rev,
-    x_cres,
-#if OPT_COLOR
-    x_fcol,
-    x_bcol,
-#else
+    null_cres,
     null_t_setfor,
     null_t_setback,
-#endif
     null_t_setpal,		/* no palette */
     x_scroll,
     x_flush,
@@ -726,7 +720,7 @@ JumpProc(
 	return;
     set_scroll_window(value);
     mvupwind(TRUE,
-             line_no(curwp->w_bufp, curwp->w_line.l) - cbs->new_location);
+	     line_no(curwp->w_bufp, curwp->w_line.l) - cbs->new_location);
     dont_update_sb = TRUE;
     (void)update(TRUE);
     dont_update_sb = FALSE;
@@ -794,10 +788,10 @@ update_scrollbar_sizes(void)
     /* Unmanage current set of scrollbars */
     if (cur_win->nscrollbars > 0)
 	XtUnmanageChildren(cur_win->scrollbars,
-	                   (Cardinal) (cur_win->nscrollbars));
+			   (Cardinal) (cur_win->nscrollbars));
     if (cur_win->nscrollbars > 1)
 	XtUnmanageChildren(cur_win->sliders,
-	                   (Cardinal) (cur_win->nscrollbars - 1));
+			   (Cardinal) (cur_win->nscrollbars - 1));
 
     /* Set sizes and positions on scrollbars and sliders */
     cur_win->nscrollbars = newsbcnt;
@@ -838,7 +832,7 @@ update_scrollbar_sizes(void)
 
     /* Manage the current set of scrollbars */
     XtManageChildren(cur_win->scrollbars,
-	                   (Cardinal) (cur_win->nscrollbars));
+			   (Cardinal) (cur_win->nscrollbars));
 
 
     for (i=0; i<cur_win->nscrollbars; i++)
@@ -911,9 +905,9 @@ update_scrollbar_sizes(void)
 		    XmNtranslations,	cur_win->my_scrollbars_trans,
 		    NULL);
 	    XtAddCallback(cur_win->scrollbars[i],
-	            XmNvalueChangedCallback, JumpProc, (XtPointer) i);
+		    XmNvalueChangedCallback, JumpProc, (XtPointer) i);
 	    XtAddCallback(cur_win->scrollbars[i],
-	            XmNdragCallback, JumpProc, (XtPointer) i);
+		    XmNdragCallback, JumpProc, (XtPointer) i);
 	    XtAddEventHandler(
 		    cur_win->scrollbars[i],
 		    StructureNotifyMask,
@@ -925,7 +919,7 @@ update_scrollbar_sizes(void)
     /* Unmanage current set of scrollbars */
     if (cur_win->nscrollbars >= 0)
 	XtUnmanageChildren(cur_win->scrollbars,
-	                   (Cardinal) (cur_win->nscrollbars + 1));
+			   (Cardinal) (cur_win->nscrollbars + 1));
 
     /* Set sizes on scrollbars */
     cur_win->nscrollbars = newsbcnt;
@@ -953,7 +947,7 @@ update_scrollbar_sizes(void)
 
     /* Manage the current set of scrollbars */
     XtManageChildren(cur_win->scrollbars,
-	                   (Cardinal) (cur_win->nscrollbars + 1));
+			   (Cardinal) (cur_win->nscrollbars + 1));
 
     /* Add event handlers for sashes */
     XtVaGetValues(cur_win->pane,
@@ -985,11 +979,11 @@ JumpProc(
     float *percent = (float *)call_data;
 
     if (value < cur_win->nscrollbars) {
-        set_scroll_window(value);
-        lcur = line_no(curwp->w_bufp, curwp->w_line.l);
+	set_scroll_window(value);
+	lcur = line_no(curwp->w_bufp, curwp->w_line.l);
 	lmax = line_count(curwp->w_bufp);
-        mvupwind(TRUE, (int)(lcur - lmax * (*percent)));
-        (void)update(TRUE);
+	mvupwind(TRUE, (int)(lcur - lmax * (*percent)));
+	(void)update(TRUE);
     }
 }
 
@@ -1003,9 +997,9 @@ ScrollProc(
     long position = (long)call_data;
 
     if (value < cur_win->nscrollbars) {
-        set_scroll_window(value);
+	set_scroll_window(value);
 	forwline(TRUE, (position / cur_win->char_height));
-        (void)update(TRUE);
+	(void)update(TRUE);
     }
 }
 #endif
@@ -1058,7 +1052,7 @@ update_scrollbar_sizes(void)
     /* Unmanage current set of scrollbars */
     if (cur_win->nscrollbars > 0)
 	XtUnmanageChildren(cur_win->scrollbars,
-	                   (Cardinal) (cur_win->nscrollbars));
+			   (Cardinal) (cur_win->nscrollbars));
 
     /* Set sizes and positions on scrollbars and grips */
     cur_win->nscrollbars = newsbcnt;
@@ -1096,10 +1090,10 @@ update_scrollbar_sizes(void)
 
     /* Manage the current set of scrollbars */
     XtManageChildren(cur_win->scrollbars,
-	                   (Cardinal) (cur_win->nscrollbars));
+			   (Cardinal) (cur_win->nscrollbars));
 
     XtManageChildren(cur_win->grips,
-	                   (Cardinal) (cur_win->nscrollbars - 1));
+			   (Cardinal) (cur_win->nscrollbars - 1));
 
     for (i=0; i<cur_win->nscrollbars; i++)
 	XRaiseWindow(dpy, XtWindow(cur_win->scrollbars[i]));
@@ -1179,7 +1173,7 @@ update_scrollbar_sizes(void)
 	    XtNy,		wp->w_toprow * cur_win->char_height,
 	    XtNheight,		new_height,
 	    XtNwidth,		cur_win->pane_width
-	                           + (cur_win->slider_is_3D ? 2 : 0),
+				   + (cur_win->slider_is_3D ? 2 : 0),
 	    NULL);
 	cur_win->scrollinfo[i].totlen = new_height;
 	if (wp->w_wndp) {
@@ -1258,7 +1252,7 @@ draw_thumb(
 
     if (!dofill)
 	XClearArea(XtDisplay(w), XtWindow(w), cur_win->slider_is_3D ? 2 : 1,
-	           top, cur_win->pane_width-2, length, FALSE);
+		   top, cur_win->pane_width-2, length, FALSE);
     else if (!cur_win->slider_is_3D)
 	XFillRectangle(XtDisplay(w), XtWindow(w), cur_win->scrollbargc,
 		       1, top, cur_win->pane_width-2, length);
@@ -1280,7 +1274,7 @@ draw_thumb(
 	if (dofill & FILL_BOT) {
 	    int btop = max(top, bot-(SP_HT-2));
 	    XCopyArea(dpy, cur_win->slider_pixmap, XtWindow(w),
-	              cur_win->scrollbargc,
+		      cur_win->scrollbargc,
 		      0, SP_HT - (bot-btop),
 		      cur_win->pane_width-2, (unsigned int) (bot - btop),
 		      2, btop);
@@ -1289,7 +1283,7 @@ draw_thumb(
 	}
 	if (top < bot) {
 	    XFillRectangle(XtDisplay(w), XtWindow(w), cur_win->scrollbargc,
-		           2, top,
+			   2, top,
 			   cur_win->pane_width-2, (unsigned int) (bot-top));
 	}
     }
@@ -1324,7 +1318,7 @@ update_thumb(
 	if (newtop < oldtop) {
 	    int tbot = min(newbot, oldtop+f);
 	    draw_thumb(w, newtop, tbot,
-	               FILL_TOP | ((tbot == newbot) ? FILL_BOT : 0));
+		       FILL_TOP | ((tbot == newbot) ? FILL_BOT : 0));
 	}
 	if (newtop > oldtop) {
 	    draw_thumb(w, oldtop, min(newtop, oldbot), 0);
@@ -1339,7 +1333,7 @@ update_thumb(
 	if (newbot > oldbot) {
 	    int btop = max(newtop, oldbot-f);
 	    draw_thumb(w, btop, newbot,
-	               FILL_BOT | ((btop == newtop) ? FILL_TOP : 0));
+		       FILL_BOT | ((btop == newtop) ? FILL_TOP : 0));
 	}
     }
 }
@@ -1831,7 +1825,7 @@ static XtResource resources[] = {
 	XtOffset(TextWindow, fg),
 	XtRString,
 #if OLD_RESOURCES
-        XtDefaultForeground
+	XtDefaultForeground
 #else
 	"#c71bc30bc71b"
 #endif /* OLD_RESOURCES */
@@ -2480,9 +2474,9 @@ x_preparse_args(
     int		i;
     Cardinal	start_cols, start_rows;
     static XrmOptionDescRec options[] = {
-	{"-t",   	(char *)0,          XrmoptionSkipArg,	(caddr_t)0 },
-	{"-fork",   	"*forkOnStartup",   XrmoptionNoArg,	"true" },
-	{"+fork",   	"*forkOnStartup",   XrmoptionNoArg,	"false" },
+	{"-t",		(char *)0,	    XrmoptionSkipArg,	(caddr_t)0 },
+	{"-fork",	"*forkOnStartup",   XrmoptionNoArg,	"true" },
+	{"+fork",	"*forkOnStartup",   XrmoptionNoArg,	"false" },
 	{"-leftbar",	"*scrollbarOnLeft", XrmoptionNoArg,	"true" },
 	{"-rightbar",	"*scrollbarOnLeft", XrmoptionNoArg,	"false" },
     };
@@ -2665,7 +2659,7 @@ x_preparse_args(
 	    0);
 
     /* Initialize atoms needed for getting a fully specified font name */
-    atom_FONT 		= XInternAtom(dpy, "FONT", False);
+    atom_FONT		= XInternAtom(dpy, "FONT", False);
     atom_FOUNDRY	= XInternAtom(dpy, "FOUNDRY", False);
     atom_WEIGHT_NAME	= XInternAtom(dpy, "WEIGHT_NAME", False);
     atom_SLANT		= XInternAtom(dpy, "SLANT", False);
@@ -2828,7 +2822,7 @@ x_preparse_args(
 	    cur_win->form_widget,
 	    XtNwidth,			x_width(cur_win),
 	    XtNheight,			x_height(cur_win),
-	    XtNborderWidth, 		0,
+	    XtNborderWidth,		0,
 	    XtNbackground,		cur_win->bg,
 #if MOTIF_WIDGETS
 	    XmNresizable,		TRUE,
@@ -2883,7 +2877,7 @@ x_preparse_args(
     gcvals.font = cur_win->pfont->fid;
     gcvals.graphics_exposures = False;
     cur_win->textgc = XCreateGC(dpy,
-            DefaultRootWindow(dpy),
+	    DefaultRootWindow(dpy),
 	    gcmask, &gcvals);
     cur_win->exposed    = FALSE;
     cur_win->visibility = VisibilityUnobscured;
@@ -2892,7 +2886,7 @@ x_preparse_args(
     gcvals.background = cur_win->fg;
     gcvals.font = cur_win->pfont->fid;
     cur_win->reversegc = XCreateGC(dpy,
-            DefaultRootWindow(dpy),
+	    DefaultRootWindow(dpy),
 	    gcmask, &gcvals);
 
     for (i = 0; i < NCOLORS; i++) {
@@ -2907,13 +2901,13 @@ x_preparse_args(
 	    gcvals.foreground = cur_win->colors_fg[i];
 	    gcvals.background = cur_win->colors_bg[i];
 	    cur_win->colors_fgc[i] = XCreateGC(dpy,
-		                               DefaultRootWindow(dpy),
-		                               gcmask, &gcvals);
+					       DefaultRootWindow(dpy),
+					       gcmask, &gcvals);
 	    gcvals.foreground = cur_win->colors_bg[i];
 	    gcvals.background = cur_win->colors_fg[i];
 	    cur_win->colors_bgc[i] = XCreateGC(dpy,
-		                               DefaultRootWindow(dpy),
-		                               gcmask, &gcvals);
+					       DefaultRootWindow(dpy),
+					       gcmask, &gcvals);
 	}
     }
 
@@ -2957,8 +2951,8 @@ x_preparse_args(
 	gcvals.foreground = cur_win->modeline_fg;
 	gcvals.background = cur_win->modeline_bg;
 	cur_win->modeline_gc = XCreateGC(dpy,
-		                         DefaultRootWindow(dpy),
-		                         gcmask, &gcvals);
+					 DefaultRootWindow(dpy),
+					 gcmask, &gcvals);
     }
 
     /*
@@ -2977,8 +2971,8 @@ x_preparse_args(
 	gcvals.foreground = cur_win->modeline_focus_fg;
 	gcvals.background = cur_win->modeline_focus_bg;
 	cur_win->modeline_focus_gc = XCreateGC(dpy,
-		                               DefaultRootWindow(dpy),
-		                               gcmask, &gcvals);
+					       DefaultRootWindow(dpy),
+					       gcmask, &gcvals);
     }
 
     /* Initialize cursor graphics context and flag which indicates how to
@@ -3092,21 +3086,21 @@ x_preparse_args(
 	    cur_win->slider_pixmap = XCreatePixmap(dpy, DefaultRootWindow(dpy),
 		    cur_win->pane_width-2, SP_HT, (unsigned int)screen_depth);
 	    XCopyArea(dpy, slider_pixmap, cur_win->slider_pixmap, gc,
-	              0, 0, cur_win->pane_width-2, SP_HT, 0, 0);
+		      0, 0, cur_win->pane_width-2, SP_HT, 0, 0);
 
 	    /* Draw top bevel */
 	    XSetForeground(dpy, gc, fg_light);
 	    XDrawLine(dpy, cur_win->slider_pixmap, gc,
-	              0, 0, (int)cur_win->pane_width-3, 0);
+		      0, 0, (int)cur_win->pane_width-3, 0);
 	    XDrawLine(dpy, cur_win->slider_pixmap, gc,
-	              0, 1, (int)cur_win->pane_width-4, 1);
+		      0, 1, (int)cur_win->pane_width-4, 1);
 
 	    /* Draw bottom bevel */
 	    XSetForeground(dpy, gc, fg_dark);
 	    XDrawLine(dpy, cur_win->slider_pixmap, gc,
-	              2, SP_HT-2, (int)cur_win->pane_width-3, SP_HT-2);
+		      2, SP_HT-2, (int)cur_win->pane_width-3, SP_HT-2);
 	    XDrawLine(dpy, cur_win->slider_pixmap, gc,
-	              1, SP_HT-1, (int)cur_win->pane_width-3, SP_HT-1);
+		      1, SP_HT-1, (int)cur_win->pane_width-3, SP_HT-1);
 
 	    XFreeGC(dpy, gc);
 	}
@@ -3123,7 +3117,7 @@ x_preparse_args(
 	    cur_win->form_widget,
 	    XtNwidth,			cur_win->pane_width,
 	    XmNbottomAttachment,	XmATTACH_FORM,
-	    XmNtraversalOn,		False, /* Added by gdr */ 
+	    XmNtraversalOn,		False, /* Added by gdr */
 #if OPT_MENUS
 	    XmNtopAttachment,		XmATTACH_WIDGET,
 	    XmNtopWidget,		menub,
@@ -3328,7 +3322,7 @@ check_visuals(void)
 	int i;
 	for (i=0; i<nvisuals; i++) {
 	    printf("Class: %s, Depth: %d\n",
-	           classes[visuals[i].class], visuals[i].depth);
+		   classes[visuals[i].class], visuals[i].depth);
 	}
 	XFree(visuals);
     }
@@ -3352,7 +3346,7 @@ too_light_or_too_dark(
     XQueryColor(dpy, colormap, &color);
 
     return (color.red > 0xfff0 && color.green > 0xfff0 && color.blue > 0xfff0)
-        || (color.red < 0x0020 && color.green < 0x0020 && color.blue < 0x0020);
+	|| (color.red < 0x0020 && color.green < 0x0020 && color.blue < 0x0020);
 }
 #endif
 
@@ -3757,7 +3751,7 @@ x_close(void)
     /* FIXME: Free pixmaps and GCs !!! */
 
     if(cur_win->top_widget)
-    	XtDestroyWidget(cur_win->top_widget);
+	XtDestroyWidget(cur_win->top_widget);
 }
 
 static void
@@ -3800,10 +3794,10 @@ wait_for_scroll(
     TextWindow  tw)
 {
     XEvent      ev;
-    int         sc,
-                sr;
+    int 	sc,
+		sr;
     unsigned    ec,
-                er;
+		er;
     XGraphicsExposeEvent *gev;
 
     for_ever {		/* loop looking for a gfx expose or no expose */
@@ -3928,7 +3922,7 @@ flush_line(
 	if ((attr & (VABOLD | VAITAL)) == (VABOLD | VAITAL)) {
 	    if (!(cur_win->fsrch_flags & FSRCH_BOLDITAL)) {
 		if ((fsp = alternate_font("bold","i")) != NULL
-	         || (fsp = alternate_font("bold","o")) != NULL)
+		 || (fsp = alternate_font("bold","o")) != NULL)
 		    cur_win->pfont_boldital = fsp;
 		cur_win->fsrch_flags |= FSRCH_BOLDITAL;
 	    }
@@ -3944,7 +3938,7 @@ flush_line(
 tryital:
 	    if (!(cur_win->fsrch_flags & FSRCH_ITAL)) {
 		if ((fsp = alternate_font((char *)0,"i")) != NULL
-	         || (fsp = alternate_font((char *)0,"o")) != NULL)
+		 || (fsp = alternate_font((char *)0,"o")) != NULL)
 		    cur_win->pfont_ital = fsp;
 		cur_win->fsrch_flags |= FSRCH_ITAL;
 	    }
@@ -4028,7 +4022,7 @@ trybold:
     if (attr & (VAUL | VAITAL)) {
 	fore_yy += cur_win->char_descent - 1;
 	XDrawLine(dpy, cur_win->win, fore_gc,
-	          x_pos(cur_win, startcol), fore_yy,
+		  x_pos(cur_win, startcol), fore_yy,
 		  x_pos(cur_win, startcol + len) - 1, fore_yy);
     }
 
@@ -4132,7 +4126,7 @@ x_flush(void)
 	    }
 	    /* write out the portion from sc thru ec */
 	    flush_line(&CELL_TEXT(r,sc), ec-sc+1,
-	               (unsigned int) VATTRIB(CELL_ATTR(r,sc)), r, sc);
+		       (unsigned int) VATTRIB(CELL_ATTR(r,sc)), r, sc);
 	}
     }
     XFlush(dpy);
@@ -4247,13 +4241,13 @@ static int
 set_character_class(register char *s)
 {
     register int i;		/* iterator, index into s */
-    int         len;		/* length of s */
-    int         acc;		/* accumulator */
-    int         low,
-                high;		/* bounds of range [0..127] */
-    int         base;		/* 8, 10, 16 (octal, decimal, hex) */
-    int         numbers;	/* count of numbers per range */
-    int         digits;		/* count of digits in a number */
+    int 	len;		/* length of s */
+    int 	acc;		/* accumulator */
+    int 	low,
+		high;		/* bounds of range [0..127] */
+    int 	base;		/* 8, 10, 16 (octal, decimal, hex) */
+    int 	numbers;	/* count of numbers per range */
+    int 	digits; 	/* count of digits in a number */
     static char *errfmt = "xvile:  %s in range string \"%s\" (position %d)\n";
 
     if (!s || !s[0])
@@ -4264,7 +4258,7 @@ set_character_class(register char *s)
 
     for (i = 0, len = strlen(s), acc = 0, numbers = digits = 0;
 	    i < len; i++) {
-	int        c = s[i];
+	int	   c = s[i];
 
 	if (isSpace(c)) {
 	    continue;
@@ -4416,7 +4410,7 @@ SIZE_T	length)
 				char *pstr;
 				/* we're _replacing_ the default
 					insertion command, so reinit */
-				tb_init(p, abortc);
+				tb_init(p, esc_c);
 				pstr = fnc2pstr(f);
 				tb_bappend(p, pstr + 1, (ALLOC_T) *pstr);
 			}
@@ -4437,13 +4431,13 @@ SIZE_T	length)
 /* ARGSUSED */
 static void
 x_get_selection(
-    Widget         w GCC_UNUSED,
+    Widget	   w GCC_UNUSED,
     XtPointer      cldat GCC_UNUSED,
-    Atom          *selection,
-    Atom          *type,
+    Atom	  *selection,
+    Atom	  *type,
     XtPointer      value,
     unsigned long *length,
-    int           *format)
+    int 	  *format)
 {
     int	do_ins;
 
@@ -4460,10 +4454,10 @@ x_get_selection(
 		&& (!onMsgRow(cur_win) || *selection == atom_CLIPBOARD)
 		&& ((s = fnc2pstr(&f_insert_no_aindent)) != NULL);
 
-	if (tb_init(&PasteBuf, abortc)) {
+	if (tb_init(&PasteBuf, esc_c)) {
 		if ((do_ins && !tb_bappend(&PasteBuf, s+1, (ALLOC_T)*s))
 		 || !copy_paste(&PasteBuf, (char *)value, (SIZE_T) *length)
-		 || (do_ins && !tb_append(&PasteBuf, abortc)))
+		 || (do_ins && !tb_append(&PasteBuf, esc_c)))
 			tb_free(&PasteBuf);
 	}
 	XtFree((char *)value);
@@ -4488,7 +4482,7 @@ x_paste_selection(Atom selection)
 	}
 	len_ul = (unsigned long) len_st;	/* Ugh. */
 	x_get_selection(cur_win->top_widget, NULL, &selection, &type,
-	                (XtPointer) data, &len_ul, &format);
+			(XtPointer) data, &len_ul, &format);
     }
     else {
 	XtGetSelectionValue(
@@ -4569,12 +4563,12 @@ x_get_clipboard_text(
 static Boolean
 x_convert_selection(
     Widget	   w GCC_UNUSED,
-    Atom          *selection,
-    Atom          *target,
-    Atom          *type,
+    Atom	  *selection,
+    Atom	  *target,
+    Atom	  *type,
     XtPointer     *value,
     unsigned long *length,
-    int           *format)
+    int 	  *format)
 {
     if (!cur_win->have_selection && *selection == XA_PRIMARY)
 	return False;
@@ -4775,7 +4769,7 @@ extend_selection(
 	if (scroll_count > 0) {
 	    x_flush();
 	    cur_win->sel_scroll_id = XtAppAddTimeOut(cur_win->app_context,
-	                                             interval,
+						     interval,
 						     scroll_selection,
 						     (XtPointer) rowcol);
 	}
@@ -4787,8 +4781,8 @@ extend_selection(
 static void
 multi_click(
 	TextWindow  tw,
-	int         nr,
-	int         nc)
+	int	    nr,
+	int	    nc)
 {
     UCHAR	*p;
     int	cclass;
@@ -4807,7 +4801,7 @@ multi_click(
 	switch (tw->numclicks) {
 	case 0:
 	case 1:			/* shouldn't happen */
-		mlwrite("BUG: 0 or 1 multiclick value.");
+		mlforce("BUG: 0 or 1 multiclick value.");
 		return;
 	case 2:			/* word */
 #if OPT_HYPERTEXT
@@ -5003,13 +4997,13 @@ x_process_event(
     XEvent     *ev,
     Boolean    *continue_to_dispatch GCC_UNUSED)
 {
-    int         sc,
-                sr;
+    int 	sc,
+		sr;
     unsigned    ec,
-                er;
+		er;
 
-    int         nr,
-                nc;
+    int 	nr,
+		nc;
     static int onr = -1, onc = -1;
 
     XMotionEvent *mev;
@@ -5061,7 +5055,7 @@ x_process_event(
 	/* ignore any spurious motion during a multi-cick */
 	if (cur_win->numclicks > 1
 	 && cur_win->lasttime != 0
-         && (absol(ev->xmotion.time - cur_win->lasttime) < cur_win->click_timeout))
+	 && (absol(ev->xmotion.time - cur_win->lasttime) < cur_win->click_timeout))
 	    return;
 	if (do_sel) {
 	    if (ev->xbutton.state & ControlMask) {
@@ -5507,7 +5501,7 @@ x_move_events(void)
     XEvent ev;
 
     while (x_has_events()
-        && !kqfull(cur_win)) {
+	&& !kqfull(cur_win)) {
 
 	/* Get and dispatch next event */
 	XtAppNextEvent(cur_win->app_context, &ev);
@@ -5559,7 +5553,7 @@ x_move_events(void)
 	if (!kqempty(cur_win) && ev.type == KeyPress) {
 	    int c = kqpop(cur_win);
 	    if (c == intrc) {
-		kqadd(cur_win, abortc);
+		kqadd(cur_win, esc_c);
 #if SYS_VMS
 		kbd_alarm(); /* signals? */
 #else
@@ -5747,7 +5741,7 @@ display_cursor(
 		cur_win->blink_id = XtAppAddTimeOut(
 			cur_win->app_context,
 			(unsigned long) max(cur_win->blink_interval,
-			                    -cur_win->blink_interval),
+					    -cur_win->blink_interval),
 			display_cursor,
 			(XtPointer) 0);
 		cur_win->blink_status ^= BLINK_TOGGLE;
@@ -5768,8 +5762,8 @@ display_cursor(
 	MARK_CELL_DIRTY(ttrow,the_col);
 	MARK_LINE_DIRTY(ttrow);
 	flush_line(&CELL_TEXT(ttrow,the_col), 1,
-	           (unsigned int) (VATTRIB(CELL_ATTR(ttrow,the_col))
-		                ^ ((cur_win->blink_status & BLINK_TOGGLE)
+		   (unsigned int) (VATTRIB(CELL_ATTR(ttrow,the_col))
+				^ ((cur_win->blink_status & BLINK_TOGGLE)
 				  ? 0 : VACURS)),
 		   ttrow, the_col);
     }
@@ -5785,9 +5779,9 @@ display_cursor(
 	flush_line(&CELL_TEXT(ttrow,the_col), 1,
 	    (unsigned int) VATTRIB(CELL_ATTR(ttrow,the_col)), ttrow, the_col);
 	XDrawRectangle(dpy, cur_win->win,
-	               IS_REVERSED(ttrow,the_col) ? cur_win->cursgc
-		                                : cur_win->revcursgc,
-	               x_pos(cur_win, ttcol), y_pos(cur_win, ttrow),
+		       IS_REVERSED(ttrow,the_col) ? cur_win->cursgc
+						: cur_win->revcursgc,
+		       x_pos(cur_win, ttcol), y_pos(cur_win, ttrow),
 		       (unsigned)(cur_win->char_width - 1),
 		       (unsigned)(cur_win->char_height - 1));
     }
@@ -6019,7 +6013,7 @@ x_key_press(
 #if OPT_LOCALE
     if (!XFilterEvent(ev, *(&ev->xkey.window))) {
 	if (Input_Context != NULL) {
-	    Status          status_return;
+	    Status	    status_return;
 
 	    num = XmbLookupString(Input_Context, (XKeyPressedEvent *) ev, buffer,
 				  sizeof(buffer), &keysym,
@@ -6064,13 +6058,6 @@ x_rev(UINT state)
     cur_win->reverse = state;
 }
 
-/* change screen resolution */
-/*ARGSUSED*/
-static int
-x_cres(const char *flag GCC_UNUSED)
-{
-    return TRUE;
-}
 
 #if OPT_COLOR
 static void
@@ -6171,7 +6158,7 @@ x_get_window_name(void)
 
 static void
 watched_input_callback(XtPointer fd,
-                       int *src GCC_UNUSED,
+		       int *src GCC_UNUSED,
 		       XtInputId *id GCC_UNUSED)
 {
     dowatchcallback((int) fd);
@@ -6184,8 +6171,8 @@ x_watchfd(int fd, WATCHTYPE type, long *idp)
 		    cur_win->app_context,
 		    fd,
 		    (XtPointer) ((type & WATCHREAD)  ? XtInputReadMask :
-		                 (type & WATCHWRITE) ? XtInputWriteMask
-					             : XtInputExceptMask),
+				 (type & WATCHWRITE) ? XtInputWriteMask
+						     : XtInputExceptMask),
 		    watched_input_callback,
 		    (XtPointer) fd);
     return TRUE;
@@ -6236,11 +6223,11 @@ gui_isprint(int ch)
 static void
 init_xlocale(void)
 {
-    char           *p, *s, buf[32], tmp[1024];
-    XIM             xim = NULL;
-    XIMStyle        input_style = 0;
+    char	   *p, *s, buf[32], tmp[1024];
+    XIM 	    xim = NULL;
+    XIMStyle	    input_style = 0;
     XIMStyles      *xim_styles = NULL;
-    int             found;
+    int 	    found;
 
     Input_Context = NULL;
 
@@ -6250,7 +6237,7 @@ init_xlocale(void)
     } else {
 	strcpy(tmp, rs_inputMethod);
 	for (s = tmp; *s; s++) {
-	    char           *end, *next_s;
+	    char	   *end, *next_s;
 
 	    for (; *s && isSpace(*s); s++)
 		/* */ ;
@@ -6288,7 +6275,7 @@ init_xlocale(void)
     strcpy(tmp, (rs_preeditType ? rs_preeditType : "Root"));
     for (found = 0, s = tmp; *s && !found; ) {
 	unsigned short  i;
-	char           *end, *next_s;
+	char	       *end, *next_s;
 
 	for (; *s && isSpace(*s); s++)
 	    /* */ ;

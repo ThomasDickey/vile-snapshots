@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.237 1999/03/09 11:57:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.239 1999/03/20 16:32:20 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -111,17 +111,17 @@ decl_uninit( int scanbound_is_header);	/* is scanboundpos the header line? */
 decl_uninit( short opcmd );		/* what sort of operator?	*/
 decl_uninit( const CMDFUNC *havemotion ); /* so we can use "oper" routines
 					   internally */
-decl_uninit( int currow );		/* Cursor row                   */
-decl_uninit( int curcol );		/* Cursor column                */
-decl_uninit( WINDOW *curwp );		/* Current window               */
-decl_uninit( BUFFER *curbp );		/* Current buffer               */
+decl_uninit( int currow );		/* Cursor row			*/
+decl_uninit( int curcol );		/* Cursor column		*/
+decl_uninit( WINDOW *curwp );		/* Current window		*/
+decl_uninit( BUFFER *curbp );		/* Current buffer		*/
 decl_uninit( WINDOW *wheadp );		/* Head of list of windows      */
 decl_uninit( BUFFER *bheadp );		/* Head of list of buffers      */
 
 decl_uninit( WINDOW *wminip );		/* window for command-line      */
 decl_uninit( BUFFER *bminip );		/* buffer for command-line      */
 
-decl_uninit( TBUFF *save_shell[2] );	/* last ":!" or ^X-!  command	*/
+decl_uninit( TBUFF *tb_save_shell[2] );	/* last ":!" or ^X-!  command	*/
 
 decl_uninit( char sres[NBUFN] );	/* current screen resolution	*/
 
@@ -140,13 +140,12 @@ decl_uninit( char exithook[NBUFN] );	/* proc to run when exiting */
 
 decl_uninit( regexp *gregexp );		/* compiled version of pat */
 
-/* patmatch holds the string that satisfied the search command.  */
-decl_uninit( TBUFF *patmatch );
+decl_uninit( TBUFF *tb_matched_pat);	/* text that scan found */
 
 decl_uninit( int ignorecase );
 
-decl_init( int curgoal, -1 );           /* column goal			*/
-decl_uninit( const char *execstr );	/* pointer to string to execute	*/
+decl_init( int curgoal, -1 );		/* column goal			*/
+decl_uninit( const char *execstr );	/* string being execute		*/
 #if OPT_EVAL
 decl_uninit( char golabel[NPAT] );	/* current line to go to	*/
 #endif
@@ -175,7 +174,7 @@ decl_uninit( G_VALUES global_g_values );
 decl_uninit( B_VALUES global_b_values );
 decl_uninit( W_VALUES global_w_values );
 
-decl_init( int sgarbf, TRUE );          /* TRUE if screen is garbage	*/
+decl_init( int sgarbf, TRUE );		/* TRUE if screen is garbage	*/
 decl_uninit( int clexec	);		/* command line execution flag	*/
 decl_uninit( int clhide );		/* hide results of this command	*/
 decl_uninit( int miniedit );		/* editing minibuffer with vi-cmds */
@@ -183,11 +182,11 @@ decl_uninit( int mstore	);		/* storing text to macro flag	*/
 decl_init( int discmd, TRUE );		/* display command flag		*/
 decl_init( int disinp, TRUE );		/* display input characters	*/
 decl_uninit( struct BUFFER *bstore );	/* buffer to store macro text to*/
-decl_uninit( int vtrow );               /* Row location of SW cursor	*/
-decl_uninit( int vtcol );               /* Column location of SW cursor */
-decl_init( int ttrow, HUGE );           /* Row location of HW cursor	*/
-decl_init( int ttcol, HUGE );           /* Column location of HW cursor */
-decl_uninit( int taboff	);		/* tab offset for display	*/
+decl_uninit( int vtrow );		/* Row location of SW cursor	*/
+decl_uninit( int vtcol );		/* Column location of SW cursor */
+decl_init( int ttrow, HUGE );		/* Row location of HW cursor	*/
+decl_init( int ttcol, HUGE );		/* Column location of HW cursor */
+decl_uninit( int horscroll );		/* line offset when displaying	*/
 decl_init( int ntildes, 100 );		/* number of tildes displayed at eob
 					  (expressed as percent of window) */
 #if OPT_COLOR
@@ -197,13 +196,17 @@ decl_init( int ncolors, NCOLORS );	/* total number of colors displayable */
 /* Special characters, used in keyboard control (some values are set on
  * initialization in termio.c).
  */
-decl_init( int cntl_a, tocntrl('A') );	/* current meta character	*/
-decl_init( int cntl_x, tocntrl('X') );	/* current control X prefix char */
-decl_init( int reptc, 'K' );		/* current universal repeat char */
-decl_init( int abortc, tocntrl('[') );	/* ESC: current abort command char */
+
+/* these five are rebindable in the "usual" way */
+decl_init( int cntl_a, tocntrl('A') );	/* rebindable control-A prefix	*/
+decl_init( int cntl_x, tocntrl('X') );	/* rebindable control-X prefix	*/
+decl_init( int reptc, 'K' );		/* rebindable "repeat" arg	*/
+decl_init( int esc_c, tocntrl('[') );	/* rebindable vi esc char	*/
+decl_init( int poundc, '#' );		/* pseudo function key prefi	 */
+
+/* rebindable via the "set-terminal" interface */
 decl_init( int editc, tocntrl('G') );	/* toggle edit-mode in minibuffer */
-decl_init( int poundc, '#' );		/* pseudo function key prefix */
-decl_init( int quotec, tocntrl('V') );	/* quote char during mlreply()	*/
+decl_init( int quotec, tocntrl('V') );	/* current quoting char		*/
 decl_init( int killc, tocntrl('U') );	/* current line kill char	*/
 decl_init( int wkillc, tocntrl('W') );	/* current word kill char	*/
 decl_init( int intrc, tocntrl('C') );	/* current interrupt char	*/
@@ -213,10 +216,6 @@ decl_init( int stopc, tocntrl('S') );	/* current output stop char	*/
 decl_init( int backspc, '\b');		/* current backspace char	*/
 decl_init( int name_cmpl, '\t');	/* do name-completion		*/
 decl_init( int test_cmpl, '?');		/* show name-completion		*/
-
-#if OPT_MSDOS_PATH
-decl_init( int slashc, '\\');		/* default path delimiter	*/
-#endif
 
 decl_uninit( KILLREG kbs[NKREGS] );	/* all chars, 1 thru 9, and default */
 decl_uninit( short ukb );		/* index of current kbuffs */
@@ -232,24 +231,18 @@ decl_uninit( WINDOW *swindow );		/* saved window pointer		*/
 #endif
 
 #if OPT_ENCRYPT
-decl_init( int cryptflag, FALSE );	/* currently encrypting?	*/
 decl_init( char * cryptkey, 0 );	/* top-level crypt-key, if any	*/
 #endif
 
-decl_init( int dotcmdmode, RECORD );	/* current dot command mode	*/
+decl_uninit( int dotcmdactive );	/* current dot command mode	*/
 decl_init( int dotcmdarg, FALSE);	/* was there an arg to '.'? */
 decl_uninit( short dotcmdkreg);		/* original dot command kill reg */
 decl_uninit( ITBUFF *dotcmd );		/* recorded-text of dot-commands */
 decl_uninit( int dotcmdcnt );		/* down-counter for dot-commands */
 decl_uninit( int dotcmdrep );		/* original dot-command repeat-count */
 
-decl_init( int	kbdmode, STOP );	/* current keyboard macro mode	*/
 #if OPT_EVAL
 decl_init( int seed, 123 );		/* random number seed		*/
-#endif
-
-#if OPT_RAMSIZE
-decl_uninit( long envram );		/* # of bytes current used malloc */
 #endif
 
 #if OPT_EVAL || OPT_DEBUGMACROS
@@ -272,41 +265,37 @@ decl_uninit( struct VAL *relisting_b_vals );
 decl_uninit( struct VAL *relisting_w_vals );
 #endif
 
-decl_init( char out_of_mem[], "OUT OF MEMORY" );
+decl_init( char out_of_mem[], "Out of Memory" );
 decl_init( char errorm[], "ERROR" );	/* error literal		*/
-decl_init( char truem[], "TRUE" );	/* true literal			*/
-decl_init( char falsem[], "FALSE" );	/* false literal		*/
 
 decl_init( int	cmdstatus, TRUE );	/* last command status		*/
 #if OPT_EVAL || OPT_COLOR
-decl_uninit( TBUFF *palstr );		/* palette string		*/
+decl_uninit( TBUFF *tb_curpalette );	/* current colormap palete	*/
 #endif
 #if OPT_COLOR
 decl_uninit( int ctrans[NCOLORS] );	/* color translation table	*/
 #endif
-decl_uninit( char *fline );		/* dynamic return line		*/
-decl_uninit( ALLOC_T flen );		/* current length of fline	*/
-
 decl_uninit( int kbd_expand );		/* -1 kbd_putc shows tab as space */
 					/* +1 kbd_putc shows cr as ^M */
 
 
 decl_uninit( FILE *ffp );		/* File pointer, all functions. */
+decl_uninit( char *fflinebuf );		/* current buffer for file reads */
+decl_uninit( ALLOC_T fflinelen );	/* fflinebuf length */
+
 decl_uninit( int fileispipe );
-decl_uninit( int eofflag );		/* end-of-file flag */
+decl_uninit( int fileeof );		/* found eof */
 decl_init ( L_NUM help_at, -1 );	/* position in help-file */
 decl_uninit( char *helpfile );
 
 decl_uninit( char *startup_file );
 decl_uninit( char *startup_path );
 
-#if HAVE_PUTENV && OPT_SHELL
 decl_uninit( char *libdir_path );
-#endif
 
 decl_init_const( char hexdigits[], "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 
-decl_init_const( char HELP_BufName[],	 	"[Help]");
+decl_init_const( char HELP_BufName[],		"[Help]");
 #if OPT_REBIND
 decl_init_const( char BINDINGLIST_BufName[],	"[Binding List]");
 # if OPT_TERMCHRS
@@ -381,7 +370,7 @@ decl_uninit(int ev_end_of_cmd);
 /* terminal table defined only in TERM.C */
 
 #ifndef	termdef
-extern  TERM    term;                   /* Terminal information.        */
+extern	TERM	term;			/* Terminal information.	*/
 #endif
 #if OPT_DUMBTERM
 extern	TERM	dumb_term;

@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.86 1999/03/09 11:53:03 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.87 1999/03/19 12:01:59 pgf Exp $
  *
  */
 
@@ -878,22 +878,26 @@ newlength(int f, int n)
 		return FALSE;
 	}
 
+	if (term.t_nrow == n)
+		return(TRUE);
+
 	/* validate */
 	if (n < MINWLNS || n > term.t_mrow) {
 		mlforce("[Bad screen length]");
 		return(FALSE);
 	}
 
-	if (term.t_nrow == n) {  /* already okay? */
-		return(TRUE);
-	} else if (wheadp && n > term.t_nrow) {
+	if (!wheadp)
+		return TRUE;
 
-		/* find the last window */
-		for (wp = wheadp ;wp->w_wndp; wp = wp->w_wndp)
+	/* screen getting bigger, grow the last window */
+	if (n > term.t_nrow) {
+
+		/* find end of list */
+		for (wp = wheadp; wp->w_wndp; wp = wp->w_wndp)
 			/*EMPTY*/;
 
-		/* and grow it */
-		wp->w_ntrows = n - wp->w_toprow - 2;
+		wp->w_ntrows += n - term.t_nrow;
 		wp->w_flag |= WFHARD|WFMODE;
 
 	} else {
@@ -948,7 +952,7 @@ newlength(int f, int n)
 }
 
 int
-newwidth(int f, int n)	/* resize the screen, re-writing the screen */
+newwidth(int f, int n)	/* change width of displayed area */
 {
 	WINDOW *wp;
 
@@ -979,22 +983,18 @@ newwidth(int f, int n)	/* resize the screen, re-writing the screen */
 }
 
 #if OPT_EVAL
+/* where on screen is current line? */
 int
-getwpos(void)	/* get screen offset of current line in current window */
+getlinerow(void)
 {
-	register int sline;	/* screen line from top of window */
-	register LINE *lp;	/* scannile line pointer */
+	int row;
+	LINE *lp;
 
-	/* search down the line we want */
-	lp = curwp->w_line.l;
-	sline = 1;
-	while (lp != DOT.l) {
-		sline += line_height(curwp,lp);
-		lp = lforw(lp);
-	}
+	row = 1;
+	for (lp = curwp->w_line.l; lp != DOT.l; lp = lforw(lp))
+		row += line_height(curwp,lp);
 
-	/* and return the value */
-	return(sline);
+	return(row);
 }
 #endif
 

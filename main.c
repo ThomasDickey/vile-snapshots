@@ -1,19 +1,21 @@
 /*
- *	This used to be MicroEMACS 3.9
- *			written by Dave G. Conroy.
- *			substantially modified by Daniel M. Lawrence
- *
- *	Turned into "VI Like Emacs", a.k.a. vile, by Paul Fox
+ *	this used to be MicroEMACS, a public domain program
+ *	written by dave g. conroy, with substantial modifications
+ *	by daniel m. lawrence.  dan has placed restrictions on
+ *	his work, as follows:
  *
  *	(C)opyright 1987 by Daniel M. Lawrence
  *	MicroEMACS 3.9 can be copied and distributed freely for any
  *	non-commercial purposes. MicroEMACS 3.9 can only be incorporated
  *	into commercial software with the permission of the current author.
  *
- *	The same goes for vile.  -pgf, 1990-1995
+ *	microemacs was initially turned into "VI Like Emacs", a.k.a.
+ *	vile, by paul fox.  tom dickey and kevin buettner made huge
+ *	contributions along the way, as did rick sladkey and clark
+ *	morgan.  vile is now principally maintained by tom dickey.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.360 1999/03/09 00:16:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.365 1999/03/20 23:06:55 tom Exp $
  *
  */
 
@@ -45,9 +47,9 @@
 extern char *exec_pathname;
 extern const char *const pathname[];	/* startup file path/name array */
 
-/* for MSDOS, increase the default stack space */
+/* if on a crippled system, try to survive: bigger stack */
 #if	SYS_MSDOS && CC_TURBO
-unsigned _stklen = 32768U;
+unsigned _stklen = 24000U;
 #endif
 
 static	void	get_executable_dir (void);
@@ -69,17 +71,20 @@ int
 MainProgram(int argc, char *argv[])
 {
 	int tt_opened;
-	register BUFFER *bp;		/* temp buffer pointer */
+	register BUFFER *bp;
 	register int	carg;		/* current arg to scan */
 	char *vileinit = NULL;		/* the startup file or VILEINIT var */
 	int startstat = TRUE;		/* result of running startup */
-	BUFFER *firstbp = NULL; 	/* ptr to first buffer in cmd line */
-	char *firstname = NULL;		/* name of first buffer in cmd line */
+	BUFFER *havebp = NULL;		/* initial buffer to read */
+	char *havename = NULL;		/* name of first buffer in cmd line */
 	int gotoflag = FALSE;		/* do we need to goto line at start? */
 	int gline = FALSE;		/* if so, what line? */
 	int helpflag = FALSE;		/* do we need help at start? */
 	REGEXVAL *search_exp = 0;	/* initial search-pattern */
 	const char *msg;
+#if SYS_VMS
+	char *cmdline_res = NULL;
+#endif
 #ifdef VILE_OLE
 	int ole_register = FALSE;
 #endif
@@ -91,8 +96,8 @@ MainProgram(int argc, char *argv[])
 	char *tname = NULL;
 #endif
 #if	OPT_ENCRYPT
-	char ekey[NPAT];		/* startup encryption key */
-	*ekey = EOS;
+	char startkey[NKEYLEN];		/* initial encryption key */
+	*startkey = EOS;
 #endif
 
 #if OPT_LOCALE
@@ -150,11 +155,20 @@ MainProgram(int argc, char *argv[])
 		/* Process Switches */
 		if (*param == '-') {
 			++param;
-#if DISP_IBMPC || DISP_BORLAND
-		    	/* if it's a digit, it's probably a screen
+#if DISP_IBMPC || DISP_BORLAND || SYS_VMS
+			/* if it's a digit, it's probably a screen
 				resolution */
 			if (isDigit(*param)) {
+#if DISP_IBMPC || DISP_BORLAND
 				current_res_name = param;
+#else
+				if (strcmp(param, "132") == 0)
+					cmdline_res = "WIDE";
+				else if (strcmp(param, "80") == 0)
+					cmdline_res = "NORMAL";
+				else
+					print_usage();
+#endif
 				continue;
 			} else
 #endif	/* DISP_IBMPC */
@@ -222,7 +236,7 @@ MainProgram(int argc, char *argv[])
 			case 'k':	/* -k<key> for code key */
 			case 'K':
 				GetArgVal(param);
-				vl_make_encrypt_key(ekey, param);
+				vl_make_encrypt_key(startkey, param);
 				break;
 #endif
 #ifdef VILE_OLE
@@ -233,11 +247,12 @@ MainProgram(int argc, char *argv[])
 					print_usage();
 				break;
 #endif
-			case 's':  /* -s for initial search string */
+			case 's':  /* -s <pattern> */
 			case 'S':
 		dosearch:
 				GetArgVal(param);
-				search_exp = new_regexval(param, global_b_val(MDMAGIC));
+				search_exp = new_regexval(param,
+						global_b_val(MDMAGIC));
 				break;
 #if OPT_TAGS
 			case 't':  /* -t for initial tag lookup */
@@ -250,7 +265,7 @@ MainProgram(int argc, char *argv[])
 				set_global_b_val(MDVIEW,TRUE);
 				break;
 
-			case 'R':	/* -R is readonly mode (like "view") */
+			case 'R':	/* -R is readonly mode */
 				set_global_b_val(MDREADONLY,TRUE);
 				break;
 
@@ -262,7 +277,7 @@ MainProgram(int argc, char *argv[])
 #endif
 				tidy_exit(GOODEXIT);
 
-				/* FALLTHROUGH */
+				/* NOTREACHED */
 
 			case '?':
 			default:	/* unknown switch */
@@ -284,18 +299,18 @@ MainProgram(int argc, char *argv[])
 			vileinit = ++param;
 		} else if (*param != EOS) {
 
-			/* Process an input file */
+			/* must be a filename */
 #if OPT_ENCRYPT
-			cryptkey = (*ekey != EOS) ? ekey : 0;
+			cryptkey = (*startkey != EOS) ? startkey : 0;
 #endif
 			/* set up a buffer for this file */
 			bp = getfile2bp(param,FALSE,TRUE);
 			if (bp) {
 				bp->b_flag |= BFARGS;	/* treat this as an argument */
 				make_current(bp); /* pull it to the front */
-				if (firstbp == 0) {
-					firstbp = bp;
-					firstname = param;
+				if (!havebp) {
+					havebp = bp;
+					havename = param;
 				}
 			}
 #if OPT_ENCRYPT
@@ -336,17 +351,17 @@ MainProgram(int argc, char *argv[])
 		char	*tty = "/dev/tty";
 # endif
 #else
-  		FILE	*in;
-  		int	fd;
+		FILE	*in;
+		int	fd;
 #endif /* SYS_UNIX */
 #endif /* DISP_X11 */
-		BUFFER	*lastbp = firstbp;
+		BUFFER	*lastbp = havebp;
 		int	nline = 0;
 
 		bp = bfind(STDIN_BufName, BFARGS);
 		make_current(bp); /* pull it to the front */
-		if (firstbp == 0)
-			firstbp = bp;
+		if (!havebp)
+			havebp = bp;
 		ffp = fdopen(dup(fileno(stdin)), "r");
 #if !DISP_X11
 # if SYS_UNIX
@@ -387,8 +402,8 @@ MainProgram(int argc, char *argv[])
 #endif /* DISP_X11 */
 
 #if	OPT_ENCRYPT
-		if (*ekey != EOS) {
-			strcpy(bp->b_key, ekey);
+		if (*startkey != EOS) {
+			strcpy(bp->b_cryptkey, startkey);
 			make_local_b_val(bp, MDCRYPT);
 			set_b_val(bp, MDCRYPT, TRUE);
 		}
@@ -399,7 +414,7 @@ MainProgram(int argc, char *argv[])
 
 		if (is_empty_buf(bp)) {
 			(void)zotbuf(bp);
-			curbp = firstbp = lastbp;
+			curbp = havebp = lastbp;
 		}
 #if OPT_FINDERR
 		  else {
@@ -413,7 +428,6 @@ MainProgram(int argc, char *argv[])
 	if (do_newgroup)
 		(void) newprocessgroup(TRUE,1);
 #endif
-	/* initialize the editor */
 
 	if (!tt_opened)
 		siginit();
@@ -439,7 +453,7 @@ MainProgram(int argc, char *argv[])
 	 * triggered by switching buffers after reading the .vilerc file.
 	 *
 	 * If nothing modifies it, this buffer will be automatically removed
-	 * when we switch to the first file (e.g., firstbp), because it is
+	 * when we switch to the first file (i.e., havebp), because it is
 	 * empty (and presumably isn't named the same as an actual file).
 	 */
 	bp = bfind(UNNAMED_BufName, 0);
@@ -464,7 +478,7 @@ MainProgram(int argc, char *argv[])
 		startup_file = strmalloc(vileinit);
 	} else {
 
-		/* now vileinit is the contents of their VILEINIT variable */
+		/* else vileinit is the contents of their VILEINIT variable */
 		vileinit = getenv("VILEINIT");
 		if (vileinit != NULL) { /* set... */
 			int odiscmd;
@@ -514,17 +528,17 @@ MainProgram(int argc, char *argv[])
 		}
 	}
 
-	/* If there are any files to read, read the first one!  Double-check,
-	 * however, since a startup-script may have removed the first buffer.
+	/*
+	 * before reading, double-check, since a startup-script may
+	 * have removed the first buffer.
 	 */
-	if (firstbp != 0
-	 && find_bp(firstbp)) {
+	if (havebp && find_bp(havebp)) {
 		if (find_bp(bp) && is_empty_buf(bp) && !b_is_changed(bp))
 			b_set_scratch(bp);	/* remove the unnamed-buffer */
-		startstat = swbuffer(firstbp);
-		if (firstname)
-			set_last_file_edited(firstname);
-		if (bp2any_wp(bp) && bp2any_wp(firstbp))
+		startstat = swbuffer(havebp);
+		if (havename)
+			set_last_file_edited(havename);
+		if (bp2any_wp(bp) && bp2any_wp(havebp))
 			zotwp(bp);
 	}
 #if OPT_TAGS
@@ -543,7 +557,7 @@ MainProgram(int argc, char *argv[])
 		msg = "[Use ^A-h, ^X-h, or :help to get help]";
 	}
 
-	/* Deal with startup gotos and searches */
+	/* honor command-line actions */
 	if (gotoflag + (search_exp != 0)
 #if OPT_TAGS
 		 + (tname?1:0)
@@ -576,7 +590,17 @@ MainProgram(int argc, char *argv[])
 	if (startstat == TRUE)  /* else there's probably an error message */
 		mlforce(msg);
 
- begin:
+begin:
+#if SYS_VMS
+	if (cmdline_res)
+	{
+		/*
+		 * All terminal inits are complete.  Switch to new screen
+		 * resolution specified from command line.
+		 */
+		(void) TTrez(cmdline_res);
+	}
+#endif
 	(void)update(FALSE);
 
 #if OPT_POPUP_MSGS
@@ -637,13 +661,13 @@ loop(void)
 		/* start recording for '.' command */
 		dotcmdbegin();
 
-		/* Fix up the screen	*/
+		/* bring the screen up to date */
 		s = update(FALSE);
 
-		/* get the next command from the keyboard */
+		/* get a user command */
 		c = kbd_seq();
 
-		/* if there is something on the command line, clear it */
+		/* reset the contents of the command/status line */
 		if (kbd_length() > 0) {
 			mlerase();
 			if (s != SORTOFTRUE) /* did nothing due to typeahead */
@@ -732,7 +756,7 @@ get_executable_dir(void)
 	if (last_slash(prog_arg) == NULL) {
 		/* If there are no slashes, we can guess where we came from,
 		 */
-		if ((s = flook(prog_arg, FL_PATH|FL_EXECABLE)) != 0)
+		if ((s = cfg_locate(prog_arg, FL_PATH|FL_EXECABLE)) != 0)
 			s = strmalloc(s);
 	} else {
 		/* if there _are_ slashes, then argv[0] was either
@@ -745,14 +769,14 @@ get_executable_dir(void)
 
 	t = pathleaf(s);
 	if (t != s) {
-# if SYS_UNIX	/* 't' points past slash */
-		t[-1] = EOS;
-		prog_arg = t;
-# else		/* 't' points to ']' */
+		/*
+		 * On a unix host, 't' points past slash.  On a VMS host,
+		 * 't' points to first char after the last ':' or ']' in
+		 * the exe's path.
+		 */
+		prog_arg = strmalloc(t);
 		*t = EOS;
-		prog_arg = t+1;
-# endif
-		exec_pathname = s;
+		exec_pathname = strmalloc(lengthen_path(strcpy(temp, s)));
 	} else
 		free(s);
 #endif
@@ -822,7 +846,7 @@ global_val_init(void)
 	/*
 	 * Universal-mode defaults
 	 */
-	set_global_g_val(GMDABUFF,	TRUE); 	/* auto-buffer */
+	set_global_g_val(GMDABUFF,	TRUE);	/* auto-buffer */
 	set_global_g_val(GMDALTTABPOS,	FALSE); /* emacs-style tab
 							positioning */
 #ifdef GMDDIRC
@@ -830,13 +854,13 @@ global_val_init(void)
 #endif
 	set_global_g_val(GMDERRORBELLS, TRUE);	/* alarms are noticeable */
 #if OPT_FLASH
-	set_global_g_val(GMDFLASH,  	FALSE);	/* beeps beep by default */
+	set_global_g_val(GMDFLASH,	FALSE); /* beeps beep by default */
 # if VTFLASH_HOST
 	set_global_g_val(GVAL_VTFLASH,	VTFLASH_OFF); /* hardwired flash off */
 # endif
 #endif
 #ifdef GMDW32PIPES
-	set_global_g_val(GMDW32PIPES,  	is_winnt()); /* use native pipes? */
+	set_global_g_val(GMDW32PIPES,	is_winnt()); /* use native pipes? */
 #endif
 #if SYS_WINNT && defined(DISP_NTWIN)
 	/* Allocate console before spawning piped process? */
@@ -845,7 +869,7 @@ global_val_init(void)
 #if SYS_WINNT && defined(VILE_OLE)
 	/* Allocate console before spawning piped process? */
 	set_global_g_val_ptr(GVAL_REDIRECT_KEYS,
-	                     strmalloc("F5::S,F10::S,F11::S,F7::F,F5:C:"));
+			     strmalloc("F5::S,F10::S,F11::S,F7::F,F5:C:"));
 #endif
 #ifdef GMDHISTORY
 	set_global_g_val(GMDHISTORY,	TRUE);
@@ -853,7 +877,7 @@ global_val_init(void)
 	set_global_g_val(GMDMULTIBEEP,	TRUE); /* multiple beeps for multiple
 						motion failures */
 #if OPT_WORKING
-	set_global_g_val(GMDWORKING,  	TRUE);	/* we put up "working..." */
+	set_global_g_val(GMDWORKING,	TRUE);	/* we put up "working..." */
 #endif
 	/* which 8 bit chars are printable? */
 	set_global_g_val(GVAL_PRINT_LOW, 0);
@@ -911,8 +935,8 @@ global_val_init(void)
 #if	OPT_POPUP_MSGS
 	set_global_g_val(GMDPOPUP_MSGS,-TRUE);	/* popup-msgs */
 #endif
-#ifdef GMDRAMSIZE
-	set_global_g_val(GMDRAMSIZE,	TRUE);	/* show ram-usage */
+#ifdef GMDHEAPSIZE
+	set_global_g_val(GMDHEAPSIZE,	TRUE);	/* show heap usage */
 #endif
 	set_global_g_val(GVAL_REPORT,	5);	/* report changes */
 #if	OPT_XTERM
@@ -937,7 +961,7 @@ global_val_init(void)
 	 */
 	set_global_b_val(MDAIND,	FALSE); /* auto-indent */
 	set_global_b_val(MDASAVE,	FALSE);	/* auto-save */
-	set_global_b_val(MDBACKLIMIT,	TRUE); 	/* limit backspacing to
+	set_global_b_val(MDBACKLIMIT,	TRUE);	/* limit backspacing to
 							insert point */
 #ifdef	MDCHK_MODTIME
 	set_global_b_val(MDCHK_MODTIME,	FALSE); /* modtime-check */
@@ -950,14 +974,14 @@ global_val_init(void)
 #endif
 	set_global_b_val(MDIGNCASE,	FALSE); /* exact matches */
 	set_global_b_val(MDDOS, CRLF_LINES); /* on by default on DOS, off others */
-	set_global_b_val(MDMAGIC,	TRUE); 	/* magic searches */
+	set_global_b_val(MDMAGIC,	TRUE);	/* magic searches */
 	set_global_b_val( MDMETAINSBIND, TRUE); /* honor meta-bindings when
 							in insert mode */
-	set_global_b_val(MDNEWLINE,	TRUE); 	/* trailing-newline */
+	set_global_b_val(MDNEWLINE,	TRUE);	/* trailing-newline */
 	set_global_b_val(MDREADONLY,	FALSE); /* readonly */
 	set_global_b_val(MDSHOWMAT,	FALSE);	/* show-match */
 	set_global_b_val(MDSHOWMODE,	TRUE);	/* show-mode */
-	set_global_b_val(MDSWRAP,	TRUE); 	/* scan wrap */
+	set_global_b_val(MDSWRAP,	TRUE);	/* scan wrap */
 	set_global_b_val(MDTABINSERT,	TRUE);	/* allow tab insertion */
 	set_global_b_val(MDTAGSRELTIV,	FALSE);	/* path relative tag lookups */
 	set_global_b_val(MDTERSE,	FALSE);	/* terse messaging */
@@ -987,13 +1011,13 @@ global_val_init(void)
 
 	set_global_b_val(VAL_ASAVECNT,	256);	/* autosave count */
 #if OPT_MAJORMODE
-	set_submode_val("c", VAL_SWIDTH, 8); 	/* C file shiftwidth */
-	set_submode_val("c", VAL_TAB,	8); 	/* C file tab stop */
+	set_submode_val("c", VAL_SWIDTH, 8);	/* C file shiftwidth */
+	set_submode_val("c", VAL_TAB,	8);	/* C file tab stop */
 #else
-	set_global_b_val(VAL_C_SWIDTH,	8); 	/* C file shiftwidth */
-	set_global_b_val(VAL_C_TAB,	8); 	/* C file tab stop */
+	set_global_b_val(VAL_C_SWIDTH,	8);	/* C file shiftwidth */
+	set_global_b_val(VAL_C_TAB,	8);	/* C file tab stop */
 #endif
-	set_global_b_val(VAL_SWIDTH,	8); 	/* shiftwidth */
+	set_global_b_val(VAL_SWIDTH,	8);	/* shiftwidth */
 	set_global_b_val(VAL_TAB,	8);	/* tab stop */
 	set_global_b_val(VAL_TAGLEN,	0);	/* significant tag length */
 	set_global_b_val(MDUNDOABLE,	TRUE);	/* undo stack active */
@@ -1122,14 +1146,15 @@ global_val_init(void)
 		}
 	}
 #endif
-#if HAVE_PUTENV
+	if (!(s = getenv("VILE_LIBDIR_PATH")))
+	{
 #ifdef VILE_LIBDIR_PATH
-	s = VILE_LIBDIR_PATH;
+	    s = VILE_LIBDIR_PATH;
 #else
-	s = "";
+	    s = "";
 #endif
+	}
 	libdir_path = strmalloc(s);
-#endif
 }
 
 #if SYS_UNIX || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT || SYS_VMS
@@ -1316,7 +1341,7 @@ do_num_proc(int *cp, int *fp, int *np)
 	*np = n * oldn;
 }
 
-/* do ^U-style repeat argument processing -- vile binds this to 'K' */
+/* do emacs ^U-style repeat argument processing -- vile binds this to 'K' */
 static void
 do_rept_arg_proc(int *cp, int *fp, int *np)
 {
@@ -1342,14 +1367,9 @@ do_rept_arg_proc(int *cp, int *fp, int *np)
 	mlwrite("arg: %d",n);
 	while ( (isDigit( c=kbd_seq() ) && !isspecial(c))
 			|| c==reptc || c=='-'){
-		if (c == reptc) {
-			/* wow.  what does this do?  -pgf */
-			/* (i've been told it controls overflow...) */
-			if ((n > 0) == ((n*4) > 0))
-				n = n*4;
-			else
-				n = 1;
-		}
+		if (c == reptc)
+			n = n*4;
+
 		/*
 		 * If dash, and start of argument string, set arg.
 		 * to -1.  Otherwise, insert it.
@@ -1394,7 +1414,7 @@ do_repeats(int *cp, int *fp, int *np)
 {
 	do_num_proc(cp,fp,np);
 	do_rept_arg_proc(cp,fp,np);
-	if (dotcmdmode == PLAY) {
+	if (dotcmdactive == PLAY) {
 		if (dotcmdarg)	/* then repeats are done by dotcmdcnt */
 			*np = 1;
 	} else {
@@ -1414,7 +1434,7 @@ zzquit(int f, int n)
 	thiscmd = lastcmd;
 	cnt = any_changed_buf(&bp);
 	if (cnt) {
-	    	if (cnt > 1) {
+		if (cnt > 1) {
 		    mlprompt("Will write %d buffers.  %s ", cnt,
 			    clexec ? s_NULL : "Repeat command to continue.");
 		} else {
@@ -1440,8 +1460,7 @@ zzquit(int f, int n)
 }
 
 /*
- * Fancy quit command, as implemented by Norm. If the any buffer has
- * changed do a write on that buffer and exit, otherwise simply exit.
+ * attempt to write all changed buffers, and quit
  */
 int
 quickexit(int f, int n)
@@ -1547,18 +1566,18 @@ quit(int f, int n GCC_UNUSED)
 
 		FreeAndNull(startup_path);
 		FreeAndNull(gregexp);
-		tb_free(&patmatch);
+		tb_free(&tb_matched_pat);
 #if	OPT_MLFORMAT
-    		FreeAndNull(modeline_format);
+		FreeAndNull(modeline_format);
 #endif
-    		FreeAndNull(helpfile);
+		FreeAndNull(helpfile);
 		FreeAndNull(startup_file);
 
 #if SYS_UNIX
 		if (strcmp(exec_pathname, "."))
 			FreeAndNull(exec_pathname);
 #endif
-		/* do these last, e.g., for patmatch */
+		/* do these last, e.g., for tb_matched_pat */
 		itb_leaks();
 		tb_leaks();
 
@@ -1592,7 +1611,7 @@ writequit(int f GCC_UNUSED, int n)
 int
 esc_func(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	dotcmdmode = STOP;
+	dotcmdactive = 0;
 	regionshape = EXACT;
 	doingopcmd = FALSE;
 	do_sweep(FALSE);
@@ -1669,39 +1688,25 @@ ex(int f, int n)
 }
 
 /* ARGSUSED */
+/* user function that does (almost) NOTHING */
 int
-nullproc(int f GCC_UNUSED, int n GCC_UNUSED)	/* user function that does (almost) NOTHING */
+nullproc(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	return TRUE;
 }
 
+/* dummy functions for binding to key sequence prefixes */
 /* ARGSUSED */
-int
-cntl_a_func(int f GCC_UNUSED, int n GCC_UNUSED)	/* dummy function for binding to control-a prefix */
-{
-	return TRUE;
-}
+int cntl_a_func(int f GCC_UNUSED, int n GCC_UNUSED) { return TRUE; }
 
 /* ARGSUSED */
-int
-cntl_x_func(int f GCC_UNUSED, int n GCC_UNUSED)	/* dummy function for binding to control-x prefix */
-{
-	return TRUE;
-}
+int cntl_x_func(int f GCC_UNUSED, int n GCC_UNUSED) { return TRUE; }
 
 /* ARGSUSED */
-int
-poundc_func(int f GCC_UNUSED, int n GCC_UNUSED)	/* dummy function for binding to poundsign prefix */
-{
-	return TRUE;
-}
+int poundc_func(int f GCC_UNUSED, int n GCC_UNUSED) { return TRUE; }
 
 /* ARGSUSED */
-int
-unarg_func(int f GCC_UNUSED, int n GCC_UNUSED) /* dummy function for binding to universal-argument */
-{
-	return TRUE;
-}
+int reptc_func(int f GCC_UNUSED, int n GCC_UNUSED) { return TRUE; }
 
 /*----------------------------------------------------------------------------*/
 
@@ -1965,44 +1970,38 @@ charinit(void)
 
 }
 
-/*****		Compiler specific Library functions	****/
 
+#if	OPT_HEAPSIZE
 
-#if	OPT_RAMSIZE
-/*	These routines will allow me to track memory usage by placing
-	a layer on top of the standard system malloc() and free() calls.
-	with this code defined, the environment variable, $RAM, will
-	report on the number of bytes allocated via malloc.
-
-	with SHOWRAM defined, the number is also posted on the
-	end of the bottom mode line and is updated whenever it is changed.
-*/
+/* track overall heap usage */
 
 #undef	realloc
 #undef	malloc
 #undef	free
 
+long currentheap;    /* current heap usage */
+
 typedef	struct {
 	size_t	length;
 	unsigned magic;
-} RAMSIZE;
+} HEAPSIZE;
 
-#define MAGIC_RAM 0x12345678
+#define MAGIC_HEAP 0x12345678
 
-	/* display the amount of RAM currently malloc'ed */
+/* display the amount of HEAP currently malloc'ed */
 static void
-display_ram_usage (void)
+display_heap_usage (void)
 {
 	beginDisplay();
-	if (global_g_val(GMDRAMSIZE)) {
-		char mbuf[20];
+	if (global_g_val(GMDHEAPSIZE)) {
+		char membuf[20];
 		int	saverow = ttrow;
 		int	savecol = ttcol;
 
 		if (saverow >= 0 && saverow < term.t_nrow
 		 && savecol >= 0 && savecol < term.t_ncol) {
-			(void)lsprintf(mbuf, "[%ld]", envram);
-			kbd_overlay(mbuf);
+			(void)lsprintf(membuf, "[%ld]", currentheap);
+			kbd_overlay(membuf);
 			kbd_flush();
 			movecursor(saverow, savecol);
 		}
@@ -2012,65 +2011,65 @@ display_ram_usage (void)
 
 static char *old_ramsize(char *mp)
 {
-	RAMSIZE *p = (RAMSIZE *)(mp - sizeof(RAMSIZE));
+	HEAPSIZE *p = (HEAPSIZE *)(mp - sizeof(HEAPSIZE));
 
-	if (p->magic == MAGIC_RAM) {
+	if (p->magic == MAGIC_HEAP) {
 		mp = (char *)p;
-		envram -= p->length;
+		currentheap -= p->length;
 	}
 	return mp;
 }
 
 static char *new_ramsize(char *mp, unsigned nbytes)
 {
-	RAMSIZE *p = (RAMSIZE *)mp;
+	HEAPSIZE *p = (HEAPSIZE *)mp;
 	if (p != 0) {
 		p->length = nbytes;
-		p->magic  = MAGIC_RAM;
-		envram += nbytes;
-		mp = (char *)((long)p + sizeof(RAMSIZE));
+		p->magic  = MAGIC_HEAP;
+		currentheap += nbytes;
+		mp = (char *)((long)p + sizeof(HEAPSIZE));
 	}
 	return mp;
 }
 
-	/* reallocate mp with nbytes and track */
-char *reallocate(char *mp, unsigned nbytes)
+/* track reallocs */
+char *track_realloc(char *p, unsigned size)
 {
-	if (mp != 0) {
-		nbytes += sizeof(RAMSIZE);
-		mp = new_ramsize(realloc(old_ramsize(mp), nbytes), nbytes);
-		display_ram_usage();
-	} else
-		mp = allocate(nbytes);
-	return mp;
+	if (!p)
+		return track_malloc(size);
+
+	size += sizeof(HEAPSIZE);
+	p = new_ramsize(realloc(old_ramsize(p), size), size);
+	display_heap_usage();
+	return p;
 }
 
-	/* allocate nbytes and track */
-char *allocate(
-unsigned nbytes)	/* # of bytes to allocate */
+/* track mallocs */
+char *track_malloc(
+unsigned size)
 {
-	char *mp;	/* ptr returned from malloc */
+	char *p;
 
-	nbytes += sizeof(RAMSIZE);
-	if ((mp = malloc(nbytes)) != 0) {
-		(void)memset(mp, 0, nbytes);	/* so we can use for calloc */
-		mp = new_ramsize(mp, nbytes);
-		display_ram_usage();
+	size += sizeof(HEAPSIZE);
+	if ((p = malloc(size)) != 0) {
+		(void)memset(p, 0, size);	/* so we can use for calloc */
+		p = new_ramsize(p, size);
+		display_heap_usage();
 	}
 
-	return mp;
+	return p;
 }
 
-	/* release malloced memory and track */
+/* track free'd memory */
 void
-release(char *mp)	/* chunk of RAM to release */
+track_free(char *p)
 {
-	if (mp) {
-		free(old_ramsize(mp));
-		display_ram_usage();
-	}
+	if (!p)
+		return;
+	free(old_ramsize(p));
+	display_heap_usage();
 }
-#endif	/* OPT_RAMSIZE */
+#endif	/* OPT_HEAPSIZE */
 
 #if MALLOCDEBUG
 mallocdbg(int f, int n)
@@ -2091,7 +2090,7 @@ mallocdbg(int f, int n)
 /*
  *	the log file is left open, unbuffered.  thus any code can do
  *
- * 	extern FILE *FF;
+ *	extern FILE *FF;
  *	fprintf(FF, "...", ...);
  *
  *	to log events without disturbing the screen
@@ -2176,7 +2175,7 @@ setup_handler(int sig, void (*disp) (int ACTUAL_SIG_ARGS))
     act.sa_handler = disp;
     sigemptyset(&act.sa_mask);
 #ifdef SA_NODEFER	/* don't rely on it.  if it's not there, signals
-    				probably aren't deferred anyway. */
+				probably aren't deferred anyway. */
     act.sa_flags = SA_RESTART|SA_NODEFER ;
 #else
     act.sa_flags = SA_RESTART;

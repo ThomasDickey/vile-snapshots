@@ -2,7 +2,7 @@
  * Unix crypt(1)-style interface.
  * Written by T.E.Dickey for vile (March 1999).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.4 1999/03/09 11:55:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.6 1999/03/19 12:03:11 tom Exp $
  *
  */
 
@@ -33,7 +33,7 @@ UINT	len)
 {
     int status;			/* return status */
     int odisinp = disinp;	/* original value of disinp */
-    char temp[NPAT];
+    char temp[NKEYLEN];
 
     /* turn command input echo off */
     disinp = FALSE;
@@ -57,7 +57,7 @@ vl_encrypt_blok(char *buf, UINT len)
     for (c2 = 0; c2 < len; c2++) {
 	c1 = buf[c2];
 	buf[c2] = table2[
-	    	MASKED(table3[
+		MASKED(table3[
 		    MASKED(table1[
 			MASKED(c1+index_1)] + index_2)
 			    ] - index_2)
@@ -93,9 +93,10 @@ vl_make_encrypt_key (char *dst, char *src)
     memcpy(salt, src,  sizeof(salt));
 
     while (*src)
-    	*src++ = 0;
+	*src++ = 0;
 
-    memcpy(dst,  crypt(key, salt), LEN_CRYPT);
+    crypt(key, salt);
+    memcpy(dst,  key,  LEN_CRYPT);
     dst[LEN_CRYPT] = 0;
 
     TRACE(("made encryption key(%s)\n", dst))
@@ -109,15 +110,15 @@ const char *fname)
     register int s;	/* return status */
 
     /* turn off the encryption flag */
-    cryptflag = FALSE;
+    ffdocrypt(FALSE);
 
     /* if we are in crypt mode */
     if (b_val(bp, MDCRYPT)) {
 	char temp[NFILEN];
 
 	/* don't automatically inherit key from other buffers */
-	if (bp->b_key[0] != EOS
-	 && !b_is_argument(bp)       
+	if (bp->b_cryptkey[0] != EOS
+	 && !b_is_argument(bp)
 	 && strcmp(lengthen_path(strcpy(temp, fname)), bp->b_fname)) {
 	    char	prompt[80];
 	    (void)lsprintf(prompt, "Use crypt-key from %s", bp->b_bname);
@@ -127,14 +128,14 @@ const char *fname)
 	}
 
 	/* make a key if we don't have one */
-	if (bp->b_key[0] == EOS) {
-	    s = get_encryption_key(bp->b_key, sizeof(bp->b_key));
+	if (bp->b_cryptkey[0] == EOS) {
+	    s = get_encryption_key(bp->b_cryptkey, sizeof(bp->b_cryptkey));
 	    if (s != TRUE)
 		return (s == FALSE);
 	}
 
-	cryptflag = TRUE;
-	vl_setup_encrypt(bp->b_key);
+	ffdocrypt(TRUE);
+	vl_setup_encrypt(bp->b_cryptkey);
     }
 
     return TRUE;
@@ -146,21 +147,21 @@ vl_setkey(		/* set/reset encryption key of current buffer */
 int f GCC_UNUSED,	/* default flag */
 int n GCC_UNUSED)	/* numeric argument */
 {
-    char result[NPAT];
+    char result[NKEYLEN];
     int rc = get_encryption_key(result, sizeof(result));
 
     if (rc == TRUE) {
 	TRACE(("set key for %s\n", curbp->b_bname))
-	(void)strcpy(curbp->b_key, result);
+	(void)strcpy(curbp->b_cryptkey, result);
 	make_local_b_val(curbp, MDCRYPT);
 	set_b_val(curbp, MDCRYPT, TRUE);
 	curwp->w_flag |= WFMODE;
     } else if (rc == FALSE) {
-	if (curbp->b_key[0] != EOS) {
+	if (curbp->b_cryptkey[0] != EOS) {
 	    rc = mlyesno("Discard encryption key");
 	    if (rc == TRUE) {
 		TRACE(("reset key for %s\n", curbp->b_bname))
-		curbp->b_key[0] = EOS;
+		curbp->b_cryptkey[0] = EOS;
 		if (global_b_val(MDCRYPT)) {
 		    make_local_b_val(curbp, MDCRYPT);
 		    set_b_val(curbp, MDCRYPT, FALSE);

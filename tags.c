@@ -4,11 +4,11 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.94 1998/09/01 22:01:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.95 1999/03/19 11:01:21 pgf Exp $
  *
  */
 #include	"estruct.h"
-#include        "edef.h"
+#include	"edef.h"
 
 #if OPT_TAGS
 
@@ -76,7 +76,7 @@ static void
 old_tags (BI_NODE *a)
 {
 	free(BI_KEY(a));
-	free(a);
+	free(TYPECAST(char,a));
 }
 
 static void
@@ -238,7 +238,7 @@ free_tag_hits(void)
 	TAGHITS *p;
 	while ((p = tag_hits) != 0) {
 		tag_hits = p->link;
-		free(p);
+		free(TYPECAST(char,p));
 	}
 }
 
@@ -262,7 +262,7 @@ gototag(int f GCC_UNUSED, int n GCC_UNUSED)
 		if ((s = kbd_string("Tag name: ",
 				tagname, sizeof(tagname),
 				'\n', mode, tags_completion)) != TRUE)
-	                return (s);
+			return (s);
 		taglen = b_val(curbp,VAL_TAGLEN);
 	} else {
 		s = screen_string(tagname, sizeof(tagname), vl_ident);
@@ -606,7 +606,7 @@ gettagsfile(int n, int *endofpathflagp, int *did_read)
 		}
 
 		/* look up the tags file */
-		tagsfile = flook(tagfilename, FL_HERE|FL_READABLE);
+		tagsfile = cfg_locate(tagfilename, FL_CDIR|FL_READABLE);
 
 		/* if it isn't around, don't sweat it */
 		if (tagsfile == NULL)
@@ -624,7 +624,7 @@ gettagsfile(int n, int *endofpathflagp, int *did_read)
 			return NULL;
 		}
 		*did_read = TRUE;
-        }
+	}
 #ifdef	MDCHK_MODTIME
 	/*
 	 * Re-read the tags buffer if we are checking modification-times and
@@ -639,7 +639,7 @@ gettagsfile(int n, int *endofpathflagp, int *did_read)
 		 && readin(tagbp->b_fname, FALSE, tagbp, FALSE) != TRUE) {
 			return NULL;
 		}
-	 	set_modtime(tagbp, tagbp->b_fname);
+		set_modtime(tagbp, tagbp->b_fname);
 		*did_read = TRUE;
 	}
 #endif
@@ -741,7 +741,7 @@ cheap_buffer_scan(BUFFER *bp, char *patrn, int dir)
 			break;
 		}
 	}
-	free(exp);
+	free(TYPECAST(char,exp));
 #ifdef MDTAGIGNORECASE
 	ignorecase = savecase;
 #endif

@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.139 1998/11/14 17:35:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.140 1999/03/19 11:19:01 pgf Exp $
  *
  */
 
@@ -261,13 +261,13 @@ spawn(int f, int n GCC_UNUSED)
  * Common function for prompting for shell/pipe command, and for recording the
  * last shell/pipe command so that we can support "!!" convention.
  *
- * Note that for 'pipecmd()', we must retain a leading "!".
+ * Note that for 'capturecmd()', we must retain a leading "!".
  */
 static int
 ShellPrompt(
 TBUFF	**holds,
 char	*result,
-int	rerun)		/* TRUE/FALSE: spawn, -TRUE: pipecmd */
+int	rerun)		/* TRUE/FALSE: spawn, -TRUE: capturecmd */
 {
 	register int	s;
 	register SIZE_T	len;
@@ -333,7 +333,7 @@ spawn1(int rerun, int pressret)
 	register int	s;
 	char	line[NLINE];	/* command line send to shell */
 
-	if ((s = ShellPrompt(&save_shell[0], line, rerun)) != TRUE)
+	if ((s = ShellPrompt(&tb_save_shell[0], line, rerun)) != TRUE)
 		return s;
 #endif	/* COMMON_SH_PROMPT */
 
@@ -424,7 +424,7 @@ spawn1(int rerun, int pressret)
  */
 /* ARGSUSED */
 int
-pipecmd(int f, int n)
+capturecmd(int f, int n)
 {
 	register BUFFER *bp;	/* pointer to buffer to zot */
 	register int	s;
@@ -432,7 +432,8 @@ pipecmd(int f, int n)
 
 	/* get the command to pipe in */
 	hst_init('!');
-	s = ShellPrompt(&save_shell[!global_g_val(GMDSAMEBANGS)], line, -TRUE);
+	s = ShellPrompt(&tb_save_shell[!global_g_val(GMDSAMEBANGS)],
+		line, -TRUE);
 	hst_flush();
 
 	/* prompt ok? */
@@ -443,15 +444,6 @@ pipecmd(int f, int n)
 	if (writeall(f,n,FALSE,FALSE,TRUE) != TRUE)
 		return FALSE;
 
-
-#if BEFORE
-	if (((s = ((bp = bfind(OUTPUT_BufName, 0)) != NULL)) == TRUE)
-	 && ((s = popupbuff(bp)) == TRUE)
-	 && ((s = swbuffer(bp)) == TRUE)
-	 && ((s = readin(line, FALSE, bp, TRUE)) == TRUE))
-		set_rdonly(bp, line, MDVIEW);
-
-#else
 	if ((s = ((bp = bfind(OUTPUT_BufName, 0)) != NULL)) != TRUE)
 		return s;
 	if ((s = popupbuff(bp)) != TRUE)
@@ -461,7 +453,6 @@ pipecmd(int f, int n)
 	if ((s = swbuffer_lfl(bp,FALSE)) != TRUE)
 		return s;
 	set_rdonly(bp, line, MDVIEW);
-#endif
 
 	return (s);
 }
@@ -472,7 +463,7 @@ pipecmd(int f, int n)
  * Pipe a one line command into a window
  */
 int
-pipecmd(int f, int n)
+capturecmd(int f, int n)
 {
 	register int	s;	/* return status from CLI */
 	register WINDOW *wp;	/* pointer to new window */

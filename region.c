@@ -5,12 +5,12 @@
  * commands. Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.93 1999/03/07 23:36:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.95 1999/03/20 16:42:18 tom Exp $
  *
  */
 
 #include	"estruct.h"
-#include        "edef.h"
+#include	"edef.h"
 
 typedef	int (*CharProcFunc) (int c);
 
@@ -39,7 +39,7 @@ int
 killregionmaybesave(int save)
 {
 	register int    status;
-	REGION          region;
+	REGION		region;
 
 	if ((status = getregion(&region)) == TRUE) {
 		if (save) {
@@ -133,7 +133,7 @@ killrectmaybesave(int save)
 static int
 open_hole_in_line(void *flagp, int l, int r)
 {
-    	char *string = (char *)flagp;
+	char *string = (char *)flagp;
 	int len;
 	int s;
 	int saveo = DOT.o;
@@ -187,7 +187,7 @@ openregion(void)
 int
 stringrect(void)
 {
-	int             s;
+	int		s;
 	static char     buf[NLINE];
 
 	s = mlreply("Rectangle text: ", buf, sizeof(buf) );
@@ -242,7 +242,7 @@ shift_right_line(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 int
 shiftrregion(void)
 {
-    	if (regionshape == RECTANGLE)
+	if (regionshape == RECTANGLE)
 	    return do_lines_in_region(open_hole_in_line, (void *)NULL, FALSE);
 
 	regionshape = FULLLINE;
@@ -296,7 +296,7 @@ shift_left_line(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 int
 shiftlregion(void)
 {
-    	if (regionshape == RECTANGLE)
+	if (regionshape == RECTANGLE)
 	    return killrectmaybesave(FALSE);
 
 	regionshape = FULLLINE;
@@ -331,8 +331,10 @@ detabline(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 			break;
 		/* if we have a tab */
 		if (c == '\t') {
-			if ((s = ldelete(1L, FALSE)) != TRUE
-			||  (s = insspace(TRUE, curtabval - (DOT.o % curtabval) )) != TRUE)
+			if ((s = ldelete(1L, FALSE)) != TRUE)
+				return s;
+			if ((s = insspace(TRUE,
+				curtabval - (DOT.o % curtabval) )) != TRUE)
 				return s;
 		}
 		DOT.o++;
@@ -345,14 +347,12 @@ detabline(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 /*
  * change all tabs in the region to the right number of spaces
  */
-#if OPT_AEDIT
 int
 detab_region(void)
 {
 	regionshape = FULLLINE;
 	return do_lines_in_region(detabline,(void *)FALSE, FALSE);
 }
-#endif
 
 /*
  * convert all appropriate spaces in the line to tab characters.
@@ -362,71 +362,72 @@ detab_region(void)
 int
 entabline(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 {
-	register int fspace;	/* pointer to first space if in a run */
-	register int ccol;	/* current cursor column */
-	register char cchar;	/* current character */
-	int	ocol;
+	int	savecol;
 	long leadingonly = (long)flagp;
 	LINE *lp = DOT.l;
+	C_NUM ocol, ncol;
+	C_NUM ooff, noff;
+	int ch;
 
 	if (llength(lp) == 0)
 		return TRUE;
 
-	ocol = getccol(FALSE);
+	savecol = getccol(FALSE);
 
-	/* entab the current line */
-	/* would this have been easier if it had started at
-		the _end_ of the line, rather than the beginning?  -pgf */
-	fspace = -1;
-	ccol = 0;
-
-	detabline(flagp, 0, 0);	/* get rid of possible existing tabs */
-	DOT.o = 0;
+	ooff = noff = 0;
+	ocol = ncol = 0;
 	for_ever {
-		/* see if it is time to compress */
-		if ((fspace >= 0) && (nextab(fspace) <= ccol)) {
-			if (ccol - fspace < 2) {
-				fspace = -1;
-			} else {
-				backchar(TRUE, ccol - fspace);
-				(void)ldelete((B_COUNT)(ccol - fspace), FALSE);
-				linsert(1, '\t');
-				fspace = -1;
+
+	    if (ooff == llength(lp))
+		ch = '\n';
+	    else
+		ch = lgetc(lp, ooff);
+
+	    switch ( ch ) {
+		case ' ':
+		    ocol++;
+		    break;
+		case '\t':
+		    ocol = nexttabcol(ocol);
+		    break;
+		default:
+			while (nexttabcol(ncol) <= ocol) {
+				if (ncol + 1 == ocol)
+					break;
+				(void)lreplc(lp, noff++, '\t');
+				ncol = nexttabcol(ncol);
 			}
-		}
-
-		if (DOT.o >= llength(lp))
-			break;
-
-		/* get the current character */
-		cchar = char_at(DOT);
-
-		if (cchar == ' ') { /* a space...compress? */
-			if (fspace == -1)
-				fspace = ccol;
-		} else {
-			if (leadingonly)
-				break;
-			fspace = -1;
-		}
-		ccol++;
-		DOT.o++;
+			while (ncol < ocol) {
+				(void)lreplc(lp, noff++, ' ');
+				ncol++;
+			}
+			if (ch == '\n' || leadingonly) {
+				if (noff != ooff) {
+				    while (ooff < llength(lp))
+					(void)lreplc(lp, noff++,
+						    lgetc(lp, ooff++));
+				    DOT.o = noff;
+				    (void)ldelete(ooff - noff, FALSE);
+				}
+				(void)gocol(savecol);
+				return TRUE;
+			}
+			(void)lreplc(lp, noff++, ch);
+			ncol++, ocol++;
+	    }
+	    ooff++;
 	}
-	(void)gocol(ocol);
-	return TRUE;
 }
 
 /*
  * convert all appropriate spaces in the region to tab characters
  */
-#if OPT_AEDIT
 int
 entab_region(void)
 {
 	regionshape = FULLLINE;
 	return do_lines_in_region(entabline,(void *)FALSE, FALSE);
 }
-#endif
 
 /* trim trailing whitespace from a line.  dot is preserved if possible. */
 /* (dot is even preserved if it was sitting on the newline) */
@@ -474,21 +475,19 @@ trimline(void *flag GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 /*
  * trim trailing whitespace from a region
  */
-#if OPT_AEDIT
 int
 trim_region(void)
 {
 	regionshape = FULLLINE;
 	return do_lines_in_region(trimline, (void *)0, FALSE);
 }
-#endif
 
 /* turn line, or part, to whitespace */
 /*ARGSUSED*/
 static int
 blankline(void *flagp, int l, int r)
 {
-    	char *string = (char *)flagp;
+	char *string = (char *)flagp;
 	int len;
 	int s = TRUE;
 	int saveo;
@@ -520,7 +519,7 @@ blankline(void *flagp, int l, int r)
 	DOT.o = l;
 
 	if (llength(lp) <= r) {
-	    	/* then the rect doesn't extend to the end of line */
+		/* then the rect doesn't extend to the end of line */
 		ldelete((B_COUNT)(llength(lp) - l), FALSE);
 
 		/* so there's nothing beyond the rect, so insert at
@@ -533,15 +532,15 @@ blankline(void *flagp, int l, int r)
 		    len = 0;
 		}
 	} else {
-	    	/* the line goes on, so delete and reinsert exactly */
+		/* the line goes on, so delete and reinsert exactly */
 		ldelete((B_COUNT)(r - l), FALSE);
-	    	len = r - l;
+		len = r - l;
 	}
 
 	s = lstrinsert(string, len);
 	if (s != TRUE) return s;
 
-        if (regionshape == RECTANGLE && b_val(curbp,MDTABINSERT))
+	if (regionshape == RECTANGLE && b_val(curbp,MDTABINSERT))
 		s = entabline((void *)TRUE, 0, 0);
 
 	return s;
@@ -643,13 +642,11 @@ _to_caseflip(int c)
 /*
  * turn region to whitespace
  */
-#if OPT_AEDIT
 int
 blank_region(void)
 {
 	return do_lines_in_region(blankline, (void *)NULL, FALSE);
 }
-#endif
 
 int
 flipregion(void)
@@ -674,7 +671,7 @@ upperregion(void)
 
 #if NEEDED
 /* this walks a region, char by char, and invokes a funcion for
- 	each.  it does _not_ know about rectangles, which is why it is
+	each.  it does _not_ know about rectangles, which is why it is
 	probably obsolete -- we can do_lines_in_region/do_chars_in_line
 	to get the same effect*/
 int
@@ -683,8 +680,8 @@ charprocreg(int (*func)(int))
 	MARK		m;
 	register int    c,nc;
 	register int    status;
-	REGION          region;
-	int 		changed = 0;
+	REGION		region;
+	int		changed = 0;
 
 	if ((status = getregion(&region)) == TRUE) {
 		m = region.r_orig;
@@ -810,7 +807,7 @@ getregion(register REGION *rp)
 			if (flp != buf_head(curbp) && flp != flp_start) {
 			    fsize += line_length(flp) - w_left_margin(curwp);
 			} else if (flp != blp) {
-			    mlwrite ("BUG: hit buf end in getregion");
+			    mlforce("BUG: hit buf end in getregion");
 			    return FALSE;
 			}
 
@@ -908,7 +905,7 @@ int convert_cols)	/* if rectangle, convert columns to offsets */
 {
 	register LINE   *linep;
 	register int    status;
-	REGION          region;
+	REGION		region;
 	C_NUM		l, r;
 
 	if ((status=getregion(&region)) == TRUE) {
@@ -995,7 +992,7 @@ int convert_cols)	/* if rectangle, convert columns to offsets */
 	if it returns other than -1, then the char is replaced with
 	that value.
     the ll and rr args are OFFSETS, so if you use this routine with
-    	do_lines_in_region, tell it to CONVERT columns to offsets. */
+	do_lines_in_region, tell it to CONVERT columns to offsets. */
 /*ARGSUSED*/
 static int
 do_chars_in_line(
@@ -1003,7 +1000,7 @@ void	*flagp GCC_UNUSED,
 int	ll, int	rr)		/* offsets of of chars to be processed */
 {
 	register int    c,nc;
-	int 		changed = 0;
+	int		changed = 0;
 	register LINE *lp;
 	int i;
 

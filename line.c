@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.116 1999/03/09 11:25:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.118 1999/03/20 16:36:16 tom Exp $
  *
  */
 
@@ -289,6 +289,28 @@ int len)	/* if non-zero, insert exactly this amount.  pad if needed */
 	return TRUE;
 }
 
+
+/*
+ * replace a single character on a line.  _cannot_ be
+ * use to replace a newline.
+ */
+int
+lreplc(LINEPTR lp, C_NUM off, int c)
+{
+
+	if (off == llength(lp))
+	    return FALSE;
+
+	if (lp->l_text[off] != (char)c) {
+	    copy_for_undo(lp);
+	    lp->l_text[off] = (char)c;
+
+	    chg_buff(curbp, WFEDIT);
+	}
+
+	return TRUE;
+}
+
 /*
  * Insert "n" copies of the character "c" at the current location of dot. In
  * the easy case all that happens is the text is stored in the line. In the
@@ -532,7 +554,7 @@ lnewline(void)
  */
 int
 ldelete(
-B_COUNT n, 	/* # of chars to delete */
+B_COUNT n,	/* # of chars to delete */
 int kflag)	/* put killed text in kill buffer flag */
 {
 	register char	*cp1;
@@ -647,12 +669,12 @@ int kflag)	/* put killed text in kill buffer flag */
 	return (s);
 }
 
-/* getctext:	grab and return a string with text from
-		the current line, consisting of chars of type "type"
-*/
+/* returns pointer to static copy of text from current pos, consisting
+ * of chars of type "type"
+ */
 #if OPT_EVAL
 char *
-getctext(CHARTYPE type)
+lgrabtext(CHARTYPE type)
 {
 	static char rline[NSTRING];	/* line to return */
 
@@ -662,47 +684,44 @@ getctext(CHARTYPE type)
 #endif
 
 #if OPT_EVAL
-/* putctext:	replace the current line with the passed in text	*/
 
+/*
+ * replace the current line with the passed in text
+ */
 int
-putctext(
+lrepltext(
 CHARTYPE type,
-const char *iline)	/* contents of new line */
+const char *np)	/* contents of new line */
 {
-	register int status = TRUE;
+	int status = TRUE;
+	int c;
 
-	TRACE(("putctext:%s%lx:%s\n", type ? "word" : "line", (ULONG) type, iline))
+	TRACE(("lrepltext:%s%lx:%s\n", type ? "word" : "line",
+		    (ULONG) type, np))
 
 	if (b_val(curbp,MDVIEW))
 		return rdonly();
 
 	mayneedundo();
 
-	if (type != 0) {
+	if (type != 0) {  /* it's an exact region */
 		regionshape = EXACT;
 		while (DOT.o < llength(DOT.l)
 		  && istype(type, char_at(DOT))) {
 			if ((status = forwdelchar(FALSE,1)) != TRUE)
 				return(status);
 		}
-	} else {
+	} else { /* it's the full line */
 		regionshape = FULLLINE;
-		/* delete the current line */
-		DOT.o = w_left_margin(curwp); /* start at the beginning of the line */
+		DOT.o = w_left_margin(curwp);
 		if ((status = deltoeol(TRUE, 1)) != TRUE)
 			return(status);
 	}
 
-	/* insert the new text */
-	while (*iline) {
-		if (*iline == '\n') {
-			if (lnewline() != TRUE)
-				return(FALSE);
-		} else {
-			if (linsert(1, *iline) != TRUE)
-				return(FALSE);
-		}
-		++iline;
+	/* insert passed in chars */
+	while ((c = *np++) != 0) {
+		if (((c == '\n') ? lnewline() : linsert(1,c)) != TRUE)
+			return(FALSE);
 	}
 	if (type == 0) {
 		status = lnewline();
@@ -867,7 +886,7 @@ kdone(void)
 int
 kinsertlater(int c)
 {
-    	int s = TRUE;
+	int s = TRUE;
 	if (kcharpending >= 0) {
 		int oc = kcharpending;
 		kcharpending = -1;
@@ -1030,7 +1049,7 @@ usekreg(int f, int n)
 		return FALSE;
 
 	/* if we're playing back dot, let its kreg override */
-	if (dotcmdmode == PLAY && dotcmdkreg != 0)
+	if (dotcmdactive == PLAY && dotcmdkreg != 0)
 		ukb = dotcmdkreg;
 	else
 		ukb = (short)i;
@@ -1134,7 +1153,7 @@ static int kb_size(int ii, KILL *kp)
 int
 begin_kill(void)
 {
-	if ((undo_kill.started = !b_val(curbp, MDUNDOABLE))) {
+	if ((undo_kill.started = !b_val(curbp, MDUNDOABLE)) != 0) {
 		static KILLREG unused;
 		int num = nextkb();
 		undo_kill.last_kb = lastkb;
@@ -1679,7 +1698,7 @@ static void
 relist_registers(void)
 {
 
-	if (will_relist_regs) 	/* have we already done this? */
+	if (will_relist_regs)	/* have we already done this? */
 		return;
 
 	will_relist_regs = TRUE;

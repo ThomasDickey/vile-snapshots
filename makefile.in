@@ -19,9 +19,8 @@
 # Paul Fox
 #
 # gnu autoconf support by kevin buettner, 5/94
-# original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.124 1999/03/08 11:20:24 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.125 1999/03/19 11:48:57 pgf Exp $
 #
 
 #### Start of system configuration section. ####
@@ -68,7 +67,7 @@ mandir		= @mandir@/man$(manext)
 #### End of system configuration section. ####
 
 SHELL		= /bin/sh
-RM              = rm -f
+RM		= rm -f
 
 QUOTDEFS	= \
 		-DVILE_LIBDIR_PATH=\"@VILE_LIBDIR_PATH@\" \
@@ -443,15 +442,15 @@ patch:	/tmp/vilevers
 	while read file filerev						;\
 	do								 \
 	  rcsdiff -c -u -r$$filerev $$file 2>/dev/null || true		;\
-	done  >patch$$ovilevers-$$vilevers 				;\
+	done  >patch$$ovilevers-$$vilevers				;\
 	echo Created patch$$ovilevers-$$vilevers
 
 dpatch:
-	co -p$(PATCH_AGAINST) revlist |			 		 \
+	co -p$(PATCH_AGAINST) revlist | 				 \
 	while read file filerev						;\
 	do								 \
 	  rcsdiff -c -u -r$$filerev $$file 2>/dev/null || true		;\
-	done  >patchREL-CUR 						;\
+	done  >patchREL-CUR						;\
 	echo Created patchREL-CUR
 
 /tmp/vilevers: ALWAYS
@@ -482,7 +481,7 @@ release_warnings:
 rcsdiffrw:
 	@-for x in `$(MAKE) -f makefile.in rw`	;\
 	do	\
-		echo 		;\
+		echo		;\
 		echo $$x	;\
 		echo =========	;\
 		rcsdiff -u $$x	;\
@@ -568,11 +567,11 @@ $(mandir)/xvile.$(manext): $(srcdir)/vile.1
 $(datadir)/vile.hlp:       $(srcdir)/vile.hlp
 	$(INSTALL_DATA)    $(srcdir)/vile.hlp $@
 
-$(bindir)/vileget:         $(srcdir)/perl/vileget
+$(bindir)/vileget:	   $(srcdir)/perl/vileget
 	$(INSTALL_SCRIPT)  $(srcdir)/perl/vileget $@
 $(perldir)/Vileserv.pm:    $(srcdir)/perl/Vileserv.pm
 	$(INSTALL_SCRIPT)  $(srcdir)/perl/Vileserv.pm $@
-$(perldir)/dir.pl:         $(srcdir)/perl/dir.pl
+$(perldir)/dir.pl:	   $(srcdir)/perl/dir.pl
 	$(INSTALL_DATA)    $(srcdir)/perl/dir.pl $@
 $(perldir)/glob2re.pl:     $(srcdir)/perl/glob2re.pl
 	$(INSTALL_SCRIPT)  $(srcdir)/perl/glob2re.pl $@
@@ -582,7 +581,7 @@ $(perldir)/hilite.pl:      $(srcdir)/perl/hilite.pl
 	$(INSTALL_DATA)    $(srcdir)/perl/hilite.pl $@
 $(perldir)/manfilt.pl:     $(srcdir)/perl/manfilt.pl
 	$(INSTALL_SCRIPT)  $(srcdir)/perl/manfilt.pl $@
-$(perldir)/mime.pl:        $(srcdir)/perl/mime.pl
+$(perldir)/mime.pl:	   $(srcdir)/perl/mime.pl
 	$(INSTALL_DATA)    $(srcdir)/perl/mime.pl $@
 $(perldir)/plugins.pl:     $(srcdir)/perl/plugins.pl
 	$(INSTALL_DATA)    $(srcdir)/perl/plugins.pl $@

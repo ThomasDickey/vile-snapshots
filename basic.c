@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.100 1998/11/14 14:07:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.101 1999/03/19 10:49:44 pgf Exp $
  *
  */
 
@@ -372,12 +372,11 @@ forwline(int f, int n)
 	if (n < 0) return (backline(f, -n));
 	if (n == 0) return TRUE;
 
-	/* if the last command was not a line move,
-	   reset the goal column */
+	/* set the "goal" column if necessary */
 	if (curgoal < 0)
 		curgoal = getccol(FALSE);
 
-	/* and move the point down */
+	/* loop downwards */
 	dlp = DOT.l;
 	do {
 		register LINE *nlp = lforw(dlp);
@@ -387,7 +386,7 @@ forwline(int f, int n)
 		dlp = nlp;
 	} while (--n);
 
-	/* resetting the current position */
+	/* set dot */
 	DOT.l  = dlp;
 	DOT.o  = getgoal(dlp);
 	curwp->w_flag |= WFMOVE;
@@ -508,21 +507,20 @@ backline(int f, int n)
 	if (n < 0)
 		return (forwline(f, -n));
 
-	/* if we are on the first line as we start....fail the command */
+	/* can't move up? */
 	if (is_first_line(DOT, curbp))
 		return(FALSE);
 
-	/* if the last command was not note a line move,
-	   reset the goal column */
+	/* set the "goal" column if necessary */
 	if (curgoal < 0)
 		curgoal = getccol(FALSE);
 
-	/* and move the point up */
+	/* loop upwards */
 	dlp = DOT.l;
 	while (n-- && lback(dlp) != buf_head(curbp))
 		dlp = lback(dlp);
 
-	/* reseting the current position */
+	/* set dot */
 	DOT.l  = dlp;
 	DOT.o  = getgoal(dlp);
 	curwp->w_flag |= WFMOVE;
@@ -815,7 +813,7 @@ int
 next_column(int c, int col)
 {
 	if (c == '\t')
-		return nextab(col);
+		return nexttabcol(col);
 	else if (!isPrint(c))
 		return col+2;
 	else

@@ -39,12 +39,12 @@
  *			SPEC|c.
  *
  *
- *	TTtypahead() 	  true if a key is avail from TTgetc().
+ *	TTtypahead()	  true if a key is avail from TTgetc().
  *	sysmapped_c_avail() "  if a key is avail from sysmapped_c() or below.
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.190 1999/01/26 10:47:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.191 1999/03/19 11:29:29 pgf Exp $
  *
  */
 
@@ -58,13 +58,13 @@
 
 typedef	struct	_kstack	{
 	struct	_kstack	*m_link;
-	int	m_save;		/* old value of 'kbdmode'		*/
+	int	m_save;	/* old value of 'kbdmacactive'		*/
 	int	m_indx;		/* index identifying this macro		*/
 	int	m_rept;		/* the number of times to execute the macro */
-	ITBUFF  *m_kbdm;		/* the macro-text to execute		*/
-	ITBUFF  *m_dots;		/* workspace for "." command		*/
+	ITBUFF  *m_kbdm;	/* the macro-text to execute		*/
+	ITBUFF  *m_dots;	/* workspace for "." command		*/
 #ifdef GMDDOTMACRO
-	ITBUFF  *m_DOTS;		/* save-area for "." command		*/
+	ITBUFF  *m_DOTS;	/* save-area for "." command		*/
 	int	m_RPT0;		/* saves 'dotcmdcnt'			*/
 	int	m_RPT1;		/* saves 'dotcmdrep'			*/
 #endif
@@ -83,7 +83,8 @@ typedef	struct	_kstack	{
 /*--------------------------------------------------------------------------*/
 static	void	finish_kbm (void);
 
-static	KSTACK *KbdStack;	/* keyboard/@-macros that are replaying */
+static  int	kbdmacactive;	/* current mode	*/
+static	KSTACK	*KbdStack;	/* keyboard/@-macros that are replaying */
 static	ITBUFF  *KbdMacro;	/* keyboard macro, recorded	*/
 static	int	last_eolchar;	/* records last eolchar-match in 'kbd_string' */
 
@@ -98,13 +99,13 @@ TempDot(int init)
 {
 	static	ITBUFF  *tmpcmd;	/* dot commands, 'til we're sure */
 
-	if (kbdmode == PLAY) {
+	if (kbdmacactive == PLAY) {
 		if (init)
-			(void)itb_init(&(KbdStack->m_dots), abortc);
+			(void)itb_init(&(KbdStack->m_dots), esc_c);
 		return KbdStack->m_dots;
 	}
 	if (init || (tmpcmd == 0))
-		(void)itb_init(&tmpcmd, abortc);
+		(void)itb_init(&tmpcmd, esc_c);
 	return tmpcmd;
 }
 
@@ -162,7 +163,7 @@ unsigned *pos)
 /*
  * Ask a yes or no question in the message line. Return either TRUE, FALSE, or
  * ABORT. The ABORT status is returned if the user bumps out of the question
- * with an abortc. Used any time a confirmation is required.
+ * with an esc_c. Used any time a confirmation is required.
  */
 
 int
@@ -340,7 +341,7 @@ mlreply_no_opts(const char *prompt, char *buf, UINT bufn)
 void
 incr_dot_kregnum(void)
 {
-	if (dotcmdmode == PLAY) {
+	if (dotcmdactive == PLAY) {
 		register int	c = itb_peek(dotcmd);
 		if (isDigit(c) && c < '9')
 			itb_stuff(dotcmd, ++c);
@@ -353,7 +354,7 @@ incr_dot_kregnum(void)
 static void
 record_dot_char(int c)
 {
-	if (dotcmdmode == RECORD) {
+	if (dotcmdactive == RECORD) {
 		ITBUFF	*tmp = TempDot(FALSE);
 		(void)itb_append(&tmp, c);
 	}
@@ -365,7 +366,7 @@ record_dot_char(int c)
 static void
 record_kbd_char(int c)
 {
-	if (dotcmdmode != PLAY && kbdmode == RECORD)
+	if (dotcmdactive != PLAY && kbdmacactive == RECORD)
 		(void)itb_append(&KbdMacro, c);
 }
 
@@ -385,10 +386,10 @@ int eatit)  /* consume the character? */
 	register int	c = -1;
 	register ITBUFF	*buffer;
 
-	if (dotcmdmode == PLAY) {
+	if (dotcmdactive == PLAY) {
 
 		if (interrupted()) {
-			dotcmdmode = STOP;
+			dotcmdactive = 0;
 			return intrc;
 		} else {
 
@@ -398,7 +399,7 @@ int eatit)  /* consume the character? */
 						return itb_get(buffer, 0);
 				} else { /* at the end of last repetition?  */
 					if (--dotcmdrep < 1) {
-						dotcmdmode = STOP;
+						dotcmdactive = 0;
 						(void)dotcmdbegin();
 						/* immediately start recording
 						 * again, just in case.
@@ -423,10 +424,10 @@ int eatit)  /* consume the character? */
 		}
 	}
 
-	if (kbdmode == PLAY) { /* if we are playing a keyboard macro back, */
+	if (kbdmacactive == PLAY) {
 
 		if (interrupted()) {
-			while (kbdmode == PLAY)
+			while (kbdmacactive == PLAY)
 				finish_kbm();
 			return intrc;
 		} else {
@@ -438,7 +439,7 @@ int eatit)  /* consume the character? */
 					finish_kbm();
 			}
 
-			if (kbdmode == PLAY) {
+			if (kbdmacactive == PLAY) {
 				buffer = KbdStack->m_kbdm;
 				if (eatit)
 					record_dot_char(c = itb_next(buffer));
@@ -539,7 +540,7 @@ tgetc(int quoted)
 		not_interrupted();
 		if (setjmp(read_jmp_buf)) {
 			c = kcod2key(intrc);
-    			TRACE(("setjmp/getc:%c (%#x)\n", c, c))
+			TRACE(("setjmp/getc:%c (%#x)\n", c, c))
 #if defined(linux) && defined(DISP_TERMCAP)
 			/*
 			 * Linux bug (observed with kernels 1.2.13 & 2.0.0):
@@ -833,7 +834,7 @@ UINT	options)
 
 	/* Are we allowed to expand anything? */
 	if (!(expand || exppat || shell))
-	 	return FALSE;
+		return FALSE;
 
 	/* Is this a character that we know about? */
 	if (strchr(global_g_val_ptr(GVAL_EXPAND_CHARS),c) == 0)
@@ -898,7 +899,7 @@ UINT	options)
 		if (cpos > (buffer[0] == '!'))
 			return FALSE;
 #endif
-		cp = tb_values(save_shell[!isShellOrPipe(buffer)]);
+		cp = tb_values(tb_save_shell[!isShellOrPipe(buffer)]);
 		if (cp != NULL && isShellOrPipe(cp))
 			cp++;	/* skip the '!' */
 		break;
@@ -1220,15 +1221,15 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 	    miniedit = FALSE;
 	} else if (miniedit && cfp == &f_insertbol) {
 	    edited = editMinibuffer(buf, cpos, fnc2kcod(&f_firstnonwhite),
-	                            margin, quoted);
+				    margin, quoted);
 	    miniedit = FALSE;
 	} else if (miniedit && cfp == &f_appendeol) {
 	    edited = editMinibuffer(buf, cpos, fnc2kcod(&f_gotoeol),
-	                            margin, quoted);
+				    margin, quoted);
 	    miniedit = FALSE;
 	} else if (miniedit && cfp == &f_append) {
 	    edited = editMinibuffer(buf, cpos, fnc2kcod(&f_forwchar_to_eol),
-	                            margin, quoted);
+				    margin, quoted);
 	    miniedit = FALSE;
 	/* FIXME:  reject non-motion commands for now, since we haven't
 	 * resolved what to do with the minibuffer if someone inserts a
@@ -1396,7 +1397,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 		 * must not use them in filenames, for example.  (We don't
 		 * support name-completion with embedded nulls, either).
 		 */
-		if ((c == 0 && c != abortc) && !(options & KBD_0CHAR))
+		if ((c == 0 && c != esc_c) && !(options & KBD_0CHAR))
 			continue;
 
 		/* if we echoed ^V, erase it now */
@@ -1497,14 +1498,14 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 		} else
 #endif
 		/*
-		 * If editc and abortc are the same, don't abort unless the
+		 * If editc and esc_c are the same, don't abort unless the
 		 * user presses it twice in a row.
 		 */
 		if ((c != editc || c == lastch)
 		  && ABORTED(c)
 		  && !quotef
 		  && !dontmap) {
-			tb_init(&buf, abortc);
+			tb_init(&buf, esc_c);
 			status = esc_func(FALSE, 1);
 			break;
 		} else if ((isbackspace(c) ||
@@ -1629,9 +1630,9 @@ int
 dotcmdbegin(void)
 {
 	/* never record a playback */
-	if (dotcmdmode != PLAY) {
+	if (dotcmdactive != PLAY) {
 		(void)TempDot(TRUE);
-		dotcmdmode = RECORD;
+		dotcmdactive = RECORD;
 		return TRUE;
 	}
 	return FALSE;
@@ -1643,12 +1644,12 @@ dotcmdbegin(void)
 int
 dotcmdfinish(void)
 {
-	if (dotcmdmode == RECORD) {
+	if (dotcmdactive == RECORD) {
 		ITBUFF	*tmp = TempDot(FALSE);
 		if (itb_length(tmp) == 0	/* keep the old value */
 		 || itb_copy(&dotcmd, tmp) != 0) {
 			itb_first(dotcmd);
-			dotcmdmode = STOP;
+			dotcmdactive = 0;
 			return TRUE;
 		}
 	}
@@ -1661,8 +1662,8 @@ dotcmdfinish(void)
 void
 dotcmdstop(void)
 {
-	if (dotcmdmode == RECORD)
-		dotcmdmode = STOP;
+	if (dotcmdactive == RECORD)
+		dotcmdactive = 0;
 }
 
 /*
@@ -1683,8 +1684,8 @@ dotcmdplay(int f, int n)
 	/* else
 		leave dotcmdarg alone; */
 
-	if (dotcmdmode != STOP || itb_length(dotcmd) == 0) {
-		dotcmdmode = STOP;
+	if (dotcmdactive || itb_length(dotcmd) == 0) {
+		dotcmdactive = 0;
 		dotcmdarg = FALSE;
 		return FALSE;
 	}
@@ -1692,7 +1693,7 @@ dotcmdplay(int f, int n)
 	if (n == 0) n = 1;
 
 	dotcmdcnt = dotcmdrep = n;  /* remember how many times to execute */
-	dotcmdmode = PLAY;	/* put us in play mode */
+	dotcmdactive = PLAY;	/* put us in play mode */
 	itb_first(dotcmd);	/*    at the beginning */
 
 	if (ukb != 0) /* save our kreg, if one was specified */
@@ -1709,7 +1710,7 @@ dotcmdplay(int f, int n)
 int
 kbd_replaying(int match)
 {
-	if (dotcmdmode == PLAY) {
+	if (dotcmdactive == PLAY) {
 		/*
 		 * Force a false-return if we are in insert-mode and have
 		 * only one character to display.
@@ -1723,49 +1724,41 @@ kbd_replaying(int match)
 		}
 		return TRUE;
 	}
-	return (kbdmode == PLAY);
+	return (kbdmacactive == PLAY);
 }
 
-/*
- * Begin recording a keyboard macro.
- */
-/* ARGSUSED */
 int
-kbd_mac_begin(int f GCC_UNUSED, int n GCC_UNUSED)
+kbd_mac_recording(void)
 {
-	if (kbdmode != STOP) {
-		mlforce("[Macro already active]");
-		return FALSE;
-	}
-	mlwrite("[Start macro]");
-
-	kbdmode = RECORD;
-	return (itb_init(&KbdMacro, abortc) != 0);
+	return (kbdmacactive == RECORD);
 }
 
-/*
- * End keyboard macro. Check for the same limit conditions as the above
- * routine. Set up the variables and return to the caller.
- */
 /* ARGSUSED */
 int
-kbd_mac_end(int f GCC_UNUSED, int n GCC_UNUSED)
+kbd_mac_startstop(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	if (kbdmode == STOP) {
-		mlforce("[Macro not active]");
-		return FALSE;
-	}
-	if (kbdmode == RECORD) {
-		mlwrite("[End macro]");
-		kbdmode = STOP;
+	if (kbdmacactive) {
+		if (kbdmacactive == RECORD) {
+			mlwrite("[Macro recording stopped]");
+			kbdmacactive = 0;
 #ifdef GMDDOTMACRO
-		dot_replays_macro(DEFAULT_REG);
+			dot_replays_macro(DEFAULT_REG);
 #endif
+			upmode();
+			return TRUE;
+		}
+
+		/* note that for PLAY, we do nothing -- that makes the
+		 * '^X-)' at the of the recorded buffer a no-op during
+		 * playback */
+		return TRUE;
+	} else {
+		mlwrite("[Macro recording started]");
+		kbdmacactive = RECORD;
+		upmode();
+		return (itb_init(&KbdMacro, esc_c) != 0);
 	}
-	/* note that if kbd_mode == PLAY, we do nothing -- that makes
-		the '^X-)' at the of the recorded buffer a no-op during
-		playback */
-	return TRUE;
+
 }
 
 /*
@@ -1777,15 +1770,14 @@ kbd_mac_end(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 kbd_mac_exec(int f GCC_UNUSED, int n)
 {
-	if (kbdmode != STOP) {
-		mlforce("[Can't execute macro while recording]");
-		return FALSE;
+	if (!kbdmacactive) {
+		if (n <= 0)
+			return TRUE;
+		return start_kbm(n, DEFAULT_REG, KbdMacro);
 	}
 
-	if (n <= 0)
-		return TRUE;
-
-	return start_kbm(n, DEFAULT_REG, KbdMacro);
+	mlforce("[Can't execute macro unless idle]");
+	return FALSE;
 }
 
 /* ARGSUSED */
@@ -1808,11 +1800,11 @@ kbd_mac_save(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 kbm_started(int macnum, int force)
 {
-	if (force || (kbdmode == PLAY)) {
+	if (force || (kbdmacactive == PLAY)) {
 		register KSTACK *sp;
 		for (sp = KbdStack; sp != 0; sp = sp->m_link) {
 			if (sp->m_indx == macnum) {
-				while (kbdmode == PLAY)
+				while (kbdmacactive == PLAY)
 					finish_kbm();
 				mlwarn("[Error: currently executing %s%c]",
 					macnum == DEFAULT_REG
@@ -1840,7 +1832,7 @@ ITBUFF *ptr)			/* data to interpret */
 	if (interrupted())
 		return FALSE;
 
-	if (kbdmode == RECORD && KbdStack != 0)
+	if (kbdmacactive == RECORD && KbdStack != 0)
 		return TRUE;
 
 	if (itb_length(ptr)
@@ -1850,33 +1842,33 @@ ITBUFF *ptr)			/* data to interpret */
 		/* make a copy of the macro in case recursion alters it */
 		itb_first(tp);
 
-		sp->m_save = kbdmode;
+		sp->m_save = kbdmacactive;
 		sp->m_indx = macnum;
 		sp->m_rept = n;
 		sp->m_kbdm = tp;
 		sp->m_link = KbdStack;
 
 		KbdStack   = sp;
-		kbdmode    = PLAY; 	/* start us in play mode */
+		kbdmacactive = PLAY;	/* start us in play mode */
 
 		/* save data for "." on the same stack */
 		sp->m_dots = 0;
-		if (dotcmdmode == PLAY) {
+		if (dotcmdactive == PLAY) {
 #ifdef GMDDOTMACRO
 			sp->m_DOTS = dotcmd;
 			sp->m_RPT0 = dotcmdcnt;
 			sp->m_RPT1 = dotcmdrep;
 #endif
 			dotcmd     = 0;
-			dotcmdmode = RECORD;
+			dotcmdactive = RECORD;
 		}
 #ifdef GMDDOTMACRO
 		  else {
 			sp->m_DOTS = 0;
 		  }
 #endif
-		return (itb_init(&dotcmd, abortc) != 0
-		  &&    itb_init(&(sp->m_dots), abortc) != 0);
+		return (itb_init(&dotcmd, esc_c) != 0
+		  &&    itb_init(&(sp->m_dots), esc_c) != 0);
 	}
 	return FALSE;
 }
@@ -1887,12 +1879,12 @@ ITBUFF *ptr)			/* data to interpret */
 static void
 finish_kbm(void)
 {
-	if (kbdmode == PLAY) {
+	if (kbdmacactive == PLAY) {
 		register KSTACK *sp = KbdStack;
 
-		kbdmode = STOP;
+		kbdmacactive = 0;
 		if (sp != 0) {
-			kbdmode  = sp->m_save;
+			kbdmacactive  = sp->m_save;
 			KbdStack = sp->m_link;
 
 			itb_free(&(sp->m_kbdm));
@@ -1903,7 +1895,7 @@ finish_kbm(void)
 				dotcmd     = sp->m_DOTS;
 				dotcmdcnt  = sp->m_RPT0;
 				dotcmdrep  = sp->m_RPT1;
-				dotcmdmode = PLAY;
+				dotcmdactive = PLAY;
 			}
 			dot_replays_macro(sp->m_indx);
 #endif

@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.93 1999/02/12 03:48:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.95 1999/03/20 16:35:12 tom Exp $
  *
  */
 
@@ -967,7 +967,7 @@ multimotion(int f, int n)
 
 	if (s == TRUE && pasting)
 		s = SEL_PASTE;
-		
+
 	return s;
 }
 
@@ -1261,7 +1261,7 @@ hyperspray(int (*f)(char *))
 		f(p->ar_hypercmd);
 		count++;
 		/* As originally written, there was no break below.
-		        This means that we'd loop over all of the
+			This means that we'd loop over all of the
 			attributes in case there were multiple
 			overlapping attributes with attached hypertext
 			commands.  As cool as this may sound, it is
@@ -1486,7 +1486,7 @@ attribute_cntl_a_sequences(void)
 #endif
 
     if ((pastline = setup_region()) == 0)
-    	return FALSE;
+	return FALSE;
 
     while (DOT.l != pastline) {
 	while (DOT.o < llength(DOT.l)) {
@@ -1528,7 +1528,6 @@ attribute_from_filter(void)
     int nbytes;
     int done;
     int n;
-    int s;
 
     if ((pastline = setup_region()) == 0)
 	return FALSE;
@@ -1538,14 +1537,14 @@ attribute_from_filter(void)
 	free_attribs(curbp);
 	while (DOT.l != pastline) {
 
-	    if ((s=ffgetline(&nbytes)) > FIOSUC)
+	    if (ffgetline(&nbytes) > FIOSUC)
 		break;
 
 	    DOT.o = 0;
 	    for (n = 0; n < nbytes && DOT.o < llength(DOT.l); n++) {
-		if (fline[n] == CONTROL_A) {
+		if (fflinebuf[n] == CONTROL_A) {
 		    MK = DOT;
-		    done = parse_attribute(fline, nbytes, n, &skip);
+		    done = parse_attribute(fflinebuf, nbytes, n, &skip);
 		    if (done) {
 			n = (done + skip - 1);
 			MK.o += skip;

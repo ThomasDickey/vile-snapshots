@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.177 1999/03/07 21:25:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.179 1999/03/20 16:44:14 tom Exp $
  *
  */
 
@@ -912,7 +912,7 @@ int f, int n)
 		}
 	}
 
-	if (dotcmdmode != PLAY) {
+	if (dotcmdactive != PLAY) {
 		if (execfunc != &f_dotcmdplay) {
 			/* reset dotcmdkreg on any command where ukb is
 			 * unspecified.  usekreg() does it on the one's
@@ -1068,7 +1068,7 @@ int	skip)
 	int	multi	= !isShellOrPipe(ref);	/* shift command? */
 	int	count	= 0;
 
-	if (tb_init(p, abortc) != 0) {
+	if (tb_init(p, esc_c) != 0) {
 		ALLOC_T	n, len = tb_length(src);
 		char	*txt = tb_values(src);
 
@@ -1944,28 +1944,12 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 #if	OPT_DEBUGMACROS
 		/* if $debug == TRUE, every line to execute
 		   gets echoed and a key needs to be pressed to continue
-		   ^G will abort the command */
+		   abortc will abort the command */
 
 		if (macbug) {
-			char	outline[NLINE];
-			(void)strcpy(outline, "<<<");
-
-			/* debug macro name */
-			(void)strcat(outline, bp->b_bname);
-			(void)strcat(outline, ":");
-
-			/* debug if levels */
-			(void)strcat(outline, l_itoa(ifstk.level));
-			(void)strcat(outline, "/");
-			(void)strcat(outline, l_itoa(ifstk.disabled));
-			(void)strcat(outline, ":");
-
-			/* and lastly the line */
-			(void)strcat(outline, eline);
-			(void)strcat(outline, ">>>");
-
-			/* write out the debug line */
-			mlforce("%s",outline);
+			mlforce("<<<%s:%d/%d:%s>>>", bp->b_bname,
+				ifstk.level, ifstk.disabled,
+				eline);
 			(void)update(TRUE);
 
 			/* and get the keystroke */
@@ -2055,7 +2039,7 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 		} else if (*eline != DIRECTIVE_CHAR) {
 			/* prefix lines with "WITH" value, if any */
 			if (tb_length(line_prefix)) {
-				int adj = eline - einit;
+				long adj = eline - einit;
 				char *temp = malloc(tb_length(line_prefix) + strlen(eline) + 2);
 				(void)lsprintf(temp, "%s %s", tb_values(line_prefix), eline);
 				free(einit);
@@ -2150,19 +2134,19 @@ do_source(char *fname, int n, int optional)
 	char *fspec;		/* full file spec */
 
 	/* look up the path for the file */
-	fspec = flook(fname,
+	fspec = cfg_locate(fname,
 #if SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
 		FL_ANYWHERE | FL_READABLE
 #else
-		FL_HERE | FL_HOME | FL_TABLE | FL_READABLE
+		FL_CDIR | FL_HOME | FL_STARTPATH | FL_READABLE
 #endif
 		);
 
-	/* if it isn't around */
+	/* nonexistant */
 	if (fspec == NULL)
 		return optional ? TRUE : no_such_file(fname);
 
-	/* otherwise, execute it */
+	/* do it */
 	while (n-- > 0)
 		if ((status=dofile(fspec)) != TRUE)
 			return status;
@@ -2249,7 +2233,8 @@ char *fname)		/* file name to execute */
 			return FALSE;
 		clobber = TRUE;
 	}
-	bp->b_flag = BFEXEC;
+
+	bp->b_flag |= BFEXEC;
 
 	/* try to save the original location, so we can restore it */
 	original = get_b_lineno(bp);

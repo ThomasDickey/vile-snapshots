@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.113 1998/11/07 16:46:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.115 1999/03/19 12:16:42 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -11,14 +11,14 @@
  */
 
 #include	"estruct.h"
-#include        "edef.h"
+#include	"edef.h"
 
 static char const onlyonemsg[] = "Only one occurrence of pattern";
 static char const notfoundmsg[] = "Not found";
 static char const hitendmsg[] = "Search reached %s without matching pattern";
 
 static	int	rsearch(int f, int n, int dummy, int fromscreen);
-static	void	nextch(MARK *pdot, int dir);
+static	void	movenext(MARK *pdot, int dir);
 static	void	savematch(MARK curpos, SIZE_T matchlen);
 
 static void
@@ -43,9 +43,8 @@ scrbacksearch(int f, int n)
 }
 
 /*
- * forwsearch -- Search forward.  Get a search string from the user, and
- *	search for the string.  If found, reset the "." to be just after
- *	the match string, and (perhaps) repaint the display.
+ * Search forward.  Get a search string from the user, and
+ *	search for the string.
  */
 
 int
@@ -64,7 +63,7 @@ forwsearch(int f, int n)
 int
 fsearch(int f, int n, int marking, int fromscreen)
 {
-	register int status;
+	register int status = TRUE;
 	int wrapok;
 	MARK curpos;
 	int didmark = FALSE;
@@ -73,22 +72,21 @@ fsearch(int f, int n, int marking, int fromscreen)
 	if (f && n < 0)
 		return rsearch(f, -n, FALSE, FALSE);
 
+	if (n == 0) n = 1;
+
 	wrapok = marking || window_b_val(curwp, MDSWRAP);
 
 	last_srch_direc = FORWARD;
 
-	/* Ask the user for the text of a pattern.  If the
-	 * response is TRUE (responses other than FALSE are
-	 * possible), search for the pattern for as long as
-	 * n is positive (n == 0 will go through once, which
-	 * is just fine).
-	 *
-	 * If "marking", then we were called to do line marking for the
+	/* ask the user for the text of a pattern.
+	 * if "marking", then we were called to do line marking for the
 	 *  global command.
 	 */
-	if (!marking && (status = readpattern("Search: ", &pat[0],
-				&gregexp, lastkey, fromscreen)) != TRUE) {
-		return status;
+	if (!marking) {
+		status = readpattern("Search: ", pat, &gregexp,
+				    lastkey, fromscreen);
+		if (status != TRUE)
+			return status;
 	}
 
 	ignorecase = window_b_val(curwp, MDIGNCASE);
@@ -96,8 +94,8 @@ fsearch(int f, int n, int marking, int fromscreen)
 	curpos = DOT;
 	scanboundry(wrapok,curpos,FORWARD);
 	didwrap = FALSE;
-	do {
-		nextch(&(DOT), FORWARD);
+	while (marking || n--) {
+		movenext(&(DOT), FORWARD);
 		status = scanner(gregexp, FORWARD, wrapok, &didwrap);
 		if (status == ABORT) {
 			mlforce("[Aborted]");
@@ -113,7 +111,7 @@ fsearch(int f, int n, int marking, int fromscreen)
 			if (lismarked(DOT.l))
 				break;
 			lsetmarked(DOT.l);
-			/* and, so the next nextch gets to next line */
+			/* and, so the next movenext gets to next line */
 			DOT.o = llength(DOT.l);
 			didmark = TRUE;
 		}
@@ -121,10 +119,12 @@ fsearch(int f, int n, int marking, int fromscreen)
 			mlwrite("[Search wrapped past end of buffer]");
 			didwrap = FALSE;
 		}
-	} while ((marking || --n > 0) && status == TRUE);
+		if (status != TRUE)
+			break;
+	}
 
 	if (!marking && !status)
-		nextch(&(DOT),REVERSE);
+		movenext(&(DOT),REVERSE);
 
 	if (marking) {  /* restore dot and offset */
 		DOT = curpos;
@@ -147,23 +147,22 @@ fsearch(int f, int n, int marking, int fromscreen)
 }
 
 /*
- * forwhunt -- Search forward for a previously acquired search string.
- *	If found, reset the "." to be just after the match string,
- *	and (perhaps) repaint the display.
+ * forwhunt -- repeat previous forward search
  */
-
 int
 forwhunt(int f, int n)
 {
-	register int status;
+	register int status = TRUE;
 	int wrapok;
 	MARK curpos;
 	int didwrap;
 
 	wrapok = window_b_val(curwp, MDSWRAP);
 
-	if (n < 0)		/* search backwards */
+	if (f && n < 0) /* search backwards */
 		return(backhunt(f, -n));
+
+	if (n == 0) n = 1;
 
 	/* Make sure a pattern exists */
 	if (pat[0] == EOS)
@@ -174,30 +173,29 @@ forwhunt(int f, int n)
 
 	ignorecase = window_b_val(curwp, MDIGNCASE);
 
-	/* Search for the pattern for as long as
-	 * n is positive (n == 0 will go through once, which
-	 * is just fine).
+	/* find n'th occurence of pattern
 	 */
 	curpos = DOT;
 	scanboundry(wrapok,DOT,FORWARD);
 	didwrap = FALSE;
-	do {
-		nextch(&(DOT),FORWARD);
+	while (n--) {
+		movenext(&(DOT),FORWARD);
 		status = scanner(gregexp, FORWARD, wrapok, &didwrap);
 		if (didwrap) {
 			mlwrite("[Search wrapped past end of buffer]");
 			didwrap = FALSE;
 		}
-	} while ((--n > 0) && status == TRUE);
+		if (status != TRUE)
+			break;
+	}
 
-	/* Save away the match, or complain if not there.  */
 	if (status == TRUE) {
 		savematch(DOT,gregexp->mlen);
 		if (samepoint(DOT,curpos)) {
 			mlwrite(onlyonemsg);
 		}
 	} else if (status == FALSE) {
-		nextch(&(DOT),REVERSE);
+		movenext(&(DOT),REVERSE);
 		not_found_msg(wrapok,FORWARD);
 	} else if (status == ABORT) {
 		mlforce("[Aborted]");
@@ -210,10 +208,8 @@ forwhunt(int f, int n)
 }
 
 /*
- * backsearch -- Reverse search.  Get a search string from the user, and
- *	search, starting at "." and proceeding toward the front of the buffer.
- *	If found "." is left pointing at the first character of the pattern
- *	(the last character that was matched).
+ * Search backward.  Get a search string from the user, and
+ *	search for it.
  */
 int
 backsearch(int f, int n)
@@ -234,73 +230,74 @@ rsearch(int f, int n, int dummy GCC_UNUSED, int fromscreen)
 	MARK curpos;
 	int didwrap;
 
-	if (n < 0)
+	if (f && n < 0) /* reverse direction */
 		return fsearch(f, -n, FALSE, fromscreen);
+
+	if (n == 0) n = 1;
 
 	wrapok = window_b_val(curwp, MDSWRAP);
 
 	last_srch_direc = REVERSE;
 
-	/* Ask the user for the text of a pattern.  If the
-	 * response is TRUE (responses other than FALSE are
-	 * possible), search for the pattern for as long as
-	 * n is positive (n == 0 will go through once, which
-	 * is just fine).
+	/* ask the user for the text of a pattern, and find
+	 * n'th occurence.
 	 */
-	if ((status = readpattern("Reverse search: ", &pat[0],
-				&gregexp, EOS, fromscreen)) == TRUE) {
-		ignorecase = window_b_val(curwp, MDIGNCASE);
+	status = readpattern("Reverse search: ", pat, &gregexp,
+					EOS, fromscreen);
+	if (status != TRUE)
+		return status;
 
-		curpos = DOT;
-		scanboundry(wrapok,DOT,REVERSE);
-		didwrap = FALSE;
-		do {
-			nextch(&(DOT),REVERSE);
-			status = scanner(gregexp, REVERSE, wrapok, &didwrap);
-			if (didwrap) {
-				mlwrite(
-				  "[Search wrapped past start of buffer]");
-				didwrap = FALSE;
-			}
-		} while ((--n > 0) && status == TRUE);
+	ignorecase = window_b_val(curwp, MDIGNCASE);
 
-		/* Save away the match, or complain if not there.  */
-		if (status == TRUE)
-			savematch(DOT,gregexp->mlen);
-			if (samepoint(DOT,curpos)) {
-				mlwrite(onlyonemsg);
-			}
-		else if (status == FALSE) {
-			nextch(&(DOT),FORWARD);
-			not_found_msg(wrapok,REVERSE);
-		} else if (status == ABORT) {
-			mlforce("[Aborted]");
-			DOT = curpos;
-			return status;
+	curpos = DOT;
+	scanboundry(wrapok,DOT,REVERSE);
+	didwrap = FALSE;
+	while (n--) {
+		movenext(&(DOT),REVERSE);
+		status = scanner(gregexp, REVERSE, wrapok, &didwrap);
+		if (didwrap) {
+			mlwrite(
+			  "[Search wrapped past start of buffer]");
+			didwrap = FALSE;
 		}
+		if (status != TRUE)
+			break;
+	}
+
+	if (status == TRUE) {
+		savematch(DOT,gregexp->mlen);
+		if (samepoint(DOT,curpos)) {
+			mlwrite(onlyonemsg);
+		}
+	} else if (status == FALSE) {
+		movenext(&(DOT),FORWARD);
+		not_found_msg(wrapok,REVERSE);
+	} else if (status == ABORT) {
+		mlforce("[Aborted]");
+		DOT = curpos;
+		return status;
 	}
 	attrib_matches();
 	return status;
 }
 
 /*
- * backhunt -- Reverse search for a previously acquired search string,
- *	starting at "." and proceeding toward the front of the buffer.
- *	If found "." is left pointing at the first character of the pattern
- *	(the last character that was matched).
+ * backhunt -- repeat previous forward search
  */
 int
 backhunt(int f, int n)
 {
-	register int status;
+	register int status = TRUE;
 	int wrapok;
 	MARK curpos;
 	int didwrap;
 
 	wrapok = window_b_val(curwp, MDSWRAP);
 
-	if (n < 0)		/* search forwards */
+	if (f && n < 0) /* search forwards */
 		return(forwhunt(f, -n));
+
+	if (n == 0) n = 1;
 
 	/* Make sure a pattern exists */
 	if (pat[0] == EOS) {
@@ -308,35 +305,31 @@ backhunt(int f, int n)
 		return FALSE;
 	}
 
-	/* Go search for it for as long as
-	 * n is positive (n == 0 will go through once, which
-	 * is just fine).
-	 */
-
 	ignorecase = window_b_val(curwp, MDIGNCASE);
 
+	/* find n'th occurence of pattern
+	 */
 	curpos = DOT;
 	scanboundry(wrapok,DOT,REVERSE);
 	didwrap = FALSE;
-	do {
-		nextch(&(DOT),REVERSE);
+	while (n--) {
+		movenext(&(DOT),REVERSE);
 		status = scanner(gregexp, REVERSE, wrapok, &didwrap);
 		if (didwrap) {
 			mlwrite("[Search wrapped past start of buffer]");
 			didwrap = FALSE;
 		}
-	} while ((--n > 0) && status == TRUE);
+		if (status != TRUE)
+			break;
+	}
 
-	/* Save away the match, or complain
-	 * if not there.
-	 */
 	if (status == TRUE) {
 		savematch(DOT,gregexp->mlen);
 		if (samepoint(DOT, curpos)) {
 			mlwrite(onlyonemsg);
 		}
 	} else if (status == FALSE) {
-		nextch(&(DOT),FORWARD);
+		movenext(&(DOT),FORWARD);
 		not_found_msg(wrapok,REVERSE);
 	} else if (status == ABORT) {
 		mlforce("[Aborted]");
@@ -389,14 +382,14 @@ testit(LINE *lp, regexp *exp, int *end, int srchlim)
 }
 
 /*
- * scanner -- Search for a pattern in either direction.  If found,
- *	reset the "." to be at the start or just after the match string
+ * scanner -- Search for a pattern in either direction.  can optionally
+ * wrap around end of buffer.
  */
 int
 scanner(
 regexp	*exp,	/* the compiled expression */
-int	direct,	/* which way to go.*/
-int	wrapok,	/* ok to wrap around bottom of buffer? */
+int	direct,	/* up or down */
+int	wrapok,	/* ok to wrap around end of buffer? */
 int	*wrappedp)
 {
 	MARK curpos;
@@ -642,7 +635,7 @@ attrib_matches(void)
 
 	scanboundry(FALSE,DOT,FORWARD);
 	do {
-		nextch(&(DOT),FORWARD);
+		movenext(&(DOT),FORWARD);
 		status = scanner(gregexp, FORWARD, FALSE, (int *)0);
 		if (status != TRUE)
 			break;
@@ -708,13 +701,9 @@ scrsearchpat(int f GCC_UNUSED, int n GCC_UNUSED)
 }
 
 /*
- * readpattern -- Read a pattern.  Stash it in apat.  If it is the
- *	search string, re_comp() it.
- *	Apat is not updated if the user types in an empty line.  If
- *	the user typed an empty line, and there is no old pattern, it is
- *	an error.  Display the old pattern, in the style of Jeff Lomicka.
- *	There is some do-it-yourself control expansion.
- *	An alternate termination character is passed in.
+ * readpattern -- read a pattern.  if it is the
+ *	search string, recompile it.
+ *	pattern not updated if the user types in an empty line.
  */
 int
 readpattern(
@@ -726,10 +715,6 @@ int	fromscreen)
 {
 	int status;
 
-	/* Read a pattern.  Either we get one,
-	 * or we don't, and use the previous pattern.
-	 * Then, if it's the search string, compile it.
-	 */
 	if (fromscreen) {
 		status = screen_string(apat, NPAT, vl_ident);
 		if (status != TRUE)
@@ -743,8 +728,8 @@ int	fromscreen)
 		status = kbd_string(prompt, apat, NPAT, c, KBD_EXPPAT|KBD_0CHAR,
 				    no_completion);
 	}
- 	if (status == TRUE) {
-		if (srchexpp) {	/* If doing the search string, compile it */
+	if (status == TRUE) {
+		if (srchexpp) {	/* compile it */
 			FreeIfNeeded(*srchexpp);
 			*srchexpp = regcomp(pat, b_val(curbp, MDMAGIC));
 			if (!*srchexpp)
@@ -764,16 +749,16 @@ int	fromscreen)
 static void
 savematch(MARK curpos, SIZE_T matchlen)
 {
-	tb_init(&patmatch, EOS);
-	tb_bappend(&patmatch, &(curpos.l->l_text[curpos.o]), matchlen);
-	tb_append(&patmatch, EOS);
+	tb_init(&tb_matched_pat, EOS);
+	tb_bappend(&tb_matched_pat, &(curpos.l->l_text[curpos.o]), matchlen);
+	tb_append(&tb_matched_pat, EOS);
 }
 
 void
 scanboundry(int wrapok, MARK dot, int dir)
 {
 	if (wrapok) {
-		nextch(&dot,dir);
+		movenext(&dot,dir);
 		scanboundpos = dot;
 		scanbound_is_header = FALSE;
 	} else {
@@ -783,11 +768,11 @@ scanboundry(int wrapok, MARK dot, int dir)
 }
 
 /*
- * nextch -- advance/retreat the given mark
- *  will wrap, and doesn't set motion flags
+ * movenext -- move to next character in either direction, but
+ *  don't return it.  will wrap, and doesn't set motion flags.
  */
 static void
-nextch(MARK *pdot, int dir)
+movenext(MARK *pdot, int dir)
 {
 	register LINE	*curline;
 	register int	curoff;

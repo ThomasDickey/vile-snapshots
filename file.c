@@ -1,12 +1,11 @@
-/*	FILE.C:   for MicroEMACS
+/*
+ * The routines in this file
+ * handle the reading and writing of
+ * disk files. All of details about the
+ * reading and writing of the disk are
+ * in "fileio.c".
  *
- *	The routines in this file handle the reading, writing
- *	and lookup of disk files.  All of details about the
- *	reading and writing of the disk are in "fileio.c".
- *
- *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.241 1999/03/09 00:39:55 tom Exp $
- *
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.243 1999/03/20 14:41:54 tom Exp $
  */
 
 #include	"estruct.h"
@@ -533,14 +532,14 @@ int cmdline)
 		/* make sure the buffer name doesn't exist */
 		while ((bp = find_b_name(bname)) != NULL) {
 			if ( !b_is_changed(bp) && is_empty_buf(bp) &&
-			    		!ffexists(bp->b_fname)) {
+					!ffexists(bp->b_fname)) {
 				/* empty and unmodified -- then it's okay
 					to re-use this buffer */
 				bp->b_active = FALSE;
 				ch_fname(bp, nfname);
 				return bp;
 			}
-			/* old buffer name conflict code */
+			/* make a new name if it conflicts */
 			unqname(bname);
 			if (!ok_to_ask || !global_g_val(GMDWARNRENAME))
 				continue;
@@ -757,6 +756,26 @@ grab_lck_file(BUFFER *bp, char *fname)
 #endif
 
 /*
+ * Set the buffer's window traits to sane values after reading the buffer from
+ * a file.  We have to do this, since we may copy the buffer traits back to the
+ * window when making a buffer visible after source'ing it from a file.
+ */
+static void
+init_b_traits(BUFFER *bp)
+{
+	bp->b_dot.l  = lforw(buf_head(bp));
+	bp->b_dot.o  = 0;
+	bp->b_wline  = bp->b_dot;
+	bp->b_lastdot = bp->b_dot;
+#if WINMARK
+	bp->b_mark   = bp->b_dot;
+#endif
+#if OPT_MOUSE
+	bp->b_wtraits.insmode = FALSE;
+#endif
+}
+
+/*
  *	Read file "fname" into a buffer, blowing away any text
  *	found there.  Returns the final status of the read.
  */
@@ -781,7 +800,7 @@ int	mflg)		/* print messages? */
 		return FALSE;
 
 	if (*fname == EOS) {
-		mlwrite("BUG: readin called with NULL fname");
+		mlforce("BUG: readin called with NULL fname");
 		return FALSE;
 	}
 
@@ -826,7 +845,7 @@ int	mflg)		/* print messages? */
 		if (!isInternalName(bp->b_fname))
 			fname = resolve_filename(bp);
 #endif
-		/* read the file in */
+		/* start reading */
 		nline = 0;
 #if OPT_WORKING
 		max_working = cur_working = old_working = 0;
@@ -842,7 +861,7 @@ int	mflg)		/* print messages? */
 			/*EMPTY*/;
 		} else {
 
-			if (s == FIOFUN)	/* last line is incomplete */
+			if (s == FIOBAD)	/* last line is incomplete */
 				set_b_val(bp, MDNEWLINE, FALSE);
 			b_clr_changed(bp);
 #if OPT_FINDERR
@@ -918,8 +937,6 @@ int
 bp2readin(BUFFER *bp, int lockfl)
 {
 	register int s = readin(bp->b_fname, lockfl, bp, TRUE);
-	bp->b_dot.l  = lforw(buf_head(bp));
-	bp->b_dot.o  = 0;
 	bp->b_active = TRUE;
 	return s;
 }
@@ -940,7 +957,7 @@ quickreadf(register BUFFER *bp, int *nlinep)
 		return s;
 #endif
 	if ((len = ffsize()) < 0) {
-	    	mlwarn("[Can't size file]");
+		mlwarn("[Can't size file]");
 		return FIOERR;
 	}
 
@@ -965,8 +982,8 @@ quickreadf(register BUFFER *bp, int *nlinep)
 
 #if OPT_ENCRYPT
 	if (b_val(bp, MDCRYPT)
-	 && bp->b_key[0]) {	/* decrypt the file */
-	 	vl_setup_encrypt(bp->b_key);
+	 && bp->b_cryptkey[0]) {	/* decrypt the file */
+		vl_setup_encrypt(bp->b_cryptkey);
 		vl_encrypt_blok((char *)&bp->b_ltext[1], (UINT)len);
 	}
 #endif
@@ -1060,7 +1077,7 @@ quickreadf(register BUFFER *bp, int *nlinep)
 			}
 			/*
 			if (textp != bp->b_ltext_end - 1)
-				mlwrite("BUG: textp not equal to end %d %d",
+				mlforce("BUG: textp not equal to end %d %d",
 					textp,bp->b_ltext_end);
 			*/
 			lp--;  /* point at last line again */
@@ -1073,6 +1090,7 @@ quickreadf(register BUFFER *bp, int *nlinep)
 			set_lback(bp->b_LINEs, buf_head(bp));
 			set_lforw(buf_head(bp), bp->b_LINEs);
 		}
+		init_b_traits(bp);
 	}
 
 	*nlinep = nlines;
@@ -1083,7 +1101,7 @@ quickreadf(register BUFFER *bp, int *nlinep)
 	if (global_b_val(MDDOS))
 		guess_dosmode(bp);
 #endif
-	return b_val(bp, MDNEWLINE) ? FIOSUC : FIOFUN;
+	return b_val(bp, MDNEWLINE) ? FIOSUC : FIOBAD;
 }
 
 #endif /* ! SYS_MSDOS */
@@ -1136,16 +1154,16 @@ slowreadf(register BUFFER *bp, int *nlinep)
 		 * keep any CR's that we read.
 		 */
 		if (global_b_val(MDDOS)) {
-			if (len > 0 && fline[len-1] == '\r') {
+			if (len > 0 && fflinebuf[len-1] == '\r') {
 				doslines++;
 			} else {
 				unixlines++;
 			}
 		}
 #endif
-		if (addline(bp,fline,len) != TRUE) {
-			s = FIOMEM;		/* Keep message on the	*/
-			break;			/* display.		*/
+		if (addline(bp,fflinebuf,len) != TRUE) {
+			s = FIOMEM;
+			break;
 		}
 #if SYS_UNIX || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
 		else {
@@ -1192,7 +1210,7 @@ slowreadf(register BUFFER *bp, int *nlinep)
 		}
 #endif
 		++(*nlinep);
-		if (s == FIOFUN) {
+		if (s == FIOBAD) {
 			set_b_val(bp, MDNEWLINE, FALSE);
 			break;
 		}
@@ -1202,6 +1220,7 @@ slowreadf(register BUFFER *bp, int *nlinep)
 		strip_if_dosmode(bp, doslines, unixlines);
 	}
 #endif
+	init_b_traits(bp);
 	return s;
 }
 
@@ -1213,11 +1232,11 @@ readlinesmsg(int n, int s, const char *f, int rdo)
 	const char *m;
 	char *short_f = shorten_path(strcpy(fname,f),TRUE);
 	switch(s) {
-		case FIOFUN:	m = "INCOMPLETE LINE, ";break;
-		case FIOERR:	m = "I/O ERROR, ";	break;
-		case FIOMEM:	m = "OUT OF MEMORY, ";	break;
-		case FIOABRT:	m = "ABORTED, ";	break;
-		default:	m = "";			break;
+		case FIOBAD:	m = "Incomplete line, ";	break;
+		case FIOERR:	m = "I/O Error, ";		break;
+		case FIOMEM:	m = "Not enough memory, ";	break;
+		case FIOABRT:	m = "Aborted, ";		break;
+		default:	m = "";				break;
 	}
 	if (!global_b_val(MDTERSE))
 		mlwrite("[%sRead %d line%s from \"%s\"%s]", m,
@@ -1367,7 +1386,7 @@ filewrite(int f, int n)
 {
 	register int	s;
 	char		fname[NFILEN];
-	int 		forced = (f && n == SPECIAL_BANG_ARG);
+	int		forced = (f && n == SPECIAL_BANG_ARG);
 
 	if (more_named_cmd()) {
 		if ((s= mlreply_file("Write to file: ", (TBUFF **)0,
@@ -1460,7 +1479,7 @@ static int
 writereg(
 REGION	*rp,
 const char  *given_fn,
-int 	msgf,
+int	msgf,
 BUFFER	*bp,
 int	forced)
 {
@@ -1640,7 +1659,7 @@ int	forced)
 	if (whole_file
 	 && eql_bname(bp, UNNAMED_BufName)
 	 && find_b_file(fname) == 0) {
-	  	ch_fname(bp, fname);
+		ch_fname(bp, fname);
 		set_buffer_name(bp);
 	}
 
@@ -1797,7 +1816,7 @@ ifile(char *fname, int belowthisline, FILE *haveffp)
 #if OPT_DOSFILES
 		if (b_val(curbp,MDDOS)
 		 && (nbytes > 0)
-		 && fline[nbytes-1] == '\r')
+		 && fflinebuf[nbytes-1] == '\r')
 			nbytes--;
 #endif
 		if (!belowthisline) {
@@ -1805,12 +1824,15 @@ ifile(char *fname, int belowthisline, FILE *haveffp)
 			prevp = lback(prevp);
 		}
 
-		if (add_line_at(curbp, prevp, fline, nbytes) != TRUE) {
-			s = FIOMEM;		/* Keep message on the	*/
-			break;			/* display.		*/
+		beginDisplay();
+		if (add_line_at(curbp, prevp, fflinebuf, nbytes) != TRUE) {
+			s = FIOMEM;
+			break;
 		}
 		newlp = lforw(prevp);
 		tag_for_undo(newlp);
+		endofDisplay();
+
 		prevp = belowthisline ? newlp : nextp;
 		++nline;
 		if (s < FIOSUC)
@@ -1862,7 +1884,7 @@ kifile(char *fname)
 		CleanToPipe();
 		while ((s=ffgetline(&nbytes)) <= FIOSUC) {
 			for (i=0; i<nbytes; ++i)
-				if (!kinsert(fline[i]))
+				if (!kinsert(fflinebuf[i]))
 					return FIOMEM;
 			if ((s == FIOSUC) && !kinsert('\n'))
 				return FIOMEM;
@@ -1880,15 +1902,61 @@ out:
 	return (s != FIOERR);
 }
 
+int create_save_dir(char *dirnam);
+
+/* try really hard to create a private subdirectory in some tmp
+ * space to save the modified buffers in.  start with $TMPDIR, and
+ * then the rest of the table.  if all that fails, try and create a subdir
+ * of the current directory.
+ */
+int
+create_save_dir(char *dirnam)
+{
+#if HAVE_MKDIR && !SYS_MSDOS && !SYS_OS2
+    static char *tbl[] = {
+	    0, /* reserved for $TMPDIR */
 #if SYS_UNIX
-static const char *mailcmds[] = {
-	"/usr/lib/sendmail",
-	"/sbin/sendmail",
-	"/usr/sbin/sendmail",
-	"/bin/mail",
-	0
-};
+	    "/var/tmp",
+	    "/usr/tmp",
+	    "/tmp",
 #endif
+	    "."
+    };
+
+    char *np;
+    unsigned n;
+
+    if ((np = getenv("TMPDIR")) != 0 &&
+		strlen(np) < 32 &&
+		is_directory(np)) {
+	    tbl[0] = np;
+	    n = 0;
+    } else {
+	    n = 1;
+    }
+    for (; n < TABLESIZE(tbl); n++) {
+	    if (is_directory(tbl[n])) {
+		    (void)pathcat(dirnam, tbl[n], "vileDXXXXXX");
+		    (void)mktemp(dirnam);
+		    /* on failure, keep going */
+		    if(mkdir(dirnam,0700) == 0)
+			    return TRUE;
+	    }
+    }
+#endif /* no mkdir, or dos, or os/2 */
+    return FALSE;
+}
+
+#if SYS_UNIX
+    static const char *mailcmds[] = {
+	    "/usr/lib/sendmail",
+	    "/sbin/sendmail",
+	    "/usr/sbin/sendmail",
+	    "/bin/mail",
+	    0
+    };
+#endif
+
 
 /* called on hangups, interrupts, and quits */
 /* This code is definitely not production quality, or probably very
@@ -1900,27 +1968,16 @@ SIGT
 imdying(int ACTUAL_SIG_ARGS)
 {
 	static char dirnam[NSTRING] = "";
-#if SYS_UNIX
-	static const char *tbl[] = {
-		"/var/tmp",
-		"/usr/tmp",
-		"/tmp"
-		"."
-	};
-#endif
+	static int  wrote = 0;
+	static int  i_am_dead;
 	char filnam[NFILEN];
 	BUFFER *bp;
+	int bad_karma = FALSE;
 #if SYS_UNIX
 	char cmd[NFILEN+250];
-	char *np;
 #endif
-	static int wrote = 0;
-#if HAVE_MKDIR && !SYS_MSDOS && !SYS_OS2
 	static int created = FALSE;
-#else
 	char temp[NFILEN];
-#endif
-	static	int	i_am_dead;
 
 #if SYS_APOLLO
 	extern	char	*getlogin(void);
@@ -1946,48 +2003,31 @@ imdying(int ACTUAL_SIG_ARGS)
 		if (!b_is_temporary(bp) &&
 			bp->b_active == TRUE &&
 			b_is_changed(bp)) {
-#if HAVE_MKDIR && !SYS_MSDOS && !SYS_OS2
 			if (!created) {
-#if SYS_UNIX
-				if ((np = getenv("TMPDIR")) != 0
-				 && strlen(np) < 32
-				 && is_directory(np)) {
-					strcpy(dirnam, np);
-				} else {
-					unsigned n;
-					for (n = 0; n < TABLESIZE(tbl); n++) {
-						strcpy(dirnam, tbl[n]);
-						if (is_directory(dirnam)) {
-							break;
-						}
-					}
-				}
-#else
-				strcpy(dirnam, "");
-#endif
-				(void)pathcat(dirnam, dirnam, "vileDXXXXXX");
-				(void)mktemp(dirnam);
-				if(mkdir(dirnam,0700) != 0) {
-					tidy_exit(BADEXIT);
-				}
-				created = TRUE;
+				created = create_save_dir(dirnam);
 			}
-			(void)pathcat(filnam, dirnam, bp->b_bname);
-#else
-			(void)pathcat(filnam, dirnam,
+			if (created) {
+			    /* then the path is dir+file */
+			    (void)pathcat(filnam, dirnam, bp->b_bname);
+			} else {
+			    /* no dir: the path is V+file */
+			    (void)strcpy(filnam,
 				strcat(strcpy(temp, "V"), bp->b_bname));
-#endif
+			}
 			set_b_val(bp,MDVIEW,FALSE);
 			if (writeout(filnam,bp,TRUE,FALSE) != TRUE) {
-				tidy_exit(BADEXIT);
+				bad_karma = TRUE;
+				continue;
 			}
 			wrote++;
 		}
 	}
-#if SYS_UNIX
-	if (wrote) {
+#if SYS_UNIX  /* try and send mail */
+	/* if we wrote, or tried to */
+	if (wrote || bad_karma) {
 		const char **mailcmdp;
 		struct stat sb;
+		char *np;
 		/* choose the first mail sender we can find.
 		   it used to be you could rely on /bin/mail being
 		   a simple mailer, but no more.  and sendmail has
@@ -1999,33 +2039,44 @@ imdying(int ACTUAL_SIG_ARGS)
 		if (*mailcmdp &&
 			((np = getenv("LOGNAME")) != 0 ||
 				(np = getenv("USER")) != 0)) {
+			char *cp;
+			cp = lsprintf(cmd, "( %s %s; %s; %s; %s %d;",
+			    "echo To:", np,
+			    "echo Subject: vile died, files saved",
+			    "echo",
+			    "echo vile died due to signal", signo);
+
 #if HAVE_GETHOSTNAME
-			char hostname[128];
-			if (gethostname(hostname, sizeof(hostname)) < 0)
-				(void)strcpy(hostname, "unknown");
-			hostname[sizeof(hostname)-1] = EOS;
+			{
+			    char hostname[128];
+			    if (gethostname(hostname, sizeof(hostname)) < 0)
+				    (void)strcpy(hostname, "unknown");
+			    hostname[sizeof(hostname)-1] = EOS;
+			    cp = lsprintf(cp, "%s %s;",
+				"echo on host", hostname);
+			}
 #endif
-			(void)lsprintf(cmd,
-			 "( %s%s; %s; %s; %s%d; %s%s; %s%s; %s%s%s ) | %s %s",
-			"echo To: ", np,
-			"echo Subject: vile died, files saved",
-			"echo ",
-			"echo vile died due to signal ", signo,
-#if HAVE_GETHOSTNAME
-			"echo on host ", hostname,
-#else
-			"echo ", "",
-#endif
-			"echo the following files were saved in directory ",
-			dirnam,
+			cp = lsprintf(cp,
+			"echo the following files were saved in directory %s;",
+			    dirnam);
+
+			cp = lsprintf(cp, "%s%s%s;",
 #if HAVE_MKDIR
-			/* reverse sort so '.' comes last, in case it
-			 * terminates the mail message early */
-			"ls -a ", dirnam, " | sort -r",
+			    /* reverse sort so '.' comes last, in case it
+			     * terminates the mail message early */
+			    "ls -a ", dirnam, " | sort -r"
 #else
-			"ls ", dirnam, "/V*",
+			    "ls ", dirnam, "/V*"
 #endif
-			*mailcmdp, np);
+			    );
+
+			if (bad_karma)
+			    cp = lsprintf(cp, "%s %s",
+				"echo errors:  check in current",
+				"directory too.;");
+
+			cp = lsprintf(cp, ") | %s %s", *mailcmdp, np);
+
 			(void)system(cmd);
 		}
 	}
@@ -2035,8 +2086,11 @@ imdying(int ACTUAL_SIG_ARGS)
 	}
 #else
 	if (wrote) {
-		fprintf(stderr, "vile died: Files saved in directory %s\n",
+		fprintf(stderr, "vile died: Files saved in directory %s\r\n",
 			dirnam);
+	}
+	if (bad_karma) {
+		fprintf(stderr, "problems encountered during save.  sorry\r\n");
 	}
 #endif
 

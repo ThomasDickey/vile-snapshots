@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.177 1998/09/30 01:30:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.179 1999/03/20 14:54:29 tom Exp $
  *
  */
 
@@ -645,8 +645,8 @@ firstbuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 nextbuffer(int f GCC_UNUSED, int n GCC_UNUSED)	/* switch to the next buffer in the buffer list */
 {
-	register BUFFER *bp;	/* eligible buffer to switch to*/
-	register BUFFER *stopatbp;	/* eligible buffer to switch to*/
+	register BUFFER *bp;
+	register BUFFER *stopatbp;
 
 	if (global_g_val(GMDABUFF)) {	/* go backward thru buffer-list */
 		stopatbp = NULL;
@@ -673,6 +673,7 @@ nextbuffer(int f GCC_UNUSED, int n GCC_UNUSED)	/* switch to the next buffer in t
 			}
 		}
 		mlforce("[No more files to edit]");
+		return FALSE;
 	}
 	/* we're back to the top -- they were all invisible */
 	return swbuffer(stopatbp);
@@ -703,6 +704,7 @@ prevbuffer(int f GCC_UNUSED, int n GCC_UNUSED)	/* switch to the previous buffer 
 			stopatbp = bp;
 		else
 			mlforce("[No more files to edit]");
+		return FALSE;
 	}
 	/* we're back to the top -- they were all invisible */
 	return swbuffer(stopatbp);
@@ -1101,7 +1103,7 @@ zotbuf(register BUFFER *bp)	/* kill the buffer pointed to by bp */
 	register int	s;
 	register int	didswitch = FALSE;
 
-	if (find_bp(bp) == 0) 	/* delwp may have zotted us, pointer obsolete */
+	if (find_bp(bp) == 0)	/* delwp may have zotted us, pointer obsolete */
 		return TRUE;
 
 	TRACE(("zotbuf(%s)\n", bp->b_bname))
@@ -1118,7 +1120,7 @@ zotbuf(register BUFFER *bp)	/* kill the buffer pointed to by bp */
 		/* Not on screen, but a fake window might refer to it.  So
 		   delete all such fake windows */
 		for_each_window(wp) {
-			if (is_fake_window(wp) 
+			if (is_fake_window(wp)
 			 && wp->w_bufp == bp && wheadp->w_wndp != NULL) {
 				dummy.w_wndp = wp->w_wndp;
 				s = delwp(wp);
@@ -1135,7 +1137,7 @@ zotbuf(register BUFFER *bp)	/* kill the buffer pointed to by bp */
 		}
 	}
 	if (bp->b_nwnd != 0 || is_fake_window(wheadp))  {
-	        		/* then it's on the screen somewhere 
+				/* then it's on the screen somewhere
 				   or there are fake windows to worry about */
 		(void)zotwp(bp);
 		if (find_bp(bp) == 0) /* delwp must have zotted us */
@@ -1505,7 +1507,7 @@ makebufflist(
 		(void)bsizes(curbp);
 		(void)lsprintf(temp, "%7ld", curbp->b_bytecount);
 		(void)memcpy(curlp->l_text + 6, temp,
-		             (SIZE_T)strlen(temp));
+			     (SIZE_T)strlen(temp));
 	}
 }
 
@@ -1590,13 +1592,18 @@ listbuffers(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 addline(register BUFFER *bp, const char *text, int len)
 {
+    	int status = FALSE;
+
+	beginDisplay();
 	if (add_line_at (bp, lback(buf_head(bp)), text, len) == TRUE) {
 		/* If "." is at the end, move it to new line  */
 		if (sameline(bp->b_dot, bp->b_line))
 			bp->b_dot.l = lback(buf_head(bp));
-		return TRUE;
+		status = TRUE;
 	}
-	return FALSE;
+	endofDisplay();
+
+	return status;
 }
 
 /*
@@ -1668,7 +1675,7 @@ any_changed_buf(BUFFER **bpp)
 
 	for_each_buffer(bp) {
 		if (!b_is_invisible(bp) && b_is_changed(bp)) {
-		    	if (bpp && !*bpp)
+			if (bpp && !*bpp)
 				*bpp = bp;
 			cnt++;
 		}
@@ -1686,7 +1693,7 @@ any_unread_buf(BUFFER **bpp)
 
 	for_each_buffer(bp) {
 		if (!b_is_invisible(bp) && !bp->b_active) {
-		    	if (bpp && !*bpp)
+			if (bpp && !*bpp)
 				*bpp = bp;
 			cnt++;
 		}
@@ -1716,24 +1723,6 @@ set_bname(BUFFER *bp, const char *name)
 		d[k] = EOS;
 }
 
-#if BEFORE
-/*
- * Copies buffer-name to a null-terminated buffer (for use in code that
- * cannot conveniently use the name without a null-termination).
- */
-char *
-XXX still needed XXX get_bname(BUFFER *bp)
-{
-	static	char	bname[NBUFN];
-	if (bp) {
-	    (void)strncpy0(bname, bp->b_bname, NBUFN);
-	    bname[NBUFN] = EOS;
-	} else {
-	    *bname = EOS;
-	}
-	return bname;
-}
-#endif
 
 /*
  * Look for a buffer-name in the buffer-list.  This assumes that the argument
@@ -1811,11 +1800,11 @@ bfind(const char *bname, UINT bflag)
 #if	OPT_ENCRYPT
 	if (!b_is_temporary(bp)
 	 && cryptkey != 0 && *cryptkey != EOS) {
-		(void)strcpy(bp->b_key, cryptkey);
+		(void)strcpy(bp->b_cryptkey, cryptkey);
 		make_local_b_val(bp, MDCRYPT);
 		set_b_val(bp, MDCRYPT, TRUE);
 	} else
-		bp->b_key[0] = EOS;
+		bp->b_cryptkey[0] = EOS;
 #endif
 	bp->b_udstks[0] = bp->b_udstks[1] = null_ptr;
 	bp->b_ulinep = null_ptr;
@@ -1890,6 +1879,7 @@ bclear(register BUFFER *bp)
 #endif
 	b_clr_changed(bp);		/* Not changed		*/
 
+	beginDisplay();
 	freeundostacks(bp,TRUE);	/* do this before removing lines */
 	FreeAndNull(bp->b_nmmarks);     /* free the named marks */
 #if OPT_SELECTIONS
@@ -1924,6 +1914,7 @@ bclear(register BUFFER *bp)
 	bp->b_linecount = 0;
 
 	free_local_vals(b_valnames, global_b_values.bv, bp->b_values.bv);
+	endofDisplay();
 
 	return (TRUE);
 }

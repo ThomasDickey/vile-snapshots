@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.88 1999/03/05 02:42:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.89 1999/03/20 16:48:28 cmorgan Exp $
  *
  *
  */
@@ -462,8 +462,31 @@ home_path(char *path)
 #if OPT_VMS_PATH
 		(void)mklower(temp);
 #endif
-		if ((d = find_user(temp)) != NULL)
+		if ((d = find_user(temp)) != NULL) {
 			(void)pathcat(path, d, s);
+#if OPT_VMS_PATH
+			/*
+			 * path name is now potentially in this form:
+			 *
+			 *    disk:[rooted_logical.][dir]subdir/leaf
+			 *    disk:[dir]subdir/leaf
+			 *            etc.
+			 *
+			 * which is not legit.  fix it up.
+			 */
+
+			if ((s = strrchr(path, '/')) != NULL) {
+				if ((d = strrchr(path, ']')) != NULL)
+					*d = '.';
+				*s = ']';
+				d  = path;
+				while ((s = strchr(d, '/')) != NULL) {
+					*s++ = '.';
+					d    = s;
+				}
+			}
+#endif
+		}
 	}
 	return path;
 }

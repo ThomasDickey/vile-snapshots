@@ -4,7 +4,7 @@
  * "termio.c". It compiles into nothing if not an ANSI device.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.33 1998/05/30 17:37:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.35 1999/03/20 22:16:33 tom Exp $
  */
 
 
@@ -52,9 +52,6 @@ static	void	ansibeep   (void);
 static	void	ansiopen   (void);
 static	void	ansirev    (UINT state);
 static	void	ansiclose  (void);
-static	void	ansikopen  (void);
-static	void	ansikclose (void);
-static	int	ansicres   (const char *flag);
 static	void	ansiscroll (int from, int to, int n);
 
 #if	OPT_COLOR
@@ -79,9 +76,9 @@ TERM	term	= {
 	SCRSIZ,
 	NPAUSE,
 	ansiopen,
+	null_kopen,
+	null_kclose,
 	ansiclose,
-	ansikopen,
-	ansikclose,
 	ttgetc,
 	ttputc,
 	tttypahead,
@@ -91,7 +88,7 @@ TERM	term	= {
 	ansieeop,
 	ansibeep,
 	ansirev,
-	ansicres,
+	null_cres,
 #if	OPT_COLOR
 	ansifcol,
 	ansibcol,
@@ -249,11 +246,6 @@ UINT state)	/* TRUE = reverse, FALSE = normal */
 
 #endif
 
-static int
-ansicres(const char *flag)	/* change screen resolution */
-{
-	return(FALSE);
-}
 
 static void
 ansibeep(void)
@@ -377,16 +369,6 @@ ansiclose(void)
 	ansifcol(C_WHITE);
 	ansibcol(C_BLACK);
 #endif
-}
-
-static void
-ansikopen(void)		/* open the keyboard (a noop here) */
-{
-}
-
-static void
-ansikclose(void)	/* close the keyboard (a noop here) */
-{
 }
 
 #endif	/* DISP_ANSI */

@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.114 1999/02/11 11:27:14 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.115 1999/03/19 11:34:03 pgf Exp $
  *
  */
 
@@ -164,7 +164,6 @@ static const struct {
 #endif
 
 static int  colors_are_really_ANSI (void);
-static int  tcapcres (const char *cres);
 static void putnpad(char *str, int n);
 static void putpad(char *str);
 static void tcapbeep (void);
@@ -218,7 +217,7 @@ TERM term = {
 #else
 	tcaprev,
 #endif
-	tcapcres,
+	null_cres,
 #if	OPT_COLOR
 	tcapfcol,
 	tcapbcol,
@@ -427,7 +426,7 @@ tcapopen(void)
 		ExitProgram(BADEXIT);
 	}
 
-	if (tc_CE == NULL) 	/* will we be able to use clear to EOL? */
+	if (tc_CE == NULL)	/* will we be able to use clear to EOL? */
 		eolexist = FALSE;
 
 	if (!tc_CS || !tc_SR) { /* some xterm's termcap entry is missing entries */
@@ -668,13 +667,6 @@ tcapeeop(void)
 	} else
 #endif
 	putpad(tc_CL);
-}
-
-/*ARGSUSED*/
-static int
-tcapcres(const char *res GCC_UNUSED)	/* change screen resolution */
-{
-	return(TRUE);
 }
 
 
@@ -1019,7 +1011,7 @@ tcapbeep(void)
 	{
 		static char *seq[][2] =
 		{
-			{ NULL, NULL },                /* vtflash = off */
+			{ NULL, NULL }, 	       /* vtflash = off */
 			{ VTFLASH_NORMSEQ, VTFLASH_REVSEQ }, /* reverse */
 			{ VTFLASH_REVSEQ, VTFLASH_NORMSEQ }, /* normal  */
 		};
@@ -1080,7 +1072,7 @@ putnpad(char *str, int n)
  *	when a mouse-dragging operation is begun: it waits for us to specify
  *	the screen locations that limit the highlighting.
  *
- * 	While highlighting, the xterm accepts other characters, but the display
+ *	While highlighting, the xterm accepts other characters, but the display
  *	does not appear to be refreshed until highlighting is ended. So (even
  *	if we always capture the beginning of highlighting) we cannot simply
  *	loop here waiting for the end of highlighting.

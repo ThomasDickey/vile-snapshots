@@ -7,7 +7,7 @@
  *
  * original author: D. R. Banks 9-May-86
  *
- * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.49 1997/11/01 00:18:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.50 1999/03/19 10:56:02 pgf Exp $
  *
  */
 
@@ -15,6 +15,11 @@
 #include        "edef.h"
 
 #if	OPT_ISRCH
+
+#define	CMDBUFLEN	256	/* Length of our command buffer */
+
+#define IS_REVERSE	tocntrl('R')	/* Search backward */
+#define IS_FORWARD	tocntrl('F')	/* Search forward */
 
 static	char *	expandp(char *deststr, char *srcstr, int maxlength);
 static	int	get_char (void);
@@ -392,7 +397,7 @@ get_char(void)
 						 * ... */
 		mlforce("[Command too long]");	/* Complain loudly and
 						 * bitterly */
-		return (abortc);/* And force a quit */
+		return (esc_c);/* And force a quit */
 	}
 	c = keystroke8();		/* Get the next character */
 	cmd_buff[cmd_offset++] = c;	/* Save the char for next time */

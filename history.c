@@ -63,7 +63,7 @@
  *
  *	Allow left/right scrolling of input lines (when they get too long).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.49 1998/07/01 10:58:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.50 1999/03/19 10:50:50 pgf Exp $
  *
  */
 
@@ -208,7 +208,7 @@ void
 hst_init(int c)
 {
 	if (++MyLevel == 1) {
-		(void)tb_init(&MyText, abortc);
+		(void)tb_init(&MyText, esc_c);
 		MyGlue = EOS;
 		if (c != EOS)
 			(void)tb_append(&MyText, c);
@@ -284,7 +284,7 @@ hst_flush(void)
 		if (((lp = lback(buf_head(bp))) != 0)
 		 && (lp != buf_head(bp))
 		 && (sameLine(lp, tb_args(MyText)) == 0)) {
-			(void)tb_init(&MyText, abortc);
+			(void)tb_init(&MyText, esc_c);
 			return;
 		 }
 
@@ -309,7 +309,7 @@ hst_flush(void)
 			}
 		}
 		updatelistbuffers();	/* force it to show current sizes */
-		(void)tb_init(&MyText, abortc);
+		(void)tb_init(&MyText, esc_c);
 	 }
 }
 

@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.161 1999/01/31 23:24:54 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.162 1999/03/19 11:31:54 pgf Exp $
  *
  */
 #include	"estruct.h"
@@ -99,12 +99,43 @@ static void ttmiscinit (void);
 #endif
 
 #if USE_FCNTL
-/* this is used to determine whether input is pending from the user */
+
 #include	<fcntl.h>
-int kbd_flags;			/* saved keyboard fcntl flags	*/
-int kbd_is_polled;		/* in O_NDELAY mode?		*/
-int kbd_char_present;		/* there is a char in kbd_char	*/
-char kbd_char;			/* the char we've already read	*/
+char kbd_char;		/* one char of typeahead, gotten during poll	*/
+int kbd_char_good;	/* is a char in kbd_char?			*/
+
+/*
+ * putting the input tty in polling mode lets us check for
+ * user typeahead
+ */
+void
+set_kbd_polling(int yes)
+{
+	static int kbd_flags = -1;	/* initial keyboard flags	*/
+	static int kbd_is_polled;	/* are we in O_NDELAY mode?	*/
+
+	if (kbd_flags == -1) {
+		kbd_flags = fcntl( 0, F_GETFL, 0 );
+		if (kbd_flags == -1)
+			imdying(SIGINT);
+		kbd_is_polled = FALSE;
+	}
+
+	if (yes) {  /* turn polling on -- put us in NDELAY mode */
+		if (!kbd_is_polled) {
+			if (fcntl( 0, F_SETFL, kbd_flags|O_NDELAY ) < 0 )
+				imdying(SIGINT);
+		}
+		kbd_is_polled = TRUE;  /* I think */
+	} else {  /* turn polling off -- clear NDELAY mode */
+		if (kbd_is_polled) {
+			if (fcntl( 0, F_SETFL, kbd_flags ) < 0 )
+				imdying(SIGINT);
+		}
+		kbd_is_polled = FALSE;
+	}
+}
+
 #endif
 
 #define SMALL_STDOUT 1
@@ -180,11 +211,6 @@ ttopen(void)
 #endif
 #ifdef SIGTTOU
 	setup_handler(SIGTTOU,SIG_IGN); 	/* ignore output prevention */
-#endif
-
-#if USE_FCNTL
-	kbd_flags = fcntl( 0, F_GETFL, 0 );
-	kbd_is_polled = FALSE;
 #endif
 
 #if ! DISP_X11
@@ -270,8 +296,7 @@ ttclean(int f)
 	TTclose();
 	TTkclose();
 #if USE_FCNTL
-	fcntl(0, F_SETFL, kbd_flags);
-	kbd_is_polled = FALSE;
+	set_kbd_polling(FALSE);
 #endif
 #endif
 	was_clean = TRUE;
@@ -318,10 +343,6 @@ ttopen(void)
 	backspc = otermio.c_cc[VERASE];
 	wkillc =  tocntrl('W');
 
-#if USE_FCNTL
-	kbd_flags = fcntl( 0, F_GETFL, 0 );
-	kbd_is_polled = FALSE;
-#endif
 
 #if SIGTSTP
 /* be careful here -- VSUSP is sometimes out of the range of the c_cc array */
@@ -399,8 +420,7 @@ ttclean(int f)
 	TTkclose();	/* xterm */
 	ioctl(0, TCSETAF, (char *)&otermio);
 #if USE_FCNTL
-	fcntl(0, F_SETFL, kbd_flags);
-	kbd_is_polled = FALSE;
+	set_kbd_polling(FALSE);
 #endif
 #endif	/* DISP_X11 */
 	was_clean = TRUE;
@@ -597,13 +617,9 @@ int
 ttgetc(void)
 {
 #if	USE_FCNTL
-	int n;
-	if( kbd_char_present ) {
-		kbd_char_present = FALSE;
-	} else {
-		if( kbd_is_polled && fcntl( 0, F_SETFL, kbd_flags ) < 0 )
-			imdying(SIGINT);
-		kbd_is_polled = FALSE;
+	if( ! kbd_char_good ) {
+		int n;
+		set_kbd_polling(FALSE);
 		n = read(0, &kbd_char, 1);
 		if (n <= 0) {
 			if (n < 0 && errno == EINTR)
@@ -611,6 +627,7 @@ ttgetc(void)
 			imdying(SIGINT);
 		}
 	}
+	kbd_char_good = FALSE;
 	return ( kbd_char );
 #else /* USE_FCNTL */
 #if SYS_APOLLO
@@ -664,15 +681,12 @@ tttypahead(void)
 	}
 # else
 #  if	USE_FCNTL
-	if( !kbd_char_present )
-	{
-		if( !kbd_is_polled &&
-				fcntl(0, F_SETFL, kbd_flags|O_NDELAY ) < 0 )
-			return(FALSE);
-		kbd_is_polled = TRUE;  /* I think */
-		kbd_char_present = (1 == read( 0, &kbd_char, 1 ));
+	if ( ! kbd_char_good ) {
+		set_kbd_polling(TRUE);
+		if (read( 0, &kbd_char, 1 ) == 1)
+			kbd_char_good = TRUE;
 	}
-	return ( kbd_char_present );
+	return ( kbd_char_good );
 #  else
 	return FALSE;
 #  endif/* USE_FCNTL */
@@ -1038,7 +1052,6 @@ getscreensize (int *widthp, int *heightp)
  * so that command-line prompting will have something to talk to.
  */
 
-static int  null_cres     (const char *res);
 static int  null_getc     (void);
 static OUTC_DCL null_putc (OUTC_ARGS);
 static int  null_typahead (void);
@@ -1047,8 +1060,6 @@ static void null_close    (void);
 static void null_eeol     (void);
 static void null_eeop     (void);
 static void null_flush    (void);
-static void null_kclose   (void);
-static void null_kopen    (void);
 static void null_move     (int row, int col);
 static void null_open     (void);
 static void null_rev      (UINT state);
@@ -1089,9 +1100,7 @@ TERM null_term = {
 
 static void null_open(void)	{ }
 static void null_close(void)	{ }
-static void null_kopen(void)	{ }
-static void null_kclose(void)	{ }
-static int  null_getc(void)	{ return abortc; }
+static int  null_getc(void)	{ return esc_c; }
 /*ARGSUSED*/
 static OUTC_DCL null_putc(OUTC_ARGS) { OUTC_RET c; }
 static int  null_typahead(void)	{ return FALSE; }
@@ -1103,13 +1112,13 @@ static void null_eeop(void)	{ }
 static void null_beep(void)	{ }
 /*ARGSUSED*/
 static void null_rev(UINT state GCC_UNUSED) { }
-/*ARGSUSED*/
-static int null_cres(const char *res GCC_UNUSED) { return(FALSE); }
 
 /*
  * These are public, since we'll use them as placeholders for unimplemented
  * device methods.
  */
+/*ARGSUSED*/ void null_kopen(void)	{ }
+/*ARGSUSED*/ void null_kclose(void)	{ }
 /*ARGSUSED*/ void null_t_setfor (int f GCC_UNUSED) { }
 /*ARGSUSED*/ void null_t_setback (int b GCC_UNUSED) { }
 /*ARGSUSED*/ void null_t_setpal (const char *p GCC_UNUSED) { }
@@ -1120,6 +1129,7 @@ static int null_cres(const char *res GCC_UNUSED) { return(FALSE); }
 /*ARGSUSED*/ int  null_t_watchfd (int fd GCC_UNUSED, WATCHTYPE type GCC_UNUSED, long *idp GCC_UNUSED) { return 0; }
 /*ARGSUSED*/ void null_t_unwatchfd (int fd GCC_UNUSED, long id GCC_UNUSED) { }
 /*ARGSUSED*/ void null_t_cursor (int flag GCC_UNUSED) { }
+/*ARGSUSED*/ int  null_cres(const char *res GCC_UNUSED) { return(FALSE); }
 
 /******************************************************************************/
 
