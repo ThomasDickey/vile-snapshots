@@ -1,5 +1,17 @@
 Changes for vile 7.3 (released ??? ??? ??, 1997)
 
+ (tom)	971128 (q)
+	+ modify tagignorecase mode to use lowercased keys in the binary-tree,
+	  and applying tagignorecase mode to the search within the tagged file,
+	  making this behave as Joseph F. Garvey requested.
+ 	+ implement tags-completion.
+	+ replace Alex Wetmore's binary tree code with a balanced binary tree
+	  module that's a little more general, and does deletion more rapidly
+	  than my first try.
+ 	+ minor fixes for foreground/background colors when resizing terminal
+	  window so minibuffer is painted correctly (display.c, ntconio.c).
+ 	+ rename ntvile to winvile.
+
  (tom)	971112 (p)
  	+ correct logic for minibuffer by ensuring that it is not marked for
 	  undo, and that the value of MK is save/restored when modifying

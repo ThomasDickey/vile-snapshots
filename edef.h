@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.217 1997/11/08 02:07:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.218 1997/11/27 13:38:21 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -353,7 +353,6 @@ decl_init_const( char TAGFILE_BufName[],	"[Tags %d]");
 /* defined in nebind.h and nename.h */
 extern const NTAB nametbl[];
 extern const CMDFUNC *asciitbl[];
-decl_init(NBST *namebst, NULL);
 extern KBIND kbindtbl[];
 
 /* vars useful for writing procedures that are : commands */

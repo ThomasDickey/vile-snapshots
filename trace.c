@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.5 1997/10/27 23:02:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.6 1997/11/27 13:56:08 tom Exp $
  *
  */
 #include "estruct.h"
@@ -63,13 +63,14 @@ void
 Elapsed(char *msg)
 {
 #if SYS_UNIX
-	static	struct	timeval		tv0, tv1;
-	static	struct	timezone	tz0, tz1;
+	struct	timeval		tv1;
+	struct	timezone	tz1;
+	static	struct	timeval	tv0;
 	static	int	init;
-	if (!init++)
-		gettimeofday(&tv0, &tz0);
 	gettimeofday(&tv1, &tz1);
-	Trace("%10.6f %s\n", SECS(tv1) - SECS(tv0), msg);
+	if (!init++)
+		tv0 = tv1;
+	Trace("%10.3f %s\n", SECS(tv1) - SECS(tv0), msg);
 	tv0 = tv1;
 #endif
 }

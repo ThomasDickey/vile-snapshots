@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.304 1997/11/06 23:20:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.305 1997/11/27 15:20:26 tom Exp $
  *
  */
 
@@ -87,7 +87,7 @@ MainProgram(int argc, char *argv[])
 #endif
 
 #if OPT_NAMEBST
-	build_namebst(&namebst, nametbl, 0, nametblsize - 2);
+	build_namebst(nametbl, 0, nametblsize - 1);
 #endif
 	global_val_init();	/* global buffer values */
 	charinit();	/* character types -- we need these pretty early  */
@@ -1438,6 +1438,7 @@ quit(int f, int n GCC_UNUSED)
 		kbs_leaks();
 		bind_leaks();
 		map_leaks();
+		tags_leaks();
 		itb_leaks();
 		tb_leaks();
 		wp_leaks();

@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.165 1997/11/12 01:06:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.166 1997/11/26 19:16:40 tom Exp $
  *
  */
 
@@ -1106,9 +1106,7 @@ zotbuf(register BUFFER *bp)	/* kill the buffer pointed to by bp */
 #if OPT_NAMEBST
 		if (is_scratchname(bp->b_bname)) {
 			char procname[NBUFN];
-			NBST *parent = 0;
-			delete_namebst(&namebst, &parent,
-				strip_brackets(procname, bp->b_bname));
+			delete_namebst(strip_brackets(procname, bp->b_bname));
 		}
 #endif
 		FreeBuffer(bp);
@@ -1141,8 +1139,8 @@ namebuffer(int f GCC_UNUSED, int n GCC_UNUSED)	/*	Rename the current buffer	*/
 	if (is_scratchname(curbp->b_bname)) {
 		char procname[NBUFN];
 		(void) strip_brackets(procname, curbp->b_bname);
-		if (lookup_namebst(TRUE, namebst, procname)
-		 && rename_namebst(&namebst, procname, bufn) != TRUE)
+		if (search_namebst(procname)
+		 && rename_namebst(procname, bufn) != TRUE)
 			return FALSE;
 	}
 #endif

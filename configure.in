@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.68 $)
+AC_REVISION($Revision: 1.69 $)
 AC_PREREQ(2.12)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.68 1997/10/15 01:16:56 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.69 1997/11/27 21:07:59 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -470,7 +470,7 @@ test "$cf_exec_macros" != no && AC_DEFINE(OPT_EXEC_MACROS,$cf_exec_macros)
 ###	Debugging/development options
 AC_ARG_WITH(dbmalloc,
 	[  --with-dbmalloc         use Conor Cahill's dbmalloc library],
-	[AC_DEFINE(DBMALLOC)
+	[AC_DEFINE(USE_DBMALLOC)
 	 LIBS="$LIBS -ldbmalloc"])
 
 AC_ARG_WITH(no-leaks,

@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.327 1997/11/09 22:45:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.328 1997/11/27 20:36:39 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -413,26 +413,27 @@
 #define OPT_B_LIMITS    !SMALLER		/* left-margin */
 #define OPT_ENUM_MODES  !SMALLER		/* fixed-string modes */
 #define OPT_EVAL        !SMALLER		/* expression-evaluation */
+#define OPT_FILEBACK    !SMALLER && !SYS_VMS	/* file backup style */
 #define OPT_FINDERR     !SMALLER		/* finderr support. */
-#define OPT_FORMAT      !SMALLER		/* region formatting support. */
 #define OPT_FLASH       !SMALLER || DISP_IBMPC	/* visible-bell */
+#define OPT_FORMAT      !SMALLER		/* region formatting support. */
+#define OPT_HILITEMATCH !SMALLER		/* highlight all matches of a search */
 #define OPT_HISTORY     !SMALLER		/* command-history */
-#define OPT_ISRCH       !SMALLER		/* Incremental searches */
 #define OPT_ISO_8859    !SMALLER		/* ISO 8859 characters */
+#define OPT_ISRCH       !SMALLER		/* Incremental searches */
 #define OPT_LINEWRAP    !SMALLER		/* line-wrap mode */
 #define OPT_MAJORMODE   !SMALLER		/* majormode support */
 #define OPT_MLFORMAT    !SMALLER		/* modeline-format */
 #define OPT_MS_MOUSE    !SMALLER && DISP_IBMPC  /* MsDos-mouse */
+#define OPT_NAMEBST	!SMALLER		/* name's stored in a bst */
 #define OPT_ONLINEHELP  !SMALLER		/* short per-command help */
 #define OPT_POPUPCHOICE !SMALLER		/* popup-choices mode */
 #define OPT_POPUP_MSGS  !SMALLER		/* popup-msgs mode */
 #define OPT_REBIND      !SMALLER		/* permit rebinding of keys at run-time	*/
-#define OPT_FILEBACK    !SMALLER && !SYS_VMS	/* file backup style */
+#define OPT_TAGS_CMPL   !SMALLER && OPT_TAGS	/* name-completion for tags */
 #define OPT_TERMCHRS    !SMALLER		/* set/show-terminal */
 #define OPT_UPBUFF      !SMALLER		/* animated buffer-update */
 #define OPT_WIDE_CTYPES !SMALLER		/* extra char-types tests */
-#define OPT_HILITEMATCH !SMALLER		/* highlight all matches of a search */
-#define OPT_NAMEBST	!SMALLER		/* name's stored in a bst */
 
 /* "show" commands for the optional features */
 #define OPT_SHOW_EVAL   !SMALLER && OPT_EVAL	/* "show-variables" */
@@ -1972,14 +1973,12 @@ typedef struct {
  * a binary search tree of the above structure.  we use this so that we can
  * add in procedures as they are created.
  */
-typedef struct NBST_st {
-	const char *n_name;		/* the name of the command	*/
+typedef struct {
+	const char *bi_key;		/* the name of the command	*/
 	const CMDFUNC *n_cmd;		/* if NULL, stored procedure	*/
 	int n_readonly;			/* original commands readonly	*/
-	struct NBST_st *n_left;		/* left children		*/
-	struct NBST_st *n_right;	/* right children		*/
-	struct NBST_st *n_parent;	/* our parent			*/
-}	NBST;
+}	NBST_DATA;
+
 
 /* when a command is referenced by bound key (like h,j,k,l, or "dd"), it
  *	is looked up one of two ways: single character 7-bit ascii commands (by
@@ -2236,8 +2235,11 @@ extern void _exit (int code);
 #ifndef	DOALLOC		/* record info for 'show_alloc()' */
 #define	DOALLOC		0
 #endif
-#ifndef	DBMALLOC	/* test malloc/free/strcpy/memcpy, etc. */
-#define	DBMALLOC	0
+#ifndef	USE_DBMALLOC	/* test malloc/free/strcpy/memcpy, etc. */
+#define	USE_DBMALLOC	0
+#endif
+#ifndef	USE_DMALLOC	/* test malloc/free/strcpy/memcpy, etc. */
+#define	USE_DMALLOC	0
 #endif
 #ifndef	NO_LEAKS	/* free permanent memory, analyze leaks */
 #define	NO_LEAKS	0
@@ -2248,25 +2250,31 @@ extern void _exit (int code);
 
 #undef TRACE
 
-#if	DBMALLOC
-#undef strchr
-#undef strrchr
-#undef memcpy
-#undef memccpy
-#undef malloc
-#undef realloc
-#undef free
-#include <dbmalloc.h>		/* renamed from dbmalloc's convention */
-#define show_alloc() malloc_dump(fileno(stderr))
-#define strmalloc strdup
-#if	OPT_TRACE
-#include "trace.h"
-#endif
+#if USE_DBMALLOC || USE_DMALLOC
+#  undef strchr
+#  undef strrchr
+#  undef memcpy
+#  undef memccpy
+#  undef malloc
+#  undef realloc
+#  undef free
+#  define strmalloc strdup
+#  if USE_DBMALLOC
+#    include <dbmalloc.h>		/* renamed from dbmalloc's convention */
+#    define show_alloc() malloc_dump(fileno(stderr))
+#  endif
+#  if USE_DMALLOC
+#    include <dmalloc.h>
+#    define show_alloc() dmalloc_log_unfreed()
+#  endif
+#  if OPT_TRACE
+#    include "trace.h"
+#  endif
 #else
-#if	NO_LEAKS || DOALLOC || OPT_TRACE
-#include "trace.h"
-#endif
-#endif	/* DBMALLOC */
+#  if NO_LEAKS || DOALLOC || OPT_TRACE
+#    include "trace.h"
+#  endif
+#endif	/* USE_DBMALLOC */
 
 /* Normally defined in "trace.h" */
 #ifndef TRACE

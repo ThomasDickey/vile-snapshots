@@ -1,4 +1,4 @@
-MANIFEST for vile, version v7_2p
+MANIFEST for vile, version v7_2q
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -19,6 +19,8 @@ api.h                           interface of api.c
 basic.c                         basic cursor-movement
 bind.c                          key-bindings & low-level command-completion
 borland.c                       BORLAND terminal driver
+btree.c                         balanced-binary (AVL) tree functions
+btree.h                         interface of btree.c
 buffer.c                        buffer-management
 buglist                         bug-list
 c-filt.c                        VILE attribute-filter for C files

@@ -4,7 +4,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.84 1997/10/06 23:35:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.87 1997/11/28 13:18:05 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -12,25 +12,46 @@
 
 #if OPT_TAGS
 
+#if OPT_TAGS_CMPL
+typedef struct {
+	/* FIXME: we could make next-tag work faster if we also hash the
+	 * line-pointers for each key.
+	 */
+	char	*bi_key;
+	} TAGS_DATA;
+
+#define BI_DATA TAGS_DATA
+#include	"btree.h"
+
+#endif
+
 #define	UNTAG	struct	untag
 	UNTAG {
 	char *u_fname;
-	int u_lineno;
+	L_NUM u_lineno;
 	UNTAG *u_stklink;
 #if OPT_SHOW_TAGS
 	char	*u_templ;
 #endif
 };
 
+#define TAGHITS	struct	taghits
+	TAGHITS	{
+	TAGHITS	*link;
+	LINE	*tag;	/* points to tag-buffer line */
+	LINE	*hit;	/* points to corresponding line in source-file */
+};
+
 static	LINE *	cheap_tag_scan(LINEPTR oldlp, char *name, SIZE_T taglen);
 static	LINE *	cheap_buffer_scan(BUFFER *bp, char *patrn, int dir);
-static	BUFFER *gettagsfile(int n, int *endofpathflagp);
-static	int	popuntag(char *fname, int *linenop);
-static	void	pushuntag(char *fname, int lineno, char *tag);
+static	BUFFER *gettagsfile(int n, int *endofpathflagp, int *did_read);
+static	int	popuntag(char *fname, L_NUM *linenop);
+static	void	pushuntag(char *fname, L_NUM lineno, char *tag);
 static	int	tag_search(char *tag, int taglen, int initial);
 static	void	tossuntag (void);
 
-static	UNTAG *	untaghead = NULL;
+static	TAGHITS*tag_hits;
+static	UNTAG *	untaghead;
 static	char	tagname[NFILEN+2];  /* +2 since we may add a tab later */
 
 #if OPT_SHOW_TAGS
@@ -38,6 +59,183 @@ static	char	tagname[NFILEN+2];  /* +2 since we may add a tab later */
 static	int	update_tagstack ( BUFFER *bp );
 #  endif
 #endif	/* OPT_SHOW_TAGS */
+
+#if OPT_TAGS_CMPL
+
+static BI_NODE*
+new_tags (BI_DATA *a)
+{
+	BI_NODE *p = typecalloc(BI_NODE);
+	p->value = *a;
+	BI_KEY(p) = strmalloc(a->bi_key);
+	return p;
+}
+
+static void
+old_tags (BI_NODE *a)
+{
+	free(BI_KEY(a));
+	free(a);
+}
+
+static void
+dpy_tags (BI_NODE *a GCC_UNUSED, int level GCC_UNUSED)
+{
+#if OPT_TRACE
+	while (level-- > 0)
+		TRACE((". "));
+	TRACE(("%s (%d)\n", BI_KEY(a), a->balance));
+#endif
+}
+
+static BI_TREE tags_tree = { new_tags, old_tags, dpy_tags };
+
+/* Parse the identifier out of the given line and store it in the binary tree */
+static void
+store_tag(LINE *lp)
+{
+	char	my_name[sizeof(tagname)];
+	size_t	len, got;
+	int	c;
+
+	if (llength(lp) > 0) {
+		len = llength(lp);
+		for (got = 0; got < len; got++) {
+			c = lgetc(lp, got);
+			if (!isident(c))
+				break;
+			my_name[got] = c;
+		}
+		my_name[got] = EOS;
+		if (got) {
+			BI_DATA temp;
+#ifdef MDTAGIGNORECASE
+			if (b_val(curbp,MDTAGIGNORECASE))
+				mklower(my_name);
+#endif
+			temp.bi_key = my_name;
+			btree_insert(&tags_tree, &temp);
+		}
+	}
+}
+
+/* check if the binary-tree is up-to-date.  If not, rebuild it. */
+static const char **
+init_tags_cmpl (char *buf, unsigned cpos)
+{
+	int tf_num;
+	BUFFER *bp;
+	LINE *lp;
+	int done;
+	int flag;
+	int obsolete = (tags_tree.count == 0);
+
+#ifdef MDTAGIGNORECASE
+	/* If curbp's b_val(curbp,MDTAGIGNORECASE)) is different from the last
+	 * time we built the tree, obsolete the tree, since the keys changed.
+	 */
+	{
+		static int my_tcase = SORTOFTRUE;
+		if (b_val(curbp,MDTAGIGNORECASE) != my_tcase) {
+			my_tcase = b_val(curbp,MDTAGIGNORECASE);
+			obsolete = TRUE;
+		}
+	}
+#endif
+	/*
+	 * Check if we've already loaded all of the tags buffers.  If not, we
+	 * know we should build the tree.  Also, if any aren't empty, we may
+	 * have loaded the buffer for some other reason than tags processing.
+	 */
+	if (!obsolete) {
+		for (tf_num = 0; ; tf_num++) {
+			bp = gettagsfile(tf_num, &done, &flag);
+			if (done || bp == 0)
+				break;
+			(void)bsizes(bp);
+			obsolete = flag || (bp->b_linecount != 0);
+			if (obsolete)
+				break;
+		}
+	}
+
+	if (obsolete) {
+		btree_freeup(&tags_tree);
+
+		for (tf_num = 0; ; tf_num++) {
+			bp = gettagsfile(tf_num, &done, &flag);
+			if (done || bp == 0)
+				break;
+			for_each_line(lp,bp)
+				store_tag(lp);
+		}
+
+		TRACE(("stored %d tags entries\n", tags_tree.count))
+	}
+
+	return btree_parray(&tags_tree, buf, cpos);
+}
+
+static int
+tags_completion(int c, char *buf, unsigned *pos)
+{
+	register unsigned cpos = *pos;
+	int status = FALSE;
+	const char **nptr;
+
+	kbd_init();		/* nothing to erase */
+	buf[cpos] = EOS;	/* terminate it for us */
+
+	if ((nptr = init_tags_cmpl(buf, cpos)) != 0) {
+		status = kbd_complete(FALSE, c, buf, pos, (char *)nptr, sizeof(*nptr));
+		free(nptr);
+	}
+	return status;
+}
+#else
+#define tags_completion no_completion
+#endif
+
+/*
+ * Record the places we've been to during a tag-search, so we'll not push the
+ * stack just because there's repetition in the tags files.  Return true if
+ * we've been here before.
+ */
+static int
+mark_tag_hit(LINE *tag, LINE *hit)
+{
+	TAGHITS *p;
+
+	TRACE(("mark_tag_hit %s:%d\n", curbp->b_bname, line_no(curbp, hit)))
+	for (p = tag_hits; p != 0; p = p->link) {
+		if (p->hit == hit) {
+			TRACE(("... mark_tag_hit TRUE\n"))
+			return (p->tag == tag) ? ABORT : TRUE;
+		}
+	}
+
+	p = typecalloc(TAGHITS);
+	p->link  = tag_hits;
+	p->tag   = tag;
+	p->hit   = hit;
+	tag_hits = p;
+
+	TRACE(("... mark_tag_hit FALSE\n"))
+	return FALSE;
+}
+
+/*
+ * Discard the list of tag-hits when we're about to begin a new tag-search.
+ */
+static void
+free_tag_hits(void)
+{
+	TAGHITS *p;
+	while ((p = tag_hits) != 0) {
+		tag_hits = p->link;
+		free(p);
+	}
+}
 
 /* ARGSUSED */
 int
@@ -47,16 +245,33 @@ gototag(int f GCC_UNUSED, int n GCC_UNUSED)
 	int taglen;
 
 	if (clexec || isnamedcmd) {
-	        if ((s=mlreply("Tag name: ", tagname, NFILEN)) != TRUE)
+		UINT mode = KBD_NORMAL
+#if OPT_TAGS_CMPL
+			| KBD_MAYBEC
+#endif
+			;
+#ifdef MDTAGIGNORECASE
+			if (b_val(curbp,MDTAGIGNORECASE))
+				mode |= KBD_LOWERC;
+#endif
+		if ((s = kbd_string("Tag name: ",
+				tagname, sizeof(tagname),
+				'\n', mode, tags_completion)) != TRUE)
 	                return (s);
 		taglen = b_val(curbp,VAL_TAGLEN);
 	} else {
-		s = screen_string(tagname, NFILEN, _ident);
+		s = screen_string(tagname, sizeof(tagname), _ident);
 		taglen = 0;
 	}
-	if (s == TRUE)
+
+	if (s == TRUE) {
+#ifdef MDTAGIGNORECASE
+		if (b_val(curbp,MDTAGIGNORECASE))
+			mklower(tagname);
+#endif
+		free_tag_hits();
 		s = tag_search(tagname,taglen,TRUE);
-	else
+	} else
 		tagname[0] = EOS;
 	return s;
 }
@@ -69,8 +284,13 @@ int
 nexttag(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	int	s = FALSE;
-	if (tagname[0] != EOS)
-		s = tag_search(tagname, global_b_val(VAL_TAGLEN), FALSE);
+	if (tagname[0] != EOS) {
+		do {
+			s = tag_search(tagname, global_b_val(VAL_TAGLEN), FALSE);
+		} while (s == SORTOFTRUE);
+		if (s == ABORT)
+			mlwarn("[No more matches]");
+	}
 	return s;
 }
 
@@ -82,6 +302,30 @@ cmdlinetag(const char *t)
 		TRUE);
 }
 
+/*
+ * Jump back to the given file & line.
+ */
+static int
+finish_pop(char *fname, L_NUM lineno)
+{
+	MARK odot;
+	int s;
+	
+	s = getfile(fname,FALSE);
+	if (s == TRUE) {
+		/* it's an absolute move -- remember where we are */
+		odot = DOT;
+		s = gotoline(TRUE, lineno);
+		/* if we moved, update the "last dot" mark */
+		if (s == TRUE) {
+			if (!sameline(DOT, odot))
+				curwp->w_flag &= ~WFMOVE;
+			else
+				curwp->w_lastdot = odot;
+		}
+	}
+	return s;
+}
 
 static int
 tag_search(char *tag, int taglen, int initial)
@@ -100,7 +344,8 @@ tag_search(char *tag, int taglen, int initial)
 	register int status;
 	char *tfp, *lplim;
 	char tfname[NFILEN];
-	int lineno;
+	int flag;
+	L_NUM lineno;
 	int changedfile;
 	MARK odot;
 	BUFFER *tagbp;
@@ -121,7 +366,7 @@ tag_search(char *tag, int taglen, int initial)
 #endif
 
 	do {
-		tagbp = gettagsfile(tf_num, &nomore);
+		tagbp = gettagsfile(tf_num, &nomore, &flag);
 		lp = 0;
 		if (nomore) {
 			if (gotafile) {
@@ -192,16 +437,7 @@ tag_search(char *tag, int taglen, int initial)
 	}
 
 	if (curbp && curwp) {
-#if SMALLER
-		register LINE *clp;
-		lineno = 1;
-	        for(clp = lforw(buf_head(curbp));
-				clp != DOT.l; clp = lforw(clp))
-			lineno++;
-#else
-		(void)bsizes(curbp);
-		lineno = DOT.l->l_number;
-#endif
+		lineno = line_no(curbp, DOT.l);
 		if (!isInternalName(curbp->b_fname))
 			pushuntag(curbp->b_fname, lineno, tag);
 		else
@@ -218,7 +454,6 @@ tag_search(char *tag, int taglen, int initial)
 		}
 		changedfile = TRUE;
 	} else {
-		mlwrite("Tag \"%s\" in current buffer", tag);
 		changedfile = FALSE;
 	}
 
@@ -285,9 +520,22 @@ tag_search(char *tag, int taglen, int initial)
 		(void)firstnonwhite(FALSE,1);
 		status = TRUE;
 	}
-	/* if we moved, update the "last dot" mark */
-	if (status == TRUE && !sameline(DOT, odot)) {
-		curwp->w_lastdot = odot;
+
+	if (status == TRUE) {
+		int s;
+		if ((s = mark_tag_hit(tagbp->b_dot.l, DOT.l)) != FALSE) {
+			if (popuntag(tfname, &lineno))
+				(void) finish_pop(tfname, lineno);
+			return s;
+		}
+
+		if (!changedfile)
+			mlwrite("Tag \"%s\" in current buffer", tag);
+
+		/* if we moved, update the "last dot" mark */
+		if (!sameline(DOT, odot)) {
+			curwp->w_lastdot = odot;
+		}
 	}
 
 	return status;
@@ -311,7 +559,7 @@ nth_name(char *buf, const char *path, int n)
 
 
 static BUFFER *
-gettagsfile(int n, int *endofpathflagp)
+gettagsfile(int n, int *endofpathflagp, int *did_read)
 {
 #ifdef	MDCHK_MODTIME
 	time_t current;
@@ -322,6 +570,7 @@ gettagsfile(int n, int *endofpathflagp)
 	char tagfilename[NFILEN];
 
 	*endofpathflagp = FALSE;
+	*did_read = FALSE;
 
 	(void)lsprintf(tagbufname, TAGFILE_BufName, n+1);
 
@@ -354,6 +603,7 @@ gettagsfile(int n, int *endofpathflagp)
 		if (readin(tagsfile, FALSE, tagbp, FALSE) != TRUE) {
 			return NULL;
 		}
+		*did_read = TRUE;
         }
 #ifdef	MDCHK_MODTIME
 	/*
@@ -362,13 +612,15 @@ gettagsfile(int n, int *endofpathflagp)
 	 * value because it's too awkward to set the local mode value for a
 	 * scratch buffer.
 	 */
-	else if (global_b_val(MDCHK_MODTIME)
+	if (global_b_val(MDCHK_MODTIME)
 	 && get_modtime(tagbp, &current)
 	 && tagbp->b_modtime != current) {
-		if (readin(tagbp->b_fname, FALSE, tagbp, FALSE) != TRUE) {
+		if (!*did_read
+		 && readin(tagbp->b_fname, FALSE, tagbp, FALSE) != TRUE) {
 			return NULL;
 		}
 	 	set_modtime(tagbp, tagbp->b_fname);
+		*did_read = TRUE;
 	}
 #endif
 	b_set_invisible(tagbp);
@@ -380,10 +632,10 @@ static int my_strncasecmp(const char *a, const char *b, size_t len)
 {
 	int aa = EOS, bb = EOS;
 
-	while (len != 0
-	  && (aa = isAlpha(*a) ? toLower(*a) : *a) != EOS
-	  && (bb = isAlpha(*b) ? toLower(*b) : *b) != EOS
-	  && (aa == bb)) {
+	while ((len != 0)
+	  &&   ((aa = (isUpper(*a) ? toLower(*a) : *a)) != EOS)
+	  &&   ((bb = (isUpper(*b) ? toLower(*b) : *b)) != EOS)
+	  &&   (aa == bb)) {
 		len--;
 		a++;
 		b++;
@@ -450,6 +702,11 @@ cheap_buffer_scan(BUFFER *bp, char *patrn, int dir)
 	register LINE *lp;
 	register LINE *result = 0;
 	regexp *exp = regcomp(patrn, FALSE);
+#ifdef MDTAGIGNORECASE
+	int savecase = ignorecase;
+	if (b_val(bp,MDTAGIGNORECASE))
+		ignorecase = TRUE;
+#endif
 
 	TRACE(("cheap_buffer_scan '%s' %s\n",
 		patrn,
@@ -465,31 +722,24 @@ cheap_buffer_scan(BUFFER *bp, char *patrn, int dir)
 		}
 	}
 	free(exp);
+#ifdef MDTAGIGNORECASE
+	ignorecase = savecase;
+#endif
 	return (result);
 }
 
 int
 untagpop(int f, int n)
 {
-	int lineno;
+	L_NUM lineno;
 	char fname[NFILEN];
-	MARK odot;
 	int s;
 
 	if (!f) n = 1;
 	while (n && popuntag(fname,&lineno))
 		n--;
 	if (lineno && fname[0]) {
-		s = getfile(fname,FALSE);
-		if (s == TRUE) {
-			/* it's an absolute move -- remember where we are */
-			odot = DOT;
-			s = gotoline(TRUE,lineno);
-			/* if we moved, update the "last dot" mark */
-			if (s == TRUE && !sameline(DOT, odot)) {
-				curwp->w_lastdot = odot;
-			}
-		}
+		s = finish_pop(fname, lineno);
 	} else {
 		mlwarn("[No stacked un-tags]");
 		s = FALSE;
@@ -511,7 +761,7 @@ free_untag(UNTAG *utp)
 
 /*ARGSUSED*/
 static void
-pushuntag(char *fname, int lineno, char *tag)
+pushuntag(char *fname, L_NUM lineno, char *tag)
 {
 	UNTAG *utp;
 	utp = typealloc(UNTAG);
@@ -538,7 +788,7 @@ pushuntag(char *fname, int lineno, char *tag)
 
 
 static int
-popuntag(char *fname, int *linenop)
+popuntag(char *fname, L_NUM *linenop)
 {
 	register UNTAG *utp;
 
@@ -622,5 +872,20 @@ showtagstack(int f, int n GCC_UNUSED)
 	return liststuff(TAGSTACK_BufName, FALSE, maketagslist, f, (void *)0);
 }
 #endif	/* OPT_SHOW_TAGS */
+
+#if NO_LEAKS
+void tags_leaks (void)
+{
+	L_NUM lineno;
+	char fname[NFILEN];
+
+	free_tag_hits();
+	while (popuntag(fname, &lineno))
+		;
+#if OPT_TAGS_CMPL
+	btree_freeup(&tags_tree);
+#endif
+}
+#endif
 
 #endif	/* OPT_TAGS */

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.240 1997/11/12 19:23:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.241 1997/11/27 00:46:43 tom Exp $
  *
  */
 
@@ -368,8 +368,7 @@ vtinit(void)
     	return (vscreen != NULL);
 
     for (i = 0; i < term.t_mrow; ++i) {
-
-        vp = vscreen[i];
+	vp = vscreen[i];
 	vp->v_flag = 0;
 #if OPT_COLOR
 	ReqFcolor(vp) = gfcolor;
@@ -381,6 +380,17 @@ vtinit(void)
 #endif
     return TRUE;
 }
+
+#if OPT_VIDEO_ATTRS
+static void
+set_vattrs(int row, int col, VIDEO_ATTR attr, size_t len)
+{
+	while (len--)
+		vscreen[row]->v_attrs[col++] = attr;
+}
+#else
+#define set_vattrs(row, col, attr, len) /*nothing*/
+#endif
 
 static void
 freeVIDEO(register VIDEO *vp)
@@ -713,9 +723,10 @@ vteeol(void)
 #ifdef WMDLINEWRAP
 	    if (vtrow >= 0)
 #endif
-		if (n >= 0)
+		if (n >= 0) {
 			(void)memset(&vscreen[vtrow]->v_text[n],
 				' ', (SIZE_T)(term.t_ncol-n));
+		}
 		vtcol = term.t_ncol;
 	}
 }
@@ -787,13 +798,17 @@ kbd_openup(void)
 				pscreen[i]->v_text,
 				pscreen[i+1]->v_text,
 				(SIZE_T)(term.t_ncol));
+#if OPT_VIDEO_ATTRS
 			(void)memcpy(
 				pscreen[i]->v_attrs,
 				pscreen[i+1]->v_attrs,
 				alen);
+#endif
 		}
 		(void)memset(pscreen[i]->v_text, ' ', (SIZE_T)(term.t_ncol));
+#if OPT_VIDEO_ATTRS
 		(void)memset(pscreen[i]->v_attrs, VADIRTY, alen);
+#endif
 	}
 #endif
 }
@@ -834,17 +849,13 @@ kbd_flush(void)
 		}
 
 		vteeol();
+		set_vattrs(row, 0, 0, term.t_ncol);
 		if (my_overlay[0] != EOS) {
 			int n = term.t_ncol - strlen(my_overlay) - 1;
 			if (n > 0) {
 				(void)memcpy(&vscreen[row]->v_text[n],
 					my_overlay,
 					strlen(my_overlay));
-#if OPT_VIDEO_ATTRS
-				(void)memset(&vscreen[row]->v_attrs[n],
-					0,
-					sizeof(VIDEO_ATTR)*strlen(my_overlay));
-#endif
 			}
 		}
 		vscreen[row]->v_flag |= VFCHG;
@@ -1427,15 +1438,14 @@ updgar(void)
 		vscreen[i]->v_flag &= ~VFREV;
 #endif
 #if	OPT_COLOR
-		CurFcolor(vscreen[i]) = gfcolor;
-		CurBcolor(vscreen[i]) = gbcolor;
+		CurFcolor(vscreen[i]) = -1;
+		CurBcolor(vscreen[i]) = -1;
 #endif
 #if	! MEMMAP && ! OPT_PSCREEN
 		for (j = 0; j < term.t_ncol; ++j) {
 			CELL_TEXT(i,j) = ' ';
 #if OPT_VIDEO_ATTRS
-			/* FIXME: Color? */
-			CELL_ATTR(i,j) = 0;
+			CELL_ATTR(i,j) = VFCOL;
 #endif /* OPT_VIDEO_ATTRS */
 		}
 #endif
@@ -1488,7 +1498,7 @@ static void
 updattrs(WINDOW *wp)
 {
     AREGION *ap;
-    int i, j;
+    int i;
     
     L_NUM start_wlnum, end_wlnum;
     LINEPTR lp;
@@ -1500,8 +1510,7 @@ updattrs(WINDOW *wp)
      */
     /* FIXME: color; need to set to value indicating fg and bg for window */
     for (i = wp->w_toprow + wp->w_ntrows - 1; i >= wp->w_toprow; i--)
-	for (j = 0; j < term.t_ncol; j++)
-	    vscreen[i]->v_attrs[j] = 0;
+    	set_vattrs(i, 0, 0, term.t_ncol);
 
     /*
      * No need to do any more work on this window if there are no
@@ -1946,7 +1955,7 @@ scrolls(int inserts)	/* returns true if it does something */
 			    MARK_LINE_DIRTY(a);				\
 			    for (j = 0; j < term.t_ncol; j++) {		\
 				CELL_TEXT(a,j) = ' ';			\
-				CELL_TEXT(a,j) = 0; /* FIXME: color */	\
+				CELL_ATTR(a,j) = VFCOL;			\
 			    }						\
 			  } one_time
 		if (from < to) {
@@ -2647,8 +2656,7 @@ modeline(WINDOW *wp)
 	attr |= VAREV;
 #endif
 	vscreen[n]->v_flag |= VFCHG;
-	for (col=0; col < term.t_ncol; col++)
-	    vscreen[n]->v_attrs[col] = attr;
+	set_vattrs(n, 0, attr, term.t_ncol);
     }
 #else
     vscreen[n]->v_flag |= VFCHG | VFREQ | VFCOL;/* Redraw next time. */

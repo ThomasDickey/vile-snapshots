@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Borland C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.6 1997/05/26 14:59:10 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.7 1997/11/26 16:16:03 tom Exp $
 #
 #
 
@@ -16,7 +16,7 @@ HDRS = estruct.h edef.h proto.h dirstuff.h
 # and in modetbl
 BUILTHDRS = nebind.h neproto.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nefsms.h
 
-SRC = 	main.c ntconio.c basic.c bind.c buffer.c crypt.c \
+SRC = 	main.c ntconio.c basic.c bind.c btree.c buffer.c crypt.c \
 	csrch.c display.c eval.c exec.c externs.c \
 	fences.c file.c filec.c \
 	fileio.c finderr.c glob.c globals.c history.c \
@@ -27,7 +27,7 @@ SRC = 	main.c ntconio.c basic.c bind.c buffer.c crypt.c \
 	tags.c tbuff.c termio.c undo.c \
 	version.c window.c word.c wordmov.c map.c 
 
-OBJ = 	main.obj ntconio.obj basic.obj bind.obj buffer.obj crypt.obj \
+OBJ = 	main.obj ntconio.obj basic.obj bind.obj btree.obj buffer.obj crypt.obj \
       	csrch.obj display.obj eval.obj exec.obj externs.obj \
 	fences.obj file.obj filec.obj \
 	fileio.obj finderr.obj glob.obj globals.obj history.obj \

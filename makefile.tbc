@@ -1,5 +1,5 @@
 # This is a makefile for mktbls and vile under Turbo-C
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.tbc,v 1.21 1997/05/26 14:59:50 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.tbc,v 1.22 1997/11/26 16:15:58 tom Exp $
 
 .AUTODEPEND
 
@@ -89,6 +89,7 @@ mktbls.obj: vile.cfg mktbls.c
 VILE_DEPS =  \
  basic.obj \
  bind.obj \
+ btree.obj \
  buffer.obj \
  crypt.obj \
  csrch.obj \
@@ -143,6 +144,7 @@ $(TARGET): vile.cfg $(VILE_DEPS)
 c0l.obj+
 basic.obj+
 bind.obj+
+btree.obj+
 buffer.obj+
 crypt.obj+
 csrch.obj+
@@ -204,6 +206,8 @@ VILE_CFG=	vile.cfg estruct.h nefkeys.h nemode.h edef.h proto.h
 basic.obj:	$(VILE_CFG) basic.c 
 
 bind.obj:	$(VILE_CFG) bind.c	nefunc.h
+
+btree.obj:	$(VILE_CFG) btree.c 
 
 buffer.obj:	$(VILE_CFG) buffer.c 
 

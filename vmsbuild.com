@@ -1,4 +1,4 @@
-$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.14 1997/09/05 00:45:51 tom Exp $
+$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.15 1997/11/26 16:15:51 tom Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
 $! Tested with:
@@ -19,6 +19,7 @@ $ open/write optf vms_link.opt
 $ write optf "Identification=""Vile 7.2"""
 $ write optf "basic.obj"
 $ write optf "bind.obj"
+$ write optf "btree.obj"
 $ write optf "buffer.obj"
 $ write optf "crypt.obj"
 $ write optf "csrch.obj"
