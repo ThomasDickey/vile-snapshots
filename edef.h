@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.313 2003/08/04 22:34:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.302 2002/07/02 00:06:57 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -46,7 +46,7 @@ decl_init( char *exec_pathname, ".");	/* replaced at runtime with path-head of a
 #endif /* PROGRAM_NAME */
 
 decl_init( char prognam[], PROGRAM_NAME);
-decl_init( char version[], "version 9.4");
+decl_init( char version[], "version 9.3");
 
 #ifdef SYSTEM_NAME
 decl_init( char opersys[], SYSTEM_NAME);
@@ -82,8 +82,6 @@ decl_init( int autoindented , -1);	/* how many chars (not cols) indented */
 decl_uninit( int isnamedcmd );		/* are we typing a command name */
 decl_uninit( int calledbefore );	/* called before during this command? */
 decl_uninit( CHARTYPE vl_chartypes_[N_chars] );	/* character types	*/
-decl_uninit( char vl_uppercase[N_chars] );
-decl_uninit( char vl_lowercase[N_chars] );
 decl_uninit( int reading_msg_line );	/* flag set during msgline reading */
 decl_uninit( jmp_buf read_jmp_buf );	/* for setjmp/longjmp on SIGINT */
 #ifndef insertmode
@@ -107,7 +105,6 @@ decl_uninit( int doingopcmd );		/* operator command in progress */
 decl_uninit( int doingsweep );		/* operator command in progress */
 decl_uninit( int sweephack );		/* don't include dot when sweeping */
 decl_uninit( MARK pre_op_dot );		/* current pos. before operator cmd */
-decl_uninit( MARK post_op_dot );	/* current pos. after operator motion */
 
 decl_uninit( MARK scanboundpos );	/* where do searches end? */
 decl_uninit( int scanbound_is_header);	/* is scanboundpos the header line? */
@@ -130,7 +127,7 @@ decl_uninit( TBUFF *tb_save_shell[2] );	/* last ":!" or ^X-!  command	*/
 decl_uninit( char screen_desc[NBUFN] );	/* rough description of screen  */
 
 decl_init( TBUFF *mlsave, 0 );		/* last message, if postponed	*/
-decl_init( TBUFF *searchpat, 0 );	/* Search pattern		*/
+decl_uninit( char searchpat[NPAT] );	/* Search pattern		*/
 decl_init( TBUFF *replacepat, 0 );	/* replacement pattern		*/
 decl_uninit( int  last_srch_direc );	/* Direction of last search */
 decl_uninit( regexp *gregexp );		/* compiled version of searchpat */
@@ -179,11 +176,9 @@ decl_init( int sgarbf, TRUE );		/* TRUE if screen is garbage	*/
 decl_init( int need_update, TRUE );	/* TRUE if screen is not updated*/
 decl_uninit( int clexec	);		/* command line execution flag	*/
 decl_uninit( int clhide );		/* hide results of this command	*/
-decl_init( int quiet, FALSE );		/* hide output of this command	*/
-decl_init( int miniedit, FALSE );	/* editing minibuffer with vi-cmds */
-decl_init( int no_minimsgs, FALSE );	/* suppress messages in minibuffer */
+decl_uninit( int miniedit );		/* editing minibuffer with vi-cmds */
 decl_init( int vl_msgs, TRUE);		/* suppress command output?	*/
-decl_init( int no_errs, FALSE );	/* suppress bells/alarms?	*/
+decl_uninit( int no_errs);		/* suppress bells/alarms?	*/
 decl_init( int vl_echo, TRUE);		/* echo user input 		*/
 decl_init( int qpasswd, FALSE);		/* querying for password	*/
 decl_init( int in_autocolor, FALSE );	/* Autocoloring			*/
@@ -207,8 +202,6 @@ decl_init( int rgb_bright, 255 );
 #if OPT_TITLE
 decl_init( int auto_set_title, TRUE );	/* automatically set title	*/
 decl_init ( TBUFF * title_format, 0 );	/* format, if any		*/
-decl_init ( TBUFF * current_title, 0 );
-decl_init ( TBUFF * request_title, 0 );
 #endif
 
 /* Special characters, used in keyboard control (some values are set on
@@ -272,13 +265,14 @@ decl_init( int tracemacros, FALSE );	/* macro tracing flag		*/
 #endif
 
 decl_init ( int im_displaying, 0 );	/* flag set during screen updates */
-decl_uninit( int vile_is_busy );	/* disabling flag, e.g., working */
 
 #if OPT_WORKING
 decl_uninit( B_COUNT max_working );	/* 100% value for slowreadf	*/
 decl_uninit( B_COUNT cur_working );	/* current-value for slowreadf	*/
 decl_uninit( B_COUNT old_working );	/* previous-value for slowreadf	*/
 #endif
+decl_uninit( int vile_is_busy );	/* disabling flag, e.g., working */
+decl_uninit( int signal_was );		/* what was the last signal */
 
 #if OPT_SHELL
 decl_init ( int cd_on_open, FALSE );
@@ -320,8 +314,7 @@ decl_uninit( size_t fflinelen );	/* fflinebuf length */
 
 decl_init ( L_NUM help_at, -1 );	/* position in help-file */
 decl_uninit( char *helpfile );
-decl_init( char vl_pathchr, PATHCHR );	/* $pathlist-separator */
-decl_init( char vl_pathsep, PATHSEP );	/* $pathname-separator */
+decl_init( char vl_pathsep, PATHCHR );	/* $pathlist-separator */
 
 decl_uninit( char *startup_file );
 decl_uninit( char *startup_path );
@@ -444,13 +437,13 @@ extern BINDINGS sel_bindings;
 decl_uninit(int ev_end_of_cmd);
 
 /* terminal structure is defined in the configured screen driver */
+#ifndef	termdef
 extern	TERM	term;			/* Terminal information.	*/
+#endif
 #if OPT_DUMBTERM
 extern	TERM	dumb_term;
 #endif
 extern	TERM	null_term;
-
-decl_init(int utf8_locale, FALSE);
 
 #if DISP_IBMPC || DISP_BORLAND || DISP_VIO
 decl_init( char *current_res_name, "default");

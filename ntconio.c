@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.76 2002/10/07 23:33:57 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.74 2002/05/01 00:08:07 tom Exp $
  *
  */
 
@@ -622,8 +622,6 @@ static struct {
     { VK_F20,		KEY_F20 },
     /* Allow ^-6 to invoke the alternate-buffer command, a la Unix.  */
     { '6',		'6' },
-    /* Support recognition of ^@ */
-    { '2',		'2' },
     /* *INDENT-ON* */
 
 };
@@ -664,6 +662,14 @@ decode_key_event(INPUT_RECORD * irp)
 	    TRACE(("...decode_key_event ^^\n"));
 	    return '\036';
 	}
+	/*
+	 * Control-shift-2 is control/@, or null.
+	 */
+	if (irp->Event.KeyEvent.wVirtualKeyCode == '2'
+	    || irp->Event.KeyEvent.wVirtualKeyCode == '@') {
+	    TRACE(("...decode_key_event null\n"));
+	    return 0;
+	}
     }
 
     key = NOKYMAP;
@@ -687,21 +693,6 @@ decode_key_event(INPUT_RECORD * irp)
 		    key |= mod_ALT;
 		if (state & SHIFT_PRESSED)
 		    key |= mod_SHIFT;
-		if (keyxlate[i].vile == '2') {
-		    if ((key & mod_CTRL) && ((key & mod_ALT) == 0)) {
-			/* either ^2 or ^@, => nul char */
-
-			key = 0;
-		    } else if ((key & mod_SHIFT) &&
-			       ((key & (mod_ALT | mod_CTRL)) == 0)) {
-			/*
-			 * this will be mapped to '@' if we let Windows do
-			 * the translation
-			 */
-
-			key = NOKYMAP;
-		    }
-		}
 	    } else
 		key = keyxlate[i].vile;
 	    TRACE(("... %#x -> %#x\n", irp->Event.KeyEvent.wVirtualKeyCode, key));

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.14 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.13 2000/08/10 01:33:04 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of awk
  * input text.
@@ -20,6 +20,30 @@ static char *Preproc_attr;
 static char *String_attr;
 
 static int nesting;
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *input)
+{
+    yyin = input;
+
+    Comment_attr = class_attr(NAME_COMMENT);
+    Ident_attr   = class_attr(NAME_IDENT);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    Number_attr  = class_attr(NAME_NUMBER);
+    Preproc_attr = class_attr(NAME_PREPROC);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    BEGIN(MATCHING);
+    nesting = 0;
+
+    while (yylex() > 0) {
+    }
+}
 
 %}
 
@@ -58,29 +82,3 @@ PATTERN		"/"(\\.|\[(\\.|.)*\]|[^ \t\n])*"/"
 {IDENT}			{ WriteToken(Ident_attr); }
 
 {DSTRING}		{ WriteToken(String_attr); }
-
-%%
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *inputs)
-{
-    yyin = inputs;
-
-    Comment_attr = class_attr(NAME_COMMENT);
-    Ident_attr   = class_attr(NAME_IDENT);
-    Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
-    Preproc_attr = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    BEGIN(MATCHING);
-    nesting = 0;
-
-    while (yylex() > 0) {
-    }
-}

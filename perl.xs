@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.89 2003/05/25 23:56:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.84 2002/01/29 01:11:52 tom Exp $
  */
 
 /*#
@@ -97,24 +97,19 @@
 #undef WIN32_LEAN_AND_MEAN
 #endif
 
+/* contortions to avoid typedef conflicts */
+#define main perl_main
+#define regexp perl_regexp
+
 #if !(defined(__GNUC__) || defined(__attribute__))
 #define __attribute__(p) /*nothing*/
 #endif
 
-/* for vile */
-#define MARK vile_MARK
-#include "estruct.h"
-#include "edef.h"
-#include "api.h"
-#undef MARK
-#undef ABORT
-
 /* for perl */
-#define main perl_main
-#define regexp perl_regexp
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
+
 #undef main
 #undef regexp
 #undef dofile
@@ -135,79 +130,42 @@
 
 #include <patchlevel.h>		/* This is perl's patchlevel.h */
 
-#ifndef pTHX
-#define pTHX			/* nothing */
+#if PATCHLEVEL < 5
+#define PL_incgv incgv
+#define PL_rs rs
+#define PL_ofslen ofslen
+#define PL_ofs ofs
+#define PL_ors ors
+#define PL_orslen orslen
+#define PL_errgv errgv			
+#define PL_na na			
+#define PL_sv_undef sv_undef			
 #endif
 
-#ifndef pTHX_
-#define pTHX_			/* nothing */
-#endif
-
-#ifndef PERL_MAGIC_tiedscalar
-#define	PERL_MAGIC_tiedscalar	'q'
-#endif
-
-#ifndef PERL_MAGIC_ext
-#define	PERL_MAGIC_ext		'~'
-#endif
-
-#if !defined(__PATCHLEVEL_H_INCLUDED__) && !defined(SUBVERSION)
-#error The patchlevel.h file is probably not from Perl
-#endif
-
-#ifndef PERL_VERSION
-#ifdef  PATCHLEVEL
-#define PERL_VERSION PATCHLEVEL
-#else
-#error The patchlevel.h file does not define PATCHLEVEL
-#endif
-#endif
-
-#if PERL_VERSION < 5		/* before perl 5.5 */
-#define PL_incgv	incgv
-#define PL_rs		rs
-#define PL_errgv	errgv
-#define PL_na		na
-#define PL_sv_undef	sv_undef
-#endif
+#undef MARK			/* Perl unnecessarily defines this */
 
 #define PDEBUG 0		/* For debugging reference counts */
+
+/* for vile */
+#include "estruct.h"
+#include "edef.h"
+
+#include "api.h"
 
 static PerlInterpreter *perl_interp;
 static int use_ml_as_prompt;
 static SV *svcurbuf;		/* $Vile::current_buffer in perl */
-static int svcurbuf_set(pTHX_ SV *, MAGIC *);
+static int svcurbuf_set(SV *, MAGIC *);
 static WINDOW * set_curwp0(WINDOW *wp);
 static MGVTBL svcurbuf_accessors = {
 	/* Virtual table for svcurbuf magic. */
 	NULL, svcurbuf_set, NULL, NULL, NULL
-#if PERL_VERSION >= 8
-	, NULL, NULL
-#endif
 };
 
-static SV *ofs_sv;
-static SV *ors_sv;
-
 static int perl_init(void);
-static void xs_init(pTHX);
+static void xs_init(void);
 static int  perl_prompt(void);
 static int  perldo_prompt(void);
-
-/* tie a filehandle */
-static void
-tie_handle(SV *sv, SV *obj)
-{
-    SV *tie = sv;
-#if PERL_VERSION >= 8
-    if (!GvIOp(sv))
-	GvIOp(sv) = newIO();
-
-    tie = (SV *) GvIOp(sv);
-#endif
-
-    sv_magic(tie, obj, PERL_MAGIC_tiedscalar, Nullch, 0);
-}
 
 /* write each line to message line */
 static int
@@ -257,14 +215,14 @@ require(char *file, int optional)
     {
 	/* this error is OK for optional files */
 	SV *tmp = newSVpv("Can't locate ", 0);
-	char const *my_check;
+	char const *check;
 	STRLEN sz;
 	int not_found;
 
 	sv_catpv(tmp, file);
 	sv_catpv(tmp, " ");
-	my_check = SvPV(tmp, sz);
-	not_found = !strncmp(SvPV(GvSV(PL_errgv), PL_na), my_check, sz);
+	check = SvPV(tmp, sz);
+	not_found = !strncmp(SvPV(GvSV(PL_errgv), PL_na), check, sz);
 	SvREFCNT_dec(tmp);
 
 	if (not_found)
@@ -281,7 +239,7 @@ void
 perl_default_region(void)
 {
     static REGION region;
-    vile_MARK save_DOT = DOT;
+    MARK save_DOT = DOT;
     DOT.l = lforw(buf_head(curbp));
     DOT.o = 0;
     MK.l  = lback(buf_head(curbp));
@@ -311,7 +269,11 @@ newVBrv(SV *rv, VileBuf *sp)
 	sp->perl_handle = newGVgen("Vile::Buffer");
 	GvSV((GV*)sp->perl_handle) = newSV(0);
 	sv_setiv(GvSV((GV*)sp->perl_handle), (IV) sp);
-	tie_handle(sp->perl_handle, rv);
+	/* The following line would be preferable, but does not work in
+	 * older versions of perl:
+	 *  sv_magic(sp->perl_handle, NULL, 'q', Nullch, 0);
+	 */
+	sv_magic(sp->perl_handle, rv, 'q', Nullch, 0);
 	gv_IOadd((GV*)sp->perl_handle);
 	IoLINES(GvIO((GV*)sp->perl_handle)) = 0;	/* initialise $. */
     }
@@ -350,7 +312,7 @@ perl_free_handle(void *handle)
     /* Remove the magic from the handle.  This should break the
        circular structure which would otherwise prevent the handle
        from getting freed. */
-    sv_unmagic(handle, PERL_MAGIC_tiedscalar);
+    sv_unmagic(handle, 'q');
 #if PDEBUG
     fprintf(stderr, "In perl_free_handle: ");
     sv_dump((SV*)handle);
@@ -410,84 +372,88 @@ static int
 do_perl_cmd(SV *cmd, int inplace)
 {
     int old_isnamedcmd;
-    REGION region;
-    VileBuf *curvbp;
 
     use_ml_as_prompt = 0;
 
-    if (recursecount == 0) {
-	curvbp = api_bp2vbp(curbp);
+    if (perl_interp || perl_init()) {
+	REGION region;
+	VileBuf *curvbp;
 
-	if (DOT.l == 0 || MK.l == 0 || getregion(&region) != TRUE) {
-	    /* shouldn't ever get here. But just in case... */
-	    perl_default_region();
-	    if (getregion(&region) != TRUE) {
-		mlforce("BUG: getregion won't return TRUE in perl.xs.");
+	if (recursecount == 0) {
+	    curvbp = api_bp2vbp(curbp);
+
+	    if (DOT.l == 0 || MK.l == 0 || getregion(&region) != TRUE) {
+		/* shouldn't ever get here. But just in case... */
+		perl_default_region();
+		if (getregion(&region) != TRUE) {
+		    mlforce("BUG: getregion won't return TRUE in perl.xs.");
+		}
 	    }
+	    if (is_header_line(region.r_end, curbp) && !b_val(curbp, MDNEWLINE))
+		region.r_size -= len_record_sep(curbp);
+
+	    /* Initialize some of the fields in curvbp */
+	    curvbp->region = region;
+	    curvbp->regionshape = regionshape;
+	    curvbp->inplace_edit = inplace;
+
+	    {
+		SV *sv = newVBrv(newSV(0), curvbp);
+		sv_setsv(svcurbuf, sv);
+		SvREFCNT_dec(sv);
+	    }
+	    IoLINES(GvIO((GV*)curvbp->perl_handle)) = 0;  /* initialise $. */
 	}
-	if (is_header_line(region.r_end, curbp) && !b_val(curbp, MDNEWLINE))
-	    region.r_size -= len_record_sep(curbp);
 
-	/* Initialize some of the fields in curvbp */
-	curvbp->region = region;
-	curvbp->regionshape = regionshape;
-	curvbp->inplace_edit = inplace;
+	/* Make sure that mlreply_dir and mlreply_file will actually prompt
+	   the user.  It is necessary to do this because isnamedcmd was not
+	   getting set when invoked through a binding. */
+	old_isnamedcmd = isnamedcmd;
+	isnamedcmd = TRUE;
 
+	recursecount++;
+
+#if PDEBUG
+	fprintf(stderr, "do_perl_command: before eval:\n");
+	sv_dump(svcurbuf);
+#endif
+	sv_setpv(GvSV(PL_errgv),"");
+	if (SvROK(cmd) && SvTYPE(SvRV(cmd)) == SVt_PVCV)
 	{
-	    SV *sv = newVBrv(newSV(0), curvbp);
-	    sv_setsv(svcurbuf, sv);
-	    SvREFCNT_dec(sv);
+	    dSP;
+	    PUSHMARK(sp);
+	    PUTBACK;
+	    perl_call_sv(cmd, G_EVAL|G_VOID|G_DISCARD);
 	}
-	IoLINES(GvIO((GV*)curvbp->perl_handle)) = 0;  /* initialise $. */
-    }
-
-    /* Make sure that mlreply_dir and mlreply_file will actually prompt
-       the user.  It is necessary to do this because isnamedcmd was not
-       getting set when invoked through a binding. */
-    old_isnamedcmd = isnamedcmd;
-    isnamedcmd = TRUE;
-
-    recursecount++;
-
+	else
+	    perl_eval_sv(cmd, G_DISCARD|G_NOARGS|G_KEEPERR);
 #if PDEBUG
-    fprintf(stderr, "do_perl_command: before eval:\n");
-    sv_dump(svcurbuf);
-#endif
-    sv_setpv(GvSV(PL_errgv),"");
-    if (SvROK(cmd) && SvTYPE(SvRV(cmd)) == SVt_PVCV)
-    {
-	dSP;
-	PUSHMARK(sp);
-	PUTBACK;
-	perl_call_sv(cmd, G_EVAL|G_VOID|G_DISCARD);
-    }
-    else
-	perl_eval_sv(cmd, G_DISCARD|G_NOARGS|G_KEEPERR);
-#if PDEBUG
-    fprintf(stderr, "do_perl_command: after eval: \n");
-    sv_dump(svcurbuf);
+	fprintf(stderr, "do_perl_command: after eval: \n");
+	sv_dump(svcurbuf);
 #endif
 
-    isnamedcmd = old_isnamedcmd;
-    recursecount--;
-    if (recursecount == 0) {
-	sv_setsv(svcurbuf, &PL_sv_undef);
-	api_command_cleanup();
-    }
-    else {
-	/* We don't do the hardcore cleanup if we're recursing, but
-	   we at least need to make sure that curwp points at a
-	   visible window */
-	if (curwp_visible)
-	    set_curwp0(curwp_visible);
-    }
-    if (!is_visible_window(curwp))
-	mlforce("BUG: curwp not set to a visible window");
+	isnamedcmd = old_isnamedcmd;
+	recursecount--;
+	if (recursecount == 0) {
+	    sv_setsv(svcurbuf, &PL_sv_undef);
+	    api_command_cleanup();
+	}
+	else {
+	    /* We don't do the hardcore cleanup if we're recursing, but
+	       we at least need to make sure that curwp points at a
+	       visible window */
+	    if (curwp_visible)
+		set_curwp0(curwp_visible);
+	}
+	if (!is_visible_window(curwp))
+	    mlforce("BUG: curwp not set to a visible window");
 
-    if (SvTRUE(GvSV(PL_errgv)) == 0)
-	return TRUE;
+	if (SvTRUE(GvSV(PL_errgv)) == 0)
+	    return TRUE;
 
-    write_message("perl cmd:", GvSV(PL_errgv));
+	write_message("perl cmd:", GvSV(PL_errgv));
+    }
+
     return FALSE;
 }
 
@@ -507,9 +473,9 @@ int
 perl_call_sub(void *data, int oper, int f, int n)
 {
     AV *av = data;	/* callback is an array containing: */
-    SV **name = 0;	/* the registered name, */
-    SV **sub = 0;	/* a sub name or coderef to call, */
-    SV **req = 0;	/* and an [optional] file to require */
+    SV **name;		/* the registered name, */
+    SV **sub;		/* a sub name or coderef to call, */
+    SV **req;		/* and an [optional] file to require */
 
     switch (av_len(av))
     {
@@ -609,15 +575,14 @@ perl_free_sub(void *data)
 int
 perl(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    int status = FALSE;
+    int status;
 
 #if OPT_HISTORY
     if (recursecount == 0)
 	hst_init(EOS);
 #endif
 
-    if (perl_interp || perl_init())
-	status = perl_prompt();
+    status = perl_prompt();
 
 #if OPT_HISTORY
     if (recursecount == 0)
@@ -795,14 +760,13 @@ static int octal(char **s)
 int
 perldo(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    int status = FALSE;
+    int status;
 
 #if OPT_HISTORY
     hst_init(EOS);
 #endif
 
-    if (perl_interp || perl_init())
-	status = perldo_prompt();
+    status = perldo_prompt();
 
 #if OPT_HISTORY
     hst_flush();
@@ -1029,7 +993,7 @@ perldo_prompt(void)
 }
 
 static int
-svcurbuf_set(pTHX_ SV *sv, MAGIC *mg)
+svcurbuf_set(SV *sv, MAGIC *mg)
 {
     VileBuf *vbp;
     if (sv_isa(sv, "Vile::Buffer")
@@ -1038,9 +1002,9 @@ svcurbuf_set(pTHX_ SV *sv, MAGIC *mg)
 	api_swscreen(NULL, vbp);
     }
     else {
-	SV *my_sv = newVBrv(newSV(0), api_bp2vbp(curbp));
-	sv_setsv(svcurbuf, my_sv);
-	SvREFCNT_dec(my_sv);
+	SV *sv = newVBrv(newSV(0), api_bp2vbp(curbp));
+	sv_setsv(svcurbuf, sv);
+	SvREFCNT_dec(sv);
     }
     return 1;
 }
@@ -1093,14 +1057,15 @@ perl_init(void)
     svminibuf   = newVBrv(newSV(0), api_bp2vbp(bminip));
 
     /* Tie STDOUT and STDERR to miniscr->PRINT() function */
-    tie_handle((SV *) gv_fetchpv("STDOUT", TRUE, SVt_PVIO), svminibuf);
-    tie_handle((SV *) gv_fetchpv("STDERR", TRUE, SVt_PVIO), svminibuf);
-    tie_handle((SV *) gv_fetchpv("STDIN", TRUE, SVt_PVIO), svminibuf);
+    sv_magic((SV *) gv_fetchpv("STDOUT", TRUE, SVt_PVIO), svminibuf, 'q',
+	     Nullch, 0);
+    sv_magic((SV *) gv_fetchpv("STDERR", TRUE, SVt_PVIO), svminibuf, 'q',
+	     Nullch, 0);
+    sv_magic((SV *) gv_fetchpv("STDIN", TRUE, SVt_PVIO), svminibuf, 'q',
+	     Nullch, 0);
 
-    sv_magic(svcurbuf, NULL, PERL_MAGIC_ext, svcurbuf_name,
-	strlen(svcurbuf_name));
-
-    mg_find(svcurbuf, PERL_MAGIC_ext)->mg_virtual = &svcurbuf_accessors;
+    sv_magic(svcurbuf, NULL, '~', svcurbuf_name, strlen(svcurbuf_name));
+    mg_find(svcurbuf, '~')->mg_virtual = &svcurbuf_accessors;
     SvMAGICAL_on(svcurbuf);
 
     /* Some things are better (or easier) to do in perl... */
@@ -1109,10 +1074,6 @@ perl_init(void)
 		 "    my $fh=shift; my $fmt=shift;"
 		 "    print $fh sprintf($fmt,@_);"
 		 "}", G_DISCARD);
-
-    /* Fetch $\ and $, */
-    ors_sv = perl_get_sv("\\", TRUE);
-    ofs_sv = perl_get_sv(",", TRUE);
 
     /* Load user or system wide initialization script */
     require("vileinit.pl", TRUE);
@@ -1137,15 +1098,15 @@ void perl_exit()
 extern "C" {
 #endif
 
-extern void boot_DynaLoader(pTHX_ CV* cv);
-extern void boot_Vile(pTHX_ CV* cv);
+extern void boot_DynaLoader _((CV* cv));
+extern void boot_Vile _((CV* cv));
 
 #ifdef __cplusplus
 }
 #endif
 
 static void
-xs_init(pTHX)
+xs_init()
 {
     char *file = __FILE__;
     dXSUB_SYS;
@@ -1683,8 +1644,7 @@ FindMode(char *mode, int isglobal, VALARGS *args)
 {
     int status = FALSE;
     int literal = (toktyp(mode) == TOK_LITSTR);
-    const char *value;
-    char *result = 0;
+    char *value;
 
     if (literal)
 	status = find_mode(curbp, mode, isglobal, args);
@@ -1723,23 +1683,8 @@ FindMode(char *mode, int isglobal, VALARGS *args)
 	}
     }
 
-    if (value == error_val) {
-	result = error_val;
-    } else if (value != 0) {
-	result = strmalloc(value);
-    } else {
-	value = "";
-    }
     TRACE(("value of %s(%s) = %s\n", status ? "mode" : "", mode, value));
-    return result;
-}
-
-static void
-FreeMode(char *value)
-{
-    /* we made a copy to avoid possibly writing on const (perl 5.005_03) */
-    if (value != 0 && value != error_val)
-	free(value);
+    return value;
 }
 
 /* A version of set_curwp that does nothing but the bare essentials. We
@@ -2396,7 +2341,7 @@ set(...)
 		    }
 		}
 	    } else {
-		const char *val = 0;
+		const char *val;
 
 		if (modenames)
 		    modenames[nmodenames++] = mode;
@@ -2432,7 +2377,6 @@ set(...)
 		if (mode != NULL) {
 		    value = FindMode(mode, isglobal, &args);
 		    XPUSHs(sv_2mortal(newSVpv(value, 0)));
-		    FreeMode(value);
 		}
 	    }
 	}
@@ -2443,7 +2387,6 @@ set(...)
 		value = FindMode(mode, isglobal, &args);
 		XPUSHs(sv_2mortal(newSVpv(mode, 0)));
 		XPUSHs(sv_2mortal(newSVpv(value, 0)));
-		FreeMode(value);
 	    }
 	    free(modenames);
 	}
@@ -2642,7 +2585,7 @@ watchfd(fd, watchtypestr, ...)
 
     PREINIT:
 	char *cmd;
-	int   watchtype = -1;
+	int   watchtype;
 
 
     PPCODE:
@@ -2808,7 +2751,7 @@ READLINE(vbp)
 	    if (use_ml_as_prompt && !is_empty_buf(bminip)) {
 		LINE *lp = lback(buf_head(bminip));
 		int len = llength(lp);
-		if (len > (int) sizeof(prompt)-1)
+		if (len > sizeof(prompt)-1)
 		    len = sizeof(prompt)-1;
 		(void) memcpy(prompt, lp->l_text, len);
 		prompt[len] = EOS;
@@ -2829,13 +2772,13 @@ READLINE(vbp)
 	}
 	else {
 	    I32 gimme = GIMME_V;
-	    struct vile_MARK old_DOT;
+	    struct MARK old_DOT;
 	    int (*f)(SV**,VileBuf*,char*,int);
 	    char *rsstr;
 	    STRLEN rslen;
 #ifdef HAVE_BROKEN_PERL_RS
 	    /* The input record separator, or $/ Normally, this is
-	     * available via the PL_rs macro, but apparently perl5.00402
+	     * available via the rs macro, but apparently perl5.00402
 	     * on win32 systems don't export the necessary symbol from
 	     * the DLL.  So we have our own...  */
 	    SV *svrs = perl_get_sv("main::/", FALSE);
@@ -3204,8 +3147,8 @@ current_buffer(...)
 	Vile::current_buffer = 1
 
     PREINIT:
-	VileBuf *callbuf = 0;
-	VileBuf *newbuf = 0;
+	VileBuf *callbuf;
+	VileBuf *newbuf;
 
     PPCODE:
 	if (items > 2)
@@ -3403,7 +3346,7 @@ fetch(vbp)
 
     PREINIT:
 	SV *sv;
-	struct vile_MARK old_DOT;
+	struct MARK old_DOT;
 
     PPCODE:
 	/* Set up the fake window */
@@ -3520,7 +3463,7 @@ motion(vbp,mstr)
 
     PREINIT:
 	I32 gimme;
-	struct vile_MARK old_DOT;
+	struct MARK old_DOT;
 	int status;
 
     PPCODE:
@@ -3674,12 +3617,6 @@ PRINT(vbp, ...)
     ALIAS:
 	insert = 1
 
-    PREINIT:
-	STRLEN ofs_len;
-	STRLEN ors_len;
-	char *ofs_str = SvPV(ofs_sv, ofs_len);
-	char *ors_str = SvPV(ors_sv, ors_len);
-
     CODE:
 	if (vbp2bp(vbp) == bminip) {
 	    if (items > 0) {
@@ -3687,8 +3624,8 @@ PRINT(vbp, ...)
 		int i;
 
 		for (i = 2; i < items; i++) {
-		    if (ofs_len > 0)
-			sv_catpvn(tmp, ofs_str, ofs_len);
+		    if (PL_ofslen > 0)
+			sv_catpvn(tmp, PL_ofs, PL_ofslen);
 
 		    sv_catsv(tmp, ST(i));
 		}
@@ -3706,12 +3643,11 @@ PRINT(vbp, ...)
 		char *arg = SvPV(ST(i), len);
 		api_dotinsert(vbp, arg, len);
 		i++;
-		if (i < items && ofs_len > 0)
-		    api_dotinsert(vbp, ofs_str, ofs_len);
+		if (i < items && PL_ofslen > 0)
+		    api_dotinsert(vbp, PL_ofs, PL_ofslen);
 	    }
-
-	    if (ors_len)
-		api_dotinsert(vbp, ors_str, ors_len);
+	    if (PL_orslen > 0)
+		api_dotinsert(vbp, PL_ors, PL_orslen);
 	}
 
   #

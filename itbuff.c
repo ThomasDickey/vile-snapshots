@@ -7,7 +7,7 @@
  *	To do:	add 'itb_ins()' and 'itb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/itbuff.c,v 1.18 2003/07/27 16:16:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/itbuff.c,v 1.15 2002/04/30 23:29:50 tom Exp $
  *
  */
 
@@ -31,23 +31,18 @@ static ITB_LIST *all_tbuffs;
 static void
 itb_remember(ITBUFF * p)
 {
-    ITB_LIST *q;
-
-    beginDisplay();
-    q = typealloc(ITB_LIST);
+    register ITB_LIST *q = typealloc(ITB_LIST);
     q->buff = p;
     q->link = all_tbuffs;
     all_tbuffs = q;
-    endofDisplay();
 }
 
 static void
 itb_forget(ITBUFF * p)
 {
-    ITB_LIST *q, *r;
+    register ITB_LIST *q, *r;
 
-    beginDisplay();
-    for (q = all_tbuffs, r = 0; q != 0; r = q, q = q->link) {
+    for (q = all_tbuffs, r = 0; q != 0; r = q, q = q->link)
 	if (q->buff == p) {
 	    if (r != 0)
 		r->link = q->link;
@@ -56,8 +51,6 @@ itb_forget(ITBUFF * p)
 	    free((char *) q);
 	    break;
 	}
-    }
-    endofDisplay();
 }
 
 void
@@ -83,9 +76,7 @@ itb_leaks(void)
 ITBUFF *
 itb_alloc(ITBUFF ** p, size_t n)
 {
-    ITBUFF *q = *p;
-
-    beginDisplay();
+    register ITBUFF *q = *p;
     if (q == 0) {
 	q = *p = typealloc(ITBUFF);
 	q->itb_data = typeallocn(int, q->itb_size = n);
@@ -97,7 +88,6 @@ itb_alloc(ITBUFF ** p, size_t n)
 	q->itb_data = typereallocn(int, q->itb_data,
 				   q->itb_size = (n * 2));
     }
-    endofDisplay();
     return q;
 }
 
@@ -107,7 +97,7 @@ itb_alloc(ITBUFF ** p, size_t n)
 ITBUFF *
 itb_init(ITBUFF ** p, int c)
 {
-    ITBUFF *q = *p;
+    register ITBUFF *q = *p;
     if (q == 0)
 	q = itb_alloc(p, NCHUNK);
     q->itb_used = 0;
@@ -122,16 +112,14 @@ itb_init(ITBUFF ** p, int c)
 void
 itb_free(ITBUFF ** p)
 {
-    ITBUFF *q = *p;
+    register ITBUFF *q = *p;
 
-    beginDisplay();
     if (q != 0) {
 	FreedBuffer(q)
 	    free((char *) (q->itb_data));
 	free((char *) q);
     }
     *p = 0;
-    endofDisplay();
 }
 
 /*******(storage)************************************************************/
@@ -142,7 +130,7 @@ itb_free(ITBUFF ** p)
 static ITBUFF *
 itb_put(ITBUFF ** p, size_t n, int c)
 {
-    ITBUFF *q;
+    register ITBUFF *q;
 
     if ((q = itb_alloc(p, n + 1)) != 0) {
 	q->itb_data[n] = c;
@@ -169,8 +157,8 @@ itb_stuff(ITBUFF * p, int c)
 ITBUFF *
 itb_append(ITBUFF ** p, int c)
 {
-    ITBUFF *q = *p;
-    size_t n = (q != 0) ? q->itb_used : 0;
+    register ITBUFF *q = *p;
+    register size_t n = (q != 0) ? q->itb_used : 0;
 
     return itb_put(p, n, c);
 }
@@ -196,7 +184,6 @@ itb_copy(ITBUFF ** d, ITBUFF * s)
     return p;
 }
 
-#if VILE_NEEDED
 /*
  * append a binary data to the temp-buff
  */
@@ -209,6 +196,7 @@ itb_bappend(ITBUFF ** p, const char *s, size_t len)
     return *p;
 }
 
+#if NEEDED
 /*
  * append a string to the temp-buff
  */
@@ -249,7 +237,7 @@ itb_delete(ITBUFF * p, size_t cnt)
 ITBUFF *
 itb_insert(ITBUFF ** p, int c)
 {
-    ITBUFF *q = *p;
+    register ITBUFF *q = *p;
     int *last, *to;
 
     /* force enough room for another character */
@@ -278,7 +266,7 @@ itb_insert(ITBUFF ** p, int c)
 int
 itb_get(ITBUFF * p, size_t n)
 {
-    int c = esc_c;
+    register int c = esc_c;
 
     if (p != 0)
 	c = (n < p->itb_used) ? p->itb_data[n] : p->itb_endc;
@@ -286,7 +274,7 @@ itb_get(ITBUFF * p, size_t n)
     return c;
 }
 
-#if VILE_NEEDED
+#if NEEDED
 /*
  * undo the last 'itb_put'
  */
@@ -365,7 +353,7 @@ itb_last(ITBUFF * p)
     return esc_c;
 }
 
-#if VILE_NEEDED
+#if NEEDED
 /*
  * undo a itb_next
  */

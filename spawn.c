@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.178 2003/05/25 20:21:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.173 2002/07/04 22:41:44 tom Exp $
  *
  */
 
@@ -76,7 +76,7 @@ x_window_SHELL(const char *cmd)
 {
     TBUFF *tmp = 0;
 
-#ifdef HAVE_WAITPID
+#if HAVE_WAITPID
     int pid;
 
     if ((pid = fork()) > 0) {
@@ -89,7 +89,7 @@ x_window_SHELL(const char *cmd)
 	     * would get in the way of the user's ability to
 	     * customize $xshell.
 	     */
-#ifdef HAVE_PUTENV
+#if HAVE_PUTENV
 	    static char *display_env;
 	    char *env = get_xdisplay();
 	    if (display_env != 0)
@@ -111,7 +111,7 @@ x_window_SHELL(const char *cmd)
 	    TRACE(("executing '%s'\n", tb_values(tmp)));
 	    (void) system(tb_values(tmp));
 	    tb_free(&tmp);
-#ifdef HAVE_WAITPID
+#if HAVE_WAITPID
 	}
 	_exit(0);
     }
@@ -171,7 +171,7 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 	spawnl(P_WAIT, shell, shell, NULL);
 #else
 #if SYS_WINNT
-# if DISP_NTCONS
+# ifdef DISP_NTCONS
 	w32_CreateProcess(shell, FALSE);
 # else
 	/*
@@ -248,6 +248,10 @@ rtfrmshell(int ACTUAL_SIG_ARGS GCC_UNUSED)
     kbd_openup();
     ttunclean();
     sgarbf = TRUE;
+#  if SYS_APOLLO
+    (void) term.getch();	/* have to skip a character */
+    ttunclean();		/* ...so that I can finally suppress echo */
+#  endif
     setup_handler(SIGCONT, rtfrmshell);		/* suspend & restart */
     (void) update(TRUE);
 #endif
@@ -381,7 +385,7 @@ spawn1(int rerun, int pressret)
 
 #if SYS_UNIX
 #if DISP_X11
-#if defined(HAVE_WAITPID) && !SMALLER
+#if HAVE_WAITPID && !SMALLER
     (void) x_window_SHELL(line);
 #else
     (void) system_SHELL(line);
@@ -975,7 +979,7 @@ vms_system(register char *cmd)
 }
 #endif
 
-#ifdef HAVE_PUTENV
+#if HAVE_PUTENV
 int
 set_envvar(int f GCC_UNUSED, int n GCC_UNUSED)
 {
@@ -1012,7 +1016,7 @@ set_envvar(int f GCC_UNUSED, int n GCC_UNUSED)
  * DESCRIPTION
  *   find-cfg mode is a string that supports this syntax:
  *
- *      "[<recursive_token>][,<nonrecursive_token>[,<option>...]]"
+ *      "[<recursive_token>][,<nonrecursive_token>[,<option>]]"
  *
  *   where:
  *     <recursive_token>    := an ascii char that triggers a recursive find,
@@ -1024,11 +1028,9 @@ set_envvar(int f GCC_UNUSED, int n GCC_UNUSED)
  *                             by isalpha().  To use ',' as a token, escape it
  *                             with '\'.
  *
- *     <option>             := <dirs_only>|<follow>
+ *     <option>             := <dirs_only>
  *
  *     <dirs_only>          := d
- *
- *     <follow>             := f
  *
  *   Example usage:
  *     se find-cfg="$,@"  ; '$' -> recursive find, '@' -> nonrecursive find
@@ -1084,19 +1086,13 @@ parse_findcfg_mode(FINDCFG * pcfg, char *inputstr)
 	}
     }
 
-    /* options? */
+    /* worry about option */
     if (*cp) {
-	while (*cp) {
-	    if (*cp == 'd')
-		pcfg->dirs_only = TRUE;
-	    else if (*cp == 'f')
-		pcfg->follow = TRUE;
-	    else {
-		mlforce("[invalid find-cfg syntax]");
-		rc = FALSE;
-		break;
-	    }
-	    cp++;
+	if (*cp == 'd' && cp[1] == EOS)
+	    pcfg->dirs_only = TRUE;
+	else {
+	    mlforce("[invalid find-cfg syntax]");
+	    rc = FALSE;
 	}
     }
     pcfg->disabled = (!rc);
@@ -1199,8 +1195,8 @@ determine_quoted_delimiter(void)
 	    *cp = EOS;		/* trim file suffix */
 	shell_len = strlen(buf);
 	unix_shell = (shell_len >= 2 &&
-		      toLower(buf[shell_len - 2]) == 's' &&
-		      toLower(buf[shell_len - 1]) == 'h');
+		      tolower(buf[shell_len - 2]) == 's' &&
+		      tolower(buf[shell_len - 1]) == 'h');
 	if (unix_shell)
 	    qdelim = "'";
 	else {
@@ -1417,12 +1413,6 @@ find_dirs_only(char *cmd, FINDINFO * pinfo, int prepend_bang)
 	    return (NULL);
     }
 
-    /* follow symbolic links? */
-    if (pinfo->cfg.follow) {
-	if (!add_token_to_cmd(&rslt, &outidx, &outlen, "-follow", fnname))
-	    return (NULL);
-    }
-
     /* terminate find string with "-type d -print" */
     if (!add_token_to_cmd(&rslt, &outidx, &outlen, "-type d -print", fnname))
 	return (NULL);
@@ -1576,14 +1566,6 @@ find_all_files(char *cmd, FINDINFO * pinfo, int prepend_bang)
     /* worry about nonrecursive find */
     if (pinfo->nonrecursive) {
 	if (!add_token_to_cmd(&rslt, &outidx, &outlen, "-maxdepth 1", fnname)) {
-	    free_vector(&vec, vecidx);
-	    return (NULL);
-	}
-    }
-
-    /* follow symbolic links? */
-    if (pinfo->cfg.follow) {
-	if (!add_token_to_cmd(&rslt, &outidx, &outlen, "-follow", fnname)) {
 	    free_vector(&vec, vecidx);
 	    return (NULL);
 	}

@@ -4,7 +4,7 @@
  * Support functions for "popup-msgs" mode.
  * Written by T.E.Dickey for vile (august 1994).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/msgs.c,v 1.25 2003/06/18 21:40:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/msgs.c,v 1.24 2002/04/30 23:51:47 tom Exp $
  */
 #include "estruct.h"
 
@@ -20,7 +20,7 @@ create_msgs(void)
 {
     BUFFER *bp = bfind(MESSAGES_BufName, BFSCRTCH);
 
-    if (valid_buffer(bp)) {
+    if (bp != NULL) {
 	b_set_scratch(bp);
 	b_set_invisible(bp);
 	bp->b_active = TRUE;
@@ -155,7 +155,7 @@ purge_msgs(void)
     if ((global_g_val(GMDPOPUP_MSGS) == -TRUE)
 	&& (warnings == 0)) {
 	BUFFER *bp = find_b_name(MESSAGES_BufName);
-	if (valid_buffer(bp)
+	if (bp != 0
 	    && bp->b_nwnd == 0) {
 	    (void) zotbuf(bp);
 	}

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/fdl-filt.l,v 1.9 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/fdl-filt.l,v 1.8 2001/08/21 20:52:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of fdl
  * input text.  This treats all of the text area as quoted, except for
@@ -20,7 +20,42 @@ static char *String_attr;
 
 static int next_state;
 
-static void handle_keyword(char *name);
+static void
+handle_keyword(char *name)
+{
+    flt_puts(name, strlen(name), keyword_attr(name));
+    next_state = INITIAL;
+    if (!strcmp(name, "$rem")) {
+	BEGIN(NOTE);
+    } else if (!strcmp(name, "$text")) {
+	BEGIN(PRETEXT);
+	next_state = TEXT;
+    } else {
+	BEGIN(INITIAL);
+    }
+}
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *input)
+{
+    yyin = input;
+
+    Comment_attr = class_attr(NAME_COMMENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    next_state = INITIAL;
+
+    BEGIN(INITIAL);
+    while (yylex() > 0) {
+    }
+}
 
 %}
 
@@ -48,42 +83,3 @@ KEYWORD		$[a-zA-Z_][a-zA-Z_0-9]*
 
 <TEXT>[_]+		{ WriteToken(Ident2_attr); }
 <TEXT>[^$_\n]+		{ WriteToken(String_attr); }
-
-%%
-
-static void
-handle_keyword(char *name)
-{
-    flt_puts(name, strlen(name), keyword_attr(name));
-    next_state = INITIAL;
-    if (!strcmp(name, "$rem")) {
-	BEGIN(NOTE);
-    } else if (!strcmp(name, "$text")) {
-	BEGIN(PRETEXT);
-	next_state = TEXT;
-    } else {
-	BEGIN(INITIAL);
-    }
-}
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *inputs)
-{
-    yyin = inputs;
-
-    Comment_attr = class_attr(NAME_COMMENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Keyword_attr = class_attr(NAME_KEYWORD);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    next_state = INITIAL;
-
-    BEGIN(INITIAL);
-    while (yylex() > 0) {
-    }
-}

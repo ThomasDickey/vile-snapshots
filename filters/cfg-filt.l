@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/cfg-filt.l,v 1.8 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/cfg-filt.l,v 1.6 2001/03/26 14:18:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an ordinary Lynx config-file
  */
@@ -35,9 +35,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *inputs)
+do_filter(FILE *input)
 {
-    yyin = inputs;
+    yyin = input;
 
     Comment_attr = class_attr(NAME_COMMENT);
     Ident2_attr  = class_attr(NAME_IDENT2);
@@ -51,7 +51,7 @@ do_filter(FILE *inputs)
 
 %}
 
-COMMENT		^[ \t]*#[^\n]*\n
+COMMENT		^#[^\n]*\n
 
 KEYWORD		([a-zA-Z_][a-zA-Z0-9_.]*|[A-Z][+/&][A-Z])
 
@@ -62,7 +62,7 @@ HEXADECIMAL	0x[0-9a-fA-F_]+
 REAL		[-+]?([0-9_]*\.[0-9][0-9_]*)([eE][+-]?[0-9_]+)?
 NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
-NAME		[a-zA-Z0-9_.-]+
+NAME		[a-zA-Z0-9_.#-]+
 ADDRESS		({NAME}|\.)+
 EMAIL		{NAME}@{ADDRESS}
 

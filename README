@@ -1,6 +1,6 @@
 
-README for vile, version 9.4
-----------------------------
+README for vile, version 9.3
+-----------------------------
 
 vile is a text editor which is extremely compatible with vi in terms
 of "finger feel".  in addition, it has extended capabilities in many areas,
@@ -47,7 +47,7 @@ don't worry -- the volume won't fill your inbox.
 
 paul fox, pgf@foxharp.boston.ma.us (original author)
 kevin buettner, kev@primenet.com
-tom dickey, dickey@invisible-island.net (current maintainer)
+tom dickey, dickey@herndon4.his.com (current maintainer)
 
 ------------------------------------------------------
 Up-to-date copies of vile, including executables for DOS, Win32 and
@@ -636,5 +636,5 @@ June, 2002
     + add $prompt variable, to allow changing the command-line prompt.
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.90 2003/08/04 22:46:30 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.89 2002/06/30 20:27:52 cmorgan Exp $
 -------------------------------

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.7 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.6 2002/05/14 00:07:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Basic
  * input text.
@@ -22,8 +22,46 @@ static char *Number_attr;
 static char *String_attr;
 static char *LineNo_attr;
 
-static int is_hex(char *s);
+static int
+is_hex(char *s)
+{
+    int number = 0;
+    int alpha = 0;
+    while (*s != 0) {
+	if (isxdigit(CharOf(*s))) {
+	    if (isalpha(CharOf(*s)))
+	    	++alpha;
+	    else
+	    	++number;
+	} else {
+	    number = 0;
+	    break;
+	}
+	s++;
+    }
+    return number && alpha;
+}
 
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *input)
+{
+    yyin = input;
+
+    Action_attr  = class_attr(NAME_ACTION);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Number_attr  = class_attr(NAME_NUMBER);
+    String_attr  = class_attr(NAME_LITERAL);
+    LineNo_attr  = class_attr("LineNumber");
+
+    BEGIN(NORMAL);
+    while (yylex() > 0) {
+    }
+}
 %}
 
 TYPES		[%&!#$]?
@@ -58,46 +96,3 @@ NUMBER		{INTEGER}|{REAL}|{UUID}|({INTEGER}{HEX}|("&[Hh]"|\$){HEX}){TYPES}
 
 <COMMENT>[^\n]*			{ WriteToken(Comment_attr); }
 <COMMENT>[\n]			{ ECHO; BEGIN(NORMAL); }
-
-%%
-
-static int
-is_hex(char *s)
-{
-    int number = 0;
-    int alpha = 0;
-    while (*s != 0) {
-	if (isxdigit(CharOf(*s))) {
-	    if (isalpha(CharOf(*s)))
-	    	++alpha;
-	    else
-	    	++number;
-	} else {
-	    number = 0;
-	    break;
-	}
-	s++;
-    }
-    return number && alpha;
-}
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *inputs)
-{
-    yyin = inputs;
-
-    Action_attr  = class_attr(NAME_ACTION);
-    Comment_attr = class_attr(NAME_COMMENT);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
-    LineNo_attr  = class_attr("LineNumber");
-
-    BEGIN(NORMAL);
-    while (yylex() > 0) {
-    }
-}

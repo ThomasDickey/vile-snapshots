@@ -3,14 +3,14 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.97 2002/11/01 23:58:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.95 2002/02/04 00:39:24 tom Exp $
  *
  */
 
 #include "estruct.h"
 #include "edef.h"
 
-#if DISP_NTWIN
+#ifdef DISP_NTWIN
 # define NTWIN_CURSOR_MINWAIT 550   /* msec */
 #endif
 
@@ -101,7 +101,7 @@ static	int	maplookup(int c, ITBUFF **outp, struct maprec *mp, GetFunc get, Avail
 
 #define NUMKEYSTR (KBLOCK / 2)
 
-#ifdef DOKEYLOG
+#if DOKEYLOG
 int do_keylog = 1;
 #endif
 
@@ -502,42 +502,41 @@ static int mapgetc_ungotcnt = 0;
 static void
 save_keystroke(int c)
 {
-    KILL *kp;
-    KILLREG *kr = &kbs[KEYST_KREG];
+	KILL *kp;
+	KILLREG *kr = &kbs[KEYST_KREG];
 
-    beginDisplay();
-#ifdef DOKEYLOG
-    if (do_keylog) {
-	static int keyfd = -1;
-	static char *tfilenam;
-	if (!tfilenam)
-	    tfilenam = tempnam("/tmp/vilekeylogs", "vilek");
-	if (tfilenam) {
-	    if (keyfd < 0)
-		keyfd = open(tfilenam, O_CREAT | O_WRONLY, 0600);
-	    if (keyfd >= 0)
-		write(keyfd, &c, 1);
+#if DOKEYLOG
+	if (do_keylog) {
+		static int keyfd = -1;
+		static char *tfilenam;
+		if (!tfilenam)
+			tfilenam = tempnam("/tmp/vilekeylogs", "vilek");
+		if (tfilenam) {
+			if (keyfd < 0)
+				keyfd = open(tfilenam, O_CREAT|O_WRONLY, 0600);
+			if (keyfd >= 0)
+				write(keyfd, &c, 1);
+		}
 	}
-    }
 #endif
-    if (kr->kbufh == NULL) {
-	kr->kbufh = typealloc(KILL);
-	kr->kused = 0;
-    }
-    if (kr->kbufh != NULL) {
+	if (kr->kbufh == NULL) {
+		kr->kbufh = typealloc(KILL);
+		kr->kused = 0;
+	}
+	if (kr->kbufh == NULL)
+		return;
 
 	kp = kr->kbufp = kr->kbufh;
 	kp->d_next = NULL;
 
-	kp->d_chunk[kr->kused++] = (UCHAR) c;
-	if (kr->kused >= NUMKEYSTR * 2) {	/* time to dump the oldest half */
-	    (void) memcpy((kp->d_chunk),
-			  (&kp->d_chunk[NUMKEYSTR / 2]),
-			  NUMKEYSTR / 2);
-	    kr->kused = NUMKEYSTR / 2;
+	kp->d_chunk[kr->kused++] = (UCHAR)c;
+	if (kr->kused >= NUMKEYSTR * 2) { /* time to dump the oldest half */
+		(void)memcpy(
+			(char *)(kp->d_chunk),
+			(char *)(&kp->d_chunk[NUMKEYSTR / 2]),
+			NUMKEYSTR / 2);
+		kr->kused = NUMKEYSTR / 2;
 	}
-    }
-    endofDisplay();
 }
 
 /* these two wrappers are provided because at least one pcc-based
@@ -873,7 +872,7 @@ maplookup(
 
 		/* give it a little extra time... */
 		int timer = 0;
-#if DISP_NTWIN
+#ifdef DISP_NTWIN
 		int cursor_state = 0;
 #endif
 
@@ -890,7 +889,7 @@ maplookup(
 				timer = global_g_val(GVAL_TIMEOUTVAL);
 		}
 
-#if DISP_NTWIN
+#ifdef DISP_NTWIN
 		if (timer > NTWIN_CURSOR_MINWAIT) {
 			/*
 			 * editor waits for a potentially long time
@@ -905,7 +904,7 @@ maplookup(
 		}
 #endif
 		catnap(timer,TRUE);
-#if DISP_NTWIN
+#ifdef DISP_NTWIN
 		if (timer > NTWIN_CURSOR_MINWAIT) /* restore cursor state */
 			(void) winvile_cursor_state(cursor_state, FALSE);
 #endif

@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.28 2002/12/23 01:25:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.24 2002/02/04 00:39:36 tom Exp $
  */
 
 #include "estruct.h"
@@ -116,19 +116,13 @@ commdlg_open_files(int chdir_allowed, const char *dir)
 #define RET_BUF_SIZE_ (24 * 1024)
 
     int   chdir_mask, i, len, nfile, rc = TRUE, status;
-    char  *filebuf;
-    char  oldcwd[FILENAME_MAX];
-    char  newcwd[FILENAME_MAX];
-    char  *cp;
-    char  validated_dir[FILENAME_MAX];
-
-    TRACE((T_CALLED "commdlg_open_files(chdir_allowed=%d, dir=%s)\n",
-           chdir_allowed, TRACE_NULL(dir)));
+    char  *filebuf, oldcwd[FILENAME_MAX], newcwd[FILENAME_MAX], *cp,
+          validated_dir[FILENAME_MAX];
 
     if (dir)
     {
         if (! glob_and_validate_dir(dir, validated_dir))
-            returnCode(FALSE);
+            return (FALSE);
         else
             dir = validated_dir;
 
@@ -137,7 +131,7 @@ commdlg_open_files(int chdir_allowed, const char *dir)
     chdir_mask = (chdir_allowed) ? 0 : OFN_NOCHANGEDIR;
     filebuf    = malloc(RET_BUF_SIZE_);
     if (! filebuf)
-        returnCode(no_memory("commdlg_open_files()"));
+        return (no_memory("commdlg_open_files()"));
     filebuf[0] = '\0';
     if (! ofn_initialized)
         ofn_init();
@@ -147,14 +141,14 @@ commdlg_open_files(int chdir_allowed, const char *dir)
     ofn.nMaxFile        = RET_BUF_SIZE_;
     ofn.Flags           = (OFN_PATHMUSTEXIST | OFN_HIDEREADONLY |
                           OFN_ALLOWMULTISELECT | OFN_EXPLORER) | chdir_mask;
-#if DISP_NTWIN
+#ifdef DISP_NTWIN
     ofn.hwndOwner       = winvile_hwnd();
 #else
     ofn.hwndOwner       = GetForegroundWindow();
 #endif
     status              = GetOpenFileName(&ofn);
 
-#if DISP_NTCONS
+#ifdef DISP_NTCONS
     /* attempt to restore focus to the console editor */
     (void) SetForegroundWindow(ofn.hwndOwner);
 #endif
@@ -176,7 +170,7 @@ commdlg_open_files(int chdir_allowed, const char *dir)
         else
             rc = FALSE;  /* Win32 error */
         free(filebuf);
-        returnCode(rc);
+        return (rc);
     }
     if (chdir_allowed)
     {
@@ -186,14 +180,14 @@ commdlg_open_files(int chdir_allowed, const char *dir)
         {
             free(filebuf);
             mlerror("_getcwd() failed");
-            returnCode(FALSE);
+            return (FALSE);
         }
         if (stricmp(newcwd, oldcwd) != 0)
         {
             if (! set_directory(newcwd))
             {
                 free(filebuf);
-                returnCode(FALSE);
+                return (FALSE);
             }
         }
     }
@@ -259,7 +253,7 @@ commdlg_open_files(int chdir_allowed, const char *dir)
 
     /* Cleanup */
     free(filebuf);
-    returnCode(rc);
+    return (rc);
 
 #undef RET_BUF_SIZE_
 }
@@ -391,14 +385,14 @@ commdlg_save_file(int chdir_allowed, const char *dir)
     ofn.nMaxFile        = sizeof(filebuf);
     ofn.Flags           = (OFN_PATHMUSTEXIST | OFN_HIDEREADONLY |
                           OFN_OVERWRITEPROMPT | OFN_EXPLORER) | chdir_mask;
-#if DISP_NTWIN
+#ifdef DISP_NTWIN
     ofn.hwndOwner       = winvile_hwnd();
 #else
     ofn.hwndOwner       = GetForegroundWindow();
 #endif
     status              = GetSaveFileName(&ofn);
 
-#if DISP_NTCONS
+#ifdef DISP_NTCONS
     /* attempt to restore focus to the console editor */
     (void) SetForegroundWindow(ofn.hwndOwner);
 #endif
@@ -529,7 +523,7 @@ windeltxtsel(int f, int n)  /* bound to Alt+Delete */
 /* - 4 & 15 of Petzold's "Programming Windows 95". --------------------- */
 /* --------------------------------------------------------------------- */
 
-#if DISP_NTWIN                 /* Printing is only supported for winvile.
+#ifdef DISP_NTWIN              /* Printing is only supported for winvile.
                                 * There are hooks in the code to support
                                 * this feature in console vile, but the
                                 * following items require attention:
@@ -830,7 +824,7 @@ push_curbp(BUFFER *selbp)
 static void
 pop_curbp(WINDOW *owp)
 {
-    pop_fake_win(owp, (BUFFER *)0);
+    pop_fake_win(owp);
 }
 
 
@@ -1060,7 +1054,7 @@ winprint_fmttxt(char *dst,
      * whitespace (modulo a formfeed), or empty, handle that case now.
      */
     i = 0;
-    while (i < srclen && isSpace((UCHAR)src[i]) && src[i] != _FF_)
+    while (i < srclen && isspace((UCHAR)src[i]) && src[i] != _FF_)
         i++;
     if (i == srclen)
     {
@@ -1130,7 +1124,7 @@ winprint_fmttxt(char *dst,
          */
 
         i = 0;
-        while (i < srclen && isSpace((UCHAR)src[i]))
+        while (i < srclen && isspace((UCHAR)src[i]))
         {
             if (src[i] == _FF_ && (! *saw_ff))
                 break;
@@ -1672,7 +1666,7 @@ get_printing_font(HDC hdc, HWND hwnd)
      * FIXME -- allow user to specify distinct printing font via a
      * a state var.
      */
-#if DISP_NTWIN
+#ifdef DISP_NTWIN
     curfont = ntwinio_current_font();
 #else
     curfont = "courier new,8";     /* A console port would substitute a
@@ -1780,7 +1774,7 @@ winprint(int f, int n)
     TEXTMETRIC      tm;
 
     memset(&pparam, 0, sizeof(pparam));
-#if DISP_NTWIN
+#ifdef DISP_NTWIN
     hwnd = hPrintWnd = winvile_hwnd();
 #else
     hwnd = hPrintWnd = GetForegroundWindow();
@@ -1865,7 +1859,7 @@ winprint(int f, int n)
     /* Up goes the canonical win32 print dialog */
     status = PrintDlg(pd);
 
-#if DISP_NTCONS
+#ifdef DISP_NTCONS
     /* attempt to restore focus to the console editor */
     (void) SetForegroundWindow(ofn.hwndOwner);
 #endif
@@ -2085,7 +2079,7 @@ winpg_setup(int f, int n)
     HWND hwnd;
     int  rc = TRUE, status;
 
-#if DISP_NTWIN
+#ifdef DISP_NTWIN
     hwnd = winvile_hwnd();
 #else
     hwnd = GetForegroundWindow();
@@ -2128,7 +2122,7 @@ winpg_setup(int f, int n)
     }
     status = PageSetupDlg(pgsetup);
 
-#if DISP_NTCONS
+#ifdef DISP_NTCONS
     /* attempt to restore focus to the console editor */
     (void) SetForegroundWindow(hwnd);
 #endif

@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.44 2003/07/27 17:04:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.41 2002/01/09 00:32:02 tom Exp $
  *
  */
 
@@ -25,15 +25,14 @@ typedef struct _tb_list {
 
 static TB_LIST *all_tbuffs;
 
-#define	AllocatedBuffer(q)	tb_remember(q)
-#define	FreedBuffer(q)		tb_forget(q)
+#define	AllocatedBuffer(q)	tb_remember(q);
+#define	FreedBuffer(q)		tb_forget(q);
 
 static void
 tb_remember(TBUFF * p)
 {
-    TB_LIST *q;
+    TB_LIST *q = typealloc(TB_LIST);
 
-    q = typealloc(TB_LIST);
     q->buff = p;
     q->link = all_tbuffs;
     all_tbuffs = q;
@@ -44,8 +43,7 @@ tb_forget(TBUFF * p)
 {
     TB_LIST *q, *r;
 
-    beginDisplay();
-    for (q = all_tbuffs, r = 0; q != 0; r = q, q = q->link) {
+    for (q = all_tbuffs, r = 0; q != 0; r = q, q = q->link)
 	if (q->buff == p) {
 	    if (r != 0)
 		r->link = q->link;
@@ -54,8 +52,6 @@ tb_forget(TBUFF * p)
 	    free((char *) q);
 	    break;
 	}
-    }
-    endofDisplay();
 }
 
 void
@@ -82,8 +78,6 @@ TBUFF *
 tb_alloc(TBUFF ** p, size_t n)
 {
     TBUFF *q = *p;
-
-    beginDisplay();
     if (q == 0) {
 	q = *p = typealloc(TBUFF);
 	q->tb_data = typeallocn(char, q->tb_size = n);
@@ -92,11 +86,10 @@ tb_alloc(TBUFF ** p, size_t n)
 	q->tb_endc = esc_c;
 	q->tb_data[0] = 0;	/* appease Purify */
 	q->tb_errs = FALSE;
-	AllocatedBuffer(q);
+	AllocatedBuffer(q)
     } else if (n >= q->tb_size) {
 	q->tb_data = typereallocn(char, q->tb_data, q->tb_size = (n * 2));
     }
-    endofDisplay();
     return q;
 }
 
@@ -124,14 +117,12 @@ tb_free(TBUFF ** p)
 {
     TBUFF *q = *p;
 
-    beginDisplay();
     if (q != 0) {
-	FreedBuffer(q);
-	free(q->tb_data);
+	FreedBuffer(q)
+	    free(q->tb_data);
 	free((char *) q);
     }
     *p = 0;
-    endofDisplay();
 }
 
 /*******(storage)************************************************************/
@@ -151,7 +142,7 @@ tb_put(TBUFF ** p, size_t n, int c)
     return (*p = q);
 }
 
-#if VILE_NEEDED
+#if NEEDED
 /*
  * stuff the nth character into the temp-buff -- assumes space already there
  *  it's sort of the opposite of tb_peek
@@ -223,11 +214,9 @@ tb_bappend(TBUFF ** p, const char *s, size_t len)
     size_t n = (q != 0) ? q->tb_used : 0;
 
     if ((q = tb_alloc(p, n + len)) != 0) {
-	if (len != 0) {
-	    memcpy(q->tb_data + n, s, len);
-	    q->tb_used = n + len;
-	    q->tb_errs += (s == error_val);
-	}
+	memcpy(q->tb_data + n, s, len);
+	q->tb_used = n + len;
+	q->tb_errs += (s == error_val);
     }
     return *p;
 }
@@ -314,7 +303,7 @@ tb_unput(TBUFF * p)
 
 /*******(iterators)************************************************************/
 
-#if VILE_NEEDED
+#if NEEDED
 /*
  * Reset the iteration-count
  */
@@ -348,7 +337,7 @@ tb_next(TBUFF * p)
 }
 #endif
 
-#if VILE_NEEDED
+#if NEEDED
 /*
  * undo a tb_next
  */

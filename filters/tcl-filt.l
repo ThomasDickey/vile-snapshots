@@ -4,7 +4,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.13 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.12 2002/05/11 18:04:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TCL/TK script.
  *
@@ -29,6 +29,30 @@ static char *Ident_attr;
 static char *Keywrd2_attr;
 static char *Number_attr;
 static char *String_attr;
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *input)
+{
+    yyin = input;
+    Action_attr  = class_attr(NAME_ACTION);
+    Braces_attr  = class_attr("Braces");
+    Comment_attr = class_attr(NAME_COMMENT);
+    Error_attr   = class_attr(NAME_ERROR);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    Ident_attr   = class_attr(NAME_IDENT);
+    Keywrd2_attr = class_attr(NAME_KEYWRD2);
+    Number_attr  = class_attr(NAME_NUMBER);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    BEGIN(VERB);
+    while (yylex() > 0) {
+    }
+}
 
 %}
 
@@ -84,29 +108,3 @@ NONUMBER	{SIGN}?({NODECIMAL}|{NOOCTAL}|{NOHEXADECIMAL}|{NOREAL})
 
 \\.		|
 {STRINGS}		{ WriteToken(String_attr); }
-
-%%
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *inputs)
-{
-    yyin = inputs;
-    Action_attr  = class_attr(NAME_ACTION);
-    Braces_attr  = class_attr("Braces");
-    Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Ident_attr   = class_attr(NAME_IDENT);
-    Keywrd2_attr = class_attr(NAME_KEYWRD2);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    BEGIN(VERB);
-    while (yylex() > 0) {
-    }
-}

@@ -1,4 +1,4 @@
--- $Header: /users/source/archives/vile.vcs/doc/RCS/menus.doc,v 1.7 2003/10/09 00:37:21 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/menus.doc,v 1.6 1999/12/18 01:17:15 tom Exp $
 -- adapted from description by Philippe Chassany (20/02/1997)
 -- e-mail: phil@cln46ks.der.edf.fr
 
@@ -6,12 +6,8 @@
 The Motif and Athena widget versions of xvile automatically support user
 configurable menus.
 
-If the environment variable XVILE_MENU is set, it contains the name of the rc
-file.  Otherwise, the name ".vilemenu" is used.  The name of the menu file is
-given in the variable "$menu-file".  If it is not found, and is different from
-"vilemenu.rc", xvile looks for that file in the list of directories given in
-"$startup-path".  The "vilemenu.rc" file is treated specially because it is the
-file installed from vile's distribution.
+If the environment variable XVILE_MENU is set, it contains the name of
+the rc file.  Otherwise, the name ".vilemenu" is used.
 
 The file contains a series of lines whose first character denotes the
 type of entry, subsequent fields delimited by colon:
@@ -31,7 +27,7 @@ type of entry, subsequent fields delimited by colon:
 		edit_rc - switch to a buffer with ".vilerc".
 		parse_rc - source ".vilerc"
 		edit_mrc - switch to a buffer with the menu rc file
-			which was found, e.g., "$menu-file" or "vilemenu.rc".
+			".vilemenu"
 
 	S - separator
 

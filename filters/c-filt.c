@@ -6,24 +6,25 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.67 2003/05/24 00:49:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.62 2002/02/12 22:29:35 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
- *
- * Options:
- *	-j	java special cases
- *	-p	suppress preprocessor suppoer
  */
 
 #include <filters.h>
 
-DefineOptFilter("c", "jp");
+DefineOptFilter("c", "p");
+
+#define ESCAPE '\\'
+#define DQUOTE '"'
+#define SQUOTE '\''
 
 #define UPPER(c) isalpha(CharOf(c)) ? toupper(CharOf(c)) : c
 
-#define isIdent(c)  (isalpha(CharOf(c)) || (c) == '_' || (FltOptions('j') && (c) == '$'))
-#define isNamex(c)  (isIdent(c) || isdigit(CharOf(c)))
+#define isIdent(c)  (isalpha(CharOf(c)) || (c) == '_')
+#define isNamex(c)  (isalnum(CharOf(c)) || (c) == '_')
 
+#define isBlank(c)  ((c) == ' ' || (c) == '\t')
 #define isQuote(c)  ((c) == DQUOTE || (c) == SQUOTE)
 
 static char *Comment_attr;
@@ -85,7 +86,7 @@ has_endofliteral(char *s, int delim)
     while (*s) {
 	if (*s == delim)
 	    return (i);
-	if (s[0] == BACKSLASH && (s[1] == delim || s[1] == BACKSLASH)) {
+	if (s[0] == ESCAPE && (s[1] == delim || s[1] == ESCAPE)) {
 	    ++i;
 	    ++s;
 	}
@@ -131,11 +132,7 @@ static char *
 write_escape(char *s, char *attr)
 {
     char *base = s++;
-    int want = ((*s == '0' || *s == 'x')
-		? 3
-		: ((FltOptions('j') && *s == 'u')
-		   ? 4
-		   : 1));
+    int want = (*s == '0' || *s == 'x') ? 3 : 1;
     while (want && *s != 0) {
 	s++;
 	want--;
@@ -381,7 +378,7 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input GCC_UNUSED)
+do_filter(FILE * input GCC_UNUSED)
 {
     static unsigned used;
     static char *line;
@@ -395,7 +392,7 @@ do_filter(FILE *input GCC_UNUSED)
     Ident_attr = class_attr(NAME_IDENT);
     Literal_attr = class_attr(NAME_LITERAL);
     Number_attr = class_attr(NAME_NUMBER);
-    Preproc_attr = FltOptions('p') ? Error_attr : class_attr(NAME_PREPROC);
+    Preproc_attr = flt_options['p'] ? Error_attr : class_attr(NAME_PREPROC);
 
     comment = 0;
     literal = 0;
@@ -441,7 +438,7 @@ do_filter(FILE *input GCC_UNUSED)
 		    write_comment(s, c_length, 0);
 		    s = s + c_length;
 		}
-	    } else if (*s == BACKSLASH) {
+	    } else if (*s == ESCAPE) {
 		if (s[1] != '\n') {
 		    s = write_escape(s, Error_attr);
 		} else {

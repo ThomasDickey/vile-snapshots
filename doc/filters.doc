@@ -60,16 +60,11 @@ non-Unix host, the search looks like this:
 	$VILE_STARTUP_PATH/c.keywords
 
 
-The vile.keywords file contains color information for the most common classes. 
-The c.keywords file contains the actual keywords to be highlighted, referenced
-to the classes which are in turn colored.  You can see the search for keyword
-files by running the filter with a -v option, repeating the option (-vv) to
-obtain more verbose traces.  Note that filters may be compiled-into vile.  In
-that case (vile calls the filter using the attribute-directly command), you can
-still get a trace by adding the -v option to the filtername line of the
-majormode.  The trace will go to the message line, but also if you have
-	set popup-msgs
-specified, to the [Messages] buffer.
+The vile.keywords file contains color information for the most common
+classes.  The c.keywords file contains the actual keywords to be
+highlighted, referenced to the classes which are in turn colored.  You can
+see the search for keyword files by running the filter with a -v option,
+repeating the option (-vv) to obtain more verbose traces.
 
 Predefined keyword classes include (but may not necessarily be used in specific
 filters):
@@ -149,8 +144,6 @@ PROGRAMS
 The following are implemented:
 
 	vile-ada-filt	(Ada95)
-	vile-as-filt	(GNU assembler (x86))
-	vile-asm-filt	(Microsoft ASM (x86))
 	vile-awk-filt	(awk)
 	vile-basic-filt	(BASIC)
 	vile-bat-filt	(DOS batchfiles)
@@ -162,10 +155,8 @@ The following are implemented:
 	vile-diff-filt	(diff/patch files)
 	vile-ecl-filt	(Prolog/ECLiPSe)
 	vile-esql-filt	(embedded SQL with C/C++)
-	vile-est-filt	(Enscript syntax-descriptions)
 	vile-html-filt	(HTML with embedded JavaScript)
 	vile-imake-filt	(imake)
-	vile-info-filt	(GNU info files)
 	vile-key-filt	(Vile keyword files)
 	vile-latex-filt	(LaTeX or TeX)
 	vile-lex-filt	(lex)
@@ -178,14 +169,10 @@ The following are implemented:
 	vile-pas-filt	(Pascal)
 	vile-perl-filt	(Perl, in C)
 	vile-pl-filt	(Perl, in lex)
-	vile-pot-filt	(gettext (.po) files)
-	vile-ps-filt	(PostScript)
 	vile-py-filt	(Python)
 	vile-rc-filt	(Windows resource files)
 	vile-rcs-filt	(RCS archives)
 	vile-rexx-filt	(REXX)
-	vile-rpm-filt	(RPM ".spec" files)
-	vile-ruby-filt	(Ruby)
 	vile-sccs-filt	(SCCS archives)
 	vile-sed-filt	(sed scripts)
 	vile-sh-filt	(sh/ksh/csh)
@@ -196,12 +183,10 @@ The following are implemented:
 	vile-tbl-filt	(Vile's mktbl format)
 	vile-tc-filt	(termcap)
 	vile-tcl-filt	(TCL/TK)
-	vile-texi-filt	(texinfo)
 	vile-ti-filt	(terminfo)
 	vile-txt-filt	(plain text files, such as vile.hlp)
 	vile-vile-filt	(Vile's macros)
 	vile-vlog-filt	(Verilog)
-	vile-xml-filt	(XML)
 	vile-xres-filt	(X Window resources)
 	vile-xs-filt	(Perl extension)
 	vile-yacc-filt	(yacc)
@@ -214,6 +199,7 @@ use the same syntax as other majormodes:
 	imakemode	Imake uses C filter
 	javamode	Java uses C filter
 	jsmode		JavaScript uses C filter
+	potmode		Message libraries use shell filter
 
 
 NOTE
@@ -222,4 +208,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.30 2003/02/15 16:00:52 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.24 2001/03/21 12:43:50 tom Exp $

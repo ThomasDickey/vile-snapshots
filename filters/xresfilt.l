@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.14 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.13 2001/09/18 20:27:18 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an X resource file.
  */
@@ -19,52 +19,6 @@ static char *Keyword_attr;
 static char *Number_attr;
 static char *Preproc_attr;
 static char *String_attr;
-
-static int isClass(char *name);
-static int preprocessor(char *text, int size);
-static void quoted_name(char *text, int length);
-
-%}
-
-SPACE		[ \t]
-
-COMMENT		![^\n]*\n
-
-SIGN		[-+]
-DECIMAL		[0-9]+
-OCTAL		0[0-7]+
-HEX		[0-9a-fA-Z]
-HEXADECIMAL	0x{HEX}+
-REAL		[-+]?([0-9]*\.[0-9]+)([eE][+-]?[0-9]+)?
-RGB		[Rr][Gg][Bb]:{HEX}+"/"{HEX}+"/"{HEX}+
-COLOR		(#{HEX}+|{RGB})
-NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL}|{COLOR})
-
-ESCAPED		(\\[0-7][0-7][0-7]|\\.)
-
-NAME		[a-zA-Z0-9_-]+
-KEYWORD		({NAME}|<{NAME}>)
-
-%%
-
-<NORMAL>[?*.]		{ BEGIN(RESNAME); ECHO; }
-<NORMAL,RESNAME>{NAME}	{ WriteToken(isClass(yytext) ? Keyword_attr : Ident2_attr); }
-<RESNAME>:		{ BEGIN(RESVALUE); ECHO; flt_bfr_begin(String_attr); }
-
-<RESVALUE>{NUMBER}	{ flt_bfr_embed(yytext, yyleng, Number_attr); }
-<RESVALUE>{KEYWORD}	{ quoted_name(yytext, yyleng); }
-<RESVALUE>![^\\\n]*	{ flt_bfr_embed(yytext, yyleng, Comment_attr); }
-<RESVALUE>\\\n		{ flt_bfr_append(yytext, yyleng); }
-<RESVALUE>({ESCAPED}|.)	{ flt_bfr_append(yytext, yyleng); }
-<RESVALUE>\n		{ flt_bfr_finish(); ECHO; BEGIN(NORMAL); }
-
-<NORMAL>{COMMENT}	{ WriteToken(Comment_attr); }
-
-<NORMAL>^{SPACE}*#{SPACE}*{NAME} { if (!preprocessor(yytext, yyleng)) {
-				    WriteToken(Error_attr);
-				} }
-
-%%
 
 static char *
 skip_name(char *text)
@@ -123,9 +77,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *inputs)
+do_filter(FILE *input)
 {
-    yyin = inputs;
+    yyin = input;
 
     Comment_attr = class_attr(NAME_COMMENT);
     Error_attr   = class_attr(NAME_ERROR);
@@ -140,3 +94,43 @@ do_filter(FILE *inputs)
     }
     flt_bfr_finish();
 }
+
+%}
+
+SPACE		[ \t]
+
+COMMENT		![^\n]*\n
+
+SIGN		[-+]
+DECIMAL		[0-9]+
+OCTAL		0[0-7]+
+HEX		[0-9a-fA-Z]
+HEXADECIMAL	0x{HEX}+
+REAL		[-+]?([0-9]*\.[0-9]+)([eE][+-]?[0-9]+)?
+RGB		[Rr][Gg][Bb]:{HEX}+"/"{HEX}+"/"{HEX}+
+COLOR		(#{HEX}+|{RGB})
+NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL}|{COLOR})
+
+ESCAPED		(\\[0-7][0-7][0-7]|\\.)
+
+NAME		[a-zA-Z0-9_-]+
+KEYWORD		({NAME}|<{NAME}>)
+
+%%
+
+<NORMAL>[?*.]		{ BEGIN(RESNAME); ECHO; }
+<NORMAL,RESNAME>{NAME}	{ WriteToken(isClass(yytext) ? Keyword_attr : Ident2_attr); }
+<RESNAME>:		{ BEGIN(RESVALUE); ECHO; flt_bfr_begin(String_attr); }
+
+<RESVALUE>{NUMBER}	{ flt_bfr_embed(yytext, yyleng, Number_attr); }
+<RESVALUE>{KEYWORD}	{ quoted_name(yytext, yyleng); }
+<RESVALUE>![^\\\n]*	{ flt_bfr_embed(yytext, yyleng, Comment_attr); }
+<RESVALUE>\\\n		{ flt_bfr_append(yytext, yyleng); }
+<RESVALUE>({ESCAPED}|.)	{ flt_bfr_append(yytext, yyleng); }
+<RESVALUE>\n		{ flt_bfr_finish(); ECHO; BEGIN(NORMAL); }
+
+<NORMAL>{COMMENT}	{ WriteToken(Comment_attr); }
+
+<NORMAL>^{SPACE}*#{SPACE}*{NAME} { if (!preprocessor(yytext, yyleng)) {
+				    WriteToken(Error_attr);
+				} }

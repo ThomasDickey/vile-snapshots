@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.18 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.17 2000/11/04 20:24:14 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
@@ -21,38 +21,6 @@ static char *Ident_attr;
 static char *String_attr;
 
 static int commented;
-
-static void begin_value(char *name);
-static void write_capname(char *name, int len);
-
-%}
-
-CAPNAME		[^\.| \t\n:=]+
-DOTNAME		(\.)+{CAPNAME}
-
-ALIAS		[a-zA-Z_\.0-9+-]+
-
-NUMBER		"#"[0-9]+
-STRING		[^#:\\\n](\\[:]|\\\n|[^:\n])*
-
-%%
-
-^"#"[^\n]*			{ WriteToken(Comment_attr); }
-\n\n				{ ECHO; BEGIN(INITIAL); }
-
-^({ALIAS}"|"|(\\\n\t)*)*	{ WriteToken(Ident_attr); BEGIN(DESC); }
-^{ALIAS}:			{ WriteToken(Ident_attr); BEGIN(GAPS); }
-
-<DESC>[^:\n]*			{ WriteToken(Comment_attr); BEGIN(GAPS); }
-<GAPS,VALS>(:|:\\\n\t)+		{ commented=0; ECHO; BEGIN(CAPS); }
-<GAPS,CAPS>\n(\t)+		{ WriteToken(Error_attr); }
-<CAPS>{CAPNAME}			{ write_capname(yytext, yyleng); begin_value(yytext); }
-<CAPS>{DOTNAME}			{ WriteToken(Comment_attr); commented = 1; begin_value(yytext); }
-<VALS>{NUMBER}			{ WriteToken(commented ? Comment_attr : Number_attr); BEGIN(GAPS); }
-<VALS>{STRING}			{ WriteToken(commented ? Comment_attr : String_attr); BEGIN(GAPS); }
-<LINK>{STRING}			{ WriteToken(commented ? Comment_attr : Ident_attr); BEGIN(GAPS); }
-
-%%
 
 static char *
 check_name(char *name)
@@ -115,9 +83,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *inputs)
+do_filter(FILE *input)
 {
-    yyin = inputs;
+    yyin = input;
 
     Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
@@ -133,3 +101,30 @@ do_filter(FILE *inputs)
     while (yylex() > 0) {
     }
 }
+
+%}
+
+CAPNAME		[^\.| \t\n:=]+
+DOTNAME		(\.)+{CAPNAME}
+
+ALIAS		[a-zA-Z_\.0-9+-]+
+
+NUMBER		"#"[0-9]+
+STRING		[^#:\\\n](\\[:]|\\\n|[^:\n])*
+
+%%
+
+^"#"[^\n]*			{ WriteToken(Comment_attr); }
+\n\n				{ ECHO; BEGIN(INITIAL); }
+
+^({ALIAS}"|"|(\\\n\t)*)*	{ WriteToken(Ident_attr); BEGIN(DESC); }
+^{ALIAS}:			{ WriteToken(Ident_attr); BEGIN(GAPS); }
+
+<DESC>[^:\n]*			{ WriteToken(Comment_attr); BEGIN(GAPS); }
+<GAPS,VALS>(:|:\\\n\t)+		{ commented=0; ECHO; BEGIN(CAPS); }
+<GAPS,CAPS>\n(\t)+		{ WriteToken(Error_attr); }
+<CAPS>{CAPNAME}			{ write_capname(yytext, yyleng); begin_value(yytext); }
+<CAPS>{DOTNAME}			{ WriteToken(Comment_attr); commented = 1; begin_value(yytext); }
+<VALS>{NUMBER}			{ WriteToken(commented ? Comment_attr : Number_attr); BEGIN(GAPS); }
+<VALS>{STRING}			{ WriteToken(commented ? Comment_attr : String_attr); BEGIN(GAPS); }
+<LINK>{STRING}			{ WriteToken(commented ? Comment_attr : Ident_attr); BEGIN(GAPS); }

@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.30 2003/05/24 00:49:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.24 2002/07/04 20:29:46 tom Exp $
  *
  */
 
@@ -106,11 +106,11 @@ process_params(void)
     char *value;
 
     memset(flt_options, 0, sizeof(flt_options));
-    FltOptions('t') = tabstop_val(curbp);
+    flt_options['t'] = tabstop_val(curbp);
     while (*s != EOS) {
 	s = skip_cblanks(s);
 	if (*s == '-') {
-	    while (*s != EOS && *++s != EOS && !isSpace(*s)) {
+	    while (*++s != EOS && !isSpace(*s)) {
 		flt_options[CharOf(*s)] += 1;
 		switch (*s) {
 		case 'k':
@@ -121,8 +121,8 @@ process_params(void)
 		    break;
 		case 't':
 		    if ((value = param_value(&s)) != 0) {
-			if ((FltOptions('t') = atoi(value)) <= 0)
-			    FltOptions('t') = 8;
+			if ((flt_options['t'] = atoi(value)) <= 0)
+			    flt_options['t'] = 8;
 			free(value);
 		    }
 		    break;
@@ -132,7 +132,7 @@ process_params(void)
 	    s = skip_ctext(s);
 	}
     }
-    vile_keywords = !FltOptions('k');
+    vile_keywords = !flt_options['v'];
     return !vile_keywords;
 }
 
@@ -151,23 +151,8 @@ save_mark(int first)
  * Public functions                                                           *
  ******************************************************************************/
 
-/*
- * Trim newline from the string, returning true if it was found.
- */
-int
-chop_newline(char *s)
-{
-    size_t len = strlen(s);
-
-    if (len != 0 && s[len - 1] == '\n') {
-	s[--len] = '\0';
-	return 1;
-    }
-    return 0;
-}
-
 void
-flt_echo(const char *string, int length)
+flt_echo(char *string, int length)
 {
     while (length-- > 0)
 	flt_putc(*string++);
@@ -250,19 +235,10 @@ flt_input(char *buffer, int max_size)
     return used;
 }
 
-const char *
+char *
 flt_name(void)
 {
     return current_filter ? current_filter->filter_name : "";
-}
-
-char *
-flt_put_blanks(char *string)
-{
-    char *result = skip_blanks(string);
-    if (result != string)
-	flt_puts(string, result - string, "");
-    return result;
 }
 
 void
@@ -278,7 +254,7 @@ flt_putc(int ch)
 }
 
 void
-flt_puts(const char *string, int length, const char *marker)
+flt_puts(char *string, int length, char *marker)
 {
     char bfr1[NSTRING];
     char bfr2[NSTRING];
@@ -290,12 +266,12 @@ flt_puts(const char *string, int length, const char *marker)
 	if (marker != 0 && *marker != 0 && *marker != 'N') {
 	    vl_strncpy(bfr2, marker, sizeof(bfr1) - 10);
 	    last = lsprintf(bfr1, "%c%d%s:", CTL_A, length, bfr2);
-	    decode_attribute(bfr1, last - bfr1, 0, &count);
+	    parse_attribute(bfr1, last - bfr1, 0, &count);
 	}
 	flt_echo(string, length);
 	save_mark(FALSE);
 	if (apply_attribute()) {
-	    REGIONSHAPE save_shape = regionshape;
+	    int save_shape = regionshape;
 	    regionshape = EXACT;
 	    (void) attributeregion();
 	    videoattribute = 0;

@@ -4,8 +4,11 @@
  * "termio.c". It compiles into nothing if not an ANSI device.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.44 2003/05/27 00:21:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.40 1999/09/19 20:09:06 tom Exp $
  */
+
+
+#define termdef 1			/* don't define "term" external */
 
 #include	"estruct.h"
 #include	"edef.h"
@@ -24,12 +27,7 @@
 #define SCROLL_REG 0
 #endif
 
-#ifdef ANSI_RESIZE
-#define NROW    77
-#define NCOL    132
-#endif
-
-#if    !defined NROW && defined(linux)
+#if	defined(linux)
 #define NROW	25			/* Screen size.			*/
 #define NCOL	80			/* Edit if you want to.		*/
 #endif
@@ -185,7 +183,7 @@ force_colors(int fc, int bc)
 }
 #endif
 
-#ifdef BROKEN_REVERSE_VIDEO
+#if BROKEN_REVERSE_VIDEO
 /* there was something wrong with this "fix".  the "else" of
 		the ifdef just uses "ESC [ 7 m" to set reverse
 		video, and it works under DOS for me....  but then, i
@@ -337,7 +335,7 @@ ansiparm(register int n)
 {
 	register int q,r;
 
-#ifdef optimize_works /* i don't think it does, although it should, to be ANSI */
+#if optimize_works /* i don't think it does, although it should, to be ANSI */
 	if (n == 1) return;
 #endif
 
@@ -360,18 +358,6 @@ ansiopen(void)
 		already_open = TRUE;
 		strcpy(screen_desc, "NORMAL");
 		revexist = TRUE;
-#if ! SYS_MSDOS
-		/* Get screen size from system */
-		getscreensize(&term.cols, &term.rows);
-		if (term.rows <= 1)
-		    term.rows = 24;
-
-		if (term.cols <= 1)
-		    term.cols = 80;
-		/* we won't resize, but need the measured size */
-		term.maxrows = term.rows;
-		term.maxcols = term.cols;
-#endif
 		ttopen();
 	}
 }

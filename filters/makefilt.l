@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.49 2003/05/24 00:49:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.46 2002/07/04 22:21:10 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -23,70 +23,6 @@ static char *Preproc_attr;
 static char *String_attr;
 
 static int continued;
-
-static void write_keyword(char *text, int size, int prepro, int caseless);
-static void write_delimited(char *text, int size, int less, char *attr);
-static void missing_quote(char *text, int length);
-
-%}
-
-SPACE		[ \t]
-
-ID		[a-zA-Z_][a-zA-Z_0-9]+
-NAME		[a-zA-Z_][a-zA-Z_0-9.-]+
-
-MACRO		([$]?\$\{{ID}\}|[$]?\${ID}|[$]?\$[A-Za-z@!%^&*?<]|\${SPACE}*\([^\)]+\))
-
-OPER		[+:?]?=
-
-%%
-
-<NORMAL>^{SPACE}*[!]{NAME}{SPACE}*	{ write_keyword(yytext, yyleng, 1, 1); }
-
-<NORMAL>^{SPACE}*{NAME}{SPACE}*	{ write_keyword(yytext, yyleng, 1, 0); }
-
-<NORMAL>^{SPACE}*([-.])?include{SPACE}* { write_keyword(yytext, yyleng, 1, 0); }
-
-<NORMAL>^{SPACE}*[\.]{NAME}{SPACE}*:[:]? { write_keyword(yytext, yyleng, 0, 0); }
-
-<NORMAL>^({SPACE}*{NAME}{SPACE}*|\\\n)+: { write_delimited(yytext, yyleng, 1, Keyword_attr); }
-
-<NORMAL>^{SPACE}*{NAME}{SPACE}*{OPER}	{
-				  int oper = 1;
-				  if (strchr("+:?", yytext[yyleng - 2]) != 0)
-				      ++oper;
-				  write_delimited(yytext, yyleng, oper, Ident2_attr);
-				}
-
-<NORMAL>{MACRO}			{ WriteToken(Ident2_attr); }
-
-<NORMAL>^{SPACE}\@		{ if (yyleng)
-				    flt_puts(yytext, yyleng-1, "");
-				  flt_puts("@", 1, String_attr); }
-<NORMAL>\\{SPACE}+\n		{ WriteToken(Error_attr); continued = 1; }
-<NORMAL>\\[\n]			{ WriteToken(String_attr); continued = 1; }
-<NORMAL>[\n]			{ ECHO; continued = 0; }
-<NORMAL>\\["']			{ WriteToken(String_attr); }
-<NORMAL>\'			{ BeginQuote(QUOTE1, String_attr); }
-<NORMAL>\"			{ BeginQuote(QUOTE2, String_attr); }
-
-<NORMAL>"#"			{ BeginQuote(COMMENT, Comment_attr); }
-<COMMENT>(\\.|\\\n|[^\n])*	{ flt_bfr_append(yytext, yyleng); }
-<COMMENT>\n			{ FinishQuote(NORMAL); }
-
-<QUOTE1,QUOTE2>{MACRO}		{ flt_bfr_embed(yytext, yyleng, Ident2_attr); }
-<QUOTE1,QUOTE2>\\{SPACE}+\n	{ flt_bfr_embed(yytext, yyleng, Error_attr); }
-<QUOTE1,QUOTE2>\\\n		{ flt_bfr_append(yytext, yyleng); }
-
-<QUOTE1>(\\.|[^\n\'])		{ flt_bfr_append(yytext, yyleng); }
-<QUOTE1>\'			{ FinishQuote(NORMAL); }
-
-<QUOTE2>(\\.|[^\n\"])		{ flt_bfr_append(yytext, yyleng); }
-<QUOTE2>\"			{ FinishQuote(NORMAL); }
-
-<QUOTE1,QUOTE2>[\n]		{ missing_quote(yytext, yyleng); }
-
-%%
 
 /*
  * If we're looking for tabs, only tabs (optionally followed by spaces) will
@@ -113,7 +49,7 @@ want_tabs(char *text, int size)
 	    }
 	}
 	/* a little paranoia does not hurt */
-	if ((spcs == FltOptions('t')) && !tabs)
+	if ((spcs == flt_options['t']) && !tabs)
 	    result = 1;
     } else {
 	result = 1;	/* should not happen */
@@ -156,7 +92,7 @@ write_keyword(char *text, int size, int prepro, int caseless)
     text[size] = 0;
     attr = caseless
 	 ? ci_keyword_attr(text)
-	 : keyword_attr(text);
+    	 : keyword_attr(text);
     /*
      * Some symbols cannot be preceded by tabs - we put those in the "premake"
      * table.
@@ -199,23 +135,25 @@ write_delimited_unit(char *text, char **attr, char **gaps)
 
     panchor = pwhite = text;
     while (isspace(CharOf(*pwhite))) {
-	pwhite++;
+        pwhite++;
     }
     if (pwhite > panchor)
-	flt_puts(panchor, pwhite - panchor, *gaps);
+        flt_puts(panchor, pwhite - panchor, *gaps);
     panchor = ptoken = pwhite;
     while (*ptoken && (! isspace(CharOf(*ptoken))))
-	ptoken++;
+        ptoken++;
     flt_puts(panchor, ptoken - panchor, *attr);
-    if (isspace(CharOf(*ptoken))) {
-	panchor = ptoken;
-	pwhite	= ptoken + 1;  /* advance beyond initial white space byte */
-	while (isspace(CharOf(*pwhite)))
-	    pwhite++;
-	flt_puts(panchor, pwhite - panchor, *gaps);
-	pnxt_unit = pwhite;
-    } else
-	pnxt_unit = ptoken;
+    if (isspace(CharOf(*ptoken)))
+    {
+        panchor = ptoken;
+        pwhite  = ptoken + 1;  /* advance beyond initial white space byte */
+        while (isspace(CharOf(*pwhite)))
+            pwhite++;
+        flt_puts(panchor, pwhite - panchor, *gaps);
+        pnxt_unit = pwhite;
+    }
+    else
+        pnxt_unit = ptoken;
     return (pnxt_unit);
 }
 
@@ -225,24 +163,27 @@ write_delimited_unit(char *text, char **attr, char **gaps)
  *    ([<white>]<token>[<white>]|\\\n)+<single delimiter>
  */
 static void
-write_delimited(char *text, int size, int less, char *attr)
+write_delimited(char *text, int size, char *attr)
 {
-    char *cp;
+    char *cp, delim[2];
     char *gaps = "";
-    int save = text[size - less];
 
-    text[size - less] = '\0';
+    delim[0] = text[size - 1];         /* save the trailing delimiter */
+    delim[1] = text[size - 1] = '\0';  /* chop the trailing delimiter */
     cp       = text;
-    do {
-	if (*cp == '\\' && cp[1] == '\n') {
-	    flt_puts(cp, 2, gaps);
-	    cp += 2;
-	} else
-	    cp = write_delimited_unit(cp, &attr, &gaps);
-    } while (*cp);
+    do
+    {
+        if (*cp == '\\' && cp[1] == '\n')
+        {
+            flt_puts(cp, 2, gaps);
+            cp += 2;
+        }
+        else
+            cp = write_delimited_unit(cp, &attr, &gaps);
+    }
+    while (*cp);
 
-    text[size - less] = save;
-    flt_puts(text + size - less, less, gaps);
+    flt_puts(delim, 1, gaps);
 }
 
 static void
@@ -262,9 +203,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *inputs)
+do_filter(FILE *input)
 {
-    yyin = inputs;
+    yyin = input;
 
     Comment_attr = class_attr(NAME_COMMENT);
     Error_attr   = class_attr(NAME_ERROR);
@@ -280,3 +221,56 @@ do_filter(FILE *inputs)
     }
     flt_bfr_error();
 }
+
+%}
+
+SPACE		[ \t]
+
+ID		[a-zA-Z_][a-zA-Z_0-9]+
+NAME		[a-zA-Z_][a-zA-Z_0-9.-]+
+
+MACRO		([$]?\$\{{ID}\}|[$]?\${ID}|[$]?\$[A-Za-z@!%^&*?<]|\${SPACE}*\([^\)]+\))
+
+OPER		[+:?]?=
+
+%%
+
+<NORMAL>^{SPACE}*[!]{NAME}{SPACE}*	{ write_keyword(yytext, yyleng, 1, 1); }
+
+<NORMAL>^{SPACE}*{NAME}{SPACE}*	{ write_keyword(yytext, yyleng, 1, 0); }
+
+<NORMAL>^{SPACE}*([-.])?include{SPACE}* { write_keyword(yytext, yyleng, 1, 0); }
+
+<NORMAL>^{SPACE}*[\.]{NAME}{SPACE}*:[:]? { write_keyword(yytext, yyleng, 0, 0); }
+
+<NORMAL>^({SPACE}*{NAME}{SPACE}*|\\\n)+: { write_delimited(yytext, yyleng, Keyword_attr); }
+
+<NORMAL>^{SPACE}*{NAME}{SPACE}*{OPER}	{ write_delimited(yytext, yyleng, Ident2_attr); }
+
+<NORMAL>{MACRO}			{ WriteToken(Ident2_attr); }
+
+<NORMAL>^{SPACE}\@		{ if (yyleng)
+				    flt_puts(yytext, yyleng-1, "");
+				  flt_puts("@", 1, String_attr); }
+<NORMAL>\\{SPACE}+\n		{ WriteToken(Error_attr); continued = 1; }
+<NORMAL>\\[\n]			{ WriteToken(String_attr); continued = 1; }
+<NORMAL>[\n]			{ ECHO; continued = 0; }
+<NORMAL>\\["']			{ WriteToken(String_attr); }
+<NORMAL>\'			{ BeginQuote(QUOTE1, String_attr); }
+<NORMAL>\"			{ BeginQuote(QUOTE2, String_attr); }
+
+<NORMAL>"#"			{ BeginQuote(COMMENT, Comment_attr); }
+<COMMENT>(\\.|\\\n|[^\n])*	{ flt_bfr_append(yytext, yyleng); }
+<COMMENT>\n			{ FinishQuote(NORMAL); }
+
+<QUOTE1,QUOTE2>{MACRO}		{ flt_bfr_embed(yytext, yyleng, Ident2_attr); }
+<QUOTE1,QUOTE2>\\{SPACE}+\n	{ flt_bfr_embed(yytext, yyleng, Error_attr); }
+<QUOTE1,QUOTE2>\\\n		{ flt_bfr_append(yytext, yyleng); }
+
+<QUOTE1>(\\.|[^\n\'])		{ flt_bfr_append(yytext, yyleng); }
+<QUOTE1>\'			{ FinishQuote(NORMAL); }
+
+<QUOTE2>(\\.|[^\n\"])		{ flt_bfr_append(yytext, yyleng); }
+<QUOTE2>\"			{ FinishQuote(NORMAL); }
+
+<QUOTE1,QUOTE2>[\n]		{ missing_quote(yytext, yyleng); }

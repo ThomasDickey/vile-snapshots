@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.6 2003/05/24 00:49:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.3 2002/01/20 23:46:32 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -35,9 +35,6 @@
 #include <X11/Xaw/SmeLine.h>
 #include <X11/Xaw/SmeBSB.h>
 #endif
-
-#define Nval(name,value) name, (XtArgVal)(value)
-#define Sval(name,value) name, (value)
 
 #define MY_MENUS struct MyMenus
 MY_MENUS {
@@ -67,12 +64,12 @@ gui_make_menu(void *menubar, char *nom, int the_class GCC_UNUSED)
     pm = (Widget) XmCreatePulldownMenu(menub, str, NULL, 0);
 #if OPT_MENUS_COLORED
     XtVaSetValues(pm,
-		  Nval(XtNforeground, x_menu_foreground()),
-		  Nval(XtNbackground, x_menu_background()),
+		  XtNforeground, x_menu_foreground(),
+		  XtNbackground, x_menu_background(),
 		  NULL);
     XtVaSetValues(menub,
-		  Nval(XtNforeground, x_menu_foreground()),
-		  Nval(XtNbackground, x_menu_background()),
+		  XtNforeground, x_menu_foreground(),
+		  XtNbackground, x_menu_background(),
 		  NULL);
 #endif /* OPT_MENUS_COLORED */
 
@@ -80,18 +77,18 @@ gui_make_menu(void *menubar, char *nom, int the_class GCC_UNUSED)
 
     cascade = XtVaCreateManagedWidget("menuHeader",
 				      xmCascadeButtonWidgetClass, menub,
-				      Nval(XmNlabelString, xms),
-				      Nval(XmNsubMenuId, pm),
+				      XmNlabelString, xms,
+				      XmNsubMenuId, pm,
 #if OPT_MENUS_COLORED
-				      Nval(XtNforeground, x_menu_foreground()),
-				      Nval(XtNbackground, x_menu_background()),
+				      XtNforeground, x_menu_foreground(),
+				      XtNbackground, x_menu_background(),
 #endif /* OPT_MENUS_COLORED */
 				      NULL);
     XmStringFree(xms);
 
     if (the_class == 'H') {
 	XtVaSetValues(menub,
-		      Nval(XmNmenuHelpWidget, cascade),
+		      XmNmenuHelpWidget, cascade,
 		      NULL);
     }
 #endif /* MOTIF_WIDGETS */
@@ -103,16 +100,16 @@ gui_make_menu(void *menubar, char *nom, int the_class GCC_UNUSED)
     pm = XtVaCreatePopupShell(str,
 			      simpleMenuWidgetClass,
 			      menub,
-			      Nval(XtNgeometry, NULL),
+			      XtNgeometry, NULL,
 			      NULL);
 
     cascade = XtVaCreateManagedWidget("menuHeader",
 				      menuButtonWidgetClass,
 				      menub,
-				      Nval(XtNheight, x_menu_height()),
-				      Nval(XtNlabel, nom),
-				      Nval(XtNfromHoriz, last),
-				      Nval(XtNmenuName, str),
+				      XtNheight, x_menu_height(),
+				      XtNlabel, nom,
+				      XtNfromHoriz, last,
+				      XtNmenuName, str,
 				      NULL);
     last = cascade;
 
@@ -159,9 +156,9 @@ gui_add_menu_item(void *pm, char *nom, char *accel GCC_UNUSED, int the_class)
     xms_name = XmStringCreateSimple(nom);
     w = XtVaCreateManagedWidget("menuEntry",
 				wc,
-				(Widget) pm,
-				Nval(XmNacceleratorText, xms_accl),
-				Nval(XmNlabelString, xms_name),
+				pm,
+				XmNacceleratorText, xms_accl,
+				XmNlabelString, xms_name,
 				NULL);
 
     XmStringFree(xms_accl);
@@ -174,12 +171,12 @@ gui_add_menu_item(void *pm, char *nom, char *accel GCC_UNUSED, int the_class)
 				((the_class == 'B')
 				 ? smeBSBObjectClass
 				 : smeLineObjectClass),
-				(Widget) pm,
-				Nval(XtNlabel, nom),
+				pm,
+				XtNlabel, nom,
 				NULL);
 
 #endif /* ATHENA_WIDGETS */
-    return (void *) w;
+    return w;
 }
 
 /************************************************************************/
@@ -309,22 +306,20 @@ post_buffer_list(Widget w GCC_UNUSED,
 	}
 
 	if (pm_buffer[nb_item_menu_list] == 0) {
-	    pm_buffer[nb_item_menu_list] = (Widget) gui_add_menu_item(pm, string,
-								      temp, 'B');
+	    pm_buffer[nb_item_menu_list] = gui_add_menu_item(pm, string,
+							     temp, 'B');
 	} else {
 #if MOTIF_WIDGETS
 	    XmString xms = XmStringCreateSimple(string);
 	    XtVaSetValues(pm_buffer[nb_item_menu_list],
-			  Nval(XmNlabelString, xms),
-			  NULL);
+			  XmNlabelString, xms, NULL);
 	    XmStringFree(xms);
 	    XtRemoveCallback(pm_buffer[nb_item_menu_list],
 			     XmNactivateCallback, list_proc_back, NULL);
 #endif
 #if ATHENA_WIDGETS
 	    XtVaSetValues(pm_buffer[nb_item_menu_list],
-			  Nval(XtNlabel, string),
-			  NULL);
+			  XtNlabel, string, NULL);
 	    XtRemoveAllCallbacks(pm_buffer[nb_item_menu_list],
 				 XtNcallback);
 #endif

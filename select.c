@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.147 2003/06/30 00:31:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.138 2002/06/30 17:42:36 tom Exp $
  *
  */
 
@@ -81,25 +81,10 @@ typedef enum {
 
 static WHICHEND whichend;
 
-static AREGION *
-alloc_AREGION(void)
-{
-    AREGION *arp;
-
-    beginDisplay();
-    if ((arp = typealloc(AREGION)) == NULL) {
-	(void) no_memory("AREGION");
-    }
-    endofDisplay();
-    return arp;
-}
-
 void
 free_attribs(BUFFER *bp)
 {
     AREGION *p, *q;
-
-    beginDisplay();
     p = bp->b_attribs;
     while (p != NULL) {
 	q = p->ar_next;
@@ -117,15 +102,12 @@ free_attribs(BUFFER *bp)
     bp->b_attribs = NULL;
 
     free_line_attribs(bp);
-    endofDisplay();
 }
 
 void
 free_attrib(BUFFER *bp, AREGION * ap)
 {
     detach_attrib(bp, ap);
-
-    beginDisplay();
 #if OPT_HYPERTEXT
     FreeAndNull(ap->ar_hypercmd);
 #endif
@@ -135,29 +117,26 @@ free_attrib(BUFFER *bp, AREGION * ap)
 	startbufp = NULL;
     else
 	free((char *) ap);
-    endofDisplay();
 }
 
 static void
 detach_attrib(BUFFER *bp, AREGION * arp)
 {
-    if (find_bp(bp) != 0) {
-	if (valid_buffer(bp)) {
-	    WINDOW *wp;
-	    AREGION **rpp;
-	    for_each_visible_window(wp) {
-		if (wp->w_bufp == bp)
-		    wp->w_flag |= WFHARD;
-	    }
-	    rpp = &bp->b_attribs;
-	    while (*rpp != NULL) {
-		if (*rpp == arp) {
-		    *rpp = (*rpp)->ar_next;
-		    arp->ar_region.r_attr_id = 0;
-		    break;
-		} else
-		    rpp = &(*rpp)->ar_next;
-	    }
+    if (bp != NULL) {
+	WINDOW *wp;
+	AREGION **rpp;
+	for_each_visible_window(wp) {
+	    if (wp->w_bufp == bp)
+		wp->w_flag |= WFHARD;
+	}
+	rpp = &bp->b_attribs;
+	while (*rpp != NULL) {
+	    if (*rpp == arp) {
+		*rpp = (*rpp)->ar_next;
+		arp->ar_region.r_attr_id = 0;
+		break;
+	    } else
+		rpp = &(*rpp)->ar_next;
 	}
     }
 }
@@ -165,7 +144,7 @@ detach_attrib(BUFFER *bp, AREGION * arp)
 void
 find_release_attr(BUFFER *bp, REGION * rp)
 {
-    if (valid_buffer(bp)) {
+    if (bp != NULL) {
 	AREGION **rpp;
 	rpp = &bp->b_attribs;
 	while (*rpp != NULL) {
@@ -188,7 +167,7 @@ assign_attr_id(void)
 static void
 attach_attrib(BUFFER *bp, AREGION * arp)
 {
-    if (valid_buffer(bp)) {
+    if (bp != 0) {
 	WINDOW *wp;
 	arp->ar_next = bp->b_attribs;
 	bp->b_attribs = arp;
@@ -278,7 +257,7 @@ sel_extend(int wiping, int include_dot)
     MARK working_dot;
 
     saved_dot = DOT;
-    if (valid_buffer(startbufp)) {
+    if (startbufp != NULL) {
 	detach_attrib(selbufp, &selregion);
 	selbufp = startbufp;
 	selregion = startregion;
@@ -431,35 +410,36 @@ sel_yank(int reg)
 {
     REGIONSHAPE save_shape;
     WINDOW *save_wp;
-    BUFFER *save_bp = curbp;
-    int code = FALSE;
 
-    if (valid_window(save_wp = push_fake_win(selbufp))) {
-	/*
-	 * We're not guaranteed that curbp and selbufp are the same.
-	 */
-	save_shape = regionshape;
+    if (selbufp == NULL)
+	return FALSE;		/* No selection to yank */
 
-	curbp = selbufp;
+    if ((save_wp = push_fake_win(selbufp)) == NULL)
+	return FALSE;
 
-	ukb = (short) reg;
-	kregflag = 0;
-	haveregion = &selregion.ar_region;
-	regionshape = selregion.ar_shape;
-	yankregion();
-	haveregion = NULL;
+    /*
+     * We're not guaranteed that curbp and selbufp are the same.
+     */
+    save_shape = regionshape;
 
-	pop_fake_win(save_wp, save_bp);
+    curbp = selbufp;
 
-	regionshape = save_shape;
+    ukb = (short) reg;
+    kregflag = 0;
+    haveregion = &selregion.ar_region;
+    regionshape = selregion.ar_shape;
+    yankregion();
+    haveregion = NULL;
 
-	show_selection_position(TRUE);
+    pop_fake_win(save_wp);
 
-	/* put cursor back on screen...is there a cheaper way to do this?  */
-	(void) update(FALSE);
-	code = TRUE;
-    }
-    return code;
+    regionshape = save_shape;
+
+    show_selection_position(TRUE);
+
+    /* put cursor back on screen...is there a cheaper way to do this?  */
+    (void) update(FALSE);
+    return TRUE;
 }
 
 /* select all text in curbp and yank to unnamed register */
@@ -486,16 +466,16 @@ sel_all(int f GCC_UNUSED, int n GCC_UNUSED)
 BUFFER *
 sel_buffer(void)
 {
-    return valid_buffer(startbufp) ? startbufp : selbufp;
+    return (startbufp != NULL) ? startbufp : selbufp;
 }
 
 static int
 get_selregion(REGION * result)
 {
-    if (valid_buffer(startbufp)) {
+    if (startbufp != NULL) {
 	*result = startregion.ar_region;
 	return TRUE;
-    } else if (valid_buffer(selbufp)) {
+    } else if (selbufp != NULL) {
 	*result = selregion.ar_region;
 	return TRUE;
     } else {
@@ -528,10 +508,10 @@ sel_get_rightmark(MARK *result)
 int
 sel_setshape(REGIONSHAPE shape)
 {
-    if (valid_buffer(startbufp)) {
+    if (startbufp != NULL) {
 	startregion.ar_shape = shape;
 	return TRUE;
-    } else if (valid_buffer(selbufp)) {
+    } else if (selbufp != NULL) {
 	selregion.ar_shape = shape;
 	return TRUE;
     } else {
@@ -624,7 +604,7 @@ sel_motion(int f GCC_UNUSED, int n GCC_UNUSED)
 static int
 selectregion(void)
 {
-    int status;
+    register int status;
     REGION region;
     MARK savedot;
     MARK savemark;
@@ -632,7 +612,6 @@ selectregion(void)
 
     savedot = DOT;
     savemark = MK;
-    memset(&region, 0, sizeof(region));
     if (haveregion) {		/* getregion() will clear this, so
 				   we need to save it */
 	region = *haveregion;
@@ -771,7 +750,7 @@ on_mouse_click(int button, int y, int x)
     int status;
 
     if (button > 0) {
-	if (valid_window(this_wp = row2window(y))
+	if ((this_wp = row2window(y)) != 0
 	    && (y != mode_row(this_wp))) {
 	    /*
 	     * If we get a click on the "<" marking the left side
@@ -1144,7 +1123,7 @@ apply_attribute(void)
 int
 attributeregion(void)
 {
-    int status;
+    register int status;
     REGION region;
     AREGION *arp;
 
@@ -1160,7 +1139,8 @@ attributeregion(void)
 		return TRUE;
 
 	    /* add new attribute-region */
-	    if ((arp = alloc_AREGION()) == NULL) {
+	    if ((arp = typealloc(AREGION)) == NULL) {
+		(void) no_memory("AREGION");
 		return FALSE;
 	    }
 	    arp->ar_region = region;
@@ -1247,7 +1227,8 @@ attributeregion(void)
 			p->ar_shape = EXACT;
 			if ((rle < ple) || (rle == ple && roe < poe)) {
 			    /* open a new region */
-			    if ((n = alloc_AREGION()) == NULL) {
+			    if ((n = typealloc(AREGION)) == NULL) {
+				(void) no_memory("AREGION");
 				return FALSE;
 			    }
 			    n->ar_region = p->ar_region;
@@ -1478,7 +1459,7 @@ attribute_cntl_a_seqs_in_region(REGION * rp, REGIONSHAPE shape)
 LINEPTR
 setup_region(void)
 {
-    LINEPTR pastline;		/* pointer to line just past EOP */
+    register LINEPTR pastline;	/* pointer to line just past EOP */
 
     if (!sameline(MK, DOT)) {
 	REGION region;
@@ -1501,9 +1482,9 @@ setup_region(void)
  * Set videoattribute and hypercmd as side-effects.
  */
 int
-decode_attribute(char *text, int length, int offset, int *countp)
+parse_attribute(char *text, int length, int offset, int *countp)
 {
-    int c;			/* current char during scan */
+    register int c;		/* current char during scan */
     int count = 0;
     int found;
 #if OPT_HYPERTEXT
@@ -1585,8 +1566,6 @@ decode_attribute(char *text, int length, int offset, int *countp)
 	    }
 	    offset++;
 	}
-	if (videoattribute != VOWN_CTLA && count != 0)
-	    break;
     }
     *countp = count;
     return offset;
@@ -1666,8 +1645,8 @@ attribute_cntl_a_sequences(void)
 	    return FALSE;
 	while (DOT.o < llength(DOT.l)) {
 	    if (char_at(DOT) == CONTROL_A) {
-		offset = decode_attribute(DOT.l->l_text, llength(DOT.l),
-					  DOT.o, &count);
+		offset = parse_attribute(DOT.l->l_text, llength(DOT.l),
+					 DOT.o, &count);
 #if EFFICIENCY_HACK
 		new_attribs = curbp->b_attribs;
 		curbp->b_attribs = orig_attribs;
@@ -1679,9 +1658,8 @@ attribute_cntl_a_sequences(void)
 		set_mark_after(count, len_record_sep(curbp));
 		if (apply_attribute())
 		    (void) attributeregion();
-	    } else {
-		DOT.o++;
 	    }
+	    DOT.o++;
 	}
 	DOT.l = lforw(DOT.l);
 	DOT.o = 0;
@@ -1741,7 +1719,7 @@ attribute_from_filter(void)
 	    DOT.o = 0;
 	    for (n = 0; n < nbytes; n++) {
 		if (fflinebuf[n] == CONTROL_A) {
-		    done = decode_attribute(fflinebuf, nbytes, n, &skip);
+		    done = parse_attribute(fflinebuf, nbytes, n, &skip);
 		    if (done) {
 			n = (done - 1);
 			set_mark_after(skip, 1);
@@ -1792,7 +1770,7 @@ attribute_directly(void)
     int code = FALSE;
 
 #if OPT_MAJORMODE
-    if (valid_buffer(curbp)) {
+    if (curbp != 0) {
 	discard_syntax_highlighting();
 	if (b_val(curbp, MDHILITE)) {
 	    char *filtername = 0;
@@ -1815,8 +1793,6 @@ attribute_directly(void)
 	    }
 	    tb_free(&token);
 	}
-	attach_attrib(selbufp, &selregion);
-	attach_attrib(startbufp, &startregion);
     }
 #endif
     return code;
@@ -1848,7 +1824,7 @@ init_line_attr_tbl(void)
     line_attr_tbl[1].vattr = 0;
 }
 
-/* Find an index in line_attr_tbl[] containing the specified attribute.
+/* Find a an index in line_attr_tbl[] containing the specified attribute.
    Add the attribute to the table if not found.  Return -1 if table is
    full. (Kevin's note: I don't think the table full condition will
    be a real problem.  But if it is, it should be possible to garbage
@@ -1914,15 +1890,12 @@ lattr_shift(BUFFER *bp GCC_UNUSED, LINEPTR lp, int doto, int shift)
 	for (f = t; f >= doto && f > t - shift; f--)
 	    if (lap[f] != 1) {
 		int newlen;
-
-		beginDisplay();
 		newlen = len + shift - (t - f);
 		lap = castrealloc(UCHAR, lap, newlen + 1);
 		lp->l_attrs = lap;
 		lap[newlen] = 0;
 		t = newlen - 1;
 		f = t - shift;
-		endofDisplay();
 		break;
 	    }
 	while (f > doto) {
@@ -1986,9 +1959,6 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
     WINDOW *wp;
     int vidx;
     int i;
-    int overlap = FALSE;
-    int last;
-
     if (rp->r_orig.l != rp->r_end.l	/* must be confined to one line */
 	|| rs != EXACT		/* must be an exact region */
 	|| (hypercmdp && tb_length(hypercmdp) != 0)
@@ -1997,58 +1967,49 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
 	|| (vattr & VASEL) != 0)	/* can't be a selection */
 	return FALSE;
 
-    beginDisplay();
-
     lp = rp->r_orig.l;
-    last = rp->r_end.o;
-
-    if (lp->l_attrs != NULL) {
+    if (lp->l_attrs) {
 	int len = strlen((char *) (lp->l_attrs));
 	/* Make sure the line attribute is long enough */
 	if (len < rp->r_end.o) {
-	    last = rp->r_end.o;
-	    lp->l_attrs = castrealloc(UCHAR, lp->l_attrs, last + 1);
-	    if (lp->l_attrs != NULL) {
-		for (i = len; i < rp->r_end.o; i++)
-		    lp->l_attrs[i] = 1;
-		lp->l_attrs[i] = 0;
-	    }
+	    lp->l_attrs = castrealloc(UCHAR,
+				      lp->l_attrs, rp->r_end.o + 1);
+	    if (lp->l_attrs == NULL)
+		return FALSE;	/* Let someone else deal with the
+				   problem of running out of memory */
+	    for (i = len; i < rp->r_end.o; i++)
+		lp->l_attrs[i] = 1;
+	    lp->l_attrs[i] = 0;
 	}
 	/* See if attributed region we're about to add overlaps an existing
 	   line based one */
-	if (lp->l_attrs != NULL) {
-	    for (i = rp->r_orig.o; i < last; i++) {
-		if (lp->l_attrs[i] != 1) {
-		    overlap = TRUE;
-		    break;
-		}
-	    }
-	}
+	for (i = rp->r_orig.o; i < rp->r_end.o; i++)
+	    if (lp->l_attrs[i] != 1)
+		return FALSE;	/* Can't have overlapping line
+				   attributes */
     } else {
 	/* Must allocate and initialize memory for the line attributes */
 	lp->l_attrs = castalloc(UCHAR, llength(lp) + 1);
 	lp->l_attrs[llength(lp)] = 0;
 	for (i = llength(lp) - 1; i >= 0; i--)
 	    lp->l_attrs[i] = 1;
-	if (last > llength(lp))
-	    last = llength(lp);
     }
-    endofDisplay();
 
-    if (lp->l_attrs != NULL && !overlap) {
-	if ((vidx = find_line_attr_idx(vattr)) >= 0) {
-	    for (i = rp->r_orig.o; i < last; i++)
-		lp->l_attrs[i] = (UCHAR) vidx;
+    vidx = find_line_attr_idx(vattr);
+    if (vidx < 0)
+	return FALSE;
 
-	    for_each_visible_window(wp) {
-		if (wp->w_bufp == bp)
-		    wp->w_flag |= WFHARD;
-	    }
-	    return TRUE;
-	}
+    for (i = rp->r_orig.o; i < rp->r_end.o; i++)
+	lp->l_attrs[i] = (UCHAR) vidx;
+
+    for_each_visible_window(wp) {
+	if (wp->w_bufp == bp)
+	    wp->w_flag |= WFHARD;
     }
-#endif /* OPT_LINE_ATTRS */
+    return TRUE;
+#else /* !OPT_LINE_ATTRS */
     return FALSE;
+#endif /* OPT_LINE_ATTRS */
 }
 
 static void

@@ -55,7 +55,7 @@
  *	not (yet) correspond to :-commands.  Before implementing, probably will
  *	have to make TESTC a settable mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.76 2003/07/27 16:55:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.72 2002/01/09 00:30:55 tom Exp $
  *
  */
 
@@ -105,8 +105,6 @@ makeMyBuff(void)
 	bp = 0;
     } else if ((bp = make_ro_bp(HISTORY_BufName, BFINVS)) == 0) {
 	stopMyBuff();
-    } else {
-	set_vilemode(bp);
     }
     return bp;
 }
@@ -251,7 +249,7 @@ stripQuotes(char *src, int len, int eolchar, int *actual)
 
     if (len > 0) {
 	TRACE(("stripQuotes(%.*s)\n", len, src));
-	if ((dst = (char *) malloc((size_t) len + 1)) != 0) {
+	if ((dst = malloc((size_t) len + 1)) != 0) {
 	    int j, k;
 	    int quoted = FALSE;
 	    int escaped = FALSE;
@@ -382,7 +380,7 @@ hst_append_s(char *cmd, int glue)
 void
 hst_remove(const char *cmd)
 {
-    if (MyLevel == 1 && *cmd != EOS) {
+    if (MyLevel == 1) {
 	TBUFF *temp = 0;
 	unsigned len = tb_length(tb_scopy(&temp, cmd)) - 1;
 
@@ -545,25 +543,21 @@ hst_display(HST * parm, char *src, int srclen)
     wminip->w_dot.o = llength(wminip->w_dot.l);
     kbd_kill_response(*(parm->buffer), parm->position, killc);
 
-    if (src != 0 && srclen != 0) {
+    if (src != 0) {
 	char *stripped;
-	int offset = tb_length(MyText) + willGlue();
-	int n = endOfParm(parm, src, offset, srclen) - offset;
+	int keylen = tb_length(MyText) + willGlue();
+	int n = endOfParm(parm, src, keylen, srclen) - keylen;
 
-	src += offset;
+	src += keylen;
 	stripped = src;
 #if HST_QUOTES
-	TRACE(("...offset=%d, n=%d, MyText=%s\n", offset, n, tb_visible(MyText)));
-	if (tb_length(MyText) != 0 && isShellOrPipe(tb_values(MyText)))
-	    TRACE(("...MyText is a shell command\n"));
-	else if (tb_length(MyText) == 0 && offset == 0 && isShellOrPipe(src))
-	    TRACE(("...src is a shell command\n"));
-	else if (*src == DQUOTE || isSpace(parm->eolchar))
+	if (!isShellOrPipe(tb_values(MyText))
+	    && (*src == DQUOTE || isSpace(parm->eolchar)))
 	    stripped = stripQuotes(src, n,
 				   isSpace(parm->eolchar) ? ' ' : parm->eolchar,
 				   &n);
 #endif
-	TRACE(("...hst_display offset=%d, string='%.*s'\n", offset, n, stripped));
+	TRACE(("hst_display offset=%d, string='%.*s'\n", keylen, n, stripped));
 	*parm->position = kbd_show_response(parm->buffer,
 					    stripped,
 					    n,

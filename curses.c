@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.20 2002/12/22 19:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.16 2002/01/09 00:23:54 tom Exp $
  */
 
 #include	"estruct.h"
@@ -127,7 +127,7 @@ initialize(void)
     if (has_colors()) {
 	can_color = TRUE;
 	start_color();
-#ifdef HAVE_USE_DEFAULT_COLORS
+#if HAVE_USE_DEFAULT_COLORS
 	use_default_colors();
 #endif
 	set_colors(COLORS);
@@ -163,7 +163,8 @@ initialize(void)
 	char *seq = TGETSTR(keyseqs[i].capname, &p);
 	if (!NO_CAP(seq)) {
 	    int len;
-	    TRACE(("TGETSTR(%s) = %s\n", keyseqs[i].capname, str_visible(seq)));
+	    TRACE(("TGETSTR(%s) = %s\n", keyseqs[i].capname,
+		   visible_buff(seq, strlen(seq), FALSE)));
 #define DONT_MAP_DEL 1
 #if DONT_MAP_DEL
 	    /* NetBSD, FreeBSD, etc. have the kD (delete) function key
@@ -247,9 +248,8 @@ curs_getc(void)
 static OUTC_DCL
 curs_putc(OUTC_ARGS)
 {
-    c &= (N_chars - 1);
     if (in_screen) {
-	OUTC_RET addch((UINT) (c));
+	OUTC_RET addch(c);
     } else {
 	OUTC_RET putchar(c);
     }
@@ -328,7 +328,7 @@ set_bkgd_colors(int fg, int bg)
 {
     int pair;
 
-#ifdef HAVE_USE_DEFAULT_COLORS
+#if HAVE_USE_DEFAULT_COLORS
     /*
      * ncurses supports the use of default colors, which we can specify
      * in the init_pair() function at the expense of specifying all of the
@@ -403,7 +403,7 @@ curs_attr(UINT attr)
 	if (attr & VACOLOR) {
 	    fg = VCOLORNUM(attr);
 	    bg = gbcolor;
-#ifdef HAVE_USE_DEFAULT_COLORS
+#if HAVE_USE_DEFAULT_COLORS
 	    if (is_default(bg)) {
 		pair = fg * COLORS;
 		init_pair(pair, fg, -1);

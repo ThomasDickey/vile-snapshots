@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.113 2003/06/18 21:38:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.107 2002/05/14 00:16:12 tom Exp $
  *
  */
 
@@ -38,18 +38,18 @@
 
 #define isDotname(leaf) (!strcmp(leaf, ".") || !strcmp(leaf, ".."))
 
-#if defined(MISSING_EXTERN_ENVIRON) || (defined(__DJGPP__) && __DJGPP__ >= 2)
+#if (MISSING_EXTERN_ENVIRON || __DJGPP__ >= 2)
 extern char **environ;
 #endif
 
 #define	SLASH (EOS+1)		/* less than everything but EOS */
 
 #if OPT_VMS_PATH
-#define	KBD_FLAGS	KBD_NORMAL|KBD_UPPERC
+#define	KBD_OPTIONS	KBD_NORMAL|KBD_UPPERC
 #endif
 
-#ifndef	KBD_FLAGS
-#define	KBD_FLAGS	KBD_NORMAL
+#ifndef	KBD_OPTIONS
+#define	KBD_OPTIONS	KBD_NORMAL
 #endif
 
 #ifndef FoundDirectory
@@ -164,17 +164,9 @@ makeString(BUFFER *bp, LINE *lp, char *text, size_t len)
     LINE *np;
     int extra = (len != 0 && is_slashc(text[len - 1])) ? 2 : 3;
 
-    beginDisplay();
     if ((np = lalloc((int) len + extra, bp)) == NULL) {
 	lp = 0;
     } else {
-#if !OPT_MSDOS_PATH
-	/*
-	 * If we are NOT processing MSDOS pathnames, we may have literal
-	 * backslashes in the pathnames.  Escape those by doubling them.
-	 */
-	text = add_backslashes(text);
-#endif
 	(void) strcpy(np->l_text, text);
 	np->l_text[len + extra - 1] = 0;	/* clear scan indicator */
 	llength(np) -= extra;	/* hide the null and scan indicator */
@@ -185,7 +177,6 @@ makeString(BUFFER *bp, LINE *lp, char *text, size_t len)
 	set_lforw(np, lp);
 	lp = np;
     }
-    endofDisplay();
     return lp;
 }
 
@@ -516,33 +507,35 @@ sortMyBuff(BUFFER *bp)
     LINE **slp;
 
     b_clr_counted(bp);
-    if ((n = vl_line_count(bp)) > 0) {
-	beginDisplay();
-	if ((sortvec = typecallocn(LINE *, (size_t) n)) != NULL) {
-	    slp = sortvec;
-	    for_each_line(lp, bp) {
-		*slp++ = lp;
-	    }
-	    qsort((char *) sortvec, (size_t) n, sizeof(LINE *), qs_pathcmp);
+    n = vl_line_count(bp);
+    if (n <= 0)
+	return;			/* Nothing to sort */
 
-	    plp = buf_head(bp);
-	    slp = sortvec;
-	    while (n-- > 0) {
-		lp = *slp++;
-		set_lforw(plp, lp);
-		set_lback(lp, plp);
-		plp = lp;
-	    }
-	    lp = buf_head(bp);
-	    set_lforw(plp, lp);
-	    set_lback(lp, plp);
-	    remove_duplicates(bp);
-	    b_clr_counted(bp);
+    sortvec = typecallocn(LINE *, (size_t)n);
+    if (sortvec == NULL)
+	return;			/* Can't sort it .. have to get by unsorted */
 
-	    free(sortvec);
-	}
-	endofDisplay();
+    slp = sortvec;
+    for_each_line(lp, bp) {
+	*slp++ = lp;
     }
+    qsort((char *) sortvec, (size_t) n, sizeof(LINE *), qs_pathcmp);
+
+    plp = buf_head(bp);
+    slp = sortvec;
+    while (n-- > 0) {
+	lp = *slp++;
+	set_lforw(plp, lp);
+	set_lback(lp, plp);
+	plp = lp;
+    }
+    lp = buf_head(bp);
+    set_lforw(plp, lp);
+    set_lback(lp, plp);
+    remove_duplicates(bp);
+    b_clr_counted(bp);
+
+    free((char *) sortvec);
 }
 #endif /* USE_QSORT */
 
@@ -827,7 +820,6 @@ makeMyList(BUFFER *bp, char *name)
     char *slashocc;
     int len = strlen(name);
 
-    beginDisplay();
     if (is_slashc(name[len - 1]))
 	len++;
 
@@ -851,18 +843,15 @@ makeMyList(BUFFER *bp, char *name)
 	    bp->b_index_list[n++] = lp->l_text;
     }
     bp->b_index_list[n] = 0;
-    endofDisplay();
 }
 
 #if NO_LEAKS
 static void
 freeMyList(BUFFER *bp)
 {
-    if (valid_buffer(bp)) {
-	beginDisplay();
+    if (bp != 0) {
 	FreeAndNull(bp->b_index_list);
 	bp->b_index_size = 0;
-	endofDisplay();
     }
 }
 
@@ -902,7 +891,7 @@ init_filec(const char *buffer_name)
  * return it would be too slow.
  */
 int
-path_completion(DONE_ARGS)
+path_completion(int c, char *buf, unsigned *pos)
 {
     int code = FALSE;
     int action = (c == NAMEC || c == TESTC);
@@ -912,9 +901,8 @@ path_completion(DONE_ARGS)
     int count;
 #endif
 
-    TRACE(("path_completion(%#x '%c' %d:\"%s\")\n",
-	   flags, c, *pos, visible_buff(buf, (int) *pos, TRUE)));
-    (void) flags;
+    TRACE(("path_completion('%c' %d:\"%s\")\n",
+	   c, *pos, visible_buff(buf, (int) *pos, TRUE)));
 #if OPT_VMS_PATH
     if (ignore && action) {	/* resolve scratch-name conflict */
 	if (is_vms_pathname(buf, -TRUE))
@@ -1177,7 +1165,7 @@ mlreply_file(const char *prompt, TBUFF ** buffer, UINT flag, char *result)
     static TBUFF *last;
     char Reply[NFILEN];
     int (*complete) (DONE_ARGS) = no_completion;
-    int had_fname = (valid_buffer(curbp)
+    int had_fname = (curbp != 0
 		     && curbp->b_fname != 0
 		     && curbp->b_fname[0] != EOS);
     int do_prompt = (clexec || isnamedcmd || (flag & FILEC_PROMPT));
@@ -1211,7 +1199,7 @@ mlreply_file(const char *prompt, TBUFF ** buffer, UINT flag, char *result)
 	    *Reply = EOS;
 
 	status = kbd_string(prompt, Reply, sizeof(Reply),
-			    '\n', KBD_FLAGS | KBD_MAYBEC, complete);
+			    '\n', KBD_OPTIONS | KBD_MAYBEC, complete);
 	freeMyList(MyBuff);
 
 	if (status == ABORT)
@@ -1232,7 +1220,7 @@ mlreply_file(const char *prompt, TBUFF ** buffer, UINT flag, char *result)
 	     * prompting.  Read the rest of the text into Reply.
 	     */
 	    status = kbd_string(prompt, Reply, sizeof(Reply),
-				'\n', KBD_FLAGS | KBD_MAYBEC, complete);
+				'\n', KBD_OPTIONS | KBD_MAYBEC, complete);
 	}
 	/*
 	 * Not everyone expects to be able to write files whose names
@@ -1324,7 +1312,7 @@ mlreply_dir(const char *prompt, TBUFF ** buffer, char *result)
 
 	only_dir = TRUE;
 	status = kbd_string(prompt, Reply, sizeof(Reply), '\n',
-			    KBD_FLAGS | KBD_MAYBEC, complete);
+			    KBD_OPTIONS | KBD_MAYBEC, complete);
 	freeMyList(MyBuff);
 	only_dir = FALSE;
 	if (status != TRUE)

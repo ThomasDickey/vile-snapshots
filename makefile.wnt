@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.76 2002/10/16 23:34:29 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.74 2002/06/30 21:15:30 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -14,7 +14,6 @@
 #	LEX - name of flex/lex program, if any (needed to make most filters).
 #	OPT - secondary configuration (extra features)
 #	ICON - winvile's icon
-#	TRACE - nonempty to suppress tracing when building a debug-executable.
 #	PROGNAME - vile/winvile $progname value
 ###############################################################################
 
@@ -84,12 +83,9 @@ THE_PERLCFG  = perl_env.inc
 !ENDIF
 
 !IF  "$(DBG)" != ""
-MY_CCOPT = $(cdebug) -DVILE_ERROR_ABORT
-MY_LDOPT = $(ldebug)
-!IF "$(TRACE)" == ""
 DBGOBJS  = trace.obj
-MY_CCOPT = $(MY_CCOPT) -DOPT_TRACE
-!ENDIF
+MY_CCOPT = $(cdebug) -DOPT_TRACE
+MY_LDOPT = $(ldebug)
 !else
 MY_LDOPT = -pdb:none
 !endif
@@ -334,8 +330,7 @@ SCRIPTS	= \
 	macros\search.rc \
 	macros\shifts.rc \
 	macros\vileinit.rc \
-	macros\vileperl.rc \
-	macros\which.rc
+	macros\vileperl.rc
 
 !if "$(VILE_STARTUP_PATH)" == ""
 all ::
