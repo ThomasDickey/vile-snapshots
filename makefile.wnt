@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.49 1999/09/12 20:50:16 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.50 1999/09/21 01:20:06 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -88,7 +88,7 @@ CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
            -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(DBGOPTS)
 LDFLAGS  = -nologo /subsystem:windows /incremental:no -pdb:none
 SCREEN   = ntwinio
-LIBS     = $(LD_DEBUG) $(guilflags) $(guilibsmt) $(VILE_PERL_LIB) $(OLELIBS)
+LIBS     = $(LD_DEBUG) $(guilflags) $(guilibsmt) $(VILE_PERL_LIB) $(OLELIBS) shell32.lib
 EXTRA    = winvile.res
 !endif
 

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.421 1999/09/14 00:18:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.423 1999/09/19 19:51:36 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -414,7 +414,7 @@
 
   /* NOTE:  OPT_ICURSOR is _only_ supported by borland.c for a PC build
      and ntconio.c for a win32 build!! */
-#define OPT_TITLE	(SYS_WINNT)		/* use a window title */
+#define OPT_TITLE	(SYS_WINNT | SYS_UNIX)	/* use a window title */
 
 /* the "working..." message -- we must have the alarm() syscall, and
    system calls must be restartable after an interrupt by default or be
@@ -1695,6 +1695,7 @@ typedef struct	{
 #if OPT_COLOR
 #define gfcolor global_g_val(GVAL_FCOLOR)
 #define gbcolor global_g_val(GVAL_BCOLOR)
+#define gccolor global_g_val(GVAL_CCOLOR)
 #else
 #define gfcolor C_WHITE
 #define gbcolor C_BLACK
@@ -2091,10 +2092,11 @@ typedef struct	{
 	void	(*setfore) (int f);	/* set foreground color		*/
 	void	(*setback) (int b);	/* set background color		*/
 	void	(*setpal) (const char *p); /* set color palette	*/
+	void	(*setccol) (int c);	/* set cursor color		*/
 	void	(*scroll) (int from, int to, int n); /* scroll region	*/
 	void	(*pflush) (void);	/* really flush 		*/
 	void	(*icursor) (int c);	/* set cursor shape for insertion */
-	void	(*title) (char *t);	/* set window title		*/
+	void	(*set_title) (const char *t); /* set window title	*/
 	int	(*watchfd)(int, WATCHTYPE, long *);
 					/* Watch a file descriptor for
 					   input; execute associated

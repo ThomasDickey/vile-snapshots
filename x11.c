@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.224 1999/09/13 23:40:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.229 1999/09/19 20:42:18 tom Exp $
  *
  */
 
@@ -443,8 +443,13 @@ static	void	x_open   (void),
 		x_rev    ( UINT state );
 
 #if OPT_COLOR
-static	void	x_fcol   ( int color ),
-		x_bcol   ( int color );
+static	void	x_fcol   ( int color );
+static	void	x_bcol   ( int color );
+static	void	x_ccol   ( int color );
+#else
+#define	x_fcol	nullterm_setfore
+#define	x_bcol	nullterm_setback
+#define	x_ccol	nullterm_setccol
 #endif
 
 static	void	x_setpal(const char *s);
@@ -541,18 +546,18 @@ TERM	    term = {
     x_beep,
     x_rev,
     nullterm_setdescrip,
-#if OPT_COLOR
     x_fcol,
     x_bcol,
-#else
-    nullterm_setfore,
-    nullterm_setback,
-#endif
     x_setpal,
+    x_ccol,
     x_scroll,
     x_flush,
     nullterm_icursor,
+#if OPT_TITLE
+    x_set_window_name,
+#else
     nullterm_settitle,
+#endif
     x_watchfd,
     x_unwatchfd,
     nullterm_cursorvis,
@@ -2561,7 +2566,9 @@ x_preparse_args(
 	NULL
     };
 #endif /* OPT_KEV_DRAGGING */
+#if OPT_XAW_SCROLLBARS
     static char solid_pixmap_bits[] = { '\003', '\003' };
+#endif
     static char stippled_pixmap_bits[] = { '\002', '\001' };
 #endif /* MOTIF_WIDGETS || OL_WIDGETS */
 
@@ -3021,16 +3028,13 @@ x_preparse_args(
     }
     else {
 	cur_win->is_color_cursor = TRUE;
-	gcvals.foreground = cur_win->cursor_fg;
-	gcvals.background = cur_win->cursor_bg;
 	cur_win->cursgc = XCreateGC(dpy,
 		DefaultRootWindow(dpy),
 		gcmask, &gcvals);
-	gcvals.foreground = cur_win->cursor_bg;
-	gcvals.background = cur_win->cursor_fg;
 	cur_win->revcursgc = XCreateGC(dpy,
 		DefaultRootWindow(dpy),
 		gcmask, &gcvals);
+	x_ccol(-1);
     }
 
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
@@ -4138,10 +4142,10 @@ x_flush(void)
     }
 
     /* sometimes we're the last to know about resizing...*/
-    if (cur_win->rows > term.maxrows)
+    if ((int) cur_win->rows > term.maxrows)
 	cur_win->rows = term.maxrows;
 
-    for (r = 0; r < cur_win->rows; r++) {
+    for (r = 0; r < (int) cur_win->rows; r++) {
 	if (!IS_DIRTY_LINE(r))
 	    continue;
 	if (r !=  ttrow)
@@ -4904,7 +4908,7 @@ multi_click(
 		do {
 			++nc;
 			++p;
-		} while (nc < tw->cols && charClass[*p] == cclass);
+		} while (nc < (int) tw->cols && charClass[*p] == cclass);
 		--nc;
 
 		if (setcursor(nr,sc)) {
@@ -5132,7 +5136,7 @@ x_process_event(
 
 	if (nc < 0)
 	    nc = 0;
-	else if (nc >= cur_win->cols)
+	else if (nc >= (int) cur_win->cols)
 	    nc = cur_win->cols-1;
 
 	/* ignore any spurious motion during a multi-cick */
@@ -5366,7 +5370,8 @@ x_configure_window(
 	return;
     }
 
-    if (nc != cur_win->cols || nr != cur_win->rows) {
+    if (nc != (int) cur_win->cols
+     || nr != (int) cur_win->rows) {
 	newscreensize(nr,nc);
 	cur_win->rows = nr;
 	cur_win->cols = nc;
@@ -6057,6 +6062,7 @@ x_key_press(
 	{XK_End,     KEY_End},
 	/* editing */
 	{XK_Insert,  KEY_Insert},
+	{XK_Delete,  KEY_Delete},
 	{XK_Find,    KEY_Find},
 	{XK_Select,  KEY_Select},
 	/* command keys */
@@ -6104,7 +6110,19 @@ x_key_press(
 	{XK_KP_F1,   KEY_KP_F1},
 	{XK_KP_F2,   KEY_KP_F2},
 	{XK_KP_F3,   KEY_KP_F3},
-	{XK_KP_F4,   KEY_KP_F4}
+	{XK_KP_F4,   KEY_KP_F4},
+#if defined(XK_KP_Up)
+	{XK_KP_Up,      KEY_Up},
+	{XK_KP_Down,    KEY_Down},
+	{XK_KP_Right,   KEY_Right},
+	{XK_KP_Left,    KEY_Left},
+	{XK_KP_Next,    KEY_Next},
+	{XK_KP_Prior,   KEY_Prior},
+	{XK_KP_Home,    KEY_Home},
+	{XK_KP_End,     KEY_End},
+	{XK_KP_Insert,  KEY_Insert},
+	{XK_KP_Delete,  KEY_Delete},
+#endif
     };
 
     if (ev->type != KeyPress)
@@ -6171,7 +6189,7 @@ x_fcol(int color)
     TRACE(("x_fcol(%d)\n", color))
     cur_win->fg = (color >= 0 && color < NCOLORS)
 		    ? cur_win->colors_fg[color]
-		    : cur_win->default_fg,
+		    : cur_win->default_fg;
 
     gcmask = GCForeground;
     gcvals.foreground = cur_win->fg;
@@ -6203,7 +6221,7 @@ x_bcol(int color)
 		    ? ((cur_win->colors_bg[color] == cur_win->default_bg)
 		    	? cur_win->colors_fg[color]
 		    	: cur_win->colors_bg[color])
-		    : cur_win->default_bg,
+		    : cur_win->default_bg;
 
     gcmask = GCBackground;
     gcvals.background = cur_win->bg;
@@ -6223,6 +6241,37 @@ x_bcol(int color)
 
     x_touch(cur_win, 0, 0, cur_win->cols, cur_win->rows);
     x_flush();
+}
+
+static void
+x_ccol(int color)
+{
+    XGCValues   gcvals;
+    ULONG	gcmask;
+    Pixel	fg, bg;
+
+    TRACE(("x_ccol(%d)\n", color))
+
+    fg = (color >= 0 && color < NCOLORS)
+		    ? ((cur_win->colors_bg[color] == cur_win->default_bg)
+		        ? cur_win->colors_bg[color]
+		        : cur_win->colors_fg[color])
+		    : cur_win->cursor_fg;
+
+    bg = (color >= 0 && color < NCOLORS)
+		    ? ((cur_win->colors_bg[color] == cur_win->default_bg)
+		    	? cur_win->colors_fg[color]
+		    	: cur_win->colors_bg[color])
+		    : cur_win->cursor_bg;
+
+    gcmask = GCForeground|GCBackground;
+    gcvals.background = bg;
+    gcvals.foreground = fg;
+    XChangeGC(dpy, cur_win->cursgc, gcmask, &gcvals);
+
+    gcvals.foreground = bg;
+    gcvals.background = fg;
+    XChangeGC(dpy, cur_win->revcursgc, gcmask, &gcvals);
 }
 
 #endif
@@ -6266,8 +6315,11 @@ x11_leaks(void)
 }
 #endif	/* NO_LEAKS */
 
-char x_window_name[NFILEN];
-char x_icon_name[NFILEN];
+#ifdef USE_SET_WM_NAME
+static char x_window_name[NFILEN];
+#endif
+
+static char x_icon_name[NFILEN];
 
 void
 x_set_icon_name(const char *name)
@@ -6293,6 +6345,7 @@ x_get_icon_name(void)
 void
 x_set_window_name(const char *name)
 {
+#ifdef USE_SET_WM_NAME
 	XTextProperty Prop;
 
 	(void)strncpy0(x_window_name, name, NFILEN);
@@ -6303,12 +6356,23 @@ x_set_window_name(const char *name)
 	Prop.nitems = strlen(x_window_name);
 
 	XSetWMName(dpy,XtWindow(cur_win->top_widget),&Prop);
+#else
+	XtVaSetValues(cur_win->top_widget, XtNtitle, name, NULL);
+#endif
 }
 
 char *
 x_get_window_name(void)
 {
+#ifdef USE_SET_WM_NAME
 	return x_window_name;
+#else
+	char *result = "";
+	if (cur_win->top_widget != 0) {
+		XtVaGetValues(cur_win->top_widget, XtNtitle, &result, NULL);
+	}
+	return result;
+#endif
 }
 
 static void

@@ -9,7 +9,7 @@
  * Note: Visual flashes are not yet supported.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.28 1999/05/10 23:41:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.30 1999/09/19 20:09:31 tom Exp $
  *
  */
 
@@ -147,6 +147,7 @@ TERM    term    = {
 	nullterm_setback,
 	nullterm_setpal,
 #endif
+	nullterm_setccol,
 	borscroll,
 	nullterm_pflush,
 #if OPT_ICURSOR
@@ -176,6 +177,8 @@ boricursor(int cmode)
 static void
 borfcol(int color)		/* set the current output color */
 {
+	if (color < 0)
+		color = C_WHITE;
 	cfcolor = ctrans[color];
 	textcolor(cfcolor & 15);
 }
@@ -183,6 +186,8 @@ borfcol(int color)		/* set the current output color */
 static void
 borbcol(int color)		/* set the current background color */
 {
+	if (color < 0)
+		color = C_BLACK;
 	cbcolor = ctrans[color];
 	textbackground(cbcolor & 7);
 }

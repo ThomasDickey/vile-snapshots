@@ -1,17 +1,19 @@
 #
 # VMS makefile for vile.  Requires "MMS"
 #
-# Tested with:
-#	VMS system version 5.4-2
-#	MMS version 2.6
-#	VAX-C version 3.2
-#
 # To change screen driver modules, change SCREEN and SCRDEF below, OR edit
 # estruct.h to make sure the correct one is #defined as "1", and the others
-# all as "0".  If you use tcap.c, you'll need libtermcap.a too.  If you use
-# x11.c, you'll need libX11.a too.
+# all as "0".
 #
-# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.40 1999/04/30 10:31:00 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.41 1999/09/19 18:15:43 cmorgan Exp $
+
+# Editor Configuration Note
+# -------------------------
+# If you elect to build both vile and xvile from the same source
+# directory, be sure to execute this command prior to each build:
+#
+#   $ mms clean
+#
 
 .IFDEF __XVILE__
 

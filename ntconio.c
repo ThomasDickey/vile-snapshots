@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.44 1999/06/03 01:19:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.47 1999/09/20 10:59:06 tom Exp $
  *
  */
 
@@ -47,7 +47,7 @@ static	void	ntscroll	(int, int, int);
 static	void	nticursor	(int);
 #endif
 #if OPT_TITLE
-static	void	nttitle		(char *);
+static	void	nttitle		(const char *);
 #endif
 
 static HANDLE hConsoleOutput;		/* handle to the console display */
@@ -108,6 +108,7 @@ TERM    term    = {
 	nullterm_setback,
 	nullterm_setpal,
 #endif
+	nullterm_setccol,
 	ntscroll,
 	nullterm_pflush,
 #if OPT_ICURSOR
@@ -170,7 +171,7 @@ nticursor(int cmode)
 
 #if OPT_TITLE
 static void
-nttitle(char *title)		/* set the current window title */
+nttitle(const char *title)	/* set the current window title */
 {
 	SetConsoleTitle(title);
 }
@@ -578,24 +579,53 @@ decode_key_event(INPUT_RECORD *irp)
     return key;
 }
 
+#define CLICK 1000
+
 static void
 handle_mouse_event(MOUSE_EVENT_RECORD mer)
 {
+	static DWORD lastclick = 0;
+	static int clicks = 0;
+
 	int buttondown = FALSE;
 	COORD first, current, last;
 	int state;
+	DWORD thisclick;
 
 	for_ever {
+		current = mer.dwMousePosition;
 		switch (mer.dwEventFlags) {
 		case 0:
 			state = mer.dwButtonState;
 			if (state == 0) {
-				if (!buttondown)
-					return;
-				buttondown = FALSE;
-				sel_yank(0);
+				thisclick = GetTickCount();
+				TRACE(("CLICK %d/%d\n", lastclick, thisclick))
+					if (thisclick - lastclick < CLICK) {
+					clicks++;
+					TRACE(("MOUSE CLICKS %d\n", clicks))
+				} else {
+					clicks = 0;
+				}
+				lastclick = thisclick;
+
+				switch (clicks) {
+				case 1:
+					on_double_click();
+					break;
+				case 2:
+					on_triple_click();
+					break;
+				}
+
+				if (buttondown) {
+					buttondown = FALSE;
+					(void)setcursor(current.Y, current.X);
+					sel_yank(0);
+				}
 				return;
 			}
+			if (!setcursor(current.Y, current.X))
+				return;
 			if (state & FROM_LEFT_1ST_BUTTON_PRESSED) {
 				if (buttondown) {
 					if (state & RIGHTMOST_BUTTON_PRESSED) {
@@ -606,19 +636,24 @@ handle_mouse_event(MOUSE_EVENT_RECORD mer)
 					break;
 				}
 				buttondown = TRUE;
-				first = mer.dwMousePosition;
-				if (!setcursor(first.Y, first.X))
+				first = current;
+				if (!setcursor(current.Y, current.X))
 					return;
 				(void)sel_begin();
 				(void)update(TRUE);
-				break;
+			} else if (state & (FROM_LEFT_2ND_BUTTON_PRESSED
+					   |RIGHTMOST_BUTTON_PRESSED)) {
+				sel_yank(0);
+				sel_release();
+				paste_selection();
+				(void)update(TRUE);
+				return;
 			}
 			break;
 
 		case MOUSE_MOVED:
 			if (!buttondown)
 				return;
-			current = mer.dwMousePosition;
 			if (!setcursor(current.Y, current.X))
 				break;
 			last = current;

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.179 1999/09/14 01:09:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.180 1999/09/19 19:58:24 tom Exp $
  *
  */
 
@@ -799,6 +799,7 @@ FSM_CHOICES fsm_error[] = {
 #if OPT_COLOR_CHOICES
 static const char s_fcolor[]       = "fcolor";
 static const char s_bcolor[]       = "bcolor";
+static const char s_ccolor[]       = "ccolor";
 #endif
 
 #if OPT_COLOR_SCHEMES
@@ -822,6 +823,7 @@ struct FSM fsm_tbl[] = {
 #if OPT_COLOR_CHOICES
 	{ s_fcolor,          fsm_color_choices },
 	{ s_bcolor,          fsm_color_choices },
+	{ s_ccolor,          fsm_color_choices },
 #endif
 #if OPT_POPUP_CHOICES
 	{ "popup-choices",   fsm_popup_choices },
@@ -1521,6 +1523,8 @@ chgd_color(VALARGS *args, int glob_vals, int testing)
 			term.setfore(gfcolor);
 		else if (&args->local->vp->i == &gbcolor)
 			term.setback(gbcolor);
+		else if (&args->local->vp->i == &gccolor)
+			term.setccol(gccolor);
 		set_winflags(glob_vals, WFHARD|WFCOLR);
 		vile_refresh(FALSE,0);
 	}
@@ -1620,6 +1624,7 @@ int set_colors(int n)
 	}
 	set_fsm_choice(s_fcolor, the_colors);
 	set_fsm_choice(s_bcolor, the_colors);
+	set_fsm_choice(s_ccolor, the_colors);
 	set_fsm_choice("visual-matches", the_hilite);
 	set_fsm_choice("mini-hilite", the_hilite);
 #endif /* OPT_ENUM_MODES */
@@ -2546,9 +2551,9 @@ extend_mode_list(int increment)
 
 	if (my_mode_list == all_modes) {
 		my_mode_list = typeallocn(const char *, k);
-		memcpy((char *)my_mode_list, all_modes, (j+1) * sizeof(*my_mode_list));
+		memcpy(TYPECAST(char *,my_mode_list), all_modes, (j+1) * sizeof(*my_mode_list));
 	} else {
-		my_mode_list = typereallocn(const char *, my_mode_list, k);
+		my_mode_list = typereallocn(const char *, TYPECAST(char *,my_mode_list), k);
 	}
 	return j;
 }
@@ -3060,8 +3065,9 @@ set_majormode_rexp(const char *name, int n, const char *r)
 typedef struct {
 	char *	name;
 	UINT	code;
-	int	fcol;
-	int	bcol;
+	int	fcol;	/* foreground color */
+	int	bcol;	/* background color */
+	int	ccol;	/* cursor color */
 	int	attr;	/* bold, reverse, underline, etc. */
 	char *	list;
 } PALETTES;
@@ -3176,6 +3182,7 @@ set_current_scheme(PALETTES *p)
 
 	if (p->fcol != q->fcol
 	 || p->bcol != q->bcol
+	 || p->ccol != q->ccol
 	 || p->attr != q->attr
 	 || !same_string(p->list, q->list)) {
 
@@ -3187,6 +3194,9 @@ set_current_scheme(PALETTES *p)
 
 		set_global_g_val(GVAL_BCOLOR,p->bcol);
 		term.setback(gbcolor);
+
+		set_global_g_val(GVAL_CCOLOR,p->ccol);
+		term.setback(gccolor);
 
 		set_global_g_val(GVAL_VIDEO,p->attr);
 
@@ -3253,6 +3263,7 @@ alloc_scheme(const char *name)
 		my_schemes[len].code = code++;	/* unique identifier */
 		my_schemes[len].fcol = -1;
 		my_schemes[len].bcol = -1;
+		my_schemes[len].ccol = -1;
 		my_schemes[len].attr = 0;
 		my_schemes[len].list = 0;
 		result = &my_schemes[len];
@@ -3297,6 +3308,7 @@ prompt_scheme_name(char **result, int defining)
 /* this table must be sorted, since we do name-completion on it */
 static const struct VALNAMES scheme_values[] = {
 	{ s_bcolor,      s_bcolor,        VALTYPE_ENUM,     0 },
+	{ s_ccolor,      s_ccolor,        VALTYPE_ENUM,     0 },
 	{ s_fcolor,      s_fcolor,        VALTYPE_ENUM,     0 },
 	{ s_palette,     s_palette,       VALTYPE_STRING,   0 },
 	{ "use",         "use",           VALTYPE_ENUM,     0 },
@@ -3357,6 +3369,8 @@ prompt_scheme_value(PALETTES *p)
 				status = set_scheme_color(fp, &(p->attr), respbuf);
 			} else if (*name == *s_bcolor) {
 				status = set_scheme_color(fp, &(p->bcol), respbuf);
+			} else if (*name == *s_ccolor) {
+				status = set_scheme_color(fp, &(p->ccol), respbuf);
 			} else if (*name == *s_fcolor) {
 				status = set_scheme_color(fp, &(p->fcol), respbuf);
 			} else if (*name == *s_palette) {
@@ -3366,6 +3380,7 @@ prompt_scheme_value(PALETTES *p)
 			 && (q = find_scheme(respbuf)) != 0) {
 				p->fcol = q->fcol;
 				p->bcol = q->bcol;
+				p->ccol = q->ccol;
 				p->attr = q->attr;
 				if (p->list)
 					FreeAndNull(p->list);
@@ -3399,6 +3414,7 @@ init_scheme(void)
 
 	p->fcol = gfcolor;
 	p->bcol = gbcolor;
+	p->ccol = gccolor;
 	if (list != 0)
 		p->list = strmalloc(list);
 }
@@ -3455,6 +3471,7 @@ makeschemelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 		bprintf("\n\n%s", p->name);
 		bprintf(fmt, s_fcolor, get_color_name(p->fcol));
 		bprintf(fmt, s_bcolor, get_color_name(p->bcol));
+		bprintf(fmt, s_ccolor, get_color_name(p->ccol));
 		bprintf(fmt, s_video_attrs,
 			choice_to_name(fsm_videoattrs_choices, p->attr));
 		if (p->list != 0)

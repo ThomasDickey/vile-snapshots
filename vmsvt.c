@@ -14,7 +14,7 @@
  *   -- support wide and narrow screen resolutions,
  *   -- support visual bells.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.50 1999/05/10 23:41:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.51 1999/09/19 19:42:28 tom Exp $
  *
  */
 
@@ -112,6 +112,7 @@ TERM	term	= {
 	nullterm_setfore,		/* N/A: Set foreground color	*/
 	nullterm_setback,		/* N/A: Set background color	*/
 	nullterm_setpal,		/* N/A: Set palette colors	*/
+	nullterm_setccol,
 	nullterm_scroll,		/* set at init-time		*/
 	nullterm_pflush,
 	nullterm_icursor,

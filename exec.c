@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.204 1999/09/10 22:04:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.205 1999/09/21 00:47:05 tom Exp $
  *
  */
 
@@ -1135,7 +1135,7 @@ decode_parameter_info(TBUFF *tok, PARAM_INFO *result)
 	if ((s = strchr(name, ':')) != 0)
 	    *s++ = EOS;
 
-	result->pi_type = (PARAM_TYPES) choice_to_code(fsm_paramtypes_choices,
+	result->pi_type = choice_to_code(fsm_paramtypes_choices,
 					 name, strlen(name));
 	if (result->pi_type != PT_UNKNOWN) {
 	    result->pi_text = *text ? strmalloc(text) : 0;
@@ -1528,8 +1528,7 @@ dname_to_dirnum(const char *cmdp, size_t length)
 			if (!isAlnum(cmdp[n]))
 				length = n;
 		}
-		dirnum = (DIRECTIVE) choice_to_code(fsm_directive_choices,
-						cmdp, length);
+		dirnum = choice_to_code(fsm_directive_choices, cmdp, length);
 	}
 
 	return dirnum;
