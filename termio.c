@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.174 1999/10/03 18:18:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.175 1999/10/17 23:42:28 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -689,29 +689,29 @@ tttypahead(void)
 	return x_typahead(0);
 #else
 
-# if	USE_FIONREAD
+# if (HAVE_SELECT && HAVE_TYPE_FD_SET) || (HAVE_POLL && HAVE_POLL_H) || defined(__BEOS__)
+	/* use the watchinput part of catnap if it's useful */
+	return catnap(0, TRUE);
+# else
+#  if	USE_FIONREAD
 	{
 	long x;
 	return((ioctl(0,FIONREAD,(caddr_t)&x) < 0) ? 0 : (int)x);
 	}
-# else
-#  if	USE_FCNTL
+#  else
+#   if	USE_FCNTL
 	if ( ! kbd_char_good ) {
 		set_kbd_polling(TRUE);
 		if (read( 0, &kbd_char, 1 ) == 1)
 			kbd_char_good = TRUE;
 	}
 	return ( kbd_char_good );
-#  else
-#   if (HAVE_SELECT && HAVE_TYPE_FD_SET) || (HAVE_POLL && HAVE_POLL_H) || defined(__BEOS__)
-	 /* use the watchinput part of catnap if it's useful */
-	 return catnap(10, TRUE);
 #   else
 	 /* otherwise give up */
-	 return FALSE;
-#   endif
-#  endif/* USE_FCNTL */
-# endif/* USE_FIONREAD */
+	return FALSE;
+#   endif/* USE_FCNTL */
+#  endif/* USE_FIONREAD */
+# endif /* using catnap */
 #endif	/* DISP_X11 */
 }
 

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.425 1999/10/10 21:59:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.426 1999/10/19 00:05:47 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1679,6 +1679,7 @@ typedef struct	{
 #if OPT_CACHE_VCOL
 	MARK	w_left_dot;	/* nominal location of left-side of screen */
 	int	w_left_col;	/* ...corresponding effective column */
+	int	w_list_opt;	/* ...and list-mode setting */
 #endif
 } W_TRAITS;
 

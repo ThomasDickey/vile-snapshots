@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.305 1999/10/01 11:03:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.308 1999/10/19 10:54:57 tom Exp $
  *
  */
 
@@ -840,9 +840,11 @@ dot_to_vcol(WINDOW *wp)
 			: 0;
 	int use_off	= w_left_margin(wp);
 
-	if (wt->w_left_dot.l != wp->w_dot.l) {
+	if (wt->w_left_dot.l != wp->w_dot.l
+	 || wt->w_list_opt != w_val(wp, WMDLIST)) {
 		wt->w_left_dot.l = wp->w_dot.l;
 		wt->w_left_dot.o = 0;
+		wt->w_list_opt = w_val(wp, WMDLIST);
 		need_col = TRUE;
 	}
 
@@ -863,9 +865,16 @@ dot_to_vcol(WINDOW *wp)
 	} else
 #endif
 	if (wt->w_left_col != shift) {
+		int base = nu_width(wp) + w_left_margin(wp) - 1;
+		TRACE(("...change w_left_col from %d to %d, base %d\n",
+			wt->w_left_col, shift, base))
 		wt->w_left_col = shift;
-		wt->w_left_dot.o = col2offs(wp, wt->w_left_dot.l, -1);
-		need_col = FALSE;
+		wt->w_left_dot.o = col2offs(wp, wt->w_left_dot.l, base);
+		if (wt->w_left_dot.o > wp->w_dot.o) {
+			need_col = TRUE; /* dot is inconsistent with shift */
+		} else {
+			need_col = FALSE;
+		}
 	}
 
 	if (need_col) {
@@ -875,6 +884,7 @@ dot_to_vcol(WINDOW *wp)
 						    w_val(wp,WMDLIST),
 						    w_left_margin(wp),
 						    0);
+			TRACE(("...cache w_left_col %d\n", wt->w_left_col))
 		}
 	}
 	result = mk_to_vcol(wp->w_dot,
@@ -883,8 +893,15 @@ dot_to_vcol(WINDOW *wp)
 			wt->w_left_col);
 #if OPT_TRACE
 	check = mk_to_vcol(wp->w_dot, w_val(wp,WMDLIST), w_left_margin(wp), 0);
-	TRACE(("dot_to_vcol result %d (off=%d)\n", result, wp->w_dot.o))
-	TRACE(("-> %s:%s\n", (check != result) ? "OOPS" : "OK", wp->w_bufp->b_bname))
+	TRACE(("dot_to_vcol result %d check %d (off=%d)\n", result, check, wp->w_dot.o))
+	if (check != result) {
+		kbd_alarm();
+		TRACE(("-> OOPS:%s %d vs %d+%d %d\n",
+			wp->w_bufp->b_bname,
+			wp->w_dot.o,
+			wt->w_left_dot.o, use_off,
+			wt->w_left_col))
+	}
 #endif
 	return result;
 #else

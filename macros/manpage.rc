@@ -3,7 +3,7 @@
 ;;
 ;; Author: Kevin Buettner
 ;;
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.7 1999/10/03 20:07:55 tom Exp $
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.8 1999/10/18 10:16:23 tom Exp $
 ;;
 
 store-procedure ShowManpage "Prompt for, and display a manual-page"
@@ -14,7 +14,7 @@ store-procedure ShowManpage "Prompt for, and display a manual-page"
 		~return
 	~endif
 	set-variable %manpage &query "man page? "
-	~if &or &seq %manpage "ERROR" & seq %manpage ""
+	~if &or &seq %manpage "ERROR" &seq %manpage ""
 		~return
 	~endif
 	set-variable %manpagebuf &cat "<" &cat %manpage ">"

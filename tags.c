@@ -5,7 +5,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.101 1999/09/22 21:46:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.102 1999/10/18 00:46:48 enhenderson Exp $
  *
  */
 #include	"estruct.h"
@@ -30,6 +30,7 @@ typedef struct {
 	UNTAG {
 	char *u_fname;
 	L_NUM u_lineno;
+	C_NUM u_colno;
 	UNTAG *u_stklink;
 #if OPT_SHOW_TAGS
 	char	*u_templ;
@@ -46,10 +47,10 @@ typedef struct {
 static	BUFFER *gettagsfile(int n, int *endofpathflagp, int *did_read);
 static	LINE *	cheap_buffer_scan(BUFFER *bp, char *patrn, int dir);
 static	LINE *	cheap_tag_scan(LINEPTR oldlp, char *name, SIZE_T taglen);
-static	int	popuntag(char *fname, L_NUM *linenop);
+static	int	popuntag(char *fname, L_NUM *linenop, C_NUM *colnop);
 static	int	tag_search(char *tag, int taglen, int initial);
 static	void	free_untag(UNTAG *utp);
-static	void	pushuntag(char *fname, L_NUM lineno, char *tag);
+static	void	pushuntag(char *fname, L_NUM lineno, C_NUM colnum, char *tag);
 static	void	tossuntag (void);
 
 static	TAGHITS*tag_hits;
@@ -315,7 +316,7 @@ cmdlinetag(const char *t)
  * Jump back to the given file & line.
  */
 static int
-finish_pop(char *fname, L_NUM lineno)
+finish_pop(char *fname, L_NUM lineno, C_NUM colno)
 {
 	MARK odot;
 	int s;
@@ -327,6 +328,7 @@ finish_pop(char *fname, L_NUM lineno)
 		s = gotoline(TRUE, lineno);
 		/* if we moved, update the "last dot" mark */
 		if (s == TRUE) {
+			gocol(colno);
 			if (!sameline(DOT, odot))
 				curwp->w_flag &= ~WFMOVE;
 			else
@@ -355,6 +357,7 @@ tag_search(char *tag, int taglen, int initial)
 	char tfname[NFILEN];
 	int flag;
 	L_NUM lineno;
+	C_NUM colno;
 	int changedfile;
 	MARK odot;
 	BUFFER *tagbp;
@@ -447,10 +450,11 @@ tag_search(char *tag, int taglen, int initial)
 
 	if (curbp && curwp) {
 		lineno = line_no(curbp, DOT.l);
+		colno = getccol(FALSE);
 		if (!isInternalName(curbp->b_fname))
-			pushuntag(curbp->b_fname, lineno, tag);
+			pushuntag(curbp->b_fname, lineno, colno, tag);
 		else
-			pushuntag(curbp->b_bname, lineno, tag);
+			pushuntag(curbp->b_bname, lineno, colno, tag);
 	}
 
 	if (curbp == NULL
@@ -533,8 +537,8 @@ tag_search(char *tag, int taglen, int initial)
 	if (status == TRUE) {
 		int s;
 		if ((s = mark_tag_hit(tagbp->b_dot.l, DOT.l)) != FALSE) {
-			if (popuntag(tfname, &lineno)) {
-				(void) finish_pop(tfname, lineno);
+			if (popuntag(tfname, &lineno, &colno)) {
+				(void) finish_pop(tfname, lineno, colno);
 			}
 			return s;
 		}
@@ -756,14 +760,15 @@ int
 untagpop(int f, int n)
 {
 	L_NUM lineno;
+	C_NUM colno;
 	char fname[NFILEN];
 	int s;
 
 	if (!f) n = 1;
-	while (n && popuntag(fname,&lineno))
+	while (n && popuntag(fname,&lineno,&colno))
 		n--;
 	if (lineno && fname[0]) {
-		s = finish_pop(fname, lineno);
+		s = finish_pop(fname, lineno, colno);
 	} else {
 		mlwarn("[No stacked un-tags]");
 		s = FALSE;
@@ -785,7 +790,7 @@ free_untag(UNTAG *utp)
 
 /*ARGSUSED*/
 static void
-pushuntag(char *fname, L_NUM lineno, char *tag)
+pushuntag(char *fname, L_NUM lineno, C_NUM colno, char *tag)
 {
 	UNTAG *utp;
 	utp = typealloc(UNTAG);
@@ -805,6 +810,7 @@ pushuntag(char *fname, L_NUM lineno, char *tag)
 #endif
 
 	utp->u_lineno = lineno;
+	utp->u_colno = colno;
 	utp->u_stklink = untaghead;
 	untaghead = utp;
 	update_scratch(TAGSTACK_BufName, update_tagstack);
@@ -812,7 +818,7 @@ pushuntag(char *fname, L_NUM lineno, char *tag)
 
 
 static int
-popuntag(char *fname, L_NUM *linenop)
+popuntag(char *fname, L_NUM *linenop, C_NUM *colnop)
 {
 	register UNTAG *utp;
 
@@ -821,6 +827,7 @@ popuntag(char *fname, L_NUM *linenop)
 		untaghead = utp->u_stklink;
 		(void)strcpy(fname, utp->u_fname);
 		*linenop = utp->u_lineno;
+		*colnop = utp->u_colno;
 		free_untag(utp);
 		update_scratch(TAGSTACK_BufName, update_tagstack);
 		return TRUE;
@@ -901,10 +908,11 @@ showtagstack(int f, int n GCC_UNUSED)
 void tags_leaks (void)
 {
 	L_NUM lineno;
+	C_NUM colno;
 	char fname[NFILEN];
 
 	free_tag_hits();
-	while (popuntag(fname, &lineno))
+	while (popuntag(fname, &lineno, &colno))
 		;
 #if OPT_TAGS_CMPL
 	btree_freeup(&tags_tree);
