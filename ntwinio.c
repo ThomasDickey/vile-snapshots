@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.11 1998/07/08 01:42:57 Chris.Sherman Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.12 1998/07/09 09:34:47 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -1404,12 +1404,12 @@ WinMain(
 			int value = strtol(src, &dst, 0);
 			if (dst != src) {
 				if (value > 2)
-					term.t_nrow = value;
+					term.t_ncol = value;
 				if (*dst++ == 'x') {
 					src = dst;
 					value = strtol(src, &dst, 0);
 					if (value > 2)
-						term.t_ncol = value;
+						term.t_nrow = value;
 				}
 				eat = 2;
 			}

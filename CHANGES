@@ -1,5 +1,19 @@
 Changes for vile 8.1 (released ??? ??? ??, 1998)
 
+ (tom) 980710 (e)
+ 	+ correct recompilation of [Error Expressions], by adding a check if
+	  the buffer is marked as changed, or if the number of lines in it
+	  has changed.  If [Error Expressions] was popped up to view its
+	  contents, that worked, but otherwise (e.g., in .vilerc), it did not
+	  trigger the recompile (reported by Brian Moore).
+ 	+ change winvile -geometry parameter to COLSxROWS, for consistency with
+	  X Window applications (e.g., xterm), and documented in vile.hlp.
+ 	+ correct parsing of line-specification when a leading ',' is used,
+	  e.g., ":,$d" (reported by hymie! <hymie@lactose.smart.net>).
+	+ documentation updates (patch by Clark Morgan).
+	+ modify logic in tags.c so that tags completion works when some of the
+	  tags files are missing (patch by Clark Morgan).
+
  (tom) 980708 (d)
 	+ correct offset for ending null in kbd_string(), which was beyond
 	  buffer limit - bug from 7.3f (patch by Chris Sherman

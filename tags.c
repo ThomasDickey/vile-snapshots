@@ -4,7 +4,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.90 1998/07/01 23:34:51 Larry.Gensch Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.91 1998/07/09 10:01:04 cmorgan Exp $
  *
  */
 #include	"estruct.h"
@@ -150,6 +150,8 @@ init_tags_cmpl (char *buf, unsigned cpos)
 	if (!obsolete) {
 		for (tf_num = 0; ; tf_num++) {
 			bp = gettagsfile(tf_num, &done, &flag);
+			if (!done && bp == 0)
+				continue;     /* More tag files to examine */
 			if (done || bp == 0)
 				break;
 			(void)bsizes(bp);
@@ -164,6 +166,8 @@ init_tags_cmpl (char *buf, unsigned cpos)
 
 		for (tf_num = 0; ; tf_num++) {
 			bp = gettagsfile(tf_num, &done, &flag);
+			if (!done && bp == 0)
+				continue;     /* More tag files to examine */
 			if (done || bp == 0)
 				break;
 			for_each_line(lp,bp)

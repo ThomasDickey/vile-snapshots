@@ -13,7 +13,7 @@
  *    Subsequent copies do not show this cursor.  On an NT 4.0 host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.5 1998/07/04 01:01:25 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.6 1998/07/09 23:59:38 tom Exp $
  */
 
 #include <windows.h>
@@ -355,7 +355,7 @@ map_and_insert(unsigned c,       /* ANSI char to insert   */
                unsigned *nbyte   /* total #chars inserted */
                )
 {
-    int  rc, tmp;
+    int  rc;
     MAP  key, *rslt_p;
     char *str;
 
