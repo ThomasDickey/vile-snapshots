@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.7 2000/06/09 01:13:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.8 2000/07/11 01:02:47 tom Exp $
  *
  */
 
@@ -77,6 +77,8 @@ void
 flt_putc(int ch)
 {
     fputc(ch, my_out);
+    if (ch == CTL_A)
+	fputc('?', my_out);
 }
 
 void
@@ -85,7 +87,8 @@ flt_puts(char *string, int length, char *marker)
     if (length > 0) {
 	if (marker != 0 && *marker != 0 && *marker != 'N')
 	    fprintf(my_out, "%c%i%s:", CTL_A, length, marker);
-	fprintf(my_out, "%.*s", length, string);
+	while (length-- > 0)
+	    flt_putc(*string++);
     }
 }
 

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.201 2000/06/17 11:20:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.202 2000/07/10 23:52:00 tom Exp $
  *
  */
 
@@ -3361,6 +3361,18 @@ chgd_mm_order(VALARGS *args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing GC
 		compute_majormodes_order();
 		relist_majormodes();
 	}
+	return TRUE;
+}
+
+/*ARGSUSED*/
+int
+reset_majormode(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+	if (curbp->majr != 0)
+		(void) detach_mmode(curbp, curbp->majr->name);
+	setm_by_suffix(curbp);
+	setm_by_preamble(curbp);
+	set_winflags(TRUE, WFMODE);
 	return TRUE;
 }
 #endif /* OPT_MAJORMODE */

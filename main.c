@@ -22,10 +22,14 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.429 2000/06/08 23:18:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.430 2000/07/10 02:50:34 cmorgan Exp $
  */
 
 #define realdef /* Make global definitions not external */
+
+#ifdef _WIN32
+# include	<windows.h>
+#endif
 
 #include	"estruct.h"	/* global structures and defines */
 #include	"edef.h"	/* global declarations */
@@ -101,6 +105,9 @@ MainProgram(int argc, char *argv[])
 #if OPT_TAGS
 	int didtag = FALSE;		/* look up a tag to start? */
 	char *tname = NULL;
+#endif
+#ifdef DISP_NTCONS
+	int new_console = FALSE;
 #endif
 #if	OPT_ENCRYPT
 	char startkey[NKEYLEN];		/* initial encryption key */
@@ -234,6 +241,23 @@ MainProgram(int argc, char *argv[])
 					print_usage();
 				break;
 #endif /* DISP_X11 */
+#if DISP_NTCONS
+			case 'c':
+				if (strcmp(param, "console") == 0) {
+				    /* 
+				     * start editor in a new console env if
+				     * stdin is redirected.  if this option
+				     * is not set when stdin is redirected,
+				     * console vile's mouse features are
+				     * unavailable (bug).
+				     */
+
+				    new_console = TRUE;
+				}
+				else
+					print_usage();
+				break;
+#endif /* DISP_NTCONS */
 			case 'e':	/* -e for Edit file */
 			case 'E':
 				set_global_b_val(MDVIEW,FALSE);
@@ -408,6 +432,19 @@ MainProgram(int argc, char *argv[])
 #else
 # if SYS_WINNT
 #  if DISP_NTCONS
+		if (new_console) {
+		    if (FreeConsole()) {
+			if (! AllocConsole()) {
+			    fputs("unable to allocate new console\n", stderr);
+			    tidy_exit(BADEXIT);
+			}
+		    }
+		    else {
+			fputs("unable to release existing console\n", stderr);
+			tidy_exit(BADEXIT);
+		    }
+		}
+
 		/*
 		 * The editor must reopen the console, not fd 0.  If the console
 		 * is not reopened, the nt console I/O routines die immediately

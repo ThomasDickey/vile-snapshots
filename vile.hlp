@@ -4505,8 +4505,8 @@ Win32 specifics
 	cannot be changed using explicit -43, -50, etc. command-line
 	switches or via the sres command.
 
-	Winvile Command-Line Switches
-	-----------------------------
+	GUI Command-Line Switches
+	-------------------------
 	Winvile accepts these command-line options in addition to the
 	standard ones:
 
@@ -4519,6 +4519,18 @@ Win32 specifics
 
 	-fn       <fontspec>   Initial font (or -font).  The "Winvile Font"
 				 section below describes <fontspec> syntax.
+
+	Console Command-Line Switches
+	-----------------------------
+	Vile accepts these additional command-line options:
+
+	-console               Start editor in a new console environment if
+				 stdin is redirected (i.e., input is taken
+				 from a redirected file or from a pipe). 
+				 If this option is not set when stdin is
+				 redirected, console mouse features are
+				 unavailable (this problem is most often
+				 encountered on a Windows NT host).
 
 	Pipes
 	-----
@@ -4534,6 +4546,13 @@ Win32 specifics
 	similar to those described above (e.g., Thompson Toolkit Shell),
 	vile may be forced to use native Win32 pipes by setting the global
 	mode "w32pipes" (e.g., "se w32pipes").
+
+	Paths
+	-----
+	vile recognizes either DOS- or UNIX-style pathnames and '~' is
+	supported as a shortcut for $HOME (e.g., :e ~/vile.rc).
+
+	CDPATH directory lists are delimited with a semicolon.
 
 	Shell
 	-----
@@ -5038,4 +5057,4 @@ Problems
 
 Copyright 1995-2000 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.491 2000/06/27 11:10:07 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.492 2000/07/10 02:50:34 cmorgan Exp $

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.427 2000/06/08 23:19:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.428 2000/07/10 02:54:15 cmorgan Exp $
  *
  */
 
@@ -1014,8 +1014,10 @@ extern void dumpuline (LINEPTR lp);
 extern void freeundostacks (BUFFER *bp, int both);
 extern void mayneedundo (void);
 extern void nounmodifiable (BUFFER *bp);
+extern int  redo_ok(void);
 extern void tag_for_undo (LINEPTR lp);
 extern void toss_to_undo (LINEPTR lp);
+extern int  undo_ok(void);
 
 /* version.c */
 extern const char * getversion (void);

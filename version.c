@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.47 2000/01/02 22:42:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.48 2000/07/10 02:50:34 cmorgan Exp $
  *
  */
 
@@ -20,6 +20,9 @@ print_usage (void)
 #if SYS_WINNT && defined(DISP_NTWIN)
 	"-fn fontspec   to change font",
 	"-geometry CxR  to set initial size to R rows and C columns",
+#endif
+#if SYS_WINNT && defined(DISP_NTCONS)
+	"-console       if stdin is not a tty, start editor in a new console",
 #endif
 #if SYS_WINNT && defined(VILE_OLE) && defined(DISP_NTWIN)
 	"-Oa            invoke as an OLE Automation server",

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.5 2000/02/28 11:58:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.7 2000/07/11 00:53:04 tom Exp $
  *
  * Filter to add vile "attribution" sequences to SCCS files.
  */
@@ -23,6 +23,11 @@ typedef struct _States {
 } States;
 
 static States *state_stk;
+
+/* FreeBSD 2.1.5, with Flex 2.4 */
+#if !defined(YYSTATE) && defined(YY_START)
+#define YYSTATE YY_START
+#endif
 
 static int
 pushstate(int state)
@@ -74,7 +79,7 @@ MARKED		^\001[^\n]*
 
 %%
 
-{MARKED}	{ putchar('?');
+{MARKED}	{ flt_putc('\001');
 		    WriteToken2((yytext[1] == 'c')
 		  		? Comment_attr
 				: Marker_attr, 1);

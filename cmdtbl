@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.203 2000/06/27 23:09:38 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.204 2000/07/10 23:42:13 tom Exp $
 #
 #
 
@@ -1323,6 +1323,9 @@ resize		NONE			!SMALLER
 restwnd		NONE			!SMALLER
 	"restore-window"
 	<return to window saved with \"save-window\">
+reset_majormode	NONE			OPT_MAJORMODE
+	"reset-majormode"
+	<recompute $majormode for the current buffer>
 rev_csrch	MOTION
 	"reverse-char-scan"		!FEWNAMES
 	','
