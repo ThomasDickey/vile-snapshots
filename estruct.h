@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.541 2004/03/20 11:48:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.543 2004/06/17 00:54:17 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -434,6 +434,10 @@
 
 #ifndef OPT_PERL
 #define OPT_PERL 0	/* normally set by configure-script */
+#endif
+
+#ifndef OPT_PLUGIN
+#define OPT_PLUGIN 0	/* normally set by configure-script */
 #endif
 
 #ifndef OPT_SHELL
@@ -861,7 +865,7 @@ extern int MainProgram(int argc, char *argv[]);
 
 	/* semaphore may be needed to prevent interrupt of display-code */
 #if defined(SIGWINCH) || OPT_WORKING
-# if OPT_TRACE > 1
+# if OPT_TRACE > 2
 extern void beginDisplay(void);
 extern void endofDisplay(void);
 # else
@@ -2049,7 +2053,7 @@ typedef struct	BUFFER {
 #if OPT_HILITEMATCH
 	USHORT	b_highlight;
 #endif
-#if OPT_PERL || OPT_TCL
+#if OPT_PERL || OPT_TCL || OPT_PLUGIN
 	void *	b_api_private;		/* pointer to private perl, tcl, etc.
 					   data */
 #endif
@@ -2190,7 +2194,7 @@ typedef struct	BUFFER {
 
 /* macro for iterating over the marks associated with the current buffer */
 
-#if OPT_PERL || OPT_TCL
+#if OPT_PERL || OPT_TCL || OPT_PLUGIN
 extern MARK *api_mark_iterator(BUFFER *bp, int *iter);
 #define api_do_mark_iterate_helper(mp, statement)	\
 	{						\
@@ -2897,7 +2901,7 @@ extern void ExitProgram(int code);
 #endif
 
 #if OPT_EVAL || OPT_DEBUGMACROS
-#define TPRINTF(p) if (tracemacros) tprintf p
+#define TPRINTF(p) { TRACE(p); if (tracemacros) tprintf p; }
 #else
 #define TPRINTF(p) /* nothing */
 #endif

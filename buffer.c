@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.264 2003/11/12 01:21:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.266 2004/06/17 00:55:53 tom Exp $
  *
  */
 
@@ -323,7 +323,7 @@ FreeBuffer(BUFFER *bp)
 #if OPT_HILITEMATCH
 	clobber_save_curbp(bp);
 #endif
-#if OPT_PERL || OPT_TCL
+#if OPT_PERL || OPT_TCL || OPT_PLUGIN
 	api_free_private(bp->b_api_private);
 #endif
 	free((char *) bp);	/* Release buffer block */
@@ -1740,7 +1740,7 @@ makebufflist(int unused GCC_UNUSED, void *dummy GCC_UNUSED)
 	    bprintf(" %2d%c ", nbuf++, this_or_that);
 
 	(void) bsizes(bp);
-	bprintf("%7ld %*S ", bp->b_bytecount, NBUFN - 1, bp->b_bname);
+	bprintf("%7ld %.*s ", bp->b_bytecount, NBUFN - 1, bp->b_bname);
 	{
 	    char *p;
 

@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.74 2002/04/30 23:24:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.75 2004/06/09 01:06:32 tom Exp $
  *
  */
 
@@ -385,7 +385,7 @@ comment_prefix(void)
 		&& memcmp("/*", tb_values(*wp), 2) == 0)
 
 static int
-do_formatting(TBUFF ** wp, TBUFF ** cp)
+do_formatting(TBUFF **wp, TBUFF **cp)
 {
     register int c;		/* current char during scan     */
     register int clength;	/* position on line during fill */

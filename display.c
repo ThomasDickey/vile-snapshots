@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.385 2004/03/21 22:21:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.386 2004/06/09 00:03:36 tom Exp $
  *
  */
 
@@ -106,18 +106,27 @@ right_num(char *buffer, int len, long value)
 }
 
 /*
- * Do format a string.
+ * Do format a string.  Return the number of bytes by which 'width' exceeds
+ * that actually written to the output.
  */
 static int
-dfputsn(OutFunc outfunc, const char *s, int n)
+dfputsn(OutFunc outfunc, const char *s, int width, int limit)
 {
-    int c;
     int l = 0;
 
-    TRACE2(("...str=%s\n", visible_buff(s, (n < 0) ? strlen(s) : n, TRUE)));
     if (s != 0) {
-	while ((n-- != 0) && ((c = *s++) != EOS)) {
-	    (*outfunc) (c);
+	int length = strlen(s);
+
+	if (width < 0)
+	    width = length;
+	if (limit > 0 && width > limit)
+	    width = limit;
+	if (width > length)
+	    width = length;
+
+	TRACE2(("...str=%s\n", visible_buff(s, width, TRUE)));
+	while (width-- > 0) {
+	    (*outfunc) (*s++);
 	    l++;
 	}
     }
@@ -128,7 +137,7 @@ dfputsn(OutFunc outfunc, const char *s, int n)
 static int
 dfputs(OutFunc outfunc, const char *s)
 {
-    return dfputsn(outfunc, s, -1);
+    return dfputsn(outfunc, s, -1, -1);
 }
 
 /*
@@ -191,45 +200,76 @@ dfputf(OutFunc outfunc, double s)
 }
 
 /*
+ * On entry, *fmt may point to either '*' or a digit.  If either, decode the
+ * appropriate width or limit.
+ */
+static void
+decode_length(const char **fmt, va_list *app, int *result)
+{
+    int c = **fmt;
+    int value = 0;
+    int found = FALSE;
+
+    if (c == '*') {
+	value = va_arg(*app, int);
+	found = TRUE;
+	*(*fmt)++;
+    } else {
+	while (isDigit(c)) {
+	    value = (value * 10) + c - '0';
+	    found = TRUE;
+	    *(*fmt)++;
+	    c = **fmt;
+	}
+    }
+    if (found)
+	*result = value;
+}
+
+/*
  * Generic string formatter.  Takes printf-like args, and calls
  * the global function (*dfoutfn)(c) for each c
  */
 static void
-dofmt(const char *fmt, va_list * app)
+dofmt(const char *fmt, va_list *app)
 {
-    register int c;		/* current char in format string */
-    register int wid;
-    register int n;
-    register int nchars = 0;
+    int c;			/* current char in format string */
+    int the_width;
+    int the_limit;
+    int n;
+    int nchars = 0;
     int islong;
     int int_value;
     long long_value;
     UINT radix;
     OutFunc outfunc = dfoutfn;	/* local copy, for recursion */
 
-    TRACE2(("dofmt fmt='%s'\n", fmt));
+    TRACE2(("dofmt fmt='%s'\n", visible_buff(fmt, strlen(fmt), FALSE)));
     while ((c = *fmt++) != 0) {
 	if (c != '%') {
 	    (*outfunc) (c);
 	    nchars++;
 	    continue;
 	}
-	c = *fmt++;
-	wid = 0;
+	the_width = -1;
 	islong = FALSE;
-	if (c == '*') {
-	    wid = va_arg(*app, int);
-	    c = *fmt++;
+	decode_length(&fmt, app, &the_width);
+	if (*fmt == '.') {
+	    ++fmt;
+	    decode_length(&fmt, app, &the_limit);
+	    if (the_width < 0)
+		the_width = the_limit;
 	} else {
-	    while (isDigit(c)) {
-		wid = (wid * 10) + c - '0';
-		c = *fmt++;
-	    }
+	    the_limit = the_width;
 	}
+	c = *fmt++;
 	if (c == 'l') {
 	    islong = TRUE;
 	    c = *fmt++;
 	}
+	TRACE2(("... fmt='%%%d.%d%c%s'\n",
+		the_width, the_limit,
+		c, islong ? "L" : ""));
 	switch (c) {
 	case EOS:
 	    n = 0;
@@ -291,14 +331,7 @@ dofmt(const char *fmt, va_list * app)
 	    break;
 
 	case 's':
-	    if (wid <= 0) {
-		n = dfputs(outfunc, va_arg(*app, char *));
-		break;
-	    }
-	    /* FALLTHROUGH */
-
-	case 'S':		/* use wid as max width */
-	    n = dfputsn(outfunc, va_arg(*app, char *), wid);
+	    n = dfputsn(outfunc, va_arg(*app, char *), the_width, the_limit);
 	    break;
 
 	case 'f':
@@ -306,15 +339,15 @@ dofmt(const char *fmt, va_list * app)
 	    break;
 
 	case 'P':		/* output padding -- pads total output to
-				   "wid" chars, using c as the pad char */
-	    wid -= nchars;
+				   "the_width" chars, using c as the pad char */
+	    the_width -= nchars;
 	    /* FALLTHROUGH */
 
-	case 'Q':		/* field padding -- puts out "wid"
+	case 'Q':		/* field padding -- puts out "the_width"
 				   copies of c */
 	    n = 0;
 	    c = va_arg(*app, int);
-	    while (n < wid) {
+	    while (n < the_width) {
 		(*outfunc) (c);
 		n++;
 	    }
@@ -324,9 +357,9 @@ dofmt(const char *fmt, va_list * app)
 	    (*outfunc) (c);
 	    n = 1;
 	}
-	wid -= n;
+	the_width -= n;
 	nchars += n;
-	while (wid-- > 0) {
+	while (the_width-- > 0) {
 	    (*outfunc) (' ');
 	    nchars++;
 	}
@@ -2640,7 +2673,7 @@ percentage(WINDOW *wp)
  * a number of special variables that we would like to output quickly.
  */
 void
-special_formatter(TBUFF ** result, const char *fs, WINDOW *wp)
+special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 {
     BUFFER *bp;
     char *ms;
@@ -3577,7 +3610,7 @@ mlsavec(int c)
  * line" flag TRUE.
  */
 static void
-mlmsg(const char *fmt, va_list * app)
+mlmsg(const char *fmt, va_list *app)
 {
     static int recur;
     int end_at;

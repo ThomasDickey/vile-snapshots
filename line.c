@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.160 2003/07/27 16:10:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.162 2004/06/09 01:04:34 tom Exp $
  *
  */
 
@@ -720,7 +720,7 @@ ldelete(B_COUNT nchars, int kflag)
  */
 #if OPT_EVAL
 void
-lgrabtext(TBUFF ** rp, CHARTYPE type)
+lgrabtext(TBUFF **rp, CHARTYPE type)
 {
     (void) screen2tbuff(rp, type);
 }
@@ -1730,7 +1730,7 @@ makereglist(
 			index2reg(i),
 			REGS_PREFIX - 2, ' ');
 	    } else {
-		bprintf("%*S",
+		bprintf("%.*s",
 			REGS_PREFIX, "(unnamed)");
 	    }
 	    do {

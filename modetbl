@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.224 2004/04/11 23:43:17 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.225 2004/06/15 21:55:03 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -229,6 +229,7 @@ string
 "error-buffer"	ERROR_BUFFER	OPT_FINDERR	# buffer to use for find-next-error
 "error-expr"	ERROR_EXPR	OPT_FINDERR	# last matched error pattern
 "error-match"	ERROR_MATCH	OPT_FINDERR	# " " " matching text
+"error-tabstop"	ERROR_TABSTOP	OPT_FINDERR	# tabstop to use when interpreting %C
 "exec-path"	EXEC_PATH		# directory where vile's executable is found
 "exec-suffix"	EXEC_SUFFIX		# suffix to append when looking for execable programs
 "exit-hook"	EXITHOOK	OPT_HOOKS	# procedure to run when quitting

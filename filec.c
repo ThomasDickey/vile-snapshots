@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.113 2003/06/18 21:38:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.114 2004/06/09 01:03:57 tom Exp $
  *
  */
 
@@ -1171,7 +1171,7 @@ strip_non_graphics(char *path)
  * flag - +1 to read, -1 to write, 0 don't care
  */
 int
-mlreply_file(const char *prompt, TBUFF ** buffer, UINT flag, char *result)
+mlreply_file(const char *prompt, TBUFF **buffer, UINT flag, char *result)
 {
     int status;
     static TBUFF *last;
@@ -1297,7 +1297,7 @@ mlreply_file(const char *prompt, TBUFF ** buffer, UINT flag, char *result)
  * Prompt for a directory name, allowing completion via tab and '?'
  */
 int
-mlreply_dir(const char *prompt, TBUFF ** buffer, char *result)
+mlreply_dir(const char *prompt, TBUFF **buffer, char *result)
 {
     int status;
     static TBUFF *last;

@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.228 2003/02/17 11:44:28 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.229 2004/06/17 00:43:42 tom Exp $
 #
 #
 
@@ -945,6 +945,9 @@ lineundo	NONE
 loadkreg	NONE
 	"load-register"
 	<load the given string into the given named register.  give CNT for full-lines.>
+loadplugin	NONE			OPT_PLUGIN
+	"load-plugin"
+	<try to load a plug-in from a shared-library file>
 showkreg	NONE			OPT_SHOW_REGS
 	"show-registers"
 	"showregisters"			!FEWNAMES

@@ -55,7 +55,7 @@
  *	not (yet) correspond to :-commands.  Before implementing, probably will
  *	have to make TESTC a settable mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.76 2003/07/27 16:55:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.79 2004/06/16 22:54:27 tom Exp $
  *
  */
 
@@ -228,11 +228,11 @@ parseArg(HST * parm, LINE *lp)
  * parsing.
  */
 static int
-needQuotes(TBUFF * src)
+needQuotes(TBUFF *src)
 {
 #if HST_QUOTES
     if (tb_length(MyText)
-	|| must_quote_token(tb_values(src), tb_length(src)))
+	&& must_quote_token(tb_values(src), tb_length(src)))
 	return TRUE;
 #endif
     return FALSE;
@@ -297,7 +297,7 @@ stripQuotes(char *src, int len, int eolchar, int *actual)
 #endif
 
 static void
-glueBufferToResult(TBUFF ** dst, TBUFF * src)
+glueBufferToResult(TBUFF **dst, TBUFF *src)
 {
     int shell_cmd = ((tb_length(*dst) != 0 && isShellOrPipe(tb_values(*dst)))
 		     || (tb_length(*dst) != 0 && isShellOrPipe(tb_values(src))));
@@ -343,7 +343,7 @@ hst_glue(int c)
 }
 
 void
-hst_append(TBUFF * cmd, int glue)
+hst_append(TBUFF *cmd, int glue)
 {
     static int skip = 1;	/* e.g., after "!" */
 
@@ -498,12 +498,6 @@ hst_find(HST * parm, BUFFER *bp, LINE *lp, int direction)
 		continue;
 	}
 
-	/* avoid picking up lines with range-spec, since this is too
-	 * cumbersome to splice in 'namedcmd()'.
-	 */
-	if (islinespecchar(lp->l_text[0]))
-	    continue;
-
 	/* '/' and '?' are not (yet) :-commands.  Don't display them
 	 * in the command-name scrolling.
 	 */
@@ -588,7 +582,7 @@ display_LINE(HST * parm, LINE *lp)
  * Update the display using a TBUFF as source
  */
 static void
-display_TBUFF(HST * parm, TBUFF * tp)
+display_TBUFF(HST * parm, TBUFF *tp)
 {
     hst_display(parm, tb_args(tp));
 }
@@ -635,13 +629,12 @@ hst_scroll(LINE *lp1, HST * parm)
  * escape-character is entered.
  */
 int
-edithistory(
-	       TBUFF ** buffer,
-	       unsigned *position,
-	       int *given,
-	       UINT options,
-	       int (*endfunc) (EOL_ARGS),
-	       int eolchar)
+edithistory(TBUFF **buffer,
+	    unsigned *position,
+	    int *given,
+	    UINT options,
+	    int (*endfunc) (EOL_ARGS),
+	    int eolchar)
 {
     HST param;
     BUFFER *bp;

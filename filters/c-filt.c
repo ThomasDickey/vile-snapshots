@@ -6,18 +6,19 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.67 2003/05/24 00:49:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.72 2004/05/14 23:29:23 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  *
  * Options:
  *	-j	java special cases
  *	-p	suppress preprocessor suppoer
+ *	-s	javascript special cases
  */
 
 #include <filters.h>
 
-DefineOptFilter("c", "jp");
+DefineOptFilter("c", "jps");
 
 #define UPPER(c) isalpha(CharOf(c)) ? toupper(CharOf(c)) : c
 
@@ -201,7 +202,7 @@ write_number(char *s)
 		    state = 1;
 		} else if (BeginExponent(radix, ch)) {
 		    state = 2;
-		} else if (ch == 'F') {
+		} else if (ch == 'F' || (FltOptions('j') && ch == 'D')) {
 		    num_f++;
 		    state = 3;
 		} else if (ch == 'L') {
@@ -223,7 +224,7 @@ write_number(char *s)
 		state = -1;
 		if (BeginExponent(radix, ch)) {
 		    state = 2;
-		} else if (ch == 'F') {
+		} else if (ch == 'F' || (FltOptions('j') && ch == 'D')) {
 		    num_f++;
 		    state = 3;
 		} else if (ch == 'L') {
@@ -239,7 +240,7 @@ write_number(char *s)
 		ch = UPPER(*s);
 		/* FALLTHRU */
 	    case 3:
-		if (ch == 'F') {
+		if (ch == 'F' || (FltOptions('j') && ch == 'D')) {
 		    if (++num_f > 1)
 			state = -1;
 		} else if (ch == 'L') {
@@ -307,6 +308,52 @@ write_literal(char *s, int *literal, int escaped)
     s += c_length;
     if (!*literal)
 	flt_putc(*s++);
+    return s;
+}
+
+/* Java and JavaScript */
+static char *
+write_wchar(char *s)
+{
+    int n;
+    for (n = 2; n <= 6; ++n) {
+	if (!isxdigit(CharOf(s[n])))
+	    break;
+    }
+    flt_puts(s, n, n == 6 ? Literal_attr : Error_attr);
+    return s + n;
+}
+
+/* JavaScript */
+static char *
+write_regexp(char *s)
+{
+    char *base = s;
+    int escape = 0;
+    int adjust = 0;
+
+    do {
+	int ch = *s;
+	if (escape) {
+	    ++s;
+	    escape = 0;
+	} else {
+	    if (ch == BACKSLASH)
+		escape = 1;
+	    ++s;
+	}
+    } while ((*s != '\0') && (escape || (*s != '/')));
+    if (*s == '/') {
+	++s;
+	adjust = 1;
+    }
+    while (*s == 'i' || *s == 'g') {
+	++s;
+	adjust = 1;
+    }
+    if (!adjust)
+	++s;
+    flt_puts(base, s - base, Literal_attr);
     return s;
 }
 
@@ -387,7 +434,12 @@ do_filter(FILE *input GCC_UNUSED)
     static char *line;
 
     char *s;
-    int comment, c_length, literal, escaped, was_esc;
+    int c_length;
+    int comment;
+    int escaped;
+    int literal;
+    int was_eql;
+    int was_esc;
     unsigned len;
 
     Comment_attr = class_attr(NAME_COMMENT);
@@ -399,6 +451,7 @@ do_filter(FILE *input GCC_UNUSED)
 
     comment = 0;
     literal = 0;
+    was_eql = 0;
     was_esc = 0;
 
     while (flt_gets(&line, &used) != NULL) {
@@ -429,6 +482,7 @@ do_filter(FILE *input GCC_UNUSED)
 		       && set_symbol_table("cpre")) {
 		s = parse_prepro(s, &literal);
 		set_symbol_table(filter_def.filter_name);
+		was_eql = 0;
 	    } else if (comment && *s) {
 		if ((c_length = has_endofcomment(s)) > 0) {
 		    write_comment(s, c_length, 0);
@@ -442,31 +496,54 @@ do_filter(FILE *input GCC_UNUSED)
 		    s = s + c_length;
 		}
 	    } else if (*s == BACKSLASH) {
-		if (s[1] != '\n') {
-		    s = write_escape(s, Error_attr);
+		if (s[1] == '\n') {
+		    flt_putc(*s++);	/* escaped newline - ok */
+		} else if (FltOptions('j') && (s[1] == 'u')) {
+		    /* FIXME: a Unicode value is potentially part of an
+		     * identifier.  For now, simply color it like a string.
+		     */
+		    s = write_wchar(s);
 		} else {
-		    /* escaped newline - ok */
-		    flt_putc(*s++);
+		    s = write_escape(s, Error_attr);
 		}
+		was_eql = 0;
 	    } else if (isQuote(*s)) {
 		literal = (literal == 0) ? *s : 0;
 		flt_putc(*s++);
 		if (literal) {
 		    s = write_literal(s, &literal, 1);
 		}
+		was_eql = 0;
 	    } else if (isIdent(*s)) {
 		s = extract_identifier(s);
+		was_eql = 0;
 	    } else if (isdigit(CharOf(*s))
 		       || (*s == '.'
 			   && (isdigit(CharOf(s[1])) || s[1] == '.'))) {
 		s = write_number(s);
+		was_eql = 0;
 	    } else if (*s == '#') {
 		char *t = s;
 		while (*s == '#')
 		    s++;
 		flt_puts(t, s - t, ((s - t) > 2) ?
 			 Error_attr : Preproc_attr);
+		was_eql = 0;
+	    } else if (ispunct(CharOf(*s))) {
+		if (FltOptions('s') && was_eql && *s == '/') {
+		    s = write_regexp(s);
+		} else {
+		    /*
+		     * A JavaScript regular expression can appear to the
+		     * right of an assignment, or as a parameter to new()
+		     * or match().
+		     */
+		    was_eql = (*s == '=' || *s == L_PAREN || *s == ',');
+		    flt_putc(*s++);
+		}
 	    } else {
+		if (!isspace(CharOf(*s)))
+		    was_eql = 0;
 		flt_putc(*s++);
 	    }
 	}

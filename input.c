@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.262 2004/03/21 18:27:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.265 2004/06/11 10:08:44 tom Exp $
  *
  */
 
@@ -321,7 +321,7 @@ mlreply(const char *prompt, char *buf, UINT bufn)
 }
 
 int
-mlreply2(const char *prompt, TBUFF ** buf)
+mlreply2(const char *prompt, TBUFF **buf)
 {
     return kbd_string2(prompt, buf, '\n', KBD_NORMAL, no_completion);
 }
@@ -647,7 +647,7 @@ screen_string(char *buf, int bufn, CHARTYPE inclchartype)
 /* get a string consisting of inclchartype characters from the current
 	position.  if inclchartype is 0, return everything to eol */
 int
-screen2tbuff(TBUFF ** result, CHARTYPE inclchartype)
+screen2tbuff(TBUFF **result, CHARTYPE inclchartype)
 {
     int i = 0;
     MARK save_dot;
@@ -665,7 +665,7 @@ screen2tbuff(TBUFF ** result, CHARTYPE inclchartype)
     } else if (b_is_directory(curbp)
 	       && inclchartype == SCREEN_STRING) {
 	whole_line = 1;
-	inclchartype = (CHARTYPE) ~ 0;
+	inclchartype = (CHARTYPE) ~0;
     }
 
     if (whole_line
@@ -811,7 +811,7 @@ add_backslashes(char *text)
  * that don't know it's a TBUFF.
  */
 static char *
-tbreserve(TBUFF ** buf)
+tbreserve(TBUFF **buf)
 {
     char *result = tb_values(tb_alloc(buf, tb_length(*buf) + NSTRING));
     BuffToStr(*buf);
@@ -820,7 +820,7 @@ tbreserve(TBUFF ** buf)
 
 /* turn \X into X */
 static void
-remove_backslashes(TBUFF * buf)
+remove_backslashes(TBUFF *buf)
 {
     register char *cp = tb_values(buf);
     register size_t s, d;
@@ -838,7 +838,7 @@ remove_backslashes(TBUFF * buf)
  * position escaped by one.
  */
 static UINT
-countBackSlashes(TBUFF * buf, UINT len)
+countBackSlashes(TBUFF *buf, UINT len)
 {
     char *buffer = tb_values(buf);
     register UINT count;
@@ -890,7 +890,7 @@ show1Char(int c)
 
 /* expand a single character (only used on interactive input) */
 static int
-expandChar(TBUFF ** buf,
+expandChar(TBUFF **buf,
 	   unsigned *position,
 	   int c,
 	   KBD_OPTIONS options)
@@ -1006,7 +1006,7 @@ is_edit_char(int c)
  * Erases the response from the screen for 'kbd_string()'
  */
 void
-kbd_kill_response(TBUFF * buffer, unsigned *position, int c)
+kbd_kill_response(TBUFF *buffer, unsigned *position, int c)
 {
     char *buf = tb_values(buffer);
     TBUFF *tmp = 0;
@@ -1043,7 +1043,7 @@ kbd_kill_response(TBUFF * buffer, unsigned *position, int c)
  * necessary.
  */
 int
-kbd_show_response(TBUFF ** dst,	/* string with escapes */
+kbd_show_response(TBUFF **dst,	/* string with escapes */
 		  char *src,	/* string w/o escapes */
 		  unsigned bufn,	/* # of chars we read from 'src[]' */
 		  int eolchar,
@@ -1104,7 +1104,7 @@ static int pushback_flg;
 static char *pushback_ptr;
 
 void
-kbd_pushback(TBUFF * buf, int skip)
+kbd_pushback(TBUFF *buf, int skip)
 {
     static TBUFF *PushBack;
     char *buffer = tb_values(buf);	/* FIXME */
@@ -1156,7 +1156,7 @@ kbd_string(const char *prompt,	/* put this out first */
 
 int
 kbd_string2(const char *prompt,	/* put this out first */
-	    TBUFF ** result,	/* the caller's (possibly full) buffer */
+	    TBUFF **result,	/* the caller's (possibly full) buffer */
 	    int eolchar,	/* char we can terminate on, in addition to '\n' */
 	    KBD_OPTIONS options,	/* KBD_EXPAND/KBD_QUOTES, etc. */
 	    int (*complete) (DONE_ARGS))	/* handles completion */
@@ -1276,7 +1276,7 @@ fakeKeyCode(const CMDFUNC * f)
 }
 
 static int
-editMinibuffer(TBUFF ** buf, unsigned *cpos, int c, int margin, int quoted)
+editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 {
     int edited = FALSE;
     const CMDFUNC *cfp;
@@ -1521,7 +1521,7 @@ read_quoted(int count, int inscreen)
 }
 
 static int
-may_complete(TBUFF * data, KBD_OPTIONS options)
+may_complete(TBUFF *data, KBD_OPTIONS options)
 {
     int result = ABORT;
 
@@ -1536,6 +1536,18 @@ may_complete(TBUFF * data, KBD_OPTIONS options)
 }
 
 /*
+ * This undoes the quoting done by tb_enquote() in run_func(), etc.
+ */
+static void
+copy_dequoting(TBUFF **p, const char *string)
+{
+    (void) tb_init(p, EOS);
+    tb_scopy(p, string);
+    tb_dequote(p);
+    TRACE2(("copy_dequoting(%s) %s\n", string, tb_visible(*p)));
+}
+
+/*
  * Same as 'kbd_string()', except for adding the 'endfunc' parameter.
  *
  * Returns:
@@ -1546,7 +1558,7 @@ may_complete(TBUFF * data, KBD_OPTIONS options)
  */
 int
 kbd_reply(const char *prompt,	/* put this out first */
-	  TBUFF ** extbuf,	/* the caller's (possibly full) buffer */
+	  TBUFF **extbuf,	/* the caller's (possibly full) buffer */
 	  int (*endfunc) (EOL_ARGS),	/* parsing with 'eolchar' delimiter */
 	  int eolchar,		/* char we can terminate on, in addition to '\n' */
 	  KBD_OPTIONS options,	/* KBD_EXPAND/KBD_QUOTES */
@@ -1626,14 +1638,14 @@ kbd_reply(const char *prompt,	/* put this out first */
 		 * a quoted string.
 		 */
 		if (result == error_val) {
-		    result = "";
 		    status = ABORT;
+		    (void) tb_scopy(extbuf, "");
 		} else if (toktyp(tb_values(buf)) == TOK_FUNCTION &&
 			   toktyp(result) == TOK_QUOTSTR) {
-		    ++result;
+		    copy_dequoting(extbuf, result);
+		} else {
+		    (void) tb_scopy(extbuf, result);
 		}
-
-		(void) tb_scopy(extbuf, result);
 		tb_free(&buf);
 		tb_unput(*extbuf);	/* trim the null */
 	    }
@@ -2062,7 +2074,7 @@ kbd_mac_check(void)
 
 /* translate the keyboard-macro into readable form */
 void
-get_kbd_macro(TBUFF ** rp)
+get_kbd_macro(TBUFF **rp)
 {
     char temp[80];
     unsigned n, last, len;

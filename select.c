@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.149 2004/03/18 01:15:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.151 2004/06/09 00:00:44 tom Exp $
  *
  */
 
@@ -46,7 +46,7 @@ static void detach_attrib(BUFFER *bp, AREGION * arp);
 static int attribute_cntl_a_sequences(void);
 static void free_line_attribs(BUFFER *bp);
 static int add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs,
-			   VIDEO_ATTR vattr, TBUFF * hypercmd);
+			   VIDEO_ATTR vattr, TBUFF *hypercmd);
 static void purge_line_attribs(BUFFER *bp, REGION * rp, REGIONSHAPE rs,
 			       int owner);
 
@@ -675,7 +675,7 @@ sweepmsg(const char *msg)
 {
     char temp[NLINE];
     (void) kcod2pstr(fnc2kcod(&f_multimotion), temp);
-    mlforce("[%s (end with %*S)]", msg, *temp, temp + 1);
+    mlforce("[%s (end with %.*s)]", msg, CharOf(*temp), temp + 1);
 }
 
 static int
@@ -1817,6 +1817,12 @@ attribute_directly(void)
 	}
 	attach_attrib(selbufp, &selregion);
 	attach_attrib(startbufp, &startregion);
+#if OPT_HILITEMATCH
+	if (curbp->b_highlight & HILITE_ON) {
+	    curbp->b_highlight |= HILITE_DIRTY;
+	    attrib_matches();
+	}
+#endif
     }
 #endif
     return code;
@@ -1979,7 +1985,7 @@ free_line_attribs(BUFFER *bp)
 
 static int
 add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
-		TBUFF * hypercmdp)
+		TBUFF *hypercmdp)
 {
 #if OPT_LINE_ATTRS
     LINEPTR lp;

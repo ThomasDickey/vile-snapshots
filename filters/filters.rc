@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.186 2004/04/11 19:29:50 tom Exp $
+; $Id: filters.rc,v 1.191 2004/06/05 22:52:44 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -66,6 +66,7 @@ define-mode bat
 ; we normally use the builtin values, but this is useful for looking at
 ; autoconf templates:
 ~with define-submode c
+	mode-filename	'llib-.*$'
 	ignoresuffix	'\.\(in\|orig\|~\)$'
 ~endwith
 
@@ -79,7 +80,12 @@ define-mode cfg
 define-mode cpp
 ~with define-submode cpp
 	before "c"
-	suffixes	'\.\(C\|CC\|cc\|cpp\|cxx\|hxx\|hh\)$'
+	mode-pathname	'.*/include/[cg]++[^/]*/.*'
+	~if $filename-ic
+		suffixes	'\.\(cc\|cpp\|cxx\|hh\|hpp\|hxx\)$'
+	~else
+		suffixes	'\.\(cc\|cpp\|cxx\|hh\|hpp\|hxx\|[CH]\|CC\)$'
+	~endif
 	cindent
 	cindent-chars   &cat ':#' $fences
 	filtername	'vile-c-filt -k cpp'
@@ -246,7 +252,7 @@ define-mode java
 define-mode js
 ~with define-submode js
 	suffixes	'\.\(js\|jsp\)$'
-	filtername 'vile-c-filt -p -k js'
+	filtername 'vile-c-filt -j -s -p -k js'
 	cindent
 	cindent-chars &cat ':' $fences
 ~endwith
@@ -276,7 +282,7 @@ define-mode lex
 
 define-mode lisp
 ~with define-submode lisp
-	suffixes	'\.\(lisp\|lsp\)$'
+	suffixes	'\.\(el\|lisp\|lsp\)$'
 	fence-pairs='()'
 	fence-begin='#|'
 	fence-end='|#'
@@ -285,7 +291,7 @@ define-mode lisp
 
 define-mode log
 ~with define-submode log
-	mode-filename	'^\(run\|make\).*\.out$'
+	mode-filename	'^\(run\|\w\?make\).*\.out$'
 	suffixes	'\.\(log.*\)$'
 	before make
 ~endwith

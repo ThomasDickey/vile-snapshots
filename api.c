@@ -18,7 +18,7 @@
 
 #include "estruct.h"
 
-#if OPT_PERL
+#if OPT_PERL || OPT_PLUGIN
 
 #include "edef.h"
 #include "api.h"
@@ -783,7 +783,9 @@ api_command_cleanup(void)
 
     MK = DOT;			/* make sure MK is in same buffer as DOT */
 
+#if OPT_PERL
     perl_free_deferred();
+#endif
 }
 
 void

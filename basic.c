@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.119 2003/07/27 19:01:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.120 2004/05/29 14:28:28 tom Exp $
  *
  */
 
@@ -1084,7 +1084,7 @@ show_mark(int count, BUFFER *bp, MARK mark, int name)
 		line_no(bp, mark.l),
 		mk_to_vcol(mark, FALSE, bp, 0, 0) + 1);
 	if (llength(mark.l) > 0) {
-	    bprintf("%*P%*S",
+	    bprintf("%*P%.*s",
 		    stop - DOT.o, ' ',
 		    llength(mark.l),
 		    mark.l->l_text);

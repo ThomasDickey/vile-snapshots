@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.178 2003/05/25 20:21:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.179 2004/06/09 01:05:13 tom Exp $
  *
  */
 
@@ -306,7 +306,7 @@ spawn(int f, int n GCC_UNUSED)
  * Note that for 'capturecmd()', we must retain a leading "!".
  */
 static int
-ShellPrompt(TBUFF ** holds,
+ShellPrompt(TBUFF **holds,
 	    char *result,
 	    int rerun)		/* TRUE/FALSE: spawn, -TRUE: capturecmd */
 {

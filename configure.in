@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.204 $)
-AC_PREREQ(2.13.20020210)
+AC_REVISION($Revision: 1.207 $)
+AC_PREREQ(2.13.20030927)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.204 2004/03/17 23:50:30 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.207 2004/06/17 00:44:17 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -16,25 +16,10 @@ AC_CONFIG_HEADER(config.h:config_h.in)
 
 CF_CHECK_CACHE
 
-###	checks for alternative programs
-CF_MAKEFLAGS
+###	checks for compiler
 AC_PROG_CC
 AC_PROG_CPP
 AC_GCC_TRADITIONAL
-AC_PROG_INSTALL
-
-AC_PROG_MAKE_SET
-AC_PROG_AWK
-AC_PROG_RANLIB
-case $host_os in hpux*) CPPFLAGS="-DYYCHAR_ARRAY $CPPFLAGS";; esac; AC_DECL_YYTEXT
-
-CF_SUBST(archiver,AR,ar)
-CF_SUBST(archiver options,AR_OPTS,rv)
-
-CF_DISABLE_ECHO
-CF_PATHSEP
-CF_PROG_EXT
-CF_LIB_PREFIX
 
 ###	checks for UNIX variants that set C preprocessor variables
 AC_AIX
@@ -42,9 +27,26 @@ AC_ISC_POSIX
 AC_MINIX
 
 ###	checks for compiler characteristics
+CF_PROG_EXT
 CF_ANSI_CC_REQD
 AC_CONST
 CF_CC_INIT_UNIONS
+case $host_os in hpux*) CPPFLAGS="-DYYCHAR_ARRAY $CPPFLAGS";; esac; AC_DECL_YYTEXT
+
+###	checks for alternative programs
+CF_MAKEFLAGS
+AC_PROG_INSTALL
+
+AC_PROG_MAKE_SET
+AC_PROG_AWK
+AC_PROG_RANLIB
+
+CF_SUBST(archiver,AR,ar)
+CF_SUBST(archiver options,AR_OPTS,rv)
+
+CF_DISABLE_ECHO
+CF_PATHSEP
+CF_LIB_PREFIX
 
 ###	options to control how much we build
 AC_MSG_CHECKING(if you wish to build only core functions)
@@ -77,7 +79,7 @@ fi
 ###	use option --with-cflags to set default CFLAGS
 AC_MSG_CHECKING(for CFLAGS options)
 AC_ARG_WITH(CFLAGS,
-	[  --with-CFLAGS=value     set default for \$CFLAGS],
+	[  --with-CFLAGS=value     set default for $CFLAGS],
 	[cflags="$withval"])
 if test -z "$cflags"; then
 	AC_ARG_WITH(cflags,
@@ -93,6 +95,13 @@ elif test -z "$CFLAGS" ; then
 	CFLAGS="-O"
 fi
 AC_MSG_RESULT($cflags)
+
+AC_MSG_CHECKING(if you want to compile-in plugin support)
+CF_ARG_ENABLE(plugins,
+	[  --enable-plugins        compile-in plugin support],
+	[with_plugins=yes],
+	[with_plugins=no])
+AC_MSG_RESULT($with_plugins)
 
 AC_MSG_CHECKING(if you want to build syntax filters)
 CF_ARG_DISABLE(filters,
@@ -821,51 +830,48 @@ AC_SUBST(BUILTLIBS)
 AC_SUBST(FILTER_LIBS)
 AC_SUBST(LIBBUILTFLT)
 
+# --- check dynamic loading capabilities
+
+cf_need_libdl=no
+
+test "$VILE_LOADABLE_FILTERS" != none && cf_need_libdl=yes
+test "$with_plugins"          != no   && cf_need_libdl=yes
+
+if test "$with_plugins" != no ; then
+	if test "$GCC" = yes ; then
+		LDFLAGS="$LDFLAGS -export-dynamic"
+	# TODO: how to do with other compilers ? can libtool help ?
+	fi
+	AC_DEFINE(OPT_PLUGIN)
+	EXTRAOBJS="$EXTRAOBJS plugin.o"
+fi
+
+if test "$cf_need_libdl" = yes ; then
+	CF_FUNC_DLSYM
+fi
+
 if test "$VILE_LOADABLE_FILTERS" != none ; then
-	cf_have_dlsym=no
-	cf_have_libdl=no
+	if test "$GCC" = yes ; then
 
-	AC_CHECK_FUNC(dlsym,cf_have_dlsym=yes,[
-		AC_CHECK_LIB(dl,dlsym,[
-			cf_have_dlsym=yes
-			cf_have_libdl=yes])])
+		# FIXME:  this doesn't work (gcc doesn't give an error
+		# on an unrecognized option).
+		cf_opt_rdynamic=no
+		cf_save_CFLAGS="$CFLAGS"
+		CFLAGS="-Wall -rdynamic $CFLAGS"
+		AC_MSG_CHECKING(if gcc has -rdynamic option)
+		AC_TRY_LINK([#include <stdio.h>],
+			    [printf("Hello");],
+			    [cf_opt_rdynamic=yes],
+			    [cf_opt_rdynamic=no])
+		AC_MSG_RESULT($cf_opt_rdynamic)
+		test "$cf_opt_rdynamic" = no && CFLAGS="$cf_save_CFLAGS"
 
-	if test "$cf_have_dlsym" = yes ; then
-		test "$cf_have_libdl" = yes && LIBS="-ldl $LIBS"
-		if test "$GCC" = yes ; then
-
-			# FIXME:  this doesn't work (gcc doesn't give an error
-			# on an unrecognized option).
-			cf_opt_rdynamic=no
-			cf_save_CFLAGS="$CFLAGS"
-			CFLAGS="-Wall -rdynamic $CFLAGS"
-			AC_MSG_CHECKING(if gcc has -rdynamic option)
-			AC_TRY_LINK([#include <stdio.h>],
-				    [printf("Hello");],
-				    [cf_opt_rdynamic=yes],
-				    [cf_opt_rdynamic=no])
-			AC_MSG_RESULT($cf_opt_rdynamic)
-			test "$cf_opt_rdynamic" = no && CFLAGS="$cf_save_CFLAGS"
-
-			SH_CFLAGS="-fPIC"
-			SH_LDFLAGS="-shared"
-		else
-			# this works for Solaris and IRIX64
-			SH_CFLAGS="-KPIC"
-			SH_LDFLAGS="-G"
-		fi
-
-		AC_TRY_LINK([#include <dlfcn.h>],[
-			void *obj;
-			if ((obj = dlopen("filename", 0)) != 0) {
-				if (dlsym(obj, "symbolname") == 0) {
-				dlclose(obj);
-				}
-			}],[
-			AC_DEFINE(HAVE_LIBDL)],[
-			AC_MSG_ERROR(Cannot link test program for libdl)])
+		SH_CFLAGS="-fPIC"
+		SH_LDFLAGS="-shared"
 	else
-		AC_MSG_ERROR(Cannot find dlsym function)
+		# this works for Solaris and IRIX64
+		SH_CFLAGS="-KPIC"
+		SH_LDFLAGS="-G"
 	fi
 fi
 

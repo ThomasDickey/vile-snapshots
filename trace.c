@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.41 2003/02/26 13:49:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.44 2004/06/16 21:31:17 tom Exp $
  *
  */
 
@@ -28,8 +28,8 @@
 #if	defined(sun) && !defined(__SVR4)
 extern void perror(const char *s);
 extern int gettimeofday(struct timeval *t, struct timezone *z);
-extern int vfprintf(FILE * fp, const char *fmt, va_list v);
-extern int fflush(FILE * fp);
+extern int vfprintf(FILE *fp, const char *fmt, va_list v);
+extern int fflush(FILE *fp);
 #endif
 
 #include <stdarg.h>
@@ -184,7 +184,7 @@ visible_buff(const char *buffer, int length, int eos)
     beginDisplay();
     if (buffer == 0) {
 	buffer = "";
-	length = 1;
+	length = 0;
     }
 
     result = alloc_visible(need);
@@ -226,7 +226,7 @@ str_visible0(char *s)
 }
 
 char *
-tb_visible(TBUFF * p)
+tb_visible(TBUFF *p)
 {
     return visible_buff(tb_values(p), tb_length(p), FALSE);
 }
@@ -698,7 +698,7 @@ trace_window(WINDOW *wp)
     }
 }
 
-#if OPT_WORKING && (OPT_TRACE > 1)
+#if OPT_WORKING && (OPT_TRACE > 2)
 #undef beginDisplay
 void
 beginDisplay(void)

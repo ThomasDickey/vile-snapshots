@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.522 2003/11/12 01:55:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.525 2004/06/17 00:56:50 tom Exp $
  *
  */
 
@@ -81,7 +81,9 @@ extern	void	perl_exit(void);
 extern	int	perl_call_sub(void *, int, int, int);
 extern	void	perl_free_sub(void *);
 #endif
+#endif
 
+#if OPT_PERL || OPT_PLUGIN
 /* api.c */
 extern void api_free_private(void *);
 /* There are others as well, but the rest are found in api.h */
@@ -1084,11 +1086,12 @@ extern int cmdlinetag (const char *t);
 #endif /* OPT_TAGS */
 
 /* tbuff.c */
-size_t	tb_length (TBUFF *p);
 TBUFF *	tb_alloc (TBUFF **p, size_t n);
 TBUFF *	tb_append (TBUFF **p, int c);
 TBUFF *	tb_bappend (TBUFF **p, const char *s, size_t len);
 TBUFF *	tb_copy (TBUFF **d, TBUFF *s);
+TBUFF *	tb_dequote (TBUFF **p);
+TBUFF *	tb_enquote (TBUFF **p);
 TBUFF *	tb_init (TBUFF **p, int c);
 TBUFF *	tb_insert (TBUFF **p, size_t n, int c);
 TBUFF *	tb_put (TBUFF **p, size_t n, int c);
@@ -1101,6 +1104,7 @@ int	tb_get (TBUFF *p, size_t n);
 int	tb_more (TBUFF *p);
 int	tb_next (TBUFF *p);
 int	tb_peek (TBUFF *p);
+size_t	tb_length (TBUFF *p);
 void	tb_first (TBUFF *p);
 void	tb_free (TBUFF **p);
 void	tb_stuff (TBUFF *p, int c);
@@ -1539,7 +1543,7 @@ extern	int	setitimer (int which, const struct itimerval *value, struct itimerval
 extern	int	setjmp	(jmp_buf env);
 #endif
 #ifdef MISSING_EXTERN_SETPGRP
-#if SETPGRP_VOID
+#ifdef SETPGRP_VOID
 extern	pid_t	setpgrp	(void);
 #else
 extern	int	setpgrp	(int pid, int pgid);

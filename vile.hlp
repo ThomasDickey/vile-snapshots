@@ -1220,11 +1220,13 @@ Editor modes
 			[Map Sequences]
 			[Map! Sequences]
 			[Named Marks]
+			[Printable Chars]
 			[Registers]
 			[Select-Bindings]
 			[Settings]
 			[Tag Stack]
 			[Terminal Characters]
+			[Variables]
 		Turning off "animated" is rarely necessary: the capability
 		is present mostly as a debugging aid.  (B)
 
@@ -2679,6 +2681,7 @@ Programmed procedures (aka macros)
 	$error-buffer   buffer name assigned to the error-buffer
 	$error-expr     regular expression that matched the error-buffer
 	$error-match    text that matched the error-buffer
+	$error-tabstop	tabstop to use with error-buffer for %C
 	$exec-path	where to find vile			(read only)
 	$exec-suffix	suffix, if any, for execable programs	(read only)
 	$exit-hook	name of procedure to run when quitting
@@ -2788,31 +2791,31 @@ Programmed procedures (aka macros)
 	&divide		2	division
 	&dquery		2	prompt user for input, given default value
 	&env		1	retrieve a system environment variable
-	&equal		2	logical equality
+	&equal		2	numeric equality
 	&error		1	true if the parameter was ERROR
 	&execable	1	is a file exec'able
 	&filter		1	true if the given majormode's filter is builtin
 	&ftime		1	modification-time of the given file, as a number
-	&geq		2	logical greater than or equal
+	&geq		2	numeric greater than or equal
 	&global		1	retrieves global mode setting
-	&greater	2	logical greater than
-	&gt		2	logical greater than
+	&greater	2	numeric greater than
+	&gt		2	numeric greater than
 	&gtkey		0	get 1 character
 	&gtsequence	0	get keycode sequence, e.g., #1
 	&indirect	1	evaluate indirect value
 	&left		2	left string(string, len)
 	&length		1	string length
-	&leq		2	logical less than or equal
-	&lessthan	2	logical less than
+	&leq		2	numeric less than or equal
+	&lessthan	2	numeric less than
 	&local		1	retrieves local mode setting
 	&lookup		2	look for filename (see below for arguments)
 	&lower		1	lower case string
-	&lt		2	logical less than
+	&lt		2	numeric less than
 	&match		2	match regular-expression value
 	&middle		3	mid string(string, pos, len)
 	&modulo		2	modulus
 	&negate		1	negate
-	&neq		2	logical inequality
+	&neq		2	numeric inequality
 	&not		1	logical not
 	&or		2	logical or
 	&path		2	extract/translate pathname (see below for args)
@@ -4185,27 +4188,43 @@ Majormodes
 	doc/modes.doc .  Rather than regurgitating the contents of that
 	file here, we'll hit the high points with a couple of examples.
 
-	To define a new majormode, do this in your vile startup file:
+	To define a new majormode, add this in your vile startup file:
 
 	    define-mode <new_majormode_name>
 	    ~with define-submode <new_majormode_name>
-		suffixes   "<regexp_pattern>"
-		preamble   "<if necessary>"
-		before     "<if necessary>"
-		filtername "<syntax-coloring-filter>"
+		mode-pathname  "<regexp_pattern>"	; see next para
+		mode-filename  "<regexp_pattern>"	; see next para
+		suffixes       "<regexp_pattern>"	; see next para
+		preamble       "<regexp_pattern>"	; see next para
+		before         "<if necessary>"
+		filtername     "<syntax-coloring-filter>"
 		buffer mode setting#1
 		buffer mode setting#2
 		; etc.
 	    ~endwith
 
-	For example, suppose someone wanted to edit this help file and
-	subsequently submit patches to the vile's developers.  In the spirit
+	Selecting file(s) for inclusion within a majormode is a matter of
+	specifying an appropriate regular expression, like so:
+
+	    regexp mode name	selection based on
+	    ----------------	------------------
+	    mode-pathname	any file component in path
+	    mode-filename	leaf filename
+	    suffixes		.<file_suffix>
+	    preamble		first line of file
+
+	One or more of these regular expressions may be specified within a
+	majormode definition, with selection precedence given in the order
+	listed above.
+
+	As an actual example, suppose someone wanted to edit this help file
+	and subsequently submit patches to vile's developers.  In the spirit
 	of cooperation, the developers would appreciate changes that were
 	made with the same tabstops and tab insertion policies as used in the
 	existing help file (vile.hlp).  Taking a peek at vile.hlp, it can
 	readily be seen that physical tabs are indeed used, with stops
 	apparently set at intervals of 8.  Also, it appears that the right
-	margin is set fairly close to 80. To mirror this policy, create this
+	margin is set fairly close to 80.  To mirror this policy, create this
 	new majormode:
 
 	    define-mode hlp
@@ -4273,6 +4292,40 @@ Majormodes
 	   "setl <majormode_name>" command.  Example:
 
 	    setl cppmode     ; <-- force cppmode for current buffer
+
+	Distinguishing between C/C++ include files
+	------------------------------------------
+	Both C and C++ use ".h" as an include file suffix.  vile's current
+	majormode definitions favor "*.h" for inclusion in cmode (not
+	cppmode), which is not desirable for C++ programmers and/or a C++
+	project.  There are two workarounds:
+
+	1) On a project-by-project basis (i.e., developer does not devote all
+	   of his/her time to C++ coding), simply add something like this to
+	   the vile startup file:
+
+	   source "filters.rc"
+	   ; ...
+	   define-mode cpp
+	   ~with define-submode cpp
+	      mode-pathname 'project_root_directory_name/.*\.h$'
+	   ~endwith
+
+	   This change specifies that all "*.h" files beneath a root
+	   directory name are presumed to be C++ files.
+
+	2) If coding C++ more than C, then make these changes:
+
+	   source "filters.rc"
+	   ; ...
+	   define-mode cpp
+	   ~with define-submode cpp
+	      suffixes	'\.\(C\|CC\|cc\|cpp\|cxx\|hxx\|h\|hh\)$'
+	   ~endwith
+
+	   This change adds ".h" to the list of C++ files and since vile
+	   tests cppmode before cmode, all "*.h" files will now be edited in
+	   cppmode.
 
 	cmode:  the original vile builtin majormode
 	-------------------------------------------
@@ -6016,4 +6069,4 @@ Problems
 
 Copyright 1995-2003 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.580 2004/04/11 23:43:55 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.584 2004/06/15 22:10:08 tom Exp $
