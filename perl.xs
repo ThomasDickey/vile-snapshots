@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.37 1999/04/14 00:37:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.38 1999/04/20 01:36:53 tom Exp $
  */
 
 /*#
@@ -333,7 +333,7 @@ do_perl_cmd(SV *cmd, int inplace)
 	   way, we won't always be prompted... */
         clexec = FALSE;
         save_no_msgs = no_msgs;
-        no_msgs = TRUE;
+        no_msgs = FALSE;
 	old_isnamedcmd = isnamedcmd;	/* for mlreply_dir */
 	isnamedcmd = TRUE;
 	recursecount++;
@@ -1638,7 +1638,7 @@ command(cline)
 
     CODE:
 	save_no_msgs = no_msgs;
-	no_msgs = FALSE;
+	no_msgs = TRUE;
 	RETVAL = docmd(cline, TRUE, FALSE, 1);
 	no_msgs = save_no_msgs;
 
@@ -2798,7 +2798,7 @@ command(vbp,cline)
 	int save_no_msgs;
     PPCODE:
 	save_no_msgs = no_msgs;
-	no_msgs = FALSE;
+	no_msgs = TRUE;
 	api_setup_fake_win(vbp, TRUE);
 	status = docmd(cline, TRUE, FALSE, 1);
 	no_msgs = save_no_msgs;
