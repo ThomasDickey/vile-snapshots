@@ -1,0 +1,62 @@
+Philippe Chassany (20/02/1997)
+
+MXvile Menu Presentation
+------------------------
+
+The Patch is based on the Vile 6.3 Release. I hope it's not a big work
+to adapt it to the 6.5.
+
+Sources		Status		Definition
+
+menu.c		New		The rc file parser and menu generator
+x11.c		Patched		Patch to create the Motif MenuBar
+bind.c		Patched		Little patch to give acclerator of a command
+makefile	Patched		menu.c compilation and -DMENU CFLAGS
+menurc		New		A rc file example
+
+I use -DMENU CFLAGS to compile x11.c and bind.c files.
+
+The environment variable XVILE_MENU contains the name of the rc file.
+If it is not defined then the menubar is empty. For the moment, it's a bug
+but it's easy to bypass the menubar creation in this case.
+
+Part of the menurc file:
+
+C:Xvile					-> Cascade
+B:New:new_xvile				-> Common Action (compiled)
+B:Edit .vilerc:edit_rc			-> Idem
+B:Parse .vilerc:parse_rc		-> Idem
+B:Quit:quit				-> Vile Internal Action
+#					-> Comment
+C:Edition				
+B:Search Forward...:search-forward
+B:Search Backward...:search-reverse	-> Vile Internal Action
+B:Grep for...:34			-> Vile Macro from .vilerc file
+S					-> Seperator
+B:Manual for...:2
+#
+C:Help:help				-> Help Cascade
+B:General:help
+B:Bindings:describe-bindings
+B:Motions:describe-motions
+B:Operators:describe-operators
+S
+B:Apropos...:apropos
+B:On Function...:describe-function
+B:On Key...:describe-key
+
+Note : The Macro calls from the menurc file can't work for you because the 
+       Macro numbers are locals. All the other actions can work.
+
+I know, the patch is a little dirty but I think it's a good start to
+give xvile a powerfull gui (especially for new users).
+I have not lot of time to do more things in this patch but the main ideas
+are here. The next idea will be a xvile (X11/Xt) version of the menubar.
+
+If you have question/suggestions ...?
+
+Regards.
+		Phil.
+
+e-mail: phil@cln46ks.der.edf.fr
+

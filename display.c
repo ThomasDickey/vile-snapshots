@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.226 1997/03/31 01:17:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.227 1997/04/08 00:17:08 tom Exp $
  *
  */
 
@@ -39,7 +39,6 @@ static	int *lmap;
 #define CAN_SCROLL 0
 #endif
 
-static	int	i_displayed;
 static	int	im_displaying;		/* flag set during screen updates */
 static	int	im_timing;
 
@@ -888,7 +887,6 @@ int force)	/* force update past type ahead? */
 
 	TTflush();
 	endofDisplay();
-	i_displayed = TRUE;
 
 	while (chg_width || chg_height)
 		newscreensize(chg_height,chg_width);
@@ -3044,7 +3042,7 @@ mlmsg(const char *fmt, va_list *app)
 
 		/* if we can, erase to the end of screen */
 		erase_remaining_msg(ttcol);
-		mpresf = ttcol;
+		mpresf = (mpresf >= 0) ? ttcol : -ttcol;
 		mlsave[0] = EOS;
 		endofDisplay();
 	}
@@ -3214,6 +3212,26 @@ start_working(void)
 }
 
 /*
+ * When we stop the timer, we should cleanup the "working..." message.
+ */
+static void
+stop_working(void)
+{
+	if (mpresf < 0) {	/* erase leftover working-message */
+		int	save_row = ttrow;
+		int	save_col = ttcol;
+		int	erase_at = -(mpresf+1);
+		if (erase_at < save_col && reading_msg_line)
+			erase_at = save_col;
+		movecursor(term.t_nrow-1, erase_at);
+		erase_remaining_msg(erase_at);
+		movecursor(save_row, save_col);
+		TTflush();
+		mpresf = 0;
+	}
+}
+
+/*
  * Displays alternate
  *	"working..." and
  *	"...working"
@@ -3246,16 +3264,16 @@ imworking (int ACTUAL_SIG_ARGS GCC_UNUSED)
 		/*EMPTY*/;
 	} else if (im_waiting(-1)) {
 		im_timing = FALSE;
+		stop_working();
 		return;
 	} else if (ShowWorking()) {
 		if (skip) {
 			skip = FALSE;
-		} else if (i_displayed) {
+		} else {
 			int	save_row = ttrow;
 			int	save_col = ttcol;
 			int	show_col = LastMsgCol - 10;
 
-			i_displayed = FALSE;
 			if (show_col < 0)
 				show_col = 0;
 			movecursor(term.t_nrow-1, show_col);
@@ -3288,21 +3306,9 @@ imworking (int ACTUAL_SIG_ARGS GCC_UNUSED)
 #endif
 		}
 	} else {
-		if (mpresf < 0) {	/* erase leftover working-message */
-			int	save_row = ttrow;
-			int	save_col = ttcol;
-			int	erase_at = -(mpresf+1);
-			if (erase_at < save_col && reading_msg_line)
-				erase_at = save_col;
-			movecursor(term.t_nrow-1, erase_at);
-			erase_remaining_msg(erase_at);
-			movecursor(save_row, save_col);
-			TTflush();
-			mpresf = 0;
-		}
+		stop_working();
 		skip = TRUE;
-		if (!ShowWorking())
-			return;
+		return;
 	}
 	start_working();
 	flip = !flip;
