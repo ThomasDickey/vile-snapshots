@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.41 2001/12/26 20:49:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.43 2002/07/03 10:27:42 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -18,15 +18,18 @@ DefineFilter("make");
 static char *Comment_attr;
 static char *Error_attr;
 static char *Ident2_attr;
+static char *Preproc_attr;
 static char *Keyword_attr;
 static char *String_attr;
 
 static void
-write_keyword(char *text, int size)
+write_keyword(char *text, int size, int prepro, int caseless)
 {
     int colon = size > 1 && text[size-1] == ':';
     int space = 0;
+    int save;
     char *base = text;
+    char *attr = "";
 
     if (colon)
 	text[--size] = 0;
@@ -45,7 +48,22 @@ write_keyword(char *text, int size)
 	space++;
     }
 
-    flt_puts(text, size, keyword_attr(text));
+    save = text[size];
+    text[size] = 0;
+    attr = caseless
+	 ? ci_keyword_attr(text)
+    	 : keyword_attr(text);
+    if ((attr == 0) && prepro) {
+	set_symbol_table("premake");
+	attr = caseless
+	     ? ci_keyword_attr(text)
+	     : keyword_attr(text);
+	flt_puts(text, size, attr);
+	set_symbol_table(flt_name());
+    } else {
+	flt_puts(text, size, attr);
+    }
+    text[size] = save;
 
     if (space)
 	flt_puts(text + size, space, "");
@@ -142,6 +160,7 @@ do_filter(FILE *input)
     Error_attr   = class_attr(NAME_ERROR);
     Ident2_attr  = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
+    Preproc_attr = class_attr(NAME_PREPROC);
     String_attr  = class_attr(NAME_LITERAL);
 
     BEGIN(NORMAL);
@@ -159,15 +178,21 @@ NAME		[a-zA-Z_][a-zA-Z_0-9.-]+
 
 MACRO		([$]?\$\{{ID}\}|[$]?\${ID}|[$]?\$[A-Za-z@!%^&*?<]|\${SPACE}*\([^\)]+\))
 
+OPER		[+:?]?=
+
 %%
 
-<NORMAL>^{SPACE}*([^#])?include{SPACE}*	{ write_keyword(yytext, yyleng); }
+<NORMAL>^[ ]*[!]{NAME}{SPACE}*	{ write_keyword(yytext, yyleng, 1, 1); }
 
-<NORMAL>^{SPACE}*[\.!]{NAME}{SPACE}*:	{ write_keyword(yytext, yyleng); }
+<NORMAL>^[ ]*{NAME}{SPACE}*	{ write_keyword(yytext, yyleng, 1, 1); }
+
+<NORMAL>^{SPACE}*([-.])?include{SPACE}* { write_keyword(yytext, yyleng, 1, 0); }
+
+<NORMAL>^{SPACE}*[\.]{NAME}{SPACE}*:	{ write_keyword(yytext, yyleng, 0, 0); }
 
 <NORMAL>^({SPACE}*{NAME}{SPACE}*|\\\n)+: { write_delimited(yytext, yyleng, Keyword_attr); }
 
-<NORMAL>^{SPACE}*{NAME}{SPACE}*=	{ write_delimited(yytext, yyleng, Ident2_attr); }
+<NORMAL>^{SPACE}*{NAME}{SPACE}*{OPER}	{ write_delimited(yytext, yyleng, Ident2_attr); }
 
 <NORMAL>{MACRO}			{ WriteToken(Ident2_attr); }
 

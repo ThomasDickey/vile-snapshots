@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.101 2002/05/01 00:22:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.102 2002/07/03 00:02:01 tom Exp $
  *
  */
 
@@ -530,6 +530,47 @@ copy_traits(W_TRAITS * dst, W_TRAITS * src)
 {
     *dst = *src;
     copy_mvals(NUM_W_VALUES, dst->w_vals.wv, src->w_vals.wv);
+}
+
+W_VALUES *
+save_window_modes(BUFFER *bp)
+{
+    W_VALUES *result = 0;
+    WINDOW *wp;
+    UINT n;
+
+    if (bp->b_nwnd != 0) {
+	result = typecallocn(W_VALUES, bp->b_nwnd);
+	if (result != 0) {
+	    n = 0;
+	    for_each_window(wp) {
+		if (wp->w_bufp == bp) {
+		    copy_mvals(NUM_W_VALUES, result[n].wv, wp->w_values.wv);
+		    if (++n >= bp->b_nwnd)
+			break;
+		}
+	    }
+	}
+    }
+    return result;
+}
+
+void
+restore_window_modes(BUFFER *bp, W_VALUES * saved)
+{
+    if (saved != 0) {
+	WINDOW *wp;
+	UINT n = 0;
+
+	for_each_window(wp) {
+	    if (wp->w_bufp == bp) {
+		copy_mvals(NUM_W_VALUES, wp->w_values.wv, saved[n].wv);
+		if (++n >= bp->b_nwnd)
+		    break;
+	    }
+	}
+	free(saved);
+    }
 }
 
 /*

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.493 2002/02/27 10:24:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.494 2002/07/02 23:05:07 tom Exp $
  *
  */
 
@@ -1228,11 +1228,13 @@ extern void dowatchcallback(int fd);
 
 /* window.c */
 extern WINDOW * wpopup (void);
+extern W_VALUES * save_window_modes(BUFFER *bp);
 extern int delwp (WINDOW *thewp);
 extern int set_curwp (WINDOW *wp);
 extern void clone_window (WINDOW *dst, WINDOW *src);
 extern void copy_traits (W_TRAITS *dst, W_TRAITS *src);
 extern void init_window (WINDOW *wp, BUFFER *bp);
+extern void restore_window_modes(BUFFER *bp, W_VALUES *saved);
 extern void shrinkwrap (void);
 extern void winit (int screen);
 

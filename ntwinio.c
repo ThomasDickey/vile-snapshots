@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.128 2002/06/26 00:28:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.129 2002/07/03 22:49:39 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -3116,6 +3116,10 @@ repaint_window(HWND hWnd)
 	y0 = 0;
     if (x0 < 0)
 	x0 = 0;
+    if (y1 > term.maxrows)
+	y1 = term.maxrows;
+    if (x1 > term.maxcols)
+	x1 = term.maxcols;
 
     TRACE(("...erase %d\n", ps.fErase));
     TRACE(("...cells (%d,%d) - (%d,%d)\n", y0, x0, y1, x1));
