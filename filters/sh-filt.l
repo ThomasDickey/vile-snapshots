@@ -5,7 +5,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.56 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.57 2003/07/09 00:58:32 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -213,7 +213,7 @@ save_here(char *text, int length)
 	} else if (strchr(" \t", *text) != 0) {
 	    if (s != here_tag)
 		break;
-	} else if (strchr("<->", *text) == 0) {
+	} else if (!here_exp || strchr("<->", *text) == 0) {
 	    *s++ = *text;
 	}
 	text++;
