@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.295 1997/01/10 11:07:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.296 1997/01/19 19:01:43 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -1411,7 +1411,7 @@ typedef struct	{
 	MARK 	w_dt;		/* Line containing "."	       */
 		/* i don't think "mark" needs to be here -- I think it 
 			could safely live only in the buffer -pgf */
-#ifdef WINMARK
+#if WINMARK
 	MARK 	w_mk;	        /* Line containing "mark"      */
 #endif
 	MARK 	w_ld;	        /* Line containing "lastdotmark"*/
@@ -1566,7 +1566,7 @@ typedef struct	BUFFER {
 #define is_empty_buf(bp) (lforw(buf_head(bp)) == buf_head(bp))
 
 #define b_dot     b_wtraits.w_dt
-#ifdef WINMARK
+#if WINMARK
 #define b_mark    b_wtraits.w_mk
 #endif
 #define b_lastdot b_wtraits.w_ld
@@ -1696,7 +1696,7 @@ typedef struct	WINDOW {
 #define	for_each_window(wp) for (wp = wheadp; wp; wp = wp->w_wndp)
 
 #define w_dot     w_traits.w_dt
-#ifdef WINMARK
+#if WINMARK
 #define w_mark    w_traits.w_mk
 #endif
 #define w_lastdot w_traits.w_ld
@@ -1712,7 +1712,7 @@ typedef struct	WINDOW {
 #if OPT_MOUSE
 #define insertmode (curwp->w_traits.insmode)
 #endif /* OPT_MOUSE */
-#ifdef WINMARK
+#if WINMARK
 #define MK curwp->w_mark
 #else
 #define MK Mark

@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.84 1996/12/08 21:48:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.85 1997/01/19 15:40:58 tom Exp $
  *
  */
 
@@ -187,7 +187,22 @@ static const struct {
     { CAPNAME("F7","kf17"),	KEY_F17 },
     { CAPNAME("F8","kf18"),	KEY_F18 },
     { CAPNAME("F9","kf19"),	KEY_F19 },		/* F19 */
-    { CAPNAME("FA","kf20"),	KEY_F20 }		/* F20 */
+    { CAPNAME("FA","kf20"),	KEY_F20 },		/* F20 */
+    { CAPNAME("FB","kf21"),	KEY_F21 },
+    { CAPNAME("FC","kf22"),	KEY_F22 },
+    { CAPNAME("FD","kf23"),	KEY_F23 },
+    { CAPNAME("FE","kf24"),	KEY_F24 },
+    { CAPNAME("FF","kf25"),	KEY_F25 },
+    { CAPNAME("FG","kf26"),	KEY_F26 },
+    { CAPNAME("FH","kf27"),	KEY_F27 },
+    { CAPNAME("FI","kf28"),	KEY_F28 },
+    { CAPNAME("FJ","kf29"),	KEY_F29 },
+    { CAPNAME("FK","kf30"),	KEY_F30 },
+    { CAPNAME("FL","kf31"),	KEY_F31 },
+    { CAPNAME("FM","kf32"),	KEY_F32 },
+    { CAPNAME("FN","kf33"),	KEY_F33 },
+    { CAPNAME("FO","kf34"),	KEY_F34 },
+    { CAPNAME("FP","kf35"),	KEY_F35 }
 };
 
 static int  tcapcres ( char *cres );

@@ -1,5 +1,33 @@
 Changes for vile 7.0 (released ??? ??? ??, 1997)
 
+(tom)	970119 (d)
+	  Restrict xvile's modifier + mouse-2 behavior to check only the shift
+	  modifier (my system sets one of the modmap flags on all mouse
+	  clicks).
+	+ modify select/paste behavior in xvile so that the default pastes text
+	  at the last cursor (or mouse-click) position before selecting
+	  (requested by Jukka Keto <jketo@sasu1.carelian.fi>)
+	+ reset MK in set_curwp(), to avoid letting xvile cause DOT and MK
+	  point to different buffers, which breaks getregion().  This happened
+	  when the focusFollowsMouse resource was set (reported by Ralphe Neill
+	  <ran@dgs.monash.edu.au>)
+	+ add check for infinite loop in multimotion() (i.e., the 'q' command)
+	  that might arise from xvile's switching the value of DOT in response
+	  to mouse motion.  The loop happened because MK is a global rather
+	  than per-window.
+	+ check return values from getregion() in sel_extend().
+	+ change default binding of KEY_F11 to execute-macro-11, for
+	  consistency (does anyone have a keyboard w/o <esc>?).
+	+ add bindings for KEY_F21 through KEY_F35 and corresponding logic to
+	  x11.c and tcap.c (from a request by Abraham V.  George
+	  <ageorge@ERC.MsState.Edu>), so that xvile & vile can recognize these
+	  codes.  If they're not in a default binding, the KEY_Fxx aren't
+	  defined.  Note that vile's are bound to 8-bit codes, so they're of
+	  limited usefulness.
+	+ modify mktbls to allow 8-bit codes in nefkeys.h
+	+ corrected some places where WINMARK wasn't ifdef'd consistently,
+	  as part of testing that configuration.
+
 (tom)	970109 (c)
 	+ eliminate epath.h by variables $startup-file and $startup-path.
 	+ disable SIGHUP during normal quit/exit to workaround spurious "vile

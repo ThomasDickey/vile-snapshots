@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.138 1996/11/18 01:41:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.139 1997/01/19 19:35:42 tom Exp $
  *
  */
 
@@ -253,7 +253,13 @@ typedef struct _text_win {
     Bool        have_selection;
     Bool	wipe_permitted;
     Bool	was_on_msgline;
+    Bool	did_select;
+    Bool	pasting;
     XtIntervalId sel_scroll_id;
+    struct	{
+	int	col;
+	int	row;
+    } click_pos[2];
 
     /* key press queue */
     int		kqhead;
@@ -2899,7 +2905,7 @@ alloc_shadows(
       || (color.red < 0x0020 && color.green < 0x0020 && color.blue < 0x0020))
 	return False;			/* It'll look awful! */
 
-#define MAXINTENS 65535
+#define MAXINTENS ((unsigned long)65535L)
 #define PlusFortyPercent(v) ((7 * (long) (v)) / 5)
     lred   = PlusFortyPercent(color.red);
     lred   = min(lred, MAXINTENS);
@@ -4225,6 +4231,7 @@ extend_selection(
 	scroll_count = 0;
     }
     if (setcursor(nr,nc) && sel_extend(wipe,TRUE)) {
+	cur_win->did_select = True;
 	(void)update(TRUE);
 	if (scroll_count > 0) {
 	    x_flush();
@@ -4484,15 +4491,31 @@ x_process_event(
     case ButtonPress:
 	nc = ev->xbutton.x / cur_win->char_width;
 	nr = ev->xbutton.y / cur_win->char_height;
+	TRACE(("ButtonPress #%d (%d,%d)\n", ev->xbutton.button, nr, nc))
 	switch (ev->xbutton.button) {
 	case Button1:		/* move button and set selection point */
 	    start_selection(cur_win, (XButtonPressedEvent *) ev, nr, nc);
 	    onr = nr;
 	    onc = nc;
+	    if (!cur_win->did_select)
+		cur_win->click_pos[1] = cur_win->click_pos[0];
+	    cur_win->click_pos[0].row = nr;
+	    cur_win->click_pos[0].col = nc;
+	    cur_win->did_select = False;
 	    break;
 	case Button2:		/* paste selection */
-	    if (ev->xbutton.state) {	/* if modifier, paste at mouse */
+	    /*
+	     * If shifted, paste at mouse.  Otherwise, paste at the last
+	     * position marked before beginning a selection.
+	     */
+	    if (ev->xbutton.state & ShiftMask) {
 		if (!setcursor(nr, nc)) {
+		    kbd_alarm();	/* don't know how to paste here */
+		    break;
+		}
+	    } else {
+		if (!setcursor(cur_win->click_pos[1].row,
+			       cur_win->click_pos[1].col)) {
 		    kbd_alarm();	/* don't know how to paste here */
 		    break;
 		}
@@ -4510,10 +4533,21 @@ x_process_event(
 	}
 	break;
     case ButtonRelease:
+	TRACE(("ButtonRelease #%d (%d,%d)%s\n",
+		ev->xbutton.button,
+		ev->xbutton.y / cur_win->char_height,
+		ev->xbutton.x / cur_win->char_width,
+		cur_win->did_select ? ": did_select" : ""))
 	switch (ev->xbutton.button) {
 	case Button1:
 	    if (cur_win->persistent_selections)
 		sel_yank(SEL_KREG);
+
+	    if (cur_win->did_select)
+		cur_win->click_pos[0] = cur_win->click_pos[1];
+	    else
+		cur_win->click_pos[1] = cur_win->click_pos[0];
+
 	    /* FALLTHRU */
 	case Button3:
 	    if (cur_win->sel_scroll_id != ((XtIntervalId) 0)) {
@@ -5190,7 +5224,18 @@ x_getc(void)
 	if (tb_more(PasteBuf)) {	/* handle any queued pasted text */
 	    c = tb_next(PasteBuf);
 	    c |= NOREMAP;	/* pasted chars are not subject to mapping */
+	    cur_win->pasting = True;
 	    break;
+	} else if (cur_win->pasting) {
+	    /*
+	     * Set the default position for new pasting to just past the newly
+	     * inserted text.
+	     */
+	    cur_win->pasting = False;
+	    update(TRUE);	/* make sure ttrow & ttcol are valid */
+	    cur_win->click_pos[0].row = ttrow;
+	    cur_win->click_pos[0].col = ttcol + 1;
+	    cur_win->click_pos[1] = cur_win->click_pos[0];
 	}
 
 	if (!kqempty(cur_win)) {
@@ -5306,7 +5351,8 @@ x_key_press(
     KeySym	keysym;
     int		num;
 
-    register int i, n;
+    register int i;
+    register SIZE_T n;
 
     static const struct {
 	KeySym  key;
@@ -5350,6 +5396,21 @@ x_key_press(
 	{XK_F18,     KEY_F18},
 	{XK_F19,     KEY_F19},
 	{XK_F20,     KEY_F20},
+	{XK_F21,     KEY_F21},
+	{XK_F22,     KEY_F22},
+	{XK_F23,     KEY_F23},
+	{XK_F24,     KEY_F24},
+	{XK_F25,     KEY_F25},
+	{XK_F26,     KEY_F26},
+	{XK_F27,     KEY_F27},
+	{XK_F28,     KEY_F28},
+	{XK_F29,     KEY_F29},
+	{XK_F30,     KEY_F30},
+	{XK_F31,     KEY_F31},
+	{XK_F32,     KEY_F32},
+	{XK_F33,     KEY_F33},
+	{XK_F34,     KEY_F34},
+	{XK_F35,     KEY_F35},
 	/* keypad function keys */
 	{XK_KP_F1,   KEY_KP_F1},
 	{XK_KP_F2,   KEY_KP_F2},

@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.74 1996/02/26 04:24:35 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.75 1997/01/19 15:40:58 tom Exp $
  *
  */
 
@@ -1620,7 +1620,7 @@ main(int argc, char *argv[])
 					break;
 
 				case '\'':	/* then it's a key */
-					if (r < 1 || r > 2)
+					if (r < 1 || r > 3)
 						badfmt("looking for key binding");
 
 					if (strncmp("KEY_",vec[2],4) == 0) {
@@ -1628,8 +1628,8 @@ main(int argc, char *argv[])
 							badfmt("KEY_xxx definition must for FN- binding");
 						if (!nefkeys)
 								nefkeys = OpenHeader("nefkeys.h", argv);
-						Fprintf(nefkeys, "#define\t%s\t(SPEC|'%c')\n",
-								vec[2],vec[1][3]);
+						Fprintf(nefkeys, "#define %16s (SPEC|'%s')\n",
+								vec[2],vec[1]+3);
 						vec[2] = vec[3];
 					}
 					save_bindings(vec[1], func, formcond(fcond,vec[2]));

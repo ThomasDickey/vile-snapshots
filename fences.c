@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.39 1996/03/24 13:38:16 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.40 1997/01/19 20:09:55 tom Exp $
  *
  */
 
@@ -41,7 +41,7 @@ int	off)
 {
 	char	temp[NSTRING];
 	register char *d = temp;
-	register int  n;
+	register SIZE_T  n;
 
 	static	const	struct	{
 		char	*name;
