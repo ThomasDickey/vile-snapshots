@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.15 2000/02/27 21:48:21 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.16 2000/09/22 11:13:01 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -22,9 +22,11 @@
 #include "edef.h"
 
 #define  CLIPBOARD_BUSY      "Clipboard currently busy"
+#define  CLIPBOARD_COPY_MB   "Clipboard copy from minibuffer not supported"
 #define  CLIPBOARD_COPYING   "[Copying...]"
 #define  CLIPBOARD_COPY_FAIL "Clipboad copy failed"
 #define  CLIPBOARD_COPY_MEM  "Insufficient memory for copy operation"
+#define  CLIPBOARD_PASTE_ML  "Multi-line paste to minibuffer not supported"
 #define  PASS_HIGH(c)        ((int)(c) <= print_high && (int)(c) >= print_low)
 #define  _SPC_               ' '
 #define  _TAB_               '\t'
@@ -40,6 +42,25 @@ static char ctrl_lookup[] = "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_";
 static int  print_low, print_high;
 
 /* ------------------------------------------------------------------ */
+
+static void
+minibuffer_abort(void)
+{
+    char str[3];
+
+    /*
+     * Aborting out of the minibuffer is not easy.  When in doubt, use a
+     * sledge hammer.
+     */
+
+    str[0] = ESC;
+    str[1] = '\0';
+    (void) w32_keybrd_write(str);
+    update(TRUE);
+}
+
+
+
 
 static void
 report_cbrdstats(unsigned nbyte, unsigned nline, char *direction)
@@ -308,6 +329,13 @@ cbrdcpy_unnamed(int unused1, int unused2)
 {
     int rc;
 
+    if (curbp == bminip)
+    {
+        minibuffer_abort();   /* FIXME -- goes away some day? */
+        mlerase();
+        mlforce(CLIPBOARD_COPY_MB);
+        return (ABORT);
+    }
     kregcirculate(FALSE);
     rc  = cbrd_reg_copy();
     ukb = 0;
@@ -386,6 +414,13 @@ cbrdcpy_region(void)
 int
 opercbrdcpy(int f, int n)
 {
+    if (curbp == bminip)
+    {
+        minibuffer_abort();   /* FIXME -- goes away some day? */
+        mlerase();
+        mlforce(CLIPBOARD_COPY_MB);
+        return (ABORT);
+    }
     if (ukb != 0)
         return (cbrd_reg_copy());
     else
@@ -403,11 +438,123 @@ opercbrdcpy(int f, int n)
 
 /* ------------------- Paste Functionality ----------------------- */
 
+#define MAX_MAPPED_STR 16     /* fairly conservative :-) */
+
 static int  map_and_insert(unsigned, unsigned *);
 
 typedef struct { unsigned val; char *str; } MAP;
 
+/* Keep this table sorted by "val" . */
+static MAP cbrdmap[] =
+{
+    { 0x85, "..."  },
+    { 0x8B, "<"    },
+    { 0x91, "'"    },
+    { 0x92, "'"    },
+    { 0x93, "\""   },
+    { 0x94, "\""   },
+    { 0x96, "-"    },
+    { 0x97, "--"   },
+    { 0x99, "(TM)" },
+    { 0x9B, ">"    },
+    { 0xA6, "|"    },
+    { 0xA9, "(C)"  },
+    { 0xAB, "<<"   },
+    { 0xAD, "-"    },
+    { 0xAE, "(R)"  },
+    { 0xB1, "+/-"  },
+    { 0xBB, ">>"   },
+    { 0xBC, "1/4"  },
+    { 0xBD, "1/2"  },
+    { 0xBE, "3/4"  },
+};
+
 /* --------------------------------------------------------------- */
+
+static int
+map_compare(const void *elem1, const void *elem2)
+{
+    return (((MAP *) elem1)->val - ((MAP *) elem2)->val);
+}
+
+
+
+static int
+map_cbrd_char(unsigned c, unsigned char mapped_rslt[MAX_MAPPED_STR]) 
+{
+    MAP  key, *rslt_p;
+    int  nmapped = 0;
+    char *str;
+
+    key.val = c;
+    rslt_p  = bsearch(&key,
+                      cbrdmap,
+                      sizeof(cbrdmap) / sizeof(cbrdmap[0]),
+                      sizeof(cbrdmap[0]),
+                      map_compare);
+    if (! rslt_p)
+        mapped_rslt[nmapped++] = c;
+    else
+    {
+        for (str = rslt_p->str; *str; str++)
+            mapped_rslt[nmapped++] = *str;
+    }
+    mapped_rslt[nmapped] = '\0';
+    return (nmapped);
+}
+
+
+
+/* paste a single line from the clipboard to the minibuffer. */
+static int
+paste_to_minibuffer(unsigned char *cbrddata)
+{
+    int           ch, i, nmapped, rc = TRUE;
+    unsigned char *cp = cbrddata, *eol = NULL, map_str[MAX_MAPPED_STR + 1],
+                  one_char[2];
+
+    /* 
+     * err if attempting to paste more than one line of data into the
+     * minibuffer (to protect the user from seriously bad side effects when
+     * s/he pastes in the wrong buffer).
+     */
+    while(*cp)
+    {
+        if (*cp == '\r' && *(cp + 1) == '\n')
+        {
+            eol = cp;
+            if (*(cp + 2))
+            {
+                minibuffer_abort();   /* FIXME -- goes away some day? */
+                mlforce(CLIPBOARD_PASTE_ML);
+                return (ABORT);
+            }
+            else
+                break;
+        }
+        cp++;
+    }
+    if (eol)
+        *eol = '\0';  /* chop delimiter */
+    one_char[1] = '\0';
+    while (*cbrddata && rc)
+    {
+        if (*cbrddata > _TILDE_)
+        {
+            (void) map_cbrd_char(*cbrddata, map_str);
+            rc = w32_keybrd_write((char *) map_str);
+        }
+        else
+        {
+            one_char[0] = *cbrddata;
+            rc = w32_keybrd_write((char *) one_char);
+        }
+        cbrddata++;
+    }
+    return (rc);
+}
+
+
 
 /*
  * Paste contents of windows clipboard (if TEXT) to current buffer.
@@ -419,9 +566,10 @@ cbrdpaste(int f, int n)
     register unsigned      c;
     register unsigned char *data;
     HANDLE                 hClipMem;
-    int                    i, rc, suppressnl;
+    int                    i, isminibuf, rc, suppressnl;
     unsigned               nbyte, nline;
 
+    isminibuf = (curbp == bminip);
     for (rc = i = 0; i < 8 && (! rc); i++)
     {
         /* Try to open clipboard */
@@ -433,20 +581,48 @@ cbrdpaste(int f, int n)
     }
     if (! rc)
     {
+        if (isminibuf)
+        {
+            minibuffer_abort();   /* FIXME -- goes away some day? */
+            rc = ABORT;
+        }
+        else
+            rc = FALSE;
         mlforce(CLIPBOARD_BUSY);
-        return (FALSE);
+        return (rc);
     }
     if ((hClipMem = GetClipboardData(CF_TEXT)) == NULL)
     {
         CloseClipboard();
-        mlforce("[Clipboard empty or not TEXT data]");
-        return (FALSE);
+        if (isminibuf)
+        {
+            minibuffer_abort();   /* FIXME -- goes away some day? */
+            rc = ABORT;
+        }
+        else
+            rc = FALSE;
+        mlforce("Clipboard empty or not TEXT data");
+        return (rc);
     }
     if ((data = GlobalLock(hClipMem)) == NULL)
     {
         CloseClipboard();
-        mlforce("[Can't lock clipboard memory]");
-        return (FALSE);
+        if (isminibuf)
+        {
+            minibuffer_abort();   /* FIXME -- goes away some day? */
+            rc = ABORT;
+        }
+        else
+            rc = FALSE;
+        mlforce("Can't lock clipboard memory");
+        return (rc);
+    }
+    if (isminibuf)
+    {
+        rc = paste_to_minibuffer(data);
+        GlobalUnlock(hClipMem);
+        CloseClipboard();
+        return (rc);
     }
     mlwrite(CLIPBOARD_COPYING);
     nbyte = nline = 0;
@@ -513,20 +689,12 @@ cbrdpaste(int f, int n)
          * code).  "Tha' boy shore makes keen use of cut and paste."
          */
 
-		swapmark();                           /* I understand this. */
+        swapmark();                           /* I understand this. */
         if (is_header_line(DOT, curbp))
             DOT.l = lback(DOT.l);             /* This is a mystery. */
         report_cbrdstats(nbyte, nline, "from");
     }
     return (rc);
-}
-
-
-
-static int
-map_compare(const void *elem1, const void *elem2)
-{
-    return (((MAP *) elem1)->val - ((MAP *) elem2)->val);
 }
 
 
@@ -540,54 +708,13 @@ map_and_insert(unsigned c,       /* ANSI char to insert   */
                unsigned *nbyte   /* total #chars inserted */
                )
 {
-    int  rc;
-    MAP  key, *rslt_p;
-    char *str;
+    unsigned char mapped_str[MAX_MAPPED_STR];
+    int           i, nmapped, rc;
 
-    /* Keep this table sorted by "val" . */
-    static MAP map[] =
-    {
-        { 0x85, "..."  },
-        { 0x8B, "<"    },
-        { 0x91, "'"    },
-        { 0x92, "'"    },
-        { 0x93, "\""   },
-        { 0x94, "\""   },
-        { 0x96, "-"    },
-        { 0x97, "--"   },
-        { 0x99, "(TM)" },
-        { 0x9B, ">"    },
-        { 0xA6, "|"    },
-        { 0xA9, "(C)"  },
-        { 0xAB, "<<"   },
-        { 0xAD, "-"    },
-        { 0xAE, "(R)"  },
-        { 0xB1, "+/-"  },
-        { 0xBB, ">>"   },
-        { 0xBC, "1/4"  },
-        { 0xBD, "1/2"  },
-        { 0xBE, "3/4"  },
-    };
-
-    key.val = c;
-    rslt_p  = bsearch(&key,
-                      map,
-                      sizeof(map) / sizeof(map[0]),
-                      sizeof(map[0]),
-                      map_compare);
-    if (! rslt_p)
-    {
-        (*nbyte)++;
-        rc = linsert(1, c);
-    }
-    else
-    {
-        for (rc = TRUE, str = rslt_p->str; *str && rc; str++)
-        {
-            (*nbyte)++;
-            rc = linsert(1, *str);
-        }
-    }
+    nmapped = map_cbrd_char(c, mapped_str);
+    *nbyte += nmapped;
+    for (rc = TRUE, i = 0; i < nmapped && rc; i++)
+        rc = linsert(1, mapped_str[i]);
     return (rc);
 }
 

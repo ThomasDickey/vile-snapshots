@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2000 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.94 2000/07/25 10:32:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.95 2000/09/26 01:10:12 tom Exp $
  *
  */
 
@@ -35,6 +35,8 @@ static int newfebuff = TRUE;	/* is the name new since last time? */
 static TBUFF *fe_verb;
 static TBUFF *fe_file;
 static TBUFF *fe_text;
+static int cC_base;
+static int lL_base;
 static int fe_colm;
 static int fe_line;
 
@@ -208,11 +210,15 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 		    APP_S(remain);
 		    errp->words[W_TEXT] = ++word;
 		    break;
+		case 'c':
 		case 'C':
+		    cC_base = ((*src) == 'C');
 		    APP_S(number);
 		    errp->words[W_COLM] = ++word;
 		    break;
+		case 'l':
 		case 'L':
+		    lL_base = ((*src) == 'L');
 		    APP_S(number);
 		    errp->words[W_LINE] = ++word;
 		    break;
@@ -379,7 +385,7 @@ decode_exp(ERR_PATTERN * exp)
     tb_free(&fe_verb);
     tb_free(&fe_file);
     tb_free(&fe_text);
-    fe_colm = 1;
+    fe_colm = cC_base;
     fe_line = 0;
 
     n = 0;
@@ -614,8 +620,8 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
     }
     /* it's an absolute move */
     curwp->w_lastdot = DOT;
-    s = gotoline(TRUE, -(curbp->b_lines_on_disk - fe_line + 1));
-    DOT.o = fe_colm ? fe_colm - 1 : 0;
+    s = gotoline(TRUE, -(curbp->b_lines_on_disk - fe_line + lL_base));
+    DOT.o = fe_colm ? fe_colm - cC_base : 0;
 
     oerrline = fe_line;
     (void) tb_scopy(&oerrfile, errfile);

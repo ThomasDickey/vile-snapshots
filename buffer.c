@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.220 2000/06/24 12:56:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.223 2000/09/26 09:12:14 tom Exp $
  *
  */
 
@@ -436,7 +436,15 @@ histbuff0(int f, int n, int this_window)
 int
 histbuff(int f, int n)
 {
-	return histbuff0(f, n, FALSE);
+	int rc;
+
+	if (! clexec)
+	    vile_is_busy = TRUE;  /* kill autocolor */
+	rc = histbuff0(f, n, FALSE);
+	if (! clexec)
+	    vile_is_busy = FALSE;
+	return (rc);
+
 }
 
 /*
@@ -446,7 +454,14 @@ histbuff(int f, int n)
 int
 histbuff_to_current_window(int f, int n)
 {
-	return histbuff0(f, n, TRUE);
+	int rc;
+
+	if (! clexec)
+	    vile_is_busy = TRUE;  /* kill autocolor */
+	rc = histbuff0(f, n, TRUE);
+	if (! clexec)
+	    vile_is_busy = FALSE;
+	return (rc);
 }
 
 /*
@@ -500,13 +515,21 @@ char *	fname,
 int	copy,
 int	lockfl)
 {
-	register BUFFER *bp;
-	register LINE	*lp;
+	static int nested;
+
+	BUFFER *bp;
+	LINE	*lp;
 	BUFFER *savebp;
 	char nfname[NFILEN];
+	char *stripped;
 
 	if (interrupted() || fname == 0) /* didn't really have a filename */
 		return;
+	if (nested)
+		return;
+
+	if ((stripped = is_appendname(fname)) != 0)
+		fname = stripped;
 
 	(void)lengthen_path(strcpy(nfname, fname));
 	if (global_g_val(GMDIMPLYBUFF)
@@ -563,6 +586,11 @@ int	lockfl)
 					}
 				}
 			}
+		} else if (!b_is_changed(bp)) {
+			nested++;
+			if (bp->b_active == TRUE)
+				bp2readin(bp, TRUE);
+			nested--;
 		}
 		DisableHook(&bufhook);
 		make_current(bp);
@@ -2306,10 +2334,22 @@ writeall(int f, int n, int promptuser, int leaving, int autowriting)
 			dirtymsgline = TRUE;
 			failure = (status != TRUE);
 			if (failure) {
+#define SAVE_FAILED_FMT "[Save of %s failed]"
+
+				int  outlen;
+				char tmp[NFILEN];
+
 				mlforce("\n");
-				mlforce("[Save of %s failed]",bp->b_fname);
+				outlen = (term.cols - 1) -
+					 (sizeof(SAVE_FAILED_FMT) - 3);
+				mlforce(SAVE_FAILED_FMT,
+					path_trunc(bp->b_fname,
+						   outlen,
+						   tmp,
+						   sizeof(tmp)));
 				/* dirtymsgline still TRUE */
 				break;
+#undef SAVE_FAILED_FMT
 			}
 			count++;
 		}

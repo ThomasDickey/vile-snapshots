@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.436 2000/09/12 11:10:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.438 2000/09/22 11:16:26 cmorgan Exp $
  *
  */
 
@@ -766,6 +766,10 @@ extern int is_scratchname (const char *fn);
 extern int maybe_pathname (char *fn);
 extern void append_to_path_list(char **path_list, char *path);
 extern void prepend_to_path_list(char **path_list, char *path);
+extern char *path_trunc(char *path,
+                        int  max_path_len,
+                        char *trunc_buf,
+                        int  trunc_buf_len);
 
 #if OPT_MSDOS_PATH
 extern char * is_msdos_drive (char *path);
@@ -1091,7 +1095,6 @@ extern int  is_win95(void);
 extern int  is_winnt(void);
 extern char *mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc);
 extern char *ntwinio_current_font(void);
-extern int	winvile_cursor_state(int visible, int queue_change);
 extern int  ntwinio_font_frm_str(const char *fontstr, int use_mb);
 extern void ntwinio_oleauto_reg(void);
 extern void ntwinio_redirect_hwnd(int redirect);
@@ -1108,11 +1111,13 @@ extern int  w32_CreateProcess(char *cmd, int no_wait);
 extern int  w32_del_selection(int copy_to_clipboard);
 extern int  w32_inout_popen(FILE **fr, FILE **fw, char *cmd);
 extern void w32_keybrd_reopen(int pressret);
+extern int  w32_keybrd_write(char *data);
 extern void w32_npclose(FILE *fp);
 extern int  w32_system(const char *cmd);
 extern int  w32_system_winvile(const char *cmd, int *pressret);
 extern char *w32_wdw_title();
 extern int  winvile_cursor(int visible, int queue_change);
+extern int	winvile_cursor_state(int visible, int queue_change);
 extern void *winvile_hwnd(void);
 extern void winvile_start(void);
 #endif

@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.250 2000/08/26 16:38:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.251 2000/09/25 00:53:50 tom Exp $
  *
  */
 
@@ -957,7 +957,7 @@ update_scrollbar_sizes(void)
 	    XmNallowResize,		TRUE,
 	    XmNheight,			new_height,
 	    XmNpaneMinimum,		1,
-	    XmNpaneMaximum,		1000,
+	    XmNpaneMaximum,		DisplayHeight(dpy, DefaultScreen(dpy)),
 	    XmNshowArrows,		wp->w_ntrows > 3 ? TRUE : FALSE,
 	    NULL);
 	wp->w_flag &= ~WFSBAR;

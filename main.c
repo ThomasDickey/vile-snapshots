@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.433 2000/08/26 16:41:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.434 2000/09/25 23:17:50 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -1304,8 +1304,8 @@ global_val_init(void)
 		const CMDFUNC *cfp;
 
 		sel_bindings.kb_normal[i] = dft_bindings.kb_normal[i];
-		ins_bindings.kb_normal[i] =
-		cmd_bindings.kb_normal[i] = 0;
+		ins_bindings.kb_normal[i] = 0;
+		cmd_bindings.kb_normal[i] = dft_bindings.kb_normal[i];
 		if (i < 32
 		 && (cfp = dft_bindings.kb_normal[i]) != 0
 		 && (cfp->c_flags & (GOAL|MOTION)) != 0) {

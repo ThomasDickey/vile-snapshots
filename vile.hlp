@@ -299,13 +299,14 @@ Window manipulation commands
 File manipulation commands:
 ---------------------------
 	The usual ":e", ":r", ":f", ":w" commands are available, though
-	only ":e!" and ":w!" are available of the "!" options.  The ":r"
-	command reads the named file in after the current line.  To read a
-	file before the first line, use ":0r".  File completion works like
-	command completion: using the TAB and '?' keys you can complete or
-	see next character choices.  Additionally, on unix hosts, backquotes
-	may be used to invoke a shell command that returns the path of a
-	desired file.  For example:
+	only ":e!" and ":w!" are available of the "!" options.  The command
+	":w >> filename" appends one file to another.  The ":r" command
+	reads the named file in after the current line.  To read a file
+	before the first line, use ":0r".  File completion works like
+	command completion:  using the TAB and '?' keys you can complete or
+	see next character choices.  Additionally, on unix hosts,
+	backquotes may be used to invoke a shell command that returns the
+	path of a desired file.  For example:
 
 		:e `which locks`       # csh looks for script called "locks"
 		:e `type -path locks`  # bash equivalent
@@ -728,13 +729,19 @@ Miscellaneous commands
 
 		The command parsing is done with regular expressions.  Vile
 		compiles these from the buffer [Error Expressions], which are a
-		set of regular expressions with extra embedded information.
+		set of regular expressions with extra embedded information. 
 		Unescaped '%' followed by 'V', 'B', 'F', 'L', 'C' or 'T'
 		substitute verb (Entering/Leaving for gmake), buffer (i.e.,
 		scratch buffer with a bracketed name), file, line, column and
-		text fields.  The V, B, F, T substitutions are for nonblank
-		fields, which is not always enough, so vile additionally
-		recognizes a range in brackets, e.g.,
+		text fields.
+		
+		The line and column numbers are 1-based, treating tab character
+		as a single column.  Use %l and %c, respectively for 0-based
+		values.
+		
+		The V, B, F, T substitutions are for nonblank fields, which is
+		not always enough, so vile additionally recognizes a range in
+		brackets, e.g.,
 
 			^%[^: 	]:\s*%L:%T
 
@@ -5089,4 +5096,4 @@ Problems
 
 Copyright 1995-2000 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.500 2000/09/12 11:18:51 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.502 2000/09/26 01:14:00 tom Exp $

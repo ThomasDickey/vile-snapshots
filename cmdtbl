@@ -69,6 +69,8 @@
 #		i.e. not relative to the current position or screen.  It causes
 #		the "lastdotmark", ldmark to be set to dot before the move
 #		takes place.
+#	NOMINI is a special case, MOTION commands which cannot be used in the
+#		minibuffer.  It implicitly includes FL and ABSM.
 #	GOAL signifies a motion that will attempt to retain the
 #		current column position after the motion.
 #	GLOBOK says the function can follow a global command
@@ -95,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.205 2000/08/26 16:36:01 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.206 2000/09/25 09:50:30 tom Exp $
 #
 #
 
@@ -137,7 +139,7 @@ backdelchar	REDO|UNDO
 backhunt	ABSM|MOTION		!SMALLER
 	"hunt-backward"
 	<search backward for previously entered pattern>
-backhpage	MOTION
+backhpage	MOTION|NOMINI
 	"previous-half-page"		!FEWNAMES
 	"back-half-page"		!FEWNAMES
 	"up-half-page"			!FEWNAMES
@@ -158,13 +160,13 @@ backbline	MOTION|FL
 	"up-line-at-bol"		!FEWNAMES
 	'-'
 	<move up CNT lines, to first non-white character>
-backpage	MOTION
+backpage	MOTION|NOMINI
 	"previous-page"			!FEWNAMES
 	"back-page"			!FEWNAMES
 	'^B'
 	'FN-p'				KEY_Prior
 	<move up CNT full screens>
-back_row	GOAL|MOTION
+back_row	GOAL|MOTION|NOMINI
 	'^X-^U'
 	"backward-row"			!FEWNAMES
 	"previous-row"			!FEWNAMES
@@ -179,7 +181,7 @@ backviword	MOTION
 	"back-punctuated-word"		!FEWNAMES
 	'b'
 	<move left by CNT \"small\" words>
-backsearch	ABSM|MOTION
+backsearch	ABSM|MOTION|NOMINI
 	"search-reverse"		!FEWNAMES
 	'?'
 	<search backwards for fresh pattern>
@@ -247,7 +249,7 @@ clrmes		NONE
 comp_err_exps	NONE			OPT_FINDERR
 	"compile-error-expressions"
 	<(re)compile the [Error Expressions] buffer>
-consearch	ABSM|MOTION
+consearch	ABSM|MOTION|NOMINI
 	"continue-search"		!FEWNAMES
 	'n'
 	<search for previous pattern in same direction as before>
@@ -630,7 +632,7 @@ forwdelchar	REDO|UNDO
 	'x'
 	'FN-d'				KEY_Delete
 	<delete CNT characters to the right>
-forwhpage	MOTION
+forwhpage	MOTION|NOMINI
 	"forward-half-page"		!FEWNAMES
 	"next-half-page"		!FEWNAMES
 	"down-half-page"		!FEWNAMES
@@ -648,14 +650,14 @@ forwchar_to_eol	MOTION
 	'l'
 	'FN-C'				KEY_Right
 	<move CNT characters right, stopping at end of line>
-forwpage	MOTION
+forwpage	MOTION|NOMINI
 	"forward-page"			!FEWNAMES
 	"next-page"			!FEWNAMES
 	"down-page"			!FEWNAMES
 	'^F'
 	'FN-n'				KEY_Next
 	<move down CNT full screens>
-forw_row	GOAL|MOTION
+forw_row	GOAL|MOTION|NOMINI
 	'^X-^D'
 	"forward-row"			!FEWNAMES
 	"next-row"			!FEWNAMES
@@ -700,7 +702,7 @@ forwviendw	MOTION
 forwhunt	ABSM|MOTION		!SMALLER
 	"hunt-forward"			!FEWNAMES
 	<search forward for previously entered pattern>
-forwsearch	ABSM|MOTION
+forwsearch	ABSM|MOTION|NOMINI
 	"search-forward"		!FEWNAMES
 	'/'
 	'FN-f'				KEY_Find
@@ -726,24 +728,24 @@ godotplus	MOTION|FL
 # this function is for internal use only, for ex commands
 gomark		MOTION|FL|(RANGE|ZERO)
 
-gotobop		ABSM|MOTION
+gotobop		ABSM|MOTION|NOMINI
 	"previous-paragraph"		!FEWNAMES
 	"back-paragraph"		!FEWNAMES
 	"up-paragraph"			!FEWNAMES
 	'{'
 	<move to the start of a paragraph>
-gotoeop		ABSM|MOTION
+gotoeop		ABSM|MOTION|NOMINI
 	"forward-paragraph"		!FEWNAMES
 	"next-paragraph"		!FEWNAMES
 	"down-paragraph"		!FEWNAMES
 	'}'
 	<move to the end of a paragraph>
-gotobob		ABSM|MOTION		!SMALLER
+gotobob		ABSM|MOTION|NOMINI	!SMALLER
 	"beginning-of-file"		!FEWNAMES
 	"goto-beginning-of-file"	!FEWNAMES
 	'FN-H'				KEY_Home
 	<move to the top of the buffer>
-gotoeob		ABSM|MOTION		!SMALLER
+gotoeob		ABSM|MOTION|NOMINI	!SMALLER
 	"goto-end-of-file"		!FEWNAMES
 	"end-of-file"			!FEWNAMES
 	'FN-E'				KEY_End
@@ -775,13 +777,13 @@ gotoeos		ABSM|MOTION|FL
 	"end-of-screen"			!FEWNAMES
 	'L'
 	<move to the CNT'th line from the bottom of the screen>
-gotobosec	ABSM|MOTION
+gotobosec	ABSM|MOTION|NOMINI
 	"previous-section"		!FEWNAMES
 	"back-section"			!FEWNAMES
 	"up-section"			!FEWNAMES
 	'['
 	<move to the previous start of a \"section\">
-gotoeosec	ABSM|MOTION
+gotoeosec	ABSM|MOTION|NOMINI
 	"forward-section"		!FEWNAMES
 	"next-section"			!FEWNAMES
 	"down-section"			!FEWNAMES
@@ -805,7 +807,7 @@ gototag		NONE			OPT_TAGS
 	"find-tag"			!FEWNAMES
 	'^]'
 	<look up the given (or under-cursor) name as a \"tag\">
-gotochr		ABSM|MOTION|(RANGE)	!SMALLER
+gotochr		ABSM|MOTION|RANGE	!SMALLER
 	"goto-char"
 	'^X-G'
 	<go to the CNT'th character.  unspecified CNT means end of buffer>
@@ -813,7 +815,7 @@ gotocol		MOTION
 	"goto-column"			!FEWNAMES
 	'|'
 	<go to the CNT'th column on the line>
-gotoline	ABSM|MOTION|FL|(RANGE)
+gotoline	ABSM|MOTION|FL|RANGE
 	"goto-line"			!FEWNAMES
 	'G'
 	<go to the CNT'th line.  unspecified CNT means end of buffer>
@@ -825,11 +827,11 @@ golinenmmark	MOTION|FL
 #  single quote -- can't use '''
 	'\047'
 	<move to line containing the mark, at first non-white character>
-goexactnmmark	MOTION
+goexactnmmark	MOTION|NOMINI
 	"goto-named-mark-exact"		!FEWNAMES
 	'`'
 	<move to the given mark>
-gorectnmmark	MOTION|RECT
+gorectnmmark	MOTION|RECT|NOMINI
 	"goto-named-mark-rectangular"	!FEWNAMES
 	'\0134'
 	<move to the mark, implying a rectangle if used with an operator>
@@ -1334,20 +1336,20 @@ risearch	NONE			OPT_ISRCH
 	"reverse-incremental-search"	!FEWNAMES
 	'^X-R'
 	<search backwards for a pattern entered character by character>
-revsearch	ABSM|MOTION
+revsearch	ABSM|MOTION|NOMINI
 	"reverse-search"		!FEWNAMES
 	'N'
 	<search for previous pattern in opposite direction from before>
-sel_motion	ABSM|MOTION		OPT_SELECTIONS
+sel_motion	ABSM|MOTION|NOMINI	OPT_SELECTIONS
 	"selection"
 	'^S'
 	'^A-S'
 	<move to selection.  if used with operator, region is the selection>
-scrforwsearch	ABSM|MOTION
+scrforwsearch	ABSM|MOTION|NOMINI
 	"screen-search-forward"		!FEWNAMES
 	'^X-/'
 	<search forwards for pattern (word) under cursor>
-scrbacksearch	ABSM|MOTION
+scrbacksearch	ABSM|MOTION|NOMINI
 	"screen-search-reverse"		!FEWNAMES
 	'^X-?'
 	<search backwards for pattern (word) under cursor>
@@ -1406,15 +1408,15 @@ setfillcol	NONE
 	"set-fill-column"
 	'^X-f'
 	<set the fillcol setting to CNT.  same as \"set fillcol=NN\">
-multimotion		MOTION		OPT_SELECTIONS
+multimotion	MOTION|NOMINI		OPT_SELECTIONS
 	"quoted-motion"			!FEWNAMES
 	'q'
 	'FN-s'				KEY_Select
 	<start (and end) a selection using multiple motions, CNT is type (1) >
-multimotionfullline		MOTION	OPT_SELECTIONS
+multimotionfullline	MOTION|NOMINI	OPT_SELECTIONS
 	"quoted-fullline-motion"	!FEWNAMES
 	<start (and end) a full-line selection using multiple motions (2) >
-multimotionrectangle		MOTION	OPT_SELECTIONS
+multimotionrectangle	MOTION|NOMINI	OPT_SELECTIONS
 	"quoted-rectangular-motion"	!FEWNAMES
 	'^A-q'
 	<start (and end) a rectangular selection using multiple motions (3) >

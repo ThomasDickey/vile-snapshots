@@ -1,8 +1,8 @@
-%x NORMAL HEREDOC QUOTED
+%x NORMAL HEREDOC QUOTED QUOTED2
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.32 2000/09/14 01:31:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.35 2000/09/24 22:41:21 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -60,14 +60,14 @@ do_filter(FILE *input)
     BEGIN(NORMAL);
     while (yylex() > 0) {
     }
-    flt_bfr_finish();
+    flt_bfr_error();
 }
 
 %}
 
 SPACE		[ \t]
 
-SSTRING		\'(\\.|[^'\\]|\\\n)*\'
+SSTRING		\'([^']|\n)*\'
 
 NAME		[a-zA-Z0-9_]
 
@@ -132,9 +132,11 @@ INTEGER		[-+]?([0-9]+)
 <HEREDOC>[^\n]+		{ flt_bfr_append(yytext, yyleng); }
 <HEREDOC>\n		{ flt_bfr_append(yytext, yyleng); }
 
-<QUOTED>\\.		{ flt_bfr_append(yytext, yyleng); }
+<QUOTED>\\		{ flt_bfr_embed(yytext, yyleng, Action_attr); BEGIN(QUOTED2); }
 <QUOTED>{IDENT1}	|
 <QUOTED>{IDENT2}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); }
-<QUOTED>[^\n\"]+	{ flt_bfr_append(yytext, yyleng); }
+<QUOTED>[^\n\\\"\$]+	{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>\n		{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>\"		{ FinishQuote(NORMAL); }
+
+<QUOTED2>(.|\n)		{ flt_bfr_embed(yytext, yyleng, Action_attr); BEGIN(QUOTED); }

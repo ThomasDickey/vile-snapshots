@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.170 2000/09/05 11:11:30 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.171 2000/09/25 00:11:53 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -54,7 +54,6 @@ PERLLIB		= @perl_lib_path@
 INSTALL_SCRIPT	= $(srcdir)/sinstall.sh $(PERL) $(INSTALL_PROGRAM)
 INSTALL_MODULE	= $(srcdir)/sinstall.sh $(PERL) $(INSTALL_DATA)
 
-
 prefix		= @prefix@
 exec_prefix	= @exec_prefix@
 
@@ -69,6 +68,7 @@ mandir		= @mandir@/man$(manext)
 
 SHELL		= /bin/sh
 RM		= rm -f
+MAKE_RECUR	= @cf_cv_makeflags@ prefix=$(prefix)
 
 ICON		= vile
 ICON_SUFFIX	= @ICON_SUFFIX@
@@ -276,11 +276,11 @@ ALL =	$(TARGET)
 
 all \
 install ::
-	cd filters && $(MAKE) @cf_cv_makeflags@ $@
+	cd filters && $(MAKE) $(MAKE_RECUR) $@
 all ::	$(ALL)
 
 filters/@LIB_PREFIX@vlflt.a :
-	cd filters && $(MAKE) @cf_cv_makeflags@ @LIB_PREFIX@vlflt.a
+	cd filters && $(MAKE) $(MAKE_RECUR) @LIB_PREFIX@vlflt.a
 
 $(TARGET): $(BUILTHDRS) $(OBJ) $(BUILTLIBS)
 	- mv $(TARGET) o$(TARGET)
@@ -403,7 +403,7 @@ uninstall \
 mostlyclean \
 clean \
 distclean ::
-	- test -f filters/makefile && cd filters && $(MAKE) @cf_cv_makeflags@ $@
+	- test -f filters/makefile && cd filters && $(MAKE) $(MAKE_RECUR) $@
 
 mostlyclean ::
 	- $(RM) *.[oi] o$(TARGET) $(BUILTHDRS) $(BUILTSRCS) $(MKTBLS) \

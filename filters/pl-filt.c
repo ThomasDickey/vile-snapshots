@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.7 2000/09/04 22:28:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.8 2000/09/25 00:47:05 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -384,7 +384,7 @@ begin_HERE(char *s, int *quoted)
 	    s += ok;
 	base = s;
 	if ((ok = is_QIDENT(s)) != 0) {
-	    size_t temp = 0;
+	    unsigned temp = 0;
 	    char *marker = do_alloc((char *) 0, ok + 1, &temp);
 	    char *d = marker;
 	    s += ok;
@@ -564,7 +564,7 @@ do_filter(FILE * input GCC_UNUSED)
     static unsigned used;
     static char *line;
 
-    size_t actual = 0;
+    unsigned actual = 0;
     size_t request = 0;
     States state = eCODE;
     char *s;
