@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.24 2002/07/04 20:29:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.26 2002/10/23 00:51:04 tom Exp $
  *
  */
 
@@ -110,7 +110,7 @@ process_params(void)
     while (*s != EOS) {
 	s = skip_cblanks(s);
 	if (*s == '-') {
-	    while (*++s != EOS && !isSpace(*s)) {
+	    while (*s != EOS && *++s != EOS && !isSpace(*s)) {
 		flt_options[CharOf(*s)] += 1;
 		switch (*s) {
 		case 'k':
@@ -132,7 +132,7 @@ process_params(void)
 	    s = skip_ctext(s);
 	}
     }
-    vile_keywords = !flt_options['v'];
+    vile_keywords = !flt_options['k'];
     return !vile_keywords;
 }
 

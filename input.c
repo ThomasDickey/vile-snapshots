@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.244 2002/10/09 13:31:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.247 2002/10/23 23:05:48 tom Exp $
  *
  */
 
@@ -1498,10 +1498,11 @@ kbd_reply(const char *prompt,	/* put this out first */
     TBUFF *buf = 0;
     char *result;
 
-    TRACE(("kbd_reply(prompt=%s, extbuf=%s, options=%#x)\n\tclexec=%d,\n\tpushed_back=%d\n",
+    TRACE((T_CALLED "kbd_reply(prompt=%s, extbuf=%s, options=%#x)\n",
 	   TRACE_NULL(prompt),
 	   tb_visible(*extbuf),
-	   options, clexec, pushed_back));
+	   options));
+    TRACE(("clexec=%d, pushed_back=%d\n", clexec, pushed_back));
 
     miniedit = FALSE;
     set_end_string(EOS);	/* ...in case we don't set it elsewhere */
@@ -1521,7 +1522,7 @@ kbd_reply(const char *prompt,	/* put this out first */
 	    options |= KBD_REGLUE | KBD_SHPIPE;
 
 	tbreserve(extbuf);
-	TRACE(("...getting token from: %s\n", str_visible(execstr)));
+	TRACE(("...getting token from: %s\n", str_visible0(execstr)));
 	execstr = ((options & KBD_REGLUE) != 0 && pushed_back)
 	    ? get_token2(execstr, extbuf, eolchar, &actual)
 	    : get_token(execstr, extbuf, eolchar, &actual);
@@ -1540,10 +1541,27 @@ kbd_reply(const char *prompt,	/* put this out first */
 		buf = tb_copy(&buf, *extbuf);
 		tb_append(&buf, EOS);	/* FIXME: for tokval() */
 		result = tokval(tb_values(buf));
+
+		/*
+		 * Check for special return values from tokval().  It may be
+		 * the result of an expression.  If an error was detected
+		 * during evaluation, we will see the magic error_val.  That's
+		 * a reason to stop here.
+		 *
+		 * If the result is a string, tokval() will return a quoted
+		 * version of it, to avoid confusing recursive calls of
+		 * run_func().  But we do not want quotes here, just the
+		 * contents.  Dequote it if we started with a function and got
+		 * a quoted string.
+		 */
 		if (result == error_val) {
 		    result = "";
 		    status = ABORT;
+		} else if (toktyp(tb_values(buf)) == TOK_FUNCTION &&
+			   toktyp(result) == TOK_QUOTSTR) {
+		    ++result;
 		}
+
 		(void) tb_scopy(extbuf, result);
 		tb_free(&buf);
 		tb_unput(*extbuf);	/* trim the null */
@@ -1584,7 +1602,7 @@ kbd_reply(const char *prompt,	/* put this out first */
 #endif
 	}
 	tb_append(extbuf, EOS);	/* FIXME */
-	return status;
+	returnCode(status);
     }
 
     quotef = FALSE;
@@ -1842,7 +1860,7 @@ kbd_reply(const char *prompt,	/* put this out first */
 	   (int) tb_length(*extbuf),
 	   tb_visible(*extbuf)));
     tb_append(extbuf, EOS);	/* FIXME */
-    return status;
+    returnCode(status);
 }
 
 /*

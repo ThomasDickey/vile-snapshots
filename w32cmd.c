@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.26 2002/10/09 13:43:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.27 2002/10/20 11:24:13 tom Exp $
  */
 
 #include "estruct.h"
@@ -116,13 +116,19 @@ commdlg_open_files(int chdir_allowed, const char *dir)
 #define RET_BUF_SIZE_ (24 * 1024)
 
     int   chdir_mask, i, len, nfile, rc = TRUE, status;
-    char  *filebuf, oldcwd[FILENAME_MAX], newcwd[FILENAME_MAX], *cp,
-          validated_dir[FILENAME_MAX];
+    char  *filebuf;
+    char  oldcwd[FILENAME_MAX];
+    char  newcwd[FILENAME_MAX];
+    char  *cp;
+    char  validated_dir[FILENAME_MAX];
+
+    TRACE((T_CALLED "commdlg_open_files(chdir_allowed=%d, dir=%s)\n",
+           chdir_allowed, TRACE_NULL(dir)));
 
     if (dir)
     {
         if (! glob_and_validate_dir(dir, validated_dir))
-            return (FALSE);
+            returnCode(FALSE);
         else
             dir = validated_dir;
 
@@ -131,7 +137,7 @@ commdlg_open_files(int chdir_allowed, const char *dir)
     chdir_mask = (chdir_allowed) ? 0 : OFN_NOCHANGEDIR;
     filebuf    = malloc(RET_BUF_SIZE_);
     if (! filebuf)
-        return (no_memory("commdlg_open_files()"));
+        returnCode(no_memory("commdlg_open_files()"));
     filebuf[0] = '\0';
     if (! ofn_initialized)
         ofn_init();
@@ -170,7 +176,7 @@ commdlg_open_files(int chdir_allowed, const char *dir)
         else
             rc = FALSE;  /* Win32 error */
         free(filebuf);
-        return (rc);
+        returnCode(rc);
     }
     if (chdir_allowed)
     {
@@ -180,14 +186,14 @@ commdlg_open_files(int chdir_allowed, const char *dir)
         {
             free(filebuf);
             mlerror("_getcwd() failed");
-            return (FALSE);
+            returnCode(FALSE);
         }
         if (stricmp(newcwd, oldcwd) != 0)
         {
             if (! set_directory(newcwd))
             {
                 free(filebuf);
-                return (FALSE);
+                returnCode(FALSE);
             }
         }
     }
@@ -253,7 +259,7 @@ commdlg_open_files(int chdir_allowed, const char *dir)
 
     /* Cleanup */
     free(filebuf);
-    return (rc);
+    returnCode(rc);
 
 #undef RET_BUF_SIZE_
 }

@@ -16,7 +16,7 @@
  *
  *		ted, 01/01
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.81 2002/10/09 19:51:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.82 2002/10/20 14:56:18 tom Exp $
  *
  */
 
@@ -2080,11 +2080,13 @@ regnext(register char *p)
 #ifdef REGDEBUG
 
 /*
- - regdump - dump a regexp onto stdout in vaguely comprehensible form
+ - regdump - dump a regexp in vaguely comprehensible form
  */
 static void
 regdump(regexp * r)
 {
+    static TBUFF *dump;
+    char temp[80];
     register char *s;
     register char op = EXACTLY;	/* Arbitrary non-END op. */
     register char *next;
@@ -2092,35 +2094,48 @@ regdump(regexp * r)
     TRACE(("regdump\n"));
     s = r->program + 1;
     while (op != END) {		/* While that wasn't END last time... */
+	tb_init(&dump, EOS);
 	op = OP(s);
-	TRACE(("%2d%s", s - r->program, regprop(s)));	/* Where, what. */
+	sprintf(temp, "%2d%s", s - r->program, regprop(s));	/* Where, what. */
+	tb_sappend0(&dump, temp);
 	next = regnext(s);
 	if (next == NULL)	/* Next ptr. */
-	    TRACE(("(0)"));
+	    strcpy(temp, "(0)");
 	else
-	    TRACE(("(%d)", (s - r->program) + (next - s)));
+	    sprintf(temp, "(%d)", (s - r->program) + (next - s));
+	tb_sappend0(&dump, temp);
 	s += 3;
 	if (op == ANYOF || op == ANYBUT || op == EXACTLY) {
 	    /* Literal string, where present. */
 	    while (*s != EOS) {
-		TRACE(("%c", *s));
+		sprintf(temp, "%c", *s);
+		tb_sappend0(&dump, temp);
 		s++;
 	    }
 	    s++;
 	} else if (op == RSIMPLE || op == RCOMPLX) {
 	    s += (RR_LEN - 3);
 	}
-	TRACE(("\n"));
+	TRACE(("%s\n", tb_values(dump)));
     }
 
     /* Header fields of interest. */
-    if (r->regstart != EOS)
-	TRACE(("start `%c' ", r->regstart));
-    if (r->reganch)
-	TRACE(("anchored "));
-    if (r->regmust != -1)
-	TRACE(("must have \"%s\"", &(r->program[r->regmust])));
-    TRACE(("\n"));
+    tb_init(&dump, EOS);
+    if (r->regstart != EOS) {
+	sprintf(temp, "start `%c' ", r->regstart);
+	tb_sappend0(&dump, temp);
+    }
+    if (r->reganch) {
+	sprintf(temp, "anchored ");
+	tb_sappend0(&dump, temp);
+    }
+    if (r->regmust != -1) {
+	tb_sappend0(&dump, "must have \"");
+	tb_sappend0(&dump, &(r->program[r->regmust]));
+	tb_sappend0(&dump, "\"");
+    }
+    TRACE(("%s\n", tb_values(dump)));
+    tb_free(&dump);
 }
 
 /*

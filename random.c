@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.264 2002/10/09 19:36:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.265 2002/10/20 11:25:49 tom Exp $
  *
  */
 
@@ -108,18 +108,22 @@ liststuff(
     int alreadypopped;
     BUFFER *ocurbp = curbp;
 
+    TRACE((T_CALLED
+	   "liststuff(name=%s, appendit=%d, func=%p, iarg=%d, vargp=%p)\n",
+	   TRACE_NULL(name), appendit, func, iarg, vargp));
+
     /* create the buffer list buffer   */
     bp = bfind(name, BFSCRTCH);
     if (bp == NULL)
-	return FALSE;
+	returnCode(FALSE);
 
     if (!appendit && (s = bclear(bp)) != TRUE)	/* clear old text (?) */
-	return (s);
+	returnCode(s);
     b_set_scratch(bp);
     alreadypopped = (bp->b_nwnd != 0);
     if (popupbuff(bp) == FALSE) {
 	(void) zotbuf(bp);
-	return (FALSE);
+	returnCode(FALSE);
     }
 
     if ((wp = bp2any_wp(bp)) != NULL) {
@@ -147,7 +151,7 @@ liststuff(
     else
 	shrinkwrap();		/* only resize if it's fresh */
 
-    return TRUE;
+    returnCode(TRUE);
 }
 
 /*

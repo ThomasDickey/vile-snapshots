@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.502 2002/10/09 22:22:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.503 2002/10/20 13:30:16 tom Exp $
  *
  */
 
@@ -1338,6 +1338,7 @@ extern	void	onel_leaks (void);
 extern	void	path_leaks (void);
 extern	void	tags_leaks (void);
 extern	void	tb_leaks (void);
+extern	void	trace_leaks (void);
 extern	void	vars_leaks (void);
 extern	void	vt_leaks (void);
 extern	void	wp_leaks (void);

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.246 2002/10/09 19:46:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.248 2002/10/20 13:25:35 tom Exp $
  *
  */
 
@@ -1212,11 +1212,13 @@ listmodes(int f, int n GCC_UNUSED)
     register WINDOW *wp = curwp;
     register int s;
 
+    TRACE((T_CALLED "listmodes(f=%d)\n", f));
+
     s = liststuff(SETTINGS_BufName, FALSE, makemodelist, f, (void *) wp);
     /* back to the buffer whose modes we just listed */
     if (swbuffer(wp->w_bufp))
 	curwp = wp;
-    return s;
+    returnCode(s);
 }
 
 /*
@@ -1601,13 +1603,13 @@ is_white(int n)
 static int
 reset_color(int n)
 {
-    if (global_g_val(n) > ncolors) {
-	if (is_white(global_g_val(n)))
-	    return FALSE;
-	TRACE(("reset_color(%scolor) from %d",
-	       (n == GVAL_FCOLOR) ? "f" : "b", global_g_val(n)));
-	set_global_g_val(n, global_g_val(n) % ncolors);
-	TRACE((" to %d\n", global_g_val(n)));
+    int oldvalue = global_g_val(n);
+    if (oldvalue > ncolors && !is_white(oldvalue)) {
+	set_global_g_val(n, oldvalue % ncolors);
+	TRACE(("reset_color(%scolor) from %d to %d\n",
+	       (n == GVAL_FCOLOR) ? "f" : "b",
+	       oldvalue,
+	       global_g_val(n)));
 	return TRUE;
     }
     return FALSE;
@@ -2249,12 +2251,16 @@ find_majormode_order(int mm)
 static void
 show_majormode_order(char *tag)
 {
+    static TBUFF *order;
+
     int n;
-    TRACE(("order %s", tag));
+    tb_scopy(&order, "order ");
+    tb_sappend0(&order, tag);
     for (n = 0; majormodes_order[n] >= 0; n++) {
-	TRACE((" %s", my_majormodes[majormodes_order[n]].name));
+	tb_sappend0(&order, " ");
+	tb_sappend0(&order, my_majormodes[majormodes_order[n]].name);
     }
-    TRACE(("\n"));
+    TRACE(("%s\n", tb_values(order)));
 }
 #else
 #define show_majormode_order(tag)	/* nothing */
@@ -3131,12 +3137,14 @@ list_majormodes(int f, int n GCC_UNUSED)
     register WINDOW *wp = curwp;
     register int s;
 
+    TRACE((T_CALLED "list_majormodes(f=%d)\n", f));
+
     s = liststuff(MAJORMODES_BufName, FALSE, makemajorlist, f, (void *) wp);
     /* back to the buffer whose modes we just listed */
     if (swbuffer(wp->w_bufp))
 	curwp = wp;
 
-    return s;
+    returnCode(s);
 }
 
 int

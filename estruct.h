@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.512 2002/10/17 00:19:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.513 2002/10/19 17:57:08 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2593,7 +2593,7 @@ typedef enum {
 	,file_is_unbuffered
 	,file_is_external
 	,file_is_pipe
-	,file_is_internal 	
+	,file_is_internal
 } FFType;
 
 /* definitions for 'mlreply_file()' and other filename-completion */
@@ -2718,12 +2718,14 @@ extern void _exit (int code);
 #define	FreeAndNull(p)	if ((p) != 0) { free((char *)p); p = 0; }
 #define	FreeIfNeeded(p)	if ((p) != 0) free((char *)(p))
 
+#if defined(VILE_ERROR_ABORT)
+extern void ExitProgram(int code);
+#endif
+
 #if SYS_WINNT && defined(VILE_OLE) && DISP_NTWIN
 #define ExitProgram(code)   oleauto_exit(code)
 #else
-#if defined(VILE_ERROR_ABORT)
-extern void ExitProgram(int code);
-#else
+#if !defined(VILE_ERROR_ABORT)
 #define	ExitProgram(code)	exit(code)
 #endif
 #endif
@@ -2866,6 +2868,9 @@ extern void ExitProgram(int code);
 /* Normally defined in "trace.h" */
 #ifndef TRACE
 #define TRACE(p) /* nothing */
+#define returnCode(c)   return(c)
+#define returnString(c) return(c)
+#define returnVoid()    return
 #endif
 
 #if OPT_TRACE > 1

@@ -667,6 +667,7 @@ api_swscreen(VileBuf * oldsp, VileBuf * newsp)
      * buried in the macro "for_each_visible_window".
      *          - kev 4/20/1998
      */
+    TRACE((T_CALLED "api_swscreen(oldsp=%p, newsp=%p)\n", oldsp, newsp));
 
     curwp = curwp_visible ? curwp_visible : curwp;
     curbp = curwp->w_bufp;
@@ -677,7 +678,7 @@ api_swscreen(VileBuf * oldsp, VileBuf * newsp)
 
     curwp_visible = curwp;
 
-    return TRUE;
+    returnCode(TRUE);
 }
 
 /* Causes the screen(s) to be updated */

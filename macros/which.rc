@@ -1,4 +1,4 @@
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/which.rc,v 1.1 2002/09/02 17:40:13 tom Exp $
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/which.rc,v 1.2 2002/10/22 11:35:40 tom Exp $
 ;;
 ;; Show where vile looks for keyword file, and where it finds it.  If we
 ;; always implemented built-in filters, the natural place for this would be
@@ -18,15 +18,20 @@ store-procedure which-filename f='Filename'
 ~endm
 
 store-procedure which-keywords major="MajorMode" "Prompt for, and display location of keyword files"
-	~local %terse %path %leaf %suffix %pathdot %dothides %index
+	~local %terse %path %leaf %suffix %pathdot %dothides %index %mybuffer
 	setv %terse=$terse
 	set terse
 	;
-	edit-buffer "[Which Keywords]"
-	setl noreadonly noview
-	~if &greater $bchars 0
-		goto-beginning-of-file
-		delete-lines-til end-of-file
+	setv %mybuffer='[Which Keywords]'
+	~force select-buffer %mybuffer
+	~if $status
+		setl noreadonly noview
+		~if &greater $bchars 0
+			goto-beginning-of-file
+			delete-lines-til end-of-file
+		~endif
+	~else
+		edit-buffer %mybuffer
 	~endif
 	setl noai
 	;

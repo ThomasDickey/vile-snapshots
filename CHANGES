@@ -1,13 +1,43 @@
 Changes for vile 9.4 (released ??? ??? ?? ????)
 
+ 20021023 (f)
+	> Clark Morgan:
+	+ update list of filters in config.doc
+	> Tom Dickey:
+	+ correct a check in builtflt.c that had the effect of making some
+	  keyword files only work if the -v option was given in the filtername
+	  string (broken in 9.2y).
+	+ small fix to argument parsing in builtflt.c, to avoid going past the
+	  end of the string (found with valgrind).
+	+ documented the filtername majormode value in modes.doc
+	+ correct initialization of which.rc, so it can be run more than once.
+	+ improve/complete XtArgVal casts using macros Nval() and Sval().
+	+ modify x11.c to make scrolling always use mvupwind() - one place used
+	  forwline(), and to fix some cases where horizontal resizing would
+	  change the width of the Xaw scrollbar (patch by D J Hawkey Jr).
+	+ modify run_func() to quote string-results, to ensure that they are
+	  not mistaken for other token types such as directives.  This change
+	  is needed to make "which.rc" work on win32.
+	+ implemented tilde-expansion on win32.  Actually it was present, but
+	  globbing did not work, and the environment variables did not match
+	  the Windows 2000 configuration.
+	+ modify debug traces to allow Trace() to make an indented listing,
+	  according to the function-nesting level.  This is done (from ncurses)
+	  by prefixing the format string with T_CALLED or T_RETURN strings.
+	  Used this feature to help debug changes for which.rc on win32.  Not
+	  all functions are traced this way, but all that call swbuffer() are,
+	  as well as some others that were useful.
+	+ adjust ifdef's so VILE_ERROR_ABORT and VILE_OLE can be defined at
+	  the same time.
+
  20021016 (e)
 	> Clark Morgan:
 	+ correction to 9.3d change:  @<register> was busted (command mode) and
-	  :write-message "@stuff" caused vile to complain when '@' was pressed. 
+	  :write-message "@stuff" caused vile to complain when '@' was pressed.
 	+ I noticed recently that I could not use vile's file/directory
 	  traversal feature (on linux) to find the value of an errno.h macro
 	  (e.g., EINVAL).  As it turns out, linux puts these definitions in a
-	  directory that's referencedk via a symbolic link resident within
+	  directory that's referenced via a symbolic link resident within
 	  /usr/include (other features such as the X11 includes files are
 	  handled similarly).  Seems that GNU's find won't traverse symbolic
 	  links without specifying an explicit option (it appears SunOS 5.7
@@ -66,7 +96,7 @@ Changes for vile 9.4 (released ??? ??? ?? ????)
 	+ modify configure script to use '%' consistently as sed delimiter,
 	  rather than sometimes '@', to avoid problems with AFS.
 	+ update config.guess, config.sub
-	
+
  20020902 (d)
 	> Brendan O'Dea:
 	+ updates to allow vile to build with perl 5.8.0 (ifdef's checked for
@@ -80,7 +110,7 @@ Changes for vile 9.4 (released ??? ??? ?? ????)
 	  - restructure doc/config.doc's builtin-filter prose for improved clarity.
 	+ vile.hlp:
 	  - fix ispell macro so that users avoid a "warn-reread" prompt.
-	  - remove ShowManpage macro from vile.hlp; it's long and complex. 
+	  - remove ShowManpage macro from vile.hlp; it's long and complex.
 	    Interested readers can read the macro directly by browsing
 	    manpage.rc .
 	  - documented builtin filters.  One of the more notable changes here
@@ -117,7 +147,7 @@ Changes for vile 9.4 (released ??? ??? ?? ????)
 	  <mlm@mlm.ath.cx>).
 	+ correct parsing of '+' in prc2kcod(), so one can bind that key
 	  to a command, e.g.,
-		bind-key next-buffer +	
+		bind-key next-buffer +
 	  (patch by Brian T. Schellenberger <bts@babbleon.org>).
 	+ add x11menu to descrip.mms and vmsbuild.com (patch by Jouk Jansen
 	  <joukj@hrem.stm.tudelft.nl>).

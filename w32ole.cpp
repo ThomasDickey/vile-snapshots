@@ -17,7 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.19 2002/02/26 23:33:49 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.20 2002/10/20 12:56:42 tom Exp $
  */
 
 #include "w32vile.h"
@@ -160,7 +160,12 @@ oleauto_exit(int code)
             RevokeActiveObject(dwRegisterActiveObj, NULL);
         OleUninitialize();
     }
+#ifdef VILE_ERROR_ABORT
+#undef ExitProgram              /* use VILE_ERROR_ABORT code in main.c */
+    ExitProgram(code);
+#else
     exit(code);
+#endif
 }
 
 } /* Extern "C" */

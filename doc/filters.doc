@@ -60,11 +60,16 @@ non-Unix host, the search looks like this:
 	$VILE_STARTUP_PATH/c.keywords
 
 
-The vile.keywords file contains color information for the most common
-classes.  The c.keywords file contains the actual keywords to be
-highlighted, referenced to the classes which are in turn colored.  You can
-see the search for keyword files by running the filter with a -v option,
-repeating the option (-vv) to obtain more verbose traces.
+The vile.keywords file contains color information for the most common classes. 
+The c.keywords file contains the actual keywords to be highlighted, referenced
+to the classes which are in turn colored.  You can see the search for keyword
+files by running the filter with a -v option, repeating the option (-vv) to
+obtain more verbose traces.  Note that filters may be compiled-into vile.  In
+that case (vile calls the filter using the attribute-directly command), you can
+still get a trace by adding the -v option to the filtername line of the
+majormode.  The trace will go to the message line, but also if you have
+	set popup-msgs
+specified, to the [Messages] buffer.
 
 Predefined keyword classes include (but may not necessarily be used in specific
 filters):
@@ -211,4 +216,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.26 2002/10/16 00:26:19 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.27 2002/10/23 00:45:45 tom Exp $

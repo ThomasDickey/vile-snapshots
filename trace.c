@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.29 2002/10/14 22:31:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.33 2002/10/20 14:36:48 tom Exp $
  *
  */
 
@@ -40,7 +40,14 @@ extern int fflush(FILE * fp);
 #undef	free
 #endif /* DOALLOC */
 
-static const char *bad_form;
+static const char *bad_form;	/* magic address for fail_alloc() */
+
+static char *visible_result;
+static char *visible_indent;
+static unsigned used_visible;
+static unsigned used_indent;
+
+static int trace_depth;
 
 void
 Trace(const char *fmt,...)
@@ -62,6 +69,16 @@ Trace(const char *fmt,...)
 	abort();
 
     if (fmt != bad_form) {
+	fprintf(fp, "%s", trace_indent(trace_depth, '|'));
+	if (!strncmp(fmt, T_CALLED, T_LENGTH)) {
+	    ++trace_depth;
+	} else if (!strncmp(fmt, T_RETURN, T_LENGTH)) {
+	    if (trace_depth == 0) {
+		fprintf(fp, "BUG: called/return mismatch\n");
+	    } else {
+		--trace_depth;
+	    }
+	}
 	vfprintf(fp, fmt, ap);
 	(void) fflush(fp);
     } else {
@@ -79,21 +96,72 @@ Trace(const char *fmt,...)
 #endif
 }
 
+int
+retrace_code(int code)
+{
+    Trace(T_RETURN "%d\n", code);
+    return code;
+}
+
+char *
+retrace_string(char *code)
+{
+    Trace(T_RETURN "%s%s\n", TRACE_NULL(code),
+	  (code == error_val) ? " (ERROR)" : "");
+    return code;
+}
+
+void
+retrace_void(void)
+{
+    Trace(T_RETURN "\n");
+}
+
+static char *
+alloc_visible(unsigned need)
+{
+    if (need > used_visible) {
+	used_visible = need;
+	if (visible_result == 0)
+	    visible_result = malloc(need);
+	else
+	    visible_result = realloc(visible_result, need);
+    }
+    return visible_result;
+}
+
+char *
+trace_indent(int level, int marker)
+{
+    unsigned need = 1 + (level * 3);
+    int n;
+
+    if (need > used_indent) {
+	used_indent = need;
+	if (visible_indent == 0)
+	    visible_indent = malloc(need);
+	else
+	    visible_indent = realloc(visible_indent, need);
+    }
+
+    for (n = 0; n < level; ++n)
+	sprintf(visible_indent + (3 * n), "%c  ", marker);
+    return visible_indent;
+}
+
 char *
 visible_buff(const char *buffer, int length, int eos)
 {
-    static char *result;
     int j;
     unsigned k = 0;
     unsigned need = ((length > 0) ? (length * 4) : 0) + 1;
+    char *result;
 
     beginDisplay();
     if (buffer == 0)
 	buffer = "";
 
-    if (result != 0)
-	free(result);
-    result = malloc(need);
+    result = alloc_visible(need);
 
     for (j = 0; j < length; j++) {
 	int c = buffer[j] & 0xff;
@@ -116,11 +184,25 @@ visible_buff(const char *buffer, int length, int eos)
     return result;
 }
 
+/*
+ * Convert a string to visible form.
+ */
 char *
 str_visible(char *s)
 {
     if (s == 0)
-	return "(null)";
+	return "<null>";
+    return visible_buff(s, strlen(s), FALSE);
+}
+
+/*
+ * Convert a string to visible form, but include the trailing null.
+ */
+char *
+str_visible0(char *s)
+{
+    if (s == 0)
+	return "<null>";
     return visible_buff(s, strlen(s), TRUE);
 }
 
@@ -137,12 +219,9 @@ itb_visible(ITBUFF * p)
     int len, n, pass;
     unsigned used;
     char temp[80];
-
-    static char *result;
+    char *result = 0;
 
     beginDisplay();
-    if (result != 0)
-	free(result);
     vec = itb_values(p);
     len = itb_length(p);
     if (vec != 0 && len != 0) {
@@ -160,10 +239,10 @@ itb_visible(ITBUFF * p)
 		used += strlen(temp);
 	    }
 	    if (!pass)
-		*(result = malloc(1 + used)) = EOS;
+		*(result = alloc_visible(1 + used)) = EOS;
 	}
     } else {
-	result = strmalloc("");
+	*(result = alloc_visible(1)) = EOS;
     }
     endofDisplay();
     return result;
@@ -270,10 +349,10 @@ typedef struct {
 
 static AREA *area;
 
-static long maxAllocated,	/* maximum # of bytes allocated */
-  nowAllocated;			/* current # of bytes allocated */
-static int nowPending,		/* current end of 'area[]' table */
-  maxPending;			/* maximum # of segments allocated */
+static long maxAllocated;	/* maximum # of bytes allocated */
+static long nowAllocated;	/* current # of bytes allocated */
+static int nowPending;		/* current end of 'area[]' table */
+static int maxPending;		/* maximum # of segments allocated */
 
 static void
 InitArea(void)
@@ -443,7 +522,7 @@ dopoison(void *oldp, long len)
 void
 show_alloc(void)
 {
-#if	DOALLOC
+#if DOALLOC
     static char *fmt = ".. %-24.24s %10ld\n";
 
     printf("show_alloc\n");	/* patch */
@@ -474,8 +553,6 @@ show_alloc(void)
 	Trace(fmt, "segment-table length:", nowPending);
 	Trace(fmt, "current # of segments:", (long) count);
 	Trace(fmt, "maximum # of segments:", maxPending);
-	free(area);
-	area = 0;
     }
 #endif
 }
@@ -561,8 +638,9 @@ trace_buffer(BUFFER *bp)
 	  bp->b_bname,
 	  bp->b_dot.l,
 	  bp == curbp ? " (curbp)" : "");
-    for_each_line(lp, bp)
+    for_each_line(lp, bp) {
 	trace_line(lp, bp);
+    }
 }
 
 void
@@ -598,3 +676,17 @@ trace_window(WINDOW *wp)
 	imdying(10);
     }
 }
+
+#if NO_LEAKS
+void
+trace_leaks(void)
+{
+#if DOALLOC
+    FreeAndNull(area);
+#endif
+    FreeAndNull(visible_result);
+    FreeAndNull(visible_indent);
+    used_visible = 0;
+    used_indent = 0;
+}
+#endif
