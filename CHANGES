@@ -1,5 +1,40 @@
 Changes for vile 8.1 (released ??? ??? ??, 1998)
 
+ (tom) 980831 (l)
+	+ modify dbgwrite() message to show how to get out of the loop, since
+	  more than one person has thought vile is hung when it is awaiting
+	  a ^G after reporting a keyboard problem.
+	+ modify imdying() function to search for a temp-directory, preferring
+	  $TMPDIR, /var/tmp and /usr/tmp over /tmp.  Lengthened cmd buffer in
+	  that function since it was too small.  (reported by Duncan Barclay
+	  <dmlb@ragnet.demon.co.uk>).
+	+ correct logic for dragging scrollbar thumb in winvile which also
+	  moved cursor position unnecessarily (reported by Ed Henderson).
+	+ correct handling of Alt-F4 in winvile, which did not close the window
+	  because it was hidden by logic to support Win32 key modifiers
+	  (reported by Clark Morgan).
+	+ correct rendering of color 8 in winvile, which was black rather than
+	  gray (reported by Clark Morgan).
+	+ add gui_isprint() function to x11.c to test for characters which are
+	  nonprinting in xvile, override printing-low and printing-high modes
+	  to keep, for example, \80 to \A0 in printable form (main.c, x11.c)
+	+ added a TTkopen call to ttunclean to match the TTkclose in ttclean,
+	  fixes a problem where arrow keys did not work in the termcap version
+	  after a :sh command (reported by Ryan Murray).
+	+ modify configure script tests for termcap/terminfo libraries to allow
+	  $LIBS to have the corresponding libraries (for Ryan Murray, who wants
+	  to override the check for -lcurses).
+	+ correct handling of configure --without-perl, which still tried to
+	  use perl (reported by Ryan Murray).
+ 	+ add autoconf macro CF_PROG_PERL, based on macro from Brendan O'Dea.
+ 	+ remove x_quit function, using normal imdying function to handle
+	  SIGHUP and SIGTERM for xvile (reported by Shawn Halpenny).
+	> patches by Clark Morgan:
+	+ remove spurious rumor in doc/visvile.doc
+	+ winvile shows file name in title bar
+	+ winvile ole automation server now catches bogus command line
+	  arguments before attempting to process -Or switch.
+
  (tom) 980827 (k)
 	+ add gui_version() function for winvile, to handle -V option (reported
 	  by Clark Morgan).
@@ -17,9 +52,9 @@ Changes for vile 8.1 (released ??? ??? ??, 1998)
 	+ adds _some_ winvile integration to DevStudio Version 5.  In
 	  particular, this patch creates a component called visvile.dll, which
 	  is a DevStudio-compatible add-in that invokes an OLE-compatible
-	  version of winvile when editing/browsing text/source documents. 
-	  Visvile.dll, a work in progress, is heavily based on visvim.dll. 
-	  Full documentation is included in the new file doc/visvile.doc. 
+	  version of winvile when editing/browsing text/source documents.
+	  Visvile.dll, a work in progress, is heavily based on visvim.dll.
+	  Full documentation is included in the new file doc/visvile.doc.
 	+ add InsertMode and IsMinimized functions for OLE interface.
 	+ remove unneeded assert's (winreg.c).
 	+ always set force-console mode for Win95 (main.c).
@@ -32,10 +67,10 @@ Changes for vile 8.1 (released ??? ??? ??, 1998)
 	  is clicked on the modeline.
  	+ implement scrollbars for winvile (ntwinio.c)
 	> patches by Clark Morgan:
-	+ changes to allow winvile to be built as an OLE automation server. 
+	+ changes to allow winvile to be built as an OLE automation server.
 	  Included with this patch are several new files, including one called
 	  doc/oleauto.doc, which describes the build process and the relevant
-	  server options/features. 
+	  server options/features.
 
  (tom) 980727 (i)
 	+ modify makefile.djg to use -f option of rm, to work with djgpp 2.x

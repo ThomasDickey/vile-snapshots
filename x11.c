@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.186 1998/07/26 12:09:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.188 1998/08/31 00:59:47 tom Exp $
  *
  */
 
@@ -431,7 +431,6 @@ static	void	x_fcol   ( int color ),
 
 static	void	x_scroll(int from, int to, int count);
 
-static	SIGT	x_quit (int ACTUAL_SIG_ARGS);
 static	int	x_watchfd(int fd, WATCHTYPE type, long *idp);
 static	void	x_unwatchfd(int fd, long id);
 
@@ -3650,16 +3649,6 @@ x_setfont(
     return 1;
 }
 
-static
-/* ARGSUSED */
-SIGT x_quit (int ACTUAL_SIG_ARGS GCC_UNUSED)
-{
-    x_close();
-    ExitProgram(GOODEXIT);
-    /* NOTREACHED */
-    SIGRET;
-}
-
 static void
 x_open(void)
 {
@@ -3673,10 +3662,6 @@ x_open(void)
 #if OL_WIDGETS
     cur_win->sliders = NULL;
 #endif
-
-    setup_handler(SIGHUP, x_quit);
-    setup_handler(SIGINT, catchintr);
-    setup_handler(SIGTERM, x_quit);
 
     /* main code assumes that it can access a cell at nrow x ncol */
     term.t_mcol = term.t_ncol = cur_win->cols;
@@ -6097,6 +6082,32 @@ static void
 x_unwatchfd(int fd GCC_UNUSED, long id)
 {
     XtRemoveInput((XtInputId) id);
+}
+
+/*
+ * Return true if the given character would be printable.  Not all characters are.
+ */
+int
+gui_isprint(int ch)
+{
+    XFontStruct *pf = cur_win->pfont;
+    XCharStruct	*pc = 0;
+
+    if (pf != 0
+     && pf->per_char != 0
+     && !pf->all_chars_exist) {
+	if (pf->min_byte1 == 0
+	 && pf->max_byte1 == 0) {
+	    pc = pf->per_char + (ch - pf->min_char_or_byte2);
+	} /* FIXME: this does not handle doublebyte characters */
+	if (pc != 0
+	 && (pc->lbearing + pc->rbearing) == 0
+	 && (pc->ascent   + pc->descent) == 0
+	 && pc->width == 0) {
+	    return FALSE;
+	}
+    }
+    return TRUE;
 }
 
 #endif	/* DISP_X11 && XTOOLKIT */

@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.230 1998/07/27 23:31:04 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.231 1998/09/01 01:54:00 tom Exp $
  *
  */
 
@@ -1877,44 +1877,42 @@ static const char *mailcmds[] = {
 SIGT
 imdying(int ACTUAL_SIG_ARGS)
 {
-#if SYS_UNIX
-#if HAVE_MKDIR
-	static char dirnam[NSTRING] = "/tmp/vileDXXXXXX";
-#else
-	static char dirnam[NSTRING] = "/tmp";
-	char temp[NFILEN];
-#endif
-#else
-#if HAVE_MKDIR && !SYS_MSDOS && !SYS_OS2
-	static char dirnam[NSTRING] = "vileDXXXXXX";
-#else
 	static char dirnam[NSTRING] = "";
-	char temp[NFILEN];
+#if SYS_UNIX
+	static const char *tbl[] = {
+		"/var/tmp",
+		"/usr/tmp",
+		"/tmp"
+		"."
+	};
 #endif
+#if !HAVE_MKDIR
+	char temp[NFILEN];
 #endif
 	char filnam[NFILEN];
 	BUFFER *bp;
 #if SYS_UNIX
-	char cmd[200];
+	char cmd[NFILEN+250];
 	char *np;
 #endif
 	static int wrote = 0;
 #if HAVE_MKDIR && !SYS_MSDOS && !SYS_OS2
 	static int created = FALSE;
 #endif
+	static	int	i_am_dead;
 
 #if SYS_APOLLO
 	extern	char	*getlogin(void);
-	static	int	i_am_dead;
 #endif	/* SYS_APOLLO */
 
 #if OPT_WORKING && defined(SIGALRM)
 	setup_handler(SIGALRM, SIG_IGN);
 #endif
 
-#if SYS_APOLLO
 	if (i_am_dead++)	/* prevent recursive faults */
 		_exit(signo);
+
+#if SYS_APOLLO
 	(void)lsprintf(cmd,
 		"(echo signal %d killed vile;/com/tb %d)| /bin/mail %s",
 		signo, getpid(), getlogin());
@@ -1929,6 +1927,24 @@ imdying(int ACTUAL_SIG_ARGS)
 			b_is_changed(bp)) {
 #if HAVE_MKDIR && !SYS_MSDOS && !SYS_OS2
 			if (!created) {
+#if SYS_UNIX
+				if ((np = getenv("TMPDIR")) != 0
+				 && strlen(np) < 32
+				 && is_directory(np)) {
+					strcpy(dirnam, np);
+				} else {
+					unsigned n;
+					for (n = 0; n < TABLESIZE(tbl); n++) {
+						strcpy(dirnam, tbl[n]);
+						if (is_directory(dirnam)) {
+							break;
+						}
+					}
+				}
+#else
+				strcpy(dirname, "");
+#endif
+				(void)pathcat(dirnam, dirnam, "vileDXXXXXX");
 				(void)mktemp(dirnam);
 				if(mkdir(dirnam,0700) != 0) {
 					tidy_exit(BADEXIT);

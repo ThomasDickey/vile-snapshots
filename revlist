@@ -1,6 +1,6 @@
-revlist for vile, version v8_0k
+revlist for vile, version 8_0l
 --------------------------------------------------------------------------------
-CHANGES	1.201
+CHANGES	1.206
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -11,7 +11,7 @@ INSTALL	1.6
 MANIFEST	none
 README	1.66
 README.PC	1.14
-aclocal.m4	1.57
+aclocal.m4	1.60
 ansi.c	1.33
 api.c	1.15
 api.h	1.11
@@ -29,12 +29,12 @@ cmdtbl	1.160
 config.emx	1.1
 config_h.in	1.2
 configure	none
-configure.in	1.91
+configure.in	1.93
 crypt.c	1.22
 csrch.c	1.28
 descrip.mms	1.35
 dirstuff.h	1.23
-display.c	1.253
+display.c	1.254
 djhandl.c	1.6
 dumbterm.c	1.13
 edef.h	1.229
@@ -43,7 +43,7 @@ eval.c	1.163
 exec.c	1.163
 externs.c	1.7
 fences.c	1.50
-file.c	1.230
+file.c	1.231
 filec.c	1.81
 fileio.c	1.127
 finderr.c	1.71
@@ -59,12 +59,12 @@ isearch.c	1.49
 itbuff.c	1.12
 lckfiles.c	1.8
 line.c	1.111
-main.c	1.332
+main.c	1.334
 makefile.blc	1.9
 makefile.djg	1.26
 makefile.emx	1.2
 makefile.icc	1.10
-makefile.in	1.112
+makefile.in	1.113
 makefile.tbc	1.22
 makefile.wat	1.24
 makefile.wnt	1.31
@@ -79,23 +79,23 @@ modetbl	1.98
 msgs.c	1.17
 npopen.c	1.64
 ntconio.c	1.37
-ntwinio.c	1.19
+ntwinio.c	1.21
 oneliner.c	1.89
 opers.c	1.62
 os2keys.h	1.1
 os2pipe.c	1.4
 os2vio.c	1.19
 pas-filt.c	1.2
-patchlev.h	1.133
+patchlev.h	1.134
 path.c	1.84
 perl.xs	1.29
-proto.h	1.295
+proto.h	1.297
 pscreen.h	1.1
 ptypemap	1.5
 random.c	1.191
 regexp.c	1.65
 region.c	1.90
-revlist	v8_0k
+revlist	8_0l
 search.c	1.112
 select.c	1.75
 spawn.c	1.130
@@ -103,7 +103,7 @@ tags.c	1.91
 tbuff.c	1.31
 tcap.c	1.111
 tcap.h	1.4
-termio.c	1.155
+termio.c	1.156
 trace.c	1.8
 trace.h	1.6
 undo.c	1.69
@@ -127,7 +127,7 @@ window.c	1.84
 winvile.odl	1.2
 word.c	1.62
 wordmov.c	1.19
-x11.c	1.186
+x11.c	1.188
 xshell.sh	1.4
 doc/config.doc	1.1
 doc/macros.doc	1.2
@@ -135,7 +135,7 @@ doc/menus.doc	1.1
 doc/modes.doc	1.1
 doc/oleauto.doc	1.2
 doc/perl.doc	1.1
-doc/visvile.doc	1.1
+doc/visvile.doc	1.2
 doc/w32modes.doc	1.2
 macros/digraphs.rc	1.1
 macros/manpage.rc	1.1

@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.332 1998/08/27 10:37:55 Larry.Gensch Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.334 1998/08/31 01:01:02 tom Exp $
  *
  */
 
@@ -79,6 +79,9 @@ MainProgram(int argc, char *argv[])
 	int helpflag = FALSE;		/* do we need help at start? */
 	REGEXVAL *search_exp = 0;	/* initial search-pattern */
 	const char *msg;
+#ifdef VILE_OLE
+	int ole_register = FALSE;
+#endif
 #if DISP_X11 && !XTOOLKIT
 	int do_newgroup = FALSE;	/* do we spawn at start? */
 #endif
@@ -224,6 +227,14 @@ MainProgram(int argc, char *argv[])
 				ue_crypt(ekey, strlen(ekey));
 				break;
 #endif
+#ifdef VILE_OLE
+			case 'O':
+				if (param[1] == 'r')
+					ole_register = TRUE;
+				else
+					print_usage();
+				break;
+#endif
 			case 's':  /* -s for initial search string */
 			case 'S':
 		dosearch:
@@ -294,6 +305,18 @@ MainProgram(int argc, char *argv[])
 #endif
 		}
 	}
+#ifdef VILE_OLE
+	if (ole_register)
+	{
+		/*
+		 * Now that all command line options have been successfully
+		 * parsed, register the OLE automation server and exit.
+		 */
+
+		ntwinio_oleauto_reg();
+		/* NOT REACHED */
+	}
+#endif
 
 
 	/* if stdin isn't a terminal, assume the user is trying to pipe a
@@ -1718,6 +1741,10 @@ charinit(void)
 {
 	register int c;
 
+	TRACE(("charinit lo=%d, hi=%d\n",
+		global_g_val(GVAL_PRINT_LOW),
+		global_g_val(GVAL_PRINT_HIGH)))
+
 	/* If we're using the locale functions, set our flags based on its
 	 * tables.  Note that just because you have 'setlocale()' doesn't mean
 	 * that the tables are present or correct.  But this is a start.
@@ -1814,6 +1841,13 @@ charinit(void)
 	while ( c <= global_g_val(GVAL_PRINT_HIGH) && c < N_chars)
 		vl_chartypes_[c++] |= vl_print;
 
+#if DISP_X11
+	for (c = 0; c < N_chars; c++) {
+		if (isPrint(c) && !gui_isprint(c)) {
+			vl_chartypes_[c] &= ~vl_print;
+		}
+	}
+#endif
 	/* backspacers: ^H, rubout */
 	vl_chartypes_['\b'] |= vl_bspace;
 	vl_chartypes_[127] |= vl_bspace;

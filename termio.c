@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.155 1998/05/14 23:17:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.156 1998/08/30 23:01:25 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -280,6 +280,7 @@ ttunclean(void)
 #if ! DISP_X11
 	tcdrain(1);
 	tcsetattr(0, TCSADRAIN, &ntermios);
+	TTkopen();
 #endif
 }
 

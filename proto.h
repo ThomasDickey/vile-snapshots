@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.295 1998/08/27 10:29:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.297 1998/08/31 01:00:45 tom Exp $
  *
  */
 
@@ -905,6 +905,7 @@ extern char *fmt_win32_error(ULONG errcode, char **buf, ULONG buflen);
 extern int  is_win95(void);
 extern int  is_winnt(void);
 extern char *mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc);
+extern void ntwinio_oleauto_reg(void);
 extern void oleauto_exit(int code);
 extern int  oleauto_init(OLEAUTO_OPTIONS *opts);
 extern int  oleauto_register(OLEAUTO_OPTIONS *opts);
@@ -998,6 +999,7 @@ extern	int	x_menu_height		(void);
 extern	void	x_working		(void);
 #endif
 
+extern	int	gui_isprint		(int ch);
 #endif	/* DISP_X11 */
 
 #if DISP_X11 || DISP_NTWIN

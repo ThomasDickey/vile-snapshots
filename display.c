@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.253 1998/08/27 01:55:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.254 1998/09/01 01:37:34 tom Exp $
  *
  */
 
@@ -3060,9 +3060,12 @@ mlprompt(const char *fmt, ...)
 void
 dbgwrite(const char *fmt, ...)
 {
+	char temp[80];
+
 	va_list ap;	/* ptr to current data field */
 	va_start(ap,fmt);
-	mlmsg(fmt,&ap);
+	lsprintf(temp, "[press ^G to continue] %s", fmt);
+	mlmsg(temp,&ap);
 	va_end(ap);
 	beginDisplay();
 	while (TTgetc() != '\007')

@@ -6,11 +6,10 @@ Developer Studio editor.
 
 Preconditions
 =============
-+ You must be using Developer Studio version 5, which exposes OLE
-  automation "hooks" that permit winvile to augment and/or replace the
++ You must be using Developer Studio version 5 (or later), which exposes
+  OLE automation "hooks" that permit winvile to augment and/or replace the
   default editor.  The implementation described within this document will
-  not work with earlier versions of DevStudio and, it's rumored, will not
-  work with DevStudio version 6.
+  not work with earlier versions of DevStudio.
 
 + Obtain or build a version of winvile that supports OLE Automation.
   Register same.  For further details, refer to the file oleauto.doc,
