@@ -1,15 +1,176 @@
 /*	Crypt:	Encryption routines for MicroEMACS
  *		written by Dana Hoggatt and Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/crypt.c,v 1.18 1997/08/30 01:09:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/crypt.c,v 1.19 1998/02/21 22:23:32 pgf Exp $
  *
  */
 
-#include	"estruct.h"
-#include	"edef.h"
+#ifdef STANDALONE
+# ifndef OPT_ENCRYPT
+#  define OPT_ENCRYPT 1
+# endif
+# define ALLOC_T size_t
+# define ULONG	unsigned long
+#else
+# include	"estruct.h"
+# include	"edef.h"
+#endif
 
 #if	OPT_ENCRYPT
 static	int	mod95 (int val);
+
+#ifdef STANDALONE
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#else
+/* assume ANSI C */
+#define HAVE_STDLIB_H 1
+#endif
+
+#include <sys/types.h>		/* sometimes needed to get size_t */
+
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+#if STDC_HEADERS || HAVE_STRING_H
+# include <string.h>
+  /* An ANSI string.h and pre-ANSI memory.h might conflict.  */
+# if !STDC_HEADERS && HAVE_MEMORY_H
+#  include <memory.h>
+# endif /* not STDC_HEADERS and HAVE_MEMORY_H */
+#else /* not STDC_HEADERS and not HAVE_STRING_H */
+# if HAVE_STRINGS_H
+#  include <strings.h>
+  /* memory.h and strings.h conflict on some systems */
+  /* FIXME: should probably define memcpy and company in terms of bcopy,
+     et al here */
+# endif
+#endif /* not STDC_HEADERS and not HAVE_STRING_H */
+
+#include <stdio.h>
+#include <ctype.h>
+
+extern	int	ue_makekey (char *key, ALLOC_T len);
+extern	void	ue_crypt (char *bptr, ALLOC_T len);
+
+static void
+failed(const char *s)
+{
+	perror(s);
+	exit(1);
+}
+
+
+static void
+filecrypt(FILE *ifp, char *key, int mailmode)
+{
+
+    char buf[5000];
+    char *p;
+
+    ue_crypt((char *)0, 0);
+    ue_crypt(key, strlen(key));
+
+    while (1) {
+	p = fgets( buf, sizeof(buf), ifp);
+	if (!p) {
+	    if (ferror(ifp))
+		failed("reading file");
+	    if (feof(ifp))
+		break;
+	}
+	if (mailmode) {
+	    if (strcmp(buf, "\n") == 0)
+		mailmode = 0;
+	}
+	if (!mailmode)
+	    ue_crypt(buf, strlen(buf));
+	if (fputs(buf, stdout) == EOF)
+	    failed("writing stdout");
+    }
+
+    if (fflush(stdout))
+	failed("flushing stdout");
+
+
+}
+
+int 
+main(int argc, char **argv)
+{
+	char key[256];
+	char *prog = argv[0];
+	int mailmode = 0;
+
+	/* -m for mailmode:  leaves headers intact (up to first blank line)
+	 * then crypts the rest.  i use this for encrypting mail messages
+	 * in mh folders.  */
+	if (argc > 1 && strcmp(argv[1], "-m") == 0) {
+	    mailmode = 1;
+	    argc -= 1;
+	    argv += 1;
+	}
+	if (argc > 2 && strcmp(argv[1], "-k") == 0) {
+	    if (strlen(argv[2]) > sizeof(key) - 1) {
+		fprintf(stderr, "%s: excessive key length\n", prog);
+		exit(1);
+	    }
+	    (void)strncpy(key, argv[2], sizeof(key));
+	    (void)memset(argv[2], '.', strlen(argv[2]));
+	    key[sizeof(key)-1] = '\0';
+	    argc -= 2;
+	    argv += 2;
+	} else {
+#if HAVE_GETPASS
+	    char *userkey;
+	    userkey = getpass("Enter key: ");
+
+	    /* HACK -- the linux version of getpass is not
+	     * interruptible.  this means there's no way to abort
+	     * a botched passwd.  until this problem goes away (and
+	     * i do believe it's a bug, and i'm not planning on
+	     * providing our own getpass()) we'll just see if the last
+	     * char of the entered key is ^C, and consider it an abort
+	     * if so.  yes, this should really be the INTR char.
+	     */
+	    if (userkey[strlen(userkey)-1] == 3) {
+		fprintf(stderr,"Aborted\n");
+		exit(1);
+	    }
+	    (void)strncpy(key, userkey, sizeof(key));
+	    (void)memset(userkey, '.', strlen(userkey));
+#else
+	    fprintf(stderr,
+		"usage: %s [-m] -k crypt-key [file ...]\n"
+		"  where '-k crypt-key' must be specified on this system\n",
+		prog
+	    );
+	    exit(1);
+#endif
+	}
+
+	if (argc > 1) {
+		int n;
+		for (n = 1; n < argc; n++) {
+			FILE *fp = fopen(argv[n], "r");
+			if (fp == 0)
+				failed(argv[n]);
+			filecrypt(fp, key, mailmode);
+			(void)fclose(fp);
+		}
+	} else {
+		filecrypt(stdin, key, mailmode);
+	}
+	exit(0);
+}
+
+#else /* STANDALONE */
 
 int
 ue_makekey(			/* make encryption key */
@@ -60,6 +221,8 @@ int n GCC_UNUSED)	/* numeric argument */
 	}
 	return (s);
 }
+
+#endif /* STANDALONE */
 
 /**********
  *

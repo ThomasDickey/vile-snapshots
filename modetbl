@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.89 1997/12/17 01:35:45 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.90 1998/02/21 22:23:32 pgf Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -75,7 +75,7 @@ bool							# MD prefix
 	"BackspaceLimit" BACKLIMIT	0		# backspace limited in insert mode
 	"check-modtime" CHK_MODTIME	0		!SMALLER # check buffer-modtime
 	"cmode"		CMOD		chgd_major_w	!OPT_MAJORMODE # C indentation and fence match
-	"crypt"		CRYPT		0		OPT_ENCRYPT	# encrytion mode active
+	"crypt"		CRYPT		chgd_major	OPT_ENCRYPT	# encrytion mode active
 	"dos"		DOS		chgd_major_w	# "dos" mode -- lines end in crlf
 	"IgnoreCase"	IGNCASE		chgd_hilite	# Exact matching for searches
 	"locked"	LOCKED		chgd_disabled	OPT_LCKFILES # mode locked

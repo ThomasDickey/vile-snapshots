@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.264 1998/02/08 22:04:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.265 1998/02/21 22:23:32 pgf Exp $
  *
  */
 
@@ -708,6 +708,7 @@ extern int lregexec (regexp *prog, LINE *lp, int startoff, int endoff);
 
 /* region.c */
 extern int blank_region (void);
+extern int cryptregion (void);
 extern int detab_region (void);
 extern int detabline (void *flagp, int l, int r);
 extern int entab_region (void);
@@ -1020,6 +1021,9 @@ extern	char *	getcwd (char *buffer, int len);
 #endif
 #if MISSING_EXTERN_GETENV
 extern	char *	getenv	(const char *name);
+#endif
+#if MISSING_EXTERN_GETPASS
+extern	char *	getpass	(const char *prompt);
 #endif
 #if MISSING_EXTERN_GETHOSTNAME && HAVE_GETHOSTNAME 
 extern	int	gethostname (char *name, int len);

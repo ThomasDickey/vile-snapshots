@@ -545,6 +545,9 @@ Text manipulation command:
 		lets one reference the selected region with other operators.
 		(If you use this command much, it is recommended that you
 		bind it to and easier to type sequence, such as 'S'.)
+	^X-C	Encrypt or decrypt the region, using the current encryption
+		key.  If no key has been set, user will be prompted.  See
+		"Encryption" below.
 
 	Text insertion
 	--------------
@@ -710,9 +713,8 @@ Miscellaneous commands
 		buffer is currently using the local or global copy of the
 		tabstop value.
 
-	^X-X	Set encryption key.  (not well tested, but hopefully not
-		broken)  OPT_ENCRYPT must have been on when vile was built
-		for this to do anything.
+	^X-X    Set current encryption key for this buffer.  See "Encryption"
+		below for more information.
 
 	K	Count prefix.  The first time you type it, it is equivalent
 		to an argument of 4 to the following command.  If you repeat
@@ -1085,9 +1087,10 @@ Editor modes
 		column 1.  Additionally, if a line begins with a '#'
 		character, it will not shift right with the '>>' command. (M)
 
-	crypt	Causes files to be encrypted.  This is NOT compatible
-		with the UNIX crypt(1) routines, and may not be built
-		into your version of vile by default. (B)
+	crypt	Causes buffer(s) to be decrypted when read, and encrypted
+		when written.  This is NOT compatible with the UNIX
+		crypt(1) routines.  See the section on "Encryption" for
+		more information.  (B)
 
 	comment-prefix A regular expression denoting the portion of a line
 		that is replicated and untouched, except for leading
@@ -2589,6 +2592,35 @@ Invocation
 		file, and will bypass any normal startup file (i.e.
 		.vilerc) or environment variable (i.e. $VILEINIT).
 
+Encryption
+----------
+	vile implements a simple encryption algorithm, and can apply this
+	to your buffers either automatically (via a mode setting) or
+	manually (via an explicit command).  The algorithm is reversible,
+	so crypting a previously crypted buffer or region will undo that
+	encryption. 
+
+	The encryption key for a buffer will be a) inherited from the
+	global cryptkey which was set via the vile command line (-k) if it
+	exists, b) set with the set-crypt-key (^X-X) command, or c)
+	obtained from the user interactively.  The details of this are a
+	little messy, and should probably be cleaned up somewhat.  The
+	buffer's key will remain active until changed or reset.
+	
+	If "crypt" mode is on, then when the buffer is written the user
+	will be prompted for the encryption key to use in none has yet been
+	set.  If "crypt" mode is on, and an encryption key has been set,
+	then the buffer will be crypted when read.  In practice this means
+	you need to read the file, then set crypt mode, then reread the
+	file.  (Or, equivalently, create the buffer, set crypt mode, and
+	then insert the file into it (with ":r").
+
+	The ^X-C operator will crypt an arbitrary region of a buffer, using
+	the current key.  Note that crypting two adjacent regions
+	separately will _not_ produce the same result as crypting their
+	single equivalent region once.
+	
+
 Crash Recovery
 --------------
 
@@ -3508,4 +3540,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.337 1998/02/07 21:14:33 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.338 1998/02/21 22:23:32 pgf Exp $
