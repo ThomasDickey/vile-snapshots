@@ -97,6 +97,8 @@ perl(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     register int status;
     char buf[NLINE];	/* buffer to receive command into */
+    int old_discmd; 
+    int old_isnamedcmd; 
 
     buf[0] = EOS;
     if ((status = mlreply_no_opts("Perl command: ", buf, sizeof(buf))) != TRUE)
@@ -132,8 +134,20 @@ perl(int f GCC_UNUSED, int n GCC_UNUSED)
 	newVIrv(svScreenId, curscr); 
 	newVIrv(svcurscr,   curscr); 
 
+	/* We set the following stuff up in the event that we call 
+	   one of the mlreply methods.  If they are not set up this 
+	   way, we won't always be prompted... */ 
+        clexec = FALSE; 
+        old_discmd = discmd; 
+        discmd = TRUE; 
+	old_isnamedcmd = isnamedcmd;	/* for mlreply_dir */ 
+	isnamedcmd = TRUE; 
+ 
 	perl_eval(buf);
 
+        discmd = old_discmd; 
+	isnamedcmd = old_isnamedcmd; 
+ 
 	SvREFCNT_dec(SvRV(svScreenId));
 	SvROK_off(svScreenId);
 	SvREFCNT_dec(SvRV(svcurscr));
@@ -286,6 +300,7 @@ static int perl_init(void)
     SV   *svminiscr; 
     AV   *av; 
     SV   *sv; 
+    char  temp[NFILEN]; 
 
     perl_interp = perl_alloc();
     perl_construct(perl_interp);
@@ -301,7 +316,7 @@ static int perl_init(void)
 
     /* Add our own paths to the front @INC */ 
     av_unshift(av = GvAVn(incgv), 2); 
-    av_store(av, 0, newSVpv("~/.vile/perl",0)); 
+    av_store(av, 0, newSVpv(lengthen_path(strcpy(temp,"~/.vile/perl")),0));  
     sv = newSVpv(HELP_LOC,0); 
     sv_catpv(sv, "perl"); 
     av_store(av, 1, sv); 
@@ -347,12 +362,76 @@ perl_eval(char *string)
 extern void boot_DynaLoader _((CV* cv));
 extern void boot_VI _((CV* cv));
 
-static void xs_init()
+static void 
+xs_init() 
 {
-	char *file = __FILE__;
-	dXSUB_SYS;
-	newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, file);
-	newXS("VI::bootstrap", boot_VI, file);
+    char *file = __FILE__; 
+    dXSUB_SYS; 
+    newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, file); 
+    newXS("VI::bootstrap", boot_VI, file); 
+} 
+ 
+ 
+/* 
+ * Returns a line number given an SV.  '$' represents the last line 
+ * in the file. '$$' represents the line after the last line.  The 
+ * only time that '$' and '$$' represent the same line is when the 
+ * buffer is empty. 
+ */ 
+ 
+static I32 
+sv2linenum(SV *sv) 
+{ 
+    I32 linenum; 
+ 
+    if (!SvIOKp(sv) && strcmp(SvPV(sv,na),"$") == 0) {  
+	linenum = line_count(curbp);  
+    }  
+    else if (!SvIOKp(sv) && strcmp(SvPV(sv,na),"$$") == 0) {  
+	linenum = line_count(curbp) + 1;  
+    } 
+    else {  
+	linenum = SvIV(sv);  
+	if (linenum < 1) {  
+	    linenum = 1;  
+	}  
+	else if (linenum > line_count(curbp)) {  
+	    linenum = line_count(curbp);  
+	}  
+    }  
+    return linenum; 
+} 
+ 
+ 
+/*  
+ * Returns an offset within the current line (where DOT is) given an 
+ * SV.  '$' represents the last non-newline character in the line.  '$$' 
+ * represents the newline character.  The only time '$' and '$$' represent 
+ * the same position is when the line is empty. 
+ */ 
+ 
+static I32 
+sv2offset(SV *sv) 
+{ 
+    I32 offset;  
+    if (!SvIOKp(sv) && strcmp(SvPV(sv,na),"$") == 0) {  
+	offset = llength(DOT.l) - 1;  
+	if (offset < 0) 
+	    offset = 0; 
+    }  
+    else if (!SvIOKp(sv) && strcmp(SvPV(sv,na),"$$") == 0) {  
+	offset = llength(DOT.l);  
+    } 
+    else {  
+	offset = SvIV(sv);  
+	if (offset < 0) {  
+	    offset = 0;  
+	}  
+	else if (offset > llength(DOT.l)) {  
+	    offset = llength(DOT.l);  
+	}  
+    }  
+    return offset; 
 }
 
 typedef void *	VI;
@@ -736,16 +815,6 @@ FindScreen(file)
 	OUTPUT:
 	RETVAL
 
-int 
-VileCommand(cline) 
-	char *cline; 
- 
-	CODE: 
-	RETVAL = docmd(cline,FALSE,1); 
- 
-	OUTPUT: 
-	RETVAL 
- 
 # XS_VI_swscreen --
 #	Change the current focus to screen.
 #
@@ -775,6 +844,54 @@ Warn(warning)
 	CODE:
 	sv_catpv(GvSV(errgv),warning);
  
+# command CMDLINE 
+# 
+# executes the given vile command line (as if it were typed on the 
+# : line). 
+# 
+# This is not exactly safe in all contexts.  (It is easy to cause 
+# seg faults.)  It'll likely be removed once the API has been fleshed 
+# out some more. 
+ 
+int  
+command(cline)  
+	char *cline;  
+ 
+	CODE:  
+	RETVAL = docmd(cline,FALSE,1);  
+  
+	OUTPUT:  
+	RETVAL  
+  
+  
+# inplace_edit BUFOBJ 
+# inplace_edit BUFOBJ VALUE 
+# 	 
+# 	Sets the value of the "inplace edit" flag (either true of false). 
+# 	Returns the old value.  When used without an argument, merely 
+# 	returns current value without modifying the current value. 
+#  
+# 	This flag determines whether a line is deleted after being 
+# 	read.  E.g, 
+#  
+# 	$curscr->inplace_edit(1); 
+# 	while (<$curscr>) { 
+# 		s/foo/bar/g; 
+# 		print; 
+# 	} 
+#  
+# 	The <$curscr> operation will cause one line to be read and 
+# 	deleted.  DOT will be left at the beginning of the next line. 
+# 	The print statment will cause $_ to get inserted prior the 
+# 	the next line. 
+#  
+# 	Setting this flag to true is very similar to setting the 
+# 	$INPLACE_EDIT flag (or $^I) for normal filehandles or 
+# 	using the -i switch from the command line. 
+#  
+# 	Setting it to false (which is its default value) will cause 
+# 	the lines that are read to be left alone. 
+ 
 int 
 inplace_edit(screen, ...) 
 	VI screen 
@@ -786,6 +903,41 @@ inplace_edit(screen, ...)
 	 
 	OUTPUT: 
 	RETVAL 
+ 
+ 
+ 
+# setregion BUFOBJ 
+# setregion BUFOBJ STARTLINE, ENDLINE 
+# setregion BUFOBJ STARTLINE, STARTOFFSET, ENDLINE, ENDOFFSET 
+# setregion BUFOBJ STARTLINE, STARTOFFSET, ENDLINE, ENDOFFSET, 'rectangle' 
+# setregion BUFOBJ STARTLINE, STARTOFFSET, ENDLINE, ENDOFFSET, 'exact' 
+#  
+#	Sets the region and sets DOT to the beginning of the region.  
+# 
+#       Either the line number or offset (or both) may be the special 
+#	string '$' which represents the last line in the buffer and the 
+#	last character on a line. 
+# 
+#	Often times, however, the special string '$$' will be more 
+#	useful.  It truly represents the farthest that it possible 
+#	to go in both the vertical and horizontal directions.  As 
+#	a line number, this represents the line beyond the last 
+#	line of the buffer.  Characters inserted at this point 
+#	will form a new line.  As an offset, '$$' refers to the 
+#	newline character at the end of a line.  Characters inserted 
+#	at this point will be inserted before the newline character. 
+# 
+#	When used in an array context, returns a five element array 
+#	with the start line, start offset, end line, end offset, and a 
+#	string indicating the type of region (one of 'line', 
+#	'rectangle', or 'exact'). 
+# 
+#	When used in a scalar context, returns the buffer object 
+#	so that cascading method calls may be performed, i.e, 
+# 
+#		$curscr->setregion(3,4)->attribute_cntl_a_sequences; 
+# 
+# Note: rectangular regions are not implemented yet. 
  
 void 
 setregion(screen, ...) 
@@ -806,9 +958,9 @@ setregion(screen, ...)
 		break; 
 	    case 3: 
 		/* Set up a full line region */ 
-		api_gotoline(scrp, SvIV(ST(2))+1); 
+		api_gotoline(scrp, sv2linenum(ST(2))+1);  
 		scrp->region.r_end = DOT; 
-		api_gotoline(scrp, SvIV(ST(1))); 
+		api_gotoline(scrp, sv2linenum(ST(1)));  
 		scrp->region.r_orig = DOT; 
 		break; 
 	    case 5: 
@@ -831,30 +983,20 @@ setregion(screen, ...)
 		} 
 	    setregion_common: 
 		if (scrp->regionshape == FULLLINE) { 
-		    api_gotoline(scrp, SvIV(ST(3))+1); 
+		    api_gotoline(scrp, sv2linenum(ST(3))+1);  
 		    DOT.o = 0; 
 		} 
 		else { 
-		    api_gotoline(scrp, SvIV(ST(3))); 
-		    DOT.o = SvIV(ST(4)); 
-		    if (DOT.o < 0) 
-			DOT.o = 0; 
-		    if (DOT.o > llength(DOT.l)) 
-			DOT.o = llength(DOT.l); 
+		    api_gotoline(scrp, sv2linenum(ST(3)));  
+		    DOT.o = sv2offset(ST(4));  
 		} 
 		scrp->region.r_end = DOT; 
  
 		api_gotoline(scrp, SvIV(ST(1))); 
-		if (scrp->regionshape == FULLLINE) { 
+		if (scrp->regionshape == FULLLINE) 
 		    DOT.o = 0; 
-		} 
-		else { 
-		    DOT.o = SvIV(ST(2)); 
-		    if (DOT.o < 0) 
-			DOT.o = 0; 
-		    if (DOT.o > llength(DOT.l)) 
-			DOT.o = llength(DOT.l); 
-		} 
+		else 
+		    DOT.o = sv2offset(ST(2));  
 		scrp->region.r_orig = DOT; 
 		break; 
 	    default: 
@@ -864,8 +1006,7 @@ setregion(screen, ...)
 	scrp->dot_inited = 1; 
 	gimme = GIMME_V; 
 	if (gimme == G_SCALAR) { 
-	    warn("setregion should only be called in void or array context"); 
-	    XPUSHs(sv_newmortal());		/* Push undef */ 
+	    XPUSHs(ST(0)); 
 	} 
 	else if (gimme == G_ARRAY) { 
 	    /* Return range information */ 
@@ -895,8 +1036,19 @@ setregion(screen, ...)
 # 	the beginning of that line.  When supplied with two arguments, 
 # 	both the line number and offset components are set. 
 #  
-# 	The line number may also be the special character '$' which 
-# 	represents the last line of the buffer. 
+#       Either the line number or offset (or both) may be the special 
+#	string '$' which represents the last line in the buffer and the 
+#	last character on a line. 
+# 
+#	Often times, however, the special string '$$' will be more 
+#	useful.  It truly represents the farthest that it possible 
+#	to go in both the vertical and horizontal directions.  As 
+#	a line number, this represents the line beyond the last 
+#	line of the buffer.  Characters inserted at this point 
+#	will form a new line.  As an offset, '$$' refers to the 
+#	newline character at the end of a line.  Characters inserted 
+#	at this point will be inserted before the newline character. 
+#	 
 #  
 # 	Examples: 
 #  
@@ -942,38 +1094,12 @@ dot(screen, ...)
 	else if (items > 1) { 
 	    I32 linenum; 
 	    /* Expect a line number or '$' */ 
-	    if (!SvIOKp(ST(1)) && strcmp(SvPV(ST(1),na),"$") == 0) { 
-		linenum = line_count(curbp); 
-	    } 
-	    else { 
-		linenum = SvIV(ST(1)); 
-		if (linenum < 1) { 
-		    linenum = 1; 
-		} 
-		else if (linenum > line_count(curbp)) { 
-		    linenum = line_count(curbp); 
-		} 
-	    } 
  
-	    api_gotoline(scrp, linenum); 
+	    api_gotoline(scrp, sv2linenum(ST(1)));  
  
-	    if (items == 3) { 
-		I32 offset; 
-		/* Expect an offset within the line or '$' */ 
-		if (!SvIOKp(ST(2)) && strcmp(SvPV(ST(2),na),"$") == 0) { 
-		    offset = llength(DOT.l); 
-		} 
-		else { 
-		    offset = SvIV(ST(2)); 
-		    if (offset < 0) { 
-			offset = 0; 
-		    } 
-		    else if (offset > llength(DOT.l)) { 
-			offset = llength(DOT.l); 
-		    } 
-		} 
-		DOT.o = offset; 
-	    } 
+	    if (items == 3) 
+		DOT.o = sv2offset(ST(2));  
+ 
 	    /* Don't allow api_dotgline to change dot if dot is explicitly 
 	       set.  OTOH, simply querying dot doesn't count. */ 
 	    scrp->dot_inited = TRUE;  
@@ -993,10 +1119,18 @@ dot(screen, ...)
  
  
  
+# mlreply PROMPT 
+# mlreply PROMPT, INITIALVALUE 
 # 
-# Various mlreply functions.  I lack sufficient imagination right now 
-# to think of better names. 
+#	Prompts the user with the given prompt and (optional) supplied 
+#	initial value.  Certain characters that the user may input have 
+#	special meanings to mlreply and may have to be escaped by the 
+#	user to be input.  If this is unacceptable, use mlreply_no_opts 
+#	instead. 
 # 
+#	Returns the user's response string.  If the user aborts 
+#	(via the use of the escape key) the query, an undef is 
+#	returned. 
  
 SV * 
 mlreply(prompt, ...) 
@@ -1017,10 +1151,22 @@ mlreply(prompt, ...)
 	    buf[0] = EOS; 
  
 	status = mlreply(prompt, buf, sizeof(buf)); 
+ 
 	RETVAL = status ? newSVpv(buf, 0) : newSVsv(&sv_undef); 
  
 	OUTPUT: 
 	RETVAL 
+ 
+# mlreply_no_opts PROMPT 
+# mlreply_no_opts PROMPT, INITIALVALUE 
+# 
+#	Prompts the user with the given prompt and (optional) supplied 
+#	initial value.  All printable characters may be entered by the 
+#	without any special escapes. 
+# 
+#	Returns the user's response string.  If the user aborts 
+#	(via the use of the escape key) the query, an undef is 
+#	returned. 
  
 SV * 
 mlreply_no_opts(prompt, ...) 
@@ -1041,11 +1187,23 @@ mlreply_no_opts(prompt, ...)
 	    buf[0] = EOS; 
  
 	status = mlreply_no_opts(prompt, buf, sizeof(buf)); 
+ 
 	RETVAL = status ? newSVpv(buf, 0) : newSVsv(&sv_undef); 
  
 	OUTPUT: 
 	RETVAL 
  
+# mlreply_file PROMPT 
+# mlreply_file PROMPT, INITIALVALUE 
+# 
+#	Prompts the user for a filename with the given prompt and 
+#	(optional) initial value.  Filename completion (via the 
+#	TAB key, if enabled) may be used to assist in entering 
+#	the filename. 
+# 
+#	Returns the user's response string.  If the user aborts 
+#	(via the use of the escape key) the query, an undef is 
+#	returned. 
  
 SV * 
 mlreply_file(prompt, ...) 
@@ -1071,6 +1229,18 @@ mlreply_file(prompt, ...)
 	OUTPUT: 
 	RETVAL 
  
+# mlreply_dir PROMPT 
+# mlreply_dir PROMPT, INITIALVALUE 
+# 
+#	Prompts the user for a directory name with the given prompt 
+#	and (optional) initial value.  Filename completion (via the 
+#	TAB key, if enabled) may be used to assist in entering 
+#	the directory name. 
+# 
+#	Returns the user's response string.  If the user aborts 
+#	(via the use of the escape key) the query, an undef is 
+#	returned. 
+ 
 SV * 
 mlreply_dir(prompt, ...) 
 	char *prompt 
@@ -1095,3 +1265,48 @@ mlreply_dir(prompt, ...)
 	OUTPUT: 
 	RETVAL 
 
+# attribute_cntl_a_sequences BUFOBJ 
+# 
+#	Causes the editor to attach attributes to the <Ctrl>A 
+#	sequences found in the buffer for the current region (which 
+#	may be set via setregion). 
+# 
+#	Returns the buffer object. 
+ 
+VI 
+attribute_cntl_a_sequences(screen) 
+	VI screen 
+ 
+	PREINIT: 
+	SCR *scrp;   
+ 
+	CODE: 
+	scrp = (SCR *)screen;   
+	api_setup_fake_win(scrp);   
+	attribute_cntl_a_sequences_over_region(&scrp->region); 
+	RETVAL = screen; 
+ 
+	OUTPUT: 
+	RETVAL 
+ 
+# unmark 
+# 
+#	Clear the "modified" status of the buffer. 
+# 
+#	Returns the buffer object. 
+ 
+VI 
+unmark(screen) 
+	VI screen 
+ 
+	PREINIT: 
+	SCR *scrp;   
+ 
+	CODE: 
+	scrp = (SCR *)screen;   
+	api_setup_fake_win(scrp);   
+	unmark(0,0); 
+	RETVAL = screen; 
+ 
+	OUTPUT: 
+	RETVAL 
