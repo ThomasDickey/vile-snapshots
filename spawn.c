@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.150 1999/11/16 00:05:26 Ryan.Murray Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.151 1999/12/10 23:19:02 tom Exp $
  *
  */
 
@@ -388,10 +388,6 @@ spawn1(int rerun, int pressret)
 	}
 	sgarbf = TRUE;
 	return (s);
-#endif
-#if	SYS_WIN31
-	mlforce("[Not in Windows 3.1]");
-	return FALSE;
 #endif
 #if	SYS_MSDOS || SYS_OS2 || SYS_WINNT
 	kbd_erase_to_end(0);

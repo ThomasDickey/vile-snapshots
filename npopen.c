@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.78 1999/11/12 01:48:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.80 1999/12/11 15:08:39 tom Exp $
  *
  */
 
@@ -86,7 +86,7 @@ static void append_libdir_to_path(void)
 			tmp = (char *) malloc(6 + strlen(env));
 			lsprintf(tmp, "PATH=%s", env);
 			putenv(tmp);
-			TRACE(("putenv %s\n", tmp))
+			TRACE(("putenv %s\n", tmp));
 		}
 	}
 }
@@ -303,21 +303,17 @@ softfork(void)
 #endif /* SYS_UNIX */
 #endif /* TEST_DOS_PIPES */
 
-#if SYS_MSDOS || SYS_WIN31 || SYS_WINNT || TEST_DOS_PIPES
+#if SYS_MSDOS || SYS_WINNT || TEST_DOS_PIPES
 #include <fcntl.h>		/* defines O_RDWR */
 #if ! TEST_DOS_PIPES
 #include <io.h>			/* defines 'dup2()', etc. */
-#endif
-
-#if SYS_WIN31
-/* FIXME: is it possible to execute a DOS program from Windows? */
-int	system(const char *command) { return (-1); }
 #endif
 
 static	void	deleteTemp (void);
 
 static	FILE **	myPipe;		/* current pipe-file pointer */
 static	FILE **	myWrtr;		/* write-pipe pointer */
+static	FILE **	myRead;		/* read-pipe pointer */
 static	char *	myName[2];	/* name of temporary file for pipe */
 static	char *	myCmds;		/* command to execute on read-pipe */
 static	int	myRval;		/* return-value of 'system()' */
@@ -350,6 +346,7 @@ deleteTemp (void)
 
 	for (n = 0; n < 2; n++) {
 		if (myName[n] != 0) {
+			TRACE(("deleteTemp #%d '%s'\n", n, myName[n]));
 			(void)unlink(myName[n]);
 			FreeAndNull(myName[n]);
 		}
@@ -361,6 +358,7 @@ closePipe(FILE ***pp)
 {
 	if (*pp != 0) {
 		if (**pp != 0) {
+			TRACE(("closePipe fd=%d\n", fileno(**pp)));
 			(void)fclose(**pp);
 			**pp = 0;
 		}
@@ -373,7 +371,7 @@ readPipe(const char *cmd, int in, int out)
 {
 	int old0, old1, old2;
 
-	TRACE(("readPipe(cmd='%s', in=%d, out=%d)\n", cmd, in, out))
+	TRACE(("readPipe(cmd='%s', in=%d, out=%d)\n", cmd, in, out));
 
 	term.kclose();	/* close the keyboard in case of error */
 
@@ -416,7 +414,7 @@ writePipe(const char *cmd)
 {
 	int old0;
 
-	TRACE(("writePipe(cmd='%s')\n", cmd))
+	TRACE(("writePipe(cmd='%s')\n", cmd));
 
 	term.kclose();	/* close the keyboard in case of error */
 
@@ -456,10 +454,10 @@ int
 inout_popen(FILE **fr, FILE **fw, char *cmd)
 {
 	char		*type = (fw != 0) ? "w" : "r";
-	static FILE	*pp = 0;
+	static FILE	*pp[2] = { 0, 0 };
 	int		fd;
 
-	TRACE(("inout_popen(fr=%p, fw=%p, cmd='%s')\n", fr, fw, cmd))
+	TRACE(("inout_popen(fr=%p, fw=%p, cmd='%s')\n", fr, fw, cmd));
 
 	fileispipe = TRUE;
 	fileeof = FALSE;
@@ -472,14 +470,14 @@ inout_popen(FILE **fr, FILE **fw, char *cmd)
 	/* Create the file that will hold the pipe's content */
 	if ((fd = createTemp(type)) >= 0) {
 		if (fw == 0) {
-			*fr = pp = readPipe(cmd, -1, fd);
+			*fr = pp[0] = readPipe(cmd, -1, fd);
 			myWrtr = 0;
-			myPipe = &pp;  /* Can't assign "fr", may be stack-based. */
+			myPipe = &pp[0];  /* "fr" may be stack-based. */
 			myCmds = 0;
 		} else {
-			*fw = pp = fdopen(fd, type);
+			*fw = pp[1] = fdopen(fd, type);
 			myPipe = fr;
-			myWrtr = &pp;  /* Can't assign "fw", may be stack-based. */
+			myWrtr = &pp[1];  /* "fw" may be stack-based. */
 			myCmds = strmalloc(cmd);
 		}
 	}
@@ -500,13 +498,20 @@ npflush (void)
 #endif
 	if (myCmds != 0) {
 		if (myWrtr != 0) {
+			int fd;
+			static FILE *pp;
+
 			(void)fflush(*myWrtr);
-#if UNUSED
+#if 0
 			(void)fclose(*myWrtr);
 			*myWrtr = fopen(myName[0], "r");
-#endif
+#else
 			rewind(*myWrtr);
-			*myPipe = readPipe(myCmds, fileno(*myWrtr), createTemp("r"));
+#endif
+			fd = createTemp("r");
+			pp = fdopen (fd, "r");
+			myRead = &pp;
+			*myPipe = readPipe(myCmds, fileno(*myWrtr), fd);
 		}
 		FreeAndNull(myCmds);
 	}
@@ -526,6 +531,7 @@ npclose (FILE *fp)
 	if (myWrtr != 0 && myPipe == 0)
 		writePipe(myCmds);
 #endif
+	closePipe(&myRead);
 	closePipe(&myWrtr);
 	closePipe(&myPipe);
 	deleteTemp();

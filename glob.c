@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.67 1999/12/10 03:00:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.68 1999/12/10 23:17:35 tom Exp $
  *
  */
 
@@ -35,7 +35,7 @@
 #define	isname(c)	(isAlnum(c) || ((c) == '_'))
 #define	isdelim(c)	((c) == '(' || ((c) == '{'))
 
-#if SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
+#if SYS_MSDOS || SYS_OS2 || SYS_WINNT
 # if UNIX_GLOBBING
 #  define DirEntryStr(p)		p->d_name
 # else
@@ -404,7 +404,7 @@ char	*pattern)
 						break;
 					}
 				} else if (is_directory(path)) {
-#if SYS_MSDOS || SYS_WIN31
+#if SYS_MSDOS
 					s = strrchr(path, '.');
 					if (s[1] == EOS)
 						s[0] = EOS;
@@ -816,7 +816,7 @@ expand_pattern (char *item)
 	}
 	}
 #endif				/* UNIX-style globbing */
-#if (SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT) && !UNIX_GLOBBING
+#if (SYS_MSDOS || SYS_OS2 || SYS_WINNT) && !UNIX_GLOBBING
 	/* native DOS-wildcards */
 	DeclareFind(p);
 	char	temp[FILENAME_MAX + 1];

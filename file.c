@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.261 1999/12/09 02:43:10 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.263 1999/12/12 23:03:56 tom Exp $
  */
 
 #include	"estruct.h"
@@ -29,7 +29,7 @@ static	void	readlinesmsg(int n, int s, const char *f, int rdo);
 # endif
 #endif
 
-#if !(SYS_MSDOS || SYS_WIN31)
+#if !SYS_MSDOS
 static	int	quickreadf(BUFFER *bp, int *nlinep);
 #endif
 
@@ -877,7 +877,7 @@ int	mflg)		/* print messages? */
 #if OPT_WORKING
 		max_working = cur_working = old_working = 0;
 #endif
-#if ! (SYS_MSDOS||SYS_WIN31)
+#if ! SYS_MSDOS
 		if (fileispipe || (s = quickreadf(bp, &nline)) == FIOMEM)
 #endif
 			s = slowreadf(bp, &nline);
@@ -959,7 +959,7 @@ bp2readin(BUFFER *bp, int lockfl)
 	return s;
 }
 
-#if ! (SYS_MSDOS || SYS_WIN31)
+#if ! SYS_MSDOS
 static int
 quickreadf(register BUFFER *bp, int *nlinep)
 {
@@ -1146,7 +1146,7 @@ slowreadf(register BUFFER *bp, int *nlinep)
 	int	doslines = 0,
 		unixlines = 0;
 #endif
-#if SYS_UNIX || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT	/* i.e., we can read from a pipe */
+#if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT /* i.e., we can read from a pipe */
 	USHORT	flag = 0;
 	int	done_update = FALSE;
 #endif
@@ -1196,7 +1196,7 @@ slowreadf(register BUFFER *bp, int *nlinep)
 			s = FIOMEM;
 			break;
 		}
-#if SYS_UNIX || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
+#if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
 		else {
 			/* reading from a pipe, and internal? */
 			if (slowtime(&last_updated)) {
@@ -1321,7 +1321,7 @@ makename(char *bname, const char *fname)
 	while (isBlank(*fcp))
 		fcp++;
 
-#if     SYS_UNIX || SYS_MSDOS || SYS_WIN31 || SYS_VMS || SYS_OS2 || SYS_WINNT
+#if     SYS_UNIX || SYS_MSDOS || SYS_VMS || SYS_OS2 || SYS_WINNT
 	bcp = bname;
 	if (isShellOrPipe(fcp)) {
 		/* ...it's a shell command; bname is first word */
@@ -1776,11 +1776,6 @@ filename(int f GCC_UNUSED, int n GCC_UNUSED)
 	if (s == FALSE)
 		return s;
 
-	/* 
-	 * Supersede local buffer's view mode with global view mode.
-	 * Why?  Don't know--this is ancient code.
-	 */
-	make_global_b_val(curbp,MDVIEW);
 #if OPT_LCKFILES
 	if ( global_g_val(GMDUSEFILELOCK) ) {
 		if (!b_val(curbp,MDLOCKED) && !b_val(curbp,MDVIEW))

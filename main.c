@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.413 1999/11/24 22:12:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.414 1999/12/10 23:18:13 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -362,7 +362,7 @@ MainProgram(int argc, char *argv[])
 	/* if stdin isn't a terminal, assume the user is trying to pipe a
 	 * file into a buffer.
 	 */
-#if SYS_UNIX || SYS_VMS || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
+#if SYS_UNIX || SYS_VMS || SYS_MSDOS || SYS_OS2 || SYS_WINNT
 #if DISP_NTWIN
 	if (stdin_data_available())
 #else
@@ -1113,7 +1113,7 @@ global_val_init(void)
 #if SYS_VMS
 #define	DEFAULT_CSUFFIX	"\\.\\(\\([CHIS]\\)\\|CC\\|CXX\\|HXX\\)\\(;[0-9]*\\)\\?$"
 #endif
-#if SYS_MSDOS || SYS_WIN31
+#if SYS_MSDOS
 #define	DEFAULT_CSUFFIX	"\\.\\(\\([chis]\\)\\|cc\\|cpp\\|cxx\\|hxx\\)$"
 #endif
 #ifndef DEFAULT_CSUFFIX	/* UNIX or OS2/HPFS (mixed-case names) */
@@ -1178,7 +1178,7 @@ global_val_init(void)
 	helpfile = strmalloc(s);
 
 	if ((s = getenv("VILE_STARTUP_FILE")) == 0) {
-#if	SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT || SYS_VMS
+#if	SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_VMS
 		s = "vile.rc";
 #else	/* SYS_UNIX */
 		s = ".vilerc";
@@ -1189,7 +1189,7 @@ global_val_init(void)
 	if ((s = getenv("VILE_STARTUP_PATH")) != 0) {
 		append_to_path_list(&startup_path, s);
 	} else {
-#if	SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
+#if	SYS_MSDOS || SYS_OS2 || SYS_WINNT
 		append_to_path_list(&startup_path, "/sys/public");
 		append_to_path_list(&startup_path, "/usr/bin");
 		append_to_path_list(&startup_path, "/bin");
@@ -1242,7 +1242,7 @@ global_val_init(void)
 #endif
 }
 
-#if SYS_UNIX || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT || SYS_VMS
+#if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_VMS
 
 /* ARGSUSED */
 SIGT

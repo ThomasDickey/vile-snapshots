@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.369 1999/11/24 19:44:57 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.370 1999/12/11 15:08:09 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1579,3 +1579,13 @@ parent process will hang until all of the subprocess xterms are closed.
 Also, on Solaris, the 'read' used in /bin/sh to hold the process on
 completion does not work.  (One can use XFree86 xterm's -hold option
 to work around the last problem).
+
+-- 99-12-06 (tom)
+
+While fixing a file-descriptor leak in npflush for win32 (now32pipe), I
+was running winvile.exe from a .bat script which ran nmake and then winvile.
+The script itself I ran from vile.exe, which used w32pipe on WinNT.  While
+the leak was present, I could "use" ^X-q on the third try of the .bat script.
+It appears that the inherited file-descriptor from vile.exe for the w32pipe
+was "usable" for the winvile.exe process, when it coincided with the one that
+winvile.exe was using.
