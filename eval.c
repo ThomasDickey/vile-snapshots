@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.269 2000/04/28 22:52:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.270 2000/05/19 00:57:52 tom Exp $
  *
  */
 
@@ -250,6 +250,7 @@ reset_charclasses(int f GCC_UNUSED, int n GCC_UNUSED)
 
 #endif /* OPT_SHOW_CTYPE */
 
+#if OPT_EVAL
 /*
  * Compute the intersection of the character classes in the argument.
  */
@@ -288,6 +289,7 @@ show_charclass(TBUFF **result, char *arg)
 	lsprintf(tb_values(*result), "%X", k);
 #endif
 }
+#endif
 
 /*--------------------------------------------------------------------------*/
 

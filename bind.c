@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.227 2000/05/18 01:48:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.229 2000/05/19 00:52:43 tom Exp $
  *
  */
 
@@ -89,7 +89,19 @@ BINDINGS cmd_bindings =
 #endif
 };
 
+static const CMDFUNC *sel_table[N_chars];
+BINDINGS sel_bindings =
+{
+    sel_table
+    ,kbindtbl
+#if OPT_REBIND
+    ,kbindtbl
+#endif
+};
+
+#if OPT_REBIND
 static BINDINGS *bindings_to_describe = &dft_bindings;
+#endif
 
 static void kbd_puts(const char *s);
 
@@ -525,6 +537,13 @@ unbind_c_key(int f GCC_UNUSED, int n GCC_UNUSED)
     return unbind_any_key(&cmd_bindings);
 }
 
+/* ARGSUSED */
+int
+unbind_s_key(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    return unbind_any_key(&sel_bindings);
+}
+
 /*
  * Prefix-keys can be only bound to one value. This procedure tests the
  * argument 'kcmd' to see if it is a prefix key, and if so, unbinds the
@@ -632,6 +651,13 @@ bind_c_key(int f GCC_UNUSED, int n GCC_UNUSED)
     return bind_any_key(&cmd_bindings);
 }
 
+/* ARGSUSED */
+int
+bind_s_key(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    return bind_any_key(&sel_bindings);
+}
+
 /* describe bindings bring up a fake buffer and list the key bindings
 		   into it with view mode			*/
 
@@ -664,24 +690,32 @@ desbind(int f GCC_UNUSED, int n GCC_UNUSED)
     return describe_any_bindings((char *) 0, 0);
 }
 
-int
-des_i_bind(int f GCC_UNUSED, int n GCC_UNUSED)
+static int
+describe_alternate_bindings(BINDINGS *bs)
 {
     int code;
-    bindings_to_describe = &ins_bindings;
+    bindings_to_describe = bs;
     code = describe_any_bindings((char *) 0, 0);
     bindings_to_describe = &dft_bindings;
     return code;
 }
 
 int
+des_i_bind(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    return describe_alternate_bindings(&ins_bindings);
+}
+
+int
 des_c_bind(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    int code;
-    bindings_to_describe = &ins_bindings;
-    code = describe_any_bindings((char *) 0, 0);
-    bindings_to_describe = &cmd_bindings;
-    return code;
+    return describe_alternate_bindings(&cmd_bindings);
+}
+
+int
+des_s_bind(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    return describe_alternate_bindings(&sel_bindings);
 }
 
 /* ARGSUSED */
@@ -802,6 +836,12 @@ int
 des_c_key(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     return prompt_describe_key(&cmd_bindings);
+}
+
+int
+des_s_key(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    return prompt_describe_key(&sel_bindings);
 }
 
 /* returns a name in double-quotes */
@@ -2806,6 +2846,7 @@ bind_leaks(void)
     free_all_bindings(&dft_bindings);
     free_all_bindings(&ins_bindings);
     free_all_bindings(&cmd_bindings);
+    free_all_bindings(&sel_bindings);
 #endif
 #if OPT_NAMEBST
     btree_freeup(&redefns);

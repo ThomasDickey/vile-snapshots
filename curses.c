@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.9 2000/05/18 02:34:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.10 2000/05/18 10:13:24 tom Exp $
  */
 
 #include	"estruct.h"
@@ -333,7 +333,7 @@ set_bkgd_colors(int fg, int bg)
 #else
     pair = fg * COLORS + bg;
 #endif
-    bkgdset(COLOR_PAIR(pair));
+    bkgdset(COLOR_PAIR(pair) | ' ');
 }
 
 static void

@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.119 2000/05/18 00:48:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.120 2000/05/18 10:11:26 tom Exp $
  *
  */
 
@@ -938,7 +938,7 @@ multimotion(int f, int n)
 		do_repeats(&c,&f,&n);
 
 		/* and execute the command */
-		cfp = InsertKeyBinding(c);
+		cfp = SelectKeyBinding(c);
 		if ( (cfp != NULL)
 		 && ((cfp->c_flags & (GOAL|MOTION)) != 0)) {
 			MARK testdot;

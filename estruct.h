@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.447 2000/05/17 22:27:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.448 2000/05/18 10:11:40 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2298,6 +2298,7 @@ typedef struct {
 #define DefaultKeyBinding(c) kcod2fnc(&dft_bindings, c)
 #define InsertKeyBinding(c)  kcod2fnc(&ins_bindings, c)
 #define CommandKeyBinding(c) kcod2fnc(&cmd_bindings, c)
+#define SelectKeyBinding(c)  kcod2fnc(&sel_bindings, c)
 
 /* These are the flags which can appear in the CMDFUNC structure, describing a
  * command.

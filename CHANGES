@@ -1,5 +1,16 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000519 (i)
+	> Tom Dickey:
+	+ use $cmd-count in AlignToCol to align more than one line at the
+	  cursor's column.
+	+ modify logic of $cmd-count to increment only for the topmost level
+	  of dobuf() nesting.
+	+ update ifdef's for building with SMALLER defined.
+	+ add key binding for select mode, use that rather than insert mode
+	  binding.
+	+ correct parameter of bkgdset() in curses.c for Solaris curses.
+
  20000517 (h)
 	> Tom Dickey:
 	+ add key binding functions for insert-mode and command-mode, making it
