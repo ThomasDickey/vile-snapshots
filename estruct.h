@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.322 1997/10/13 13:06:48 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.323 1997/10/15 23:22:33 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -525,24 +525,9 @@ extern	char *	sys_errlist[];
 #define	lBIT(n)	((ULONG)(1L<<(n)))
 #define	iBIT(n) ((UINT)(1 <<(n)))
 
-/* use 'size_t' if we have it ... for unix systems, the configuration script
-   will define size_t if it wasn't available in sys/types.h. */
-#if SYS_UNIX || SYS_VMS || CC_NEWDOSCC
-# if defined(lint) && (SYS_SUNOS||SYS_APOLLO)
-#  define SIZE_T  size_t	/* note: SunOs 4.1.3 defines 'size_t' as 'int'*/
-#  define ALLOC_T unsigned
-#  if SYS_APOLLO && !APOLLO_STDLIB
-#   undef SIZE_T
-#   define SIZE_T int
-#  endif
-# else
-#  define SIZE_T  size_t
-#  define ALLOC_T size_t
-# endif
-#else
-# define SIZE_T  int
-# define ALLOC_T unsigned
-#endif
+/* FIXME: leftover definitions from K&R version */
+#define SIZE_T  size_t
+#define ALLOC_T size_t
 
 #ifndef HAVE_GETHOSTNAME
 #define HAVE_GETHOSTNAME 0

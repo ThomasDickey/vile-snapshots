@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.213 1997/10/07 10:13:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.214 1997/10/15 23:21:23 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -26,7 +26,7 @@ extern "C" {
 # ifdef __cplusplus
 #  define decl_init_const(thing,value) extern const thing = value
 # else
-#  define decl_init_const(thing,value) thing = value
+#  define decl_init_const(thing,value) const thing = value
 # endif
 #  define decl_init(thing,value) thing = value
 #  define decl_uninit(thing) thing

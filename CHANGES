@@ -1,5 +1,26 @@
 Changes for vile 7.3 (released ??? ??? ??, 1997)
 
+ (tom)	971015 (k)
+	+ add configure options --with-Xaw-scrollbars and
+	  --with-drag-extension.  These make it easy to build xvile with
+	  Kevin's scrollbars by specifying --without-Xaw-scrollbars, or to use
+	  the Xaw's default translations for scrollbars by specifing
+	  --without-drag-extension.
+	+ ifdef'd out the code that invokes $xshell in ":!command".
+	+ correct logic in xvile that spawns a new instance from menu entry,
+	  was leaving a zombie when the new instance closed (reported by Brian
+	  Moore <bem@cmc.net>).
+	+ modify own_selection to always try to own the select, as well as to
+	  check the return value from XtOwnSelection (reported by Ian Jamison
+	  <ianj@quadrics.com>)
+	+ add Lesstif-specific ifdef for workaround (requested by Larry Gensch).
+	+ correct ifdef'ing of Motif version of xvile (reported by Larry
+	  Gensch).
+	+ add screen types Xol and Xm as aliases for OpenLook and Motif.
+	+ correct quoting in configure script for OpenLook case.
+	+ fix some compiler warnings and add 'make check' target (reported by
+	  Nelson H. F. Beebe <beebe@math.utah.edu>)
+
  (kev)	971013 (j)
  	+ perl.xs, ptypemap: Lots of new code which extends the perl
  	  interface a bit more.
