@@ -6,7 +6,7 @@
  * 		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.24 1998/12/22 03:06:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.27 1998/12/29 17:37:47 tom Exp $
  *
  * Features:
  * 	- Reads the keyword file ".vile.keywords" from the home directory.
@@ -125,12 +125,16 @@ char *filter_name = "c";
 #define DQUOTE '"'
 #define SQUOTE '\''
 
+#define isIdent(c)  (isalpha(c) || (c) == '_')
+#define isNamex(c)  (isalnum(c) || (c) == '_')
+
 #define isBlank(c)  ((c) == ' ' || (c) == '\t')
 #define isQuote(c)  ((c) == DQUOTE || (c) == SQUOTE)
 
 static char *Comment_attr;
 static char *Ident_attr;
 static char *Literal_attr;
+static char *Number_attr;
 static char *Preproc_attr;
 
 static char *
@@ -147,11 +151,12 @@ extract_identifier(FILE *fp, char *s)
 
     if (*s == '#') {
 	has_cpp = 1;
+	s++;
 	while (isBlank(*s))
 	    s++;
     }
     base = s;
-    while ((isalpha(*s) || *s == '_' || isdigit(*s)))
+    while (isNamex(*s))
 	s++;
     if (base != s) {
 	need = has_cpp + (s - base);
@@ -160,7 +165,7 @@ extract_identifier(FILE *fp, char *s)
 	    name[0] = '#';
 	}
 	strncpy(name+has_cpp, base, s - base);
-	name[s - base + has_cpp] = 0;
+	name[(s - base) + has_cpp] = 0;
 	if ((attr = keyword_attr(name)) != 0) {
 	    write_token(fp, show, s - show, attr);
 	} else {
@@ -218,6 +223,33 @@ firstnonblank(char *tst, char *cmp)
 }
 
 static char *
+write_number(FILE *fp, char *s)
+{
+    char *base = s;
+    int radix = (*s == '0') ? ((s[1] == 'x' || s[1] == 'X') ? 16 : 8) : 10;
+    int done = 0;
+
+    if (radix == 16)
+	s++;
+    while (!done) {
+	s++;
+	switch (radix) {
+	case 8:
+	    done = !isdigit(*s) || (*s == '8') || (*s == '9'); 
+	    break;
+	case 10:
+	    done = !isdigit(*s);
+	    break;
+	case 16:
+	    done = !isxdigit(*s);
+	    break;
+	}
+    }
+    write_token(fp, base, s - base, Number_attr);
+    return s;
+}
+
+static char *
 write_literal(FILE *fp, char *s, int *literal)
 {
     int c_length = has_endofliteral(s, *literal);
@@ -233,7 +265,7 @@ write_literal(FILE *fp, char *s, int *literal)
 }
 
 void
-init_filter(void)
+init_filter(int before GCC_UNUSED)
 {
 }
 
@@ -249,6 +281,7 @@ do_filter(FILE *input, FILE *output)
     Comment_attr = keyword_attr(NAME_COMMENT);
     Ident_attr   = keyword_attr(NAME_IDENT);
     Literal_attr = keyword_attr(NAME_LITERAL);
+    Number_attr  = keyword_attr(NAME_NUMBER);
     Preproc_attr = keyword_attr(NAME_PREPROC);
 
     comment = 0;
@@ -316,9 +349,12 @@ do_filter(FILE *input, FILE *output)
 		}
 
 		if (*s) {
-		    if ( (isalpha(*s) || *s == '_' || *s == '#')
-		    && ! literal) {
+		    if (literal) {
+			fputc(*s++, output);
+		    } else if (isIdent(*s) || *s == '#') {
 			s = extract_identifier(output, s);
+		    } else if (isdigit(*s)) {
+			s = write_number(output, s);
 		    } else {
 			fputc(*s++, output);
 		    }

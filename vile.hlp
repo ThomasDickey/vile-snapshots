@@ -2890,7 +2890,7 @@ Filtering C programs
 	$HOME/.vile.keywords, which contains a set of keyword/attribute
 	pairs.  An example (and probably insufficient) .vile.keywords file
 	might contain:
-		Comments:B
+		Comment:B
 		Literal:B
 		Preproc:U
 		if:C3
@@ -2900,7 +2900,7 @@ Filtering C programs
 		do:C3
 		typedef:I
 		struct:I
-	The "Comments" keyword is a pseudo-keyword which determines the
+	The "Comment" keyword is a pseudo-keyword which determines the
 	attribute given to C and C++ style comments.  "Literal" applies to
 	string literals.  "Preproc" applies to C preprocessor lines, e.g., #if,
 	etc.
@@ -3928,4 +3928,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.384 1998/12/21 00:58:54 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.385 1998/12/25 02:02:55 tom Exp $

@@ -1,33 +1,7 @@
 /*
- * Program: A simple comment and keyword attributer for vile
- * Author : Jukka Keto, jketo@cs.joensuu.fi
- * Date   : 30.12.1994
- * Modifications:  kevin buettner and paul fox  2/95
- * 		string literal ("Literal") support --  ben stoltz
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.c,v 1.8 1998/12/25 21:33:29 tom Exp $
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.c,v 1.7 1998/12/22 02:45:28 tom Exp $
- *
- * Features:
- * 	- Reads the keyword file ".vile.keywords" from the home directory.
- *	  Keyword file consists lines "keyword:attribute" where
- *	  keyword is any alphanumeric string [#a-zA-Z0-9_] followed
- *	  by colon ":" and attribute character; "I" for italic,
- *	  "U" for underline, "B" for bold, "R" for reverse or
- *	  "C#" for color (where # is a single hexadecimal digit representing
- *	  one of 16 colors).
- *	- Attributes the file read from stdin using vile attribute sequences
- *	  and outputs the file to stdout with keywords and comments
- *	  attributed.
- *	- Comments are handled by the pseudo-keyword "Comments".
- *	- "String literals" are handled by the pseudo-keyword "Literals".
- *	- Here is a macro one might use to invoke the colorizer:
- *	    30 store-macro
- *		write-message "[Attaching Pascal attributes...]"
- *		~local $curcol $curline
- *		~hidden goto-beginning-of-file
- *		~hidden attribute-from-filter end-of-file "vile-pas-filt"
- *	    ~endm
- *	    bind-key execute-macro-30 ^X-q
+ * Markup a Pascal file, for highlighting with vile.
  */
 
 #include <filters.h>
@@ -126,7 +100,7 @@ write_literal(FILE *fp, char *s)
 }
 
 void
-init_filter(void)
+init_filter(int before GCC_UNUSED)
 {
 }
 

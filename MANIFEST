@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_2i
+MANIFEST for vile, version v8_2j
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -142,18 +142,30 @@ doc/perl.doc                    notes about perl interface to vile
 doc/visvile.doc                 document visvile.dll
 doc/w32modes.doc                describe win32-specific modes
 filters                         subdirectory
+filters/ada-filt.l              ada syntax highlighter for vile
+filters/ada.key                 Ada95 keywords
+filters/awk-filt.l              awk syntax highlighter for vile
+filters/awk.key                 keywords for awk syntax highlighting
+filters/bat-filt.l              dos batchfile syntax filter for vile
+filters/bat.key                 dos batchfile keywords
 filters/c-filt.c                c filter
 filters/c-filt.flx              original flex-based c-filter
 filters/c.key                   keywords for C
 filters/cwebfilt.l              cwebx syntax filter for vile
+filters/dcl-filt.l              VAX dcl syntax highlighting filter for vile
+filters/dcl.key                 dcl keywords
 filters/filters.c               common utilities for filtering
 filters/filters.h               interface/definitions for filtering utilities
 filters/filters.rc              sample majormodes, and corresponding filters
 filters/html.key                keywords for vile-html-filt
 filters/htmlfilt.l              HTML syntax filter for vile
+filters/java.key                java keywords
+filters/js.key                  javascript keywords
 filters/latexflt.l              LaTeX syntax filter for vile
 filters/lex-filt.l              lex syntax filter for vile
 filters/lex.key                 keywords for lex + c
+filters/mail.key                keywords for mail-filter
+filters/mailfilt.l              mail syntax highlighting filter for vile
 filters/make.key                keywords for makefile syntax highlighter
 filters/makefile.djg            makefile for DJGPP (vile-utilities)
 filters/makefile.emx            makefile for OS/2 EMX (vile utilities)
@@ -162,14 +174,26 @@ filters/makefile.in             makefile for vile filters
 filters/makefile.wnt            makefile for filters with Visual C++
 filters/makefilt.l              makefile syntax filter for vile
 filters/manfilt.c               manpage-filter
+filters/nr-filt.l               nroff syntax highlighting filter for vile
+filters/nr.key                  keywords for nroff filter
 filters/pas-filt.c              Pascal syntax filter for vile
 filters/pas.key                 keywords for pascal highlighting filter
 filters/perl.key                keywords for perl syntax filter
 filters/perlfilt.l              Perl syntax filter for vile
 filters/sh-filt.l               a sh/ksh/csh syntax filter for vile
 filters/sh.key                  keywords for "sh" syntax filter
+filters/sql-filt.l              sql syntax highlighting filter for vile
+filters/sql.key                 sql keywords
+filters/tc-filt.l               termcap syntax highlighting filter for vile
+filters/tc.key                  termcap keywords for syntax highlighting
+filters/tcl-filt.l              tcl/tk syntax highlighting filter for vile
+filters/tcl.key                 tcl/tk keywords
+filters/ti-filt.l               terminfo syntax highlighting filter for vile
+filters/ti.key                  terminfo keywords
 filters/vile.key                fallback template for highlighting colors
 filters/vilefilt.l              syntax filter for vile macros
+filters/yacc.key                yacc keywords
+filters/yaccfilt.l              yacc syntax highlighting filter for vile
 icons                           subdirectory
 icons/pumpkin.ico               V-eyes pumpkin icon
 icons/sink.ico                  kitchen-sink icon (J.R.Sladkey)

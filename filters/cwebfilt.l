@@ -1,11 +1,12 @@
 %x COMMENT PREP_COM
 
 %{
-/* CWEBx Filter.........................................................*/
-/* Filter to add vile "attribution" sequences to selected bits of Cwebx */
-/* input text. Also useful for Cweb				        */
-
 /*
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.6 1998/12/25 21:31:40 tom Exp $
+ *
+ * Filter to add vile "attribution" sequences to selected bits of Cwebx input
+ * text.  Also useful for Cweb
+ *
  * This is based on a filter written by Vanessa Conchodon (conchodo@univ-mlv.fr)
  * - T.Dickey
  */
@@ -33,13 +34,15 @@ static char *Cweb_code_titre;
 static char *Cweb_code_autre;
 
 void
-init_filter(void)
+init_filter(int before)
 {
-    insert_keyword(NAME_TeX_command, ATTR_KEYWORD);
-    insert_keyword(NAME_TeX_comment, ATTR_COMMENT);
-    insert_keyword(NAME_Cweb_module, ATTR_KEYWORD);
-    insert_keyword(NAME_Cweb_title,  ATTR_IDENT2);
-    insert_keyword(NAME_Cweb_other,  "");
+    if (before) {
+	insert_keyword(NAME_TeX_command, ATTR_KEYWORD);
+	insert_keyword(NAME_TeX_comment, ATTR_COMMENT);
+	insert_keyword(NAME_Cweb_module, ATTR_KEYWORD);
+	insert_keyword(NAME_Cweb_title,  ATTR_IDENT2);
+	insert_keyword(NAME_Cweb_other,  "");
+    }
 }
 
 void
@@ -47,6 +50,7 @@ do_filter(FILE *input, FILE *output)
 {
     yyin = input;
     yyout = output;
+
     Comment_attr = keyword_attr(NAME_COMMENT);
     Preproc_attr = keyword_attr(NAME_PREPROC);
     Keyword_attr = keyword_attr(NAME_KEYWORD);

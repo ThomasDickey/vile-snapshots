@@ -1,6 +1,8 @@
 %{
 
 /*
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.10 1998/12/25 21:33:29 tom Exp $
+ *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
  * This was based on a filter written by Pierre Dittgen (dittgen@univ-mlv.fr)
@@ -16,7 +18,7 @@ static char *Keyword_attr;
 static char *Ident_attr;
 
 void
-init_filter(void)
+init_filter(int before GCC_UNUSED)
 {
 }
 

@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.112 1998/11/11 22:25:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.113 1998/12/29 16:19:20 tom Exp $
  *
  */
 
@@ -36,6 +36,7 @@ static char *tc_US;	/* underline-start */
 static char *tc_UE;	/* underline-end */
 static char *tc_ME;
 static char *tc_MD;
+static int   tc_NC;	/* no_color_video */
 #endif
 
 #if OPT_FLASH
@@ -472,6 +473,8 @@ tcapopen(void)
 		set_palette(UNKN_palette);
 #endif
 #if OPT_VIDEO_ATTRS
+	if ((tc_NC = TGETNUM(CAPNAME("NC","ncv"))) < 0)
+		tc_NC = 0;
 	if (tc_US == 0 && tc_UE == 0) {	/* if we don't have underline, do bold */
 		tc_US = tc_MD;
 		tc_UE = tc_ME;
@@ -873,14 +876,16 @@ tcapattr(UINT attr)
 	static	const	struct	{
 		char	**start;
 		char	**end;
+		UINT	NC_bit;
 		UINT	mask;
 	} tbl[] = {
-		{ &tc_SO, &tc_SE, VASEL|VAREV },
-		{ &tc_US, &tc_UE, VAUL },
-		{ &tc_US, &tc_UE, VAITAL },
-		{ &tc_MD, &tc_ME, VABOLD },
+		{ &tc_SO, &tc_SE,  1, VASEL|VAREV },
+		{ &tc_US, &tc_UE,  2, VAUL },
+		{ &tc_US, &tc_UE,  2, VAITAL },
+		{ &tc_MD, &tc_ME, 32, VABOLD },
 	};
 	static	UINT last;
+	register unsigned n;
 
 	attr = VATTRIB(attr);
 	if (attr & VASPCOL) {
@@ -889,8 +894,22 @@ tcapattr(UINT attr)
 		attr &= ~(VAML|VAMLFOC);
 	}
 
+#if OPT_COLOR
+	/*
+	 * If we have a choice between color and some other attribute, choose
+	 * color, since the other attributes may not be real anyway.
+	 */
+	if (tc_NC != 0
+	 && (attr & VACOLOR) != 0) {
+		for (n = 0; n < TABLESIZE(tbl); n++) {
+			if (tbl[n].NC_bit & tc_NC) {
+				attr &= ~tbl[n].mask;
+			}
+		}
+	}
+#endif
+
 	if (attr != last) {
-		register SIZE_T n;
 		register char *s;
 		UINT	diff = attr ^ last;
 		int	ends = FALSE;
