@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.242 1997/04/30 01:11:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.243 1997/05/07 10:44:46 tom Exp $
  *
  */
 
@@ -735,6 +735,9 @@ extern  void	x_set_geometry		(char *g);
 extern	void	x_set_dpy		(char *dn);
 extern	int	x_key_events_ready	(void);
 #endif	/* !XTOOKIT */
+#if OPT_MENUS
+extern	int	x_menu_height		(void);
+#endif
 extern	int	x_setfont		(const char *fname);
 extern	char *	x_current_fontname	(void);
 extern	void	x_preparse_args		(int *pargc, char ***pargv);

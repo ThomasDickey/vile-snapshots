@@ -3066,6 +3066,7 @@ X Window System specifics
 	menuHeader
 	menuEntry	The names given to the menu header and entries,
 			respectively.
+	menuHeight	resource controlling the menu-height
 
 	Sample .Xdefault entries
 	------------------------
@@ -3460,4 +3461,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.319 1997/04/30 00:13:54 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.320 1997/05/07 11:03:22 tom Exp $
