@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.166 2001/03/23 01:07:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.167 2001/05/16 23:16:14 tom Exp $
  *
  */
 
@@ -1521,13 +1521,13 @@ find_dirs_only(char *cmd, FINDINFO *pinfo, int prepend_bang)
     else
     {
         rslt[outidx] = EOS;  /* terminate cmd string */
-        if (outidx > 0)
+        if (outidx != 0)
         {
             char *cp;
 
             i  = --outidx;
             cp = rslt + outidx;
-            while (isSpace(*cp) && i > 0)
+            while (isSpace(*cp) && i != 0)
             {
                 cp--;
                 i--;
@@ -1675,7 +1675,7 @@ find_all_files(char *cmd, FINDINFO *pinfo, int prepend_bang)
     {
         sprintf(buf,
                 "%s-%sname %s%s%s",
-                (i > 0) ? "-o " : "",
+                (i != 0) ? "-o " : "",
 #if SYS_UNIX
                 "",
 #else
@@ -1737,13 +1737,13 @@ find_all_files(char *cmd, FINDINFO *pinfo, int prepend_bang)
     else
     {
         rslt[outidx] = EOS;  /* terminate cmd string */
-        if (outidx > 0)
+        if (outidx != 0)
         {
             char *cp;
 
             i  = --outidx;
             cp = rslt + outidx;
-            while (isSpace(*cp) && i > 0)
+            while (isSpace(*cp) && i != 0)
             {
                 cp--;
                 i--;

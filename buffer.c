@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.235 2001/04/29 23:51:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.236 2001/05/20 16:28:32 tom Exp $
  *
  */
 
@@ -1985,9 +1985,10 @@ find_b_name(const char *bname)
 
     set_bname(&temp, bname);	/* make a canonical buffer-name */
 
-    for_each_buffer(bp)
+    for_each_buffer(bp) {
 	if (eql_bname(bp, temp.b_bname))
-	return bp;
+	    return bp;
+    }
     return 0;
 }
 
@@ -2324,15 +2325,28 @@ int
 writeall(int f, int n, int promptuser, int leaving, int autowriting, int all)
 {
     BUFFER *bp;			/* scanning pointer to buffers */
+    BUFFER *nbp;
     BUFFER *oldbp;		/* original current buffer */
     int status = TRUE;
     int count = 0;
     int failure = FALSE;
     int dirtymsgline = FALSE;
 
+    beginDisplay();
     oldbp = curbp;		/* save in case we fail */
 
-    for_each_buffer(bp) {
+    /*
+     * We cannot use for_each_buffer() for this loop, because make_current()
+     * will temporarily change the order of the linked list of buffers, putting
+     * its argument at the beginning of the list unless autobuffer is set false
+     * (in other words, there's the possibility of an infinite loop).  We can't
+     * temporarily change autobuffer's setting either, since that changes the
+     * list order.  Hence the use of 'nbp'.
+     */
+    for (bp = bheadp; bp != 0; bp = nbp) {
+	nbp = bp->b_bufp;
+	if (!(bp->b_active))	/* we don't have it anyway - ignore */
+	    continue;
 	if (autowriting && !b_val(bp, MDAUTOWRITE))
 	    continue;
 	if (b_val(bp, MDREADONLY))	/* ignore read-only buffer */
@@ -2340,7 +2354,7 @@ writeall(int f, int n, int promptuser, int leaving, int autowriting, int all)
 	if (((all && !is_internalname(bp->b_fname))
 	     || b_is_changed(bp))
 	    && !b_is_invisible(bp)) {
-	    make_current(bp);
+	    make_current(bp);	/* do this so filesave() works */
 	    if (dirtymsgline && (promptuser || leaving)) {
 		mlforce("\n");
 	    }
@@ -2370,6 +2384,7 @@ writeall(int f, int n, int promptuser, int leaving, int autowriting, int all)
 	    count++;
 	}
     }
+    endofDisplay();
 
     /* shortcut out */
     if (autowriting && !failure && !count)

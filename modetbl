@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.191 2001/03/23 00:54:58 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.192 2001/05/20 17:38:56 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -290,6 +290,7 @@ string
 "cat"		CAT		2|STR|SRET	# concatenate string
 "cclass"	CCLASS		1|STR|SRET	# character-class
 "chr"		CHR		1|NUM		# integer to char conversion
+"date"		DATE		2|NUM|SRET	# formatted date/timestamp
 "divide"	DIV		2|NUM|NRET	# division
 "dquery"	DQUERY		2|STR|SRET	# query the user, given default value
 "env"		ENV		1|STR|SRET	# retrieve a system environment var
@@ -297,6 +298,7 @@ string
 "execable"	EXECABLE	1|BRET		# is a file executable?
 "equal"		EQUAL		2|NUM|BRET	# logical equality check
 "filter"	FILTER		1|STR|BRET	# check if internal filter exists
+"ftime"		FTIME		2|STR|NRET	# file-timestamp (last-modified)
 "global"	GLOBMODE	1|STR|SRET	# retrieve global setting
 "greater"	GREATER		2|NUM|BRET	# logical greater than
 "gtkey"		GTKEY		0		# get 1 character
@@ -327,6 +329,7 @@ string
 "sgreater"	SGREAT		2|BRET		# string logical greater than
 "sindex"	SINDEX		2|NRET		# find the index of one string in another
 "sless"		SLESS		2|BRET		# string logical less than
+"stime"		STIME		0|NRET		# system-timestamp
 "subtract"	SUB		2|NUM|NRET	# subtraction
 "times"		TIMES		2|NUM|NRET	# multiplication
 "token"		TOKEN		3|STR|SRET	# select n'th token of string, given delims

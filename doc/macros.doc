@@ -739,6 +739,8 @@ Functions
 	    &random "N"
 	    &rnd    "N"		    Random number between 1 and N
 	    &abs    "N"		    Absolute value of "N"
+	    &ftime  "N"		    The modification time of the file "N"
+	    &stime		    The system time.
 
 	String manipulation functions --
 
@@ -828,6 +830,11 @@ Functions
 
 	    &query  "S"		    Present "S" to the user, and return
 					their typed response.
+
+	    &date "F" "T"	    If strftime() is found, format the time "T"
+					using the "F" format.  Otherwise, use
+					ctime() to format the time.  Times are
+					numbers (see &ftime and &stime).
 
 	    &dquery  "S" "D"	    Present "S" to the user, and return
 					their typed response.  If "D" is given,
@@ -1379,6 +1386,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.71 2001/03/23 00:54:59 cmorgan Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.72 2001/05/20 21:14:03 tom Exp $
 -----------------------------------
 

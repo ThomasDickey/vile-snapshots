@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.66 2001/03/01 22:56:14 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.67 2001/05/24 01:16:51 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -312,6 +312,7 @@ clean ::
 
 SCRIPTS	= \
 	filters\filters.rc \
+	macros\dates.rc \
 	macros\digraphs.rc \
 	macros\palettes.rc \
 	macros\pictmode.rc \

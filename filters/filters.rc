@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.142 2001/04/24 22:40:32 cmorgan Exp $
+; $Id: filters.rc,v 1.143 2001/05/19 00:19:38 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -539,6 +539,17 @@ define-mode vim
 ~elsewith define-submode vim group 'while'
 	fence-if	'^\s*while\>'
 	fence-fi	'^\s*endwhile\>'
+~endwith
+
+define-mode xml
+~with define-submode xml
+	filtername 'vile-html-filt -k html'
+	suf '\.xml$'
+	pre '^\s*<?xml\s'
+	fence-pairs	'<>()[]{}'
+	ignorecase
+	comment-prefix	'^\s*--'
+	comments	'^\s*$'
 ~endwith
 
 define-mode xres

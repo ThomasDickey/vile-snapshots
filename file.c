@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.285 2001/04/29 23:40:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.286 2001/05/20 17:06:47 tom Exp $
  */
 
 #include	"estruct.h"
@@ -47,7 +47,6 @@ static int quickreadf(BUFFER *bp, int *nlinep);
 /* Returns the modification time iff the path corresponds to an existing file,
  * otherwise it returns zero.
  */
-#if	defined(MDCHK_MODTIME) || SYS_VMS || SYS_UNIX
 time_t
 file_modified(char *path)
 {
@@ -64,7 +63,6 @@ file_modified(char *path)
     }
     return the_time;
 }
-#endif
 
 #ifdef MDCHK_MODTIME
 static int

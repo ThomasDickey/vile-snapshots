@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.465 2001/04/29 22:42:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.466 2001/05/20 17:34:06 tom Exp $
  *
  */
 
@@ -308,6 +308,7 @@ extern char * mklower (char *str);
 extern char * mktrimmed (char *str);
 extern char * render_boolean (TBUFF **rp, int i);
 extern char * render_int (TBUFF **rp, int i);
+extern char * render_long (TBUFF **rp, long i);
 extern char * tokval (char *tokn);
 extern const char * skip_cblanks (const char *str);
 extern const char * skip_cstring (const char *str);
@@ -334,10 +335,11 @@ extern char *skip_text (char *str);
 
 #if OPT_EVAL
 extern LINEPTR label2lp (BUFFER *bp, const char *label);
-extern int rmv_tempvar(const char *name);
-extern int scan_int (const char *s );
-extern int set_state_variable(const char *name, const char *value);
-extern int vl_lookup_func(const char *name);
+extern int rmv_tempvar (const char *name);
+extern int set_state_variable (const char *name, const char *value);
+extern int vl_lookup_func (const char *name);
+extern long scan_long (const char *s);
+#define scan_int(s) (int)scan_long(s)
 #else
 #define gtenv(name) getenv(name)
 #define scan_int(s) atoi(s)

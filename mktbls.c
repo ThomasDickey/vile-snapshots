@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.111 2001/03/21 13:49:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.112 2001/05/20 19:35:13 tom Exp $
  *
  */
 
@@ -1946,6 +1946,23 @@ free_mktbls (void)
 #define free_mktbls()
 #endif	/* NO_LEAKS */
 
+/*
+ * Fix for quoted octal codes, which are sign-extended if the value is above
+ * \177, e.g., vile's KEY_F21 to KEY_F35.
+ */
+static char *
+ok_char(char *src)
+{
+	static char temp[20];
+	if (src[0] != '\\' || src[1] == '\\') {
+		sprintf(temp, "'%s'", src);
+	} else {
+		strncpy(temp, src, sizeof(temp)-1);
+		*temp = '0';
+	}
+	return temp;
+}
+
 /******************************************************************************/
 int
 main(int argc, char *argv[])
@@ -2056,8 +2073,8 @@ main(int argc, char *argv[])
 								badfmt("KEY_xxx definition must for FN- binding");
 							if (!nefkeys)
 									nefkeys = OpenHeader("nefkeys.h", argv);
-							Fprintf(nefkeys, "#define %16s (SPEC|'%s')\n",
-									vec[2],vec[1]+3);
+							Fprintf(nefkeys, "#define %16s (SPEC|%s)\n",
+									vec[2], ok_char(vec[1]+3));
 							vec[2] = vec[3];
 						}
 						save_bindings(vec[1], func, formcond(fcond,vec[2]));

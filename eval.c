@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.287 2001/04/03 19:34:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.289 2001/05/20 23:02:12 tom Exp $
  *
  */
 
@@ -44,7 +44,7 @@ typedef struct PROC_ARGS {
 static PROC_ARGS *arg_stack;
 
 static char **init_vars_cmpl(void);
-static char *get_statevar_val (int vnum);
+static char *get_statevar_val(int vnum);
 static const char *s2offset(const char *s, const char *n);
 static int lookup_statevar(const char *vname);
 static int SetVarValue(VWRAP * var, const char *name, const char *value);
@@ -563,6 +563,28 @@ path_quote(TBUFF ** result, const char *path)
 #endif
 }
 
+static void
+render_date(TBUFF ** result, char *format, time_t stamp)
+{
+#if HAVE_STRFTIME
+    struct tm *tm = localtime(&stamp);
+    char temp[NSTRING];
+
+    if (strftime(temp, sizeof(temp) - 1, format, tm) != 0)
+	tb_scopy(result, temp);
+    else
+#endif
+    {
+	/* FIXME (2001/5/20) I'd write a q/d fallback for strftime() using
+	 * struct tm, but don't want to get sidetracked with its portability
+	 * -TD
+	 */
+	*result = tb_string(ctime(&stamp));
+	tb_unput(*result);	/* trim the newline */
+	tb_append(result, EOS);
+    }
+}
+
 #define MAXARGS 3
 
 /*
@@ -573,13 +595,15 @@ run_func(int fnum)
 {
     static TBUFF *result;	/* function result */
 
+    BUFFER *bp;
     TBUFF *args[MAXARGS];
     char *arg[MAXARGS];		/* function arguments */
     char *cp;
-    int nums[MAXARGS];
+    int args_numeric, args_boolean, ret_numeric, ret_boolean;
     int bools[MAXARGS];
     int i, nargs;
-    int args_numeric, args_boolean, ret_numeric, ret_boolean;
+    long value = 0;
+    long nums[MAXARGS];
 
     nargs = vl_ufuncs[fnum].f_code & NARGMASK;
     args_numeric = vl_ufuncs[fnum].f_code & NUM;
@@ -602,7 +626,7 @@ run_func(int fnum)
 	tb_free(&result);	/* in case mac_tokval() called us */
 	TPRINTF(("...arg[%d] = '%s'\n", i, arg[i]));
 	if (args_numeric)
-	    nums[i] = scan_int(arg[i]);
+	    nums[i] = scan_long(arg[i]);
 	else if (args_boolean)
 	    bools[i] = scan_bool(arg[i]);
     }
@@ -611,22 +635,22 @@ run_func(int fnum)
 
     switch (fnum) {
     case UFADD:
-	i = nums[0] + nums[1];
+	value = nums[0] + nums[1];
 	break;
     case UFSUB:
-	i = nums[0] - nums[1];
+	value = nums[0] - nums[1];
 	break;
     case UFTIMES:
-	i = nums[0] * nums[1];
+	value = nums[0] * nums[1];
 	break;
     case UFDIV:
-	i = nums[0] / nums[1];
+	value = nums[0] / nums[1];
 	break;
     case UFMOD:
-	i = nums[0] % nums[1];
+	value = nums[0] % nums[1];
 	break;
     case UFNEG:
-	i = -nums[0];
+	value = -nums[0];
 	break;
     case UFCAT:
 	tb_scopy(&result, arg[0]);
@@ -634,6 +658,9 @@ run_func(int fnum)
 	break;
     case UFCCLASS:
 	show_charclass(&result, arg[0]);
+	break;
+    case UFDATE:
+	render_date(&result, arg[0], nums[1]);
 	break;
     case UFLEFT:
 	tb_bappend(&result, arg[0], s2size(arg[1]));
@@ -647,40 +674,40 @@ run_func(int fnum)
 	tb_append(&result, EOS);
 	break;
     case UFNOT:
-	i = !bools[0];
+	value = !bools[0];
 	break;
     case UFEQUAL:
-	i = (nums[0] == nums[1]);
+	value = (nums[0] == nums[1]);
 	break;
     case UFERROR:
-	i = (arg[0] == error_val);
+	value = (arg[0] == error_val);
 	break;
     case UFLESS:
-	i = (nums[0] < nums[1]);
+	value = (nums[0] < nums[1]);
 	break;
     case UFGREATER:
-	i = (nums[0] > nums[1]);
+	value = (nums[0] > nums[1]);
 	break;
     case UFSEQUAL:
-	i = (strcmp(arg[0], arg[1]) == 0);
+	value = (strcmp(arg[0], arg[1]) == 0);
 	break;
     case UFSLESS:
-	i = (strcmp(arg[0], arg[1]) < 0);
+	value = (strcmp(arg[0], arg[1]) < 0);
 	break;
     case UFSGREAT:
-	i = (strcmp(arg[0], arg[1]) > 0);
+	value = (strcmp(arg[0], arg[1]) > 0);
 	break;
     case UFINDIRECT:
 	tb_scopy(&result, tokval(arg[0]));
 	break;
     case UFAND:
-	i = (bools[0] && bools[1]);
+	value = (bools[0] && bools[1]);
 	break;
     case UFOR:
-	i = (bools[0] || bools[1]);
+	value = (bools[0] || bools[1]);
 	break;
     case UFLENGTH:
-	i = (int) strlen(arg[0]);
+	value = (long) strlen(arg[0]);
 	break;
     case UFUPPER:
 	mkupper(tb_values(tb_scopy(&result, arg[0])));
@@ -692,7 +719,7 @@ run_func(int fnum)
 	mktrimmed(tb_values(tb_scopy(&result, arg[0])));
 	break;
     case UFASCII:
-	i = (int) arg[0][0];
+	value = (long) arg[0][0];
 	break;
     case UFCHR:
 	tb_append(&result, (char) nums[0]);
@@ -708,14 +735,14 @@ run_func(int fnum)
 	break;
     case UFRANDOM:		/* FALLTHRU */
     case UFRND:
-	i = rand() % absol(nums[0]);
-	i++;			/* return 1 to N */
+	value = rand() % absol(nums[0]);
+	value++;		/* return 1 to N */
 	break;
     case UFABS:
-	i = absol(nums[0]);
+	value = absol(nums[0]);
 	break;
     case UFSINDEX:
-	i = ourstrstr(arg[0], arg[1], FALSE);
+	value = ourstrstr(arg[0], arg[1], FALSE);
 	break;
     case UFENV:
 	tb_scopy(&result, vile_getenv(arg[0]));
@@ -725,26 +752,31 @@ run_func(int fnum)
 	break;
     case UFREADABLE:		/* FALLTHRU */
     case UFRD:
-	i = ((arg[0] != error_val) &&
-	     doglob(arg[0]) &&
-	     cfg_locate(arg[0], FL_CDIR | FL_READABLE) != NULL);
+	value = ((arg[0] != error_val) &&
+		 doglob(arg[0]) &&
+		 cfg_locate(arg[0], FL_CDIR | FL_READABLE) != NULL);
 	break;
     case UFWRITABLE:
-	i = ((arg[0] != error_val) &&
-	     doglob(arg[0]) &&
-	     cfg_locate(arg[0], FL_CDIR | FL_WRITEABLE) != NULL);
+	value = ((arg[0] != error_val) &&
+		 doglob(arg[0]) &&
+		 cfg_locate(arg[0], FL_CDIR | FL_WRITEABLE) != NULL);
 	break;
     case UFEXECABLE:
-	i = ((arg[0] != error_val) &&
-	     doglob(arg[0]) &&
-	     cfg_locate(arg[0], FL_CDIR | FL_EXECABLE) != NULL);
+	value = ((arg[0] != error_val) &&
+		 doglob(arg[0]) &&
+		 cfg_locate(arg[0], FL_CDIR | FL_EXECABLE) != NULL);
 	break;
     case UFFILTER:
-	i = FALSE;
+	value = FALSE;
 #if OPT_FILTER
 	if (flt_lookup(arg[0]))
-	    i = TRUE;
+	    value = TRUE;
 #endif
+	break;
+    case UFFTIME:
+	if ((bp = find_any_buffer(arg[0])) != 0
+	    && !is_internalname(bp->b_fname))
+	    value = file_modified(bp->b_fname);
 	break;
     case UFLOCMODE:
     case UFGLOBMODE:
@@ -808,6 +840,9 @@ run_func(int fnum)
     case UFPATHQUOTE:
 	path_quote(&result, SL_TO_BSL(arg[0]));
 	break;
+    case UFSTIME:
+	value = time((time_t *) 0);
+	break;
     case UFTOKEN:
 	extract_token(&result, arg[0], arg[1], arg[2]);
 	break;
@@ -836,9 +871,9 @@ run_func(int fnum)
     }
 
     if (ret_numeric)
-	render_int(&result, i);
+	render_long(&result, value);
     else if (ret_boolean)
-	render_boolean(&result, i);
+	render_boolean(&result, value);
 
     TPRINTF(("-> '%s'\n", tb_values(result)));
     for (i = 0; i < nargs; i++) {
@@ -1173,6 +1208,7 @@ static int
 SetVarValue(VWRAP * var, const char *name, const char *value)
 {
     int status;
+    int savecmd;
     char *savestr;
     VALARGS args;
 
@@ -1183,11 +1219,14 @@ SetVarValue(VWRAP * var, const char *name, const char *value)
 
     case VW_MODE:
 	savestr = execstr;
+	savecmd = clexec;
 	execstr = TYPECAST(char, value);
+	clexec = TRUE;
 	(void) find_mode(curbp, name + 1, -TRUE, &args);
 	set_end_string('=');
 	status = adjvalueset(name + 1, FALSE, TRUE, -TRUE, &args);
 	execstr = savestr;
+	clexec = savecmd;
 	break;
 
     case VW_TEMPVAR:
@@ -1299,7 +1338,7 @@ set_ctrans(const char *thePalette)
 #if OPT_TRACE
     TRACE(("...ctrans "));
     for (n = 0; n < NCOLORS; n++)
-	    TRACE(("%s%d", n == 0 ? "[" : " ", ctrans[n]));
+	TRACE(("%s%d", n == 0 ? "[" : " ", ctrans[n]));
     TRACE(("]\n"));
 #endif
 }
@@ -1425,6 +1464,18 @@ render_int(TBUFF ** rp, int i)
     return p;
 }
 
+/* represent long integer as string */
+char *
+render_long(TBUFF ** rp, long i)
+{
+    char *p, *q;
+
+    p = tb_values(tb_alloc(rp, 32));
+    q = lsprintf(p, "%ld", i);
+    (*rp)->tb_used = (q - p + 1);
+    return p;
+}
+
 #if OPT_EVAL
 
 /* represent boolean as string */
@@ -1451,8 +1502,8 @@ render_hex(TBUFF ** rp, unsigned i)
 #endif
 
 /* pull an integer out of a string.  allow 'c' character constants as well */
-int
-scan_int(const char *s)
+long
+scan_long(const char *s)
 {
     char *ns;
     long l;
@@ -1465,7 +1516,7 @@ scan_int(const char *s)
     /* the endpointer better point at a 0, otherwise
      * it wasn't all digits */
     if (*s && !*ns)
-	return (int) l;
+	return l;
 
     return 0;
 }
@@ -1708,9 +1759,9 @@ read_argument(TBUFF ** paramp, const PARAM_INFO * info)
 	 * to be interactive.
 	 */
 	if (execstr == 0 || !*skip_blanks(execstr)) {
-		clexec = FALSE;
-		isnamedcmd = TRUE;
-		execstr = "";
+	    clexec = FALSE;
+	    isnamedcmd = TRUE;
+	    execstr = "";
 	}
 
 	if (info->pi_type == PT_FILE) {
@@ -2068,10 +2119,11 @@ evaluate(int f, int n)
 		if (tb_length(cmd))
 		    tb_sappend0(&cmd, " ");
 		tb_sappend0(&cmd, tmp);
+		TRACE(("...token {%s}\n", tmp));
 	    }
 	    if ((tmp = tb_values(cmd)) != 0) {
 		execstr = tmp;
-		TRACE(("...docmd %s{%s}\n", tmp, execstr));
+		TRACE(("...docmd {%s}\n", execstr));
 		code = docmd(tmp, TRUE, f, n);
 	    }
 	    execstr = old;

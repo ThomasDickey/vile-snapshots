@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.214 2001/04/29 22:24:35 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.215 2001/05/20 16:24:59 tom Exp $
 #
 #
 
@@ -1676,12 +1676,14 @@ SetRGBPalette	NONE			SYS_WINNT&&DISP_NTWIN
 wordcount	RANGE			OPT_WORDCOUNT
 	"count-words"
 	<count words, lines, and chars in the region>
-writeallbuffers	NONE|(VI_NL)
+writeallbuffers	NONE|(BANG|VI_NL)
 	"wall"
+	"wall!"
 	"write-all-buffers"		!FEWNAMES
 	<attempt to write all buffers whether or not marked \"modified\">
-writeallchanged	NONE|(VI_NL)
+writeallchanged	NONE|(BANG|VI_NL)
 	"ww"
+	"ww!"
 	"write-changed-buffers"		!FEWNAMES
 	<attempt to write any buffers which are marked \"modified\">
 writequit	NONE|(VI_NL)

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.221 2001/03/23 01:07:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.222 2001/05/20 22:10:49 tom Exp $
  *
  */
 
@@ -1541,7 +1541,7 @@ chgd_color(VALARGS *args, int glob_vals, int testing)
 		else if (&args->local->vp->i == &gccolor)
 			term.setccol(gccolor);
 		set_winflags(glob_vals, WFHARD|WFCOLR);
-		vile_refresh(FALSE,0);
+		need_update = TRUE;
 	}
 	return TRUE;
 }
@@ -1637,7 +1637,7 @@ int set_colors(int n)
 	if (reset_color(GVAL_FCOLOR)
 	 || reset_color(GVAL_BCOLOR)) {
 		set_winflags(TRUE, WFHARD|WFCOLR);
-		vile_refresh(FALSE,0);
+		need_update = TRUE;
 		relist_settings();
 	}
 
@@ -1963,7 +1963,7 @@ chgd_hilite(VALARGS *args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing)
 		attrib_matches();
 #if OPT_COLOR
 		set_winflags(glob_vals, WFHARD|WFCOLR);
-		vile_refresh(FALSE,0);
+		need_update = TRUE;
 #endif
 	}
 	return TRUE;
@@ -3954,7 +3954,7 @@ chgd_scheme(VALARGS *args, int glob_vals, int testing)
 			return FALSE;
 		} else if (set_current_scheme(p)) {
 			set_winflags(glob_vals, WFHARD|WFCOLR);
-			vile_refresh(FALSE,0);
+			need_update = TRUE;
 		}
 	}
 	return TRUE;
