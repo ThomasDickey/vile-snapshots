@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.16 2002/06/30 18:09:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.19 2002/12/17 02:03:10 tom Exp $
  *
  * Filter to add vile "attribution" sequences to sed scripts.
  */
@@ -8,18 +8,7 @@
 
 DefineFilter("sed");
 
-#define ESC '\\'
-
-#define L_CURLY '{'
-#define R_CURLY '}'
-
-#define L_ROUND '('
-#define R_ROUND ')'
-
-#define L_SQUARE '['
-#define R_SQUARE ']'
-
-#define isSlash(c) ((c) == '/' || (c) == ESC)
+#define isSlash(c) ((c) == '/' || (c) == BACKSLASH)
 #define isComma(c) ((c) == ',' || (c) == ';')
 
 typedef enum {
@@ -74,7 +63,7 @@ SkipRemaining(char *s, char *attr)
     size_t len = strlen(s);
 
     s += len;
-    if (attr != Comment_attr && len > 1 && s[-2] == ESC) {
+    if (attr != Comment_attr && len > 1 && s[-2] == BACKSLASH) {
 	flt_puts(base, s - base - 2, attr);
 	flt_puts(s - 2, 1, Literal_attr);
     } else {
@@ -153,9 +142,9 @@ SkipPattern(char *s, int *done, int join)
     *done = 0;
     error = 0;
     while (*s != 0) {
-	if (*s == ESC) {
+	if (*s == BACKSLASH) {
 	    ch = *++s;
-	    RE_NEST(round, L_ROUND, R_ROUND);
+	    RE_NEST(round, L_PAREN, R_PAREN);
 	    RE_NEST(curly, L_CURLY, R_CURLY);
 	    if (ch != 0)
 		s++;
@@ -167,9 +156,9 @@ SkipPattern(char *s, int *done, int join)
 		*done = 1;
 		break;
 	    }
-	    if (ch == L_SQUARE) {
+	    if (ch == L_BLOCK) {
 		square++;
-	    } else if (ch == R_SQUARE) {
+	    } else if (ch == R_BLOCK) {
 		if (square)
 		    square--;
 	    }
@@ -249,7 +238,7 @@ SkipAddress(char *s, int *count)
     } else if (*s == '$') {
 	flt_puts(s++, 1, Literal_attr);
     } else if (isSlash(*s)) {
-	if (*s == ESC) {
+	if (*s == BACKSLASH) {
 	    flt_puts(s++, 1, Action_attr);
 	}
 	s = SkipPattern(s, &done, 0);
@@ -287,7 +276,7 @@ do_filter(FILE * input GCC_UNUSED)
     while (flt_gets(&line, &used) != NULL) {
 	size_t len = strlen(s = line);
 
-	escaped_newline = (len > 1 && s[len - 2] == ESC);
+	escaped_newline = (len > 1 && s[len - 2] == BACKSLASH);
 
 	while (*s) {
 	    States next = LeadingBlanks;

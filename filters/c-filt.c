@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.62 2002/02/12 22:29:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.64 2002/12/17 02:02:06 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  */
@@ -15,16 +15,11 @@
 
 DefineOptFilter("c", "p");
 
-#define ESCAPE '\\'
-#define DQUOTE '"'
-#define SQUOTE '\''
-
 #define UPPER(c) isalpha(CharOf(c)) ? toupper(CharOf(c)) : c
 
 #define isIdent(c)  (isalpha(CharOf(c)) || (c) == '_')
 #define isNamex(c)  (isalnum(CharOf(c)) || (c) == '_')
 
-#define isBlank(c)  ((c) == ' ' || (c) == '\t')
 #define isQuote(c)  ((c) == DQUOTE || (c) == SQUOTE)
 
 static char *Comment_attr;
@@ -86,7 +81,7 @@ has_endofliteral(char *s, int delim)
     while (*s) {
 	if (*s == delim)
 	    return (i);
-	if (s[0] == ESCAPE && (s[1] == delim || s[1] == ESCAPE)) {
+	if (s[0] == BACKSLASH && (s[1] == delim || s[1] == BACKSLASH)) {
 	    ++i;
 	    ++s;
 	}
@@ -438,7 +433,7 @@ do_filter(FILE * input GCC_UNUSED)
 		    write_comment(s, c_length, 0);
 		    s = s + c_length;
 		}
-	    } else if (*s == ESCAPE) {
+	    } else if (*s == BACKSLASH) {
 		if (s[1] != '\n') {
 		    s = write_escape(s, Error_attr);
 		} else {

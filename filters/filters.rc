@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.164 2002/11/04 00:22:26 tom Exp $
+; $Id: filters.rc,v 1.166 2002/12/11 02:01:37 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -21,7 +21,7 @@ define-mode ada
 ; GNU assembler (a Byzantine elaboration of AT&T)
 define-mode as
 ~with define-submode as
-	suf '\.s$'
+	suf '\.[sS]$'
 ~endwith
 
 ; M$ assembler (a Byzantine elaboration of Intel)
@@ -73,7 +73,7 @@ define-mode cfg
 define-mode cpp
 ~with define-submode cpp
 	before "c"
-	suf '\(\.\(CC\|cpp\|cxx\|hxx\|hh\)$\)'
+	suf '\(\.\(C\|CC\|cc\|cpp\|cxx\|hxx\|hh\)$\)'
 	cindent
 	cindent-chars   &cat ':#' $fences
 	filtername	'vile-c-filt -k cpp'
@@ -217,6 +217,7 @@ define-mode html
 
 define-mode info
 ~with define-submode info
+	after ti
 	suf '\(\.\|\([a-z]*\)\)\(info\(-\d\+\)\?\)$'
 ~endwith
 
@@ -624,11 +625,9 @@ define-mode vim
 
 define-mode xml
 ~with define-submode xml
-	filtername 'vile-html-filt -k html'
 	suf '\.xml$'
 	pre '^\s*<?xml\s'
 	fence-pairs	'<>()[]{}'
-	ignorecase
 	comment-prefix	'^\s*--'
 	comments	'^\s*$'
 ~endwith

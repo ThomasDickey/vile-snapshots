@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.367 2002/11/02 16:25:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.370 2002/12/23 00:24:29 tom Exp $
  *
  */
 
@@ -2558,19 +2558,19 @@ modeline_show(WINDOW *wp, int lchar)
 
     if (b_val(bp, MDSHOWMODE)) {
 #ifdef insertmode		/* insert mode is a trait for each window */
-	if (wp->w_traits.insmode == INSERT)
+	if (wp->w_traits.insmode == INSMODE_INS)
 	    ic = 'I';
-	else if (wp->w_traits.insmode == REPLACECHAR)
+	else if (wp->w_traits.insmode == INSMODE_RPL)
 	    ic = 'R';
-	else if (wp->w_traits.insmode == OVERWRITE)
+	else if (wp->w_traits.insmode == INSMODE_OVR)
 	    ic = 'O';
 #else /* insertmode is a variable global to all windows */
 	if (wp == curwp) {
-	    if (insertmode == INSERT)
+	    if (insertmode == INSMODE_INS)
 		ic = 'I';
-	    else if (insertmode == REPLACECHAR)
+	    else if (insertmode == INSMODE_RPL)
 		ic = 'R';
-	    else if (insertmode == OVERWRITE)
+	    else if (insertmode == INSMODE_OVR)
 		ic = 'O';
 	}
 #endif /* !defined(insertmode) */
@@ -3279,7 +3279,21 @@ update(int force /* force update past type ahead? */ )
 
     beginDisplay();
 
-    /* first, propagate mode line changes to all instances of
+#if OPT_TITLE
+    /*
+     * Only update the title when we have nothing better to do.  The
+     * auto_set_title logic is otherwise likely to set the title frequently if
+     * [Buffer List] is visible.
+     */
+    if (tb_values(request_title) != 0
+	&& (tb_values(current_title) == 0
+	    || strcmp(tb_values(current_title), tb_values(request_title)))) {
+	tb_copy(&current_title, request_title);
+	term.set_title(tb_values(request_title));
+    }
+#endif
+
+    /* propagate mode line changes to all instances of
        a buffer displayed in more than one window */
     for_each_visible_window(wp) {
 	if (wp->w_flag & WFMODE) {
@@ -3531,6 +3545,9 @@ mlmsg(const char *fmt, va_list * app)
 #endif
     int do_crlf = (strchr(fmt, '\n') != 0
 		   || strchr(fmt, '\r') != 0);
+
+    if (quiet)
+	return;
 
 #if DISP_NTWIN
     if (recur == 0) {

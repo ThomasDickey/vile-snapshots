@@ -4,11 +4,8 @@
  * "termio.c". It compiles into nothing if not an ANSI device.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.41 2002/10/09 22:28:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.42 2002/12/06 23:32:38 tom Exp $
  */
-
-
-#define termdef 1			/* don't define "term" external */
 
 #include	"estruct.h"
 #include	"edef.h"

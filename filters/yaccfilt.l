@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.15 2000/08/10 01:31:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.17 2002/12/11 01:31:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
@@ -12,6 +12,7 @@
 DefineFilter("yacc");
 
 static char *Comment_attr;
+static char *Error_attr;
 static char *Ident_attr;
 static char *Ident2_attr;
 static char *Keyword_attr;
@@ -21,35 +22,10 @@ static char *String_attr;
 
 static char *save_attr = "";
 
-#define MAX_LEVEL 10
-
-static int oldstate = INITIAL;
 static int section = 0;
-static int state_level = 0;
 static int brace_level = 0;
 
-static int state_stack[MAX_LEVEL];
-
-static void
-new_state(int code)
-{
-    oldstate = code;
-    BEGIN(code);
-}
-
-static void
-push_state(int code)
-{
-    state_stack[state_level++] = oldstate;
-    new_state(code);
-}
-
-static void
-pop_state(void)
-{
-    if (state_level > 0)
-	new_state(state_stack[--state_level]);
-}
+#include "fltstack.h"
 
 static void
 set_state(void)
@@ -73,6 +49,7 @@ do_filter(FILE *input)
 {
     yyin = input;
     Comment_attr = class_attr(NAME_COMMENT);
+    Error_attr   = class_attr(NAME_ERROR);
     Ident_attr   = class_attr(NAME_IDENT);
     Ident2_attr  = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
@@ -81,12 +58,13 @@ do_filter(FILE *input)
     String_attr  = class_attr(NAME_LITERAL);
 
     section = 0;
-    state_level = 0;
     brace_level = 0;
+    save_attr = Error_attr;
 
-    new_state(RULES);
+    begin_state(RULES);
     while (yylex() > 0) {
     }
+    end_state();
 }
 
 %}
@@ -110,7 +88,7 @@ PATTERN		(\\.|\[(\\.|.)*\]|[^ \t\n])+
 
 <INITIAL,RULES,ACTIONS,CODE>{DIRECTIVE}	{
 		    save_attr = "";
-		    WriteToken(Keyword_attr);
+		    WriteToken(keyword_attr(yytext));
 		    switch(yytext[1]) {
 		    case '%':
 		    	section++;

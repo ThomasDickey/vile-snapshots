@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.514 2002/11/02 15:47:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.520 2002/12/23 00:15:31 Mark.Robinson Exp $
  */
 
 #ifndef _estruct_h
@@ -144,6 +144,10 @@
 
 #ifndef SYS_SUNOS
 #define SYS_SUNOS		0	/* SunOS 4.x			*/
+#endif
+
+#ifndef SYS_UNIX
+#define SYS_UNIX       		0       /* Unix & friends               */
 #endif
 
 #ifndef SYS_VMS
@@ -445,10 +449,6 @@
 #define OPT_TCL 0	/* normally set by configure-script */
 #endif
 
-#ifndef OPT_LOCALE
-#define OPT_LOCALE 0
-#endif
-
 /*
  * Widgets for xvile
  */
@@ -553,8 +553,6 @@
 
 #define OPT_KEY_MODIFY	(SYS_WINNT | DISP_X11)	/* allow shift/ctrl/alt mods */
 
-#define OPT_TITLE	(SYS_WINNT | DISP_X11)	/* use a window title */
-
 /* the "working..." message -- we must have the alarm() syscall, and
    system calls must be restartable after an interrupt by default or be
    made restartable with sigaction() */
@@ -634,6 +632,9 @@
 #else
 #define	OPT_XTERM	0	/* vile doesn't recognize xterm mouse */
 #endif
+
+ 	/* implement window title */
+#define OPT_TITLE	(SYS_WINNT | DISP_X11 | OPT_XTERM)
 
 	/* combine select/yank (for mouse support) */
 #define OPT_SEL_YANK    ((DISP_X11 && XTOOLKIT) || SYS_WINNT || SYS_OS2)
@@ -1026,8 +1027,8 @@ extern void endofDisplay(void);
 #define	PLAY	'P'
 #define	RECORD	'R'
 
-#define QUOTED	TRUE
-#define NOQUOTED	FALSE
+#define MAP_QUOTED	TRUE
+#define MAP_UNQUOTED	FALSE
 
 #define DOMAP	TRUE
 #define NODOMAP	FALSE
@@ -1071,6 +1072,7 @@ typedef	enum {
 	, D_BREAK
 	, D_FORCE
 	, D_HIDDEN
+	, D_QUIET
 	, D_LOCAL
 	, D_WITH
 	, D_ELSEWITH
@@ -1235,9 +1237,9 @@ typedef UINT WATCHTYPE;
 
 /* three flavors of insert mode	*/
 /* it's FALSE, or one of:	*/
-#define INSERT 1
-#define OVERWRITE 2
-#define REPLACECHAR 3
+#define INSMODE_INS 1
+#define INSMODE_OVR 2
+#define INSMODE_RPL 3
 
 /* kill register control -- values for kbflag */
 #define KNEEDCLEAN   iBIT(0)		/* Kill register needs cleaning */
@@ -1258,12 +1260,12 @@ typedef UINT WATCHTYPE;
 
 /* define these so C-fence matching doesn't get confused when we're editing
 	the cfence code itself */
-#define LBRACE '{'
-#define RBRACE '}'
-#define LPAREN '('
-#define RPAREN ')'
-#define LBRACK '['
-#define RBRACK ']'
+#define L_CURLY '{'
+#define R_CURLY '}'
+#define L_PAREN '('
+#define R_PAREN ')'
+#define L_BLOCK '['
+#define R_BLOCK ']'
 
 /* these are the characters that are used in the expand-chars mode */
 #define EXPC_THIS  '%'
@@ -2717,7 +2719,7 @@ extern void _exit (int code);
 #define	typeallocn(cast,ntypes)		(cast *)malloc((ntypes)*sizeof(cast))
 #define	typereallocn(cast,ptr,ntypes)	(cast *)realloc((char *)(ptr),\
 							(ntypes)*sizeof(cast))
-#define	typeallocplus(cast,extra)	(cast *)malloc((extra)+sizeof(cast))
+#define	typeallocplus(cast,extra)	(cast *)calloc((extra)+sizeof(cast),1)
 #endif
 
 #define	FreeAndNull(p)	if ((p) != 0) { free((char *)p); p = 0; }
@@ -2869,6 +2871,10 @@ extern void ExitProgram(int code);
 #    include "trace.h"
 #  endif
 #endif	/* USE_DBMALLOC */
+
+#ifndef init_alloc
+#define init_alloc(s,n) /* nothing */
+#endif
 
 /* Normally defined in "trace.h" */
 #ifndef TRACE

@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.125 2002/10/15 09:58:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.126 2002/12/07 00:01:30 tom Exp $
  *
  */
 
@@ -398,7 +398,7 @@ formcond(const char *c1, const char *c2)
     static char cond[MAX_BUFFER];
 
     if (c1[0] && c2[0])
-	Sprintf(cond, "(%s) & (%s)", c1, c2);
+	Sprintf(cond, "(%s) && (%s)", c1, c2);
     else if (c1[0] || c2[0])
 	Sprintf(cond, "(%s%s)", c1, c2);
     else

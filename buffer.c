@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.256 2002/11/02 16:12:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.258 2002/12/13 00:10:48 tom Exp $
  *
  */
 
@@ -1889,7 +1889,7 @@ add_line_at(BUFFER *bp, LINEPTR prevp, const char *text, int len)
     int ntext;
 
     nextp = lforw(prevp);
-    ntext = (len < 0) ? strlen(text) : len;
+    ntext = (len < 0) ? (int) strlen(text) : len;
     newlp = lalloc(ntext, bp);
     if (newlp == null_ptr)
 	return (FALSE);
@@ -2530,7 +2530,7 @@ set_editor_title(void)
 		? "%{$cbufname} - %{$progname}"
 		: "%{$progname} - %{$cbufname}";
 	special_formatter(&title, format, curwp);
-	term.set_title(tb_values(title));
+	tb_copy(&request_title, title);
     }
 }
 #endif

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.263 2002/11/02 17:26:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.264 2002/12/23 00:22:35 tom Exp $
  *
  */
 
@@ -2107,6 +2107,7 @@ kbd_alarm(void)
 
     if (!no_errs
 	&& !clhide
+	&& !quiet
 	&& global_g_val(GMDERRORBELLS)) {
 	term.beep();
 	term.flush();

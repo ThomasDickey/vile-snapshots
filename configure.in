@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.175 $)
-AC_PREREQ(2.12.971222)
+AC_REVISION($Revision: 1.180 $)
+AC_PREREQ(2.13.20020210)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.175 2002/10/31 22:24:19 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.180 2002/12/23 01:18:21 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -280,6 +280,7 @@ AC_STRUCT_TM
 CF_HEADER_RESOURCE
 CF_SIZECHANGE
 CF_FP_ISREADY
+CF_WCTYPE
 
 ###	checks for system services and user specified options
 AC_LONG_FILE_NAMES
@@ -317,8 +318,8 @@ AC_MSG_CHECKING(for screen type)
 AC_ARG_WITH(screen,
 [  --with-screen=value     specify terminal driver.  The default is tcap, for
                           the termcap/terminfo driver.  Other values include
-                          curses, ncurses, X11, OpenLook, Motif, Athena, Xaw,
-                          Xaw3d, neXtaw and ansi.],
+                          curses, ncurses, ncursesw, X11, OpenLook, Motif,
+			  Athena, Xaw, Xaw3d, neXtaw and ansi.],
 [screen=$withval])
 
 if test -z "$screen"; then
@@ -396,6 +397,13 @@ case "$screen" in
 		AC_DEFINE(DISP_CURSES)
 		CF_NCURSES_CPPFLAGS
 		CF_NCURSES_LIBS
+	;;
+	ncursesw)
+		SCREEN=curses
+		TARGET=vile
+		AC_DEFINE(DISP_CURSES)
+		CF_NCURSES_CPPFLAGS(ncursesw)
+		CF_NCURSES_LIBS(ncursesw)
 	;;
 	* )
 		SCREEN=tcap
@@ -477,6 +485,7 @@ utime \
 utimes \
 waitpid $cf_tc_funcs \
 )
+
 CF_ANSI_QSORT
 CF_MKSTEMP
 
@@ -555,7 +564,7 @@ AC_MSG_CHECKING(if you want to use i18n locale support)
 AC_ARG_WITH(locale,
 	[  --with-locale           use i18n support for character-types],
 	[cf_locale="$withval"],
-	[cf_locale=no])
+	[cf_locale=yes])
 AC_MSG_RESULT($cf_locale)
 test "$cf_locale" != no && AC_DEFINE(OPT_LOCALE)
 ])])

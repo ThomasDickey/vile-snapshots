@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.171 2002/11/03 11:38:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.172 2002/12/03 01:42:49 pgf Exp $
  *
  */
 
@@ -360,7 +360,7 @@ ffwopen(char *fn, int forced)
     TRACE(("ffwopen(fn=%s, forced=%d)\n", fn, forced));
     ffstatus = file_is_closed;
     if (i_am_dead) {
-	if ((ffd = open(SL_TO_BSL(fn), O_WRONLY | O_CREAT)) < 0) {
+	if ((ffd = open(SL_TO_BSL(fn), O_WRONLY | O_CREAT, 0600)) < 0) {
 	    return (FIOERR);
 	}
 	ffstatus = file_is_unbuffered;

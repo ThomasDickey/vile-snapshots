@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.250 2002/10/20 14:37:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.253 2002/12/23 00:18:38 Mark.Robinson Exp $
  *
  */
 
@@ -1410,14 +1410,6 @@ execproc(int f, int n)
 
 #endif
 
-static char *
-skip_space_tab(char *src)
-{
-    while (isBlank(*src))
-	++src;
-    return src;
-}
-
 #if ! SMALLER
 /*
  * Execute the contents of a buffer of commands
@@ -1466,6 +1458,7 @@ free_all_whiles(WHLOOP * wp)
 #define DDIR_INCOMPLETE  1
 #define DDIR_FORCE       2
 #define DDIR_HIDDEN      3
+#define DDIR_QUIET	 4
 
 /*
  * When we get a "~local", we save the variable's name and its value.  Save the
@@ -1583,21 +1576,29 @@ pop_buffer(IFSTK * save)
     with_prefix = ifstk.prefix;
 }
 
+/*
+ * Lookup a directory name.
+ *	*cmdp points to a command
+ *	length is the nominal maximum length (*cmdp is null-terminated)
+ */
 DIRECTIVE
-dname_to_dirnum(const char *cmdp, size_t length)
+dname_to_dirnum(char **cmdpp, int length)
 {
     DIRECTIVE dirnum = D_UNKNOWN;
+    int n;
+    const char *ptr = (*cmdpp);
 
     if ((--length > 0)
-	&& (*cmdp++ == DIRECTIVE_CHAR)) {
-	size_t n;
+	&& (*ptr++ == DIRECTIVE_CHAR)) {
 	for (n = 0; n < length; n++) {
-	    if (!isAlnum(cmdp[n]))
+	    if (!isAlnum(ptr[n]))
 		length = n;
 	}
-	dirnum = choice_to_code(fsm_directive_choices, cmdp, length);
+	dirnum = choice_to_code(fsm_directive_choices, ptr, length);
 	if (dirnum < 0)
 	    dirnum = D_UNKNOWN;
+	else
+	    *cmdpp += (1 + length);
     }
 
     return dirnum;
@@ -1630,6 +1631,12 @@ navigate_while(LINEPTR * lpp, WHLOOP * whlist)
     return FALSE;
 }
 
+/*
+ * Do the bookkeeping to begin a directive.
+ *	*cmdp points to the first token after the directive name
+ *	dirnum is the number of the directive
+ *	whlish is state/data for while/loops
+ */
 static int
 begin_directive(char **const cmdpp,
 		DIRECTIVE dirnum,
@@ -1779,6 +1786,10 @@ begin_directive(char **const cmdpp,
 	status = DDIR_HIDDEN;
 	break;
 
+    case D_QUIET:
+	status = DDIR_QUIET;
+	break;
+
     case D_ELSEWITH:
 	if (!tb_length(with_prefix)) {
 	    status = unbalanced_directive(dirnum);
@@ -1862,7 +1873,7 @@ setup_dobuf(BUFFER *bp, WHLOOP ** result)
 	if (i <= 0)
 	    continue;
 
-	dirnum = dname_to_dirnum(cmdp, (size_t) i);
+	dirnum = dname_to_dirnum(&cmdp, i);
 	if (dirnum == D_WHILE ||
 	    dirnum == D_BREAK ||
 	    dirnum == D_ENDWHILE) {
@@ -1918,8 +1929,8 @@ setup_dobuf(BUFFER *bp, WHLOOP ** result)
     return status;
 }
 #else
-#define dname_to_dirnum(cmdp,length) \
-		(cmdp[0] == DIRECTIVE_CHAR && !strcmp(cmdp+1, "endm") \
+#define dname_to_dirnum(cmdpp,length) \
+		((*cmdpp)[0] == DIRECTIVE_CHAR && !strcmp((*cmdpp)+1, "endm") \
 		? D_ENDM \
 		: D_UNKNOWN)
 #define push_buffer(save)	/* nothing */
@@ -1928,10 +1939,10 @@ setup_dobuf(BUFFER *bp, WHLOOP ** result)
 
 #if OPT_TRACE && !SMALLER
 static const char *
-TraceIndent(int level, const char *cmdp, size_t length)
+TraceIndent(int level, char *cmdp, int length)
 {
     static const char indent[] = ".  .  .  .  .  .  .  .  ";
-    switch (dname_to_dirnum(cmdp, length)) {
+    switch (dname_to_dirnum(&cmdp, length)) {
     case D_ELSE:		/* FALLTHRU */
     case D_ELSEIF:		/* FALLTHRU */
     case D_ENDIF:
@@ -1985,7 +1996,7 @@ compute_indent(char *cmd, int length, int *indent, int *indstate)
 	int next = 0;
 
 	cmd = skip_blanks(cmd);
-	dirnum = dname_to_dirnum(cmd, (size_t) (length - (cmd - base)));
+	dirnum = dname_to_dirnum(&cmd, (length - (cmd - base)));
 	switch (dirnum) {
 	case D_IF:		/* FALLTHRU */
 	case D_WHILE:		/* FALLTHRU */
@@ -2049,6 +2060,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
     char *cmdp;			/* text to execute */
     int save_clhide = clhide;
     int save_no_errs = no_errs;
+    int save_quiet = quiet;
     int indent = 0;
     int indstate = 0;
 
@@ -2163,7 +2175,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 
 	if (*cmdp == DIRECTIVE_CHAR) {
 
-	    dirnum = dname_to_dirnum(cmdp, linlen);
+	    dirnum = dname_to_dirnum(&cmdp, (int) linlen);
 	    if (dirnum == D_UNKNOWN) {
 		mlforce("[Unknown directive \"%s\"]", cmdp);
 		status = FALSE;
@@ -2207,9 +2219,9 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	if (dirnum != D_UNKNOWN) {
 	    int code;
 
+	  next_directive:
 	    /* move past directive */
-	    while (*cmdp && !isBlank(*cmdp))
-		++cmdp;
+	    cmdp = skip_space_tab(cmdp);
 
 	    code = begin_directive(&cmdp, dirnum, whlist, bp, &lp);
 	    if (code == DDIR_FAILED) {
@@ -2221,10 +2233,26 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 		status = TRUE;	/* not exactly an error */
 		break;
 	    } else if (code == DDIR_FORCE) {
+		TRACE(("~force\n"));
 		no_errs = TRUE;
 	    } else if (code == DDIR_HIDDEN) {
-		no_errs = TRUE;
+		TRACE(("~hidden\n"));
 		clhide = TRUE;
+	    } else if (code == DDIR_QUIET) {
+		TRACE(("~quiet\n"));
+		quiet = TRUE;
+	    }
+
+	    /* check if next word is also a directive */
+	    cmdp = skip_space_tab(cmdp);
+	    if (*cmdp == DIRECTIVE_CHAR) {
+		dirnum = dname_to_dirnum(&cmdp, (int) linlen);
+		if (dirnum == D_UNKNOWN) {
+		    mlforce("[Unknown directive \"%s\"]", cmdp);
+		    status = FALSE;
+		    break;
+		}
+		goto next_directive;
 	    }
 	} else if (*cmdp != DIRECTIVE_CHAR) {
 	    /* prefix lines with "WITH" value, if any */
@@ -2249,6 +2277,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 
 	clhide = save_clhide;
 	no_errs = save_no_errs;
+	quiet = save_quiet;
 
 	if (status == TRUE) {
 	    dobuferrbp = NULL;
@@ -2351,22 +2380,27 @@ dobuf(BUFFER *bp, int limit)
 int
 do_source(char *fname, int n, int optional)
 {
-    register int status;	/* return status of name query */
+    int status = TRUE;		/* return status of name query */
     char *fspec;		/* full file spec */
+
+    TRACE((T_CALLED "do_source(%s, %d, %d)\n", TRACE_NULL(fname), n, optional));
 
     /* look for the file in the configuration paths */
     fspec = cfg_locate(fname, LOCATE_SOURCE);
 
     /* nonexistant */
-    if (fspec == NULL)
-	return optional ? TRUE : no_such_file(fname);
+    if (fspec == NULL) {
+	if (!optional)
+	    status = no_such_file(fname);
+    } else {
 
-    /* do it */
-    while (n-- > 0)
-	if ((status = dofile(fspec)) != TRUE)
-	    return status;
+	/* do it */
+	while (n-- > 0)
+	    if ((status = dofile(fspec)) != TRUE)
+		break;
+    }
 
-    return TRUE;
+    returnCode(status);
 }
 
 #if ! SMALLER

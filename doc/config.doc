@@ -141,6 +141,8 @@ mappings:
     Filter Name  Filter Name      Colors These Language(s)/Files
     ===========  ===========      ==============================
     ada          vile-ada-filt    ada
+    as           vile-as-filt     GNU assembler (x86)
+    asm          vile-asm-filt    Microsoft ASM (x86)
     awk          vile-awk-filt    awk
     basic        vile-basic-filt  basic and visual basic (vb)
     bat          vile-bat-filt    Windows .bat files
@@ -154,8 +156,9 @@ mappings:
     esql         vile-esql-filt   embedded SQL with C/C++.
     est          vile-est-filt    Enscript syntax-descriptions
     fdl          vile-fdl-filt    forms definition language
-    html         vile-html-filt   html and xml
+    html         vile-html-filt   HTML
     imake        vile-imake-filt  imake files
+    info         vile-info-filt   GNU info files
     key          vile-key-filt    vile .keyword files
     latex        vile-latex-filt  latex
     lex          vile-lex-filt    flex and lex
@@ -167,6 +170,7 @@ mappings:
     nr           vile-nr-filt     nroff/troff files
     pas          vile-pas-filt    Pascal
     pl           vile-pl-filt     perl
+    pot          vile-pot-filt    gettext (.po) files
     ps           vile-ps-filt     PostScript
     py           vile-py-filt     python
     rc           vile-rc-filt     Windows resource (.rc) files
@@ -175,7 +179,7 @@ mappings:
     rpm          vile-rpm-filt    RPM .spec files
     sccs         vile-sccs-filt   SCCS files
     sed          vile-sed-filt    sed scripts
-    sh           vile-sh-filt     csh, sh, pot (gettext message libraries)
+    sh           vile-sh-filt     csh, sh
     sml          vile-sml-filt    SML input text
     spell        vile-spell-filt  highlight misspelled words using ispell
                                     or spell (see filters/spell.rc)
@@ -184,10 +188,12 @@ mappings:
     tbl          vile-tbl-filt    vile's modetbl and cmdtbl files
     tc           vile-tc-filt     termcap and printcap files
     tcl          vile-tcl-filt    tcl/tk scripts
+    texi         vile-texi-filt   texinfo
     ti           vile-ti-filt     terminfo files
     txt          vile-txt-filt    various flavors of text files
     vile         vile-vile-filt   vile and vim macros
     vlog         vile-vlog-filt   verilog
+    xml          vile-html-filt   XML
     xres         vile-xres-filt   X resource files
     xs           vile-xs-filt     Perl extension source files
     yacc         vile-yacc-filt   yacc and bison
@@ -447,5 +453,5 @@ without shell support, but perhaps not (ymmv).
 
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.11 2002/10/20 23:59:33 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.13 2002/12/11 02:04:07 tom Exp $
 ------------------------

@@ -46,13 +46,18 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.31 2002/10/27 14:54:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.33 2002/12/15 21:23:37 tom Exp $
  *
  */
 
-#define	_trace_h 1
+#define	_trace_h 1	/* don't include trace.h */
 
 #include <filters.h>
+
+#if OPT_LOCALE
+#include	<locale.h>
+#include	<ctype.h>
+#endif
 
 #if !defined(HAVE_STDLIB_H)
 # if !defined(HAVE_CONFIG_H) || defined(MISSING_EXTERN_CALLOC)
@@ -61,15 +66,6 @@ extern char *calloc(size_t nmemb, size_t size);
 # if !defined(HAVE_CONFIG_H) || defined(MISSING_EXTERN_REALLOC)
 extern char *realloc(char *ptr, size_t size);
 # endif
-#endif
-
-#ifdef lint
-#define	typecallocn(cast,ntypes)	(((cast *)0)+(ntypes))
-#define	typereallocn(cast,ptr,ntypes)	((ptr)+(ntypes))
-#else
-#define	typecallocn(cast,ntypes)	(cast *)calloc(sizeof(cast),ntypes)
-#define	typereallocn(cast,ptr,ntypes)	(cast *)realloc((char *)(ptr),\
-							(ntypes)*sizeof(cast))
 #endif
 
 #define backspace() \

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.21 2002/07/04 20:56:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.22 2002/12/23 00:13:44 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -26,7 +26,7 @@ is_prepro(char *text, int len)
 {
     if (vile_keywords) {
 	char *next = skip_blanks(text);
-	int code = dname_to_dirnum(next, (size_t)(len - (next - text)));
+	int code = dname_to_dirnum(&next, (len - (next - text)));
 	return code >= 0;
     }
     return 1;

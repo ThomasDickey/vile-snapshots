@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.117 2002/02/03 23:25:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.118 2002/12/14 19:09:41 tom Exp $
  *
  */
 
@@ -1165,7 +1165,7 @@ can_set_nmmark(int c)
 }
 
 static int
-get_nmmark(int c, MARK * markp)
+get_nmmark(int c, MARK *markp)
 {
     int result = TRUE;
 
@@ -1228,7 +1228,11 @@ setnmmark(int f GCC_UNUSED, int n GCC_UNUSED)
     }
 
     if (curbp->b_nmmarks == NULL) {
+
+	beginDisplay();
 	curbp->b_nmmarks = typeallocn(struct MARK, NMARKS);
+	endofDisplay();
+
 	if (curbp->b_nmmarks == NULL)
 	    return no_memory("named-marks");
 	for (i = 0; i < NMARKS; i++) {

@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.36 2002/11/02 16:44:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.40 2002/12/18 00:02:39 tom Exp $
  *
  */
 
@@ -147,6 +147,7 @@ alloc_visible(unsigned need)
 	    visible_result = malloc(need);
 	else
 	    visible_result = realloc(visible_result, need);
+	memset(visible_result, 0, need);
     }
     return visible_result;
 }
@@ -163,10 +164,12 @@ trace_indent(int level, int marker)
 	    visible_indent = malloc(need);
 	else
 	    visible_indent = realloc(visible_indent, need);
+	memset(visible_indent, 0, need);
     }
 
+    *visible_indent = EOS;
     for (n = 0; n < level; ++n)
-	sprintf(visible_indent + (3 * n), "%c  ", marker);
+	sprintf(visible_indent + (2 * n), "%c ", marker);
     return visible_indent;
 }
 
@@ -179,8 +182,10 @@ visible_buff(const char *buffer, int length, int eos)
     char *result;
 
     beginDisplay();
-    if (buffer == 0)
+    if (buffer == 0) {
 	buffer = "";
+	length = 1;
+    }
 
     result = alloc_visible(need);
 

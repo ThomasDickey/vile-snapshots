@@ -1,5 +1,5 @@
 /*
- * $Id: btree.c,v 1.14 2002/10/09 19:51:14 tom Exp $
+ * $Id: btree.c,v 1.16 2002/12/22 18:24:33 tom Exp $
  * Copyright 1997-1999 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
@@ -26,11 +26,11 @@
 #include "trace.h"
 #endif
 
-#ifdef USE_DBMALLOC
+#if USE_DBMALLOC
 #include <dbmalloc.h>
 #endif
 
-#ifdef USE_DMALLOC
+#if USE_DMALLOC
 #include <dmalloc.h>
 #endif
 
@@ -38,6 +38,7 @@
 
 #else
 #include "estruct.h"
+#include "edef.h"
 #endif
 
 #include <assert.h>
@@ -671,7 +672,9 @@ btree_parray(BI_TREE *tree, char *name, unsigned len)
 	if (top != 0) {
 		int i = 0;
 		size_t cnt = btree_pcount(top, name, len);
+		beginDisplay();
 		nptr = castalloc(const char *, sizeof(const char *) * (cnt + 1));
+		endofDisplay();
 		if (nptr != 0) {
 			build_parray(top, name, len, nptr, &i);
 			nptr[i] = 0;
@@ -786,7 +789,9 @@ new_node (BI_DATA * data)
 static void
 old_node (BI_NODE *node)
 {
+	beginDisplay();
 	free(node);
+	endofDisplay();
 }
 
 static void

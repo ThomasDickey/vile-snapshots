@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.39 2002/11/01 01:50:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.42 2002/12/17 02:02:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -13,23 +13,11 @@ DefineOptFilter("perl", "d");
 DefineFilter("perl");
 #endif
 
-#define ESC     '\\'
-#define SQUOTE  '\''
-#define DQUOTE  '"'
-
-#define L_CURLY '{'
-#define R_CURLY '}'
-#define L_PAREN '('
-#define R_PAREN ')'
-#define L_BLOCK '['
-#define R_BLOCK ']'
-
 #define QUOTE_DELIMS "#:/?|!:%`',{}[]()"
 /* from Perl's S_scan_str() */
 #define LOOKUP_TERM "([{< )]}> )]}>"
 
 #define isIdent(c)   (isalnum(CharOf(c)) || c == '_')
-#define isBlank(c)   ((c) == ' ' || (c) == '\t')
 #define isPattern(c) ((c) == '/' || (c) == '?')
 
 #ifdef DEBUG
@@ -119,7 +107,7 @@ static int
 is_ESCAPED(char *s)
 {
     int found = 0;
-    if (*s == ESC) {
+    if (*s == BACKSLASH) {
 	found = 1;
     }
     return found;
@@ -140,7 +128,7 @@ is_STRINGS(char *s, int *err, int delim)
 		*err = 1;	/* unterminated string */
 		break;
 	    }
-	    if (!escape && (*s == ESC)) {
+	    if (!escape && (*s == BACKSLASH)) {
 		escape = 1;
 	    } else {
 		if (!escape && (*s == delim)) {
@@ -201,7 +189,7 @@ is_QIDENT(char *s)
 	ch = CharOf(*s);
 	if (isalpha(ch)
 	    || (s != base && isdigit(CharOf(ch)))
-	    || ch == ESC
+	    || ch == BACKSLASH
 	    || ch == '_'
 	    || ch == SQUOTE
 	    || ch == DQUOTE)
@@ -436,7 +424,8 @@ is_PREPROC(char *s)
 	return 0;
     if ((skip = is_INTEGER(s += skip)) == 0)
 	return 0;
-    s += is_BLANK(s += skip);
+    s += skip;
+    s += is_BLANK(s);
     if (*s == DQUOTE) {
 	s += is_STRINGS(s, &err, DQUOTE);
 	if (err)
@@ -506,7 +495,7 @@ begin_HERE(char *s, int *quoted)
 	    s += ok;
 	    *quoted = 0;
 	    while (base != s) {
-		if (*base != SQUOTE && *base != DQUOTE && *base != ESC)
+		if (*base != SQUOTE && *base != DQUOTE && *base != BACKSLASH)
 		    *d++ = *base;
 		else
 		    *quoted = 1;
@@ -664,7 +653,7 @@ add_to_PATTERN(char *s)
 	    if (comment) {
 		if (*s == '\n')
 		    comment = 0;
-	    } else if (!escaped && (*s == ESC)) {
+	    } else if (!escaped && (*s == BACKSLASH)) {
 		escaped = 1;
 	    } else {
 		if (!escaped) {
@@ -733,7 +722,7 @@ write_PATTERN(char *s, int len)
     for (n = first = 0; n < len; n++) {
 	if (escaped) {
 	    escaped = 0;
-	} else if (s[n] == ESC) {
+	} else if (s[n] == BACKSLASH) {
 	    escaped = 1;
 	} else if (isBlank(s[n]) && !escaped && !comment &&
 		   (leading || after_blanks(s + n) == '#')) {
@@ -796,7 +785,7 @@ is_String(char *s, int *err)
 }
 
 static int
-line_length(char *s)
+line_size(char *s)
 {
     char *base = s;
 
@@ -836,7 +825,7 @@ put_embedded(char *s, int len, char *attr)
     int j, k;
 
     for (j = k = 0; j < len; j++) {
-	if ((j == 0 || (s[j - 1] != ESC))
+	if ((j == 0 || (s[j - 1] != BACKSLASH))
 	    && (id = is_IDENT(s + j)) != 0) {
 	    if (var_embedded(s + j)) {
 		if (j != k)
@@ -861,7 +850,7 @@ put_embedded(char *s, int len, char *attr)
 static char *
 put_remainder(char *s, char *attr, int quoted)
 {
-    int ok = line_length(s);
+    int ok = line_size(s);
 
     if (quoted) {
 	flt_puts(s, ok, attr);

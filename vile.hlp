@@ -1860,8 +1860,13 @@ Editor modes
 		Since this mode overrides xterm's cut & paste, you will
 		need to use the Shift key when pressing the mouse buttons
 		to cut and paste between X windows.  Your TERM variable's
-		termcap entry must contain the string "xterm" for this to
+		termcap entry should contain the string "xterm" for this to
 		work.  (U)
+
+	xterm-title Enables titlebar updates if you are running within an
+		xterm.  Each time you switch to a different buffer, vile
+		can update the title.  This uses the same tests of the
+		TERM variable as the xterm-mouse mode. (U)
 
 	yankmotion (ym) Yanking text will cause cursor movement (just like
 		vi) if the motion is left or up.  (B)
@@ -2548,6 +2553,7 @@ Programmed procedures (aka macros)
 
 			athena      -> xvile built with Athena widgets
 			curses      -> editor uses curses terminal driver
+			locale      -> editor uses system's LC_CTYPE locale
 			motif       -> xvile built with Motif libraries
 			nextaw      -> xvile built with Athena widgets (NeXtaw)
 			noshell     -> shell commands are disabled
@@ -2777,7 +2783,8 @@ Programmed procedures (aka macros)
 	~return		Return (terminating current macro)
 	~goto label	Jump to a label in the current macro
 	~force		Force macro to continue...even if command fails
-	~hidden		Force macro to continue, do not update screen
+	~hidden		Do not update screen while the macro executes.
+	~quiet		Suppress messages while the macro executes.
 	~while cond	Execute a loop if the condition is true
 	~break
 	~endwhile
@@ -5749,4 +5756,4 @@ Problems
 
 Copyright 1995-2002 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.557 2002/10/28 01:44:38 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.560 2002/12/23 00:23:53 tom Exp $

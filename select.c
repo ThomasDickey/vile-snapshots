@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.140 2002/10/16 10:46:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.141 2002/12/15 20:40:18 tom Exp $
  *
  */
 
@@ -81,10 +81,25 @@ typedef enum {
 
 static WHICHEND whichend;
 
+static AREGION *
+alloc_AREGION(void)
+{
+    AREGION *arp;
+
+    beginDisplay();
+    if ((arp = typealloc(AREGION)) == NULL) {
+	(void) no_memory("AREGION");
+    }
+    endofDisplay();
+    return arp;
+}
+
 void
 free_attribs(BUFFER *bp)
 {
     AREGION *p, *q;
+
+    beginDisplay();
     p = bp->b_attribs;
     while (p != NULL) {
 	q = p->ar_next;
@@ -102,12 +117,15 @@ free_attribs(BUFFER *bp)
     bp->b_attribs = NULL;
 
     free_line_attribs(bp);
+    endofDisplay();
 }
 
 void
 free_attrib(BUFFER *bp, AREGION * ap)
 {
     detach_attrib(bp, ap);
+
+    beginDisplay();
 #if OPT_HYPERTEXT
     FreeAndNull(ap->ar_hypercmd);
 #endif
@@ -117,6 +135,7 @@ free_attrib(BUFFER *bp, AREGION * ap)
 	startbufp = NULL;
     else
 	free((char *) ap);
+    endofDisplay();
 }
 
 static void
@@ -1139,8 +1158,7 @@ attributeregion(void)
 		return TRUE;
 
 	    /* add new attribute-region */
-	    if ((arp = typealloc(AREGION)) == NULL) {
-		(void) no_memory("AREGION");
+	    if ((arp = alloc_AREGION()) == NULL) {
 		return FALSE;
 	    }
 	    arp->ar_region = region;
@@ -1227,8 +1245,7 @@ attributeregion(void)
 			p->ar_shape = EXACT;
 			if ((rle < ple) || (rle == ple && roe < poe)) {
 			    /* open a new region */
-			    if ((n = typealloc(AREGION)) == NULL) {
-				(void) no_memory("AREGION");
+			    if ((n = alloc_AREGION()) == NULL) {
 				return FALSE;
 			    }
 			    n->ar_region = p->ar_region;
@@ -1890,12 +1907,15 @@ lattr_shift(BUFFER *bp GCC_UNUSED, LINEPTR lp, int doto, int shift)
 	for (f = t; f >= doto && f > t - shift; f--)
 	    if (lap[f] != 1) {
 		int newlen;
+
+		beginDisplay();
 		newlen = len + shift - (t - f);
 		lap = castrealloc(UCHAR, lap, newlen + 1);
 		lp->l_attrs = lap;
 		lap[newlen] = 0;
 		t = newlen - 1;
 		f = t - shift;
+		endofDisplay();
 		break;
 	    }
 	while (f > doto) {
@@ -1959,6 +1979,8 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
     WINDOW *wp;
     int vidx;
     int i;
+    int overlap = FALSE;
+
     if (rp->r_orig.l != rp->r_end.l	/* must be confined to one line */
 	|| rs != EXACT		/* must be an exact region */
 	|| (hypercmdp && tb_length(hypercmdp) != 0)
@@ -1967,26 +1989,30 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
 	|| (vattr & VASEL) != 0)	/* can't be a selection */
 	return FALSE;
 
+    beginDisplay();
     lp = rp->r_orig.l;
-    if (lp->l_attrs) {
+    if (lp->l_attrs != NULL) {
 	int len = strlen((char *) (lp->l_attrs));
 	/* Make sure the line attribute is long enough */
 	if (len < rp->r_end.o) {
 	    lp->l_attrs = castrealloc(UCHAR,
 				      lp->l_attrs, rp->r_end.o + 1);
-	    if (lp->l_attrs == NULL)
-		return FALSE;	/* Let someone else deal with the
-				   problem of running out of memory */
-	    for (i = len; i < rp->r_end.o; i++)
-		lp->l_attrs[i] = 1;
-	    lp->l_attrs[i] = 0;
+	    if (lp->l_attrs != NULL) {
+		for (i = len; i < rp->r_end.o; i++)
+		    lp->l_attrs[i] = 1;
+		lp->l_attrs[i] = 0;
+	    }
 	}
 	/* See if attributed region we're about to add overlaps an existing
 	   line based one */
-	for (i = rp->r_orig.o; i < rp->r_end.o; i++)
-	    if (lp->l_attrs[i] != 1)
-		return FALSE;	/* Can't have overlapping line
-				   attributes */
+	if (lp->l_attrs != NULL) {
+	    for (i = rp->r_orig.o; i < rp->r_end.o; i++) {
+		if (lp->l_attrs[i] != 1) {
+		    overlap = TRUE;
+		    break;
+		}
+	    }
+	}
     } else {
 	/* Must allocate and initialize memory for the line attributes */
 	lp->l_attrs = castalloc(UCHAR, llength(lp) + 1);
@@ -1994,22 +2020,22 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
 	for (i = llength(lp) - 1; i >= 0; i--)
 	    lp->l_attrs[i] = 1;
     }
+    endofDisplay();
 
-    vidx = find_line_attr_idx(vattr);
-    if (vidx < 0)
-	return FALSE;
+    if (lp->l_attrs != NULL && !overlap) {
+	if ((vidx = find_line_attr_idx(vattr)) >= 0) {
+	    for (i = rp->r_orig.o; i < rp->r_end.o; i++)
+		lp->l_attrs[i] = (UCHAR) vidx;
 
-    for (i = rp->r_orig.o; i < rp->r_end.o; i++)
-	lp->l_attrs[i] = (UCHAR) vidx;
-
-    for_each_visible_window(wp) {
-	if (wp->w_bufp == bp)
-	    wp->w_flag |= WFHARD;
+	    for_each_visible_window(wp) {
+		if (wp->w_bufp == bp)
+		    wp->w_flag |= WFHARD;
+	    }
+	    return TRUE;
+	}
     }
-    return TRUE;
-#else /* !OPT_LINE_ATTRS */
-    return FALSE;
 #endif /* OPT_LINE_ATTRS */
+    return FALSE;
 }
 
 static void
