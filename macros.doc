@@ -336,8 +336,8 @@ Functions
 					one
 	&LEFt           <str> <num>     return the <num> leftmost characters
 					from <str>
-	&RIGht          <str> <num>     return the <num> rightmost characters
-					from <str>
+	&RIGht          <str> <num>     Starting from <num> position in <str>,
+					return substring to the right.
 	&MID            <str> <num1> <num2>
 					Starting from <num1> position in <str>,
 					return <num2> characters.
@@ -349,8 +349,7 @@ Functions
 					keystroke from the user
 	&ENV            <str>           If the operating system is capable,
 					this returns the environment string
-	associated
-					with <str>
+					associated with <str>
 	&BIND           <str>           return the function name bound to the
 					keystroke <str>
 
@@ -585,5 +584,5 @@ Directives
 		insert-string "You are on an old machine!\n"
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/RCS/macros.doc,v 1.12 1996/09/18 00:56:29 tom Exp $
+  $Header: /users/source/archives/vile.vcs/RCS/macros.doc,v 1.13 1998/04/26 20:34:03 tom Exp $
 -----------------------------------

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.172 1998/04/23 23:50:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.173 1998/04/26 21:53:32 tom Exp $
  *
  */
 
@@ -1346,7 +1346,7 @@ kbd_engl(
 const char *prompt,	/* null pointer to splice calls */
 char *buffer)
 {
-	if (kbd_engl_stat(prompt, buffer) == TRUE)
+	if (kbd_engl_stat(prompt, buffer, 0) == TRUE)
 		return buffer;
 	return NULL;
 }
@@ -2080,9 +2080,7 @@ unsigned *pos)
 }
 
 int
-kbd_engl_stat(
-const char *prompt,
-char	*buffer)
+kbd_engl_stat(const char *prompt, char	*buffer, int stated)
 {
 	int	kbd_flags = KBD_EXPCMD|KBD_NULLOK|((NAMEC != ' ') ? 0 : KBD_MAYBEC);
 	int	code;
@@ -2093,6 +2091,7 @@ char	*buffer)
 #if COMPLETE_FILES
 	init_filec(FILECOMPLETION_BufName);
 #endif
+	kbd_flags |= stated;
 	code = kbd_reply(
 		prompt,		/* no-prompt => splice */
 		&temp,		/* in/out buffer */

@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.7 1998/03/08 22:40:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.8 1998/04/26 12:36:05 tom Exp $
  *
  */
 #include "estruct.h"
@@ -212,7 +212,6 @@ record_freed(char *ptr)
 {
 	register int j;
 
-	InitArea();
 	if ((j = FindArea(ptr)) >= 0) {
 		nowAllocated -= area[j].size;
 		area[j].size = 0;
@@ -319,6 +318,24 @@ dofree(void *oldp)
 	}
 
 	fail_alloc("free (not found)", oldp);
+}
+
+/*
+ * Write over the area if it is valid.
+ */
+void
+dopoison(void *oldp, long len)
+{
+	int j;
+
+	if ((j = FindArea(oldp)) >= 0) {
+		if (area[j].size >= len)
+			(void)memset((char *)oldp, 0xdf, len);
+		else
+			fail_alloc("incorrect length", oldp);
+	} else {
+		fail_alloc("cannot find to poison", oldp);
+	}
 }
 #endif
 

@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.177 1998/04/23 23:52:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.178 1998/04/26 21:52:52 tom Exp $
  *
  */
 
@@ -1474,6 +1474,19 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 			}
 
 			kbd_kill_response(buf, &cpos, c);
+
+			/*
+			 * If we backspaced to erase the buffer, it's ok to
+			 * return to the caller, who would be the :-line
+			 * parser, so we can do something reasonable with the
+			 * address specication.
+			 */
+			if (cpos == 0
+			 && isbackspace(c)
+			 && (options & KBD_STATED)) {
+				status = SORTOFTRUE;
+				break;
+			}
 			backslashes = countBackSlashes(buf, cpos);
 
 		} else if (firstch == TRUE && !quotef && !isMiniEdit(c)) {

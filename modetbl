@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.93 1998/04/24 10:36:37 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.94 1998/04/26 01:44:41 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -114,12 +114,12 @@ string							# VAL_ prefix
 regex							# VAL_ prefix
 	"comments"	COMMENTS	0		# matches leading comment for comment reformatting
 	"comment-prefix" CMT_PREFIX	0		# prefix to ignore/preserve when formatting comment
-	"fence-begin"	FENCE_BEGIN	chgd_fences	# begin a simple (character, non-nestable) fence
-	"fence-end"	FENCE_END	chgd_fences	# end a simple fence
-	"fence-if"	FENCE_IF	chgd_fences	# begin a complex (line, nestable) fence
-	"fence-elif"	FENCE_ELIF	chgd_fences	# next complex fence
-	"fence-else"	FENCE_ELSE	chgd_fences	# final complex fence
-	"fence-fi"	FENCE_FI	chgd_fences	# end a complex fence
+	"fence-begin"	FENCE_BEGIN	0		# begin a simple (character, non-nestable) fence
+	"fence-end"	FENCE_END	0		# end a simple fence
+	"fence-if"	FENCE_IF	0		# begin a complex (line, nestable) fence
+	"fence-elif"	FENCE_ELIF	0		# next complex fence
+	"fence-else"	FENCE_ELSE	0		# final complex fence
+	"fence-fi"	FENCE_FI	0		# end a complex fence
 	"paragraphs"	PARAGRAPHS	0		# delimits a paragraph
 	"sections"	SECTIONS	0		# delimits a section
 	"sentences"	SENTENCES	0		# delimits a sentence

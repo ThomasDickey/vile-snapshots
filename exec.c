@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.154 1998/04/23 09:18:54 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.155 1998/04/26 23:13:48 tom Exp $
  *
  */
 
@@ -201,7 +201,7 @@ execute_named_command(int f, int n)
 			repeat_cmd = EOS;
 		} else {			/* looking for command-name */
 			fnp = NULL;
-			status = kbd_engl_stat((char *)0, cspec);
+			status = kbd_engl_stat((char *)0, cspec, KBD_STATED);
 			if (status == TRUE) {
 				fnp = cspec;
 #if !SMALLER
@@ -412,6 +412,10 @@ seems like we need one more check here -- is it from a .exrc file?
 		maybe_reg = ((flags & OPTREG) == OPTREG);
 		maybe_num = ((flags & TO) == TO)
 			&& !((lflag & TO) == TO);
+		if (maybe_num && (lflag & FROM)) {
+			toline = fromline;
+			maybe_num = FALSE;
+		}
 	} else {
 		maybe_reg =
 		maybe_num = FALSE;
@@ -626,6 +630,9 @@ LINEPTR		*markptr)	/* where to store the mark's value */
 			s = t;
 		}
 #endif
+		else if (*s == EOS) {	/* empty string matches '.' */
+			lp = DOT.l;
+		}
 
 		/* if linespec was faulty, quit now */
 		if (!lp) {
@@ -693,19 +700,20 @@ CMDFLAGS	*flagp)
 		scan++;
 		*flagp |= (FROM|TO);
 	} else {
-		scan = linespec(scan, &fromline);
+		scan = linespec(scan, &toline);
 		*flagp |= FROM;
-		if (fromline == null_ptr)
+		if (toline == null_ptr)
 			fromline = DOT.l;
-		toline = fromline;
-		if (*scan == ',') {
+		fromline = toline;
+		while (*scan == ',') {
+			fromline = toline;
 			scan++;
 			scan = linespec(scan, &toline);
 			*flagp |= TO;
-		}
-		if (toline == null_ptr) {
-			/* faulty line spec */
-			return FALSE;
+			if (toline == null_ptr) {
+				/* faulty line spec */
+				return FALSE;
+			}
 		}
 	}
 

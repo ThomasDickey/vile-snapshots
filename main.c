@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.316 1998/04/23 11:07:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.317 1998/04/26 23:18:12 tom Exp $
  *
  */
 
@@ -1811,6 +1811,7 @@ charinit(void)
 	_chartypes_['%'] |= _linespec;
 	_chartypes_['-'] |= _linespec;
 	_chartypes_['+'] |= _linespec;
+	_chartypes_[';'] |= _linespec;
 	_chartypes_['.'] |= _linespec;
 	_chartypes_['$'] |= _linespec;
 	_chartypes_['\''] |= _linespec;

@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.339 1998/04/12 20:37:42 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.340 1998/04/26 23:19:52 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -208,7 +208,7 @@ above).
   the $ off the end of the comment regexp).  ]
 
 ------------------------------
-Another enhacement.
+Another enhancement.
 How about a history file.  say I have been using vile and
 quit and come back in later I can use the history file.
 
@@ -314,15 +314,6 @@ $debug variable, and what it does, how it works.
 
 -------------------------------
 
-the docs for the &right function disagree, in vile.hlp and macros.doc.  the
-code seems to do what vile.hlp says.  the macros.doc behavior seems more
-rational, since the current behavior can i think be duplicated more easily
-with &mid than the macros.doc-style behavior.  (vile.hlp says that we take
-the substring starting at the given position.  macros.doc says we take the
-substring starting the given number of chars from the end.)
-
----------------------------------
-
 there should be better support in vile for reading bits of shell output
 into a buffer -- ":r !foo" is a little primitive when trying to insert a
 single word into a line.
@@ -423,6 +414,7 @@ under DOS, ^P character turns on the printer.   argh.
 actually, this only happens if compiled with borland.  it uses getch()
 instead of intdos() to get the char.  (see ttgetc())  that's probably
 at least part of the answer.
+[I also see this with djgpp, which uses borland.c - tom]
 
 ---------------
 how about a mode that supports autosaving to the backup-file,
@@ -637,18 +629,6 @@ wrapmargin, vi trims only the whitespace inserted during the current command.
 in many such situations.  if you're using wrapmargin, you're probably
 not worried about trailing whitespace anyway.  -- pgf ]
 
----------------
-
-I just rediscovered a small problem with the :<number> command
-to go to a certain line number. Try:
-
-        <esc>:a<backspace>1<return>
-
-This is not accepted by vile. You have to type <esc>:1 to recover. I am
-running under SunOS 4.1.2.
-
-[ this is very difficult to fix.  -pgf ]
-
 --------------------------
 
 This is a report against vile v5.4 built using djgpp.  Vile is running
@@ -738,14 +718,6 @@ OS/2 version built with Watcom 10.0a does not open pipes successfully.  Also it
 does not do function keys.
 
 ------------------------
-given a :map! of:
-    map! #9 foobar
-then when Fn-9 is pressed in insert mode, you get "foobar" in the buffer.
-if you manually insert "#9", no translation is done.  BUT, if you repeat
-that insert by typing '.', then you'll get "foobar".  (i.e. "i#9<ESC>." )
-
-------------------------
-
 
 when a buffer is out of date wrt its file (i.e. you have been warned but
 you answered 'n') it should say something like [out-of-date] on the modeline.
@@ -825,29 +797,7 @@ CTRL-D, vile insists on keeping the indent on par with the last non-empty
 line.  (^^D is inteneded to be temporary, 0^D should be permanent, even if
 what you've entered is a blank line.  don't know about simple ^D.)
 
--------------------------
-
-There's another thought for you, if I have a file, say 1000
-lines and at some point in the middle (say line 500), I enter
-the command ":1,w file1", it doesn't work.  In 'vi' it works
-fine but vile can't do it.  There's two errors in the line
-according to vile, the first is without saying ":1,.w", vile
-doesn't default to the current line (vi says this is valid)
-and then, the space after the "w" causes vile to say "invalid
-line specification".  HOWEVER!  Doing ":,$w file2" works fine,
-so vile DOES recognize that the unstated line number before
-the comma is the current line.
-
-------------------------------
-
-vile should accept a single line number as implying that line only.  Every
-version of vi I've ever used takes
-  :.w /tmp/dans
-or
-  :206w /tmp/dans
-to mean "write just exactly one line to /tmp/dans".
 ----------------------
-
 
 file completion doesn't work in the presence of directories which match
 a substring of other files or directories.  that is:
@@ -865,15 +815,6 @@ yields:
 instead of also providing "fool".
 
 ------------------------
-
-I think there is a bug for th motif version of VILE. If I have two
-windows opened, I drag the resize button with my mouse to resize the top
-window. When the bottom window become too small, the two windows just
-simply disappear and become one window. The other versions (X11 and
-Plain) don't collapse windows. They will leave one line for the bottom
-window and display a message saying "Impossible change".
-
-------------
 
 When the various DOS/Windoze) .zip files are created, it would be nice if
 they included a formatted version of the man page ('cuz DOS/Windoze doesn't

@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.108 1998/02/23 11:27:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.109 1998/04/26 20:12:56 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -248,7 +248,7 @@ rsearch(int f, int n, int dummy GCC_UNUSED, int fromscreen)
 	 * is just fine).
 	 */
 	if ((status = readpattern("Reverse search: ", &pat[0],
-				&gregexp, lastkey, fromscreen)) == TRUE) {
+				&gregexp, EOS, fromscreen)) == TRUE) {
 		ignorecase = window_b_val(curwp, MDIGNCASE);
 
 		curpos = DOT;

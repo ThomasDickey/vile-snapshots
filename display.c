@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.246 1998/04/24 10:35:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.247 1998/04/26 12:40:21 tom Exp $
  *
  */
 
@@ -3356,6 +3356,9 @@ imworking (int ACTUAL_SIG_ARGS GCC_UNUSED)
 		if (skip) {
 			skip = FALSE;
 		} else {
+#if DISP_X11
+			x_working();
+#else
 			char	result[20];
 			result[0] = EOS;
 			if (cur_working != 0
@@ -3380,8 +3383,6 @@ imworking (int ACTUAL_SIG_ARGS GCC_UNUSED)
 			}
 			kbd_overlay(result);
 			kbd_flush();
-#if DISP_X11
-			x_working();
 #endif
 		}
 	} else {

@@ -1,5 +1,45 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (tom) 980426 (x)
+	+ modify :-line line specification parsing so that statements such
+	  as
+		:.,.+2,+3,-4;99p
+	  work as in vi.  Both the repetition for commas and the character
+	  class for semicolon were missing.
+	+ modify :-line line specification parsing so that statements such
+	  as
+		:1,w filename
+		:.w filename
+	  work as in vi.  Vi accepts an empty string (e.g., between the "," and
+	  "w") as ".", and does not require that both limits in a range be
+	  given.  Previous behavior of vile would prompt, in the latter
+	  example, when the space after "w" is typed, for the number of lines.
+ 	+ corrected :-line parser bug which caused state hang, e.g, when
+	  typing
+		<esc>:a<backspace>1<return>
+	  vile would be expecting a command verb when the '1' is read, so
+	  it would only allow the user to abort the command.
+	+ modify end-character parameter of readpattern so that it is not
+	  necessary to escape a '?' when doing a reverse search.
+	+ correct logic of set_rect_columns() so that reversed rectangular
+	  selection (where DOT > MK) gives the right number of columns
+	  (reported by Kuntal M. Daftary).
+	+ remove spurious comma in enum WATCHTYPE (reported by Larry Gensch)
+ 	+ update README.MENU with "cmd" keywords for the examples of search
+	  menu entries.  Other minor documentation updates.
+	+ tested xvile with ElectricFence, doalloc and Purify.  (The problems
+	  with 'working' mode did not appear on SunOS or Solaris, but did on
+	  Linux).  Minor fixes to ifdef's to build the test configuration.
+	+ remove chgd_fences callback from the newer regular-expression
+	  fences modes, since that function applies only to fence-pairs.
+	+ modify 'working' mode so that xvile simply sets the watch cursor. 
+	  Though the "working..." message would be nice to have, it introduces
+	  problems with X Windows to cause events which may interrupt the
+	  normal event processing.  The new scheme sets a flag which is tested
+	  in the event loop; the watch cursor will therefore not appear
+	  immediately, but it is still automatic.  (prompted in part by a
+	  bug report by Mike Peercy <peercy@sierravista.com>).
+
  (tom) 980424 (w)
 	+ make xvile menu entries "work" which rely on executing from the
 	  :-line, by using "cmd" prefix for "apropos", and new function
