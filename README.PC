@@ -92,6 +92,33 @@ aware that vile is NOT a PM program.  the two builds use the borland.c
 or os2vio.c screen drivers, respectively.  with vile 7.3, an EMX port
 is supported (for comparison, since OS/2 VIO performs much better).
 
+we build the VIO version for the ftp downloads with IBM CSET, and the
+associate nmake utility.
+
+the makefile.emx (and associated config.emx file) are used for building
+with a minimal EMX environment.  you need gcc for this.  however, for
+best results in EMX, you should build with the autoconf version and
+ncurses.  this requires a number of tools:
+
+	+ you will have to regenerate the configure script, using
+	  autoconf 2.12, with the patches from 
+
+	  http://www.clark.net/pub/dickey/autoconf/autoconf.html
+
+	+ you'll need ksh (build or obtain a copy of pdksh 5.2.13 or
+	  better).
+
+	+ GNU m4 (needed for autoconf), and sed.
+
+the termcap library distributed with EMX does not work well.  use ncurses:
+
+	+ ncurses 4.2, with patches through September 1998, from
+
+	  http://ftp.clark.net/pub/dickey/ncurses/ncurses.faq.html
+	  ftp://ftp.clark.net/pub/dickey/ncurses/4.2
+
+	+ use '$TERM=ansi', or start customizing from that.
+
 WIN32 information (Windows NT and 95/98)
 ----------------------------------------
 either Visual C++ (4.x or later) or the Borland compiler can be used.  use
@@ -172,5 +199,5 @@ tom dickey, dickey@clark.net
 paul fox, pgf@foxharp.boston.ma.us (home)
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.15 1998/10/24 15:58:35 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.16 1998/10/26 02:15:55 tom Exp $
 ------------------------
