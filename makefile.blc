@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Borland C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.9 1998/07/26 11:43:07 Ryan.Murray Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.10 1999/03/08 11:21:26 tom Exp $
 #
 #
 
@@ -16,7 +16,7 @@ HDRS = estruct.h edef.h proto.h dirstuff.h
 # and in modetbl
 BUILTHDRS = nebind.h neproto.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nefsms.h
 
-SRC = 	main.c ntconio.c basic.c bind.c btree.c buffer.c crypt.c \
+SRC = 	main.c ntconio.c basic.c bind.c btree.c buffer.c \
 	csrch.c display.c eval.c exec.c externs.c \
 	fences.c file.c filec.c \
 	fileio.c finderr.c glob.c globals.c history.c \
@@ -24,11 +24,11 @@ SRC = 	main.c ntconio.c basic.c bind.c btree.c buffer.c crypt.c \
 	line.c modes.c msgs.c npopen.c oneliner.c opers.c \
 	path.c random.c regexp.c \
 	region.c search.c select.c spawn.c \
-	tags.c tbuff.c termio.c undo.c \
+	tags.c tbuff.c termio.c ucrypt.c undo.c \
 	version.c w32cbrd.c w32misc.c w32pipe.c \
 	window.c word.c wordmov.c map.c
 
-OBJ = 	main.obj ntconio.obj basic.obj bind.obj btree.obj buffer.obj crypt.obj \
+OBJ = 	main.obj ntconio.obj basic.obj bind.obj btree.obj buffer.obj \
       	csrch.obj display.obj eval.obj exec.obj externs.obj \
 	fences.obj file.obj filec.obj \
 	fileio.obj finderr.obj glob.obj globals.obj history.obj \
@@ -36,7 +36,7 @@ OBJ = 	main.obj ntconio.obj basic.obj bind.obj btree.obj buffer.obj crypt.obj \
 	line.obj modes.obj msgs.obj npopen.obj oneliner.obj opers.obj \
 	path.obj random.obj regexp.obj \
 	region.obj search.obj select.obj spawn.obj \
-	tags.obj tbuff.obj termio.obj undo.obj \
+	tags.obj tbuff.obj termio.obj ucrypt.obj undo.obj \
 	version.obj w32cbrd.obj w32misc.obj w32pipe.obj \
 	window.obj word.obj wordmov.obj map.obj
 

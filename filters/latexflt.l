@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.14 1999/01/01 15:33:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.15 1999/03/07 19:19:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LaTeX input
  * text.
@@ -69,17 +69,17 @@ do_filter(FILE *input, FILE *output)
     yyin = input;
     yyout = output;
 
-    Comment_attr = keyword_attr(NAME_COMMENT);
-    Keyword_attr = keyword_attr(NAME_KEYWORD);
-    Ident_attr   = keyword_attr(NAME_IDENT);
-    Ident2_attr  = keyword_attr(NAME_IDENT2);
-    Number_attr  = keyword_attr(NAME_NUMBER);
-    String_attr  = keyword_attr(NAME_LITERAL);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    Ident_attr   = class_attr(NAME_IDENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    Number_attr  = class_attr(NAME_NUMBER);
+    String_attr  = class_attr(NAME_LITERAL);
 
-    Math_attr    = keyword_attr(NAME_MATH);
-    Math_c_attr  = keyword_attr(NAME_MATH_C);
-    Section_attr = keyword_attr(NAME_SECTION);
-    Subsection_attr = keyword_attr(NAME_SUBSECTION);
+    Math_attr    = class_attr(NAME_MATH);
+    Math_c_attr  = class_attr(NAME_MATH_C);
+    Section_attr = class_attr(NAME_SECTION);
+    Subsection_attr = class_attr(NAME_SUBSECTION);
 
     BEGIN(TEXT);
     while (yylex() > 0) {

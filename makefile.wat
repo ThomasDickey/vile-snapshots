@@ -3,7 +3,7 @@
 # based on the original makefile of vile 3.46 (see the original makefile)
 # T.DANG (dang@cogit.ign.fr)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wat,v 1.24 1997/11/26 16:17:33 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wat,v 1.25 1999/03/08 11:23:13 tom Exp $
 #
 # if you use the watcom version of vile, you may want to "set DOS4G=quiet"
 # to suppress the DOS 4G/W banner that comes up from the Rational Systems
@@ -38,7 +38,7 @@ HDRS = estruct.h edef.h proto.h dirstuff.h
 BUILTHDRS = nebind.h neproto.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nefsms.h
 
 SRC = 	main.c $(SCREEN).c &
-	basic.c bind.c btree.c buffer.c crypt.c &
+	basic.c bind.c btree.c buffer.c &
 	csrch.c display.c eval.c exec.c externs.c &
 	fences.c file.c filec.c &
 	fileio.c finderr.c glob.c globals.c history.c &
@@ -46,11 +46,11 @@ SRC = 	main.c $(SCREEN).c &
 	line.c map.c modes.c msgs.c npopen.c &
 	oneliner.c opers.c path.c random.c regexp.c &
 	region.c search.c select.c spawn.c &
-	tags.c tbuff.c termio.c undo.c &
+	tags.c tbuff.c termio.c ucrypt.c undo.c &
 	version.c window.c word.c wordmov.c
 
 OBJ = 	main.obj $(SCREEN).obj &
-	basic.obj bind.obj btree.obj buffer.obj crypt.obj &
+	basic.obj bind.obj btree.obj buffer.obj &
       	csrch.obj display.obj eval.obj exec.obj externs.obj &
 	fences.obj file.obj filec.obj &
 	fileio.obj finderr.obj glob.obj globals.obj history.obj &
@@ -58,7 +58,7 @@ OBJ = 	main.obj $(SCREEN).obj &
 	line.obj map.obj modes.obj msgs.obj npopen.obj &
 	oneliner.obj opers.obj path.obj random.obj regexp.obj &
 	region.obj search.obj select.obj spawn.obj &
-	tags.obj tbuff.obj termio.obj undo.obj &
+	tags.obj tbuff.obj termio.obj ucrypt.obj undo.obj &
 	version.obj window.obj word.obj wordmov.obj
 
 

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.6 1998/12/25 21:31:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.7 1999/03/07 19:18:26 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Cwebx input
  * text.  Also useful for Cweb
@@ -37,11 +37,11 @@ void
 init_filter(int before)
 {
     if (before) {
-	insert_keyword(NAME_TeX_command, ATTR_KEYWORD);
-	insert_keyword(NAME_TeX_comment, ATTR_COMMENT);
-	insert_keyword(NAME_Cweb_module, ATTR_KEYWORD);
-	insert_keyword(NAME_Cweb_title,  ATTR_IDENT2);
-	insert_keyword(NAME_Cweb_other,  "");
+	insert_keyword(NAME_TeX_command, ATTR_KEYWORD, 1);
+	insert_keyword(NAME_TeX_comment, ATTR_COMMENT, 1);
+	insert_keyword(NAME_Cweb_module, ATTR_KEYWORD, 1);
+	insert_keyword(NAME_Cweb_title,  ATTR_IDENT2,  1);
+	insert_keyword(NAME_Cweb_other,  "",           1);
     }
 }
 
@@ -51,18 +51,18 @@ do_filter(FILE *input, FILE *output)
     yyin = input;
     yyout = output;
 
-    Comment_attr = keyword_attr(NAME_COMMENT);
-    Preproc_attr = keyword_attr(NAME_PREPROC);
-    Keyword_attr = keyword_attr(NAME_KEYWORD);
-    String_attr  = keyword_attr(NAME_LITERAL);
-    Number_attr  = keyword_attr(NAME_NUMBER);
-    Type_attr    = keyword_attr(NAME_TYPES);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Preproc_attr = class_attr(NAME_PREPROC);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    String_attr  = class_attr(NAME_LITERAL);
+    Number_attr  = class_attr(NAME_NUMBER);
+    Type_attr    = class_attr(NAME_TYPES);
 
-    TeX_mot_cle  = keyword_attr(NAME_TeX_command);
-    TeX_comment  = keyword_attr(NAME_TeX_comment);
-    Cweb_nom_module = keyword_attr(NAME_Cweb_module);
-    Cweb_code_titre = keyword_attr(NAME_Cweb_title);
-    Cweb_code_autre = keyword_attr(NAME_Cweb_other);
+    TeX_mot_cle  = class_attr(NAME_TeX_command);
+    TeX_comment  = class_attr(NAME_TeX_comment);
+    Cweb_nom_module = class_attr(NAME_Cweb_module);
+    Cweb_code_titre = class_attr(NAME_Cweb_title);
+    Cweb_code_autre = class_attr(NAME_Cweb_other);
 
     while (yylex() > 0) {
     }

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.5 1998/12/28 18:57:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.6 1999/03/07 19:21:52 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TCL/TK script.
  */
@@ -31,13 +31,13 @@ do_filter(FILE *input, FILE *output)
 {
     yyin = input;
     yyout = output;
-    Comment_attr = keyword_attr(NAME_COMMENT);
-    Action_attr  = keyword_attr(NAME_ACTION);
-    Ident_attr   = keyword_attr(NAME_IDENT);
-    Ident2_attr  = keyword_attr(NAME_IDENT2);
-    Keywrd2_attr = keyword_attr(NAME_KEYWRD2);
-    String_attr  = keyword_attr(NAME_LITERAL);
-    Number_attr  = keyword_attr(NAME_NUMBER);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Action_attr  = class_attr(NAME_ACTION);
+    Ident_attr   = class_attr(NAME_IDENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    Keywrd2_attr = class_attr(NAME_KEYWRD2);
+    String_attr  = class_attr(NAME_LITERAL);
+    Number_attr  = class_attr(NAME_NUMBER);
 
     BEGIN(VERB);
     while (yylex() > 0) {

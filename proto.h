@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.326 1999/02/01 00:17:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.330 1999/03/09 10:58:53 tom Exp $
  *
  */
 
@@ -182,12 +182,6 @@ void update_scratch (const char *name, int (*func)(BUFFER *));
 #define update_scratch(name, func)
 #endif
 
-/* crypt.c */
-#if	OPT_ENCRYPT
-extern	int	ue_makekey (char *key, UINT len);
-extern	void	ue_crypt (char *bptr, UINT len);
-#endif	/* OPT_ENCRYPT */
-
 /* csrch.c */
 
 /* display.c */
@@ -356,10 +350,6 @@ extern int check_modtime (BUFFER *bp, char *fn);
 extern int check_visible_modtimes (void);
 extern int get_modtime (BUFFER *bp, time_t *the_time);
 extern void set_modtime (BUFFER *bp, char *fn);
-#endif
-
-#if OPT_ENCRYPT
-extern int resetkey (BUFFER *bp, const char *fname);
 #endif
 
 #if SMALLER	/* cancel neproto.h */
@@ -595,9 +585,10 @@ void purge_msgs (void);
 extern REGEXVAL *new_regexval (const char *pattern, int magic);
 extern char *string_mode_val (VALARGS *args);
 extern int adjvalueset (const char *cp, int setting, int global, VALARGS *args);
-extern int find_mode (const char *mode, int global, VALARGS *args);
+extern int find_mode (BUFFER *bp, const char *mode, int global, VALARGS *args);
+extern int getfillcol(BUFFER *bp);
 extern int mode_eol (EOL_ARGS);
-extern int set_mode_value(const char *cp, int setting, int global, VALARGS *args, const char *rp);
+extern int set_mode_value(BUFFER *bp, const char *cp, int setting, int global, VALARGS *args, const char *rp);
 extern int string_to_number (const char *from, int *np);
 extern void copy_mvals (int maximum, struct VAL *dst, struct VAL *src);
 extern void free_local_vals (const struct VALNAMES *names, struct VAL *gbl, struct VAL *val);
@@ -753,7 +744,6 @@ extern int lregexec (regexp *prog, LINEPTR lp, int startoff, int endoff);
 typedef int (*DORGNLINES)(int (*)(REGN_ARGS), void *, int);
 
 extern int        blank_region (void);
-extern int        cryptregion (void);
 extern int        detab_region (void);
 extern int        detabline (void *flagp, int l, int r);
 extern int        entab_region (void);
@@ -883,6 +873,15 @@ extern void ttclose (void);
 extern void ttflush (void);
 extern void ttopen (void);
 extern void ttunclean (void);
+
+/* ucrypt.c */
+#if	OPT_ENCRYPT
+extern	int	vl_encrypt_char(int c);
+extern	int	vl_resetkey (BUFFER *bp, const char *fname);
+extern	void	vl_encrypt_blok (char *bptr, UINT len);
+extern	void	vl_make_encrypt_key (char *dst, char *src);
+extern	void	vl_setup_encrypt (char *pw);
+#endif	/* OPT_ENCRYPT */
 
 /* undo.c */
 extern void copy_for_undo (LINEPTR lp);

@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.16 1999/01/25 19:31:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.17 1999/03/07 19:19:55 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -61,10 +61,10 @@ do_filter(FILE *input, FILE *output)
     yyin = input;
     yyout = output;
 
-    Comment_attr = keyword_attr(NAME_COMMENT);
-    Ident2_attr  = keyword_attr(NAME_IDENT2);
-    Keyword_attr = keyword_attr(NAME_KEYWORD);
-    String_attr  = keyword_attr(NAME_LITERAL);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    String_attr  = class_attr(NAME_LITERAL);
 
     while (yylex() > 0) {
     }

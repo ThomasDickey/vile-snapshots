@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.5 1999/01/05 03:10:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.7 1999/03/09 10:42:16 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of terminfo
  */
@@ -56,12 +56,12 @@ do_filter(FILE *input, FILE *output)
     yyin = input;
     yyout = output;
 
-    Action_attr  = keyword_attr(NAME_ACTION);
-    Comment_attr = keyword_attr(NAME_COMMENT);
-    Keyword_attr = keyword_attr(NAME_KEYWORD);
-    Number_attr  = keyword_attr(NAME_NUMBER);
-    Ident_attr   = keyword_attr(NAME_IDENT);
-    String_attr  = keyword_attr(NAME_LITERAL);
+    Action_attr  = class_attr(NAME_ACTION);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    Number_attr  = class_attr(NAME_NUMBER);
+    Ident_attr   = class_attr(NAME_IDENT);
+    String_attr  = class_attr(NAME_LITERAL);
 
     while (yylex() > 0) {
     }
@@ -80,12 +80,13 @@ COMMA		[,]
 ESCNL		{COMMA}{SPACE}*\\\n\t
 
 NUMBER		"#"[0-9]+
-STRING		"="(\\[,]|[^,]|\t)*
+STRING		"="(\\.|\^.|[^,\^\\])*
 
 %%
 
 ^"#"[^\n]*			{ WriteToken(Comment_attr); }
 
+^{ALIAS},{SPACE}*[\n]		{ WriteToken(Ident_attr); BEGIN(CAPS); }
 ^({ALIAS}"|")+			{ WriteToken(Ident_attr); BEGIN(DESC); }
 <DESC>[^,\n]*			{ WriteToken(Comment_attr); BEGIN(GAPS); }
 <GAPS,VALS>({COMMA}|{ESCNL})*	{ commented = 0; ECHO; BEGIN(CAPS); }

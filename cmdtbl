@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.166 1999/02/11 11:21:56 pgf Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.167 1999/03/08 00:04:06 tom Exp $
 #
 #
 
@@ -241,10 +241,6 @@ opercopy	OPER|(RANGE|EXTRA)
 	"copy-til"
 	"c"
 	<copy text in the region>
-opercrypt	OPER|REDO|UNDO|GLOBOK|(RANGE)	OPT_ENCRYPT
-	"crypt-til"
-	'^X-C'
-	<encrypt/decrypt text in the region>
 kbd_mac_begin	NONE
 	"begin-keyboard-macro"		!FEWNAMES
 	'^X-('
@@ -1339,8 +1335,9 @@ multimotionrectangle		MOTION	OPT_SELECTIONS
 	"quoted-rectangular-motion"	!FEWNAMES
 	'^A-q'
 	<start (and end) a rectangular selection using multiple motions (3) >
-ue_setkey	NONE			OPT_ENCRYPT
+vl_setkey	NONE			OPT_ENCRYPT
 	"set-crypt-key"
+	"X"
 	'^X-X'
 	<set the encryption key on the current buffer>
 setlocmode	NONE|(EXRCOK|EXTRA)

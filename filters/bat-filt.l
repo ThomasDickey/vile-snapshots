@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.2 1998/12/25 21:33:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.3 1999/03/07 19:16:39 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DOS (and
  * similar, such as W95, NT) batch file.
@@ -29,10 +29,10 @@ do_filter(FILE *input, FILE *output)
     yyin = input;
     yyout = output;
 
-    Action_attr  = keyword_attr(NAME_ACTION);
-    Comment_attr = keyword_attr(NAME_COMMENT);
-    Ident2_attr  = keyword_attr(NAME_IDENT2);
-    String_attr  = keyword_attr(NAME_LITERAL);
+    Action_attr  = class_attr(NAME_ACTION);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    String_attr  = class_attr(NAME_LITERAL);
 
     while (yylex() > 0) {
     }

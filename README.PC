@@ -142,7 +142,7 @@ ntconio.c .  Both makefiles build vile.exe by default.
 additionally, vile-c-filt.exe (a static, external syntax colorizer) is
 included in makefile.wnt's default target list.  refer to vile's help
 file for a description of the colorizer and refer to the module comments
-within c-filt.c for win32-specific features.
+within filters/c-filt.c for win32-specific features.
 
 as of vile 7.3, a gui called "winvile" is provided (screen driver is
 ntwinio.c), which continues to improve with successive releases of the
@@ -178,26 +178,14 @@ winvile   perl,ole[2] nmake -f makefile.wnt CFG=winvile-with-perl OPT=ole-auto
 More about makefile.wnt
 -----------------------
 this makefile builds the editor from the command-line, _not_ from Developer
-Studio.  on an NT host, this is usually a trivial task.  simply:
-
-a) open a dos box
-b) cd to the vile source directory
-c) use one of the nmake command-lines shown above
-
-should the build fail due to "missing" include/library files or other
-tools, the problem is most likely caused by invalid/omitted environment
-variable settings.  in general, these variables are automatically
-initialized when Dev Studio is installed on an NT host.  for a workaround,
-read on.
-
-on a win95/win98 host, selected environment variables _must_ be set before
+Studio.  however, selected environment variables _must_ be set before
 any VC++ tool can be used (this includes nmake, cl, link, etc.).
 fortunately, microsoft supplies the file vcvars32.bat, in the Dev Studio
 bin directory, to set these variables.  you'll probably want to examine and
 edit this .bat file before using it for the first time because it usually
 modifies the PATH to include the PC's CD-ROM drive (not nice at all!).
-given all of this information, here's how to build the editor in the
-win95/win98 environment:
+given all of this information, here's how to build the editor using the
+MS developer tools:
 
 a) open a dos box
 b) cd to the vile source directory
@@ -231,5 +219,5 @@ tom dickey, dickey@clark.net
 paul fox, pgf@foxharp.boston.ma.us (home)
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.19 1998/12/21 10:47:19 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.20 1999/03/04 11:44:25 cmorgan Exp $
 ------------------------

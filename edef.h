@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.236 1999/02/11 22:05:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.237 1999/03/09 11:57:29 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -245,7 +245,7 @@ decl_uninit( int dotcmdrep );		/* original dot-command repeat-count */
 
 decl_init( int	kbdmode, STOP );	/* current keyboard macro mode	*/
 #if OPT_EVAL
-decl_uninit( int seed );		/* random number seed		*/
+decl_init( int seed, 123 );		/* random number seed		*/
 #endif
 
 #if OPT_RAMSIZE

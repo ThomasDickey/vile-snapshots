@@ -42,11 +42,14 @@ empty attribute string implies "Keyword".  If the second string matches
 a keyword class (or in fact, any other keyword), the highlighting attributes
 of that keyword are used.
 
-The keyword file reader supports a limited include facility.  If a line
-begins with "::", it reads from the given keyword file.  A few filters
-(such as html) require multiple symbol tables; these include using ":+".
-In either case, the parameter of the include is the root name of the
-keyword file, e.g., "c" for "c.key".
+The keyword file reader supports a limited include facility.  If a line begins
+with ".include", it reads from the given keyword file.  A few filters (such as
+html) require multiple symbol tables; these include using ".merge".  In either
+case, the parameter of the include is the root name of the keyword file, e.g.,
+"c" for "c.key".
+
+You can change the characters assigned to ':' and '.' using ".equals" and
+".meta" directives, respectively.
 
 You can modify the behavior slightly, by giving an absolute pathname with
 the -k option, but otherwise they search for both "vile" and the specific
@@ -80,15 +83,12 @@ The following are implemented:
 	vile-vile-filt	(Vile's macros)
 	vile-yacc-filt	(yacc)
 
-BUGS (1998/12/29)
+BUGS (1999/3/8)
 ----
 
 Not all filters use a keywords file (yet).
 
-No check is made to exclude identifiers with leading capitals from the
-highlighting.
-
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.2 1998/12/29 15:34:20 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.3 1999/03/09 01:16:38 tom Exp $

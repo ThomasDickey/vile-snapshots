@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.175 1999/02/06 12:45:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.177 1999/03/07 21:25:10 tom Exp $
  *
  */
 
@@ -1126,6 +1126,84 @@ TBUFF **tok)	/* buffer to place argument */
 	return TRUE;
 }
 
+static int
+setup_macro_buffer(TBUFF *name, int flag)
+{
+#if OPT_ONLINEHELP
+	static TBUFF *helpstring;	/* optional help string */
+#endif
+#if OPT_MAJORMODE
+	VALARGS args;
+#endif
+	char bname[NBUFN];		/* name of buffer to use */
+	BUFFER *bp;
+	int status;
+
+	/* construct the macro buffer name */
+	if (flag < 0)
+	    (void)add_brackets(bname, tb_values(name));
+	else
+	    (void)lsprintf(bname, MACRO_N_BufName, flag);
+
+	/* set up the new macro buffer */
+	if ((bp = bfind(bname, BFINVS)) == NULL) {
+		mlforce("[Cannot create procedure]");
+		return FALSE;
+	}
+
+	/* and make sure it is empty */
+	if (!bclear(bp))
+		return FALSE;
+
+	set_rdonly(bp, bp->b_fname, MDVIEW);
+
+	/* save this into the list of : names */
+#if OPT_NAMEBST
+	if (flag < 0) {
+	    CMDFUNC *cf = typealloc(CMDFUNC);
+
+	    if (!cf)
+		return no_memory("registering procedure name");
+
+#if OPT_ONLINEHELP
+	    /* get optional help string */
+	    if (!token_ended_line)
+	    {
+		tb_scopy(&helpstring, "");
+		if ((status = kbd_reply("help info: ", &helpstring,
+		    eol_history, '\n', KBD_NORMAL, no_completion)) != TRUE)
+			return status;
+	    }
+	    else
+		tb_scopy(&helpstring, "User-defined procedure");
+#endif
+#if CC_CANNOT_INIT_UNIONS
+	    cf->c_union = (void *)bp;
+#else
+	    cf->cu.c_buff = bp;
+#endif
+	    cf->c_flags = UNDO|REDO|CMD_PROC|VIEWOK;
+#if OPT_ONLINEHELP
+	    cf->c_help = strmalloc(tb_values(helpstring));
+#endif
+
+	    if (insert_namebst(tb_values(name), cf, FALSE) != TRUE)
+		return FALSE;
+	}
+#endif /* OPT_NAMEBST */
+
+#if OPT_MAJORMODE
+	if ((status = find_mode(bp, "vilemode", FALSE, &args)) == TRUE) {
+	    (void)set_mode_value(bp, "vilemode", TRUE, FALSE, &args, (char*)0);
+	}
+#endif
+
+	/* and set the macro store pointers to it */
+	mstore = TRUE;
+	bstore = bp;
+	return TRUE;
+}
+
 /*	storemac:	Set up a macro buffer and flag to store all executed
 			command lines there. 'n' is the macro number to use
  */
@@ -1133,9 +1211,6 @@ TBUFF **tok)	/* buffer to place argument */
 int
 storemac(int f, int n)
 {
-	register struct BUFFER *bp;	/* pointer to macro buffer */
-	char bname[NBUFN];		/* name of buffer to use */
-
 	/* can't store macros interactively */
 	if (!clexec)
 	{
@@ -1150,30 +1225,12 @@ storemac(int f, int n)
 	}
 
 	/* range check the macro number */
-	if (n < 1 || n > 40) {
+	if (n < 1 || n > OPT_EXEC_MACROS) {
 		mlforce("[Macro number out of range]");
 		return FALSE;
 	}
 
-	/* construct the macro buffer name */
-	(void)lsprintf(bname, MACRO_N_BufName, n);
-
-	/* set up the new macro buffer */
-	if ((bp = bfind(bname, BFINVS)) == NULL) {
-		mlforce("[Cannot create macro]");
-		return FALSE;
-	}
-
-	/* and make sure it is empty */
-	if (!bclear(bp))
-		return FALSE;
-
-	set_rdonly(bp, bp->b_fname, MDVIEW);
-
-	/* and set the macro store pointers to it */
-	mstore = TRUE;
-	bstore = bp;
-	return TRUE;
+	return setup_macro_buffer((TBUFF *)0, n);
 }
 
 #if	OPT_PROCEDURES
@@ -1186,12 +1243,7 @@ int
 storeproc(int f, int n)
 {
 	static TBUFF *name;		/* procedure name */
-#if OPT_ONLINEHELP
-	static TBUFF *helpstring;	/* optional help string */
-#endif
-	register struct BUFFER *bp;	/* pointer to macro buffer */
 	register int status;		/* return status */
-	char bname[NBUFN];		/* name of buffer to use */
 
 	/* a numeric argument means its a numbered macro */
 	if (f == TRUE)
@@ -1210,61 +1262,8 @@ storeproc(int f, int n)
 	    eol_history, ' ', KBD_NORMAL, no_completion)) != TRUE)
 		return status;
 
-#if OPT_ONLINEHELP
-	/* get optional help string */
-	if (!token_ended_line)
-	{
-	    tb_scopy(&helpstring, "");
-	    if ((status = kbd_reply("help info: ", &helpstring,
-		eol_history, '\n', KBD_NORMAL, no_completion)) != TRUE)
-		    return status;
-	}
-	else
-	    tb_scopy(&helpstring, "User-defined procedure");
-#endif
-
 	/* construct the macro buffer name */
-	add_brackets(bname, tb_values(name));
-
-	/* set up the new macro buffer */
-	if ((bp = bfind(bname, BFINVS)) == NULL) {
-		mlforce("[Cannot create procedure]");
-		return FALSE;
-	}
-
-	/* and make sure it is empty */
-	if (!bclear(bp))
-		return FALSE;
-
-	set_rdonly(bp, bp->b_fname, MDVIEW);
-
-	/* save this into the list of : names */
-#if OPT_NAMEBST
-	{
-	    CMDFUNC *cf = typealloc(CMDFUNC);
-
-	    if (!cf)
-		return no_memory("registering procedure name");
-
-#if CC_CANNOT_INIT_UNIONS
-	    cf->c_union = (void *)bp;
-#else
-	    cf->cu.c_buff = bp;
-#endif
-	    cf->c_flags = UNDO|REDO|CMD_PROC|VIEWOK;
-#if OPT_ONLINEHELP
-	    cf->c_help = strmalloc(tb_values(helpstring));
-#endif
-
-	    if (insert_namebst(tb_values(name), cf, FALSE) != TRUE)
-		return FALSE;
-	}
-#endif /* OPT_NAMEBST */
-
-	/* and set the macro store pointers to it */
-	mstore = TRUE;
-	bstore = bp;
-	return TRUE;
+	return setup_macro_buffer(name, -1);
 }
 
 /*	execproc:	Execute a procedure				*/
@@ -1304,7 +1303,7 @@ run_procedure(const char *name)
 		return FALSE;
 
 	/* construct the buffer name */
-	add_brackets(bufn, name);
+	(void)add_brackets(bufn, name);
 
 	/* find the pointer to that buffer */
 	if ((bp = find_b_name(bufn)) == NULL) {

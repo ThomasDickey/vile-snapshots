@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.134 1998/12/14 02:25:01 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.135 1999/03/08 11:13:51 tom Exp $
  *
  */
 
@@ -613,7 +613,7 @@ ffputline(const char *buf, int nbuf, const char *ending)
 
 	while (*ending != EOS) {
 		if (*ending != '\r' || i == 0 || buf[i-1] != '\r')
-			fputc(*ending, ffp);
+			ffputc(*ending);
 		ending++;
 	}
 
@@ -636,7 +636,7 @@ ffputc(int c)
 
 #if	OPT_ENCRYPT
 	if (cryptflag)
-		ue_crypt(&d, 1);
+		d = vl_encrypt_char(d);
 #endif
 	fputc(d, ffp);
 
@@ -693,7 +693,13 @@ i don't think this code is safe... */
 #else
 		c = fgetc(ffp);
 #endif
-		if ((c == '\n') || feof(ffp) || ferror(ffp))
+		if (feof(ffp) || ferror(ffp))
+			break;
+#if	OPT_ENCRYPT
+		if (cryptflag)
+			c = vl_encrypt_char(c);
+#endif
+		if (c == '\n')
 			break;
 		if (interrupted()) {
 			free_fline();
@@ -734,11 +740,6 @@ i don't think this code is safe... */
 			return(FIOEOF);
         }
 
-#if	OPT_ENCRYPT
-	/* decrypt the line */
-	if (cryptflag)
-		ue_crypt(fline, i);
-#endif
 	count_fline++;
         return (eofflag ? FIOFUN : FIOSUC);
 }

@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.111 1998/10/06 00:11:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.112 1999/03/09 10:57:03 tom Exp $
  *
  */
 
@@ -77,7 +77,7 @@ wrap_at_col(int c)
 		return TRUE;
 
 	if (b_val(curbp, MDWRAP)
-	 && (n = b_val(curbp, VAL_FILL)) > 0)
+	 && (n = getfillcol(curbp)) > 0)
 	 	return (getccol(FALSE) > n);
 
 	return FALSE;

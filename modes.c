@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.134 1999/02/11 11:27:55 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.138 1999/03/09 11:09:03 tom Exp $
  *
  */
 
@@ -32,7 +32,7 @@
 #define OPT_BACKUP_CHOICES	OPT_FILEBACK
 #define OPT_HILITE_CHOICES	OPT_HILITEMATCH
 #define OPT_RECORDFORMAT_CHOICES SYS_VMS
-#define OPT_VTFLASHSEQ_CHOICES OPT_FLASH
+#define OPT_VTFLASHSEQ_CHOICES (VTFLASH_HOST && (OPT_FLASH))
 
 #include "nefsms.h"
 
@@ -485,18 +485,30 @@ settab(int f, int n)
 int
 setfillcol(int f, int n)
 {
-	if (f && n >= 1) {
+	if (f) {
 		make_local_b_val(curbp,VAL_FILL);
 		set_b_val(curbp,VAL_FILL,n);
-	} else if (f) {
-		mlwarn("[Illegal fill-column value]");
-		return FALSE;
 	}
 	if (!global_b_val(MDTERSE) || !f)
 		mlwrite("[Fill column is %d, and is %s]",
-			b_val(curbp,VAL_FILL),
+			getfillcol(curbp),
 			is_local_b_val(curbp,VAL_FILL) ? "local" : "global" );
 	return(TRUE);
+}
+
+/*
+ * Returns the effective fill-column
+ */
+int
+getfillcol(BUFFER *bp)
+{
+	int result = b_val(bp,VAL_FILL);
+	if (result == 0) {
+		result = term.t_ncol - b_val(bp,VAL_WRAPMARGIN);
+	} else if (result < 0) {
+		result = term.t_ncol + result;
+	}
+	return (result);
 }
 
 /*
@@ -917,14 +929,14 @@ VALARGS *args)			/* symbol-table entry for the mode */
 	else
 		hst_glue(' ');
 #endif
-	status = set_mode_value(cp, setting, global, args, rp);
+	status = set_mode_value(curbp, cp, setting, global, args, rp);
 	TRACE(("...adjvalueset(%s)=%d\n", cp, status))
 
 	return status;
 }
 
 int
-set_mode_value(const char *cp, int setting, int global, VALARGS *args, const char *rp)
+set_mode_value(BUFFER *bp, const char *cp, int setting, int global, VALARGS *args, const char *rp)
 {
 	const struct VALNAMES *names = args->names;
 	struct VAL     *values = args->local;
@@ -939,8 +951,7 @@ set_mode_value(const char *cp, int setting, int global, VALARGS *args, const cha
 
 	if (rp == NULL) {
 		rp = no ? cp+2 : cp;
-	}
-	else {
+	} else {
 		if (no && !is_bool_type(names->type))
 			return FALSE;		/* this shouldn't happen */
 
@@ -980,7 +991,7 @@ set_mode_value(const char *cp, int setting, int global, VALARGS *args, const cha
 			if (values == globls)
 				changed = enable_mmode(names->shortname, FALSE);
 			else
-				changed = detach_mmode(curbp, names->shortname);
+				changed = detach_mmode(bp, names->shortname);
 			break;
 		}
 #endif
@@ -996,8 +1007,8 @@ set_mode_value(const char *cp, int setting, int global, VALARGS *args, const cha
 				changed = enable_mmode(names->shortname, values->vp->i);
 			} else {
 				changed = no
-					? detach_mmode(curbp, names->shortname)
-					: attach_mmode(curbp, names->shortname);
+					? detach_mmode(bp, names->shortname)
+					: attach_mmode(bp, names->shortname);
 			}
 			break;
 #endif
@@ -1121,7 +1132,7 @@ lookup_valnames(const char *rp, const struct VALNAMES *table)
 }
 
 int
-find_mode(const char *mode, int global, VALARGS *args)
+find_mode(BUFFER *bp, const char *mode, int global, VALARGS *args)
 {
 	register const char *rp = !strncmp(mode, "no", 2) ? mode+2 : mode;
 	register int	mode_class;
@@ -1144,8 +1155,8 @@ find_mode(const char *mode, int global, VALARGS *args)
 			args->global = global_b_values.bv;
 			args->local  = (global == TRUE)
 				? args->global
-				: ((curbp != 0)
-					? curbp->b_values.bv
+				: ((bp != 0)
+					? bp->b_values.bv
 					: (struct VAL *)0);
 			break;
 		case 2:	/* window modes */
@@ -1163,7 +1174,7 @@ find_mode(const char *mode, int global, VALARGS *args)
 			args->global = major_g_vals;
 			args->local  = (global == TRUE)
 				? args->global
-				: ((curbp != 0)
+				: ((bp != 0)
 					? major_l_vals
 					: (struct VAL *)0);
 			break;
@@ -1199,8 +1210,8 @@ find_mode(const char *mode, int global, VALARGS *args)
 				TRACE(("...found class %d %s\n", mode_class, rp))
 #if OPT_MAJORMODE
 				if (mode_class == 3) {
-					char *it = (curbp->majr != 0)
-						? curbp->majr->name
+					char *it = (bp->majr != 0)
+						? bp->majr->name
 						: "?";
 					make_global_val(args->local,args->global,0);
 					if (global) {
@@ -1238,16 +1249,16 @@ find_mode(const char *mode, int global, VALARGS *args)
 			 && is_local_val(my_vals,k)) {
 				TRACE(("...found submode %s\n", b_valnames[k].name))
 				if (global == FALSE) {
-					if (curbp != 0
-					 && (curbp->majr == 0
-					  || strcmp(curbp->majr->name, p->name))) {
+					if (bp != 0
+					 && (bp->majr == 0
+					  || strcmp(bp->majr->name, p->name))) {
 						TRACE(("...not applicable\n"))
 						return FALSE;
 					}
 					args->names  = b_valnames + k;
 					args->global = my_vals + k;
-					args->local  = ((curbp != 0)
-							? curbp->b_values.bv + k
+					args->local  = ((bp != 0)
+							? bp->b_values.bv + k
 							: (struct VAL *)0);
 				} else {
 					args->names  = b_valnames + k;
@@ -1287,9 +1298,9 @@ do_a_mode(int kind, int global)
 		return listmodes(FALSE,1);
 	}
 
-	if ((s = find_mode(tb_values(cbuf), global, &args)) != TRUE) {
+	if ((s = find_mode(curbp, tb_values(cbuf), global, &args)) != TRUE) {
 #if OPT_EVAL
-		if (!global && (s = find_mode(tb_values(cbuf), TRUE, &args)) == TRUE) {
+		if (!global && (s = find_mode(curbp, tb_values(cbuf), TRUE, &args)) == TRUE) {
 			mlforce("[Not a local mode: \"%s\"]", tb_values(cbuf));
 			return FALSE;
 		}

@@ -1,4 +1,4 @@
-$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.23 1998/10/25 01:04:04 tom Exp $
+$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.24 1999/03/08 11:25:31 tom Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
 $! Tested with:
@@ -21,7 +21,6 @@ $ write optf "basic.obj"
 $ write optf "bind.obj"
 $ write optf "btree.obj"
 $ write optf "buffer.obj"
-$ write optf "crypt.obj"
 $ write optf "csrch.obj"
 $ write optf "display.obj"
 $ write optf "dumbterm.obj"
@@ -58,6 +57,7 @@ $ write optf "spawn.obj"
 $ write optf "tags.obj"
 $ write optf "tbuff.obj"
 $ write optf "termio.obj"
+$ write optf "ucrypt.obj"
 $ write optf "undo.obj"
 $ write optf "version.obj"
 $ write optf "vms2unix.obj"
@@ -187,7 +187,6 @@ $	call make basic
 $	call make bind
 $	call make btree
 $	call make buffer
-$	call make crypt
 $	call make csrch
 $	call make display
 $	call make dumbterm
@@ -224,6 +223,7 @@ $	call make spawn
 $	call make tags
 $	call make tbuff
 $	call make termio
+$	call make ucrypt
 $	call make undo
 $	call make version
 $	call make vms2unix
