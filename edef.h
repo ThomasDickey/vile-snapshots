@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.223 1998/04/30 22:19:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.224 1998/05/12 22:42:15 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -152,7 +152,6 @@ decl_uninit( int revexist );		/* does reverse video exist?	*/
 decl_uninit( int flickcode );		/* do flicker suppression?	*/
 #endif
 decl_uninit( int curtabval );		/* current tab width		*/
-decl_uninit( int curswval );		/* current shiftwidth		*/
 
 #ifdef realdef
 	MARK	nullmark = { NULL, 0 };

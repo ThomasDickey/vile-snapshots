@@ -5,7 +5,7 @@
  * commands. Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.88 1998/05/06 00:30:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.89 1998/05/12 22:40:49 tom Exp $
  *
  */
 
@@ -218,7 +218,7 @@ shift_right_line(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 					char_at(DOT) == '#')) {
 		return TRUE;
 	}
-	s = curswval;
+	s = shiftwid_val(curbp);
 	t = curtabval;
 	DOT.o = w_left_margin(curwp);
 	if (s) {  /* try to just insert tabs if possible */
@@ -264,7 +264,7 @@ shift_left_line(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 	if (llength(linep) == 0)
 		return TRUE;
 
-	s = curswval;
+	s = shiftwid_val(curbp);
 
 	detabline((void *)TRUE, 0, 0);
 

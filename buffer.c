@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.170 1998/04/28 10:15:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.171 1998/05/12 22:44:20 tom Exp $
  *
  */
 
@@ -713,7 +713,6 @@ make_current(BUFFER *nbp)
 	}
 #endif
 	curtabval = tabstop_val(curbp);
-	curswval = shiftwid_val(curbp);
 
 #if OPT_TITLE
 	{

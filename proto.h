@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.279 1998/05/11 09:54:27 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.280 1998/05/12 23:30:52 kev Exp $
  *
  */
 
@@ -68,6 +68,7 @@ extern int getgoal (LINE *dlp);
 extern int gonmmark (int c);
 extern int lastchar (LINE *lp);
 extern int next_column (int c, int col);
+extern int next_sw(int col);
 extern int nextchar (LINE *lp, int off);
 extern int setmark (void);
 extern void swapmark (void);

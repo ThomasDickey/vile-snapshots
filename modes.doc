@@ -167,13 +167,13 @@ solely by the define-submode command:
 		a majormode (e.g., "^!#.*\/perl[^a-z]").
 
 	fences
-		The keyword "cstyle", or any of the following keywords
-		with a regular expression: if, then, else, elif,
-		endif.
+		"fence-" followed by any of the following keywords with a
+		regular expression:  if, elif, else, fi,
 
 	comments
-		The keyword "cstyle", or any of the following keywords
-		with a regular expression: begin, end.
+		To support C-style comments, with the '%' going between
+		"/* and "*/", use "fence-" followed any of the following
+		keywords with a regular expression:  begin, end.
 
 	indent
 		The keyword "cstyle", or any of the following keywords
@@ -207,6 +207,27 @@ The "remove-submode" command"
 
 Remove the special association of a submode from a majormode.
 
+Example
+-------
+
+The builtin C/C++ majormode description is equivalent to
+
+define-mode c
+set csuf "\\.\\(\\([Cchisyl]\\)\\|CC\\|cc|cpp\\|cxx\\|hxx\\|scm\\)$"
+set c-comment-prefix="^\\s*\\(\\s*[#*>]\\)\\+"
+set c-comments="^\\s*/\\?\\(\\s*[#*>]\\)\\+/\\?\\s*$"
+set c-fence-begin="/\\*"
+set c-fence-end="\\*/"
+set c-fence-if="^\\s*#\\s*if"
+set c-fence-elif="^\\s*#\\s*elif\\>"
+set c-fence-else="^\\s*#\\s*else\\>"
+set c-fence-fi="^\\s*#\\s*endif\\>"
+
+Note that the following are equivalent once you have defined the majormode "c":
+	set cts=8
+	set c-tabstop=8
+	define-submode c tabstop=8
+
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/modes.doc,v 1.2 1997/09/04 01:14:27 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/modes.doc,v 1.3 1998/05/13 10:20:30 tom Exp $
 -------------------------------
