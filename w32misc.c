@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.19 1999/12/24 13:02:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.20 2000/01/11 18:56:34 tom Exp $
  */
 
 #include <windows.h>
@@ -279,7 +279,7 @@ mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
 
 
 /*
- * vile's homegrown WIN32 system command. Refer to the w32_system() 
+ * vile's homegrown WIN32 system command. Refer to the w32_system()
  * DESCRIPTION below for the rationale behind this function.
  */
 
@@ -313,10 +313,6 @@ internal_system(char *cmd, int no_shell)
                       &pi))
     {
         /* Success */
-
-        DWORD        dummy;
-        INPUT_RECORD ir;
-
         if (! no_shell)
         {
             /* wait for shell process to exit */
@@ -348,8 +344,8 @@ internal_system(char *cmd, int no_shell)
  *   the user's command string is properly quoted if get_shell() points to a
  *   bourne shell clone.  We use our version of system() rather than the
  *   vendor's so that vile's users may redefine their shell via the editor's
- *   $shell state variable.  If we didn't add this additional layer of 
- *   indirection, users would be at the mercy of whatever env var the C 
+ *   $shell state variable.  If we didn't add this additional layer of
+ *   indirection, users would be at the mercy of whatever env var the C
  *   compiler's runtime library chose to reference from within system()--in
  *   the case of the MS CRT, that would be $COMSPEC.
  *
@@ -369,12 +365,12 @@ w32_system(const char *cmd)
     int  no_shell, freestr, rc;
 
     TRACE(("w32_system(%s)\n", cmd));
-    
+
     no_shell = W32_SKIP_SHELL(cmd);
     if (no_shell)
     {
-        /* 
-         * Must strip off "start " prefix from command because this 
+        /*
+         * Must strip off "start " prefix from command because this
          * idiom is supported by Win95, but not by WinNT.
          */
 
@@ -453,8 +449,8 @@ w32_system_winvile(const char *cmd, int *pressret)
     no_shell = W32_SKIP_SHELL(cmd);
     if (no_shell)
     {
-        /* 
-         * Must strip off "start " prefix from command because this 
+        /*
+         * Must strip off "start " prefix from command because this
          * idiom is supported by Win95, but not by WinNT.
          */
 
@@ -850,7 +846,7 @@ w32_wdw_title(void)
 #else
         nchars = GetConsoleTitle(buf, bufsize);
 #endif
-        if (nchars >= bufsize - 1)
+        if (nchars >= ((int) bufsize - 1))
         {
             /* Enlarge buffer and try again. */
 

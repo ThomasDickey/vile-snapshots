@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.190 1999/12/24 01:11:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.193 2000/01/12 02:55:46 tom Exp $
  *
  */
 
@@ -1533,6 +1533,11 @@ static void
 set_fsm_choice(const char *name, const FSM_CHOICES *choices)
 {
 	size_t n;
+#if OPT_TRACE
+	Trace("set_fsm_choices %s\n", name);
+	for (n = 0; choices[n].choice_name != 0; n++)
+		Trace("   [%d] %s = %d\n", n, choices[n].choice_name, choices[n].choice_code);
+#endif
 	for (n = 0; n < TABLESIZE(fsm_tbl); n++) {
 		if (!strcmp(name, fsm_tbl[n].mode_name)) {
 			fsm_tbl[n].choices = choices;
@@ -1543,10 +1548,23 @@ set_fsm_choice(const char *name, const FSM_CHOICES *choices)
 #endif	/* OPT_EVAL */
 
 static int
+is_white(int n)
+{
+	if (ncolors <= 8)
+		return ((n & 7) == 7);
+	return (n == NCOLORS-1);
+}
+
+static int
 reset_color(int n)
 {
 	if (global_g_val(n) > ncolors) {
+		if (is_white(global_g_val(n)))
+			return FALSE;
+		TRACE(("reset_color(%scolor) from %d",
+			(n == GVAL_FCOLOR) ? "f" : "b", global_g_val(n)));
 		set_global_g_val(n, global_g_val(n) % ncolors);
+		TRACE((" to %d\n", global_g_val(n)));
 		return TRUE;
 	}
 	return FALSE;
@@ -1557,10 +1575,25 @@ static FSM_CHOICES *my_colors;
 static FSM_CHOICES *my_hilite;
 #endif
 
+static int
+choosable_color(const char *name, int n)
+{
+	if (ncolors > 2 && n < NCOLORS) {
+		if (ncolors <= 8	/* filter out misleading names */
+		 && (!strncmp(name, "bright", 6)
+		  || !strncmp(name, "light", 5)
+		  || !strcmp(name, "gray")
+		  || !strcmp(name, "brown")))
+			return FALSE;
+		return TRUE;
+	}
+	return (n == C_BLACK) || (n == NCOLORS-1);
+}
+
 /*
  * Set the number of colors to a subset of that which is configured.  The main
  * use for this is to switch between 16-colors and 8-colors, though it should
- * work for setting any power of 2 up to the NCOLORS value.
+ * work for setting any value up to the NCOLORS value.
  */
 int set_colors(int n)
 {
@@ -1568,7 +1601,10 @@ int set_colors(int n)
 #if OPT_ENUM_MODES
 	const FSM_CHOICES *the_colors, *the_hilite;
 	size_t s, d;
+	int code;
 #endif
+
+	TRACE(("set_colors(%d)\n", n));
 
 	if (n > NCOLORS || n < 2)
 		return FALSE;
@@ -1579,7 +1615,9 @@ int set_colors(int n)
 	ncolors = n;
 	if (reset_color(GVAL_FCOLOR)
 	 || reset_color(GVAL_BCOLOR)) {
+		set_winflags(TRUE, WFHARD|WFCOLR);
 		vile_refresh(FALSE,0);
+		relist_settings();
 	}
 
 #if OPT_ENUM_MODES
@@ -1593,27 +1631,24 @@ int set_colors(int n)
 		the_hilite = my_hilite;
 		for (s = d = 0; fsm_color_choices[s].choice_name != 0; s++) {
 			my_colors[d] = fsm_color_choices[s];
-			if (my_colors[d].choice_code > 0) {
-				if (!(my_colors[d].choice_code %= ncolors))
-					continue;
-			}
-			if (strncmp(my_colors[d].choice_name, "bright", 6))
+			if (choosable_color(my_colors[d].choice_name, my_colors[d].choice_code)) {
+				if (ncolors <= 8)
+					my_colors[d].choice_code %= 8;
 				d++;
+			}
 		}
 		my_colors[d].choice_name = 0;
 
 		for (s = d = 0; fsm_hilite_choices[s].choice_name != 0; s++) {
 			my_hilite[d] = fsm_hilite_choices[s];
-			if (my_hilite[d].choice_code & VASPCOL) {
-				unsigned code = my_hilite[d].choice_code % NCOLORS;
-				if (code != 0) {
-					if ((code %= ncolors) == 0)
-						continue;
-					my_hilite[d].choice_code = VASPCOL | code;
-				}
-				if (strncmp(my_hilite[d].choice_name, "bright", 6))
+			code = my_hilite[d].choice_code;
+			if (code >=0 && (code & VASPCOL) != 0) {
+				if (ncolors > 2
+				 && choosable_color(my_hilite[d].choice_name, code & ~VASPCOL)) {
+					my_hilite[d].choice_code = (VASPCOL | code);
 					d++;
-			} else {
+				}
+			} else if (ncolors > 2 || (code & VACOLOR) == 0) {
 				d++;
 			}
 		}
@@ -1624,12 +1659,31 @@ int set_colors(int n)
 	set_fsm_choice(s_ccolor, the_colors);
 	set_fsm_choice("visual-matches", the_hilite);
 	set_fsm_choice("mini-hilite", the_hilite);
+	relist_descolor();
 #endif /* OPT_ENUM_MODES */
 	return TRUE;
 }
 #endif	/* OPT_COLOR */
 
 #if OPT_SHOW_COLORS
+int is_color_code(int n)
+{
+#if OPT_COLOR_CHOICES
+	int j;
+	struct VALNAMES names;
+	const FSM_CHOICES *the_colors;
+	names.name = s_fcolor;
+	the_colors = valname_to_choices(&names);
+	for (j = 0; the_colors[j].choice_name != 0; j++) {
+		if (n == the_colors[j].choice_code)
+			return TRUE;
+	}
+	return FALSE;
+#else
+	return (c >= C_BLACK && n < ncolors);
+#endif
+}
+
 const char *get_color_name(int n)
 {
 	static char temp[80];

@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.20 1999/12/26 22:18:26 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.21 2000/01/12 22:03:34 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -268,7 +268,7 @@ vile-py-filt$x : py-filt$o $(LF_DEPS)
 vile-rcs-filt$x : rcs-filt$o $(LF_DEPS)
 	$(link) -out:$@ $(CON_LDFLAGS) rcs-filt$o $(LF_ARGS)
 
-vile-rexxfilt$x : rexxfilt$o $(LF_DEPS)
+vile-rexx-filt$x : rexxfilt$o $(LF_DEPS)
 	$(link) -out:$@ $(CON_LDFLAGS) rexxfilt$o $(LF_ARGS)
 
 vile-sccs-filt$x : sccsfilt$o $(LF_DEPS)

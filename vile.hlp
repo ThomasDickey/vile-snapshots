@@ -4241,8 +4241,9 @@ Notes on TERM types and Scrolling
 		smul=\E[4m$<2>,
 	)
 
-Credits
--------
+
+Credits (last updated Jan, 2000)
+--------------------------------
 
 	Since version 6.1, Tom Dickey has been maintaining the "official"
 	source tree, and release responsibilities.  Paul Fox maintains the
@@ -4260,33 +4261,54 @@ Credits
 	a huge amount of work on the code on which vile is based.  vile
 	re-implements and extends many features inspired by his work.
 
-	Tom Dickey has contributed many code improvements and features, and
-	has stabilized vile on both VMS and DOS.  Kevin Buettner has
-	contributed lots of changes for X11 Toolkit support, as well as the
-	bulk of the selection and video attribute mechanisms, and the bulk of
-	the :map command.  Rick Sladkey has done great stuff making vile
-	work correctly in Win32 environments, something I might not have done
-	for a long time.  Some of the "ex" code is by Steve Kirkendall,
-	author of the vi work-alike "elvis".  The regular expression code and
-	documentation is by Henry Spencer.  The sample .vilerc was created by
-	Dave Lemke; he also contributed code for new features, including the
-	original native X support.  Eric Krohn has done some excellent testing
-	and enhancement.  The implementation of rectangles and their operations
+	Throughout the years, Tom Dickey has contributed many code
+	improvements and features, and has stabilized vile on both VMS and
+	DOS.  After taking over official maintenance duties, Tom coded
+	winvile, added major modes, added 16-color support, and implemented
+	the majority of the current syntax coloring infrastructure.  On an
+	ongoing basis, Tom continues to fix bugs and provide the drive and
+	energy that pushes out one release of the editor after another--no
+	small feat for a product that's supported on multiple hosts.
+
+	Kevin Buettner has contributed lots of changes for X11 Toolkit
+	support, as well as the bulk of the selection and video attribute
+	mechanisms, and the bulk of the :map command.  Kevin also added
+	autocoloring and a Perl interface to the editor.  Rick Sladkey has
+	done great stuff making vile work correctly in Win32 environments,
+	something I might not have done for a long time.  Some of the "ex"
+	code is by Steve Kirkendall, author of the vi work-alike "elvis".
+	The regular expression code and documentation is by Henry Spencer.
+	Dave Lemke contributed code for new features, including the original
+	native X11 support.  Eric Krohn has done some excellent testing and
+	enhancement.  The implementation of rectangles and their operations
 	was inspired by code from the 'notgnu' editor, by Julie Melbin.
 	Patches to support OS/2 came from Charles Moschel and for Windows/NT
-	from Joe Greer and Clark Morgan.  Clark Morgan and Greg McFarlane seem
-	to run full regression tests on each new release, and always seem to
-	find something to report.  Sean Ahern is also always dependable for
-	finding a bug or two per release.  The reference.doc file supplied with
-	Bram Moolenaar's excellent Vim editor was useful in unraveling some of
-	the less obvious parts of :map functionality.  In addition, his
-	implementation of digraph insertion was used directly in the creation
-	of digraphs.rc.  Thanks to Jukka Keto for contributing the c-filt.c
-	code.
+	from Joe Greer and Clark Morgan.  Ed Henderson gave us wvwrap, as
+	well as several other useful patches.  Chris Coppick created
+	Vileserv.  Alex Wetmore contributed stored procedures and vile's
+	initial btree interface (later rewritten by Tom).  Brendan O'Dea
+	closely monitors the Perl API, as well as contributing Perl updates.
+	Brendan also added the machinery for binding vile commands to Perl
+	subroutines.  Better still, he also found a way to bind operators
+	and motions to same.  Kuntal Daftary added several Perl modules.
+	Clark Morgan and Greg McFarlane seem to run full regression tests on
+	each new release, and always seem to find something to report.  In
+	addition, Clark regularly updates and corrects the documention left
+	as an afterthought by the rest of us.  Sean Ahern is also always
+	dependable for finding a bug or two per release.  The reference.doc
+	file supplied with Bram Moolenaar's excellent Vim editor was useful
+	in unraveling some of the less obvious parts of :map functionality.
+	In addition, his implementation of digraph insertion was used
+	directly in the creation of digraphs.rc.  Thanks to Jukka Keto for
+	contributing the c-filt.c code, which served as the precursor for
+	vile's current syntax coloring implementation.
 
 	The initial changes to create vile from micro-Emacs were all done
 	by Paul Fox (pgf@foxharp.boston.ma.us).  (By the way, he is not the
 	Paul D. Fox that wrote the Crisp editor.)
+
+            -- Paul Fox
+
 
 Where to Get It
 ---------------
@@ -4315,4 +4337,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.463 2000/01/09 23:43:20 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.464 2000/01/13 02:44:16 cmorgan Exp $

@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.61 1999/12/27 01:43:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.62 2000/01/12 12:29:56 cmorgan Exp $
  *
  */
 
@@ -63,7 +63,7 @@ static void RemoveList(KEYWORD * k);
 static KEYWORD **hashtable;
 static CLASS *classes;
 static char *Default_attr;
-static int verbose;
+static int verbose, quit;
 static int k_used;
 
 /******************************************************************************
@@ -363,6 +363,12 @@ ProcessArgs(int argc, char *argv[], int flag)
 		case 'v':
 		    if (!flag)
 			verbose++;
+		    break;
+		case 'q':
+		    quit = 1;	/* 
+				 * quit before filter parses data.  useful
+				 * in conjunction with -v or -vv.
+				 */
 		    break;
 		default:
 		    fprintf(stderr, "unknown option %c\n", *s);
@@ -768,9 +774,32 @@ main(int argc, char **argv)
 	}
     }
     set_symbol_table(filter_name);
+
     init_filter(0);
 
-    if (n < argc) {
+    if (quit) {
+	/* 
+	 * When the filter is called, we want to force it to print out its
+	 * class info and then immediately exit.  Easiest way to do this
+	 * is to connect the filter's input to /dev/null.
+	 *
+	 * To date, syntax filtering only works well/reliably on win32 or
+	 * Unix hosts.   Handle those hosts now.
+	 */
+
+	char *name;
+	FILE *fp;
+
+#if defined(_WIN32)
+	name = "NUL";
+#else
+	name = "/dev/null";
+#endif
+	if ((fp = fopen(name, "r")) != NULL) {
+	    do_filter(fp, stdout);
+	    fclose(fp);
+	}
+    } else if (n < argc) {
 	char *name = argv[n++];
 	FILE *fp = fopen(name, "r");
 	if (fp != 0) {

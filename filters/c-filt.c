@@ -6,112 +6,9 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.51 1999/12/29 16:12:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.52 2000/01/12 12:29:57 cmorgan Exp $
  *
- * Features:
- *	- Reads the keyword file ".vile.keywords" from the home directory.
- *	  Keyword file consists lines "keyword:attribute" where
- *	  keyword is any alphanumeric string [#a-zA-Z0-9_] followed
- *	  by colon ":" and attribute character; "I" for italic,
- *	  "U" for underline, "B" for bold, "R" for reverse or
- *	  "C#" for color (where # is a single hexadecimal digit representing
- *	  one of 16 colors).
- *	- Attributes the file read from stdin using vile attribute sequences
- *	  and outputs the file to stdout with keywords and comments
- *	  attributed.
- *	- Normal C-Comments are handled by the pseudo-keyword "Comments".
- *	- "String literals" are handled by the pseudo-keyword "Literals".
- *	- #if, #include, etc. are handled by the pseudo-keyword "Cpp".
- *	- Here is a macro one might use to invoke the colorizer:
- *	    30 store-macro
- *		~local $curcol $curline
- *		~hidden goto-beginning-of-file
- *		~hidden attribute-from-filter end-of-file "vile-c-filt"
- *	    ~endm
- *	    bind-key execute-macro-30 ^X-q
- *
- * example .vile.keywords files:
- * (first, for color use)
- *	Comments:C1
- *	Literal:C1
- *	Cpp:C2
- *	if:C3
- *	else:C3
- *	for:C3
- *	return:C3
- *	while:C3
- *	switch:C3
- *	case:C3
- *	do:C3
- *	goto:C3
- *	break:C3
- *
- * (for non-color use)
- *	Comments:U
- *	Literal:U
- *	Cpp:I
- *	if:B
- *	else:B
- *	for:B
- *	return:B
- *	while:B
- *	switch:B
- *	case:B
- *	do:B
- *	goto:B
- *	break:B
- *
- * Note:
- *	- I use this to get the coloring effects in XVile, or when
- *	  using a terminal emulator which supports color.  some, for
- *	  instance, allow the mapping of bold and italic attributes to
- *	  color.
- *
- * Win32 Notes:
- *    1) Keywords are read from either $HOME\vile.keywords or
- *       .\vile.keywords .
- *
- *    2) The console and GUI versions of vile both support full use of
- *       16 colors.  The default color mapping (palette) is as follows:
- *
- *       C0:black       C1:red            C2:green        C3:brown
- *       C4:blue        C5:magenta        C6:cyan         C7:lightgray
- *       C8:gray        C9:brightred      CA:brightgreen  CB:yellow
- *       CC:brightblue  CD:brightmagenta  CE:brightcyan   CF:white
- *
- *    3) Note also that the user may specify the editor's foreground and
- *       background colors (:se fcolor, :se bcolor) as well as a
- *       foreground color for search matches (:se visual-matches).
- *
- *    Pulling 1-3 together, here is an example vile.rc file that
- *    sets the foreground color to white, background color to (dark) blue,
- *    and visual matches color to bright red:
- *
- *    vile.rc
- *    =======
-      set bcolor=blue
-      set fcolor=white
-      set visual-matches=brightred
-
- *    And here is an example vile.keywords file that colors comments in
- *    yellow, C keywords in brightcyan, preprocesor directives in
- *    brightmagenta, and string constants in brightgreen.
- *
- *    vile.keywords
- *    =============
-      Comments:CB
-      Cpp:CD
-      Literal:CA
-      if:CE
-      else:CE
-      for:CE
-      return:CE
-      while:CE
-      switch:CE
-      case:CE
-      do:CE
-      goto:CE
-      break:CE
+ * Usage: refer to vile.hlp and doc/filters.doc .
  */
 
 #include <filters.h>
@@ -255,8 +152,8 @@ write_number(FILE * fp, char *s)
     char *base = s;
     char *attr = Number_attr;
     int radix = (*s == '0')
-		? ((s[1] == 'x' || s[1] == 'X') ? 16
-		: (!isdigit(s[1])) ? 10 : 8) : 10;
+    ? ((s[1] == 'x' || s[1] == 'X') ? 16
+	: (!isdigit(s[1])) ? 10 : 8) : 10;
     int state = 0;
     int done = 0;
     int found = isdigit(*s) && (radix != 16);
@@ -310,7 +207,7 @@ write_number(FILE * fp, char *s)
 		}
 		break;
 	    case 1:		/* after decimal point */
-		while (SkipDigit(radix,s)) {
+		while (SkipDigit(radix, s)) {
 		    s++;
 		    found++;
 		}
@@ -329,7 +226,7 @@ write_number(FILE * fp, char *s)
 	    case 2:		/* after exponent letter */
 		if (ch == '+' || ch == '-')
 		    s++;
-		while (SkipDigit(radix,s))
+		while (SkipDigit(radix, s))
 		    s++;
 		ch = UPPER(*s);
 		/* FALLTHRU */
@@ -374,14 +271,14 @@ write_number(FILE * fp, char *s)
 	    s++;
 	}
     }
-    if (!found || IsDigitX(*s) || dot > 1) { /* something is run-on to a number */
+    if (!found || IsDigitX(*s) || dot > 1) {	/* something is run-on to a number */
 	while (IsDigitX(*s))
 	    s++;
 	if (dot > 0
-	 && (s - base) == 3
-	 && !strncmp(base, "...", 3)) {
+	    && (s - base) == 3
+	    && !strncmp(base, "...", 3)) {
 	    attr = "";
-	} else { 
+	} else {
 	    attr = Error_attr;
 	}
     } else {
@@ -541,7 +438,7 @@ do_filter(FILE * input, FILE * output)
 	    } else if (isIdent(*s)) {
 		s = extract_identifier(output, s);
 	    } else if (isdigit(*s)
-			|| (*s == '.' && (isdigit(s[1]) || s[1] =='.'))) {
+		|| (*s == '.' && (isdigit(s[1]) || s[1] == '.'))) {
 		s = write_number(output, s);
 	    } else if (*s == '#') {
 		char *t = s;

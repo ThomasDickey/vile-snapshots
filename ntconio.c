@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.54 2000/01/07 01:55:47 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.55 2000/01/12 10:30:08 tom Exp $
  *
  */
 
@@ -403,7 +403,10 @@ static void
 ntopen(void)
 {
     TRACE(("ntopen\n"));
+
+    set_colors(NCOLORS);
     set_palette(initpalettestr);
+
     hOldConsoleOutput = 0;
     hConsoleOutput = GetStdHandle(STD_OUTPUT_HANDLE);
     GetConsoleScreenBufferInfo(hConsoleOutput, &csbi);
@@ -418,10 +421,13 @@ ntopen(void)
 	GetConsoleScreenBufferInfo(hConsoleOutput, &csbi);
     }
     originalAttribute = csbi.wAttributes;
+
     crow = csbi.dwCursorPosition.Y;
     ccol = csbi.dwCursorPosition.X;
+
     nfcolor = cfcolor = gfcolor;
     nbcolor = cbcolor = gbcolor;
+
     newscreensize(csbi.dwMaximumWindowSize.Y, csbi.dwMaximumWindowSize.X);
     hConsoleInput = GetStdHandle(STD_INPUT_HANDLE);
     SetConsoleCtrlHandler(nthandler, TRUE);

@@ -15,10 +15,11 @@ Note:  For the remainder of this document, a generic reference to "vile"
 
 Background
 ==========
-Command.com, the shell supplied with the original version of Windows 95,
-exhibits many, many problems when communicating with another application
-via an anonymous pipe.  Consequently, w32pipes and force-console were
-created to permit the user to avoid as many of those problems as possible.
+Command.com, the 16-bit shell supplied with the original version of Windows
+95, exhibits many, many problems when communicating with another
+application via an anonymous pipe.  Consequently, w32pipes and
+force-console were created to permit the user to avoid as many of those
+problems as possible.
 
 After the initial Windows 95 release, Microsoft eventually rolled out a
 bugfix called OSR2.  However, OSR2 is only available from OEM's (e.g.,
@@ -46,26 +47,32 @@ force-console
 =============
 If w32pipes is set, then winvile (only) consults force-console to decide
 whether or not to explicitly create a console prior to initiating a read
-pipe or filter region operation.
+pipe or filter region operation.  In general, force-console is required
+only when using a 16-bit shell (e.g., command.com) or when invoking 16-bit
+programs/filters.
 
 
 Trade-Offs
 ==========
-If using console vile and command.com (i.e., not using a replacement shell),
-w32pipes must _not_ be set.  This means that pipe operations will be effected
-with temporary files.  Unfortunately, write pipes simply don't work via
-temporary file communication.  Note that some replacement shells (e.g.,
-Thompson Toolkit) don't exhibit anonymous pipe bugs and w32pipes may
-safely be set in that case (assuming, of course, that the editor's $shell
-state variable specifies the path of the replacement shell).
+If using console vile and command.com (i.e., using the default win95/98
+shell), w32pipes must _not_ be set.  This means that pipe operations will
+be effected with temporary files.  Unfortunately, write pipes simply don't
+work via temporary file communication, which means that filter operations
+(including syntax coloring) will behave erratically.  Note that 32-bit
+replacement shells (e.g., Thompson Toolkit shell, bash, MKS shell, etc.)
+don't suffer from anonymous pipe bugs and w32pipes may safely be set
+(assuming, of course, that the editor's $shell state variable specifies the
+path of the replacement shell).
 
-If using winvile, w32pipes and force-console _must_ be set for all shells
-and versions of Win95/98 tested to date.  If w32pipes is not set, _all_ pipe
-operations will fail and if force-console is not set, the editor will hang.
-However, if w32pipes is set and command.com is used as the shell, the
-floppy will be accessed during each pipe operation.  Additionally,
-setting force-console causes each read pipe and filter region operation to
-briefly pop up and pop down a black, background console.  Got that :-) ?
+If using winvile, w32pipes _must_ be set for all shells and versions of
+Win95/98 tested to date.  When w32pipes is not set, _all_ pipe operations
+will fail.  Additionally, force-console mode must be set if using a 16-bit
+shell or invoking 16-bit apps.  If not set, the editor will hang and most
+likely lock up Win95/98 as well.  Note that when w32pipes is set and
+command.com is used as the shell, the floppy is accessed during each pipe
+operation.  Additionally, setting force-console causes each read pipe and
+filter region operation to briefly pop up and pop down a black, background
+console.  Sigh.
 
 
 Configuring Winvile and Vile via Vile.rc
@@ -73,6 +80,8 @@ Configuring Winvile and Vile via Vile.rc
 ~if &not &sequal "Windows_NT" &env "OS"
     ; Assume host is win95/98
     ~if &sequal $progname "winvile"
+        ; change next statement to "set noforce-console" when using 32-bit
+        ; shell and not invoking 16-bit apps
         set force-console
         set w32pipes
     ~elseif &equal 0 &sindex &lower $shell "command.com"
@@ -88,31 +97,49 @@ Configuring Winvile and Vile via Vile.rc
 
 Optimum Console Vile Settings
 =============================
-Entries in the table marked ?  have not been tested.  If your host
+Entries in the table marked  ?  have not been tested.  If your host
 environment matches an untested entry in the table and you have validated
 various mode settings, please send your results to the "vile-bugs" mailing
 list:  vile-bugs@foxharp.boston.ma.us .
 
-       shell         w32pipes  force-console  trade-offs
+host   shell         w32pipes  force-console  trade-offs/comments
 
-NT     any 32-bit      set        N/A         no problems
+NT     any 32-bit      set        N/A         no problems, [1]
 Win95  command.com     unset      N/A         no write pipes
-Win95  Thomp Toolkit   set        N/A         no problems
+Win95  any 32-bit      set        N/A         no problems, [2]
 OSR2      ?             ?         N/A             ?
 Win98  command.com     unset      N/A         no write pipes
+Win98  any 32-bit      set        N/A         no problems, [2]
+
+Note 1:  if not using cmd.exe (the default WinNT shell), see note 2.
+
+Note 2:  explicitly specify a path to the shell in vile.rc via the $shell
+         state variable (e.g., setv $shell 'c:\usr\binw\sh.exe').
 
 
 Optimum Winvile Settings
 ========================
-Entries in the table marked ?  have not been tested.  If your host
+Entries in the table marked  ?  have not been tested.  If your host
 environment matches an untested entry in the table and you have validated
 various mode settings, please send your results to the "vile-bugs" mailing
 list:  vile-bugs@foxharp.boston.ma.us .
 
-       shell         w32pipes  force-console  trade-offs
+host   shell         w32pipes  force-console  trade-offs/comments
 
-NT     any 32-bit      set        unset       no problems
+NT     any 32-bit      set        unset       no problems, [1]
 Win95  command.com     set        set         floppy grinds, transient console
-Win95  Thomp Toolkit   set        set         transient console
+Win95  any 32-bit      set        [2]         [3]
 OSR2      ?             ?          ?              ?
 Win98  command.com     set        set         floppy grinds, transient console
+Win98  any 32-bit      set        [2]         [3]
+
+Note 1:  if not using cmd.exe (the default WinNT shell), see note 3.
+
+Note 2:  If 16-bit apps will _not_ be invoked, it's safe to unset
+         force-console.  If set, a transient background console appears
+         during each read or write pipe operation.
+
+Note 3:  explicitly specify a path to the shell in vile.rc via the $shell
+         state variable (e.g., setv $shell 'c:\usr\binw\sh.exe').
+
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/w32modes.doc,v 1.6 2000/01/13 00:28:36 cmorgan Exp $

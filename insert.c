@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.123 1999/12/19 11:36:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.126 2000/01/13 02:34:33 tom Exp $
  *
  */
 
@@ -389,6 +389,32 @@ replacechar(int f, int n)
 }
 
 /*
+ * Check if a command is safe to execute within insert-mode.
+ */
+#define can_ins_exec(cfp) \
+	(cfp != 0 \
+	 && ((cfp->c_flags & (GOAL|MOTION)) != 0 \
+	  || (cfp->c_flags & (UNDO|REDO)) == (UNDO|REDO))) \
+
+/*
+ * Execute a command within the insert-mode.
+ */
+static int
+insertion_exec(const CMDFUNC *cfp)
+{
+	int savedexecmode = insertmode;
+	int backsp_limit = w_left_margin(curwp);
+
+	if (curgoal < 0)
+		curgoal = getccol(FALSE);
+
+	(void)execute(cfp,FALSE,1);
+	insertmode = savedexecmode;
+
+	return backsp_limit;
+}
+
+/*
  * This routine performs the principal decoding for insert mode (i.e.., the
  * i,I,a,A,R commands).  It is invoked via 'ins_n_times()', which loops over
  * the repeat-count for direct commands.  One complicating factor is that
@@ -509,15 +535,8 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 				then see if it's bound to something, and
 				execute it */
 			const CMDFUNC *cfp = kcod2fnc(c);
-			if (cfp != 0
-			 && cfp->c_flags & (GOAL|MOTION)) {
-				int savedexecmode = insertmode;
-
-				backsp_limit = w_left_margin(curwp);
-				if (curgoal < 0)
-					curgoal = getccol(FALSE);
-				(void)execute(cfp,FALSE,1);
-				insertmode = savedexecmode;
+			if (can_ins_exec(cfp)) {
+				backsp_limit = insertion_exec(cfp);
 				continue;
 			} else if (isSpecial(c)) {
 				/* ignore SPEC bindings that we cannot use */
@@ -566,14 +585,8 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 				then see if it's bound to something, and
 				insert it if not */
 			const CMDFUNC *cfp = kcod2fnc(c);
-			if (cfp) {
-				int savedexecmode = insertmode;
-
-				backsp_limit = w_left_margin(curwp);
-				if (curgoal < 0)
-					curgoal = getccol(FALSE);
-				(void)execute(cfp,FALSE,1);
-				insertmode = savedexecmode;
+			if (can_ins_exec(cfp)) {
+				backsp_limit = insertion_exec(cfp);
 				continue;
 			}
 		}
@@ -956,7 +969,7 @@ int
 previndent(int *bracefp)
 {
 	int ind;
-	int cmode = allow_aindent && is_c_mode(curbp);
+	int cmode = allow_aindent && is_c_mode(curbp) && b_val(curbp,MDCINDENT);
 
 	if (bracefp) *bracefp = FALSE;
 

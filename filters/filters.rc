@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.105 2000/01/09 22:47:39 tom Exp $
+; $Id: filters.rc,v 1.107 2000/01/12 23:22:49 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -166,7 +166,7 @@ define-mode html
 
 define-mode imake
 ~with define-submode imake
-	suf 'I[Mm]akefile'
+	suf 'I[Mm]akefile[^/]*$'
 	pre '^\s*\(XCOMM\>\|\/\*\*\/#\)'
 	filtername 'vile-c-filt -k imake'
 ~endwith
@@ -226,13 +226,13 @@ define-mode m4
 
 define-mode mail
 ~with define-submode mail
-	suf '\([Mm]ail\>\|\<mbox$\)'
+	suf '\([Mm]ail\>[^/]*\|\<mbox\)$'
 	pre '^\(From \|To: \)'
 ~endwith
 
 define-mode make
 ~with define-submode make
-	suf '\([Mm]akefile\|\.mak$\|\.mk$\)'
+	suf '\([Mm]akefile[^/]*\|\.mak\|\.mk\)$'
 	comment-prefix	'^\s*[!#]'
 	comments	'^\s*[!#]\s*$'
 ~if &sin $os 'win32'
@@ -408,14 +408,14 @@ define-mode ti
 
 define-mode txt
 ~with define-submode txt
-	suf '\.\(txt\|doc\|hlp\)$'
+	suf '\(\(README\|CHANGES\|Change[Ll]og]\|COPYING\)[^/]*\|\.\(txt\|doc\|hlp\)\)$'
 	comment-prefix	'^\s*--'
 	comments	'^\s*--\s*$'
 ~endwith
 
 ; define-mode vile
 ~with define-submode vile
-	suf '\(\.vilerc\|\.rc$\)'
+	suf '\(\.vilerc[^/]*\|\.rc\)$'
 	comment-prefix	'^\s*;'
 	comments	'^\s*;\s*$'
 	fence-if	'^\s*~if\>'
@@ -436,7 +436,7 @@ define-mode txt
 
 define-mode xres
 ~with define-submode xres
-	suf '\(/[A-Z]\?[A-Z][a-z0-9-]\+$\|\.Xdefaults\|\.ad$\)'
+	suf '\(/[A-Z]\?[A-Z][a-z0-9-]\+\|\.Xdefaults\|\.ad\)$'
 	comment-prefix	'^\s*!'
 	comments	'^\s*!\s*$'
 ~endwith
