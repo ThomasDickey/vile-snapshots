@@ -1,5 +1,5 @@
 
-Getting along with vile						(version 9.3)
+Getting along with vile						(version 9.4)
 -----------------------						-------------
 
 	Use Ctrl-D and Ctrl-U to scroll through this help information.
@@ -5680,7 +5680,7 @@ Credits (last updated Jan, 2000)
 
 	This code has been written by a _lot_ of people, with help from a
 	lot more sending in bug reports, fixes, and suggestions.  The
-	authors of vile are Tom Dickey (dickey@herndon4.his.com) and Kevin
+	authors of vile are Tom Dickey (dickey@invisible-island.net) and Kevin
 	Buettner (kev@primenet.com), and Paul Fox (pgf@foxharp.boston.ma.us).
 
 	Names appearing within comments in the micro-Emacs source code are:
@@ -5770,4 +5770,4 @@ Problems
 
 Copyright 1995-2003 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.566 2003/05/26 18:09:43 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.568 2003/08/04 22:46:30 tom Exp $
