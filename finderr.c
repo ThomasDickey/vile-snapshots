@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2002 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.110 2002/07/04 21:25:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.111 2002/10/17 23:45:30 tom Exp $
  *
  */
 
@@ -93,7 +93,7 @@ char *const predefined[] =
 #if SYS_APOLLO
     " Line %L of \"%[^\" \t]\"",	/* C compiler */
 #endif
-#if SYS_SUNOS && SYSTEM_HAS_LINT_PROG
+#if SYS_SUNOS && defined(SYSTEM_HAS_LINT_PROG)
     "%[^:( \t](%L):%T",		/* bsd lint) */
     "  ::  %[^( \t](%L)",	/* bsd lint) */
     "used[ \t]*([ \t]%[^(](%L)[ \t]*)",		/* bsd lint) */
@@ -118,7 +118,7 @@ char *const predefined[] =
 #endif
 
     "^%[^\"(](%L)[ \t]\\?:%T",	/* weblint */
-#if SYS_UNIX && SYSTEM_HAS_LINT_PROG
+#if SYS_UNIX && defined(SYSTEM_HAS_LINT_PROG)
     /* sys5 lint */
     "^    [^ \t]\\+[ \t]\\+%[^(](%L)$",
     "^    [^(].*( arg %L ) \t%[^( \t](%L) :: [^(]\\+(%L))",

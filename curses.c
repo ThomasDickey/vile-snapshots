@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.17 2002/10/09 19:40:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.18 2002/10/20 14:28:34 tom Exp $
  */
 
 #include	"estruct.h"
@@ -163,8 +163,7 @@ initialize(void)
 	char *seq = TGETSTR(keyseqs[i].capname, &p);
 	if (!NO_CAP(seq)) {
 	    int len;
-	    TRACE(("TGETSTR(%s) = %s\n", keyseqs[i].capname,
-		   visible_buff(seq, strlen(seq), FALSE)));
+	    TRACE(("TGETSTR(%s) = %s\n", keyseqs[i].capname, str_visible(seq)));
 #define DONT_MAP_DEL 1
 #if DONT_MAP_DEL
 	    /* NetBSD, FreeBSD, etc. have the kD (delete) function key

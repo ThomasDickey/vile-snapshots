@@ -152,6 +152,7 @@ mappings:
     diff         vile-diff-filt   output of diff command
     ecl          vile-ecl-filt    Prolog/ECLiPSe
     esql         vile-esql-filt   embedded SQL with C/C++.
+    est          vile-est-filt    Enscript syntax-descriptions
     fdl          vile-fdl-filt    forms definition language
     html         vile-html-filt   html and xml
     imake        vile-imake-filt  imake files
@@ -166,10 +167,12 @@ mappings:
     nr           vile-nr-filt     nroff/troff files
     pas          vile-pas-filt    Pascal
     pl           vile-pl-filt     perl
+    ps           vile-ps-filt     PostScript
     py           vile-py-filt     python
     rc           vile-rc-filt     Windows resource (.rc) files
     rcs          vile-rcs-filt    RCS archives
     rexx         vile-rexx-filt   REXX
+    rpm          vile-rpm-filt    RPM .spec files
     sccs         vile-sccs-filt   SCCS files
     sed          vile-sed-filt    sed scripts
     sh           vile-sh-filt     csh, sh, pot (gettext message libraries)
@@ -444,5 +447,5 @@ without shell support, but perhaps not (ymmv).
 
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.10 2002/08/25 20:26:48 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.11 2002/10/20 23:59:33 cmorgan Exp $
 ------------------------

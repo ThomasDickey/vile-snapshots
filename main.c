@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.482 2002/10/09 20:06:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.484 2002/10/20 13:30:32 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -866,19 +866,6 @@ get_executable_dir(void)
     free(s);
 #endif
 }
-
-#ifdef VILE_ERROR_ABORT
-void
-ExitProgram(int code)
-{
-    char *env;
-    if (code != GOODEXIT
-	&& (env = getenv("VILE_ERROR_ABORT")) != 0
-	&& *env != '\0')
-	abort();
-    exit(code);
-}
-#endif
 
 void
 tidy_exit(int code)
@@ -1982,6 +1969,7 @@ quit(int f, int n GCC_UNUSED)
 	term.close();
 	/* whatever is left over must be a leak */
 	show_alloc();
+	trace_leaks();
     }
 #endif
     tidy_exit(GOODEXIT);
@@ -2649,3 +2637,17 @@ make_startup_file(char *name)
 	fclose(fp);
     }
 }
+
+#ifdef VILE_ERROR_ABORT
+#undef ExitProgram		/* in case it is oleauto_exit() */
+void
+ExitProgram(int code)
+{
+    char *env;
+    if (code != GOODEXIT
+	&& (env = getenv("VILE_ERROR_ABORT")) != 0
+	&& *env != '\0')
+	abort();
+    exit(code);
+}
+#endif

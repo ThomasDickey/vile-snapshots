@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.97 2002/02/03 21:02:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.98 2002/10/20 11:39:46 tom Exp $
  */
 
 #include	"estruct.h"
@@ -288,10 +288,14 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
     int matched_at_eol = FALSE;
     int yes, c, skipped;
 
+    TRACE((T_CALLED
+	   "substline(exp=%p, nth_occur=%d, printit=%d, globally=%d, confirmp=%p)\n",
+	   exp, nth_occur, printit, globally, confirmp));
+
     /* if the "magic number" hasn't been set yet... */
     if (!exp || UCHAR_AT(exp->program) != REGEXP_MAGIC) {
 	mlforce("[No pattern set yet]");
-	return FALSE;
+	returnCode(FALSE);
     }
 
     ignorecase = window_b_val(curwp, MDIGNCASE);
@@ -349,7 +353,7 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
 		    break;
 		case 'q':
 		    mlerase();
-		    return (FALSE);
+		    returnCode(FALSE);
 		case 'a':
 		    yes = TRUE;
 		    *confirmp = FALSE;
@@ -362,7 +366,7 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
 	    if (yes) {
 		s = delins(exp, tb_values(replacepat));
 		if (s != TRUE)
-		    return s;
+		    returnCode(s);
 		if (!again++)
 		    lines_changed++;
 		total_changes++;
@@ -377,7 +381,7 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
 	} else {		/* non-overlapping matches */
 	    s = forwchar(TRUE, (int) (exp->mlen));
 	    if (s != TRUE)
-		return s;
+		returnCode(s);
 	}
     } while (globally && sameline(scanboundpos, DOT));
     if (foundit && printit) {
@@ -385,13 +389,13 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
 	(void) setmark();
 	s = plineregion();
 	if (s != TRUE)
-	    return s;
+	    returnCode(s);
 	/* back to our buffer */
 	swbuffer(wp->w_bufp);
     }
     if (*confirmp)
 	mlerase();
-    return TRUE;
+    returnCode(TRUE);
 }
 
 /*

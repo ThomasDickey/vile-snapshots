@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.75 2002/05/01 00:05:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.76 2002/10/20 11:38:34 tom Exp $
  *
  */
 
@@ -866,10 +866,10 @@ glob_expand(char **list_of_items)
     for (i = 0; i < len; ++i) {
 	char *item = list_of_items[i];
 	/*
-	 * For UNIX, expand '~' expressions in case we've got a pattern
-	 * like "~/test*.log".
+	 * Expand '~' expressions in case we've got a pattern like
+	 * "~/test*.log".
 	 */
-#if SYS_UNIX || !SMALLER
+#if !SMALLER
 	char temp[NFILEN];
 	item = home_path(strcpy(temp, item));
 #endif

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.131 2002/10/07 23:33:59 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.132 2002/10/19 21:07:05 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -2607,6 +2607,8 @@ find_scrollbar(HWND hWnd)
     WINDOW *wp;
     int i = 0;
 
+    TRACE((T_CALLED "find_scrollbar(hWnd=%p)\n", hWnd));
+
     for_each_visible_window(wp) {
 	if (cur_win->scrollbars[i].w == hWnd
 	    || cur_win->main_hwnd == hWnd) {
@@ -2614,11 +2616,11 @@ find_scrollbar(HWND hWnd)
 	    if (wp->w_bufp != curbp) {
 		swbuffer(wp->w_bufp);
 	    }
-	    return i;
+	    returnCode(i);
 	}
 	i++;
     }
-    return -1;
+    returnCode(-1);
 }
 
 /*
@@ -3199,7 +3201,9 @@ receive_dropped_files(HDROP hDrop)
     UINT limit = DragQueryFile(hDrop, inx, name, sizeof(name));
     BUFFER *bp = 0;
 
-    TRACE(("receiving %d dropped files\n", limit));
+    TRACE((T_CALLED "receive_dropped_files(hDrop=%p) %d dropped files\n",
+	   hDrop, limit));
+
     while (++inx < limit) {
 	DragQueryFile(hDrop, inx, name, sizeof(name));
 	TRACE(("...'%s'\n", name));
@@ -3213,6 +3217,7 @@ receive_dropped_files(HDROP hDrop)
 	update(TRUE);
     }
     DragFinish(hDrop);
+    returnVoid();
 }
 
 static void

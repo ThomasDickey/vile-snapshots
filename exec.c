@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.248 2002/10/17 00:20:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.250 2002/10/20 14:37:44 tom Exp $
  *
  */
 
@@ -749,6 +749,9 @@ docmd(char *cline, int execflag, int f, int n)
     char *token;		/* next token off of command line */
     const CMDFUNC *cfp;
 
+    TRACE((T_CALLED "docmd(cline=%s, execflag=%d, f=%d, n=%d)\n",
+	   str_visible(cline), execflag, f, n));
+
     set_end_string(EOS);
     oldestr = execstr;		/* save ptr to starting command string to execute */
     execstr = cline;		/* and change execstr to the new one */
@@ -756,7 +759,7 @@ docmd(char *cline, int execflag, int f, int n)
     do {
 	if ((token = mac_tokval(&tok)) == 0) {	/* grab first token */
 	    execstr = oldestr;
-	    return FALSE;
+	    returnCode(FALSE);
 	}
 	if (*token == ':') {	/* allow leading ':' on line */
 	    register int j;
@@ -773,7 +776,7 @@ docmd(char *cline, int execflag, int f, int n)
 	/* and now get the command to execute */
 	if ((token = mac_tokval(&tok)) == 0) {
 	    execstr = oldestr;
-	    return FALSE;
+	    returnCode(FALSE);
 	}
     }
 
@@ -797,7 +800,7 @@ docmd(char *cline, int execflag, int f, int n)
 
     execstr = oldestr;
     tb_free(&tok);
-    return status;
+    returnCode(status);
 }
 
 /*
@@ -838,13 +841,15 @@ execute(const CMDFUNC * execfunc, int f, int n)
     register int status;
     register CMDFLAGS flags;
 
+    TRACE((T_CALLED "execute(execfunc=%p, f=%d, n=%d)\n", execfunc, f, n));
+
     if (execfunc == NULL) {
 #if OPT_REBIND
 	mlwarn("[Key not bound]");	/* complain             */
 #else
 	mlwarn("[Not a command]");	/* complain             */
 #endif
-	return FALSE;
+	returnCode(FALSE);
     }
 
     flags = execfunc->c_flags;
@@ -861,11 +866,11 @@ execute(const CMDFUNC * execfunc, int f, int n)
 	    /* undoable command can't be permitted when read-only */
 	    if (!(flags & VIEWOK)) {
 		if (b_val(curbp, MDVIEW))
-		    return rdonly();
+		    returnCode(rdonly());
 #ifdef MDCHK_MODTIME
 		if (!b_is_changed(curbp) &&
 		    !ask_shouldchange(curbp))
-		    return FALSE;
+		    returnCode(FALSE);
 #endif
 	    }
 	    if (!kbd_replaying(FALSE))
@@ -909,7 +914,7 @@ execute(const CMDFUNC * execfunc, int f, int n)
 
     curwp->w_tentative_lastdot = DOT;
 
-    return status;
+    returnCode(status);
 }
 
 /*
@@ -1153,10 +1158,10 @@ mac_tokval(TBUFF ** tok)
     if (mac_token(tok) != 0) {
 	/* evaluate the token */
 	(void) tb_scopy(tok, tokval(tb_values(*tok)));
-	return tb_values(*tok);
+	return (tb_values(*tok));
     }
     tb_free(tok);
-    return 0;
+    return (0);
 }
 
 /*
@@ -1531,6 +1536,8 @@ pop_variable(void)
 {
     LOCALS *p = ifstk.locals;
 
+    TRACE((T_CALLED "pop_variable()\n"));
+
     ifstk.locals = p->next;
     TPRINTF(("...pop_variable(%s) %s\n", p->name, p->value));
     if (!strcmp(p->value, error_val)) {
@@ -1541,6 +1548,8 @@ pop_variable(void)
     }
     free(p->name);
     free((char *) p);
+
+    returnVoid();
 }
 
 static void
@@ -2045,6 +2054,9 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 
     static BUFFER *dobuferrbp = 0;
 
+    TRACE((T_CALLED "perform_dobuf(bp=%p, whlist=%p) buffer '%s'\n",
+	   bp, whlist, bp->b_bname));
+
     bp->b_inuse++;
 
     /* starting at the beginning of the buffer */
@@ -2129,7 +2141,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	if (tracemacros) {
 	    mlforce("<<<%s:%d/%d:%s>>>", bp->b_bname,
 		    ifstk.level, ifstk.disabled,
-		    cmdp);
+		    str_visible(cmdp));
 	    (void) update(TRUE);
 
 	    /* and get the keystroke */
@@ -2146,7 +2158,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	       bp->b_bname, ifstk.level, ifstk.disabled,
 	       ifstk.fired ? '+' : ' ',
 	       TRACE_INDENT(ifstk.level, cmdp),
-	       cmdp));
+	       str_visible(cmdp)));
 #endif
 
 	if (*cmdp == DIRECTIVE_CHAR) {
@@ -2268,7 +2280,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 
     if (--(bp->b_inuse) < 0)
 	bp->b_inuse = 0;
-    return status;
+    returnCode(status);
 }
 
 /*
@@ -2426,8 +2438,10 @@ dofile(char *fname)
     int clobber = FALSE;
     int original;
 
+    TRACE((T_CALLED "dofile(%s)\n", TRACE_NULL(fname)));
+
     if (fname == 0 || *fname == EOS)
-	return no_file_found();
+	returnCode(no_file_found());
 
     /*
      * Check first for the name, assuming it's a filename.  If we don't
@@ -2435,7 +2449,7 @@ dofile(char *fname)
      */
     if ((bp = find_b_file(fname)) == 0) {
 	if ((bp = make_bp(fname, 0)) == 0)
-	    return FALSE;
+	    returnCode(FALSE);
 	clobber = TRUE;
     }
 
@@ -2465,7 +2479,7 @@ dofile(char *fname)
 	else
 	    set_b_lineno(bp, original);
     }
-    return status;
+    returnCode(status);
 }
 
 /*

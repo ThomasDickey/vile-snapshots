@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.312 2002/10/15 20:59:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.314 2002/10/20 23:24:41 tom Exp $
  *
  */
 
@@ -388,16 +388,20 @@ show_VariableList(BUFFER *bp GCC_UNUSED)
     register const char *vv;
     static const char fmt[] =
     {"$%s = %*S\n"};
-    const char *const *Names = show_vars_f ? list_of_modes() : statevars;
-    int showall = show_vars_f ? (show_vars_n > 1) : FALSE;
+    const char *const *Names;
+    int showall;
 
+    TRACE((T_CALLED "show_VariableList()\n"));
+
+    Names = show_vars_f ? list_of_modes() : statevars;
+    showall = show_vars_f ? (show_vars_n > 1) : FALSE;
     /* collect data for state-variables, since some depend on window */
     for (s = t = 0; Names[s] != 0; s++) {
 	if ((vv = get_listvalue(Names[s], showall)) != 0)
 	    t += strlen(Names[s]) + strlen(fmt) + strlen(vv);
     }
     if ((values = typeallocn(char, t)) == 0)
-	  return FALSE;
+	  returnCode(FALSE);
 
     for (s = 0, v = values; Names[s] != 0; s++) {
 	if ((vv = get_listvalue(Names[s], showall)) != 0) {
@@ -416,7 +420,7 @@ show_VariableList(BUFFER *bp GCC_UNUSED)
 
     /* back to the buffer whose modes we just listed */
     swbuffer(wp->w_bufp);
-    return s;
+    returnCode(s);
 }
 
 #if OPT_UPBUFF
@@ -455,11 +459,10 @@ vl_lookup_func(const char *name)
     int n;
     unsigned m;
 
-    TRACE(("vl_lookup_func(%s) ", name));
-    if (*name++ == '&'
-	&& *name != EOS) {
+    if (name[0] == '&'
+	&& name[1] != EOS) {
 
-	mklower(vl_strncpy(downcased, name, sizeof(downcased)));
+	mklower(vl_strncpy(downcased, name + 1, sizeof(downcased)));
 
 	m = strlen(downcased);
 	for (n = 0; n < NFUNCS; n++) {
@@ -471,8 +474,8 @@ vl_lookup_func(const char *name)
 	    }
 	}
     }
-    TRACE(("-> %d\n", fnum));
-    return fnum;
+    TRACE(("vl_lookup_func(%s) = %d\n", TRACE_NULL(name), fnum));
+    return (fnum);
 }
 
 /*
@@ -670,6 +673,59 @@ default_mode_value(TBUFF ** result, char *name)
 
 #define MAXARGS 3
 
+/* quote string, so toktyp() will know what it is */
+static void
+render_string(TBUFF ** rp)
+{
+    char *value = tb_values(*rp);
+    if (value != error_val && *value != EOS && toktyp(value) != TOK_LITSTR) {
+	UINT j;
+	UINT have = strlen(value);	/* FIXME: assumes we used EOS */
+	UINT need = 2 + have;
+
+	for (j = 0; j < have; ++j) {
+	    if (value[j] == SQUOTE
+		|| value[j] == BACKSLASH) {
+		++need;
+	    }
+	}
+	tb_alloc(rp, need + 1);
+	(*rp)->tb_used = need + 1;
+#if 0
+	/*
+	 * FIXME:  We _should_ quote the result just as if it had come from a
+	 * file.  But some inputs come from a prompt, which does not (yet)
+	 * quote its input.  Taking out the check for empty string above, the
+	 * following loop would quote the string "properly".  But returning ''
+	 * would break for various reasons.
+	 */
+	value[need] = EOS;
+	value[need - 1] = SQUOTE;
+	for (j = 0; j < have; ++j) {
+	    UINT i = have - j - 1;
+	    UINT k = need - j - 2;
+	    value[k] = value[i];
+	    if (value[k] == SQUOTE
+		|| value[k] == BACKSLASH) {
+		--need;
+		value[k - 1] = BACKSLASH;
+	    }
+	}
+#else
+	/*
+	 * What we actually do is simpler: put a quote character at the front
+	 * of the data so it will be treated as a string.
+	 */
+	value[have + 1] = EOS;
+	for (j = 0; j < have; ++j) {
+	    UINT i = have - j;
+	    value[i] = value[i - 1];
+	}
+#endif
+	value[0] = SQUOTE;
+    }
+}
+
 /*
  * execute a builtin function
  */
@@ -689,6 +745,8 @@ run_func(int fnum)
     int is_error = FALSE;
     long value = 0;
     long nums[MAXARGS];
+
+    TRACE((T_CALLED "run_func(%d)\n", fnum));
 
     nargs = vl_ufuncs[fnum].f_code & NARGMASK;
     args_numeric = vl_ufuncs[fnum].f_code & NUM;
@@ -1037,10 +1095,8 @@ run_func(int fnum)
 	render_long(&result, value);
     else if (ret_boolean)
 	render_boolean(&result, value);
-
-    TRACE(("-> %s'%s'\n",
-	   is_error ? "*" : "",
-	   is_error ? error_val : tb_values(result)));
+    else
+	render_string(&result);
 
     TPRINTF(("-> %s'%s'\n",
 	     is_error ? "*" : "",
@@ -1049,7 +1105,7 @@ run_func(int fnum)
     for (i = 0; i < nargs; i++) {
 	tb_free(&args[i]);
     }
-    return is_error ? error_val : tb_values(result);
+    returnString(is_error ? error_val : tb_values(result));
 }
 
 /* find a temp variable */
@@ -1508,10 +1564,11 @@ set_ctrans(const char *thePalette)
 	    break;
     }
 #if OPT_TRACE
-    TRACE(("...ctrans "));
-    for (n = 0; n < NCOLORS; n++)
-	TRACE(("%s%d", n == 0 ? "[" : " ", ctrans[n]));
-    TRACE(("]\n"));
+    TRACE(("...ctrans, where not 1-1:\n"));
+    for (n = 0; n < NCOLORS; n++) {
+	if (n != ctrans[n])
+	    TRACE(("\t[%d] = %d\n", n, ctrans[n]));
+    }
 #endif
 }
 #endif
@@ -2009,7 +2066,7 @@ save_arguments(BUFFER *bp)
     } else {
 	max_args = 0;
     }
-    TRACE(("save_arguments(%s) max_args=%d\n", bp->b_bname, max_args));
+    TRACE((T_CALLED "save_arguments(%s) max_args=%d\n", bp->b_bname, max_args));
 
     p->nxt_args = arg_stack;
     arg_stack = p;
@@ -2041,8 +2098,7 @@ save_arguments(BUFFER *bp)
     p->num_args = num_args - 1;
 
     updatelistvariables();
-    TRACE(("...save_arguments ->%d\n", status));
-    return status;
+    returnCode(status);
 }
 
 /*
@@ -2262,16 +2318,20 @@ char *
 tokval(char *tokn)
 {
     char *result;
+
 #if OPT_EVAL
-    int toknum = toktyp(tokn);
-    if (toknum < 0 || toknum > MAXTOKTYPE)
-	result = error_val;
-    else
-	result = (*eval_func[toknum]) (tokn);
+    {
+	int toknum = toktyp(tokn);
+	if (toknum < 0 || toknum > MAXTOKTYPE)
+	    result = error_val;
+	else
+	    result = (*eval_func[toknum]) (tokn);
+	TRACE2(("tokval(%s) = %s\n", TRACE_NULL(tokn), TRACE_NULL(result)));
+    }
 #else
     result = (toktyp(tokn) == TOK_QUOTSTR) ? tokn + 1 : tokn;
 #endif
-    return result;
+    return (result);
 }
 
 /*

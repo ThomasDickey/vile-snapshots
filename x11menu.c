@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.4 2002/08/25 20:58:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.5 2002/10/20 19:13:46 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -35,6 +35,9 @@
 #include <X11/Xaw/SmeLine.h>
 #include <X11/Xaw/SmeBSB.h>
 #endif
+
+#define Nval(name,value) name, (XtArgVal)(value)
+#define Sval(name,value) name, (value)
 
 #define MY_MENUS struct MyMenus
 MY_MENUS {
@@ -64,12 +67,12 @@ gui_make_menu(void *menubar, char *nom, int the_class GCC_UNUSED)
     pm = (Widget) XmCreatePulldownMenu(menub, str, NULL, 0);
 #if OPT_MENUS_COLORED
     XtVaSetValues(pm,
-		  XtNforeground, (XtArgVal) (x_menu_foreground()),
-		  XtNbackground, (XtArgVal) (x_menu_background()),
+		  Nval(XtNforeground, x_menu_foreground()),
+		  Nval(XtNbackground, x_menu_background()),
 		  NULL);
     XtVaSetValues(menub,
-		  XtNforeground, (XtArgVal) (x_menu_foreground()),
-		  XtNbackground, (XtArgVal) (x_menu_background()),
+		  Nval(XtNforeground, x_menu_foreground()),
+		  Nval(XtNbackground, x_menu_background()),
 		  NULL);
 #endif /* OPT_MENUS_COLORED */
 
@@ -77,18 +80,18 @@ gui_make_menu(void *menubar, char *nom, int the_class GCC_UNUSED)
 
     cascade = XtVaCreateManagedWidget("menuHeader",
 				      xmCascadeButtonWidgetClass, menub,
-				      XmNlabelString, xms,
-				      XmNsubMenuId, pm,
+				      Nval(XmNlabelString, xms),
+				      Nval(XmNsubMenuId, pm),
 #if OPT_MENUS_COLORED
-				      XtNforeground, x_menu_foreground(),
-				      XtNbackground, x_menu_background(),
+				      Nval(XtNforeground, x_menu_foreground()),
+				      Nval(XtNbackground, x_menu_background()),
 #endif /* OPT_MENUS_COLORED */
 				      NULL);
     XmStringFree(xms);
 
     if (the_class == 'H') {
 	XtVaSetValues(menub,
-		      XmNmenuHelpWidget, (XtArgVal) (cascade),
+		      Nval(XmNmenuHelpWidget, cascade),
 		      NULL);
     }
 #endif /* MOTIF_WIDGETS */
@@ -100,16 +103,16 @@ gui_make_menu(void *menubar, char *nom, int the_class GCC_UNUSED)
     pm = XtVaCreatePopupShell(str,
 			      simpleMenuWidgetClass,
 			      menub,
-			      XtNgeometry, NULL,
+			      Nval(XtNgeometry, NULL),
 			      NULL);
 
     cascade = XtVaCreateManagedWidget("menuHeader",
 				      menuButtonWidgetClass,
 				      menub,
-				      XtNheight, x_menu_height(),
-				      XtNlabel, nom,
-				      XtNfromHoriz, last,
-				      XtNmenuName, str,
+				      Nval(XtNheight, x_menu_height()),
+				      Nval(XtNlabel, nom),
+				      Nval(XtNfromHoriz, last),
+				      Nval(XtNmenuName, str),
 				      NULL);
     last = cascade;
 
@@ -157,8 +160,8 @@ gui_add_menu_item(void *pm, char *nom, char *accel GCC_UNUSED, int the_class)
     w = XtVaCreateManagedWidget("menuEntry",
 				wc,
 				pm,
-				XmNacceleratorText, xms_accl,
-				XmNlabelString, xms_name,
+				Nval(XmNacceleratorText, xms_accl),
+				Nval(XmNlabelString, xms_name),
 				NULL);
 
     XmStringFree(xms_accl);
@@ -172,7 +175,7 @@ gui_add_menu_item(void *pm, char *nom, char *accel GCC_UNUSED, int the_class)
 				 ? smeBSBObjectClass
 				 : smeLineObjectClass),
 				pm,
-				XtNlabel, nom,
+				Nval(XtNlabel, nom),
 				NULL);
 
 #endif /* ATHENA_WIDGETS */
@@ -312,7 +315,7 @@ post_buffer_list(Widget w GCC_UNUSED,
 #if MOTIF_WIDGETS
 	    XmString xms = XmStringCreateSimple(string);
 	    XtVaSetValues(pm_buffer[nb_item_menu_list],
-			  XmNlabelString, (XtArgVal) (xms),
+			  Nval(XmNlabelString, xms),
 			  NULL);
 	    XmStringFree(xms);
 	    XtRemoveCallback(pm_buffer[nb_item_menu_list],
@@ -320,7 +323,7 @@ post_buffer_list(Widget w GCC_UNUSED,
 #endif
 #if ATHENA_WIDGETS
 	    XtVaSetValues(pm_buffer[nb_item_menu_list],
-			  XtNlabel, (XtArgVal) (string),
+			  Nval(XtNlabel, string),
 			  NULL);
 	    XtRemoveAllCallbacks(pm_buffer[nb_item_menu_list],
 				 XtNcallback);

@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.125 2002/10/09 19:46:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.126 2002/10/20 11:32:01 tom Exp $
  *
  *
  */
@@ -448,8 +448,9 @@ find_user(const char *name)
 	/* if either of the above lookups worked
 	 * then save the result
 	 */
-	if (p != 0)
+	if (p != 0) {
 	    return save_user(name, p->pw_dir);
+	}
 #endif
 	if (*name == EOS) {
 	    char *env = home_dir();
@@ -481,15 +482,23 @@ home_dir(void)
     if ((result = getenv("SYS$LOGIN")) == 0)
 	result = getenv("HOME");
 #else
-    result = getenv("HOME");
 #if SYS_WINNT
-    if (result != 0) {
-	static char desktop[NFILEN];
-	char *drive = getenv("HOMEDRIVE");
-	result = pathcat(desktop, drive, result);
+    if ((result = getenv("USERPROFILE")) == 0 &&
+	(result = getenv("HOMESHARE")) == 0) {
+	/* M$ copies from VMS, but does not learn from its mistakes... */
+	if ((result = getenv("HOMEPATH")) != 0) {
+	    static char desktop[NFILEN];
+	    char *drive = getenv("HOMEDRIVE");
+	    result = pathcat(desktop, drive, result);
+	} else {
+	    result = getenv("HOME");
+	}
     }
+#else
+    result = getenv("HOME");
 #endif
 #endif
+    TRACE(("home_dir ->%s\n", TRACE_NULL(result)));
     return result;
 }
 
@@ -2062,11 +2071,7 @@ find_in_path_list(const char *path_list, char *path)
     char find[NFILEN];
 
     vl_strncpy(find, SL_TO_BSL(path), sizeof(find));
-    TRACE(("find_in_path_list\n\t%s\n\t%s\n",
-	   (path_list != 0)
-	   ? path_list
-	   : "(null)",
-	   find));
+    TRACE(("find_in_path_list\n\t%s\n\t%s\n", TRACE_NULL(path_list), find));
     while ((path_list = parse_pathlist(path_list, temp)) != 0) {
 #if OPT_CASELESS
 	if (!stricmp(temp, find))

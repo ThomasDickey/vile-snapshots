@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.144 2002/10/09 21:48:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.145 2002/10/20 14:27:48 tom Exp $
  *
  */
 
@@ -403,9 +403,7 @@ tcapopen(void)
 	if (NO_CAP(*(tc_strings[i].data))) {
 	    t = TGETSTR(tc_strings[i].name, &p);
 	    TRACE(("TGETSTR(%s) = %s\n", tc_strings[i].name,
-		   ((t != 0)
-		    ? visible_buff(t, strlen(t), FALSE)
-		    : "<null>")));
+		   str_visible(t)));
 	    /* simplify subsequent checks */
 	    if (NO_CAP(t))
 		t = 0;
@@ -521,8 +519,7 @@ tcapopen(void)
 	char *seq = TGETSTR(keyseqs[i].capname, &p);
 	if (!NO_CAP(seq)) {
 	    int len;
-	    TRACE(("TGETSTR(%s) = %s\n", keyseqs[i].capname,
-		   visible_buff(seq, strlen(seq), FALSE)));
+	    TRACE(("TGETSTR(%s) = %s\n", keyseqs[i].capname, str_visible(seq)));
 #define DONT_MAP_DEL 1
 #if DONT_MAP_DEL
 	    /* NetBSD, FreeBSD, etc. have the kD (delete) function key

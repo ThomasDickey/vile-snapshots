@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.137 2002/05/05 20:26:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.138 2002/10/19 15:28:44 tom Exp $
  *
  */
 
@@ -850,20 +850,23 @@ inschar(int c, int *backsp_limit_p)
 int
 appstring(int f, int n)
 {
+    TRACE((T_CALLED "appstring(f=%d, n=%d)\n", f, n));
     advance_one_char();
-    return istring(f, n, INSERT);
+    returnCode(istring(f, n, INSERT));
 }
 
 int
 insstring(int f, int n)
 {
-    return istring(f, n, INSERT);
+    TRACE((T_CALLED "insstring(f=%d, n=%d)\n", f, n));
+    returnCode(istring(f, n, INSERT));
 }
 
 int
 overwstring(int f, int n)
 {
-    return istring(f, n, OVERWRITE);
+    TRACE((T_CALLED "overwstring(f=%d, n=%d)\n", f, n));
+    returnCode(istring(f, n, OVERWRITE));
 }
 
 /* ask for and insert or overwrite a string into the current */

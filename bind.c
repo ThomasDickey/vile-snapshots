@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.260 2002/10/09 22:53:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.262 2002/10/20 14:07:53 tom Exp $
  *
  */
 
@@ -143,9 +143,8 @@ static void
 dpy_namebst(BI_NODE * a GCC_UNUSED, int level GCC_UNUSED)
 {
 #if OPT_TRACE
-    while (level-- > 0)
-	TRACE((". "));
-    TRACE(("%p -> %s (%d)\n", a, BI_KEY(a), a->balance));
+    TRACE(("%s%p -> %s (%d)\n",
+	   trace_indent(level, '.'), a, BI_KEY(a), a->balance));
 #endif
 }
 
@@ -175,24 +174,26 @@ vl_help(int f GCC_UNUSED, int n GCC_UNUSED)
     char *hname;
     int alreadypopped;
 
+    TRACE((T_CALLED "vl_help()\n"));
+
     /* first check if we are already here */
     bp = bfind(HELP_BufName, BFSCRTCH);
     if (bp == NULL)
-	return FALSE;
+	returnCode(FALSE);
 
     if (bp->b_active == FALSE) {	/* never been used */
 	hname = cfg_locate(helpfile, FL_ANYWHERE | FL_READABLE);
 	if (!hname) {
 	    mlforce("[Sorry, can't find the help information]");
 	    (void) zotbuf(bp);
-	    return (FALSE);
+	    returnCode(FALSE);
 	}
 	alreadypopped = (bp->b_nwnd != 0);
 	/* and read the stuff in */
 	if (readin(hname, 0, bp, TRUE) == FALSE ||
 	    popupbuff(bp) == FALSE) {
 	    (void) zotbuf(bp);
-	    return (FALSE);
+	    returnCode(FALSE);
 	}
 	set_bname(bp, HELP_BufName);
 	set_rdonly(bp, hname, MDVIEW);
@@ -206,16 +207,16 @@ vl_help(int f GCC_UNUSED, int n GCC_UNUSED)
     }
 
     if (!swbuffer(bp))
-	return FALSE;
+	returnCode(FALSE);
 
     if (help_at >= 0) {
 	if (!gotoline(TRUE, help_at))
-	    return FALSE;
+	    returnCode(FALSE);
 	mlwrite("[Type '1G' to return to start of help information]");
 	help_at = -1;		/* until zotbuf is called, we let normal
 				   DOT tracking keep our position */
     }
-    return TRUE;
+    returnCode(TRUE);
 }
 
 /*
@@ -2074,6 +2075,7 @@ kbd_alarm(void)
 #endif
 {
     TRACE(("BEEP (%s @%d)\n", file, line));
+    TPRINTF(("BEEP\n"));
 
     if (!no_errs
 	&& !clhide
@@ -2427,8 +2429,9 @@ scroll_completions(
 		      const char *table,
 		      size_t size_entry)
 {
-    BUFFER *bp = find_b_name(COMPLETIONS_BufName);
-    if (bp == NULL)
+    BUFFER *bp;
+
+    if ((bp = find_b_name(COMPLETIONS_BufName)) == NULL)
 	show_completions(case_insensitive, buf, len, table, size_entry);
     else {
 	LINEPTR lp;

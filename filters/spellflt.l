@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.9 2002/08/27 00:50:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.10 2002/10/17 22:57:22 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -27,7 +27,7 @@ static FILE *
 open_tempfile(char *fname)
 {
     FILE *fp = 0;
-#if HAVE_MKSTEMP
+#ifdef HAVE_MKSTEMP
     int fd = mkstemp(strcpy(fname, "vileXXXXXX"));
     if (fd >= 0)
     	fp = fdopen(fd, "w");

@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.253 2002/10/17 00:24:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.254 2002/10/20 11:27:45 tom Exp $
  *
  */
 
@@ -228,7 +228,7 @@ zotwp(BUFFER *bp)
     WINDOW dummy;
     int s = FALSE;
 
-    TRACE(("zotwp(%s)\n", bp->b_bname));
+    TRACE((T_CALLED "zotwp(%s)\n", bp->b_bname));
 
     /*
      * Locate buffer to switch to after deleting windows.  It can't be
@@ -257,7 +257,7 @@ zotwp(BUFFER *bp)
     if (obp != NULL)
 	s = swbuffer(obp);
 
-    return s;
+    returnCode(s);
 }
 
 /*
@@ -656,12 +656,14 @@ imply_alt(char *fname, int copy, int lockfl)
 int
 altbuff(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    BUFFER *bp = find_alt();
-    if (bp == 0) {
+    BUFFER *bp;
+
+    TRACE((T_CALLED "altbuff()\n"));
+    if ((bp = find_alt()) == 0) {
 	mlwarn("[No alternate filename to substitute for #]");
-	return FALSE;
+	returnCode(FALSE);
     } else {
-	return swbuffer(bp);
+	returnCode(swbuffer(bp));
     }
 }
 
@@ -743,13 +745,14 @@ usebuffer(int f GCC_UNUSED, int n GCC_UNUSED)
     int s;
     char bufn[NBUFN];
 
+    TRACE((T_CALLED "usebuffer()\n"));
     bufn[0] = EOS;
     if ((s = ask_for_bname("Use buffer: ", bufn, sizeof(bufn))) != TRUE
 	&& (s != SORTOFTRUE))
-	return s;
+	returnCode(s);
     if ((bp = find_any_buffer(bufn)) == 0)	/* Try buffer */
-	return FALSE;
-    return swbuffer(bp);
+	returnCode(FALSE);
+    returnCode(swbuffer(bp));
 }
 
 /*
@@ -762,14 +765,15 @@ edit_buffer(int f GCC_UNUSED, int n GCC_UNUSED)
     int s;
     char bufn[NBUFN];
 
+    TRACE((T_CALLED "edit_buffer()\n"));
     bufn[0] = EOS;
     if ((s = ask_for_bname("Use buffer: ", bufn, sizeof(bufn))) != TRUE
 	&& (s != SORTOFTRUE))
-	return s;
+	returnCode(s);
     if ((bp = find_buffer(bufn)) == 0) {
 	bp = bfind(bufn, 0);
     }
-    return swbuffer(bp);
+    returnCode(swbuffer(bp));
 }
 
 #if !SMALLER
@@ -810,6 +814,8 @@ nextbuffer(int f GCC_UNUSED, int n GCC_UNUSED)
     BUFFER *bp;
     BUFFER *stopatbp;
 
+    TRACE((T_CALLED "nextbuffer()\n"));
+
     if (global_g_val(GMDABUFF)) {	/* go backward thru buffer-list */
 	stopatbp = NULL;
 	while (stopatbp != bheadp) {
@@ -821,7 +827,7 @@ nextbuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 	    if (b_is_invisible(bp))
 		stopatbp = bp;
 	    else
-		return swbuffer(bp);
+		returnCode(swbuffer(bp));
 	}
     } else {			/* go forward thru args-list */
 	if ((stopatbp = curbp) == 0)
@@ -831,14 +837,14 @@ nextbuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 	if (last_bp != 0) {
 	    for (bp = last_bp->b_bufp; bp; bp = bp->b_bufp) {
 		if (b_is_argument(bp))
-		    return swbuffer(last_bp = bp);
+		    returnCode(swbuffer(last_bp = bp));
 	    }
 	}
 	mlforce("[No more files to edit]");
-	return FALSE;
+	returnCode(FALSE);
     }
     /* we're back to the top -- they were all invisible */
-    return swbuffer(stopatbp);
+    returnCode(swbuffer(stopatbp));
 }
 
 #if !SMALLER
@@ -850,6 +856,8 @@ prevbuffer(int f GCC_UNUSED, int n GCC_UNUSED)
     BUFFER *bp;			/* eligible buffer to switch to */
     BUFFER *stopatbp;		/* eligible buffer to switch to */
 
+    TRACE((T_CALLED "prevbuffer()\n"));
+
     if (global_g_val(GMDABUFF)) {	/* go forward thru buffer-list */
 	if ((bp = curbp) == 0)
 	    bp = bheadp;
@@ -858,17 +866,17 @@ prevbuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 	    /* get the next buffer in the list */
 	    /* if that one's invisible, skip it and try again */
 	    if (!b_is_invisible(bp))
-		return swbuffer(bp);
+		returnCode(swbuffer(bp));
 	}
     } else {			/* go backward thru args-list */
 	if ((stopatbp = curbp) == 0)
 	    (void) find_nth_created(1);
 	else if ((bp = find_nth_created(curbp->b_created - 1)) == 0)
 	    mlforce("[No more files to edit]");
-	return FALSE;
+	returnCode(FALSE);
     }
     /* we're back to the top -- they were all invisible */
-    return swbuffer(stopatbp);
+    returnCode(swbuffer(stopatbp));
 }
 #endif /* !SMALLER */
 
@@ -917,7 +925,8 @@ make_current(BUFFER *nbp)
 int
 swbuffer(BUFFER *bp)
 {
-    return swbuffer_lfl(bp, TRUE, FALSE);
+    TRACE((T_CALLED "swbuffer(bp=%p)\n", bp));
+    returnCode(swbuffer_lfl(bp, TRUE, FALSE));
 }
 
 static int
@@ -925,7 +934,7 @@ suckitin(BUFFER *bp, int copy, int lockfl)
 {
     int s = TRUE;
 
-    TRACE(("suckitin(%s, %s)\n", bp->b_bname, copy ? "copy" : "new"));
+    TRACE((T_CALLED "suckitin(%s, %s)\n", bp->b_bname, copy ? "copy" : "new"));
     if (copy) {
 	WINDOW *wp;
 
@@ -946,7 +955,7 @@ suckitin(BUFFER *bp, int copy, int lockfl)
 #endif
     updatelistbuffers();
     run_buffer_hook();
-    return s;
+    returnCode(s);
 }
 
 /*
@@ -958,9 +967,12 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
     int s = TRUE;
     WINDOW *wp;
 
+    TRACE((T_CALLED "swbuffer_lfl(bp=%p, lockfl=%d, this_window=%d)\n",
+	   bp, lockfl, this_window));
+
     if (!bp) {
 	mlforce("BUG:  swbuffer passed null bp");
-	return FALSE;
+	returnCode(FALSE);
     }
 
     TRACE(("swbuffer(%s) nwnd=%d\n", bp->b_bname, bp->b_nwnd));
@@ -973,7 +985,7 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 	    !bp->b_active)	/* on second thought, yes there is */
 	    s = suckitin(bp, TRUE, lockfl);
 
-	return s;
+	returnCode(s);
     }
 #if !WINMARK
     /* Whatever else we do, make sure MK isn't bogus when we leave */
@@ -1010,9 +1022,9 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 	LINE *lp;
 	int trait_matches;
 	if (curwp == 0)
-	    return FALSE;
+	    returnCode(FALSE);
 	if (curwp->w_bufp == bp)
-	    return TRUE;
+	    returnCode(TRUE);
 	if (curwp->w_bufp->b_nwnd == 0)
 	    undispbuff(curwp->w_bufp, curwp);
 	else
@@ -1070,15 +1082,15 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 	    updatelistbuffers();
 #endif
 	run_buffer_hook();
-	return (find_bp(bp) != 0);
+	returnCode(find_bp(bp) != 0);
     } else if (curwp == 0) {
-	return FALSE;		/* we haven't started displaying yet */
+	returnCode(FALSE);	/* we haven't started displaying yet */
     }
 
     /* oh well, suck it into this window */
 
     curwp->w_bufp = bp;
-    return suckitin(bp, (bp->b_nwnd++ == 0), lockfl);
+    returnCode(suckitin(bp, (bp->b_nwnd++ == 0), lockfl));
 }
 
 #if VILE_NEEDED
@@ -1358,17 +1370,19 @@ zotbuf(BUFFER *bp)
     int status;
     int didswitch = FALSE;
 
+    TRACE((T_CALLED "zotbuf(bp=%p)\n", bp));
+
     if (find_bp(bp) == 0)	/* delwp may have zotted us, pointer obsolete */
-	return TRUE;
+	returnCode(TRUE);
 
     TRACE(("zotbuf(%s)\n", bp->b_bname));
 
     if (buffer_in_use(bp))
-	return FALSE;
+	returnCode(FALSE);
 #define no_del
 #ifdef no_del
     if (buffer_is_visible(bp))	/* Error if on screen.      */
-	return FALSE;
+	returnCode(FALSE);
     if (is_fake_window(wheadp)) {
 	WINDOW *wp;
 	WINDOW dummy;
@@ -1387,7 +1401,7 @@ zotbuf(BUFFER *bp)
     if (curbp == bp) {
 	didswitch = TRUE;
 	if (buffer_is_solo(bp)) {
-	    return FALSE;
+	    returnCode(FALSE);
 	}
     }
     if (bp->b_nwnd != 0 || is_fake_window(wheadp)) {
@@ -1395,7 +1409,7 @@ zotbuf(BUFFER *bp)
 	   or there are fake windows to worry about */
 	(void) zotwp(bp);
 	if (find_bp(bp) == 0)	/* delwp must have zotted us */
-	    return TRUE;
+	    returnCode(TRUE);
     }
 #endif
 #if OPT_LCKFILES
@@ -1421,7 +1435,7 @@ zotbuf(BUFFER *bp)
 	FreeBuffer(bp);
 	updatelistbuffers();
     }
-    return (status);
+    returnCode(status);
 }
 
 /* Rename a buffer given a buffer pointer and new buffer name. */
@@ -1495,7 +1509,7 @@ popupbuff(BUFFER *bp)
 {
     WINDOW *wp;
 
-    TRACE(("popupbuff(%s) nwnd=%d\n", bp->b_bname, bp->b_nwnd));
+    TRACE((T_CALLED "popupbuff(%s) nwnd=%d\n", bp->b_bname, bp->b_nwnd));
     if (!curbp) {
 	curbp = bp;		/* possibly at startup time */
 	curwp->w_bufp = curbp;
@@ -1514,7 +1528,7 @@ popupbuff(BUFFER *bp)
 	    init_window(wp, bp);
 	}
     }
-    return swbuffer(bp);
+    returnCode(swbuffer(bp));
 }
 
 /*
@@ -2388,6 +2402,10 @@ writeall(int f, int n, int promptuser, int leaving, int autowriting, int all)
     int failure = FALSE;
     int dirtymsgline = FALSE;
 
+    TRACE((T_CALLED
+	   "writeall(f=%d, n=%d, promptuser=%d, leaving=%d, autowriting=%d, all=%d)\n",
+	   f, n, promptuser, leaving, autowriting, all));
+
     beginDisplay();
     oldbp = curbp;		/* save in case we fail */
 
@@ -2444,7 +2462,7 @@ writeall(int f, int n, int promptuser, int leaving, int autowriting, int all)
 
     /* shortcut out */
     if (autowriting && !failure && !count)
-	return TRUE;
+	returnCode(TRUE);
 
     /* do we want a press-return message?  */
     if (failure || ((promptuser && !leaving) && count)) {
@@ -2479,7 +2497,7 @@ writeall(int f, int n, int promptuser, int leaving, int autowriting, int all)
     if (dirtymsgline)
 	sgarbf = TRUE;
 
-    return status;
+    returnCode(status);
 }
 
 #if OPT_TITLE
