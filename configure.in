@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.105 $)
+AC_REVISION($Revision: 1.108 $)
 AC_PREREQ(2.12.971222)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.105 1999/03/26 01:51:12 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.108 1999/04/18 20:29:19 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -175,7 +175,6 @@ CF_FP_ISREADY
 AC_CONST
 CF_ANSI_CC_REQD
 CF_CC_INIT_UNIONS
-CF_CC_OFFSETOF_CASES
 
 ###	checks for system services and user specified options
 AC_LONG_FILE_NAMES
@@ -345,6 +344,25 @@ $cf_tc_funcs \
 CF_ANSI_QSORT
 
 ###	Miscellaneous options
+
+ICON_SUFFIX=.xbm
+AC_SUBST(ICON_SUFFIX)
+if test "$TARGET" = xvile ; then
+
+AC_MSG_CHECKING(if you want to use the Xpm library for colored icon)
+AC_ARG_WITH(xpm,
+	[  --with-xpm              use Xpm library for colored icon],
+	[cf_Xpm_library=$withval],
+	[cf_Xpm_library=no])
+AC_MSG_RESULT($cf_Xpm_library)
+if test "$cf_Xpm_library" != no ; then
+	AC_CHECK_LIB(Xpm,XpmCreatePixmapFromData,[
+	LIBS="-lXpm $LIBS"
+	AC_DEFINE(HAVE_LIBXPM)
+	ICON_SUFFIX=.xpm
+	])
+fi
+
 if test -n "$cf_x_athena" ; then
     AC_MSG_CHECKING(if you want to use Xaw scrollbars rather than our own)
     AC_ARG_WITH(Xaw-scrollbars,
@@ -368,6 +386,8 @@ if test -n "$cf_x_athena" ; then
 	    AC_DEFINE(OPT_KEV_DRAGGING)
 	fi
     fi
+fi
+
 fi
 
 AC_MSG_CHECKING(if you want to change the number of exec-macros)

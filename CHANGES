@@ -1,5 +1,30 @@
 Changes for vile 8.3 (released ??? ??? ??, 1998)
 
+(tom) 990418 (t)
+	+ add configure option --with-xpm, to support color icons in xvile.
+	  Not all window managers support xpm icons.
+	+ remove configure test and ifdef's for CC_CANNOT_OFFSET_CASES, since
+	  rewrite of eval.c left only one place where we care about this
+	  compiler limitation.
+	+ add .ico, .xbm and .xpm versions of the most popular icons for xvile
+	  and winvile.
+	+ use SMG to get control sequences for 80/132 column switching (Clark
+	  Morgan, request by Tom).
+	+ rewrote vmsopen() in vmsvt.c (patch by Clark Morgan).
+	+ update vile-pager script to find vile-manfilt according to the
+	  VILE_LIBDIR_PATH setting, etc.
+	+ modify majormode suffixes check to exclude pipes and internal names
+	+ add ".hlp" to txtmode suffixes (note that the :h command bypasses
+	  $read-hook).
+	+ add cindent to lex, yacc majormodes.
+	+ add sccs majormode.
+	+ implement imake mode using C filter.
+	+ add syntax filter txt-filt.l, for highlighting simple textfiles.
+	+ add syntax filter spellflt.l, for highlighting misspelled words with
+	  ispell.  Source "spell.rc" to get the ^X-i spelling highlighter.
+	+ add syntax filter difffilt.l for diff output
+	+ use "seed" in ucrypt.c rather than rand().
+
 (tom) 990414 (s)
 	+ add "DBG=" option to makefile.wnt to simplify building with OPT_TRACE.
 	+ add VILE_LIBDIR_PATH to $PATH on WinNT, as on Unix to find syntax

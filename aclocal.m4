@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.66 1999/04/13 23:29:34 pgf Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.67 1999/04/18 18:41:17 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -167,22 +167,6 @@ cf_cv_init_unions,[
 	[cf_cv_init_unions=no])
 	])
 test $cf_cv_init_unions = no && AC_DEFINE(CC_CANNOT_INIT_UNIONS)
-])dnl
-dnl ---------------------------------------------------------------------------
-dnl Check if the C compiler supports offsetof expressions in switch cases.
-dnl Some losing compiler's can be found on pyramid's, aix, and Apple's AUX2.
-dnl (Lint on several platforms will complain, even when the compiler won't).
-AC_DEFUN([CF_CC_OFFSETOF_CASES],[
-AC_CACHE_CHECK(if switch cases work with structure offsets,
-cf_cv_case_offsetof,[
-	AC_TRY_COMPILE([],
-	[struct foo {int a,b;};
-	 extern long longfunc();
-	 switch(longfunc()){case ((long) &(((struct foo *)0)->b)) : printf("foo"); } ],
-	[cf_cv_case_offsetof=yes],
-	[cf_cv_case_offsetof=no])
-	])
-test $cf_cv_case_offsetof = no && AC_DEFINE(CC_CANNOT_OFFSET_CASES)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check if we're accidentally using a cache from a different machine.

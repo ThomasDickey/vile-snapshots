@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.42 1999/04/14 23:15:16 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.43 1999/04/18 15:28:32 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -163,8 +163,13 @@ all :: $(PERLCFG) $(TARGET)
 $(TARGET): 	$(BUILTHDRS) $(OBJ)
 	$(link) $(LDFLAGS) $(OBJ) $(LIBS) -out:$(TARGET)
 
+# you can override the icon to suit your taste (e.g,. vile, kitchen-sink,
+# or V-eye pumpkin).
+
+ICON	= vile
+
 winvile.res :	winvile.rc
-	$(RC) -Iicons winvile.rc
+	$(RC) -DVILE_ICON="$(ICON).ico" -Iicons winvile.rc
 
 # collect some perl environment info
 $(PERLCFG): mkprlenv.wnt

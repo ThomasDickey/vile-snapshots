@@ -1,13 +1,20 @@
 /*
- *  Advanced VMS terminal driver
+ * VMS terminal driver
  *
- *  Knows about any terminal defined in SMGTERMS.TXT and TERMTABLE.TXT
- *  located in SYS$SYSTEM.
+ * Uses SMG to lookup capabilities of the terminal (see SYS$SYSTEM:SMGTERMS.TXT
+ * and SYS$SYSTEM:TERMTABLE.TXT)
  *
- *  Author:  Curtis Smith
- *  Last Updated: 07/14/87
+ * Originally written by Curtis Smith in 1987, this module has been rewritten
+ * by Tom Dickey and Clark Morgan to:
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.45 1999/04/13 23:29:34 pgf Exp $
+ *   -- simplify it,
+ *   -- extend it to support a wider variety of terminal types,
+ *   -- add VT220 keyboard mappings,
+ *   -- support syntax highlighting,
+ *   -- support wide and narrow screen resolutions,
+ *   -- support visual bells.
+ *
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.49 1999/04/17 21:09:15 cmorgan Exp $
  *
  */
 
@@ -19,32 +26,31 @@
 #include	<descrip.h>		/* Descriptor definitions	*/
 #include	<iodef.h>		/* to get IO$_SENSEMODE		*/
 #include	<ttdef.h>		/* to get TT$_UNKNOWN		*/
+#include	<stsdef.h>		/* to get $VMS_STATUS_SUCCESS	*/
 
 #include	<starlet.h>
-#include	<smgtrmptr.h>		/* to get SMG$K_??? definitions	*/
+#include	<smgtrmptr.h>		/* to get SMG$K_??? definitions */
 #include	<smg$routines.h>
-
-#define COLS_132 "\033[?3h"
-#define COLS_80  "\033[?3l"
+#include	<ssdef.h>
 
 /** Forward references **/
 static	void	vmsscrollregion (int top, int bot);
 static	void	vmsscroll_reg (int from, int to, int n);
 static	void	vmsscroll_delins (int from, int to, int n);
-static	void	vmsopen	(void);
+static	void	vmsopen (void);
 static	void	vmsclose (void);
 static	void	vmskopen (void);
 static	void	vmskclose (void);
 static	void	vmsmove (int row, int col);
-static	void	vmseeol	(void);
-static	void	vmseeop	(void);
-static	void	vmsbeep	(void);
+static	void	vmseeol (void);
+static	void	vmseeop (void);
+static	void	vmsbeep (void);
 #if OPT_VIDEO_ATTRS
 static	void	vmsattr ( UINT attr );
 #else
-static	void	vmsrev  ( UINT state );
+static	void	vmsrev	( UINT state );
 #endif
-static	int	vmscres	(const char *);
+static	int	vmscres (const char *);
 
 /** SMG stuff (just like termcap) */
 static	int	initialized;
@@ -59,6 +65,12 @@ static	char *	insert_line;
 static	char *	scroll_forw;
 static	char *	scroll_back;
 static	char *	scroll_regn;
+
+static	char *	set_narrow;
+static	char *	set_wide;
+
+static	long	wide_cols;
+static	long	narrow_cols;
 
 #if OPT_VIDEO_ATTRS
 static	char *	tc_MD;		/* begin bold */
@@ -82,7 +94,7 @@ TERM	term	= {
 	vmsopen,			/* Open terminal at the start	*/
 	vmsclose,			/* Close terminal at end	*/
 	nullterm_kopen,			/* Open keyboard		*/
-	nullterm_kclose,			/* Close keyboard		*/
+	nullterm_kclose,		/* Close keyboard		*/
 	ttgetc,				/* Get character from keyboard	*/
 	ttputc,				/* Put character to display	*/
 	tttypahead,			/* char ready for reading	*/
@@ -97,10 +109,10 @@ TERM	term	= {
 	vmsrev,				/* Set reverse video state	*/
 #endif
 	vmscres,			/* Change screen resolution	*/
-	nullterm_setfore,			/* N/A: Set foreground color	*/
-	nullterm_setback,			/* N/A: Set background color	*/
-	nullterm_setpal,			/* N/A: Set palette colors	*/
-	nullterm_scroll,			/* set at init-time		*/
+	nullterm_setfore,		/* N/A: Set foreground color	*/
+	nullterm_setback,		/* N/A: Set background color	*/
+	nullterm_setpal,		/* N/A: Set palette colors	*/
+	nullterm_scroll,		/* set at init-time		*/
 	nullterm_pflush,
 	nullterm_icursor,
 	nullterm_settitile,
@@ -205,18 +217,17 @@ ttputs(char * string)			/* String to write		*/
 }
 
 /***
- *  putpad_tgoto - 2-argument request
+ *  vmsvt_tgoto - 2-argument request, e.g., for cursor movement.
  *
  *  Nothing returned
  ***/
 static void
-putpad_tgoto(request_code, parm1, parm2)
+vmsvt_tgoto(request_code, parm1, parm2)
 {
 	char buffer[32];
 	int ret_length;
 	static int max_buffer_length = sizeof(buffer);
 	static int arg_list[3] = { 2 };
-	register char * cp;
 
 	register int i;
 
@@ -230,37 +241,30 @@ putpad_tgoto(request_code, parm1, parm2)
 	arg_list[1] = parm1;
 	arg_list[2] = parm2;
 
-	if ((smg$get_term_data(		/* Get terminal data		*/
-		&termtype,		/* Terminal table address	*/
-		&request_code,		/* Request code			*/
-		&max_buffer_length,	/* Maximum buffer length	*/
-		&ret_length,		/* Return length		*/
-		buffer,			/* Capability data buffer	*/
-		arg_list)		/* Argument list array		*/
-
-	/* We'll know soon enough if this doesn't work		*/
-			& 1) == 0) {
-				ttputs("OOPS");
-				return;
-			}
-
-	/* Send out resulting sequence				*/
-	i = ret_length;
-	cp = buffer;
-	while (i-- > 0)
-		ttputc(*cp++);
+	if (!$VMS_STATUS_SUCCESS(smg$get_term_data(
+		&termtype,
+		&request_code,
+		&max_buffer_length,
+		&ret_length,
+		buffer,
+		arg_list)))
+	{
+		ttputs("OOPS");
+		return;
+	}
+	else if (ret_length > 0)
+	{
+		char *cp = buffer;
+		while (ret_length-- > 0)
+			ttputc(*cp++);
+	}
 }
 
 
-/***
- *  vmsmove  -  Move the cursor (0 origin)
- *
- *  Nothing returned
- ***/
 static void
 vmsmove (int row, int col)
 {
-	putpad_tgoto(SMG$K_SET_CURSOR_ABS, row+1, col+1);
+	vmsvt_tgoto(SMG$K_SET_CURSOR_ABS, row+1, col+1);
 }
 
 #if OPT_VIDEO_ATTRS
@@ -297,7 +301,7 @@ vmsattr(UINT attr)
 		for (n = 0; n < TABLESIZE(tbl); n++) {
 			if ((tbl[n].mask & diff) != 0
 			 && (tbl[n].mask & attr) == 0
-			 && (s = *(tbl[n].end))  != 0) {
+			 && (s = *(tbl[n].end))	 != 0) {
 				ttputs(s);
 #if OPT_COLOR
 				if (!ends)	/* do this once */
@@ -353,11 +357,6 @@ UINT state)		/* FALSE = normal video, TRUE = reverse video */
 
 #endif	/* OPT_VIDEO_ATTRS */
 
-/***
- *  vmseeol  -  Erase to end of line
- *
- *  Nothing returned
- ***/
 static void
 vmseeol(void)
 {
@@ -365,11 +364,6 @@ vmseeol(void)
 }
 
 
-/***
- *  vmseeop  -  Erase to end of page (clear screen)
- *
- *  Nothing returned
- ***/
 static void
 vmseeop(void)
 {
@@ -377,71 +371,78 @@ vmseeop(void)
 }
 
 
-/***
- *  vmsgetstr  -  Get an SMG string capability by name
- *
- *  Returns:	Escape sequence
- *		NULL	No escape sequence available
- ***/
-static char *
-vmsgetstr(int request_code)
+
+static void
+cache_capabilities(void)
 {
-	register char * result;
-	static char seq_storage[1024];
-	static char * buffer = seq_storage;
-	static int arg_list[] = { 1, 1 };
-	int max_buffer_length, ret_length;
+    static struct caps_struct
+    {
+	long  code;
+	char **cap_string;
+    } tbl[] =
+    {
+	{ SMG$K_BEGIN_REVERSE,	     &tc_SO },
+	{ SMG$K_END_REVERSE,	     &tc_SE },
+#if OPT_VIDEO_ATTRS
+	{ SMG$K_BEGIN_BOLD,	     &tc_MD },
+	{ SMG$K_END_BOLD,	     &tc_ME },
+	{ SMG$K_BEGIN_UNDERSCORE,    &tc_US },
+	{ SMG$K_END_UNDERSCORE,	     &tc_UE },
+#endif
+#if OPT_FLASH
+	{ SMG$K_DARK_SCREEN,	     &dark_on },
+	{ SMG$K_LIGHT_SCREEN,	     &dark_off },
+#endif
+	{ SMG$K_ERASE_TO_END_LINE,   &erase_to_end_line },
+	{ SMG$K_ERASE_WHOLE_DISPLAY, &erase_whole_display },
+	{ SMG$K_INSERT_LINE,	     &insert_line },	/* al */
+	{ SMG$K_DELETE_LINE,	     &delete_line },	/* dl */
+	{ SMG$K_SCROLL_FORWARD,	     &scroll_forw },	/* SF */
+	{ SMG$K_SCROLL_REVERSE,	     &scroll_back },	/* SR */
+	{ SMG$K_SET_SCROLL_REGION,   &scroll_regn },	/* CS */
+	{ SMG$K_WIDTH_NARROW,	     &set_narrow },	/* 80 columns */
+	{ SMG$K_WIDTH_WIDE,	     &set_wide },	/* 132 columns */
+    };
+    char	       *buf;
+    struct caps_struct *csp;
+    int		       i, buf_len, ret_len;
+    long	       rqst_code;
+    static char	       storage[1024];
 
-	/*  Precompute buffer length */
-
-	max_buffer_length = (seq_storage + sizeof(seq_storage)) - buffer;
-
-	/* Get terminal commands sequence from master table */
-
-	if ((smg$get_term_data(	/* Get terminal data		*/
-		&termtype,	/* Terminal table address	*/
-		&request_code,	/* Request code			*/
-		&max_buffer_length,/* Maximum buffer length	*/
-		&ret_length,	/* Return length		*/
-		buffer,		/* Capability data buffer	*/
-		arg_list)	/* Argument list array		*/
-
-	/* If this doesn't work, try again with no arguments */
-
-		& 1) == 0 &&
-
-		(smg$get_term_data(	/* Get terminal data		*/
-			&termtype,	/* Terminal table address	*/
-			&request_code,	/* Request code			*/
-			&max_buffer_length,/* Maximum buffer length	*/
-			&ret_length,	/* Return length		*/
-			buffer)		/* Capability data buffer	*/
-
-	/* Return NULL pointer if capability is not available */
-
-			& 1) == 0)
-				return NULL;
-
-	/* Check for empty result */
-	if (ret_length == 0)
-		return NULL;
-
-	/* Save current position so we can return it to caller */
-
-	result = buffer;
-
-	/* NIL terminate the sequence for return */
-
-	buffer[ret_length] = 0;
-
-	/* Advance buffer */
-
-	buffer += ret_length + 1;
-
-	/* Return capability to user */
-	return result;
+    for (i = 0, buf = storage, csp = tbl; i < TABLESIZE(tbl); i++, csp++)
+    {
+	buf_len = (storage + sizeof(storage)) - buf;
+	if (!$VMS_STATUS_SUCCESS(smg$get_term_data(&termtype,
+			       &csp->code,
+			       &buf_len,
+			       &ret_len,
+			       buf)) || ret_len == 0)
+	{
+	    *(csp->cap_string) = NULL;
+	}
+	else
+	{
+	    buf[ret_len]       = 0;
+	    *(csp->cap_string) = buf;
+	    buf		      += ret_len + 1;
+	}
+    }
+    rqst_code = SMG$K_COLUMNS;
+    if (!$VMS_STATUS_SUCCESS(smg$get_numeric_data(&termtype,
+						  &rqst_code,
+						  &narrow_cols)))
+    {
+	narrow_cols = 80;
+    }
+    rqst_code = SMG$K_WIDE_SCREEN_COLUMNS;
+    if (!$VMS_STATUS_SUCCESS(smg$get_numeric_data(&termtype,
+						  &rqst_code,
+						  &wide_cols)))
+    {
+	wide_cols = 132;
+    }
+    term.maxcols = wide_cols;
 }
-
 
 /** I/O information block definitions **/
 struct iosb {			/* I/O status block			*/
@@ -458,22 +459,16 @@ struct termchar {		/* Terminal characteristics		*/
 };
 static struct termchar tc;	/* Terminal characteristics		*/
 
-/***
- *  vmsgtty - Get terminal type from system control block
- *
- *  Nothing returned
- ***/
 static void
-vmsgtty(void)
+get_terminal_type(void)
 {
 	short fd;
-	int status;
+	int status, deassign_status;
 	struct iosb iostatus;
 	$DESCRIPTOR(devnam, "SYS$COMMAND");
 
 	/* Assign input to a channel */
-	status = sys$assign(&devnam, &fd, 0, 0);
-	if ((status & 1) == 0)
+	if (!$VMS_STATUS_SUCCESS(status = sys$assign(&devnam, &fd, 0, 0)))
 		tidy_exit(status);
 
 	/* Get terminal characteristics */
@@ -488,60 +483,27 @@ vmsgtty(void)
 		0, 0, 0, 0);		/* P3-P6 unused			*/
 
 	/* De-assign the input device */
-	if ((sys$dassgn(fd) & 1) == 0)
-		tidy_exit(status);
+	if (!$VMS_STATUS_SUCCESS(deassign_status = sys$dassgn(fd)))
+		tidy_exit(deassign_status);
 
-	/* Jump out if bad status */
-	if ((status & 1) == 0)
+	/* Jump out if bad qiow status */
+	if (!$VMS_STATUS_SUCCESS(status))
 		tidy_exit(status);
 	if ((iostatus.i_cond & 1) == 0)
 		tidy_exit(iostatus.i_cond);
 }
 
-
-/***
- *  vmsopen  -  Get terminal type and open terminal
- *
- *  Nothing returned
- ***/
 static void
 vmsopen(void)
 {
-	static struct {
-		int	smg_code;
-		char **	string;
-	} tcaps[] = {
-		{ SMG$K_BEGIN_REVERSE,		&tc_SO	},
-		{ SMG$K_END_REVERSE,		&tc_SE	},
-#if OPT_VIDEO_ATTRS
-		{ SMG$K_BEGIN_BOLD,		&tc_MD	},
-		{ SMG$K_END_BOLD,		&tc_ME	},
-		{ SMG$K_BEGIN_UNDERSCORE,	&tc_US	},
-		{ SMG$K_END_UNDERSCORE,		&tc_UE	},
-#endif
-#if OPT_FLASH
-		{ SMG$K_DARK_SCREEN,		&dark_on	},
-		{ SMG$K_LIGHT_SCREEN,		&dark_off	},
-#endif
-		{ SMG$K_ERASE_TO_END_LINE,	&erase_to_end_line },
-		{ SMG$K_ERASE_WHOLE_DISPLAY,	&erase_whole_display },
-		{ SMG$K_INSERT_LINE,		&insert_line	},	/* al */
-		{ SMG$K_DELETE_LINE,		&delete_line	},	/* dl */
-		{ SMG$K_SCROLL_FORWARD,		&scroll_forw	},	/* SF */
-		{ SMG$K_SCROLL_REVERSE,		&scroll_back	},	/* SR */
-		{ SMG$K_SET_SCROLL_REGION,	&scroll_regn	},	/* CS */
-	};
-
 	int	i, keyseq_tablesize;
 	struct vmskeyseqs *keyseqs;
 
-
-	/* Get terminal type */
-	vmsgtty();
-	if (tc.t_type == TT$_UNKNOWN) {
+	get_terminal_type();
+	if (tc.t_type == TT$_UNKNOWN)
+	{
 		printf("Terminal type is unknown!\n");
-		printf("Try set your terminal type with SET TERMINAL/INQUIRE\n");
-		printf("Or get help on SET TERMINAL/DEVICE_TYPE\n");
+		printf("Set your terminal type using $ SET TERMINAL/INQUIRE\n");
 		tidy_exit(3);
 	}
 	if (tc.t_type != TT$_VT52)
@@ -557,9 +519,8 @@ vmsopen(void)
 
 	/* Access the system terminal definition table for the		*/
 	/* information of the terminal type returned by IO$_SENSEMODE	*/
-	if ((smg$init_term_table_by_type(&tc.t_type, &termtype) & 1) == 0) {
+	if (!$VMS_STATUS_SUCCESS(smg$init_term_table_by_type(&tc.t_type, &termtype)))
 		return;
-	}
 
 	/* Set sizes */
 	term.rows = ((UINT) tc.t_mandl >> 24);
@@ -571,42 +532,38 @@ vmsopen(void)
 	if (term.maxcols < term.cols)
 		term.maxcols = term.cols;
 
-	/* Get some capabilities */
-	for (i = 0; i < sizeof(tcaps)/sizeof(tcaps[0]); i++) {
-		*(tcaps[i].string) = vmsgetstr(tcaps[i].smg_code);
-	}
+	cache_capabilities();
 
-	revexist	= tc_SO	!= NULL
-		&&	  tc_SE	!= NULL;
-
+	revexist = (tc_SO != NULL && tc_SE != NULL);
 	eolexist = erase_whole_display != NULL;
 
 	/*
 	 * I tried 'vmsgetstr()' for a VT100 terminal and it had no codes
-	 * for insert_line or for delete_line.  (Have to work up a test for
-	 * that).
+	 * for insert_line or for delete_line.	(Have to work up a test for
+	 * that) - TD
 	 */
 
-	if (scroll_regn && scroll_back) {
+	if (scroll_regn && scroll_back)
+	{
 		if (scroll_forw == NULL) /* assume '\n' scrolls forward */
 			scroll_forw = "\n";
 		term.scroll = vmsscroll_reg;
-	} else if (delete_line && insert_line) {
-		term.scroll = vmsscroll_delins;
-	} else {
-		term.scroll = nullterm_scroll;
 	}
+	else if (delete_line && insert_line)
+		term.scroll = vmsscroll_delins;
+	else
+		term.scroll = nullterm_scroll;
 
 	/* Set resolution */
-	(void)strcpy(screen_desc, (term.cols != 132) ? "NORMAL" : "WIDE");
+	(void) strcpy(screen_desc, (term.cols == narrow_cols) ? "NORMAL" : "WIDE");
 
 	/* Open terminal I/O drivers */
 	ttopen();
 
 	/* Set predefined keys */
-	for (i = keyseq_tablesize; i--; ) {
+	for (i = keyseq_tablesize; i--; )
 		addtosysmap(keyseqs[i].seq, strlen(keyseqs[i].seq), keyseqs[i].code);
-	}
+
 	initialized = TRUE;
 }
 
@@ -675,11 +632,11 @@ vmsscroll_delins(int from, int to, int n)
 static void
 vmsscrollregion(int top, int bot)
 {
-	putpad_tgoto(SMG$K_SET_SCROLL_REGION, top+1, bot+1);
+	vmsvt_tgoto(SMG$K_SET_SCROLL_REGION, top+1, bot+1);
 }
 
 /***
- *  vmscres  -  Change screen resolution
+ *  vmscres  -	Change screen resolution
  *
  *  support these values:   WIDE -> 132 columns, NORMAL -> 80 columns
  *
@@ -689,7 +646,7 @@ static int
 vmscres(const char *res)
 {
     char buf[NLINE];
-    int  rc = FALSE;
+    int	 rc = FALSE;
 
     if (tc.t_type == TT$_VT52)
     {
@@ -699,17 +656,17 @@ vmscres(const char *res)
 
     strcpy(buf, res);
     mkupper(buf);
-    if (strcmp(buf, "WIDE") == 0)
+    if (strcmp(buf, "WIDE") == 0 && set_wide != 0)
     {
-	ttputs(COLS_132);
-	term.cols = 132;
-	rc	    = TRUE;
+	ttputs(set_wide);
+	term.cols = wide_cols;
+	rc	  = TRUE;
     }
-    else if (strcmp(buf, "NORMAL") == 0)
+    else if (strcmp(buf, "NORMAL") == 0 && set_narrow != 0)
     {
-	ttputs(COLS_80);
-	term.cols = 80;
-	rc	    = TRUE;
+	ttputs(set_narrow);
+	term.cols = narrow_cols;
+	rc	  = TRUE;
     }
     else
 	mlforce("[invalid sres value (use NORMAL or WIDE)]");
@@ -731,7 +688,7 @@ vmsclose(void)
 	 */
 
 	if (tc.t_width != term.cols)
-	    ttputs((tc.t_width == 80) ? COLS_80 : COLS_132);
+	    vmscres((tc.t_width == narrow_cols) ? "NORMAL" : "WIDE");
     }
     ttclose();
 }
@@ -739,7 +696,7 @@ vmsclose(void)
 
 
 /***
- *  vmsbeep  -  Ring the bell
+ *  vmsbeep  -	Ring the bell
  *
  *  Nothing returned
  ***/
@@ -753,6 +710,8 @@ vmsbeep(void)
 	{
 		hit = 1;
 		ttputs(dark_off);
+		term.flush();
+		catnap(200, FALSE);
 		ttputs(dark_on);
 	}
 	if (! hit && tc.t_type != TT$_VT52)
@@ -761,7 +720,7 @@ vmsbeep(void)
 		{
 			{ NULL, NULL },		       /* vtflash = off */
 			{ VTFLASH_NORMSEQ, VTFLASH_REVSEQ }, /* reverse */
-			{ VTFLASH_REVSEQ, VTFLASH_NORMSEQ }, /* normal  */
+			{ VTFLASH_REVSEQ, VTFLASH_NORMSEQ }, /* normal	*/
 		};
 		char *str1, *str2;
 		int  val;
@@ -773,7 +732,7 @@ vmsbeep(void)
 			str2 = seq[val][1];
 			ttputs(str1);
 			term.flush();
-			catnap(150, FALSE);
+			catnap(200, FALSE);
 			ttputs(str2);
 			hit = 1;
 		}
@@ -785,13 +744,8 @@ vmsbeep(void)
 
 #else
 
-/***
- *  hellovms  -  Avoid error because of empty module
- *
- *  Nothing returned
- ***/
 void
-hellovms(void)
+vmsvt_dummy(void)
 {
 }
 

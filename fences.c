@@ -8,7 +8,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.69 1999/04/14 22:29:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.70 1999/04/18 18:41:30 tom Exp $
  *
  */
 
@@ -135,7 +135,6 @@ match_complex(TRACEARG(int group) LINE *lp, struct VAL *vals)
 #define any_rexp(bv,n) (bv[n].vp->r)
 
 	for (j = 0; j < TABLESIZE(modes); j++) {
-		/* fix for CC_CANNOT_OFFSET_CASES */
 		switch (modes[j]) {
 		case CPP_IF:		k = VAL_FENCE_IF;	break;
 		case CPP_ELIF:		k = VAL_FENCE_ELIF;	break;

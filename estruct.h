@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.390 1999/04/14 23:33:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.391 1999/04/18 18:41:48 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -132,7 +132,6 @@
 # define HAVE_STRERROR		1
 # define HAVE_SYS_UTIME_H	1
 # define CPP_SUBS_BEFORE_QUOTE	1
-# define CC_CANNOT_OFFSET_CASES	1
 #endif
 
 #if CC_DJGPP
@@ -222,7 +221,6 @@
 # endif
 # define SIGT void
 # define SIGRET
-# define CC_CANNOT_OFFSET_CASES 1
 #else
 # define SYS_VMS    0
 #endif
@@ -1194,12 +1192,6 @@ typedef	long		B_COUNT;	/* byte-count */
 #define one_time while(malloc(1)==0)
 #else
 #define one_time while(0)
-#endif
-
-	/* Some lint's do, many don't like this */
-#ifdef lint
-#undef  CC_CANNOT_OFFSET_CASES
-#define CC_CANNOT_OFFSET_CASES 1
 #endif
 
 /*

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.272 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.273 1999/04/18 18:41:04 tom Exp $
  *
  */
 
@@ -2555,7 +2555,6 @@ char	**msptr)
 	register char *ms = msptr ? *msptr : 0;
 	register SIZE_T mcnt = 0;
 
-#if CC_CANNOT_OFFSET_CASES
 	PutMajormode(bp)
 #if !OPT_MAJORMODE
 	PutMode(MDCMOD,		"cmode")
@@ -2568,31 +2567,6 @@ char	**msptr)
 	PutMode(MDVIEW,		"view-only")
 #if OPT_LCKFILES
 	PutMode(MDLOCKED,	"locked by")
-#endif
-#else
-	static	const	struct {
-		int   mode;
-		const char *name;
-	} table[] = {
-#if !OPT_MAJORMODE
-		{MDCMOD,    "cmode"},
-#endif
-#if OPT_ENCRYPT
-		{MDCRYPT,   "crypt"},
-#endif
-		{MDDOS,     "dos-style"},
-		{MDREADONLY,"read-only"},
-		{MDVIEW,    "view-only"},
-#if OPT_LCKFILES
-		{MDLOCKED,  "locked by"},  /* keep this last */
-#endif
-	};
-	register SIZE_T j;
-
-	PutMajormode(bp)
-	for (j = 0; j < TABLESIZE(table); j++) {
-		PutMode(table[j].mode, table[j].name)
-	}
 #endif
 #if OPT_LCKFILES
 	if (ms != 0 && b_val(bp, MDLOCKED))

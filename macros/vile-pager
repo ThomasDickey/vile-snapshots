@@ -12,6 +12,7 @@ set nopopup-msgs
 store-procedure OnRead
 	setl noview
 	1 goto-line
+	filter-til end-of-file "vile-manfilt"
 	attribute-cntl_a-sequences-til end-of-file
 	unmark
 	setl view
@@ -20,4 +21,4 @@ store-procedure OnRead
 ~endm
 setv \$buffer-hook "OnRead"
 EOF/
-vile-manfilt $* | vile @$TMP
+cat $* | vile @$TMP
