@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.321 1997/02/27 11:34:04 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.322 1997/03/01 02:11:23 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -751,18 +751,11 @@ under the same key.
 
 ------------------------
 
-on OS/2, pipes stop working after invoking a process that's linked with EMX
-(e.g., fgrep).  Ordinary OS/2 32-bit applications don't break the pipes (e.g.,
-the shell builtins such as 'dir').
-
-------------------------
-
 The 'qsort' function in Watcom 10.0a for MS-DOS is broken (file-completion
 hangs, probably due to stack overflow).
 
 OS/2 version built with Watcom 10.0a does not open pipes successfully.  Also it
-does not do function keys.  (CSet C/C++ version works properly except for
-interaction with EMX).
+does not do function keys.
 
 ------------------------
 given a :map! of:

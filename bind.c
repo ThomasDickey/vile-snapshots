@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.146 1997/02/11 02:00:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.147 1997/03/01 01:33:42 tom Exp $
  *
  */
 
@@ -1358,8 +1358,8 @@ kbd_erase(void)
 static int
 cs_strcmp(
 int case_insensitive,
-char *s1,
-char *s2)
+const char *s1,
+const char *s2)
 {
 	if (case_insensitive)
 		return stricmp(s1, s2);
@@ -1369,8 +1369,8 @@ char *s2)
 static int
 cs_strncmp(
 int case_insensitive,
-char *s1,
-char *s2,
+const char *s1,
+const char *s2,
 SIZE_T n)
 {
 	if (case_insensitive)
