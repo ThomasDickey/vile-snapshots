@@ -10,7 +10,7 @@
  *
  *                samples\com\oleaut\hello\hello .
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.h,v 1.1 1998/08/16 22:33:35 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.h,v 1.2 1998/08/27 11:07:24 cmorgan Exp $
  */
 
 #ifndef W32OLE_H
@@ -63,10 +63,12 @@ public:
     // IVileAuto methods
     STDMETHOD(get_Application)(IVileAuto **ppvile);
     STDMETHOD(get_FullName)(BSTR *pbstr);
+    STDMETHOD(get_InsertMode)(VARIANT_BOOL *pbool);
+    STDMETHOD(get_IsMinimized)(VARIANT_BOOL *pbool);
     STDMETHOD(get_Name)(BSTR *pbstr);
     STDMETHOD(get_Parent)(IVileAuto **ppvile);
     STDMETHOD(put_Visible)(VARIANT_BOOL bVisible);
-    STDMETHOD(get_Visible)(VARIANT_BOOL FAR* pbool);
+    STDMETHOD(get_Visible)(VARIANT_BOOL *pbool);
     STDMETHOD(ForegroundWindow)();
     STDMETHOD(Minimize)();
     STDMETHOD(Quit)();
@@ -86,7 +88,7 @@ public:
 private:
     LPTYPEINFO m_ptinfo;           // Vile application type information
     BSTR m_bstrFullName;           // Full name of application.
-    BOOL m_bVisible;               // Editor visible?
+    VARIANT_BOOL m_bVisible;       // Editor visible?
     ULONG m_cRef;                  // Reference count
     HWND m_hwnd;                   // Winvile's window handle.
 };

@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.107 1998/05/28 10:20:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.111 1998/08/27 01:30:06 tom Exp $
  *
  */
 
@@ -61,10 +61,10 @@ static char *vb;	/* visible-bell */
  * set_a_background "setab"   str    "AB"
  * color_names      "colornm" str    "Yw"
  *
- * FIXME: In this version, we don't support color pairs, since the only
- * platform on which it's been tested is Linux, with an IBM-PC compatible
- * display.  Also, the color names are hardcoded.  The termcap must have
- * the following capabilities set:
+ * In this version, we don't support color pairs, since the only terminals on
+ * which it's been tested are "ANSI".  The color names are hardcoded.  The
+ * termcap must have the following capabilities set (or an equivalent
+ * terminfo):
  *	Co (limited to 1 .. (NCOLORS-1)
  *	AF (e.g., "\E[%a+c\036%dm")
  *	AB (e.g., "\E[%a+c\050%dm")
@@ -862,6 +862,7 @@ tcapspal(const char *thePalette)	/* reset the palette registers */
 static void
 tcapattr(UINT attr)
 {
+#define VA_SGR (VASEL|VAREV|VAUL|VAITAL|VABOLD)
 	static	const	struct	{
 		char	**start;
 		char	**end;
@@ -894,7 +895,8 @@ tcapattr(UINT attr)
 			 && (s = *(tbl[n].end))  != 0) {
 				putpad(s);
 #if OPT_COLOR
-				reinitialize_colors();
+				if (!ends)	/* do this once */
+					reinitialize_colors();
 #endif
 				ends = TRUE;
 				diff &= ~(tbl[n].mask);
@@ -914,7 +916,7 @@ tcapattr(UINT attr)
 		if (tc_SO != 0 && tc_SE != 0) {
 			if (ends && (attr & (VAREV|VASEL))) {
 				putpad(tc_SO);
-			} else if (diff) {	/* we didn't find it */
+			} else if (diff & VA_SGR) {  /* we didn't find it */
 				putpad(tc_SE);
 			}
 		}
@@ -1034,13 +1036,13 @@ xterm_mouse_T(int f, int n)
 static int
 xterm_button(int c)
 {
-	WINDOW	*wp;
 	int	event;
 	int	button;
 	int	x;
 	int	y;
 	int	status;
 #if OPT_XTERM >= 3
+	WINDOW	*wp;
 	int	save_row = ttrow;
 	int	save_col = ttcol;
 	int	firstrow, lastrow;
@@ -1054,13 +1056,34 @@ xterm_button(int c)
 	if ((status = (global_g_val(GMDXTERM_MOUSE))) != 0) {
 		beginDisplay();
 		switch(c) {
+#if OPT_XTERM < 3
+		/*
+		 * If we get a click on a modeline, clear the current selection,
+		 * if any.  Allow implied movement of the mouse (distance between
+		 * pressing and releasing a mouse button) to drag the modeline.
+		 *
+		 * Likewise, if we get a click _not_ on a modeline, make that
+		 * start/extend a selection.
+		 */
+		case 'M':	/* button-event */
+			event	= keystroke();
+			x	= XtermPos() + x_origin - 1;
+			y	= XtermPos() + y_origin - 1;
+			button	= (event & 3) + 1;
+
+			if (button > 3)
+				button = 0;
+			TRACE(("MOUSE-button event %d -> btn %d loc %d.%d\n", event, button, y, x))
+			status = on_mouse_click(button, y, x);
+			break;
+#else /* OPT_XTERM >=3, highlighting mode */
 		case 'M':	/* button-event */
 			event	= keystroke();
 			x	= XtermPos() + x_origin;
 			y	= XtermPos() + y_origin;
 
 			button	= (event & 3) + 1;
-			TRACE(("M-button event:%d x:%d y:%d\n", event, x, y))
+			TRACE(("MOUSE-button event:%d x:%d y:%d\n", event, x, y))
 			if (button > 3) {
 				endofDisplay();
 				return TRUE; /* button up */
@@ -1070,7 +1093,6 @@ xterm_button(int c)
 				kbd_alarm();
 				return ABORT;
 			}
-#if OPT_XTERM >= 3
 			/* Tell the xterm how to highlight the selection.
 			 * It won't do anything else until we do this.
 			 */
@@ -1086,7 +1108,6 @@ xterm_button(int c)
 			(void)lsprintf(temp, fmt, 1, x, y, firstrow, lastrow);
 			putpad(temp);
 			TTflush();
-#endif	/* OPT_XTERM >= 3 */
 			/* Set the dot-location if button 1 was pressed in a
 			 * window.
 			 */
@@ -1094,32 +1115,27 @@ xterm_button(int c)
 			 && button == 1
 			 && !reading_msg_line
 			 && setcursor(y-1, x-1)) {
-				/*mlerase();*/
 				(void)update(TRUE);
 				status = TRUE;
 			} else if (button <= 3) {
-#if OPT_XTERM >= 3
 				/* abort the selection */
 				(void)lsprintf(temp, fmt, 0, x, y, firstrow, lastrow);
 				putpad(temp);
 				TTflush();
-#endif	/* OPT_XTERM >= 3 */
 				status = ABORT;
 			} else {
 				status = FALSE;
 			}
 			break;
-#if OPT_XTERM >= 3
 		case 't':	/* reports valid text-location */
 			x = XtermPos();
 			y = XtermPos();
 
-			TRACE(("t: x:%d y:%d\n", x, y))
+			TRACE(("MOUSE-valid: x:%d y:%d\n", x, y))
 			setwmark(y-1, x-1);
 			yankregion();
 
 			movecursor(save_row, save_col);
-			/*mlerase();*/
 			(void)update(TRUE);
 			break;
 		case 'T':	/* reports invalid text-location */
@@ -1143,7 +1159,7 @@ xterm_button(int c)
 			mousex = XtermPos();	/* location at mouse-up */
 			mousey = XtermPos();
 
-			TRACE(("T: start(%d,%d) end(%d,%d) mouse(%d,%d)\n",
+			TRACE(("MOUSE-invalid: start(%d,%d) end(%d,%d) mouse(%d,%d)\n",
 				starty, startx,
 				endy,   endx,
 				mousey, mousex))
@@ -1155,10 +1171,9 @@ xterm_button(int c)
 
 			DOT = save_dot;
 			movecursor(save_row, save_col);
-			/*mlerase();*/
 			(void)update(TRUE);
 			break;
-#endif /* OPT_XTERM >= 3 */
+#endif /* OPT_XTERM < 3 */
 		default:
 			status = FALSE;
 		}

@@ -41,7 +41,9 @@
  *    Win95 shell does not exhibit communication problems similar to
  *    those described above (e.g., Thompson Toolkit Shell), vile may be
  *    forced to use native Win32 pipes by setting the global mode
- *    "w32pipes" (e.g., "se w32pipes").
+ *    "w32pipes" (e.g., "se w32pipes").  For further details, including
+ *    a description of "force-console" mode, refer to the file
+ *    doc/w32modes.doc .
  *
  * -- This module's native pipes implementation exhibits various problems
  *    when a 16-bit console app is exec'd.  On a win95 host, the editor
@@ -57,7 +59,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.13 1998/07/27 23:32:13 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.14 1998/08/17 22:10:48 cmorgan Exp $
  */
 
 #include <windows.h>

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_0j
+MANIFEST for vile, version v8_0k
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -135,6 +135,7 @@ doc/menus.doc                   description of xvile (Xm and Xaw) menus
 doc/modes.doc                   overview of modes/majormodes
 doc/oleauto.doc                 document Winvile OLE
 doc/perl.doc                    notes about perl interface to vile
+doc/visvile.doc                 document visvile.dll
 doc/w32modes.doc                describe win32-specific modes
 macros                          subdirectory
 macros/digraphs.rc              macros for inserting digraphs
@@ -149,3 +150,24 @@ perl/search.pl                  perl lookalike for vile's search commands
 perl/shell.pl                   spawn a shell via a pty
 perl/tailf.pl                   do a "tail -f"
 perl/visit.pl                   utility-script for vile's hypertext
+visvile                         subdirectory
+visvile/commands.cpp            implement commands for visvile.dll
+visvile/commands.h              implement commands for visvile.dll
+visvile/dsaddin.cpp             developer-studio add-in support
+visvile/dsaddin.h               developer-studio add-in support
+visvile/oleauto.cpp             manage winvile OLE automation server
+visvile/oleauto.h               interface for oleauto.cpp
+visvile/readme.txt              overview of visvile.dll
+visvile/resource.h              generated definitions for visvile.dll
+visvile/stdafx.cpp              standard-includes interface for visvile.dll
+visvile/stdafx.h                standard-includes interface for visvile.dll
+visvile/tbarlrge.bmp            large toolbar icons for visvile
+visvile/tbarmedm.bmp            medium toolbar icons for visvile
+visvile/visvile.cpp             initialization routines for visvile.dll
+visvile/visvile.def             declares module parameters for visvile.dll
+visvile/visvile.dsp             developer-studio-project file
+visvile/visvile.dsw             developer-studio-workspace file
+visvile/visvile.h               interface/common defs for visvile
+visvile/visvile.odl             OLE definition for visvile
+visvile/visvile.rc              resource-file for visvile
+visvile/visvile.rc2             resource-file for visvile

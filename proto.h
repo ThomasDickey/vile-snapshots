@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.293 1998/08/17 01:40:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.295 1998/08/27 10:29:43 tom Exp $
  *
  */
 
@@ -790,14 +790,17 @@ extern	void	free_attrib	(BUFFER *bp, AREGION *ap);
 extern	void	free_attribs	(BUFFER *bp);
 extern	void	sel_reassert_ownership (BUFFER *bp);
 extern	void	sel_release	(void);
+#if OPT_MOUSE
+extern	int	on_mouse_click	(int button, int y, int x);
+#endif
+#if OPT_PERL || OPT_TCL
+extern	BUFFER *get_selection_buffer_and_region(AREGION *arp);
+#endif /* OPT_PERL || OPT_TCL */
 #if OPT_SEL_YANK
 extern	int	sel_yank	(int reg);
 extern	int	sel_attached	(void);
 extern	BUFFER *sel_buffer	(void);
 #endif
-#if OPT_PERL || OPT_TCL
-extern	BUFFER *get_selection_buffer_and_region(AREGION *arp);
-#endif /* OPT_PERL || OPT_TCL */
 #endif /* OPT_SELECTIONS */
 
 /* spawn.c */
@@ -1002,6 +1005,7 @@ extern	void	gui_resize		(int cols, int rows);
 #endif
 
 #if DISP_NTWIN
+extern	void	gui_version(char *program);
 extern	void	gui_usage(char *program, const char *const *options, size_t length);
 #endif
 

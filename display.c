@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.252 1998/07/22 00:59:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.253 1998/08/27 01:55:56 tom Exp $
  *
  */
 
@@ -846,6 +846,7 @@ kbd_flush(void)
 				llength(wminip->w_dot.l),
 				llength(wminip->w_dot.l),
 				wminip->w_dot.l->l_text));
+			lsettrimmed(wminip->w_dot.l);
 			vtset(wminip->w_dot.l, wminip);
 		}
 

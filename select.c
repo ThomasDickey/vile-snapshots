@@ -18,13 +18,23 @@
  * transfering the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.70 1998/07/03 00:20:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.75 1998/08/27 10:23:55 tom Exp $
  *
  */
 
 #include	"estruct.h"
 #include	"edef.h"
 #include	"nefunc.h"
+
+#define BTN_BEGIN   1
+#define BTN_PASTE   2
+#define BTN_EXTEND  3
+
+#define SEL_BEGIN   10	/* button 1 up */
+#define SEL_PASTE   11	/* button 2 up */
+#define SEL_EXTEND  12	/* button 3 up */
+#define SEL_RELEASE 13	/* click on modeline */
+#define SEL_FINISH  14	/* finish a selection */
 
 #if OPT_SELECTIONS
 
@@ -565,16 +575,193 @@ selectregion(void)
 	return status;
 }
 
+static void
+sweepmsg(const char *msg)
+{
+	char	temp[NLINE];
+	(void)kcod2pstr(fnc2kcod(&f_multimotion), temp);
+	mlforce("[%s (end with %*S)]", msg, *temp,temp+1);
+}
+
+static int
+release_selection(int status)
+{
+	TRACE(("MOUSE release selection\n"))
+	if (doingsweep) {
+		doingsweep = FALSE;
+		if (status != TRUE)
+			mlforce("[Sweeping: Aborted]");
+		else
+			mlerase();
+	}
+	sel_release();
+	return status;
+}
+
+#if OPT_MOUSE
+static int
+paste_selection(void)
+{
+	if (!doingsweep) {
+		TRACE(("MOUSE paste selection\n"))
+		mayneedundo();
+		return putafter(FALSE, 1);
+	}
+	return SEL_PASTE;
+}
+
+/*
+ * On button press, we get an explicit number (1,2,3), and on release we don't
+ * really know which button, but assume it is the last-pressed button.
+ */
+int
+on_mouse_click(int button, int y, int x)
+{
+	static int first_x, first_y, pending;
+	WINDOW *this_wp, *that_wp;
+	int status;
+
+	if (button > 0) {
+		if ((this_wp = row2window(y)) != 0
+		 && (y != mode_row(this_wp))) {
+			if (!doingsweep) {
+				if (button == BTN_EXTEND) {
+					first_x = offs2col(this_wp, this_wp->w_dot.l, this_wp->w_dot.o);
+					first_y = line_no(this_wp->w_bufp, this_wp->w_dot.l)
+						- line_no(this_wp->w_bufp, this_wp->w_line.l);
+				} else {
+					first_x = x;
+					first_y = y;
+				}
+			}
+			status = setcursor(y, x);
+			/*
+			 * Check for button1-down while we're in multimotion
+			 * sweep, so we can suppress highlighting extension.
+			 */
+			if (button != BTN_EXTEND
+			 && status == TRUE
+			 && doingsweep) {
+				status = SORTOFTRUE;
+				if (button == BTN_BEGIN) {
+					first_x = x;
+					first_y = y;
+				}
+			}
+		} else { /* pressed button on modeline */
+			status = SORTOFTRUE;
+			first_x = x;
+			first_y = y;
+		}
+		pending = button;
+	} else if (pending) {
+		button  = pending;
+		pending = FALSE;
+		this_wp = row2window(y);
+		that_wp = row2window(first_y);
+		if (this_wp == 0
+		 || that_wp == 0
+		 || reading_msg_line) {
+			TRACE(("MOUSE cannot move msg-line\n"))
+			status = FALSE;
+		} else if (insertmode
+		 && (this_wp != curwp || that_wp != curwp)) {
+			TRACE(("MOUSE cannot move from window while inserting\n"))
+			kbd_alarm();
+			status = ABORT;
+		} else if (first_y == mode_row(that_wp)) { /* drag modeline? */
+			if (first_y == y) {
+				sel_release();
+				status = SEL_RELEASE;
+			} else {
+				WINDOW *save_wp = curwp;
+				TRACE(("MOUSE dragging modeline\n"))
+				set_curwp(that_wp);
+				status = shrinkwind(FALSE, first_y - y);
+				set_curwp(save_wp);
+			}
+		} else if (y != first_y || x != first_x) { /* drag selection */
+			if (button == BTN_PASTE) {
+				(void) setcursor(y, x);
+				status = paste_selection();
+			} else if (doingsweep) {
+				switch (button) {
+				case BTN_BEGIN:
+					(void) release_selection(TRUE);
+					status = setcursor(first_y, first_x);
+					if (status == TRUE) {
+						MK = DOT;
+						status = SEL_BEGIN;
+						TRACE(("MOUSE setting SEL_BEGIN MK %d.%d\n",
+							line_no(curbp, MK.l), MK.o))
+					}
+					break;
+				case BTN_PASTE:
+					(void) setcursor(y, x);
+					status = paste_selection();
+					break;
+				default:
+					(void) setcursor(y, x);
+					status = SEL_EXTEND;
+					TRACE(("MOUSE setting SEL_EXTEND DOT %d.%d MK %d.%d\n",
+						line_no(curbp, MK.l), MK.o,
+						line_no(curbp, DOT.l), DOT.o))
+					break;
+				}
+			} else {
+				TRACE(("MOUSE begin multimotion on button%d-up\n", button))
+				if (button == BTN_EXTEND) {
+					(void) setcursor(y, x);
+					y = first_y;
+					x = first_x;
+				}
+				doingsweep = SORTOFTRUE;
+				(void)sel_begin();
+				(void)sel_setshape(EXACT);
+				status = setcursor(y, x);
+				status = multimotion(TRUE,1);
+				TRACE(("MOUSE end multimotion after button%d-up\n", button))
+				if (status == SEL_PASTE)
+					status = paste_selection();
+			}
+		} else { /* position the cursor */
+			TRACE(("MOUSE button %d position cursor\n", button))
+			(void) setcursor(y, x);
+			switch (button) {
+			case BTN_BEGIN:
+				status = SEL_FINISH;
+				break;
+			case BTN_PASTE:
+				status = paste_selection();
+				break;
+			default:
+				status = release_selection(TRUE);
+				break;
+			}
+		}
+	} else {
+		TRACE(("MOUSE ignored (illegal state)\n"))
+		status = FALSE;
+	}
+
+	if (status == TRUE || status >= SORTOFTRUE)
+		(void)update(TRUE);
+
+	TRACE(("MOUSE status:%d\n", status))
+	return status;
+}
+#endif
+
 int
 multimotion(int f, int n)
 {
 	const CMDFUNC	*cfp;
-	int s,c,waserr;
+	int s, c, waserr;
+	int pasting;
 	REGIONSHAPE shape;
 	MARK savedot;
 	MARK savemark;
 	MARK realdot;
-	char	temp[NLINE];
 	BUFFER *origbp = curbp;
 	static int wassweephack = FALSE;
 
@@ -594,7 +781,8 @@ multimotion(int f, int n)
 
 	sweephack = FALSE;
 	savedot = DOT;
-	if (doingsweep) { /* the same command terminates as starts the sweep */
+	switch (doingsweep) {
+	case TRUE:	/* the same command terminates as starts the sweep */
 		doingsweep = FALSE;
 		mlforce("[Sweeping: Completed]");
 		regionshape = shape;
@@ -606,15 +794,26 @@ multimotion(int f, int n)
 		if (wassweephack)
 			sweephack = wassweephack;
 		return TRUE;
-	} else {
-		(void)kcod2pstr(fnc2kcod(&f_multimotion), temp);
+	case SORTOFTRUE:
 		doingsweep = TRUE;
-		mlwrite("[Begin cursor sweep... (end with %*S)]",*temp,temp+1);
+		sweepmsg("Begin cursor sweep...");
+		sel_extend(TRUE,(regionshape != RECTANGLE && sweephack));
+		savedot = MK;
+		TRACE(("MOUSE BEGIN DOT: %d.%d MK %d.%d\n",
+			line_no(curbp, DOT.l), DOT.o,
+			line_no(curbp, MK.l), MK.o))
+		break;
+	case FALSE:
+		doingsweep = TRUE;
+		sweepmsg("Begin cursor sweep...");
 		(void)sel_begin();
 		(void)sel_setshape(shape);
+		break;
 	}
 
 	waserr = TRUE; /* to force message "state-machine" */
+	realdot = DOT;
+	pasting = FALSE;
 
 	while (doingsweep) {
 
@@ -626,10 +825,7 @@ multimotion(int f, int n)
 
 		if (ABORTED(c)
 		 || curbp != origbp) {
-			doingsweep = FALSE;
-			mlforce("[Sweeping: Aborted]");
-			sel_release();
-			return FALSE;
+			return release_selection(FALSE);
 		}
 
 		f = FALSE;
@@ -641,22 +837,61 @@ multimotion(int f, int n)
 		cfp = kcod2fnc(c);
 		if ( (cfp != NULL)
 		 && ((cfp->c_flags & MOTION) != 0)) {
+			MARK testdot;
+
 			wassweephack = sweephack;
 			sweephack = FALSE;
+			TRACE(("MOUSE TEST DOT: %d.%d MK %d.%d\n",
+				line_no(curbp, DOT.l), DOT.o,
+				line_no(curbp, MK.l), MK.o))
+			testdot = DOT;
+
 			s = execute(cfp, f, n);
-			if (s != TRUE) {
-				mlforce(
-				"[Sweeping: Motion failed. (end with %*S)]",*temp,temp+1);
-				waserr = TRUE;
-			} else {
+			switch (s) {
+			case SEL_RELEASE:
+				TRACE(("MOUSE SEL_RELEASE %d.%d\n",
+					line_no(curbp, DOT.l), DOT.o))
+				return release_selection(TRUE);
+
+			case SEL_PASTE:
+				pasting = TRUE;
+				/* FALLTHRU */
+
+			case SEL_FINISH:
+				doingsweep = FALSE;
+				break;
+
+			case SORTOFTRUE:
+				TRACE(("MOUSE selection pending %d.%d -> %d.%d\n",
+					line_no(curbp, realdot.l), realdot.o,
+					line_no(curbp, testdot.l), testdot.o))
+				realdot = testdot;
+				break;
+
+			case SEL_BEGIN:
+				savedot = MK;
+				TRACE(("MOUSE SEL_BEGIN...\n"))
+				/*FALLTHRU*/
+
+			case SEL_EXTEND:
+				TRACE(("MOUSE SEL_EXTEND from %d.%d to %d.%d\n",
+					line_no(curbp, savedot.l), savedot.o,
+					line_no(curbp, DOT.l), DOT.o))
+				/*FALLTHRU*/
+
+			case TRUE:
 				if (waserr && doingsweep) {
-					mlforce("[Sweeping... (end with %*S)]",*temp,temp+1);
+					sweepmsg("Sweeping...");
 					waserr = FALSE;
 				}
 				realdot = DOT;
 				DOT = savedot;
 				(void)sel_begin();
 				DOT = realdot;
+				TRACE(("MOUSE LOOP save: %d.%d real %d.%d, mark %d.%d\n",
+					line_no(curbp, savedot.l), savedot.o,
+					line_no(curbp, realdot.l), realdot.o,
+					line_no(curbp, MK.l), MK.o))
 				(void)sel_setshape(shape);
 				/* we sometimes want to include DOT.o in the
 				   selection (unless it's a rectangle, in
@@ -664,10 +899,15 @@ multimotion(int f, int n)
 				 */
 				sel_extend(TRUE,(regionshape != RECTANGLE &&
 					sweephack));
+				break;
+
+			default:
+				sweepmsg("Sweeping: Motion failed.");
+				waserr = TRUE;
+				break;
 			}
 		 } else {
-			mlforce(
-			"[Sweeping: Only motions permitted (end with %*S)]",*temp,temp+1);
+			sweepmsg("Sweeping: Only motions permitted");
 			waserr = TRUE;
 		 }
 
@@ -677,8 +917,13 @@ multimotion(int f, int n)
 		it set */
 	if (doingopcmd)
 		pre_op_dot = savedot;
+
 	savedot = DOT;
 	savemark = MK;
+	DOT = realdot;
+	TRACE(("MOUSE SAVE DOT: %d.%d MK %d.%d\n",
+		line_no(curbp, DOT.l), DOT.o,
+		line_no(curbp, MK.l), MK.o))
 	if ((regionshape != RECTANGLE) && sweephack) {
 		if (dot_vs_mark() < 0)
 			MK.o += 1;
@@ -688,7 +933,12 @@ multimotion(int f, int n)
 	s = yankregion();
 	DOT = savedot;
 	MK = savemark;
+
 	sweephack = wassweephack = FALSE;
+
+	if (s == TRUE && pasting)
+		s = SEL_PASTE;
+		
 	return s;
 }
 

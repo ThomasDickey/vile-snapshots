@@ -1,0 +1,169 @@
+                      VisVile -- Developer Studio Support
+                      ===================================
+Within a limited context, winvile may be substituted as the default
+Developer Studio editor.
+
+
+Preconditions
+=============
++ You must be using Developer Studio version 5, which exposes OLE
+  automation "hooks" that permit winvile to augment and/or replace the
+  default editor.  The implementation described within this document will
+  not work with earlier versions of DevStudio and, it's rumored, will not
+  work with DevStudio version 6.
+
++ Obtain or build a version of winvile that supports OLE Automation.
+  Register same.  For further details, refer to the file oleauto.doc,
+  stored in the same directory as this document.  When reading oleauto.doc,
+  note that:
+
+  - step 1 (building the editor) is optional if using pre-built software,
+
+  - step 2 (configuring the editor as a server) is mandatory, and
+
+  - step 3 (manipulating winvile via an automation client) is described
+    in great detail within this document :-) .
+
+
+Installation
+============
+1) Obtain or build visvile.dll, the Developer Studio add-in that actually
+   invokes winvile.  Building visvile.dll is simple.
+
+   a) Use Developer Studio to open the visvile source directory as a
+      project.
+
+   b) Set the "active project configuration" (see the Build Menu) as
+      "VisVile - Win32 Release".
+
+   c) Press F7 (which builds visvile.dll in the Release subdirectory).
+
+2) Copy Release/visvile.dll to a directory location of your choice.
+   It may or may not be important for the destination directory to be a
+   member of your PATH.  On a Win95 host, it is not.
+
+3) On a WinNT host it may be necessary to formally register visvile.dll's
+   type information in the Win32 registry (on a Win95 host it is not).
+   Type registration is accomplished like so:
+
+   a) login to an account with Admin rights,
+   b) open a dos box,
+   c) cd to the destination directory chosen in step 2 above,
+   d) execute this command:    regsvr32 visvile.dll
+
+4) Almost done :-) .  Invoke Developer Studio and incorporate visvile.dll
+   as an add-in using these steps:
+
+   a) Invoke the add-in dialog box via these menus:
+
+          Tools
+             Customize...
+                Add-Ins and Macro Files
+
+   b) Click the Browse button and point Developer Studio at visvile.dll .
+   c) Select visvile.dll (it will be registered as an add-in).
+   d) Close the Customize dialog box.
+
+5) You should immediately notice a new VisVile Toolbar.  Click the first
+   toolbar icon to configure VisVile (configuration options and toolbar
+   icons are discussed shortly).
+
+That's it.  Now, every time Developer Studio is invoked, visvile.dll is
+automatically loaded as an add-in.
+
+
+Configuration Options
+=====================
+There aren't many, yet.
+
+Option Name       Explanation
+-----------       -----------
+Add-in enabled    if checked, VisVile causes winvile to open any new or
+                  existing _text_ document accessed by DevStudio,
+                  provided that the default editor doesn't already have
+                  that document open (see next option).
+
+Close DevStudio copy of text document
+                  if checked, VisVile closes DevStudio's copy of an open
+                  text document after winvile has opened its copy.  This
+                  feature keeps DevStudio from issuing a warning message
+                  each time a project file is modified by an external
+                  editor.  If unchecked, winvile and the DevStudio text
+                  editor co-exist side by side.  But see the Caveats
+                  section below.
+
+
+DevStudio Operations Affected By VisVile
+========================================
+When VisVile is enabled, any operation that causes DevStudio to open a text
+file will instead/also cause winvile to open that file.  Don't forget that
+repeatedly pressing the F4 key within DevStudio following a failed build
+causes winvile to be positioned at the source code line(s) triggering error
+and/or warning messages.
+
+
+Toolbar Icons
+=============
+The first icon, bound to command name "VisVileConfigCmd", configures VisVile.
+
+The second and third icons provide shortcuts for enabling and disabling
+VisVile.  Note that it makes sense to disable VisVile before debugging an
+application (otherwise, the debugger pops up winvile whenever a breakpoint
+is taken).  These icons are bound to command names "VisVileEnableCmd" and
+"VisVileDisableCmd", respectively.
+
+The fourth icon, bound to command name "VisVileOpenDocCmd", forces winvile
+to unconditionally open the text document currently visible in the default
+text editor.  This icon is often useful when VisVile is disabled.
+
+
+Keyboard Shortcuts
+==================
+Use this menu hierarchy:
+
+      Tools
+         Customize...
+            Keyboard (category Add-ins)
+
+to assign DevStudio keyboard shortcuts to any of the command names mentioned
+in the previous section of this document.
+
+
+Caveats
+=======
++ DevStudio sends VisVile a "document opened" event _only_ if the affected
+  document is not currently open in the default editor.  Keep this fact in
+  mind when configuring the "Close DevStudio copy of text document" option.
+  This caveat does not apply to the fourth toolbar icon.
+
++ It makes sense to disable VisVile before debugging an application
+  (otherwise, the debugger pops up winvile whenever a breakpoint is taken).
+
+
+Uninstalling VisVile
+====================
+1) Invoke Developer Studio, invoke the Add-Ins and Macro Files dialog
+   box, and uncheck "Winvile Developer Studio Add-In".
+
+2) If it was necessary to register visvile.dll's type information, open a dos
+   box, cd to the destination directory chosen in installation step 2 above,
+   and execute this command:    regsvr32 -unregister visvile.dll  .
+
+
+Copyright And Acknowledgments
+=============================
+Copyright (C) 1998 Clark Morgan
+
+VisVile is based upon VisVim, written by Heiko Erhardt (Copyright (C) 1997
+Heiko Erhardt).  VisVim is based upon VisEmacs, written by Christopher
+Payne (Copyright (C) Christopher Payne 1997).
+
+VisVile is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+VisVile is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
