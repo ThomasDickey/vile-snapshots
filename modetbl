@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.176 2000/06/06 00:50:56 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.177 2000/06/24 13:12:52 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -352,6 +352,7 @@ string
 "sh"		vl_SHPIPE	OPT_WIDE_CTYPES
 
 .table color
+"fcolor"	ENUM_FCOLOR	DISP_X11
 "default"	ENUM_UNKNOWN
 "black"		0
 "red"		1

@@ -5,7 +5,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995-2000 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.108 2000/02/09 11:31:30 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.109 2000/06/24 12:55:01 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -330,7 +330,6 @@ pinned_tagstack(char *fname /* target of tag/push op */)
 	int    nobufchg, /* TRUE if a call to swbuffer_lfl() will not
 			  * change/re-read current buffer.
 			  */
-	       s,
 	       wdwcnt;
 	WINDOW *wp;
 
@@ -357,7 +356,7 @@ pinned_tagstack(char *fname /* target of tag/push op */)
 			    curwp->w_bufp == bp &&
 			    bp->b_active);
 
-		if ((s = swbuffer_lfl(bp, FALSE, TRUE)) != FALSE)
+		if (swbuffer_lfl(bp, FALSE, TRUE) != FALSE)
 		{
 		    if (nobufchg)
 		    {

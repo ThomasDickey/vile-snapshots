@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.202 2000/06/06 00:57:59 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.203 2000/06/27 23:09:38 tom Exp $
 #
 #
 
@@ -1439,6 +1439,10 @@ setvar		NONE			OPT_EVAL
 	"setv"
 	"set-variable"
 	<set the given vile variable to a value>
+unsetvar	NONE			OPT_EVAL
+	"unsetv"
+	"unset-variable"
+	<reset the given vile variable to an empty string or default-value>
 showcpos	NONE
 	"position"			!FEWNAMES
 	'^G'

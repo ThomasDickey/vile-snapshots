@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.269 2000/02/27 22:03:33 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.270 2000/06/27 23:47:25 tom Exp $
  */
 
 #include	"estruct.h"
@@ -400,6 +400,13 @@ set_buffer_name(BUFFER *bp)
 	markWFMODE(bp);
 }
 
+static int
+cannot_reread(void)
+{
+	mlforce("[Cannot reread]");
+	return FALSE;
+}
+
 /*
  * Read a file into the current
  * buffer. This is really easy; all you do it
@@ -418,22 +425,23 @@ fileread(int f GCC_UNUSED, int n GCC_UNUSED)
 				FILEC_REREAD, fname)) != TRUE)
 			return s;
 	} else if (b_is_temporary(curbp)) {
-		mlforce("[Cannot reread]");
-		return FALSE;
+		return cannot_reread();
 	} else if (!(global_g_val(GMDWARNREREAD) || curbp->b_fname[0] == EOS)
 		 || ((s = mlyesno("Reread current buffer")) == TRUE)) {
 		(void)strcpy(fname, curbp->b_fname);
 		/* Check if we are rereading an unnamed-buffer if it is not
 		 * associated with a file.
 		 */
-		if (curbp->b_fname[0] == EOS
-		   && (eql_bname(curbp, STDIN_BufName)
-		    || eql_bname(curbp, UNNAMED_BufName))) {
-			s = bclear(curbp);
-			if (s == TRUE)
-				mlerase();
-			curwp->w_flag |= WFMODE|WFHARD;
-			return s;
+		if (curbp->b_fname[0] == EOS) {
+			if (eql_bname(curbp, STDIN_BufName)
+			 || eql_bname(curbp, UNNAMED_BufName)) {
+				s = bclear(curbp);
+				if (s == TRUE)
+					mlerase();
+				curwp->w_flag |= WFMODE|WFHARD;
+				return s;
+			}
+			return cannot_reread();
 		}
 	} else {
 		return FALSE;
@@ -1348,6 +1356,26 @@ readlinesmsg(int n, int s, const char *f, int rdo)
 		mlforce("[%s%d lines]",m,n);
 }
 
+static void
+writelinesmsg(char *fn, int nline, B_COUNT nchar)
+{
+	if (!global_b_val(MDTERSE)) {
+		char *aname;
+		const char *action;
+		if ((aname = is_appendname(fn)) != 0) {
+			fn = aname;
+			action = "Appended";
+		} else {
+			action = "Wrote";
+		}
+		mlforce("[%s %d line%s %ld char%s to \"%s\"]",
+			action, nline, PLURAL(nline),
+			nchar, PLURAL(nchar), fn);
+	} else {
+		mlforce("[%d lines]", nline);
+	}
+}
+
 /*
  * Take a (null-terminated) file name, and from it
  * fabricate a buffer name. This routine knows
@@ -1708,21 +1736,7 @@ int	forced)
 #endif
 		s = ffclose();
 		if (s == FIOSUC && msgf) {	/* No close error.	*/
-			if (!global_b_val(MDTERSE)) {
-				char *aname;
-				const char *action;
-				if ((aname = is_appendname(fn)) != 0) {
-					fn = aname;
-					action = "Appended";
-				} else {
-					action = "Wrote";
-				}
-				mlforce("[%s %d line%s %ld char%s to \"%s\"]",
-					action, nline, PLURAL(nline),
-					nchar, PLURAL(nchar), fn);
-			} else {
-				mlforce("[%d lines]", nline);
-			}
+			writelinesmsg(fn, nline, nchar);
 		}
 	} else {				/* Ignore close error	*/
 		(void)ffclose();		/* if a write error.	*/
@@ -1767,12 +1781,13 @@ int	forced)
 int
 kwrite(char *fn, int msgf)
 {
-	register KILL *kp;		/* pointer into kill register */
-	register int	nline;
-	register int	s;
-	register int	c;
-	register int	i;
-	register char	*sp;	/* pointer into string to insert */
+	KILL *kp;		/* pointer into kill register */
+	int	nline;
+	B_COUNT	nchar;
+	int	s;
+	int	c;
+	int	i;
+	char	*sp;	/* pointer into string to insert */
 
 	/* make sure there is something to put */
 	if (kbs[ukb].kbufh == NULL) {
@@ -1791,11 +1806,13 @@ kwrite(char *fn, int msgf)
 	if (msgf == TRUE)
 		mlwrite("[Writing...]");
 	nline = 0;				/* Number of lines.	*/
+	nchar = 0;
 
 	kp = kbs[ukb].kbufh;
 	while (kp != NULL) {
 		i = KbSize(ukb,kp);
 		sp = (char *)kp->d_chunk;
+		nchar += i;
 		while (i--) {
 			if ((c = *sp++) == '\n')
 				nline++;
@@ -1807,11 +1824,7 @@ kwrite(char *fn, int msgf)
 	if (s == FIOSUC) {			/* No write error.	*/
 		s = ffclose();
 		if (s == FIOSUC && msgf) {	/* No close error.	*/
-			if (!global_b_val(MDTERSE))
-				mlwrite("[Wrote %d line%s to %s ]",
-					nline, PLURAL(nline), fn);
-			else
-				mlforce("[%d lines]", nline);
+			writelinesmsg(fn, nline, nchar);
 		}
 	} else	{				/* Ignore close error	*/
 		(void)ffclose();		/* if a write error.	*/

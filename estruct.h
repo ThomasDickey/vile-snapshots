@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.448 2000/05/18 10:11:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.449 2000/06/24 13:13:25 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -883,7 +883,8 @@ typedef enum {
 	RECTANGLE
 } REGIONSHAPE;
 
-#define ENUM_ILLEGAL   (-2)
+#define ENUM_ILLEGAL   (-3)
+#define ENUM_FCOLOR    (-2)
 #define ENUM_UNKNOWN   (-1)
 #define END_CHOICES    { (char *)0, ENUM_ILLEGAL }
 

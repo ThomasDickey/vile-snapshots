@@ -310,6 +310,7 @@ Variables
 	State variable         $curcol
 	Buffer variable        <main.c
 	Interactive variable   @"Enter a filename: "
+	Mode variable          $autoindent
 
 	All temporary variables, and some state variables, may be
 	assigned to, using the "set-variable" command, or "setv"
@@ -967,7 +968,7 @@ Directives
 	$curcol is restored last.
 
 	~local can save/restore the state of mode variables, user variables
-	and the system variables shown with show-variables.  Note that
+	and the state variables shown with show-variables.  Note that
 	setting certain variables, such as the cursor position, will have
 	side effects, i.e., modifying the display.  If these are
 	distracting, use ~hidden to suppress display updates until the
@@ -1314,6 +1315,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.53 2000/06/09 10:07:31 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.54 2000/06/28 01:52:43 cmorgan Exp $
 -----------------------------------
 

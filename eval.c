@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.271 2000/06/06 01:15:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.272 2000/06/27 23:24:12 tom Exp $
  *
  */
 
@@ -45,7 +45,6 @@ static PROC_ARGS *arg_stack;
 
 static	SIZE_T	s2size ( char *s );
 static	char *	s2offset ( char *s, char *n );
-static	int	PromptAndSet ( const char *var, int f, int n );
 static	int	SetVarValue ( VWRAP *var, const char *name, const char *value );
 static	int	lookup_statevar(const char *vname);
 #endif
@@ -964,12 +963,8 @@ unsigned *pos)
 	return status;
 }
 
-/*
- * this is the externally bindable command function.
- * assign a variable a new value -- any type of variable.
- */
-int
-setvar(int f, int n)
+static int
+PromptForVariableName(TBUFF **result)
 {
 	int status;
 	static TBUFF *var;
@@ -979,9 +974,7 @@ setvar(int f, int n)
 		tb_scopy(&var, "");
 	status = kbd_reply("Variable name: ", &var,
 		mode_eol, '=', KBD_NOEVAL|KBD_LOWERC, vars_complete);
-	if (status == TRUE)
-		status = PromptAndSet(tb_values(var), f, n);
-	updatelistvariables();
+	*result = var;
 	return status;
 }
 
@@ -1091,6 +1084,40 @@ set_state_variable(const char *name, const char *value)
 	return status;
 }
 
+/*
+ * this is the externally bindable command function.
+ * assign a variable a new value -- any type of variable.
+ */
+int
+setvar(int f, int n)
+{
+	int status;
+	TBUFF *var;
+
+	if ((status = PromptForVariableName(&var)) == TRUE) {
+		status = PromptAndSet(tb_values(var), f, n);
+	}
+	updatelistvariables();
+	return status;
+}
+
+/*
+ * this is the externally bindable command function.
+ * assign a variable a new value -- any type of variable.
+ */
+/* ARGSUSED */
+int
+unsetvar(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+	int status;
+	TBUFF *var;
+
+	if ((status = PromptForVariableName(&var)) == TRUE) {
+		status = set_state_variable(tb_values(var), "");
+	}
+	updatelistvariables();
+	return status;
+}
 
 /* int set_statevar_val(int vnum, const char *value);  */
 

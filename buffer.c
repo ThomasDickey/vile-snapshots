@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.219 2000/03/13 02:58:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.220 2000/06/24 12:56:56 tom Exp $
  *
  */
 
@@ -673,6 +673,7 @@ usebuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 }
 
 #if !SMALLER
+/* ARGSUSED */
 int
 set_window(int f GCC_UNUSED, int n GCC_UNUSED)
 {
@@ -1142,7 +1143,7 @@ killbuffer(int f, int n)
 	if (!f)
 		n = 1;
 	for_ever {
-		BUFFER *bp_next;
+		BUFFER *bp_next = 0;
 		bufn[0] = EOS;
 		if ((s=ask_for_bname("Kill buffer: ", bufn, sizeof(bufn))) != TRUE)
 			break;

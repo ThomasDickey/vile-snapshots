@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.87 2000/05/14 19:25:43 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.88 2000/06/23 22:15:10 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -234,7 +234,7 @@ AC_CACHE_VAL(cf_cv_dcl_$1,[
 #include <errno.h> ],
     [long x = (long) $1],
     [eval 'cf_cv_dcl_'$1'=yes'],
-    [eval 'cf_cv_dcl_'$1'=no]')
+    [eval 'cf_cv_dcl_'$1'=no'])
 ])
 
 eval 'cf_result=$cf_cv_dcl_'$1
