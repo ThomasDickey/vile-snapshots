@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.16 2000/09/22 11:13:01 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.17 2000/10/05 10:55:30 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -26,7 +26,6 @@
 #define  CLIPBOARD_COPYING   "[Copying...]"
 #define  CLIPBOARD_COPY_FAIL "Clipboad copy failed"
 #define  CLIPBOARD_COPY_MEM  "Insufficient memory for copy operation"
-#define  CLIPBOARD_PASTE_ML  "Multi-line paste to minibuffer not supported"
 #define  PASS_HIGH(c)        ((int)(c) <= print_high && (int)(c) >= print_low)
 #define  _SPC_               ' '
 #define  _TAB_               '\t'
@@ -63,18 +62,19 @@ minibuffer_abort(void)
 
 
 static void
-report_cbrdstats(unsigned nbyte, unsigned nline, char *direction)
+report_cbrdstats(unsigned nbyte, unsigned nline, int pasted)
 {
     char buf[128];
 
     if (! global_b_val(MDTERSE))
     {
         lsprintf(buf,
-                  "[Copied %d line%s, %d bytes %s clipboard]",
-                  nline,
-                  PLURAL(nline),
-                  nbyte,
-                  direction);
+                 "[%s %d line%s, %d bytes %s clipboard]",
+                 (pasted) ? "Pasted" : "Copied",
+                 nline,
+                 PLURAL(nline),
+                 nbyte,
+                 (pasted) ? "from" : "to");
         mlwrite(buf);
     }
     else
@@ -118,7 +118,7 @@ setclipboard(HGLOBAL hClipMem, unsigned nbyte, unsigned nline)
 
         report_cbrdstats(nbyte - 1,  /* subtract terminating NUL */
                          nline,
-                         "to");
+                         FALSE);
     }
     return (rc);
 }
@@ -329,7 +329,7 @@ cbrdcpy_unnamed(int unused1, int unused2)
 {
     int rc;
 
-    if (curbp == bminip)
+    if (reading_msg_line)
     {
         minibuffer_abort();   /* FIXME -- goes away some day? */
         mlerase();
@@ -414,7 +414,7 @@ cbrdcpy_region(void)
 int
 opercbrdcpy(int f, int n)
 {
-    if (curbp == bminip)
+    if (reading_msg_line)
     {
         minibuffer_abort();   /* FIXME -- goes away some day? */
         mlerase();
@@ -513,24 +513,22 @@ paste_to_minibuffer(unsigned char *cbrddata)
     unsigned char *cp = cbrddata, *eol = NULL, map_str[MAX_MAPPED_STR + 1],
                   one_char[2];
 
-    /* 
-     * err if attempting to paste more than one line of data into the
-     * minibuffer (to protect the user from seriously bad side effects when
-     * s/he pastes in the wrong buffer).
-     */
     while(*cp)
     {
         if (*cp == '\r' && *(cp + 1) == '\n')
         {
             eol = cp;
-            if (*(cp + 2))
-            {
-                minibuffer_abort();   /* FIXME -- goes away some day? */
-                mlforce(CLIPBOARD_PASTE_ML);
-                return (ABORT);
-            }
-            else
-                break;
+
+            /* 
+             * Don't allow more than one line of data to be pasted into the
+             * minibuffer (to protect the user from seriously bad side
+             * effects when s/he pastes in the wrong buffer).  We don't
+             * report an error here in an effort to retain compatibility
+             * with a couple of "significant" win32 apps (e.g., IE and
+             * Outlook) that simply truncate a paste at one line when it
+             * only makes sense to take a single line of input.
+             */
+            break;
         }
         cp++;
     }
@@ -566,10 +564,9 @@ cbrdpaste(int f, int n)
     register unsigned      c;
     register unsigned char *data;
     HANDLE                 hClipMem;
-    int                    i, isminibuf, rc, suppressnl;
+    int                    i, rc, suppressnl;
     unsigned               nbyte, nline;
 
-    isminibuf = (curbp == bminip);
     for (rc = i = 0; i < 8 && (! rc); i++)
     {
         /* Try to open clipboard */
@@ -581,7 +578,7 @@ cbrdpaste(int f, int n)
     }
     if (! rc)
     {
-        if (isminibuf)
+        if (reading_msg_line)
         {
             minibuffer_abort();   /* FIXME -- goes away some day? */
             rc = ABORT;
@@ -594,7 +591,7 @@ cbrdpaste(int f, int n)
     if ((hClipMem = GetClipboardData(CF_TEXT)) == NULL)
     {
         CloseClipboard();
-        if (isminibuf)
+        if (reading_msg_line)
         {
             minibuffer_abort();   /* FIXME -- goes away some day? */
             rc = ABORT;
@@ -607,7 +604,7 @@ cbrdpaste(int f, int n)
     if ((data = GlobalLock(hClipMem)) == NULL)
     {
         CloseClipboard();
-        if (isminibuf)
+        if (reading_msg_line)
         {
             minibuffer_abort();   /* FIXME -- goes away some day? */
             rc = ABORT;
@@ -617,7 +614,7 @@ cbrdpaste(int f, int n)
         mlforce("Can't lock clipboard memory");
         return (rc);
     }
-    if (isminibuf)
+    if (reading_msg_line)
     {
         rc = paste_to_minibuffer(data);
         GlobalUnlock(hClipMem);
@@ -692,7 +689,7 @@ cbrdpaste(int f, int n)
         swapmark();                           /* I understand this. */
         if (is_header_line(DOT, curbp))
             DOT.l = lback(DOT.l);             /* This is a mystery. */
-        report_cbrdstats(nbyte, nline, "from");
+        report_cbrdstats(nbyte, nline, TRUE);
     }
     return (rc);
 }

@@ -11,6 +11,7 @@
 #define IDM_ABOUT         109
 #define IDM_UNDO          110
 #define IDM_REDO          111
+#define IDM_FAVORITES     112
 
 /* About dialog box defns. */
 

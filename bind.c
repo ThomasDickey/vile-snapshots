@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.234 2000/09/13 10:40:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.236 2000/10/01 23:14:54 tom Exp $
  *
  */
 
@@ -48,10 +48,10 @@ static void makebindlist(LIST_ARGS);
 #endif /* OPT_REBIND */
 
 #if OPT_NAMEBST
-static int kbd_complete_bst(int case_insensitive, int c, char *buf, unsigned *pos);
+static int kbd_complete_bst(unsigned flags, int c, char *buf, unsigned *pos);
 #else
-#define kbd_complete_bst(case_insensitive, c, buf, pos) \
-	kbd_complete(case_insensitive, c, buf, pos, \
+#define kbd_complete_bst(flags, c, buf, pos) \
+	kbd_complete(flags, c, buf, pos, \
 			(const char *)&nametbl[0], sizeof(nametbl[0]))
 #endif /* OPT_NAMEBST */
 
@@ -307,7 +307,7 @@ chr_lookup(const char *name)
 static int
 chr_complete(int c, char *buf, unsigned *pos)
 {
-    return kbd_complete(FALSE, c, buf, pos, (const char *) &TermChrs[0],
+    return kbd_complete(0, c, buf, pos, (const char *) &TermChrs[0],
 			sizeof(TermChrs[0]));
 }
 
@@ -2239,8 +2239,8 @@ fill_partial(
     SIZE_T n = pos;
     const char *this_name = THIS_NAME(first);
 
-    TRACE(("fill_partial(%d:%.*s) first=%s, last=%s\n", 
-	    pos, (int)pos, buf, THIS_NAME(first), THIS_NAME(last)));
+    TRACE(("fill_partial(%d:%.*s) first=%s, last=%s\n",
+	   pos, (int) pos, buf, THIS_NAME(first), THIS_NAME(last)));
 
 #if 0				/* case insensitive reply correction doesn't work reliably yet */
     if (!clexec && case_insensitive) {
@@ -2258,7 +2258,7 @@ fill_partial(
 #endif
 
     if (first == last
-     || (first = NEXT_DATA(first)) == last) {
+	|| (first = NEXT_DATA(first)) == last) {
 	TRACE(("...empty list\n"));
 	return n;
     }
@@ -2358,13 +2358,14 @@ kbd_unquery(void)
  */
 int
 kbd_complete(
-		int case_insensitive,
+		unsigned flags,	/* KBD_xxx */
 		int c,		/* TESTC, NAMEC or isreturn() */
 		char *buf,
 		unsigned *pos,
 		const char *table,
 		SIZE_T size_entry)
 {
+    int case_insensitive = (flags & KBD_CASELESS) != 0;
     SIZE_T cpos = *pos;
     const char *nbp;		/* first ptr to entry in name binding table */
     int status = FALSE;
@@ -2464,13 +2465,17 @@ kbd_complete(
 #if OPT_POPUPCHOICE
     cmplcol = 0;
 #endif
-    if (clexec) {
-	mlwarn("[No match for '%s']", buf);	/* no match */
-    } else {
-	kbd_alarm();
-    }
     buf[*pos = cpos] = EOS;
-    return FALSE;
+    if ((flags & (KBD_MAYBEC|KBD_MAYBEC2)) != 0) {
+	return (cpos != 0);
+    } else {
+	if (clexec) {
+	    mlwarn("[No match for '%s']", buf);		/* no match */
+	} else {
+	    kbd_alarm();
+	}
+	return FALSE;
+    }
 }
 
 /*
@@ -2581,7 +2586,7 @@ cmd_complete(
 	    unkeystroke(c);
 #endif
     } else {
-	status = kbd_complete_bst(FALSE, c, buf, pos);
+	status = kbd_complete_bst(0, c, buf, pos);
     }
     return status;
 }
@@ -2768,7 +2773,7 @@ build_namebst(const NTAB * nptr, int lo, int hi)
  */
 static int
 kbd_complete_bst(
-		    int case_insensitive GCC_UNUSED,
+		    unsigned flags GCC_UNUSED,
 		    int c,	/* TESTC, NAMEC or isreturn() */
 		    char *buf,
 		    unsigned *pos)
@@ -2781,7 +2786,7 @@ kbd_complete_bst(
     buf[cpos] = EOS;		/* terminate it for us */
 
     if ((nptr = btree_parray(&namebst, buf, cpos)) != 0) {
-	status = kbd_complete(FALSE, c, buf, pos, (const char *) nptr,
+	status = kbd_complete(0, c, buf, pos, (const char *) nptr,
 			      sizeof(*nptr));
 	free(TYPECAST(char, nptr));
     } else

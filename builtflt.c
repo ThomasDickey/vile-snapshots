@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.16 2000/08/28 10:28:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.18 2000/10/05 10:45:30 tom Exp $
  *
  */
 
@@ -109,6 +109,17 @@ process_params(void)
     return k_used;
 }
 
+static void
+save_mark(int first)
+{
+    if (mark_out.o > llength(mark_out.l))
+	mark_out.o = llength(mark_out.l);
+    if (first)
+	DOT = mark_out;
+    else
+	MK = mark_out;
+}
+
 /******************************************************************************
  * Public functions                                                           *
  ******************************************************************************/
@@ -206,9 +217,12 @@ flt_name(void)
 void
 flt_putc(int ch)
 {
-    if (ch == '\n' || mark_out.o++ >= llength(mark_out.l)) {
-	mark_out.l = lforw(mark_out.l);
+    if (ch == '\n') {
+	if (mark_out.l != buf_head(curbp))
+	    mark_out.l = lforw(mark_out.l);
 	mark_out.o = w_left_margin(curwp);
+    } else {
+	mark_out.o++;
     }
 }
 
@@ -221,14 +235,14 @@ flt_puts(char *string, int length, char *marker)
     int count;
 
     if (length > 0) {
-	DOT = mark_out;
+	save_mark(TRUE);
 	if (marker != 0 && *marker != 0 && *marker != 'N') {
 	    vl_strncpy(bfr2, marker, sizeof(bfr1) - 10);
 	    last = lsprintf(bfr1, "%c%d%s:", CTL_A, length, bfr2);
 	    parse_attribute(bfr1, last - bfr1, 0, &count);
 	}
 	flt_echo(string, length);
-	MK = mark_out;
+	save_mark(FALSE);
 	if (apply_attribute()) {
 	    int save_shape = regionshape;
 	    regionshape = EXACT;

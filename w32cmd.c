@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.5 2000/02/27 21:48:21 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.7 2000/10/05 10:50:12 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -39,12 +39,52 @@ ofn_init(void)
 
 
 
+/* glob a canonical filename, and if a true directory, put it in win32 fmt */
+static int
+glob_and_validate_dir(const char *inputdir, char *outputdir)
+{
+#define NOT_A_DIR  "\"%s\" is not a directory"
+
+    int  outlen, rc;
+    char tmp[NFILEN];
+
+    strcpy(outputdir, inputdir);
+    if (! doglob(outputdir))      /* doglob updates outputdir */
+        rc = FALSE;
+    else
+    {
+        /*
+         * GetOpenFileName()/GetSaveFileName() will accept bogus initial dir
+         * values without reporting an error.  Handle that.
+         */
+
+        if (! is_directory(outputdir))
+        {
+            outlen = (term.cols - 1) - (sizeof(NOT_A_DIR) - 3);
+            mlforce(NOT_A_DIR, path_trunc(outputdir, outlen, tmp, sizeof(tmp)));
+            rc = FALSE;
+        }
+        else
+        {
+            strcpy(outputdir, sl_to_bsl(outputdir));
+            rc = TRUE;
+        }
+    }
+    return (rc);
+
+#undef NOT_A_DIR
+}
+
+
+
 /*
  * FUNCTION
- *   commdlg_open_files(int chdir_allowed)
+ *   commdlg_open_files(int chdir_allowed, const char *dir)
  *
  *   chdir_allowed - permissible for GetOpenFileName() to cd to the
  *                   folder that stores the file(s) the user opens.
+ *
+ *   dir           - path of directory to browse.  If NULL, use cwd.
  *
  * DESCRIPTION
  *   Use the Windows common dialog library to open one or more files.
@@ -54,14 +94,23 @@ ofn_init(void)
  */
 
 static int
-commdlg_open_files(int chdir_allowed)
+commdlg_open_files(int chdir_allowed, const char *dir)
 {
 #define RET_BUF_SIZE_ (24 * 1024)
 
     int   chdir_mask, i, len, nfile, rc = TRUE;
     DWORD errcode;
-    char  *filebuf, oldcwd[FILENAME_MAX], newcwd[FILENAME_MAX], *cp;
+    char  *filebuf, oldcwd[FILENAME_MAX], newcwd[FILENAME_MAX], *cp, 
+          validated_dir[FILENAME_MAX];
 
+    if (dir)
+    {
+        if (! glob_and_validate_dir(dir, validated_dir))
+            return (FALSE);
+        else
+            dir = validated_dir;
+
+    }
     oldcwd[0]  = newcwd[0] = '\0';
     chdir_mask = (chdir_allowed) ? 0 : OFN_NOCHANGEDIR;
     filebuf    = malloc(RET_BUF_SIZE_);
@@ -70,7 +119,8 @@ commdlg_open_files(int chdir_allowed)
     filebuf[0] = '\0';
     if (! ofn_initialized)
         ofn_init();
-    ofn.lpstrInitialDir = _getcwd(oldcwd, sizeof(oldcwd));
+    (void) _getcwd(oldcwd, sizeof(oldcwd));
+    ofn.lpstrInitialDir = (dir) ? dir : oldcwd;
     ofn.lpstrFile       = filebuf;
     ofn.nMaxFile        = RET_BUF_SIZE_;
     ofn.Flags           = (OFN_PATHMUSTEXIST | OFN_HIDEREADONLY |
@@ -89,8 +139,37 @@ commdlg_open_files(int chdir_allowed)
             mlforce("CommDlgExtendedError() returns err code %d", errcode);
             rc = FALSE;
         }
+        else
+        {
+            /* canceled -- restore old cwd if necessary */
+
+            if (chdir_allowed)
+            {
+                if (stricmp(newcwd, oldcwd) != 0)
+                    (void) _chdir(oldcwd);
+            }
+        }
         free(filebuf);
         return (rc);
+    }
+    if (chdir_allowed)
+    {
+        /* tell editor cwd changed, if it did... */
+
+        if (! _getcwd(newcwd, sizeof(newcwd)))
+        {
+            free(filebuf);
+            mlerror("_getcwd() failed");
+            return (FALSE);
+        }
+        if (stricmp(newcwd, oldcwd) != 0)
+        {
+            if (! set_directory(newcwd))
+            {
+                free(filebuf);
+                return (FALSE);
+            }
+        }
     }
 
     /*
@@ -115,25 +194,6 @@ commdlg_open_files(int chdir_allowed)
         char   *dir, tmp[FILENAME_MAX * 2], *nxtfile;
         int    have_dir;
 
-        if (chdir_allowed)
-        {
-            /* tell editor cwd changed, if it did... */
-
-            if (! _getcwd(newcwd, sizeof(newcwd)))
-            {
-                free(filebuf);
-                mlerror("_getcwd() failed");
-                return (FALSE);
-            }
-            if (stricmp(newcwd, oldcwd) != 0)
-            {
-                if (! set_directory(newcwd))
-                {
-                    free(filebuf);
-                    return (FALSE);
-                }
-            }
-        }
         if (nfile > 1)
         {
             /* first "file" in the list is actually a folder */
@@ -180,10 +240,37 @@ commdlg_open_files(int chdir_allowed)
 
 
 
+static int
+wopen_common(int chdir_allowed)
+{
+
+    char         dir[NFILEN];
+    static TBUFF *last;
+    int          rc;
+
+    dir[0] = '\0';
+    rc     = mlreply_dir("Directory: ", &last, dir);
+    if (rc == TRUE)
+    {
+        mktrimmed(dir);
+        rc = commdlg_open_files(chdir_allowed, (dir[0]) ? dir : NULL);
+    }
+    else if (rc == FALSE)
+    {
+        /* empty response */
+
+        rc = commdlg_open_files(chdir_allowed, NULL);
+    }
+    /* else rc == ABORT or SORTOFTRUE */
+    return (rc);
+}
+
+
+
 int
 winopen_nocd(int f, int n)
 {
-    return (commdlg_open_files(FALSE));
+    return (wopen_common(FALSE));
 }
 
 
@@ -191,17 +278,28 @@ winopen_nocd(int f, int n)
 int
 winopen(int f, int n)
 {
-    return (commdlg_open_files(TRUE));
+    return (wopen_common(TRUE));
+}
+
+
+
+/* explicitly specify initial directory */
+int
+winopen_dir(const char *dir)
+{
+    return (commdlg_open_files(TRUE, dir));
 }
 
 
 
 /*
  * FUNCTION
- *   commdlg_save_file(int chdir_allowed)
+ *   commdlg_save_file(int chdir_allowed, char *dir)
  *
  *   chdir_allowed - permissible for GetSaveFileName() to cd to the
  *                   folder that stores the file the user saves.
+ *
+ *   dir           - path of directory to browse.  If NULL, use cwd.
  *
  * DESCRIPTION
  *   Use the Windows common dialog library to save the current buffer in
@@ -212,19 +310,59 @@ winopen(int f, int n)
  */
 
 static int
-commdlg_save_file(int chdir_allowed)
+commdlg_save_file(int chdir_allowed, const char *dir)
 {
     int   chdir_mask, rc = TRUE;
     DWORD errcode;
-    char  filebuf[FILENAME_MAX];
-    char  oldcwd[FILENAME_MAX];
-    char  newcwd[FILENAME_MAX];
+    char  filebuf[FILENAME_MAX], validated_dir[FILENAME_MAX],
+          oldcwd[FILENAME_MAX], newcwd[FILENAME_MAX], *fname, *leaf,
+          scratch[FILENAME_MAX];
 
-    oldcwd[0]  = newcwd[0] = filebuf[0] = '\0';
+    if (dir)
+    {
+        if (! glob_and_validate_dir(dir, validated_dir))
+            return (FALSE);
+        else
+            dir = validated_dir;
+
+    }
+
+    /*
+     * The "Save As" dialog box is traditionally initialized with the 
+     * name of the current open file.  Handle that detail now.
+     */
+    fname      = curbp->b_fname;
+    filebuf[0] = '\0';           /* copy the currently open filename here */
+    leaf       = NULL;
+    if (! is_internalname(fname))
+    {
+        strcpy(scratch, fname);
+        if ((leaf = last_slash(scratch)) == NULL)
+        {
+            /* easy case -- fname is a pure leaf */
+
+            leaf = scratch;
+        }
+        else
+        {
+            /* fname specifies a path */
+
+            *leaf++ = '\0';
+            if (! dir)
+            {
+                /* save dirspec from path */
+
+                dir = sl_to_bsl(scratch);
+            }
+        }
+        strcpy(filebuf, leaf);
+    }
+    oldcwd[0]  = newcwd[0] = '\0';
     chdir_mask = (chdir_allowed) ? 0 : OFN_NOCHANGEDIR;
     if (! ofn_initialized)
         ofn_init();
-    ofn.lpstrInitialDir = _getcwd(oldcwd, sizeof(oldcwd));
+    (void) _getcwd(oldcwd, sizeof(oldcwd));
+    ofn.lpstrInitialDir = (dir) ? dir : oldcwd;
     ofn.lpstrFile       = filebuf;
     ofn.nMaxFile        = sizeof(filebuf);
     ofn.Flags           = (OFN_PATHMUSTEXIST | OFN_HIDEREADONLY |
@@ -242,6 +380,16 @@ commdlg_save_file(int chdir_allowed)
         {
             mlforce("CommDlgExtendedError() returns err code %d", errcode);
             rc = FALSE;
+        }
+        else
+        {
+            /* canceled -- restore old cwd if necessary */
+
+            if (chdir_allowed)
+            {
+                if (stricmp(newcwd, oldcwd) != 0)
+                    (void) _chdir(oldcwd);
+            }
         }
         return (rc);
     }
@@ -288,17 +436,53 @@ commdlg_save_file(int chdir_allowed)
 
 
 
+static int
+wsave_common(int chdir_allowed)
+{
+
+    char         dir[NFILEN];
+    static TBUFF *last;
+    int          rc;
+
+    dir[0] = '\0';
+    rc     = mlreply_dir("Directory: ", &last, dir);
+    if (rc == TRUE)
+    {
+        mktrimmed(dir);
+        rc = commdlg_save_file(chdir_allowed, (dir[0]) ? dir : NULL);
+    }
+    else if (rc == FALSE)
+    {
+        /* empty user response */
+
+        rc = commdlg_save_file(chdir_allowed, NULL);
+    }
+    /* else rc == ABORT or SORTOFTRUE */
+    return (rc);
+}
+
+
+
 int
 winsave(int f, int n)
 {
-    return (commdlg_save_file(TRUE));
+    return (wsave_common(TRUE));
 }
 
 
 int
 winsave_nocd(int f, int n)
 {
-    return (commdlg_save_file(FALSE));
+    return (wsave_common(FALSE));
+}
+
+
+
+/* explicitly specify initial directory */
+int
+winsave_dir(const char *dir)
+{
+    return (commdlg_save_file(TRUE, dir));
 }
 
 /* --------------------------------------------------------------------- */

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.279 2000/09/12 11:11:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.281 2000/10/02 01:35:16 tom Exp $
  *
  */
 
@@ -45,6 +45,7 @@ static PROC_ARGS *arg_stack;
 
 static SIZE_T s2size(const char *s);
 static const char *s2offset(const char *s, const char *n);
+static char **init_vars_cmpl(void);
 static int SetVarValue(VWRAP * var, const char *name, const char *value);
 static int lookup_statevar(const char *vname);
 #endif
@@ -121,7 +122,7 @@ desprint(int f GCC_UNUSED, int n GCC_UNUSED)
 static int
 cclass_complete(int c, char *buf, unsigned *pos)
 {
-    return kbd_complete(FALSE, c, buf, pos,
+    return kbd_complete(0, c, buf, pos,
 			(const char *) fsm_charclass_choices,
 			sizeof(fsm_charclass_choices[0]));
 }
@@ -972,8 +973,13 @@ vars_complete(
     int status;
     if (buf[0] == '$') {
 	*pos -= 1;		/* account for leading '$', not in tables */
-	status = kbd_complete(FALSE, c, buf + 1, pos,
+	status = kbd_complete(0, c, buf + 1, pos,
 			      (const char *) list_of_modes(), sizeof(char *));
+	*pos += 1;
+    } else if (buf[0] == '%') {
+	*pos -= 1;		/* account for leading '%', not in tables */
+	status = kbd_complete(KBD_MAYBEC, c, buf + 1, pos,
+			      (const char *) init_vars_cmpl(), sizeof(char *));
 	*pos += 1;
     } else {
 	if (c != NAMEC)		/* cancel the unget */
@@ -993,8 +999,9 @@ PromptForVariableName(TBUFF ** result)
     if (var == 0)
 	tb_scopy(&var, "");
     status = kbd_reply("Variable name: ", &var,
-		       mode_eol, '=', KBD_NOEVAL | KBD_LOWERC, vars_complete);
+		       mode_eol, '=', KBD_MAYBEC2 | KBD_NOEVAL | KBD_LOWERC, vars_complete);
     *result = var;
+    TRACE(("PromptForVariableName returns %s (%d)\n", tb_visible(*result), status));
     return status;
 }
 
@@ -1022,6 +1029,12 @@ PromptAndSet(const char *name, int f, int n)
 	if (f == TRUE) {	/* new (numeric) value passed as arg */
 	    render_int(&tmp, n);
 	} else {		/* get it from user */
+	    if (vd.v_type == VW_STATEVAR)
+		tb_scopy(&tmp, get_statevar_val(vd.v_num));
+	    else {
+		/* must be temp var */
+		tb_scopy(&tmp, (vd.v_ptr->u_value) ? vd.v_ptr->u_value : "");
+	    }
 	    (void) lsprintf(prompt, "Value of %s: ", var);
 	    status = mlreply2(prompt, &tmp);
 	    if (status != TRUE)
@@ -1532,7 +1545,7 @@ complete_FSM(DONE_ARGS, const FSM_CHOICES * choices)
     if (isDigit(*buf)) {	/* allow numbers for colors */
 	status = complete_integer(c, buf, pos);
     } else if (choices != 0) {
-	status = kbd_complete(FALSE, c, buf, pos,
+	status = kbd_complete(0, c, buf, pos,
 			      (const char *) choices,
 			      sizeof(FSM_CHOICES));
     } else {
@@ -1561,7 +1574,7 @@ complete_enum(DONE_ARGS)
 static int
 complete_mode(DONE_ARGS)
 {
-    return kbd_complete(FALSE, c, buf, pos,
+    return kbd_complete(0, c, buf, pos,
 			(const char *) list_of_modes(),
 			sizeof(char *));
 }
@@ -1606,7 +1619,7 @@ complete_vars(DONE_ARGS)
     char **nptr;
 
     if ((nptr = init_vars_cmpl()) != 0) {
-	status = kbd_complete(FALSE, c, buf, pos,
+	status = kbd_complete(0, c, buf, pos,
 			      (const char *) nptr,
 			      sizeof(char *));
 	free(nptr);

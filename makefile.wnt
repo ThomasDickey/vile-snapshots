@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.63 2000/08/20 23:16:32 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.64 2000/10/01 20:38:17 cmorgan Exp $
 #
 #
 !include <ntwin32.mak>
@@ -91,7 +91,7 @@ CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
 LDFLAGS  = -nologo $(MY_LDOPT)
 SCREEN   = ntconio
 LIBS     = $(LD_DEBUG) $(conlflags) $(conlibsmt) user32.lib comdlg32.lib \
-	   $(VILE_PERL_LIB)
+           ole32.lib shell32.lib $(VILE_PERL_LIB)
 !endif
 
 !IF  "$(CFG)" == "winvile" || "$(CFG)" == "winvile-with-perl"
@@ -101,7 +101,8 @@ CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
 	   -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(MY_CCOPT)
 LDFLAGS  = -nologo /subsystem:windows /incremental:no $(MY_LDOPT)
 SCREEN   = ntwinio
-LIBS     = $(LD_DEBUG) $(guilflags) $(guilibsmt) $(VILE_PERL_LIB) $(OLELIBS) shell32.lib
+LIBS     = $(LD_DEBUG) $(guilflags) $(guilibsmt) ole32.lib shell32.lib \
+           $(VILE_PERL_LIB) $(OLELIBS)
 EXTRA    = winvile.res
 !endif
 
@@ -111,7 +112,7 @@ OLEOBJS  = w32ole.obj w32reg.obj w32ole.res
 OLESRCS  = w32ole.cpp w32reg.c
 WRAPUTIL = wvwrap.exe
 EXTRA    =
-OLELIBS  = ole32.lib uuid.lib oleaut32.lib comsupp.lib
+OLELIBS  = uuid.lib oleaut32.lib comsupp.lib
 !endif
 
 !IF "$(CFG)" == "winvile-with-perl" || "$(CFG)" == "vile-with-perl"
@@ -185,7 +186,7 @@ SRC = 	main.c $(SCREEN).c \
 	region.c search.c select.c spawn.c statevar.c \
 	tags.c tbuff.c termio.c ucrypt.c undo.c \
 	version.c window.c word.c wordmov.c map.c \
-	w32cbrd.c w32cmd.c w32misc.c w32pipe.c $(PERLSRCS) \
+	w32cbrd.c w32cmd.c w32misc.c w32oo.cpp w32pipe.c $(PERLSRCS) \
 	$(OLESRCS)
 
 OBJ = 	main.obj $(SCREEN).obj \
@@ -199,7 +200,7 @@ OBJ = 	main.obj $(SCREEN).obj \
 	region.obj search.obj select.obj spawn.obj statevar.obj \
 	tags.obj tbuff.obj termio.obj ucrypt.obj undo.obj \
 	version.obj window.obj word.obj wordmov.obj map.obj \
-	w32cbrd.obj w32cmd.obj w32misc.obj w32pipe.obj $(PERLOBJS) \
+	w32cbrd.obj w32cmd.obj w32misc.obj w32oo.obj w32pipe.obj $(PERLOBJS) \
 	$(OLEOBJS) $(DBGOBJS) $(EXTRA)
 
 .c.obj:
@@ -348,4 +349,4 @@ w32misc.obj:	nefunc.h
 w32ole.obj:	w32ole.h winviletlb.h w32reg.h
 w32reg.obj:	w32reg.h
 word.obj:	nefunc.h
-wvwrap.obj: w32reg.h w32ole.h winviletlb.h
+wvwrap.obj:	w32reg.h w32ole.h winviletlb.h

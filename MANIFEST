@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_1x
+MANIFEST for vile, version v9_1y
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -123,6 +123,7 @@ w32misc.c                       vile-7.4h
 w32ole.cpp                      interface for Winvile OLE
 w32ole.h                        interface of w32ole.cpp
 w32ole.rc                       resource-control for ole configuration
+w32oo.cpp                       various C++ support functions for winvile
 w32pipe.c                       Win32 native pipe support
 w32reg.c                        Winvile OLE registration code
 w32reg.h                        interface of w32reg

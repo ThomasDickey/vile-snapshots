@@ -2360,6 +2360,7 @@ Programmed procedures and macros
 	$exec-path	where to find vile			(read only)
 	$exec-suffix	suffix, if any, for execable programs	(read only)
 	$exit-hook	name of procedure to run when quitting
+	$favorites	path to favorites folder (win32 only)	(read only)
 	$fence-limit	iteration limit for complex fences
 	$filename-expr	actual pattern for %F in [Error Expressions]
 	$filename-ic	ignore case in filename completion	(read only)
@@ -4628,28 +4629,28 @@ Win32 specifics
 	Pressing the right mouse button pops up a menu of editor commands.
 	These are predefined:
 
-		"Open"     executes the "winopen" command (described below).
-		"Save As"  executes the "winsave" command (described below).
-		"Font"     described below.
-		"Menu"     disables the popup menu and instead transforms
-			   the right mouse button into a hot key that copies
-			   the contents of the unnamed register to the
-			   clipboard.  When the popup menu is disabled,
-			   selection with the left mouse, followed by a
-			   right mouse click, provides a quick means of
-			   copying highlighted blocks of text to the
-			   clipboard.
-		"Undo"     Bound to undo-changes-backward.
-		"Redo"     Bound to redo-changes-forward.
-		"Cut"      deletes current text selection into unnamed register
-			   and copies same to clipboard.
-		"Copy"     copies the current text selection to both the
-			   unnamed register and the clipboard.
-		"Paste"    pastes clipboard contents (if text) into current
-			   buffer.
-		"Delete"   deletes current text selection into unnamed register.
+	"Open"		executes the "winopen" command (described below).
+	"Save As"	executes the "winsave" command (described below).
+	"Favorites"	executes "winopen $favorites".
+	"Font"		described below.
+	"Menu"		disables the popup menu and instead transforms the
+			right mouse button into a hot key that copies the
+			contents of the unnamed register to the clipboard. 
+			When the popup menu is disabled, selection with the
+			left mouse, followed by a right mouse click,
+			provides a quick means of copying highlighted
+			blocks of text to the clipboard.
+	"Undo"		Bound to undo-changes-backward.
+	"Redo"		Bound to redo-changes-forward.
+	"Cut"		deletes current text selection into unnamed register
+			and copies same to clipboard.
+	"Copy"		copies the current text selection to both the
+			unnamed register and the clipboard.
+	"Paste"		pastes clipboard contents (if text) into current
+			buffer.
+	"Delete"   	deletes current text selection into unnamed register.
 
-	The first four popup menu entries are added to the system menu (in
+	The first five popup menu entries are added to the system menu (in
 	the upper left corner of the window).  Use the "Menu" entry in that
 	menu to re-enable the popup menu.
 
@@ -4748,10 +4749,12 @@ Win32 specifics
 
 	Commands
 	--------
-	delete-text-selection  Delete the current text selection to the 
+	delete-text-selection
+			Delete the current text selection to the 
 			unnamed register.  Bound to Alt+Delete.
 
-	reset-rgb-palette  Set red/green/blue values to their initial state.
+	reset-rgb-palette
+			Set red/green/blue values to their initial state.
 			If you give a parameter, this is used to specify a
 			single color number.
 
@@ -4761,26 +4764,31 @@ Win32 specifics
 
 	swap-clipboard-keys  See discussion of clipboard above.
 
-	winopen		Launches the Windows common open dialog box to open
-			one or more files within the editor.  Note that if
-			this dialog box opens files outside the editor's
-			current working directory (cwd), then Windows (and
-			vile) implicitly change the cwd to match that of
-			the opened files.  This command _is_ available from
-			console vile.
-
-	winopen-nocd	Same as "winopen", except the editor's cwd remains
-			unchanged.
-
-	winsave		Launches the Windows common save dialog box to save
-			the current buffer in a file of the user's choice.
-			Note that if this dialog box saves a file outside
+	winopen [dir]	Launches the Windows common open dialog box to open
+			one or more files within the editor.  The optional
+			"dir" argument specifies the initial browse
+			directory (default is current working directory). 
+			Note that if this dialog box opens files outside
 			the editor's cwd, then Windows (and vile)
 			implicitly change the cwd to match that of the
-			saved file.  This command _is_ available from
+			opened files.  This command _is_ available from
 			console vile.
 
-	winsave-nocd	Same as "winsave", except the editor's cwd remains
+	winopen-nocd [dir]
+			Same as "winopen", except the editor's cwd remains
+			unchanged.
+
+	winsave	[dir]	Launches the Windows common save dialog box to save
+			the current buffer in a file of the user's choice.
+			The optional "dir" argument specifies the initial
+			browse directory (default is cwd).  Note that if
+			this dialog box saves a file outside the editor's
+			cwd, then Windows (and vile) implicitly change the
+			cwd to match that of the saved file.  This command
+			_is_ available from console vile.
+
+	winsave-nocd [dir]
+			Same as "winsave", except the editor's cwd remains
 			unchanged.
 
 
@@ -5096,4 +5104,4 @@ Problems
 
 Copyright 1995-2000 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.502 2000/09/26 01:14:00 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.503 2000/10/01 20:38:18 cmorgan Exp $

@@ -450,6 +450,8 @@ State Variables
 
 	$exit-hook      Name of procedure to run when quitting.
 
+	$favorites      [READ ONLY] Path to favorites folder (win32 only)
+
 	$fence-limit	iteration limit for complex fences, in seconds.
 
 	$filename-expr	actual pattern for %F in [Error Expressions].  Note
@@ -1336,6 +1338,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.61 2000/09/14 11:12:21 cmorgan Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.62 2000/10/01 20:38:17 cmorgan Exp $
 -----------------------------------
 

@@ -1,5 +1,54 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20001005 (y)
+	> Clark Morgan:
+	+ update makefile.blc, add w32oo.obj 
+	+ when pasting to clipboard, use a less ambiguous status message.
+	+ change global var that's used to detect when minibuffer is active.
+	  Keying on "bminip" doesn't work in all cases.
+	+ for winvile, allow clipboard paste via RMB menu into minibuffer.
+	+ when pasting into minibuffer, don't report an error if an attempt is
+	  made to paste more than one line.  Instead, clip the paste to a
+	  single line.  This behavior mimics the action taken under similar
+	  circumstances by nontrivial windows apps (e.g., Outlook and IE).
+	+ initialize the winvile "Save As" dialog with the name of the current
+	  open file.
+	+ modify 'setv' logic to provide the current value of a variable when
+	  setting it (request by Pedro Gomes).
+	+ added the state variable $favorites, which returns the path to the Windows
+	  Favorites directory.  On a Win95/98 host, this feature affects
+	  console vile.  When console vile starts, the "launch cursor"
+	  (combined pointer/hour glass cursor) is displayed for ~15 seconds on
+	  a 166 MHz Classic Pentium host.  I would presume this is because the
+	  console app is now linked with OLE32.LIB .  During this 15-sec
+	  interval, normal vile operations are unaffected.  This effect does
+	  not occur on NT hosts available for my tests (although they are a tad
+	  faster than 166 MHz :-).
+	+ added new file w32oo.cpp to vile's distribution.  This module
+	  comprises a collection of Win32-specific functions that require a C++
+	  (OO) compilation.
+	+ winopen, winopen-nocd, winsave, and winsave-nocd now each take an
+	  optional directory argument, which specifies the initial directory
+	  opened by the Open/Save Win32 common dialogs.  If the optional
+	  directory is not specified, cwd is used by default.
+	+ added a "Favorites" menu selection to winvile's RMB menu, which
+	  executes the command "winopen $favorites".
+	+ shorten the path in set_directory()'s "Couldn't change" error message
+	  if the complete text won't fit in the message line.
+	+ on a win32 host, ":cd<CR>" is mapped to ":cd ~".  This change makes
+	  win32 hosts compatble with VMS and Unix.
+	> Tom Dickey:
+	+ modify flt_putc() in builtflt.c to avoid incrementing line pointer
+	  twice if the filter emits a newline before the actual end of line.
+	  That could make the program count a line twice, for instance.
+	+ implement name-completion for user variables, e.g., %foo.
+	+ rephrase loop in purge_line_attribs() to handle the case where the
+	  ending line-pointer is at the end of the buffer.  This makes the
+	  ^A-NG command (clear-attributes-til) work when the cursor is on the
+	  first line (reported by Christian Lindig).
+	+ modify sh-filt.l to allow here-document tags such as containing
+	  punctuation characters, e.g., "eof/".
+
  20000926 (x)
 	> Clark Morgan:
 	+ prevent autocolor from overwriting the message-line when '_' or ^X-_

@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.94 2000/08/26 16:38:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.95 2000/10/01 22:15:40 tom Exp $
  *
  */
 
@@ -1072,14 +1072,14 @@ path_completion(int c, char *buf, unsigned *pos)
 		/* patch: how can I force buffer-update to show? */
 
 #if OPT_CASELESS
-		code = kbd_complete(TRUE, c, path, &newlen, (const char *)&MyList[0], sizeof(MyList[0]));
+		code = kbd_complete(KBD_CASELESS, c, path, &newlen, (const char *)&MyList[0], sizeof(MyList[0]));
 #if 0 /* case insensitive reply correction doesn't work reliably yet */
 		(void)strcpy(buf, path);
 #else
 		(void)strcat(buf, path+oldlen);
 #endif
 #else
-		code = kbd_complete(FALSE, c, path, &newlen, (const char *)&MyList[0], sizeof(MyList[0]));
+		code = kbd_complete(0, c, path, &newlen, (const char *)&MyList[0], sizeof(MyList[0]));
 		(void)strcat(buf, path+oldlen);
 #endif
 #if OPT_VMS_PATH
