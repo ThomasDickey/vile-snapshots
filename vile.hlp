@@ -638,13 +638,7 @@ Text manipulation command:
 	    can be a search command.  If it begins with a '/', the search
 	    goes forward.  If it begins with a '?', the search goes
 	    backward.  In either case, the matching delimiter _must_ be the
-	    last character on the line in the tags file.  And, in either
-	    case, the second character of the command _must_ be a '^',
-	    signifying an anchored match of the search string.  If a '$' is
-	    found just before the trailing delimiter, then the pattern must
-	    match the whole line, otherwise it can be just a leading
-	    substring match.  Also, the tag pattern is _not_ a regular
-	    expression, but a simple case-sensitive string match.
+	    last character on the line in the tags file.
 
 	    All of this isn't as bad as it sounds, since ctags, the program
 	    most people use to generate tags files, does generate exactly
@@ -3395,4 +3389,4 @@ Problems
 
 Copyright 1995,1996 by Paul Fox, Tom Dickey, and Kevin Buettner
 ---------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.301 1996/10/14 23:21:57 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.302 1996/10/17 10:44:58 tom Exp $

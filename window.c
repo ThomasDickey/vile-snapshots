@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.70 1996/10/03 01:02:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.71 1996/10/17 10:44:58 tom Exp $
  *
  */
 
@@ -1005,7 +1005,7 @@ winit(int screen)
 	wp->w_bufp  = NULL;
 
 	if (screen) {
-		delink_bp(bminip);
+		(void) delink_bp(bminip);
 	} else {
 		/* create the command-buffer */
 		wminip = wp;

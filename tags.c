@@ -4,7 +4,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.77 1996/03/24 13:38:16 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.78 1996/10/17 10:44:58 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -23,7 +23,7 @@
 };
 
 static	LINE *	cheap_tag_scan(LINEPTR oldlp, char *name, SIZE_T taglen);
-static	LINE *	cheap_buffer_scan(BUFFER *bp, char *patrn, SIZE_T len, int exact, int dir);
+static	LINE *	cheap_buffer_scan(BUFFER *bp, char *patrn, int dir);
 static	BUFFER *gettagsfile(int n, int *endofpathflagp);
 static	int	popuntag(char *fname, int *linenop);
 static	void	pushuntag(char *fname, int lineno, char *tag);
@@ -93,17 +93,20 @@ tag_search(char *tag, int taglen, int initial)
 	static	time_t	last_modtime;
 #endif
 
+	static TBUFF *srchpat;
+
 	register LINE *lp;
-	register int i, s;
+	register SIZE_T i;
+	register int status;
 	char *tfp, *lplim;
 	char tfname[NFILEN];
-	char srchpat[NPAT];
 	int lineno;
 	int changedfile;
 	MARK odot;
 	BUFFER *tagbp;
 	int nomore;
 	int gotafile = FALSE;
+	int retried = FALSE;
 
 	if (initial)
 		tf_num = 0;
@@ -119,24 +122,29 @@ tag_search(char *tag, int taglen, int initial)
 
 	do {
 		tagbp = gettagsfile(tf_num, &nomore);
+		lp = 0;
 		if (nomore) {
 			if (gotafile) {
-				mlwarn("[No such tag: \"%s\"]",tag);
+				if (initial || retried) {
+					mlwarn("[No such tag: \"%s\"]", tag);
+					return FALSE;
+				}
+				retried = TRUE;
+				tf_num = 0;
+				continue;
 			} else {
 				mlforce("[No tags file available.]");
+				return FALSE;
 			}
-			return FALSE;
 		}
 
 		if (tagbp) {
 			lp = cheap_tag_scan(
-				initial
+				initial || retried
 				  ? buf_head(tagbp)
 				  : tagbp->b_dot.l,
 				tag, (SIZE_T)taglen);
 			gotafile = TRUE;
-		} else {
-			lp = NULL;
 		}
 
 		tf_num++;
@@ -183,7 +191,7 @@ tag_search(char *tag, int taglen, int initial)
 #if SMALLER
 		register LINE *clp;
 		lineno = 1;
-	        for(clp = lforw(buf_head(curbp)); 
+	        for(clp = lforw(buf_head(curbp));
 				clp != DOT.l; clp = lforw(clp))
 			lineno++;
 #else
@@ -199,10 +207,10 @@ tag_search(char *tag, int taglen, int initial)
 	if (curbp == NULL
 	 || !same_fname(tfname, curbp, TRUE)) {
 		(void) doglob(tfname);
-		s = getfile(tfname,TRUE);
-		if (s != TRUE) {
+		status = getfile(tfname,TRUE);
+		if (status != TRUE) {
 			tossuntag();
-			return s;
+			return status;
 		}
 		changedfile = TRUE;
 	} else {
@@ -224,11 +232,10 @@ tag_search(char *tag, int taglen, int initial)
 			lineno = 10*lineno + *tfp - '0';
 			tfp++;
 		}
-		s = gotoline(TRUE,lineno);
-		if (s != TRUE && !changedfile)
+		status = gotoline(TRUE,lineno);
+		if (status != TRUE && !changedfile)
 			tossuntag();
 	} else {
-		int exact;
 		int delim = *tfp;
 		int quoted = FALSE;
 		char *p;
@@ -239,8 +246,7 @@ tag_search(char *tag, int taglen, int initial)
 		} else {
 			dir = FORWARD;
 		}
-		tfp += 2; /* skip the "/^" */
-		p = tfp+1;
+		p = ++tfp;	/* skip the "/" */
 
 		/* we're on the '/', so look for the matching one */
 		while (p < lplim) {
@@ -257,21 +263,13 @@ tag_search(char *tag, int taglen, int initial)
 			mlforce("[Bad pattern in tags file.]");
 			return FALSE;
 		}
-		if (p[-1] == '$') {
-			exact = TRUE;
-			p--;
-		} else {
-			exact = FALSE;
-		}
-		lplim = p;
-		i = 0;
-		while (i < sizeof(srchpat) && tfp < lplim) {
-			if (*tfp == '\\' && tfp < lplim - 1)
-				tfp++;  /* the backslash escapes next char */
-			srchpat[i++] = *tfp++;
-		}
-		srchpat[i] = EOS;
-		lp = cheap_buffer_scan(curbp, srchpat, (SIZE_T)i, exact, dir);
+
+		if ((srchpat = tb_init(&srchpat, EOS)) == 0
+		 || (srchpat = tb_bappend(&srchpat, tfp, (ALLOC_T)(p - tfp))) == 0
+		 || (srchpat = tb_append(&srchpat, EOS)) == 0)
+			return no_memory("tags");
+
+		lp = cheap_buffer_scan(curbp, tb_values(srchpat), dir);
 		if (lp == NULL) {
 			mlwarn("[Tag not present]");
 			if (!changedfile)
@@ -281,18 +279,18 @@ tag_search(char *tag, int taglen, int initial)
 		DOT.l = lp;
 		curwp->w_flag |= WFMOVE;
 		(void)firstnonwhite(FALSE,1);
-		s = TRUE;
+		status = TRUE;
 	}
 	/* if we moved, update the "last dot" mark */
-	if (s == TRUE && !sameline(DOT, odot)) {
+	if (status == TRUE && !sameline(DOT, odot)) {
 		curwp->w_lastdot = odot;
 	}
 
-	return s; 	
+	return status;
 }
 
-/* 
- * return (in buf) the Nth whitespace 
+/*
+ * return (in buf) the Nth whitespace
  *	separated word in "path", counting from 0
  */
 static void
@@ -320,7 +318,7 @@ gettagsfile(int n, int *endofpathflagp)
 	char tagfilename[NFILEN];
 
 	*endofpathflagp = FALSE;
-	
+
 	(void)lsprintf(tagbufname, TAGFILE_BufName, n+1);
 
 	/* is the buffer around? */
@@ -417,23 +415,27 @@ cheap_tag_scan(LINEPTR oldlp, char *name, SIZE_T taglen)
 }
 
 static LINE *
-cheap_buffer_scan(BUFFER *bp, char *patrn, SIZE_T len, int exact, int dir)
+cheap_buffer_scan(BUFFER *bp, char *patrn, int dir)
 {
 	register LINE *lp;
+	register LINE *result = 0;
+	regexp *exp = regcomp(patrn, FALSE);
 
-	len = strlen(patrn);
+	TRACE(("cheap_buffer_scan '%s' %s\n",
+		patrn,
+		dir == FORWARD ? "fwd" : "bak"))
 
 	for (lp = dir == FORWARD ? lforw(buf_head(bp)) : lback(buf_head(bp));
 		lp != buf_head(bp);
 		lp = dir == FORWARD ? lforw(lp) : lback(lp))
 	{
-		if ((exact && llength(lp) == len) || (!exact && llength(lp) >= len)) {
-			if (!strncmp(lp->l_text, patrn, len)) {
-				return lp;
-			}
+		if (lregexec(exp, lp, 0, llength(lp))) {
+			result = lp;
+			break;
 		}
 	}
-	return NULL;
+	free(exp);
+	return (result);
 }
 
 int

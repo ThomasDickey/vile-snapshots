@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.101 1996/08/13 02:10:07 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.102 1996/10/19 11:50:51 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -368,6 +368,25 @@ revsearch(int f, int n)
 		return(forwhunt(f,n));
 }
 
+static int
+testit(LINE *lp, regexp *exp, int *end, int srchlim)
+{
+	char *txt = lp->l_text;
+	C_NUM col = (C_NUM)(exp->startp[0] - txt) + 1;
+
+	if (col > llength(lp))
+		col = llength(lp);
+	if (lregexec(exp, lp, col, srchlim)) {
+		col = (C_NUM)(exp->startp[0] - txt) + 1;
+		if (col > llength(lp) && !*end) {
+			col = llength(lp);
+			*end = TRUE;
+		}
+		if (col <= srchlim)
+			return TRUE;
+	}
+	return FALSE;
+}
 
 /*
  * scanner -- Search for a pattern in either direction.  If found,
@@ -416,7 +435,7 @@ int	*wrappedp)
 					} else {
 						startoff = curpos.o;
 						srchlim = 
-						 (scanboundpos.o > curpos.o) ?
+						 (scanboundpos.o > startoff) ?
 							scanboundpos.o : 
 							llength(curpos.l);
 					}
@@ -447,27 +466,35 @@ int	*wrappedp)
 		}
 		if (found) {
 			char *txt = curpos.l->l_text;
+			char *got = exp->startp[0];
+			C_NUM next;
+			C_NUM last = curpos.o;
 
 			if (direct == REVERSE) { /* find the last one */
-				char *got = exp->startp[0];
+				int end = FALSE;
 
-				while (lregexec(exp, curpos.l,
-					  (int)(got + 1 - txt), srchlim)
-				   && ((int)(exp->startp[0] + 1 - txt) <= srchlim)) {
+				last++;
+				while (testit(curpos.l, exp, &end, srchlim)) {
 					got = exp->startp[0];
 				}
+				if (end)
+					last++;
 				if (!lregexec(exp, curpos.l,
 					    (int)(got - txt), srchlim)) {
 					mlforce("BUG: prev. match no good");
 					return FALSE;
 				}
+			} else if (last < llength(curpos.l))
+				last--;
+			next = (C_NUM)(got - txt);
+			if (next != last) {
+				DOT.l = curpos.l;
+				DOT.o = next;
+				curwp->w_flag |= WFMOVE; /* flag that we have moved */
+				if (wrappedp)
+					*wrappedp = wrapped;
+				return TRUE;
 			}
-			DOT.l = curpos.l;
-			DOT.o = (C_NUM)(exp->startp[0] - txt);
-			curwp->w_flag |= WFMOVE; /* flag that we have moved */
-			if (wrappedp)
-				*wrappedp = wrapped;
-			return TRUE;
 		} else {
 			if (sameline(curpos,scanboundpos) &&
 							(!wrapok || wrapped))

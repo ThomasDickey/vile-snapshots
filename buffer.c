@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.149 1996/10/03 01:02:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.150 1996/10/17 10:44:58 tom Exp $
  *
  */
 
@@ -209,6 +209,8 @@ zotwp(BUFFER *bp)
 	WINDOW	dummy;
 	int s = FALSE;
 
+	TRACE(("zotwp(%s)\n", bp->b_bname))
+
 	/*
 	 * Locate buffer to switch to after deleting windows.  It can't be
 	 * the same as the buffer which is being deleted and if it's an
@@ -291,14 +293,15 @@ FreeBuffer(BUFFER *bp)
 	}
 #endif
 	lfree(buf_head(bp), bp);		/* Release header line. */
-	delink_bp(bp);
-	if (curbp == bp)
-		curbp = NULL;
+	if (delink_bp(bp)) {
+		if (curbp == bp)
+			curbp = NULL;
 
 #if OPT_HILITEMATCH
-	clobber_save_curbp(bp);
+		clobber_save_curbp(bp);
 #endif
-	free((char *) bp);			/* Release buffer block */
+		free((char *) bp);		/* Release buffer block */
+	}
 }
 
 /*
@@ -646,7 +649,7 @@ nextbuffer(int f, int n)	/* switch to the next buffer in the buffer list */
 		while (stopatbp != bheadp) {
 			/* get the last buffer in the list */
 			bp = bheadp;
-			while(bp->b_bufp != stopatbp)
+			while(bp != 0 && bp->b_bufp != stopatbp)
 				bp = bp->b_bufp;
 			/* if that one's invisible, back up and try again */
 			if (b_is_invisible(bp))
@@ -687,7 +690,7 @@ make_current(BUFFER *nbp)
 	if (!updating_list && global_g_val(GMDABUFF)) {
 		if (nbp != bheadp) {	/* remove nbp from the list */
 			bp = bheadp;
-			while(bp->b_bufp != nbp)
+			while(bp != 0 && bp->b_bufp != nbp)
 				bp = bp->b_bufp;
 			bp->b_bufp = nbp->b_bufp;
 
@@ -779,7 +782,7 @@ swbuffer_lfl(register BUFFER *bp, int lockfl)	/* make buffer BP current */
 			updatelistbuffers();
 #endif
 		run_buffer_hook();
-		return TRUE;
+		return (find_bp(bp) != 0);
 	} else if (curwp == 0) {
 		return FALSE;	/* we haven't started displaying yet */
 	}
@@ -987,7 +990,7 @@ killbuffer(int f, int n)
 /*
  * Unlink a buffer from the list, adjusting last-used and created counts.
  */
-void
+int
 delink_bp(BUFFER *bp)
 {
 	register BUFFER *bp1, *bp2;
@@ -998,7 +1001,7 @@ delink_bp(BUFFER *bp)
 		bp1 = bp2;
 		bp2 = bp2->b_bufp;
 		if (bp2 == 0)
-			return;
+			return FALSE;
 	}
 	bp2 = bp2->b_bufp;			/* Next one in chain.	*/
 	if (bp1 == NULL)			/* Unlink it.		*/
@@ -1009,6 +1012,7 @@ delink_bp(BUFFER *bp)
 	MarkDeleted(bp);
 	if (bp == last_bp)
 		last_bp = 0;
+	return TRUE;
 }
 
 int
@@ -1016,6 +1020,11 @@ zotbuf(register BUFFER *bp)	/* kill the buffer pointed to by bp */
 {
 	register int	s;
 	register int	didswitch = FALSE;
+
+	if (find_bp(bp) == 0) 	/* delwp may have zotted us, pointer obsolete */
+		return TRUE;
+
+	TRACE(("zotbuf(%s)\n", bp->b_bname))
 
 #define no_del
 #ifdef no_del
@@ -1051,12 +1060,11 @@ zotbuf(register BUFFER *bp)	/* kill the buffer pointed to by bp */
 		/* the user must have answered no */
 		if (didswitch)
 			(void)swbuffer(bp);
-		return (s);
+	} else {
+		FreeBuffer(bp);
+		updatelistbuffers();
 	}
-
-	FreeBuffer(bp);
-	updatelistbuffers();
-	return (TRUE);
+	return (s);
 }
 
 /* ARGSUSED */
@@ -1120,8 +1128,7 @@ popupbuff(BUFFER *bp)
 			wp->w_flag |= WFMODE|WFHARD;
 		}
 	}
-	(void)swbuffer(bp);
-	return TRUE;
+	return swbuffer(bp);
 }
 
 /*
@@ -1201,7 +1208,7 @@ footnote(int c)
 		{"scratch",	0},
 		{"unread",	0},
 		};
-	register int	j, next;
+	register SIZE_T	j, next;
 
 	for (j = next = 0; j < TABLESIZE(table); j++) {
 		if (c != 0) {
