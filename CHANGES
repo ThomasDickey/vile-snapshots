@@ -1,5 +1,12 @@
 Changes for vile 9.4 (released ??? ??? ?? ????)
 
+ 20030611 (r)
+	> Tom Dickey:
+	+ add a dummy entry to table in siginit() for VMS, which has no signal
+	  handlers.
+	+ correct a sign-extension problem with SAME() macro in regexp.c, which
+	  made searches for upper-128 characters fail.
+
  20030526 (q)
 	> Danny Zerkel:
 	+ revert part of regexp.c changes in regmatch(), which caused pattern

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.533 2003/05/25 20:20:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.534 2003/06/04 17:38:32 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1409,7 +1409,7 @@ typedef USHORT CHARTYPE;
 #define tocntrl(c)	((c)^DIFCNTRL)
 #define toalpha(c)	((c)^DIFCNTRL)
 
-#define nocase_eq(bc,pc)	((bc) == (pc) || (toUpper(bc) == toUpper(pc)))
+#define nocase_eq(bc,pc) (CharOf(bc) == CharOf(pc) || (toUpper(bc) == toUpper(pc)))
 
 #define ESC		tocntrl('[')
 #define BEL		tocntrl('G')	/* ascii bell character		*/

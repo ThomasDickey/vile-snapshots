@@ -24,7 +24,7 @@
  *
  *		ted, 05/03
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.106 2003/05/26 23:03:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.107 2003/06/04 17:47:53 tom Exp $
  *
  */
 
@@ -103,7 +103,7 @@
 # define visible_buff(s,n,e) s
 # if OPT_TRACE
 #  undef  TRACE
-#  define TRACE(p) printf p
+#  define TRACE(p)		/* nothing */
 # endif
 #endif
 
@@ -317,7 +317,7 @@ typedef enum {
 #define RR_MIN(p) ((p)[3])	/* minimum repeat count (0 is unspecified) */
 #define RR_MAX(p) ((p)[4])	/* maximum repeat count (0 is unspecified) */
 
-#define SAME(a,b) (ignorecase ? nocase_eq(a,b) : ((a) == (b)))
+#define SAME(a,b) (ignorecase ? nocase_eq(a,b) : (CharOf(a) == CharOf(b)))
 #define STRSKIP(s) ((s) + strlen(s))
 
 /*
@@ -1417,7 +1417,7 @@ RegStrChr2(const char *s, unsigned length, int c)
 	    /* this matches ANY_ESC */
 	    switch (*++s) {
 	    default:
-		matched = (c == *s);
+		matched = (CharOf(c) == CharOf(*s));
 		break;
 	    case 'a':
 		matched = is_ALPHA(c);
