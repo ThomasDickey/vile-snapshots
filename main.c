@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.280 1996/10/17 10:44:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.281 1996/10/30 13:58:58 bod Exp $
  *
  */
 
@@ -723,7 +723,7 @@ static void
 global_val_init(void)
 {
 	static const char expand_chars[] =
-		{ EXPC_THIS, EXPC_THAT, EXPC_SHELL, EXPC_TOKEN, 0 };
+		{ EXPC_THIS, EXPC_THAT, EXPC_SHELL, EXPC_TOKEN, EXPC_RPAT, 0 };
 	register int i;
 	/* set up so the global value pointers point at the global
 		values.  we never actually use the global pointers

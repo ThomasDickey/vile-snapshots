@@ -1,5 +1,18 @@
 Changes for vile 6.3 (released ??? ??? ??, 1996)
 
+(tom)	961105 (d)
+	+ apply Brendan O'Dea's <bod@tyndall.com.au> followup patch to ensure
+	  that "#", "%" and ":" substitions aren't made in search/replacement
+	  inputs.
+
+(pgf)	961030 (c)
+	+ apply brendan o'dea's patch to implement use of ~ in a replacement
+	  pattern, to expand to the previous replacement.  this patch also
+	  turns off the longstanding behavior of supplying the previous
+	  replacement pattern as the default response to the "replacement
+	  string: "  prompt.  i added a paragraph in the help file.  (estruct.h
+	  input.c main.c oneliner.c search.c)
+
 (tom)	961022 (b)
 	+ modify 'showpat()' to show at least one highlighted space even if the
 	  pattern is null, e.g., a '$' matching the end of line (oneliner.c).

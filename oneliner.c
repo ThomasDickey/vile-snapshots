@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.81 1996/10/22 01:24:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.82 1996/10/30 13:58:58 bod Exp $
  */
 
 #include	"estruct.h"
@@ -138,6 +138,7 @@ substreg1(int needpats, int use_opts)
 	REGION region;
 	LINEPTR oline;
 	int	getopts = FALSE;
+	char    tpat[NPAT];
 
 	if ((status = get_fl_region(&region)) != TRUE) {
 		return (status);
@@ -159,12 +160,15 @@ substreg1(int needpats, int use_opts)
 							(SIZE_T)gregexp->size);
 		}
 
-		if ((status = readpattern("replacement string: ", &rpat[0], 
-						(regexp	**)0, c,
-				FALSE)) == ABORT) {
-			return FALSE;
+		tpat[0] = 0;
+		status = readpattern("replacement string: ",
+				     &tpat[0], (regexp **)0, c, FALSE);
+
+		(void)strcpy(rpat, tpat);
+		if (status == ABORT)
 			/* if false, the pattern is null, which is okay... */
-		}
+			return FALSE;
+
 		nth_occur = -1;
 		confirm = printit = globally = FALSE;
 		getopts = (lastkey == c); /* the user may have 
