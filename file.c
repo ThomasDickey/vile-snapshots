@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.340 2002/11/05 01:27:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.341 2002/12/22 22:48:30 tom Exp $
  */
 
 #include "estruct.h"
@@ -1711,10 +1711,7 @@ makename(char *bname, const char *fname)
 	       )) {
 	    *(--fcp) = EOS;
 	}
-	fcp = temp;
-	/* trim leading whitespace */
-	while (isBlank(*fcp))
-	    fcp++;
+	fcp = skip_space_tab(temp);
 
 #if SYS_UNIX || SYS_MSDOS || SYS_VMS || SYS_OS2 || SYS_WINNT
 	bcp = bname;

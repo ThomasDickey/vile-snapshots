@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2002 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.111 2002/10/17 23:45:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.113 2002/12/15 20:14:29 tom Exp $
  *
  */
 
@@ -196,7 +196,7 @@ marks_in(const char *expr)
 
     while (*expr != EOS) {
 	if (escaped) {
-	    if (*expr == LPAREN)
+	    if (*expr == L_PAREN)
 		result++;
 	    escaped = FALSE;
 	} else if (*expr == BACKSLASH) {
@@ -248,7 +248,7 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 		APP_C;
 		if (++src == last)
 		    break;
-		if (*src == LPAREN)	/* a group we don't own... */
+		if (*src == L_PAREN)	/* a group we don't own... */
 		    word++;
 		APP_C;
 	    } else if (*src == '%') {
@@ -284,7 +284,7 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 		    APP_S(number);
 		    errp->words[W_LINE] = ++word;
 		    break;
-		case LBRACK:
+		case L_BLOCK:
 		    range = TRUE;
 		    APP_S(before);
 		    APP_C;
@@ -292,7 +292,7 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 			src++;
 			APP_C;
 		    }
-		    if (src[1] == RBRACK) {
+		    if (src[1] == R_BLOCK) {
 			src++;
 			APP_C;
 		    }
@@ -305,7 +305,7 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 		    APP_S(normal);
 		    errp->words[mark] = ++word;
 		}
-	    } else if ((*src == RBRACK) && range) {
+	    } else if ((*src == R_BLOCK) && range) {
 		APP_C;
 		APP_S(after);
 		range = FALSE;
@@ -333,7 +333,9 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 	    }
 	}
 	if (pass == 1) {
+	    beginDisplay();
 	    dst = temp = typeallocn(char, want + 1);
+	    endofDisplay();
 	    if (dst == 0)
 		break;
 	} else {
@@ -361,6 +363,7 @@ static void
 free_patterns(void)
 {
     if (exp_table != 0) {
+	beginDisplay();
 	while (exp_count-- != 0) {
 	    free(exp_table[exp_count].exp_text);
 	    free((char *) (exp_table[exp_count].exp_comp));
@@ -368,6 +371,7 @@ free_patterns(void)
 	free((char *) exp_table);
 	exp_table = 0;
 	exp_count = 0;
+	endofDisplay();
     }
 }
 
@@ -416,10 +420,12 @@ load_patterns(void)
 #endif
 
     if (exp_count == 0) {
+	beginDisplay();
 	exp_count = bp->b_linecount;
 	exp_table = typeallocn(ERR_PATTERN, exp_count);
 	for (n = 0; n < W_LAST; n++)
 	    exp_table->words[n] = -1;
+	endofDisplay();
 
 	n = 0;
 	for_each_line(lp, bp)
@@ -583,12 +589,14 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 	return (FALSE);
     }
     if (newfebuff) {
+	beginDisplay();
 	oerrline = -1;
 	oerrfile = tb_init(&oerrfile, EOS);
 	oerrtext = tb_init(&oerrtext, EOS);
 	while (l)
 	    free(dirs[l--]);
 	odotp = 0;
+	endofDisplay();
     }
     dotp = getdot(sbp);
 
@@ -596,8 +604,10 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 
 	LINE *tdotp;
 
+	beginDisplay();
 	while (l)
 	    free(dirs[l--]);
+	endofDisplay();
 
 	tdotp = lforw(buf_head(sbp));
 
@@ -626,6 +636,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 		    errfile = tb_values(fe_file);
 
 		    if (errverb != 0 && errfile != 0) {
+			beginDisplay();
 			if (!strcmp("Entering", errverb)) {
 			    if (l < DIRLEVELS) {
 				dirs[++l] = strmalloc(errfile);
@@ -634,6 +645,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 			    if (l > 0)
 				free(dirs[l--]);
 			}
+			endofDisplay();
 		    }
 		} else if (interrupted()) {
 		    kbd_alarm();
@@ -676,6 +688,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 			break;
 		} else if (errverb != 0
 			   && errfile != 0) {
+		    beginDisplay();
 		    if (!strcmp("Entering", errverb)) {
 			if (l < DIRLEVELS) {
 			    dirs[++l] = strmalloc(errfile);
@@ -684,6 +697,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 			if (l > 0)
 			    free(dirs[l--]);
 		    }
+		    endofDisplay();
 		}
 	    }
 	}
@@ -693,9 +707,11 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 	} else if (lforw(dotp) == buf_head(sbp)) {
 	    mlwarn("[No more errors in %s buffer]", febuff);
 	    /* start over at the top of file */
+	    beginDisplay();
 	    putdotback(sbp, lforw(buf_head(sbp)));
 	    while (l)
 		free(dirs[l--]);
+	    endofDisplay();
 	    return FALSE;
 	}
 	dotp = lforw(dotp);

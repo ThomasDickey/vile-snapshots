@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.247 2002/10/23 23:05:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.248 2002/12/15 19:31:58 tom Exp $
  *
  */
 
@@ -475,13 +475,13 @@ unkeystroke(int c)
 int
 mapped_keystroke(void)
 {
-    return lastkey = mapped_c(DOMAP, NOQUOTED);
+    return lastkey = mapped_c(DOMAP, MAP_UNQUOTED);
 }
 
 int
 keystroke(void)
 {
-    return lastkey = mapped_c(NODOMAP, NOQUOTED);
+    return lastkey = mapped_c(NODOMAP, MAP_UNQUOTED);
 }
 
 int
@@ -489,7 +489,7 @@ keystroke8(void)
 {
     int c;
     for_ever {
-	c = mapped_c(NODOMAP, NOQUOTED);
+	c = mapped_c(NODOMAP, MAP_UNQUOTED);
 	if ((c & ~0xff) == 0)
 	    return lastkey = c;
 	kbd_alarm();
@@ -501,7 +501,7 @@ keystroke_raw8(void)
 {
     int c;
     for_ever {
-	c = mapped_c(NODOMAP, QUOTED);
+	c = mapped_c(NODOMAP, MAP_QUOTED);
 	if ((c & ~0xff) == 0)
 	    return lastkey = c;
 	kbd_alarm();
@@ -511,7 +511,7 @@ keystroke_raw8(void)
 static int
 mapped_keystroke_raw(void)
 {
-    return lastkey = mapped_c(DOMAP, QUOTED);
+    return lastkey = mapped_c(DOMAP, MAP_QUOTED);
 }
 
 int
@@ -1958,7 +1958,7 @@ kbd_replaying(int match)
 	 * only one character to display.
 	 */
 	if (match
-	    && insertmode == INSERT
+	    && insertmode == INSMODE_INS
 	    && b_val(curbp, MDSHOWMAT)
 	    && KbdStack == 0
 	    && (dotcmd->itb_last + 1 >= dotcmd->itb_used)) {

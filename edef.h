@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.305 2002/11/01 20:43:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.309 2002/12/23 00:15:31 Mark.Robinson Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -177,6 +177,7 @@ decl_init( int sgarbf, TRUE );		/* TRUE if screen is garbage	*/
 decl_init( int need_update, TRUE );	/* TRUE if screen is not updated*/
 decl_uninit( int clexec	);		/* command line execution flag	*/
 decl_uninit( int clhide );		/* hide results of this command	*/
+decl_uninit( int quiet );		/* hide output of this command	*/
 decl_uninit( int miniedit );		/* editing minibuffer with vi-cmds */
 decl_init( int vl_msgs, TRUE);		/* suppress command output?	*/
 decl_uninit( int no_errs);		/* suppress bells/alarms?	*/
@@ -203,6 +204,8 @@ decl_init( int rgb_bright, 255 );
 #if OPT_TITLE
 decl_init( int auto_set_title, TRUE );	/* automatically set title	*/
 decl_init ( TBUFF * title_format, 0 );	/* format, if any		*/
+decl_init ( TBUFF * current_title, 0 );
+decl_init ( TBUFF * request_title, 0 );
 #endif
 
 /* Special characters, used in keyboard control (some values are set on
@@ -438,13 +441,13 @@ extern BINDINGS sel_bindings;
 decl_uninit(int ev_end_of_cmd);
 
 /* terminal structure is defined in the configured screen driver */
-#ifndef	termdef
 extern	TERM	term;			/* Terminal information.	*/
-#endif
 #if OPT_DUMBTERM
 extern	TERM	dumb_term;
 #endif
 extern	TERM	null_term;
+
+decl_init(int utf8_locale, FALSE);
 
 #if DISP_IBMPC || DISP_BORLAND || DISP_VIO
 decl_init( char *current_res_name, "default");

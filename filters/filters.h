@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.62 2002/10/27 14:52:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.68 2002/12/23 02:07:28 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -14,6 +14,19 @@
 # define HAVE_STDLIB_H 1
 # define HAVE_STRING_H 1
 #endif
+
+#ifndef OPT_FILTER
+#define OPT_FILTER 0
+#endif
+
+/* If we are using built-in filters, we can use many definitions from estruct.h
+ * that may resolve to functions in ../vile
+ */
+#if OPT_FILTER
+
+#include "estruct.h"
+
+#else
 
 #ifndef NO_LEAKS
 #define NO_LEAKS 0
@@ -97,18 +110,25 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 #define GCC_UNUSED /*nothing*/
 #endif
 
+#define BACKSLASH '\\'
+
+#define isBlank(c)   ((c) == ' ' || (c) == '\t')
+
+#define	typecallocn(cast,ntypes)	(cast *)calloc(sizeof(cast),ntypes)
+#define	typereallocn(cast,ptr,ntypes)	(cast *)realloc((char *)(ptr),\
+							(ntypes)*sizeof(cast))
+
 extern	char *home_dir(void);
 
-#ifndef _estruct_h
 typedef enum { D_UNKNOWN = -1, D_KNOWN = 0 } DIRECTIVE;
-extern DIRECTIVE dname_to_dirnum(const char *cmdp, size_t length);
-#endif
+extern DIRECTIVE dname_to_dirnum(char **cmdp, size_t length);
 
 typedef struct { int dummy; } CMDFUNC;
 extern const CMDFUNC * engl2fnc(const char *fname);
 
 extern int vl_lookup_func(const char *name);
 
+#endif /* OPT_FILTER */
 #endif /* _estruct_h */
 
 #include <ctype.h>
@@ -154,6 +174,19 @@ extern int vl_lookup_func(const char *name);
  * Our magic character.
  */
 #define CTL_A	'\001'
+
+/*
+ * Useful character definitions
+ */
+#define SQUOTE  '\''
+#define DQUOTE  '"'
+
+#define L_CURLY '{'
+#define R_CURLY '}'
+#define L_PAREN '('
+#define R_PAREN ')'
+#define L_BLOCK '['
+#define R_BLOCK ']'
 
 /*
  * Pathname definitions
@@ -245,7 +278,6 @@ extern KEYWORD *is_class(char *name);
 extern KEYWORD *is_keyword(char *name);
 extern char *ci_keyword_attr(char *name);
 extern char *class_attr(char *name);
-extern char *do_alloc(char *ptr, unsigned need, unsigned *have);
 extern char *get_symbol_table(void);
 extern char *keyword_attr(char *name);
 extern char *lowercase_of(char *name);
@@ -254,6 +286,7 @@ extern char *skip_ident(char *src);
 extern int flt_bfr_length(void);
 extern int set_symbol_table(const char *classname);
 extern long hash_function(const char *id);
+extern void *flt_alloc(void *ptr, unsigned need, unsigned *have, unsigned size);
 extern void flt_bfr_append(char *text, int length);
 extern void flt_bfr_begin(char *attr);
 extern void flt_bfr_embed(char *text, int length, char *attr);
@@ -267,6 +300,9 @@ extern void flt_read_keywords(char *classname);
 extern void for_each_keyword(EachKeyword func);
 extern void insert_keyword(const char *ident, const char *attribute, int classflag);
 extern void parse_keyword(char *name, int classflag);
+
+#define type_alloc(type, ptr, need, have) (type*)flt_alloc(ptr, need, have, sizeof(type))
+#define do_alloc(ptr, need, have) type_alloc(char, ptr, need, have)
 
 /*
  * Declared in filterio.c and/or builtflt.c
@@ -301,6 +337,17 @@ extern char *strmalloc(const char *src);
 			flt_bfr_append(yytext, yyleng);\
 			flt_bfr_finish();\
 			BEGIN(state)
+
+/* see fltstack.h */
+#define PushQuote(state, attr) \
+			push_state(state); \
+			flt_bfr_begin(attr); \
+			flt_bfr_append(yytext, yyleng)
+
+#define PopQuote() \
+			flt_bfr_append(yytext, yyleng);\
+			flt_bfr_finish();\
+			pop_state()
 
 #if NO_LEAKS
 #include <trace.h>

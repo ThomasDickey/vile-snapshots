@@ -3,7 +3,7 @@
  *
  *	Miscellaneous routines for UNIX/VMS compatibility.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.36 2002/01/12 12:51:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.37 2002/12/15 20:14:29 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -343,7 +343,7 @@ unix2vms_path(char *dst, const char *src)
 				on_top = TRUE;
 			} else if (strchr(s, SLASHC)) {	/* must do a splice */
 				if ((len > 2)
-				&&  (d[len-1] == RBRACK)) {
+				&&  (d[len-1] == R_BLOCK)) {
 					bracket++;
 					if (d[len-2] == PERIOD)
 						/* rooted-device ? */
@@ -375,7 +375,7 @@ unix2vms_path(char *dst, const char *src)
 
 		len = strlen(strcpy(d, home));
 
-		if (d[len-1] == RBRACK) {
+		if (d[len-1] == R_BLOCK) {
 			bracket++;
 			if (strcmp(s, "/")) { /* strip right-bracket to allow new levels */
 				if (d[len-2] == PERIOD)
@@ -423,19 +423,19 @@ unix2vms_path(char *dst, const char *src)
 	while (!strncmp(s, "../", 3)) {
 		s += 3;
 		if (!bracket++)
-			*d++ = LBRACK;
+			*d++ = L_BLOCK;
 		*d++ = '-';
 	}
 	if (!strcmp(s, "..")) {
 		s += 2;
 		if (!bracket++)
-			*d++ = LBRACK;
+			*d++ = L_BLOCK;
 		*d++ = '-';
 	}
 
 	if (strchr(s, SLASHC)) {
 		if (!bracket++)
-			*d++ = LBRACK;
+			*d++ = L_BLOCK;
 		if (*s == SLASHC) {
 			s++;
 		} else if (!on_top) {
@@ -460,11 +460,11 @@ unix2vms_path(char *dst, const char *src)
 		}
 	}
 	if (bracket) {
-		if (on_top && d[-1] == LBRACK) {
+		if (on_top && d[-1] == L_BLOCK) {
 			(void)strcpy(d, RootDir);
 			d += strlen(d);
 		}
-		*d++ = RBRACK;
+		*d++ = R_BLOCK;
 	}
 	if (c != EOS && *s) {
 		leaf_dot = DotPrefix(s);
@@ -535,12 +535,12 @@ vms_dir2path(char *path)
 	if ((s = is_vms_rootdir(path)) != 0) {
 		*s = EOS;
 	} else {
-		if ((s = strrchr(path, RBRACK)) != 0
+		if ((s = strrchr(path, R_BLOCK)) != 0
 		 && (s[1] != EOS)) {
 			char *t;
 			if ((t = is_vms_dirtype(s)) != 0) {
 				*s = '.';
-				*t++ = RBRACK;
+				*t++ = R_BLOCK;
 				*t = EOS;
 			}
 		}
@@ -560,11 +560,11 @@ vms_path2dir(const char *src)
 	static	char	buffer[NFILEN];
 	register char	*s	= skip_string(strcpy(buffer, src));
 
-	if (s != buffer && *(--s) == RBRACK) {
+	if (s != buffer && *(--s) == R_BLOCK) {
 		(void)strcpy(s, DirType);
 		while (--s >= buffer) {
 			if (*s == PERIOD) {
-				*s = RBRACK;
+				*s = R_BLOCK;
 				if (s == buffer+1) {	/* absorb "]" */
 					register char *t = s + 1;
 					s = buffer;
@@ -573,13 +573,13 @@ vms_path2dir(const char *src)
 				}
 				break;
 			}
-			if (*s == LBRACK) {		/* absorb "[" */
+			if (*s == L_BLOCK) {		/* absorb "[" */
 				register char *t = s + 1;
 				if (is_vms_rootdir(t)
 				 && (s == buffer || s[-1] == COLON)) {
 					(void) lsprintf(t, "%s%c%s%s",
 						RootDir,
-						RBRACK,
+						R_BLOCK,
 						RootDir,
 						DirType);
 				} else {
@@ -635,10 +635,10 @@ vms2unix_path(char *dst, const char *src)
 		base++;			/* skip over ":" */
 		have_dev = TRUE;
 	} else if (need_dev
-	||	  ((base[0] == LBRACK)
+	||	  ((base[0] == L_BLOCK)
 	&&	   (base[1] != '-')
 	&&	   (base[1] != PERIOD)
-	&&	   (base[1] != RBRACK))) {	/* must supply a device */
+	&&	   (base[1] != R_BLOCK))) {	/* must supply a device */
 		register char	*a = getcwd(current, NFILEN),
 				*b = strchr(a ? a : "?", COLON);
 		if ((b != 0)
@@ -656,9 +656,9 @@ vms2unix_path(char *dst, const char *src)
 	}
 
 	/* translate directory-syntax */
-	if ((s = strchr(base, LBRACK)) != NULL) {
+	if ((s = strchr(base, L_BLOCK)) != NULL) {
 		int bracketed = TRUE;
-		if (s[1] == RBRACK) {
+		if (s[1] == R_BLOCK) {
 			if (dst != output && *dst != SLASHC)
 				*dst++ = SLASHC;
 			*dst++ = PERIOD;
@@ -679,7 +679,7 @@ vms2unix_path(char *dst, const char *src)
 				*dst++ = PERIOD;
 				*dst++ = PERIOD;
 				if (*s == PERIOD
-				 && (s[1] == '-' || s[1] == RBRACK))
+				 && (s[1] == '-' || s[1] == R_BLOCK))
 					/* allow "-.-" */
 					s++;
 				if (*s == '-')
@@ -696,7 +696,7 @@ vms2unix_path(char *dst, const char *src)
 		}
 		/* expect s points to the last token before right-bracket */
 		if (bracketed) {
-			while (*s && *s != RBRACK) {
+			while (*s && *s != R_BLOCK) {
 				if (*s == PERIOD)
 					*s = SLASHC;
 				s++;

@@ -410,6 +410,7 @@ State Variables
 
 			athena      -> xvile built with Athena widgets
 			curses      -> editor uses curses terminal driver
+			locale      -> editor uses system's LC_CTYPE locale
 			motif       -> xvile built with Motif libraries
 			nextaw      -> xvile built with Athena widgets (NeXtaw)
 			noshell     -> shell commands are disabled
@@ -970,6 +971,11 @@ Directives
 	completion of the macro, after the current position has been restored
 	from the values saved with the ~local directive.
 
+    ~quiet
+    ------
+    	Rather than suppress all screen updates, you may suppress any messages
+	that are written as the command progresses.
+
     ~if, ~elseif, ~else, and ~endif
     ------------------------------
 	These control execution of macro commands in the expected manner.
@@ -1095,8 +1101,8 @@ Directives
 	variables and the state variables shown with show-variables.  Note
 	that setting certain variables, such as the cursor position, will
 	have side effects, i.e., modifying the display.  If these are
-	distracting, use ~hidden to suppress display updates until the
-	macro completes.
+	distracting, use ~hidden or ~quiet to suppress display updates until
+	the macro completes.
 
 	[1] Subject to the limitations described above for "Mode
 	variables".  Namely, "global values of the editor modes are not
@@ -1442,6 +1448,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.86 2002/10/15 20:25:05 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.88 2002/12/23 00:30:16 tom Exp $
 -----------------------------------
 

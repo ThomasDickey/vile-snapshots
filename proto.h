@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.504 2002/11/01 23:50:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.507 2002/12/22 23:40:10 tom Exp $
  *
  */
 
@@ -312,6 +312,7 @@ extern char * mktrimmed (char *str);
 extern char * render_boolean (TBUFF **rp, int i);
 extern char * render_int (TBUFF **rp, int i);
 extern char * render_long (TBUFF **rp, long i);
+extern char * skip_space_tab(char *src);
 extern char * tokval (char *tokn);
 extern const char * skip_cblanks (const char *str);
 extern const char * skip_cstring (const char *str);
@@ -390,7 +391,7 @@ extern char *render_hex(TBUFF **rp, UINT i);
 #endif
 
 /* exec.c */
-extern DIRECTIVE dname_to_dirnum(const char *cmdp, size_t length);
+extern DIRECTIVE dname_to_dirnum(char **cmdp, int length);
 extern int do_source (char *fname, int n, int optional);
 extern int dobuf (BUFFER *bp, int n);
 extern int docmd (char *cline, int execflag, int f, int n);
@@ -1351,6 +1352,7 @@ extern	void	x11_leaks		(void);
 
 #if OPT_FILTER
 extern	void	flt_leaks (void);
+extern	void	filters_leaks (void);
 #endif
 
 #endif /* NO_LEAKS */

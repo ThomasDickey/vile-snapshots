@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.265 2002/10/20 19:11:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.266 2002/12/06 23:32:52 tom Exp $
  *
  */
 
@@ -23,8 +23,6 @@
  *    OPT_KEV_DRAGGING
  *    OPT_KEV_SCROLLBARS
  */
-
-#define	termdef	1		/* don't define "term" external */
 
 #define NEED_X_INCLUDES 1
 #include	"estruct.h"

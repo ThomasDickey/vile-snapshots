@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.16 2002/07/04 14:57:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.17 2002/12/23 02:07:22 tom Exp $
  *
  */
 
@@ -171,7 +171,7 @@ strmalloc(const char *src)
  */
 /* ARGSUSED */
 DIRECTIVE
-dname_to_dirnum(const char *s GCC_UNUSED, size_t len GCC_UNUSED)
+dname_to_dirnum(char **s GCC_UNUSED, size_t len GCC_UNUSED)
 {
     return 0;
 }

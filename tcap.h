@@ -1,7 +1,7 @@
 /*
  * Configurable headers used by termcap/terminfo driver for vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.h,v 1.8 2002/10/09 19:08:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.h,v 1.9 2002/12/22 17:19:16 tom Exp $
  */
 
 #ifndef VILE_TCAP_H
@@ -18,14 +18,25 @@ extern "C" {
 #undef MK
 #define MK other_MK	/* workaround for bug in NetBSD 1.5 curses */
 
+/* _XOPEN_SOURCE_EXTENDED is needed for the wide-character X/Open functions */
+#ifdef NCURSES
+#  ifndef _XOPEN_SOURCE_EXTENDED
+#    define _XOPEN_SOURCE_EXTENDED 1
+#  endif
+#endif
+
 #ifdef NEED_CURSES_H
-#  ifdef HAVE_NCURSES_NCURSES_H
-#    include <ncurses/ncurses.h>
+#  ifdef HAVE_NCURSESW_NCURSES_H
+#    include <ncursesw/ncurses.h>
 #  else
-#    ifdef HAVE_NCURSES_H
-#      include <ncurses.h>
+#    ifdef HAVE_NCURSES_NCURSES_H
+#      include <ncurses/ncurses.h>
 #    else
-#      include <curses.h>
+#      ifdef HAVE_NCURSES_H
+#        include <ncurses.h>
+#      else
+#        include <curses.h>
+#      endif
 #    endif
 #  endif
 #endif

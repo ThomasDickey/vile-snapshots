@@ -5,7 +5,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995-2000 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.117 2002/09/02 12:27:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.118 2002/12/14 18:08:39 tom Exp $
  *
  */
 #include "estruct.h"
@@ -144,18 +144,24 @@ gettagsfile(int n, int *endofpathflagp, int *did_read)
 static BI_NODE *
 new_tags(BI_DATA * a)
 {
-    BI_NODE *p = typecalloc(BI_NODE);
+    BI_NODE *p;
 
+    beginDisplay();
+    p = typecalloc(BI_NODE);
     p->value = *a;
     BI_KEY(p) = strmalloc(a->bi_key);
+    endofDisplay();
+
     return p;
 }
 
 static void
 old_tags(BI_NODE * a)
 {
+    beginDisplay();
     free(BI_KEY(a));
     free(TYPECAST(char, a));
+    endofDisplay();
 }
 
 /*ARGSUSED*/
@@ -274,10 +280,12 @@ tags_completion(DONE_ARGS)
     kbd_init();			/* nothing to erase */
     buf[cpos] = EOS;		/* terminate it for us */
 
+    beginDisplay();
     if ((nptr = init_tags_cmpl(buf, cpos)) != 0) {
 	status = kbd_complete(PASS_DONE_ARGS, (const char *) nptr, sizeof(*nptr));
 	free(TYPECAST(char *, nptr));
     }
+    endofDisplay();
     return status;
 }
 #else
@@ -302,11 +310,13 @@ mark_tag_hit(LINE *tag, LINE *hit)
 	}
     }
 
+    beginDisplay();
     p = typecalloc(TAGHITS);
     p->link = tag_hits;
     p->tag = tag;
     p->hit = hit;
     tag_hits = p;
+    endofDisplay();
 
     TRACE(("... mark_tag_hit FALSE\n"));
     return FALSE;
@@ -319,20 +329,25 @@ static void
 free_tag_hits(void)
 {
     TAGHITS *p;
+
+    beginDisplay();
     while ((p = tag_hits) != 0) {
 	tag_hits = p->link;
 	free(TYPECAST(char, p));
     }
+    endofDisplay();
 }
 
 static void
 free_untag(UNTAG * utp)
 {
+    beginDisplay();
     FreeIfNeeded(utp->u_fname);
 #if OPT_SHOW_TAGS
     FreeIfNeeded(utp->u_templ);
 #endif
     free((char *) utp);
+    endofDisplay();
 }
 
 /* discard without returning anything */
@@ -354,27 +369,29 @@ static void
 pushuntag(char *fname, L_NUM lineno, C_NUM colno, char *tag)
 {
     UNTAG *utp;
-    utp = typealloc(UNTAG);
-    if (!utp)
-	return;
 
-    if ((utp->u_fname = strmalloc(fname)) == 0
+    beginDisplay();
+    if ((utp = typealloc(UNTAG)) != 0) {
+
+	if ((utp->u_fname = strmalloc(fname)) == 0
 #if OPT_SHOW_TAGS
-	|| (utp->u_templ = strmalloc(tag)) == 0
+	    || (utp->u_templ = strmalloc(tag)) == 0
 #endif
-	) {
-	free_untag(utp);
-	return;
-    }
+	    ) {
+	    free_untag(utp);
+	    return;
+	}
 #if OPT_VMS_PATH
-    strip_version(utp->u_fname);
+	strip_version(utp->u_fname);
 #endif
 
-    utp->u_lineno = lineno;
-    utp->u_colno = colno;
-    utp->u_stklink = untaghead;
-    untaghead = utp;
-    update_scratch(TAGSTACK_BufName, update_tagstack);
+	utp->u_lineno = lineno;
+	utp->u_colno = colno;
+	utp->u_stklink = untaghead;
+	untaghead = utp;
+	update_scratch(TAGSTACK_BufName, update_tagstack);
+    }
+    endofDisplay();
 }
 
 static int
@@ -581,7 +598,11 @@ cheap_buffer_scan(BUFFER *bp, char *patrn, int dir)
 	    break;
 	}
     }
+
+    beginDisplay();
     free(TYPECAST(char, exp));
+    endofDisplay();
+
 #ifdef MDTAGIGNORECASE
     ignorecase = savecase;
 #endif

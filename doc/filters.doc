@@ -149,6 +149,8 @@ PROGRAMS
 The following are implemented:
 
 	vile-ada-filt	(Ada95)
+	vile-as-filt	(GNU assembler (x86))
+	vile-asm-filt	(Microsoft ASM (x86))
 	vile-awk-filt	(awk)
 	vile-basic-filt	(BASIC)
 	vile-bat-filt	(DOS batchfiles)
@@ -163,6 +165,7 @@ The following are implemented:
 	vile-est-filt	(Enscript syntax-descriptions)
 	vile-html-filt	(HTML with embedded JavaScript)
 	vile-imake-filt	(imake)
+	vile-info-filt	(GNU info files)
 	vile-key-filt	(Vile keyword files)
 	vile-latex-filt	(LaTeX or TeX)
 	vile-lex-filt	(lex)
@@ -175,6 +178,7 @@ The following are implemented:
 	vile-pas-filt	(Pascal)
 	vile-perl-filt	(Perl, in C)
 	vile-pl-filt	(Perl, in lex)
+	vile-pot-filt	(gettext (.po) files)
 	vile-ps-filt	(PostScript)
 	vile-py-filt	(Python)
 	vile-rc-filt	(Windows resource files)
@@ -191,10 +195,12 @@ The following are implemented:
 	vile-tbl-filt	(Vile's mktbl format)
 	vile-tc-filt	(termcap)
 	vile-tcl-filt	(TCL/TK)
+	vile-texi-filt	(texinfo)
 	vile-ti-filt	(terminfo)
 	vile-txt-filt	(plain text files, such as vile.hlp)
 	vile-vile-filt	(Vile's macros)
 	vile-vlog-filt	(Verilog)
+	vile-xml-filt	(XML)
 	vile-xres-filt	(X Window resources)
 	vile-xs-filt	(Perl extension)
 	vile-yacc-filt	(yacc)
@@ -207,7 +213,6 @@ use the same syntax as other majormodes:
 	imakemode	Imake uses C filter
 	javamode	Java uses C filter
 	jsmode		JavaScript uses C filter
-	potmode		Message libraries use shell filter
 
 
 NOTE
@@ -216,4 +221,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.27 2002/10/23 00:45:45 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.29 2002/12/11 02:04:47 tom Exp $

@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.19 2002/10/20 14:21:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.20 2002/12/15 21:39:05 tom Exp $
  *
  */
 #ifndef	_trace_h
@@ -18,6 +18,11 @@
 #ifndef	show_alloc
 extern	void	show_alloc (void);
 #endif
+
+/* Initialize SOME data to quiet memory-checking complaints about
+ * references to uninitialized data.
+ */
+#define init_alloc(s,n) memset(s,0,n)
 
 #if	DOALLOC
 extern	char *	doalloc (char *oldp, unsigned amount);

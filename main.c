@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.487 2002/11/04 23:30:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.497 2002/12/23 01:14:53 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -37,8 +37,30 @@
 
 #if OPT_LOCALE
 #include	<locale.h>
+
+#ifdef HAVE_WCTYPE
+#include	<wctype.h>
+#define sys_iscntrl(n)  iswcntrl(n)
+#define sys_isdigit(n)  iswdigit(n)
+#define sys_islower(n)  iswlower(n)
+#define sys_isprint(n)  iswprint(n)
+#define sys_ispunct(n)  iswpunct(n)
+#define sys_isspace(n)  iswspace(n)
+#define sys_isupper(n)  iswupper(n)
+#define sys_isxdigit(n) iswxdigit(n)
+#else
 #include	<ctype.h>
+#define sys_iscntrl(n)  iscntrl(n)
+#define sys_isdigit(n)  isdigit(n)
+#define sys_islower(n)  islower(n)
+#define sys_isprint(n)  isprint(n)
+#define sys_ispunct(n)  ispunct(n)
+#define sys_isspace(n)  isspace(n)
+#define sys_isupper(n)  isupper(n)
+#define sys_isxdigit(n) isxdigit(n)
 #endif
+
+#endif	/* OPT_LOCALE */
 
 #if CC_NEWDOSCC
 #include <io.h>
@@ -126,7 +148,32 @@ MainProgram(int argc, char *argv[])
 #endif
 
 #if OPT_LOCALE
-    setlocale(LC_CTYPE, "");
+    {
+	char *env = "";
+
+	/*
+	 * Force 8-bit locale for display drivers where we only support 8-bits
+	 */
+#if DISP_TERMCAP
+	if (((env = getenv("LC_ALL")) != 0 && *env != 0) ||
+	    ((env = getenv("LC_CTYPE")) != 0 && *env != 0) ||
+	    ((env = getenv("LANG")) != 0 && *env != 0)) {
+	    char *utf = strstr(env, ".UTF-8");
+
+	    if (utf != 0) {
+		char *tmp = strmalloc(env);
+		tmp[utf - env] = EOS;
+		env = tmp;
+		utf8_locale = TRUE;
+	    } else {
+		env = "";
+	    }
+	} else {
+	    env = "";
+	}
+#endif
+	setlocale(LC_ALL, env);	/* set locale according to environment vars */
+    }
 #endif
 
 #if OPT_NAMEBST
@@ -895,9 +942,12 @@ tidy_exit(int code)
 char *
 strmalloc(const char *s)
 {
-    register char *ns = castalloc(char, strlen(s) + 1);
+    char *ns;
+    beginDisplay();
+    ns = castalloc(char, strlen(s) + 1);
     if (ns != 0)
 	(void) strcpy(ns, s);
+    endofDisplay();
     return ns;
 }
 #endif
@@ -1058,6 +1108,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #ifdef GMDXTERM_MOUSE
 	    setINT(GMDXTERM_MOUSE, FALSE);	/* mouse-clicking */
 #endif
+#ifdef GMDXTERM_TITLE
+	    setINT(GMDXTERM_TITLE, FALSE);	/* xterm window-title */
+#endif
 #ifdef GVAL_BACKUPSTYLE
 	    setTXT(GVAL_BACKUPSTYLE, DFT_BACKUPSTYLE);
 #endif
@@ -1125,7 +1178,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setINT(MDUNDO_DOS_TRIM, FALSE);	/* undo dos trimming */
 	    setINT(MDVIEW, FALSE);	/* view-only */
 	    setINT(MDWRAP, FALSE);	/* wrap */
-	    setINT(MDYANKMOTION, TRUE);	/* yank-motion */
+	    setINT(MDYANKMOTION, TRUE);		/* yank-motion */
 	    setINT(VAL_ASAVECNT, 256);	/* autosave count */
 	    setINT(VAL_PERCENT_CRLF, 50);	/* threshold for crlf conversion */
 	    setINT(VAL_RECORD_SEP, RS_DEFAULT);
@@ -1452,6 +1505,7 @@ global_val_init(void)
 {
     int i;
 
+    TRACE((T_CALLED "global_val_init()\n"));
 #if OPT_FILTER && defined(WIN32)
     flt_array();
 #endif
@@ -1543,6 +1597,7 @@ global_val_init(void)
 		cmd_bindings.kb_normal[i] = cfp;
 	}
     }
+    returnVoid();
 }
 
 #if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_VMS
@@ -1967,6 +2022,7 @@ quit(int f, int n GCC_UNUSED)
 #endif
 #if OPT_FILTER
 	flt_leaks();
+	filters_leaks();
 #endif
 	/* do these last, e.g., for tb_matched_pat */
 	itb_leaks();
@@ -2125,7 +2181,7 @@ charinit(void)
 {
     register int c;
 
-    TRACE(("charinit lo=%d, hi=%d\n",
+    TRACE((T_CALLED "charinit() lo=%d, hi=%d\n",
 	   global_g_val(GVAL_PRINT_LOW),
 	   global_g_val(GVAL_PRINT_HIGH)));
 
@@ -2136,22 +2192,22 @@ charinit(void)
 #if OPT_LOCALE
     for (c = 0; c < N_chars; c++) {
 	vl_chartypes_[c] = 0;
-	if (iscntrl(c))
+	if (sys_iscntrl(c))
 	    vl_chartypes_[c] |= vl_cntrl;
-	if (isdigit(c))
+	if (sys_isdigit(c))
 	    vl_chartypes_[c] |= vl_digit;
-	if (islower(c))
+	if (sys_islower(c))
 	    vl_chartypes_[c] |= vl_lower;
-	if (isprint(c))
+	if (sys_isprint(c))
 	    vl_chartypes_[c] |= vl_print;
-	if (ispunct(c))
+	if (sys_ispunct(c))
 	    vl_chartypes_[c] |= vl_punct;
-	if (isspace(c))
+	if (sys_isspace(c))
 	    vl_chartypes_[c] |= vl_space;
-	if (isupper(c))
+	if (sys_isupper(c))
 	    vl_chartypes_[c] |= vl_upper;
 #ifdef vl_xdigit
-	if (isxdigit(c))
+	if (sys_isxdigit(c))
 	    vl_chartypes_[c] |= vl_xdigit;
 #endif
     }
@@ -2202,7 +2258,7 @@ charinit(void)
 	vl_chartypes_[c] |= vl_punct;
     for (c = '['; c <= '`'; c++)
 	vl_chartypes_[c] |= vl_punct;
-    for (c = LBRACE; c <= '~'; c++)
+    for (c = L_CURLY; c <= '~'; c++)
 	vl_chartypes_[c] |= vl_punct;
 #if OPT_ISO_8859
     for (c = 0xa1; c <= 0xbf; c++)
@@ -2273,10 +2329,10 @@ charinit(void)
 #if SYS_UNIX
     vl_chartypes_['~'] |= vl_wild;
 #endif
-    vl_chartypes_[LBRACK] |= vl_wild;
-    vl_chartypes_[RBRACK] |= vl_wild;
-    vl_chartypes_[LBRACE] |= vl_wild;
-    vl_chartypes_[RBRACE] |= vl_wild;
+    vl_chartypes_[L_BLOCK] |= vl_wild;
+    vl_chartypes_[R_BLOCK] |= vl_wild;
+    vl_chartypes_[L_CURLY] |= vl_wild;
+    vl_chartypes_[R_CURLY] |= vl_wild;
     vl_chartypes_['$'] |= vl_wild;
     vl_chartypes_['`'] |= vl_wild;
 #endif
@@ -2292,16 +2348,16 @@ charinit(void)
     vl_chartypes_['\''] |= vl_linespec;
 
     /* fences */
-    vl_chartypes_[LBRACE] |= vl_fence;
-    vl_chartypes_[RBRACE] |= vl_fence;
-    vl_chartypes_[LPAREN] |= vl_fence;
-    vl_chartypes_[RPAREN] |= vl_fence;
-    vl_chartypes_[LBRACK] |= vl_fence;
-    vl_chartypes_[RBRACK] |= vl_fence;
+    vl_chartypes_[L_CURLY] |= vl_fence;
+    vl_chartypes_[R_CURLY] |= vl_fence;
+    vl_chartypes_[L_PAREN] |= vl_fence;
+    vl_chartypes_[R_PAREN] |= vl_fence;
+    vl_chartypes_[L_BLOCK] |= vl_fence;
+    vl_chartypes_[R_BLOCK] |= vl_fence;
 
 #if OPT_VMS_PATH
-    vl_chartypes_[LBRACK] |= vl_pathn;	/* actually, "<", ">" too */
-    vl_chartypes_[RBRACK] |= vl_pathn;
+    vl_chartypes_[L_BLOCK] |= vl_pathn;		/* actually, "<", ">" too */
+    vl_chartypes_[R_BLOCK] |= vl_pathn;
     vl_chartypes_['$'] |= vl_pathn;
     vl_chartypes_[':'] |= vl_pathn;
     vl_chartypes_[';'] |= vl_pathn;
@@ -2333,7 +2389,7 @@ charinit(void)
 	    vl_chartypes_[c] |= vl_scrtch;
 #endif
     }
-
+    returnVoid();
 }
 
 #if OPT_HEAPSIZE

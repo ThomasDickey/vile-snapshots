@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.129 2002/11/05 23:41:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.131 2002/12/22 18:27:37 tom Exp $
  *
  *
  */
@@ -1622,7 +1622,7 @@ is_absolute_pathname(char *path)
 
 #if OPT_VMS_PATH
     if (is_vms_pathname(path, -TRUE)
-	&& (strchr(path, LBRACK) != 0
+	&& (strchr(path, L_BLOCK) != 0
 	    || strchr(path, ':') != 0))
 	return TRUE;
 #endif
@@ -2104,7 +2104,7 @@ prepend_to_path_list(char **path_list, char *path)
     if (*path_list == 0 || **path_list == 0) {
 	append_to_path_list(path_list, find);
     } else if (!find_in_path_list(*path_list, find)
-#ifdef SYS_UNIX
+#if SYS_UNIX
 	       && file_stat(find, &sb) == 0
 #endif
 	) {
@@ -2134,13 +2134,13 @@ append_to_path_list(char **path_list, char *path)
     char *s, *t;
     size_t need;
     char find[NFILEN];
-#ifdef SYS_UNIX
+#if SYS_UNIX
     struct stat sb;
 #endif
 
     vl_strncpy(find, SL_TO_BSL(path), sizeof(find));
     if (!find_in_path_list(*path_list, find)
-#ifdef SYS_UNIX
+#if SYS_UNIX
 	&& file_stat(find, &sb) == 0
 #endif
 	) {

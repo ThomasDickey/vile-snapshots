@@ -1,11 +1,9 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.145 2002/10/20 14:27:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.152 2002/12/24 01:35:22 tom Exp $
  *
  */
-
-#define termdef 1		/* don't define "term" external */
 
 #include	"estruct.h"
 #include	"edef.h"
@@ -166,76 +164,28 @@ static const struct {
 #endif
 
 static int colors_are_really_ANSI(void);
-static void putpad(char *str);
-static void tcapbeep(void);
-static void tcapclose(void);
-static void tcapeeol(void);
-static void tcapeeop(void);
-static void tcapkclose(void);
-static void tcapkopen(void);
-static void tcapmove(int row, int col);
-static void tcapopen(void);
+static void putpad(const char *str);
 static void tcapscroll_delins(int from, int to, int n);
 static void tcapscroll_reg(int from, int to, int n);
 static void tcapscrollregion(int top, int bot);
 
+static OUTC_DCL utf8_putch(OUTC_ARGS);
+
 #if OPT_COLOR
-static void tcapfcol(int color);
-static void tcapbcol(int color);
-static void tcapspal(const char *s);
+static void tcap_fcol(int color);
+static void tcap_bcol(int color);
+static void tcap_spal(const char *s);
+#else
+#define tcap_fcol nullterm_setfore
+#define tcap_bcol nullterm_setback
+#define tcap_spal nullterm_setpal
 #endif
 
 #if OPT_VIDEO_ATTRS
-static void tcapattr(UINT attr);
+static void tcap_attr(UINT attr);
 #else
-static void tcaprev(UINT state);
+static void tcap_rev(UINT state);
 #endif
-
-static void tcapcursor(int flag);
-
-TERM term =
-{
-    0,				/* the first four values are set dynamically */
-    0,
-    0,
-    0,
-    NPAUSE,
-    tcapopen,
-    tcapclose,
-    tcapkopen,
-    tcapkclose,
-    ttgetc,
-    ttputc,
-    tttypahead,
-    ttflush,
-    tcapmove,
-    tcapeeol,
-    tcapeeop,
-    tcapbeep,
-#if OPT_VIDEO_ATTRS
-    tcapattr,
-#else
-    tcaprev,
-#endif
-    nullterm_setdescrip,
-#if	OPT_COLOR
-    tcapfcol,
-    tcapbcol,
-    tcapspal,
-#else
-    nullterm_setfore,
-    nullterm_setback,
-    nullterm_setpal,
-#endif
-    nullterm_setccol,
-    nullterm_scroll,		/* set dynamically at open time */
-    nullterm_pflush,
-    nullterm_icursor,
-    nullterm_settitle,
-    ttwatchfd,
-    ttunwatchfd,
-    tcapcursor,
-};
 
 #define	XtermPos()	((unsigned)(keystroke() - 040))
 
@@ -262,7 +212,7 @@ static int x_origin = 1, y_origin = 1;
 #endif
 
 static void
-tcapopen(void)
+tcap_open(void)
 {
 #if USE_TERMCAP
     char tcbuf[2048];
@@ -296,7 +246,7 @@ tcapopen(void)
     ,{ CAPNAME("sr","ri"),    &tc_SR }	/* scroll reverse 1 line */
     ,{ CAPNAME("te","rmcup"), &tc_TE }	/* end cursor-motion program */
     ,{ CAPNAME("ti","smcup"), &tc_TI }	/* initialize cursor-motion program */
-#if	OPT_COLOR
+#if OPT_COLOR
     ,{ CAPNAME("AF","setaf"), &AF }	/* set ANSI foreground-color */
     ,{ CAPNAME("AB","setab"), &AB }	/* set ANSI background-color */
     ,{ CAPNAME("Sf","setf"),  &Sf }	/* set foreground-color */
@@ -304,10 +254,10 @@ tcapopen(void)
     ,{ CAPNAME("op","op"), &OrigColors } /* set to original color pair */
     ,{ CAPNAME("oc","oc"), &OrigColors } /* set to original colors */
 #endif
-#if	OPT_FLASH
+#if OPT_FLASH
     ,{ CAPNAME("vb","flash"), &vb }	/* visible bell */
 #endif
-#if	OPT_VIDEO_ATTRS
+#if OPT_VIDEO_ATTRS
     ,{ CAPNAME("me","sgr0"),  &tc_ME }	/* turn off all attributes */
     ,{ CAPNAME("md","bold"),  &tc_MD }	/* turn on bold attribute */
     ,{ CAPNAME("us","smul"),  &tc_US }	/* underline-start */
@@ -329,8 +279,9 @@ tcapopen(void)
     };
     /* *INDENT-ON* */
 
+    TRACE((T_CALLED "tcap_open()\n"));
     if (already_open)
-	return;
+	returnVoid();
 
     if ((tv_stype = getenv("TERM")) == NULL) {
 	puts("Environment variable TERM not defined!");
@@ -345,6 +296,10 @@ tcapopen(void)
 	ExitProgram(BADEXIT);
     }
 #endif
+
+    /* check if we're using UTF-8 locale */
+    if (utf8_locale)
+	term.putch = utf8_putch;
 
     /* Get screen size from system, or else from termcap.  */
     getscreensize(&term.cols, &term.rows);
@@ -368,10 +323,13 @@ tcapopen(void)
     /* are we probably an xterm?  */
     i_am_xterm = FALSE;
     if (!strncmp(tv_stype, "xterm", sizeof("xterm") - 1)
-	|| !strcmp(tv_stype, "rxvt")) {
+	|| !strncmp(tv_stype, "rxvt", sizeof("rxvt") - 1)) {
 	i_am_xterm = TRUE;
     } else if ((t = TGETSTR(CAPNAME("Km", "kmous"), &p)) != 0
+	       && (t != (char *) (-1))
 	       && !strcmp(t, "\033[M")) {
+	i_am_xterm = TRUE;
+    } else if (TGETFLAG(CAPNAME("XT", "XT")) > 0) {	/* screen */
 	i_am_xterm = TRUE;
     }
 #if USE_TERMCAP
@@ -464,7 +422,7 @@ tcapopen(void)
     } else {
 	term.scroll = nullterm_scroll;
     }
-#if	OPT_COLOR
+#if OPT_COLOR
     /*
      * If we've got one of the canonical strings for resetting to the
      * default colors, we don't have to assume the screen is black/white.
@@ -477,7 +435,7 @@ tcapopen(void)
     /* clear with current bcolor */
     have_bce = TGETFLAG(CAPNAME("ut", "bce")) > 0;
 
-#if	OPT_VIDEO_ATTRS
+#if OPT_VIDEO_ATTRS
     if (OrigColors == 0)
 	OrigColors = tc_ME;
 #endif
@@ -569,11 +527,14 @@ tcapopen(void)
 #endif
     ttopen();
     already_open = TRUE;
+
+    returnVoid();
 }
 
 static void
-tcapclose(void)
+tcap_close(void)
 {
+    TRACE((T_CALLED "tcap_close()\n"));
 #if OPT_VIDEO_ATTRS
     if (tc_SE)
 	putpad(tc_SE);
@@ -586,6 +547,12 @@ tcapclose(void)
     shown_fcolor = shown_bcolor =
 	given_fcolor = given_bcolor = NO_COLOR;
 #endif
+    /* all of the ways one could find the original title and restore it
+     * are too clumsy.  Setting it to $TERM is a nice way to appease about
+     * 90% of the users.
+     */
+    term.set_title(getenv("TERM"));
+    returnVoid();
 }
 
 /*
@@ -596,8 +563,9 @@ tcapclose(void)
 static int keyboard_open = FALSE;
 
 static void
-tcapkopen(void)
+tcap_kopen(void)
 {
+    TRACE((T_CALLED "tcap_kopen()\n"));
 #if OPT_XTERM
     if (i_am_xterm && global_g_val(GMDXTERM_MOUSE))
 	putpad(XTERM_ENABLE_TRACKING);
@@ -612,11 +580,13 @@ tcapkopen(void)
 	    putpad(tc_KS);
     }
     (void) strcpy(screen_desc, "NORMAL");
+    returnVoid();
 }
 
 static void
-tcapkclose(void)
+tcap_kclose(void)
 {
+    TRACE((T_CALLED "tcap_kclose()\n"));
 #if OPT_XTERM
     if (i_am_xterm && global_g_val(GMDXTERM_MOUSE))
 	putpad(XTERM_DISABLE_TRACKING);
@@ -629,10 +599,11 @@ tcapkclose(void)
 	    putpad(tc_KE);
     }
     term.flush();
+    returnVoid();
 }
 
 static void
-tcapmove(register int row, register int col)
+tcap_move(register int row, register int col)
 {
     putpad(tgoto(tc_CM, col, row));
 }
@@ -668,7 +639,7 @@ set_reverse(void)
 #define set_reverse()		/* nothing */
 #endif
 
-#if	OPT_COLOR
+#if OPT_COLOR
 /*
  * Accommodate brain-damaged non-bce terminals by writing a blank to each
  * space that we'll color, return true if we moved the cursor.
@@ -700,10 +671,10 @@ erase_non_bce(int row, int col)
 #endif
 
 static void
-tcapeeol(void)
+tcap_eeol(void)
 {
     set_reverse();
-#if	OPT_COLOR
+#if OPT_COLOR
     if (NEED_BCE_FIX) {
 	erase_non_bce(ttrow, ttcol);
     } else
@@ -712,12 +683,12 @@ tcapeeol(void)
 }
 
 static void
-tcapeeop(void)
+tcap_eeop(void)
 {
     set_reverse();
-#if	OPT_COLOR
-    tcapfcol(gfcolor);
-    tcapbcol(gbcolor);
+#if OPT_COLOR
+    tcap_fcol(gfcolor);
+    tcap_bcol(gbcolor);
 
     if (NEED_BCE_FIX) {
 	int row = ttrow;
@@ -744,14 +715,14 @@ tcapscroll_reg(int from, int to, int n)
 	return;
     if (to < from) {
 	tcapscrollregion(to, from + n - 1);
-	tcapmove(from + n - 1, 0);
+	tcap_move(from + n - 1, 0);
 	for (i = from - to; i > 0; i--) {
 	    putpad(tc_SF);
 	    FILL_BCOLOR(from + n - 1, 0);
 	}
     } else {			/* from < to */
 	tcapscrollregion(from, to + n - 1);
-	tcapmove(from, 0);
+	tcap_move(from, 0);
 	for (i = to - from; i > 0; i--) {
 	    putpad(tc_SR);
 	    FILL_BCOLOR(from, 0);
@@ -774,15 +745,15 @@ tcapscroll_delins(int from, int to, int n)
 	return;
     if (tc_DL && tc_AL) {
 	if (to < from) {
-	    tcapmove(to, 0);
+	    tcap_move(to, 0);
 	    putpad(tgoto(tc_DL, 0, from - to));
-	    tcapmove(to + n, 0);
+	    tcap_move(to + n, 0);
 	    putpad(tgoto(tc_AL, 0, from - to));
 	    FILL_BCOLOR(to + n, 0);
 	} else {
-	    tcapmove(from + n, 0);
+	    tcap_move(from + n, 0);
 	    putpad(tgoto(tc_DL, 0, to - from));
-	    tcapmove(from, 0);
+	    tcap_move(from, 0);
 	    putpad(tgoto(tc_AL, 0, to - from));
 	    FILL_BCOLOR(from + n, 0);
 	}
@@ -797,19 +768,19 @@ tcapscroll_delins(int from, int to, int n)
 	}
 #endif
 	if (to < from) {
-	    tcapmove(to, 0);
+	    tcap_move(to, 0);
 	    for (i = from - to; i > 0; i--)
 		putpad(tc_dl);
-	    tcapmove(to + n, 0);
+	    tcap_move(to + n, 0);
 	    for (i = from - to; i > 0; i--) {
 		putpad(tc_al);
 		FILL_BCOLOR(to + n, 0);
 	    }
 	} else {
-	    tcapmove(from + n, 0);
+	    tcap_move(from + n, 0);
 	    for (i = to - from; i > 0; i--)
 		putpad(tc_dl);
-	    tcapmove(from, 0);
+	    tcap_move(from, 0);
 	    for (i = to - from; i > 0; i--) {
 		putpad(tc_al);
 		FILL_BCOLOR(from, 0);
@@ -825,7 +796,7 @@ tcapscrollregion(int top, int bot)
     putpad(tgoto(tc_CS, bot, top));
 }
 
-#if	OPT_COLOR
+#if OPT_COLOR
 /*
  * This ugly hack is designed to work around an incompatibility built into
  * non BSD-derived systems that implemented color based on a SVr4 manpage.
@@ -884,12 +855,12 @@ reinitialize_colors(void)
     shown_fcolor = shown_bcolor =
 	given_fcolor = given_bcolor = NO_COLOR;
 
-    tcapfcol(saved_fcolor);
-    tcapbcol(saved_bcolor);
+    tcap_fcol(saved_fcolor);
+    tcap_bcol(saved_bcolor);
 }
 
 static void
-tcapfcol(int color)
+tcap_fcol(int color)
 {
     if (color != given_fcolor) {
 	given_fcolor = color;
@@ -899,7 +870,7 @@ tcapfcol(int color)
 }
 
 static void
-tcapbcol(int color)
+tcap_bcol(int color)
 {
     if (color != given_bcolor) {
 	given_bcolor = color;
@@ -909,7 +880,7 @@ tcapbcol(int color)
 }
 
 static void
-tcapspal(const char *thePalette)	/* reset the palette registers */
+tcap_spal(const char *thePalette)	/* reset the palette registers */
 {
     set_ctrans(thePalette);
     reinitialize_colors();
@@ -927,7 +898,7 @@ tcapspal(const char *thePalette)	/* reset the palette registers */
  * In rxvt (2.12), setting _any_ attribute seems to clobber the color settings.
  */
 static void
-tcapattr(UINT attr)
+tcap_attr(UINT attr)
 {
 	/* *INDENT-OFF* */
 #define VA_SGR (VASEL|VAREV|VAUL|VAITAL|VABOLD)
@@ -1057,9 +1028,9 @@ tcapattr(UINT attr)
 #if OPT_COLOR
 	if (colored) {
 	    if (attr & VACOLOR) {
-		tcapfcol(VCOLORNUM(attr));
+		tcap_fcol(VCOLORNUM(attr));
 	    } else if (given_fcolor != gfcolor) {
-		tcapfcol(gfcolor);
+		tcap_fcol(gfcolor);
 	    }
 	}
 #endif
@@ -1069,9 +1040,11 @@ tcapattr(UINT attr)
 
 #else /* highlighting is a minimum attribute */
 
+/*
+ * change reverse video status
+ */
 static void
-tcaprev(			/* change reverse video status */
-	   UINT state)		/* FALSE = normal video, TRUE = reverse video */
+tcap_rev(UINT state)		/* FALSE = normal video, TRUE = reverse video */
 {
     static UINT revstate = SORTOFTRUE;
     if (state == revstate)
@@ -1091,7 +1064,7 @@ tcaprev(			/* change reverse video status */
  * multimotion.
  */
 static void
-tcapcursor(int flag)
+tcap_cursor(int flag)
 {
     static int level;
     if (tc_VI != 0
@@ -1111,7 +1084,7 @@ tcapcursor(int flag)
 }
 
 static void
-tcapbeep(void)
+tcap_beep(void)
 {
 #if OPT_FLASH
     int hit = 0;
@@ -1149,9 +1122,24 @@ tcapbeep(void)
 }
 
 static void
-putpad(char *str)
+putpad(const char *str)
 {
     tputs(str, 1, ttputc);
+}
+
+/*
+ * Write 8-bit Latin-1 characters to a UTF-8 display
+ */
+static OUTC_DCL
+utf8_putch(OUTC_ARGS)
+{
+    unsigned ch = (c & 0xff);
+    if (ch < 128) {
+	OUTC_RET ttputc(ch);
+    } else {
+	(void) ttputc(0xC0 | (0x03 & (ch >> 6)));
+	OUTC_RET ttputc(0x80 | (0x3F & ch));
+    }
 }
 
 #if OPT_XTERM
@@ -1359,6 +1347,57 @@ xterm_button(int c)
     }
     return status;
 }
+
+static void
+tcap_settitle(const char *string)
+{
+    if (i_am_xterm && global_g_val(GMDXTERM_TITLE) && string != 0) {
+	putpad("\033]0;");
+	putpad(string);
+	putpad("\007");
+	term.flush();
+    }
+}
+#else
+#define tcap_settitle nullterm_settitle
 #endif /* OPT_XTERM */
+
+TERM term =
+{
+    0,				/* the first four values are set dynamically */
+    0,
+    0,
+    0,
+    NPAUSE,
+    tcap_open,
+    tcap_close,
+    tcap_kopen,
+    tcap_kclose,
+    ttgetc,
+    ttputc,
+    tttypahead,
+    ttflush,
+    tcap_move,
+    tcap_eeol,
+    tcap_eeop,
+    tcap_beep,
+#if OPT_VIDEO_ATTRS
+    tcap_attr,
+#else
+    tcap_rev,
+#endif
+    nullterm_setdescrip,
+    tcap_fcol,
+    tcap_bcol,
+    tcap_spal,
+    nullterm_setccol,
+    nullterm_scroll,		/* set dynamically at open time */
+    nullterm_pflush,
+    nullterm_icursor,
+    tcap_settitle,
+    ttwatchfd,
+    ttunwatchfd,
+    tcap_cursor,
+};
 
 #endif /* DISP_TERMCAP */

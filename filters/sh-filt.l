@@ -4,7 +4,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.51 2002/11/05 23:56:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.52 2002/12/05 00:08:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -48,7 +48,7 @@ push_stk(int state)
     if (++stk_level >= stk_limit) {
 	unsigned have = sizeof(STACK) * stk_limit;
 	unsigned want = sizeof(STACK) * (stk_limit += (20 + stk_level));
-	stk_state = (STACK *) do_alloc((void *)stk_state, want, &have);
+	stk_state = type_alloc(STACK,(void *)stk_state, want, &have);
     }
     stk_state[stk_level].state = state;
     stk_state[stk_level].backtic = 0;

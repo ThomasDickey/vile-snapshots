@@ -4,7 +4,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.2 2002/10/27 16:26:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.3 2002/12/11 01:58:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
@@ -22,6 +22,8 @@ static char *Ident_attr;
 static char *Number_attr;
 static char *String_attr;
 
+#include "fltstack.h"
+
 static void
 begin_section(char *name)
 {
@@ -29,9 +31,9 @@ begin_section(char *name)
     if (!strcmp(name, "%description")
      || !strcmp(name, "%changelog")
      || !strcmp(name, "%package")) {
-	BEGIN(TEXT);
+	new_state(TEXT);
     } else {
-	BEGIN(NORMAL);
+	new_state(NORMAL);
     }
 }
 
@@ -40,32 +42,6 @@ meta_variable(char *name)
 {
     char *attr = keyword_attr(name);
     return (attr != 0) ? attr : Ident_attr;
-}
-
-/*
- * We do not need much of a stack, since not much is recursive.  Just in case,
- */
-#define STK_LENGTH 20
-static int stk_state[STK_LENGTH];
-static int stk_level;
-
-static void
-pop_stk(void)
-{
-    int state = NORMAL;
-    if (--stk_level < STK_LENGTH) {
-	if (stk_level >= 0)
-	    state = stk_state[stk_level];
-    }
-    BEGIN(state);
-}
-
-static void
-push_stk(int state)
-{
-    if (++stk_level < STK_LENGTH)
-	stk_state[stk_level] = state;
-    BEGIN(state);
 }
 
 static int strip_tabs;
@@ -160,12 +136,11 @@ do_filter(FILE *input)
     String_attr  = class_attr(NAME_LITERAL);
 
     here_exp = 0;
-    stk_state[stk_level = 0] = NORMAL;
-
-    BEGIN(NORMAL);
+    begin_state(NORMAL);
     while (yylex() > 0) {
     }
     flt_bfr_error();
+    end_state();
 }
 
 %}
@@ -221,14 +196,14 @@ SECTION		%{IDENT}
 
 <NORMAL>{IDENT1}	|
 <NORMAL>{IDENT2}	{ WriteToken(meta_variable(yytext)); }
-<NORMAL>{IDENT2L}	{ WriteToken(meta_variable(yytext)); push_stk(SUBST); }
+<NORMAL>{IDENT2L}	{ WriteToken(meta_variable(yytext)); push_state(SUBST); }
 <NORMAL>{IDENTX}	{ WriteToken(meta_variable(yytext)); }
 
 <NORMAL>{IDENTEQLS}	{ flt_puts(yytext, yyleng-1, meta_variable(yytext)); flt_putc('='); }
 
 <NORMAL>\\.		|
 <NORMAL>{SSTRING}	{ WriteToken(String_attr); }
-<NORMAL>\"		{ push_stk(QUOTED); BeginQuote(QUOTED, String_attr); }
+<NORMAL>\"		{ push_state(QUOTED); BeginQuote(QUOTED, String_attr); }
 
 <NORMAL>\<\<[-]?{SPACE}*{QIDENT} {
 			    int n;
@@ -241,7 +216,7 @@ SECTION		%{IDENT}
 				}
 			    }
 			    save_here(yytext, yyleng);
-			    push_stk(HEREDOC);
+			    push_state(HEREDOC);
 			    BeginQuote(HEREDOC,
 				(strchr(yytext, '\n') != 0)
 				? Error_attr
@@ -251,7 +226,7 @@ SECTION		%{IDENT}
 <HEREDOC>\\\$		{ flt_bfr_append(yytext, yyleng); }
 <HEREDOC>{IDENT1}	|
 <HEREDOC>{IDENT2}	{ embed_or_append(yytext, yyleng); }
-<HEREDOC>{IDENT2L}	{ if (embed_or_append(yytext, yyleng)) push_stk(SUBST); }
+<HEREDOC>{IDENT2L}	{ if (embed_or_append(yytext, yyleng)) push_state(SUBST); }
 <HEREDOC>^[\t]*{QIDENT}$ {
 			    int used = 0;
 			    if (strip_tabs) {
@@ -261,7 +236,7 @@ SECTION		%{IDENT}
 			    }
 			    if (got_here(yytext + used, yyleng - used)) {
 				flt_bfr_finish();
-				pop_stk();
+				pop_state();
 				strip_tabs = 0;
 			    } else {
 				flt_bfr_append(yytext, yyleng);
@@ -271,16 +246,16 @@ SECTION		%{IDENT}
 <HEREDOC>\n		{ flt_bfr_append(yytext, yyleng); }
 <HEREDOC>.		{ flt_bfr_append(yytext, yyleng); }
 
-<QUOTED>\\		{ flt_bfr_embed(yytext, yyleng, Action_attr); push_stk(QUOTED2); }
+<QUOTED>\\		{ flt_bfr_embed(yytext, yyleng, Action_attr); push_state(QUOTED2); }
 <QUOTED>{IDENT1}	|
 <QUOTED>{IDENT2}	{ flt_bfr_embed(yytext, yyleng, meta_variable(yytext)); }
-<QUOTED>{IDENT2L}	{ if (embed_or_append(yytext, yyleng)) push_stk(SUBST); }
+<QUOTED>{IDENT2L}	{ if (embed_or_append(yytext, yyleng)) push_state(SUBST); }
 <QUOTED>[^\n\\\"$]+	{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>[\n$]		{ flt_bfr_append(yytext, yyleng); }
-<QUOTED>\"		{ FinishQuote(NORMAL); pop_stk(); }
+<QUOTED>\"		{ FinishQuote(NORMAL); pop_state(); }
 
-<QUOTED2>(.|\n)		{ flt_bfr_embed(yytext, yyleng, Action_attr); pop_stk(); }
+<QUOTED2>(.|\n)		{ flt_bfr_embed(yytext, yyleng, Action_attr); pop_state(); }
 
-<SUBST>{IDENT2R}	{ flt_bfr_embed(yytext, yyleng, meta_variable(yytext)); pop_stk(); }
-<SUBST>\"		{ push_stk(QUOTED); BeginQuote(QUOTED, String_attr); }
+<SUBST>{IDENT2R}	{ flt_bfr_embed(yytext, yyleng, meta_variable(yytext)); pop_state(); }
+<SUBST>\"		{ push_state(QUOTED); BeginQuote(QUOTED, String_attr); }
 <SUBST>[^"}]+		{ flt_bfr_embed(yytext, yyleng, ""); }

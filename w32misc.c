@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.38 2002/10/09 13:43:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.40 2002/12/23 02:10:46 tom Exp $
  */
 
 #include "estruct.h"
@@ -924,20 +924,16 @@ parse_font_str(const char *fontstr, FONTSTR_OPTIONS *results)
 
     memset(results, 0, sizeof(*results));
     size  = 0;
-    cp    = fontstr;
-    while (*cp && isspace(*cp))
-        cp++;
+    cp    = skip_cblanks(fontstr);
 
     /* Up first is either a font face or font size. */
-    if (isdigit(*cp))
+    if (isDigit(*cp))
     {
         errno = 0;
         size  = strtoul(cp, &endnum, 10);
         if (errno != 0)
             return (FALSE);
-        tmp = endnum;
-        while (*tmp && isspace(*tmp))
-            tmp++;
+        tmp = skip_cblanks(endnum);
         if (*tmp != '\0')
         {
             if (*tmp != ',')
@@ -988,16 +984,14 @@ parse_font_str(const char *fontstr, FONTSTR_OPTIONS *results)
     }
 
     /* Now look for optional font style. */
-    while (*cp && isspace(*cp))
-        cp++;
+    cp = skip_cblanks(cp);
 
     /* At this point, there are two allowable states:  delimiter or EOS. */
     if (*cp)
     {
         if (*cp++ == ',')
         {
-            while (*cp && isspace(*cp))
-                cp++;
+            cp = skip_cblanks(cp);
             if (strncmp(cp, "bold-italic", sizeof("bold-italic") - 1) == 0)
                 results->bold = results->italic = TRUE;
             else if (strncmp(cp, "italic", sizeof("italic") - 1) == 0)

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.18 2000/08/09 23:18:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.19 2002/12/11 01:11:44 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LaTeX input
  * text.
@@ -31,32 +31,7 @@ static char *Section_attr;	/* subsection */
 static char *String_attr;
 static char *Subsection_attr;	/* section */
 
-#define MAX_LEVEL 10
-
-static int oldstate = TEXT;
-static int state_level = 0;
-static int state_stack[MAX_LEVEL];
-
-static void
-new_state(int code)
-{
-    oldstate = code;
-    BEGIN(code);
-}
-
-static void
-push_state(int code)
-{
-    state_stack[state_level++] = oldstate;
-    new_state(code);
-}
-
-static void
-pop_state(void)
-{
-    if (state_level > 0)
-	new_state(state_stack[--state_level]);
-}
+#include "fltstack.h"
 
 static void
 init_filter(int before GCC_UNUSED)
@@ -80,11 +55,10 @@ do_filter(FILE *input)
     Section_attr = class_attr(NAME_SECTION);
     Subsection_attr = class_attr(NAME_SUBSECTION);
 
-    oldstate = TEXT;
-    state_level = 0;
-    BEGIN(TEXT);
+    begin_state(TEXT);
     while (yylex() > 0) {
     }
+    end_state();
 }
 
 %}

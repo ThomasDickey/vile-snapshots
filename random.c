@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.266 2002/11/02 00:53:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.267 2002/12/15 20:14:29 tom Exp $
  *
  */
 
@@ -1233,8 +1233,8 @@ set_directory(const char *dir)
 			strcpy(cdpathdir, globvec[0]);
 			glob_free(globvec);
 			tmp = &cdpathdir[len - 1];
-			if (*tmp == RBRACK &&
-			    *exdp == LBRACK &&
+			if (*tmp == R_BLOCK &&
+			    *exdp == L_BLOCK &&
 			    exdp[1] == '.') {
 			    /*
 			     * Concatenating dir that ends
@@ -1245,7 +1245,7 @@ set_directory(const char *dir)
 			    *tmp = '\0';
 			    sprintf(newdir, "%s%s", cdpathdir, &exdp[1]);
 			} else if (*tmp == ':' &&
-				   *exdp == LBRACK) {
+				   *exdp == L_BLOCK) {
 			    /*
 			     * Concatenating rooted logical
 			     * with dir.
