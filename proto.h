@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.466 2001/05/20 17:34:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.467 2001/06/13 22:15:44 tom Exp $
  *
  */
 
@@ -472,6 +472,14 @@ extern void ffrewind (void);
 #if OPT_FINDERR
 extern const char * get_febuff (void);
 extern void set_febuff (const char *name);
+#endif
+
+#if OPT_UPBUFF
+extern	int	free_err_exps(BUFFER *bp);
+extern	void	update_err_regex(void);
+#else
+#define update_err_regex()	/*nothing */
+#define free_err_exps(bp)	/*nothing */
 #endif
 
 /* glob.c */

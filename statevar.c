@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.52 2001/03/23 00:54:59 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.54 2001/06/13 22:16:38 tom Exp $
  */
 
 #include	"estruct.h"
@@ -90,6 +90,7 @@ any_ro_STR(TBUFF **rp, const char *vp, const char *value)
 	return FALSE;
 }
 
+#if OPT_TITLE
 static int
 any_rw_STR(TBUFF **rp, const char *vp, TBUFF **value)
 {
@@ -104,6 +105,7 @@ any_rw_STR(TBUFF **rp, const char *vp, TBUFF **value)
 	}
 	return FALSE;
 }
+#endif /* OPT_TITLE */
 
 static int
 any_rw_EXPR(TBUFF **rp, const char *vp, TBUFF **value)
@@ -625,7 +627,12 @@ int var_FILENAME_IC(TBUFF **rp, const char *vp)
 #if OPT_FINDERR
 int var_FILENAME_EXPR(TBUFF **rp, const char *vp)
 {
-	return any_rw_EXPR(rp, vp, &filename_expr);
+	int code = any_rw_EXPR(rp, vp, &filename_expr);
+	if (rp != 0 && code == TRUE) {
+	    free_err_exps(curbp);
+	    update_err_regex();
+	}
+	return code;
 }
 
 int var_ERROR_EXPR(TBUFF **rp, const char *vp)

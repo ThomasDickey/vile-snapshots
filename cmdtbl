@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.215 2001/05/20 16:24:59 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.216 2001/06/13 22:01:23 tom Exp $
 #
 #
 
@@ -249,6 +249,9 @@ clrmes		NONE
 comp_err_exps	NONE			OPT_FINDERR
 	"compile-error-expressions"
 	<(re)compile the [Error Expressions] buffer>
+show_err_regex	NONE			OPT_FINDERR
+	"show-error-expressions"
+	<display error meta-expressions and resulting regular expressions>
 consearch	ABSM|MOTION|NOMINI
 	"continue-search"		!FEWNAMES
 	'n'

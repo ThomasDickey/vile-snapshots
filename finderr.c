@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2000 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.103 2001/02/24 16:19:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.105 2001/06/13 22:41:12 tom Exp $
  *
  */
 
@@ -121,8 +121,8 @@ char *const predefined[] =
     "^    .* :: %[^(](%L)",
 #endif
 
-#if CC_CSETPP
-    "^%[^(](%L:%C) : %T",
+#if SYS_OS2 || SYS_OS2_EMX
+    "^%[^(](%L:%C) : %T",	/* CSet compiler */
 #endif
 #if CC_WATCOM
     "^%[^(](%L): %T",
@@ -363,13 +363,14 @@ free_patterns(void)
 	}
 	free((char *) exp_table);
 	exp_table = 0;
+	exp_count = 0;
     }
 }
 
 #if OPT_UPBUFF
 /* ARGSUSED */
-static int
-update_patterns(BUFFER *bp GCC_UNUSED)
+int
+free_err_exps(BUFFER *bp GCC_UNUSED)
 {
     free_patterns();
     return TRUE;
@@ -406,8 +407,8 @@ load_patterns(void)
 
     /* any change makes the patterns obsolete */
 #if OPT_UPBUFF
-    update_scratch(ERRORS_BufName, update_patterns);
-    bp->b_rmbuff = update_patterns;
+    update_scratch(ERRORS_BufName, free_err_exps);
+    bp->b_rmbuff = free_err_exps;
 #endif
 
     if (exp_count == 0) {
@@ -816,6 +817,70 @@ finderrbuf(int f GCC_UNUSED, int n GCC_UNUSED)
     return TRUE;
 }
 
+#define ERR_PREFIX 8
+
+static void
+make_err_regex_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
+{
+    BUFFER *bp;
+    LINE *lp;
+
+    bprintf("--- Error Meta-Expressions and Resulting Regular Expressions %*P",
+	    term.cols - 1, '-');
+    if (exp_table == 0)
+	load_patterns();
+    if (exp_table != 0
+	&& (bp = find_b_name(ERRORS_BufName)) != 0) {
+	ALLOC_T j = 0;
+	b_set_left_margin(curbp, ERR_PREFIX);
+	for_each_line(lp, bp) {
+	    int k, first = TRUE;
+	    if (j >= exp_count)
+		break;
+	    bprintf("\n%7d ", j);
+	    bprintf("%*S\n", llength(lp), lp->l_text);
+	    bprintf("%*S%s", ERR_PREFIX, " ", exp_table[j].exp_text);
+	    for (k = 0; k < W_LAST; k++) {
+		if (exp_table[j].words[k] != 0) {
+		    if (first) {
+			bprintf("\n%*S", ERR_PREFIX, " ");
+			first = FALSE;
+		    } else {
+			bprintf(", ");
+		    }
+		    bprintf("%s=\\%d", get_token_name(k), exp_table[j].words[k]);
+		}
+	    }
+	    ++j;
+	}
+    }
+}
+
+/* ARGSUSED */
+static int
+show_ErrRegex(BUFFER *bp GCC_UNUSED)
+{
+    return liststuff(ERR_REGEX_BufName,
+		     FALSE, make_err_regex_list, 0, (void *) 0);
+}
+
+int
+show_err_regex(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    return show_ErrRegex(curbp);
+}
+
+#if OPT_UPBUFF
+void
+update_err_regex(void)
+{
+    update_scratch(ERR_REGEX_BufName, show_ErrRegex);
+}
+
+#else
+#define update_err_regex()	/*nothing */
+#endif
+
 /*
  * (Re)compile the error-expressions buffer.  This is needed as an entrypoint
  * so that macros can manipulate the set of expressions (including reading it
@@ -829,6 +894,7 @@ comp_err_exps(int f GCC_UNUSED, int n GCC_UNUSED)
 	mlforce("[No error-expressions are defined.]");
 	return (FALSE);
     }
+    update_err_regex();
     return TRUE;
 }
 #endif

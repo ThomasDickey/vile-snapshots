@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.192 2001/05/20 17:38:56 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.194 2001/06/13 18:54:58 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -33,6 +33,7 @@ bool							# GMD prefix
 	"HIstory"	HISTORY		0		OPT_HISTORY # command-history
 	"ImplyBuffer"	IMPLYBUFF	0		# imply-buffer (vi-like)
 	"Insert-Exec"	INSEXEC		0		# allow ^F/^B, etc., to be interpreted during insert mode
+	"mouse"		MOUSE		chgd_mouse	SYS_OS2 # mode to control whether we allow mouse-clicking
 	"multibeep"	MULTIBEEP	0		# multiple successive identical failed motions all beep
 	"maplonger"	MAPLONGER	0		# favor longer maps
 	"pin-tagstack"	PIN_TAGSTACK	0		# tagstack push/pop ops are pinned to curwin

@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.143 2001/05/19 00:19:38 tom Exp $
+; $Id: filters.rc,v 1.144 2001/06/13 18:45:52 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -316,6 +316,7 @@ define-mode perl
 ~with define-submode perl
 	pre '^#\s*!\s*\.*\/.*perl[0-9]*\>'
 	suf '\.\(pl\|pm\)$'
+	before "mail"
 	cindent
 	comment-prefix '^\s*#'
 	comments       '^\s*#\s*$'
@@ -404,7 +405,7 @@ define-mode sed
 define-mode sh
 ~with define-submode sh
 	suf '\.\(sh\|ksh\|[^/]*rc\)$'
-	pre '^\(\(#!\s*\/.*sh\>\(\s*-[a-z]*\s*\)\?\)\|:\)\s*$'
+	pre '^\(\(#!\s*\/.*sh\>\(\s*[-]\+[a-z]*\s*\)\?\)\|:\)\s*$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
 	fence-if   '^\s*\<if\>'

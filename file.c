@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.286 2001/05/20 17:06:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.287 2001/06/12 08:57:24 tom Exp $
  */
 
 #include	"estruct.h"
@@ -17,6 +17,10 @@
 #define	vl_mkdir(path,mode) mkdir(path)
 #else
 #define	vl_mkdir(path,mode) mkdir(path,mode)
+#endif
+
+#if CC_NEWDOSCC
+#include	<io.h>
 #endif
 
 #if CC_CSETPP
