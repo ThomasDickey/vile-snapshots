@@ -3,9 +3,9 @@
  *	Invoked either by ":ta routine-name" or by "^]" while sitting
  *	on a string.  In the latter case, the tag is the word under
  *	the cursor.
- *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
+ *	written for vile: Copyright (c) 1990, 1995-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.102 1999/10/18 00:46:48 enhenderson Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.103 1999/10/31 23:24:42 tom Exp $
  *
  */
 #include	"estruct.h"

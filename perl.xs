@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.55 1999/10/10 19:07:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.56 1999/11/06 21:02:38 tom Exp $
  */
 
 /*#
@@ -853,10 +853,10 @@ perldo_prompt(void)
 	    else
 	    {
 		char delim;
-		char *try = "'~#\200\1";
+		char *test = "'~#\200\1";
 		/* try to find a delimiter not in the string */
-		while (*try && strchr(split, *try)) try++;
-		delim = *try;
+		while (*test && strchr(split, *test)) test++;
+		delim = *test;
 		sv_catpvf(cmd, "q%c%s%c", delim, split, delim);
 	    }
 
@@ -990,8 +990,16 @@ void perl_exit()
 
 /* Register any extra external extensions */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void boot_DynaLoader _((CV* cv));
 extern void boot_Vile _((CV* cv));
+
+#ifdef __cplusplus
+}
+#endif
 
 static void
 xs_init()

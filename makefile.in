@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.146 1999/10/10 22:38:48 Ryan.Murray Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.150 1999/11/06 20:16:29 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -178,6 +178,7 @@ MACRO_SRC = \
 	$(srcdir)/macros/manpage.rc \
 	$(srcdir)/macros/palettes.rc \
 	$(srcdir)/macros/pictmode.rc \
+	$(srcdir)/macros/vileinit.rc \
 	$(srcdir)/macros/vileperl.rc
 
 OTHERSRC = \
@@ -311,6 +312,7 @@ INSTALL_MACRO_FILES = \
 	$(DATADIR)/manpage.rc \
 	$(DATADIR)/palettes.rc \
 	$(DATADIR)/pictmode.rc \
+	$(DATADIR)/vileinit.rc \
 	$(DATADIR)/vileperl.rc
 
 INSTALL_PERL_DIRS = $(PERLDIR)
@@ -332,6 +334,10 @@ INSTALL_PERL_FILES = \
 	$(PERLDIR)/syntax.pl \
 	$(PERLDIR)/tailf.pl \
 	$(PERLDIR)/visit.pl
+
+INSTALL_X_FILES = \
+	$(BINDIR)/xshell.sh \
+	$(DATADIR)/.vilemenu
 
 INSTALL_FILES = \
 	$(BINDIR)/$(TARGET) \
@@ -598,6 +604,9 @@ x11.o:		nefunc.h
 # dependency-rules for install/installdirs
 $(BINDIR)/$(TARGET):		$(TARGET)
 	$(INSTALL_PROGRAM)	$(TARGET) $@
+
+$(BINDIR)/xshell.sh:		$(srcdir)/xshell.sh
+	$(INSTALL_PROGRAM)	$(srcdir)/xshell.sh $@
 $(BINDIR)/vileget:		$(srcdir)/perl/vileget
 	$(INSTALL_SCRIPT)	$(srcdir)/perl/vileget $@
 
@@ -613,8 +622,13 @@ $(DATADIR)/palettes.rc:		$(srcdir)/macros/palettes.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/palettes.rc $@
 $(DATADIR)/pictmode.rc:		$(srcdir)/macros/pictmode.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/pictmode.rc $@
+$(DATADIR)/vileinit.rc:		$(srcdir)/macros/vileinit.rc
+	$(INSTALL_DATA)		$(srcdir)/macros/vileinit.rc $@
 $(DATADIR)/vileperl.rc:		$(srcdir)/macros/vileperl.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/vileperl.rc $@
+
+$(DATADIR)/.vilemenu:		$(srcdir)/macros/vilemenu.rc
+	$(INSTALL_DATA)		$(srcdir)/macros/vilemenu.rc $@
 
 $(DATADIR)/vile.hlp:		$(srcdir)/vile.hlp
 	$(INSTALL_DATA)		$(srcdir)/vile.hlp $@

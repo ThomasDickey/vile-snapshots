@@ -1,5 +1,5 @@
 
-Getting along with vile						(version 8.3)
+Getting along with vile						(version 8.4)
 -----------------------						-------------
 
 	Use Ctrl-D and Ctrl-U to scroll through this help information.
@@ -2142,6 +2142,12 @@ Programmed procedures and macros
 
 	$abufname	alternate buffer name (i.e. last visited) (read only)
 	$bchars		number of characters in current buffer	(read only)
+	$bflags		status flags for current buffer (read only)
+			a	autobuffer caused this to be created
+			i	invisible, e.g., tags
+			m	modified
+			s	scratch, will be removed when popped down
+			u	unread
 	$blines		number of lines in current buffer	(read only)
 	$bwindows	number of windows open on current buffer(read only)
 	$buffer-hook	name of procedure to run when switching to a buffer
@@ -4243,4 +4249,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.447 1999/10/10 23:31:39 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.449 1999/11/05 22:40:34 tom Exp $

@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.44 1999/03/26 11:03:17 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.45 1999/11/06 12:35:01 tom Exp $
  *
  */
 
@@ -66,6 +66,7 @@ print_usage (void)
 	"-132           132-column mode",
 #endif
 	"-V             for version info",
+	"-I             use vileinit.rc to initialize",
 	"use @cmdfile to run cmdfile as commands (this will suppress .vilerc)"
 	};
 	register SIZE_T	j;

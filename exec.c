@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.206 1999/09/22 21:42:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.208 1999/11/01 11:20:20 tom Exp $
  *
  */
 
@@ -210,7 +210,7 @@ execute_named_command(int f, int n)
 					hst_glue(EOS);
 				} else {
 					c = fnp[strlen(fnp)-1];
-					if (isPunct(c)) {
+					if (isPunct(c) && (c != '&')) {
 						c = end_string();
 						if (c != NAMEC
 						 && c != ' '
@@ -1975,12 +1975,14 @@ perform_dobuf(BUFFER *bp, WHLOOP *whlist)
 			}
 		}
 #endif
+#if !SMALLER
 		TRACE(("<<<%s%s:%d/%d%c%s%s>>>\n",
 			(bp == curbp) ? "*" : "",
 			bp->b_bname, ifstk.level, ifstk.disabled,
 			ifstk.fired ? '+' : ' ',
 			TRACE_INDENT(ifstk.level, cmdp),
 			cmdp))
+#endif
 
 		if (*cmdp == DIRECTIVE_CHAR) {
 

@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.231 1999/09/26 18:29:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.232 1999/11/06 00:26:23 tom Exp $
  *
  */
 
@@ -3864,8 +3864,11 @@ x_close(void)
 {
     /* FIXME: Free pixmaps and GCs !!! */
 
-    if(cur_win->top_widget)
+    if(cur_win->top_widget) {
 	XtDestroyWidget(cur_win->top_widget);
+	cur_win->top_widget = 0;
+	XtCloseDisplay(dpy);  /* need this if $xshell left subprocesses */
+    }
 }
 
 static void

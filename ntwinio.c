@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.60 1999/10/29 00:57:30 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.61 1999/11/04 22:42:53 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -2020,6 +2020,14 @@ ntgetch(void)
 			}
 			break;
 
+		case WM_WVILE_CURSOR_ON:
+			fshow_cursor();
+			break;
+
+		case WM_WVILE_CURSOR_OFF:
+			fhide_cursor();
+			break;
+
 		default:
 			TRACE(("GETC:default(%s)\n", message2s(msg.message)))
 		case WM_KEYUP:
@@ -3175,6 +3183,37 @@ winvile_start(void)
     UpdateWindow(cur_win->main_hwnd);
     caret_disabled = FALSE;
     fshow_cursor();
+}
+
+/*
+ * Unfortunately, winvile cannot use vile's standard cursor visible/invisible
+ * API.  Instead, winvile manages its cursor state internally (and does a
+ * pretty good job, at that).  However, there are times when the editor
+ * makes display changes that require an external "override".
+ */
+void
+winvile_cursor_state(
+    int visible,      /* Boolean, T -> cursor on */
+    int queue_change  /* Boolean, change cursor state using a windows
+                       * message (i.e., defer cursor change until winvile
+                       * next reads its message queue).
+                       */
+    )
+{
+    if (! queue_change)
+    {
+        if (visible)
+            fshow_cursor();
+        else
+            fhide_cursor();
+    }
+    else
+    {
+        PostMessage(winvile_hwnd(), 
+                    (visible) ? WM_WVILE_CURSOR_ON : WM_WVILE_CURSOR_OFF,
+                    0,
+                    0);
+    }
 }
 
 #ifdef VILE_OLE

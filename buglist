@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.363 1999/09/05 23:01:19 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.366 1999/11/06 20:05:51 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1302,7 +1302,7 @@ questions:
 	seem to be able to.  it seems like macros would be obsolete if
 	i could do this.
 
-    - can i define a procedure with acts as an "operator"?  i.e. can i
+    - can i define a procedure which acts as an "operator"?  i.e. can i
 	define a procedure which should be named "xxx-til"?  i can imagine
 	that with the perl hooks, it will be very tempting to write new
 	buffer-filtering stuff in perl (like sean's enhanced paragraph
@@ -1420,6 +1420,8 @@ BTW, this same behavior occurs for both '^' and '$' as search patterns.  Note
 that both of these are zero width assertions.  Also note that '.*' can match
 the empty string.
 
+[This happens with a blank line on the end of the file - tom]
+
 -- 98-06-16 (Jim Crigler <crigler@seo.com>)
 
 This may be specific to the fonts I'm using.  When I compiled xvile
@@ -1521,17 +1523,6 @@ seem to unless I do something call calls update(TRUE).
 region defined in the current buffer and, if possible, where the
 region is?
 
--- 98-09-02 (paul)
-
-my officemate just pointed out that showmatch in winvile doesn't.
-
-you can see that it pauses, but the temporary cursor position doesn't get
-flushed to the screen (or something like that).
-
-[I spent a couple of hours studying this without a solution.  If I call
-Sleep(), the events are simply postponed until the timeout ends.  Possibly
-waiting for an event of some sort would work - tom]
-
 -- 98-09-03 (Clark Morgan)
 
 I've got a case where visual-matches highlighting doesn't work.
@@ -1576,3 +1567,50 @@ to go awry).
 The lex filters will not build with old versions of lex, since those do not
 support %x.  We can support new versions of lex, but really recommend using
 flex, since even the newer versions of lex apparently have more bugs.
+
+-- 99-03-31 (tom)
+
+The configure script should search for -lcrypt.  It doesn't work on FreeBSD
+anyway, since it's a stub of some sort.
+
+-- 99-04-23 (tom)
+
+should have a mode that says if majormode suffixes and preamble
+must both be present, or not.  Also, making matches in alphabetic
+order may not always be the best...
+
+-- 99-06-27 (tom)
+
+add a pattern to ignore (strip) before checking suffix, e.g., .orig|~
+
+-- 99-07-07 (tom)
+
+down-row and up-row don't work properly with binary files.
+(it's using the offset rather than the screen-column)
+
+-- 99-08-29 (tom)
+
+In timode, it would be nice to make '#' insert in column 1 like vile's cmode
+does for preprocessor lines (indeed, make this work with the autoindent).
+
+-- 99-10-03 (tom)
+
+There's a remaining problem where re-reading a buffer does not repaint syntax
+highlighting.  That happens when it is not the current buffer, e.g., after
+running a shell command.
+
+-- 99-10-04 (tom)
+
+The error-return in ttgetc that's marked for 'linux' also
+applies to Solaris and SCO (perhaps ESPIPE or EINVAL for the errno
+value).
+
+-- 99-11-06 (tom)
+
+The logic I'm using to detach a subprocess for $xshell works properly on
+Linux (tested with libc5 and glibc2) and FreeBSD, but has problems on
+Solaris (tested with 2.7) and SCO OpenServer.  On both the latter, the
+parent process will hang until all of the subprocess xterms are closed.
+Also, on Solaris, the 'read' used in /bin/sh to hold the process on
+completion does not work.  (One can use XFree86 xterm's -hold option
+to work around the last problem).

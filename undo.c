@@ -1,9 +1,9 @@
 /* these routines take care of undo operations
  * code by Paul Fox, original algorithm mostly by Julia Harper May, 89
  *
- * written for vile: Copyright (c) 1990, 1995 by Paul Fox
+ * written for vile: Copyright (c) 1990, 1995-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.72 1999/07/06 00:47:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.73 1999/10/31 23:24:40 tom Exp $
  *
  */
 

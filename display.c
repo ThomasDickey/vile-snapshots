@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.310 1999/10/30 01:35:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.313 1999/11/05 22:48:16 tom Exp $
  *
  */
 
@@ -832,19 +832,39 @@ dot_to_vcol(WINDOW *wp)
 {
 #if OPT_CACHE_VCOL
 	W_TRAITS *wt	= &(wp->w_traits);
-	int check;
 	int need_col	= FALSE;
 	int result;
 	int shift	= w_val(wp, WVAL_SIDEWAYS)
 			? w_val(wp, WVAL_SIDEWAYS) - 1
 			: 0;
 	int use_off	= w_left_margin(wp);
+#if OPT_TRACE
+	int check;
+#endif
 
+#if OPT_TRACE && OPT_DEBUG
+	TRACE(("CHECK left_col %d, shift %d, length %d\n",
+			wt->w_left_col, shift, llength(wp->w_dot.l)))
+	TRACE(("%s\n", lp_visible(wp->w_dot.l)))
+	TRACE(("DOT:%s\n", visible_buff(
+			wp->w_dot.l->l_text + wp->w_dot.o,
+			llength(wp->w_dot.l) - wp->w_dot.o,
+			FALSE)))
+#endif
+
+	/*
+	 * If we've moved to a new line, or if the 'list' mode is changed,
+	 * we'll need to recompute the whole state.
+	 */
 	if (wt->w_left_dot.l != wp->w_dot.l
-	 || wt->w_list_opt != w_val(wp, WMDLIST)) {
+	 || wt->w_list_opt != w_val(wp, WMDLIST)
+	 || wt->w_num_cols != term.cols) {
 		wt->w_left_dot.l = wp->w_dot.l;
 		wt->w_left_dot.o = 0;
+		wt->w_left_col = 0;
+		wt->w_left_adj = 0;
 		wt->w_list_opt = w_val(wp, WMDLIST);
+		wt->w_num_cols = term.cols;
 		need_col = TRUE;
 	}
 
@@ -880,23 +900,49 @@ dot_to_vcol(WINDOW *wp)
 			use_off = 0;
 	} else
 #endif
-	if (wt->w_left_col != shift) {
+	if ((wt->w_left_col + wt->w_left_adj < shift)
+	 || (wt->w_left_col > shift)
+	 || (wp->w_dot.o < wt->w_left_dot.o)) {
 		int base = nu_width(wp) + w_left_margin(wp) - 1;
 		int col;
 
-		TRACE(("...change w_left_col from %d to %d, base %d\n",
-			wt->w_left_col, shift, base))
+		TRACE(("...change dot %d(%d) w_left_col from [%d..%d] to match shift %d, base %d\n",
+			wp->w_dot.o,
+			wt->w_left_dot.o,
+			wt->w_left_col,
+			wt->w_left_col + wt->w_left_adj,
+			shift, base))
 
-		wt->w_left_col = shift;
-		wt->w_left_dot.o = col2offs(wp, wt->w_left_dot.l, base);
-		if ((col = offs2col(wp, wt->w_left_dot.l, wt->w_left_dot.o)) < base) {
-			/* if there was a multi-column character at the left
-			 * side of the shifted screen, adjust */
-			wt->w_left_col -= (base - col);
+		col = offs2col(wp, wt->w_left_dot.l, wp->w_dot.o) + shift - base;
+		TRACE(("...compare col %d to shift %d\n", col, shift))
+		if (col < shift) {
+			wt->w_left_col = col;
+		} else {
+			wt->w_left_col = shift;
 		}
+		wt->w_left_adj = 0;
+
+		wt->w_left_dot.o = col2offs(wp, wt->w_left_dot.l, wt->w_left_col + base - shift);
+		TRACE(("...col2offs(%d) = %d\n", wt->w_left_col, wt->w_left_dot.o))
+
+		TRACE(("...compare w_left_dot.o %d to w_dot.o %d\n",
+			wt->w_left_dot.o, wp->w_dot.o))
 		if (wt->w_left_dot.o > wp->w_dot.o) {
 			need_col = TRUE; /* dot is inconsistent with shift */
+			wt->w_left_dot.o = wp->w_dot.o;
 		} else {
+			col = offs2col(wp, wt->w_left_dot.l, wt->w_left_dot.o) + shift - base;
+			TRACE(("...offs2col(%d) = %d\n", wt->w_left_dot.o, col))
+
+			TRACE(("...compare col %d to w_left_col %d\n",
+				col, wt->w_left_col))
+			if (col < wt->w_left_col) {
+				/* if there was a multi-column character at the left
+				 * side of the shifted screen, adjust */
+				TRACE(("...adjust for multi-column character %d\n", col))
+				wt->w_left_adj = wt->w_left_col - col;
+				wt->w_left_col = col;
+			}
 			need_col = FALSE;
 		}
 	}
@@ -917,7 +963,8 @@ dot_to_vcol(WINDOW *wp)
 			wt->w_left_col);
 #if OPT_TRACE
 	check = mk_to_vcol(wp->w_dot, w_val(wp,WMDLIST), w_left_margin(wp), 0);
-	TRACE(("dot_to_vcol result %d check %d (off=%d)\n", result, check, wp->w_dot.o))
+	TRACE(("dot_to_vcol result %d check %d (off=%d, shift=%d)\n",
+		result, check, wp->w_dot.o, shift))
 	if (check != result) {
 		kbd_alarm();
 		TRACE(("-> OOPS:%s %d vs %d+%d %d\n",
