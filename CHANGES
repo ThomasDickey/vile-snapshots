@@ -1,5 +1,12 @@
 Changes for vile 8.1 (released ??? ??? ??, 1998)
 
+ (tom) 980925 (t)
+ 	+ correct two errors in AdjustedWidth and AdjustedHeight, making
+	  winvile resize properly when maximized, as well as not jumping when
+	  resizing after changing fontsize.
+	+ keep caret in winvile invisible until ttrow,ttcol point to a legal
+	  position, i.e., until initialization is complete.
+
  (tom) 980922 (s)
  	+ correct caret position and size in winvile after changing fontsize.
 	+ modify putctext() function to support setv of $word, $identifier,
