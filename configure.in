@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.125 $)
+AC_REVISION($Revision: 1.138 $)
 AC_PREREQ(2.12.971222)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.125 2000/02/29 22:43:14 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.138 2000/03/18 19:34:26 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -21,11 +21,17 @@ AC_PROG_CPP
 AC_GCC_TRADITIONAL
 AC_PROG_INSTALL
 
+AC_PROG_AWK
+AC_PROG_RANLIB
 AC_PROG_LEX
 AC_DECL_YYTEXT
 
+CF_SUBST(archiver,AR,ar)
+CF_SUBST(archiver options,AR_OPTS,rv)
+
 CF_DISABLE_ECHO
 CF_PROG_EXT
+CF_LIB_PREFIX
 
 CF_ARG_DISABLE(extensions,
 	[  --disable-extensions    test: build only core functions],
@@ -41,11 +47,11 @@ CF_ARG_DISABLE(shell,
 AC_MSG_CHECKING(for CFLAGS options)
 AC_ARG_WITH(CFLAGS,
 	[  --with-CFLAGS=value     set default for \$CFLAGS],
-	[cflags=$withval])
+	[cflags="$withval"])
 if test -z "$cflags"; then
 	AC_ARG_WITH(cflags,
 		[  --with-cflags=value     (same as --with-CFLAGS)],
-		[cflags=$withval])
+		[cflags="$withval"])
 fi
 
 # if the user specified nothing else, set -O.  user can override
@@ -57,10 +63,54 @@ elif test -z "$CFLAGS" ; then
 fi
 AC_MSG_RESULT($cflags)
 
+AC_MSG_CHECKING(if you want built-in syntax filters)
+AC_ARG_WITH(builtin-filters,
+[  --with-builtin-filters=XX specify filters to compile built-in vs external
+                          Give an option value to specify only certain filters.
+                          The default, if no value is given is 'all'.
+                          The default if the option is not given is 'none'],
+[VILE_BUILTIN_FILTERS="$withval"],
+[VILE_BUILTIN_FILTERS=none])
+test -z "$VILE_BUILTIN_FILTERS" && VILE_BUILTIN_FILTERS=none
+AC_MSG_RESULT($VILE_BUILTIN_FILTERS)
+changequote(,)dnl
+if test "$VILE_BUILTIN_FILTERS" != none ; then
+	AC_MSG_CHECKING(if any filters require flex)
+	cf_save_IFS="$IFS"
+	cf_found=
+	IFS=",$IFS"
+	for cf_name in $VILE_BUILTIN_FILTERS
+	do
+		if test "$cf_name" = all ; then
+			cf_found=yes
+			break
+		else
+			if (egrep "$cf_name	.*\.l\$" $top_srcdir/filters/genmake.mak 2>/dev/null >/dev/null )
+			then
+				cf_found="$cf_found $cf_name"
+			fi
+		fi
+	done
+	IFS="$cf_save_IFS"
+	AC_MSG_RESULT($cf_found)
+	AC_MSG_CHECKING(version of $LEX)
+	LEX_VERSION=`$LEX --version 2>&1 | sed -e 's/^[^0-9]*//'`
+	if test -z "$LEX_VERSION"
+	then
+		AC_MSG_ERROR(You need flex to compile builtin filters)
+	elif ( expr $LEX_VERSION \< 2.5 >/dev/null )
+	then
+		AC_MSG_ERROR(Sorry - your version of flex is too old: $LEX_VERSION)
+	fi
+	AC_MSG_RESULT($LEX_VERSION)
+fi
+changequote([,])dnl
+AC_SUBST(VILE_BUILTIN_FILTERS)
+
 AC_MSG_CHECKING(for library path)
 AC_ARG_WITH(libdir-path,
 [  --with-libdir-path=PATH specify locations to search for filters, etc.],
-[VILE_LIBDIR_PATH=$withval],
+[VILE_LIBDIR_PATH="$withval"],
 [test -z "$VILE_LIBDIR_PATH" &&\
 	VILE_LIBDIR_PATH='$(libdir)/vile'])
 AC_MSG_RESULT($VILE_LIBDIR_PATH)
@@ -69,7 +119,7 @@ AC_SUBST(VILE_LIBDIR_PATH)
 AC_MSG_CHECKING(for startup path)
 AC_ARG_WITH(startup-path,
 [  --with-startup-path=PATH specify locations to search for vile.hlp, etc.],
-[VILE_STARTUP_PATH=$withval],
+[VILE_STARTUP_PATH="$withval"],
 [test -z "$VILE_STARTUP_PATH" && VILE_STARTUP_PATH='$(datadir)'])
 AC_MSG_RESULT($VILE_STARTUP_PATH)
 AC_SUBST(VILE_STARTUP_PATH)
@@ -79,7 +129,7 @@ CF_LEX_STATES
 AC_MSG_CHECKING(if you want to use perl as an extension language)
 AC_ARG_WITH(perl,
 	[  --with-perl             enable use of Perl as an extension language],
-	[with_perl=$withval],
+	[with_perl="$withval"],
 	[with_perl=no])
 AC_MSG_RESULT($with_perl)
 if test "$with_perl" = yes ; then
@@ -368,7 +418,7 @@ cf_save_ldflags="${LDFLAGS}"
 AC_MSG_CHECKING(if you want to use the Xpm library for colored icon)
 AC_ARG_WITH(xpm,
 [  --with-xpm=DIR          use Xpm library for colored icon, may specify path],
-	[cf_Xpm_library=$withval],
+	[cf_Xpm_library="$withval"],
 	[cf_Xpm_library=no])
 AC_MSG_RESULT($cf_Xpm_library)
 
@@ -391,7 +441,7 @@ if test -n "$cf_x_athena" ; then
     AC_MSG_CHECKING(if you want to use Xaw scrollbars rather than our own)
     AC_ARG_WITH(Xaw-scrollbars,
 	[  --with-Xaw-scrollbars   use Xaw scrollbars rather than our own],
-	[cf_Xaw_scrollbars=$withval],
+	[cf_Xaw_scrollbars="$withval"],
 	[cf_Xaw_scrollbars=no])
     AC_MSG_RESULT($cf_Xaw_scrollbars)
 
@@ -403,7 +453,7 @@ if test -n "$cf_x_athena" ; then
 	AC_MSG_CHECKING(if you want to use the drag/scrolling extension with Xaw)
 	AC_ARG_WITH(drag-extension,
 	    [  --with-drag-extension   use drag/scrolling extension with Xaw],
-	    [cf_drag_extension=$withval],
+	    [cf_drag_extension="$withval"],
 	    [cf_drag_extension=no])
 	AC_MSG_RESULT($cf_drag_extension)
 	if test "$cf_drag_extension" != "no" ; then
@@ -417,7 +467,7 @@ fi
 AC_MSG_CHECKING(if you want to change the number of exec-macros)
 AC_ARG_WITH(exec-macros,
 	[  --with-exec-macros=N    specify count of numbered macros],
-	[cf_exec_macros=$withval],
+	[cf_exec_macros="$withval"],
 	[cf_exec_macros=no])
 AC_MSG_RESULT($cf_exec_macros)
 test "$cf_exec_macros" != no && AC_DEFINE_UNQUOTED(OPT_EXEC_MACROS,$cf_exec_macros)
@@ -429,7 +479,7 @@ AC_CHECK_HEADER(locale.h,[
 AC_MSG_CHECKING(if you want to use i18n locale support)
 AC_ARG_WITH(locale,
 	[  --with-locale           use i18n support for character-types],
-	[cf_locale=$withval],
+	[cf_locale="$withval"],
 	[cf_locale=no])
 AC_MSG_RESULT($cf_locale)
 test "$cf_locale" != no && AC_DEFINE(OPT_LOCALE)
@@ -480,7 +530,7 @@ test -n "${with_trace}${with_no_leaks}" && EXTRAOBJS="$EXTRAOBJS trace.o"
 # CFLAGS="$saved_CFLAGS"
 AC_ARG_WITH(warnings,
 	[  --with-warnings         test: turn on GCC compiler warnings],
-	[with_warnings=$withval])
+	[with_warnings="$withval"])
 if test -n "$with_warnings"
 then
 	CF_GCC_ATTRIBUTES
@@ -598,7 +648,47 @@ ioctl \
 )
 fi
 
+if test "$VILE_BUILTIN_FILTERS" != none ; then
+	EXTRAOBJS="$EXTRAOBJS builtflt.o"
+	CFLAGS="-I\$(srcdir)/filters $CFLAGS"
+	FILTER_LIBS="-Lfilters -lvlflt $LIBS"
+	LIBBUILTFLT="${LIB_PREFIX}vlflt.a"
+	BUILTLIBS="$BUILTLIBS filters/$LIBBUILTFLT"
+fi
+
 AC_SUBST(EXTRAOBJS)
+AC_SUBST(BUILTLIBS)
+AC_SUBST(FILTER_LIBS)
+AC_SUBST(LIBBUILTFLT)
 
 ###	output makefile and config.h
-AC_OUTPUT(makefile filters/makefile,,,sort)
+AC_OUTPUT(makefile filters/makefile filters/makefile.tmp:filters/makefile.2nd,
+{
+echo "Checking for built-in filters: $VILE_BUILTIN_FILTERS"
+if test "$top_srcdir" = ".."
+then
+	cf_srcdir=.
+else
+	cf_srcdir=`echo $top_srcdir |sed -e s@^../@@`
+fi
+
+$AWK -f $cf_srcdir/filters/mk-1st.awk <$cf_srcdir/filters/genmake.mak mode=built-in list="$VILE_BUILTIN_FILTERS" >>filters/makefile
+$AWK -f $cf_srcdir/filters/mk-1st.awk <$cf_srcdir/filters/genmake.mak mode=external list="$VILE_BUILTIN_FILTERS" >>filters/makefile
+
+cat   filters/makefile.tmp >>filters/makefile
+rm -f filters/makefile.tmp
+
+$AWK -f $cf_srcdir/filters/mk-2nd.awk <$cf_srcdir/filters/genmake.mak from=../$cf_srcdir/filters linking="$ECHO_LD" compiling="$RULE_CC" show="$ECHO_CC" mode=built-in list="$VILE_BUILTIN_FILTERS" >>filters/makefile
+$AWK -f $cf_srcdir/filters/mk-2nd.awk <$cf_srcdir/filters/genmake.mak from=../$cf_srcdir/filters linking="$ECHO_LD" compiling="$RULE_CC" show="$ECHO_CC" mode=external list="$VILE_BUILTIN_FILTERS" >>filters/makefile
+
+ls -1 $cf_srcdir/filters/*.key | awk -f $cf_srcdir/filters/mk-key.awk from=$cf_srcdir >>filters/makefile
+},
+{
+RULE_CC='$RULE_CC'
+ECHO_LD='$ECHO_LD'
+ECHO_CC='$ECHO_CC'
+MAKE_LEX='$MAKE_LEX'
+AWK="$AWK"
+VILE_BUILTIN_FILTERS='$VILE_BUILTIN_FILTERS'
+},
+sort)

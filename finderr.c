@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2000 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.88 2000/03/14 03:00:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.89 2000/03/15 00:24:53 tom Exp $
  *
  */
 
@@ -125,7 +125,7 @@ char *const predefined[] =
     "^%B:%L:%T",		/* "pp" in scratch buf */
     "^[^:]\\+: %V directory `%[^']'",	/* GNU make */
     "%T at %F line %L.*",	/* perl 5 */
-    "%F\\[%L\\]:%T",		/* hgrep */
+    "^%F\\[%L\\]:%T",		/* hgrep */
     "^\"%[^\"]\", line %L, col %C, %T",		/* ncurses, atac */
     "^\"%[^\"]\", line %L, %T",	/* ncurses */
 };
@@ -196,6 +196,7 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 		    APP_S(before);
 		    APP_S(tb_values(filename_expr));
 		    APP_S(after);
+		    errp->words[W_FILE] = ++word;
 		    break;
 		case 'B':
 		    APP_S("\\(\\[[^:]\\+]\\)");

@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.82 1999/12/12 12:47:32 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.84 2000/03/18 19:33:48 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -948,6 +948,18 @@ test "$prefix" != /usr           && $1="[$]$1 /usr/lib /usr/lib/$2"
 test "$prefix" != /opt           && $1="[$]$1 /opt/lib /opt/lib/$2"
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl Compute the library-prefix for the given host system
+dnl $1 = variable to set
+AC_DEFUN([CF_LIB_PREFIX],
+[
+	case $cf_cv_system_name in
+	os2)	LIB_PREFIX=''     ;;
+	*)	LIB_PREFIX='lib'  ;;
+	esac
+ifelse($1,,,[$1=$LIB_PREFIX])
+	AC_SUBST(LIB_PREFIX)
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl Some 'make' programs support $(MAKEFLAGS), some $(MFLAGS), to pass 'make'
 dnl options to lower-levels.  It's very useful for "make -n" -- if we have it.
 dnl (GNU 'make' does both, something POSIX 'make', which happens to make the
@@ -1398,6 +1410,22 @@ done
 	])
 AC_MSG_RESULT($cf_cv_sizechange)
 test $cf_cv_sizechange != no && AC_DEFINE(HAVE_SIZECHANGE)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl	Shorthand macro for substituting things that the user may override
+dnl	with an environment variable.
+dnl
+dnl	$1 = long/descriptive name
+dnl	$2 = environment variable
+dnl	$3 = default value
+AC_DEFUN([CF_SUBST],
+[AC_CACHE_VAL(cf_cv_subst_$2,[
+AC_MSG_CHECKING(for $1 (symbol $2))
+test -z "[$]$2" && $2=$3
+AC_MSG_RESULT([$]$2)
+AC_SUBST($2)
+cf_cv_subst_$2=[$]$2])
+$2=${cf_cv_subst_$2}
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check for declaration of sys_nerr and sys_errlist in one of stdio.h and

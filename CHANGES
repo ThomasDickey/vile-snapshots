@@ -1,5 +1,15 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000318 (e)
+	> Tom Dickey:
+	+ add configure --with-builtin-filters option.  This is only to test
+	  the build scripts; the builtin filters are stubs.
+	+ add cindent to awkmode.
+	+ correct awk-filt.l - it did not echo curly braces.
+	+ add '^' at beginning of pattern for hgrep in finderr.c
+	+ correct index for W_FILE in finderr.c for %F token, omitted in
+	  changes for 9.1d (reported by Clark Morgan).
+
  20000314 (d)
  	+ Brendan O'Dea:
 	+ modify perl.xs to allow perl operators to be used with a range.  Also
