@@ -1,6 +1,6 @@
-revlist for vile-9.2zc, version v9_2zc
+revlist for vile, version v9_2zd
 --------------------------------------------------------------------------------
-CHANGES	1.685
+CHANGES	1.686
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -85,16 +85,16 @@ opers.c	1.78
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.29
-patchlev.h	1.278
+patchlev.h	1.279
 path.c	1.123
 perl.xs	1.84
 proto.h	1.493
 pscreen.h	1.1
 ptypemap	1.7
-random.c	1.261
+random.c	1.262
 regexp.c	1.80
 region.c	1.107
-revlist	v9_2zc
+revlist	v9_2zd
 search.c	1.126
 select.c	1.137
 sinstall.sh	1.1
@@ -105,8 +105,8 @@ tbuff.c	1.41
 tcap.c	1.142
 tcap.h	1.7
 termio.c	1.192
-trace.c	1.25
-trace.h	1.13
+trace.c	1.26
+trace.h	1.14
 ucrypt.c	1.15
 undo.c	1.83
 version.c	1.53

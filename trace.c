@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.25 2002/02/16 01:50:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.26 2002/05/22 00:03:44 tom Exp $
  *
  */
 
@@ -128,6 +128,45 @@ char *
 tb_visible(TBUFF * p)
 {
     return visible_buff(tb_values(p), tb_length(p), FALSE);
+}
+
+char *
+itb_visible(ITBUFF * p)
+{
+    int *vec;
+    int len, n, pass;
+    unsigned used;
+    char temp[80];
+
+    static char *result;
+
+    beginDisplay();
+    if (result != 0)
+	free(result);
+    vec = itb_values(p);
+    len = itb_length(p);
+    if (vec != 0 && len != 0) {
+	used = 0;
+	for (pass = 0; pass < 2; ++pass) {
+	    for (n = 0; n < len; ++n) {
+		kcod2escape_seq(vec[n], temp);
+		if (used) {
+		    if (pass)
+			strcat(result, ",");
+		    ++used;
+		}
+		if (pass)
+		    strcat(result, temp);
+		used += strlen(temp);
+	    }
+	    if (!pass)
+		*(result = malloc(1 + used)) = EOS;
+	}
+    } else {
+	result = strmalloc("");
+    }
+    endofDisplay();
+    return result;
 }
 
 char *
