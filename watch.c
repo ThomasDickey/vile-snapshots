@@ -64,6 +64,11 @@ unwatchfd(int fd)
 void
 dowatchcallback(int fd)
 {
+    /* Not safe to do one of these callbacks when the user is
+       typing on the message line.  FIXME. */
+    if (reading_msg_line)
+	return;
+
     if (watchfds[fd] == NULL || watchfds[fd]->callback == NULL)
 	return;
 

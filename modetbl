@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.164 1999/12/19 10:47:55 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.165 1999/12/22 11:04:05 kev Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -92,6 +92,7 @@ bool							# MD prefix
 	"crypt"		CRYPT		chgd_major	OPT_ENCRYPT	# encrytion mode active
 	"dos"		DOS		chgd_major_w	# "dos" mode -- lines end in crlf
 	"IgnoreCase"	IGNCASE		chgd_hilite	# Exact matching for searches
+	"loading"	LOADING		0		# Are we asynchronously loading a file?
 	"locked"	LOCKED		chgd_disabled	OPT_LCKFILES # mode locked
 	"magic"		MAGIC		chgd_hilite	# regular expressions in search
 	"Meta-Insert-Bindings" METAINSBIND 0		# honor meta bindings in insert mode

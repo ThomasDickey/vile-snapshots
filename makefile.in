@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.152 1999/11/11 02:04:17 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.153 1999/12/22 11:04:05 kev Exp $
 #
 
 #### Start of system configuration section. ####
@@ -156,6 +156,7 @@ SCREENS = \
 PERL_SRC = \
 	$(srcdir)/perl/Vile.pm \
 	$(srcdir)/perl/Vileserv.pm \
+	$(srcdir)/perl/capture.pl \
 	$(srcdir)/perl/dir.pl \
 	$(srcdir)/perl/glob2re.pl \
 	$(srcdir)/perl/hgrep.pl \
@@ -170,7 +171,9 @@ PERL_SRC = \
 	$(srcdir)/perl/syntax.pl \
 	$(srcdir)/perl/tailf.pl \
 	$(srcdir)/perl/vileget \
-	$(srcdir)/perl/visit.pl
+	$(srcdir)/perl/visit.pl \
+	$(srcdir)/perl/winops.pl
+
 
 MACRO_SRC = \
 	$(srcdir)/macros/digraphs.rc \
@@ -319,6 +322,7 @@ INSTALL_PERL_FILES = \
 	$(BINDIR)/vileget \
 	$(PERLDIR)/Vile.pm \
 	$(PERLDIR)/Vileserv.pm \
+	$(PERLDIR)/capture.pl \
 	$(PERLDIR)/dir.pl \
 	$(PERLDIR)/glob2re.pl \
 	$(PERLDIR)/hgrep.pl \
@@ -332,7 +336,8 @@ INSTALL_PERL_FILES = \
 	$(PERLDIR)/spell.pl \
 	$(PERLDIR)/syntax.pl \
 	$(PERLDIR)/tailf.pl \
-	$(PERLDIR)/visit.pl
+	$(PERLDIR)/visit.pl \
+	$(PERLDIR)/winops.pl
 
 INSTALL_X_FILES = \
 	$(BINDIR)/xshell.sh \
@@ -643,6 +648,8 @@ $(PERLDIR)/Vile.pm:		$(srcdir)/perl/Vile.pm
 	$(INSTALL_DATA)		$(srcdir)/perl/Vile.pm $@
 $(PERLDIR)/Vileserv.pm:		$(srcdir)/perl/Vileserv.pm
 	$(INSTALL_DATA)		$(srcdir)/perl/Vileserv.pm $@
+$(PERLDIR)/capture.pl:		$(srcdir)/perl/capture.pl
+	$(INSTALL_DATA)		$(srcdir)/perl/capture.pl $@
 $(PERLDIR)/dir.pl:		$(srcdir)/perl/dir.pl
 	$(INSTALL_DATA)		$(srcdir)/perl/dir.pl $@
 $(PERLDIR)/glob2re.pl:		$(srcdir)/perl/glob2re.pl
@@ -671,6 +678,8 @@ $(PERLDIR)/tailf.pl:		$(srcdir)/perl/tailf.pl
 	$(INSTALL_DATA)		$(srcdir)/perl/tailf.pl $@
 $(PERLDIR)/visit.pl:		$(srcdir)/perl/visit.pl
 	$(INSTALL_DATA)		$(srcdir)/perl/visit.pl $@
+$(PERLDIR)/winops.pl:		$(srcdir)/perl/winops.pl
+	$(INSTALL_DATA)		$(srcdir)/perl/winops.pl $@
 
 $(INSTALL_DIRS):
 	$(SHELL) ${srcdir}/mkdirs.sh $@

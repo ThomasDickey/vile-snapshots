@@ -6,7 +6,7 @@
  * 		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.42 1999/12/19 11:11:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.46 1999/12/21 23:02:27 tom Exp $
  *
  * Features:
  * 	- Reads the keyword file ".vile.keywords" from the home directory.
@@ -122,6 +122,8 @@ char *filter_name = "c";
 #define DQUOTE '"'
 #define SQUOTE '\''
 
+#define UPPER(c) isalpha(c) ? toupper(c) : c
+
 #define isIdent(c)  (isalpha(c) || (c) == '_')
 #define isNamex(c)  (isalnum(c) || (c) == '_')
 
@@ -215,7 +217,7 @@ write_comment(FILE * fp, char *s, int len, int begin)
     char *nested;
     if (begin)
 	t += 2;
-    while ((nested = strstr(t, "/*")) != 0) {
+    while ((nested = strstr(t, "/*")) != 0 && (nested - s) < len) {
 	write_token(fp, s, nested - s, Comment_attr);
 	write_token(fp, nested, 2, Error_attr);
 	len -= (nested + 2 - s);
@@ -236,6 +238,16 @@ write_escape(FILE * fp, char *s, char *attr)
     write_string(fp, base, s - base, attr);
     return s;
 }
+
+#define SkipDigit(radix,s) \
+		(radix == 10 && isdigit(*s)) || \
+		(radix == 16 && isxdigit(*s))
+
+#define BeginExponent(radix,ch) \
+		(radix == 10 && ch == 'E') || \
+		(radix == 16 && ch == 'P')
+
+#define IsDigitX(c) (isNamex(c) || (c) == '.')
 
 static char *
 write_number(FILE * fp, char *s)
@@ -266,16 +278,20 @@ write_number(FILE * fp, char *s)
 	    done = !isxdigit(*s);
 	    break;
 	}
+	if ((radix == 10 || radix == 16) && *s == '.') {
+	    found = done = 1;
+	    break;
+	}
 	found += !done;
     }
-    if (radix == 10) {
+    if (radix == 10 || radix == 16) {
 	while (state >= 0) {
-	    int ch = isalpha(*s) ? toupper(*s) : *s;
+	    int ch = UPPER(*s) ? toupper(*s) : *s;
 	    switch (state) {
 	    case 0:
 		if (ch == '.') {
 		    state = 1;
-		} else if (ch == 'E') {
+		} else if (BeginExponent(radix, ch)) {
 		    state = 2;
 		} else if (ch == 'F') {
 		    num_f++;
@@ -291,10 +307,11 @@ write_number(FILE * fp, char *s)
 		}
 		break;
 	    case 1:		/* after decimal point */
-		while (isdigit(*s))
+		while (SkipDigit(radix,s))
 		    s++;
+		ch = UPPER(*s);
 		state = -1;
-		if (ch == 'E') {
+		if (BeginExponent(radix, ch)) {
 		    state = 2;
 		} else if (ch == 'F') {
 		    num_f++;
@@ -307,8 +324,9 @@ write_number(FILE * fp, char *s)
 	    case 2:		/* after exponent letter */
 		if (ch == '+' || ch == '-')
 		    s++;
-		while (isdigit(*s))
+		while (SkipDigit(radix,s))
 		    s++;
+		ch = UPPER(*s);
 		/* FALLTHRU */
 	    case 3:
 		if (ch == 'F') {
@@ -338,7 +356,7 @@ write_number(FILE * fp, char *s)
 	}
     } else {
 	for (;;) {
-	    int ch = isalpha(*s) ? toupper(*s) : *s;
+	    int ch = UPPER(*s);
 	    if (ch == 'L') {
 		if (++num_l > 2)
 		    break;
@@ -351,8 +369,8 @@ write_number(FILE * fp, char *s)
 	    s++;
 	}
     }
-    if (!found || isNamex(*s)) {	/* something is run-on to a number */
-	while (isNamex(*s))
+    if (!found || IsDigitX(*s)) {	/* something is run-on to a number */
+	while (IsDigitX(*s))
 	    s++;
 	write_string(fp, base, s - base, Error_attr);
     } else {

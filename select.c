@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.105 1999/11/24 17:29:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.108 1999/12/22 01:59:19 tom Exp $
  *
  */
 
@@ -1519,6 +1519,39 @@ parse_attribute(char *text, int length, int offset, int *countp)
 }
 
 /*
+ * DOT points to the beginning of a region, we're given the count of characters
+ * to put into the region.  Set MK at the end.  This handles counts that extend
+ * beyond the current line, but makes assumptions about the record separator.
+ * Data from an external filter always uses newline for a separator, otherwise
+ * we will run into problems with lex/flex.  Internally computed regions are
+ * not the same problem.
+ */
+static void
+set_mark_after(int count, int rslen)
+{
+	int offset = DOT.o;
+
+	MK = DOT;
+	while (count > 0) {
+		MK.o += count;
+		if (is_last_line(MK, curbp)) {
+			count = 0;
+		} else if (MK.o > llength(MK.l)) {
+			if (MK.o <= (llength(MK.l) + rslen)) {
+				MK.o = llength(MK.l);
+				break;
+			}
+			count -= (llength(MK.l) + rslen - offset);
+			MK.l = lforw(MK.l);
+			MK.o = 0;
+		} else {
+			break;
+		}
+		offset = 0;
+	}
+}
+
+/*
  * attribute_cntl_a_sequences can take quite a while when processing a region
  * with a large number of attributes.  The reason for this is that the number
  * of marks to check for fixing (from ldelete) increases with each attribute
@@ -1568,10 +1601,7 @@ attribute_cntl_a_sequences(void)
 #else
 		ldelete((B_COUNT)(offset - DOT.o), FALSE);
 #endif
-		MK = DOT;
-		MK.o += count;
-		if (MK.o > llength(DOT.l))
-		    MK.o = llength(DOT.l);
+		set_mark_after(count, len_record_sep(curbp));
 		if (VATTRIB(videoattribute) || hypercmd != 0)
 		    (void) attributeregion();
 	    }
@@ -1597,6 +1627,7 @@ attribute_from_filter(void)
     int done;
     int n;
     int result = TRUE;
+    int drained = FALSE;
 
     if ((pastline = setup_region()) == 0) {
 	result = FALSE;
@@ -1611,31 +1642,37 @@ attribute_from_filter(void)
 		break;
 	    }
 
-	    if (ffgetline(&nbytes) > FIOSUC)
+	    if (ffgetline(&nbytes) > FIOSUC) {
+		drained = TRUE;
 		break;
+	    }
 
 	    DOT.o = 0;
-	    for (n = 0; n < nbytes && DOT.o < llength(DOT.l); n++) {
+	    for (n = 0; n < nbytes; n++) {
 		if (fflinebuf[n] == CONTROL_A) {
-		    MK = DOT;
 		    done = parse_attribute(fflinebuf, nbytes, n, &skip);
 		    if (done) {
-			n = (done + skip - 1);
-			MK.o += skip;
-			if (MK.o > llength(DOT.l))
-			    MK.o = llength(DOT.l);
+			n = (done - 1);
+			set_mark_after(skip, 1);
 			if (VATTRIB(videoattribute)
 			 || hypercmd != 0) {
 				(void) attributeregion();
 			}
-			DOT = MK;
-			DOT.o -= 1;
 		    }
+		} else {
+		    DOT.o += 1;
 		}
-		DOT.o += 1;
 	    }
 	    DOT.l = lforw(DOT.l);
 	}
+
+	/* some pipes will hang if they're not drained */
+	if (!drained) {
+	    while (ffgetline(&nbytes) <= FIOSUC) {
+		;
+	    }
+	}
+
 	(void)ffclose();		/* Ignore errors.	*/
 #if OPT_HILITEMATCH
 	if (curbp->b_highlight & HILITE_ON) {

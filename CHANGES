@@ -1,5 +1,79 @@
 Changes for vile 9.1 (released ??? ??? ??, 1999)
 
+ (kev) 991222 (i)
+	+ makefile.in (capture.pl, winops.pl): New files/targets.
+	+ perl.xs (perl_exit): Clear perl_interp variable so that
+	  we get out early if we're called twice.  This won't
+	  presently happen, but we want to be prepared if it does.
+	  (stringify_coderef):  Fixed situation in which the coderef
+	  was getting pushed on @Vile::CRs twice -- and also
+	  incrementing the reference count twice which was preventing
+	  the code ref from being freed up.
+	  (perl_free_deferred): New code to work around perl bug
+	  in which parts of the coderef are getting freed too
+	  early causing memory corruption.
+	  (perl_free_callback):  Ditto.  Also added a comment
+	  regarding a (now removed) call to SvREFCNT_dec() and why it
+	  shouldn't be there.  Also, don't increment the reference
+	  count on a newly created integer (newSViv).  It's already
+	  incremented when allocated.
+	+ proto.h (perl_free_deferred): Declared.
+	  (perl_free_callback): Change return type.  This is so
+	  that the GROW macro may be used to increase the size
+	  of the vector of Sv's to deallocate in perl_free_deferred().
+	+ api.c (api_command_cleanup): Call perl_free_deferred() in order
+	  to work around perl bug.  I didn't ifdef it because we may
+	  someday find some other deferred allocations which need to
+	  be performed.
+	+ main.c (quit): Don't shut down X11's display here.
+	  (tidy_exit): Shut it down here instead.
+	  Fixes bug reported by Sean Ahern in which .vilesock was
+	  not getting removed properly.  Thanks also to Brendan
+	  O'Dea for additional insight into the problem.
+	+ npopen.c (pipe_pid2): New static variable.
+	  (npclose): Wait on both pids associated with a filtering
+	  operation.  This cleans up the zombies (and there were a lot
+	  of them) associated with automatic syntax coloring.
+	  (softfork): Set pipe_pid2 for callers who are too lazy
+	  to remember the pid.  [Note: I consider this to be an
+	  ugly hack.  Please feel free to improve upon it.]
+	+ modetbl (loading): New mode.
+	+ display.c (modeline_modes): Added code for "loading" mode.
+	+ capture.pl: Some improvements:
+	    + Error finder now hooked up
+	    + [loading] message on modeline when loading a file
+	    + New name for the binding: async-capture-command instead
+	      of perl-capture-command
+	    + New keybinding ^A-!.  Think of the ^A as "asynchronous".
+	    + Prettier header
+	    + Dot reset to top of new buffer contents if appropriate
+	      (If you're browsing the buffer, it won't interfere with
+	      your browsing.)
+	    + Lots of new comments in the code
+	+ watch.c (dowatchcallback):  Do not run watch callbacks when
+	  user is typing on the message line.  (This cures a nasty
+	  abort that I encountered while using async-capture-command.)
+	> Tom Dickey:
+	+ revert Kev's change to main.c - this made xvile not run when it
+	  forks on startup.
+	+ compiler warnings in x11.c (reported by Michael Finken
+	  <finkenm@hotmail.com>)
+ 	+ improve attribute_from_filter() by draining a pipe that has data;
+	  if the filter program incorrectly sends more data than vile expects,
+	  vile would not be able to close the pipe.
+ 	+ correct check in c-filt.c from 9.0g for nested comments; it flagged
+	  adjacent comments.
+	+ modify m4-filt.c to test multi-line attributes by writing Literal's
+	  as a single token rather than each piece split by lines.
+	+ improve attribute-from-filter and attribute-cntl_a-sequences-til to
+	  allow lengths beyond the end of the current line (Kevin & I were
+	  aware of this - report by Christian Lindig <lindig@ips.cs.tu-bs.de>).
+ 	+ modify c-filt.c to highlight C9X hexadecimal floating constants
+	+ add new C9X keywords to c.key: inline, restrict, _Bool, _Complex,
+	  _Imaginary, _Pragma, __STDC_VERSION__, __VA_ARGS__, __func__.
+	+ correction to c-filt.c's parsing of floating-point constants (missed
+	  a toupper).
+
  (kev) 991220 (h)
 	+ perl/capture.pl: New perl script which implements a perl version
 	  of capture-command.  This version incrementally updates the

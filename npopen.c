@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.80 1999/12/11 15:08:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.81 1999/12/22 11:04:05 kev Exp $
  *
  */
 
@@ -39,6 +39,7 @@
 
 #if SYS_UNIX
 static int pipe_pid;
+static int pipe_pid2;
 #endif
 
 static void exec_sh_c(char *cmd);
@@ -175,11 +176,25 @@ npclose (FILE *fp)
 	int child;
 	(void)fflush(fp);
 	(void)fclose(fp);
-	while ((child = wait ((int *)0)) != pipe_pid) {
+
+	if (pipe_pid == pipe_pid2)
+		pipe_pid2 = -1;
+
+	while (pipe_pid >= 0 || pipe_pid2 >= 0) {
+		child = wait ((int *)0);
 		if (child < 0 && errno == EINTR) {
-			(void) kill (SIGKILL, pipe_pid);
+			if (pipe_pid >= 0)
+				(void) kill (SIGKILL, pipe_pid);
+			if (pipe_pid2 >= 0)
+				(void) kill (SIGKILL, pipe_pid2);
+		} else {
+			if (pipe_pid == child)
+				pipe_pid = -1;
+			if (pipe_pid2 == child)
+				pipe_pid2 = -1;
 		}
 	}
+
 }
 
 static void
@@ -297,6 +312,8 @@ softfork(void)
 		(void) sleep (slp);
 		slp <<= 1;
 	}
+	pipe_pid2 = fpid;	/* For calls to softfork which don't
+				   remember the pid */
 	return fpid;
 }
 

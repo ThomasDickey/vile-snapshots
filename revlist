@@ -1,6 +1,6 @@
-revlist for vile, version v9_0h
+revlist for vile, version v9_0i
 --------------------------------------------------------------------------------
-CHANGES	1.516
+CHANGES	1.522
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -15,7 +15,7 @@ README.PC	1.22
 README.VMS	1.5
 aclocal.m4	1.82
 ansi.c	1.40
-api.c	1.22
+api.c	1.23
 api.h	1.12
 basic.c	1.111
 bind.c	1.212
@@ -23,7 +23,7 @@ borland.c	1.30
 btree.c	1.6
 btree.h	1.3
 buffer.c	1.212
-buglist	1.370
+buglist	1.371
 chgdfunc.h	1.9
 cmdtbl	1.193
 config.emx	1.1
@@ -33,7 +33,7 @@ configure.in	1.123
 csrch.c	1.30
 descrip.mms	1.42
 dirstuff.h	1.23
-display.c	1.319
+display.c	1.320
 djhandl.c	1.6
 dumbterm.c	1.17
 edef.h	1.264
@@ -63,7 +63,7 @@ makefile.blc	1.11
 makefile.djg	1.30
 makefile.emx	1.5
 makefile.icc	1.13
-makefile.in	1.152
+makefile.in	1.153
 makefile.tbc	1.24
 makefile.wat	1.26
 makefile.wnt	1.55
@@ -73,9 +73,9 @@ mkdirs.sh	1.4
 mkprlenv.wnt	1.5
 mktbls.c	1.106
 modes.c	1.187
-modetbl	1.164
+modetbl	1.165
 msgs.c	1.19
-npopen.c	1.80
+npopen.c	1.81
 ntconio.c	1.49
 ntwinio.c	1.66
 oneliner.c	1.94
@@ -83,18 +83,18 @@ opers.c	1.68
 os2keys.h	1.1
 os2pipe.c	1.4
 os2vio.c	1.26
-patchlev.h	1.208
+patchlev.h	1.209
 path.c	1.100
-perl.xs	1.57
-proto.h	1.408
+perl.xs	1.58
+proto.h	1.409
 pscreen.h	1.1
 ptypemap	1.6
 random.c	1.221
 regexp.c	1.66
 region.c	1.101
-revlist	v9_0h
+revlist	v9_0i
 search.c	1.119
-select.c	1.105
+select.c	1.108
 sinstall.sh	1.1
 spawn.c	1.151
 statevar.c	1.31
@@ -110,7 +110,7 @@ undo.c	1.74
 version.c	1.45
 vile-9.0.spec	1.1
 vile.1	1.24
-vile.hlp	1.459
+vile.hlp	1.460
 vile.wmconfig	1.1
 vms2unix.c	1.34
 vmsbuild.com	1.33
@@ -125,7 +125,7 @@ w32ole.rc	1.2
 w32pipe.c	1.17
 w32reg.c	1.4
 w32reg.h	1.1
-watch.c	1.3
+watch.c	1.4
 window.c	1.93
 winvile.h	1.4
 winvile.odl	1.5
@@ -133,7 +133,7 @@ winvile.rc	1.6
 word.c	1.71
 wordmov.c	1.21
 wvwrap.cpp	1.3
-x11.c	1.238
+x11.c	1.239
 xshell.sh	1.4
 xvile.wmconfig	1.1
 doc/Vileserv.doc	1.1
@@ -155,9 +155,9 @@ filters/awk-filt.l	1.7
 filters/awk.key	1.2
 filters/bat-filt.l	1.5
 filters/bat.key	1.3
-filters/c-filt.c	1.42
+filters/c-filt.c	1.46
 filters/c-filt.flx	1.1
-filters/c.key	1.6
+filters/c.key	1.9
 filters/cfg-filt.l	1.1
 filters/cpp.key	1.2
 filters/csh.key	1.1
@@ -182,7 +182,7 @@ filters/latex.key	1.2
 filters/latexflt.l	1.15
 filters/lex-filt.l	1.14
 filters/lex.key	1.4
-filters/m4-filt.c	1.9
+filters/m4-filt.c	1.11
 filters/m4.key	1.3
 filters/mail.key	1.2
 filters/mailfilt.l	1.8
@@ -253,7 +253,7 @@ macros/vilemenu.rc	1.2
 macros/vileperl.rc	1.1
 perl/Vile.pm	1.1
 perl/Vileserv.pm	1.4
-perl/capture.pl	1.1
+perl/capture.pl	1.2
 perl/dir.pl	1.1
 perl/glob2re.pl	1.1
 perl/hgrep.pl	1.1

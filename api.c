@@ -811,6 +811,8 @@ api_command_cleanup(void)
 	make_current(curwp->w_bufp);
 
     MK = DOT;			/* make sure MK is in same buffer as DOT */
+
+    perl_free_deferred();
 }
 
 void

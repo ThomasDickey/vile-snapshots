@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.408 1999/12/20 21:16:56 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.409 1999/12/22 11:04:05 kev Exp $
  *
  */
 
@@ -56,7 +56,8 @@ extern int xterm_mouse_T (int f, int n);
 /* perl.xs (perl.c) */
 extern	void	perl_default_region(void);
 extern	void	perl_free_handle(void *);
-extern	void	perl_free_callback(char *);
+extern	int	perl_free_callback(char *);
+extern  void	perl_free_deferred(void);
 extern	void	perl_exit(void);
 #if OPT_NAMEBST
 extern	int	perl_call_sub(void *, int, int, int);
