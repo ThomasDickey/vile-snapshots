@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.43 1999/06/08 00:39:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.44 1999/06/11 11:21:17 tom Exp $
  */
 
 /*#
@@ -160,6 +160,7 @@ write_message(char *prefix, SV *sv)
 	if ((nl = strchr(text, '\n')))
 	{
 	    *nl = 0;
+	    mktrimmed(text);
 	    while (*++nl == '\n')
 		;
 
@@ -167,7 +168,8 @@ write_message(char *prefix, SV *sv)
 		nl = 0;
 	}
 
-	mlforce("%s%s", prefix, text);
+	if (*text)
+	    mlforce("%s%s", prefix, text);
 	text = nl;
 	count++;
     }
@@ -2383,6 +2385,7 @@ watchfd(fd, watchtypestr, ...)
 	    /* It's just a string (how boring) */
 	    cmd = strdup(SvPV(ST(2),na));
 	}
+        TRACE(("Vile::watchfd(fd=%d, watchtype=%d, cmd=%s)\n", fd, watchtype, cmd))
 	watchfd(fd, watchtype, cmd);
 
   #
@@ -2397,6 +2400,7 @@ unwatchfd(fd)
     int fd
 
     PPCODE:
+        TRACE(("Vile::unwatchfd(fd=%d)\n", fd))
 	unwatchfd(fd);
 
 

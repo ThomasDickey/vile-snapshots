@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.185 1999/05/17 10:34:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.190 1999/06/14 22:58:12 tom Exp $
  *
  */
 
@@ -598,6 +598,70 @@ altbuff(int f GCC_UNUSED, int n GCC_UNUSED)
 	}
 }
 
+#if OPT_BNAME_CMPL
+static int
+qs_bname_cmp(const void *a, const void *b)
+{
+	return strcmp(*(char *const*)a, (* (char *const*) b));
+}
+
+static char **
+init_bname_cmpl(void)
+{
+	size_t used = 0;
+	size_t count = countBuffers();
+	char **list = typeallocn(char *, count+1);
+	BUFFER *bp;
+
+	for_each_buffer(bp) {
+		list[used++] = bp->b_bname;
+	}
+	list[used] = 0;
+	qsort(list, used, sizeof(char *), qs_bname_cmp);
+	return list;
+}
+
+static int
+bname_complete(int c, char *buf, unsigned *pos)
+{
+	register unsigned cpos = *pos;
+	int status = FALSE;
+	char **nptr;
+
+	kbd_init();		/* nothing to erase */
+	buf[cpos] = EOS;	/* terminate it for us */
+
+	if ((nptr = init_bname_cmpl()) != 0) {
+		status = kbd_complete(FALSE, c, buf, pos, (char *)nptr, sizeof(*nptr));
+		free((char *)nptr);
+	}
+	return status;
+}
+#endif
+
+/*
+ * Prompt for a buffer name (though we may use a filename - it's not a
+ * stringent requirement).
+ */
+int
+ask_for_bname(char *prompt, char *bufn, size_t len)
+{
+	int status;
+
+	if (clexec || isnamedcmd) {
+#if OPT_BNAME_CMPL
+		status = kbd_string(prompt, bufn, len,
+			'\n', KBD_NORMAL|KBD_MAYBEC, bname_complete);
+#else
+		status = mlreply(prompt, bufn, len);
+#endif
+	} else if ((status = screen_to_bname(bufn)) != TRUE) {
+		mlforce("[Nothing selected]");
+	}
+
+	return status;
+}
+
 /*
  * Attach a buffer to a window. The
  * values of dot and mark come from the buffer
@@ -613,7 +677,8 @@ usebuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 	char		bufn[NBUFN];
 
 	bufn[0] = EOS;
-	if ((s=mlreply("Use buffer: ", bufn, sizeof(bufn))) != TRUE)
+	if ((s = ask_for_bname("Use buffer: ", bufn, sizeof(bufn))) != TRUE
+	 && (s != SORTOFTRUE))
 		return s;
 	if ((bp=find_any_buffer(bufn)) == 0)	/* Try buffer */
 		return FALSE;
@@ -939,6 +1004,29 @@ has_C_suffix(register BUFFER *bp)
 }
 #endif
 
+static int
+kill_that_buffer(BUFFER *bp)
+{
+	int s;
+	char bufn[NFILEN];
+
+	if ((curbp == bp) && (find_alt() == 0)) {
+		mlforce("[Can't kill that buffer]");
+		return FALSE;
+	}
+
+	(void)strcpy(bufn, bp->b_bname); /* ...for info-message */
+	if (bp->b_nwnd != 0)  { /* then it's on the screen somewhere */
+		(void)zotwp(bp);
+		if (find_bp(bp) == 0) { /* delwp must have zotted us */
+			return FALSE;
+		}
+	}
+	if ((s = zotbuf(bp)) == TRUE)
+		mlwrite("Buffer %s gone", bufn);
+	return s;
+}
+
 /*
  * Dispose of a buffer, by name.  If this is a screen-command, pick the name up
  * from the screen.  Otherwise, ask for the name.  Look it up (don't get too
@@ -982,36 +1070,31 @@ killbuffer(int f, int n)
 		n = 1;
 	for_ever {
 		bufn[0] = EOS;
-		if (clexec || isnamedcmd) {
-			if ((s=mlreply("Kill buffer: ", bufn, sizeof(bufn))) != TRUE)
-				break;
-		} else if ((s = screen_to_bname(bufn)) != TRUE) {
-			mlforce("[Nothing selected]");
+		if ((s=ask_for_bname("Kill buffer: ", bufn, sizeof(bufn))) != TRUE)
 			break;
-		}
 
-		if ((bp=find_any_buffer(bufn)) == 0) {	/* Try buffer */
-			s = FALSE;
-			break;
+#if UNIX_GLOBBING
+		s = 0;
+		for_each_buffer(bp) {
+			if (glob_match_leaf(bp->b_bname, bufn)) {
+				if (kill_that_buffer(bp))
+					s++;
+			}
 		}
-
-		if ((curbp == bp) && (find_alt() == 0)) {
-			mlforce("[Can't kill that buffer]");
-			s = FALSE;
-			break;
-		}
-
-		(void)strcpy(bufn, bp->b_bname); /* ...for info-message */
-		if (bp->b_nwnd != 0)  { /* then it's on the screen somewhere */
-			(void)zotwp(bp);
-			if (find_bp(bp) == 0) { /* delwp must have zotted us */
+		if (s != 0) {
+			mlforce("[Removed %d buffer%s]", s, PLURAL(s));
+			s = TRUE;
+		} else	/* perhaps filename or buffer number */
+#endif
+		{
+			if ((bp=find_any_buffer(bufn)) == 0) {	/* Try buffer */
 				s = FALSE;
 				break;
 			}
+			if ((s = kill_that_buffer(bp)) != TRUE)
+				break;
 		}
-		if ((s = zotbuf(bp)) != TRUE)
-			break;
-		mlwrite("Buffer %s gone", bufn);
+
 		if (--n > 0) {
 #if OPT_UPBUFF
 			if (special)

@@ -1,5 +1,35 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+(tom) 990614 (h)
+	+ updated example in menus.doc, dropping references to macros not in
+	  our source distribution.
+	+ add no_errs flag to suppress bells when ~force is in effect.
+	+ implement clear-attributes-til, to allow reset of all video attributes
+	  and highlighting.
+	+ implement wildcard matching in :kill-buffer, so one can do
+		:ki *.log
+	  to discard all files ending with ".log".  I used filename wildcards
+	  rather than regular expressions.  If no wildcard matches, the normal
+	  matching is used, e.g., filename or buffer number.
+	+ implement name-completion for killbuffer(), usebuffer(), finderrbuf()
+	  and execbuf().
+	+ correct logic in x11.c which sets window manager hints for icon; it
+	  did not first ask for the existing hints.  This caused some window
+	  managers (olvwm, for instance) to ignore FocusIn events (Mark
+	  Robinson <Mark.D.Robinson@UK.Sun.COM>).
+	+ modify logic of insert_namebst() and delete_namebst() to allow
+	  redefinition of builtin commands.  The builtin command is moved to
+	  the redefns table until the user deletes the command that redefined
+	  it (request by Alex Wetmore).
+	+ modify c-filt.c to highlight floating point constants.
+	+ modify write_string() function in filters.c to avoid writing a
+	  newline that's beyond the limit of the string passed as parameter. 
+	  This fixes a case in m4-filt.l that would write an extra newline
+	  after comment lines containing only a "#".
+	+ add "/**/#" lines to imakemode preamble pattern, to accommodate old
+	  (i.e., obsolete) Imakefile's that rely on pre-ANSI cpp's.
+	+ suppress blank messages in perl.xs
+
 (tom) 990607 (g)
 	+ add distinct prefixes to warnings written in perl.xs with write_message
 	  to aid in debugging.

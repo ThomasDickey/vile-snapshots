@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.248 1999/06/01 23:54:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.249 1999/06/14 22:32:19 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -170,6 +170,7 @@ decl_uninit( int clexec	);		/* command line execution flag	*/
 decl_uninit( int clhide );		/* hide results of this command	*/
 decl_uninit( int miniedit );		/* editing minibuffer with vi-cmds */
 decl_uninit( int no_msgs);		/* suppress command output?	*/
+decl_uninit( int no_errs);		/* suppress bells/alarms?	*/
 decl_uninit( int no_echo);		/* echo user input 		*/
 
 decl_uninit( int vtrow );		/* Row location of SW cursor	*/
@@ -286,6 +287,8 @@ decl_uninit( char *startup_path );
 decl_uninit( char *libdir_path );
 
 decl_init_const( char hexdigits[], "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+
+/*--------------------------------------------------------------------------*/
 
 decl_init_const( char HELP_BufName[],		"[Help]");
 #if OPT_REBIND

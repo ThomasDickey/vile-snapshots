@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.216 1999/06/07 22:36:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.217 1999/06/13 19:25:46 Mark.Robinson Exp $
  *
  */
 
@@ -3317,7 +3317,8 @@ x_preparse_args(
 #  include <icons/vile.xbm>
 # endif
 #endif
-	XWMHints *hints = XAllocWMHints();
+	XWMHints *hints = XGetWMHints(dpy, XtWindow(cur_win->top_widget));
+	if (!hints) hints = XAllocWMHints();
 #if OPT_TRACE
 	XIconSize *size_list;
 	int size_size;
@@ -3727,7 +3728,7 @@ alternate_font(
 	cur_win->left_ink = cur_win->left_ink || (fsp->min_bounds.lbearing < 0);
 	cur_win->right_ink = cur_win->right_ink
 		    || (fsp->max_bounds.rbearing > cur_win->char_width);
-        TRACE(("...found left:%d, right:%d\n", 
+	TRACE(("...found left:%d, right:%d\n",
 		cur_win->left_ink,
 		cur_win->right_ink))
     }
@@ -5202,11 +5203,11 @@ x_process_event(
 	    cur_win->prevDOT = DOT;
 	    extend_selection(cur_win, nr, nc, False);
 	    break;
-        case Button4:
+	case Button4:
 	    mvupwind(TRUE, cur_win->wheel_scroll_amount);
 	    (void)update(TRUE);
 	    break;
-        case Button5:
+	case Button5:
 	    mvdnwind(TRUE, cur_win->wheel_scroll_amount);
 	    (void)update(TRUE);
 	    break;
@@ -6464,7 +6465,7 @@ init_xlocale(void)
      * This program only understands the Root preedit_style yet
      * Then misc.preedit_type should default to:
      *          "OverTheSpot,OffTheSpot,Root"
-     *  /MaF
+     *	/MaF
      */
     if (input_style != (XIMPreeditNothing | XIMStatusNothing)) {
 	fprintf(stderr, "This program only supports the \"Root\" preedit type\n");

@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.87 1999/05/10 23:10:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.88 1999/06/13 18:15:43 tom Exp $
  *
  */
 
@@ -891,7 +891,7 @@ path_completion(int c, char *buf, unsigned *pos)
 	int	count;
 #endif
 
-	TRACE(("path_completion('%c' %d:\"%s\")\n", c, *pos, visible_buff(buf, (int)*pos)))
+	TRACE(("path_completion('%c' %d:\"%s\")\n", c, *pos, visible_buff(buf, (int)*pos, TRUE)))
 #if OPT_VMS_PATH
 	if (ignore && action) {		/* resolve scratch-name conflict */
 		if (is_vms_pathname(buf, -TRUE))

@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.172 1999/06/06 19:48:29 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.173 1999/06/14 00:44:14 tom Exp $
 #
 #
 
@@ -220,6 +220,9 @@ chgtoeol	REDO|UNDO
 	"delete-to-eol-and-insert-chars" !FEWNAMES
 	'C'
 	<insert text to replace the rest of the line>
+clear_any_attrs	OPER|GLOBOK|RANGE	OPT_SELECTIONS
+	"clear-attributes-til"
+	<clear video-attributes and other highlighting>
 clear_match_attrs	NONE		OPT_HILITEMATCH
 	"clear-visual-matches"
 	'='

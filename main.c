@@ -2,7 +2,7 @@
  * vile -- "vi like emacs"
  *
  * this used to be MicroEMACS, a public domain program written by
- * dave g. conroy, further improved and modifiied by daniel m. lawrence.
+ * dave g. conroy, further improved and modified by daniel m. lawrence.
  *
  * the original author of vile is paul fox.  tom dickey and kevin
  * buettner made huge contributions along the way, as did rick
@@ -23,7 +23,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.381 1999/06/06 19:48:29 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.382 1999/06/14 23:11:23 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */

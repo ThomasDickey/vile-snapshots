@@ -6,7 +6,7 @@
  * 		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.30 1999/05/19 09:09:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.32 1999/06/13 20:54:22 tom Exp $
  *
  * Features:
  * 	- Reads the keyword file ".vile.keywords" from the home directory.
@@ -222,14 +222,19 @@ firstnonblank(char *tst, char *cmp)
     return (tst == cmp);
 }
 
+#define Exponent(ch)  ((ch) == 'e' || (ch) == 'E')
+#define SuffixInt(ch) ((ch) == 'l' || (ch) == 'L' || (ch) == 'U' || (ch) == 'U')
+#define SuffixFlt(ch) ((ch) == 'l' || (ch) == 'L' || (ch) == 'f' || (ch) == 'F')
+
 static char *
 write_number(FILE *fp, char *s)
 {
     char *base = s;
     int radix = (*s == '0') ? ((s[1] == 'x' || s[1] == 'X') ? 16 : 8) : 10;
+    int state = 0;
     int done = 0;
 
-    if (radix == 16)
+    if (radix == 16 || (*s == '.'))
 	s++;
     while (!done) {
 	s++;
@@ -244,6 +249,54 @@ write_number(FILE *fp, char *s)
 	    done = !isxdigit(*s);
 	    break;
 	}
+    }
+    if (radix == 10) {
+	while (state >= 0) {
+	    switch (state) {
+	    case 0:
+		if (*s == '.') {
+		    state = 1;
+		} else if (Exponent(*s)) {
+		    state = 2;
+		} else if (SuffixFlt(*s)) {
+		    state = 3;
+		} else if (SuffixInt(*s)) {
+		    state = 4;
+		} else {
+		    state = -1;
+		}
+		break;
+	    case 1:		/* after decimal point */
+		while (isdigit(*s))
+		    s++;
+		state = -1;
+		if (Exponent(*s))
+		    state = 2;
+		else if (SuffixFlt(*s))
+		    state = 3;
+		break;
+	    case 2:		/* after exponent letter */
+		if (*s == '+' || *s == '-')
+		    s++;
+		while (isdigit(*s))
+		    s++;
+		/* FALLTHRU */
+	    case 3:
+		state = -1;
+		if (SuffixFlt(*s))
+		    state = 3;
+		break;
+	    case 4:
+		state = -1;
+		if (SuffixInt(*s))
+		    state = 4;
+		break;
+	    }
+	    if (state >= 0)
+		s++;
+	}
+    } else if (SuffixInt(*s)) {
+	s++;
     }
     write_token(fp, base, s - base, Number_attr);
     return s;
@@ -313,7 +366,7 @@ do_filter(FILE *input, FILE *output)
 	    if (!comment && *s == '#' && firstnonblank(s, line) ) {
 		char *ss = s+1;
 		int isinclude;
-		while (isspace(*ss))
+		while (isBlank(*ss))
 		    ss++;
 		isinclude = !strncmp(ss, "include", 7);
 		while (isalpha(*ss))
@@ -347,7 +400,7 @@ do_filter(FILE *input, FILE *output)
 		}
 	    } else if (isIdent(*s)) {
 		s = extract_identifier(output, s);
-	    } else if (isdigit(*s)) {
+	    } else if (isdigit(*s) || (*s == '.' && isdigit(s[1]))) {
 		s = write_number(output, s);
 	    } else {
 		fputc(*s++, output);
