@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.50 1998/02/07 14:48:23 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.51 1998/03/21 13:25:35 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -186,6 +186,9 @@ AC_DEFUN([CF_CHECK_ERRNO],
 AC_MSG_CHECKING([declaration of $1])
 AC_CACHE_VAL(cf_cv_dcl_$1,[
     AC_TRY_COMPILE([
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #include <stdio.h>
 #include <sys/types.h>
 #include <errno.h> ],
@@ -332,7 +335,7 @@ dnl
 AC_DEFUN([CF_DISABLE_ECHO],[
 AC_MSG_CHECKING(if you want to see long compiling messages)
 CF_ARG_DISABLE(echo,
-	[  --disable-echo          test: display \"compiling\" commands],
+	[  --disable-echo          test: display "compiling" commands],
 	[
     ECHO_LD='@echo linking [$]@;'
     RULE_CC='	@echo compiling [$]<'
@@ -397,6 +400,11 @@ AC_DEFUN([CF_FIND_LIBRARY],
 if test $cf_cv_have_lib_$1 = no ; then
 	AC_ERROR(Cannot link $1 library)
 fi
+case $host_os in #(vi
+linux*) # Suse Linux does not follow /usr/lib convention
+	$1="[$]$1 /lib"
+	;;
+esac
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Test for availability of useful gcc __attribute__ directives to quiet
@@ -835,7 +843,7 @@ esac
 
 LIBS="$cf_ncurses_LIBS $LIBS"
 CF_FIND_LIBRARY(ncurses,
-	[#include <$cf_cv_ncurses_header>],
+	[#include <${cf_cv_ncurses_header-curses.h}>],
 	[initscr()],
 	initscr)
 
@@ -848,7 +856,7 @@ if test -n "$cf_ncurses_LIBS" ; then
 			LIBS="$q"
 		fi
 	done
-	AC_TRY_LINK([#include <$cf_cv_ncurses_header>],
+	AC_TRY_LINK([#include <${cf_cv_ncurses_header-curses.h}>],
 		[initscr(); mousemask(0,0); tgoto((char *)0, 0, 0);],
 		[AC_MSG_RESULT(yes)],
 		[AC_MSG_RESULT(no)
@@ -863,7 +871,7 @@ AC_CACHE_VAL(cf_cv_ncurses_version,[
 	cf_cv_ncurses_version=no
 	cf_tempfile=out$$
 	AC_TRY_RUN([
-#include <$cf_cv_ncurses_header>
+#include <${cf_cv_ncurses_header-curses.h}>
 int main()
 {
 	FILE *fp = fopen("$cf_tempfile", "w");
@@ -888,7 +896,7 @@ int main()
 	# This will not work if the preprocessor splits the line after the
 	# Autoconf token.  The 'unproto' program does that.
 	cat > conftest.$ac_ext <<EOF
-#include <$cf_cv_ncurses_header>
+#include <${cf_cv_ncurses_header-curses.h}>
 #undef Autoconf
 #ifdef NCURSES_VERSION
 Autoconf NCURSES_VERSION

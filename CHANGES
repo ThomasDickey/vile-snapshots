@@ -1,4 +1,24 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
+
+ (tom) 980321 (k)
+	+ correct logic in tcap.c so that visual-matches works for a specific
+	  color (reported by Kuntal M. Daftary).
+ 	+ add test for Xp library, needed to link with RedHat Motif 2.1
+	  (reported by Richard <rruth@studio.disney.com>). 
+	+ add configure option --with-startup-path to allow installer to
+	  customize the $startup-path used by vile.
+	+ change Unix lib directory (i.e., location of vile.hlp) to
+	  $(prefix)/shared/vile.  The older location, $(exec_prefix)/lib, is
+	  still in the $startup-path, but vile.hlp will not be installed
+	  there.
+	+ remove config.cache at the start of configure script, since we use it
+	  only for problem reporting.
+	+ ifdef'd out w32pipe code, but make it available for further
+	  development as OPT_W32PIPES (recommended by Clark Morgan).
+	+ minor fixes/resync for configure macros CF_CHECK_ERRNO,
+	  CF_DISABLE_ECHO, CF_FIND_LIBRARY, CF_NCURSES_LIBS and
+	  CF_NCURSES_VERSION.
+
  (kev) 980320 (j) 
  	+ api.c (linsert_chars): Rewritten both for efficiency and 
 	  so that the MARK at the end of the region stays put when 

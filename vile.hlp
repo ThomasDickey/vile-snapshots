@@ -1059,10 +1059,10 @@ Editor modes
 		using the ":w!" form of the write command.  (U)
 
 	bcolor	On systems supporting this, will set the background color.
-		Currently only DOS can do color, although the X11 version
-		(xvile) can be given colors at startup or via .Xdefaults.
-		See notes about the color palette down below, under DOS
-		specifics.
+		Currently only terminfo/termcap, OS/2 and PC's (Win32, DOS) can
+		do color, although the X11 version (xvile) can be given colors
+		at startup or via .Xdefaults.  See notes about the color
+		palette down below, under DOS specifics.
 
 	check-modtime  Check modification-time.  If a file has changed since
 		it was last read or written, vile will issue a "file newer
@@ -1153,10 +1153,10 @@ Editor modes
 		the path stripped off).  (U)
 
 	fcolor	On systems supporting this, will set the foreground color.
-		Currently only DOS can do color, although the X11 version
-		(xvile) can be given colors at startup or via .Xdefaults.
-		See notes about the color palette down below, under DOS
-		specifics.
+		Currently only terminfo/termcap, OS/2 and PC's (Win32, DOS) can
+		do color, although the X11 version (xvile) can be given colors
+		at startup or via .Xdefaults.  See notes about the color
+		palette down below, under DOS specifics.
 
 	fence-pairs  Each pair of characters in this string is taken to be
 		a set of "fences", which should be matched with the '%'
@@ -1724,7 +1724,8 @@ Key Rebinding
 			^X	(one char)
 
 		2) followed by an optional "function" prefix:
-			#-	(two chars)
+			#-	(two chars) or
+			FN-	(three chars)
 
 		3) followed by an optional "meta" prefix:
 			M-	(two chars)
@@ -3575,4 +3576,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.340 1998/03/15 21:29:40 pgf Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.341 1998/03/21 16:19:44 tom Exp $
