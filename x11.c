@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.156 1997/08/11 21:50:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.158 1997/10/04 14:38:24 tom Exp $
  *
  */
 
@@ -11,8 +11,8 @@
  *
  * You must have exactly one of the following defined
  *
- *    NO_WIDGETS	-- Use only Xlib and X toolkit
- *    ATHENA_WIDGETS	-- Use only Xlib X toolkit (Xt) and Xaw
+ *    NO_WIDGETS	-- Use only Xlib and X toolkit (Xt)
+ *    ATHENA_WIDGETS	-- Use Xlib, Xt, and Xaw widget set
  *    MOTIF_WIDGETS	-- Use Xlib, Xt, and Motif widget set
  *    OL_WIDGETS	-- Use Xlib, Xt, and Openlook widget set
  */
@@ -34,6 +34,30 @@
 
 #if DISP_X11 && XTOOLKIT
 
+/* sanity-check, so we know it's safe to not nest ifdef's */
+
+#if NO_WIDGETS
+# if ATHENA_WIDGETS || MOTIF_WIDGETS || OL_WIDGETS
+   >make an error<
+# endif
+#else
+# if ATHENA_WIDGETS
+#  if MOTIF_WIDGETS || OL_WIDGETS
+    >make an error<
+#  endif
+# else
+#  if MOTIF_WIDGETS
+#   if OL_WIDGETS
+     >make an error<
+#   endif
+#  else
+#   if !OL_WIDGETS
+     >make an error<
+#   endif
+#  endif
+# endif
+#endif
+
 #define MY_CLASS	"XVile"
 
 #if SYS_VMS
@@ -44,6 +68,24 @@
 /* redefined in X11/Xos.h */
 #undef strchr
 #undef strrchr
+
+#if ATHENA_WIDGETS
+#if HAVE_LIB_XAW
+#include	<X11/Xaw/Form.h>
+#include	<X11/Xaw/Grip.h>
+#include	<X11/Xaw/Scrollbar.h>
+#endif
+#if HAVE_LIB_XAW3D
+#include	<X11/Xaw3d/Form.h>
+#include	<X11/Xaw3d/Grip.h>
+#include	<X11/Xaw3d/Scrollbar.h>
+#endif
+#if HAVE_LIB_NEXTAW
+#include	<X11/neXtaw/Form.h>
+#include	<X11/neXtaw/Grip.h>
+#include	<X11/neXtaw/Scrollbar.h>
+#endif
+#endif /* ATHENA_WIDGETS */
 
 #if OL_WIDGETS
 #undef BANG
@@ -75,7 +117,7 @@
 #define	absol(x)	((x) > 0 ? (x) : -(x))
 #define	CEIL(a,b)	((a + b - 1) / (b))
 
-#define onMsgRow(tw)	(ttrow == (tw->rows - 1))
+#define onMsgRow(tw)	(ttrow == (int)(tw->rows - 1))
 
 /* XXX -- use xcutsel instead */
 #undef	SABER_HACK		/* hack to support Saber since it doesn't do
@@ -155,13 +197,19 @@ static Display *dpy;
     Widget	menub;
 #endif
 
-#if NO_WIDGETS || ATHENA_WIDGETS
+#if ATHENA_WIDGETS
+typedef struct _scroll_info {
+    int		totlen;		/* total length of scrollbar */
+} ScrollInfo;
+#else
+#if NO_WIDGETS
 typedef struct _scroll_info {
     int		top;		/* top of "thumb" */
     int		bot;		/* bottom of "thumb" */
     int		totlen;		/* total length of scrollbar */
     Boolean	exposed;	/* has scrollbar received expose event? */
 } ScrollInfo;
+#endif
 #endif
 
 typedef struct _text_win {
@@ -197,6 +245,9 @@ typedef struct _text_win {
     XtIntervalId scroll_repeat_id;
     ULONG	scroll_repeat_timeout;
 #endif	/* NO_WIDGETS */
+#if ATHENA_WIDGETS
+    Pixmap	thumb_bm;	/* bitmap for scrollbar thumb */
+#endif
     ULONG	scroll_repeat_interval;
     XtIntervalId blink_id;
     int		blink_status;
@@ -391,7 +442,6 @@ static	XFontStruct *query_font (TextWindow tw, const char *fname);
 static	void	configure_bar (Widget w, XEvent *event, String *params,
 			Cardinal *num_params);
 static	int	check_scrollbar_allocs (void);
-static	void	update_scrollbar_sizes (void);
 static	void	kqinit(TextWindow tw);
 static	int	kqempty(TextWindow tw);
 static	int	kqfull(TextWindow tw);
@@ -402,21 +452,16 @@ static	void	display_cursor (XtPointer client_data, XtIntervalId *idp);
 static	void	check_visuals (void);
 #endif
 #if MOTIF_WIDGETS
-static	void	grip_moved (Widget w, XtPointer unused, XEvent *ev,
-			Boolean *continue_to_dispatch);
 static	void	pane_button (Widget w, XtPointer unused, XEvent *ev,
 			Boolean *continue_to_dispatch);
-#else
-#if OL_WIDGETS
-static	void	grip_moved (Widget slider, XtPointer closure, XtPointer call_data);
-#else
-#if NO_WIDGETS || ATHENA_WIDGETS
+#endif /* MOTIF_WIDGETS */
+#if NO_WIDGETS
 static	void	x_expose_scrollbar (Widget w, XtPointer unused, XEvent *ev,
 			Boolean *continue_to_dispatch);
-static	void	repeat_scroll (XtPointer count, XtIntervalId  *id);
 #endif /* NO_WIDGETS */
-#endif /* OL_WIDGETS */
-#endif /* MOTIF_WIDGETS */
+#if NO_WIDGETS || ATHENA_WIDGETS
+static	void	repeat_scroll (XtPointer count, XtIntervalId  *id);
+#endif
 #if OPT_WORKING
 static	void	x_set_watch_cursor(int onflag);
 #endif /* OPT_WORKING */
@@ -473,7 +518,7 @@ TERM        term = {
 
 
 
-#if NO_WIDGETS || ATHENA_WIDGETS
+#if NO_WIDGETS
 /* We define our own little bulletin board widget here...if this gets
  * too unwieldly, we should move it to another file.
  */
@@ -879,7 +924,101 @@ update_scrollbar_sizes(void)
 }
 
 #else
-#if NO_WIDGETS || ATHENA_WIDGETS
+#if ATHENA_WIDGETS
+static void
+update_scrollbar_sizes(void)
+{
+    register WINDOW *wp;
+    int i, newsbcnt;
+    Dimension new_height;
+
+    i=0;
+    for_each_window(wp)
+	i++;
+    newsbcnt=i;
+
+    /* Create any needed new scrollbars and grips */
+    for (i = cur_win->nscrollbars+1; i <= newsbcnt; i++) {
+	if (cur_win->scrollbars[i] == NULL) {
+	    cur_win->scrollbars[i] = XtVaCreateWidget(
+		    "scrollbar",
+		    scrollbarWidgetClass,
+		    cur_win->pane,
+		    XtNforeground,	cur_win->scrollbar_fg,
+		    XtNbackground,	cur_win->scrollbar_bg,
+		    XtNthumb,		cur_win->thumb_bm,
+		    XtNtranslations,	cur_win->my_scrollbars_trans,
+		    NULL);
+	}
+    }
+    for (i = newsbcnt-2; i >= 0 && cur_win->grips[i] == NULL; i--) {
+	cur_win->grips[i] = XtVaCreateWidget(
+		    "resizeGrip",
+		    gripWidgetClass,
+		    cur_win->pane,
+		    XtNbackground,	cur_win->modeline_bg,
+		    XtNborderWidth,	0,
+		    XtNheight,		1,
+		    XtNwidth,		1,
+		    XtNtranslations,	cur_win->my_resizeGrip_trans,
+		    NULL);
+    }
+
+    /* Unmanage current set of scrollbars */
+    if (cur_win->nscrollbars > 0)
+	XtUnmanageChildren(cur_win->scrollbars,
+	                   (Cardinal) (cur_win->nscrollbars));
+
+    /* Set sizes and positions on scrollbars and grips */
+    cur_win->nscrollbars = newsbcnt;
+    i=0;
+    for_each_window(wp) {
+	L_NUM total = line_count(curwp->w_bufp);
+	L_NUM thumb = line_no(curwp->w_bufp, curwp->w_line.l);
+
+	new_height = wp->w_ntrows * cur_win->char_height;
+	cur_win->scrollinfo[i].totlen = new_height;
+	XtVaSetValues(cur_win->scrollbars[i],
+	    XtNy,		wp->w_toprow * cur_win->char_height,
+	    XtNheight,		new_height,
+	    XtNorientation,	XtorientVertical,
+	    XtNvertDistance,	wp->w_toprow * cur_win->char_height,
+	    XtNhorizDistance,	1,
+	    NULL);
+	XawScrollbarSetThumb(cur_win->scrollbars[i],
+		((float) (thumb - 1)) / max(total, 1),
+		((float) wp->w_ntrows) / max(total, wp->w_ntrows));
+	wp->w_flag &= ~WFSBAR;
+	update_scrollbar(wp);
+	if (wp->w_wndp) {
+	    XtVaSetValues(cur_win->grips[i],
+		XtNx,		1,
+		XtNy,		(wp->w_wndp->w_toprow-1) * cur_win->char_height,
+		XtNheight,	cur_win->char_height,
+		XtNwidth,	cur_win->pane_width,
+		XtNvertDistance,(wp->w_wndp->w_toprow-1) * cur_win->char_height,
+		XtNhorizDistance,1,
+		NULL);
+	}
+	i++;
+    }
+
+    /* Manage the current set of scrollbars */
+    XtManageChildren(cur_win->scrollbars,
+	                   (Cardinal) (cur_win->nscrollbars));
+
+    XtManageChildren(cur_win->grips,
+	                   (Cardinal) (cur_win->nscrollbars - 1));
+
+    for (i=0; i<cur_win->nscrollbars; i++)
+	XRaiseWindow(dpy, XtWindow(cur_win->scrollbars[i]));
+
+    for (i=1; i<cur_win->nscrollbars; i++)
+	XRaiseWindow(dpy, XtWindow(cur_win->grips[i-1]));
+}
+
+#else
+#if NO_WIDGETS
 static void
 update_scrollbar_sizes(void)
 {
@@ -1139,8 +1278,12 @@ x_expose_scrollbar(
 	}
     }
 }
+#endif /* NO_WIDGETS  */
+#endif /* ATHENA_WIDGETS  */
+#endif /* MOTIF_WIDGETS */
+#endif /* OL_WIDGETS */
 
-
+#if NO_WIDGETS || ATHENA_WIDGETS
 static void
 do_scroll(
     Widget w,
@@ -1359,9 +1502,7 @@ resize_bar(
 	(void)update(TRUE);
     }
 }
-#endif /* NO_WIDGETS  */
-#endif /* MOTIF_WIDGETS */
-#endif /* OL_WIDGETS */
+#endif /* NO_WIDGETS || ATHENA_WIDGETS */
 
 void
 update_scrollbar(
@@ -1412,7 +1553,12 @@ update_scrollbar(
 	    XtNsliderValue,	lnum,
 	    NULL);
 #else
-#if NO_WIDGETS || ATHENA_WIDGETS
+#if ATHENA_WIDGETS
+    XawScrollbarSetThumb(cur_win->scrollbars[i],
+	    ((float) (lnum - 1)) / max(lcnt, wp->w_ntrows),
+	    ((float) wp->w_ntrows) / max(lcnt, wp->w_ntrows));
+#else
+#if NO_WIDGETS
     {
 	int top, len;
 	lcnt  = max(lcnt, 1);
@@ -1423,6 +1569,7 @@ update_scrollbar(
 	update_thumb(i, top, len);
     }
 #endif /* NO_WIDGETS */
+#endif /* ATHENA_WIDGETS */
 #endif /* OL_WIDGETS */
 #endif /* MOTIF_WIDGETS */
 }
@@ -2264,6 +2411,7 @@ x_preparse_args(
     static String fallback_resources[]= {
 	NULL
     };
+    static char solid_pixmap_bits[] = { '\003', '\003' };
     static char stippled_pixmap_bits[] = { '\002', '\001' };
 #endif /* NO_WIDGETS */
 #endif /* MOTIF_WIDGETS || OL_WIDGETS */
@@ -2466,7 +2614,11 @@ x_preparse_args(
 	    NULL);
     cur_win->form_widget = XtVaCreateManagedWidget(
 	    "form",
+#if NO_WIDGETS	/* FIXME */
 	    bbWidgetClass,
+#else
+	    formWidgetClass,
+#endif
 	    cur_win->pane_widget,
 	    XtNwidth,			x_width(cur_win)
 	    					+ cur_win->pane_width + 2,
@@ -2479,7 +2631,7 @@ x_preparse_args(
 	    XtNvertDistance,		0,
 	    NULL);
 #else
-#if NO_WIDGETS || ATHENA_WIDGETS
+#if NO_WIDGETS
     cur_win->form_widget = XtVaCreateManagedWidget(
 	    "form",
 	    bbWidgetClass,
@@ -2688,13 +2840,24 @@ x_preparse_args(
     }
 
 #if NO_WIDGETS || ATHENA_WIDGETS
-
     if (cur_win->scrollbar_bg == cur_win->scrollbar_fg) {
 	cur_win->scrollbar_bg = cur_win->bg;
 	cur_win->scrollbar_fg = cur_win->fg;
     }
     if (screen_depth == 1 || too_light_or_too_dark(cur_win->scrollbar_fg))
 	cur_win->slider_is_solid = False;
+#endif /* NO_WIDGETS */
+
+#if ATHENA_WIDGETS
+    cur_win->thumb_bm =
+	XCreateBitmapFromData(dpy, DefaultRootWindow(dpy),
+	    cur_win->slider_is_solid
+		? solid_pixmap_bits
+		: stippled_pixmap_bits,
+	    2, 2);
+#endif /* ATHENA_WIDGETS */
+
+#if NO_WIDGETS
     gcvals.background = cur_win->scrollbar_bg;
     if (!cur_win->slider_is_solid) {
 	gcmask = GCFillStyle | GCStipple | GCForeground | GCBackground;
@@ -2822,7 +2985,32 @@ x_preparse_args(
 	    XtNlayout,			OL_IGNORE,
 	    NULL);
 #else
-#if NO_WIDGETS || ATHENA_WIDGETS
+#if ATHENA_WIDGETS
+    cur_win->my_resizeGrip_trans = XtParseTranslationTable(resizeGrip_translations);
+    cur_win->pane = XtVaCreateManagedWidget(
+	    "scrollPane",
+	    formWidgetClass,
+	    cur_win->form_widget,
+	    XtNwidth,			cur_win->pane_width + 2,
+	    XtNheight,			x_height(cur_win)
+	    					- cur_win->char_height,
+	    XtNx,			cur_win->scrollbar_on_left
+					    ? 0
+					    : x_width(cur_win),
+	    XtNy,			0,
+	    XtNborderWidth,		0,
+	    XtNbackground,		cur_win->modeline_bg,
+	    XtNfromHoriz,		cur_win->scrollbar_on_left
+					    ? NULL
+					    : cur_win->screen,
+	    XtNhorizDistance,		0,
+	    NULL);
+    if (cur_win->scrollbar_on_left)
+	XtVaSetValues(cur_win->screen,
+	    XtNfromHoriz,		cur_win->pane,
+	    NULL);
+#else
+#if NO_WIDGETS
     cur_win->my_resizeGrip_trans = XtParseTranslationTable(resizeGrip_translations);
     cur_win->pane = XtVaCreateManagedWidget(
 	    "scrollPane",
@@ -2838,17 +3026,21 @@ x_preparse_args(
 	    XtNborderWidth,		0,
 	    XtNbackground,		cur_win->modeline_bg,
 	    NULL);
+#endif	/* NO_WIDGETS */
+#endif	/* ATHENA_WIDGETS */
+#endif	/* OL_WIDGETS */
+#endif	/* MOTIF_WIDGETS */
+
+#if NO_WIDGETS || ATHENA_WIDGETS
     curs_sb_v_double_arrow = XCreateFontCursor(dpy, XC_sb_v_double_arrow);
     curs_sb_up_arrow       = XCreateFontCursor(dpy, XC_sb_up_arrow);
     curs_sb_down_arrow     = XCreateFontCursor(dpy, XC_sb_down_arrow);
     curs_sb_left_arrow     = XCreateFontCursor(dpy, XC_sb_left_arrow);
     curs_sb_right_arrow    = XCreateFontCursor(dpy, XC_sb_right_arrow);
     curs_double_arrow      = XCreateFontCursor(dpy, XC_double_arrow);
-#endif	/* NO_WIDGETS */
-#endif	/* OL_WIDGETS */
-#endif	/* MOTIF_WIDGETS */
+#endif
 
-#if NO_WIDGETS || ATHENA_WIDGETS
+#if NO_WIDGETS
     cur_win->nscrollbars = 0;
 #else
     cur_win->nscrollbars = -1;
