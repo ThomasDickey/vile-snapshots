@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.282 1996/11/11 22:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.283 1996/11/17 21:23:42 tom Exp $
  *
  */
 
@@ -348,14 +348,8 @@ main(int argc, char *argv[])
 #endif
 
 #if DISP_X11 && !XTOOLKIT
-	/* newprocessgroup() forks, but won't do what we need here */
 	if (do_newgroup)
-	{
-		int pid = 0;
-		if ((pid=fork()) < 0)
-			fprintf(stderr, "%s: could not fork\n", prog_arg);
-		else if (pid > 0) exit(0);
-	}
+		(void) newprocessgroup(TRUE,1);
 #endif
 	/* initialize the editor */
 

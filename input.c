@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.153 1996/11/05 13:42:39 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.154 1996/11/17 15:59:28 tom Exp $
  *
  */
 
@@ -905,7 +905,9 @@ int	options)
 			if (options & KBD_QUOTES)
 				dst[j++] = '\\'; /* add extra */
 		} else if (strchr(global_g_val_ptr(GVAL_EXPAND_CHARS),c) != 0) {
-			if ((options & KBD_QUOTES)
+			if (c == EXPC_RPAT && !(options & KBD_EXPPAT))
+				;
+			else if ((options & KBD_QUOTES)
 			 && (options & KBD_EXPAND))
 				dst[j++] = '\\'; /* add extra */
 		}

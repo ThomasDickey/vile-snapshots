@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.98 1996/05/28 01:45:22 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.99 1996/11/17 16:28:09 tom Exp $
  *
  */
 
@@ -1076,6 +1076,8 @@ inspound(void)	/* insert a # into the text here...we are in CMODE */
 		return(linsert(1,'#'));
 
 	if (autoindented > 0) { /* must all be whitespace before us */
+		if (autoindented > llength(DOT.l))
+			autoindented = llength(DOT.l);
 		DOT.o = w_left_margin(curwp);
 		(void)ldelete((B_COUNT)autoindented,FALSE);
 	}
