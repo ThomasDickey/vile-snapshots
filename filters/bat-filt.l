@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.11 2000/08/09 23:48:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.12 2000/08/20 22:53:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DOS (and
  * similar, such as W95, NT) batch file.
@@ -90,10 +90,10 @@ REM		[rR][eE][mM]
 SET		[sS][eE][tT]
 ECHO		([eE][cC][hH][oO])(\.?)
 
-IDENT		[a-zA-Z_][a-zA-Z0-9]*
+IDENT		[a-zA-Z_][a-zA-Z_0-9]*
 
 PARAM		%[0-9]
-VARIABLE	%[a-zA-Z0-9_]+%
+VARIABLE	%%{IDENT}|%{IDENT}%
 IDENT2		({PARAM}|{VARIABLE})
 
 %%

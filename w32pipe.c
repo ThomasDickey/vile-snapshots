@@ -9,7 +9,7 @@
  * functionality provided in this module and that may well be the case.
  * But be sure you test your new code with at least these versions of Win32:
  *
- *      win95 (original version), OSR2, NT 4.0
+ *      win95, win98, OSR2, NT 4.0, win2K
  *
  * For each HOST, be sure to test read pipes, write pipes, and filters (and
  * test repeatedly within the same vile session).
@@ -28,9 +28,11 @@
  *    to redirect a spawned process's stdin, stdout, and stderr.  Don't go
  *    there.
  *
+ * -- On a Win2K host, DuplicateHandle() failed.
+ *
  * -- The original Win95 console shell (command.com) accesses the floppy
  *    drive each and every time a process communicates with it via a pipe
- *    and the OS R2 shell abruptly hangs under similar conditions.  By
+ *    and the OSR2 shell abruptly hangs under similar conditions.  By
  *    default, then, on a WinNT host, vile's pipes are implemented using
  *    native pipes (i.e., with the code in this module), while Win95 hosts
  *    fall back to temp file communication.  If the user's replacement
@@ -55,7 +57,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.21 2000/08/09 09:13:01 Ian.Jamison Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.22 2000/08/20 18:23:39 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -233,25 +235,9 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
              */
             if (_pipe(rp, PIPESIZ, O_TEXT|O_NOINHERIT) == -1)
                 break;
-
-#ifdef DUP_HANDLE_BROKEN_ON_WIN2K
-            if (! DuplicateHandle(GetCurrentProcess(),
-                                  (HANDLE) _get_osfhandle(rp[1]),
-                                  GetCurrentProcess(),
-                                  handles + 1,
-                                  0,
-                                  TRUE,
-                                  DUPLICATE_SAME_ACCESS|DUPLICATE_CLOSE_SOURCE))
-            {
-                break;
-            }
-#else
             if ((rp[2] = _dup(rp[1])) == -1)
                 break;
-            handles[1] = (HANDLE)_get_osfhandle(rp[2]);
-#endif
-
-            handles[2] = handles[1];
+            handles[2] = handles[1] = (HANDLE) _get_osfhandle(rp[2]);
             (void) close(rp[1]);
             rp[1] = BAD_FD;
             if (! fw)
@@ -290,24 +276,9 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
              */
             if (_pipe(wp, PIPESIZ, O_BINARY|O_NOINHERIT) == -1)
                 break;
-
-#ifdef DUP_HANDLE_BROKEN_ON_WIN2K
-            if (! DuplicateHandle(GetCurrentProcess(),
-                                  (HANDLE) _get_osfhandle(wp[0]),
-                                  GetCurrentProcess(),
-                                  handles + 0,
-                                  0,
-                                  TRUE,
-                                  DUPLICATE_SAME_ACCESS|DUPLICATE_CLOSE_SOURCE))
-            {
-                break;
-            }
-#else
             if ((wp[2] = _dup(wp[0])) == -1)
                 break;
             handles[0] = (HANDLE)_get_osfhandle(wp[2]);
-#endif
-
             (void) close(wp[0]);
             wp[0] = BAD_FD;
             if (! fr)
