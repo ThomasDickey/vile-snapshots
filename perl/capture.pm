@@ -1,5 +1,14 @@
-package Vile::Capture;
-use FileHandle;
+package capture;
+
+require Vile::Exporter;
+@ISA = 'Vile::Exporter';
+%REGISTRY = (
+    'async-capture-command' => [
+	\&capture_command,
+	'run a command, capturing its output in the [Output] buffer',
+	'^A-!',
+    ],
+);
 
 #
 # This package contains a drop-in replacement for vile's capture-command
@@ -138,10 +147,5 @@ sub capture_command {
     # invoked without an argument, this is its default action.
     Vile::command 'error-buffer';
 }
-
-Vile::register 'async-capture-command' => \&capture_command,
-		"run a command, capturing its output in the [Output] buffer";
-
-Vile::command 'bind-key async-capture-command ^A-!';
 
 1;

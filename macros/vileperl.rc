@@ -1,4 +1,4 @@
-; $Id: vileperl.rc,v 1.1 1999/06/22 01:06:13 tom Exp $
+; $Id: vileperl.rc,v 1.2 1999/12/29 15:44:31 tom Exp $
 ;
 ; This is a sample script which shows how to initialize the perl scripts
 ; distributed with vile.
@@ -6,30 +6,32 @@
 ~if &sin $cfgopts "perl"
 
 ~if &seq $progname xvile
-	; Add ':startserv' vile command for starting Vileserv 
-	; 
-	perl "Vile::register 'startserv', 'Vileserv::start', 'Start Edit Server', 'Vileserv.pm'"  
-	; Add ':stopserv' vile command for stopping Vileserv 
-	; 
-	perl "Vile::register 'stopserv', 'Vileserv::stop', 'Stop Edit Server', 'Vileserv.pm'"  
-	; Start Vileserv now... 
-	; 
-	startserv 
+	;
+	; Add ':startserv' vile command for starting Vileserv
+	perl "Vile::register 'startserv', 'Vileserv::start', 'Start Edit Server', 'Vileserv.pm'"
+	;
+	; Add ':stopserv' vile command for stopping Vileserv
+	perl "Vile::register 'stopserv', 'Vileserv::stop', 'Stop Edit Server', 'Vileserv.pm'"
+	;
+	; Start Vileserv now...
+	;"startserv" by itself would work, since we registered the name.
+	; But for consistency, use "use":
+	perl "use Vileserv"
 ~endif
 
 ; Directory browser
-perl "Vile::register 'dir', 'dir', 'Dir Browser', 'dir.pl'" 
+perl "use directory"
 
 ; Add spell checker
-perl "Vile::register 'spell', 'spell', 'Spell Check', 'spell.pl'"
+perl "use spell"
 
 ; Add screen lock
-perl "Vile::register 'lock', 'lock', 'Screen Lock', 'lock.pl'"
+perl "use lock"
 
 store-procedure hgrep
-    perl "require 'hgrep.pl'"
-    perl hgrep
-    error-buffer $cbufname
+	perl "use hgrep"
+	perl hgrep
+	error-buffer $cbufname
 ~endm
 
 ~endif

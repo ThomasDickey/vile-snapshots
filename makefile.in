@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.153 1999/12/22 11:04:05 kev Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.155 1999/12/29 15:02:18 kev Exp $
 #
 
 #### Start of system configuration section. ####
@@ -155,24 +155,21 @@ SCREENS = \
 #  some possibly obsolete
 PERL_SRC = \
 	$(srcdir)/perl/Vile.pm \
+	$(srcdir)/perl/Vile/Exporter.pm \
 	$(srcdir)/perl/Vileserv.pm \
-	$(srcdir)/perl/capture.pl \
-	$(srcdir)/perl/dir.pl \
+	$(srcdir)/perl/capture.pm \
+	$(srcdir)/perl/directory.pm \
 	$(srcdir)/perl/glob2re.pl \
-	$(srcdir)/perl/hgrep.pl \
-	$(srcdir)/perl/hilite.pl \
-	$(srcdir)/perl/lock.pl \
-	$(srcdir)/perl/manfilt.pl \
+	$(srcdir)/perl/hgrep.pm \
+	$(srcdir)/perl/lock.pm \
 	$(srcdir)/perl/mime.pl \
 	$(srcdir)/perl/plugins.pl \
-	$(srcdir)/perl/search.pl \
-	$(srcdir)/perl/shell.pl \
-	$(srcdir)/perl/spell.pl \
-	$(srcdir)/perl/syntax.pl \
-	$(srcdir)/perl/tailf.pl \
+	$(srcdir)/perl/search.pm \
+	$(srcdir)/perl/shell.pm \
+	$(srcdir)/perl/spell.pm \
 	$(srcdir)/perl/vileget \
 	$(srcdir)/perl/visit.pl \
-	$(srcdir)/perl/winops.pl
+	$(srcdir)/perl/winops.pm
 
 
 MACRO_SRC = \
@@ -317,27 +314,25 @@ INSTALL_MACRO_FILES = \
 	$(DATADIR)/vileinit.rc \
 	$(DATADIR)/vileperl.rc
 
-INSTALL_PERL_DIRS = $(PERLDIR)
+INSTALL_PERL_DIRS = $(PERLDIR) $(PERLDIR)/Vile
 INSTALL_PERL_FILES = \
 	$(BINDIR)/vileget \
 	$(PERLDIR)/Vile.pm \
+	$(PERLDIR)/Vile/Exporter.pm \
 	$(PERLDIR)/Vileserv.pm \
-	$(PERLDIR)/capture.pl \
-	$(PERLDIR)/dir.pl \
+	$(PERLDIR)/capture.pm \
+	$(PERLDIR)/directory.pm \
 	$(PERLDIR)/glob2re.pl \
-	$(PERLDIR)/hgrep.pl \
-	$(PERLDIR)/hilite.pl \
-	$(PERLDIR)/lock.pl \
-	$(PERLDIR)/manfilt.pl \
+	$(PERLDIR)/hgrep.pm \
+	$(PERLDIR)/lock.pm \
 	$(PERLDIR)/mime.pl \
 	$(PERLDIR)/plugins.pl \
-	$(PERLDIR)/search.pl \
-	$(PERLDIR)/shell.pl \
-	$(PERLDIR)/spell.pl \
-	$(PERLDIR)/syntax.pl \
-	$(PERLDIR)/tailf.pl \
+	$(PERLDIR)/search.pm \
+	$(PERLDIR)/shell.pm \
+	$(PERLDIR)/spell.pm \
 	$(PERLDIR)/visit.pl \
-	$(PERLDIR)/winops.pl
+	$(PERLDIR)/winops.pm
+
 
 INSTALL_X_FILES = \
 	$(BINDIR)/xshell.sh \
@@ -646,40 +641,34 @@ $(MANDIR)/xvile.$(manext):	$(srcdir)/vile.1
 
 $(PERLDIR)/Vile.pm:		$(srcdir)/perl/Vile.pm
 	$(INSTALL_DATA)		$(srcdir)/perl/Vile.pm $@
+$(PERLDIR)/Vile/Exporter.pm:	$(srcdir)/perl/Vile/Exporter.pm
+	$(INSTALL_DATA)		$(srcdir)/perl/Vile/Exporter.pm $@
 $(PERLDIR)/Vileserv.pm:		$(srcdir)/perl/Vileserv.pm
 	$(INSTALL_DATA)		$(srcdir)/perl/Vileserv.pm $@
-$(PERLDIR)/capture.pl:		$(srcdir)/perl/capture.pl
-	$(INSTALL_DATA)		$(srcdir)/perl/capture.pl $@
-$(PERLDIR)/dir.pl:		$(srcdir)/perl/dir.pl
-	$(INSTALL_DATA)		$(srcdir)/perl/dir.pl $@
+$(PERLDIR)/capture.pm:		$(srcdir)/perl/capture.pm
+	$(INSTALL_DATA)		$(srcdir)/perl/capture.pm $@
+$(PERLDIR)/directory.pm:	$(srcdir)/perl/directory.pm
+	$(INSTALL_DATA)		$(srcdir)/perl/directory.pm $@
 $(PERLDIR)/glob2re.pl:		$(srcdir)/perl/glob2re.pl
-	$(INSTALL_SCRIPT)	$(srcdir)/perl/glob2re.pl $@
-$(PERLDIR)/hgrep.pl:		$(srcdir)/perl/hgrep.pl
-	$(INSTALL_SCRIPT)	$(srcdir)/perl/hgrep.pl $@
-$(PERLDIR)/hilite.pl:		$(srcdir)/perl/hilite.pl
-	$(INSTALL_DATA)		$(srcdir)/perl/hilite.pl $@
-$(PERLDIR)/lock.pl:		$(srcdir)/perl/lock.pl
-	$(INSTALL_DATA)		$(srcdir)/perl/lock.pl $@
-$(PERLDIR)/manfilt.pl:		$(srcdir)/perl/manfilt.pl
-	$(INSTALL_SCRIPT)	$(srcdir)/perl/manfilt.pl $@
+	$(INSTALL_DATA)		$(srcdir)/perl/glob2re.pl $@
+$(PERLDIR)/hgrep.pm:		$(srcdir)/perl/hgrep.pm
+	$(INSTALL_DATA)		$(srcdir)/perl/hgrep.pm $@
+$(PERLDIR)/lock.pm:		$(srcdir)/perl/lock.pm
+	$(INSTALL_DATA)		$(srcdir)/perl/lock.pm $@
 $(PERLDIR)/mime.pl:		$(srcdir)/perl/mime.pl
 	$(INSTALL_DATA)		$(srcdir)/perl/mime.pl $@
 $(PERLDIR)/plugins.pl:		$(srcdir)/perl/plugins.pl
 	$(INSTALL_DATA)		$(srcdir)/perl/plugins.pl $@
-$(PERLDIR)/search.pl:		$(srcdir)/perl/search.pl
-	$(INSTALL_DATA)		$(srcdir)/perl/search.pl $@
-$(PERLDIR)/shell.pl:		$(srcdir)/perl/shell.pl
-	$(INSTALL_DATA)		$(srcdir)/perl/shell.pl $@
-$(PERLDIR)/spell.pl:		$(srcdir)/perl/spell.pl
-	$(INSTALL_DATA)		$(srcdir)/perl/spell.pl $@
-$(PERLDIR)/syntax.pl:		$(srcdir)/perl/syntax.pl
-	$(INSTALL_DATA)		$(srcdir)/perl/syntax.pl $@
-$(PERLDIR)/tailf.pl:		$(srcdir)/perl/tailf.pl
-	$(INSTALL_DATA)		$(srcdir)/perl/tailf.pl $@
+$(PERLDIR)/search.pm:		$(srcdir)/perl/search.pm
+	$(INSTALL_DATA)		$(srcdir)/perl/search.pm $@
+$(PERLDIR)/shell.pm:		$(srcdir)/perl/shell.pm
+	$(INSTALL_DATA)		$(srcdir)/perl/shell.pm $@
+$(PERLDIR)/spell.pm:		$(srcdir)/perl/spell.pm
+	$(INSTALL_DATA)		$(srcdir)/perl/spell.pm $@
 $(PERLDIR)/visit.pl:		$(srcdir)/perl/visit.pl
 	$(INSTALL_DATA)		$(srcdir)/perl/visit.pl $@
-$(PERLDIR)/winops.pl:		$(srcdir)/perl/winops.pl
-	$(INSTALL_DATA)		$(srcdir)/perl/winops.pl $@
+$(PERLDIR)/winops.pm:		$(srcdir)/perl/winops.pm
+	$(INSTALL_DATA)		$(srcdir)/perl/winops.pm $@
 
 $(INSTALL_DIRS):
 	$(SHELL) ${srcdir}/mkdirs.sh $@

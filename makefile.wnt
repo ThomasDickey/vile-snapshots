@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.55 1999/12/09 02:43:10 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.56 1999/12/29 17:46:38 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -123,7 +123,7 @@ PERLCFG  = $(THE_PERLCFG)
 # The following perl scripts, stored in the subdirectory .\perl, are
 # known to work under win32:
 #
-PERL_SCRIPTS = glob2re.pl visit.pl hgrep.pl search.pl syntax.pl hilite.pl
+PERL_SCRIPTS = Vile\\exporter.pm glob2re.pl visit.pl hgrep.pm search.pm
 !ENDIF
 
 # these are normal editable headers
@@ -241,6 +241,28 @@ all \
 clean ::
 	cd filters
 	$(MAKE) -f makefile.wnt $@
+	cd ..
+
+SCRIPTS	= \
+	filters\filters.rc \
+	macros\digraphs.rc \
+	macros\palettes.rc \
+	macros\pictmode.rc \
+	macros\vileinit.rc \
+	macros\vileperl.rc
+
+!if "$(VILE_STARTUP_PATH)" == ""
+all ::
+	@ echo Sorry, you have not set VILE_STARTUP_PATH
+!else if !exist("$(VILE_STARTUP_PATH)")
+all :: $(SCRIPTS) vile.hlp
+	@echo Sorry, these are installed only if VILE_STARTUP_PATH is a single directory
+	!@echo "      $(**F)"
+!else
+all :: $(SCRIPTS) vile.hlp
+	echo installing $(SCRIPTS) in $(VILE_STARTUP_PATH)
+	- !copy $** "$(VILE_STARTUP_PATH)"\$(**F)
+!endif
 
 api.obj:	api.h
 bind.obj:	nefunc.h btree.h

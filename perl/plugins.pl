@@ -1,4 +1,5 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/plugins.pl,v 1.1 1998/11/13 11:05:01 Kuntal.Daftary Exp $
+#!/bin/echo not_a_script:
+# $Header: /users/source/archives/vile.vcs/perl/RCS/plugins.pl,v 1.2 1999/12/29 14:29:57 bod Exp $
 # (see dir.doc)
 package plugins;
 

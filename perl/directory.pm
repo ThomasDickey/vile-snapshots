@@ -1,5 +1,12 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/dir.pl,v 1.1 1998/11/13 11:05:01 Kuntal.Daftary Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/directory.pm,v 1.1 1999/12/29 14:29:56 bod Exp $
 # (see dir.doc)
+
+package directory;
+
+require Vile::Exporter;
+@ISA = 'Vile::Exporter';
+%REGISTRY = ('directory' => [ \&dir, 'interactive directory browser' ]);
+
 require 'mime.pl';
 
 sub dir {
@@ -98,7 +105,7 @@ sub dir {
             $cb->setregion($i+1+5, 0, $i+1+5, length($str));
             $cb->attribute("bold", "color", $color[$ind]) if ($color[$ind]);
             $cb->setregion($i+1+5, 15, $i+1+5, 15+length($substr));
-            $cb->attribute("hyper", "perl \"dir(\'$sub\')\"");
+            $cb->attribute("hyper", "perl \"directory::dir(\'$sub\')\"");
         } else {
             print $cb " "x$len, "| ";
         }
@@ -141,19 +148,14 @@ dir - directory browser in vile
 
 =head1 SYNOPSIS
 
-require "dir.pl"
+In .vilerc:
 
-In .vilerc
+    perl "use directory"
 
-perl "Vile::register 'dir', 'dir', 'Dir Browser', 'dir.pl'"
+In [x]vile:
 
-In [x]vile
-
-:dir
-
-:perl dir
-
-:perl dir "<dirname>"
+    :directory
+    :dir
 
 =head1 DESCRIPTION
 

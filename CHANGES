@@ -1,16 +1,77 @@
 Changes for vile 9.1 (released ??? ??? ??, 1999)
 
+ (tom) 991229 (l)
+ 	+ save/restore selection highlighting in attribute-from-filter, so that
+	  autocolor does not clear the current selection.
+	+ add OS/2 EMX to list of platforms that must open text files in binary
+	  mode, to see trailing carriage-returns on a line in vileinit.rc
+	+ modify makefile.wnt to copy the .rc files to $VILE_STARTUP_PATH
+	  during build, as the Perl files already were.
+ 	+ update makefile.wnt to install renamed/new Perl scripts
+ 	+ modify tc-filt.l to flag as an error an unescaped newline within
+	  a description.
+	+ modify c-filt.c to flag as an error a multi-line literal which is
+	  missing a backslashed newline.  This is allowed by gcc, but the
+	  C standard is explicit.
+	+ modify c-filt.c to not treat a line beginning with a '#' if the
+	  previous line ended with a backslash.  This is needed to not flag as
+	  an error tokens in a macro which are quoted with '#'.
+ 	+ update vileperl.rc to work with Brendan's renaming/simplification.
+ 	> Paul Fox:
+	+ add cc and reply-to to the list of recognized mail headers, and makes
+	  them all caseless.
+	+ also added '+' as a valid character in email names, since more and
+	  more people are using the user+foo style convention mail sorting.
+	> Kevin Buettner:
+	+ buffer.c (killbuffer):  When attempting to free more than one buffer
+	  by use of a glob expression, don't use recently freed memory after a
+	  buffer kill to obtain the next buffer to check.
+	+ perl/hgrep.pl:  Change "rgrep" to "hgrep".  Also, don't allow buffer
+	  to be autocolor'd.
+	+ perl.xs (PDEBUG):  Added/revised code for debugging reference counts.
+	  + (newVBrv):  Pass NULL for the obj (second) parameter to sv_magic().
+	    This prevents a circular structure from being created which was
+	    quite difficult for Perl to free properly.  (newVBrv):  Removed
+	    extraneous calls to SvREFCNT_inc().  [Analysis by Brendan O'Dea.]
+	  + (do_perl_cmd, svcurbuf_set):  Don't use sv_2mortal() on the new SV
+	    passed to newVBrv().  Instead, explicitly call SvREFCNT_dec() on it
+	    after svcurbuf assignment.  [Analysis by Brendan O'Dea.]
+	  + (do_perl_cmd):  Instead of doing an explicit SvREFCNT_dec() on
+	    svcurbuf, assign undef to this variable.  This will still decrement
+	    the reference count.  I think this is the reason we needed the
+	    extra SvREFCNT_inc() statements.  We would decrement the reference
+	    count here without also removing the reference.  As a result, when
+	    svcurbuf was assigned to again, the reference count was decremented
+	    again on the thing being replaced.
+	+ makefile.in: Look for perl .pm files in the perl subdirectory.
+	+ hgrep.pl: Set up the error finder.
+	> Brendan O'Dea:
+	+ Deletes hilight.pl, manfilt.pl, syntax.pl and tailf.pl.
+	+ rename most .pl files to .pm (makefile.in).
+	+ add an Exporter-like mechanism to Perl5 interface, although instead
+	  of exposing a module's functions to the caller, it exposes them to
+	  vile as registered commands.  By renaming the extensions as `.pm',
+	  and making some minor changes to use Vile::Exporter, an extension
+	  becomes visible by simply adding:
+		  use extension;
+	  to vileinit.pl.  There is also provision for only including some
+	  commands provided by the extension, and for overriding the keybinding
+	  defined by the developer (documented in the attached module).
+	  Of course you can still say:
+		   require extension;
+	  and do the registering yourself if you so choose.
+
  (tom) 991226 (k)
- 	+ disable autocolor in manpage.rc macros, which have txtmode set.
- 	+ suppress autocolor when 'working...' message is active.
- 	+ modify filters.c to always initialize predefined classes whenever
+	+ disable autocolor in manpage.rc macros, which have txtmode set.
+	+ suppress autocolor when 'working...' message is active.
+	+ modify filters.c to always initialize predefined classes whenever
 	  a symbol table is created.  It was done before only for the first
 	  symbol table, which meant that some filters using multiple symbol
 	  tables were not able to use class names for keyword attributes.
 	+ change cpp.key's inclusion of c.key to ".include" to avoid forcing
 	  cweb filter, which includes cpp.key, to keep track of C and C++
 	  tables.
- 	+ split-out cweb.key, install vile-cweb-filt
+	+ split-out cweb.key, install vile-cweb-filt
 	+ add syntax filter for embedded SQL (esqlfilt.l)
 	+ add syntax filter for REXX (rexxfilt.l)
 	+ minor fix to c-filt.l in write_number(): recognize "..." string.
@@ -21,11 +82,11 @@ Changes for vile 9.1 (released ??? ??? ??, 1999)
 	+ add cygwin to list of platforms that must open text files in binary
 	  mode, to see trailing carriage-returns on a line in vileinit.rc
 	+ restore Kevin's change to main.c, which calls term.close() within
-	  tidy_exit() after perl_exit(), to ensure that ".vilesock" is removed. 
+	  tidy_exit() after perl_exit(), to ensure that ".vilesock" is removed.
 	  At the same time, call ExitProgram() directly from newprocessgroup()
 	  so that xvile does not exit prematurely when invoked w/o forking
 	  (analysis by Kevin Buettner).
- 	+ more fixes for special case numbers in c-filt.c, e.g., ".1", "..1"
+	+ more fixes for special case numbers in c-filt.c, e.g., ".1", "..1"
 	  (err), "0x.p1" (err).
 	+ implement special attribute code 'N' to allow users to disable syntax
 	  highlighting for a given class.
@@ -34,7 +95,7 @@ Changes for vile 9.1 (released ??? ??? ??, 1999)
 	  forward-references.
 	+ correct an off-by-one in repaint_window() from 9.0g changes that left
 	  debris after an exposure event (ntwinio.c).
- 	+ add rules to makefile.wnt for compiling all filters, not merely those
+	+ add rules to makefile.wnt for compiling all filters, not merely those
 	  which are normally installed.
 	+ correct a minor formatting error in describe-bindings for command
 	  names longer than 31 characters using new function quote_and_pad().
@@ -114,17 +175,17 @@ Changes for vile 9.1 (released ??? ??? ??, 1999)
 	  forks on startup.
 	+ compiler warnings in x11.c (reported by Michael Finken
 	  <finkenm@hotmail.com>)
- 	+ improve attribute_from_filter() by draining a pipe that has data;
+	+ improve attribute_from_filter() by draining a pipe that has data;
 	  if the filter program incorrectly sends more data than vile expects,
 	  vile would not be able to close the pipe.
- 	+ correct check in c-filt.c from 9.0g for nested comments; it flagged
+	+ correct check in c-filt.c from 9.0g for nested comments; it flagged
 	  adjacent comments.
 	+ modify m4-filt.c to test multi-line attributes by writing Literal's
 	  as a single token rather than each piece split by lines.
 	+ improve attribute-from-filter and attribute-cntl_a-sequences-til to
 	  allow lengths beyond the end of the current line (Kevin & I were
 	  aware of this - report by Christian Lindig <lindig@ips.cs.tu-bs.de>).
- 	+ modify c-filt.c to highlight C9X hexadecimal floating constants
+	+ modify c-filt.c to highlight C9X hexadecimal floating constants
 	+ add new C9X keywords to c.key: inline, restrict, _Bool, _Complex,
 	  _Imaginary, _Pragma, __STDC_VERSION__, __VA_ARGS__, __func__.
 	+ correction to c-filt.c's parsing of floating-point constants (missed
@@ -137,7 +198,7 @@ Changes for vile 9.1 (released ??? ??? ??, 1999)
 	+ perl/winops.pl: New perl script which implements various window
 	  related operations.  Good for testing implementation of the
 	  Vile::Window API.
- 	+ perl.xs: Documentation fixes.
+	+ perl.xs: Documentation fixes.
 	  (package Vile::Window):  Documentation and implementation of
 	  Vile::Window API.
 	  (perl_free_callback): Disable deallocation of the coderef since
@@ -246,7 +307,7 @@ Changes for vile 9.1 (released ??? ??? ??, 1999)
 	  leading "#", to accommodate non-standard usage by GCC's preprocessor.
 
  (kev) 991214 (f)
- 	+ buffer.c (chg_buff, unchg_buff): Set the "recently changed"
+	+ buffer.c (chg_buff, unchg_buff): Set the "recently changed"
 	  flag for syntax coloring purposes.
 	+ edef.h (autocolorhook): Declare.
 	+ macros/vileinit.rc: Added example code for automatic syntax
@@ -281,14 +342,14 @@ Changes for vile 9.1 (released ??? ??? ??, 1999)
 	  as appropriate.
 	  (x_key_press): Call x_start_autocolor_timer to reset the timer
 	  on each keystroke.
- 	> patches by Tom Dickey:
+	> patches by Tom Dickey:
 	+ color continued comment-lines in makemode.
 	+ correct c-filt.c parsing of numbers such as 0.0, from 9.0e rewrite.
 	+ correct display of termcap numbers, which were highlighted as errors
 	  after allowing '#' in capability-names.
 
  (tom) 991212 (e)
- 	+ improve c-filt.c's parsing of numbers to flag spuriously-repeated
+	+ improve c-filt.c's parsing of numbers to flag spuriously-repeated
 	  suffixes as errors (request by Kevin Buettner).
 	+ indent'd word.c, add a special case to avoid putting two spaces after
 	  "i.e." or "e.g." to accommodate some European usage.
@@ -296,14 +357,14 @@ Changes for vile 9.1 (released ??? ??? ??, 1999)
 	+ remove "unsetl view" logic from :f command, since it is an obscure
 	  and not desirable side-effect.  Appeared in filename() and
 	  commdlg_save_file() (reported by Clark Morgan).
- 	+ modify HighlightFilter to check if user is trying to run this with
+	+ modify HighlightFilter to check if user is trying to run this with
 	  winvile w/o w32pipes set.  That combination does not work, so don't
 	  try it.
 	+ update CF_ANSI_CC_CHECK to match that in tin, which now uses -Ae
 	  option for HPUX (patch by Urs Jansen).
 	+ modify config.sub to recognize ia64 machine (patch by Kevin Buettner).
- 	+ allow '_' and '.' in terminfo aliases.
- 	+ correct a file-descriptor leak in npflush for win32, which showed up
+	+ allow '_' and '.' in terminfo aliases.
+	+ correct a file-descriptor leak in npflush for win32, which showed up
 	  as undeleted temp-files.  This would happen when opening read/write
 	  pipes, e.g., for syntax filtering, when now32pipe was specified.
 	+ remove obsolete/unused Win31 ifdef's (reported by Clark Morgan).
@@ -317,27 +378,27 @@ Changes for vile 9.1 (released ??? ??? ??, 1999)
 
  (tom) 991209 (d)
 	+ implement "before" and "after" qualifiers for majormodes.
- 	+ add C++ majormode cppmode,
- 	+ change prompt for majormode in procedure parameter lists to allow
+	+ add C++ majormode cppmode,
+	+ change prompt for majormode in procedure parameter lists to allow
 	  mixed case.
- 	+ add ".table" and ".default" to filter interpreter.
+	+ add ".table" and ".default" to filter interpreter.
 	+ add a syntax filter for vile's .key files, use that to fix some
 	  errors in make.key, tcl.key .
- 	+ add a syntax filter for Lynx config file.
+	+ add a syntax filter for Lynx config file.
 	+ add '_' to URL patterns, used in txt and mail filters.
- 	+ corrected DSTRINGS definition in awk syntax filter, which did not
+	+ corrected DSTRINGS definition in awk syntax filter, which did not
 	  handle quoted backslash.
 	+ allow '+' in alias in termcap syntax filter.
 	+ add variable $error-buffer, use this in manpage.rc to avoid losing
 	  the setting when creating a manpage buffer.
 	+ add error-patterns for ncurses tic and atac.
- 	+ implement ".merge" in filter keyword files, needed for C and HTML
+	+ implement ".merge" in filter keyword files, needed for C and HTML
 	  filters.
 	+ improve C syntax filter:
 	  + marking misspelled preprocessor keywords as an error.
 	  + marking numbers run-on to names as an error,
 	  + marking unexpected escapes as an error,
- 	+ minor fixes of ifdef's for glob_match_leaf(), for building with
+	+ minor fixes of ifdef's for glob_match_leaf(), for building with
 	  configure --disable-extensions.
 	> patches by Clark Morgan:
 	+ add the Win32 common dialog "save as" feature to both console
@@ -356,28 +417,28 @@ Changes for vile 9.1 (released ??? ??? ??, 1999)
 	+ modified vmsbuild.com and descrip.mms (untested) to build the Motif
 	  version with menus, the X toolkit version without (based on discussion
 	  with Clark Morgan and Jonathan Ridler).
- 	+ fix ttclean() function for xvile on VMS (Clark Morgan, from problem
+	+ fix ttclean() function for xvile on VMS (Clark Morgan, from problem
 	  report by Jonathan Ridler <JONATHAN@rubens.its.unimelb.edu.au>).
 	+ add .Xdefaults to xresmode.
- 	+ add backslashes as needed to digraph.rc, to work with the new single
+	+ add backslashes as needed to digraph.rc, to work with the new single
 	  quote interpretation (reported by Paul Fox).
- 	+ correct a place where expression evaluation result was overwritten
+	+ correct a place where expression evaluation result was overwritten
 	  with the nested result in a complex expression from 8.3d (reported
 	  by George Eccles).
- 	+ highlight whitespace in makefiles between backspace and newline as
+	+ highlight whitespace in makefiles between backspace and newline as
 	  an error.
 	+ define "Error" class for syntax filters.
 	+ correct make filter's handling of escaped newline: '.' does not match
 	  newline.
 
  (tom) 991127 (b)
- 	+ add "case" and "do" groups to m4mode.
- 	+ add ".ms" and ".me" suffixes for nrmode.
+	+ add "case" and "do" groups to m4mode.
+	+ add ".ms" and ".me" suffixes for nrmode.
 	+ add ``quote'' quoting to txt filter.
 	+ refine treatment of double-quote in txt filter so it can be quoted
 	  by single-quote or parenthesis.
 	+ allow "~" in URL patterns for txt and mail filters, omitted in 9.0a.
- 	+ correct some missing backslashes before vertical bar and parentheses
+	+ correct some missing backslashes before vertical bar and parentheses
 	  in filters.rc, made apparent by the change to use single-quoted
 	  strings.
 	+ restore handling of special control characters such as ^D, ^T in
@@ -397,20 +458,20 @@ Changes for vile 9.1 (released ??? ??? ??, 1999)
 	  grow-window, move-next-window-down, move-next-window-up,
 	  position-window (z), redraw-display, scroll-next-window-down,
 	  scroll-next-window-up and shrink-window, as well as api_motion().
- 	+ modify quoted-motion so that commands with the GOAL flag are allowed,
+	+ modify quoted-motion so that commands with the GOAL flag are allowed,
 	  since those do not change the buffer contents.
 	+ change handling of status return from readpattern() so that an abort
 	  is passed up to the caller.  In execute-named-procedure, check for
 	  abort, and restore DOT to the value before evaluating addresses
 	  (reported by Clark Morgan).
- 	+ correct bug in wrapmargin/fillcol logic which did not split a line
+	+ correct bug in wrapmargin/fillcol logic which did not split a line
 	  when a newline was inserted into a string containing no blanks
 	  after the fillcol position.  Instead, an empty line was inserted
 	  (reported by Clark Morgan).
- 	+ correct missing allocation of default help-string for user-defined
+	+ correct missing allocation of default help-string for user-defined
 	  procedures, which could cause core dump if a procedure were redefined,
 	  e.g., by source'ing .vilerc (reported by Paul Fox).
- 	+ add tags syntax filter and majormode tagsmode.
+	+ add tags syntax filter and majormode tagsmode.
 	+ add X resource syntax filter and majormode xresmode.
 	+ improve URL pattern in mail and txt filters, to allow it to match
 	  ftp and other URL types, as well as limited the pattern to avoid

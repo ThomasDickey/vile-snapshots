@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w 
+#!/bin/echo not_a_script:
  
 sub glob2re { 
     my ($glob) = @_; 

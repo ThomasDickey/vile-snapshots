@@ -1,4 +1,3 @@
-
 #   Vileserv.pm (version 1.1) - Provides file-load server capability for xvile.
 #
 #   Copyright (C) 1998  J. Chris Coppick
@@ -34,6 +33,9 @@ $__esc = '+++';
 END {
    &stop;
 }
+
+*import = *start;
+*unimport = *stop;
 
 # Initiates the child "server" process and sets up the appropriate
 # filehandle callbacks.

@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.110 1999/12/24 13:06:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.111 1999/12/30 01:49:03 tom Exp $
  *
  */
 
@@ -83,9 +83,7 @@ free_attribs(BUFFER *bp)
     while (p != NULL) {
 	q = p->ar_next;
 #if OPT_HYPERTEXT
-	if (p->ar_hypercmd)
-	    free(p->ar_hypercmd);
-	    p->ar_hypercmd = 0;
+	FreeAndNull(p->ar_hypercmd);
 #endif
 	if (p == &selregion)
 	    selbufp = NULL;
@@ -103,10 +101,7 @@ free_attrib(BUFFER *bp, AREGION *ap)
 {
     detach_attrib(bp, ap);
 #if OPT_HYPERTEXT
-    if (ap->ar_hypercmd) {
-	free(ap->ar_hypercmd);
-	ap->ar_hypercmd = 0;
-    }
+    FreeAndNull(ap->ar_hypercmd);
 #endif
     if (ap == &selregion)
 	selbufp = NULL;
@@ -166,13 +161,16 @@ assign_attr_id(void)
 static void
 attach_attrib(BUFFER *bp, AREGION *arp)
 {
-    WINDOW *wp;
-    arp->ar_next = bp->b_attribs;
-    bp->b_attribs = arp;
-    for_each_visible_window(wp)
-	if (wp->w_bufp == bp)
-	    wp->w_flag |= WFHARD;
-    arp->ar_region.r_attr_id = (unsigned short) assign_attr_id();
+    if (bp != 0) {
+	WINDOW *wp;
+	arp->ar_next = bp->b_attribs;
+	bp->b_attribs = arp;
+	for_each_visible_window(wp) {
+	    if (wp->w_bufp == bp)
+		wp->w_flag |= WFHARD;
+	}
+	arp->ar_region.r_attr_id = (unsigned short) assign_attr_id();
+    }
 }
 
 /*
@@ -1634,7 +1632,10 @@ attribute_from_filter(void)
 
     } else if (open_region_filter() == TRUE) {
 
+	detach_attrib(selbufp, &selregion);
+	detach_attrib(startbufp, &startregion);
 	free_attribs(curbp);
+
 	while (DOT.l != pastline) {
 
 	    if (interrupted()) {
@@ -1674,6 +1675,8 @@ attribute_from_filter(void)
 	}
 
 	(void)ffclose();		/* Ignore errors.	*/
+	attach_attrib(selbufp, &selregion);
+	attach_attrib(startbufp, &startregion);
 #if OPT_HILITEMATCH
 	if (curbp->b_highlight & HILITE_ON) {
 		curbp->b_highlight |= HILITE_DIRTY;

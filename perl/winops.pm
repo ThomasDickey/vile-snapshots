@@ -11,6 +11,42 @@
 #	- Kevin, December 1999.
 #
 
+package winops;
+
+require Vile::Exporter;
+@ISA = 'Vile::Exporter';
+%REGISTRY = (
+    'equalize-window-height' => [
+	\&equalize_window_height,
+	'make all window the same approximate size',
+    ],
+    'maximize-window-height' => [
+	\&maximize_window_height,
+	'make current window as large as possible without deleting other' .
+	' windows',
+    ],
+    'swap-above' => [
+	\&swap_above,
+	'swap contents of current window and window above',
+    ],
+    'swap-below' => [
+	\&swap_below,
+	'swap contents of current window and window below',
+    ],
+    'new-window' => [
+	\&new_window,
+	'create a new window and make it current',
+    ],
+    'delete-windows-below' => [
+	\&delete_windows_below,
+	'delete windows below current window',
+    ],
+    'delete-windows-above' => [
+	\&delete_windows_above,
+	'delete windows above current window',
+    ],
+);
+
 # Make all windows of approximately equal height
 sub equalize_window_height {
     my $n = Vile::window_count;
@@ -121,20 +157,5 @@ sub delete_windows_above {
 	Vile::window_at(0)->delete;
     }
 }
-
-Vile::register 'equalize-window-height' => \&equalize_window_height,
-		"Make all window the same approximate size";
-Vile::register 'maximize-window-height' => \&maximize_window_height,
-		"Make current window as large as possible without deleting other windows";
-Vile::register 'swap-above' => \&swap_above,
-		"contents of current window and window above";
-Vile::register 'swap-below' => \&swap_below,
-		"contents of current window and window below";
-Vile::register 'new-window' => \&new_window,
-		"Create a new window and make it current";
-Vile::register 'delete-windows-below' => \&delete_windows_below,
-		"Delete windows below current window";
-Vile::register 'delete-windows-above' => \&delete_windows_above,
-		"Delete windows above current window";
 
 1;

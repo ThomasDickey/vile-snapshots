@@ -1,3 +1,5 @@
+#!/bin/echo not_a_script:
+
 sub visit {
     my ($fname, @dot) = @_;
 

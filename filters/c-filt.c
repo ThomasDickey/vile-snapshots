@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.49 1999/12/27 02:07:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.51 1999/12/29 16:12:02 tom Exp $
  *
  * Features:
  *	- Reads the keyword file ".vile.keywords" from the home directory.
@@ -391,14 +391,14 @@ write_number(FILE * fp, char *s)
 }
 
 static char *
-write_literal(FILE * fp, char *s, int *literal)
+write_literal(FILE * fp, char *s, int *literal, int escaped)
 {
     int c_length = has_endofliteral(s, *literal);
     if (c_length < 0)
 	c_length = strlen(s);
     else
 	*literal = 0;
-    write_token(fp, s, c_length, Literal_attr);
+    write_token(fp, s, c_length, escaped ? Literal_attr : Error_attr);
     s += c_length;
     if (!*literal)
 	fputc(*s++, fp);
@@ -471,7 +471,8 @@ do_filter(FILE * input, FILE * output)
     static char *line;
 
     char *s;
-    int comment, c_length, literal;
+    int comment, c_length, literal, escaped, was_esc;
+    unsigned len;
 
     Comment_attr = class_attr(NAME_COMMENT);
     Error_attr = class_attr(NAME_ERROR);
@@ -482,11 +483,14 @@ do_filter(FILE * input, FILE * output)
 
     comment = 0;
     literal = 0;
+    was_esc = 0;
 
     while (readline(input, &line, &used) != NULL) {
+	escaped = was_esc;
+	was_esc = 0;
 	s = line;
 	if (literal)
-	    s = write_literal(output, s, &literal);
+	    s = write_literal(output, s, &literal, escaped);
 	s = skip_white(output, s);
 	while (*s) {
 	    if (!comment && *s == '/' && *(s + 1) == '*') {
@@ -505,7 +509,7 @@ do_filter(FILE * input, FILE * output)
 		c_length = strlen(s);
 		write_comment(output, s, c_length, 1);
 		break;
-	    } else if (!comment && *s == '#' && firstnonblank(s, line)
+	    } else if (!escaped && !comment && *s == '#' && firstnonblank(s, line)
 		&& set_symbol_table("cpre")) {
 		s = parse_prepro(output, s);
 		set_symbol_table(filter_name);
@@ -532,7 +536,7 @@ do_filter(FILE * input, FILE * output)
 		literal = (literal == 0) ? *s : 0;
 		fputc(*s++, output);
 		if (literal) {
-		    s = write_literal(output, s, &literal);
+		    s = write_literal(output, s, &literal, 1);
 		}
 	    } else if (isIdent(*s)) {
 		s = extract_identifier(output, s);
@@ -549,5 +553,8 @@ do_filter(FILE * input, FILE * output)
 		fputc(*s++, output);
 	    }
 	}
+	len = s - line;
+	if (len > 2 && !strcmp(line + len - 2, "\\\n"))
+	    was_esc = 1;
     }
 }
