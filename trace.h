@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.1 1996/01/30 02:19:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.2 1997/02/09 17:44:51 tom Exp $
  *
  */
 #ifndef	_trace_h
@@ -38,7 +38,7 @@ extern	void	dofree (char *oldp);
 #endif
 
 extern	void	fail_alloc (char *msg, char *ptr);
-extern	void	Trace ( char *fmt, ... ) __attribute__ ((format(printf,1,2)));
+extern	void	Trace ( const char *fmt, ... ) __attribute__ ((format(printf,1,2)));
 extern	void	Elapsed ( char * msg);
 extern	void	WalkBack (void);
 extern	void	show_alloc (void);

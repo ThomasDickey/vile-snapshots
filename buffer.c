@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.151 1997/01/19 15:40:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.152 1997/02/09 20:11:51 tom Exp $
  *
  */
 
@@ -1073,7 +1073,7 @@ namebuffer(int f, int n)	/*	Rename the current buffer	*/
 {
 	register BUFFER *bp;	/* pointer to scan through all buffers */
 	static char bufn[NBUFN];	/* buffer to hold buffer name */
-	char *prompt = "New name for buffer: ";
+	const char *prompt = "New name for buffer: ";
 
 	/* prompt for and get the new buffer name */
 	do {
@@ -1199,7 +1199,7 @@ static void
 footnote(int c)
 {
 	static	struct	{
-		char	*name;
+		const char *name;
 		int	flag;
 	} table[] = {
 		{"automatic",	0},

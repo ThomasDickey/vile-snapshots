@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.52 1996/08/05 12:51:57 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.54 1997/02/09 20:08:15 tom Exp $
  *
  */
 
@@ -647,7 +647,7 @@ expand_environ(char *pattern)
 	int	delim,
 		left,
 		right;
-	char	*s;
+	const char *s;
 	char	save[NFILEN];
 
 	for (j = 0; pattern[j] != EOS; j++) {
@@ -712,7 +712,7 @@ static int
 expand_pattern (const char *item)
 {
 	int	result = FALSE;
-#if OPT_VMS_PATH
+#if OPT_VMS_PATH && !SYS_UNIX
 	DIR	*dp;
 	DIRENT	*de;
 

@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/manfilt.c,v 1.17 1996/02/05 02:19:21 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/manfilt.c,v 1.18 1997/02/09 17:53:59 tom Exp $
  *
  */
 
@@ -140,12 +140,12 @@ extern int main ( int argc, char **argv );
 static CHARCELL * allocate_cell ( void );
 static LINEDATA * allocate_line ( void );
 static int ansi_escape ( FILE *ifp, int level, int ident );
-static int cell_code ( LINEDATA *line, int col);
+static int cell_code ( LINEDATA *line, size_t col);
 static int half_down ( int level );
 static int half_up ( int level );
 static void ManFilter ( FILE *ifp );
 static void extend_line ( void );
-static void failed ( char *s );
+static void failed ( const char *s );
 static void flush_line ( void );
 static void next_line ( void );
 static void prev_line ( void );
@@ -156,7 +156,7 @@ static LINEDATA *cur_line;
 static long	total_lines;
 
 static void
-failed(char *s)
+failed(const char *s)
 {
 	perror(s);
 	exit(1);
@@ -366,7 +366,7 @@ half_down(int level)
 }
 
 static int
-cell_code(LINEDATA *line, int col)
+cell_code(LINEDATA *line, size_t col)
 {
 	CHARCELL *p = &(line->l_cell[col]);
 	CHARCELL *q;
@@ -389,7 +389,7 @@ cell_code(LINEDATA *line, int col)
 static void
 flush_line(void)
 {
-	int	col;
+	size_t	col;
 	int	ref_code;
 	int	tst_code;
 	int	counter;

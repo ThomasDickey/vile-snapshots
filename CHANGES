@@ -1,5 +1,23 @@
 Changes for vile 7.0 (released ??? ??? ??, 1997)
 
+(tom)	970210 (j)
+	+ correct bracketing of shell-command buffer names from 6.4g (reported
+	  by Paul Fox).
+	+ modify filename completion to allow completion of "." and ".." as
+	  non-directory leaves.
+	+ fix some places (not all!) for gcc -Wcast-qual -Wwrite-strings
+	+ some compiler nits for Visual C/C++ 4.0 on WinNT.
+
+(kev)	970129 (i)
+	+ x11.c (start_selection): Make sure that prevDOT is set to the DOT
+	  in the window where the click occurs.
+	  (x_process_event): In the Button3 "ButtonPress" code, set prevDOT
+	  to DOT in order to sensibly handle the situation where the user
+	  first marks the beginning of a selection by pressing Button1 and
+	  then releasing it (without wiping) and then uses Button3 to mark
+	  the end of the selection.  In this case, DOT will be left at the
+	  location of the initial Button1 press.
+
 (tom)	970125 (h)
 	+ add limit-check to getcol(), in case mark.o is out-of-bounds.
 	+ correct an indexing out-of-bounds in 'attribute_cntl_a_sequences()'

@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.75 1997/01/19 15:40:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.77 1997/02/09 19:30:39 tom Exp $
  *
  */
 
@@ -170,20 +170,20 @@ static	int	isspace (int c);
 static	int	isprint (int c);
 
 static	char *	Alloc (unsigned len);
-static	char *	StrAlloc (char *s);
+static	char *	StrAlloc (const char *s);
 static	LIST *	ListAlloc (void);
 
-static	void	badfmt (char *s);
-static	void	badfmt2 (char *s, int col);
+static	void	badfmt (const char *s);
+static	void	badfmt2 (const char *s, int col);
 
-static	void	WriteLines (FILE *fp, char **list, int count);
-static	FILE *	OpenHeader (char *name, char **argv);
+static	void	WriteLines (FILE *fp, const char *const *list, int count);
+static	FILE *	OpenHeader (const char *name, char **argv);
 
-static	void	InsertSorted (LIST **headp, char *name, char *func, char *data, char *cond, char *note);
-static	void	InsertOnEnd (LIST **headp, char *name);
+static	void	InsertSorted (LIST **headp, const char *name, const char *func, const char *data, const char *cond, const char *note);
+static	void	InsertOnEnd (LIST **headp, const char *name);
 
-static	char *	append (char *dst, char *src);
-static	char *	formcond (char *c1, char *c2);
+static	char *	append (char *dst, const char *src);
+static	char *	formcond (const char *c1, const char *c2);
 static	int	LastCol (char *buffer);
 static	char *	PadTo (int col, char *buffer);
 static	int	two_conds (int c, char *cond);
@@ -191,23 +191,23 @@ static	void	set_binding (int btype, int c, char *cond, char *func);
 static	int	Parse (char *input, char **vec);
 
 static	void	BeginIf (void);
-static	void	WriteIf (FILE *fp, char *cond);
+static	void	WriteIf (FILE *fp, const char *cond);
 static	void	FlushIf (FILE *fp);
 
 static	char *	AbbrevMode (char *src);
 static	char *	NormalMode (char *src);
-static	char *	c2TYPE (int c);
+static	const char * c2TYPE (int c);
 static	void	CheckModes ( char *name );
 static	char *	Mode2Key (char *type, char *name, char *cond);
 static	char *	Name2Symbol (char *name);
 static	char *	Name2Address (char *name, char *type);
 
 static	void	DefineOffset (FILE *fp);
-static	void	WriteIndexStruct (FILE *fp, LIST *p, char *ppref);
-static	void	WriteModeDefines (LIST *p, char *ppref);
+static	void	WriteIndexStruct (FILE *fp, LIST *p, const char *ppref);
+static	void	WriteModeDefines (LIST *p, const char *ppref);
 static	void	WriteModeSymbols (LIST *p);
 
-static	void	save_all_modes (char *type, char *normal, char *abbrev, char *cond);
+static	void	save_all_modes (const char *type, char *normal, const char *abbrev, char *cond);
 static	void	dump_all_modes (void);
 
 static	void	save_bindings (char *s, char *func, char *cond);
@@ -254,8 +254,8 @@ static	void	dump_wmodes (void);
 
 static	char *bindings  [LEN_CHRSET];
 static	char *conditions[LEN_CHRSET];
-static	char *tblname   [MAX_BIND] = {"asciitbl", "ctlxtbl", "metatbl", "spectbl" };
-static	char *prefname  [MAX_BIND] = {"",         "CTLX|",   "CTLA|",   "SPEC|" };
+static	const char *tblname   [MAX_BIND] = {"asciitbl", "ctlxtbl", "metatbl", "spectbl" };
+static	const char *prefname  [MAX_BIND] = {"",         "CTLX|",   "CTLA|",   "SPEC|" };
 
 static	char *inputfile;
 static	int l = 0;
@@ -288,7 +288,7 @@ Alloc(unsigned len)
 }
 
 static char *
-StrAlloc(char *s)
+StrAlloc(const char *s)
 {
 	return strcpy(Alloc((unsigned)strlen(s)+1), s);
 }
@@ -301,7 +301,7 @@ ListAlloc(void)
 
 /******************************************************************************/
 static void
-badfmt(char *s)
+badfmt(const char *s)
 {
 	Fprintf(stderr,"\"%s\", line %d: bad format:", inputfile, l);
 	Fprintf(stderr,"\t%s\n",s);
@@ -309,7 +309,7 @@ badfmt(char *s)
 }
 
 static void
-badfmt2(char *s, int col)
+badfmt2(const char *s, int col)
 {
 	char	temp[MAX_BUFFER];
 	Sprintf(temp, "%s (column %d)", s, col);
@@ -320,7 +320,7 @@ badfmt2(char *s, int col)
 static void
 WriteLines(
 FILE	*fp,
-char	**list,
+const char *const *list,
 int	count)
 {
 	while (count-- > 0)
@@ -331,11 +331,11 @@ int	count)
 /******************************************************************************/
 static FILE *
 OpenHeader(
-char	*name,
+const char *name,
 char	**argv)
 {
 	register FILE *fp;
-	static char *progcreat =
+	static const char *progcreat =
 "/* %s: this header file was produced automatically by\n\
  * the %s program, based on input from the file %s\n */\n";
 
@@ -351,11 +351,11 @@ char	**argv)
 static void
 InsertSorted(
 LIST	**headp,
-char	*name,
-char	*func,
-char	*data,
-char	*cond,
-char	*note)
+const char *name,
+const char *func,
+const char *data,
+const char *cond,
+const char *note)
 {
 	register LIST *n, *p, *q;
 	register int  r;
@@ -383,7 +383,7 @@ char	*note)
 static void
 InsertOnEnd(
 LIST	**headp,
-char	*name)
+const char *name)
 {
 	register LIST *n, *p, *q;
 
@@ -408,14 +408,14 @@ char	*name)
 static char *
 append(
 char	*dst,
-char	*src)
+const char *src)
 {
 	(void)strcat(dst, src);
 	return (dst + strlen(dst));
 }
 
 static char *
-formcond(char *c1, char *c2)
+formcond(const char *c1, const char *c2)
 {
 	static char cond[MAX_BUFFER];
 	if (c1[0] && c2[0])
@@ -446,8 +446,8 @@ PadTo(int col, char *buffer)
 {
 	int	any	= 0,
 		len	= strlen(buffer),
-		now,
-		with;
+		now;
+	char	with;
 
 	for (;;) {
 		if ((now = LastCol(buffer)) >= col) {
@@ -571,7 +571,7 @@ char	**vec)
 }
 
 /******************************************************************************/
-static	char	*lastIfdef;
+static const char *lastIfdef;
 
 static void
 BeginIf(void)
@@ -582,7 +582,7 @@ BeginIf(void)
 static void
 WriteIf(
 FILE	*fp,
-char	*cond)
+const char *cond)
 {
 	if (cond == 0)
 		cond = "";
@@ -616,7 +616,7 @@ AbbrevMode(char *src)
 			*d = dst;
 	while (*s) {
 		if (isupper(*s))
-			*d++ = tolower(*s);
+			*d++ = (char)tolower(*s);
 		s++;
 	}
 	*d = EOS;
@@ -631,17 +631,17 @@ NormalMode(char *src)
 	register char *s = dst;
 	while (*s) {
 		if (isupper(*s))
-			*s = tolower(*s);
+			*s = (char)tolower(*s);
 		s++;
 	}
 	return dst;
 }
 
 /* given single-char type-key (cf: Mode2Key), return define-string */
-static char *
+static const char *
 c2TYPE(int c)
 {
-	char	*value;
+	const char *value;
 	switch (c) {
 	case 'b':	value	= "BOOL";	break;
 	case 'e':	value	= "ENUM";	break;
@@ -755,7 +755,7 @@ static void
 WriteIndexStruct(
 FILE	*fp,
 LIST	*p,
-char	*ppref)
+const char *ppref)
 {
 #if	OPT_IFDEF_MODES
 	char	*s,
@@ -789,7 +789,7 @@ char	*ppref)
 static void
 WriteModeDefines(
 LIST	*p,
-char	*ppref)
+const char *ppref)
 {
 	char	temp[MAX_BUFFER],
 		line[MAX_BUFFER],
@@ -881,9 +881,9 @@ WriteModeSymbols(LIST *p)
 /******************************************************************************/
 static void
 save_all_modes(
-char	*type,
+const char *type,
 char	*normal,
-char	*abbrev,
+const char *abbrev,
 char	*cond)
 {
 	if (*type == 'b') {
@@ -904,7 +904,7 @@ char	*cond)
 static void
 dump_all_modes(void)
 {
-	static	char	*top[] = {
+	static const char *const top[] = {
 		"",
 		"#ifdef realdef",
 		"/*",
@@ -912,14 +912,14 @@ dump_all_modes(void)
 		" */",
 		"static const char",
 		};
-	static	char	*middle[] = {
+	static const char *const middle[] = {
 		"\ts_NULL[] = \"\";",
 		"#endif /* realdef */",
 		"",
 		"#ifdef realdef",
 		"const char *const all_modes[] = {",
 		};
-	static	char	*bottom[] = {
+	static const char *const bottom[] = {
 		"\tNULL\t/* ends table */",
 		"};",
 		"#else",
@@ -1019,7 +1019,7 @@ static void
 dump_bindings(void)
 {
 	char	temp[MAX_BUFFER];
-	char *sctl, *meta;
+	const char *sctl, *meta;
 	int i, c, btype;
 	register LIST *p;
 
@@ -1087,12 +1087,12 @@ char	**vec)
 static void
 dump_bmodes(void)
 {
-	static	char	*top[] = {
+	static const char *const top[] = {
 		"",
 		"/* buffer mode flags\t*/",
 		"/* the indices of B_VALUES.v[] */",
 		};
-	static	char	*middle[] = {
+	static const char *const middle[] = {
 		"",
 		"typedef struct B_VALUES {",
 		"\t/* each entry is a val, and a ptr to a val */",
@@ -1102,7 +1102,7 @@ dump_bmodes(void)
 		"#ifdef realdef",
 		"const struct VALNAMES b_valuenames[] = {",
 		};
-	static	char	*bottom[] = {
+	static const char *const bottom[] = {
 		"",
 		"\t{ NULL,\tNULL,\tVALTYPE_INT, 0 }",
 		"};",
@@ -1123,7 +1123,7 @@ dump_bmodes(void)
 static void
 start_evar_h(char **argv)
 {
-	static	char	*head[] = {
+	static const char *const head[] = {
 		"",
 		"#if OPT_EVAL",
 		"",
@@ -1156,7 +1156,7 @@ finish_evar_h(void)
 static void
 init_envars(void)
 {
-	static	char	*head[] = {
+	static const char *const head[] = {
 		"",
 		"/*\tlist of recognized environment variables\t*/",
 		"",
@@ -1182,7 +1182,7 @@ save_envars(char **vec)
 static void
 dump_envars(void)
 {
-	static	char *middle[] = {
+	static const char *const middle[] = {
 		"\tNULL\t/* ends table for name-completion */",
 		"};",
 		"#else",
@@ -1305,12 +1305,12 @@ char	**vec)
 static void
 dump_gmodes(void)
 {
-	static	char	*top[] = {
+	static const char *const top[] = {
 		"",
 		"/* global mode flags\t*/",
 		"/* the indices of G_VALUES.v[] */",
 		};
-	static	char	*middle[] = {
+	static const char *const middle[] = {
 		"",
 		"typedef struct G_VALUES {",
 		"\t/* each entry is a val, and a ptr to a val */",
@@ -1320,7 +1320,7 @@ dump_gmodes(void)
 		"#ifdef realdef",
 		"const struct VALNAMES g_valuenames[] = {",
 		};
-	static	char	*bottom[] = {
+	static const char *const bottom[] = {
 		"",
 		"\t{ NULL,\tNULL,\tVALTYPE_INT, 0 }",
 		"};",
@@ -1368,7 +1368,7 @@ dump_names(void)
 static void
 init_ufuncs(void)
 {
-	static	char	*head[] = {
+	static const char *const head[] = {
 		"",
 		"/*\tlist of recognized user functions\t*/",
 		"",
@@ -1400,7 +1400,7 @@ save_ufuncs(char **vec)
 static void
 dump_ufuncs(void)
 {
-	static	char	*middle[] = {
+	static	const char	*const middle[] = {
 		"};",
 		"#else",
 		"extern const UFUNC funcs[];",
@@ -1450,14 +1450,14 @@ char	**vec)
 static void
 dump_wmodes(void)
 {
-	static	char	*top[] = {
+	static const char *top[] = {
 		"",
 		"/* these are the boolean, integer, and pointer value'd settings that are",
 		"\tassociated with a window, and usually settable by a user.  There",
 		"\tis a global set that is inherited into a buffer, and its windows",
 		"\tin turn are inherit the buffer's set. */",
 		};
-	static	char	*middle[] = {
+	static const char *middle[] = {
 		"",
 		"typedef struct W_VALUES {",
 		"\t/* each entry is a val, and a ptr to a val */",
@@ -1467,7 +1467,7 @@ dump_wmodes(void)
 		"#ifdef realdef",
 		"const struct VALNAMES w_valuenames[] = {",
 		};
-	static	char	*bottom[] = {
+	static const char *bottom[] = {
 		"",
 		"\t{ NULL,\tNULL,\tVALTYPE_INT, 0 }",
 		"};",

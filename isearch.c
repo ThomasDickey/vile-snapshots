@@ -7,7 +7,7 @@
  *
  * original author: D. R. Banks 9-May-86
  *
- * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.45 1996/02/26 04:24:35 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.46 1997/02/09 20:12:15 tom Exp $
  *
  */
 
@@ -19,7 +19,7 @@
 static	char *	expandp(char *deststr, char *srcstr, int maxlength);
 static	int	get_char (void);
 static	int	isearch(int f, int n);
-static	int	promptpattern(char *prompt);
+static	int	promptpattern(const char *prompt);
 static	int	scanmore(char *patrn, int dir);
 static	int	echochar(int c, int col);
 
@@ -302,7 +302,7 @@ scanmore(			/* search forward or back for a pattern */
 /* Routine to prompt for I-Search string. */
 
 static int
-promptpattern(char *prompt)
+promptpattern(const char *prompt)
 {
 	static	const char fmt[] = "%s [%s]: ";
 	char            tpat[NPAT],

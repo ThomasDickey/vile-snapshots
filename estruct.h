@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.297 1997/01/25 14:44:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.298 1997/02/04 00:33:58 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -57,6 +57,11 @@
 # endif
 # undef CC_TURBO
 # define CC_TURBO  1
+#endif
+
+#ifdef _WIN32		/* predefined in Visual C/C++ 4.0 */
+# undef SYS_WINNT
+# define SYS_WINNT 1
 #endif
 
 #ifdef __WATCOMC__

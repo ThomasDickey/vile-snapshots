@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.137 1997/01/10 11:07:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.138 1997/02/04 00:55:32 tom Exp $
  *
  */
 
@@ -1059,7 +1059,7 @@ const char *tokn)		/* token to evaluate */
 #if OPT_EVAL
 	register int status;	/* error return */
 	register BUFFER *bp;	/* temp buffer pointer */
-	register SIZE_T blen;	/* length of buffer argument */
+	register B_COUNT blen;	/* length of buffer argument */
 	register int distmp;	/* temporary discmd flag */
 	int	oclexec;
 	static char buf[NSTRING];/* string buffer for some returns */
@@ -1114,7 +1114,7 @@ const char *tokn)		/* token to evaluate */
 					blen = NSTRING;
 				(void)strncpy(buf,
 					bp->b_dot.l->l_text + bp->b_dot.o,
-					blen);
+					(SIZE_T)blen);
 				buf[blen] = EOS;
 
 				/* and step the buffer's line ptr

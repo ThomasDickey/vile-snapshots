@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.40 1997/01/19 20:09:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.41 1997/02/09 19:41:53 tom Exp $
  *
  */
 
@@ -44,7 +44,7 @@ int	off)
 	register SIZE_T  n;
 
 	static	const	struct	{
-		char	*name;
+		const char *name;
 		int	code;
 	} keyword_table[] = {
 		{ "if",     CPP_IF },

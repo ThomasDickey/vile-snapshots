@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.57 1996/12/09 01:07:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.58 1997/02/09 17:49:22 tom Exp $
  *
  */
 
@@ -255,7 +255,7 @@ operlower(int f, int n)
  * to be specified by repeating the '<' or '>' operators.
  */
 static int
-shift_n_times(int f, int n, OpsFunc func, char *msg)
+shift_n_times(int f, int n, OpsFunc func, const char *msg)
 {
 	register int status = FALSE;
 

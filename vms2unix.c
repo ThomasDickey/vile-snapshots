@@ -3,7 +3,7 @@
  *
  *	Miscellaneous routines for UNIX/VMS compatibility.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.19 1996/12/23 21:58:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.22 1997/02/07 01:30:39 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -204,6 +204,9 @@ path_version(char *path)
 char *
 unix2vms_path(char *dst, const char *src)
 {
+#if !SYS_VMS
+	char	tmp2[NFILEN];
+#endif
 	char	tmp[NFILEN],
 		leading[NFILEN],
 		*t,
@@ -254,11 +257,16 @@ unix2vms_path(char *dst, const char *src)
 		}
 		d  += len;
 	} else if (*s == '~') {		/* process home-directory reference */
+		char *home = getenv("SYS$LOGIN");
+#if !SYS_VMS
+		if (home == 0)
+			home = unix2vms_path(tmp2, getenv("HOME"));
+#endif
 		node =
 		device = TRUE;
 		s++;
 
-		len = strlen(strcpy(d, getenv("SYS$LOGIN")));
+		len = strlen(strcpy(d, home));
 
 		if (d[len-1] == RBRACK) {
 			bracket++;
@@ -327,8 +335,11 @@ unix2vms_path(char *dst, const char *src)
 			*d++ = PERIOD;
 		}
 		while ((c = *s++) != EOS) {
-			if (c == PERIOD)
+			if (c == PERIOD) {
 				c = '$';
+				if (*s == SLASHC) /* ignore "./" */
+					continue;
+			}
 			if (c == SLASHC) {
 		    		leaf_dot = DotPrefix(s);
 				if (strchr(s, SLASHC))
@@ -617,6 +628,7 @@ vms2unix_path(char *dst, const char *src)
 }
 #endif	/* OPT_VMS_PATH */
 
+#if SYS_VMS
 /*
  * Function:	When creating a file, try to copy the protection mask from
  *		previous version to the new version.  This makes writing to a
@@ -778,3 +790,4 @@ int	vms_fix_umask (char *filespec)
 	}
 	return 0;
 }
+#endif /* SYS_VMS */

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.222 1996/12/08 21:58:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.223 1997/02/09 17:54:29 tom Exp $
  *
  */
 
@@ -113,7 +113,7 @@ right_num (char *buffer, int len, long value)
  * Do format a string.
  */
 static int
-dfputsn(OutFunc outfunc, char *s, int n)
+dfputsn(OutFunc outfunc, const char *s, int n)
 {
 	register int c;
 	register int l = 0;
@@ -127,7 +127,7 @@ dfputsn(OutFunc outfunc, char *s, int n)
 
 /* as above, but uses null-terminated string's length */
 static int
-dfputs(OutFunc outfunc, char *s)
+dfputs(OutFunc outfunc, const char *s)
 {
 	return dfputsn(outfunc, s, -1);
 }
@@ -578,7 +578,7 @@ vtgetc(int col)
 }
 
 static void
-vtputsn(char *s, int n)
+vtputsn(const char *s, int n)
 {
 	int c;
 	while (n-- > 0 && (c = *s++) != EOS)
@@ -2419,7 +2419,7 @@ char	**msptr)
 #else
 	static	const	struct {
 		int   mode;
-		char *name;
+		const char *name;
 	} table[] = {
 		 {MDCMOD,    "cmode"}
 #if OPT_ENCRYPT
@@ -2487,12 +2487,12 @@ int lchar)
 	return ic;
 }
 
-static char *
+static const char *
 rough_position(WINDOW *wp)
 {
 	LINE *lp = wp->w_line.l;
 	int rows = wp->w_ntrows;
-	char *msg = 0;
+	const char *msg = 0;
 
 	while (rows-- > 0) {
 		lp = lforw(lp);

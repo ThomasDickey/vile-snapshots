@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.1 1996/03/23 22:01:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.2 1997/02/09 17:44:58 tom Exp $
  *
  */
 #include "estruct.h"
@@ -33,7 +33,7 @@ extern	int	fflush ( FILE *fp );
 #endif	/* DOALLOC */
 
 void
-Trace(char *fmt, ...)
+Trace(const char *fmt, ...)
 {
 	static	FILE	*fp;
 	va_list ap;

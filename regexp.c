@@ -11,7 +11,7 @@
  *
  *		pgf, 11/91
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.61 1996/12/09 00:00:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.62 1997/02/09 19:38:36 tom Exp $
  *
  */
 
@@ -234,7 +234,7 @@ static long regsize;		/* Code size. */
 static void
 regmassage(const char *old, char *new, int magic)
 {
-	char *metas =  magic ? MAGICMETA : NOMAGICMETA;
+	const char *metas =  magic ? MAGICMETA : NOMAGICMETA;
 	while (*old) {
 		if (*old == '\\') { /* remove \ from these metas */
 			if (*(old+1) == EOS) {
