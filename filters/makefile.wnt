@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.2 1998/12/21 10:10:12 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.3 1999/01/25 19:32:30 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -10,25 +10,54 @@
 CC_DEBUG     = #$(cdebug)
 LD_DEBUG     = #$(ldebug)
 
+LEX_OUTPUT_ROOT = lex.yy
+
 # Other vars
 CON_LDFLAGS  = -nologo -pdb:none
 
+!IF  "$(LEX)" == ""
 UTILS    = vile-c-filt.exe
+!ELSE
+UTILS    = vile-c-filt.exe \
+	   vile-lex-filt.exe \
+	   vile-make-filt.exe \
+	   vile-vile-filt.exe
+!endif
+
 CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 -I.
+
+.SUFFIXES: .c .l .obj
+
+.l.obj:
+	$(LEX) $<
+	$(CC) -c $(CPPFLAGS) $(CFLAGS) $(LEX_OUTPUT_ROOT).c
+	-@ erase $@
+	move $(LEX_OUTPUT_ROOT).obj $@
+	- erase $(LEX_OUTPUT_ROOT).c
 
 .c.obj:
 	$(cc) $(CFLAGS) -c $< -Fo$@
 
-.cpp.obj:
-	$(cc) $(CFLAGS) $(CFLAGS) -c $< -Fo$@
-
 all: $(UTILS)
 
+LF_DEPS = filters.obj
+LF_ARGS = filters.obj $(LEXLIB)
+
 CF_DEPS	= filters.obj
+CF_ARGS	= filters.obj
 
 vile-c-filt.exe: c-filt.c $(CF_DEPS)
 	$(cc) $(CFLAGS) c-filt.c \
-    -Fovile-c-filt -link $(CON_LDFLAGS) $(CF_DEPS)
+    -Fovile-c-filt -link $(CON_LDFLAGS) $(CF_ARGS)
+
+vile-lex-filt.exe : lex-filt.obj $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) lex-filt.obj $(LF_ARGS)
+
+vile-make-filt.exe : makefilt.obj $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) makefilt.obj $(LF_ARGS)
+
+vile-vile-filt.exe : vilefilt.obj $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) vilefilt.obj $(LF_ARGS)
 
 clean:
     del *.exe

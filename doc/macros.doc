@@ -843,12 +843,13 @@ Directives
 	will restore the cursor position.
 
 
-    ~WITH and ~ENDWITH Directives
-    -----------------------------
+    ~WITH, ~ELSEWITH and ~ENDWITH Directives
+    ----------------------------------------
 	Tokens following the ~WITH Directive will be prepended to succeeding
 	lines of macro until the next ~ENDWITH Directive, or the end of the
 	current macro.  This is useful for simplifying majormode directives,
-	which are repetitive.
+	which are repetitive.  Use ~ELSEWITH as a convenience for fences;
+	otherwise it functions just as ~WITH does.
 
 	For example, use
 
@@ -1104,5 +1105,5 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.10 1998/12/15 02:56:24 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.11 1999/01/26 22:43:10 tom Exp $
 -----------------------------------

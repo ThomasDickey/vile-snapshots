@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.91 1998/12/30 02:28:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.92 1999/01/25 22:39:31 tom Exp $
  *
  */
 
@@ -710,8 +710,8 @@ DefineOffset(FILE *fp)
 #if	OPT_IFDEF_MODES
 	Fprintf(fp,
 "#ifndef\tMember_Offset\n\
-#define\tMember_Offset(T, M)\t(((int)&(((T*)0)->M))/\\\n\
-\t\t\t\t ((int)&(((T*)0)->Q1) - (int)&(((T*)0)->s_MAX)))\n\
+#define\tMember_Offset(T,M) ((int)(((long)&(((T*)0)->M))/\\\n\
+\t\t\t\t ((long)&(((T*)0)->Q1) - (long)&(((T*)0)->s_MAX))))\n\
 #endif\n");
 #endif
 }
