@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.90 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.92 1999/08/21 13:06:08 tom Exp $
  *
  *
  */
@@ -1758,7 +1758,6 @@ is_directory(char * path)
 
 }
 
-#if (SYS_UNIX||SYS_VMS||OPT_MSDOS_PATH) && OPT_PATHLOOKUP
 /*
  * Parse the next entry in a list of pathnames, returning null only when no
  * more entries can be parsed.
@@ -1769,7 +1768,7 @@ parse_pathlist(const char *list, char *result)
 	if (list != NULL && *list != EOS) {
 		register int	len = 0;
 
-		while (*list && (*list != PATHCHR)) {
+		while (*list && (*list != vl_pathsep)) {
 			if (len < NFILEN-1)
 				result[len++] = *list;
 			list++;
@@ -1778,13 +1777,12 @@ parse_pathlist(const char *list, char *result)
 			result[len++] = '.';
 		result[len] = EOS;
 
-		if (*list == PATHCHR)
+		if (*list == vl_pathsep)
 			++list;
 	} else
 		list = NULL;
 	return list;
 }
-#endif	/* OPT_PATHLOOKUP */
 
 #if SYS_WINNT && !CC_TURBO
 /********                                               \\  opendir  //

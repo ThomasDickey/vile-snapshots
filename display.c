@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.292 1999/08/18 00:11:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.293 1999/08/22 12:01:53 tom Exp $
  *
  */
 
@@ -3408,7 +3408,7 @@ mlmsg(const char *fmt, va_list *app)
 void
 mlerror(const char *s)
 {
-	char *t = 0;
+	const char *t = 0;
 #if HAVE_STRERROR
 #ifdef VMS
 	if (errno == EVMSERR)

@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.31 1999/08/18 00:49:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.32 1999/08/18 22:27:33 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -230,6 +230,8 @@ int parse_menu ( const char *rc_filename )
     int     n, tmp;
     int     cascade_token = 0;
     int     nlig = 0;
+
+    TRACE(("parse_menu(%s)\n", rc_filename))
 
     if ((fp = fopen(rc_filename, "r")) == NULL)
         return FALSE;
@@ -690,6 +692,11 @@ int do_menu ( Widget menub )
     int     rc;
     char   *menurc = menu_filename();
 
+    if (menurc == 0)
+    {
+        mlforce("No menu-file found");
+        return FALSE;
+    }
     if ((rc = parse_menu (menurc)) != TRUE)
     {
         mlforce("Error parsing menu-file");

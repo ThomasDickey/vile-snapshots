@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.10 1999/08/06 01:27:22 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.11 1999/08/22 23:42:38 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -89,10 +89,10 @@ install :: $(UTILS)
 !else
 install :: $(UTILS)
 	echo installing $(UTILS) in $(VILE_LIBDIR_PATH)
-	!copy $** $(VILE_LIBDIR_PATH)\$**
+	!copy $** "$(VILE_LIBDIR_PATH)"\$**
 uninstall :: $(UTILS)
 	echo uninstalling $(UTILS) in $(VILE_LIBDIR_PATH)
-	!erase $(VILE_LIBDIR_PATH)\$**
+	!erase "$(VILE_LIBDIR_PATH)"\$**
 !endif
 
 !if "$(VILE_STARTUP_PATH)" == ""
@@ -105,16 +105,16 @@ install :: $(SCRIPTS) $(KEYS)
 !else
 install :: $(SCRIPTS)
 	echo installing $(SCRIPTS) in $(VILE_STARTUP_PATH)
-	!copy $** $(VILE_STARTUP_PATH)\$**
+	!copy $** "$(VILE_STARTUP_PATH)"\$**
 uninstall :: $(SCRIPTS)
 	echo uninstalling $(SCRIPTS) in $(VILE_STARTUP_PATH)
-	!erase $(VILE_STARTUP_PATH)\$**
+	!erase "$(VILE_STARTUP_PATH)"\$**
 install :: $(KEYS)
 	echo installing $(KEYS) in $(VILE_STARTUP_PATH)
-	!copy $** $(VILE_STARTUP_PATH)\$**words
+	!copy $** "$(VILE_STARTUP_PATH)"\$**words
 uninstall :: $(KEYS)
 	echo uninstalling $(KEYS) in $(VILE_STARTUP_PATH)
-	!erase $(VILE_STARTUP_PATH)\$**words
+	!erase "$(VILE_STARTUP_PATH)"\$**words
 !endif
 
 LF_DEPS = filters.obj

@@ -4,37 +4,14 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.193 1999/08/18 00:12:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.195 1999/08/20 01:05:41 tom Exp $
  *
  */
 
 #include	"estruct.h"
 #include	"edef.h"
 #include	"nefunc.h"
-
-/*	Directive definitions	*/
-
-typedef	enum {
-	D_UNKNOWN,
-#if ! SMALLER
-	D_IF,
-	D_ELSEIF,
-	D_ELSE,
-	D_ENDIF,
-	D_GOTO,
-	D_RETURN,
-	D_WHILE,
-	D_ENDWHILE,
-	D_BREAK,
-	D_FORCE,
-	D_HIDDEN,
-	D_LOCAL,
-	D_WITH,
-	D_ELSEWITH,
-	D_ENDWITH,
-#endif
-	D_ENDM
-} DIRECTIVE;
+#include	"nefsms.h"
 
 #define isSPorTAB(c) ((c) == ' ' || (c) == '\t')
 
@@ -63,33 +40,6 @@ typedef struct WHLOOP {
 	DIRECTIVE w_type;   /* block type: D_WHILE, D_BREAK, D_ENDWHILE */
 	struct WHLOOP *w_next;
 } WHLOOP;
-
-/* directive name table:
-	This holds the names of all the directives....	*/
-
-#if !SMALLER
-static	const struct {
-		const DIRECTIVE type;
-		const char *const name;
-	} dname[] = {
-	{ D_IF,       "if" },
-	{ D_ELSEIF,   "elseif" },
-	{ D_ELSE,     "else" },
-	{ D_ENDIF,    "endif" },
-	{ D_GOTO,     "goto" },
-	{ D_RETURN,   "return" },
-	{ D_WHILE,    "while" },
-	{ D_ENDWHILE, "endwhile" },
-	{ D_BREAK,    "break" },
-	{ D_FORCE,    "force" },
-	{ D_HIDDEN,   "hidden" },
-	{ D_LOCAL,    "local" },
-	{ D_WITH,     "with" },
-	{ D_ELSEWITH, "elsewith" },
-	{ D_ENDWITH,  "endwith" },
-	{ D_ENDM,     "endm" }
-	};
-#endif
 
 static int token_ended_line;  /* did the last token end at end of line? */
 
@@ -1489,34 +1439,23 @@ dname_to_dirnum(const char *cmdp, size_t length)
 	DIRECTIVE dirnum = D_UNKNOWN;
 	if ((--length > 0)
 	 && (*cmdp++ == DIRECTIVE_CHAR)) {
-		size_t n, m;
-		for (n = 0; n < TABLESIZE(dname); n++) {
-			m = strlen(dname[n].name);
-			if (length >= m
-			 && (length == m || !isAlnum(cmdp[m]))
-			 && memcmp(cmdp, dname[n].name, m) == 0) {
-				dirnum = dname[n].type;
-				break;
-			}
+		size_t n;
+		for (n = 0; n < length; n++) {
+			if (!isAlnum(cmdp[n]))
+				length = n;
 		}
+		dirnum = choice_to_code(fsm_directive_choices, cmdp, length);
 	}
+
 	return dirnum;
 }
 
-static const char *
-dirnum_to_name(DIRECTIVE dirnum)
-{
-	size_t n;
-	for (n = 0; n < TABLESIZE(dname); n++)
-		if (dname[n].type == dirnum)
-			return dname[n].name;
-	return "?";
-}
+#define directive_name(code) choice_to_name(fsm_directive_choices, code)
 
 static int
 unbalanced_directive(DIRECTIVE dirnum)
 {
-	mlforce("[Unexpected directive: %s]", dirnum_to_name(dirnum));
+	mlforce("[Unexpected directive: %s]", directive_name(dirnum));
 	return DDIR_FAILED;
 }
 
@@ -1725,7 +1664,7 @@ alloc_WHLOOP(WHLOOP *whp, DIRECTIVE dirnum, LINEPTR lp)
 
 	if ((nwhp = typealloc(WHLOOP)) == 0) {
 		mlforce("[Out of memory during '%s' scan]",
-			dirnum_to_name(dirnum));
+			directive_name(dirnum));
 		free_all_whiles(whp);
 		return 0;
 	}
@@ -1799,8 +1738,8 @@ setup_dobuf(BUFFER *bp, WHLOOP **result)
 					/* no while for an endwhile */
 					mlforce(
 					    "[%s doesn't follow %s in '%s']",
-						dirnum_to_name(D_ENDWHILE),
-						dirnum_to_name(D_WHILE),
+						directive_name(D_ENDWHILE),
+						directive_name(D_WHILE),
 						bp->b_bname);
 					status = FALSE;
 					break;
@@ -1813,8 +1752,8 @@ setup_dobuf(BUFFER *bp, WHLOOP **result)
 	/* no endwhile for a while or break */
 	if (status == TRUE && whp && whp->w_type != D_ENDWHILE) {
 		mlforce("[%s with no matching %s in '%s']",
-			dirnum_to_name(D_WHILE),
-			dirnum_to_name(D_ENDWHILE),
+			directive_name(D_WHILE),
+			directive_name(D_ENDWHILE),
 			bp->b_bname);
 		status = FALSE;
 	}

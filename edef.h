@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.253 1999/08/18 00:08:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.254 1999/08/20 10:40:59 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -283,6 +283,7 @@ decl_uninit( int fileispipe );
 decl_uninit( int fileeof );		/* found eof */
 decl_init ( L_NUM help_at, -1 );	/* position in help-file */
 decl_uninit( char *helpfile );
+decl_init( char vl_pathsep, PATHCHR );	/* $pathlist-separator */
 
 decl_uninit( char *startup_file );
 decl_uninit( char *startup_path );

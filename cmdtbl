@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.181 1999/07/16 09:13:10 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.184 1999/08/23 01:18:28 tom Exp $
 #
 #
 
@@ -1311,6 +1311,16 @@ scrsearchpat	NONE
 	"screen-search-pattern-grab"	!FEWNAMES
 	'^A-/'
 	<set search pattern to word under cursor>
+set_charclass	NONE			OPT_SHOW_CTYPE
+	"set-char-class"
+	<add characters to class, given keyword and regular expression>
+unset_charclass	NONE			OPT_SHOW_CTYPE
+	"delete-char-class"		!FEWNAMES
+	"unset-char-class"
+	<remove characters from class, given keyword and regular expression>
+reset_charclasses NONE			OPT_SHOW_CTYPE
+	"reset-char-classes"
+	<remove user-defined character class changes>
 set_dosmode	NONE			OPT_DOSFILES
 	"set-dos-mode"
 	<force a \"dos\"-style buffer: trim CR characters, and set \"dos-mode\">

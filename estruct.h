@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.403 1999/07/15 09:30:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.409 1999/08/21 16:11:11 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -439,12 +439,11 @@
 /* individual features that are (normally) controlled by SMALLER */
 #define OPT_BNAME_CMPL  !SMALLER		/* name-completion for buffers */
 #define OPT_B_LIMITS    !SMALLER		/* left-margin */
-#define OPT_COLOR_SCHEMES !SMALLER && OPT_COLOR
 #define OPT_ENUM_MODES  !SMALLER		/* fixed-string modes */
 #define OPT_EVAL        !SMALLER		/* expression-evaluation */
-#define OPT_FILEBACK    !SMALLER && !SYS_VMS	/* file backup style */
+#define OPT_FILEBACK    (!SMALLER && !SYS_VMS)	/* file backup style */
 #define OPT_FINDERR     !SMALLER		/* finderr support. */
-#define OPT_FLASH       !SMALLER || DISP_IBMPC	/* visible-bell */
+#define OPT_FLASH       (!SMALLER || DISP_IBMPC)/* visible-bell */
 #define OPT_FORMAT      !SMALLER		/* region formatting support. */
 #define OPT_HILITEMATCH !SMALLER		/* highlight all matches of a search */
 #define OPT_HISTORY     !SMALLER		/* command-history */
@@ -454,30 +453,30 @@
 #define OPT_LINEWRAP    !SMALLER		/* line-wrap mode */
 #define OPT_MAJORMODE   !SMALLER		/* majormode support */
 #define OPT_MLFORMAT    !SMALLER		/* modeline-format */
-#define OPT_MS_MOUSE    !SMALLER && DISP_IBMPC	/* MsDos-mouse */
+#define OPT_MS_MOUSE    (!SMALLER && DISP_IBMPC)/* MsDos-mouse */
 #define OPT_NAMEBST     !SMALLER		/* name's stored in a bst */
 #define OPT_ONLINEHELP  !SMALLER		/* short per-command help */
 #define OPT_POPUPCHOICE !SMALLER		/* popup-choices mode */
 #define OPT_POPUP_MSGS  !SMALLER		/* popup-msgs mode */
 #define OPT_POSFORMAT   !SMALLER		/* position-format */
 #define OPT_REBIND      !SMALLER		/* permit rebinding of keys at run-time	*/
-#define OPT_TAGS_CMPL   !SMALLER && OPT_TAGS	/* name-completion for tags */
+#define OPT_TAGS_CMPL   (!SMALLER && OPT_TAGS)	/* name-completion for tags */
 #define OPT_TERMCHRS    !SMALLER		/* set/show-terminal */
 #define OPT_UPBUFF      !SMALLER		/* animated buffer-update */
 #define OPT_WIDE_CTYPES !SMALLER		/* extra char-types tests */
 #define OPT_WORDCOUNT   !SMALLER		/* "count-words" command" */
 
 /* "show" commands for the optional features */
-#define OPT_SHOW_COLORS	!SMALLER && OPT_COLOR	/* "show-colors" */
+#define OPT_SHOW_COLORS	(!SMALLER && OPT_COLOR)	/* "show-colors" */
 #define OPT_SHOW_CTYPE	!SMALLER		/* "show-printable" */
-#define OPT_SHOW_EVAL   !SMALLER && OPT_EVAL	/* "show-variables" */
+#define OPT_SHOW_EVAL   (!SMALLER && OPT_EVAL)	/* "show-variables" */
 #define OPT_SHOW_MAPS   !SMALLER 		/* display mapping for ":map" */
 #define OPT_SHOW_MARKS  !SMALLER 		/* "show-marks" */
 #define OPT_SHOW_REGS   !SMALLER		/* "show-registers" */
-#define OPT_SHOW_TAGS   !SMALLER && OPT_TAGS	/* ":tags" displays tag-stack */
+#define OPT_SHOW_TAGS   (!SMALLER && OPT_TAGS)	/* ":tags" displays tag-stack */
 
 /* selections and attributed regions */
-#define OPT_VIDEO_ATTRS (!SMALLER||XTOOLKIT)
+#define OPT_VIDEO_ATTRS (!SMALLER || XTOOLKIT)
 #define OPT_SELECTIONS  OPT_VIDEO_ATTRS
 #define OPT_HYPERTEXT	OPT_VIDEO_ATTRS
 
@@ -530,6 +529,24 @@
 #else
 #define OPT_ENCRYPT     0
 #endif
+
+/*
+ * Symbols that turn on tables related to OPT_ENUM_MODES in nefsms.h
+ */
+#define OPT_COLOR_SCHEMES        (OPT_ENUM_MODES && !SMALLER && OPT_COLOR)
+
+#define OPT_BACKUP_CHOICES	 (OPT_ENUM_MODES && OPT_FILEBACK)
+#define OPT_BOOL_CHOICES	 OPT_ENUM_MODES
+#define OPT_CHARCLASS_CHOICES	 OPT_SHOW_CTYPE
+#define OPT_COLOR_CHOICES	 (OPT_ENUM_MODES && OPT_COLOR)
+#define OPT_DIRECTIVE_CHOICES    !SMALLER
+#define OPT_HILITE_CHOICES	 (OPT_ENUM_MODES && OPT_HILITEMATCH)
+#define OPT_LOOKUP_CHOICES       !SMALLER
+#define OPT_PATH_CHOICES         !SMALLER
+#define OPT_POPUP_CHOICES	 (OPT_ENUM_MODES && OPT_POPUPCHOICE)
+#define OPT_RECORDFORMAT_CHOICES (OPT_ENUM_MODES && SYS_VMS)
+#define OPT_VIDEOATTRS_CHOICES   (OPT_ENUM_MODES && OPT_COLOR_SCHEMES)
+#define OPT_VTFLASHSEQ_CHOICES   (OPT_ENUM_MODES && VTFLASH_HOST && OPT_FLASH)
 
 /*
  * Special characters used in globbing
@@ -867,17 +884,66 @@ typedef enum {
 	RECTANGLE
 } REGIONSHAPE;
 
+#define ENUM_ILLEGAL   (-2)
+#define ENUM_UNKNOWN   (-1)
+#define END_CHOICES    { (char *)0, ENUM_ILLEGAL }
+
+typedef struct {
+	const char * choice_name;
+	int    choice_code;
+} FSM_CHOICES;
+
+struct FSM {
+	const char * mode_name;
+	const FSM_CHOICES * choices;
+};
+
+/*	Directive definitions	*/
+
+typedef	enum {
+	D_UNKNOWN = ENUM_UNKNOWN,
+	D_ENDM = 0
+#if ! SMALLER
+	, D_IF
+	, D_ELSEIF
+	, D_ELSE
+	, D_ENDIF
+	, D_GOTO
+	, D_RETURN
+	, D_WHILE
+	, D_ENDWHILE
+	, D_BREAK
+	, D_FORCE
+	, D_HIDDEN
+	, D_LOCAL
+	, D_WITH
+	, D_ELSEWITH
+	, D_ENDWITH
+#endif
+} DIRECTIVE;
+
+typedef enum {
+	PATH_UNKNOWN = ENUM_UNKNOWN
+	, PATH_END
+	, PATH_FULL
+	, PATH_HEAD
+	, PATH_ROOT
+	, PATH_SHORT
+	, PATH_TAIL
+} PATH_CHOICES;
+
 /* cfg_locate options */
 #define FL_EXECABLE  iBIT(0)	/* maps to X_OK */
 #define FL_WRITEABLE iBIT(1)	/* maps to W_OK */
 #define FL_READABLE  iBIT(2)	/* maps to R_OK */
 #define FL_CDIR      iBIT(3)	/* look in current directory */
-#define FL_HOME      iBIT(4)	/* look in home directory */
+#define FL_HOME      iBIT(4)	/* look in environment $HOME */
 #define FL_EXECDIR   iBIT(5)	/* look in execution directory */
-#define FL_STARTPATH iBIT(6)	/* look in environment "VILE_STARTUP_PATH" */
-#define FL_PATH      iBIT(7)	/* look along execution-path */
+#define FL_STARTPATH iBIT(6)	/* look in environment $VILE_STARTUP_PATH */
+#define FL_PATH      iBIT(7)	/* look in environment $PATH */
+#define FL_LIBDIR    iBIT(8)	/* look in environment $VILE_LIBDIR_PATH */
 
-#define FL_ANYWHERE  (FL_CDIR|FL_HOME|FL_EXECDIR|FL_STARTPATH|FL_PATH)
+#define FL_ANYWHERE  (FL_CDIR|FL_HOME|FL_EXECDIR|FL_STARTPATH|FL_PATH|FL_LIBDIR)
 
 /* definitions for name-completion */
 #define	NAMEC		name_cmpl /* char for forcing name-completion */
@@ -1023,25 +1089,48 @@ typedef UINT WATCHTYPE;
 #define chrBIT(n) iBIT(n)
 #endif
 
-#define vl_upper    chrBIT(0)		/* upper case */
-#define vl_lower    chrBIT(1)		/* lower case */
-#define vl_digit    chrBIT(2)		/* digits */
-#define vl_space    chrBIT(3)		/* whitespace */
-#define vl_bspace   chrBIT(4)		/* backspace character (^H, DEL, and user's) */
-#define vl_cntrl    chrBIT(5)		/* control characters, including DEL */
-#define vl_print    chrBIT(6)		/* printable */
-#define vl_punct    chrBIT(7)		/* punctuation */
-#define vl_ident    chrBIT(8)		/* is typically legal in "normal" identifier */
-#define vl_pathn    chrBIT(9)		/* is typically legal in a file's pathname */
-#define vl_wild     chrBIT(10)		/* is typically a shell wildcard char */
-#define vl_linespec chrBIT(11)		/* ex-style line range: 1,$ or 13,15 or % etc.*/
-#define vl_fence    chrBIT(12)		/* a fence, i.e. (, ), [, ], {, } */
-#define vl_nonspace chrBIT(13)		/* non-whitespace */
-#define vl_qident   chrBIT(14)		/* is typically legal in "qualified" identifier */
+typedef enum {
+	vl_UPPER = 0
+	, vl_LOWER
+	, vl_DIGIT
+	, vl_SPACE
+	, vl_BSPACE
+	, vl_CNTRL
+	, vl_PRINT
+	, vl_PUNCT
+	, vl_IDENT
+	, vl_PATHN
+	, vl_WILD
+	, vl_LINESPEC
+	, vl_FENCE
+	, vl_NONSPACE
+	, vl_QIDENT
+#if OPT_WIDE_CTYPES
+	, vl_SCRTCH
+	, vl_SHPIPE
+#endif
+	, vl_UNUSED
+} VL_CTYPES;
+
+#define vl_upper    chrBIT(vl_UPPER)	/* upper case */
+#define vl_lower    chrBIT(vl_LOWER)	/* lower case */
+#define vl_digit    chrBIT(vl_DIGIT)	/* digits */
+#define vl_space    chrBIT(vl_SPACE)	/* whitespace */
+#define vl_bspace   chrBIT(vl_BSPACE)	/* backspace character (^H, DEL, and user's) */
+#define vl_cntrl    chrBIT(vl_CNTRL)	/* control characters, including DEL */
+#define vl_print    chrBIT(vl_PRINT)	/* printable */
+#define vl_punct    chrBIT(vl_PUNCT)	/* punctuation */
+#define vl_ident    chrBIT(vl_IDENT)	/* is typically legal in "normal" identifier */
+#define vl_pathn    chrBIT(vl_PATHN)	/* is typically legal in a file's pathname */
+#define vl_wild     chrBIT(vl_WILD)	/* is typically a shell wildcard char */
+#define vl_linespec chrBIT(vl_LINESPEC)	/* ex-style line range: 1,$ or 13,15 or % etc.*/
+#define vl_fence    chrBIT(vl_FENCE)	/* a fence, i.e. (, ), [, ], {, } */
+#define vl_nonspace chrBIT(vl_NONSPACE)	/* non-whitespace */
+#define vl_qident   chrBIT(vl_QIDENT)	/* is typically legal in "qualified" identifier */
 
 #if OPT_WIDE_CTYPES
-#define vl_scrtch   chrBIT(15)		/* legal in scratch-buffer names */
-#define vl_shpipe   chrBIT(16)		/* legal in shell/pipe-buffer names */
+#define vl_scrtch   chrBIT(vl_SCRTCH)	/* legal in scratch-buffer names */
+#define vl_shpipe   chrBIT(vl_SHPIPE)	/* legal in shell/pipe-buffer names */
 
 #define	SCREEN_STRING (vl_pathn|vl_scrtch|vl_shpipe)
 typedef	ULONG CHARTYPE;

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_3n
+MANIFEST for vile, version v8_3o
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -205,6 +205,8 @@ filters/spell.rc                defines a filter for spell-checking
 filters/spellflt.l              ispell filter to highlight misspelled words
 filters/sql-filt.l              sql syntax highlighting filter for vile
 filters/sql.key                 sql keywords
+filters/tbl-filt.l              syntax filter for vile's mktbls program
+filters/tbl.key                 keywords for tbl-filt.l
 filters/tc-filt.l               termcap syntax highlighting filter for vile
 filters/tc.key                  termcap keywords for syntax highlighting
 filters/tcl-filt.l              tcl/tk syntax highlighting filter for vile

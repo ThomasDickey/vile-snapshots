@@ -2148,6 +2148,7 @@ Programmed procedures and macros
 	$discmd		display commands on command line (boolean)
 	$disinp		display command line input characters (boolean)
 	$end-of-cmd	true if user ended the cmd with <CR>
+	$exec-suffix	suffix, if any, for execable programs	(read only)
 	$exit-hook	name of procedure to run when quitting
 	$fence-limit	iteration limit for complex fences
 	$font		current font name (X11/winvile versions only)
@@ -2174,6 +2175,7 @@ Programmed procedures and macros
 	$pagewid	current screen width
 	$palette	current palette string
 	$patchlevel	current patch-level (empty for release)	(read only)
+	$pathlist-separator separator for lists of pathnames, e.g., $PATH
 	$pathname	current path-like word
 	$pending	typeahead pending flag			(read only)
 	$pid		returns vile's process-id		(read only)
@@ -2217,51 +2219,81 @@ Programmed procedures and macros
 	---------
 	There are also functions available, which can act on those variables,
 	or on hard-coded values.  Operations are expressed in prefix notation,
-	so to add to numbers you would say "&add 3 5".
+	so to add to numbers you would say "&add 3 5".  You may use any
+	unique abbreviation of the function names.
 
-	func	no. of
-	name	args
-	--------------
-	&add	2	add two numbers together
-	&sub	2	subtraction
-	&tim	2	multiplication
-	&div	2	division
-	&mod	2	modulus
-	&neg	1	negate
-	&cat	2	concatenate string
-	&lef	2	left string(string, len)
-	&rig	2	right string(string, pos)
-	&mid	3	mid string(string, pos, len)
-	&not	1	logical not
-	&equ	2	logical equality
-	&les	2	logical less than
-	&gre	2	logical greater than
-	&seq	2	string logical equality check
-	&sle	2	string logical less than
-	&sgr	2	string logical greater than
-	&ind	1	evaluate indirect value
-	&and	2	logical and
-	&or	2	logical or
-	&len	1	string length
-	&upp	1	uppercase string
-	&low	1	lower case string
-	&tri	1	trim whitespace from string
-	&tru	1	Truth of the universe logical test
-	&asc	1	char to integer conversion
-	&chr	1	integer to char conversion
-	&gtk	0	get 1 character
-	&gts	0	get keycode sequence, e.g., #1
-	&que	1	prompt user for input
-	&rnd	1	get a random number from 1 to n
-	&abs	1	absolute value of a number
-	&sin	2	find the index of second string in first
-	&env	1	retrieve a system environment variable
-	&bin	1	lookup what function name is bound to key
-	&rd	1	is a file readable
-	&wr	1	is a file writable
-	&glo	1	retrieves global mode setting
-	&loc	1	retrieves local mode setting
+	func		no. of
+	name		args
+	------------------------
+	&abs		1	absolute value of a number
+	&add		2	add two numbers together
+	&and		2	logical and
+	&ascii		1	char to integer conversion
+	&bind		1	lookup what function name is bound to key
+	&cat		2	concatenate string
+	&chr		1	integer to char conversion
+	&cclass		1	character class (see "show-printable")
+	&divide		2	division
+	&env		1	retrieve a system environment variable
+	&equal		2	logical equality
+	&execable	1	is a file exec'able
+	&global		1	retrieves global mode setting
+	&greater	2	logical greater than
+	&gtkey		0	get 1 character
+	&gtsequence	0	get keycode sequence, e.g., #1
+	&indirect	1	evaluate indirect value
+	&left		2	left string(string, len)
+	&length		1	string length
+	&less		2	logical less than
+	&local		1	retrieves local mode setting
+	&lookup		2	look for filename
+	&lower		1	lower case string
+	&middle		3	mid string(string, pos, len)
+	&modulo		2	modulus
+	&negate		1	negate
+	&not		1	logical not
+	&or		2	logical or
+	&path		2	extract/translate pathname
+	&pcat		2	concatenate directory and filename
+	&pquote		1	quote pathname if needed, e.g., embedded spaces
+	&query		1	prompt user for input
+	&random		1	get a random number from 1 to n
+	&rd		1	is a file readable
+	&readable	1	is a file readable
+	&right		2	right string(string, pos)
+	&rnd		1	get a random number from 1 to n
+	&sequal		2	string logical equality check
+	&sgreater	2	string logical greater than
+	&sindex		2	find the index of second string in first
+	&sless		2	string logical less than
+	&subtract	2	subtraction
+	&times		2	multiplication
+	&token		3	select n'th token of string, given delims
+	&trim		1	trim whitespace from string
+	&upper		1	uppercase string
+	&word		2	select n'th word of string, blank-separated
+	&writable	1	is a file writable
 
+	The &lookup function takes two arguments.  The first is a keyword and
+	the second is a filename.  Keywords may be combined with '+', e.g.,
+	r+bin to find a readable file in the directory where vile's executable
+	is.  The keywords are for location:
+		bin		look in vile's directory
+		current		look in the current directory
+		home		look in user's $HOME directory
+		libdir		look along $libdir-path
+		path		look along user's $PATH
+		startup		look along $startup-path
+	and for access type, defaulting to an existence check:
+		execable	test if file is exec'able
+		readable	test if file is readable
+		writable	test if file is writable
+	Search order is fixed: current, home, bin, startup, path, libdir
+
+	The &path function takes two arguments.  The first is a keyword and
+	the second is a pathname.  Keywords are:  end (suffix of the filename),
+	full (absolute path), head (directory), root (filename without suffix),
+	short (relative path), tail (filename).
 
 	Directives
 	----------
@@ -4144,4 +4176,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.426 1999/08/05 23:58:48 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.436 1999/08/23 00:08:46 tom Exp $

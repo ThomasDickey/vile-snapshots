@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.53 1999/08/17 09:49:50 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.54 1999/08/21 14:28:31 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -102,6 +102,7 @@ LEX_ALL = \
 	vile-sh-filt$x \
 	vile-spell-filt$x \
 	vile-sql-filt$x \
+	vile-tbl-filt$x \
 	vile-tc-filt$x \
 	vile-tcl-filt$x \
 	vile-ti-filt$x \
@@ -189,6 +190,9 @@ vile-spell-filt$x : spellflt.o $(LF_DEPS)
 vile-sql-filt$x : sql-filt.o $(LF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ sql-filt.o $(LF_ARGS)
 
+vile-tbl-filt$x : tbl-filt.o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ tbl-filt.o $(LF_ARGS)
+
 vile-tc-filt$x : tc-filt.o $(LF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ tc-filt.o $(LF_ARGS)
 
@@ -244,6 +248,7 @@ INSTALL_LEX_BIN = \
 	$(BINDIR)/vile-sh-filt$x \
 	$(BINDIR)/vile-spell-filt$x \
 	$(BINDIR)/vile-sql-filt$x \
+	$(BINDIR)/vile-tbl-filt$x \
 	$(BINDIR)/vile-tc-filt$x \
 	$(BINDIR)/vile-tcl-filt$x \
 	$(BINDIR)/vile-ti-filt$x \
@@ -276,6 +281,7 @@ INSTALL_LEX_TXT = \
 	$(DATADIR)/sh.keywords \
 	$(DATADIR)/spell.rc \
 	$(DATADIR)/sql.keywords \
+	$(DATADIR)/tbl.keywords \
 	$(DATADIR)/tc.keywords \
 	$(DATADIR)/tcl.keywords \
 	$(DATADIR)/ti.keywords \
@@ -355,6 +361,7 @@ $(BINDIR)/vile-sccs-filt$x :	vile-sccs-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-sh-filt$x :	vile-sh-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-spell-filt$x :	vile-spell-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-sql-filt$x :	vile-sql-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-tbl-filt$x :	vile-tbl-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-tc-filt$x :	vile-tc-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-tcl-filt$x :	vile-tcl-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-txt-filt$x :	vile-txt-filt$x		; $(INSTALL_PROGRAM) $? $@
@@ -391,6 +398,7 @@ $(DATADIR)/rcs.keywords :	$(srcdir)/rcs.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/sccs.keywords :	$(srcdir)/sccs.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/sh.keywords :	$(srcdir)/sh.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/sql.keywords :	$(srcdir)/sql.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/tbl.keywords :	$(srcdir)/tbl.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/tc.keywords :	$(srcdir)/tc.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/tcl.keywords :	$(srcdir)/tcl.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/ti.keywords :	$(srcdir)/ti.key	; $(INSTALL_DATA) $? $@

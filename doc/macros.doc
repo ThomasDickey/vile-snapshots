@@ -354,6 +354,10 @@ State Variables
 		        terminated with a space character rather than
 		        a carriage return.)
 
+	$exec-suffix	[READ ONLY] suffix, if any, for execable programs.
+			Use this in portable macros, with &lookup, to get the
+			actual program path.
+
 	$exit-hook      Name of procedure to run when quitting.
 
 	$font           Name of the current font (in xvile/winvile only).
@@ -406,8 +410,9 @@ State Variables
 	$ocwd           [READ ONLY]  Previous current directory.
 
 	$os             [READ ONLY]  "Operating system" for which was vile
-			was built.  Currently "unix", "dos", "vms", "os/2",
-			"win32".
+			was built.  Currently "unix" (if no more-specific name
+			is derived from the configure script), "dos", "vms",
+			"os/2", "vms" and "win32".
 
 	$pagelen        Length of the vile screen.
 
@@ -419,6 +424,8 @@ State Variables
 			color.
 
 	$patchlevel     [READ ONLY] current patch-level (empty for release).
+
+	$pathlist-separator separates directory names in lists such as $PATH.
 
 	$pathname       [READ ONLY] current "path-like" word, under the
 			cursor.
@@ -526,8 +533,11 @@ Interactive variables
 
 Functions
 ---------
-	Functions always return strings.  Functions can take 0, 1, 2,
-	or 3 arguments.  Function names always begin with the & character.
+	Functions always return strings.  Functions can take 0, 1, 2, or 3
+	arguments.  Function names are always preceded by the & character, and
+	can usually be shortened to just three characters, though there is
+	little reason to do so.
+
 	Tasks that are usually implemented as "operators" in other
 	languages are implemented as functions in vile's macro language.
 	Thus, for example, arithmetic division which is usually
@@ -555,10 +565,6 @@ Functions
 		- Logically "false" values:
 		    "false", "f", "no", "n", "off", and zero-valued numerics
 
-	Function names are always preceded by the & character, and
-	can usually be shortened to just three characters, though
-	there is little reason to do so.
-
 	Arithmetic functions --
 
 	  These all return numeric values:
@@ -571,6 +577,7 @@ Functions
 	    &negate "N"             Return -(N).
 	    &ascii  "S"	            Return the ascii code of the first
 					    character in "S"
+	    &random "N"
 	    &rnd    "N"		    Random number between 1 and N
 	    &abs    "N"		    Absolute value of "N"
 
@@ -583,20 +590,21 @@ Functions
 
 	  The rest return strings:
 
-	    &cat    "S1" "S2"	    Concatenate S1 and string "S".
-	    &left   "S" "N"	    Extract first "N" characters from "S"
-	    &right  "S" "N"	    Extract chars from position "N" onward.
-	    &mid    "S" "N1" "N2"   Extract "N2" chars at position "N1".
-	    &upper  "S"	            Return uppercase version of "S".
-	    &lower  "S"	            Return lowercase version of "S".
-	    &chr    "N"	            Converts numeric "N" to an ascii character.
-	    &gtk		    Get a single raw keystroke from the user.
-	    &gts		    Get a complete vile key sequence from user.
-	    &bind   "S"	            Return the function name bound to the
+	    &bind   "S"		    Return the function name bound to the
 					keysequence "S".
-	    &env    "S"	            Return the value of the user's environment
+	    &cat    "S1" "S2"	    Concatenate S1 and string "S".
+	    &chr    "N"		    Converts numeric "N" to an ascii character.
+	    &cclass "S"		    Character class (see "show-printable")
+	    &env    "S"		    Return the value of the user's environment
 					variable named "S".
-	    &trim   "S"	            Remove whitespace at either end of "S",
+	    &gtkey		    Get a single raw keystroke from the user.
+	    &gtsequence		    Get a complete vile key sequence from user.
+	    &left   "S" "N"	    Extract first "N" characters from "S"
+	    &lower  "S"		    Return lowercase version of "S".
+	    &right  "S" "N"	    Extract chars from position "N" onward.
+	    &middle "S" "N1" "N2"   Extract "N2" chars at position "N1".
+	    &upper  "S"		    Return uppercase version of "S".
+	    &trim   "S"		    Remove whitespace at either end of "S",
 					reduce multiple spaces within "S"
 					to a just one space each.
 
@@ -616,25 +624,67 @@ Functions
 	    &sless  "S1" "S2"	    Is "S1" lexically less than "S2"?
 	    &sgreater "S1" "S2"     Is "S1" lexically greater or equal to "S2"?
 
+	    &readable "S"
 	    &rd	    "S"		    Is the named file "S" readable?
-	    &wr	    "S"		    Is the named file "S" writable?
+	    &writable "S"	    Is the named file "S" writable?
+	    &execable "S"	    Is the named file "S" exec'able?
 
 	Miscellaneous functions --
 
 	  These all return string values:
 
 	    &global "MODENAME"	    Retrieves universal/global mode setting.
-	    &local  "MODENAME"	    Retrieves local mode setting (for
-					current buffer).
-
-	    &query  "S"	            Present "S" to the user, and return
-					their typed response.
 
 	    &indirect "S"	    Evaluate value of "S" as a
 					macro language variable itself.
 					Thus if %foo has value "HOME",
 					then &env &indirect %foo will
 					return the home directory pathname.
+
+	    &local  "MODENAME"	    Retrieves local mode setting (for
+					current buffer).
+
+	    &lookup   "N" "P"	    The "N" keyword tells which field to use
+				    looking for the file "P":
+					bin - look in vile's directory
+					current - look in the current directory
+					home - look in user's $HOME directory
+					libdir - look along $libdir-path
+					path - look along user's $PATH
+					startup - look along $startup-path
+				    as well as associated access tests:
+					execable - test if file is exec'able
+					readable - test if file is readable
+					writable - test if file is writable
+				    The search order is fixed: current, home,
+				    bin, startup, path, libdir.  Note that
+				    the directory lists may overlap.
+
+	    &query  "S"		    Present "S" to the user, and return
+					their typed response.
+
+	    &path   "N" "P"	    The "N" keyword tells which field to extract
+				    from the pathname "P":
+					end - suffix of the filename
+					full - absolute path
+					head - directory
+					root - filename without suffix
+					short - relative path
+					tail - filename
+
+	    &pcat   "D" "F"	    Concatenate directory and filename, handing
+				    syntax and ensuring that if the filename is
+				    absolute, that the directory is ignored.
+
+	    &pquote "P"		    Quote the pathname if it contains characters
+				    such as space that cannot be passed to the
+				    shell without special handling.
+
+	    &token  "N" "D" "S"     Select N'th token of string "S", given
+				    delimiters "D".
+
+	    &word   "N" "S"	    Select N'th word of string "S", blank
+				    separated.
 
 
 Directives
@@ -1070,6 +1120,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.20 1999/07/17 18:36:33 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.28 1999/08/23 00:12:57 tom Exp $
 -----------------------------------
 

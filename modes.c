@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.165 1999/08/04 10:55:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.169 1999/08/22 01:31:45 tom Exp $
  *
  */
 
@@ -25,16 +25,6 @@
 #define isLocalVal(valptr)          ((valptr)->vp == &((valptr)->v))
 #define makeLocalVal(valptr)        ((valptr)->vp = &((valptr)->v))
 
-/* FIXME */
-#define OPT_COLOR_CHOICES	OPT_COLOR
-#define OPT_BOOL_CHOICES	1
-#define OPT_POPUP_CHOICES	OPT_POPUPCHOICE
-#define OPT_BACKUP_CHOICES	OPT_FILEBACK
-#define OPT_HILITE_CHOICES	OPT_HILITEMATCH
-#define OPT_RECORDFORMAT_CHOICES SYS_VMS
-#define OPT_VIDEOATTRS_CHOICES  OPT_COLOR_SCHEMES
-#define OPT_VTFLASHSEQ_CHOICES (VTFLASH_HOST && (OPT_FLASH))
-
 #include "nefsms.h"
 
 /*--------------------------------------------------------------------------*/
@@ -46,8 +36,7 @@ static	void	relist_settings (void);
 #endif
 
 #if OPT_ENUM_MODES
-static	const char * choice_to_name (const FSM_CHOICES *choices, int code);
-static	const FSM_CHOICES * name_to_choices (const struct VALNAMES *names);
+static	const FSM_CHOICES * valname_to_choices (const struct VALNAMES *names);
 #endif
 
 /*--------------------------------------------------------------------------*/
@@ -103,6 +92,83 @@ static void relist_majormodes(void);
 #define relist_majormodes() /* nothing */
 
 #endif /* OPT_MAJORMODE */
+
+/*--------------------------------------------------------------------------*/
+
+#if OPT_ENUM_MODES || !SMALLER
+int
+choice_to_code (const FSM_CHOICES *choices, const char *name, size_t len)
+{
+	char temp[NSTRING];
+	int code = ENUM_ILLEGAL;
+	int i;
+
+	if (len > NSTRING-1)
+		len = NSTRING-1;
+
+	memcpy(temp, name, len);
+	temp[len] = EOS;
+	(void)mklower(temp);
+
+	for (i = 0; choices[i].choice_name != 0; i++) {
+		if (!strncmp(temp, choices[i].choice_name, len)) {
+			if (choices[i].choice_name[len] == EOS
+			 || choices[i+1].choice_name == 0
+			 || strncmp(temp, choices[i+1].choice_name, len))
+				code = choices[i].choice_code;
+			break;
+		}
+	}
+	return code;
+}
+
+const char *
+choice_to_name (const FSM_CHOICES *choices, int code)
+{
+	const char *name = 0;
+	register int i;
+
+	for (i = 0; choices[i].choice_name != 0; i++) {
+		if (choices[i].choice_code == code) {
+			name = choices[i].choice_name;
+			break;
+		}
+	}
+	return name;
+}
+#endif /* OPT_FSM_CHOICES */
+
+#if !SMALLER
+/*
+ * Add the values from one or more keywords.  If any error is found, return that
+ * code instead.
+ */
+int
+combine_choices(const FSM_CHOICES *choices, const char *string)
+{
+	char temp[NSTRING];
+	const char *s;
+	int code;
+	int result = 0;
+
+	while (*string) {
+		vl_strncpy(temp, string, sizeof(temp));
+		if ((s = strchr(string, '+')) != 0) {
+			temp[s - string] = EOS;
+			string = s + 1;
+		} else {
+			string += strlen(string);
+		}
+		if ((code = choice_to_code(choices, temp, strlen(temp))) >= 0) {
+			result += code;
+		} else {
+			result = code;
+			break;
+		}
+	}
+	return result;
+}
+#endif
 
 /*--------------------------------------------------------------------------*/
 
@@ -163,7 +229,7 @@ string_val(const struct VALNAMES *names, struct VAL *values)
 	switch (names->type) {
 #if	OPT_ENUM_MODES		/* will show the enum name too */
 	case VALTYPE_ENUM:
-		s = choice_to_name(name_to_choices(names), values->vp->i);
+		s = choice_to_name(valname_to_choices(names), values->vp->i);
 		break;
 #endif
 	case VALTYPE_STRING:
@@ -209,7 +275,7 @@ string_mode_val(VALARGS *args)
 		{
 		static	char	temp[20];	/* FIXME: const workaround */
 		(void)strcpy(temp,
-			choice_to_name(name_to_choices(names), values->vp->i));
+			choice_to_name(valname_to_choices(names), values->vp->i));
 		return temp;
 		}
 #endif				/* else, fall-thru to use int-code */
@@ -518,7 +584,7 @@ getfillcol(BUFFER *bp)
 /*
  * Release storage of a REGEXVAL struct
  */
-static REGEXVAL *
+REGEXVAL *
 free_regexval(register REGEXVAL *rp)
 {
 	if (rp != 0) {
@@ -704,6 +770,7 @@ legal_glob_mode(const char *base)
 }
 #endif
 
+
 /*
  * FSM stands for fixed string mode, so called because the strings which the
  * user is permitted to enter are non-arbitrary (fixed).
@@ -783,48 +850,31 @@ struct FSM fsm_tbl[] = {
 
 static int fsm_idx;
 
-static int
-choice_to_code (const FSM_CHOICES *choices, const char *name)
+static size_t
+fsm_size(const FSM_CHOICES *list)
 {
-	int code = ENUM_ILLEGAL;
-	register int i;
-	char	temp[64];
-	(void)mklower(strncpy0(temp, name, sizeof(temp)));
-
-	for (i = 0; choices[i].choice_name != 0; i++) {
-		if (strcmp(temp, choices[i].choice_name) == 0) {
-			code = choices[i].choice_code;
-			break;
-		}
-	}
-	return code;
-}
-
-static const char *
-choice_to_name (const FSM_CHOICES *choices, int code)
-{
-	const char *name = 0;
-	register int i;
-
-	for (i = 0; choices[i].choice_name != 0; i++) {
-		if (choices[i].choice_code == code) {
-			name = choices[i].choice_name;
-			break;
-		}
-	}
-	return name;
+	size_t result = 0;
+	while ((list++)->choice_name != 0)
+		result++;
+	return result;
 }
 
 static const FSM_CHOICES *
-name_to_choices (const struct VALNAMES *names)
+name_to_choices (const char *name)
 {
 	register SIZE_T i;
 
 	for (i = 1; i < TABLESIZE(fsm_tbl); i++)
-		if (strcmp(fsm_tbl[i].mode_name, names->name) == 0)
+		if (strcmp(fsm_tbl[i].mode_name, name) == 0)
 			return fsm_tbl[i].choices;
 
 	return 0;
+}
+
+static const FSM_CHOICES *
+valname_to_choices (const struct VALNAMES *names)
+{
+	return name_to_choices(names->name);
 }
 
 static int
@@ -869,7 +919,7 @@ legal_fsm(const char *val)
 			if ((s = choice_to_name(p, i)) != 0)
 				return s;
 		} else {
-			if (choice_to_code(p, val) != ENUM_ILLEGAL)
+			if (choice_to_code(p, val, strlen(val)) != ENUM_ILLEGAL)
 				return val;
 		}
 		mlforce("[Illegal value for %s: '%s']",
@@ -1046,7 +1096,7 @@ set_mode_value(BUFFER *bp, const char *cp, int setting, int global, VALARGS *arg
 		case VALTYPE_ENUM:
 #if OPT_ENUM_MODES
 			{
-				const FSM_CHOICES *fp = name_to_choices(names);
+				const FSM_CHOICES *fp = valname_to_choices(names);
 
 				if (isDigit(*rp)) {
 					if (!string_to_number(rp, &nval))
@@ -1054,7 +1104,7 @@ set_mode_value(BUFFER *bp, const char *cp, int setting, int global, VALARGS *arg
 					if (choice_to_name(fp, nval) == 0)
 						nval = ENUM_ILLEGAL;
 				} else {
-					nval = choice_to_code(fp, rp);
+					nval = choice_to_code(fp, rp, strlen(rp));
 				}
 				if (nval == ENUM_ILLEGAL) {
 					mlforce("[Not a legal enum-index: %s]",
@@ -1470,7 +1520,7 @@ chgd_color(VALARGS *args, int glob_vals, int testing)
 	return TRUE;
 }
 
-#if OPT_EVAL || OPT_COLOR_SCHEMES
+#if OPT_ENUM_MODES || OPT_COLOR_SCHEMES
 static void
 set_fsm_choice(const char *name, const FSM_CHOICES *choices)
 {
@@ -1529,11 +1579,11 @@ int set_colors(int n)
 		the_colors = fsm_color_choices;
 		the_hilite = fsm_hilite_choices;
 	} else {
-		my_colors = typecallocn(FSM_CHOICES,TABLESIZE(fsm_color_choices));
-		my_hilite = typecallocn(FSM_CHOICES,TABLESIZE(fsm_hilite_choices));
+		my_colors = typecallocn(FSM_CHOICES,fsm_size(fsm_color_choices));
+		my_hilite = typecallocn(FSM_CHOICES,fsm_size(fsm_hilite_choices));
 		the_colors = my_colors;
 		the_hilite = my_hilite;
-		for (s = d = 0; s < TABLESIZE(fsm_color_choices)-1; s++) {
+		for (s = d = 0; fsm_color_choices[s].choice_name != 0; s++) {
 			my_colors[d] = fsm_color_choices[s];
 			if (my_colors[d].choice_code > 0) {
 				if (!(my_colors[d].choice_code %= ncolors))
@@ -1544,7 +1594,7 @@ int set_colors(int n)
 		}
 		my_colors[d].choice_name = 0;
 
-		for (s = d = 0; s < TABLESIZE(fsm_hilite_choices)-1; s++) {
+		for (s = d = 0; fsm_hilite_choices[s].choice_name != 0; s++) {
 			my_hilite[d] = fsm_hilite_choices[s];
 			if (my_hilite[d].choice_code & VASPCOL) {
 				unsigned code = my_hilite[d].choice_code % NCOLORS;
@@ -1579,7 +1629,7 @@ const char *get_color_name(int n)
 	struct VALNAMES names;
 	const FSM_CHOICES *the_colors;
 	names.name = s_fcolor;
-	the_colors = name_to_choices(&names);
+	the_colors = valname_to_choices(&names);
 	for (j = 0; the_colors[j].choice_name != 0; j++) {
 		if (n == the_colors[j].choice_code)
 			return the_colors[j].choice_name;
@@ -2956,7 +3006,7 @@ set_scheme_color(const FSM_CHOICES *fp, int *d, char *s)
 		if (choice_to_name(fp, nval) == 0)
 			nval = ENUM_ILLEGAL;
 	} else {
-		nval = choice_to_code(fp, s);
+		nval = choice_to_code(fp, s, strlen(s));
 	}
 	*d = nval;
 	return TRUE;
@@ -3210,7 +3260,7 @@ prompt_scheme_value(PALETTES *p)
 				names = &scheme_values[code];
 				if (is_fsm(names))
 					complete = fsm_complete;
-				fp = name_to_choices(names);
+				fp = valname_to_choices(names);
 				break;
 			}
 		}

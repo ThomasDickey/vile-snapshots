@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.69 1999/08/18 01:43:54 tom Exp $
+; $Id: filters.rc,v 1.76 1999/08/23 00:00:25 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -41,7 +41,7 @@ define-mode cweb
 
 define-mode csh
 ~with define-submode csh
-	suf "\\.csh*"
+	suf "\\.\\(csh*\\|login\\|logout\\)$"
 	pre "^#!\\s*\\/.*csh\\>\\(\\s*-[a-z]\\+\\)*$"
 	filtername	"vile-sh-filt -k csh"
 	comment-prefix	"^\\s*#"
@@ -311,6 +311,14 @@ define-mode sql
 	ignorecase
 ~endwith
 
+; VILE's mktbls
+define-mode tbl
+~with define-submode tbl
+	suf "\\(modetbl\\|cmdtbl\\)$"
+	comment-prefix	"^\\s*#"
+	comments	"^\\s*#\\s*$"
+~endwith
+
 define-mode tc
 ~with define-submode tc
 	suf "\\(\\.tc\\|\\<termcap[^/]*\\)$"
@@ -375,13 +383,19 @@ define-mode yacc
 store-procedure HighlightFilter
     ~if &not &seq $majormode ""
 	~local $curcol $curline
-	~local %filtername
+	~local %filtername %filterpath %filteropts
 	~hidden goto-beginning-of-file
 	~if &seq $filtername ""
 		set-variable %filtername &cat &cat "vile-" $majormode "-filt"
-		~hidden attribute-from-filter end-of-file %filtername
 	~else
-		~hidden attribute-from-filter end-of-file $filtername
+		set-variable %filtername $filtername
+	~endif
+	set-variable %filterpath &word 0 %filtername
+	set-variable %filteropts &right %filtername &add 1 &len %filterpath
+	set-variable %filterpath &lookup e+l+p &cat %filterpath $exec-suffix
+	~if &not &seq %filterpath ""
+		set-variable %filterpath &pquote %filterpath
+		~hidden attribute-from-filter end-of-file &cat %filterpath %filteropts
 	~endif
     ~endif
 ~endm

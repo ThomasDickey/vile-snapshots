@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.197 1999/08/04 10:56:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.199 1999/08/22 12:00:08 tom Exp $
  *
  */
 
@@ -1057,6 +1057,34 @@ int anchor)
 #endif /* OPT_REBIND */
 
 
+static char *
+locate_fname(char *dirname, char *fname, int mode)
+{
+	static char fullpath[NFILEN];  /* expanded path */
+
+	if (dirname
+	 && dirname[0] != EOS
+	 && ffaccess(pathcat(fullpath, dirname, fname), mode))
+		return(fullpath);
+
+	return 0;
+}
+
+static char *
+locate_file_in_list(char *list, char *fname, int mode)
+{
+	const char *cp;
+	char *sp;
+	char dirname[NFILEN];
+
+	cp = list;
+	while ((cp = parse_pathlist(cp, dirname)) != 0) {
+		if ((sp = locate_fname(dirname, fname, mode)) != 0)
+			return sp;
+	}
+	return 0;
+}
+
 /* config files that vile is interested in may live in various places,
  * and which may be constrained to various r/w/x modes.  the files may
  * be
@@ -1073,8 +1101,7 @@ cfg_locate(
 char *fname,		/* what we're looking for */
 UINT which)		/* flags specifying where to look */
 {
-	const char *cp;
-	static char fullpath[NFILEN];  /* expanded path */
+	char	*sp;
 	int	mode = (which & (FL_EXECABLE|FL_WRITEABLE|FL_READABLE));
 
 	/* take care of special cases */
@@ -1090,35 +1117,17 @@ UINT which)		/* flags specifying where to look */
 		}
 	}
 
-	/* look in the home directory */
-	if (which & FL_HOME) {
-		cp = getenv("HOME");
-		if (cp != NULL) {
-			/* try home dir file spec */
-			if (ffaccess(pathcat(fullpath,cp,fname), mode)) {
-				return(fullpath);
-			}
-		}
-	}
+	if ((which & FL_HOME) /* look in the home directory */
+	 && ((sp = locate_fname(getenv("HOME"), fname, mode)) != 0))
+		return sp;
 
-	/* look in vile's bin directory */
-	if (which & FL_EXECDIR) { /* is it where we found the executable? */
-		if (exec_pathname
-		 && exec_pathname[0] != EOS
-		 && ffaccess(pathcat(fullpath, exec_pathname, fname), mode))
-			return(fullpath);
-	}
+	if ((which & FL_EXECDIR) /* look in vile's bin directory */
+	 && ((sp = locate_fname(exec_pathname, fname, mode)) != 0))
+		return sp;
 
-	/* look along "VILE_STARTUP_PATH" */
-	if (which & FL_STARTPATH) {
-		cp = startup_path;
-		while ((cp = parse_pathlist(cp, fullpath)) != 0) {
-			if (ffaccess(pathcat(fullpath, fullpath,
-						fname), mode)) {
-				return(fullpath);
-			}
-		}
-	}
+	if ((which & FL_STARTPATH) /* look along "VILE_STARTUP_PATH" */
+	 && (sp = locate_file_in_list(startup_path, fname, mode)) != 0)
+		return sp;
 
 	/* look along "PATH" */
 	if (which & FL_PATH) {
@@ -1150,19 +1159,19 @@ UINT which)		/* flags specifying where to look */
 			 || !tb_append(&myfiles, EOS))
 			return NULL;
 		}
-		cp = tb_values(myfiles);
+		sp = tb_values(myfiles);
 #else	/* UNIX or MSDOS */
-		cp = getenv("PATH");	/* get the PATH variable */
+		sp = getenv("PATH");	/* get the PATH variable */
 #endif
-		while ((cp = parse_pathlist(cp, fullpath)) != 0) {
-			if (ffaccess(pathcat(fullpath,
-					fullpath, fname), mode)) {
-				return(fullpath);
-			}
-		}
+		if ((sp = locate_file_in_list(sp, fname, mode)) != 0)
+			return sp;
 #endif	/* OPT_PATHLOOKUP */
 
 	}
+
+	if ((which & FL_LIBDIR) /* look along "VILE_LIBDIR_PATH" */
+	 && (sp = locate_file_in_list(libdir_path, fname, mode)) != 0)
+		return sp;
 
 	return NULL;
 }
@@ -2501,7 +2510,7 @@ unsigned *pos)
 	buf[cpos] = EOS;	/* terminate it for us */
 
 	if ((nptr = btree_parray(&namebst, buf, cpos)) != 0) {
-		status = kbd_complete(FALSE, c, buf, pos, (char *)nptr, sizeof(*nptr));
+		status = kbd_complete(FALSE, c, buf, pos, (const char *)nptr, sizeof(*nptr));
 		free((char *)nptr);
 	} else
 		kbd_alarm();

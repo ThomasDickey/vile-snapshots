@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.365 1999/08/18 00:49:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.372 1999/08/22 11:58:19 tom Exp $
  *
  */
 
@@ -615,9 +615,13 @@ void purge_msgs (void);
 #endif
 
 /* modes.c */
+extern REGEXVAL *free_regexval(REGEXVAL *rp);
 extern REGEXVAL *new_regexval (const char *pattern, int magic);
 extern char *string_mode_val (VALARGS *args);
+extern const char * choice_to_name (const FSM_CHOICES *choices, int code);
 extern int adjvalueset (const char *cp, int setting, int global, VALARGS *args);
+extern int choice_to_code (const FSM_CHOICES *choices, const char *name, size_t len);
+extern int combine_choices(const FSM_CHOICES *choices, const char *string);
 extern int find_mode (BUFFER *bp, const char *mode, int global, VALARGS *args);
 extern int getfillcol(BUFFER *bp);
 extern int mode_eol (EOL_ARGS);
@@ -703,6 +707,7 @@ extern char * lengthen_path (char *path);
 extern char * pathcat (char *dst, const char *path, char *leaf);
 extern char * pathleaf (char *path);
 extern char * shorten_path (char *path, int keep_cwd);
+extern const char *parse_pathlist (const char *list, char *result);
 extern int is_directory (char *path);
 extern int is_internalname (const char *fn);
 extern int is_pathname (char *path);
@@ -716,10 +721,6 @@ extern char * sl_to_bsl (const char *p);
 
 #ifndef bsl_to_sl_inplace
 extern void bsl_to_sl_inplace (char *p);
-#endif
-
-#if OPT_PATHLOOKUP && (SYS_UNIX||SYS_VMS||OPT_MSDOS_PATH)
-extern const char *parse_pathlist (const char *list, char *result);
 #endif
 
 #if OPT_CASELESS && SYS_OS2
@@ -1172,6 +1173,9 @@ extern	int	chdir	(const char *path);
 #endif
 #if MISSING_EXTERN_CLOSE
 extern	int	close	(int fd);
+#endif
+#if MISSING_EXTERN_CRYPT
+extern	char *	crypt	(const char *key, const char *salt);
 #endif
 #if MISSING_EXTERN_DUP
 extern	int	dup	(int fd);
