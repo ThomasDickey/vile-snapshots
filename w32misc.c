@@ -7,7 +7,7 @@
  * =======
  * -- This code has not been tested with NT 3.51 .
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.6 1998/08/16 22:28:55 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.7 1998/09/03 10:15:40 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -479,3 +479,136 @@ disp_win32_error(ULONG errcode, void *hwnd)
     MessageBox(hwnd, buf, prognam, MB_OK|MB_ICONSTOP);
     LocalFree(buf);
 }
+
+
+
+#ifdef DISP_NTWIN
+/*
+ * FUNCTION
+ *   parse_font_str(const char *fontstr, FONTSTR_OPTIONS *results)
+ *
+ *   fontstr - a font specification string, see DESCRIPTION below.
+ *
+ *   results - Pointer to structure that returns data from a successfully
+ *             parsed font string.
+ *
+ * DESCRIPTION
+ *   Turns a font specification string into a LOGFONT data structure.
+ *   Specification syntax is as follows:
+ *
+ *     <font>  :== [<face>,]<size>[,<style>]
+ *
+ *     <face>  :== font-name
+ *     <size>  :== point size (integer)
+ *     <style> :== { bold | italic | bold-italic }
+ *
+ *     ex:    Letter Gothic,8
+ *     ex:    r_ansi,8,bold
+ *
+ *     Note 1:  If <style> unspecified, "normal" is assumed.
+ *     Note 2:  if <face> contains a comma it should be escaped with '\'.
+ *     Note 3:  if <face> is omitted, the current font is modified.
+ *
+ * RETURNS
+ *   Boolean, T -> font syntax ok, else bogus syntax
+ */
+
+int
+parse_font_str(const char *fontstr, FONTSTR_OPTIONS *results)
+{
+    const char    *cp, *tmp;
+    char          *endnum, *facep;
+    unsigned long size;
+
+    memset(results, 0, sizeof(*results));
+    size  = 0;
+    cp    = fontstr;
+    while (*cp && isspace(*cp))
+        cp++;
+
+    /* Up first is either a font face or font size. */
+    if (isdigit(*cp))
+    {
+        errno = 0;
+        size  = strtoul(cp, &endnum, 10);
+        if (errno != 0)
+            return (FALSE);
+        tmp = endnum;
+        while (*tmp && isspace(*tmp))
+            tmp++;
+        if (*tmp != '\0')
+        {
+            if (*tmp != ',')
+            {
+                /* Not a 100% integer value, assume this is a font face. */
+
+                size = 0;
+            }
+            else
+                cp = tmp;      /* Valid point size. */
+        }
+        else
+            cp = tmp;         /* Only a point size specified, nothing left. */
+    }
+    if (size == 0)
+    {
+        /* this must be a font face */
+
+        facep = results->face;
+        while (*cp)
+        {
+            if (*cp == ',')
+            {
+                cp++;
+                break;
+            }
+            else if (*cp == '\\' && cp[1] == ',')
+            {
+                *facep++  = ',';
+                cp       += 2;
+            }
+            else
+                *facep++ = *cp++;
+        }
+        *facep = '\0';
+        if (results->face[0] == '\0' || *cp == '\0')
+            return (FALSE);
+        else
+        {
+            /* Now pick up non-optional font size (that follows face). */
+
+            errno = 0;
+            size  = strtoul(cp, &endnum, 10);
+            if (errno != 0 || size == 0)
+                return (FALSE);
+            cp = endnum;
+        }
+    }
+
+    /* Now look for optional font style. */
+    while (*cp && isspace(*cp))
+        cp++;
+
+    /* At this point, there are two allowable states:  delimiter or EOS. */
+    if (*cp)
+    {
+        if (*cp++ == ',')
+        {
+            while (*cp && isspace(*cp))
+                cp++;
+            if (strncmp(cp, "bold-italic", sizeof("bold-italic") - 1) == 0)
+                results->bold = results->italic = TRUE;
+            else if (strncmp(cp, "italic", sizeof("italic") - 1) == 0)
+                results->italic = TRUE;
+            else if (strncmp(cp, "bold", sizeof("bold") - 1) == 0)
+                results->bold = TRUE;
+            else
+                return (FALSE);
+        }
+        else
+            return (FALSE);
+    }
+    results->size = size;
+    return (TRUE);
+}
+#endif  /* DISP_NTWIN */

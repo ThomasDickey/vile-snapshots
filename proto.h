@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.298 1998/09/01 10:11:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.299 1998/09/03 10:15:12 cmorgan Exp $
  *
  */
 
@@ -894,11 +894,25 @@ extern FILE *vms_rpipe (const char *cmd, int fd, const char *input_file);
 #if SYS_WINNT
 
 #define W32_SYS_ERROR  NOERROR
+
+typedef struct fontstr_options_struct
+{
+    unsigned long size;      /* Font's point size.                     */
+    int           bold;      /* Boolean -> T, user wants bold weight.  */
+    int           italic;    /* Boolean -> T, user wants italic style. */
+    char          face[256]; /* Font face requested by user.  If no face
+                              * specified, face[0] == '\0';
+                              */
+} FONTSTR_OPTIONS;
+
 typedef struct oleauto_options_struct
 {
-    int invisible;      /* Boolean, T -> server invisible at startup        */
-    int multiple;       /* Boolean, T -> multiple server instances possible */
-    int rows, cols;     /* Size of winvile at startup, 0 if unspecified     */
+    int  invisible;     /* Boolean, T -> server invisible at startup        */
+    int  multiple;      /* Boolean, T -> multiple server instances possible */
+    int  rows, cols;    /* Size of winvile at startup, 0 if unspecified     */
+    char *fontstr;      /* Ptr to font specification (see parse_font_str()),
+                         * fall back on default font if NULL.
+                         */
 } OLEAUTO_OPTIONS;
 
 extern void disp_win32_error(ULONG errcode, void *hwnd);
@@ -906,11 +920,14 @@ extern char *fmt_win32_error(ULONG errcode, char **buf, ULONG buflen);
 extern int  is_win95(void);
 extern int  is_winnt(void);
 extern char *mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc);
+extern char *ntwinio_current_font(void);
+extern int  ntwinio_font_frm_str(const char *fontstr, int use_mb);
 extern void ntwinio_oleauto_reg(void);
 extern void oleauto_exit(int code);
 extern int  oleauto_init(OLEAUTO_OPTIONS *opts);
 extern int  oleauto_register(OLEAUTO_OPTIONS *opts);
 extern int  oleauto_unregister(void);
+extern int  parse_font_str(const char *fontstr, FONTSTR_OPTIONS *results);
 extern void restore_console_title(void);
 extern void set_console_title(const char *title);
 extern int  stdin_data_available(void);

@@ -2081,7 +2081,7 @@ Programmed procedures and macros
 	$end-of-cmd	true if user ended the cmd with <CR>
 	$exit-hook	name of procedure to run when quitting
 	$flicker	set true to suppress CGA flicker on a PC.  ugh.
-	$font		current font name (X11 version only)
+	$font		current font name (X11/winvile versions only)
 	$forward-search	search direction, true=forward
 	$helpfile	help-filename (vile.hlp)
 	$iconname	current icon name (X11 version only)
@@ -3487,18 +3487,23 @@ Win32 specifics
 	reference to "vile" refers to both the console and GUI editor,
 	unless otherwise stated.
 
+	Heritage
+	--------
+	The Win32 version of vile supports almost all of the features and
+	changes listed directly above in the section entitled "DOS
+	specifics", with the exception that the editor's screen resolution
+	cannot be changed using explicit -43, -50, etc. command-line
+	switches or via the sres command.
+
+	Winvile Command-Line Switches
+	-----------------------------
 	Winvile accepts these command-line options in addition to the
 	standard ones:
 
-	-geometry geom	Initial window dimensions in columns and rows.
-
-	Heritage
-	--------
-	The Win32 version of vile supports almost all of the features
-	and changes listed directly above in the section entitled
-	"DOS specifics", with the exception that the editor's screen
-	resolution cannot be changed using command-line switches or
-	the sres command.
+	-geometry <C>x<R>      Initial window dimensions in Columns and Rows
+				 (ex:  -geometry 80x30).
+	-fn       <fontspec>   Initial font (or -font).  The "Winvile Font"
+				 section below describes <fontspec> syntax.
 
 	Pipes
 	-----
@@ -3549,6 +3554,39 @@ Win32 specifics
 	provides a mechanism for substituting winvile as the default
 	Developer Studio editor.  Refer to the file doc/visvile.doc for
 	detailed information.
+
+	Winvile Font
+	------------
+	Winvile's font may be set via a command-line switch or from within
+	the editor by modifying the $font environment variable.  In either
+	case, a <fontspec> string describes the desired font, where:
+
+	<fontspec>  :== [<face>,]<size>[,<style>]
+	<face>      :== font-name
+	<size>      :== point size (as an integer)
+	<style>     :== { bold | italic | bold-italic }
+
+	Note 1:  if <style> is unspecified, "normal" is assumed.
+	Note 2:  if <face> contains a comma, escape it with '\'.
+	Note 3:  if <face> is omitted, the current font is modified.
+	Note 4:  if <face> contains spaces and the font is set from the
+		 command-line, delimit <fontspec> as appropriate for the
+		 current shell/desktop environment.
+	Note 5:  <face> must be fixed pitch.  To obtain a list of all fixed
+		 pitch fonts on the current win32 host, invoke winvile and
+		 browse the "Font" dialog box accessible from the System menu
+		 (accelerator key is ALT+<space bar>+f).
+
+	Cmdline Examples		Internal Examples
+	****************                *****************
+	-fn 'Letter Gothic,8'   	:setv $font r_ansi,7
+	-font r_ansi,8,bold     	:setv $font 8
+
+			Vile.rc Example
+			***************
+			~if &sequal $progname "winvile"
+				set-variable $font "courier new,8"
+			~endif
 
 	Utilities
 	---------
@@ -3850,4 +3888,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.365 1998/08/27 11:23:32 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.366 1998/09/03 10:15:36 cmorgan Exp $

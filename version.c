@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.40 1998/08/17 00:38:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.41 1998/09/03 10:15:12 cmorgan Exp $
  *
  */
 
@@ -18,6 +18,7 @@ print_usage (void)
 	"-h             to get help on startup",
 	"-gNNN          or simply +NNN to go to line NNN",
 #if SYS_WINNT && defined(DISP_NTWIN)
+	"-fn fontspec   to change font",
 	"-geometry CxR  to set initial size to R rows and C columns",
 #endif
 #if SYS_WINNT && defined(VILE_OLE) && defined(DISP_NTWIN)

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.255 1998/09/02 10:53:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.256 1998/09/03 10:04:12 tom Exp $
  *
  */
 
@@ -1620,8 +1620,9 @@ updattrs(WINDOW *wp)
 	    if (ap->ar_shape == RECTANGLE) {
 		end_col = rect_end_col;
 	    } else if (lnum == end_rlnum) {
-		int n = MARK2COL(wp, ap->ar_region.r_end);
-		end_col = mark2col(wp, ap->ar_region.r_end);
+		int n = mark2col(wp, ap->ar_region.r_end) - 1;
+		end_col = offs2col(wp, ap->ar_region.r_end.l,
+				   ap->ar_region.r_end.o - 1);
 		if (end_col < n)
 			end_col = n;
 	    } else {

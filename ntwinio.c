@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.22 1998/09/02 01:36:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.24 1998/09/03 10:25:20 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -26,12 +26,12 @@
 
 #if OPT_TRACE
 #define IGN_PROC(tag,name) \
- 	case name: \
+	case name: \
 		TRACE((tag #name " (ignored)\n")) \
 		break;
 
 #define DEF_PROC(tag,name) \
- 	case name: \
+	case name: \
 		TRACE((tag #name " (%s)\n", which_window(hWnd))) \
 		return (DefWindowProc(hWnd, message, wParam, lParam))
 #else
@@ -249,12 +249,16 @@ gui_resize(int cols, int rows)
 {
 	RECT crect;
 	RECT wrect;
+	int text_wide;
+	int text_high;
 
 	GetClientRect(cur_win->main_hwnd, &crect);
 	GetWindowRect(cur_win->main_hwnd, &wrect);
 
-	wrect.right  += ColToPixel(cols) - crect.right;
-	wrect.bottom += RowToPixel(rows) - crect.bottom;
+	text_wide = ColToPixel(cols);
+	text_high = RowToPixel(rows);
+	wrect.right  += text_wide - crect.right;
+	wrect.bottom += text_high - crect.bottom;
 
 	TRACE(("gui_resize(%d x %d) -> (%d,%d) (%d,%d)\n",
 		rows, cols,
@@ -272,8 +276,8 @@ gui_resize(int cols, int rows)
 	MoveWindow(cur_win->text_hwnd,
 		0,
 		0,
-		wrect.right - wrect.left - (cur_win->x_border * 2),
-		wrect.bottom - wrect.top,
+		text_wide,
+		text_high,
 		TRUE);
 #if OPT_SCROLLBARS
 	update_scrollbar_sizes();
@@ -520,7 +524,7 @@ static int fshow_cursor(void)
 	}
 
 	if (!caret_exists) {
-		TRACE(("...CreateCaret(%d,%d)\n", y, x))
+		TRACE(("...CreateCaret(%d,%d)\n", ttrow, ttcol))
 		CreateCaret(cur_win->text_hwnd, (HBITMAP) 0, nCharWidth, nLineHeight);
 		caret_exists = 1;
 		SetCaretPos(x, y);
@@ -538,7 +542,7 @@ static int CALLBACK
 enumerate_fonts(
 	ENUMLOGFONT *lpelf,
 	NEWTEXTMETRIC *lpntm,
-	int FontType,
+	DWORD FontType,
 	LPARAM lParam)
 {
 	int code = 2;
@@ -584,7 +588,7 @@ static int is_fixed_pitch(HFONT font)
 
 static int new_font(LOGFONT *lf)
 {
-	HFONT *font = CreateFontIndirect(lf);
+	HFONT font = CreateFontIndirect(lf);
 
 	if (font != 0) {
 		if (is_fixed_pitch(font)) {
@@ -593,6 +597,8 @@ static int new_font(LOGFONT *lf)
 			TRACE(("created new font\n"))
 			return TRUE;
 		}
+		else
+		    DeleteObject(font);
 	}
 	return FALSE;
 }
@@ -682,6 +688,159 @@ static void set_font(void)
 	}
 
 	TRACE(("LOGFONT Facename:%s\n", vile_logfont.lfFaceName))
+}
+
+static int
+last_w32_error(int use_msg_box)
+{
+    if (use_msg_box)
+        disp_win32_error(W32_SYS_ERROR, winvile_hwnd());
+    else
+    {
+        char *msg = NULL;
+
+        fmt_win32_error(W32_SYS_ERROR, &msg, 0);
+        mlforce(msg);
+        LocalFree(msg);
+    }
+    return (FALSE);
+}
+
+/*
+ * Set font from string specification.  See the function parse_font_str()
+ * in file w32misc.c for acceptable font string syntax.
+ *
+ * Prerequistes before calling this function:
+ *
+ *    winvile's windows and default font (vile_font) created.
+ *
+ * Returns: T -> all is well, F -> failure.
+ */
+int
+ntwinio_font_frm_str(
+    const char *fontstr,
+    int        use_mb    /* Boolean, T -> errors reported via MessageBox.
+                          *          F -> errors reported via message line.
+                          */
+                     )
+{
+    int             face_specified;
+    HDC             hdc;
+    HFONT           hfont;
+    HWND            hwnd;
+    LOGFONT         logfont;
+    char            *msg, font_mapper_face[LF_FACESIZE + 1];
+    TEXTMETRIC      metrics;
+    FONTSTR_OPTIONS str_rslts;
+
+    if (! parse_font_str(fontstr, &str_rslts))
+    {
+        msg = "Font syntax invalid";
+        if (use_mb)
+            MessageBox(winvile_hwnd(), msg, prognam, MB_ICONSTOP|MB_OK);
+        else
+            mlforce(msg);
+        return (FALSE);
+    }
+    hwnd           = cur_win->text_hwnd;
+    face_specified = (str_rslts.face[0] != '\0');
+    if (! ((hdc = GetDC(hwnd)) && SelectObject(hdc, vile_font)))
+    {
+        if (hdc)
+            ReleaseDC(hwnd, hdc);
+        return (last_w32_error(use_mb));
+    }
+    if (! face_specified)
+    {
+        /* user didn't specify a face name, get current name. */
+
+        if ((GetTextFace(hdc, sizeof(str_rslts.face), str_rslts.face)) == 0)
+        {
+            ReleaseDC(hwnd, hdc);
+            return (last_w32_error(use_mb));
+        }
+    }
+
+    /* Build up LOGFONT data structure. */
+    memset(&logfont, 0, sizeof(logfont));
+    logfont.lfWeight = (str_rslts.bold) ? FW_BOLD : FW_NORMAL;
+    logfont.lfHeight = -MulDiv(str_rslts.size,
+                               GetDeviceCaps(hdc, LOGPIXELSY),
+                               72);
+    if (str_rslts.italic)
+        logfont.lfItalic = TRUE;
+    logfont.lfCharSet        = ANSI_CHARSET;
+    logfont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
+    strncpy(logfont.lfFaceName, str_rslts.face, LF_FACESIZE - 1);
+    logfont.lfFaceName[LF_FACESIZE - 1] = '\0';
+    if (! ((hfont = CreateFontIndirect(&logfont)) && SelectObject(hdc, hfont)))
+    {
+        if (hfont)
+            DeleteObject(hfont);
+        ReleaseDC(hwnd, hdc);
+        return (last_w32_error(use_mb));
+    }
+
+    /*
+     * The font mapper will substitute some other font for a font request
+     * that cannot exactly be met.  Ck first to see if the face name
+     * matches the user chosen face (if applicatble).
+     */
+    if (face_specified)
+    {
+        if ((GetTextFace(hdc, sizeof(font_mapper_face), font_mapper_face)) == 0)
+        {
+            ReleaseDC(hwnd, hdc);
+            DeleteObject(hfont);
+            return (last_w32_error(use_mb));
+        }
+        if (stricmp(font_mapper_face, str_rslts.face) != 0)
+        {
+            ReleaseDC(hwnd, hdc);
+            DeleteObject(hfont);
+            msg = "Font face unknown";
+            if (use_mb)
+                MessageBox(winvile_hwnd(), msg, prognam, MB_ICONSTOP|MB_OK);
+            else
+                mlforce(msg);
+            return (FALSE);
+        }
+    }
+
+    /* Next, font must be fixed pitch. */
+    if (! GetTextMetrics(hdc, &metrics))
+    {
+        ReleaseDC(hwnd, hdc);
+        DeleteObject(hfont);
+        return (last_w32_error(use_mb));
+    }
+    if ((metrics.tmPitchAndFamily & TMPF_FIXED_PITCH) != 0)
+    {
+        /* Misnamed constant! */
+
+        ReleaseDC(hwnd, hdc);
+        DeleteObject(hfont);
+        msg = "Font not fixed pitch";
+        if (use_mb)
+            MessageBox(winvile_hwnd(), msg, prognam, MB_ICONSTOP|MB_OK);
+        else
+            mlforce(msg);
+        return (FALSE);
+    }
+    DeleteObject(vile_font);      /* Nuke original font     */
+    ReleaseDC(hwnd, hdc);         /* finally done with this */
+    vile_font = hfont;
+    memcpy(&vile_logfont, &logfont, sizeof(vile_logfont));
+    use_font(vile_font, FALSE);
+    vile_refresh(FALSE, 0);
+    return (TRUE);
+}
+
+char *
+ntwinio_current_font(void)
+{
+	/* FIXME */
+    return ("this feature not yet implemented");
 }
 
 #if OPT_TITLE
@@ -1085,7 +1244,6 @@ ntgetch(void)
 	vile_in_getfkey = 1;
 	while(! result) {
 		if(GetFocus() == cur_win->main_hwnd) {
-			SetCursor(arrow_cursor);
 			if(! have_focus) {
 				have_focus = 1;
 				fshow_cursor();
@@ -1224,9 +1382,6 @@ ntgetch(void)
 			break;
 		}
 	}
-	if(GetFocus() == cur_win->main_hwnd) {
-		SetCursor(hglass_cursor);
-	}
 	fhide_cursor();
 	vile_in_getfkey = 0;
 
@@ -1303,7 +1458,7 @@ ntscroll(int from, int to, int n)
 		&region,	/* address of structure with clip rectangle */
 		(HRGN)0,	/* handle of update region */
 		&tofill,	/* address of structure for update rectangle */
-		SW_ERASE 	/* scrolling flags */
+		SW_ERASE	/* scrolling flags */
 		);
 	TRACE(("fill: (%d,%d)/(%d,%d)\n",
 		tofill.left, tofill.top,
@@ -1727,13 +1882,6 @@ LONG FAR PASCAL TextWndProc(
 	switch (message) {
 	case WM_MOUSEMOVE:
 		TRACE(("TEXT:MOUSEMOVE\n"))
-		if(GetFocus() == cur_win->text_hwnd) {
-			if(vile_in_getfkey) {
-				SetCursor(arrow_cursor);
-			} else {
-				SetCursor(hglass_cursor);
-			}
-		}
 		break;
 
 	case WM_PAINT:
@@ -1788,13 +1936,6 @@ LONG FAR PASCAL MainWndProc(
 	HANDLE_MSG(hWnd, WM_CLOSE,	HandleClose);
 	case WM_MOUSEMOVE:
 		TRACE(("MAIN:MOUSEMOVE\n"))
-		if(GetFocus() == cur_win->main_hwnd) {
-			if(vile_in_getfkey) {
-				SetCursor(arrow_cursor);
-			} else {
-				SetCursor(hglass_cursor);
-			}
-		}
 		break;
 	case WM_COMMAND:
 		TRACE(("MAIN:COMMAND\n"))
@@ -1829,15 +1970,17 @@ LONG FAR PASCAL MainWndProc(
 		break;
 
 /*
-	case WM_SETFOCUS:
-		fshow_cursor();
-		break;
-
 	case WM_SIZE:
 		MoveWindow(cur_win->main_hwnd, 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
 		break;
 */
+	case WM_SETFOCUS:
+		TRACE(("MAIN:SETFOCUS\n"))
+		fshow_cursor();
+		break;
+
 	case WM_KILLFOCUS:
+		TRACE(("MAIN:KILLFOCUS\n"))
 		fhide_cursor();
 		break;
 
@@ -1914,9 +2057,8 @@ LONG FAR PASCAL MainWndProc(
 	return (1);
 }
 
-BOOL InitInstance(
-	HANDLE          hInstance,
-	int             nCmdShow)
+static BOOL
+InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
 	WNDCLASS  wc;
 
@@ -2040,8 +2182,6 @@ BOOL InitInstance(
 		return (FALSE);
 #endif
 
-	SetCursor(hglass_cursor);
-
 	get_font(&vile_logfont);
 	use_font(vile_font, FALSE);
 
@@ -2050,18 +2190,18 @@ BOOL InitInstance(
 	return (TRUE);
 }
 
-int PASCAL
+int WINAPI
 WinMain(
-	HANDLE hInstance,
-	HANDLE hPrevInstance,
+	HINSTANCE hInstance,
+	HINSTANCE hPrevInstance,
 	LPSTR lpCmdLine,
 	int nCmdShow)
 {
-#define MAXARGS 10
+#define MAXARGS 12
 	int argc = 0;
 	int n;
 	char *argv[MAXARGS];
-	char *ptr;
+	char *ptr, *fontstr;
 #ifdef VILE_OLE
 	int oa_invoke, oa_reg;
 
@@ -2094,76 +2234,89 @@ WinMain(
 		if (*ptr == delim)
 			*ptr++ = '\0';
 	}
-	argv[argc] = 0;
+	fontstr = argv[argc] = 0;
 
 	SetCols(80);
 	SetRows(24);
 
 	/*
-	 * Get screen size and OLE options, if any.
+	 * Get screen size and OLE options, if any.  Parsing logic is
+	 * messy, but must remain that way to handle the various command
+	 * line options available with and without OLE automation.
 	 */
 	for (n = 1; n < argc; n++) {
-		size_t len = strlen(argv[n]);
 		int m = n, eat = 0;
-		if (len >2
-		    && n + 1 < argc
-		    && !strncmp(argv[n], "-geometry", len)) {
-			char *src = argv[n+1];
-			char *dst = 0;
-			int value = strtol(src, &dst, 0);
-			if (dst != src) {
-				if (value > 2)
-					SetCols(value);
-				if (*dst++ == 'x') {
-					src = dst;
-					value = strtol(src, &dst, 0);
+		if (n + 1 < argc) {
+			if (strcmp(argv[n], "-geometry") == 0) {
+				char *src = argv[n+1];
+				char *dst = 0;
+				int value = strtol(src, &dst, 0);
+				if (dst != src) {
 					if (value > 2)
-					{
-						SetRows(value);
+						SetCols(value);
+					if (*dst++ == 'x') {
+						src = dst;
+						value = strtol(src, &dst, 0);
+						if (value > 2) {
+							SetRows(value);
 #ifdef VILE_OLE
-						oa_opts.cols = term.t_ncol;
-						oa_opts.rows = term.t_nrow;
+							oa_opts.cols = term.t_ncol;
+							oa_opts.rows = term.t_nrow;
 #endif
+						}
 					}
+					eat = 2;
 				}
-				eat = 2;
+			}
+			else if (strcmp(argv[n], "-font") == 0 ||
+						strcmp(argv[n], "-fn") == 0)
+			{
+				fontstr = argv[n + 1];
+				eat     = 2;
 			}
 		}
 #ifdef VILE_OLE
-		else if (argv[n][0] == '-' && argv[n][1] == 'O')
+		if (eat == 0)
 		{
-			int which = argv[n][2];
+			/* No valid options seen yet. */
 
-			if (which == 'r')
+			if (argv[n][0] == '-' && argv[n][1] == 'O')
 			{
-				/*
-				 * Flag OLE registration request, but don't
-				 * eat argument.  Instead, registration
-				 * will be carried out in main.c, so that
-				 * the regular cmdline parser has an
-				 * opportunity to flag misspelled OLE
-				 * options.  Ex:  winvile -Or -mutiple
-				 */
+				int which = argv[n][2];
 
-				oa_reg = TRUE;
+				if (which == 'r')
+				{
+					/*
+					 * Flag OLE registration request,
+					 * but don't eat argument.  Instead,
+					 * registration will be carried out
+					 * in main.c, so that the regular
+					 * cmdline parser has an opportunity
+					 * to flag misspelled OLE options.
+					 *
+					 * Ex:  winvile -Or -multiple
+					 */
+
+					oa_reg = TRUE;
+				}
+				else if (which == 'u')
+					ExitProgram(oleauto_unregister());
+				else if (which == 'a')
+				{
+					oa_invoke = TRUE;
+					eat       = 1;
+				}
 			}
-			else if (which == 'u')
-				ExitProgram(oleauto_unregister());
-			else if (which == 'a')
+			else if (strcmp(argv[n], "-invisible") == 0)
 			{
-				oa_invoke = TRUE;
-				eat       = 1;
+				oa_opts.invisible = TRUE;
+				eat               = 1;
 			}
-		}
-		else if (strcmp(argv[n], "-invisible") == 0)
-		{
-			oa_opts.invisible = TRUE;
-			eat               = 1;
-		}
-		else if (strcmp(argv[n], "-multiple") == 0)
-		{
-			oa_opts.multiple = TRUE;
-			eat            = 1;
+			else if (strcmp(argv[n], "-multiple") == 0)
+			{
+				oa_opts.multiple = TRUE;
+				eat            = 1;
+			}
 		}
 #endif
 		if (eat) {
@@ -2203,6 +2356,33 @@ WinMain(
 
 	if (!InitInstance(hInstance, nCmdShow))
 		return (FALSE);
+
+	/*
+	 * Vile window created and default font set.  It's now kosher to set
+	 * the font from a cmdline switch.
+	 */
+	if (fontstr)
+    {
+        int success = ntwinio_font_frm_str(fontstr, TRUE);
+
+#ifdef VILE_OLE
+        if (oa_reg)
+        {
+            if (! success)
+            {
+                /*
+                 * That's it, game over -- crummy font spec detected during
+                 * OLE registration.
+                 */
+
+                ExitProgram(1);
+            }
+            else
+                oa_opts.fontstr = fontstr;
+        }
+#endif
+        /* Regardless of success or failure, continue with new/default font. */
+    }
 
 #ifdef VILE_OLE
 	if (oa_invoke)
