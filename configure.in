@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.84 $)
+AC_REVISION($Revision: 1.86 $)
 AC_PREREQ(2.12.971222)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.84 1998/04/15 10:58:41 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.86 1998/05/22 02:02:51 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -59,7 +59,7 @@ AC_ARG_WITH(startup-path,
 [  --with-startup-path=PATH specify locations to search for vile.hlp, etc.],
 [VILE_STARTUP_PATH=$withval],
 [test -z "$VILE_STARTUP_PATH" &&\
-	VILE_STARTUP_PATH='$(exec_prefix)/lib:/usr/local/lib/:/usr/local/:/usr/lib/'])
+	VILE_STARTUP_PATH='$(datadir):/usr/local/lib/:/usr/local/:/usr/lib/'])
 AC_MSG_RESULT($VILE_STARTUP_PATH)
 AC_SUBST(VILE_STARTUP_PATH)
 
@@ -68,12 +68,10 @@ AC_ARG_WITH(perl,
 	[  --with-perl             enable use of Perl as an extension language],
 	[
 	 if test "$perl_bin_path" = no; then
-	    echo "Fatal configure error: perl not found."
-	    exit 1
+	    AC_ERROR([perl not found])
 	 fi
 	 $perl_bin_path -e 'require 5.003' || {
-	    echo "Fatal configure error: perl version must be 5.003 or greater."
-	    exit 1
+	    AC_ERROR([perl version must be 5.003 or greater])
 	 }
 	 perl_lib_path=`$perl_bin_path -MConfig -e 'print $Config{privlib}'`
 	 AC_DEFINE(OPT_PERL)
@@ -81,9 +79,11 @@ AC_ARG_WITH(perl,
 	 LINK_PREFIX=`$perl_bin_path -MConfig -e 'print $Config{shrpenv}'` 
 	 ac_link="$LINK_PREFIX $ac_link" 
 	 CFLAGS="$CFLAGS `$perl_bin_path -MExtUtils::Embed -e ccopts`"
-	 LIBS="$LIBS `$perl_bin_path -MExtUtils::Embed -e ldopts`"])
+	 LIBS="$LIBS `$perl_bin_path -MExtUtils::Embed -e ldopts`"
+	 EXTRA_INSTALL="$EXTRA_INSTALL \$(INSTALL_PERL)"])
 AC_SUBST(perl_lib_path)
 AC_SUBST(perl_bin_path)
+AC_SUBST(EXTRA_INSTALL)
 
 # X11 checks will sometimes add to CFLAGS.  We want the state of CFLAGS
 # prior to these checks
@@ -481,6 +481,7 @@ getwd \
 malloc \
 realloc \
 rindex \
+strerror \
 strtol \
 )
 

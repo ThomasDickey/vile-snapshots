@@ -6,7 +6,7 @@
 # The C language version of this filter, also distributed with vile,
 # is much faster.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/manfilt.pl,v 1.1 1994/07/11 22:56:20 pgf Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/manfilt.pl,v 1.1 1994/07/11 22:56:20 tom Exp $
 #
 while (<>) {
     if (/^[A-Z][A-Z]/) {

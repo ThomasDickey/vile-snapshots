@@ -136,13 +136,73 @@ static SV *svrs;		/* The input record separator, or $/
 
 static int perl_init(void);
 static void xs_init(void);
-static void perl_eval(char *string);
 static int  perl_prompt(void);
 static int  perldo_prompt(void);
 
+/* write each line to message line */
+static int
+write_message(SV *sv)
+{
+    int count = 0;
+    char *text = SvPV(sv, na);
+    char *nl;
+
+    while (text)
+    {
+	if ((nl = strchr(text, '\n')))
+	{
+	    *nl = 0;
+	    while (*++nl == '\n')
+		;
+
+	    if (!*nl)
+		nl = 0;
+	}
+
+	mlforce("%s", text);
+	text = nl;
+	count++;
+    }
+
+    return count;
+}
+
+/* require a file, `optional' indicates that it is OK for the file not
+   to exist */
+static int
+require(char *file, int optional)
+{
+    /* require the file */
+    perl_require_pv(file);
+
+    /* OK */
+    if (!SvTRUE(GvSV(errgv)))
+	return TRUE;
+
+    if (optional)
+    {
+	/* this error is OK for optional files */
+	SV *tmp = newSVpv("Can't locate ", 0);
+	char const *check;
+	int sz;
+
+	sv_catpv(tmp, file);
+	sv_catpv(tmp, " ");
+	check = SvPV(tmp, sz);
+	SvREFCNT_dec(tmp);
+
+	if (!strncmp(SvPV(GvSV(errgv), na), check, sz))
+	    return SORTOFTRUE;
+    }
+
+    write_message(GvSV(errgv));
+    return FALSE;
+}
+
 /* When no region is specified, this will cause the entire buffer to
    be selected without moving DOT. */
-void perl_default_region(void)
+void
+perl_default_region(void)
 {
     static REGION region;
     MARK save_DOT = DOT;
@@ -218,7 +278,7 @@ perl_free_handle(void *handle)
 static int recursecount = 0;
 
 static int
-do_perl_cmd(char *cmd, int inplace)
+do_perl_cmd(SV *cmd, int inplace)
 {
     int old_discmd;
     int old_isnamedcmd;
@@ -227,8 +287,6 @@ do_perl_cmd(char *cmd, int inplace)
 
     if (perl_interp || perl_init()) {
 	REGION region;
-	char *err;
-	STRLEN length;
 	VileBuf *curvbp;
 
 	if (recursecount == 0) {
@@ -265,7 +323,16 @@ do_perl_cmd(char *cmd, int inplace)
 	printf("\nbefore eval\n");
         sv_dump(svcurbuf);
 #endif
-	perl_eval(cmd);
+	sv_setpv(GvSV(errgv),"");
+	if (SvROK(cmd) && SvTYPE(SvRV(cmd)) == SVt_PVCV)
+	{
+ 	    dSP;
+ 	    PUSHMARK(sp);
+ 	    PUTBACK;
+ 	    perl_call_sv(cmd, G_EVAL|G_VOID|G_DISCARD);
+	}
+	else
+	    perl_eval_sv(cmd, G_DISCARD|G_NOARGS|G_KEEPERR);
 #if PDEBUG
 	printf("after eval\n");
         sv_dump(svcurbuf);
@@ -280,18 +347,84 @@ do_perl_cmd(char *cmd, int inplace)
 	    api_command_cleanup();
 	}
 
-	err = SvPV(GvSV(errgv), length);
-	if (length == 0)
+	if (!SvTRUE(GvSV(errgv)))
 	    return TRUE;
-	else {
-	    err[length - 1] = '\0';
-	    mlforce("%s", err);
-	    return FALSE;
-	}
+
+	write_message(GvSV(errgv));
+    }
+
+    return FALSE;
+}
+
+#if OPT_NAMEBST
+/*
+ * procedures for bindable callbacks: see Vile::register*
+ */
+
+static SV *opsv;
+
+static int
+perl_oper()
+{
+    return do_perl_cmd(opsv, FALSE);
+}
+
+int
+perl_call_sub(void *data, int oper, int f, int n)
+{
+    AV *av = data;	/* callback is an array containing: */
+    SV **name;		/* the registered name, */
+    SV **sub;		/* a sub name or coderef to call, */
+    SV **req;		/* and an [optional] file to require */
+
+    switch (av_len(av))
+    {
+	case 2: /* (name, sub, require) */
+	    if ((req = av_fetch(av, 2, 0)) && SvTRUE(*req))
+		if (!require(SvPV(*req, na), FALSE))
+		    return FALSE;
+
+	    /* FALLTHRU */
+
+	case 1: /* (name, sub) */
+	    if (!(name = av_fetch(av, 0, 0)) || !SvTRUE(*name))
+		croak("BUG: can't fetch name SV");
+
+	    if (!(sub = av_fetch(av, 1, 0)) || !SvTRUE(*sub))
+		croak("BUG: can't fetch subroutine SV");
+
+	    break;
+
+	default:
+	    croak("BUG: array contains %d elements", av_len(av) + 1);
+    }
+
+    /* call the subroutine */
+    if (oper)
+    {
+	opcmd = OPOTHER;
+	opsv = *sub;
+	f = vile_op(f, n, perl_oper, SvPV(*name, na));
     }
     else
-	return FALSE;
+    {
+	if (!f)
+	    n = 1;
+
+	while (n-- && (f = do_perl_cmd(*sub, FALSE)))
+	    ;
+    }
+
+    return f;
 }
+
+void
+perl_free_sub(void *data)
+{
+    AV *av = data;
+    av_undef(av);
+}
+#endif
 
 /*
  * Prompt for and execute a perl command.
@@ -363,12 +496,15 @@ perl_prompt(void)
 {
     register int status;
     char buf[NLINE];	/* buffer to receive command into */
+    SV *cmd;
 
     buf[0] = EOS;
     if ((status = mlreply_no_opts("Perl command: ", buf, sizeof(buf))) != TRUE)
-	    return(status);
+	    return status;
 
-    return do_perl_cmd(buf, FALSE);
+    status = do_perl_cmd(cmd = newSVpv(buf, 0), FALSE);
+    SvREFCNT_dec(cmd);
+    return status;
 }
 
 #define isoctal(c) ((c) >= '0' && (c) <= '7')
@@ -717,7 +853,7 @@ perldo_prompt(void)
     /* reset handle and close block */
 /*{*/ sv_catpv(cmd, "select $_save_fh}");
 
-    status = do_perl_cmd(SvPV(cmd, na), opts & OPT_i);
+    status = do_perl_cmd(cmd, opts & OPT_i);
     SvREFCNT_dec(cmd);
 
     return status;
@@ -761,7 +897,6 @@ perl_init(void)
 	return FALSE;
     }
     perl_call_argv("Vile::bootstrap", G_DISCARD, bootargs);
-    perl_eval("$SIG{__WARN__}='Vile::Warn'");
 
     /* Add our own paths to the front of @INC */
 #ifdef HELP_LOC
@@ -783,7 +918,6 @@ perl_init(void)
         }
     }
 #endif
-
 
     /* Obtain handles to specific perl variables, creating them
        if they do not exist. */
@@ -808,25 +942,15 @@ perl_init(void)
     svrs = perl_get_sv("main::/", FALSE);
 
     /* Some things are better (or easier) to do in perl... */
-    perl_eval("sub Vile::Buffer::PRINTF { \
-                   my $fh=shift; my $fmt=shift;\
-		   print $fh sprintf($fmt,@_);\
-	       }");
+    perl_eval_pv("$SIG{__WARN__}='Vile::Warn';"
+		 "sub Vile::Buffer::PRINTF {"
+		 "    my $fh=shift; my $fmt=shift;"
+		 "    print $fh sprintf($fmt,@_);"
+		 "}", G_DISCARD);
 
     /* Load user or system wide initialization script */
-    perl_eval("require 'vileinit.pl'");
-
+    require("vileinit.pl", TRUE);
     return TRUE;
-}
-
-static void
-perl_eval(char *string)
-{
-    SV* sv = newSVpv(string, 0);
-
-    sv_setpv(GvSV(errgv),"");
-    perl_eval_sv(sv, G_DISCARD | G_NOARGS | G_KEEPERR);
-    SvREFCNT_dec(sv);
 }
 
 /* Register any extra external extensions */
@@ -1396,6 +1520,8 @@ PROTOTYPES: DISABLE
   # The second will actually call the main subroutine of the
   # script.
   #
+  # See also the Vile::C<register> functions.
+  #
 
 
 MODULE = Vile	PACKAGE = Vile
@@ -1414,13 +1540,11 @@ MODULE = Vile	PACKAGE = Vile
 
 void
 Warn(warning)
-    char *warning;
+    char *warning
 
     CODE:
-	mlforce("%s",SvPV(GvSV(errgv), na));
-	/* don't know if this actually works... */
+	write_message(GvSV(errgv));
 	sv_catpv(GvSV(errgv),warning);
-
 
   #
   # =item beep
@@ -1430,7 +1554,7 @@ Warn(warning)
 
 void
 beep()
-    PPCODE:
+    CODE:
     	kbd_alarm();
 
   #
@@ -1558,7 +1682,8 @@ mlreply(prompt, ...)
 	    hst_glue('\r');
 #endif
 	RETVAL = (status == TRUE || status == FALSE)
-	         ? newSVpv(buf, 0) : newSVsv(&sv_undef);
+	         ? sv_2mortal(newSVpv(buf, 0))
+		 : &sv_undef;
 
     OUTPUT:
 	RETVAL
@@ -1602,7 +1727,8 @@ mlreply_dir(prompt, ...)
 	    hst_glue('\r');
 #endif
 	RETVAL = (status == TRUE || status == FALSE)
-	         ? newSVpv(buf, 0) : newSVsv(&sv_undef);
+	         ? sv_2mortal(newSVpv(buf, 0))
+		 : &sv_undef;
 
     OUTPUT:
 	RETVAL
@@ -1646,7 +1772,8 @@ mlreply_file(prompt, ...)
 	    hst_glue('\r');
 #endif
 	RETVAL = (status == TRUE || status == FALSE)
-	         ? newSVpv(buf, 0) : newSVsv(&sv_undef);
+	         ? sv_2mortal(newSVpv(buf, 0))
+		 : &sv_undef;
 
     OUTPUT:
 	RETVAL
@@ -1689,7 +1816,8 @@ mlreply_no_opts(prompt, ...)
 	    hst_glue('\r');
 #endif
 	RETVAL = (status == TRUE || status == FALSE)
-	         ? newSVpv(buf, 0) : newSVsv(&sv_undef);
+	         ? sv_2mortal(newSVpv(buf, 0))
+		 : &sv_undef;
 
     OUTPUT:
 	RETVAL
@@ -2033,6 +2161,119 @@ working(...)
 #endif
     OUTPUT:
 	RETVAL
+
+#if OPT_NAMEBST
+  #
+  # =item register NAME, [SUB, HELP, REQUIRE]
+  #
+  # Register a subroutine SUB as Vile function NAME.  Once registered,
+  # the subroutine may then be invoked as a named command and bound to
+  # keystrokes.
+  #
+  # SUB may be given either as a string to eval, or a reference to a
+  # subroutine.  If omitted, SUB defaults to NAME.
+  #
+  # HELP provides a description of the subroutine for the [Binding
+  # List] functions.
+  #
+  # An optional file to require may be given.
+  #
+  # Example:
+  #
+  #     Vile::register grep => 'hgrep', 'recursive grep', 'hgrep.pl';
+  #
+  # or
+  #
+  #     require 'hgrep.pl';
+  #     Vile::register grep => \&hgrep, 'recursive grep';
+  #
+  # also
+  #
+  #     sub foo { print "foo" }
+  #     Vile::register 'foo';
+  #     Vile::register bar => 'print "bar"';
+  #     Vile::register quux => sub { print "quux" };
+  #
+  # =item register_motion NAME, [SUB, HELP, REQUIRE]
+  #
+  # =item register_oper NAME, [SUB, HELP, REQUIRE]
+  #
+  # These synonyms for Vile::C<register> allow perl subroutines to
+  # behave as motions and operators.  For example, these subroutines
+  # behave like their builtin counterparts:
+  #
+  #     *cb = \$Vile::current_buffer;
+  #     Vile::register_motion 'my-forward-line-at-bol' => sub {
+  #         $cb->dot((scalar $cb->dot) + 1, 0);
+  #     };
+  #
+  #     Vile::register_oper 'my-delete-til' => sub { $cb->delete };
+  #
+
+void
+register(name, ...)
+    char *name
+
+    ALIAS:
+	register_motion = MOTION
+	register_oper = OPER
+
+    PREINIT:
+	CMDFUNC *cmd;
+	AV *av;
+	SV *sub;
+	char *p;
+
+    PPCODE:
+	if (items > 4)
+	    croak("Too many arguments to %s", GvNAME(CvGV(cv)));
+
+	for (p = name; *p; p++)
+	    if (!isalnum(*p) && *p != '-' && *p != '_')
+		croak("invalid subroutine name");
+
+	if (!(cmd = typealloc(CMDFUNC)))
+	    croak("Can't allocate space");
+
+	cmd->cu.c_perl = av = newAV();
+	cmd->c_flags = REDO|UNDO|VIEWOK|CMD_PERL|ix;
+#if OPT_ONLINEHELP
+	cmd->c_help = strmalloc((items > 2 && SvTRUE(ST(2)))
+				? SvPV(ST(2), na)
+				: "Perl subroutine");
+#endif
+
+	if (insert_namebst(name, cmd, FALSE) != TRUE)
+	{
+#if OPT_ONLINEHELP
+	    free((char *) cmd->c_help);
+#endif
+	    free(cmd);
+	    av_undef(av);
+	}
+	else
+	{
+	    /* push the name */
+	    av_push(av, newSVpv(name, 0));
+
+	    /* push the subroutine */
+	    if (items > 1 && SvTRUE(ST(1)))
+	    {
+		SvREFCNT_inc(sub = ST(1));
+		av_push(av, sub);
+
+		/* push the require */
+		if (items > 3 && SvTRUE(ST(3)))
+		{
+		    SvREFCNT_inc(ST(3));
+		    av_push(av, ST(3));
+		}
+	    }
+	    else /* sub = name */
+		av_push(av, newSVpv(name, 0));
+	}
+
+#endif
 
   #
   # =item watchfd FD, WATCHTYPE, CALLBACK
@@ -3008,8 +3249,6 @@ PRINT(vbp, ...)
 	if (vbp2bp(vbp) == bminip) {
 	    if (items > 0) {
 		SV *tmp = newSVsv(ST(1));
-		char *text;
-		char *nl;
 		int i;
 
 		for (i = 2; i < items; i++) {
@@ -3019,21 +3258,8 @@ PRINT(vbp, ...)
 		    sv_catsv(tmp, ST(i));
 		}
 
-		text = SvPV(tmp, na);
-		while (text) {
-		    if ((nl = strchr(text, '\n')) != NULL) {
-			*nl = 0;
-			while (*++nl == '\n')
-			    ;
-
-			if (!*nl)
-			    nl = 0;
-		    }
-
-		    mlforce("%s", text);
+		if (write_message(tmp))
 		    use_ml_as_prompt = 1;
-		    text = nl;
-		}
 
 		SvREFCNT_dec(tmp);
 	    }

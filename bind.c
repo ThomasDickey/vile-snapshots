@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.175 1998/05/11 09:54:27 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.177 1998/05/22 00:03:23 tom Exp $
  *
  */
 
@@ -43,7 +43,7 @@ static	char *	kcod2prc (int c, char *seq);
 static	int	install_bind (int c, const CMDFUNC *kcmd, const CMDFUNC **oldfunc);
 static	int	key_to_bind ( const CMDFUNC *kcmd );
 static	int	rebind_key ( int c, const CMDFUNC *kcmd );
-static	int	strinc (char *sourc, char *sub);
+static	int	strinc (const char *sourc, const char *sub);
 static	int	unbindchar ( int c );
 static	int	update_binding_list ( BUFFER *bp );
 static	void	makebindlist (LIST_ARGS);
@@ -74,7 +74,7 @@ new_namebst (BI_DATA *a)
 {
 	BI_NODE *p = typecalloc(BI_NODE);
 	p->value = *a;
-	if (!a->n_readonly)
+	if (!(a->n_flags & NBST_READONLY))
 		BI_KEY(p) = strmalloc(a->bi_key);
 	return p;
 }
@@ -82,7 +82,7 @@ new_namebst (BI_DATA *a)
 static void
 old_namebst (BI_NODE *a)
 {
-	if (!a->value.n_readonly)
+	if (!(a->value.n_flags & NBST_READONLY))
 		free(TYPECAST(char,BI_KEY(a)));
 	free(a);
 }
@@ -358,7 +358,7 @@ rebind_key (
 register int	c,
 register const CMDFUNC *kcmd)
 {
-	static const CMDFUNC ignored = { unimpl }, *old = &ignored;
+	static const CMDFUNC ignored = { { unimpl } }, *old = &ignored;
 	return install_bind (c, kcmd, &old);
 }
 
@@ -477,31 +477,69 @@ unbindkey(int f GCC_UNUSED, int n GCC_UNUSED)
 static int
 unbindchar(int c)		/* command key to unbind */
 {
-	register KBIND *kbp;	/* pointer into the command table */
-	register KBIND *skbp;	/* saved pointer into the command table */
+    register KBIND *kbp;	/* pointer into the command table */
+    register KBIND *skbp;	/* saved pointer into the command table */
 
-	if (!isspecial(c)) {
-		asciitbl[c] = NULL;
-	} else {
-		/* search the table to see if the key exists */
-		if ((kbp = kcode2kbind(c)) == 0)
-			return(FALSE);
-
-		/* save the pointer and scan to the end of the table */
-		skbp = kbp;
-		while (kbp->k_cmd != NULL)
-			++kbp;
-		--kbp;		/* backup to the last legit entry */
-
-		/* copy the last entry to the current one */
-		skbp->k_code = kbp->k_code;
-		skbp->k_cmd  = kbp->k_cmd;
-
-		/* null out the last one */
-		kbp->k_code = 0;
-		kbp->k_cmd = NULL;
+    if (!isspecial(c))
+    {
+	if (asciitbl[c])
+	{
+	    asciitbl[c] = 0;
+	    return TRUE;
 	}
+
+	return FALSE;
+    }
+
+    /* check first entry in KeyBindings table */
+    kbp = skbp = KeyBindings;
+    if (kbp->k_code == c)
+    {
+	KeyBindings = kbp->k_link;
+	free(kbp);
 	return TRUE;
+    }
+
+    /* check KeyBindings */
+    while (kbp != kbindtbl)
+    {
+	if (kbp->k_code == c)
+	{
+	    /* relink previous */
+	    skbp->k_link = kbp->k_link;
+	    free(kbp);
+	    return TRUE;
+	}
+
+	skbp = kbp;
+	kbp = kbp->k_link;
+    }
+
+    /* nope, check kbindtbl */
+    skbp = 0;
+    for (skbp = 0; kbp->k_cmd; kbp++)
+    {
+	if (!skbp && kbp->k_code == c)
+	    skbp = kbp;
+    }
+
+    /* not found */
+    if (!skbp)
+	return FALSE;
+
+    --kbp; /* backup to the last legit entry */
+    if (skbp != kbp)
+    {
+	/* copy the last entry to the current one */
+	skbp->k_code = kbp->k_code;
+	skbp->k_cmd  = kbp->k_cmd;
+    }
+
+    /* null out the last one */
+    kbp->k_code = 0;
+    kbp->k_cmd = 0;
+
+    return TRUE;
 }
 
 /* describe bindings bring up a fake buffer and list the key bindings
@@ -578,23 +616,8 @@ desfunc(int f GCC_UNUSED, int n GCC_UNUSED)	/* describe-function */
 
 	fnp = kbd_engl("Describe function whose full name is: ",
 							described_cmd+1);
-	if (fnp == NULL) {
+	if (fnp == NULL || engl2fnc(fnp) == NULL) {
 		s = no_such_function(fnp);
-	} else if (engl2fnc(fnp) == NULL) {
-		char bufn[NBUFN];
-		add_brackets(bufn, fnp);
-		if (find_b_name(bufn) == NULL) {
-			s = no_such_function(fnp);
-		} else {
-			/* FIXME:  it would be nice to add this message to the
-			 * binding list, but then that opens up the
-			 * corresponding 'need' for support with apropos, as
-			 * well as putting all user-macros automatically into
-			 * the binding-list.
-			 */
-			mlforce("User-defined procedure");
-			s = TRUE;
-		}
 	} else {
 		last_apropos_string = described_cmd;
 		last_whichcmds = 0;
@@ -664,7 +687,7 @@ deskey(int f GCC_UNUSED, int n GCC_UNUSED)	/* describe the command for a certain
 
 /* returns a name in double-quotes */
 static char *
-quoted(char *dst, char *src)
+quoted(char *dst, const char *src)
 {
 	return strcat(strcat(strcpy(dst, "\""), src), "\"");
 }
@@ -699,6 +722,168 @@ convert_kcode(int c, char *buffer)
 	(void)kcod2prc(c, to_tabstop(buffer));
 }
 
+#if OPT_NAMEBST
+struct bindlist_data {
+    int mask;		/* oper/motion mask */
+    int min;		/* minimum key length */
+    char *apropos;	/* key check */
+};
+
+static int
+btree_walk(BI_NODE *node, int (*func)(BI_NODE *, const void *),
+	   const void *data)
+{
+    if (node)
+    {
+	if (btree_walk(BI_LEFT(node), func, data))
+	    return 1;
+
+	if (BI_KEY(node))
+	    func(node, data);
+
+	if (btree_walk(BI_RIGHT(node), func, data))
+	    return 1;
+    }
+
+    return 0;
+}
+
+static int
+clearflag_func(BI_NODE *n, const void *d GCC_UNUSED)
+{
+    n->value.n_flags &= ~NBST_DONE;
+    return 0;
+}
+
+static int
+addsynonym_func(BI_NODE *node, const void *d)
+{
+    const CMDFUNC *func = d;
+    static char outseq[NLINE];	/* output buffer for text */
+
+    if (node->value.n_cmd == func &&
+	!(node->value.n_flags & NBST_DONE))
+    {
+	strcpy(outseq, "  or\t");
+	quoted(outseq+5, BI_KEY(node));
+	if (!addline(curbp, outseq, -1))
+	    return 1;
+    }
+
+    return 0;
+}
+
+static int
+makebind_func(BI_NODE *node, const void *d)
+{
+    const struct bindlist_data *data = d;
+    static KBIND *kbp;		/* pointer into a key binding table */
+    static char outseq[NLINE];	/* output buffer for keystroke sequence */
+    const CMDFUNC *cmd = node->value.n_cmd;
+    register int i;
+
+    /* has this been listed? */
+    if (node->value.n_flags & NBST_DONE)
+	return 0;
+
+    /* are we interested in this type of command? */
+    if (data->mask && !(cmd->c_flags & data->mask))
+	return 0;
+
+    /* try to avoid alphabetizing by the real short names */
+    if (data->min && (int) strlen(BI_KEY(node)) <= data->min)
+	return 0;
+
+    /* if we are executing an apropos command
+       and current string doesn't include the search string */
+    if (data->apropos && !strinc(BI_KEY(node), data->apropos))
+	return 0;
+
+    /* add in the command name */
+    quoted(outseq, BI_KEY(node));
+    while (converted_len(outseq) < 32)
+	strcat(outseq, "\t");
+
+    /* look in the simple ascii binding table first */
+    for (i = 0; i < N_chars; i++)
+	if (asciitbl[i] == cmd)
+	    convert_kcode(i, outseq);
+
+    /* then look in the multi-key table */
+#if OPT_REBIND
+    for (kbp = KeyBindings; kbp != kbindtbl; kbp = kbp->k_link)
+    {
+	if (kbp->k_cmd == cmd)
+	    convert_kcode(kbp->k_code, outseq);
+    }
+#endif
+    for (kbp = kbindtbl; kbp->k_cmd; kbp++)
+	if (kbp->k_cmd == cmd)
+	    convert_kcode(kbp->k_code, outseq);
+
+    /* dump the line */
+    if (!addline(curbp, outseq, -1))
+	    return 1;
+
+    node->value.n_flags |= NBST_DONE;
+
+    /* add synonyms */
+    btree_walk(&namebst.head, addsynonym_func, cmd);
+
+#if OPT_ONLINEHELP
+    if (cmd->c_help && *cmd->c_help)
+	lsprintf(outseq, "  (%s %s )",
+	    (cmd->c_flags & MOTION) ? "motion: " :
+	    (cmd->c_flags & OPER)   ? "operator: " : "",
+	    cmd->c_help);
+	else
+	    lsprintf(outseq, "  ( no help for this command )");
+
+    if (!addline(curbp, outseq, -1))
+	return 1;
+
+    if (cmd->c_flags & GLOBOK)
+	if (!addline(curbp, "  (may follow global command)", -1))
+	    return 1;
+#endif
+    /* blank separator */
+    if (!addline(curbp, "", -1))
+	return 1;
+
+    return 0;
+}
+
+/* build a binding list (limited or full) */
+/* ARGSUSED */
+static void
+makebindlist(
+int whichmask,
+void *mstring)		/* match string if partial list, NULL to list all */
+{
+    struct bindlist_data data;
+
+    data.mask = whichmask;
+    data.min = SHORT_CMD_LEN;
+    data.apropos = mstring;
+
+    /* let us know this is in progress */
+    mlwrite("[Building binding list]");
+
+    /* clear the NBST_DONE flag */
+    btree_walk(&namebst.head, clearflag_func, 0);
+
+    /* create binding list */
+    if (btree_walk(&namebst.head, makebind_func, &data))
+	return;
+
+    /* catch entries with no synonym > SHORT_CMD_LEN */
+    data.min = 0;
+    if (btree_walk(&namebst.head, makebind_func, &data))
+	return;
+
+    mlerase();	/* clear the message line */
+}
+#else /* OPT_NAMEBST */
 /* fully describe a function into the current buffer, given a pointer to
  * its name table entry */
 static int
@@ -827,17 +1012,18 @@ void *mstring)		/* match string if partial list, NULL to list all */
 		mlerase();	/* clear the message line */
 	free(listed);
 }
+#endif /* OPT_NAMEBST */
 
 /* much like the "standard" strstr, but if the substring starts
 	with a '^', we discard it and force an exact match.  */
 static int
-strinc(		/* does source include sub? */
-char *sourc,	/* string to search in */
-char *sub)	/* substring to look for */
+strinc(			/* does source include sub? */
+const char *sourc,	/* string to search in */
+const char *sub)	/* substring to look for */
 {
-	char *sp;	/* ptr into source */
-	char *nxtsp;	/* next ptr into source */
-	char *tp;	/* ptr into substring */
+	const char *sp;		/* ptr into source */
+	const char *nxtsp;	/* next ptr into source */
+	const char *tp;		/* ptr into substring */
 	int exact = (*sub == '^');
 
 	if (exact)
@@ -2130,30 +2316,93 @@ kbd_engl_stat(const char *prompt, char	*buffer, int stated)
 int
 insert_namebst(const char *name, const CMDFUNC *cmd, int ro)
 {
-	BI_DATA temp, *p;
+    BI_DATA temp, *p;
 
-	if ((p = btree_search(&namebst, name)) != 0) {
-		if (p->n_readonly && !ro) {
-			mlforce("[Cannot redefine %s]", name);
-			return FALSE;
-		}
-		p->n_cmd = cmd;
-		return TRUE;
-	} else {
-		temp.bi_key     = name;
-		temp.n_cmd      = cmd;
-		temp.n_readonly = ro;
-		return (btree_insert(&namebst, &temp) != 0);
+    if ((p = btree_search(&namebst, name)) != 0)
+    {
+	if ((p->n_flags & NBST_READONLY) && !ro)
+	{
+	    mlforce("[Cannot redefine %s]", name);
+	    return FALSE;
 	}
+
+	if (!delete_namebst(name, TRUE))
+	    return FALSE;
+    }
+
+    temp.bi_key     = name;
+    temp.n_cmd      = cmd;
+    temp.n_flags    = ro ? NBST_READONLY : 0;
+
+    return (btree_insert(&namebst, &temp) != 0);
 }
 
 /*
  * Lookup a name in the binary-search tree, remove it if found
  */
 int
-delete_namebst(const char *name)
+delete_namebst(const char *name, int release)
 {
-	return btree_delete(&namebst, name);
+    BI_DATA *p = btree_search(&namebst, name);
+
+    /* not a named procedure */
+    if (!p)
+	return TRUE;
+
+    if (p->n_flags & NBST_READONLY)
+    {
+	mlforce("BUG: btree entry %s is readonly", name);
+	return FALSE;
+    }
+
+    /* we may have to free some stuff */
+    if (p && release)
+    {
+	int i;
+	int redo;
+
+	/* remove ascii bindings */
+	for (i = 0; i < N_chars; i++)
+	    if (asciitbl[i] == p->n_cmd)
+		asciitbl[i] = 0;
+
+	/* then look in the multi-key table */
+#if OPT_REBIND
+	do {
+	    register KBIND *kbp;
+	    redo = FALSE;
+	    for (kbp = KeyBindings; kbp != kbindtbl; kbp = kbp->k_link)
+		if (kbp->k_cmd == p->n_cmd)
+		{
+		    unbindchar(kbp->k_code);
+		    redo = TRUE;
+		    break;
+		}
+	} while (redo);
+#endif
+	do {
+	    register KBIND *kbp;
+	    redo = FALSE;
+	    for (kbp = kbindtbl; kbp->k_cmd; kbp++)
+		if (kbp->k_cmd == p->n_cmd)
+		{
+		    unbindchar(kbp->k_code);
+		    redo = TRUE;
+		    break;
+		}
+	} while (redo);
+
+	/* free stuff */
+#if OPT_PERL
+	if (p->n_cmd->c_flags & CMD_PERL)
+	    perl_free_sub(p->n_cmd->cu.c_perl);
+#endif
+
+	free((void *) p->n_cmd->c_help);
+	free((void *) p->n_cmd);
+    }
+
+    return btree_delete(&namebst, name);
 }
 
 /*
@@ -2164,25 +2413,25 @@ delete_namebst(const char *name)
 int
 rename_namebst(const char *oldname, const char *newname)
 {
-	NBST_DATA *prior;
-	int code = FALSE;
+    BI_DATA *prior;
+    char name[NBUFN];
 
-	TRACE(("renaming procedure %s to %s\n", oldname, newname));
-	if ((prior = btree_search(&namebst, oldname)) != 0) {
-		char procname[NBUFN];
-		const CMDFUNC *cmd = prior->n_cmd;
-		int ro = prior->n_readonly;
+    /* not a named procedure */
+    if (!(prior = btree_search(&namebst, oldname)))
+	return TRUE;
 
-		if ((code = delete_namebst(
-				strip_brackets(procname, oldname))) == TRUE) {
-			if (is_scratchname(newname)) {
-				code = insert_namebst(
-					strip_brackets(procname, newname),
-					cmd, ro);
-			}
-		}
-	}
-	return code;
+    /* remove the entry if the new name is not a procedure (bracketed) */
+    if (!is_scratchname(newname))
+	return delete_namebst(oldname, TRUE);
+
+    /* add the new name */
+    strip_brackets(name, newname);
+    if ((insert_namebst(name, prior->n_cmd,
+		       prior->n_flags & NBST_READONLY)) != TRUE)
+	return FALSE;
+
+    /* delete the old (but don't free the data) */
+    return delete_namebst(oldname, FALSE);
 }
 
 int

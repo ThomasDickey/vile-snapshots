@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.350 1998/05/14 23:12:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.353 1998/05/22 01:23:55 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -128,6 +128,7 @@
 
 #if CC_CSETPP
 # define HAVE_UTIME		1
+# define HAVE_STRERROR		1
 # define HAVE_SYS_UTIME_H	1
 # define CPP_SUBS_BEFORE_QUOTE	1
 # define HAVE_LOSING_SWITCH_WITH_STRUCTURE_OFFSET	1
@@ -606,6 +607,7 @@ extern char *rindex (const char *s, int c);
 
 #if CC_NEWDOSCC && ! CC_CSETPP
 #include <dos.h>
+# define HAVE_STRERROR		1
 #endif
 
 #if CC_NEWDOSCC && ! CC_DJGPP && ! CC_CSETPP
@@ -2018,7 +2020,13 @@ typedef struct  VIDEO {
 typedef	int	(*CmdFunc) (int f, int n);
 
 typedef	struct {
-	CmdFunc  c_func;	/* function name is bound to */
+	union {
+		CmdFunc c_func;
+		BUFFER *c_buff;
+#if OPT_PERL
+		void *c_perl;	/* Perl 5 'AV' type */
+#endif
+	} cu;
 	CMDFLAGS c_flags;	/* what sort of command is it? */
 #if OPT_ONLINEHELP
 	const char *c_help;	/* short help message for the command */
@@ -2055,8 +2063,11 @@ typedef struct {
  */
 typedef struct {
 	const char *bi_key;		/* the name of the command	*/
-	const CMDFUNC *n_cmd;		/* if NULL, stored procedure	*/
-	int n_readonly;			/* original commands readonly	*/
+	const CMDFUNC *n_cmd;		/* command details		*/
+	char n_flags;			/* flags (below)		*/
+#define	NBST_READONLY	1		/* for builtin functions	*/
+#define	NBST_DONE	2		/* temporary flag used by
+					   bind.c:makebindlist()	*/
 }	NBST_DATA;
 
 
@@ -2085,6 +2096,7 @@ typedef struct  k_bind {
  */
 #define NONE    0L
 #define cmdBIT(n) lBIT(n)	/* ...to simplify typing */
+/* bits 0-11 */
 #define UNDO    cmdBIT(0)	/* command is undo-able, so clean up undo lists */
 #define REDO    cmdBIT(1)	/* command is redo-able, record it for dotcmd */
 #define MOTION  cmdBIT(2)	/* command causes motion, okay after operator cmds */
@@ -2103,27 +2115,36 @@ typedef struct  k_bind {
 /* These flags are 'ex' argument descriptors, adapted from elvis.  Not all are
  * used or honored or implemented.
  */
-#define argBIT(n) cmdBIT(n+11)	/* ...to simplify adding bits */
-#define FROM    argBIT(1)	/* allow a linespec */
-#define TO      argBIT(2)	/* allow a second linespec */
-#define BANG    argBIT(3)	/* allow a ! after the command name */
-#define EXTRA   argBIT(4)	/* allow extra args after command name */
-#define XFILE   argBIT(5)	/* expand wildcards in extra part */
-#define NOSPC   argBIT(6)	/* no spaces allowed in the extra part */
-#define DFLALL  argBIT(7)	/* default file range is 1,$ */
-#define DFLNONE argBIT(9)	/* no default file range */
-#define NODFL   argBIT(10)	/* do not default to the current file name */
-#define EXRCOK  argBIT(11)	/* can be in a .exrc file */
-#define VI_NL   argBIT(12)	/* if !exmode, then write a newline first */
-#define PLUS    argBIT(13)	/* allow a line number, as in ":e +32 foo" */
-#define ZERO    argBIT(14)	/* allow 0 to be given as a line number */
-#define OPTREG  argBIT(15)	/* allow optional register-name */
+#define argBIT(n) cmdBIT(n+12)	/* ...to simplify adding bits */
+/* bits 12-25 */
+#define FROM    argBIT(0)	/* allow a linespec */
+#define TO      argBIT(1)	/* allow a second linespec */
+#define BANG    argBIT(2)	/* allow a ! after the command name */
+#define EXTRA   argBIT(3)	/* allow extra args after command name */
+#define XFILE   argBIT(4)	/* expand wildcards in extra part */
+#define NOSPC   argBIT(5)	/* no spaces allowed in the extra part */
+#define DFLALL  argBIT(6)	/* default file range is 1,$ */
+#define DFLNONE argBIT(7)	/* no default file range */
+#define NODFL   argBIT(8)	/* do not default to the current file name */
+#define EXRCOK  argBIT(9)	/* can be in a .exrc file */
+#define VI_NL   argBIT(10)	/* if !exmode, then write a newline first */
+#define PLUS    argBIT(11)	/* allow a line number, as in ":e +32 foo" */
+#define ZERO    argBIT(12)	/* allow 0 to be given as a line number */
+#define OPTREG  argBIT(13)	/* allow optional register-name */
 #define FILES   (XFILE | EXTRA)	/* multiple extra files allowed */
 #define WORD1   (EXTRA | NOSPC)	/* one extra word allowed */
 #define FILE1   (FILES | NOSPC)	/* 1 file allowed, defaults to current file */
 #define NAMEDF  (FILE1 | NODFL)	/* 1 file allowed, defaults to "" */
 #define NAMEDFS (FILES | NODFL)	/* multiple files allowed, default is "" */
 #define RANGE   (FROM  | TO)	/* range of linespecs allowed */
+
+/* these flags determine the type of cu.* */
+#define typBIT(n) cmdBIT(n+26)	/* ...to simplify adding bits */
+/* bits 26-27 */
+#define CMD_FUNC 0L		/* this is the default (CmdFunc) */
+#define CMD_PROC typBIT(0)	/* named procedure (BUFFER *) */
+#define CMD_PERL typBIT(1)	/* perl subroutine (AV *) */
+#define CMD_TYPE (CMD_PROC | CMD_PERL) /* type mask */
 
 #define SPECIAL_BANG_ARG -42	/* arg passed as 'n' to functions which
  					were invoked by their "xxx!" name */

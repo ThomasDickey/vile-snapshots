@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.281 1998/05/19 23:58:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.283 1998/05/22 01:17:36 tom Exp $
  *
  */
 
@@ -30,6 +30,7 @@ extern void do_repeats (int *cp, int *fp, int *np);
 extern void not_interrupted (void);
 extern void setup_handler (int sig, void (*disp) (int ACTUAL_SIG_ARGS));
 extern void tidy_exit (int code);
+extern int call_cmdfunc(const CMDFUNC *p, int f, int n);
 
 #ifndef interrupted
 extern int interrupted (void);
@@ -56,6 +57,10 @@ extern int xterm_mouse_T (int f, int n);
 extern	void	perl_default_region(void);
 extern	void	perl_free_handle(void *);
 extern	void	perl_free_callback(char *);
+#if OPT_NAMEBST
+extern	int	perl_call_sub(void *, int, int, int);
+extern	void	perl_free_sub(void *);
+#endif
 
 /* api.c */
 extern void api_free_private(void *);
@@ -118,7 +123,7 @@ extern char *give_accelerator ( char * );
 #endif
 
 #if OPT_NAMEBST
-extern int delete_namebst(const char *name);
+extern int delete_namebst(const char *name, int release);
 extern int insert_namebst(const char *name, const CMDFUNC *cmd, int ro);
 extern int rename_namebst(const char *oldname, const char *newname);
 extern int search_namebst(const char *name);
@@ -1180,6 +1185,9 @@ extern	int	sleep	(UINT secs);
 #endif
 #if MISSING_EXTERN_SSCANF
 extern	int	sscanf	(const char *src, const char *fmt, ...);
+#endif
+#if MISSING_EXTERN_STRERROR
+extern	char *	strerror (int code);
 #endif
 #if MISSING_EXTERN_STRTOL
 extern	long	strtol	(const char *nptr, char **endptr, int base);

@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.102 1998/05/03 10:22:04 kev Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.106 1998/05/22 02:05:35 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -70,7 +70,7 @@ CPPFLAGS	= -I. -I$(srcdir) $(X_CFLAGS) \
 		-DVILE_STARTUP_PATH=\"@VILE_STARTUP_PATH@\" \
 		-DHAVE_CONFIG_H @CPPFLAGS@
 
-LDFLAGS		=
+LDFLAGS		= @IMAKE_LOADFLAGS@
 
 INSTALL_DIRS    = $(bindir) $(datadir) $(mandir)
 
@@ -140,18 +140,42 @@ SCREENS = \
 
 # other source code, some used in other makefiles, some useful tools,
 #  some possibly obsolete
-OTHERSRC = vms2unix.c vmspipe.c os2pipe.c djhandl.c \
-	manpage.rc manfilt.pl manfilt.c \
-	c-filt.c c-filt.flx \
+PERL_SRC = \
+	$(srcdir)/perl/glob2re.pl \
+	$(srcdir)/perl/hgrep.pl \
+	$(srcdir)/perl/manfilt.pl \
+	$(srcdir)/perl/shell.pl \
+	$(srcdir)/perl/tailf.pl \
+	$(srcdir)/perl/visit.pl
+
+MACRO_SRC = \
+	$(srcdir)/macros/manpage.rc \
+	$(srcdir)/macros/pictmode.rc \
+	$(srcdir)/macros/digraphs.rc
+
+OTHERSRC = \
+	c-filt.c \
+	c-filt.flx \
+	djhandl.c \
+	gppconio.c \
+	manfilt.c \
+	os2pipe.c \
 	pas-filt.c \
-	pictmode.rc \
-	gppconio.c digraphs.rc
+	vms2unix.c \
+	vmspipe.c
 
 # documentation, such as it is
-DOCS = vile.hlp vile.1 macros.doc
+DOCS =	\
+	doc/config.doc \
+	doc/macros.doc \
+	doc/modes.doc \
+	doc/menus.doc \
+	doc/perl-api.doc \
+	vile.1 \
+	vile.hlp
 
 # miscellaneous text files
-TEXTFILES = README README.CFG README.PC \
+TEXTFILES = README README.PC \
 	INSTALL CHANGES CHANGES.R5 CHANGES.R4 CHANGES.R3 \
 	buglist revlist patchlev.h COPYING
 
@@ -169,8 +193,6 @@ ALLSRC = $(VILESRC) $(SCREENS) $(OTHERSRC) $(HDRS)
 # this is for work-in-progress files being shared among developers
 #  which don't need to go into general releases yet.
 DEVELOPER_ONLY = NOTES.X11 empty.rc mktbls.bat \
-	win31drv.c win31drv.def win31tbl.c win31tbl.def \
-	win31tbl.h win31tbl.rc  commdlg.msg \
 	trace.c trace.h \
 	fakevms.c fakevms.h
 
@@ -261,6 +283,14 @@ $(MKTBLS):  $(srcdir)/mktbls.c
 check: $(TARGET)
 	@echo Sorry, no batch tests available.
 
+INSTALL_PERL = \
+	$(datadir)/glob2re.pl \
+	$(datadir)/hgrep.pl \
+	$(datadir)/manfilt.pl \
+	$(datadir)/shell.pl \
+	$(datadir)/tailf.pl \
+	$(datadir)/visit.pl
+
 INSTALL_FILES = \
 	$(bindir)/$(TARGET) \
 	$(bindir)/vile-manfilt$x \
@@ -268,7 +298,7 @@ INSTALL_FILES = \
 	$(bindir)/vile-pas-filt$x \
 	$(bindir)/vile-crypt$x \
 	$(mandir)/$(TARGET).$(manext) \
-	$(datadir)/vile.hlp
+	$(datadir)/vile.hlp @EXTRA_INSTALL@
 
 install: $(INSTALL_DIRS) \
 	$(INSTALL_FILES)
@@ -531,6 +561,19 @@ $(mandir)/xvile.$(manext): $(srcdir)/vile.1
 
 $(datadir)/vile.hlp:       $(srcdir)/vile.hlp
 	$(INSTALL_DATA)    $(srcdir)/vile.hlp $@
+
+$(datadir)/glob2re.pl:     $(srcdir)/perl/glob2re.pl
+	$(INSTALL_DATA)    $(srcdir)/perl/glob2re.pl $@
+$(datadir)/hgrep.pl:       $(srcdir)/perl/hgrep.pl
+	$(INSTALL_DATA)    $(srcdir)/perl/hgrep.pl $@
+$(datadir)/manfilt.pl:     $(srcdir)/perl/manfilt.pl
+	$(INSTALL_DATA)    $(srcdir)/perl/manfilt.pl $@
+$(datadir)/shell.pl:       $(srcdir)/perl/shell.pl
+	$(INSTALL_DATA)    $(srcdir)/perl/shell.pl $@
+$(datadir)/tailf.pl:       $(srcdir)/perl/tailf.pl
+	$(INSTALL_DATA)    $(srcdir)/perl/tailf.pl $@
+$(datadir)/visit.pl:       $(srcdir)/perl/visit.pl
+	$(INSTALL_DATA)    $(srcdir)/perl/visit.pl $@
 
 $(INSTALL_DIRS):
 	$(SHELL) ${srcdir}/mkdirs.sh $@

@@ -22,7 +22,7 @@ to be sure it's still the latest.
 impatient?  just type "./configure; make", and get a cup of coffee, decaf
 if necessary.  
 
-want X11 support?  you'd better look at README.CFG, although 
+want X11 support?  you'd better look at doc/config.doc, although 
 "./configure --with-screen=x11"; make" may well do what you want.
 
 if you like vile, and wish to be informed of new releases, let me
@@ -316,5 +316,5 @@ September, 1996
 	on vile -- i _really_ appreciate it...  -pgf
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.63 1998/04/30 23:49:21 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.64 1998/05/22 00:55:28 tom Exp $
 -------------------------------

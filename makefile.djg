@@ -3,7 +3,7 @@
 #
 # T.DANG (dang@cogit.ign.fr)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.24 1998/04/12 15:00:04 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.25 1998/05/22 00:18:52 tom Exp $
 #
 #
 
@@ -60,10 +60,11 @@ dist :	vile
 	strip vile
 	coff2exe vile
 	-stubedit vile.exe globbing=no
-	pkzip pcvile.zip readme.pc readme vile.exe \
-		vile.hlp pictmode.rc digraphs.rc \\djgpp\\bin\\go32.exe
-
-
+	pkzip pcvile.zip readme.pc readme vile.exe vile.hlp 
+	cd macros
+	pkzip pcvile.zip pictmode.rc digraphs.rc 
+	cd ..
+	pkzip pcvile.zip \\djgpp\\bin\\go32.exe
 
 # for my poor slow omnibook, i do incremental linking when working on
 # just a couple of modules...
