@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.261 1999/12/24 01:08:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.262 2000/01/09 23:30:57 tom Exp $
  *
  */
 
@@ -1215,14 +1215,31 @@ makecolorlist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 {
 	int j, k;
 	REGION region;
+	char temp[11];
+	char *s;
 
 	bprintf("--- Color palette %*P\n", term.cols-1, '-');
 	bprintf("\nColor name       Internal  $palette   Examples\n");
 	for (j = -1; j < ncolors; j++) {
 		k = j >= 0 ? ctrans[j] : j;
 		bprintf("\n%16s ", get_color_name(j));
-		bprintf("%d%*P", j, 10, ' ');
-		bprintf("%d%*P", k, 10, ' ');
+
+		/* show internal codes in the form that we'll read from the
+		 * filters.  That's 'C' followed by a single digit, in
+		 * hexadecimal because we allow up to 16 colors.
+		 */
+		if (j >= 0)
+			bprintf("C%X%*P", j, 10, ' ');
+		else
+			bprintf("%*P", 10, ' ');
+		/*
+		 * $palette values are in decimal, but it's useful to see the
+		 * hexadecimal equivalents.
+		 */
+		s = lsprintf(temp, "%d", k);
+		if (k > 9)
+			(void)lsprintf(s, " (%X)", k);
+		bprintf("%s%*P", temp, sizeof(temp)-1, ' ');
 
 		show_attr(j, "",   "Normal");
 		show_attr(j, "B",  "Bold");

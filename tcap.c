@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.132 1999/12/24 01:08:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.134 2000/01/09 23:36:01 tom Exp $
  *
  */
 
@@ -30,6 +30,8 @@ static char *tc_CS, *tc_dl, *tc_al, *tc_DL, *tc_AL, *tc_SF, *tc_SR;
 static char *tc_VI, *tc_VE;
 
 #if OPT_VIDEO_ATTRS
+static char *tc_ZH;	/* italic-start */
+static char *tc_ZR;	/* italic-end */
 static char *tc_US;	/* underline-start */
 static char *tc_UE;	/* underline-end */
 static char *tc_MD;
@@ -323,6 +325,8 @@ tcapopen(void)
 	,{ CAPNAME("md","bold"),  &tc_MD }	/* turn on bold attribute */
 	,{ CAPNAME("us","smul"),  &tc_US }	/* underline-start */
 	,{ CAPNAME("ue","rmul"),  &tc_UE }	/* underline-end */
+	,{ CAPNAME("ZH","sitm"),  &tc_ZH }	/* italic-start */
+	,{ CAPNAME("ZR","ritm"),  &tc_ZR }	/* italic-end */
 #endif
 	,{ CAPNAME("ve","cnorm"), &tc_VE }	/* make cursor appear normal */
 	,{ CAPNAME("vi","civis"), &tc_VI }	/* make cursor invisible */
@@ -438,6 +442,10 @@ tcapopen(void)
 		tc_MD = tc_ME = 0;
 	if ((tc_US != 0) ^ (tc_UE != 0))
 		tc_US = tc_UE = 0;
+	if ((tc_ZH == 0) || (tc_ZR == 0)) {
+		tc_ZH = tc_US;
+		tc_ZR = tc_UE;
+	}
 #endif
 
 	if ((tc_SO != 0 && tc_SE != 0) || (tc_MR != 0 && tc_ME != 0))
@@ -945,7 +953,7 @@ tcapattr(UINT attr)
 		{ &tc_MR, &tc_ME,  4, VASEL|VAREV }, /* more reliable than standout */
 		{ &tc_SO, &tc_SE,  1, VASEL|VAREV },
 		{ &tc_US, &tc_UE,  2, VAUL },
-		{ &tc_US, &tc_UE,  2, VAITAL },
+		{ &tc_ZH, &tc_ZR,  2, VAITAL },
 		{ &tc_MD, &tc_ME, 32, VABOLD },
 	};
 	static	UINT last;

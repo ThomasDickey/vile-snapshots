@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.72 2000/01/07 02:05:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.74 2000/01/10 01:21:49 evhendrs Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -752,9 +752,9 @@ enumerate_fonts(
 	*dst = *src;
 	if (src->lfCharSet == ANSI_CHARSET) {
 	    code = 0;
-	    TRACE(("Found good font:%s\n", lpelf->elfFullName));
+	    TRACE(("Found good font:%s\n", lpelf->lfFaceName));
 	}
-	TRACE(("Found ok font:%s\n", lpelf->elfFullName));
+	TRACE(("Found ok font:%s\n", lpelf->lfFaceName));
 	TRACE(("Pitch/Family:   %#x\n", dst->lfPitchAndFamily));
     }
 
@@ -1625,6 +1625,59 @@ GetMousePos(POINT * result)
     result->y /= nLineHeight;
 }
 
+// Get current mouse position.
+// If the mouse is above/below the current window
+// then scroll the window down/up proportinally
+// to the distance above/below.
+// This function is called from WM_TIMER when
+// the mouse is captured and a wipe selection is
+// active.
+static void
+AutoScroll(WINDOW *wp)
+{
+    POINT current;
+    int Scroll = 0;
+    static int ScrollCount = 0;
+    GetMousePos(&current);
+
+    // Determine if we are above or below the window,
+    // and if so, how far...
+    if (current.y < wp->w_toprow) {
+	// Above the window
+	// Scroll = wp->w_toprow - current.y;
+	Scroll = 1;
+    }
+    if (current.y > mode_row(wp)) {
+	// Below
+	// Scroll = current.y - mode_row(wp);
+	// Scroll *= -1;
+	Scroll = -1;
+    }
+
+    if (Scroll) {
+	int row;
+	if (Scroll > 0) {
+	    row = wp->w_toprow;
+	} else {
+	    row = mode_row(wp) - 1;
+	}
+
+	// Scroll the pre-determined amount..
+	// ScrollScale is signed, so it will
+	// be negative if we want to scroll down.
+	mvupwind(TRUE, Scroll * ScrollCount / 10);
+
+	// Set the cursor. Column doesn't really matter, it will
+	// get updated as soon as we get back into the window...
+	setcursor(row, 0) && sel_extend(TRUE, TRUE);
+	(void) update(TRUE);
+	ScrollCount++;
+    } else {
+	// Reset counter
+	ScrollCount = 0;
+    }
+}
+
 static int
 MouseClickSetPos(POINT * result, int *onmode)
 {
@@ -2139,6 +2192,8 @@ ntgetch(void)
 {
     static DWORD lastclick = 0;
     static int clicks = 0, onmode;
+    // Save the timer ID so we can kill it.
+    static UINT nIDTimer = 0;
 
     DWORD dword;
     DWORD thisclick;
@@ -2255,6 +2310,14 @@ ntgetch(void)
 	    }
 	    break;
 
+	case WM_TIMER:
+	    TRACE(("Timer fired\n"));
+	    {
+		// perform auto-scroll if the mouse cursor
+		// is above/below the current window.
+		AutoScroll(that_wp);
+	    }
+	    break;
 	case WM_LBUTTONDOWN:
 	    TRACE(("GETC:LBUTTONDOWN %s\n", which_window(msg.hwnd)));
 	    if (msg.hwnd == cur_win->text_hwnd) {
@@ -2269,6 +2332,14 @@ ntgetch(void)
 		    that_wp = row2window(first.y);
 		    (void) update(TRUE);	/* for wdw change */
 		}
+		// Check to see if the mouse is currently captured...
+		// If not, then capture it to our window handle
+		if (!GetCapture()) {
+		    SetCapture(cur_win->text_hwnd);
+		    // Set a 100ms timer for handling auto-scroll.
+		    nIDTimer = SetTimer(cur_win->text_hwnd, 1, 25, 0);
+		    AutoScroll(that_wp);
+		}
 	    } else {
 		DispatchMessage(&msg);
 	    }
@@ -2277,6 +2348,12 @@ ntgetch(void)
 	case WM_LBUTTONUP:
 	    TRACE(("GETC:LBUTTONUP %s\n", which_window(msg.hwnd)));
 	    if (msg.hwnd == cur_win->text_hwnd) {
+		// If we captured the mouse, then we will release it.
+		if (GetCapture() == cur_win->text_hwnd) {
+		    ReleaseCapture();
+		    KillTimer(cur_win->text_hwnd, nIDTimer);
+		    nIDTimer = 0;
+		}
 		fhide_cursor();
 
 		sel_pending = FALSE;

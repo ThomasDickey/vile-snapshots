@@ -825,6 +825,13 @@ Miscellaneous commands
 		any numeric argument, will list _all_ buffers, even those
 		normally invisible or considered temporary.
 
+	show-color-schemes -- displays a color chart of the user-definable
+		color schemes (see palettes.rc for examples)
+
+	show-colors -- displays a color chart of the builtin color names, the
+		internal coding used in the syntax filters (e.g., C0), the
+		$palette mapping and examples in bold, italic, etc.
+
 	show-commands or show-bindings -- displays the list of commands
 		and the keys bound to them.
 
@@ -4308,4 +4315,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.462 2000/01/05 02:27:04 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.463 2000/01/09 23:43:20 tom Exp $

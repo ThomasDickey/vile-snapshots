@@ -1,6 +1,6 @@
-revlist for vile, version v9_0p
+revlist for vile, version v9_0q
 --------------------------------------------------------------------------------
-CHANGES	1.552
+CHANGES	1.553
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -29,7 +29,7 @@ cmdtbl	1.193
 config.emx	1.2
 config_h.in	1.2
 configure	none
-configure.in	1.123
+configure.in	1.124
 csrch.c	1.30
 descrip.mms	1.42
 dirstuff.h	1.23
@@ -38,7 +38,7 @@ djhandl.c	1.6
 dumbterm.c	1.17
 edef.h	1.265
 estruct.h	1.437
-eval.c	1.261
+eval.c	1.262
 exec.c	1.214
 externs.c	1.7
 fences.c	1.76
@@ -63,7 +63,7 @@ makefile.blc	1.11
 makefile.djg	1.30
 makefile.emx	1.5
 makefile.icc	1.13
-makefile.in	1.156
+makefile.in	1.157
 makefile.tbc	1.24
 makefile.wat	1.26
 makefile.wnt	1.57
@@ -77,13 +77,13 @@ modetbl	1.165
 msgs.c	1.20
 npopen.c	1.81
 ntconio.c	1.54
-ntwinio.c	1.72
+ntwinio.c	1.74
 oneliner.c	1.94
 opers.c	1.68
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.26
-patchlev.h	1.216
+patchlev.h	1.217
 path.c	1.101
 perl.xs	1.68
 proto.h	1.411
@@ -92,7 +92,7 @@ ptypemap	1.6
 random.c	1.229
 regexp.c	1.67
 region.c	1.101
-revlist	v9_0p
+revlist	v9_0q
 search.c	1.119
 select.c	1.112
 sinstall.sh	1.1
@@ -100,7 +100,7 @@ spawn.c	1.151
 statevar.c	1.31
 tags.c	1.105
 tbuff.c	1.36
-tcap.c	1.132
+tcap.c	1.134
 tcap.h	1.4
 termio.c	1.185
 trace.c	1.16
@@ -110,7 +110,7 @@ undo.c	1.74
 version.c	1.47
 vile-9.0.spec	1.1
 vile.1	1.24
-vile.hlp	1.462
+vile.hlp	1.463
 vile.wmconfig	1.1
 vms2unix.c	1.34
 vmsbuild.com	1.33
@@ -143,7 +143,7 @@ doc/filters.doc	1.17
 doc/indent.pro	1.2
 doc/macros.doc	1.41
 doc/menus.doc	1.6
-doc/modes.doc	1.6
+doc/modes.doc	1.7
 doc/oleauto.doc	1.6
 doc/perl.doc	1.2
 doc/visvile.doc	1.7
@@ -173,13 +173,13 @@ filters/fdl-filt.l	1.3
 filters/fdl.key	1.3
 filters/filters.c	1.61
 filters/filters.h	1.31
-filters/filters.rc	1.104
+filters/filters.rc	1.105
 filters/html.key	1.6
 filters/htmlfilt.l	1.18
 filters/imake.key	1.2
 filters/java.key	1.2
 filters/js.key	1.1
-filters/key-filt.c	1.5
+filters/key-filt.c	1.6
 filters/latex.key	1.2
 filters/latexflt.l	1.15
 filters/lex-filt.l	1.14
@@ -212,7 +212,7 @@ filters/rexx.key	1.1
 filters/rexxfilt.l	1.2
 filters/sccs.key	1.1
 filters/sccsfilt.l	1.1
-filters/sh-filt.l	1.26
+filters/sh-filt.l	1.27
 filters/sh.key	1.4
 filters/spell.rc	1.2
 filters/spellflt.l	1.2
@@ -266,8 +266,8 @@ perl/directory.pm	1.6
 perl/dirlist.pm	1.3
 perl/hgrep.pm	1.3
 perl/lock.pm	1.1
-perl/mime.pl	1.2
-perl/plugins.pl	1.2
+perl/mime.pl	1.3
+perl/plugins.pl	1.3
 perl/search.pm	1.2
 perl/shell.pm	1.2
 perl/spell.pm	1.1

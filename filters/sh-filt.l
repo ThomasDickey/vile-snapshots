@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.26 1999/11/25 01:21:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.27 2000/01/10 00:33:16 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -118,6 +118,7 @@ INTEGER		[-+]?([0-9]+)
 
 <NORMAL>"#"[^\n]*	{ WriteString(Comment_attr); }
 
+<NORMAL>^{SPACE}*:	|
 <NORMAL>{ACTION}	{ WriteToken(Action_attr); }
 
 <NORMAL>{INTEGER}	{ WriteToken(Number_attr); }

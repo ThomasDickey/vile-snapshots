@@ -1,5 +1,4 @@
-#!/bin/echo not_a_script:
-# $Header: /users/source/archives/vile.vcs/perl/RCS/mime.pl,v 1.2 1999/12/29 14:29:57 bod Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/mime.pl,v 1.3 2000/01/09 22:53:07 bod Exp $
 # (see dir.doc)
 require 'plugins.pl';
 
