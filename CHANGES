@@ -1,5 +1,17 @@
 Changes for vile 7.5/8.0 (released ??? ??? ?, 1998)
 
+ (kev) 980506 (d)
+	+ fences.c (comment_fence): Call scanboundry() before calling
+	  scanner() to set the scanner's boundary.  This fixes a bug
+	  in which the corresponding fence would sometimes not be matched
+	  due to an old scan boundary sitting in the middle of the region
+	  delimited by the two fences.  A quick way to reproduce the bug:
+	  Search for something in the middle of a multi-line comment.
+	  Move your cursor to the beginning or end of the comment.  Press
+	  the '%' to try to move to the other end of the comment.  Notice
+	  that it doesn't.  (Or it does, if the bug has been fixed!)
+	+ input.c (editMinibuffer): Some hacks for 'i', 'a', 'I', and 'A'.
+
  (tom) 980506 (c)
 	+ modify getregion() to handle the special case where a region is given
 	  extending to the end of file, e.g., "^A~]", when DOT is on the last

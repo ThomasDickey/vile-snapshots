@@ -8,7 +8,7 @@
  * Extensions for vile by Paul Fox
  * Revised to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.47 1998/05/01 00:48:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.48 1998/05/07 01:40:47 kev Exp $
  *
  */
 
@@ -235,6 +235,7 @@ comment_fence(int sdir)
 			forwchar(TRUE, BlkEnd->mlen - off);
 	}
 
+	scanboundry(FALSE,DOT,sdir);
 	if (scanner((sdir == FORWARD) ? BlkEnd : BlkBegin,
 			sdir, FALSE, (int *)0)) {
 		if (!doingopcmd || doingsweep)
