@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_1p
+MANIFEST for vile, version v9_1q
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -178,6 +178,7 @@ filters/filterio.c              main program and I/O for external filters
 filters/filters.c               common utilities for filtering
 filters/filters.h               interface/definitions for filtering utilities
 filters/filters.rc              sample majormodes, and corresponding filters
+filters/genmake.c               parse/substitute from genmake.mak
 filters/genmake.mak             makefile template-data for genmake.awk
 filters/html.key                keywords for vile-html-filt
 filters/htmlfilt.l              HTML syntax filter for vile

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sml-filt.l,v 1.1 2000/07/27 02:46:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sml-filt.l,v 1.2 2000/08/09 23:49:32 tom Exp $
 
     Filter to add vile "attribution" sequences to selected bits of SML
     input text.
@@ -35,8 +35,7 @@ static int	strpos;
 static void
 flush_string(void)
 {
-    if (strpos > 0)
-    {
+    if (strpos > 0) {
 	flt_puts(strbuf, strpos, String_attr);
 	strpos = 0;
     }
@@ -53,13 +52,10 @@ start_string(void)
 static void
 add_string(char* str, int len)
 {
-    while (len-- > 0)
-    {
-	if (strpos >= STRBUF)
-	{
+    while (len-- > 0) {
+	if (strpos >= STRBUF) {
 	    flush_string();
 	}
-
 	strbuf[strpos++] = *(str++);
     }
 }
@@ -82,8 +78,8 @@ do_filter(FILE *input)
     Number_attr  = class_attr(NAME_NUMBER);
     String_attr  = class_attr(NAME_LITERAL);
 
-    while (yylex() > 0)
-    {
+    BEGIN(INITIAL);
+    while (yylex() > 0) {
     }
 
     flush_string();

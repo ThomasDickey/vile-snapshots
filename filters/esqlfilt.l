@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.8 2000/04/21 15:37:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.9 2000/08/09 23:17:38 tom Exp $
  *
  * Filter to add vile "attribution" sequences to embedded SQL with C/C++.
  * - T.Dickey
@@ -126,6 +126,10 @@ do_filter(FILE *input)
     Number_attr  = class_attr(NAME_NUMBER);
     Preproc_attr = class_attr(NAME_PREPROC);
     String_attr  = class_attr(NAME_LITERAL);
+
+    exec_sql = 0;
+    in_execute = 0;
+    in_block = 0;
 
     default_state(CODE);
     while (yylex() > 0) {

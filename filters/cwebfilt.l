@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.11 2000/02/28 11:58:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.12 2000/08/09 23:47:52 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Cwebx input
  * text.  Also useful for Cweb
@@ -52,6 +52,7 @@ do_filter(FILE *input)
 {
     yyin = input;
 
+    in_code = 0;
     Comment_attr = class_attr(NAME_COMMENT);
     Preproc_attr = class_attr(NAME_PREPROC);
     Keyword_attr = class_attr(NAME_KEYWORD);
@@ -65,6 +66,7 @@ do_filter(FILE *input)
     Cweb_code_titre = class_attr(NAME_Cweb_title);
     Cweb_code_autre = class_attr(NAME_Cweb_other);
 
+    BEGIN(INITIAL);
     while (yylex() > 0) {
     }
 }

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.11 2000/04/21 11:07:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.13 2000/08/09 23:40:36 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an ordinary text file
  */
@@ -74,6 +74,7 @@ do_filter(FILE *input)
     BEGIN(NORMAL);
     while (yylex() > 0) {
     }
+    flush_quoted();
 }
 
 %}

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.14 2000/02/28 11:58:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.15 2000/08/09 23:30:18 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
@@ -95,6 +95,9 @@ do_filter(FILE *input)
     Ident_attr   = class_attr(NAME_IDENT);
     String_attr  = class_attr(NAME_LITERAL);
 
+    commented = 0;
+
+    BEGIN(INITIAL);
     while (yylex() > 0) {
     }
 }

@@ -55,7 +55,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.20 2000/02/29 22:43:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.21 2000/08/09 09:13:01 Ian.Jamison Exp $
  */
 
 #include <windows.h>
@@ -183,11 +183,11 @@ int
 w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
 {
     HANDLE handles[3];
-    int    i, rc, rp[2], tmpin_fd, wp[2];
+    int    i, rc, rp[3], tmpin_fd, wp[3];
 
     TRACE(("w32_inout_popen cmd=%s\n", cmd));
     proc_handle  = BAD_PROC_HANDLE;
-    rp[0]        = rp[1]      = wp[0]      = wp[1] = BAD_FD;
+    rp[0] = rp[1] = rp[2] = wp[0] = wp[1] = wp[2] = BAD_FD;
     handles[0]   = handles[1] = handles[2] = INVALID_HANDLE_VALUE;
     tmpin_fd     = BAD_FD;
     tmpin_name   = NULL;
@@ -233,6 +233,8 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
              */
             if (_pipe(rp, PIPESIZ, O_TEXT|O_NOINHERIT) == -1)
                 break;
+
+#ifdef DUP_HANDLE_BROKEN_ON_WIN2K
             if (! DuplicateHandle(GetCurrentProcess(),
                                   (HANDLE) _get_osfhandle(rp[1]),
                                   GetCurrentProcess(),
@@ -243,6 +245,12 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
             {
                 break;
             }
+#else
+            if ((rp[2] = _dup(rp[1])) == -1)
+                break;
+            handles[1] = (HANDLE)_get_osfhandle(rp[2]);
+#endif
+
             handles[2] = handles[1];
             (void) close(rp[1]);
             rp[1] = BAD_FD;
@@ -282,6 +290,8 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
              */
             if (_pipe(wp, PIPESIZ, O_BINARY|O_NOINHERIT) == -1)
                 break;
+
+#ifdef DUP_HANDLE_BROKEN_ON_WIN2K
             if (! DuplicateHandle(GetCurrentProcess(),
                                   (HANDLE) _get_osfhandle(wp[0]),
                                   GetCurrentProcess(),
@@ -292,6 +302,12 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
             {
                 break;
             }
+#else
+            if ((wp[2] = _dup(wp[0])) == -1)
+                break;
+            handles[0] = (HANDLE)_get_osfhandle(wp[2]);
+#endif
+
             (void) close(wp[0]);
             wp[0] = BAD_FD;
             if (! fr)
@@ -342,10 +358,14 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
         close(wp[0]);
     if (wp[1] != BAD_FD)
         close(wp[1]);
+    if (wp[2] != BAD_FD)
+        close(wp[2]);
     if (rp[0] != BAD_FD)
         close(rp[0]);
     if (rp[1] != BAD_FD)
         close(rp[1]);
+    if (rp[2] != BAD_FD)
+        close(rp[2]);
     if (tmpin_fd != BAD_FD)
         close(tmpin_fd);
     for (i = 0; i < 3; i++)

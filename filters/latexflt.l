@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.17 2000/02/28 12:03:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.18 2000/08/09 23:18:50 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LaTeX input
  * text.
@@ -80,6 +80,8 @@ do_filter(FILE *input)
     Section_attr = class_attr(NAME_SECTION);
     Subsection_attr = class_attr(NAME_SUBSECTION);
 
+    oldstate = TEXT;
+    state_level = 0;
     BEGIN(TEXT);
     while (yylex() > 0) {
     }

@@ -742,6 +742,22 @@ Miscellaneous commands
 
 			^\([^: 	]\+\):\s*\([0-9]\+\):\(.\+\)
 
+		; example of a macro to add to [Error Expressions]
+		store-procedure AddError
+			~local %oldbuffer
+			setv %oldbuffer=$cbufname
+			compile-error-expressions
+			yank-line
+			edit-file '[Error Expressions]'
+			unsetl view
+			goto-beginning-of-file
+			put-before
+			unmark
+			setl view
+			buffer %oldbuffer
+			compile-error-expressions
+		~endm
+
 	^X-t	Set or report on the tab-stop width.  To set, the spacing must
 		precede the command, as in "4^X-t".  The "set tabstop"
 		command described below does the same thing.  The status
@@ -5069,4 +5085,4 @@ Problems
 
 Copyright 1995-2000 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.496 2000/07/24 23:09:05 pgf Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.497 2000/08/09 09:06:12 tom Exp $

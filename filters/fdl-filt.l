@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/fdl-filt.l,v 1.6 2000/02/28 11:58:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/fdl-filt.l,v 1.7 2000/08/09 23:51:38 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of fdl
  * input text.  This treats all of the text area as quoted, except for
@@ -52,6 +52,7 @@ do_filter(FILE *input)
 
     next_state = INITIAL;
 
+    BEGIN(INITIAL);
     while (yylex() > 0) {
     }
 }

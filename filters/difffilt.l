@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/difffilt.l,v 1.4 2000/02/28 11:58:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/difffilt.l,v 1.5 2000/08/09 23:51:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of diff output
  */
@@ -34,6 +34,7 @@ do_filter(FILE *input)
     Delete_attr = class_attr("Delete");
     Modify_attr = class_attr("Modify");
 
+    BEGIN(INITIAL);
     while (yylex() > 0) {
     }
 }
