@@ -1,5 +1,12 @@
 Changes for vile 7.0 (released ??? Feb ??, 1997)
 
+(pgf)	970227 (e)
+	+ fixed the mail sending in imdying.  i think it's been trying
+	  to run the command "on host" for a long time now.  in addition
+	  to simply fixing the command, and the printf arguments (which were
+	  also broken), it now runs sendmail if it can find it, since
+	  /bin/mail is not a reliable delivery agent anymore.  (file.c)
+
 (tom)	970227 (d)
 	+ ifdef'd function-key change to x11.c from 6.4d (reported by Graeme
 	  Miller).
