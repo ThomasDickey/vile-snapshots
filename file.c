@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.212 1997/08/30 00:36:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.214 1997/09/01 20:53:44 tom Exp $
  *
  */
 
@@ -1034,7 +1034,9 @@ slowreadf(register BUFFER *bp, int *nlinep)
 		}
 	}
 #endif
+	bp->b_lines_on_disk = 0;
         while ((s = ffgetline(&len)) <= FIOSUC) {
+		bp->b_lines_on_disk += 1;
 #if OPT_DOSFILES
 		/*
 		 * Strip CR's if we are reading in DOS-mode.  Otherwise,
@@ -1929,18 +1931,15 @@ imdying(int ACTUAL_SIG_ARGS)
 	if (signo > 2) {
 		ttclean(FALSE);
 		abort();
-	} else {
-		tidy_exit(wrote ? BADEXIT : GOODEXIT);
 	}
 #else
 	if (wrote) {
 		fprintf(stderr, "vile died: Files saved in directory %s\n",
                 	dirnam);
-	} else {
-		tidy_exit(wrote ? BADEXIT : GOODEXIT);
 	}
 #endif
 
+	tidy_exit(wrote ? BADEXIT : GOODEXIT);
 	/* NOTREACHED */
 	SIGRET;
 }

@@ -4,7 +4,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.81 1997/05/25 22:59:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.82 1997/09/01 22:57:05 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -375,6 +375,24 @@ gettagsfile(int n, int *endofpathflagp)
 	return tagbp;
 }
 
+#ifdef MDTAGIGNORECASE
+static int my_strncasecmp(const char *a, const char *b, size_t len)
+{
+	int aa = EOS, bb = EOS;
+
+	while (len != 0
+	  && (aa = isalpha(*a) ? tolower(*a) : *a) != EOS
+	  && (bb = isalpha(*b) ? tolower(*b) : *b) != EOS
+	  && (aa == bb)) {
+		len--;
+		a++;
+		b++;
+	}
+
+	return aa - bb;
+}
+#endif
+
 /*
  * Do exact/inexact lookup of an anchored string in a buffer.
  *	if taglen is 0, matches must be exact (i.e.  all
@@ -390,6 +408,12 @@ cheap_tag_scan(LINEPTR oldlp, char *name, SIZE_T taglen)
 	SIZE_T namelen = strlen(name);
 	int exact = (taglen == 0);
 	int added_tab;
+#ifdef MDTAGIGNORECASE
+	int (*compare)(const char *a, const char *b, size_t len)
+		= b_val(curbp,MDTAGIGNORECASE)
+		? my_strncasecmp
+		: strncmp;
+#endif
 
 	/* force a match of the tab delimiter if we're supposed to do
 		exact matches or if we're searching for something shorter
@@ -406,7 +430,7 @@ cheap_tag_scan(LINEPTR oldlp, char *name, SIZE_T taglen)
 	lp = lforw(oldlp);
 	while (lp != oldlp) {
 		if (llength(lp) > (int)namelen) {
-			if (!strncmp(lp->l_text, name, namelen)) {
+			if (!compare(lp->l_text, name, namelen)) {
 				retlp = lp;
 				break;
 			}

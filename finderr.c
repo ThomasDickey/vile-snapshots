@@ -2,7 +2,7 @@
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  * rewritten to use regular expressions, 1995 by T.Dickey (dickey@clark.net)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.64 1997/05/26 14:29:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.65 1997/09/01 20:54:52 tom Exp $
  *
  */
 
@@ -44,13 +44,14 @@ static	int	fe_line;
 	 * except the file are optional.
 	 *
 	 *	%V - verb, for tracking gmake-style Entering/Leaving messages
-	 *	%F - range of characters to match filename. 
+	 *	%F - range of characters to match filename.
+	 *	%B - range of characters to match scratch-buffer.
 	 *	%L - line number (this has to be an integer)
 	 *	%T - text to display in the message line. If no field is given,
 	 *		the error finder will display the entire line from
 	 *		the error-buffer.
 	 *
-	 * The %V, %F, %T fields may be given in alternate form, using ranges. 
+	 * The %V, %F, %T fields may be given in alternate form, using ranges.
 	 * The default field is a blank-delimited token, which is enough for
 	 * %V, marginal for %F and useless for %T.  Vile takes each %-marked
 	 * field and replaces it by a subexpression, to use the subexpression
@@ -104,6 +105,7 @@ char *const predefined[] = {
 #if CC_WATCOM
 	"^%[^(](%L): %T",
 #endif
+	"^%B:%L:%T",					/* "pp" in scratch buf*/
 	"^[^:]\\+: %V directory `%[^']'"		/* GNU make */
 	};
 
@@ -132,6 +134,7 @@ convert_pattern(ERR_PATTERN *errp, LINE *lp)
 	static	const	char	number[] = "\\([0-9]\\+\\)";
 	static	const	char	normal[] = "\\([^ \t]\\+\\)";
 	static	const	char	remain[] = "\\(.\\+\\)";
+
 	char	*temp = 0, *src, *dst = 0;
 	regexp	*exp = 0;
 	int	pass;
@@ -159,6 +162,10 @@ convert_pattern(ERR_PATTERN *errp, LINE *lp)
 				switch(*++src) {
 				case 'V':	mark = W_VERB;	break;
 				case 'F':	mark = W_FILE;	break;
+				case 'B':
+					APP_S("\\(\\[[^:]\\+]\\)");
+					errp->words[W_FILE] = ++word;
+					break;
 				case 'T':
 					APP_S(remain);
 					errp->words[W_TEXT] = ++word;
@@ -175,6 +182,14 @@ convert_pattern(ERR_PATTERN *errp, LINE *lp)
 					range = TRUE;
 					APP_S(before);
 					APP_C;
+					if (src[1] == '^') {
+						src++;
+						APP_C;
+					}
+					if (src[1] == RBRACK) {
+						src++;
+						APP_C;
+					}
 					break;
 				default:
 					src--;
@@ -378,7 +393,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 		mlforce("[No buffer to search for errors.]");
 		return(FALSE);
 	}
- 
+
 	if (newfebuff) {
 		oerrline = -1;
 		oerrfile = tb_init(&oerrfile, EOS);

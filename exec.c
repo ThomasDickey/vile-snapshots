@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.141 1997/08/30 01:12:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.142 1997/09/01 21:33:30 tom Exp $
  *
  */
 
@@ -740,6 +740,7 @@ int f, int n)
 	char tkn[NSTRING];	/* next token off of command line */
 	const CMDFUNC *cfp;
 
+	set_end_string(EOS);
 	oldestr = execstr;	/* save last ptr to string to execute */
 	execstr = cline;	/* and set this one as current */
 

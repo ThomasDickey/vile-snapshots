@@ -680,14 +680,15 @@ Miscellaneous commands
 		in those versions, since it conflicts with the driver letter
 		separator.)
 
-		The command parsing is done with regular expressions.  vile
+		The command parsing is done with regular expressions.  Vile
 		compiles these from the buffer [Error Expressions], which are a
-		set of regular expressions with extra embedded information.
-		Unescaped '%' followed by 'V', 'F', 'L', 'C' or 'T' substitute
-		verb (Entering/Leaving for gmake), file, line, column and text
-		fields.  The V, F, T substitutions are for nonblank fields,
-		which is not always enough, so vile additionally recognizes a
-		range in brackets, e.g.,
+		set of regular expressions with extra embedded information. 
+		Unescaped '%' followed by 'V', 'B', 'F', 'L', 'C' or 'T'
+		substitute verb (Entering/Leaving for gmake), buffer (i.e.,
+		scratch buffer with a bracketed name), file, line, column and
+		text fields.  The V, B, F, T substitutions are for nonblank
+		fields, which is not always enough, so vile additionally
+		recognizes a range in brackets, e.g.,
 
 			^%[^: 	]:\s*%L:%T
 
@@ -1086,6 +1087,14 @@ Editor modes
 		with the UNIX crypt(1) routines, and may not be built
 		into your version of vile by default. (B)
 
+	comment-prefix A regular expression denoting the portion of a line that
+		is replicated and untouched, except for leading indention when
+		doing text formatting.  The expression should begin with "^",
+		e.g., the default value
+			^\s*\(\s*[#*>]\)\+
+		is useful for matching shell comments (#), multi-line C
+		comments (*) and email (>).  (B)
+
 	comments A regular expression defining commented paragraph
 		delimiters.  This is used in addition to the "paragraphs"
 		expression (see below) when reformatting a region.  The net
@@ -1372,6 +1381,9 @@ Editor modes
 		from a region of text.  (B)
 
 	tabstop (ts) Set the value for spacing of normal tabstops. (B)
+
+	tagignorecase (tc) Causes tag searches to be done ignoring upper
+		and lower case. (B)
 
 	taglength (tl) Sets the significant length for tags.  If non-zero,
 		lookups for names longer than the taglength value will only
@@ -3481,4 +3493,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.324 1997/08/15 09:46:56 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.327 1997/09/01 23:01:17 tom Exp $
