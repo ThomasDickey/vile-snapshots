@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.159 1997/03/15 15:48:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.160 1997/03/31 00:33:36 tom Exp $
  *
  */
 
@@ -516,7 +516,7 @@ tgetc(int quoted)
 			(void)ttgetc();
 #endif
 		} else {
-			doing_kbd_read = TRUE;
+			(void) im_waiting(TRUE);
 			do { /* if it's sysV style signals,
 				 we want to try again, since this
 				 must not have been SIGINT, but
@@ -524,7 +524,7 @@ tgetc(int quoted)
 				c = sysmapped_c();
 			} while (c == -1);
 		}
-		doing_kbd_read = FALSE;
+		(void) im_waiting(FALSE);
 		if (quoted || (c != kcod2key(intrc)))
 			record_char(c);
 	}
@@ -923,6 +923,8 @@ int	options)
 				dst[j++] = '\\'; /* add extra */
 		} else if (strchr(global_g_val_ptr(GVAL_EXPAND_CHARS),c) != 0) {
 			if (c == EXPC_RPAT && !(options & KBD_EXPPAT))
+				;
+			else if (c == EXPC_SHELL && !(options & KBD_SHPIPE))
 				;
 			else if ((options & KBD_QUOTES)
 			 && (options & KBD_EXPAND))

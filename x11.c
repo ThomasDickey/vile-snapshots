@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.144 1997/02/27 11:09:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.145 1997/03/31 01:17:34 tom Exp $
  *
  */
 
@@ -526,9 +526,9 @@ WidgetClass bbWidgetClass = (WidgetClass)&bbClassRec;
 /*ARGSUSED*/
 static XtGeometryResult
 bbPreferredSize(
-    Widget widget,
-    XtWidgetGeometry *constraint,
-    XtWidgetGeometry *preferred)
+    Widget widget GCC_UNUSED,
+    XtWidgetGeometry *constraint GCC_UNUSED,
+    XtWidgetGeometry *preferred GCC_UNUSED)
 {
     return XtGeometryYes;
 }
@@ -538,7 +538,7 @@ static XtGeometryResult
 bbGeometryManager(
     Widget		w,
     XtWidgetGeometry	*request,
-    XtWidgetGeometry	*reply)	/* RETURN */
+    XtWidgetGeometry	*reply GCC_UNUSED)	/* RETURN */
 
 {
     /* Allow any and all changes to the geometry */
@@ -1090,9 +1090,9 @@ update_thumb(
 static void
 x_expose_scrollbar(
     Widget	w,
-    XtPointer	unused,
+    XtPointer	unused GCC_UNUSED,
     XEvent     *ev,
-    Boolean    *continue_to_dispatch)
+    Boolean    *continue_to_dispatch GCC_UNUSED)
 {
     int i;
 
@@ -1228,7 +1228,7 @@ do_scroll_common:
 static void
 repeat_scroll(
     XtPointer count,
-    XtIntervalId  *id)
+    XtIntervalId  *id GCC_UNUSED)
 {
     cur_win->scroll_repeat_id = XtAppAddTimeOut(
 	    cur_win->app_context,
@@ -3246,7 +3246,7 @@ x_setfont(
 
 static
 /* ARGSUSED */
-SIGT x_quit (int ACTUAL_SIG_ARGS)
+SIGT x_quit (int ACTUAL_SIG_ARGS GCC_UNUSED)
 {
     x_close();
     ExitProgram(GOODEXIT);
@@ -3964,9 +3964,9 @@ SIZE_T	length)
 /* ARGSUSED */
 static void
 x_get_selection(
-    Widget         w,
-    XtPointer      cldat,
-    Atom          *selection,
+    Widget         w GCC_UNUSED,
+    XtPointer      cldat GCC_UNUSED,
+    Atom          *selection GCC_UNUSED,
     Atom          *type,
     XtPointer      value,
     unsigned long *length,
@@ -4067,8 +4067,8 @@ x_get_selected_text(
 /* ARGSUSED */
 static Boolean
 x_convert_selection(
-    Widget	   w,
-    Atom          *selection,
+    Widget	   w GCC_UNUSED,
+    Atom          *selection GCC_UNUSED,
     Atom          *target,
     Atom          *type,
     XtPointer     *value,
@@ -4121,8 +4121,8 @@ x_convert_selection(
 /* ARGSUSED */
 static void
 x_lose_selection(
-    Widget w,
-    Atom  *selection)
+    Widget w GCC_UNUSED,
+    Atom  *selection GCC_UNUSED)
 {
     cur_win->have_selection = False;
     cur_win->was_on_msgline = False;
@@ -4200,7 +4200,7 @@ line_count_and_interval(
 
 static void
 extend_selection(
-    TextWindow tw,
+    TextWindow tw GCC_UNUSED,
     int	nr,
     int	nc,
     Bool wipe)
@@ -4343,7 +4343,7 @@ start_selection(
     else {
 	WINDOW *wp;
 
-	beginDisplay;
+	beginDisplay();
 
 	tw->lasttime = ev->time;
 	tw->numclicks = 1;
@@ -4381,7 +4381,7 @@ start_selection(
 	    /* force the editor to notice the changed DOT, if it cares */
 	    kqadd(cur_win, KEY_Mouse);
 	}
-	endofDisplay;
+	endofDisplay();
     }
 }
 
@@ -4390,7 +4390,7 @@ start_selection(
 	main editor code to notice that DOT has moved. */
 /*ARGSUSED*/
 int
-mouse_motion(int f, int n)
+mouse_motion(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	return TRUE;
 }
@@ -4419,10 +4419,10 @@ compress_motion(
 /*ARGSUSED*/
 static void
 x_process_event(
-    Widget	w,
-    XtPointer	unused,
+    Widget	w GCC_UNUSED,
+    XtPointer	unused GCC_UNUSED,
     XEvent     *ev,
-    Boolean    *continue_to_dispatch)
+    Boolean    *continue_to_dispatch GCC_UNUSED)
 {
     int         sc,
                 sr;
@@ -4567,10 +4567,10 @@ x_process_event(
 /*ARGSUSED*/
 static void
 x_configure_window(
-    Widget	w,
-    XtPointer	unused,
+    Widget	w GCC_UNUSED,
+    XtPointer	unused GCC_UNUSED,
     XEvent     *ev,
-    Boolean    *continue_to_dispatch)
+    Boolean    *continue_to_dispatch GCC_UNUSED)
 {
     int nr, nc;
     Dimension new_width, new_height;
@@ -4849,9 +4849,9 @@ pane_button(
 static void
 x_change_focus(
     Widget	w,
-    XtPointer	unused,
+    XtPointer	unused GCC_UNUSED,
     XEvent     *ev,
-    Boolean    *continue_to_dispatch)
+    Boolean    *continue_to_dispatch GCC_UNUSED)
 {
     static int got_focus_event = FALSE;
 
@@ -4889,10 +4889,10 @@ focus_out:
 /*ARGSUSED*/
 static void
 x_wm_delwin(
-    Widget	w,
-    XtPointer	unused,
+    Widget	w GCC_UNUSED,
+    XtPointer	unused GCC_UNUSED,
     XEvent     *ev,
-    Boolean    *continue_to_dispatch)
+    Boolean    *continue_to_dispatch GCC_UNUSED)
 {
     if ( ev->type == ClientMessage
       && ev->xclient.message_type == atom_WM_PROTOCOLS
@@ -5125,7 +5125,7 @@ kqpop(TextWindow tw)
 /*ARGSUSED*/
 static void
 display_cursor(
-    XtPointer client_data,
+    XtPointer client_data GCC_UNUSED,
     XtIntervalId *idp)
 {
     static Bool am_blinking = FALSE;
@@ -5274,12 +5274,12 @@ x_typahead(
     int status;
     XtIntervalId timeoutid = 0;
     int timedout;
-    int olddkr = doing_kbd_read;
+    int olddkr;
 
     if (!cur_win->exposed)
 	return FALSE;
 
-    doing_kbd_read = TRUE;
+    olddkr = im_waiting(TRUE);
 
     status = !kqempty(cur_win) || tb_more(PasteBuf);
 
@@ -5327,7 +5327,7 @@ x_typahead(
 	status = !kqempty(cur_win);
     }
 
-    doing_kbd_read = olddkr;
+    (void) im_waiting(olddkr);
 
     return status;
 }
@@ -5336,7 +5336,7 @@ x_typahead(
 static void
 x_typahead_timeout(
     XtPointer flagp,
-    XtIntervalId *id)
+    XtIntervalId *id GCC_UNUSED)
 {
     * (int *) flagp = 1;
 }
@@ -5344,10 +5344,10 @@ x_typahead_timeout(
 /*ARGSUSED*/
 static void
 x_key_press(
-    Widget	w,
-    XtPointer	unused,
+    Widget	w GCC_UNUSED,
+    XtPointer	unused GCC_UNUSED,
     XEvent     *ev,
-    Boolean    *continue_to_dispatch)
+    Boolean    *continue_to_dispatch GCC_UNUSED)
 {
     char	buffer[128];
     KeySym	keysym;
@@ -5458,7 +5458,7 @@ x_rev(int state)
 /* change screen resolution */
 /*ARGSUSED*/
 static int
-x_cres(char *flag)
+x_cres(char *flag GCC_UNUSED)
 {
     return TRUE;
 }
@@ -5482,7 +5482,7 @@ x_beep(void)
 {
 #if OPT_FLASH
     if (global_g_val(GMDFLASH)) {
-	beginDisplay;
+	beginDisplay();
 	XGrabServer(dpy);
 	XSetFunction(dpy, cur_win->textgc, GXxor);
 	XSetBackground(dpy, cur_win->textgc, 0L);
@@ -5498,7 +5498,7 @@ x_beep(void)
 	XSetBackground(dpy, cur_win->textgc, cur_win->bg);
 	XSetForeground(dpy, cur_win->textgc, cur_win->fg);
 	XUngrabServer(dpy);
-	endofDisplay;
+	endofDisplay();
     }
     else
 #endif

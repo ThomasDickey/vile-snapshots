@@ -4,7 +4,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.79 1997/03/15 15:51:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.80 1997/03/31 00:40:03 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -171,7 +171,11 @@ tag_search(char *tag, int taglen, int initial)
 	}
 
 	i = 0;
-	if (b_val(curbp,MDTAGSRELTIV) && !is_slashc(*tfp)) {
+	if (b_val(curbp,MDTAGSRELTIV) && !is_slashc(*tfp)
+#if OPT_MSDOS_PATH
+	&& !is_msdos_drive(tfp)
+#endif
+	) {
 		register char *first = tagbp->b_fname;
 		char *lastsl = pathleaf(tagbp->b_fname);
 		while (lastsl != first)

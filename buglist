@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.324 1997/03/22 16:59:55 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.325 1997/03/30 22:04:44 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -956,10 +956,6 @@ These are pre-6.0 (undated)
 
 	add configure-test for 'ospeed'
 
-	am told that vile's opt_working code keeps the process awake;
-	should set up so that the time elapses automatically, use a
-	procedure instead of semaphores.
-
 	implement gpm
 
 	vi sets '#' on attempted write; vile doesn't
@@ -1003,10 +999,6 @@ selected area.
 -- 96-10-14 (tom)
 
 add 'mouse-hook' command (maybe generalize with "on" command)
-
--- 96-10-14 (tom)
-
-support text-formatting of C++ comments
 
 -- 96-10-16 (tom)
 

@@ -7,7 +7,7 @@
  * Original code probably by Dan Lawrence or Dave Conroy for MicroEMACS.
  * Major extensions for vile by Paul Fox, 1991
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.83 1997/03/22 17:00:16 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.84 1997/03/30 22:39:00 tom Exp $
  *
  */
 
@@ -800,7 +800,7 @@ fsm_complete(int c, char *buf, int *pos)
 	return isspace(c);
     }
     return kbd_complete(FALSE, c, buf, pos,
-                        (char *)(fsm_tbl[fsm_idx].choices),
+                        (const void *)(fsm_tbl[fsm_idx].choices),
 			sizeof (FSM_CHOICES) );
 }
 #endif	/* OPT_ENUM_MODES */
@@ -976,7 +976,7 @@ static int
 mode_complete(int c, char *buf, int *pos)
 {
 	return kbd_complete(FALSE, c, buf, pos,
-		(char *)&all_modes[0], sizeof(all_modes[0]));
+		(const void *)&all_modes[0], sizeof(all_modes[0]));
 }
 
 int

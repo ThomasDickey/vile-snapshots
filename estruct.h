@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.300 1997/03/20 18:03:04 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.301 1997/03/30 22:45:12 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -648,12 +648,9 @@ extern char *rindex (const char *s, int c);
 #endif
 
 	/* semaphore may be needed to prevent interrupt of display-code */
-#if defined(SIGWINCH) || OPT_WORKING
-# define beginDisplay displaying++
-# define endofDisplay displaying--
-#else
-# define beginDisplay
-# define endofDisplay
+#if !defined(SIGWINCH) && ! OPT_WORKING
+# define beginDisplay() /* nothing */
+# define endofDisplay() /* nothing */
 #endif
 
 #if OPT_WORKING
@@ -1513,7 +1510,7 @@ typedef struct	BUFFER {
 	UCHAR	*b_ltext_end;		/* end of block-malloced text */
 	LINEPTR	b_ulinep;		/* pointer at 'Undo' line	*/
 	int	b_active;		/* window activated flag	*/
-	int	b_nwnd;		        /* Count of windows on buffer   */
+	UINT	b_nwnd;		        /* Count of windows on buffer   */
 	int	b_flag;		        /* Flags 		        */
 	short	b_acount;		/* auto-save count	        */
 	char	*b_fname;		/* File name			*/

@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.207 1997/03/15 15:48:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.208 1997/03/30 23:53:38 tom Exp $
  *
  */
 
@@ -1196,10 +1196,7 @@ makename(char *bname, const char *fname)
 			++fcp;
 		} while (isspace(*fcp));
 		(void)strncpy0(bcp, fcp, (SIZE_T)(NBUFN - (bcp - bname)));
-		for (j = 4; j < NBUFN; j++) {
-			if (isspace(*bcp)) {
-				break;
-			}
+		for (j = 4; (j < NBUFN) && isprint(*bcp); j++) {
 			bcp++;
 		}
 		(void) strcpy(bcp, SCRTCH_RIGHT);

@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.207 1997/02/28 11:09:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.208 1997/03/30 21:48:26 tom Exp $
  */
 
 /* I know this declaration stuff is really ugly, and I probably won't ever
@@ -64,8 +64,6 @@ decl_init( int autoindented , -1);	/* how many chars (not cols) indented */
 decl_uninit( int isnamedcmd );		/* are we typing a command name */
 decl_uninit( int calledbefore );	/* called before during this command? */
 decl_uninit( CHARTYPE _chartypes_[N_chars] );	/* character types	*/
-decl_uninit( int displaying );		/* flag set during screen updates */
-decl_uninit( int doing_kbd_read );	/* flag set during keyboard reading */
 decl_uninit( int reading_msg_line );	/* flag set during msgline reading */
 decl_uninit( jmp_buf read_jmp_buf );	/* for setjmp/longjmp on SIGINT */
 #ifndef insertmode

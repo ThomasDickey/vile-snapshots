@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.139 1997/03/15 15:45:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.140 1997/03/30 22:46:41 tom Exp $
  *
  */
 
@@ -649,7 +649,7 @@ int	*pos)
 	if (buf[0] == '$') {
 		*pos -= 1;	/* account for leading '$', not in tables */
 		status = kbd_complete(FALSE, c, buf+1, pos,
-				(char *)AllModes(), sizeof(list_of_modes[0]));
+				(const void *)AllModes(), sizeof(list_of_modes[0]));
 		*pos += 1;
 	} else {
 		if (c != NAMEC) /* cancel the unget */
@@ -1123,7 +1123,7 @@ const char *tokn)		/* token to evaluate */
 				bp->b_dot.o = 0;
 
 				/* if displayed buffer, reset window ptr vars*/
-				if (bp->b_nwnd > 0) {
+				if (bp->b_nwnd != 0) {
 					DOT.l = curbp->b_dot.l;
 					DOT.o = 0;
 					curwp->w_flag |= WFMOVE;
