@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.129 1998/07/03 23:59:48 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.130 1998/07/27 23:30:46 cmorgan Exp $
  *
  */
 
@@ -452,30 +452,10 @@ pipecmd(int f, int n)
 		return s;
 	if ((s = popupbuff(bp)) != TRUE)
 		return s;
-#if SYS_WINNT
-	/*
-	 * Due to command.com's limitations when w32pipes mode is enabled,
-	 * the code path taken here goes through ifile(), rather than
-	 * swbuffer_lfl().  Reason:  ifile() does a more complete job
-	 * of setting up and tearing down [win32] pipes.
-	 */
-
-	if ((s = bclear(bp)) != TRUE)	/* Clear all buffer text. */
-		return s;
-	s = ifile(line, TRUE, NULL);
-	(void) firstnonwhite(FALSE,1);
-	if (! s)
-		return (s);
-#if OPT_FINDERR
-	set_febuff(OUTPUT_BufName);
-#endif
-	ch_fname(bp,line);
-#else
 	ch_fname(bp,line);
 	bp->b_active = FALSE; /* force a re-read */
 	if ((s = swbuffer_lfl(bp,FALSE)) != TRUE)
 		return s;
-#endif /* SYS_WINNT */
 	set_rdonly(bp, line, MDVIEW);
 #endif
 

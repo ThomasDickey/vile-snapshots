@@ -1,6 +1,6 @@
-revlist for vile-8.0h, version v8_0h
+revlist for vile, version v8_0i
 --------------------------------------------------------------------------------
-CHANGES	1.189
+CHANGES	1.192
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -37,13 +37,13 @@ dirstuff.h	1.23
 display.c	1.252
 djhandl.c	1.6
 dumbterm.c	1.13
-edef.h	1.228
+edef.h	1.229
 estruct.h	1.359
 eval.c	1.163
 exec.c	1.163
 externs.c	1.7
 fences.c	1.50
-file.c	1.229
+file.c	1.230
 filec.c	1.81
 fileio.c	1.127
 finderr.c	1.71
@@ -61,13 +61,13 @@ lckfiles.c	1.8
 line.c	1.111
 main.c	1.329
 makefile.blc	1.9
-makefile.djg	1.25
+makefile.djg	1.26
 makefile.emx	1.2
 makefile.icc	1.10
 makefile.in	1.112
 makefile.tbc	1.22
 makefile.wat	1.24
-makefile.wnt	1.29
+makefile.wnt	1.30
 manfilt.c	1.22
 map.c	1.81
 menu.c	1.22
@@ -86,7 +86,7 @@ os2keys.h	1.1
 os2pipe.c	1.4
 os2vio.c	1.19
 pas-filt.c	1.2
-patchlev.h	1.130
+patchlev.h	1.131
 path.c	1.84
 perl.xs	1.29
 proto.h	1.291
@@ -95,10 +95,10 @@ ptypemap	1.5
 random.c	1.191
 regexp.c	1.65
 region.c	1.90
-revlist	v8_0h
+revlist	v8_0i
 search.c	1.112
 select.c	1.70
-spawn.c	1.129
+spawn.c	1.130
 tags.c	1.91
 tbuff.c	1.31
 tcap.c	1.107
@@ -114,9 +114,9 @@ vms2unix.c	1.31
 vmsbuild.com	1.20
 vmspipe.c	1.12
 vmsvt.c	1.34
-w32cbrd.c	1.10
+w32cbrd.c	1.11
 w32misc.c	1.5
-w32pipe.c	1.12
+w32pipe.c	1.13
 watch.c	1.2
 window.c	1.82
 word.c	1.62

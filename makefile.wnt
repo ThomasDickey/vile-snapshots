@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.29 1998/07/23 09:19:56 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.30 1998/07/27 23:31:31 cmorgan Exp $
 #
 #
 !include <ntwin32.mak>
@@ -94,7 +94,7 @@ HDRS = estruct.h edef.h proto.h dirstuff.h
 
 # these headers are built by the mktbls program from the information in cmdtbl
 # and in modetbl
-BUILTHDRS = nebind.h neproto.h nefunc.h nemode.h nename.h nevars.h \
+BUILTHDRS = nebind.h neproto.h neexec.h nefunc.h nemode.h nename.h nevars.h \
             nefkeys.h nefsms.h
 
 SRC = 	main.c $(SCREEN).c \
@@ -135,17 +135,18 @@ $(TARGET): 	$(BUILTHDRS) $(OBJ)
 $(PERLCFG): mkprlenv.wnt
 !INCLUDE "mkprlenv.wnt"
 
-$(OBJ):	estruct.h
+$(OBJ): estruct.h nemode.h edef.h neproto.h proto.h nefkeys.h
 
-neproto.h \
 nebind.h \
-nefunc.h \
 nefkeys.h \
+neexec.h \
+nefunc.h \
+neproto.h \
 nename.h :	cmdtbl mktbls.exe
 	mktbls.exe cmdtbl
 
-nevars.h \
 nefsms.h \
+nevars.h \
 nemode.h:	modetbl mktbls.exe
 	mktbls.exe modetbl
 
@@ -167,20 +168,24 @@ clean:
     -del $(THE_PERLCFG)
     -del perl.c
 
-bind.obj:	nefunc.h
+api.obj:	api.h
+bind.obj:	nefunc.h btree.h
+btree.obj:	btree.h
 eval.obj:	nevars.h
-exec.obj:	nefunc.h
+exec.obj:	neexec.h nefunc.h
 externs.obj:	nebind.h nename.h neproto.h nefunc.h
 filec.obj:	dirstuff.h
 glob.obj:	dirstuff.h
 globals.obj:	nefunc.h
 main.obj:	chgdfunc.h nevars.h
-modes.obj:	chgdfunc.h
+modes.obj:	chgdfunc.h nefsms.h
 opers.obj:	nefunc.h
 path.obj:	dirstuff.h
+perl.obj:	api.h
 random.obj:	nefunc.h
 select.obj:	nefunc.h
 spawn.obj:	nefunc.h
+tags.obj:	btree.h
 termio.obj:	nefunc.h
 version.obj:	patchlev.h
 w32misc.obj:	nefunc.h

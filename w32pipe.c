@@ -38,7 +38,7 @@
  *    default, then, on a WinNT host, vile's pipes are implemented using
  *    native pipes (i.e., with the code in this module), while Win95 hosts
  *    fall back to temp file communication.  If the user's replacement
- *	  Win95 shell does not exhibit communication problems similar to
+ *    Win95 shell does not exhibit communication problems similar to
  *    those described above (e.g., Thompson Toolkit Shell), vile may be
  *    forced to use native Win32 pipes by setting the global mode
  *    "w32pipes" (e.g., "se w32pipes").
@@ -57,7 +57,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.12 1998/07/26 12:18:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.13 1998/07/27 23:32:13 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -69,6 +69,7 @@
 #include <share.h>
 #include <process.h>
 #include <assert.h>
+#include <ctype.h>
 
 #define HAVE_FCNTL_H 1
 
@@ -190,6 +191,33 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
     tmpin_fd     = BAD_FD;
     tmpin_name   = NULL;
     set_console_title(cmd);
+    if (is_win95())
+    {
+        char *cmdp;
+
+        /*
+         * If w32pipes is set on a win95 host, you don't ever want slowreadf()
+         * to periodically update the display while an intrinisic, high
+         * bandwidth DOS command is in progress.  Reason:  the win95 shell,
+         * command.com, will simply hang in the following scenario:
+         *
+         *    ^X!<high_bandwidth_cmd>
+         *
+         *         and
+         *
+         *    PIPESIZ < output of <high_bandwidth_cmd>
+         *
+         * I'm assuming that what's going on here is that command.com is
+         * written in ASM and is using very low level BIOS/DOS calls to
+         * effect output and, furthermore, that these low level calls don't
+         * block when the input consumer is busy.
+         */
+
+        for (cmdp = cmd; *cmdp && isspace(*cmdp); cmdp++)
+            ;
+        nowait_pipe_cmd = (strnicmp(cmdp, "dir", 3) == 0)  ||
+                          (strnicmp(cmdp, "type", 4) == 0);
+    }
     do
     {
         if (fr)
