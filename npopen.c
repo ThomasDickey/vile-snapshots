@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.83 2001/02/16 22:33:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.84 2001/09/18 09:10:38 cmorgan Exp $
  *
  */
 
@@ -15,6 +15,9 @@
 /*
  * For OS/2 implementations of inout_popen(), npflush(), and npclose(),
  * see "os2pipe.c".
+ *
+ * For Win32 implementations of inout_popen(), npflush(), and npclose(),
+ * see "w32pipe.c".
  */
 
 #if SYS_OS2
@@ -63,39 +66,6 @@ npopen (char *cmd, const char *type)
 	}
 }
 #endif /* SYS_UNIX || SYS_OS2 */
-
-#if HAVE_PUTENV
-/*
- * Put the libdir in our path so we do not have to install the filters in the
- * regular $PATH.  If we can do this right after forking, it will not affect
- * the path for subshells invoked via ":sh".
- */
-static void append_libdir_to_path(void)
-{
-	char *env, *tmp;
-	const char *cp;
-	char buf[NFILEN];
-
-	if (libdir_path != 0
-	 && (tmp = getenv("PATH")) != 0) {
-		env = strmalloc(tmp);
-		cp = libdir_path;
-		while ((cp = parse_pathlist(cp, buf)) != 0) {
-			append_to_path_list(&env, buf);
-		}
-		if (strcmp(tmp, env)) {
-			tmp = (char *) malloc(6 + strlen(env));
-			lsprintf(tmp, "PATH=%s", env);
-			putenv(tmp);
-			TRACE(("putenv %s\n", tmp));
-		} else {
-			free(env);
-		}
-	}
-}
-#else
-#define append_libdir_to_path() /*nothing*/
-#endif
 
 #if SYS_UNIX
 int
@@ -324,7 +294,7 @@ softfork(void)
 #endif /* SYS_UNIX */
 #endif /* TEST_DOS_PIPES */
 
-#if SYS_MSDOS || SYS_WINNT || TEST_DOS_PIPES
+#if SYS_MSDOS || TEST_DOS_PIPES
 #include <fcntl.h>		/* defines O_RDWR */
 #if ! TEST_DOS_PIPES
 #include <io.h>			/* defines 'dup2()', etc. */
@@ -408,11 +378,7 @@ readPipe(const char *cmd, int in, int out)
 	dup2(out, 1);
 	dup2(out, 2);
 
-#if SYS_WINNT
-	myRval = w32_system(cmd);
-#else
 	myRval = system(cmd);
-#endif
 
 	/* restore old std... */
 	if (in >= 0)
@@ -483,10 +449,6 @@ inout_popen(FILE **fr, FILE **fw, char *cmd)
 	fileispipe = TRUE;
 	fileeof = FALSE;
 	append_libdir_to_path();
-#ifdef GMDW32PIPES
-	if (global_g_val(GMDW32PIPES))
-	    return (w32_inout_popen(fr, fw, cmd));
-#endif
 
 	/* Create the file that will hold the pipe's content */
 	if ((fd = createTemp(type)) >= 0) {
@@ -513,10 +475,6 @@ inout_popen(FILE **fr, FILE **fw, char *cmd)
 void
 npflush (void)
 {
-#ifdef GMDW32PIPES
-	if (global_g_val(GMDW32PIPES))
-	    return;
-#endif
 	if (myCmds != 0) {
 		if (myWrtr != 0) {
 			int fd;
@@ -541,13 +499,6 @@ npflush (void)
 void
 npclose (FILE *fp)
 {
-#ifdef GMDW32PIPES
-	if (global_g_val(GMDW32PIPES))
-	{
-	    w32_npclose(fp);
-	    return;
-	}
-#endif
 #if SYS_MSDOS
 	if (myWrtr != 0 && myPipe == 0)
 		writePipe(myCmds);

@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.112 2000/01/13 01:01:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.113 2001/09/18 09:49:27 tom Exp $
  *
  */
 
@@ -128,7 +128,7 @@ gotoeol(int f, int n)
 			return FALSE;
 	}
 	DOT.o  = llength(DOT.l);
-	curgoal = HUGE;
+	curgoal = VL_HUGE;
 	return (TRUE);
 }
 
@@ -194,7 +194,7 @@ forwchar_to_eol(int f, int n)
 			return n != nwas; /* return ok if we moved at all */
 		else
 			DOT.o++;
-	} while (--n);
+	} while (--n != 0);
 	return TRUE;
 }
 
@@ -276,7 +276,7 @@ gotobos(int f, int n)
 		n = 1;
 
 	DOT.l = curwp->w_line.l;
-	while (--n) {
+	while (--n != 0) {
 		if (is_last_line(DOT,curbp))
 			break;
 		nn -= line_height(curwp, DOT.l);
@@ -348,7 +348,7 @@ gotoeos(int f, int n)
 #endif
 	/* and then go back up */
 	/* (we're either at eos or eof) */
-	while (--n) {
+	while (--n != 0) {
 		if (sameline(DOT, curwp->w_line))
 			break;
 		DOT.l = lback(DOT.l);
@@ -384,7 +384,7 @@ forwline(int f, int n)
 			return FALSE;
 		}
 		dlp = nlp;
-	} while (--n);
+	} while (--n != 0);
 
 	/* set dot */
 	DOT.l  = dlp;

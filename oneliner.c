@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.94 1999/11/24 22:12:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.95 2001/09/18 09:49:28 tom Exp $
  */
 
 #include	"estruct.h"
@@ -426,7 +426,7 @@ delins(regexp *exp, char *sourc)
 {
 	register char *src;
 	register ALLOC_T dlength;
-	register char c;
+	register int c;
 	register int no;
 	int s;
 #define NO_CASE	0

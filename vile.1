@@ -1,5 +1,5 @@
 .\" obligatory man page for vile
-.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.27 2000/11/04 11:50:38 tom Exp $
+.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.28 2001/09/18 09:10:38 cmorgan Exp $
 .TH VILE 1
 .SH NAME
 vile, xvile \- \fBVI L\fRike \fBE\fRmacs
@@ -201,7 +201,8 @@ the getpass() library routine is not interruptible from the keyboard,
 entering a crypt-key password which ends in ^C will cause the program to
 quit.  See the help file for more information on
 .IR vile 's
-encryption support.
+encryption support, including a discussion of a collection of macros that
+interface with GNU's gpg package.
 .SH "ENVIRONMENT VARIABLES"
 .TP
 .B

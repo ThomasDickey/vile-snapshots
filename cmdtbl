@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.216 2001/06/13 22:01:23 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.218 2001/09/23 23:55:03 tom Exp $
 #
 #
 
@@ -487,6 +487,9 @@ des_s_bind	NONE			OPT_REBIND
 	"describe-selmode-bindings"
 	"show-selmode-bindings"
 	<show a list of all commands that may be executed in selection mode>
+des_keynames	NONE			OPT_REBIND
+	"show-key-names"
+	<show a list of all function-key that may be bound with #-syntax>
 descolors	NONE			OPT_SHOW_COLORS
 	"list-colors"
 	"show-colors"
@@ -834,7 +837,7 @@ goexactnmmark	MOTION|NOMINI
 	"goto-named-mark-exact"		!FEWNAMES
 	'`'
 	<move to the given mark>
-gorectnmmark	MOTION|RECT|NOMINI
+gorectnmmark	MOTION|VL_RECT|NOMINI
 	"goto-named-mark-rectangular"	!FEWNAMES
 	'\0134'
 	<move to the mark, implying a rectangle if used with an operator>

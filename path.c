@@ -2,14 +2,10 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.107 2001/05/16 09:06:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.109 2001/09/18 09:49:29 tom Exp $
  *
  *
  */
-
-#ifdef _WIN32
-# include <windows.h>
-#endif
 
 #include "estruct.h"
 #include "edef.h"
@@ -915,7 +911,7 @@ case_correct_path(char *old_file, char *new_file)
 	    new_file[0] = old_file[0];
 	    new_file[1] = old_file[1];
 	    if (isLower(new_file[0]))
-		new_file[0] = toUpper(new_file[0]);
+		new_file[0] = (char) toUpper(new_file[0]);
 	    current = old_file + 2;
 	    sofar = new_file + 2;
 	} else {
@@ -1559,7 +1555,7 @@ lengthen_path(char *path)
     if (is_msdos_drive(path) == 0) {	/* ensure that we have drive too */
 	/* UNC paths have no drive */
 	if (curdrive() != 0) {
-	    temp[0] = curdrive();
+	    temp[0] = (char) curdrive();
 	    temp[1] = ':';
 	    (void) strcpy(temp + 2, path);
 	    (void) strcpy(path, temp);
@@ -2143,6 +2139,39 @@ path_trunc(char *path, int max_path_len, char *trunc_buf, int trunc_buf_len)
     }
     return (trunc_buf);
 }
+
+#if HAVE_PUTENV
+/*
+ * Put the libdir in our path so we do not have to install the filters in the
+ * regular $PATH.  If we can do this right after forking, it will not affect
+ * the path for subshells invoked via ":sh".
+ */
+void append_libdir_to_path(void)
+{
+	char *env, *tmp;
+	const char *cp;
+	char buf[NFILEN];
+
+	if (libdir_path != 0
+	 && (tmp = getenv("PATH")) != 0) {
+		env = strmalloc(tmp);
+		cp = libdir_path;
+		while ((cp = parse_pathlist(cp, buf)) != 0) {
+			append_to_path_list(&env, buf);
+		}
+		if (strcmp(tmp, env)) {
+			tmp = (char *) malloc(6 + strlen(env));
+			lsprintf(tmp, "PATH=%s", env);
+			putenv(tmp);
+			TRACE(("putenv %s\n", tmp));
+		} else {
+			free(env);
+		}
+	}
+}
+#else
+void append_libdir_to_path(void) {}
+#endif
 
 #if NO_LEAKS
 void

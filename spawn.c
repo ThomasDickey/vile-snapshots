@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.167 2001/05/16 23:16:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.168 2001/09/18 09:10:38 cmorgan Exp $
  *
  */
 
@@ -613,9 +613,7 @@ write_kreg_to_pipe(void *writefp)
     ExitProgram (GOODEXIT);
     /* NOTREACHED */
 #else
-    npflush();  /* fake multi-processing */
-#endif
-#if SYS_WINNT
+# if SYS_WINNT
     /*
      * If this function is invoked by a thread, then that thread (not
      * the parent process) must close write pipe.  We generalize this
@@ -624,6 +622,11 @@ write_kreg_to_pipe(void *writefp)
      */
     (void)fflush(fw);
     (void)fclose(fw);
+    if (! global_g_val(GMDW32PIPES))
+        npflush();
+# else
+    npflush();  /* fake multi-processing */
+# endif
 #endif
 }
 
@@ -650,9 +653,7 @@ write_region_to_pipe(void *writefp)
     ExitProgram (GOODEXIT);
     /* NOTREACHED */
 #else
-    npflush();  /* fake multi-processing */
-#endif
-#if SYS_WINNT
+# if SYS_WINNT
     /*
      * If this function is invoked by a thread, then that thread (not
      * the parent process) must close write pipe.  We generalize this
@@ -661,6 +662,11 @@ write_region_to_pipe(void *writefp)
      */
     (void)fflush(fw);
     (void)fclose(fw);
+    if (! global_g_val(GMDW32PIPES))
+        npflush();
+# else
+    npflush();  /* fake multi-processing */
+# endif
 #endif
 }
 #endif

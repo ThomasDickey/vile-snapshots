@@ -7,7 +7,7 @@
  *
  * original author: D. R. Banks 9-May-86
  *
- * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.52 1999/11/15 23:35:00 Ryan.Murray Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.53 2001/09/18 09:49:27 tom Exp $
  *
  */
 
@@ -347,7 +347,7 @@ expandp(
 			maxlength -= 4;
 		} else if (!isPrint(c)) {	/* control character */
 			*deststr++ = '^';
-			*deststr++ = toalpha(c);
+			*deststr++ = (char) toalpha(c);
 			maxlength -= 2;
 		} else {	/* any other character */
 			*deststr++ = c;

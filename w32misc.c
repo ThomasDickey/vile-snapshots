@@ -2,19 +2,18 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.33 2001/02/18 01:19:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.34 2001/09/18 09:49:29 tom Exp $
  */
 
-#include <windows.h>
+#include "estruct.h"
+#include "edef.h"
+#include "nefunc.h"
+
 #include <io.h>
 #include <conio.h>
 #include <stdio.h>
 #include <errno.h>
 #include <process.h>
-
-#include "estruct.h"
-#include "edef.h"
-#include "nefunc.h"
 
 #define CSHEXE           "csh.exe"
 #define CSHEXE_LEN       (sizeof(CSHEXE) - 1)
@@ -24,8 +23,6 @@
 #define SHEXE            "sh.exe"
 #define SHEXE_LEN        (sizeof(SHEXE) - 1)
 #define SHELL_C_LEN      (sizeof(" -c ") - 1)
-
-#undef  RECT                         /* FIXME: symbol conflict */
 
 extern REGION *haveregion;
 

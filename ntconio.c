@@ -1,17 +1,14 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.67 2001/04/07 15:54:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.68 2001/09/18 10:01:05 tom Exp $
  *
  */
 
-#include <windows.h>
+#include "estruct.h"
+#include "edef.h"
+
 #include <process.h>
-
-#include        "estruct.h"
-#include        "edef.h"
-
-#undef RECT			/* FIXME: symbol conflict */
 
 /*
  * Define this if you want to kernel fault win95 when ctrl brk is pressed.
@@ -118,8 +115,8 @@ scflush(void)
 	COORD coordCursor;
 	DWORD written;
 
-	coordCursor.X = ccol;
-	coordCursor.Y = crow;
+	coordCursor.X = (SHORT) ccol;
+	coordCursor.Y = (SHORT) crow;
 	TRACE2(("scflush %04x [%d,%d]%.*s\n",
 		AttrColor(cbcolor, cfcolor), crow, ccol, bufpos, linebuf));
 	WriteConsoleOutputCharacter(
@@ -157,8 +154,8 @@ ntflush(void)
     COORD coordCursor;
 
     scflush();
-    coordCursor.X = ccol;
-    coordCursor.Y = crow;
+    coordCursor.X = (SHORT) ccol;
+    coordCursor.Y = (SHORT) crow;
     SetConsoleCursorPosition(hConsoleOutput, coordCursor);
 }
 
@@ -178,8 +175,8 @@ nteeol(void)
     COORD coordCursor;
 
     scflush();
-    coordCursor.X = ccol;
-    coordCursor.Y = crow;
+    coordCursor.X = (SHORT) ccol;
+    coordCursor.Y = (SHORT) crow;
     FillConsoleOutputCharacter(
 				  hConsoleOutput, ' ',
 				  csbi.dwMaximumWindowSize.X - ccol,
@@ -222,12 +219,12 @@ ntscroll(int from, int to, int n)
     fill.Attributes = AttrColor(cbcolor, cfcolor);
 
     sRect.Left = 0;
-    sRect.Top = from;
-    sRect.Right = csbi.dwMaximumWindowSize.X - 1;
-    sRect.Bottom = from + n - 1;
+    sRect.Top = (SHORT) from;
+    sRect.Right = (SHORT) (csbi.dwMaximumWindowSize.X - 1);
+    sRect.Bottom = (SHORT) (from + n - 1);
 
     dest.X = 0;
-    dest.Y = to;
+    dest.Y = (SHORT) to;
 
     ScrollConsoleScreenBuffer(hConsoleOutput, &sRect, NULL, dest, &fill);
     if ((scroll_pause = global_g_val(GVAL_SCROLLPAUSE)) > 0) {
@@ -251,10 +248,10 @@ ntscroll(int from, int to, int n)
 
 	coordCursor.X = 0;
 	if (to > from) {
-	    coordCursor.Y = from + n;
+	    coordCursor.Y = (SHORT) (from + n);
 	    cnt = to - from - n;
 	} else {
-	    coordCursor.Y = to + n;
+	    coordCursor.Y = (SHORT) (to + n);
 	    cnt = from - to - n;
 	}
 	cnt *= csbi.dwMaximumWindowSize.X;
@@ -262,7 +259,7 @@ ntscroll(int from, int to, int n)
 				      hConsoleOutput, ' ', cnt, coordCursor, &written);
 	FillConsoleOutputAttribute(
 				      hConsoleOutput, AttrColor(cbcolor,
-				      cfcolor), cnt,
+								cfcolor), cnt,
 				      coordCursor, &written);
     }
 #endif
@@ -314,7 +311,7 @@ ntputc(int ch)
     if (ch >= ' ') {
 
 	/* This is an optimization for the most common case. */
-	linebuf[bufpos++] = ch;
+	linebuf[bufpos++] = (char) ch;
 
     } else {
 
@@ -353,7 +350,7 @@ ntputc(int ch)
 	    break;
 
 	default:
-	    linebuf[bufpos++] = ch;
+	    linebuf[bufpos++] = (char) ch;
 	    break;
 	}
     }
@@ -369,8 +366,8 @@ nteeop(void)
     COORD coordCursor;
 
     scflush();
-    coordCursor.X = ccol;
-    coordCursor.Y = crow;
+    coordCursor.X = (SHORT) ccol;
+    coordCursor.Y = (SHORT) crow;
     cnt = csbi.dwMaximumWindowSize.X - ccol
 	+ (csbi.dwMaximumWindowSize.Y - crow - 1)
 	* csbi.dwMaximumWindowSize.X;
@@ -379,7 +376,7 @@ nteeop(void)
 	);
     FillConsoleOutputAttribute(
 				  hConsoleOutput, AttrColor(cbcolor,
-				  cfcolor), cnt,
+							    cfcolor), cnt,
 				  coordCursor, &written
 	);
 }
@@ -390,7 +387,7 @@ ntrev(UINT attr)
     scflush();
     cbcolor = nbcolor;
     cfcolor = nfcolor;
-    attr &= (VASPCOL|VACOLOR|VABOLD|VAITAL|VASEL|VAREV);
+    attr &= (VASPCOL | VACOLOR | VABOLD | VAITAL | VASEL | VAREV);
     if (attr) {
 	if (attr & VASPCOL)
 	    cfcolor = (VCOLORNUM(attr) & (NCOLORS - 1));
@@ -610,23 +607,24 @@ decode_key_event(INPUT_RECORD * irp)
 	return (NOKYMAP);
 
     TRACE(("decode_key_event(%c=%02x, Virtual=%#x,%#x, State=%#x)\n",
-	irp->Event.KeyEvent.uChar.AsciiChar,
-	irp->Event.KeyEvent.uChar.AsciiChar,
-	irp->Event.KeyEvent.wVirtualKeyCode,
-	irp->Event.KeyEvent.wVirtualScanCode,
-	irp->Event.KeyEvent.dwControlKeyState));
+	   irp->Event.KeyEvent.uChar.AsciiChar,
+	   irp->Event.KeyEvent.uChar.AsciiChar,
+	   irp->Event.KeyEvent.wVirtualKeyCode,
+	   irp->Event.KeyEvent.wVirtualScanCode,
+	   irp->Event.KeyEvent.dwControlKeyState));
 
     if ((key = (UCHAR) irp->Event.KeyEvent.uChar.AsciiChar) != 0)
 	return key;
 
     if ((state & (RIGHT_CTRL_PRESSED | LEFT_CTRL_PRESSED)) != 0
-     && (state & (RIGHT_CTRL_PRESSED | LEFT_CTRL_PRESSED | SHIFT_PRESSED)) == state) {
+	&& (state & (RIGHT_CTRL_PRESSED | LEFT_CTRL_PRESSED |
+	SHIFT_PRESSED)) == state) {
 	/*
 	 * Control-shift-6 is control/^, control/~ or control/`.
 	 */
 	if (irp->Event.KeyEvent.wVirtualKeyCode == '6'
-	 || irp->Event.KeyEvent.wVirtualKeyCode == '^'
-	 || irp->Event.KeyEvent.wVirtualKeyCode == '\036') {
+	    || irp->Event.KeyEvent.wVirtualKeyCode == '^'
+	    || irp->Event.KeyEvent.wVirtualKeyCode == '\036') {
 	    TRACE(("...decode_key_event ^^\n"));
 	    return '\036';
 	}
@@ -634,7 +632,7 @@ decode_key_event(INPUT_RECORD * irp)
 	 * Control-shift-2 is control/@, or null.
 	 */
 	if (irp->Event.KeyEvent.wVirtualKeyCode == '2'
-	 || irp->Event.KeyEvent.wVirtualKeyCode == '@') {
+	    || irp->Event.KeyEvent.wVirtualKeyCode == '@') {
 	    TRACE(("...decode_key_event null\n"));
 	    return 0;
 	}
@@ -846,7 +844,7 @@ autoscroll_thread(void *unused)
 {
     DWORD status;
 
-    while (1) {
+    for_ever {
 	status = WaitForSingleObject(hAsMutex, AS_TMOUT);
 	if (!buttondown) {
 	    (void) ReleaseMutex(hAsMutex);
@@ -1290,7 +1288,7 @@ parse_icursor_string(char *str, int *revert_cursor)
     }
     icursor_insmode = (int) vl_atoul(pinsmode, 10, &failed);
     if (pcmdmode)
-	*pcmdmode = tmp;	/* delimiter  restored */
+	*pcmdmode = (char) tmp;	/* delimiter restored */
     if (failed)
 	return (FALSE);
     if (pcmdmode) {

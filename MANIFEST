@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_2o
+MANIFEST for vile, version v9_2p
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -127,6 +127,7 @@ w32oo.cpp                       various C++ support functions for winvile
 w32pipe.c                       Win32 native pipe support
 w32reg.c                        Winvile OLE registration code
 w32reg.h                        interface of w32reg
+w32vile.h                       includes <windows.h>, but adds pragmas to stifle the -W4 warnings.
 watch.c                         watch file-descriptors & timers
 window.c                        window-management functions
 winvile.h                       definitions for winvile
@@ -150,7 +151,6 @@ doc/modes.doc                   overview of modes/majormodes
 doc/oleauto.doc                 document Winvile OLE
 doc/perl.doc                    notes about perl interface to vile
 doc/visvile.doc                 document visvile.dll
-doc/w32modes.doc                describe win32-specific modes
 filters                         subdirectory
 filters/ada-filt.l              ada syntax highlighter for vile
 filters/ada.key                 Ada95 keywords
@@ -297,6 +297,7 @@ macros/vileinit.rc              sample initialization file
 macros/vilemenu.rc              sample menu for xvile
 macros/vileperl.rc              sample initialization for perl scripts
 perl                            subdirectory
+perl/Breadcrumbs.pm             manages bookmarks for a set of files
 perl/Glob2re.pm                 perl: convert wildcard (glob) to regular expression
 perl/Vile.pm                    utility functions for perl scripts
 perl/Vile                       subdirectory
@@ -306,11 +307,13 @@ perl                            subdirectory
 perl/Vileserv.pm                provides file-load server capability for xvile
 perl/Visit.pm                   perl: utility for visiting files
 perl/capture.pm                 Perl script that improves on vile's capture-command
+perl/dict.pm                    dictionary lookup via dict.org
 perl/directory.pm               directory-browser extension
 perl/dirlist.pm                 perl: create a flat directory listing
 perl/gdb.pm                     run gdb in a window, tracking changes
 perl/hgrep.pm                   Perl utility: recursive grep, makes hypertext links
 perl/lock.pm                    Perl: screen-lock script
+perl/man.pm                     a manpage-script
 perl/mime.pl                    mime-aware file viewer support
 perl/plugins.pl                 plugins extension to the mime library
 perl/search.pm                  Perl: lookalike for vile's search commands

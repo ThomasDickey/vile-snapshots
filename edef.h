@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.286 2001/08/17 18:55:37 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.289 2001/09/24 00:03:56 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -183,8 +183,8 @@ decl_init( int in_autocolor, FALSE );	/* Autocoloring			*/
 
 decl_uninit( int vtrow );		/* Row location of SW cursor	*/
 decl_uninit( int vtcol );		/* Column location of SW cursor */
-decl_init( int ttrow, HUGE );		/* Row location of HW cursor	*/
-decl_init( int ttcol, HUGE );		/* Column location of HW cursor */
+decl_init( int ttrow, VL_HUGE );	/* Row location of HW cursor	*/
+decl_init( int ttcol, VL_HUGE );	/* Column location of HW cursor */
 decl_uninit( int horscroll );		/* line offset when displaying	*/
 decl_init( int ntildes, 100 );		/* number of tildes displayed at eob
 					  (expressed as percent of window) */
@@ -321,7 +321,11 @@ decl_init_const( char ctrldigits[], "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_");
 
 decl_init_const( char HELP_BufName[],		"[Help]");
 #if OPT_REBIND
+decl_init_const( char KEY_NAMES_BufName[],	"[Key Names]");
 decl_init_const( char BINDINGLIST_BufName[],	"[Binding List]");
+decl_init_const( char CMD_BINDINGS_BufName[],	"[Command-Bindings]");
+decl_init_const( char INS_BINDINGS_BufName[],	"[Insert-Bindings]");
+decl_init_const( char SEL_BINDINGS_BufName[],	"[Select-Bindings]");
 # if OPT_TERMCHRS
 decl_init_const( char TERMINALCHARS_BufName[],	"[Terminal Chars]");
 # endif

@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.237 2001/08/25 17:37:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.238 2001/09/18 09:49:27 tom Exp $
  *
  */
 
@@ -655,7 +655,7 @@ screen_string (char *buf, int bufn, CHARTYPE inclchartype)
 		}
 	}
 	while ( i < (bufn-1) && !is_at_end_of_line(DOT)) {
-		buf[i] = char_at(DOT);
+		buf[i] = (char) char_at(DOT);
 #if OPT_WIDE_CTYPES
 		if (i == 0) {
 			if (inclchartype & vl_scrtch) {

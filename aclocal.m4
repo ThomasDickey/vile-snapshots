@@ -1,15 +1,8 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.98 2001/08/23 20:32:08 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.100 2001/09/23 18:26:19 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
-dnl ---------------------------------------------------------------------------
-dnl CF_PREREQ_COMPARE(MAJOR1, MINOR1, TERNARY1, MAJOR2, MINOR2, TERNARY2,
-dnl                   PRINTABLE2, not FOUND, FOUND)
-define(CF_PREREQ_COMPARE,
-[ifelse(builtin([eval], [$3 < $6]), 1,
-ifelse([$8], , ,[$8]),
-ifelse([$9], , ,[$9]))])dnl
 dnl ---------------------------------------------------------------------------
 dnl Conditionally generate script according to whether we're using the release
 dnl version of autoconf, or a patched version (using the ternary component as
@@ -1230,6 +1223,46 @@ CF_MISSING_CHECK(${ac_func}, ${ac_tr_func})dnl
 done
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl Check for a working mkstemp
+AC_DEFUN([CF_MKSTEMP],[
+AC_CACHE_CHECK(for working mkstemp, cf_cv_func_mkstemp,[
+rm -f conftest*
+AC_TRY_RUN([
+#include <sys/types.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/stat.h>
+int main()
+{
+	char *tmpl = "conftestXXXXXX";
+	char temp[80];
+	int result = 0;
+	int fd;
+	struct stat sb;
+
+	umask(077);
+	strcpy(temp, tmpl);
+	if ((fd = mkstemp(temp)) >= 0) {
+		if (!strcmp(temp, tmpl)
+		 || stat(temp, &sb) != 0
+		 || (sb.st_mode & S_IFMT) != S_IFREG
+		 || (sb.st_mode & 077) != 0) {
+			result = 1;
+		}
+		close(fd);
+	}
+	exit(result);
+}
+],[cf_cv_func_mkstemp=yes
+],[cf_cv_func_mkstemp=no
+],[AC_CHECK_FUNC(mkstemp)
+])
+])
+if test "$cf_cv_func_mkstemp" = yes ; then
+	AC_DEFINE(HAVE_MKSTEMP)
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl Write a debug message to config.log, along with the line number in the
 dnl configure script.
 AC_DEFUN([CF_MSG_LOG],[
@@ -1470,6 +1503,42 @@ AC_DEFUN([CF_PATHSEP],
 ifelse($1,,,[$1=$PATHSEP])
 	AC_SUBST(PATHSEP)
 ])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check the argument to see that it looks like a pathname.  Rewrite it if it
+dnl begins with one of the prefix/exec_prefix variables, and then again if the
+dnl result begins with 'NONE'.  This is necessary to work around autoconf's
+dnl delayed evaluation of those symbols.
+AC_DEFUN([CF_PATH_SYNTAX],[
+case ".[$]$1" in #(vi
+.\[$]\(*\)*|.\'*\'*) #(vi
+  ;;
+..|./*|.\\*) #(vi
+  ;;
+.[[a-zA-Z]]:[[\\/]]*) #(vi OS/2 EMX
+  ;;
+.\[$]{*prefix}*) #(vi
+  eval $1="[$]$1"
+  case ".[$]$1" in #(vi
+  .NONE/*)
+    $1=`echo [$]$1 | sed -e s@NONE@$ac_default_prefix@`
+    ;;
+  esac
+  ;; #(vi
+.NONE/*)
+  $1=`echo [$]$1 | sed -e s@NONE@$ac_default_prefix@`
+  ;;
+*)
+  AC_ERROR([expected a pathname, not \"[$]$1\"])
+  ;;
+esac
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_PREREQ_COMPARE(MAJOR1, MINOR1, TERNARY1, MAJOR2, MINOR2, TERNARY2,
+dnl                   PRINTABLE2, not FOUND, FOUND)
+define(CF_PREREQ_COMPARE,
+[ifelse(builtin([eval], [$3 < $6]), 1,
+ifelse([$8], , ,[$8]),
+ifelse([$9], , ,[$9]))])dnl
 dnl ---------------------------------------------------------------------------
 dnl Compute $PROG_EXT, used for non-Unix ports, such as OS/2 EMX.
 AC_DEFUN([CF_PROG_EXT],
@@ -1880,6 +1949,46 @@ dnl ---------------------------------------------------------------------------
 dnl Use AC_VERBOSE w/o the warnings
 AC_DEFUN([CF_VERBOSE],
 [test -n "$verbose" && echo "	$1" 1>&AC_FD_MSG
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Process an option specifying a list of colon-separated paths.
+dnl
+dnl $1 = option name
+dnl $2 = help-text
+dnl $3 = environment variable to set
+dnl $4 = default value, shown in the help-message, must be a constant
+dnl $5 = default value, if it's an expression & cannot be in the help-message
+dnl $6 = flag to tell if we want to define or substitute
+dnl
+AC_DEFUN([CF_WITH_PATHLIST],[
+AC_REQUIRE([CF_PATHSEP])
+AC_ARG_WITH($1,[$2 ](default: ifelse($4,,empty,$4)),,
+ifelse($4,,[withval="${$3}"],[withval="${$3-ifelse($5,,$4,$5)}"]))dnl
+
+IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS="${PATHSEP}"
+cf_dst_path=
+for cf_src_path in $withval
+do
+  CF_PATH_SYNTAX(cf_src_path)
+  test -n "$cf_dst_path" && cf_dst_path="${cf_dst_path}:"
+  cf_dst_path="${cf_dst_path}${cf_src_path}"
+done
+IFS="$ac_save_ifs"
+
+ifelse($6,define,[
+# Strip single quotes from the value, e.g., when it was supplied as a literal
+# for $4 or $5.
+case $cf_dst_path in #(vi
+\'*)
+  cf_dst_path=`echo $cf_dst_path |sed -e s/\'// -e s/\'\$//`
+  ;;
+esac
+cf_dst_path=`echo "$cf_dst_path" | sed -e 's/\\\\/\\\\\\\\/g'`
+])
+
+eval '$3="$cf_dst_path"'
+AC_SUBST($3)dnl
+
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check for Xaw (Athena) libraries

@@ -552,8 +552,8 @@ State Variables
 	$ocwd           [READ ONLY]  Previous current directory.
 
 	$os             [READ ONLY]  "Operating system" for which was vile
-			was built.  Currently "unix" (if no more-specific name
-			is derived from the configure script), "dos", "vms",
+			was built.  Currently "unix" (if no more-specific
+			name is derived from the configure script), "dos",
 			"os/2", "vms" and "win32".
 
 	$pagelen        Length of the vile screen.
@@ -1301,9 +1301,8 @@ Example startup file
 
 	~if &sequal $progname "winvile"
 	    set-variable $font "r_ansi,8"
-	    set force-console
-	    set w32pipes
-	~elseif &equal 0 &sindex &lower $shell "command.com"
+	~endif
+	~if &equal 0 &sindex &lower $shell "command.com"
 	    set w32pipes
 	~else
 	    set now32pipes
@@ -1396,6 +1395,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.75 2001/08/22 00:27:36 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.76 2001/09/18 09:10:38 cmorgan Exp $
 -----------------------------------
 

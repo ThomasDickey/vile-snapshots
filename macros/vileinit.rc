@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.17 2001/04/03 19:39:46 tom Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.18 2001/09/23 19:21:17 tom Exp $
 ; This is a sample which may be installed as .vilerc (or vile.rc for non-Unix
 ; systems), or source'd as-is to provide quick initialization of some useful
 ; macros and settings.
@@ -24,6 +24,11 @@ bind-key help #1
 
 ; A tab is useful for stepping through the windows:
 bind-key next-window ^I
+
+; In command-mode, we can use home/end keys most effectively by going to either
+; end of the line:
+bind-cmdmode-key goto-bol FN-H
+bind-cmdmode-key goto-eol FN-E
 
 ; Special settings that depend on the platform/configuration.  Note
 ; that there is no special symbol denoting "UNIX", so we infer it from

@@ -2,21 +2,18 @@
  * w32reg.c:  Winvile OLE registration code (currently only used for OLE
  *            automation).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32reg.c,v 1.5 2000/01/30 20:43:19 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32reg.c,v 1.6 2001/09/18 09:49:29 tom Exp $
  */
 
-#include <windows.h>
+#include "estruct.h"
+#include "edef.h"
+
 #include <objbase.h>
 #include <direct.h>
 #include <ctype.h>
 
 #include <initguid.h>
 #include "w32reg.h"
-
-
-#include "estruct.h"
-#include "edef.h"
-
 
 static void make_editor_name(char *name),
             make_editor_path(char *path),

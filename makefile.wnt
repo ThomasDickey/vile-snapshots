@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.67 2001/05/24 01:16:51 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.68 2001/09/18 09:10:38 cmorgan Exp $
 #
 #
 !include <ntwin32.mak>
@@ -190,7 +190,7 @@ SRC = 	main.c $(SCREEN).c \
 	fences.c file.c filec.c \
 	fileio.c finderr.c glob.c globals.c history.c \
 	input.c insert.c itbuff.c isearch.c \
-	line.c modes.c msgs.c npopen.c oneliner.c opers.c \
+	line.c modes.c msgs.c oneliner.c opers.c \
 	path.c random.c regexp.c \
 	region.c search.c select.c spawn.c statevar.c \
 	tags.c tbuff.c termio.c ucrypt.c undo.c \
@@ -204,7 +204,7 @@ OBJ = 	main.obj $(SCREEN).obj \
 	fences.obj file.obj filec.obj \
 	fileio.obj finderr.obj glob.obj globals.obj history.obj \
 	input.obj insert.obj itbuff.obj isearch.obj \
-	line.obj modes.obj msgs.obj npopen.obj oneliner.obj opers.obj \
+	line.obj modes.obj msgs.obj oneliner.obj opers.obj \
 	path.obj random.obj regexp.obj \
 	region.obj search.obj select.obj spawn.obj statevar.obj \
 	tags.obj tbuff.obj termio.obj ucrypt.obj undo.obj \

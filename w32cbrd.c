@@ -11,15 +11,14 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.22 2001/02/18 00:28:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.24 2001/09/23 22:08:13 mark.robinson Exp $
  */
-
-#include <windows.h>
-#include <stdlib.h>
-#include <search.h>
 
 #include "estruct.h"
 #include "edef.h"
+
+#include <stdlib.h>
+#include <search.h>
 
 #define  CLIPBOARD_BUSY      "[Clipboard currently busy]"
 #define  CLIPBOARD_COPY_MB   "[Clipboard copy from minibuffer not supported]"
@@ -629,8 +628,10 @@ cbrdpaste(int f, int n)
      * the clipboard (I hope).
      */
     suppressnl = is_header_line(DOT, curbp);
+    /* this pastes after DOT instead of at DOT - very annoying
     if (! is_at_end_of_line(DOT))
         forwchar(TRUE,1);
+    */
     (void) setmark();
     while(*data && rc)
     {
@@ -679,9 +680,11 @@ cbrdpaste(int f, int n)
         /*
          * Success.  Fiddle with dot and mark again (another chunk of doput()
          * code).  "Tha' boy shore makes keen use of cut and paste."
+         * Don't swap if inserting - this allows you to continue typing
+         * after a paste operation without additional futzing with DOT.
          */
 
-        swapmark();                           /* I understand this. */
+        if (!insertmode) swapmark();          /* I understand this. */
         if (is_header_line(DOT, curbp))
             DOT.l = lback(DOT.l);             /* This is a mystery. */
         report_cbrdstats(nbyte, nline, TRUE);

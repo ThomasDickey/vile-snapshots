@@ -1,9 +1,9 @@
-%s COMMENT
+%s COMMENT COMMENT1
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.10 2000/08/09 23:27:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.11 2001/09/18 19:54:51 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of SQL script
  * - T.Dickey
@@ -48,7 +48,7 @@ SPACE		[ \t]*
 
 ACTION		@
 
-COMMENT1	^{SPACE}(--|[rR][eE][mM]([aA][rR][kK])?[^A-Za-z])[^\n]*
+COMMENT1	^{SPACE}--[^\n]*
 
 UNITS		[kKmM]
 INTEGER		[0-9]+
@@ -69,7 +69,14 @@ HOSTVAR		":"{IDENT}
 {LABEL}		|
 {ACTION}		{ WriteToken(Action_attr); }
 
-{IDENT}			{ WriteToken(ci_keyword_attr(yytext)); }
+{IDENT}			{   if (!strcmp(lowercase_of(yytext), "rem")
+			     || !strcmp(yytext, "remark")) {
+				WriteToken(Comment_attr);
+				BEGIN(COMMENT1);
+			    } else {
+				WriteToken(ci_keyword_attr(yytext));
+			    }
+			}
 
 {HOSTVAR}		{ flt_puts(yytext, 1, Action_attr);
 			  WriteToken2(Ident_attr,1);
@@ -79,7 +86,9 @@ HOSTVAR		":"{IDENT}
 
 {STRING}		{ WriteToken(String_attr); }
 
-{COMMENT1}		{ WriteToken(Comment_attr); }
+^{SPACE}--[^\n]*	{ WriteToken(Comment_attr); BEGIN(COMMENT1); }
+<COMMENT1>[^\n]*	{ WriteToken(Comment_attr); }
+<COMMENT1>\n		{ ECHO; BEGIN(INITIAL); }
 
 "/*"			{ WriteToken(Comment_attr); BEGIN(COMMENT); }
 <COMMENT>[^*]*		{ WriteToken(Comment_attr); }

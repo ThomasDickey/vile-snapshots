@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.71 2000/05/17 22:32:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.72 2001/09/18 09:49:28 tom Exp $
  *
  */
 
@@ -97,7 +97,7 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 	if (regionshape == EXACT) {
 	    if (cfp->c_flags & FL)
 		    regionshape = FULLLINE;
-	    if (cfp->c_flags & RECT)
+	    if (cfp->c_flags & VL_RECT)
 		    regionshape = RECTANGLE;
 	}
 

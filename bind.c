@@ -3,13 +3,9 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.243 2001/08/26 15:55:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.246 2001/09/24 00:29:45 tom Exp $
  *
  */
-
-#ifdef _WIN32
-# include <windows.h>
-#endif
 
 #include	"estruct.h"
 #include	"edef.h"
@@ -62,7 +58,8 @@ static int prc2kcod(const char *kk);
 
 BINDINGS dft_bindings =
 {
-    asciitbl
+    BINDINGLIST_BufName
+    ,asciitbl
     ,kbindtbl
 #if OPT_REBIND
     ,kbindtbl
@@ -72,7 +69,8 @@ BINDINGS dft_bindings =
 static const CMDFUNC *ins_table[N_chars];
 BINDINGS ins_bindings =
 {
-    ins_table
+    INS_BINDINGS_BufName
+    ,ins_table
     ,kbindtbl
 #if OPT_REBIND
     ,kbindtbl
@@ -82,7 +80,8 @@ BINDINGS ins_bindings =
 static const CMDFUNC *cmd_table[N_chars];
 BINDINGS cmd_bindings =
 {
-    cmd_table
+    CMD_BINDINGS_BufName
+    ,cmd_table
     ,kbindtbl
 #if OPT_REBIND
     ,kbindtbl
@@ -92,7 +91,8 @@ BINDINGS cmd_bindings =
 static const CMDFUNC *sel_table[N_chars];
 BINDINGS sel_bindings =
 {
-    sel_table
+    SEL_BINDINGS_BufName
+    ,sel_table
     ,kbindtbl
 #if OPT_REBIND
     ,kbindtbl
@@ -226,15 +226,20 @@ kcode2kbind(BINDINGS * bs, int code)
 {
     KBIND *kbp;
 
+    TRACE(("kcode2kbind(%s, %#x)\n", bs->bufname, code));
 #if OPT_REBIND
     for (kbp = bs->kb_extra; kbp != bs->kb_special; kbp = kbp->k_link) {
-	if (kbp->k_code == code)
+	if (kbp->k_code == code) {
+	    TRACE(("...found in extra-bindings\n"));
 	    return kbp;
+	}
     }
 #endif
     for (kbp = bs->kb_special; kbp->k_cmd; kbp++) {
-	if (kbp->k_code == code)
+	if (kbp->k_code == code) {
+	    TRACE(("...found in special-bindings\n"));
 	    return kbp;
+	}
     }
     return 0;
 }
@@ -512,7 +517,7 @@ unbind_any_key(BINDINGS * bs)
 	mlforce("[Key not bound]");
 	return (FALSE);
     }
-    update_scratch(BINDINGLIST_BufName, update_binding_list);
+    update_scratch(bs->bufname, update_binding_list);
     return (TRUE);
 }
 
@@ -603,7 +608,7 @@ install_bind(int c, const CMDFUNC * kcmd, BINDINGS * bs)
 	kbp->k_cmd = kcmd;	/* and func pointer */
 	bs->kb_extra = kbp;
     }
-    update_scratch(BINDINGLIST_BufName, update_binding_list);
+    update_scratch(bs->bufname, update_binding_list);
     return (TRUE);
 }
 
@@ -670,7 +675,7 @@ static int append_to_binding_list;
 static int
 update_binding_list(BUFFER *bp GCC_UNUSED)
 {
-    return liststuff(BINDINGLIST_BufName, append_to_binding_list,
+    return liststuff(bindings_to_describe->bufname, append_to_binding_list,
 		     makebindlist, (int) last_whichcmds, (void *) last_lookup_string);
 }
 
@@ -770,6 +775,94 @@ desfunc(int f GCC_UNUSED, int n GCC_UNUSED)
 	append_to_binding_list = FALSE;
     }
     return s;
+}
+
+/* FIXME: this table should be generated from cmdtbl, but excluding the
+ * mouse and text pseudo-keys.  Note that the table isn't really
+ * sorted alphabetically, so it would be hard to generate in a nice way.
+ */
+static void
+make_key_names(int iarg GCC_UNUSED, void *varg GCC_UNUSED)
+{
+    static const struct {
+	int code;
+	const char *name;
+    } table[] = {
+	/* *INDENT-OFF* */
+	{ KEY_Up,	   "KEY_Up" },
+	{ KEY_Down,	   "KEY_Down" },
+	{ KEY_Right,	   "KEY_Right" },
+	{ KEY_Left,	   "KEY_Left" },
+	{ 0,		   0 },
+	{ KEY_Delete,	   "KEY_Delete" },
+	{ KEY_End,	   "KEY_End" },
+	{ KEY_Find,	   "KEY_Find" },
+	{ KEY_Help,	   "KEY_Help" },
+	{ KEY_Home,	   "KEY_Home" },
+	{ KEY_Insert,	   "KEY_Insert" },
+	{ KEY_Menu,	   "KEY_Menu" },
+	{ KEY_Next,	   "KEY_Next" },
+	{ KEY_Prior,	   "KEY_Prior" },
+	{ KEY_Select,	   "KEY_Select" },
+	{ 0,		   0 },
+	{ KEY_F1,	   "KEY_F1" },
+	{ KEY_F2,	   "KEY_F2" },
+	{ KEY_F3,	   "KEY_F3" },
+	{ KEY_F4,	   "KEY_F4" },
+	{ KEY_F5,	   "KEY_F5" },
+	{ KEY_F6,	   "KEY_F6" },
+	{ KEY_F7,	   "KEY_F7" },
+	{ KEY_F8,	   "KEY_F8" },
+	{ KEY_F9,	   "KEY_F9" },
+	{ KEY_F10,	   "KEY_F10" },
+	{ KEY_F11,	   "KEY_F11" },
+	{ KEY_F12,	   "KEY_F12" },
+	{ KEY_F13,	   "KEY_F13" },
+	{ KEY_F14,	   "KEY_F14" },
+	{ KEY_F15,	   "KEY_F15" },
+	{ KEY_F16,	   "KEY_F16" },
+	{ KEY_F17,	   "KEY_F17" },
+	{ KEY_F18,	   "KEY_F18" },
+	{ KEY_F19,	   "KEY_F19" },
+	{ KEY_F20,	   "KEY_F20" },
+	{ KEY_F21,	   "KEY_F21" },
+	{ KEY_F22,	   "KEY_F22" },
+	{ KEY_F23,	   "KEY_F23" },
+	{ KEY_F24,	   "KEY_F24" },
+	{ KEY_F25,	   "KEY_F25" },
+	{ KEY_F26,	   "KEY_F26" },
+	{ KEY_F27,	   "KEY_F27" },
+	{ KEY_F28,	   "KEY_F28" },
+	{ KEY_F29,	   "KEY_F29" },
+	{ KEY_F31,	   "KEY_F31" },
+	{ KEY_F32,	   "KEY_F32" },
+	{ KEY_F33,	   "KEY_F33" },
+	{ KEY_F34,	   "KEY_F34" },
+	{ KEY_F35,	   "KEY_F35" },
+	{ KEY_F30,	   "KEY_F30" },
+	{ 0,		   0 },
+	{ KEY_KP_F1,	   "KEY_KP_F1" },
+	{ KEY_KP_F2,	   "KEY_KP_F2" },
+	{ KEY_KP_F3,	   "KEY_KP_F3" },
+	{ KEY_KP_F4,	   "KEY_KP_F4" },
+	/* *INDENT-ON* */
+
+    };
+    unsigned n;
+    char temp[80];
+
+    bprintf("Coding for function and cursor-keys (your terminal may not support all):\n");
+    for (n = 0; n < TABLESIZE(table); n++) {
+	bputc('\n');
+	if (table[n].code != 0)
+	    bprintf("%s\t%s", kcod2prc(table[n].code, temp), table[n].name);
+    }
+}
+
+int
+des_keynames(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    return liststuff(KEY_NAMES_BufName, FALSE, make_key_names, 0, (void *) 0);
 }
 
 /* lookup up function by key */
@@ -1139,7 +1232,7 @@ makebindlist(int whichmask, void *mstring)
     char *listed = typecallocn(char, (ALLOC_T) nametblsize);
 
     if (listed == 0) {
-	(void) no_memory(BINDINGLIST_BufName);
+	(void) no_memory(bindings_to_describe->bufname);
 	return;
     }
 
@@ -1198,7 +1291,7 @@ ourstrstr(const char *haystack, const char *needle, int anchor)
 	int hl = strlen(haystack);
 	const char *hp = haystack;
 	while (hl >= nl && *hp) {
-	    if (!strncmp(hp, needle, (size_t)nl))
+	    if (!strncmp(hp, needle, (size_t) nl))
 		return hp - haystack + 1;
 	    hp++;
 	    hl--;
@@ -1506,7 +1599,7 @@ kcod2escape_seq(int c, char *ptr)
 	    strcpy(ptr, W32DELETE);
 	    ptr += sizeof(W32DELETE) - 1;
 	} else
-	    *ptr++ = c;		/* Pickup <modifier>+...<single_char> */
+	    *ptr++ = (char) c;	/* Pickup <modifier>+...<single_char> */
 	*ptr = EOS;
 	return (int) (ptr - base);
     }
@@ -1540,7 +1633,7 @@ bytes2prc(char *dst, char *src, int n)
 	    tmp = "<space>";
 	} else if (isCntrl(c)) {
 	    *dst++ = '^';
-	    *dst = tocntrl(c);
+	    *dst = (char) tocntrl(c);
 	} else {
 	    *dst = (char) c;
 	}
@@ -2625,7 +2718,7 @@ insert_namebst(const char *name, const CMDFUNC * cmd, int ro)
 
     temp.bi_key = name;
     temp.n_cmd = cmd;
-    temp.n_flags = ro ? NBST_READONLY : 0;
+    temp.n_flags = (UCHAR) (ro ? NBST_READONLY : 0);
 
     return (btree_insert(&namebst, &temp) != 0);
 }

@@ -2,23 +2,21 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.15 2001/08/22 21:42:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.16 2001/09/18 09:49:29 tom Exp $
  */
 
-#include <windows.h>
+#include "estruct.h"
+#include "edef.h"
+#include "nefunc.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <commdlg.h>
 #include <direct.h>
 
-#include "estruct.h"
-#include "edef.h"
-#include "nefunc.h"
-
 #define FOOTER_OFFS      0.333  /* inches from bottom of page */
 #define _FF_             '\f'
-#undef  RECT                    /* FIXME: symbol conflict     */
 
 extern REGION *haveregion;      /* FIXME -- put this in edef.h and get rid of
                                  * all the "extern" refs in all vile modules.

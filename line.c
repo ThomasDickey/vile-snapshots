@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.141 2001/02/13 23:55:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.142 2001/09/18 09:49:27 tom Exp $
  *
  */
 
@@ -276,7 +276,7 @@ int len)	/* if non-zero, insert exactly this amount.  pad if needed */
 	const char *p = s;
 	int n, b = 0;
 	if (len <= 0)
-		n = HUGE;
+		n = VL_HUGE;
 	else
 		n = len;
 	while (p && *p && n) {
@@ -1151,9 +1151,9 @@ kregcirculate(int killing)
 		/* for the others, if the current "0 has lines in it, it
 		    must be `"1', else "1 is `"1'.  get it? */
 			if (kbs[lastkb].kbflag & (KLINES|KAPPEND))
-				ukb = (lastkb + ukb - 1) % 10;
+				ukb = (short) ((lastkb + ukb - 1) % 10);
 			else
-				ukb = (lastkb + ukb) % 10;
+				ukb = (short) ((lastkb + ukb) % 10);
 		}
 	}
 }
@@ -1609,7 +1609,7 @@ execkreg(int f, int n)
 		while (kbcount) {
 			whichkb = kbcount;
 			tkp = kp;
-			while (--whichkb)
+			while (--whichkb != 0)
 				tkp = tkp->d_next;
 			i = KbSize(jj,tkp);
 			sp = (char *)tkp->d_chunk+i-1;

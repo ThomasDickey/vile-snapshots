@@ -3,7 +3,7 @@
  *
  * written for vile: Copyright (c) 1990, 1995-2001 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.80 2001/02/16 22:42:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.81 2001/09/18 09:49:29 tom Exp $
  *
  */
 
@@ -837,7 +837,7 @@ lineundo(int f GCC_UNUSED, int n GCC_UNUSED)
     do_mark_iterate(mp,
 		    if (mp->l == lp)
 		    mp->o = b_left_margin(curbp);
-	) ;
+    );
 #if OPT_LINE_ATTRS
     FreeAndNull(lp->l_attrs);
 #endif

@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.131 2000/05/18 00:59:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.133 2001/09/24 22:58:24 tom Exp $
  *
  */
 
@@ -498,6 +498,19 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 
 			c = mapped_keystroke();
 
+			/*
+			 * Like kbd_seq(), but we would find it too painful to
+			 * also allow '#' to be used as a prefix in insert
+			 * mode.
+			 */
+			if (global_g_val(GMDINSEXEC)) {
+				if (c == cntl_a) {
+					c = CTLA | keystroke();
+				} else if (c == cntl_x) {
+					c = CTLX | keystroke();
+				}
+			}
+
 #if OPT_MOUSE
 			/*
 			 * Prevent user from starting insertion into a
@@ -607,7 +620,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 			if (curbp->b_acount <= 0) {
 				(void)update(TRUE);
 				filesave(FALSE, 0);
-				curbp->b_acount = b_val(curbp,VAL_ASAVECNT);
+				curbp->b_acount = (short) b_val(curbp,VAL_ASAVECNT);
 			}
 		}
 	}
@@ -1145,7 +1158,7 @@ tab(int f, int n)
 
 	ccol = getccol(FALSE);
 	return linsert((nexttabcol(ccol,curtabval) - ccol) +
-		   				(n-1)*curtabval,' ');
+						(n-1)*curtabval,' ');
 }
 
 /*ARGSUSED*/
@@ -1256,7 +1269,7 @@ quote_next(int f, int n)
 	} else if (c == '\n') {
 		do {
 			s = lnewline();
-		} while (s==TRUE && --n);
+		} while ((s == TRUE) && (--n != 0));
 		return s;
 	} else  {
 		return linsert(n, c);

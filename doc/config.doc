@@ -28,7 +28,7 @@ modify makefile to add references to obscure libraries or non-standard
 library locations.
 
     [ At least one version of bash running on Linux (and perhaps other)
-    systems will cause the configure script to produce invalid results. 
+    systems will cause the configure script to produce invalid results.
     Specifically, if you're running version 1.14.3 of bash consider
     upgrading to a newer one.  ]
 
@@ -181,7 +181,7 @@ Installing (x)vile
 ------------------
 
 Installation of (x)vile is simple.  Obtain the appropriate privileges (become
-superuser if you have to), and enter the following command:
+superuser if necessary), and enter the following command:
 
 	make install
 
@@ -191,23 +191,36 @@ different place (by default) than they do now.  It can be most confusing
 to use an older version of the help file with a newer version of the
 program, and unfortunately, older help files didn't have version numbers.
 
+By default, (x)vile and the script "vile-pager" are installed in
+/usr/local/bin.  Other editor components are stored in these directories:
+
+    component                 install dir
+    ---------                 -----------
+    vile.hlp                  /usr/local/share/vile
+    vile.1 (man page)         /usr/local/man/man1
+    syntax coloring filters   [note 1]
+    coloring keyword files    /usr/local/share/vile
+    various macro files       /usr/local/share/vile
+
+    Note 1:  the value of the environment variable VILE_LIBDIR_PATH
+             specifies where configure installs coloring filters.  If
+             unset, configure defaults to /usr/local/lib/vile.
+
 We realize that not everyone has superuser privileges on the machines on
-which they wish to build (x)vile.  By default, the executables will be
-installed in /usr/local/bin.  vile.hlp will be installed in /usr/local/lib. 
-vile.1 (the manual page) will be installed in /usr/local/man/man1.  If you
-lack superuser access or write access to /usr/local, you will want to
-change the installation location.  You may do so by using the --prefix
-option to "configure".  Suppose you wish to have xvile installed in
-$HOME/bin (your home bin directory).  You would issue the following
-configuration command:
+which they wish to build (x)vile.  If you lack superuser access or write
+access to /usr/local, you will want to change the installation location.
+You may do so by using the --prefix option to "configure".  Suppose you
+wish to have xvile installed in $HOME/bin (your home bin directory).  You
+would issue the following commands:
 
-	./configure --with-screen=x11 --prefix=$HOME
+    ./configure --with-screen=x11 --prefix=$HOME
+    make install
 
-The file INSTALL has more information on installation and on the --prefix
-option to "configure".  (If you don't feel like rebuilding (likely), you
-can also edit the makefile and change the "prefix", "bindir", or "libdir"
-definitions -- remember that your changes will be lost next time you run
-configure.
+The file INSTALL has more information on installation and on configure's
+--prefix option.  If you don't feel like rebuilding (likely), you can
+also edit the makefile and change the "prefix", "bindir", or "libdir"
+definitions--but remember that your changes will be lost the next time
+configure is run.
 
 
 Building in a separate directory
@@ -298,12 +311,12 @@ Because the echoed commands in the makefile are long, the
 --disable-echo option is provided to shorten the commands, making it easy to
 see the warnings.
 
-The --disable-extensions and --disable-shell options are for testing. 
+The --disable-extensions and --disable-shell options are for testing.
 Disabling extensions produces a smaller program, essentially the core of
 vile (no macros), which is a workable editor.  You may wish to build vile
 without shell support, but perhaps not (ymmv).
 
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.4 2000/05/16 01:28:58 tom Exp $
+$Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.5 2001/09/18 09:00:51 cmorgan Exp $
 ------------------------
