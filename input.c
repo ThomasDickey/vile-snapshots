@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.180 1998/05/05 23:50:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.181 1998/05/07 01:40:47 kev Exp $
  *
  */
 
@@ -1205,7 +1205,24 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 				kbd_alarm();
 		} else
 			kbd_alarm();
-	/* FIMXE:  reject non-motion commands for now, since we haven't
+	/* FIXME: Below are some hacks for making it appear that we're
+	 * doing the right thing for certain non-motion commands...
+	 */
+	} else if (miniedit && cfp == &f_insert) {
+	    miniedit = FALSE;
+	} else if (miniedit && cfp == &f_insertbol) {
+	    edited = editMinibuffer(buf, cpos, fnc2kcod(&f_firstnonwhite),
+	                            margin, quoted);
+	    miniedit = FALSE;
+	} else if (miniedit && cfp == &f_appendeol) {
+	    edited = editMinibuffer(buf, cpos, fnc2kcod(&f_gotoeol),
+	                            margin, quoted);
+	    miniedit = FALSE;
+	} else if (miniedit && cfp == &f_append) {
+	    edited = editMinibuffer(buf, cpos, fnc2kcod(&f_forwchar_to_eol),
+	                            margin, quoted);
+	    miniedit = FALSE;
+	/* FIXME:  reject non-motion commands for now, since we haven't
 	 * resolved what to do with the minibuffer if someone inserts a
 	 * newline.
 	 */
