@@ -1,5 +1,29 @@
 Changes for vile 7.3 (released ??? ??? ??, 1997)
 
+ (tom)	971205 (s)
+ 	+ add logic to configure.in to use a filter (installed by td_lib)
+	  named 'td_config' which works around limited 'sed' when constructing
+	  config.h on SCO 3.x, HP-UX 9.x and other antiquated platforms.
+ 	+ add configure options --disable-extensions (SMALLER, FEWNAMES) and
+	  --disable-shell (OPT_SHELL), and --with-dmalloc.  The shell option is
+	  experimental; note that a genuinely secure editor should not allow
+	  directory names to be specified (but I think that's the only omission).
+	+ add fallback for tparam/tparm in tcap.c (for EMX, but usable for
+	  genuine termcap systems such as SunOS 4.x), to support color.
+	+ add files for building termcap version on OS/2 with EMX
+	  (makefile.emx, config.emx and os2keys.h).
+ 	+ change $shell to use $COMSPEC on OS/2, MS-DOS, etc.  This is needed
+	  for the OS/2 EMX configuration, but useful in the others.
+ 	+ modify configure script to use ifdef's in estruct.h when testing
+	  for missing extern/prototype declarations rather than a separate
+	  list in aclocal.m4 (this requires rebuild/test on most platforms).
+	+ combine configure-tests for errno, sys_nerr and sys_errlist.
+	+ minor fixes:  new versions of CF_NCURSES_LIBS, CF_ADD_INCDIR,
+	  CF_CHECK_CACHE, CF_NCURSES_CPPFLAGS.
+	+ correct handling of :map containing ".", which was being handled
+	  as if the "." always appeared at the end (patch by Duncan Sargeant;
+	  input.c, map.c).
+
  (kev)  971203 (r)
 	+ api.c (lreplace): Fix marks up.  This won't always be right,
 	  but at least it'll be closer.  We need a way to modify marks

@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.188 1997/10/07 00:22:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.189 1997/12/02 00:12:15 tom Exp $
  *
  */
 
@@ -886,7 +886,7 @@ update_dos_drv_dir(char *cwd)
 }
 #endif
 
-
+#if OPT_SHELL
 /* ARGSUSED */
 int
 cd(int f GCC_UNUSED, int n GCC_UNUSED)
@@ -1059,6 +1059,7 @@ set_directory(const char *dir)
     mlforce("[Couldn't change to \"%s\"]", exdir);
     return FALSE;
 }
+#endif /* OPT_SHELL */
 
 void
 ch_fname(BUFFER *bp, const char *fname)

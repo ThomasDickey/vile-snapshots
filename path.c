@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.80 1997/10/07 00:21:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.81 1997/12/06 00:50:59 tom Exp $
  *
  *
  */
@@ -29,8 +29,6 @@
 # define INCL_ERRORS
 # include <os2.h>
 #endif
-
-#include <sys/stat.h>
 
 #include "dirstuff.h"
 

@@ -4,14 +4,16 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.262 1997/12/03 20:57:06 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.263 1997/12/03 23:16:53 tom Exp $
  *
  */
 
 #ifndef VILE_PROTO_H
 #define VILE_PROTO_H 1
 
+#if !CHECK_PROTOTYPES
 extern int main (int argc, char **argv);
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -67,7 +69,7 @@ extern int gotoeob (int f, int n);
 /* bind.c */
 extern int no_such_function (const char *fname);
 extern int startup (char *sfname);
-extern char *flook (char *fname, int hflag);
+extern char *flook (char *fname, UINT hflag);
 extern char *kcod2pstr (int c, char *seq);
 extern int kcod2escape_seq (int c, char *ptr);
 extern int fnc2kcod (const CMDFUNC *);
@@ -384,6 +386,7 @@ extern int keystroke_raw8 (void);
 extern int keystroke_avail (void);
 extern void unkeystroke (int c);
 extern int tgetc (int quoted);
+extern void tungetc(int c);
 extern int tgetc_avail (void);
 extern int get_recorded_char (int eatit);
 extern int kbd_seq (void);
@@ -641,9 +644,13 @@ extern void scanboundry (int wrapok, MARK dot, int dir);
 extern int findpat (int f, int n, regexp *exp, int direc);
 
 /* spawn.c */
+#if OPT_SHELL
 extern SIGT rtfrmshell (int ACTUAL_SIG_ARGS);
 extern void pressreturn (void);
 extern int filterregion (void);
+#else
+#define pressreturn() (void)keystroke()
+#endif
 
 /* tags.c */
 #if OPT_TAGS
@@ -1003,7 +1010,7 @@ extern	void	setbuf	(FILE *fp, char *buffer);
 extern	void	setbuffer (FILE *fp, char *buffer, int size);
 #endif
 #if MISSING_EXTERN_SETITIMER
-extern	int setitimer (int which, const struct itimerval *value, struct itimerval *ovalue);
+extern	int	setitimer (int which, const struct itimerval *value, struct itimerval *ovalue);
 #endif
 #if MISSING_EXTERN_SETJMP && !defined(setjmp)
 extern	int	setjmp	(jmp_buf env);
@@ -1037,20 +1044,8 @@ extern	long	strtol	(const char *nptr, char **endptr, int base);
 #if MISSING_EXTERN_SYSTEM
 extern	int	system	(const char *cmd);
 #endif
-#if MISSING_EXTERN_TGETSTR
-extern	char *	tgetstr (const char *name, char **area);
-#endif
-#if MISSING_EXTERN_TGOTO
-extern	char *	tgoto (const char *cstring, int hpos, int vpos);
-#endif
-#if MISSING_EXTERN_TIGETSTR
-extern	char *	tigetstr (char *name);
-#endif
 #if MISSING_EXTERN_TIME
 extern	time_t	time	(time_t *t);
-#endif
-#if MISSING_EXTERN_TPARM
-extern	char *	tparm (const char *fmt, ...);
 #endif
 #if MISSING_EXTERN_UNLINK
 extern	int	unlink	(char *path);

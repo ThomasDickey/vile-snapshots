@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.59 1997/10/07 00:21:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.60 1997/12/01 23:40:41 tom Exp $
  *
  */
 
@@ -313,6 +313,7 @@ operformat(int f, int n)
 }
 #endif
 
+#if OPT_SHELL
 int
 operfilter(int f, int n)
 {
@@ -320,6 +321,7 @@ operfilter(int f, int n)
 	opcmd = OPOTHER;
 	return vile_op(f,n,filterregion,"Filter");
 }
+#endif
 
 
 int

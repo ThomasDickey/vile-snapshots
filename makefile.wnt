@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.19 1997/11/26 16:15:54 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.20 1997/12/05 20:40:03 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -59,7 +59,7 @@ HDRS = estruct.h edef.h proto.h dirstuff.h
 # and in modetbl
 BUILTHDRS = nebind.h neproto.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nefsms.h
 
-SRC = 	main.c $(SCREEN).c &
+SRC = 	main.c $(SCREEN).c \
 	basic.c bind.c btree.c buffer.c crypt.c \
 	csrch.c display.c eval.c exec.c externs.c \
 	fences.c file.c filec.c \
@@ -71,7 +71,7 @@ SRC = 	main.c $(SCREEN).c &
 	tags.c tbuff.c termio.c undo.c \
 	version.c window.c word.c wordmov.c map.c 
 
-OBJ = 	main.obj $(SCREEN).obj &
+OBJ = 	main.obj $(SCREEN).obj \
 	basic.obj bind.obj btree.obj buffer.obj crypt.obj \
       	csrch.obj display.obj eval.obj exec.obj externs.obj \
 	fences.obj file.obj filec.obj \

@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.98 1997/11/09 22:58:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.99 1997/12/02 11:11:37 tom Exp $
  *
  */
 
@@ -14,88 +14,15 @@
 
 #if DISP_TERMCAP
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define MARGIN	8
 #define SCRSIZ	64
 #define NPAUSE	10			/* # times thru update to pause */
 
-#if USE_TERMINFO
-#  define TGETSTR(name, bufp) tigetstr(name)
-#  define TGETNUM(name)       tigetnum(name) /* may be tigetint() */
-#  define TGETFLAG(name)      tigetflag(name)
-#  define CAPNAME(a,b)        b
-#  define NO_CAP(s)           (s == 0 || s == (char *)-1)
-#  undef TRUE
-#  undef FALSE
-#  undef WINDOW
-#  if HAVE_NCURSES_H
-#    include <ncurses.h>
-#  else
-#    include <curses.h>
-#  endif
-#  undef WINDOW
-#  define WINDOW vile_WINDOW
-#  ifndef TRUE
-#  define TRUE 1
-#  endif
-#  ifndef FALSE
-#  define FALSE 0
-#  endif
-#  if HAVE_TERM_H
-#    include <term.h>
-#  endif
-#  if !HAVE_TIGETNUM && HAVE_TIGETINT
-#    define tigetnum tigetint
-#  endif
-#else /* USE_TERMCAP */
-#  undef USE_TERMCAP
-#  define USE_TERMCAP 1
-#  define TGETSTR(name, bufp) tgetstr(name, bufp)
-#  define TGETNUM(name)       tgetnum(name)
-#  define TGETFLAG(name)      tgetflag(name)
-#  define CAPNAME(a,b)        a
-#  define NO_CAP(s)           (s == 0)
-#  if HAVE_TERMCAP_H
-#    include <termcap.h>
-#  endif
-#endif /* USE_TERMINFO */
+#include	"tcap.h"
 
 #if USE_TERMCAP
 #  define TCAPSLEN 768 
 	static	char tcapbuf[TCAPSLEN];
-#  if HAVE_EXTERN_TCAP_PC
-	extern char PC;		/* used in 'tputs()' */
-#  endif
-#  if !HAVE_TERMCAP_H
-	extern int tgetent (char *buffer, char *termtype);
-	extern int tgetnum (char *name);
-	extern int tgetflag (char *name);
-	extern int tputs (char *string, int nlines, OUTC_DCL (*_f)(OUTC_ARGS) );
-#    if HAVE_TPARAM
-	extern char *tparam (char *cstring, char *buf, int size, ...);
-#    endif
-#  endif
-#endif
-
-#ifdef __cplusplus
-}
-#endif
-
-#if HAVE_TPARM	/* usually terminfo */
-#define CALL_TPARM(cap,code) tparm(cap, code)
-#define FREE_TPARM(s) /* nothing */
-#else
-#if HAVE_TPARAM	/* GNU termcap */
-#define CALL_TPARM(cap,code) tparam(cap, (char *)0, 0, code)
-#define FREE_TPARM(s) free(s)
-#else
-static char *my_tparm(char *cap GCC_UNUSED, int code GCC_UNUSED) { return 0; }
-#define CALL_TPARM(cap,code) my_tparm(cap, code)
-#define FREE_TPARM(s) /* nothing */
-#endif
 #endif
 
 static char *CM, *CE, *CL, *SO, *SE;
@@ -229,6 +156,10 @@ static const struct {
     { CAPNAME("FP","kf35"),	KEY_F35 }
 };
 
+#ifdef __EMX__
+#include "os2keys.h"
+#endif
+
 static int  colors_are_really_ANSI (void);
 static int  tcapcres (char *cres);
 static void putnpad(char *str, int n);
@@ -316,6 +247,25 @@ TERM term = {
 static	int	i_am_xterm;
 static	int	x_origin = 1,
 		y_origin = 1;
+
+#if HAVE_TPARM	/* usually terminfo */
+#define CALL_TPARM(cap,code) tparm(cap, code)
+#define FREE_TPARM(s) /* nothing */
+#else
+#if HAVE_TPARAM	/* GNU termcap */
+#define CALL_TPARM(cap,code) tparam(cap, (char *)0, 0, code)
+#define FREE_TPARM(s) free(s)
+#else
+static char *my_tparm(char *cap GCC_UNUSED, int code GCC_UNUSED)
+{
+	static char result[10];
+	sprintf(result, cap, code);
+	return strcmp(result, cap) ? result : 0;
+}
+#define CALL_TPARM(cap,code) my_tparm(cap, code)
+#define FREE_TPARM(s) /* nothing */
+#endif
+#endif
 
 static void
 tcapopen(void)
@@ -515,6 +465,11 @@ tcapopen(void)
 	}
 #endif
 
+#ifdef __EMX__
+	for (i = TABLESIZE(VIO_KeyMap); i--; ) {
+		addtosysmap(VIO_KeyMap[i].seq, 2, VIO_KeyMap[i].code);
+	}
+#endif
 	for (i = TABLESIZE(keyseqs); i--; ) {
 	    char *seq = TGETSTR(keyseqs[i].capname, &p);
 	    if (!NO_CAP(seq)) {

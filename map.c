@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.78 1997/10/07 13:39:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.79 1997/12/01 01:26:17 Duncan.Sargeant Exp $
  *
  */
 
@@ -48,7 +48,7 @@
 
 struct maprec {
 	int		ch;		/* character to match		*/
-	int		flags;		/* flags word			*/
+	UINT		flags;		/* flags word			*/
 	struct maprec *	dlink;		/* Where to go to match the	*/
 					/*   next character in a multi-	*/
 					/*   character sequence.	*/
@@ -75,9 +75,9 @@ static struct maprec *map_insert = NULL;
 static struct maprec *map_syskey = NULL;
 static struct maprec *abbr_map = NULL;
 
-static	int	map_common(struct maprec **mpp, const char *bufname, int remapflag);
+static	int	map_common(struct maprec **mpp, const char *bufname, UINT remapflag);
 static	int	unmap_common(struct maprec **mpp, const char *bufname);
-static	void	addtomap(struct maprec **mpp, const char * ks, int kslen, int flags, int irv, char * srv);
+static	void	addtomap(struct maprec **mpp, const char * ks, int kslen, UINT flags, int irv, char * srv);
 static	int	delfrommap(struct maprec **mpp, const char * ks);
 
 static	int	abbr_getc (void);
@@ -245,7 +245,7 @@ sysmap(int f GCC_UNUSED, int n GCC_UNUSED)
 #endif
 
 static int
-map_common(struct maprec **mpp, const char *bufname, int remapflag)
+map_common(struct maprec **mpp, const char *bufname, UINT remapflag)
 {
     int	 status;
     static TBUFF *kbuf;
@@ -376,7 +376,7 @@ addtomap(
     struct maprec **mpp,
     const char * ks,
     int         kslen,
-    int         flags,
+    UINT        flags,
     int		irv,
     char *	srv)
 {
@@ -590,13 +590,25 @@ sysmapped_c_avail(void)
 
 
 static ITBUFF *mapgetc_ungottenchars = NULL;
-static int mapgetc_ungotcnt;
+static int mapgetc_ungotcnt = 0;
+
+/* make the assumption that no input will magically appear
+ * (un)available to tgetc in between a mapungetc and the next mapgetc. 
+ * Hence characters can't be ungotten onto the wrong buffer (exception
+ * is the last tgot char might be mapungot onto the map buffer.  This
+ * is OK (if assumption holds) because the next character will be
+ * gotten from this buffer.
+ */
 
 void
 mapungetc(int c)
 {
+    if (tgetc_avail()) {
+	tungetc(c);
+    } else {
 	(void)itb_append(&mapgetc_ungottenchars, c);
 	mapgetc_ungotcnt++;
+    }
 }
 
 static int infloopcount;
@@ -605,13 +617,13 @@ static int mapgetc_raw_flag;
 static int
 mapgetc(void)
 {
-    int remapflag;
+    UINT remapflag;
     if (global_g_val(GMDREMAP))
     	remapflag = 0;
     else
     	remapflag = NOREMAP;
 
-    if (mapgetc_ungotcnt > 0) {
+    if (!tgetc_avail() && mapgetc_ungotcnt > 0) {
 	    if (infloopcount++ > global_g_val(GVAL_MAPLENGTH)) {
 		(void)itb_init(&mapgetc_ungottenchars, abortc);
 		mapgetc_ungotcnt = 0;
@@ -883,7 +895,7 @@ maplookup(
 	    (void)itb_append(outp, itb_values(unmatched)[--count]);
 	/* unget the mapping and elide correct number of recorded chars */
 	if (rmp->srv) {
-	    int remapflag;
+	    UINT remapflag;
 	    char *cp;
 	    /* cp = rmp->srv + cnt; */
 	    for (cp = rmp->srv; *cp; cp++)

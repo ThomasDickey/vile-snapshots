@@ -1,4 +1,4 @@
-$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.15 1997/11/26 16:15:51 tom Exp $
+$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.16 1997/12/05 20:39:43 tom Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
 $! Tested with:
@@ -184,6 +184,7 @@ $	call make main
 $	call make 'SCREEN
 $	call make basic
 $	call make bind
+$	call make btree
 $	call make buffer
 $	call make crypt
 $	call make csrch

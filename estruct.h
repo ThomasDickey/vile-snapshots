@@ -9,11 +9,15 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.328 1997/11/27 20:36:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.330 1997/12/06 00:50:31 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
+
+#ifndef CHECK_PROTOTYPES
+#define CHECK_PROTOTYPES 0
 #endif
 
 #ifndef os_chosen
@@ -220,9 +224,8 @@
 
 #include <stdio.h>
 #include <sys/types.h>
-#if SYS_VMS
 #include <sys/stat.h>	/* defines off_t */
-#endif
+
 #if HAVE_LIBC_H
 #include <libc.h>
 #endif
@@ -344,8 +347,17 @@
 /*	Configuration options... pick and choose as you wish */
 
 /*	Code size options	*/
+#ifndef FEWNAMES
 #define	FEWNAMES 0	/* strip some names - will no longer be bindable */
+#endif
+
+#ifndef SMALLER
 #define	SMALLER	0	/* strip some fluff -- not a lot smaller, but some */
+#endif
+
+#ifndef OPT_SHELL
+#define OPT_SHELL 1	/* we'll disable this only as an exercise */
+#endif
 
 /* various color stuff */
 #define	OPT_COLOR (DISP_ANSI || IBM_VIDEO || DISP_TERMCAP)
@@ -405,7 +417,7 @@
 
 /* systems with MSDOS-like filename syntax */
 #define OPT_MSDOS_PATH  (SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT)
-#define OPT_CASELESS	(SYS_WINNT || SYS_OS2)
+#define OPT_CASELESS	(SYS_WINNT || SYS_OS2 || defined(__EMX__))
 #define OPT_UNC_PATH	(SYS_WINNT)
 
 /* individual features that are (normally) controlled by SMALLER */
@@ -425,7 +437,7 @@
 #define OPT_MAJORMODE   !SMALLER		/* majormode support */
 #define OPT_MLFORMAT    !SMALLER		/* modeline-format */
 #define OPT_MS_MOUSE    !SMALLER && DISP_IBMPC  /* MsDos-mouse */
-#define OPT_NAMEBST	!SMALLER		/* name's stored in a bst */
+#define OPT_NAMEBST     !SMALLER		/* name's stored in a bst */
 #define OPT_ONLINEHELP  !SMALLER		/* short per-command help */
 #define OPT_POPUPCHOICE !SMALLER		/* popup-choices mode */
 #define OPT_POPUP_MSGS  !SMALLER		/* popup-msgs mode */
@@ -496,7 +508,7 @@
  */
 #define	OPT_GLOB_ENVIRON	ENVFUNC && !SMALLER
 #define	OPT_GLOB_ELLIPSIS	SYS_VMS || SYS_UNIX || SYS_OS2 || SYS_WINNT || (SYS_MSDOS && !SMALLER)
-#define	OPT_GLOB_PIPE		SYS_UNIX
+#define	OPT_GLOB_PIPE		SYS_UNIX && OPT_SHELL
 #define	OPT_GLOB_RANGE		SYS_UNIX || SYS_OS2 || SYS_WINNT || (SYS_MSDOS && !SMALLER)
 
 /*	Debugging options	*/
@@ -520,7 +532,9 @@
 # ifdef DECL_ERRNO
 extern	int	errno;	/* some systems don't define this in <errno.h> */
 # endif
+# ifdef DECL_SYS_NERR
 extern	int	sys_nerr;
+# endif
 # ifdef DECL_SYS_ERRLIST
 extern	char *	sys_errlist[];
 # endif
@@ -1427,7 +1441,13 @@ struct VALNAMES {
 #include "chgdfunc.h"
 #endif
 
-#include "nemode.h"
+#if	CHECK_PROTOTYPES
+	typedef long W_VALUES;
+	typedef long M_VALUES;
+	typedef long B_VALUES;
+#else
+#	include "nemode.h"
+#endif
 
 /* macros for setting GLOBAL modes */
 
@@ -2290,13 +2310,17 @@ extern void _exit (int code);
  * Local prototypes (must follow NO_LEAKS definition)
  */
 
+#if	!CHECK_PROTOTYPES
 #include "neproto.h"
 #include "proto.h" 
+#endif
 
 /*
  * the list of generic function key bindings
  */
+#if	!CHECK_PROTOTYPES
 #include "nefkeys.h" 
+#endif
 
 /*	Dynamic RAM tracking and reporting redefinitions	*/
 #if	OPT_RAMSIZE

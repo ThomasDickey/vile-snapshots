@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.169 1997/11/08 12:14:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.170 1997/12/01 01:25:43 Duncan.Sargeant Exp $
  *
  */
 
@@ -488,10 +488,21 @@ keystroke_avail(void)
 	return mapped_c_avail();
 }
 
+static ITBUFF *tgetc_ungottenchars = NULL;
+static int tgetc_ungotcnt = 0;
+
+void
+tungetc(int c)
+{
+	(void)itb_append(&tgetc_ungottenchars, c);
+	tgetc_ungotcnt++;
+}
+
 int
 tgetc_avail(void)
 {
-	return get_recorded_char(FALSE) != -1 || 
+	return tgetc_ungotcnt > 0 ||
+		get_recorded_char(FALSE) != -1 || 
 		sysmapped_c_avail();
 }
 
@@ -499,6 +510,11 @@ int
 tgetc(int quoted)
 {
 	register int c;	/* fetched character */
+
+	if (tgetc_ungotcnt > 0) {
+	    tgetc_ungotcnt--;
+	    return itb_last(tgetc_ungottenchars);
+	}
 
 	if ((c = get_recorded_char(TRUE)) == -1) {
 		/* fetch a character from the terminal driver */ 

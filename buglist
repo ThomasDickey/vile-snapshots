@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.334 1997/11/07 00:09:53 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.335 1997/12/04 00:37:07 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1279,3 +1279,57 @@ preamble).
 
 format-til does not work on rectangular regions (it should also take
 into account the comment-prefix).
+
+-- 97-11-27 (tom)
+
+should make tags-stack based on a buffer rather than its struct so I could
+simply kill it.
+
+-- 97-12-03 (tom)
+
+The --without-shell configure option is experimental; note that a genuinely
+secure editor should not allow directory names to be specified (but I think
+that's the only omission).
+
+-- 97-12-03 (tom)
+
+EMX configuration looks ok (function keys, pipes, name-completion, color),
+except that there's nothing to allow changing to a different device (e.g.,
+"c:").  Must check/see if EMX supports that.  The termcap files distributed
+with EMX are incomplete & incorrect (should we distribute our own?).
+
+-- 97-12-03 (tom)
+
+Recently investigated two "POSIX" layers for WinNT:  gnu-win32 b18 and UWIN
+1.33 Neither is suitable for production use (both are still in alpha), so I'll
+only make notes.  I ran both of these on a longname filesystem:
+
+gnu-win32
+	+ bash was reluctant to run the configure script (and inconsistent;
+	  sometimes "sh configure" worked, other times "./configure").
+
+	+ configure script had to be "helped" since the tests for killpg,
+	  etc., broke (process never returned).
+
+	+ the fcntl(0, F_SETFL, kbd_flags|O_NDELAY) call for tttypahead()
+	  returns success though it does nothing.  I stubbed it out to
+	  get a workable program.
+
+	+ the "vt100" terminal emulator is limited-functionality (less, even,
+	  than ANSI.SYS).
+
+	+ server pathnames begin with "//".  There is some old code to support
+	  Apollo (one of the sources that M$ copied), which seems to work for
+	  this purpose.
+
+UWIN:
+	+ the configure script mostly ran (though the previous version could
+	  not run sed for constructing config.h).
+
+	+ 'environ' did not seem to be present (there's no configure test for
+	  that yet).
+
+	+ the isready_c macro has to be tweaked (it doesn't correspond to any
+	  of the other flavors).
+
+	+ appears to be same "vt100" emulator as gnu-win32 (perhaps it is).

@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.122 1997/11/07 23:59:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.123 1997/11/30 22:36:58 tom Exp $
  *
  */
 
@@ -126,25 +126,16 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 	kbd_flush();
 	TTkclose();
 	{
-		char *shell;
-		if ((shell = getenv("COMSPEC")) == NULL) {
-#if SYS_OS2
-			shell = "cmd.exe";
-#else
-			shell = "command.com";
-#endif
-			system(shell);          /* Will search path     */
-		} else {
+		char *shell = gtenv("shell");
 #if SYS_OS2
 /*
  *	spawn it if we know it.  Some 3rd party command processors fail
  *	if they system themselves (eg 4OS2).  CCM 24-MAR-94
  */
-			spawnl( P_WAIT, shell, shell, NULL);
+		spawnl( P_WAIT, shell, shell, NULL);
 #else
-			system(shell);
+		system(shell);
 #endif
-		}
 	}
 	TTkopen();
 	sgarbf = TRUE;

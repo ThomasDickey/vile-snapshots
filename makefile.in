@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.93 1997/12/03 20:57:06 kev Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.94 1997/12/03 23:15:09 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -89,8 +89,20 @@ DJGPPMAK = makefile.djg				# on DOS, DJGCC v1.09
 NTMAK = makefile.wnt				# on Windows/NT
 BCCNTMAK = makefile.blc				# Borland C on Windows/NT
 OS2MAK = makefile.icc				# OS/2, (IBM C Set ++ 2.x)
-MAKFILES = $(UNIXMAKIN) $(VMSMAK) $(TURBOMAK) $(WATMAK) \
-	$(DJGPPMAK) $(MSCMAK) $(BORMAK) $(NTMAK) $(BCCNTMAK) $(OS2MAK)
+EMXMAK = makefile.emx config.emx		# OS/2, (EMX with gcc)
+
+MAKFILES = \
+	$(UNIXMAKIN) \
+	$(VMSMAK) \
+	$(TURBOMAK) \
+	$(WATMAK) \
+	$(DJGPPMAK) \
+	$(MSCMAK) \
+	$(BORMAK) \
+	$(NTMAK) \
+	$(BCCNTMAK) \
+	$(OS2MAK) \
+	$(EMXMAK)
 
 ALLTOOLS = $(MAKFILES) mktbls.c cmdtbl modetbl \
 	configure config_h.in \
@@ -105,8 +117,10 @@ HDRS = \
 	dirstuff.h \
 	edef.h \
 	estruct.h \
+	os2keys.h \
 	proto.h \
 	pscreen.h \
+	tcap.h \
 	trace.h
 
 SCREENS = \
@@ -167,13 +181,18 @@ MKTBLS = ./mktbls
 # and in modetbl
 BUILTHDRS = nebind.h neproto.h neexec.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nefsms.h
 
+# The following are optional (non-core):
+#	btree.o
+#	crypt.o
+#	npopen.o
+#	spawn.o
 OBJ = $(SCREEN).o \
-	main.o api.o basic.o bind.o btree.o buffer.o crypt.o csrch.o \
+	main.o api.o basic.o bind.o buffer.o csrch.o \
 	display.o dumbterm.o eval.o exec.o externs.o fences.o file.o \
 	filec.o fileio.o finderr.o glob.o globals.o \
 	history.o input.o insert.o isearch.o itbuff.o lckfiles.o line.o map.o \
-	modes.o msgs.o npopen.o oneliner.o opers.o path.o random.o \
-	regexp.o region.o search.o select.o spawn.o tags.o \
+	modes.o msgs.o oneliner.o opers.o path.o random.o \
+	regexp.o region.o search.o select.o tags.o \
 	tbuff.o termio.o undo.o version.o \
 	window.o word.o wordmov.o @EXTRAOBJS@
 

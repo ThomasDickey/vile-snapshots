@@ -2,15 +2,12 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.119 1997/10/28 11:22:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.121 1997/12/06 00:50:55 tom Exp $
  *
  */
 
 #include	"estruct.h"
 #include        "edef.h"
-#if SYS_UNIX || SYS_VMS || SYS_MSDOS || SYS_OS2 || SYS_WINNT
-#include	<sys/stat.h>
-#endif
 
 #if SYS_VMS
 #include	<file.h>
@@ -233,6 +230,7 @@ ffropen(char *fn)
 	fileispipe = FALSE;
 	eofflag = FALSE;
 
+#if OPT_SHELL
 	if (isShellOrPipe(fn)) {
 		ffp = 0;
 #if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
@@ -250,7 +248,9 @@ ffropen(char *fn)
 		fileispipe = TRUE;
 		count_fline = 0;
 
-	} else if (is_directory(fn)) {
+	} else
+#endif
+	if (is_directory(fn)) {
 		set_errno(EISDIR);
 		mlerror("opening directory");
 		return (FIOERR);
@@ -282,13 +282,16 @@ ffwopen(char *fn, int forced)
 	char	*name;
 	char	*mode = FOPEN_WRITE;
 
+#if OPT_SHELL
 	if (isShellOrPipe(fn)) {
 		if ((ffp=npopen(fn+1, mode)) == NULL) {
 	                mlerror("opening pipe for write");
 	                return (FIOERR);
 		}
 		fileispipe = TRUE;
-	} else {
+	} else
+#endif
+	{
 		if ((name = is_appendname(fn)) != NULL) {
 			fn = name;
 			mode = FOPEN_APPEND;
@@ -548,6 +551,7 @@ ffclose(void)
 	free_fline();	/* free this since we do not need it anymore */
 
 #if SYS_UNIX || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
+#if OPT_SHELL
 	if (fileispipe) {
 		npclose(ffp);
 		mlforce("[Read %d lines%s]",
@@ -556,7 +560,9 @@ ffclose(void)
 #ifdef	MDCHK_MODTIME
 		(void)check_visible_modtimes();
 #endif
-	} else {
+	} else
+#endif
+	{
 		s = fclose(ffp);
 	}
         if (s != 0) {

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.166 1997/11/27 22:46:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.167 1997/11/30 21:08:13 tom Exp $
  *
  */
 
@@ -654,10 +654,10 @@ quoted(char *dst, char *src)
 }
 
 /* returns the number of columns used by the given string */
-static int
+static unsigned
 converted_len(register char *buffer)
 {
-	register int len = 0, c;
+	register unsigned len = 0, c;
 	while ((c = *buffer++) != EOS) {
 		if (c == '\t')
 			len |= 7;
@@ -670,7 +670,7 @@ converted_len(register char *buffer)
 static char *
 to_tabstop(char *buffer)
 {
-	register int	cpos = converted_len(buffer);
+	register unsigned cpos = converted_len(buffer);
 	if (cpos & 7)
 		(void)strcat(buffer, "\t");
 	return skip_string(buffer);
@@ -884,7 +884,7 @@ char *sfname)			/* name of startup file  */
 char *
 flook(
 char *fname,		/* base file name to search for */
-int hflag)		/* Look in the HOME environment variable first? */
+UINT hflag)		/* Look in the HOME environment variable first? */
 {
 	register char *home;	/* path to home directory */
 #if ENVFUNC && OPT_PATHLOOKUP

@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.151 1997/10/16 10:34:32 Alex.Wetmore Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.152 1997/12/02 00:42:44 tom Exp $
  *
  */
 
@@ -16,6 +16,19 @@
 #define	ILLEGAL_NUM	-1
 #define	MODE_NUM	-2
 #define	USER_NUM	-3
+
+#if SYS_OS2 || defined(__EMX__)
+#  define SHELL_NAME "COMSPEC"
+#  define SHELL_PATH "cmd.exe"
+#else
+#  if SYS_MSDOS || SYS_WINNT
+#    define SHELL_NAME "COMSPEC"
+#    define SHELL_PATH "command.com"
+#  else
+#    define SHELL_NAME "SHELL"
+#    define SHELL_PATH "/bin/sh"
+#  endif
+#endif
 
 /* When the command interpretor needs to get a variable's name, rather than its
  * value, it is passed back as a VDESC variable description structure.  The
@@ -88,7 +101,7 @@ char	*value)
 #define	SetEnv(np,s)	(*(np) = strmalloc(s))
 #endif
 
-#if OPT_EVAL
+#if OPT_EVAL && OPT_SHELL
 static char *shell;	/* $SHELL environment is "$shell" variable */
 static char *directory;	/* $TMP environment is "$directory" variable */
 #if DISP_X11
@@ -476,8 +489,10 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 #if SYS_UNIX
 		ElseIf( EVPROCESSID )	value = l_itoa(getpid());
 #endif
+#if OPT_SHELL
 		ElseIf( EVCWD )		value = current_directory(FALSE);
 		ElseIf( EVOCWD )	value = previous_directory();
+#endif
 #if OPT_PROCEDURES
 		ElseIf( EVCDHOOK )	value = cdhook;
 		ElseIf( EVRDHOOK )	value = readhook;
@@ -498,15 +513,17 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 				SetEnv(&x_shell, DftEnv("XSHELL", "xterm"));
 			value = x_shell;
 #endif
+#if OPT_SHELL
 		ElseIf( EVSHELL )
 			if (shell == 0)
-				SetEnv(&shell, DftEnv("SHELL", "/bin/sh"));
+				SetEnv(&shell, DftEnv(SHELL_NAME, SHELL_PATH));
 			value = shell;
 
 		ElseIf( EVDIRECTORY )
 			if (directory == 0)
 				SetEnv(&directory, DftEnv("TMP", P_tmpdir));
 			value = directory;
+#endif
 
 		ElseIf( EVHELPFILE )	value = helpfile;
 
@@ -864,8 +881,6 @@ char *value)	/* value to set to */
 				status = putctext(value);
 			}
 
-		ElseIf( EVCWD )
-			status = set_directory(value);
 #if DISP_X11
 		ElseIf( EVFONT ) status = x_setfont(value);
 		ElseIf( EVTITLE ) x_set_window_name(value);
@@ -873,11 +888,16 @@ char *value)	/* value to set to */
 		ElseIf( EVXDISPLAY ) SetEnv(&x_display, value);
 		ElseIf( EVXSHELL ) SetEnv(&x_shell, value);
 #endif
+#if OPT_SHELL
+		ElseIf( EVCWD )
+			status = set_directory(value);
+
 		ElseIf( EVSHELL )
 			SetEnv(&shell, value);
 
 		ElseIf( EVDIRECTORY )
 			SetEnv(&directory, value);
+#endif
 
 		ElseIf( EVHELPFILE )
 			SetEnv(&helpfile, value);

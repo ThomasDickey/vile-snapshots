@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.70 $)
+AC_REVISION($Revision: 1.72 $)
 AC_PREREQ(2.12)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.70 1997/12/03 20:57:06 kev Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.72 1997/12/06 00:54:17 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -17,8 +17,19 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_GCC_TRADITIONAL
 AC_PROG_INSTALL
+AC_PROGRAM_PATH(TD_CONFIG,td_config)
 
 CF_DISABLE_ECHO
+
+CF_ARG_DISABLE(extensions,
+	[  --disable-extensions    test: build only core functions],
+	[AC_DEFINE(SMALLER)
+	 AC_DEFINE(FEWNAMES)],
+	[EXTRAOBJS="$EXTRAOBJS btree.o crypt.o"])
+CF_ARG_DISABLE(shell,
+	[  --disable-shell         test: disable shell/external commands],
+	[AC_DEFINE(OPT_SHELL,0)],
+	[EXTRAOBJS="$EXTRAOBJS npopen.o spawn.o"])
 
 ###	use option --with-cflags to set default CFLAGS
 AC_MSG_CHECKING(for CFLAGS options)
@@ -42,7 +53,7 @@ AC_MSG_RESULT($cflags)
 
 AC_PATH_PROGS(perl_bin_path, perl5 perl, no)
 AC_ARG_WITH(perl,
-	[ --with-perl              enable use of Perl as an extension language],
+	[  --with-perl             enable use of Perl as an extension language],
 	[
 	 if test "$perl_bin_path" = no; then
 	    echo "Fatal configure error: perl not found."
@@ -97,7 +108,7 @@ AC_CHECK_HEADERS(unistd.h stdlib.h stdarg.h stddef.h string.h memory.h fcntl.h \
 		ioctl.h select.h setjmp.h signal.h utime.h varargs.h)
 
 ###	checks for <sys/xxx> header files (separate, to avoid bug in autoconf)
-AC_CHECK_HEADERS(sys/stat.h sys/filio.h sys/ioctl.h sys/itimer.h \
+AC_CHECK_HEADERS(sys/filio.h sys/ioctl.h sys/itimer.h \
 		sys/param.h \
 		sys/resource.h sys/wait.h sys/time.h sys/select.h)
 
@@ -310,14 +321,14 @@ if test "$termlib" = terminfo ; then
 	AC_DEFINE(USE_TERMINFO)
 	CF_CURSES_TERM_H
 	cf_tc_funcs="tigetint tigetnum tparam tparm"
-	cf_tc_externs="tparm tgoto tigetstr"
+	cf_tc_externs="$cf_tc_funcs tgoto tigetstr tputs"
 elif test "$termlib" = termcap ; then
 	# BSD 'tputs()' may need 'PC' to be set.
 	AC_TRY_LINK([],[extern char PC; PC = 0],
 		[AC_DEFINE(HAVE_EXTERN_TCAP_PC)])
 	AC_CHECK_HEADERS(termcap.h)
-	cf_tc_funcs="tparam tparm"
-	cf_tc_externs="tparm tgoto tgetstr"
+	cf_tc_funcs="tgetint tgetnum tparam tparm"
+	cf_tc_externs="$cf_tc_funcs tgoto tgetstr tputs"
 fi
 
 if test "$termlib" != "none" ; then
@@ -352,86 +363,6 @@ utime \
 utimes \
 $cf_tc_funcs \
 )
-
-###	mandatory checks for missing prototypes
-CF_MISSING_EXTERN( \
-environ \
-getenv \
-getwd \
-malloc \
-realloc \
-rindex \
-strtol \
-$cf_tc_externs \
-)
-
-###	optional checks for missing headers (enabled with --with-warnings)
-if test -n "$with_warnings"
-then
-CF_MISSING_EXTERN( \
-_filbuf \
-_flsbuf \
-access \
-alarm \
-atoi \
-bzero \
-chdir \
-close \
-dup \
-execlp \
-fclose \
-fflush \
-fgetc \
-fileno \
-fork \
-fprintf \
-fputc \
-fputs \
-fread \
-free \
-fseek \
-fwrite \
-gethostname \
-getpgrp \
-getpid \
-getuid \
-ioctl \
-isatty \
-kill \
-killpg \
-link \
-longjmp \
-lstat \
-memset \
-mkdir \
-mktemp \
-open \
-perror \
-pipe \
-printf \
-puts \
-qsort \
-read \
-readlink \
-select \
-setbuf \
-setbuffer \
-setitimer \
-setjmp \
-setpgrp \
-setsid \
-setvbuf \
-sleep \
-sscanf \
-system \
-time \
-unlink \
-utime \
-utimes \
-wait \
-write \
-)
-fi
 
 CF_ANSI_QSORT
 
@@ -475,6 +406,11 @@ AC_ARG_WITH(dbmalloc,
 	[AC_DEFINE(USE_DBMALLOC)
 	 LIBS="$LIBS -ldbmalloc"])
 
+AC_ARG_WITH(dmalloc,
+	[  --with-dmalloc          use Gray Watson's dmalloc library],
+	[AC_DEFINE(USE_DMALLOC)
+	 LIBS="$LIBS -ldmalloc"])
+
 AC_ARG_WITH(no-leaks,
 	[  --with-no-leaks         free permanent memory, analyze leaks],
 	[AC_DEFINE(NO_LEAKS)])
@@ -494,7 +430,116 @@ then
 	CF_GCC_WARNINGS
 fi
 
+###	Do these last, since they rely on a properly constructed config.h
+
+###	Mandatory checks for missing prototypes:
+CHECK_DECL_FLAG="-I. -Dscrn_chosen"
+VILE_CHECK_HDRS='
+#define CHECK_PROTOTYPES 1
+#include <estruct.h>
+'
+CHECK_DECL_HDRS="$VILE_CHECK_HDRS"
+
+CF_MISSING_EXTERN( \
+environ \
+getenv \
+getwd \
+malloc \
+realloc \
+rindex \
+strtol \
+)
+
+if test -n "$cf_tc_externs"
+then
+CHECK_DECL_HDRS="$VILE_CHECK_HDRS
+#include <tcap.h>
+"
+CF_MISSING_EXTERN( \
+$cf_tc_externs \
+)
+fi
+
+###	Optional checks for missing functions (enabled with --with-warnings)
+if test -n "$with_warnings"
+then
+CHECK_DECL_HDRS="$VILE_CHECK_HDRS"
+CF_MISSING_EXTERN( \
+_filbuf \
+_flsbuf \
+access \
+alarm \
+atoi \
+bzero \
+chdir \
+close \
+dup \
+execlp \
+fclose \
+fflush \
+fgetc \
+fileno \
+fork \
+fprintf \
+fputc \
+fputs \
+fread \
+free \
+fseek \
+fwrite \
+gethostname \
+getpgrp \
+getpid \
+getuid \
+isatty \
+kill \
+killpg \
+link \
+longjmp \
+lstat \
+memset \
+mkdir \
+mktemp \
+open \
+perror \
+pipe \
+printf \
+puts \
+qsort \
+read \
+readlink \
+select \
+setbuf \
+setbuffer \
+setitimer \
+setjmp \
+setpgrp \
+setsid \
+setvbuf \
+sleep \
+sscanf \
+system \
+time \
+unlink \
+utime \
+utimes \
+wait \
+write \
+)
+
+CHECK_DECL_HDRS="$VILE_CHECK_HDRS
+#if HAVE_SYS_IOCTL_H
+#include	<sys/ioctl.h>
+#endif
+"
+CF_MISSING_EXTERN( \
+ioctl \
+)
+fi
+
 AC_SUBST(EXTRAOBJS)
 
 ###	output makefile and config.h
-AC_OUTPUT(makefile config_h,[CF_SED_CONFIG_H(config_h,config.h)])
+AC_OUTPUT(makefile config_h,
+	[CF_SED_CONFIG_H(config_h,config.h)],
+	[ac_cv_path_TD_CONFIG="$ac_cv_path_TD_CONFIG"])
