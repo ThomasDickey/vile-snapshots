@@ -28,6 +28,8 @@
 #   store-procedure hgrep
 #       perl "require 'hgrep.pl'"
 #       perl hgrep
+#	; uncomment next line to use results with error-finder.
+#	; error-buffer $cbufname
 #   ~endm
 #
 #   Once this procedure, is defined, just type
@@ -46,10 +48,7 @@
 # ----------------
 #   
 #   As not much has been written about it yet, this module is an
-#   example of how to use the perl interface.  But be warned!  I'm
-#   about to make some changes to the interface.  Don't go and write
-#   thousands of lines of perl code which uses this interface without
-#   checking with me first.  :-)
+#   example of how to use the perl interface.
 #
 #				- kev (4/3/1998)
 #
@@ -94,7 +93,7 @@ sub hgrep {
     my $code = '
     find(
 	sub { 
-	    if (-f && -T && /' 
+	    if (-f && -T && $_ ne "tags" && /' 
     .                  $fpat 
     .                      '/) {
 		my $fname = $File::Find::name;

@@ -2282,39 +2282,67 @@ set(...)
 	while (argno < items) {
 	    mode = SvPV(ST(argno), na);
 	    argno++;
+
+	    /* Look for a mode first */
 	    status = find_mode(mode, isglobal, &args);
 
-	    if (status != TRUE) {
+
+	    if (status == TRUE) {
 		if (modenames)
-		    free(modenames);
-		croak("set: Invalid mode %s", mode);
-	    }
+		    modenames[nmodenames++] = mode;
 
-	    if (modenames)
-		modenames[nmodenames++] = mode;
-
-	    if (issetter) {
-		char *val;
-		val = NULL;
-		if (argno >= items) {
-		    if (args.names->type == VALTYPE_BOOL) {
-			val = "1";
+		if (issetter) {
+		    char *val;
+		    val = NULL;
+		    if (argno >= items) {
+			if (args.names->type == VALTYPE_BOOL) {
+			    val = "1";
+			}
+			else {
+			    if (modenames) free(modenames);
+			    croak("set: value required for %s", mode);
+			}
 		    }
-		    else
-			croak("set: value required for %s", mode);
-		}
-		else {
-		    val = SvPV(ST(argno), na);
-		    argno++;
-		}
+		    else {
+			val = SvPV(ST(argno), na);
+			argno++;
+		    }
 
-		if (set_mode_value(mode, TRUE, isglobal, &args, val) != TRUE) {
+		    if (set_mode_value(mode, TRUE, isglobal, &args, val) != TRUE) {
+			if (modenames) free(modenames);
+			croak("set: Invalid value %s for mode %s", val, mode);
+		    }
+		}
+	    } else {
+		char *val;
+		val = gtenv(mode);
+		if (val == errorm) {
 		    if (modenames)
 			free(modenames);
-		    croak("set: Invalid value %s for mode %s", val, mode);
+		    croak("set: Invalid mode or variable %s", mode);
+		}
+
+		if (modenames)
+		    modenames[nmodenames++] = mode;
+
+		if (issetter) {
+		    if (argno >= items) {
+			if (modenames) free(modenames);
+			croak("set: value required for %s", mode);
+		    }
+		    else {
+			val = SvPV(ST(argno), na);
+			argno++;
+		    }
+		    status = stenv(mode, val);
+
+		    if (status != TRUE) {
+			if (modenames) free(modenames);
+			croak("set: Unable to set variable %s to value %s",
+			      mode, val);
+		    }
 		}
 	    }
-
 	}
 
 	if (modenames == NULL) {
@@ -2325,8 +2353,13 @@ set(...)
 		    XPUSHs(ST(0));	/* Buffer object */
 	    }
 	    else {
-		if (mode != NULL)
-		    XPUSHs(sv_2mortal(newSVpv(string_mode_val(&args), 0)));
+		if (mode != NULL) {
+		    status = find_mode(mode, isglobal, &args);
+		    if (status == TRUE)
+			XPUSHs(sv_2mortal(newSVpv(string_mode_val(&args), 0)));
+		    else
+			XPUSHs(sv_2mortal(newSVpv(gtenv(mode), 0)));
+		}
 	    }
 	}
 	else {
@@ -2334,12 +2367,42 @@ set(...)
 	    for (i = 0; i < nmodenames; i++) {
 		mode = modenames[i];
 		status = find_mode(mode, isglobal, &args);
-		XPUSHs(sv_2mortal(newSVpv(mode, 0)));
-		XPUSHs(sv_2mortal(newSVpv(string_mode_val(&args), 0)));
+		if (status == TRUE) {
+		    XPUSHs(sv_2mortal(newSVpv(mode, 0)));
+		    XPUSHs(sv_2mortal(newSVpv(string_mode_val(&args), 0)));
+		}
+		else {
+		    XPUSHs(sv_2mortal(newSVpv(mode, 0)));
+		    XPUSHs(sv_2mortal(newSVpv(gtenv(mode), 0)));
+		}
 	    }
 	    free(modenames);
 	}
- 
+
+#
+# buffers
+#
+# 	Returns a list of the editor's buffers.
+#
+
+void
+buffers(...)
+
+    PREINIT:
+	BUFFER *bp;
+
+    PPCODE:
+
+	if (! (items == 0 
+	       || (items == 1 && strcmp(SvPV(ST(0), na), "Vile") == 0)) )
+	{
+	    /* Must be called as either Vile::buffers() or Vile->buffers() */
+	    croak("buffers: called with too many arguments");
+	}
+
+	for_each_buffer(bp) {
+	    XPUSHs(sv_2mortal(newVBrv(newSV(0), api_bp2vbp(bp))));
+	}
  
 #
 # mlreply PROMPT 
@@ -2590,10 +2653,15 @@ working(...)
 	if (items > 1)
 	    croak("Too many arguments to working");
 	else if (items == 1) {
+#if OPT_WORKING
 	    no_working = !SvIV(ST(0));
+#endif
 	}
-
+#if OPT_WORKING
 	RETVAL = !no_working;
+#else
+	RETVAL = 0;
+#endif
     OUTPUT:
 	RETVAL
 

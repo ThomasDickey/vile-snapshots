@@ -2,7 +2,7 @@
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  * rewritten to use regular expressions, 1995 by T.Dickey (dickey@clark.net)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.69 1998/04/23 09:18:54 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.70 1998/04/30 09:19:03 kev Exp $
  *
  */
 
@@ -111,6 +111,7 @@ char *const predefined[] = {
 	"^%B:%L:%T",					/* "pp" in scratch buf*/
 	"^[^:]\\+: %V directory `%[^']'",		/* GNU make */
 	"%T at %F line %L.*",		/* perl 5 */
+	"%F\\[%L\\]:%T",		/* hgrep */
 	};
 
 static	ERR_PATTERN *	exp_table = 0;
