@@ -250,13 +250,13 @@ Misc macro syntax features
 	character is ignored.  The semi-colon is inherited from MicroEMACS,
 	the double-quote (") is for vi compatibility.
 
-	 Lines ending with '\' are joined before interpretation.
+	Lines ending with '\' are joined before interpretation.
 
 
 Limits
 ------
-	 The length of a variable name may not exceed 255 (NLINE-1) bytes of
-	 storage.  Most other strings are allocated dynamically.
+	The length of a variable name may not exceed 255 (NLINE-1) bytes of
+	storage.  Most other strings are allocated dynamically.
 
 
 Strings
@@ -279,7 +279,7 @@ Strings
 	\f              formfeed               (control-L)
 	\t              tab                    (control-I)
 	\a              bell                   (control-G)
-	\s              space                  (ascii SPACE)
+	\s              space                  (ASCII SPACE)
 	\"              quote                  (the '"' character)
 	\xNN            the character in hex   (i.e. 0xNN)
 	\NNN            the character in octal (i.e. 0NNN)
@@ -317,6 +317,10 @@ Variables
 
 	    set-variable $search "new pattern to look for"
 	    setv %index "1"
+	    setv %index2="2"
+
+	An assignment may use either an equals (=) sign, or whitespace
+	to delimit the left/right sides of the assignment, as shown.
 
 Temporary variables
 --------------
@@ -648,7 +652,7 @@ Functions
 	    &divide "N1" "N2"       Divide the "N1" by "N2"
 	    &mod    "N1" "N2"       Divide the "N1" by "N2", return remainder.
 	    &negate "N"             Return -(N).
-	    &ascii  "S"	            Return the ascii code of the first
+	    &ascii  "S"	            Return the ASCII code of the first
 					    character in "S"
 	    &random "N"
 	    &rnd    "N"		    Random number between 1 and N
@@ -664,9 +668,9 @@ Functions
 	  The rest return strings:
 
 	    &bind   "S"		    Return the function name bound to the
-					keysequence "S".
+					key sequence "S".
 	    &cat    "S1" "S2"	    Concatenate S1 and string "S".
-	    &chr    "N"		    Converts numeric "N" to an ascii character.
+	    &chr    "N"		    Converts numeric "N" to an ASCII character.
 	    &cclass "S"		    Character class (see "show-printable")
 	    &env    "S"		    Return the value of the user's environment
 					variable named "S".
@@ -923,7 +927,7 @@ Directives
 
     ~local
     ------
-        The ~LOCAL directive causes the variables which are listed to
+        The ~local directive causes the variables which are listed to
         be saved at that point (once if the directive is within a loop),
         and automatically restored at the end of the current macro.
         If the directive specifies a temporary variable which was not
@@ -938,11 +942,11 @@ Directives
 
     ~with, ~elsewith and ~endwith
     -----------------------------
-        Tokens following the ~WITH directive will be prepended to succeeding
-        lines of macro until the next ~ENDWITH directive, or the end of the
+        Tokens following the ~with directive will be prepended to succeeding
+        lines of macro until the next ~endwith directive, or the end of the
         current macro.  This is useful for simplifying majormode directives,
-        which are repetitive.  Use ~ELSEWITH as a convenience for fences;
-        otherwise it functions just as ~WITH does.
+        which are repetitive.  Use ~elsewith as a convenience for fences;
+        otherwise it functions just as ~with does.
 
         For example, use
 
@@ -1195,6 +1199,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.41 2000/01/07 02:02:38 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.42 2000/01/14 11:21:21 tom Exp $
 -----------------------------------
 

@@ -1,5 +1,6 @@
 package capture;
 
+use Vile::Manual;
 require Vile::Exporter;
 @ISA = 'Vile::Exporter';
 %REGISTRY = (
@@ -8,28 +9,27 @@ require Vile::Exporter;
 	'run a command, capturing its output in the [Output] buffer',
 	'^A-!',
     ],
+    'async-capture-command-help' => [
+	sub {&manual}, 'manual page for async-capture-command' ]
 );
 
-#
-# This package contains a drop-in replacement for vile's capture-command
-# command.
-#
-# It provides some additional functionality, however.  (Otherwise there's
-# not much point in doing it.)  Rather than wait for the command to finish,
-# this version will update the [Output] buffer as the results of the
-# command become available thus permitting the user to do other editing
-# tasks while the command is running.
-#
+my $last_command = '';
 
 sub capture_command {
 
     # Fetch user command from the message line
-    my $command = Vile::mlreply_no_opts("async-!");
+    my $command = Vile::mlreply_shell("async-!", $last_command);
     return if !defined($command);
+
+    # Remember the command for next time...
+    $last_command = $command;
 
     # Get a handle for or create the [Output] buffer by whatever
     # means necessary
-    my $b = edit Vile::Buffer '[Output]';
+    my $b;
+    if (grep($_->buffername eq '[Output]', Vile::buffers())) {
+	$b = edit Vile::Buffer '[Output]';
+    }
     if (!$b) {
 	$b = new Vile::Buffer;
 	$b->buffername('[Output]');
@@ -149,3 +149,61 @@ sub capture_command {
 }
 
 1;
+__DATA__
+
+=head1 NAME
+
+capture - run a shell command, capturing its output in the [Output] buffer
+
+=head1 SYNOPSIS
+
+In .vilerc:
+
+    perl "use capture"
+
+In [x]vile:
+
+    :async-capture-command
+
+or
+
+    ^A-!
+
+and then provide the command to run at the ensuing prompt.
+
+=head1 DESCRIPTION
+
+The B<capture> package provides a drop-in replacement (almost) for
+vile's capture-command command.
+
+It provides additional functionality, however.  Rather than waiting
+for the command to finish before displaying the buffer, this version
+will update the [Output] buffer as the results of the command become
+available thus permitting the user to perform other editing tasks while
+the command is running.
+
+Also, unlike its builtin cousin, capture.pm will preserve all of the
+commands that have been run in the [Output] buffer, setting the
+current position to the first line of the new output after the
+command has completed.  This allows the error finder to operate
+on the newly read in lines.  The error finder may also be used
+before the command has completed, but the user must position the
+cursor manually for this to work.
+
+When capturing a slow or long running command, capture.pm look at
+the cursor position prior to adding new output from the command.
+If the position is near the end of the buffer, the cursor will
+be repositioned to be at the end of the new text added to the
+buffer.  Otherwise, the cursor will be left alone.  This allows
+the user to either watch the output or browse the buffer whichever
+is desired.
+
+=head1 BUGS
+
+There is no way to interrupt a command once started.
+
+=head1 AUTHOR
+
+Kevin Buettner
+
+=cut

@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.107 2000/01/12 23:22:49 tom Exp $
+; $Id: filters.rc,v 1.109 2000/01/14 11:13:53 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -53,7 +53,7 @@ define-mode cpp
 
 define-mode csh
 ~with define-submode csh
-	suf '\.\(csh.*\|login\|logout\)$'
+	suf '\.\(csh[^/]*\|login\|logout\)$'
 	pre '^#!\s*\/.*csh\>\(\s*-[a-z]\+\)*$'
 	filtername	'vile-sh-filt -k csh'
 	comment-prefix	'^\s*#'
@@ -226,7 +226,7 @@ define-mode m4
 
 define-mode mail
 ~with define-submode mail
-	suf '\([Mm]ail\>[^/]*\|\<mbox\)$'
+	suf '\([Mm]ail\>[^/]*\|\<mbox\|mutt-[^/]*\)$' 
 	pre '^\(From \|To: \)'
 ~endwith
 

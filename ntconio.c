@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.55 2000/01/12 10:30:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.56 2000/01/14 10:59:05 cmorgan Exp $
  *
  */
 
@@ -36,6 +36,10 @@ static int crow = -1;		/* current row */
 static int ccol = -1;		/* current col */
 static int keyboard_open = FALSE;	/* keyboard is open */
 static int keyboard_was_closed = TRUE;
+
+#ifdef VAL_AUTOCOLOR
+static int ac_active = FALSE;	/* autocolor active */
+#endif
 
 /* ansi to ibm color translation table */
 static const char *initpalettestr = "0 4 2 6 1 5 3 7 8 12 10 14 9 13 11 15";
@@ -774,8 +778,11 @@ ntgetch(void)
 	    Sleep(20);		/* sleep a bit, but be responsive to keybd input */
 	    milli_ac -= 20;
 	}
-	if (orig_milli_ac && milli_ac <= 0)
+	if (orig_milli_ac && milli_ac <= 0) {
+	    ac_active = TRUE;
 	    autocolor();
+	    ac_active = FALSE;
+	}
 #endif
 	if (!ReadConsoleInput(hConsoleInput, &ir, 1, &nr))
 	    imdying(0);
@@ -824,7 +831,17 @@ nttypahead(void)
 
     if (!keyboard_open)
 	return 0;
+#ifdef VAL_AUTOCOLOR
+    if (ac_active) {
+	/*
+	 * Came here during an autocolor operation.  Do nothing, in an
+	 * attempt to avoid a keyboard lockup (editor loop) that occurs on
+	 * rare occasions (not reproducible).
+	 */
 
+	return (0);
+    }
+#endif
     if (saveCount > 0)
 	return 1;
 

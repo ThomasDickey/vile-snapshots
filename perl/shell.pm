@@ -2,28 +2,35 @@ package shell;
 
 use IO::Pty;
 require POSIX;
+use Vile::Manual;
 require Vile::Exporter;
 
 @ISA = 'Vile::Exporter';
 %REGISTRY = (
     'start-shell'  => [ \&shell, 'start an interactive shell' ],
     'resume-shell' => [ \&resume_shell, 'resume interactive shell' ],
+    'shell-help' => [ sub {&manual}, 'manual page for shell.pm' ],
 );
 
 my %shells = ();
 
-sub terminal_emulation ($$$);
-
+# Provide some rudimentary terminal emulation
 #
 # Not meant to be complete.  Just enough so that I could use
 # bash and limp along in vi (or vile) on a remote machine
 #
-
-sub terminal_emulation ($$$) {
+# I found the vt220 manual at http://vt100.net/docs/vt220-rm/
+# to be quite useful for this endeavor.
+sub terminal_emulation {
     my ($b, $buf, $te_state) = @_;
 
     my (@dot) = $b->dotq;
     my (@enddot);
+
+    if (length($te_state->{PUTBACK}) > 0) {
+	$buf = $te_state->{PUTBACK} . $buf;
+	$te_state->{PUTBACK} = '';
+    }
 
     while (length($buf) > 0) {
 	if ($te_state->{IC} > 0) {
@@ -38,12 +45,8 @@ sub terminal_emulation ($$$) {
 	}
 	elsif ($buf =~ /^([\x09\x20-\xff]+)(.*)$/s) {
 	    # Handle sequence of printable characters
-	    $b->setregion(@dot, $dot[0], $dot[1]+length($1))
-	        ->delete;
-	    print $b $1;
 	    $buf = $2;
-	    @dot = $b->dotq;
-	    check_wrap($b, $te_state, \@dot);
+	    overwrite($b, $te_state, \@dot, $1);
 	}
 	elsif ($buf =~ /^\r(.*)$/s) {
 	    # ^M				-- beginning of line
@@ -205,21 +208,63 @@ sub terminal_emulation ($$$) {
 	    # character sets.  We'll just ignore them for now.
 	    $buf = $1;
 	}
+	elsif ($buf =~ /^\032/) {
+	    # Possible gdb annotation
+	    if ($buf =~ /^\032\032	# two ctrl-Z's start a gdb annotation
+			([^\n]*)	# filename
+			:		# colon separator
+			(\d+)		# line number
+			:
+			(\d+)		# file offset
+			:
+			(beg|middle)	# indicator as to where we are
+			:		#   in the statement
+			(\S+)		# address that we stopped at
+			\n		# newline terminates it
+			(.*)		# remainder of buffer
+			$/sx) {
+		$buf = $6;
+		open_gdb_file($b, $te_state, \@dot, $1, $2, $3, $4, $5);
+	    }
+	    elsif ($buf =~ /^\032(\032[^\n]*)?$/) {
+		# Incomplete annotation
+		$te_state->{PUTBACK} = $buf;
+		$buf = '';
+	    }
+	    elsif ($buf =~ /^(\032\032?)(.*)$/s) { # should always match
+		# Error in annotation  
+		#    (or perhaps an annotation level higher than 1)
+		# Write out the control-Z(s) and let the chips
+		# fall where they may
+		$buf = $2;
+		overwrite($b, $te_state, \@dot, $1);
+	    }
+	}
+	elsif ($buf =~ /^\e(\[[^a-zA-Z?@]*)?$/) {
+	    # Incomplete escape sequence
+	    $te_state->{PUTBACK} = $buf;
+	    $buf = '';
+	}
 	else {
-	    # Unhandled control character(s)
-	    # just print them out...
+	    # Unhandled control character(s)... Just print them out.
 	    # (And when they annoy you enough, add a case to handle
 	    # them above.)
 
 	    $buf =~ /^(.)(.*)$/s;
-
-	    $b->setregion(@dot, $dot[0], $dot[1]+length($1))
-	        ->delete;
-	    print $b $1;
 	    $buf = $2;
-	    @dot = $b->dotq;
+	    overwrite($b, $te_state, \@dot, $1);
 	}
     }
+}
+
+# Cause a sequence of characters to overwrite what's already there
+sub overwrite {
+    my ($b, $te_state, $dotp, $chars) = @_;
+    $b->setregion(@{$dotp}, $dotp->[0], $dotp->[1]+length($chars))
+	->delete;
+    print $b $chars;
+    @{$dotp} = $b->dotq;
+    check_wrap($b, $te_state, $dotp);
 }
 
 # See if newly inserted characters extend line beyond edge of screen
@@ -431,6 +476,69 @@ sub delete_lines {
     }
 }
 
+# Open a file from information given in a gdb annotation
+sub open_gdb_file {
+    my ($b, $te_state, $dotp, $fname, $lnum, $foff, $mid, $addr) = @_;
+
+    # Attempt to open the pathname given to us by gdb
+    my $gb = Vile::Buffer->new($fname);
+
+    # The above will nearly always work, but the results are not
+    # useful to us if vile creates a new file to edit
+    if (!defined($gb) or ($gb->set_region(1,'$'))[2] < $lnum) {
+	$b->dotq(@{$dotp});
+	print $b "Stopped at $addr ($fname:$lnum not found)\n";
+	@{$dotp} = $b->dotq;
+	return;
+    }
+
+    # If we get here, we've got a file to display along with
+    # a line number.  Now we've got to find a place to display
+    # it.  First see if there's a window open to that buffer...
+
+    my $i = 0;
+    my $w = undef;
+    while ($w = Vile::window_at($i++)) {
+	last if $w->buffer->buffername eq $gb->buffername;
+    }
+
+    # If $w is defined at this point, we have window open to the
+    # buffer already.  Otherwise, we need to open one.  First, we'll
+    # try to find an existing window that isn't one of our shell
+    # windows.
+
+    if (!defined($w)) {
+	$i = 0;
+	while ($w = Vile::window_at($i++)) {
+	    last if $w->buffer->buffername ne $b->buffername;
+	}
+    }
+
+    # If $w is still undefined, we'll need create a new window
+    $w = Vile::Window->new		unless defined $w;
+
+    # If it's still undefined, we'll just pick the first one.
+    $w = Vile::window_at(0)		unless defined $w;
+
+    # Now that we finally have a window to use, set it up.
+    $w->buffer($gb);
+    $w->dot($lnum);
+    $gb->set_region($lnum,0,$lnum,'$$')->set_selection;
+
+    # Put some visible indication of the fact that we've stopped in
+    # the shell buffer.
+    $b->dotq(@{$dotp});
+
+    # Try not to let dot lie on the bottom line
+    if ($w->size > 3 and $w->topline + $w->size - 1 == $w->dot) {
+	$w->topline($w->topline + int($w->size * 2 / 3));
+    }
+
+    $fname =~ s#^.*/##;
+    print $b "Stopped at $addr in $fname:$lnum\n";
+    @{$dotp} = $b->dotq;
+}
+
 # Given a buffer, return a string that will be unique for that buffer
 # We don't want to rely on vile's name for the buffer because the user
 # can change that.  (We use this information for resuming / controlling
@@ -448,18 +556,21 @@ sub buffer_name_internal {
 # emulator.
 #
 #	IC        - number of characters remaining to insert
+#	PUTBACK   - unconsumed characters (probably partial sequences)
 #	WIDTH     - width of the terminal
 #	HEIGHT    - height of the terminal
 #	SR_TOP    - top line in scrolling region
 #	SR_BOT    - bottom line in scrolling region
 #
 sub initial_te_state {
-    return { IC => 0, WIDTH => 80, HEIGHT => 24, SR_TOP => 1, SR_BOT => 24 };
+    return { IC => 0, PUTBACK => '',
+            WIDTH => 80, HEIGHT => 24,
+	    SR_TOP => 1, SR_BOT => 24 };
 }
 
 # Test to see if the terminal emulator *must* be called
 sub must_emulate {
-    return $_[0]->{IC} != 0;
+    return $_[0]->{IC} != 0 || length($_[0]->{PUTBACK}) > 0;
 }
 
 # Use ``do'' instead of ``require'' to bring in sys/ioctl.ph.  It isn't vital
@@ -485,12 +596,77 @@ sub check_size {
     }
 }
 
+# Try to find a window associated with the buffer which also has DOT
+# near the passed in dot.  (Plus or minus one line.) Give preference
+# to the current window if that matches our criteria.  May return
+# undef if no suitable window is found.
+sub find_best_window_for_buffer {
+    my ($b, @dot) = @_;
+    return undef unless @dot > 0;
+    my $w = Vile::current_window;
+    unless ($b->buffername eq $w->buffer->buffername
+	and (my @wdot = $w->dot())[0] >= $dot[0] - 1
+	and $wdot[0] <= $dot[0] + 1)
+    {
+	foreach my $i (0..Vile::window_count()-1) {
+	    $w = Vile::window_at($i);
+	    if ($b->buffername eq $w->buffer->buffername
+	    and (my @wdot = $w->dot())[0] >= $dot[0] - 1
+	    and $wdot[0] <= $dot[0] + 1) {
+		last;
+	    }
+	    $w = undef;
+	}
+    }
+    return $w;
+}
+
+# Find any window associated with the given buffer giving
+# (possible) preference to one with dot near the indicated
+# location.
+sub find_window_for_buffer {
+    my ($b, @dot) = @_;
+
+    # Try to find the best one
+    my $w = find_best_window_for_buffer($b, @dot);
+    return $w				if defined $w;
+
+    # No best one; just find one that's visible
+    my $i = 0;
+    while ($w = Vile::window_at($i++)) {
+	if ($b->buffername eq $w->buffer->buffername) {
+	    last;
+	}
+    }
+    return $w				if defined $w;
+
+    # Well, try to create one then
+    $w = Vile::Window->new;
+    
+    # But if that doesn't work either, just use the first one.
+    $w = Vile::window_at(0)		unless defined $w;
+
+    # Set it to our buffer and then return
+    $w->buffer($b);
+    return $w;
+}
+
+# Return a string suitable for describing a character (using printable
+# characters); especially useful for control characters.
+sub char_name {
+    my ($ch) = @_;
+    return "ESC" 			if ($ch eq "\e");
+    return "^" . chr(ord($ch) + 64)	if (ord($ch) < 32);
+    return $ch;
+}
+
 # Do the low level work of starting a shell... Returns the pty's filehandle
 # and the pid of the shell if successful.  If it's unsuccessful, the die
 # message will tell you why.
 sub start_shell {
-    my $shell = $ENV{SHELL};
-    $shell = '/bin/sh' unless defined($shell);
+    my ($shell) = @_;
+    $shell = $ENV{SHELL} 		unless defined $shell;
+    $shell = '/bin/sh' 			unless defined $shell;
 
     my $pty     = new IO::Pty		or die "Can't open new pty: $!";
 
@@ -506,6 +682,7 @@ sub start_shell {
 	system("stty sane");
 	close $pty;
 	close $tty;
+	$ENV{TERM} = 'vt100';
 	exec $shell;
     }
     return ($pty, $pid);
@@ -515,15 +692,12 @@ sub start_shell {
 # user command
 sub shell
 {
+    my ($command) = @_;
     # Uncomment for debugging (uncomment hexdump line below too)
     #open TTY, ">/dev/tty";
 
-    # Disable working messages
-    my $oldworking = Vile::working();
-    Vile::working(0);
-
     # Start a new shell
-    my ($pty, $pid ) = start_shell();
+    my ($pty, $pid ) = start_shell($command);
     die "shell: start_shell failed" 		unless defined $pty;
 
     # Create a buffer to display the shell in
@@ -565,8 +739,8 @@ sub shell
     my $te_state = initial_te_state();
 
     # Have vile watch for shell output while waiting for user input;
-    # when not otherwise busy, vile will call the anonymous subroutine
-    # which we pass as the third parameter
+    # when shell output is available (and when not otherwise busy), vile
+    # will call the anonymous subroutine which we pass as the third parameter
     Vile::watchfd(
 	fileno($pty),
 	'read',
@@ -584,21 +758,7 @@ sub shell
 	    # also has DOT near @mydot.  (Plus or minus one line.)
 	    # Give preference to the current window if that matches
 	    # our criteria.
-	    my $w = Vile::current_window;
-	    unless ($b->buffername eq $w->buffer->buffername
-	        and (my @wdot = $w->dot())[0] >= $mydot[0] - 1
-	        and $wdot[0] <= $mydot[0] + 1)
-	    {
-		foreach my $i (0..Vile::window_count()-1) {
-		    $w = Vile::window_at($i);
-		    if ($b->buffername eq $w->buffer->buffername
-		    and (my @wdot = $w->dot())[0] >= $mydot[0] - 1
-		    and $wdot[0] <= $mydot[0] + 1) {
-			last;
-		    }
-		    $w = undef;
-		}
-	    }
+	    my $w = find_best_window_for_buffer($b, @mydot);
 
 	    # Fetch data from input stream
 	    if (!sysread $pty, $buf, 4096) {
@@ -658,36 +818,88 @@ sub shell
 	}
     );
 
-    print STDOUT "Shell started.  Use ^G to escape";
-    Vile::update();
-
     # Stow away a reference to the character getting subroutine.
     # We use it immediately below and when we want character input
     # to be directed to the shell.  (I.e, when resume_shell is called.)
+    my $resume_sub = # Work-around for a perl bug. This line should not be needed!
     $shells{$bufid}{RESUME_SUB} = 
 	sub {
+	    my ($escape, $quote) = @_;
+	    my $w = find_window_for_buffer($b, @mydot);
+
 	    # Restore dot to its rightful place
-	    Vile::current_window()->dot(@mydot);
+	    $w->dot(@mydot);
+	    $w->current_window;
+	    Vile::update();
+
+	    # Disable working messages
+	    my $oldworking = Vile->get('working');
+	    Vile->set(working => 0);
+
+	    # Tell user how to get back to vile
+	    my $escape_name = char_name($escape);
+	    my $quote_name  = char_name($quote);
+	    print STDOUT "Use $escape_name to escape shell, $quote_name to escape characters";
 	    Vile::update();
 
 	    my $c;
+	    my $quote_next = 0;
+	    my $escape_disabled = 0;
 	    while (1) {
 		$c = Vile::keystroke();
-		# FIXME: Need more flexible escape mechanism
-		last if $c == 7;		# ^G escapes
 		last unless exists $shells{$bufid};
+		if ($quote_next) {
+		    $quote_next = 0;
+		    if ($c == ord('e')) {
+			$escape_disabled = !$escape_disabled;
+			print STDOUT "$escape_name toggled: $escape_name will ",
+			      $escape_disabled ? "be sent to shell"
+			                       : "escape from shell";
+			Vile::update();
+			next;
+		    }
+		    print STDOUT $quote_name, char_name($c);
+		    Vile::update();
+		}
+		else {
+		    if ($c == ord($escape) && !$escape_disabled) {
+			last;
+		    }
+		    if ($c == ord($quote)) {
+			$quote_next = 1;
+			print STDOUT $quote_name;
+			Vile::update();
+			next;
+		    }
+		}
 		print $pty chr($c);
 	    }
+
+	    if (exists $shells{$bufid}) {
+		print STDOUT 'Editor resumed.  Use ":resume-shell" to return.'
+	    }
+	    else {
+		# probably here because shell died in which case we've
+		# already printed a message.  The line below will provide
+		# a small amount of visual feedback to the user...
+		# (by clearing the message which said to press any key
+		# to continue).
+		print STDOUT ' ';
+	    }
+	    Vile::update();
+
+	    Vile->set(working => $oldworking);
 	};
 
-    &{$shells{$bufid}{RESUME_SUB}};		# Run the above loop
-
-    print STDOUT 'Editor resumed.  Use ":resume-shell" to return.'
-    					if exists $shells{$bufid};
     Vile::update();
 
-    # Restore "working..." message display to its previous state
-    Vile::working($oldworking);
+    if (defined($command)) {
+	# FIXME: It'd be better to return an object
+	return $bufid;
+    }
+    else {
+	&{$shells{$bufid}{RESUME_SUB}}("\e", "\cV");	# Run the above loop
+    }
 }
 
 # Resume a shell at the user's request.
@@ -696,26 +908,31 @@ sub shell
 # to look up the shell, but that won't always work because the user may
 # rename the buffer!
 sub resume_shell {
-    my $bufid = buffer_name_internal(Vile::current_buffer);
+    my ($bufid) = @_;
+    $bufid = buffer_name_internal(Vile::current_buffer)
+    					unless defined $bufid;
 
     if (!defined($bufid) or !defined($shells{$bufid}{PTY_HANDLE})) {
 	print "Not in a shell window!";
 	return;
     }
 
-    my $oldworking = Vile::working();		# fetch old value of working
-    Vile::working(0);				# disable working... messages
-
-    print STDOUT "Shell resumed.  Use ^G to escape";
-    Vile::update();
-
     # Run the keyboard character fetching loop
-    &{$shells{$bufid}{RESUME_SUB}};
+    &{$shells{$bufid}{RESUME_SUB}}("\e", "\cV");
+}
 
-    print STDOUT 'Editor resumed.  Use ":resume-shell" to return.'
-    					if exists $shells{$bufid};
+# See if a shell is dead
+sub dead {
+    return !defined($bufid) || !defined($shells{$bufid}{PTY_HANDLE});
+}
 
-    Vile::working($oldworking);			# restore "working..." message
+# Send some characters to a shell
+sub send_chars {
+    my ($bufid, $chars) = @_;
+    return undef		unless exists $shells{$bufid};
+    my $pty = $shells{$bufid}{PTY_HANDLE};
+    print $pty $chars;
+    1;
 }
 
 # Debugging subroutine
@@ -730,3 +947,119 @@ sub hexdump {
 }
 
 1;
+__DATA__
+
+=head1 NAME
+
+start-shell, resume-shell - start/resume a shell in a vile window
+
+=head1 SYNOPSIS
+
+In .vilerc:
+
+    perl "use shell"
+
+In [x]vile:
+
+    :start-shell
+
+    :resume-shell
+
+=head1 DESCRIPTION
+
+The B<shell.pm> module provides facilities for running a shell in a
+vile window.
+
+A shell is started via
+
+    :start-shell
+
+By default, the escape character (ESC) is used to escape the shell and
+the Control-V character is used to escape characters to send to the
+shell (like either ESC or Control-V).  Since it can be quite annoying
+to have to explicitly escape all of the ESC characters that you wish
+to send to a shell or application running under the shell, a mechanism
+is provided for temporarily allowing ESC to be sent to the shell
+unfettered.  The sequence ^V-e (Control-V followed by 'e') will
+toggle whether the ESC is sent to the shell or is used to escape the
+shell.  (A message will be printed to the command line to indicate
+which is the case.)
+
+Once the shell has been escaped from, all of the usual editor
+commands may be used to browse/edit the shell window text, move
+to other windows, etc.  When you wish to resume interacting with
+the shell, simply place the cursor anywhere in the shell window
+and use
+
+    :resume-shell
+
+to resume interacting with the shell.  The cursor will be repositioned
+at the correct place to continue the interaction.
+
+=head1 GDB INTERACTIONS
+
+The B<shell.pm> terminal emulation facilities have been made gdb
+aware, but you need to invoke gdb with the '--fullname' option to
+make use of these facilities.  E.g, you might invoke gdb as follows:
+
+    gdb --fullname myprogram
+
+When gdb is invoked in such a fashion, it will annotate its output to
+include the name of the file to open when stopped (e.g, due to
+breakpoint or after a single step).  Going "up" or "down" the stack
+will also cause an appropriate annotation to be sent.
+
+B<shell.pm> will watch for these annotations and attempt to open and
+display the file specified by the annotation.  The line at which
+execution has stopped will be highlighted using vile's selection
+mechanism.
+
+A gdb.pm module is under construction.
+
+=head1 REQUIREMENTS
+
+You will almost certainly need to be running on some sort of Unix
+system for B<shell.pm> to work at all.
+
+You will need the IO::Pty module.  This is available from
+
+    http://www.cpan.org/modules/by-module/IO/IO-Tty-0.02.tar.gz
+
+You may want to check CPAN for a more recent version prior to
+downloading this version.
+
+Resizing won't work unless you have sys/ioctl.ph installed.  This
+file is created from your system's <sys/ioctl.h> file.  In order to
+install sys/ioctl.ph, simply obtain whatever privileges are necessary
+for writing to the perl installation directories and then do:
+
+    cd /usr/include
+    h2ph -a -l sys/*
+
+=head1 BUGS
+
+Terminal emulation is incomplete.
+
+The shell is not immediately notified of a resize when a window is
+resized.  (It is notified, but not until the shell sends some output
+to be placed in a buffer.)
+
+The shell is not killed when the buffer is destroyed.  (It is killed
+when vile exits though.)
+
+Escaping the shell is clumsy.
+
+Selecting with the mouse in xvile causes 'M' to be sent to the
+shell.
+
+It's possible to change active windows with the mouse in xvile,
+but shell.pm is not made aware of the fact that a different window
+has been made active.
+
+This is a work in progress.  Expect many things to change.
+
+=head1 AUTHOR
+
+Kevin Buettner
+
+=cut
