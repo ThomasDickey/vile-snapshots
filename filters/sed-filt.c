@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.14 2001/12/06 01:55:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.15 2001/12/19 23:14:16 tom Exp $
  *
  * Filter to add vile "attribution" sequences to sed scripts.
  */
@@ -210,6 +210,8 @@ SkipTwoPatterns(char *s, int flags)
 		s++;
 	    else if (*s == 'w') {
 		s += strlen(s);
+	    } else {
+		break;
 	    }
 	}
 	flt_puts(base, s - base, Ident2_attr);

@@ -1,5 +1,26 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20011225 (s)
+	> Tom Dickey:
+	+ fix a memory leak in vars_complete(), as well as make it faster by
+	  caching the sorted list of temporary variables until one is added or
+	  removed.
+	+ modify modeline display to show local recordseparator values (cr, lf,
+	  crlf) rather than dos mode, since the latter is redundant in that
+	  context.
+	+ implemented support for reading/writing Macintosh files, i.e.,
+	  recordseparator=cr.  New commands set-rs-cr, set-rs-lf, set-rs-crlf
+	  extend the set-unix-mode and set-dos-mode commands to include Mac's.
+	+ indent'd fileio.c, mktbls.c, tbuff.c
+	+ modify ntconio.c so that default fcolor is 7 (request by Walter
+	  Kennedy <wkennedy@softintegration.com>).
+	+ modify ntconio.c so that "reverse" color scheme works.
+	+ add $prompt variable, to allow changing the command-line prompt.
+	+ fix an infinite loop in sh-filt.c (reported by Paul Fox).
+	+ add a configure check for mkdtemp().
+	+ regenerate configure script, overlooked in 9.2r after resyncing
+	  macros in aclocal.m4
+
  20011216 (r)
 	> Paul Fox:
 	+ fix a problem where repeated ":!cmd" invocations (with no intervening

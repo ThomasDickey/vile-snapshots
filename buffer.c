@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.239 2001/12/06 00:59:49 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.240 2001/12/21 12:38:50 tom Exp $
  *
  */
 
@@ -2046,7 +2046,7 @@ bfind(const char *bname, UINT bflag)
 #if OPT_VIDEO_ATTRS
 #endif
     bp->b_flag = bflag;
-    bp->b_acount = b_val(bp, VAL_ASAVECNT);
+    bp->b_acount = (short) b_val(bp, VAL_ASAVECNT);
     bp->b_fname = NULL;
     ch_fname(bp, "");
     fileuid_invalidate(bp);

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.348 2001/12/13 23:24:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.351 2001/12/24 16:03:00 tom Exp $
  *
  */
 
@@ -136,7 +136,7 @@ right_num (char *buffer, int len, long value)
 
 	*q = EOS;
 	while (q != buffer)
-		*(--q) = (p != temp) ? *(--p) : ' ';
+		*(--q) = (char) ((p != temp) ? *(--p) : ' ');
 	return buffer;
 }
 
@@ -569,7 +569,7 @@ vtputc(int c)
 	 vp = vscreen[vtrow];
 
 	if (isPrint(c) && vtcol >= 0 && vtcol < lastcol) {
-		VideoText(vp)[vtcol++] = (c & (N_chars-1));
+		VideoText(vp)[vtcol++] = (char) (c & (N_chars-1));
 #ifdef WMDLINEWRAP
 		if ((allow_wrap != 0)
 		 && (vtcol == lastcol)
@@ -977,9 +977,9 @@ dot_to_vcol(WINDOW *wp)
 			wt->w_left_col);
 #if OPT_TRACE
 	check = mk_to_vcol(wp->w_dot, w_val(wp,WMDLIST), w_left_margin(wp), 0);
-	TRACE(("dot_to_vcol result %d check %d (off=%d, shift=%d)\n",
-		result, check, wp->w_dot.o, shift));
 	if (check != result) {
+		TRACE(("dot_to_vcol result %d check %d (off=%d, shift=%d)\n",
+			result, check, wp->w_dot.o, shift));
 		kbd_alarm();
 		TRACE(("-> OOPS:%s %d vs %d+%d %d\n",
 			wp->w_bufp->b_bname,
@@ -1732,6 +1732,7 @@ updgar(void)
 	term.setback(gbcolor);
 #endif
 	movecursor(0, 0);		 /* Erase the screen. */
+	reset_term_attrs();
 	term.eeop();
 #else
 	kbd_erase_to_end(0);
@@ -1988,8 +1989,8 @@ mergeattr(WINDOW *wp, int row, int start_col, int end_col, VIDEO_ATTR attr)
 	    if (x < mode_row(wp)) {
 		int y = col % term.cols;
 		vscreen[x]->v_attrs[y] =
-		    (vscreen[x]->v_attrs[y] | (attr & ~VAREV))
-		    ^ (attr & VAREV);
+		    (VIDEO_ATTR) ((vscreen[x]->v_attrs[y] | (attr & ~VAREV))
+		    ^ (attr & VAREV));
 	    }
 	    else
 		break;
@@ -2002,8 +2003,8 @@ mergeattr(WINDOW *wp, int row, int start_col, int end_col, VIDEO_ATTR attr)
 	    end_col = term.cols-1;
 	for (col = start_col; col <= end_col; col++)
 	    vscreen[row]->v_attrs[col] =
-		(vscreen[row]->v_attrs[col] | (attr & ~VAREV))
-		^ (attr & VAREV);
+		(VIDEO_ATTR) ((vscreen[row]->v_attrs[col] | (attr & ~VAREV))
+		^ (attr & VAREV));
     }
 }
 #endif /* OPT_VIDEO_ATTRS */
@@ -2895,12 +2896,13 @@ modeline_modes(BUFFER *bp, char **msptr)
 #if OPT_ENCRYPT
 	PutMode(MDCRYPT,	"crypt")
 #endif
-	PutMode(MDDOS,		"dos-style")
 #if OPT_RECORDSEP_CHOICES
-	if (b_val(bp, MDDOS) ^ ((b_val(bp, VAL_RECORD_SEP) == RS_CRLF)))
+	if (is_local_b_val(bp, VAL_RECORD_SEP))
 		PutModename("%c%s",
 			choice_to_name(fsm_recordsep_choices,
 					b_val(bp, VAL_RECORD_SEP)));
+#else
+	PutMode(MDDOS,		"dos-style")
 #endif
 	PutMode(MDREADONLY,	"read-only")
 	PutMode(MDVIEW,		"view-only")

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.482 2001/09/23 17:15:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.485 2001/12/23 18:42:10 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1025,10 +1025,17 @@ typedef struct {
 } PARAM_INFO;
 
 typedef enum {
-	RS_LF = 0		/* unix */
+	RS_AUTO = 0
+	, RS_LF			/* unix */
 	, RS_CR			/* mac */
 	, RS_CRLF		/* dos */
 } RECORD_SEP;
+
+#if CRLF_LINES
+#define RS_DEFAULT RS_CRLF
+#else
+#define RS_DEFAULT RS_LF
+#endif
 
 /* cfg_locate options */
 #define FL_EXECABLE  iBIT(0)	/* maps to X_OK */
@@ -1502,7 +1509,7 @@ typedef struct	LINE {
 	 * Macros for referencing fields in the LINE struct.
 	 */
 #define lgetc(lp, n)		char2int((lp)->l_text[(n)])
-#define lputc(lp, n, c) 	((lp)->l_text[(n)]=(c))
+#define lputc(lp, n, c) 	((lp)->l_text[(n)]=(char)(c))
 #define llength(lp)		((lp)->l_used)
 #define line_length(lp)		(llength(lp)+len_rs) /* counting recordsep */
 
@@ -1601,7 +1608,7 @@ typedef UCHAR VIDEO_ATTR;
 #define VACOL_F (VASPCOL|0xF000)
 
 #define VCOLORNUM(attr) (((attr) & VACOLOR) >> 12)
-#define VCOLORATTR(num) ((UINT)(num) << 12)
+#define VCOLORATTR(num) ((VIDEO_ATTR) ((UINT)(num) << 12))
 
 /* who owns an attributed region -- so we can delete them independently */
 #define VOWNER(attr)	((attr) & VAOWNER)
@@ -1616,10 +1623,10 @@ typedef UCHAR VIDEO_ATTR;
 
 #if OPT_PSCREEN
 #define VADIRTY	iBIT(0)			/* cell needs to be written out */
-#define VATTRIB(attr) ((attr) & (VIDEO_ATTR) ~(VAOWNER|VADIRTY))
+#define VATTRIB(attr) ((VIDEO_ATTR) ((attr) & (VIDEO_ATTR) ~(VAOWNER|VADIRTY)))
 #else
 #define VADIRTY ((VIDEO_ATTR)0)		/* nop for all others */
-#define VATTRIB(attr) ((attr) & (VIDEO_ATTR) ~(VAOWNER))
+#define VATTRIB(attr) ((VIDEO_ATTR) ((attr) & (VIDEO_ATTR) ~(VAOWNER)))
 #endif
 
 /* grow (or initially allocate) a vector of newsize types, pointed to by

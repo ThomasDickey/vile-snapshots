@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.133 2001/09/18 09:49:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.134 2001/12/21 12:43:34 tom Exp $
  *
  */
 
@@ -430,7 +430,7 @@ sel_yank(int reg)
     curbp = selbufp;
     curtabval = tabstop_val(curbp);
 
-    ukb = reg;
+    ukb = (short) reg;
     kregflag = 0;
     haveregion = &selregion.ar_region;
     regionshape = selregion.ar_shape;

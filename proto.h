@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.475 2001/11/27 21:44:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.480 2001/12/25 16:31:42 tom Exp $
  *
  */
 
@@ -405,8 +405,8 @@ extern int more_named_cmd (void);
 /* file.c */
 extern SIGT imdying (int ACTUAL_SIG_ARGS);
 extern int bp2readin (BUFFER *bp, int lockfl);
-extern int fileuid_get (const char *fname, FUID *fuid);
 extern int fileuid_compare (FUID *fuid1, FUID *fuid2);
+extern int fileuid_get (const char *fname, FUID *fuid);
 extern int fileuid_same (BUFFER *bp, FUID *fuid);
 extern int getfile (char *fname, int lockfl);
 extern int ifile (char *fname, int belowthisline, FILE *haveffp);
@@ -421,6 +421,7 @@ extern int slowreadf (BUFFER *bp, int *nlinep);
 extern int writeout (const char *fn, BUFFER *bp, int forced, int msgf);
 extern int writeregion (void);
 extern time_t file_modified (char *path);
+extern void explicit_dosmode(BUFFER *bp, RECORD_SEP record_sep);
 extern void fileuid_invalidate (BUFFER *bp);
 extern void fileuid_set (BUFFER *bp, FUID *fuid);
 extern void fileuid_set_if_valid(BUFFER *bp, const char *fname);
@@ -1120,7 +1121,6 @@ extern	char *	is_vms_dirtype	(char *path);
 extern	char *	is_vms_rootdir	(char *path);
 extern	char *	unix2vms_path   (char *dst, const char *src);
 extern	char *	vms2unix_path   (char *dst, const char *src);
-extern	int	vms_fseek_ok	(char *filename);
 extern	int	vms_ffexists	(char *filename);
 extern	void	vms_dir2path	(char *path);
 extern	char *	vms_path2dir    (const char *src);
@@ -1328,6 +1328,7 @@ extern	void	onel_leaks (void);
 extern	void	path_leaks (void);
 extern	void	tags_leaks (void);
 extern	void	tb_leaks (void);
+extern	void	vars_leaks (void);
 extern	void	vt_leaks (void);
 extern	void	wp_leaks (void);
 
@@ -1340,6 +1341,12 @@ extern	void	flt_leaks (void);
 #endif
 
 #endif /* NO_LEAKS */
+
+#if defined(HAVE_MKSTEMP) && defined(HAVE_MKDTEMP)
+#define vl_mkdtemp(path) mkdtemp(path)
+#else
+#define vl_mkdtemp(path) mktemp(path)
+#endif
 
 #if SYS_UNIX
 #if MISSING_EXTERN__FILBUF

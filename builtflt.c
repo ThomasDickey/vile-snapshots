@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.20 2001/12/06 01:34:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.21 2001/12/24 14:57:54 tom Exp $
  *
  */
 
@@ -190,7 +190,7 @@ flt_input(char *buffer, int max_size)
     if (!is_header_line(mark_in, curbp)) {
 	while (used < max_size) {
 	    if (mark_in.o < llength(mark_in.l)) {
-		buffer[used++] = lgetc(mark_in.l, mark_in.o++);
+		buffer[used++] = (char) lgetc(mark_in.l, mark_in.o++);
 	    } else {
 		mark_in.l = lforw(mark_in.l);
 		mark_in.o = w_left_margin(curwp);

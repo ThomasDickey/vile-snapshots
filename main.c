@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.461 2001/09/23 19:29:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.464 2001/12/25 16:30:34 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1138,7 +1138,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setINT(MDVIEW, FALSE);	/* view-only */
 	    setINT(MDWRAP, FALSE);	/* wrap */
 	    setINT(VAL_ASAVECNT, 256);	/* autosave count */
-	    setINT(VAL_RECORD_SEP, CRLF_LINES ? RS_CRLF : RS_LF);
+	    setINT(VAL_RECORD_SEP, RS_DEFAULT);
 	    setINT(VAL_SWIDTH, 8);	/* shiftwidth */
 	    setINT(VAL_TAB, 8);	/* tab stop */
 	    setINT(VAL_TAGLEN, 0);	/* significant tag length */
@@ -1366,6 +1366,9 @@ init_state_value(int which)
 	result = DFT_POSFORMAT;
 	break;
 #endif
+    case VAR_PROMPT:
+	result = ": ";
+	break;
     case VAR_REPLACE:
 	result = "";
 	break;
@@ -1907,6 +1910,7 @@ quit(int f, int n GCC_UNUSED)
 	vt_leaks();
 	ev_leaks();
 	mode_leaks();
+	vars_leaks();
 	fileio_leaks();
 #if DISP_X11
 	x11_leaks();

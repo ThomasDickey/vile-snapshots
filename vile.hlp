@@ -1536,8 +1536,20 @@ Editor modes
 		mode should be turned on to truly mimic vi's default
 		behavior.  (U)
 
-	recordseparator (rs) Specify format of files that vile reads.  Formats
-		are lf (for Unix) and crlf (for DOS).  (B)
+	recordseparator (rs) Specify format of files that vile reads and
+		writes.  Formats are lf (for Unix), crlf (for DOS), cr (for
+		Macintosh).  When reading from a file, vile determines the file
+		format automatically, and sets a local value for this mode. 
+		When reading from a pipe, it uses the global value of
+		recordseparator to decide how to split lines.  Files created
+		within vile do not automatically have a local recordseparator
+		mode; they inherit the global mode setting.  The commands
+			set-rs-cr
+			set-rs-lf or set-unix-mode
+			set-rs-crlf or set-dos-mode
+		are aliases which set the corresponding local mode values of
+		recordseparator.  Set the recordseparator on a given buffer to
+		control how it is written.  (B)
 
 	remap   Controls whether :map or :map! sequences entered with
 		no explicit remapping control should be subject to remapping
@@ -2564,6 +2576,7 @@ Programmed procedures (aka macros)
 	$pid		returns vile's process-id		(read only)
 	$position-format format of ^G command.  see "Mode line customization".
 	$progname	returns "vile" or "xvile" or "winvile".	(read only)
+	$prompt		the command-line prompt string  ": "
 	$qidentifier	current qualified name (as with C++ ::)
 	$read-hook	name of procedure to run after a file is read
 	$replace	replacement pattern
@@ -4906,6 +4919,7 @@ DOS specifics
 	returns, and forces "nodos" mode, so that they don't come back when
 	you write the file.  In both cases, "dos" mode becomes a so-called
 	"local" mode, so that the rest of your buffers will be unaffected.
+	See also the discussion of "recordseparator" mode.
 
 
 
@@ -5663,4 +5677,4 @@ Problems
 
 Copyright 1995-2001 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.528 2001/12/06 00:40:36 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.533 2001/12/24 13:39:05 tom Exp $

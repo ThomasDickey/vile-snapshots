@@ -2,25 +2,24 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.151 2001/08/26 15:21:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.154 2001/12/24 01:16:39 tom Exp $
  *
  */
 
-#include	"estruct.h"
-#include	"edef.h"
+#include "estruct.h"
+#include "edef.h"
 
 #if SYS_VMS
-#include	<file.h>
+#include <file.h>
 #endif
 
 #if HAVE_SYS_IOCTL_H
-#include	<sys/ioctl.h>
+#include <sys/ioctl.h>
 #endif
 
 #if CC_NEWDOSCC
-#include	<io.h>
+#include <io.h>
 #endif
-
 
 #ifndef EISDIR
 #define EISDIR EACCES
@@ -31,8 +30,8 @@
 static void
 free_fline(void)
 {
-	FreeAndNull(fflinebuf);
-	fflinelen = 0;
+    FreeAndNull(fflinebuf);
+    fflinelen = 0;
 }
 
 #if OPT_FILEBACK
@@ -40,31 +39,31 @@ free_fline(void)
  * Copy file when making a backup
  */
 static int
-copy_file (const char *src, const char *dst)
+copy_file(const char *src, const char *dst)
 {
-	FILE	*ifp;
-	FILE	*ofp;
-	int	chr;
-	int	ok = FALSE;
+    FILE *ifp;
+    FILE *ofp;
+    int chr;
+    int ok = FALSE;
 
-	if ((ifp = fopen(SL_TO_BSL(src), FOPEN_READ)) != 0) {
-		if ((ofp = fopen(SL_TO_BSL(dst), FOPEN_WRITE)) != 0) {
-			ok = TRUE;
-			for_ever {
-				chr = getc(ifp);
-				if (feof(ifp))
-					break;
-				putc(chr, ofp);
-				if (ferror(ifp) || ferror(ofp)) {
-					ok = FALSE;
-					break;
-				}
-			}
-			(void)fclose(ofp);
+    if ((ifp = fopen(SL_TO_BSL(src), FOPEN_READ)) != 0) {
+	if ((ofp = fopen(SL_TO_BSL(dst), FOPEN_WRITE)) != 0) {
+	    ok = TRUE;
+	    for_ever {
+		chr = getc(ifp);
+		if (feof(ifp))
+		    break;
+		putc(chr, ofp);
+		if (ferror(ifp) || ferror(ofp)) {
+		    ok = FALSE;
+		    break;
 		}
-		(void)fclose(ifp);
+	    }
+	    (void) fclose(ofp);
 	}
-	return ok;
+	(void) fclose(ifp);
+    }
+    return ok;
 }
 
 /*
@@ -86,135 +85,135 @@ copy_file (const char *src, const char *dst)
 static int
 write_backup_file(const char *orig, char *backup)
 {
-	int s;
+    int s;
 
-	struct stat ostat, bstat;
+    struct stat ostat, bstat;
 
-	if (stat(SL_TO_BSL(orig), &ostat) != 0)
-		return FALSE;
+    if (stat(SL_TO_BSL(orig), &ostat) != 0)
+	return FALSE;
 
-	if (stat(SL_TO_BSL(backup), &bstat) == 0) {  /* the backup file exists */
+    if (stat(SL_TO_BSL(backup), &bstat) == 0) {		/* the backup file exists */
 
 #if SYS_UNIX
-		/* same file, somehow? */
-		if (bstat.st_dev == ostat.st_dev &&
-		    bstat.st_ino == ostat.st_ino) {
-			return FALSE;
-		}
+	/* same file, somehow? */
+	if (bstat.st_dev == ostat.st_dev &&
+	    bstat.st_ino == ostat.st_ino) {
+	    return FALSE;
+	}
 #endif
 
-		/* remove it */
-		if (unlink(SL_TO_BSL(backup)) != 0)
-			return FALSE;
-	}
+	/* remove it */
+	if (unlink(SL_TO_BSL(backup)) != 0)
+	    return FALSE;
+    }
 
-	/* there are many reasons for copying, rather than renaming
-	   and writing a new file -- the file may have links, which
-	   will follow the rename, rather than stay with the real-name.
-	   additionally, if the write fails, we need to re-rename back to
-	   the original name, otherwise two successive failed writes will
-	   destroy the file.
-	*/
+    /* there are many reasons for copying, rather than renaming
+       and writing a new file -- the file may have links, which
+       will follow the rename, rather than stay with the real-name.
+       additionally, if the write fails, we need to re-rename back to
+       the original name, otherwise two successive failed writes will
+       destroy the file.
+     */
 
-	s = copy_file(orig, backup);
-	if (s != TRUE)
-		return s;
+    s = copy_file(orig, backup);
+    if (s != TRUE)
+	return s;
 
-	/* change date and permissions to match original */
+    /* change date and permissions to match original */
 #if HAVE_UTIMES
-	/* we favor utimes over utime, since not all implementations (i.e.
-		older ones) declare the utimbuf argument.  NeXT, for example,
-		declares it as an array of two timevals instead.  we think
-		utimes will be more standard, where it exists.  what we
-		really think is that it's probably BSD systems that got
-		utime wrong, and those will have utimes to cover for it.  :-) */
-	{
-	    struct timeval buf[2];
-	    buf[0].tv_sec = ostat.st_atime;
-	    buf[0].tv_usec = 0;
-	    buf[1].tv_sec = ostat.st_mtime;
-	    buf[1].tv_usec = 0;
-	    s = utimes(SL_TO_BSL(backup), buf);
-	    if (s != 0) {
-		    (void)unlink(SL_TO_BSL(backup));
-		    return FALSE;
-	    }
+    /* we favor utimes over utime, since not all implementations (i.e.
+       older ones) declare the utimbuf argument.  NeXT, for example,
+       declares it as an array of two timevals instead.  we think
+       utimes will be more standard, where it exists.  what we
+       really think is that it's probably BSD systems that got
+       utime wrong, and those will have utimes to cover for it.  :-) */
+    {
+	struct timeval buf[2];
+	buf[0].tv_sec = ostat.st_atime;
+	buf[0].tv_usec = 0;
+	buf[1].tv_sec = ostat.st_mtime;
+	buf[1].tv_usec = 0;
+	s = utimes(SL_TO_BSL(backup), buf);
+	if (s != 0) {
+	    (void) unlink(SL_TO_BSL(backup));
+	    return FALSE;
 	}
+    }
 #else
 # if HAVE_UTIME
-	{
-	    struct utimbuf buf;
-	    buf.actime = ostat.st_atime;
-	    buf.modtime = ostat.st_mtime;
-	    s = utime(SL_TO_BSL(backup), &buf);
-	    if (s != 0) {
-		    (void)unlink(SL_TO_BSL(backup));
-		    return FALSE;
-	    }
+    {
+	struct utimbuf buf;
+	buf.actime = ostat.st_atime;
+	buf.modtime = ostat.st_mtime;
+	s = utime(SL_TO_BSL(backup), &buf);
+	if (s != 0) {
+	    (void) unlink(SL_TO_BSL(backup));
+	    return FALSE;
 	}
+    }
 #endif
 #endif
 
 #if SYS_OS2 && CC_CSETPP
-	s = chmod(SL_TO_BSL(backup), ostat.st_mode & (S_IREAD | S_IWRITE));
+    s = chmod(SL_TO_BSL(backup), ostat.st_mode & (S_IREAD | S_IWRITE));
 #else
-	s = chmod(SL_TO_BSL(backup), ostat.st_mode & 0777);
+    s = chmod(SL_TO_BSL(backup), ostat.st_mode & 0777);
 #endif
-	if (s != 0) {
-		(void)unlink(SL_TO_BSL(backup));
-		return FALSE;
-	}
+    if (s != 0) {
+	(void) unlink(SL_TO_BSL(backup));
+	return FALSE;
+    }
 
-	return TRUE;
+    return TRUE;
 }
 
 static int
-make_backup (char *fname)
+make_backup(char *fname)
 {
-	int	ok	= TRUE;
+    int ok = TRUE;
 
-	if (ffexists(fname)) { /* if the file exists, attempt a backup */
-		char	tname[NFILEN];
-		char	*s = pathleaf(strcpy(tname, fname)),
-			*t = strrchr(s, '.');
-		char *gvalfileback = global_g_val_ptr(GVAL_BACKUPSTYLE);
+    if (ffexists(fname)) {	/* if the file exists, attempt a backup */
+	char tname[NFILEN];
+	char *s = pathleaf(strcpy(tname, fname));
+	char *t = strrchr(s, '.');
+	char *gvalfileback = global_g_val_ptr(GVAL_BACKUPSTYLE);
 
-		if (strcmp(gvalfileback,".bak") == 0) {
-			if (t == 0	/* i.e. no '.' at all */
+	if (strcmp(gvalfileback, ".bak") == 0) {
+	    if (t == 0		/* i.e. no '.' at all */
 #if SYS_UNIX
-				|| t == s	/* i.e. leading char is '.' */
+		|| t == s	/* i.e. leading char is '.' */
 #endif
-			)
-				t = skip_string(s); /* then just append */
-			(void)strcpy(t, ".bak");
+		)
+		t = skip_string(s);	/* then just append */
+	    (void) strcpy(t, ".bak");
 #if SYS_UNIX
-		} else if (strcmp(gvalfileback, "tilde") == 0) {
-			t = skip_string(s);
+	} else if (strcmp(gvalfileback, "tilde") == 0) {
+	    t = skip_string(s);
 #if ! HAVE_LONG_FILENAMES
-			if (t - s >= MAX_FN_LEN) {
-				if (t - s == MAX_FN_LEN &&
-					s[MAX_FN_LEN-2] == '.')
-					s[MAX_FN_LEN-2] = s[MAX_FN_LEN-1];
-				t = &s[MAX_FN_LEN-1];
-			}
+	    if (t - s >= MAX_FN_LEN) {
+		if (t - s == MAX_FN_LEN &&
+		    s[MAX_FN_LEN - 2] == '.')
+		    s[MAX_FN_LEN - 2] = s[MAX_FN_LEN - 1];
+		t = &s[MAX_FN_LEN - 1];
+	    }
 #endif
-			(void)strcpy(t, "~");
+	    (void) strcpy(t, "~");
 #if SOMEDAY
-		} else if (strcmp(gvalfileback, "tilde_N_existing")) {
-			/* numbered backups if one exists, else simple */
-		} else if (strcmp(gvalfileback, "tilde_N")) {
-			/* numbered backups of all files*/
+	} else if (strcmp(gvalfileback, "tilde_N_existing")) {
+	    /* numbered backups if one exists, else simple */
+	} else if (strcmp(gvalfileback, "tilde_N")) {
+	    /* numbered backups of all files */
 #endif
 #endif /* SYS_UNIX */
-		} else {
-			mlforce("BUG: bad fileback value");
-			return FALSE;
-		}
-
-		ok = write_backup_file(fname, tname);
-
+	} else {
+	    mlforce("BUG: bad fileback value");
+	    return FALSE;
 	}
-	return ok;
+
+	ok = write_backup_file(fname, tname);
+
+    }
+    return ok;
 }
 #endif /* OPT_FILEBACK */
 
@@ -224,49 +223,49 @@ make_backup (char *fname)
 int
 ffropen(char *fn)
 {
-	fileispipe = FALSE;
-	fileeof = FALSE;
+    fileispipe = FALSE;
+    fileeof = FALSE;
 
-	TRACE(("ffropen(fn=%s)\n", fn));
+    TRACE(("ffropen(fn=%s)\n", fn));
 #if OPT_SHELL
-	if (isShellOrPipe(fn)) {
-		ffp = 0;
+    if (isShellOrPipe(fn)) {
+	ffp = 0;
 #if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
-		ffp = npopen(fn+1, FOPEN_READ);
+	ffp = npopen(fn + 1, FOPEN_READ);
 #endif
 #if SYS_VMS
-		ffp = vms_rpipe(fn+1, 0, (char *)0);
-		/* really a temp-file, but we cannot fstat it to get size */
+	ffp = vms_rpipe(fn + 1, 0, (char *) 0);
+	/* really a temp-file, but we cannot fstat it to get size */
 #endif
-		if (ffp == 0) {
-			mlerror("opening pipe for read");
-			return (FIOERR);
-		}
-
-		fileispipe = TRUE;
-		count_fline = 0;
-
-	} else
-#endif
-	if (is_directory(fn)) {
-		set_errno(EISDIR);
-		mlerror("opening directory");
-		return (FIOERR);
-
-	} else if ((ffp=fopen(SL_TO_BSL(fn), FOPEN_READ)) == NULL) {
-		if (errno != ENOENT
-#if SYS_OS2 && CC_CSETPP
-		 && errno != ENOTEXIST
-		 && errno != EBADNAME
-#endif
-		 && errno != EINVAL) {	/* a problem with Linux to DOS-files */
-			mlerror("opening for read");
-			return (FIOERR);
-		}
-		return (FIOFNF);
+	if (ffp == 0) {
+	    mlerror("opening pipe for read");
+	    return (FIOERR);
 	}
 
-	return (FIOSUC);
+	fileispipe = TRUE;
+	count_fline = 0;
+
+    } else
+#endif
+    if (is_directory(fn)) {
+	set_errno(EISDIR);
+	mlerror("opening directory");
+	return (FIOERR);
+
+    } else if ((ffp = fopen(SL_TO_BSL(fn), FOPEN_READ)) == NULL) {
+	if (errno != ENOENT
+#if SYS_OS2 && CC_CSETPP
+	    && errno != ENOTEXIST
+	    && errno != EBADNAME
+#endif
+	    && errno != EINVAL) {	/* a problem with Linux to DOS-files */
+	    mlerror("opening for read");
+	    return (FIOERR);
+	}
+	return (FIOFNF);
+    }
+
+    return (FIOSUC);
 }
 
 /*
@@ -277,84 +276,83 @@ int
 ffwopen(char *fn, int forced)
 {
 #if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
-	char	*name;
-	char	*mode = FOPEN_WRITE;
+    char *name;
+    char *mode = FOPEN_WRITE;
 
-	TRACE(("ffwopen(fn=%s, forced=%d)\n", fn, forced));
+    TRACE(("ffwopen(fn=%s, forced=%d)\n", fn, forced));
 #if OPT_SHELL
-	if (isShellOrPipe(fn)) {
-		if ((ffp=npopen(fn+1, mode)) == NULL) {
-			mlerror("opening pipe for write");
-			return (FIOERR);
-		}
-		fileispipe = TRUE;
-	} else
-#endif
-	{
-		if ((name = is_appendname(fn)) != NULL) {
-			fn = name;
-			mode = FOPEN_APPEND;
-		}
-		if (is_directory(fn)) {
-			set_errno(EISDIR);
-			mlerror("opening directory");
-			return (FIOERR);
-		}
-
-#if OPT_FILEBACK
-		/* will we be able to write? (before attempting backup) */
-		if (ffexists(fn) && ffronly(fn)) {
-			mlerror("accessing for write");
-			return (FIOERR);
-		}
-
-		if (*global_g_val_ptr(GVAL_BACKUPSTYLE) != 'o') { /* "off" ? */
-			if (!make_backup(fn)) {
-				if (!forced) {
-					mlerror("making backup file");
-					return (FIOERR);
-				}
-			}
-		}
-#endif
-		if ((ffp = fopen(SL_TO_BSL(fn), mode)) == NULL) {
-			mlerror("opening for write");
-			return (FIOERR);
-		}
-		fileispipe = FALSE;
+    if (isShellOrPipe(fn)) {
+	if ((ffp = npopen(fn + 1, mode)) == NULL) {
+	    mlerror("opening pipe for write");
+	    return (FIOERR);
 	}
+	fileispipe = TRUE;
+    } else
+#endif
+    {
+	if ((name = is_appendname(fn)) != NULL) {
+	    fn = name;
+	    mode = FOPEN_APPEND;
+	}
+	if (is_directory(fn)) {
+	    set_errno(EISDIR);
+	    mlerror("opening directory");
+	    return (FIOERR);
+	}
+#if OPT_FILEBACK
+	/* will we be able to write? (before attempting backup) */
+	if (ffexists(fn) && ffronly(fn)) {
+	    mlerror("accessing for write");
+	    return (FIOERR);
+	}
+
+	if (*global_g_val_ptr(GVAL_BACKUPSTYLE) != 'o') {	/* "off" ? */
+	    if (!make_backup(fn)) {
+		if (!forced) {
+		    mlerror("making backup file");
+		    return (FIOERR);
+		}
+	    }
+	}
+#endif
+	if ((ffp = fopen(SL_TO_BSL(fn), mode)) == NULL) {
+	    mlerror("opening for write");
+	    return (FIOERR);
+	}
+	fileispipe = FALSE;
+    }
 #else
 #if     SYS_VMS
-	char	temp[NFILEN];
-	register int	fd;
-	strip_version(fn = strcpy(temp, fn));
+    char temp[NFILEN];
+    int fd;
+    strip_version(fn = strcpy(temp, fn));
 
-	if (is_appendname(fn)
-	||  is_directory(fn)
-	|| (fd=vms_creat(temp)) < 0
-	|| (ffp=fdopen(fd, FOPEN_WRITE)) == NULL) {
-		mlforce("[Cannot open file for writing]");
-		return (FIOERR);
-	}
+    if (is_appendname(fn)
+	|| is_directory(fn)
+	|| (fd = vms_creat(temp)) < 0
+	|| (ffp = fdopen(fd, FOPEN_WRITE)) == NULL) {
+	mlforce("[Cannot open file for writing]");
+	return (FIOERR);
+    }
 #else
-	if ((ffp=fopen(fn, FOPEN_WRITE)) == NULL) {
-		mlerror("opening for write");
-		return (FIOERR);
-	}
+    if ((ffp = fopen(fn, FOPEN_WRITE)) == NULL) {
+	mlerror("opening for write");
+	return (FIOERR);
+    }
 #endif
 #endif
-	return (FIOSUC);
+    return (FIOSUC);
 }
 
 /* wrapper for 'access()' */
 int
 ffaccess(char *fn, UINT mode)
 {
-	int status;
+    int status;
 #if HAVE_ACCESS
-	/* these were chosen to match the SYSV numbers, but we'd rather use
-	 * the symbols for portability.
-	 */
+    /* these were chosen to match the SYSV numbers, but we'd rather use
+     * the symbols for portability.
+     */
 #ifndef X_OK
 #define X_OK 1
 #endif
@@ -364,114 +362,114 @@ ffaccess(char *fn, UINT mode)
 #ifndef R_OK
 #define R_OK 4
 #endif
-	int n = 0;
-	if (mode & FL_EXECABLE)  n |= X_OK;
-	if (mode & FL_WRITEABLE) n |= W_OK;
-	if (mode & FL_READABLE)  n |= R_OK;
-	status = (!isInternalName(fn)
-	    &&   access(SL_TO_BSL(fn), n) == 0);
+    int n = 0;
+    if (mode & FL_EXECABLE)
+	n |= X_OK;
+    if (mode & FL_WRITEABLE)
+	n |= W_OK;
+    if (mode & FL_READABLE)
+	n |= R_OK;
+    status = (!isInternalName(fn)
+	      && access(SL_TO_BSL(fn), n) == 0);
 #else
-	int	fd;
-	switch (mode) {
-	case FL_EXECABLE:
-		/* FALL-THRU */
-	case FL_READABLE:
-		if (ffropen(fn) == FIOSUC) {
-			ffclose();
-			status = TRUE;
-		} else {
-			status = FALSE;
-		}
-		break;
-	case FL_WRITEABLE:
-		if ((fd=open(SL_TO_BSL(fn), O_WRONLY|O_APPEND)) < 0) {
-			status = FALSE;
-		} else {
-			(void)close(fd);
-			status = TRUE;
-		}
-		break;
-	default:
-		status = ffexists(fn);
-		break;
+    int fd;
+    switch (mode) {
+    case FL_EXECABLE:
+	/* FALL-THRU */
+    case FL_READABLE:
+	if (ffropen(fn) == FIOSUC) {
+	    ffclose();
+	    status = TRUE;
+	} else {
+	    status = FALSE;
 	}
+	break;
+    case FL_WRITEABLE:
+	if ((fd = open(SL_TO_BSL(fn), O_WRONLY | O_APPEND)) < 0) {
+	    status = FALSE;
+	} else {
+	    (void) close(fd);
+	    status = TRUE;
+	}
+	break;
+    default:
+	status = ffexists(fn);
+	break;
+    }
 #endif
-	TRACE(("ffaccess(fn=%s, mode=%d) = %d\n", SL_TO_BSL(fn), mode, status));
-	return (status);
+    TRACE(("ffaccess(fn=%s, mode=%d) = %d\n", SL_TO_BSL(fn), mode, status));
+    return (status);
 }
 
 /* is the file read-only?  true or false */
 int
 ffronly(char *fn)
 {
-	int status;
-	if (isShellOrPipe(fn)) {
-		status = TRUE;
-	} else {
-		status = !ffaccess(fn, FL_WRITEABLE);
-	}
-	TRACE(("ffronly(fn=%s) = %d\n", fn, status));
-	return status;
+    int status;
+    if (isShellOrPipe(fn)) {
+	status = TRUE;
+    } else {
+	status = !ffaccess(fn, FL_WRITEABLE);
+    }
+    TRACE(("ffronly(fn=%s) = %d\n", fn, status));
+    return status;
 }
 
-#if	OPT_ENCRYPT
+#if OPT_ENCRYPT
 static int ffcrypting = FALSE;
 
 void
 ffdocrypt(int crypting)
 {
-	ffcrypting = crypting;
+    ffcrypting = crypting;
 }
 #endif
 
 B_COUNT
 ffsize(void)
 {
-	long result = -1L;
+    long result = -1L;
 
 #if SYS_WINNT
 
-	long prev;
-	prev = ftell(ffp);
-	if (fseek(ffp, 0, 2) >= 0) {
-		result = ftell(ffp);
-		fseek(ffp, prev, 0);
-	}
-
+    long prev;
+    prev = ftell(ffp);
+    if (fseek(ffp, 0, 2) >= 0) {
+	result = ftell(ffp);
+	fseek(ffp, prev, 0);
+    }
 #else
 #if SYS_UNIX || SYS_VMS || SYS_OS2
 
-	struct stat statbuf;
-	if (fstat(fileno(ffp), &statbuf) == 0) {
-		result = (B_COUNT)statbuf.st_size;
-	}
+    struct stat statbuf;
+    if (fstat(fileno(ffp), &statbuf) == 0) {
+	result = (B_COUNT) statbuf.st_size;
+    }
 #if SYS_VMS
-	if (result == -1)
-	{
-	    /*
-	     * Attempting to read a file size across DECNET via fstat()
-	     * doesn't work using (at least) VAXC and its runtime library.
-	     * So return 0 and let slowreadf() read the file.
-	     */
-	    result = 0;
-	}
+    if (result == -1) {
+	/*
+	 * Attempting to read a file size across DECNET via fstat()
+	 * doesn't work using (at least) VAXC and its runtime library.
+	 * So return 0 and let slowreadf() read the file.
+	 */
+	result = 0;
+    }
 #endif
 
 #else
 #if SYS_MSDOS
 #if CC_DJGPP
 
-	long prev;
-	prev = ftell(ffp);
-	if (fseek(ffp, 0, 2) >= 0) {
-		result = ftell(ffp);
-		fseek(ffp, prev, 0);
-	}
-
+    long prev;
+    prev = ftell(ffp);
+    if (fseek(ffp, 0, 2) >= 0) {
+	result = ftell(ffp);
+	fseek(ffp, prev, 0);
+    }
 #else
 
-	int fd = fileno(ffp);
-	if (fd >= 0)
+    int fd = fileno(ffp);
+    if (fd >= 0)
 	result = filelength(fd);
 
 #endif /* CC_DJGPP */
@@ -479,98 +477,98 @@ ffsize(void)
 #endif /* SYS_UNIX || SYS_VMS || SYS_OS2 */
 #endif /* SYS_WINNT */
 
-	TRACE(("ffsize = %ld\n", result));
-	return result;
+    TRACE(("ffsize = %ld\n", result));
+    return result;
 }
 
 int
 ffexists(char *p)
 {
-	int status = FALSE;
+    int status = FALSE;
 
 #if SYS_VMS
-	if (!isInternalName(p))
-		status = vms_ffexists(p);
+    if (!isInternalName(p))
+	status = vms_ffexists(p);
 #endif
 
 #if SYS_UNIX || SYS_OS2 || SYS_WINNT
 
-	struct stat statbuf;
-	if (!isInternalName(p)
-	 && stat(SL_TO_BSL(p), &statbuf) == 0) {
-		status = TRUE;
-	}
+    struct stat statbuf;
+    if (!isInternalName(p)
+	&& stat(SL_TO_BSL(p), &statbuf) == 0) {
+	status = TRUE;
+    }
 #endif
 
 #if SYS_MSDOS
 
-	if (!isInternalName(p)
-	 && ffropen(SL_TO_BSL(p)) == FIOSUC) {
-		ffclose();
-		status = TRUE;
-	}
+    if (!isInternalName(p)
+	&& ffropen(SL_TO_BSL(p)) == FIOSUC) {
+	ffclose();
+	status = TRUE;
+    }
 #endif
 
-	TRACE(("ffexists(fn=%s) = %d\n", p, status));
-	return (status);
+    TRACE(("ffexists(fn=%s) = %d\n", p, status));
+    return (status);
 }
 
 #if !SYS_MSDOS
 int
 ffread(char *buf, long len)
 {
-	int result;
+    int result;
 #if SYS_VMS
-	int got;
-	/*
-	 * If the input file is record-formatted (as opposed to stream-lf, a
-	 * single read won't get the whole file.
-	 */
-	for (result = 0; len > 0; result += got) {
-		got = read(fileno(ffp), buf+result, len-result);
-		if (got <= 0)
-			break;
-	}
-	fseek (ffp, len, 1);	/* resynchronize stdio */
+    int got;
+    /*
+     * If the input file is record-formatted (as opposed to stream-lf, a
+     * single read won't get the whole file.
+     */
+    for (result = 0; len > 0; result += got) {
+	got = read(fileno(ffp), buf + result, len - result);
+	if (got <= 0)
+	    break;
+    }
+    fseek(ffp, len, 1);		/* resynchronize stdio */
 #else
 # if CC_CSETPP
-	if ((result = fread(buf, len, 1, ffp)) == 1)
-		result = len;
-	else
-		result = -1;
+    if ((result = fread(buf, len, 1, ffp)) == 1)
+	result = len;
+    else
+	result = -1;
 # else
-	result = read(fileno(ffp), buf, (SIZE_T)len);
-	if (result >= 0)
-	    fseek (ffp, len, 1);	/* resynchronize stdio */
+    result = read(fileno(ffp), buf, (SIZE_T) len);
+    if (result >= 0)
+	fseek(ffp, len, 1);	/* resynchronize stdio */
 # endif
 #endif
-	return result;
+    return result;
 }
 
 void
 ffseek(long n)
 {
 #if SYS_VMS
-	ffrewind();	/* see below */
+    ffrewind();			/* see below */
 #endif
-	fseek (ffp,n,0);
+    fseek(ffp, n, 0);
 }
 
 void
 ffrewind(void)
 {
 #if SYS_VMS
-	/* VAX/VMS V5.4-2, VAX-C 3.2 'rewind()' does not work properly, because
-	 * no end-of-file condition is returned after rewinding.  Reopening the
-	 * file seems to work.  We can get away with this because we only
-	 * reposition in "permanent" files that we are reading.
-	 */
-	char	temp[NFILEN];
-	fgetname(ffp, temp);
-	(void)fclose(ffp);
-	ffp = fopen(temp, FOPEN_READ);
+    /* VAX/VMS V5.4-2, VAX-C 3.2 'rewind()' does not work properly, because
+     * no end-of-file condition is returned after rewinding.  Reopening the
+     * file seems to work.  We can get away with this because we only
+     * reposition in "permanent" files that we are reading.
+     */
+    char temp[NFILEN];
+    fgetname(ffp, temp);
+    (void) fclose(ffp);
+    ffp = fopen(temp, FOPEN_READ);
 #else
-	fseek (ffp,0L,0);
+    fseek(ffp, 0L, 0);
 #endif
 }
 #endif
@@ -581,33 +579,33 @@ ffrewind(void)
 int
 ffclose(void)
 {
-	int s = 0;
+    int s = 0;
 
-	free_fline();
+    free_fline();
 
 #if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
 #if OPT_SHELL
-	if (fileispipe) {
-		npclose(ffp);
-		mlwrite("[Read %d lines%s]",
-			count_fline,
-			interrupted() ? "- Interrupted" : "");
+    if (fileispipe) {
+	npclose(ffp);
+	mlwrite("[Read %d lines%s]",
+		count_fline,
+		interrupted()? "- Interrupted" : "");
 #ifdef MDCHK_MODTIME
-		(void)check_visible_files_changed();
+	(void) check_visible_files_changed();
 #endif
-	} else
+    } else
 #endif
-	{
-		s = fclose(ffp);
-	}
-	if (s != 0) {
-		mlerror("closing");
-		return(FIOERR);
-	}
+    {
+	s = fclose(ffp);
+    }
+    if (s != 0) {
+	mlerror("closing");
+	return (FIOERR);
+    }
 #else
-	(void)fclose(ffp);
+    (void) fclose(ffp);
 #endif
-	return (FIOSUC);
+    return (FIOSUC);
 }
 
 /*
@@ -617,23 +615,23 @@ ffclose(void)
 int
 ffputline(const char *buf, int nbuf, const char *ending)
 {
-	register int	i;
-	for (i = 0; i < nbuf; ++i)
-		if (ffputc(char2int(buf[i])) == FIOERR)
-			return FIOERR;
+    int i;
+    for (i = 0; i < nbuf; ++i)
+	if (ffputc(char2int(buf[i])) == FIOERR)
+	    return FIOERR;
 
-	while (*ending != EOS) {
-		if (*ending != '\r' || i == 0 || buf[i-1] != '\r')
-			ffputc(*ending);
-		ending++;
-	}
+    while (*ending != EOS) {
+	if (*ending != '\r' || i == 0 || buf[i - 1] != '\r')
+	    ffputc(*ending);
+	ending++;
+    }
 
-	if (ferror(ffp)) {
-		mlerror("writing");
-		return (FIOERR);
-	}
+    if (ferror(ffp)) {
+	mlerror("writing");
+	return (FIOERR);
+    }
 
-	return (FIOSUC);
+    return (FIOSUC);
 }
 
 /*
@@ -643,96 +641,96 @@ ffputline(const char *buf, int nbuf, const char *ending)
 int
 ffputc(int c)
 {
-	char	d = (char)c;
+    char d = (char) c;
 
-#if	OPT_ENCRYPT
-	if (ffcrypting && !fileispipe)
-		d = vl_encrypt_char(d);
+#if OPT_ENCRYPT
+    if (ffcrypting && !fileispipe)
+	d = vl_encrypt_char(d);
 #endif
-	putc(d, ffp);
+    putc(d, ffp);
 
-	if (ferror(ffp)) {
-		mlerror("writing");
-		return (FIOERR);
-	}
+    if (ferror(ffp)) {
+	mlerror("writing");
+	return (FIOERR);
+    }
 
-	return (FIOSUC);
+    return (FIOSUC);
 }
 
 /*
  * Read a line from a file, and store the bytes in an allocated buffer.
  * "fflinelen" is the length of the buffer. Reallocate and copy as necessary.
- * Check for I/O errors. Return status.
+ * Check for I/O errors. Return status.  The final length is returned via
+ * the 'lenp' parameter.
  */
 
 int
-ffgetline(
-int *lenp)	/* to return the final length */
+ffgetline(int *lenp)
 {
-	register int c;
-	register ALLOC_T i;	/* current index into fflinebuf */
+    int c;
+    ALLOC_T i;			/* current index into fflinebuf */
+    int end_of_line = (global_b_val(VAL_RECORD_SEP) == RS_CR) ? '\r' : '\n';
 
-	if (fileeof)
-		return(FIOEOF);
+    if (fileeof)
+	return (FIOEOF);
 
-	/* be sure there's a buffer */
-	if (!fflinebuf)
-		fflinebuf = castalloc(char,fflinelen = NSTRING);
-	if (!fflinebuf)
-		return(FIOMEM);
+    /* be sure there's a buffer */
+    if (!fflinebuf)
+	fflinebuf = castalloc(char, fflinelen = NSTRING);
+    if (!fflinebuf)
+	return (FIOMEM);
 
-	/* accumulate to a newline */
-	i = 0;
-	for_ever {
-		c = getc(ffp);
-		if (feof(ffp) || ferror(ffp))
-			break;
-#if	OPT_ENCRYPT
-		if (ffcrypting && !fileispipe)
-			c = vl_encrypt_char(c);
+    /* accumulate to a newline */
+    i = 0;
+    for_ever {
+	c = getc(ffp);
+	if (feof(ffp) || ferror(ffp))
+	    break;
+#if OPT_ENCRYPT
+	if (ffcrypting && !fileispipe)
+	    c = vl_encrypt_char(c);
 #endif
-		if (c == '\n')
-			break;
-		if (interrupted()) {
-			free_fline();
-			*lenp = 0;
-			return FIOABRT;
-		}
-		fflinebuf[i++] = (char)c;
-		/* grow our buffer -- be sure it grows fast enough */
-		if (i >= fflinelen) {
-			/* "Small" exponential growth - EJK */
-			ALLOC_T growth = (fflinelen >> 3) + NSTRING;
-			fflinelen += growth;
-			fflinebuf = castrealloc(char,fflinebuf,fflinelen);
-			if (!fflinebuf) {
-				fflinelen = 0;
-				return(FIOMEM);
-			}
-		}
+	if (c == end_of_line)
+	    break;
+	if (interrupted()) {
+	    free_fline();
+	    *lenp = 0;
+	    return FIOABRT;
+	}
+	fflinebuf[i++] = (char) c;
+	/* grow our buffer -- be sure it grows fast enough */
+	if (i >= fflinelen) {
+	    /* "Small" exponential growth - EJK */
+	    ALLOC_T growth = (fflinelen >> 3) + NSTRING;
+	    fflinelen += growth;
+	    fflinebuf = castrealloc(char, fflinebuf, fflinelen);
+	    if (!fflinebuf) {
+		fflinelen = 0;
+		return (FIOMEM);
+	    }
+	}
 #if OPT_WORKING
-		cur_working++;
+	cur_working++;
 #endif
+    }
+
+    *lenp = i;			/* return the length, not including final null */
+    fflinebuf[i] = EOS;
+
+    if (c == EOF) {		/* problems? */
+	if (!feof(ffp) && ferror(ffp)) {
+	    mlerror("reading");
+	    return (FIOERR);
 	}
 
+	if (i != 0)		/* got something */
+	    fileeof = TRUE;
+	else
+	    return (FIOEOF);
+    }
 
-	*lenp = i;	/* return the length, not including final null */
-	fflinebuf[i] = EOS;
-
-	if (c == EOF) {  /* problems? */
-		if (!feof(ffp) && ferror(ffp)) {
-			mlerror("reading");
-			return(FIOERR);
-		}
-
-		if (i != 0) /* got something */
-			fileeof = TRUE;
-		else
-			return(FIOEOF);
-	}
-
-	count_fline++;
-	return (fileeof ? FIOBAD : FIOSUC);
+    count_fline++;
+    return (fileeof ? FIOBAD : FIOSUC);
 }
 
 /*
@@ -769,22 +767,23 @@ int
 ffhasdata(void)
 {
 #ifdef isready_c
-	if (isready_c(ffp))
-		return TRUE;
+    if (isready_c(ffp))
+	return TRUE;
 #endif
 #if defined(FIONREAD) && !SYS_WINNT
-	{
+    {
 	long x;
-	if ((ioctl(fileno(ffp),FIONREAD,(caddr_t)&x) >= 0) && x != 0)
-		return TRUE;
-	}
+	if ((ioctl(fileno(ffp), FIONREAD, (caddr_t) & x) >= 0) && x != 0)
+	    return TRUE;
+    }
 #endif
-	return FALSE;
+    return FALSE;
 }
 
 #if NO_LEAKS
-void fileio_leaks(void)
+void
+fileio_leaks(void)
 {
-	free_fline();
+    free_fline();
 }
 #endif

@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.123 2001/09/18 09:49:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.124 2001/12/21 12:43:52 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -566,7 +566,7 @@ need_to_rehilite(void)
 	(!hilite_suppressed && save_curbp != curbp)) {
 	(void) strcpy(savepat, searchpat);
 	save_igncase = ignorecase;
-	save_vattr = b_val(curbp, VAL_HILITEMATCH);
+	save_vattr = (VIDEO_ATTR) b_val(curbp, VAL_HILITEMATCH);
 	save_magic = b_val(curbp, MDMAGIC);
 	save_curbp = curbp;
 	return TRUE;

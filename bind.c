@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.246 2001/09/24 00:29:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.247 2001/12/25 00:55:41 tom Exp $
  *
  */
 
@@ -2945,15 +2945,22 @@ free_all_bindings(BINDINGS * bs)
 	free((char *) kbp);
     }
 }
+
+static void
+free_ext_bindings(BINDINGS * bs)
+{
+    free_all_bindings(bs);
+    FreeAndNull(bs->kb_special);
+}
 #endif
 void
 bind_leaks(void)
 {
 #if OPT_REBIND
     free_all_bindings(&dft_bindings);
-    free_all_bindings(&ins_bindings);
-    free_all_bindings(&cmd_bindings);
-    free_all_bindings(&sel_bindings);
+    free_ext_bindings(&ins_bindings);
+    free_ext_bindings(&cmd_bindings);
+    free_ext_bindings(&sel_bindings);
 #endif
 #if OPT_NAMEBST
     btree_freeup(&redefns);

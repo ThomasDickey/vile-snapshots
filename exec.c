@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.237 2001/09/19 00:08:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.238 2001/12/21 12:36:46 tom Exp $
  *
  */
 
@@ -172,7 +172,7 @@ execute_named_command(int f, int n)
     last_DOT = DOT;
 
     /* prompt the user to type a named command */
-    mlprompt(": ");
+    mlprompt(tb_values(prompt_string));
 
     /* and now get the function name to execute */
     for_ever {
@@ -445,7 +445,7 @@ execute_named_command(int f, int n)
 		swapmark();
 	    } else {
 		ukb = (short) num;
-		kregflag = (that == 1) ? KAPPEND : 0;
+		kregflag = (short) ((that == 1) ? KAPPEND : 0);
 		that = 1;
 		/* patch: need to handle recursion */
 	    }

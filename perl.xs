@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.80 2001/09/18 17:10:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.82 2001/12/23 18:40:24 tom Exp $
  */
 
 /*#
@@ -179,7 +179,7 @@ write_message(char *prefix, SV *sv)
 
     while (text)
     {
-	if ((nl = strchr(text, '\n')))
+	if ((nl = strchr(text, '\n')) != 0)
 	{
 	    *nl = 0;
 	    mktrimmed(text);
@@ -450,7 +450,7 @@ do_perl_cmd(SV *cmd, int inplace)
 	if (!is_visible_window(curwp))
 	    mlforce("BUG: curwp not set to a visible window");
 
-	if (!SvTRUE(GvSV(PL_errgv)))
+	if (SvTRUE(GvSV(PL_errgv)) == 0)
 	    return TRUE;
 
 	write_message("perl cmd:", GvSV(PL_errgv));
@@ -482,17 +482,17 @@ perl_call_sub(void *data, int oper, int f, int n)
     switch (av_len(av))
     {
 	case 2: /* (name, sub, require) */
-	    if ((req = av_fetch(av, 2, 0)) && SvTRUE(*req))
+	    if ((req = av_fetch(av, 2, 0)) != 0 && SvTRUE(*req))
 		if (!require(SvPV(*req, PL_na), FALSE))
 		    return FALSE;
 
 	    /* FALLTHRU */
 
 	case 1: /* (name, sub) */
-	    if (!(name = av_fetch(av, 0, 0)) || !SvTRUE(*name))
+	    if ((name = av_fetch(av, 0, 0)) == 0 || !SvTRUE(*name))
 		croak("BUG: can't fetch name SV");
 
-	    if (!(sub = av_fetch(av, 1, 0)) || !SvTRUE(*sub))
+	    if ((sub = av_fetch(av, 1, 0)) == 0 || !SvTRUE(*sub))
 		croak("BUG: can't fetch subroutine SV");
 
 	    break;
@@ -513,7 +513,7 @@ perl_call_sub(void *data, int oper, int f, int n)
 	if (!f)
 	    n = 1;
 
-	while (n-- && (f = do_perl_cmd(*sub, FALSE)))
+	while (n-- && (f = do_perl_cmd(*sub, FALSE)) != 0)
 	    ;
     }
 
@@ -1474,6 +1474,7 @@ svgettors(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
     int off;
     char *ending = get_record_sep(curbp);
     int	len_rs = strlen(ending);
+    char temp[10];
 
     /* See if we're already at the end of the region and have nothing
        to do. */
@@ -1484,20 +1485,8 @@ svgettors(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
 
     /* Adjust rsstr if need be */
     if (rslen == 0) {
-	switch (b_val(curbp, VAL_RECORD_SEP)) {
-	case RS_CRLF:
-	    rsstr = "\r\n\r\n";
-	    rslen = 4;
-	    break;
-	case RS_CR:
-	    rsstr = "\r\r";
-	    rslen = 2;
-	    break;
-	case RS_LF:
-	    rsstr = "\n\n";
-	    rslen = 2;
-	    break;
-	}
+	rsstr = strcat(strcpy(temp, ending), ending);
+	rslen = strlen(rsstr);
     }
 
     /* Get first separator character */
@@ -1928,7 +1917,7 @@ keystroke(...)
 
 	noget = FALSE;
 
-	if (items == 1 && !SvTRUE(ST(0))) {
+	if (items == 1 && SvTRUE(ST(0)) == 0) {
 	    if (!sysmapped_c_avail()) {
 		XPUSHs(&PL_sv_undef);
 		noget = TRUE;
@@ -2530,7 +2519,7 @@ register(name, ...)
 	    if (!isAlnum(*p) && *p != '-' && *p != '_')
 		croak("invalid subroutine name");
 
-	if (!(cmd = typecalloc(CMDFUNC)))
+	if ((cmd = typecalloc(CMDFUNC)) == 0)
 	    croak("Can't allocate space");
 
 	ix |= (ix == OPER) ? RANGE : VIEWOK;

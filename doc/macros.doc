@@ -590,6 +590,8 @@ State Variables
 	$progname       [READ ONLY] The string "vile" "xvile", or "winvile"
 			as appropriate.
 
+	$prompt         The string ": ", used in command-line prompts.
+
 	$qidentifier    the name of the current "qualified-identifier-like"
 			word under the cursor, useful for C++ programmers.
 
@@ -1402,6 +1404,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.77 2001/12/06 00:43:11 cmorgan Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.78 2001/12/21 12:24:54 tom Exp $
 -----------------------------------
 
