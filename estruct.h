@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.318 1997/09/05 23:38:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.320 1997/09/06 14:25:45 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -511,11 +511,11 @@
 #include <perror.h>	/* defines 'sys_errlist[]' */
 #endif
 #if SYS_UNIX
-# ifndef HAVE_EXTERN_ERRNO
+# ifdef DECL_ERRNO
 extern	int	errno;	/* some systems don't define this in <errno.h> */
 # endif
 extern	int	sys_nerr;
-# ifndef HAVE_EXTERN_SYS_ERRLIST
+# ifdef DECL_SYS_ERRLIST
 extern	char *	sys_errlist[];
 # endif
 #endif

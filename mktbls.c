@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.82 1997/08/14 10:54:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.83 1997/09/06 14:54:53 tom Exp $
  *
  */
 
@@ -1628,7 +1628,7 @@ init_ufuncs(void)
 		"/*\tlist of recognized user functions\t*/",
 		"",
 		"typedef struct UFUNC {",
-		"\tchar *f_name;\t/* name of function */",
+		"\tconst char *f_name;\t/* name of function */",
 		"\tint f_type;\t/* 1 = monamic, 2 = dynamic */",
 		"} UFUNC;",
 		"",
