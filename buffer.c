@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.153 1997/03/15 15:44:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.154 1997/03/30 22:46:44 tom Exp $
  *
  */
 
@@ -751,7 +751,7 @@ swbuffer_lfl(register BUFFER *bp, int lockfl)	/* make buffer BP current */
 
 	if (curbp) {
 		/* if we'll have to take over this window, and it's the last */
-		if (bp->b_nwnd == 0 && curbp->b_nwnd > 0 &&
+		if (bp->b_nwnd == 0 && curbp->b_nwnd != 0 &&
 					--(curbp->b_nwnd) == 0) {
 			undispbuff(curbp,curwp);
 		}
@@ -768,7 +768,7 @@ swbuffer_lfl(register BUFFER *bp, int lockfl)	/* make buffer BP current */
 				we were going to */
 
 	/* get it already on the screen if possible */
-	if (bp->b_nwnd > 0)  { /* then it's on the screen somewhere */
+	if (bp->b_nwnd != 0)  { /* then it's on the screen somewhere */
 		register WINDOW *wp = bp2any_wp(bp);
 		if (!wp)
 			mlforce("BUG: swbuffer: wp still NULL");
@@ -819,7 +819,7 @@ buf_win_sanity(void)
 {
 	register BUFFER *bp;
 	for_each_buffer(bp) {
-	    if (bp->b_nwnd > 0)  { /* then it's on the screen somewhere */
+	    if (bp->b_nwnd != 0)  { /* then it's on the screen somewhere */
 		register WINDOW *wp = bp2any_wp(bp);
 		if (!wp) {
 		    dbgwrite("BUG: swbuffer 1: wp is NULL");
@@ -953,7 +953,7 @@ killbuffer(int f, int n)
 		}
 
 		(void)strcpy(bufn, bp->b_bname); /* ...for info-message */
-		if (bp->b_nwnd > 0)  { /* then it's on the screen somewhere */
+		if (bp->b_nwnd != 0)  { /* then it's on the screen somewhere */
 			(void)zotwp(bp);
 			if (find_bp(bp) == 0) { /* delwp must have zotted us */
 				s = FALSE;
@@ -1040,7 +1040,7 @@ zotbuf(register BUFFER *bp)	/* kill the buffer pointed to by bp */
 			return FALSE;
 		}
 	}
-	if (bp->b_nwnd > 0)  { /* then it's on the screen somewhere */
+	if (bp->b_nwnd != 0)  { /* then it's on the screen somewhere */
 		(void)zotwp(bp);
 		if (find_bp(bp) == 0) /* delwp must have zotted us */
 			return TRUE;
@@ -1373,7 +1373,7 @@ update_scratch(const char *name, int (*func)(BUFFER *))
 
 /* ARGSUSED */
 int
-listbuffers(int f GCC_UNUSED, int n)
+listbuffers(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 #if	OPT_UPBUFF
 	register int status;

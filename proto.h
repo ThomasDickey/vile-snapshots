@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.236 1997/02/26 11:58:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.237 1997/03/30 22:19:47 tom Exp $
  *
  */
 
@@ -171,8 +171,13 @@ extern SIGT sizesignal (int ACTUAL_SIG_ARGS);
 #endif
 #endif
 extern void newscreensize (int h, int w);
+extern int im_waiting (int flag);
 #if OPT_WORKING
 extern SIGT imworking (int ACTUAL_SIG_ARGS);
+#endif
+#if defined(SIGWINCH) || OPT_WORKING
+extern void beginDisplay (void);
+extern void endofDisplay (void);
 #endif
 #if OPT_PSCREEN
 extern	OUTC_DCL psc_putchar	(OUTC_ARGS);

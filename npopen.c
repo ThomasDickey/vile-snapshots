@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.55 1997/03/19 10:49:45 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.56 1997/03/30 21:03:38 tom Exp $
  *
  */
 
@@ -211,13 +211,13 @@ system_SHELL(const char *cmd)
 	if (cpid) { /* parent */
 		int child;
 		int status;
-		beginDisplay;
+		beginDisplay();
 		while ((child = wait (&status)) != cpid) {
 			if (child < 0 && errno == EINTR) {
 				(void) kill (SIGKILL, cpid);
 			}
 		}
-		endofDisplay;
+		endofDisplay();
 #if LATER
 		shellstatus = process_exit_status(status);
 #endif

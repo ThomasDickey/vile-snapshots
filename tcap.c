@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.87 1997/03/15 15:32:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.88 1997/03/30 21:03:38 tom Exp $
  *
  */
 
@@ -1037,7 +1037,7 @@ xterm_button(int c)
 #endif	/* OPT_XTERM >= 3 */
 
 	if ((status = (global_g_val(GMDXTERM_MOUSE))) != 0) {
-		beginDisplay;
+		beginDisplay();
 		switch(c) {
 		case 'M':	/* button-event */
 			event	= keystroke();
@@ -1047,7 +1047,7 @@ xterm_button(int c)
 			button	= (event & 3) + 1;
 			TRACE(("M-button event:%d x:%d y:%d\n", event, x, y))
 			if (button > 3) {
-				endofDisplay;
+				endofDisplay();
 				return TRUE; /* button up */
 			}
 			wp = row2window(y-1);
@@ -1147,7 +1147,7 @@ xterm_button(int c)
 		default:
 			status = FALSE;
 		}
-		endofDisplay;
+		endofDisplay();
 	}
 	return status;
 }

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.148 1997/03/15 15:44:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.149 1997/03/30 21:03:38 tom Exp $
  *
  */
 
@@ -1304,7 +1304,7 @@ kbd_alarm(void)
 void
 kbd_putc(int c)
 {
-	beginDisplay;
+	beginDisplay();
 	if ((kbd_expand <= 0) && isreturn(c)) {
 		TTputc(c);
 		ttcol = 0;
@@ -1331,7 +1331,7 @@ kbd_putc(int c)
 			kbd_putc(toalpha(c));
 		}
 	}
-	endofDisplay;
+	endofDisplay();
 }
 
 /* put a string to the keyboard-prompt */
@@ -1346,7 +1346,7 @@ kbd_puts(const char *s)
 void
 kbd_erase(void)
 {
-	beginDisplay;
+	beginDisplay();
 	if (ttcol > 0) {
 		if (--ttcol < term.t_ncol-1) {
 			TTputc('\b');
@@ -1355,7 +1355,7 @@ kbd_erase(void)
 		}
 	} else
 		ttcol = 0;
-	endofDisplay;
+	endofDisplay();
 }
 
 #if OPT_CASELESS
@@ -1712,7 +1712,7 @@ kbd_init(void)
 void
 kbd_unquery(void)
 {
-	beginDisplay;
+	beginDisplay();
 #if OPT_POPUPCHOICE
 	if (cmplcol != ttcol && -cmplcol != ttcol)
 		cmplcol = 0;
@@ -1723,7 +1723,7 @@ kbd_unquery(void)
 		TTflush();
 		testcol = -1;
 	}
-	endofDisplay;
+	endofDisplay();
 }
 
 /*

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.225 1997/03/15 15:57:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.226 1997/03/31 01:17:32 tom Exp $
  *
  */
 
@@ -39,7 +39,9 @@ static	int *lmap;
 #define CAN_SCROLL 0
 #endif
 
-static	int	displayed;
+static	int	i_displayed;
+static	int	im_displaying;		/* flag set during screen updates */
+static	int	im_timing;
 
 #define mark2col(wp, mk)  offs2col(wp, mk.l, mk.o)
 
@@ -788,7 +790,7 @@ int force)	/* force update past type ahead? */
 		return SORTOFTRUE;
 #endif
 
-	beginDisplay;
+	beginDisplay();
 
 	/* first, propagate mode line changes to all instances of
 		a buffer displayed in more than one window */
@@ -885,8 +887,8 @@ int force)	/* force update past type ahead? */
 	    movecursor(screenrow, screencol);
 
 	TTflush();
-	endofDisplay;
-	displayed  = TRUE;
+	endofDisplay();
+	i_displayed = TRUE;
 
 	while (chg_width || chg_height)
 		newscreensize(chg_height,chg_width);
@@ -1367,7 +1369,7 @@ updgar(void)
 
 static void
 updupd(
-int force)	/* forced update flag */
+int force GCC_UNUSED)	/* forced update flag */
 {
 	register int i;
 
@@ -1919,10 +1921,10 @@ scrolls(int inserts)	/* returns true if it does something */
 static void
 scrscroll(int from, int to, int count)
 {
-	beginDisplay;
+	beginDisplay();
 	ttrow = ttcol = -1;
 	TTscroll(from,to,count);
-	endofDisplay;
+	endofDisplay();
 }
 
 static int
@@ -2844,14 +2846,14 @@ recompute_buffer(BUFFER *bp)
 void
 movecursor(int row, int col)
 {
-	beginDisplay;
+	beginDisplay();
 	if (row!=ttrow || col!=ttcol)
         {
 	        ttrow = row;
 	        ttcol = col;
 	        TTmove(row, col);
         }
-	endofDisplay;
+	endofDisplay();
 }
 
 void
@@ -2864,7 +2866,7 @@ bottomleft(void)
 static void
 erase_remaining_msg (int column)
 {
-	beginDisplay;
+	beginDisplay();
 #if !OPT_RAMSIZE
 	if (eolexist == TRUE)
 		TTeeol();
@@ -2885,7 +2887,7 @@ erase_remaining_msg (int column)
 		movecursor(term.t_nrow-1, column);
 	}
 	TTflush();
-	endofDisplay;
+	endofDisplay();
 }
 
 
@@ -2897,7 +2899,7 @@ erase_remaining_msg (int column)
 void
 mlerase(void)
 {
-	beginDisplay;
+	beginDisplay();
 	if (mpresf != 0) {
 		bottomleft();
 		if (discmd != FALSE) {
@@ -2909,7 +2911,7 @@ mlerase(void)
 			mpresf = 0;
 		}
 	}
-	endofDisplay;
+	endofDisplay();
 }
 
 char *mlsavep;
@@ -2982,10 +2984,10 @@ dbgwrite(const char *fmt, ...)
 	va_start(ap,fmt);
 	mlmsg(fmt,&ap);
 	va_end(ap);
-	beginDisplay;
+	beginDisplay();
 	while (TTgetc() != '\007')
 		;
-	endofDisplay;
+	endofDisplay();
 }
 
 /*
@@ -3020,7 +3022,7 @@ mlmsg(const char *fmt, va_list *app)
 		TTbacg(gbcolor);
 #endif
 
-		beginDisplay;
+		beginDisplay();
 		bottomleft();
 
 		kbd_expand = -1;
@@ -3044,7 +3046,7 @@ mlmsg(const char *fmt, va_list *app)
 		erase_remaining_msg(ttcol);
 		mpresf = ttcol;
 		mlsave[0] = EOS;
-		endofDisplay;
+		endofDisplay();
 	}
 	recur--;
 }
@@ -3175,7 +3177,7 @@ void
 newscreensize (int h, int w)
 {
 	/* do the change later */
-	if (displaying) {
+	if (im_displaying) {
 		chg_width = w;
 		chg_height = h;
 		return;
@@ -3199,6 +3201,18 @@ newscreensize (int h, int w)
 	(void)update(TRUE);
 }
 
+#if OPT_WORKING
+/*
+ * Start the timer that controls the "working..." message.
+ */
+static void
+start_working(void)
+{
+	setup_handler(SIGALRM,imworking);
+	(void)alarm(1);
+	im_timing = TRUE;
+}
+
 /*
  * Displays alternate
  *	"working..." and
@@ -3208,7 +3222,6 @@ newscreensize (int h, int w)
  * max_working values are used in 'slowreadf()' to show the progress of reading
  * large files.
  */
-#if OPT_WORKING
 
 /*ARGSUSED*/
 SIGT
@@ -3229,15 +3242,20 @@ imworking (int ACTUAL_SIG_ARGS GCC_UNUSED)
 	 * again to start things up)
 	 */
 
-	if (displaying) {	/* look at the semaphore first! */
+	if (im_displaying) {	/* look at the semaphore first! */
 		/*EMPTY*/;
-	} else if (ShowWorking() && !doing_kbd_read) {
+	} else if (im_waiting(-1)) {
+		im_timing = FALSE;
+		return;
+	} else if (ShowWorking()) {
 		if (skip) {
 			skip = FALSE;
-		} else if (displayed) {
+		} else if (i_displayed) {
 			int	save_row = ttrow;
 			int	save_col = ttcol;
 			int	show_col = LastMsgCol - 10;
+
+			i_displayed = FALSE;
 			if (show_col < 0)
 				show_col = 0;
 			movecursor(term.t_nrow-1, show_col);
@@ -3286,11 +3304,51 @@ imworking (int ACTUAL_SIG_ARGS GCC_UNUSED)
 		if (!ShowWorking())
 			return;
 	}
-	setup_handler(SIGALRM,imworking);
-	(void)alarm(1);
+	start_working();
 	flip = !flip;
 }
 #endif	/* OPT_WORKING */
+
+/*
+ * Maintain a flag that records whether we're waiting for keyboard input.  As a
+ * side-effect, restart the 'working' timer if we see that it's been made
+ * inactive while we were waiting.
+ */
+int
+im_waiting(int flag)
+{
+	static int waiting;
+	if (flag >= 0) {	/* TRUE or FALSE set, negative used to query */
+		waiting = flag;
+#if OPT_WORKING
+		if (!waiting && !im_timing && ShowWorking())
+			start_working();
+#endif
+	}
+	return waiting;
+}
+
+#if defined(SIGWINCH) || OPT_WORKING
+/*
+ * Set the semaphore so that we don't try to do I/O while we're being
+ * interrupted.
+ */
+void
+beginDisplay (void)
+{
+	im_displaying++;
+}
+
+/*
+ * Reset the semaphore.
+ */
+void
+endofDisplay (void)
+{
+	if (im_displaying)
+		im_displaying--;
+}
+#endif
 
 #if	OPT_PSCREEN
 /* Most of the code in this section is for making the message line work
@@ -3365,7 +3423,7 @@ psc_eeop(void)
 
 /* ARGSUSED */
 void
-psc_rev(int huh)
+psc_rev(int huh GCC_UNUSED)
 {
     /* do nothing */
 }

@@ -1,5 +1,16 @@
 Changes for vile 7.1 (released ??? ??? ??, 1997)
 
+(tom)	970330 (d)
+	+ correct missing ']' on generated buffer name for shell output, e.g.,
+	  "[!ls]" rather than "[!ls" (reported by Paul Fox): (file.c).
+	+ correct unnecessary escaping of '!' in prompts that are not expanding
+	  the shell contents (reported by Paul Fox): (input.c).
+	+ modify semaphore used by 'working' mode to make the SIGALRM timer
+	  elapse when it is not in use, allowing idle process to swap out
+	  properly (reported by Bill Kipp): (display.c, etc).
+	+ correct filename parsing for MS-DOS/etc configuration by checking
+	  for device name (patch by Clark Morgan).
+
 (tom)	970322 (c)
 	+ fixes for piping to vile in WinNT (patch by Clark Morgan).
 	+ add logic for visual-matches in color, WinNT (patch by Clark Morgan).

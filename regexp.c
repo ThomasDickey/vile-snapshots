@@ -11,7 +11,7 @@
  *
  *		pgf, 11/91
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.62 1997/02/09 19:38:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.63 1997/03/30 23:06:07 tom Exp $
  *
  */
 
@@ -919,20 +919,20 @@ regstrncmp(const char *a, const char *b, int n, const char *e)
 }
 
 static char *
-regstrchr(register const char *s, register int c, register const char *e)
+regstrchr(register char *s, register int c, register const char *e)
 {
 	if (ignorecase) {
 		while (s != e) {
-			if (nocase_eq(*s,c)) return (char *)s;
+			if (nocase_eq(*s,c)) return s;
 			s++;
 		}
 	} else {
 		while (s != e) {
-			if (*s == c) return (char *)s;
+			if (*s == c) return s;
 			s++;
 		}
 	}
-	return (char *)0;
+	return 0;
 }
 
 /*

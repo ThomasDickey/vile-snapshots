@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.291 1997/03/22 17:51:39 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.292 1997/03/30 21:53:13 tom Exp $
  *
  */
 
@@ -1051,7 +1051,7 @@ catchintr (int ACTUAL_SIG_ARGS)
 	sgarbf = TRUE;	/* there's probably a ^C on the screen. */
 #endif
 	setup_handler(SIGINT,catchintr);
-	if (doing_kbd_read)
+	if (im_waiting(-1))
 		longjmp(read_jmp_buf, signo);
 	SIGRET;
 }
@@ -1439,7 +1439,7 @@ quit(int f, int n GCC_UNUSED)
 #endif
 #if NO_LEAKS
 	{
-		beginDisplay;		/* ...this may take a while... */
+		beginDisplay();		/* ...this may take a while... */
 
 		/* free all of the global data structures */
 		onel_leaks();
@@ -1783,7 +1783,7 @@ charinit(void)
 static void
 display_ram_usage (void)
 {
-	beginDisplay;
+	beginDisplay();
 	if (global_g_val(GMDRAMSIZE)) {
 		char mbuf[20];
 		int	saverow = ttrow;
@@ -1802,7 +1802,7 @@ display_ram_usage (void)
 			TTflush();
 		}
 	}
-	endofDisplay;
+	endofDisplay();
 }
 
 	/* reallocate mp with nbytes and track */

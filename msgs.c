@@ -4,7 +4,7 @@
  * Support functions for "popup-msgs" mode.
  * Written by T.E.Dickey for vile (august 1994).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/msgs.c,v 1.14 1996/09/20 10:51:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/msgs.c,v 1.15 1997/03/30 21:03:38 tom Exp $
  */
 #include "estruct.h"
 
@@ -51,7 +51,7 @@ msg_putc(int c)
 	if ((bp = create_msgs()) == 0)
 		return;
 
-	beginDisplay;
+	beginDisplay();
 	/*
 	 * Modify the current-buffer state as unobtrusively as possible (i.e.,
 	 * don't modify the buffer order, and don't make the buffer visible if
@@ -104,7 +104,7 @@ msg_putc(int c)
 			kbd_putc(c);
 		}
 	}
-	endofDisplay;
+	endofDisplay();
 }
 
 void
