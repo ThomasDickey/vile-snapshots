@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.115 1997/02/04 00:25:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.116 1997/04/07 09:39:13 kev Exp $
  *
  */
 
@@ -738,7 +738,7 @@ i don't think this code is safe... */
 	/* C E Chew's package */
 #   define 	isready_c(p)	( (p)->__rptr < (p)->__rend)
 #  else
-#   ifdef _G_FOPEN_MAX
+#   if defined(_G_FOPEN_MAX) || defined(_G_config_h)
 	/* two versions of GNU iostream/stdio library */
 #     if _IO_STDIO
 #      define   isready_c(p)    ( (p)->_IO_read_ptr < (p)->_IO_read_end)
