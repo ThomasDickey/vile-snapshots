@@ -1,5 +1,19 @@
 Changes for vile 9.1 (released ??? ??? ??, 1999)
 
+ (tom) 991127 (b)
+ 	+ add "case" and "do" groups to m4mode.
+ 	+ add ".ms" and ".me" suffixes for nrmode.
+	+ add ``quote'' quoting to txt filter.
+	+ refine treatment of double-quote in txt filter so it can be quoted
+	  by single-quote or parenthesis.
+	+ allow "~" in URL patterns for txt and mail filters, omitted in 9.0a.
+ 	+ correct some missing backslashes before vertical bar and parentheses
+	  in filters.rc, made apparent by the change to use single-quoted
+	  strings.
+	+ restore handling of special control characters such as ^D, ^T in
+	  insert mode which happened to be GOAL or MOTION commands (reported by
+	  Clark Morgan).
+
  (tom) 991124 (a)
 	+ add single-quoted strings, which eliminate the need for escaping
 	  backslash (suggested by Paul Fox).
