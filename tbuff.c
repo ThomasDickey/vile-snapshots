@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.36 1999/10/10 23:52:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.37 2000/01/15 12:40:13 tom Exp $
  *
  */
 
@@ -182,7 +182,7 @@ tb_insert(TBUFF **p, ALLOC_T n, int c)
 			q->tb_data[m] = q->tb_data[m-1];
 			m--;
 		}
-		q->tb_data[m] = c;
+		q->tb_data[m] = (char) c;
 	}
 	return q;
 }

@@ -5,7 +5,7 @@
  * commands. Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.101 1999/11/15 23:35:00 Ryan.Murray Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.102 2000/01/15 01:08:33 tom Exp $
  *
  */
 
@@ -191,16 +191,16 @@ stringrect(void)
 	static char     buf[NLINE];
 
 	s = mlreply("Rectangle text: ", buf, sizeof(buf) );
-	if (s != TRUE)
-		return s;
-
+	if (s == TRUE) {
 /* i couldn't decide at first whether we should be inserting or
 	overwriting... this chooses. */
 #ifdef insert_the_string
-	return do_lines_in_region(open_hole_in_line, (void *)buf, FALSE);
+		s = do_lines_in_region(open_hole_in_line, (void *)buf, FALSE);
 #else /* overwrite the string */
-	return do_lines_in_region(blankline, (void *)buf, FALSE);
+		s = do_lines_in_region(blankline, (void *)buf, FALSE);
 #endif
+	}
+	return s;
 }
 
 /*

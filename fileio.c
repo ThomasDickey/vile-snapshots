@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.143 1999/12/24 00:59:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.144 2000/01/15 12:19:53 tom Exp $
  *
  */
 
@@ -200,9 +200,9 @@ make_backup (char *fname)
 #endif
 			(void)strcpy(t, "~");
 #if SOMEDAY
-		} else if (strcmp(gvalfileback, "tilde_N_existing") {
+		} else if (strcmp(gvalfileback, "tilde_N_existing")) {
 			/* numbered backups if one exists, else simple */
-		} else if (strcmp(gvalfileback, "tilde_N") {
+		} else if (strcmp(gvalfileback, "tilde_N")) {
 			/* numbered backups of all files*/
 #endif
 #endif /* SYS_UNIX */
@@ -517,32 +517,32 @@ ffexists(char *p)
 int
 ffread(char *buf, long len)
 {
+	int result = 0;
 #if SYS_VMS
 	/*
 	 * If the input file is record-formatted (as opposed to stream-lf, a
 	 * single read won't get the whole file.
 	 */
-	int	total = 0;
-
 	while (len > 0) {
-		int	this = read(fileno(ffp), buf+total, len-total);
+		int	this = read(fileno(ffp), buf+result, len-result);
 		if (this <= 0)
 			break;
-		total += this;
+		result += this;
 	}
 	fseek (ffp, len, 1);	/* resynchronize stdio */
-	return total;
 #else
 # if CC_CSETPP
-	int got = fread(buf, len, 1, ffp);
-	return got == 1 ? len : -1;
+	if ((result = fread(buf, len, 1, ffp)) == 1)
+		result = len;
+	else
+		result = -1;
 # else
-	int got = read(fileno(ffp), buf, (SIZE_T)len);
-	if (got >= 0)
+	result = read(fileno(ffp), buf, (SIZE_T)len);
+	if (result >= 0)
 	    fseek (ffp, len, 1);	/* resynchronize stdio */
-	return got;
 # endif
 #endif
+	return result;
 }
 
 void
@@ -773,11 +773,11 @@ ffhasdata(void)
 #if defined(FIONREAD) && !SYS_WINNT
 	{
 	long x;
-	return(((ioctl(fileno(ffp),FIONREAD,(caddr_t)&x) < 0) || x == 0) ? FALSE : TRUE);
+	if ((ioctl(fileno(ffp),FIONREAD,(caddr_t)&x) >= 0) && x != 0)
+		return TRUE;
 	}
-#else
-	return FALSE;
 #endif
+	return FALSE;
 }
 
 #if NO_LEAKS

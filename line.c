@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.132 1999/12/24 01:08:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.133 2000/01/15 12:43:01 tom Exp $
  *
  */
 
@@ -1084,15 +1084,15 @@ usekreg(int f, int n)
 	return(status);
 }
 
-static int lastkb;
+static short lastkb;
 
 /*
  * Returns the index in kbs[] of the next kill-buffer we will write into.
  */
-static int
+static short
 nextkb(void)
 {
-	int n = lastkb;
+	short n = lastkb;
 
 	if ((kbs[n].kbflag & (KLINES|KRECT|KAPPEND))
 	 && !(kbs[n].kbflag & KYANK)) {
@@ -1132,8 +1132,8 @@ kregcirculate(int killing)
 
 static	struct	{
 	int	started;
-	int	next_kb;
-	int	last_kb;
+	short	next_kb;
+	short	last_kb;
 	int	save_ukb;
 	USHORT	kregflg;
 	KILLREG	killreg;
@@ -1161,7 +1161,7 @@ begin_kill(void)
 {
 	if ((undo_kill.started = !b_val(curbp, MDUNDOABLE)) != 0) {
 		static KILLREG unused;
-		int num = nextkb();
+		short num = nextkb();
 		undo_kill.last_kb = lastkb;
 		undo_kill.next_kb = num;
 		undo_kill.kregflg = kregflag;

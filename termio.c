@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.185 1999/12/24 13:02:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.186 2000/01/15 13:19:24 tom Exp $
  *
  */
 
@@ -699,6 +699,7 @@ ttwatchfd(int fd, WATCHTYPE type, long *idp)
     return TRUE;
 }
 
+/* ARGSUSED */
 void
 ttunwatchfd(int fd, long id GCC_UNUSED)
 {

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.76 2000/01/11 23:14:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.77 2000/01/15 01:02:30 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -2480,13 +2480,14 @@ ntgetch(void)
 
 	default:
 	    TRACE(("GETC:default(%s)\n", message2s(msg.message)));
-	case WM_KEYUP:
-	case WM_NCHITTEST:
-	case WM_NCMOUSEMOVE:
-	case WM_NCLBUTTONDOWN:
-	case WM_PAINT:
-	case WM_NCACTIVATE:
-	case WM_SETCURSOR:
+	    /* FALLTHRU */
+	case WM_KEYUP:		/* FALLTHRU */
+	case WM_NCHITTEST:	/* FALLTHRU */
+	case WM_NCMOUSEMOVE:	/* FALLTHRU */
+	case WM_NCLBUTTONDOWN:	/* FALLTHRU */
+	case WM_PAINT:		/* FALLTHRU */
+	case WM_NCACTIVATE:	/* FALLTHRU */
+	case WM_SETCURSOR:	/* FALLTHRU */
 	case 0x118:
 	    DispatchMessage(&msg);
 	    break;

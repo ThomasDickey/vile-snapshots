@@ -1,4 +1,10 @@
-Changes for vile 9.1 (released ??? ??? ??, 1999)
+Changes for vile 9.1 (released Sat Jan 15 2000)
+
+ 20000115 (t)
+	+ Clark Morgan:
+	+ fix a file-descriptor leak in win32 pipes.
+ 	> Tom Dickey:
+	+ small compiler warnings (using 'antic' and SGI's lint)
 
  20000114 (s)
  	> Kevin Buettner:

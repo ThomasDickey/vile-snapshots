@@ -11,7 +11,7 @@
  *
  *		pgf, 11/91
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.67 1999/12/24 01:03:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.68 2000/01/15 01:07:40 tom Exp $
  *
  */
 
@@ -679,15 +679,15 @@ regatom(int *flagp, int at_bop)
 		case EOS:
 #ifdef FAIL_TRAILING_BS
 			regerror("trailing \\");
-			return NULL;
+			ret = NULL;
 #else
 			/* as a special case, treat a trailing '\' char as
 			 * a trailing '.'.  This makes '\' work in isearch
 			 * most of the time */
 			ret = regnode(ANY);
 			*flagp |= HASWIDTH|SIMPLE;
-			return ret;
 #endif
+			return ret;
 		case 's':
 			ret = regnode(WHITESP);
 			*flagp |= HASWIDTH|SIMPLE;

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.437 1999/12/29 23:39:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.438 2000/01/15 13:38:40 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2429,7 +2429,7 @@ extern void _exit (int code);
 #define	typecallocn(cast,ntypes)	(((cast *)0)+(ntypes))
 #define	typealloc(cast)			((cast *)0)
 #define	typeallocn(cast,ntypes)		(((cast *)0)+(ntypes))
-#define	typereallocn(cast,ptr,ntypes)	((ptr)+(ntypes))
+#define	typereallocn(cast,ptr,ntypes)	(TYPECAST(cast,ptr)+(ntypes))
 #define	typeallocplus(cast,extra)	(((cast *)0)+(extra))
 #else
 #define	castalloc(cast,nbytes)		(cast *)malloc(nbytes)

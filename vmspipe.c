@@ -3,7 +3,7 @@
  *		adapted from elvis, in turn from
  *		Chris Janton's (chj) VMS Icon port.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmspipe.c,v 1.12 1996/02/26 04:24:35 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmspipe.c,v 1.13 2000/01/15 01:09:01 tom Exp $
  *
  */
 
@@ -243,7 +243,7 @@ vms_rpipe (const char *cmd, int fd, const char *input_file)
 		 * pipe into a temporary file.  Unfortunately, this means that
 		 * the application will use 'slowreadf()' to write the data.
 		 */
-		if (pp = tmpfile()) {
+		if ((pp = tmpfile()) != 0) {
 			for_ever {
 				len = vms_pread(pfile, buffer, sizeof(buffer));
 				if (len <= 0)
