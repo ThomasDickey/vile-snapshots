@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.76 $)
+AC_REVISION($Revision: 1.79 $)
 AC_PREREQ(2.12)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.76 1997/12/17 10:49:38 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.79 1997/12/19 02:14:12 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -291,7 +291,14 @@ changequote([,])dnl
 		SCREEN=tcap
 		TARGET=vile
 		AC_DEFINE(DISP_TERMCAP)
+		AC_TRY_LINK([],[char *x=(char*)tgoto("",0,0)],
+		[AC_TRY_LINK([],[int x=tigetstr("")],
+			[termlib=terminfo],
+			[termlib=termcap])
+		 CF_VERBOSE(using functions in predefined $termlib LIBS)
+		],[
 		if test "$screen" = ncurses; then
+			CF_NCURSES_CPPFLAGS
 			CF_NCURSES_LIBS
 			termlib=terminfo
 		fi
@@ -313,6 +320,7 @@ changequote([,])dnl
 		if test "$termlib" = none; then
 			AC_WARN([Can't find -ltermlib, -lcurses, or -ltermcap])
 		fi
+		])
 	;;
 esac
 
@@ -321,18 +329,14 @@ cf_tc_funcs=""
 cf_tc_externs=""
 if test "$termlib" = terminfo ; then
 	AC_DEFINE(USE_TERMINFO)
-	cf_tc_funcs="tigetint tigetnum tparam tparm tigetflag"
-	cf_tc_externs="$cf_tc_funcs tgoto tigetstr tputs"
+	cf_tc_funcs="tigetint tigetnum tparam tparm"
+	cf_tc_externs="$cf_tc_funcs tgoto tigetstr tputs tigetflag"
 elif test "$termlib" = termcap ; then
 	# BSD 'tputs()' may need 'PC' to be set.
 	AC_TRY_LINK([],[extern char PC; PC = 0],
 		[AC_DEFINE(HAVE_EXTERN_TCAP_PC)])
 	cf_tc_funcs="tgetint tgetnum tparam tparm"
-	cf_tc_externs="$cf_tc_funcs tgoto tgetstr tputs"
-fi
-
-if test "$termlib" != "none" ; then
-	CF_TYPE_OUTCHAR
+	cf_tc_externs="$cf_tc_funcs tgoto tgetstr tputs tgetent tgetflag"
 fi
 
 LIBS="$LIBS $X_EXTRA_LIBS"
@@ -455,6 +459,10 @@ then
 CHECK_DECL_HDRS="$VILE_CHECK_HDRS
 #include <tcap.h>
 "
+
+if test "$termlib" != "none" ; then
+	CF_TYPE_OUTCHAR
+fi
 CF_MISSING_EXTERN( \
 $cf_tc_externs \
 )

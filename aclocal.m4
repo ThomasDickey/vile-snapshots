@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.46 1997/12/17 23:35:01 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.48 1997/12/18 22:53:00 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -245,51 +245,40 @@ dnl but may be in <term.h>.  We check for termcap.h as an alternate, but it
 dnl isn't standard (usually associated with GNU termcap).
 dnl
 dnl The 'tgoto()' function is declared in both terminfo and termcap.
+dnl
+dnl See CF_TYPE_OUTCHAR for more details.
 AC_DEFUN([CF_CURSES_TERMCAP],
 [
 AC_REQUIRE([CF_CURSES_TERM_H])
 AC_MSG_CHECKING(if we should include curses.h or termcap.h)
 AC_CACHE_VAL(cf_cv_need_curses_h,[
 cf_save_CFLAGS="$CFLAGS"
+cf_cv_need_curses_h=no
 
 for cf_t_opts in "" "NEED_TERMCAP_H"
 do
 for cf_c_opts in "" "NEED_CURSES_H"
 do
 
-    CFLAGS="$cf_save_CFLAGS"
+    CFLAGS="$cf_save_CFLAGS $CHECK_DECL_FLAG"
     test -n "$cf_c_opts" && CFLAGS="$CFLAGS -D$cf_c_opts"
     test -n "$cf_t_opts" && CFLAGS="$CFLAGS -D$cf_t_opts"
 
-cat >conftest.h <<EOF
-/* cut down on config.log by moving this to a separate file */
-#if NEED_CURSES_H
-# if HAVE_NCURSES_H
-#  include <ncurses.h>
-# else
-#  include <curses.h>
-# endif
-#endif
-#if HAVE_TERM_H
-# include <term.h>
-#endif
-#if NEED_TERMCAP_H
-# if HAVE_TERMCAP_H
-#  include <termcap.h>
-# endif
-#endif
-EOF
-
-    AC_TRY_LINK([#include "conftest.h" /* $cf_c_opts $cf_t_opts */],
-	[char *x = tgoto("")],
-	[cf_cv_need_curses_h=no],
-	[cf_cv_need_curses_h=yes])
+    AC_TRY_LINK([/* $cf_c_opts $cf_t_opts */
+$CHECK_DECL_HDRS],
+	[char *x = (char *)tgoto("")],[],
+	[echo "Recompiling with corrected call (C:$cf_c_opts, T:$cf_t_opts)" >&AC_FD_CC
+	AC_TRY_LINK([
+$CHECK_DECL_HDRS],
+	[char *x = (char *)tgoto("",0,0)],
+	[cf_cv_need_curses_h=yes])])
 
 	CFLAGS="$cf_save_CFLAGS"
 	test "$cf_cv_need_curses_h" = yes && break
 done
 	test "$cf_cv_need_curses_h" = yes && break
 done
+
 if test "$cf_cv_need_curses_h" = yes ; then
 	echo "Curses/termcap test succeeded (C:$cf_c_opts, T:$cf_t_opts)" >&AC_FD_CC
 	if test -n "$cf_c_opts" ; then
@@ -303,7 +292,7 @@ if test "$cf_cv_need_curses_h" = yes ; then
 	elif test "$cf_cv_have_term_h" = yes ; then
 		cf_cv_need_curses_h=term.h
 	else 
-		cf_cv_need_curses_h=unknown
+		cf_cv_need_curses_h=no
 	fi
 fi
 ])
@@ -1115,6 +1104,24 @@ done
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check for return and param type of 3rd -- OutChar() -- param of tputs().
+dnl
+dnl For this check, and for CF_CURSES_TERMCAP, the $CHECK_DECL_HDRS variable
+dnl must point to a header file containing this (or equivalent):
+dnl
+dnl	#ifdef NEED_CURSES_H
+dnl	# if HAVE_NCURSES_H
+dnl	#  include <ncurses.h>
+dnl	# else
+dnl	#  include <curses.h>
+dnl	# endif
+dnl	#endif
+dnl	#if HAVE_TERM_H
+dnl	# include <term.h>
+dnl	#endif
+dnl	#if NEED_TERMCAP_H
+dnl	# include <termcap.h>
+dnl	#endif
+dnl
 AC_DEFUN([CF_TYPE_OUTCHAR],
 [
 AC_REQUIRE([CF_CURSES_TERMCAP])
@@ -1124,30 +1131,15 @@ AC_CACHE_VAL(cf_cv_type_outchar,[
 
 cf_cv_type_outchar="int OutChar(int)"
 cf_cv_found=no
+cf_save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS $CHECK_DECL_FLAG"
 
 for P in int void; do
 for Q in int void; do
 for R in int char; do
 for S in "" const; do
 
-cat >conftest.h <<EOF
-/* cut down on config.log by moving this to a separate file */
-#ifdef NEED_CURSES_H
-# if HAVE_NCURSES_H
-#  include <ncurses.h>
-# else
-#  include <curses.h>
-# endif
-#endif
-#if HAVE_TERM_H
-# include <term.h>
-#endif
-#if NEED_TERMCAP_H
-# include <termcap.h>
-#endif
-EOF
-
-	AC_TRY_COMPILE([#include "conftest.h"],
+	AC_TRY_COMPILE([$CHECK_DECL_HDRS],
 	[extern $Q OutChar($R);
 	extern $P tputs ($S char *string, int nlines, $Q (*_f)($R));
 	tputs("", 1, OutChar)],
@@ -1173,6 +1165,8 @@ case $cf_cv_type_outchar in
 	AC_DEFINE(OUTC_ARGS,char c)
 	;;
 esac
+
+CFLAGS="$cf_save_CFLAGS"
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Make an uppercase version of a variable
