@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.29 1998/02/23 11:27:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.30 1998/03/31 23:05:29 tom Exp $
  *
  */
 
@@ -162,8 +162,27 @@ tb_append(TBUFF **p, int c)
 {
 	register TBUFF *q = *p;
 	register ALLOC_T n = (q != 0) ? q->tb_used : 0;
-	
+
 	return tb_put(p, n, c);
+}
+
+/*
+ * insert a character into the temp-buff
+ */
+TBUFF *
+tb_insert(TBUFF **p, ALLOC_T n, int c)
+{
+	register ALLOC_T m = tb_length(*p);
+	register TBUFF *q = tb_append(p, c);
+
+	if (q != 0 && n < m) {
+		while (n < m) {
+			q->tb_data[m] = q->tb_data[m-1];
+			m--;
+		}
+		q->tb_data[m] = c;
+	}
+	return q;
 }
 
 /*

@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.150 1998/03/13 00:40:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.151 1998/03/31 23:48:08 tom Exp $
  *
  */
 
@@ -1934,9 +1934,11 @@ char *fname)		/* file name to execute */
 	register int odiscmd;
 
 	/* okay, we've got a unique name -- create it */
-	if ((bp = make_bp(fname, 0)) == 0) {
+	if ((bp = find_b_file(fname)) == 0
+	 && (bp = make_bp(fname, 0)) == 0) {
 		return FALSE;
 	}
+	bp->b_flag = BFEXEC;
 
 	/* and try to read in the file to execute */
 	if ((status = readin(fname, FALSE, bp, TRUE)) == TRUE) {

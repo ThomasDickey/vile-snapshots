@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.220 1998/03/14 00:06:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.221 1998/03/31 23:59:57 tom Exp $
  *
  */
 
@@ -18,7 +18,6 @@ static	int	writereg(REGION *rp, const char *fn, int msgf, BUFFER *bp, int forced
 static	void	readlinesmsg(int n, int s, const char *f, int rdo);
 
 #if OPT_DOSFILES
-static	void	guess_dosmode(BUFFER *bp);
 /* give DOS the benefit of the doubt on ambiguous files */
 # if CRLF_LINES
 #  define MORETHAN >=
@@ -618,6 +617,29 @@ int lockfl)		/* check the file for locks? */
  * LF alone.  If so, set the DOS-mode to true, otherwise false.
  */
 #if OPT_DOSFILES
+/*
+ * If the given buffer is one that we're sourcing (e.g., with ":so"), or
+ * specified in initialization, we require that _all_ of the lines end with
+ * ^M's before deciding that it is DOS-style.  That is to protect us from
+ * accidentally trimming the ^M's from a :map command.
+ */
+static void
+apply_dosmode(BUFFER *bp, int doslines, int unixlines)
+{
+	int result;
+
+	if (bp->b_flag & BFEXEC) {
+		if (doslines && !unixlines) {
+			result = TRUE;
+		} else {
+			result = FALSE;
+		}
+	} else {
+		result = (doslines MORETHAN unixlines);
+	}
+	set_b_val(bp, MDDOS, result);
+}
+
 static void
 guess_dosmode(BUFFER *bp)
 {
@@ -635,7 +657,7 @@ guess_dosmode(BUFFER *bp)
 			unixlines++;
 		}
 	}
-	set_b_val(bp, MDDOS, doslines MORETHAN unixlines);
+	apply_dosmode(bp, doslines, unixlines);
 	if (b_val(bp, MDDOS)) {
 		/* then eliminate 'em if necessary */
 		for_each_line(lp,bp) {
@@ -747,7 +769,7 @@ int	mflg)		/* print messages? */
 	ch_fname(bp,fname);
 	fname = bp->b_fname;		/* this may have been b_fname! */
 #if OPT_DOSFILES
-	make_local_b_val(bp,MDDOS);
+	make_local_b_val(bp, MDDOS);
 	/* assume that if our OS wants it, that the buffer will have CRLF
 	 * lines.  this may change when the file is read, based on actual
 	 * line counts, below.  otherwise, if there's an error, or the
@@ -1113,8 +1135,7 @@ slowreadf(register BUFFER *bp, int *nlinep)
 				/* track changes in dosfile as lines arrive */
 #if OPT_DOSFILES
 				if (global_b_val(MDDOS))
-					set_b_val(bp, MDDOS,
-						doslines MORETHAN unixlines);
+					apply_dosmode(bp, doslines, unixlines);
 #endif
 				curwp->w_flag |= WFMODE|WFKILLS;
 				if (!update(TRUE)) {
@@ -1141,7 +1162,7 @@ slowreadf(register BUFFER *bp, int *nlinep)
         }
 #if OPT_DOSFILES
 	if (global_b_val(MDDOS)) {
-		set_b_val(bp, MDDOS, doslines MORETHAN unixlines);
+		apply_dosmode(bp, doslines, unixlines);
 		if (b_val(bp, MDDOS)) {  /* if it _is_ a dos file, strip 'em */
         		register LINE   *lp;
 			for_each_line(lp,bp) {

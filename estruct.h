@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.339 1998/03/22 12:06:15 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.340 1998/03/31 23:28:24 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1685,10 +1685,11 @@ typedef struct	BUFFER {
 #define BFCHG      iBIT(1)	/* Changed since last write	*/
 #define BFSCRTCH   iBIT(2)	/* scratch -- gone on last close */
 #define BFARGS     iBIT(3)	/* set for ":args" buffers */
-#define BFIMPLY    iBIT(4)	/* set for implied-# buffers */
-#define BFSIZES    iBIT(5)	/* set if byte/line counts current */
-#define BFUPBUFF   iBIT(6)	/* set if buffer should be updated */
-#define BFRCHG     iBIT(7)	/* Changed since last reset of this flag*/
+#define BFEXEC     iBIT(4)	/* set for ":source" buffers */
+#define BFIMPLY    iBIT(5)	/* set for implied-# buffers */
+#define BFSIZES    iBIT(6)	/* set if byte/line counts current */
+#define BFUPBUFF   iBIT(7)	/* set if buffer should be updated */
+#define BFRCHG     iBIT(8)	/* Changed since last reset of this flag*/
 
 /* macros for manipulating b_flag */
 #define b_is_implied(bp)        ((bp)->b_flag & (BFIMPLY))
