@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.182 1996/08/05 12:51:57 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.183 1997/01/25 18:01:12 tom Exp $
  *
  */
 
@@ -294,7 +294,10 @@ int actual)	/* false: effective column (expand tabs) */
 		if (actual) {
 			col = offs2col(curwp, mark.l, mark.o) - nu_width(curwp);
 		} else {
-			for (i = w_left_margin(curwp); i < mark.o; ++i) {
+			C_NUM len = mark.o;
+			if (len > llength(mark.l))
+				len = llength(mark.l);
+			for (i = w_left_margin(curwp); i < len; ++i) {
 				c = lgetc(mark.l, i);
 				col = next_column(c,col); /* assumes curbp */
 			}

@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.47 $)
+AC_REVISION($Revision: 1.48 $)
 AC_PREREQ(2.12)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.47 1997/01/10 11:07:43 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.48 1997/01/25 14:49:48 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -459,7 +459,21 @@ fi
 
 VC_ANSI_QSORT
 
-###	use option --with-warnings to turn on all gcc warnings
+###	Debugging/development options
+AC_ARG_WITH(dbmalloc,
+	[  --with-dbmalloc         use Conor Cahill's dbmalloc library],
+	[AC_DEFINE(DBMALLOC)
+	 LIBS="$LIBS -ldbmalloc"])
+
+AC_ARG_WITH(no-leaks,
+	[  --with-no-leaks         free permanent memory, analyze leaks],
+	[AC_DEFINE(NO_LEAKS)])
+
+AC_ARG_WITH(trace,
+	[  --with-trace            turn on debug-tracing],
+	[AC_DEFINE(OPT_TRACE)
+	 EXTRAOBJS="$EXTRAOBJS trace.o"])
+
 CFLAGS="$saved_CFLAGS"
 AC_ARG_WITH(warnings,
 	[  --with-warnings         turn on GCC compiler warnings],
@@ -471,6 +485,8 @@ then
 		CFLAGS="$CFLAGS -W -Wall -Wshadow -Wconversion -Wstrict-prototypes -Wmissing-prototypes"
 	fi
 fi
+
+AC_SUBST(EXTRAOBJS)
 
 ###	output makefile and config.h
 changequote({,})dnl

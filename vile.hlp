@@ -653,7 +653,7 @@ Miscellaneous commands
 		line, then it and any blank lines surrounding it will be
 		removed.  If a non-blank line, then any immediately following
 		blank lines will be removed.  If given an argument, will force
-		exacrly that many blank lines to exist at that point,
+		exactly that many blank lines to exist at that point,
 		regardless of how many were there before.  Moves current
 		location forward, to allow repeated use.
 
@@ -1494,7 +1494,7 @@ Editor modes
 	Input
 	-----
 
-	There are basically three ways of gettig 8-bit characters into
+	There are basically three ways of getting 8-bit characters into
 	a vile buffer:
 
 	Directly -- if the user's input device (i.e. the terminal or
@@ -1520,7 +1520,7 @@ Editor modes
 	    examples, the mappings in digraphs.rc allow one to type ^Ku"
 	    to get an umlaut character, ^K12 to get the little '1/2'
 	    symbol, ^KY- to get the Yen currency symbol, or ^K:- to get an
-	    arithemtic division symbol.
+	    arithmetic division symbol.
 
 	Users who have no need to enter 8-bit text may want access to the
 	meta-bound functions while in insert mode as well as command mode. 
@@ -1569,7 +1569,7 @@ Key Rebinding
 	There is a key rebinding facility (if vile is built to include it),
 	which is invoked as follows.  One must know the "english" name for the
 	command being rebound.  Use ":show-commands" or ":apropos string"
-	to find englishnames containing "string".  Then use the command:
+	to find english names containing "string".  Then use the command:
 		":bind-key englishname keyseq"
 	where keyseq is the exact keyboard sequence (i.e. single character,
 	or '^X', '^A', or '#' followed by a single character) to which the
@@ -1773,7 +1773,7 @@ Key Rebinding
 	the first character of the sequence being mapped to is not subject
 	to recursive (map) evaluation.  Assuming "remap" is on, pressing
 	'j' when ":map j jh" is in effect will not cause an infinite loop,
-	whereas ":map j hj" _wlll_ cause such a loop.  Setting the
+	whereas ":map j hj" _will_ cause such a loop.  Setting the
 	"remapfirst" option will allow this sort of remapping (and will
 	cause an infinite loops for both examples).
 
@@ -1889,7 +1889,7 @@ Flow-control
 	automatically control the data flow by generating ^S/^Q without the
 	user's intervention.
 
-	To accomodate these situations, the "flow-control-enable" command
+	To accommodate these situations, the "flow-control-enable" command
 	will reset the terminal driver to its original state.  Software
 	flow-control will be re-enabled, and commands bound only to the ^S
 	and ^Q characters will be inaccessible.  The characters affected
@@ -2157,7 +2157,7 @@ Programmed procedures and macros
 	Be careful with "buffer-hook".  Executing commands in the hook
 	which themselves switch buffers is not recommended.  In general,
 	all the hooks are a little dangerous, since vile has not been
-	written with re-entancy foremost in mind.  One should avoid putting
+	written with re-entrancy foremost in mind.  One should avoid putting
 	actions in hooks which might cause the hook to be re-executed.
 	(vile keeps the hook procedure itself from being re-executed, to
 	prevent recursion, but the code surrounding the call to it may not
@@ -2756,7 +2756,7 @@ X Window System specifics
 		be rectangular by holding the control key down while wiping
 		with button one depressed.  If the wiping motion goes out of
 		the current window, text will be scrolled in the appropriate
-		direction if possible to accomodate selections larger than
+		direction if possible to accommodate selections larger than
 		the window.  The speed at which the scrolling occurs will
 		increase with the passage of time making it practical to
 		select large regions of text quickly.
@@ -2812,7 +2812,7 @@ X Window System specifics
 	the slider from one place to another causing text to scroll
 	continuously.
 
-	The Motif and Openlook versions provide scrollbars from their
+	The Motif and OpenLook versions provide scrollbars from their
 	respective widget sets.  Both versions have a slider indicating the
 	position of the window over the buffer.  OpenLook's slider is fixed
 	in size with little arrows at the top and bottom of the slider.
@@ -3402,7 +3402,7 @@ Credits
 	on each new release, and always seem to find something to report. 
 	Sean Ahern is also always dependable for finding a bug or two per
 	release.  The reference.doc file supplied with Bram Moolenaar's
-	excellent Vim editor was useful in unravelling some of the less
+	excellent Vim editor was useful in unraveling some of the less
 	obvious parts of :map functionality.  In addition, his
 	implementation of digraph insertion was used directly in the
 	creation of digraphs.rc.  Thanks to Jukka Keto for contributing the
@@ -3423,4 +3423,4 @@ Problems
 
 Copyright 1995,1996 by Paul Fox, Tom Dickey, and Kevin Buettner
 ---------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.311 1997/01/22 01:48:45 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.312 1997/01/25 14:24:34 tom Exp $

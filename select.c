@@ -18,7 +18,7 @@
  * transfering the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.52 1997/01/19 15:40:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.53 1997/01/25 17:09:11 tom Exp $
  *
  */
 
@@ -931,7 +931,8 @@ start_scan:
 			case 'R' : videoattribute |= VAREV;  break;
 			case 'I' : videoattribute |= VAITAL; break;
 			case ':' : offset++;
-			    if (lgetc(DOT.l, offset) == CONTROL_A) {
+			    if (offset < llength(DOT.l)
+			     && lgetc(DOT.l, offset) == CONTROL_A) {
 				count = 0;
 				offset++;
 				goto start_scan; /* recover from filter-err */
