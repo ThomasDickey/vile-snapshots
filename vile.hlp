@@ -2061,6 +2061,7 @@ Programmed procedures and macros
 	$wline		number of lines in current window
 	$word		current "word"
 	$write-hook	name of procedure to run before a file is written
+	$xdisplay	the value to set $DISPLAY when running $xshell.
 	$xshell		name of the terminal program for spawned xvile commands.
 
 	In addition to the environment variables, you may set and use the
@@ -3495,4 +3496,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.331 1997/10/06 11:01:04 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.332 1997/10/08 10:44:56 tom Exp $

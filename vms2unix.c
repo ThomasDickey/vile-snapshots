@@ -3,7 +3,7 @@
  *
  *	Miscellaneous routines for UNIX/VMS compatibility.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.30 1997/09/05 23:38:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.31 1997/10/06 23:33:39 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -127,7 +127,7 @@ CharToVms(int c)
 	if (c == PERIOD) {
 		if (leaf_dot++)
 			c = '$';
-	} else if (!isalnum(c) && !strchr("_-", c)) {
+	} else if (!isAlnum(c) && !strchr("_-", c)) {
 		c = '$';
 	}
 	return (c);
@@ -140,8 +140,8 @@ leading_uc(char * dst, char * src)
 	register int	c;
 
 	while ((c = *src) != EOS && c != SLASHC) {
-		if (isalpha(c)) {
-			if (islower(c))
+		if (isAlpha(c)) {
+			if (isLower(c))
 				return (0);
 		} else if (!strchr("0123456789$_", c))
 			return (0);

@@ -1,6 +1,6 @@
 /*	Dumb terminal driver, for I/O before we get into screen mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/dumbterm.c,v 1.9 1997/03/15 15:48:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/dumbterm.c,v 1.10 1997/10/06 23:26:29 tom Exp $
  *
  */
 
@@ -91,7 +91,7 @@ dumb_getc(void)
 static OUTC_DCL
 dumb_putc(OUTC_ARGS)
 {
-	if (isspace(c)) {
+	if (isSpace(c)) {
 		if (last_col == 0)
 			last_col = this_col;
 	} else {

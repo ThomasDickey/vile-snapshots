@@ -2,7 +2,7 @@
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  * rewritten to use regular expressions, 1995 by T.Dickey (dickey@clark.net)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.65 1997/09/01 20:54:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.66 1997/10/07 00:18:26 tom Exp $
  *
  */
 
@@ -220,7 +220,7 @@ convert_pattern(ERR_PATTERN *errp, LINE *lp)
 			}
 		}
 		if (pass == 1) {
-			dst = temp = malloc(want);
+			dst = temp = typeallocn(char, want);
 			if (dst == 0)
 				break;
 		} else

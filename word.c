@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file. 
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.57 1997/09/01 17:56:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.58 1997/10/07 13:37:39 tom Exp $
  *
  */
 
@@ -41,9 +41,9 @@ wrapword(int f, int n)
 	if (f) {
 		register LINE *lp = DOT.l;
 		to_delete = 0L;
-		if (DOT.o >= 0 && !n && !isspace(lgetc(lp,DOT.o))) {
+		if (DOT.o >= 0 && !n && !isSpace(lgetc(lp,DOT.o))) {
 			for (c = DOT.o; c >= 0; c--) {
-				if (isspace(lgetc(lp,c))) {
+				if (isSpace(lgetc(lp,c))) {
 					to_append = n;
 					cnt = (DOT.o - c);
 					DOT.o = c;
@@ -52,7 +52,7 @@ wrapword(int f, int n)
 			}
 		}
 		for (c = DOT.o; c >= 0; c--) {
-			if (isspace(lgetc(lp,c))) {
+			if (isSpace(lgetc(lp,c))) {
 				to_delete++;
 				DOT.o = c;
 			} else {
@@ -65,7 +65,7 @@ wrapword(int f, int n)
 		/* Back up until we aren't in a word, make sure there is a
 		 * break in the line
 		 */
-		while (c = char_at(DOT), !isspace(c)) {
+		while (c = char_at(DOT), !isSpace(c)) {
 			cnt++;
 			if (!backchar(FALSE, 1))
 				return(FALSE);
@@ -312,7 +312,7 @@ joinregion(void)
 					/*EMPTY*/; /* join after parentheses */
 				else if (lgetc(DOT.l, doto-1) == '.')
 					status = linsert(2,' ');
-				else if (!isspace(c))
+				else if (!isSpace(c))
 					status = linsert(1,' ');
 			}
 		}
@@ -384,7 +384,6 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 	register ALLOC_T i;		/* index during word copy	*/
 	register int newlen;		/* tentative new line length	*/
 	register int finished;		/* Are we at the End-Of-Paragraph? */
-	register int is_cpluscomment;	/* doing a c++ comment		*/
 	register int firstflag;		/* first word? (needs no space)	*/
 	register int is_comment;	/* doing a comment block?	*/
 	register int at_nl = TRUE;	/* just saw a newline?		*/
@@ -437,13 +436,12 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 
 		c = char_at(DOT);
 		is_comment = FALSE;
-		is_cpluscomment = FALSE;
 		if (plength >= 0) {
 			is_comment = TRUE;
 			tb_bappend(cp,
 				DOT.l->l_text + DOT.o,
 				(ALLOC_T)(plength - DOT.o));
-		} else if ((is_cpluscomment = cplus_comment_start(c)) != 0) {
+		} else if (cplus_comment_start(c)) {
 			is_comment = TRUE;
 			tb_bappend(cp, "//", 2);
 		} else if (c_comment_start(c)) {
@@ -505,7 +503,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 				at_nl = TRUE;
 			} else {
 				c = char_at(DOT);
-				if (at_nl && ((plength-- > 0) || isspace(c)))
+				if (at_nl && ((plength-- > 0) || isSpace(c)))
 					c = ' ';
 				else
 					at_nl = FALSE;

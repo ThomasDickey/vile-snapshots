@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.42 1997/05/25 20:27:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.43 1997/10/07 00:13:57 tom Exp $
  *
  */
 
@@ -76,7 +76,7 @@ int sdir,
 int key)
 {
 	int count = 1;
-	int i, j, this;
+	int i, j, that = CPP_UNKNOWN;
 
 	/* patch: this should come from arguments */
 	if (key == CPP_ENDIF)
@@ -94,16 +94,16 @@ int key)
 		if ((i = firstchar(DOT.l)) >= 0
 		 && lgetc(DOT.l,i) == '#'
 		 && (j = nextchar(DOT.l, i+1)) >= 0
-		 && ((this = cpp_keyword(DOT.l, j)) != CPP_UNKNOWN)) {
+		 && ((that = cpp_keyword(DOT.l, j)) != CPP_UNKNOWN)) {
 			int	done = FALSE;
 
-			switch (this) {
+			switch (that) {
 			case CPP_IF:
 				if (sdir == FORWARD) {
 					count++;
 				} else {
 					done = ((count-- == 1) && 
-						(key != this));
+						(key != that));
 					if (done)
 						count = 0;
 				}

@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.58 1997/02/09 17:49:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.59 1997/10/07 00:21:02 tom Exp $
  *
  */
 
@@ -17,7 +17,7 @@ extern REGION *haveregion;
  *  the operator itself is repeated.  All operate on regions.
  */
 int
-operator(int f, int n, OpsFunc fn, const char *str)
+vile_op(int f, int n, OpsFunc fn, const char *str)
 {
 	int c;
 	int thiskey;
@@ -140,7 +140,7 @@ operdel(int f, int n)
 
 	opcmd = OPDEL;
 	lines_deleted = 0;
-	status = operator(f, n, killregion,
+	status = vile_op(f, n, killregion,
 		regionshape == FULLLINE
 			? "Delete of full lines"
 			: "Delete");
@@ -180,7 +180,7 @@ operchg(int f, int n)
 	int s;
 
 	opcmd = OPOTHER;
-	s = operator(f,n,chgreg,"Change");
+	s = vile_op(f,n,chgreg,"Change");
 	if (s == TRUE) swapmark();
 	return s;
 }
@@ -192,7 +192,7 @@ operlinechg(int f, int n)
 
 	regionshape = FULLLINE;
 	opcmd = OPOTHER;
-	s = operator(f,n,chgreg,"Change of full lines");
+	s = vile_op(f,n,chgreg,"Change of full lines");
 	if (s == TRUE) swapmark();
 	return s;
 }
@@ -201,7 +201,7 @@ int
 operjoin(int f, int n)
 {
 	opcmd = OPOTHER;
-	return operator(f,n,joinregion,"Join");
+	return vile_op(f,n,joinregion,"Join");
 }
 
 int
@@ -211,7 +211,7 @@ operyank(int f, int n)
 	int s;
 	savedot = DOT;
 	opcmd = OPDEL;
-	s = operator(f,n,yankregion,"Yank");
+	s = vile_op(f,n,yankregion,"Yank");
 	DOT = savedot;
 	return s;
 }
@@ -224,7 +224,7 @@ operlineyank(int f, int n)
 	savedot = DOT;
 	regionshape = FULLLINE;
 	opcmd = OPOTHER;
-	s = operator(f,n,yankregion,"Yank of full lines");
+	s = vile_op(f,n,yankregion,"Yank of full lines");
 	DOT = savedot;
 	return s;
 }
@@ -233,21 +233,21 @@ int
 operflip(int f, int n)
 {
 	opcmd = OPOTHER;
-	return operator(f,n,flipregion,"Flip case");
+	return vile_op(f,n,flipregion,"Flip case");
 }
 
 int
 operupper(int f, int n)
 {
 	opcmd = OPOTHER;
-	return operator(f,n,upperregion,"Upper case");
+	return vile_op(f,n,upperregion,"Upper case");
 }
 
 int
 operlower(int f, int n)
 {
 	opcmd = OPOTHER;
-	return operator(f,n,lowerregion,"Lower case");
+	return vile_op(f,n,lowerregion,"Lower case");
 }
 
 /*
@@ -266,11 +266,11 @@ shift_n_times(int f, int n, OpsFunc func, const char *msg)
 		const CMDFUNC *cfp = havemotion;
 		while (n-- > 0) {
 			havemotion = cfp;
-			if ((status = operator(FALSE,1, func, msg)) != TRUE)
+			if ((status = vile_op(FALSE,1, func, msg)) != TRUE)
 				break;
 		}
 	} else
-		status = operator(f,n, func, msg);
+		status = vile_op(f,n, func, msg);
 	return status;
 }
 
@@ -299,7 +299,7 @@ operwrite(int f, int n)
 		return kwrite(fname,TRUE);
 	} else {
 		opcmd = OPOTHER;
-		return operator(f,n,writeregion,"File write");
+		return vile_op(f,n,writeregion,"File write");
 	}
 }
 
@@ -309,7 +309,7 @@ operformat(int f, int n)
 {
 	regionshape = FULLLINE;
 	opcmd = OPOTHER;
-	return operator(f,n,formatregion,"Format");
+	return vile_op(f,n,formatregion,"Format");
 }
 #endif
 
@@ -318,7 +318,7 @@ operfilter(int f, int n)
 {
 	regionshape = FULLLINE;
 	opcmd = OPOTHER;
-	return operator(f,n,filterregion,"Filter");
+	return vile_op(f,n,filterregion,"Filter");
 }
 
 
@@ -327,7 +327,7 @@ operprint(int f, int n)
 {
 	regionshape = FULLLINE;
 	opcmd = OPOTHER;
-	return operator(f,n,plineregion,"Line print");
+	return vile_op(f,n,plineregion,"Line print");
 }
 
 int
@@ -335,7 +335,7 @@ operpprint(int f, int n)
 {
 	regionshape = FULLLINE;
 	opcmd = OPOTHER;
-	return operator(f,n,pplineregion,"Line-number print");
+	return vile_op(f,n,pplineregion,"Line-number print");
 }
 
 int
@@ -343,7 +343,7 @@ operlist(int f, int n)
 {
 	regionshape = FULLLINE;
 	opcmd = OPOTHER;
-	return operator(f,n,llineregion,"Line list");
+	return vile_op(f,n,llineregion,"Line list");
 }
 
 int
@@ -351,7 +351,7 @@ opersubst(int f, int n)
 {
 	regionshape = FULLLINE;
 	opcmd = OPOTHER;
-	return operator(f,n,substregion,"Substitute");
+	return vile_op(f,n,substregion,"Substitute");
 }
 
 int
@@ -359,7 +359,7 @@ opersubstagain(int f, int n)
 {
 	regionshape = FULLLINE;
 	opcmd = OPOTHER;
-	return operator(f,n,subst_again_region,"Substitute-again");
+	return vile_op(f,n,subst_again_region,"Substitute-again");
 }
 
 #if OPT_AEDIT
@@ -368,7 +368,7 @@ operentab(int f, int n)
 {
 	regionshape = FULLLINE;
 	opcmd = OPOTHER;
-	return operator(f,n,entab_region,"Spaces-->Tabs");
+	return vile_op(f,n,entab_region,"Spaces-->Tabs");
 }
 #endif
 
@@ -378,7 +378,7 @@ operdetab(int f, int n)
 {
 	regionshape = FULLLINE;
 	opcmd = OPOTHER;
-	return operator(f,n,detab_region,"Tabs-->Spaces");
+	return vile_op(f,n,detab_region,"Tabs-->Spaces");
 }
 #endif
 
@@ -388,7 +388,7 @@ opertrim(int f, int n)
 {
 	regionshape = FULLLINE;
 	opcmd = OPOTHER;
-	return operator(f,n,trim_region,"Trim whitespace");
+	return vile_op(f,n,trim_region,"Trim whitespace");
 }
 #endif
 
@@ -397,7 +397,7 @@ int
 operblank(int f, int n)
 {
 	opcmd = OPOTHER;
-	return operator(f,n,blank_region,"Blanking");
+	return vile_op(f,n,blank_region,"Blanking");
 }
 #endif
 
@@ -406,6 +406,6 @@ operopenrect(int f, int n)
 {
 	opcmd = OPOTHER;
 	regionshape = RECTANGLE;
-	return operator(f,n,openregion,"Opening");
+	return vile_op(f,n,openregion,"Opening");
 }
 

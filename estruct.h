@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.320 1997/09/06 14:25:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.321 1997/10/07 10:59:16 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -939,7 +939,7 @@ typedef enum {
 #define NEXT_COLUMN(col, c, list, tabs) \
 		((c == '\t' && !list) \
 		 ? (col + tabs - (col % tabs)) \
-		 : (	(isprint(c)) \
+		 : (	(isPrint(c)) \
 			? (col + 1) \
 			: (col + ((c & HIGHBIT) ? 4 : 2))))
 
@@ -980,37 +980,26 @@ typedef	ULONG CHARTYPE;
 typedef USHORT CHARTYPE;
 #endif
 
-#if SYS_WINNT
-/* I dont like the warnings, so... */
-#undef islower
-#undef isupper
-#undef isdigit
-#undef isspace
-#undef iscntrl
-#undef isprint
-#undef ispunct
-#undef isalpha
-#undef isalnum
-#endif /* SYS_WINNT */
-
-/* these intentionally match the ctypes.h definitions, except that
+/* these parallel the ctypes.h definitions, except that
 	they force the char to valid range first */
 #define istype(m,c) ((_chartypes_[((UINT)(c))&((UINT)(N_chars-1))] & (m)) != 0)
-#define islower(c)	istype(_lower, c)
-#define isupper(c)	istype(_upper, c)
-#define isdigit(c)	istype(_digit, c)
-#define isspace(c)	istype(_space, c)
-#define iscntrl(c)	istype(_cntrl, c)
-#define isprint(c)	istype(_print, c)
-#define ispunct(c)	istype(_punct, c)
-#define iswild(c)	istype(_wild, c)
-#define isalpha(c)	istype(_lower|_upper, c)
-#define isalnum(c)	istype(_lower|_upper|_digit, c)
-#define isident(c)	istype(_ident, c)
-#define ispath(c)	istype(_pathn, c)
+
+#define isAlnum(c)	istype(_lower|_upper|_digit, c)
+#define isAlpha(c)	istype(_lower|_upper, c)
+#define isCntrl(c)	istype(_cntrl, c)
+#define isDigit(c)	istype(_digit, c)
+#define isLower(c)	istype(_lower, c)
+#define isPrint(c)	istype(_print, c)
+#define isPunct(c)	istype(_punct, c)
+#define isSpace(c)	istype(_space, c)
+#define isUpper(c)	istype(_upper, c)
+
 #define isbackspace(c)	(istype(_bspace, c) || (c) == backspc)
-#define islinespecchar(c)	istype(_linespec, c)
 #define isfence(c)	istype(_fence, c)
+#define isident(c)	istype(_ident, c)
+#define islinespecchar(c)	istype(_linespec, c)
+#define ispath(c)	istype(_pathn, c)
+#define iswild(c)	istype(_wild, c)
 
 /* macro for cases where return & newline are equivalent */
 #define	isreturn(c)	((c == '\r') || (c == '\n'))
@@ -1023,13 +1012,13 @@ typedef USHORT CHARTYPE;
    control characters.	They are xor-able values.  */
 #define	DIFCASE		0x20
 #define	DIFCNTRL	0x40
-#define toupper(c)	((c)^DIFCASE)
-#define tolower(c)	((c)^DIFCASE)
+#define toUpper(c)	((c)^DIFCASE)
+#define toLower(c)	((c)^DIFCASE)
 #define tocntrl(c)	((c)^DIFCNTRL)
 #define toalpha(c)	((c)^DIFCNTRL)
 
 #define nocase_eq(bc,pc)	((bc) == (pc) || \
-			(isalpha(bc) && (((bc) ^ DIFCASE) == (pc))))
+			(isAlpha(bc) && (((bc) ^ DIFCASE) == (pc))))
 
 #define ESC		tocntrl('[')
 #define BEL		tocntrl('G')	/* ascii bell character		*/
@@ -1113,6 +1102,12 @@ typedef	struct {
 
 typedef	ULONG		CMDFLAGS;	/* CMDFUNC flags */
 typedef	long		B_COUNT;	/* byte-count */
+
+#ifdef __cplusplus
+#define EXTERN_CONST extern const
+#else
+#define EXTERN_CONST const
+#endif
 
 /*
  * Control structures
@@ -2173,6 +2168,12 @@ extern void _exit (int code);
  * We cannot define these in config.h, since they require parameters to be
  * passed (that's non-portable).
  */
+#ifdef __cplusplus
+#undef GCC_PRINTF
+#undef GCC_NORETURN
+#undef GCC_UNUSED
+#endif
+
 #if GCC_PRINTF
 #define GCC_PRINTFLIKE(fmt,var) __attribute__((format(printf,fmt,var)))
 #else

@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.148 1997/09/29 10:39:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.150 1997/10/07 23:24:57 tom Exp $
  *
  */
 
@@ -71,7 +71,7 @@ register char	*name,
 register char	*dft)
 {
 	name = GetEnv(name);
-	return (name == 0) ? dft : name;
+	return (*name == EOS) ? dft : name;
 }
 
 static void
@@ -92,6 +92,7 @@ char	*value)
 static char *shell;	/* $SHELL environment is "$shell" variable */
 static char *directory;	/* $TMP environment is "$directory" variable */
 #if DISP_X11
+static char *x_display;	/* $DISPLAY environment is "$xdisplay" variable */
 static char *x_shell;	/* $XSHELL environment is "$xshell" variable */
 #endif
 #endif
@@ -166,7 +167,7 @@ listvars(int f, int n)
 		if ((vv = get_listvalue(Names[s], showall)) != 0)
 			t += strlen(Names[s]) + strlen(fmt) + strlen(vv);
 	}
-	if ((values = malloc(t)) == 0)
+	if ((values = typeallocn(char, t)) == 0)
 		return FALSE;
 
 	for (s = 0, v = values; Names[s] != 0; s++) {
@@ -487,6 +488,10 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 		ElseIf( EVFONT )	value = x_current_fontname();
 		ElseIf( EVTITLE )	value = x_get_window_name();
 		ElseIf( EVICONNAM )	value = x_get_icon_name();
+		ElseIf( EVXDISPLAY )
+			if (x_display == 0)
+				SetEnv(&x_display, DftEnv("DISPLAY", "unix:0"));
+			value = x_display;
 		ElseIf( EVXSHELL )
 			if (x_shell == 0)
 				SetEnv(&x_shell, DftEnv("XSHELL", "xterm"));
@@ -630,7 +635,7 @@ unsigned *pos)
 	if (buf[0] == '$') {
 		*pos -= 1;	/* account for leading '$', not in tables */
 		status = kbd_complete(FALSE, c, buf+1, pos,
-				(const void *)list_of_modes(), sizeof(char *));
+				(const char *)list_of_modes(), sizeof(char *));
 		*pos += 1;
 	} else {
 		if (c != NAMEC) /* cancel the unget */
@@ -864,6 +869,7 @@ char *value)	/* value to set to */
 		ElseIf( EVFONT ) status = x_setfont(value);
 		ElseIf( EVTITLE ) x_set_window_name(value);
 		ElseIf( EVICONNAM ) x_set_icon_name(value);
+		ElseIf( EVXDISPLAY ) SetEnv(&x_display, value);
 		ElseIf( EVXSHELL ) SetEnv(&x_shell, value);
 #endif
 		ElseIf( EVSHELL )
@@ -961,7 +967,7 @@ char *value)	/* value to set to */
 const char *
 skip_cblanks(const char *src)
 {
-	while (isspace(*src))
+	while (isSpace(*src))
 		src++;
 	return src;
 }
@@ -975,7 +981,7 @@ skip_cstring(const char *src)
 const char *
 skip_ctext(const char *src)
 {
-	while (*src != EOS && !isspace(*src))
+	while (*src != EOS && !isSpace(*src))
 		src++;
 	return src;
 }
@@ -987,7 +993,7 @@ skip_ctext(const char *src)
 char *
 skip_blanks(char *src)
 {
-	while (isspace(*src))
+	while (isSpace(*src))
 		src++;
 	return src;
 }
@@ -1001,7 +1007,7 @@ skip_string(char *src)
 char *
 skip_text(char *src)
 {
-	while (*src != EOS && !isspace(*src))
+	while (*src != EOS && !isSpace(*src))
 		src++;
 	return src;
 }
@@ -1083,7 +1089,7 @@ const char *tokn)	/* token to analyze */
 		return(TKNUL);
 
 	/* a numeric literal? */
-	if (isdigit(tokn[0]))
+	if (isDigit(tokn[0]))
 		return(TKLIT);
 
 	if (tokn[0] == '"')
@@ -1315,8 +1321,8 @@ char *str)		/* string to upper case */
 
 	sp = str;
 	while (*sp) {
-		if (islower(*sp))
-			*sp = toupper(*sp);
+		if (isLower(*sp))
+			*sp = toUpper(*sp);
 		++sp;
 	}
 	return(str);
@@ -1331,8 +1337,8 @@ char *str)		/* string to lower case */
 
 	sp = str;
 	while (*sp) {
-		if (isupper(*sp))
-			*sp = tolower(*sp);
+		if (isUpper(*sp))
+			*sp = toLower(*sp);
 		++sp;
 	}
 	return(str);
@@ -1345,7 +1351,7 @@ mktrimmed(register char *str)	/* trim whitespace */
 	register char *dst = str;
 
 	while (*str != EOS) {
-		if (isspace(*str)) {
+		if (isSpace(*str)) {
 			if (dst != base)
 				*dst++ = ' ';
 			str = skip_blanks(str);
@@ -1354,7 +1360,7 @@ mktrimmed(register char *str)	/* trim whitespace */
 		}
 	}
 	if (dst != base
-	 && isspace(dst[-1]))
+	 && isSpace(dst[-1]))
 	 	dst--;
 	*dst = EOS;
 	return base;
@@ -1424,6 +1430,7 @@ ev_leaks(void)
 	FreeAndNull(shell);
 	FreeAndNull(directory);
 #if DISP_X11
+	FreeAndNull(x_display);
 	FreeAndNull(x_shell);
 #endif
 #endif

@@ -1,5 +1,15 @@
 Changes for vile 7.3 (released ??? ??? ??, 1997)
 
+(tom)	971008 (h)
+	+ correct typo in stubbed-out code for $xshell, add $xdisplay and
+	  example script 'xshell.sh' which can be used to run a shell command
+	  from xvile, prompting at the end so that the output doesn't go away
+	  when the xterm completes.
+	+ rename vile's ctype macros to mixed-case to avoid conflict.  This
+	  is needed for Solaris 2.6, which does not implement ctype as macros.
+	+ modify casts and some names (e.g., new, operator, class) to allow
+	  compiling with C++ (tested with g++ 2.7.2 on Linux).
+
 (kev)	971007 (g)
 	+ x11.c (multi_click): Reimplemented multiclick selections for
 	  lines.  Previously, it was not possible to select the entirety

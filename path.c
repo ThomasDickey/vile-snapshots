@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.79 1997/08/22 09:32:58 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.80 1997/10/07 00:21:53 tom Exp $
  *
  *
  */
@@ -41,7 +41,7 @@
 #if (SYS_WIN31 && CC_TURBO) || SYS_WINNT
 # include <direct.h>
 # define curdrive() (_getdrive() + ('A' - 1))
-# define curr_dir_on_drive(d) _getdcwd(toupper(d) - ('A' - 1), temp, sizeof(temp))
+# define curr_dir_on_drive(d) _getdcwd(toUpper(d) - ('A' - 1), temp, sizeof(temp))
 #endif
 
 #ifdef GMDRESOLVE_LINKS
@@ -121,7 +121,7 @@ is_msdos_drive(char *path)
 	if (is_slashc(path[0]) && is_slashc(path[1]))
 		return (path+1);
 #endif
-	if (isalpha(path[0]) && path[1] == ':')
+	if (isAlpha(path[0]) && path[1] == ':')
 		return (path+2);
 	return 0;
 }
@@ -594,7 +594,7 @@ resolve_directory(
 
 		/* loop until no more links */
 		while ((st.st_mode & S_IFMT) == S_IFLNK) {
-			int got;
+			int got = 0;
 
 			if (levels++ > 4	/* FIXME */
 			 || (got = readlink(temp_name,
@@ -823,8 +823,8 @@ case_correct_path(char *old_file, char *new_file)
 		if (old_file[0] && old_file[1] == ':') {
 			new_file[0] = old_file[0];
 			new_file[1] = old_file[1];
-			if (islower(new_file[0]))
-				new_file[0] = toupper(new_file[0]);
+			if (isLower(new_file[0]))
+				new_file[0] = toUpper(new_file[0]);
 			current = old_file + 2;
 			sofar = new_file + 2;
 		}
@@ -922,8 +922,8 @@ case_correct_path(char *old_file, char *new_file)
 	if (old_file[0] && old_file[1] == ':') {
 		new_file[0] = old_file[0];
 		new_file[1] = old_file[1];
-		if (islower(new_file[0]))
-			new_file[0] = toupper(new_file[0]);
+		if (isLower(new_file[0]))
+			new_file[0] = toUpper(new_file[0]);
 		current = old_file + 2;
 		sofar = new_file + 2;
 	}
@@ -1311,8 +1311,8 @@ mixed_case(const char *path)
 	int	had_upper = FALSE;
 	int	had_lower = FALSE;
 	while ((c = *path++) != EOS) {
-		if (islower(c))	had_lower = TRUE;
-		if (isupper(c))	had_upper = TRUE;
+		if (isLower(c))	had_lower = TRUE;
+		if (isUpper(c))	had_upper = TRUE;
 	}
 	return (had_upper && had_lower);
 }

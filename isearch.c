@@ -7,7 +7,7 @@
  *
  * original author: D. R. Banks 9-May-86
  *
- * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.47 1997/03/15 15:48:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.48 1997/10/06 23:30:37 tom Exp $
  *
  */
 
@@ -340,7 +340,7 @@ expandp(
 			*deststr++ = 'L';
 			*deststr++ = '>';
 			maxlength -= 4;
-		} else if (!isprint(c)) {	/* control character */
+		} else if (!isPrint(c)) {	/* control character */
 			*deststr++ = '^';
 			*deststr++ = toalpha(c);
 			maxlength -= 2;
@@ -368,7 +368,7 @@ echochar(
 	int             col)	/* column to be echoed in */
 {
 	movecursor(term.t_nrow-1, col);	/* Position the cursor */
-	if (!isprint(c)) {	/* control char */
+	if (!isPrint(c)) {	/* control char */
 		TTputc('^');	/* Yes, output prefix */
 		TTputc(toalpha(c));	/* Make it "^X" */
 		col++;		/* Count this char */

@@ -11,7 +11,7 @@
  *
  *		pgf, 11/91
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.63 1997/03/30 23:06:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.64 1997/10/07 00:23:58 tom Exp $
  *
  */
 
@@ -232,26 +232,26 @@ static long regsize;		/* Code size. */
 #define NOMAGICMETA "?+()<>|*[] .~"
 
 static void
-regmassage(const char *old, char *new, int magic)
+regmassage(const char *old, char *nxt, int magic)
 {
 	const char *metas =  magic ? MAGICMETA : NOMAGICMETA;
 	while (*old) {
 		if (*old == '\\') { /* remove \ from these metas */
 			if (*(old+1) == EOS) {
-				*new++ = '\\';
+				*nxt++ = '\\';
 				break;
 			}
 			if (strchr(metas, *(old+1))) {
 				old++; /* skip the \ */
 			} else if (*(old+1) == '\\') {
-				*new++ = *old++;  /* the escape */
+				*nxt++ = *old++;  /* the escape */
 			}
 		} else if (strchr(metas, *old)) { /* add \ to these metas */
-			*new++ = '\\';
+			*nxt++ = '\\';
 		}
-		*new++ = *old++;  /* the char */
+		*nxt++ = *old++;  /* the char */
 	}
-	*new = EOS;
+	*nxt = EOS;
 }
 
 /*
@@ -614,7 +614,7 @@ regatom(int *flagp, int at_bop)
 		*flagp |= HASWIDTH|SIMPLE;
 		break;
 	case '[': {
-			register int class;
+			register int classbgn;
 			register int classend;
 
 			if (*regparse == '^') {	/* Complement of range. */
@@ -630,14 +630,14 @@ regatom(int *flagp, int at_bop)
 					if (*regparse == ']' || *regparse == EOS)
 						regc('-');
 					else {
-						class = UCHAR_AT(regparse-2)+1;
+						classbgn = UCHAR_AT(regparse-2)+1;
 						classend = UCHAR_AT(regparse);
-						if (class > classend+1) {
+						if (classbgn > classend+1) {
 							regerror("invalid [] range");
 							return NULL;
 						}
-						for (; class <= classend; class++)
-							regc(class);
+						for (; classbgn <= classend; classbgn++)
+							regc(classbgn);
 						regparse++;
 					}
 				} else
@@ -1143,14 +1143,14 @@ regmatch(char *prog)
 			/* any single whitespace, but not bol or eol */
 			if (reginput == regnomore)
 				return 0;
-			if (!isspace(*reginput))
+			if (!isSpace(*reginput))
 				return 0;
 			reginput++;
 			break;
 		case NWHITESP:
 			if (reginput == regnomore)
 				return 0;
-			if (isspace(*reginput))
+			if (isSpace(*reginput))
 				return 0;
 			reginput++;
 			break;
@@ -1171,28 +1171,28 @@ regmatch(char *prog)
 		case DIGIT:
 			if (reginput == regnomore)
 				return 0;
-			if (!isdigit(*reginput))
+			if (!isDigit(*reginput))
 				return 0;
 			reginput++;
 			break;
 		case NDIGIT:
 			if (reginput == regnomore)
 				return 0;
-			if (isdigit(*reginput))
+			if (isDigit(*reginput))
 				return 0;
 			reginput++;
 			break;
 		case PRINT:
 			if (reginput == regnomore)
 				return 0;
-			if (!(isprint(*reginput) || isspace(*reginput)))
+			if (!(isPrint(*reginput) || isSpace(*reginput)))
 				return 0;
 			reginput++;
 			break;
 		case NPRINT:
 			if (reginput == regnomore)
 				return 0;
-			if (isprint(*reginput) || isspace(*reginput))
+			if (isPrint(*reginput) || isSpace(*reginput))
 				return 0;
 			reginput++;
 			break;
@@ -1421,13 +1421,13 @@ regrepeat(const char *p)
 		}
 		break;
 	case WHITESP:
-		while (scan != regnomore && isspace(*scan)) {
+		while (scan != regnomore && isSpace(*scan)) {
 			count++;
 			scan++;
 		}
 		break;
 	case NWHITESP:
-		while (scan != regnomore && !isspace(*scan)) {
+		while (scan != regnomore && !isSpace(*scan)) {
 			count++;
 			scan++;
 		}
@@ -1445,27 +1445,27 @@ regrepeat(const char *p)
 		}
 		break;
 	case DIGIT:
-		while (scan != regnomore && isdigit(*scan)) {
+		while (scan != regnomore && isDigit(*scan)) {
 			count++;
 			scan++;
 		}
 		break;
 	case NDIGIT:
-		while (scan != regnomore && !isdigit(*scan)) {
+		while (scan != regnomore && !isDigit(*scan)) {
 			count++;
 			scan++;
 		}
 		break;
 	case PRINT:
 		while (scan != regnomore &&
-				(isprint(*scan) || isspace(*scan))) {
+				(isPrint(*scan) || isSpace(*scan))) {
 			count++;
 			scan++;
 		}
 		break;
 	case NPRINT:
 		while (scan != regnomore &&
-				!(isprint(*scan) || isspace(*scan))) {
+				!(isPrint(*scan) || isSpace(*scan))) {
 			count++;
 			scan++;
 		}

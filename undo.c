@@ -3,7 +3,7 @@
  *
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.66 1997/03/15 15:52:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.67 1997/10/07 23:26:03 tom Exp $
  *
  */
 
@@ -797,7 +797,7 @@ lineundo(int f GCC_UNUSED, int n GCC_UNUSED)
 	preundocleanup();
 
 	ntext = NULL;
-	if (ulp->l_size && (ntext = malloc((ALLOC_T)(ulp->l_size))) == NULL)
+	if (ulp->l_size && (ntext = typeallocn(char,ulp->l_size)) == NULL)
 		return (FALSE);
 
 	copy_for_undo(lp);

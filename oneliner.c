@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.86 1997/08/30 01:07:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.87 1997/10/06 23:35:59 tom Exp $
  */
 
 #include	"estruct.h"
@@ -224,13 +224,13 @@ substreg1(int needpats, int use_opts)
 			} else if (*bp == 'g' &&
 					!globally && !nth_occur) {
 				globally = TRUE;
-			} else if (isdigit(*bp) &&
+			} else if (isDigit(*bp) &&
 					!nth_occur && !globally) {
 				nth_occur = *bp - '0';
 				globally = TRUE;
 			} else if (*bp == 'c' && !confirm) {
 				confirm = TRUE;
-			} else if (!isspace(*bp)) {
+			} else if (!isSpace(*bp)) {
 				mlforce("[Unknown action %s]",buf);
 				return FALSE;
 			}
@@ -472,7 +472,7 @@ delins(regexp *exp, char *sourc)
 		    c = *src++;
 		    if (c == EOS)
 			return TRUE;
-		    if (!isdigit(c)) {
+		    if (!isDigit(c)) {
 			    /* here's where the \U \E \u \l \t etc.
 			    special escapes should be implemented */
 			    switch (c) {
@@ -540,10 +540,10 @@ delins(regexp *exp, char *sourc)
 					       \u\L correctly (upper case first
 					       char, lower case remainder).
 					       This is the perl model, not the vi model. */
-					    if (isupper(c) && (direction == LOWER_CASE))
-						    c = tolower(c);
-					    if (islower(c) && (direction == UPPER_CASE))
-						    c = toupper(c);
+					    if (isUpper(c) && (direction == LOWER_CASE))
+						    c = toLower(c);
+					    if (isLower(c) && (direction == UPPER_CASE))
+						    c = toUpper(c);
 					    s = linsert(1,c);
 				    }
 			    }
@@ -563,10 +563,10 @@ delins(regexp *exp, char *sourc)
 			       \u\L correctly (upper case first
 			       char, lower case remainder).
 			       This is the perl model, not the vi model. */
-			    if (isupper(c) && (direction == LOWER_CASE))
-				    c = tolower(c);
-			    if (islower(c) && (direction == UPPER_CASE))
-				    c = toupper(c);
+			    if (isUpper(c) && (direction == LOWER_CASE))
+				    c = toLower(c);
+			    if (isLower(c) && (direction == UPPER_CASE))
+				    c = toUpper(c);
 		    }
 		    s = linsert(1,c);
 		    break;

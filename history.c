@@ -63,7 +63,7 @@
  *
  *	Allow left/right scrolling of input lines (when they get too long).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.39 1997/09/04 23:15:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.40 1997/10/06 23:47:09 tom Exp $
  *
  */
 
@@ -128,7 +128,7 @@ stopMyBuff(void)
 static int
 willGlue(void)
 {
-	if ((tb_length(MyText) != 0) && isprint(MyGlue)) {
+	if ((tb_length(MyText) != 0) && isPrint(MyGlue)) {
 		register int c = tb_values(MyText)[0];
 		if ((c != SHPIPE_LEFT[0]) || isRepeatable(c))
 			return 1;
@@ -359,7 +359,7 @@ int	direction)
 		if (willGlue()) {		/* avoid conflicts setall/set */
 			register int len = tb_length(MyText);
 			if (len > 0
-			 && (len > 1 || !ispunct(tb_values(MyText)[0]))
+			 && (len > 1 || !isPunct(tb_values(MyText)[0]))
 			 && llength(lp) > len
 			 && lp->l_text[len] != MyGlue)
 				continue;
@@ -485,7 +485,7 @@ hst_scroll(LINE * lp1, HST * parm)
 }
 
 #undef isgraph
-#define	isgraph(c)	(!isspecial(c) && !isspace(c) && isprint(c))
+#define	isgraph(c)	(!isspecial(c) && !isSpace(c) && isPrint(c))
 
 /*
  * Invoked on an escape-character, this processes history-editing until another
@@ -514,8 +514,8 @@ int	eolchar)
 		if (is_edit_char(c)
 		 || ABORTED(c)
 		 || (c == quotec)
-		 || isspace(c)
-		 || !iscntrl(c))
+		 || isSpace(c)
+		 || !isCntrl(c))
 			return FALSE;
 	}
 

@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.65 $)
+AC_REVISION($Revision: 1.66 $)
 AC_PREREQ(2.12)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.65 1997/10/04 15:02:33 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.66 1997/10/08 10:36:08 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -303,6 +303,7 @@ killpg \
 link \
 mkdir \
 poll \
+putenv \
 select \
 setitimer \
 setsid \

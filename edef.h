@@ -8,17 +8,30 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.212 1997/09/05 00:45:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.213 1997/10/07 10:13:05 tom Exp $
  */
+
+#ifndef VILE_EDEF_H
+#define VILE_EDEF_H 1
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* I know this declaration stuff is really ugly, and I probably won't ever
  *	do it again.  promise.  but it _does_ make it easy to add/change
  *	globals. -pgf
  */
 #ifdef realdef
-# define decl_init(thing,value) thing = value
-# define decl_uninit(thing) thing
+# ifdef __cplusplus
+#  define decl_init_const(thing,value) extern const thing = value
+# else
+#  define decl_init_const(thing,value) thing = value
+# endif
+#  define decl_init(thing,value) thing = value
+#  define decl_uninit(thing) thing
 #else
+# define decl_init_const(thing,value) extern const thing
 # define decl_init(thing,value) extern thing
 # define decl_uninit(thing) extern thing
 #endif
@@ -275,67 +288,67 @@ decl_uninit( char *helpfile );
 decl_uninit( char *startup_file );
 decl_uninit( char *startup_path );
 
-decl_init( const char hexdigits[], "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+decl_init_const( char hexdigits[], "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 
-decl_init( const char HELP_BufName[],	 	"[Help]");
+decl_init_const( char HELP_BufName[],	 	"[Help]");
 #if OPT_REBIND
-decl_init( const char BINDINGLIST_BufName[],	"[Binding List]");
+decl_init_const( char BINDINGLIST_BufName[],	"[Binding List]");
 # if OPT_TERMCHRS
-decl_init( const char TERMINALCHARS_BufName[],	"[Terminal Chars]");
+decl_init_const( char TERMINALCHARS_BufName[],	"[Terminal Chars]");
 # endif
 #endif
 #if OPT_POPUPCHOICE
-decl_init( const char COMPLETIONS_BufName[],	"[Completions]");
+decl_init_const( char COMPLETIONS_BufName[],	"[Completions]");
 #endif
-decl_init( const char BUFFERLIST_BufName[],	"[Buffer List]");
+decl_init_const( char BUFFERLIST_BufName[],	"[Buffer List]");
 #if OPT_SHOW_EVAL
-decl_init( const char VARIABLES_BufName[],	"[Variables]");
+decl_init_const( char VARIABLES_BufName[],	"[Variables]");
 #endif
-decl_init( const char MACRO_N_BufName[],	"[Macro %d]");
+decl_init_const( char MACRO_N_BufName[],	"[Macro %d]");
 #if COMPLETE_FILES
-decl_init( const char FILECOMPLETION_BufName[],	"[FileCompletion]");
+decl_init_const( char FILECOMPLETION_BufName[],	"[FileCompletion]");
 #endif
 #if COMPLETE_DIRS
-decl_init( const char DIRCOMPLETION_BufName[],	"[DirCompletion]");
+decl_init_const( char DIRCOMPLETION_BufName[],	"[DirCompletion]");
 #endif
-decl_init( const char OUTPUT_BufName[],		"[Output]");
+decl_init_const( char OUTPUT_BufName[],		"[Output]");
 #if OPT_FINDERR
-decl_init( const char ERRORS_BufName[],		"[Error Expressions]");
+decl_init_const( char ERRORS_BufName[],		"[Error Expressions]");
 #endif
 #if OPT_HISTORY
-decl_init( const char HISTORY_BufName[],	"[History]");
+decl_init_const( char HISTORY_BufName[],	"[History]");
 #endif
 #if OPT_SHOW_REGS
-decl_init( const char REGISTERS_BufName[],	"[Registers]");
+decl_init_const( char REGISTERS_BufName[],	"[Registers]");
 #endif
-decl_init( const char STDIN_BufName[],		"[Standard Input]");
-decl_init( const char UNNAMED_BufName[],	"[unnamed]");
-decl_init( const char VILEINIT_BufName[],	"[vileinit]");
+decl_init_const( char STDIN_BufName[],		"[Standard Input]");
+decl_init_const( char UNNAMED_BufName[],	"[unnamed]");
+decl_init_const( char VILEINIT_BufName[],	"[vileinit]");
 #if OPT_SHOW_MAPS
-decl_init( const char MAP_BufName[],		"[Map Sequences]");
-decl_init( const char MAPBANG_BufName[],	"[Map! Sequences]");
-decl_init( const char ABBR_BufName[],		"[Abbreviations]");
-decl_init( const char SYSMAP_BufName[],		"[System Maps]");
+decl_init_const( char MAP_BufName[],		"[Map Sequences]");
+decl_init_const( char MAPBANG_BufName[],	"[Map! Sequences]");
+decl_init_const( char ABBR_BufName[],		"[Abbreviations]");
+decl_init_const( char SYSMAP_BufName[],		"[System Maps]");
 #else
 /* needed anyway, since they're passed around as args */
-decl_init( const char MAP_BufName[],		"");
-decl_init( const char MAPBANG_BufName[],	"");
-decl_init( const char ABBR_BufName[],		"");
-decl_init( const char SYSMAP_BufName[],		"");
+decl_init_const( char MAP_BufName[],		"");
+decl_init_const( char MAPBANG_BufName[],	"");
+decl_init_const( char ABBR_BufName[],		"");
+decl_init_const( char SYSMAP_BufName[],		"");
 #endif
-decl_init( const char SETTINGS_BufName[],	"[Settings]");
+decl_init_const( char SETTINGS_BufName[],	"[Settings]");
 #if OPT_MAJORMODE
-decl_init( const char MAJORMODES_BufName[],	"[Major Modes]");
+decl_init_const( char MAJORMODES_BufName[],	"[Major Modes]");
 #endif
 #if OPT_POPUP_MSGS
-decl_init( const char MESSAGES_BufName[],	"[Messages]");
+decl_init_const( char MESSAGES_BufName[],	"[Messages]");
 #endif
-decl_init( const char P_LINES_BufName[],	"[p-lines]");
+decl_init_const( char P_LINES_BufName[],	"[p-lines]");
 #if OPT_SHOW_TAGS
-decl_init( const char TAGSTACK_BufName[],	"[Tag Stack]");
+decl_init_const( char TAGSTACK_BufName[],	"[Tag Stack]");
 #endif
 #if OPT_TAGS
-decl_init( const char TAGFILE_BufName[],	"[Tags %d]");
+decl_init_const( char TAGFILE_BufName[],	"[Tags %d]");
 #endif
 
 /* defined in nebind.h and nename.h */
@@ -356,3 +369,9 @@ extern	TERM	null_term;
 #if DISP_IBMPC || DISP_BORLAND || DISP_VIO
 decl_init( char *current_res_name, "default");
 #endif	/* IBMPC */
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* VILE_EDEF_H */

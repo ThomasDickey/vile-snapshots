@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.85 1997/09/18 23:14:11 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.86 1997/10/07 18:50:15 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -31,6 +31,7 @@ srcdir_sl = @srcdir@/
 VPATH  = @srcdir@
 
 CC		= @CC@
+CPP		= @CPP@
 LINK		= $(CC) $(CFLAGS)
 INSTALL		= @INSTALL@
 INSTALL_PROGRAM	= @INSTALL_PROGRAM@
@@ -66,6 +67,11 @@ LDFLAGS		=
 
 INSTALL_DIRS    = $(bindir) $(libdir) $(mandir)
 
+.SUFFIXES: .c .i .o
+
+.c.i:
+@RULE_CC@
+	@ECHO_CC@$(CPP) -C $(CPPFLAGS) $< >$@
 .c.o:
 @RULE_CC@
 	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(CFLAGS) -DHELP_LOC=\"$(libdir)/\" $<
@@ -213,7 +219,7 @@ config.status: configure
 	$(SHELL) ./config.status --recheck
 
 mostlyclean:
-	-$(RM) *.o o$(TARGET) $(BUILTHDRS) $(MKTBLS) core *~ *.BAK
+	-$(RM) *.[oi] o$(TARGET) $(BUILTHDRS) $(MKTBLS) core *~ *.BAK
 
 clean: mostlyclean
 	-$(RM) $(TARGET) vile-manfilt vile-c-filt

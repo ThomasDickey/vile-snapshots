@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.104 1997/09/19 00:52:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.106 1997/10/07 23:25:28 tom Exp $
  *
  */
 
@@ -797,7 +797,7 @@ legal_fsm(const char *val)
 		const FSM_CHOICES *p = fsm_tbl[idx].choices;
 		const char *s;
 
-		if (isdigit(*val)) {
+		if (isDigit(*val)) {
 			if (!string_to_number(val, &i))
 				return 0;
 			if ((s = choice_to_name(p, i)) != 0)
@@ -817,13 +817,13 @@ legal_fsm(const char *val)
 static int
 fsm_complete(int c, char *buf, unsigned *pos)
 {
-    if (isdigit(*buf)) {		/* allow numbers for colors */
+    if (isDigit(*buf)) {		/* allow numbers for colors */
 	if (c != NAMEC)  		/* put it back (cf: kbd_complete) */
 	    unkeystroke(c);
-	return isspace(c);
+	return isSpace(c);
     }
     return kbd_complete(FALSE, c, buf, pos,
-                        (const void *)(fsm_tbl[fsm_idx].choices),
+                        (const char *)(fsm_tbl[fsm_idx].choices),
 			sizeof (FSM_CHOICES) );
 }
 #endif	/* OPT_ENUM_MODES */
@@ -949,7 +949,7 @@ VALARGS *args)			/* symbol-table entry for the mode */
 			{
 				const FSM_CHOICES *fp = name_to_choices(names);
 
-				if (isdigit(*rp)) {
+				if (isDigit(*rp)) {
 					if (!string_to_number(rp, &nval))
 						return FALSE;
 					if (choice_to_name(fp, nval) == 0)
@@ -1033,7 +1033,7 @@ mode_complete(DONE_ARGS)
 	init_my_mode_list();
 
 	return kbd_complete(FALSE, c, buf, pos,
-		(const void *)&my_mode_list[0], sizeof(my_mode_list[0]));
+		(const char *)&my_mode_list[0], sizeof(my_mode_list[0]));
 }
 
 int
@@ -1061,14 +1061,14 @@ int
 find_mode(const char *mode, int global, VALARGS *args)
 {
 	register const char *rp = !strncmp(mode, "no", 2) ? mode+2 : mode;
-	register int	class;
+	register int	mode_class;
 	register int	j;
 
 	TRACE(("find_mode(%s) %s\n", mode, global ? "global" : "local"))
 
-	for (class = 0; class < MODE_CLASSES; class++) {
+	for (mode_class = 0; mode_class < MODE_CLASSES; mode_class++) {
 		memset(args, 0, sizeof(*args));
-		switch (class) {
+		switch (mode_class) {
 		default: /* universal modes */
 			args->names  = g_valnames;
 			args->global = global_g_values.gv;
@@ -1133,9 +1133,9 @@ find_mode(const char *mode, int global, VALARGS *args)
 				args->names  += j;
 				args->local  += j;
 				args->global += j;
-				TRACE(("...found class %d %s\n", class, rp))
+				TRACE(("...found class %d %s\n", mode_class, rp))
 #if OPT_MAJORMODE
-				if (class == 3) {
+				if (mode_class == 3) {
 					char *it = (curbp->majr != 0)
 						? curbp->majr->name
 						: "?";
@@ -1161,7 +1161,7 @@ find_mode(const char *mode, int global, VALARGS *args)
 #if OPT_MAJORMODE
 	/* major submodes (buffers) */
 	if (my_majormodes != 0 && global != FALSE) {
-		int k;
+		int k = 0;
 		size_t n = strlen(rp);
 
 		for (j = 0; my_majormodes[j].name; j++) {
@@ -1595,7 +1595,7 @@ is_identifier (const char *name)
 
 	while (*name != EOS) {
 		if (first) {
-			if (!isalpha(*name))
+			if (!isAlpha(*name))
 				return FALSE;
 			first = FALSE;
 		} else if (!isident(*name))
@@ -1689,7 +1689,7 @@ ModeName(const char *name)
 		static char *dst;
 		if (dst != 0)
 			free(dst);
-		dst = malloc(strlen(TheMajor) + strlen(name) + 3);
+		dst = typeallocn(char, strlen(TheMajor) + strlen(name) + 3);
 		(void) lsprintf(dst, "%s-%s", TheMajor, name);
 		return dst;
 	}
@@ -1956,7 +1956,7 @@ static int
 detach_mmode(BUFFER *bp, const char *name)
 {
 	size_t n;
-	MAJORMODE *mp;
+	MAJORMODE *mp = 0;
 
 	if (bp != 0
 	 && (mp = bp->majr) != 0

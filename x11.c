@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.159 1997/10/07 09:48:47 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.160 1997/10/07 14:10:10 tom Exp $
  *
  */
 
@@ -4090,9 +4090,9 @@ set_character_class(register char *s)
 	    i < len; i++) {
 	int        c = s[i];
 
-	if (isspace(c)) {
+	if (isSpace(c)) {
 	    continue;
-	} else if (isdigit(c)) {
+	} else if (isDigit(c)) {
 	    acc = acc * base + (c - '0');
 	    digits++;
 	    continue;
@@ -4174,7 +4174,7 @@ int	c)
 {
 	if (c == '\n' || isblank(c))
 		/*EMPTY*/;
-	else if (isspecial(c) || (c == '\r') || !isprint(c))
+	else if (isspecial(c) || (c == '\r') || !isPrint(c))
 	 	(void)tb_append(p, quotec);
 	return (tb_append(p, c) != 0);
 }
@@ -4604,7 +4604,8 @@ multi_click(
 		return;
 	case 3:			/* line (doesn't include trailing newline) */
 		if (setcursor(nr,sc)) {
-			MARK saveDOT = DOT;
+			MARK saveDOT;
+			saveDOT = DOT;
 			(void) gotobol(0, 0);
 			(void) sel_begin();
 			(void) gotoeol(FALSE, 0);

@@ -4,7 +4,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.83 1997/09/05 00:03:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.84 1997/10/06 23:35:59 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -230,9 +230,9 @@ tag_search(char *tag, int taglen, int initial)
 		mlforce("[Bad line in tags file.]");
 		return FALSE;
 	}
-	if (isdigit(*tfp)) { /* then it's a line number */
+	if (isDigit(*tfp)) { /* then it's a line number */
 		lineno = 0;
-		while (isdigit(*tfp) && (tfp < lplim)) {
+		while (isDigit(*tfp) && (tfp < lplim)) {
 			lineno = 10*lineno + *tfp - '0';
 			tfp++;
 		}
@@ -305,7 +305,7 @@ nth_name(char *buf, const char *path, int n)
 		path = skip_ctext(path);
 	}
 	path = skip_cblanks(path);
-	while (*path && !isspace(*path)) *buf++ = *path++;
+	while (*path && !isSpace(*path)) *buf++ = *path++;
 	*buf = EOS;
 }
 
@@ -381,8 +381,8 @@ static int my_strncasecmp(const char *a, const char *b, size_t len)
 	int aa = EOS, bb = EOS;
 
 	while (len != 0
-	  && (aa = isalpha(*a) ? tolower(*a) : *a) != EOS
-	  && (bb = isalpha(*b) ? tolower(*b) : *b) != EOS
+	  && (aa = isAlpha(*a) ? toLower(*a) : *a) != EOS
+	  && (bb = isAlpha(*b) ? toLower(*b) : *b) != EOS
 	  && (aa == bb)) {
 		len--;
 		a++;

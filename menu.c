@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.14 1997/08/20 20:07:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.15 1997/10/06 23:24:55 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -265,7 +265,7 @@ int parse_menu ( const char *rc_filename )
                         strcpy(Token[Nb_Token].libelle, ptr_tok);
                         break;
                     case 1:
-                        if (isdigit((int)*ptr_tok))
+                        if (isDigit((int)*ptr_tok))
                         {
                             tmp = (int)atoi(ptr_tok);
                             Token[Nb_Token].macro = tmp;

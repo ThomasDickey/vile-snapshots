@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.94 1997/10/05 21:46:13 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.95 1997/10/06 23:30:36 tom Exp $
  *
  */
 
@@ -444,7 +444,7 @@ int
 nextchar(LINE *lp, int off)
 {
 	while (off < llength(lp)) {
-		if (!isspace(lgetc(lp,off)))
+		if (!isSpace(lgetc(lp,off)))
 			return off;
 		off++;
 	}
@@ -457,7 +457,7 @@ int
 lastchar(LINE *lp)
 {
 	int off = llength(lp)-1;
-	while ( off >= 0 && isspace(lgetc(lp, off)) )
+	while ( off >= 0 && isSpace(lgetc(lp, off)) )
 		off--;
 	return off;
 }
@@ -714,7 +714,7 @@ gotobosent(int f, int n)
 	savepos = DOT;
 	exp = b_val_rexp(curbp,VAL_SENTENCES)->reg;
 
-	while (s && (is_at_end_of_line(DOT) || isspace(char_at(DOT)))) {
+	while (s && (is_at_end_of_line(DOT) || isSpace(char_at(DOT)))) {
 		s = backchar(TRUE,1);
 		if (is_at_end_of_line(DOT) && !empty)
 			return TRUE;
@@ -725,7 +725,7 @@ gotobosent(int f, int n)
 		return gotobob(f,n);
 	}
 	s = forwchar(TRUE, RegexpLen(exp));
-	while (s && (is_at_end_of_line(DOT) || isspace(char_at(DOT)))) {
+	while (s && (is_at_end_of_line(DOT) || isSpace(char_at(DOT)))) {
 		s = forwchar(TRUE,1);
 		extra++;
 	}
@@ -770,7 +770,7 @@ gotoeosent(int f, int n)
 		}
 	}
 	s = forwchar(TRUE, RegexpLen(exp));
-	while (s && (is_at_end_of_line(DOT) || isspace(char_at(DOT)))) {
+	while (s && (is_at_end_of_line(DOT) || isSpace(char_at(DOT)))) {
 		s = forwchar(TRUE,1);
 	}
 	return TRUE;
@@ -809,7 +809,7 @@ next_column(int c, int col)
 {
 	if (c == '\t')
 		return nextab(col);
-	else if (!isprint(c))
+	else if (!isPrint(c))
 		return col+2;
 	else
 		return col+1;
@@ -1081,7 +1081,7 @@ gonmmark(int c)
 	MARK tmark;
 	int found;
 
-	if (!islower(c) && c != '\'') {
+	if (!isLower(c) && c != '\'') {
 		mlforce("[Invalid mark name]");
 		return FALSE;
 	}

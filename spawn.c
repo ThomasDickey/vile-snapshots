@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.116 1997/09/29 11:07:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.119 1997/10/08 10:39:09 tom Exp $
  *
  */
 
@@ -45,6 +45,40 @@ extern  short	iochan;				/* In "termio.c"	*/
 #define	AfterShell()	TRUE
 #endif
 
+#if DISP_X11
+static void x_window_SHELL(const char *cmd)
+{
+	int flag = im_waiting(TRUE);
+	TBUFF *tmp = 0;
+
+	/*
+	 * We would use the -display option of xterm, but that would get in the
+	 * way of the user's ability to customize $xshell.
+	 */
+#if HAVE_PUTENV
+	static char *display_env;
+	char *env = gtenv("xdisplay");
+	if (display_env != 0)
+		free(display_env);
+	display_env = typeallocn(char,20+strlen(env));
+	lsprintf(display_env, "DISPLAY=%s", env);
+	putenv(display_env);
+#endif
+
+	tmp = tb_scopy(&tmp, gtenv("xshell"));
+	if (cmd != 0) {
+		tb_unput(tmp);
+		tmp = tb_sappend(&tmp, " -e ");
+		tmp = tb_sappend(&tmp, cmd);
+		tmp = tb_append(&tmp, EOS);
+	}
+	TRACE(("executing '%s'\n", tb_values(tmp)));
+	(void)system(tb_values(tmp));
+	(void)im_waiting(flag);
+	tb_free(&tmp);
+}
+#endif
+
 /*
  * Create a subjob with a copy of the command interpreter in it. When the
  * command interpreter exits, mark the screen as garbage so that you do a full
@@ -63,12 +97,7 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 	ttclean(TRUE);
 	TTputc('\n');
 #if	DISP_X11
-	{
-//		int flag = im_waiting(TRUE);
-		//(void)system(gtenv("xshell"));
-		(void)system("xterm");
-//		(void)im_waiting(flag);
-	}
+	(void)x_window_SHELL((char *)0);
 #else
 	(void)system_SHELL((char *)0);
 #endif
@@ -305,7 +334,7 @@ spawn1(int rerun, int pressret)
 
 #if SYS_UNIX
 #if DISP_X11
-	(void)system_SHELL(line);
+	(void)x_window_SHELL(line);
 #else
 	ttclean(TRUE);
 	(void)system_SHELL(line);
