@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.367 1998/11/23 22:54:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.369 1998/12/14 02:23:21 cmorgan Exp $
  */
 
 #ifndef _estruct_h
@@ -211,6 +211,7 @@
 # if !defined(__DECC)
 #  undef  HAVE_QSORT
 #  define HAVE_QSORT 0	/* VAX-C's 'qsort()' is definitely broken */
+#  define CC_CANNOT_INIT_UNIONS 1
 # endif
 # define SIGT void
 # define SIGRET
@@ -230,8 +231,13 @@
 #define CRLF_LINES 	(SYS_MSDOS || SYS_OS2 || SYS_WINNT)
 
 #include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#if SYS_VMS && (! defined(__DECC_VER))
+# include <types.h>
+# include <stat.h>
+#else
+# include <sys/types.h>
+# include <sys/stat.h>
+#endif
 
 #if HAVE_LIBC_H
 #include <libc.h>

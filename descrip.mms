@@ -11,7 +11,7 @@
 # all as "0".  If you use tcap.c, you'll need libtermcap.a too.  If you use
 # x11.c, you'll need libX11.a too.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.36 1998/09/21 11:03:58 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.37 1998/12/14 02:10:10 cmorgan Exp $
 
 .IFDEF __XVILE__
 
@@ -156,6 +156,15 @@ all :
 #	CC_OPTIONS = /PREFIX_LIBRARY_ENTRIES=ALL_ENTRIES	(DEC-C)
 # The latter (DEC-C) gives better type-checking -- T.Dickey
 #
+# But on a VAX, the DEC-C compiler and/or its run-time library cause
+# vile to change the "Revised time" of every file the editor _reads_.
+# You won't like this when using mms or a make clone.  The VAXC
+# compiler does not suffer from this problem.
+#
+# Configuration where problem was observed:
+#                DEC C V5.6-003 on OpenVMS VAX V7.1
+#                                                    --C. Morgan
+#
 .IFDEF __ALPHA__
 CC_OPTIONS = /PREFIX_LIBRARY_ENTRIES=ALL_ENTRIES
 CC_DEFS = ,HAVE_ALARM
@@ -164,7 +173,7 @@ CC_DEFS = ,HAVE_ALARM
 CC_OPTIONS = /DECC /PREFIX_LIBRARY_ENTRIES=ALL_ENTRIES
 CC_DEFS = ,HAVE_ALARM
 .ELSE
-CC_OPTIONS =
+CC_OPTIONS = /VAXC
 CC_DEFS = ,HAVE_SYS_ERRLIST
 .ENDIF
 .ENDIF
@@ -182,7 +191,7 @@ nemode.h :	modetbl $(MKTBLS)
 # install to DESTDIR1 if it's writable, else DESTDIR2
 install :
 	@ WRITE SYS$ERROR "** no rule for $@"
-	
+
 clean :
 	@- if f$search("*.obj") .nes. "" then delete *.obj;*
 	@- if f$search("*.bak") .nes. "" then delete *.bak;*
@@ -235,7 +244,7 @@ word.obj :	nefunc.h
 # can also use /Debug /Listing, /Show=All
 CFLAGS =-
 	$(CC_OPTIONS)/Diagnostics /Define=("os_chosen",$(SCRDEF)$(CC_DEFS)) -
-	/Object=$@ /Include=($(INCS)) 
+	/Object=$@ /Include=($(INCS))
 
 .C.OBJ :
 	$(CC) $(CFLAGS) $(MMS$SOURCE)
@@ -245,7 +254,7 @@ $(MKTBLS) : mktbls.obj $(OPTFILE)
 	$(LINK) $(LINKFLAGS) mktbls.obj $(OPTIONS)
 
 $(TARGET) : $(OBJ), vms_link.opt, descrip.mms $(OPTFILE)
-	$(LINK) $(LINKFLAGS) main.obj, $(SCREEN).obj, vms_link/opt 
+	$(LINK) $(LINKFLAGS) main.obj, $(SCREEN).obj, vms_link/opt
 
 vms_link.opt :
 	@vmsbuild vms_link_opt

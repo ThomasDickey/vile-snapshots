@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.186 1998/11/30 23:23:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.187 1998/12/14 11:50:02 tom Exp $
  *
  */
 
@@ -1614,7 +1614,7 @@ kbd_putc(int c)
 		if (! is_header_line(DOT,curbp) && !is_at_end_of_line(DOT))
 			forwchar(TRUE,1); /* END OF LINE HACK */
 #ifdef DEBUG
-		TRACE(("mini:%2d:%.*s\n", llength(DOT.l), llength(DOT.l), DOT.l->l_text));
+		TRACE(("mini:%2d:%s\n", llength(DOT.l), lp_visible(DOT.l)));
 #endif
 	}
 	curbp = savebp;
@@ -1654,7 +1654,7 @@ kbd_erase(void)
 		ldelete(1, FALSE);
 	}
 #ifdef DEBUG
-	TRACE(("MINI:%2d:%.*s\n", llength(DOT.l), llength(DOT.l), DOT.l->l_text));
+	TRACE(("MINI:%2d:%s\n", llength(DOT.l), lp_visible(DOT.l)));
 #endif
 	curbp = savebp;
 	curwp = savewp;
@@ -1682,7 +1682,7 @@ kbd_erase_to_end(int column)
 	if (llength(DOT.l) > 0) {
 		DOT.o = column;
 		ldelete(llength(DOT.l) - DOT.o, FALSE);
-		TRACE(("NULL:%2d:%.*s\n", llength(DOT.l), llength(DOT.l), DOT.l->l_text));
+		TRACE(("NULL:%2d:%s\n", llength(DOT.l), lp_visible(DOT.l)));
 	}
 	curbp = savebp;
 	curwp = savewp;
