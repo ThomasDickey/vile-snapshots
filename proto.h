@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.356 1999/06/21 01:08:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.358 1999/07/03 13:29:41 tom Exp $
  *
  */
 
@@ -157,7 +157,7 @@ extern int popupbuff (BUFFER *bp);
 extern int renamebuffer(BUFFER *rbp, char *bufname);
 extern int shiftwid_val (BUFFER *bp);
 extern int swbuffer (BUFFER *bp);
-extern int swbuffer_lfl (BUFFER *bp, int lockfl);
+extern int swbuffer_lfl (BUFFER *bp, int lockfl, int this_window);
 extern int tabstop_val (BUFFER *bp);
 extern int zotbuf (BUFFER *bp);
 extern int zotwp (BUFFER *bp);
@@ -452,6 +452,7 @@ extern	void	scwrite (int row, int col, int nchar, const char *outstr, VIDEO_ATTR
 #endif
 
 /* input.c */
+extern const char *user_reply(const char *prompt);
 extern int dotcmdbegin (void);
 extern int dotcmdfinish (void);
 extern int end_string (void);
@@ -467,7 +468,6 @@ extern int kbd_seq (void);
 extern int kbd_seq_nomap (void);
 extern int kbd_show_response (TBUFF **dst, char *src, unsigned bufn, int eolchar, UINT options);
 extern int kbd_string (const char *prompt, char *extbuf, unsigned bufn, int eolchar, UINT options, int (*func)(DONE_ARGS));
-extern const char *user_reply(const char *prompt);
 extern int kbm_started (int macnum, int force);
 extern int keystroke (void);
 extern int keystroke8 (void);
@@ -482,6 +482,7 @@ extern int mlreply_reg (const char *prompt, char *cbuf, int *retp, int at_dft);
 extern int mlreply_reg_count (int state, int *retp, int *next);
 extern int mlyesno (const char *prompt);
 extern int no_completion (DONE_ARGS);
+extern int read_quoted(int count, int verbose);
 extern int screen_string (char *buf, int bufn, CHARTYPE inclchartype);
 extern int start_kbm (int n, int macnum, ITBUFF *ptr);
 extern int tgetc (int quoted);
@@ -1031,7 +1032,9 @@ extern void dowatchcallback(int fd);
 extern WINDOW * wpopup (void);
 extern int delwp (WINDOW *thewp);
 extern int set_curwp (WINDOW *wp);
+extern void clone_window (WINDOW *dst, WINDOW *src);
 extern void copy_traits (W_TRAITS *dst, W_TRAITS *src);
+extern void init_window (WINDOW *wp, BUFFER *bp);
 extern void shrinkwrap (void);
 extern void winit (int screen);
 

@@ -3,10 +3,10 @@
 ;;
 ;; Author: Kevin Buettner
 ;;
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.2 1999/03/24 23:43:15 pgf Exp $
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.3 1999/06/23 22:34:38 tom Exp $
 ;;
 
-29 store-macro
+store-procedure ShowManpage
 	set-variable %manpage &query "man page? "
 	~if &or &seq %manpage "ERROR" & seq %manpage ""
 		~return
@@ -29,4 +29,37 @@
 	~endif
 	set noterse
 ~endm
-bind-key execute-macro-29 ^X-m
+bind-key ShowManpage ^X-m
+
+store-procedure ShowFormatted
+	~if &sin $cbufname "<"
+		set-variable %manpagebuf $cbufname
+		set-variable %manpagesrc &mid $cbufname 2 &sub &len $cbufname 2
+		~force select-buffer %manpagesrc
+		~if &not $status
+			write-message &cat "Buffer not found: " %manpagesrc
+			~return
+		~endif
+	~else
+		set-variable %manpagebuf &cat "<" &cat $cbufname ">"
+	~endif
+	set terse
+	~force kill-buffer %manpagebuf
+	~if &sin $cfilname ".ms"
+		edit-file &cat "!tbl " &cat $cfilname " | nroff -ms | vile-manfilt"
+	~else
+		edit-file &cat "!tbl " &cat $cfilname " | nroff -man | vile-manfilt"
+	~endif
+	~force rename-buffer %manpagebuf
+	~force error-buffer %manpagebuf
+	write-message "[Attaching bold and underline attributes...]"
+	goto-beginning-of-file
+	setl noview
+	attribute-cntl_a-sequences-til end-of-file
+	unmark-buffer
+	setl view
+	goto-beginning-of-file
+	write-message "[Done formatting manual page.]"
+	set noterse
+~endm
+bind-key ShowFormatted ^X-n

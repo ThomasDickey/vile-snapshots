@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.144 1999/05/11 00:24:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.145 1999/07/03 12:32:55 tom Exp $
  *
  */
 
@@ -450,7 +450,7 @@ capturecmd(int f, int n)
 		return s;
 	ch_fname(bp,line);
 	bp->b_active = FALSE; /* force a re-read */
-	if ((s = swbuffer_lfl(bp,FALSE)) != TRUE)
+	if ((s = swbuffer_lfl(bp, FALSE, FALSE)) != TRUE)
 		return s;
 	set_rdonly(bp, line, MDVIEW);
 

@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.103 1999/05/23 21:13:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.106 1999/07/03 14:12:27 tom Exp $
  *
  */
 
@@ -957,6 +957,83 @@ backhpage(int f, int n)
 	return status;
 }
 
+#if OPT_SHOW_MARKS
+static int
+show_mark (int count, BUFFER *bp, MARK mark, int name)
+{
+	static int tab = 8; /* no b_val(bp,VAL_TAB) -- set_rdonly uses 8 */
+	static int stop;
+
+	if (!samepoint(mark, nullmark)) {
+
+		if (!count) {
+			bprintf("\nMark  Line     Column");
+			if (stop == 0) {
+				stop = ((DOT.o + tab - 1) / tab) * tab;
+			}
+			bprintf("%*PText", stop - DOT.o, ' ');
+			bprintf("\n----  -------- ------");
+			bprintf("%*P----", stop - DOT.o, ' ');
+		}
+
+		bprintf("\n%c     %8d %8d",
+			name,
+			line_no(bp, mark.l),
+			mk_to_vcol(mark, FALSE, 0) + 1);
+		if (llength(mark.l) > 0) {
+			bprintf("%*P%*S",
+				stop - DOT.o, ' ',
+				llength(mark.l),
+				mark.l->l_text);
+		}
+		return 1;
+	}
+	return 0;
+}
+
+static void
+makemarkslist (int value GCC_UNUSED, void *dummy GCC_UNUSED)
+{
+	BUFFER *bp = (BUFFER *)dummy;
+	WINDOW *wp;
+	int n;
+	int done = 0;
+
+	bprintf("Named marks for %s\n", bp->b_bname);
+	set_b_val(curbp, VAL_TAB, b_val(bp,VAL_TAB));
+
+	for_each_window(wp) {
+		if (wp->w_bufp == bp)
+			done += show_mark(done, bp, wp->w_lastdot, '\'');
+	}
+	if (bp->b_nmmarks != 0) {
+		for (n = 0; n < 26; n++) {
+			done += show_mark(done, bp, bp->b_nmmarks[n], n + 'a');
+		}
+	}
+	if (done)
+		bprintf("\n\n%d mark%s", done, PLURAL(done));
+	else
+		bprintf("\n(none)");
+}
+
+int
+showmarks(int f, int n GCC_UNUSED)
+{
+	return liststuff(MARKS_BufName, FALSE, makemarkslist, f, (void *)curbp);
+}
+
+#if OPT_UPBUFF
+/* ARGSUSED */
+static int
+update_marklist(BUFFER *bp GCC_UNUSED)
+{
+	return showmarks(FALSE,1);
+}
+#endif
+
+#endif
+ 
 /*
  * Implements the vi "m" command.
  *
@@ -996,6 +1073,7 @@ setnmmark(int f GCC_UNUSED, int n GCC_UNUSED)
 
 	curbp->b_nmmarks[c-'a'] = DOT;
 	mlwrite("[Mark %c set]",c);
+	update_scratch(MARKS_BufName, update_marklist);
 	return TRUE;
 }
 

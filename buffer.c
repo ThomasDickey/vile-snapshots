@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.192 1999/06/20 21:33:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.193 1999/07/03 13:39:31 tom Exp $
  *
  */
 
@@ -653,6 +653,24 @@ usebuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 	return swbuffer(bp);
 }
 
+#if !SMALLER
+int
+set_window(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+	register BUFFER *bp;
+	register int	s;
+	char		bufn[NBUFN];
+
+	bufn[0] = EOS;
+	if ((s = ask_for_bname("Set window to buffer: ", bufn, sizeof(bufn))) != TRUE
+	 && (s != SORTOFTRUE))
+		return s;
+	if ((bp=find_any_buffer(bufn)) == 0)	/* Try buffer */
+		return FALSE;
+	return swbuffer_lfl(bp, TRUE, TRUE);
+}
+#endif
+
 /* switch back to the first buffer (i.e., ":rewind") */
 /* ARGSUSED */
 int
@@ -783,7 +801,7 @@ make_current(BUFFER *nbp)
 int
 swbuffer(register BUFFER *bp)	/* make buffer BP current */
 {
-	return swbuffer_lfl(bp, TRUE);
+	return swbuffer_lfl(bp, TRUE, FALSE);
 }
 
 static int
@@ -813,10 +831,14 @@ suckitin (BUFFER *bp, int copy, int lockfl)
 	return s;
 }
 
+/*
+ * Make given buffer 'bp' current'.
+ */
 int
-swbuffer_lfl(register BUFFER *bp, int lockfl)	/* make buffer BP current */
+swbuffer_lfl(register BUFFER *bp, int lockfl, int this_window)
 {
 	int s = TRUE;
+	WINDOW *wp;
 
 	if (!bp) {
 		mlforce("BUG:  swbuffer passed null bp");
@@ -854,9 +876,31 @@ swbuffer_lfl(register BUFFER *bp, int lockfl)	/* make buffer BP current */
 				we were going to */
 
 	/* get it already on the screen if possible */
+#if !SMALLER
+	if (this_window) {
+		if (curwp == 0)
+			return FALSE;
+		if (curwp->w_bufp == bp)
+			return TRUE;
+		undispbuff(curwp->w_bufp, curwp);
+		/*
+		 * FIXME:  It would be nice to maintain a list of the windows
+		 * that have been associated with a buffer (or buffers that have
+		 * been associated with the current window), and use that info
+		 * to restore the window at this point.  In lieu of that, we'll
+		 * simply initialize the newest window to be a clone of any
+		 * other window on the buffer, or initialize it as we do in
+		 * popupbuff().
+		 */
+		if ((wp = bp2any_wp(bp)) == 0) {
+			init_window(curwp, bp);
+		} else {
+			clone_window(curwp, wp);
+		}
+	} else
+#endif
 	if (bp->b_nwnd != 0)  { /* then it's on the screen somewhere */
-		register WINDOW *wp = bp2any_wp(bp);
-		if (!wp)
+		if ((wp = bp2any_wp(bp)) == 0)
 			mlforce("BUG: swbuffer: wp still NULL");
 		curwp = wp;
 		upmode();
@@ -1339,15 +1383,7 @@ popupbuff(BUFFER *bp)
 
 	for_each_window(wp) {
 		if (wp->w_bufp == bp) {
-			wp->w_line.l = lforw(buf_head(bp));
-			wp->w_dot.l  = lforw(buf_head(bp));
-			wp->w_dot.o  = 0;
-#if WINMARK
-			wp->w_mark = nullmark;
-#endif
-			wp->w_lastdot = nullmark;
-			wp->w_values = global_w_values;
-			wp->w_flag |= WFMODE|WFHARD;
+			init_window(wp, bp);
 		}
 	}
 	return swbuffer(bp);

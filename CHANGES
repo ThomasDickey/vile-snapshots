@@ -1,5 +1,41 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+(tom) 990703 (j)
+	+ implement set-window command (request by Adam Denton).
+	+ implement show-marks command.
+	+ rename 'quote()' to 'quote_next()', split-out 'read_quoted()' to
+	  reuse the logic that recognizes ^V followed by a number in input. 
+	  Now the minibuffer can accept any character except for nulls
+	  (originally requested by Sean Ahern, but Adam Denton reminded me).
+	+ modify txt-filt.l to highlight strings in double-quotes.
+	+ change kbd_reply() to ensure that last_eolchar is set either to
+	  a newline or a blank if we are interpreting a macro.
+	+ correct array limit in save_arguments(), which was one too small,
+	  and added a double-check against that limit.
+	+ add a sample of .indent.pro (i.e., doc/indent.pro) to use with indent
+	  2.x (we're not planning to use this wholesale, but piecemeal, since
+	  even indent 2.0 has bugs ;-).
+	+ undefine 'dofile' in perl.xs, to build with perl on Redhat 6.0 (Kevin
+	  Buettner).
+	+ correct two minor, but annoying warning messages in perl.xs:
+		Attempt to free unreferenced scalar
+	  by incrementing a reference count, and
+		BUG: getregion: no mark set in this window
+	  by checking for null MK before call to getregion.
+	+ add ShowFormatted macro to manpage.rc, bound to ^X-n, which renders
+	  the current buffer with nroff.
+	+ rename manpage macro to ShowManpage
+	> patches by Paul Fox:
+	+ make the Entering/Leaving nesting work correctly if you jump into the
+	  middle of an error buffer.  previously selecting a line partway
+	  through the buffer would cause vile to skip parsing the preceding
+	  change-directory directives, so it wouldn't know where the referenced
+	  file was to be found.  now, if you don't use ^X^X to traverse the
+	  buffer linearly, the preceding lines are re-parsed as needed.
+	+ changed fence.c over to 4 column indents, using indent, plus some
+	  hand editing on continuations and comment alignment.
+	+ modify vilefilt.l to accept hyphens in identifiers
+
 (tom) 990621 (i)
 	+ add vile-pager to install rule.
 	+ add macros (e.g., manpage.rc) to install rule.

@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.173 1999/06/14 00:44:14 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.176 1999/07/03 12:00:52 tom Exp $
 #
 #
 
@@ -1226,7 +1226,7 @@ quickexit	NONE|(BANG|VI_NL)
 	"write-changed-buffers-and-quit" !FEWNAMES
 	"quick-exit"			!FEWNAMES
 	<leave the editor, writing modified buffers as needed>
-quote		REDO|UNDO
+quote_next	REDO|UNDO
 	"quote-next-character"		!FEWNAMES
 	<insert the next character literally, CNT times>
 vile_refresh	NONE
@@ -1307,6 +1307,10 @@ settab		NONE
 set_termchrs	NONE			OPT_REBIND&&OPT_TERMCHRS
 	"set-terminal"
 	<change the value of a terminal special character>
+set_window	NONE			!SMALLER
+	"setw"
+	"set-window"
+	<set the current window to a specific buffer>
 show_termchrs	NONE			OPT_REBIND&&OPT_TERMCHRS
 	"show-terminal-chars"
 	<show the values of the terminal special characters>
@@ -1394,6 +1398,10 @@ listvars	NONE			OPT_SHOW_EVAL
 showversion	NONE|(EXRCOK)
 	"version"
 	<report version information for the editor>
+showmarks	NONE			OPT_SHOW_MARKS
+	"marks"
+	"show-marks"
+	<show named marks for the current buffer>
 showmemory	NONE			SYS_MSDOS&&(CC_TURBO||CC_WATCOM||CC_DJGPP)
 	"memory"
 	<report on available memory>

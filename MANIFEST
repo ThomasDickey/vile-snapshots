@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_3i
+MANIFEST for vile, version v8_3j
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -137,6 +137,7 @@ doc/config.doc                  configuration-instructions for VILE
 doc/dir.doc                     description of perl directory-browser
 doc/filters.doc                 overview of syntax filter programs
 doc/hilite.doc                  readme for hilite.pl and syntax.pl
+doc/indent.pro                  sample 'indent' profile for vile
 doc/macros.doc                  documentation for VILE macros
 doc/menus.doc                   description of xvile (Xm and Xaw) menus
 doc/modes.doc                   overview of modes/majormodes

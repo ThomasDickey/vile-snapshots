@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.9 1999/05/01 02:54:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.10 1999/06/30 22:15:01 pgf Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -62,7 +62,7 @@ DSTRING		\"(\\.|[^\\"\n])*\"
 
 FUNCTION	&[a-zA-Z]+
 
-VARIABLE	[$%][a-zA-Z][a-zA-Z0-9]*
+VARIABLE	[$%][a-zA-Z][a-zA-Z0-9]*(-[a-zA-Z0-9]+)*
 
 %%
 
