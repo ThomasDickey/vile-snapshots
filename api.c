@@ -232,11 +232,11 @@ api_gotoline(SCR *sp, int lno)
     count = lno - DOT.l->l_number;
     lp = DOT.l;
 
-    while (count < 0) {
+    while (count < 0 && lp != buf_head(bp)) { 
 	lp = lback(lp);
 	count++;
     }
-    while (count > 0) {
+    while (count > 0 && lp != buf_head(bp)) { 
 	lp = lforw(lp);
 	count--;
     }
@@ -333,7 +333,7 @@ api_dotgline(SCR *sp, char **linep, int *lenp)
 { 
  
     api_setup_fake_win(sp); 
-    if (sp->dot_inited) { 
+    if (!sp->dot_inited) {  
 	DOT = sp->region.r_orig;	/* set DOT to beginning of region */ 
 	sp->dot_inited = 1; 
     } 
@@ -471,16 +471,52 @@ void
 api_command_cleanup(void)
 {
     BUFFER *bp;
+    WINDOW *wp; 
 
     if (curwp_after == 0)
 	curwp_after = curwp;
 
+    /* Propagate DOT for the fake windows that need it */ 
+ 
+    for_each_window(wp) { 
+	if (!is_fake_win(wp)) { 
+	    /* We happen to know that the fake windows will always 
+	       be first in the buffer list.  So we exit the loop 
+	       when we hit one that isn't fake. */ 
+	    break; 
+	} 
+	if (bp2sp(wp->w_bufp)->dot_changed) { 
+	    if (curwp_after->w_bufp == wp->w_bufp) { 
+		curwp_after->w_dot = wp->w_dot; 
+		curwp_after->w_flag |= WFHARD; 
+	    } 
+	    else { 
+		int found = 0; 
+		WINDOW *pwp; 
+		for_each_window(pwp) { 
+		    if (wp->w_bufp == pwp->w_bufp) { 
+			found = 1; 
+			pwp->w_dot = wp->w_dot; 
+			pwp->w_flag |= WFHARD; 
+			break;		/* out of inner for_each_window */ 
+		    } 
+		} 
+		if (!found) { 
+		    /* No window to propagate DOT in, so just use the 
+		       buffer's traits */ 
+		    wp->w_bufp->b_dot = wp->w_dot; 
+		} 
+	    } 
+	} 
+    } 
+ 
     /* Pop the fake windows */
 
     while ((bp = pop_fake_win(curwp_after)) != NULL) {
 	if (bp2sp(bp) != NULL)
 	    bp2sp(bp)->fwp = 0;
 	    bp2sp(bp)->dot_inited = 0;		/* for next time */ 
+	    bp2sp(bp)->dot_changed = 0;		/* ditto */ 
 	    if (bp2sp(bp)->changed) {
 		chg_buff(bp, WFHARD);
 		bp2sp(bp)->changed = 0;
@@ -527,6 +563,7 @@ api_bp2sp(BUFFER *bp)
 	    sp->region.r_orig.o = 
 	    sp->region.r_end.o  = 0; 
 	    sp->dot_inited = 0; 
+	    sp->dot_changed = 0;  
 	}
     }
     return sp;

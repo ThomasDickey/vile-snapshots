@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.266 1998/03/12 23:06:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.267 1998/03/24 10:14:15 kev Exp $
  *
  */
 
@@ -887,6 +887,7 @@ extern int resize (int f, int n);
 #if OPT_SEL_YANK || OPT_PERL
 extern WINDOW * push_fake_win(BUFFER *bp);
 extern BUFFER * pop_fake_win(WINDOW *oldwp);
+extern int	is_fake_win(WINDOW *wp); 
 #endif
 
 /* word.c */
