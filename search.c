@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.125 2002/01/09 00:27:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.126 2002/02/04 00:30:34 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -803,6 +803,7 @@ findpat(int f, int n, regexp * exp, int direc)
     s = TRUE;
     scanboundpos = curbp->b_line;	/* was scanboundry(FALSE,savepos,0); */
     scanbound_is_header = TRUE;
+    savepos = DOT;
     while (s == TRUE && n--) {
 	savepos = DOT;
 	s = (direc == FORWARD) ? forwchar(TRUE, 1) : backchar(TRUE, 1);

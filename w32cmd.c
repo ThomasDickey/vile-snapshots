@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.22 2002/01/09 20:32:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.24 2002/02/04 00:39:36 tom Exp $
  */
 
 #include "estruct.h"
@@ -211,7 +211,7 @@ commdlg_open_files(int chdir_allowed, const char *dir)
     if (nfile)
     {
         BUFFER *bp, *first_bp;
-        char   *dir, tmp[FILENAME_MAX * 2], *nxtfile;
+        char   *dir2 = 0, tmp[FILENAME_MAX * 2], *nxtfile;
         int    have_dir;
 
         if (nfile > 1)
@@ -219,8 +219,8 @@ commdlg_open_files(int chdir_allowed, const char *dir)
             /* first "file" in the list is actually a folder */
 
             have_dir = 1;
-            dir      = filebuf;
-            cp       = dir + strlen(dir) + 1;
+            dir2     = filebuf;
+            cp       = dir2 + strlen(dir2) + 1;
             nfile--;
         }
         else
@@ -232,7 +232,7 @@ commdlg_open_files(int chdir_allowed, const char *dir)
         {
             if (have_dir)
             {
-                sprintf(tmp, "%s\\%s", dir, cp);
+                sprintf(tmp, "%s\\%s", dir2, cp);
                 nxtfile = tmp;
             }
             else
@@ -1696,7 +1696,7 @@ get_printing_font(HDC hdc, HWND hwnd)
         logfont.lfItalic = TRUE;
     logfont.lfCharSet        = DEFAULT_CHARSET;
     logfont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
-    strncpy(logfont.lfFaceName, str_rslts.face, LF_FACESIZE - 1);
+    vl_strncpy(logfont.lfFaceName, str_rslts.face, LF_FACESIZE);
     logfont.lfFaceName[LF_FACESIZE - 1] = '\0';
     if ((hfont = CreateFontIndirect(&logfont)) == NULL)
     {

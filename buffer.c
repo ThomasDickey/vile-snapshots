@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.245 2002/01/11 22:37:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.248 2002/02/04 01:26:01 tom Exp $
  *
  */
 
@@ -68,9 +68,10 @@ BUFFER *
 find_bp(BUFFER *bp1)
 {
     BUFFER *bp;
-    for_each_buffer(bp)
+    for_each_buffer(bp) {
 	if (bp == bp1)
-	return bp;
+	    return bp;
+    }
     return 0;
 }
 
@@ -95,9 +96,10 @@ find_nth_created(int n)
 {
     BUFFER *bp;
 
-    for_each_buffer(bp)
+    for_each_buffer(bp) {
 	if (bp->b_created == n)
-	return bp;
+	    return bp;
+    }
     return 0;
 }
 
@@ -109,9 +111,10 @@ find_nth_used(int n)
 {
     BUFFER *bp;
 
-    for_each_buffer(bp)
+    for_each_buffer(bp) {
 	if (bp->b_last_used == n)
-	return bp;
+	    return bp;
+    }
     return 0;
 }
 
@@ -141,10 +144,11 @@ find_b_file(const char *fname)
     BUFFER *bp;
     char nfname[NFILEN];
 
-    (void) lengthen_path(strcpy(nfname, fname));
-    for_each_buffer(bp)
+    (void) lengthen_path(vl_strncpy(nfname, fname, sizeof(nfname)));
+    for_each_buffer(bp) {
 	if (same_fname(nfname, bp, FALSE))
-	return bp;
+	    return bp;
+    }
     return 0;
 }
 
@@ -157,9 +161,10 @@ find_b_hist(int number)
     BUFFER *bp;
 
     if (number >= 0) {
-	for_each_buffer(bp)
+	for_each_buffer(bp) {
 	    if (!b_is_temporary(bp) && (number-- <= 0))
-	    break;
+		break;
+	}
     } else
 	bp = 0;
     return bp;
@@ -341,11 +346,12 @@ lookup_hist(BUFFER *bp1)
     BUFFER *bp;
     int count = -1;
 
-    for_each_buffer(bp)
+    for_each_buffer(bp) {
 	if (!b_is_temporary(bp)) {
-	count++;
-	if (bp == bp1)
-	    return count;
+	    count++;
+	    if (bp == bp1)
+		return count;
+	}
     }
     return -1;			/* no match */
 }
@@ -409,9 +415,10 @@ WINDOW *
 bp2any_wp(BUFFER *bp)
 {
     WINDOW *wp;
-    for_each_visible_window(wp)
+    for_each_visible_window(wp) {
 	if (wp->w_bufp == bp)
-	break;
+	    break;
+    }
     return wp;
 }
 
@@ -559,7 +566,7 @@ imply_alt(char *fname, int copy, int lockfl)
 	fname = stripped;
 
     /* if fname is a pipe cmd, it can be arbitrarily long */
-    strncpy(nfname, fname, sizeof(nfname) - 1);
+    vl_strncpy(nfname, fname, sizeof(nfname));
     nfname[sizeof(nfname) - 1] = '\0';
     (void) lengthen_path(nfname);
     if (global_g_val(GMDIMPLYBUFF)
@@ -1178,18 +1185,22 @@ killbuffer(int f, int n)
     C_NUM save_COL;
     MARK save_DOT;
     MARK save_TOP;
-    int animated = f
-    && (n > 1)
-    && (curbp != 0)
-    && (curbp == find_BufferList());
+    int animated = (f
+		    && (curwp != 0)
+		    && (n > 1)
+		    && (curbp != 0)
+		    && (curbp == find_BufferList()));
     int special = animated && (DOT.o == 2);
 
     if (animated && !special) {
 	save_COL = getccol(FALSE);
 	save_DOT = DOT;
 	save_TOP = curwp->w_line;
-    } else
+    } else {
 	save_COL = 0;		/* appease gcc */
+	save_DOT = nullmark;
+	save_TOP = nullmark;
+    }
 #endif
 
     if (!f)
@@ -1408,9 +1419,10 @@ renamebuffer(BUFFER *rbp, char *bufname)
 #endif
     set_bname(rbp, bufn);	/* copy buffer name to structure */
 
-    for_each_visible_window(wp)
+    for_each_visible_window(wp) {
 	if (wp->w_bufp == rbp)
-	wp->w_flag |= WFMODE;
+	    wp->w_flag |= WFMODE;
+    }
 
     return (TRUE);
 }
@@ -1661,7 +1673,7 @@ makebufflist(int unused GCC_UNUSED, void *dummy GCC_UNUSED)
 	    char *p;
 
 	    if ((p = bp->b_fname) != 0)
-		p = shorten_path(strcpy(temp, p), TRUE);
+		p = shorten_path(vl_strncpy(temp, p, sizeof(temp)), TRUE);
 
 	    if (p != 0)
 		bprintf("%s", p);
@@ -1730,8 +1742,8 @@ update_scratch(const char *name, UpBuffFunc func)
 int
 listbuffers(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-#if OPT_UPBUFF
     int status;
+#if OPT_UPBUFF
 
     show_all = f;		/* save this to use in automatic updating */
     if (find_BufferList() != 0) {
@@ -1743,14 +1755,14 @@ listbuffers(int f GCC_UNUSED, int n GCC_UNUSED)
     status = liststuff(BUFFERLIST_BufName, FALSE,
 		       makebufflist, 0, (void *) 0);
     b_clr_obsolete(curbp);
-    return status;
 #else
     show_all = f;
     this_bp = 0;
     that_bp = curbp;
-    return liststuff(BUFFERLIST_BufName, FALSE,
-		     makebufflist, 0, (void *) 0);
+    status = liststuff(BUFFERLIST_BufName, FALSE,
+		       makebufflist, 0, (void *) 0);
 #endif
+    return status;
 }
 
 /*
@@ -2246,16 +2258,17 @@ chg_buff(BUFFER *bp, USHORT flag)
     if (update_on_chg(bp))
 	updatelistbuffers();
 #endif
-    for_each_visible_window(wp)
+    for_each_visible_window(wp) {
 	if (wp->w_bufp == bp) {
-	wp->w_flag |= flag;
+	    wp->w_flag |= flag;
 #ifdef WMDLINEWRAP
-	/* The change may affect the line-height displayed
-	 * on the screen.  Assume the worst-case.
-	 */
-	if ((flag & WFEDIT) && w_val(wp, WMDLINEWRAP))
-	    wp->w_flag |= WFHARD;
+	    /* The change may affect the line-height displayed
+	     * on the screen.  Assume the worst-case.
+	     */
+	    if ((flag & WFEDIT) && w_val(wp, WMDLINEWRAP))
+		wp->w_flag |= WFHARD;
 #endif
+	}
     }
 }
 

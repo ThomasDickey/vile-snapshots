@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.500 2002/01/20 17:13:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.501 2002/02/03 23:21:56 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -855,10 +855,7 @@ extern int MainProgram(int argc, char *argv[]);
 #endif
 #define	KBLOCK	256			/* sizeof kill buffer chunks	*/
 
-#if !OPT_SELECTIONS
-#define	NKREGS	37			/* number of kill buffers	*/
-#define KEYST_KREG (NKREGS-1)
-#else
+#if OPT_SELECTIONS
 #define NKREGS	39			/* When selections are enabled, we
 					 * allocate an extra kill buffer for
 					 * the current selection and another
@@ -867,6 +864,11 @@ extern int MainProgram(int argc, char *argv[]);
 #define CLIP_KREG  (NKREGS-1)
 #define SEL_KREG   (NKREGS-2)
 #define KEYST_KREG (NKREGS-3)
+#define NMARKS  26
+#else
+#define	NKREGS	37			/* number of kill buffers	*/
+#define KEYST_KREG (NKREGS-1)
+#define NMARKS  26
 #endif
 
 /* special characters assigned to kill-registers */
@@ -906,10 +908,11 @@ extern int MainProgram(int argc, char *argv[]);
 
 #define	PLURAL(n)	((n!=1)?"s":"")
 
-#define	EOS     '\0'
-#define SQUOTE  '\''
-#define DQUOTE  '"'
-#define BACKSLASH '\\'
+#define EOS        '\0'
+#define BQUOTE     '`'
+#define SQUOTE     '\''
+#define DQUOTE     '"'
+#define BACKSLASH  '\\'
 
 /* protect against losing namespaces */
 #undef	FALSE
@@ -1190,7 +1193,7 @@ typedef UINT WATCHTYPE;
 
 
 /* token types								*/
-/* these must be kept in sync with the function table in eval.c		*/
+/* these must be kept in sync with the eval_func[] table in eval.c	*/
 #define TOK_NULL        0   /* null string          */
 #define TOK_QUERY       1   /* query response       */
 #define TOK_BUFLINE     2   /* line from buffer     */
@@ -1201,7 +1204,7 @@ typedef UINT WATCHTYPE;
 #define TOK_LABEL       7   /* goto target          */
 #define TOK_QUOTSTR     8   /* quoted string        */
 #define TOK_LITSTR      9   /* unquoted string      */
-#define	MAXTOKTYPE	 9
+#define	MAXTOKTYPE	9
 
 
 #define NEXT_COLUMN(col, c, list, tabs) \
@@ -2096,11 +2099,11 @@ extern MARK *api_mark_iterator(BUFFER *bp, int *iter);
 #define do_mark_iterate(mp, statement)			\
     do {						\
 	struct MARK *mp;				\
-	int	     dmi_idx;				\
+	int	     idx;				\
 	AREGION     *dmi_ap = curbp->b_attribs;		\
 	if (curbp->b_nmmarks != NULL)			\
-	    for (dmi_idx=0; dmi_idx < 26; dmi_idx++) {	\
-		mp = &(curbp->b_nmmarks[dmi_idx]);	\
+	    for (idx=0; idx < NMARKS; idx++) {		\
+		mp = &(curbp->b_nmmarks[idx]);		\
 		statement				\
 	    }						\
 	if (dmi_ap != NULL) {				\
@@ -2120,9 +2123,9 @@ extern MARK *api_mark_iterator(BUFFER *bp, int *iter);
     do {						\
 	struct MARK *mp;				\
 	if (curbp->b_nmmarks != NULL) {			\
-	    int dmi_idx;				\
-	    for (dmi_idx=0; dmi_idx < 26; dmi_idx++) {	\
-		mp = &(curbp->b_nmmarks[dmi_idx]);	\
+	    int idx;					\
+	    for (idx=0; idx < NMARKS; idx++) {		\
+		mp = &(curbp->b_nmmarks[idx]);		\
 		statement				\
 	    }						\
 	}						\

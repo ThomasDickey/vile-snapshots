@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.120 2002/01/19 16:41:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.121 2002/02/04 00:31:54 tom Exp $
  *
  */
 
@@ -1831,7 +1831,7 @@ dump_wmodes(void)
  */
 #ifdef _WIN32
 static void
-mkw32binding(char *key, char *defn, char *conditional, char *func, char *fcond)
+mkw32binding(char *key, char *conditional, char *func, char *fcond)
 {
 #define KEYTOKEN "mod_KEY"
 
@@ -1883,7 +1883,7 @@ mkw32binding(char *key, char *defn, char *conditional, char *func, char *fcond)
 #undef KEYTOKEN
 }
 #else /* Not a Win32 host -> dummy function -- doesn't do a thing */
-#define mkw32binding(key, defn, conditional, func, fcond)	/*EMPTY */
+#define mkw32binding(key, conditional, func, fcond)	/*EMPTY */
 #endif /* _WIN32 */
 
 /******************************************************************************/
@@ -2043,7 +2043,7 @@ main(int argc, char *argv[])
 			badfmt("looking for key binding");
 
 		    if (strcmp("W32KY", vec[2]) == 0) {
-			mkw32binding(vec[1], vec[2], vec[3], func, fcond);
+			mkw32binding(vec[1], vec[3], func, fcond);
 		    } else {
 			if (strncmp("KEY_", vec[2], 4) == 0) {
 			    if (strncmp("FN-", vec[1], 3) != 0)

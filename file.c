@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.318 2002/01/22 01:11:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.325 2002/02/04 00:36:56 tom Exp $
  */
 
 #include "estruct.h"
@@ -75,7 +75,7 @@ PromptFileChanged(BUFFER *bp, char *fname, const char *question, int iswrite)
     int status = SORTOFTRUE;
     char prompt[NLINE];
     const char *remind, *again;
-    time_t curtime;
+    time_t curtime = 0;
     int modtimes_mismatch = FALSE;
     int fuids_mismatch = FALSE;
 #ifdef CAN_CHECK_INO
@@ -123,8 +123,7 @@ PromptFileChanged(BUFFER *bp, char *fname, const char *question, int iswrite)
 			check_against = &bp->b_fileuid;
 		    }
 		}
-		fuids_mismatch = !fileuid_compare(
-						     check_against, &curfuid);
+		fuids_mismatch = !fileuid_compare(check_against, &curfuid);
 	    }
 	}
 #endif /* CAN_CHECK_INO */
@@ -350,7 +349,7 @@ same_fname(const char *fname, BUFFER *bp, int lengthen)
 	   fname, bp->b_bname, lengthen));
 
     if (lengthen)
-	fname = lengthen_path(strcpy(temp, fname));
+	fname = lengthen_path(vl_strncpy(temp, fname, sizeof(temp)));
 
 #if OPT_VMS_PATH
     /* ignore version numbers in this comparison unless both are given */
@@ -381,6 +380,9 @@ fileuid_get(const char *fname, FUID * fuid)
 {
 #ifdef CAN_CHECK_INO
     struct stat sb;
+
+    TRACE(("fileuid_get(%s) discarding cache\n", fname));
+    (void) file_stat(fname, 0);
     if (file_stat(fname, &sb) == 0) {
 	fuid->ino = sb.st_ino;
 	fuid->dev = sb.st_dev;
@@ -493,11 +495,11 @@ fileread(int f GCC_UNUSED, int n GCC_UNUSED)
 	return cannot_reread();
     } else if (!(global_g_val(GMDWARNREREAD) || curbp->b_fname[0] == EOS)
 	       || ((s = mlyesno("Reread current buffer")) == TRUE)) {
-	(void) strcpy(fname, curbp->b_fname);
+	(void) vl_strncpy(fname, curbp->b_fname, sizeof(fname));
 	/* Check if we are rereading an unnamed-buffer if it is not
 	 * associated with a file.
 	 */
-	if (curbp->b_fname[0] == EOS) {
+	if (is_internalname(curbp->b_fname)) {
 	    if (eql_bname(curbp, STDIN_BufName)
 		|| eql_bname(curbp, UNNAMED_BufName)) {
 		s = bclear(curbp);
@@ -551,8 +553,7 @@ bp2swbuffer(BUFFER *bp, int ask_rerun, int lockfl)
     if ((s = (bp != 0)) != FALSE) {
 	if (bp->b_active) {
 	    if (ask_rerun) {
-		switch (mlyesno(
-				   "Old command output -- rerun")) {
+		switch (mlyesno("Old command output -- rerun")) {
 		case TRUE:
 		    bp->b_active = FALSE;
 		    break;
@@ -651,7 +652,7 @@ readlinesmsg(int n, int s, const char *f, int rdo)
     const char *m;
 
     /* if "f" is a pipe cmd, it can be arbitrarily long */
-    strncpy(fname, f, sizeof(fname) - 1);
+    vl_strncpy(fname, f, sizeof(fname));
     fname[sizeof(fname) - 1] = '\0';
 
     short_f = shorten_path(fname, TRUE);
@@ -736,6 +737,16 @@ set_rdonly_modes(BUFFER *bp, int always)
 }
 
 #if COMPLETE_FILES || COMPLETE_DIRS
+static void
+ff_read_directory(BUFFER *bp, char *fname)
+{
+    int count = fill_directory_buffer(bp, fname, 0);
+
+    mlwrite("[Read %d line%s]", count, PLURAL(count));
+    b_set_flags(bp, BFDIRS);
+    set_rdonly_modes(bp, TRUE);
+}
+
 /*
  * If we are inserting text from a directory list, make a buffer if necessary,
  * and redirect ffgetline() to read from that buffer.
@@ -745,7 +756,8 @@ ff_load_directory(char *fname)
 {
     if (ffstatus == file_is_internal) {
 	char temp[NFILEN];
-	BUFFER *bp = find_b_file(lengthen_path(strcpy(temp, fname)));
+	BUFFER *bp = find_b_file(lengthen_path(vl_strncpy(temp, fname,
+							  sizeof(temp))));
 
 	if (bp == 0)
 	    bp = getfile2bp(temp, FALSE, FALSE);
@@ -754,9 +766,7 @@ ff_load_directory(char *fname)
 	    return FIOERR;
 
 	ffbuffer = bp;
-	fill_directory_buffer(bp, temp, 0);
-	b_set_flags(bp, BFDIRS);
-	set_rdonly_modes(bp, TRUE);
+	ff_read_directory(bp, temp);
 	ffcursor = lforw(buf_head(bp));
 	bp->b_active = TRUE;
     }
@@ -861,7 +871,7 @@ getfile2bp(
 	/* It's not already here by that buffer name.
 	 * Try to find it assuming we're given the file name.
 	 */
-	(void) lengthen_path(strcpy(nfname, fname));
+	(void) lengthen_path(vl_strncpy(nfname, fname, sizeof(nfname)));
 	if (is_internalname(nfname)) {
 	    mlforce("[Buffer not found]");
 	    return 0;
@@ -1438,9 +1448,7 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
 	    mlwrite("[New file]");
 #if COMPLETE_FILES || COMPLETE_DIRS
     } else if (ffstatus == file_is_internal) {
-	fill_directory_buffer(bp, fname, 0);
-	b_set_flags(bp, BFDIRS);
-	set_rdonly_modes(bp, TRUE);
+	ff_read_directory(bp, fname);
 #endif
     } else {
 
@@ -1645,13 +1653,11 @@ slowreadf(BUFFER *bp, int *nlinep)
 }
 
 /*
- * Take a (null-terminated) file name, and from it
- * fabricate a buffer name. This routine knows
- * about the syntax of file names on the target system.
- * I suppose that this information could be put in
- * a better place than a line of code.
+ * Take a (null-terminated) file name, and from it fabricate a buffer name. 
+ * This routine knows about the syntax of file names on the target system.  I
+ * suppose that this information could be put in a better place than a line of
+ * code.
  */
-
 void
 makename(char *bname, const char *fname)
 {
@@ -1660,79 +1666,89 @@ makename(char *bname, const char *fname)
     int j;
     char temp[NFILEN];
 
-    fcp = skip_string(strcpy(temp, fname));
+    TRACE(("makename(%s)\n", fname));
+
+    *bname = EOS;
+    fcp = skip_string(vl_strncpy(temp, fname, sizeof(temp)));
 #if OPT_VMS_PATH
     if (is_vms_pathname(temp, TRUE)) {
-	(void) strcpy(bname, "NoName");
-	return;
-    }
-    if (is_vms_pathname(temp, FALSE)) {
+	;
+    } else if (is_vms_pathname(temp, FALSE)) {
 	for (; fcp > temp && !strchr(":]", fcp[-1]); fcp--) {
 	    ;
 	}
 	(void) strncpy0(bname, fcp, NBUFN);
 	strip_version(bname);
 	(void) mklower(bname);
-	return;
-    }
+    } else
 #endif
-    /* trim trailing whitespace */
-    while (fcp != temp && (isBlank(fcp[-1])
+    {
+	/* trim trailing whitespace */
+	while (fcp != temp && (isBlank(fcp[-1])
 #if SYS_UNIX || OPT_MSDOS_PATH	/* trim trailing slashes as well */
-			   || is_slashc(fcp[-1])
+			       || is_slashc(fcp[-1])
 #endif
-	   ))
-	*(--fcp) = EOS;
-    fcp = temp;
-    /* trim leading whitespace */
-    while (isBlank(*fcp))
-	fcp++;
-
-#if     SYS_UNIX || SYS_MSDOS || SYS_VMS || SYS_OS2 || SYS_WINNT
-    bcp = bname;
-    if (isShellOrPipe(fcp)) {
-	/* ...it's a shell command; bname is first word */
-	*bcp++ = SCRTCH_LEFT[0];
-	*bcp++ = SHPIPE_LEFT[0];
-	do {
-	    ++fcp;
-	} while (isSpace(*fcp));
-	(void) strncpy0(bcp, fcp, (size_t) (NBUFN - (bcp - bname)));
-	for (j = 4; (j < NBUFN) && isPrint(*bcp); j++) {
-	    bcp++;
+	       )) {
+	    *(--fcp) = EOS;
 	}
-	(void) strcpy(bcp, SCRTCH_RIGHT);
-	return;
-    }
+	fcp = temp;
+	/* trim leading whitespace */
+	while (isBlank(*fcp))
+	    fcp++;
 
-    (void) strncpy0(bcp, pathleaf(fcp), (size_t) (NBUFN - (bcp - bname)));
+#if SYS_UNIX || SYS_MSDOS || SYS_VMS || SYS_OS2 || SYS_WINNT
+	bcp = bname;
+	if (isShellOrPipe(fcp)) {
+	    /* ...it's a shell command; bname is first word */
+	    *bcp++ = SCRTCH_LEFT[0];
+	    *bcp++ = SHPIPE_LEFT[0];
+	    do {
+		++fcp;
+	    } while (isSpace(*fcp));
+
+	    (void) vl_strncpy(bcp, fcp, NBUFN - 2);
+
+	    for (j = 4; (j < NBUFN) && isPrint(*bcp); j++) {
+		bcp++;
+	    }
+	    (void) strcpy(bcp, SCRTCH_RIGHT);
+
+	} else {
+
+	    (void) vl_strncpy(bcp, pathleaf(fcp), NBUFN);
 
 #if SYS_UNIX
-    /* UNIX filenames can have any characters (other than EOS!).  Refuse
-     * (rightly) to deal with leading/trailing blanks, but allow embedded
-     * blanks.  For this special case, ensure that the buffer name has no
-     * blanks, otherwise it is difficult to reference from commands.
-     */
-    for (j = 0; j < NBUFN; j++) {
-	if (*bcp == EOS)
-	    break;
-	if (isSpace(*bcp))
-	    *bcp = '-';
-	bcp++;
-    }
+	    /* UNIX filenames can have any characters (other than EOS!). 
+	     * Refuse (rightly) to deal with leading/trailing blanks, but allow
+	     * embedded blanks.  For this special case, ensure that the buffer
+	     * name has no blanks, otherwise it is difficult to reference from
+	     * commands.
+	     */
+	    for (j = 0; j < NBUFN; j++) {
+		if (*bcp == EOS)
+		    break;
+		if (isSpace(*bcp))
+		    *bcp = '-';
+		bcp++;
+	    }
 #endif
+	}
 
 #else /* !(SYS_UNIX||SYS_VMS||SYS_MSDOS) */
 
-    bcp = skip_string(fcp);
-    {
-	char *cp2 = bname;
-	strcpy0(bname, bcp, NBUFN);
-	cp2 = strchr(bname, ':');
-	if (cp2)
-	    *cp2 = EOS;
-    }
+	bcp = skip_string(fcp);
+	{
+	    char *cp2 = bname;
+	    vl_strncpy(bname, bcp, NBUFN);
+	    cp2 = strchr(bname, ':');
+	    if (cp2)
+		*cp2 = EOS;
+	}
 #endif
+    }
+    if (*bname == EOS)
+	(void) strcpy(bname, "NoName");
+    TRACE((" -> '%s'\n", bname));
 }
 
 /* generate a unique name for a buffer */
@@ -1752,7 +1768,7 @@ unqname(char *name)
 	j = strlen(strcpy(name, "NoName"));
 
     /* check to see if this name is in use */
-    strcpy(newname, name);
+    vl_strncpy(newname, name, NBUFN);
     adjust = is_scratchname(newname);
     while (find_b_name(newname) != NULL) {
 	/* from "foo" create "foo-1" or "foo-a1b5" */
@@ -1773,6 +1789,7 @@ unqname(char *name)
 	    strcpy(&newname[k], suffixbuf);
     }
     strncpy0(name, newname, NBUFN);
+    TRACE(("unqname ->%s\n", name));
 }
 
 /*
@@ -1792,7 +1809,7 @@ filewrite(int f, int n)
 			      : FILEC_WRITE, fname)) != TRUE)
 	    return s;
     } else
-	(void) strcpy(fname, curbp->b_fname);
+	(void) vl_strncpy(fname, curbp->b_fname, sizeof(fname));
 
     if ((s = writeout(fname, curbp, forced, TRUE)) == TRUE)
 	unchg_buff(curbp, 0);
@@ -1999,7 +2016,7 @@ writereg(REGION * rp, const char *given_fn, int msgf, BUFFER *bp, int forced)
 	    mlwrite("File not written");
 	    status = FALSE;
 	} else {
-	    fn = lengthen_path(strcpy(fname, given_fn));
+	    fn = lengthen_path(vl_strncpy(fname, given_fn, sizeof(fname)));
 	    if (same_fname(fn, bp, FALSE) && b_val(bp, MDVIEW)) {
 		mlwarn("[Can't write-back from view mode]");
 		status = FALSE;
@@ -2055,7 +2072,7 @@ writeregion(void)
 	    mlwrite("Range not written");
 	    return FALSE;
 	}
-	(void) strcpy(fname, curbp->b_fname);
+	(void) vl_strncpy(fname, curbp->b_fname, sizeof(fname));
     } else {
 	if ((status = mlreply_file("Write region to file: ",
 				   (TBUFF **) 0, FILEC_WRITE | FILEC_PROMPT,
@@ -2194,6 +2211,10 @@ ifile(char *fname, int belowthisline, FILE * haveffp)
 #if COMPLETE_FILES || COMPLETE_DIRS
 	else if ((s = ff_load_directory(fname)) == FIOERR)
 	    goto out;
+	if (b_is_directory(curbp)) {
+	    /* special case: contents are already added */
+	    goto out;
+	}
 #endif
 #if OPT_ENCRYPT
 	if ((s = vl_resetkey(curbp, fname)) != TRUE)
@@ -2243,14 +2264,26 @@ ifile(char *fname, int belowthisline, FILE * haveffp)
 	readlinesmsg(nline, s, fname, FALSE);
     }
   out:
-    /* advance to the next line and mark the window for changes */
-    DOT.l = lforw(DOT.l);
-
     /* copy window parameters back to the buffer structure */
     copy_traits(&(curbp->b_wtraits), &(curwp->w_traits));
 
     imply_alt(fname, FALSE, FALSE);
+
+    /* advance to the next line and mark the window for changes */
     chg_buff(curbp, WFHARD);
+
+#if COMPLETE_FILES || COMPLETE_DIRS
+    /*
+     * Changes to a directory buffer can't be written back to the directory,
+     * so do not mark it modified.
+     */
+    if (b_is_directory(curbp)) {
+	b_clr_changed(curbp);
+	b_clr_recentlychanged(curbp);
+	DOT.l = lback(DOT.l);
+    } else
+#endif
+	DOT.l = lforw(DOT.l);
 
     return (s != FIOERR);
 }
@@ -2367,8 +2400,9 @@ imdying(int ACTUAL_SIG_ARGS)
 		(void) pathcat(filnam, dirnam, bp->b_bname);
 	    } else {
 		/* no dir: the path is V+file */
-		(void) strcpy(filnam,
-			      strcat(strcpy(temp, "V"), bp->b_bname));
+		(void) vl_strncpy(filnam,
+				  strcat(strcpy(temp, "V"), bp->b_bname),
+				  sizeof(filnam));
 	    }
 	    set_b_val(bp, MDVIEW, FALSE);
 	    if (writeout(filnam, bp, TRUE, FALSE) != TRUE) {

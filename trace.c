@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.23 2001/12/05 10:11:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.24 2002/01/31 23:41:48 tom Exp $
  *
  */
 
@@ -448,8 +448,10 @@ trace_line(LINE *lp, BUFFER *bp)
     } else if (bp == 0) {
 	Trace("? null BUFFER pointer\n");
     } else {
-	Trace("%4d:{%p,%p,%p}:%s\n",
-	      line_no(bp, lp), lp, lforw(lp), lback(lp),
+	Trace("%4d:{%p, f %p%s, b %p%s}:%s\n",
+	      line_no(bp, lp), lp,
+	      lforw(lp), (lp == lback(lforw(lp))) ? "" : "?",
+	      lback(lp), (lp == lforw(lback(lp))) ? "" : "?",
 	      lp_visible(lp));
     }
 }

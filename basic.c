@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.116 2002/01/09 22:58:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.117 2002/02/03 23:25:02 tom Exp $
  *
  */
 
@@ -222,7 +222,7 @@ forwchar_to_eol(int f, int n)
 int
 gotoline(int f, int n)
 {
-    int status;	/* status return */
+    int status;			/* status return */
 
     MARK odot;
 
@@ -1102,14 +1102,27 @@ makemarkslist(int value GCC_UNUSED, void *dummy GCC_UNUSED)
     set_b_val(curbp, VAL_TAB, b_val(bp, VAL_TAB));
 
     for_each_window(wp) {
-	if (wp->w_bufp == bp)
-	    done += show_mark(done, bp, wp->w_lastdot, '\'');
+	if (wp->w_bufp == bp) {
+	    done += show_mark(done, bp, wp->w_lastdot, SQUOTE);
+	}
     }
     if (bp->b_nmmarks != 0) {
-	for (n = 0; n < 26; n++) {
+	for (n = 0; n < NMARKS; n++) {
 	    done += show_mark(done, bp, bp->b_nmmarks[n], n + 'a');
 	}
     }
+#if OPT_SELECTIONS
+    if (bp == sel_buffer()) {
+	MARK left, right;
+	if (sel_get_leftmark(&left)
+	    && sel_get_rightmark(&right)
+	    && (left.l != right.l
+		|| left.o != right.o)) {
+	    done += show_mark(done, bp, left, '<');
+	    done += show_mark(done, bp, right, '>');
+	}
+    }
+#endif
     if (done)
 	bprintf("\n\n%d mark%s", done, PLURAL(done));
     else
@@ -1130,8 +1143,62 @@ update_marklist(BUFFER *bp GCC_UNUSED)
     return showmarks(FALSE, 1);
 }
 #endif
+#endif /* OPT_SHOW_MARKS */
 
+static int
+invalid_nmmark(void)
+{
+    mlforce("[Invalid mark name]");
+    return FALSE;
+}
+
+int
+can_set_nmmark(int c)
+{
+    if (isLower(c) || c == SQUOTE)
+	return TRUE;
+#if OPT_SELECTIONS
+    if (c == '<' || c == '>')
+	return TRUE;
 #endif
+    return FALSE;
+}
+
+static int
+get_nmmark(int c, MARK * markp)
+{
+    int result = TRUE;
+
+    *markp = nullmark;
+    if (c == SQUOTE) {		/* use the 'last dot' mark */
+	*markp = curwp->w_lastdot;
+    } else {
+#if OPT_SELECTIONS
+	if (c == '<') {
+	    result = sel_get_leftmark(markp);
+	} else if (c == '>') {
+	    result = sel_get_rightmark(markp);
+	} else
+#endif
+	if (curbp->b_nmmarks != NULL) {
+	    *markp = curbp->b_nmmarks[c - 'a'];
+	} else {
+	    result = FALSE;
+	}
+    }
+    TRACE(("get_nmmark(%c) ->%d.%d\n",
+	   c, result ? line_no(curbp, markp->l) : 0, markp->o));
+    return result;
+}
+
+int
+show_mark_is_set(int c)
+{
+    if (isLower(c))
+	mlwrite("[Mark '%c' set]", c);
+    update_scratch(MARKS_BufName, update_marklist);
+    return TRUE;
+}
 
 /*
  * Implements the vi "m" command.
@@ -1157,23 +1224,20 @@ setnmmark(int f GCC_UNUSED, int n GCC_UNUSED)
     }
 
     if (c < 'a' || c > 'z') {
-	mlforce("[Invalid mark name]");
-	return FALSE;
+	return invalid_nmmark();
     }
 
     if (curbp->b_nmmarks == NULL) {
-	curbp->b_nmmarks = typeallocn(struct MARK, 26);
+	curbp->b_nmmarks = typeallocn(struct MARK, NMARKS);
 	if (curbp->b_nmmarks == NULL)
 	    return no_memory("named-marks");
-	for (i = 0; i < 26; i++) {
+	for (i = 0; i < NMARKS; i++) {
 	    curbp->b_nmmarks[i] = nullmark;
 	}
     }
 
     curbp->b_nmmarks[c - 'a'] = DOT;
-    mlwrite("[Mark %c set]", c);
-    update_scratch(MARKS_BufName, update_marklist);
-    return TRUE;
+    return show_mark_is_set(c);
 }
 
 /*
@@ -1194,7 +1258,7 @@ getnmmarkname(int *cp)
 	if ((status = mlreply("Goto mark: ", cbuf, 2)) != TRUE)
 	    return status;
 	c = cbuf[0];
-	useldmark = (c == '\'' || c == '`');
+	useldmark = (c == SQUOTE || c == BQUOTE);
     } else {
 	thiskey = lastkey;
 	c = keystroke();
@@ -1204,9 +1268,10 @@ getnmmarkname(int *cp)
     }
 
     if (useldmark)
-	c = '\'';
+	c = SQUOTE;
 
     *cp = c;
+    TRACE(("getnmmarkname(%c)\n", c));
     return TRUE;
 }
 
@@ -1225,7 +1290,6 @@ golinenmmark(int f GCC_UNUSED, int n GCC_UNUSED)
 	return s;
 
     return firstnonwhite(FALSE, 1);
-
 }
 
 /* ARGSUSED */
@@ -1260,27 +1324,20 @@ gorectnmmark(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 gonmmark(int c)
 {
-    MARK *markp;
+    MARK my_mark;
     MARK tmark;
 
-    if (!isLower(c) && c != '\'') {
-	mlforce("[Invalid mark name]");
-	return FALSE;
+    TRACE(("gonmmark(%c)\n", c));
+
+    if (!can_set_nmmark(c)) {
+	return invalid_nmmark();
     }
 
     /* save current dot */
     tmark = DOT;
 
-    markp = NULL;
-
-    if (c == '\'') {		/* use the 'last dot' mark */
-	markp = &(curwp->w_lastdot);
-    } else if (curbp->b_nmmarks != NULL) {
-	markp = &(curbp->b_nmmarks[c - 'a']);
-    }
-
     /* if we have any named marks, and the one we want isn't null */
-    if ((markp != 0) ? !restore_dot(*markp) : TRUE) {
+    if (!get_nmmark(c, &my_mark) || !restore_dot(my_mark)) {
 	mlforce("[Mark not set]");
 	return (FALSE);
     }
@@ -1288,6 +1345,7 @@ gonmmark(int c)
     if (!doingopcmd)		/* reset last-dot-mark to old dot */
 	curwp->w_lastdot = tmark;
 
+    show_mark_is_set(0);
     return (TRUE);
 }
 

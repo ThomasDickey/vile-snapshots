@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.114 2002/01/12 13:38:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.118 2002/02/04 00:30:14 tom Exp $
  *
  *
  */
@@ -289,7 +289,8 @@ pathleaf(char *path)
 #endif
 
 /*
- * Concatenates a directory and leaf name to form a full pathname
+ * Concatenates a directory and leaf name to form a full pathname.  The result
+ * must be no longer than NFILEN.
  */
 char *
 pathcat(char *dst, const char *path, char *leaf)
@@ -297,40 +298,45 @@ pathcat(char *dst, const char *path, char *leaf)
     char save_path[NFILEN];
     char save_leaf[NFILEN];
     char *s;
+    size_t have;
+
+    leaf = vl_strncpy(save_leaf, leaf, NFILEN);		/* in case leaf is in dst */
 
     if (path == 0
 	|| *path == EOS)
 	return strcpy(dst, leaf);
 
+    path = vl_strncpy(save_path, path, NFILEN);		/* in case path is in dst */
+
 #if OPT_MSDOS_PATH
-    if (is_msdos_drive(strcpy(save_path, path)) != 0
-	&& is_msdos_drive(strcpy(save_leaf, leaf)) == 0) {
-	strcpy(dst, save_path);
-	s = dst + strlen(dst) - 1;
-	if (!is_slashc(*s))
-	    *(++s) = SLASHC;
-	strcpy(++s, save_leaf);
+    if (is_msdos_drive((char *)path) != 0
+	&& is_msdos_drive(leaf) == 0) {
+	have = strlen(strcpy(dst, path));
+	if (have + strlen(leaf) + 2 < NFILEN) {
+	    s = dst + have - 1;
+	    if (!is_slashc(*s))
+		*(++s) = SLASHC;
+	    (void) strcpy(s + 1, leaf);
+	}
 	return dst;
     }
 #endif
     if (is_absolute_pathname(leaf))
 	return strcpy(dst, leaf);
 
-    path = strcpy(save_path, path);	/* in case path is in dst */
-    leaf = strcpy(save_leaf, leaf);	/* in case leaf is in dst */
-
-    (void) strcpy(s = dst, path);
-    s += strlen(s) - 1;
+    have = strlen(strcpy(dst, path));
+    if (have + strlen(leaf) + 2 < NFILEN) {
+	s = dst + have - 1;
 
 #if OPT_VMS_PATH
-    if (!is_vms_pathname(dst, TRUE))	/* could be DecShell */
+	if (!is_vms_pathname(dst, TRUE))	/* could be DecShell */
 #endif
-	if (!is_slashc(*s)) {
-	    *(++s) = SLASHC;
-	}
+	    if (!is_slashc(*s)) {
+		*(++s) = SLASHC;
+	    }
 
-    (void) strcpy(s + 1, leaf);
-
+	(void) strcpy(s + 1, leaf);
+    }
 #if OPT_VMS_PATH
     if (is_vms_pathname(path, -TRUE)
 	&& is_vms_pathname(leaf, -TRUE)
@@ -647,7 +653,7 @@ resolve_directory(char *path_name, char **file_namep)
     char *tnp;			/* temp name pointer */
     char *temp_path;		/* the path that we've determined */
 
-    size_t len;		/* temporary for length computations */
+    size_t len;			/* temporary for length computations */
 
     static struct cpn_cache {
 	dev_t ce_dev;
@@ -885,7 +891,7 @@ case_correct_path(char *old_file, char *new_file)
     char tmp_file[MAX_PATH];
 
     /* Handle old_file == new_file safely. */
-    (void) strcpy(tmp_file, old_file);
+    (void) vl_strncpy(tmp_file, old_file, sizeof(tmp_file));
     old_file = tmp_file;
 
     if (is_slashc(old_file[0]) && is_slashc(old_file[1])) {
@@ -1270,6 +1276,10 @@ shorten_path(char *path, int keep_cwd)
     char *f;
 #if OPT_VMS_PATH
     char *dot;
+#else
+# if SYS_UNIX || OPT_MSDOS_PATH
+    int found;
+# endif
 #endif
 
     if (!path || *path == EOS)
@@ -1278,10 +1288,10 @@ shorten_path(char *path, int keep_cwd)
     if (isInternalName(path))
 	return path;
 
-    TRACE(("shorten '%s'\n", path));
     if ((f = is_appendname(path)) != 0)
 	return (shorten_path(f, keep_cwd) != 0) ? path : 0;
 
+    TRACE(("shorten '%s'\n", path));
 #if OPT_VMS_PATH
     /*
      * This assumes that 'path' is in canonical form.
@@ -1346,7 +1356,6 @@ shorten_path(char *path, int keep_cwd)
 	*temp = EOS;
 
     (void) strcpy(path, strcat(temp, ff));
-    TRACE(("     -> '%s' shorten\n", path));
 #else
 # if SYS_UNIX || OPT_MSDOS_PATH
     cwd = current_directory(FALSE);
@@ -1360,6 +1369,7 @@ shorten_path(char *path, int keep_cwd)
 
     /* if we reached the end of cwd, and we're at a path boundary,
        then the file must be under '.' */
+    found = FALSE;
     if (*cwd == EOS) {
 	if (keep_cwd) {
 	    temp[0] = '.';
@@ -1367,25 +1377,30 @@ shorten_path(char *path, int keep_cwd)
 	    temp[2] = EOS;
 	} else
 	    *temp = EOS;
-	if (is_slashc(*ff))
-	    return strcpy(path, strcat(temp, ff + 1));
-	if (slp == ff - 1)
-	    return strcpy(path, strcat(temp, ff));
+	if (is_slashc(*ff)) {
+	    found = TRUE;
+	    (void) strcpy(path, strcat(temp, ff + 1));
+	} else if (slp == ff - 1) {
+	    found = TRUE;
+	    (void) strcpy(path, strcat(temp, ff));
+	}
     }
 
-    /* if we mismatched during the first path component, we're done */
-    if (slp == path)
-	return path;
-
-    /* if we mismatched in the last component of cwd, then the file
-       is under '..' */
-    if (last_slash(cwd) == 0)
-	return strcpy(path, strcat(strcpy(temp, ".."), slp));
+    if (!found) {
+	/* if we mismatched during the first path component, we're done */
+	if (slp != path) {
+	    /* if we mismatched in the last component of cwd, then the file
+	       is under '..' */
+	    if (last_slash(cwd) == 0)
+		(void) strcpy(path, strcat(strcpy(temp, ".."), slp));
+	}
+    }
 
     /* we're off by more than just '..', so use absolute path */
 # endif				/* SYS_UNIX || SYS_MSDOS */
 #endif /* OPT_VMS_PATH */
 
+    TRACE(("     -> '%s' shorten\n", path));
     return path;
 }
 
@@ -1552,7 +1567,7 @@ lengthen_path(char *path)
 #endif
 	len = strlen(temp);
 	temp[len++] = SLASHC;
-	(void) strcpy(temp + len, f);
+	(void) vl_strncpy(temp + len, f, sizeof(temp) - len);
 	(void) strcpy(path, temp);
     }
 #if OPT_MSDOS_PATH
@@ -1561,7 +1576,7 @@ lengthen_path(char *path)
 	if (curdrive() != 0) {
 	    temp[0] = (char) curdrive();
 	    temp[1] = ':';
-	    (void) strcpy(temp + 2, path);
+	    (void) vl_strncpy(temp + 2, path, sizeof(temp) - 2);
 	    (void) strcpy(path, temp);
 	}
     }
@@ -1845,7 +1860,7 @@ opendir(char *fname)
     char buf[MAX_PATH];
     DIR *od;
 
-    (void) strcpy(buf, fname);
+    (void) vl_strncpy(buf, fname, sizeof(buf));
 
     if (!strcmp(buf, "."))	/* if its just a '.', replace with '*.*' */
 	(void) strcpy(buf, "*.*");
@@ -1940,6 +1955,7 @@ slconv(const char *f, char *t, char oc, char nc)
 
     return retp;
 }
+
 /*
  * Use this function to filter our internal '/' format pathnames to '\'
  * when invoking system calls (e.g., opendir, chdir).
@@ -2026,7 +2042,7 @@ find_in_path_list(const char *path_list, char *path)
     int found = FALSE;
     char find[NFILEN];
 
-    strcpy(find, SL_TO_BSL(path));
+    vl_strncpy(find, SL_TO_BSL(path), sizeof(find));
     TRACE(("find_in_path_list\n\t%s\n\t%s\n",
 	   (path_list != 0)
 	   ? path_list
@@ -2047,6 +2063,7 @@ find_in_path_list(const char *path_list, char *path)
     return found;
 }
 
+#if 0
 /*
  * Prepend the given path to a path-list
  */
@@ -2056,11 +2073,16 @@ prepend_to_path_list(char **path_list, char *path)
     char *s, *t;
     size_t need;
     char find[NFILEN];
+    struct stat sb;
 
-    strcpy(find, SL_TO_BSL(path));
+    vl_strncpy(find, SL_TO_BSL(path), sizeof(find));
     if (*path_list == 0 || **path_list == 0) {
 	append_to_path_list(path_list, find);
-    } else if (!find_in_path_list(*path_list, find)) {
+    } else if (!find_in_path_list(*path_list, find)
+#ifdef SYS_UNIX
+	       && file_stat(find, &sb) == 0
+#endif
+	) {
 	need = strlen(find) + 2;
 	if ((t = *path_list) != 0) {
 	    need += strlen(t);
@@ -2076,6 +2098,7 @@ prepend_to_path_list(char **path_list, char *path)
     }
     TRACE(("prepend_to_path_list\n\t%s\n\t%s\n", *path_list, find));
 }
+#endif
 
 /*
  * Append the given path to a path-list
@@ -2086,9 +2109,16 @@ append_to_path_list(char **path_list, char *path)
     char *s, *t;
     size_t need;
     char find[NFILEN];
+#ifdef SYS_UNIX
+    struct stat sb;
+#endif
 
-    strcpy(find, SL_TO_BSL(path));
-    if (!find_in_path_list(*path_list, find)) {
+    vl_strncpy(find, SL_TO_BSL(path), sizeof(find));
+    if (!find_in_path_list(*path_list, find)
+#ifdef SYS_UNIX
+	&& file_stat(find, &sb) == 0
+#endif
+	) {
 	need = strlen(find) + 2;
 	if ((t = *path_list) != 0) {
 	    need += strlen(t);

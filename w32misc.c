@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.36 2002/01/09 00:40:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.37 2002/02/04 00:42:58 tom Exp $
  */
 
 #include "estruct.h"
@@ -666,11 +666,11 @@ w32_system_winvile(const char *cmd, int *pressret)
                     (void) EnableMenuItem(GetSystemMenu(hwnd, FALSE),
                                           SC_CLOSE,
                                           MF_GRAYED);
+                    (void) SetForegroundWindow(hwnd);
                     break;
                 }
                 Sleep(200);
             }
-            (void) SetForegroundWindow(hwnd);
         }
         if (! no_shell)
         {

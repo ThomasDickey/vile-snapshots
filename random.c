@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.259 2002/01/08 00:22:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.260 2002/01/29 01:37:47 tom Exp $
  *
  */
 
@@ -922,6 +922,7 @@ current_directory(int force)
 	current_dirname[0] = '.';
 	current_dirname[1] = EOS;
     } else {
+	cwd[NFILEN - 1] = EOS;
 	s = strchr(cwd, '\n');
 	if (s)
 	    *s = EOS;
@@ -929,6 +930,7 @@ current_directory(int force)
 #if OPT_MSDOS_PATH
     bsl_to_sl_inplace(cwd);
     lengthen_path(cwd);
+    cwd[NFILEN - 1] = EOS;
 #if !OPT_CASELESS
     mklower(cwd);
 #endif
@@ -1304,7 +1306,7 @@ set_directory_from_file(BUFFER *bp)
 {
     if (!isInternalName(bp->b_fname)) {
 	char name[NFILEN];
-	char *leaf = pathleaf(strcpy(name, bp->b_fname));
+	char *leaf = pathleaf(vl_strncpy(name, bp->b_fname, NFILEN));
 	if (leaf != 0
 	    && leaf != name) {
 	    *leaf = EOS;
@@ -1667,7 +1669,7 @@ popd(int f GCC_UNUSED, int n GCC_UNUSED)
 	return (FALSE);
     }
     if (last) {
-	(void) strncpy(newcwd, tb_values(last), sizeof(newcwd) - 1);
+	(void) vl_strncpy(newcwd, tb_values(last), sizeof(newcwd));
 	newcwd[sizeof(newcwd) - 1] = '\0';
     } else
 	newcwd[0] = '\0';
@@ -1842,7 +1844,7 @@ vl_dirs_add(int f GCC_UNUSED, int n GCC_UNUSED)
     if ((rc = mlreply2("Directory: ", &last)) == ABORT)
 	return (rc);
     if (last) {
-	(void) strncpy(newdir, tb_values(last), sizeof(newdir) - 1);
+	(void) vl_strncpy(newdir, tb_values(last), sizeof(newdir));
 	newdir[sizeof(newdir) - 1] = '\0';
 	mktrimmed(newdir);
     } else

@@ -600,6 +600,7 @@ Text manipulation command:
 		lets one reference the selected region with other operators.
 		(If you use this command much, it is recommended that you
 		bind it to and easier to type sequence, such as 'S'.)
+		See also the q (quoted motion) command.
 
 	Text insertion
 	--------------
@@ -849,12 +850,13 @@ Miscellaneous commands
 		and the final cursor position.
 
 		Any motion command can appear in between the two 'q'
-		commands.  If used alone, i.e. not in an operator
-		context, then the spanned text is selected, highlighted,
-		and yanked as a side effect.  The resulting selection can
-		then be manipulated with the ^S pseudo-motion, below.
-		The selection-clear command removes the selection's
-		highlight attributes.
+		commands.  If used alone, i.e., not in an operator context,
+		then the spanned text is highlighted, and yanked on
+		completion (as well as setting the special named marks '<
+		and '>) as a side effect.  The resulting selection can then
+		be manipulated with the ^S pseudo-motion, below.  The
+		selection-clear command removes the selection's highlight
+		attributes.
 
 		Most motions will select up to but not including their
 		endpoint.  The 'e', 'E', 'f', 't', and '%' commands are
@@ -5704,4 +5706,4 @@ Problems
 
 Copyright 1995-2001 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.541 2002/01/20 23:52:13 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.542 2002/02/03 23:43:01 tom Exp $

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.72 2002/01/19 17:30:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.73 2002/02/04 00:32:32 tom Exp $
  *
  */
 
@@ -999,7 +999,7 @@ handle_mouse_event(MOUSE_EVENT_RECORD mer)
     int onmode = FALSE;
     COORD current, first, latest;
     MARK lmbdn_mark;		/* left mouse button down here */
-    int sel_pending, state;
+    int sel_pending = 0, state;
     DWORD thisclick;
     UINT clicktime = GetDoubleClickTime();
 
@@ -1307,7 +1307,7 @@ ntcons_reopen(void)
 static int
 parse_icursor_string(char *str, int *revert_cursor)
 {
-    int failed, rc = TRUE, tmp;
+    int failed, rc = TRUE, tmp = 0;
     char *pinsmode, *pcmdmode;
 
     *revert_cursor = FALSE;

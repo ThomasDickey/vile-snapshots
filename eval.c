@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.307 2002/01/19 00:21:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.308 2002/02/04 00:35:50 tom Exp $
  *
  */
 
@@ -1804,7 +1804,7 @@ init_vars_cmpl(void)
 {
     int pass;
     UVAR *p;
-    unsigned count;
+    unsigned count = 0;
 
     if (vars_cmpl_list == 0) {
 	for (pass = 0; pass < 2; pass++) {

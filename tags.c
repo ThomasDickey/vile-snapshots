@@ -5,7 +5,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995-2000 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.113 2002/01/09 00:32:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.114 2002/02/04 00:31:00 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -827,8 +827,8 @@ cheap_buffer_scan(BUFFER *bp, char *patrn, int dir)
 int
 untagpop(int f, int n)
 {
-	L_NUM lineno;
-	C_NUM colno;
+	L_NUM lineno = 0;
+	C_NUM colno = 0;
 	char fname[NFILEN];
 	int s;
 

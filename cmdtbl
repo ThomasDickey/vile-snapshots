@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.221 2002/01/20 22:32:32 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.222 2002/02/03 20:36:25 tom Exp $
 #
 #
 
@@ -1113,10 +1113,18 @@ operdetab	OPER|REDO|UNDO|GLOBOK|(RANGE)
 	"detab-lines-til"		!FEWNAMES
 	'^A- '
 	<convert tabs to spaces in the region>
+oper_l_detab	OPER|REDO|UNDO|GLOBOK|(RANGE)
+	"leading-detab-lines-til"	!FEWNAMES
+	'^X- '
+	<convert leading tabs to spaces in the region>
 operentab	OPER|REDO|UNDO|GLOBOK|(RANGE)
 	"entab-lines-til"		!FEWNAMES
 	'^A-^I'
 	<convert spaces to tabs where possible in the region>
+oper_l_entab	OPER|REDO|UNDO|GLOBOK|(RANGE)
+	"leading-entab-lines-til"	!FEWNAMES
+	'^X-^I'
+	<convert leading spaces to tabs where possible in the region>
 opermove	OPER|(RANGE|EXTRA)
 	"move-til"
 	"m"

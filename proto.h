@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.489 2002/01/20 23:41:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.491 2002/02/03 23:17:14 tom Exp $
  *
  */
 
@@ -72,6 +72,7 @@ extern void api_free_private(void *);
 #endif
 
 /* basic.c */
+extern int can_set_nmmark(int c);
 extern int firstchar (LINEPTR lp);
 extern int getgoal (LINEPTR dlp);
 extern int gonmmark (int c);
@@ -81,6 +82,7 @@ extern int next_sw (int col);
 extern int next_tabcol (int col);
 extern int nextchar (LINEPTR lp, int off);
 extern int setmark (void);
+extern int show_mark_is_set (int c);
 extern void swapmark (void);
 
 #if OPT_MOUSE
@@ -924,18 +926,20 @@ extern int lregexec (regexp *prog, LINEPTR lp, int startoff, int endoff);
 /* region.c */
 typedef int (*DORGNLINES)(int (*)(REGN_ARGS), void *, int);
 
+extern DORGNLINES get_do_lines_rgn(void);
 extern int        blank_region (void);
 extern int        detab_region (void);
 extern int        detabline (void *flagp, int l, int r);
 extern int        entab_region (void);
 extern int        entabline (void *flagp, int l, int r);
 extern int        flipregion (void);
-extern DORGNLINES get_do_lines_rgn(void);
 extern int        get_fl_region (REGION *rp);
 extern int        getregion (REGION *rp);
 extern int        kill_line(void *flagp, int l, int r);
 extern int        killregion (void);
 extern int        killregionmaybesave (int save);
+extern int        l_detab_region (void);
+extern int        l_entab_region (void);
 extern int        lowerregion (void);
 extern int        openregion (void);
 extern int        shiftlregion (void);
@@ -961,6 +965,7 @@ void clobber_save_curbp(BUFFER *bp);
 
 /* select.c */
 #if OPT_SELECTIONS
+extern	BUFFER *sel_buffer	(void);
 extern	LINEPTR setup_region    (void);
 extern	int	apply_attribute	(void);
 extern	int	assign_attr_id	(void);
@@ -971,6 +976,8 @@ extern	int	attributeregion_in_region(REGION *rp, REGIONSHAPE shape,
 extern	int	parse_attribute	(char *text, int length, int offset, int *countp);
 extern	int	sel_begin	(void);
 extern	int	sel_extend	(int wiping, int include_dot);
+extern	int	sel_get_leftmark(MARK *result);
+extern	int	sel_get_rightmark(MARK *result);
 extern	int	sel_setshape	(REGIONSHAPE shape);
 extern	void	do_sweep	(int flag);
 extern	void	find_release_attr (BUFFER *bp, REGION *rp);
@@ -993,7 +1000,6 @@ extern	BUFFER *get_selection_buffer_and_region(AREGION *arp);
 #if OPT_SEL_YANK
 extern	int	sel_yank	(int reg);
 extern	int	sel_attached	(void);
-extern	BUFFER *sel_buffer	(void);
 #endif
 
 #if OPT_LINE_ATTRS

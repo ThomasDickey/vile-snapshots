@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.105 2002/01/11 21:36:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.106 2002/02/01 01:28:15 tom Exp $
  *
  */
 
@@ -481,6 +481,24 @@ qs_pathcmp(const void *lpp1, const void *lpp2)
 }
 
 static void
+remove_duplicates(BUFFER *bp)
+{
+    LINE *plp = lforw(buf_head(bp));
+    LINE *lp;
+
+    while (plp != buf_head(bp)) {
+	if ((lp = lforw(plp)) != buf_head(bp)) {
+	    if (pathcmp(plp, lp->l_text) == 0) {
+		lremove(bp, lp);
+		lfree(lp, bp);
+		continue;
+	    }
+	}
+	plp = lforw(plp);
+    }
+}
+
+static void
 sortMyBuff(BUFFER *bp)
 {
     L_NUM n;
@@ -507,17 +525,14 @@ sortMyBuff(BUFFER *bp)
     slp = sortvec;
     while (n-- > 0) {
 	lp = *slp++;
-	if (pathcmp(plp, lp->l_text) == 0) {
-	    lfree(lp, bp);
-	} else {
-	    set_lforw(plp, lp);
-	    set_lback(lp, plp);
-	    plp = lp;
-	}
+	set_lforw(plp, lp);
+	set_lback(lp, plp);
+	plp = lp;
     }
     lp = buf_head(bp);
     set_lforw(plp, lp);
     set_lback(lp, plp);
+    remove_duplicates(bp);
     b_clr_counted(bp);
 
     free((char *) sortvec);
