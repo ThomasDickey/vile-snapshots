@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.37 1998/05/27 23:46:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.38 1998/07/02 23:42:25 tom Exp $
  *
  */
 
@@ -46,7 +46,7 @@ print_usage (void)
 	"-4             43-line mode",
 	"-5             50-line mode",
 #if SYS_OS2
-	"-6		60-line mode",
+	"-6             60-line mode",
 #endif
 	"(see help file for more screen resolutions)",
 #endif

@@ -7,15 +7,17 @@
  * =======
  * -- This code has not been tested with NT 3.51 .
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.2 1998/05/27 10:16:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.3 1998/07/03 23:58:15 cmorgan Exp $
  */
 
 #include <windows.h>
+#include <conio.h> 
 #include <assert.h>
 #include <errno.h>
 
 #include "estruct.h"
 #include "edef.h"
+#include "nefunc.h" 
 
 #define CSHEXE      "csh.exe"
 #define CSHEXE_LEN  (sizeof(CSHEXE) - 1)
@@ -305,6 +307,63 @@ w32_system(const char *cmd)
         free(cmdstr);
     restore_console_title();
     return (rc);
+} 
+ 
+ 
+ 
+/* 
+ * FUNCTION 
+ *   w32_keybrd_reopen(int pressret) 
+ * 
+ *   pressret - Boolean, T -> display prompt and wait for response 
+ * 
+ * DESCRIPTION 
+ *   This is essentially the Win32 equivalent of the pressreturn() function 
+ *   in spawn.c, but differs in that it reopens the console keyboard _after_  
+ *   prompting the user to press return.  Order is important IF the user has 
+ *   configured his/her dos box such that the buffer size exceeds the 
+ *   window size.  In that scenario, if the ntconio.c routines gained 
+ *   control (via TTkopen) before the prompt, then the output of the  
+ *   previous shell command (e.g., :!dir) is immediately thrown away  
+ *   due to a screen context switch and the user has no chance to read the 
+ *   shell output. 
+ * 
+ *   This function prevents that scenario from occurring. 
+ * 
+ * APPLIES TO 
+ *   W32 console vile only. 
+ * 
+ * RETURNS  
+ *   None 
+ */ 
+ 
+void 
+w32_keybrd_reopen(int pressret) 
+{ 
+#ifdef DISP_NTCONS 
+    int c; 
+ 
+    if (pressret) 
+    { 
+        fputs("[Press return to continue]", stdout); 
+        fflush(stdout); 
+ 
+        /* loop for a CR, a space, or a : to do another named command */ 
+        while ((c = _getch()) != '\r' && 
+                c != '\n' && 
+                c != ' ' && 
+                !ABORTED(c)) 
+        { 
+            if (kcod2fnc(c) == &f_namedcmd)  
+            { 
+                unkeystroke(c); 
+                break; 
+            } 
+        } 
+    } 
+    TTkopen(); 
+    kbd_erase_to_end(0); 
+#endif 
 }
 
 

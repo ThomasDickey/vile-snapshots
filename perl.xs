@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.26 1998/07/01 23:51:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.27 1998/07/03 00:29:42 kev Exp $
  */
 
 /*#
@@ -2147,7 +2147,7 @@ set(...)
   #
 
 void
-update(void)
+update()
     PPCODE:
 	api_update();
 
@@ -2654,7 +2654,7 @@ attribute(vbp, ...)
 		hypercmd = 0;
 	    }
 
-	    status = attributeregion_over_region(
+	    status = attributeregion_in_region(
 	    		&vbp->region, vbp->regionshape, vattr, hypercmd);
 
 	    if (status == TRUE)		/* not the same as "if (status)" */
@@ -2684,7 +2684,7 @@ attribute_cntl_a_sequences(vbp)
     CODE:
 #if OPT_SELECTIONS
 	api_setup_fake_win(vbp, TRUE);
-	attribute_cntl_a_sequences_over_region(&vbp->region, vbp->regionshape);
+	attribute_cntl_a_seqs_in_region(&vbp->region, vbp->regionshape);
 	RETVAL = vbp;
 #else
 	croak("%s requires vile to be compiled with OPT_SELECTIONS",

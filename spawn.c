@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.128 1998/05/30 11:46:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.129 1998/07/03 23:59:48 cmorgan Exp $
  *
  */
 
@@ -42,7 +42,7 @@ extern  int	newmode[3];			/* In "termio.c"	*/
 extern  short	iochan;				/* In "termio.c"	*/
 #endif
 
-#if CC_NEWDOSCC && !CC_DJGPP			/* Typo, was NEWSDOSCC 	*/
+#if CC_NEWDOSCC && !CC_DJGPP			/* Typo, was NEWSDOSCC	*/
 #include	<process.h>
 #endif
 
@@ -179,15 +179,15 @@ bktoshell(int f, int n)		/* suspend and wait to wake up */
 # else
 	(void)signal_pg(SIGTSTP);
 
- 	/*
- 	 * Next four lines duplicate spawncli() actions following return
- 	 * from shell.  Adding lines 1-3 ensure that vile properly redraws
- 	 * its screen when TERM type is vt220 or vt320 and host is linux.
- 	 */
+	/*
+	 * Next four lines duplicate spawncli() actions following return
+	 * from shell.	Adding lines 1-3 ensure that vile properly redraws
+	 * its screen when TERM type is vt220 or vt320 and host is linux.
+	 */
 	kbd_openup();
- 	ttunclean();
- 	sgarbf = TRUE;
- 	return AfterShell();
+	ttunclean();
+	sgarbf = TRUE;
+	return AfterShell();
 # endif
 #else
 	mlforce("[Job control unavailable]");
@@ -390,14 +390,15 @@ spawn1(int rerun, int pressret)
 #endif
 #if SYS_WINNT
 	w32_system(line);
+	w32_keybrd_reopen(pressret);
 #else
 	system(line);
-#endif
 	TTkopen();
 	/* if we are interactive, pause here */
 	if (pressret) {
 		pressreturn();
 	}
+#endif
 #if	DISP_IBMPC
 	/* Reopen the display _after_ the prompt, to keep the shell-output
 	 * in the same type of screen as the prompt.
@@ -451,10 +452,30 @@ pipecmd(int f, int n)
 		return s;
 	if ((s = popupbuff(bp)) != TRUE)
 		return s;
+#if SYS_WINNT
+	/*
+	 * Due to command.com's limitations when w32pipes mode is enabled,
+	 * the code path taken here goes through ifile(), rather than
+	 * swbuffer_lfl().  Reason:  ifile() does a more complete job
+	 * of setting up and tearing down [win32] pipes.
+	 */
+
+	if ((s = bclear(bp)) != TRUE)	/* Clear all buffer text. */
+		return s;
+	s = ifile(line, TRUE, NULL);
+	(void) firstnonwhite(FALSE,1);
+	if (! s)
+		return (s);
+#if OPT_FINDERR
+	set_febuff(OUTPUT_BufName);
+#endif
+	ch_fname(bp,line);
+#else
 	ch_fname(bp,line);
 	bp->b_active = FALSE; /* force a re-read */
 	if ((s = swbuffer_lfl(bp,FALSE)) != TRUE)
 		return s;
+#endif /* SYS_WINNT */
 	set_rdonly(bp, line, MDVIEW);
 #endif
 

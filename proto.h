@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.285 1998/05/29 00:52:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.287 1998/07/04 00:00:08 cmorgan Exp $
  *
  */
 
@@ -775,9 +775,9 @@ void clobber_save_curbp(BUFFER *bp);
 /* select.c */
 #if OPT_SELECTIONS
 extern	int	assign_attr_id	(void);
-extern	int	attribute_cntl_a_sequences_over_region(REGION *rp, REGIONSHAPE shape);
+extern	int	attribute_cntl_a_seqs_in_region(REGION *rp, REGIONSHAPE shape);
 extern	int	attributeregion (void);
-extern	int	attributeregion_over_region(REGION *rp, REGIONSHAPE shape,
+extern	int	attributeregion_in_region(REGION *rp, REGIONSHAPE shape,
 			                    VIDEO_ATTR vattr, char *hc);
 extern	int	sel_begin	(void);
 extern	int	sel_extend	(int wiping, int include_dot);
@@ -883,16 +883,17 @@ extern	void	vms_dir2path	(char *path);
 extern FILE *vms_rpipe (const char *cmd, int fd, const char *input_file);
 #endif
 
-/* w32misc.c */
+/* w32isms */
 #if SYS_WINNT
 extern char *mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc);
 extern int  is_win95(void);
 extern int  is_winnt(void);
-extern int  w32_inout_popen(FILE **fr, FILE **fw, char *cmd);
-extern int  w32_system(const char *cmd);
 extern void restore_console_title(void);
 extern void set_console_title(const char *title);
+extern int  w32_inout_popen(FILE **fr, FILE **fw, char *cmd);
 extern void w32_npclose(FILE *fp);
+extern void w32_keybrd_reopen(int pressret);
+extern int  w32_system(const char *cmd);
 #endif
 
 /* watchfd.c */

@@ -1,5 +1,22 @@
 Changes for vile 8.1 (released ??? ??? ??, 1998)
 
+ (tom) 980703 (c)
+ 	+ remove spurious 'void' in perl.xs which caused items to be miscounted
+	  (report by Kuntal M. Daftary, patch by Kevin Buettner).
+	+ shorten identifiers to no more than 31 characters (reported by
+	  Graeme Miller).
+	> patches by Clark Morgan:
+	+ fix for a problem reported by Paul Fox:  when a dos box has scroll
+	  bars (window size smaller than buffer size), then :!<dir> displays
+	  its output in a switched screen context that the user can't examine. 
+	  This applies to console vile only (winvile has much worse problems in
+	  the same scenario :-).
+	+ changes to make -!  use the same code path as filter-region and
+	  read-pipe when the host is win32-based.
+	+ implement paste-from-clipboard for win32, bound to Shift+Insert
+	+ add a new documentation file (doc/w32modes.doc) that describes the
+	  optimum settings for win32 modes when the host OS is not NT4.
+
  (tom) 980702 (b)
 	+ change highlighting rule in vile-c-filt to highlight only the
 	  "#" and keyword on preprocessor lines (patch by Paul Fox).

@@ -18,7 +18,7 @@
  * transfering the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.69 1998/05/21 22:55:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.70 1998/07/03 00:20:31 tom Exp $
  *
  */
 
@@ -181,7 +181,7 @@ fix_dot(void)
  */
 
 static void
-output_selection_position_to_message_line(int yanked)
+show_selection_position(int yanked)
 {
 #ifdef WMDTERSELECT
     if (!w_val(curwp, WMDTERSELECT)) {
@@ -346,7 +346,7 @@ sel_extend(int wiping, int include_dot)
 			wp->w_flag |= WFHARD;
 	}
 
-	output_selection_position_to_message_line(FALSE);
+	show_selection_position(FALSE);
 
 	regionshape = save_shape;
 	DOT = saved_dot;
@@ -408,7 +408,7 @@ sel_yank(int reg)
     haveregion = NULL;
     regionshape = save_shape;
     pop_fake_win(save_wp);
-    output_selection_position_to_message_line(TRUE);
+    show_selection_position(TRUE);
 
     /* put cursor back on screen...is there a cheaper way to do this?  */
     (void)update(FALSE);
@@ -776,10 +776,10 @@ attributeregion(void)
 }
 
 int
-attributeregion_over_region(REGION *rp,
-                            REGIONSHAPE shape,
-			    VIDEO_ATTR vattr,
-			    char *hc)
+attributeregion_in_region(REGION *rp,
+			  REGIONSHAPE shape,
+			  VIDEO_ATTR vattr,
+			  char *hc)
 {
     haveregion = rp;
     DOT =  rp->r_orig;
@@ -943,7 +943,7 @@ operattrcaseq(int f, int n)
 }
 
 int
-attribute_cntl_a_sequences_over_region(REGION *rp, REGIONSHAPE shape)
+attribute_cntl_a_seqs_in_region(REGION *rp, REGIONSHAPE shape)
 {
     haveregion = rp;
     DOT =  rp->r_orig;
