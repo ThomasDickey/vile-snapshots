@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file. 
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.53 1996/03/24 13:38:16 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.54 1996/10/03 01:02:51 tom Exp $
  *
  */
 
@@ -506,6 +506,7 @@ formatregion(void)
 /*	wordcount:	count the # of words in the marked region,
 			along with average word sizes, # of chars, etc,
 			and report on them.			*/
+/*ARGSUSED*/
 int
 wordcount(int f, int n)
 {

@@ -1,6 +1,6 @@
 /*	Dumb terminal driver, for I/O before we get into screen mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/dumbterm.c,v 1.7 1996/04/14 23:37:50 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/dumbterm.c,v 1.8 1996/10/03 01:02:51 tom Exp $
  *
  */
 
@@ -11,7 +11,8 @@
 #define SCRSIZ	64
 #define NPAUSE	10			/* # times thru update to pause */
 
-static int  dumb_cres     ( char * res);
+static OUTC_DCL dumb_putc (OUTC_ARGS);
+static int  dumb_cres     (char * res);
 static int  dumb_getc     (void);
 static int  dumb_typahead (void);
 static void dumb_beep     (void);
@@ -21,7 +22,6 @@ static void dumb_flush    (void);
 static void dumb_kclose   (void);
 static void dumb_kopen    (void);
 static void dumb_move     ( int row, int col );
-static void dumb_putc     ( int c );
 static void dumb_rev      ( int state );
 
 static void flush_blanks  (void);
@@ -88,8 +88,8 @@ dumb_getc(void)
 	return getchar();
 }
 
-static void
-dumb_putc(int c)
+static OUTC_DCL
+dumb_putc(OUTC_ARGS)
 {
 	if (isspace(c)) {
 		if (last_col == 0)
@@ -99,6 +99,7 @@ dumb_putc(int c)
 		(void)putchar(c);
 	}
 	this_col++;
+	OUTC_RET c;
 }
 
 static int

@@ -2,7 +2,7 @@
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  * rewritten to use regular expressions, 1995 by T.Dickey (dickey@clark.net)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.58 1996/04/30 20:08:07 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.59 1996/10/03 01:02:51 tom Exp $
  *
  */
 
@@ -555,6 +555,7 @@ finderrbuf(int f, int n)
  * so that macros can manipulate the set of expressions (including reading it
  * from a file).
  */
+/*ARGSUSED*/
 int
 comp_err_exps(int f, int n)
 {

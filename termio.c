@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.145 1996/09/17 13:01:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.146 1996/10/03 01:02:51 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -568,10 +568,10 @@ ttunclean(void)
 #endif /* USE_SGTTY */
 
 #if !DISP_X11
-void
-ttputc(int c)
+OUTC_DCL
+ttputc(OUTC_ARGS)
 {
-	(void)putchar(c);
+	OUTC_RET putchar((char)c);
 }
 
 void
@@ -839,23 +839,24 @@ ttunclean(void)
  * On CPM terminal I/O unbuffered, so we just write the byte out. Ditto on
  * MS-DOS (use the very very raw console output routine).
  */
-void
-ttputc(int c)
+OUTC_DCL
+ttputc(OUTC_ARGS)
 {
 #if	SYS_VMS
 	if (nobuf >= NOBUF)
 		ttflush();
 	obuf[nobuf++] = c;
+	OUTC_RET c;
 #endif
 #if	SYS_OS2 && !DISP_VIO
-	putch(c);
+	OUTC_RET putch(c);
 #endif
 #if	SYS_MSDOS
 # if DISP_IBMPC
 	/* unneeded currently -- output is memory-mapped */
 # endif
 # if DISP_ANSI
-	putchar(c);
+	OUTC_RET putchar(c);
 # endif
 #endif
 }
@@ -1053,6 +1054,7 @@ getscreensize (int *widthp, int *heightp)
 
 static int  null_cres     (char *res);
 static int  null_getc     (void);
+static OUTC_DCL null_putc (OUTC_ARGS);
 static int  null_typahead (void);
 static void null_beep     (void);
 static void null_close    (void);
@@ -1063,7 +1065,6 @@ static void null_kclose   (void);
 static void null_kopen    (void);
 static void null_move     (int row, int col);
 static void null_open     (void);
-static void null_putc     (int c);
 static void null_rev      (int state);
 
 TERM null_term = {
@@ -1103,7 +1104,7 @@ static void null_kopen(void)	{ }
 static void null_kclose(void)	{ }
 static int  null_getc(void)	{ return abortc; }
 /*ARGSUSED*/
-static void null_putc(int c)	{ }
+static OUTC_DCL null_putc(OUTC_ARGS) { OUTC_RET c; }
 static int  null_typahead(void)	{ return FALSE; }
 static void null_flush(void)	{ }
 /*ARGSUSED*/

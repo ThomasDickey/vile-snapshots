@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.113 1996/04/30 20:08:07 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.114 1996/10/03 01:02:51 tom Exp $
  *
  */
 
@@ -529,7 +529,7 @@ filterregion(void)
  */
 /* ARGSUSED */
 int
-filter(int f, int n)
+vile_filter(int f, int n)
 {
 #if !(SYS_UNIX||SYS_MSDOS || (SYS_OS2 && CC_CSETPP)) /* filterregion up above is better */
 	register int	s;	/* return status from CLI */

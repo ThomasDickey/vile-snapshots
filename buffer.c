@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.148 1996/08/13 03:06:48 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.149 1996/10/03 01:02:51 tom Exp $
  *
  */
 
@@ -1620,7 +1620,8 @@ bfind(const char *bname, int bflag)
 	bp->b_fname = NULL;
 	ch_fname(bp, "");
 #if	OPT_ENCRYPT
-	if (cryptkey != 0 && *cryptkey != EOS) {
+	if (!b_is_temporary(bp)
+	 && cryptkey != 0 && *cryptkey != EOS) {
 		(void)strcpy(bp->b_key, cryptkey);
 		make_local_b_val(bp, MDCRYPT);
 		set_b_val(bp, MDCRYPT, TRUE);

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.227 1996/09/17 14:30:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.228 1996/10/04 23:57:22 tom Exp $
  *
  */
 
@@ -175,7 +175,7 @@ extern void newscreensize (int h, int w);
 extern SIGT imworking (int ACTUAL_SIG_ARGS);
 #endif
 #if OPT_PSCREEN
-extern	void	psc_putchar	(int c);
+extern	OUTC_DCL psc_putchar	(OUTC_ARGS);
 extern	void	psc_flush	(void);
 extern	void	psc_move	(int row, int col);
 extern	void	psc_eeol	(void);
@@ -572,7 +572,7 @@ extern void ttopen (void);
 extern void ttclose (void);
 extern void ttclean (int f);
 extern void ttunclean (void);
-extern void ttputc (int c);
+extern OUTC_DCL ttputc (OUTC_ARGS);
 extern void ttflush (void);
 extern int ttgetc (void);
 extern int tttypahead (void);
@@ -943,8 +943,20 @@ extern	long	strtol	(const char *nptr, char **endptr, int base);
 #if MISSING_EXTERN_SYSTEM
 extern	int	system	(const char *cmd);
 #endif
+#if MISSING_EXTERN_TGETSTR
+extern	char *	tgetstr (const char *name, char **area);
+#endif
+#if MISSING_EXTERN_TGOTO
+extern	char *	tgoto (const char *cstring, int hpos, int vpos);
+#endif
+#if MISSING_EXTERN_TIGETSTR
+extern	char *	tigetstr (char *name);
+#endif
 #if MISSING_EXTERN_TIME
 extern	time_t	time	(time_t *t);
+#endif
+#if MISSING_EXTERN_TPARM
+extern	char *	tparm (const char *fmt, ...);
 #endif
 #if MISSING_EXTERN_UNLINK
 extern	int	unlink	(char *path);

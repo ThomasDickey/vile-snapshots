@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.64 1996/04/17 02:49:32 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.65 1996/10/03 01:02:51 tom Exp $
  *
  */
 
@@ -850,6 +850,7 @@ path_completion(int c, char *buf, int *pos)
 				return FALSE;
 			case 1:
 				(void)strcpy(path, expand[0]);
+				/*FALLTHRU*/
 			case 0:
 				(void)glob_free(expand);
 				break;

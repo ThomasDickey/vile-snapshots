@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.133 1996/04/14 23:37:50 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.134 1996/10/03 01:02:51 tom Exp $
  *
  */
 
@@ -816,6 +816,14 @@ char *value)	/* value to set to */
 				(void)backchar(FALSE, 1);
 			}
 
+#if OPT_CRYPT
+		ElseIf( EVCRYPTKEY )
+			if (cryptkey != 0)
+				free(cryptkey);
+			cryptkey = strmalloc(value);
+			ue_crypt((char *)NULL, 0);
+			ue_crypt(cryptkey, (int)strlen(cryptkey));
+#endif
 		ElseIf( EVDISCMD )
 			discmd = stol(value);
 
@@ -952,7 +960,7 @@ set_palette(const char *value)
 #if OPT_COLOR
 	if (term.t_setpal != null_t_setpal) {
 		TTspal(palstr);
-		refresh(FALSE,0);
+		vile_refresh(FALSE,0);
 		return TRUE;
 	}
 	return FALSE;

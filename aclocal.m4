@@ -1,7 +1,7 @@
 dnl
 dnl Local definitions for autoconf.
 dnl ------------------------
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.20 1996/05/28 01:45:22 pgf Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.21 1996/10/05 00:17:34 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -345,6 +345,15 @@ AC_TRY_LINK([
 # endif
 #endif
 
+#if USE_TERMINFO
+# include <curses.h>
+# include <term.h>
+#else
+#if HAVE_TERMCAP_H
+#include <termcap.h>
+#endif
+#endif
+
 #undef $1
 struct zowie { int a; double b; struct zowie *c; char d; };
 extern struct zowie *$1();
@@ -451,4 +460,47 @@ AC_CACHE_VAL(vc_cv_dcl_sys_errlist,[
 	])
 AC_MSG_RESULT($vc_cv_dcl_sys_errlist)
 test $vc_cv_dcl_sys_errlist = yes && AC_DEFINE(HAVE_EXTERN_SYS_ERRLIST)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl	Check for return and param type of 3rd -- OutChar() -- param of tputs().
+AC_DEFUN([VC_TYPE_OUTCHAR],
+[AC_MSG_CHECKING([declaration of tputs 3rd param])
+AC_CACHE_VAL(vc_vc_type_outchar,[
+vc_cv_type_outchar="int OutChar(int)"
+vc_cv_found=no
+for P in int void; do
+for Q in int char; do
+for R in "" const; do
+	AC_TRY_COMPILE([
+#if USE_TERMINFO
+#include <curses.h>
+#include <term.h>
+#else
+#if HAVE_TERMCAP_H
+#include <termcap.h>
+#endif
+#endif ],
+	[extern $P OutChar($Q);
+	extern int tputs ($R char *string, int nlines, $P (*_f)($Q));
+	tputs("", 1, OutChar)],
+	[vc_cv_type_outchar="$P OutChar($Q)"
+	 vc_cv_found=yes
+	 break])
+done
+	test $vc_cv_found = yes && break
+done
+	test $vc_cv_found = yes && break
+done
+	])
+AC_MSG_RESULT($vc_cv_type_outchar)
+case $vc_cv_type_outchar in
+int*)
+	AC_DEFINE(OUTC_RETURN)
+	;;
+esac
+case $vc_cv_type_outchar in
+*char*)
+	AC_DEFINE(OUTC_ARGS,char c)
+	;;
+esac
 ])dnl

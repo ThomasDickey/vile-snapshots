@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.290 1996/09/19 00:47:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.291 1996/10/05 00:17:09 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -356,9 +356,9 @@
 #define	OPT_REVSTA	1	/* Status line appears in reverse video       */
 #define	OPT_CFENCE	1	/* do fence matching in CMODE		      */
 #define	OPT_LCKFILES	0	/* create lock files (file.lck style) 	      */
-#define	OPT_ENCRYPT	0	/* file encryption (not crypt(1) compatible!) */
+#define	OPT_ENCRYPT	!SMALLER/* file encryption (not crypt(1) compatible!) */
 #define	OPT_TAGS	1	/* tags support  			      */
-#define	OPT_WORDCOUNT	0	/* "count-words" command"		      */
+#define	OPT_WORDCOUNT	!SMALLER/* "count-words" command"		      */
 #define	OPT_PROCEDURES	1	/* named procedures			      */
 #define	OPT_KSH_HISTORY	0	/* ksh-style history commands		      */
 #define	OPT_PATHLOOKUP	1	/* search $PATH for startup and help files    */
@@ -1725,6 +1725,21 @@ typedef struct	WINDOW {
 	 */
 #define w_left_margin(wp) b_left_margin(wp->w_bufp)
 
+	/* tputs uses a 3rd parameter (a function pointer).  We're stuck with
+	 * making ttputc and TTputc the same type.
+	 */
+#ifdef OUTC_RETURN
+#define OUTC_DCL int
+#define OUTC_RET return
+#else
+#define OUTC_DCL void
+#define OUTC_RET (void)
+#endif
+
+#ifndef OUTC_ARGS
+#define OUTC_ARGS int c
+#endif
+
 /*
  * The editor communicates with the display using a high level interface. A
  * "TERM" structure holds useful variables, and indirect pointers to routines
@@ -1747,7 +1762,7 @@ typedef struct	{
 	void	(*t_kopen) (void);	/* Open keyboard		*/
 	void	(*t_kclose) (void);	/* close keyboard		*/
 	int	(*t_getchar) (void);	/* Get character from keyboard. */
-	void	(*t_putchar) (int c); 	/* Put character to display.	*/
+	OUTC_DCL(*t_putchar) (OUTC_ARGS); /* Put character to display.	*/
 	int	(*t_typahead) (void);	/* character ready?		*/
 	void	(*t_flush) (void);	/* Flush output buffers.	*/
 	void	(*t_move) (int row, int col); /* Move the cursor, origin 0. */
