@@ -1,6 +1,6 @@
-revlist for vile, version v6_2
+revlist for vile, version v6_2a
 --------------------------------------------------------------------------------
-CHANGES	1.13
+CHANGES	1.14
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -15,8 +15,8 @@ ansi.c	1.28
 basic.c	1.92
 bind.c	1.140
 borland.c	1.17
-buffer.c	1.149
-buglist	1.314
+buffer.c	1.150
+buglist	1.315
 c-filt.c	1.1
 c-filt.flx	1.1
 chgdfunc.h	1.4
@@ -36,10 +36,10 @@ edef.h	1.201
 epath.h	1.20
 estruct.h	1.291
 eval.c	1.134
-exec.c	1.129
+exec.c	1.130
 externs.c	1.5
 fences.c	1.39
-file.c	1.197
+file.c	1.198
 filec.c	1.65
 fileio.c	1.112
 finderr.c	1.59
@@ -56,7 +56,7 @@ itbuff.c	1.10
 lckfiles.c	1.7
 line.c	1.103
 macros.doc	1.12
-main.c	1.279
+main.c	1.280
 makefile.blc	1.4
 makefile.djg	1.19
 makefile.icc	1.4
@@ -79,18 +79,18 @@ oneliner.c	1.80
 opers.c	1.56
 os2pipe.c	1.1
 os2vio.c	1.8
-patchlev.h	1.10
+patchlev.h	1.11
 path.c	1.75
 pictmode.rc	1.1
-proto.h	1.228
+proto.h	1.229
 random.c	1.182
-regexp.c	1.59
+regexp.c	1.60
 region.c	1.79
-revlist	v6_2
-search.c	1.101
+revlist	v6_2a
+search.c	1.102
 select.c	1.51
 spawn.c	1.114
-tags.c	1.77
+tags.c	1.78
 tbuff.c	1.27
 tcap.c	1.82
 termio.c	1.146
@@ -98,12 +98,12 @@ tipc.c	1.1
 undo.c	1.65
 version.c	1.33
 vile.1	1.15
-vile.hlp	1.301
+vile.hlp	1.302
 vms2unix.c	1.18
 vmsbuild.com	1.11
 vmspipe.c	1.12
 vmsvt.c	1.29
-window.c	1.70
+window.c	1.71
 word.c	1.54
 wordmov.c	1.17
 x11.c	1.134

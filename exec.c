@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.129 1996/10/15 01:25:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.130 1996/10/19 15:47:06 tom Exp $
  *
  */
 
@@ -72,9 +72,13 @@ static	const struct {
 
 static int token_ended_line;  /* did the last token end at end of line? */
 
-static int execlevel;		/* nonzero to disable execution */
-static int if_level;		/* ~if ... ~endif nesting level */
-static int if_fired;		/* at top-level, ~if/... used */
+typedef struct {
+	int disabled;		/* nonzero to disable execution */
+	int level;		/* ~if ... ~endif nesting level */
+	int fired;		/* at top-level, ~if/... used */
+	} IFSTK;
+
+static IFSTK ifstk;
 
 /*----------------------------------------------------------------------------*/
 
@@ -739,7 +743,7 @@ int f, int n)
 	const CMDFUNC *cfp;
 
 	/* if we are scanning and not executing..go back here */
-	if (execlevel)
+	if (ifstk.disabled)
 		return TRUE;
 
 	oldestr = execstr;	/* save last ptr to string to execute */
@@ -1318,22 +1322,22 @@ begin_directive(
 	switch (dirnum) {
 	case D_IF:	/* IF directive */
 		/* grab the value of the logical exp */
-		if_level++;
-		if (execlevel == 0) {
-			if_fired = FALSE;
-			execlevel = if_level;
+		ifstk.level++;
+		if (!ifstk.disabled) {
+			ifstk.fired = FALSE;
+			ifstk.disabled = ifstk.level;
 			if (macarg(tkn) != TRUE)
 				status = DDIR_INCOMPLETE;
 			else if (stol(tkn) == TRUE) {
-				execlevel = 0;
-				if_fired = TRUE;
+				ifstk.disabled = 0;
+				ifstk.fired = TRUE;
 			}
 		}
 		break;
 
 	case D_WHILE:	/* WHILE directive */
 		/* grab the value of the logical exp */
-		if (execlevel == 0) {
+		if (!ifstk.disabled) {
 			if (macarg(tkn) != TRUE) {
 				status = DDIR_INCOMPLETE;
 				break;
@@ -1345,7 +1349,7 @@ begin_directive(
 
 		/* FALLTHRU */
 	case D_BREAK:	/* BREAK directive */
-		if (dirnum != D_BREAK || !execlevel) {
+		if (dirnum != D_BREAK || !ifstk.disabled) {
 
 			/* Jump down to the endwhile, then find the right while
 			 * loop.
@@ -1364,42 +1368,50 @@ begin_directive(
 		break;
 
 	case D_ELSEIF:	/* ELSEIF directive */
-		if (if_level == 0) {
+		if (ifstk.level == 0) {
 			status = unbalanced_directive(dirnum);
-		} else if (execlevel <= if_level) {
-			execlevel = if_level;
-			if (macarg(tkn) != TRUE)
+		} else {
+			if (ifstk.fired) {
+				if (!ifstk.disabled)
+					ifstk.disabled = ifstk.level;
+			} else if (macarg(tkn) != TRUE) {
 				status = DDIR_INCOMPLETE;
-			else if (!if_fired && (stol(tkn) == TRUE)) {
-				execlevel = 0;
-				if_fired = TRUE;
+			} else if (!ifstk.fired
+			  && ifstk.disabled == ifstk.level
+			  && (stol(tkn) == TRUE)) {
+				ifstk.disabled = 0;
+				ifstk.fired = TRUE;
 			}
 		}
 		break;
 
 	case D_ELSE:	/* ELSE directive */
-		if (if_level == 0) {
+		if (ifstk.level == 0) {
 			status = unbalanced_directive(dirnum);
-		} else if (execlevel <= if_level) {
-			execlevel = if_level;
-			if (!if_fired)
-				execlevel = 0;
+		} else {
+			if (ifstk.fired) {
+				if (!ifstk.disabled)
+					ifstk.disabled = ifstk.level;
+			} else if (ifstk.disabled == ifstk.level) {
+				ifstk.disabled = 0;
+				ifstk.fired = TRUE;
+			}
 		}
 		break;
 
 	case D_ENDIF:	/* ENDIF directive */
-		if (if_level == 0) {
+		if (ifstk.level == 0) {
 			status = unbalanced_directive(dirnum);
 		} else {
-			if_level--;
-			if (execlevel > if_level)
-				execlevel = 0;
+			ifstk.level--;
+			if (ifstk.disabled > ifstk.level)
+				ifstk.disabled = ifstk.level;
 		}
 		break;
 
 	case D_GOTO:	/* GOTO directive */
 		/* .....only if we are currently executing */
-		if (execlevel == 0) {
+		if (!ifstk.disabled) {
 			int found = FALSE;
 			SIZE_T len;	/* length of line to execute */
 			register LINEPTR glp;	/* line to goto */
@@ -1427,12 +1439,12 @@ begin_directive(
 		break;
 
 	case D_RETURN:	/* RETURN directive */
-		if (execlevel == 0)
+		if (!ifstk.disabled)
 			status = DDIR_INCOMPLETE;
 		break;
 
 	case D_ENDWHILE: /* ENDWHILE directive */
-		if (execlevel == 0) {
+		if (!ifstk.disabled) {
 			/* find the right while loop */
 			for (wht = whlist; wht != 0; wht = wht->w_next) {
 				if (wht->w_type == D_WHILE
@@ -1568,6 +1580,30 @@ setup_dobuf(BUFFER *bp, WHBLOCK **result)
 		: D_UNKNOWN)
 #endif
 
+#if OPT_TRACE
+static const char *TraceIndent(int level, const char *eline)
+{
+	static	const char indent[] = ".  .  .  .  .  .  .  .  ";
+	switch (dname_to_dirnum(eline)) {
+	case D_ELSE:	/* FALLTHRU */
+	case D_ELSEIF:	/* FALLTHRU */
+	case D_ENDIF:
+		if (level > 0)
+			level--;
+		break;
+	default:
+		break;
+	}
+	level = strlen(indent) - (3 * level);
+	if (level < 0)
+		level = 0;
+	return &indent[level];
+}
+#define TRACE_INDENT(level, eline) TraceIndent(level, eline)
+#else
+#define TRACE_INDENT(level, eline) /* nothing */
+#endif
+
 static int
 perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 {
@@ -1662,9 +1698,9 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 			(void)strcat(outline, ":");
 
 			/* debug if levels */
-			(void)strcat(outline, l_itoa(if_level));
+			(void)strcat(outline, l_itoa(ifstk.level));
 			(void)strcat(outline, "/");
-			(void)strcat(outline, l_itoa(execlevel));
+			(void)strcat(outline, l_itoa(ifstk.disabled));
 			(void)strcat(outline, ":");
 
 			/* and lastly the line */
@@ -1683,9 +1719,12 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 			}
 		}
 #endif
-		TRACE(("<<<%s%s:%d/%d:%s>>>\n",
+		TRACE(("<<<%s%s:%d/%d%c%s%s>>>\n",
 			(bp == curbp) ? "*" : "",
-			bp->b_bname, if_level, execlevel, eline))
+			bp->b_bname, ifstk.level, ifstk.disabled,
+			ifstk.fired ? '+' : ' ',
+			TRACE_INDENT(ifstk.level, eline),
+			eline))
 
 		/* Parse directives here.... */
 		dirnum = D_UNKNOWN;
@@ -1702,7 +1741,7 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 			}
 
 			/* service only the ENDM macro here */
-			if (dirnum == D_ENDM && execlevel == 0) {
+			if (dirnum == D_ENDM && !ifstk.disabled) {
 				if (!mstore) {
 					mlforce(
 					"[No macro definition in progress]");
@@ -1809,25 +1848,20 @@ dobuf(BUFFER *bp)	/* buffer to execute */
 		whlist = NULL;
 #endif
 		{
+			static const IFSTK new_ifstk; /* all 0's */
 			const CMDFUNC *save_havemotion  = havemotion;
-			int save_if_level    = if_level;
-			int save_execlevel   = execlevel;
-			int save_if_fired    = if_fired;
+			IFSTK save_ifstk;
 			int save_regionshape = regionshape;
 
-			/* clear IF level flags/while ptr */
-			execlevel   = 0;
+			save_ifstk  = ifstk;
+			ifstk       = new_ifstk;
 			havemotion  = NULL;
-			if_fired    = FALSE;
-			if_level    = 0;
 			regionshape = EXACT;
 
 			status = perform_dobuf(bp, whlist);
 
-			execlevel   = save_execlevel;
+			ifstk       = save_ifstk;
 			havemotion  = save_havemotion;
-			if_fired    = save_if_fired;
-			if_level    = save_if_level;
 			regionshape = save_regionshape;
 		}
 

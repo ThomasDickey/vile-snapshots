@@ -1,3 +1,28 @@
+Changes for vile 6.3 (released ??? ??? ??, 1996)
+
+(tom)	961019 (a)
+	+ corrected logic of ~else/~elseif broken in 6.1a (exec.c), reported by
+	  Timothy Phan <tphan@asl.dl.nec.com>.
+	+ use new type IFSTK to combine if-stacking variables to clarify their
+	  relationship (exec.c).
+	+ modified macro trace to make if simpler to understand (exec.c).
+	+ corrected boundary condition that prevented match of "\>" on the end
+	  of line in search commands (search.c).
+	+ corrected handling of command line arguments with similar buffer
+	  names by prohibiting match against buffer names (main.c, file.c).
+	+ corrected translation of '\\' in special case where it preceded a
+	  potential metachar, causing search for "\\>" to fail (regexp.c),
+	  reported by Emil Rojas.
+	+ corrected wrap-around case in tags lookup where there was only one
+	  match; using next-tag would report that there was no such tag
+	  (tags.c).
+	+ implement regular-expressions in cheap_buffer_scan(), making it work
+	  with trailing "\>" emitted by ctags -N option (tags.c) reported by
+	  Emil Rojas <erojas@divi.com>.
+	+ add double-checks in swbuffer() and related logic to recover in case
+	  $buffer-hook frees the current buffer (buffer.c), reported by
+	  Sean Ahern <ahern@sphere.llnl.gov>.
+
 Changes for vile 6.2 (released Tue Oct 15, 1996)
 
 (tom)	961006 (d)

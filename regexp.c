@@ -11,11 +11,13 @@
  *
  *		pgf, 11/91
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.59 1996/10/03 01:02:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.60 1996/10/19 11:53:50 tom Exp $
  *
  */
 
+#if OPT_TRACE
 /* #define REGDEBUG  1 */
+#endif
 
 /*
  * regcomp and regexec -- regsub and regerror are elsewhere
@@ -61,6 +63,12 @@ static	void	regninsert(int n, char *opnd);
 static	void	regopinsert(int op, char *opnd);
 static	void	regoptail(char *p, char *val);
 static	void	regtail(char *p, char *val);
+
+#ifdef REGDEBUG
+static int regnarrate = 1;
+static void regdump(regexp *r);
+static char *regprop(char *op);
+#endif
 
 /*
  * The "internal use only" fields in regexp.h are present to pass info from
@@ -235,6 +243,8 @@ regmassage(const char *old, char *new, int magic)
 			}
 			if (strchr(metas, *(old+1))) {
 				old++; /* skip the \ */
+			} else if (*(old+1) == '\\') {
+				*new++ = *old++;  /* the escape */
 			}
 		} else if (strchr(metas, *old)) { /* add \ to these metas */
 			*new++ = '\\';
@@ -276,6 +286,8 @@ regcomp(char *origexp, int magic)
 		return NULL;
 	}
 
+	TRACE(("regcomp(%s,%d)\n", origexp, magic))
+
 	len = strlen(origexp)+1;
 	if (explen < 2*len+20) {
 		if (exp)
@@ -289,6 +301,7 @@ regcomp(char *origexp, int magic)
 	}
 
 	regmassage(origexp, exp, magic);
+	TRACE(("after regmassage: '%s'\n", exp))
 
 	/* First pass: determine size, legality. */
 	regparse = exp;
@@ -365,6 +378,9 @@ regcomp(char *origexp, int magic)
 
 #if NO_LEAKS
 	if (exp != 0) { free(exp); exp = 0; explen = 0; }
+#endif
+#if REGDEBUG
+	regdump(r);
 #endif
 	return(r);
 }
@@ -872,12 +888,6 @@ static char *regbol;		/* Beginning of input, for ^ check. */
 static char **regstartp;	/* Pointer to startp array. */
 static char **regendp;		/* Ditto for endp. */
 
-#ifdef REGDEBUG
-int regnarrate = 0;
-void regdump();
-STATIC char *regprop();
-#endif
-
 /* this very special copy of strncmp allows for caseless operation,
  * and also for non-null terminated strings.  the A arg ends at position
  * E, which can be NULL if A really is null terminated.  B must be null-
@@ -1095,12 +1105,12 @@ regmatch(char *prog)
 	scan = prog;
 #ifdef REGDEBUG
 	if (scan != NULL && regnarrate)
-		fprintf(stderr, "%s(\r\n", regprop(scan));
+		TRACE(( "%s(\n", regprop(scan)));
 #endif
 	while (scan != NULL) {
 #ifdef REGDEBUG
 		if (regnarrate)
-			fprintf(stderr, "%s...\r\n", regprop(scan));
+			TRACE(( "%s...\n", regprop(scan)));
 #endif
 		next = regnext(scan);
 
@@ -1493,57 +1503,54 @@ regnext(register char *p)
 
 #ifdef REGDEBUG
 
-STATIC char *regprop();
-
 /*
  - regdump - dump a regexp onto stdout in vaguely comprehensible form
  */
-void
+static void
 regdump(regexp *r)
 {
 	register char *s;
 	register char op = EXACTLY;	/* Arbitrary non-END op. */
 	register char *next;
 
-
 	s = r->program + 1;
 	while (op != END) {	/* While that wasn't END last time... */
 		op = OP(s);
-		printf("%2d%s", s-r->program, regprop(s));	/* Where, what. */
+		TRACE(("%2d%s", s-r->program, regprop(s))); /* Where, what. */
 		next = regnext(s);
 		if (next == NULL)		/* Next ptr. */
-			printf("(0)");
+			TRACE(("(0)"));
 		else
-			printf("(%d)", (s-r->program)+(next-s));
+			TRACE(("(%d)", (s-r->program)+(next-s)));
 		s += 3;
 		if (op == ANYOF || op == ANYBUT || op == EXACTLY) {
 			/* Literal string, where present. */
 			while (*s != EOS) {
-				putchar(*s);
+				TRACE(("%c", *s));
 				s++;
 			}
 			s++;
 		}
-		printf("\r\n");
+		TRACE(("\n"));
 	}
 
 	/* Header fields of interest. */
 	if (r->regstart != EOS)
-		printf("start `%c' ", r->regstart);
+		TRACE(("start `%c' ", r->regstart));
 	if (r->reganch)
-		printf("anchored ");
+		TRACE(("anchored "));
 	if (r->regmust != -1)
-		printf("must have \"%s\"", &(r->program[r->regmust]));
-	printf("\r\n");
+		TRACE(("must have \"%s\"", &(r->program[r->regmust])));
+	TRACE(("\n"));
 }
 
 /*
  - regprop - printable representation of opcode
  */
-char *
+static char *
 regprop(char *op)
 {
-	register char *p;
+	register char *p = "?";
 	static char buf[50];
 
 	(void) strcpy(buf, ":");

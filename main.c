@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.279 1996/08/13 02:10:07 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.280 1996/10/17 10:44:58 tom Exp $
  *
  */
 
@@ -259,7 +259,7 @@ main(int argc, char *argv[])
 			cryptkey = (*ekey != EOS) ? ekey : 0;
 #endif
 			/* set up a buffer for this file */
-			bp = getfile2bp(param,FALSE);
+			bp = getfile2bp(param,FALSE,TRUE);
 			if (bp) {
 				bp->b_flag |= BFARGS;	/* treat this as an argument */
 				make_current(bp); /* pull it to the front */

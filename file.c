@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.197 1996/10/03 01:02:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.198 1996/10/17 10:44:58 tom Exp $
  *
  */
 
@@ -389,7 +389,7 @@ filefind(int f, int n)
 					FILEC_READ|FILEC_EXPAND,
 			fname)) == TRUE) {
 		while ((actual = filec_expand()) != 0) {
-			if ((bp = getfile2bp(actual, !clexec)) == 0)
+			if ((bp = getfile2bp(actual, !clexec,FALSE)) == 0)
 				break;
 			bp->b_flag |= BFARGS;	/* treat this as an argument */
 			if (firstbp == 0)
@@ -452,7 +452,8 @@ insfile(int f, int n)
 BUFFER *
 getfile2bp(
 const char *fname,		/* file name to find */
-int ok_to_ask)
+int ok_to_ask,
+int cmdline)
 {
 	register BUFFER *bp;
         register int    s;
@@ -460,7 +461,8 @@ int ok_to_ask)
 	char nfname[NFILEN];	/* canonical form of 'fname' */
 
 	/* user may have renamed buffer to look like filename */
-	if ((bp = find_b_name(fname)) == NULL
+	if (cmdline
+	 || (bp = find_b_name(fname)) == NULL
 	 || (strlen(fname) > (SIZE_T)NBUFN-1)) {
 
 		/* It's not already here by that buffer name.
@@ -571,7 +573,7 @@ int lockfl)		/* check the file for locks? */
 	 || maybe_pathname(fname)  /* looks a lot like a filename */
 	 || (bp = find_b_name(fname)) == NULL) {
 		/* oh well.  canonicalize the name, and try again */
-		bp = getfile2bp(fname,!clexec);
+		bp = getfile2bp(fname,!clexec,FALSE);
 		if (!bp)
 			return FALSE;
 	}

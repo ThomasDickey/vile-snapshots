@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.228 1996/10/04 23:57:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.229 1996/10/17 10:44:58 tom Exp $
  *
  */
 
@@ -93,7 +93,7 @@ extern void undispbuff (BUFFER *bp, WINDOW *wp);
 extern int tabstop_val (BUFFER *bp);
 extern int shiftwid_val (BUFFER *bp);
 extern int has_C_suffix (BUFFER *bp);
-extern void delink_bp (BUFFER *bp);
+extern int delink_bp (BUFFER *bp);
 extern int zotbuf (BUFFER *bp);
 extern int zotwp (BUFFER *bp);
 extern BUFFER *find_any_buffer (const char *name);
@@ -121,7 +121,7 @@ extern int bclear (BUFFER *bp);
 extern int bsizes (BUFFER *bp);
 extern void chg_buff (BUFFER *bp, int flag);
 extern void unchg_buff (BUFFER *bp, int flag);
-extern BUFFER *getfile2bp (const char *fname, int ok_to_ask);
+extern BUFFER *getfile2bp (const char *fname, int ok_to_ask, int cmdline);
 
 /* crypt.c */
 #if	OPT_ENCRYPT
