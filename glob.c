@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.64 1999/09/26 19:34:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.65 1999/11/22 21:13:00 cmorgan Exp $
  *
  */
 
@@ -157,61 +157,10 @@ record_a_match(char *item)
 	return TRUE;
 }
 
-#if UNIX_GLOBBING
-/*
- * Point to the leaf following the given string (i.e., skip a slash), returns
- * null if none is found.
- */
-static char *
-next_leaf (char *path)
-{
-	if (path != 0) {
-		while (*path != EOS) {
-			if (is_slashc(*path))
-				return path+1;
-			path++;
-		}
-	}
-	return 0;
-}
 
-/*
- * Point to the beginning (after slash, if present) of the first leaf in
- * the given pattern argument that contains a wildcard.
- */
-static char *
-wild_leaf (char *pattern)
-{
-	register int	j, k, ok;
-	register char	c;
 
-	/* skip leading slashes */
-	for (j = 0; pattern[j] != EOS && is_slashc(pattern[j]); j++)
-		;
 
-	/* skip to the leaf with wildcards */
-	while (pattern[j] != EOS) {
-		int	skip = FALSE;
-		for (k = j+1; (c = pattern[k]) != EOS; k++) {
-			if (is_slashc(c)) {
-				pattern[k] = EOS;
-				ok = string_has_wildcards(pattern+j);
-				pattern[k] = c;
-				if (ok)
-					return pattern+j;
-				skip = TRUE;	/* skip this leaf */
-				break;
-			}
-		}
-		if (skip)
-			j = k+1;	/* point past slash */
-		else if (c == EOS)
-			break;
-		else
-			j++;		/* leaf is empty */
-	}
-	return string_has_wildcards(pattern+j) ? pattern+j : 0;
-}
+#if !SMALLER
 
 #if OPT_CASELESS
 static int
@@ -296,6 +245,65 @@ glob_match_leaf(char *leaf, char *pattern)
 			return FALSE;
 	}
 	return (*leaf == EOS && only_multi(pattern));
+}
+#endif /* !SMALLER */
+
+
+
+#if UNIX_GLOBBING
+/*
+ * Point to the leaf following the given string (i.e., skip a slash), returns
+ * null if none is found.
+ */
+static char *
+next_leaf (char *path)
+{
+	if (path != 0) {
+		while (*path != EOS) {
+			if (is_slashc(*path))
+				return path+1;
+			path++;
+		}
+	}
+	return 0;
+}
+
+/*
+ * Point to the beginning (after slash, if present) of the first leaf in
+ * the given pattern argument that contains a wildcard.
+ */
+static char *
+wild_leaf (char *pattern)
+{
+	register int	j, k, ok;
+	register char	c;
+
+	/* skip leading slashes */
+	for (j = 0; pattern[j] != EOS && is_slashc(pattern[j]); j++)
+		;
+
+	/* skip to the leaf with wildcards */
+	while (pattern[j] != EOS) {
+		int	skip = FALSE;
+		for (k = j+1; (c = pattern[k]) != EOS; k++) {
+			if (is_slashc(c)) {
+				pattern[k] = EOS;
+				ok = string_has_wildcards(pattern+j);
+				pattern[k] = c;
+				if (ok)
+					return pattern+j;
+				skip = TRUE;	/* skip this leaf */
+				break;
+			}
+		}
+		if (skip)
+			j = k+1;	/* point past slash */
+		else if (c == EOS)
+			break;
+		else
+			j++;		/* leaf is empty */
+	}
+	return string_has_wildcards(pattern+j) ? pattern+j : 0;
 }
 
 #if !SYS_OS2

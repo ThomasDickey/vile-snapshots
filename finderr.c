@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-1999 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.81 1999/10/31 23:26:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.82 1999/11/24 22:12:52 tom Exp $
  *
  */
 
@@ -171,7 +171,7 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
      */
     for (pass = 1; pass <= 2; pass++) {
 	for (src = first, word = 0, range = FALSE; src < last; src++) {
-	    if (*src == '\\') {
+	    if (*src == BACKSLASH) {
 		APP_C;
 		if (++src == last)
 		    break;

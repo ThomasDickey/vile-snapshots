@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.432 1999/11/11 00:39:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.433 1999/11/24 22:09:55 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -860,6 +860,9 @@ extern int MainProgram(int argc, char *argv[]);
 #define	PLURAL(n)	((n!=1)?"s":"")
 
 #define	EOS     '\0'
+#define SQUOTE  '\''
+#define DQUOTE  '"'
+#define BACKSLASH '\\'
 
 /* protect against losing namespaces */
 #undef	FALSE

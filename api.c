@@ -612,7 +612,7 @@ api_motion(VileBuf *vbp, char *mstr)
 
 	/* and execute the command */
 	cfp = kcod2fnc(c);
-	if ( (cfp != NULL) && ((cfp->c_flags & MOTION) != 0))
+	if ( (cfp != NULL) && ((cfp->c_flags & (GOAL|MOTION)) != 0))
 	    s = execute(cfp, f, n);
 	else {
 	    while (mapped_ungotc_avail())

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.399 1999/11/10 00:13:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.402 1999/11/24 20:05:47 cmorgan Exp $
  *
  */
 
@@ -428,14 +428,11 @@ extern	char **	glob_free   (char **list_of_items);
 extern	char **	glob_string (char *item);
 extern	int	doglob (char *path);
 extern	int	glob_length (char **list_of_items);
+extern	int	glob_match_leaf(char *leaf, char *pattern);
 
 #if !SYS_UNIX
 extern	int	glob_needed (char **list_of_items);
 extern	void	expand_wild_args (int *argcp, char ***argvp);
-#endif
-
-#if UNIX_GLOBBING
-extern int glob_match_leaf(char *leaf, char *pattern);
 #endif
 
 /* globals.c */
@@ -989,9 +986,10 @@ extern	char *	is_vms_dirtype	(char *path);
 extern	char *	is_vms_rootdir	(char *path);
 extern	char *	unix2vms_path   (char *dst, const char *src);
 extern	char *	vms2unix_path   (char *dst, const char *src);
-extern	char *	vms_path2dir    (const char *src);
 extern	int	vms_fseek_ok	(char *filename);
+extern	int	vms_ffexists	(char *filename);
 extern	void	vms_dir2path	(char *path);
+extern	char *	vms_path2dir    (const char *src);
 #endif
 
 #if SYS_VMS
@@ -1057,7 +1055,7 @@ extern void w32_npclose(FILE *fp);
 extern int  w32_system(const char *cmd);
 extern int  w32_system_winvile(const char *cmd, int *pressret);
 extern char *w32_wdw_title();
-extern void winvile_cursor(int visible, int queue_change);
+extern int  winvile_cursor(int visible, int queue_change);
 extern void *winvile_hwnd(void);
 extern void winvile_start(void);
 #endif

@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.118 1999/09/04 15:16:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.121 1999/11/24 23:58:43 tom Exp $
  *
  */
 
@@ -72,6 +72,12 @@ static int
 wrap_at_col(int c)
 {
 	register int	n;
+
+	/* if we'll split the line, there is no point in wrapping */
+	if (isreturn(c)
+	 && (DOT.o >= llength(DOT.l)
+	  || !isSpace(lgetc(DOT.l, DOT.o))))
+		return FALSE;
 
 	if (past_wrapmargin(c) >= 0)
 		return TRUE;
@@ -488,12 +494,14 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 		}
 
 
-		if (isSpecial(c)) {
+		if (isSpecial(c)
+		 || (isCntrl(c) && !isreturn(c) && !isbackspace(c))) {
 			/* if we're allowed to honor SPEC bindings,
 				then see if it's bound to something, and
 				execute it */
 			const CMDFUNC *cfp = kcod2fnc(c);
-			if (cfp) {
+			if (cfp != 0
+			 && cfp->c_flags & (GOAL|MOTION)) {
 				int savedexecmode = insertmode;
 
 				backsp_limit = w_left_margin(curwp);
@@ -501,8 +509,11 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 					curgoal = getccol(FALSE);
 				(void)execute(cfp,FALSE,1);
 				insertmode = savedexecmode;
+				continue;
+			} else if (isSpecial(c)) {
+				/* ignore SPEC bindings that we cannot use */
+				continue;
 			}
-			continue;
 		}
 
 		if (!isident(c))
@@ -650,15 +661,16 @@ inschar(int c, int *backsp_limit_p)
 		execfunc = quote_next;
 	} else {
 		/*
-		 * If a space was typed, fill column is defined, the
-		 * argument is non- negative, wrap mode is enabled, and
-		 * we are now past fill column, perform word wrap.
+		 * If a space was typed, fill column is defined, the argument
+		 * is non-negative, wrap mode is enabled, and we are now past
+		 * fill column, perform word wrap.
 		 */
 		if (wrap_at_col(c)) {
 			int offset = past_wrapmargin(c);
-			int wm_flag = (offset >= 0);
 			int is_print = (!isSpecial(c) && isPrint(c));
 			int is_space = (!isSpecial(c) && isSpace(c));
+			int at_end = DOT.o >= llength(DOT.l);
+			int wm_flag = (offset >= 0) || (is_space && !at_end);
 
 			if (is_space
 			 || (is_print && (offset >= 1) && blanks_on_line())) {

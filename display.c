@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.315 1999/11/15 23:34:59 Ryan.Murray Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.317 1999/11/24 22:13:02 tom Exp $
  *
  */
 
@@ -603,7 +603,7 @@ vtlistc(int c)
 	}
 
 	if (c & HIGHBIT) {
-	    vtputc('\\');
+	    vtputc(BACKSLASH);
 	    if (vt_octal) {
 		vtputc(((c>>6)&3)+'0');
 		vtputc(((c>>3)&7)+'0');
@@ -674,7 +674,7 @@ vtset(LINEPTR lp, WINDOW *wp)
 			if ((list || (c != '\t')) && !isPrint(c)) {
 				if (c & HIGHBIT) {
 				    k += 4;
-				    fill = '\\';  /* FIXXXX */
+				    fill = BACKSLASH;  /* FIXXXX */
 				} else {
 				    k += 2;
 				    fill = toalpha(c);
@@ -3449,9 +3449,29 @@ mlmsg(const char *fmt, va_list *app)
 {
 	static	int	recur;
 	int	end_at;
+#ifdef DISP_NTWIN
+	int	cursor_state;
+#endif
 	int	do_crlf = (strchr(fmt, '\n') != 0
 			|| strchr(fmt, '\r') != 0);
 
+#ifdef DISP_NTWIN
+	if (recur == 0) {
+		/* 
+		 * Winvile internally manages its own cursor and this
+		 * usually works fine.  However, if the user activates
+		 * functionality that triggers windows message(s) (e.g.,
+		 * invoke the Win32 common open dialog) and if this
+		 * functionality writes message line status text as a side
+		 * effect, then winvile may inadvertently enable its cursor
+		 * during the display update.  If this happens, the GDI
+		 * drops a cursor glyph in the message line.  Fix this
+		 * problem by forcing the winvile curor off now.
+		 */
+
+		cursor_state = winvile_cursor_state(FALSE, FALSE);
+	}
+#endif
 	if (recur++) {
 		/*EMPTY*/;
 	} else if (sgarbf) {
@@ -3503,6 +3523,15 @@ mlmsg(const char *fmt, va_list *app)
 		endofDisplay();
 	}
 	recur--;
+#ifdef DISP_NTWIN
+	if (recur == 0) {
+
+		/* restore previous cursor state if it was ON. */
+
+		if (cursor_state)
+			winvile_cursor_state(TRUE, TRUE);
+	}
+#endif
 }
 
 /*

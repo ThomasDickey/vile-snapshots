@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.27 1999/11/09 22:23:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.28 1999/11/24 00:01:41 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -90,6 +90,7 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
  */
 #define ATTR_ACTION  "BC1"
 #define ATTR_COMMENT "C1"
+#define ATTR_ERROR   "RC2"
 #define ATTR_IDENT   ""
 #define ATTR_IDENT2  "C6"
 #define ATTR_KEYWORD "B"	/* was C3 */
@@ -104,6 +105,7 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
  */
 #define NAME_ACTION  "Action"
 #define NAME_COMMENT "Comment"
+#define NAME_ERROR   "Error"
 #define NAME_IDENT   "Ident"
 #define NAME_IDENT2  "Ident2"
 #define NAME_KEYWORD "Keyword"

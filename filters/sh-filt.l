@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.25 1999/09/24 01:13:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.26 1999/11/25 01:21:26 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -160,7 +160,8 @@ INTEGER		[-+]?([0-9]+)
 			}
 
 <QUOTED>\\.		{ add_to_quoted(yytext, yyleng); }
-<QUOTED>{IDENT1}	{ flush_quoted();
+<QUOTED>{IDENT1}	|
+<QUOTED>{IDENT2}	{ flush_quoted();
 			  WriteToken(Ident_attr);
 			}
 <QUOTED>[^\n\"]		{ add_to_quoted(yytext, yyleng); }

@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.187 1999/10/03 23:00:45 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.188 1999/11/24 18:50:05 tom Exp $
 #
 #
 
@@ -521,7 +521,7 @@ execproc	REDO			OPT_PROCEDURES
 	"execute-procedure"		!FEWNAMES
 	"run"
 	<run the given named stored-procedure as a script>
-enlargewind	NONE
+enlargewind	GOAL
 	"grow-window"			!FEWNAMES
 	'V'
 	<increase the size of the current window by CNT lines>
@@ -721,7 +721,7 @@ gotobol		MOTION
 	"bol"				!FEWNAMES
 	'0'
 	<move to the very beginning of the line>
-gotoeol		MOTION|GOAL
+gotoeol		GOAL|MOTION
 	"goto-eol"			!FEWNAMES
 	"end-of-line"			!FEWNAMES
 	"eol"				!FEWNAMES
@@ -922,15 +922,15 @@ noremap		NONE|(EXRCOK|EXTRA)
 noremap_bang	NONE|(EXRCOK|EXTRA)
 	"noremap!"
 	<create a new unremappable insert-mode map>
-cntl_a_func		NONE
+cntl_a_func	NONE
 	"cntl_a-prefix"
 	'^A'
 	<the \"Control-A\" prefix, used when typing extended commands>
-mvdnnxtwind	NONE
+mvdnnxtwind	GOAL
 	"move-next-window-down"		!FEWNAMES
 	'^A-^E'
 	<move next window down (or buffer up) by CNT lines>
-mvupnxtwind	NONE
+mvupnxtwind	GOAL
 	"move-next-window-up"		!FEWNAMES
 	'^A-^Y'
 	<move next window up (or buffer down) by CNT lines>
@@ -1192,7 +1192,7 @@ perldo		OPER|REDO|UNDO|GLOBOK|RANGE|EXTRA		OPT_PERL
 	"perldo-til"
 	"perldo"
 	<run a perl command on each line in a range>
-poswind		NONE
+poswind		GOAL
 	"position-window"		!FEWNAMES
 	'z'
 	<reframe with cursor at center (.,M,m), top (CR,H,t), or bottom (-,L,b)>
@@ -1259,7 +1259,7 @@ remove_submode	NONE			OPT_MAJORMODE
 remove_scheme	NONE			OPT_COLOR_SCHEMES
 	"remove-scheme"
 	<delete the given color scheme>
-reposition	NONE			!SMALLER
+reposition	GOAL			!SMALLER
 	"redraw-display"
 	<redraw, cursor at center, or CNT'th line, or CNT'th from end if neg>
 rep_csrch	MOTION
@@ -1348,11 +1348,11 @@ spawncli	NONE			OPT_SHELL
 savewnd		NONE			!SMALLER
 	"save-window"
 	<mark a window for later return with \"restore-window\">
-scrnextup	NONE
+scrnextup	GOAL
 	"scroll-next-window-up"		!FEWNAMES
 	'^A-^U'
 	<move next window up by CNT half screens>
-scrnextdw	NONE
+scrnextdw	GOAL
 	"scroll-next-window-down"	!FEWNAMES
 	'^A-^D'
 	<move next window down by CNT half screens>
@@ -1436,7 +1436,7 @@ showtagstack	NONE			OPT_SHOW_TAGS
 	"tagstack"
 	"show-tagstack"
 	<show the stack of successive tag references>
-shrinkwind	NONE
+shrinkwind	GOAL
 	"shrink-window"			!FEWNAMES
 	'v'
 	<decrease the size of the current window by CNT lines>
@@ -1499,7 +1499,7 @@ forwredo	NONE
 unabbr		NONE|(EXRCOK|BANG|EXTRA)
 	"unabbreviate"
 	<delete an abbreviation>
-reptc_func		NONE
+reptc_func	NONE
 	"universal-argument"		!FEWNAMES
 	'K'
 	<supply a numeric CNT to a command. sets CNT to 4, 16, 64, 256, etc.>
@@ -1655,7 +1655,7 @@ cbrdcpy_unnamed NONE			SYS_WINNT
 	"copy-unnamed-reg-to-clipboard"
 	'ALT+INSERT'			W32KY
 	<copies the unnamed register selection to the windows clipboard>
-cbrdpaste REDO|UNDO			SYS_WINNT
+cbrdpaste	REDO|UNDO		SYS_WINNT
 	"paste-from-clipboard"
 	'SHIFT+INSERT'			W32KY
 	<paste the windows clipboard contents>

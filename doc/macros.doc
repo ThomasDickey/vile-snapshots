@@ -290,6 +290,10 @@ Strings
 	of the macro language, and if it contains no whitespace, but
 	it's probably better practice to use the quotes all the time,
 	to reinforce the idea that all values are strings.
+	
+	You may also use strings surrounded by single quotes.  The single
+	quotes override double quotes and backslashes, making it simpler
+	to enter regular expressions.
 
 
 Variables
@@ -1186,6 +1190,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.36 1999/11/09 23:37:53 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.37 1999/11/25 00:02:08 tom Exp $
 -----------------------------------
 

@@ -3,7 +3,7 @@
  *
  *	Miscellaneous routines for UNIX/VMS compatibility.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.33 1999/07/15 01:00:38 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.34 1999/11/24 19:50:39 cmorgan Exp $
  *
  */
 #include	"estruct.h"
@@ -197,6 +197,39 @@ vms_fseek_ok(char *file)
     (void) sys$close(&fab);
     return (retval);
 #undef CARRIAGE_CNTL
+}
+
+
+
+/*
+ * Does "filename" exist?  Can't use stat(), fstat(), or access() because
+ * they return incorrect results for DECNET-based files.
+ *
+ * Note 1:  This routine will handle wildcarded filenames, but that's not it's
+ *          purpose.  Think of this routine as a replacement for 
+ *          "access(file, F_OK)".
+ *
+ * Note 2:  This routine returns TRUE for "some.dir" (assuming it exists),
+ *          but not "[.some]" .
+ */
+int
+vms_ffexists(char *filename)
+{
+    struct FAB fab;
+    struct NAM nam;
+    char       expnd_file_buffer[NAM$C_MAXRSS], rslt_file_buffer[NAM$C_MAXRSS];
+
+    fab           = cc$rms_fab;
+    nam           = cc$rms_nam;
+    fab.fab$l_fna = filename;
+    fab.fab$b_fns = strlen(filename);
+    fab.fab$l_nam = &nam;
+    nam.nam$l_esa = expnd_file_buffer;
+    nam.nam$b_ess = sizeof(expnd_file_buffer);
+    nam.nam$l_rsa = rslt_file_buffer;
+    nam.nam$b_rss = sizeof(rslt_file_buffer);
+
+    return (sys$parse(&fab) == RMS$_NORMAL && sys$search(&fab) == RMS$_NORMAL);
 }
 
 #endif

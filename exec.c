@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.209 1999/11/15 23:34:59 Ryan.Murray Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.213 1999/11/25 01:03:43 tom Exp $
  *
  */
 
@@ -504,6 +504,8 @@ seems like we need one more check here -- is it from a .exrc file?
 	/* don't use this if the command modifies! */
 	if (flags & NOMOVE)
 		restore_dot(save_DOT);
+	else if (status == ABORT)
+		restore_dot(last_DOT);
 
 	return status;
 }
@@ -920,12 +922,13 @@ int f, int n)
 
 char *
 get_token(
-char *src,		/* source string */
-TBUFF **tok,		/* destination token string */
+char *src,			/* source string */
+TBUFF **tok,			/* destination token string */
 int eolchar)
 {
-	register int quotef = EOS; /* nonzero iff the current string quoted */
-	register int c, i, d, chr;
+	int quotef = EOS;	/* nonzero iff the current string quoted */
+	int c, i, d, chr;
+	char *base;
 
 	tb_init(tok, EOS);
 	if (src == 0)
@@ -934,11 +937,27 @@ int eolchar)
 	/* first scan past any whitespace in the source string */
 	while (isSPorTAB(*src))
 		++src;
+	base = src;
 
-	/* scan through the source string */
+	/* scan through the source string, which may be quoted */
 	while ((c = *src) != EOS) {
-		/* process special characters */
-		if (c == '\\') {
+		/* single-quotes override backslashes */
+		if (quotef == SQUOTE) {
+			if (c == SQUOTE) {
+				if (*++src == SQUOTE) {
+					/* double a quote to insert one */
+					chr = *src++;
+				} else {
+					quotef = EOS;
+					continue;
+				}
+			} else {
+				chr = *src++;
+			}
+		} else if (quotef == EOS && c == SQUOTE) {
+			quotef = SQUOTE;
+			chr = *src++;
+		} else if (c == BACKSLASH) { /* process special characters */
 			src++;
 			if (*src == EOS)
 				break;
@@ -996,7 +1015,7 @@ int eolchar)
 					if (!isSPorTAB(c))
 						src++;
 					break;
-				} else if (c == '"') {
+				} else if (c == DQUOTE) {
 					quotef = c;
 					/* note that leading quote
 						is included */
@@ -1016,6 +1035,11 @@ int eolchar)
 	token_ended_line = isreturn(*src) || *src == EOS;
 
 	tb_append(tok, EOS);
+	/* both double and single-quote strings are reduced to a single-quote
+	 * string with no trailing quote, to simplify use in the caller.
+	 */
+	if (tb_length(*tok) && *tb_values(*tok) == DQUOTE)
+		*tb_values(*tok) = SQUOTE;
 	return src;
 }
 
@@ -1040,16 +1064,16 @@ int	skip)
 		char	*txt = tb_values(src);
 
 		TRACE(("macroizing %s\n", tb_visible(src)))
-		(void)tb_append(p, '"');
+		(void)tb_append(p, DQUOTE);
 		for (n = skip; n < len; n++) {
 			c = txt[n];
 			if (multi && count++)
 				(void)tb_sappend(p, "\" \"");
-			if (c == '\\' || c == '"')
-				(void)tb_append(p, '\\');
+			if (c == BACKSLASH || c == DQUOTE)
+				(void)tb_append(p, BACKSLASH);
 			(void)tb_append(p, c);
 		}
-		(void)tb_append(p, '"');
+		(void)tb_append(p, DQUOTE);
 		TRACE(("macroized %s\n", tb_visible(*p)))
 		return (tb_append(p, EOS) != 0);
 	}
@@ -1236,7 +1260,7 @@ setup_macro_buffer(TBUFF *name, int flag)
 
 #if OPT_ONLINEHELP
 	    if (helpstring == 0)
-		cf->c_help = "User-defined procedure";
+		cf->c_help = strmalloc("User-defined procedure");
 	    else
 		cf->c_help = strmalloc(tb_values(helpstring));
 	    tb_free(&helpstring);
@@ -1949,7 +1973,7 @@ perform_dobuf(BUFFER *bp, WHLOOP *whlist)
 		 */
 		if (lforw(lp) != buf_head(bp)
 		 && linlen != 0
-		 && cmdp[linlen-1] == '\\') {
+		 && cmdp[linlen-1] == BACKSLASH) {
 			glue = linlen + (size_t)(cmdp - linebuf) - 1;
 			continue;
 		}

@@ -1,436 +1,450 @@
-; $Id: filters.rc,v 1.89 1999/11/06 02:10:59 tom Exp $
+; $Id: filters.rc,v 1.92 1999/11/24 22:31:19 tom Exp $
 
 define-mode ada
 ~with define-submode ada
-	suf "\\.\\(\\<ada\\>\\|\\<ads\\>\\|\\<adb\\>\\)$"
-	comment-prefix	"^\\s*--"
-	comments	"^\\s*--\\s*$"
-	fence-if   "^\\s*\\<if\\>"
-	fence-elif "^\\s*\\<elsif\\>"
-	fence-else "^\\s*\\<else\\>"
-	fence-fi   "^\\s*\\<end\\>"
+	suf '\.\(\<ada\>\|\<ads\>\|\<adb\>\)$'
+	comment-prefix	'^\s*--'
+	comments	'^\s*--\s*$'
+	fence-if   '^\s*\<if\>'
+	fence-elif '^\s*\<elsif\>'
+	fence-else '^\s*\<else\>'
+	fence-fi   '^\s*\<end\>'
 	ignorecase
-~elsewith define-submode ada group "begin"
-	fence-if   "^\\s*\\<begin\\>"
-	fence-else "^\\s*\\<exception\\>"
-	fence-fi   "^\\s*\\<end\\>"
+~elsewith define-submode ada group 'begin'
+	fence-if   '^\s*\<begin\>'
+	fence-else '^\s*\<exception\>'
+	fence-fi   '^\s*\<end\>'
 ~endwith
 
 define-mode awk
 ~with define-submode awk
-	suf "\\.awk$"
-	pre "^#!\\s*\\/.*awk\\>\\(\\s*-[a-z]\\+\\)*$"
-	comment-prefix "^\\s*#"
-	comments   "^\\s*#\\s\\+\\s*$"
+	suf '\.awk$'
+	pre '^#!\s*\/.*awk\>\(\s*-[a-z]\+\)*$'
+	comment-prefix '^\s*#'
+	comments   '^\s*#\s\+\s*$'
 ~endwith
 
 define-mode bat
 ~with define-submode bat
-	suf "\\.bat$"
-	pre "\\s*(@)\\?echo\\s*(on|off)\\?$"
+	suf '\.bat$'
+	pre '\s*(@)\?echo\s*(on|off)\?$'
 	dos
 	ignorecase
-	comment-prefix "^\\s*rem\>"
-	comments   "^\\s*rem\>\\s\\+\\s*$"
+	comment-prefix '^\s*rem\>'
+	comments   '^\s*rem\>\s\+\s*$'
 ~endwith
 
 define-mode cweb
 ~with define-submode cweb
-	suf "\\(\\.w\\|\\.web\\)$"
+	suf '\(\.w\|\.web\)$'
 ~endwith
 
 define-mode csh
 ~with define-submode csh
-	suf "\\.\\(csh.*\\|login\\|logout\\)$"
-	pre "^#!\\s*\\/.*csh\\>\\(\\s*-[a-z]\\+\\)*$"
-	filtername	"vile-sh-filt -k csh"
-	comment-prefix	"^\\s*#"
-	comments	"^\\s*#\\s*$"
-	fence-if	"^\\s*\\<if\\>.*\\<then\\>"
-	fence-elif	"^\\s*\\<else\\s*if\\>"
-	fence-else	"^\\s*\\<else\\>"
-	fence-fi	"^\\s*\\<endif\\>"
-~elsewith define-submode csh group "case"
-	fence-if	"^\\s*\\<switch\\>(.*)"
-	fence-elif	"^\\s*\\<case\\>.*:"
-	fence-else	"^\\s*\\<default\\>\\s*:"
-~elsewith define-submode csh group "loop"
-	fence-if	"^\\s*\\<foreach\\|while\\>(.*)"
-	fence-fi	"^\\s*\\<end\\>"
+	suf '\.\(csh.*\|login\|logout\)$'
+	pre '^#!\s*\/.*csh\>\(\s*-[a-z]\+\)*$'
+	filtername	'vile-sh-filt -k csh'
+	comment-prefix	'^\s*#'
+	comments	'^\s*#\s*$'
+	fence-if	'^\s*\<if\>.*\<then\>'
+	fence-elif	'^\s*\<else\s*if\>'
+	fence-else	'^\s*\<else\>'
+	fence-fi	'^\s*\<endif\>'
+~elsewith define-submode csh group 'case'
+	fence-if	'^\s*\<switch\>(.*)'
+	fence-elif	'^\s*\<case\>.*:'
+	fence-else	'^\s*\<default\>\s*:'
+~elsewith define-submode csh group 'loop'
+	fence-if	'^\s*\<foreach\|while\>(.*)'
+	fence-fi	'^\s*\<end\>'
 ~endwith
 
 ; Fences in DCL do not work well because we really want a fence-if which
-; looks for an "if" on a line where there is no "then".  But here is a set of
+; looks for an 'if' on a line where there is no 'then'.  But here is a set of
 ; expressions that work by relying on matching the if-once first, so it
 ; excludes the if-block.
 define-mode dcl
 ~with define-submode dcl
-	suf "\\.com$"
-	comment-prefix	"^\\s*\\$!"
-	comments	"^\\s*\\$!\\s*$"
+	suf '\.com$'
+	comment-prefix	'^\s*\$!'
+	comments	'^\s*\$!\s*$'
 	ignorecase
-~elsewith define-submode dcl group "if-once"
-	fence-if	"^\\s*\\(\\$\\s*\\)\\?\\<if\\>.*\\<then\\>"
-~elsewith define-submode dcl group "if-block"
-	fence-if	"^\\s*\\(\\$\\s*\\)\\?\\<if\\>"
-	fence-else	"^\\s*\\(\\$\\s*\\)\\?\\<else\\>"
-	fence-fi	"^\\s*\\(\\$\\s*\\)\\?\\<endif\\>"
+~elsewith define-submode dcl group 'if-once'
+	fence-if	'^\s*\(\$\s*\)\?\<if\>.*\<then\>'
+~elsewith define-submode dcl group 'if-block'
+	fence-if	'^\s*\(\$\s*\)\?\<if\>'
+	fence-else	'^\s*\(\$\s*\)\?\<else\>'
+	fence-fi	'^\s*\(\$\s*\)\?\<endif\>'
 ~endwith
 
 define-mode diff
 ~with define-submode diff
-	suf "\\.\\(patch\\|dif\\|diff\\|diffs\\|rej\\)$"
-	pre "^\\<diff\\>"
+	suf '\.\(patch\|dif\|diff\|diffs\|rej\)$'
+	pre '^\<diff\>'
 ~endwith
 
 ; forms definition.
 ; FIXME: The groups should not nest (extend the syntax)
 define-mode fdl
 ~with define-submode fdl
-	suf "\\.\\<fdl\\>$"
-	comment-prefix "^\\s*$rem\\>"
-	comments   "^\\(\\|$rem\\)$"
-	fence-if   "^\\$\\s*if\\>"
-	fence-elif "^\\$\\s*elseif\\>"
-	fence-else "^\\$\\s*else\\>\\s*$"
-	fence-fi   "^\\$\\s*endif\\s*$"
-~elsewith define-submode fdl group "form"
-	fence-if   "^\\$form\\>"
-	fence-fi   "^\\$endform\\s*$"
-~elsewith define-submode fdl group "field"
-	fence-if   "^\\$field\\>$"
-	fence-fi   "^\\$endfield\\s*$"
-~elsewith define-submode fdl group "group"
-	fence-if   "^\\$group\\>"
-	fence-fi   "^\\$endgroup\\s*$"
-~elsewith define-submode fdl group "array"
-	fence-if   "^\\$array\\>"
-	fence-fi   "^\\$endarray\\s*$"
-~elsewith define-submode fdl group "page"
-	fence-if   "^\\$page\\>"
-	fence-fi   "^\\$endpage\\s*$"
-~elsewith define-submode fdl group "scroll"
-	fence-if   "^\\$scroll\\>"
-	fence-fi   "^\\$endscroll\\s*$"
-~elsewith define-submode fdl group "state"
-	fence-if   "^\\$state\\>"
-	fence-fi   "^\\$endstate\\s*$"
-~elsewith define-submode fdl group "text"
-	fence-if   "^\\$text\\>"
-	fence-fi   "^\\$endtext\\s*$"
+	suf '\.\<fdl\>$'
+	comment-prefix '^\s*$rem\>'
+	comments   '^\(\|$rem\)$'
+	fence-if   '^\$\s*if\>'
+	fence-elif '^\$\s*elseif\>'
+	fence-else '^\$\s*else\>\s*$'
+	fence-fi   '^\$\s*endif\s*$'
+~elsewith define-submode fdl group 'form'
+	fence-if   '^\$form\>'
+	fence-fi   '^\$endform\s*$'
+~elsewith define-submode fdl group 'field'
+	fence-if   '^\$field\>$'
+	fence-fi   '^\$endfield\s*$'
+~elsewith define-submode fdl group 'group'
+	fence-if   '^\$group\>'
+	fence-fi   '^\$endgroup\s*$'
+~elsewith define-submode fdl group 'array'
+	fence-if   '^\$array\>'
+	fence-fi   '^\$endarray\s*$'
+~elsewith define-submode fdl group 'page'
+	fence-if   '^\$page\>'
+	fence-fi   '^\$endpage\s*$'
+~elsewith define-submode fdl group 'scroll'
+	fence-if   '^\$scroll\>'
+	fence-fi   '^\$endscroll\s*$'
+~elsewith define-submode fdl group 'state'
+	fence-if   '^\$state\>'
+	fence-fi   '^\$endstate\s*$'
+~elsewith define-submode fdl group 'text'
+	fence-if   '^\$text\>'
+	fence-fi   '^\$endtext\s*$'
 ~endwith
 
 ; Inherit the C-style fences for JavaScript, but add new ones for HTML
 define-mode html
 ~with define-submode html
-	suf "\\.\\(html\\|htm\\)$"
-	pre "\\(<html>\\|<script>\\|<!doctype\\|<!--\\)"
-	fence-pairs	"<>()[]{}"
+	suf '\.\(html\|htm\)$'
+	pre '\(<html>\|<script>\|<!doctype\|<!--\)'
+	fence-pairs	'<>()[]{}'
 	ignorecase
-	comment-prefix	"^\\s*--"
-	comments	"^\\s*$"
-~elsewith define-submode html group "script"
-	fence-if	"^\\s*<script>$"
-	fence-fi	"^\\s*</script>$"
-~elsewith define-submode html group "server"
-	fence-if	"^\\s*<server>$"
-	fence-fi	"^\\s*</server>$"
-~elsewith define-submode html group "html"
-	fence-begin	"<--"
-	fence-end	"-->"
+	comment-prefix	'^\s*--'
+	comments	'^\s*$'
+~elsewith define-submode html group 'script'
+	fence-if	'^\s*<script>$'
+	fence-fi	'^\s*</script>$'
+~elsewith define-submode html group 'server'
+	fence-if	'^\s*<server>$'
+	fence-fi	'^\s*</server>$'
+~elsewith define-submode html group 'html'
+	fence-begin	'<--'
+	fence-end	'-->'
 ~endwith
 
 define-mode imake
 ~with define-submode imake
-	suf "I[Mm]akefile"
-	pre "^\\s*\\(XCOMM\\>\\|\\/\\*\\*\\/#\\)"
-	filtername "vile-c-filt -k imake"
+	suf 'I[Mm]akefile'
+	pre '^\s*\(XCOMM\>\|\/\*\*\/#\)'
+	filtername 'vile-c-filt -k imake'
 ~endwith
 
 define-mode java
 ~with define-submode java
-	suf "\\.java$"
-	filtername "vile-c-filt -k java"
+	suf '\.java$'
+	filtername 'vile-c-filt -k java'
 	cindent
 ~endwith
 
 define-mode js
 ~with define-submode js
-	suf "\\.js$"
-	filtername "vile-c-filt -k js"
+	suf '\.js$'
+	filtername 'vile-c-filt -k js'
 	cindent
 ~endwith
 
 define-mode key
 ~with define-submode key
-	suf "\\.\\(key\\|keywords\\)$"
-	comment-prefix	"^\\s*:"
-	comments	"^\\s*:\\s+*$"
+	suf '\.\(key\|keywords\)$'
+	comment-prefix	'^\s*:'
+	comments	'^\s*:\s+*$'
 ~endwith
 
 define-mode latex
 ~with define-submode latex
-	suf "\\.\\(latex\\|ltex\\|tex\\)$"
-	comment-prefix	"^\\s*%"
-	comments	"^\\s*%.*$"
+	suf '\.\(latex\|ltex\|tex\)$'
+	comment-prefix	'^\s*%'
+	comments	'^\s*%.*$'
 ~endwith
 
 define-mode lex
 ~with define-submode lex
-	suf "\\.\\(l\\|lex\\|flex\\|flx\\)$"
+	suf '\.\(l\|lex\|flex\|flx\)$'
 	cindent
 ~endwith
 
 ; actually, m4 used for autoconf scripts, which is Bourne-shell
 define-mode m4
 ~with define-submode m4
-	pre "^\\s*dnl\\>"
-	suf "\\.m4$"
-	comment-prefix "^\\s*\\(dnl\\|#\\)"
-	comments   "^\\s*\\(dnl\\>\\|#\\)\\s*$"
-	fence-if   "^\\s*\\<if\\>"
-	fence-elif "^\\s*\\<elif\\>"
-	fence-else "^\\s*\\<else\\>"
-	fence-fi   "^\\s*\\<fi\\>"
+	pre '^\s*dnl\>'
+	suf '\.m4$'
+	comment-prefix '^\s*\(dnl\|#\)'
+	comments   '^\s*\(dnl\>\|#\)\s*$'
+	fence-if   '^\s*\<if\>'
+	fence-elif '^\s*\<elif\>'
+	fence-else '^\s*\<else\>'
+	fence-fi   '^\s*\<fi\>'
 ~endwith
 
 define-mode mail
 ~with define-submode mail
-	suf "\\([Mm]ail\\>\\|\\<mbox$\\)"
-	pre "^\\(From \\|To: \\)"
+	suf '\([Mm]ail\>\|\<mbox$\)'
+	pre '^\(From \|To: \)'
 ~endwith
 
 define-mode make
 ~with define-submode make
-	suf "\\([Mm]akefile\\|\\.mak$\\|\\.mk$\\)"
-	comment-prefix	"^\\s*[!#]"
-	comments	"^\\s*[!#]\\s*$"
-~if &sin $os "win32"
+	suf '\([Mm]akefile\|\.mak$\|\.mk$\)'
+	comment-prefix	'^\s*[!#]'
+	comments	'^\s*[!#]\s*$'
+~if &sin $os 'win32'
 	ignorecase
-~elsewith define-submode make group "nmake"
-	fence-if   "^\\s*!if"
-	fence-elif "^\\s*!elseif"
-	fence-else "^\\s*!else\\>"
-	fence-fi   "^\\s*!endif\\>"
+~elsewith define-submode make group 'nmake'
+	fence-if   '^\s*!if'
+	fence-elif '^\s*!elseif'
+	fence-else '^\s*!else\>'
+	fence-fi   '^\s*!endif\>'
 ~endif
 ~endwith
 
 define-mode mms
 ~with define-submode mms
-	suf "\\.mms$"
-	comment-prefix	"^\\s*[!#]"
-	comments	"^\\s*[!#]\\s*$"
+	suf '\.mms$'
+	comment-prefix	'^\s*[!#]'
+	comments	'^\s*[!#]\s*$'
 	ignorecase
-	fence-if   "^\\s*\\.\\<ifdef\\>"
-	fence-elif "^\\s*\\.\\<elif\\>"
-	fence-else "^\\s*\\.\\<else\\>"
-	fence-fi   "^\\s*\\.\\<endif\\>"
+	fence-if   '^\s*\.\<ifdef\>'
+	fence-elif '^\s*\.\<elif\>'
+	fence-else '^\s*\.\<else\>'
+	fence-fi   '^\s*\.\<endif\>'
 ~endwith
 
 define-mode nr
 ~with define-submode nr
-	suf "\\.\\(\\([1-9ln][a-z]\\?\\)\\|man\\)$"
-	pre "^\\.\\\\\""
-	comment-prefix	"^\\.\\\\\""
-	comments	"^\\.\\\\\"\\s*$"
+	suf '\.\(\([1-9ln][a-z]\?\)\|man\)$'
+	pre '^\.\\\''
+	comment-prefix	'^\.\\\''
+	comments	'^\.\\\'\s*$'
 ~endwith
 
 define-mode pas
 ~with define-submode pas
-	suf "\\.\\(p|pas\\)$"
+	suf '\.\(p|pas\)$'
 ~endwith
 
-; "do" should really be a separate group, but since ambiguous fence-fi is
-; very expensive to resolve, we combine it with the similar "while" group.
+; 'do' should really be a separate group, but since ambiguous fence-fi is
+; very expensive to resolve, we combine it with the similar 'while' group.
 define-mode perl
 ~with define-submode perl
-	pre "^#\\s*!\\s*\\.*\\/.*perl\\>"
-	suf "\\.\\(pl\\|pm\\)$"
+	pre '^#\s*!\s*\.*\/.*perl\>'
+	suf '\.\(pl\|pm\)$'
 	cindent
-	comment-prefix "^\\s*#"
-	comments       "^\\s*#\\s*$"
-	fence-pairs    "{}()[]<>"
-	fence-if       "^\\s*if\\>.*{"
-	fence-elif     "^\\s*}\\s*elsif\\s*(.*{"
-	fence-else     "^\\s*}\\s*else\\s*{"
-	fence-fi       "^\\s*}\\s*$"
-~elsewith define-submode perl group "while"
-	fence-if       "^\\s*\\(sub\\|foreach\\|while\\|unless\\do\\)\\>.*{"
-	fence-fi       "^\\s*}"
+	comment-prefix '^\s*#'
+	comments       '^\s*#\s*$'
+	fence-pairs    '{}()[]<>'
+	fence-if       '^\s*if\>.*{'
+	fence-elif     '^\s*}\s*elsif\s*(.*{'
+	fence-else     '^\s*}\s*else\s*{'
+	fence-fi       '^\s*}\s*$'
+~elsewith define-submode perl group 'while'
+	fence-if       '^\s*\(sub\|foreach\|while\|unless\do\)\>.*{'
+	fence-fi       '^\s*}'
 ~endwith
 
 define-mode pot
 ~with define-submode pot
-	suf "\\.\\(pot\\|po\\)$"
-	filtername "vile-sh-filt -k pot"
-	comment-prefix "^#"
-	comments       "^#\\s*$"
+	suf '\.\(pot\|po\)$'
+	filtername 'vile-sh-filt -k pot'
+	comment-prefix '^#'
+	comments       '^#\s*$'
 ~endwith
 
 define-mode py
 ~with define-submode py
-	pre "^#\\s*!\\s*\\.*\\/.*python\\>"
-	suf "\\.py$"
-	comment-prefix "^\\s*#"
-	comments   "^\\s*#\\s\\+\\s*$"
+	pre '^#\s*!\s*\.*\/.*python\>'
+	suf '\.py$'
+	comment-prefix '^\s*#'
+	comments   '^\s*#\s\+\s*$'
 ~endwith
 
 ; I capitalized the majormode RCS/SCCS names because matches are made in
 ; alphabetic order (usually not a problem, but conflicting with other modes,
-; such as "makemode").
+; such as 'makemode').
 define-mode RCS
 ~with define-submode RCS
-	suf ",v$"
-	filtername "vile-rcs-filt"
+	suf ',v$'
+	filtername 'vile-rcs-filt'
 ~endwith
 
 define-mode SCCS
 ~with define-submode SCCS
-	suf "\\<s\\."
-	pre "^\h"
-	filtername "vile-sccs-filt"
-~elsewith define-submode SCCS group "delete"
-	fence-if       "^\D\\s\\+\\(\d\\+\\)$"
-	fence-fi       "^\E\\s\\+\\(\d\\+\\)$"
-~elsewith define-submode SCCS group "insert"
-	fence-if       "^\I\\s\\+\\(\d\\+\\)$"
-	fence-fi       "^\E\\s\\+\\(\d\\+\\)$"
+	suf '\<s\.'
+	pre '^\h'
+	filtername 'vile-sccs-filt'
+~elsewith define-submode SCCS group 'delete'
+	fence-if       '^\D\s\+\(\d\+\)$'
+	fence-fi       '^\E\s\+\(\d\+\)$'
+~elsewith define-submode SCCS group 'insert'
+	fence-if       '^\I\s\+\(\d\+\)$'
+	fence-fi       '^\E\s\+\(\d\+\)$'
 ~endwith
 
-; This is matched after "csh", and will pick up /bin/sh, /bin/bash, /bin/ksh
+; This is matched after 'csh', and will pick up /bin/sh, /bin/bash, /bin/ksh
 define-mode sh
 ~with define-submode sh
-	suf "\\.\\(sh\\|ksh\\)$"
-	pre "^\\(#!\\s*\\/.*sh\\>\\s*\\(-[a-z]\\+\\s*\\)*\\|:\\)$"
-	comment-prefix	"^\\s*[:#]"
-	comments	"^\\s*[:#]\\s*$"
-	fence-if   "^\\s*\\<if\\>"
-	fence-elif "^\\s*\\<elif\\>"
-	fence-else "^\\s*\\<else\\>"
-	fence-fi   "^\\s*\\<fi\\>"
-~elsewith define-submode sh group "case"
-	fence-if   "^\\s*\\<case\\>.*\\<in\\>"
-	fence-elif "^\\s*[^)]\\+)"
-	fence-else "^\\s*\\*)"
-	fence-fi   "^\\s*\\<esac\\>"
-~elsewith define-submode sh group "do"
-	fence-if   "\\(^\\s*\\<do\\>\\|;\\s*\\<do\\>\\)\\s*$"
-	fence-fi   "^\\s*\\<done\\>"
+	suf '\.\(sh\|ksh\)$'
+	pre '^\(#!\s*\/.*sh\>\s*\(-[a-z]\+\s*\)*\|:\)$'
+	comment-prefix	'^\s*[:#]'
+	comments	'^\s*[:#]\s*$'
+	fence-if   '^\s*\<if\>'
+	fence-elif '^\s*\<elif\>'
+	fence-else '^\s*\<else\>'
+	fence-fi   '^\s*\<fi\>'
+~elsewith define-submode sh group 'case'
+	fence-if   '^\s*\<case\>.*\<in\>'
+	fence-elif '^\s*[^)]\+)'
+	fence-else '^\s*\*)'
+	fence-fi   '^\s*\<esac\>'
+~elsewith define-submode sh group 'do'
+	fence-if   '\(^\s*\<do\>\|;\s*\<do\>\)\s*$'
+	fence-fi   '^\s*\<done\>'
 ~endwith
 
 define-mode sql
 ~with define-submode sql
-	suf "\\.sql$"
-	pre "^\\s*\\remark\\>$"
-	comment-prefix	"^\\s*rem\\(ark\\)\\?"
-	comments	"^\\s*rem\\(ark\\)\\?\\s*$"
+	suf '\.sql$'
+	pre '^\s*\remark\>$'
+	comment-prefix	'^\s*rem\(ark\)\?'
+	comments	'^\s*rem\(ark\)\?\s*$'
 	ignorecase
+~endwith
+
+define-mode tags
+~with define-submode tags
+	suf '\tags$'
+	comment-prefix	'^!_'
+	comments	'^!_$'
 ~endwith
 
 ; VILE's mktbls
 define-mode tbl
 ~with define-submode tbl
-	suf "\\(modetbl\\|cmdtbl\\)$"
-	comment-prefix	"^\\s*#"
-	comments	"^\\s*#\\s*$"
+	suf '\(modetbl\|cmdtbl\)$'
+	comment-prefix	'^\s*#'
+	comments	'^\s*#\s*$'
 ~endwith
 
 define-mode tc
 ~with define-submode tc
-	suf "\\(\\.tc\\|\\.tcap\\|\\<termcap[^/]*\\)$"
-	comment-prefix	"^\\s*[:#]"
-	comments	"^\\s*[:#]\\s*$"
+	suf '\(\.tc\|\.tcap\|\<termcap[^/]*\)$'
+	comment-prefix	'^\s*[:#]'
+	comments	'^\s*[:#]\s*$'
 ~endwith
 
 define-mode tcl
 ~with define-submode tcl
-	suf "\\(\\.tcl\\)$"
-	pre "^#!\\s*\\/.*wish[0-9.]*\\>\\(\\s*-[a-z]\\+\\)*$"
-	comment-prefix	"^\\s*[:#]"
-	comments	"^\\s*[:#]\\s*$"
+	suf '\(\.tcl\)$'
+	pre '^#!\s*\/.*wish[0-9.]*\>\(\s*-[a-z]\+\)*$'
+	comment-prefix	'^\s*[:#]'
+	comments	'^\s*[:#]\s*$'
 ~endwith
 
 define-mode ti
 ~with define-submode ti
-	suf "\\(\\.ti\\|\\.tinfo\\|\\<terminfo[^/]*\\)$"
-	comment-prefix	"^\\s*[:#]"
-	comments	"^\\s*[:#]\\s*$"
+	suf '\(\.ti\|\.tinfo\|\<terminfo[^/]*\)$'
+	comment-prefix	'^\s*[:#]'
+	comments	'^\s*[:#]\s*$'
 ~endwith
 
 define-mode txt
 ~with define-submode txt
-	suf "\\.\\(txt\\|doc\\|hlp\\)$"
-	comment-prefix	"^\\s*--"
-	comments	"^\\s*--\\s*$"
+	suf '\.\(txt\|doc\|hlp\)$'
+	comment-prefix	'^\s*--'
+	comments	'^\s*--\s*$'
 ~endwith
 
 ; define-mode vile
 ~with define-submode vile
-	suf "\\(\\.vilerc\\|\\.rc$\\)"
-	comment-prefix	"^\\s*;"
-	comments	"^\\s*;\\s*$"
-	fence-if	"^\\s*~if\\>"
-	fence-elif	"^\\s*~elseif\\>"
-	fence-else	"^\\s*~else\\>"
-	fence-fi	"^\\s*~endif\\>"
-~elsewith define-submode vile group "while"
-	fence-if	"^\\s*~while\\>"
-	fence-fi	"^\\s*~endwhile\\>"
-~elsewith define-submode vile group "with"
-	fence-if	"^\\s*~with\\>"
-	fence-elif	"^\\s*~elsewith\\>"
-	fence-fi	"^\\s*~endwith\\>"
-~elsewith define-submode vile group "macro"
-	fence-if	"^\\s*\\(\\d\\+\\s*\\)\\?store-\\(macro\\|procedure\\)"
-	fence-fi	"^\\s*~endm\\>"
+	suf '\(\.vilerc\|\.rc$\)'
+	comment-prefix	'^\s*;'
+	comments	'^\s*;\s*$'
+	fence-if	'^\s*~if\>'
+	fence-elif	'^\s*~elseif\>'
+	fence-else	'^\s*~else\>'
+	fence-fi	'^\s*~endif\>'
+~elsewith define-submode vile group 'while'
+	fence-if	'^\s*~while\>'
+	fence-fi	'^\s*~endwhile\>'
+~elsewith define-submode vile group 'with'
+	fence-if	'^\s*~with\>'
+	fence-elif	'^\s*~elsewith\>'
+	fence-fi	'^\s*~endwith\>'
+~elsewith define-submode vile group 'macro'
+	fence-if	'^\s*\(\d\+\s*\)\?store-\(macro\|procedure\)'
+	fence-fi	'^\s*~endm\>'
+~endwith
+
+define-mode xres
+~with define-submode xres
+	suf '\(/[A-Z]\?[A-Z][a-z0-9-]\+$\|\.ad$\)'
+	comment-prefix	'^\s*!'
+	comments	'^\s*!\s*$'
 ~endwith
 
 define-mode xs
 ~with define-submode xs
-	suf "\\.xs$"
+	suf '\.xs$'
 	cindent
 ~endwith
 
 define-mode yacc
 ~with define-submode yacc
-	suf "\\.\\(y\\|yacc\\)$"
+	suf '\.\(y\|yacc\)$'
 	cindent
 ~endwith
 
-store-procedure HighlightFilter "Invoke syntax-highlighting filter on the current buffer"
-    ~if &not &seq $majormode ""
+store-procedure HighlightFilter 'Invoke syntax-highlighting filter on the current buffer'
+    ~if &not &seq $majormode ''
 	~local $curcol $curline
 	~local %filtername %filterpath %filteropts
 	~hidden goto-beginning-of-file
-	~if &seq $filtername ""
-		set-variable %filtername &cat &cat "vile-" $majormode "-filt"
+	~if &seq $filtername ''
+		set-variable %filtername &cat &cat 'vile-' $majormode '-filt'
 	~else
 		set-variable %filtername $filtername
 	~endif
 	set-variable %filterpath &word 0 %filtername
 	set-variable %filteropts &right %filtername &add 1 &len %filterpath
-	~if &seq "" &lookup e+p &cat %filterpath $exec-suffix
+	~if &seq '' &lookup e+p &cat %filterpath $exec-suffix
 		set-variable %filterpath &lookup e+l &cat %filterpath $exec-suffix
 	~endif
-	~if &not &seq %filterpath ""
+	~if &not &seq %filterpath ''
 		~hidden attribute-from-filter end-of-file &cat &pquote %filterpath %filteropts
 	~endif
     ~endif
 ~endm
-store-procedure HighlightFilterMsg "Attach highlighting to the current buffer"
+store-procedure HighlightFilterMsg 'Attach highlighting to the current buffer'
 	HighlightFilter
-	write-message "[Attaching attributes...]"
+	write-message '[Attaching attributes...]'
 ~endm
 bind-key HighlightFilterMsg ^X-q
 
-store-procedure HighlightClear "Clear all highlighting from the current buffer"
+store-procedure HighlightClear 'Clear all highlighting from the current buffer'
 	~local $curcol $curline
 	~hidden goto-beginning-of-file
 	~hidden clear-attributes-til goto-char
 ~endm
 bind-key HighlightClear ^X-Q
 
-store-procedure set-highlighting ma "Set a majormode and invoke highlighting"
+store-procedure set-highlighting ma 'Set a majormode and invoke highlighting'
 	; show-variables
 	write-message &cat $1 mode
 	setl &cat $1 mode

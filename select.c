@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.104 1999/10/10 18:02:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.105 1999/11/24 17:29:13 tom Exp $
  *
  */
 
@@ -938,7 +938,7 @@ multimotion(int f, int n)
 		/* and execute the command */
 		cfp = kcod2fnc(c);
 		if ( (cfp != NULL)
-		 && ((cfp->c_flags & MOTION) != 0)) {
+		 && ((cfp->c_flags & (GOAL|MOTION)) != 0)) {
 			MARK testdot;
 
 			wassweephack = sweephack;

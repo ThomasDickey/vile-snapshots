@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.367 1999/11/10 01:58:07 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.369 1999/11/24 19:44:57 cmorgan Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1471,13 +1471,6 @@ signs-o-mode.
 It'd be a bit cleaner than hacking '~if &not &seq $majormode "mail"'
 stuff at the start of a procedure.
 
--- 98-06-23 (Quang Ngo <quang@usa.net>)
-
-Watcom compiler version 10 has a very nice vi editor.  It allows you to
-scroll the buffer up/down 1 line using the ^E and ^Y while in the editing
-mode, not just the command mode.  I find this very useful.  Vile only
-supports these 2 keys in command mode.  Could you please add this feature?
-
 -- 98-06-24 (Clark Morgan)
 
 If a vile user changes the value of a universal string mode (e.g.,
@@ -1510,22 +1503,6 @@ seem to unless I do something call calls update(TRUE).
 3) again, from inside a store-macro, how do I find out if there's a
 region defined in the current buffer and, if possible, where the
 region is?
-
--- 98-09-03 (Clark Morgan)
-
-I've got a case where visual-matches highlighting doesn't work.
-
-   :se visual-matches brightred
-   <colorize source file>
-   /pattern_x
-   n
-   N
-   <no problems so far, works great>
-   =             ; erase current visual-matches highlighting
-   n             ; whoops, no visual match highlight  <<<
-   /pattern_x    ; still no visual match highlight    <<<
-   /pattern_y    ; visual match highlight works again
-   /pattern_x    ; still working
 
 -- 98-09-03 (tom)
 

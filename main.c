@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.412 1999/11/15 23:35:00 Ryan.Murray Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.413 1999/11/24 22:12:42 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -1953,7 +1953,7 @@ charinit(void)
 #endif
 
 #if OPT_MSDOS_PATH
-	vl_chartypes_['\\'] |= vl_pathn;
+	vl_chartypes_[BACKSLASH] |= vl_pathn;
 	vl_chartypes_[':'] |= vl_pathn;
 #endif
 
