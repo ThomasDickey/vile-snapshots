@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.59 1998/10/24 20:02:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.61 1998/12/22 10:54:19 tom Exp $
  *
  */
 
@@ -133,6 +133,10 @@ string_has_wildcards (const char *item)
 		if (*item == '$' && (isname(item[1]) || isdelim(item[1])))
 			return TRUE;
 #endif
+#endif
+#if OPT_VMS_PATH
+		if (*item == '~')
+			return TRUE;
 #endif
 		item++;
 	}
@@ -716,17 +720,40 @@ static int
 expand_pattern (char *item)
 {
 	int	result = FALSE;
-#if OPT_VMS_PATH && !SYS_UNIX
+#if OPT_VMS_PATH
 	DIR	*dp;
 	DIRENT	*de;
+	char actual[NFILEN];
+	char *leaf;
 
-	if ((dp = opendir(SL_TO_BSL(item))) != 0) {
+	strcpy(actual, item);
+	/*
+	 * If we're given a Unix-style pathname, split off the leaf (which may
+	 * contain wildcards), translate the directory to VMS form, and put the
+	 * leaf back.  The unix2vms_path function would otherwise mangle the
+	 * wildcards in the leaf.  We only handle wildcards in the leaf
+	 * filename, since native VMS syntax for wildcards in the directory is
+	 * too cumbersome to use.
+	 */
+	if (!is_vms_pathname(actual, -TRUE)) {
+		if ((leaf = pathleaf(actual)) != actual)
+			*leaf = EOS;
+		unix2vms_path(actual, actual);
+		if (leaf != actual)
+			pathcat(actual, actual, pathleaf(item));
+	}
+
+	if ((dp = opendir(actual)) != 0) {
 		result = TRUE;
 		while ((de = readdir(dp)) != 0) {
 			char	temp[NFILEN];
+#if USE_D_NAMLEN
 			size_t	len = de->d_namlen;
 			(void)strncpy(temp, de->d_name, len);
 			temp[len] = EOS;
+#else
+			(void)strcpy(temp, de->d_name);
+#endif
 			if (!record_a_match(temp)) {
 				result = FALSE;
 				break;
@@ -942,15 +969,25 @@ expand_wild_args(int *argcp, char ***argvp)
 		char	**newvec = typeallocn(char *, comma + *argcp + 1);
 		for (j = k = 0; j < *argcp; j++) {
 			char	*the_arg = strmalloc((*argvp)[j]);
-			char	*item;
+			char	*item, *tmp;
 
-			/* strip off VMS options */
-			while ((item = strrchr(the_arg, '/')) != 0) {
+			/*
+			 * strip off supported VMS options, else don't muck
+			 * with pseudo-unix path delimiters so that the
+			 * glob routines will correctly handle filenames
+			 * like these:
+			 *
+			 *     ../readme.txt   ~/vile.rc
+			 */
+			tmp = the_arg;
+			while ((item = strrchr(tmp, '/')) != 0) {
 				mkupper(item);
 				if (!strncmp(item, "/READ_ONLY", strlen(item))) {
 					set_global_b_val(MDVIEW,TRUE);
+					*item = EOS;
 				}
-				*item = EOS;
+				else
+				    tmp = item + 1;
 			}
 
 			while (*the_arg != EOS) {

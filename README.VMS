@@ -1,0 +1,64 @@
+                          -------------------
+                          Running vile on VMS
+                          -------------------
+
+vile can be built using either the VAXC or DECC compiler.  if your host
+includes the mms utility, then build vile using this command:
+
+    $ mms
+
+otherwise, use this canned build script:
+
+    $ @vmsbuild
+
+in either case, before building the editor, edit descrip.mms or
+vmsbuild.com to specify the compiler of your choice.
+
+                        +++++++++++++++++++++++++++
+                        warning   warning   warning
+                        +++++++++++++++++++++++++++
+
+when selecting a target compiler, beware of this problem:
+
+    on a VAX, the DEC-C compiler and/or its run-time library cause
+    vile to change the "Revised time" of every file the editor _reads_.
+    you won't like this when using mms or a make clone.  the VAXC
+    compiler does not suffer from this problem.
+
+    configuration where problem was observed:
+                 DEC C V5.6-003 on OpenVMS VAX V7.1
+
+General installation instructions
+---------------------------------
+installation of vile's components is the responsibility of the end user.
+
+after the build, copy all resultant executables (except mktbls.exe) and the
+file vile.hlp to a directory of your choice.  finally, create a foreign
+symbol that invokes the editor from the installation directory.  ex:
+
+      vile :== $install_disk:[install_dir]vile.exe
+
+Creating a startup file
+-----------------------
+most users will configure the editor.  this is accomplished by creating a
+startup file, called "vile.rc", and adding various settings and macros as
+described in vile.hlp .  vile searches for the startup file in these
+locations (and in the order listed):
+
+    current working directory
+    the directory specified by the symbol HOME
+    the vile executable directory   [this often does not work]
+    if the symbol VILE_STARTUP_PATH exists then
+        any directory specified in this symbol is searched
+    else search
+        sys$login
+        sys$device:[vmstools]
+        sys$library
+    end if
+    sys$system
+    sys$library
+
+VMS-specific features
+---------------------
+vile includes several useful vms-specific modes, which are described in
+vile.hlp in the section entitled "VMS specifics".

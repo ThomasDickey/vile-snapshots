@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.187 1998/12/14 11:50:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.188 1998/12/17 03:17:40 tom Exp $
  *
  */
 
@@ -87,10 +87,13 @@ static void
 old_namebst (BI_NODE *a)
 {
 	if (!(a->value.n_flags & NBST_READONLY)) {
+		if (a->value.n_cmd != 0) {
 #if OPT_ONLINEHELP
-		free(TYPECAST(char,a->value.n_cmd->c_help));
+			if (a->value.n_cmd->c_help)
+				free(TYPECAST(char,a->value.n_cmd->c_help));
 #endif
-		free(TYPECAST(char,a->value.n_cmd));
+			free(TYPECAST(char,a->value.n_cmd));
+		}
 		free(TYPECAST(char,BI_KEY(a)));
 	}
 	free(a);
@@ -2423,6 +2426,7 @@ delete_namebst(const char *name, int release)
 
 	free(TYPECAST(char,p->n_cmd->c_help));
 	free(TYPECAST(char,p->n_cmd));
+	p->n_cmd = 0;	/* ...so old_namebst won't free this too */
     }
 
     return btree_delete(&namebst, name);

@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.369 1998/12/14 02:23:21 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.370 1998/12/22 10:17:17 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -428,7 +428,10 @@
 #define OPT_WORKING (!SMALLER && HAVE_ALARM && HAVE_RESTARTABLE_PIPEREAD)
 
 #define OPT_SCROLLBARS (XTOOLKIT | DISP_NTWIN)	/* scrollbars */
+
+#ifndef OPT_VMS_PATH
 #define OPT_VMS_PATH    (SYS_VMS)  /* vax/vms path parsing (testing/porting)*/
+#endif
 
 /* systems with MSDOS-like filename syntax */
 #define OPT_MSDOS_PATH  (SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT || SYS_OS2_EMX)

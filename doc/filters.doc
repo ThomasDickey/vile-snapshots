@@ -1,0 +1,79 @@
+FILTERS.DOC
+-----------
+
+There are several highlighting filters in the filters subdirectory.  These all
+are programs that read a file, usually from the standard input, and write to
+the standard output.  Vile invokes these, uses the marked-up text to display
+highlighting.
+
+Except for the manpage filter (a special case) all of these can be (and most
+are) implemented using lex.
+
+KEYWORDS
+--------
+
+Each filter reads one or more keyword files, which list specific keywords
+and their highlighting attributes, as well as classes of keywords.
+
+The filters search for these files in the current, $HOME, $HOME/vile and
+startup directories.  On Unix, the keyword files are hidden using a "." prefix. 
+Except for MS-DOS, the suffix is ".keywords"; on that platform it is ".key". 
+You can specify the root name to search, otherwise they search for "vile" and
+the filter name, e.g., "c".
+
+Defined keyword classes include (but may not be used in specific filters):
+
+	Action
+	Comment
+	Ident
+	Keyword
+	Literal
+	Number
+	Preproc
+	Type
+
+Each line in the keyword file consists of two strings separated by a colon (:).
+If the first string is empty, the line is treated as a comment.  The second
+string is used as the highlighting attributes for the first string.  An
+empty attribute string implies "Keyword".
+
+Tell how the new filters search along ., $HOME, $HOME/vile and startup path.
+You can override the behavior, but otherwise they search for both "vile"
+and the specific language keywords, if any.
+
+PROGRAMS
+--------
+
+The following are implemented:
+
+	vile-c-filt	(C language)
+	vile-cweb-filt	(CWEBx)
+	vile-html-filt	(HTML)
+	vile-latex-filt	(LaTeX or TeX)
+	vile-lex-filt	(lex)
+	vile-make-filt	(make)
+	vile-manfilt	(manpage)
+	vile-pas-filt	(Pascal)
+	vile-perl-filt	(Perl)
+	vile-sh-filt	(sh/ksh/csh)
+	vile-vile-filt	(Vile's macros)
+
+BUGS (1998/12/21)
+----
+
+Not all filters use a keywords file (yet).
+
+The filters make inconsistent use of implicit linking in the keywords file,
+e.g.,
+	Keyword:B
+	if:Keyword
+
+is the design, which is not always implemented (yet).
+
+No check is made to exclude identifiers with leading capitals from the
+highlighting.
+
+The lex filters have been tested only with flex, which treats newlines
+differently.  Older versions of lex also do not support the %x states.
+
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.1 1998/12/21 11:51:42 tom Exp $

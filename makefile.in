@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.119 1998/11/14 15:00:54 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.121 1998/12/21 00:27:31 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -165,13 +165,9 @@ MACRO_SRC = \
 	$(srcdir)/macros/digraphs.rc
 
 OTHERSRC = \
-	c-filt.c \
-	c-filt.flx \
 	djhandl.c \
 	gppconio.c \
-	manfilt.c \
 	os2pipe.c \
-	pas-filt.c \
 	vms2unix.c \
 	vmspipe.c
 
@@ -244,8 +240,9 @@ OBJ = $(SCREEN).o \
 	tbuff.o termio.o undo.o version.o \
 	watch.o window.o word.o wordmov.o @EXTRAOBJS@
 
-ALL =	$(TARGET) vile-manfilt$x vile-c-filt$x vile-pas-filt$x vile-crypt$x
-all:	$(ALL)
+ALL =	$(TARGET) vile-crypt$x
+
+all ::	$(ALL)
 
 $(TARGET): $(BUILTHDRS) $(OBJ)
 	-mv $(TARGET) o$(TARGET)
@@ -253,15 +250,6 @@ $(TARGET): $(BUILTHDRS) $(OBJ)
 
 vile.man: vile.1
 	nroff -man vile.1 | col -b >vile.man
-
-vile-manfilt$x : manfilt.o
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ manfilt.o
-
-vile-c-filt$x : c-filt.o
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ c-filt.o
-
-vile-pas-filt$x : pas-filt.o
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ pas-filt.o
 
 vile-crypt$x : $(srcdir)/crypt.c
 	@ECHO_LD@$(CC) -DSTANDALONE $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) \
@@ -318,14 +306,11 @@ INSTALL_PERL_FILES = \
 
 INSTALL_FILES = \
 	$(bindir)/$(TARGET) \
-	$(bindir)/vile-manfilt$x \
-	$(bindir)/vile-c-filt$x \
-	$(bindir)/vile-pas-filt$x \
 	$(bindir)/vile-crypt$x \
 	$(mandir)/$(TARGET).$(manext) \
 	$(datadir)/vile.hlp @EXTRA_INSTALL_FILES@
 
-install: $(INSTALL_DIRS) \
+install :: $(INSTALL_DIRS) \
 	$(INSTALL_FILES)
 	@echo 'Completed installation.'
 
@@ -350,14 +335,14 @@ makefile: makefile.in
 config.status: configure
 	$(SHELL) ./config.status --recheck
 
-mostlyclean:
+mostlyclean ::
 	-$(RM) *.[oi] o$(TARGET) $(BUILTHDRS) $(BUILTSRCS) $(MKTBLS) \
 	    core *~ *.BAK
 
-clean: mostlyclean
+clean :: mostlyclean
 	-$(RM) $(ALL)
 
-distclean: clean
+distclean :: clean
 	-$(RM) makefile config.status config.cache config.log config.h
 
 realclean: distclean
@@ -366,9 +351,6 @@ realclean: distclean
 lint: $(BUILTHDRS)
 	$(LINT) $(CPPFLAGS) $(SRC) $(LIBS)
 	$(LINT) $(CPPFLAGS) mktbls.c
-	$(LINT) $(CPPFLAGS) c-filt.c
-	$(LINT) $(CPPFLAGS) pas-filt.c
-	$(LINT) $(CPPFLAGS) manfilt.c
 
 tags:
 	ctags $(SRC) $(HDRS)
@@ -543,6 +525,13 @@ perl.c: $(srcdir)/perl.xs $(srcdir)/ptypemap
 		-typemap ptypemap \
 		$(srcdir)/perl.xs > $@
 
+all \
+install \
+mostlyclean \
+clean \
+distclean ::
+	cd filters && $(MAKE) -k$(MAKEFLAGS) $@
+
 $(OBJ): estruct.h nemode.h edef.h neproto.h proto.h config.h
 
 api.o:		api.h
@@ -572,12 +561,7 @@ x11.o:		nefunc.h
 # dependency-rules for install/installdirs
 $(bindir)/$(TARGET):       $(TARGET)
 	$(INSTALL_PROGRAM) $(TARGET) $@
-$(bindir)/vile-manfilt$x : vile-manfilt$x
-	$(INSTALL_PROGRAM) vile-manfilt$x $@
-$(bindir)/vile-c-filt$x :  vile-c-filt$x
-	$(INSTALL_PROGRAM) vile-c-filt$x $@
-$(bindir)/vile-pas-filt$x : vile-pas-filt$x
-	$(INSTALL_PROGRAM) vile-pas-filt$x $@
+
 $(bindir)/vile-crypt$x :   vile-crypt$x
 	$(INSTALL_PROGRAM) vile-crypt$x $@
 

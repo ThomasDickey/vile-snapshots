@@ -2,7 +2,7 @@
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  * rewritten to use regular expressions, 1995 by T.Dickey (dickey@clark.net)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.72 1998/11/30 11:58:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.73 1998/12/22 10:11:15 cmorgan Exp $
  *
  */
 
@@ -71,6 +71,13 @@ char *const predefined[] = {
 #if OPT_MSDOS_PATH
 	"^%F:\\s*%L:\\s*%T",			/* "grep -n", handles */
 	                                        /* dos drive letter   */
+#endif
+#if SYS_VMS
+	"[ \t]*At line number %L in %[^;].*",	/* crude support for DEC C
+						 * compilers. Unfortunately,
+						 * these compilers place error
+						 * text on previous _lines_.
+						 */
 #endif
 #if SYS_APOLLO
 	" Line %L of \"%[^\" \t]\"",		/* C compiler */

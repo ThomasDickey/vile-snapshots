@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.200 1998/11/14 19:14:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.201 1998/12/15 03:01:34 tom Exp $
  *
  */
 
@@ -6209,6 +6209,11 @@ gui_isprint(int ch)
     if (pf != 0
      && pf->per_char != 0
      && !pf->all_chars_exist) {
+	if (ch < (int) pf->min_char_or_byte2
+	 || ch > (int) pf->max_char_or_byte2) {
+	    TRACE(("MissingChar %c\n", ch))
+	    return FALSE;
+	}
 	if (pf->min_byte1 == 0
 	 && pf->max_byte1 == 0) {
 	    pc = pf->per_char + (ch - pf->min_char_or_byte2);

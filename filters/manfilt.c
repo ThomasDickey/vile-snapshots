@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/manfilt.c,v 1.22 1998/04/28 10:17:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.22 1998/04/28 10:17:23 tom Exp $
  *
  */
 

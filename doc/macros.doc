@@ -843,6 +843,31 @@ Directives
 	will restore the cursor position.
 
 
+    ~WITH and ~ENDWITH Directives
+    -----------------------------
+	Tokens following the ~WITH Directive will be prepended to succeeding
+	lines of macro until the next ~ENDWITH Directive, or the end of the
+	current macro.  This is useful for simplifying majormode directives,
+	which are repetitive.
+
+	For example, use
+
+		define-mode txt
+		~with define-submode txt
+			suf "\\.txt$"
+			comment-prefix "^\\s*/\\?--"
+			comments "^\\s*/\\?--\\s+/\\?\\s*$"
+		~endwith
+
+	rather than
+
+		define-mode txt
+		define-submode txt suf "\\.txt$"
+		define-submode txt comment-prefix "^\\s*/\\?--"
+		define-submode txt comments "^\\s*/\\?--\\s+/\\?\\s*$"
+
+
+
 Editor commands
 ---------------
 	The "show-commands" command lists _all_ available editor commands.
@@ -1079,5 +1104,5 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.9 1998/11/14 13:45:24 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.10 1998/12/15 02:56:24 tom Exp $
 -----------------------------------

@@ -26,8 +26,8 @@ Installing the precompiled binaries
 Installing after a build
 ------------------------
 1) build the editor using the hints/information supplied below.
-2) copy all resultant executables and the file vile.hlp to a directory
-   in your PATH.
+2) copy all resultant executables (except mktbls.exe) and the file vile.hlp
+   to a directory in your PATH.
 
 Creating a startup file
 -----------------------
@@ -231,5 +231,5 @@ tom dickey, dickey@clark.net
 paul fox, pgf@foxharp.boston.ma.us (home)
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.18 1998/11/05 00:42:52 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.19 1998/12/21 10:47:19 cmorgan Exp $
 ------------------------

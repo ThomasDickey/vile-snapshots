@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_2h
+MANIFEST for vile, version v8_2i
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -11,6 +11,7 @@ COPYING                         GPL copyright (for 'configure')
 INSTALL                         installation instructions for VILE
 README                          overview of VILE (read first)
 README.PC                       instructions for PC's (MS-DOS, etc.)
+README.VMS                      instructions for VAX's (OpenVMS)
 aclocal.m4                      VILE-specific autoconf macros
 ansi.c                          ANSI terminal driver
 api.c                           nvi-like api to perl and tcl
@@ -22,8 +23,6 @@ btree.c                         balanced-binary (AVL) tree functions
 btree.h                         interface of btree.c
 buffer.c                        buffer-management
 buglist                         bug-list
-c-filt.c                        VILE attribute-filter for C files
-c-filt.flx                      FLEX filter for C programs
 chgdfunc.h                      prototypes for mode-functions with side-effects
 cmdtbl                          used by 'mktbls' to generate VILE's command-tables
 config.emx                      configure-ifdefs for EMX (OS/2)
@@ -67,7 +66,6 @@ makefile.in                     used by 'configure' to generate a makefile
 makefile.tbc                    makefile for TurboC (MS-DOS)
 makefile.wat                    makefile for Watcom (MS-DOS) with wmake
 makefile.wnt                    makefile for Win32 with Microsoft Visual C++
-manfilt.c                       VILE attribute-filter for man-page (nroff-output)
 map.c                           map and map! commands
 menu.c                          menu-support for xvile
 mkdirs.sh                       script to make directory-hierarchy
@@ -84,7 +82,6 @@ opers.c                         operator-commands (that use motions)
 os2keys.h                       function-key definitions for OS/2
 os2pipe.c                       OS/2 pipe support
 os2vio.c                        OS/2 video terminal driver
-pas-filt.c                      Pascal syntax-highlighting filter
 patchlev.h                      patch-level
 path.c                          functions that manipulate pathnames
 perl.xs                         Perl/C interface wrapper
@@ -94,6 +91,7 @@ ptypemap                        perl-interface type map
 random.c                        miscellaneous functions
 regexp.c                        regular expression functions
 region.c                        region-manipulation
+revlist                         revision-list for VILE
 search.c                        functions for search-commands
 select.c                        selection-handling functions
 sinstall.sh                     wrapper for installing perl-scripts
@@ -134,6 +132,7 @@ doc                             subdirectory
 doc/Vileserv.doc                overview of Vileserv and vileget scripts
 doc/config.doc                  configuration-instructions for VILE
 doc/dir.doc                     description of perl directory-browser
+doc/filters.doc                 overview of syntax filter programs
 doc/hilite.doc                  readme for hilite.pl and syntax.pl
 doc/macros.doc                  documentation for VILE macros
 doc/menus.doc                   description of xvile (Xm and Xaw) menus
@@ -142,6 +141,35 @@ doc/oleauto.doc                 document Winvile OLE
 doc/perl.doc                    notes about perl interface to vile
 doc/visvile.doc                 document visvile.dll
 doc/w32modes.doc                describe win32-specific modes
+filters                         subdirectory
+filters/c-filt.c                c filter
+filters/c-filt.flx              original flex-based c-filter
+filters/c.key                   keywords for C
+filters/cwebfilt.l              cwebx syntax filter for vile
+filters/filters.c               common utilities for filtering
+filters/filters.h               interface/definitions for filtering utilities
+filters/filters.rc              sample majormodes, and corresponding filters
+filters/html.key                keywords for vile-html-filt
+filters/htmlfilt.l              HTML syntax filter for vile
+filters/latexflt.l              LaTeX syntax filter for vile
+filters/lex-filt.l              lex syntax filter for vile
+filters/lex.key                 keywords for lex + c
+filters/make.key                keywords for makefile syntax highlighter
+filters/makefile.djg            makefile for DJGPP (vile-utilities)
+filters/makefile.emx            makefile for OS/2 EMX (vile utilities)
+filters/makefile.icc            makefile for OS/2 IBM CSet (vile utilities)
+filters/makefile.in             makefile for vile filters
+filters/makefile.wnt            makefile for filters with Visual C++
+filters/makefilt.l              makefile syntax filter for vile
+filters/manfilt.c               manpage-filter
+filters/pas-filt.c              Pascal syntax filter for vile
+filters/pas.key                 keywords for pascal highlighting filter
+filters/perl.key                keywords for perl syntax filter
+filters/perlfilt.l              Perl syntax filter for vile
+filters/sh-filt.l               a sh/ksh/csh syntax filter for vile
+filters/sh.key                  keywords for "sh" syntax filter
+filters/vile.key                fallback template for highlighting colors
+filters/vilefilt.l              syntax filter for vile macros
 icons                           subdirectory
 icons/pumpkin.ico               V-eyes pumpkin icon
 icons/sink.ico                  kitchen-sink icon (J.R.Sladkey)

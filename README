@@ -31,8 +31,8 @@ want PC support?  look for precompiled binaries at the various ftp sites.
 
 want to build vile on a PC host?  refer to the file README.PC .
 
-want VMS support?  you'll need to build vile yourself.  use either
-decrip.mms or vmsbuild.com .
+want VMS support?  you'll need to build vile yourself. refer to the
+file README.VMS .
 
 if you like vile, and wish to be informed of new releases, let me
 know -- i maintain a mailing list for that purpose.  don't worry -- the
@@ -343,5 +343,5 @@ Oct, 1998
 
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.69 1998/10/30 02:54:37 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.70 1998/12/21 10:47:19 cmorgan Exp $
 -------------------------------

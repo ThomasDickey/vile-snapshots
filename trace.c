@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.9 1998/12/14 11:53:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.10 1998/12/17 02:33:51 tom Exp $
  *
  */
 #include "estruct.h"
@@ -41,6 +41,7 @@ Trace(const char *fmt, ...)
 	static	FILE	*fp;
 	va_list ap;
 
+	beginDisplay();
 	if (!fp)
 		fp = fopen("Trace.out", "w");
 	if (!fp)
@@ -56,6 +57,7 @@ Trace(const char *fmt, ...)
 		(void)fflush(stdout);
 		(void)fflush(stderr);
 	}
+	endofDisplay();
 }
 
 char *
@@ -65,6 +67,7 @@ visible_buff(const char *buffer, int length)
 	int j;
 	unsigned k = 0;
 
+	beginDisplay();
 	if (length <= 0)
 		length = 1;
 	if (buffer == 0)
@@ -89,6 +92,7 @@ visible_buff(const char *buffer, int length)
 		}
 	}
 	result[k] = 0;
+	endofDisplay();
 	return result;
 }
 

@@ -1,0 +1,212 @@
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.17 1998/12/22 03:39:09 tom Exp $
+#
+
+#### Start of system configuration section. ####
+
+srcdir		= @srcdir@
+VPATH		= @srcdir@
+
+CC		= @CC@
+CPP		= @CPP@
+LINK		= @LINK_PREFIX@ $(CC) $(CFLAGS)
+INSTALL		= @INSTALL@
+INSTALL_PROGRAM	= @INSTALL_PROGRAM@
+INSTALL_DATA	= @INSTALL_DATA@
+
+EXTRA_CFLAGS	= @EXTRA_CFLAGS@
+CFLAGS		= @CFLAGS@ $(EXTRA_CFLAGS)
+LIBS		= @LIBS@
+LINT		= @LINT@
+
+LEX		= @LEX@
+LEXLIB		= @LEXLIB@
+LEX_OUTPUT_ROOT	= @LEX_OUTPUT_ROOT@
+
+x		= @PROG_EXT@
+
+SCREEN		= @SCREEN@
+TARGET		= @TARGET@$x
+
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+
+manext		= 1
+bindir		= @bindir@
+datadir		= @datadir@/vile
+mandir		= @mandir@/man$(manext)
+
+#### End of system configuration section. ####
+
+SHELL		= /bin/sh
+RM              = rm -f
+
+QUOTDEFS	= -DVILE_STARTUP_PATH=\"@VILE_STARTUP_PATH@\"
+CPPFLAGS	= -I. -I.. -I$(srcdir) -DHAVE_CONFIG_H @CPPFLAGS@
+
+LDFLAGS		= @IMAKE_LOADFLAGS@
+
+INSTALL_DIRS    = $(bindir) $(datadir)
+
+.SUFFIXES: .l .c .i .o
+
+.l.o:
+@RULE_CC@
+	@ECHO_CC@$(LEX) $<
+	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(CFLAGS) $(LEX_OUTPUT_ROOT).c
+	@mv $(LEX_OUTPUT_ROOT).o $@
+	- @$(RM) $(LEX_OUTPUT_ROOT).c
+.c.i:
+@RULE_CC@
+	@ECHO_CC@$(CPP) -C $(CPPFLAGS) $(QUOTDEFS) $< >$@
+.c.o:
+@RULE_CC@
+	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(QUOTDEFS) $(CFLAGS) $<
+
+LF_DEPS = filters.o
+LF_ARGS = filters.o $(LEXLIB)
+
+CF_DEPS = filters.o
+CF_ARGS = filters.o
+
+ALL = \
+	vile-c-filt$x \
+	vile-cweb-filt$x \
+	vile-html-filt$x \
+	vile-latex-filt$x \
+	vile-lex-filt$x \
+	vile-make-filt$x \
+	vile-manfilt$x \
+	vile-pas-filt$x \
+	vile-perl-filt$x \
+	vile-sh-filt$x \
+	vile-vile-filt$x
+
+all:	$(ALL)
+
+vile-manfilt$x : manfilt.o
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ manfilt.o
+
+vile-c-filt$x : c-filt.o $(CF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ c-filt.o $(CF_ARGS)
+
+vile-cweb-filt$x : cwebfilt.o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ cwebfilt.o $(LF_ARGS)
+
+vile-html-filt$x : htmlfilt.o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ htmlfilt.o $(LF_ARGS)
+
+vile-latex-filt$x : latexflt.o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ latexflt.o $(LF_ARGS)
+
+vile-lex-filt$x : lex-filt.o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ lex-filt.o $(LF_ARGS)
+
+vile-make-filt$x : makefilt.o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ makefilt.o $(LF_ARGS)
+
+vile-pas-filt$x : pas-filt.o $(CF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ pas-filt.o $(CF_ARGS)
+
+vile-perl-filt$x : perlfilt.o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ perlfilt.o $(LF_ARGS)
+
+vile-sh-filt$x : sh-filt.o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ sh-filt.o $(LF_ARGS)
+
+vile-vile-filt$x : vilefilt.o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ vilefilt.o $(LF_ARGS)
+
+check: $(TARGET)
+	@echo Sorry, no batch tests available.
+
+INSTALL_FILES = \
+	$(bindir)/vile-c-filt$x \
+	$(bindir)/vile-html-filt$x \
+	$(bindir)/vile-lex-filt$x \
+	$(bindir)/vile-make-filt$x \
+	$(bindir)/vile-manfilt$x \
+	$(bindir)/vile-pas-filt$x \
+	$(bindir)/vile-perl-filt$x \
+	$(bindir)/vile-sh-filt$x \
+	$(bindir)/vile-vile-filt$x \
+	$(datadir)/c.keywords \
+	$(datadir)/filters.rc \
+	$(datadir)/html.keywords \
+	$(datadir)/lex.keywords \
+	$(datadir)/make.keywords \
+	$(datadir)/pas.keywords \
+	$(datadir)/perl.keywords \
+	$(datadir)/sh.keywords \
+	$(datadir)/vile.keywords
+
+install: $(INSTALL_DIRS) \
+	$(INSTALL_FILES)
+	@echo 'Completed installation.'
+
+installdirs: $(INSTALL_DIRS)
+
+uninstall:
+	-$(RM) $(INSTALL_FILES)
+
+# defining this target, though technically (i think) correct, causes
+#  the make to fail on machines which don't have autoconf, i.e. most of them.
+#configure: configure.in aclocal.m4
+#	autoconf
+
+config.status: configure
+	$(SHELL) ./config.status --recheck
+
+mostlyclean:
+	-$(RM) *.[oi] o$(TARGET) $(BUILTSRCS) core *~ *.BAK $(LEX_OUTPUT_ROOT).*
+
+clean: mostlyclean
+	-$(RM) $(ALL)
+
+distclean: clean
+	-$(RM) makefile config.status config.cache config.log config.h
+
+realclean: distclean
+	-$(RM) tags TAGS
+
+lint:
+	$(LINT) $(CPPFLAGS) c-filt.c
+	$(LINT) $(CPPFLAGS) pas-filt.c
+	$(LINT) $(CPPFLAGS) manfilt.c
+
+tags:
+	ctags *.[chyl]
+
+TAGS:
+	etags *.[chyl]
+
+dotags:
+	dotags *.[chyl]
+
+# dependency-rules for install/installdirs
+$(bindir)/vile-c-filt$x :	vile-c-filt$x		; $(INSTALL_PROGRAM) vile-c-filt$x $@
+$(bindir)/vile-html-filt$x :	vile-html-filt$x	; $(INSTALL_PROGRAM) vile-html-filt$x $@
+$(bindir)/vile-lex-filt$x :	vile-lex-filt$x		; $(INSTALL_PROGRAM) vile-lex-filt$x $@
+$(bindir)/vile-make-filt$x :	vile-make-filt$x	; $(INSTALL_PROGRAM) vile-make-filt$x $@
+$(bindir)/vile-manfilt$x :	vile-manfilt$x		; $(INSTALL_PROGRAM) vile-manfilt$x $@
+$(bindir)/vile-pas-filt$x :	vile-pas-filt$x		; $(INSTALL_PROGRAM) vile-pas-filt$x $@
+$(bindir)/vile-perl-filt$x :	vile-perl-filt$x	; $(INSTALL_PROGRAM) vile-perl-filt$x $@
+$(bindir)/vile-sh-filt$x :	vile-sh-filt$x		; $(INSTALL_PROGRAM) vile-sh-filt$x $@
+$(bindir)/vile-vile-filt$x :	vile-vile-filt$x	; $(INSTALL_PROGRAM) vile-vile-filt$x $@
+
+$(datadir)/filters.rc :		filters.rc		; $(INSTALL_DATA) filters.rc $@
+
+# Install one of these for each filter program
+$(datadir)/c.keywords :		c.key			; $(INSTALL_DATA) c.key $@
+$(datadir)/html.keywords :	html.key		; $(INSTALL_DATA) html.key $@
+$(datadir)/lex.keywords :	lex.key			; $(INSTALL_DATA) lex.key $@
+$(datadir)/make.keywords :	make.key		; $(INSTALL_DATA) make.key $@
+$(datadir)/pas.keywords :	pas.key			; $(INSTALL_DATA) pas.key $@
+$(datadir)/perl.keywords :	perl.key		; $(INSTALL_DATA) perl.key $@
+$(datadir)/sh.keywords :	sh.key			; $(INSTALL_DATA) sh.key $@
+$(datadir)/vile.keywords :	vile.key		; $(INSTALL_DATA) vile.key $@
+
+$(INSTALL_DIRS):
+	$(SHELL) ${srcdir}/mkdirs.sh $@
+
+ALWAYS:
+
