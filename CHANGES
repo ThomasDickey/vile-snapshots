@@ -1,4 +1,4 @@
-Changes for vile 7.2 (released ??? ??? ??, 1997)
+Changes for vile 7.2 (released Thu Sep 4, 1997)
 
 (tom)	970903 (k)
 	+ modify rename-buffer so that if we rename a buffer, we'll clear the
