@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.233 2001/03/04 01:25:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.234 2001/03/23 01:22:11 tom Exp $
  *
  */
 
@@ -1425,7 +1425,7 @@ read_quoted(int count, int inscreen)
 		kbd_flush();
 	}
 
-	if (c > 0) {
+	if (c >= 0) {
 		if (i == 0)	/* Did we start a number? */
 			return c;
 		else if (i < digs) /* any other character will be pushed back */

@@ -364,7 +364,7 @@ State Variables
 			typed '#' at a prompt.  (E.g. ":e #")
 
 	$autocolor-hook	name of the hook to run when attempting to do
-			automatic syntax coloring
+			automatic syntax coloring.
 
 	$bchars         [READ ONLY] Number of characters in current buffer.
 
@@ -380,7 +380,7 @@ State Variables
 	$blines         [READ ONLY] Number of lines in current buffer.
 
 	$brightness	RGB levels for gray, normal, bright in the 0-255 range
-			(winvile version only)
+			(winvile version only).
 
 	$buffer-hook    Name of procedure to run when switching to a buffer.
 
@@ -486,6 +486,15 @@ State Variables
 
 	$filter-list	[READ ONLY] list of builtin-filters.
 
+	$findpath	editor's copy of the $VILE_FINDPATH environment var
+			(read/write).  Available on win32 and unix hosts. 
+			For more details, refer to that section of the help
+			file entitled "Working in a project hierarchy".
+
+	$find-cmd	[READ ONLY] last shell command spawned via the
+			capture command's builtin "find" interface. 
+			Available on win32 and unix hosts.
+
 	$font           Name of the current font (in xvile/winvile only).
 
 	$forward-search Boolean value indicating search direction.
@@ -521,6 +530,9 @@ State Variables
 			of the current line.
 
 	$majormode      [READ ONLY] Current majormode, if any.
+
+	$majormode-hook	name of the hook to run when attempting to determine
+			the majormode for the current buffer.
 
 	$match          [READ ONLY] After a successful search, contains
 			the text that matched the search pattern.
@@ -1367,6 +1379,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.69 2001/03/04 23:18:25 cmorgan Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.71 2001/03/23 00:54:59 cmorgan Exp $
 -----------------------------------
 

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.469 2001/03/04 20:09:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.471 2001/03/23 00:54:58 cmorgan Exp $
  */
 
 #ifndef _estruct_h
@@ -411,6 +411,22 @@
 # define OPT_ICURSOR    0
 #endif
 
+/*
+ * The $findpath statevar and find-cfg mode features require:
+ *
+ * - access to an OS that can handle potentially long command lines,
+ *   in some cases transmitted via a pipe.
+ *
+ * - access to the unix find, xargs, and egrep commands.
+ *
+ * These restrictions make a port to DOS or VMS problematic.
+ */
+#if (SYS_WINNT || SYS_UNIX) && defined(OPT_SHELL)
+# define OPT_FINDPATH   1
+#else
+# define OPT_FINDPATH   0
+#endif
+
 #ifndef OPT_EXEC_MACROS		/* total numbered macros (see mktbls.c) */
 #if SMALLER
 #define OPT_EXEC_MACROS 10
@@ -546,6 +562,7 @@
 #define OPT_DIRECTIVE_CHOICES    !SMALLER
 #define OPT_HILITE_CHOICES	 (OPT_ENUM_MODES && OPT_HILITEMATCH)
 #define OPT_LOOKUP_CHOICES       !SMALLER
+#define OPT_MMQUALIFIERS_CHOICES OPT_MAJORMODE
 #define OPT_PARAMTYPES_CHOICES   OPT_MACRO_ARGS
 #define OPT_PATH_CHOICES         !SMALLER
 #define OPT_POPUP_CHOICES	 (OPT_ENUM_MODES && OPT_POPUPCHOICE)
@@ -932,6 +949,11 @@ typedef	enum {
 	, D_TRACE
 #endif
 } DIRECTIVE;
+
+typedef enum {
+	MMQ_ANY = 0
+	, MMQ_ALL
+} MMQ_CHOICES;
 
 typedef enum {
 	PATH_UNKNOWN = ENUM_UNKNOWN

@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.281 2001/03/03 17:55:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.282 2001/03/22 20:54:25 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -138,6 +138,7 @@ decl_uninit( HOOK writehook );		/* proc to run when write file */
 decl_uninit( HOOK bufhook );		/* proc to run when change buf */
 decl_uninit( HOOK exithook );		/* proc to run when exiting */
 decl_uninit( HOOK autocolorhook );	/* proc to run for autocoloring */
+decl_uninit( HOOK majormodehook );	/* proc to run for majormodes */
 #endif
 
 decl_uninit( int ignorecase );

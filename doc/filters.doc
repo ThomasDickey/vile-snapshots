@@ -129,6 +129,10 @@ reset the default back to "Keyword".
 You can change the characters assigned to ':' and '.' using ".equals" and
 ".meta" directives, respectively.
 
+Some of the filters match case-independent keywords (e.g., the DOS batchfiles). 
+The keywords file must give these names in lowercase, since the filtered text
+is converted to lowercase when matching.
+
 You can modify the behavior slightly, by giving an absolute pathname with the
 -k option, but otherwise the filters search for both "vile" and the specific
 language keywords, if any.
@@ -141,12 +145,15 @@ The following are implemented:
 
 	vile-ada-filt	(Ada95)
 	vile-awk-filt	(awk)
+	vile-basic-filt	(BASIC)
 	vile-bat-filt	(DOS batchfiles)
 	vile-c-filt	(C language)
 	vile-cfg-filt	(Lynx configure file)
 	vile-cweb-filt	(CWEBx)
 	vile-dcl-filt	(VMS DCL batchfiles)
+	vile-def-filt	(Windows linker definition files)
 	vile-diff-filt	(diff/patch files)
+	vile-ecl-filt	(Prolog/ECLiPSe)
 	vile-esql-filt	(embedded SQL with C/C++)
 	vile-html-filt	(HTML with embedded JavaScript)
 	vile-imake-filt	(imake)
@@ -163,6 +170,7 @@ The following are implemented:
 	vile-perl-filt	(Perl, in C)
 	vile-pl-filt	(Perl, in lex)
 	vile-py-filt	(Python)
+	vile-rc-filt	(Windows resource files)
 	vile-rcs-filt	(RCS archives)
 	vile-rexx-filt	(REXX)
 	vile-sccs-filt	(SCCS archives)
@@ -178,6 +186,7 @@ The following are implemented:
 	vile-ti-filt	(terminfo)
 	vile-txt-filt	(plain text files, such as vile.hlp)
 	vile-vile-filt	(Vile's macros)
+	vile-vlog-filt	(Verilog)
 	vile-xres-filt	(X Window resources)
 	vile-xs-filt	(Perl extension)
 	vile-yacc-filt	(yacc)
@@ -199,4 +208,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.21 2000/10/11 00:19:44 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.24 2001/03/21 12:43:50 tom Exp $

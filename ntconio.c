@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.64 2001/02/18 00:48:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.65 2001/03/23 00:41:27 cmorgan Exp $
  *
  */
 
@@ -1314,7 +1314,7 @@ chgd_icursor(VALARGS * args, int glob_vals, int testing)
 	char *val = args->global->vp->p;
 
 	if (!parse_icursor_string(val, &revert_cursor)) {
-	    mlforce("invalid icursor syntax");
+	    mlforce("[invalid icursor syntax]");
 	    return (FALSE);
 	}
 	if (!revert_cursor) {

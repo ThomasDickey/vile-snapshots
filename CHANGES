@@ -1,11 +1,59 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20010322 (j)
+	> Clark Morgan:
+	+ added $findpath and $find-cmd state variables.
+	+ on win32 and unix hosts, modified capturecmd (aka ^X-!) to support
+	  find operations that span directory tree(s).   This feature is enabled
+	  via a find-cfg mode.
+	+ added a section to the help file entitled:
+	    Working in a project hierarchy
+	  which describes several features that enable quick access to many
+	  files spread over a directory hierarchy.  Features discussed include:
+	  - Directory navigation (the pushd, popd, et. al. commands).
+	  - Hierarchical tags
+	  - File/Directory traversal (win32/Unix hosts only)
+		+ w32ole.cpp compiler warning fix.
+		+ put ntwinio/ntconio msg strings in proper format.
+		+ eliminate a couple of atoi() calls in random.c
+	> Kevin Buettner:
+	+ workaround for a Perl 5.005 bug in perl_prompt().
+	+ several changes to shell.pm:
+	  + some documentation updates
+	  + bug fixes
+	  + a new command called "xterm".  which starts a shell in one of
+	    vile's buffers just as "start-shell" already does, but also
+	    starts an xterm through which one may (also) interact with the
+	    shell.  The shell output (and echoed input) is displayed in both
+	    the xterm and a vile buffer.
+	> Paul Fox:
+	+ fix a typo in vile.hlp's example using bind-key for a space (report
+	  by Clark Morgan).
+	> Tom Dickey:
+	+ change an inequality in read_quoted() which had the effect of
+	  changing a null (^@) entered after ^V to a -1, preventing user from
+	  inserting a null character (reported by Clark Morgan).
+	+ correct a loop condition in put_majormode_after(), which caused a
+	  core dump when an "after" qualifier referred to a majormode which was
+	  not defined.
+	+ add $majormode-hook, which can override the suffix/preamble rules
+	  for choosing a majormode for the current buffer.  If the associated
+	  script sets the majormode, the other rules are not run.
+	+ implement new majormode submode "qualifiers", which can be set to
+	  "all" to specify that both suffix and preamble must match.  This is
+	  used to keep rcmode and vilemode from conflicting.
+	+ add null-pointer checks to choice_to_code() and choice_to_name(),
+	  guarding against unimplemented enum-tables.
+	+ add syntax filters for Windows ".def" and ".rc" files.
+	+ add Visual Basic majormode (vbmode).
+	+ add syntax filter for BASIC, and majormode basicmode.
+
  20010304 (i)
 	> Clark Morgan:
 	+ elaborated on "apropos" and "describe-key" in macros.doc
 	> Paul Fox:
 	+ extended check-modtimes mode, necessitated by an interaction between
-	  the new unique-buffers mode and check-modtimes.  The problem is this: 
+	  the new unique-buffers mode and check-modtimes.  The problem is this:
 	  my current project lives in a tree that makes copious use of
 	  symlinks.  This means that the name by which I edit a file may not
 	  match the name by which "make" refers to the file when it reports an

@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.282 2001/03/05 00:14:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.283 2001/03/21 15:50:40 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1082,8 +1082,7 @@ int	mflg)		/* print messages? */
 	/*
 	 * Set the majormode if the file's suffix matches.
 	 */
-	setm_by_suffix(bp);
-	setm_by_preamble(bp);
+	infer_majormode(bp);
 
 	for_each_window(wp) {
 		if (wp->w_bufp == bp) {

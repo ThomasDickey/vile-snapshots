@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.105 2001/02/24 18:38:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.106 2001/03/23 00:41:27 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -3639,7 +3639,7 @@ chgd_icursor(VALARGS * args, int glob_vals, int testing)
 	char *val = args->global->vp->p;
 
 	if (!parse_icursor_string(val)) {
-	    mlforce("invalid icursor syntax");
+	    mlforce("[invalid icursor syntax]");
 	    rc = FALSE;
 	} else {
 	    if (caret_visible) {

@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.110 2001/02/24 17:20:10 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.111 2001/03/21 13:49:24 tom Exp $
  *
  */
 
@@ -399,7 +399,7 @@ PadTo(int col, char *buffer)
 				break;
 			else
 				with = ' ';
-		} else if (col-now > 1)
+		} else if (col-now > 2)
 			with = '\t';
 		else
 			with = ' ';
@@ -759,7 +759,7 @@ const char *ppref)
 
 	for (; p != 0; p = p->nst, count++) {
 		(void)Parse(strcpy(line, p->Name), vec);
-		Sprintf(temp, "#define %.1s%s%s ",
+		Sprintf(temp, "#define %.1s%s%s",
 			(*ppref == 'B') ? "" : ppref,
 			(*vec[2] == 'b') ? "MD" : "VAL_",
 			p->Func);

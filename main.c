@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.448 2001/03/04 20:42:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.450 2001/03/23 00:54:58 cmorgan Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -619,8 +619,7 @@ MainProgram(int argc, char *argv[])
 			 * highlighting.
 			 */
 			VALARGS args;
-			setm_by_suffix(curbp);
-			setm_by_preamble(curbp);
+			infer_majormode(curbp);
 			if (find_mode(curbp, "vilemode", FALSE, &args) == TRUE)
 				run_readhook();
 #else
@@ -983,6 +982,9 @@ global_val_init(void)
 #endif
 #if OPT_SHELL
 	set_global_g_val(GMDCD_ON_OPEN,	cd_on_open);
+#endif
+#if OPT_FINDPATH
+	set_global_g_val_ptr(GVAL_FINDCFG, strmalloc(""));
 #endif
 #ifdef GMDW32PIPES
 	set_global_g_val(GMDW32PIPES,	is_winnt()); /* use native pipes? */

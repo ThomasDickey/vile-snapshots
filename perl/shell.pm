@@ -4,12 +4,14 @@ use IO::Pty;
 require POSIX;
 use Vile::Manual;
 require Vile::Exporter;
+use Fcntl;
 
 @ISA = 'Vile::Exporter';
 %REGISTRY = (
     'start-shell'  => [ \&shell, 'start an interactive shell' ],
+    'xterm'        => [ \&xterm, 'start an interactive shell in an xterm' ],
     'resume-shell' => [ \&resume_shell, 'resume interactive shell' ],
-    'shell-help' => [ sub {&manual}, 'manual page for shell.pm' ],
+    'shell-help'   => [ sub {&manual}, 'manual page for shell.pm' ],
 );
 
 my %shells = ();
@@ -241,6 +243,11 @@ sub terminal_emulation {
 	    $te_state->{PUTBACK} = $buf;
 	    $buf = '';
 	}
+	elsif ($buf =~ /^\0+(.*)$/s) {
+	    # Null characters; these are for timing purposes.
+	    # Just ignore them.
+	    $buf = $1;
+	}
 	else {
 	    # Unhandled control character(s)... Just print them out.
 	    # (And when they annoy you enough, add a case to handle
@@ -362,7 +369,7 @@ sub erase_display {
 	# Erase from cursor to end of screen
 	$b->set_region(@{$dotp}, $dotp->[0], '$$')->delete;
 	my $i;
-	for ($i = $dotp->[0]+1; $i <= $linenum; $i++) {
+	for ($i = $dotp->[0]+1; $i <= $endlinenum; $i++) {
 	    $b->set_region($i, 0, $i, '$$')->delete;
 	}
     }
@@ -578,11 +585,23 @@ do 'sys/ioctl.ph';
 sub check_size {
     return unless defined &TIOCSWINSZ;
 
-    my ($w, $te_state, $pty) = @_;
-    my ($height, $width) = $w->size;
+    my ($w, $te_state, $shell_pty, $xterm_tty) = @_;
+    my ($height, $width);
+
+    if (defined $xterm_tty) {
+	my $winsz = '\0' x 8;
+	ioctl($xterm_tty, &TIOCGWINSZ, $winsz);
+	($height, $width) = unpack 'S4', $winsz;
+	$height = 24 			if $height <= 0;
+	$width  = 80			if $width <= 0;
+    }
+    else {
+	($height, $width) = $w->size;
+    }
     if ($height != $te_state->{HEIGHT} or $width != $te_state->{WIDTH}) {
 	$sizeparam = pack 'S4', $height, $width, 0, 0;
-	if (ioctl($pty, &TIOCSWINSZ, $sizeparam) == 0) {
+	if (ioctl($shell_pty, &TIOCSWINSZ, $sizeparam) == 0) {
+	    #print TTY "After TIOCSWINSZ call: $height, $width\n";
 	    $te_state->{WIDTH} = $width;
 	    $te_state->{HEIGHT} = $height;
 	    # Just reset the scrolling region to be the entire display.
@@ -660,7 +679,7 @@ sub char_name {
 # and the pid of the shell if successful.  If it's unsuccessful, the die
 # message will tell you why.
 sub start_shell {
-    my ($shell) = @_;
+    my ($shell, $termtype) = @_;
     $shell = $ENV{SHELL} 		unless defined $shell;
     $shell = '/bin/sh' 			unless defined $shell;
 
@@ -672,6 +691,7 @@ sub start_shell {
     if ($pid == 0) {
 	POSIX::setsid();
 	my $tty	= $pty->slave;
+	ioctl($tty, &TIOCSCTTY, 0)	if defined(&TIOCSCTTY);
 	untie *STDIN;
 	untie *STDOUT;
 	untie *STDERR;
@@ -681,35 +701,98 @@ sub start_shell {
 	system("stty sane");
 	close $pty;
 	close $tty;
-	$ENV{TERM} = 'vt100';
+	$ENV{TERM} = $termtype;
 	exec $shell;
     }
     return ($pty, $pid);
+}
+
+sub start_xterm {
+    my ($shell_pid) = @_;
+
+    my $pty = new IO::Pty;
+
+    unless ($pty) {
+	die "Couldn't start xterm: can't open a pty.";
+	return undef;
+    }
+
+    my $pid = fork;
+    if ($pid < 0) {
+	die "Couldn't start xterm: $!";
+	return undef;
+    }
+
+    my $ttyname   = $pty->ttyname;
+    if ($pid) {
+	# Parent
+	my $tty = $pty->slave;		# Open the tty-end
+	system("stty raw -echo -icrnl <$ttyname");
+	$tty->autoflush(1);
+	return ($tty, $pid);
+    }
+    else {
+	# Child
+	my $fileno = fileno($pty);
+	my ($twochars) = $ttyname =~ /(..)$/;
+
+	fcntl($pty, F_SETFD, 0);
+
+	# Pass the final two characters from the slave's ttyname
+	# in addition to file descriptor number for the master.
+	# Unfortunately, it does not work to call the TIOCSPGRP
+	# ioctl from the parent (on the tty end of things) because
+	# the parent process already has a controlling terminal.
+	# (This would be desirable in order to receive SIGWINCH
+	# signals in order to learn that the xterm had been
+	# resized.)
+
+	exec "xterm", "-S${twochars}$fileno",
+	              "-title", "xvile shell-$shell_pid";
+    }
+}
+
+# Start a shell w/ a slave xterm
+sub xterm {
+    my ($command) = @_;
+    shell($command, start_xterm => 1);
 }
 
 # Start a shell and put it in it's own window if possible.  Invoked by
 # user command
 sub shell
 {
-    my ($command) = @_;
+    my ($command, %opts) = @_;
     # Uncomment for debugging (uncomment hexdump line below too)
-    #open TTY, ">/dev/tty";
+    open TTY, ">/dev/tty";
 
     # Start a new shell
-    my ($pty, $pid ) = start_shell($command);
-    die "shell: start_shell failed" 		unless defined $pty;
+    my ($shell_pty, $shell_pid )
+	= start_shell($command, $opts{start_xterm} ? "xterm" : "vt100");
+    die "shell: start_shell failed" 		unless defined $shell_pty;
+
+    # Start an xterm
+    my ($xterm_tty, $xterm_pid);
+    if ($opts{start_xterm}) {
+	($xterm_tty, $xterm_pid) = start_xterm($shell_pid);
+	die "shell: start_xterm failed"		unless defined $xterm_tty;
+    }
 
     # Create a buffer to display the shell in
     my $b = new Vile::Buffer;
     die "shell: Couldn't create buffer"		unless defined $b;
-    $b->buffername("shell-$pid");
+    $b->buffername("shell-$shell_pid");
 
     # Create a unique name for the buffer and stow away info that we
     # may need later on  (e.g, for resuming the shell)
     my $bufid = &buffer_name_internal($b);
-    $shells{$bufid}{PTY_HANDLE} = $pty;
-    $shells{$bufid}{PID}        = $pid;
+    $shells{$bufid}{PTY_HANDLE} = $shell_pty;
+    $shells{$bufid}{PID}        = $shell_pid;
     $shells{$bufid}{BUF_HANDLE} = $b;
+    if (defined $xterm_tty) {
+	$shells{$bufid}{XTERM_HANDLE} = $xterm_tty;
+	$shells{$bufid}{XTERM_PID}  = $xterm_pid;
+    }
 
     # Set some buffer attributes
     $b->set(tabstop => 8, tabinsert => 0);
@@ -737,11 +820,40 @@ sub shell
     # Create the initial state for the terminal emulator
     my $te_state = initial_te_state();
 
+    if (defined $xterm_tty) {
+	Vile::watchfd(
+	    fileno($xterm_tty),
+	    'read',
+	    sub {
+		my $buf = ' ' x 4096;
+
+		# Fetch data from input stream
+		if (!sysread $xterm_tty, $buf, 4096) {
+		    Vile::unwatchfd(fileno($xterm_tty));
+		    close $xterm_tty;
+		    waitpid $xterm_pid, 0;
+		    return;
+		}
+
+		if (!defined($shells{$bufid}{XTERM_ID})) {
+		    my ($id, $rest) = $buf =~ /^([\dA-Fa-f]+)\n?(.*)/;
+		    $shells{$bufid}{XTERM_ID} = $id;
+		    $buf = $rest;
+		    check_size($w, $te_state, $shell_pty, $xterm_tty);
+		    return		if $buf eq '';
+		}
+
+		print $shell_pty $buf;
+
+	    }
+	);
+    }
+
     # Have vile watch for shell output while waiting for user input;
     # when shell output is available (and when not otherwise busy), vile
     # will call the anonymous subroutine which we pass as the third parameter
     Vile::watchfd(
-	fileno($pty),
+	fileno($shell_pty),
 	'read',
 	sub {
 	    my $buf = ' ' x 4096;
@@ -760,15 +872,23 @@ sub shell
 	    my $w = find_best_window_for_buffer($b, @mydot);
 
 	    # Fetch data from input stream
-	    if (!sysread $pty, $buf, 4096) {
-		Vile::unwatchfd(fileno($pty));
-		close $pty;
+	    if (!sysread $shell_pty, $buf, 4096) {
+		Vile::unwatchfd(fileno($shell_pty));
+		close $shell_pty;
+		if (defined $shells{$bufid}{XTERM_PID}) {
+		    kill 15, $shells{$bufid}{XTERM_PID};
+		    close $shells{$bufid}{XTERM_PTY};
+		    kill 9, $shells{$bufid}{XTERM_PID};
+		}
 		delete $shells{$bufid};
-		waitpid $pid, 0;
-		print STDOUT "Shell $pid is dead.  Press any character to resume editing.";
+		waitpid $shell_pid, 0;
+		print STDOUT "Shell $shell_pid is dead.  Press any character to resume editing.";
 		Vile::update();
 		return;
 	    }
+
+	    # Send raw buffer to xterm
+	    print $xterm_tty $buf		if defined $xterm_tty;
 
 	    $buf =~ s/\r\n/\n/gs;		# nuke ^M characters
 
@@ -805,7 +925,7 @@ sub shell
 		$b->dotq(@mydot);
 		$w->topline($topline);
 		$w->dot(@mydot);
-		check_size($w, $te_state, $pty);
+		check_size($w, $te_state, $shell_pty, $xterm_tty);
 	    }
 
 	    # Update the screen
@@ -857,7 +977,7 @@ sub shell
 			Vile::update();
 			next;
 		    }
-		    print STDOUT $quote_name, char_name($c);
+		    print STDOUT $quote_name, char_name(chr($c));
 		    Vile::update();
 		}
 		else {
@@ -871,7 +991,7 @@ sub shell
 			next;
 		    }
 		}
-		print $pty chr($c);
+		print $shell_pty chr($c);
 	    }
 
 	    if (exists $shells{$bufid}) {
@@ -955,6 +1075,47 @@ sub hexdump {
     print TTY "$hexstr\n$buffer\n";
 }
 
+END {
+    # Close handles associated with all open shells and slave xterms
+    # and attempt to kill them gracefully using SIGTERM.
+    foreach my $bufid (keys %shells) {
+	if (defined $shells{$bufid}{PTY_HANDLE}) {
+	    close $shells{$bufid}{PTY_HANDLE};
+	}
+	if (defined $shells{$bufid}{PID}) {
+	    kill 15, $shells{$bufid}{PID};	# SIGTERM
+	}
+	if (defined $shells{$bufid}{XTERM_HANDLE}) {
+	    close $shells{$bufid}{XTERM_HANDLE};
+	}
+	if (defined $shells{$bufid}{XTERM_PID}) {
+	    kill 15, $shells{$bufid}{XTERM_PID}; # SIGTERM
+	}
+    }
+
+    # See if any shells or slave are still alive; if so kill them
+    # off with SIGKILL after waiting one second.
+    my $slept = 0;
+    foreach my $bufid (keys %shells) {
+	if (defined $shells{$bufid}{PID} && kill(0, $shells{$bufid}{PID})) {
+	    if (!$slept) {
+		sleep 1;
+		$slept = 1;
+	    }
+	    kill 9, $shells{$bufid}{PID};	# SIGKILL
+	}
+	if (defined $shells{$bufid}{XTERM_PID} 
+	    && kill(0, $shells{$bufid}{XTERM_PID}))
+	{
+	    if (!$slept) {
+		sleep 1;
+		$slept = 1;
+	    }
+	    kill 9, $shells{$bufid}{XTERM_PID}; # SIGKILL
+	}
+    }
+}
+
 1;
 __DATA__
 
@@ -1032,7 +1193,7 @@ system for B<shell.pm> to work at all.
 
 You will need the IO::Pty module.  This is available from
 
-    http://www.cpan.org/modules/by-module/IO/IO-Tty-0.02.tar.gz
+    http://www.cpan.org/modules/by-module/IO/IO-Tty-0.04.tar.gz
 
 You may want to check CPAN for a more recent version prior to
 downloading this version.
@@ -1044,6 +1205,11 @@ for writing to the perl installation directories and then do:
 
     cd /usr/include
     h2ph -a -l sys/*
+
+If you are on a BSD (or BSD-like) system which requires that the
+TIOCSCTTY ioctl() be used to acquire the controlling terminal, you
+will need to follow the above instructions to make sure that
+sys/ioctl.ph is install.
 
 =head1 BUGS
 
