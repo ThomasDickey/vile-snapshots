@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.118 1997/09/05 23:40:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.119 1997/10/28 11:22:50 tom Exp $
  *
  */
 
@@ -753,6 +753,9 @@ i don't think this code is safe... */
 #    endif
 #    if CC_TURBO
 #     define    isready_c(p)	( (p)->bsize > ((p)->curp - (p)->buffer) )
+#    endif
+#    ifdef __EMX__
+#     define	isready_c(p)	( (p)->_rcount > 0)
 #    endif
 #    ifndef isready_c	/* most other stdio's (?) */
 #     define	isready_c(p)	( (p)->_cnt > 0)

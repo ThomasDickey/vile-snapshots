@@ -9,7 +9,7 @@
  * Note: Visual flashes are not yet supported.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.19 1997/05/26 11:46:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.20 1997/10/27 01:49:44 tom Exp $
  *
  */
 
@@ -340,6 +340,10 @@ borclose(void)
 #endif
 	ibmtype = current_type;	/* ...so subsequent TTopen restores us */
 
+#if OPT_COLOR
+	borfcol(C_WHITE);
+	borbcol(C_BLACK);
+#endif
 	bottomleft();
 	TTeeol();
 }

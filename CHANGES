@@ -1,5 +1,12 @@
 Changes for vile 7.3 (released ??? ??? ??, 1997)
 
+ (tom)	971028 (m)
+	+ correct inverted parameter in call on lookup_namebst().
+	+ compiler warnings from Solaris (unsigned vs signed in bind.c, ifdef
+	  in trace.c).
+	+ minor changes to compile on OS/2 with EMX.
+	+ modify borland.c to reset colors to white/black on exit.
+
  (tom)	971027 (l)
 	+ backout change to own_selection, since it doesn't follow ICCCM,
 	  in the sense that it increases X traffic needlessly (pointed out by
