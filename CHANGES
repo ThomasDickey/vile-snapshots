@@ -1,5 +1,9 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (pgf) 980315 (g) 
+	+ documentation and usage improvements for vile-crypt, in crypt.c, 
+	  vile.hlp, and vile.1. 
+ 
  (tom)	980314 (f)
  	+ add "attribute-reverse-til" (suggested by Kuntal M. Daftary
 	  daftary@cisco.com).
