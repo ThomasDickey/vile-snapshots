@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.119 2000/05/29 18:54:41 tom Exp $
+; $Id: filters.rc,v 1.120 2000/06/06 23:39:38 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -404,6 +404,7 @@ define-mode tcl
 
 define-mode ti
 ~with define-submode ti
+	before "sh"
 	suf '\(\.ti\|\.tinfo\|\<terminfo[^/]*\)$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
@@ -477,7 +478,14 @@ define-mode yacc
 ~endwith
 
 store-procedure HighlightFilter 'Invoke syntax-highlighting filter on the current buffer'
-    ~if &not &seq $majormode ''
+    ~if &seq $majormode ''
+	~return
+    ~elseif &filter $majormode
+	~local $curcol $curline
+	~hidden goto-beginning-of-file
+	~hidden attribute-directly end-of-file $majormode
+	~return
+    ~else
 	~if &seq $progname "winvile"
 	    ~if &not $w32pipes	
 		write-message "Sorry - you must set w32pipes to use external filters"

@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.428 2000/05/18 10:12:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.429 2000/06/08 23:18:29 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -1689,6 +1689,9 @@ quit(int f, int n GCC_UNUSED)
 #if SYS_UNIX
 		if (strcmp(exec_pathname, "."))
 			FreeAndNull(exec_pathname);
+#endif
+#if OPT_FILTER
+		flt_leaks();
 #endif
 		/* do these last, e.g., for tb_matched_pat */
 		itb_leaks();

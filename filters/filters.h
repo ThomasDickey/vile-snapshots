@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.40 2000/03/18 00:43:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.45 2000/06/09 01:33:37 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -67,8 +67,6 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 #include <locale.h>
 #endif
 
-#include <ctype.h>
-
 #if defined(VMS)
 #include	<stsdef.h>
 #define GOODEXIT	(STS$M_INHIB_MSG | STS$K_SUCCESS)
@@ -87,7 +85,11 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 #define GCC_UNUSED /*nothing*/
 #endif
 
+extern	char *home_dir(void);
+
 #endif /* _estruct_h */
+
+#include <ctype.h>
 
 #define MY_NAME "vile"
 
@@ -211,6 +213,9 @@ extern char *readline(FILE *fp, char **ptr, unsigned *len);
 extern char *skip_ident(char *src);
 extern int set_symbol_table(const char *classname);
 extern long hash_function(const char *id);
+extern void flt_free_keywords(char *classname);
+extern void flt_free_symtab(void);
+extern void flt_initialize(void);
 extern void flt_make_symtab(char *classname);
 extern void flt_read_keywords(char *classname);
 extern void for_each_keyword(EachKeyword func);
@@ -220,10 +225,12 @@ extern void parse_keyword(char *name, int classflag);
 /*
  * Declared in filterio.c and/or builtflt.c
  */
+extern char *flt_gets(char **ptr, unsigned *len);
 extern char *flt_name(void);
 extern char *skip_blanks(char *src);
 extern char *strmalloc(const char *src);
 extern int flt_input(char *buffer, int max_size);
+extern int flt_lookup(char *name);
 extern int flt_start(char *name);
 extern void flt_echo(char *string, int length);
 extern void flt_failed(const char *msg);

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.197 2000/05/19 00:55:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.199 2000/06/07 00:58:01 tom Exp $
  *
  */
 
@@ -63,7 +63,6 @@ static const char **my_mode_list;	/* copy of 'all_modes[]' */
 #define MODE_CLASSES 5
 #define is_bool_type(type) ((type) == VALTYPE_BOOL || (type) == VALTYPE_MAJOR)
 
-static MAJORMODE * lookup_mm_data(const char *name);
 static MAJORMODE_LIST * lookup_mm_list(const char *name);
 static char * majorname(char *dst, const char *majr, int flag);
 static const char *ModeName(const char *name);
@@ -72,8 +71,6 @@ static int detach_mmode(BUFFER *bp, const char *name);
 static int enable_mmode(const char *name, int flag);
 static struct VAL *get_sm_vals(MAJORMODE *ptr);
 static void init_my_mode_list(void);
-static void reset_qualifier(const struct VALNAMES *names, struct VAL *values);
-static void reset_sm_qualifiers(MAJORMODE *ptr);
 
 #if OPT_UPBUFF
 static void relist_majormodes(void);
@@ -2097,28 +2094,69 @@ static char *get_mm_string(int n, int m)
 }
 
 static int
+find_majormode_order(int mm)
+{
+	int found = -1;
+	int n;
+
+	for (n = 0; majormodes_order[n] >= 0; n++) {
+		if (majormodes_order[n] == mm) {
+			found = n;
+			break;
+		}
+	}
+	return found;
+}
+
+#if OPT_TRACE
+static void
+show_majormode_order(char *tag)
+{
+	int n;
+	TRACE(("order %s", tag));
+	for (n = 0; majormodes_order[n] >= 0; n++) {
+		TRACE((" %s", my_majormodes[majormodes_order[n]].name));
+	}
+	TRACE(("\n"));
+}
+#else
+#define show_majormode_order(tag) /* nothing */
+#endif
+
+static int
 put_majormode_before(unsigned j, char *s)
 {
 	char *t;
+	char *told = "";
 	unsigned k;
 	int kk;
+	int found = -1;
+
+	TRACE(("put_majormode_before(%d:%s, %s)\n",
+		j,
+		my_majormodes[majormodes_order[j]].name,
+		s));
 
 	for (k = 0; (kk = majormodes_order[k]) >= 0; k++) {
 		t = my_majormodes[kk].name;
-		if (strcmp(s, t) <= 0) {
-			if (k < j) {
-				kk = majormodes_order[j];
-				while (k < j) {
-					majormodes_order[j] =
-					majormodes_order[j - 1];
-					j--;
-				}
-				majormodes_order[j] = kk;
-				return k + 1;
-			}
-			break;	/* we're already "before" */
+		if (strcmp(t, s) <= 0 
+		 && (found < 0 || strcmp(told, t) < 0)) {
+			found = k;
+			told = t;
 		}
 	}
+	if (found >= 0 && found < (int) j) {
+		show_majormode_order("before");
+		kk = majormodes_order[j];
+		while (found < (int) j) {
+			majormodes_order[j] =
+			majormodes_order[j - 1];
+			j--;
+		}
+		majormodes_order[j] = kk;
+		show_majormode_order("after:");
+	}
+	TRACE(("->%d\n", j));
 	return j;
 }
 
@@ -2126,25 +2164,36 @@ static int
 put_majormode_after(unsigned j, char *s)
 {
 	char *t;
+	char *told = "";
 	unsigned k;
 	int kk;
+	int found = -1;
+
+	TRACE(("put_majormode_after(%d:%s, %s)\n",
+		j,
+		my_majormodes[majormodes_order[j]].name,
+		s));
 
 	for (k = count_majormodes() - 1; (kk = majormodes_order[k]) >= 0; k--) {
 		t = my_majormodes[kk].name;
-		if (strcmp(s, t) >= 0) {
-			if (k > j) {
-				kk = majormodes_order[j];
-				while (k > j) {
-					majormodes_order[j] =
-					majormodes_order[j + 1];
-					j++;
-				}
-				majormodes_order[k] = kk;
-				return k + 1;
-			}
-			break;	/* we're already "after" */
+		if (strcmp(t, s) >= 0 
+		 && (found < 0 || strcmp(told, t) > 0)) {
+			found = k;
+			told = t;
 		}
 	}
+	if (found >= 0 && found > (int) j) {
+		show_majormode_order("before");
+		kk = majormodes_order[j];
+		while (found > (int) j) {
+			majormodes_order[j] =
+			majormodes_order[j + 1];
+			j++;
+		}
+		majormodes_order[found] = kk;
+		show_majormode_order("after:");
+	}
+	TRACE(("->%d\n", j));
 	return j;
 }
 
@@ -2180,6 +2229,7 @@ static void compute_majormodes_order(void)
 		majormodes_order[need] = -1;
 
 		/* handle special cases */
+		TRACE(("computing_majormode_order:%d\n", need));
 		for (j = 0; j < need; j++) {
 			jj = majormodes_order[j];
 			if ((s = get_mm_string(jj, MVAL_BEFORE)) != 0
@@ -2194,6 +2244,8 @@ static void compute_majormodes_order(void)
 				j = put_majormode_after(j, s);
 			}
 		}
+		show_majormode_order("final:");
+		TRACE(("...computing_majormode_order:%d\n", need));
 	}
 }
 
@@ -2834,13 +2886,17 @@ makemajorlist(int local, void *ptr GCC_UNUSED)
 	MINORMODE *vals;
 
 	if (my_majormodes != 0) {
+		int count = count_majormodes();
 		for (j = 0; my_majormodes[j].name != 0; j++) {
 			if (local)
 				TheMajor = my_majormodes[j].name;
 			nflag = 0;
 			data = my_majormodes[j].data;
-			bprintf("--- \"%s\" majormode settings %*P\n",
+			bprintf("--- \"%s\" majormode settings %*P(%d:%d)%*P\n",
 				my_majormodes[j].name,
+				term.cols-12, '-',
+				find_majormode_order(j) + 1,
+				count,
 				term.cols-1, '-');
 			nflag = listvalueset("Qualifier", FALSE, TRUE,
 				m_valnames,
@@ -3176,6 +3232,9 @@ setm_by_suffix(register BUFFER *bp)
 				regexp *exp = get_mm_rexp(n, MVAL_SUFFIXES);
 				if (exp != 0
 				 && regexec(exp, bp->b_fname, (char *)0, 0, -1)) {
+					TRACE(("setm_by_suffix(%s) %s\n",
+						bp->b_fname,
+						my_majormodes[n].name));
 					attach_mmode(bp, my_majormodes[n].name);
 					break;
 				}
@@ -3221,6 +3280,9 @@ setm_by_preamble(register BUFFER *bp)
 #endif
 				if (exp != 0
 				 && lregexec(exp, lp, 0, llength(lp))) {
+					TRACE(("setm_by_preamble(%s) %s\n",
+						bp->b_fname,
+						my_majormodes[n].name));
 					attach_mmode(bp, my_majormodes[n].name);
 					break;
 				 }

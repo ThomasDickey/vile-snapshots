@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.175 2000/05/12 00:50:10 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.176 2000/06/06 00:50:56 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -278,6 +278,7 @@ string
 "env"		ENV		1|STR|SRET	# retrieve a system environment var
 "execable"	EXECABLE	1|BRET		# is a file executable?
 "equal"		EQUAL		2|NUM|BRET	# logical equality check
+"filter"	FILTER		1|STR|BRET	# check if internal filter exists
 "global"	GLOBMODE	1|STR|SRET	# retrieve global setting
 "greater"	GREATER		2|NUM|BRET	# logical greater than
 "gtkey"		GTKEY		0		# get 1 character
