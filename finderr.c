@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2000 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.92 2000/06/17 02:44:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.93 2000/07/25 02:03:38 tom Exp $
  *
  */
 
@@ -373,7 +373,7 @@ static void
 decode_exp(ERR_PATTERN * exp)
 {
     regexp *p = exp->exp_comp;
-    int n;
+    int n, m;
     TBUFF *temp;
 
     tb_free(&fe_verb);
@@ -383,7 +383,17 @@ decode_exp(ERR_PATTERN * exp)
     fe_line = 0;
 
     n = 0;
-    for (n = 1; (n < NSUBEXP) && p->startp[n] && p->endp[n]; n++) {
+    /*
+     * Count the atoms separately from the loop indices because when
+     * we do
+     *		setv $filename-expr='\([a-zA-Z]:\)\?[^ ^I\[:]'
+     * the resulting array will have an extra entry with null pointers
+     * for the nested atom in the %F expression:
+     *		\([a-zA-Z]:\)
+     */
+    for (n = m = 1; (n < NSUBEXP); n++) {
+	if (p->startp[n] == 0 || p->endp[n] == 0)
+	    continue;	/* discount nested atom */
 	temp = 0;
 	if (tb_bappend(&temp,
 		p->startp[n],
@@ -391,19 +401,20 @@ decode_exp(ERR_PATTERN * exp)
 	    || tb_append(&temp, EOS) == 0)
 	    return;
 
-	if (n == exp->words[W_VERB]) {
+	if (m == exp->words[W_VERB]) {
 	    fe_verb = temp;
-	} else if (n == exp->words[W_FILE]) {
+	} else if (m == exp->words[W_FILE]) {
 	    fe_file = temp;
-	} else if (n == exp->words[W_TEXT]) {
+	} else if (m == exp->words[W_TEXT]) {
 	    fe_text = temp;
 	} else {
-	    if (n == exp->words[W_LINE])
+	    if (m == exp->words[W_LINE])
 		fe_line = atoi(tb_values(temp));
-	    else if (n == exp->words[W_COLM])
+	    else if (m == exp->words[W_COLM])
 		fe_colm = atoi(tb_values(temp));
 	    tb_free(&temp);
 	}
+	m++;
     }
 }
 

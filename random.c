@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.232 2000/02/11 03:47:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.233 2000/07/24 22:33:08 tom Exp $
  *
  */
 
@@ -1368,6 +1368,7 @@ autocolor(void)
 	if (b_is_recentlychanged(bp)
 #if OPT_MAJORMODE
 	    && (bp->majr != 0 || !b_is_temporary(bp))
+	    && b_val(bp, MDHILITE)
 #endif
 	    && b_val(bp, VAL_AUTOCOLOR) > 0) {
 	    WINDOW *oldwp;

@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.70 2000/07/10 02:38:06 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.71 2000/07/24 22:42:45 cmorgan Exp $
  *
  */
 
@@ -99,6 +99,10 @@ static	char **	myVec;		/* the expanded list */
 static int
 string_has_wildcards (const char *item)
 {
+#if OPT_VMS_PATH || SYS_WINNT   /* either host can support ~/whatever */
+	if (*item == '~')
+		return TRUE;
+#endif
 #if OPT_VMS_PATH || SYS_UNIX || OPT_MSDOS_PATH
 	while (*item != EOS) {
 #if UNIX_GLOBBING
@@ -120,10 +124,6 @@ string_has_wildcards (const char *item)
 		if (*item == '$' && (isname(item[1]) || isdelim(item[1])))
 			return TRUE;
 #endif
-#endif
-#if OPT_VMS_PATH || SYS_WINNT   /* either host can support ~/whatever */
-		if (*item == '~')
-			return TRUE;
 #endif
 		item++;
 	}
@@ -502,7 +502,7 @@ char	*pattern)
 			(void) mklower(strcpy(leaf, fb.achName));
 
 			if (strcmp(leaf, ".") == 0 || strcmp(leaf, "..") == 0)
-			 	continue;
+				continue;
 			if (!glob_match_leaf(leaf, wild))
 				continue;
 
@@ -530,7 +530,7 @@ char	*pattern)
 			}
 
 		} while (entries = 1,
-		         DosFindNext(hdir, &fb, sizeof(fb), &entries) == NO_ERROR
+			 DosFindNext(hdir, &fb, sizeof(fb), &entries) == NO_ERROR
 				 && entries == 1);
 
 		DosFindClose(hdir);
@@ -629,7 +629,7 @@ glob_from_pipe(const char *pattern)
 					if (!result)
 						break;
 				 } else {
-				 	*d++ = *s;
+					*d++ = *s;
 				 }
 			}
 		}
@@ -849,7 +849,7 @@ expand_pattern (char *item)
 int
 glob_needed (char **list_of_items)
 {
-	register int 	n;
+	register int	n;
 
 	for (n = 0; list_of_items[n] != 0; n++)
 		if (string_has_wildcards(list_of_items[n]))
@@ -995,7 +995,7 @@ expand_wild_args(int *argcp, char ***argvp)
 				while ((item = strrchr(tmp, '/')) != 0) {
 					mkupper(item);
 					if (!strncmp(item,
-					             "/READ_ONLY",
+						     "/READ_ONLY",
 						     strlen(item))) {
 						set_global_b_val(MDVIEW,TRUE);
 						*item = EOS;

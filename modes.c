@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.202 2000/07/10 23:52:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.203 2000/07/24 22:28:08 tom Exp $
  *
  */
 
@@ -936,7 +936,7 @@ int
 fsm_complete(int c, char *buf, unsigned *pos)
 {
     if (isDigit(*buf)) {		/* allow numbers for colors */
-	if (c != NAMEC) 		/* put it back (cf: kbd_complete) */
+	if (c != NAMEC)			/* put it back (cf: kbd_complete) */
 	    unkeystroke(c);
 	return isSpace(c);
     }
@@ -1859,7 +1859,7 @@ chgd_uniqbuf(VALARGS *args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing)
 		if (global_g_val(GMDUNIQ_BUFS)) {
 			FUID fuid;
 			for_each_buffer(bp) {
-	 			if (bp->b_fname != 0
+				if (bp->b_fname != 0
 				    && !isInternalName(bp->b_fname)
 				    && fileuid_get(bp->b_fname, &fuid)) {
 					fileuid_set(bp, &fuid);
@@ -2139,7 +2139,7 @@ put_majormode_before(unsigned j, char *s)
 
 	for (k = 0; (kk = majormodes_order[k]) >= 0; k++) {
 		t = my_majormodes[kk].name;
-		if (strcmp(t, s) <= 0 
+		if (strcmp(t, s) <= 0
 		 && (found < 0 || strcmp(told, t) < 0)) {
 			found = k;
 			told = t;
@@ -2176,7 +2176,7 @@ put_majormode_after(unsigned j, char *s)
 
 	for (k = count_majormodes() - 1; (kk = majormodes_order[k]) >= 0; k--) {
 		t = my_majormodes[kk].name;
-		if (strcmp(t, s) >= 0 
+		if (strcmp(t, s) >= 0
 		 && (found < 0 || strcmp(told, t) > 0)) {
 			found = k;
 			told = t;
@@ -2681,7 +2681,7 @@ attach_mmode(BUFFER *bp, const char *name)
 						args.local = &(bp->b_values.bv[n]);
 						args.global = &mm[n];
 						b_valnames[n].side_effect(&args,
-						 			TRUE,
+									TRUE,
 									FALSE);
 					}
 				} else if (n == MDDOS
@@ -3360,6 +3360,28 @@ chgd_mm_order(VALARGS *args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing GC
 	if (!testing) {
 		compute_majormodes_order();
 		relist_majormodes();
+	}
+	return TRUE;
+}
+
+/*ARGSUSED*/
+int
+chgd_filter(VALARGS *args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing)
+{
+	if (!testing) {
+		struct VAL *values = args->local;
+		BUFFER *bp;
+
+		if (values->vp->i == FALSE) {
+			if (glob_vals) {
+				for_each_buffer(bp) {
+					free_attribs(bp);
+				}
+			} else {
+				free_attribs(curbp);
+			}
+		}
+		set_winflags(glob_vals, WFHARD);
 	}
 	return TRUE;
 }

@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.121 2000/06/19 23:22:06 tom Exp $
+; $Id: filters.rc,v 1.123 2000/07/24 22:35:08 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -259,6 +259,14 @@ define-mode mms
 	fence-fi   '^\s*\.\<endif\>'
 ~endwith
 
+; prevent .newsrc from being recognized as a mode that requires syntax
+; highlighting, since it may contain very long lines.
+define-mode newsrc
+~with define-submode newsrc
+	suf '\.\([^/]*newsrc[^/]*\)$'
+	before "sh"
+~endwith
+
 define-mode nr
 ~with define-submode nr
 	suf '\.\(\([1-9ln][a-z]\?\)\|me\|ms\|man\)$'
@@ -478,7 +486,9 @@ define-mode yacc
 ~endwith
 
 store-procedure HighlightFilter 'Invoke syntax-highlighting filter on the current buffer'
-    ~if &seq $majormode ''
+    ~if &not $highlight
+	~return
+    ~elseif &seq $majormode ''
 	~return
     ~elseif &filter $majormode
 	~local $curcol $curline

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.177 2000/06/24 13:12:52 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.178 2000/07/24 11:09:37 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -94,6 +94,7 @@ bool							# MD prefix
 	"cmode"		CMOD		chgd_major_w	!OPT_MAJORMODE # C indentation and fence match
 	"crypt"		CRYPT		chgd_major	OPT_ENCRYPT	# encrytion mode active
 	"dos"		DOS		chgd_major_w	# "dos" mode -- lines end in crlf
+	"HighLight"	HILITE		chgd_filter	OPT_MAJORMODE # true if we enable syntax highlighting
 	"IgnoreCase"	IGNCASE		chgd_hilite	# Exact matching for searches
 	"loading"	LOADING		0		# Are we asynchronously loading a file?
 	"locked"	LOCKED		chgd_disabled	OPT_LCKFILES # mode locked
