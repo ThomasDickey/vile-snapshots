@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.50 2001/03/03 17:36:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.52 2001/03/23 00:54:59 cmorgan Exp $
  */
 
 #include	"estruct.h"
@@ -16,6 +16,12 @@
 #endif
 
 #define		WRITE_ONLY	"[write only]"
+
+#if OPT_FINDPATH
+static char *findpath;     /* $VILE_FINDPATH environment is "$findpath" state
+                            * variable.
+                            */
+#endif
 
 #if OPT_EVAL && OPT_SHELL
 static char *shell;	/* $SHELL environment is "$shell" state variable */
@@ -198,6 +204,15 @@ get_shell(void)
 }
 #endif
 
+#if OPT_FINDPATH
+char *
+get_findpath(void)
+{
+	if (findpath == 0)
+		SetEnv(&findpath, DftEnv("VILE_FINDPATH", ""));
+	return (findpath);
+}
+#endif
 
 #if OPT_EVAL && DISP_X11 && OPT_SHELL
 char *
@@ -674,6 +689,31 @@ int var_FAVORITES(TBUFF **rp, const char *vp)
 }
 #endif
 
+#if OPT_FINDPATH
+int
+var_FINDPATH(TBUFF **rp, const char *vp)
+{
+	if (rp) {
+		tb_scopy(rp, get_findpath());
+		return TRUE;
+	} else if (vp) {
+		SetEnv(&findpath, vp);
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+
+/* debug aid -- this may go away */
+int
+var_FINDCMD(TBUFF **rp, const char *vp)
+{
+	char *cmd = last_findcmd();
+
+	return (any_ro_STR(rp, vp, (cmd) ? cmd : ""));
+}
+#endif
+
 #if DISP_X11||DISP_NTWIN
 int var_FONT(TBUFF **rp, const char *vp)
 {
@@ -840,6 +880,11 @@ int var_LLENGTH(TBUFF **rp, const char *vp)
 int var_MAJORMODE(TBUFF **rp, const char *vp)
 {
 	return any_ro_STR(rp, vp, (curbp->majr != 0) ? curbp->majr->name : "");
+}
+
+int var_MAJORMODEHOOK(TBUFF **rp, const char *vp)
+{
+	return any_HOOK(rp, vp, &majormodehook);
 }
 #endif
 

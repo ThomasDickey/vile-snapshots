@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.253 2001/03/05 01:14:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.254 2001/03/23 00:39:52 cmorgan Exp $
  *
  */
 
@@ -1567,9 +1567,10 @@ do_pushd(int uindx,		/* user-specified dirstack index */
 int
 pushd(int f GCC_UNUSED, int n GCC_UNUSED)
 {
+    long dirlocn;
+    int failed, rc, sign;
     char oldcwd[NFILEN], newcwd[NFILEN], *tmp, *cp;
     static TBUFF *last;
-    int rc, sign, dirlocn;
 
     newcwd[0] = '\0';
     if ((rc = mlreply_dir("Directory: ", &last, newcwd)) == ABORT)
@@ -1617,7 +1618,11 @@ pushd(int f GCC_UNUSED, int n GCC_UNUSED)
 		    mlforce("[Invalid pushd syntax,  usage:  pushd [{+|-}n] ]");
 		    return (rc);
 		}
-		dirlocn = atoi(newcwd + 1);	/* FIXME: atoi is a bug */
+		dirlocn = vl_atol(newcwd + 1, 10, &failed);
+		if (failed) {
+		    mlforce("[Invalid pushd index]");
+		    return (FALSE);
+		}
 		if (dirlocn > dirs_idx) {
 		    /*
 		     * not "dirs_idx - 1" because cwd is a virtual member
@@ -1643,8 +1648,9 @@ int
 popd(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     char *cp, newcwd[NFILEN];
+    long dirlocn;
     static TBUFF *last;
-    int sign = 0, rc, dirlocn;
+    int sign = 0, rc, failed;
 
     rc = mlreply2("Directory stack entry: ", &last);
     if (rc == ABORT)
@@ -1689,7 +1695,11 @@ popd(int f GCC_UNUSED, int n GCC_UNUSED)
 	mlforce("[Invalid popd syntax,  usage:  popd [{+|-}n] ]");
 	return (rc);
     }
-    dirlocn = atoi(newcwd + 1);	/* FIXME: atoi is a bug */
+    dirlocn = vl_atol(newcwd + 1, 10, &failed);
+    if (failed) {
+	mlforce("[Invalid popd index]");
+	return (FALSE);
+    }
     if (dirlocn > dirs_idx) {
 	/*
 	 * not "dirs_idx - 1" because cwd is a virtual member of the

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_2i
+MANIFEST for vile, version v9_2j
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -156,6 +156,8 @@ filters/ada-filt.l              ada syntax highlighter for vile
 filters/ada.key                 Ada95 keywords
 filters/awk-filt.l              awk syntax highlighter for vile
 filters/awk.key                 keywords for awk syntax highlighting
+filters/bas-filt.l              syntax filter for BASIC
+filters/basic.key               keywords for basic syntax filter
 filters/bat-filt.l              dos batchfile syntax filter for vile
 filters/bat.key                 dos batchfile keywords
 filters/c-filt.c                c filter
@@ -168,6 +170,8 @@ filters/cweb.key                keyword table for cweb syntax filter
 filters/cwebfilt.l              cwebx syntax filter for vile
 filters/dcl-filt.l              VAX dcl syntax highlighting filter for vile
 filters/dcl.key                 dcl keywords
+filters/def-filt.l              syntax filter for Windows ".def" files
+filters/def.key                 keywords for Windows ".def" files
 filters/diff.key                keywords for 'diff' syntax filter
 filters/difffilt.l              syntax filter for 'diff' output
 filters/ecl-filt.l              syntax filter for ECLiPSe
@@ -226,6 +230,8 @@ filters/pl-filt.c               syntax highlighter for perl
 filters/pot.key                 keywords for pot (gettext) mode
 filters/py-filt.l               syntax filter for Python
 filters/py.key                  keywords for Python syntax filter
+filters/rc-filt.l               syntax filter for Windows ".rc" files
+filters/rc.key                  keywords for Windows ".rc" files
 filters/rcs-filt.l              syntax filter for RCS archives
 filters/rcs.key                 keywords for RCS syntax filter
 filters/rexx.key                keywords for REXX syntax filter
@@ -252,6 +258,7 @@ filters/tcl.key                 tcl/tk keywords
 filters/ti-filt.l               terminfo syntax highlighting filter for vile
 filters/ti.key                  terminfo keywords
 filters/txt-filt.l              syntax filter for ordinary text
+filters/vb.key                  keywords for Visual Basic .Net
 filters/vile.key                fallback template for highlighting colors
 filters/vilefilt.l              syntax filter for vile macros
 filters/vim.key                 keywords for vim syntax files

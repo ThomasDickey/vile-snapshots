@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.71 2000/07/24 22:42:45 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.72 2001/03/23 00:54:58 cmorgan Exp $
  *
  */
 
@@ -96,7 +96,7 @@ static	SIZE_T	myMax, myLen;	/* length and index of the expanded list */
 static	char **	myVec;		/* the expanded list */
 
 /*--------------------------------------------------------------------------*/
-static int
+int
 string_has_wildcards (const char *item)
 {
 #if OPT_VMS_PATH || SYS_WINNT   /* either host can support ~/whatever */

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.457 2001/03/05 00:24:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.460 2001/03/23 00:57:55 cmorgan Exp $
  *
  */
 
@@ -275,6 +275,7 @@ extern int did_hard_error_occur (void);
 #endif
 
 /* statevar.c */
+extern char * get_findpath (void);
 extern char * vile_getenv(char *s);
 
 #if OPT_EVAL
@@ -471,6 +472,7 @@ extern	char **	glob_string (char *item);
 extern	int	doglob (char *path);
 extern	int	glob_length (char **list_of_items);
 extern	int	glob_match_leaf(char *leaf, char *pattern);
+extern	int	string_has_wildcards(const char *item);
 
 #if !SYS_UNIX
 extern	int	glob_needed (char **list_of_items);
@@ -710,13 +712,11 @@ extern int alloc_mode (const char *name, int predef);
 extern int major_complete(DONE_ARGS);
 extern struct VAL * get_submode_vals (BUFFER *bp, int n);
 extern struct VAL * get_submode_valx (BUFFER *bp, int n, int *m);
+extern void infer_majormode (BUFFER *bp);
 extern void set_majormode_rexp (const char *name, int n, const char *pat);
 extern void set_submode_val (const char *name, int n, int value);
-extern void setm_by_preamble (BUFFER *bp);
-extern void setm_by_suffix (BUFFER *bp);
 #else
-#define setm_by_suffix(bp) fix_cmode(bp, (global_b_val(MDCMOD) && has_C_suffix(bp)))
-#define setm_by_preamble(bp) /* nothing */
+#define infer_majormode(bp) fix_cmode(bp, (global_b_val(MDCMOD) && has_C_suffix(bp)))
 #endif
 
 #if OPT_SHOW_COLORS
@@ -968,6 +968,27 @@ extern	void	lattr_shift	(BUFFER *bp, LINEPTR lp, int doto, int shift);
 #endif /* OPT_SELECTIONS */
 
 /* spawn.c */
+#if OPT_FINDPATH
+
+typedef struct findcfg_struct
+{
+    int        disabled;   /* mode is disabled                             */
+    int        recur_token;/* ascii char that triggers a recursive find;
+                            * 0 (zero) indicates that this token is unset.
+                            */
+    int        nonrecur_token;
+                           /* ascii char that triggers a nonrecursive find;
+                            * 0 (zero) indicates that this token is unset.
+                            */
+    int        dirs_only; /* Boolean, T -> find only looks for directory
+                            * names.
+                            */
+} FINDCFG;
+
+extern char *last_findcmd(void);
+extern int  parse_findcfg_mode(FINDCFG *pcfg, char *str);
+#endif
+
 #if OPT_SHELL
 extern SIGT rtfrmshell (int ACTUAL_SIG_ARGS);
 extern void pressreturn (void);

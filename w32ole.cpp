@@ -17,7 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.15 2001/03/04 17:11:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.16 2001/03/23 00:41:27 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -1354,7 +1354,8 @@ build_keylist(void)
 int
 oleauto_redirected_key(ULONG vk, ULONG modifier)
 {
-    int       attached, i, hit;
+    int       attached, hit;
+    unsigned  i;
     REDIR_KEY *lcl_tbl;
 
     if (vk >= TABLESIZE(keymap))

@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.76 2001/02/14 01:35:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.77 2001/03/23 00:44:29 kev Exp $
  */
 
 /*#
@@ -601,7 +601,17 @@ perl_prompt(void)
     if ((status = mlreply_no_opts("Perl command: ", buf, sizeof(buf))) != TRUE)
 	    return status;
 
-    status = do_perl_cmd(cmd = newSVpv(buf, 0), FALSE);
+    /* Hack to workaround problem with perl5.005 in which package Dynaloader
+       sometimes winds up being the current package */
+#if 0
+    /* This is what the code ought to look like... */
+    cmd = newSVpv(buf, 0);
+#else
+    /* This is the hack... */
+    cmd = newSVpv("package main; ", 0);
+    sv_catpv(cmd, buf);
+#endif
+    status = do_perl_cmd(cmd, FALSE);
     SvREFCNT_dec(cmd);
     return status;
 }
@@ -900,7 +910,13 @@ perldo_prompt(void)
 	}
 
     /* construct command: block with localised $/ and $\ */
+#if 0	/* See comment in perl_prompt() regarding this hack... */
+    /* No hack */
     cmd = newSVpv("{local $/=", 0); /*}*/
+#else
+    /* Package name hack - works around a bug in perl5.00503 */
+    cmd = newSVpv("package main; {local $/=", 0); /*}*/
+#endif
     if (i_rs == RS_NONE)
 	sv_catpv(cmd, "undef");
     else if (i_rs == RS_PARA)

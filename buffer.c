@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.230 2001/03/03 17:19:53 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.232 2001/03/22 22:52:23 tom Exp $
  *
  */
 
@@ -566,8 +566,6 @@ int	lockfl)
 					}
 				}
 				set_b_val(bp, MDNEWLINE, b_val(savebp,MDNEWLINE));
-				setm_by_suffix(bp);
-				setm_by_preamble(bp);
 			} else {
 				readin(fname, lockfl, bp, FALSE);
 			}
@@ -595,6 +593,7 @@ int	lockfl)
 		}
 		DisableHook(&bufhook);
 		make_current(bp);
+		infer_majormode(bp);
 		make_current(savebp);
 		EnableHook(&bufhook);
 	}

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.188 2001/03/03 19:32:54 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.191 2001/03/23 00:54:58 cmorgan Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -81,6 +81,7 @@ regex							# VAL_ prefix
 string							# VAL_ prefix
 	"backup-style"  BACKUPSTYLE	0		OPT_FILEBACK # file backup style
 	"expand-chars"	EXPAND_CHARS	0		# list of chars we can expand (%,#,:)
+	"find-cfg"	FINDCFG		chgd_find_cfg	OPT_FINDPATH # configuration of the "find" feature
 	"icursor"	ICURSOR		chgd_icursor	OPT_ICURSOR # specify insertion cursor
 	"glob"		GLOB		0		OPT_GLOB_PIPE # select filename globbing style
 	"redirect-keys"	REDIRECT_KEYS	chgd_redir_keys	SYS_WINNT&&defined(VILE_OLE) # send keys to another process
@@ -169,6 +170,8 @@ int							# VAL_ prefix
 .majormode c	tabstop
 .majormode c	shiftwidth
 .majormode vile
+enum
+	"qualifiers"	QUALIFIERS	0		# denotes how preamble/suffixes are combined
 regex							# MVAL_ prefix
 	"PREamble"	PREAMBLE	0		# match against file header to turn on mode
 	"SUFfixes"	SUFFIXES	0		# match against filenames to turn on mode
@@ -221,6 +224,8 @@ string
 "filename-expr"	FILENAME_EXPR	OPT_FINDERR	# regular expression for %F
 "filename-ic"	FILENAME_IC		# true if we set OPT_CASELESS
 "filter-list"	FILTER_LIST	OPT_FILTER	# list of builtin-filters
+"findpath"	FINDPATH	OPT_FINDPATH	# directory(s) used with "find" feature
+"find-cmd"	FINDCMD		OPT_FINDPATH	# shell cmd emitted via "find" feature (debug)
 "font"		FONT		DISP_X11||DISP_NTWIN	# current font
 "forward-search" FWD_SEARCH		# search-direction (true if forward)
 "helpfile"	HELPFILE		# helpfile (vile.hlp)
@@ -234,6 +239,7 @@ string
 "line"		LINE			# text of current line
 "llength"	LLENGTH			# length of current line
 "majormode"	MAJORMODE	OPT_MAJORMODE # current majormode, if any
+"majormode-hook" MAJORMODEHOOK	OPT_HOOKS&&OPT_MAJORMODE	# procedure to run for majormodes
 "match"		MATCH			# last matched magic pattern
 "mode"		MODE			# are we inserting/overwriting/command
 "modeline-format" MLFORMAT	OPT_MLFORMAT # modeline format string
@@ -442,6 +448,10 @@ string
 "startup"	FL_STARTPATH
 "path"		FL_PATH
 "libdir"	FL_LIBDIR
+
+.table mmqualifiers		OPT_MAJORMODE
+"any"		MMQ_ANY
+"all"		MMQ_ALL
 
 .table paramtypes
 "bool"		PT_BOOL

@@ -45,6 +45,16 @@ nocmode".  In the new scheme,
 	  search, but a match of preamble overrides a match of suffixes. 
 	  Use "after" and "before" qualifiers to handle special cases.
 
+	  In rare circumstances, both suffixes and preamble are needed to
+	  distinguish a given mode from another.  Use
+	  	qualifiers=all
+	  to specify this.  The default, "qualifiers=any", allows either
+	  suffixes or preamble to determine the majormode.
+
+	  The suffixes and preamble rules can be overridden altogether by
+	  specifying $majormode-hook to a script which sets the majormode
+	  for the current buffer.
+
 	+ majormodes can be disabled (e.g., ":set nocmode"), as before.
 	  However, there is no global sense of majormode; unsetting a
 	  buffer's local value of a majormode simply makes it not have a
@@ -271,5 +281,5 @@ Note that the following are equivalent once you have defined the majormode "c":
 	define-submode c tabstop=8
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.8 2000/12/05 11:39:46 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.9 2001/03/22 22:39:09 tom Exp $
 -------------------------------

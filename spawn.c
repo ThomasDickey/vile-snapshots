@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.164 2001/03/03 17:19:53 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.166 2001/03/23 01:07:55 tom Exp $
  *
  */
 
@@ -23,6 +23,24 @@
 #include <starlet.h>
 #include <lib$routines.h>
 extern	int	vms_system(char *);	/*FIXME: not the same as 'system()'?*/
+#endif
+
+#if OPT_FINDPATH
+
+typedef struct struct_findinfo
+{
+    FINDCFG    cfg;          /* findcfg mode info             */
+    const char *dir_list;    /* findpath directory list       */
+    int        nonrecursive; /* this find cmd is nonrecursive */
+} FINDINFO;
+
+static	char *ck_find_cmd(char *cmd, int *allocd_storage, int prepend_bang);
+static	char *find_all_files(char *cmd, FINDINFO *pinfo, int prepend_bang);
+static	char *find_dirs_only(char *cmd, FINDINFO *pinfo, int prepend_bang);
+
+static  char *prev_findcmd;   /* last shell command created by the builtin
+                               * find feature.  debug aid -- may go away
+                               */
 #endif
 
 static	int spawn1(int rerun, int pressret);
@@ -454,9 +472,10 @@ spawn1(int rerun, int pressret)
 int
 capturecmd(int f, int n)
 {
+	int allocd_storage, s;
 	register BUFFER *bp;	/* pointer to buffer to zot */
-	register int	s;
-	char line[NLINE];	/* command line send to shell */
+	char line[NLINE],	/* command line send to shell */
+	     *final_cmd;	/* possibly edited command line */
 
 	/* get the command to pipe in */
 	hst_init('!');
@@ -468,6 +487,14 @@ capturecmd(int f, int n)
 	if (s != TRUE)
 		return s;
 
+#if OPT_FINDPATH
+	if ((final_cmd = ck_find_cmd(line, &allocd_storage, TRUE)) == NULL)
+	    return (FALSE);
+#else
+	allocd_storage = FALSE;
+	final_cmd      = line;
+#endif
+
 	/* take care of autowrite */
 	if (writeall(f,n,FALSE,FALSE,TRUE,FALSE) != TRUE)
 		return FALSE;
@@ -476,7 +503,11 @@ capturecmd(int f, int n)
 		return s;
 	if ((s = popupbuff(bp)) != TRUE)
 		return s;
-	ch_fname(bp,line);
+	ch_fname(bp,final_cmd);
+#if OPT_FINDPATH
+	if (allocd_storage)
+	    (void) free(final_cmd);
+#endif
 	bp->b_active = FALSE; /* force a re-read */
 	if ((s = swbuffer_lfl(bp, FALSE, FALSE)) != TRUE)
 		return s;
@@ -990,3 +1021,742 @@ set_envvar(int f GCC_UNUSED, int n GCC_UNUSED)
 	return TRUE;
 }
 #endif
+
+#if OPT_FINDPATH
+
+/*
+ * FUNCTION
+ *   parse_findcfg_mode(FINDCFG *pcfg, char *inputstr)
+ *
+ *   pcfg     - returned by reference -- what was found in inputstr
+ *
+ *   inputstr - what to parse
+ *
+ * DESCRIPTION
+ *   find-cfg mode is a string that supports this syntax:
+ *
+ *      "[<recursive_token>][,<nonrecursive_token>[,<option>]]"
+ *
+ *   where:
+ *     <recursive_token>    := an ascii char that triggers a recursive find,
+ *                             may not be taken from the character set defined
+ *                             by isalpha().  To use ',' as a token, escape it
+ *                             with '\'.
+ *     <nonrecursive_token> := an ascii char that triggers a nonrecursive find,
+ *                             may not be taken from the character set defined
+ *                             by isalpha().  To use ',' as a token, escape it
+ *                             with '\'.
+ *
+ *     <option>             := <dirs_only>
+ *
+ *     <dirs_only>          := d
+ *
+ *   Example usage:
+ *     se find-cfg="$,@"  ; '$' -> recursive find, '@' -> nonrecursive find
+ *     se find-cfg="$,,d" ; '$' -> recursive find, the find operation should
+ *                        ; only look for directories.
+ *
+ *   Note that an empty string disables find-cfg mode.
+ *
+ * RETURNS
+ *   Boolean, T -> all is well
+ */
+int
+parse_findcfg_mode(FINDCFG *pcfg, char *inputstr)
+{
+    char *cp;
+    int  i, rc = TRUE;
+
+    memset(pcfg, 0, sizeof(*pcfg));
+    pcfg->disabled = TRUE;             /* an assumption */
+    cp             = mktrimmed(inputstr);
+    if (*cp == EOS)
+        return (rc);
+
+    /* handle first 2 tokens */
+    for (i = 0; i < 2 && *cp; i++)
+    {
+        if (*cp != ',')
+        {
+            if (isAlpha(*cp))
+            {
+                mlforce("[alphanumeric tokens not allowed]");
+                return (FALSE);
+            }
+            if (*cp == '\\' && cp[1] == ',')
+                cp++;                     /* skip escape char */
+            if (i == 0)
+                pcfg->recur_token = *cp++;
+            else
+                pcfg->nonrecur_token = *cp++;
+            cp = skip_blanks(cp);
+            if (*cp)
+            {
+                if (*cp != ',')
+                {
+                    mlforce("[invalid find-cfg syntax]");
+                    return (FALSE);
+                }
+            }
+            else
+            {
+                pcfg->disabled = (! rc);
+                return (rc);  /* end of string, all done */
+            }
+        }
+        cp++;     /* skip token delimiter */
+        cp = skip_blanks(cp);
+        if (*cp == EOS)
+        {
+            mlforce("[invalid find-cfg syntax]");
+            return (FALSE);
+        }
+    }
+
+    /* worry about option */
+    if (*cp)
+    {
+        if (*cp == 'd' && cp[1] == EOS)
+            pcfg->dirs_only = TRUE;
+        else
+        {
+            mlforce("[invalid find-cfg syntax]");
+            rc = FALSE;
+        }
+    }
+    pcfg->disabled = (! rc);
+    return (rc);
+}
+
+
+
+/*
+ * Cruise through the user's shell command, stripping out unquoted tokens
+ * that include wildcard characters.   Save each token in a vector.  Return
+ * the remains of the shell command to the caller (or NULL if an error occurs).
+ */
+static char *
+extract_wildcards(char *cmd, char ***vec, size_t *vecidx, const char *fnname)
+{
+    char   **base, *cp, *anchor, buf[NFILEN * 2];
+    int    delim;
+    size_t idx, len;
+
+    idx  = 0;
+    len  = 32;
+    cp   = cmd;
+    base = castalloc(char*, len * sizeof(char *));
+    if (base == NULL)
+    {
+        (void) no_memory(fnname);
+        return (NULL);
+    }
+    while (*cp)
+    {
+        cp = anchor = skip_blanks(cp);
+        if (*cp == '\'' || *cp == '"')
+        {
+            delim = *cp++;
+            while(*cp)
+            {
+                if (*cp == '\\' && cp[1] == delim)
+                    cp += 2;
+                else if (*cp == delim)
+                {
+                    cp++;
+                    break;
+                }
+                else
+                    cp++;
+            }
+        }
+        else
+        {
+            cp++;
+            while (*cp && (! isSpace(*cp)))
+                cp++;
+            len = cp - anchor;
+            strncpy(buf, anchor, len);
+            buf[len] = EOS;
+            if (string_has_wildcards(buf))
+            {
+                memset(anchor, ' ', len);  /* blank out wildcard in cmd */
+                if (idx >= len)
+                {
+                    len *= 2;
+                    base = castrealloc(char*, base, sizeof(*base));
+                    if (base == NULL)
+                    {
+                        (void) no_memory(fnname);
+                        return (NULL);
+                    }
+                }
+                base[idx] = castalloc(char, len + 1);
+                if (base[idx] == NULL)
+                {
+                    (void) no_memory(fnname);
+                    return (NULL);
+                }
+                strcpy(base[idx++], buf);
+            }
+        }
+    }
+
+    /* all done */
+    *vec    = base;
+    *vecidx = idx;
+    return (cmd);
+}
+
+
+
+static void
+free_vector(char ***vec, size_t vec_elements)
+{
+    char  **base;
+    ULONG i;
+
+    base = *vec;
+    for (i = 0; i < vec_elements; i++, base++)
+        (void) free(*base);
+    (void) free(*vec);
+}
+
+
+
+static char *
+determine_quoted_delimiter(void)
+{
+    char *qdelim;
+
+#if SYS_UNIX
+    qdelim = "'";
+#else
+    {
+        char *cp, buf[NFILEN];
+        int unix_shell, shell_len;
+
+        strcpy(buf, get_shell());
+        cp = strrchr(buf, '.');
+        if (cp)
+            *cp = EOS;   /* trim file suffix */
+        shell_len  = strlen(buf);
+        unix_shell = (shell_len >= 2 &&
+                      tolower(buf[shell_len - 2]) == 's' &&
+                      tolower(buf[shell_len - 1]) == 'h');
+        if (unix_shell)
+            qdelim = "'";
+        else
+        {
+            /*
+             * Assume a DOS-based shell, which generally honors double
+             * quotes as argument delimiters (not single quotes).
+             */
+
+            qdelim = "\"";
+        }
+    }
+#endif
+    return (qdelim);
+}
+
+
+
+char *
+last_findcmd(void)
+{
+    return (prev_findcmd);
+}
+
+
+
+/*
+ * Add a string to the end of a cmd string, lengthening same if necessary.
+ * Does not terminate cmd string.
+ */
+static int
+add_token_to_cmd(char       **cmd,
+                 size_t     *cmdidx,
+                 size_t     *cmdlen,
+                 char       *token,
+                 const char *funcname)
+{
+    int    rc     = TRUE;
+    size_t toklen = strlen(token);
+
+    if (*cmdidx + toklen + 2 > *cmdlen)
+    {
+        char *tmp = *cmd;
+
+        *cmdlen *= 2;
+        tmp      = castrealloc(char, tmp, *cmdlen);
+        if (tmp == NULL)
+        {
+            (void) free(*cmd);
+            rc = no_memory(funcname);
+            return (rc);
+        }
+        *cmd = tmp;
+    }
+    strcpy(*cmd + *cmdidx, token);
+    *cmdidx        += toklen;
+    (*cmd)[*cmdidx] = ' ';
+    (*cmdidx)++;
+    return (rc);
+}
+
+
+
+/*
+ * FUNCTION
+ *   ck_find_cmd(char *cmd, int *allocd_storage, int prepend_bang)
+ *
+ *   cmd            - user's original shell command.
+ *
+ *   allocd_storage - by ref, T -> the returned cmd string was allocated
+ *                    on the heap.  Caller must free.
+ *
+ *   prepend_bang   - Boolean, T -> that if a modified shell command is
+ *                    created, prepend it with '!'.
+ *
+ * DESCRIPTION
+ *   If the user has enabled find-cfg mode and if the user's shell
+ *   command contains a token that indicates that a find operation should
+ *   be initiated, modify the user's shell command appropriately.
+ *
+ *   Example:
+ *     :setv $findpath="."
+ *     :se find-cfg="$"
+ *     ^X-!$egrep -n FIXME *.[ch]
+ *
+ *   Resultant shell command on a Unix host (somewhat simplified):
+ *     !find . -name '*.[ch]' -print | xargs egrep -n FIXME
+ *
+ *   Note that this example does not include the syntax used to filter out
+ *   CVS/RCS directories and tags files.
+ *
+ * RETURNS
+ *   Pointer to original user cmd if no find operation required, a newly
+ *   synthesized cmd string, or NULL (failure case).
+ */
+static char *
+ck_find_cmd(char *cmd, int *allocd_storage, int prepend_bang)
+{
+    char     *cp, *cmdcopy;
+    FINDINFO info;
+
+    *allocd_storage = FALSE;
+    if (! parse_findcfg_mode(&info.cfg, global_g_val_ptr(GVAL_FINDCFG)))
+    {
+        return (NULL);   /* bogus find-cfg value noted */
+    }
+    if (info.cfg.disabled)
+        return (cmd);    /* find-cfg mode disabled */
+
+    /*
+     * don't munge vile's copy of the user's command line -- scrogs the
+     * [Output] buffer name.
+     */
+    if ((cmdcopy = strmalloc(cmd)) == NULL)
+    {
+        (void) no_memory("ck_find_cmd");
+        return (NULL);
+    }
+    cp = skip_blanks(cmdcopy);
+    if (*cp == SHPIPE_LEFT[0])
+        cp++;
+    cp = skip_blanks(cp);
+    if (*cp)
+    {
+        info.nonrecursive = (*cp == info.cfg.nonrecur_token);
+
+        /* if specifying recursive or nonrecursive find syntax ... */
+        if (info.nonrecursive || *cp == info.cfg.recur_token)
+        {
+            /*
+             * user wants [non]recursive find syntax added to shell
+             * command.
+             */
+
+            info.dir_list = get_findpath();
+            if (info.dir_list[0] == EOS)
+                info.dir_list = ".";
+            if (info.cfg.dirs_only)
+                cmd = find_dirs_only(cp + 1, &info, prepend_bang);
+            else
+                cmd = find_all_files(cp + 1, &info, prepend_bang);
+            if (cmd)
+            {
+                /* keep a record of the cmd that's about to be spawned */
+
+                if (prev_findcmd)
+                    (void) free(prev_findcmd);
+                if ((prev_findcmd = strmalloc(cmd)) == NULL)
+                {
+                    (void) free(cmd);
+                    cmd = NULL;
+                    no_memory("ck_find_cmd");
+                }
+                else
+                {
+                    *allocd_storage = TRUE;
+                }
+            }
+        }
+    }
+    (void) free(cmdcopy);
+    return (cmd);
+}
+
+
+
+/*
+ * FUNCTION
+ *   find_dirs_only(char *cmd, FINDINFO *pinfo, int prepend_bang)
+ *
+ *   cmd          - user's input command, stripped of leading '!' and
+ *                  find-cfg tokens.
+ *
+ *   pinfo        - contains info about the user's various "find" parameters.
+ *
+ *   prepend_bang - Boolean, T -> prepend '!' to beginning of shell cmd 
+ *                  synthesized by this routine.
+ *
+ * DESCRIPTION
+ *   The task:
+ *
+ *   - construct a shell command that looks like so:
+ *
+ *     [!]find <$findpath_dir_list> -type d -print | \
+ *          egrep -v <RE that elides CVS & RCS dirs> | xargs cmdstr
+ *
+ *   - if executing on a host that supports case insensitive file names, 
+ *     modify the above shell command to include option modifiers that as
+ *     required.
+ *
+ *   - if a nonrecursive find is requested, add an appropriate option
+ *     (i.e., -maxdepth 1) to the find cmdline (again, this syntax used may
+ *     only be supported by the GNU version of find).
+ *
+ * RETURNS
+ *   Pointer to newly formulated shell command (allocated on the heap) or
+ *   NULL (failure).
+ */
+static char *
+find_dirs_only(char *cmd, FINDINFO *pinfo, int prepend_bang)
+{
+    size_t      i, outidx, outlen;
+    const char  *path, *fnname;
+    char        *rslt, *qdelim, buf[512];
+
+    fnname = "find_dirs_only";
+    outlen = 512;
+    outidx = 0;
+    rslt   = castalloc(char, outlen);
+    if (! rslt)
+    {
+        (void) no_memory(fnname);
+        return (NULL);
+    }
+    if (prepend_bang)
+    {
+        *rslt   = SHPIPE_LEFT[0];
+        rslt[1] = EOS;
+        outidx  = 1;
+    }
+    else
+        *rslt = '\0';
+    strcat(rslt, "find ");
+    outidx += sizeof("find ") - 1;
+    path    = pinfo->dir_list;
+
+    /* add directory list to find command */
+    while ((path = parse_pathlist(path, buf)) != NULL)
+    {
+        if (! add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname))
+            return (NULL);
+    }
+
+    /* worry about nonrecursive find */
+    if (pinfo->nonrecursive)
+    {
+        if (! add_token_to_cmd(&rslt, &outidx, &outlen, "-maxdepth 1", fnname))
+            return (NULL);
+    }
+
+
+    /* terminate find string with "-type d -print" */
+    if (! add_token_to_cmd(&rslt, &outidx, &outlen, "-type d -print", fnname))
+        return (NULL);
+
+    qdelim = determine_quoted_delimiter();
+
+    /*
+     * filter out RCS/CVS directories and tags files.  we make the 
+     * assumption that the user's "find" creates filenames with
+     * '/' as a path delimiter.
+     *
+     * ========================== FIXME ==================================
+     * Note that this regular expression is simplistic and could be better
+     * if it ensured that "RCS/CVS" are preceded by '/' or nothing.
+     * ========================== FIXME ==================================
+     */
+    sprintf(buf,
+            "| egrep -v%s %s(RCS|CVS)/%s",
+#if SYS_UNIX
+            "",
+#else
+            "i",
+#endif
+            qdelim,
+            qdelim);
+    if (! add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname))
+        return (NULL);
+
+    /* finish off with xargs */
+    if (! add_token_to_cmd(&rslt, &outidx, &outlen, "| xargs", fnname))
+        return (NULL);
+    if (! add_token_to_cmd(&rslt, &outidx, &outlen, cmd, fnname))
+        rslt = NULL;
+    else
+    {
+        rslt[outidx] = EOS;  /* terminate cmd string */
+        if (outidx > 0)
+        {
+            char *cp;
+
+            i  = --outidx;
+            cp = rslt + outidx;
+            while (isSpace(*cp) && i > 0)
+            {
+                cp--;
+                i--;
+            }
+            if (cp != rslt + outidx)
+            {
+                /* white space found at end of string, trim it. */
+
+                cp[1] = EOS;
+            }
+        }
+    }
+    return (rslt);
+}
+
+
+
+/*
+ * FUNCTION
+ *   find_all_files(char *cmd, FINDINFO *pinfo, int prepend_bang)
+ *
+ *   cmd          - user's input command, stripped of leading '!' and
+ *                  find-cfg tokens.
+ *
+ *   pinfo        - contains info about the user's various "find" parameters.
+ *
+ *   prepend_bang - Boolean, T -> prepend '!' to beginning of shell cmd 
+ *                  synthesized by this routine.
+ *
+ * DESCRIPTION
+ *   The task:
+ *
+ *   - scan all unquoted tokens in the user's command line.
+ *
+ *   - remove each unqoted token that includes shell wildcard chars.  Call the
+ *     remainder of the user's input the "cmdstr".  Call the removed tokens
+ *     the "wildvec".
+ *
+ *   - construct a shell command that looks like so:
+ *
+ *     [!]find <$findpath_dir_list> '(' -name wildvec[0] -o \
+ *             -name wildvec[1] ... -o -name wildvec[n-1] ')' -print | \
+ *          egrep -v <RE that elides CVS & RCS dirs and tags files> | \
+ *          xargs cmdstr
+ *
+ *   - if executing on a host that supports case insensitive file names, 
+ *     modify the above shell command to include option modifiers that as
+ *     required.  Note that the find options used in this case (i.e., -iname)
+ *     may only be supported by the GNU version of find. 
+ *
+ *   - if a nonrecursive find is requested, add an appropriate option
+ *     (i.e., -maxdepth 1) to the find cmdline (again, this syntax used may
+ *     only be supported by the GNU version of find).
+ *
+ * RETURNS
+ *   Pointer to newly formulated shell command (allocated on the heap) or
+ *   NULL (failure).
+ */
+static char *
+find_all_files(char *cmd, FINDINFO *pinfo, int prepend_bang)
+{
+    size_t      i, outidx, outlen, vecidx;
+    const char  *path, *fnname;
+    char        *xargstr, **vec, *rslt, *qdelim, buf[512];
+
+    fnname = "find_all_files";
+    if ((xargstr = extract_wildcards(cmd, &vec, &vecidx, fnname)) == NULL)
+        return (NULL);
+    if (vecidx == 0)
+    {
+        /* No wild cards were found on the command line.  No sense 
+         * continuing.  Why?  With no wild cards, the find command 
+         * will search for all files by default, this may or may not
+         * be what the user wants.  It's certainly not what the user
+         * wants if s/he types this by mistake:
+         *
+         *    !<token>egrep -n FIXME 8.c
+         *
+         * which is an obvious slip of the fingers on the keyboard.
+         * If the user really wants to examine all files, s/he can type:
+         *
+         *    !<token>egrep -n FIXME *
+         */
+
+        free_vector(&vec, vecidx);
+        mlforce(
+"[unless \"d\" option is set, shell command must include at least one wildcard]"
+               );
+        return (NULL);
+    }
+    outlen = 512;
+    outidx = 0;
+    rslt   = castalloc(char, outlen);
+    if (! rslt)
+    {
+        free_vector(&vec, vecidx);
+        (void) no_memory(fnname);
+        return (NULL);
+    }
+    if (prepend_bang)
+    {
+        *rslt   = SHPIPE_LEFT[0];
+        rslt[1] = EOS;
+        outidx  = 1;
+    }
+    else
+        *rslt = '\0';
+    strcat(rslt, "find ");
+    outidx += sizeof("find ") - 1;
+    path    = pinfo->dir_list;
+
+    /* add directory list to find command */
+    while ((path = parse_pathlist(path, buf)) != NULL)
+    {
+        if (! add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname))
+        {
+            free_vector(&vec, vecidx);
+            return (NULL);
+        }
+    }
+
+    /* worry about nonrecursive find */
+    if (pinfo->nonrecursive)
+    {
+        if (! add_token_to_cmd(&rslt, &outidx, &outlen, "-maxdepth 1", fnname))
+        {
+            free_vector(&vec, vecidx);
+            return (NULL);
+        }
+    }
+
+    if (vecidx > 1)
+    {
+        if (! add_token_to_cmd(&rslt, &outidx, &outlen, "'('", fnname))
+        {
+            free_vector(&vec, vecidx);
+            return (NULL);
+        }
+    }
+
+    qdelim = determine_quoted_delimiter();
+
+    /* add wildcards (if any) to find command */
+    for (i = 0; i < vecidx; i++)
+    {
+        sprintf(buf,
+                "%s-%sname %s%s%s",
+                (i > 0) ? "-o " : "",
+#if SYS_UNIX
+                "",
+#else
+                "i",     /* find uses case insensitive filename search */
+#endif
+                qdelim,
+                vec[i],
+                qdelim);
+        if (! add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname))
+        {
+            free_vector(&vec, vecidx);
+            return (NULL);
+        }
+    }
+    free_vector(&vec, vecidx);   /* don't need this anymore */
+
+    if (vecidx > 1)
+    {
+        if (! add_token_to_cmd(&rslt, &outidx, &outlen, "')'", fnname))
+            return (NULL);
+    }
+
+    /* terminate find string with "-print" (not needed for GNU find) */
+    if (! add_token_to_cmd(&rslt, &outidx, &outlen, "-print", fnname))
+        return (NULL);
+
+    /*
+     * filter out RCS/CVS directories and tags files.  we make the 
+     * assumption that the user's "find" creates filenames with
+     * '/' as a path delimiter.
+     *
+     * ========================== FIXME ==================================
+     * Note that this regular expression is simplistic and could be better
+     * if it ensured that "RCS/CVS" are preceded by '/' or nothing.
+     * ========================== FIXME ==================================
+     */
+    sprintf(buf,
+            "| egrep -v%s %s((RCS|CVS)/|/%s$)%s",
+#if SYS_UNIX
+            "",
+#else
+            "i",
+#endif
+            qdelim,
+#if SYS_UNIX
+            "[Tt][Aa][Gg][Ss]",
+#else
+            "tags",
+#endif
+            qdelim);
+    if (! add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname))
+        return (NULL);
+
+    /* finish off with xargs */
+    if (! add_token_to_cmd(&rslt, &outidx, &outlen, "| xargs", fnname))
+        return (NULL);
+    if (! add_token_to_cmd(&rslt, &outidx, &outlen, xargstr, fnname))
+        rslt = NULL;
+    else
+    {
+        rslt[outidx] = EOS;  /* terminate cmd string */
+        if (outidx > 0)
+        {
+            char *cp;
+
+            i  = --outidx;
+            cp = rslt + outidx;
+            while (isSpace(*cp) && i > 0)
+            {
+                cp--;
+                i--;
+            }
+            if (cp != rslt + outidx)
+            {
+                /* white space found at end of string, trim it. */
+
+                cp[1] = EOS;
+            }
+        }
+    }
+    return (rslt);
+}
+
+#endif   /* OPT_FINDPATH */
