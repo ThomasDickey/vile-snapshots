@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.83 1996/12/09 02:02:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.84 1997/01/10 11:07:43 tom Exp $
  */
 
 #include	"estruct.h"
@@ -45,9 +45,7 @@ pregion(int flag)
 		return FALSE;
 	}
 
-	if (bp == curbp
-	 || find_b_name(BUFFERLIST_BufName) != 0 /* patch */
-		) {
+	if (bp == curbp) {
 		mlforce("[Can't do that from this buffer.]");
 		return FALSE;
 	}
@@ -65,14 +63,14 @@ pregion(int flag)
 	do {
 		if (!addline(bp, linep->l_text, llength(linep)))
 			break;	/* out of memory */
-		if (flag & PNUMS && !isInternalName(oldbp->b_fname)) {
+		if (flag & PNUMS) {
 			BUFFER *savebp = curbp;
 			WINDOW *savewp = curwp;
 			curbp = bp;
 			curwp = bp2any_wp(bp);
 			DOT.l = lback(buf_head(bp));
 			DOT.o = 0;
-			bprintf("%s:%d:", oldbp->b_fname, line_no(oldbp, linep));
+			bprintf("%s:%d:", oldbp->b_bname, line_no(oldbp, linep));
 			DOT.o = 0;
 			curbp = savebp;
 			curwp = savewp;

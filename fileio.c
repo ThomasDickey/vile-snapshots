@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.113 1996/12/23 22:06:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.114 1997/01/10 11:07:43 tom Exp $
  *
  */
 
@@ -627,7 +627,7 @@ ffgetline(
 int *lenp)	/* to return the final length */
 {
         register int c;		/* current character read */
-        register int i;		/* current index into fline */
+        register ALLOC_T i;	/* current index into fline */
 	register char *tmpline;	/* temp storage for expanding line */
 
 	/* if we are at the end...return it */

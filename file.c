@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.198 1996/10/17 10:44:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.199 1997/01/10 11:07:43 tom Exp $
  *
  */
 
@@ -876,9 +876,9 @@ quickreadf(register BUFFER *bp, int *nlinep)
 	 && bp->b_key[0]) {	/* decrypt the file */
 	 	char	temp[NPAT];
 		(void)strcpy(temp, bp->b_key);
-		ue_crypt((char *)NULL, 0);
-		ue_crypt(temp, (int)strlen(temp));
-		ue_crypt((char *)&bp->b_ltext[1], len);
+		ue_crypt((char *)0, 0);
+		ue_crypt(temp, strlen(temp));
+		ue_crypt((char *)&bp->b_ltext[1], (ALLOC_T)len);
 	}
 #endif
 
@@ -1245,7 +1245,7 @@ char *name)	/* name to check on */
 	char suffixbuf[NBUFN];
 	int suffixlen;
 	int i = 0;
-	int k;
+	SIZE_T k;
 
 	j = strlen(name);
 	if (j == 0)
@@ -1853,15 +1853,15 @@ imdying(int ACTUAL_SIG_ARGS)
 				(void)strcpy(hostname, "unknown");
 			hostname[sizeof(hostname)-1] = EOS;
 #endif
-			(void)lsprintf(cmd, "%s%s%s%s%s%s%s%s%s%s%s%s%s%s",
-			"(echo To: ", np, ";", "echo Subject: vile died; ",
+			(void)lsprintf(cmd, "%s%s;%s%d;%s%s;%s%s%s%s%s",
+			"(echo To: ", np,
+			"echo Subject: vile died with signal ", signo,
 			"echo Files saved in directory ", dirnam,
 #if HAVE_GETHOSTNAME
 			" on host ", hostname,
 #else
 			", host unknown", "",
 #endif
-			": ;",
 #if HAVE_MKDIR
 			"ls -a ", dirnam, " | sort -r)",
 #else
@@ -1938,12 +1938,12 @@ const char *fname)
 
 		/* and set up the key to be used! */
 		/* de-encrypt it */
-		ue_crypt((char *)NULL, 0);
-		ue_crypt(bp->b_key, (int)strlen(bp->b_key));
+		ue_crypt((char *)0, 0);
+		ue_crypt(bp->b_key, strlen(bp->b_key));
 
 		/* re-encrypt it...seeding it to start */
-		ue_crypt((char *)NULL, 0);
-		ue_crypt(bp->b_key, (int)strlen(bp->b_key));
+		ue_crypt((char *)0, 0);
+		ue_crypt(bp->b_key, strlen(bp->b_key));
 	}
 
 	return TRUE;

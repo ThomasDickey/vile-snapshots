@@ -1,7 +1,7 @@
 /*	Crypt:	Encryption routines for MicroEMACS
  *		written by Dana Hoggatt and Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/crypt.c,v 1.15 1996/02/05 02:19:21 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/crypt.c,v 1.16 1997/01/10 11:07:43 tom Exp $
  *
  */
 
@@ -14,7 +14,7 @@ static	int	mod95 (int val);
 int
 ue_makekey(			/* make encryption key */
 char	*key,			/* where to write key */
-int	len)
+ALLOC_T	len)
 {
 	register int status;	/* return status */
 	int odisinp = disinp;	/* original value of disinp */
@@ -23,17 +23,17 @@ int	len)
 	/* turn command input echo off */
 	disinp = FALSE;
 
-	/* get the string to use as an encrytion string */
+	/* get the string to use as an encryption string */
 	temp[0] = EOS;
-	status = mlreply("Encryption String: ", temp, len-1);
+	status = mlreply("Encryption String: ", temp, (int)len-1);
 	disinp = odisinp;
 
         if (status == TRUE) {
 		(void)strcpy(key, temp);
 
 		/* and encrypt it */
-		ue_crypt((char *)NULL, 0);
-		ue_crypt(key, (int)strlen(key));
+		ue_crypt((char *)0, 0);
+		ue_crypt(key, strlen(key));
 	}
 	mlerase();		/* clear it off the bottom line */
 	return(status);
@@ -157,7 +157,7 @@ int n)		/* numeric argument */
 void
 ue_crypt(
 register char *bptr,	/* buffer of characters to be encrypted */
-register int len)	/* number of characters in the buffer */
+register ALLOC_T len)	/* number of characters in the buffer */
 {
 	register int cc;	/* current character being considered */
 

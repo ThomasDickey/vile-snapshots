@@ -1,6 +1,6 @@
 #
 # 'vile' and 'mktbls' makefile for IBM C Set ++ 2.x (OS/2)
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.4 1996/03/24 13:38:16 pgf Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.5 1997/01/10 11:07:43 tom Exp $
 #
 
 # 
@@ -117,7 +117,7 @@ VILE_CFG=	estruct.h nefkeys.h nemode.h edef.h proto.h
 
 basic$O:	$(VILE_CFG) basic.c 
 
-bind$O:	$(VILE_CFG) bind.c	epath.h	nefunc.h
+bind$O:	$(VILE_CFG) bind.c	nefunc.h
 
 buffer$O:	$(VILE_CFG) buffer.c 
 

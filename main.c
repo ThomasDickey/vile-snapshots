@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.284 1996/12/17 11:41:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.285 1997/01/10 11:10:43 tom Exp $
  *
  */
 
@@ -206,8 +206,8 @@ main(int argc, char *argv[])
 				GetArgVal(param);
 				(void)strcpy(ekey, param);
 				(void)memset(param, '.', strlen(param));
-				ue_crypt((char *)NULL, 0);
-				ue_crypt(ekey, (int)strlen(ekey));
+				ue_crypt((char *)0, 0);
+				ue_crypt(ekey, strlen(ekey));
 				break;
 #endif
 			case 's':  /* -s for initial search string */
@@ -450,15 +450,14 @@ main(int argc, char *argv[])
 					don't clobber it */
 #if SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
 			/* search PATH for vilerc under dos */
-			fname = flook(pathname[PATH_STARTUP_NAME],
-					FL_ANYWHERE|FL_READABLE);
+			fname = flook(startup_file, FL_ANYWHERE|FL_READABLE);
 			if (!fname)
-				fname = pathname[PATH_STARTUP_NAME];
+				fname = startup_file;
 #else
-			fname = pathname[PATH_STARTUP_NAME];
+			fname = startup_file;
 #endif
 			if (firstbp != 0
-			 && eql_bname(firstbp, pathname[PATH_STARTUP_NAME])) {
+			 && eql_bname(firstbp, startup_file)) {
 				char c;
 				c = firstbp->b_bname[0];
 				firstbp->b_bname[0] = SCRTCH_LEFT[0];
@@ -700,6 +699,9 @@ void
 tidy_exit(int code)
 {
 	ttclean (TRUE);
+#if SYS_UNIX
+	setup_handler(SIGHUP,SIG_IGN);
+#endif
 	ExitProgram(code);
 }
 
@@ -952,6 +954,22 @@ global_val_init(void)
 	set_global_w_val(WVAL_SIDEWAYS,	0);	/* list-mode */
 
 	helpfile = strmalloc("vile.hlp");
+
+#if	SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT || SYS_VMS
+	startup_file = strmalloc("vile.rc");
+#else	/* SYS_UNIX */
+	startup_file = strmalloc(".vilerc");
+#endif
+
+#if	SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
+	startup_path = strmalloc("\\sys\\public\\;\\usr\\bin\\;\\bin\\;\\");
+#else
+#if	SYS_VMS
+	startup_path = strmalloc("sys$login;sys$sysdevice:[vmstools];sys$library");
+#else	/* SYS_UNIX */
+	startup_path = strmalloc("/usr/local/lib/:/usr/local/:/usr/lib/");
+#endif
+#endif
 }
 
 #if SYS_UNIX || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT || SYS_VMS
@@ -1351,7 +1369,6 @@ quit(int f, int n)
 	mlerase();
 #endif
 #endif
-	ttclean(TRUE);
 #if NO_LEAKS
 	{
 		beginDisplay;		/* ...this may take a while... */
@@ -1390,7 +1407,7 @@ quit(int f, int n)
 		show_alloc();
 	}
 #endif
-	ExitProgram(GOODEXIT);
+	tidy_exit(GOODEXIT);
 	/* NOTREACHED */
 	return FALSE;
 }
