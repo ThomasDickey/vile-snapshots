@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.21 2000/02/27 21:48:21 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.22 2000/03/13 01:44:54 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -281,12 +281,11 @@ mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
 
 
 /*
- * vile's homegrown WIN32 system command. Refer to the w32_system()
- * DESCRIPTION below for the rationale behind this function.
+ * Semi-generic CreateProcess(). Refer to the w32_system()
+ * DESCRIPTION below for the rationale behind "no_wait" argument.
  */
-
-static int
-internal_system(char *cmd, int no_shell)
+int
+w32_CreateProcess(char *cmd, int no_wait)
 {
     PROCESS_INFORMATION  pi;
     int                  rc = -1;
@@ -294,7 +293,7 @@ internal_system(char *cmd, int no_shell)
 
     memset(&si, 0, sizeof(si));
     si.cb          = sizeof(si);
-    if (! no_shell)
+    if (! no_wait)
     {
         /* command requires a shell, so hookup console I/O */
 
@@ -307,7 +306,7 @@ internal_system(char *cmd, int no_shell)
                       cmd,
                       NULL,
                       NULL,
-                      ! no_shell,       /* Inherit handles */
+                      ! no_wait,       /* Inherit handles */
                       0,
                       NULL,
                       NULL,
@@ -315,7 +314,7 @@ internal_system(char *cmd, int no_shell)
                       &pi))
     {
         /* Success */
-        if (! no_shell)
+        if (! no_wait)
         {
             /* wait for shell process to exit */
 
@@ -395,7 +394,7 @@ w32_system(const char *cmd)
         }
     }
     set_console_title(cmd);
-    rc = internal_system(cmdstr, no_shell);
+    rc = w32_CreateProcess(cmdstr, no_shell);
     if (freestr)
         free(cmdstr);
     restore_console_title();

@@ -2284,6 +2284,7 @@ Programmed procedures and macros
 	$exec-suffix	suffix, if any, for execable programs	(read only)
 	$exit-hook	name of procedure to run when quitting
 	$fence-limit	iteration limit for complex fences
+	$filename-expr	actual pattern for %F in [Error Expressions]
 	$font		current font name (X11/winvile versions only)
 	$forward-search	search direction, true=forward
 	$helpfile	help-filename (vile.hlp)
@@ -2435,6 +2436,8 @@ Programmed procedures and macros
 	Primitive flow-of-control within a macro may be obtained with
 	certain directives.  Macro directives start with a "~" and include
 	the following:  (see the file macros.doc for more detail)
+
+	~trace cond	set $debug trace
 
 	~if cond	conditional execution
 	~elseif cond	conditional execution
@@ -4965,4 +4968,4 @@ Problems
 
 Copyright 1995-2000 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.479 2000/02/28 01:40:59 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.481 2000/03/14 03:16:48 tom Exp $

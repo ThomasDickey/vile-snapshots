@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.329 2000/02/27 22:09:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.330 2000/03/13 11:29:37 tom Exp $
  *
  */
 
@@ -3700,8 +3700,31 @@ bprintf(const char *fmt, ...)
 	va_start(ap,fmt);
 	dofmt(fmt,&ap);
 	va_end(ap);
-
 }
+
+#if OPT_EVAL || OPT_DEBUGMACROS
+/* printf into [Trace] */
+void
+tprintf(const char *fmt, ...)
+{
+	WINDOW *save_wp;
+	BUFFER *bp = make_ro_bp(TRACE_BufName, BFINVS);
+
+	if (bp != 0
+	 && (save_wp = push_fake_win(bp)) != 0) {
+		va_list ap;
+
+		dfoutfn = bputc;
+
+		va_start(ap,fmt);
+		dofmt(fmt,&ap);
+		va_end(ap);
+
+		b_clr_changed(bp);
+		pop_fake_win(save_wp);
+	}
+}
+#endif
 
 #if defined( SIGWINCH) && ! DISP_X11
 /* ARGSUSED */

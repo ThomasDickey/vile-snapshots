@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.213 2000/01/15 13:19:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.214 2000/03/14 01:16:47 tom Exp $
  *
  */
 
@@ -860,7 +860,7 @@ UINT	options)
 			return FALSE;
 
 		bp = (c == EXPC_THIS) ? curbp : find_alt();
-		if (bp == 0 || b_is_invisible(bp)) {
+		if (bp == 0) {
 			kbd_alarm();	/* complain a little */
 			return FALSE;	/* ...and let the user type it as-is */
 		}

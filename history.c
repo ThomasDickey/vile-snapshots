@@ -63,7 +63,7 @@
  *
  *	Allow left/right scrolling of input lines (when they get too long).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.52 1999/09/04 15:16:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.53 2000/03/13 02:57:34 tom Exp $
  *
  */
 
@@ -86,7 +86,6 @@ typedef	struct	{
 /*--------------------------------------------------------------------------*/
 static	void	stopMyBuff (void);
 
-static	const char *MyBuff = HISTORY_BufName;
 static	TBUFF	*MyText;	/* current command to display */
 static	int	MyGlue,		/* most recent eolchar */
 		MyLevel;	/* logging iff level is 1 */
@@ -100,11 +99,7 @@ makeMyBuff(void)
 
 	if (!global_g_val(GMDHISTORY)) {
 		bp = 0;
-	} else if ((bp = bfind(MyBuff, BFINVS)) != 0) {
-		b_set_invisible(bp);
-		b_clr_scratch(bp); /* make it nonvolatile */
-		set_rdonly(bp, non_filename(), MDVIEW);
-	} else {
+	} else if ((bp = make_ro_bp(HISTORY_BufName, BFINVS)) == 0) {
 		stopMyBuff();
 	}
 	return bp;
@@ -115,7 +110,7 @@ stopMyBuff(void)
 {
 	register BUFFER *bp;
 
-	if ((bp = find_b_name(MyBuff)) != 0)
+	if ((bp = find_b_name(HISTORY_BufName)) != 0)
 		(void)zotbuf(bp);
 
 	tb_free(&MyText);

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.266 2000/02/27 23:53:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.268 2000/03/14 10:40:15 tom Exp $
  *
  */
 
@@ -42,7 +42,7 @@ static PROC_ARGS *arg_stack;
 static	SIZE_T	s2size ( char *s );
 static	char *	s2offset ( char *s, char *n );
 static	int	PromptAndSet ( const char *var, int f, int n );
-static	int	SetVarValue ( VWRAP *var, const char *value );
+static	int	SetVarValue ( VWRAP *var, const char *name, const char *value );
 static	int	lookup_statevar(const char *vname);
 #endif
 
@@ -573,7 +573,7 @@ run_func(int fnum)
 	ret_numeric = vl_ufuncs[fnum].f_code & NRET;
 	ret_boolean = vl_ufuncs[fnum].f_code & BRET;
 
-	TRACE(("evaluate '%s' (%#x), %d args\n",
+	TPRINTF(("** evaluate '%s' (0x%x), %d args",
 			vl_ufuncs[fnum].f_name,
 			vl_ufuncs[fnum].f_code,
 			nargs));
@@ -584,7 +584,7 @@ run_func(int fnum)
 		if ((arg[i] = mac_tokval(&args[i])) == 0)
 			return error_val;
 		tb_free(&result); /* in case mac_tokval() called us */
-		TRACE(("...arg[%d] = '%s'\n", i, arg[i]));
+		TPRINTF(("...arg[%d] = '%s'", i, arg[i]));
 		if (args_numeric)
 			nums[i] = scan_int(arg[i]);
 		else if (args_boolean)
@@ -807,7 +807,7 @@ run_func(int fnum)
 	else if (ret_boolean)
 		render_boolean(&result, i);
 
-	TRACE(("-> '%s'\n", tb_values(result)));
+	TPRINTF(("-> '%s'", tb_values(result)));
 	for (i = 0; i < nargs; i++) {
 		tb_free(&args[i]);
 	}
@@ -1004,7 +1004,7 @@ PromptAndSet(const char *name, int f, int n)
 				return status;
 		}
 
-		status = SetVarValue(&vd, value);
+		status = SetVarValue(&vd, var, value);
 
 		if (status == ABORT) {
 			mlforce("[Variable %s is readonly]", var);
@@ -1052,6 +1052,8 @@ set_state_variable(const char *name, const char *value)
 	int status;
 	char var[NLINE];
 
+	TRACE(("set_state_variable(%s,%s)\n", name, value));
+
 	/* it may not be "marked" yet -- unadorned names are assumed to
 	 *  be "state variables
 	 */
@@ -1065,12 +1067,14 @@ set_state_variable(const char *name, const char *value)
 	if (value != NULL) { /* value supplied */
 		VWRAP vd;
 		FindVar(var, &vd);
-		status = SetVarValue(&vd, value);
+		status = SetVarValue(&vd, var, value);
 	} else { /* no value supplied:  interactive */
 		status = PromptAndSet(var, FALSE, 0);
 	}
 
 	updatelistvariables();
+
+	TRACE(("...set_state_variable ->%d\n", status));
 	return status;
 }
 
@@ -1086,16 +1090,27 @@ set_statevar_val(int vnum, const char *value)
 /* figure out what type of variable we're setting, and do so */
 static int
 SetVarValue(
-VWRAP *var,		/* name */
-const char *value)	/* value */
+VWRAP *var,
+const char *name,
+const char *value)
 {
 	int status;
+	char *savestr;
+	VALARGS	args;
 
 	status = TRUE;
 	switch (var->v_type) {
 	case VW_NOVAR:
-	case VW_MODE:
 		return FALSE;
+
+	case VW_MODE:
+		savestr = execstr;
+		execstr = TYPECAST(char,value);
+		(void)find_mode(curbp, name+1, -TRUE, &args);
+		set_end_string('=');
+		status = adjvalueset(name+1, FALSE, TRUE, -TRUE, &args);
+		execstr = savestr;
+		break;
 
 	case VW_TEMPVAR:
 		FreeIfNeeded(var->v_ptr->u_value);
@@ -1628,7 +1643,7 @@ save_arguments(BUFFER *bp)
 		tokval(tb_values(p->all_args[num_args])));
 	else
 	    tb_scopy(&(p->all_args[num_args]), "");
-	TRACE(("...ARG%d:%s\n", num_args, tb_values(p->all_args[num_args])));
+	TPRINTF(("...ARG%d:%s\n", num_args, tb_values(p->all_args[num_args])));
 	num_args++;
     }
 

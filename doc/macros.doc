@@ -408,7 +408,8 @@ State Variables
 			current window.
 
 	$debug          Boolean value which enables runtime tracing
-			of macro execution.
+			of macro execution.  This can be set in the
+			~trace command as well as via set-variable.
 
 	$directory      Location of temp files.  This is unused, but
 			its initial value is set from the user's
@@ -441,6 +442,8 @@ State Variables
 	$exit-hook      Name of procedure to run when quitting.
 
 	$fence-limit	iteration limit for complex fences, in seconds.
+
+	$filename-expr	actual pattern for %F in [Error Expressions]
 
 	$font           Name of the current font (in xvile/winvile only).
 
@@ -979,6 +982,28 @@ Directives
 		define-submode txt comment-prefix "^\\s*/\\?--"
 		define-submode txt comments "^\\s*/\\?--\\s+/\\?\\s*$"
 
+    ~trace
+    ------
+	No program is complete without a few bugs.  Use vile's builtin
+	macro tracing to see what the macros really do.  The ~trace command
+	sets the $debug variable, which controls whether vile appends to
+	the [Trace] buffer a copy of each line executed, the local
+	variables saved/restored and intermediate states of expression
+	evaluation.
+
+	For example,
+
+		~trace on
+
+	activates tracing,
+
+		~trace off
+
+	deactivates it, and
+
+		~trace
+
+	prints a message telling if tracing is active.
 
 
 Editor commands
@@ -1273,6 +1298,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.46 2000/02/28 00:28:25 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.48 2000/03/14 03:16:59 tom Exp $
 -----------------------------------
 

@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.145 2000/02/27 20:07:05 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.146 2000/02/29 22:31:10 tom Exp $
  *
  */
 
@@ -25,8 +25,6 @@
 #ifndef EISDIR
 #define EISDIR EACCES
 #endif
-
-static char *freadbuf;  /* allocated once per invocation of editor */
 
 /*--------------------------------------------------------------------------*/
 
@@ -53,10 +51,10 @@ copy_file (const char *src, const char *dst)
 		if ((ofp = fopen(dst, FOPEN_WRITE)) != 0) {
 			ok = TRUE;
 			for_ever {
-				chr = fgetc(ifp);
+				chr = getc(ifp);
 				if (feof(ifp))
 					break;
-				fputc(chr, ofp);
+				putc(chr, ofp);
 				if (ferror(ifp) || ferror(ofp)) {
 					ok = FALSE;
 					break;
@@ -649,7 +647,7 @@ ffputc(int c)
 	if (ffcrypting && !fileispipe)
 		d = vl_encrypt_char(d);
 #endif
-	fputc(d, ffp);
+	putc(d, ffp);
 
 	if (ferror(ffp)) {
 		mlerror("writing");
@@ -671,43 +669,22 @@ int *lenp)	/* to return the final length */
 {
 	register int c;
 	register ALLOC_T i;	/* current index into fflinebuf */
-	int nbytes;
-	static char *end, *cp;
 
 	if (fileeof)
 		return(FIOEOF);
 
-	/* be sure buffers exist */
-	if (!fflinebuf) {
-		if (!freadbuf) {
-		    freadbuf = castalloc(char, BUFSIZ);
-		    if (!freadbuf)
-			    return(FIOMEM);
-		}
-		fflinebuf = castalloc(char, fflinelen = NSTRING);
-		if (!fflinebuf)
-			return(FIOMEM);
-	}
+	/* be sure there's a buffer */
+	if (!fflinebuf)
+		fflinebuf = castalloc(char,fflinelen = NSTRING);
+	if (!fflinebuf)
+		return(FIOMEM);
 
 	/* accumulate to a newline */
 	i = 0;
 	for_ever {
-		if (cp != end)
-			c = *cp++;
-		else {
-			nbytes = fread(freadbuf, sizeof(char), BUFSIZ, ffp);
-			if (nbytes > 0) {
-				cp  = freadbuf;
-				end = freadbuf + nbytes;
-				c   = *cp++;
-			} else {
-				c   = EOF;
-				end = cp = NULL; /* prime pump for next
-						  * ffgetline() invocation.
-						  */
-				break;
-			}
-		}
+		c = getc(ffp);
+		if (feof(ffp) || ferror(ffp))
+			break;
 #if	OPT_ENCRYPT
 		if (ffcrypting && !fileispipe)
 			c = vl_encrypt_char(c);
@@ -807,6 +784,5 @@ ffhasdata(void)
 void fileio_leaks(void)
 {
 	free_fline();
-	FreeAndNull(freadbuf);
 }
 #endif

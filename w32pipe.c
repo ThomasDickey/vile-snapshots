@@ -55,7 +55,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.19 2000/01/15 13:32:58 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.20 2000/02/29 22:43:08 tom Exp $
  */
 
 #include <windows.h>
@@ -309,7 +309,7 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
             {
                  /* Shell process failed, put complaint in user's face. */
 
-                fputc('\n', stdout);
+                putc('\n', stdout);
                 printf(SHELL_ERR_MSG, get_shell());
                 fflush(stdout);
             }

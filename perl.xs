@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.71 2000/01/14 00:47:09 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.72 2000/03/14 01:24:44 bod Exp $
  */
 
 /*#
@@ -2510,8 +2510,9 @@ register(name, ...)
 	if (!(cmd = typecalloc(CMDFUNC)))
 	    croak("Can't allocate space");
 
+	ix |= (ix == OPER) ? RANGE : VIEWOK;
 	cmd->cu.c_perl = av = newAV();
-	cmd->c_flags = REDO|UNDO|VIEWOK|CMD_PERL|ix;
+	cmd->c_flags = REDO|UNDO|CMD_PERL|ix;
 #if OPT_ONLINEHELP
 	cmd->c_help = strmalloc((items > 2 && SvTRUE(ST(2)))
 				? SvPV(ST(2), na)
