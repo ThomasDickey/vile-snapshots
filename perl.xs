@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.46 1999/07/01 10:18:25 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.47 1999/09/03 23:34:00 tom Exp $
  */
 
 /*#
@@ -2120,7 +2120,7 @@ set(...)
 			argno++;
 		    }
 
-		    if (set_mode_value(curbp, mode, TRUE, isglobal, &args, val) != TRUE) {
+		    if (set_mode_value(curbp, mode, FALSE, TRUE, isglobal, &args, val) != TRUE) {
 			if (modenames) free(modenames);
 			croak("set: Invalid value %s for mode %s", val, mode);
 		    }

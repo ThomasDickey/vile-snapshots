@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.117 1999/07/02 10:42:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.118 1999/09/04 15:16:16 tom Exp $
  *
  */
 
@@ -488,7 +488,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 		}
 
 
-		if (isspecial(c)) {
+		if (isSpecial(c)) {
 			/* if we're allowed to honor SPEC bindings,
 				then see if it's bound to something, and
 				execute it */
@@ -657,8 +657,8 @@ inschar(int c, int *backsp_limit_p)
 		if (wrap_at_col(c)) {
 			int offset = past_wrapmargin(c);
 			int wm_flag = (offset >= 0);
-			int is_print = (!isspecial(c) && isPrint(c));
-			int is_space = (!isspecial(c) && isSpace(c));
+			int is_print = (!isSpecial(c) && isPrint(c));
+			int is_space = (!isSpecial(c) && isSpace(c));
 
 			if (is_space
 			 || (is_print && (offset >= 1) && blanks_on_line())) {

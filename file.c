@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.251 1999/07/17 15:12:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.253 1999/09/03 10:20:11 tom Exp $
  */
 
 #include	"estruct.h"
@@ -639,12 +639,11 @@ int lockfl)		/* check the file for locks? */
 	return bp2swbuffer(bp, isShellOrPipe(bp->b_fname), lockfl);
 }
 
+#if OPT_DOSFILES
 /*
  * Scan a buffer to see if it contains more lines terminated by CR-LF than by
  * LF alone.  If so, set the DOS-mode to true, otherwise false.
- */
-#if OPT_DOSFILES
-/*
+ *
  * If the given buffer is one that we're sourcing (e.g., with ":so"), or
  * specified in initialization, we require that _all_ of the lines end with
  * ^M's before deciding that it is DOS-style.  That is to protect us from
@@ -664,7 +663,15 @@ apply_dosmode(BUFFER *bp, int doslines, int unixlines)
 	} else {
 		result = (doslines MORETHAN unixlines);
 	}
+	/*
+	 * Make 'dos' and 'recordseparator' modes local, since this
+	 * transformation should apply only to the specified file.
+	 */
+	make_local_b_val(bp, MDDOS);
+	make_local_b_val(bp, VAL_RECORD_SEP);
+
 	set_b_val(bp, MDDOS, result);
+	set_b_val(bp, VAL_RECORD_SEP, result ? RS_CRLF : RS_LF);
 }
 
 static void
@@ -673,6 +680,7 @@ strip_if_dosmode(BUFFER *bp, int doslines, int unixlines)
 	apply_dosmode(bp, doslines, unixlines);
 	if (b_val(bp, MDDOS)) {  /* if it _is_ a dos file, strip 'em */
 		register LINE   *lp;
+		TRACE(("stripping CR's for dosmode\n"))
 		for_each_line(lp,bp) {
 			if (llength(lp) > 0 &&
 				  lgetc(lp, llength(lp)-1) == '\r') {
@@ -690,7 +698,6 @@ guess_dosmode(BUFFER *bp)
 		unixlines = 0;
 	register LINE *lp;
 
-	make_local_b_val(bp, MDDOS);	/* keep it local, if not */
 	/* first count 'em */
 	for_each_line(lp,bp) {
 		if (llength(lp) > 0 &&
@@ -700,35 +707,56 @@ guess_dosmode(BUFFER *bp)
 			unixlines++;
 		}
 	}
+	/* then strip 'em */
 	strip_if_dosmode(bp, doslines, unixlines);
 	TRACE(("guess_dosmode %d\n", b_val(bp, MDDOS)))
 }
 
 /*
+ * Forces the current buffer to be either 'dos' or 'unix' format.
+ */
+static void
+explicit_dosmode(int flag)
+{
+	make_local_b_val(curbp, MDDOS);
+	make_local_b_val(curbp, VAL_RECORD_SEP);
+
+	set_b_val(curbp, MDDOS, flag);
+	set_b_val(curbp, VAL_RECORD_SEP, flag ? RS_CRLF : RS_LF);
+}
+
+/*
+ * Recompute the buffer size, redisplay the [Settings] buffer.
+ */
+static int
+modified_dosmode(int flag)
+{
+	explicit_dosmode(flag);
+	guess_dosmode(curbp);
+	explicit_dosmode(flag);	/* ignore the guess - only want to strip CR's */
+	set_record_sep(curbp, b_val(curbp, VAL_RECORD_SEP));
+	curwp->w_flag |= WFMODE|WFHARD;
+	return TRUE;
+}
+
+/*
  * Forces the current buffer to be in DOS-mode, stripping any trailing CR's.
- * ( any argument forces non-DOS mode, trailing CR's still stripped )
  */
 /*ARGSUSED*/
 int
-set_dosmode(int f, int n GCC_UNUSED)
+set_dosmode(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	guess_dosmode(curbp);
-
-	/* force dos mode on the buffer, based on the user argument */
-	set_b_val(curbp, MDDOS, !f);
-
-	curwp->w_flag |= WFMODE|WFHARD;
-	return TRUE;
+	return modified_dosmode(TRUE);
 }
 
 /* as above, but forces unix-mode instead */
 /*ARGSUSED*/
 int
-set_unixmode(int f, int n)
+set_unixmode(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	return set_dosmode(!f, n);
+	return modified_dosmode(FALSE);
 }
-#endif
+#endif /* OPT_DOSFILES */
 
 #if OPT_LCKFILES
 static void
@@ -1495,13 +1523,7 @@ int	forced)
 	register int i;
 	char	fname[NFILEN], *fn;
 	B_COUNT	nchar;
-	const char * ending =
-#if OPT_DOSFILES
-			b_val(bp, MDDOS) ? "\r\n" : "\n"
-#else
-			"\n"
-#endif	/* OPT_DOSFILES */
-		;
+	const char * ending = get_record_sep(bp);
 	C_NUM	offset = rp->r_orig.o;
 
 	/* this is adequate as long as we cannot write parts of lines */

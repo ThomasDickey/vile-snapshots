@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.169 1999/08/22 01:31:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.172 1999/09/03 23:20:30 tom Exp $
  *
  */
 
@@ -846,6 +846,9 @@ struct FSM fsm_tbl[] = {
 #if SYS_VMS
 	{ "record-format",   fsm_recordformat_choices },
 #endif
+#if OPT_RECORDSEP_CHOICES
+	{ "recordseparator", fsm_recordsep_choices },
+#endif
 };
 
 static int fsm_idx;
@@ -950,6 +953,7 @@ fsm_complete(int c, char *buf, unsigned *pos)
 int
 adjvalueset(
 const char *cp,			/* name of the mode we are changing */
+int defining,			/* for majormodes, suppress side_effect */
 int setting,			/* true if setting, false if unsetting */
 int global,
 VALARGS *args)			/* symbol-table entry for the mode */
@@ -971,7 +975,8 @@ VALARGS *args)			/* symbol-table entry for the mode */
 	/*
 	 * Check if we're allowed to change this mode in the current context.
 	 */
-	if ((names->side_effect != 0)
+	if (!defining
+	 && (names->side_effect != 0)
 	 && !(*(names->side_effect))(args, (values==globls), TRUE)) {
 		return FALSE;
 	 }
@@ -1006,14 +1011,14 @@ VALARGS *args)			/* symbol-table entry for the mode */
 	else
 		hst_glue(' ');
 #endif
-	status = set_mode_value(curbp, cp, setting, global, args, rp);
+	status = set_mode_value(curbp, cp, defining, setting, global, args, rp);
 	TRACE(("...adjvalueset(%s)=%d\n", cp, status))
 
 	return status;
 }
 
 int
-set_mode_value(BUFFER *bp, const char *cp, int setting, int global, VALARGS *args, const char *rp)
+set_mode_value(BUFFER *bp, const char *cp, int defining, int setting, int global, VALARGS *args, const char *rp)
 {
 	const struct VALNAMES *names = args->names;
 	struct VAL     *values = args->local;
@@ -1035,7 +1040,8 @@ set_mode_value(BUFFER *bp, const char *cp, int setting, int global, VALARGS *arg
 		/*
 		 * Check if we're allowed to change this mode in the current context.
 		 */
-		if ((names->side_effect != 0)
+		if (!defining
+		 && (names->side_effect != 0)
 		 && !(*(names->side_effect))(args, (values==globls), TRUE)) {
 			return FALSE;
 		}
@@ -1148,7 +1154,8 @@ set_mode_value(BUFFER *bp, const char *cp, int setting, int global, VALARGS *arg
 	if (!same_val(names, values, &oldvalue))
 		changed = TRUE;
 
-	if (changed
+	if (!defining
+	 && changed
 	 && (names->side_effect != 0)
 	 && !(*(names->side_effect))(args, (values==globls), FALSE))
 		status = FALSE;
@@ -1385,7 +1392,7 @@ do_a_mode(int kind, int global)
 #else
 		mlforce("[Not a legal set option: \"%s\"]", tb_values(cbuf));
 #endif
-	} else if ((s = adjvalueset(tb_values(cbuf), kind, global, &args)) != 0) {
+	} else if ((s = adjvalueset(tb_values(cbuf), FALSE, kind, global, &args)) != 0) {
 		if (s == TRUE)
 			mlerase();	/* erase the junk */
 		return s;
@@ -1711,6 +1718,50 @@ chgd_major_w(VALARGS *args, int glob_vals, int testing)
 
 	set_winflags(glob_vals, WFHARD|WFMODE);
 	return TRUE;
+}
+
+char *
+get_record_sep(BUFFER *bp)
+{
+	char *s = "";
+
+	switch (b_val(bp, VAL_RECORD_SEP)) {
+	case RS_LF:
+		s = "\n";
+		break;
+	case RS_CRLF:
+		s = "\r\n";
+		break;
+	case RS_CR:
+		s = "\r";
+		break;
+	}
+
+	return s;
+}
+
+void
+set_record_sep(BUFFER *bp, RECORD_SEP value)
+{
+	set_b_val(bp, MDDOS, (value == RS_CRLF));
+	set_b_val(bp, VAL_RECORD_SEP, value);
+	b_clr_counted(bp);
+	(void)bsizes(bp);
+	relist_settings();
+	updatelistbuffers();
+}
+
+	/* Change the record separator */
+int
+chgd_rs(VALARGS *args, int glob_vals, int testing)
+{
+	if (!testing) {
+		if (curbp == 0)
+			return FALSE;
+		set_record_sep(curbp, args->local->vp->i);
+	}
+
+	return chgd_major_w(args, glob_vals, testing);
 }
 
 	/* Change something on the mode/status line */
@@ -2276,7 +2327,7 @@ static int ok_subqual(MAJORMODE *ptr, char *name)
 	args.global += j;
 	args.local  += j;
 
-	return adjvalueset(name, TRUE, FALSE, &args);
+	return adjvalueset(name, TRUE, TRUE, FALSE, &args);
 }
 
 static int
@@ -2316,6 +2367,7 @@ static int
 attach_mmode(BUFFER *bp, const char *name)
 {
 	int n;
+	VALARGS args;
 
 	if (bp != 0) {
 		if (bp->majr != 0
@@ -2331,6 +2383,25 @@ attach_mmode(BUFFER *bp, const char *name)
 				if (!is_local_b_val(bp,n)
 				 && is_local_val(mm,n)) {
 					make_global_val(bp->b_values.bv, mm, n);
+					if (b_valnames[n].side_effect != 0) {
+						args.names = &(b_valnames[n]);
+						args.local = &(bp->b_values.bv[n]);
+						args.global = &mm[n];
+						b_valnames[n].side_effect(&args,
+						 			TRUE,
+									FALSE);
+					}
+				} else if (n == MDDOS
+				 && is_local_val(mm,n)
+				 && !b_val(bp,n)) {
+					/*
+					 * This is a special case - we need a
+					 * way to force vile to go back and
+					 * strip the ^M's from the end of each
+					 * line when reading a .bat file on
+					 * a Unix system.
+					 */
+					set_dosmode(0,1);
 				}
 			}
 			return TRUE;
@@ -2767,7 +2838,7 @@ do_a_submode(int defining)
 	/*
 	 * We store submodes in the majormode as local values.
 	 */
-	status = adjvalueset(subname, defining, FALSE, &args);
+	status = adjvalueset(subname, TRUE, defining, FALSE, &args);
 
 	/*
 	 * Check if we deleted one of the qualifiers, since there's no global

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.238 1999/08/29 23:45:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.239 1999/09/03 11:00:30 tom Exp $
  *
  */
 
@@ -966,7 +966,7 @@ PromptAndSet(const char *name, int f, int n)
 		VALARGS	args;
 		(void)find_mode(curbp, var+1, -TRUE, &args);
 		set_end_string('=');
-		status = adjvalueset(var+1, TRUE, -TRUE, &args);
+		status = adjvalueset(var+1, FALSE, TRUE, -TRUE, &args);
 	} else {
 		if (f == TRUE) {  /* new (numeric) value passed as arg */
 			static TBUFF *tmp;

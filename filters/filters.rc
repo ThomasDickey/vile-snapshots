@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.77 1999/08/26 21:44:39 tom Exp $
+; $Id: filters.rc,v 1.79 1999/09/03 23:37:08 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -284,7 +284,7 @@ define-mode SCCS
 ; This is matched after "csh", and will pick up /bin/sh, /bin/bash, /bin/ksh
 define-mode sh
 ~with define-submode sh
-	suf "\\.sh$"
+	suf "\\.\\(sh\\|ksh\\)$"
 	pre "^\\(#!\\s*\\/.*sh\\>\\s*\\(-[a-z]\\+\\s*\\)*\\|:\\)$"
 	comment-prefix	"^\\s*[:#]"
 	comments	"^\\s*[:#]\\s*$"

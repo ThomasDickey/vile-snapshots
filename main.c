@@ -23,7 +23,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.394 1999/08/22 02:11:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.398 1999/09/04 15:16:16 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -1009,6 +1009,7 @@ global_val_init(void)
 #endif
 	set_global_b_val(MDIGNCASE,	FALSE); /* exact matches */
 	set_global_b_val(MDDOS,	CRLF_LINES);	/* on by default on DOS, off others */
+	set_global_b_val(VAL_RECORD_SEP, CRLF_LINES ? RS_CRLF : RS_LF);
 	set_global_b_val(MDMAGIC,	TRUE);	/* magic searches */
 	set_global_b_val(MDMETAINSBIND, TRUE);	/* honor meta-bindings when
 							in insert mode */
@@ -1141,47 +1142,35 @@ global_val_init(void)
 	}
 	startup_file = strmalloc(s);
 
-	if ((s = getenv("VILE_STARTUP_PATH")) == 0) {
+	if ((s = getenv("VILE_STARTUP_PATH")) != 0) {
+		append_to_path_list(&startup_path, s);
+	} else {
 #if	SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
-		s = "\\sys\\public\\;\\usr\\bin\\;\\bin\\;\\";
+		append_to_path_list(&startup_path, "/sys/public");
+		append_to_path_list(&startup_path, "/usr/bin");
+		append_to_path_list(&startup_path, "/bin");
+		append_to_path_list(&startup_path, "/");
 #else
 #if	SYS_VMS
-		s = "sys$login,sys$sysdevice:[vmstools],sys$library";
+		append_to_path_list(&startup_path, "sys$login");
+		append_to_path_list(&startup_path, "sys$sysdevice:[vmstools]");
+		append_to_path_list(&startup_path, "sys$library");
 #else	/* SYS_UNIX */
 #if	defined(VILE_STARTUP_PATH)
-		s = VILE_STARTUP_PATH;
+		append_to_path_list(&startup_path, VILE_STARTUP_PATH);
 #else
-		s = "/usr/local/lib/:/usr/local/:/usr/lib/";
-#endif
-#endif
-#endif
+		append_to_path_list(&startup_path, "/usr/local/lib");
+		append_to_path_list(&startup_path, "/usr/local");
+		append_to_path_list(&startup_path, "/usr/lib");
+#endif	/* VILE_STARTUP_PATH */
+#endif	/* SYS_VMS... */
+#endif	/* SYS_MSDOS...*/
 	}
-	startup_path = strmalloc(s);
 
 #ifdef	HELP_LOC
-	/*
-	 * *NIX install will define this
-	 */
-	{
-		char temp[NFILEN];
-		int found = FALSE;
-		const char *t = startup_path;
-
-		while ((t = parse_pathlist(t, temp)) != 0) {
-			if (!strcmp(temp, HELP_LOC)) {
-				found = TRUE;
-				break;
-			}
-		}
-		if (!found) {
-			s = typeallocn(char, strlen(HELP_LOC) + 2 + strlen(startup_path));
-			lsprintf(s, "%s%c%s", HELP_LOC, vl_pathsep, startup_path);
-			if (startup_path != NULL)	/* memory leak! */
-			    free(startup_path);
-			startup_path = s;
-		}
-	}
+	append_to_path_list(&startup_path, HELP_LOC);
 #endif
+
 	if (!(s = getenv("VILE_LIBDIR_PATH")))
 	{
 #ifdef VILE_LIBDIR_PATH
@@ -1355,7 +1344,7 @@ do_num_proc(int *cp, int *fp, int *np)
 
 	c = *cp;
 
-	if (isCntrl(c) || isspecial(c))
+	if (isCntrl(c) || isSpecial(c))
 		return;
 
 	f = *fp;
@@ -1370,7 +1359,7 @@ do_num_proc(int *cp, int *fp, int *np)
 		n = 0;		/* start with a zero default */
 		f = TRUE;	/* there is a # arg */
 		mflag = 1;		/* current minus flag */
-		while ((isDigit(c) && !isspecial(c)) || (c == '-')) {
+		while ((isDigit(c) && !isSpecial(c)) || (c == '-')) {
 			if (c == '-') {
 				/* already hit a minus or digit? */
 				if ((mflag == -1) || (n != 0))
@@ -1417,7 +1406,7 @@ do_rept_arg_proc(int *cp, int *fp, int *np)
 	f = TRUE;	/* there is a # arg */
 	mflag = 0;			/* that can be discarded. */
 	mlwrite("arg: %d",n);
-	while ( (isDigit( c=kbd_seq() ) && !isspecial(c))
+	while ( (isDigit( c=kbd_seq() ) && !isSpecial(c))
 			|| c==reptc || c=='-'){
 		if (c == reptc)
 			n = n*4;

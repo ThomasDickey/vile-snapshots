@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.166 1999/08/29 22:19:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.167 1999/08/31 00:00:18 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -692,7 +692,13 @@ tttypahead(void)
 	}
 	return ( kbd_char_good );
 #  else
-	return FALSE;
+#   if (HAVE_SELECT && HAVE_TYPE_FD_SET) || (HAVE_POLL && HAVE_POLL_H) || defined(__BEOS__)
+	 /* use the watchinput part of catnap if it's useful */
+	 return catnap(10, TRUE);
+#   else
+	 /* otherwise give up */
+	 return FALSE;
+#   endif
 #  endif/* USE_FCNTL */
 # endif/* USE_FIONREAD */
 #endif	/* DISP_X11 */

@@ -2,12 +2,16 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.203 1999/08/17 11:08:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.205 1999/09/03 01:17:37 tom Exp $
  *
  */
 
 #ifdef _WIN32
 # include <windows.h>
+#endif
+
+#ifdef __BEOS__
+#include <OS.h>
 #endif
 
 #include	"estruct.h"
@@ -339,7 +343,7 @@ gotochr(int f, int n)
 {
 	LINE *lp;
 	int len;
-	int len_nl = b_val(curbp,MDDOS) ? 2 : 1;
+	int len_nl = strlen(get_record_sep(curbp));
 
 	if (!f) {
 		DOT.l = lback(buf_head(curbp));
@@ -682,14 +686,15 @@ userbeep(int f GCC_UNUSED, int n GCC_UNUSED)
 }
 #endif /* !SMALLER */
 
-
-/* delay for the given number of milliseconds.  if "watchinput" is true,
-	then user input will abort the delay */
-void
+/*
+ * Delay for the given number of milliseconds.  If "watchinput" is true,
+ * then user input will abort the delay.  Return true if we did find user input.
+ */
+int
 catnap(int milli, int watchinput)
 {
     if (milli == 0)
-	return;
+	return FALSE;
 #if DISP_X11
     if (watchinput)
 	x_typahead(milli);
@@ -719,12 +724,15 @@ catnap(int milli, int watchinput)
 #  if HAVE_SIGPROCMASK
 	sigprocmask(SIG_SETMASK, &oldset, (sigset_t*)0);
 #  endif
+	if (watchinput)
+		return FD_ISSET(0, &read_bits);
 
 # else
 #  if HAVE_POLL && HAVE_POLL_H
 
 	struct pollfd pfd;
 	int fdcnt;
+	int found;
 	if (watchinput) {
 		pfd.fd = 0;
 		pfd.events = POLLIN;
@@ -732,26 +740,56 @@ catnap(int milli, int watchinput)
 	} else {
 		fdcnt = 0;
 	}
-	(void)poll(&pfd, fdcnt, milli); /* milliseconds */
+	found = poll(&pfd, fdcnt, milli); /* milliseconds */
 
+	if (watchinput && (found > 0))
+		return found;
 #  else
+#   ifdef __BEOS__
+	/*
+	 * BeOS's select() is declared in socket.h, so the configure script does
+	 * not see it.  That's just as well, since that function works only for
+	 * sockets.  This (using snooze and ioctl) was distilled from Be's patch
+	 * for ncurses which uses a separate thread to simulate select().
+	 *
+	 * FIXME: the return values from the ioctl aren't very clear if we get
+	 * interrupted.
+	 */
+	if (watchinput) {
+		bigtime_t d;
+		bigtime_t useconds = milli * 1000;
+		int n, howmany;
+
+		for (d = 0; d < useconds; d += 5000) {
+			n = 0;
+			howmany = ioctl(0, 'ichr', &n);
+			if (howmany >= 0 && n > 0) {
+				return TRUE;
+			}
+			snooze(5000);
+		}
+	} else {
+		snooze(milli * 1000);
+	}
+#   else
 
 	int seconds = (milli + 999) / 1000;
 	if (watchinput)  {
 		while(seconds > 0) {
 			sleep(1);
 			if (term.typahead())
-				return;
+				return TRUE;
 			seconds -= 1;
 		}
 	} else {
 		sleep(seconds);
 	}
 
+#   endif
 #  endif
 # endif
 #define have_slept 1
-#endif
+#endif /* SYS_UNIX */
 
 #if SYS_VMS
 	float	seconds = milli/1000.;
@@ -760,7 +798,7 @@ catnap(int milli, int watchinput)
 		while(seconds > 0.1) {
 			lib$wait(&tenth);
 			if (term.typahead())
-				return;
+				return TRUE;
 			seconds -= tenth;
 		}
 	}
@@ -776,7 +814,7 @@ catnap(int milli, int watchinput)
 		while(milli > 100) {
 			delay(100);
 			if (term.typahead())
-				return;
+				return TRUE;
 			milli -= 100;
 		}
 	}
@@ -790,6 +828,7 @@ catnap(int milli, int watchinput)
 		;
 #endif
     }
+    return FALSE;
 }
 
 static char	current_dirname[NFILEN];

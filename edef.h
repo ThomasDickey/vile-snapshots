@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.254 1999/08/20 10:40:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.255 1999/09/01 00:35:08 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -351,6 +351,9 @@ decl_init_const( char SYSMAP_BufName[],		"");
 #endif
 #if OPT_SHOW_MARKS
 decl_init_const( char MARKS_BufName[],		"[Named Marks]");
+#endif
+#if OPT_SHOW_WHICH
+decl_init_const( char WHICH_BufName[],		"[Which Files]");
 #endif
 decl_init_const( char SETTINGS_BufName[],	"[Settings]");
 #if OPT_MAJORMODE

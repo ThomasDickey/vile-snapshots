@@ -63,7 +63,7 @@
  *
  *	Allow left/right scrolling of input lines (when they get too long).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.51 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.52 1999/09/04 15:16:16 tom Exp $
  *
  */
 
@@ -496,7 +496,7 @@ hst_scroll(LINE * lp1, HST * parm)
 }
 
 #undef isgraph
-#define	isgraph(c)	(!isspecial(c) && !isSpace(c) && isPrint(c))
+#define	isgraph(c)	(!isSpecial(c) && !isSpace(c) && isPrint(c))
 
 /*
  * Invoked on an escape-character, this processes history-editing until another
@@ -518,7 +518,7 @@ int	eolchar)
 
 	register int	c = *given;
 
-	if (!isspecial(c)) {
+	if (!isSpecial(c)) {
 		if (is_edit_char(c)
 		 || ABORTED(c)
 		 || (c == quotec)

@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.195 1999/08/20 01:05:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.198 1999/09/04 15:16:16 tom Exp $
  *
  */
 
@@ -81,7 +81,7 @@ eol_range(const char * buffer, unsigned cpos, int c, int eolchar GCC_UNUSED)
 	if (is_edit_char(c))
 		return FALSE;
 
-	if (isspecial(c)	/* sorry, cannot scroll with arrow keys */
+	if (isSpecial(c)	/* sorry, cannot scroll with arrow keys */
 	 || isCntrl(c))
 		return TRUE;
 
@@ -1163,7 +1163,7 @@ setup_macro_buffer(TBUFF *name, int flag)
 
 #if OPT_MAJORMODE
 	if ((status = find_mode(bp, "vilemode", FALSE, &args)) == TRUE) {
-	    (void)set_mode_value(bp, "vilemode", TRUE, FALSE, &args, (char*)0);
+	    (void)set_mode_value(bp, "vilemode", FALSE, TRUE, FALSE, &args, (char*)0);
 	}
 #endif
 
@@ -2079,13 +2079,7 @@ do_source(char *fname, int n, int optional)
 	char *fspec;		/* full file spec */
 
 	/* look up the path for the file */
-	fspec = cfg_locate(fname,
-#if SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
-		FL_ANYWHERE | FL_READABLE
-#else
-		FL_CDIR | FL_HOME | FL_STARTPATH | FL_READABLE
-#endif
-		);
+	fspec = cfg_locate(fname, LOCATE_SOURCE);
 
 	/* nonexistant */
 	if (fspec == NULL)

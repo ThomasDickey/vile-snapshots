@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.411 1999/08/29 23:29:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.414 1999/09/04 15:16:18 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -456,6 +456,7 @@
 #define OPT_POPUP_MSGS  !SMALLER		/* popup-msgs mode */
 #define OPT_POSFORMAT   !SMALLER		/* position-format */
 #define OPT_REBIND      !SMALLER		/* permit rebinding of keys at run-time	*/
+#define OPT_SHOW_WHICH	!SMALLER		/* which-source, etc. */
 #define OPT_TAGS_CMPL   (!SMALLER && OPT_TAGS)	/* name-completion for tags */
 #define OPT_TERMCHRS    !SMALLER		/* set/show-terminal */
 #define OPT_UPBUFF      !SMALLER		/* animated buffer-update */
@@ -540,6 +541,7 @@
 #define OPT_LOOKUP_CHOICES       !SMALLER
 #define OPT_PATH_CHOICES         !SMALLER
 #define OPT_POPUP_CHOICES	 (OPT_ENUM_MODES && OPT_POPUPCHOICE)
+#define OPT_RECORDSEP_CHOICES    !SMALLER
 #define OPT_RECORDFORMAT_CHOICES (OPT_ENUM_MODES && SYS_VMS)
 #define OPT_VIDEOATTRS_CHOICES   (OPT_ENUM_MODES && OPT_COLOR_SCHEMES)
 #define OPT_VTFLASHSEQ_CHOICES   (OPT_ENUM_MODES && VTFLASH_HOST && OPT_FLASH)
@@ -844,7 +846,7 @@ extern int MainProgram(int argc, char *argv[]);
 #define W32_NOMOD  (~(W32_KEY|W32_SHIFT|W32_CTRL|W32_ALT))
 
 #define kcod2key(c)	((c) & (UINT)(N_chars-1)) /* strip off the above prefixes */
-#define	isspecial(c)	(((UINT)(c) & (UINT)~(N_chars-1)) != 0)
+#define	isSpecial(c)	(((UINT)(c) & (UINT)~(N_chars-1)) != 0)
 
 #define	char2int(c)	((int)(c & 0xff)) /* mask off sign-extension, etc. */
 
@@ -928,6 +930,12 @@ typedef enum {
 	, PATH_TAIL
 } PATH_CHOICES;
 
+typedef enum {
+	RS_LF = 0		/* unix */
+	, RS_CR			/* mac */
+	, RS_CRLF		/* dos */
+} RECORD_SEP;
+
 /* cfg_locate options */
 #define FL_EXECABLE  iBIT(0)	/* maps to X_OK */
 #define FL_WRITEABLE iBIT(1)	/* maps to W_OK */
@@ -940,6 +948,16 @@ typedef enum {
 #define FL_LIBDIR    iBIT(8)	/* look in environment $VILE_LIBDIR_PATH */
 
 #define FL_ANYWHERE  (FL_CDIR|FL_HOME|FL_EXECDIR|FL_STARTPATH|FL_PATH|FL_LIBDIR)
+
+/* These are the chief ways we use the cfg_locate options: */
+
+#if SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
+#define LOCATE_SOURCE FL_ANYWHERE | FL_READABLE
+#else
+#define LOCATE_SOURCE FL_CDIR | FL_HOME | FL_STARTPATH | FL_READABLE
+#endif
+
+#define LOCATE_EXEC   FL_PATH | FL_LIBDIR | FL_EXECABLE
 
 /* definitions for name-completion */
 #define	NAMEC		name_cmpl /* char for forcing name-completion */

@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.73 1999/08/20 10:43:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.75 1999/09/02 22:39:52 tom Exp $
  *
  */
 
@@ -72,16 +72,21 @@ npopen (char *cmd, const char *type)
 static void append_libdir_to_path(void)
 {
 	char *env, *tmp;
+	const char *cp;
+	char buf[NFILEN];
 
 	if (libdir_path != 0
-	 && (env = getenv("PATH")) != 0) {
-		unsigned len = strlen(libdir_path);
-		if (strlen(env) < len + 5
-		 || strcmp(env+strlen(env)-len, libdir_path)) {
-			if ((tmp = (char *)malloc(strlen(env) + len + 8)) != 0) {
-				lsprintf(tmp, "PATH=%s%c%s", env, vl_pathsep, libdir_path);
-				putenv(tmp);
-			}
+	 && (tmp = getenv("PATH")) != 0) {
+		env = strmalloc(tmp);
+		cp = libdir_path;
+		while ((cp = parse_pathlist(cp, buf)) != 0) {
+			append_to_path_list(&env, buf);
+		}
+		if (strcmp(tmp, env)) {
+			tmp = malloc(6 + strlen(env));
+			lsprintf(tmp, "PATH=%s", env);
+			putenv(tmp);
+			TRACE(("putenv %s\n", tmp))
 		}
 	}
 }
@@ -205,10 +210,23 @@ exec_sh_c(char *cmd)
 		}
 	}
 
-	if (cmd)
+	if (cmd) {
+#if SYS_OS2_EMX
+		/*
+		 * OS/2 EMX accepts forward and backward slashes
+		 * interchangeably except in one special case -
+		 * invoking the OS/2 cmd.exe program for syntax
+		 * filters.  That accepts only backslashes if we put a
+		 * ".exe" suffix on the pathname.
+		 */
+		for (i = 0; ispath(cmd[i]); i++)
+			if (cmd[i] == '/')
+				cmd[i] = '\\';
+#endif
 		(void) execlp (sh, shname, SHELL_C, cmd, 0);
-	else
+	} else {
 		(void) execlp (sh, shname, 0);
+	}
 	(void)write(2,"exec failed\r\n",14);
 	exit (-1);
 }

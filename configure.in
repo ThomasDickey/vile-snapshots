@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.117 $)
+AC_REVISION($Revision: 1.118 $)
 AC_PREREQ(2.12.971222)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.117 1999/08/30 01:32:46 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.118 1999/08/31 23:34:48 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -70,8 +70,7 @@ AC_MSG_CHECKING(for startup path)
 AC_ARG_WITH(startup-path,
 [  --with-startup-path=PATH specify locations to search for vile.hlp, etc.],
 [VILE_STARTUP_PATH=$withval],
-[test -z "$VILE_STARTUP_PATH" &&\
-	VILE_STARTUP_PATH='$(datadir):/usr/local/lib/:/usr/local/:/usr/lib/'])
+[test -z "$VILE_STARTUP_PATH" && VILE_STARTUP_PATH='$(datadir)'])
 AC_MSG_RESULT($VILE_STARTUP_PATH)
 AC_SUBST(VILE_STARTUP_PATH)
 

@@ -1,5 +1,36 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+(tom) 990904 (q)
+	+ modify check for curses/termcap library for FreeBSD to exclude
+	  curses library, preferring either ncurses or termcap.
+	+ rename isspecial to isSpecial because FreeBSD 3.1's ctype.h conflicts
+	+ make ^X-^X command interruptible
+	+ modify majormode logic so that when a user sets a majormode for a
+	  given buffer, the side-effects that are performed for each of the
+	  modes associated with the majormode are performed in this context
+	  as well.  Previously the mode values were simply attached.
+	+ recount buffer size after set-dos and set-unix commands to take into
+	  account the length of the line-ending.
+	+ force a null on the end of the result from special_formatter(), which
+	  is used to display the ^G command.  Sometimes there was no null,
+	  causing the output line to get trashed.
+	+ add buffer mode recordseparator to set dos/unix modes like the
+	  set-dos and set-unix commands, i.e., not delayed til the next buffer
+	  read like the 'dos' mode.
+	+ add vile-tbl-filt to makefile.wnt
+	+ add *.ksh to shmode
+	+ workaround in exec_sh_c() for OS/2 EMX special requirements for
+	  slash/backslash conversion.
+	+ reduce compiled-in Unix $startup-path to the path on which we
+	  install the filter programs, incidentally correcting path
+	  separator in default value for $startup-path on OS/2 EMX
+	+ add commands which-source and which-exec to show which file would
+	  be source'd and exec'd from $startup-path and $PATH + $libdir-path,
+	  respectively.
+	+ add logic, also used for type-ahead testing to catnap for BeOS, making
+	  the cursor and function keys work.
+	+ modify catnap() to use its select/poll logic for tty type-ahead tests.
+
 (tom) 990829 (p)
 	+ modify test for terminfo/termcap library support to look for curses
 	  library first.  SCO's native termlib does not support color, though

@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.220 1999/08/18 00:55:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.221 1999/09/04 15:16:16 tom Exp $
  *
  */
 
@@ -4421,7 +4421,7 @@ int	c)
 {
 	if (c == '\n' || isBlank(c))
 		/*EMPTY*/;
-	else if (isspecial(c) || (c == '\r') || !isPrint(c))
+	else if (isSpecial(c) || (c == '\r') || !isPrint(c))
 		(void)tb_append(p, quotec);
 	return (tb_append(p, c) != 0);
 }
