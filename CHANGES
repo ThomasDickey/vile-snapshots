@@ -1,5 +1,18 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000828 (u)
+	> Tom Dickey
+	+ add error checks in sed-filt.c for unbalanced curly or square
+	  brackets.
+	+ make regular expresion delimiters easier to read in sedmode by
+	  coloring them with Action class.
+	+ modify preamble expressions that match a pathname (e.g., "#!/bin/sh")
+	  to allow trailing blanks on that line.
+	+ correct preamble expression for sedmode, which interfered with shmode.
+	+ correct syntax error in filters/filterio.c for stub functions used
+	  for vilemode symbols (reported by Pedro Miguel Marrecas Gomes
+	  <GomeZ@netc.pt> and Jim Crigler <criglerj@yahoo.com>).
+
  20000828 (t)
 	> Tom Dickey
 	+ add stubs for dname_to_dirnum(), vl_lookup_func() and engl2fnc() to

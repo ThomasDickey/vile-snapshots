@@ -1,9 +1,7 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.6 2000/08/28 02:14:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.10 2000/08/29 01:49:46 tom Exp $
  *
- * Filter to add vile "attribution" sequences to selected bits of m4 
- * input text.  This is in C rather than LEX because M4's quoting delimiters
- * change by embedded directives, to simplify inclusion of brackets.
+ * Filter to add vile "attribution" sequences to sed scripts.
  */
 
 #include <filters.h>
@@ -12,14 +10,20 @@ DefineFilter("sed");
 
 #define ESC '\\'
 
-#define L_BRACE '{'
-#define R_BRACE '}'
+#define L_CURLY '{'
+#define R_CURLY '}'
 
-#define isSlash(c) ((c) != 0 && strchr("/@%", c) != 0)
+#define L_ROUND '('
+#define R_ROUND ')'
+
+#define L_SQUARE '['
+#define R_SQUARE ']'
+
+#define isSlash(c) ((c) == '/' || (c) == ESC)
 
 typedef enum {
     LeadingBlanks,
-    OptionalRBrace,
+    OptionalRCurly,
     OptionalLabel,
     OptionalComment,
     OptionalAddresses,
@@ -32,6 +36,7 @@ typedef enum {
     AfterCommandChar,
 } States;
 
+static char *Action_attr;
 static char *Comment_attr;
 static char *Error_attr;
 static char *Ident_attr;
@@ -79,10 +84,10 @@ SkipRemaining(char *s, char *attr)
 }
 
 static char *
-SkipRBrace(char *s)
+SkipRCurly(char *s)
 {
-    if (*s == R_BRACE) {
-	flt_puts(s++, 1, Literal_attr);
+    if (*s == R_CURLY) {
+	flt_puts(s++, 1, Action_attr);
 	s = SkipBlanks(s);
 	s = SkipError(s);
     }
@@ -126,34 +131,62 @@ SkipLabel(char *s)
     return s;
 }
 
+#define RE_NEST(var, left, right) \
+	switch (ch) { \
+	case left: var++; break; \
+	case right: if (--var < 0) error = 1; break; \
+	}
+
 /* the first character is the delimiter we'll search for */
 static char *
-SkipPattern(char *s, int *done, int *errs)
+SkipPattern(char *s, int *done, int join)
 {
+    char *base = s;
+    int error = 0;
     int delim = *s++;
-    int level = 0;
+    int curly = 0;
+    int round = 0;
+    int square = 0;
     int ch;
 
     *done = 0;
-    *errs = 0;
+    error = 0;
     while (*s != 0) {
 	if (*s == ESC) {
-	    switch (ch = *++s) {
-	    case '(':
-		level++;
-		break;
-	    case ')':
-		if (--level < 0)
-		    *errs = 1;
-		break;
-	    }
+	    ch = *++s;
+	    RE_NEST(round, L_ROUND, R_ROUND);
+	    RE_NEST(curly, L_CURLY, R_CURLY);
 	    if (ch != 0)
 		s++;
-	} else if (*s++ == delim) {
-	    if (level != 0)
-		*errs = 1;
-	    *done = 1;
-	    break;
+	} else {
+	    ch = *s++;
+	    if (!square && ch == delim) {
+		if (curly || round || square)
+		    error = 1;
+		*done = 1;
+		break;
+	    }
+	    if (ch == L_SQUARE) {
+		square++;
+	    } else if (ch == R_SQUARE) {
+		if (square)
+		    square--;
+	    }
+	}
+    }
+
+    if (s != base) {
+	if (error) {
+	    flt_puts(base, s - base, Error_attr);
+	} else {
+	    if (!join)
+		flt_puts(base, 1, Action_attr);
+	    base++;
+	    if (done)
+		s--;
+	    flt_puts(base, s - base, Literal_attr);
+	    if (done)
+		flt_puts(s++, 1, Action_attr);
 	}
     }
     return s;
@@ -163,16 +196,10 @@ static char *
 SkipTwoPatterns(char *s, int flags)
 {
     char *base = s;
-    char *base2;
     int done;
-    int errs;
 
-    s = SkipPattern(s, &done, &errs);
-    base2 = done ? s - 1 : s;
-    flt_puts(base, base2 - base, errs ? Error_attr : Literal_attr);
-
-    s = SkipPattern(base2, &done, &errs);
-    flt_puts(base2, s - base2, errs ? Error_attr : Literal_attr);
+    s = SkipPattern(s, &done, 0);
+    s = SkipPattern(done ? s - 1 : s, &done, 1);
 
     if (flags) {
 	base = s;
@@ -202,9 +229,7 @@ static char *
 SkipAddress(char *s, int *count)
 {
     char *base = s;
-    char *attr = "";
     int done;
-    int errs;
 
     if (*count) {
 	if (*s == ',') {
@@ -215,22 +240,19 @@ SkipAddress(char *s, int *count)
     }
 
     if (isdigit(*s)) {
-	attr = Number_attr;
 	while (isdigit(*s))
 	    s++;
+	flt_puts(base, s - base, Number_attr);
     } else if (*s == '$') {
-	attr = Literal_attr;
-	s++;
+	flt_puts(s++, 1, Literal_attr);
     } else if (isSlash(*s)) {
-	attr = Literal_attr;
-	s = SkipPattern(s, &done, &errs);
-	if (errs)
-	    attr = Error_attr;
+	if (*s == ESC) {
+	    flt_puts(s++, 1, Action_attr);
+	}
+	s = SkipPattern(s, &done, 0);
     } else {
-	attr = Error_attr;
-	s += strlen(s);
+	s = SkipError(s);
     }
-    flt_puts(base, s - base, attr);
     *count += 1;
     return s;
 }
@@ -252,6 +274,7 @@ do_filter(FILE * input GCC_UNUSED)
     int escaped_newline;
     States state = LeadingBlanks;
 
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
     Error_attr = class_attr(NAME_ERROR);
     Ident_attr = class_attr(NAME_IDENT);
@@ -273,10 +296,10 @@ do_filter(FILE * input GCC_UNUSED)
 	    switch (state) {
 	    case LeadingBlanks:
 		if (*(s = SkipBlanks(s)) != 0)
-		    next = OptionalRBrace;
+		    next = OptionalRCurly;
 		break;
-	    case OptionalRBrace:
-		if (*(s = SkipRBrace(s)) != 0)
+	    case OptionalRCurly:
+		if (*(s = SkipRCurly(s)) != 0)
 		    next = OptionalLabel;
 		break;
 	    case OptionalLabel:
@@ -292,10 +315,13 @@ do_filter(FILE * input GCC_UNUSED)
 	    case OptionalAddresses:
 		if (HaveAddress(s)) {
 		    s = SkipAddress(s, &addresses);
-		    if (*s == ',')
+		    if (*s == ',') {
 			next = state;
-		    if (*s == '!')
-			flt_puts(s++, 1, Literal_attr);
+		    } else {
+			s = SkipBlanks(s);
+			if (*s == '!')
+			    flt_puts(s++, 1, Literal_attr);
+		    }
 		} else {
 		    next = BlanksAfterAddresses;
 		}
@@ -319,8 +345,9 @@ do_filter(FILE * input GCC_UNUSED)
 			break;
 		    }
 		    flt_puts(s++, 1, Ident_attr);
-		} else if (*s == L_BRACE) {
-		    flt_puts(s++, 1, Literal_attr);
+		} else if (*s == L_CURLY) {
+		    flt_puts(s++, 1, Action_attr);
+		    next = LeadingBlanks;
 		} else {
 		    flt_puts(s++, 1, Error_attr);
 		}
@@ -338,10 +365,19 @@ do_filter(FILE * input GCC_UNUSED)
 		    next = state;
 		break;
 	    case ExpectText:
-	    case AfterCommandChar:
 		s = SkipRemaining(s, "");
 		if (escaped_newline)
 		    next = state;
+		break;
+	    case AfterCommandChar:
+		if (*s == ';') {
+		    flt_puts(s++, 1, Action_attr);
+		    next = LeadingBlanks;
+		} else {
+		    s = SkipRemaining(s, "");
+		    if (escaped_newline)
+			next = state;
+		}
 		break;
 	    }
 	    state = next;
