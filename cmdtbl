@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.155 1998/03/30 10:15:53 kev Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.156 1998/04/04 12:11:58 kev Exp $
 #
 #
 
@@ -497,6 +497,12 @@ execfile	NONE			!SMALLER
 	"execute-file"			!FEWNAMES
 	"source"
 	<run the given file as a script>
+exechypercmd	NONE			OPT_HYPERTEXT 
+	"execute-hypertext-command"	!FEWNAMES 
+	<run the hypertext command attached to the region under the cursor> 
+showhypercmd	NONE			OPT_HYPERTEXT 
+	"show-hypertext-command"	!FEWNAMES 
+	<show the hypertext command attached to the region under the cursor> 
 execkreg	REDO|UNDO|VIEWOK
 	"execute-register"
 	'@'
@@ -992,6 +998,10 @@ operattrcaseq	REDO|UNDO|OPER|GLOBOK|RANGE	OPT_SELECTIONS
 	"attribute-cntl_a-sequences-til"	!FEWNAMES
 	'^A-A'
 	<display text as given by ^A sequences in the region>
+operattrhc	OPER|GLOBOK|RANGE	OPT_HYPERTEXT 
+	"attribute-hypertext-til"	!FEWNAMES 
+	'^A-H' 
+	<attach hypertext command to region> 
 operattrital	OPER|GLOBOK|RANGE	OPT_SELECTIONS
 	"attribute-italic-til"		!FEWNAMES
 	'^A-I'

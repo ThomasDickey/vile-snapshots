@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.170 1998/03/22 12:06:15 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.171 1998/04/04 12:11:58 kev Exp $
  *
  */
 
@@ -4738,6 +4738,12 @@ multi_click(
 		mlwrite("BUG: 0 or 1 multiclick value.");
 		return;
 	case 2:			/* word */
+#if OPT_HYPERTEXT 
+		if (setcursor(nr,nc) && exechypercmd(0,0)) { 
+		    (void) update(TRUE); 
+		    return; 
+		} 
+#endif 
 		/* find word start */
 		p = (UCHAR *)(&CELL_TEXT(nr,sc));
 		cclass = charClass[*p];

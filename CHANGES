@@ -1,5 +1,32 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (kev) 980403 (p) 
+	+ hgrep.pl, glob2re.pl, visit.pl: New files which implement 
+	  a recursive grep with hypertext links in perl. 
+ 	+ api.c (api_command_cleanup): Fixed bug in which DOT 
+	  was being propogated to the fake windows instead of 
+	  the real ones.  (Which is a pretty useless thing to do.) 
+	  (api_swscreen): Added big comment noting problems with 
+	  calling api_command_cleanup. 
+	+ cmdtbl (exechypercmd, showhypercmd, operattrhc): New 
+	  commands related to hypertext commands. 
+	+ estruct.h (AREGION): Added new field ar_hypercmd which 
+	  points at a hypertext command. 
+	+ select.c (hypercmd): New static variable used to communicate 
+	  the hypertext command string to attributeregion(). 
+	  (free_attribs, free_attrib, sel_begin, selectregion, 
+	  attribute_region): All modified slightly to deal with the 
+	  new ar_hypercmd field in the AREGION structure. 
+	  (attribute_cntl_a_sequences): Look for an H followed by 
+	  the hypertext command, followed by a null character in 
+	  the ^A sequences. 
+	  (attributehyperregion, operattrhc, hyperspray, doexechypercmd, 
+	  exechypercmd, doshowhypercmd, showhypercmd): New functions. 
+	+ vile.hlp: Added new sections "Writing your own filters" and 
+	  "Hypertext". 
+	+ x11.c (multi_click): Added code to execute hypertext command, 
+	  when present, on a double click. 
+ 
  (tom) 980331 (o) 
  	+ change logic that determines whether to set dos mode for a file so
 	  that .vilerc (or vile.rc) and source'd files are treated specially. 

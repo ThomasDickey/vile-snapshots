@@ -2854,6 +2854,81 @@ Filtering C programs
 	starting point for creating similar coloring mechanisms for other
 	languages.
 
+Writing your own filters 
+------------------------ 
+	Filters may be written as either an external program or with 
+	the Perl interface.  Both the manual page filter and the C 
+	program colorizer are examples of external programs which do 
+	the filtering.  The hgrep.pl perl script is an example of a 
+	filter which uses the vile's interface to Perl. 
+ 
+	Regardless, the goal of the filter is to embed in the text 
+	a control sequences which describe how the subsequent text 
+	should be attributed by the vile command 
+	 
+		attribute-cntl_a-sequences-til 
+ 
+	(See above for examples of how to use this command.) 
+ 
+	The control sequences take the following form: 
+ 
+		^A<Count><Attr>: 
+ 
+	<Count> is a sequence of digits representing the number of 
+	characters following the ':' to be attributed. 
+ 
+	<Attr> is a sequence of characters which indicates how to 
+	attribute the required number of characters following the 
+	':'.  The following sequences are recognized by vile: 
+ 
+		I		-- italic 
+		B		-- bold 
+		R		-- reverse (or inverse) video 
+		U		-- underline 
+		C<hex digit>	-- color number (one of 16) 
+		H<command>\0	-- hypertext command 
+ 
+	The <command> for hypertext commands may be any sequence of 
+	characters except for newlines and null characters.  A null 
+	character must terminate the hypertext command.  The command 
+	should be a valid vile command such as you might enter into 
+	your .vilerc file. 
+ 
+	The attribute characters may be used together in any 
+	combination.  So, for example, you could use the following 
+	to make some text appear both bold and italic: 
+ 
+		^A15IB:Bold and italic 
+ 
+Hypertext 
+--------- 
+	Vile does not currently supply a builtin key binding for 
+	executing hypertext commands.  The following macro and 
+	key binding will cause the space bar to be bound to a macro 
+	which will follow a hypertext link when the cursor is placed 
+	on top of it.  If no hypertext link is present, then the 
+	normal default action of advancing one character to the 
+	right is taken: 
+ 
+	    22 store-macro 
+		~force execute-hypertext-command 
+		~if  &not $status 
+		    ~force forward-character-to-eol 
+		~endif 
+	    ~endm 
+	    bind-key execute-macro-22 \  
+ 
+	[ Note to Paul and Tom:  Maybe we should just add a little 
+	  bit of code to make this the default binding for space bar? 
+	  Or is some other key binding preferable?  In any event, 
+	  it'll only take 7 or 8 lines to do the job... ] 
+ 
+	When using xvile, double clicking on a hypertext link will 
+	cause the hypertext command to be executed.  If no hypertext 
+	command is associated with the text under the cursor, the 
+	default action of selecting the word under the cursor will 
+	occur instead. 
+ 
 X Window System specifics
 -------------------------
 
@@ -3610,4 +3685,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.342 1998/03/22 12:06:15 kev Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.343 1998/04/04 12:11:58 kev Exp $

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v7_3o
+MANIFEST for vile, version v7_3p
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -49,8 +49,10 @@ filec.c                         filename-completion functions
 fileio.c                        low-level file I/O functions
 finderr.c                       error-finder
 glob.c                          globbing (wildcard & environment-variable substitution)
+glob2re.pl                      utility-script for vile's hypertext
 globals.c                       ed/vi/ex style global commands
 gppconio.c                      patched console I/O support for DJGCC
+hgrep.pl                        utility-script for vile's hypertext
 history.c                       command-history
 ibmpc.c                         IBM PC terminal driver (direct I/O)
 input.c                         various input-routines
@@ -100,7 +102,6 @@ ptypemap                        perl-interface type map
 random.c                        miscellaneous functions
 regexp.c                        regular expression functions
 region.c                        region-manipulation
-revlist                         revision-list for VILE
 search.c                        functions for search-commands
 select.c                        selection-handling functions
 spawn.c                         functions for spawning subprocesses
@@ -115,6 +116,7 @@ undo.c                          support for "undo"
 version.c                       version & usage messages
 vile.1                          man-page for VILE
 vile.hlp                        help-file
+visit.pl                        utility-script for vile's hypertext
 vms2unix.c                      VMS/UNIX compatibility support functions
 vmsbuild.com                    VAX/VMS DCL build script
 vmspipe.c                       pipe-filter support for VMS
