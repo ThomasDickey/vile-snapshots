@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.301 1998/09/07 21:18:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.302 1998/09/09 00:59:43 cmorgan Exp $
  *
  */
 
@@ -935,6 +935,7 @@ extern int  w32_inout_popen(FILE **fr, FILE **fw, char *cmd);
 extern void w32_keybrd_reopen(int pressret);
 extern void w32_npclose(FILE *fp);
 extern int  w32_system(const char *cmd);
+extern int  w32_system_winvile(const char *cmd);
 extern void *winvile_hwnd(void);
 #endif
 

@@ -1,6 +1,15 @@
 Changes for vile 8.1 (released ??? ??? ??, 1998)
 
- (tom) 98090? (p)
+ (tom) 98090? (q)
+	+ correct parenthesis for test of F4 change in 8.0l (winvile.c)
+	+ modify so that xvile builds with --disable-shell (eval.c).
+	+ correct off-by-one in scrollbar position for winvile.
+	+ correct computation in AdjustResizing function so that starting a
+	  window resizing does not change the initial window size (ntwinio.c).
+	+ improved ":!command" for winvile, by creating a transient console
+	  which closes when the user presses any key (patch by Clark Morgan).
+
+ (tom) 980908 (p)
 	+ modify attribute rendition in win32 drivers (ntconio.c, ntwinio.c)
 	  to make highlighting work with colored text by reversing fg/bg.
 	+ modify colors in winvile to make lightgray distinct from gray

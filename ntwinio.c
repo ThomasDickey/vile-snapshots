@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.26 1998/09/08 01:49:58 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.30 1998/09/10 10:39:00 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -141,20 +141,27 @@ static	const char *initpalettestr = "0 4 2 6 1 5 3 7 8 12 10 14 9 13 11 15";
 static	int	cur_pos = 0;
 static	VIDEO_ATTR cur_atr = 0;
 
+typedef	struct {
+	HWND	w;
+	RECT	r;
+	int	shown;
+} SBDATA;
+
 struct	gui_info {
 	HWND	main_hwnd;		/* the top-level window */
 	HWND	text_hwnd;		/* the enclosed text area */
 	int	closed;
 	int	cols;
 	int	rows;
+	RECT	xy_limit;
 	int	x_border;
 	int	y_border;
+	int	y_titles;		/* height of caption/titles */
 	int	nscrollbars;
 	int	maxscrollbars;
-	HWND	*scrollbars;
-	HWND	size_box;
-	HWND	size_grip;
-	int	*scrollsize;
+	SBDATA	*scrollbars;
+	SBDATA	size_box;
+	SBDATA	size_grip;
 } only_window, *cur_win = &only_window;
 
 #if OPT_SCROLLBARS
@@ -229,7 +236,7 @@ which_window(HWND hwnd)
 		static char temp[20];
 		sprintf(temp, "%#lx", hwnd);
 		for (n = 0; n < cur_win->nscrollbars; n++) {
-			if (hwnd == cur_win->scrollbars[n]) {
+			if (hwnd == cur_win->scrollbars[n].w) {
 				sprintf(temp, "sb%d", n);
 				break;
 			}
@@ -237,6 +244,137 @@ which_window(HWND hwnd)
 		return temp;
 	}
 }
+
+static char *
+message2s(unsigned code)
+{
+	static struct {
+		WORD code;
+		char *name;
+	} table[] = {
+		{ WM_ACTIVATE,		"WM_ACTIVATE" },
+		{ WM_ACTIVATEAPP,	"WM_ACTIVATEAPP" },
+		{ WM_CAPTURECHANGED,	"WM_CAPTURECHANGED" },
+		{ WM_CREATE,		"WM_CREATE" },
+		{ WM_CTLCOLORSCROLLBAR,	"WM_CTLCOLORSCROLLBAR" },
+		{ WM_ERASEBKGND,	"WM_ERASEBKGND" },
+		{ WM_GETMINMAXINFO,	"WM_GETMINMAXINFO" },
+		{ WM_GETTEXT,		"WM_GETTEXT" },
+		{ WM_KEYDOWN,		"WM_KEYDOWN" },
+		{ WM_KEYUP,		"WM_KEYUP" },
+		{ WM_MOUSEACTIVATE,	"WM_MOUSEACTIVATE" },
+		{ WM_MOVE,		"WM_MOVE" },
+		{ WM_NCACTIVATE,	"WM_NCACTIVATE" },
+		{ WM_NCCALCSIZE,	"WM_NCCALCSIZE" },
+		{ WM_NCCREATE,		"WM_NCCREATE" },
+		{ WM_NCHITTEST,		"WM_NCHITTEST" },
+		{ WM_NCLBUTTONDOWN,	"WM_NCLBUTTONDOWN" },
+		{ WM_NCMOUSEMOVE,	"WM_NCMOUSEMOVE" },
+		{ WM_NCPAINT,		"WM_NCPAINT" },
+		{ WM_PAINT,		"WM_PAINT" },
+		{ WM_PARENTNOTIFY,	"WM_PARENTNOTIFY" },
+		{ WM_QUERYNEWPALETTE,	"WM_QUERYNEWPALETTE" },
+		{ WM_SETCURSOR,		"WM_SETCURSOR" },
+		{ WM_SETFOCUS,		"WM_SETFOCUS" },
+		{ WM_SETTEXT,		"WM_SETTEXT" },
+		{ WM_SHOWWINDOW,	"WM_SHOWWINDOW" },
+		{ WM_SIZE,		"WM_SIZE" },
+		{ WM_SIZING,		"WM_SIZING" },
+		{ WM_SYSCOMMAND,	"WM_SYSCOMMAND" },
+		{ WM_WINDOWPOSCHANGED,	"WM_WINDOWPOSCHANGED" },
+		{ WM_WINDOWPOSCHANGING,	"WM_WINDOWPOSCHANGING" },
+	};
+	size_t n;
+	static char temp[20];
+
+	for (n = 0; n < TABLESIZE(table); n++) {
+		if (table[n].code == code) {
+			return table[n].name;
+		}
+	}
+	sprintf(temp, "%#x", code);
+	return temp;
+}
+
+static char *
+syscommand2s(unsigned code)
+{
+	static struct {
+		WORD code;
+		char *name;
+	} table[] = {
+		{ SC_SIZE,		"SC_SIZE" },
+		{ SC_MOVE,		"SC_MOVE" },
+		{ SC_MINIMIZE,		"SC_MINIMIZE" },
+		{ SC_MAXIMIZE,		"SC_MAXIMIZE" },
+		{ SC_NEXTWINDOW,	"SC_NEXTWINDOW" },
+		{ SC_PREVWINDOW,	"SC_PREVWINDOW" },
+		{ SC_CLOSE,		"SC_CLOSE" },
+		{ SC_VSCROLL,		"SC_VSCROLL" },
+		{ SC_HSCROLL,		"SC_HSCROLL" },
+		{ SC_MOUSEMENU,		"SC_MOUSEMENU" },
+		{ SC_KEYMENU,		"SC_KEYMENU" },
+		{ SC_ARRANGE,		"SC_ARRANGE" },
+		{ SC_RESTORE,		"SC_RESTORE" },
+		{ SC_TASKLIST,		"SC_TASKLIST" },
+		{ SC_SCREENSAVE,	"SC_SCREENSAVE" },
+		{ SC_HOTKEY,		"SC_HOTKEY" },
+	};
+	size_t n;
+	static char temp[80];
+	unsigned remainder = code & 0xf;
+
+	for (n = 0; n < TABLESIZE(table); n++) {
+		if (table[n].code == (code - remainder)) {
+			sprintf(temp, "%s+%X", table[n].name, remainder);
+			return temp;
+		}
+	}
+	sprintf(temp, "%#x", code);
+	return temp;
+}
+
+static void
+TraceWindowRect(HWND hwnd)
+{
+	RECT wrect;
+	int rows;
+	int cols;
+	GetWindowRect(hwnd, &wrect);
+	cols = RectToCols(wrect);
+	rows = RectToRows(wrect);
+	TRACE(("... (%d,%d) (%d,%d), window is %dx%d cells (%dx%d pixels)%s\n",
+		wrect.top, wrect.left,
+		wrect.bottom, wrect.right,
+		rows,
+		cols,
+		RowToPixel(rows),
+		ColToPixel(cols),
+		IsZoomed(hwnd) ? " zoomed" : ""
+		))
+}
+
+static void
+TraceClientRect(HWND hwnd)
+{
+	RECT crect;
+	int rows;
+	int cols;
+	GetClientRect(hwnd, &crect);
+	cols = RectToCols(crect);
+	rows = RectToRows(crect);
+	TRACE(("... (%d,%d) (%d,%d), client is %dx%d cells (%dx%d pixels)\n",
+		crect.top, crect.left,
+		crect.bottom, crect.right,
+		rows,
+		cols,
+		RowToPixel(rows),
+		ColToPixel(cols)
+		))
+}
+#else
+#define TraceWindowRect(hwnd) /* nothing */
+#define TraceClientRect(hwnd) /* nothing */
 #endif
 
 static HBRUSH
@@ -249,10 +387,16 @@ Background(HDC hdc)
 void
 gui_resize(int cols, int rows)
 {
+	static int level;
 	RECT crect;
 	RECT wrect;
+	int main_wide;
+	int main_high;
 	int text_wide;
 	int text_high;
+
+	level++;
+	TRACE(("gui_resize(%d x %d) begin %d\n", rows, cols, level))
 
 	GetClientRect(cur_win->main_hwnd, &crect);
 	GetWindowRect(cur_win->main_hwnd, &wrect);
@@ -261,19 +405,29 @@ gui_resize(int cols, int rows)
 	text_high = RowToPixel(rows);
 	wrect.right  += text_wide - crect.right;
 	wrect.bottom += text_high - crect.bottom;
+#if FIXME_POSCHANGING
+	main_wide = text_wide + (2 * cur_win->x_border) + SbWidth;
+	main_high = text_high + (2 * cur_win->y_border) + cur_win->y_titles;
+#else
+	main_wide = wrect.right - wrect.left + SbWidth;
+	main_high = wrect.bottom - wrect.top;
+#endif
 
-	TRACE(("gui_resize(%d x %d) -> (%d,%d) (%d,%d)\n",
-		rows, cols,
+	TRACE(("... gui_resize -> (%d,%d) (%d,%d) main %dx%d, text %dx%d\n",
 		wrect.top,
 		wrect.left,
 		wrect.bottom,
-		wrect.right));
+		wrect.right,
+		main_high,
+		main_wide,
+		text_high,
+		text_wide))
 
 	MoveWindow(cur_win->main_hwnd,
 		wrect.left,
 		wrect.top,
-		wrect.right - wrect.left + SbWidth,
-		wrect.bottom - wrect.top,
+		main_wide,
+		main_high,
 		TRUE);
 	MoveWindow(cur_win->text_hwnd,
 		0,
@@ -281,43 +435,58 @@ gui_resize(int cols, int rows)
 		text_wide,
 		text_high,
 		TRUE);
+
+	TraceWindowRect(cur_win->main_hwnd);
+	TraceClientRect(cur_win->main_hwnd);
 #if OPT_SCROLLBARS
 	update_scrollbar_sizes();
 #endif
+	TRACE(("... gui_resize finish %d\n", level))
+	level--;
 }
 
 static int
 AdjustedHeight(int high)
 {
-	int	rows = high / nLineHeight;
+	int	extra = cur_win->y_titles + (2 * cur_win->y_border);
+	int	rows;
+	if (high > cur_win->xy_limit.bottom)
+		high = cur_win->xy_limit.bottom;
+	rows = (high - extra) / nLineHeight;
 	if (rows < MIN_ROWS)
 		rows = MIN_ROWS;
-	return rows * nLineHeight;
+	return (rows * nLineHeight) + extra;
 }
 
 static int
 AdjustedWidth(int wide)
 {
-	int	cols = wide / nCharWidth;
+	int	extra = SbWidth;
+	int	cols;
+	if (wide > cur_win->xy_limit.right)
+		wide = cur_win->xy_limit.right;
+	cols = (wide - extra) / nCharWidth;
 	if (cols < MIN_COLS)
 		cols = MIN_COLS;
-	return cols * nCharWidth;
+	return (cols * nCharWidth) + extra;
 }
 
 #if FIXME_POSCHANGING
 static int
 AdjustPosChanging(HWND hwnd, WINDOWPOS *pos)
 {
-	int wide = AdjustedWidth(pos->cx);
-	int high = AdjustedHeight(pos->cy);
+	if (!(pos->flags & SWP_NOSIZE)) {
+		int wide = AdjustedWidth(pos->cx);
+		int high = AdjustedHeight(pos->cy);
 
-	if (wide > pos->cx
-	 || high > pos->cy) {
-		pos->flags &= ~SWP_NOSIZE;
+		TRACE(("...%s position %d,%d, resize from %d,%d to %d,%d\n",
+			IsZoomed(hwnd) ? " zoomed" : "",
+			pos->y,  pos->x,
+			pos->cy, pos->cx, high, wide))
 		pos->cx = wide;
 		pos->cy = high;
 	}
-	return 1;
+	return 0;
 }
 #endif
 
@@ -333,8 +502,10 @@ AdjustResizing(HWND hwnd, WPARAM fwSide, RECT *rect)
 	int	adjX = wide - AdjustedWidth(wide);
 	int	adjY = high - AdjustedHeight(high);
 
-	TRACE(("... (%d,%d) (%d,%d)\n",
+	TRACE(("AdjustResizing now (%d,%d) (%d,%d)\n",
 		rect->top, rect->left, rect->bottom, rect->right))
+	TraceWindowRect(hwnd);
+	TraceClientRect(hwnd);
 
 	if (fwSide == WMSZ_LEFT
 	 || fwSide == WMSZ_TOPLEFT
@@ -356,8 +527,9 @@ AdjustResizing(HWND hwnd, WPARAM fwSide, RECT *rect)
 	 || fwSide == WMSZ_BOTTOMRIGHT)
 		rect->bottom -= adjY;
 
-	TRACE(("... (%d,%d) (%d,%d) Y:%d, X:%d\n",
-		rect->top, rect->left, rect->bottom, rect->right, adjY, adjX))
+	TRACE(("... AdjustResizing (%d,%d) (%d,%d) adjY:%d, adjX:%d\n",
+		rect->top, rect->left, rect->bottom, rect->right,
+		adjY, adjX))
 
 	return TRUE;
 }
@@ -365,6 +537,7 @@ AdjustResizing(HWND hwnd, WPARAM fwSide, RECT *rect)
 static void
 ResizeClient()
 {
+	static int level;
 	int h, w;
 	RECT crect;
 
@@ -373,11 +546,11 @@ ResizeClient()
 		return;
 	}
 
+	level++;
+	TRACE(("ResizeClient begin %d, currently %dx%d\n", level, term.t_nrow, term.t_ncol))
+	TraceWindowRect(cur_win->main_hwnd);
+	TraceClientRect(cur_win->main_hwnd);
 	GetClientRect(cur_win->main_hwnd, &crect);
-
-	TRACE(("... (%d,%d) (%d,%d)\n",
-		crect.top, crect.left,
-		crect.bottom, crect.right))
 
 	h = RectToRows(crect);
 	w = RectToCols(crect);
@@ -394,7 +567,7 @@ ResizeClient()
 		w = MIN_COLS;
 
 	if ((h > 1 && h != term.t_nrow) || (w > 1 && w != term.t_ncol)) {
-		TRACE(("ResizeClient %dx%d\n", h, w))
+		TRACE(("...ResizeClient %dx%d\n", h, w))
 		vile_resizing = TRUE;
 		newscreensize(h, w);
 		SetRows(h);
@@ -411,6 +584,8 @@ ResizeClient()
 	}
 
 	gui_resize(w, h);
+	TRACE(("...ResizeClient finish %d\n", level))
+	level--;
 }
 
 #define LTGRAY_COLOR 140
@@ -539,6 +714,23 @@ static int fshow_cursor(void)
 	return 0;
 }
 
+static void
+get_borders(void)
+{
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &cur_win->xy_limit, 0);
+	TRACE(("WORKAREA: %d,%d %d,%d\n",
+		cur_win->xy_limit.top,
+		cur_win->xy_limit.left,
+		cur_win->xy_limit.right,
+		cur_win->xy_limit.bottom))
+	cur_win->x_border = GetSystemMetrics(SM_CXSIZEFRAME);
+	cur_win->y_border = GetSystemMetrics(SM_CYSIZEFRAME);
+	cur_win->y_titles = GetSystemMetrics(SM_CYFRAME);
+	TRACE(("X border: %d, Y border: %d\n", cur_win->x_border, cur_win->y_border))
+	TRACE(("CYFRAME:   %d\n", GetSystemMetrics(SM_CYFRAME)))
+	TRACE(("CYCAPTION: %d\n", cur_win->y_titles))
+}
+
 /* Notes: lpntm is a pointer to a TEXTMETRIC struct if FontType does not
  * have TRUETYPE_FONTTYPE set, but we only need the tmPitchAndFamily member,
  * which has the same alignment as in NEWTEXTMETRIC.
@@ -644,6 +836,7 @@ static void use_font(HFONT my_font, BOOL resizable)
 	 */
 	nLineHeight = textmetric.tmExternalLeading + textmetric.tmHeight;
 	nCharWidth  = textmetric.tmAveCharWidth;
+	get_borders();
 
 	if (resizable) {
 		GetClientRect(cur_win->main_hwnd, &crect);
@@ -1223,7 +1416,7 @@ decode_key_event(KEY_EVENT_RECORD *irp)
 	     * processed properly.
 	     */
 	    if (keyxlate[i].windows == VK_F4
-	    && (state & LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED))
+	    && (state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)))
 		break;
 
 	    /*
@@ -1531,8 +1724,7 @@ int check_scrollbar_allocs(void)
 
 	TRACE(("check_scrollbar_allocs %d > %d ?\n", oldmax, newmax))
 	if (newmax > oldmax) {
-		GROW(cur_win->scrollbars, HWND, oldmax, newmax);
-		GROW(cur_win->scrollsize, int, oldmax, newmax);
+		GROW(cur_win->scrollbars, SBDATA, oldmax, newmax);
 		cur_win->maxscrollbars = newmax;
 		TRACE(("GROW scrollbars=%p, oldmax=%d, newmax=%d\n",
 			cur_win->scrollbars, oldmax, newmax))
@@ -1540,11 +1732,18 @@ int check_scrollbar_allocs(void)
 	return TRUE;
 }
 
-static HWND
+static SBDATA
 new_scrollbar(void)
 {
-	HWND result;
-	result = CreateWindow(
+	SBDATA result;
+
+	result.shown    = FALSE;
+	result.r.top    = -1;
+	result.r.left   = -1;
+	result.r.bottom = -1;
+	result.r.right  = -1;
+
+	result.w = CreateWindow(
 		SCRL_CLASS,
 		"scrollbar",
 		WS_CHILD | SBS_VERT | WS_CLIPSIBLINGS,
@@ -1558,6 +1757,17 @@ new_scrollbar(void)
 		(LPVOID)0
 		);
 	return result;
+}
+
+static int
+show_scrollbar(int n, int flag)
+{
+	if (cur_win->scrollbars[n].shown != flag) {
+		ShowScrollBar(cur_win->scrollbars[n].w, SB_CTL, flag);
+		cur_win->scrollbars[n].shown = flag;
+		return TRUE;
+	}
+	return FALSE;
 }
 
 static void
@@ -1577,11 +1787,11 @@ set_scrollbar_range(int n, WINDOW *wp)
 
 	info.cbSize = sizeof(info);
 	info.fMask  = SIF_POS | SIF_RANGE | SIF_PAGE;
-	info.nPos   = lnum;
-	info.nMin   = 1;
-	info.nMax   = lcnt;
+	info.nPos   = lnum - 1;
+	info.nMin   = 0;
+	info.nMax   = lcnt - 1;
 	info.nPage  = wp->w_ntrows;
-	SetScrollInfo(cur_win->scrollbars[n], SB_CTL, &info, TRUE);
+	SetScrollInfo(cur_win->scrollbars[n].w, SB_CTL, &info, TRUE);
 }
 
 /*
@@ -1598,9 +1808,10 @@ LONG FAR PASCAL GripWndProc(
 	PAINTSTRUCT ps;
 	HBRUSH brush;
 
+	TRACE(("GRIP:%s\n", message2s(message)))
+
 	switch (message) {
 	case WM_PAINT:
-		TRACE(("GRIP:WM_PAINT\n"))
 		BeginPaint(hWnd, &ps);
 		TRACE(("...painting (%d,%d) (%d,%d)\n",
 			ps.rcPaint.top,
@@ -1616,9 +1827,6 @@ LONG FAR PASCAL GripWndProc(
 			ps.rcPaint.bottom);
 		DeleteObject(brush);
 		EndPaint(hWnd, &ps);
-		break;
-	default:
-		TRACE(("GRIP:msg=%#x\n", message))
 		break;
 	}
 	return (DefWindowProc(hWnd, message, wParam, lParam));
@@ -1641,9 +1849,9 @@ update_scrollbar_sizes(void)
 	newsbcnt = i;
 
 	for (i = cur_win->nscrollbars+1; i <= newsbcnt; i++) {
-		if (cur_win->scrollbars[i] == NULL) {
+		if (cur_win->scrollbars[i].w == NULL) {
 			cur_win->scrollbars[i] = new_scrollbar();
-			TRACE(("... created sb%d=%#x\n", i, cur_win->scrollbars[i]))
+			TRACE(("... created sb%d=%#x\n", i, cur_win->scrollbars[i].w))
 		}
 	}
 	cur_win->nscrollbars = newsbcnt;
@@ -1654,20 +1862,26 @@ update_scrollbar_sizes(void)
 	top = crect.top;
 	left = crect.right - SbWidth;
 	for_each_visible_window(wp) {
-		int high = cur_win->scrollsize[i] = RowToPixel(wp->w_ntrows + 1);
-		ShowScrollBar(cur_win->scrollbars[i], SB_CTL, TRUE);
-		MoveWindow(cur_win->scrollbars[i],
-			left,
-			top,
-			SbWidth,
-			high,
-			TRUE);
-		TRACE(("... adjusted %s to (%d,%d) (%d,%d)\n",
-			which_window(cur_win->scrollbars[i]),
-			left,
-			top,
-			SbWidth,
-			high));
+		int high = RowToPixel(wp->w_ntrows + 1);
+		int wide = SbWidth;
+		if (show_scrollbar(i, TRUE)
+		 || cur_win->scrollbars[i].r.top    != top
+		 || cur_win->scrollbars[i].r.left   != left
+		 || cur_win->scrollbars[i].r.bottom != high
+		 || cur_win->scrollbars[i].r.right  != wide) {
+			MoveWindow(cur_win->scrollbars[i].w,
+				cur_win->scrollbars[i].r.left   = left,
+				cur_win->scrollbars[i].r.top    = top,
+				cur_win->scrollbars[i].r.right  = wide,
+				cur_win->scrollbars[i].r.bottom = high,
+				TRUE);
+			TRACE(("... adjusted %s to (%d,%d) (%d,%d)\n",
+				which_window(cur_win->scrollbars[i].w),
+				left,
+				top,
+				SbWidth,
+				high));
+		 }
 		if (cur_win->nscrollbars == i+1)
 			set_scrollbar_range(i, wp);
 		i++;
@@ -1675,7 +1889,7 @@ update_scrollbar_sizes(void)
 	}
 
 	while (i < oldsbcnt) {
-		ShowScrollBar(cur_win->scrollbars[i], SB_CTL, FALSE);
+		(void) show_scrollbar(i, FALSE);
 		i++;
 	}
 #if FIXME_RECUR_SB
@@ -1685,23 +1899,23 @@ update_scrollbar_sizes(void)
 	}
 #endif
 
-	if (cur_win->size_box == 0) {
-		cur_win->size_box = CreateWindow(
+	if (cur_win->size_box.w == 0) {
+		cur_win->size_box.w = CreateWindow(
 			GRIP_CLASS,
 			"sizebox",
 			WS_CHILD
 			| WS_VISIBLE
 			| WS_CLIPSIBLINGS,
-			left,		/* x */
-			top,		/* y */
-			SbWidth + 1,	/* width */
-			nLineHeight,	/* height */
+			cur_win->size_box.r.left   = left,
+			cur_win->size_box.r.top    = top,
+			cur_win->size_box.r.right  = SbWidth + 1,
+			cur_win->size_box.r.bottom = nLineHeight,
 			cur_win->main_hwnd,
 			(HMENU)0,
 			vile_hinstance,
 			(LPVOID)0
 			);
-		cur_win->size_grip = CreateWindow(
+		cur_win->size_grip.w = CreateWindow(
 			"SCROLLBAR",
 			"sizebox",
 			WS_CHILD
@@ -1710,32 +1924,48 @@ update_scrollbar_sizes(void)
 			| SBS_SIZEGRIP
 			| WS_CLIPSIBLINGS
 			| SBS_SIZEBOXBOTTOMRIGHTALIGN,
-			0,		/* x */
-			0,		/* y */
-			SbWidth,	/* width */
-			nLineHeight,	/* height */
-			cur_win->size_box,
+			cur_win->size_box.r.left   = 0,
+			cur_win->size_box.r.top    = 0,
+			cur_win->size_box.r.right  = SbWidth,
+			cur_win->size_box.r.bottom = nLineHeight,
+			cur_win->size_box.w,
 			(HMENU)0,
 			vile_hinstance,
 			(LPVOID)0
 			);
-		TRACE(("... made SIZEGRIP %x at %d,%d\n", cur_win->size_box, left, top))
+		TRACE(("... made SIZEGRIP %x at %d,%d\n", cur_win->size_box.w, left, top))
 	} else {
 		int ok;
-		ok = MoveWindow(cur_win->size_box,
-			left,
-			top,
-			SbWidth,
-			nLineHeight,
-			TRUE);
-		TRACE(("... move SIZE_BOX %d:%x to %d,%d\n", ok, cur_win->size_box, left, top))
-		ok = MoveWindow(cur_win->size_grip,
-			0,
-			0,
-			SbWidth,
-			nLineHeight,
-			TRUE);
-		TRACE(("... move SIZEGRIP %d:%x to %d,%d\n", ok, cur_win->size_box, left, top))
+
+		if (cur_win->size_box.r.left   != left
+		 || cur_win->size_box.r.top    != top
+		 || cur_win->size_box.r.right  != SbWidth
+		 || cur_win->size_box.r.bottom != nLineHeight) {
+			ok = MoveWindow(cur_win->size_box.w,
+				cur_win->size_box.r.left   = left,
+				cur_win->size_box.r.top    = top,
+				cur_win->size_box.r.right  = SbWidth,
+				cur_win->size_box.r.bottom = nLineHeight,
+				TRUE);
+			TRACE(("... move SIZE_BOX %d:%x to %d,%d\n",
+				ok, cur_win->size_box.w, left, top))
+		}
+
+		left = 0;
+		top  = 0;
+		if (cur_win->size_grip.r.left   != left
+		 || cur_win->size_grip.r.top    != top
+		 || cur_win->size_grip.r.right  != SbWidth
+		 || cur_win->size_grip.r.bottom != nLineHeight) {
+			ok = MoveWindow(cur_win->size_grip.w,
+				cur_win->size_grip.r.left   = left,
+				cur_win->size_grip.r.top    = top,
+				cur_win->size_grip.r.right  = SbWidth,
+				cur_win->size_grip.r.bottom = nLineHeight,
+				TRUE);
+			TRACE(("... move SIZEGRIP %d:%x to %d,%d\n",
+				ok, cur_win->size_grip.w, left, top))
+		}
 	}
 }
 
@@ -1776,7 +2006,7 @@ static int find_scrollbar (HWND hWnd)
 	int i = 0;
 
 	for_each_visible_window(wp) {
-		if (cur_win->scrollbars[i] == hWnd) {
+		if (cur_win->scrollbars[i].w == hWnd) {
 			set_curwp (wp);
 			if (wp->w_bufp != curbp) {
 				swbuffer(wp->w_bufp);
@@ -1928,13 +2158,10 @@ LONG FAR PASCAL TextWndProc(
 			WPARAM wParam,
 			LONG lParam)
 {
-	switch (message) {
-	case WM_MOUSEMOVE:
-		TRACE(("TEXT:MOUSEMOVE\n"))
-		break;
+	TRACE(("TEXT:%s, %s\n", message2s(message), which_window(hWnd)))
 
+	switch (message) {
 	case WM_PAINT:
-		TRACE(("TEXT:WM_PAINT %s\n", which_window(hWnd)))
 		if (GetUpdateRect(hWnd, (LPRECT)0, FALSE)) {
 			repaint_window(hWnd);
 		} else {
@@ -1950,23 +2177,9 @@ LONG FAR PASCAL TextWndProc(
 		khit = 1;
 		/* FALLTHRU */
 	default:
-		TRACE(("TEXT:default %#x %s\n", message, which_window(hWnd)))
 		return (DefWindowProc(hWnd, message, wParam, lParam));
+
 	IGN_PROC("TEXT:", WM_ERASEBKGND);
-	DEF_PROC("TEXT:", WM_CREATE);
-	DEF_PROC("TEXT:", WM_GETTEXT);
-	DEF_PROC("TEXT:", WM_NCACTIVATE);
-	DEF_PROC("TEXT:", WM_MOVE);
-	DEF_PROC("TEXT:", WM_MOUSEACTIVATE);
-	DEF_PROC("TEXT:", WM_NCCALCSIZE);
-	DEF_PROC("TEXT:", WM_NCHITTEST);
-	DEF_PROC("TEXT:", WM_NCPAINT);
-	DEF_PROC("TEXT:", WM_QUERYNEWPALETTE);
-	DEF_PROC("TEXT:", WM_PARENTNOTIFY);
-	DEF_PROC("TEXT:", WM_SETCURSOR);
-	DEF_PROC("TEXT:", WM_SIZE);
-	DEF_PROC("TEXT:", WM_WINDOWPOSCHANGING);
-	DEF_PROC("TEXT:", WM_WINDOWPOSCHANGED);
 	}
 	return (0);
 }
@@ -1981,13 +2194,11 @@ LONG FAR PASCAL MainWndProc(
 	FARPROC lpProcAbout;
 #endif
 
+	TRACE(("MAIN:%s, %s\n", message2s(message), which_window(hWnd)))
+
 	switch (message) {
 	HANDLE_MSG(hWnd, WM_CLOSE,	HandleClose);
-	case WM_MOUSEMOVE:
-		TRACE(("MAIN:MOUSEMOVE\n"))
-		break;
 	case WM_COMMAND:
-		TRACE(("MAIN:COMMAND\n"))
 #if FIXME
 		switch (wParam) {
 		case IDC_button:
@@ -2024,27 +2235,22 @@ LONG FAR PASCAL MainWndProc(
 		break;
 */
 	case WM_SETFOCUS:
-		TRACE(("MAIN:SETFOCUS\n"))
 		fshow_cursor();
 		break;
 
 	case WM_KILLFOCUS:
-		TRACE(("MAIN:KILLFOCUS\n"))
 		fhide_cursor();
 		break;
 
 	case WM_DESTROY:
-		TRACE(("MAIN:DESTROY\n"))
 		PostQuitMessage(0);
 		break;
 
 	case WM_WINDOWPOSCHANGED:
-		TRACE(("MAIN:WM_WINDOWPOSCHANGED, %s\n", which_window(hWnd)))
 		ResizeClient();
 		return (DefWindowProc(hWnd, message, wParam, lParam));
 
 	case WM_WINDOWPOSCHANGING:
-		TRACE(("MAIN:WM_WINDOWPOSCHANGING, %s\n", which_window(hWnd)))
 #if FIXME_POSCHANGING
 		if (wheadp != 0)
 			return AdjustPosChanging(hWnd, (LPWINDOWPOS)lParam);
@@ -2052,16 +2258,17 @@ LONG FAR PASCAL MainWndProc(
 		return (DefWindowProc(hWnd, message, wParam, lParam));
 
 	case WM_SIZING:
-		TRACE(("MAIN:WM_SIZING, %s\n", which_window(hWnd)))
 		return AdjustResizing(hWnd, wParam, (LPRECT)lParam);
 
 	case WM_EXITSIZEMOVE:
-		TRACE(("MAIN:WM_EXITSIZEMOVE, %s\n", which_window(hWnd)))
 		ResizeClient();
 		return (DefWindowProc(hWnd, message, wParam, lParam));
 
 	case WM_SYSCOMMAND:
-		TRACE(("MAIN:SYSCOMMAND %#x\n", LOWORD(wParam)))
+		TRACE(("MAIN:WM_SYSCOMMAND %s at %d,%d\n",
+			syscommand2s(LOWORD(wParam)),
+			HIWORD(lParam),
+			LOWORD(lParam)))
 		switch(LOWORD(wParam))
 		{
 		case MM_FONT:
@@ -2072,7 +2279,6 @@ LONG FAR PASCAL MainWndProc(
 
 #if OPT_SCROLLBARS
 	case WM_VSCROLL:
-		TRACE(("MAIN:WM_VSCROLL\n"))
 		handle_scrollbar((HWND)lParam, LOWORD(wParam), HIWORD(wParam));
 		return (DefWindowProc(hWnd, message, wParam, lParam));
 #endif
@@ -2084,24 +2290,9 @@ LONG FAR PASCAL MainWndProc(
 		khit = 1;
 		/* FALLTHRU */
 	default:
-		TRACE(("MAIN:default %#x %s\n", message, which_window(hWnd)))
 		return (TextWndProc(hWnd, message, wParam, lParam));
 
 	IGN_PROC("MAIN:", WM_ERASEBKGND);
-	DEF_PROC("MAIN:", WM_GETTEXT);
-	DEF_PROC("MAIN:", WM_KEYUP);
-	DEF_PROC("MAIN:", WM_MOUSEACTIVATE);
-	DEF_PROC("MAIN:", WM_NCPAINT);
-	DEF_PROC("MAIN:", WM_SETCURSOR);
-	DEF_PROC("MAIN:", WM_NCACTIVATE);
-	DEF_PROC("MAIN:", WM_NCCALCSIZE);
-	DEF_PROC("MAIN:", WM_NCHITTEST);
-	DEF_PROC("MAIN:", WM_NCMOUSEMOVE);
-	DEF_PROC("MAIN:", WM_PAINT);
-	DEF_PROC("MAIN:", WM_SIZE);
-	DEF_PROC("MAIN:", WM_GETMINMAXINFO);
-	DEF_PROC("MAIN:", WM_QUERYNEWPALETTE);
-	DEF_PROC("MAIN:", WM_PARENTNOTIFY);
 	}
 	return (1);
 }
@@ -2212,9 +2403,6 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
 #endif
 
 	cur_win->nscrollbars = -1;
-	cur_win->x_border = GetSystemMetrics(SM_CXSIZEFRAME);
-	cur_win->y_border = GetSystemMetrics(SM_CYSIZEFRAME);
-	TRACE(("X border: %d, Y border: %d\n", cur_win->x_border, cur_win->y_border))
 
 	/*
 	 * Insert "File" and "Font" before "Close" in the system menu.

@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.166 1998/09/07 21:18:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.167 1998/09/09 09:23:49 tom Exp $
  *
  */
 
@@ -524,6 +524,7 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 #if SYS_WINNT && defined(DISP_NTWIN)
 		ElseIf( EVFONT )	value = ntwinio_current_font();
 #endif
+#if OPT_SHELL
 #if DISP_X11
 		ElseIf( EVFONT )	value = x_current_fontname();
 		ElseIf( EVTITLE )	value = x_get_window_name();
@@ -537,7 +538,6 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 				SetEnv(&x_shell, DftEnv("XSHELL", "xterm"));
 			value = x_shell;
 #endif
-#if OPT_SHELL
 		ElseIf( EVSHELL )
 			value = get_shell();
 
@@ -925,6 +925,7 @@ const char *value)	/* value to set to */
 #if SYS_WINNT && defined(DISP_NTWIN)
 		ElseIf( EVFONT ) status = ntwinio_font_frm_str(value, FALSE);
 #endif
+#if OPT_SHELL
 #if DISP_X11
 		ElseIf( EVFONT ) status = x_setfont(value);
 		ElseIf( EVTITLE ) x_set_window_name(value);
@@ -932,7 +933,6 @@ const char *value)	/* value to set to */
 		ElseIf( EVXDISPLAY ) SetEnv(&x_display, value);
 		ElseIf( EVXSHELL ) SetEnv(&x_shell, value);
 #endif
-#if OPT_SHELL
 		ElseIf( EVCWD )
 			status = set_directory(value);
 
