@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.558 2004/12/15 13:34:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.568 2005/01/24 00:23:43 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -545,6 +545,11 @@
 # define OPT_ICURSOR    0
 #endif
 
+#if SYS_WINNT
+# define MAX_RECENT_FILES 20
+# define MAX_RECENT_FLDRS 20
+#endif
+
 /*
  * The $findpath statevar and find-cfg mode features require:
  *
@@ -1052,7 +1057,9 @@ extern void endofDisplay(void);
 
 #define	char2int(c)	((int)(c & 0xff)) /* mask off sign-extension, etc. */
 
-#define	PLURAL(n)	((n!=1)?"s":"")
+#define	PLURAL(n)	((n) != 1 ? "s" : "")
+#define NONNULL(s)	((s) != 0 ? (s) : "")
+#define isEmpty(s)	((s) == 0 || *(s) == EOS)
 
 #define EOS        '\0'
 #define BQUOTE     '`'
@@ -1549,6 +1556,8 @@ typedef	struct	vl_tbuff	{
 	int	tb_errs;	/* true if we copied error_val here */
 	} TBUFF;
 
+#define isTB_ERRS(p) ((p) != 0 && (p)->tb_errs)
+
 /*
  * Definitions for 'itbuff.c' (temporary/dynamic int-buffers)
  */
@@ -1624,11 +1633,9 @@ typedef	long		B_COUNT;	/* byte-count */
  *
  * Lines are additionally sometimes stacked in undo lists.
  */
-typedef	struct	LINE*	LINEPTR;
-
 typedef struct	LINE {
-	LINEPTR l_fp;			/* Link to the next line	*/
-	LINEPTR l_bp;			/* Link to the previous line	*/
+	struct LINE *l_fp;		/* Link to the next line	*/
+	struct LINE *l_bp;		/* Link to the previous line	*/
 	union {
 		size_t	l_sze;		/* Allocated size		*/
 		C_NUM	l_fo;		/* forward undo dot offs (undo only) */
@@ -1640,11 +1647,11 @@ typedef struct	LINE {
 	int	l_used;			/* Used size (may be negative)	*/
 	union {
 	    char *l_txt;		/* The data for this line	*/
-	    LINEPTR l_nxt;		/* if an undo stack separator,	*/
+	    struct LINE *l_nxt;		/* if an undo stack separator,	*/
 	} lt;				/*  a pointer to the next one	*/
 	union
 	{
-	    LINEPTR	l_stklnk;	/* Link for undo stack		*/
+	    struct LINE	*l_stklnk;	/* Link for undo stack		*/
 	    L_FLAG	l_flg;		/* flags for undo ops		*/
 	} l;
 #if OPT_LINE_ATTRS
@@ -1684,7 +1691,6 @@ typedef struct	LINE {
 #define PURESTACKSEP	((int)(-3)) /* as above, but buffer unmodified before */
 					/* this change */
 
-#define	null_ptr	(LINE *)0
 #define set_lforw(a,b)	lforw(a) = (b)
 #define set_lback(a,b)	lback(a) = (b)
 #define lforw(lp)	(lp)->l_fp
@@ -1723,7 +1729,7 @@ typedef struct	LINE {
 
 /* marks are a line and an offset into that line */
 typedef struct MARK {
-	LINEPTR l;
+	LINE *l;
 	C_NUM o;
 } MARK;
 
@@ -2076,18 +2082,18 @@ typedef struct	BUFFER {
 	B_COUNT	b_bytecount;		/* # of chars			*/
 	L_NUM	b_linecount;		/* no. lines in buffer		*/
 	L_NUM	b_lines_on_disk;	/* no. lines as of last read/write */
-	LINEPTR b_udstks[2];		/* undo stack pointers		*/
+	LINE	*b_udstks[2];		/* undo stack pointers		*/
 	MARK	b_uddot[2];		/* Link to "." before undoable op */
 	short	b_udstkindx;		/* which of above to use	*/
-	LINEPTR b_udtail;		/* tail of undo backstack	*/
-	LINEPTR b_udlastsep;		/* last stack separator pushed	*/
+	LINE	*b_udtail;		/* tail of undo backstack	*/
+	LINE	*b_udlastsep;		/* last stack separator pushed	*/
 	int	b_udcount;		/* how many undo's we can do	*/
-	LINEPTR	b_LINEs;		/* block-malloced LINE structs	*/
-	LINEPTR b_LINEs_end;		/* end of	"	"	*/
-	LINEPTR b_freeLINEs;		/* list of free "	"	*/
+	LINE	*b_LINEs;		/* block-malloced LINE structs	*/
+	LINE	*b_LINEs_end;		/* end of	"	"	*/
+	LINE	*b_freeLINEs;		/* list of free "	"	*/
 	UCHAR	*b_ltext;		/* block-malloced text		*/
 	UCHAR	*b_ltext_end;		/* end of block-malloced text	*/
-	LINEPTR	b_ulinep;		/* pointer at 'Undo' line	*/
+	LINE	*b_ulinep;		/* pointer at 'Undo' line	*/
 	int	b_active;		/* window activated flag	*/
 	int	b_refcount;		/* counts levels of source'ing	*/
 	UINT	b_nwnd;			/* Count of windows on buffer	*/
@@ -2211,6 +2217,9 @@ typedef struct	BUFFER {
 #define BFUPBUFF   iBIT(8)	/* set if buffer should be updated */
 #define BFRCHG     iBIT(9)	/* Changed since last reset of this flag*/
 #define BFISREAD   iBIT(10)	/* set if we are reading data into buffer */
+#define BFREGD     iBIT(11)	/* set if file path written to registry
+				 * (winvile feature)
+				 */
 
 /* macros for manipulating b_flag */
 #define b_is_set(bp,flags)        (((bp)->b_flag & (flags)) != 0)
@@ -2225,6 +2234,12 @@ typedef struct	BUFFER {
 #define b_is_recentlychanged(bp)  b_is_set(bp, BFRCHG)
 #define b_is_scratch(bp)          b_is_set(bp, BFSCRTCH)
 #define b_is_temporary(bp)        b_is_set(bp, BFINVS|BFSCRTCH)
+/*
+ * don't write file paths to registry if already written _or_ if dealing
+ * with a non-file and/or transient buffer.
+ */
+#define b_is_registered(bp)        b_is_set(bp, \
+                                       BFINVS|BFSCRTCH|BFREGD|BFEXEC|BFDIRS)
 
 #define b_set_flags(bp,flags)     (bp)->b_flag |= (flags)
 #define b_set_changed(bp)         b_set_flags(bp, BFCHG)
@@ -2234,6 +2249,7 @@ typedef struct	BUFFER {
 #define b_set_reading(bp)         b_set_flags(bp, BFISREAD)
 #define b_set_recentlychanged(bp) b_set_flags(bp, BFRCHG)
 #define b_set_scratch(bp)         b_set_flags(bp, BFSCRTCH)
+#define b_set_registered(bp)      b_set_flags(bp, BFREGD)
 
 #define b_clr_flags(bp,flags)     (bp)->b_flag &= ~(flags)
 #define b_clr_changed(bp)         b_clr_flags(bp, BFCHG)
@@ -2676,6 +2692,7 @@ typedef enum {
 	,file_is_external
 	,file_is_pipe
 	,file_is_internal
+	,file_is_new          /* winvile-specific functionality */
 } FFType;
 
 /* definitions for 'mlreply_file()' and other filename-completion */
@@ -2769,34 +2786,25 @@ extern void _exit (int code);
 
 /* Quiet compiler warnings on places where we're being blamed incorrectly,
  * e.g., for casting away const, or for alignment problems.  It's always
- * legal to cast a pointer to long w/o loss of precision.
+ * legal in c89 to cast a pointer to long w/o loss of precision.
+ *
+ * FIXME: c99 may require a wider type.
  */
 #define TYPECAST(type,ptr) (type*)((long)(ptr))
 
-/* structure-allocate, for linting */
-#if	0 /* this was useful for K&R lint, but we don't use it anymore */
-#define	castalloc(cast,nbytes)		((cast *)0)
-#define	castrealloc(cast,ptr,nbytes)	((ptr)+(nbytes))
-#define	typecalloc(cast)		((cast *)0)
-#define	typecallocn(cast,ntypes)	(((cast *)0)+(ntypes))
-#define	typealloc(cast)			((cast *)0)
-#define	typeallocn(cast,ntypes)		(((cast *)0)+(ntypes))
-#define	typereallocn(cast,ptr,ntypes)	(TYPECAST(cast,ptr)+(ntypes))
-#define	typeallocplus(cast,extra)	(((cast *)0)+(extra))
-#else
+/* structure-allocate, for appeasing strict compilers */
 #define	castalloc(cast,nbytes)		(cast *)malloc(nbytes)
-#define	castrealloc(cast,ptr,nbytes)	(cast *)realloc((char *)(ptr),(nbytes))
+#define	castrealloc(cast,ptr,nbytes)	(cast *)realloc((ptr),(nbytes))
 #define	typecalloc(cast)		(cast *)calloc(sizeof(cast),1)
 #define	typecallocn(cast,ntypes)	(cast *)calloc(sizeof(cast),ntypes)
 #define	typealloc(cast)			(cast *)malloc(sizeof(cast))
 #define	typeallocn(cast,ntypes)		(cast *)malloc((ntypes)*sizeof(cast))
-#define	typereallocn(cast,ptr,ntypes)	(cast *)realloc((char *)(ptr),\
+#define	typereallocn(cast,ptr,ntypes)	(cast *)realloc((ptr),\
 							(ntypes)*sizeof(cast))
 #define	typeallocplus(cast,extra)	(cast *)calloc((extra)+sizeof(cast),1)
-#endif
 
-#define	FreeAndNull(p)	if ((p) != 0) { free((char *)p); p = 0; }
-#define	FreeIfNeeded(p)	if ((p) != 0) free((char *)(p))
+#define	FreeAndNull(p)	if ((p) != 0)	{ free(p); p = 0; }
+#define	FreeIfNeeded(p)	if ((p) != 0)	free(p)
 
 #if defined(VILE_ERROR_ABORT)
 extern void ExitProgram(int code);
@@ -2897,6 +2905,9 @@ extern void ExitProgram(int code);
 #ifndef	USE_DMALLOC	/* test malloc/free/strcpy/memcpy, etc. */
 #define	USE_DMALLOC	0
 #endif
+#ifndef	USE_MPATROL	/* test malloc/free/strcpy/memcpy, etc. */
+#define	USE_MPATROL	0
+#endif
 #ifndef	NO_LEAKS	/* free permanent memory, analyze leaks */
 #define	NO_LEAKS	0
 #endif
@@ -2935,6 +2946,10 @@ extern void ExitProgram(int code);
 #  if USE_DMALLOC
 #    include <dmalloc.h>
 #    define show_alloc() dmalloc_log_unfreed()
+#  endif
+#  if USE_MPATROL
+#    include <mpatrol.h>
+#    define show_alloc() void __mp_summary()
 #  endif
 #  if CAN_TRACE && OPT_TRACE
 #    include "trace.h"

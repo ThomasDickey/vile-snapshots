@@ -1,7 +1,7 @@
 /*
  * Parsing and I/O support for atr2text, etc.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/unfilter.c,v 1.6 2004/10/27 19:17:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/unfilter.c,v 1.8 2005/01/18 23:23:26 tom Exp $
  */
 #define CAN_TRACE 0
 #define CAN_VMS_PATH 0
@@ -22,6 +22,13 @@ typedef struct {
 
 static COUNTS *my_counts = 0;
 static unsigned my_length = 0;
+
+static void
+failed(const char *s)
+{
+    perror(s);
+    exit(BADEXIT);
+}
 
 static void
 unfilter(FILE *src, FILE *dst)
@@ -75,7 +82,8 @@ unfilter(FILE *src, FILE *dst)
 		markup_unfilter(dst, attrs);
 		if (my_length == 0) {
 		    my_length = 10;
-		    my_counts = (COUNTS *) calloc(my_length, sizeof(COUNTS));
+		    if ((my_counts = typecallocn(COUNTS, my_length)) == 0)
+			failed("malloc");
 		}
 		for (n = 0; n < my_length; ++n) {
 		    if (my_counts[n].length == 0) {

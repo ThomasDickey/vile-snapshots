@@ -4234,17 +4234,18 @@ Majormodes
 
 	Majormodes are collections of buffer mode values that vile
 	automatically assigns to new buffers.  When the vile distribution
-	file "filters.rc" is sourced, a significant number of majormodes are
-	defined for various programming languages and file formats.  The
-	majormode assigned to a particular buffer is dependent upon two
-	criteria, in the following priority order:
+	file "filters.rc" is sourced, it in turn sources "modes.rc", which
+	subsequently defines a significant number of majormodes for various
+	programming languages and file formats.  The majormode assigned to a
+	particular buffer is dependent upon two criteria, in the following
+	priority order:
 
 	1) the suffix of the file being edited, and
 	2) the file's preamble (i.e., file's first line).
 
 	Both suffix and preamble are expressed as regular expressions and
-	examples of each are readily available in filters.rc .  Speaking
-	of filters.rc, it becomes obvious from browsing this file that most
+	examples of each are readily available in modes.rc .  Speaking of
+	modes.rc, it becomes obvious from browsing this file that most
 	majormode buffer settings involve specifying appropriate regex
 	patterns for fences and comments.
 
@@ -5609,6 +5610,12 @@ Win32 specifics
 
 	Select individual words or lines with a double or triple click.
 
+	Note that console vile has _zero_ mouse functionality if the parent
+	command prompt window (aka DOS box) is configured with QuickEdit Mode
+	enabled.  QuickEdit is accessed like so:
+
+		system menu->Properties->Options Tab
+
 	Winvile Mouse
 	-------------
 	Pressing the right mouse button pops up a menu of editor commands.
@@ -5645,10 +5652,24 @@ Win32 specifics
 	"Select All"    selects all text in the current buffer.
 
 	The first five popup menu entries are added to the system menu (in
-	the upper left corner of the window).  The system menu also includes
-	two selections that support the traditional Windows printing
-	interface.  Use the "Menu" entry in that menu to re-enable the
-	popup menu.
+	the upper left corner of the window).  The system menu also includes:
+
+	+ Two selections that support the traditional Windows printing
+	  interface.
+
+	+ A "Recent Files" menu that lists the last N files opened/created
+	  by the editor.  Any file selected from this list is immediately
+	  opened for editing.  This feature is disabled by default, but can
+	  be configured via the "recent-files" mode.
+
+	+ A "Recent Folders" menu that lists the last N folders visited via
+	  an explicit or implicit cd.  Selecting a folder from this list is
+	  equivalent to executing ":cd <foldername>".  This feature is
+	  disabled by default, but can be configured via the
+	  "recent-folders" mode.
+
+	+ A "Menu" command that disables/re-enables the aforementioned
+	  popup menu.
 
 	Clipboard
 	---------
@@ -5699,7 +5720,7 @@ Win32 specifics
 		 current shell/desktop environment.
 	Note 5:  <face> must be fixed pitch.  To obtain a list of all fixed
 		 pitch fonts on the current win32 host, invoke winvile and
-		 browse the "Font" dialog box accessible from the System menu
+		 browse the "Font" dialog box accessible from the system menu
 		 (accelerator key is ALT+<space bar>+f).
 
 	Cmdline Examples		Internal Examples
@@ -5748,6 +5769,14 @@ Win32 specifics
 	delete-text-selection
 			Delete the current text selection to the
 			unnamed register.  Bound to Alt+Delete.
+
+	purge-recent-files
+			Clear the list of files that appear in winvile's
+			"Recent Files" menu.
+
+	purge-recent-folders
+			Clear the list of folders that appear in winvile's
+			"Recent Folders" menu.
 
 	reset-rgb-palette
 			Set red/green/blue values to their initial state.
@@ -5826,7 +5855,15 @@ Win32 specifics
 			    2 -> cmd mode = vertical bar
 		                 ins mode = block cursor (U)
 
-	popup-menu	Enables/disables the popup menu in winvile.  (U)
+	popup-menu	Enables/disables the winvile popup menu.  (U)
+
+	recent-files	Specify maximum number of files that may appear in
+			winvile's "Recent Files" menu. Range is 0-20;
+			a value of 0 disables this menu.  (U)
+
+	recent-folders	Specify maximum number of folders that may appear in
+			winvile's "Recent Folders" menu. Range is 0-20;
+			a value of 0 disables this menu.  (U)
 
 	scroll-pause	An integer indicating the time in milliseconds to
 			wait after scrolling the display.  A value of zero,
@@ -6138,4 +6175,4 @@ Problems
 
 Copyright 1995-2003 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.593 2004/12/12 20:11:54 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.596 2005/01/15 16:33:33 cmorgan Exp $

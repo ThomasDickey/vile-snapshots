@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.93 2004/11/01 01:08:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.99 2005/01/22 01:51:41 tom Exp $
  */
 
 /*#
@@ -417,6 +417,8 @@ do_perl_cmd(SV *cmd, int inplace)
 
     if (recursecount == 0) {
 	curvbp = api_bp2vbp(curbp);
+	if (curvbp == 0)
+	    return FALSE;
 
 	if (DOT.l == 0 || MK.l == 0 || getregion(&region) != TRUE) {
 	    /* shouldn't ever get here. But just in case... */
@@ -1038,9 +1040,12 @@ svcurbuf_set(pTHX_ SV *sv, MAGIC *mg)
 	api_swscreen(NULL, vbp);
     }
     else {
-	SV *my_sv = newVBrv(newSV(0), api_bp2vbp(curbp));
-	sv_setsv(svcurbuf, my_sv);
-	SvREFCNT_dec(my_sv);
+	VileBuf *curvbp = api_bp2vbp(curbp);
+	if (curvbp != 0) {
+	    SV *my_sv = newVBrv(newSV(0), curvbp);
+	    sv_setsv(svcurbuf, my_sv);
+	    SvREFCNT_dec(my_sv);
+	}
     }
     return 1;
 }
@@ -1458,7 +1463,7 @@ svgetregion(SV **svp, VileBuf *vbp, char *rsstr GCC_UNUSED, int rslen GCC_UNUSED
 {
     int len;
     SV *sv;
-    LINEPTR lp;
+    LINE *lp;
     int off;
     char *ending = get_record_sep(curbp);
     int	len_rs = strlen(ending);
@@ -1521,7 +1526,7 @@ svgettors(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
     SV *sv;
     int rs1;
     int orig_rslen = rslen;
-    LINEPTR lp;
+    LINE *lp;
     int off;
     char *ending = get_record_sep(curbp);
     int	len_rs = strlen(ending);
@@ -1552,7 +1557,7 @@ svgettors(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
     for (;;) {
 	int loff;
 	int cont_off;
-	LINEPTR cont_lp;
+	LINE *cont_lp;
 	int fidx;
 	int rsidx;
 
@@ -1720,18 +1725,23 @@ FindMode(char *mode, int isglobal, VALARGS *args)
 		char *save_str = execstr;
 		int save_flag = clexec;
 
-		temp = tb_scopy(&temp, mode);
-		execstr = skip_text(tb_values(temp));
-		clexec = FALSE;
-		if (isSpace(*execstr)) {
-		    *execstr++ = 0;
-		}
-		tb_scopy(&temp, tokval(tb_values(temp)));
-		tb_dequote(&temp);
-		value = tb_values(temp);
+		if ((temp = tb_scopy(&temp, mode)) != 0
+		    && tb_length(temp) != 0) {
 
-		execstr = save_str;
-		clexec = save_flag;
+		    execstr = skip_text(tb_values(temp));
+		    clexec = FALSE;
+		    if (isSpace(*execstr)) {
+			*execstr++ = 0;
+		    }
+		    tb_scopy(&temp, tokval(tb_values(temp)));
+		    tb_dequote(&temp);
+		    value = tb_values(temp);
+
+		    execstr = save_str;
+		    clexec = save_flag;
+		} else {
+		    value = "";
+		}
 	    } else {
 		value = tokval(mode);
 	    }
@@ -1741,7 +1751,8 @@ FindMode(char *mode, int isglobal, VALARGS *args)
     if (value == error_val) {
 	result = error_val;
     } else if (value != 0) {
-	result = strmalloc(value);
+	if ((result = strmalloc(value)) == 0)
+	    value = "";
     } else {
 	value = "";
     }
@@ -2237,9 +2248,11 @@ selection_buffer(...)
 	    bp = get_selection_buffer_and_region(&aregion);
 	    if (bp != NULL) {
 		VileBuf *vbp = api_bp2vbp(bp);
-		vbp->region = aregion.ar_region;
-		vbp->regionshape =  aregion.ar_shape;
-		XPUSHs(sv_2mortal(newVBrv(newSV(0), vbp)));
+		if (vbp != 0) {
+		    vbp->region = aregion.ar_region;
+		    vbp->regionshape =  aregion.ar_shape;
+		    XPUSHs(sv_2mortal(newVBrv(newSV(0), vbp)));
+		}
 	    }
 	    else {
 		XPUSHs(&PL_sv_undef);
@@ -2382,6 +2395,7 @@ set(...)
 
 	    /* Look for a mode first */
 	    status = FALSE;
+	    memset(&args, 0, sizeof(args));
 	    if (toktyp(mode) == TOK_LITSTR)
 		status = find_mode(curbp, mode, isglobal, &args);
 

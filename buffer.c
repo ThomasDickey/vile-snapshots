@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.274 2004/12/15 20:34:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.282 2005/01/24 01:43:28 tom Exp $
  *
  */
 
@@ -311,7 +311,7 @@ FreeBuffer(BUFFER *bp)
 
 #if !WINMARK
     if (is_header_line(MK, bp)) {
-	MK.l = null_ptr;
+	MK.l = 0;
 	MK.o = 0;
     }
 #endif
@@ -383,7 +383,7 @@ run_buffer_hook(void)
 static int
 hist_show(int lo_limit, int hi_limit, int cycle)
 {
-    int i = 0;
+    int i;
     int first = -1;
     char line[(HIST_SHOW + 1) * (NBUFN + 10)];
     BUFFER *abp = (BUFFER *) 0;
@@ -444,7 +444,7 @@ histbuff0(int f, int n, int this_window)
     int thiskey, c;
     BUFFER *bp = 0;
     int cycle = 0;
-    int first = 0;
+    int first;
     char *bufn;
 
     if (f == FALSE) {
@@ -593,18 +593,21 @@ imply_alt(char *fname, int copy, int lockfl)
     char nfname[NFILEN];
     char *stripped;
 
-    if (interrupted() || fname == 0)	/* didn't really have a filename */
-	return;
-    if (nested)
-	return;
+    TRACE((T_CALLED "imply_alt(fname=%s, copy=%d, lockfl=%d)\n",
+	   NONNULL(fname), copy, lockfl));
+
+    if (interrupted()
+	|| isEmpty(fname)
+	|| nested)
+	returnVoid();
 
     if ((stripped = is_appendname(fname)) != 0)
 	fname = stripped;
 
     /* if fname is a pipe cmd, it can be arbitrarily long */
     vl_strncpy(nfname, fname, sizeof(nfname));
-    nfname[sizeof(nfname) - 1] = '\0';
     (void) lengthen_path(nfname);
+
     if (global_g_val(GMDIMPLYBUFF)
 	&& valid_buffer(curbp)
 	&& curbp->b_fname != 0
@@ -612,64 +615,80 @@ imply_alt(char *fname, int copy, int lockfl)
 	&& !isInternalName(fname)) {
 	savebp = curbp;
 	if ((bp = find_b_file(nfname)) == 0) {
-	    L_NUM top, now;
+	    L_NUM top = -1;
+	    L_NUM now = -1;
 
 	    if ((bp = make_bp(fname, 0)) == 0) {
 		mlforce("[Cannot create buffer]");
-		return;
-	    }
+	    } else {
+		/* fill the buffer */
+		b_clr_flags(bp, BFINVS | BFCHG);
+		b_set_flags(bp, BFIMPLY);
+		bp->b_active = TRUE;
+		ch_fname(bp, nfname);
+		make_local_b_val(bp, MDNEWLINE);
+		if (valid_window(curwp) && curwp->w_bufp == curbp) {
+		    top = line_no(curbp, curwp->w_line.l);
+		    now = line_no(curbp, DOT.l);
+		}
 
-	    /* fill the buffer */
-	    b_clr_flags(bp, BFINVS | BFCHG);
-	    b_set_flags(bp, BFIMPLY);
-	    bp->b_active = TRUE;
-	    ch_fname(bp, nfname);
-	    make_local_b_val(bp, MDNEWLINE);
-	    if (valid_window(curwp) && curwp->w_bufp == curbp) {
-		top = line_no(curbp, curwp->w_line.l);
-		now = line_no(curbp, DOT.l);
-	    } else
-		top = now = -1;
-
-	    if (copy) {
-		for_each_line(lp, savebp) {
-		    if (addline(bp, lp->l_text, lp->l_used) != TRUE) {
-			mlforce("[Copy-buffer failed]");
-			return;
+		if (copy) {
+		    for_each_line(lp, savebp) {
+			if (addline(bp, lp->l_text, lp->l_used) != TRUE) {
+			    mlforce("[Copy-buffer failed]");
+			    zotbuf(bp);
+			    bp = 0;
+			    break;
+			}
+		    }
+		    if (bp != 0) {
+			set_b_val(bp, MDNEWLINE, b_val(savebp, MDNEWLINE));
+		    }
+		} else {
+		    if (readin(fname, lockfl, bp, FALSE) != TRUE) {
+			zotbuf(bp);
+			bp = 0;
 		    }
 		}
-		set_b_val(bp, MDNEWLINE, b_val(savebp, MDNEWLINE));
-	    } else {
-		readin(fname, lockfl, bp, FALSE);
 	    }
 
 	    /* setup so that buffer-toggle works as in vi (i.e.,
 	     * the top/current lines of the screen are the same).
 	     */
-	    if (now >= 0) {
-		for_each_line(lp, bp) {
-		    if (--now == 0) {
-			bp->b_dot.l = lp;
-			bp->b_dot.o = curbp->b_dot.o;
-			break;
-		    }
-		    if (--top == 0) {
-			bp->b_wline.l = lp;
+	    if (bp != 0) {
+		if (now >= 0) {
+		    for_each_line(lp, bp) {
+			if (--now == 0) {
+			    bp->b_dot.l = lp;
+			    bp->b_dot.o = curbp->b_dot.o;
+			    break;
+			}
+			if (--top == 0) {
+			    bp->b_wline.l = lp;
+			}
 		    }
 		}
 	    }
 	} else if (copy && !b_is_changed(bp)) {
 	    nested++;
-	    if (bp->b_active == TRUE)
-		bp2readin(bp, TRUE);
+	    if (bp->b_active == TRUE) {
+		if (bp2readin(bp, TRUE) != TRUE) {
+		    zotbuf(bp);
+		    bp = 0;
+		}
+	    }
 	    nested--;
 	}
+
 	DisableHook(&bufhook);
-	make_current(bp);
-	infer_majormode(bp);
+	if (bp != 0) {
+	    make_current(bp);
+	    infer_majormode(bp);
+	}
 	make_current(savebp);
 	EnableHook(&bufhook);
     }
+    returnVoid();
 }
 
 /* switch back to the most recent buffer */
@@ -695,6 +714,16 @@ qs_bname_cmp(const void *a, const void *b)
     return strcmp(*(const char *const *) a, (*(const char *const *) b));
 }
 
+static void
+free_bname_cmpl(char **list)
+{
+    int n;
+    for (n = 0; list[n] != 0; ++n) {
+	free(list[n]);
+    }
+    free((char *) list);
+}
+
 static char **
 init_bname_cmpl(void)
 {
@@ -707,24 +736,22 @@ init_bname_cmpl(void)
 	beginDisplay();
 	if ((list = typeallocn(char *, count + 1)) != 0) {
 	    for_each_buffer(bp) {
-		list[used++] = strmalloc(add_backslashes(bp->b_bname));
+		list[used] = strmalloc(add_backslashes(bp->b_bname));
+		if (list[used] == 0) {
+		    free_bname_cmpl(list);
+		    list = 0;
+		    break;
+		}
+		++used;
 	    }
+	}
+	if (list != 0) {
 	    list[used] = 0;
 	    qsort(list, used, sizeof(char *), qs_bname_cmp);
 	}
 	endofDisplay();
     }
     return list;
-}
-
-static void
-free_bname_cmpl(char **list)
-{
-    int n;
-    for (n = 0; list[n] != 0; ++n) {
-	free(list[n]);
-    }
-    free((char *) list);
 }
 
 static int
@@ -1015,7 +1042,7 @@ swbuffer(BUFFER *bp)
 static int
 suckitin(BUFFER *bp, int copy, int lockfl)
 {
-    int s = TRUE;
+    int s;
 
     TRACE((T_CALLED "suckitin(%s, %s)\n", bp->b_bname, copy ? "copy" : "new"));
     if (copy) {
@@ -1034,7 +1061,7 @@ suckitin(BUFFER *bp, int copy, int lockfl)
     }
 #ifdef MDCHK_MODTIME
     else
-	(void) check_file_changed(bp, bp->b_fname);
+	s = check_file_changed(bp, bp->b_fname);
 #endif
     updatelistbuffers();
     run_buffer_hook();
@@ -1452,12 +1479,14 @@ strip_brackets(char *dst, const char *src)
 char *
 add_brackets(char *dst, const char *src)
 {
-    size_t len = strlen(src);
-    if (len > NBUFN - 3)
-	len = NBUFN - 3;
-    dst[0] = SCRTCH_LEFT[0];
-    (void) strncpy(&dst[1], src, len);
-    (void) strcpy(&dst[len + 1], SCRTCH_RIGHT);
+    if (dst != 0 && src != 0) {
+	size_t len = strlen(src);
+	if (len > NBUFN - 3)
+	    len = NBUFN - 3;
+	dst[0] = SCRTCH_LEFT[0];
+	(void) strncpy(&dst[1], src, len);
+	(void) strcpy(&dst[len + 1], SCRTCH_RIGHT);
+    }
     return dst;
 }
 
@@ -1771,12 +1800,12 @@ static void
 makebufflist(int unused GCC_UNUSED, void *dummy GCC_UNUSED)
 {
     BUFFER *bp;
-    LINEPTR curlp;		/* entry corresponding to buffer-list */
+    LINE *curlp;		/* entry corresponding to buffer-list */
     int nbuf = 0;		/* no. of buffers */
     int this_or_that;
     char temp[NFILEN];
 
-    curlp = null_ptr;
+    curlp = 0;
 
     if (this_bp == 0)
 	this_bp = curbp;
@@ -1834,7 +1863,7 @@ makebufflist(int unused GCC_UNUSED, void *dummy GCC_UNUSED)
 	    current_directory(FALSE));
 
     /* show the actual size of the buffer-list */
-    if (curlp != null_ptr) {
+    if (curlp != 0) {
 	(void) bsizes(curbp);
 	(void) lsprintf(temp, "%7ld", curbp->b_bytecount);
 	(void) memcpy(curlp->l_text + 6, temp, strlen(temp));
@@ -1968,17 +1997,17 @@ addline(BUFFER *bp, const char *text, int len)
  * Add a LINE filled with the given text after the specified LINE.
  */
 int
-add_line_at(BUFFER *bp, LINEPTR prevp, const char *text, int len)
+add_line_at(BUFFER *bp, LINE *prevp, const char *text, int len)
 {
-    LINEPTR newlp;
-    LINEPTR nextp;
+    LINE *newlp;
+    LINE *nextp;
     LINE *lp;
     int ntext;
 
     nextp = lforw(prevp);
-    ntext = (len < 0) ? (int) strlen(text) : len;
+    ntext = (len < 0) ? (int) strlen(NONNULL(text)) : len;
     newlp = lalloc(ntext, bp);
-    if (newlp == null_ptr)
+    if (newlp == 0)
 	return (FALSE);
 
     lp = newlp;
@@ -2160,7 +2189,7 @@ BUFFER *
 bfind(const char *bname, UINT bflag)
 {
     BUFFER *bp;
-    LINEPTR lp;
+    LINE *lp;
     BUFFER *lastb = NULL;	/* buffer to insert after */
     BUFFER *bp2;
 
@@ -2180,7 +2209,7 @@ bfind(const char *bname, UINT bflag)
 	set_bname(bp, bname);
 
 	lp = lalloc(0, bp);
-	if (lp == null_ptr) {
+	if (lp == 0) {
 	    FreeAndNull(bp);
 	    (void) no_memory("BUFFER head");
 	} else {
@@ -2213,10 +2242,10 @@ bfind(const char *bname, UINT bflag)
 	    } else
 		bp->b_cryptkey[0] = EOS;
 #endif
-	    bp->b_udstks[0] = bp->b_udstks[1] = null_ptr;
-	    bp->b_ulinep = null_ptr;
-	    bp->b_udtail = null_ptr;
-	    bp->b_udlastsep = null_ptr;
+	    bp->b_udstks[0] = bp->b_udstks[1] = 0;
+	    bp->b_ulinep = 0;
+	    bp->b_udtail = 0;
+	    bp->b_udlastsep = 0;
 
 	    b_set_counted(bp);	/* buffer is empty */
 	    set_lforw(lp, lp);
@@ -2288,7 +2317,7 @@ make_ro_bp(const char *bname, UINT flags)
 int
 bclear(BUFFER *bp)
 {
-    LINEPTR lp;
+    LINE *lp;
 
     if (!b_is_temporary(bp)	/* Not invisible or scratch */
 	&&b_is_changed(bp)) {	/* Something changed    */
@@ -2315,9 +2344,9 @@ bclear(BUFFER *bp)
 	lfree(lp, bp);
     }
 
-    if (bp->b_ulinep != null_ptr) {
+    if (bp->b_ulinep != 0) {
 	lfree(bp->b_ulinep, bp);
-	bp->b_ulinep = null_ptr;
+	bp->b_ulinep = 0;
     }
     FreeAndNull(bp->b_ltext);
     bp->b_ltext_end = NULL;

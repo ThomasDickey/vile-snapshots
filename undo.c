@@ -3,7 +3,7 @@
  *
  * written for vile: Copyright (c) 1990, 1995-2001 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.84 2002/10/09 19:56:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.88 2005/01/24 00:23:42 tom Exp $
  *
  */
 
@@ -122,16 +122,16 @@
 #define STACK(i)	(&(curbp->b_udstks[i]))
 #define OTHERSTACK(i)	(&(curbp->b_udstks[1^i]))
 
-static LINE *popline(LINEPTR * stkp, int force);
-static LINEPTR copyline(LINE *lp);
-static int linesmatch(LINE *lp1, register LINE *lp2);
+static LINE *popline(LINE **stkp, int force);
+static LINE *copyline(LINE *lp);
+static int linesmatch(LINE *lp1, LINE *lp2);
 static int undoworker(int stkindx);
 static void freshstack(int stkindx);
-static void make_undo_patch(LINEPTR olp, LINEPTR nlp);
+static void make_undo_patch(LINE *olp, LINE *nlp);
 static void preundocleanup(void);
-static void pushline(LINEPTR lp, LINEPTR * stk);
-static void repointstuff(register LINEPTR nlp, register LINEPTR olp);
-static void setupuline(LINEPTR lp);
+static void pushline(LINE *lp, LINE **stk);
+static void repointstuff(LINE *nlp, LINE *olp);
+static void setupuline(LINE *lp);
 
 static short needundocleanup;
 
@@ -141,7 +141,7 @@ static USHORT current_undo_cookie = 1;	/* see L_FLAG.cook */
 /* #define UNDOLOG 1 */
 #ifdef UNDOLOG
 static void
-undolog(char *s, LINEPTR lp)
+undolog(char *s, LINE *lp)
 {
     char *t;
     if (lisreal(lp))
@@ -171,22 +171,17 @@ OkUndo(void)
 	return FALSE;
     if (!b_val(curbp, MDUNDOABLE))
 	return FALSE;
-#define SCRATCH 1
-#if SCRATCH
     if (b_is_scratch(curbp))
-#else
-    if (b_val(curbp, MDVIEW))
-#endif
 	return FALSE;
     return TRUE;
 }
 
 /* push a deleted line onto the undo stack. */
 void
-toss_to_undo(LINEPTR lp)
+toss_to_undo(LINE *lp)
 {
-    register LINEPTR next;
-    register LINEPTR prev;
+    LINE *next;
+    LINE *prev;
     int fc;
 
     if (!OkUndo())
@@ -229,67 +224,72 @@ toss_to_undo(LINEPTR lp)
  * redo stack) instead of at the copy, which will have just been popped,
  * unless we fix them by popping and using the patch.
  */
-
-void
-copy_for_undo(LINEPTR lp)
+int
+copy_for_undo(LINE *lp)
 {
-    register LINEPTR nlp;
+    int status = FALSE;
+    LINE *nlp;
 
-    if (!OkUndo())
-	return;
+    if (OkUndo()) {
+	if (needundocleanup)
+	    preundocleanup();
 
-    if (needundocleanup)
-	preundocleanup();
+	if (liscopied(lp)) {
+	    status = TRUE;
+	} else if ((nlp = copyline(lp)) == 0) {
+	    status = ABORT;
+	} else {
+	    /* take care of the normal undo stack */
+	    pushline(nlp, BACKSTK(curbp));
 
-    if (liscopied(lp))
-	return;
+	    make_undo_patch(lp, nlp);
 
-    /* take care of the normal undo stack */
-    nlp = copyline(lp);
-    if (nlp == null_ptr)
-	return;
+	    lsetcopied(lp);
 
-    pushline(nlp, BACKSTK(curbp));
+	    setupuline(lp);
 
-    make_undo_patch(lp, nlp);
+	    FORWDOT(curbp).l = lp;
+	    FORWDOT(curbp).o = DOT.o;
 
-    lsetcopied(lp);
-
-    setupuline(lp);
-
-    FORWDOT(curbp).l = lp;
-    FORWDOT(curbp).o = DOT.o;
+	    status = TRUE;
+	}
+    }
+    return status;
 }
 
 /* push an unreal line onto the undo stack
  * lp should be the new line, _after_ insertion, so
  *	lforw() and lback() are right
  */
-void
-tag_for_undo(LINEPTR lp)
+int
+tag_for_undo(LINE *lp)
 {
-    register LINEPTR nlp;
+    int status = FALSE;
+    LINE *nlp;
 
-    if (!OkUndo())
-	return;
+    if (OkUndo()) {
+	if (needundocleanup)
+	    preundocleanup();
 
-    if (needundocleanup)
-	preundocleanup();
+	if (liscopied(lp)) {
+	    status = TRUE;
+	} else if ((nlp = lalloc(LINENOTREAL, curbp)) == 0) {
+	    TRACE(("tag_for_undo: no memory\n"));
+	    status = ABORT;
+	} else {
+	    set_lforw(nlp, lforw(lp));
+	    set_lback(nlp, lback(lp));
 
-    if (liscopied(lp))
-	return;
+	    pushline(nlp, BACKSTK(curbp));
 
-    nlp = lalloc(LINENOTREAL, curbp);
-    if (nlp == null_ptr)
-	return;
-    set_lforw(nlp, lforw(lp));
-    set_lback(nlp, lback(lp));
+	    lsetcopied(lp);
+	    FORWDOT(curbp).l = lp;
+	    FORWDOT(curbp).o = DOT.o;
 
-    pushline(nlp, BACKSTK(curbp));
-
-    lsetcopied(lp);
-    FORWDOT(curbp).l = lp;
-    FORWDOT(curbp).o = DOT.o;
+	    status = TRUE;
+	}
+    }
+    return status;
 }
 
 /* Change all PURESTACKSEPS on the stacks to STACKSEPS, so that undo won't
@@ -299,7 +299,7 @@ tag_for_undo(LINEPTR lp)
 void
 nounmodifiable(BUFFER *bp)
 {
-    register LINE *tlp;
+    LINE *tlp;
     for (tlp = *BACKSTK(bp); tlp != NULL; tlp = tlp->l_nxtundo) {
 	if (lispurestacksep(tlp))
 	    tlp->l_used = STACKSEP;
@@ -313,9 +313,9 @@ nounmodifiable(BUFFER *bp)
 /* before any undoable command (except undo itself), clean the undo list */
 /* clean the copied flag on the line we're the copy of */
 void
-freeundostacks(register BUFFER *bp, int both)
+freeundostacks(BUFFER *bp, int both)
 {
-    register LINE *lp;
+    LINE *lp;
 
     while ((lp = popline(FORWSTK(bp), TRUE)) != NULL) {
 	lfree(lp, bp);
@@ -323,109 +323,118 @@ freeundostacks(register BUFFER *bp, int both)
     if (both) {
 	while ((lp = popline(BACKSTK(bp), TRUE)) != NULL)
 	    lfree(lp, bp);
-	bp->b_udtail = null_ptr;
-	bp->b_udlastsep = null_ptr;
+	bp->b_udtail = 0;
+	bp->b_udlastsep = 0;
 	bp->b_udcount = 0;
     }
-
 }
 
 /* ARGSUSED */
 int
 undo(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    int s;
+    int status;
     L_NUM before;
 
-    if (b_val(curbp, MDVIEW))
-	return (rdonly());
+    TRACE((T_CALLED "undo(%d,%d)\n", f, n));
 
-    before = vl_line_count(curbp);
-    if ((s = undoworker(curbp->b_udstkindx)) == TRUE) {
-	if (!line_report(before)) {
-	    mlwrite("[change %sdone]",
-		    curbp->b_udstkindx == BACK ? "un" : "re");
-	}
-	curbp->b_udstkindx ^= 1;	/* flip to other stack */
+    if (b_val(curbp, MDVIEW)) {
+	status = rdonly();
     } else {
-	mlwarn("[No changes to undo]");
+	before = vl_line_count(curbp);
+	if ((status = undoworker(curbp->b_udstkindx)) == TRUE) {
+	    if (!line_report(before)) {
+		mlwrite("[change %sdone]",
+			curbp->b_udstkindx == BACK ? "un" : "re");
+	    }
+	    curbp->b_udstkindx ^= 1;	/* flip to other stack */
+	} else {
+	    mlwarn("[No changes to undo]");
+	}
     }
-    return s;
+    returnCode(status);
 }
 
 int
 inf_undo(int f, int n)
 {
-    int s = TRUE;
+    int status = TRUE;
+
+    TRACE((T_CALLED "undo(%d,%d)\n", f, n));
 
     if (!f || n < 1)
 	n = 1;
 
-    if (b_val(curbp, MDVIEW))
-	return (rdonly());
-
-    curbp->b_udstkindx ^= 1;	/* flip to other stack */
-    while (s && n--) {
-	if ((s = undoworker(curbp->b_udstkindx)) == TRUE) {
-	    mlwrite("[change %sdone]",
-		    curbp->b_udstkindx == BACK ? "un" : "re");
-	} else {
-	    mlwarn("[No more changes to %s]",
-		   curbp->b_udstkindx == BACK ? "undo" : "redo");
+    if (b_val(curbp, MDVIEW)) {
+	status = rdonly();
+    } else {
+	curbp->b_udstkindx ^= 1;	/* flip to other stack */
+	while ((status == TRUE) && n--) {
+	    if ((status = undoworker(curbp->b_udstkindx)) == TRUE) {
+		mlwrite("[change %sdone]",
+			curbp->b_udstkindx == BACK ? "un" : "re");
+	    } else {
+		mlwarn("[No more changes to %s]",
+		       curbp->b_udstkindx == BACK ? "undo" : "redo");
+	    }
 	}
+	curbp->b_udstkindx ^= 1;	/* flip to other stack */
     }
-    curbp->b_udstkindx ^= 1;	/* flip to other stack */
-    return s;
+    returnCode(status);
 }
 
 int
 backundo(int f, int n)
 {
-    int s = TRUE;
+    int status = TRUE;
 
-    if (b_val(curbp, MDVIEW))
-	return (rdonly());
+    TRACE((T_CALLED "backundo(%d,%d)\n", f, n));
 
     if (!f || n < 1)
 	n = 1;
 
-    while (s && n--) {
-	s = undoworker(BACK);
-	if (s) {
-	    mlwrite("[change undone]");
-	} else {
-	    mlwarn("[No more changes to undo]");
+    if (b_val(curbp, MDVIEW)) {
+	status = rdonly();
+    } else {
+	while ((status == TRUE) && n--) {
+	    status = undoworker(BACK);
+	    if (status) {
+		mlwrite("[change undone]");
+	    } else {
+		mlwarn("[No more changes to undo]");
+	    }
 	}
+
+	curbp->b_udstkindx = FORW;	/* flip to other stack */
     }
-
-    curbp->b_udstkindx = FORW;	/* flip to other stack */
-
-    return s;
+    returnCode(status);
 }
 
 int
 forwredo(int f, int n)
 {
-    int s = TRUE;
+    int status = TRUE;
 
-    if (b_val(curbp, MDVIEW))
-	return (rdonly());
+    TRACE((T_CALLED "forwundo(%d,%d)\n", f, n));
 
     if (!f || n < 1)
 	n = 1;
 
-    while (s && n--) {
-	s = undoworker(FORW);
-	if (s) {
-	    mlwrite("[change redone]");
-	} else {
-	    mlwarn("[No more changes to redo]");
+    if (b_val(curbp, MDVIEW)) {
+	status = rdonly();
+    } else {
+	while ((status == TRUE) && n--) {
+	    status = undoworker(FORW);
+	    if (status) {
+		mlwrite("[change redone]");
+	    } else {
+		mlwarn("[No more changes to redo]");
+	    }
 	}
+
+	curbp->b_udstkindx = BACK;	/* flip to other stack */
     }
-
-    curbp->b_udstkindx = BACK;	/* flip to other stack */
-
-    return s;
+    return status;
 }
 
 void
@@ -439,7 +448,7 @@ mayneedundo(void)
 static void
 preundocleanup(void)
 {
-    register LINE *lp;
+    LINE *lp;
 
     freeundostacks(curbp, FALSE);
 
@@ -472,7 +481,7 @@ preundocleanup(void)
 }
 
 static void
-pushline(LINEPTR lp, LINEPTR * stk)
+pushline(LINE *lp, LINE **stk)
 {
     lp->l_nxtundo = *stk;
     *stk = lp;
@@ -482,7 +491,7 @@ pushline(LINEPTR lp, LINEPTR * stk)
 /* get a line from the specified stack.  unless force'ing, don't
 	go past a false bottom stack-separator */
 static LINE *
-popline(LINEPTR * stkp, int force)
+popline(LINE **stkp, int force)
 {
     LINE *lp;
 
@@ -494,13 +503,13 @@ popline(LINEPTR * stkp, int force)
     }
 
     *stkp = lp->l_nxtundo;
-    lp->l_nxtundo = null_ptr;
+    lp->l_nxtundo = 0;
     undolog("popped", lp);
     return (lp);
 }
 
 static LINE *
-peekline(LINEPTR * stkp)
+peekline(LINE **stkp)
 {
     return *stkp;
 }
@@ -508,7 +517,7 @@ peekline(LINEPTR * stkp)
 static void
 freshstack(int stkindx)
 {
-    register LINEPTR plp;
+    LINE *plp;
     /* push on a stack delimiter, so we know where this undo ends */
     if (b_is_changed(curbp)) {
 	plp = lalloc(STACKSEP, curbp);
@@ -518,16 +527,18 @@ freshstack(int stkindx)
 	/* and make sure there are no _other_ special separators */
 	nounmodifiable(curbp);
     }
-    if (plp == null_ptr)
+    if (plp == 0) {
+	TRACE(("freshstack: no memory\n"));
 	return;
+    }
     set_lback(plp, BACKDOT(curbp).l);
     plp->l_back_offs = BACKDOT(curbp).o;
     set_lforw(plp, FORWDOT(curbp).l);
     plp->l_forw_offs = FORWDOT(curbp).o;
     pushline(plp, STACK(stkindx));
     if (stkindx == BACK) {
-	plp->l_nextsep = null_ptr;
-	if (curbp->b_udtail == null_ptr) {
+	plp->l_nextsep = 0;
+	if (curbp->b_udtail == 0) {
 	    if (curbp->b_udcount != 0) {
 		mlforce("BUG: null tail with non-0 undo count");
 		curbp->b_udcount = 0;
@@ -535,7 +546,7 @@ freshstack(int stkindx)
 	    curbp->b_udtail = plp;
 	    curbp->b_udlastsep = plp;
 	} else {
-	    if (curbp->b_udlastsep == null_ptr) {
+	    if (curbp->b_udlastsep == 0) {
 		/* then we need to find lastsep */
 		int i;
 		curbp->b_udlastsep = curbp->b_udtail;
@@ -552,8 +563,8 @@ freshstack(int stkindx)
 	/* dbgwrite("bumped undocount %d", curbp->b_udcount); */
 	if (b_val(curbp, VAL_UNDOLIM) != 0 &&
 	    curbp->b_udcount > b_val(curbp, VAL_UNDOLIM)) {
-	    LINEPTR newtail;
-	    LINEPTR lp;
+	    LINE *newtail;
+	    LINE *lp;
 
 	    newtail = curbp->b_udtail;
 	    while (curbp->b_udcount > b_val(curbp, VAL_UNDOLIM)) {
@@ -563,38 +574,40 @@ freshstack(int stkindx)
 
 	    curbp->b_udtail = newtail;
 	    newtail = newtail->l_nxtundo;
-	    if (newtail != null_ptr) {
+	    if (newtail != 0) {
 		do {
 		    lp = newtail;
 		    if (newtail == curbp->b_udlastsep)
 			mlforce("BUG: tail passed lastsep");
 		    newtail = newtail->l_nxtundo;
 		    lfree(lp, curbp);
-		} while (newtail != null_ptr);
+		} while (newtail != 0);
 	    }
-	    curbp->b_udtail->l_nxtundo = null_ptr;
+	    curbp->b_udtail->l_nxtundo = 0;
 
 	}
     }
 }
 
 static void
-make_undo_patch(LINEPTR olp, LINEPTR nlp)
+make_undo_patch(LINE *olp, LINE *nlp)
 {
-    register LINEPTR plp;
+    LINE *plp;
     /* push on a tag that matches up the copy with the original */
     plp = lalloc(LINEUNDOPATCH, curbp);
-    if (plp == null_ptr)
+    if (plp == 0) {
+	TRACE(("make_undo_patch: no memory\n"));
 	return;
+    }
     set_lforw(plp, olp);	/* lforw() is the original line */
     set_lback(plp, nlp);	/* lback() is the copy */
     pushline(plp, BACKSTK(curbp));
 }
 
 static void
-applypatch(LINEPTR newlp, LINEPTR oldlp)
+applypatch(LINE *newlp, LINE *oldlp)
 {
-    register LINE *tlp;
+    LINE *tlp;
     for (tlp = *BACKSTK(curbp); tlp != NULL;
 	 tlp = tlp->l_nxtundo) {
 	if (!lispatch(tlp)) {
@@ -614,14 +627,16 @@ applypatch(LINEPTR newlp, LINEPTR oldlp)
     }
 }
 
-static LINEPTR
-copyline(register LINE *lp)
+static LINE *
+copyline(LINE *lp)
 {
-    register LINE *nlp;
+    LINE *nlp;
 
     nlp = lalloc(lp->l_used, curbp);
-    if (nlp == NULL)
-	return null_ptr;
+    if (nlp == NULL) {
+	TRACE(("copyline: no memory\n"));
+	return 0;
+    }
     /* copy the text and forward and back pointers.  everything else
        matches already */
     set_lforw(nlp, lforw(lp));
@@ -635,8 +650,8 @@ copyline(register LINE *lp)
 static int
 undoworker(int stkindx)
 {
-    register LINEPTR lp;
-    register LINEPTR alp;
+    LINE *lp;
+    LINE *alp;
     int nopops = TRUE;
 
     while ((lp = popline(STACK(stkindx), FALSE)) != 0) {
@@ -660,14 +675,23 @@ undoworker(int stkindx)
 		set_lback(lforw(alp), lback(alp));
 	    } else {		/* there is more than one line there */
 		mlforce("BUG: no stacked line for an insert");
+#if OPT_TRACE
+		trace_line(lp, curbp);
+		trace_line(lback(lp), curbp);
+		trace_line(lforw(lback(lp)), curbp);
+		trace_line(lforw(lforw(lback(lp))), curbp);
+		trace_line(lforw(lp), curbp);
+#endif
 		/* cleanup ? naw, a bugs a bug */
 		return (FALSE);
 	    }
 	} else {		/* there is no line where we're going */
 	    /* create an "unreal" tag line to push */
 	    alp = lalloc(LINENOTREAL, curbp);
-	    if (alp == null_ptr)
+	    if (alp == 0) {
+		TRACE(("undoworker: no memory\n"));
 		return (FALSE);
+	    }
 	    set_lforw(alp, lforw(lp));
 	    set_lback(alp, lback(lp));
 	}
@@ -720,7 +744,7 @@ undoworker(int stkindx)
 	DOT = BACKDOT(curbp);
 	/* dbgwrite("about to decr undocount %d", curbp->b_udcount); */
 	curbp->b_udcount--;
-	curbp->b_udlastsep = null_ptr;	/* it's only a hint */
+	curbp->b_udlastsep = 0;	/* it's only a hint */
 	if (curbp->b_udtail == lp) {
 	    if (curbp->b_udcount != 0) {
 		mlforce("BUG: popped tail; non-0 undo count");
@@ -728,8 +752,8 @@ undoworker(int stkindx)
 	    }
 	    /* dbgwrite("clearing tail 0x%x and lastsep 0x%x", curbp->b_udtail,
 	       curbp->b_udlastsep); */
-	    curbp->b_udtail = null_ptr;
-	    curbp->b_udlastsep = null_ptr;
+	    curbp->b_udtail = 0;
+	    curbp->b_udlastsep = 0;
 	}
     }
 
@@ -745,9 +769,9 @@ undoworker(int stkindx)
 }
 
 static void
-setupuline(LINEPTR lp)
+setupuline(LINE *lp)
 {
-    register LINE *ulp;
+    LINE *ulp;
     /* take care of the U line */
     if ((ulp = curbp->b_ulinep) == NULL
 	|| (ulp->l_nxtundo != lp)) {
@@ -760,13 +784,13 @@ setupuline(LINEPTR lp)
 }
 
 void
-dumpuline(LINEPTR lp)
+dumpuline(LINE *lp)
 {
-    register LINE *ulp = curbp->b_ulinep;
+    LINE *ulp = curbp->b_ulinep;
 
     if ((ulp != NULL) && (ulp->l_nxtundo == lp)) {
 	lfree(curbp->b_ulinep, curbp);
-	curbp->b_ulinep = null_ptr;
+	curbp->b_ulinep = 0;
     }
 }
 
@@ -774,10 +798,10 @@ dumpuline(LINEPTR lp)
 int
 lineundo(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    register LINE *ulp;		/* the Undo line */
-    register LINE *lp;		/* the line we may replace */
-    register WINDOW *wp;
-    register char *ntext;
+    LINE *ulp;			/* the Undo line */
+    LINE *lp;			/* the line we may replace */
+    WINDOW *wp;
+    char *ntext;
 
     ulp = curbp->b_ulinep;
     if (ulp == NULL) {
@@ -851,12 +875,12 @@ lineundo(int f GCC_UNUSED, int n GCC_UNUSED)
 #define _min(a,b) ((a) < (b)) ? (a) : (b)
 
 static void
-repointstuff(register LINEPTR nlp, register LINEPTR olp)
+repointstuff(LINE *nlp, LINE *olp)
 {
-    register WINDOW *wp;
+    WINDOW *wp;
     int usenew = lisreal(nlp);
-    register LINEPTR point;
-    register LINE *ulp;
+    LINE *point;
+    LINE *ulp;
 
     point = usenew ? nlp : lforw(olp);
 #if ! WINMARK
@@ -902,14 +926,14 @@ repointstuff(register LINEPTR nlp, register LINEPTR olp)
 	} else {
 	    /* we lose the ability to undo all changes
 	       to this line, since it's going away */
-	    curbp->b_ulinep = null_ptr;
+	    curbp->b_ulinep = 0;
 	}
     }
 
 }
 
 static int
-linesmatch(register LINE *lp1, register LINE *lp2)
+linesmatch(LINE *lp1, LINE *lp2)
 {
     if (llength(lp1) != llength(lp2))
 	return FALSE;

@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.172 2002/12/03 01:42:49 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.175 2005/01/21 11:46:18 tom Exp $
  *
  */
 
@@ -718,15 +718,20 @@ ffclose(void)
 int
 ffputline(const char *buf, int nbuf, const char *ending)
 {
-    int i;
-    for (i = 0; i < nbuf; ++i)
-	if (ffputc(char2int(buf[i])) == FIOERR)
-	    return FIOERR;
+    int i = 0;
 
-    while (*ending != EOS) {
-	if (*ending != '\r' || i == 0 || buf[i - 1] != '\r')
-	    ffputc(*ending);
-	ending++;
+    if (buf != 0) {
+	for (i = 0; i < nbuf; ++i)
+	    if (ffputc(char2int(buf[i])) == FIOERR)
+		return FIOERR;
+    }
+
+    if (ending != 0) {
+	while (*ending != EOS) {
+	    if (*ending != '\r' || i == 0 || buf[i - 1] != '\r')
+		ffputc(*ending);
+	    ending++;
+	}
     }
 
     if (ffp != 0 && ferror(ffp)) {
@@ -862,7 +867,12 @@ ffgetline(int *lenp)
 	fflinebuf[i] = EOS;
 
 	if (c == EOF) {		/* problems? */
-	    if (!feof(ffp) && ferror(ffp)) {
+	    if (!feof(ffp) && ferror(ffp)
+#ifdef EPIPE
+	    /* fix for Borland - no point in warnings if we have EOF */
+		&& (errno != EPIPE)
+#endif
+		) {
 		mlerror("reading");
 		return (FIOERR);
 	    }

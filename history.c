@@ -55,7 +55,7 @@
  *	not (yet) correspond to :-commands.  Before implementing, probably will
  *	have to make TESTC a settable mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.80 2004/11/01 00:41:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.82 2005/01/20 01:58:52 tom Exp $
  *
  */
 
@@ -137,6 +137,7 @@ static int
 willExtend(const char *src, int srclen)
 {
     if ((tb_length(MyText) == 0)
+	&& src != 0
 	&& (srclen > 0)) {
 	return (src[0] == SHPIPE_LEFT[0]) || isRepeatable(src[0]);
     }
@@ -151,7 +152,7 @@ willExtend(const char *src, int srclen)
 static int
 sameLine(LINE *lp, char *src, int srclen)
 {
-    if (srclen <= 0)
+    if (lp == 0 || !lisreal(lp) || src == 0 || srclen <= 0)
 	return 0;
     else {
 	int dstlen = llength(lp);
@@ -251,7 +252,7 @@ stripQuotes(char *src, int len, int eolchar, int *actual)
 
     if (len > 0) {
 	TRACE(("stripQuotes(%.*s)\n", len, src));
-	if ((dst = (char *) malloc((size_t) len + 1)) != 0) {
+	if ((dst = typeallocn(char, (size_t) len + 1)) != 0) {
 	    int j, k;
 	    int quoted = FALSE;
 	    int escaped = FALSE;
@@ -300,7 +301,7 @@ static void
 glueBufferToResult(TBUFF **dst, TBUFF *src)
 {
     int shell_cmd = ((tb_length(*dst) != 0 && isShellOrPipe(tb_values(*dst)))
-		     || (tb_length(*dst) != 0 && isShellOrPipe(tb_values(src))));
+		     || (tb_length(src) != 0 && isShellOrPipe(tb_values(src))));
 
     if (willGlue())
 	(void) tb_append(dst, MyGlue);
@@ -382,7 +383,7 @@ hst_append_s(char *cmd, int glue, int can_extend)
 void
 hst_remove(const char *cmd)
 {
-    if (MyLevel == 1 && *cmd != EOS) {
+    if (MyLevel == 1 && cmd != 0 && *cmd != EOS) {
 	TBUFF *temp = 0;
 	unsigned len = tb_length(tb_scopy(&temp, cmd)) - 1;
 

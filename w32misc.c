@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.41 2003/03/11 19:53:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.43 2005/01/17 00:40:30 tom Exp $
  */
 
 #include "estruct.h"
@@ -239,7 +239,7 @@ mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
         if (prepend_shc)
         {
             alloc_len = strlen(cmd) + strlen(shell) + SHELL_C_LEN + 1;
-            if ((out_str = malloc(alloc_len)) == NULL)
+            if ((out_str = typeallocn(char, alloc_len)) == NULL)
                 return (out_str);
             *allocd_mem = TRUE;
             sprintf(out_str, "%s %s %s", shell, shell_c, cmd);
@@ -257,7 +257,7 @@ mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
     if (prepend_shc)
         alloc_len += strlen(shell) + SHELL_C_LEN;
     alloc_len += 3;              /* terminating nul + 2 quote chars     */
-    if ((out_str = malloc(alloc_len)) == NULL)
+    if ((out_str = typeallocn(char, alloc_len)) == NULL)
     {
         errno = ENOMEM;
         return (out_str);
@@ -401,7 +401,7 @@ w32_system(const char *cmd)
          * idiom is supported by Win95, but not by WinNT.
          */
 
-        if ((cmdstr = malloc(strlen(cmd) + 1)) == NULL)
+        if ((cmdstr = typeallocn(char, strlen(cmd) + 1)) == NULL)
         {
             (void) no_memory("w32_system");
             return (-1);
@@ -435,6 +435,7 @@ static int
 get_console_handles(STARTUPINFO *psi, SECURITY_ATTRIBUTES *psa)
 {
     CONSOLE_CURSOR_INFO cci;
+    char                shell[NFILEN];
 
     psi->hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
     psi->dwFlags    = STARTF_USESTDHANDLES;
@@ -504,6 +505,21 @@ get_console_handles(STARTUPINFO *psi, SECURITY_ATTRIBUTES *psa)
         mlforce("[std output handle creation failed]");
         return (FALSE);
     }
+
+    /*
+     * set some value for stderr...this seems to be important for
+     * cygwin version circa 1.5.xx (so that error messages appear in the
+     * spawned console when winvile is invoked from bash command line).
+     *
+     * What to choose depends on the user's $shell .
+     */
+    strcpy(shell, get_shell());
+    (void) mklower(shell);
+    if (strstr(shell, "cmd") || strstr(shell, "command"))
+        psi->hStdError = psi->hStdOutput;
+    else
+        psi->hStdError = GetStdHandle(STD_ERROR_HANDLE);
+
     psi->dwFlags         |= STARTF_USEFILLATTRIBUTE;
     psi->dwFillAttribute  = FOREGROUND_RED|FOREGROUND_GREEN|FOREGROUND_BLUE;
     return (TRUE);
@@ -566,7 +582,7 @@ w32_system_winvile(const char *cmd, int *pressret)
          * idiom is supported by Win95, but not by WinNT.
          */
 
-        if ((cmdstr = malloc(strlen(cmd) + 1)) == NULL)
+        if ((cmdstr = typeallocn(char, strlen(cmd) + 1)) == NULL)
         {
             (void) no_memory("w32_system_winvile");
             return (-1);

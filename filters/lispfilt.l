@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Id: lispfilt.l,v 1.9 2003/11/02 21:58:13 tom Exp $
+ * $Id: lispfilt.l,v 1.10 2005/01/15 17:38:06 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of lisp code.
  *
@@ -28,7 +28,7 @@ static char *Ident_attr;
 static char *String_attr;
 static char *Number_attr;
 
-static char *paren_attr(void);
+static const char *paren_attr(void);
 
 %}
 
@@ -86,7 +86,7 @@ RPAREN		\)
 
 %%
 
-static char *
+static const char *
 paren_attr(void)
 {
     return (FLTSTACK_THIS.quoted ? String_attr : "");

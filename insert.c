@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.141 2003/06/18 21:38:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.142 2005/01/19 01:46:17 tom Exp $
  *
  */
 
@@ -650,7 +650,7 @@ ins(void)
 }
 
 static int
-isallspace(LINEPTR ln, int lb, int ub)
+isallspace(LINE *ln, int lb, int ub)
 {
     while (lb <= ub) {
 	if (!isSpace(lgetc(ln, ub)))

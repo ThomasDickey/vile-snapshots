@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.105 2003/06/18 21:45:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.106 2005/01/19 01:56:03 tom Exp $
  *
  */
 
@@ -23,7 +23,7 @@ static ULONG w_id_next = 1;
 static void
 unlink_window(WINDOW *thewp)
 {
-    register WINDOW *p, *q;
+    WINDOW *p, *q;
 
     for (p = wheadp, q = 0; p != 0; q = p, p = p->w_wndp)
 	if (p == thewp) {
@@ -76,14 +76,14 @@ set_curwp(WINDOW *wp)
 }
 
 /*
- * Adjust a LINEPTR forward by the given number of screen-rows, limited by
+ * Adjust a LINE pointer forward by the given number of screen-rows, limited by
  * the end of the buffer.
  */
-static LINEPTR
-adjust_forw(WINDOW *wp, LINEPTR lp, int n)
+static LINE *
+adjust_forw(WINDOW *wp, LINE *lp, int n)
 {
-    register int i;
-    LINEPTR dlp;
+    int i;
+    LINE *dlp;
     for (i = n; i > 0 && (lp != win_head(wp));) {
 	if ((i -= line_height(wp, lp)) < 0)
 	    break;
@@ -96,14 +96,14 @@ adjust_forw(WINDOW *wp, LINEPTR lp, int n)
 }
 
 /*
- * Adjust a LINEPTR backward by the given number of screen-rows, limited by
+ * Adjust a LINE pointer backward by the given number of screen-rows, limited by
  * the end of the buffer.
  */
-static LINEPTR
-adjust_back(WINDOW *wp, LINEPTR lp, int n)
+static LINE *
+adjust_back(WINDOW *wp, LINE *lp, int n)
 {
-    register int i;
-    LINEPTR dlp;
+    int i;
+    LINE *dlp;
     for (i = n; i > 0 && (lp != win_head(wp));) {
 	if ((i -= line_height(wp, lp)) < 0)
 	    break;
@@ -166,8 +166,8 @@ vile_refresh(int f, int n GCC_UNUSED)
 int
 nextwind(int f, int n)
 {
-    register WINDOW *wp;
-    register int nwindows;	/* total number of windows */
+    WINDOW *wp;
+    int nwindows;		/* total number of windows */
 
     if (f) {
 
@@ -200,8 +200,8 @@ nextwind(int f, int n)
 int
 poswind(int f, int n)
 {
-    register int c;
-    register int row;
+    int c;
+    int row;
     int s;
 
     if (!f)
@@ -242,8 +242,8 @@ poswind(int f, int n)
 int
 prevwind(int f, int n)
 {
-    register WINDOW *wp1;
-    register WINDOW *wp2;
+    WINDOW *wp1;
+    WINDOW *wp2;
 
     /* if we have an argument, we mean the nth window from the bottom */
     if (f)
@@ -286,8 +286,8 @@ mvdnwind(int f, int n)
 int
 mvupwind(int f, int n)
 {
-    register LINE *lp;
-    register int i;
+    LINE *lp;
+    int i;
     int was_n = n;
 
     lp = curwp->w_line.l;
@@ -415,7 +415,7 @@ onlywind(int f GCC_UNUSED, int n GCC_UNUSED)
 
     wp = wheadp;
     while (wp != NULL) {
-	register WINDOW *nwp;
+	WINDOW *nwp;
 	nwp = wp->w_wndp;
 	if (wp != curwp) {
 	    if (--wp->w_bufp->b_nwnd == 0)
@@ -482,7 +482,7 @@ delwind(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 delwp(WINDOW *thewp)
 {
-    register WINDOW *wp;	/* window to receive deleted space */
+    WINDOW *wp;			/* window to receive deleted space */
     int visible = is_visible_window(thewp);
 
     /* if there is only one window, don't delete it */
@@ -599,22 +599,21 @@ restore_window_modes(BUFFER *bp, W_VALUES * saved)
 }
 
 /*
-	Split the current window.  A window smaller than 3 lines cannot be
-	split.  An argument of 1 forces the cursor into the upper window, an
-	argument of two forces the cursor to the lower window.  The only other
-	error that is possible is a "malloc" failure allocating the structure
-	for the new window.
+ * Split the current window.  A window smaller than 3 lines cannot be split. 
+ * An argument of 1 forces the cursor into the upper window, an argument of two
+ * forces the cursor to the lower window.  The only other error that is
+ * possible is a "malloc" failure allocating the structure for the new window.
  */
 static WINDOW *
 splitw(int f, int n)
 {
-    register WINDOW *wp;
-    register LINE *lp;
-    register int ntru;
-    register int ntrl;
-    register int ntrd;
-    register WINDOW *wp1;
-    register WINDOW *wp2;
+    WINDOW *wp;
+    LINE *lp;
+    int ntru;
+    int ntrl;
+    int ntrd;
+    WINDOW *wp1;
+    WINDOW *wp2;
 
     if (curwp->w_ntrows < MINWLNS) {
 	mlforce("[Cannot split a %d line window]", curwp->w_ntrows);
@@ -722,7 +721,7 @@ splitwind(int f, int n)
 int
 enlargewind(int f, int n)
 {
-    register WINDOW *adjwp;
+    WINDOW *adjwp;
 
     if (n < 0)
 	return (shrinkwind(f, -n));
@@ -762,7 +761,7 @@ enlargewind(int f, int n)
 int
 shrinkwind(int f, int n)
 {
-    register WINDOW *adjwp;
+    WINDOW *adjwp;
 
     if (n < 0)
 	return (enlargewind(f, -n));
@@ -823,9 +822,9 @@ resize(int f, int n)
 WINDOW *
 wpopup(void)
 {
-    register WINDOW *wp;
-    register WINDOW *owp;
-    register WINDOW *biggest_wp;
+    WINDOW *wp;
+    WINDOW *owp;
+    WINDOW *biggest_wp;
 
     owp = curwp;
     wp = biggest_wp = wheadp;	/* Find window to split   */
@@ -881,7 +880,7 @@ shrinkwrap(void)
 	resize(TRUE, nlines);
     } else {
 	/* give/steal from upper window; need to find upper window */
-	register WINDOW *wp;
+	WINDOW *wp;
 	WINDOW *savewp = curwp;
 	int nrows, snrows;
 	for (wp = wheadp;
@@ -933,7 +932,7 @@ savewnd(int f GCC_UNUSED, int n GCC_UNUSED)	/* save ptr to current window */
 int
 restwnd(int f GCC_UNUSED, int n GCC_UNUSED)	/* restore the saved screen */
 {
-    register WINDOW *wp;
+    WINDOW *wp;
 
     /* find the window */
     for_each_visible_window(wp) {
@@ -1120,7 +1119,7 @@ clone_window(WINDOW *dst, WINDOW *src)
 void
 winit(int screen)
 {
-    register WINDOW *wp;
+    WINDOW *wp;
 
     wp = typecalloc(WINDOW);	/* First window         */
     if (wp == NULL)
@@ -1306,7 +1305,7 @@ win2index(WINDOW *wp_to_find)
 void
 wp_leaks(void)
 {
-    register WINDOW *wp;
+    WINDOW *wp;
 
     while ((wp = wheadp) != 0) {
 	wp = wp->w_wndp;

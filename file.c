@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.355 2004/12/01 22:08:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.367 2005/01/24 00:23:42 tom Exp $
  */
 
 #include "estruct.h"
@@ -37,6 +37,26 @@
 #endif
 
 #define NO_BNAME "NoName"
+
+#if SYS_WINNT && DISP_NTWIN
+    /*
+     * Create a shadow copy of ffstatus for the purposes of distinguishing
+     * a new file from an existing file.  A new file does not yet exist on
+     * disk and the user may decide not to write back its contents before
+     * exiting the editor.
+     *
+     * A shadow copy is used here to prevent breaking a _lot_ of existing
+     * code that references the value of ffstatus.
+     */
+static FFType ffshadow;
+#endif
+
+#define FIO2Status(fio) \
+	  ((fio) < FIOERR) \
+	   ? TRUE \
+	   : (((fio) == FIOERR) \
+	      ? FALSE \
+	      : ABORT)
 
 /*--------------------------------------------------------------------------*/
 
@@ -506,6 +526,36 @@ cannot_reread(void)
 }
 
 /*
+ * Zap the given buffer without trying to close its window, by renaming it
+ * to the unnamed-buffer and resetting its local modes.  Keeping the window
+ * sidesteps the issue of whether it was the only buffer, while allowing us
+ * to free the associated memory.
+ *
+ * FIXME: this may also have a majormode associated with it, should remove it.
+ */
+static void
+reset_to_unnamed(BUFFER *bp)
+{
+    WINDOW *wp;
+    int n;
+
+    for (n = 0; n < MAX_B_VALUES; ++n) {
+	if (is_local_b_val(bp, n)) {
+	    make_global_b_val(bp, n);
+	}
+    }
+    bclear(bp);
+    set_bname(bp, UNNAMED_BufName);
+    ch_fname(bp, "");
+
+    for_each_window(wp) {
+	if (wp->w_bufp == bp) {
+	    wp->w_flag |= (WFHARD | WFMODE);
+	}
+    }
+}
+
+/*
  * Read a file into the current
  * buffer. This is really easy; all you do it
  * find the name of the file, and call the standard
@@ -515,18 +565,20 @@ cannot_reread(void)
 int
 fileread(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    int s;
+    int status;
     char fname[NFILEN];
     W_VALUES *save_wvals;
 
+    TRACE((T_CALLED "fileread(%d,%d)\n", f, n));
+
     if (more_named_cmd()) {
-	if ((s = mlreply_file("Replace with file: ", (TBUFF **) 0,
-			      FILEC_REREAD, fname)) != TRUE)
-	    return s;
+	if ((status = mlreply_file("Replace with file: ", (TBUFF **) 0,
+				   FILEC_REREAD, fname)) != TRUE)
+	    returnCode(status);
     } else if (b_is_temporary(curbp)) {
-	return cannot_reread();
+	returnCode(cannot_reread());
     } else if (!(global_g_val(GMDWARNREREAD) || curbp->b_fname[0] == EOS)
-	       || ((s = mlyesno("Reread current buffer")) == TRUE)) {
+	       || ((status = mlyesno("Reread current buffer")) == TRUE)) {
 	(void) vl_strncpy(fname, curbp->b_fname, sizeof(fname));
 	/* Check if we are rereading an unnamed-buffer if it is not
 	 * associated with a file.
@@ -534,16 +586,16 @@ fileread(int f GCC_UNUSED, int n GCC_UNUSED)
 	if (is_internalname(curbp->b_fname)) {
 	    if (eql_bname(curbp, STDIN_BufName)
 		|| eql_bname(curbp, UNNAMED_BufName)) {
-		s = bclear(curbp);
-		if (s == TRUE)
+		status = bclear(curbp);
+		if (status == TRUE)
 		    mlerase();
-		curwp->w_flag |= WFMODE | WFHARD;
-		return s;
+		curwp->w_flag |= (WFMODE | WFHARD);
+		returnCode(status);
 	    }
-	    return cannot_reread();
+	    returnCode(cannot_reread());
 	}
     } else {
-	return FALSE;
+	returnCode(FALSE);
     }
 
 #if OPT_LCKFILES
@@ -558,11 +610,15 @@ fileread(int f GCC_UNUSED, int n GCC_UNUSED)
     b_clr_changed(curbp);
 
     save_wvals = save_window_modes(curbp);
-    s = readin(fname, TRUE, curbp, TRUE);
-    set_buffer_name(curbp);
+    status = readin(fname, TRUE, curbp, TRUE);
+    if (status == ABORT) {
+	reset_to_unnamed(curbp);
+    } else {
+	set_buffer_name(curbp);
+    }
     restore_window_modes(curbp, save_wvals);
 
-    return s;
+    returnCode(status);
 }
 
 /*
@@ -623,6 +679,8 @@ set_files_to_edit(const char *prompt, int appflag)
     char *actual;
     BUFFER *firstbp = 0;
 
+    TRACE((T_CALLED "set_files_to_edit(%s, %d)\n", NONNULL(prompt), appflag));
+
     if ((status = mlreply_file(prompt, &lastfileedited,
 			       FILEC_READ | FILEC_EXPAND,
 			       fname)) == TRUE) {
@@ -644,10 +702,13 @@ set_files_to_edit(const char *prompt, int appflag)
 		}
 	    }
 	}
-	if (find_bp(firstbp) != 0)
+	if (find_bp(firstbp) != 0) {
 	    status = bp2swbuffer(firstbp, FALSE, TRUE);
+	    if (status != TRUE)
+		reset_to_unnamed(firstbp);
+	}
     }
-    return status;
+    returnCode(status);
 }
 
 /* ARGSUSED */
@@ -811,9 +872,8 @@ ff_load_directory(char *fname)
 #endif
 
 /*
- * Insert file "fname" into the kill register
- * Called by insert file command. Return the final
- * status of the read.
+ * Insert file "fname" into the kill register.  Called by insert file command. 
+ * Return the final status of the read as true/false/abort.
  */
 static int
 kifile(char *fname)
@@ -823,73 +883,86 @@ kifile(char *fname)
     int nline;
     int nbytes;
 
-    ksetup();
-    if ((s = ffropen(fname)) == FIOERR)		/* Hard file open */
-	goto out;
-    else if (s == FIOFNF)	/* File not found */
-	return no_such_file(fname);
-#if COMPLETE_FILES || COMPLETE_DIRS
-    else if ((s = ff_load_directory(fname)) == FIOERR)
-	goto out;
-#endif
+    TRACE((T_CALLED "kifile(%s)\n", NONNULL(fname)));
 
-    nline = 0;
-#if OPT_ENCRYPT
-    if ((s = vl_resetkey(curbp, fname)) == TRUE)
+    ksetup();
+    if ((s = ffropen(fname)) == FIOERR) {	/* Hard file open */
+	goto out;
+    } else if (s == FIOFNF) {	/* File not found */
+	returnCode(no_such_file(fname));
+#if COMPLETE_FILES || COMPLETE_DIRS
+    } else if ((s = ff_load_directory(fname)) == FIOERR) {
+	goto out;
 #endif
-    {
-	mlwrite("[Reading...]");
-	CleanToPipe(FALSE);
-	while ((s = ffgetline(&nbytes)) <= FIOSUC) {
-	    for (i = 0; i < nbytes; ++i)
-		if (!kinsert(fflinebuf[i]))
-		    return FIOMEM;
-	    if ((s == FIOSUC) && !kinsert('\n'))
-		return FIOMEM;
-	    ++nline;
-	    if (s < FIOSUC)
-		break;
+    } else {
+
+	nline = 0;
+#if OPT_ENCRYPT
+	if ((s = vl_resetkey(curbp, fname)) == TRUE)
+#endif
+	{
+	    mlwrite("[Reading...]");
+	    CleanToPipe(FALSE);
+	    while ((s = ffgetline(&nbytes)) <= FIOSUC) {
+		for (i = 0; i < nbytes; ++i)
+		    if (!kinsert(fflinebuf[i]))
+			returnCode(FIOMEM);
+		if ((s == FIOSUC) && !kinsert('\n')) {
+		    s = FIOMEM;
+		    goto out;
+		}
+		++nline;
+		if (s < FIOSUC)
+		    break;
+	    }
+	    CleanAfterPipe(FALSE);
 	}
-	CleanAfterPipe(FALSE);
+	kdone();
+	(void) ffclose();	/* Ignore errors.       */
+	readlinesmsg(nline, s, fname, FALSE);
     }
-    kdone();
-    (void) ffclose();		/* Ignore errors.       */
-    readlinesmsg(nline, s, fname, FALSE);
 
   out:
-    return (s != FIOERR);
+    returnCode(FIO2Status(s));
 }
 
 /*
- * Insert a file into the current
- * buffer. This is really easy; all you do it
- * find the name of the file, and call the standard
- * "insert a file into the current buffer" code.
+ * Insert a file into the current buffer.  This is really easy; all you do is
+ * find the name of the file, and call the standard "insert a file into the
+ * current buffer" code.
  */
 /* ARGSUSED */
 int
 insfile(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    int s;
+    int status;
     char fname[NFILEN];
     static TBUFF *last;
 
+    TRACE((T_CALLED "insfile(%d, %d)\n", f, n));
+
     if (!calledbefore) {
-	if ((s = mlreply_file("Insert file: ", &last,
-			      FILEC_READ | FILEC_PROMPT, fname)) != TRUE)
-	    return s;
+	if ((status = mlreply_file("Insert file: ", &last,
+				   FILEC_READ | FILEC_PROMPT, fname)) != TRUE)
+	    returnCode(status);
     }
+
     if (ukb == 0)
-	return ifile(fname, TRUE, (FILE *) 0);
+	status = ifile(fname, TRUE, (FILE *) 0);
     else
-	return kifile(fname);
+	status = kifile(fname);
+
+    if (status == ABORT) {
+	TRACE(("undo insert to recover memory\n"));
+	undo(FALSE, 1);
+    }
+    returnCode(status);
 }
 
 BUFFER *
-getfile2bp(
-	      const char *fname,	/* file name to find */
-	      int ok_to_ask,
-	      int cmdline)
+getfile2bp(const char *fname,	/* file name to find */
+	   int ok_to_ask,
+	   int cmdline)
 {
     BUFFER *bp = cmdline ? NULL : find_b_name(fname);
     int s;
@@ -983,13 +1056,12 @@ no_file_name(const char *fname)
 }
 
 int
-getfile(
-	   char *fname,		/* file name to find */
-	   int lockfl)
-{				/* check the file for locks? */
+getfile(char *fname,		/* file name to find */
+	int lockfl)		/* check the file for locks? */
+{
     BUFFER *bp;
 
-    if (fname == 0 || *fname == EOS)
+    if (isEmpty(fname))
 	return no_file_found();
 
     /* if there are no path delimiters in the name, then the user
@@ -1176,16 +1248,19 @@ grab_lck_file(BUFFER *bp, char *fname)
 	!isShellOrPipe(fname) &&
 	!b_val(bp, MDVIEW)) {
 	char locker[100];
+	char *locked_by;
 
 	if (!set_lock(fname, locker, sizeof(locker))) {
 	    /* we didn't get it */
-	    make_local_b_val(bp, MDVIEW);
-	    set_b_val(bp, MDVIEW, TRUE);
-	    make_local_b_val(bp, MDLOCKED);
-	    set_b_val(bp, MDLOCKED, TRUE);
-	    make_local_b_val(bp, VAL_LOCKER);
-	    set_b_val_ptr(bp, VAL_LOCKER, strmalloc(locker));
-	    markWFMODE(bp);
+	    if ((locked_by = strmalloc(locker)) != 0) {
+		make_local_b_val(bp, MDVIEW);
+		set_b_val(bp, MDVIEW, TRUE);
+		make_local_b_val(bp, MDLOCKED);
+		set_b_val(bp, MDLOCKED, TRUE);
+		make_local_b_val(bp, VAL_LOCKER);
+		set_b_val_ptr(bp, VAL_LOCKER, locked_by);
+		markWFMODE(bp);
+	    }
 	}
     }
 }
@@ -1395,7 +1470,7 @@ quickreadf(BUFFER *bp, int *nlinep)
 		if (lp != bp->b_LINEs)
 		    set_lback(lp, lp - 1);
 		lsetclear(lp);
-		lp->l_nxtundo = null_ptr;
+		lp->l_nxtundo = 0;
 #if OPT_LINE_ATTRS
 		lp->l_attrs = NULL;
 #endif
@@ -1434,7 +1509,7 @@ quickreadf(BUFFER *bp, int *nlinep)
  * fname  - name of file to read
  * lockfl - check for file locks?
  * bp     - read into this buffer
- * mflg   - print messages? 
+ * mflg   - print messages?
  */
 /* ARGSUSED */
 int
@@ -1448,16 +1523,23 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
     && is_local_val(bp->b_values.bv, MDCRYPT);
 #endif
 
+    TRACE((T_CALLED "readin(fname=%s, lockfl=%d, bp=%p, mflg=%d)\n",
+	   NONNULL(fname), lockfl, bp, mflg));
+
+#if SYS_WINNT && DISP_NTWIN
+    ffshadow = file_is_closed;	/* an assumption */
+#endif
+
     if (bp == 0)		/* doesn't hurt to check */
-	return FALSE;
+	returnCode(FALSE);
 
     if (*fname == EOS) {
-	TRACE(("readin called with NULL fname\n"));
-	return TRUE;
+	TRACE(("...called with NULL fname\n"));
+	returnCode(FALSE);	/* we do not want to do that */
     }
 
     if ((s = bclear(bp)) != TRUE)	/* Might be old.    */
-	return s;
+	returnCode(s);
 
 #if OPT_ENCRYPT
     /* bclear() gets rid of local flags */
@@ -1487,6 +1569,9 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
 	   and it will appear as empty buffer */
 	/*EMPTY */ ;
     } else if (s == FIOFNF) {	/* File not found */
+#if SYS_WINNT && DISP_NTWIN
+	ffshadow = file_is_new;
+#endif
 	if (mflg)
 	    mlwrite("[New file]");
 #if COMPLETE_FILES || COMPLETE_DIRS
@@ -1551,14 +1636,16 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
     /*
      * Set the majormode if the file's suffix matches.
      */
-    infer_majormode(bp);
+    if (s < FIOERR)
+	infer_majormode(bp);
 
     for_each_window(wp) {
 	if (wp->w_bufp == bp) {
 	    init_window(wp, bp);
 	}
     }
-    imply_alt(fname, FALSE, lockfl);
+    if (s < FIOERR)
+	imply_alt(fname, FALSE, lockfl);
     updatelistbuffers();
 
 #if OPT_LCKFILES
@@ -1574,7 +1661,7 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
 	set_directory_from_file(bp);
 #endif
     b_match_attrs_dirty(bp);
-    return (s != FIOERR);
+    returnCode(FIO2Status(s));
 }
 
 /*
@@ -1583,9 +1670,25 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
 int
 bp2readin(BUFFER *bp, int lockfl)
 {
-    int s = readin(bp->b_fname, lockfl, bp, TRUE);
-    bp->b_active = TRUE;
-    return s;
+    int status = readin(bp->b_fname, lockfl, bp, TRUE);
+
+    if (status == TRUE) {
+	bp->b_active = TRUE;
+
+#if SYS_WINNT && DISP_NTWIN
+	if (status &&
+	    (!(isShellOrPipe(bp->b_fname) ||
+	       ffshadow == file_is_new ||
+	       b_is_registered(bp)))) {
+	    /* save file path to windows registry for later recall */
+
+	    store_recent_file_or_folder(bp->b_fname, TRUE);
+	    b_set_registered(bp);
+	}
+#endif
+    }
+
+    return status;
 }
 
 /*
@@ -1698,7 +1801,7 @@ slowreadf(BUFFER *bp, int *nlinep)
 }
 
 /*
- * Take a (null-terminated) file name, and from it fabricate a buffer name. 
+ * Take a (null-terminated) file name, and from it fabricate a buffer name.
  * This routine knows about the syntax of file names on the target system.  I
  * suppose that this information could be put in a better place than a line of
  * code.
@@ -1762,7 +1865,7 @@ makename(char *bname, const char *fname)
 	    (void) vl_strncpy(bcp, pathleaf(fcp), NBUFN);
 
 #if SYS_UNIX
-	    /* UNIX filenames can have any characters (other than EOS!). 
+	    /* UNIX filenames can have any characters (other than EOS!).
 	     * Refuse (rightly) to deal with leading/trailing blanks, but allow
 	     * embedded blanks.  For this special case, ensure that the buffer
 	     * name has no blanks, otherwise it is difficult to reference from
@@ -2121,10 +2224,22 @@ int
 writeout(const char *fn, BUFFER *bp, int forced, int msgf)
 {
     REGION region;
+    int status;
 
     setup_file_region(bp, &region);
 
-    return writereg(&region, fn, msgf, bp, forced, FALSE);
+    status = writereg(&region, fn, msgf, bp, forced, FALSE);
+
+#if SYS_WINNT && DISP_NTWIN
+    if (status && (!(isShellOrPipe(fn) || b_is_registered(bp)))) {
+	/* save file path to windows registry for later recall */
+
+	store_recent_file_or_folder(fn, TRUE);
+	b_set_registered(bp);
+    }
+#endif
+
+    return (status);
 }
 
 /*
@@ -2275,27 +2390,30 @@ vl_filename(int f GCC_UNUSED, int n GCC_UNUSED)
 }
 
 /*
- * Insert file "fname" into the current buffer, called by insert file command. 
+ * Insert file "fname" into the current buffer, called by insert file command.
  * Return the final status of the read.
  */
 int
 ifile(char *fname, int belowthisline, FILE *haveffp)
 {
-    LINEPTR prevp;
-    LINEPTR newlp;
-    LINEPTR nextp;
-    int s;
+    LINE *prevp;
+    LINE *newlp;
+    LINE *nextp;
+    int status;
     int nbytes;
     int nline;
 
+    TRACE((T_CALLED "ifile(fname=%s, belowthisline=%d, haveffp=%p)\n",
+	   NONNULL(fname), belowthisline, haveffp));
+
     b_clr_invisible(curbp);	/* we are not temporary */
     if (haveffp == 0) {
-	if ((s = ffropen(fname)) == FIOERR)	/* Hard file open */
+	if ((status = ffropen(fname)) == FIOERR)	/* Hard file open */
 	    goto out;
-	else if (s == FIOFNF)	/* File not found */
-	    return no_such_file(fname);
+	else if (status == FIOFNF)	/* File not found */
+	    returnCode(no_such_file(fname));
 #if COMPLETE_FILES || COMPLETE_DIRS
-	else if ((s = ff_load_directory(fname)) == FIOERR)
+	else if ((status = ff_load_directory(fname)) == FIOERR)
 	    goto out;
 	if (b_is_directory(curbp)) {
 	    /* special case: contents are already added */
@@ -2303,8 +2421,8 @@ ifile(char *fname, int belowthisline, FILE *haveffp)
 	}
 #endif
 #if OPT_ENCRYPT
-	if ((s = vl_resetkey(curbp, fname)) != TRUE)
-	    return s;
+	if ((status = vl_resetkey(curbp, fname)) != TRUE)
+	    returnCode(status);
 #endif
 	mlwrite("[Inserting...]");
 	CleanToPipe(FALSE);
@@ -2317,8 +2435,8 @@ ifile(char *fname, int belowthisline, FILE *haveffp)
     MK = DOT;
 
     nline = 0;
-    nextp = null_ptr;
-    while ((s = ffgetline(&nbytes)) <= FIOSUC) {
+    nextp = 0;
+    while ((status = ffgetline(&nbytes)) <= FIOSUC) {
 #if OPT_DOSFILES
 	if (b_val(curbp, MDDOS)
 	    && (nbytes > 0)
@@ -2332,22 +2450,34 @@ ifile(char *fname, int belowthisline, FILE *haveffp)
 
 	beginDisplay();
 	if (add_line_at(curbp, prevp, fflinebuf, nbytes) != TRUE) {
-	    s = FIOMEM;
-	    break;
+	    status = FIOMEM;
+	    newlp = 0;
+	} else {
+	    newlp = lforw(prevp);
+	    if ((tag_for_undo(newlp)) == ABORT) {
+		status = FIOMEM;
+		/*
+		 * De-link the line added for which we cannot undo.
+		 * If we don't do this, undoworker() won't find a match
+		 * against the buffer, and will be deadlocked.
+		 */
+		lremove(curbp, prevp);
+	    }
 	}
-	newlp = lforw(prevp);
-	tag_for_undo(newlp);
 	endofDisplay();
+
+	if (status == FIOMEM)
+	    break;
 
 	prevp = belowthisline ? newlp : nextp;
 	++nline;
-	if (s < FIOSUC)
+	if (status < FIOSUC)
 	    break;
     }
     if (!haveffp) {
 	CleanAfterPipe(FALSE);
 	(void) ffclose();	/* Ignore errors.       */
-	readlinesmsg(nline, s, fname, FALSE);
+	readlinesmsg(nline, status, fname, FALSE);
     }
 
     /* mark the window for changes.  could this be moved up to
@@ -2359,7 +2489,8 @@ ifile(char *fname, int belowthisline, FILE *haveffp)
     /* copy window parameters back to the buffer structure */
     copy_traits(&(curbp->b_wtraits), &(curwp->w_traits));
 
-    imply_alt(fname, FALSE, FALSE);
+    if (status < FIOERR)
+	imply_alt(fname, FALSE, FALSE);
 
 #if COMPLETE_FILES || COMPLETE_DIRS
     if (b_is_directory(curbp)) {
@@ -2369,7 +2500,7 @@ ifile(char *fname, int belowthisline, FILE *haveffp)
 	/* advance to the next line */
 	DOT.l = lforw(DOT.l);
 
-    return (s != FIOERR);
+    returnCode(FIO2Status(status));
 }
 
 /* try really hard to create a private subdirectory in some tmp

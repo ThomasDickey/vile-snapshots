@@ -3,7 +3,7 @@
  *		adapted from elvis, in turn from
  *		Chris Janton's (chj) VMS Icon port.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmspipe.c,v 1.13 2000/01/15 01:09:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmspipe.c,v 1.14 2005/01/23 00:56:27 tom Exp $
  *
  */
 
@@ -132,7 +132,7 @@ vms_rpipe (const char *cmd, int fd, const char *input_file)
 		int	last;
 	} itmlst;
 
-	if (!cmd || cmd[0] == EOS)
+	if (isEmpty(cmd))
 		return (0);
 	lib$get_ef(&efn);
 	if (efn == -1)

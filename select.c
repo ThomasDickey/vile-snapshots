@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.151 2004/06/09 00:00:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.154 2005/01/19 01:47:07 tom Exp $
  *
  */
 
@@ -1475,10 +1475,10 @@ attribute_cntl_a_seqs_in_region(REGION * rp, REGIONSHAPE shape)
 /*
  * Setup for iteration over region to attribute, ensure that DOT < MK.
  */
-LINEPTR
+LINE *
 setup_region(void)
 {
-    LINEPTR pastline;		/* pointer to line just past EOP */
+    LINE *pastline;		/* pointer to line just past EOP */
 
     if (!sameline(MK, DOT)) {
 	REGION region;
@@ -1648,7 +1648,7 @@ set_mark_after(int count, int rslen)
 static int
 attribute_cntl_a_sequences(void)
 {
-    LINEPTR pastline;
+    LINE *pastline;
     C_NUM offset;		/* offset in cur line of place to attribute */
     int count;
 
@@ -1707,7 +1707,7 @@ discard_syntax_highlighting(void)
 static int
 attribute_from_filter(void)
 {
-    LINEPTR pastline;
+    LINE *pastline;
     int skip;
     int nbytes;
     int done;
@@ -1900,65 +1900,78 @@ find_line_attr_idx(VIDEO_ATTR vattr)
 }
 
 /* Attempt to shift a portion of a line either left or right for
-   inserts or deletes.  The idea is to preserve the line attributes
-   as much as possible until autocolor gets around to recoloring the
-   line */
+ * inserts or deletes.  The idea is to preserve the line attributes
+ * as much as possible until autocolor gets around to recoloring the
+ * line.
+ *
+ * Returns false if we ran out of memory.
+ */
 /* ARGSUSED */
-void
-lattr_shift(BUFFER *bp GCC_UNUSED, LINEPTR lp, int doto, int shift)
+int
+lattr_shift(BUFFER *bp GCC_UNUSED, LINE *lp, int doto, int shift)
 {
+    int status = TRUE;
     UCHAR *lap;
-    if (!lp->l_attrs)
-	return;
-    lap = lp->l_attrs;
-    if (shift > 0) {
-	int f, t, len;
-	len = strlen((char *) lap);
-	t = len - 1;
-	if (t <= 0)
-	    return;
-	for (f = t; f >= doto && f > t - shift; f--)
-	    if (lap[f] != 1) {
-		int newlen;
 
-		beginDisplay();
-		newlen = len + shift - (t - f);
-		lap = castrealloc(UCHAR, lap, newlen + 1);
-		lp->l_attrs = lap;
-		lap[newlen] = 0;
-		t = newlen - 1;
-		f = t - shift;
-		endofDisplay();
-		break;
+    if (lp->l_attrs != 0) {
+	lap = lp->l_attrs;
+	if (shift > 0) {
+	    int f, t, len;
+	    len = strlen((char *) lap);
+	    t = len - 1;
+	    if (t > 0) {
+		for (f = t; f >= doto && f > t - shift; f--) {
+		    if (lap[f] != 1) {
+			int newlen;
+
+			beginDisplay();
+			newlen = len + shift - (t - f);
+			if ((lap = castrealloc(UCHAR, lap, newlen + 1)) != 0) {
+			    lp->l_attrs = lap;
+			    lap[newlen] = 0;
+			    t = newlen - 1;
+			    f = t - shift;
+			}
+			endofDisplay();
+			break;
+		    }
+		}
+		if (lap != 0) {
+		    while (f > doto) {
+			lap[t--] = lap[f--];
+		    }
+		} else {
+		    no_memory("lattr_shift");
+		    status = FALSE;
+		}
 	    }
-	while (f > doto) {
-	    lap[t--] = lap[f--];
+	} else if (shift < 0) {
+	    int f, t;
+	    int saw_attr = 0;
+	    shift = -shift;
+	    /* Move t to doto, but don't run off end */
+	    for (t = 0; t < doto && lap[t]; t++)
+		saw_attr |= (lap[t] != 1);
+	    if (lap[t] != 0) {
+		/* Position f, but don't run off end */
+		for (f = t; f < doto + shift && lap[f]; f++) ;
+		/* Shift via copying, but observe what it is we shift */
+		while (lap[f]) {
+		    saw_attr |= (lap[f] != 1);
+		    lap[t++] = lap[f++];
+		}
+		/* Try to get rid of the line attributes entirely */
+		if (!saw_attr) {
+		    FreeAndNull(lp->l_attrs);
+		} else {
+		    /* Normal out the stuff at the end. */
+		    while (t < f)
+			lap[t++] = 1;
+		}
+	    }
 	}
-    } else if (shift < 0) {
-	int f, t;
-	int saw_attr = 0;
-	shift = -shift;
-	/* Move t to doto, but don't run off end */
-	for (t = 0; t < doto && lap[t]; t++)
-	    saw_attr |= (lap[t] != 1);
-	if (lap[t] == 0)
-	    return;
-	/* Position f, but don't run off end */
-	for (f = t; f < doto + shift && lap[f]; f++) ;
-	/* Shift via copying, but observe what it is we shift */
-	while (lap[f]) {
-	    saw_attr |= (lap[f] != 1);
-	    lap[t++] = lap[f++];
-	}
-	/* Try to get rid of the line attributes entirely */
-	if (!saw_attr) {
-	    FreeAndNull(lp->l_attrs);
-	    return;
-	}
-	/* Normal out the stuff at the end. */
-	while (t < f)
-	    lap[t++] = 1;
     }
+    return status;
 }
 
 #endif /* OPT_LINE_ATTRS */
@@ -1967,7 +1980,7 @@ static void
 free_line_attribs(BUFFER *bp)
 {
 #if OPT_LINE_ATTRS
-    LINEPTR lp;
+    LINE *lp;
     int do_update = 0;
     for_each_line(lp, bp) {
 	do_update |= (lp->l_attrs != 0);
@@ -1988,7 +2001,7 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
 		TBUFF *hypercmdp)
 {
 #if OPT_LINE_ATTRS
-    LINEPTR lp;
+    LINE *lp;
     WINDOW *wp;
     int vidx;
     int i;
@@ -2032,12 +2045,13 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
 	}
     } else {
 	/* Must allocate and initialize memory for the line attributes */
-	lp->l_attrs = castalloc(UCHAR, llength(lp) + 1);
-	lp->l_attrs[llength(lp)] = 0;
-	for (i = llength(lp) - 1; i >= 0; i--)
-	    lp->l_attrs[i] = 1;
-	if (last > llength(lp))
-	    last = llength(lp);
+	if ((lp->l_attrs = castalloc(UCHAR, llength(lp) + 1)) != 0) {
+	    lp->l_attrs[llength(lp)] = 0;
+	    for (i = llength(lp) - 1; i >= 0; i--)
+		lp->l_attrs[i] = 1;
+	    if (last > llength(lp))
+		last = llength(lp);
+	}
     }
     endofDisplay();
 
@@ -2061,11 +2075,11 @@ static void
 purge_line_attribs(BUFFER *bp, REGION * rp, REGIONSHAPE rs, int owner)
 {
 #if OPT_LINE_ATTRS
-    LINEPTR ls = rp->r_orig.l;
-    LINEPTR le = rp->r_end.l;
+    LINE *ls = rp->r_orig.l;
+    LINE *le = rp->r_end.l;
     int os = rp->r_orig.o;
     int oe = rp->r_end.o;
-    LINEPTR lp;
+    LINE *lp;
     int i;
     int do_update = 0;
 

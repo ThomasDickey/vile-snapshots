@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.232 2004/12/14 01:40:22 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.233 2005/01/15 16:33:33 cmorgan Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -74,10 +74,12 @@ int							# VAL_ prefix
 	"maplength"	MAPLENGTH	0		# maximum length of :map string
 	"printing-low"	PRINT_LOW	chgd_charset	# low end of high-bit-set printable range
 	"printing-high"	PRINT_HIGH	chgd_charset	# high end of high-bit-set printable range
+	"recent-files"	RECENT_FILES	chgd_rcntfiles	SYS_WINNT # how many recently visited files saved in registry
+	"recent-folders" RECENT_FLDRS	chgd_rcntfldrs	SYS_WINNT # how many recently visited folders saved in registry
 	"report"	REPORT		0		# threshold for reporting changes
+	"scroll-pause"	SCROLLPAUSE	0		SYS_WINNT # how long to catnap after scrolling
 	"timeoutlen"	TIMEOUTVAL	0		# how long to catnap for more input
 	"timeoutlen-user" TIMEOUTUSERVAL 0		# how long to catnap for more input
-	"scroll-pause"	SCROLLPAUSE	0		SYS_WINNT # how long to catnap after scrolling
 regex							# VAL_ prefix
 	"C-SUFfixes"	CSUFFIXES	0		!OPT_MAJORMODE # match against filenames to turn on c-mode
 string							# VAL_ prefix

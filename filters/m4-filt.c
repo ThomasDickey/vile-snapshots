@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.23 2004/12/10 00:27:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.25 2005/01/19 22:07:00 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -119,6 +119,8 @@ parse_arglist(char *name, char *s, char ***args, int *parens)
 	    processing = 1;
 	    *args = type_alloc(char *, (char *) 0, sizeof(*args) *
 			         (count + 4), &used);
+	    if (*args == 0)
+		return 0;
 	    (*args)[count++] = strmalloc(name);
 	    (*args)[count] = 0;
 	    t++;
@@ -138,12 +140,14 @@ parse_arglist(char *name, char *s, char ***args, int *parens)
 	    while ((*t != ',') && (*t != R_PAREN) && *t)
 		t++;
 	    if (*t == ',' || *t == R_PAREN) {
-		v = (char *) malloc(1 + t - r);
+		v = typeallocn(char, 1 + t - r);
 		if (t != r)
 		    strncpy(v, r, t - r);
 		v[t - r] = 0;
 		*args = type_alloc(char *, (char *) (*args), sizeof(*args) *
 				     (count + 2), &used);
+		if (*args == 0)
+		    return 0;
 		(*args)[count++] = v;
 	    }
 	    (*args)[count] = 0;
@@ -415,7 +419,7 @@ do_filter(FILE *input GCC_UNUSED)
 
     while (flt_gets(&line, &used) != NULL) {
 	s = line;
-	while (*s) {
+	while (s != 0 && *s != '\0') {
 	    if (parens != 0) {
 		s = parse_directive(args[0], s, &args, &parens);
 	    } else if (literal) {

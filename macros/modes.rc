@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.10 2004/12/08 01:01:31 tom Exp $
+; $Id: modes.rc,v 1.13 2005/01/23 00:32:46 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -110,7 +110,7 @@ define-mode bat
 ; we normally use the builtin values, but this is useful for looking at
 ; autoconf templates:
 ~with define-submode c
-	mode-filename	'llib-.*$'
+	mode-filename	'^llib-[\w.]*$'
 	ignoresuffix	'\.\(in\|orig\|~\)$'
 ~endwith
 
@@ -187,6 +187,7 @@ define-mode def
 define-mode diff
 ~with define-submode diff
 	suffixes	'\.\(patch\|dif\|diff\|diffs\|rej\)$'
+	mode-filename	'^![\w/]*diff.*'
 	pre '^\<diff\>'
 ~endwith
 
@@ -272,14 +273,14 @@ define-mode html
 define-mode info
 ~with define-submode info
 	after ti
-	mode-filename	'\([a-z]*\)\(info\(-\d\+\)\?\)$'
+	mode-filename	'^\(\a*\)\(info\(-\d\+\)\?\)$'
 	suffixes	'\.\(info\(-\d\+\)\?\)$'
 ~endwith
 
 define-mode imake
 ~with define-submode imake
 	before "def"
-	mode-filename	'I[Mm]akefile.*$'
+	mode-filename	'^I[Mm]akefile.*$'
 	pre '^\s*\(XCOMM\>\|\/\*\*\/#\)'
 ~endwith
 
@@ -356,13 +357,13 @@ define-mode m4
 
 define-mode mail
 ~with define-submode mail
-	mode-filename	'\([Mm]ail\>.*\|\<mbox\|mutt-.*\)$'
+	mode-filename	'^\([Mm]ail\>.*\|\<mbox\|mutt-.*\)$'
 	pre '^\(From \|To: \)'
 ~endwith
 
 define-mode make
 ~with define-submode make
-	mode-filename	'\([Mm]akefile.*\|make\..*\|\.mak\|\.mk\)$'
+	mode-filename	'^\([Mm]akefile.*\|make\..*\|.*\.mak\|.*\.mk\)$'
 	comment-prefix	'^\s*[!#]'
 	comments	'^\s*[!#]\s*$'
 ~elsewith define-submode make group 'gnumake'
@@ -429,7 +430,7 @@ define-mode pas
 
 define-mode pc
 ~with define-submode pc
-	mode-filename	'\(\<printcap.*\)$'
+	mode-filename	'^\(\<printcap.*\)$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
 ~endwith
@@ -515,7 +516,7 @@ define-mode rexx
 ; such as 'makemode').
 define-mode RCS
 ~with define-submode RCS
-	mode-filename	',v$'
+	mode-filename	'^[\w-],v$'
 ~endwith
 
 define-mode rpm
@@ -547,7 +548,7 @@ define-mode sed
 ; This is matched after 'csh', and will pick up /bin/sh, /bin/bash, /bin/ksh
 define-mode sh
 ~with define-submode sh
-	mode-filename	'profile$'
+	mode-filename	'^[a-z-]*profile$'
 	suffixes	'\(\.\(sh\|ksh\|shar\|.*rc\)$\|\.bash_[a-z]\+$\)'
 	pre '^\(\(#!\s*\/.*sh\>\(\s*[-]\+[\a]*\s*\)\?\)\|:\)\s*$'
 	comment-prefix	'^\s*[:#]'
@@ -682,7 +683,7 @@ define-mode vlog
 ~with define-submode vile
 	before "sh"
 	mode-pathname	'\(vile.*/.*rc\)$'
-	mode-filename	'\(vile.*rc\)$'
+	mode-filename	'^\(vile.*rc\)$'
 	suffixes	'\.\(exrc\|vile\)$'
 	comment-prefix	'^\s*;'
 	comments	'^\s*;\s*$'

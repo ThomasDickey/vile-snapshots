@@ -8,10 +8,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * FIXME:
- *	SHGetMalloc is obsolete (use CoTaskMemAlloc)
- *
- * $Header: /users/source/archives/vile.vcs/RCS/w32oo.cpp,v 1.4 2004/12/01 21:51:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32oo.cpp,v 1.5 2005/01/19 20:45:50 cmorgan Exp $
  */
 
 #include "w32vile.h"
@@ -37,38 +34,26 @@ const char *
 get_favorites(void)
 {
     char         dir[FILENAME_MAX];
-    LPMALLOC     pMalloc = NULL;
     static       char *path;
-    LPITEMIDLIST pidl = NULL;
+    LPITEMIDLIST pidl;
     HRESULT      hr;
 
     if (! path)
     {
-        pMalloc = NULL;
-        pidl    = NULL;
-
 #ifndef VILE_OLE
-        hr = OleInitialize(NULL);   /* Intialize OLE */
+        hr = OleInitialize(NULL);
         if (! SUCCEEDED(hr))
         {
             disp_win32_error(hr, NULL);
             return (NULL);
         }
 #endif
-        hr = SHGetMalloc(&pMalloc);
+        pidl = NULL;
+        hr   = SHGetSpecialFolderLocation(NULL, CSIDL_FAVORITES, &pidl);
         if (! SUCCEEDED(hr))
         {
             disp_win32_error(hr, NULL);
-#ifndef VILE_OLE
-            OleUninitialize();
-#endif
-            return (NULL);
-        }
-        hr = SHGetSpecialFolderLocation(NULL, CSIDL_FAVORITES, &pidl);
-        if (! SUCCEEDED(hr))
-        {
-            disp_win32_error(hr, NULL);
-            pMalloc->Release();
+            CoTaskMemFree(pidl);     // API accepts NULL ptr
 #ifndef VILE_OLE
             OleUninitialize();
 #endif
@@ -76,26 +61,18 @@ get_favorites(void)
         }
 
         if (! SHGetPathFromIDList(pidl, dir))
-        {
             disp_win32_error(W32_SYS_ERROR, NULL);
-            pMalloc->Release();
-#ifndef VILE_OLE
-            OleUninitialize();
-#endif
-            return (NULL);
+        else
+        {
+            bsl_to_sl_inplace(dir);  // Convert to canonical form
+            path = strmalloc(dir);
+            if (! path)
+                no_memory("get_favorites()");
         }
-        bsl_to_sl_inplace(dir);  /* Convert to canonical form */
-        path = strmalloc(dir);
-        if (pidl)
-            pMalloc->Free(pidl);
-        pMalloc->Release();
-
+        CoTaskMemFree(pidl);
 #ifndef VILE_OLE
         OleUninitialize();
 #endif
-        if (! path)
-            no_memory("get_favorites()");
-
     }
     return (path);
 }

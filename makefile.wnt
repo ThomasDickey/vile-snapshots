@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.81 2004/12/15 01:22:18 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.82 2005/01/15 16:35:53 cmorgan Exp $
 #
 #
 !include <ntwin32.mak>
@@ -250,7 +250,7 @@ winvile.res :	winvile.rc winvile.h
 $(PERLCFG): $(PERL_SCRIPTS) mkprlenv.wnt
 !INCLUDE "mkprlenv.wnt"
 
-$(OBJ): estruct.h edef.h proto.h $(MYHDRS) 
+$(OBJ): estruct.h edef.h proto.h $(MYHDRS)
 builtflt.obj : builtflt.h
 
 builtflt.h :
@@ -383,7 +383,7 @@ statevar.obj:	nevars.h
 tags.obj:	btree.h
 termio.obj:	nefunc.h
 version.obj:	patchlev.h
-w32cmd.obj:	nefunc.h
+w32cmd.obj:	nefunc.h winvile.h
 w32misc.obj:	nefunc.h
 w32ole.obj:	w32ole.h winviletlb.h w32reg.h
 w32reg.obj:	w32reg.h

@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.79 2004/11/06 00:03:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.81 2005/01/21 23:04:20 tom Exp $
  *
  */
 
@@ -969,9 +969,18 @@ expand_wild_args(int *argcp, char ***argvp)
     }
     if (comma || option) {
 	char **newvec = typeallocn(char *, comma + *argcp + 1);
+
+	if (newvec == 0) {
+	    no_memory("expand_wild_args");
+	    return;
+	}
+
 	for (j = k = 0; j < *argcp; j++) {
 	    char *the_arg = strmalloc((*argvp)[j]);
 	    char *item, *tmp;
+
+	    if (the_arg == 0)
+		break;
 
 	    /*
 	     * strip off supported VMS options, else don't muck

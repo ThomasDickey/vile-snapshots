@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.99 2004/04/11 19:23:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.103 2005/01/20 21:26:24 tom Exp $
  *
  */
 
@@ -112,18 +112,30 @@ makemaplist(int dummy GCC_UNUSED, void *mapp)
     size_t depth = 0;
     size_t maxdepth;
     size_t i;
+    char *the_lhs_string;
 
     lhsstr = tb_init(&lhsstr, 0);
+
     lhsstack = typeallocn(struct maprec *, maxdepth = NSTRING);
+    if (lhsstack == 0) {
+	no_memory("makemaplist");
+	return;
+    }
+
     for_ever {
 	if (mp) {
 	    const char *remapnote;
 	    char *mapstr;
-	    char esc_seq[10];	/* FIXME */
+	    char esc_seq[100];	/* FIXME */
+
 	    tb_put(&lhsstr, depth, mp->ch);
 	    if (depth + 1 >= maxdepth) {
 		maxdepth *= 2;
 		lhsstack = typereallocn(struct maprec *, lhsstack, maxdepth);
+		if (lhsstack == 0) {
+		    no_memory("makemaplist");
+		    return;
+		}
 	    }
 	    lhsstack[depth++] = mp->flink;
 
@@ -134,11 +146,12 @@ makemaplist(int dummy GCC_UNUSED, void *mapp)
 		(void) kcod2escape_seq(mp->irv, esc_seq);
 		mapstr = esc_seq;
 	    }
-	    if (mapstr) {
+	    if (mapstr && (the_lhs_string = tb_values(lhsstr)) != 0) {
 		if (mapp && (struct maprec *) mapp == abbr_map) {
 		    /* the abbr map is stored inverted */
-		    for (i = depth; i != 0;)
-			bputc(tb_values(lhsstr)[--i]);
+		    if (the_lhs_string != 0)
+			for (i = depth; i != 0;)
+			    bputc(the_lhs_string[--i]);
 		} else {
 		    if (mp->flags & MAPF_NOREMAP) {
 			remapnote = "(n)";
@@ -148,7 +161,7 @@ makemaplist(int dummy GCC_UNUSED, void *mapp)
 		    }
 		    bprintf("%s ", remapnote);
 		    for (i = 0; i < depth; i++)
-			bputc(tb_values(lhsstr)[i]);
+			bputc(the_lhs_string[i]);
 		}
 		bprintf("\t%s\n", mapstr);
 	    }
@@ -201,7 +214,7 @@ relist_mappings(const char *bufname)
 
 #endif /* OPT_SHOW_MAPS */
 
-static void
+static int
 addtomap(struct maprec **mpp,
 	 const char *ks,
 	 int kslen,
@@ -209,44 +222,50 @@ addtomap(struct maprec **mpp,
 	 int irv,
 	 char *srv)
 {
+    int status = TRUE;
     struct maprec *mp = NULL;
 
-    if (ks == 0 || kslen == 0)
-	return;
+    if (ks != 0 && kslen != 0) {
 
-    while (*mpp && kslen) {
-	mp = *mpp;
-	mp->flags |= flags;
-	if (char2int(*ks) == mp->ch) {
+	while (*mpp && kslen) {
+	    mp = *mpp;
+	    mp->flags |= flags;
+	    if (char2int(*ks) == mp->ch) {
+		mpp = &mp->dlink;
+		ks++;
+		kslen--;
+	    } else
+		mpp = &mp->flink;
+	}
+
+	while (kslen) {
+	    mp = typealloc(struct maprec);
+	    if (mp == 0) {
+		status = no_memory("addtomap");
+		break;
+	    }
+	    *mpp = mp;
+	    mp->dlink = mp->flink = NULL;
+	    mp->ch = char2int(*ks++);
+	    mp->srv = NULL;
+	    mp->flags = flags;
+	    mp->irv = -1;
 	    mpp = &mp->dlink;
-	    ks++;
 	    kslen--;
-	} else
-	    mpp = &mp->flink;
-    }
+	}
 
-    while (kslen) {
-	mp = typealloc(struct maprec);
-	if (mp == 0)
-	    break;
-	*mpp = mp;
-	mp->dlink = mp->flink = NULL;
-	mp->ch = char2int(*ks++);
-	mp->srv = NULL;
-	mp->flags = flags;
-	mp->irv = -1;
-	mpp = &mp->dlink;
-	kslen--;
+	if (mp != 0) {
+	    if (irv != -1)
+		mp->irv = irv;
+	    if (srv) {
+		if (mp->srv)
+		    free(mp->srv);
+		mp->srv = strmalloc(srv);
+	    }
+	    mp->flags = flags;
+	}
     }
-
-    if (irv != -1)
-	mp->irv = irv;
-    if (srv) {
-	if (mp->srv)
-	    free(mp->srv);
-	mp->srv = strmalloc(srv);
-    }
-    mp->flags = flags;
+    return status;
 }
 
 static int
@@ -278,8 +297,11 @@ delfrommap(struct maprec **mpp, const char *ks)
 
 	if (*ks)
 	    return FALSE;	/* not in map */
-	if (!pass)
+	if (!pass) {
 	    mstk = typecallocn(struct maprec **, depth + 1);
+	    if (mstk == 0)
+		return no_memory("delfrommap");
+	}
     }
 
     depth--;
@@ -424,7 +446,10 @@ maplookup(int c,
 	    mp = mp->flink;
     }
 
-    if (had_start && (rmp != 0)) {
+    if (itb_values(unmatched) == 0) {
+	matchedcnt = 0;
+	no_memory("maplookup");
+    } else if (had_start && (rmp != 0)) {
 	/* unget the unmatched suffix */
 	while (suffix && (count > 0))
 	    (void) itb_append(outp, itb_values(unmatched)[--count]);
@@ -496,10 +521,10 @@ map_common(struct maprec **mpp, const char *bufname, UINT remapflag)
 	}
     }
 
-    addtomap(mpp, tb_values(kbuf), len,
-	     MAPF_USERTIMER | remapflag, -1, tb_values(val));
+    status = addtomap(mpp, tb_values(kbuf), len,
+		      MAPF_USERTIMER | remapflag, -1, tb_values(val));
     relist_mappings(bufname);
-    return TRUE;
+    return status;
 }
 
 static int

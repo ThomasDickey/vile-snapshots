@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.45 2004/10/26 22:02:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.50 2005/01/19 01:54:17 tom Exp $
  *
  */
 
@@ -143,11 +143,14 @@ alloc_visible(unsigned need)
 {
     if (need > used_visible) {
 	used_visible = need;
+
 	if (visible_result == 0)
-	    visible_result = malloc(need);
+	    visible_result = typeallocn(char, need);
 	else
-	    visible_result = realloc(visible_result, need);
-	memset(visible_result, 0, need);
+	    visible_result = typereallocn(char, visible_result, need);
+
+	if (visible_result != 0)
+	    memset(visible_result, 0, need);
     }
     return visible_result;
 }
@@ -160,11 +163,14 @@ trace_indent(int level, int marker)
 
     if (need > used_indent) {
 	used_indent = need;
+
 	if (visible_indent == 0)
-	    visible_indent = malloc(need);
+	    visible_indent = typeallocn(char, need);
 	else
-	    visible_indent = realloc(visible_indent, need);
-	memset(visible_indent, 0, need);
+	    visible_indent = typereallocn(char, visible_indent, need);
+
+	if (visible_indent != 0)
+	    memset(visible_indent, 0, need);
     }
 
     *visible_indent = EOS;
@@ -378,7 +384,7 @@ static void
 InitArea(void)
 {
     if (area == 0) {
-	area = (AREA *) calloc(DOALLOC, sizeof(AREA));
+	area = typecallocn(AREA, DOALLOC);
 	if (area == 0)
 	    abort();
 	Trace("Initialized doalloc (%d * %d) = %ld\n",
@@ -391,7 +397,7 @@ InitArea(void)
 static int
 FindArea(char *ptr)
 {
-    register int j;
+    int j;
 
     InitArea();
     for (j = 0; j < DOALLOC; j++)
@@ -409,7 +415,7 @@ FindArea(char *ptr)
 static int
 record_freed(char *ptr)
 {
-    register int j;
+    int j;
 
     if ((j = FindArea(ptr)) >= 0) {
 	nowAllocated -= area[j].size;
@@ -417,7 +423,7 @@ record_freed(char *ptr)
 	area[j].text = 0;
 	area[j].note = count_freed;
 	if ((j + 1) == nowPending) {
-	    register int k;
+	    int k;
 	    for (k = j; (k >= 0) && !area[k].size; k--)
 		nowPending = k;
 	}
@@ -428,7 +434,7 @@ record_freed(char *ptr)
 static int
 record_alloc(char *newp, char *oldp, unsigned len)
 {
-    register int j;
+    int j;
 
     if (newp == oldp) {
 	if ((j = FindArea(oldp)) >= 0) {
@@ -477,7 +483,7 @@ char *
 doalloc(char *oldp, unsigned amount)
 {
     int j;
-    register char *newp;
+    char *newp;
 
     check_opt_working();
     count_alloc += (oldp == 0);
@@ -485,12 +491,14 @@ doalloc(char *oldp, unsigned amount)
     LOG_PTR("  old = ", oldp);
 
 #if 1
-    newp = (oldp != 0) ? realloc(oldp, amount) : malloc(amount);
+    newp = ((oldp != 0)
+	    ? typereallocn(char, oldp, amount)
+	    : typeallocn(char, amount));
 #else
     /* this is a little cleaner for valgrind's purpose, but slower */
     if (oldp != 0 && (j = FindArea(oldp)) >= 0) {
-	newp = calloc(amount, sizeof(char));
-	if (oldp != 0) {
+	newp = typecalloc(char, amount);
+	if (newp != 0) {
 	    int k;
 	    TRACE(("memcpy %p .. %p to %p .. %p (%ld -> %ld)\n",
 		   oldp, oldp + area[j].size - 1,
@@ -502,9 +510,9 @@ doalloc(char *oldp, unsigned amount)
 	    free(oldp);
 	}
     } else if (oldp != 0) {
-	newp = realloc(oldp, amount);
+	newp = typereallocn(char, oldp, amount);
     } else {
-	newp = calloc(amount, sizeof(char));
+	newp = typecalloc(char, amount);
     }
 #endif
     if (!OK_ALLOC(newp, oldp, amount)) {
@@ -575,8 +583,8 @@ show_alloc(void)
     Trace(fmt, "allocs:", count_alloc);
     Trace(fmt, "frees:", count_freed);
     if (area != 0) {
-	register int j, count = 0;
-	register long total = 0;
+	int j, count = 0;
+	long total = 0;
 
 	for (j = 0; j < nowPending; j++) {
 	    if (area[j].text) {
@@ -642,8 +650,8 @@ trace_line(LINE *lp, BUFFER *bp)
     } else if (bp == 0) {
 	Trace("? null BUFFER pointer\n");
     } else {
-	char *a = check_forw(lp) ? "" : "?";
-	char *b = check_back(lp) ? "" : "?";
+	const char *a = check_forw(lp) ? "" : "?";
+	const char *b = check_back(lp) ? "" : "?";
 	Trace("%4d%s:{%p, f %p%s, b %p%s}:%s\n",
 	      line_no(bp, lp), check_line(lp, bp) ? "" : "?", lp,
 	      lforw(lp), a,
@@ -678,7 +686,7 @@ trace_region(REGION * rp, BUFFER *bp)
 void
 trace_buffer(BUFFER *bp)
 {
-    LINEPTR lp;
+    LINE *lp;
     Trace("trace_buffer(%s) dot=%p%s\n",
 	  bp->b_bname,
 	  bp->b_dot.l,
@@ -691,7 +699,7 @@ trace_buffer(BUFFER *bp)
 void
 trace_window(WINDOW *wp)
 {
-    LINEPTR lp;
+    LINE *lp;
     int got_dot = FALSE;
     int had_line = FALSE;
 

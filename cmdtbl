@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.233 2004/12/14 20:18:42 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.234 2005/01/15 16:35:48 cmorgan Exp $
 #
 #
 
@@ -788,13 +788,13 @@ gotoeos		ABSM|MOTION|FL
 	"end-of-screen"			!FEWNAMES
 	'L'
 	<move to the CNT'th line from the bottom of the screen>
-gotobosec	ABSM|MOTION	
+gotobosec	ABSM|MOTION
 	"previous-section"		!FEWNAMES
 	"back-section"			!FEWNAMES
 	"up-section"			!FEWNAMES
 	'['
 	<move to the previous start of a \"section\">
-gotoeosec	ABSM|MOTION	
+gotoeosec	ABSM|MOTION
 	"forward-section"		!FEWNAMES
 	"next-section"			!FEWNAMES
 	"down-section"			!FEWNAMES
@@ -838,11 +838,11 @@ golinenmmark	MOTION|FL
 #  single quote -- can't use '''
 	'\047'
 	<move to line containing the mark, at first non-white character>
-goexactnmmark	MOTION	
+goexactnmmark	MOTION
 	"goto-named-mark-exact"		!FEWNAMES
 	'`'
 	<move to the given mark>
-gorectnmmark	MOTION|VL_RECT	
+gorectnmmark	MOTION|VL_RECT
 	"goto-named-mark-rectangular"	!FEWNAMES
 	'\0134'
 	<move to the mark, implying a rectangle if used with an operator>
@@ -1411,7 +1411,7 @@ risearch	NONE			OPT_ISRCH
 	"reverse-incremental-search"	!FEWNAMES
 	'^X-R'
 	<search backwards for a pattern entered character by character>
-revsearch	ABSM|MOTION	
+revsearch	ABSM|MOTION
 	"reverse-search"		!FEWNAMES
 	'N'
 	<search for previous pattern in opposite direction from before>
@@ -1426,11 +1426,11 @@ sel_motion	ABSM|MOTION		OPT_SELECTIONS
 	'^S'
 	'^A-S'
 	<move to selection.  if used with operator, region is the selection>
-scrforwsearch	ABSM|MOTION	
+scrforwsearch	ABSM|MOTION
 	"screen-search-forward"		!FEWNAMES
 	'^X-/'
 	<search forwards for pattern (word) under cursor>
-scrbacksearch	ABSM|MOTION	
+scrbacksearch	ABSM|MOTION
 	"screen-search-reverse"		!FEWNAMES
 	'^X-?'
 	<search backwards for pattern (word) under cursor>
@@ -1729,6 +1729,12 @@ which_exec	NONE			OPT_SHOW_WHICH
 which_source	NONE			OPT_SHOW_WHICH
 	"which-source"
 	<show which file would be source'd from $startup-path, CNT for popup>
+purge_recent_files	NONE		SYS_WINNT
+	"purge-recent-files"
+	<purge winvile's recent file list>
+purge_recent_folders	NONE	SYS_WINNT
+	"purge-recent-folders"
+	<purge winvile's recent folder list>
 winopen_nocd	NONE			SYS_WINNT
 	"winopen-nocd"
 	<launch Windows common dialog box to open file(s), CWD is unmodified>

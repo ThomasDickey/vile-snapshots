@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.92 2004/12/10 02:12:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.97 2005/01/20 19:51:19 tom Exp $
  *
  */
 
@@ -22,7 +22,6 @@
 #endif
 
 #define VERBOSE(level,params)	if (FltOptions('v') >= level) mlforce params
-#define NONNULL(s)		((s) != 0) ? (s) : "<null>"
 
 #define HASH_LENGTH 256
 
@@ -73,6 +72,12 @@ static unsigned len_keyword_file = 0;
 /******************************************************************************
  * Private functions                                                          *
  ******************************************************************************/
+
+static void
+CannotAllocate(const char *where)
+{
+    VERBOSE(1, ("%s: cannot allocate", where));
+}
 
 static const char *
 AttrsOnce(KEYWORD * entry)
@@ -214,6 +219,10 @@ OpenKeywords(char *classname)
 
     need = sizeof(suffix) + strlen(classname) + 2;
     str_keyword_file = do_alloc(str_keyword_file, need, &len_keyword_file);
+    if (str_keyword_file == 0) {
+	CannotAllocate("OpenKeywords");
+	return 0;
+    }
     sprintf(str_keyword_file, "%s%s", classname, suffix);
 
     if (strchr(str_keyword_file, PATHSEP) != 0) {
@@ -228,6 +237,10 @@ OpenKeywords(char *classname)
 	+ 20;
 
     str_keyword_name = do_alloc(str_keyword_name, need, &len_keyword_name);
+    if (str_keyword_name == 0) {
+	CannotAllocate("OpenKeywords");
+	return 0;
+    }
 
     FIND_IT((str_keyword_name, "%s%c%s%s", PATHDOT, PATHSEP, DOT_TO_HIDE_IT, str_keyword_file));
     FIND_IT((str_keyword_name, "%s%c%s%s", path, PATHSEP, DOT_TO_HIDE_IT, str_keyword_file));
@@ -245,6 +258,10 @@ OpenKeywords(char *classname)
 
 	need = strlen(path) + strlen(str_keyword_file) + 2;
 	str_keyword_name = do_alloc(str_keyword_name, need, &len_keyword_name);
+	if (str_keyword_name == 0) {
+	    CannotAllocate("OpenKeywords");
+	    return 0;
+	}
 	while (path[n] != 0) {
 	    for (m = n; path[m] != 0 && path[m] != PATHCHR; m++)
 		/*LOOP */ ;
@@ -366,8 +383,12 @@ void
 flt_bfr_append(char *text, int length)
 {
     flt_bfr_text = do_alloc(flt_bfr_text, flt_bfr_used + length, &flt_bfr_size);
-    strncpy(flt_bfr_text + flt_bfr_used, text, length);
-    flt_bfr_used += length;
+    if (flt_bfr_text != 0) {
+	strncpy(flt_bfr_text + flt_bfr_used, text, length);
+	flt_bfr_used += length;
+    } else {
+	CannotAllocate("flt_bfr_append");
+    }
 }
 
 void
@@ -481,9 +502,23 @@ void
 flt_make_symtab(char *classname)
 {
     if (!set_symbol_table(classname)) {
-	CLASS *p = typecallocn(CLASS, 1);
+	CLASS *p;
+
+	if ((p = typecallocn(CLASS, 1)) == 0) {
+	    CannotAllocate("flt_make_symtab");
+	    return;
+	}
+
 	p->name = strmalloc(classname);
 	p->data = typecallocn(KEYWORD *, HASH_LENGTH);
+	if (p->name == 0 || p->data == 0) {
+	    if (p->name != 0)
+		free(p->name);
+	    free(p);
+	    CannotAllocate("flt_make_symtab");
+	    return;
+	}
+
 	p->next = classes;
 	classes = p;
 	hashtable = p->data;
@@ -579,52 +614,19 @@ hash_function(const char *id)
     return ((CharOf(id[0]) ^ (CharOf(id[1]) << 3) ^ (CharOf(id[2]) >> 1)) & 0xff);
 }
 
-void
-insert_keyword(const char *ident, const char *attribute, int classflag)
+static KEYWORD *
+alloc_keyword(const char *ident, const char *attribute, int classflag)
 {
     KEYWORD *first;
     KEYWORD *nxt;
     int Index;
-    char *mark;
-
-    VERBOSE(2, ("insert_keyword(%s, %s, %d)\n",
-		ident,
-		attribute,
-		classflag));
-
-    if ((mark = strchr(ident, zero_or_more)) != 0
-	&& (mark != ident)) {
-	char *temp = strmalloc(ident);
-
-	mark = temp + (mark - ident);
-	while (*mark == zero_or_more) {
-	    *mark = 0;
-	    insert_keyword(temp, attribute, classflag);
-	    if ((mark[0] = mark[1]) != 0) {
-		*(++mark) = zero_or_more;
-	    }
-	}
-	free(temp);
-	return;
-    } else if ((mark = strchr(ident, zero_or_all)) != 0
-	       && (mark != ident)) {
-	char *temp = strmalloc(ident);
-
-	mark = temp + (mark - ident);
-	if (*mark == zero_or_all) {
-	    *mark = 0;
-	    insert_keyword(temp, attribute, classflag);
-	    while ((mark[0] = mark[1]) != 0)
-		++mark;
-	    insert_keyword(temp, attribute, classflag);
-	}
-	free(temp);
-	return;
-    }
 
     if ((nxt = FindIdentifier(ident)) != 0) {
 	Free(nxt->kw_attr);
-	nxt->kw_attr = strmalloc(attribute);
+	if ((nxt->kw_attr = strmalloc(attribute)) == NULL) {
+	    free(nxt);
+	    nxt = 0;
+	}
     } else {
 	nxt = first = NULL;
 	Index = hash_function(ident);
@@ -636,15 +638,71 @@ insert_keyword(const char *ident, const char *attribute, int classflag)
 	    nxt->kw_flag = classflag;
 	    nxt->kw_used = 2;
 	    nxt->next = first;
-	    hashtable[Index] = nxt;
-	} else {
-	    VERBOSE(1, ("insert_keyword: cannot allocate"));
-	    return;
+	    if (nxt->kw_name != 0
+		&& nxt->kw_attr != 0) {
+		hashtable[Index] = nxt;
+	    } else {
+		if (nxt->kw_name != 0)
+		    free(nxt->kw_name);
+		free(nxt);
+		nxt = 0;
+	    }
 	}
     }
-    VERBOSE(3, ("...\tname \"%s\"\tattr \"%s\"",
-		nxt->kw_name,
-		NONNULL(nxt->kw_attr)));
+    return nxt;
+}
+
+void
+insert_keyword(const char *ident, const char *attribute, int classflag)
+{
+    KEYWORD *nxt;
+    char *mark;
+    char *temp;
+
+    VERBOSE(2, ("insert_keyword(%s, %s, %d)\n",
+		ident,
+		attribute,
+		classflag));
+
+    if ((mark = strchr(ident, zero_or_more)) != 0
+	&& (mark != ident)) {
+	if ((temp = strmalloc(ident)) != 0) {
+
+	    mark = temp + (mark - ident);
+	    while (*mark == zero_or_more) {
+		*mark = 0;
+		insert_keyword(temp, attribute, classflag);
+		if ((mark[0] = mark[1]) != 0) {
+		    *(++mark) = zero_or_more;
+		}
+	    }
+	    free(temp);
+	} else {
+	    CannotAllocate("insert_keyword");
+	}
+    } else if ((mark = strchr(ident, zero_or_all)) != 0
+	       && (mark != ident)) {
+	if ((temp = strmalloc(ident)) != 0) {
+
+	    mark = temp + (mark - ident);
+	    if (*mark == zero_or_all) {
+		*mark = 0;
+		insert_keyword(temp, attribute, classflag);
+		while ((mark[0] = mark[1]) != 0)
+		    ++mark;
+		insert_keyword(temp, attribute, classflag);
+	    }
+	    free(temp);
+	} else {
+	    CannotAllocate("insert_keyword");
+	}
+    } else if ((nxt = alloc_keyword(ident, attribute, classflag)) == 0) {
+	CannotAllocate("insert_keyword");
+    } else {
+	VERBOSE(3, ("...\tname \"%s\"\tattr \"%s\"",
+		    nxt->kw_name,
+		    NONNULL(nxt->kw_attr)));
+    }
 }
 
 KEYWORD *
@@ -769,8 +827,10 @@ readline(FILE *fp, char **ptr, unsigned *len)
     char *buf = *ptr;
     unsigned used = 0;
 
-    if (buf == 0)
-	buf = (char *) malloc(*len = BUFSIZ);
+    if (buf == 0) {
+	*len = BUFSIZ;
+	buf = typeallocn(char, *len);
+    }
     while (!feof(fp)) {
 	int ch = fgetc(fp);
 	if (ch == EOF || feof(fp) || ferror(fp)) {
@@ -778,7 +838,9 @@ readline(FILE *fp, char **ptr, unsigned *len)
 	}
 	if (used + 2 >= *len) {
 	    *len = 3 * (*len) / 2;
-	    buf = (char *) realloc(buf, *len);
+	    buf = typereallocn(char, buf, *len);
+	    if (buf == 0)
+		return 0;
 	}
 	buf[used++] = ch;
 	if (ch == '\n')

@@ -3,7 +3,7 @@
  * Modified from a really old version of "borland.c" (before the VIO
  * stuff went in there.)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.29 2001/06/13 09:57:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.31 2005/01/18 01:40:09 tom Exp $
  */
 
 #include "estruct.h"
@@ -362,32 +362,33 @@ flash_display(void)
 {
     VIOMODEINFO data;
     UINT cellsize;
-    BYTE *buf1;
-    BYTE *buf2;
+    BYTE *buf1 = 0;
+    BYTE *buf2 = 0;
     USHORT got, length;
 
     data.cb = sizeof(data);
     VioGetMode(&data, 0);
     cellsize = 1 + data.attrib;
 
-    buf1 = malloc(data.full_length);
-    buf2 = malloc(data.full_length);
+    if ((buf1 = typeallocn(BYTE, data.full_length)) != 0
+	&& (buf2 = typeallocn(BYTE, data.full_length)) != 0) {
 
-    length = data.full_length;
-    VioReadCellStr(buf1, &length, 0, 0, 0);
+	length = data.full_length;
+	VioReadCellStr(buf1, &length, 0, 0, 0);
 
-    length = data.full_length;
-    VioReadCellStr(buf2, &length, 0, 0, 0);
+	length = data.full_length;
+	VioReadCellStr(buf2, &length, 0, 0, 0);
 
-    for (got = 0; got < data.full_length; got += cellsize) {
-	buf2[got + 1] ^= 8;
+	for (got = 0; got < data.full_length; got += cellsize) {
+	    buf2[got + 1] ^= 8;
+	}
+	VioWrtCellStr(buf2, data.full_length, 0, 0, 0);
+	DosSleep(200);
+	VioWrtCellStr(buf1, data.full_length, 0, 0, 0);
+
+	free(buf1);
+	free(buf2);
     }
-    VioWrtCellStr(buf2, data.full_length, 0, 0, 0);
-    DosSleep(200);
-    VioWrtCellStr(buf1, data.full_length, 0, 0, 0);
-
-    free(buf1);
-    free(buf2);
 }
 #endif
 
