@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.227 2004/10/30 18:48:31 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.229 2004/11/03 00:05:55 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -243,6 +243,7 @@ string
 "find-cmd"	FINDCMD		OPT_FINDPATH	# shell cmd emitted via "find" feature (debug)
 "font"		FONT		DISP_X11||DISP_NTWIN	# current font
 "forward-search" FWD_SEARCH		# search-direction (true if forward)
+"goal-column"	GOAL_COLUMN	OPT_TRACE	# goal-column (debug-only)
 "helpfile"	HELPFILE		# helpfile (vile.hlp)
 "iconname"	ICONNAM		DISP_X11	# current font
 "identifier"	IDENTIF			# current identifier

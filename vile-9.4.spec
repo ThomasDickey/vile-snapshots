@@ -1,7 +1,7 @@
 Summary: VILE VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/RCS/vile-9.4.spec,v 1.12 2004/10/31 20:22:04 liboska Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/vile-9.4.spec,v 1.13 2004/11/01 22:02:38 tom Exp $
 Name: vile
-Version: 9.4j
+Version: 9.4k
 # each patch should update the version
 Release: 1
 Copyright: GPL
@@ -18,6 +18,7 @@ Patch7: vile-9.4g.patch.gz
 Patch8: vile-9.4h.patch.gz
 Patch9: vile-9.4i.patch.gz
 Patch10: vile-9.4j.patch.gz
+Patch11: vile-9.4k.patch.gz
 # each patch should add itself to this list
 Packager: Thomas Dickey <dickey@invisible-island.net>
 BuildRoot: %{_tmppath}/%{name}-root
@@ -40,6 +41,7 @@ rebinding, and real X window system support.
 %patch8 -p1
 %patch9 -p1
 %patch10 -p1
+%patch11 -p1
 # each patch should add itself to this list
 
 %build
@@ -91,6 +93,9 @@ install xvile.wmconfig $RPM_BUILD_ROOT/%{_sysconfdir}/X11/wmconfig/xvile
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Mon Nov 01 2004 Thomas Dickey
+- added patch for 9.4k
 
 * Fri Oct 22 2004 Radek Liboska
 - add vile-pager to list of installed files

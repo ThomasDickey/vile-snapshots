@@ -1,11 +1,11 @@
-$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.39 2003/08/04 22:35:00 tom Exp $
+$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.42 2004/11/03 23:03:35 tom Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
 $! Screen Configurations
 $! ---------------------
 $! To build vile, type:
 $!        $ @vmsbuild [vile [<compiler> [bld_target]]]
-$! To build xvile, type 
+$! To build xvile, type
 $!        $ @vmsbuild xvile [<compiler> [bld_target]]
 $!
 $! where:
@@ -35,6 +35,8 @@ $ if "''hlp'" .eqs. "" .or. -
      "''hlp'" .eqs. "VILE.EXE" .or. -
      "''hlp'" .eqs. "XVILE" .or. -
      "''hlp'" .eqs. "XVILE.EXE" then goto start
+$!
+$! handle the <bldtarget>
 $ gosub 'p1
 $ exit
 $!
@@ -45,7 +47,7 @@ $! -----------------------------------------------------------
 $!
 $ comp = ""
 $ using_vaxc = 0
-$ if "''p2'" .nes. "" 
+$ if "''p2'" .nes. ""
 $ then
 $    comp = f$edit(p2, "UPCASE")
 $    if "''comp'" .eqs. "VAXC"
@@ -64,7 +66,7 @@ $! -----------------------------------------------------------
 $!      Build the option-file
 $!
 $ open/write optf vms_link.opt
-$ write optf "Identification=""Vile 9.4"""
+$ write optf "Identification=""Vile 9.4k"""
 $ write optf "basic.obj"
 $ write optf "bind.obj"
 $ write optf "btree.obj"
@@ -118,11 +120,22 @@ $! ----------------------------------
 $! Look for the compiler used and specify architecture.
 $!
 $ CC = "CC"
-$ if f$getsyi("HW_MODEL").ge.1024
+$ arch = "UNKNOWN"
+$!
+$ if f$getsyi("ARCH_NAME") .eqs. "Alpha"
 $ then
 $  arch = "__alpha__=1"
 $  if "''comp'" .eqs. "" then gosub decc_config
-$ else
+$ endif
+$!
+$ if f$getsyi("ARCH_NAME") .eqs. "IA64"
+$ then
+$  arch = "__ia64__=1"
+$  if "''comp'" .eqs. "" then gosub decc_config
+$ endif
+$!
+$ if f$getsyi("ARCH_NAME") .eqs. "VAX"
+$ then
 $  arch = "__vax__=1"
 $  if "''comp'" .nes. "" then goto screen_config
 $  if f$search("SYS$SYSTEM:VAXC.EXE").nes.""
@@ -146,6 +159,12 @@ $     CC = "GCC"
 $    endif
 $   endif
 $  endif
+$ endif
+$
+$ if "''arch'" .eqs. "UNKNOWN"
+$ then
+$   write sys$output "Cannot determine architecture type"
+$   exit 1
 $ endif
 $!
 $ screen_config:
@@ -184,6 +203,7 @@ $     write optf "sys$share:decw$xmlibshr.exe/share"
 $     write optf "sys$share:decw$xtshr.exe/share"
 $     SCRDEF := "MOTIF_WIDGETS,XTOOLKIT,DISP_X11,scrn_chosen"
 $     mmstar = "__xmvile__=1"
+$     GoTo MAIN2
 $   endif
 $   if f$extract(4,3,decw$version).eqs."1.2"
 $   then
@@ -193,16 +213,19 @@ $     write optf "sys$share:decw$xmlibshr12.exe/share"
 $     write optf "sys$share:decw$xtlibshrr5.exe/share"
 $     SCRDEF := "MOTIF_WIDGETS,XTOOLKIT,DISP_X11,scrn_chosen"
 $     mmstar = "__xmvile__=1"
+$     GoTo MAIN2
 $   endif
 $   GoTo MAIN
 $!
-$XUI:
-$!
+$XUI :
 $   write optf "Sys$share:DECW$DWTLIBSHR.EXE/Share"
-$MAIN:
 $!
+$MAIN :
+$   write optf "sys$share:decw$xtshr.exe/share"
 $   write optf "sys$share:decw$xlibshr.exe/share"
 $ endif
+$!
+$MAIN2 :
 $ if using_vaxc .eq. 1 then write optf "sys$library:vaxcrtl.exe/share"
 $ close optf
 $! -------------- vms_link.opt is created -------------
@@ -316,7 +339,7 @@ $	if f$search("*.lis") .nes. "" then delete *.lis;*
 $	if f$search("*.log") .nes. "" then delete *.log;*
 $	if f$search("*.map") .nes. "" then delete *.map;*
 $	if f$search("*.opt") .nes. "" then delete *.opt;*
-$	if f$search("ne*.h") .nes. "" then delete ne*.h;
+$	if f$search("ne*.h") .nes. "" then delete ne*.h;*
 $	if f$search("$(MKTBLS)") .nes. "" then delete $(MKTBLS);
 $	gosub build_last
 $	return
@@ -399,4 +422,7 @@ $    write sys$output "usage: "
 $    write sys$output "      $ @vmsbuild [vile [{decc | vaxc} [<bldtarget>]]]"
 $    write sys$output "                   or"
 $    write sys$output "      $ @vmsbuild xvile [{decc | vaxc} [<bldtarget>]]"
+$    write sys$output "bldtarget is one of"
+$    write sys$output "      all install clobber clean"
+$!    write sys$output "      vms_link.opt vile_com xvile_com"
 $    exit 2

@@ -1,5 +1,22 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20041107 (k)
+ 	> Tom Dickey:
+	+ modify glob_match_leaf() to work with 8-bit characters.
+	+ correct loop in glob_match_leaf(), which did not handle strings such
+	  as "[!strings xyz-]".
+	+ correct expression in filters.rc for %filters-modes (report by
+	  Duncan Sargeant).
+	+ fix conflict between DECWindows Motif/Xt libraries and the non-Motif
+	  Xt library in vmsbuild.com
+	+ make xvile compile properly on VMS by defining XTSTRINGDEFINES.
+	+ modify catnap() function to use IEEE floating point on IA64, since
+	  that platform does not support F-floats.
+	+ modify vmsbuild.com and descrip.mms to work with IA64.
+	+ add $goal-column variable for debugging.
+	+ fix quoting and parameter list for iconv_open() in configure macro
+	  CF_ICONV_FUNC.
+
  20041031 (j)
 	> Clark Morgan:
 	+ add "explicit" and "typename" to cpp.key
@@ -24,6 +41,9 @@ Changes for vile 9.5 (released ??? ??? ?? ????)
 	  + filters.rc turns on automatic syntax highlighting only if both
 	    builtin-filters and colors are available.  Before 9.4i, vileinit.rc
 	    turned on automatic syntax highlighting.
+	    NOTE: if you are using external syntax filters, vileinit.rc no
+	    longer automatically enables highlighting for this case.  The
+	    builtin or loadable filters perform better for most systems.
 	  + add a variable %filters-modes, set in modes.rc to be tested by
 	    filters.rc to ensure that modes.rc is source'd if needed.  Both of
 	    these files are sourced by vileinit.rc in 9.4i, but not everyone

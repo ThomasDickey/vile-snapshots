@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.134 2004/10/21 22:56:25 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.136 2004/11/03 21:05:39 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -949,7 +949,7 @@ else
 fi
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_FUNC_ICONV version: 1 updated: 2004/10/21 18:55:51
+dnl CF_FUNC_ICONV version: 3 updated: 2004/11/03 16:04:09
 dnl -------------
 dnl Check for iconv() and related functions/headers.  On a few systems it is
 dnl part of the default runtime library, but on others it may be within the
@@ -962,12 +962,12 @@ AC_DEFUN([CF_FUNC_ICONV],
 [
 CF_FIND_LIBRARY(iconv,iconv,
 	[#include <iconv.h>],
-	[iconv_t c = iconv_open(); iconv(c, 0,0,0,0); iconv_close(c)],
+	[iconv_t c = iconv_open(0,0); iconv(c, 0,0,0,0); iconv_close(c)],
 	iconv)
 AC_CACHE_CHECK(for iconv function library,cf_cv_func_iconv,
 	cf_cv_func_iconv="$ac_cv_func_iconv"
 	if test "$cf_cv_func_iconv" = yes ; then
-		if test -n $cf_libdir ; then
+		if test -n "$cf_libdir" ; then
 			cf_cv_func_iconv="-L$cf_libdir -liconv"
 		fi
 	fi

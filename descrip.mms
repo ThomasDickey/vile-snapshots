@@ -5,7 +5,7 @@
 # estruct.h to make sure the correct one is #defined as "1", and the others
 # all as "0".
 #
-# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.45 2004/10/30 11:06:45 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.46 2004/11/02 22:55:11 tom Exp $
 
 # Editor Configuration Note
 # -------------------------
@@ -175,6 +175,10 @@ all :
 #                DEC C V5.6-003 on OpenVMS VAX V7.1
 #                                                    --C. Morgan
 #
+.IFDEF __IA64__
+CC_OPTIONS = /PREFIX_LIBRARY_ENTRIES=ALL_ENTRIES
+CC_DEFS = ,HAVE_ALARM,HAVE_STRERROR,USE_IEEE_FLOAT
+.ELSE
 .IFDEF __ALPHA__
 CC_OPTIONS = /PREFIX_LIBRARY_ENTRIES=ALL_ENTRIES
 CC_DEFS = ,HAVE_ALARM,HAVE_STRERROR
@@ -185,6 +189,7 @@ CC_DEFS = ,HAVE_ALARM,HAVE_STRERROR
 .ELSE
 CC_OPTIONS = /VAXC
 CC_DEFS = ,HAVE_STRERROR
+.ENDIF
 .ENDIF
 .ENDIF
 

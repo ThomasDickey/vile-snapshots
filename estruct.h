@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.552 2004/10/31 00:34:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.553 2004/11/03 01:10:55 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -248,6 +248,9 @@
 # endif
 # define SIGT void
 # define SIGRET
+# if DISP_X11 && defined(NEED_X_INCLUDES)
+#  define XTSTRINGDEFINES
+# endif
 #endif
 
 #endif /* HAVE_CONFIG_H */

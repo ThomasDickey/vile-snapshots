@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.266 2004/10/26 18:49:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.267 2004/11/02 01:17:35 tom Exp $
  *
  */
 
@@ -848,7 +848,7 @@ execute(const CMDFUNC * execfunc, int f, int n)
 #else
 	mlwarn("[Not a command]");	/* complain             */
 #endif
-	returnCode(FALSE);
+	return (FALSE);
     }
 
     TRACE((T_CALLED "execute(execfunc=%p(%s:%s), f=%d, n=%d)\n",
@@ -876,12 +876,14 @@ execute(const CMDFUNC * execfunc, int f, int n)
 	if (flags & UNDO) {
 	    /* undoable command can't be permitted when read-only */
 	    if (!(flags & VIEWOK)) {
-		if (b_val(curbp, MDVIEW))
+		if (b_val(curbp, MDVIEW)) {
 		    returnCode(rdonly());
+		}
 #ifdef MDCHK_MODTIME
 		if (!b_is_changed(curbp) &&
-		    !ask_shouldchange(curbp))
+		    !ask_shouldchange(curbp)) {
 		    returnCode(FALSE);
+		}
 #endif
 	    }
 	    if (!kbd_replaying(FALSE))

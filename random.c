@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.273 2004/10/29 00:35:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.276 2004/11/06 01:57:46 tom Exp $
  *
  */
 
@@ -22,6 +22,10 @@
 #if defined(HAVE_POLL) && defined(HAVE_POLL_H)
 # include <poll.h>
 #endif
+#endif
+
+#if SYS_VMS
+#include	<cvtdef.h>	/* for float constants */
 #endif
 
 #include	"dirstuff.h"
@@ -848,16 +852,23 @@ catnap(int milli, int watchinput)
 
 #if SYS_VMS
 	float seconds = milli / 1000.;
+	unsigned flags = 0;
+#ifdef USE_IEEE_FLOAT
+	unsigned type = CVT$K_IEEE_S;
+#else
+	unsigned type = CVT$K_VAX_F;
+#endif
 	if (watchinput) {
 	    float tenth = .1;
 	    while (seconds > 0.1) {
-		lib$wait(&tenth);
+		lib$wait(&tenth, &flags, &type);
 		if (term.typahead())
 		    return TRUE;
 		seconds -= tenth;
 	    }
 	}
-	lib$wait(&seconds);
+	if (seconds > 0.0)
+	    lib$wait(&seconds, &flags, &type);
 #define have_slept 1
 #endif
 
@@ -1407,6 +1418,27 @@ ch_fname(BUFFER *bp, const char *fname)
 }
 
 #if OPT_HOOKS
+static char *
+name_of_hook(HOOK * hook)
+{
+    char *result = "unknown";
+    if (hook == &cdhook)
+	result = "$cd-hook";
+    else if (hook == &readhook)
+	result = "$read-hook";
+    else if (hook == &writehook)
+	result = "$write-hook";
+    else if (hook == &bufhook)
+	result = "$buf-hook";
+    else if (hook == &exithook)
+	result = "$exit-hook";
+    else if (hook == &autocolorhook)
+	result = "autocolor-hook";
+    else if (hook == &majormodehook)
+	result = "$majormode-hook";
+    return result;
+}
+
 int
 run_a_hook(HOOK * hook)
 {
@@ -1419,6 +1451,8 @@ run_a_hook(HOOK * hook)
 	save_pre_op_dot = pre_op_dot;
 
 	DisableHook(hook);
+	TPRINTF(("running %s HOOK with %s, current %s\n",
+		 name_of_hook(hook), hook->proc, curbp->b_bname));
 	status = docmd(hook->proc, TRUE, FALSE, 1);
 	EnableHook(hook);
 
