@@ -5,7 +5,7 @@
  * commands. Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.87 1998/04/28 10:15:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.88 1998/05/06 00:30:20 tom Exp $
  *
  */
 
@@ -818,8 +818,8 @@ getregion(register REGION *rp)
 	if (b_is_counted(curbp)) { /* we have valid line numbers */
 		register LINE   *flp_start;
 		L_NUM dno, mno;
-		dno = DOT.l->l_number;
-		mno = MK.l->l_number;
+		dno = line_no(curbp, DOT.l);
+		mno = line_no(curbp, MK.l);
 		if (mno > dno) {
 			flp = DOT.l;
 			blp = MK.l;
@@ -837,9 +837,9 @@ getregion(register REGION *rp)
 		flp_start = flp;
 		while (flp != blp) {
 			flp = lforw(flp);
-			if (flp != buf_head(curbp) && flp != flp_start)
+			if (flp != buf_head(curbp) && flp != flp_start) {
 			    fsize += line_length(flp) - w_left_margin(curwp);
-			else {
+			} else if (flp != blp) {
 			    mlwrite ("BUG: hit buf end in getregion");
 			    return FALSE;
 			}
