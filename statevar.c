@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.38 2000/10/01 20:38:17 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.39 2000/10/27 01:56:26 tom Exp $
  */
 
 #include	"estruct.h"
@@ -438,7 +438,7 @@ int var_CRYPTKEY(TBUFF **rp, const char *vp)
 int var_CURCHAR (TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		render_int(rp, getcchar() + 1);
+		render_int(rp, vl_getcchar() + 1);
 		return TRUE;
 	} else if (vp) {
 		return gotochr(TRUE, strtol(vp,0,0));

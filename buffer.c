@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.224 2000/10/01 22:30:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.225 2000/10/27 01:52:01 tom Exp $
  *
  */
 
@@ -568,8 +568,9 @@ int	lockfl)
 				set_b_val(bp, MDNEWLINE, b_val(savebp,MDNEWLINE));
 				setm_by_suffix(bp);
 				setm_by_preamble(bp);
-			} else
+			} else {
 				readin(fname, lockfl, bp, FALSE);
+			}
 
 			/* setup so that buffer-toggle works as in vi (i.e.,
 			 * the top/current lines of the screen are the same).
@@ -586,7 +587,7 @@ int	lockfl)
 					}
 				}
 			}
-		} else if (!b_is_changed(bp)) {
+		} else if (copy && !b_is_changed(bp)) {
 			nested++;
 			if (bp->b_active == TRUE)
 				bp2readin(bp, TRUE);

@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.239 2000/10/16 01:58:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.240 2000/10/27 01:56:28 tom Exp $
  *
  */
 
@@ -357,7 +357,7 @@ char_no(BUFFER *the_buffer, MARK the_mark)
 }
 
 B_COUNT
-getcchar(void)
+vl_getcchar(void)
 {
     return char_no(curbp, DOT);
 }

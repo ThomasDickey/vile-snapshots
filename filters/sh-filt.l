@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.37 2000/10/05 11:11:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.38 2000/10/27 02:02:49 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -160,6 +160,7 @@ INTEGER		[-+]?([0-9]+)
 			}
 <HEREDOC>[^\n\$]+	{ flt_bfr_append(yytext, yyleng); }
 <HEREDOC>\n		{ flt_bfr_append(yytext, yyleng); }
+<HEREDOC>.		{ flt_bfr_append(yytext, yyleng); }
 
 <QUOTED>\\		{ flt_bfr_embed(yytext, yyleng, Action_attr); BEGIN(QUOTED2); }
 <QUOTED>{IDENT1}	|

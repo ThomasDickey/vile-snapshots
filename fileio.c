@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.146 2000/02/29 22:31:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.147 2000/10/27 01:39:02 tom Exp $
  *
  */
 
@@ -227,6 +227,7 @@ ffropen(char *fn)
 	fileispipe = FALSE;
 	fileeof = FALSE;
 
+	TRACE(("ffropen(fn=%s)\n", fn));
 #if OPT_SHELL
 	if (isShellOrPipe(fn)) {
 		ffp = 0;
@@ -279,6 +280,7 @@ ffwopen(char *fn, int forced)
 	char	*name;
 	char	*mode = FOPEN_WRITE;
 
+	TRACE(("ffwopen(fn=%s, forced=%d)\n", fn, forced));
 #if OPT_SHELL
 	if (isShellOrPipe(fn)) {
 		if ((ffp=npopen(fn+1, mode)) == NULL) {
