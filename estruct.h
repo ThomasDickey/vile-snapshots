@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.317 1997/09/04 23:12:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.318 1997/09/05 23:38:47 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -619,16 +619,6 @@ extern char *rindex (const char *s, int c);
 #define FOPEN_WRITE	"w"
 #define FOPEN_APPEND	"a"
 #define FOPEN_UPDATE	"w+"
-#endif
-
-/* special hack for VMS, to use VAX-style default protection rather than
- * Unix-ized form.
- */
-#if SYS_VMS
-# if !defined(__DECC) || !defined(__HIDE_FORBIDDEN_NAMES)
-#undef  FOPEN_WRITE
-#define FOPEN_WRITE	"wb","0"
-#endif
 #endif
 
 #if OPT_MSDOS_PATH	/* DOS path / to \ conversions */

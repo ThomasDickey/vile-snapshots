@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.146 1997/09/01 22:40:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.147 1997/09/06 00:23:37 tom Exp $
  *
  */
 
@@ -458,6 +458,11 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 		ElseIf( EVTPAUSE )	value = l_itoa(term.t_pause);
 		ElseIf( EVPENDING )	value = ltos(keystroke_avail());
 		ElseIf( EVLLENGTH )	value = l_itoa(llength(DOT.l));
+#if OPT_MAJORMODE
+		ElseIf( EVMAJORMODE )	value = (curbp->majr != 0)
+						? curbp->majr->name
+						: "";
+#endif
 		ElseIf( EVLINE )	value = getctext((CHARTYPE)0);
 		ElseIf( EVWORD )	value = getctext(_nonspace);
 		ElseIf( EVIDENTIF )	value = getctext(_ident);
@@ -893,6 +898,7 @@ char *value)	/* value to set to */
 			/* EVKILL */
 			/* EVPENDING */
 			/* EVLLENGTH */
+			/* EVMAJORMODE */
 			/* EVMODIFIED */
 			/* EVPROCESSID */
 			/* EVRAM */

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.82 1997/09/01 23:01:38 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.83 1997/09/06 00:05:29 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -166,6 +166,7 @@ regex							# MVAL_ prefix
 "lastkey"	LASTKEY			# last keyboard char struck
 "line"		LINE			# text of current line
 "llength"	LLENGTH			# length of current line
+"majormode"	MAJORMODE	OPT_MAJORMODE # current majormode, if any
 "match"		MATCH			# last matched magic pattern
 "mode"		MODE			# are we inserting/overwriting/command
 "modeline-format" MLFORMAT	OPT_MLFORMAT # modeline format string
