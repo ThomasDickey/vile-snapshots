@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.314 2004/06/15 21:54:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.316 2004/10/24 22:06:45 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -317,6 +317,14 @@ decl_uninit( int fileeof );		/* found eof */
 decl_uninit( size_t fflinelen );	/* fflinebuf length */
 
 /*--------------------------------------------------------------------------*/
+
+#if OPT_LOCALE
+decl_uninit( char *vl_encoding );
+decl_uninit( char *vl_locale );
+#else
+#define vl_encoding "8bit"
+#define vl_locale "built-in"
+#endif
 
 decl_init ( L_NUM help_at, -1 );	/* position in help-file */
 decl_uninit( char *helpfile );

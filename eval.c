@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.331 2004/06/19 15:04:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.333 2004/10/31 22:52:23 tom Exp $
  *
  */
 
@@ -65,18 +65,20 @@ makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
     CHARTYPE k;
     const char *s;
 
-    bprintf("--- Printable Characters %*P\n", term.cols - 1, '-');
+    bprintf("--- Printable Characters for locale %s (%s) %*P\n",
+	    vl_locale,
+	    vl_encoding,
+	    term.cols - 1, '-');
     for (i = 0; i < N_chars; i++) {
 	bprintf("\n%d\t", i);
 	if ((i == '\n') || (i == '\t'))		/* vtlistc() may not do these */
 	    bprintf("^%c", '@' | i);
 #if OPT_LOCALE
 	else if (!isPrint(i) && i > 127 && i < 160)	/* C1 controls? */
-	    bprintf(
-		       global_w_val(WMDNONPRINTOCTAL)
-		       ? "\\%3o"
-		       : "\\x%2x",
-		       i);
+	    bprintf(global_w_val(WMDNONPRINTOCTAL)
+		    ? "\\%3o"
+		    : "\\x%2x",
+		    i);
 #endif
 	else
 	    bprintf("%c", i);
@@ -147,10 +149,9 @@ get_charclass_code(void)
 		       KBD_NOEVAL | KBD_LOWERC,
 		       cclass_complete);
     return (status == TRUE)
-	? choice_to_code(
-			    fsm_charclass_choices,
-			    tb_values(var),
-			    tb_length(var))
+	? choice_to_code(fsm_charclass_choices,
+			 tb_values(var),
+			 tb_length(var))
 	: -1;
 }
 
@@ -1342,7 +1343,9 @@ PromptAndSet(const char *name, int f, int n)
 	    }
 	    (void) lsprintf(prompt, "Value of %s: ", var);
 	    status = mlreply2(prompt, &tmp);
-	    if (status != TRUE)
+	    if (status == ABORT)
+		tmp->tb_errs = TRUE;
+	    else if (status != TRUE)
 		returnCode(status);
 	}
 
@@ -1522,7 +1525,7 @@ SetVarValue(VWRAP * var, const char *name, const char *value)
 	break;
     }
 
-#if	OPT_DEBUGMACROS
+#if OPT_DEBUGMACROS
     if (tracemacros) {		/* we tracing macros? */
 	if (var->v_type == TOK_STATEVAR)
 	    mlforce("(((%s:&%s:%s)))",
@@ -1643,6 +1646,7 @@ show_attr(int color, const char *attr, const char *name)
 	bprintf("%X", color);
     bprintf(":%s", name);
 }
+
 /*
  * This will show the foreground colors, which we can display with attributes.
  */

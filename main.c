@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.517 2004/05/29 14:28:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.523 2004/10/26 19:13:39 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -38,6 +38,10 @@
 
 #if OPT_LOCALE
 #include	<locale.h>
+
+#ifdef HAVE_LANGINFO_CODESET
+#include	<langinfo.h>
+#endif
 
 #ifdef HAVE_WCTYPE
 #include	<wctype.h>
@@ -152,19 +156,28 @@ MainProgram(int argc, char *argv[])
 	char *env = "";
 
 	/*
-	 * Force 8-bit locale for display drivers where we only support 8-bits
+	 * Force 8-bit locale for display drivers where we only support 8-bits.
+	 * This is a special case, assumes that the name of the 8-bit locale
+	 * can be found by stripping the "UTF-8" string, and also that both
+	 * locales are installed.
 	 */
-#if DISP_TERMCAP
+#if DISP_TERMCAP || DISP_X11
 	if (((env = getenv("LC_ALL")) != 0 && *env != 0) ||
 	    ((env = getenv("LC_CTYPE")) != 0 && *env != 0) ||
 	    ((env = getenv("LANG")) != 0 && *env != 0)) {
-	    char *utf = strstr(env, ".UTF-8");
+	    char *utf;
 
-	    if (utf != 0) {
+	    if ((utf = strstr(env, ".UTF-8")) != 0
+		|| (utf = strstr(env, ".utf-8")) != 0
+		|| (utf = strstr(env, ".UTF8")) != 0
+		|| (utf = strstr(env, ".utf8")) != 0) {
 		char *tmp = strmalloc(env);
 		tmp[utf - env] = EOS;
-		env = tmp;
 		utf8_locale = TRUE;
+#if DISP_TERMCAP && OPT_ICONV_FUNCS
+		tcap_setup_locale(env, tmp);
+#endif
+		env = tmp;
 	    } else {
 		env = "";
 	    }
@@ -172,7 +185,34 @@ MainProgram(int argc, char *argv[])
 	    env = "";
 	}
 #endif
-	setlocale(LC_ALL, env);	/* set locale according to environment vars */
+	/* set locale according to environment vars */
+	vl_locale = setlocale(LC_ALL, env);
+
+#ifdef HAVE_LANGINFO_CODESET
+	/*
+	 * Check the encoding and try to decide if it looks like an 8-bit
+	 * encoding.  If it does not, fallback to POSIX locale and its
+	 * corresponding encoding.
+	 */
+	vl_encoding = nl_langinfo(CODESET);
+	if (strstr(vl_encoding, "ASCII") == 0
+	    && strstr(vl_encoding, "ANSI") == 0
+	    && strncmp(vl_encoding, "ISO-8859", 8) != 0
+	    && strncmp(vl_encoding, "ISO 8859", 8) != 0
+	    && strncmp(vl_encoding, "ISO_8859", 8) != 0
+	    && strncmp(vl_encoding, "ISO8859", 8) != 0
+	    && strncmp(vl_encoding, "8859", 4) != 0) {
+	    vl_locale = setlocale(LC_ALL, "C");
+	    vl_encoding = nl_langinfo(CODESET);
+	}
+#else
+	/* meaningless, but we need a value */
+	vl_encoding = "8bit";
+#endif
+
+	/* make our own copy of the strings */
+	vl_locale = strmalloc(vl_locale);
+	vl_encoding = strmalloc(vl_encoding);
     }
 #endif /* OPT_LOCALE */
 
@@ -2044,6 +2084,10 @@ quit(int f, int n GCC_UNUSED)
 	FreeAndNull(startup_path);
 	FreeAndNull(gregexp);
 	tb_free(&tb_matched_pat);
+#if OPT_LOCALE
+	FreeAndNull(vl_locale);
+	FreeAndNull(vl_encoding);
+#endif /* OPT_LOCALE */
 #if OPT_MLFORMAT
 	FreeAndNull(modeline_format);
 #endif
@@ -2052,7 +2096,6 @@ quit(int f, int n GCC_UNUSED)
 #endif
 	FreeAndNull(helpfile);
 	FreeAndNull(startup_file);
-
 #if SYS_UNIX
 	if (strcmp(exec_pathname, "."))
 	    FreeAndNull(exec_pathname);
@@ -2225,6 +2268,10 @@ charinit(void)
     /* If we're using the locale functions, set our flags based on its
      * tables.  Note that just because you have 'setlocale()' doesn't mean
      * that the tables are present or correct.  But this is a start.
+     *
+     * NOTE:  Solaris8 and some versions of M$ incorrectly classify tab as a
+     * printable character (ANSI C says control characters are not printable). 
+     * Ignore that (the former fixes it in Solaris9).
      */
 #if OPT_LOCALE
     for (c = 0; c < N_chars; c++) {
@@ -2235,7 +2282,7 @@ charinit(void)
 	    vlCTYPE(c) |= vl_digit;
 	if (sys_islower(c))
 	    vlCTYPE(c) |= vl_lower;
-	if (sys_isprint(c))
+	if (sys_isprint(c) && c != '\t')
 	    vlCTYPE(c) |= vl_print;
 	if (sys_ispunct(c))
 	    vlCTYPE(c) |= vl_punct;

@@ -4,7 +4,7 @@
  *	Definitions to interface to unix-like DIRECTORY(3) procedures.
  *	Include this after "estruct.h"
  *
- * $Header: /users/source/archives/vile.vcs/RCS/dirstuff.h,v 1.25 2004/03/20 11:45:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/dirstuff.h,v 1.26 2004/10/30 14:54:56 tom Exp $
  *
  */
 
@@ -84,14 +84,14 @@ typedef struct	{
 	ULONG	d_ino;
 	short	d_reclen;
 	short	d_namlen;
-	char	d_name[NAM$C_MAXRSS];		/* result: SYS$SEARCH */
+	char	d_name[NAM$C_MAXRSS + 1];		/* result: SYS$SEARCH */
 	} DIRENT;
 
 typedef	struct	{
 	DIRENT		dd_ret;
 	struct	FAB	dd_fab;
 	struct	NAM	dd_nam;
-	char		dd_esa[NAM$C_MAXRSS];	/* expanded: SYS$PARSE */
+	char		dd_esa[NAM$C_MAXRSS + 1];	/* result: SYS$PARSE */
 	} DIR;
 
 #endif	/* SYS_VMS */

@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.152 2002/12/24 01:35:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.155 2004/10/21 23:10:28 tom Exp $
  *
  */
 
@@ -13,6 +13,12 @@
 #define NPAUSE	10		/* # times thru update to pause */
 
 #include	"tcap.h"
+
+#if OPT_ICONV_FUNCS
+#include	<iconv.h>
+#include	<locale.h>
+#include	<langinfo.h>
+#endif
 
 #undef WINDOW
 #define WINDOW vile_WINDOW
@@ -169,8 +175,6 @@ static void tcapscroll_delins(int from, int to, int n);
 static void tcapscroll_reg(int from, int to, int n);
 static void tcapscrollregion(int top, int bot);
 
-static OUTC_DCL utf8_putch(OUTC_ARGS);
-
 #if OPT_COLOR
 static void tcap_fcol(int color);
 static void tcap_bcol(int color);
@@ -179,6 +183,11 @@ static void tcap_spal(const char *s);
 #define tcap_fcol nullterm_setfore
 #define tcap_bcol nullterm_setback
 #define tcap_spal nullterm_setpal
+#endif
+
+#if OPT_LOCALE
+static OUTC_DCL mb_putch(OUTC_ARGS);
+static int mb_getch(void);
 #endif
 
 #if OPT_VIDEO_ATTRS
@@ -297,9 +306,13 @@ tcap_open(void)
     }
 #endif
 
+#if OPT_LOCALE
     /* check if we're using UTF-8 locale */
-    if (utf8_locale)
-	term.putch = utf8_putch;
+    if (utf8_locale) {
+	term.putch = mb_putch;
+	term.getch = mb_getch;
+    }
+#endif
 
     /* Get screen size from system, or else from termcap.  */
     getscreensize(&term.cols, &term.rows);
@@ -1127,19 +1140,153 @@ putpad(const char *str)
     tputs(str, 1, ttputc);
 }
 
+#if OPT_LOCALE
+#if OPT_ICONV_FUNCS
+static iconv_t mb_desc;
+static char *mb_table[256];
+
+static char *
+get_encoding(char *locale)
+{
+    char *encoding;
+
+    setlocale(LC_ALL, locale);
+    if ((encoding = nl_langinfo(CODESET)) == 0 || *encoding == '\0') {
+	fprintf(stderr, "Cannot find encoding for %s\n", locale);
+	tidy_exit(BADEXIT);
+    }
+    return strmalloc(encoding);
+}
+
+static void
+open_encoding(char *from, char *to)
+{
+    mb_desc = iconv_open(to, from);
+    if (mb_desc == (iconv_t) (-1)) {
+	fprintf(stderr, "cannot setup translation from %s to %s\n", from, to);
+	tidy_exit(BADEXIT);
+    }
+}
+
+void
+tcap_setup_locale(char *wide, char *narrow)
+{
+    char *wide_enc;
+    char *narrow_enc;
+    int n;
+
+    TRACE(("setup_locale(%s, %s)\n", wide, narrow));
+    wide_enc = get_encoding(wide);
+    narrow_enc = get_encoding(narrow);
+    TRACE(("...setup_locale(%s, %s)\n", wide_enc, narrow_enc));
+
+    open_encoding(narrow_enc, wide_enc);
+
+    for (n = 0; n < 256; ++n) {
+	size_t converted;
+	char input[80], *ip = input;
+	char output[80], *op = output;
+	size_t in_bytes = 1;
+	size_t out_bytes = sizeof(output);
+	input[0] = n;
+	input[1] = 0;
+	converted = iconv(mb_desc, &ip, &in_bytes, &op, &out_bytes);
+	if (converted == (size_t) (-1)) {
+	    TRACE(("err:%d\n", errno));
+	    TRACE(("convert(%d) %d %d/%d\n", n, converted, in_bytes, out_bytes));
+	} else {
+	    output[sizeof(output) - out_bytes] = 0;
+	    mb_table[n] = strmalloc(output);
+	}
+    }
+    iconv_close(mb_desc);
+    /*
+     * If we were able to convert in one direction, the other should
+     * succeed.
+     */
+    open_encoding(wide_enc, narrow_enc);
+}
+#endif /* OPT_ICONV_FUNCS */
+
 /*
- * Write 8-bit Latin-1 characters to a UTF-8 display
+ * Write 8-bit (e.g., Latin-1) characters to a multibyte (e.g., UTF-8) display.
  */
 static OUTC_DCL
-utf8_putch(OUTC_ARGS)
+mb_putch(OUTC_ARGS)
 {
     unsigned ch = (c & 0xff);
+#if OPT_ICONV_FUNCS
+    char *s = mb_table[ch];
+    if (s != 0) {
+	while (*s != 0) {
+	    ttputc(*s++);
+	}
+    }
+    OUTC_RET 0;
+#else
     if (ch < 128) {
 	OUTC_RET ttputc(ch);
     } else {
 	(void) ttputc(0xC0 | (0x03 & (ch >> 6)));
 	OUTC_RET ttputc(0x80 | (0x3F & ch));
     }
+#endif
+}
+#endif /* OPT_LOCALE */
+
+/*
+ * Decode multibyte (e.g., UTF-8) to 8-bit (e.g., Latin-1) characters.
+ */
+static int
+mb_getch(void)
+{
+    int ch, c2;
+#if OPT_ICONV_FUNCS
+    char input[80], *ip;
+    char output[80], *op;
+    int used = 0;
+    size_t converted, in_bytes, out_bytes;
+    for (;;) {
+	c2 = ttgetc();
+	input[used++] = c2;
+	input[used] = 0;
+	ip = input;
+	in_bytes = used;
+	op = output;
+	out_bytes = sizeof(output);
+	*output = 0;
+	converted = iconv(mb_desc, &ip, &in_bytes, &op, &out_bytes);
+	TRACE(("converted %d '%s' -> %d:%#x\n",
+	       converted, input, out_bytes, *output));
+	if (converted == (size_t) (-1)) {
+	    if (errno == EILSEQ) {
+		ch = -1;
+		break;
+	    }
+	} else {
+	    /* assume it is 8-bits */
+	    ch = CharOf(output[0]);
+	    break;
+	}
+    }
+#else
+    ch = ttgetc();
+    if (ch >= 0x80) {
+	if (ch <= 0xc3) {
+	    c2 = ttgetc();
+	    ch &= 0x3;
+	    ch <<= 6;
+	    ch |= c2 & 0x3f;
+	} else {
+	    do {
+		ch = ttgetc();
+	    } while (ch < 0 || ch >= 0x80);
+	    ch = -1;
+	}
+    }
+#endif
+    TRACE(("mb_getch:%#x\n", ch));
+    return ch;
 }
 
 #if OPT_XTERM

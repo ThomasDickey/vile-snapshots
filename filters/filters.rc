@@ -1,6 +1,15 @@
-; $Id: filters.rc,v 1.192 2004/08/08 18:15:13 Mark.Robinson Exp $
+; $Id: filters.rc,v 1.195 2004/10/31 21:57:28 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
+
+; This file depends upon modes.rc, which may have been source'd by vileinit.rc
+; so we will check if it was not source'd.
+~if &or \
+	&error %filters-modes \
+	&seq %filters-modes ''
+	source modes.rc
+~endif
+unsetv %filters-modes
 
 define-mode cpp
 ~with define-submode cpp
@@ -14,17 +23,22 @@ define-mode csh
 
 define-mode java
 ~with define-submode java
-	filtername 'vile-c-filt -j -p -k java'
+	filtername	'vile-c-filt -j -p -k java'
 ~endwith
 
 define-mode js
 ~with define-submode js
-	filtername 'vile-c-filt -j -s -p -k js'
+	filtername	'vile-c-filt -j -s -p -k js'
 ~endwith
 
 define-mode latex
 ~with define-submode latex
-	filtername 'vile-latex-filt -a'
+	filtername	'vile-latex-filt -a'
+~endwith
+
+define-mode nmake
+~with define-submode nmake
+	filtername	'vile-make-filt'
 ~endwith
 
 define-mode pc
@@ -34,22 +48,22 @@ define-mode pc
 
 define-mode rb
 ~with define-submode rb
-	filtername 'vile-ruby-filt -k rb'
+	filtername	'vile-ruby-filt -k rb'
 ~endwith
 
 define-mode RCS
 ~with define-submode RCS
-	filtername 'vile-rcs-filt'
+	filtername	'vile-rcs-filt'
 ~endwith
 
 define-mode SCCS
 ~with define-submode SCCS
-	filtername 'vile-sccs-filt'
+	filtername	'vile-sccs-filt'
 ~endwith
 
 define-mode tex
 ~with define-submode tex
-	filtername 'vile-latex-filt -k tex'
+	filtername	'vile-latex-filt -k tex'
 ~endwith
 
 define-mode vb
@@ -118,7 +132,11 @@ store-procedure set-highlighting ma 'Set a majormode and invoke highlighting'
 	HighlightFilter
 ~endm
 
-~if &not &error $ncolors
+; If we have built-in filters, and colors are available, simply turn on
+; the syntax highlighting.
+~if &and \
+	&not &error $filter-list \
+	&not &error $ncolors
 	setv $read-hook HighlightFilter
 	set autocolor=5000
 	setv $autocolor-hook HighlightFilter

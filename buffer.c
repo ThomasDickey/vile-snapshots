@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.266 2004/06/17 00:55:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.267 2004/10/31 16:03:59 tom Exp $
  *
  */
 
@@ -2281,29 +2281,34 @@ bclear(BUFFER *bp)
 int
 bsizes(BUFFER *bp)
 {
-    LINE *lp;			/* current line */
-    B_COUNT numchars = 0;	/* # of chars in file */
-    L_NUM numlines = 0;		/* # of lines in file */
-    L_NUM ending = len_record_sep(bp);
+    int code = FALSE;
 
-    if (b_is_counted(bp))
-	return FALSE;
+    if (valid_buffer(curbp)) {
+	LINE *lp;		/* current line */
+	B_COUNT numchars = 0;	/* # of chars in file */
+	L_NUM numlines = 0;	/* # of lines in file */
+	L_NUM ending = len_record_sep(bp);
 
-    /* count chars and lines */
-    for_each_line(lp, bp) {
-	++numlines;
-	numchars += llength(lp) + ending;
+	if (!b_is_counted(bp)) {
+
+	    /* count chars and lines */
+	    for_each_line(lp, bp) {
+		++numlines;
+		numchars += llength(lp) + ending;
 #if !SMALLER			/* tradeoff between codesize & data */
-	lp->l_number = numlines;
+		lp->l_number = numlines;
 #endif
-    }
-    if (!b_val(bp, MDNEWLINE))
-	numchars -= ending;
+	    }
+	    if (!b_val(bp, MDNEWLINE))
+		numchars -= ending;
 
-    bp->b_bytecount = numchars;
-    bp->b_linecount = numlines;
-    b_set_counted(bp);
-    return TRUE;
+	    bp->b_bytecount = numchars;
+	    bp->b_linecount = numlines;
+	    b_set_counted(bp);
+	    code = TRUE;
+	}
+    }
+    return code;
 }
 
 /*

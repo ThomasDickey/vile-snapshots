@@ -46,12 +46,12 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.35 2003/05/03 10:57:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.36 2004/10/27 19:18:30 tom Exp $
  *
  */
 
-#define	_trace_h 1		/* don't include trace.h */
-
+#define CAN_TRACE 0
+#define CAN_VMS_PATH 0
 #include <filters.h>
 
 #if OPT_LOCALE

@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.196 2004/05/28 18:33:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.197 2004/10/30 16:40:14 tom Exp $
  *
  */
 
@@ -1048,8 +1048,14 @@ ttopen(void)
 	tidy_exit(status);
     newmode[0] = oldmode[0];
     newmode[1] = oldmode[1];
-    newmode[1] &= ~(TT$M_TTSYNC | TT$M_HOSTSYNC);
-    newmode[2] = oldmode[2] | TT2$M_PASTHRU;
+    newmode[1] |= TT$M_NOBRDCST;	/* turn on no-broadcast */
+    newmode[1] &= ~TT$M_TTSYNC;
+    newmode[1] &= ~TT$M_ESCAPE;	/* turn off escape-processing */
+    newmode[1] &= ~TT$M_HOSTSYNC;
+    newmode[1] &= ~TT$M_NOTYPEAHD;	/* turn off no-typeahead */
+    newmode[2] = oldmode[2];
+    newmode[2] |= TT2$M_PASTHRU;	/* turn on pass-through */
+    newmode[2] |= TT2$M_ALTYPEAHD;	/* turn on big typeahead buffer */
     status = sys$qiow(EFN, iochan, IO$_SETMODE, &iosb, 0, 0,
 		      newmode, sizeof(newmode), 0, 0, 0, 0);
     if (status != SS$_NORMAL
@@ -1166,11 +1172,15 @@ read_vms_tty(int length)
     QIO_SB iosb;
     int term[2] =
     {0, 0};
+    unsigned mask = (IO$_READVBLK
+		     | IO$M_NOECHO
+		     | IO$M_NOFILTR
+		     | IO$M_TRMNOECHO);
 
     status = sys$qiow(EFN, iochan,
-		      (length == 1)
-		      ? IO$_READLBLK | IO$M_NOECHO | IO$M_NOFILTR
-		      : IO$_READLBLK | IO$M_NOECHO | IO$M_NOFILTR | IO$M_TIMED,
+		      ((length == 1)
+		       ? mask
+		       : mask | IO$M_TIMED),
 		      &iosb, 0, 0, ibuf, length, 0, term, 0, 0);
 
     if (status != SS$_NORMAL)

@@ -1,7 +1,7 @@
 Summary: VILE VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/RCS/vile-9.4.spec,v 1.10 2004/08/08 21:12:12 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/vile-9.4.spec,v 1.12 2004/10/31 20:22:04 liboska Exp $
 Name: vile
-Version: 9.4i
+Version: 9.4j
 # each patch should update the version
 Release: 1
 Copyright: GPL
@@ -17,6 +17,7 @@ Patch6: vile-9.4f.patch.gz
 Patch7: vile-9.4g.patch.gz
 Patch8: vile-9.4h.patch.gz
 Patch9: vile-9.4i.patch.gz
+Patch10: vile-9.4j.patch.gz
 # each patch should add itself to this list
 Packager: Thomas Dickey <dickey@invisible-island.net>
 BuildRoot: %{_tmppath}/%{name}-root
@@ -38,12 +39,13 @@ rebinding, and real X window system support.
 %patch7 -p1
 %patch8 -p1
 %patch9 -p1
+%patch10 -p1
 # each patch should add itself to this list
 
 %build
 EXTRA_CFLAGS="$RPM_OPT_FLAGS" INSTALL_PROGRAM='${INSTALL} -s' ./configure --target %{_target_platform} --prefix=%{_prefix} --with-locale --with-builtin-filters --with-screen=x11 --with-xpm
 make xvile
-EXTRA_CFLAGS="$RPM_OPT_FLAGS" INSTALL_PROGRAM='${INSTALL} -s' ./configure --target %{_target_platform} --prefix=%{_prefix} --with-locale --with-builtin-filters --with-screen=ncurses
+EXTRA_CFLAGS="$RPM_OPT_FLAGS" INSTALL_PROGRAM='${INSTALL} -s' ./configure --target %{_target_platform} --prefix=%{_prefix} --with-locale --with-builtin-filters --with-screen=ncurses --mandir=%{_mandir}
 touch x11.o menu.o
 make
 touch xvile
@@ -59,6 +61,8 @@ strip $RPM_BUILD_ROOT/%{_libdir}/vile/vile-*filt
 
 ./mkdirs.sh $RPM_BUILD_ROOT/%{_prefix}/X11R6/man/man1  
 install -m 644 vile.1 $RPM_BUILD_ROOT/%{_prefix}/X11R6/man/man1/xvile.1  
+./mkdirs.sh $RPM_BUILD_ROOT/%{_mandir}/man1  
+install -m 644 vile.1 $RPM_BUILD_ROOT/%{_mandir}/man1/vile.1  
 
 ./mkdirs.sh $RPM_BUILD_ROOT/%{_sysconfdir}/X11/wmconfig  
 install vile.wmconfig $RPM_BUILD_ROOT/%{_sysconfdir}/X11/wmconfig/vile  
@@ -76,14 +80,24 @@ install xvile.wmconfig $RPM_BUILD_ROOT/%{_sysconfdir}/X11/wmconfig/xvile
 %config(missingok) %{_sysconfdir}/X11/wmconfig/vile
 %config(missingok) %{_sysconfdir}/X11/wmconfig/xvile
 %{_prefix}/X11R6/bin/xvile
+%{_prefix}/X11R6/bin/vile-pager
 %{_prefix}/X11R6/man/man1/xvile.*
+%{_prefix}/X11R6/share/vile
 %{_bindir}/vile
+%{_bindir}/vile-pager
 %{_mandir}/man1/vile.*
-%{_datadir}/vile
+%{_datadir}/vile/
 %{_libdir}/vile/
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Fri Oct 22 2004 Radek Liboska
+- add vile-pager to list of installed files
+- install vile.1 in ${mandir}/man1/
+
+* Thu Sep 02 2004 Thomas Dickey
+- added patch for 9.4j
 
 * Sun Aug 08 2004 Thomas Dickey
 - added patch for 9.4i

@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.351 2003/06/18 22:25:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.354 2004/10/31 14:51:15 tom Exp $
  */
 
 #include "estruct.h"
@@ -35,6 +35,8 @@
 #else
 #define isFileMode(mode) (mode & S_IFMT) == S_IFREG
 #endif
+
+#define NO_BNAME "NoName"
 
 /*--------------------------------------------------------------------------*/
 
@@ -321,12 +323,35 @@ explicit_version(char *ver)
 }
 #endif /* OPT_VMS_PATH */
 
-#if SYS_VMS
+#if OPT_VMS_PATH
 static char *
 resolve_filename(BUFFER *bp)
 {
     char temp[NFILEN];
+#if SYS_VMS
     ch_fname(bp, fgetname(ffp, temp));
+#else
+    /*
+     * The fgetname() should be just a shortcut; we should already have a
+     * usable filename in bp->b_fname.
+     */
+    if (bp->b_fname == 0) {
+	TRACE(("resolve_filename NULL\n"));
+    } else if (is_vms_pathname(bp->b_fname, FALSE)
+	       && strcspn(bp->b_fname, ":[];") != strlen(bp->b_fname)) {
+	TRACE(("resolve_filename NONEED: %s\n", bp->b_fname));
+    } else {
+	char temp2[NFILEN];
+	mklower(strcpy(temp2, bp->b_fname));
+	if (realpath(temp2, temp)) {
+	    (void) unix2vms_path(temp, temp);
+	    TRACE(("resolve_filename %s -> %s\n", bp->b_fname, temp));
+	    ch_fname(bp, temp);
+	} else {
+	    TRACE(("resolve_filename FAILED: %s\n", bp->b_fname));
+	}
+    }
+#endif
     markWFMODE(bp);
     return bp->b_fname;
 }
@@ -367,7 +392,7 @@ same_fname(const char *fname, BUFFER *bp, int lengthen)
 	if ((!explicit_version(s)
 	     || !explicit_version(t))
 	    && ((s - bname) == (t - fname))) {
-	    status = !strncmp(fname, bname, (size_t) (s - bname));
+	    status = !strnicmp(fname, bname, (size_t) (s - bname));
 	    TRACE(("=>%d\n", status));
 	    return (status);
 	}
@@ -1482,7 +1507,7 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
 		    path_trunc(fname, outlen, tmp, sizeof(tmp)));
 #undef READING_FILE_FMT
 	}
-#if SYS_VMS
+#if OPT_VMS_PATH
 	if (!isInternalName(bp->b_fname))
 	    fname = resolve_filename(bp);
 #endif
@@ -1692,7 +1717,9 @@ makename(char *bname, const char *fname)
     fcp = skip_string(vl_strncpy(temp, fname, sizeof(temp)));
 #if OPT_VMS_PATH
     if (is_vms_pathname(temp, TRUE)) {
-	;
+	vms2unix_path(temp, temp);
+	(void) strncpy0(bname, pathleaf(temp), NBUFN);
+	strip_version(bname);
     } else if (is_vms_pathname(temp, FALSE)) {
 	for (; fcp > temp && !strchr(":]", fcp[-1]); fcp--) {
 	    ;
@@ -1764,7 +1791,7 @@ makename(char *bname, const char *fname)
 #endif
     }
     if (*bname == EOS)
-	(void) strcpy(bname, "NoName");
+	(void) strcpy(bname, NO_BNAME);
     TRACE((" -> '%s'\n", bname));
 }
 
@@ -1782,7 +1809,7 @@ unqname(char *name)
 
     j = strlen(name);
     if (j == 0)
-	j = strlen(strcpy(name, "NoName"));
+	j = strlen(strcpy(name, NO_BNAME));
 
     /* check to see if this name is in use */
     vl_strncpy(newname, name, NBUFN);
@@ -1973,7 +2000,7 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
 
   out:
     if (s == FIOSUC) {		/* No write error.      */
-#if SYS_VMS
+#if OPT_VMS_PATH
 	if (same_fname(fn, bp, FALSE))
 	    fn = resolve_filename(bp);
 #endif

@@ -1,5 +1,80 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20041031 (j)
+	> Clark Morgan:
+	+ add "explicit" and "typename" to cpp.key
+	+ correct parameter lists for chgd_icursor() and chgd_popupmenu()
+	  in ntconio.c and ntwinio.c which were not updated in 9.4b, which
+	  added a BUFFER* parameter.
+ 	> Tom Dickey:
+	+ add parameter to hst_append() to control logic which is used to build
+	  up shell commands for replay.  Use this parameter to suppress shell
+	  command construction when prompting for regular expressions and other
+	  strings that cannot be shell commands (report by Daniel L Ashbrook).
+	+ save/restore MK in kbd_reply() to work around lost value of MK when
+	  swbuffer() is called as a side-effect of name-completion.  This
+	  caused commands such as
+	  	!Gls /tmp/<tab><tab>
+	  to report a "BUG: no mark" (report by Daniel L Ashbrook).
+	+ modify PromptAndSet() to allow a cancelled prompt for variable's
+	  value to store an ERROR token, which can be tested in scripts with
+	  &error (request by Clark Morgan).
+	+ modify filters.rc, modes.rc and vileinit.rc as follows (reports by
+	  Clark Morgan and J Chris Coppic):
+	  + filters.rc turns on automatic syntax highlighting only if both
+	    builtin-filters and colors are available.  Before 9.4i, vileinit.rc
+	    turned on automatic syntax highlighting.
+	  + add a variable %filters-modes, set in modes.rc to be tested by
+	    filters.rc to ensure that modes.rc is source'd if needed.  Both of
+	    these files are sourced by vileinit.rc in 9.4i, but not everyone
+	    uses vileinit.rc
+	  + update vile.hlp to reflect these changes.
+	+ ensure values for $bchars and $blines are up-to-date, e.g., if
+	  which-keywords is called twice in succession in the same macro the
+	  values were not, causing the [Which Keywords] content to be repeated.
+	+ indent'd vmsvt.c, vms2unix.c
+	+ add VMS mode record-attrs, modify logic in vms_creat() to use this
+	  information to make the default VFC files written from DCL editable.
+	  Those use PRN (print file format) record attributes (report by
+	  Jordan Henderson).
+	+ modify terminal settings for VMS to improve type-ahead.
+	+ add xterm-style bindings for F1-F5 to vmsvt.c
+	+ modify which.rc to use &pcat rather than $pathname-separator, since
+	  the latter is ambiguous on VMS.
+	+ modify infer_majormode() to work with VMS pathnames.
+	+ correct logic for VMS pathnames so that a directory buffer will,
+	  as on Unix, give the same buffer name as the directory leaf.
+	+ improve fakevms test-driver and related OPT_VMS_PATH code for VMS
+	  pathnames, making name-completion work for VMS pathnames on Unix.
+	+ fix a memory leak in old_namebst().
+	+ modify tb_bappend() to avoid memcpy() with the same source/target
+	  address (valgrind warning).
+	+ add/use CAN_TRACE symbol to allow configure --with-no-leaks, since
+	  the unfilter program otherwise fails to link in that configuration.
+	+ add some discussion of character classes to vile.hlp
+	+ fixes for vile-9.4.spec, adds vile-pager to list of installed files
+	  and installs manpage in the normal man-directory (patch by Radek
+	  Liboska). 
+	+ add configure option --with-iconv, use that to extend termcap driver
+	  to allow it to handle encodings other than Latin-1, e.g., Latin-2
+	  (request by Radek Liboska). 
+	+ extend workaround for UTF-8 locale in termcap driver to translate
+	  UTF-8 input to Latin-1.
+	+ improve/extend checks for locales which correspond to 8-bit character
+	  encoding, resetting to POSIX locale (ASCII) if the nl_langinfo()
+	  function returns a value that does not look like ASCII or ISO-8859-x.
+	  This change applies to the termcap/terminfo and X11 drivers.
+	+ show locale and encoding values in header of [Printable Chars].
+	+ add $encoding and $locale variables to show what vile's internal
+	  8-bit encoding and locale are set to.
+	+ turn on locale feature on win32
+	+ workaround for broken locale table on Solaris8 and Windows2000, etc.,
+	  which shows tab as both as printable and a control character.  The
+	  ISO C standard states that control characters are not printable.
+	+ add nmakemode, for special cases such as M$'s ".dsp" files.
+	+ add syntax filter for AutoIt version 3 and majormode au3mode.
+	+ correct pattern for HEX in bas-filt.l
+
  20040808 (i)
 	> Mark Robinson:
 	+ split-out modes.rc from filters.rc to make configuration more

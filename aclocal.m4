@@ -1,8 +1,31 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.132 2004/08/08 15:41:58 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.134 2004/10/21 22:56:25 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
+dnl ---------------------------------------------------------------------------
+dnl AM_LANGINFO_CODESET version: 3 updated: 2002/10/27 23:21:42
+dnl -------------------
+dnl Inserted as requested by gettext 0.10.40
+dnl File from /usr/share/aclocal
+dnl codeset.m4
+dnl ====================
+dnl serial AM1
+dnl
+dnl From Bruno Haible.
+AC_DEFUN([AM_LANGINFO_CODESET],
+[
+  AC_CACHE_CHECK([for nl_langinfo and CODESET], am_cv_langinfo_codeset,
+    [AC_TRY_LINK([#include <langinfo.h>],
+      [char* cs = nl_langinfo(CODESET);],
+      am_cv_langinfo_codeset=yes,
+      am_cv_langinfo_codeset=no)
+    ])
+  if test $am_cv_langinfo_codeset = yes; then
+    AC_DEFINE(HAVE_LANGINFO_CODESET, 1,
+      [Define if you have <langinfo.h> and nl_langinfo(CODESET).])
+  fi
+])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_AC_PREREQ version: 2 updated: 1997/09/06 13:24:56
 dnl ------------
@@ -925,6 +948,31 @@ else
 	AC_MSG_ERROR(Cannot find dlsym function)
 fi
 ])
+dnl ---------------------------------------------------------------------------
+dnl CF_FUNC_ICONV version: 1 updated: 2004/10/21 18:55:51
+dnl -------------
+dnl Check for iconv() and related functions/headers.  On a few systems it is
+dnl part of the default runtime library, but on others it may be within the
+dnl iconv library.  Set the cache variable to tell where we found it:
+dnl
+dnl	no - did not find
+dnl	yes - in the default library
+dnl	-liconv - the external library
+AC_DEFUN([CF_FUNC_ICONV],
+[
+CF_FIND_LIBRARY(iconv,iconv,
+	[#include <iconv.h>],
+	[iconv_t c = iconv_open(); iconv(c, 0,0,0,0); iconv_close(c)],
+	iconv)
+AC_CACHE_CHECK(for iconv function library,cf_cv_func_iconv,
+	cf_cv_func_iconv="$ac_cv_func_iconv"
+	if test "$cf_cv_func_iconv" = yes ; then
+		if test -n $cf_libdir ; then
+			cf_cv_func_iconv="-L$cf_libdir -liconv"
+		fi
+	fi
+)
+])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_GCC_ATTRIBUTES version: 9 updated: 2002/12/21 19:25:52
 dnl -----------------

@@ -1,4 +1,4 @@
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/which.rc,v 1.6 2004/06/21 00:04:55 tom Exp $
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/which.rc,v 1.8 2004/10/30 00:12:27 tom Exp $
 ;;
 ;; Show where vile looks for keyword file, and where it finds it.  If we
 ;; always implemented built-in filters, the natural place for this would be
@@ -19,9 +19,10 @@ store-procedure WhichFilename f='Filename'
 ~endm
 
 store-procedure which-keywords major="MajorMode" "Prompt for, and display location of keyword files"
-	~local %terse %path %leaf %suffix %pathdot %dothides %index %mybuffer %found %long %short
-	setv %terse=$terse
+	~local %path %leaf %suffix %pathdot %dothides %index %mybuffer %found %long %short
 	setv %found="no"
+	~local $report $terse
+	setv $report=0
 	set terse
 
 	~if &seq 'mode' &right $1 &sub &len $1 3
@@ -68,12 +69,12 @@ store-procedure which-keywords major="MajorMode" "Prompt for, and display locati
 	;
 	setv %leaf=&cat %short %suffix
 	insert-string '$cwd'
-	WhichFilename &cat %pathdot &cat $pathname-separator &cat %dothides %leaf
+	WhichFilename &pcat %pathdot &cat %dothides %leaf
 	;
 	newline
 	insert-string '$HOME'
-	WhichFilename &cat '~' &cat $pathname-separator &cat %dothides %leaf
-	WhichFilename &cat '~' &cat $pathname-separator &cat %dothides &cat 'vile' &cat $pathname-separator %leaf
+	WhichFilename &pcat '~' &cat %dothides %leaf
+	WhichFilename &pcat '~' &cat %dothides &pcat 'vile' %leaf
 	;
 	newline
 	insert-string '$startup-path'
@@ -83,21 +84,21 @@ store-procedure which-keywords major="MajorMode" "Prompt for, and display locati
 		~if &seq %path ''
 			~break
 		~endif
-		WhichFilename &cat %path &cat $pathname-separator %leaf
+		WhichFilename &pcat %path %leaf
 		setv %index=&add %index 1
 	~endwhile
 	;
 	unmark-buffer
 	setl readonly view
 	goto-beginning-of-file
-	setv $terse=%terse
 ~endm
 
 ~if &seq $progname "xvile"
 store-procedure which-menu "Display location of menu file"
-	~local %terse %path %leaf %suffix %pathdot %dothides %index %mybuffer %found %dotname
-	setv %terse=$terse
+	~local %path %leaf %suffix %pathdot %dothides %index %mybuffer %found %dotname
 	setv %found="no"
+	~local $report $terse
+	set report=0
 	set terse
 	;
 	setv %mybuffer='[Which Menufile]'
@@ -134,11 +135,11 @@ store-procedure which-menu "Display location of menu file"
 	; Look for $menu-file in the current and home-directories
 	setv %leaf=$menu-file
 	insert-string '$cwd'
-	WhichFilename &cat %pathdot &cat $pathname-separator %leaf
+	WhichFilename &pcat %pathdot %leaf
 	;
 	newline
 	insert-string '$HOME'
-	WhichFilename &cat '~' &cat $pathname-separator %leaf
+	WhichFilename &pcat '~' %leaf
 	;
 	; If dot hides a name, and $menu-file begins with a dot, we are done
 	; with it.  Use "vilemenu.rc" in the other places.  If it does not
@@ -158,13 +159,12 @@ store-procedure which-menu "Display location of menu file"
 		~if &seq %path ''
 			~break
 		~endif
-		WhichFilename &cat %path &cat $pathname-separator %leaf
+		WhichFilename &pcat %path %leaf
 		setv %index=&add %index 1
 	~endwhile
 	;
 	unmark-buffer
 	setl readonly view
 	goto-beginning-of-file
-	setv $terse=%terse
 ~endm
 ~endif

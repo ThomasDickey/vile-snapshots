@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.267 2003/11/13 00:35:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.269 2004/11/01 00:41:57 tom Exp $
  *
  */
 
@@ -135,8 +135,13 @@ old_namebst(BI_NODE * a)
 		free(TYPECAST(char, cmd->c_help));
 #endif
 #if OPT_MACRO_ARGS
-	    if (cmd->c_args)
+	    if (cmd->c_args) {
+		int n;
+		for (n = 0; cmd->c_args[n].pi_text != 0; ++n) {
+		    free(cmd->c_args[n].pi_text);
+		}
 		free(cmd->c_args);
+	    }
 #endif
 	    free(cmd);
 	}
@@ -428,7 +433,7 @@ key_to_bind(const CMDFUNC * kcmd)
 	outseq[0] = EOS;
 	if (vl_msgs)
 	    kbd_puts(kcod2prc(c, outseq));
-	hst_append_s(outseq, FALSE);
+	hst_append_s(outseq, FALSE, TRUE);
     } else {
 	mlforce("[Not a proper key-sequence]");
     }
@@ -913,7 +918,7 @@ prompt_describe_key(BINDINGS * bs)
     }
 
     (void) kcod2prc(c, outseq);
-    hst_append_s(outseq, FALSE);	/* cannot replay this, but can see it */
+    hst_append_s(outseq, FALSE, TRUE);	/* cannot replay this, but can see it */
 
     /* find the function bound to the key */
     if (!fnc2ntab(&temp, kcod2fnc(bs, c))) {

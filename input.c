@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.265 2004/06/11 10:08:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.267 2004/11/01 00:47:51 tom Exp $
  *
  */
 
@@ -1571,6 +1571,7 @@ kbd_reply(const char *prompt,	/* put this out first */
     int shell;
     int margin;
     size_t save_len;
+    MARK saveMK;		/* FIXME: may be lost by name-completion swbuffer */
 
     int quotef;			/* are we quoting the next char? */
     UINT backslashes;		/* are we quoting the next expandable char? */
@@ -1587,6 +1588,7 @@ kbd_reply(const char *prompt,	/* put this out first */
 	   options));
     TRACE(("clexec=%d, pushed_back=%d\n", clexec, pushed_back));
 
+    saveMK = MK;
     miniedit = FALSE;
     set_end_string(EOS);	/* ...in case we don't set it elsewhere */
     tb_unput(*extbuf);		/* FIXME: trim null */
@@ -1680,7 +1682,7 @@ kbd_reply(const char *prompt,	/* put this out first */
 	    execstr = pushback_ptr;
 #if	OPT_HISTORY
 	    if (!pushback_flg) {
-		hst_append(*extbuf, EOS);
+		hst_append(*extbuf, EOS, TRUE);
 	    }
 #endif
 	}
@@ -1690,6 +1692,7 @@ kbd_reply(const char *prompt,	/* put this out first */
 	TRACE(("reply1:(status=%d, length=%d):%s\n", status,
 	       (int) tb_length(*extbuf),
 	       tb_visible(*extbuf)));
+	MK = saveMK;
 	returnCode(status);
     }
 
@@ -1821,7 +1824,7 @@ kbd_reply(const char *prompt,	/* put this out first */
 		remove_backslashes(buf);	/* take out quoters */
 
 	    save_len = tb_length(buf);
-	    hst_append(buf, eolchar);
+	    hst_append(buf, eolchar, (options & KBD_EXPCMD));
 	    (void) tb_copy(extbuf, buf);
 	    status = (tb_length(*extbuf) != 0);
 
@@ -1943,7 +1946,8 @@ kbd_reply(const char *prompt,	/* put this out first */
     TRACE(("reply:(status=%d, length=%d):%s\n", status,
 	   (int) tb_length(*extbuf),
 	   tb_visible(*extbuf)));
-    tb_append(extbuf, EOS);	/* FIXME */
+    tb_append(extbuf, EOS);	/* FIXME: this doesn't allow nulls */
+    MK = saveMK;		/* FIXME: this should be in swbuffer? */
     returnCode(status);
 }
 

@@ -55,7 +55,7 @@
  *	not (yet) correspond to :-commands.  Before implementing, probably will
  *	have to make TESTC a settable mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.79 2004/06/16 22:54:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.80 2004/11/01 00:41:57 tom Exp $
  *
  */
 
@@ -343,7 +343,7 @@ hst_glue(int c)
 }
 
 void
-hst_append(TBUFF *cmd, int glue)
+hst_append(TBUFF *cmd, int glue, int can_extend)
 {
     static int skip = 1;	/* e.g., after "!" */
 
@@ -361,7 +361,7 @@ hst_append(TBUFF *cmd, int glue)
 	   tb_visible(cmd),
 	   glue));
     TRACE(("...MyText        :%d:%s\n", tb_length(MyText), tb_visible(MyText)));
-    if (willExtend(tb_args(cmd))
+    if (can_extend && willExtend(tb_args(cmd))
 	&& tb_length(cmd) > (size_t) skip) {
 	kbd_pushback(cmd, skip);
     }
@@ -372,10 +372,10 @@ hst_append(TBUFF *cmd, int glue)
 }
 
 void
-hst_append_s(char *cmd, int glue)
+hst_append_s(char *cmd, int glue, int can_extend)
 {
     TBUFF *p = tb_string(cmd);
-    hst_append(p, glue);
+    hst_append(p, glue, can_extend);
     tb_free(&p);
 }
 

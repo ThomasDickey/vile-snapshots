@@ -465,6 +465,8 @@ State Variables
 	$disinp         Boolean value which will prevent vile from
 			echoing ??????
 
+	$encoding	[READ ONLY] The character encoding, e.g., ISO-8859-1.
+
 	$end-of-cmd     Boolean which is true if user entered the cmd with a
 			carriage return (Some commands may expect to
 			receive additional arguments if their name is
@@ -554,6 +556,8 @@ State Variables
 
 	$llength        [READ ONLY] The length (in characters, not columns)
 			of the current line.
+
+	$locale		[READ ONLY] The character locale, e.g., en_US.
 
 	$majormode      [READ ONLY] Current majormode, if any.
 
@@ -1461,6 +1465,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.92 2004/06/15 22:12:03 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.93 2004/10/20 22:47:38 tom Exp $
 -----------------------------------
 

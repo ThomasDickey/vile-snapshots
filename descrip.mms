@@ -5,7 +5,7 @@
 # estruct.h to make sure the correct one is #defined as "1", and the others
 # all as "0".
 #
-# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.44 2003/07/04 16:52:03 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.45 2004/10/30 11:06:45 tom Exp $
 
 # Editor Configuration Note
 # -------------------------
@@ -43,6 +43,7 @@ MENUS  =
 .ENDIF # __XVILE__
 .ENDIF # __XMVILE__
 
+# can also use /Debug
 LINKFLAGS = /MAP=$(MMS$TARGET_NAME)/CROSS_REFERENCE/EXEC=$(MMS$TARGET_NAME).EXE
 
 INCS = []
@@ -251,7 +252,7 @@ word.obj :	nefunc.h
 	@- if f$search("*.opt") .nes. "" then purge *.opt
 
 # used /G_FLOAT with vaxcrtlg/share in vms_link.opt
-# can also use /Debug /Listing, /Show=All
+# can also use /Debug /Listing /Show=All
 CFLAGS =-
 	$(CC_OPTIONS)/Diagnostics /Define=("os_chosen",$(SCRDEF)$(CC_DEFS)) -
 	/Object=$@ /Include=($(INCS))

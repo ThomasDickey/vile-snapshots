@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.275 2004/05/29 14:37:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.280 2004/10/30 19:29:06 tom Exp $
  *
  */
 
@@ -857,6 +857,7 @@ static struct FSM fsm_tbl[] =
 #endif
 #if SYS_VMS
     {"record-format", fsm_recordformat_choices},
+    {"record-attrs", fsm_recordattrs_choices},
 #endif
 #if OPT_RECORDSEP_CHOICES
     {"recordseparator", fsm_recordsep_choices},
@@ -3080,12 +3081,15 @@ init_my_mode_list(void)
 static int
 extend_mode_list(int increment)
 {
-    int j = count_modes();
-    int k = increment + j + 1;
+    int j, k;
+
+    beginDisplay();
+
+    j = count_modes();
+    k = increment + j + 1;
 
     TRACE(("extend_mode_list from %d by %d\n", j, increment));
 
-    beginDisplay();
     if (my_mode_list == all_modes) {
 	my_mode_list = typeallocn(const char *, k);
 	memcpy(TYPECAST(char *, my_mode_list), all_modes, (j + 1) * sizeof(*my_mode_list));
@@ -3523,7 +3527,7 @@ remove_mode(int f GCC_UNUSED, int n GCC_UNUSED)
     return status;
 }
 
-#if !OPT_CASELESS
+#if !(OPT_CASELESS || OPT_VMS_PATH)
 /*
  * For the given majormode (by index into my_majormodes[]), return the
  * corresponding buffer mode value.
@@ -3574,12 +3578,21 @@ test_by_suffix(int n, BUFFER *bp)
 	char *filename;
 	char *suffix;
 	TBUFF *savename = 0;
+#if OPT_VMS_PATH
+	TBUFF *stripname = 0;
+#endif
 
-#if OPT_CASELESS || SYS_VMS
+#if OPT_CASELESS || OPT_VMS_PATH
 	ignorecase = TRUE;
 #else
 	ignorecase = get_sm_b_val(n, MDIGNCASE);
 #endif
+#if OPT_VMS_PATH
+	tb_scopy(&stripname, pathname);
+	pathname = tb_values(stripname);
+	strip_version(pathname);
+#endif
+
 	if (((exp = get_sm_rexp(n, VAL_STRIPSUFFIX)) != 0
 	     || (exp = b_val_rexp(bp, VAL_STRIPSUFFIX)->reg) != 0)
 	    && regexec(exp, pathname, (char *) 0, 0, -1)) {
@@ -3590,6 +3603,12 @@ test_by_suffix(int n, BUFFER *bp)
 	}
 	filename = pathleaf(pathname);
 	suffix = strchr(filename, '.');
+#if OPT_VMS_PATH
+	if (suffix != 0 && suffix[1] == 0) {
+	    *suffix = 0;
+	    suffix = 0;
+	}
+#endif
 
 	if ((exp = get_mm_rexp(n, MVAL_MODE_PATHNAME)) != 0
 	    && regexec(exp, pathname, (char *) 0, 0, -1)) {
@@ -3607,7 +3626,7 @@ test_by_suffix(int n, BUFFER *bp)
 	} else if (suffix != 0
 		   && (exp = get_mm_rexp(n, MVAL_MODE_SUFFIXES)) != 0
 		   && regexec(exp, suffix, (char *) 0, 0, -1)) {
-	    TRACE(("test_by_suffixex(%s) %s %s\n",
+	    TRACE(("test_by_suffixes(%s) %s %s\n",
 		   pathname,
 		   suffix,
 		   my_majormodes[n].shortname));
@@ -3615,6 +3634,9 @@ test_by_suffix(int n, BUFFER *bp)
 	}
 	ignorecase = savecase;
 	tb_free(&savename);
+#if OPT_VMS_PATH
+	tb_free(&stripname);
+#endif
     }
     return result;
 }
@@ -3642,7 +3664,7 @@ test_by_preamble(int n, BUFFER *bp GCC_UNUSED, LINE *lp)
 	&& my_majormodes[n].flag) {
 	regexp *exp = get_mm_rexp(n, MVAL_PREAMBLE);
 	int savecase = ignorecase;
-#if OPT_CASELESS || SYS_VMS
+#if OPT_CASELESS || OPT_VMS_PATH
 	ignorecase = TRUE;
 #else
 	ignorecase = get_sm_b_val(n, MDIGNCASE);
@@ -4306,6 +4328,12 @@ const char *
 vms_record_format(int code)
 {
     return choice_to_name(fsm_recordformat_choices, code);
+}
+
+const char *
+vms_record_attrs(int code)
+{
+    return choice_to_name(fsm_recordattrs_choices, code);
 }
 #endif
 

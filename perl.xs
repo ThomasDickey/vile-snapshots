@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.92 2004/06/19 16:44:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.93 2004/11/01 01:08:07 tom Exp $
  */
 
 /*#
@@ -1064,8 +1064,6 @@ perl_init(void)
     char *embedding[] = { "", "-e", "0" };
     char *bootargs[]  = { "Vile", NULL };
     SV   *svminibuf;
-    AV   *av;
-    SV   *sv;
     char  temp[NFILEN];
     char *vile_path;
     static char svcurbuf_name[] = "Vile::current_buffer";
