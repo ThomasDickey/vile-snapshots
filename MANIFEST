@@ -1,10 +1,11 @@
-MANIFEST for vile, version v7_0
+MANIFEST for vile, version v7_0a
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
 CHANGES.R3                      Vile 3.0 change-log
 CHANGES.R4                      Vile 4.0 change-log
 CHANGES.R5                      Vile 5.0 change log
+CHANGES.R6                      Vile 6.0 change-log
 COPYING                         GPL copyright (for 'configure')
 INSTALL                         installation instructions for VILE
 README                          overview of VILE (read first)

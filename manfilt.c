@@ -46,16 +46,15 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/manfilt.c,v 1.18 1997/02/09 17:53:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/manfilt.c,v 1.19 1997/03/14 10:38:39 tom Exp $
  *
  */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
-
-#ifndef HAVE_STDLIB_H
-# define HAVE_STDLIB_H 0
+#else
+/* assume ANSI C */
+#define HAVE_STDLIB_H 1
 #endif
 
 #include <sys/types.h>		/* sometimes needed to get size_t */

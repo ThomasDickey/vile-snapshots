@@ -5,6 +5,8 @@
  * Modifications:  kevin buettner and paul fox  2/95
  * 		string literal ("Literal") support --  ben stoltz
  * 
+ * $Header: /users/source/archives/vile.vcs/RCS/c-filt.c,v 1.2 1997/03/14 10:37:33 tom Exp $
+ *
  * Features:
  * 	- Reads the keyword file ".vile.keywords" from the home directory.
  *	  Keyword file consists lines "keyword:attribute" where
@@ -82,10 +84,10 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
-
-#ifndef HAVE_STDLIB_H
-# define HAVE_STDLIB_H 0
+#else
+/* assume ANSI C */
+# define HAVE_STDLIB_H 1
+# define HAVE_STRING_H 1
 #endif
 
 #include <sys/types.h>		/* sometimes needed to get size_t */
