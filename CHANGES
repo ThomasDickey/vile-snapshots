@@ -1,4 +1,18 @@
-Changes for vile 9.3 (released ??? ??? ?? 2000)
+Changes for vile 9.3 (released Tue Jun 25 2002)
+
+ 20020625 (ze)
+	> Clark Morgan:
+	+ more trouble shooting tips for syntax coloring to vile.hlp
+	+ update README.PC to cover platforms that have been tested.
+	+ update README file to cover 9.3 changes.
+	> Gary Jennejohn <garyj@jennejohn.org>:
+	+ add ".S" to default C suffixes on Unix.  The difference between ".s"
+	  and ".S" is that the latter may have C-preprocessor statements.
+	> Tom Dickey:
+	+ update list of macros in makefile.in and makefile.wnt to include
+	  gnugpg.rc, search.rc and shifts.rc
+	+ add macro loaderrs.rc to illustrate how to extend the built-in
+	  error expressions (request by Neil Milne <ngm@orange.net>).
 
  20020521 (zd)
 	> Tom Dickey:

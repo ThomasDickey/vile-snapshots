@@ -1373,7 +1373,8 @@ Editor modes
 	filtername (fn)  Specify a syntax-highlighting filter, for a given
 		majormode.  This is used in the filters.rc file, to handle
 		special cases where different sets of keywords are applicable
-		to a common syntax, e.g., C, C++ and Java.  (B)
+		to a common syntax, e.g., C, C++ and Java.  End users
+		will not typically modify this mode. (B)
 
 	find-cfg  Configures the builtin find feature, which is available
 		on win32 and Unix hosts.  For further details, refer to the
@@ -3893,7 +3894,8 @@ Syntax coloring
 	editor detects no active input during a user-configurable interval.
 	If this sounds appealing, add the following to your startup file:
 
-	    set autocolor=2000   ; change to suit individual tastes
+	    ; change autocolor mode value to suit individual tastes
+	    set autocolor=2000
 	    setv $autocolor-hook HighlightFilterMsg
 
 	These settings initiate an automatic syntax coloring check whenever
@@ -3997,6 +3999,21 @@ Syntax coloring
 
 	  If the filter can't find the required keyword file(s), syntax
 	  coloring configuration is incomplete.
+
+	- Ensure these environent vars are properly initialized:
+
+		VILE_STARTUP_PATH
+		VILE_LIBDIR_PATH
+
+	- Your startup file should include these lines:
+
+		source "filters.rc"      ; quotes matter on win32 hosts
+		setv $autocolor-hook HighlightFilterMsg
+		setv $read-hook HighlightFilterMsg
+		set autocolor=2000
+
+	- Some users have made the mistake of explicitly specifying
+	  a filter via the filtername mode.  Don't do that.
 
 	- If everything looks legit, but coloring still doesn't work, try
 	  adding COLORDIR to your PATH (required by some shells, but not
@@ -5766,4 +5783,4 @@ Problems
 
 Copyright 1995-2002 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.548 2002/05/11 01:01:34 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.549 2002/06/25 11:31:34 cmorgan Exp $

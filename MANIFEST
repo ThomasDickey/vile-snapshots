@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_2zd
+MANIFEST for vile, version v9_2ze
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -288,6 +288,7 @@ macros/color-ls.rc              sample macro: read output of "color ls"
 macros/dates.rc                 demo of &date function
 macros/digraphs.rc              macros for inserting digraphs
 macros/gnugpg.rc                GNU gpg macros
+macros/loaderrs.rc              macro to perform load-error-expressions
 macros/manpage.rc               macros for man-page filtering/display
 macros/palettes.rc              sample color schemes
 macros/pictmode.rc              macros to support "picture-mode" editing

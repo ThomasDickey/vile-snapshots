@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.478 2002/05/13 23:41:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.479 2002/06/25 10:24:40 garyj Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -960,7 +960,7 @@ no_memory(const char *s)
 #define DFT_CSUFFIX "\\.\\(\\([chis]\\)\\|cc\\|cpp\\|cxx\\|hxx\\)$"
 #endif
 #ifndef DFT_CSUFFIX		/* UNIX or OS2/HPFS (mixed-case names) */
-#define DFT_CSUFFIX "\\.\\(\\([Cchis]\\)\\|CC\\|cc\\|cpp\\|cxx\\|hxx\\|scm\\)$"
+#define DFT_CSUFFIX "\\.\\(\\([CchisS]\\)\\|CC\\|cc\\|cpp\\|cxx\\|hxx\\|scm\\)$"
 #endif
 
 #define DFT_FENCE_CHARS "{}()[]"

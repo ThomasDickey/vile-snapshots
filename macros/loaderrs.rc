@@ -1,0 +1,40 @@
+; $Header: /users/source/archives/vile.vcs/macros/RCS/loaderrs.rc,v 1.1 2002/06/25 11:20:39 tom Exp $
+; A macro that prepends user's error-patterns to [Error Expressions].  The
+; user-defined patterns are in a file ".vile-errs" or "vile-errs".  The macro
+; binds ^X^X to LoadErrorExprs temporarily, then the first time it is run,
+; ^X^X, it builds the combined list of patterns and resets the binding to the
+; normal one.
+
+store-procedure LoadErrorExprs
+	~local $buffer-hook
+	unsetv $buffer-hook
+	~local %file
+	setv %file=&lookup r+home+startup '.vile-errs'
+	~if &seq %file ''
+		setv %file=&lookup r+startup 'vile-errs'
+	~endif
+	~if &not &seq %file ''
+		~local %oldbuffer %imply
+		setv %oldbuffer=$cbufname
+		setv %imply=$implybuffer
+		set noimplybuffer
+		; make sure it exists
+		compile-error-expressions
+		; kill the current contents
+		kill-buffer '[Error Expressions]'
+		; create it, so we can modify it
+		compile-error-expressions
+		edit-file '[Error Expressions]'
+		unsetl view
+		goto-beginning-of-file
+		0 insert-file %file
+		unmark
+		setl view
+		buffer %oldbuffer
+		compile-error-expressions
+		setv $implybuffer=%imply
+		bind-key find-next-error ^X-^X
+		~hidden find-next-error
+	~endif
+~endm
+bind-key LoadErrorExprs ^X-^X
