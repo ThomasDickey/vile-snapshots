@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.130 2000/11/11 01:49:13 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.132 2001/02/15 23:17:18 tom Exp $
  *
  */
 
@@ -177,7 +177,7 @@ attach_attrib(BUFFER *bp, AREGION * arp)
 	    if (wp->w_bufp == bp)
 		wp->w_flag |= WFHARD;
 	}
-	arp->ar_region.r_attr_id = (unsigned short) assign_attr_id();
+	arp->ar_region.r_attr_id = (USHORT) assign_attr_id();
     }
 }
 
@@ -834,7 +834,7 @@ on_mouse_click(int button, int y, int x)
 		do_sweep(SORTOFTRUE);
 		(void) sel_begin();
 		(void) sel_setshape(EXACT);
-		status = setcursor(y, x);
+		(void) setcursor(y, x);
 		status = multimotion(TRUE, 1);
 		TRACE(("MOUSE end multimotion after button%d-up\n", button));
 		if (status == SEL_PASTE)
@@ -872,7 +872,7 @@ int
 multimotion(int f, int n)
 {
     const CMDFUNC *cfp;
-    int s, c, waserr;
+    int status, c, waserr;
     int pasting;
     REGIONSHAPE shape;
     MARK savedot;
@@ -940,7 +940,7 @@ multimotion(int f, int n)
     while (doingsweep) {
 
 	/* Fix up the screen    */
-	s = update(FALSE);
+	(void) update(FALSE);
 
 	/* get the next command from the keyboard */
 	c = kbd_seq();
@@ -968,8 +968,8 @@ multimotion(int f, int n)
 		   line_no(curbp, MK.l), MK.o));
 	    testdot = DOT;
 
-	    s = execute(cfp, f, n);
-	    switch (s) {
+	    status = execute(cfp, f, n);
+	    switch (status) {
 	    case SEL_RELEASE:
 		TRACE(("MOUSE SEL_RELEASE %d.%d\n",
 		       line_no(curbp, DOT.l), DOT.o));
@@ -1052,16 +1052,16 @@ multimotion(int f, int n)
 	else
 	    DOT.o += 1;
     }
-    s = yankregion();
+    status = yankregion();
     DOT = savedot;
     MK = savemark;
 
     sweephack = wassweephack = FALSE;
 
-    if (s == TRUE && pasting)
-	s = SEL_PASTE;
+    if (status == TRUE && pasting)
+	status = SEL_PASTE;
 
-    return s;
+    return status;
 }
 
 /*ARGSUSED*/
@@ -1145,7 +1145,7 @@ attributeregion(void)
 
 	    purge_line_attribs(curbp, &region, regionshape, owner);
 
-	    for (p = curbp->b_attribs, q = 0; p != 0; p = q) {
+	    for (p = curbp->b_attribs; p != 0; p = q) {
 		L_NUM pls, ple;
 		C_NUM pos, poe;
 
@@ -1261,12 +1261,12 @@ attributeregion_in_region(REGION * rp,
 int
 operselect(int f, int n)
 {
-    int s;
+    int status;
     opcmd = OPOTHER;
     doingopselect = TRUE;
-    s = vile_op(f, n, selectregion, "Select");
+    status = vile_op(f, n, selectregion, "Select");
     doingopselect = FALSE;
-    return s;
+    return status;
 }
 
 int
@@ -1797,7 +1797,7 @@ find_line_attr_idx(VIDEO_ATTR vattr)
 {
     int hash = 0;
     int start;
-    unsigned i;
+    UINT i;
     VIDEO_ATTR v;
 
     INIT_LINE_ATTR_TBL();
@@ -1840,7 +1840,7 @@ find_line_attr_idx(VIDEO_ATTR vattr)
 void
 lattr_shift(BUFFER *bp GCC_UNUSED, LINEPTR lp, int doto, int shift)
 {
-    unsigned char *lap;
+    UCHAR *lap;
     if (!lp->l_attrs)
 	return;
     lap = lp->l_attrs;
@@ -1854,7 +1854,7 @@ lattr_shift(BUFFER *bp GCC_UNUSED, LINEPTR lp, int doto, int shift)
 	    if (lap[f] != 1) {
 		int newlen;
 		newlen = len + shift - (t - f);
-		lap = castrealloc(unsigned char, lap, newlen + 1);
+		lap = castrealloc(UCHAR, lap, newlen + 1);
 		lp->l_attrs = lap;
 		lap[newlen] = 0;
 		t = newlen - 1;
@@ -1935,7 +1935,7 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
 	int len = strlen((char *) (lp->l_attrs));
 	/* Make sure the line attribute is long enough */
 	if (len < rp->r_end.o) {
-	    lp->l_attrs = castrealloc(unsigned char,
+	    lp->l_attrs = castrealloc(UCHAR,
 				      lp->l_attrs, rp->r_end.o + 1);
 	    if (lp->l_attrs == NULL)
 		return FALSE;	/* Let someone else deal with the
@@ -1952,7 +1952,7 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
 				   attributes */
     } else {
 	/* Must allocate and initialize memory for the line attributes */
-	lp->l_attrs = castalloc(unsigned char, llength(lp) + 1);
+	lp->l_attrs = castalloc(UCHAR, llength(lp) + 1);
 	lp->l_attrs[llength(lp)] = 0;
 	for (i = llength(lp) - 1; i >= 0; i--)
 	    lp->l_attrs[i] = 1;

@@ -8,7 +8,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.76 1999/12/24 01:08:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.77 2001/02/15 22:51:20 tom Exp $
  *
  */
 
@@ -159,7 +159,7 @@ match_complex(TRACEARG(int group) LINE *lp, struct VAL *vals)
 static int
 match_simple(void)
 {
-	C_NUM first = 0;
+	C_NUM first;
 	C_NUM last = llength(DOT.l);
 
 	TRACE(("match_simple %d:%s\n", line_no(curbp, DOT.l), lp_visible(DOT.l)));
@@ -340,7 +340,7 @@ static int
 find_complex(int sdir, int *newkey)
 {
 	int rc = FALSE;
-	int key = CPP_UNKNOWN;
+	int key;
 	int group = -1;
 	MARK	oldpos, oldpre;
 	struct VAL *vals;
@@ -382,7 +382,7 @@ static int
 find_one_complex(int sdir, int level, int group, int *newkey)
 {
 	int s = FALSE;
-	int key = CPP_UNKNOWN;
+	int key;
 	MARK	oldpos, oldpre;
 	struct VAL *vals = get_submode_vals(curbp, group);
 

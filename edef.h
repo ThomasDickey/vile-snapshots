@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.277 2001/01/03 23:16:04 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.278 2001/02/14 01:38:23 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -170,9 +170,9 @@ decl_init( int sgarbf, TRUE );		/* TRUE if screen is garbage	*/
 decl_uninit( int clexec	);		/* command line execution flag	*/
 decl_uninit( int clhide );		/* hide results of this command	*/
 decl_uninit( int miniedit );		/* editing minibuffer with vi-cmds */
-decl_uninit( int no_msgs);		/* suppress command output?	*/
+decl_init( int vl_msgs, TRUE);		/* suppress command output?	*/
 decl_uninit( int no_errs);		/* suppress bells/alarms?	*/
-decl_uninit( int no_echo);		/* echo user input 		*/
+decl_init( int vl_echo, TRUE);		/* echo user input 		*/
 decl_init( int in_autocolor, FALSE );	/* Autocoloring			*/
 
 decl_uninit( int vtrow );		/* Row location of SW cursor	*/

@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.230 2000/11/15 10:54:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.232 2001/02/15 22:58:04 tom Exp $
  *
  */
 
@@ -810,7 +810,7 @@ showChar(int c)
 {
 	int	save_expand;
 
-	if (no_echo)
+	if (!vl_echo)
 		return;
 
 	save_expand = kbd_expand;
@@ -822,7 +822,7 @@ showChar(int c)
 static void
 show1Char(int c)
 {
-	if (no_echo)
+	if (!vl_echo)
 		return;
 
 	showChar(c);
@@ -979,7 +979,7 @@ kbd_kill_response(TBUFF * buffer, unsigned * position, int c)
 		if (c != killc && c != wkillc)
 			break;
 	}
-	if (!no_echo)
+	if (vl_echo)
 		kbd_flush();
 
 	*position = cpos;
@@ -1030,7 +1030,7 @@ KBD_OPTIONS	options)
 	for (k = 0; k < tb_length(*dst); k++) {
 		showChar(tb_values(*dst)[k]);
 	}
-	if (!no_echo)
+	if (vl_echo)
 		kbd_flush();
 	return tb_length(*dst);
 }
@@ -1126,11 +1126,11 @@ char *
 user_reply(const char *prompt, const char *dft_val)
 {
 	static TBUFF *replbuf;
-	int save_no_msgs;
+	int save_vl_msgs;
 	int save_clexec;
 	int status;
 
-	save_no_msgs = no_msgs; no_msgs = FALSE;
+	save_vl_msgs = vl_msgs; vl_msgs = TRUE;
 	save_clexec = clexec; clexec = FALSE;
 
 	if (dft_val != error_val) {
@@ -1143,7 +1143,7 @@ user_reply(const char *prompt, const char *dft_val)
 			KBD_EXPAND|KBD_QUOTES,
 			no_completion);
 
-	no_msgs = save_no_msgs;
+	vl_msgs = save_vl_msgs;
 	clexec = save_clexec;
 
 	if (status == ABORT)
@@ -1310,7 +1310,7 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 	} else {
 		LINE *lp = DOT.l;
 		miniedit = FALSE;
-		if (no_echo) {
+		if (!vl_echo) {
 			char tmp = (char) c;
 			tb_bappend(buf, &tmp, 1);
 		} else if (llength(lp) >= margin) {
@@ -2045,7 +2045,7 @@ int	n,			/* # of times to repeat */
 int	macnum,			/* register to execute */
 ITBUFF *ptr)			/* data to interpret */
 {
-	register KSTACK *sp = 0;
+	KSTACK	*sp;
 	ITBUFF  *tp = 0;
 
 	if (interrupted())

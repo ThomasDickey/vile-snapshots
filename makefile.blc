@@ -1,13 +1,43 @@
 #
 # makefile for vile on WIN32 using Borland C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.13 2000/10/05 10:58:56 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.16 2001/02/18 02:01:38 tom Exp $
 #
+# Tested with
+#	Borland C++ 5.5.1
+#	make 5.2
 #
+.autodepend
+
+ICON = vile
+
+TARGET = vile
+SCREEN = ntconio
+DISP_DEF = -DDISP_NTCONS=1
+LDFLAGS = -v -tWM -tWC
+EXTRA =
+RESFILE =
+
+# Use
+#	make -Dwinvile
+!ifdef  winvile
+TARGET = winvile
+SCREEN = ntwinio
+DISP_DEF = -DDISP_NTWIN=1
+LDFLAGS = -v -tWM -tW
+RESFILE = $(TARGET).res
+!endif
+
+CFLAGS = -v -tWM -w-par -DWIN32_LEAN_AND_MEAN -Dscrn_chosen $(DISP_DEF)
+
+# Use
+#	make -Dtrace
+!ifdef	trace
+CFLAGS = $(CFLAGS) -DOPT_TRACE=1
+EXTRA = $(EXTRA) trace.obj
+!endif
 
 CC = bcc32
-CFLAGS = -v -WC -w-par -DWIN32_LEAN_AND_MEAN -Dscrn_chosen
-LDFLAGS = -v -WC
 
 # these are normal editable headers
 HDRS = estruct.h edef.h proto.h dirstuff.h
@@ -24,7 +54,7 @@ BUILTHDRS = \
 	neproto.h \
 	nevars.h
 
-SRC = 	main.c ntconio.c basic.c bind.c btree.c buffer.c \
+SRC = 	main.c $(SCREEN).c basic.c bind.c btree.c buffer.c \
 	csrch.c display.c eval.c exec.c externs.c \
 	fences.c file.c filec.c \
 	fileio.c finderr.c glob.c globals.c history.c \
@@ -33,10 +63,10 @@ SRC = 	main.c ntconio.c basic.c bind.c btree.c buffer.c \
 	path.c random.c regexp.c \
 	region.c search.c select.c spawn.c statevar.c \
 	tags.c tbuff.c termio.c ucrypt.c undo.c \
-	version.c w32cbrd.c w32misc.c w32oo.cpp w32pipe.c \
+	version.c w32cmd.c w32cbrd.c w32misc.c w32oo.cpp w32pipe.c \
 	window.c word.c wordmov.c map.c
 
-OBJ = 	main.obj ntconio.obj basic.obj bind.obj btree.obj buffer.obj \
+OBJ = 	main.obj $(SCREEN).obj basic.obj bind.obj btree.obj buffer.obj \
       	csrch.obj display.obj eval.obj exec.obj externs.obj \
 	fences.obj file.obj filec.obj \
 	fileio.obj finderr.obj glob.obj globals.obj history.obj \
@@ -45,8 +75,8 @@ OBJ = 	main.obj ntconio.obj basic.obj bind.obj btree.obj buffer.obj \
 	path.obj random.obj regexp.obj \
 	region.obj search.obj select.obj spawn.obj statevar.obj \
 	tags.obj tbuff.obj termio.obj ucrypt.obj undo.obj \
-	version.obj w32cbrd.obj w32misc.obj w32oo.obj w32pipe.obj \
-	window.obj word.obj wordmov.obj map.obj
+	version.obj w32cmd.obj w32cbrd.obj w32misc.obj w32oo.obj w32pipe.obj \
+	window.obj word.obj wordmov.obj map.obj $(EXTRA)
 
 .c.obj:
 	$(CC) $(CFLAGS) -c $<
@@ -54,10 +84,13 @@ OBJ = 	main.obj ntconio.obj basic.obj bind.obj btree.obj buffer.obj \
 .cpp.obj:
 	$(CC) $(CFLAGS) -c $<
 
-vile.exe: 	$(BUILTHDRS) $(OBJ)
-	$(CC) $(LDFLAGS) -evile.exe @&&!
+$(TARGET).exe: 	$(BUILTHDRS) $(OBJ) $(RESFILE)
+	$(CC) $(LDFLAGS) -e$(TARGET).exe @&&!
 $(OBJ)
 !
+!ifdef winvile
+	brc32 $(RESFILE)
+!endif
 
 $(OBJ):	estruct.h
 
@@ -80,9 +113,13 @@ mktbls.exe:  mktbls.c
 	$(CC) $(CFLAGS) mktbls.c
 
 clean:
-	del mktbls.exe
-	del *.obj
-	del ne*.h
+	- del *.bak
+	- del *.map
+	- del *.tds
+	- del *.res
+	- del *.exe
+	- del *.obj
+	- del ne*.h
 
 bind.obj:	nefunc.h
 eval.obj:	nevars.h
@@ -102,3 +139,6 @@ spawn.obj:	nefunc.h
 termio.obj:	nefunc.h
 version.obj:	patchlev.h
 word.obj:	nefunc.h
+
+winvile.res :	winvile.rc winvile.h
+	$(RC) -32 -I$(MAKEDIR)\..\include -DVILE_ICON="$(ICON).ico" -Iicons winvile.rc

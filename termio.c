@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.190 2001/01/19 01:56:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.191 2001/02/13 23:57:56 tom Exp $
  *
  */
 
@@ -261,7 +261,7 @@ ttopen(void)
 	 * case-conversion, and allow BREAK
 	 */
 	ntermios.c_iflag = BRKINT | (otermios.c_iflag &
-		(unsigned long) ~(INLCR | IGNCR | ICRNL
+		(ULONG) ~(INLCR | IGNCR | ICRNL
 #ifdef IUCLC
 					| IUCLC
 #endif
@@ -677,7 +677,7 @@ static struct pollfd watch_fds[256];
 static int watch_max;
 #else
 #ifdef __BEOS__
-static unsigned char watch_fds[256];
+static UCHAR watch_fds[256];
 static int watch_max;
 #endif /* __BEOS__ */
 #endif /* USE_POLL */
@@ -825,7 +825,7 @@ ttgetc(void)
 		return -1;
 	} else if (status > 0) { /* process descriptors */
 	    for (fd = watchfd_maxfd; fd > 0; fd--) {
-		if (FD_ISSET(fd, &read_fds) 
+		if (FD_ISSET(fd, &read_fds)
 		    || FD_ISSET(fd, &write_fds)
 		    || FD_ISSET(fd, &except_fds))
 		    dowatchcallback(fd);
@@ -1016,8 +1016,8 @@ ttmiscinit(void)
 #include	<tt2def.h>
 
 typedef struct	{
-	unsigned short int status;	/* I/O completion status */
-	unsigned short int count;	/* byte transfer count	 */
+	USHORT status;			/* I/O completion status */
+	USHORT count;			/* byte transfer count	 */
 	int dev_dep_data;		/* device-dependent data */
 	} QIO_SB;			/* This is a QIO I/O Status Block */
 

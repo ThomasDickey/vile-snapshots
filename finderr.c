@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2000 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.96 2000/11/04 18:25:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.102 2001/02/17 21:40:50 tom Exp $
  *
  */
 
@@ -15,12 +15,14 @@
 
 #if OPT_FINDERR
 
-#define W_VERB  0
-#define W_FILE  1
-#define W_LINE  2
-#define W_COLM  3
-#define W_TEXT  4
-#define W_LAST	5
+typedef enum {
+    W_VERB = 0
+    ,W_FILE
+    ,W_LINE
+    ,W_COLM
+    ,W_TEXT
+    ,W_LAST
+} ErrTokens;
 
 typedef struct {
     char *exp_text;
@@ -39,8 +41,8 @@ static TBUFF *fe_file;
 static TBUFF *fe_text;
 static int cC_base;
 static int lL_base;
-static int fe_colm;
-static int fe_line;
+static long fe_colm;
+static long fe_line;
 
 /*
  * This is the list of predefined regular expressions for the error
@@ -55,6 +57,7 @@ static int fe_line;
  *      %F - range of characters to match filename.
  *      %B - range of characters to match scratch-buffer.
  *      %L - line number (this has to be an integer)
+ *      %C - column number (this has to be an integer)
  *      %T - text to display in the message line. If no field is given,
  *              the error finder will display the entire line from
  *              the error-buffer.
@@ -76,11 +79,8 @@ static const
 char *const predefined[] =
 {
     "^\"%[^\" \t]\", line %L:%T",	/* various C compilers */
-    "^%[^: \t]:\\s*%L:\\s*%T",	/* "grep -n" */
-#if OPT_MSDOS_PATH
-    "^%F:\\s*%L:\\s*%T",	/* "grep -n", handles */
-					/* dos drive letter   */
-#endif
+    "^%F:\\s*%L:\\s*%T",	/* "grep -n" */
+
 #if SYS_VMS
     "[ \t]*At line number %L in %[^;].*",	/* crude support for DEC C
 						 * compilers. Unfortunately,
@@ -88,6 +88,7 @@ char *const predefined[] =
 						 * text on previous _lines_.
 						 */
 #endif
+
 #if SYS_APOLLO
     " Line %L of \"%[^\" \t]\"",	/* C compiler */
 #endif
@@ -96,36 +97,40 @@ char *const predefined[] =
     "  ::  %[^( \t](%L)",	/* bsd lint) */
     "used[ \t]*([ \t]%[^(](%L)[ \t]*)",		/* bsd lint) */
 #endif
+
     /* ultrix, sgi, osf1 (alpha only?)  use:                            */
     /*      compiler-name: Error: filename, line line-number ...        */
     "[^ ]\\+ [^ ]\\+ \"%[^, \t\"]\", line %L",
     "[^ ]\\+ [^ ]\\+ %[^, \t], line %L",
     "[^ ]\\+ \"%[^\"]\", line %L",	/* HP/UX C compiler */
     "File = %F, Line = %L",	/* SGI MIPSpro 7.3 compilers    */
+    "^\"%F\":line %L:%T",	/* Solaris lex */
 #if defined(_AIX)
-    "^\"%[^\" \t]\", line %L\\.[0-9]\\+:%T",	/* AIX C compilers */
+    "^\"%[^\" \t]\", line %L\\.%C:%T",	/* AIX C compilers */
 #endif
 #if defined(clipper) || defined(__clipper__)
-    "^\"%[^\" \t]\", line %L (col. [0-9]\\+):%T",	/* CLIX C compiler */
+    "^\"%[^\" \t]\", line %L (col. %C\\+):%T",	/* CLIX C compiler */
 #endif
-    "^%[^(](%L)[ \t]\\?:%T",	/* weblint */
 
+    "^%[^(](%L)[ \t]\\?:%T",	/* weblint */
 #if SYS_UNIX && SYSTEM_HAS_LINT_PROG
     /* sys5 lint */
     "^    [^ \t]\\+[ \t]\\+%[^(](%L)$",
     "^    [^(].*( arg %L ) \t%[^( \t](%L) :: [^(]\\+(%L))",
     "^    .* :: %[^(](%L)",
 #endif
+
 #if CC_CSETPP
     "^%[^(](%L:%C) : %T",
-#endif
-#if CC_TURBO
-    "^Error %[^ ] %L:",
-    "^Warning %[^ ] %L:",
 #endif
 #if CC_WATCOM
     "^%[^(](%L): %T",
 #endif
+
+    /* Borland C++ */
+    "^Error\\( [^ ]\\+\\)\\? %F %L: %T",
+    "^Warning\\( [^ ]\\+\\)\\? %F %L: %T",
+
     "^%B:%L:%T",		/* "pp" in scratch buf */
     "^[^:]\\+: %V directory `%[^']'",	/* GNU make */
     "%T at %F line %L.*",	/* perl 5 */
@@ -148,6 +153,53 @@ const char *
 get_febuff(void)
 {
     return febuff;
+}
+
+static const char *
+get_token_name(ErrTokens n)
+{
+    char *result;
+
+    switch (n) {
+    case W_VERB:
+	result = "verb";
+	break;
+    case W_FILE:
+	result = "filename";
+	break;
+    case W_LINE:
+	result = "line";
+	break;
+    case W_COLM:
+	result = "column";
+	break;
+    case W_TEXT:
+	result = "text";
+	break;
+    default:
+	result = "unknown";
+	break;
+    }
+    return result;
+}
+
+static int
+marks_in(const char *expr)
+{
+    int result = 0;
+    int escaped = FALSE;
+
+    while (*expr != EOS) {
+	if (escaped) {
+	    if (*expr == LPAREN)
+		result++;
+	    escaped = FALSE;
+	} else if (*expr == BACKSLASH) {
+	    escaped = TRUE;
+	}
+	expr++;
+    }
+    return result;
 }
 
 /*
@@ -191,6 +243,8 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 		APP_C;
 		if (++src == last)
 		    break;
+		if (*src == LPAREN)	/* a group we don't own... */
+		    word++;
 		APP_C;
 	    } else if (*src == '%') {
 		mark = -1;
@@ -203,6 +257,7 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 		    APP_T(tb_values(filename_expr));
 		    APP_S(after);
 		    errp->words[W_FILE] = ++word;
+		    word += marks_in(tb_values(filename_expr));
 		    break;
 		case 'B':
 		    APP_S("\\(\\[[^:]\\+]\\)");
@@ -281,6 +336,12 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 	}
     }
     if (temp != 0) {
+#if OPT_TRACE
+	TRACE(("COMPILE %s\n", temp));
+	for (word = 0; word < W_LAST; word++)
+	    TRACE(("word[%d] = %d (%s)\n", word, errp->words[word],
+		   get_token_name(word)));
+#endif
 	TPRINTF(("-> %s\n", temp));
 	exp = regcomp(temp, TRUE);
     }
@@ -379,20 +440,39 @@ next_pattern(ALLOC_T count)
 /*
  * Decode the matched ERR_PATTERN
  */
-static void
+static int
 decode_exp(ERR_PATTERN * exp)
 {
+    /* *INDENT-OFF* */
+    static struct {
+	ErrTokens code;
+	TBUFF **buffer;
+	long *number;
+    } lookup[] = {
+	{ W_VERB, &fe_verb, 0 },
+	{ W_FILE, &fe_file, 0 },
+	{ W_LINE, 0, &fe_line },
+	{ W_COLM, 0, &fe_colm },
+	{ W_TEXT, &fe_text, 0 },
+    };
+    /* *INDENT-ON* */
+
     regexp *p = exp->exp_comp;
-    int n, m;
+    int j, n;
+    int failed = FALSE;
     TBUFF *temp;
 
-    tb_free(&fe_verb);
-    tb_free(&fe_file);
-    tb_free(&fe_text);
-    fe_colm = cC_base;
-    fe_line = 0;
+    TRACE(("decode_exp{%s}\n", exp->exp_text));
 
-    n = 0;
+    for (j = 0; j < W_LAST; j++) {
+	if (lookup[j].buffer != 0) {
+	    tb_free(lookup[j].buffer);
+	} else {
+	    *(lookup[j].number) = 0;
+	}
+    }
+    fe_colm = cC_base;
+
     /*
      * Count the atoms separately from the loop indices because when
      * we do
@@ -401,31 +481,58 @@ decode_exp(ERR_PATTERN * exp)
      * for the nested atom in the %F expression:
      *          \([a-zA-Z]:\)
      */
-    for (n = m = 1; (n < NSUBEXP); n++) {
+    for (n = 1; !failed && (n < NSUBEXP); n++) {
 	if (p->startp[n] == 0 || p->endp[n] == 0)
 	    continue;		/* discount nested atom */
 	temp = 0;
 	if (tb_bappend(&temp,
 		       p->startp[n],
 		       (ALLOC_T) (p->endp[n] - p->startp[n])) == 0
-	    || tb_append(&temp, EOS) == 0)
-	    return;
-
-	if (m == exp->words[W_VERB]) {
-	    fe_verb = temp;
-	} else if (m == exp->words[W_FILE]) {
-	    fe_file = temp;
-	} else if (m == exp->words[W_TEXT]) {
-	    fe_text = temp;
+	    || tb_append(&temp, EOS) == 0) {
+	    (void) no_memory("finderr");
+	    failed = TRUE;
+	} else if (tb_length(temp) == 0) {
+	    mlforce("BUG: marker %d is empty string", n);
+	    failed = TRUE;
 	} else {
-	    if (m == exp->words[W_LINE])
-		fe_line = atoi(tb_values(temp));
-	    else if (m == exp->words[W_COLM])
-		fe_colm = atoi(tb_values(temp));
-	    tb_free(&temp);
+	    for (j = 0; j < W_LAST; j++) {
+		ErrTokens code = lookup[j].code;
+		if (n == exp->words[code]) {
+		    if (lookup[j].buffer) {
+			*(lookup[j].buffer) = temp;
+			TRACE(("matched %s:%s\n", get_token_name(code),
+			       tb_values(temp)));
+		    } else {
+			*(lookup[j].number) = vl_atol(tb_values(temp), 10, &failed);
+			TRACE(("matched %s:%s(%ld)\n", get_token_name(code),
+			       tb_values(temp), *(lookup[j].number)));
+			if (failed) {
+			    mlforce("BUG: \"%s\" (marker %d) is not a number: %s",
+				    get_token_name(code),
+				    n,
+				    tb_values(temp));
+			}
+			tb_free(&temp);
+		    }
+		}
+	    }
 	}
-	m++;
     }
+
+    if (!failed
+	&& (fe_colm != cC_base && fe_line == 0)) {
+	mlforce("BUG: found column %ld but no line", fe_colm);
+	failed = TRUE;
+    }
+
+    /*
+     * There's not enough room on the message line to show which expression
+     * failed - but update $error-expr anyway.
+     */
+    if (failed)
+	var_ERROR_EXPR((TBUFF **) 0, exp->exp_text);
+
+    return failed;
 }
 
 /* Edits the file and goes to the line pointed at by the next compiler error in
@@ -443,7 +550,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
     LINE *dotp;
     int moveddot = FALSE;
     ERR_PATTERN *exp;
-    ALLOC_T count = 0;
+    ALLOC_T count;
 
     char *errverb;
     char *errfile;
@@ -494,6 +601,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 	 * have jumped out of sequence we need to recalibrate
 	 * the directory stack against our current position.
 	 */
+	TRACE(("check for Entering/Leaving lines\n"));
 	while (tdotp != dotp) {
 
 	    if (lisreal(tdotp)) {
@@ -505,7 +613,8 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 		}
 
 		if (exp != 0) {
-		    decode_exp(exp);
+		    if (decode_exp(exp))
+			return ABORT;
 
 		    errverb = tb_values(fe_verb);
 		    errfile = tb_values(fe_file);
@@ -530,6 +639,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
     }
     newfebuff = FALSE;
 
+    TRACE(("look for matching line\n"));
     for_ever {
 	/* To use this line, we need both the filename and the line
 	 * number in the expected places, and a different line than
@@ -541,7 +651,9 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 		   && !lregexec(exp->exp_comp, dotp, 0, llength(dotp))) ;
 
 	    if (exp != 0) {
-		decode_exp(exp);
+		TRACE(("matched TEXT:%.*s\n", llength(dotp), dotp->l_text));
+		if (decode_exp(exp))
+		    return ABORT;
 
 		errverb = tb_values(fe_verb);
 		errfile = tb_values(fe_file);

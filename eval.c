@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.283 2000/11/04 18:22:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.284 2001/02/18 00:05:32 tom Exp $
  *
  */
 
@@ -853,7 +853,7 @@ lookup_tempvar(const char *name)
 
     if (*name) {
 	for (p = temp_vars; p != 0; p = p->next)
-	    if (!strcmp(name, p->u_name))
+	    if (!vl_stricmp(name, p->u_name))
 		return p;
     }
     return NULL;
@@ -1073,7 +1073,7 @@ rmv_tempvar(const char *name)
 	name++;
 
     for (p = temp_vars, q = 0; p != 0; q = p, p = p->next) {
-	if (!strcmp(p->u_name, name)) {
+	if (!vl_stricmp(p->u_name, name)) {
 	    TRACE(("rmv_tempvar(%s) ok\n", name));
 	    if (q != 0)
 		q->next = p->next;
@@ -1586,7 +1586,7 @@ complete_mode(DONE_ARGS)
 static int
 qs_vars_cmp(const void *a, const void *b)
 {
-    return strcmp(*(const char *const *) a, (*(const char *const *) b));
+    return vl_stricmp(*(const char *const *) a, (*(const char *const *) b));
 }
 
 static char **
@@ -1641,7 +1641,7 @@ read_argument(TBUFF ** paramp, const PARAM_INFO * info)
     UINT flags = 0;		/* no expansion, etc. */
 
     if (clexec == FALSE
-	|| mac_token(paramp) == 0) {
+	|| mac_tokval(paramp) == 0) {
 	prompt = "String";
 	if (info != 0) {
 	    switch (info->pi_type) {

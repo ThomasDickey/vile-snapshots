@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.209 2001/01/22 23:33:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.212 2001/02/18 00:22:24 tom Exp $
  *
  */
 
@@ -324,7 +324,7 @@ struct VAL *globvalues)
 	 *	2 - show in second pass (too long)
 	 */
 	for (j = 0; names[j].name != 0; j++) {
-		int ok = FALSE;
+		int ok;
 		show[j] = 0;
 		if (local) {
 			ok = is_local_val(values,j);
@@ -969,7 +969,7 @@ VALARGS *args)			/* symbol-table entry for the mode */
 	char respbuf[NFILEN];
 	int no = !strncmp(cp, "no", 2);
 	const char *rp = NULL;
-	int status = TRUE;
+	int status;
 
 	if (no && !is_bool_type(names->type))
 		return FALSE;		/* this shouldn't happen */
@@ -1030,7 +1030,7 @@ set_mode_value(BUFFER *bp, const char *cp, int defining, int setting, int global
 
 	struct VAL oldvalue;
 	int no = !strncmp(cp, "no", 2);
-	int nval, status = TRUE;
+	int nval, status;
 	int unsetting = !setting && !global;
 	int changed = FALSE;
 
@@ -1843,6 +1843,17 @@ chgd_status(VALARGS *args GCC_UNUSED, int glob_vals, int testing)
 	}
 	return TRUE;
 }
+
+#if OPT_TITLE && SYS_WINNT
+	/* Changed swap-title */
+int
+chgd_swaptitle(VALARGS *args GCC_UNUSED, int glob_vals, int testing)
+{
+	if (!testing)
+		set_editor_title();
+	return TRUE;
+}
+#endif
 
 	/* Change a mode that affects the windows on the buffer */
 /*ARGSUSED*/
@@ -2720,7 +2731,7 @@ static int
 detach_mmode(BUFFER *bp, const char *name)
 {
 	size_t n;
-	MAJORMODE *mp = 0;
+	MAJORMODE *mp;
 
 	if (bp != 0
 	 && (mp = bp->majr) != 0
@@ -2937,7 +2948,6 @@ makemajorlist(int local, void *ptr GCC_UNUSED)
 		for (j = 0; my_majormodes[j].name != 0; j++) {
 			if (local)
 				TheMajor = my_majormodes[j].name;
-			nflag = 0;
 			data = my_majormodes[j].data;
 			bprintf("--- \"%s\" majormode settings %*P(%d:%d)%*P\n",
 				my_majormodes[j].name,
@@ -3165,14 +3175,14 @@ do_a_submode(int defining)
 			k = extend_mode_list(2);
 			k = insert_per_major(k,
 				per_submode(temp, name, j, TRUE));
-			k = insert_per_major(k,
+			(void) insert_per_major(k,
 				per_submode(temp, name, j, FALSE));
 		} else {
 			TRACE(("destroy submode names for %d\n", j));
 			k = count_modes();
 			k = remove_per_major(k,
 				per_submode(temp, name, j, TRUE));
-			k = remove_per_major(k,
+			(void) remove_per_major(k,
 				per_submode(temp, name, j, FALSE));
 		}
 	}
@@ -3561,7 +3571,7 @@ set_current_scheme(PALETTES *p)
 static int
 free_scheme(char *name)
 {
-	PALETTES *p = 0;
+	PALETTES *p;
 
 	if (strcmp(name, s_default)
 	 && (p = find_scheme(name)) != 0) {

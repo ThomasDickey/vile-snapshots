@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.96 2000/11/13 01:04:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.97 2001/02/15 23:16:32 tom Exp $
  *
  */
 
@@ -1144,7 +1144,7 @@ TBUFF **buffer,
 UINT	flag,		/* +1 to read, -1 to write, 0 don't care */
 char *	result)
 {
-	register int	s = FALSE;
+	int	status;
 	static	TBUFF	*last;
 	char	Reply[NFILEN];
 	int	(*complete) (DONE_ARGS) = no_completion;
@@ -1182,20 +1182,20 @@ char *	result)
 		else
 			*Reply = EOS;
 
-		s = kbd_string(prompt, Reply, sizeof(Reply),
+		status = kbd_string(prompt, Reply, sizeof(Reply),
 			'\n', KBD_OPTIONS|KBD_MAYBEC, complete);
 		freeMyList();
 
-		if (s == ABORT)
-			return s;
-		if (s != TRUE) {
+		if (status == ABORT)
+			return status;
+		if (status != TRUE) {
 			if ((flag == FILEC_REREAD)
 			 && had_fname
 			 && (!global_g_val(GMDWARNREREAD)
-			  || ((s = mlyesno("Reread current buffer")) == TRUE)))
+			  || ((status = mlyesno("Reread current buffer")) == TRUE)))
 				(void)strcpy(Reply, curbp->b_fname);
 			else
-				return s;
+				return status;
 		} else if (kbd_is_pushed_back() && isShellOrPipe(Reply)) {
 			/*
 			 * The first call on 'kbd_string()' split the text off
@@ -1203,7 +1203,7 @@ char *	result)
 			 * colon-commands, but is inappropriate for filename
 			 * prompting.  Read the rest of the text into Reply.
 			 */
-			s = kbd_string(prompt, Reply, sizeof(Reply),
+			status = kbd_string(prompt, Reply, sizeof(Reply),
 				'\n', KBD_OPTIONS|KBD_MAYBEC, complete);
 		}
 		/*
@@ -1211,14 +1211,14 @@ char *	result)
 		 * have embedded (or leading/trailing) blanks.
 		 */
 #ifdef GMDWARNBLANKS
-		if (s == TRUE
+		if (status == TRUE
 		 && global_g_val(GMDWARNBLANKS)
 		 && has_non_graphics(Reply)) {
-			if ((s = mlyesno("Strip nonprinting chars?")) == TRUE)
-				s = strip_non_graphics(Reply);
+			if ((status = mlyesno("Strip nonprinting chars?")) == TRUE)
+				status = strip_non_graphics(Reply);
 		}
-		if (s != TRUE)
-			return s;
+		if (status != TRUE)
+			return status;
 #endif
 	} else if (!screen_to_bname(Reply)) {
 		return FALSE;
@@ -1231,17 +1231,17 @@ char *	result)
 	free_expansion();
 	if (ok_expand) {
 		if ((MyGlob = glob_string(Reply)) == 0
-		 || (s = glob_length(MyGlob)) == 0) {
+		 || (status = glob_length(MyGlob)) == 0) {
 			mlforce("[No files found] %s", Reply);
 			return FALSE;
 		}
-		if (s > 1) {
+		if (status > 1) {
 			char	tmp[80];
-			(void)lsprintf(tmp, "Will create %d buffers. Okay", s);
-			s = mlyesno(tmp);
+			(void)lsprintf(tmp, "Will create %d buffers. Okay", status);
+			status = mlyesno(tmp);
 			mlerase();
-			if (s != TRUE)
-				return s;
+			if (status != TRUE)
+				return status;
 		}
 	} else if (doglob(Reply) != TRUE) {
 		return FALSE;
@@ -1270,7 +1270,7 @@ const char * prompt,
 TBUFF **buffer,
 char *	result)
 {
-	register int	s;
+	register int	status;
 	char	Reply[NFILEN];
 	int	(*complete) (DONE_ARGS) = no_completion;
 
@@ -1287,12 +1287,12 @@ char *	result)
 			*Reply = EOS;
 
 		only_dir = TRUE;
-		s = kbd_string(prompt, Reply, sizeof(Reply), '\n',
+		status = kbd_string(prompt, Reply, sizeof(Reply), '\n',
 			KBD_OPTIONS|KBD_MAYBEC, complete);
 		freeMyList();
 		only_dir = FALSE;
-		if (s != TRUE)
-			return s;
+		if (status != TRUE)
+			return status;
 
 	} else if (!screen_to_bname(Reply)) {
 		return FALSE;

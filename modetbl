@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.185 2001/01/04 00:36:31 Mark.Robinson Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.186 2001/02/13 22:21:35 cmorgan Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -45,6 +45,7 @@ bool							# GMD prefix
 	"resolve-links"	RESOLVE_LINKS	0		HAVE_SYMLINK # cache/resolve directory names (can be slow if NFS times-out)
 	"ShowRam"	HEAPSIZE	0		OPT_HEAPSIZE	# show heap usage
 	"SameBangs"	SAMEBANGS	0		# use same "!!" data for ^X-!
+	"swap-title"	SWAPTITLE	chgd_swaptitle	OPT_TITLE&&SYS_WINNT # title -> 'buffer - prognam'
 	"working"	WORKING		chgd_working	OPT_WORKING # "working" message
 	"usefilelock"	USEFILELOCK	0		OPT_LCKFILES # okay use filelocks
 	"unique-buffers" UNIQ_BUFS	chgd_uniqbuf	# only one buffer per file
@@ -80,6 +81,7 @@ regex							# VAL_ prefix
 string							# VAL_ prefix
 	"backup-style"  BACKUPSTYLE	0		OPT_FILEBACK # file backup style
 	"expand-chars"	EXPAND_CHARS	0		# list of chars we can expand (%,#,:)
+	"icursor"	ICURSOR		chgd_icursor	OPT_ICURSOR # specify insertion cursor
 	"glob"		GLOB		0		OPT_GLOB_PIPE # select filename globbing style
 	"redirect-keys"	REDIRECT_KEYS	chgd_redir_keys	SYS_WINNT&&defined(VILE_OLE) # send keys to another process
 

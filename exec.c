@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.230 2000/12/04 11:36:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.232 2001/02/15 22:54:26 tom Exp $
  *
  */
 
@@ -498,7 +498,7 @@ execute_named_command(int f, int n)
 	status = FALSE;
 	if (!mapped_c_avail())
 	    unkeystroke(end_string());
-	c = kbd_seq();
+	(void) kbd_seq();
 	mlforce("[Extra characters after \"%s\" command]", fnp);
     } else {
 	status = execute(cfp, f, n);
@@ -742,7 +742,7 @@ rangespec(const char *specp, LINEPTR * fromlinep, LINEPTR * tolinep,
 int
 docmd(char *cline, int execflag, int f, int n)
 {
-    int status = TRUE;		/* return status of function */
+    int status;			/* return status of function */
     int oldcle;			/* old contents of clexec flag */
     char *oldestr;		/* original exec string */
     TBUFF *tok = 0;
@@ -2193,7 +2193,7 @@ dobuf(BUFFER *bp, int limit)
 {
     int status = FALSE;
     WHLOOP *whlist;
-    int save_no_msgs;
+    int save_vl_msgs;
     int save_cmd_count;
     int counter;
 
@@ -2202,12 +2202,12 @@ dobuf(BUFFER *bp, int limit)
     beginDisplay();
     if (++dobufnesting < 9) {
 
-	save_no_msgs = no_msgs;
+	save_vl_msgs = vl_msgs;
 	save_cmd_count = cmd_count;
 
 	/* macro arguments are readonly, so we do this once */
 	save_arguments(bp);
-	no_msgs = TRUE;
+	vl_msgs = FALSE;
 
 	for (counter = 1; counter <= limit; counter++) {
 	    if (dobufnesting == 1)
@@ -2235,7 +2235,7 @@ dobuf(BUFFER *bp, int limit)
 	}
 
 	restore_arguments(bp);
-	no_msgs = save_no_msgs;
+	vl_msgs = save_vl_msgs;
 	cmd_count = save_cmd_count;
     } else {
 	mlwarn("[Too many levels of files]");

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.448 2001/01/19 01:25:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.453 2001/02/18 00:20:24 tom Exp $
  *
  */
 
@@ -41,8 +41,8 @@ extern char *strmalloc (const char *s);
 #endif
 
 #if OPT_HEAPSIZE
-extern char *track_realloc (char *mp, unsigned nbytes);
-extern char *track_malloc (unsigned nbytes);
+extern char *track_realloc (char *mp, UINT nbytes);
+extern char *track_malloc (UINT nbytes);
 extern void track_free (char *mp);
 #endif
 
@@ -99,7 +99,7 @@ extern char *kcod2pstr (int c, char *seq);
 extern const CMDFUNC *engl2fnc (const char *fname);
 extern const CMDFUNC *kcod2fnc (BINDINGS *bs, int c);
 extern int fnc2kcod (const CMDFUNC *);
-extern int kbd_complete (unsigned flags, int c, char *buf, unsigned *pos, const char *table, SIZE_T size_entry);
+extern int kbd_complete (UINT flags, int c, char *buf, UINT *pos, const char *table, SIZE_T size_entry);
 extern int kbd_engl_stat (const char *prompt, char *buffer, int stated);
 extern int kbd_length (void);
 extern int kcod2escape_seq (int c, char *ptr);
@@ -133,7 +133,7 @@ extern void build_namebst(const NTAB *nametbl, int lo, int hi);
 
 #if OPT_TRACE
 extern void trace_alarm (char *file, int lineno);
-#define kbd_alarm() trace_alarm(__FILE__, __LINE__);
+#define kbd_alarm() trace_alarm(__FILE__, __LINE__)
 #else
 extern void kbd_alarm (void);
 #endif
@@ -164,6 +164,7 @@ extern int bsizes (BUFFER *bp);
 extern int delink_bp (BUFFER *bp);
 extern int popupbuff (BUFFER *bp);
 extern int renamebuffer(BUFFER *rbp, char *bufname);
+extern void set_editor_title(void);
 extern int shiftwid_val (BUFFER *bp);
 extern int swbuffer (BUFFER *bp);
 extern int swbuffer_lfl (BUFFER *bp, int lockfl, int this_window);
@@ -265,7 +266,7 @@ extern	void	psc_rev		(UINT huh);
 
 /* djhandl.c */
 #if CC_DJGPP
-extern unsigned long was_ctrl_c_hit (void);
+extern ULONG was_ctrl_c_hit (void);
 extern void want_ctrl_c (int yes);
 extern void clear_hard_error (void);
 extern void hard_error_catch_setup (void);
@@ -314,7 +315,7 @@ extern int macroize (TBUFF **p, TBUFF *src, int skip);
 extern int scan_bool (const char *s );
 extern int scan_int (const char *s );
 extern int toktyp (const char *tokn);
-extern unsigned mac_tokens (void);
+extern UINT mac_tokens (void);
 
 #ifdef const
 #define skip_blanks(s) skip_cblanks(s)
@@ -373,7 +374,7 @@ extern void updatelistvariables(void);
 #endif
 
 #if (SYS_WINNT||SYS_VMS)
-extern char *render_hex(TBUFF **rp, unsigned i);
+extern char *render_hex(TBUFF **rp, UINT i);
 #endif
 
 /* exec.c */
@@ -475,7 +476,7 @@ extern	void	expand_wild_args (int *argcp, char ***argvp);
 
 /* history.c */
 #if OPT_HISTORY
-extern	int	edithistory (TBUFF **buffer, unsigned *position, int *given, UINT options, int (*func)(EOL_ARGS), int eolchar);
+extern	int	edithistory (TBUFF **buffer, UINT *position, int *given, UINT options, int (*func)(EOL_ARGS), int eolchar);
 extern	void	hst_append (TBUFF *cmd, int glue);
 extern	void	hst_append_s (char *cmd, int glue);
 extern	void	hst_flush (void);
@@ -512,8 +513,8 @@ extern int kbd_replaying (int match);
 extern int kbd_reply (const char *prompt, TBUFF **extbuf, int (*efunc)(EOL_ARGS), int eolchar, KBD_OPTIONS options, int (*cfunc)(DONE_ARGS));
 extern int kbd_seq (void);
 extern int kbd_seq_nomap (void);
-extern int kbd_show_response (TBUFF **dst, char *src, unsigned bufn, int eolchar, KBD_OPTIONS options);
-extern int kbd_string (const char *prompt, char *extbuf, unsigned bufn, int eolchar, KBD_OPTIONS options, int (*func)(DONE_ARGS));
+extern int kbd_show_response (TBUFF **dst, char *src, UINT bufn, int eolchar, KBD_OPTIONS options);
+extern int kbd_string (const char *prompt, char *extbuf, UINT bufn, int eolchar, KBD_OPTIONS options, int (*func)(DONE_ARGS));
 extern int kbd_string2 (const char *prompt, TBUFF **result, int eolchar, KBD_OPTIONS options, int (*complete)(DONE_ARGS));
 extern int kbm_started (int macnum, int force);
 extern int keystroke (void);
@@ -538,7 +539,7 @@ extern int tgetc_avail (void);
 extern void dotcmdstop (void);
 extern void get_kbd_macro(TBUFF **rp);
 extern void incr_dot_kregnum (void);
-extern void kbd_kill_response (TBUFF *buf, unsigned *position, int c);
+extern void kbd_kill_response (TBUFF *buf, UINT *position, int c);
 extern void kbd_mac_check(void);
 extern void kbd_pushback (TBUFF *buf, int skip);
 extern void set_end_string (int c);
@@ -686,7 +687,7 @@ extern void init_scheme(void);
 #endif
 
 #if OPT_ENUM_MODES
-extern int fsm_complete(int c, char *buf, unsigned *pos);
+extern int fsm_complete(int c, char *buf, UINT *pos);
 #endif
 
 #if OPT_EVAL || OPT_COLOR
@@ -805,7 +806,6 @@ extern char * home_path (char *path);
 #endif
 
 /* random.c */
-extern L_NUM vl_line_count (BUFFER *the_buffer);
 extern L_NUM line_no (BUFFER *the_buffer, LINEPTR the_line);
 extern char * current_directory (int force);
 extern int catnap (int milli, int watchinput);
@@ -823,6 +823,13 @@ extern void autocolor (void);
 extern void ch_fname (BUFFER *bp, const char *fname);
 extern void set_directory_from_file(BUFFER *bp);
 extern void set_rdonly (BUFFER *bp, const char *name, int mode);
+extern L_NUM vl_line_count (BUFFER *the_buffer);
+extern long vl_atol(char *str, int base, int *failed);
+extern ULONG vl_atoul(char *str, int base, int *failed);
+
+#ifndef vl_stricmp
+extern int vl_stricmp(const char *a, const char *b);
+#endif
 
 #if OPT_EVAL
 extern B_COUNT char_no (BUFFER *the_buffer, MARK the_mark);
@@ -855,7 +862,7 @@ extern int curdrive (void);
 extern int setdrive (int d);
 extern void update_dos_drv_dir (char * cwd);
 # if CC_WATCOM
-     extern int dos_crit_handler (unsigned deverror, unsigned errcode, unsigned *devhdr);
+     extern int dos_crit_handler (UINT deverror, UINT errcode, UINT *devhdr);
 # else
      extern void dos_crit_handler (void);
 # endif
@@ -1020,11 +1027,8 @@ extern void ttflush (void);
 extern void ttopen (void);
 extern void ttunclean (void);
 extern void ttunwatchfd (int fd, long id);
-
-#if DISP_CURSES || DISP_TERMCAP
 extern void vl_save_tty (void);
 extern void vl_restore_tty (void);
-#endif
 
 /* ucrypt.c */
 #if	OPT_ENCRYPT
@@ -1089,7 +1093,7 @@ extern FILE *vms_rpipe (const char *cmd, int fd, const char *input_file);
 
 typedef struct fontstr_options_struct
 {
-    unsigned long size;      /* Font's point size.                     */
+    ULONG         size;      /* Font's point size.                     */
     int           bold;      /* Boolean -> T, user wants bold weight.  */
     int           italic;    /* Boolean -> T, user wants italic style. */
     char          face[256]; /* Font face requested by user.  If no face
@@ -1126,7 +1130,6 @@ extern int  parse_font_str(const char *fontstr, FONTSTR_OPTIONS *results);
 extern void restore_console_title(void);
 extern void set_console_title(const char *title);
 extern int  stdin_data_available(void);
-extern void w32_center_window(void *child_hwnd, void *parent_hwnd);
 extern int  w32_CreateProcess(char *cmd, int no_wait);
 extern int  w32_del_selection(int copy_to_clipboard);
 extern int  w32_inout_popen(FILE **fr, FILE **fw, char *cmd);
@@ -1135,7 +1138,7 @@ extern int  w32_keybrd_write(char *data);
 extern void w32_npclose(FILE *fp);
 extern int  w32_system(const char *cmd);
 extern int  w32_system_winvile(const char *cmd, int *pressret);
-extern char *w32_wdw_title();
+extern char *w32_wdw_title(void);
 extern int  winopen_dir(const char *dir);
 extern int  winsave_dir(const char *dir);
 extern void winvile_cleanup(void);
@@ -1143,6 +1146,9 @@ extern int  winvile_cursor(int visible, int queue_change);
 extern int  winvile_cursor_state(int visible, int queue_change);
 extern void *winvile_hwnd(void);       /* winvile's main window */
 extern void winvile_start(void);
+#ifdef WINVER
+extern void w32_center_window(HWND child_hwnd, HWND parent_hwnd);
+#endif
 #endif
 
 /* watchfd.c */

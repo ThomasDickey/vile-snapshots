@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.75 2000/11/04 20:08:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.76 2001/02/14 01:35:51 tom Exp $
  */
 
 /*#
@@ -1869,13 +1869,13 @@ command(cline)
     char *cline
 
     PREINIT:
-	int save_no_msgs;
+	int save_vl_msgs;
 
     CODE:
-	save_no_msgs = no_msgs;
-	no_msgs = TRUE;
+	save_vl_msgs = vl_msgs;
+	vl_msgs = FALSE;
 	RETVAL = docmd(cline, TRUE, FALSE, 1);
-	no_msgs = save_no_msgs;
+	vl_msgs = save_vl_msgs;
 
     OUTPUT:
 	RETVAL
@@ -3054,13 +3054,13 @@ command(vbp,cline)
 
     PREINIT:
 	int status;
-	int save_no_msgs;
+	int save_vl_msgs;
     PPCODE:
-	save_no_msgs = no_msgs;
-	no_msgs = TRUE;
+	save_vl_msgs = vl_msgs;
+	vl_msgs = FALSE;
 	api_setup_fake_win(vbp, TRUE);
 	status = docmd(cline, TRUE, FALSE, 1);
-	no_msgs = save_no_msgs;
+	vl_msgs = save_vl_msgs;
 	if (status) {
 	    XPUSHs(ST(0));		/* return buffer object */
 	}

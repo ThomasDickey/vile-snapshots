@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.19 2001/01/03 23:18:02 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.22 2001/02/18 00:28:52 tom Exp $
  */
 
 #include <windows.h>
@@ -29,8 +29,8 @@
 
 typedef struct rgn_cpyarg_struct
 {
-    unsigned      nbyte, nline;
-    unsigned char *dst;
+    UINT nbyte, nline;
+    UCHAR *dst;
 } RGN_CPYARG;
 
 static int print_low, print_high;
@@ -57,7 +57,7 @@ minibuffer_abort(void)
 
 
 static void
-report_cbrdstats(unsigned nbyte, unsigned nline, int pasted)
+report_cbrdstats(UINT nbyte, UINT nline, int pasted)
 {
     char buf[128];
 
@@ -80,7 +80,7 @@ report_cbrdstats(unsigned nbyte, unsigned nline, int pasted)
 
 /* The memory block handle _must_ be unlocked before calling this fn. */
 static int
-setclipboard(HGLOBAL hClipMem, unsigned nbyte, unsigned nline)
+setclipboard(HGLOBAL hClipMem, UINT nbyte, UINT nline)
 {
     int rc, i;
 
@@ -122,12 +122,12 @@ setclipboard(HGLOBAL hClipMem, unsigned nbyte, unsigned nline)
 
 /* Count lines and nonbuffer data added during "copy to clipboard" operation. */
 static void
-cbrd_count_meta_data(int           len,
-                     unsigned      *nbyte,
-                     unsigned      *nline,
-                     unsigned char *src)
+cbrd_count_meta_data(int        len,
+                     UINT      *nbyte,
+                     UINT      *nline,
+                     UCHAR *src)
 {
-    register unsigned c;
+    register UINT c;
 
     while (len--)
     {
@@ -180,10 +180,10 @@ count_rgn_data(void *argp, int l, int r)
 
 
 static void
-cbrd_copy_and_xlate(int len, unsigned char **cbrd_ptr, unsigned char *src)
+cbrd_copy_and_xlate(int len, UCHAR **cbrd_ptr, UCHAR *src)
 {
-    register unsigned c;
-    unsigned char     *dst = *cbrd_ptr;
+    register UINT c;
+    UCHAR     *dst = *cbrd_ptr;
 
     while (len--)
     {
@@ -263,9 +263,9 @@ cbrd_reg_copy(void)
     HGLOBAL                 hClipMem;
     register int            i;
     KILL                    *kp;      /* pointer into [un]named register */
-    DWORD                   nbyte;
-    unsigned                nline;
-    unsigned char           *dst;
+    UINT                    nbyte;
+    UINT                    nline;
+    UCHAR                  *dst;
 
     /* make sure there is something to put */
     if (kbs[ukb].kbufh == NULL)
@@ -435,9 +435,9 @@ opercbrdcpy(int f, int n)
 
 #define MAX_MAPPED_STR 16     /* fairly conservative :-) */
 
-static int  map_and_insert(unsigned, unsigned *);
+static int  map_and_insert(UINT, UINT *);
 
-typedef struct { unsigned val; char *str; } MAP;
+typedef struct { UINT val; char *str; } MAP;
 
 /* Keep this table sorted by "val" . */
 static MAP cbrdmap[] =
@@ -475,7 +475,7 @@ map_compare(const void *elem1, const void *elem2)
 
 
 static int
-map_cbrd_char(unsigned c, unsigned char mapped_rslt[MAX_MAPPED_STR])
+map_cbrd_char(UINT c, UCHAR mapped_rslt[MAX_MAPPED_STR])
 {
     MAP  key, *rslt_p;
     int  nmapped = 0;
@@ -502,11 +502,11 @@ map_cbrd_char(unsigned c, unsigned char mapped_rslt[MAX_MAPPED_STR])
 
 /* paste a single line from the clipboard to the minibuffer. */
 static int
-paste_to_minibuffer(unsigned char *cbrddata)
+paste_to_minibuffer(UCHAR *cbrddata)
 {
-    int           ch, i, nmapped, rc = TRUE;
-    unsigned char *cp = cbrddata, *eol = NULL, map_str[MAX_MAPPED_STR + 1],
-                  one_char[2];
+    int   rc = TRUE;
+    UCHAR *cp = cbrddata, *eol = NULL, map_str[MAX_MAPPED_STR + 1],
+          one_char[2];
 
     while(*cp)
     {
@@ -556,11 +556,11 @@ paste_to_minibuffer(unsigned char *cbrddata)
 int
 cbrdpaste(int f, int n)
 {
-    register unsigned      c;
-    register unsigned char *data;
-    HANDLE                 hClipMem;
-    int                    i, rc, suppressnl;
-    unsigned               nbyte, nline;
+    register UINT      c;
+    register UCHAR *data;
+    HANDLE   hClipMem;
+    int      i, rc, suppressnl;
+    UINT     nbyte, nline;
 
     for (rc = i = 0; i < 8 && (! rc); i++)
     {
@@ -696,11 +696,11 @@ cbrdpaste(int f, int n)
  * equivalents and insert same in the current buffer.
  */
 static int
-map_and_insert(unsigned c,       /* ANSI char to insert   */
-               unsigned *nbyte   /* total #chars inserted */
+map_and_insert(UINT c,       /* ANSI char to insert   */
+               UINT *nbyte   /* total #chars inserted */
                )
 {
-    unsigned char mapped_str[MAX_MAPPED_STR];
+    UCHAR mapped_str[MAX_MAPPED_STR];
     int           i, nmapped, rc;
 
     nmapped = map_cbrd_char(c, mapped_str);

@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.226 2001/01/06 12:50:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.228 2001/02/15 23:03:52 tom Exp $
  *
  */
 
@@ -753,7 +753,7 @@ nextbuffer(int f GCC_UNUSED, int n GCC_UNUSED)	/* switch to the next buffer in t
 		}
 	} else {			/* go forward thru args-list */
 		if ((stopatbp = curbp) == 0)
-			stopatbp = find_nth_created(1);
+			(void) find_nth_created(1);
 		if (last_bp == 0)
 			last_bp = find_b_hist(0);
 		if (last_bp != 0) {
@@ -789,10 +789,8 @@ prevbuffer(int f GCC_UNUSED, int n GCC_UNUSED)	/* switch to the previous buffer 
 		}
 	} else {			/* go backward thru args-list */
 		if ((stopatbp = curbp) == 0)
-			stopatbp = find_nth_created(1);
-		else if ((bp = find_nth_created(curbp->b_created - 1)) != 0)
-			stopatbp = bp;
-		else
+			(void) find_nth_created(1);
+		else if ((bp = find_nth_created(curbp->b_created - 1)) == 0)
 			mlforce("[No more files to edit]");
 		return FALSE;
 	}
@@ -839,12 +837,7 @@ make_current(BUFFER *nbp)
 	curtabval = tabstop_val(curbp);
 
 #if OPT_TITLE
-	if (auto_set_title)
-	{
-		char title[NBUFN + NFILEN];
-		sprintf(title, "%s - %s", prognam, curbp->b_bname);
-		term.set_title(title);
-	}
+	set_editor_title();
 #endif
 }
 
@@ -1172,7 +1165,7 @@ killbuffer(int f, int n)
 	if (!f)
 		n = 1;
 	for_ever {
-		BUFFER *bp_next = 0;
+		BUFFER *bp_next;
 		bufn[0] = EOS;
 		if ((s=ask_for_bname("Kill buffer: ", bufn, sizeof(bufn))) != TRUE)
 			break;
@@ -1284,7 +1277,7 @@ add_brackets(char *dst, const char *src)
 int
 zotbuf(register BUFFER *bp)	/* kill the buffer pointed to by bp */
 {
-	register int	s;
+	register int	status;
 	register int	didswitch = FALSE;
 
 	if (find_bp(bp) == 0)	/* delwp may have zotted us, pointer obsolete */
@@ -1307,7 +1300,7 @@ zotbuf(register BUFFER *bp)	/* kill the buffer pointed to by bp */
 			if (is_fake_window(wp)
 			 && wp->w_bufp == bp && wheadp->w_wndp != NULL) {
 				dummy.w_wndp = wp->w_wndp;
-				s = delwp(wp);
+				(void) delwp(wp);
 				wp = &dummy;
 			}
 		}
@@ -1338,7 +1331,7 @@ zotbuf(register BUFFER *bp)	/* kill the buffer pointed to by bp */
 	}
 #endif
 	/* Blow text away.	*/
-	if ((s=bclear(bp)) != TRUE) {
+	if ((status = bclear(bp)) != TRUE) {
 		/* the user must have answered no */
 		if (didswitch)
 			(void)swbuffer(bp);
@@ -1353,7 +1346,7 @@ zotbuf(register BUFFER *bp)	/* kill the buffer pointed to by bp */
 		FreeBuffer(bp);
 		updatelistbuffers();
 	}
-	return (s);
+	return (status);
 }
 
 
@@ -2337,7 +2330,6 @@ writeall(int f, int n, int promptuser, int leaving, int autowriting, int all)
 			make_current(bp);
 			if (dirtymsgline && (promptuser || leaving)) {
 				mlforce("\n");
-				dirtymsgline = FALSE;
 			}
 			status = filesave(f, n);
 			dirtymsgline = TRUE;
@@ -2405,6 +2397,29 @@ writeall(int f, int n, int promptuser, int leaving, int autowriting, int all)
 
 	return status;
 }
+
+#if OPT_TITLE
+void
+set_editor_title(void)
+{
+	char title[NBUFN + NFILEN];
+	if (auto_set_title)
+	{
+#if SYS_WINNT
+		int swap;
+
+		swap = global_g_val(GMDSWAPTITLE);
+		sprintf(title,
+			"%s - %s",
+			(swap) ? curbp->b_bname : prognam,
+			(swap) ? prognam : curbp->b_bname);
+#else
+		sprintf(title, "%s - %s", prognam, curbp->b_bname);
+#endif
+		term.set_title(title);
+	}
+}
+#endif
 
 /* For memory-leak testing (only!), releases all buffer storage. */
 #if	NO_LEAKS

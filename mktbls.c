@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.108 2000/11/11 11:39:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.109 2001/02/15 22:41:16 tom Exp $
  *
  */
 
@@ -1438,7 +1438,7 @@ dump_statevars(void)
 
 	write_lines(nevars, middle);
 	/* emit the variable get/set routine prototypes */
-	for (p = all_statevars, count = 0; p != 0; p = p->nst) {
+	for (p = all_statevars; p != 0; p = p->nst) {
 #if OPT_IFDEF_MODES
 		WriteIf(nevars, p->Cond);
 #endif
@@ -1448,7 +1448,7 @@ dump_statevars(void)
 	FlushIf(nevars);
 	write_lines(nevars, middle2);
 	/* emit the variable get/set routine table */
-	for (p = all_statevars, count = 0; p != 0; p = p->nst) {
+	for (p = all_statevars; p != 0; p = p->nst) {
 #if OPT_IFDEF_MODES
 		WriteIf(nevars, p->Cond);
 #endif
@@ -1844,7 +1844,7 @@ mkw32binding(char *key, char *defn, char *conditional, char *func, char *fcond)
 
     strcpy(cum_defn, KEYTOKEN);
     defp        = cum_defn + sizeof(KEYTOKEN) - 1;
-    nomore_keys = saw_modifier = 0;
+    saw_modifier = 0;
     while (*cp)
     {
 	nomore_keys = 1;  /* An assumption. */

@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.119 1999/11/16 00:14:11 Ryan.Murray Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.120 2001/02/15 23:02:12 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -609,7 +609,7 @@ attrib_matches(void)
 {
 #if OPT_HILITEMATCH
 	MARK origdot;
-	int status = TRUE;
+	int status;
 	REGIONSHAPE oregionshape = regionshape;
 	VIDEO_ATTR vattr;
 

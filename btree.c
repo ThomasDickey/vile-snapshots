@@ -1,5 +1,5 @@
 /*
- * $Id: btree.c,v 1.11 2000/03/13 02:02:35 tom Exp $
+ * $Id: btree.c,v 1.12 2001/02/15 22:42:28 tom Exp $
  * Copyright 1997-1999 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
@@ -246,8 +246,7 @@ btree_delete(BI_TREE *funcs, const char *data)
 				/* (A1:Initialize) */
 register
 	BI_NODE	*t = &(funcs->head),
-		*p = RLINK(t),
-		*q, *r, *s;
+		*p, *q, *r, *s;
 register
 	short	a, b;
 	char	*value;
@@ -457,7 +456,6 @@ register
 				} else {
 					TRACE(("CASE 3: single rotation, end\n"));
 
-					r          = q;
 					LINK(-a,p) = LINK(a,q);
 					LINK(a,q)  = p;
 
