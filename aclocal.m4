@@ -1,7 +1,7 @@
 dnl
 dnl Local definitions for autoconf.
 dnl ------------------------
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.22 1996/12/08 21:41:48 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.23 1997/02/26 12:06:26 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -127,6 +127,25 @@ if test $vc_cv_ansi_qsort = yes; then
 else
 	AC_DEFINE(ANSI_QSORT,0)
 fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl SVr4 curses should have term.h as well (where it puts the definitions of
+dnl the low-level interface).  This may not be true in old/broken implementations,
+dnl as well as in misconfigured systems (e.g., gcc configured for Solaris 2.4
+dnl running with Solaris 2.5.1).
+AC_DEFUN([VC_CURSES_TERM_H],
+[
+AC_MSG_CHECKING([for term.h])
+AC_CACHE_VAL(vc_cv_have_term_h,[
+	AC_TRY_COMPILE([
+#include <curses.h>
+#include <term.h>],
+	[WINDOW *x],
+	[vc_cv_have_term_h=yes],
+	[vc_cv_have_term_h=no])
+	])
+AC_MSG_RESULT($vc_cv_have_term_h)
+test $vc_cv_have_term_h = yes && AC_DEFINE(HAVE_TERM_H)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl
@@ -347,7 +366,9 @@ AC_TRY_LINK([
 
 #if USE_TERMINFO
 # include <curses.h>
-# include <term.h>
+# if HAVE_TERM_H
+#  include <term.h>
+# endif
 #else
 #if HAVE_TERMCAP_H
 #include <termcap.h>
@@ -474,7 +495,9 @@ for R in "" const; do
 	AC_TRY_COMPILE([
 #if USE_TERMINFO
 #include <curses.h>
+#if HAVE_TERM_H
 #include <term.h>
+#endif
 #else
 #if HAVE_TERMCAP_H
 #include <termcap.h>

@@ -3,7 +3,7 @@
  *
  *	Miscellaneous routines for UNIX/VMS compatibility.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.23 1997/02/21 11:50:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.24 1997/02/26 11:59:36 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -646,23 +646,28 @@ vms2unix_path(char *dst, const char *src)
 #define	QIO(func) sys$qiow (0, chnl, func, &iosb, 0, 0, &fibDSC, 0,0,0, atr,0)
 
 /*
- * I'd rather check if fib$w_fid is defined, but that isn't portable, since an
- * ANSI compiler would complain about the '$'.
+ * Note that checking if fib$w_fid is defined won't work on a real ANSI
+ * compiler because of the '$'.
  */
-#ifdef __DECC
-#define COPY_FID(Fib, Nam) memcpy (Fib.fib$w_fid, Nam.nam$w_fid, 6)
-#else	/* VAX C */
-#define COPY_FID(Fib, Nam) memcpy (Fib.fib$r_fid_overlay.fib$w_fid, Nam.nam$w_fid, 6)
+#ifndef fib$w_fid
+#define fib$w_fid fib$r_fid_overlay.fib$w_fid
 #endif
 
-int	vms_fix_umask (char *filespec)
+#ifndef fib$l_acctl
+#define fib$l_acctl fib$r_acctl_overlay.fib$l_acctl
+#endif
+
+#define COPY_FID(Fib, Nam) memcpy (Fib.fib$w_fid, Nam.nam$w_fid, 6)
+
+int	vms_fix_umask (const char *filespec)
 {
 	struct	FAB	fab;
 	struct	NAM	nam;		/* used in wildcard parsing	*/
 
 	struct	XABPRO	xabpro;		/* Protection attribute block	*/
 
-	char	prevspec[NAM$C_MAXRSS],	/* filename string area	*/
+	char	thisspec[NAM$C_MAXRSS],	/* filename string area	*/
+		prevspec[NAM$C_MAXRSS],	/* filename string area	*/
 		rsa[NAM$C_MAXRSS],	/* resultant string area	*/
 		esa[NAM$C_MAXRSS],	/* expanded string area (search)*/
 		*s;
@@ -684,6 +689,7 @@ int	vms_fix_umask (char *filespec)
 	struct	dsc$descriptor	fibDSC;
 
 	TRACE(("vms_fix_umask(%s)\n", filespec))
+	strcpy(thisspec, filespec);
 
 	/*
 	 * Strip the version, look for previous one.  This isn't quite right
@@ -763,8 +769,8 @@ int	vms_fix_umask (char *filespec)
 		fab = cc$rms_fab;
 		fab.fab$l_fop = FAB$M_NAM;
 		fab.fab$l_nam = &nam;
-		fab.fab$l_fna = filespec;
-		fab.fab$b_fns = strlen(filespec);
+		fab.fab$l_fna = thisspec;
+		fab.fab$b_fns = strlen(thisspec);
 
 		nam = cc$rms_nam;
 		nam.nam$b_ess = NAM$C_MAXRSS;
@@ -783,7 +789,7 @@ int	vms_fix_umask (char *filespec)
 			fibDSC.dsc$w_length = sizeof(fib);
 			fibDSC.dsc$a_pointer = (char *)&fib;
 			memset (&fib, 0, sizeof(fib));
-			fib.fib$r_acctl_overlay.fib$l_acctl = FIB$M_WRITECK;
+			fib.fib$l_acctl = FIB$M_WRITECK;
 			COPY_FID (fib, nam);
 
 			atr[0].atr$w_type = ATR$C_FPRO;
