@@ -1,5 +1,13 @@
 Changes for vile 7.1 (released ??? ??? ??, 1997)
 
+(tom)	970422 (h)
+	+ improved example of menus for xvile (Philippe Chassany).
+	+ correct mistyped index in c-filt.c, which was a char (patch by Ian
+	  Jamison).
+	+ correct c-filt.c handling of nested comment delimiters (patch by Ian
+	  Jamison <ianj@quadrics.com>)
+	+ correct sign-extension in tcap.c for xterm mouse-coordinates.
+
 (tom)	970407 (g)
 	+ add mode 'tagword', which allows user to lookup the whole word rather
 	  than a substring.  (from Adam Denton <adenton@genre.com>).
