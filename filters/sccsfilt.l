@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.1 1999/04/29 23:14:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.2 2000/01/15 13:50:37 tom Exp $
  *
  * Filter to add vile "attribution" sequences to SCCS files.
  */
@@ -27,7 +27,7 @@ static States *state_stk;
 static int
 pushstate(int state)
 {
-    States *ptr = malloc(sizeof(States));
+    States *ptr = (States *)malloc(sizeof(States));
     ptr->link = state_stk;
     ptr->old_state = YYSTATE;
     state_stk = ptr;

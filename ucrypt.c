@@ -2,7 +2,7 @@
  * Unix crypt(1)-style interface.
  * Written by T.E.Dickey for vile (March 1999).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.13 1999/12/24 01:03:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.14 2000/01/15 12:43:53 tom Exp $
  *
  */
 
@@ -74,7 +74,7 @@ int
 vl_encrypt_char(int ch)
 {
     char buffer[2];
-    buffer[0] = ch;
+    buffer[0] = (char) ch;
     vl_encrypt_blok(buffer, 1);
     return buffer[0];
 }
@@ -189,7 +189,7 @@ vl_setup_encrypt(char *encrypted_password)
 	myseed = myseed * encrypted_password[j] + j;
 
     for (j = 0; j < N_chars; j++)
-	table1[j] = j;
+	table1[j] = (char) j;
     memset(table3, 0, sizeof(table3));
 
     for (j = 0; j < N_chars; j++) {

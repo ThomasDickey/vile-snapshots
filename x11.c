@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.243 2000/01/12 23:53:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.244 2000/01/15 01:09:51 tom Exp $
  *
  */
 
@@ -6442,15 +6442,16 @@ x_set_window_name(const char *name)
 char *
 x_get_window_name(void)
 {
+	char *result;
 #ifdef USE_SET_WM_NAME
-	return x_window_name;
+	result = x_window_name;
 #else
-	char *result = "";
+	result = "";
 	if (cur_win->top_widget != 0) {
 		XtVaGetValues(cur_win->top_widget, XtNtitle, &result, NULL);
 	}
-	return result;
 #endif
+	return result;
 }
 
 char *

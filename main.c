@@ -17,12 +17,12 @@
  * distributable status.  This version of vile is distributed under the
  * terms of the GNU Public License (see COPYING).
  *
- * Copyright (c) 1992-1999 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1992-2000 by Paul Fox and Thomas Dickey
  *
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.418 1999/12/24 18:19:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.419 2000/01/15 12:35:07 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -307,6 +307,7 @@ MainProgram(int argc, char *argv[])
 				/* NOTREACHED */
 
 			case '?':
+				/* FALLTHRU */
 			default:	/* unknown switch */
 				print_usage();
 			}
@@ -1303,20 +1304,21 @@ not_interrupted(void)
 
 #if SYS_MSDOS
 # if CC_WATCOM
-    int  dos_crit_handler(unsigned deverror, unsigned errcode, unsigned *devhdr)
-# else
-    void dos_crit_handler(void)
-# endif
+int
+wat_crit_handler(unsigned deverror, unsigned errcode, unsigned *devhdr)
 {
-# if CC_WATCOM
 	_hardresume((int)_HARDERR_FAIL);
 	return (int)_HARDERR_FAIL;
-# else
+}
+#else
+void
+dos_crit_handler(void)
+{
 #  if ! CC_DJGPP
 	_hardresume(_HARDERR_FAIL);
 #  endif
-# endif
 }
+#  endif
 #endif
 
 
@@ -1356,7 +1358,7 @@ siginit(void)
 #   if CC_WATCOM
 	{
 	/* clean up Warning from Watcom C */
-	void *ptrfunc = dos_crit_handler;
+	void *ptrfunc = wat_crit_handler;
 	_harderr(ptrfunc);
 	}
 #   else	/* CC_TURBO */
@@ -2268,11 +2270,13 @@ newprocessgroup(int f GCC_UNUSED, int n GCC_UNUSED)
 static int
 cmd_mouse_motion(const CMDFUNC *cfp)
 {
+	int result = FALSE;
 #if (OPT_XTERM || DISP_X11)
-	return cfp && CMD_U_FUNC(cfp) == mouse_motion;
-#else
-	return FALSE;
+	if (cfp != 0
+	 && CMD_U_FUNC(cfp) == mouse_motion)
+		result = TRUE;
 #endif
+	return result;
 }
 
 static void

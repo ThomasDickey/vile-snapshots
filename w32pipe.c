@@ -55,7 +55,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.18 1999/12/24 01:03:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.19 2000/01/15 13:32:58 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -244,7 +244,8 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
                 break;
             }
             handles[2] = handles[1];
-            rp[1]      = BAD_FD;   /* closed by DuplicateHandle() */
+            (void) close(rp[1]);
+            rp[1] = BAD_FD;
             if (! fw)
             {
                 /*
@@ -291,7 +292,8 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
             {
                 break;
             }
-            wp[0] = BAD_FD;     /* closed by DuplicateHandle() */
+            (void) close(wp[0]);
+            wp[0] = BAD_FD;
             if (! fr)
                 handles[1] = handles[2] = GetStdHandle(STD_OUTPUT_HANDLE);
             if (! (*fw = fdopen(wp[1], "w")))

@@ -5,7 +5,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.105 1999/12/24 01:08:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.106 2000/01/15 12:39:54 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -110,7 +110,7 @@ store_tag(LINE *lp)
 			c = lgetc(lp, got);
 			if (!isident(c))
 				break;
-			my_name[got] = c;
+			my_name[got] = (char) c;
 		}
 		my_name[got] = EOS;
 		if (got) {

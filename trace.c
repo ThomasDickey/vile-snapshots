@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.16 1999/12/16 23:01:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.17 2000/01/15 01:07:03 tom Exp $
  *
  */
 
@@ -303,8 +303,8 @@ record_alloc(char *newp, char *oldp, unsigned len)
 #endif	/* DOALLOC */
 
 #ifdef	DEBUG2
-#define	LOG_PTR(msg,num)	Trace("%s %p\n", msg, num);
-#define	LOG_LEN(msg,num)	Trace("%s %d\n", msg, num);
+#define	LOG_PTR(msg,num)	Trace("%s %p\n", msg, num)
+#define	LOG_LEN(msg,num)	Trace("%s %d\n", msg, num)
 #else
 #define LOG_PTR(msg,num)
 #define	LOG_LEN(msg,num)
@@ -320,8 +320,8 @@ doalloc (char *oldp, unsigned amount)
 	register char	*newp;
 
 	count_alloc += (oldp == 0);
-	LOG_LEN("allocate", amount)
-	LOG_PTR("  old = ", oldp)
+	LOG_LEN("allocate", amount);
+	LOG_PTR("  old = ", oldp);
 
 	newp = (oldp != 0) ? realloc(oldp, amount) : malloc(amount);
 	if (!OK_ALLOC(newp,oldp,amount)) {
@@ -330,7 +330,7 @@ doalloc (char *oldp, unsigned amount)
 		/*NOT REACHED*/
 	}
 
-	LOG_PTR("  new = ", newp)
+	LOG_PTR("  new = ", newp);
 	return (newp);
 }
 
@@ -350,7 +350,7 @@ void
 dofree(void *oldp)
 {
 	count_freed++;
-	LOG_PTR("dealloc ", oldp)
+	LOG_PTR("dealloc ", oldp);
 
 	if (OK_FREE(oldp)) {
 		free(oldp);

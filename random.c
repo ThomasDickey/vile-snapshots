@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.229 2000/01/05 02:33:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.230 2000/01/15 12:28:47 tom Exp $
  *
  */
 
@@ -258,22 +258,19 @@ restore_dot(MARK saved_dot)
 L_NUM
 line_count(BUFFER *the_buffer)
 {
-    if (the_buffer == (BUFFER *) 0)
-	return 0;
-    else {
-#if !SMALLER
-	(void) bsizes(the_buffer);
-	return the_buffer->b_linecount;
-#else
+    L_NUM numlines = 0;		/* # of lines in file */
+    if (the_buffer != 0) {
+#if SMALLER
 	register LINE *lp;	/* current line */
-	register L_NUM numlines = 0;	/* # of lines in file */
 
 	for_each_line(lp, the_buffer)
 	    ++ numlines;
-
-	return numlines;
+#else
+	(void) bsizes(the_buffer);
+	numlines = the_buffer->b_linecount;
 #endif
     }
+    return numlines;
 }
 
 L_NUM
@@ -281,26 +278,25 @@ line_no(			/* return the number of the given line */
     BUFFER *the_buffer,
     LINEPTR the_line)
 {
-    if (the_line != null_ptr) {
-#if !SMALLER
-	L_NUM it;
-	(void) bsizes(the_buffer);
-	if ((it = the_line->l_number) == 0)
-	    it = the_buffer->b_linecount + 1;
-	return it;
-#else
-	LINE *lp;
-	L_NUM line_num = 1;
+    L_NUM line_num = 0;
 
+    if (the_line != null_ptr) {
+#if SMALLER
+	LINE *lp;
+
+	line_num = 1;
 	for_each_line(lp, the_buffer) {
 	    if (lp == the_line)	/* found current line? */
 		break;
 	    ++line_num;
 	}
-	return (line_num);
+#else
+	(void) bsizes(the_buffer);
+	if ((line_num = the_line->l_number) == 0)
+	    line_num = the_buffer->b_linecount + 1;
 #endif
     }
-    return 0;
+    return line_num;
 }
 
 #if OPT_EVAL
@@ -946,6 +942,7 @@ char2drive(int d)
 int
 curdrive(void)
 {
+    int result;
 #if SYS_OS2
     unsigned d;
 # if CC_CSETPP
@@ -953,10 +950,11 @@ curdrive(void)
 # else
     _dos_getdrive(&d);		/* A=1 B=2 ... */
 # endif
-    return drive2char((d - 1) & 0xff);
+    result = drive2char((d - 1) & 0xff);
 #else
-    return drive2char(bdos(0x19, 0, 0) & 0xff);
+    result = drive2char(bdos(0x19, 0, 0) & 0xff);
 #endif
+    return result;
 }
 
 /* take drive _letter_ as arg. */

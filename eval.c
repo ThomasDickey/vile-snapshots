@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.264 2000/01/12 12:11:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.265 2000/01/15 00:57:00 tom Exp $
  *
  */
 
@@ -795,6 +795,7 @@ run_func(int fnum)
 			tb_append(&result, EOS);
 			break;
 		}
+		/* FALLTHRU */
 	default:
 		TRACE(("unknown function #%d\n", fnum));
 		tb_scopy(&result, error_val);

@@ -3,7 +3,7 @@
  * Modified from a really old version of "borland.c" (before the VIO
  * stuff went in there.)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.26 1999/09/21 01:07:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.27 2000/01/15 11:48:25 tom Exp $
  */
 
 #include "estruct.h"
@@ -238,16 +238,16 @@ static int
 decode_mouse_state(USHORT state)
 {
 	int button = 0;
-	if (state & MOUSE_MOTION_WITH_BN1_DOWN
-	 || state & MOUSE_BN1_DOWN) {
+	if ((state & MOUSE_MOTION_WITH_BN1_DOWN) != 0
+	 || (state & MOUSE_BN1_DOWN) != 0) {
 		button = 1;
 	}
-	if (state & MOUSE_MOTION_WITH_BN2_DOWN
-	 || state & MOUSE_BN2_DOWN) {
+	if ((state & MOUSE_MOTION_WITH_BN2_DOWN) != 0
+	 || (state & MOUSE_BN2_DOWN) != 0) {
 		button = 2;
 	}
-	if (state & MOUSE_MOTION_WITH_BN3_DOWN
-	 || state & MOUSE_BN3_DOWN) {
+	if ((state & MOUSE_MOTION_WITH_BN3_DOWN) != 0
+	 || (state & MOUSE_BN3_DOWN) != 0) {
 		button = 3;
 	}
 	return button;
@@ -613,7 +613,7 @@ vio_title(char *title)		/* set the current window title */
          HSWITCH hSwitch;
          SWCNTRL swcntrl;
 
-         if (hSwitch = WinQuerySwitchHandle(hwndActive, (PID)0L))
+         if ((hSwitch = WinQuerySwitchHandle(hwndActive, (PID)0L)) != 0)
          {
             if (!WinQuerySwitchEntry(hSwitch, &swcntrl))
             {

@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.92 1999/12/24 00:59:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.93 2000/01/15 12:40:58 tom Exp $
  *
  */
 
@@ -1127,7 +1127,7 @@ strip_non_graphics (char *path)
 	int rc = FALSE;
 	while ((ch = *path++) != EOS) {
 		if (!isSpace(ch) && isPrint(ch)) {
-			*t++ = ch;
+			*t++ = (char) ch;
 			rc = TRUE;
 		}
 	}

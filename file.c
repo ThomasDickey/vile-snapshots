@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.264 1999/12/24 01:08:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.266 2000/01/15 12:40:41 tom Exp $
  */
 
 #include	"estruct.h"
@@ -47,10 +47,11 @@ file_modified(char *path)
 
 	if (stat(SL_TO_BSL(path), &statbuf) >= 0
 #if CC_CSETPP
-	 && (statbuf.st_mode & S_IFREG) == S_IFREG)
+	 && (statbuf.st_mode & S_IFREG) == S_IFREG
 #else
-	 && (statbuf.st_mode & S_IFMT) == S_IFREG)
+	 && (statbuf.st_mode & S_IFMT) == S_IFREG
 #endif
+	 )
 	{
 #if SYS_VMS
 		the_time = statbuf.st_ctime; /* e.g., creation-time */
@@ -576,6 +577,7 @@ bp2swbuffer(BUFFER *bp, int ask_rerun, int lockfl)
 					break;
 				case ABORT:
 					s = FALSE;
+					/* FALLTHRU */
 				default:
 					mlerase();
 					break;
@@ -1946,7 +1948,7 @@ create_save_dir(char *dirnam)
     unsigned n;
 
     if ((np = getenv("TMPDIR")) != 0 &&
-		strlen(np) < 32 &&
+		(int) strlen(np) < 32 &&
 		is_directory(np)) {
 	    tbl[0] = np;
 	    n = 0;

@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.376 2000/01/13 00:24:02 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.377 2000/01/15 13:46:01 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1584,3 +1584,12 @@ number of colors.
 Even on a monochrome terminal, users can set the fcolor and bcolor modes
 to black and white if vile is able to use color.  The actual screen colors
 are not updated.
+
+-- 00-01-15 (paul)
+
+... there's the vile-with-perl-on-solaris-with-gcc problem, where 
+"-B/usr/ccs/bin" needs to be added to LDFLAGS to make it work.  i guess 
+it might be too late to change configure (though if solaris, and CC == 
+gcc and perl is included, it would probably be a safe change -- i 
+think it's benign if /usr/ccs/bin doesn't exist), but we should at least 
+have it in a README/Install/ or something. 

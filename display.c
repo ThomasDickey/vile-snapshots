@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.324 2000/01/05 01:31:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.325 2000/01/15 00:56:21 tom Exp $
  *
  */
 
@@ -1643,7 +1643,7 @@ upddex(void)
 
 		while (i < mode_row(wp)) {
 			if (i >= 0
-			 && vscreen[i]->v_flag & VFEXT) {
+			 && (vscreen[i]->v_flag & VFEXT) != 0) {
 				if ((wp != curwp)
 				 || (lp != wp->w_dot.l)
 				 || ((i != currow)

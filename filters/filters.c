@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.62 2000/01/12 12:29:56 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.63 2000/01/15 13:50:41 tom Exp $
  *
  */
 
@@ -460,9 +460,9 @@ do_alloc(char *ptr, unsigned need, unsigned *have)
     need += 2;			/* allow for trailing null */
     if (need > *have) {
 	if (ptr != 0)
-	    ptr = realloc(ptr, need);
+	    ptr = (char *)realloc(ptr, need);
 	else
-	    ptr = malloc(need);
+	    ptr = (char *)malloc(need);
 	*have = need;
     }
     return ptr;
@@ -650,7 +650,7 @@ readline(FILE * fp, char **ptr, unsigned *len)
 	}
 	if (used + 2 >= *len) {
 	    *len = 3 * (*len) / 2;
-	    buf = realloc(buf, *len);
+	    buf = (char *)realloc(buf, *len);
 	}
 	buf[used++] = ch;
 	if (ch == '\n')

@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.211 2000/01/03 22:16:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.213 2000/01/15 13:19:49 tom Exp $
  *
  */
 
@@ -976,7 +976,7 @@ kbd_kill_response(TBUFF * buffer, unsigned * position, int c)
 	if (mark < tb_length(tmp)) {
 		tb_bappend(&buffer, tb_values(tmp)+mark, tb_length(tmp)-mark);
 	}
-	(void)tb_free(&tmp);
+	tb_free(&tmp);
 }
 
 /*
@@ -1199,7 +1199,7 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 	if (c == editc && !quoted) {
 		miniedit = !miniedit;
 	} else if (isSpecial(c)
-	  ||  (miniedit && cfp != 0 && cfp->c_flags & MOTION)) {
+	  ||  (miniedit && cfp != 0 && (cfp->c_flags & MOTION) != 0)) {
 
 		/* If we're allowed to honor SPEC bindings, then see if it's
 		 * bound to something, and execute it.
@@ -1281,7 +1281,7 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 	} else {
 		miniedit = FALSE;
 		if (no_echo) {
-			char tmp = c;
+			char tmp = (char) c;
 			tb_bappend(buf, &tmp, 1);
 		} else {
 			show1Char(c);

@@ -6,7 +6,7 @@
  * Modified by Pete Ruczynski (pjr) for auto-sensing and selection of
  * display type.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.94 1999/11/15 23:43:37 Ryan.Murray Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.95 2000/01/15 01:01:35 tom Exp $
  *
  */
 
@@ -944,14 +944,14 @@ int identify_adapter(void)
 
 		case 0x02:	return CGASCR;
 
-		case 0x05:	monochrome = TRUE;
+		case 0x05:	monochrome = TRUE;	/* FALLTHRU */
 		case 0x04:	return EGASCR;
 
-		case 0x07:	monochrome = TRUE;
+		case 0x07:	monochrome = TRUE;	/* FALLTHRU */
 		case 0x08:	return VGASCR;
 
-		case 0x0b:	monochrome = TRUE;
-		case 0x0a:
+		case 0x0b:	monochrome = TRUE;	/* FALLTHRU */
+		case 0x0a:				/* FALLTHRU */
 		case 0x0c:	return CGASCR;	/* MCGA */
 		}
 	}
