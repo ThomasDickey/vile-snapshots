@@ -1,5 +1,21 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000609 (k)
+	> Tom Dickey:
+	+ add command attribute-directly, to invoke internal filter on the
+	  current buffer.  External files are still used for the keywords, but
+	  this can eliminate the subprocess and pipes for filters that are
+	  built-in.
+	+ add built-in function &filter, to tell if the given majormode has
+	  a built-in filter.
+	+ show majormode ordering in the subheaders of show-majormodes.
+	+ rewrite put_majormode_after() and put_majormode_before(), fixing
+	  a potential infinite loop.
+	+ modify manpage.rc to use lynx to render html files.  This uses the
+	  development version of lynx (2.8.4dev.3, with the -stdin and
+	  -with_backspaces options).
+	+ check timode suffixes before shmode.
+
  20000529 (j)
 	> Tom Dickey:
 	+ fixes to make shell commands work properly with curses.c driver:

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.331 2000/04/28 23:05:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.332 2000/06/08 23:00:30 tom Exp $
  *
  */
 
@@ -321,8 +321,10 @@ dofmt(const char *fmt, va_list *app)
 				break;
 
 			case 's':
-				n = dfputs(outfunc, va_arg(*app,char *));
-				break;
+				if (wid <= 0) {
+					n = dfputs(outfunc, va_arg(*app,char *));
+					break;
+				}
 
 			case 'S': /* use wid as max width */
 				n = dfputsn(outfunc, va_arg(*app,char *),wid);

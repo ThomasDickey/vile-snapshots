@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.424 2000/05/17 10:34:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.427 2000/06/08 23:19:42 tom Exp $
  *
  */
 
@@ -889,11 +889,13 @@ void clobber_save_curbp(BUFFER *bp);
 /* select.c */
 #if OPT_SELECTIONS
 extern	LINEPTR setup_region    (void);
+extern	int	apply_attribute	(void);
 extern	int	assign_attr_id	(void);
 extern	int	attribute_cntl_a_seqs_in_region(REGION *rp, REGIONSHAPE shape);
 extern	int	attributeregion (void);
 extern	int	attributeregion_in_region(REGION *rp, REGIONSHAPE shape,
 					    VIDEO_ATTR vattr, char *hc);
+extern	int	parse_attribute	(char *text, int length, int offset, int *countp);
 extern	int	sel_begin	(void);
 extern	int	sel_extend	(int wiping, int include_dot);
 extern	int	sel_setshape	(REGIONSHAPE shape);
@@ -1225,6 +1227,10 @@ extern	void	wp_leaks (void);
 
 #if DISP_X11
 extern	void	x11_leaks		(void);
+#endif
+
+#if OPT_FILTER
+extern	void	flt_leaks (void);
 #endif
 
 #endif /* NO_LEAKS */

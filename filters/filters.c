@@ -1,19 +1,13 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.72 2000/04/25 00:06:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.73 2000/06/09 01:33:41 tom Exp $
  *
  */
 
 #include <filters.h>
 
 #define QUOTE '\''
-
-#ifdef DEBUG
-#define TRACE(p) printf p;
-#else
-#define TRACE(p)		/*nothing */
-#endif
 
 #if HAVE_LONG_FILE_NAMES
 #define KEYFILE_SUFFIX ".keywords"
@@ -169,29 +163,6 @@ Free(char *ptr)
 	free(ptr);
 }
 
-static char *
-home_dir(void)
-{
-    char *result;
-#if defined(VMS)
-    if ((result = getenv("SYS$LOGIN")) == 0)
-	result = getenv("HOME");
-#else
-    result = getenv("HOME");
-#if defined(_WIN32)
-    if (result != 0 && strchr(result, ':') == 0) {
-	static char desktop[256];
-	char *drive = getenv("HOMEDRIVE");
-	if (drive != 0) {
-	    sprintf(desktop, "%s%s", drive, result);
-	    result = desktop;
-	}
-    }
-#endif
-#endif
-    return result;
-}
-
 /*
  * Find the first occurrence of a file in the canonical search list:
  *	the current directory
@@ -213,7 +184,7 @@ OpenKeywords(char *classname)
     static char *name;
     static unsigned have;
 
-    static char *filename;
+    static char *fname;
     static unsigned have2;
     static char suffix[] = KEYFILE_SUFFIX;
 
@@ -222,33 +193,33 @@ OpenKeywords(char *classname)
     unsigned need;
     char leaf[20];
 
-    filename = do_alloc(filename, sizeof(suffix) + strlen(classname) + 2, &have2);
-    sprintf(filename, "%s%s", classname, suffix);
+    fname = do_alloc(fname, sizeof(suffix) + strlen(classname) + 2, &have2);
+    sprintf(fname, "%s%s", classname, suffix);
 
-    if (strchr(filename, PATHSEP) != 0) {
-	OPEN_IT(filename);
+    if (strchr(fname, PATHSEP) != 0) {
+	OPEN_IT(fname);
     }
 
     if ((path = home_dir()) == 0)
 	path = "";
 
     need = strlen(path)
-	+ strlen(filename)
+	+ strlen(fname)
 	+ 20;
 
     name = do_alloc(name, need, &have);
 
 #if DOT_HIDES_FILE
-    FIND_IT((name, "%s%c.%s", PATHDOT, PATHSEP, filename));
-    FIND_IT((name, "%s%c.%s", path, PATHSEP, filename));
+    FIND_IT((name, "%s%c.%s", PATHDOT, PATHSEP, fname));
+    FIND_IT((name, "%s%c.%s", path, PATHSEP, fname));
     sprintf(leaf, ".%s%c", MY_NAME, PATHSEP);
 #else
-    FIND_IT((name, "%s%c%s", PATHDOT, PATHSEP, filename));
-    FIND_IT((name, "%s%c%s", path, PATHSEP, filename));
+    FIND_IT((name, "%s%c%s", PATHDOT, PATHSEP, fname));
+    FIND_IT((name, "%s%c%s", path, PATHSEP, fname));
     sprintf(leaf, "%s%c", MY_NAME, PATHSEP);
 #endif
 
-    FIND_IT((name, "%s%c%s%s", path, PATHSEP, leaf, filename));
+    FIND_IT((name, "%s%c%s%s", path, PATHSEP, leaf, fname));
 
     path = getenv("VILE_STARTUP_PATH");
 #ifdef VILE_STARTUP_PATH
@@ -261,7 +232,7 @@ OpenKeywords(char *classname)
 	while (path[n] != 0) {
 	    for (m = n; path[m] != 0 && path[m] != PATHCHR; m++)
 		/*LOOP */ ;
-	    FIND_IT((name, "%.*s%c%s", m - n, path + n, PATHSEP, filename));
+	    FIND_IT((name, "%.*s%c%s", m - n, path + n, PATHSEP, fname));
 	    if (path[m])
 		n = m + 1;
 	    else
@@ -366,6 +337,66 @@ do_alloc(char *ptr, unsigned need, unsigned *have)
 	*have = need;
     }
     return ptr;
+}
+
+void
+flt_free_keywords(char *classname)
+{
+    CLASS *p, *q;
+    KEYWORD *ptr;
+    int i;
+
+    for (p = classes, q = 0; p != 0; q = p, p = p->next) {
+	if (!strcmp(classname, p->name)) {
+	    hashtable = p->data;
+
+	    for (i = 0; i < HASH_LENGTH; i++) {
+		while ((ptr = hashtable[i]) != 0) {
+		    hashtable[i] = ptr->next;
+		    free(ptr->kw_name);
+		    free(ptr->kw_attr);
+		    free(ptr);
+		}
+	    }
+
+	    free(p->name);
+	    free(p->data);
+	    if (q != 0)
+	    	q->next = p->next;
+	    else
+	    	classes = p->next;
+	    free(p);
+	    break;
+	}
+    }
+    hashtable = (classes != 0) ? classes->data : 0;
+}
+
+void
+flt_free_symtab(void)
+{
+    while (classes != 0)
+	flt_free_keywords(classes->name);
+}
+
+/*
+ * We drop the old symbol table each time we read the data, to allow keywords
+ * to be removed from the table.  Also, it is necessary for some filters such
+ * as m4 to be able to restart to a known state.
+ */
+void
+flt_initialize(void)
+{
+    if (default_attr != 0)
+	free(default_attr);
+    default_attr = strmalloc(NAME_KEYWORD);
+
+    abbr_ch = '*';
+    meta_ch = '.';
+    eqls_ch = ':';
+    verbose_flt = 0;
+
+    flt_free_symtab();
 }
 
 void

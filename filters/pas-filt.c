@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.c,v 1.11 2000/02/28 11:58:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.c,v 1.12 2000/06/07 23:06:26 tom Exp $
  *
  * Markup a Pascal file, for highlighting with vile.
  */
@@ -105,7 +105,7 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input)
+do_filter(FILE *input GCC_UNUSED)
 {
     static unsigned used;
     static char *line;
@@ -116,7 +116,7 @@ do_filter(FILE *input)
     literal_attr = class_attr(NAME_LITERAL);
     comment = 0;
 
-    while (readline(input, &line, &used) != NULL) {
+    while (flt_gets(&line, &used) != NULL) {
 	s = line;
 	s = skip_white(s);
 	while (*s) {

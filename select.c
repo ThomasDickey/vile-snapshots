@@ -18,13 +18,17 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.120 2000/05/18 10:11:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.123 2000/06/08 22:53:03 tom Exp $
  *
  */
 
 #include	"estruct.h"
 #include	"edef.h"
 #include	"nefunc.h"
+
+#if OPT_FILTER
+#include	<filters.h>
+#endif
 
 #define BTN_BEGIN   1
 #define BTN_PASTE   2
@@ -42,9 +46,6 @@ extern REGION *haveregion;
 
 static	void	detach_attrib (BUFFER *bp, AREGION *arp);
 static	int	attribute_cntl_a_sequences (void);
-#if OPT_SHELL
-static	int	attribute_from_filter (void);
-#endif
 static	void	free_line_attribs (BUFFER *bp);
 static	int	add_line_attrib (BUFFER *bp, REGION *rp, REGIONSHAPE rs,
                                  VIDEO_ATTR vattr, TBUFF *hypercmd);
@@ -1072,6 +1073,16 @@ get_selection_buffer_and_region(AREGION *arp)
 #endif
 
 int
+apply_attribute(void)
+{
+	return (VATTRIB(videoattribute) != 0
+#if OPT_HYPERTEXT
+	    || tb_length(hypercmd) != 0
+#endif
+	    );
+}
+
+int
 attributeregion(void)
 {
     register int    status;
@@ -1079,11 +1090,7 @@ attributeregion(void)
     AREGION *	arp;
 
     if ((status = getregion(&region)) == TRUE) {
-	if (VATTRIB(videoattribute) != 0
-#if OPT_HYPERTEXT
-	    || tb_length(hypercmd) != 0)
-#endif
-	{
+	if (apply_attribute()) {
 	    if (add_line_attrib(curbp, &region, regionshape, videoattribute,
 #if OPT_HYPERTEXT
 	                        hypercmd
@@ -1397,17 +1404,6 @@ operattrcaseq(int f, int n)
 		      "Attribute ^A sequences");
 }
 
-#if OPT_SHELL
-int
-operattrfilter(int f, int n)
-{
-      opcmd = OPOTHER;
-      videoattribute = 0;
-      return vile_op(f,n,attribute_from_filter,
-		      "Attribute ^A sequences from filter");
-}
-#endif
-
 int
 attribute_cntl_a_seqs_in_region(REGION *rp, REGIONSHAPE shape)
 {
@@ -1448,7 +1444,7 @@ setup_region(void)
  * Parse a cntl_a sequence, returning the number of characters processed.
  * Set videoattribute and hypercmd as side-effects.
  */
-static int
+int
 parse_attribute(char *text, int length, int offset, int *countp)
 {
 	register int c;		/* current char during scan */
@@ -1615,7 +1611,7 @@ attribute_cntl_a_sequences(void)
 		ldelete((B_COUNT)(offset - DOT.o), FALSE);
 #endif
 		set_mark_after(count, len_record_sep(curbp));
-		if (VATTRIB(videoattribute) || hypercmd != 0)
+		if (apply_attribute())
 		    (void) attributeregion();
 	    }
 	    DOT.o++;
@@ -1670,10 +1666,8 @@ attribute_from_filter(void)
 		    if (done) {
 			n = (done - 1);
 			set_mark_after(skip, 1);
-			if (VATTRIB(videoattribute)
-			 || hypercmd != 0) {
+			if (apply_attribute())
 				(void) attributeregion();
-			}
 		    }
 		} else {
 		    DOT.o += 1;
@@ -1701,7 +1695,47 @@ attribute_from_filter(void)
     }
     return result;
 }
+
+int
+operattrfilter(int f, int n)
+{
+      opcmd = OPOTHER;
+      videoattribute = 0;
+      return vile_op(f,n,attribute_from_filter,
+		      "Attribute ^A sequences from filter");
+}
 #endif /*  OPT_SHELL */
+
+#if OPT_FILTER
+static int
+attribute_directly(void)
+{
+#if OPT_MAJORMODE
+    if (curbp != 0) {
+	detach_attrib(selbufp, &selregion);
+	detach_attrib(startbufp, &startregion);
+	free_attribs(curbp);
+
+	if (curbp->majr != 0
+	 && flt_start(curbp->majr->name)) {
+	    TRACE(("attribute_directly(%s)\n", curbp->b_bname));
+	    flt_finish();
+	    return TRUE;
+	}
+    }
+#endif
+    return FALSE;
+}
+
+int
+operattrdirect(int f, int n)
+{
+    opcmd = OPOTHER;
+    videoattribute = 0;
+    return vile_op(f,n,attribute_directly,
+		   "Attribute directly with internal filter");
+}
+#endif
 
 #if OPT_LINE_ATTRS
 

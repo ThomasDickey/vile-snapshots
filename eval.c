@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.270 2000/05/19 00:57:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.271 2000/06/06 01:15:58 tom Exp $
  *
  */
 
@@ -17,6 +17,10 @@
 
 
 #if OPT_EVAL
+
+#if OPT_FILTER
+#include	<filters.h>
+#endif
 
 /* "generic" variable wrapper, to insulate some users of variables
  * from needing to distinguish the different types */
@@ -719,6 +723,13 @@ run_func(int fnum)
 	case UFEXECABLE:
 		i = (doglob(arg[0]) &&
 			cfg_locate(arg[0], FL_CDIR|FL_EXECABLE) != NULL);
+		break;
+	case UFFILTER:
+		i = FALSE;
+#if OPT_FILTER
+		if (flt_lookup(arg[0]))
+			i = TRUE;
+#endif
 		break;
 	case UFLOCMODE:
 	case UFGLOBMODE:

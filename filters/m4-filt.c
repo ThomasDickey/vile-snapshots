@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.15 2000/02/28 11:58:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.16 2000/06/07 23:06:26 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4 
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -326,7 +326,7 @@ init_filter(int before)
 }
 
 static void
-do_filter(FILE * input)
+do_filter(FILE * input GCC_UNUSED)
 {
     static unsigned used;
     static char *line;
@@ -347,7 +347,7 @@ do_filter(FILE * input)
     literal = 0;
     comment = 0;
 
-    while (readline(input, &line, &used) != NULL) {
+    while (flt_gets(&line, &used) != NULL) {
 	s = line;
 	while (*s) {
 	    /*

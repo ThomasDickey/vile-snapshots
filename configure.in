@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.143 $)
+AC_REVISION($Revision: 1.145 $)
 AC_PREREQ(2.12.971222)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.143 2000/05/16 00:51:54 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.145 2000/06/09 09:58:08 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -69,7 +69,7 @@ AC_ARG_WITH(builtin-filters,
                           Give an option value to specify only certain filters.
                           The default, if no value is given is 'all'.
                           The default if the option is not given is 'none'],
-[VILE_BUILTIN_FILTERS="$withval"],
+[test "$withval" = yes && withval=all; VILE_BUILTIN_FILTERS="$withval"],
 [VILE_BUILTIN_FILTERS=none])
 test -z "$VILE_BUILTIN_FILTERS" && VILE_BUILTIN_FILTERS=none
 AC_MSG_RESULT($VILE_BUILTIN_FILTERS)
@@ -82,7 +82,7 @@ if test "$VILE_BUILTIN_FILTERS" != none ; then
 	for cf_name in $VILE_BUILTIN_FILTERS
 	do
 		if test "$cf_name" = all ; then
-			cf_found=yes
+			cf_found=all
 			break
 		else
 			if (egrep "$cf_name	.*\.l\$" $top_srcdir/filters/genmake.mak 2>/dev/null >/dev/null )
@@ -93,6 +93,7 @@ if test "$VILE_BUILTIN_FILTERS" != none ; then
 	done
 	IFS="$cf_save_IFS"
 	AC_MSG_RESULT($cf_found)
+	VILE_BUILTIN_FILTERS="$cf_found"
 	AC_MSG_CHECKING(version of $LEX)
 	LEX_VERSION=`$LEX --version 2>&1 | sed -e 's/^[^0-9]*//'`
 	if test -z "$LEX_VERSION"
@@ -106,7 +107,6 @@ if test "$VILE_BUILTIN_FILTERS" != none ; then
 fi
 changequote([,])dnl
 AC_SUBST(VILE_BUILTIN_FILTERS)
-
 AC_MSG_CHECKING(for library path)
 AC_ARG_WITH(libdir-path,
 [  --with-libdir-path=PATH specify locations to search for filters, etc.],
@@ -674,6 +674,7 @@ if test "$VILE_BUILTIN_FILTERS" != none ; then
 	FILTER_LIBS="-Lfilters -lvlflt $LIBS"
 	LIBBUILTFLT="${LIB_PREFIX}vlflt.a"
 	BUILTLIBS="$BUILTLIBS filters/$LIBBUILTFLT"
+	AC_DEFINE(OPT_FILTER)
 fi
 
 AC_SUBST(EXTRAOBJS)

@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.5 2000/03/18 00:35:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.7 2000/06/09 01:13:45 tom Exp $
  *
  */
 
@@ -62,6 +62,12 @@ ProcessArgs(int argc, char *argv[], int flag)
  ******************************************************************************/
 
 char *
+flt_gets(char **ptr, unsigned *len)
+{
+    return readline(my_in, ptr, len);
+}
+
+char *
 flt_name(void)
 {
     return filter_def.filter_name;
@@ -83,8 +89,31 @@ flt_puts(char *string, int length, char *marker)
     }
 }
 
+char *
+home_dir(void)
+{
+    char *result;
+#if defined(VMS)
+    if ((result = getenv("SYS$LOGIN")) == 0)
+	result = getenv("HOME");
+#else
+    result = getenv("HOME");
+#if defined(_WIN32)
+    if (result != 0 && strchr(result, ':') == 0) {
+	static char desktop[256];
+	char *drive = getenv("HOMEDRIVE");
+	if (drive != 0) {
+	    sprintf(desktop, "%s%s", drive, result);
+	    result = desktop;
+	}
+    }
+#endif
+#endif
+    return result;
+}
+
 void
-mlforce(const char *fmt, ...)
+mlforce(const char *fmt,...)
 {
     va_list ap;
     va_start(ap, fmt);
