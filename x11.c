@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.217 1999/06/13 19:25:46 Mark.Robinson Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.218 1999/07/17 22:00:22 tom Exp $
  *
  */
 
@@ -3320,26 +3320,28 @@ x_preparse_args(
 	XWMHints *hints = XGetWMHints(dpy, XtWindow(cur_win->top_widget));
 	if (!hints) hints = XAllocWMHints();
 #if OPT_TRACE
-	XIconSize *size_list;
-	int size_size;
+	{
+	    XIconSize *size_list;
+	    int size_size;
 
-	/* FIXME: get some information about the desired icon sizes to see
-	 * if it's worth supplying an explicit 16x16.  That appears to be
-	 * possible with XVision -TD
-	 */
-	if (XGetIconSizes(dpy, DefaultRootWindow(dpy), &size_list, &size_size)) {
-	    int n;
-	    Trace("XGetIconSizes size_size=%d\n", size_size);
-	    for (n = 0; n < size_size; n++)
-		Trace("[%d] min %dx%d, max %dx%d, inc %dx%d\n",
-		    n,
-		    size_list[n].min_width,
-		    size_list[n].min_height,
-		    size_list[n].max_width,
-		    size_list[n].max_height,
-		    size_list[n].width_inc,
-		    size_list[n].height_inc);
-	    XFree(size_list);
+	    /* FIXME: get some information about the desired icon sizes to see
+	     * if it's worth supplying an explicit 16x16.  That appears to be
+	     * possible with XVision -TD
+	     */
+	    if (XGetIconSizes(dpy, DefaultRootWindow(dpy), &size_list, &size_size)) {
+		int n;
+		Trace("XGetIconSizes size_size=%d\n", size_size);
+		for (n = 0; n < size_size; n++)
+		    Trace("[%d] min %dx%d, max %dx%d, inc %dx%d\n",
+			n,
+			size_list[n].min_width,
+			size_list[n].min_height,
+			size_list[n].max_width,
+			size_list[n].max_height,
+			size_list[n].width_inc,
+			size_list[n].height_inc);
+		XFree(size_list);
+	    }
 	}
 #endif
 

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.359 1999/07/05 11:51:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.361 1999/07/15 23:38:48 tom Exp $
  *
  */
 
@@ -233,6 +233,10 @@ extern int line_height (WINDOW *wp, LINEPTR lp);
 #if defined(WMDLINEWRAP) || OPT_MOUSE
 extern WINDOW *row2window (int row);
 extern int col2offs (WINDOW *wp, LINEPTR lp, C_NUM col);
+#endif
+
+#if OPT_MLFORMAT || OPT_POSFORMAT
+extern void special_formatter(TBUFF **result, char *fs, WINDOW *wp);
 #endif
 
 #if OPT_WORKING
@@ -753,6 +757,8 @@ extern void ch_fname (BUFFER *bp, const char *fname);
 extern void set_rdonly (BUFFER *bp, const char *name, int mode);
 
 #if OPT_EVAL
+extern B_COUNT char_no (BUFFER *the_buffer, MARK the_mark);
+extern B_COUNT getcchar (void);
 extern L_NUM getcline (void);
 extern char * previous_directory (void);
 #endif
@@ -958,6 +964,7 @@ extern	char *	is_vms_rootdir	(char *path);
 extern	char *	unix2vms_path   (char *dst, const char *src);
 extern	char *	vms2unix_path   (char *dst, const char *src);
 extern	char *	vms_path2dir    (const char *src);
+extern	int	vms_fseek_ok	(char *filename);
 extern	void	vms_dir2path	(char *path);
 #endif
 

@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.248 1999/07/03 13:31:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.251 1999/07/17 15:12:54 tom Exp $
  */
 
 #include	"estruct.h"
@@ -717,7 +717,7 @@ set_dosmode(int f, int n GCC_UNUSED)
 	/* force dos mode on the buffer, based on the user argument */
 	set_b_val(curbp, MDDOS, !f);
 
-	curwp->w_flag |= WFMODE;
+	curwp->w_flag |= WFMODE|WFHARD;
 	return TRUE;
 }
 
@@ -911,7 +911,7 @@ int	mflg)		/* print messages? */
 #endif
 #if OPT_HOOKS
 	if (s <= FIOEOF) {
-	    if (!b_is_temporary(bp)) {
+	    if ((bp == curbp) && !b_is_temporary(bp)) {
 		int save = count_fline;	/* read-hook may run a filter - ignore */
 		count_fline = 0;
 		run_a_hook(&readhook);
@@ -949,6 +949,19 @@ quickreadf(register BUFFER *bp, int *nlinep)
 	if ((s = vl_resetkey(curbp, bp->b_fname)) != TRUE)
 		return s;
 #endif
+
+#if SYS_VMS
+	/* 
+	 * Note that this routine uses fseek() to position a file, which
+	 * doesn't work on VMS _unless_ the the file type is stream-access
+	 * or fixed-length record with no carriage control.  If the
+	 * target file can't meet these criteria, defer to slowreadf().
+	 */
+
+	if (! vms_fseek_ok(bp->b_fname))
+		return (FIOMEM);
+#endif
+
 	if ((len = ffsize()) < 0) {
 		mlwarn("[Can't size file]");
 		return FIOERR;

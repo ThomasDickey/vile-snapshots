@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.14 1999/06/20 21:29:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.18 1999/07/16 09:59:52 tom Exp $
  */
 
 #include	"estruct.h"
@@ -241,6 +241,18 @@ int var_CBUFNAME(TBUFF **rp, const char *vp)
 	}
 }
 
+int var_BWINDOWS(TBUFF **rp, const char *vp)
+{
+	if (rp) {
+		render_int(rp, curbp->b_nwnd);
+		return TRUE;
+	} else if (vp) {
+		return ABORT;  /* read-only */
+	} else {
+		return FALSE;
+	}
+}
+
 #if OPT_HOOKS
 int var_CDHOOK(TBUFF **rp, const char *vp)
 {
@@ -276,7 +288,7 @@ int var_CFNAME(TBUFF **rp, const char *vp)
 	}
 }
 
-int var_CURCHAR(TBUFF **rp, const char *vp)
+int var_CHAR(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		if (curbp && !is_empty_buf(curbp)) {
@@ -319,6 +331,20 @@ int var_CRYPTKEY(TBUFF **rp, const char *vp)
 		cryptkey = (char *)malloc(NKEYLEN);
 		vl_make_encrypt_key (cryptkey, vp);
 		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+#endif
+
+#if !SMALLER
+int var_CURCHAR (TBUFF **rp, const char *vp)
+{
+	if (rp) {
+		render_int(rp, getcchar() + 1);
+		return TRUE;
+	} else if (vp) {
+		return gotochr(TRUE, strtol(vp,0,0));
 	} else {
 		return FALSE;
 	}
@@ -552,6 +578,18 @@ int var_LASTKEY(TBUFF **rp, const char *vp)
 	}
 }
 
+int var_LCOLS(TBUFF **rp, const char *vp)
+{
+	if (rp) {
+		render_int(rp, offs2col(curwp, DOT.l, llength(DOT.l)));
+		return TRUE;
+	} else if (vp) {
+		return ABORT;  /* read-only */
+	} else {
+		return FALSE;
+	}
+}
+
 int var_LIBDIR_PATH(TBUFF **rp, const char *vp)
 {
 	if (rp) {
@@ -734,6 +772,24 @@ int var_PAGELEN(TBUFF **rp, const char *vp)
 		return FALSE;
 	}
 }
+
+#if OPT_POSFORMAT
+int var_POSFORMAT(TBUFF **rp, const char *vp)
+{
+	if (rp) {
+		if (position_format == 0)
+			mlforce("BUG: position_format uninitialized");
+		else
+		    	tb_scopy(rp, position_format);
+		return TRUE;
+	} else if (vp) {
+		SetEnv(&position_format, vp);
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+#endif
 
 int var_CURWIDTH(TBUFF **rp, const char *vp)
 {

@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.199 1999/07/05 11:51:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.202 1999/07/16 10:10:23 tom Exp $
  *
  */
 
@@ -118,6 +118,7 @@ void *vargp)
 	return TRUE;
 }
 
+
 /*
  * Display the current position of the cursor, lines and columns, in the file,
  * the character that is under the cursor (in hex), and the fraction of the
@@ -128,6 +129,9 @@ void *vargp)
 int
 showcpos(int f GCC_UNUSED, int n GCC_UNUSED)
 {
+#if OPT_POSFORMAT
+	static TBUFF *result;
+#else
 	register LINE	*lp;		/* current line */
 	register B_COUNT numchars = 0;	/* # of chars in file */
 	register L_NUM	 numlines = 0;	/* # of lines in file */
@@ -138,6 +142,7 @@ showcpos(int f GCC_UNUSED, int n GCC_UNUSED)
 	C_NUM col;
 	C_NUM savepos;			/* temp save for current offset */
 	C_NUM ecol;			/* column pos/end of current line */
+#endif
 
 #if CC_WATCOM || CC_DJGPP /* for testing interrupts */
 	if (f && n == 11) {
@@ -148,11 +153,10 @@ showcpos(int f GCC_UNUSED, int n GCC_UNUSED)
 		return ABORT;
 	}
 #endif
-#if debug_undo_log
-	extern int do_undolog;
-	if (f && n == 11)
-		do_undolog = !do_undolog;
-#endif
+#if OPT_POSFORMAT
+	special_formatter(&result, position_format, curwp);
+	mlforce("%s", tb_values(result));
+#else
 	/* count chars and lines */
 	for_each_line(lp, curbp) {
 		/* if we are on the current line, record it */
@@ -194,6 +198,7 @@ showcpos(int f GCC_UNUSED, int n GCC_UNUSED)
 "Line %d of %d, Col %d of %d, Char %D of %D (%D%%) char is 0x%x or 0%o",
 		predlines+1, numlines, col+1, ecol,
 		predchars+1, numchars, ratio, curchar, curchar);
+#endif
 	return TRUE;
 }
 
@@ -292,10 +297,69 @@ LINEPTR the_line)
 }
 
 #if OPT_EVAL
+/*
+ * Returns the index of the mark in the buffer
+ */
+B_COUNT
+char_no(BUFFER *the_buffer, MARK the_mark)
+{
+	register LINE	*lp;
+	B_COUNT	curchar = 0;
+
+	for_each_line(lp, the_buffer) {
+		if (lp == the_mark.l) {
+			curchar += the_mark.o;
+			break;
+		}
+		curchar += llength(lp) + 1;
+	}
+
+	return curchar;
+}
+
+B_COUNT
+getcchar(void)
+{
+	return char_no(curbp, DOT);
+}
+
 L_NUM
 getcline(void)	/* get the current line number */
 {
 	return line_no(curbp, DOT.l);
+}
+#endif /* OPT_EVAL */
+
+#if !SMALLER
+/*
+ * Go to the given character index in the buffer
+ */
+int
+gotochr(int f, int n)
+{
+	LINE *lp;
+	int len;
+	int len_nl = b_val(curbp,MDDOS) ? 2 : 1;
+
+	if (!f) {
+		DOT.l = lback(buf_head(curbp));
+		DOT.o = llength(DOT.l);
+	} else {
+		B_COUNT goal = n;
+		for_each_line(lp, curbp) {
+			len = llength(lp) + len_nl;
+			if ((goal -= len) <= 0) {
+				DOT.l = lp;
+				if ((DOT.o = goal + len - 1) >= llength(lp))
+					DOT.o = llength(lp) - 1;
+				break;
+			}
+		}
+		if (goal > 0)
+			return FALSE;
+	}
+	curwp->w_flag |= WFMOVE;
+	return TRUE;
 }
 #endif
 

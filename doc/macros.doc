@@ -203,7 +203,7 @@ Misc macro syntax features
 --------------------------
 	Any line beginning with a semi-colon (;) or double-quote (")
 	character is ignored.  The semi-colon is inherited from MicroEMACS,
-	the double-quote is for vi compatibility.
+	the double-quote (") is for vi compatibility.
 
 	 Lines ending with '\' are joined before interpretation.
 
@@ -298,6 +298,8 @@ State Variables
 
 	$buffer-hook    Name of procedure to run when switching to a buffer.
 
+	$bwindows       [READ ONLY] Number of windows open on current buffer.
+
 	$cbufname       The current buffer's "buffername".  (As opposed
 			to the name of the file it may contain.)
 
@@ -320,6 +322,9 @@ State Variables
 		        the cursor location.
 
 	$cryptkey       [WRITE ONLY] encryption key.
+
+	$curchar        The index of the cursor's in the buffer, in characters
+			(counting from 1).
 
 	$curcol         The cursor's column number (counting from 1).
 
@@ -368,6 +373,8 @@ State Variables
 
 	$lastkey        [READ ONLY]  Character most recently entered at
 			the keyboard.
+
+	$lcols          [READ ONLY] The length (in columns) of the current line.
 
 	$libdir-path    This value will be used to augment the user's PATH
 			environment variable when running filters, so that
@@ -420,6 +427,9 @@ State Variables
 			has "typed ahead", i.e. there are waiting keystrokes.
 
 	$pid            [READ ONLY]  vile's process-id.
+
+	$position-format Format of ^G command.  See "Mode line customization"
+			in the vile help file.
 
 	$progname       [READ ONLY] The string "vile" "xvile", or "winvile"
 			as appropriate.
@@ -537,7 +547,7 @@ Functions
 		- character constants (single character in single quotes: 'C')
 		- any other string will be interpreted as 0.
 
-	 - Boolean (or "logical) arguments will be interpreted as
+	 - Boolean (or "logical") arguments will be interpreted as
 	     follows (without regard to upper/lowercase):
 		- Logically "true" values:
 		    "true", "t", "yes", "y", "on", and non-zero numerics.
@@ -1060,6 +1070,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.18 1999/06/21 00:12:07 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.20 1999/07/17 18:36:33 tom Exp $
 -----------------------------------
 

@@ -1,5 +1,31 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+(tom) 990717 (l)
+	+ turn off OPT_CACHE_VCOL, still too experimental.
+	+ correct flag that would force window repainting in set-dos-mode
+	  command, lost by optimization in 8.3k.
+	+ correct a syntax error in configure script's --with-no-leaks option.
+	+ fix several memory leaks in majormodes with new function
+	  free_sm_vals(), etc.
+	+ correct logic in write_string(), an infinite loop would result if the
+	  string contains a null (filters.c)
+	+ suppress $read-hook in readin() if we are not reading the current
+	  buffer.  This can happen as a side-effect of the :tags command, and
+	  would cause the prompt to be overwritten by the message from
+	  highlighting the current buffer.
+	+ add HighlightClear macro, bound to ^X-Q (request by J Chris Coppick).
+	+ add goto-char command, bound to ^X-G.
+	+ add variable $bwindows
+	+ add variable $curchar
+	+ add variable $lcols
+	+ add variable $position-format
+	+ implement a simple 'eval' or 'execute-string' command, allowing users
+	  to construct commands dynamically.
+	+ use new function vms_fseek_ok() to check if quickreadf() would not
+	  successfully read a file whose record structure prevents VMS's read()
+	  function from reading it in one call (patch by Clark Morgan, reported
+	  by Adam Denton).
+
 (tom) 990705 (k)
 	+ correct logic of read_quoted() from 8.3j, which no longer accepted
 	  nondigits after a control/V, e.g., ^V^D.
