@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.55 2001/08/21 00:18:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.56 2001/12/21 12:23:28 tom Exp $
  */
 
 #include	"estruct.h"
@@ -90,7 +90,6 @@ any_ro_STR(TBUFF **rp, const char *vp, const char *value)
 	return FALSE;
 }
 
-#if OPT_TITLE
 static int
 any_rw_STR(TBUFF **rp, const char *vp, TBUFF **value)
 {
@@ -105,7 +104,6 @@ any_rw_STR(TBUFF **rp, const char *vp, TBUFF **value)
 	}
 	return FALSE;
 }
-#endif /* OPT_TITLE */
 
 static int
 any_rw_EXPR(TBUFF **rp, const char *vp, TBUFF **value)
@@ -1103,6 +1101,11 @@ int var_PROCESSID(TBUFF **rp, const char *vp)
 int var_PROGNAME(TBUFF **rp, const char *vp)
 {
 	return any_ro_STR(rp, vp, prognam);
+}
+
+int var_PROMPT(TBUFF **rp, const char *vp)
+{
+	return any_rw_STR(rp, vp, &prompt_string);
 }
 
 int var_QIDENTIF(TBUFF **rp, const char *vp)

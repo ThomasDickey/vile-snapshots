@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.38 2000/08/25 11:05:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.40 2001/12/25 17:02:30 tom Exp $
  *
  */
 
@@ -18,51 +18,50 @@
 
 /*******(testing)************************************************************/
 #if NO_LEAKS
-typedef	struct	_tb_list	{
-	struct	_tb_list	*link;
-	TBUFF			*buff;
-	} TB_LIST;
+typedef struct _tb_list {
+    struct _tb_list *link;
+    TBUFF *buff;
+} TB_LIST;
 
-static	TB_LIST	*all_tbuffs;
+static TB_LIST *all_tbuffs;
 
 #define	AllocatedBuffer(q)	tb_remember(q);
 #define	FreedBuffer(q)		tb_forget(q);
 
-static
-void
-tb_remember(TBUFF *p)
+static void
+tb_remember(TBUFF * p)
 {
-	register TB_LIST *q = typealloc(TB_LIST);
-	q->buff = p;
-	q->link = all_tbuffs;
-	all_tbuffs = q;
+    TB_LIST *q = typealloc(TB_LIST);
+
+    q->buff = p;
+    q->link = all_tbuffs;
+    all_tbuffs = q;
 }
 
-static
-void
-tb_forget(TBUFF *p)
+static void
+tb_forget(TBUFF * p)
 {
-	register TB_LIST *q, *r;
+    TB_LIST *q, *r;
 
-	for (q = all_tbuffs, r = 0; q != 0; r = q, q = q->link)
-		if (q->buff == p) {
-			if (r != 0)
-				r->link = q->link;
-			else
-				all_tbuffs = q->link;
-			free((char *)q);
-			break;
-		}
+    for (q = all_tbuffs, r = 0; q != 0; r = q, q = q->link)
+	if (q->buff == p) {
+	    if (r != 0)
+		r->link = q->link;
+	    else
+		all_tbuffs = q->link;
+	    free((char *) q);
+	    break;
+	}
 }
 
 void
 tb_leaks(void)
 {
-	while (all_tbuffs != 0) {
-		TBUFF	*q = all_tbuffs->buff;
-		FreedBuffer(q);
-		tb_free(&q);
-	}
+    while (all_tbuffs != 0) {
+	TBUFF *q = all_tbuffs->buff;
+	FreedBuffer(q);
+	tb_free(&q);
+    }
 }
 
 #else
@@ -76,54 +75,54 @@ tb_leaks(void)
  * ensure that the given temp-buff has as much space as specified
  */
 TBUFF *
-tb_alloc(TBUFF **p, ALLOC_T n)
+tb_alloc(TBUFF ** p, ALLOC_T n)
 {
-	register TBUFF *q = *p;
-	if (q == 0) {
-		q = *p = typealloc(TBUFF);
-		q->tb_data = typeallocn(char, q->tb_size = n);
-		q->tb_used = 0;
-		q->tb_last = 0;
-		q->tb_endc = esc_c;
-		q->tb_data[0] = 0;	/* appease Purify */
-		q->tb_errs = FALSE;
-		AllocatedBuffer(q)
-	} else if (n >= q->tb_size) {
-		q->tb_data = typereallocn(char, q->tb_data, q->tb_size = (n*2));
-	}
-	return q;
+    TBUFF *q = *p;
+    if (q == 0) {
+	q = *p = typealloc(TBUFF);
+	q->tb_data = typeallocn(char, q->tb_size = n);
+	q->tb_used = 0;
+	q->tb_last = 0;
+	q->tb_endc = esc_c;
+	q->tb_data[0] = 0;	/* appease Purify */
+	q->tb_errs = FALSE;
+	AllocatedBuffer(q)
+    } else if (n >= q->tb_size) {
+	q->tb_data = typereallocn(char, q->tb_data, q->tb_size = (n * 2));
+    }
+    return q;
 }
 
 /*
  * (re)initialize a temp-buff
  */
 TBUFF *
-tb_init(TBUFF **p, int c)
+tb_init(TBUFF ** p, int c)
 {
-	register TBUFF *q = *p;
-	if (q == 0)
-		q = tb_alloc(p, NCHUNK);
-	q->tb_used = 0;
-	q->tb_last = 0;
-	q->tb_endc = c;		/* code to return if no-more-data */
-	q->tb_errs = FALSE;
-	return (*p = q);
+    TBUFF *q = *p;
+    if (q == 0)
+	q = tb_alloc(p, NCHUNK);
+    q->tb_used = 0;
+    q->tb_last = 0;
+    q->tb_endc = c;		/* code to return if no-more-data */
+    q->tb_errs = FALSE;
+    return (*p = q);
 }
 
 /*
  * deallocate a temp-buff
  */
 void
-tb_free(TBUFF **p)
+tb_free(TBUFF ** p)
 {
-	register TBUFF *q = *p;
+    TBUFF *q = *p;
 
-	if (q != 0) {
-		FreedBuffer(q)
-		free(q->tb_data);
-		free((char *)q);
-	}
-	*p = 0;
+    if (q != 0) {
+	FreedBuffer(q)
+	    free(q->tb_data);
+	free((char *) q);
+    }
+    *p = 0;
 }
 
 /*******(storage)************************************************************/
@@ -132,15 +131,15 @@ tb_free(TBUFF **p)
  * put a character c at the nth position of the temp-buff
  */
 TBUFF *
-tb_put(TBUFF **p, ALLOC_T n, int c)
+tb_put(TBUFF ** p, ALLOC_T n, int c)
 {
-	register TBUFF *q;
+    TBUFF *q;
 
-	if ((q = tb_alloc(p, n+1)) != 0) {
-		q->tb_data[n] = (char)c;
-		q->tb_used = n+1;
-	}
-	return (*p = q);
+    if ((q = tb_alloc(p, n + 1)) != 0) {
+	q->tb_data[n] = (char) c;
+	q->tb_used = n + 1;
+    }
+    return (*p = q);
 }
 
 #if NEEDED
@@ -149,12 +148,12 @@ tb_put(TBUFF **p, ALLOC_T n, int c)
  *  it's sort of the opposite of tb_peek
  */
 void
-tb_stuff(TBUFF *p, int c)
+tb_stuff(TBUFF * p, int c)
 {
-	if (p->tb_last < p->tb_used)
-		p->tb_data[p->tb_last] = c;
-	else
-		p->tb_endc = c;
+    if (p->tb_last < p->tb_used)
+	p->tb_data[p->tb_last] = c;
+    else
+	p->tb_endc = c;
 }
 #endif
 
@@ -162,75 +161,75 @@ tb_stuff(TBUFF *p, int c)
  * append a character to the temp-buff
  */
 TBUFF *
-tb_append(TBUFF **p, int c)
+tb_append(TBUFF ** p, int c)
 {
-	register TBUFF *q = *p;
-	register ALLOC_T n = (q != 0) ? q->tb_used : 0;
+    TBUFF *q = *p;
+    ALLOC_T n = (q != 0) ? q->tb_used : 0;
 
-	return tb_put(p, n, c);
+    return tb_put(p, n, c);
 }
 
 /*
  * insert a character into the temp-buff
  */
 TBUFF *
-tb_insert(TBUFF **p, ALLOC_T n, int c)
+tb_insert(TBUFF ** p, ALLOC_T n, int c)
 {
-	register ALLOC_T m = tb_length(*p);
-	register TBUFF *q = tb_append(p, c);
+    ALLOC_T m = tb_length(*p);
+    TBUFF *q = tb_append(p, c);
 
-	if (q != 0 && n < m) {
-		while (n < m) {
-			q->tb_data[m] = q->tb_data[m-1];
-			m--;
-		}
-		q->tb_data[m] = (char) c;
+    if (q != 0 && n < m) {
+	while (n < m) {
+	    q->tb_data[m] = q->tb_data[m - 1];
+	    m--;
 	}
-	return q;
+	q->tb_data[m] = (char) c;
+    }
+    return q;
 }
 
 /*
  * Copy one temp-buff to another
  */
 TBUFF *
-tb_copy(TBUFF **d, TBUFF *s)
+tb_copy(TBUFF ** d, TBUFF * s)
 {
-	register TBUFF *p;
+    TBUFF *p;
 
-	if (s != 0) {
-		if ((p = tb_init(d, s->tb_endc)) != 0)
-			p = tb_bappend(d, s->tb_data, s->tb_used);
-	} else
-		p = tb_init(d, esc_c);
-	return p;
+    if (s != 0) {
+	if ((p = tb_init(d, s->tb_endc)) != 0)
+	    p = tb_bappend(d, s->tb_data, s->tb_used);
+    } else
+	p = tb_init(d, esc_c);
+    return p;
 }
 
 /*
  * append a binary data to the temp-buff
  */
 TBUFF *
-tb_bappend(TBUFF **p, const char *s, ALLOC_T len)
+tb_bappend(TBUFF ** p, const char *s, ALLOC_T len)
 {
-	register TBUFF *q = *p;
-	register ALLOC_T n = (q != 0) ? q->tb_used : 0;
+    TBUFF *q = *p;
+    ALLOC_T n = (q != 0) ? q->tb_used : 0;
 
-	if ((q = tb_alloc(p, n+len)) != 0) {
-		memcpy(q->tb_data + n, s, len);
-		q->tb_used = n+len;
-		q->tb_errs += (s == error_val);
-	}
-	return *p;
+    if ((q = tb_alloc(p, n + len)) != 0) {
+	memcpy(q->tb_data + n, s, len);
+	q->tb_used = n + len;
+	q->tb_errs += (s == error_val);
+    }
+    return *p;
 }
 
 /*
  * append a string to the temp-buff
  */
 TBUFF *
-tb_sappend(TBUFF **p, const char *s)
+tb_sappend(TBUFF ** p, const char *s)
 {
-	if (s != 0)
-		(void) tb_bappend(p, s, strlen(s));
-	return *p;
+    if (s != 0)
+	(void) tb_bappend(p, s, strlen(s));
+    return *p;
 }
 
 /*
@@ -238,30 +237,30 @@ tb_sappend(TBUFF **p, const char *s)
  * target which is removed.
  */
 TBUFF *
-tb_sappend0(TBUFF **p, const char *s)
+tb_sappend0(TBUFF ** p, const char *s)
 {
-	if (s != 0) {
-		TBUFF *q = *p;
-		if (q != 0
-		 && q->tb_used > 0
-		 && q->tb_data[q->tb_used-1] == EOS) {
-			q->tb_used--;
-		}
-		tb_bappend(p, s, strlen(s));
-		tb_append(p, EOS);
+    if (s != 0) {
+	TBUFF *q = *p;
+	if (q != 0
+	    && q->tb_used > 0
+	    && q->tb_data[q->tb_used - 1] == EOS) {
+	    q->tb_used--;
 	}
-	return *p;
+	tb_bappend(p, s, strlen(s));
+	tb_append(p, EOS);
+    }
+    return *p;
 }
 
 /*
  * copy a string to the temp-buff, including a null
  */
 TBUFF *
-tb_scopy(TBUFF **p, const char *s)
+tb_scopy(TBUFF ** p, const char *s)
 {
-	(void) tb_init(p, EOS);
-	(void) tb_sappend(p, s);
-	return tb_append(p, EOS);
+    (void) tb_init(p, EOS);
+    (void) tb_sappend(p, s);
+    return tb_append(p, EOS);
 }
 
 /*
@@ -270,9 +269,9 @@ tb_scopy(TBUFF **p, const char *s)
 TBUFF *
 tb_string(const char *s)
 {
-	TBUFF *p = 0;
-	(void) tb_init(&p, EOS);
-	return tb_bappend(&p, s, strlen(s));
+    TBUFF *p = 0;
+    (void) tb_init(&p, EOS);
+    return tb_bappend(&p, s, strlen(s));
 }
 
 /*******(retrieval)************************************************************/
@@ -281,25 +280,25 @@ tb_string(const char *s)
  * get the nth character from the temp-buff
  */
 int
-tb_get(TBUFF *p, ALLOC_T n)
+tb_get(TBUFF * p, ALLOC_T n)
 {
-	register int	c = esc_c;
+    int c = esc_c;
 
-	if (p != 0)
-		c = (n < p->tb_used) ? p->tb_data[n] : p->tb_endc;
+    if (p != 0)
+	c = (n < p->tb_used) ? p->tb_data[n] : p->tb_endc;
 
-	return char2int(c);
+    return char2int(c);
 }
 
 /*
  * undo the last 'tb_put'
  */
 void
-tb_unput(TBUFF *p)
+tb_unput(TBUFF * p)
 {
-	if (p != 0
-	 && p->tb_used != 0)
-		p->tb_used -= 1;
+    if (p != 0
+	&& p->tb_used != 0)
+	p->tb_used -= 1;
 }
 
 /*******(iterators)************************************************************/
@@ -309,10 +308,10 @@ tb_unput(TBUFF *p)
  * Reset the iteration-count
  */
 void
-tb_first(TBUFF *p)
+tb_first(TBUFF * p)
 {
-	if (p != 0)
-		p->tb_last = 0;
+    if (p != 0)
+	p->tb_last = 0;
 }
 #endif
 
@@ -321,20 +320,20 @@ tb_first(TBUFF *p)
  * Returns true iff the iteration-count has not gone past the end of temp-buff.
  */
 int
-tb_more(TBUFF *p)
+tb_more(TBUFF * p)
 {
-	return (p != 0) ? (p->tb_last < p->tb_used) : FALSE;
+    return (p != 0) ? (p->tb_last < p->tb_used) : FALSE;
 }
 
 /*
  * get the next character from the temp-buff
  */
 int
-tb_next(TBUFF *p)
+tb_next(TBUFF * p)
 {
-	if (p != 0)
-		return tb_get(p, p->tb_last++);
-	return esc_c;
+    if (p != 0)
+	return tb_get(p, p->tb_last++);
+    return esc_c;
 }
 #endif
 
@@ -343,25 +342,25 @@ tb_next(TBUFF *p)
  * undo a tb_next
  */
 void
-tb_unnext(TBUFF *p)
+tb_unnext(TBUFF * p)
 {
-	if (p == 0)
-		return;
-	if (p->tb_last > 0)
-		p->tb_last--;
+    if (p == 0)
+	return;
+    if (p->tb_last > 0)
+	p->tb_last--;
 }
 
 /*
  * get the next character from the temp-buff w/o incrementing index
  */
 int
-tb_peek(TBUFF *p)
+tb_peek(TBUFF * p)
 {
-	if (p != 0)
-		return tb_get(p, p->tb_last);
-	return esc_c;
+    if (p != 0)
+	return tb_get(p, p->tb_last);
+    return esc_c;
 }
-#endif  /* NEEDED */
+#endif /* NEEDED */
 
 /*******(bulk-data)************************************************************/
 
@@ -369,34 +368,34 @@ tb_peek(TBUFF *p)
  * returns a pointer to data, assumes it is one long string
  */
 char *
-tb_values(TBUFF *p)
+tb_values(TBUFF * p)
 {
-	char *result = 0;
+    char *result = 0;
 
-	if (p != 0) {
-		if (p->tb_errs) {
-			result = error_val;
-		} else {
-			result = p->tb_data;
-		}
+    if (p != 0) {
+	if (p->tb_errs) {
+	    result = error_val;
+	} else {
+	    result = p->tb_data;
 	}
-	return result;
+    }
+    return result;
 }
 
 /*
  * returns the length of the data
  */
 ALLOC_T
-tb_length(TBUFF *p)
+tb_length(TBUFF * p)
 {
-	ALLOC_T result = 0;
+    ALLOC_T result = 0;
 
-	if (p != 0) {
-		if (p->tb_errs) {
-			result = 6;	/* sizeof(ERROR) */
-		} else {
-			result = p->tb_used;
-		}
+    if (p != 0) {
+	if (p->tb_errs) {
+	    result = 6;		/* sizeof(ERROR) */
+	} else {
+	    result = p->tb_used;
 	}
-	return result;
+    }
+    return result;
 }

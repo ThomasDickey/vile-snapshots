@@ -17,7 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.17 2001/09/18 09:49:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.18 2001/12/21 13:41:02 tom Exp $
  */
 
 #include "w32vile.h"
@@ -370,7 +370,7 @@ vile_oa::Create(vile_oa **ppvile, BOOL visible)
 
     // Name
     tmp = TO_OLE_STRING(prognam);
-    if (! (tmp && (pvile->m_bstrName = SysAllocString(tmp))))
+    if (! (tmp && (pvile->m_bstrName = SysAllocString(tmp)) != 0))
         return E_OUTOFMEMORY;
 
     // Load type information from type library.
@@ -532,7 +532,7 @@ vile_oa::get_FullName(BSTR *pbstr)
         if ((cp = strchr((char *) value, ' ')) != NULL)
             *cp = '\0';
         tmp = TO_OLE_STRING((char *) value);
-        if (! (tmp && (m_bstrFullName = SysAllocString(tmp))))
+        if (! (tmp && (m_bstrFullName = SysAllocString(tmp)) != 0))
             return (E_OUTOFMEMORY);
     }
     *pbstr = SysAllocString(m_bstrFullName);

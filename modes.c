@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.228 2001/09/19 00:06:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.234 2001/12/25 00:44:21 tom Exp $
  *
  */
 
@@ -1071,20 +1071,21 @@ set_mode_value(BUFFER *bp, const char *cp, int defining, int setting, int
     int unsetting = !setting && !global;
     int changed = FALSE;
 
+    /*
+     * Check if we're allowed to change this mode in the current context.
+     */
+    if (!defining
+	&& (names->side_effect != 0)
+	&& !(*(names->side_effect)) (args, (values == globls), TRUE)) {
+	return FALSE;
+    }
+
     if (rp == NULL) {
 	rp = no ? cp + 2 : cp;
     } else {
 	if (no && !is_bool_type(names->type))
 	    return FALSE;	/* this shouldn't happen */
 
-	/*
-	 * Check if we're allowed to change this mode in the current context.
-	 */
-	if (!defining
-	    && (names->side_effect != 0)
-	    && !(*(names->side_effect)) (args, (values == globls), TRUE)) {
-	    return FALSE;
-	}
 #if defined(GMD_GLOB) || defined(GVAL_GLOB)
 	if (!strcmp(names->name, "glob")
 	    && !legal_glob_mode(rp))
@@ -1192,14 +1193,21 @@ set_mode_value(BUFFER *bp, const char *cp, int defining, int setting, int
      * side-effects.
      */
     status = TRUE;
-    if (!same_val(names, values, &oldvalue))
+    if (!same_val(names, values, &oldvalue)) {
 	changed = TRUE;
+    }
 
     if (!defining
 	&& changed
 	&& (names->side_effect != 0)
-	&& !(*(names->side_effect)) (args, (values == globls), FALSE))
+	&& !(*(names->side_effect)) (args, (values == globls), FALSE)) {
+	if (!same_val(names, values, &oldvalue)) {
+	    free_val(names, values);
+	}
+	(void) copy_val(values, &oldvalue);
+	mlforce("[Cannot set this value]");
 	status = FALSE;
+    }
 
     if (isLocalVal(&oldvalue)
 	&& (values != globls))
@@ -1834,8 +1842,12 @@ char *
 get_record_sep(BUFFER *bp)
 {
     char *s = "";
+    RECORD_SEP code = b_val(bp, VAL_RECORD_SEP);
 
-    switch (b_val(bp, VAL_RECORD_SEP)) {
+    if (code == RS_AUTO)
+	code = RS_DEFAULT;
+
+    switch (code) {
     case RS_LF:
 	s = "\n";
 	break;
@@ -1845,6 +1857,8 @@ get_record_sep(BUFFER *bp)
     case RS_CR:
 	s = "\r";
 	break;
+    case RS_AUTO:
+	break;
     }
 
     return s;
@@ -1853,24 +1867,33 @@ get_record_sep(BUFFER *bp)
 void
 set_record_sep(BUFFER *bp, RECORD_SEP value)
 {
+    make_local_b_val(bp, MDDOS);
+    make_local_b_val(bp, VAL_RECORD_SEP);
     set_b_val(bp, MDDOS, (value == RS_CRLF));
     set_b_val(bp, VAL_RECORD_SEP, value);
     b_clr_counted(bp);
     (void) bsizes(bp);
     relist_settings();
     updatelistbuffers();
+    set_winflags(TRUE, WFMODE);
 }
 
 	/* Change the record separator */
 int
 chgd_rs(VALARGS * args, int glob_vals, int testing)
 {
+    /* we can set 'auto' only as a global */
+    if (!glob_vals) {
+	if (args->local->vp->i == RS_AUTO)
+	    return FALSE;
+    }
     if (!testing) {
 	if (curbp == 0)
 	    return FALSE;
 	set_record_sep(curbp, (RECORD_SEP) args->local->vp->i);
     }
 
+    set_winflags(TRUE, WFMODE);
     return chgd_major_w(args, glob_vals, testing);
 }
 
@@ -2828,7 +2851,7 @@ attach_mmode(BUFFER *bp, const char *name)
 		     * line when reading a .bat file on
 		     * a Unix system.
 		     */
-		    set_dosmode(0, 1);
+		    set_rs_crlf(0, 1);
 		}
 	    }
 	    return TRUE;
@@ -4086,6 +4109,7 @@ mode_leaks(void)
 	FreeAndNull(my_mode_list);
     }
     FreeAndNull(major_valnames);
+    FreeAndNull(majormodes_order);
 #endif
 }
 #endif /* NO_LEAKS */

@@ -5,16 +5,17 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.291 2001/12/06 00:59:49 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.304 2001/12/25 14:52:02 tom Exp $
  */
 
-#include	"estruct.h"
-#include	"edef.h"
+#include "estruct.h"
+#include "edef.h"
+#include "nefsms.h"
 
 #if SYS_WINNT
-#include	<io.h>		/* for mktemp */
-#include	<direct.h>	/* for mkdir */
-#define	vl_mkdir(path,mode) mkdir(path)
+#include <io.h>			/* for mktemp */
+#include <direct.h>		/* for mkdir */
+#define vl_mkdir(path,mode) mkdir(path)
 #else
 #define	vl_mkdir(path,mode) mkdir(path,mode)
 #endif
@@ -26,7 +27,7 @@
 #endif
 
 #if CC_NEWDOSCC
-#include	<io.h>
+#include <io.h>
 #endif
 
 #if CC_CSETPP
@@ -35,10 +36,6 @@
 #define isFileMode(mode) (mode & S_IFMT) == S_IFREG
 #endif
 
-static int bp2swbuffer(BUFFER *bp, int ask_rerun, int lockfl);
-static int kifile(char *fname);
-static void readlinesmsg(int n, int s, const char *f, int rdo);
-
 #if OPT_DOSFILES
 /* give DOS the benefit of the doubt on ambiguous files */
 # if CRLF_LINES
@@ -46,10 +43,6 @@ static void readlinesmsg(int n, int s, const char *f, int rdo);
 # else
 #  define MORETHAN >
 # endif
-#endif
-
-#if !SYS_MSDOS
-static int quickreadf(BUFFER *bp, int *nlinep);
 #endif
 
 /*--------------------------------------------------------------------------*/
@@ -183,7 +176,7 @@ check_file_changed(BUFFER *bp, char *fn)
 static int
 inquire_file_changed(BUFFER *bp, char *fn)
 {
-    register int status;
+    int status;
     if ((status = PromptFileChanged(bp, fn, "Write", TRUE)) != TRUE
 	&& (status != SORTOFTRUE)) {
 	mlforce("[Write aborted]");
@@ -195,7 +188,7 @@ inquire_file_changed(BUFFER *bp, char *fn)
 int
 check_visible_files_changed(void)
 {
-    register WINDOW *wp;
+    WINDOW *wp;
 
     for_each_visible_window(wp)
 	(void) check_file_changed(wp->w_bufp, wp->w_bufp->b_fname);
@@ -228,7 +221,7 @@ set_modtime(BUFFER *bp, char *fn)
 #endif /* MDCHK_MODTIME */
 
 #if SYS_UNIX || SYS_MSDOS
-#define	CleanToPipe()	if (fileispipe) ttclean(TRUE)
+#define CleanToPipe() if (fileispipe) ttclean(TRUE)
 
 static void
 CleanAfterPipe(int Wrote)
@@ -296,9 +289,9 @@ slowtime(time_t * refp)
 }
 #else
 # if SYS_WINNT
-#  define	slowtime(refp)	(fileispipe && !nowait_pipe_cmd && !ffhasdata())
+#  define slowtime(refp) (fileispipe && !nowait_pipe_cmd && !ffhasdata())
 # else
-#  define	slowtime(refp)	(fileispipe && !ffhasdata())
+#  define slowtime(refp) (fileispipe && !ffhasdata())
 # endif
 #endif
 
@@ -483,7 +476,7 @@ cannot_reread(void)
 int
 fileread(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    register int s;
+    int s;
     char fname[NFILEN];
 
     if (more_named_cmd()) {
@@ -544,6 +537,39 @@ set_last_file_edited(const char *f)
     tb_scopy(&lastfileedited, f);
 }
 
+static int
+bp2swbuffer(BUFFER *bp, int ask_rerun, int lockfl)
+{
+    int s;
+
+    if ((s = (bp != 0)) != FALSE) {
+	if (bp->b_active) {
+	    if (ask_rerun) {
+		switch (mlyesno(
+				   "Old command output -- rerun")) {
+		case TRUE:
+		    bp->b_active = FALSE;
+		    break;
+		case ABORT:
+		    s = FALSE;
+		    /* FALLTHRU */
+		default:
+		    mlerase();
+		    break;
+		}
+	    } else {
+		mlwrite("[Old buffer]");
+	    }
+	}
+	if (s == TRUE)
+	    s = swbuffer_lfl(bp, lockfl, FALSE);
+	if (s == TRUE)
+	    curwp->w_flag |= WFMODE | WFHARD;
+    }
+
+    return s;
+}
+
 int
 set_files_to_edit(const char *prompt, int appflag)
 {
@@ -593,7 +619,7 @@ int
 viewfile(int f GCC_UNUSED, int n GCC_UNUSED)
 {				/* visit a file in VIEW mode */
     char fname[NFILEN];		/* file user wishes to find */
-    register int s;		/* status return */
+    int s;			/* status return */
     char *actual;
     static TBUFF *last;
 
@@ -611,6 +637,129 @@ viewfile(int f GCC_UNUSED, int n GCC_UNUSED)
     return s;
 }
 
+/* utility routine for no. of lines read */
+static void
+readlinesmsg(int n, int s, const char *f, int rdo)
+{
+    char fname[NFILEN], *short_f;
+    const char *m;
+
+    /* if "f" is a pipe cmd, it can be arbitrarily long */
+    strncpy(fname, f, sizeof(fname) - 1);
+    fname[sizeof(fname) - 1] = '\0';
+
+    short_f = shorten_path(fname, TRUE);
+    switch (s) {
+    case FIOBAD:
+	m = "Incomplete line, ";
+	break;
+    case FIOERR:
+	m = "I/O Error, ";
+	break;
+    case FIOMEM:
+	m = "Not enough memory, ";
+	break;
+    case FIOABRT:
+	m = "Aborted, ";
+	break;
+    default:
+	m = "";
+	break;
+    }
+    if (!global_b_val(MDTERSE))
+	mlwrite("[%sRead %d line%s from \"%s\"%s]", m,
+		n, PLURAL(n), short_f, rdo ? "  (read-only)" : "");
+    else
+	mlforce("[%s%d lines]", m, n);
+}
+
+static void
+writelinesmsg(char *fn, int nline, B_COUNT nchar)
+{
+#define WRITE_FILE_FMT "[%s %s line%s %s char%s to \"%s\"]"
+
+    if (!global_b_val(MDTERSE)) {
+	const char *action;
+	char *aname, tmp[NFILEN], strlines[128], strchars[128];
+	int outlen, lines_len, chars_len;
+	if ((aname = is_appendname(fn)) != 0) {
+	    fn = aname;
+	    action = "Appended";
+	} else {
+	    action = "Wrote";
+	}
+	sprintf(strlines, "%d", nline);
+	sprintf(strchars, "%ld", nchar);
+	lines_len = strlen(strlines);
+	chars_len = strlen(strchars);
+	outlen = (term.cols - 1) -
+	    (
+		(sizeof(WRITE_FILE_FMT) - 13) +
+		strlen(action) +
+		lines_len +
+		chars_len +
+		strlen(PLURAL(nline)) +
+		strlen(PLURAL(nchar))
+	    );
+	mlforce(WRITE_FILE_FMT,
+		action,
+		strlines,
+		PLURAL(nline),
+		strchars,
+		PLURAL(nchar),
+		path_trunc(fn, outlen, tmp, sizeof(tmp)));
+    } else {
+	mlforce("[%d lines]", nline);
+    }
+#undef WRITE_FILE_FMT
+}
+
+/*
+ * Insert file "fname" into the kill register
+ * Called by insert file command. Return the final
+ * status of the read.
+ */
+static int
+kifile(char *fname)
+{
+    int i;
+    int s;
+    int nline;
+    int nbytes;
+
+    ksetup();
+    if ((s = ffropen(fname)) == FIOERR)		/* Hard file open.  */
+	goto out;
+    if (s == FIOFNF)		/* File not found.  */
+	return no_such_file(fname);
+
+    nline = 0;
+#if OPT_ENCRYPT
+    if ((s = vl_resetkey(curbp, fname)) == TRUE)
+#endif
+    {
+	mlwrite("[Reading...]");
+	CleanToPipe();
+	while ((s = ffgetline(&nbytes)) <= FIOSUC) {
+	    for (i = 0; i < nbytes; ++i)
+		if (!kinsert(fflinebuf[i]))
+		    return FIOMEM;
+	    if ((s == FIOSUC) && !kinsert('\n'))
+		return FIOMEM;
+	    ++nline;
+	    if (s < FIOSUC)
+		break;
+	}
+	CleanAfterPipe(FALSE);
+    }
+    kdone();
+    (void) ffclose();		/* Ignore errors.       */
+    readlinesmsg(nline, s, fname, FALSE);
+
+  out:
+    return (s != FIOERR);
+}
+
 /*
  * Insert a file into the current
  * buffer. This is really easy; all you do it
@@ -621,7 +770,7 @@ viewfile(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 insfile(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    register int s;
+    int s;
     char fname[NFILEN];
     static TBUFF *last;
 
@@ -716,52 +865,6 @@ getfile2bp(
     return bp;
 }
 
-static int
-bp2swbuffer(BUFFER *bp, int ask_rerun, int lockfl)
-{
-    register int s;
-
-    if ((s = (bp != 0)) != FALSE) {
-	if (bp->b_active) {
-	    if (ask_rerun) {
-		switch (mlyesno(
-				   "Old command output -- rerun")) {
-		case TRUE:
-		    bp->b_active = FALSE;
-		    break;
-		case ABORT:
-		    s = FALSE;
-		    /* FALLTHRU */
-		default:
-		    mlerase();
-		    break;
-		}
-	    } else {
-		mlwrite("[Old buffer]");
-	    }
-	}
-#if BEFORE
-	/*
-	 * The 'swbuffer()' function will invoke 'readin()', but it
-	 * doesn't accept the 'lockfl' parameter, so we call it here.
-	 */
-/* added swbuffer_lfl() to take lockfl arg to get around this problem.  the
- * readin() was happening before a lot of the buffer info was set up, so a
- * user readhook could not use that info successfully.
- * if this change appears successful, the bp2readin routine (4 lines) can
- * be folded into swbuffer_lfl(), which is the only caller.  --pgf */
-	if (!(bp->b_active))
-	    s = bp2readin(bp, lockfl);
-#endif
-	if (s == TRUE)
-	    s = swbuffer_lfl(bp, lockfl, FALSE);
-	if (s == TRUE)
-	    curwp->w_flag |= WFMODE | WFHARD;
-    }
-
-    return s;
-}
-
 int
 no_file_found(void)
 {
@@ -828,6 +931,8 @@ apply_dosmode(BUFFER *bp, int doslines, int unixlines)
     } else {
 	result = (doslines MORETHAN unixlines);
     }
+    TRACE2(("apply_dosmode %d dos:%d unix:%d\n", result, doslines, unixlines));
+
     /*
      * Make 'dos' and 'recordseparator' modes local, since this
      * transformation should apply only to the specified file.
@@ -840,11 +945,10 @@ apply_dosmode(BUFFER *bp, int doslines, int unixlines)
 }
 
 static void
-strip_if_dosmode(BUFFER *bp, int doslines, int unixlines)
+strip_if_dosmode(BUFFER *bp)
 {
-    apply_dosmode(bp, doslines, unixlines);
     if (b_val(bp, MDDOS)) {	/* if it _is_ a dos file, strip 'em */
-	register LINE *lp;
+	LINE *lp;
 	TRACE(("stripping CR's for dosmode\n"));
 	for_each_line(lp, bp) {
 	    if (llength(lp) > 0 &&
@@ -859,7 +963,7 @@ static void
 guess_dosmode(BUFFER *bp)
 {
     int doslines = 0, unixlines = 0;
-    register LINE *lp;
+    LINE *lp;
 
     /* first count 'em */
     for_each_line(lp, bp) {
@@ -871,34 +975,36 @@ guess_dosmode(BUFFER *bp)
 	}
     }
     /* then strip 'em */
-    strip_if_dosmode(bp, doslines, unixlines);
+    apply_dosmode(bp, doslines, unixlines);
+    strip_if_dosmode(bp);
     TRACE(("guess_dosmode %d\n", b_val(bp, MDDOS)));
 }
 
 /*
  * Forces the current buffer to be either 'dos' or 'unix' format.
  */
-static void
-explicit_dosmode(int flag)
+void
+explicit_dosmode(BUFFER *bp, RECORD_SEP record_sep)
 {
-    make_local_b_val(curbp, MDDOS);
-    make_local_b_val(curbp, VAL_RECORD_SEP);
+    TRACE(("explicit_dosmode(%s)\n",
+	   choice_to_name(fsm_recordsep_choices, record_sep)));
+    make_local_b_val(bp, MDDOS);
+    make_local_b_val(bp, VAL_RECORD_SEP);
 
-    set_b_val(curbp, MDDOS, flag);
-    set_b_val(curbp, VAL_RECORD_SEP, flag ? RS_CRLF : RS_LF);
+    set_b_val(bp, MDDOS, (record_sep == RS_CRLF));
+    set_b_val(bp, VAL_RECORD_SEP, record_sep);
 }
 
 /*
  * Recompute the buffer size, redisplay the [Settings] buffer.
  */
 static int
-modified_dosmode(int flag)
+modified_record_sep(int record_sep)
 {
-    explicit_dosmode(flag);
+    explicit_dosmode(curbp, record_sep);
     guess_dosmode(curbp);
-    explicit_dosmode(flag);	/* ignore the guess - only want to strip CR's */
+    explicit_dosmode(curbp, record_sep);	/* ignore the guess - only want to strip CR's */
     set_record_sep(curbp, (RECORD_SEP) b_val(curbp, VAL_RECORD_SEP));
-    curwp->w_flag |= WFMODE | WFHARD;
     return TRUE;
 }
 
@@ -907,17 +1013,25 @@ modified_dosmode(int flag)
  */
 /*ARGSUSED*/
 int
-set_dosmode(int f GCC_UNUSED, int n GCC_UNUSED)
+set_rs_crlf(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    return modified_dosmode(TRUE);
+    return modified_record_sep(RS_CRLF);
 }
 
 /* as above, but forces unix-mode instead */
 /*ARGSUSED*/
 int
-set_unixmode(int f GCC_UNUSED, int n GCC_UNUSED)
+set_rs_lf(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    return modified_dosmode(FALSE);
+    return modified_record_sep(RS_LF);
+}
+
+/* as above, but forces macintosh-mode instead */
+/*ARGSUSED*/
+int
+set_rs_cr(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    return modified_record_sep(RS_CR);
 }
 #endif /* OPT_DOSFILES */
 
@@ -965,6 +1079,220 @@ init_b_traits(BUFFER *bp)
 #endif
 }
 
+#if ! SYS_MSDOS
+/*
+ * Analyze the file to determine its format
+ */
+static RECORD_SEP
+guess_recordseparator(BUFFER *bp, UCHAR * buffer, B_COUNT length, L_NUM * lines)
+{
+    B_COUNT count_lf = 0;
+    B_COUNT count_cr = 0;
+    B_COUNT count_dos = 0;	/* CRLF's */
+    B_COUNT count_unix = 0;	/* LF's w/o preceding CR */
+    B_COUNT n;
+    RECORD_SEP result = RS_DEFAULT;
+
+    *lines = 0;
+    for (n = 0; n < length; ++n) {
+	switch (buffer[n]) {
+	case '\r':
+	    ++count_cr;
+	    break;
+	case '\n':
+	    ++count_lf;
+	    if (n != 0) {
+		if (buffer[n - 1] == '\r')
+		    ++count_dos;
+		else
+		    ++count_unix;
+	    }
+	    break;
+	}
+    }
+
+    TRACE(("guess_recordseparator assume %s CR:%ld, LF:%ld, CRLF:%ld\n",
+	   global_b_val(MDDOS) ? "dos" : "unix",
+	   (long) count_cr, (long) count_unix, (long) count_dos));
+
+    if (count_lf != 0) {
+	result = RS_LF;
+	if (global_b_val(MDDOS)) {
+	    if ((bp->b_flag & BFEXEC) != 0) {
+		result = (count_dos && !count_unix) ? RS_CRLF : RS_LF;
+	    } else if (count_dos MORETHAN count_unix) {
+		result = RS_CRLF;
+	    }
+	}
+	if (buffer[length - 1] != '\n')
+	    ++count_lf;
+	*lines = count_lf;
+    } else if (count_cr != 0) {
+	result = RS_CR;
+	if (buffer[length - 1] != '\r')
+	    ++count_cr;
+	*lines = count_cr;
+    }
+
+    TRACE(("...line count = %ld, format=%s\n", (long) *lines,
+	   choice_to_name(fsm_recordsep_choices, result)));
+    return result;
+}
+
+/*
+ * Return the index in buffer[] past the end of the record we're pointing to
+ * with 'offset'.
+ */
+static B_COUNT
+next_recordseparator(UCHAR * buffer, B_COUNT length, RECORD_SEP rscode,
+		     B_COUNT offset)
+{
+    B_COUNT result = offset;
+    B_COUNT n;
+    int done = FALSE;
+
+    for (n = offset; !done && (n < length); ++n) {
+	switch (buffer[n]) {
+	case '\r':
+	    if (rscode == RS_CR) {
+		result = n + 1;
+		done = TRUE;
+	    }
+	    break;
+	case '\n':
+	    if (rscode == RS_CRLF || rscode == RS_LF) {
+		result = n + 1;
+		done = TRUE;
+	    }
+	    break;
+	}
+    }
+    if (!done)
+	result = length;
+    return result;
+}
+
+/*
+ * If reading from an external file, read the whole file into memory at once
+ * and split it into lines.  That is potentially much faster than allocating
+ * each line separately.
+ */
+static int
+quickreadf(BUFFER *bp, int *nlinep)
+{
+    B_COUNT length;
+    B_COUNT offset;
+    LINE *lp;
+    L_NUM lineno = 0;
+    L_NUM nlines;
+    RECORD_SEP rscode;
+    UCHAR *buffer;
+#if OPT_ENCRYPT
+    int rc;
+#endif
+
+    TRACE(("quickreadf(buffer=%s, file=%s)\n", bp->b_bname, bp->b_fname));
+
+    if ((length = ffsize()) < 0) {
+	mlwarn("[Can't size file]");
+	return FIOERR;
+    }
+
+    /* avoid malloc(0) problems down below; let slowreadf() do the work */
+    if (length == 0
+	|| (buffer = castalloc(UCHAR, (ALLOC_T) length)) == NULL)
+	return FIOMEM;
+
+#if OPT_ENCRYPT
+    if ((rc = vl_resetkey(curbp, buffer)) != TRUE) {
+	free(buffer);
+	return rc;
+    }
+#endif
+
+    if ((length = ffread((char *) buffer, length)) < 0) {
+	free(buffer);
+	mlerror("reading");
+	return FIOERR;
+    }
+#if OPT_ENCRYPT
+    if (b_val(bp, MDCRYPT)
+	&& bp->b_cryptkey[0]) {	/* decrypt the file */
+	vl_setup_encrypt(bp->b_cryptkey);
+	vl_encrypt_blok((char *) buffer, (UINT) length);
+    }
+#endif
+
+    /*
+     * Analyze the file to determine its format:
+     */
+    rscode = guess_recordseparator(bp, buffer, length, &nlines);
+
+    /*
+     * Modify readin()'s setting for newline mode if needed:
+     */
+    if (buffer[length - 1] != (rscode == RS_CR ? '\r' : '\n')) {
+	set_b_val(bp, MDNEWLINE, FALSE);
+    }
+
+    /* allocate all of the line structs we'll need */
+    if ((bp->b_LINEs = typeallocn(LINE, nlines)) == NULL) {
+	FreeAndNull(buffer);
+	ffrewind();
+	return FIOMEM;
+    }
+    bp->b_ltext = buffer;
+    bp->b_ltext_end = bp->b_ltext + length;
+    bp->b_bytecount = length;
+    bp->b_linecount = nlines;
+    bp->b_LINEs_end = bp->b_LINEs + nlines;
+    b_set_counted(bp);
+
+    /* loop through the buffer again, creating
+       line data structure for each line */
+    for (lp = bp->b_LINEs, offset = 0; lp != bp->b_LINEs_end; ++lp) {
+	B_COUNT next = next_recordseparator(buffer, length, rscode, offset);
+	if (next == offset)
+	    break;
+#if !SMALLER
+	lp->l_number = ++lineno;
+#endif
+	lp->l_used = next - offset - 1;
+	if (!b_val(bp, MDNEWLINE) && next == length)
+	    lp->l_used += 1;
+	lp->l_size = lp->l_used + 1;
+	lp->l_text = (char *) (buffer + offset);
+	set_lforw(lp, lp + 1);
+	if (lp != bp->b_LINEs)
+	    set_lback(lp, lp - 1);
+	lsetclear(lp);
+	lp->l_nxtundo = null_ptr;
+#if OPT_LINE_ATTRS
+	lp->l_attrs = NULL;
+#endif
+	offset = next;
+    }
+    lp--;			/* point at last line again */
+
+    /* connect the end of the list */
+    set_lforw(lp, buf_head(bp));
+    set_lback(buf_head(bp), lp);
+
+    /* connect the front of the list */
+    set_lback(bp->b_LINEs, buf_head(bp));
+    set_lforw(buf_head(bp), bp->b_LINEs);
+
+    init_b_traits(bp);
+
+    *nlinep = nlines;
+
+    set_record_sep(bp, rscode);
+    strip_if_dosmode(bp);
+
+    return FIOSUC;
+}
+#endif /* ! SYS_MSDOS */
+
 /*
  *	Read file "fname" into a buffer, blowing away any text
  *	found there.  Returns the final status of the read.
@@ -975,13 +1303,13 @@ int
 readin(
 	  char *fname,		/* name of file to read */
 	  int lockfl,		/* check for file locks? */
-	  register BUFFER *bp,	/* read into this buffer */
+	  BUFFER *bp,		/* read into this buffer */
 	  int mflg)
 {				/* print messages? */
-    register WINDOW *wp;
-    register int s;
+    WINDOW *wp;
+    int s;
     int nline;
-#if	OPT_ENCRYPT
+#if OPT_ENCRYPT
     int local_crypt = (bp != 0)
     && is_local_val(bp->b_values.bv, MDCRYPT);
 #endif
@@ -997,7 +1325,7 @@ readin(
     if ((s = bclear(bp)) != TRUE)	/* Might be old.    */
 	return s;
 
-#if	OPT_ENCRYPT
+#if OPT_ENCRYPT
     /* bclear() gets rid of local flags */
     if (local_crypt) {
 	make_local_b_val(bp, MDCRYPT);
@@ -1126,193 +1454,16 @@ readin(
 int
 bp2readin(BUFFER *bp, int lockfl)
 {
-    register int s = readin(bp->b_fname, lockfl, bp, TRUE);
+    int s = readin(bp->b_fname, lockfl, bp, TRUE);
     bp->b_active = TRUE;
     return s;
 }
 
-#if ! SYS_MSDOS
-static int
-quickreadf(register BUFFER *bp, int *nlinep)
-{
-    register UCHAR *textp;
-    UCHAR *countp;
-    L_NUM nlines;
-    int incomplete = FALSE;
-    B_COUNT len, nbytes;
-
-#if	OPT_ENCRYPT
-    int s;
-    if ((s = vl_resetkey(curbp, bp->b_fname)) != TRUE)
-	return s;
-#endif
-
-#if SYS_VMS
-    /*
-     * Note that this routine uses fseek() to position a file, which
-     * doesn't work on VMS _unless_ the the file type is stream-access
-     * or fixed-length record with no carriage control.  If the
-     * target file can't meet these criteria, defer to slowreadf().
-     */
-
-    if (!vms_fseek_ok(bp->b_fname))
-	return (FIOMEM);
-#endif
-
-    if ((len = ffsize()) < 0) {
-	mlwarn("[Can't size file]");
-	return FIOERR;
-    }
-
-    /* avoid malloc(0) problems down below; let slowreadf() do the work */
-    if (len == 0)
-	return FIOMEM;
-#if OPT_WORKING
-    max_working = len;
-#endif
-    /* leave an extra byte at the front, for the length of the first
-       line.  after that, lengths go in place of the newline at
-       the end of the previous line */
-    bp->b_ltext = castalloc(UCHAR, (ALLOC_T) (len + 2));
-    if (bp->b_ltext == NULL)
-	return FIOMEM;
-
-    if ((len = ffread((char *) &bp->b_ltext[1], len)) < 0) {
-	FreeAndNull(bp->b_ltext);
-	mlerror("reading");
-	return FIOERR;
-    }
-#if OPT_ENCRYPT
-    if (b_val(bp, MDCRYPT)
-	&& bp->b_cryptkey[0]) {	/* decrypt the file */
-	vl_setup_encrypt(bp->b_cryptkey);
-	vl_encrypt_blok((char *) &bp->b_ltext[1], (UINT) len);
-    }
-#endif
-
-    /* loop through the buffer, replacing all newlines with the
-       length of the _following_ line */
-    bp->b_ltext_end = bp->b_ltext + len + 1;
-    countp = bp->b_ltext;
-    textp = countp + 1;
-    nbytes = len;
-    nlines = 0;
-
-    if (textp[len - 1] != '\n') {
-	textp[len++] = '\n';
-	set_b_val(bp, MDNEWLINE, FALSE);
-    }
-
-    while (len--) {
-	if (*textp == '\n') {
-	    if (textp - countp >= 255) {
-		UCHAR *np;
-#if OPT_WORKING
-		max_working = bp->b_ltext_end - countp;
-#endif
-		len = (B_COUNT) (countp - bp->b_ltext);
-		incomplete = TRUE;
-		/* we'll re-read the rest later */
-		if (len) {
-		    ffseek(len);
-		    np = castrealloc(UCHAR, bp->b_ltext, (ALLOC_T) len);
-		} else {
-		    np = NULL;
-		}
-		if (np == NULL) {
-		    ffrewind();
-		    FreeAndNull(bp->b_ltext);
-		    return FIOMEM;
-		}
-		bp->b_ltext = np;
-		bp->b_ltext_end = np + len + 1;
-		nbytes = len;
-		break;
-	    }
-	    *countp = (char) (textp - countp - 1);
-	    countp = textp;
-	    nlines++;
-	}
-	++textp;
-    }
-
-    if (nlines == 0) {
-	ffrewind();
-	FreeAndNull(bp->b_ltext);
-	incomplete = TRUE;
-    } else {
-	/* allocate all of the line structs we'll need */
-	bp->b_LINEs = typeallocn(LINE, nlines);
-	if (bp->b_LINEs == NULL) {
-	    FreeAndNull(bp->b_ltext);
-	    ffrewind();
-	    return FIOMEM;
-	}
-	bp->b_LINEs_end = bp->b_LINEs + nlines;
-	bp->b_bytecount = nbytes;
-	bp->b_linecount = nlines;
-	b_set_counted(bp);
-
-	/* loop through the buffer again, creating
-	   line data structure for each line */
-	{
-	    register LINE *lp;
-#if !SMALLER
-	    L_NUM lineno = 0;
-#endif
-	    lp = bp->b_LINEs;
-	    textp = bp->b_ltext;
-	    while (lp != bp->b_LINEs_end) {
-#if !SMALLER
-		lp->l_number = ++lineno;
-#endif
-		lp->l_used = *textp;
-		lp->l_size = *textp + 1;
-		lp->l_text = (char *) textp + 1;
-		set_lforw(lp, lp + 1);
-		if (lp != bp->b_LINEs)
-		    set_lback(lp, lp - 1);
-		lsetclear(lp);
-		lp->l_nxtundo = null_ptr;
-#if OPT_LINE_ATTRS
-		lp->l_attrs = NULL;
-#endif
-		lp++;
-		textp += *textp + 1;
-	    }
-	    /*
-	       if (textp != bp->b_ltext_end - 1)
-	       mlforce("BUG: textp not equal to end %d %d",
-	       textp,bp->b_ltext_end);
-	     */
-	    lp--;		/* point at last line again */
-
-	    /* connect the end of the list */
-	    set_lforw(lp, buf_head(bp));
-	    set_lback(buf_head(bp), lp);
-
-	    /* connect the front of the list */
-	    set_lback(bp->b_LINEs, buf_head(bp));
-	    set_lforw(buf_head(bp), bp->b_LINEs);
-	}
-	init_b_traits(bp);
-    }
-
-    *nlinep = nlines;
-
-    if (incomplete)
-	return FIOMEM;
-#if OPT_DOSFILES
-    if (global_b_val(MDDOS))
-	guess_dosmode(bp);
-#endif
-    return b_val(bp, MDNEWLINE) ? FIOSUC : FIOBAD;
-}
-
-#endif /* ! SYS_MSDOS */
-
+/*
+ * Read a file slowly, e.g., a line at a time, for instance from a pipe.
+ */
 int
-slowreadf(register BUFFER *bp, int *nlinep)
+slowreadf(BUFFER *bp, int *nlinep)
 {
     int s;
     int len;
@@ -1326,29 +1477,15 @@ slowreadf(register BUFFER *bp, int *nlinep)
 #if SYS_UNIX && OPT_SHELL
     time_t last_updated = time((time_t *) 0);
 #endif
-#if	OPT_ENCRYPT
+
+    TRACE(("slowreadf(buffer=%s, file=%s)\n", bp->b_bname, bp->b_fname));
+
+#if OPT_ENCRYPT
     if ((s = vl_resetkey(curbp, curbp->b_fname)) != TRUE)
 	return s;
 #endif
     b_set_counted(bp);		/* make 'addline()' do the counting */
-#if OPT_DOSFILES
-    /*
-     * There might be some pre-existing lines if quickreadf
-     * read part of the file and then left the rest up to us.
-     */
     make_local_b_val(bp, MDDOS);	/* keep it local, if not */
-    if (global_b_val(MDDOS)) {
-	register LINE *lp;
-	for_each_line(lp, bp) {
-	    if (llength(lp) > 0 &&
-		lgetc(lp, llength(lp) - 1) == '\r') {
-		doslines++;
-	    } else {
-		unixlines++;
-	    }
-	}
-    }
-#endif
     bp->b_lines_on_disk = 0;
     while ((s = ffgetline(&len)) <= FIOSUC) {
 	bp->b_lines_on_disk += 1;
@@ -1373,7 +1510,7 @@ slowreadf(register BUFFER *bp, int *nlinep)
 	else {
 	    /* reading from a pipe, and internal? */
 	    if (slowtime(&last_updated)) {
-		register WINDOW *wp;
+		WINDOW *wp;
 
 		flag |= (WFEDIT | WFFORCE);
 
@@ -1421,88 +1558,12 @@ slowreadf(register BUFFER *bp, int *nlinep)
     }
 #if OPT_DOSFILES
     if (global_b_val(MDDOS)) {
-	strip_if_dosmode(bp, doslines, unixlines);
+	apply_dosmode(bp, doslines, unixlines);
+	strip_if_dosmode(bp);
     }
 #endif
     init_b_traits(bp);
     return s;
-}
-
-/* utility routine for no. of lines read */
-static void
-readlinesmsg(int n, int s, const char *f, int rdo)
-{
-    char fname[NFILEN], *short_f;
-    const char *m;
-
-    /* if "f" is a pipe cmd, it can be arbitrarily long */
-    strncpy(fname, f, sizeof(fname) - 1);
-    fname[sizeof(fname) - 1] = '\0';
-
-    short_f = shorten_path(fname, TRUE);
-    switch (s) {
-    case FIOBAD:
-	m = "Incomplete line, ";
-	break;
-    case FIOERR:
-	m = "I/O Error, ";
-	break;
-    case FIOMEM:
-	m = "Not enough memory, ";
-	break;
-    case FIOABRT:
-	m = "Aborted, ";
-	break;
-    default:
-	m = "";
-	break;
-    }
-    if (!global_b_val(MDTERSE))
-	mlwrite("[%sRead %d line%s from \"%s\"%s]", m,
-		n, PLURAL(n), short_f, rdo ? "  (read-only)" : "");
-    else
-	mlforce("[%s%d lines]", m, n);
-}
-
-static void
-writelinesmsg(char *fn, int nline, B_COUNT nchar)
-{
-#define WRITE_FILE_FMT "[%s %s line%s %s char%s to \"%s\"]"
-
-    if (!global_b_val(MDTERSE)) {
-	const char *action;
-	char *aname, tmp[NFILEN], strlines[128], strchars[128];
-	int outlen, lines_len, chars_len;
-	if ((aname = is_appendname(fn)) != 0) {
-	    fn = aname;
-	    action = "Appended";
-	} else {
-	    action = "Wrote";
-	}
-	sprintf(strlines, "%d", nline);
-	sprintf(strchars, "%ld", nchar);
-	lines_len = strlen(strlines);
-	chars_len = strlen(strchars);
-	outlen = (term.cols - 1) -
-	    (
-		(sizeof(WRITE_FILE_FMT) - 13) +
-		strlen(action) +
-		lines_len +
-		chars_len +
-		strlen(PLURAL(nline)) +
-		strlen(PLURAL(nchar))
-	    );
-	mlforce(WRITE_FILE_FMT,
-		action,
-		strlines,
-		PLURAL(nline),
-		strchars,
-		PLURAL(nchar),
-		path_trunc(fn, outlen, tmp, sizeof(tmp)));
-    } else {
-	mlforce("[%d lines]", nline);
-    }
-#undef WRITE_FILE_FMT
 }
 
 /*
@@ -1516,9 +1577,9 @@ writelinesmsg(char *fn, int nline, B_COUNT nchar)
 void
 makename(char *bname, const char *fname)
 {
-    register char *fcp;
-    register char *bcp;
-    register int j;
+    char *fcp;
+    char *bcp;
+    int j;
     char temp[NFILEN];
 
     fcp = skip_string(strcpy(temp, fname));
@@ -1568,7 +1629,7 @@ makename(char *bname, const char *fname)
 
     (void) strncpy0(bcp, pathleaf(fcp), (SIZE_T) (NBUFN - (bcp - bname)));
 
-#if	SYS_UNIX
+#if SYS_UNIX
     /* UNIX filenames can have any characters (other than EOS!).  Refuse
      * (rightly) to deal with leading/trailing blanks, but allow embedded
      * blanks.  For this special case, ensure that the buffer name has no
@@ -1587,7 +1648,7 @@ makename(char *bname, const char *fname)
 
     bcp = skip_string(fcp);
     {
-	register char *cp2 = bname;
+	char *cp2 = bname;
 	strcpy0(bname, bcp, NBUFN);
 	cp2 = strchr(bname, ':');
 	if (cp2)
@@ -1596,11 +1657,11 @@ makename(char *bname, const char *fname)
 #endif
 }
 
+/* generate a unique name for a buffer */
 void
-unqname(			/* generate a unique name for a buffer */
-	   char *name)
-{				/* buffer name to make unique */
-    register SIZE_T j;
+unqname(char *name)
+{
+    SIZE_T j;
     char newname[NBUFN * 2];
     char suffixbuf[NBUFN];
     int suffixlen;
@@ -1643,7 +1704,7 @@ unqname(			/* generate a unique name for a buffer */
 int
 filewrite(int f, int n)
 {
-    register int s;
+    int s;
     char fname[NFILEN];
     int forced = (f && n == SPECIAL_BANG_ARG);
 
@@ -1670,7 +1731,7 @@ filewrite(int f, int n)
 int
 filesave(int f, int n)
 {
-    register int s;
+    int s;
     int forced = (f && n == SPECIAL_BANG_ARG);	/* then it was :w! */
 
     if (no_file_name(curbp->b_fname))
@@ -1695,10 +1756,10 @@ setup_file_region(BUFFER *bp, REGION * rp)
 static int
 actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced)
 {
-    register int s;
-    register LINE *lp;
-    register int nline;
-    register int i;
+    int s;
+    LINE *lp;
+    int nline;
+    int i;
     B_COUNT nchar;
     const char *ending = get_record_sep(bp);
     int len_rs = strlen(ending);
@@ -1728,7 +1789,7 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced)
     }
 #endif
 
-#if	OPT_ENCRYPT
+#if OPT_ENCRYPT
     if ((s = vl_resetkey(curbp, fn)) != TRUE)
 	return s;
 #endif
@@ -1752,8 +1813,8 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced)
 
     /* first (maybe partial) line and succeeding whole lines */
     while ((rp->r_size + offset) >= line_length(lp)) {
-	register C_NUM len = llength(lp) - offset;
-	register char *text = lp->l_text + offset;
+	C_NUM len = llength(lp) - offset;
+	char *text = lp->l_text + offset;
 
 	/* If this is the last line (and no fragment will be written
 	 * after the line), allow 'newline' mode to suppress the
@@ -1951,7 +2012,7 @@ kwrite(char *fn, int msgf)
 	    mlforce("Nothing to write");
 	return FALSE;		/* not an error, just nothing */
     }
-#if	OPT_ENCRYPT
+#if OPT_ENCRYPT
     if ((s = vl_resetkey(curbp, fn)) != TRUE)
 	return s;
 #endif
@@ -2003,7 +2064,7 @@ kwrite(char *fn, int msgf)
 int
 vl_filename(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    register int s;
+    int s;
     char fname[NFILEN];
 
     if (end_named_cmd()) {
@@ -2040,13 +2101,13 @@ vl_filename(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 ifile(char *fname, int belowthisline, FILE * haveffp)
 {
-    register LINEPTR prevp;
-    register LINEPTR newlp;
-    register LINEPTR nextp;
-    register BUFFER *bp;
-    register int s;
+    LINEPTR prevp;
+    LINEPTR newlp;
+    LINEPTR nextp;
+    BUFFER *bp;
+    int s;
     int nbytes;
-    register int nline;
+    int nline;
 
     bp = curbp;			/* Cheap.               */
     b_clr_flags(bp, BFINVS);	/* we are not temporary */
@@ -2055,7 +2116,7 @@ ifile(char *fname, int belowthisline, FILE * haveffp)
 	    goto out;
 	if (s == FIOFNF)	/* File not found.  */
 	    return no_such_file(fname);
-#if	OPT_ENCRYPT
+#if OPT_ENCRYPT
 	if ((s = vl_resetkey(curbp, fname)) != TRUE)
 	    return s;
 #endif
@@ -2115,60 +2176,12 @@ ifile(char *fname, int belowthisline, FILE * haveffp)
     return (s != FIOERR);
 }
 
-/*
- * Insert file "fname" into the kill register
- * Called by insert file command. Return the final
- * status of the read.
- */
-static int
-kifile(char *fname)
-{
-    register int i;
-    register int s;
-    register int nline;
-    int nbytes;
-
-    ksetup();
-    if ((s = ffropen(fname)) == FIOERR)		/* Hard file open.  */
-	goto out;
-    if (s == FIOFNF)		/* File not found.  */
-	return no_such_file(fname);
-
-    nline = 0;
-#if	OPT_ENCRYPT
-    if ((s = vl_resetkey(curbp, fname)) == TRUE)
-#endif
-    {
-	mlwrite("[Reading...]");
-	CleanToPipe();
-	while ((s = ffgetline(&nbytes)) <= FIOSUC) {
-	    for (i = 0; i < nbytes; ++i)
-		if (!kinsert(fflinebuf[i]))
-		    return FIOMEM;
-	    if ((s == FIOSUC) && !kinsert('\n'))
-		return FIOMEM;
-	    ++nline;
-	    if (s < FIOSUC)
-		break;
-	}
-	CleanAfterPipe(FALSE);
-    }
-    kdone();
-    (void) ffclose();		/* Ignore errors.       */
-    readlinesmsg(nline, s, fname, FALSE);
-
-  out:
-    return (s != FIOERR);
-}
-
-int create_save_dir(char *dirnam);
-
 /* try really hard to create a private subdirectory in some tmp
  * space to save the modified buffers in.  start with $TMPDIR, and
  * then the rest of the table.  if all that fails, try and create a subdir
  * of the current directory.
  */
-int
+static int
 create_save_dir(char *dirnam)
 {
     int result = FALSE;
@@ -2199,7 +2212,7 @@ create_save_dir(char *dirnam)
 	if (is_directory(tbl[n])) {
 	    int omask = vl_umask(0077);
 	    (void) pathcat(dirnam, tbl[n], "vileDXXXXXX");
-	    (void) mktemp(dirnam);
+	    (void) vl_mkdtemp(dirnam);
 	    /* on failure, keep going */
 	    result = (vl_mkdir(dirnam, 0700) == 0);
 	    (void) vl_umask(omask);
@@ -2366,7 +2379,7 @@ imdying(int ACTUAL_SIG_ARGS)
 void
 markWFMODE(BUFFER *bp)
 {
-    register WINDOW *wp;	/* scan for windows that need updating */
+    WINDOW *wp;			/* scan for windows that need updating */
     for_each_visible_window(wp) {
 	if (wp->w_bufp == bp)
 	    wp->w_flag |= WFMODE;

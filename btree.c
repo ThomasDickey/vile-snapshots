@@ -1,5 +1,5 @@
 /*
- * $Id: btree.c,v 1.12 2001/02/15 22:42:28 tom Exp $
+ * $Id: btree.c,v 1.13 2001/12/21 12:32:28 tom Exp $
  * Copyright 1997-1999 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
@@ -114,7 +114,7 @@ register
 		*q,
 		*r;
 register
-	short	a;
+	int	a;
 	BI_DATA	*value = 0;
 
 	TRACE(("inserting '%s'\n", data->bi_key));
@@ -248,7 +248,7 @@ register
 	BI_NODE	*t = &(funcs->head),
 		*p, *q, *r, *s;
 register
-	short	a, b;
+	int	a, b;
 	char	*value;
 
 	if ((p = t) == 0

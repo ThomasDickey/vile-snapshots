@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.218 2001/09/23 23:55:03 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.219 2001/12/22 17:55:20 tom Exp $
 #
 #
 
@@ -1392,12 +1392,17 @@ unset_charclass	NONE			OPT_SHOW_CTYPE
 reset_charclasses NONE			OPT_SHOW_CTYPE
 	"reset-char-classes"
 	<remove user-defined character class changes>
-set_dosmode	NONE			OPT_DOSFILES
+set_rs_crlf	NONE			OPT_DOSFILES
 	"set-dos-mode"
+	"set-rs-crlf"
 	<force a \"dos\"-style buffer: trim CR characters, and set \"dos-mode\">
-set_unixmode	NONE			OPT_DOSFILES
+set_rs_lf	NONE			OPT_DOSFILES
 	"set-unix-mode"
+	"set-rs-lf"
 	<force a \"unix\"-style buffer: trim CR characters, and unset \"dos-mode\">
+set_rs_cr	NONE			OPT_DOSFILES
+	"set-rs-cr"
+	<force a \"mac\"-style buffer: convert LF to CR, unset \"dos-mode\">
 settab		NONE
 	"handle-tab"			!FEWNAMES
 	"set-tab"

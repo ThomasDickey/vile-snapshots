@@ -3,7 +3,7 @@
  *
  *	Miscellaneous routines for UNIX/VMS compatibility.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.34 1999/11/24 19:50:39 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.35 2001/12/23 20:24:02 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -160,45 +160,6 @@ vms_creat(char *filename)
 
 	return fd;
 }
-
-
-/*
- * Returns TRUE if fseek() may be used to position a file at a byte offset.
- * Fseek acceptable if the file uses stream access or fixed-length records
- * with no carriage control.
- */
-int
-vms_fseek_ok(char *file)
-{
-#define CARRIAGE_CNTL (FAB$M_FTN | FAB$M_CR)
-
-    struct FAB fab;
-    int        status, retval;
-
-    fab            = cc$rms_fab;
-    fab.fab$b_fac  = FAB$M_GET;
-    fab.fab$b_shr  = FAB$M_SHRGET|FAB$M_SHRUPD;
-    fab.fab$l_fna  = file;
-    fab.fab$b_fns  = strlen(file);
-    status         = sys$open(&fab);
-    if (status != RMS$_NORMAL)
-	retval = FALSE;	       /* What? */
-    else
-    {
-        int rfm = fab.fab$b_rfm;   /* rfm == record format
-				    * rat == record attributes
-				    */
-
-	retval = (rfm == FAB$C_STMLF ||
-		  rfm == FAB$C_STMCR ||
-		  rfm == FAB$C_STM   ||
-		 (rfm == FAB$C_FIX  && ((fab.fab$b_rat & CARRIAGE_CNTL) == 0)));
-    }
-    (void) sys$close(&fab);
-    return (retval);
-#undef CARRIAGE_CNTL
-}
-
 
 
 /*

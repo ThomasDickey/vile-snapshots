@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.24 2001/09/23 22:08:13 mark.robinson Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.25 2001/12/21 13:05:12 tom Exp $
  */
 
 #include "estruct.h"
@@ -124,13 +124,13 @@ static void
 cbrd_count_meta_data(int        len,
                      UINT      *nbyte,
                      UINT      *nline,
-                     UCHAR *src)
+                     char      *src)
 {
     register UINT c;
 
     while (len--)
     {
-        if ((c = *src++) == '\n')
+        if ((c = (UCHAR) *src++) == '\n')
         {
             (*nline)++;
             (*nbyte)++;                    /* API requires CR/LF terminator */
@@ -179,20 +179,20 @@ count_rgn_data(void *argp, int l, int r)
 
 
 static void
-cbrd_copy_and_xlate(int len, UCHAR **cbrd_ptr, UCHAR *src)
+cbrd_copy_and_xlate(int len, UCHAR **cbrd_ptr, char *src)
 {
     register UINT c;
     UCHAR     *dst = *cbrd_ptr;
 
     while (len--)
     {
-        if ((c = *src++) == '\n')
+        if ((c = (UCHAR) *src++) == '\n')
         {
             *dst++ = '\r';
             *dst++ = '\n';
         }
         else if ((c >= _SPC_ && c <= _TILDE_) || (c == _TAB_))
-            *dst++ = c;
+            *dst++ = (UCHAR) c;
         else if (c < _SPC_)
         {
             *dst++ = '^';
@@ -210,7 +210,7 @@ cbrd_copy_and_xlate(int len, UCHAR **cbrd_ptr, UCHAR *src)
                 *dst++ = hexdigits[c & 0xf];
             }
             else
-                *dst++ = c;
+                *dst++ = (UCHAR) c;
         }
     }
     *cbrd_ptr = dst;
@@ -293,7 +293,7 @@ cbrd_reg_copy(void)
     {
         i      = KbSize(ukb, kp);
         nbyte += i;
-        cbrd_count_meta_data(i, &nbyte, &nline, kp->d_chunk);
+        cbrd_count_meta_data(i, &nbyte, &nline, (char *) kp->d_chunk);
     }
     nbyte++;   /* Add room for terminating null */
 
@@ -305,7 +305,7 @@ cbrd_reg_copy(void)
     }
     dst = GlobalLock(hClipMem);
     for (kp = kbs[ukb].kbufh; kp; kp = kp->d_next)
-        cbrd_copy_and_xlate((int) KbSize(ukb, kp), &dst, kp->d_chunk);
+        cbrd_copy_and_xlate((int) KbSize(ukb, kp), &dst, (char *) kp->d_chunk);
     *dst = '\0';
     GlobalUnlock(hClipMem);
     return (setclipboard(hClipMem, nbyte, nline));
@@ -487,7 +487,7 @@ map_cbrd_char(UINT c, UCHAR mapped_rslt[MAX_MAPPED_STR])
                       sizeof(cbrdmap[0]),
                       map_compare);
     if (! rslt_p)
-        mapped_rslt[nmapped++] = c;
+        mapped_rslt[nmapped++] = (UCHAR) c;
     else
     {
         for (str = rslt_p->str; *str; str++)

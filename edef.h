@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.290 2001/12/14 13:00:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.291 2001/12/21 12:36:24 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -144,6 +144,7 @@ decl_uninit( HOOK majormodehook );	/* proc to run for majormodes */
 decl_uninit( int ignorecase );
 
 decl_init( int curgoal, -1 );		/* column goal			*/
+decl_uninit( TBUFF *prompt_string );	/* command-line prompt-string	*/
 decl_uninit( char *execstr );		/* string being executed	*/
 #if OPT_MLFORMAT
 decl_uninit( char *modeline_format );	/* modeline formatting string */

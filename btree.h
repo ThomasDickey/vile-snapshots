@@ -1,5 +1,5 @@
 /*
- * $Id: btree.h,v 1.3 1998/05/14 00:46:55 tom Exp $
+ * $Id: btree.h,v 1.4 2001/12/21 12:19:24 tom Exp $
  *
  * Interface for btree.c
  */
@@ -17,7 +17,7 @@
 #define BI_NODE struct _bi_node
 	BI_NODE	{
 	BI_NODE	*links[2];
-	short	 balance;	/* holds 0, -1, +1 */
+	int	 balance;	/* holds 0, -1, +1 */
 	BI_DATA  value;
 	};
 

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.297 2001/09/18 22:18:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.302 2001/12/25 18:25:22 tom Exp $
  *
  */
 
@@ -50,6 +50,7 @@ static const char *s2offset(const char *s, const char *n);
 static int SetVarValue(VWRAP * var, const char *name, const char *value);
 static int lookup_statevar(const char *vname);
 static void FindVar(char *var, VWRAP * vd);
+static void free_vars_cmpl(void);
 #endif
 
 /*--------------------------------------------------------------------------*/
@@ -177,7 +178,7 @@ static int
 match_charclass_regexp(int ch, REGEXVAL * exp)
 {
     char temp[2];
-    temp[0] = ch;
+    temp[0] = (char) ch;
 
     return regexec(exp->reg, temp, temp + 1, 0, 0);
 }
@@ -1066,6 +1067,7 @@ FindVar(char *var, VWRAP * vd)
 		p->u_value = 0;
 		temp_vars = vd->v_ptr = p;
 		vd->v_type = VW_TEMPVAR;
+		free_vars_cmpl();
 	    }
 	}
 	break;
@@ -1096,6 +1098,7 @@ vars_complete(
 		 unsigned *pos)
 {
     int status;
+
     if (buf[0] == '$') {
 	*pos -= 1;		/* account for leading '$', not in tables */
 	status = kbd_complete(0, c, buf + 1, pos,
@@ -1210,6 +1213,7 @@ rmv_tempvar(const char *name)
 	    free_UVAR_value(p);
 	    free(p->u_name);
 	    free((char *) p);
+	    free_vars_cmpl();
 	    return TRUE;
 	}
     }
@@ -1733,31 +1737,40 @@ qs_vars_cmp(const void *a, const void *b)
     return vl_stricmp(*(const char *const *) a, (*(const char *const *) b));
 }
 
+static char **vars_cmpl_list;
+
+static void
+free_vars_cmpl(void)
+{
+    FreeAndNull(vars_cmpl_list);
+}
+
 static char **
 init_vars_cmpl(void)
 {
     int pass;
     UVAR *p;
     unsigned count;
-    char **list = 0;
 
-    for (pass = 0; pass < 2; pass++) {
-	count = 0;
-	for (p = temp_vars; p != 0; p = p->next) {
-	    if (pass != 0)
-		list[count] = p->u_name;
-	    count++;
+    if (vars_cmpl_list == 0) {
+	for (pass = 0; pass < 2; pass++) {
+	    count = 0;
+	    for (p = temp_vars; p != 0; p = p->next) {
+		if (pass != 0)
+		    vars_cmpl_list[count] = p->u_name;
+		count++;
+	    }
+	    if (pass == 0)
+		vars_cmpl_list = typeallocn(char *, count + 1);
 	}
-	if (pass == 0)
-	    list = typeallocn(char *, count + 1);
-    }
 
-    if (list != 0) {
-	list[count] = 0;
-	qsort(list, count, sizeof(char *), qs_vars_cmp);
-    }
+	if (vars_cmpl_list != 0) {
+	    vars_cmpl_list[count] = 0;
+	    qsort(vars_cmpl_list, count, sizeof(char *), qs_vars_cmp);
+	}
 
-    return list;
+    }
+    return vars_cmpl_list;
 }
 
 static int
@@ -1770,7 +1783,6 @@ complete_vars(DONE_ARGS)
 	status = kbd_complete(0, c, buf, pos,
 			      (const char *) nptr,
 			      sizeof(char *));
-	free(nptr);
     }
     return status;
 }
@@ -2307,7 +2319,7 @@ mkupper(char *s)
 
 	for (sp = s; *sp; sp++)
 	    if (isLower(*sp))
-		*sp = toUpper(*sp);
+		*sp = (char) toUpper(*sp);
 
     }
     return s;
@@ -2322,7 +2334,7 @@ mklower(char *s)
 
 	for (sp = s; *sp; sp++)
 	    if (isUpper(*sp))
-		*sp = toLower(*sp);
+		*sp = (char) toLower(*sp);
 
     }
     return s;
@@ -2421,3 +2433,13 @@ append_quoted_token(TBUFF ** dst, char *values, unsigned last)
     tb_append(dst, DQUOTE);
 }
 #endif /* !SMALLER */
+
+#if NO_LEAKS
+void
+vars_leaks(void)
+{
+#if OPT_EVAL
+    free_vars_cmpl();
+#endif
+}
+#endif

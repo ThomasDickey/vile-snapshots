@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.198 2001/09/23 23:23:55 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.201 2001/12/24 01:20:46 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -259,6 +259,7 @@ string
 "pid"		PROCESSID		# vile's process-id
 "position-format" POSFORMAT	OPT_POSFORMAT # position format string
 "progname"	PROGNAME		# returns current prog name - "vile"
+"prompt"	PROMPT			# command-prompt string - ": "
 "qidentifier"	QIDENTIF		# current qualified identifier
 "read-hook"	RDHOOK		OPT_HOOKS	# procedure to run when reading
 "replace"	REPLACE			# replacement pattern
@@ -494,9 +495,10 @@ string
 "stmcr"		FAB$C_STMCR
 
 .table recordsep
-"lf"		RS_LF
-# "cr"		RS_CR
+# "auto"	RS_AUTO
+"cr"		RS_CR
 "crlf"		RS_CRLF
+"lf"		RS_LF
 
 .table videoattrs		OPT_COLOR
 "bold"		VABOLD

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.69 2001/12/14 12:30:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.70 2001/12/22 13:01:52 tom Exp $
  *
  */
 
@@ -22,8 +22,11 @@
 #define	NPAUSE	200		/* # times thru update to pause */
 #define NOKYMAP (-1)
 
-#define ForeColor(f)	(ctrans[((f) < 0 ? C_WHITE : (f))] & (NCOLORS-1))
-#define BackColor(b)	(ctrans[((b) < 0 ? C_BLACK : (b))] & (NCOLORS-1))
+#define DFT_BCOLOR  C_BLACK
+#define DFT_FCOLOR  ((ncolors >= 8) ? 7 : (ncolors - 1))
+
+#define ForeColor(f)	(ctrans[((f) < 0 ? DFT_FCOLOR : (f))] & (NCOLORS-1))
+#define BackColor(b)	(ctrans[((b) < 0 ? DFT_BCOLOR : (b))] & (NCOLORS-1))
 #define AttrColor(b,f)	((WORD)((BackColor(b) << 4) | ForeColor(f)))
 
 static HANDLE hConsoleOutput;	/* handle to the console display */
@@ -43,6 +46,7 @@ static int cfcolor = -1;	/* current forground color */
 static int cbcolor = -1;	/* current background color */
 static int nfcolor = -1;	/* normal foreground color */
 static int nbcolor = -1;	/* normal background color */
+static int rvcolor = 0;		/* nonzero if we reverse colors */
 static int crow = -1;		/* current row */
 static int ccol = -1;		/* current col */
 static int keyboard_open = FALSE;	/* keyboard is open */
@@ -75,11 +79,12 @@ static WORD
 AttrVideo(int b, int f)
 {
     WORD result;
-    UINT mask = (global_g_val(GVAL_VIDEO) & VAREV);
-    if (mask ^ VAREV) {
-	result = AttrColor(b, f);
+    if (rvcolor) {
+	result = ((WORD) ((ForeColor(f) << 4) | BackColor(b)));
+	TRACE2(("rev AttrVideo(%d,%d) = %04x\n", f, b, result));
     } else {
-	result = AttrColor(f, b);
+	result = ((WORD) ((BackColor(b) << 4) | ForeColor(f)));
+	TRACE2(("AttrVideo(%d,%d) = %04x\n", f, b, result));
     }
     return result;
 }
@@ -91,6 +96,7 @@ static void
 set_current_attr(void)
 {
     currentAttribute = AttrColor(cbcolor, cfcolor);
+    TRACE2(("set_current_attr %04x\n", currentAttribute));
 }
 
 static void
@@ -158,6 +164,7 @@ scflush(void)
 static void
 ntfcol(int color)
 {				/* set the current output color */
+    TRACE2(("ntfcol(%d)\n", color));
     scflush();
     nfcolor = cfcolor = color;
     set_current_attr();
@@ -166,6 +173,7 @@ ntfcol(int color)
 static void
 ntbcol(int color)
 {				/* set the current background color */
+    TRACE2(("ntbcol(%d)\n", color));
     scflush();
     nbcolor = cbcolor = color;
     set_current_attr();
@@ -197,18 +205,19 @@ nteeol(void)
 {
     DWORD written;
     COORD coordCursor;
+    int length;
 
     scflush();
+    length = csbi.dwMaximumWindowSize.X - ccol;
     coordCursor.X = (SHORT) ccol;
     coordCursor.Y = (SHORT) crow;
+    TRACE2(("nteeol [%d,%d] erase %d with %04x\n", crow, ccol, length, currentAttribute));
     FillConsoleOutputCharacter(
 				  hConsoleOutput, ' ',
-				  csbi.dwMaximumWindowSize.X - ccol,
-				  coordCursor, &written);
+				  length, coordCursor, &written);
     FillConsoleOutputAttribute(
 				  hConsoleOutput, currentAttribute,
-				  csbi.dwMaximumWindowSize.X - ccol,
-				  coordCursor, &written);
+				  length, coordCursor, &written);
 }
 
 /*
@@ -394,6 +403,7 @@ nteeop(void)
     cnt = csbi.dwMaximumWindowSize.X - ccol
 	+ (csbi.dwMaximumWindowSize.Y - crow - 1)
 	* csbi.dwMaximumWindowSize.X;
+    TRACE2(("nteeop [%d,%d] erase %d with %04x\n", crow, ccol, cnt, currentAttribute));
     FillConsoleOutputCharacter(
 				  hConsoleOutput, ' ', cnt, coordCursor, &written
 	);
@@ -409,7 +419,11 @@ ntrev(UINT attr)
     scflush();
     cbcolor = nbcolor;
     cfcolor = nfcolor;
+    rvcolor = (global_g_val(GVAL_VIDEO) & VAREV) ? 1 : 0;
     attr &= (VASPCOL | VACOLOR | VABOLD | VAITAL | VASEL | VAREV);
+
+    TRACE2(("ntrev(%04x) f=%d, b=%d\n", attr, cfcolor, cbcolor));
+
     if (attr) {
 	if (attr & VASPCOL)
 	    cfcolor = (VCOLORNUM(attr) & (NCOLORS - 1));
@@ -417,15 +431,9 @@ ntrev(UINT attr)
 	    cfcolor = ((VCOLORNUM(attr)) & (NCOLORS - 1));
 
 	if (cfcolor == ENUM_UNKNOWN)
-	    cfcolor = C_WHITE;
+	    cfcolor = DFT_FCOLOR;
 	if (cbcolor == ENUM_UNKNOWN)
-	    cbcolor = C_BLACK;
-
-	if (attr & (VASEL | VAREV)) {	/* reverse video? */
-	    int temp = cfcolor;
-	    cfcolor = cbcolor;
-	    cbcolor = temp;
-	}
+	    cbcolor = DFT_BCOLOR;
 
 	if (attr == VABOLD) {
 	    cfcolor |= FOREGROUND_INTENSITY;
@@ -433,7 +441,12 @@ ntrev(UINT attr)
 	if (attr == VAITAL) {
 	    cbcolor |= BACKGROUND_INTENSITY;
 	}
-	TRACE2(("ntrev(%04x) f=%4x, b=%4x\n", attr, cfcolor, cbcolor));
+
+	if (attr & (VASEL | VAREV)) {	/* reverse video? */
+	    rvcolor ^= 1;
+	}
+
+	TRACE2(("...ntrev(%04x) f=%d, b=%d\n", attr, cfcolor, cbcolor));
     }
     set_current_attr();
 }
