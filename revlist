@@ -1,6 +1,6 @@
-revlist for vile, version v7_2c
+revlist for vile, version v7_2d
 --------------------------------------------------------------------------------
-CHANGES	1.89
+CHANGES	1.90
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -12,7 +12,7 @@ README	1.61
 README.CFG	1.11
 README.MENU	1.5
 README.PC	1.12
-aclocal.m4	1.33
+aclocal.m4	1.37
 ansi.c	1.28
 basic.c	1.93
 bind.c	1.158
@@ -25,7 +25,7 @@ chgdfunc.h	1.4
 cmdtbl	1.144
 config_h.in	1.2
 configure	none
-configure.in	1.62
+configure.in	1.64
 crypt.c	1.18
 csrch.c	1.27
 descrip.mms	1.34
@@ -57,24 +57,24 @@ itbuff.c	1.11
 lckfiles.c	1.7
 line.c	1.106
 macros.doc	1.12
-main.c	1.300
+main.c	1.301
 makefile.blc	1.6
 makefile.djg	1.21
 makefile.icc	1.7
-makefile.in	1.83
+makefile.in	1.85
 makefile.tbc	1.21
 makefile.wat	1.23
 makefile.wnt	1.17
 manfilt.c	1.20
 manfilt.pl	1.1
 manpage.rc	1.2
-map.c	1.76
+map.c	1.77
 menu.c	1.14
 mkdirs.sh	1.2
 mktbls.c	1.83
-modes.c	1.102
+modes.c	1.104
 modes.doc	1.2
-modetbl	1.83
+modetbl	1.84
 msgs.c	1.16
 npopen.c	1.58
 ntconio.c	1.23
@@ -82,20 +82,20 @@ oneliner.c	1.86
 opers.c	1.58
 os2pipe.c	1.3
 os2vio.c	1.13
-patchlev.h	1.61
+patchlev.h	1.62
 path.c	1.79
 pictmode.rc	1.1
 proto.h	1.253
 random.c	1.187
 regexp.c	1.63
 region.c	1.81
-revlist	v7_2c
+revlist	v7_2d
 search.c	1.107
 select.c	1.54
 spawn.c	1.115
 tags.c	1.83
 tbuff.c	1.28
-tcap.c	1.94
+tcap.c	1.95
 termio.c	1.148
 trace.c	1.4
 trace.h	1.4

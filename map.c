@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.76 1997/09/03 17:25:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.77 1997/09/18 00:31:52 tom Exp $
  *
  */
 
@@ -599,7 +599,6 @@ mapungetc(int c)
 	mapgetc_ungotcnt++;
 }
 
-#define TOOMANY 1200
 static int infloopcount;
 static int mapgetc_raw_flag;
 
@@ -613,7 +612,7 @@ mapgetc(void)
     	remapflag = NOREMAP;
 
     if (mapgetc_ungotcnt > 0) {
-	    if (infloopcount++ > TOOMANY) {
+	    if (infloopcount++ > global_g_val(GVAL_MAPLENGTH)) {
 		(void)itb_init(&mapgetc_ungottenchars, abortc);
 		mapgetc_ungotcnt = 0;
 		mlforce("[Infinite loop detected in %s sequence]",

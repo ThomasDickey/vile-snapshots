@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.300 1997/09/04 23:14:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.301 1997/09/18 00:31:57 tom Exp $
  *
  */
 
@@ -800,6 +800,8 @@ global_val_init(void)
 
 	/* allow remapping by default */
 	set_global_g_val(GMDREMAP, TRUE);
+
+	set_global_g_val(GVAL_MAPLENGTH, 1200);
 
 	/* set noresolve-links by default in case we've got NFS problems */
 #ifdef GMDRESOLVE_LINKS

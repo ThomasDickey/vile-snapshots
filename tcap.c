@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.94 1997/09/06 12:12:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.95 1997/09/18 22:45:51 tom Exp $
  *
  */
 
@@ -27,7 +27,11 @@
 #  undef TRUE
 #  undef FALSE
 #  undef WINDOW
-#  include <curses.h>
+#  if HAVE_NCURSES_H
+#    include <ncurses.h>
+#  else
+#    include <curses.h>
+#  endif
 #  undef WINDOW
 #  define WINDOW vile_WINDOW
 #  ifndef TRUE
