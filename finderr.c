@@ -2,7 +2,7 @@
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  * rewritten to use regular expressions, 1995 by T.Dickey (dickey@clark.net)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.61 1997/03/15 15:48:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.62 1997/04/11 11:16:15 cmorgan Exp $
  *
  */
 
@@ -67,6 +67,10 @@ static const
 char *const predefined[] = {
 	"^\"%[^\" \t]\", line %L:%T",		/* various C compilers */
 	"^%[^: \t]:\\s*%L:\\s*%T",		/* "grep -n" */
+#if OPT_MSDOS_PATH
+	"^%F:\\s*%L:\\s*%T",			/* "grep -n", handles */
+	                                        /* dos drive letter   */
+#endif
 #if SYS_APOLLO
 	" Line %L of \"%[^\" \t]\"",		/* C compiler */
 #endif

@@ -1,7 +1,21 @@
 Changes for vile 7.1 (released ??? ??? ??, 1997)
 
+(tom)	970407 (g)
+	+ add mode 'tagword', which allows user to lookup the whole word rather
+	  than a substring.  (from Adam Denton <adenton@genre.com>).
+	+ reintroduce flag 'i_displayed' into 'working' mode (I'd forgotten
+	  that it suppressed the message until screen-mode).
+	+ improve buffer-switching in menu-support (patch by Philippe Chassany)
+	+ correction to MS-DOS, etc., where attempt was made to fclose a file
+	  pointer that was out of scope (patch by Clark Morgan).
+	+ modify definition of eql_bname() macro so that buffer names are
+	  treated as case-insensitive where filenames are, e.g., WinNT and
+	  OS/2 (patch by Rick Sladkey from report by Clark Morgan).
+	+ add predefined regular expression to finderr.c to improve support
+	  for MS-DOS pathnames (patch by Clark Morgan).
+
 (tom)	970407 (f)
-	+ integrated menu-support for Motif xvile (patch by Philippe CHASSANY
+	+ integrated menu-support for Motif xvile (patch by Philippe Chassany
 	  <phil@cln46ks.der.edf.fr>).
 	+ refined changes to 'working' mode to ensure that the "working..."
 	  message is cleared when the timer elapses.

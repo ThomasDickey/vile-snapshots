@@ -1373,6 +1373,11 @@ Editor modes
 		with respect to the current directory of vile at the time
 		of the tags lookup.  (B)
 
+	tagword (tw) When scanning the word to lookup from the cursor position
+		for the tags mechanism, grab the whole word rather than the
+		substring starting at the cursor position.  The latter, which
+		is vi-like, is the default.  (B)
+
 	terse   vile produces more "status" messages than vi, which may
 		become annoying at low baud rates.  Setting terse mode will
 		suppress many of these.  (B)
@@ -3449,4 +3454,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.316 1997/03/20 18:03:04 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.317 1997/04/12 01:00:32 tom Exp $
