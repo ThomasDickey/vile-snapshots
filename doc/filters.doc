@@ -125,7 +125,10 @@ symbol table in the same file with the same effect as ".merge".
 Specify abbreviations using a '*' character, e.g.,
 	vi*le
 to match any of vi, vil, vile.  You can change the '*' character using the
-".abbrev" directive.
+".abbrev" directive.  A special case is provided for languages such as SQL*PLUS,
+using the '?' character, e.g.,
+	rem?ark
+Use ".brief" to alter the special character '?'.
 
 Use the ".default" directive to change the default class.  The parameter must
 be the name of a class which has already been defined.  Omit the parameter to
@@ -227,4 +230,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.31 2004/11/05 15:45:33 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.32 2004/11/11 00:47:06 tom Exp $

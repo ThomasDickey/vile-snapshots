@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995-2003 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.87 2003/05/26 18:10:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.90 2004/12/07 01:29:50 tom Exp $
  *
  */
 
@@ -190,6 +190,34 @@ operchg(int f, int n)
     return s;
 }
 
+#if 0
+#define toggle_b_val(bp, mode) set_b_val(bp, mode, !b_val(bp, mode))
+
+static int
+toggle_autoindent(void)
+{
+    int code = b_val(curbp, MDAIND);
+
+    toggle_b_val(curbp, MDAIND);
+
+    return code;
+}
+
+int
+operchg_i(int f, int n)
+{
+    int s, indent;
+
+    opcmd = OPOTHER;
+    indent = toggle_autoindent();
+    s = vile_op(f, n, chgreg, indent ? "Change (noai)" : "Change (ai)");
+    if (s == TRUE)
+	swapmark();
+    (void) toggle_autoindent();
+    return s;
+}
+#endif
+
 int
 operlinechg(int f, int n)
 {
@@ -208,6 +236,13 @@ operjoin(int f, int n)
 {
     opcmd = OPOTHER;
     return vile_op(f, n, joinregion, "Join");
+}
+
+int
+operjoin_x(int f, int n)
+{
+    opcmd = OPOTHER;
+    return vile_op(f, n, joinregion_x, "Join Exact");
 }
 
 int
@@ -372,6 +407,14 @@ operlist(int f, int n)
     regionshape = FULLLINE;
     opcmd = OPOTHER;
     return vile_op(f, n, llineregion, "Line list");
+}
+
+int
+opernumber(int f, int n)
+{
+    regionshape = FULLLINE;
+    opcmd = OPOTHER;
+    return vile_op(f, n, nlineregion, "Numbered list");
 }
 
 int

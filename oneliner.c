@@ -4,14 +4,16 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.104 2004/04/11 18:12:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.105 2004/12/07 00:39:13 tom Exp $
  */
 
 #include	"estruct.h"
 #include	"edef.h"
 
-#define PLIST	0x01
-#define PNUMS	0x02
+#define PNONE	0x00
+#define PLIST	0x01		/* shows line in list-mode */
+#define PNUMS	0x02		/* shows line in number-mode */
+#define PGREP	0x04		/* like "grep -n": buffer name, line number */
 
 static int delins(regexp * exp, char *sourc, int lensrc);
 static int substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp);
@@ -62,15 +64,21 @@ pregion(UINT flag)
     do {
 	if (!addline(bp, linep->l_text, llength(linep)))
 	    break;		/* out of memory */
-	if (flag & PNUMS) {
+	if (flag & (PNUMS | PGREP)) {
 	    BUFFER *savebp = curbp;
 	    WINDOW *savewp = curwp;
 	    curbp = bp;
 	    curwp = bp2any_wp(bp);
-	    DOT.l = lback(buf_head(bp));
-	    DOT.o = 0;
-	    bprintf("%s:%d:", oldbp->b_bname, line_no(oldbp, linep));
-	    DOT.o = 0;
+	    if (flag & PGREP) {
+		DOT.l = lback(buf_head(bp));
+		DOT.o = 0;
+		bprintf("%s:%d:", oldbp->b_bname, line_no(oldbp, linep));
+		DOT.o = 0;
+	    } else {
+		make_local_w_val(curwp, WMDNUMBER);
+		set_w_val(curwp, WMDNUMBER, TRUE);
+		flag &= ~PNUMS;
+	    }
 	    curbp = savebp;
 	    curwp = savewp;
 	}
@@ -99,15 +107,21 @@ llineregion(void)
 }
 
 int
-pplineregion(void)
+nlineregion(void)
 {
     return pregion(PNUMS);
 }
 
 int
+pplineregion(void)
+{
+    return pregion(PGREP);
+}
+
+int
 plineregion(void)
 {
-    return pregion(0);
+    return pregion(PNONE);
 }
 
 static regexp *substexp;

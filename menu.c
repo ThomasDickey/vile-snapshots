@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.43 2003/10/08 20:32:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.44 2004/12/02 01:47:45 tom Exp $
  */
 
 /* Vile includes */
@@ -23,7 +23,7 @@
 
 /* Tokens of the rc file */
 #define MAX_TOKEN   200
-struct _tok_ {
+static struct _tok_ {
     char type;
     int idx_cascade;
     char label[NSTRING];

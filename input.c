@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.267 2004/11/01 00:47:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.271 2004/12/06 23:37:14 tom Exp $
  *
  */
 
@@ -1311,7 +1311,7 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 	int old_clexec = clexec;
 	int old_named = isnamedcmd;
 	int old_margin = b_left_margin(bminip);
-	int old_shape = regionshape;
+	REGIONSHAPE old_shape = regionshape;
 
 	/*
 	 * Reset flags that might cause a recursion into the prompt/reply
@@ -1476,7 +1476,7 @@ read_quoted(int count, int inscreen)
 		else if ((c >= 'A') && (c <= 'F'))
 		    delta = ('A' - 10);
 		else if (isDigit(c)
-			 && (c >= '0') && (c <= base + '0'))
+			 && (c >= '0') && (c <= (int) (base + '0')))
 		    delta = '0';
 		else
 		    break;
@@ -1591,6 +1591,17 @@ kbd_reply(const char *prompt,	/* put this out first */
     saveMK = MK;
     miniedit = FALSE;
     set_end_string(EOS);	/* ...in case we don't set it elsewhere */
+
+    /*
+     * Check if the current value is the ERROR token.  If so, simply clear it.
+     * Allowing the user to change the string to something like "ERROR_VALUE"
+     * would be confusing and is not really necessary.
+     */
+    if ((extbuf != 0 && *extbuf != 0)
+	&& (tb_values(*extbuf) == error_val
+	    || (*extbuf)->tb_errs)) {
+	tb_init(extbuf, EOS);
+    }
     tb_unput(*extbuf);		/* FIXME: trim null */
 
     if (clexec) {
@@ -1738,6 +1749,18 @@ kbd_reply(const char *prompt,	/* put this out first */
 	    c = mapped_keystroke_raw();
 	else
 	    c = keystroke();
+
+#if SYS_WINNT
+	/* make SHIFT+INSERT (clipboard paste) work from mini-buffer */
+	if (c == (mod_KEY | KEY_Insert | mod_SHIFT)) {
+	    const CMDFUNC *cfp = CommandKeyBinding(c);
+	    if (cfp) {
+		(cfp->cu.c_func) (FALSE, FALSE);
+		c = 0;		/* is this important? */
+		continue;
+	    }
+	}
+#endif
 
 	/* Ignore nulls if the calling function is not prepared to process
 	 * them.  We want to be able to search for nulls, but must not use them

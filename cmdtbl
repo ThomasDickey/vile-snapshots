@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.229 2004/06/17 00:43:42 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.230 2004/12/07 01:28:55 tom Exp $
 #
 #
 
@@ -114,6 +114,10 @@ append		REDO|UNDO
 	"append-chars"			!FEWNAMES
 	'a'
 	<insert (CNT copies of) text after the cursor>
+append_i	REDO|UNDO		0
+	"append-indented-chars"		!FEWNAMES
+	"a!"
+	<insert (CNT copies of) text after the cursor, toggles autoindent>
 appstring	REDO|UNDO		!SMALLER
 	"append-string"
 	<append the given string after the cursor>
@@ -620,6 +624,7 @@ finderrbuf	NONE			OPT_FINDERR
 	<set the name of the buffer used as the error-buffer>
 firstbuffer	NONE
 	"rewind"
+	"rew!"
 	<go to first buffer in buffer list.  (does nothing if \"autobuffer\" set>
 firstnonwhite	MOTION|MINIBUF
 	"first-nonwhite"		!FEWNAMES
@@ -1053,6 +1058,10 @@ openup		REDO|UNDO|(FROM)
 	"i"
 	'O'
 	<insert text in CNT fresh blank line(s), before current line>
+openup_i	REDO|UNDO|(FROM)	0
+	"insert-indented-chars"		!FEWNAMES
+	"i!"
+	<insert text in CNT fresh blank line(s), before current line, toggle autoindent>
 openup_no_aindent	REDO|UNDO|(FROM|ZERO)
 	"open-line-above-no-autoindent"	!FEWNAMES
 	'^A-O'
@@ -1117,6 +1126,10 @@ operchg		OPER|REDO|UNDO
 	"delete-and-insert-chars-til"	!FEWNAMES
 	'c'
 	<insert text, replacing that in the region>
+operchg_i	OPER|REDO|UNDO		0
+	"change-indented-chars"		!FEWNAMES
+	"c!"
+	<insert text, replacing that in the region, toggles autoindent>
 operdetab	OPER|REDO|UNDO|GLOBOK|(RANGE)
 	"detab-lines-til"		!FEWNAMES
 	'^A- '
@@ -1150,7 +1163,11 @@ operdel		OPER|REDO|UNDO
 operjoin	OPER|REDO|UNDO|GLOBOK|RANGE
 	"j"
 	"join-lines-til"		!FEWNAMES
-	<join together lines in the region>
+	<join together lines in the region, adjusting whitespace at join>
+operjoin_x	OPER|REDO|UNDO|GLOBOK|RANGE
+	"j!"
+	"join-exact-lines-til"		!FEWNAMES
+	<join together lines in the region without whitespace adjustment>
 operlinedel	OPER|REDO|UNDO|GLOBOK|(RANGE|OPTREG)
 	"delete-lines-til"		!FEWNAMES
 	"d"
@@ -1193,6 +1210,10 @@ operlist	OPER|GLOBOK|(RANGE)
 	"list-lines-til"		!FEWNAMES
 	"l"
 	<show lines, making tabs and newlines visible>
+opernumber	OPER|GLOBOK|(RANGE)
+	"number-lines-til"		!FEWNAMES
+	"nu"
+	<show lines with their line numbers>
 operprint	OPER|GLOBOK|(RANGE)
 	"print-lines-til"		!FEWNAMES
 	"p"
@@ -1738,6 +1759,7 @@ writeallchanged	NONE|(BANG|VI_NL)
 	<attempt to write any buffers which are marked \"modified\">
 writequit	NONE|(VI_NL)
 	"wq"
+	"wq!"
 	"Wq"
 	"WQ"
 	"write-file-and-quit"		!FEWNAMES

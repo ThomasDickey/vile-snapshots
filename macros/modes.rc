@@ -1,9 +1,12 @@
-; $Id: modes.rc,v 1.6 2004/10/31 21:54:52 tom Exp $
+; $Id: modes.rc,v 1.10 2004/12/08 01:01:31 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
-; precedence used by vile is strictly alphabetic, counting case.
+; precedence used by vile is strictly alphabetic, counting case.  Use the
+; before and after qualifiers to override the precedence.
 
 setv %filters-modes=true
 
+; The tabstops correspond to those used for ncurses' Ada95 wrapper which in
+; turn follows gnat's style.
 define-mode ada
 ~with define-submode ada
 	suffixes	'\.\(ada\|ads\|adb\)$'
@@ -12,12 +15,23 @@ define-mode ada
 	fence-if   '^\s*\<if\>'
 	fence-elif '^\s*\<elsif\>'
 	fence-else '^\s*\<else\>'
-	fence-fi   '^\s*\<end\>'
+	fence-fi   '^\s*\<end\s\+if\>'
 	ignorecase
-~elsewith define-submode ada group 'begin'
-	fence-if   '^\s*\<begin\>'
-	fence-else '^\s*\<exception\>'
-	fence-fi   '^\s*\<end\>'
+	notabinsert
+	tabstop=3
+	shiftwidth=3
+~elsewith define-submode ada group 'loop'
+	fence-if   '^\s*\<for\>'
+	fence-fi   '^\s*\<end\s\+loop\>'
+~elsewith define-submode ada group 'case'
+	fence-if   '^\s*\<case\>'
+	fence-else '^\s*\<when\s\+others\>'
+	fence-elif '^\s*\<when\>'
+	fence-fi   '^\s*\<end\s\+case\>'
+;~elsewith define-submode ada group 'begin'
+;	fence-if   '^\s*\<begin\>'
+;	fence-else '^\s*\<exception\>'
+;	fence-fi   '^\s*\<end\>'
 ~endwith
 
 ; GNU assembler (a Byzantine elaboration of AT&T)
@@ -271,7 +285,7 @@ define-mode imake
 
 define-mode java
 ~with define-submode java
-	suffixes	'\.java$'
+	suffixes	'\.\(java\|jad\)$'
 	cindent
 	cindent-chars &cat ':' $fences
 ~endwith
@@ -600,7 +614,7 @@ define-mode tbl
 define-mode tc
 ~with define-submode tc
 	mode-filename	'^termcap.*$'
-	suffixes	'\.\(tc\|tcap\)$'
+	suffixes	'\.\(tc\|tcap\|termcap\)$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
 ~endwith
@@ -631,7 +645,7 @@ define-mode ti
 ~with define-submode ti
 	before "sh"
 	mode-filename	'^\<terminfo\(\.src\)\?$'
-	suffixes	'\.\(ti\|tic\|tinfo\)$'
+	suffixes	'\.\(ti\|tic\|tinfo\|terminfo\)$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
 ~endwith

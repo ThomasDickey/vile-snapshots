@@ -1,10 +1,10 @@
 %x NORMAL LIT_TEXT HEX_TEXT B85_TEXT
 
-%o6000
+%o 6000
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ps-filt.l,v 1.3 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ps-filt.l,v 1.4 2004/11/24 01:01:38 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PostScript
  * files.

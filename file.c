@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.354 2004/10/31 14:51:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.355 2004/12/01 22:08:19 tom Exp $
  */
 
 #include "estruct.h"
@@ -1361,7 +1361,7 @@ quickreadf(BUFFER *bp, int *nlinep)
 	/*
 	 * Modify readin()'s setting for newline mode if needed:
 	 */
-	if (buffer[length - 1] != (rscode == RS_CR ? '\r' : '\n')) {
+	if (buffer[length - 1] != (UCHAR) (rscode == RS_CR ? '\r' : '\n')) {
 	    set_b_val(bp, MDNEWLINE, FALSE);
 	}
 
@@ -1941,8 +1941,9 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
      * it may be a quasi-interactive process that we don't want to modify its
      * display.
      */
-    if (isShellOrPipe(fn))
+    if (isShellOrPipe(fn)) {
 	beginDisplay();
+    }
 
     /* tell us we're writing */
     if (msgf == TRUE)
@@ -2018,8 +2019,9 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
 
     CleanAfterPipe(TRUE);
 
-    if (isShellOrPipe(fn))
+    if (isShellOrPipe(fn)) {
 	endofDisplay();
+    }
 
     if (s != FIOSUC)		/* Some sort of error.      */
 	return FALSE;

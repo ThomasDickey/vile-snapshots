@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.333 2004/10/31 22:52:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.334 2004/12/02 01:51:10 tom Exp $
  *
  */
 
@@ -70,9 +70,9 @@ makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 	    vl_encoding,
 	    term.cols - 1, '-');
     for (i = 0; i < N_chars; i++) {
-	bprintf("\n%d\t", i);
+	bprintf("\n%d\t", (int) i);
 	if ((i == '\n') || (i == '\t'))		/* vtlistc() may not do these */
-	    bprintf("^%c", '@' | i);
+	    bprintf("^%c", (int) ('@' | i));
 #if OPT_LOCALE
 	else if (!isPrint(i) && i > 127 && i < 160)	/* C1 controls? */
 	    bprintf(global_w_val(WMDNONPRINTOCTAL)
@@ -81,7 +81,7 @@ makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 		    i);
 #endif
 	else
-	    bprintf("%c", i);
+	    bprintf("%c", (int) i);
 	bputc('\t');
 	for (j = 0; j != vl_UNUSED; j++) {
 	    if ((s = choice_to_name(fsm_charclass_choices, j)) != 0) {
@@ -89,7 +89,7 @@ makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 		if (j != 0)
 		    bputc(' ');
 		bprintf("%*s",
-			strlen(s),
+			(int) strlen(s),
 			(vl_chartypes_[i] & k)
 			? s
 			: "-");
@@ -1641,7 +1641,7 @@ set_ctrans(const char *thePalette)
 static void
 show_attr(int color, const char *attr, const char *name)
 {
-    bprintf(" %c%d%sC", CONTROL_A, strlen(name), attr);
+    bprintf(" %c%d%sC", CONTROL_A, (int) strlen(name), attr);
     if (color >= 0)
 	bprintf("%X", color);
     bprintf(":%s", name);
@@ -1682,7 +1682,7 @@ makecolorlist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 	s = lsprintf(temp, "%d", k);
 	if (k > 9)
 	    (void) lsprintf(s, " (%X)", k);
-	bprintf("%s%*P", temp, sizeof(temp) - 1, ' ');
+	bprintf("%s%*P", temp, (int) sizeof(temp) - 1, ' ');
 
 	show_attr(j, "", "Normal");
 	show_attr(j, "B", "Bold");

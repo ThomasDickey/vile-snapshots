@@ -1,11 +1,11 @@
 %x NORMAL HEREDOC QUOTED SUBST
 
-%o6000
-%a3000
+%o 6000
+%a 3000
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.58 2003/08/11 19:11:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.59 2004/11/24 01:01:38 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */

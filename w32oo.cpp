@@ -8,7 +8,10 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32oo.cpp,v 1.3 2001/09/18 09:49:29 tom Exp $
+ * FIXME:
+ *	SHGetMalloc is obsolete (use CoTaskMemAlloc)
+ *
+ * $Header: /users/source/archives/vile.vcs/RCS/w32oo.cpp,v 1.4 2004/12/01 21:51:12 tom Exp $
  */
 
 #include "w32vile.h"
@@ -17,7 +20,9 @@
 #include <shlobj.h>
 #include <stdio.h>
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 #include "estruct.h"
 #include "edef.h"
@@ -95,4 +100,6 @@ get_favorites(void)
     return (path);
 }
 
+#ifdef __cplusplus
 } /* Extern "C" */
+#endif

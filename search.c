@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.135 2004/06/09 01:05:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.136 2004/12/06 01:08:42 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -27,7 +27,7 @@ not_found_msg(int wrapok, int dir)
     if (wrapok || global_b_val(MDTERSE))
 	mlforce(notfoundmsg);
     else
-	mlforce(hitendmsg, dir == FORWARD ? "bottom" : "top");
+	mlforce(hitendmsg, ((dir == FORWARD) ? "bottom" : "top"));
 }
 
 int
@@ -400,6 +400,7 @@ scanner(
     MARK curpos;
     int found;
     int wrapped = FALSE;
+    int leftmargin = b_left_margin(curbp);
 
     if (!exp) {
 	mlforce("BUG: null exp");
@@ -409,6 +410,8 @@ scanner(
     /* Set starting search position to current position
      */
     curpos = DOT;
+    if (curpos.o < leftmargin)
+	curpos.o = leftmargin;
 
     /* Scan each character until we hit the scan boundary */
     for_ever {
@@ -424,7 +427,7 @@ scanner(
 	    if (scanbound_is_header) {
 		/* if we're on the header, nothing can match */
 		found = FALSE;
-		srchlim = 0;
+		srchlim = leftmargin;
 	    } else {
 		if (direct == FORWARD) {
 		    if (wrapped) {
@@ -432,35 +435,32 @@ scanner(
 			srchlim = scanboundpos.o;
 		    } else {
 			startoff = curpos.o;
-			srchlim =
-			    (scanboundpos.o > startoff) ?
-			    scanboundpos.o :
-			    llength(curpos.l);
+			srchlim = ((scanboundpos.o > startoff)
+				   ? scanboundpos.o
+				   : llength(curpos.l));
 		    }
 		} else {
 		    if (wrapped) {
 			startoff = scanboundpos.o;
 			srchlim = llength(curpos.l);
 		    } else {
-			startoff = 0;
+			startoff = leftmargin;
 			srchlim = scanboundpos.o + 1;
 		    }
 		}
-		found = lregexec(exp, curpos.l,
-				 startoff, srchlim);
+		found = lregexec(exp, curpos.l, startoff, srchlim);
 	    }
 	} else {
 	    if (direct == FORWARD) {
 		startoff = curpos.o;
 		srchlim = llength(curpos.l);
 	    } else {
-		startoff = 0;
+		startoff = leftmargin;
 		srchlim = curpos.o + 1;
 		if (srchlim > llength(curpos.l))
 		    srchlim = llength(curpos.l);
 	    }
-	    found = lregexec(exp, curpos.l,
-			     startoff, srchlim);
+	    found = lregexec(exp, curpos.l, startoff, srchlim);
 	}
 	if (found) {
 	    char *txt = curpos.l->l_text;
@@ -484,12 +484,11 @@ scanner(
 		}
 		if (end)
 		    last++;
-		if (!lregexec(exp, curpos.l,
-			      (int) (got - txt), srchlim)) {
+		if (!lregexec(exp, curpos.l, (int) (got - txt), srchlim)) {
 		    mlforce("BUG: prev. match no good");
 		    return FALSE;
 		}
-	    } else if (llength(curpos.l) <= 0
+	    } else if (llength(curpos.l) <= leftmargin
 		       || last < llength(curpos.l))
 		last--;
 	    next = (C_NUM) (got - txt);
@@ -522,10 +521,10 @@ scanner(
 		curpos.l = lback(curpos.l);
 	}
 	if (direct == FORWARD) {
-	    curpos.o = 0;
+	    curpos.o = leftmargin;
 	} else {
-	    if ((curpos.o = llength(curpos.l) - 1) < 0)
-		curpos.o = 0;
+	    if ((curpos.o = llength(curpos.l) - 1) < leftmargin)
+		curpos.o = leftmargin;
 	}
 
     }
@@ -717,12 +716,11 @@ scrsearchpat(int f GCC_UNUSED, int n GCC_UNUSED)
  *	pattern not updated if the user types in an empty line.
  */
 int
-readpattern(
-	       const char *prompt,
-	       TBUFF **apat,
-	       regexp ** srchexpp,
-	       int c,
-	       int fromscreen)
+readpattern(const char *prompt,
+	    TBUFF **apat,
+	    regexp ** srchexpp,
+	    int c,
+	    int fromscreen)
 {
     char temp[NPAT];
     int status;
@@ -854,7 +852,9 @@ findpat(int f, int n, regexp * exp, int direc)
     savepos = DOT;
     while (s == TRUE && n--) {
 	savepos = DOT;
-	s = (direc == FORWARD) ? forwchar(TRUE, 1) : backchar(TRUE, 1);
+	s = ((direc == FORWARD)
+	     ? forwchar(TRUE, 1)
+	     : backchar(TRUE, 1));
 	if (s == TRUE)
 	    s = scanner(exp, direc, FALSE, (int *) 0);
     }

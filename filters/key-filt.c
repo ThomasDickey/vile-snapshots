@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.17 2003/02/10 11:49:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.18 2004/11/11 00:19:07 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile keyword file.  It's
  * done best in C because the delimiters may change as a result of processing
@@ -59,7 +59,14 @@ color_of(char *s)
 static void
 ExecAbbrev(char *param)
 {
-    abbr_ch = *param;
+    zero_or_more = *param;
+    flt_puts(param, strlen(param), Literal_attr);
+}
+
+static void
+ExecBrief(char *param)
+{
+    zero_or_all = *param;
     flt_puts(param, strlen(param), Literal_attr);
 }
 
@@ -113,6 +120,7 @@ parse_directive(char *line)
 	void (*func) (char *);
     } table[] = {
 	{ "abbrev",  ExecAbbrev   },
+	{ "brief",   ExecBrief    },
 	{ "class",   ExecClass    },
 	{ "default", ExecTable    },
 	{ "equals",  ExecEquals   },
@@ -168,7 +176,8 @@ do_filter(FILE *input GCC_UNUSED)
     Ident2_attr = strmalloc(class_attr(NAME_IDENT2));
     Literal_attr = strmalloc(class_attr(NAME_LITERAL));
 
-    abbr_ch = '*';
+    zero_or_more = '*';
+    zero_or_all = '?';
     meta_ch = '.';
     eqls_ch = ':';
 

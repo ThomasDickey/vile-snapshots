@@ -1,11 +1,11 @@
 %s TEXT VERBATIM QUOTE_TT QUOTED MATH MATHC
 
-%o6000
-%a3000
+%o 6000
+%a 3000
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.37 2004/05/17 19:16:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.39 2004/11/24 01:01:38 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TeX or LaTeX
  * input text.

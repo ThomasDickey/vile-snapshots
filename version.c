@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.55 2003/07/27 15:19:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.56 2004/11/19 19:43:24 tom Exp $
  *
  */
 
@@ -152,6 +152,9 @@ getversion(void)
 #    else
 		    "IBM C Set ++"
 #    endif
+#   endif
+#   if CC_LCC_WIN32
+		    "Lcc-win32"
 #   endif
 #   if CC_MSVC
 		    "Visual C++"

@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.79 2004/10/20 18:09:11 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.80 2004/11/19 19:36:08 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -237,6 +237,8 @@ OBJ = 	main.obj $(SCREEN).obj \
 	$(cc) $(CFLAGS) -c $< -Fo$@
 
 all :: $(PERLCFG) $(EXEFILE) $(WRAPUTIL)
+
+sources ::	$(MYHDRS)
 
 $(EXEFILE) : 	$(MYHDRS) $(OBJ) $(MYLIBS)
 	$(link) $(LDFLAGS) $(OBJ) $(MYLIBS) $(LIBS) -out:$(EXEFILE) -map:$(MAPFILE)

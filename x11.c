@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.273 2004/06/09 01:06:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.274 2004/12/02 01:47:57 tom Exp $
  *
  */
 
@@ -688,7 +688,7 @@ BbClassRec bbClassRec =
     }
 };
 
-WidgetClass bbWidgetClass = (WidgetClass) & bbClassRec;
+static WidgetClass bbWidgetClass = (WidgetClass) & bbClassRec;
 
 /*ARGSUSED*/
 static XtGeometryResult
@@ -3912,7 +3912,7 @@ query_font(TextWindow tw, const char *fname)
     do {							\
 	ULONG val;						\
 	if (XGetFontProperty(pf, (atom), &val)) {		\
-	    sprintf(s,"%ld",val);				\
+	    sprintf(s, "%ld", (long)val);			\
 	    while (*s++ != '\0')				\
 		;						\
 	    *(s-1) = '-';					\

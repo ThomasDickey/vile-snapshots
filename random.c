@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.276 2004/11/06 01:57:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.277 2004/12/05 20:59:38 tom Exp $
  *
  */
 
@@ -174,12 +174,12 @@ showcpos(int f GCC_UNUSED, int n GCC_UNUSED)
 #if OPT_POSFORMAT
     static TBUFF *result;
 #else
-    register LINE *lp;		/* current line */
-    register B_COUNT numchars = 0;	/* # of chars in file */
-    register L_NUM numlines = 0;	/* # of lines in file */
-    register B_COUNT predchars = 0;	/* # chars preceding point */
-    register L_NUM predlines = 0;	/* # lines preceding point */
-    register int curchar = '\n';	/* character under cursor */
+    LINE *lp;			/* current line */
+    B_COUNT numchars = 0;	/* # of chars in file */
+    L_NUM numlines = 0;		/* # of lines in file */
+    B_COUNT predchars = 0;	/* # chars preceding point */
+    L_NUM predlines = 0;	/* # lines preceding point */
+    int curchar = '\n';		/* character under cursor */
     long ratio;
     C_NUM col;
     C_NUM savepos;		/* temp save for current offset */
@@ -240,12 +240,15 @@ showcpos(int f GCC_UNUSED, int n GCC_UNUSED)
 	ratio = (100L * predchars) / numchars;
 
     /* summarize and report the info */
-    if (numlines == 0 && numchars == 0)
+    if (numlines == 0 && numchars == 0) {
 	mlforce("File is empty");
-    else
+    } else {
 	mlforce("Line %d of %d, Col %d of %d, Char %ld of %ld (%ld%%) char is 0x%x or 0%o",
-		predlines + 1, numlines, col + 1, ecol,
-		predchars + 1, numchars, ratio, curchar, curchar);
+		predlines + 1, numlines,
+		col + 1, ecol,
+		predchars + 1, numchars,
+		ratio, curchar, curchar);
+    }
 #endif
     return TRUE;
 }

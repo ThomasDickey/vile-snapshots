@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.386 2004/06/09 00:03:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.392 2004/12/06 00:14:53 tom Exp $
  *
  */
 
@@ -96,8 +96,8 @@ static char *
 right_num(char *buffer, int len, long value)
 {
     char temp[NSTRING];
-    register char *p = lsprintf(temp, "%ld", value);
-    register char *q = buffer + len;
+    char *p = lsprintf(temp, "%ld", value);
+    char *q = buffer + len;
 
     *q = EOS;
     while (q != buffer)
@@ -213,12 +213,12 @@ decode_length(const char **fmt, va_list *app, int *result)
     if (c == '*') {
 	value = va_arg(*app, int);
 	found = TRUE;
-	*(*fmt)++;
+	(*fmt)++;
     } else {
 	while (isDigit(c)) {
 	    value = (value * 10) + c - '0';
 	    found = TRUE;
-	    *(*fmt)++;
+	    (*fmt)++;
 	    c = **fmt;
 	}
     }
@@ -399,7 +399,7 @@ set_vattrs(int row, int col, VIDEO_ATTR attr, size_t len)
 #endif
 
 static void
-freeVIDEO(register VIDEO * vp)
+freeVIDEO(VIDEO * vp)
 {
     if (vp != 0) {
 #if OPT_VIDEO_ATTRS
@@ -412,7 +412,7 @@ freeVIDEO(register VIDEO * vp)
 int
 video_alloc(VIDEO ** vpp)
 {
-    register VIDEO *vp;
+    VIDEO *vp;
     /* struct VIDEO already has 4 of the bytes */
     vp = typeallocplus(VIDEO, term.maxcols - 4);
     if (vp == 0)
@@ -434,7 +434,7 @@ video_alloc(VIDEO ** vpp)
 static int
 vtalloc(void)
 {
-    register int i, first;
+    int i, first;
     static int vcols, vrows;
 
     if (term.maxrows > vrows) {
@@ -473,7 +473,7 @@ vtalloc(void)
 static void
 vtfree(void)
 {
-    register int i;
+    int i;
 
     if (vscreen) {
 	for (i = 0; i < term.maxrows; ++i) {
@@ -554,7 +554,7 @@ vtputc(int c)
     /* since we don't allow wrapping on the message line, we only need
      * to evaluate this once.  */
     int lastcol = vtrow == term.rows - 1 ? term.cols - 1 : term.cols;
-    register VIDEO *vp;
+    VIDEO *vp;
 
 #ifdef WMDLINEWRAP
     if (vtrow < 0) {
@@ -645,8 +645,8 @@ vtputsn(const char *s, int n)
 static void
 vtset(LINEPTR lp, WINDOW *wp)
 {
-    register char *from;
-    register int n = llength(lp);
+    char *from;
+    int n = llength(lp);
     BUFFER *bp = wp->w_bufp;
     int skip = -vtcol;
     int list = w_val(wp, WMDLIST);
@@ -667,7 +667,7 @@ vtset(LINEPTR lp, WINDOW *wp)
     } else
 #endif
     if (w_val(wp, WMDNUMBER)) {
-	register int j, k, jk;
+	int j, k, jk;
 	L_NUM line = line_no(bp, lp);
 	int fill = ' ';
 	char temp[NU_WIDTH + 2];
@@ -681,7 +681,7 @@ vtset(LINEPTR lp, WINDOW *wp)
 	 * I don't have to introduce a global variable... */
 	from = lp->l_text;
 	for (j = k = jk = 0; (j < n) && (k < skip); j++) {
-	    register int c = from[j];
+	    int c = from[j];
 	    if ((list || (c != '\t')) && !isPrint(c)) {
 		if (c & HIGHBIT) {
 		    k += 4;
@@ -800,7 +800,24 @@ upscreen(int f GCC_UNUSED, int n GCC_UNUSED)
 
 static UINT scrflags;
 
-/* line to virtual column */
+/*
+ * Convert MARK's offset to virtual column.  The virtual column counts the left
+ * margin, the sideways shift of the window, etc., up to the given MARK.
+ *
+ * The buffer may have a left-margin, e.g., [Registers].  Use the 'bp'
+ * parameter to get that value.
+ *
+ * To allow this to be used in the OPT_CACHE_VCOL logic, it accepts a 'col'
+ * parameter which in that case may be nonzero, e.g., the nominal column of the
+ * left margin of the display (the column at which the sideways-shift
+ * coincides).
+ *
+ * Finally, use 'adjust' to adjust for cases where the sideways-shift does
+ * not exactly coincide with the 'col', where nonprinting data is displayed
+ * in hex/octal/uparrow format and is split across the display's left margin.
+ * After adding the left margin, that gives the index into the line for
+ * reading bytes whose width is added til we read the mark's offset.
+ */
 int
 mk_to_vcol(MARK mark, int expanded, BUFFER *bp, int col, int adjust)
 {
@@ -810,6 +827,9 @@ mk_to_vcol(MARK mark, int expanded, BUFFER *bp, int col, int adjust)
     int t = tabstop_val(bp);
     LINEPTR lp;
     int extra = ((!global_g_val(GMDALTTABPOS) && !insertmode) ? 1 : 0);
+
+    TRACE((T_CALLED "mk_to_vcol(mark.o=%d, col=%d, adjust=%d) extra %d\n",
+	   mark.o, col, adjust, extra));
 
     if (i < 0) {
 	i = 0;
@@ -834,7 +854,7 @@ mk_to_vcol(MARK mark, int expanded, BUFFER *bp, int col, int adjust)
     }
     if (extra && (col != 0) && (mark.o < llength(lp)))
 	col--;
-    return col;
+    returnCode(col);
 }
 
 /*
@@ -851,22 +871,25 @@ dot_to_vcol(WINDOW *wp)
 #if OPT_CACHE_VCOL
     W_TRAITS *wt = &(wp->w_traits);
     int need_col = FALSE;
-    int shift = w_val(wp, WVAL_SIDEWAYS)
-    ? w_val(wp, WVAL_SIDEWAYS) - 1
-    : 0;
-    int use_off = w_left_margin(wp);
+    int shift = (w_val(wp, WVAL_SIDEWAYS)
+		 ? w_val(wp, WVAL_SIDEWAYS) - 1
+		 : 0);
+    int use_off = -b_left_margin(bp);
 #if OPT_TRACE
     int check;
 #endif
 
+    TRACE((T_CALLED "dot_to_vcol(%s)\n", bp->b_bname));
+
 #if OPT_TRACE && OPT_DEBUG
-    TRACE(("CHECK left_col %d, shift %d, length %d\n",
-	   wt->w_left_col, shift, llength(wp->w_dot.l)));
+    TRACE(("HAVE: dot.o %d, left_dot %d+%d, left_col %d\n",
+	   wp->w_dot.o,
+	   wt->w_left_dot.o, use_off,
+	   wt->w_left_col));
     TRACE(("%s\n", lp_visible(wp->w_dot.l)));
-    TRACE(("DOT:%s\n", visible_buff(
-				       wp->w_dot.l->l_text + wp->w_dot.o,
-				       llength(wp->w_dot.l) - wp->w_dot.o,
-				       FALSE)));
+    TRACE(("DOT:%s\n", visible_buff(wp->w_dot.l->l_text + wp->w_dot.o,
+				    llength(wp->w_dot.l) - wp->w_dot.o,
+				    FALSE)));
 #endif
 
     /*
@@ -912,8 +935,6 @@ dot_to_vcol(WINDOW *wp)
 	    TRACE(("...adjust:%d\n", col));
 	    wt->w_left_col -= col;
 	}
-	if (wt->w_left_dot.o)
-	    use_off = 0;
     } else
 #endif
 	if ((wt->w_left_col + wt->w_left_adj < shift)
@@ -957,8 +978,11 @@ dot_to_vcol(WINDOW *wp)
 	    if (col < wt->w_left_col) {
 		/* if there was a multi-column character at the left
 		 * side of the shifted screen, adjust */
-		TRACE(("...adjust for multi-column character %d\n", col));
 		wt->w_left_adj = wt->w_left_col - col;
+		TRACE(("...adjust for multi-column character %d..%d -> %d\n",
+		       col,
+		       wt->w_left_col,
+		       wt->w_left_adj));
 		wt->w_left_col = col;
 	    }
 	    need_col = FALSE;
@@ -976,28 +1000,31 @@ dot_to_vcol(WINDOW *wp)
 	    TRACE(("...cache w_left_col %d\n", wt->w_left_col));
 	}
     }
+    if (use_off != 0) {
+	if (wt->w_left_col == 0)
+	    use_off = -wt->w_left_dot.o;
+    }
     result = mk_to_vcol(wp->w_dot,
 			w_val(wp, WMDLIST),
 			bp,
 			wt->w_left_col,
-			wt->w_left_dot.o + use_off - b_left_margin(bp));
+			wt->w_left_dot.o + use_off);
 #if OPT_TRACE
     check = mk_to_vcol(wp->w_dot, w_val(wp, WMDLIST), bp, 0, 0);
     if (check != result) {
-	TRACE(("dot_to_vcol result %d check %d (off=%d, shift=%d)\n",
-	       result, check, wp->w_dot.o, shift));
+	TRACE(("MISMATCH result %d check %d\n", result, check));
 	kbd_alarm();
-	TRACE(("-> OOPS:%s %d vs %d+%d %d\n",
-	       bp->b_bname,
+	TRACE(("-> OOPS: dot.o %d, left_dot %d+%d, left_col %d\n",
 	       wp->w_dot.o,
 	       wt->w_left_dot.o, use_off,
 	       wt->w_left_col));
+	result = check;
     }
 #endif
 #else
     result = mk_to_vcol(wp->w_dot, w_val(wp, WMDLIST), bp, 0, 0);
 #endif
-    return result;
+    returnCode(result);
 }
 
 /*
@@ -1017,8 +1044,8 @@ dot_to_vcol(WINDOW *wp)
 static void
 update_line(int row, int colfrom, int colto)
 {
-    register struct VIDEO *vp1 = vscreen[row];	/* virtual screen image */
-    register int req = (vp1->v_flag & VFREQ) == VFREQ;
+    struct VIDEO *vp1 = vscreen[row];	/* virtual screen image */
+    int req = (vp1->v_flag & VFREQ) == VFREQ;
 
 #if OPT_COLOR
     CurFcolor(vp1) = ReqFcolor(vp1);
@@ -1052,8 +1079,8 @@ update_line(int row, int colfrom, int colto)
 static void
 update_line(int row, int colfrom, int colto)
 {
-    register char *vc, *pc, *evc;
-    register VIDEO_ATTR *va, *pa, xx;
+    char *vc, *pc, *evc;
+    VIDEO_ATTR *va, *pa, xx;
     int nchanges = 0;
 
     if ((vscreen[row]->v_flag & VFCHG) == 0)
@@ -1096,17 +1123,17 @@ update_line(int row, int colfrom, int colto)
 {
     struct VIDEO *vp1 = vscreen[row];	/* virtual screen image */
     struct VIDEO *vp2 = PSCREEN[row];	/* physical screen image */
-    register int xl = colfrom;
-    register int xr = colto;
-    register int xx;
+    int xl = colfrom;
+    int xr = colto;
+    int xx;
 
-    register char *cp1 = VideoText(vp1);
-    register char *cp2 = VideoText(vp2);
-    register int nbflag;	/* non-blanks to the right flag? */
+    char *cp1 = VideoText(vp1);
+    char *cp2 = VideoText(vp2);
+    int nbflag;			/* non-blanks to the right flag? */
 
 #if OPT_VIDEO_ATTRS
-    register VIDEO_ATTR *ap1 = VideoAttr(vp1);
-    register VIDEO_ATTR *ap2 = VideoAttr(vp2);
+    VIDEO_ATTR *ap1 = VideoAttr(vp1);
+    VIDEO_ATTR *ap2 = VideoAttr(vp2);
     VIDEO_ATTR Blank = 0;	/* FIXME: Color? */
 #else
     UINT rev;			/* reverse video flag */
@@ -1234,7 +1261,7 @@ update_line(int row, int colfrom, int colto)
     movecursor(row, xl - colfrom);	/* Go to start of line. */
 #if OPT_VIDEO_ATTRS
     while (xl < xx) {
-	register int j = xl;
+	int j = xl;
 	VIDEO_ATTR attr = VATTRIB(ap1[j]);
 	while ((j < xx) && (attr == VATTRIB(ap1[j])))
 	    j++;
@@ -1299,15 +1326,13 @@ kbd_openup(void)
 #if !FRAMEBUF && !OPT_PSCREEN
     if (pscreen != 0) {
 	for (i = 0; i < term.rows - 1; ++i) {
-	    (void) memcpy(
-			     pscreen[i]->v_text,
-			     pscreen[i + 1]->v_text,
-			     (size_t) (term.cols));
+	    (void) memcpy(pscreen[i]->v_text,
+			  pscreen[i + 1]->v_text,
+			  (size_t) (term.cols));
 #if OPT_VIDEO_ATTRS
-	    (void) memcpy(
-			     pscreen[i]->v_attrs,
-			     pscreen[i + 1]->v_attrs,
-			     alen);
+	    (void) memcpy(pscreen[i]->v_attrs,
+			  pscreen[i + 1]->v_attrs,
+			  alen);
 #endif
 	}
 	(void) memset(pscreen[i]->v_text, ' ', (size_t) (term.cols));
@@ -1386,12 +1411,11 @@ kbd_flush(void)
  * to know if we're in the record-separator.
  */
 static int
-offs2col0(
-	     WINDOW *wp,
-	     LINEPTR lp,
-	     C_NUM offset,
-	     C_NUM * cache_offset,
-	     int *cache_column)
+offs2col0(WINDOW *wp,
+	  LINEPTR lp,
+	  C_NUM offset,
+	  C_NUM * cache_offset,
+	  int *cache_column)
 {
     int column;
 
@@ -1469,10 +1493,10 @@ col2offs(WINDOW *wp, LINEPTR lp, C_NUM col)
     w_val(wp, WVAL_SIDEWAYS);
     int goal = col + left - nu_width(wp) - w_left_margin(wp);
 
-    register C_NUM n;
-    register C_NUM offset;
-    register C_NUM len = llength(lp);
-    register char *text = lp->l_text;
+    C_NUM n;
+    C_NUM offset;
+    C_NUM len = llength(lp);
+    char *text = lp->l_text;
 
     if (lp == win_head(wp)) {
 	offset = 0;
@@ -1480,7 +1504,7 @@ col2offs(WINDOW *wp, LINEPTR lp, C_NUM col)
 	for (offset = w_left_margin(wp), n = 0;
 	     (offset < len) && (n < goal);
 	     offset++) {
-	    register int c = text[offset];
+	    int c = text[offset];
 	    if (isPrint(c)) {
 		n++;
 	    } else if (list || (c != '\t')) {
@@ -1532,7 +1556,7 @@ line_height(WINDOW *wp, LINEPTR lp)
 WINDOW *
 row2window(int row)
 {
-    register WINDOW *wp;
+    WINDOW *wp;
 
     for_each_visible_window(wp) {
 	if (row >= wp->w_toprow && row <= mode_row(wp))
@@ -1561,8 +1585,8 @@ static size_t recomp_len;
 static void
 recompute_buffer(BUFFER *bp)
 {
-    register WINDOW *wp;
-    register SAVEWIN *tbl;
+    WINDOW *wp;
+    SAVEWIN *tbl;
 
     struct VAL b_vals[MAX_B_VALUES];
     size_t num = 0;
@@ -1668,8 +1692,8 @@ update_screen_line(WINDOW *wp, LINEPTR lp, int sline)
 #ifdef WMDLINEWRAP
     if (w_val(wp, WMDLINEWRAP)) {
 	int top_line = sline - wp->w_line.o;
-	register int m = (top_line >= 0) ? top_line : 0;
-	register int n = top_line + line_height(wp, lp);
+	int m = (top_line >= 0) ? top_line : 0;
+	int n = top_line + line_height(wp, lp);
 	while (n > m)
 	    if (--n < mode_row(wp)) {
 		vscreen[n]->v_flag |= VFCHG;
@@ -1690,7 +1714,7 @@ update_screen_line(WINDOW *wp, LINEPTR lp, int sline)
 	vtmove(sline, -left);
 	vtset(lp, wp);
 	if (left && sline >= 0) {
-	    register int zero = nu_width(wp);
+	    int zero = nu_width(wp);
 	    vscreen[sline]->v_text[zero] = MRK_EXTEND_LEFT;
 	    if (vtcol <= zero)
 		vtcol = zero + 1;
@@ -1716,8 +1740,8 @@ update_screen_line(WINDOW *wp, LINEPTR lp, int sline)
 static void
 update_oneline(WINDOW *wp)
 {
-    register LINEPTR lp;	/* line to update */
-    register int sline;		/* physical screen line to update */
+    LINEPTR lp;			/* line to update */
+    int sline;			/* physical screen line to update */
 
     /* search down the line we want */
     lp = wp->w_line.l;
@@ -1739,8 +1763,8 @@ update_oneline(WINDOW *wp)
 static void
 update_all(WINDOW *wp)
 {
-    register LINEPTR lp;	/* line to update */
-    register int sline;		/* physical screen line to update */
+    LINEPTR lp;			/* line to update */
+    int sline;			/* physical screen line to update */
 
     /* search down the lines, updating them */
     lp = wp->w_line.l;
@@ -1997,9 +2021,9 @@ static void
 update_garbaged_screen(void)
 {
 #if !FRAMEBUF && !OPT_PSCREEN
-    register int j;
+    int j;
 #endif
-    register int i;
+    int i;
 
     for (i = 0; i < term.rows; ++i) {
 	vscreen[i]->v_flag |= VFCHG;
@@ -2043,8 +2067,8 @@ update_garbaged_screen(void)
 static int
 update_extended_line(int col, int excess, int use_excess)
 {
-    register int rcursor;
-    register int zero = nu_width(curwp);
+    int rcursor;
+    int zero = nu_width(curwp);
     int scrollsiz;
 
     /* calculate what column the real cursor will end up in */
@@ -2082,12 +2106,12 @@ update_extended_line(int col, int excess, int use_excess)
 static int
 update_cursor_position(int *screenrowp, int *screencolp)
 {
-    register LINEPTR lp;
+    LINEPTR lp;
 #ifdef WMDLINEWRAP
-    register int i;
+    int i;
 #endif
-    register int col, excess;
-    register int collimit;
+    int col, excess;
+    int collimit;
     int moved = FALSE;
     int nuadj = is_empty_buf(curwp->w_bufp) ? 0 : nu_width(curwp);
     int liadj = (w_val(curwp, WMDLIST)) ? 1 : 0;
@@ -2410,7 +2434,7 @@ simple_scroll(int inserts)
 static void
 update_physical_screen(int force GCC_UNUSED)
 {
-    register int i;
+    int i;
 
 #if CAN_SCROLL
     if (scrflags & WFKILLS)
@@ -2442,8 +2466,8 @@ update_physical_screen(int force GCC_UNUSED)
 static void
 mlfs_prefix(const char **fsp, char **msp, int lchar)
 {
-    register const char *fs = *fsp;
-    register char *ms = *msp;
+    const char *fs = *fsp;
+    char *ms = *msp;
     if (*fs == ':') {
 	fs++;
 	while (*fs && *fs != ':') {
@@ -2487,7 +2511,7 @@ mlfs_suffix(const char **fsp, char **msp, int lchar)
 static void
 mlfs_skipfix(const char **fsp)
 {
-    register const char *fs = *fsp;
+    const char *fs = *fsp;
     if (*fs == ':') {
 	for (fs++; *fs && *fs != ':'; fs++) ;
 	if (*fs == ':')
@@ -2521,8 +2545,8 @@ mlfs_skipfix(const char **fsp)
 static int
 modeline_modes(BUFFER *bp, char **msptr)
 {
-    register char *ms = msptr ? *msptr : 0;
-    register size_t mcnt = 0;
+    char *ms = msptr ? *msptr : 0;
+    size_t mcnt = 0;
 
     PutMajormode(bp);
 #if COMPLETE_FILES || COMPLETE_DIRS
@@ -2592,8 +2616,8 @@ modeline_modes(BUFFER *bp, char **msptr)
 static int
 modeline_show(WINDOW *wp, int lchar)
 {
-    register int ic = lchar;
-    register BUFFER *bp = wp->w_bufp;
+    int ic = lchar;
+    BUFFER *bp = wp->w_bufp;
 
     if (b_val(bp, MDSHOWMODE)) {
 #ifdef insertmode		/* insert mode is a trait for each window */
@@ -2950,7 +2974,7 @@ update_modeline(WINDOW *wp)
     char *ms;
     char right_ms[NFILEN * 2];
 #endif
-    register int n;
+    int n;
 
     term.cursorvis(FALSE);
 
@@ -3062,7 +3086,7 @@ update_modeline(WINDOW *wp)
 void
 upmode(void)
 {
-    register WINDOW *wp;
+    WINDOW *wp;
 
     for_each_window(wp)
 	wp->w_flag |= WFMODE;
@@ -3075,10 +3099,10 @@ upmode(void)
 static void
 reframe_cursor_position(WINDOW *wp)
 {
-    register LINEPTR dlp;
-    register LINEPTR lp;
-    register int i = 0;
-    register int rows;
+    LINEPTR dlp;
+    LINEPTR lp;
+    int i = 0;
+    int rows;
     int founddot = FALSE;	/* set to true iff we find dot */
     int tildecount;
 
@@ -3266,9 +3290,9 @@ reframe_cursor_position(WINDOW *wp)
 static void
 de_extend_lines(void)
 {
-    register WINDOW *wp;
-    register LINEPTR lp;
-    register int i;
+    WINDOW *wp;
+    LINEPTR lp;
+    int i;
 
     for_each_visible_window(wp) {
 	if ((lp = wp->w_line.l) == NULL) {
@@ -3310,7 +3334,7 @@ de_extend_lines(void)
 int
 update(int force /* force update past type ahead? */ )
 {
-    register WINDOW *wp;
+    WINDOW *wp;
     int origrow, origcol;
     int screenrow, screencol;
     int updated = FALSE;
@@ -3369,7 +3393,7 @@ update(int force /* force update past type ahead? */ )
 	if (wp->w_flag & WFMODE) {
 	    if (wp->w_bufp->b_nwnd > 1) {
 		/* make sure all previous windows have this */
-		register WINDOW *owp;
+		WINDOW *owp;
 		for_each_visible_window(owp) {
 		    if (owp->w_bufp == wp->w_bufp)
 			owp->w_flag |= WFMODE;
@@ -3511,7 +3535,7 @@ void
 hilite(int row, int colfrom, int colto, int on)
 {
 #if !OPT_VIDEO_ATTRS
-    register VIDEO *vp1 = vscreen[row];
+    VIDEO *vp1 = vscreen[row];
 #endif
 #ifdef WMDLINEWRAP
     WINDOW *wp = row2window(row);

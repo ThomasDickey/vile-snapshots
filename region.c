@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.128 2004/06/09 01:04:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.129 2004/11/10 01:57:01 cmorgan Exp $
  *
  */
 
@@ -328,7 +328,8 @@ shift_right_line(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
     if (is_empty_line(DOT)
 	|| (is_c_mode(curbp)
 	    && llength(DOT.l) > 0
-	    && char_at(DOT) == '#')) {
+	    && char_at(DOT) == '#'
+	    && b_val(curbp, MDCINDENT))) {
 	return TRUE;
     }
     s = shiftwid_val(curbp);
