@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.65 1999/12/31 15:15:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.66 2000/01/02 20:44:22 kev Exp $
  */
 
 /*#
@@ -151,6 +151,7 @@ static PerlInterpreter *perl_interp;
 static int use_ml_as_prompt;
 static SV *svcurbuf;		/* $Vile::current_buffer in perl */
 static int svcurbuf_set(SV *, MAGIC *);
+static WINDOW * set_curwp0(WINDOW *wp);
 static MGVTBL svcurbuf_accessors = {
 	/* Virtual table for svcurbuf magic. */
 	NULL, svcurbuf_set, NULL, NULL, NULL
@@ -437,6 +438,15 @@ do_perl_cmd(SV *cmd, int inplace)
 	    sv_setsv(svcurbuf, &sv_undef);
 	    api_command_cleanup();
 	}
+	else {
+	    /* We don't do the hardcore cleanup if we're recursing, but
+	       we at least need to make sure that curwp points at a
+	       visible window */
+	    if (curwp_visible)
+		set_curwp0(curwp_visible);
+	}
+	if (!is_visible_window(curwp))
+	    mlforce("BUG: curwp not set to a visible window");
 
 	if (!SvTRUE(GvSV(errgv)))
 	    return TRUE;

@@ -1,5 +1,23 @@
 Changes for vile 9.1 (released ??? ??? ??, 1999)
 
+ 20000102 (n)
+	> Kevin Buettner:
+	+ perl/shell.pm:  Better terminal emulation; several bugs fixed.
+	+ perl.xs (do_perl_cmd):  Make sure that curwp is visible on the way
+	  out.
+	> Brendan O'Dea:
+	+ improve Manual.pm, getting highlighting as perldoc does, using nroff
+	  and vile-manfilt.
+	+ corrections to 9.0m changes to make directory.pm and dirlist.pm work
+	  on win32 (comparison for $os was not against proper types, besides
+	  Perl has $^O to identify the operating system)
+	> Tom Dickey:
+	+ modify xvile so that if the -title option is given, xvile will not
+	  automatically set the window's title.  Setting $title explicitly will
+	  still work (reported by Eric Krohn).
+	+ correct usage-message for xvile's options, i.e., -title is used
+	  rather than -wm and -T option is used to specify a tag.
+
  (kev) 991231 (m)
 	+ doc/macros.doc, macros/vileperl.rc, perl.xs, vile.hlp:  Fix hgrep
 	  references; hgrep.pl is now hgrep.pm.  Also, fixed usage examples.
@@ -28,9 +46,9 @@ Changes for vile 9.1 (released ??? ??? ??, 1999)
 	+ hgrep now sets error-buffer internally.
 	+ add perl "use capture".
 	> Tom Dickey:
-	+ modify Vile::get() method to accept functions, needed to replace use
-	  of `pwd` in perl scripts to make them portable to win32.  Lack of
-	  a getcwd replacement is an odd omission for perl.
+	+ modify Vile::get() method to accept functions, used to replace use
+	  of `pwd` in perl scripts to make them portable to win32 [Brendan
+	  O'Dea points out that there is Cwd.pm for this sort of thing].
 	+ modify directory.pm and dirlist.pm to make them work on win32, i.e.,
 	  by not executing portions that will not work (such as mime types) and
 	  using vile's builtin functions to workaround deficiencies in perl.

@@ -1,7 +1,6 @@
 package Vile::Manual;
 
-use Pod::Text;
-use FileHandle;
+use Carp;
 
 require Exporter;
 @ISA = qw(Exporter);
@@ -9,54 +8,49 @@ require Exporter;
 
 sub manual
 {
-    my $pkg = caller;
-    my $path = find_package_file($pkg);
-    if (!defined($path)) {
-	print STDOUT "Can't locate path to $pkg";
-	return;
-    }
-    my $b = edit Vile::Buffer "<${pkg}.pm>";
-    print STDOUT $b;
-    print STDOUT scalar($b->dotq('$'));
-    print STDOUT $path;
+    my $pm = caller . '.pm';
+   (my $path = $pm) =~ s!::!/!g;
+       $path = $INC{$path};
+
+    croak "can't get path for module $pm" unless $path;
+
+    my $b = edit Vile::Buffer "<$pm>";
     if (!$b or $b->dotq('$') <= 1) {
-	$^W = 1;
-	$b = new Vile::Buffer "<${pkg}.pm"	unless $b;
+	$b = new Vile::Buffer "<$pm>" unless $b;
 
-	# This is really ugly.  It would be nice to be able to do
-	# something like
-	#
-	#	pod2text(\*{$pkg::__DATA__}, $b)
-	#
-	# in place of the 5 lines of code below.  But, after over a
-	# day of hacking, I haven't been able to make any part of this
-	# work.  I did notice some newer Pod utilities which look
-	# promising, but they are not standard with the perl
-	# distribution yet.
-	my $tmpfile = FileHandle->new_tmpfile	or croak("Can't open temp file");
-	pod2text($path, $tmpfile);
-	$tmpfile->seek(0,0);
-	print $b (<$tmpfile>);
-	$tmpfile->close;
+	local *P;
+	my $pid = open P, '-|';
 
-	$b->unmark;
+	croak "can't fork ($!)" unless defined $pid;
+
+	unless ($pid)
+	{
+	    my $filt = Vile::get('libdir-path') . '/vile-manfilt';
+
+	    if ($^O =~ /^(MSWin32|dos)$/ or !-x $filt)
+	    {
+		require Pod::Text;
+		Pod::Text::pod2text($path);
+	    }
+	    else
+	    {
+		open STDERR, '>/dev/null'; # supress pod2man whining
+		system "pod2man --lax $path|nroff -man|$filt";
+	    }
+
+	    exit;
+	}
+
+	print $b join '', <P>;
+	close P;
+
+	$b->setregion(1,'$')
+	  ->attribute_cntl_a_sequences
+	  ->unmark
+	  ->dot(1);
     }
+
     Vile::current_window->buffer($b);
-}
-
-sub find_package_file
-{
-    my ($pkg) = @_;
-
-    $pkg =~ s{::}{/}g;
-    $pkg .= '.pm';
-
-    foreach my $prefix (@INC) {
-	my $path = "$prefix/$pkg";
-	return $path			if -r $path;
-
-    }
-    return undef;
 }
 
 1;

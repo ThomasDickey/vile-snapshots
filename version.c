@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.45 1999/11/06 12:35:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.47 2000/01/02 22:42:55 tom Exp $
  *
  */
 
@@ -30,7 +30,11 @@ print_usage (void)
 #endif
 	"-sstring       or +/string to search for \"string\"",
 #if OPT_TAGS
+#if DISP_X11 && XTOOLKIT
+	"-Ttagname      to look up a tag",
+#else
 	"-ttagname      to look up a tag",
+#endif
 #endif
 	"-v             to edit in \"view\" mode -- no changes permitted",
 	"-R             to edit files \"read-only\" -- no writes permitted",
@@ -38,8 +42,9 @@ print_usage (void)
 	"-kcryptkey     for encrypted files (same as -K)",
 #endif
 #if DISP_X11
+#if XTOOLKIT
 	"-name name     to change program name for X resources",
-	"-wm name       to set name in title bar",
+	"-title name    to set name in title bar",
 	"-fg color      to change foreground color",
 	"-bg color      to change background color",
 	"-fn fontname   to change font",
@@ -51,6 +56,17 @@ print_usage (void)
 	"-xrm Resource  to change an xvile resource",
 	"-leftbar       Put scrollbar(s) on left",
 	"-rightbar      Put scrollbar(s) on right (default)",
+#else	/* obsolete */
+	"-name name     to change program name for X resources",
+	"-wm name       to set name in title bar",
+	"-fg color      to change foreground color",
+	"-bg color      to change background color",
+	"-fn fontname   to change font",
+	"-fork          to spawn xvile immediately on startup",
+	"+fork          to force xvile to not spawn on startup",
+	"-display       displayname to change the default display",
+	"-rv            for reverse video",
+#endif
 #endif
 #if DISP_IBMPC || DISP_BORLAND
 	"-2             25-line mode",

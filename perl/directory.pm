@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/directory.pm,v 1.2 1999/12/31 17:01:44 tom Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/directory.pm,v 1.3 2000/01/02 19:48:04 bod Exp $
 # (see dir.doc)
 
 package directory;
@@ -7,10 +7,7 @@ require Vile::Exporter;
 @ISA = 'Vile::Exporter';
 %REGISTRY = ('directory' => [ \&dir, 'interactive directory browser' ]);
 
-my $os = scalar(Vile->get("\$os"));
-if ($os != "win32") {
-    require 'mime.pl';
-}
+require 'mime.pl' unless $^O eq 'MSWin32';
 
 sub dir {
     my ($dir) = @_;
@@ -58,11 +55,7 @@ sub dir {
     foreach $sub (sort readdir(DIR)) {
         my ($mod, $uid, $ind) = (undef, undef, 0);
         do { ($mod, $uid) = (stat($sub))[2,4]; } || do { $ind = 17; };
-        if ($os == "win32") {
-            ;
-        } else {
-            $uid = substr((getpwuid($uid))[0], 0, 8);
-        }
+	$uid = substr((getpwuid($uid))[0], 0, 8) unless $^O eq 'MSWin32';
         if ( ( $mod & 0xF000 ) == 0x4000 ) {
             $ind = (-l $sub ? 10 : $ind);
             push @subdirs, [ $sub, $ind, $mod&0xFFF, $uid];
@@ -124,9 +117,8 @@ sub dir {
             $cb->setregion($i+1+5, $len+2,  $i+1+5, '$$');
             $cb->attribute("bold", "color", $color[$ind]) if ($color[$ind]);
             $cb->setregion($i+1+5, $len+25, $i+1+5, '$$');
-            if ($os != "win32") {
-                $cb->attribute("hyper", "perl \"mime::mime(\'$sub\')\"");
-            }
+	    $cb->attribute("hyper", "perl \"mime::mime(\'$sub\')\"")
+		unless $^O eq 'MSWin32';
         } else {
             print $cb "\n";
         }
