@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.88 2003/05/24 00:49:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.89 2003/11/13 00:34:33 tom Exp $
  *
  */
 
@@ -662,7 +662,7 @@ lowercase_of(char *text)
     name = do_alloc(name, strlen(text), &used);
     for (n = 0; text[n] != 0; n++) {
 	if (isalpha(CharOf(text[n])) && isupper(CharOf(text[n])))
-	    name[n] = tolower(text[n]);
+	    name[n] = tolower(CharOf(text[n]));
 	else
 	    name[n] = text[n];
     }

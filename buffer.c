@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.263 2003/06/18 22:14:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.264 2003/11/12 01:21:25 tom Exp $
  *
  */
 
@@ -1015,7 +1015,7 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
     MK = nullmark;
 #endif
 
-    if (curbp) {
+    if (valid_buffer(curbp)) {
 	/* if we'll have to take over this window, and it's the last */
 	if ((this_window || bp->b_nwnd == 0)
 	    && curbp->b_nwnd != 0 && --(curbp->b_nwnd) == 0) {
@@ -1533,7 +1533,7 @@ popupbuff(BUFFER *bp)
     WINDOW *wp;
 
     TRACE((T_CALLED "popupbuff(%s) nwnd=%d\n", bp->b_bname, bp->b_nwnd));
-    if (!curbp) {
+    if (!valid_buffer(curbp)) {
 	curbp = bp;		/* possibly at startup time */
 	curwp->w_bufp = curbp;
 	++curbp->b_nwnd;

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.521 2003/07/27 15:19:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.522 2003/11/12 01:55:37 tom Exp $
  *
  */
 
@@ -46,6 +46,14 @@ extern char *strmalloc (const char *s);
 extern char *track_realloc (char *mp, UINT nbytes);
 extern char *track_malloc (UINT nbytes);
 extern void track_free (char *mp);
+#endif
+
+#ifndef valid_line_bp
+extern int valid_line_bp(LINEPTR lp, BUFFER *bp);
+#endif
+
+#ifndef valid_line_wp
+extern int valid_line_wp(LINEPTR lp, WINDOW *wp);
 #endif
 
 #ifndef valid_buffer
@@ -973,7 +981,7 @@ extern int        upperregion (void);
 extern int        yankregion (void);
 
 #if OPT_SELECTIONS
-extern TBUFF * encode_attributes(LINE *lp, BUFFER *bp, REGION * top_region);
+extern TBUFF * encode_attributes(LINEPTR lp, BUFFER *bp, REGION * top_region);
 #endif
 
 /* search.c */

@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.76 2002/10/16 23:34:29 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.77 2003/11/08 16:21:47 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -123,7 +123,9 @@ TARGET   = $(PROGNAME)
 CFLAGS   = $(CFLAGS) -DPROGRAM_NAME=\"$(PROGNAME)\"
 !endif
 
-TARGET   = $(TARGET).exe
+MAPFILE  = $(TARGET).map
+ZIPFILE  = $(TARGET).zip
+EXEFILE  = $(TARGET).exe
 
 !IF "$(OPT)" == "ole-auto"
 CFLAGS   = $(CFLAGS) -DVILE_OLE
@@ -230,10 +232,10 @@ OBJ = 	main.obj $(SCREEN).obj \
 .cpp.obj:
 	$(cc) $(CFLAGS) -c $< -Fo$@
 
-all :: $(PERLCFG) $(TARGET) $(WRAPUTIL)
+all :: $(PERLCFG) $(EXEFILE) $(WRAPUTIL)
 
-$(TARGET): 	$(MYHDRS) $(OBJ) $(MYLIBS)
-	$(link) $(LDFLAGS) $(OBJ) $(MYLIBS) $(LIBS) -out:$(TARGET)
+$(EXEFILE) : 	$(MYHDRS) $(OBJ) $(MYLIBS)
+	$(link) $(LDFLAGS) $(OBJ) $(MYLIBS) $(LIBS) -out:$(EXEFILE) -map:$(MAPFILE)
 
 winvile.res :	winvile.rc winvile.h
 	$(RC) -DVILE_ICON="$(ICON).ico" -Iicons winvile.rc
@@ -294,6 +296,7 @@ winviletlb.h winvile.tlb: winvile.odl
 clean ::
 	-del *.bak
 	-del *.exe
+	-del *.map
 	-del *.obj
 	-del ne*.h
 	-del $(THE_PERLCFG)
@@ -304,14 +307,14 @@ clean ::
 	-del *.tlb
 	-del *.res
 
-dist : $(TARGET)
-	- del $(CFG).zip
-	echo "$(CFG)", vi-like-emacs for win32 >zipnote.txt
-	zip $(CFG).zip readme.pc readme $(TARGET) vile.hlp
-	zip -z $(CFG).zip <zipnote.txt
+dist : $(EXEFILE)
+	- del $(ZIPFILE)
+	echo "$(TARGET)", vi-like-emacs for win32 >zipnote.txt
+	zip $(TARGET).zip readme.pc readme $(EXEFILE) $(MAPFILE) vile.hlp
+	zip -z $(ZIPFILE) <zipnote.txt
 	- del zipnote.txt
 	cd macros
-	zip ..\$(CFG).zip *.rc
+	zip ..\$(ZIPFILE) *.rc
 	cd ..\filters
 	$(MAKE) -f makefile.wnt $@
 	cd ..

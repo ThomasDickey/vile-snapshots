@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.511 2003/10/08 01:06:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.513 2003/11/12 21:09:39 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -2798,6 +2798,45 @@ valid_window(WINDOW *test)
     endofDisplay();
 
     return (test != NULL);
+}
+#endif
+
+#ifndef valid_line_bp
+int
+valid_line_bp(LINEPTR test, BUFFER *bp)
+{
+    beginDisplay();
+    if (test != NULL) {
+	int valid = FALSE;
+	LINEPTR lp;
+
+	if (test == buf_head(bp)) {
+	    valid = TRUE;
+	} else {
+	    for_each_line(lp, bp) {
+		if (lp == test) {
+		    valid = TRUE;
+		    break;
+		}
+	    }
+	}
+	if (!valid)
+	    imdying(SIGTERM);
+    }
+    endofDisplay();
+
+    return (test != NULL);
+}
+#endif
+
+#ifndef valid_line_wp
+int
+valid_line_wp(LINEPTR test, WINDOW *wp)
+{
+    return (test != NULL)
+	&& valid_window(wp)
+	&& valid_buffer(wp->w_bufp)
+	&& valid_line_bp(test, wp->w_bufp);
 }
 #endif
 

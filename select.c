@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.147 2003/06/30 00:31:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.148 2003/11/12 01:55:45 tom Exp $
  *
  */
 
@@ -1961,7 +1961,7 @@ static void
 free_line_attribs(BUFFER *bp)
 {
 #if OPT_LINE_ATTRS
-    LINE *lp;
+    LINEPTR lp;
     int do_update = 0;
     for_each_line(lp, bp) {
 	do_update |= (lp->l_attrs != 0);

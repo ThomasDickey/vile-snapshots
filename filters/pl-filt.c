@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.71 2003/11/02 22:16:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.72 2003/12/15 01:42:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -38,6 +38,11 @@ typedef enum {
     ,eIGNORED
 } States;
 
+typedef struct {
+    int may_have_pattern;
+    int has_no_pattern;
+} AfterKey;
+
 static char *Action_attr;
 static char *Comment_attr;
 static char *Error_attr;
@@ -47,6 +52,8 @@ static char *Keyword_attr;
 static char *String_attr;
 static char *Preproc_attr;
 static char *Number_attr;
+
+static AfterKey nullKey;
 
 /*
  * The in-memory copy of the input file.
@@ -949,26 +956,38 @@ put_remainder(char *s, char *attr, int quoted)
  * Check for special cases of keywords after which we may expect a pattern
  * that does not have to be inside parentheses.
  */
-static int
-check_keyword(char *s, int ok)
+static void
+check_keyword(char *s, int ok, AfterKey * state)
 {
+    state->may_have_pattern = 0;
+    state->has_no_pattern = 0;
+
     switch (ok) {
     case 2:
-	return !strncmp(s, "if", ok);
+	state->may_have_pattern = !strncmp(s, "if", ok);
+	break;
+    case 3:
+	state->has_no_pattern = !strncmp(s, "sub", ok);
+	break;
     case 4:
-	return !strncmp(s, "grep", ok);
+	state->may_have_pattern = !strncmp(s, "grep", ok);
+	break;
     case 5:
-	return !strncmp(s, "split", ok)
-	    || !strncmp(s, "until", ok)
-	    || !strncmp(s, "while", ok);
+	state->may_have_pattern = (!strncmp(s, "split", ok)
+				   || !strncmp(s, "until", ok)
+				   || !strncmp(s, "while", ok));
+	break;
     case 6:
-	return !strncmp(s, "unless", ok);
+	state->may_have_pattern = !strncmp(s, "unless", ok);
+	break;
     }
-    return 0;
 }
 
+/*
+ * Identifier may be a keyword, or a user identifier.
+ */
 static char *
-put_IDENT(char *s, int ok, int *had_op, int *if_wrd)
+put_IDENT(char *s, int ok, int *had_op, AfterKey * if_wrd)
 {
     char *attr = 0;
     char save = s[ok];
@@ -978,7 +997,25 @@ put_IDENT(char *s, int ok, int *had_op, int *if_wrd)
     attr = keyword_attr(s);
     s[ok] = save;
     flt_puts(s, ok, (attr != 0 && *attr != '\0') ? attr : Ident2_attr);
-    *if_wrd = check_keyword(s, ok);
+    check_keyword(s, ok, if_wrd);
+    return s + ok;
+}
+
+/*
+ * Identifier must be a user identifier.
+ */
+static char *
+put_NOKEYWORD(char *s, int ok, int *had_op, AfterKey * if_wrd)
+{
+    char *attr = 0;
+    char save = s[ok];
+
+    *had_op = 0;
+    s[ok] = '\0';
+    attr = keyword_attr(s);
+    s[ok] = save;
+    flt_puts(s, ok, "");
+    check_keyword(s, ok, if_wrd);
     return s + ok;
 }
 
@@ -1061,23 +1098,23 @@ do_filter(FILE *input GCC_UNUSED)
     static unsigned used;
     static char *line;
 
-    unsigned actual = 0;
-    size_t request = 0;
+    AfterKey if_old;
+    AfterKey if_wrd;
     States state = eCODE;
-    char *s;
     char *marker = 0;
-    unsigned mark_len = 0;
+    char *s;
+    int err;
+    int had_op = 0;
+    int ignore;
     int in_line = -1;
     int in_stmt = 0;
     int ok;
-    int err;
-    int save;
-    int quoted = 0;
     int parens = 0;
-    int had_op = 0;
-    int if_wrd = 0;
-    int if_old = 0;
-    int ignore;
+    int quoted = 0;
+    int save;
+    size_t request = 0;
+    unsigned actual = 0;
+    unsigned mark_len = 0;
 
     Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
@@ -1113,7 +1150,8 @@ do_filter(FILE *input GCC_UNUSED)
 	the_last = the_file + the_size;
 
 	s = the_file;
-	if_old = if_wrd = 0;
+	if_old = nullKey;
+	if_wrd = nullKey;
 	while (MORE(s)) {
 	    if (*s == '\n' || s == the_file) {
 		in_line = -1;
@@ -1121,7 +1159,7 @@ do_filter(FILE *input GCC_UNUSED)
 		in_line++;
 	    }
 	    if_old = if_wrd;
-	    if_wrd = 0;
+	    if_wrd = nullKey;
 	    DPRINTF(("(%s(%c) line:%d.%d(%d) if:%d op:%d)\n",
 		     stateName(state), *s, in_line, in_stmt, parens, if_wrd, had_op));
 	    switch (state) {
@@ -1181,7 +1219,10 @@ do_filter(FILE *input GCC_UNUSED)
 		    flt_puts(s, ok, "");
 		    s += ok;
 		    if_wrd = if_old;
-		} else if ((if_old || had_op || (in_stmt == 1)) && isPattern(*s)) {
+		} else if ((if_old.may_have_pattern
+			    || had_op
+			    || (in_stmt == 1))
+			   && isPattern(*s)) {
 		    state = ePATTERN;
 		} else if (*s == L_CURLY) {
 		    had_op = 1;
@@ -1203,9 +1244,14 @@ do_filter(FILE *input GCC_UNUSED)
 		    flt_puts(s, ok, err ? Error_attr : Number_attr);
 		    s += ok;
 		} else if ((ok = is_KEYWORD(s)) != 0) {
-		    if ((s != the_file) && (s[-1] == '*')) {
-			/* typeglob */
+		    if ((s != the_file)
+			&& (s[-1] == '*')) {	/* typeglob */
 			s = put_IDENT(s, ok, &had_op, &if_wrd);
+			break;
+		    }
+		    if ((s != the_file)
+			&& (if_old.has_no_pattern)) {
+			s = put_NOKEYWORD(s, ok, &had_op, &if_wrd);
 			break;
 		    }
 		    if (is_QUOTE(s, &ignore)) {
@@ -1224,13 +1270,13 @@ do_filter(FILE *input GCC_UNUSED)
 			state = eIGNORED;
 		    had_op = 0;
 		    flt_puts(s, ok, keyword_attr(s));
-		    if_wrd = check_keyword(s, ok);
+		    check_keyword(s, ok, &if_wrd);
 		    s[ok] = save;
 		    s += ok;
 		} else if ((ok = is_Option(s)) != 0) {
 		    had_op = 0;
 		    flt_puts(s, ok, Keyword_attr);
-		    if_wrd = check_keyword(s, ok);
+		    check_keyword(s, ok, &if_wrd);
 		    s += ok;
 		} else if ((ok = is_IDENT(s)) != 0) {
 		    s = put_IDENT(s, ok, &had_op, &if_wrd);

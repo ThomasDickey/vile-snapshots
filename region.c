@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.126 2003/06/17 23:39:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.127 2003/11/12 01:56:30 tom Exp $
  *
  */
 
@@ -28,7 +28,7 @@ do_chars_in_line(void *flagp GCC_UNUSED, int ll, int rr)
 {
     int c, nc;
     int changed = 0;
-    LINE *lp;
+    LINEPTR lp;
     int i;
 
     lp = DOT.l;
@@ -64,7 +64,7 @@ do_chars_in_line(void *flagp GCC_UNUSED, int ll, int rr)
 static int
 do_lines_in_region(int (*linefunc) (REGN_ARGS), void *argp, int convert_cols)
 {
-    LINE *linep;
+    LINEPTR linep;
     int status;
     REGION region;
     C_NUM l, r;
@@ -230,7 +230,7 @@ kill_line(void *flagp, int l, int r)
 {
     int s;
     int save = *(int *) flagp;
-    LINE *lp = DOT.l;
+    LINEPTR lp = DOT.l;
 
     s = detabline((void *) FALSE, 0, 0);
     if (s != TRUE)
@@ -270,7 +270,7 @@ open_hole_in_line(void *flagp, int l, int r)
     int len;
     int s;
     int saveo = DOT.o;
-    LINE *lp = DOT.l;
+    LINEPTR lp = DOT.l;
 
     s = detabline((void *) FALSE, 0, 0);
     if (s != TRUE)
@@ -372,7 +372,7 @@ shift_left_line(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
     int i;
     int lim;
     int s;
-    LINE *linep = DOT.l;
+    LINEPTR linep = DOT.l;
 
     if (llength(linep) == 0)
 	return TRUE;
@@ -427,7 +427,7 @@ detabline(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
     int c;
     int ocol;
     long leadingonly = (long) flagp;
-    LINE *lp = DOT.l;
+    LINEPTR lp = DOT.l;
 
     if (llength(lp) == 0)
 	return TRUE;
@@ -486,7 +486,7 @@ entabline(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 {
     int savecol;
     long leadingonly = (long) flagp;
-    LINE *lp = DOT.l;
+    LINEPTR lp = DOT.l;
     C_NUM ocol, ncol;
     C_NUM ooff, noff;
     int ch;
@@ -569,7 +569,7 @@ int
 trimline(void *flag GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 {
     int off;
-    LINE *lp;
+    LINEPTR lp;
     int odoto, s;
     int delcnt, was_at_eol;
 
@@ -624,7 +624,7 @@ blankline(void *flagp, int l, int r)
     int len;
     int s = TRUE;
     int saveo;
-    LINE *lp = DOT.l;
+    LINEPTR lp = DOT.l;
 
     saveo = l;
 
@@ -860,8 +860,8 @@ found_region(REGION * rp)
 int
 getregion(REGION * rp)
 {
-    LINE *flp;
-    LINE *blp;
+    LINEPTR flp;
+    LINEPTR blp;
     B_COUNT fsize;
     B_COUNT bsize;
     int len_rs = len_record_sep(curbp);
@@ -912,7 +912,7 @@ getregion(REGION * rp)
     }
 #if !SMALLER
     if (b_is_counted(curbp)) {	/* we have valid line numbers */
-	LINE *flp_start;
+	LINEPTR flp_start;
 	L_NUM dno, mno;
 	dno = line_no(curbp, DOT.l);
 	mno = line_no(curbp, MK.l);
@@ -1081,7 +1081,7 @@ recompute_regionsize(REGION * region)
  * back to ^A-sequences.
  */
 TBUFF *
-encode_attributes(LINE *lp, BUFFER *bp, REGION * top_region)
+encode_attributes(LINEPTR lp, BUFFER *bp, REGION * top_region)
 {
     TBUFF *result = 0;
     int j, k, len;
@@ -1188,7 +1188,7 @@ encode_attributes(LINE *lp, BUFFER *bp, REGION * top_region)
 static int
 encode_line(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 {
-    LINE *lp = DOT.l;
+    LINEPTR lp = DOT.l;
     TBUFF *text;
     ENCODEREG *work = (ENCODEREG *) flagp;
     L_NUM this_line = line_no(curbp, lp);

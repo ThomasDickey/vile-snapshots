@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.76 2003/11/03 20:34:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.77 2003/11/12 01:26:55 tom Exp $
  */
 
 #include	"estruct.h"
@@ -168,7 +168,7 @@ any_REPL(TBUFF ** rp, const char *vp, CHARTYPE type)
     if (rp) {
 	lgrabtext(rp, type);
 	return TRUE;
-    } else if (vp && curbp) {
+    } else if (vp && valid_buffer(curbp)) {
 	return lrepltext(type, vp, strlen(vp));
     } else {
 	return FALSE;
@@ -402,7 +402,9 @@ var_AUTOCOLORHOOK(TBUFF ** rp, const char *vp)
 int
 var_BCHARS(TBUFF ** rp, const char *vp)
 {
-    return curbp ? any_ro_INT(rp, vp, curbp->b_bytecount) : FALSE;
+    return (valid_buffer(curbp)
+	    ? any_ro_INT(rp, vp, curbp->b_bytecount)
+	    : FALSE);
 }
 
 int
@@ -422,7 +424,9 @@ var_BFLAGS(TBUFF ** rp, const char *vp)
 int
 var_BLINES(TBUFF ** rp, const char *vp)
 {
-    return curbp ? any_ro_INT(rp, vp, curbp->b_linecount) : FALSE;
+    return (valid_buffer(curbp)
+	    ? any_ro_INT(rp, vp, curbp->b_linecount)
+	    : FALSE);
 }
 
 #if DISP_NTWIN
@@ -476,7 +480,7 @@ var_CBUFNAME(TBUFF ** rp, const char *vp)
 	tb_scopy(rp, curbp->b_bname);
 	return TRUE;
     } else if (vp) {
-	if (curbp) {
+	if (valid_buffer(curbp)) {
 	    set_bname(curbp, vp);
 	    curwp->w_flag |= WFMODE;
 	}
@@ -489,7 +493,9 @@ var_CBUFNAME(TBUFF ** rp, const char *vp)
 int
 var_BWINDOWS(TBUFF ** rp, const char *vp)
 {
-    return curbp ? any_ro_INT(rp, vp, curbp->b_nwnd) : FALSE;
+    return (valid_buffer(curbp)
+	    ? any_ro_INT(rp, vp, curbp->b_nwnd)
+	    : FALSE);
 }
 
 #if OPT_HOOKS
@@ -510,10 +516,12 @@ int
 var_CFNAME(TBUFF ** rp, const char *vp)
 {
     if (rp) {
-	tb_scopy(rp, (curbp && curbp->b_fname) ? curbp->b_fname : "");
+	tb_scopy(rp, ((valid_buffer(curbp) && curbp->b_fname)
+		      ? curbp->b_fname
+		      : ""));
 	return TRUE;
     } else if (vp) {
-	if (curbp) {
+	if (valid_buffer(curbp)) {
 	    ch_fname(curbp, vp);
 	    curwp->w_flag |= WFMODE;
 	}
@@ -527,7 +535,7 @@ int
 var_CHAR(TBUFF ** rp, const char *vp)
 {
     if (rp) {
-	if (curbp && !is_empty_buf(curbp)) {
+	if (valid_buffer(curbp) && !is_empty_buf(curbp)) {
 	    if (is_at_end_of_line(DOT))
 		render_int(rp, '\n');
 	    else
@@ -537,9 +545,7 @@ var_CHAR(TBUFF ** rp, const char *vp)
 	}
 	return TRUE;
     } else if (vp) {
-	if (curbp == NULL || b_val(curbp, MDVIEW)) {
-	    return rdonly();
-	} else {
+	if (valid_buffer(curbp) && !b_val(curbp, MDVIEW)) {
 	    int s, c;
 	    mayneedundo();
 	    (void) ldelete(1L, FALSE);	/* delete 1 char */
@@ -550,6 +556,8 @@ var_CHAR(TBUFF ** rp, const char *vp)
 		s = linsert(1, c);
 	    (void) backchar(FALSE, 1);
 	    return s;
+	} else {
+	    return rdonly();
 	}
     } else {
 	return FALSE;
@@ -583,7 +591,7 @@ var_CURCHAR(TBUFF ** rp, const char *vp)
     if (rp) {
 	render_int(rp, vl_getcchar() + 1);
 	return TRUE;
-    } else if (vp && curbp) {
+    } else if (vp && valid_buffer(curbp)) {
 	return gotochr(TRUE, strtol(vp, 0, 0));
     } else {
 	return FALSE;
@@ -597,7 +605,7 @@ var_CURCOL(TBUFF ** rp, const char *vp)
     if (rp) {
 	render_int(rp, getccol(FALSE) + 1);
 	return TRUE;
-    } else if (vp && curbp) {
+    } else if (vp && valid_buffer(curbp)) {
 	return gotocol(TRUE, strtol(vp, 0, 0));
     } else {
 	return FALSE;
@@ -610,7 +618,7 @@ var_CURLINE(TBUFF ** rp, const char *vp)
     if (rp) {
 	render_int(rp, getcline());
 	return TRUE;
-    } else if (vp && curbp) {
+    } else if (vp && valid_buffer(curbp)) {
 	return gotoline(TRUE, strtol(vp, 0, 0));
     } else {
 	return FALSE;
@@ -638,7 +646,7 @@ var_CWLINE(TBUFF ** rp, const char *vp)
     if (rp) {
 	render_int(rp, getlinerow());
 	return TRUE;
-    } else if (vp && curbp) {
+    } else if (vp && valid_buffer(curbp)) {
 	return forwline(TRUE, strtol(vp, 0, 0) - getlinerow());
     } else {
 	return FALSE;
@@ -948,14 +956,14 @@ var_LINE(TBUFF ** rp, const char *vp)
 int
 var_LLENGTH(TBUFF ** rp, const char *vp)
 {
-    return curbp ? any_ro_INT(rp, vp, llength(DOT.l)) : FALSE;
+    return valid_buffer(curbp) ? any_ro_INT(rp, vp, llength(DOT.l)) : FALSE;
 }
 
 #if OPT_MAJORMODE
 int
 var_MAJORMODE(TBUFF ** rp, const char *vp)
 {
-    return any_ro_STR(rp, vp, ((curbp != 0 && curbp->majr != 0)
+    return any_ro_STR(rp, vp, ((valid_buffer(curbp) && curbp->majr != 0)
 			       ? curbp->majr->name
 			       : ""));
 }
@@ -1013,7 +1021,7 @@ var_MLFORMAT(TBUFF ** rp, const char *vp)
 int
 var_MODIFIED(TBUFF ** rp, const char *vp)
 {
-    return any_ro_BOOL(rp, vp, curbp && b_is_changed(curbp));
+    return any_ro_BOOL(rp, vp, valid_buffer(curbp) && b_is_changed(curbp));
 }
 
 #if OPT_COLOR
@@ -1264,7 +1272,7 @@ var_SEARCH(TBUFF ** rp, const char *vp)
     if (rp) {
 	tb_copy(rp, searchpat);
 	return TRUE;
-    } else if (vp && curbp) {
+    } else if (vp && valid_buffer(curbp)) {
 	(void) tb_init(&searchpat, EOS);
 	(void) tb_sappend(&searchpat, vp);
 	beginDisplay();
