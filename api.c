@@ -219,7 +219,7 @@ api_setup_fake_win(VileBuf *vbp, int do_delete)
 	/* Do lazy delete; FALSE means don't put text in kill buffer */
 	status = ldelete(vbp->ndel, FALSE);
 	vbp->ndel = 0;
-	if ( status == FALSE 
+	if ( status == FALSE
 	  || (lforw(DOT.l) == buf_head(curbp) && DOT.o >= llength(DOT.l))) {
 	    make_local_b_val(curbp, MDNEWLINE);
 	    set_b_val(curbp, MDNEWLINE, FALSE);
@@ -367,7 +367,7 @@ api_dotinsert(VileBuf *vbp, char *text, int len) {
 	int status;
 	status = ldelete(vbp->ndel, FALSE);
 	vbp->ndel = 0;
-	if (status == FALSE 
+	if (status == FALSE
 	 || (lforw(DOT.l) == buf_head(curbp) && DOT.o >= llength(DOT.l))) {
 	    make_local_b_val(curbp, MDNEWLINE);
 	    set_b_val(curbp, MDNEWLINE, FALSE);
@@ -559,18 +559,22 @@ api_motion(VileBuf *vbp, char *mstr)
     char *mp;
     int   c, f, n, s;
     int status;
-    int savecle, savedis;
+    int saved_clexec, saved_disinp, saved_discmd, saved_isnamedcmd;
 
     if (mstr == NULL)
 	return FALSE;
 
     status  = TRUE;
 
-    savecle = clexec;
-    savedis = discmd;
-    clexec = TRUE;			/* Disable display of messages and
-    					   argument counts */
-    discmd = FALSE;
+    saved_clexec     = clexec;
+    saved_discmd     = discmd;
+    saved_disinp     = disinp;
+    saved_isnamedcmd = isnamedcmd;
+
+    clexec     = FALSE;		/* Not executing a command line */
+    discmd     = FALSE;		/* Don't display commands / arg counts */
+    disinp     = FALSE;		/* Don't display input */
+    isnamedcmd = FALSE;		/* Not a named command */
 
 
     api_setup_fake_win(vbp, TRUE);
@@ -618,8 +622,11 @@ api_motion(VileBuf *vbp, char *mstr)
 	}
     }
 
-    clexec = savecle;
-    discmd = savedis;
+    clexec     = saved_clexec;
+    discmd     = saved_discmd;
+    disinp     = saved_disinp;
+    isnamedcmd = saved_isnamedcmd;
+
     return status;
 }
 

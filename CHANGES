@@ -1,5 +1,32 @@
 Changes for vile 7.5/8.0 (released ??? ??? ?, 1998)
 
+ (kev) 980511 (e)
+	+ api.c (api_motion): Revised the settings for the following
+	  global flags: clexec, discmd, disinp, isnamedcmd.  Some of
+	  these were not getting set or were getting set in such a
+	  way so as to either cause core dumps or incorrect behavior.
+	+ bind.c (kbd_erase, kbd_erase_to_end): Don't erase anything if
+	  disinp is FALSE.  Reason: If we didn't display anything to
+	  begin with, there should be nothing to erase.
+	+ history.c (hst_append): Don't append to the history buffer if
+	  disinp is FALSE.
+	+ input.c (editMinibuffer): Make sure the input character is
+	  added to the buffer when disinp is FALSE.
+	+ perl.xs (svrs): New variable which represents the input
+	  record separator.  This is necessary because the symbol
+	  corresponding to rs is not exported from the Win32 DLL for
+	  perl5.00402.
+	  (perl_init): Initialize svrs.
+	  (READLINE): Use svrs instead of rs.
+	  (set): Call api_setup_fake_win() to make sure that local
+	  sets are done to the correct buffer.
+	  (set_region): Renamed from setregion.  setregion is still
+	  maintained as an alias.  I'm not entirely sure I like the new
+	  name better, but it is at least consistent with set_selection.
+	  (selection_buffer, set_selection): New methods for getting/setting
+	  the selection.
+	+ proto.h, select.c (get_selection_buffer_and_region): New function.
+
  (kev) 980506 (d)
 	+ fences.c (comment_fence): Call scanboundry() before calling
 	  scanner() to set the scanner's boundary.  This fixes a bug
@@ -35,7 +62,7 @@ Changes for vile 7.5/8.0 (released ??? ??? ?, 1998)
 	+ added a menu separator to the system menu
 	+ gave "Font" a  keyboard accelerator
 	+ added a cast to keep the compiler from barking about a call to
-	  EnumFontFamilies(). 
+	  EnumFontFamilies().
 
  (kev) 980503 (a)
  	+ api.c (api_setup_fake_win, api_dotinsert): Set MDNEWLINE to

@@ -18,7 +18,7 @@
  * transfering the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.67 1998/04/28 10:18:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.68 1998/05/11 09:54:27 kev Exp $
  *
  */
 
@@ -705,6 +705,17 @@ multimotionrectangle(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	return multimotion(TRUE,3);
 }
+
+#if OPT_PERL || OPT_TCL
+BUFFER *
+get_selection_buffer_and_region(AREGION *arp)
+{
+    if (selbufp) {
+	*arp = selregion;
+    }
+    return selbufp;
+}
+#endif
 
 int
 attributeregion(void)

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.174 1998/04/28 23:18:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.175 1998/05/11 09:54:27 kev Exp $
  *
  */
 
@@ -1430,6 +1430,9 @@ kbd_erase(void)
 	WINDOW *savewp;
 	MARK savemk;
 
+	if (!disinp)
+	    return;
+
 	beginDisplay();
 	savebp = curbp;
 	savewp = curwp;
@@ -1456,6 +1459,9 @@ kbd_erase_to_end(int column)
 	BUFFER *savebp;
 	WINDOW *savewp;
 	MARK savemk;
+
+	if (!disinp)
+	    return;
 
 	beginDisplay();
 	savebp = curbp;
