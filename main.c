@@ -23,7 +23,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.388 1999/08/05 23:52:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.390 1999/08/18 00:48:50 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -137,8 +137,10 @@ MainProgram(int argc, char *argv[])
 		set_global_b_val(MDREADONLY,TRUE);
 
 #if DISP_X11
-	if (argc != 2 || strcmp(argv[1], "-V") != 0)
-		x_preparse_args(&argc, &argv);
+	if (argc != 2 || strcmp(argv[1], "-V") != 0) {
+		if (x_preparse_args(&argc, &argv) != TRUE)
+			startstat = FALSE;
+	}
 #endif
 	/*
 	 * Allow for I/O to the command-line before we initialize the screen
@@ -359,7 +361,7 @@ MainProgram(int argc, char *argv[])
 
 #if !DISP_X11
 #if SYS_UNIX
-# if HAS_TTYNAME
+# if HAVE_TTYNAME
 		char	*tty = ttyname(fileno(stderr));
 # else
 		char	*tty = "/dev/tty";
@@ -387,7 +389,7 @@ MainProgram(int argc, char *argv[])
 		 */
 		if ((freopen(tty, "r", stdin)) == 0
 		 || !isatty(fileno(stdin))) {
-			fputs("cannot open a terminal\n", stderr);
+			fprintf(stderr, "cannot open a terminal (%s)\n", tty);
 			tidy_exit(BADEXIT);
 		}
 #else
@@ -495,8 +497,10 @@ MainProgram(int argc, char *argv[])
 	   command-line startup file, i.e. 'vile @mycmds'
 	 */
 	if (vileinit && *vileinit) {
-		if ((startstat = do_source(vileinit,1, FALSE)) != TRUE)
+		if (do_source(vileinit,1, FALSE) != TRUE) {
+			startstat = FALSE;
 			goto begin;
+		}
 		free(startup_file);
 		startup_file = strmalloc(vileinit);
 	} else {
@@ -529,9 +533,10 @@ MainProgram(int argc, char *argv[])
 				set_rdonly(vbp, vbp->b_fname, MDVIEW);
 
 				/* go execute it! */
-				startstat = dobuf(vbp);
-				if (startstat != TRUE)
+				if (dobuf(vbp) != TRUE) {
+					startstat = FALSE;
 					goto begin;
+				}
 				if (obp) {
 					swbuffer(obp);
 					obp->b_flag = oflags;
@@ -541,9 +546,10 @@ MainProgram(int argc, char *argv[])
 				(void)zotbuf(vbp);
 			}
 		} else {  /* find and run .vilerc */
-			startstat = do_source(startup_file, 1, TRUE);
-			if (startstat != TRUE)
+			if (do_source(startup_file, 1, TRUE) != TRUE) {
+				startstat = FALSE;
 				goto begin;
+			}
 		}
 	}
 
@@ -554,7 +560,8 @@ MainProgram(int argc, char *argv[])
 	if (havebp && find_bp(havebp)) {
 		if (find_bp(bp) && is_empty_buf(bp) && !b_is_changed(bp))
 			b_set_scratch(bp);	/* remove the unnamed-buffer */
-		startstat = swbuffer(havebp);
+		if (swbuffer(havebp) != TRUE)
+			startstat = FALSE;
 		if (havename)
 			set_last_file_edited(havename);
 		if (bp2any_wp(bp) && bp2any_wp(havebp))

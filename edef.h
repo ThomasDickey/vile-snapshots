@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.252 1999/07/15 09:36:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.253 1999/08/18 00:08:31 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -142,7 +142,7 @@ decl_uninit( HOOK exithook );		/* proc to run when exiting */
 decl_uninit( int ignorecase );
 
 decl_init( int curgoal, -1 );		/* column goal			*/
-decl_uninit( const char *execstr );	/* string being executed	*/
+decl_uninit( char *execstr );		/* string being executed	*/
 #if OPT_MLFORMAT
 decl_uninit( char *modeline_format );	/* modeline formatting string */
 #endif

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.220 1999/07/16 00:52:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.222 1999/08/18 00:20:38 tom Exp $
  *
  */
 
@@ -187,7 +187,7 @@ listvars(int f, int n)
  * find a function in the function list
  */
 static int
-lookup_func(const char *name)
+lookup_func(char *name)
 {
 	char downcased[FUNC_NAMELEN];
 	int fnum;
@@ -208,7 +208,7 @@ lookup_func(const char *name)
 /*
  * execute a builtin function
  */
-static const char *
+static char *
 run_func(int fnum)
 {
 	static TBUFF *result;		/* function result */
@@ -989,11 +989,11 @@ save_arguments(BUFFER *bp)
     int num_args = 0;
     int max_args = 2;
     const char *temp;
-    const char *oldexec = execstr;
+    char *oldexec = execstr;
     TBUFF *params;
 
-    TRACE(("save_arguments(%s)%s\n", bp->b_bname, execstr))
     read_execstr(&params);
+    TRACE(("save_arguments(%s)%s\n", bp->b_bname, execstr))
     for (temp = execstr; *temp; temp++) {
 	if (isSpace(*temp))
 	    max_args++;
@@ -1046,13 +1046,14 @@ restore_arguments(BUFFER *bp GCC_UNUSED)
  * arguments for '#', and the whole argument list for '*'.  As a special case,
  * return the list with individual words quoted for '@'.
  */
-static const char *
+static char *
 get_argument(const char *name)
 {
     static TBUFF *value;
+    static char empty[] = "";
     int num;
     char *str;
-    const char *result = error_val;
+    char *result = error_val;
 
     if (arg_stack != 0) {
 	if (*name == '#') {
@@ -1087,7 +1088,7 @@ get_argument(const char *name)
 		if (num > 0 || !strcmp(name, "0"))
 		    result = tb_values(arg_stack->all_args[num]);
 	    } else {
-		result = "";
+		result = empty;
 	    }
 	}
     }
@@ -1095,31 +1096,31 @@ get_argument(const char *name)
 }
 
 /* the argument simply represents itself */
-static const char *
-simple_arg_eval(const char *argp)
+static char *
+simple_arg_eval(char *argp)
 {
 	return argp;
 }
 
 /* the returned value is the user's response to the specified prompt */
-static const char *
-query_arg_eval(const char *argp)
+static char *
+query_arg_eval(char *argp)
 {
 	argp = user_reply(tokval(argp+1));
 	return argp ? argp : error_val;
 }
 
 /* the returned value is the next line from the named buffer */
-static const char *
-buffer_arg_eval(const char *argp)
+static char *
+buffer_arg_eval(char *argp)
 {
 	argp = next_buffer_line(tokval(argp+1));
 	return argp ? argp : error_val;
 }
 
 /* expand it as a temp variable */
-static const char *
-tempvar_arg_eval(const char *argp)
+static char *
+tempvar_arg_eval(char *argp)
 {
 	static TBUFF *tmp;
 	UVAR *p;
@@ -1136,11 +1137,11 @@ tempvar_arg_eval(const char *argp)
 /* state variables are expanded.  if it's
  * not an statevar, perhaps it's a mode?
  */
-static const char *
-statevar_arg_eval(const char *argp)
+static char *
+statevar_arg_eval(char *argp)
 {
 	int vnum;
-	const char *result;
+	char *result;
 
 	if ((result = get_argument(++argp)) == error_val) {
 	    vnum = lookup_statevar(argp);
@@ -1158,16 +1159,16 @@ statevar_arg_eval(const char *argp)
 }
 
 /* run a function to evalute it */
-static const char *
-function_arg_eval(const char *argp)
+static char *
+function_arg_eval(char *argp)
 {
 	int fnum = lookup_func(argp+1);
 	return (fnum != ILLEGAL_NUM) ? run_func(fnum) : error_val;
 }
 
 /* goto targets evaluate to their line number in the buffer */
-static const char *
-label_arg_eval(const char *argp)
+static char *
+label_arg_eval(char *argp)
 {
 	static TBUFF *label;
 	LINE *lp = label2lp(curbp, argp);
@@ -1179,15 +1180,15 @@ label_arg_eval(const char *argp)
 }
 
 /* the value of a quoted string begins just past the leading quote */
-static const char *
-qstring_arg_eval(const char *argp)
+static char *
+qstring_arg_eval(char *argp)
 {
 	return argp + 1;
 }
 
 
-static const char *
-directive_arg_eval(const char *argp)
+static char *
+directive_arg_eval(char *argp)
 {
 #if SYS_UNIX
 	static TBUFF *tkbuf;
@@ -1203,7 +1204,7 @@ directive_arg_eval(const char *argp)
 }
 
 
-typedef const char * (ArgEvalFunc)(const char *argp);
+typedef char * (ArgEvalFunc)(char *argp);
 
 static ArgEvalFunc *eval_func[] = {
     simple_arg_eval,		/* TOK_NULL */
@@ -1221,10 +1222,10 @@ static ArgEvalFunc *eval_func[] = {
 #endif /* OPT_EVAL */
 
 /* evaluate to the string-value of a token */
-const char *
-tokval(const char *tokn)
+char *
+tokval(char *tokn)
 {
-	const char *result;
+	char *result;
 #if OPT_EVAL
 	int toknum = toktyp(tokn);
 	if (toknum < 0 || toknum > MAXTOKTYPE)
@@ -1274,7 +1275,7 @@ int
 evaluate(int f, int n)
 {
 	TBUFF *params, *temp = 0;
-	const char *oldexec = execstr;
+	char *oldexec = execstr;
 	char *cmd;
 	int code = FALSE;
 

@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.71 1999/06/21 22:57:52 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.73 1999/08/17 11:26:17 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -340,6 +340,29 @@ termcap.h) #(vi
 	;;
 esac
 
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check if the fd_set type and corresponding macros are defined.
+AC_DEFUN([CF_TYPE_FD_SET],
+[
+AC_CACHE_CHECK([for type fd_set],cf_cv_type_fd_set,[
+AC_TRY_COMPILE([
+#include <sys/types.h>
+#if HAVE_SYS_TIME_H
+# include <sys/time.h>
+# ifdef TIME_WITH_SYS_TIME
+#  include <time.h>
+# endif
+#else
+# include <time.h>
+#endif
+],[
+	fd_set read_bits;
+	FD_ZERO(&read_bits);
+	FD_SET(0, &read_bits);],
+	[cf_cv_type_fd_set=yes],
+	[cf_cv_type_fd_set=no])])
+test $cf_cv_type_fd_set = yes && AC_DEFINE(HAVE_TYPE_FD_SET)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl SVr4 curses should have term.h as well (where it puts the definitions of

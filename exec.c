@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.192 1999/08/04 10:16:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.193 1999/08/18 00:12:01 tom Exp $
  *
  */
 
@@ -787,7 +787,7 @@ int f, int n)
 {
 	int status = TRUE;	/* return status of function */
 	int oldcle;		/* old contents of clexec flag */
-	const char *oldestr;	/* original exec string */
+	char *oldestr;		/* original exec string */
 	TBUFF *tok = 0;
 	char *token;		/* next token off of command line */
 	const CMDFUNC *cfp;
@@ -965,9 +965,9 @@ int f, int n)
 		return a pointer past the token
 */
 
-const char *
+char *
 get_token(
-const char *src,	/* source string */
+char *src,		/* source string */
 TBUFF **tok,		/* destination token string */
 int eolchar)
 {
@@ -1550,7 +1550,7 @@ begin_directive(
 	int status = DDIR_COMPLETE; /* assume directive is self-contained */
 	TBUFF *argtkn = 0;
 	char *value;
-	const char *old_execstr = execstr;
+	char *old_execstr = execstr;
 
 	execstr = *cmdpp;
 

@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.67 1999/08/04 11:14:53 tom Exp $
+; $Id: filters.rc,v 1.69 1999/08/18 01:43:54 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -81,6 +81,43 @@ define-mode diff
 ~with define-submode diff
 	suf "\\.\\(patch\\|dif\\|diff\\|diffs\\|rej\\)$"
 	pre "^\\<diff\\>"
+~endwith
+
+; forms definition.
+; FIXME: The groups should not nest (extend the syntax)
+define-mode fdl
+~with define-submode fdl
+	suf "\\.\\<fdl\\>$"
+	comment-prefix "^\\s*$rem\\>"
+	comments   "^\\(\\|$rem\\)$"
+	fence-if   "^\\$\\s*if\\>"
+	fence-elif "^\\$\\s*elseif\\>"
+	fence-else "^\\$\\s*else\\>\\s*$"
+	fence-fi   "^\\$\\s*endif\\s*$"
+~elsewith define-submode fdl group "form"
+	fence-if   "^\\$form\\>"
+	fence-fi   "^\\$endform\\s*$"
+~elsewith define-submode fdl group "field"
+	fence-if   "^\\$field\\>$"
+	fence-fi   "^\\$endfield\\s*$"
+~elsewith define-submode fdl group "group"
+	fence-if   "^\\$group\\>"
+	fence-fi   "^\\$endgroup\\s*$"
+~elsewith define-submode fdl group "array"
+	fence-if   "^\\$array\\>"
+	fence-fi   "^\\$endarray\\s*$"
+~elsewith define-submode fdl group "page"
+	fence-if   "^\\$page\\>"
+	fence-fi   "^\\$endpage\\s*$"
+~elsewith define-submode fdl group "scroll"
+	fence-if   "^\\$scroll\\>"
+	fence-fi   "^\\$endscroll\\s*$"
+~elsewith define-submode fdl group "state"
+	fence-if   "^\\$state\\>"
+	fence-fi   "^\\$endstate\\s*$"
+~elsewith define-submode fdl group "text"
+	fence-if   "^\\$text\\>"
+	fence-fi   "^\\$endtext\\s*$"
 ~endwith
 
 ; Inherit the C-style fences for JavaScript, but add new ones for HTML

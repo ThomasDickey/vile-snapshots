@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.218 1999/07/17 22:00:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.220 1999/08/18 00:55:57 tom Exp $
  *
  */
 
@@ -2484,7 +2484,7 @@ static void my_error_handler(String message)
 }
 
 /* ARGSUSED */
-void
+int
 x_preparse_args(
     int        *pargc,
     char     ***pargv)
@@ -2494,6 +2494,7 @@ x_preparse_args(
     ULONG	gcmask;
     int		geo_mask, startx, starty, screen_depth;
     int		i;
+    int		status = TRUE;
     Cardinal	start_cols, start_rows;
     static XrmOptionDescRec options[] = {
 	{"-t",		(char *)0,	    XrmoptionSkipArg,	(caddr_t)0 },
@@ -2821,7 +2822,7 @@ x_preparse_args(
 
 #if OPT_MENUS
 #if ATHENA_WIDGETS
-	do_menu ( cur_win->menu_widget );
+	status = do_menu ( cur_win->menu_widget );
 #endif
 #if MOTIF_WIDGETS
 	menub = XmCreateMenuBar (cur_win->form_widget, "menub", NULL, 0);
@@ -2833,7 +2834,7 @@ x_preparse_args(
 			XmNrightAttachment,	XmATTACH_FORM,
 			NULL);
 	XtManageChild (menub);
-	do_menu ( menub );
+	status = do_menu ( menub );
 #endif
 #endif
 
@@ -3319,31 +3320,6 @@ x_preparse_args(
 #endif
 	XWMHints *hints = XGetWMHints(dpy, XtWindow(cur_win->top_widget));
 	if (!hints) hints = XAllocWMHints();
-#if OPT_TRACE
-	{
-	    XIconSize *size_list;
-	    int size_size;
-
-	    /* FIXME: get some information about the desired icon sizes to see
-	     * if it's worth supplying an explicit 16x16.  That appears to be
-	     * possible with XVision -TD
-	     */
-	    if (XGetIconSizes(dpy, DefaultRootWindow(dpy), &size_list, &size_size)) {
-		int n;
-		Trace("XGetIconSizes size_size=%d\n", size_size);
-		for (n = 0; n < size_size; n++)
-		    Trace("[%d] min %dx%d, max %dx%d, inc %dx%d\n",
-			n,
-			size_list[n].min_width,
-			size_list[n].min_height,
-			size_list[n].max_width,
-			size_list[n].max_height,
-			size_list[n].width_inc,
-			size_list[n].height_inc);
-		XFree(size_list);
-	    }
-	}
-#endif
 
 	if (hints)
 	{
@@ -3357,7 +3333,7 @@ x_preparse_args(
 	    hints->icon_pixmap =
 		XCreateBitmapFromData(
 		    dpy, DefaultRootWindow(dpy),
-		    vile_bits, vile_width, vile_height
+		    (char *)vile_bits, vile_width, vile_height
 		);
 #endif
 
@@ -3395,6 +3371,7 @@ x_preparse_args(
 
     set_pointer(XtWindow(cur_win->screen), cur_win->normal_pointer);
 
+    return status;
 }
 
 #if 0

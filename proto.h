@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.361 1999/07/15 23:38:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.365 1999/08/18 00:49:42 tom Exp $
  *
  */
 
@@ -144,7 +144,7 @@ extern WINDOW *bp2any_wp (BUFFER *bp);
 extern char *add_brackets(char *dst, const char *src);
 extern char *hist_lookup ( int c );
 extern char *strip_brackets(char *dst, const char *src);
-extern const char *next_buffer_line(const char *bname);
+extern char *next_buffer_line(const char *bname);
 extern int add_line_at (BUFFER *bp, LINEPTR prevp, const char *text, int len);
 extern int addline (BUFFER *bp, const char *text, int len);
 extern int any_changed_buf (BUFFER **bpp);
@@ -281,8 +281,8 @@ extern int scan_bool ( const char *s );
 extern int scan_int ( const char *s );
 extern char *mklower (char *str);
 extern char *mktrimmed (char *str);
-extern const char * get_token (const char *src, TBUFF **tok, int eolchar);
-extern const char * tokval (const char *tokn);
+extern char * get_token (char *src, TBUFF **tok, int eolchar);
+extern char * tokval (char *tokn);
 extern const char *skip_cblanks (const char *str);
 extern const char *skip_cstring (const char *str);
 extern const char *skip_ctext (const char *str);
@@ -456,7 +456,7 @@ extern	void	scwrite (int row, int col, int nchar, const char *outstr, VIDEO_ATTR
 #endif
 
 /* input.c */
-extern const char *user_reply(const char *prompt);
+extern char *user_reply(char *prompt);
 extern int dotcmdbegin (void);
 extern int dotcmdfinish (void);
 extern int end_string (void);
@@ -603,7 +603,7 @@ extern void mapungetc (int c);
 #if OPT_MENUS
 extern int parse_menu (const char *rc_filename);
 #if NEED_X_INCLUDES
-extern void do_menu ( Widget menub );
+extern int do_menu ( Widget menub );
 #endif
 #endif
 
@@ -1077,10 +1077,10 @@ extern void setchartype (void);
 extern	char *	x_current_fontname	(void);
 extern	char *	x_get_icon_name (void);
 extern	char *	x_get_window_name (void);
+extern	int	x_preparse_args		(int *pargc, char ***pargv);
 extern	int	x_setfont		(const char *fname);
 extern	int	x_typahead		(int milli);
 extern	void	x_move_events		(void);
-extern	void	x_preparse_args		(int *pargc, char ***pargv);
 extern	void	x_set_icon_name (const char *name);
 extern	void	x_set_window_name (const char *name);
 
@@ -1251,9 +1251,6 @@ extern	int	kill	(int pid, int sig);
 #if MISSING_EXTERN_KILLPG && HAVE_KILLPG
 extern	int	killpg	(int pgrp, int sig);
 #endif
-#if MISSING_EXTERN_LINK && HAVE_LINK
-extern	int	link	(const char *, const char *);
-#endif
 #if MISSING_EXTERN_LONGJMP
 extern	void	longjmp	(jmp_buf env, int val);
 #endif
@@ -1299,7 +1296,7 @@ extern	int	read	(int fd, char *buffer, SIZE_T size);
 #if MISSING_EXTERN_READLINK
 extern	int	readlink (const char *path, char *buffer, size_t size);
 #endif
-#if MISSING_EXTERN_SELECT && HAVE_SELECT
+#if MISSING_EXTERN_SELECT && HAVE_SELECT && HAVE_TYPE_FD_SET
 extern	int	select	(int numfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
 #endif
 #if MISSING_EXTERN_SETBUF
