@@ -4,7 +4,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.47 2002/05/14 00:07:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.48 2002/06/30 15:29:51 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -244,7 +244,7 @@ INTEGER		[-+]?([0-9]+)
 <QUOTED>\\		{ flt_bfr_embed(yytext, yyleng, Action_attr); push_stk(QUOTED2); }
 <QUOTED>{IDENT1}	|
 <QUOTED>{IDENT2}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); }
-<QUOTED>{IDENT2L}	{ if (embed_or_append(yytext, yyleng)) push_stk(SUBST); flt_bfr_append(yytext, yyleng); }
+<QUOTED>{IDENT2L}	{ if (embed_or_append(yytext, yyleng)) push_stk(SUBST); }
 <QUOTED>[^\n\\\"$]+	{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>[\n$]		{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>\"		{ FinishQuote(NORMAL); pop_stk(); }

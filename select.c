@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.137 2002/02/03 23:23:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.138 2002/06/30 17:42:36 tom Exp $
  *
  */
 
@@ -484,7 +484,7 @@ get_selregion(REGION * result)
 }
 
 int
-sel_get_leftmark(MARK * result)
+sel_get_leftmark(MARK *result)
 {
     REGION my_region;
     if (get_selregion(&my_region)) {
@@ -495,7 +495,7 @@ sel_get_leftmark(MARK * result)
 }
 
 int
-sel_get_rightmark(MARK * result)
+sel_get_rightmark(MARK *result)
 {
     REGION my_region;
     if (get_selregion(&my_region)) {
@@ -1767,19 +1767,35 @@ operattrfilter(int f, int n)
 static int
 attribute_directly(void)
 {
+    int code = FALSE;
+
 #if OPT_MAJORMODE
     if (curbp != 0) {
 	discard_syntax_highlighting();
-	if (b_val(curbp, MDHILITE)
-	    && curbp->majr != 0
-	    && flt_start(curbp->majr->name)) {
-	    TRACE(("attribute_directly(%s)\n", curbp->b_bname));
-	    flt_finish();
-	    return TRUE;
+	if (b_val(curbp, MDHILITE)) {
+	    char *filtername = 0;
+	    TBUFF *token = 0;
+
+	    if (clexec || isnamedcmd)
+		filtername = mac_tokval(&token);
+
+	    if (filtername == 0
+		&& curbp->majr != 0)
+		filtername = curbp->majr->name;
+
+	    if (filtername != 0
+		&& flt_start(filtername)) {
+		TRACE(("attribute_directly(%s) using %s\n",
+		       curbp->b_bname,
+		       filtername));
+		flt_finish();
+		code = TRUE;
+	    }
+	    tb_free(&token);
 	}
     }
 #endif
-    return FALSE;
+    return code;
 }
 
 int

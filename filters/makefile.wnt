@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.29 2001/01/03 01:38:06 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.30 2002/06/30 21:28:26 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -25,7 +25,7 @@ UTILS	= \
 SCRIPTS = \
 	filters.rc
 
-CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 -I.
+CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 -I. -I..
 
 TMPINCS	= \
 	genmake.exe \

@@ -1,6 +1,6 @@
-revlist for vile, version v9_3
+revlist for vile, version v9_3a
 --------------------------------------------------------------------------------
-CHANGES	1.687
+CHANGES	1.688
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -10,8 +10,8 @@ CHANGES.R8	1.1
 COPYING	1.3
 INSTALL	1.6
 MANIFEST	none
-README	1.88
-README.PC	1.29
+README	1.89
+README.PC	1.30
 README.VMS	1.5
 aclocal.m4	1.108
 ansi.c	1.40
@@ -39,14 +39,14 @@ display.c	1.364
 djhandl.c	1.6
 dumbterm.c	1.17
 edef.h	1.301
-estruct.h	1.505
+estruct.h	1.506
 eval.c	1.308
 exec.c	1.246
 externs.c	1.8
 fences.c	1.80
 file.c	1.330
 filec.c	1.107
-fileio.c	1.166
+fileio.c	1.167
 finderr.c	1.109
 glob.c	1.75
 globals.c	1.46
@@ -62,13 +62,13 @@ lckfiles.c	1.10
 line.c	1.151
 main.c	1.479
 makefile.blc	1.17
-makefile.djg	1.30
+makefile.djg	1.31
 makefile.emx	1.5
 makefile.icc	1.13
-makefile.in	1.180
+makefile.in	1.181
 makefile.tbc	1.24
 makefile.wat	1.26
-makefile.wnt	1.73
+makefile.wnt	1.74
 map.c	1.95
 menu.c	1.42
 mkdirs.sh	1.5
@@ -81,11 +81,11 @@ npopen.c	1.87
 ntconio.c	1.74
 ntwinio.c	1.128
 oneliner.c	1.97
-opers.c	1.79
+opers.c	1.80
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.29
-patchlev.h	1.281
+patchlev.h	1.282
 path.c	1.123
 perl.xs	1.84
 proto.h	1.493
@@ -94,15 +94,15 @@ ptypemap	1.7
 random.c	1.262
 regexp.c	1.80
 region.c	1.107
-revlist	v9_3
+revlist	v9_3a
 search.c	1.126
-select.c	1.137
+select.c	1.138
 sinstall.sh	1.1
 spawn.c	1.171
 statevar.c	1.61
 tags.c	1.116
 tbuff.c	1.41
-tcap.c	1.142
+tcap.c	1.143
 tcap.h	1.7
 termio.c	1.192
 trace.c	1.26
@@ -142,7 +142,7 @@ x11menu.c	1.3
 xshell.sh	1.4
 xvile.wmconfig	1.1
 doc/Vileserv.doc	1.1
-doc/config.doc	1.7
+doc/config.doc	1.9
 doc/dir.doc	1.3
 doc/filters.doc	1.24
 doc/indent.pro	1.3
@@ -178,12 +178,12 @@ filters/ecl-filt.l	1.1
 filters/ecl.key	1.1
 filters/ecrypt.c	1.5
 filters/esql.key	1.3
-filters/esqlfilt.l	1.9
+filters/esqlfilt.l	1.11
 filters/fdl-filt.l	1.8
 filters/fdl.key	1.4
 filters/filterio.c	1.15
-filters/filters.c	1.81
-filters/filters.h	1.58
+filters/filters.c	1.82
+filters/filters.h	1.59
 filters/filters.rc	1.154
 filters/genmake.c	1.4
 filters/genmake.mak	1.15
@@ -209,7 +209,7 @@ filters/makefile.djg	1.3
 filters/makefile.emx	1.4
 filters/makefile.icc	1.3
 filters/makefile.in	1.71
-filters/makefile.wnt	1.29
+filters/makefile.wnt	1.30
 filters/makefilt.l	1.41
 filters/manfilt.c	1.28
 filters/mk-0th.awk	1.5
@@ -231,7 +231,7 @@ filters/pl-filt.c	1.32
 filters/pot.key	1.1
 filters/py-filt.l	1.10
 filters/py.key	1.1
-filters/rc-filt.l	1.2
+filters/rc-filt.l	1.3
 filters/rc.key	1.2
 filters/rcs-filt.l	1.7
 filters/rcs.key	1.1
@@ -239,13 +239,13 @@ filters/rexx.key	1.1
 filters/rexxfilt.l	1.6
 filters/sccs.key	1.1
 filters/sccsfilt.l	1.8
-filters/sed-filt.c	1.15
-filters/sh-filt.l	1.47
+filters/sed-filt.c	1.16
+filters/sh-filt.l	1.48
 filters/sh.key	1.4
 filters/sml-filt.l	1.3
 filters/sml.key	1.1
-filters/spell.rc	1.2
-filters/spellflt.l	1.7
+filters/spell.rc	1.3
+filters/spellflt.l	1.8
 filters/sql-filt.l	1.17
 filters/sql.key	1.7
 filters/tags.key	1.1

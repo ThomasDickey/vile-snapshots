@@ -1,10 +1,15 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.7 2001/09/23 19:55:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.8 2002/06/30 17:44:35 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
+
+#ifdef filter_def
+#include <estruct.h>
+#include <edef.h>
+#endif
 
 #include <filters.h>
 
@@ -39,19 +44,30 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input)
+do_filter(FILE *input GCC_UNUSED)
 {
 #ifdef SPELL_PIPE
-    char name[80];
+#ifdef filter_def
+    LINE *lp;
+#else
+    int ch;
+#endif
+    char name[256];
     FILE *fp;
     char buffer[BUFSIZ];
-    int ch;
     char *attr = class_attr(NAME_KEYWORD);
 
     if ((fp = open_tempfile(name)) == 0)
 	return;
+#ifdef filter_def		/* built-in filter? */
+    ffp = fp;
+    for_each_line(lp, curbp) {
+	ffputline(lp->l_text, llength(lp), "\n");
+    }
+#else
     while ((ch = fgetc(input)) != EOF && !feof(input))
 	fputc(ch, fp);
+#endif
     fclose(fp);
 
     sprintf(buffer, "%s <%s", SPELL_PIPE, name);

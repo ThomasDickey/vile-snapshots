@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.142 2002/05/01 00:17:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.143 2002/06/30 18:17:08 tom Exp $
  *
  */
 
@@ -369,6 +369,9 @@ tcapopen(void)
     i_am_xterm = FALSE;
     if (!strncmp(tv_stype, "xterm", sizeof("xterm") - 1)
 	|| !strcmp(tv_stype, "rxvt")) {
+	i_am_xterm = TRUE;
+    } else if ((t = TGETSTR(CAPNAME("Km", "kmous"), &p)) != 0
+	       && !strcmp(t, "\033[M")) {
 	i_am_xterm = TRUE;
     }
 #if USE_TERMCAP

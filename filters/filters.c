@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.81 2002/05/01 19:43:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.82 2002/06/30 19:34:01 tom Exp $
  *
  */
 
@@ -714,8 +714,10 @@ parse_keyword(char *name, int classflag)
 	insert_keyword(name, args, classflag);
     } else if (*name) {
 	KEYWORD *hash_id;
-	if (args == 0)
+	if (args == 0) {
 	    args = default_attr;
+	    VERBOSE(2, ("using attr \"%s\"", args));
+	}
 	if ((hash_id = FindIdentifier(args)) != 0) {
 	    insert_keyword(name, hash_id->kw_attr, classflag);
 	}

@@ -3,7 +3,7 @@
 #
 # T.DANG (dang@cogit.ign.fr)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.30 1999/11/07 12:55:31 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.31 2002/06/27 00:17:05 tom Exp $
 #
 #
 
@@ -19,6 +19,9 @@ OPTIM = -O2
 # Use these two lines for the IBM/PC display (not DPMI compatible).
 #CFLAGS= -Wall $(DEBUG) $(OPTIM) -DDISP_IBMPC -Dscrn_chosen
 #DISP_SRC = ibmpc.c
+
+# DEBUG	+= -DOPT_TRACE
+# TRACE_C = trace.c
 
 # Use these two lines for the Borland/CONIO display (DPMI compatible).
 CFLAGS= -Wall $(DEBUG) $(OPTIM) -DDISP_BORLAND -Dscrn_chosen
@@ -39,7 +42,7 @@ SRC = 	main.c $(DISP_SRC) basic.c bind.c btree.c buffer.c \
 	path.c random.c regexp.c \
 	region.c search.c select.c spawn.c statevar.c \
 	tags.c tbuff.c termio.c ucrypt.c undo.c \
-	version.c window.c word.c wordmov.c map.c djhandl.c
+	version.c window.c word.c wordmov.c map.c djhandl.c $(TRACE_C)
 
 OBJ =	$(SRC:.c=.o)
 
@@ -47,14 +50,14 @@ OBJ =	$(SRC:.c=.o)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 vile : 	$(BUILTHDRS) $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $(OBJ) -lpc
+	$(CC) $(CFLAGS) -o $@ *.o -lpc
 	coff2exe $@
-	-stubedit vile.exe globbing=no
+#	-stubedit vile.exe globbing=no
 
 dist :	vile
 	strip vile
 	coff2exe vile
-	-stubedit vile.exe globbing=no
+#	-stubedit vile.exe globbing=no
 	pkzip pcvile.zip readme.pc readme vile.exe vile.hlp 
 	cd macros
 	pkzip ..\pcvile.zip *.rc 
@@ -91,7 +94,7 @@ mktbls.exe:  mktbls.c
 	coff2exe mktbls
 	rm -f mktbls
 
-clean:
+clean :
 	rm -f mktbls.exe
 	rm -f *.o
 	rm -f ne*.h

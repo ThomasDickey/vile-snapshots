@@ -23,19 +23,27 @@ to be sure it's still the latest.
 impatient?  just type "./configure; make", and get a cup of coffee, decaf
 if necessary.
 
+want to know more about configure options?  type "./configure --help"
+and then read doc/config.doc for further details.
+
 want X11 support?  you'd better look at doc/config.doc, although
 "./configure --with-screen=x11"; make" may well do what you want.
+
+want syntax coloring?  add "--with-builtin-filters" to your configure
+options and then read the topics "Color basics" and "Syntax coloring" in
+the file vile.hlp.
 
 want PC support?  look for precompiled binaries at the various ftp sites.
 
 want to build vile on a PC host?  refer to the file README.PC .
 
-want VMS support?  you'll need to build vile yourself. refer to the
-file README.VMS .
+want VMS support?  some precompiled binaries are available at
+ftp://ftp.phred.org/pub/vile.  otherwise, you'll need to build vile
+yourself.  In either case, refer to the file README.VMS .
 
-if you like vile, and wish to be informed of new releases, let me
-know -- i maintain a mailing list for that purpose.  don't worry -- the
-volume won't fill your inbox.
+if you like vile, and wish to be informed of new releases, let me know -- i
+maintain a mailing list for that purpose (scroll down a bit for details). 
+don't worry -- the volume won't fill your inbox.
 
 paul fox, pgf@foxharp.boston.ma.us (original author)
 kevin buettner, kev@primenet.com
@@ -628,5 +636,5 @@ June, 2002
     + add $prompt variable, to allow changing the command-line prompt.
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.88 2002/06/26 00:25:57 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.89 2002/06/30 20:27:52 cmorgan Exp $
 -------------------------------

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.505 2002/05/13 23:25:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.506 2002/06/26 23:55:26 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -474,7 +474,7 @@
 
 /* systems with MSDOS-like filename syntax */
 #define OPT_MSDOS_PATH  (SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_OS2_EMX)
-#define OPT_CASELESS	(SYS_WINNT || SYS_OS2 || SYS_OS2_EMX)
+#define OPT_CASELESS	(SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_OS2_EMX)
 #define OPT_UNC_PATH	(SYS_WINNT)
 
 /* individual features that are (normally) controlled by SMALLER */
