@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.84 1997/10/07 11:00:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.85 1998/04/28 10:19:08 tom Exp $
  *
  */
 
@@ -1949,7 +1949,7 @@ main(int argc, char *argv[])
 					a help line for it.  save the previous
 					one now, and hang onto this one */
 				if (func[0]) { /* flush the old one */
-					save_funcs( func, flags, fcond, 
+					save_funcs( func, flags, fcond,
 						old_fcond, funchelp);
 					funchelp[0] = EOS;
 				}

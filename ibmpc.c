@@ -8,7 +8,7 @@
  * Modified by Pete Ruczynski (pjr) for auto-sensing and selection of
  * display type.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.86 1998/04/23 09:18:54 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.87 1998/04/28 10:19:58 tom Exp $
  *
  */
 
@@ -182,7 +182,7 @@ typedef	struct	{
 	} DRIVERS;
 
 #define ORIGTYPE  0	/* store original info in this slot.
-			   (these values should all (?) get replaced 
+			   (these values should all (?) get replaced
 			   at open time) */
 
 /* order this table so that more higher resolution entries for the same
@@ -713,7 +713,7 @@ ibmopen(void)
 			{ u_long staticinfop;
 			static_VGA_info static_info;
 			staticinfop = ((u_long)buffer.static_info & 0xffffL);
-			staticinfop += (((u_long)buffer.static_info >> 12) & 
+			staticinfop += (((u_long)buffer.static_info >> 12) &
 						0xffff0L);
 			dosmemget( staticinfop, sizeof(static_info),
 					&static_info);
@@ -741,7 +741,7 @@ ibmopen(void)
 
 #ifdef PVGA
 	set_display(10);	/* set graphic 640x350 mode */
-	rg.x._AX_ = 0x007F;      
+	rg.x._AX_ = 0x007F;
 	rg.h.bh = 0x01;		/* set non-VGA mode */
 	INTX86(0x10,&rg, &rg);
 	set_display(7);		/* set Hercule mode */
@@ -1170,7 +1170,7 @@ int		rodent_exists;
 int		rodent_cursor_display;
 
 #if CC_TURBO
-#define	MsButtonPending() button_pending 
+#define	MsButtonPending() button_pending
 #endif
 
 /*

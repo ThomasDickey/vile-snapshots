@@ -1,4 +1,4 @@
-/* 
+/*
  *
  *	fences.c
  *
@@ -8,7 +8,7 @@
  * Extensions for vile by Paul Fox
  * Revised to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.45 1998/04/24 01:27:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.46 1998/04/28 10:14:17 tom Exp $
  *
  */
 
@@ -126,7 +126,7 @@ complex_fence(int sdir, int key)
 				if (sdir == FORWARD) {
 					count++;
 				} else {
-					done = ((count-- == 1) && 
+					done = ((count-- == 1) &&
 						(key != that));
 					if (done)
 						count = 0;
@@ -181,12 +181,12 @@ is_user_fence(int ch, int *sdirp)
 	chp = strchr(fences, ch);
 	if (!chp)
 		return 0;
-	if ((chp - fences) & 1) { 
+	if ((chp - fences) & 1) {
 		/* look for the left fence */
 		och = chp[-1];
 		if (sdirp)
 			*sdirp = REVERSE;
-	} else { 
+	} else {
 		/* look for the right fence */
 		och = chp[1];
 		if (sdirp)
@@ -233,7 +233,7 @@ comment_fence(int sdir)
 		if (BlkEnd->mlen > off)
 			forwchar(TRUE, BlkEnd->mlen - off);
 	}
-		
+
 	if (scanner((sdir == FORWARD) ? BlkEnd : BlkBegin,
 			sdir, FALSE, (int *)0)) {
 		if (!doingopcmd || doingsweep)
@@ -364,9 +364,9 @@ int
 fmatchindent(int c)
 {
 	int ind;
-	    
+
 	MK = DOT;
-	    
+
 	if (getfence(c,REVERSE) == FALSE) {
 		(void)gomark(FALSE,1);
 		return previndent((int *)0);
@@ -375,7 +375,7 @@ fmatchindent(int c)
 	ind = indentlen(DOT.l);
 
 	(void)gomark(FALSE,1);
-	    
+
 	return ind;
 }
 

@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.221 1998/04/23 11:07:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.222 1998/04/28 10:05:36 cmorgan Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -42,7 +42,11 @@ decl_init( char *exec_pathname, ".");	/* replaced at runtime with path-head of a
 #if DISP_X11
 decl_init( char prognam[], "xvile");
 #else
+# if DISP_NTWIN
+decl_init( char prognam[], "winvile");
+# else
 decl_init( char prognam[], "vile");
+# endif
 #endif
 
 decl_init( char version[], "version 7.3");

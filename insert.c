@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.106 1997/12/01 23:43:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.107 1998/04/28 10:17:03 tom Exp $
  *
  */
 
@@ -36,7 +36,7 @@ static	int	istring(int f, int n, int mode);
 #endif
 
 /* value of insertmode maintained through subfuncs */
-static	int	savedmode;  
+static	int	savedmode;
 
 static int allow_aindent = TRUE;
 static int skipindent;
@@ -124,7 +124,7 @@ openup(int f, int n)
 	(void)gotobol(TRUE,1);
 
 	/* if we are in C mode and this is a default <NL> */
-	if (allow_aindent && n == 1 && 
+	if (allow_aindent && n == 1 &&
 		(is_c_mode(curbp) || b_val(curbp,MDAIND)) &&
 				    !is_header_line(DOT,curbp)) {
 		s = indented_newline_above();
@@ -710,7 +710,7 @@ inschar(int c, int *backsp_limit_p)
 					that tells us to skip a line
 					when calculating the autoindent
 					on the next newline */
-				if (c == tocntrl('D') && 
+				if (c == tocntrl('D') &&
 					last_insert_char == '^')
 					skipindent = 1;
 
@@ -942,7 +942,7 @@ previndent(int *bracefp)
 		int lc = lastchar(DOT.l);
 		int c = lgetc(DOT.l,lc);
 		int dir;
-		*bracefp = (lc >= 0 && (c == ':' || 
+		*bracefp = (lc >= 0 && (c == ':' ||
 				(is_user_fence(c, &dir) && dir == FORWARD)));
 
 	}
@@ -1244,7 +1244,7 @@ quote(int f, int n)
 			(void)update(FALSE);
 			c = keystroke_raw8();
 		} while ((isDigit(c) && base >= 10) ||
-			(base == 8 && c < '8') || 
+			(base == 8 && c < '8') ||
 			(base == 16 && (c >= 'a' && c <= 'f')) ||
 			(base == 16 && (c >= 'A' && c <= 'F')));
 	}

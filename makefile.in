@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.100 1998/04/20 09:54:03 kev Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.101 1998/04/30 00:52:33 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -141,7 +141,10 @@ SCREENS = \
 # other source code, some used in other makefiles, some useful tools,
 #  some possibly obsolete
 OTHERSRC = vms2unix.c vmspipe.c os2pipe.c djhandl.c \
-	manpage.rc manfilt.pl manfilt.c c-filt.c c-filt.flx pictmode.rc \
+	manpage.rc manfilt.pl manfilt.c \
+	c-filt.c c-filt.flx \
+	pas-filt.c \
+	pictmode.rc \
 	gppconio.c digraphs.rc
 
 # documentation, such as it is
@@ -203,7 +206,8 @@ OBJ = $(SCREEN).o \
 	tbuff.o termio.o undo.o version.o \
 	watch.o window.o word.o wordmov.o @EXTRAOBJS@
 
-all:	$(TARGET) vile-manfilt$x vile-c-filt$x vile-crypt$x
+ALL =	$(TARGET) vile-manfilt$x vile-c-filt$x vile-pas-filt$x vile-crypt$x
+all:	$(ALL)
 
 $(TARGET): $(BUILTHDRS) $(OBJ)
 	-mv $(TARGET) o$(TARGET)
@@ -217,6 +221,9 @@ vile-manfilt$x : manfilt.o
 
 vile-c-filt$x : c-filt.o
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ c-filt.o
+
+vile-pas-filt$x : pas-filt.o
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ pas-filt.o
 
 vile-crypt$x : $(srcdir)/crypt.c
 	@ECHO_LD@$(CC) -DSTANDALONE $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) \
@@ -242,24 +249,23 @@ $(MKTBLS):  $(srcdir)/mktbls.c
 check: $(TARGET)
 	@echo Sorry, no batch tests available.
 
-install: $(INSTALL_DIRS) \
+INSTALL_FILES = \
 	$(bindir)/$(TARGET) \
 	$(bindir)/vile-manfilt$x \
 	$(bindir)/vile-c-filt$x \
+	$(bindir)/vile-pas-filt$x \
 	$(bindir)/vile-crypt$x \
 	$(mandir)/$(TARGET).$(manext) \
 	$(datadir)/vile.hlp
+
+install: $(INSTALL_DIRS) \
+	$(INSTALL_FILES)
 	@echo 'Completed installation.'
 
 installdirs: $(INSTALL_DIRS)
 
 uninstall:
-	-$(RM) $(bindir)/$(TARGET) \
-		$(bindir)/vile-manfilt$x \
-		$(bindir)/vile-c-filt$x \
-		$(bindir)/vile-crypt$x \
-		$(mandir)/$(TARGET).$(manext) \
-		$(datadir)/vile.hlp
+	-$(RM) $(INSTALL_FILES)
 
 # The makefile is technically dependent upon the config.status file, but
 # gmake gets overly ambitious and remakes the makefile too often.
@@ -280,7 +286,7 @@ mostlyclean:
 	    core *~ *.BAK
 
 clean: mostlyclean
-	-$(RM) $(TARGET) vile-manfilt$x vile-c-filt$x vile-crypt$x
+	-$(RM) $(ALL)
 
 distclean: clean
 	-$(RM) makefile config.status config.cache config.log config.h
@@ -292,6 +298,7 @@ lint: $(BUILTHDRS)
 	$(LINT) $(CPPFLAGS) $(SRC) $(LIBS)
 	$(LINT) $(CPPFLAGS) mktbls.c
 	$(LINT) $(CPPFLAGS) c-filt.c
+	$(LINT) $(CPPFLAGS) pas-filt.c
 	$(LINT) $(CPPFLAGS) manfilt.c
 
 tags:
@@ -500,6 +507,8 @@ $(bindir)/vile-manfilt$x : vile-manfilt$x
 	$(INSTALL_PROGRAM) vile-manfilt$x $@
 $(bindir)/vile-c-filt$x :  vile-c-filt$x
 	$(INSTALL_PROGRAM) vile-c-filt$x $@
+$(bindir)/vile-pas-filt$x : vile-pas-filt$x
+	$(INSTALL_PROGRAM) vile-pas-filt$x $@
 $(bindir)/vile-crypt$x :   vile-crypt$x
 	$(INSTALL_PROGRAM) vile-crypt$x $@
 

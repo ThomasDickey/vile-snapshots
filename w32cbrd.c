@@ -1,8 +1,8 @@
-/* 
+/*
  * w32cbrd:  collection of common clipboard manipulation routines shared by
  *           the Win32 console- and GUI-based vile editor.
  *
- * Caveats  
+ * Caveats
  * =======
  * -- This code has not been tested with NT 3.51 .
  *
@@ -13,7 +13,7 @@
  *    Subsequent copies do not show this cursor.  On an NT 4.0 host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.2 1998/04/08 09:01:45 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.3 1998/04/28 10:19:24 tom Exp $
  */
 
 #include <windows.h>
@@ -50,7 +50,7 @@ cbrdcpy_unnamed(int unused1, int unused2)
     kregcirculate(FALSE);
 
     /* make sure there is something to put */
-    if (kbs[ukb].kbufh == NULL) 
+    if (kbs[ukb].kbufh == NULL)
     {
         ukb = 0;
         mlforce("Nothing to copy");
@@ -65,9 +65,9 @@ cbrdcpy_unnamed(int unused1, int unused2)
     /*
      * Make 2 passes over the data.  1st pass counts the data and
      * adjusts for the fact that:
-     * 
+     *
      * 1) each '\n' must be warped to "\r\n" to satisfy clipboard APIs.
-     * 2) unprintable data (modulo tabs) must be warped to a printable 
+     * 2) unprintable data (modulo tabs) must be warped to a printable
      *    equivalent.
      */
     kp = kbs[ukb].kbufh;
@@ -76,7 +76,7 @@ cbrdcpy_unnamed(int unused1, int unused2)
         i      = KbSize(ukb, kp);
         src    = (char *) kp->d_chunk;
         nbyte += i;
-        while (i--) 
+        while (i--)
         {
             if ((c = *src++) == '\n')
             {
@@ -105,7 +105,7 @@ cbrdcpy_unnamed(int unused1, int unused2)
     {
         i   = KbSize(ukb, kp);
         src = (char *) kp->d_chunk;
-        while (i--) 
+        while (i--)
         {
             if ((c = *src++) == '\n')
             {
@@ -137,7 +137,7 @@ cbrdcpy_unnamed(int unused1, int unused2)
     for (rc = i = 0; i < 8 && (! rc); i++)
     {
         /* Try to open clipboard */
-        
+
         if (! OpenClipboard(NULL))
             Sleep(500);
         else
@@ -158,17 +158,17 @@ cbrdcpy_unnamed(int unused1, int unused2)
         GlobalFree(hClipMem);
     }
     else
-    {       
+    {
         /* success */
 
         if (! global_b_val(MDTERSE))
         {
             char buf[128];
 
-            _snprintf(buf, 
+            _snprintf(buf,
                       sizeof(buf),
-                      "[Copied %u line%s, %u bytes to clipboard]", 
-                      nline, 
+                      "[Copied %u line%s, %u bytes to clipboard]",
+                      nline,
                       PLURAL(nline),
                       nbyte - 1);   /* subtract terminating nul */
             mlwrite(buf);
@@ -179,9 +179,9 @@ cbrdcpy_unnamed(int unused1, int unused2)
     return (rc);
 }
 
-/* 
- * Paste contents of windows clipboard (if TEXT) to either the unnamed 
- * register or the ';' register (a la xvile).  Decision to be made by 
+/*
+ * Paste contents of windows clipboard (if TEXT) to either the unnamed
+ * register or the ';' register (a la xvile).  Decision to be made by
  * future implementor and/or vile coding list.
  *
  * Another possible semantic:  cbrdpaste copies windows clipboard to
@@ -189,7 +189,7 @@ cbrdcpy_unnamed(int unused1, int unused2)
  *
  * Unimplemented.  Bound to Shift+Insert.
  */
-int 
+int
 cbrdpaste(int f, int n)
 {
     mlforce("[clipboard paste (unimplemented)]");
@@ -197,7 +197,7 @@ cbrdpaste(int f, int n)
 }
 
 /*
- * Copy contents of specified region or register to Windows clipboard.  
+ * Copy contents of specified region or register to Windows clipboard.
  * This command is an operaor and should mimic ^W.
  *
  * Unimplemented.  Bound to Ctrl+Insert.

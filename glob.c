@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.57 1997/10/06 23:35:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.58 1998/04/28 10:16:32 tom Exp $
  *
  */
 
@@ -262,7 +262,7 @@ match_leaf(char *leaf, char *pattern)
 			char *	first	= ++pattern;
 			int	negate	= 0;
 
-			if (*first == GLOB_NEGATE[0] || 
+			if (*first == GLOB_NEGATE[0] ||
 				(GLOB_NEGATE[1] && *first == GLOB_NEGATE[1])) {
 				negate = 1;
 				first = pattern++;
@@ -521,8 +521,8 @@ char	*pattern)
 				break;
 			}
 
-		} while (entries = 1, 
-		         DosFindNext(hdir, &fb, sizeof(fb), &entries) == NO_ERROR 
+		} while (entries = 1,
+		         DosFindNext(hdir, &fb, sizeof(fb), &entries) == NO_ERROR
 				 && entries == 1);
 
 		DosFindClose(hdir);

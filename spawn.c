@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.125 1998/04/06 03:00:00 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.126 1998/04/28 10:18:51 tom Exp $
  *
  */
 
@@ -539,7 +539,7 @@ write_data_to_pipe(void *writefp)
     fw = writefp;
     kregcirculate(FALSE);
     kp = kbs[ukb].kbufh;
-    while (kp != NULL) 
+    while (kp != NULL)
     {
         fwrite((char *)kp->d_chunk, 1, (SIZE_T)KbSize(ukb,kp), fw);
         kp = kp->d_next;
@@ -553,9 +553,9 @@ write_data_to_pipe(void *writefp)
 #else
     npflush();  /* fake multi-processing */
 #endif
-#if SYS_WINNT          
-    /* 
-     * If this function is invoked by a thread, then that thread (not 
+#if SYS_WINNT
+    /*
+     * If this function is invoked by a thread, then that thread (not
      * the parent process) must close write pipe.  We generalize this
      * function so that all Win32 execution environments (threaded or
      * not) use the same code.
@@ -587,7 +587,7 @@ filterregion(void)
     }
 
     killregion();
-    if (!softfork()) 
+    if (!softfork())
     {
 #if !(SYS_WINNT && defined(GMDW32PIPES))
         write_data_to_pipe(fw);
@@ -595,7 +595,7 @@ filterregion(void)
         /* This is a Win32 environment with compiled Win32 pipe support. */
         if (global_g_val(GMDW32PIPES))
         {
-            /* 
+            /*
              * w32pipes mode enabled -- create child thread to blast
              * region to write pipe.
              */
@@ -610,7 +610,7 @@ filterregion(void)
         }
         else
         {
-            /* 
+            /*
              * Single-threaded parent process writes region to pseudo
              * write pipe (temp file).
              */

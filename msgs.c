@@ -4,7 +4,7 @@
  * Support functions for "popup-msgs" mode.
  * Written by T.E.Dickey for vile (august 1994).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/msgs.c,v 1.16 1997/08/24 22:59:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/msgs.c,v 1.17 1998/04/28 10:18:19 tom Exp $
  */
 #include "estruct.h"
 
@@ -31,7 +31,7 @@ create_msgs(void)
 /*
  * This is invoked as a wrapper for 'kbd_putc()'.  It writes to the Messages
  * scratch buffer, and also to the message line.  If the Messages buffer isn't
- * visible, it is automatically popped up when a new message line is begun. 
+ * visible, it is automatically popped up when a new message line is begun.
  * Since it's a scratch buffer, popping it down destroys it.
  */
 void

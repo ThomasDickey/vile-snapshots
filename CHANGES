@@ -1,5 +1,39 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (tom) 980429 (z)
+ 	+ trim trailing whitespace from .c and .h files
+	+ implement font-selection in winvile, added to control menu.  This
+	  works passably, though you must press ^L to repaint if the character
+	  size does not change. (Italic fonts are clipped a little also, but usable).
+	+ add logic to ntwinio.c so that winvile user can use control modifier
+	  to mouse button to perform rectangular selection, as in xvile
+	  (requested by Richard A Ward <wardra@rss.rockwell.com>).
+	+ correct ":e!" command so that if user asks to reread the unnamed
+	  buffer, that vile simply clears it, rather than passing a null
+	  filename to readin() (reported by Keith Williams
+	  <keith@archelon-us.com>).
+	+ rename symbol NL to VI_NL, and the termcap symbols in tcap.c
+	  to use "tc_" prefix to avoid conflicts with curses.h on OSF/1 3.2
+	+ add pas-filt.c and corresponding vile-pas-filt program (request by
+	  Radek Liboska <liboska@tereza.uochb.cas.cz>)
+	+ modify c-filt.c so that it reads all command-parameters as keyword
+	  files.
+	+ correct two errors in c-filt.c (did not handle continued string
+	  literals - reported by Clark Morgan - and did not handle preprocessor
+	  lines with leading whitespace.
+	+ correct minor formatting nit in [Settings] buffer, adding a blank
+	  line between the multi-column and single column buffer settings.
+	+ make a more-useful message when describe-function is applied to
+	  a user-defined procedure.
+ 	> patch by Clark Morgan:
+	+ Winvile gets its own unique $progname value.
+	+ The ';' register is made accessible to all versions of vile.  The
+	  availability of the ';' and '.' registers to all versions of vile is
+	  documented in vile.hlp .
+	+ New win32 mode called "scroll-pause" added, which inserts a small
+	  delay in the console editor's scrolling code if required by user's
+	  video HW.  Documented in vile.hlp .
+
  (kev) 980427 (y)
 	+ history.c (WillGlue): Allow '\r' to be glued.
 	  (edithistory): Transform '\n' into '\r' for insertion into the
@@ -11,7 +45,7 @@ Changes for vile 7.4 (released ??? ??? ?, 1998)
 	  uppercase values to return.  Though it could be argued that I
 	  should maybe convert these to 0 and 1...)
 	  (adjvalueset, set_mode_value): Split functionality of adjvalueset
-	  into adjvalueset which (still) does the prompting and the 
+	  into adjvalueset which (still) does the prompting and the
 	  new function set_mode_value which does the setting.  Having
 	  a setter which does no prompting makes it easier to call from
 	  other places (like the perl interface.)
@@ -43,7 +77,7 @@ Changes for vile 7.4 (released ??? ??? ?, 1998)
 	    on $,
 
 	    The options format is almost the same as used by perl, and
-	    defaults to `-lpi' which was how it originally worked. 
+	    defaults to `-lpi' which was how it originally worked.
 	    Example:
 
 		:r $MAIL :%perldo print if /^From /^M-00ni
@@ -85,7 +119,7 @@ Changes for vile 7.4 (released ??? ??? ?, 1998)
 	  Linux).  Minor fixes to ifdef's to build the test configuration.
 	+ remove chgd_fences callback from the newer regular-expression
 	  fences modes, since that function applies only to fence-pairs.
-	+ modify 'working' mode so that xvile simply sets the watch cursor. 
+	+ modify 'working' mode so that xvile simply sets the watch cursor.
 	  Though the "working..." message would be nice to have, it introduces
 	  problems with X Windows to cause events which may interrupt the
 	  normal event processing.  The new scheme sets a flag which is tested
@@ -253,15 +287,15 @@ Changes for vile 7.4 (released ??? ??? ?, 1998)
 	  O'Dea).
 	> patch by Clark Morgan:
 	+ turn OPT_W32PIPES on (I modified to condition it on SYS_WINNT).
-	+ add entry to error finder to support perl 5 diagnostics 
+	+ add entry to error finder to support perl 5 diagnostics
 	+ create temporary filenames in w32pipe.c with an API that
-	  preferentially honors the current settings of TMP and TEMP. 
-	+ add back Win32-specific comments to c-filt.c  
+	  preferentially honors the current settings of TMP and TEMP.
+	+ add back Win32-specific comments to c-filt.c
 	+ fix a bug in c-filt.c that caused coloring to go south if a string
-	  literal ended with \\.  E.g., the statement: 
-		char *x = "\\"; 
+	  literal ended with \\.  E.g., the statement:
+		char *x = "\\";
 	  would cause almost all syntax coloring following this var declaration
-	  to fail. 
+	  to fail.
 
  (tom) 980412 (r)
  	+ modify configure script and makefile.in to allow for DOS-style
@@ -360,36 +394,36 @@ Changes for vile 7.4 (released ??? ??? ?, 1998)
 	  actually a bug in the X server, but the above is a more precise
 	  way of saying what we really want to do anyway.
 
- (kev) 980403 (p) 
-	+ hgrep.pl, glob2re.pl, visit.pl: New files which implement 
-	  a recursive grep with hypertext links in perl. 
- 	+ api.c (api_command_cleanup): Fixed bug in which DOT 
-	  was being propogated to the fake windows instead of 
-	  the real ones.  (Which is a pretty useless thing to do.) 
-	  (api_swscreen): Added big comment noting problems with 
-	  calling api_command_cleanup. 
-	+ cmdtbl (exechypercmd, showhypercmd, operattrhc): New 
-	  commands related to hypertext commands. 
-	+ estruct.h (AREGION): Added new field ar_hypercmd which 
-	  points at a hypertext command. 
-	+ select.c (hypercmd): New static variable used to communicate 
-	  the hypertext command string to attributeregion(). 
-	  (free_attribs, free_attrib, sel_begin, selectregion, 
-	  attribute_region): All modified slightly to deal with the 
-	  new ar_hypercmd field in the AREGION structure. 
-	  (attribute_cntl_a_sequences): Look for an H followed by 
-	  the hypertext command, followed by a null character in 
-	  the ^A sequences. 
-	  (attributehyperregion, operattrhc, hyperspray, doexechypercmd, 
-	  exechypercmd, doshowhypercmd, showhypercmd): New functions. 
-	+ vile.hlp: Added new sections "Writing your own filters" and 
-	  "Hypertext". 
-	+ x11.c (multi_click): Added code to execute hypertext command, 
-	  when present, on a double click. 
- 
- (tom) 980331 (o) 
+ (kev) 980403 (p)
+	+ hgrep.pl, glob2re.pl, visit.pl: New files which implement
+	  a recursive grep with hypertext links in perl.
+ 	+ api.c (api_command_cleanup): Fixed bug in which DOT
+	  was being propogated to the fake windows instead of
+	  the real ones.  (Which is a pretty useless thing to do.)
+	  (api_swscreen): Added big comment noting problems with
+	  calling api_command_cleanup.
+	+ cmdtbl (exechypercmd, showhypercmd, operattrhc): New
+	  commands related to hypertext commands.
+	+ estruct.h (AREGION): Added new field ar_hypercmd which
+	  points at a hypertext command.
+	+ select.c (hypercmd): New static variable used to communicate
+	  the hypertext command string to attributeregion().
+	  (free_attribs, free_attrib, sel_begin, selectregion,
+	  attribute_region): All modified slightly to deal with the
+	  new ar_hypercmd field in the AREGION structure.
+	  (attribute_cntl_a_sequences): Look for an H followed by
+	  the hypertext command, followed by a null character in
+	  the ^A sequences.
+	  (attributehyperregion, operattrhc, hyperspray, doexechypercmd,
+	  exechypercmd, doshowhypercmd, showhypercmd): New functions.
+	+ vile.hlp: Added new sections "Writing your own filters" and
+	  "Hypertext".
+	+ x11.c (multi_click): Added code to execute hypertext command,
+	  when present, on a double click.
+
+ (tom) 980331 (o)
  	+ change logic that determines whether to set dos mode for a file so
-	  that .vilerc (or vile.rc) and source'd files are treated specially. 
+	  that .vilerc (or vile.rc) and source'd files are treated specially.
 	  For those files, all lines must end with ^M's to set dos mode
 	  automatically when they are read.  This will reduce the chances of
 	  trimming ^M's from map commands.
@@ -400,79 +434,79 @@ Changes for vile 7.4 (released ??? ??? ?, 1998)
 	+ use new function tb_insert() rather than tb_put() to insert strings
 	  for expand-chars.  The tb_put() function truncates the buffer at the
 	  location of the new character, and does not work well for inline
-	  editing. 
+	  editing.
 
- (kev) 980330 (n) 
- 	+ api.c (api_gotoline): Make sure that we can move off of 
-	  buf_head if presently on it.  (This fixes a bug in which 
-	  it was sometimes impossible to move dot.  setrange also 
-	  exhibited a similar bug.) 
-	+ cmdtbl (perl): Allow perl to be run in view mode. 
-	+ perl.xs (perl): Set/restore clexec, discmd, and isnamedcmd 
-	  so that calls to the various mlreply functions will work 
-	  from within perl.  (Thanks to Sean Ahern for bug reports 
-	  and patches.) 
-	  (perl_init): Call lengthen_path to expand ~ to the user's 
-	  home directory.  (Thanks again to Sean Ahern for bug 
-	  reports and patches.) 
-	  (sv2linenum, sv2offset): New functions for converting 
-	  '$' and '$$' to either line number or offsets within 
-	  lines. 
-	  (VileCommand): Renamed to command. 
-	  (inplace_edit, setregion, dot, mlreply, mlreply_no_opts, 
-	  mlreply_file, mlreply_dir): Added documentation. 
-	  (setregion, dot): Handle '$' and '$$'. 
-	  (setregion): Return the buffer object in a scalar context. 
-	  (attribute_cntl_a_sequences, unmark): New functions. 
-	+ proto.h (attribute_cntl_a_sequences_over_region): Declared. 
-	+ select.c (attribute_cntl_a_sequences_over_region): New 
-	  function. 
- 
- (kev) 980324 (m) 
-	+ api.h (dot_changed): New field in SCR structure. 
- 	+ api.c (api_gotoline): Prevent enormous amounts of looping 
-	  for outrageous count values. 
-	  (api_dotgline): Fixed bug which caused <$curscr> operator 
-	  to go into infinite loop. 
-	  (api_command_cleanup): Added code for propagating DOT. 
-	  (api_bp2sp): Initialize dot_changed field. 
-	+ perl.xs (perl_init): Add our own search paths to @INC. 
-	  (dot): New method for getting/setting DOT. 
-	  (GetUserInput): Removed. 
-	+ proto.h (is_fake_win): Declared. 
-	+ window.c (is_fake_win): New function. 
- 
- (kev) 980321 (l) 
- 	+ api.c (api_setup_fake_win, api_dotgline, api_command_cleanup, 
-	  api_bp2sp):  Rearranged initialization of DOT so that it will 
-	  be done conditionally in api_dotgline.  This fixes a nasty 
-	  bug in which lines could get added to the wrong buffer.  It 
-	  also allows perl functions to be written which look at the 
-	  current location of DOT and possibly do something with it. 
-	  Before, we were always setting it to the start of the region 
-	  (which may not have a lot of relevance). 
-	+ api.h (SCR): New field dot_inited. 
-	+ perl.xs (setregion): Set dot_inited field. 
-	+ x11.c (atom_CLIPBOARD, x_preparse_args): New atom; initialize. 
-	  (x_get_selection, x_paste_selection, x_get_clipboard_text, 
-	  x_convert_selection, x_lose_selection, own_selection, 
-	  x_own_selection, copy_to_clipboard, paste_from_clipboard, 
-	  x_process_event): Handle CLIPBOARD selections as well as 
-	  primary selections. 
-	+ cmdtbl (copy_to_clipboard, paste_from_clipboard): New 
-	  commands. 
-	+ estruct.h (CLIP_KREG): New kill register. 
-	  (NKREGS, SEL_KREG, KEYST_KREG): Renumbered to account for 
-	  new kill register, CLIP_KREG. 
-	+ line.c (index2reg): Represent the clipboard kill register 
-	  with a ';'. 
-	+ vile.hlp: New documentation about X11 CLIPBOARD selections. 
- 
+ (kev) 980330 (n)
+ 	+ api.c (api_gotoline): Make sure that we can move off of
+	  buf_head if presently on it.  (This fixes a bug in which
+	  it was sometimes impossible to move dot.  setrange also
+	  exhibited a similar bug.)
+	+ cmdtbl (perl): Allow perl to be run in view mode.
+	+ perl.xs (perl): Set/restore clexec, discmd, and isnamedcmd
+	  so that calls to the various mlreply functions will work
+	  from within perl.  (Thanks to Sean Ahern for bug reports
+	  and patches.)
+	  (perl_init): Call lengthen_path to expand ~ to the user's
+	  home directory.  (Thanks again to Sean Ahern for bug
+	  reports and patches.)
+	  (sv2linenum, sv2offset): New functions for converting
+	  '$' and '$$' to either line number or offsets within
+	  lines.
+	  (VileCommand): Renamed to command.
+	  (inplace_edit, setregion, dot, mlreply, mlreply_no_opts,
+	  mlreply_file, mlreply_dir): Added documentation.
+	  (setregion, dot): Handle '$' and '$$'.
+	  (setregion): Return the buffer object in a scalar context.
+	  (attribute_cntl_a_sequences, unmark): New functions.
+	+ proto.h (attribute_cntl_a_sequences_over_region): Declared.
+	+ select.c (attribute_cntl_a_sequences_over_region): New
+	  function.
+
+ (kev) 980324 (m)
+	+ api.h (dot_changed): New field in SCR structure.
+ 	+ api.c (api_gotoline): Prevent enormous amounts of looping
+	  for outrageous count values.
+	  (api_dotgline): Fixed bug which caused <$curscr> operator
+	  to go into infinite loop.
+	  (api_command_cleanup): Added code for propagating DOT.
+	  (api_bp2sp): Initialize dot_changed field.
+	+ perl.xs (perl_init): Add our own search paths to @INC.
+	  (dot): New method for getting/setting DOT.
+	  (GetUserInput): Removed.
+	+ proto.h (is_fake_win): Declared.
+	+ window.c (is_fake_win): New function.
+
+ (kev) 980321 (l)
+ 	+ api.c (api_setup_fake_win, api_dotgline, api_command_cleanup,
+	  api_bp2sp):  Rearranged initialization of DOT so that it will
+	  be done conditionally in api_dotgline.  This fixes a nasty
+	  bug in which lines could get added to the wrong buffer.  It
+	  also allows perl functions to be written which look at the
+	  current location of DOT and possibly do something with it.
+	  Before, we were always setting it to the start of the region
+	  (which may not have a lot of relevance).
+	+ api.h (SCR): New field dot_inited.
+	+ perl.xs (setregion): Set dot_inited field.
+	+ x11.c (atom_CLIPBOARD, x_preparse_args): New atom; initialize.
+	  (x_get_selection, x_paste_selection, x_get_clipboard_text,
+	  x_convert_selection, x_lose_selection, own_selection,
+	  x_own_selection, copy_to_clipboard, paste_from_clipboard,
+	  x_process_event): Handle CLIPBOARD selections as well as
+	  primary selections.
+	+ cmdtbl (copy_to_clipboard, paste_from_clipboard): New
+	  commands.
+	+ estruct.h (CLIP_KREG): New kill register.
+	  (NKREGS, SEL_KREG, KEYST_KREG): Renumbered to account for
+	  new kill register, CLIP_KREG.
+	+ line.c (index2reg): Represent the clipboard kill register
+	  with a ';'.
+	+ vile.hlp: New documentation about X11 CLIPBOARD selections.
+
  (tom) 980321 (k)
 	+ correct logic in tcap.c so that visual-matches works for a specific
 	  color (reported by Kuntal M. Daftary).
  	+ add test for Xp library, needed to link with RedHat Motif 2.1
-	  (reported by Richard <rruth@studio.disney.com>). 
+	  (reported by Richard <rruth@studio.disney.com>).
 	+ add configure option --with-startup-path to allow installer to
 	  customize the $startup-path used by vile.
 	+ change Unix lib directory (i.e., location of vile.hlp) to
@@ -487,72 +521,72 @@ Changes for vile 7.4 (released ??? ??? ?, 1998)
 	  CF_DISABLE_ECHO, CF_FIND_LIBRARY, CF_NCURSES_LIBS and
 	  CF_NCURSES_VERSION.
 
- (kev) 980320 (j) 
- 	+ api.c (linsert_chars): Rewritten both for efficiency and 
-	  so that the MARK at the end of the region stays put when 
-	  doing something like: 
- 
-		$curscr->inplace_edit(1); 
-		while (<$curscr>) { s/foo/bar/g; print; } 
- 
-	  (setup_fake_win): No longer static.  Renamed to 
-	  api_setup_fake_win.  Also set DOT here to the beginning of 
-	  the region. 
-	  (api_mark_iterator): New function. 
-	  (api_gotoline): No longer static.  Also renamed from 
-	  _api_gotoline.  Fixed all callers. 
-	  (api_dotinsert, api_dotgline): New functions. 
-	  (api_bp2sp): Initialize the region beginning and end 
-	  to point to something valid. 
-	+ api.h (SCR): Added new fields region, regionshape, and 
-	  inplace_edit. 
-	  (api_dotinsert, api_dotgline, api_gotoline, api_setup_fake_win): 
-	  Added declarations. 
-	+ cmdtbl (perldo): New command. 
-	+ estruct.h (api_do_mark_iterate_helper): New macro. 
-	  (do_mark_iterate): Invoke api_do_mark_iterate_helper in order 
-	  fix the the marks in the SCR structure region. 
-	+ perl.xs (newVIrv): Make the references to SCR objects that 
-	  we give perl refer to globs instead of a scalar.  Bury 
-	  the scalar in the scalar portion of the glob.  The reason 
-	  we do this is so that these references may be used as 
-	  filehandles as well as objects. 
-	  (perl_free_handle): Slight change to account for extra 
-	  levels of indirection to get to the thing we really have 
-	  to zero out. 
-	  (perl): Added calls to hst_flush() and hst_init() in order 
-	  to prevent user input from a perl command from being added 
-	  to the history line for the perl command.  (It was simply 
-	  getting appended on the end.)  Unfortunately, this input 
-	  doesn't seem to be recorded in the history any longer, but 
-	  at least it doesn't mess up the perl command. 
-	    Also rewrote the code for setting up a region, making sure 
-	  that the new fields in the SCR structure are initialized 
-	  appropriatedly. 
-	  (replace_line, perldo): New functions. 
-	  (perl_init): Tie STDIN to read from the minibuffer.  Modified 
-	  other tie statements (calls to sv_magic()) slightly to do 
-	  the same thing. 
-	  (Msg): No longer an alias for PRINT. 
-	  (PRINT): New method which handles both buffers and STDOUT 
-	  and STDERR. 
-	  (READLINE): New method which will either read a line from 
-	  a buffer or fetch input from the user via mlreply_no_opts(). 
-	  When it reads from a buffer, it has the potential to read 
-	  multiple lines if used in an array context. 
-	  (VileCommand): New method which runs an arbitrary vile 
-	  command.  I'll probably rename this one -- don't like 
-	  the caps. 
-	  (inplace_edit, setregion): New methods which set/get fields 
-	  from the SCR structure. 
-	  (GetUserInput): Will probably go away.  This was my first 
-	  attempt at a mechanism for fetching user input. 
-	  (mlreply, mlreply_no_opts, mlreply_file, mlreply_dir): Various 
-	  methods for fetching user input from the message line. 
-	+ ptypemap (T_VI): Account for the fact that our objects may 
-	  also now be considered as filehandles.  (The references now 
-	  refer to globs instead of scalars.  The scalar is still there, 
-	  but it's just stuck inside the glob.) 
+ (kev) 980320 (j)
+ 	+ api.c (linsert_chars): Rewritten both for efficiency and
+	  so that the MARK at the end of the region stays put when
+	  doing something like:
+
+		$curscr->inplace_edit(1);
+		while (<$curscr>) { s/foo/bar/g; print; }
+
+	  (setup_fake_win): No longer static.  Renamed to
+	  api_setup_fake_win.  Also set DOT here to the beginning of
+	  the region.
+	  (api_mark_iterator): New function.
+	  (api_gotoline): No longer static.  Also renamed from
+	  _api_gotoline.  Fixed all callers.
+	  (api_dotinsert, api_dotgline): New functions.
+	  (api_bp2sp): Initialize the region beginning and end
+	  to point to something valid.
+	+ api.h (SCR): Added new fields region, regionshape, and
+	  inplace_edit.
+	  (api_dotinsert, api_dotgline, api_gotoline, api_setup_fake_win):
+	  Added declarations.
+	+ cmdtbl (perldo): New command.
+	+ estruct.h (api_do_mark_iterate_helper): New macro.
+	  (do_mark_iterate): Invoke api_do_mark_iterate_helper in order
+	  fix the the marks in the SCR structure region.
+	+ perl.xs (newVIrv): Make the references to SCR objects that
+	  we give perl refer to globs instead of a scalar.  Bury
+	  the scalar in the scalar portion of the glob.  The reason
+	  we do this is so that these references may be used as
+	  filehandles as well as objects.
+	  (perl_free_handle): Slight change to account for extra
+	  levels of indirection to get to the thing we really have
+	  to zero out.
+	  (perl): Added calls to hst_flush() and hst_init() in order
+	  to prevent user input from a perl command from being added
+	  to the history line for the perl command.  (It was simply
+	  getting appended on the end.)  Unfortunately, this input
+	  doesn't seem to be recorded in the history any longer, but
+	  at least it doesn't mess up the perl command.
+	    Also rewrote the code for setting up a region, making sure
+	  that the new fields in the SCR structure are initialized
+	  appropriatedly.
+	  (replace_line, perldo): New functions.
+	  (perl_init): Tie STDIN to read from the minibuffer.  Modified
+	  other tie statements (calls to sv_magic()) slightly to do
+	  the same thing.
+	  (Msg): No longer an alias for PRINT.
+	  (PRINT): New method which handles both buffers and STDOUT
+	  and STDERR.
+	  (READLINE): New method which will either read a line from
+	  a buffer or fetch input from the user via mlreply_no_opts().
+	  When it reads from a buffer, it has the potential to read
+	  multiple lines if used in an array context.
+	  (VileCommand): New method which runs an arbitrary vile
+	  command.  I'll probably rename this one -- don't like
+	  the caps.
+	  (inplace_edit, setregion): New methods which set/get fields
+	  from the SCR structure.
+	  (GetUserInput): Will probably go away.  This was my first
+	  attempt at a mechanism for fetching user input.
+	  (mlreply, mlreply_no_opts, mlreply_file, mlreply_dir): Various
+	  methods for fetching user input from the message line.
+	+ ptypemap (T_VI): Account for the fact that our objects may
+	  also now be considered as filehandles.  (The references now
+	  refer to globs instead of scalars.  The scalar is still there,
+	  but it's just stuck inside the glob.)
 
  (tom) 980317 (i)
 	+ remove binding of quote-next-character to ^V (reported by Keith
@@ -563,27 +597,27 @@ Changes for vile 7.4 (released ??? ??? ?, 1998)
 	  (i.e., 0) when cleaning up after a filter operation (patch by Clark
 	  Morgan).
 
- (tom) 980316 (h) 
+ (tom) 980316 (h)
  	+ correct logic that shifts minibuffer back on return from kbd_reply,
 	  had not set curwp.
 
- (pgf) 980315 (g) 
-	+ documentation and usage improvements for vile-crypt, in crypt.c, 
-	  vile.hlp, and vile.1. 
- 
+ (pgf) 980315 (g)
+	+ documentation and usage improvements for vile-crypt, in crypt.c,
+	  vile.hlp, and vile.1.
+
  (tom)	980314 (f)
  	+ add "attribute-reverse-til" (suggested by Kuntal M. Daftary
 	  daftary@cisco.com).
  	+ correct logic of find_mode() so that :setl cts=4 works as before.
 	+ modify kbd_reply() to support inline-editing of the user's text, both
 	  by arrow keys, as well as vi-style motion commands.  Use ^G to toggle
-	  between the two modes.   
+	  between the two modes.
 	+ change interfaces/logic of hst_append(), kbd_show_response(),
 	  kbd_reply() to make them accept nulls.  This is for later extensions,
 	  since regexp.c does not handle nulls.  Use the mask KBD_0CHAR for
 	  this purpose.
 	+ modify check for type-ahead to make 'showmatch' skip the 1/4 sleep,
-	  ignoring the current value of 'smoothscroll' (reported by Matthias K. 
+	  ignoring the current value of 'smoothscroll' (reported by Matthias K.
 	  Buelow <token@wicx50.informatik.uni-wuerzburg.de>)
  	+ adjust redefinition of WINDOW in tcap.h to work around OSF1 3.2,
 	  which includes curses.h from term.h
@@ -605,7 +639,7 @@ Changes for vile 7.4 (released ??? ??? ?, 1998)
 	  reading, or to read a clear file, and quickly encrypt it before
 	  writing it.  i find crypt mode to be cumbersome at best -- i find
 	  the explicit command to be more useful.
-	+ modified crypt.c to allow building it as standalone utility. 
+	+ modified crypt.c to allow building it as standalone utility.
 	  this gets built as vile-crypt, and it's compatible with the crypt
 	  command inside of vile (if used over an entire buffer).  usage
 	  is:
@@ -763,7 +797,7 @@ Changes for vile 7.3 (released Mon Dec 8, 1997)
 	  Built with Microsoft Visual C++ 4.1, both with IDE and makefile.wnt.
 	  Use "nmake -f makefile.wnt cfg=ntvile".
 	+ integrated related patch by Clark Morgan for repainting the screen
-	  correctly after a :stop command. 
+	  correctly after a :stop command.
  	+ rewrote internals of command/message line to make it a one-line
 	  minibuffer, including mods for OPT_RAMSIZE and OPT_WORKING.  Tested
 	  Linux (for tcap.c, x11.c, ansi.c), OS/2 (os2vio.c), WinNT (ntconio.c,
@@ -834,7 +868,7 @@ Changes for vile 7.3 (released Mon Dec 8, 1997)
  	+ select.c, window.c (push_fake_win, pop_fake_win): These
  	  functions removed from select.c and put into window.c.  Also
  	  they are no longer static.
- 
+
 (kev)	971009 (i)
 	+ perl.xs, ptypemap:  New files.  Beginnings of perl interface
 	  for vile.
@@ -1197,7 +1231,7 @@ Changes for vile 7.1 (released Wed May 8, 1997)
 	  "config.h".
 	+ modify MS-DOS/Win31/WinNT portion of npopen.c to leave input file
 	  descriptor alone when reading from pipe, solving a problem with
-	  applications hanging under Thompson Toolkit (patch by Clark O. 
+	  applications hanging under Thompson Toolkit (patch by Clark O.
 	  Morgan <cmorgan@aracnet.com>)
 	+ correct inequality changed in 6.2g which is part of right-margin
 	  threshold computation (report and fix by William Yuan

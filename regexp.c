@@ -11,7 +11,7 @@
  *
  *		pgf, 11/91
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.64 1997/10/07 00:23:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.65 1998/04/28 10:18:34 tom Exp $
  *
  */
 
@@ -314,7 +314,7 @@ regcomp(char *origexp, int magic)
 
 	/* Small enough for pointer-storage convention? */
 	if (regsize >= 32767) { /* Probably could be 65535. */
-		regerror("regexp too big"); 
+		regerror("regexp too big");
 		return NULL;
 	}
 
@@ -730,9 +730,9 @@ regatom(int *flagp, int at_bop)
 
 			regparse--;
 			len = strcspn(regparse, META);
-			if (len <= 0) { 
-				regerror("internal disaster"); 
-				return NULL; 
+			if (len <= 0) {
+				regerror("internal disaster");
+				return NULL;
 			}
 			ender = *(regparse+len);
 			if (len > 1 && ISMULT(ender))

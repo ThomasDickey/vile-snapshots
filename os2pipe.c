@@ -149,7 +149,7 @@ inout_popen(FILE **infile, FILE **outfile, char *command)
 		goto Error;
 	}
 
-	/* 
+	/*
 	 * Save standard I/O handles.
 	 */
 	save_in = ~0;
@@ -220,13 +220,13 @@ inout_popen(FILE **infile, FILE **outfile, char *command)
 	pipe_c_to_p = NULLHANDLE;
 
 	/* Connect the read end of the c_to_p pipe to a stream. */
-	if (infile != NULL 
+	if (infile != NULL
 		&& (vile_in = *infile = _fdopen(pipe_p_from_c, "r")) == NULL)
 		goto Error;
 	TRACE(("inout_popen, vile_in #%d\n", fileno(vile_in)))
 
 	/* Connect the write end of the p_to_c pipe to a stream. */
-	if (outfile != NULL 
+	if (outfile != NULL
 		&& (vile_out = *outfile = _fdopen(pipe_p_to_c, "w")) == NULL)
 		goto Error;
 	TRACE(("inout_popen, vile_out #%d\n", fileno(vile_out)))

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.31 1998/04/20 09:54:03 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.32 1998/04/28 10:06:16 cmorgan Exp $
  *
  */
 
@@ -542,7 +542,7 @@ decode_key_event(INPUT_RECORD *irp)
     {
         if (keyxlate[i].windows == irp->Event.KeyEvent.wVirtualKeyCode)
         {
-            if (keyxlate[i].shift != 0 && 
+            if (keyxlate[i].shift != 0 &&
                   !(keyxlate[i].shift & irp->Event.KeyEvent.dwControlKeyState))
             {
                 continue;
@@ -737,6 +737,7 @@ ntscroll(int from, int to, int n)
 	SMALL_RECT sRect;
 	COORD dest;
 	CHAR_INFO fill;
+	int       scroll_pause;
 
 	scflush();
 	if (to == from)
@@ -762,6 +763,20 @@ ntscroll(int from, int to, int n)
 	dest.Y = to;
 
 	ScrollConsoleScreenBuffer(hConsoleOutput, &sRect, NULL, dest, &fill);
+	if ((scroll_pause = global_g_val(GVAL_SCROLLPAUSE)) > 0)
+	{
+		/*
+		 * If the user has cheap video HW (1 MB or less) and
+		 * there's a busy background app (say, dev studio), then
+		 * the console version of vile can exhibit serious repaint
+		 * problems when the display is rapidly scrolled.  By
+		 * inserting a user-defined sleep after the scroll, the
+		 * video HW has a chance to properly paint before the
+		 * next scroll operation.
+		 */
+
+		Sleep(scroll_pause);
+	}
 
 #if !OPT_PRETTIER_SCROLL
 	if (absol(from - to) > n) {

@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.80 1998/04/09 21:16:45 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.81 1998/04/28 10:17:31 tom Exp $
  *
  */
 
@@ -593,7 +593,7 @@ static ITBUFF *mapgetc_ungottenchars = NULL;
 static int mapgetc_ungotcnt = 0;
 
 /* make the assumption that no input will magically appear
- * (un)available to tgetc in between a mapungetc and the next mapgetc. 
+ * (un)available to tgetc in between a mapungetc and the next mapgetc.
  * Hence characters can't be ungotten onto the wrong buffer (exception
  * is the last tgot char might be mapungot onto the map buffer.  This
  * is OK (if assumption holds) because the next character will be

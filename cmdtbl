@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.157 1998/04/08 06:55:00 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.158 1998/04/29 00:02:53 tom Exp $
 #
 #
 
@@ -1066,7 +1066,7 @@ operlinedel	OPER|REDO|UNDO|GLOBOK|(RANGE|OPTREG)
 	"d"
 	'^X-d'
 	<delete lines covered by the region>
-operfilter	OPER|REDO|UNDO|(EXRCOK|RANGE|NAMEDFS|DFLNONE|NL) OPT_SHELL
+operfilter	OPER|REDO|UNDO|(EXRCOK|RANGE|NAMEDFS|DFLNONE|VI_NL) OPT_SHELL
 	"filter-til"			!FEWNAMES
 	"!"
 	'!'
@@ -1223,7 +1223,7 @@ quithard	NONE
 	"q!"
 	"Q!"
 	<leave the editor, regardless of modified buffers>
-quickexit	NONE|(BANG|NL)
+quickexit	NONE|(BANG|VI_NL)
 	"x"
 	"x!"
 	"xit"
@@ -1508,11 +1508,11 @@ vglobals	NONE
 viewfile	NONE
 	"view-file"
 	<bring given file or existing buffer into window, mark it \"view-only\">
-writeallchanged	NONE|(NL)
+writeallchanged	NONE|(VI_NL)
 	"ww"
 	"write-changed-buffers"		!FEWNAMES
 	<attempt to write any buffers which are marked \"modified\">
-writequit	NONE|(NL)
+writequit	NONE|(VI_NL)
 	"wq"
 	"Wq"
 	"WQ"
@@ -1543,7 +1543,7 @@ xterm_mouse_t	NONE			(OPT_XTERM>=3)
 xterm_mouse_T	NONE			(OPT_XTERM>=3)
 	'FN-T'				KEY_textInvalid
 	<dummy command to support xterm mouse operation>
-zzquit		NONE|(BANG|NL)
+zzquit		NONE|(BANG|VI_NL)
 	'Z'
 	"stuttered-write-all-and-quit"	!FEWNAMES
 	<if repeated, leave the editor, writing modified buffers as needed>

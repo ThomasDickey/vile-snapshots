@@ -1,12 +1,12 @@
-/* 
+/*
  * w32pipe:  win32 clone of npopen.c, utilizes native pipes (not temp files).
  *
  * Background
- * ==========  
- * The techniques used in w32_npclose() and w32_inout_popen() are derived 
- * from much trial and error and support "pipe" I/O in both a console and 
+ * ==========
+ * The techniques used in w32_npclose() and w32_inout_popen() are derived
+ * from much trial and error and support "pipe" I/O in both a console and
  * GUI environment.  You may _think_ you have a better way of effecting the
- * functionality provided in this module and that may well be the case.  
+ * functionality provided in this module and that may well be the case.
  * But be sure you test your new code with at least these versions of Win32:
  *
  *      win95 (original version), OSR2, NT 4.0
@@ -15,31 +15,31 @@
  * test repeatedly within the same vile session).
  *
  *
- * Acknowledgments  
+ * Acknowledgments
  * ===============
- * Until I read Steve Kirkendall's code for the Win32 version of elvis, I 
- * did not realize that attempting to redirect stdin to a device is a 
+ * Until I read Steve Kirkendall's code for the Win32 version of elvis, I
+ * did not realize that attempting to redirect stdin to a device is a
  * _not_ a good strategy.
- *             
  *
- * Caveats  
+ *
+ * Caveats
  * =======
  *
  * -- This code has not been tested with NT 3.51 .
  *
- * -- The MSDN Knowledge Base has example code that uses anonymous pipes 
- *    to redirect a spawned process's stdin, stdout, and stderr.  Don't go 
+ * -- The MSDN Knowledge Base has example code that uses anonymous pipes
+ *    to redirect a spawned process's stdin, stdout, and stderr.  Don't go
  *    there.
  *
- * -- The original Win95 console shell (command.com) accesses the floppy 
- *    drive each and every time a process communicates with it via a pipe 
- *    and the OS R2 shell abruptly hangs under similar conditions.  By 
+ * -- The original Win95 console shell (command.com) accesses the floppy
+ *    drive each and every time a process communicates with it via a pipe
+ *    and the OS R2 shell abruptly hangs under similar conditions.  By
  *    default, then, on a WinNT host, vile's pipes are implemented using
- *    native pipes (i.e., with the code in this module), while Win95 hosts 
+ *    native pipes (i.e., with the code in this module), while Win95 hosts
  *    fall back to temp file communication.  If the user's replacement
- *	  Win95 shell does not exhibit communication problems similar to 
- *    those described above (e.g., Thompson Toolkit Shell), vile may be 
- *    forced to use native Win32 pipes by setting the global mode 
+ *	  Win95 shell does not exhibit communication problems similar to
+ *    those described above (e.g., Thompson Toolkit Shell), vile may be
+ *    forced to use native Win32 pipes by setting the global mode
  *    "w32pipes" (e.g., "se w32pipes").
  *
  * -- This module's native pipes implementation exhibits various problems
@@ -48,15 +48,15 @@
  *    "background" shell windows that require manual closure.
  *
  * -- This module configures read pipes so that the exec'd app reads
- *    it's input from an empty file.  That's a necessity, not a bug.  
+ *    it's input from an empty file.  That's a necessity, not a bug.
  *    Consequently, if an attempt is made to read data from an app
  *    that itself reads input (why would you do that?), the app will
  *    appear to hang if it reopens stdin on the console (because vile's
  *    stdin is not available to the app--another necessity).  In this
- *    situation, kill the app by typing ^C (and then please apply for a 
+ *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.6 1998/04/15 10:43:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.7 1998/04/28 10:15:32 tom Exp $
  */
 
 #include <windows.h>
@@ -74,12 +74,12 @@
 #define BAD_PROC_HANDLE (INVALID_HANDLE_VALUE)
 #define PIPESIZ         (4096)
 #define SHELL_ERR_MSG   \
-          "error: shell process \"%s\" failed, check COMSPEC env var\n" 
+          "error: shell process \"%s\" failed, check COMSPEC env var\n"
 
 static HANDLE proc_handle;
 static char   *shell = NULL,
               *shell_c = "/c",
-              *tmpin_name; 
+              *tmpin_name;
 
 /* ------------------------------------------------------------------ */
 
@@ -90,7 +90,7 @@ static char  orig_title[256];
 
 /*
  * Need to install an event handler before spawning a child so that
- * typing ^C in the child process does not cause the waiting vile 
+ * typing ^C in the child process does not cause the waiting vile
  * process to exit.  Don't understand why this is necessary, but it
  * is required for win95 (at least).
  */
@@ -111,7 +111,7 @@ event_handler(DWORD ctrl_type)
 
 
 /* Temporarily setup child's console input for typical line-oriented I/O. */
-void 
+void
 push_console_mode(char *shell_cmd)
 {
     HANDLE hConIn = GetStdHandle(STD_INPUT_HANDLE);
@@ -119,7 +119,7 @@ push_console_mode(char *shell_cmd)
     GetConsoleTitle(orig_title, sizeof(orig_title));
     SetConsoleTitle(shell_cmd);
     (void) GetConsoleMode(hConIn, &console_mode);
-    (void) SetConsoleMode(hConIn, 
+    (void) SetConsoleMode(hConIn,
                   ENABLE_LINE_INPUT|ENABLE_ECHO_INPUT|ENABLE_PROCESSED_INPUT);
     SetConsoleCtrlHandler(event_handler, TRUE);
 }
@@ -145,12 +145,12 @@ pop_console_mode(void)
 static void
 global_cleanup(void)
 {
-    if (tmpin_name) 
-    { 
-        (void) remove(tmpin_name); 
-        (void) free(tmpin_name); 
-        tmpin_name = NULL; 
-    } 
+    if (tmpin_name)
+    {
+        (void) remove(tmpin_name);
+        (void) free(tmpin_name);
+        tmpin_name = NULL;
+    }
     pop_console_mode();
 }
 
@@ -164,7 +164,7 @@ exec_shell(char *cmd, HANDLE *handles, int child_behind)
     PROCESS_INFORMATION  pi;
     STARTUPINFO          si;
 
-    if (shell == 0) 
+    if (shell == 0)
         shell = get_shell();
 
     if (!strcmp(shell, "/bin/sh"))
@@ -187,7 +187,7 @@ exec_shell(char *cmd, HANDLE *handles, int child_behind)
         fgnd = GetForegroundWindow();
     AllocConsole();
 #endif
-    if (CreateProcess(NULL, 
+    if (CreateProcess(NULL,
                       cmdbuf,
                       NULL,
                       NULL,
@@ -222,7 +222,7 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
     rp[0]        = rp[1]      = wp[0]      = wp[1] = BAD_FD;
     handles[0]   = handles[1] = handles[2] = INVALID_HANDLE_VALUE;
     tmpin_fd     = BAD_FD;
-    tmpin_name   = NULL; 
+    tmpin_name   = NULL;
     push_console_mode(cmd);
     do
     {
@@ -262,9 +262,9 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
                  * been warned.
                  */
 
-                if ((tmpin_name = _tempnam(getenv("TEMP"), "vile")) == NULL) 
+                if ((tmpin_name = _tempnam(getenv("TEMP"), "vile")) == NULL)
                     break;
-                if ((tmpin_fd = open(tmpin_name, 
+                if ((tmpin_fd = open(tmpin_name,
                                      O_RDONLY|O_CREAT|O_TRUNC,
                                      _S_IWRITE|_S_IREAD)) == BAD_FD)
                 {
@@ -280,8 +280,8 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
             *fw = NULL;
 
             /*
-             * Open (child's) output pipe in binary mode, which will 
-             * prevent translation of the parent's CR/LF record delimiters 
+             * Open (child's) output pipe in binary mode, which will
+             * prevent translation of the parent's CR/LF record delimiters
              * to NL.  Apparently, many apps want those delimiters :-) .
              */
             if (_pipe(wp, PIPESIZ, O_BINARY|O_NOINHERIT) == -1)
@@ -302,8 +302,8 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
             if (! (*fw = fdopen(wp[1], "w")))
                 break;
         }
-        rc = (exec_shell(cmd, 
-                         handles, 
+        rc = (exec_shell(cmd,
+                         handles,
                          fr != NULL  /* Child wdw behind unless write pipe. */
                          ) == BAD_PROC_HANDLE) ? FALSE : TRUE;
         if (fw)

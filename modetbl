@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.94 1998/04/26 01:44:41 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.95 1998/04/28 10:05:54 cmorgan Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -61,6 +61,7 @@ int							# VAL_ prefix
 	"report"	REPORT		0		# threshold for reporting changes
 	"timeoutlen"	TIMEOUTVAL	0		# how long to catnap for more input
 	"timeoutlen-user" TIMEOUTUSERVAL 0		# how long to catnap for more input
+	"scroll-pause"	SCROLLPAUSE	0		SYS_WINNT	# how long to catnap after scrolling
 regex							# VAL_ prefix
 	"C-SUFfixes"	CSUFFIXES	0		!OPT_MAJORMODE # match against filenames to turn on c-mode
 string							# VAL_ prefix
@@ -199,7 +200,7 @@ regex							# MVAL_ prefix
 "replace"	REPLACE			# replacement pattern
 "search"	SEARCH			# search pattern
 "seed"		SEED			# current random number seed
-"shell"		SHELL		OPT_SHELL	# shell-environment variable 
+"shell"		SHELL		OPT_SHELL	# shell-environment variable
 "sres"		SRES			# current screen resolution
 "startup-file"	STARTUP_FILE		# the name of the startup-file (e.g., .vilerc)
 "startup-path"	STARTUP_PATH		# where to find the startup-file (e.g., .)
@@ -291,9 +292,9 @@ regex							# MVAL_ prefix
 # "tilde_N", */
 
 .table hilite
-"bold"		VABOLD 
+"bold"		VABOLD
 "color"		VACOLOR
-"italic"	VAITAL 
+"italic"	VAITAL
 "none"		0
 "reverse"	VAREV
 "underline"	VAUL

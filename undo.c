@@ -3,7 +3,7 @@
  *
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.68 1997/11/12 01:07:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.69 1998/04/28 10:19:14 tom Exp $
  *
  */
 
@@ -45,11 +45,11 @@
  * find all references to the original line, and make them point at the
  * copy instead.  We could do this immediately, instead of pushing the
  * "patch" and waiting for the undo, but it seems better to pay the price
- * of that stack walk at undo time, rather than at the time of the change. 
+ * of that stack walk at undo time, rather than at the time of the change.
  * This patching wouldn't be necessary at all if we used line no's as the
  * pointers, instead of real pointers.
  *
- * On the actual undo, we pop these things (lines or tags) one by one. 
+ * On the actual undo, we pop these things (lines or tags) one by one.
  * There should be either a) no lines where it goes (it was a deleted line)
  * and we can just put it back, or b) exactly one line where it goes (it
  * was a changed/copied line) and it can be replaced, or if this is a tag
@@ -71,7 +71,7 @@
  * modified/unmodified state in the undo stack, so it can be restored later.
  *
  * In addition:
- *  freeundostacks() cleans up any undo data structures for a buffer, 
+ *  freeundostacks() cleans up any undo data structures for a buffer,
  *  nounmodifiable() is called if a change is happening to a
  *	buffer that is not undoable.
  *  mayneedundo() is called before starting an operation that might call
@@ -103,7 +103,7 @@
  * (based on the "needundocleanup" flag.  In previous versions of vile,
  * this cleanup required walking the entire buffer, to reset the "copied"
  * flag.  Now, the "copied" flag is actually a word-sized "cookie", which
- * matches the global "current_undo_cookie" when the line has bee copied. 
+ * matches the global "current_undo_cookie" when the line has bee copied.
  * By incrementing the global "current_undo_cookie" in preundocleanup(), we
  * are effectively resetting all of the lines' "marks", since the cookie is
  * now _guaranteed_ to not match against any of them.  Which is why, when
@@ -195,7 +195,7 @@ toss_to_undo(LINEPTR lp)
 
 	next = lforw(lp);
 
-	/* need to save a dot -- either the next line or 
+	/* need to save a dot -- either the next line or
 		the previous one */
 	if (next == buf_head(curbp)) {
 		prev = lback(lp);
@@ -217,7 +217,7 @@ toss_to_undo(LINEPTR lp)
 	dumpuline(lp);
 }
 
-/* 
+/*
  * Push a copy of a line onto the undo stack.  Push a patch so we can
  * later fix up any references to this line that might already be in the
  * stack.  When the undo happens, the later pops (i.e. those lines still
@@ -341,7 +341,7 @@ undo(int f GCC_UNUSED, int n GCC_UNUSED)
 	before = line_count(curbp);
 	if ((s = undoworker(curbp->b_udstkindx)) == TRUE) {
 		if (!line_report(before)) {
-			mlwrite("[change %sdone]", 
+			mlwrite("[change %sdone]",
 				curbp->b_udstkindx == BACK ? "un" : "re");
 		}
 		curbp->b_udstkindx ^= 1;  /* flip to other stack */
@@ -364,7 +364,7 @@ inf_undo(int f, int n)
 	curbp->b_udstkindx ^= 1;  /* flip to other stack */
 	while (s && n--) {
 		if ((s = undoworker(curbp->b_udstkindx)) == TRUE) {
-			mlwrite("[change %sdone]", 
+			mlwrite("[change %sdone]",
 				curbp->b_udstkindx == BACK ? "un" : "re");
 		} else {
 			mlwarn("[No more changes to %s]",
@@ -611,11 +611,11 @@ static LINEPTR
 copyline(register LINE *lp)
 {
 	register LINE *nlp;
-	
+
 	nlp = lalloc(lp->l_used,curbp);
 	if (nlp == NULL)
 		return null_ptr;
-	/* copy the text and forward and back pointers.  everything else 
+	/* copy the text and forward and back pointers.  everything else
 		matches already */
 	set_lforw(nlp, lforw(lp));
 	set_lback(nlp, lback(lp));
@@ -631,7 +631,7 @@ undoworker(int stkindx)
 	register LINEPTR lp;
 	register LINEPTR alp;
 	int nopops = TRUE;
-	
+
 	while ((lp = popline(STACK(stkindx), FALSE)) != 0) {
 		if (nopops)  /* first pop -- establish a new stack base */
 			freshstack(1^stkindx);
@@ -665,7 +665,7 @@ undoworker(int stkindx)
 			set_lback(alp, lback(lp));
 		}
 
-		/* insert real lines into the buffer 
+		/* insert real lines into the buffer
 			throw away the markers */
 		if (lisreal(lp)) {
 			set_lforw(lback(lp), lp);
@@ -696,7 +696,7 @@ undoworker(int stkindx)
 		return FALSE;
 	}
 #endif
-	
+
 	lp = popline(STACK(stkindx),TRUE);
 	FORWDOT(curbp).l = lforw(lp);
 	FORWDOT(curbp).o = lp->l_forw_offs;
@@ -791,7 +791,7 @@ lineundo(int f GCC_UNUSED, int n GCC_UNUSED)
 	}
 
 	/* avoid losing our undo stacks needlessly */
-	if (linesmatch(ulp,lp) == TRUE) 
+	if (linesmatch(ulp,lp) == TRUE)
 		return TRUE;
 
 	DOT.l = lp;
@@ -834,7 +834,7 @@ lineundo(int f GCC_UNUSED, int n GCC_UNUSED)
 	);
 
 	chg_buff(curbp, WFEDIT|WFKILLS|WFINS);
-	
+
 	return TRUE;
 
 }

@@ -9,7 +9,7 @@
  * Note: Visual flashes are not yet supported.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.23 1998/04/20 09:54:03 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.24 1998/04/28 10:15:46 tom Exp $
  *
  */
 
@@ -171,7 +171,7 @@ boricursor(int cmode)
 	case -1: _setcursortype( _NOCURSOR);		break;
 	case  0: _setcursortype( _NORMALCURSOR);	break;
 	case  1: _setcursortype( _SOLIDCURSOR);		break;
-	} 
+	}
 }
 #endif
 
@@ -296,18 +296,18 @@ borcres(char *res)	/* change screen resolution */
 		{
 		/* only allow valid row selections */
 		/* Are these all valid under dos?  */
-		if (i==2)  status=scinit(25); 
+		if (i==2)  status=scinit(25);
 		if (i==4)  status=scinit(43);
 		if (i==5)  status=scinit(50);
 		if (i==6)  status=scinit(60);
 
-		if (i>6 && i<28) 
+		if (i>6 && i<28)
 			status=scinit(25);
-			
-		if (i>=28 && i<43) 
+
+		if (i>=28 && i<43)
 			status=scinit(28);
 
-		if (i>=43 && i<50) 
+		if (i>=43 && i<50)
 			status=scinit(43);
 
 		if (i>=50 && i<60)
@@ -534,7 +534,7 @@ borscroll(int from, int to,int n)
 		if (from < to)
 			from = to-1;
 		else
-			from = to+1;    
+			from = to+1;
 	}
 #endif
 	gettextinfo(&t);

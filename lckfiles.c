@@ -1,4 +1,4 @@
-/* 
+/*
  * lckfiles.c   set_lock() and release_lock(), for maintaining
  *		little file.lck style lockfiles.  this isn't what
  *		we would call a standard mechanism.  but it's simple.
@@ -13,14 +13,14 @@
  *		operation:  if the global "usefilelock" is on, then when
  *		"file" is edited, a "file.lck" is created, containing the
  *		username of the user doing the editing.  when a file is
- *		edited for which there already exists a .lck file, the buffer 
+ *		edited for which there already exists a .lck file, the buffer
  *		mode "locked" is set to true and "locker" is set to the name
  *		of the user that created the .lck.  this infomation will
  *		appear on the status line, as "locked by pgf", and the
  *		buffer will be marked readonly.  the .lck file will be
  *		deleted at most of the appropriate times.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/lckfiles.c,v 1.7 1996/02/26 04:24:35 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/lckfiles.c,v 1.8 1998/04/28 10:17:15 tom Exp $
  *
  */
 
@@ -62,7 +62,7 @@ ourname(void)
 	return np;
 }
 
-int 
+int
 set_lock(const char *fname, char *who, int n)
 {
 	char	lockfile[NFILEN];

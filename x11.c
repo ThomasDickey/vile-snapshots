@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.176 1998/04/26 13:17:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.177 1998/04/28 10:19:45 tom Exp $
  *
  */
 
@@ -390,7 +390,7 @@ static	Atom	atom_TARGETS;
 static	Atom	atom_MULTIPLE;
 static	Atom	atom_TIMESTAMP;
 static	Atom	atom_TEXT;
-static	Atom	atom_CLIPBOARD; 
+static	Atom	atom_CLIPBOARD;
 
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
 static	Cursor	curs_sb_v_double_arrow;
@@ -437,10 +437,10 @@ static	void	x_unwatchfd(int fd, long id);
 
 static	int	set_character_class(char *s);
 static	void	x_touch (TextWindow tw, int sc, int sr, UINT ec, UINT er);
-static	void	x_paste_selection (Atom selection); 
-static	void	x_own_selection(Atom selection); 
+static	void	x_paste_selection (Atom selection);
+static	void	x_own_selection(Atom selection);
 static	Boolean	x_get_selected_text(UCHAR **datp, SIZE_T *lenp);
-static	Boolean	x_get_clipboard_text(UCHAR **datp, SIZE_T *lenp); 
+static	Boolean	x_get_clipboard_text(UCHAR **datp, SIZE_T *lenp);
 static	Boolean	x_convert_selection (Widget w, Atom *selection, Atom *target,
 			Atom *type, XtPointer *value, unsigned long *length,
 			int *format);
@@ -3243,10 +3243,10 @@ x_preparse_args(
     atom_MULTIPLE	= XInternAtom(dpy, "MULTIPLE",  False);
     atom_TIMESTAMP	= XInternAtom(dpy, "TIMESTAMP", False);
     atom_TEXT		= XInternAtom(dpy, "TEXT",      False);
-    atom_CLIPBOARD	= XInternAtom(dpy, "CLIPBOARD", False); 
+    atom_CLIPBOARD	= XInternAtom(dpy, "CLIPBOARD", False);
 
     set_pointer(XtWindow(cur_win->screen), cur_win->normal_pointer);
- 
+
 }
 
 #if 0
@@ -4371,7 +4371,7 @@ static void
 x_get_selection(
     Widget         w GCC_UNUSED,
     XtPointer      cldat GCC_UNUSED,
-    Atom          *selection, 
+    Atom          *selection,
     Atom          *type,
     XtPointer      value,
     unsigned long *length,
@@ -4389,7 +4389,7 @@ x_get_selection(
 	/* should be impossible to hit this with existing paste */
 	/* XXX massive hack -- leave out 'i' if in prompt line */
 	do_ins = !insertmode
-		&& (!onMsgRow(cur_win) || *selection == atom_CLIPBOARD) 
+		&& (!onMsgRow(cur_win) || *selection == atom_CLIPBOARD)
 		&& ((s = fnc2pstr(&f_insert_no_aindent)) != NULL);
 
 	if (tb_init(&PasteBuf, abortc)) {
@@ -4403,9 +4403,9 @@ x_get_selection(
 }
 
 static void
-x_paste_selection(Atom selection) 
+x_paste_selection(Atom selection)
 {
-    if (cur_win->have_selection && selection == XA_PRIMARY) { 
+    if (cur_win->have_selection && selection == XA_PRIMARY) {
 	/* local transfer */
 	UCHAR  *data;
 	SIZE_T len_st;
@@ -4425,7 +4425,7 @@ x_paste_selection(Atom selection)
     else {
 	XtGetSelectionValue(
 	    cur_win->top_widget,
-	    selection, 
+	    selection,
 	    XA_STRING,
 	    x_get_selection,
 	    (XtPointer)0,		/* client data */
@@ -4468,47 +4468,47 @@ x_get_selected_text(
     return True;
 }
 
-static Boolean 
-x_get_clipboard_text( 
-    UCHAR **datp, 
-    SIZE_T *lenp) 
-{ 
-    UCHAR	*data; 
-    UCHAR	*dp; 
-    SIZE_T	length; 
-    KILL	*kp;		/* pointer into kill register */ 
- 
-    for (length = 0, kp = kbs[CLIP_KREG].kbufh; kp; kp = kp->d_next) 
-	length += KbSize(CLIP_KREG, kp); 
-    if ( length == 0 
-      || (dp = data = (UCHAR *) XtMalloc(length * sizeof(UCHAR))) == 0 
-      || (kp = kbs[CLIP_KREG].kbufh) == 0) 
-	return False; 
- 
-    while (kp != NULL) { 
-	SIZE_T len = KbSize(CLIP_KREG,kp); 
-	(void)memcpy((char *)dp, (char *)kp->d_chunk, len); 
-	kp = kp->d_next; 
-	dp += len; 
-    } 
- 
-    *lenp = length; 
-    *datp = data; 
-    return True; 
-} 
- 
+static Boolean
+x_get_clipboard_text(
+    UCHAR **datp,
+    SIZE_T *lenp)
+{
+    UCHAR	*data;
+    UCHAR	*dp;
+    SIZE_T	length;
+    KILL	*kp;		/* pointer into kill register */
+
+    for (length = 0, kp = kbs[CLIP_KREG].kbufh; kp; kp = kp->d_next)
+	length += KbSize(CLIP_KREG, kp);
+    if ( length == 0
+      || (dp = data = (UCHAR *) XtMalloc(length * sizeof(UCHAR))) == 0
+      || (kp = kbs[CLIP_KREG].kbufh) == 0)
+	return False;
+
+    while (kp != NULL) {
+	SIZE_T len = KbSize(CLIP_KREG,kp);
+	(void)memcpy((char *)dp, (char *)kp->d_chunk, len);
+	kp = kp->d_next;
+	dp += len;
+    }
+
+    *lenp = length;
+    *datp = data;
+    return True;
+}
+
 /* ARGSUSED */
 static Boolean
 x_convert_selection(
     Widget	   w GCC_UNUSED,
-    Atom          *selection, 
+    Atom          *selection,
     Atom          *target,
     Atom          *type,
     XtPointer     *value,
     unsigned long *length,
     int           *format)
 {
-    if (!cur_win->have_selection && *selection == XA_PRIMARY) 
+    if (!cur_win->have_selection && *selection == XA_PRIMARY)
 	return False;
 
     /*
@@ -4545,10 +4545,10 @@ x_convert_selection(
     else if (*target == XA_STRING || *target == atom_TEXT) {
 	*type   = XA_STRING;
 	*format = 8;
-	if (*selection == XA_PRIMARY) 
-	    return x_get_selected_text((UCHAR **)value, (SIZE_T *)length); 
-	else	/* CLIPBOARD */ 
-	    return x_get_clipboard_text((UCHAR **)value, (SIZE_T *)length); 
+	if (*selection == XA_PRIMARY)
+	    return x_get_selected_text((UCHAR **)value, (SIZE_T *)length);
+	else	/* CLIPBOARD */
+	    return x_get_clipboard_text((UCHAR **)value, (SIZE_T *)length);
     }
 
     return False;
@@ -4558,26 +4558,26 @@ x_convert_selection(
 static void
 x_lose_selection(
     Widget w GCC_UNUSED,
-    Atom  *selection) 
+    Atom  *selection)
 {
-    if (*selection == XA_PRIMARY) { 
-	cur_win->have_selection = False; 
-	cur_win->was_on_msgline = False; 
-	sel_release(); 
-	(void) update(TRUE); 
-    } 
-    else { 
-	/* Free up the data in the kill buffer (how do we do this?) */ 
-    } 
+    if (*selection == XA_PRIMARY) {
+	cur_win->have_selection = False;
+	cur_win->was_on_msgline = False;
+	sel_release();
+	(void) update(TRUE);
+    }
+    else {
+	/* Free up the data in the kill buffer (how do we do this?) */
+    }
 }
 
-void own_selection(void) 
-{ 
-    x_own_selection(XA_PRIMARY); 
-} 
- 
-static void 
-x_own_selection(Atom selection) 
+void own_selection(void)
+{
+    x_own_selection(XA_PRIMARY);
+}
+
+static void
+x_own_selection(Atom selection)
 {
     /*
      * Note:  we've been told that the Hummingbird X Server (which runs on a
@@ -4585,25 +4585,25 @@ x_own_selection(Atom selection)
      * line, causing this program to assert the selection on each call.  We
      * don't do that, however, since it would violate the sense of the ICCCM,
      * which is minimizing network traffic.
-     * 
-     * Kev's note on the above comment (which I assume was written by Tom): 
-     * I've added some new code for dealing with clipboards in now.  It 
-     * may well be that the clipboard will work properly now.  Of course, 
-     * you'll need to run the copy-to-clipboard command from vile.  If 
-     * you're on a Sun keyboard, you might want to bind this to the Copy 
-     * key (F16).  I may also think about doing a sort of timer mechanism 
-     * which asserts ownership of the clipboard if a certain amount of 
-     * time has gone by with no activity. 
+     *
+     * Kev's note on the above comment (which I assume was written by Tom):
+     * I've added some new code for dealing with clipboards in now.  It
+     * may well be that the clipboard will work properly now.  Of course,
+     * you'll need to run the copy-to-clipboard command from vile.  If
+     * you're on a Sun keyboard, you might want to bind this to the Copy
+     * key (F16).  I may also think about doing a sort of timer mechanism
+     * which asserts ownership of the clipboard if a certain amount of
+     * time has gone by with no activity.
      */
-    if (!cur_win->have_selection || selection != XA_PRIMARY) 
-	cur_win->have_selection = 
-	    XtOwnSelection( 
-		cur_win->top_widget, 
-		selection, 
-		XtLastTimestampProcessed(dpy), 
-		x_convert_selection, 
-		x_lose_selection, 
-		(XtSelectionDoneProc)0); 
+    if (!cur_win->have_selection || selection != XA_PRIMARY)
+	cur_win->have_selection =
+	    XtOwnSelection(
+		cur_win->top_widget,
+		selection,
+		XtLastTimestampProcessed(dpy),
+		x_convert_selection,
+		x_lose_selection,
+		(XtSelectionDoneProc)0);
 }
 
 static void
@@ -4742,12 +4742,12 @@ multi_click(
 		mlwrite("BUG: 0 or 1 multiclick value.");
 		return;
 	case 2:			/* word */
-#if OPT_HYPERTEXT 
-		if (setcursor(nr,nc) && exechypercmd(0,0)) { 
-		    (void) update(TRUE); 
-		    return; 
-		} 
-#endif 
+#if OPT_HYPERTEXT
+		if (setcursor(nr,nc) && exechypercmd(0,0)) {
+		    (void) update(TRUE);
+		    return;
+		}
+#endif
 		/* find word start */
 		p = (UCHAR *)(&CELL_TEXT(nr,sc));
 		cclass = charClass[*p];
@@ -4869,29 +4869,29 @@ mouse_motion(int f GCC_UNUSED, int n GCC_UNUSED)
 	return TRUE;
 }
 
-/*ARGSUSED*/ 
-int 
-copy_to_clipboard(int f GCC_UNUSED, int n GCC_UNUSED) 
-{ 
-    if (!cur_win->have_selection) { 
-	x_beep(); 
-	return FALSE; 
-    } 
- 
-    sel_yank(CLIP_KREG); 
-    x_own_selection(atom_CLIPBOARD); 
- 
-    return TRUE; 
-} 
- 
-/*ARGSUSED*/ 
-int 
-paste_from_clipboard(int f GCC_UNUSED, int n GCC_UNUSED) 
-{ 
-    x_paste_selection(atom_CLIPBOARD); 
-    return TRUE; 
-} 
- 
+/*ARGSUSED*/
+int
+copy_to_clipboard(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    if (!cur_win->have_selection) {
+	x_beep();
+	return FALSE;
+    }
+
+    sel_yank(CLIP_KREG);
+    x_own_selection(atom_CLIPBOARD);
+
+    return TRUE;
+}
+
+/*ARGSUSED*/
+int
+paste_from_clipboard(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    x_paste_selection(atom_CLIPBOARD);
+    return TRUE;
+}
+
 static XMotionEvent *
 compress_motion(
     XMotionEvent *ev)
@@ -5018,7 +5018,7 @@ x_process_event(
 		    break;
 		}
 	    }
-	    x_paste_selection(XA_PRIMARY); 
+	    x_paste_selection(XA_PRIMARY);
 	    break;
 	case Button3:		/* end/extend selection */
 	    if (((wp = row2window(nr)) != 0) && sel_buffer() == wp->w_bufp)

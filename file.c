@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.224 1998/04/23 09:18:54 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.225 1998/04/28 22:42:15 tom Exp $
  *
  */
 
@@ -368,10 +368,21 @@ fileread(int f GCC_UNUSED, int n GCC_UNUSED)
 			return s;
 	}
 	else if (!global_g_val(GMDWARNREREAD)
-		 || ((s = mlyesno("Reread current buffer")) == TRUE))
+		 || ((s = mlyesno("Reread current buffer")) == TRUE)) {
 		(void)strcpy(fname, curbp->b_fname);
-	else
+		/* Check if we are rereading the unnamed-buffer if it is not
+		 * associated with a file.
+		 */
+		if (curbp->b_fname[0] == EOS
+		   && eql_bname(curbp, UNNAMED_BufName)) {
+			s = bclear(curbp);
+			if (s == TRUE)
+				mlerase();
+			return s;
+		}
+	} else {
 		return FALSE;
+	}
 
 #if OPT_LCKFILES
 	/* release own lock before read the replaced file */
@@ -1312,8 +1323,8 @@ char *name)	/* name to check on */
 	adjust = is_scratchname(newname);
 	while (find_b_name(newname) != NULL) {
 		/* from "foo" create "foo-1" or "foo-a1b5" */
-		/* from "thisisamuchlongernam" create 
-			"thisisamuchlongern-1" or 
+		/* from "thisisamuchlongernam" create
+			"thisisamuchlongern-1" or
 			"thisisamuchlong-a1b5" */
 		/* that is, put suffix at end if it fits, or else
 			overwrite some of the name to make it fit */
@@ -1591,7 +1602,7 @@ int	forced)
                 (void)ffclose();                /* if a write error.    */
 	}
 	if (whole_file) {
-		bp->b_linecount = 
+		bp->b_linecount =
 			bp->b_lines_on_disk = nline;
 	}
 
@@ -1954,7 +1965,7 @@ imdying(int ACTUAL_SIG_ARGS)
 			if (stat(*mailcmdp, &sb) == 0)
 				break;
 		}
-		if (*mailcmdp && 
+		if (*mailcmdp &&
 			((np = getenv("LOGNAME")) != 0 ||
 				(np = getenv("USER")) != 0)) {
 #if HAVE_GETHOSTNAME
