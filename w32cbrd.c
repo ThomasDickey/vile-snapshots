@@ -4,16 +4,14 @@
  *
  * Caveats
  * =======
- * -- This code has not been tested with NT 3.51 .
- *
  * -- On a stock Win95 host, the first copy to the clipboard from the
  *    console version of vile causes the busy thread cursor to be displayed
  *    (i.e., cursor changes to a pointer/hourglass icon).  This cursor stays
  *    active for 5-10 seconds (all apps are active) and then goes away.
- *    Subsequent copies do not show this cursor.  On an NT 4.0 host, this
+ *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.12 1998/10/24 16:03:02 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.13 1998/11/24 11:02:05 cmorgan Exp $
  */
 
 #include <windows.h>

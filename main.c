@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.346 1998/11/14 15:46:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.347 1998/11/24 03:37:36 cmorgan Exp $
  *
  */
 
@@ -1068,7 +1068,7 @@ global_val_init(void)
 		s = "\\sys\\public\\;\\usr\\bin\\;\\bin\\;\\";
 #else
 #if	SYS_VMS
-		s = "sys$login;sys$sysdevice:[vmstools];sys$library";
+		s = "sys$login,sys$sysdevice:[vmstools],sys$library";
 #else	/* SYS_UNIX */
 #if	defined(VILE_STARTUP_PATH)
 		s = VILE_STARTUP_PATH;

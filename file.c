@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.234 1998/09/29 02:22:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.235 1998/11/23 23:18:36 tom Exp $
  *
  */
 
@@ -305,13 +305,18 @@ resolve_filename(BUFFER *bp)
 int
 same_fname(char *fname, BUFFER *bp, int lengthen)
 {
+	int	status = FALSE;
 	char	temp[NFILEN];
 
 	if (fname == 0
 	 || bp->b_fname == 0
 	 || isInternalName(fname)
-	 || isInternalName(bp->b_fname))
-		return FALSE;
+	 || isInternalName(bp->b_fname)) {
+		return (status);
+	}
+
+	TRACE(("same_fname(\n\tfname=%s,\n\tbname=%s,\n\tlengthen=%d)\n",
+		fname, bp->b_bname, lengthen))
 
 	if (lengthen)
 		fname = lengthen_path(strcpy(temp, fname));
@@ -323,14 +328,19 @@ same_fname(char *fname, BUFFER *bp, int lengthen)
 			*s = version_of(bname),
 			*t = version_of(fname);
 
-		if (!explicit_version(s)
-		 || !explicit_version(t))
-			if ((s-bname) == (t-fname))
-				return !strncmp(fname, bname, (SIZE_T)(s-bname));
+		if ((!explicit_version(s)
+		  || !explicit_version(t))
+		 && ((s-bname) == (t-fname))) {
+			status = !strncmp(fname, bname, (SIZE_T)(s-bname));
+			TRACE(("=>%d\n", status))
+			return (status);
+		}
 	}
 #endif
 
-	return !strcmp(fname, bp->b_fname);
+	status = !strcmp(fname, bp->b_fname);
+	TRACE(("=>%d\n", status))
+	return (status);
 }
 
 /*
