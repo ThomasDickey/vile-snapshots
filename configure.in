@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.50 $)
+AC_REVISION($Revision: 1.51 $)
 AC_PREREQ(2.12)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.50 1997/02/28 23:25:41 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.51 1997/03/15 15:11:08 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -481,12 +481,10 @@ CFLAGS="$saved_CFLAGS"
 AC_ARG_WITH(warnings,
 	[  --with-warnings         turn on GCC compiler warnings],
 	[with_warnings=$withval])
-if test -n "$GCC"
+if test -n "$with_warnings"
 then
-	if test -n "$with_warnings"
-	then
-		CFLAGS="$CFLAGS -W -Wall -Wshadow -Wconversion -Wstrict-prototypes -Wmissing-prototypes"
-	fi
+	VC_GCC_WARNINGS
+	CFLAGS="$CFLAGS $vc_warn_CFLAGS"
 fi
 
 AC_SUBST(EXTRAOBJS)

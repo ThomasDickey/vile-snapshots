@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.34 1996/11/11 22:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.35 1997/03/15 15:52:41 tom Exp $
  *
  */
 
@@ -131,7 +131,7 @@ getversion(void)
 
 /* ARGSUSED */
 int
-showversion(int f, int n)
+showversion(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	mlforce(getversion());
 	return TRUE;

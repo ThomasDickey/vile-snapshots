@@ -18,7 +18,7 @@
  * transfering the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.53 1997/01/25 17:09:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.54 1997/03/15 15:51:38 tom Exp $
  *
  */
 
@@ -527,7 +527,7 @@ static	int	doingopselect;
 
 /* ARGSUSED */
 int
-sel_motion(int f, int n)
+sel_motion(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     if (selbufp == NULL) {
 	mlwrite("[No selection exists.]");
@@ -733,14 +733,14 @@ multimotion(int f, int n)
 
 /*ARGSUSED*/
 int
-multimotionfullline(int f, int n)
+multimotionfullline(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	return multimotion(TRUE,2);
 }
 
 /*ARGSUSED*/
 int
-multimotionrectangle(int f, int n)
+multimotionrectangle(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	return multimotion(TRUE,3);
 }

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.147 1997/03/01 01:33:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.148 1997/03/15 15:44:30 tom Exp $
  *
  */
 
@@ -68,7 +68,7 @@ no_such_function(const char * fnp)
 /* give me some help!!!! bring up a buffer and read the help file into it */
 /* ARGSUSED */
 int
-help(int f, int n)
+help(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register BUFFER *bp;	/* buffer pointer to help */
 	const char *fname;	/* ptr to file returned by flook() */
@@ -147,7 +147,7 @@ static	const struct {
 /* list the current chrs into the current buffer */
 /* ARGSUSED */
 static void
-makechrslist(int dum1, void *ptr)
+makechrslist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 {
 	register int i;
 	char	temp[NLINE];
@@ -186,7 +186,11 @@ chr_complete(int c, char *buf, int *pos)
 
 static int
 /*ARGSUSED*/
-chr_eol(char * buffer, int cpos, int c, int eolchar)
+chr_eol(
+	char * buffer GCC_UNUSED,
+	int cpos GCC_UNUSED,
+	int c GCC_UNUSED,
+	int eolchar GCC_UNUSED)
 {
 	return isspace(c);
 }
@@ -194,7 +198,7 @@ chr_eol(char * buffer, int cpos, int c, int eolchar)
 #if OPT_UPBUFF
 /* ARGSUSED */
 static int
-update_termchrs(BUFFER *bp)
+update_termchrs(BUFFER *bp GCC_UNUSED)
 {
 	return show_termchrs(FALSE,1);
 }
@@ -202,7 +206,7 @@ update_termchrs(BUFFER *bp)
 
 /* ARGSUSED */
 int
-set_termchrs(int f, int n)
+set_termchrs(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register int s, j;
 	char	name[NLINE];
@@ -230,7 +234,7 @@ set_termchrs(int f, int n)
 
 /* ARGSUSED */
 int
-show_termchrs(int f, int n)
+show_termchrs(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	return liststuff(TERMINALCHARS_BufName, FALSE, makechrslist, 0, (void *)0);
 }
@@ -248,7 +252,7 @@ char *s)	/* string to output */
 
 /* ARGSUSED */
 int
-bindkey(int f, int n)
+bindkey(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register const CMDFUNC *kcmd; /* ptr to the requested function to bind to */
 	char cmd[NLINE];
@@ -388,7 +392,7 @@ const CMDFUNC **oldfunc)
 
 /* ARGSUSED */
 int
-unbindkey(int f, int n)
+unbindkey(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register int c;		/* command key to unbind */
 	char outseq[NLINE];	/* output buffer for keystroke sequence */
@@ -465,7 +469,7 @@ static append_to_binding_list;
 
 /* ARGSUSED */
 static int
-update_binding_list(BUFFER *bp)
+update_binding_list(BUFFER *bp GCC_UNUSED)
 {
 	return liststuff(BINDINGLIST_BufName, append_to_binding_list,
 		makebindlist, (int)last_whichcmds, (void *)last_apropos_string);
@@ -473,7 +477,7 @@ update_binding_list(BUFFER *bp)
 
 /* ARGSUSED */
 int
-desbind(int f, int n)
+desbind(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	last_apropos_string = (char *)0;
 	last_whichcmds = 0;
@@ -483,7 +487,7 @@ desbind(int f, int n)
 
 /* ARGSUSED */
 int
-desmotions(int f, int n)
+desmotions(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	last_apropos_string = (char *)0;
 	last_whichcmds = MOTION;
@@ -492,7 +496,7 @@ desmotions(int f, int n)
 
 /* ARGSUSED */
 int
-desopers(int f, int n)
+desopers(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	last_apropos_string = (char *)0;
 	last_whichcmds = OPER;
@@ -501,7 +505,7 @@ desopers(int f, int n)
 
 /* ARGSUSED */
 int
-desapro(int f, int n)	/* Apropos (List functions that match a substring) */
+desapro(int f GCC_UNUSED, int n GCC_UNUSED)	/* Apropos (List functions that match a substring) */
 {
 	register int    s;
 	static char mstring[NSTRING];	/* string to match cmd names to */
@@ -519,7 +523,7 @@ static char described_cmd[NLINE+1];	/* string to match cmd names to */
 
 /* ARGSUSED */
 int
-desfunc(int f, int n)	/* describe-function */
+desfunc(int f GCC_UNUSED, int n GCC_UNUSED)	/* describe-function */
 {
 	register int    s;
 	char *fnp;
@@ -543,7 +547,7 @@ desfunc(int f, int n)	/* describe-function */
 
 /* ARGSUSED */
 int
-deskey(int f, int n)	/* describe the command for a certain key */
+deskey(int f GCC_UNUSED, int n GCC_UNUSED)	/* describe the command for a certain key */
 {
 	register int c;		/* key to describe */
 	char outseq[NSTRING];	/* output buffer for command sequence */
@@ -1398,7 +1402,7 @@ const char *	THIS_NAME(const char *p) { return 0; }
 /*ARGSUSED*/
 static const char *
 skip_partial(
-int	case_insensitive,
+int	case_insensitive GCC_UNUSED,
 char	*buf,
 SIZE_T	len,
 const char *table,
@@ -1622,7 +1626,7 @@ popdown_completions(void)
  */
 static int
 fill_partial(
-int	case_insensitive,
+int	case_insensitive GCC_UNUSED,
 char	*buf,
 SIZE_T	pos,
 const char *first,

@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.69 1997/02/09 20:07:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.70 1997/03/15 15:48:13 tom Exp $
  * 
  */
 
@@ -102,7 +102,7 @@ static	int	maplookup(int c, ITBUFF **outp, struct maprec *mp, GetFunc get, Avail
 
 /*ARGSUSED*/
 static void
-makemaplist(int dummy, void *mapp)
+makemaplist(int dummy GCC_UNUSED, void *mapp)
 {
     char lhsstr[MAXLHS];
     struct maprec *lhsstack[MAXLHS];
@@ -198,35 +198,35 @@ relist_mappings(const char * bufname)
 */
 /* ARGSUSED */
 int
-map(int f, int n)
+map(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     return map_common(&map_command, MAP_BufName, 0);
 }
 
 /* ARGSUSED */
 int
-map_bang(int f, int n)
+map_bang(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     return map_common(&map_insert, MAPBANG_BufName, 0);
 }
 
 /* ARGSUSED */
 int
-noremap(int f, int n)
+noremap(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     return map_common(&map_command, MAP_BufName, MAPF_NOREMAP);
 }
 
 /* ARGSUSED */
 int
-noremap_bang(int f, int n)
+noremap_bang(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     return map_common(&map_insert, MAPBANG_BufName, MAPF_NOREMAP);
 }
 
 /* ARGSUSED */
 int
-abbrev(int f, int n)
+abbrev(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     return map_common(&abbr_map, ABBR_BufName, MAPF_NOREMAP);
 }
@@ -234,7 +234,7 @@ abbrev(int f, int n)
 #if OPT_SHOW_MAPS
 /* ARGSUSED */
 int
-sysmap(int f, int n)
+sysmap(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	return show_mapped_chars(SYSMAP_BufName);
 }
@@ -294,28 +294,28 @@ map_common(struct maprec **mpp, const char *bufname, int remapflag)
 */
 /* ARGSUSED */
 int
-unmap(int f, int n)
+unmap(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     return unmap_common(&map_command, MAP_BufName);
 }
 
 /* ARGSUSED */
 int
-unmap_bang(int f, int n)
+unmap_bang(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     return unmap_common(&map_insert, MAPBANG_BufName);
 }
 
 /* ARGSUSED */
 int
-unmap_system(int f, int n)
+unmap_system(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     return unmap_common(&map_syskey, SYSMAP_BufName);
 }
 
 /* ARGSUSED */
 int
-unabbr(int f, int n)
+unabbr(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     return unmap_common(&abbr_map, ABBR_BufName);
 }

@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.288 1997/02/28 02:02:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.290 1997/03/15 15:38:06 tom Exp $
  *
  */
 
@@ -837,6 +837,8 @@ global_val_init(void)
 	set_global_g_val(GMDWARNRENAME,TRUE);	/* warn before renaming
 						a buffer */
 	set_global_g_val(GMDSMOOTH_SCROLL, FALSE);
+	set_global_g_val(GMDSPACESENT,  TRUE); /* add two spaces after each
+						sentence */
 #if OPT_COLOR
 	set_global_g_val(GVAL_FCOLOR,	C_WHITE); /* foreground color */
 	set_global_g_val(GVAL_BCOLOR,	C_BLACK); /* background color */
@@ -1328,7 +1330,7 @@ quickexit(int f, int n)
 /* Force quit by giving argument */
 /* ARGSUSED */
 int
-quithard(int f, int n)
+quithard(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	return quit(TRUE,1);
 }
@@ -1339,7 +1341,7 @@ quithard(int f, int n)
  */
 /* ARGSUSED */
 int
-quit(int f, int n)
+quit(int f, int n GCC_UNUSED)
 {
 	int cnt;
 	BUFFER *bp;
@@ -1447,7 +1449,7 @@ quit(int f, int n)
 
 /* ARGSUSED */
 int
-writequit(int f, int n)
+writequit(int f GCC_UNUSED, int n)
 {
 	int s;
 	s = filesave(FALSE,n);
@@ -1463,7 +1465,7 @@ writequit(int f, int n)
  */
 /* ARGSUSED */
 int
-esc_func(int f, int n)
+esc_func(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	dotcmdmode = STOP;
 	regionshape = EXACT;
@@ -1487,7 +1489,7 @@ rdonly(void)
 
 /* ARGSUSED */
 int
-unimpl(int f, int n)
+unimpl(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	mlwarn("[Sorry, that vi command is unimplemented in vile ]");
 	return FALSE;
@@ -1543,35 +1545,35 @@ ex(int f, int n)
 
 /* ARGSUSED */
 int
-nullproc(int f, int n)	/* user function that does (almost) NOTHING */
+nullproc(int f GCC_UNUSED, int n GCC_UNUSED)	/* user function that does (almost) NOTHING */
 {
 	return TRUE;
 }
 
 /* ARGSUSED */
 int
-cntl_a_func(int f, int n)	/* dummy function for binding to control-a prefix */
+cntl_a_func(int f GCC_UNUSED, int n GCC_UNUSED)	/* dummy function for binding to control-a prefix */
 {
 	return TRUE;
 }
 
 /* ARGSUSED */
 int
-cntl_x_func(int f, int n)	/* dummy function for binding to control-x prefix */
+cntl_x_func(int f GCC_UNUSED, int n GCC_UNUSED)	/* dummy function for binding to control-x prefix */
 {
 	return TRUE;
 }
 
 /* ARGSUSED */
 int
-poundc_func(int f, int n)	/* dummy function for binding to poundsign prefix */
+poundc_func(int f GCC_UNUSED, int n GCC_UNUSED)	/* dummy function for binding to poundsign prefix */
 {
 	return TRUE;
 }
 
 /* ARGSUSED */
 int
-unarg_func(int f, int n) /* dummy function for binding to universal-argument */
+unarg_func(int f GCC_UNUSED, int n GCC_UNUSED) /* dummy function for binding to universal-argument */
 {
 	return TRUE;
 }
@@ -1851,7 +1853,7 @@ FILE *FF;
 
 /*ARGSUSED*/
 static void
-start_debug_log(int ac, char **av)
+start_debug_log(int ac GCC_UNUSED, char **av GCC_UNUSED)
 {
 #ifdef DEBUGLOG
 	int i;
@@ -1949,7 +1951,7 @@ setup_handler(int sig, void (*disp) (int ACTUAL_SIG_ARGS))
 */
 /* ARGSUSED */
 int
-newprocessgroup(int f, int n)
+newprocessgroup(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 #if DISP_X11
 

@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.114 1996/10/03 01:02:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.115 1997/03/15 16:03:33 tom Exp $
  *
  */
 
@@ -53,7 +53,7 @@ extern  short	iochan;				/* In "termio.c"	*/
  */
 /* ARGSUSED */
 int
-spawncli(int f, int n)
+spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 /* i never thought i'd see an ifdef like this one... strange bedfellows */
 #if DISP_X11 || SYS_WIN31
@@ -140,7 +140,7 @@ bktoshell(int f, int n)		/* suspend and wait to wake up */
 
 /*ARGSUSED*/
 SIGT
-rtfrmshell(int ACTUAL_SIG_ARGS)
+rtfrmshell(int ACTUAL_SIG_ARGS GCC_UNUSED)
 {
 #if SYS_UNIX && defined(SIGTSTP)
 # if ! DISP_X11
@@ -188,14 +188,14 @@ pressreturn(void)
 
 /* ARGSUSED */
 int
-respawn(int f, int n)
+respawn(int f, int n GCC_UNUSED)
 {
 	return spawn1(TRUE, !f);
 }
 
 /* ARGSUSED */
 int
-spawn(int f, int n)
+spawn(int f, int n GCC_UNUSED)
 {
 	return spawn1(FALSE, !f);
 }
@@ -529,7 +529,7 @@ filterregion(void)
  */
 /* ARGSUSED */
 int
-vile_filter(int f, int n)
+vile_filter(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 #if !(SYS_UNIX||SYS_MSDOS || (SYS_OS2 && CC_CSETPP)) /* filterregion up above is better */
 	register int	s;	/* return status from CLI */

@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.298 1997/02/04 00:33:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.299 1997/03/15 15:35:43 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -2105,6 +2105,24 @@ extern void _exit (int code);
 #define	FreeIfNeeded(p)	if ((p) != 0) free((char *)(p))
 
 #define	ExitProgram(code)	exit(code)
+
+/*
+ * We cannot define these in config.h, since they require parameters to be
+ * passed (that's non-portable).
+ */
+#if GCC_PRINTF
+#define GCC_PRINTFLIKE(fmt,var) __attribute__((format(printf,fmt,var)))
+#else
+#define GCC_PRINTFLIKE(fmt,var) /*nothing*/
+#endif
+
+#ifndef	GCC_NORETURN
+#define	GCC_NORETURN /* nothing */
+#endif
+
+#ifndef	GCC_UNUSED
+#define	GCC_UNUSED /* nothing */
+#endif
 
 #if HAVE_SELECT
 # if HAVE_SELECT_H

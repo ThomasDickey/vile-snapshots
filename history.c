@@ -63,7 +63,7 @@
  *
  *	Allow left/right scrolling of input lines (when they get too long).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.33 1996/04/30 20:08:07 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.34 1997/03/15 15:48:13 tom Exp $
  *
  */
 
@@ -306,7 +306,7 @@ hst_flush(void)
 
 /*ARGSUSED*/
 int
-showhistory(int f, int n)
+showhistory(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register BUFFER *bp = makeMyBuff();
 

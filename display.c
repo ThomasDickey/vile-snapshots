@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.224 1997/03/13 11:49:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.225 1997/03/15 15:57:35 tom Exp $
  *
  */
 
@@ -714,7 +714,7 @@ vteeol(void)
 #if !SMALLER
 /* ARGSUSED */
 int
-upscreen(int f, int n)
+upscreen(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	return update(TRUE);
 }
@@ -3155,7 +3155,7 @@ bprintf(const char *fmt, ...)
 #if defined( SIGWINCH) && ! DISP_X11
 /* ARGSUSED */
 SIGT
-sizesignal (int ACTUAL_SIG_ARGS)
+sizesignal (int ACTUAL_SIG_ARGS GCC_UNUSED)
 {
 	int w, h;
 	int old_errno = errno;
@@ -3212,7 +3212,7 @@ newscreensize (int h, int w)
 
 /*ARGSUSED*/
 SIGT
-imworking (int ACTUAL_SIG_ARGS)
+imworking (int ACTUAL_SIG_ARGS GCC_UNUSED)
 {
 	static	const	char *const msg[] = {"working", "..."};
 	static	int	flip;

@@ -3,7 +3,7 @@
  * Modified from a really old version of "borland.c" (before the VIO
  * stuff went in there.)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.8 1996/04/14 23:37:50 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.9 1997/03/15 13:31:02 tom Exp $
  */
 
 #include "estruct.h"
@@ -39,7 +39,11 @@ static	void	vio_eeol   (void);
 static	void	vio_eeop   (void);
 static	void	vio_beep   (void);
 static	void    vio_open   (void);
+#if OPT_VIDEO_ATTRS
+static	void	vio_attr   (int);
+#else
 static	void	vio_rev    (int);
+#endif	/* OPT_VIDEO_ATTRS */
 static	int	vio_cres   (char *);
 static	void	vio_close  (void);
 static	void	vio_putc   (int);
@@ -105,7 +109,11 @@ TERM term = {
 	vio_eeol,
 	vio_eeop,
 	vio_beep,
+#if OPT_VIDEO_ATTRS
+	vio_attr,
+#else
 	vio_rev,
+#endif	/* OPT_VIDEO_ATTRS */
 	vio_cres,
 	vio_fcol,
 	vio_bcol,
@@ -351,6 +359,32 @@ vio_eeop(void)
 		(void) VioWrtNCell(blank_cell(), length, TextRow, TextColumn, 0);
 }
 
+#if OPT_VIDEO_ATTRS
+static void
+vio_attr(int attr)
+{
+	attr = VATTRIB(attr);
+	attr &= ~(VAML|VAMLFOC);
+
+	flush_if_necessary();
+
+#if OPT_COLOR
+	if (attr & VACOLOR)
+		vio_fcol(VCOLORNUM(attr));
+	else
+		vio_fcol(gfcolor);
+#endif
+	if (attr & VAREV)
+		TextAttr = AttrColor(cfcolor, cbcolor);
+	else
+		TextAttr = AttrColor(cbcolor, cfcolor);
+
+	if (attr & VABOLD)
+		TextAttr |= 0x8;
+}
+
+#else	/* highlighting is a minimum attribute */
+
 /*
  * Choose the text attributes for reverse or normal video.  Reverse video
  * is selected if 'reverse' is TRUE, and normal video otherwise.
@@ -365,6 +399,7 @@ vio_rev(int reverse)
 	else
 		TextAttr = AttrColor(cbcolor, cfcolor);
 }
+#endif	/* OPT_VIDEO_ATTRS */
 
 static int
 vio_cres(char *res)	/* change screen resolution */

@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.77 1997/02/09 19:30:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.78 1997/03/15 15:13:55 tom Exp $
  *
  */
 
@@ -683,7 +683,7 @@ Mode2Key(char *type, char *name, char *cond)
 
 	save_all_modes(type, normal, abbrev, cond);
 
-	(void)sprintf(tmp, "%s\n%c\n%s", normal, c, abbrev);
+	Sprintf(tmp, "%s\n%c\n%s", normal, c, abbrev);
 #if NO_LEAKS
 	free(normal);
 	free(abbrev);

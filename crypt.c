@@ -1,7 +1,7 @@
 /*	Crypt:	Encryption routines for MicroEMACS
  *		written by Dana Hoggatt and Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/crypt.c,v 1.16 1997/01/10 11:07:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/crypt.c,v 1.17 1997/03/15 15:44:30 tom Exp $
  *
  */
 
@@ -41,9 +41,9 @@ ALLOC_T	len)
 
 /* ARGSUSED */
 int
-ue_setkey(	/* reset encryption key of current buffer */
-int f,		/* default flag */
-int n)		/* numeric argument */
+ue_setkey(		/* reset encryption key of current buffer */
+int f GCC_UNUSED,	/* default flag */
+int n GCC_UNUSED)	/* numeric argument */
 {
 	register int s = ue_makekey(curbp->b_key, NPAT);
 

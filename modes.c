@@ -7,7 +7,7 @@
  * Original code probably by Dan Lawrence or Dave Conroy for MicroEMACS.
  * Major extensions for vile by Paul Fox, 1991
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.81 1997/02/09 19:33:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.82 1997/03/15 15:48:13 tom Exp $
  *
  */
 
@@ -288,7 +288,7 @@ static	/*ARGSUSED*/ WINDOW *ptr2WINDOW(void *p) { return 0; }
 /* ARGSUSED */
 static
 void	
-makemodelist(int dum1, void *ptr)
+makemodelist(int dum1 GCC_UNUSED, void *ptr)
 {
 	static	char	gg[] = "Universal",
 			bb[] = "Buffer",
@@ -930,7 +930,7 @@ VALARGS *args)			/* symbol-table entry for the mode */
 
 /* ARGSUSED */
 int
-listmodes(int f, int n)
+listmodes(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register WINDOW *wp = curwp;
 	register int s;
@@ -955,7 +955,7 @@ mode_complete(int c, char *buf, int *pos)
 
 int
 /*ARGSUSED*/
-mode_eol(char * buffer, int cpos, int c, int eolchar)
+mode_eol(char * buffer GCC_UNUSED, int cpos GCC_UNUSED, int c, int eolchar)
 {
 	return (c == ' ' || c == eolchar);
 }
@@ -1101,28 +1101,28 @@ relist_settings(void)
 
 /* ARGSUSED */
 int
-setlocmode(int f, int n)	/* prompt and set an editor mode */
+setlocmode(int f GCC_UNUSED, int n GCC_UNUSED)	/* prompt and set an editor mode */
 {
 	return adjustmode(TRUE, FALSE);
 }
 
 /* ARGSUSED */
 int
-dellocmode(int f, int n)	/* prompt and delete an editor mode */
+dellocmode(int f GCC_UNUSED, int n GCC_UNUSED)	/* prompt and delete an editor mode */
 {
 	return adjustmode(FALSE, FALSE);
 }
 
 /* ARGSUSED */
 int
-setglobmode(int f, int n)	/* prompt and set a global editor mode */
+setglobmode(int f GCC_UNUSED, int n GCC_UNUSED)	/* prompt and set a global editor mode */
 {
 	return adjustmode(TRUE, TRUE);
 }
 
 /* ARGSUSED */
 int
-delglobmode(int f, int n)	/* prompt and delete a global editor mode */
+delglobmode(int f GCC_UNUSED, int n GCC_UNUSED)	/* prompt and delete a global editor mode */
 {
 	return adjustmode(FALSE, TRUE);
 }

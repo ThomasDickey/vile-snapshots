@@ -1,6 +1,6 @@
 /*	Dumb terminal driver, for I/O before we get into screen mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/dumbterm.c,v 1.8 1996/10/03 01:02:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/dumbterm.c,v 1.9 1997/03/15 15:48:14 tom Exp $
  *
  */
 
@@ -116,7 +116,7 @@ dumb_flush(void)
 
 /*ARGSUSED*/
 static void
-dumb_move(int row, int col)
+dumb_move(int row GCC_UNUSED, int col)
 {
 	if (last_col == 0)
 		last_col = this_col;
@@ -148,14 +148,14 @@ dumb_eeop(void)
 /*ARGSUSED*/
 static int
 dumb_cres(	/* change screen resolution */
-char *	res)
+char *	res GCC_UNUSED)
 {
 	return(FALSE);
 }
 
 /* ARGSUSED */
 static void
-dumb_rev(int state)
+dumb_rev(int state GCC_UNUSED)
 {
 }
 

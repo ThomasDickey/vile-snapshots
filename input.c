@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.158 1997/02/09 19:47:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.159 1997/03/15 15:48:13 tom Exp $
  *
  */
 
@@ -102,7 +102,7 @@ TempDot(int init)
  */
 /*ARGSUSED*/
 int
-no_completion(int c, char *buf, int *pos)
+no_completion(int c GCC_UNUSED, char *buf GCC_UNUSED, int *pos GCC_UNUSED)
 {
 	return FALSE;
 }
@@ -947,7 +947,7 @@ int	options)
 /* default function for 'edithistory()' */
 static int
 /*ARGSUSED*/
-eol_history(char * buffer, int cpos, int c, int eolchar)
+eol_history(char * buffer GCC_UNUSED, int cpos GCC_UNUSED, int c, int eolchar)
 {
 	if (isprint(eolchar)) {
 		if (c == eolchar)
@@ -1421,7 +1421,7 @@ kbd_replaying(int match)
  */
 /* ARGSUSED */
 int
-kbd_mac_begin(int f, int n)
+kbd_mac_begin(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	if (kbdmode != STOP) {
 		mlforce("[Macro already active]");
@@ -1439,7 +1439,7 @@ kbd_mac_begin(int f, int n)
  */
 /* ARGSUSED */
 int
-kbd_mac_end(int f, int n)
+kbd_mac_end(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	if (kbdmode == STOP) {
 		mlforce("[Macro not active]");
@@ -1465,7 +1465,7 @@ kbd_mac_end(int f, int n)
  */
 /* ARGSUSED */
 int
-kbd_mac_exec(int f, int n)
+kbd_mac_exec(int f GCC_UNUSED, int n)
 {
 	if (kbdmode != STOP) {
 		mlforce("[Can't execute macro while recording]");
@@ -1480,7 +1480,7 @@ kbd_mac_exec(int f, int n)
 
 /* ARGSUSED */
 int
-kbd_mac_save(int f, int n)
+kbd_mac_save(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	ksetup();
 	itb_first(KbdMacro);

@@ -3,7 +3,7 @@
  *
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.65 1996/03/24 13:38:16 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.66 1997/03/15 15:52:41 tom Exp $
  *
  */
 
@@ -328,7 +328,7 @@ freeundostacks(register BUFFER *bp, int both)
 
 /* ARGSUSED */
 int
-undo(int f, int n)
+undo(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	int s;
 	L_NUM	before;
@@ -764,7 +764,7 @@ dumpuline(LINEPTR lp)
 
 /* ARGSUSED */
 int
-lineundo(int f, int n)
+lineundo(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register LINE *ulp;	/* the Undo line */
 	register LINE *lp;	/* the line we may replace */

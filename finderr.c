@@ -2,7 +2,7 @@
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  * rewritten to use regular expressions, 1995 by T.Dickey (dickey@clark.net)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.60 1997/01/19 20:10:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.61 1997/03/15 15:48:13 tom Exp $
  *
  */
 
@@ -230,7 +230,7 @@ free_patterns(void)
 #if OPT_UPBUFF
 /*ARGSUSED*/
 static int
-update_patterns(BUFFER *bp)
+update_patterns(BUFFER *bp GCC_UNUSED)
 {
 	free_patterns();
 	return TRUE;
@@ -344,7 +344,7 @@ decode_exp (ERR_PATTERN *exp)
 
 /* ARGSUSED */
 int
-finderr(int f, int n)
+finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register BUFFER *sbp;
 	register int s;
@@ -531,7 +531,7 @@ putdotback(BUFFER *bp, LINE *dotp)
  */
 /* ARGSUSED */
 int
-finderrbuf(int f, int n)
+finderrbuf(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register int    s;
 	char name[NFILEN+1];
@@ -557,7 +557,7 @@ finderrbuf(int f, int n)
  */
 /*ARGSUSED*/
 int
-comp_err_exps(int f, int n)
+comp_err_exps(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	if (!load_patterns()) {
 		mlforce("[No error-expressions are defined.]");

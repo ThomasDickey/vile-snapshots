@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.131 1996/11/07 02:00:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.132 1997/03/15 15:48:14 tom Exp $
  *
  */
 
@@ -84,7 +84,7 @@ static IFSTK ifstk;
 
 /*ARGSUSED*/
 static int
-eol_range(char * buffer, int cpos, int c, int eolchar)
+eol_range(char * buffer, int cpos, int c, int eolchar GCC_UNUSED)
 {
 	if (is_edit_char(c))
 		return FALSE;
@@ -1881,7 +1881,7 @@ dobuf(BUFFER *bp)	/* buffer to execute */
 /* ARGSUSED */
 int
 execfile(	/* execute a series of commands in a file */
-int f, int n)	/* default flag and numeric arg to pass on to file */
+int f GCC_UNUSED, int n)	/* default flag and numeric arg to pass on to file */
 {
 	register int status;	/* return status of name query */
 	char fname[NFILEN];	/* name of file to execute */
