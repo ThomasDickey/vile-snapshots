@@ -1,4 +1,4 @@
-MANIFEST for vile, version v7_4l
+MANIFEST for vile, version v7_4m
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -93,6 +93,7 @@ ptypemap                        perl-interface type map
 random.c                        miscellaneous functions
 regexp.c                        regular expression functions
 region.c                        region-manipulation
+revlist                         revision-list for VILE
 search.c                        functions for search-commands
 select.c                        selection-handling functions
 spawn.c                         functions for spawning subprocesses
@@ -135,6 +136,7 @@ perl                            subdirectory
 perl/glob2re.pl                 utility-script for vile's hypertext
 perl/hgrep.pl                   utility-script for vile's hypertext
 perl/manfilt.pl                 Perl filter for man-pages
+perl/search.pl                  perl lookalike for vile's search commands
 perl/shell.pl                   spawn a shell via a pty
 perl/tailf.pl                   do a "tail -f"
 perl/visit.pl                   utility-script for vile's hypertext
