@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.519 2003/06/17 16:42:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.520 2003/06/21 14:58:00 tom Exp $
  *
  */
 
@@ -719,9 +719,9 @@ void purge_msgs (void);
 extern REGEXVAL * free_regexval (REGEXVAL *rp);
 extern REGEXVAL * new_regexval (const char *pattern, int magic);
 extern char * get_record_sep (BUFFER *bp);
-extern const char * string_mode_val (VALARGS *args);
 extern const FSM_CHOICES * name_to_choices (const char *name);
 extern const char * choice_to_name (const FSM_CHOICES *choices, int code);
+extern const char * string_mode_val (VALARGS *args);
 extern int adjvalueset (const char *cp, int defining, int setting, int global, VALARGS *args);
 extern int choice_to_code (const FSM_CHOICES *choices, const char *name, size_t len);
 extern int combine_choices (const FSM_CHOICES *choices, const char *string);
@@ -764,8 +764,10 @@ extern void infer_majormode (BUFFER *bp);
 extern void set_majormode_rexp (const char *name, int n, const char *pat);
 extern void set_submode_val (const char *name, int n, int value);
 extern void set_submode_txt (const char *name, int n, char * value);
+extern void set_vilemode (BUFFER *bp);
 #else
 #define infer_majormode(bp) fix_cmode(bp, (global_b_val(MDCMOD) && has_C_suffix(bp)))
+#define set_vilemode(bp) /*nothing*/
 #endif
 
 #if OPT_SHOW_COLORS

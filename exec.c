@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.258 2003/05/24 15:54:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.259 2003/06/21 14:59:47 tom Exp $
  *
  */
 
@@ -1229,9 +1229,6 @@ setup_macro_buffer(TBUFF * name, int flag)
 #if OPT_ONLINEHELP
     TBUFF *helpstring = 0;	/* optional help string */
 #endif
-#if OPT_MAJORMODE
-    VALARGS args;
-#endif
     char bname[NBUFN];		/* name of buffer to use */
     BUFFER *bp;
 
@@ -1315,12 +1312,7 @@ setup_macro_buffer(TBUFF * name, int flag)
     }
 #endif /* OPT_NAMEBST */
 
-#if OPT_MAJORMODE
-    if (find_mode(bp, "vilemode", FALSE, &args) == TRUE) {
-	(void) set_mode_value(bp, "vilemode", FALSE, TRUE, FALSE, &args,
-			      (char *) 0);
-    }
-#endif
+    set_vilemode(bp);
 
     /* and set the macro store pointers to it */
     macrobuffer = bp;
