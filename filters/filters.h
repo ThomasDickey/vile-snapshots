@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.28 1999/11/24 00:01:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.31 1999/12/09 02:13:43 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -165,17 +165,28 @@ extern void do_filter(FILE *Input, FILE *Output);
 /*
  * Declared in the filters.c file.
  */
+
+typedef struct _keyword KEYWORD;
+
+extern int eqls_ch;
+extern int meta_ch;
+
+KEYWORD * is_class(char *name);
+KEYWORD * is_keyword(char *name);
 extern char *ci_keyword_attr(char *name);
 extern char *class_attr(char *name);
 extern char *do_alloc(char *ptr, unsigned need, unsigned *have);
 extern char *keyword_attr(char *name);
 extern char *lowercase_of(char *name);
 extern char *readline(FILE *fp, char **ptr, unsigned *len);
+extern char *skip_blanks(char *src);
+extern char *skip_ident(char *src);
 extern char *strmalloc(const char *src);
 extern int set_symbol_table(const char *classname);
 extern long hash_function(const char *id);
 extern void for_each_keyword(EachKeyword func);
 extern void insert_keyword(const char *ident, const char *attribute, int classflag);
+extern void parse_keyword(char *name, int classflag);
 extern void write_string(FILE *fp, char *string, int length, char *attribute);
 extern void write_token(FILE *fp, char *string, int length, char *attribute);
 

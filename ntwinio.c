@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.62 1999/11/24 19:44:57 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.63 1999/12/09 02:43:10 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -1603,6 +1603,10 @@ handle_builtin_menu(WPARAM code)
 		winopen(0, 0);
 		update(FALSE);
 		break;
+	case IDM_SAVE_AS:
+		winsave(0, 0);
+		update(FALSE);
+		break;
 	case IDM_FONT:
 		set_font();
 		break;
@@ -2842,8 +2846,9 @@ InitInstance(HINSTANCE hInstance)
 	 */
 	vile_menu = GetSystemMenu(cur_win->main_hwnd, FALSE);
 	AppendMenu(vile_menu, MF_SEPARATOR, 0, NULL);
-	AppendMenu(vile_menu, MF_STRING, IDM_OPEN, "&Open");
-	AppendMenu(vile_menu, MF_STRING, IDM_FONT, "&Font");
+	AppendMenu(vile_menu, MF_STRING, IDM_OPEN, "&Open...");
+	AppendMenu(vile_menu, MF_STRING, IDM_SAVE_AS, "&Save As...");
+	AppendMenu(vile_menu, MF_STRING, IDM_FONT, "&Font...");
 	AppendMenu(vile_menu, MF_SEPARATOR, 0, NULL);
 	AppendMenu(vile_menu, MF_STRING|MF_CHECKED, IDM_MENU, "&Menu");
 

@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.188 1999/11/24 18:50:05 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.189 1999/12/09 02:43:10 cmorgan Exp $
 #
 #
 
@@ -1562,6 +1562,12 @@ winopen_nocd	NONE			SYS_WINNT
 winopen      	NONE			SYS_WINNT
 	"winopen"
 	<launch Windows common dialog box to open file(s), CWD changes as side effect>
+winsave_nocd	NONE			SYS_WINNT
+	"winsave-nocd"
+	<launch Windows common dialog box to save current buffer, CWD is unmodified>
+winsave      	NONE			SYS_WINNT
+	"winsave"
+	<launch Windows common dialog box to save current buffer, CWD changes as side effect>
 wordcount	RANGE			OPT_WORDCOUNT
 	"count-words"
 	<count words, lines, and chars in the region>

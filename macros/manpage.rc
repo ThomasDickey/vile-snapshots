@@ -3,11 +3,11 @@
 ;;
 ;; Author: Kevin Buettner
 ;;
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.8 1999/10/18 10:16:23 tom Exp $
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.9 1999/12/05 03:56:03 tom Exp $
 ;;
 
 store-procedure ShowManpage "Prompt for, and display a manual-page"
-	~local %filter %manpage %manpagebuf
+	~local %filter %manpage %manpagebuf $error-buffer
 	set-variable %filter &lookup e+l+p &cat vile-manfilt $exec-suffix
 	~if &seq %filter ""
 		write-message "[Cannot find manpage-filter]"
@@ -39,7 +39,7 @@ store-procedure ShowManpage "Prompt for, and display a manual-page"
 bind-key ShowManpage ^X-m
 
 store-procedure ShowFormatted "Render the current buffer with nroff -man or -ms"
-	~local %filter %manpagesrc %manpagebuf
+	~local %filter %manpagesrc %manpagebuf $error-buffer
 	set-variable %filter &lookup e+l+p &cat vile-manfilt $exec-suffix
 	~if &seq %filter ""
 		write-message "[Cannot find manpage-filter]"

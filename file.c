@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.260 1999/11/15 23:48:37 Ryan.Murray Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.261 1999/12/09 02:43:10 cmorgan Exp $
  */
 
 #include	"estruct.h"
@@ -1775,7 +1775,12 @@ filename(int f GCC_UNUSED, int n GCC_UNUSED)
 		return s;
 	if (s == FALSE)
 		return s;
-	make_global_b_val(curbp,MDVIEW); /* no longer read only mode */
+
+	/* 
+	 * Supersede local buffer's view mode with global view mode.
+	 * Why?  Don't know--this is ancient code.
+	 */
+	make_global_b_val(curbp,MDVIEW);
 #if OPT_LCKFILES
 	if ( global_g_val(GMDUSEFILELOCK) ) {
 		if (!b_val(curbp,MDLOCKED) && !b_val(curbp,MDVIEW))

@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.13 1999/10/01 23:59:24 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.15 1999/12/10 02:27:00 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -19,7 +19,7 @@ CON_LDFLAGS  = -nologo -pdb:none
 UTILS =	vile-c-filt.exe
 SCRIPTS = \
 	filters.rc
-KEYS =	vile.key c.key
+KEYS =	vile.key c.key cpp.key
 !ELSE
 UTILS = \
 	vile-bat-filt.exe \
@@ -39,6 +39,7 @@ KEYS	= \
 	awk.key \
 	bat.key \
 	c.key \
+	cpp.key \
 	dcl.key \
 	html.key \
 	java.key \

@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.65 1999/11/22 21:13:00 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.67 1999/12/10 03:00:23 tom Exp $
  *
  */
 
@@ -157,10 +157,7 @@ record_a_match(char *item)
 	return TRUE;
 }
 
-
-
-
-#if !SMALLER
+#if !SMALLER || UNIX_GLOBBING
 
 #if OPT_CASELESS
 static int
@@ -246,9 +243,7 @@ glob_match_leaf(char *leaf, char *pattern)
 	}
 	return (*leaf == EOS && only_multi(pattern));
 }
-#endif /* !SMALLER */
-
-
+#endif /* !SMALLER || UNIX_GLOBBING */
 
 #if UNIX_GLOBBING
 /*
@@ -565,7 +560,7 @@ static int compar (const void *a, const void *b)
 	return strcmp(*(const char *const *)a, *(const char *const *)b);
 #endif
 }
-#endif
+#endif /* UNIX_GLOBBING */
 
 #if OPT_GLOB_PIPE
 static int
@@ -989,18 +984,26 @@ expand_wild_args(int *argcp, char ***argvp)
 			 * like these:
 			 *
 			 *     ../readme.txt   ~/vile.rc
+			 *
+			 * however don't mess with command line arguments
+			 * that look like this:
+			 *
+			 *    +/<string>
 			 */
-			tmp = the_arg;
-			while ((item = strrchr(tmp, '/')) != 0) {
-				mkupper(item);
-				if (!strncmp(item, "/READ_ONLY", strlen(item))) {
-					set_global_b_val(MDVIEW,TRUE);
-					*item = EOS;
+			if (! (the_arg[0] == '+' && the_arg[1] == '/')) {
+				tmp = the_arg;
+				while ((item = strrchr(tmp, '/')) != 0) {
+					mkupper(item);
+					if (!strncmp(item,
+					             "/READ_ONLY",
+						     strlen(item))) {
+						set_global_b_val(MDVIEW,TRUE);
+						*item = EOS;
+					}
+					else
+					    tmp = item + 1;
 				}
-				else
-				    tmp = item + 1;
 			}
-
 			while (*the_arg != EOS) {
 				item = strchr(the_arg, ',');
 				if (item == 0)

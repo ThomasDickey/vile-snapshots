@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.54 1999/11/07 18:38:58 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.55 1999/12/09 02:43:10 cmorgan Exp $
 #
 #
 !include <ntwin32.mak>
@@ -145,7 +145,7 @@ SRC = 	main.c $(SCREEN).c \
 	region.c search.c select.c spawn.c statevar.c \
 	tags.c tbuff.c termio.c ucrypt.c undo.c \
 	version.c window.c word.c wordmov.c map.c \
-	w32cbrd.c w32misc.c w32pipe.c $(PERLSRCS) \
+	w32cbrd.c w32cmd.c w32misc.c w32pipe.c $(PERLSRCS) \
 	$(OLESRCS)
 
 OBJ = 	main.obj $(SCREEN).obj \
@@ -159,7 +159,7 @@ OBJ = 	main.obj $(SCREEN).obj \
 	region.obj search.obj select.obj spawn.obj statevar.obj \
 	tags.obj tbuff.obj termio.obj ucrypt.obj undo.obj \
 	version.obj window.obj word.obj wordmov.obj map.obj \
-	w32cbrd.obj w32misc.obj w32pipe.obj $(PERLOBJS) \
+	w32cbrd.obj w32cmd.obj w32misc.obj w32pipe.obj $(PERLOBJS) \
 	$(OLEOBJS) $(DBGOBJS) $(EXTRA)
 
 .c.obj:
@@ -264,6 +264,7 @@ statevar.obj:	nevars.h
 tags.obj:	btree.h
 termio.obj:	nefunc.h
 version.obj:	patchlev.h
+w32cmd.obj:	nefunc.h
 w32misc.obj:	nefunc.h
 w32ole.obj:	w32ole.h winviletlb.h w32reg.h
 w32reg.obj:	w32reg.h

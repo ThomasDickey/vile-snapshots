@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.7 1999/11/27 14:31:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.8 1999/12/05 23:12:20 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mail
  */
@@ -62,7 +62,7 @@ NAME		[a-zA-Z0-9_.#-]+
 ADDRESS		({NAME}|\.)+
 EMAIL		{NAME}@{ADDRESS}
 
-URL		[A-Za-z]+"://"[0-9a-zA-Z%/.~-]+
+URL		[A-Za-z]+"://"[0-9a-zA-Z%/.~_-]+
 
 %%
 
@@ -72,4 +72,4 @@ URL		[A-Za-z]+"://"[0-9a-zA-Z%/.~-]+
 <HEADER,BODY>{BEGIN_HEADER}	{ WriteToken(String_attr); BEGIN(HEADER); }
 
 {EMAIL}			{ WriteToken(Ident2_attr); }
-{URL}			{ WriteToken(Comment_attr); }
+{URL}			{ WriteToken(Ident2_attr); }

@@ -40,9 +40,10 @@ nocmode".  In the new scheme,
 	  testing if any match with the majormode's suffixes, then if
 	  any preamble (first line regular expression) matches.
 
-	  The search is in alphabetic order, by majormode name.  The
-	  first match each, of suffixes and preamble terminate the
-	  search, but a match of preamble overrides a match of suffixes.
+	  The search is in normally alphabetic order, by majormode name. 
+	  The first match each, of suffixes and preamble terminate the
+	  search, but a match of preamble overrides a match of suffixes. 
+	  Use "after" and "before" qualifiers to handle special cases.
 
 	+ majormodes can be disabled (e.g., ":set nocmode"), as before.
 	  However, there is no global sense of majormode; unsetting a
@@ -166,13 +167,23 @@ solely by the define-submode command:
 		file (the first line) used to trigger association with
 		a majormode (e.g., "^!#.*\/perl[^a-z]").
 
+	before
+	after
+		A string that tells vile how to rank the majormode. 
+		Normally vile checks each mode in order by name, but there
+		are special cases where you may want to check one mode
+		before another.  For example, the C++ majormode cppmode
+		would be checked after cmode, but that uses suffixes which
+		are a subset of the built-in cmode's suffixes and would not
+		be found.  So cppmode is qualified before="c".
+
 	group
 		followed by a name, defines an alternative set of submode
 		values.
 		
 		Currently used only for complex fences, this could be applied
 		to simple fences, and (with new flags not yet defined) extend
-		both styles of fences for indention and formatting.
+		both styles of fences for indentation and formatting.
 
 	fences
 		These are "complex" fences, which are matched one expression
@@ -247,5 +258,5 @@ Note that the following are equivalent once you have defined the majormode "c":
 	define-submode c tabstop=8
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.5 1999/09/19 20:56:48 tom Exp $
+$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.6 1999/12/10 01:31:29 tom Exp $
 -------------------------------

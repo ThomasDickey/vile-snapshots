@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.259 1999/12/03 01:00:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.260 1999/12/09 02:21:07 tom Exp $
  *
  */
 
@@ -1530,7 +1530,7 @@ read_argument(TBUFF **paramp, const PARAM_INFO *info)
 #if OPT_MAJORMODE
 	    case PT_MAJORMODE:
 		prompt = "Majormode";
-		flags = KBD_NOEVAL|KBD_LOWERC;
+		flags = KBD_NOEVAL;
 		complete = major_complete;
 		break;
 #endif

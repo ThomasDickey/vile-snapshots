@@ -1,4 +1,6 @@
-; $Id: filters.rc,v 1.95 1999/12/03 02:13:52 tom Exp $
+; $Id: filters.rc,v 1.98 1999/12/10 01:05:43 tom Exp $
+; majormodes in this file are ordered alphabetically for convenience - the
+; precedence used by vile is strictly alphabetic, counting case.
 
 define-mode ada
 ~with define-submode ada
@@ -34,9 +36,19 @@ define-mode bat
 	comments   '^\s*rem\>\s\+\s*$'
 ~endwith
 
-define-mode cweb
-~with define-submode cweb
-	suf '\(\.w\|\.web\)$'
+define-mode cfg
+~with define-submode cfg
+	suf '\.cfg$'
+	comment-prefix	'^\s*#'
+	comments	'^\s*#\s*$'
+~endwith
+
+define-mode cpp
+~with define-submode cpp
+	before "c"
+	suf '\(\.\(\|CC\|cpp\|cxx\|hxx\|hh\)$\)'
+	cindent
+	filtername	'vile-c-filt -k cpp'
 ~endwith
 
 define-mode csh
@@ -57,6 +69,11 @@ define-mode csh
 ~elsewith define-submode csh group 'loop'
 	fence-if	'^\s*\<foreach\|while\>(.*)'
 	fence-fi	'^\s*\<end\>'
+~endwith
+
+define-mode cweb
+~with define-submode cweb
+	suf '\(\.w\|\.web\)$'
 ~endwith
 
 ; Fences in DCL do not work well because we really want a fence-if which
@@ -337,7 +354,7 @@ define-mode sql
 
 define-mode tags
 ~with define-submode tags
-	suf '\tags$'
+	suf '\<tags$'
 	comment-prefix	'^!_'
 	comments	'^!_$'
 ~endwith
