@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.129 2000/09/05 01:33:10 tom Exp $
+; $Id: filters.rc,v 1.130 2000/10/05 22:28:57 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -170,7 +170,6 @@ define-mode imake
 ~with define-submode imake
 	suf 'I[Mm]akefile[^/]*$'
 	pre '^\s*\(XCOMM\>\|\/\*\*\/#\)'
-	filtername 'vile-c-filt -k imake'
 ~endwith
 
 define-mode java

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.281 2000/10/02 01:35:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.282 2000/10/10 19:04:11 tom Exp $
  *
  */
 
@@ -1286,6 +1286,7 @@ set_ctrans(const char *thePalette)
     int n = 0, value;
     char *next;
 
+    TRACE(("set_ctrans(%s)\n", thePalette));
     while (*thePalette != EOS) {
 	thePalette = skip_cblanks(thePalette);
 	value = (int) strtol(thePalette, &next, 0);
@@ -1296,6 +1297,12 @@ set_ctrans(const char *thePalette)
 	if (++n >= NCOLORS)
 	    break;
     }
+#if OPT_TRACE
+    TRACE(("...ctrans "));
+    for (n = 0; n < NCOLORS; n++)
+	    TRACE(("%s%d", n == 0 ? "[" : " ", ctrans[n]));
+    TRACE(("]\n"));
+#endif
 }
 #endif
 

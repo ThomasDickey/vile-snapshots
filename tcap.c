@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.137 2000/08/30 01:47:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.138 2000/10/09 00:52:42 tom Exp $
  *
  */
 
@@ -941,8 +941,32 @@ tcapattr(UINT attr)
 		{ &tc_MD, &tc_ME, 32, VABOLD },
 	};
 	static	UINT last;
+	static	int all_sgr0 = -1;
 	unsigned n;
 	int colored = (ncolors > 2);
+
+	/*
+	 * If we have one or more video attributes ending with the same
+	 * pattern, it's likely that they all do (like a vt100).  In that
+	 * case, set a flag indicating that we'll have to assume that turning
+	 * any one off turns all off.
+	 *
+	 * As a special case, look for the \E[m string, since that is often
+	 * mixed with other pieces in sgr0, such as ^O or time delays.
+	 */
+	if (all_sgr0 < 0) {
+		all_sgr0 = 0;
+		for (n = 0; n < TABLESIZE(tbl); n++) {
+			unsigned m = (n + 1) % TABLESIZE(tbl);
+			if (*tbl[n].end != 0
+			 && *tbl[m].end != 0
+			 && (!strcmp(*tbl[n].end, *tbl[m].end)
+			  || strstr(*tbl[n].end, "\033[m") != 0)) {
+				all_sgr0 = 1;
+				break;
+			}
+		}
+	}
 
 	attr = VATTRIB(attr);
 #ifdef GVAL_VIDEO
@@ -986,9 +1010,10 @@ tcapattr(UINT attr)
 
 	if (attr != last) {
 		register char *s;
-		UINT	diff = attr ^ last;
+		UINT	diff;
 		int	ends = !colored;
 
+		diff = last & ~attr;
 		/* turn OFF old attributes */
 		for (n = 0; n < TABLESIZE(tbl); n++) {
 			if ((tbl[n].mask & diff) != 0
@@ -1003,6 +1028,11 @@ tcapattr(UINT attr)
 				diff &= ~(tbl[n].mask);
 			}
 		}
+
+		if (all_sgr0)
+			diff = attr;
+		else
+			diff = attr & ~last;
 
 		/* turn ON new attributes */
 		for (n = 0; n < TABLESIZE(tbl); n++) {

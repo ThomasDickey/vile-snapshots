@@ -672,9 +672,12 @@ sub start_shell {
     if ($pid == 0) {
 	POSIX::setsid();
 	my $tty	= $pty->slave;
-	open(STDIN, "<&".fileno($tty))	or die "Can't reopen STDIN";
-	open(STDOUT, ">&STDIN")		or die "Can't reopen STDOUT";
-	open(STDERR, ">&STDIN")		or die "Can't reopen STDERR";
+	untie *STDIN;
+	untie *STDOUT;
+	untie *STDERR;
+	open(STDIN, "<&".fileno($tty))	or die "Can't reopen STDIN: $!";
+	open(STDOUT, ">&STDIN")		or die "Can't reopen STDOUT: $!";
+	open(STDERR, ">&STDIN")		or die "Can't reopen STDERR: $!";
 	system("stty sane");
 	close $pty;
 	close $tty;

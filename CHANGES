@@ -1,8 +1,38 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20001010 (z)
+	> Clark Morgan:
+	+ fix a display glitch in w32_keybrd_reopen().
+ 	> Brendan O'Dea:
+	+ problem:  in Perl 5.6.0, some changes to the tied filehandle
+	  mechanism break anything which attempts to re-open STDOUT/STDERR,
+	  such as shell.pm as that now attempts to invoke the non-existent
+	  method Vile::Buffer::OPEN .
+	  Workaround: untie the handles before re-opening.
+	> Tom Dickey:
+	+ use new function SamePixel() to treat Pixel values as equivalent if
+	  the difference between each of their RGB components is relatively
+	  small.  Add a check for the default resource value of fcolor0,
+	  forcing that to black if xvile's foreground does not look different
+	  from white.  This makes some of the color palette commands, e.g.,
+		:set cs=black
+	  work properly.
+	+ correct computation of 'diff' variable in tcapattr(), and add a check
+	  for coincidence between strings that are used to turn off
+	  corresponding video attributes.  The first error made vile turn off
+	  the wrong attributes under some conditions, and the second would
+	  cause it to omit turning back on attributes that it had inadvertently
+	  turned off (reported by Clark Morgan).
+	+ add imakeflt.l, to highlight Imakefile's.  Using c-filt.c was not
+	  satisfactory because it did not treat quotes properly on comment
+	  lines.
+	+ minor fix to makefilt.l to treat "#include" as a comment.
+	+ minor fix to vilefilt.l to prevent double-quoted text from spanning
+	  multiple lines.
+
  20001005 (y)
 	> Clark Morgan:
-	+ update makefile.blc, add w32oo.obj 
+	+ update makefile.blc, add w32oo.obj
 	+ when pasting to clipboard, use a less ambiguous status message.
 	+ change global var that's used to detect when minibuffer is active.
 	  Keying on "bminip" doesn't work in all cases.

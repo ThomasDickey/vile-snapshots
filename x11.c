@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.251 2000/09/25 00:53:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.252 2000/10/10 23:18:32 tom Exp $
  *
  */
 
@@ -2499,6 +2499,47 @@ static void my_error_handler(String message)
     print_usage();
 }
 
+#define MIN_UDIFF  0x1000
+#define UDIFF(a,b) ((a)>(b)?(a)-(b):(b)-(a))
+
+/*
+ * Returns true if the RGB components are close enough to make distinguishing
+ * two colors difficult.
+ */
+static Boolean
+SamePixel(Pixel a, Pixel b)
+{
+    Boolean result = True;
+    XColor a_color;
+    XColor b_color;
+    Colormap colormap;
+
+    if (a != b) {
+	result = False;
+	if (cur_win->top_widget != 0) {
+	    XtVaGetValues(cur_win->top_widget,
+		XtNcolormap,	&colormap,
+		NULL);
+
+	    a_color.pixel = a;
+	    b_color.pixel = b;
+
+	    if (XQueryColor(dpy, colormap, &a_color)
+	     && XQueryColor(dpy, colormap, &b_color)) {
+		if (UDIFF(a_color.red,   b_color.red)   < MIN_UDIFF
+		 && UDIFF(a_color.green, b_color.green) < MIN_UDIFF
+		 && UDIFF(a_color.blue,  b_color.blue)  < MIN_UDIFF)
+		    result = True;
+	    } else {
+		TRACE(("FIXME: SamePixel failed\n"));
+	    }
+	} else {
+	    TRACE(("FIXME: SamePixel cannot compute (too soon)\n"));
+	}
+    }
+    return result;
+}
+
 static void
 monochrome_cursor(void)
 {
@@ -2601,6 +2642,25 @@ reset_color_gcs(void)
 	cur_win->back_color[n].reset = True;
     }
 }
+
+#if OPT_TRACE
+static char *ColorsOf(Pixel pixel)
+{
+    static char result[80];
+
+    XColor color;
+    Colormap colormap;
+
+    XtVaGetValues(cur_win->screen,
+	XtNcolormap,	&colormap,
+	NULL);
+
+    color.pixel = pixel;
+    XQueryColor(dpy, colormap, &color);
+    sprintf(result, "%4X/%4X/%4X", color.red, color.green, color.blue);
+    return result;
+}
+#endif
 
 /* ARGSUSED */
 int
@@ -2749,14 +2809,13 @@ x_preparse_args(
     if (cur_win->fork_on_startup)
 	(void) newprocessgroup(TRUE,1);
 
-    if (cur_win->bg == cur_win->fg)
+    if (SamePixel(cur_win->bg, cur_win->fg))
 	cur_win->fg = BlackPixel(dpy,DefaultScreen(dpy));
-    if (cur_win->bg == cur_win->fg)
+    if (SamePixel(cur_win->bg, cur_win->fg))
 	cur_win->bg = WhitePixel(dpy,DefaultScreen(dpy));
 
     cur_win->default_fg = cur_win->fg;
     cur_win->default_bg = cur_win->bg;
-
 
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
     XtGetSubresources(
@@ -2809,6 +2868,17 @@ x_preparse_args(
 	    XtNumber(pointer_resources),
 	    (ArgList)0,
 	    0);
+
+    /*
+     * Try to keep the default for fcolor0 looking like something other than
+     * white.
+     */
+    if (SamePixel(cur_win_rec.fg, WhitePixel(dpy,DefaultScreen(dpy)))) {
+	static Pixel black;
+	TRACE(("force default value of fcolor0 to Black\n"));
+	black = BlackPixel(dpy,DefaultScreen(dpy));
+	color_resources[0].default_addr = &black;
+    }
 
     XtGetSubresources(
 	    cur_win->top_widget,
@@ -3054,20 +3124,23 @@ x_preparse_args(
     cur_win->bg_follows_fg = (gbcolor == ENUM_FCOLOR);
     if ((j = gbcolor) < 0)
 	j = 0;
+
+    TRACE(("colors_fg/colors_bg pixel values:\n"));
     for (i = 0; i < NCOLORS; i++) {
 	ctrans[i] = i;
-	TRACE(("fcolor%d pixel %#lx\n", i, cur_win->colors_fg[i]));
-	TRACE(("bcolor%d pixel %#lx\n", i, cur_win->colors_bg[i]));
+	TRACE(("   [%2d]", i));
+	TRACE((" %#8lx %s",   cur_win->colors_fg[i], ColorsOf(cur_win->colors_fg[i])));
+	TRACE((" %#8lx %s\n", cur_win->colors_bg[i], ColorsOf(cur_win->colors_bg[i])));
     }
     reset_color_gcs();
 
     /* Initialize graphics context for display of selections */
     if (cur_win->screen_depth == 1
-     || cur_win->selection_bg == cur_win->selection_fg
-     ||  (cur_win->fg == cur_win->selection_fg
-       && cur_win->bg == cur_win->selection_bg)
-     ||  (cur_win->fg == cur_win->selection_bg
-       && cur_win->bg == cur_win->selection_fg)) {
+     || SamePixel(cur_win->selection_bg, cur_win->selection_fg)
+     ||  (SamePixel(cur_win->fg, cur_win->selection_fg)
+       && SamePixel(cur_win->bg, cur_win->selection_bg))
+     ||  (SamePixel(cur_win->fg, cur_win->selection_bg)
+       && SamePixel(cur_win->bg, cur_win->selection_fg))) {
 	cur_win->selgc = cur_win->reversegc;
 	cur_win->revselgc = cur_win->textgc;
     }
@@ -3090,11 +3163,11 @@ x_preparse_args(
      * the modeline) so there is no corresponding reverse video gc.
      */
     if (cur_win->screen_depth == 1
-     || cur_win->modeline_bg == cur_win->modeline_fg
-     ||  (cur_win->fg == cur_win->modeline_fg
-       && cur_win->bg == cur_win->modeline_bg)
-     ||  (cur_win->fg == cur_win->modeline_bg
-       && cur_win->bg == cur_win->modeline_fg)) {
+     || SamePixel(cur_win->modeline_bg, cur_win->modeline_fg)
+     ||  (SamePixel(cur_win->fg, cur_win->modeline_fg)
+       && SamePixel(cur_win->bg, cur_win->modeline_bg))
+     ||  (SamePixel(cur_win->fg, cur_win->modeline_bg)
+       && SamePixel(cur_win->bg, cur_win->modeline_fg))) {
 	cur_win->modeline_gc = cur_win->reversegc;
     }
     else {
@@ -3110,11 +3183,11 @@ x_preparse_args(
      * that the corresponding window has focus.
      */
     if (cur_win->screen_depth == 1
-     || cur_win->modeline_focus_bg == cur_win->modeline_focus_fg
-     ||  (cur_win->fg == cur_win->modeline_focus_fg
-       && cur_win->bg == cur_win->modeline_focus_bg)
-     ||  (cur_win->fg == cur_win->modeline_focus_bg
-       && cur_win->bg == cur_win->modeline_focus_fg)) {
+     || SamePixel(cur_win->modeline_focus_bg, cur_win->modeline_focus_fg)
+     ||  (SamePixel(cur_win->fg, cur_win->modeline_focus_fg)
+       && SamePixel(cur_win->bg, cur_win->modeline_focus_bg))
+     ||  (SamePixel(cur_win->fg, cur_win->modeline_focus_bg)
+       && SamePixel(cur_win->bg, cur_win->modeline_focus_fg))) {
 	cur_win->modeline_focus_gc = cur_win->reversegc;
     }
     else {
@@ -3129,18 +3202,18 @@ x_preparse_args(
      * display cursor.
      */
     if (cur_win->screen_depth == 1
-     || cur_win->cursor_bg == cur_win->cursor_fg
-     ||  (cur_win->fg == cur_win->cursor_fg
-       && cur_win->bg == cur_win->cursor_bg)
-     ||  (cur_win->fg == cur_win->cursor_bg
-       && cur_win->bg == cur_win->cursor_fg)) {
+     || SamePixel(cur_win->cursor_bg, cur_win->cursor_fg)
+     ||  (SamePixel(cur_win->fg, cur_win->cursor_fg)
+       && SamePixel(cur_win->bg, cur_win->cursor_bg))
+     ||  (SamePixel(cur_win->fg, cur_win->cursor_bg)
+       && SamePixel(cur_win->bg, cur_win->cursor_fg))) {
 	monochrome_cursor();
     } else if (color_cursor()) {
 	x_ccol(-1);
     }
 
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
-    if (cur_win->scrollbar_bg == cur_win->scrollbar_fg) {
+    if (SamePixel(cur_win->scrollbar_bg, cur_win->scrollbar_fg)) {
 	cur_win->scrollbar_bg = cur_win->bg;
 	cur_win->scrollbar_fg = cur_win->fg;
     }
@@ -6371,23 +6444,14 @@ x_rev(UINT state)
 static void
 x_fcol(int color)
 {
-    XGCValues   gcvals;
-    ULONG	gcmask;
-
-    TRACE(("x_fcol(%d)\n", color));
+    TRACE(("x_fcol(%d), cur_win->fg was %#lx\n", color, cur_win->fg));
     cur_win->fg = (color >= 0 && color < NCOLORS)
 		    ? cur_win->colors_fg[color]
 		    : cur_win->default_fg;
+    TRACE(("...cur_win->fg = %#lx%s\n", cur_win->fg, cur_win->fg == cur_win->default_fg ? " (default)" : ""));
 
-    gcmask = GCForeground;
-    gcvals.foreground = cur_win->fg;
-    XChangeGC(dpy, cur_win->textgc, gcmask, &gcvals);
-
-    gcmask = GCBackground;
-    gcvals.background = cur_win->fg;
-    XChangeGC(dpy, cur_win->reversegc, gcmask, &gcvals);
-
-    XSetForeground(dpy, cur_win->textgc, cur_win->fg);
+    XSetForeground(dpy, cur_win->textgc,    cur_win->fg);
+    XSetBackground(dpy, cur_win->reversegc, cur_win->fg);
 
     x_touch(cur_win, 0, 0, cur_win->cols, cur_win->rows);
     x_flush();
@@ -6396,34 +6460,24 @@ x_fcol(int color)
 static void
 x_bcol(int color)
 {
-    XGCValues   gcvals;
-    ULONG	gcmask;
-
-    TRACE(("x_bcol(%d)\n", color));
+    TRACE(("x_bcol(%d), cur_win->bg was %#lx\n", color, cur_win->bg));
     cur_win->bg = (color >= 0 && color < NCOLORS)
-		    ? ((cur_win->colors_bg[color] == cur_win->default_bg)
+		    ? (SamePixel(cur_win->colors_bg[color], cur_win->default_bg)
 			? cur_win->colors_fg[color]
 			: cur_win->colors_bg[color])
 		    : cur_win->default_bg;
+    TRACE(("...cur_win->bg = %#lx%s\n", cur_win->bg, cur_win->bg == cur_win->default_bg ? " (default)" : ""));
 
     if (color == ENUM_FCOLOR) {
-	gcmask = GCBackground;
-	gcvals.background = cur_win->default_bg;
-	XChangeGC(dpy, cur_win->textgc, gcmask, &gcvals);
-
-	gcmask = GCForeground;
-	gcvals.foreground = cur_win->default_bg;
-	XChangeGC(dpy, cur_win->reversegc, gcmask, &gcvals);
+	XSetBackground(dpy, cur_win->textgc,    cur_win->default_bg);
+	XSetForeground(dpy, cur_win->reversegc, cur_win->default_bg);
     } else {
-	gcmask = GCBackground;
-	gcvals.background = cur_win->bg;
-	XChangeGC(dpy, cur_win->textgc, gcmask, &gcvals);
-
-	gcmask = GCForeground;
-	gcvals.foreground = cur_win->bg;
-	XChangeGC(dpy, cur_win->reversegc, gcmask, &gcvals);
+	XSetBackground(dpy, cur_win->textgc,    cur_win->bg);
+	XSetForeground(dpy, cur_win->reversegc, cur_win->bg);
     }
     cur_win->bg_follows_fg = (color == ENUM_FCOLOR);
+    TRACE(("...cur_win->bg_follows_fg = %#x\n", cur_win->bg_follows_fg));
+
     reset_color_gcs();
 
     XtVaSetValues(cur_win->screen,
@@ -6450,13 +6504,13 @@ x_ccol(int color)
     }
 
     fg = (color >= 0 && color < NCOLORS)
-		    ? ((cur_win->colors_bg[color] == cur_win->default_bg)
+		    ? (SamePixel(cur_win->colors_bg[color], cur_win->default_bg)
 		        ? cur_win->colors_bg[color]
 		        : cur_win->colors_fg[color])
 		    : cur_win->cursor_fg;
 
     bg = (color >= 0 && color < NCOLORS)
-		    ? ((cur_win->colors_bg[color] == cur_win->default_bg)
+		    ? (SamePixel(cur_win->colors_bg[color], cur_win->default_bg)
 			? cur_win->colors_fg[color]
 			: cur_win->colors_bg[color])
 		    : cur_win->cursor_bg;

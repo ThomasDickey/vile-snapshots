@@ -8,7 +8,7 @@ require Exporter;
 
 sub manual
 {
-    my $pm = caller . '.pm';
+    my $pm = (caller) . '.pm';
    (my $path = $pm) =~ s!::!/!g;
        $path = $INC{$path};
 
