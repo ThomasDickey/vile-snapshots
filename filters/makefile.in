@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.39 1999/04/05 00:03:56 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.45 1999/04/17 14:47:58 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -82,8 +82,9 @@ LEX_ALL = \
 	vile-ada-filt$x \
 	vile-awk-filt$x \
 	vile-bat-filt$x \
-	vile-dcl-filt$x \
 	vile-cweb-filt$x \
+	vile-dcl-filt$x \
+	vile-diff-filt$x \
 	vile-html-filt$x \
 	vile-latex-filt$x \
 	vile-lex-filt$x \
@@ -93,9 +94,11 @@ LEX_ALL = \
 	vile-nr-filt$x \
 	vile-perl-filt$x \
 	vile-sh-filt$x \
+	vile-spell-filt$x \
 	vile-sql-filt$x \
 	vile-tc-filt$x \
 	vile-tcl-filt$x \
+	vile-txt-filt$x \
 	vile-ti-filt$x \
 	vile-vile-filt$x \
 	vile-yacc-filt$x
@@ -122,11 +125,14 @@ vile-bat-filt$x : bat-filt.o $(LF_DEPS)
 vile-c-filt$x : c-filt.o $(CF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ c-filt.o $(CF_ARGS)
 
+vile-cweb-filt$x : cwebfilt.o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ cwebfilt.o $(LF_ARGS)
+
 vile-dcl-filt$x : dcl-filt.o $(CF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ dcl-filt.o $(LF_ARGS)
 
-vile-cweb-filt$x : cwebfilt.o $(LF_DEPS)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ cwebfilt.o $(LF_ARGS)
+vile-diff-filt$x : difffilt.o $(CF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ difffilt.o $(LF_ARGS)
 
 vile-html-filt$x : htmlfilt.o $(LF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ htmlfilt.o $(LF_ARGS)
@@ -158,6 +164,9 @@ vile-perl-filt$x : perlfilt.o $(LF_DEPS)
 vile-sh-filt$x : sh-filt.o $(LF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ sh-filt.o $(LF_ARGS)
 
+vile-spell-filt$x : spellflt.o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ spellflt.o $(LF_ARGS)
+
 vile-sql-filt$x : sql-filt.o $(LF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ sql-filt.o $(LF_ARGS)
 
@@ -166,6 +175,9 @@ vile-tc-filt$x : tc-filt.o $(LF_DEPS)
 
 vile-tcl-filt$x : tcl-filt.o $(LF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ tcl-filt.o $(LF_ARGS)
+
+vile-txt-filt$x : txt-filt.o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ txt-filt.o $(LF_ARGS)
 
 vile-ti-filt$x : ti-filt.o $(LF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ ti-filt.o $(LF_ARGS)
@@ -194,6 +206,7 @@ INSTALL_LEX = \
 	$(bindir)/vile-awk-filt$x \
 	$(bindir)/vile-bat-filt$x \
 	$(bindir)/vile-dcl-filt$x \
+	$(bindir)/vile-diff-filt$x \
 	$(bindir)/vile-html-filt$x \
 	$(bindir)/vile-latex-filt$x \
 	$(bindir)/vile-lex-filt$x \
@@ -203,9 +216,11 @@ INSTALL_LEX = \
 	$(bindir)/vile-nr-filt$x \
 	$(bindir)/vile-perl-filt$x \
 	$(bindir)/vile-sh-filt$x \
+	$(bindir)/vile-spell-filt$x \
 	$(bindir)/vile-sql-filt$x \
 	$(bindir)/vile-tc-filt$x \
 	$(bindir)/vile-tcl-filt$x \
+	$(bindir)/vile-txt-filt$x \
 	$(bindir)/vile-ti-filt$x \
 	$(bindir)/vile-vile-filt$x \
 	$(bindir)/vile-yacc-filt$x \
@@ -214,7 +229,9 @@ INSTALL_LEX = \
 	$(datadir)/bat.keywords \
 	$(datadir)/csh.keywords \
 	$(datadir)/dcl.keywords \
+	$(datadir)/diff.keywords \
 	$(datadir)/html.keywords \
+	$(datadir)/imake.keywords \
 	$(datadir)/java.keywords \
 	$(datadir)/js.keywords \
 	$(datadir)/latex.keywords \
@@ -224,6 +241,7 @@ INSTALL_LEX = \
 	$(datadir)/nr.keywords \
 	$(datadir)/perl.keywords \
 	$(datadir)/sh.keywords \
+	$(datadir)/spell.rc \
 	$(datadir)/sql.keywords \
 	$(datadir)/tc.keywords \
 	$(datadir)/tcl.keywords \
@@ -283,6 +301,7 @@ $(bindir)/vile-bat-filt$x :	vile-bat-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-c-filt$x :	vile-c-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-crypt$x :	vile-crypt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-dcl-filt$x :	vile-dcl-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(bindir)/vile-diff-filt$x :	vile-diff-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-html-filt$x :	vile-html-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-latex-filt$x :	vile-latex-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-lex-filt$x :	vile-lex-filt$x		; $(INSTALL_PROGRAM) $? $@
@@ -294,14 +313,17 @@ $(bindir)/vile-nr-filt$x :	vile-nr-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-pas-filt$x :	vile-pas-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-perl-filt$x :	vile-perl-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-sh-filt$x :	vile-sh-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(bindir)/vile-spell-filt$x :	vile-spell-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-sql-filt$x :	vile-sql-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-tc-filt$x :	vile-tc-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-tcl-filt$x :	vile-tcl-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(bindir)/vile-txt-filt$x :	vile-txt-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-ti-filt$x :	vile-ti-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-vile-filt$x :	vile-vile-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-yacc-filt$x :	vile-yacc-filt$x	; $(INSTALL_PROGRAM) $? $@
 
 $(datadir)/filters.rc :		$(srcdir)/filters.rc	; $(INSTALL_DATA) $? $@
+$(datadir)/spell.rc :		$(srcdir)/spell.rc	; $(INSTALL_DATA) $? $@
 
 # Install one of these for each filter program
 $(datadir)/ada.keywords :	$(srcdir)/ada.key	; $(INSTALL_DATA) $? $@
@@ -310,7 +332,9 @@ $(datadir)/bat.keywords :	$(srcdir)/bat.key	; $(INSTALL_DATA) $? $@
 $(datadir)/c.keywords :		$(srcdir)/c.key		; $(INSTALL_DATA) $? $@
 $(datadir)/csh.keywords :	$(srcdir)/csh.key	; $(INSTALL_DATA) $? $@
 $(datadir)/dcl.keywords :	$(srcdir)/dcl.key	; $(INSTALL_DATA) $? $@
+$(datadir)/diff.keywords :	$(srcdir)/diff.key	; $(INSTALL_DATA) $? $@
 $(datadir)/html.keywords :	$(srcdir)/html.key	; $(INSTALL_DATA) $? $@
+$(datadir)/imake.keywords :	$(srcdir)/imake.key	; $(INSTALL_DATA) $? $@
 $(datadir)/java.keywords :	$(srcdir)/java.key	; $(INSTALL_DATA) $? $@
 $(datadir)/js.keywords :	$(srcdir)/js.key	; $(INSTALL_DATA) $? $@
 $(datadir)/latex.keywords :	$(srcdir)/latex.key	; $(INSTALL_DATA) $? $@

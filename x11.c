@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.205 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.206 1999/04/18 20:16:40 tom Exp $
  *
  */
 
@@ -143,6 +143,12 @@
 #include	<Xm/XmP.h>
 #endif
 #endif /* MOTIF_WIDGETS */
+
+#if OPT_X11_ICON
+#if HAVE_LIBXPM
+#include <X11/xpm.h>
+#endif
+#endif
 
 #define	XCalloc(type)	typecalloc(type)
 
@@ -3278,17 +3284,21 @@ x_preparse_args(
 
 #if OPT_X11_ICON
     {
-#if HAVE_LIB_XPM
-# include "icons/vile.xpm"
+#ifdef VILE_ICON
+# include VILE_ICON
 #else
-# include "icons/vile.xbm"
+# if HAVE_LIBXPM
+#  include <icons/vile.xpm>
+# else
+#  include <icons/vile.xbm>
+# endif
 #endif
 	XWMHints *hints = XAllocWMHints();
 
 	if (hints)
 	{
 	    hints->flags = IconPixmapHint;
-#if HAVE_LIB_XPM
+#if HAVE_LIBXPM
 	    XpmCreatePixmapFromData(
 		dpy, DefaultRootWindow(dpy),
 		vile, &hints->icon_pixmap, 0, 0

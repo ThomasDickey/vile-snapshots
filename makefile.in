@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.132 1999/04/14 21:21:25 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.133 1999/04/18 20:09:39 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -69,7 +69,10 @@ mandir		= @mandir@/man$(manext)
 SHELL		= /bin/sh
 RM		= rm -f
 
+ICON		= vile
+ICON_SUFFIX	= @ICON_SUFFIX@
 QUOTDEFS	= \
+		-DVILE_ICON=\"icons/$(ICON)$(ICON_SUFFIX)\" \
 		-DVILE_LIBDIR_PATH=\"@VILE_LIBDIR_PATH@\" \
 		-DVILE_STARTUP_PATH=\"@VILE_STARTUP_PATH@\"
 CPPFLAGS	= -I. -I$(srcdir) $(X_CFLAGS) \

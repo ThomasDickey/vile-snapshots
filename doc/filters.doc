@@ -66,19 +66,23 @@ The following are implemented:
 	vile-c-filt	(C language)
 	vile-cweb-filt	(CWEBx)
 	vile-dcl-filt	(VMS DCL batchfiles)
+	vile-diff-filt	(diff/patch files)
 	vile-html-filt	(HTML with embedded JavaScript)
 	vile-latex-filt	(LaTeX or TeX)
 	vile-lex-filt	(lex)
 	vile-mail-filt	(mail folders)
 	vile-make-filt	(make)
 	vile-manfilt	(manpage)
+	vile-mms-filt	(VMS makefiles)
 	vile-nr-filt	(nroff)
 	vile-pas-filt	(Pascal)
 	vile-perl-filt	(Perl)
 	vile-sh-filt	(sh/ksh/csh)
+	vile-spell-filt	(ispell highlights misspelled words)
 	vile-sql-filt	(SQL scripts)
 	vile-tc-filt	(termcap)
 	vile-tcl-filt	(TCL/TK)
+	vile-txt-filt	(plain text files, such as vile.hlp)
 	vile-ti-filt	(terminfo)
 	vile-vile-filt	(Vile's macros)
 	vile-yacc-filt	(yacc)
@@ -91,4 +95,4 @@ Not all filters use a keywords file (yet).
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.3 1999/03/09 01:16:38 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.5 1999/04/17 14:48:31 tom Exp $

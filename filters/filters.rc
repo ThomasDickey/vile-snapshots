@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.50 1999/04/04 23:55:07 tom Exp $
+; $Id: filters.rc,v 1.54 1999/04/17 15:40:09 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -77,6 +77,12 @@ define-mode dcl
 	fence-fi	"^\\s*\\(\\$\\s*\\)\\?\\<endif\\>"
 ~endwith
 
+define-mode diff
+~with define-submode diff
+	suf "\\.\\(patch\\|diff\\)$"
+	pre "^\\<diff\\>"
+~endwith
+
 ; Inherit the C-style fences for JavaScript, but add new ones for HTML
 define-mode html
 ~with define-submode html
@@ -97,6 +103,13 @@ define-mode html
 	fence-end	"-->"
 ~endwith
 
+define-mode imake
+~with define-submode imake
+	suf "I[Mm]akefile"
+	pre "^\\s*XCOMM\\>"
+	filtername "vile-c-filt -k imake"
+~endwith
+	
 define-mode java
 ~with define-submode java
 	suf "\\.java$"
@@ -128,6 +141,7 @@ define-mode latex
 define-mode lex
 ~with define-submode lex
 	suf "\\.\\(l\\|lex\\|flex\\|flx\\)$"
+	cindent
 ~endwith
 
 ; actually, m4 used for autoconf scripts, which is Bourne-shell
@@ -209,6 +223,18 @@ define-mode perl
 	fence-fi       "^\\s*}"
 ~endwith
 
+define-mode sccs
+~with define-submode sccs
+	suf "\\<s\\."
+	pre "^\\001h"
+~elsewith define-submode sccs group "delete"
+	fence-if       "^\\001D\\s\\+[0-9]\\+$"
+	fence-fi       "^\\001E\\s\\+[0-9]\\+$"
+~elsewith define-submode sccs group "insert"
+	fence-if       "^\\001I\\s\\+[0-9]\\+$"
+	fence-fi       "^\\001E\\s\\+[0-9]\\+$"
+~endwith
+
 ; This is matched after "csh", and will pick up /bin/sh, /bin/bash, /bin/ksh
 define-mode sh
 ~with define-submode sh
@@ -263,7 +289,7 @@ define-mode ti
 
 define-mode txt
 ~with define-submode txt
-	suf "\\.\\(txt\\|doc\\)$"
+	suf "\\.\\(txt\\|doc\\|hlp\\)$"
 	comment-prefix	"^\\s*--"
 	comments	"^\\s*--\\s*$"
 ~endwith
@@ -292,6 +318,7 @@ define-mode txt
 define-mode yacc
 ~with define-submode yacc
 	suf "\\.\\(y\\|yacc\\)$"
+	cindent
 ~endwith
 
 store-procedure HighlightFilter

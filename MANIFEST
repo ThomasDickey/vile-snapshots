@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_2s
+MANIFEST for vile, version v8_2t
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -156,12 +156,15 @@ filters/csh.key                 keywords for csh/tcsh syntax highlighting filter
 filters/cwebfilt.l              cwebx syntax filter for vile
 filters/dcl-filt.l              VAX dcl syntax highlighting filter for vile
 filters/dcl.key                 dcl keywords
+filters/diff.key                keywords for 'diff' syntax filter
+filters/difffilt.l              syntax filter for 'diff' output
 filters/ecrypt.c                uemacs-derived encryption
 filters/filters.c               common utilities for filtering
 filters/filters.h               interface/definitions for filtering utilities
 filters/filters.rc              sample majormodes, and corresponding filters
 filters/html.key                keywords for vile-html-filt
 filters/htmlfilt.l              HTML syntax filter for vile
+filters/imake.key               keywords for imake-filter
 filters/java.key                java keywords
 filters/js.key                  javascript keywords
 filters/latex.key               latex keywords
@@ -187,6 +190,8 @@ filters/perl.key                keywords for perl syntax filter
 filters/perlfilt.l              Perl syntax filter for vile
 filters/sh-filt.l               a sh/ksh/csh syntax filter for vile
 filters/sh.key                  keywords for "sh" syntax filter
+filters/spell.rc                defines a filter for spell-checking
+filters/spellflt.l              ispell filter to highlight misspelled words
 filters/sql-filt.l              sql syntax highlighting filter for vile
 filters/sql.key                 sql keywords
 filters/tc-filt.l               termcap syntax highlighting filter for vile
@@ -195,13 +200,19 @@ filters/tcl-filt.l              tcl/tk syntax highlighting filter for vile
 filters/tcl.key                 tcl/tk keywords
 filters/ti-filt.l               terminfo syntax highlighting filter for vile
 filters/ti.key                  terminfo keywords
+filters/txt-filt.l              syntax filter for ordinary text
 filters/vile.key                fallback template for highlighting colors
 filters/vilefilt.l              syntax filter for vile macros
 filters/yacc.key                yacc keywords
 filters/yaccfilt.l              yacc syntax highlighting filter for vile
 icons                           subdirectory
 icons/pumpkin.ico               V-eyes pumpkin icon
+icons/pumpkin.xbm               X bitmap, for vile icon
+icons/pumpkin.xpm               pumpkin icon, in Xpm form
 icons/sink.ico                  kitchen-sink icon (J.R.Sladkey)
+icons/sink.xbm                  X bitmap, for vile icon
+icons/sink.xpm                  X bitmap for vile icon
+icons/vile.ico                  Windows icon, for vile
 icons/vile.xbm                  sample icon, for X bitmap
 icons/vile.xpm                  sample icon, for xpm library
 macros                          subdirectory
