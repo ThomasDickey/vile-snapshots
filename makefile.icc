@@ -1,6 +1,6 @@
 #
 # 'vile' and 'mktbls' makefile for IBM C Set ++ 2.x (OS/2)
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.11 1998/12/21 10:58:11 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.12 1999/03/08 11:22:29 tom Exp $
 #
 
 #
@@ -62,7 +62,6 @@ VILE_DEPS =  \
  bind$O \
  btree$O \
  buffer$O \
- crypt$O \
  csrch$O \
  display$O \
  eval$O \
@@ -98,6 +97,7 @@ VILE_DEPS =  \
  tags$O \
  tbuff$O \
  termio$O \
+ ucrypt$O \
  undo$O \
  window$O \
  word$O \
@@ -123,8 +123,6 @@ bind$O:		$(VILE_CFG) bind.c	nefunc.h	btree.h
 btree$O:	$(VILE_CFG) btree.c 	btree.h
 
 buffer$O:	$(VILE_CFG) buffer.c
-
-crypt$O:	$(VILE_CFG) crypt.c
 
 csrch$O:	$(VILE_CFG) csrch.c
 
@@ -195,6 +193,8 @@ tags$O:		$(VILE_CFG) tags.c 	btree.h
 tbuff$O:	$(VILE_CFG) tbuff.c
 
 termio$O:	$(VILE_CFG) termio.c 	nefunc.h
+
+ucrypt$O:	$(VILE_CFG) ucrypt.c
 
 undo$O:		$(VILE_CFG) undo.c
 

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.2 1999/01/22 23:16:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.3 1999/03/07 19:19:42 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mail
  */
@@ -40,10 +40,10 @@ do_filter(FILE *input, FILE *output)
     yyin = input;
     yyout = output;
 
-    Action_attr  = keyword_attr(NAME_ACTION);
-    Comment_attr = keyword_attr(NAME_COMMENT);
-    Ident2_attr  = keyword_attr(NAME_IDENT2);
-    String_attr  = keyword_attr(NAME_LITERAL);
+    Action_attr  = class_attr(NAME_ACTION);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    String_attr  = class_attr(NAME_LITERAL);
 
     BEGIN(BODY);
     while (yylex() > 0) {

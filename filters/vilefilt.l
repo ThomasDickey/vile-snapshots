@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.7 1998/12/29 15:08:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.8 1999/03/07 19:22:21 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -34,11 +34,11 @@ do_filter(FILE *input, FILE *output)
     yyin = input;
     yyout = output;
 
-    Comment_attr = keyword_attr(NAME_COMMENT);
-    Ident2_attr  = keyword_attr(NAME_IDENT2);
-    Keyword_attr = keyword_attr(NAME_KEYWORD);
-    Number_attr  = keyword_attr(NAME_NUMBER);
-    String_attr  = keyword_attr(NAME_LITERAL);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    Number_attr  = class_attr(NAME_NUMBER);
+    String_attr  = class_attr(NAME_LITERAL);
 
     while (yylex() > 0) {
     }

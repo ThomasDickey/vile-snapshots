@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.122 1999/02/11 00:23:47 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.124 1999/03/08 11:20:24 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -71,7 +71,7 @@ SHELL		= /bin/sh
 RM              = rm -f
 
 QUOTDEFS	= \
-		-DVILE_LIBDIR_PATH=\"@VILE_LIBDIR_PATH@\"
+		-DVILE_LIBDIR_PATH=\"@VILE_LIBDIR_PATH@\" \
 		-DVILE_STARTUP_PATH=\"@VILE_STARTUP_PATH@\"
 CPPFLAGS	= -I. -I$(srcdir) $(X_CFLAGS) \
 		-DHAVE_CONFIG_H @CPPFLAGS@
@@ -194,13 +194,13 @@ TEXTFILES = README README.PC \
 	CHANGES.R7 CHANGES.R6 CHANGES.R5 CHANGES.R4 CHANGES.R3 \
 	buglist revlist patchlev.h COPYING
 
-VILESRC = main.c api.c basic.c bind.c btree.c buffer.c crypt.c csrch.c \
+VILESRC = main.c api.c basic.c bind.c btree.c buffer.c csrch.c \
 	display.c dumbterm.c eval.c exec.c externs.c fences.c file.c \
 	filec.c fileio.c finderr.c glob.c globals.c \
 	history.c input.c insert.c isearch.c itbuff.c lckfiles.c line.c map.c \
 	modes.c msgs.c npopen.c oneliner.c opers.c path.c random.c \
 	regexp.c region.c search.c select.c spawn.c tags.c \
-	tbuff.c termio.c undo.c version.c \
+	tbuff.c termio.c ucrypt.c undo.c version.c \
 	watch.c window.c word.c wordmov.c
 
 ALLSRC = $(VILESRC) $(SCREENS) $(OTHERSRC) $(HDRS)
@@ -230,9 +230,9 @@ BUILTSRCS = perl.c
 
 # The following are optional (non-core):
 #	btree.o
-#	crypt.o
 #	npopen.o
 #	spawn.o
+#	ucrypt.o
 OBJ = $(SCREEN).o \
 	main.o api.o basic.o bind.o buffer.o csrch.o \
 	display.o dumbterm.o eval.o exec.o externs.o fences.o file.o \
@@ -243,7 +243,7 @@ OBJ = $(SCREEN).o \
 	tbuff.o termio.o undo.o version.o \
 	watch.o window.o word.o wordmov.o @EXTRAOBJS@
 
-ALL =	$(TARGET) vile-crypt$x
+ALL =	$(TARGET)
 
 all ::	$(ALL)
 
@@ -253,10 +253,6 @@ $(TARGET): $(BUILTHDRS) $(OBJ)
 
 vile.man: vile.1
 	nroff -man vile.1 | col -b >vile.man
-
-vile-crypt$x : $(srcdir)/crypt.c
-	@ECHO_LD@$(CC) -DSTANDALONE $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) \
-	    -o $@ $(srcdir)/crypt.c
 
 vile-perl-api.pod: perl.xs
 	perl -lne 'print if s/^\s{1,2}#\s{0,1}//' $(srcdir)/perl.xs > $@
@@ -309,7 +305,6 @@ INSTALL_PERL_FILES = \
 
 INSTALL_FILES = \
 	$(bindir)/$(TARGET) \
-	$(bindir)/vile-crypt$x \
 	$(mandir)/$(TARGET).$(manext) \
 	$(datadir)/vile.hlp @EXTRA_INSTALL_FILES@
 
@@ -564,9 +559,6 @@ x11.o:		nefunc.h
 # dependency-rules for install/installdirs
 $(bindir)/$(TARGET):       $(TARGET)
 	$(INSTALL_PROGRAM) $(TARGET) $@
-
-$(bindir)/vile-crypt$x :   vile-crypt$x
-	$(INSTALL_PROGRAM) vile-crypt$x $@
 
 $(mandir)/vile.$(manext):  $(srcdir)/vile.1
 	$(INSTALL_DATA)    $(srcdir)/vile.1 $@

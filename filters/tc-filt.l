@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.4 1999/01/05 03:06:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.5 1999/03/07 19:21:17 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
@@ -43,12 +43,12 @@ do_filter(FILE *input, FILE *output)
     yyin = input;
     yyout = output;
 
-    Action_attr  = keyword_attr(NAME_ACTION);
-    Comment_attr = keyword_attr(NAME_COMMENT);
-    Keyword_attr = keyword_attr(NAME_KEYWORD);
-    Number_attr  = keyword_attr(NAME_NUMBER);
-    Ident_attr   = keyword_attr(NAME_IDENT);
-    String_attr  = keyword_attr(NAME_LITERAL);
+    Action_attr  = class_attr(NAME_ACTION);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    Number_attr  = class_attr(NAME_NUMBER);
+    Ident_attr   = class_attr(NAME_IDENT);
+    String_attr  = class_attr(NAME_LITERAL);
 
     while (yylex() > 0) {
     }

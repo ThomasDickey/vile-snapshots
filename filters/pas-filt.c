@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.c,v 1.8 1998/12/25 21:33:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.c,v 1.9 1999/03/07 19:20:21 tom Exp $
  *
  * Markup a Pascal file, for highlighting with vile.
  */
@@ -112,8 +112,8 @@ do_filter(FILE *input, FILE *output)
     char *s;
     int comment,c_length;
 
-    comment_attr = keyword_attr(NAME_COMMENT);
-    literal_attr = keyword_attr(NAME_LITERAL);
+    comment_attr = class_attr(NAME_COMMENT);
+    literal_attr = class_attr(NAME_LITERAL);
     comment = 0;
 
     while (readline(input, &line, &used) != NULL) {

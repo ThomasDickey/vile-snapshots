@@ -1,5 +1,42 @@
 Changes for vile 8.3 (released ??? ??? ??, 1998)
 
+ (tom) 990309 (o)
+ 	+ change logic of newwidth() and newheight() functions to avoid use
+	  of uemacs changes (Paul Fox).
+	+ modify treatment of 'fillcol' mode so that a zero is interpreted to
+	  use the 'wrapmargin' value, and negative values are, like
+	  'wrapmargin', counted from the current right-margin (prompted by
+	  discussion with Kuntal M Daftary).
+	+ minor fixes for ti-filt.c (handle "\\," and terminfo entries without
+	  aliases or descriptions).
+ 	+ remove crypt-til operator; this would not work properly on portions
+	  of a file.
+ 	+ write ucrypt.c to use Unix crypt(1) if available.
+ 	+ remove Dan Lawrence's code from crypt.c, move it to filters as
+	  ecrypt.c, for building standalone vile-crypt filter.
+ 	+ set "vilemode" for macros and procedure buffers, to simplify syntax
+	  highlighting of internal buffers.
+ 	+ modify syntax filters so that keyword classes and their instances
+	  can be treated distinctly.
+ 	+ correct missing backslash in QUOTDEFS in makefile.in
+	+ review/simplified/corrected comment-prefixes and comments modes
+	  in filters.rc
+	+ correct logic of version_of() function, which did not ensure that
+	  the text really looks like a VMS version specification.  From
+	  a bug report by Clark Morgan, who said that this works:
+		:e ../buf*.c     # look for buffer.c
+	  but this doesn't:
+		:e subdir/buf*.c
+	  Workaround:
+		:e [.subdir]buf*.c
+	  After fixing version_of(), my fakevms driver processes this properly.
+	+ update vile.hlp description of filter programs and renamed section to
+	  "Syntax coloring" (patch by Paul Fox).
+	> patches by Clark Morgan:
+	+ only enable vtflash on hosts that support it (Unix, VMS).
+	+ clarify vile/winvile build instructions when using MS tools.
+	+ add $pid environment variable for VMS
+
  (tom) 990212 (n)
  	+ increase size of underline cursor for OPT_ICURSOR in ntconio.c
  	+ correct dcl-filt.l to handle inline comments
@@ -74,11 +111,11 @@ Changes for vile 8.3 (released ??? ??? ??, 1998)
 	+ modify VMS logic in ttopen to use "SYS$COMMAND" rather than "TT:"
 	  since the latter does not work with the PIPE command added in VMS 7.x
 	  to mimics unix cmdline pipe functionality.  Vile couldn't use this
-	  command, though.  For example: 
-		$ pipe dir | vile 
+	  command, though.  For example:
+		$ pipe dir | vile
 	  failed with an "illegal i/o function" error.  This change allows vile
 	  to read from the pipe stream as well as retaining its ability to read
-	  from a redirected stdin (patch by Clark Morgan). 
+	  from a redirected stdin (patch by Clark Morgan).
 	+ reset eofflag in inout_popen, since attribute_from_filter may
 	  otherwise see the EOF from the previous file reading operation, e.g.,
 	  if the file did not end with a newline.  Likewise set fileispipe,

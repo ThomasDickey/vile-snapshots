@@ -5,7 +5,7 @@
  * commands. Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.92 1999/02/12 10:37:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.93 1999/03/07 23:36:11 tom Exp $
  *
  */
 
@@ -671,36 +671,6 @@ upperregion(void)
 	charprocfunc = _to_upper;
 	return do_lines_in_region(do_chars_in_line,(void *)NULL, TRUE);
 }
-
-#if OPT_ENCRYPT
-static int
-crypt_char(int c)
-{
-	char nc = c;
-	ue_crypt(&nc, 1);
-	if (nc != c)
-		return nc;
-	return -1;
-}
-
-int
-cryptregion(void)
-{
-	int s;
-	char	temp[NPAT];
-	/* make a key if we don't have one */
-	if (curbp->b_key[0] == EOS) {
-		s = ue_makekey(curbp->b_key, sizeof(curbp->b_key));
-		if (s != TRUE)
-			return (s == FALSE);
-	}
-	(void)strcpy(temp, curbp->b_key);
-	ue_crypt((char *)0, 0);
-	ue_crypt(temp, strlen(temp));
-	charprocfunc = crypt_char;
-	return do_lines_in_region(do_chars_in_line,(void *)NULL, TRUE);
-}
-#endif
 
 #if NEEDED
 /* this walks a region, char by char, and invokes a funcion for

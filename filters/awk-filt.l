@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.4 1998/12/28 22:39:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.5 1999/03/07 19:16:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of awk
  * input text.
@@ -32,12 +32,12 @@ do_filter(FILE *input, FILE *output)
     yyin = input;
     yyout = output;
 
-    Comment_attr = keyword_attr(NAME_COMMENT);
-    Ident_attr   = keyword_attr(NAME_IDENT);
-    Keyword_attr = keyword_attr(NAME_KEYWORD);
-    Number_attr  = keyword_attr(NAME_NUMBER);
-    Preproc_attr = keyword_attr(NAME_PREPROC);
-    String_attr  = keyword_attr(NAME_LITERAL);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Ident_attr   = class_attr(NAME_IDENT);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    Number_attr  = class_attr(NAME_NUMBER);
+    Preproc_attr = class_attr(NAME_PREPROC);
+    String_attr  = class_attr(NAME_LITERAL);
 
     BEGIN(MATCHING);
     nesting = 0;

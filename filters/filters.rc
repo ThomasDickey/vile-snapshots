@@ -1,10 +1,10 @@
-; $Id: filters.rc,v 1.41 1999/01/26 23:11:00 tom Exp $
+; $Id: filters.rc,v 1.43 1999/03/07 20:48:47 tom Exp $
 
 define-mode ada
 ~with define-submode ada
 	suf "\\.\\(\\<ada\\>\\|\\<ads\\>\\|\\<adb\\>\\)$"
-	comment-prefix "^\\s*/\\?--"
-	comments   "^\\s*--\\s.*$"
+	comment-prefix	"^\\s*--"
+	comments	"^\\s*--\\s*$"
 	fence-if   "^\\s*\\<if\\>"
 	fence-elif "^\\s*\\<elsif\\>"
 	fence-else "^\\s*\\<else\\>"
@@ -44,15 +44,18 @@ define-mode csh
 	suf "\\.csh*"
 	pre "^#!\\s*\\/.*csh\\>\\(\\s*-[a-z]\\+\\)*$"
 	comment-prefix	"^\\s*#"
+	comments	"^\\s*#\\s*$"
 	fence-if	"^\\s*\\<if\\>.*\\<then\\>"
 	fence-elif	"^\\s*\\<else\\s*if\\>"
 	fence-else	"^\\s*\\<else\\>"
 	fence-fi	"^\\s*\\<endif\\>"
 ~elsewith define-submode csh group "case"
-	fence-if	"^\\s*\\<switch\\>\\s*([^)]*)"
+	fence-if	"^\\s*\\<switch\\>(.*)"
 	fence-elif	"^\\s*\\<case\\>.*:"
 	fence-else	"^\\s*\\<default\\>\\s*:"
-	fence-fi	"^\\s*\\<endsw\\>"
+~elsewith define-submode csh group "loop"
+	fence-if	"^\\s*\\<foreach\\|while\\>(.*)"
+	fence-fi	"^\\s*\\<end\\>"
 ~endwith
 
 ; Fences in DCL do not work well because we really want a fence-if which
@@ -62,8 +65,8 @@ define-mode csh
 define-mode dcl
 ~with define-submode dcl
 	suf "\\.com$"
-	comment-prefix	"^\\s*/\\?\\$!"
-	comments	"^\\s*/\\?\\$!\\s*/\\?\\s*$"
+	comment-prefix	"^\\s*\\$!"
+	comments	"^\\s*\\$!\\s*$"
 	ignorecase
 ~elsewith define-submode dcl group "if-once"
 	fence-if	"^\\s*\\(\\$\\s*\\)\\?\\<if\\>.*\\<then\\>"
@@ -127,8 +130,8 @@ define-mode m4
 ~with define-submode m4
 	pre "^\\s*dnl\\>"
 	suf "\\.m4$"
-	comment-prefix "^\\s*/\\?\\(dnl\\|#\\)"
-	comments   "^\\s*/\\?\\(dnl\\|#\\)\\s+/\\?\\s*$"
+	comment-prefix "^\\s*\\(dnl\\|#\\)"
+	comments   "^\\s*\\(dnl\\>\\|#\\)\\s*$"
 	fence-if   "^\\s*\\<if\\>"
 	fence-elif "^\\s*\\<elif\\>"
 	fence-else "^\\s*\\<else\\>"
@@ -144,7 +147,8 @@ define-mode mail
 define-mode make
 ~with define-submode make
 	suf "\\([Mm]akefile\\|\\.mak$\\|\\.mk$\\)"
-	comment-prefix "^\\s*/\\?[!#]"
+	comment-prefix	"^\\s*[!#]"
+	comments	"^\\s*[!#]\\s*$"
 ~if &sin $os "win32"
 	ignorecase
 ~elsewith define-submode make group "nmake"
@@ -158,8 +162,8 @@ define-mode make
 define-mode mms
 ~with define-submode mms
 	suf "\\.mms$"
-	comment-prefix "^\\s*/\\?[!#]"
-	comments   "^\\s*/\\?[!#]\\s*/\\?\\s*$"
+	comment-prefix	"^\\s*[!#]"
+	comments	"^\\s*[!#]\\s*$"
 	ignorecase
 	fence-if   "^\\s*\\.\\<ifdef\\>"
 	fence-elif "^\\s*\\.\\<elif\\>"
@@ -171,6 +175,8 @@ define-mode nr
 ~with define-submode nr
 	suf "\\.\\(\\([1-9ln][a-z]\\?\\)\\|man\\)$"
 	pre "^\\.\\\\\""
+	comment-prefix	"^\\.\\\\\""
+	comments	"^\\.\\\\\"\\s*$"
 ~endwith
 
 define-mode pas
@@ -183,7 +189,7 @@ define-mode perl
 	pre "^#\\s*!\\s*\\/.*perl\\>"
 	suf "\\.\\(pl\\|pm\\)$"
 	comment-prefix "^\\s*#"
-	comments       "^\\s*/\\?#\\s*/\\?\\s*$"
+	comments       "^\\s*#\\s*$"
 	fence-pairs    "{}()[]<>"
 	fence-if       "^\\s*if\\>.*{"
 	fence-elif     "^\\s*}\\s*elsif\\s*(.*{"
@@ -201,8 +207,8 @@ define-mode sh
 ~with define-submode sh
 	suf "\\.sh$"
 	pre "^#!\\s*\\/.*sh\\>\\(\\s*-[a-z]\\+\\)*$"
-	comment-prefix "^\\s*[:#]"
-	comments   "^\\s*[:#]\\s\\+\\s*$"
+	comment-prefix	"^\\s*[:#]"
+	comments	"^\\s*[:#]\\s*$"
 	fence-if   "^\\s*\\<if\\>"
 	fence-elif "^\\s*\\<elif\\>"
 	fence-else "^\\s*\\<else\\>"
@@ -221,42 +227,45 @@ define-mode sql
 ~with define-submode sql
 	suf "\\.sql$"
 	pre "^\\s*\\remark\\>$"
+	comment-prefix	"^\\s*rem\\(ark\\)\\?"
+	comments	"^\\s*rem\\(ark\\)\\?\\s*$"
 	ignorecase
 ~endwith
 
 define-mode tc
 ~with define-submode tc
 	suf "\\(\\.tc\\|\\<termcap[^/]*\\)$"
-	comment-prefix "^\\s*[:#]"
-	comments   "^\\s*[:#]\\s\\+\\s*$"
+	comment-prefix	"^\\s*[:#]"
+	comments	"^\\s*[:#]\\s*$"
 ~endwith
 
 define-mode tcl
 ~with define-submode tcl
 	suf "\\(\\.tcl\\)$"
 	pre "^#!\\s*\\/.*wish\\>\\(\\s*-[a-z]\\+\\)*$"
-	comment-prefix "^\\s*[:#]"
-	comments   "^\\s*[:#]\\s\\+\\s*$"
+	comment-prefix	"^\\s*[:#]"
+	comments	"^\\s*[:#]\\s*$"
 ~endwith
 
 define-mode ti
 ~with define-submode ti
 	suf "\\(\\.ti\\|\\<terminfo[^/]*\\)$"
-	comment-prefix "^\\s*[:#]"
-	comments   "^\\s*[:#]\\s\\+\\s*$"
+	comment-prefix	"^\\s*[:#]"
+	comments	"^\\s*[:#]\\s*$"
 ~endwith
 
 define-mode txt
 ~with define-submode txt
 	suf "\\.\\(txt\\|doc\\)$"
-	comment-prefix "^\\s*/\\?--"
-	comments	"^\\s*/\\?--\\s+/\\?\\s*$"
+	comment-prefix	"^\\s*--"
+	comments	"^\\s*--\\s*$"
 ~endwith
 
-define-mode vile
+; define-mode vile
 ~with define-submode vile
 	suf "\\(\\.vilerc\\|\\.rc$\\)"
-	comment-prefix "^\\s*;"
+	comment-prefix	"^\\s*;"
+	comments	"^\\s*;\\s*$"
 	fence-if	"\\s*~if\\>"
 	fence-elif	"\\s*~elseif\\>"
 	fence-else	"\\s*~else\\>"

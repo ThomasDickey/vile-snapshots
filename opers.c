@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.63 1998/11/10 23:17:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.64 1999/03/07 23:35:31 tom Exp $
  *
  */
 
@@ -400,15 +400,6 @@ operblank(int f, int n)
 {
 	opcmd = OPOTHER;
 	return vile_op(f,n,blank_region,"Blanking");
-}
-#endif
-
-#if OPT_ENCRYPT
-int
-opercrypt(int f, int n)
-{
-	opcmd = OPOTHER;
-	return vile_op(f,n,cryptregion,"Encrypt/decrypt");
 }
 #endif
 

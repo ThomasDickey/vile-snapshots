@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.87 1999/01/15 02:06:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.88 1999/03/05 02:42:03 tom Exp $
  *
  *
  */
@@ -1927,6 +1927,12 @@ version_of(char *fname)
 		 || (*++s == EOS)
 		 || (s = strchr(fname, '.')) == 0)
 			s = skip_string(fname);
+		if (strcmp(s, "*")) {	/* either "*" or a number */
+			char *d;
+			(void)strtol(s, &d, 10);
+			if (*d != EOS)
+				s = skip_string(s);
+		}
 	}
 	return s;
 }

@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.34 1999/02/11 00:22:09 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.35 1999/03/09 00:47:59 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -74,6 +74,7 @@ CF_ARGS = filters.o
 # filters in "C" are easy to port
 C_ALL	= \
 	vile-c-filt$x \
+	vile-crypt$x \
 	vile-manfilt$x \
 	vile-pas-filt$x
 
@@ -102,6 +103,9 @@ LEX_ALL = \
 ALL = 	$(C_ALL) @MAKE_LEX@ $(LEX_ALL)
 
 all:	$(ALL)
+
+vile-crypt$x : ecrypt.o
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ ecrypt.o
 
 vile-manfilt$x : manfilt.o
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ manfilt.o
@@ -174,6 +178,7 @@ check: $(TARGET)
 
 INSTALL_C = \
 	$(bindir)/vile-c-filt$x \
+	$(bindir)/vile-crypt$x \
 	$(bindir)/vile-manfilt$x \
 	$(bindir)/vile-pas-filt$x \
 	$(datadir)/c.keywords \
@@ -253,8 +258,9 @@ realclean: distclean
 
 lint:
 	$(LINT) $(CPPFLAGS) c-filt.c
-	$(LINT) $(CPPFLAGS) pas-filt.c
+	$(LINT) $(CPPFLAGS) ecrypt.c
 	$(LINT) $(CPPFLAGS) manfilt.c
+	$(LINT) $(CPPFLAGS) pas-filt.c
 
 tags:
 	ctags *.[chyl]
@@ -270,6 +276,7 @@ $(bindir)/vile-ada-filt$x :	vile-ada-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-awk-filt$x :	vile-awk-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-bat-filt$x :	vile-bat-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-c-filt$x :	vile-c-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(bindir)/vile-crypt$x :	vile-crypt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-dcl-filt$x :	vile-dcl-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-html-filt$x :	vile-html-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-latex-filt$x :	vile-latex-filt$x	; $(INSTALL_PROGRAM) $? $@

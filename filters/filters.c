@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.35 1999/01/25 19:13:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.39 1999/03/09 01:17:22 tom Exp $
  *
  */
 
@@ -37,6 +37,7 @@ struct _keyword {
     char *kw_name;
     char *kw_attr;
     unsigned kw_size;	/* strlen(kw_name) */
+    unsigned kw_flag;	/* nonzero for classes */
     KEYWORD *next;
 };
 
@@ -48,10 +49,17 @@ struct _classes {
     CLASS *next; 
 };
 
+static char *SkipBlanks(char *src);
+static char *SkipWord(char *src);
+static unsigned TrimBlanks(char *src);
+static void ParseKeyword(char *name, int classflag);
+static void ReadKeywords(char *classname);
+static void RemoveList(KEYWORD *k);
+
 static KEYWORD **hashtable;
 static CLASS *classes;
-
-static void RemoveList(KEYWORD *k);
+static int meta_ch = '.';
+static int eqls_ch = ':';
 
 /******************************************************************************
  * Private functions                                                          *
@@ -70,30 +78,57 @@ CreateSymbolTable(char *classname)
     }
 }
 
+static void
+ExecClass(char *param)
+{
+    ParseKeyword(param, 1);
+}
+
+static void
+ExecEquals(char *param)
+{
+    eqls_ch = *param;
+}
+
+static void
+ExecMeta(char *param)
+{
+    meta_ch = *param;
+}
+
+static void
+ExecSource(char *param)
+{
+    CreateSymbolTable(param);
+    ReadKeywords(MY_NAME);
+    ReadKeywords(param);
+    set_symbol_table(filter_name);
+}
+
 static KEYWORD *
 FindIdentifier(const char *name)
 {
-	unsigned size = strlen(name);
-	KEYWORD *hash_id;
-	int Index;
+    unsigned size = strlen(name);
+    KEYWORD *hash_id;
+    int Index;
 
-	Index = hash_function(name);
-	hash_id = hashtable[Index];
-	while (hash_id != NULL) {
-		if (hash_id->kw_size == size
-		 && strcmp(hash_id->kw_name, name) == 0) {
-			break;
-		}
-		hash_id = hash_id->next;
+    Index = hash_function(name);
+    hash_id = hashtable[Index];
+    while (hash_id != NULL) {
+	if (hash_id->kw_size == size
+	 && strcmp(hash_id->kw_name, name) == 0) {
+	    break;
 	}
-	return hash_id;
+	hash_id = hash_id->next;
+    }
+    return hash_id;
 }
 
 static void
 Free (char *ptr)
 {
-	if (ptr != 0)
-		free(ptr);
+    if (ptr != 0)
+	free(ptr);
 }
 
 /*
@@ -174,75 +209,95 @@ OpenKeywords(char *classname)
     return 0;
 }
 
+static int
+ParseDirective(char *line)
+{
+    static struct {
+	const char *name;
+	void (*func)(char *param);
+    } table[] = {
+	{ "class",   ExecClass },
+	{ "equals",  ExecEquals },
+	{ "include", ReadKeywords },
+	{ "meta",    ExecMeta },
+	{ "source",  ExecSource },
+    };
+    unsigned n, len;
+
+    if (*(line = SkipBlanks(line)) == meta_ch) {
+	line = SkipBlanks(line+1);
+	if ((len = (SkipWord(line) - line)) != 0) {
+	    for (n = 0; n < sizeof(table)/sizeof(table[0]); n++) {
+		if (!strncmp(line, table[n].name, len)) {
+		    (*table[n].func)(SkipBlanks(line+len));
+		    break;
+		}
+	    }
+	}
+	return 1;
+    }
+    return 0;
+}
+
+static void
+ParseKeyword(char *name, int classflag)
+{
+    char *args = 0;
+    char *s;
+
+    if ((s = strchr(name, eqls_ch)) != 0) {
+	*s++ = 0;
+	s = SkipBlanks(s);
+	if (*s != 0) {
+	    args = s;
+	    while (*s != 0) {
+		if (!isdigit(*s) && strchr("ABCDEFIRU", *s) == 0) {
+		    args = 0;
+		    break;
+		}
+		s++;
+	    }
+	}
+	TrimBlanks(name);
+    }
+
+    TRACE(("ParseKeyword: name=%s, attr=\"%s\" (%d)\n", name, args, classflag))
+
+    if (*name && args) {
+	insert_keyword(name, args, classflag);
+    } else if (*name) {
+	KEYWORD *hash_id;
+	if (args == 0)
+	    args = NAME_KEYWORD;
+	if ((hash_id = FindIdentifier(args)) != 0) {
+	    insert_keyword(name, hash_id->kw_attr, classflag);
+	}
+    }
+}
+
 static void
 ReadKeywords(char *classname)
 {
     FILE *kwfile;
-    char *attrs = 0;
     char *line  = 0;
-    char *names = 0;
-    char *args;
-    char *s;
-    int  marker = ':';
-    unsigned attr_len = 0;
+    char *name;
     unsigned line_len = 0;
-    unsigned name_len = 0;
 
     TRACE(("ReadKeywords(%s)\n", classname))
     if ((kwfile = OpenKeywords(classname)) != NULL) {
 	while (readline(kwfile, &line, &line_len) != 0) {
-	    unsigned len = strlen(line);
 
-	    while (len != 0
-		 && isspace(line[len-1]))
-		line[--len] = 0;
-		if (!len)
-		    continue;
-
-	    if (*line == marker || *line == 0) {
-		/* A line beginning "::" denotes an inclusion */
-		if (!strncmp(line, "::", 2)) {
-		    ReadKeywords(line+2);
-		} else if (!strncmp(line, ":+", 2)) {
-		    CreateSymbolTable(line+2);
-		    ReadKeywords(MY_NAME);
-		    ReadKeywords(line+2);
-		    set_symbol_table(filter_name);
-		}
+	    name = SkipBlanks(line);
+	    if (TrimBlanks(name) == 0)
 		continue;
-	    }
+	    if (ParseDirective(name))
+		continue;
 
-	    args = 0;
-	    if ((s = strchr(line, marker)) != 0) {
-		*s++ = 0;
-		if (*s != 0)
-		    args = s;
-	    }
-
-	    names = do_alloc(names, line_len, &name_len);
-	    attrs = do_alloc(attrs, line_len, &attr_len);
-	    strcpy(names, line);
-	    if ((args == 0)
-	     || sscanf(args, "%[IURC0-9A-F]", attrs) != 1
-	     || strcmp(args, attrs)) {
-		*attrs = 0;
-	    }
-
-	    TRACE(("ReadKeywords: name=%s, attr=%s (%s)\n",
-		    names, attrs, line))
-
-	    if (*names && *attrs) {
-		insert_keyword(names, attrs);
-	    } else if (*names) {
-		if ((s = keyword_attr(args ? args : NAME_KEYWORD)) != 0)
-		    insert_keyword(names, s);
-	    }
+	    ParseKeyword(name, 0);
 	}
 	fclose(kwfile);
     }
     Free(line);
-    Free(names);
-    Free(attrs);
 }
 
 static void
@@ -255,6 +310,33 @@ RemoveList(KEYWORD *k)
     }
 }
 
+static char *
+SkipBlanks(char *src)
+{
+    while (isspace(*src))
+	src++;
+    return (src);
+}
+
+static char *
+SkipWord(char *src)
+{
+    while (*src != '\0' && isprint(*src) && !isspace(*src) && !ispunct(*src))
+	src++;
+    return (src);
+}
+
+static unsigned
+TrimBlanks(char *src)
+{
+    unsigned len = strlen(src);
+
+    while (len != 0
+	 && isspace(src[len-1]))
+	src[--len] = 0;
+    return (len);
+}
+
 /******************************************************************************
  * Public functions                                                           *
  ******************************************************************************/
@@ -263,6 +345,16 @@ char *
 ci_keyword_attr(char *text)
 {
     return keyword_attr(lowercase_of(text));
+}
+
+char *
+class_attr(char *name)
+{
+    KEYWORD *hash_id;
+    if ((hash_id = FindIdentifier(name)) != 0
+     && hash_id->kw_flag != 0)
+	return hash_id->kw_attr;
+    return 0;
 }
 
 char *
@@ -310,7 +402,7 @@ hash_function(const char *id)
 }
 
 void
-insert_keyword(const char *ident, const char *attribute)
+insert_keyword(const char *ident, const char *attribute, int classflag)
 {
     KEYWORD *first;
     KEYWORD *nxt;
@@ -327,6 +419,7 @@ insert_keyword(const char *ident, const char *attribute)
 	    nxt->kw_name = strmalloc(ident);
 	    nxt->kw_size = strlen(nxt->kw_name);
 	    nxt->kw_attr = strmalloc(attribute);
+	    nxt->kw_flag = classflag;
 	    nxt->next = first;
 	    hashtable[Index] = nxt;
 	} else {
@@ -334,7 +427,7 @@ insert_keyword(const char *ident, const char *attribute)
 	    return;
 	}
     }
-    TRACE(("insert_keyword: nxt %p, kw_name %s, kw_size %i, kw_attr %s, next %p\n",
+    TRACE(("insert_keyword: nxt %p, kw_name %s, kw_size %i, kw_attr \"%s\", next %p\n",
 	nxt,
 	nxt->kw_name,
 	nxt->kw_size,
@@ -346,7 +439,8 @@ char *
 keyword_attr(char *name)
 {
     KEYWORD *hash_id;
-    if ((hash_id = FindIdentifier(name)) != 0)
+    if ((hash_id = FindIdentifier(name)) != 0
+     && hash_id->kw_flag == 0)
 	return hash_id->kw_attr;
     return 0;
 }
@@ -423,21 +517,25 @@ strmalloc(const char *src)
 void
 write_string(FILE *fp, char *string, int length, char *marker)
 {
-    while (length > 0) {
-	int n;
-	for (n = 0; n < length && string[n] != 0 && string[n] != '\n'; n++)
-	    ;
-	if (n == 0) {
+    if (marker == 0 || *marker == 0) {
+	write_token(fp, string, length, marker);
+    } else {
+	while (length > 0) {
+	    int n;
+	    for (n = 0; n < length && string[n] != 0 && string[n] != '\n'; n++)
+		;
+	    if (n == 0) {
+		if (string[n])
+		    fputc(string[n], fp);
+	    } else {
+		fprintf(fp, "%c%i%s:%.*s", CTL_A, n, marker,
+			    (string[n] == '\n') ? n+1 : n, string);
+	    }
 	    if (string[n])
-		fputc(string[n], fp);
-	} else {
-	    fprintf(fp, "%c%i%s:%.*s", CTL_A, n, marker,
-			(string[n] == '\n') ? n+1 : n, string);
+		n++;
+	    length -= n;
+	    string += n;
 	}
-	if (string[n])
-	    n++;
-	length -= n;
-	string += n;
     }
 }
 
@@ -466,16 +564,16 @@ main(int argc, char **argv)
 
     CreateSymbolTable(filter_name);
 
-    insert_keyword(NAME_ACTION,  ATTR_ACTION);
-    insert_keyword(NAME_COMMENT, ATTR_COMMENT);
-    insert_keyword(NAME_IDENT,   ATTR_IDENT);
-    insert_keyword(NAME_IDENT2,  ATTR_IDENT2);
-    insert_keyword(NAME_KEYWORD, ATTR_KEYWORD);
-    insert_keyword(NAME_KEYWRD2, ATTR_KEYWRD2);
-    insert_keyword(NAME_LITERAL, ATTR_LITERAL);
-    insert_keyword(NAME_NUMBER,  ATTR_NUMBER);
-    insert_keyword(NAME_PREPROC, ATTR_PREPROC);
-    insert_keyword(NAME_TYPES,   ATTR_TYPES);
+    insert_keyword(NAME_ACTION,  ATTR_ACTION,  1);
+    insert_keyword(NAME_COMMENT, ATTR_COMMENT, 1);
+    insert_keyword(NAME_IDENT,   ATTR_IDENT,   1);
+    insert_keyword(NAME_IDENT2,  ATTR_IDENT2,  1);
+    insert_keyword(NAME_KEYWORD, ATTR_KEYWORD, 1);
+    insert_keyword(NAME_KEYWRD2, ATTR_KEYWRD2, 1);
+    insert_keyword(NAME_LITERAL, ATTR_LITERAL, 1);
+    insert_keyword(NAME_NUMBER,  ATTR_NUMBER,  1);
+    insert_keyword(NAME_PREPROC, ATTR_PREPROC, 1);
+    insert_keyword(NAME_TYPES,   ATTR_TYPES,   1);
 
     init_filter(1);
     ReadKeywords(MY_NAME);
@@ -521,5 +619,5 @@ main(int argc, char **argv)
 
 int yywrap(void)
 {
-	return 1;
+    return 1;
 }

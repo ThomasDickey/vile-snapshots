@@ -551,9 +551,6 @@ Text manipulation command:
 		lets one reference the selected region with other operators.
 		(If you use this command much, it is recommended that you
 		bind it to and easier to type sequence, such as 'S'.)
-	^X-C	Encrypt or decrypt the region, using the current encryption
-		key.  If no key has been set, user will be prompted.  See
-		"Encryption" below.
 
 	Text insertion
 	--------------
@@ -1101,8 +1098,9 @@ Editor modes
 		character, it will not shift right with the '>>' command. (M)
 
 	crypt	Causes buffer(s) to be decrypted when read, and encrypted
-		when written.  This is NOT compatible with the UNIX
-		crypt(1) routines.  See the section on "Encryption" for
+		when written.  This is compatible with the UNIX crypt(1)
+		routines used by vi, and is only available on platforms which
+		have this feature enabled.  See the section on "Encryption" for
 		more information.  (B)
 
 	comment-prefix A regular expression denoting the portion of a line
@@ -1118,7 +1116,8 @@ Editor modes
 		expression (see below) when reformatting a region.  The net
 		effect is that paragraphs inside of these comments are
 		preserved when doing text reformatting, but are not
-		reachable with the '}' and '{' motions.  (B)
+		reachable with the '}' and '{' motions.  A pattern that
+		consists of an empty comment line usually works well.  (B)
 
 	dirc	Causes vile to check each name when scanning directories for
 		filename completion.  This is slower, but provides additional
@@ -1194,7 +1193,8 @@ Editor modes
 
 	fillcol (fc)  Sets the value for the fill column, which is the
 		column at which autowrapping and region formatting will
-		break lines.  (B)
+		break lines.  If zero, use the wrapmargin.  If negative,
+		count from the right margin.  (B)
 
 	flash   If your terminal can, will flash the screen rather than
 		beeping on errors.  No audible or visible indication will
@@ -2691,11 +2691,11 @@ Invocation
 
 Encryption
 ----------
-	vile implements a simple encryption algorithm, and can apply this
-	to your buffers either automatically (via a mode setting) or
-	manually (via an explicit command).  The algorithm is reversible,
-	so crypting a previously crypted buffer or region will undo that
-	encryption.
+	vile implements an interface to the Unix crypt function, like
+	standard vi, and can apply this to your buffers either
+	automatically (via a mode setting) or manually (via an explicit
+	command).  The algorithm is reversible, so crypting a previously
+	crypted buffer will undo that encryption.
 
 	The encryption key for a buffer will be a) inherited from the
 	global cryptkey which was set via the vile command line (-k) if it
@@ -2705,31 +2705,26 @@ Encryption
 	buffer's key will remain active until changed or reset.
 
 	If "crypt" mode is on, then when the buffer is written the user
-	will be prompted for the encryption key to use in none has yet been
+	will be prompted for the encryption key to use if none has yet been
 	set.  If "crypt" mode is on, and an encryption key has been set,
 	then the buffer will be crypted when read.  In practice this means
 	you need to read the file, then set crypt mode, then reread the
 	file.  (Or, equivalently, create the buffer, set crypt mode, and
 	then insert the file into it (with ":r").
 
-	The ^X-C operator will crypt an arbitrary region of a buffer, using
-	the current key.  Note that crypting two adjacent regions
-	separately will _not_ produce the same result as crypting their
-	single equivalent region once.
-
-	vile's encryption algorithm is also available externally, via the
-	"vile-crypt" program built from the same sources.  vile-crypt will
-	encrypt/decrypt a file using vile's crypt algorithm.  You can use
-	"-k key" to supply the key on the commandline, and "-m" to treat
-	the file as a mail message -- in that case, only text after the
-	first blank line will be crypted.  Text to be encrypted can be
-	specified as filenames on the command line, or provided as the
-	standard input.  All output appears on stdout.  On systems with
-	a getpass() library routine, the user will be prompted for the
-	encryption key if it is not given on the command line.  To
-	accomodate systems (such as linux) where the getpass() library
-	routine is not interruptible from the keyboard, entering a
-	crypt-key password which ends in ^C will cause the program to quit.
+	An alternative vile's encryption algorithm is also available
+	externally, via the "vile-crypt" program.  vile-crypt will
+	encrypt/decrypt a file.  You can use "-k key" to supply the key on
+	the commandline, and "-m" to treat the file as a mail message -- in
+	that case, only text after the first blank line will be crypted. 
+	Text to be encrypted can be specified as filenames on the command
+	line, or provided as the standard input.  All output appears on
+	stdout.  On systems with a getpass() library routine, the user will
+	be prompted for the encryption key if it is not given on the
+	command line.  To accomodate systems (such as linux) where the
+	getpass() library routine is not interruptible from the keyboard,
+	entering a crypt-key password which ends in ^C will cause the
+	program to quit.
 
 
 Crash Recovery
@@ -2893,51 +2888,95 @@ Filtering "man" pages
 	~endm
 	bind-key execute-macro-29 ^X-m
 
-Filtering C programs
---------------------
-	C program text may be displayed with keywords and comments
-	highlighted in a similar fashion to the man page filtering
-	described above.  A filter which performs this is supplied with
-	vile, and is called "vile-c-filt" (source is "c-filt.c").  Its use
-	is described more fully in comments at the head of the source file.
-	It doesn't provide what one would describe as "tightly integrated
-	syntax coloring".  Its usefulness is limited by reliance on an
-	external filter to do the coloring.  Nonetheless, it's an interesting
-	adjunct to the editor.
+Syntax coloring
+---------------
+	vile comes with a set of external filter programs which can
+	help it color the text of many varieties of text.  For
+	instance, C program text may be displayed with keywords and
+	comments highlighted in a similar fashion to the man page
+	filtering described above.  [ The man page filter is handled
+	differently because it not only has to add color, but it
+	removes the overstriking normally produced by the "man"
+	command.  ] The filters that assist in the coloring process
+	are installed in vile's "lib" directory.  (This directory is
+	added to the PATH environment variable when vile searches for
+	external programs to run.)  The filters are typically named
+	"vile-xxx-filt", where "xxx" denotes the type of text being
+	filtered, and is also usually the name for the vile "majormode"
+	which is used when editing that kind of text.  Thus the C
+	language filter is called vile-c-filt, the filter for TCL is
+	called vile-tcl-filt, and the filter for HTML is vile-html-filt.
+	Unlike previous releases of vile which relied on the filter
+	actually being applied to the current buffer, therefore
+	changing the buffers contents, and damaging the undo history,
+	this release utilizes a new vile command, called
+	"attribute-from-filter-til", which is an operator that applies
+	coloring information taken directly from the filter's output
+	stream without modifying the buffer.
 
-	Here is a macro one might use to invoke the colorizer:
-	    30 store-macro
-		    write-message "[Attaching C/C++ attributes...]"
-		    ~local $curcol $curline
-		    ~hidden goto-beginning-of-file
-		    ~hidden attribute-from-filter end-of-file "vile-c-filt"
-		    write-message "[Attaching C/C++ attributes...done ]"
-	    ~endm
-	    bind-key execute-macro-30 ^X-q
+	Using external filters to provide coloring doesn't provide
+	what one would describe as "tightly integrated syntax
+	coloring".  But many people find it more than adequate, and
+	the advantages in modularity are clear.
 
-	The vile-c-filt program does its work based on the contents of
-	$HOME/.vile.keywords, which contains a set of keyword/attribute
-	pairs.  An example (and probably insufficient) .vile.keywords file
-	might contain:
-		Comment:B
-		Literal:B
-		Preproc:U
-		if:C3
-		else:C3
-		for:C3
-		while:C3
-		do:C3
-		typedef:I
-		struct:I
+	Here is a procedure one might use to invoke the colorizer.
+	This filter is provided in the source in filters/filters.rc:
+
+	store-procedure HighlightFilter
+	    ~local $curcol $curline
+	    ~local %filtername
+	    ~hidden goto-beginning-of-file
+	    ~if &sin $majormode "sh"
+		~hidden attribute-from-filter end-of-file "vile-sh-filt"
+	    ~else
+		set-variable %filtername &cat &cat "vile-" $majormode "-filt"
+		~hidden attribute-from-filter-til end-of-file %filtername
+	    ~endif
+	    write-message "[Attaching attributes...]"
+	~endm
+
+	This procedure can be tied to the "read-hook" variable by
+	adding "set read-hook HighlightFilter" to your .vilerc.  This
+	will cause coloring to be invoked every time you edit a new
+	file.  Adding something like "bind-key HighlightFilter ^X-q"
+	(already present in filters/filters.rc) provides a convenient
+	way of reapplying the coloring after a succession of edits to
+	the buffer.
+
+	The filter programs do their work based on the contents of a
+	.vile.keywords, which contains a set of "keyword class
+	descriptor" pairs.  An example vile.keywords file might
+	contain:
+
+	    Action:BC1
+	    Comment:C1
+	    Ident:R
+	    Ident2:C6
+	    Keyword:BC3
+	    Keyword2:BC1
+	    Literal:UC5
+	    Number:C6
+	    Preproc:C2
+	    Type:BC2
+
 	The "Comment" keyword is a pseudo-keyword which determines the
-	attribute given to C and C++ style comments.  "Literal" applies to
-	string literals.  "Preproc" applies to C preprocessor lines, e.g., #if,
-	etc.
+	attribute given to a language's comments, which will be given
+	"B"old "C"olor "1".  "Literal" applies to string literals,
+	which will be "U"nderlined "C"olor "5".  "Ident" applies to
+	identifier values ("R"egular), etc.  This file provides the
+	global coloring scheme for all the filters.  The association
+	of specific language filters to the generic "keyword classes"
+	are given in language specific mapping files, which are referred
+	to by the individual filters.  In general, the specific language
+	keyword list (e.g. awk.keywords, c.keywords, perl.keywords,
+	sh.keywords) provide only part of the filter's behavior --
+	much of its action is encoded in its source, which for most
+	filters is written in "lex".  (Actually, the GNU program "flex"
+	may be required.)
 
-	An alternative filter, written using "flex", is available in
-	c-filt.flx.  It might suit your needs better, or be a better
-	starting point for creating similar coloring mechanisms for other
-	languages.
+	More information on syntax coloring filters can be found in
+	the file doc/filters.doc, in the vile source directory.
+
 
 Writing your own filters
 ------------------------
@@ -2952,6 +2991,10 @@ Writing your own filters
 	should be attributed by the vile command
 
 		attribute-cntl_a-sequences-til
+
+	or, preferably
+
+		attribute-from-filter-til
 
 	(See above for examples of how to use this command.)
 
@@ -3985,4 +4028,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.393 1999/02/11 22:08:47 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.397 1999/03/09 11:02:00 tom Exp $

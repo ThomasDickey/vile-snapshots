@@ -6,7 +6,7 @@
  * 		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.27 1998/12/29 17:37:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.28 1999/03/07 19:14:41 tom Exp $
  *
  * Features:
  * 	- Reads the keyword file ".vile.keywords" from the home directory.
@@ -278,11 +278,11 @@ do_filter(FILE *input, FILE *output)
     char *s;
     int comment,c_length,literal;
 
-    Comment_attr = keyword_attr(NAME_COMMENT);
-    Ident_attr   = keyword_attr(NAME_IDENT);
-    Literal_attr = keyword_attr(NAME_LITERAL);
-    Number_attr  = keyword_attr(NAME_NUMBER);
-    Preproc_attr = keyword_attr(NAME_PREPROC);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Ident_attr   = class_attr(NAME_IDENT);
+    Literal_attr = class_attr(NAME_LITERAL);
+    Number_attr  = class_attr(NAME_NUMBER);
+    Preproc_attr = class_attr(NAME_PREPROC);
 
     comment = 0;
     literal = 0;

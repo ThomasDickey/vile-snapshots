@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.20 1998/12/29 13:37:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.21 1999/03/07 19:20:50 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -75,11 +75,11 @@ do_filter(FILE *input, FILE *output)
     yyin = input;
     yyout = output;
 
-    Action_attr  = keyword_attr(NAME_ACTION);
-    Comment_attr = keyword_attr(NAME_COMMENT);
-    Ident_attr   = keyword_attr(NAME_IDENT2);
-    Number_attr  = keyword_attr(NAME_NUMBER);
-    String_attr  = keyword_attr(NAME_LITERAL);
+    Action_attr  = class_attr(NAME_ACTION);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Ident_attr   = class_attr(NAME_IDENT2);
+    Number_attr  = class_attr(NAME_NUMBER);
+    String_attr  = class_attr(NAME_LITERAL);
 
     BEGIN(NORMAL);
     while (yylex() > 0) {

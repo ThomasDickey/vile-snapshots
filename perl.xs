@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.31 1998/11/11 02:42:06 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.32 1999/03/07 21:45:15 tom Exp $
  */
 
 /*#
@@ -2061,7 +2061,7 @@ set(...)
 	    argno++;
 
 	    /* Look for a mode first */
-	    status = find_mode(mode, isglobal, &args);
+	    status = find_mode(curbp, mode, isglobal, &args);
 
 
 	    if (status == TRUE) {
@@ -2085,7 +2085,7 @@ set(...)
 			argno++;
 		    }
 
-		    if (set_mode_value(mode, TRUE, isglobal, &args, val) != TRUE) {
+		    if (set_mode_value(curbp, mode, TRUE, isglobal, &args, val) != TRUE) {
 			if (modenames) free(modenames);
 			croak("set: Invalid value %s for mode %s", val, mode);
 		    }
@@ -2131,7 +2131,7 @@ set(...)
 	    }
 	    else {
 		if (mode != NULL) {
-		    status = find_mode(mode, isglobal, &args);
+		    status = find_mode(curbp, mode, isglobal, &args);
 		    if (status == TRUE)
 			XPUSHs(sv_2mortal(newSVpv(string_mode_val(&args), 0)));
 		    else
@@ -2143,7 +2143,7 @@ set(...)
 	    int i;
 	    for (i = 0; i < nmodenames; i++) {
 		mode = modenames[i];
-		status = find_mode(mode, isglobal, &args);
+		status = find_mode(curbp, mode, isglobal, &args);
 		if (status == TRUE) {
 		    XPUSHs(sv_2mortal(newSVpv(mode, 0)));
 		    XPUSHs(sv_2mortal(newSVpv(string_mode_val(&args), 0)));

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.111 1999/02/11 23:25:11 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.113 1999/03/07 21:12:43 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -57,7 +57,7 @@ enum
 	"mcolor"	MCOLOR		chgd_hilite	OPT_HILITEMATCH # modeline color
 	"Mini-Hilite"   MINI_HILITE	0		# highlight minibuffer when using vi-commands
 	"Popup-Choices"	POPUP_CHOICES	0		OPT_POPUPCHOICE&&OPT_ENUM_MODES # popup buffer showing file-completion choices
-	"vtflash"	VTFLASH		0		OPT_FLASH # flash using DEC VT esc sequences
+	"vtflash"	VTFLASH		0		VTFLASH_HOST&&(OPT_FLASH) # flash using DEC VT esc sequences
 int							# VAL_ prefix
 	"maplength"	MAPLENGTH	0		# maximum length of :map string
 	"printing-low"	PRINT_LOW	chgd_charset	# low end of high-bit-set printable range
@@ -151,6 +151,7 @@ int							# VAL_ prefix
 
 .majormode c	tabstop
 .majormode c	shiftwidth
+.majormode vile
 regex							# MVAL_ prefix
 	"PREamble"	PREAMBLE	0		# match against file header to turn on mode
 	"SUFfixes"	SUFFIXES	0		# match against filenames to turn on mode

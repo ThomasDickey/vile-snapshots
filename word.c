@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.64 1998/11/30 02:06:44 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.65 1999/03/09 10:56:38 tom Exp $
  *
  */
 
@@ -391,6 +391,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 	register int sentence;		/* was the last char a period?	*/
 	int secondindent;
 	int s;
+	int fillcolumn = getfillcol(curbp);
 
 	if (!sameline(MK, DOT)) {
 		REGION region;
@@ -526,7 +527,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 				/* calculate tentative new length
 							with word added */
 				newlen = clength + 1 + tb_length(*wp);
-				if (newlen <= b_val(curbp,VAL_FILL)) {
+				if (newlen <= fillcolumn) {
 					/* add word to current line */
 					if (!firstflag) {
 						fmt_insert(1, ' ');

@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.355 1999/02/11 23:24:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.360 1999/03/09 00:16:40 tom Exp $
  *
  */
 
@@ -222,10 +222,7 @@ MainProgram(int argc, char *argv[])
 			case 'k':	/* -k<key> for code key */
 			case 'K':
 				GetArgVal(param);
-				(void)strcpy(ekey, param);
-				(void)memset(param, '.', strlen(param));
-				ue_crypt((char *)0, 0);
-				ue_crypt(ekey, strlen(ekey));
+				vl_make_encrypt_key(ekey, param);
 				break;
 #endif
 #ifdef VILE_OLE
@@ -376,20 +373,27 @@ MainProgram(int argc, char *argv[])
 #  endif
 # else
 #  if SYS_VMS
-  		fd = open("tt:", O_RDONLY, S_IREAD); /* or sys$command */
+		fd = open("tt:", O_RDONLY, S_IREAD); /* or sys$command */
 #  else					/* e.g., DOS-based systems */
-  		fd = fileno(stderr);	/* this normally cannot be redirected */
+		fd = fileno(stderr);	/* this normally cannot be redirected */
 #  endif
-  		if ((fd >= 0)
-  		 && (close(0) >= 0)
-  		 && (fd = dup(fd)) == 0
-  		 && (in = fdopen(fd, "r")) != 0)
-  			*stdin = *in;
+		if ((fd >= 0)
+		 && (close(0) >= 0)
+		 && (fd = dup(fd)) == 0
+		 && (in = fdopen(fd, "r")) != 0)
+			*stdin = *in;
 #  endif /* SYS_WINNT */
 # endif /* SYS_UNIX */
 #endif /* DISP_X11 */
 
-  		(void)slowreadf(bp, &nline);
+#if	OPT_ENCRYPT
+		if (*ekey != EOS) {
+			strcpy(bp->b_key, ekey);
+			make_local_b_val(bp, MDCRYPT);
+			set_b_val(bp, MDCRYPT, TRUE);
+		}
+#endif
+		(void)slowreadf(bp, &nline);
 		set_rdonly(bp, bp->b_fname, MDREADONLY);
 		(void)ffclose();
 
@@ -809,9 +813,10 @@ global_val_init(void)
 
 #if OPT_MAJORMODE
 	/*
-	 * Built-in majormodes
+	 * Built-in majormodes (see 'modetbl')
 	 */
 	alloc_mode("c", TRUE);
+	alloc_mode("vile", TRUE);
 #endif
 
 	/*
@@ -826,7 +831,9 @@ global_val_init(void)
 	set_global_g_val(GMDERRORBELLS, TRUE);	/* alarms are noticeable */
 #if OPT_FLASH
 	set_global_g_val(GMDFLASH,  	FALSE);	/* beeps beep by default */
+# if VTFLASH_HOST
 	set_global_g_val(GVAL_VTFLASH,	VTFLASH_OFF); /* hardwired flash off */
+# endif
 #endif
 #ifdef GMDW32PIPES
 	set_global_g_val(GMDW32PIPES,  	is_winnt()); /* use native pipes? */

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.8 1998/12/28 21:52:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.9 1999/03/07 19:22:33 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
@@ -73,13 +73,13 @@ do_filter(FILE *input, FILE *output)
 {
     yyin = input;
     yyout = output;
-    Comment_attr = keyword_attr(NAME_COMMENT);
-    Ident_attr   = keyword_attr(NAME_IDENT);
-    Ident2_attr  = keyword_attr(NAME_IDENT2);
-    Keyword_attr = keyword_attr(NAME_KEYWORD);
-    Number_attr  = keyword_attr(NAME_NUMBER);
-    Preproc_attr = keyword_attr(NAME_PREPROC);
-    String_attr  = keyword_attr(NAME_LITERAL);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Ident_attr   = class_attr(NAME_IDENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    Number_attr  = class_attr(NAME_NUMBER);
+    Preproc_attr = class_attr(NAME_PREPROC);
+    String_attr  = class_attr(NAME_LITERAL);
 
     new_state(RULES);
     while (yylex() > 0) {
@@ -129,7 +129,7 @@ PATTERN		(\\\.|[^ \t\n])+
 		    }
 		}
 
-<RULES>{IDENT}		{ WriteToken(save_attr); insert_keyword(yytext, save_attr); }
+<RULES>{IDENT}		{ WriteToken(save_attr); insert_keyword(yytext, save_attr, 0); }
 <RULES>\<{IDENT}\>	{ WriteToken(Ident2_attr); }
 <RULES>\{		{ ECHO; push_state(CODE); }
 <RULES>;		{ WriteToken(String_attr); }

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_2n
+MANIFEST for vile, version v8_2o
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -28,7 +28,6 @@ cmdtbl                          used by 'mktbls' to generate VILE's command-tabl
 config.emx                      configure-ifdefs for EMX (OS/2)
 config_h.in                     template for config.h
 configure.in                    used by 'autoconf' to generate 'configure'
-crypt.c                         encryption (from uEmacs)
 csrch.c                         current-line character-scanning commands
 descrip.mms                     VAX/VMS MMS build-script
 dirstuff.h                      interfaces for UNIX-like directory functions
@@ -103,6 +102,7 @@ tcap.h                          interface of tcap.c
 termio.c                        low-level terminal I/O support
 trace.c                         development: trace to logfile
 trace.h                         development: trace to logfile
+ucrypt.c                        interface to Unix crypt(1)
 undo.c                          support for "undo"
 version.c                       version & usage messages
 vile-8.2.spec                   rpm spec file (sample)
@@ -154,6 +154,7 @@ filters/c.key                   keywords for C
 filters/cwebfilt.l              cwebx syntax filter for vile
 filters/dcl-filt.l              VAX dcl syntax highlighting filter for vile
 filters/dcl.key                 dcl keywords
+filters/ecrypt.c                uemacs-derived encryption
 filters/filters.c               common utilities for filtering
 filters/filters.h               interface/definitions for filtering utilities
 filters/filters.rc              sample majormodes, and corresponding filters

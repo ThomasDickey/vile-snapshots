@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.23 1999/02/10 12:03:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.24 1999/03/07 19:03:08 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -151,6 +151,7 @@ extern void do_filter(FILE *input, FILE *output);
  * Declared in the filters.c file.
  */
 extern char *ci_keyword_attr(char *name);
+extern char *class_attr(char *name);
 extern char *do_alloc(char *ptr, unsigned need, unsigned *have);
 extern char *keyword_attr(char *name);
 extern char *lowercase_of(char *name);
@@ -159,7 +160,7 @@ extern char *strmalloc(const char *src);
 extern int set_symbol_table(const char *classname);
 extern long hash_function(const char *id);
 extern void for_each_keyword(EachKeyword func);
-extern void insert_keyword(const char *ident, const char *attribute);
+extern void insert_keyword(const char *ident, const char *attribute, int classflag);
 extern void write_string(FILE *fp, char *string, int length, char *attribute);
 extern void write_token(FILE *fp, char *string, int length, char *attribute);
 

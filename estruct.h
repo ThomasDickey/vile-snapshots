@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.374 1999/02/11 11:27:50 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.379 1999/03/09 11:24:50 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -441,7 +441,6 @@
 /* individual features that are (normally) controlled by SMALLER */
 #define OPT_AEDIT       !SMALLER		/* advanced editing options: e.g. en/detabbing	*/
 #define OPT_B_LIMITS    !SMALLER		/* left-margin */
-#define OPT_ENCRYPT     !SMALLER /* file encryption (not crypt(1) compatible!) */
 #define OPT_ENUM_MODES  !SMALLER		/* fixed-string modes */
 #define OPT_EVAL        !SMALLER		/* expression-evaluation */
 #define OPT_FILEBACK    !SMALLER && !SYS_VMS	/* file backup style */
@@ -515,6 +514,15 @@
 #define OWN_SELECTION() own_selection()
 #else
 #define OWN_SELECTION()	/*EMPTY*/
+#endif
+
+/*
+ * Unix vi-style file encryption is available only on some platforms
+ */
+#if HAVE_CRYPT
+#define OPT_ENCRYPT     1
+#else
+#define OPT_ENCRYPT     0
 #endif
 
 /*
@@ -675,6 +683,19 @@ extern char *rindex (const char *s, int c);
 #define unlink(a)	remove(a)
 #endif
 
+/*
+ * Definitions for hardwired VT-compatible flash esc sequences.  These
+ * defns must precede inclusion of nemode.h
+ */
+#define VTFLASH_HOST    (SYS_UNIX||SYS_VMS)
+#if OPT_FLASH
+#define VTFLASH_OFF     0
+#define VTFLASH_REVERSE 1
+#define VTFLASH_NORMAL  2
+#define VTFLASH_REVSEQ  "\033[?5h"
+#define VTFLASH_NORMSEQ "\033[?5l"
+#endif
+
 /*	define some ability flags */
 
 	/* intermediate config-controls for filec.c (needed in nemode.h) */
@@ -767,6 +788,7 @@ extern int MainProgram(int argc, char *argv[]);
 #define	NCOLORS	8			/* number of supported colors	*/
 #endif
 #define	KBLOCK	256			/* sizeof kill buffer chunks	*/
+
 #if !OPT_SELECTIONS
 #define	NKREGS	37			/* number of kill buffers	*/
 #define KEYST_KREG (NKREGS-1)
@@ -776,10 +798,16 @@ extern int MainProgram(int argc, char *argv[]);
 					 * the current selection and another
 					 * for the clipboard.
 					 */
-#define CLIP_KREG (NKREGS-1)
-#define SEL_KREG (NKREGS-2)
+#define CLIP_KREG  (NKREGS-1)
+#define SEL_KREG   (NKREGS-2)
 #define KEYST_KREG (NKREGS-3)
 #endif
+
+/* special characters assigned to kill-registers */
+#define CLIP_KCHR  ';'
+#define SEL_KCHR   '.'
+#define KEYST_KCHR '<'
+
 #define	NBLOCK	16			/* line block chunk size	*/
 #define MINWLNS	3			/* min # lines, window/screen	*/
 #define MAXROWS	200			/* max # lines per screen	*/
@@ -2463,15 +2491,6 @@ extern void _exit (int code);
 #define	malloc	allocate
 #undef	free
 #define	free	release
-#endif
-
-/* Definitions for hardwired VT-compatible flash esc sequences. */
-#if OPT_FLASH
-#define VTFLASH_OFF     0
-#define VTFLASH_REVERSE 1
-#define VTFLASH_NORMAL  2
-#define VTFLASH_REVSEQ  "\033[?5h"
-#define VTFLASH_NORMSEQ "\033[?5l"
 #endif
 
 /* for debugging VMS pathnames on UNIX... */

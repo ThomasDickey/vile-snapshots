@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.181 1999/02/11 22:05:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.184 1999/03/08 11:41:14 tom Exp $
  *
  */
 
@@ -66,7 +66,7 @@ static	SIZE_T	s2size ( char *s );
 static	char *	getkill (void);
 static	char *	ltos ( int val );
 static	char *	s2offset ( char *s, char *n );
-#if SYS_WINNT
+#if (SYS_WINNT||SYS_VMS)
 static	char *	l_utoh(unsigned i);
 #endif
 static	int	PromptAndSet ( const char *var, int f, int n );
@@ -186,7 +186,7 @@ static int
 is_mode_name(const char *name, int showall, VALARGS *args)
 {
 	if (is_varmode(name)) {
-		if (find_mode(name, -TRUE, args)) {
+		if (find_mode(curbp, name, -TRUE, args)) {
 			if (!showall && !strcmp(name, args->names->shortname))
 				return FALSE;
 			return TRUE;
@@ -420,7 +420,7 @@ const char *fname)	/* name of function to evaluate */
 	case UFLOCMODE:
 	case UFGLOBMODE:
 		{ VALARGS args;
-		if (find_mode(arg1, (fnum == UFGLOBMODE), &args) != TRUE)
+		if (find_mode(curbp, arg1, (fnum == UFGLOBMODE), &args) != TRUE)
 			break;
 		it = string_mode_val(&args);
 		}
@@ -552,8 +552,11 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 #if SYS_UNIX
 		ElseIf( EVPROCESSID )	value = l_itoa(getpid());
 #else
-# if SYS_WINNT
-		/* translate pid to hex, because most Win32 PID's are huge */
+# if (SYS_WINNT || SYS_VMS)
+		/* translate pid to hex, because:
+		 *    a) most Win32 PID's are huge,
+		 *    b) VMS PID's are traditionally displayed in hex.
+		 */
 		ElseIf( EVPROCESSID )	value = l_utoh((unsigned) getpid());
 # endif
 #endif
@@ -774,7 +777,7 @@ PromptAndSet(const char *name, int f, int n)
 		return(FALSE);
 	} else if (vd.v_type == TKENV && vd.v_num == MODE_NUM) {
 		VALARGS	args;
-		(void)find_mode(var+1, -TRUE, &args);
+		(void)find_mode(curbp, var+1, -TRUE, &args);
 		set_end_string('=');
 		return adjvalueset(var+1, TRUE, -TRUE, &args);
 	}
@@ -964,9 +967,8 @@ const char *value)	/* value to set to */
 		ElseIf( EVCRYPTKEY )
 			if (cryptkey != 0)
 				free(cryptkey);
-			cryptkey = strmalloc(value);
-			ue_crypt((char *)NULL, 0);
-			ue_crypt(cryptkey, strlen(cryptkey));
+			cryptkey = malloc(NPAT);
+			vl_make_encrypt_key (cryptkey, value);
 #endif
 		ElseIf( EVDISCMD )
 			discmd = stol(value);
@@ -1226,7 +1228,7 @@ l_itoa(int i)		/* integer to translate to a string */
 	return result;
 }
 
-#if SYS_WINNT
+#if (SYS_WINNT||SYS_VMS)
 /* unsigned to hex */
 static char *
 l_utoh(unsigned i)

@@ -11,7 +11,7 @@
 # all as "0".  If you use tcap.c, you'll need libtermcap.a too.  If you use
 # x11.c, you'll need libX11.a too.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.37 1998/12/14 02:10:10 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.38 1999/03/08 11:26:05 tom Exp $
 
 .IFDEF __XVILE__
 
@@ -48,7 +48,6 @@ SRC =	main.c \
 	bind.c \
 	btree.c \
 	buffer.c \
-	crypt.c \
 	csrch.c \
 	display.c \
 	dumbterm.c \
@@ -85,6 +84,7 @@ SRC =	main.c \
 	tags.c \
 	tbuff.c \
 	termio.c \
+	ucrypt.c \
 	undo.c \
 	version.c \
 	vms2unix.c \
@@ -100,7 +100,6 @@ OBJ =	main.obj,\
 	bind.obj,\
 	btree.obj,\
 	buffer.obj,\
-	crypt.obj,\
 	csrch.obj,\
 	display.obj,\
 	dumbterm.obj,\
@@ -137,6 +136,7 @@ OBJ =	main.obj,\
 	tags.obj,\
 	tbuff.obj,\
 	termio.obj,\
+	ucrypt.obj,\
 	undo.obj,\
 	version.obj, \
 	vms2unix.obj,\

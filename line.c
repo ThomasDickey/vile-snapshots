@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.115 1998/11/10 23:17:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.116 1999/03/09 11:25:10 tom Exp $
  *
  */
 
@@ -938,12 +938,12 @@ index2reg(int c)
 	if (c >= 0 && c < 10)
 		n = (c + '0');
 	else if (c == KEYST_KREG)
-		n = '<';
+		n = KEYST_KCHR;
 #if OPT_SELECTIONS
 	else if (c == SEL_KREG)
-		n = '.';
+		n = SEL_KCHR;
 	else if (c == CLIP_KREG)
-		n = ';';
+		n = CLIP_KCHR;
 #endif
 	else if (c >= 10 && c < (int)TABLESIZE(kbs))
 		n = (c - 10 + 'a');
@@ -970,12 +970,12 @@ reg2index(int c)
 	else if (isUpper(c))
 		n = c - 'A' + 10;
 #if OPT_SELECTIONS
-	else if (c == '.')
+	else if (c == SEL_KCHR)
 		n = SEL_KREG;
-	else if (c == ';')
+	else if (c == CLIP_KCHR)
 		n = CLIP_KREG;
 #endif
-	else if (c == '<')
+	else if (c == KEYST_KCHR)
 		n = KEYST_KREG;
 	else if (c == '"')
 		n = 0;

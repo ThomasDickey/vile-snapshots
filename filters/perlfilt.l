@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.18 1999/02/10 12:03:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.19 1999/03/07 19:20:35 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PERL input
  * text.
@@ -80,12 +80,12 @@ do_filter(FILE *input, FILE *output)
     yyin = input;
     yyout = output;
     BEGIN(CODE);
-    Comment_attr = keyword_attr(NAME_COMMENT);
-    Preproc_attr = keyword_attr(NAME_PREPROC);
-    Keyword_attr = keyword_attr(NAME_KEYWORD);
-    Ident_attr   = keyword_attr(NAME_IDENT);
-    String_attr  = keyword_attr(NAME_LITERAL);
-    Number_attr  = keyword_attr(NAME_NUMBER);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Preproc_attr = class_attr(NAME_PREPROC);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    Ident_attr   = class_attr(NAME_IDENT);
+    String_attr  = class_attr(NAME_LITERAL);
+    Number_attr  = class_attr(NAME_NUMBER);
     while (yylex() > 0) {
     }
 }

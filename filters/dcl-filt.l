@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.6 1999/02/12 11:35:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.7 1999/03/07 19:18:08 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DCL files.
  *
@@ -43,7 +43,7 @@ add_abbrev(const char *name, int size, const char *attr)
 	char *temp = strmalloc(name);
 	temp[abbrev_len] = 0;
 	if (keyword_attr(temp) == 0) {
-	    insert_keyword(temp, attr);
+	    insert_keyword(temp, attr, 0);
 	}
 	free(temp);
     }
@@ -65,12 +65,12 @@ do_filter(FILE *input, FILE *output)
     yyin = input;
     yyout = output;
 
-    Action_attr  = keyword_attr(NAME_ACTION);
-    Comment_attr = keyword_attr(NAME_COMMENT);
-    Ident_attr   = keyword_attr(NAME_IDENT);
-    Ident2_attr  = keyword_attr(NAME_IDENT2);
-    Number_attr  = keyword_attr(NAME_NUMBER);
-    String_attr  = keyword_attr(NAME_LITERAL);
+    Action_attr  = class_attr(NAME_ACTION);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Ident_attr   = class_attr(NAME_IDENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    Number_attr  = class_attr(NAME_NUMBER);
+    String_attr  = class_attr(NAME_LITERAL);
 
     while (yylex() > 0) {
     }
