@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.38 1998/07/02 23:42:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.40 1998/08/17 00:38:38 tom Exp $
  *
  */
 
@@ -17,6 +17,16 @@ print_usage (void)
 	static	const char *const options[] = {
 	"-h             to get help on startup",
 	"-gNNN          or simply +NNN to go to line NNN",
+#if SYS_WINNT && defined(DISP_NTWIN)
+	"-geometry CxR  to set initial size to R rows and C columns",
+#endif
+#if SYS_WINNT && defined(VILE_OLE) && defined(DISP_NTWIN)
+	"-Oa            invoke as an OLE Automation server",
+	"-Or            register ole automation interface and exit",
+	"-Ou            unregister ole automation interface and exit",
+	"-invisible     OLE Automation server does not initially show a window",
+	"-multiple      multiple instances of OLE Automation server permitted",
+#endif
 	"-sstring       or +/string to search for \"string\"",
 #if OPT_TAGS
 	"-ttagname      to look up a tag",
@@ -56,10 +66,14 @@ print_usage (void)
 	register SIZE_T	j;
 
 	ttclean(TRUE);
+#if DISP_NTWIN
+	gui_usage(prog_arg, options, TABLESIZE(options));
+#else
 	(void)fprintf(stderr, "usage: %s [-flags] [@cmdfile] files...\n",
 		prog_arg);
 	for (j = 0; j < TABLESIZE(options); j++)
 		(void)fprintf(stderr, "\t%s\n", options[j]);
+#endif
 	ExitProgram(BADEXIT);
 }
 

@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.359 1998/07/23 09:19:56 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.361 1998/08/17 00:00:39 cmorgan Exp $
  */
 
 #ifndef _estruct_h
@@ -427,7 +427,7 @@
    made restartable with sigaction() */
 #define OPT_WORKING (!SMALLER && HAVE_ALARM && HAVE_RESTARTABLE_PIPEREAD)
 
-#define OPT_SCROLLBARS XTOOLKIT			/* scrollbars */
+#define OPT_SCROLLBARS (XTOOLKIT | DISP_NTWIN)	/* scrollbars */
 #define OPT_VMS_PATH    (SYS_VMS)  /* vax/vms path parsing (testing/porting)*/
 
 /* systems with MSDOS-like filename syntax */
@@ -1373,7 +1373,7 @@ typedef UCHAR VIDEO_ATTR;
 /* grow (or initially allocate) a vector of newsize types, pointed to by
  * ptr.  this is used primarily for resizing the screen
  * the studious will note this is a lot like realloc.   but realloc
- * doesn't guarantee to preserve contents if if fails, and this also
+ * doesn't guarantee to preserve contents if it fails, and this also
  * zeroes the new space.
  */
 #define GROW(ptr, type, oldsize, newsize) \
@@ -1471,7 +1471,7 @@ struct VALNAMES {
 #define WFKILLS	iBIT(6)			/* something was deleted	*/
 #define WFINS	iBIT(7)			/* something was inserted	*/
 #define WFSTAT	iBIT(8)			/* Update mode line (info only).*/
-#define WFSBAR	iBIT(9)			/* Update scroll bar(s) */
+#define WFSBAR	iBIT(9)			/* Update scroll bar(s)		*/
 
 /* define indices for GLOBAL, BUFFER, WINDOW modes */
 #ifdef realdef
@@ -2304,7 +2304,11 @@ extern void _exit (int code);
 #define	FreeAndNull(p)	if ((p) != 0) { free((char *)p); p = 0; }
 #define	FreeIfNeeded(p)	if ((p) != 0) free((char *)(p))
 
+#if SYS_WINNT && defined(VILE_OLE) && defined(DISP_NTWIN)
+#define ExitProgram(code)   oleauto_exit(code)
+#else
 #define	ExitProgram(code)	exit(code)
+#endif
 
 /*
  * We cannot define these in config.h, since they require parameters to be

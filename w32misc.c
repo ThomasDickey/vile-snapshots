@@ -7,7 +7,7 @@
  * =======
  * -- This code has not been tested with NT 3.51 .
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.5 1998/07/10 00:00:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.6 1998/08/16 22:28:55 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -409,4 +409,73 @@ restore_console_title(void)
 #ifndef DISP_NTWIN
     SetConsoleTitle(saved_title);
 #endif
+}
+
+
+
+/*
+ * FUNCTION
+ *   fmt_win32_error(ULONG errcode, char **buf, ULONG buflen)
+ *
+ *   errcode - win32 error code for which message applies.  If errcode is
+ *             W32_SYS_ERROR, GetLastError() will be invoked to obtain the
+ *             error code.
+ *
+ *   buf     - indirect pointer to buf to receive formatted message.  If *buf
+ *             is NULL, the buffer is allocated on behalf of the client and
+ *             must be free'd using LocalFree().
+ *
+ *   buflen  - length of buffer (specify 0 if *buf is NULL).
+ *
+ * DESCRIPTION
+ *   Format system error reported by Win32 API.
+ *
+ * RETURNS
+ *   *buf
+ */
+
+char *
+fmt_win32_error(ULONG errcode, char **buf, ULONG buflen)
+{
+    int flags = FORMAT_MESSAGE_FROM_SYSTEM;
+
+    if (! *buf)
+        flags |= FORMAT_MESSAGE_ALLOCATE_BUFFER;
+    FormatMessage(flags,
+                  NULL,
+                  errcode == W32_SYS_ERROR ? GetLastError() : errcode,
+                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), /* dflt language */
+                  (*buf) ? *buf : (LPTSTR) buf,
+                  buflen,
+                  NULL);
+    return (*buf);
+}
+
+
+
+/*
+ * FUNCTION
+ *   disp_win32_error(ULONG errcode, void *hwnd)
+ *
+ *   errcode - win32 error code for which message applies.  If errcode is
+ *             W32_SYS_ERROR, GetLastError() will be invoked to obtain the
+ *             error code.
+ *
+ *   hwnd    - specifies the window handle argument to MessageBox (can be NULL).
+ *
+ * DESCRIPTION
+ *   Format system error reported by Win32 API and display in message box.
+ *
+ * RETURNS
+ *   None
+ */
+
+void
+disp_win32_error(ULONG errcode, void *hwnd)
+{
+    char *buf = NULL;
+
+    fmt_win32_error(errcode, &buf, 0);
+    MessageBox(hwnd, buf, prognam, MB_OK|MB_ICONSTOP);
+    LocalFree(buf);
 }

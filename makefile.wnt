@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.30 1998/07/27 23:31:31 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.31 1998/08/16 22:24:59 cmorgan Exp $
 #
 #
 !include <ntwin32.mak>
@@ -11,15 +11,16 @@ CFG=vile
 !MESSAGE No configuration (CFG) specified.  Defaulting to vile (console)
 !ENDIF
 
-!IF "$(CFG)" != "vile" && "$(CFG)" != "winvile"  && \
-    "$(CFG)" != "vile-with-perl" && "$(CFG)" != "winvile-with-perl"
-!MESSAGE Invalid configuration "$(CFG)" specified.
+!IF ("$(CFG)" != "vile" && "$(CFG)" != "winvile"  &&                     \
+     "$(CFG)" != "vile-with-perl" && "$(CFG)" != "winvile-with-perl") || \
+    ("$(OPT)" != "" && "$(OPT)" != "ole-auto") ||                        \
+        ("$(OPT)" == "ole-auto" &&                                       \
+        ("$(CFG)" == "vile" || "$(CFG)" == "vile-with-perl"))
+!MESSAGE Invalid configuration specified!
+!MESSAGE
 !MESSAGE You can specify a configuration when running NMAKE on this makefile
-!MESSAGE by defining the macro CFG on the command line.  For example:
-!MESSAGE
-!MESSAGE NMAKE /f "makefile.wnt" CFG="winvile"
-!MESSAGE
-!MESSAGE Possible choices for configuration are:
+!MESSAGE by defining a CFG and/or OPT macro on the command line.  Possible
+!MESSAGE configuration choices are:
 !MESSAGE
 !MESSAGE vile              - console
 !MESSAGE vile-with-perl    - console and embedded perl
@@ -29,6 +30,18 @@ CFG=vile
 !MESSAGE The 'with-perl' configurations have two preconditions which must be
 !MESSAGE met prior to initiating the build.  Refer to the file "mkprlenv.wnt"
 !MESSAGE for more details.
+!MESSAGE
+!MESSAGE The only supported OPT value is:
+!MESSAGE
+!MESSAGE ole-auto          - add basic ole automation to winvile
+!MESSAGE
+!MESSAGE Examples:
+!MESSAGE
+!MESSAGE /* build console editor */
+!MESSAGE nmake -f makefile.wnt
+!MESSAGE
+!MESSAGE /* build gui editor with embedded perl and basic ole automation */
+!MESSAGE nmake -f makefile.wnt CFG=winvile-with-perl OPT=ole-auto
 !MESSAGE
 !ERROR An invalid configuration is specified.
 !ENDIF
@@ -48,23 +61,32 @@ THE_PERLCFG  = perl_env.inc
 !ENDIF
 
 !IF  "$(CFG)" == "vile" || "$(CFG)" == "vile-with-perl"
+DISP_DEF = -DDISP_NTCONS
 TARGET   = vile.exe
 UTILS    = vile-c-filt.exe
 CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
-           -Dscrn_chosen -DDISP_NTCONS $(PERLOPTS)
+           -Dscrn_chosen $(DISP_DEF) $(PERLOPTS)
 LDFLAGS  = -nologo -pdb:none
 SCREEN   = ntconio
 LIBS     = $(LD_DEBUG) $(conlflags) $(conlibsmt) user32.lib $(VILE_PERL_LIB)
 !endif
 
 !IF  "$(CFG)" == "winvile" || "$(CFG)" == "winvile-with-perl"
+DISP_DEF = -DDISP_NTWIN
 TARGET   = winvile.exe
 UTILS    = vile-c-filt.exe
 CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
-           -Dscrn_chosen -DDISP_NTWIN $(PERLOPTS)
+           -Dscrn_chosen $(DISP_DEF) $(PERLOPTS)
 LDFLAGS  = -nologo /nologo /subsystem:windows /incremental:no -pdb:none
 SCREEN   = ntwinio
-LIBS     = $(LD_DEBUG) $(guilflags) $(guilibsmt) $(VILE_PERL_LIB)
+LIBS     = $(LD_DEBUG) $(guilflags) $(guilibsmt) $(VILE_PERL_LIB) $(OLELIBS)
+!endif
+
+!IF "$(OPT)" == "ole-auto"
+CFLAGS   = $(CFLAGS) -DVILE_OLE
+OLEOBJS  = w32ole.obj w32reg.obj w32ole.res
+OLESRCS  = w32ole.cpp w32reg.c
+OLELIBS  = ole32.lib uuid.lib oleaut32.lib
 !endif
 
 !IF "$(CFG)" == "winvile-with-perl" || "$(CFG)" == "vile-with-perl"
@@ -108,7 +130,8 @@ SRC = 	main.c $(SCREEN).c \
 	region.c search.c select.c spawn.c \
 	tags.c tbuff.c termio.c undo.c \
 	version.c window.c word.c wordmov.c map.c \
-	w32cbrd.c w32misc.c w32pipe.c $(PERLSRCS)
+	w32cbrd.c w32misc.c w32pipe.c $(PERLSRCS) \
+	$(OLESRCS)
 
 OBJ = 	main.obj $(SCREEN).obj \
 	basic.obj bind.obj btree.obj buffer.obj crypt.obj \
@@ -121,10 +144,14 @@ OBJ = 	main.obj $(SCREEN).obj \
 	region.obj search.obj select.obj spawn.obj \
 	tags.obj tbuff.obj termio.obj undo.obj \
 	version.obj window.obj word.obj wordmov.obj map.obj \
-	w32cbrd.obj w32misc.obj w32pipe.obj $(PERLOBJS)
+	w32cbrd.obj w32misc.obj w32pipe.obj $(PERLOBJS) \
+	$(OLEOBJS)
 
 .c.obj:
 	$(cc) $(CFLAGS) -c $< -Fo$@
+
+.cpp.obj:
+	$(cc) $(CFLAGS) $(CFLAGS) -c $< -Fo$@
 
 all: $(PERLCFG) $(TARGET) $(UTILS)
 
@@ -161,12 +188,21 @@ vile-c-filt.exe: c-filt.c
 	$(cc) $(CFLAGS) c-filt.c \
     -Fovile-c-filt -link $(CON_LDFLAGS)
 
+w32ole.res: w32ole.rc winvile.tlb
+    $(RC) $(DISP_DEF) w32ole.rc
+
+winviletlb.h winvile.tlb: winvile.odl
+    midl -h winviletlb.h -tlb winvile.tlb winvile.odl
+
 clean:
     del *.exe
     del *.obj
     del ne*.h
     -del $(THE_PERLCFG)
     -del perl.c
+    -del winviletlb.h
+    -del *.tlb
+    -del *.res
 
 api.obj:	api.h
 bind.obj:	nefunc.h btree.h
@@ -189,4 +225,6 @@ tags.obj:	btree.h
 termio.obj:	nefunc.h
 version.obj:	patchlev.h
 w32misc.obj:	nefunc.h
+w32ole.obj:	w32ole.h winviletlb.h w32reg.h
+w32reg.obj:	w32reg.h
 word.obj:	nefunc.h

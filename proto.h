@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.291 1998/07/22 00:58:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.293 1998/08/17 01:40:45 tom Exp $
  *
  */
 
@@ -888,16 +888,32 @@ extern FILE *vms_rpipe (const char *cmd, int fd, const char *input_file);
 
 /* w32isms */
 #if SYS_WINNT
-extern char *mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc);
+
+#define W32_SYS_ERROR  NOERROR
+typedef struct oleauto_options_struct
+{
+    int invisible;      /* Boolean, T -> server invisible at startup        */
+    int multiple;       /* Boolean, T -> multiple server instances possible */
+    int rows, cols;     /* Size of winvile at startup, 0 if unspecified     */
+} OLEAUTO_OPTIONS;
+
+extern void disp_win32_error(ULONG errcode, void *hwnd);
+extern char *fmt_win32_error(ULONG errcode, char **buf, ULONG buflen);
 extern int  is_win95(void);
 extern int  is_winnt(void);
-extern int  stdin_data_available(void);
-extern int  w32_inout_popen(FILE **fr, FILE **fw, char *cmd);
-extern int  w32_system(const char *cmd);
+extern char *mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc);
+extern void oleauto_exit(int code);
+extern int  oleauto_init(OLEAUTO_OPTIONS *opts);
+extern int  oleauto_register(OLEAUTO_OPTIONS *opts);
+extern int  oleauto_unregister(void);
 extern void restore_console_title(void);
 extern void set_console_title(const char *title);
+extern int  stdin_data_available(void);
+extern int  w32_inout_popen(FILE **fr, FILE **fw, char *cmd);
 extern void w32_keybrd_reopen(int pressret);
 extern void w32_npclose(FILE *fp);
+extern int  w32_system(const char *cmd);
+extern void *winvile_hwnd(void);
 #endif
 
 /* watchfd.c */
@@ -983,6 +999,10 @@ extern	void	x_working		(void);
 
 #if DISP_X11 || DISP_NTWIN
 extern	void	gui_resize		(int cols, int rows);
+#endif
+
+#if DISP_NTWIN
+extern	void	gui_usage(char *program, const char *const *options, size_t length);
 #endif
 
 #if OPT_SCROLLBARS

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_0i
+MANIFEST for vile, version v8_0j
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -115,9 +115,15 @@ vmspipe.c                       pipe-filter support for VMS
 vmsvt.c                         VMS terminal driver
 w32cbrd.c                       Win32 clipboard support
 w32misc.c                       vile-7.4h
+w32ole.cpp                      interface for Winvile OLE
+w32ole.h                        interface of w32ole.cpp
+w32ole.rc                       resource-control for ole configuration
 w32pipe.c                       Win32 native pipe support
+w32reg.c                        Winvile OLE registration code
+w32reg.h                        interface of w32reg
 watch.c                         watch file-descriptors & timers
 window.c                        window-management functions
+winvile.odl                     interface description for Winvile OLE
 word.c                          commands that operate upon words or paragraphs
 wordmov.c                       cursor-movement commands (e.g., word, spaces)
 x11.c                           X11 (Xt, Motif or Openlook) terminal driver
@@ -127,6 +133,7 @@ doc/config.doc                  configuration-instructions for VILE
 doc/macros.doc                  documentation for VILE macros
 doc/menus.doc                   description of xvile (Xm and Xaw) menus
 doc/modes.doc                   overview of modes/majormodes
+doc/oleauto.doc                 document Winvile OLE
 doc/perl.doc                    notes about perl interface to vile
 doc/w32modes.doc                describe win32-specific modes
 macros                          subdirectory
