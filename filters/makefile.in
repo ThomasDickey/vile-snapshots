@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.48 1999/04/29 23:45:17 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.49 1999/05/06 09:30:35 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -88,6 +88,7 @@ LEX_ALL = \
 	vile-html-filt$x \
 	vile-latex-filt$x \
 	vile-lex-filt$x \
+	vile-m4-filt$x \
 	vile-mail-filt$x \
 	vile-make-filt$x \
 	vile-mms-filt$x \
@@ -144,6 +145,9 @@ vile-latex-filt$x : latexflt.o $(LF_DEPS)
 
 vile-lex-filt$x : lex-filt.o $(LF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ lex-filt.o $(LF_ARGS)
+
+vile-m4-filt$x : m4-filt.o $(CF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ m4-filt.o $(CF_ARGS)
 
 vile-mail-filt$x : mailfilt.o $(LF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ mailfilt.o $(LF_ARGS)
@@ -218,6 +222,7 @@ INSTALL_LEX_BIN = \
 	$(bindir)/vile-html-filt$x \
 	$(bindir)/vile-latex-filt$x \
 	$(bindir)/vile-lex-filt$x \
+	$(bindir)/vile-m4-filt$x \
 	$(bindir)/vile-mail-filt$x \
 	$(bindir)/vile-make-filt$x \
 	$(bindir)/vile-mms-filt$x \
@@ -248,6 +253,7 @@ INSTALL_LEX_TXT = \
 	$(datadir)/js.keywords \
 	$(datadir)/latex.keywords \
 	$(datadir)/lex.keywords \
+	$(datadir)/m4.keywords \
 	$(datadir)/mail.keywords \
 	$(datadir)/make.keywords \
 	$(datadir)/nr.keywords \
@@ -321,6 +327,7 @@ $(bindir)/vile-diff-filt$x :	vile-diff-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-html-filt$x :	vile-html-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-latex-filt$x :	vile-latex-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-lex-filt$x :	vile-lex-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(bindir)/vile-m4-filt$x :	vile-m4-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-mail-filt$x :	vile-mail-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-make-filt$x :	vile-make-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-manfilt$x :	vile-manfilt$x		; $(INSTALL_PROGRAM) $? $@
@@ -357,6 +364,7 @@ $(datadir)/java.keywords :	$(srcdir)/java.key	; $(INSTALL_DATA) $? $@
 $(datadir)/js.keywords :	$(srcdir)/js.key	; $(INSTALL_DATA) $? $@
 $(datadir)/latex.keywords :	$(srcdir)/latex.key	; $(INSTALL_DATA) $? $@
 $(datadir)/lex.keywords :	$(srcdir)/lex.key	; $(INSTALL_DATA) $? $@
+$(datadir)/m4.keywords :	$(srcdir)/m4.key	; $(INSTALL_DATA) $? $@
 $(datadir)/mail.keywords :	$(srcdir)/mail.key	; $(INSTALL_DATA) $? $@
 $(datadir)/make.keywords :	$(srcdir)/make.key	; $(INSTALL_DATA) $? $@
 $(datadir)/nr.keywords :	$(srcdir)/nr.key	; $(INSTALL_DATA) $? $@

@@ -9,7 +9,7 @@
  * Note: Visual flashes are not yet supported.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.27 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.28 1999/05/10 23:41:40 tom Exp $
  *
  */
 
@@ -154,7 +154,7 @@ TERM    term    = {
 #else
 	nullterm_icursor,
 #endif
-	nullterm_settitile,
+	nullterm_settitle,
 	nullterm_watchfd,
 	nullterm_unwatchfd,
 	nullterm_cursorvis,

@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.163 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.164 1999/05/10 23:41:21 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -1087,7 +1087,7 @@ TERM null_term = {
 	nullterm_scroll,
 	nullterm_pflush,
 	nullterm_icursor,
-	nullterm_settitile,
+	nullterm_settitle,
 	nullterm_watchfd,
 	nullterm_unwatchfd,
 	nullterm_cursorvis,
@@ -1120,7 +1120,7 @@ static void nullterm_rev(UINT state GCC_UNUSED) { }
 /*ARGSUSED*/ void nullterm_scroll (int f GCC_UNUSED, int t GCC_UNUSED, int n GCC_UNUSED) { }
 /*ARGSUSED*/ void nullterm_pflush (void) { }
 /*ARGSUSED*/ void nullterm_icursor (int c GCC_UNUSED) { }
-/*ARGSUSED*/ void nullterm_settitile (char *t GCC_UNUSED) { }
+/*ARGSUSED*/ void nullterm_settitle (char *t GCC_UNUSED) { }
 /*ARGSUSED*/ int  nullterm_watchfd (int fd GCC_UNUSED, WATCHTYPE type GCC_UNUSED, long *idp GCC_UNUSED) { return 0; }
 /*ARGSUSED*/ void nullterm_unwatchfd (int fd GCC_UNUSED, long id GCC_UNUSED) { }
 /*ARGSUSED*/ void nullterm_cursorvis (int flag GCC_UNUSED) { }

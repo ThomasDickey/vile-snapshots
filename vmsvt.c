@@ -14,7 +14,7 @@
  *   -- support wide and narrow screen resolutions,
  *   -- support visual bells.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.49 1999/04/17 21:09:15 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.50 1999/05/10 23:41:20 tom Exp $
  *
  */
 
@@ -115,7 +115,7 @@ TERM	term	= {
 	nullterm_scroll,		/* set at init-time		*/
 	nullterm_pflush,
 	nullterm_icursor,
-	nullterm_settitile,
+	nullterm_settitle,
 	nullterm_watchfd,
 	nullterm_unwatchfd,
 	nullterm_cursorvis,

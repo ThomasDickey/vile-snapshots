@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.41 1999/04/14 11:04:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.42 1999/05/10 23:41:30 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -214,7 +214,7 @@ TERM    term    = {
 #if OPT_TITLE
 	nttitle,
 #else
-	nullterm_settitile,
+	nullterm_settitle,
 #endif
 	nullterm_watchfd,
 	nullterm_unwatchfd,

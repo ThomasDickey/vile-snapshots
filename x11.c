@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.207 1999/04/29 22:36:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.209 1999/05/11 00:55:16 tom Exp $
  *
  */
 
@@ -263,8 +263,8 @@ typedef struct _text_win {
     Widget	*sliders;
 #endif
 #if OPT_MENUS_COLORED
-    Pixel       menubar_fg;     /* color of the menubar */
-    Pixel       menubar_bg;
+    Pixel	menubar_fg;	/* color of the menubar */
+    Pixel	menubar_bg;
 #endif
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
     Pixel	scrollbar_fg;
@@ -330,9 +330,10 @@ typedef struct _text_win {
 		char_height;
     Bool	left_ink,	/* font has "ink" past bounding box on left */
 		right_ink;	/* font has "ink" past bounding box on right */
-    char       *geometry;
-    char       *starting_fontname;	/* name of font at startup */
-    char       *fontname;		/* name of current font */
+    int		wheel_scroll_amount;
+    char *	geometry;
+    char *	starting_fontname;	/* name of font at startup */
+    char *	fontname;		/* name of current font */
     Bool	focus_follows_mouse;
     Bool	fork_on_startup;
     Bool	scrollbar_on_left;
@@ -343,7 +344,7 @@ typedef struct _text_win {
 
     /* text stuff */
     Bool	reverse;
-    unsigned    rows,
+    unsigned	rows,
 		cols;
     Bool	show_cursor;
 
@@ -543,7 +544,7 @@ TERM	    term = {
     x_scroll,
     x_flush,
     nullterm_icursor,
-    nullterm_settitile,
+    nullterm_settitle,
     x_watchfd,
     x_unwatchfd,
     nullterm_cursorvis,
@@ -1682,6 +1683,8 @@ gui_update_scrollbar(
 #define XtNmultiClickTime	"multiClickTime"
 #define XtCMultiClickTime	"MultiClickTime"
 #define XtNcharClass		"charClass"
+#define XtNwheelScrollAmount    "wheelScrollAmount"
+#define XtCWheelScrollAmount    "WheelScrollAmount"
 #define XtCCharClass		"CharClass"
 #if OPT_KEV_DRAGGING
 #define	XtNscrollRepeatTimeout	"scrollRepeatTimeout"
@@ -1900,6 +1903,15 @@ static XtResource resources[] = {
 	(XtPointer) PANE_WIDTH_DEFAULT
     },
 #if OPT_MENUS
+    {
+	XtNwheelScrollAmount,
+	XtCWheelScrollAmount,
+	XtRInt,
+	sizeof(int),
+	XtOffset(TextWindow, wheel_scroll_amount),
+	XtRImmediate,
+	(XtPointer) 3
+    },
     {
 	XtNmenuHeight,
 	XtCMenuHeight,
@@ -3294,10 +3306,10 @@ x_preparse_args(
 # endif
 #endif
 	XWMHints *hints = XAllocWMHints();
+#if OPT_TRACE
 	XIconSize *size_list;
 	int size_size;
 
-#if OPT_TRACE
 	/* FIXME: get some information about the desired icon sizes to see
 	 * if it's worth supplying an explicit 16x16.  That appears to be
 	 * possible with XVision -TD
@@ -5094,7 +5106,7 @@ x_process_event(
 
 	if (nr < 0)
 	    nr = -1;	/* want to be out of bounds to force scrolling */
-	else if (nr > cur_win->rows)
+	else if (nr > (int) cur_win->rows)
 	    nr = cur_win->rows;
 
 	if (nc < 0)
@@ -5154,6 +5166,14 @@ x_process_event(
 	    cur_win->wipe_permitted = True;
 	    cur_win->prevDOT = DOT;
 	    extend_selection(cur_win, nr, nc, False);
+	    break;
+        case Button4:
+	    mvupwind(TRUE, cur_win->wheel_scroll_amount);
+	    (void)update(TRUE);
+	    break;
+        case Button5:
+	    mvdnwind(TRUE, cur_win->wheel_scroll_amount);
+	    (void)update(TRUE);
 	    break;
 	}
 	break;

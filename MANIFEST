@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_3b
+MANIFEST for vile, version v8_3c
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -171,6 +171,8 @@ filters/latex.key               latex keywords
 filters/latexflt.l              LaTeX syntax filter for vile
 filters/lex-filt.l              lex syntax filter for vile
 filters/lex.key                 keywords for lex + c
+filters/m4-filt.c               syntax filter for M4
+filters/m4.key                  keywords for M4 syntax filter
 filters/mail.key                keywords for mail-filter
 filters/mailfilt.l              mail syntax highlighting filter for vile
 filters/make.key                keywords for makefile syntax highlighter
