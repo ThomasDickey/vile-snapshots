@@ -1,5 +1,14 @@
 Changes for vile 7.1 (released ??? ??? ??, 1997)
 
+(tom)	970322 (c)
+	+ fixes for piping to vile in WinNT (patch by Clark Morgan).
+	+ add logic for visual-matches in color, WinNT (patch by Clark Morgan).
+	+ add vile-c-filt.exe to makefile.wnt, modify default keyword file
+	  on that system to vile.keywords (patch by Clark Morgan).
+	+ correct problem with MS-DOS/Win95/NT version of npopen.c that left
+	  temp-files after reading from pipe, because file-remove was done
+	  before closing (patch by Clark Morgan).
+
 (tom)	970315 (b)
 	+ use macro GCC_UNUSED throughout to quiet gcc warnings about unused
 	  (dummy) parameters.

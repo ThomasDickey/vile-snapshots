@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.54 1997/03/13 11:49:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.55 1997/03/19 10:49:45 cmorgan Exp $
  *
  */
 
@@ -371,16 +371,16 @@ npopen (const char *cmd, const char *type)
 int
 inout_popen(FILE **fr, FILE **fw, const char *cmd)
 {
-	char	*type = (fw != 0) ? "w" : "r";
-	FILE	*pp = 0;
-	int	fd;
+	char		*type = (fw != 0) ? "w" : "r";
+	static FILE	*pp = 0;
+	int		fd;
 
 	/* Create the file that will hold the pipe's content */
 	if ((fd = createTemp(type)) >= 0) {
 		if (fw == 0) {
 			*fr = pp = readPipe(cmd, -1, fd);
 			myWrtr = 0;
-			myPipe = 0;
+			myPipe = &pp;  /* Can't assign "fr", may be stack-based. */
 			myCmds = 0;
 		} else {
 			*fw = pp = fdopen(fd, type);

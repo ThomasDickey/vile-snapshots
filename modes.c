@@ -7,7 +7,7 @@
  * Original code probably by Dan Lawrence or Dave Conroy for MicroEMACS.
  * Major extensions for vile by Paul Fox, 1991
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.82 1997/03/15 15:48:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.83 1997/03/22 17:00:16 cmorgan Exp $
  *
  */
 
@@ -643,6 +643,32 @@ FSM_CHOICES fsm_mono_attributes[] = {
 	{ "none",       0       },
 	{ "reverse",    VAREV   },
 	{ "underline",  VAUL    },
+#if OPT_COLOR && FIXME_VM
+	{ "black",      VACOL_0 },  /* DOS-specific color lookup */
+	{ "red",        VACOL_1 },  /* etc.                      */
+	{ "green",      VACOL_2 },
+	{ "yellow",     VACOL_3 },
+	{ "blue",       VACOL_4 },
+	{ "magenta",    VACOL_5 },
+	{ "cyan",       VACOL_6 },
+	{ "white",      VACOL_7 },
+	{ "c0",     	VACOL_0 },  /* Color 0, generic color lookup */
+	{ "c1",     	VACOL_1 },  /* etc.                          */
+	{ "c2",     	VACOL_2 },
+	{ "c3",     	VACOL_3 },
+	{ "c4",     	VACOL_4 },
+	{ "c5",     	VACOL_5 },
+	{ "c6",     	VACOL_6 },
+	{ "c7",     	VACOL_7 },
+	{ "c8",     	VACOL_8 },
+	{ "c9",     	VACOL_9 },
+	{ "c10",    	VACOL_A },
+	{ "c11",    	VACOL_B },
+	{ "c12",    	VACOL_C },
+	{ "c13",    	VACOL_D },
+	{ "c14",    	VACOL_E },
+	{ "c15",    	VACOL_F },
+#endif
 	END_CHOICES
 };
 #endif

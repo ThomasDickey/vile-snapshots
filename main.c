@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.290 1997/03/15 15:38:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.291 1997/03/22 17:51:39 cmorgan Exp $
  *
  */
 
@@ -305,7 +305,7 @@ main(int argc, char *argv[])
 			firstbp = bp;
 		ffp = fdopen(dup(fileno(stdin)), "r");
 #if !DISP_X11
-#if SYS_UNIX
+# if SYS_UNIX
 		/*
 		 * Note: On Linux, the low-level close/dup operation
 		 * doesn't work, since something hangs, apparently
@@ -318,21 +318,54 @@ main(int argc, char *argv[])
 			tidy_exit(BADEXIT);
 		}
 #else
-# if SYS_VMS
+# if SYS_WINNT
+		/*
+		 * Win32 needs to reopen the console, not fd 0.  If the console
+		 * is not reopened, the nt console I/O routines die immediately
+		 * when attempting to fetch a STDIN handle.
+		 */
+		freopen("con", "r", stdin);
+# else
+#  if SYS_VMS
   		fd = open("tt:", O_RDONLY, S_IREAD); /* or sys$command */
-# else					/* e.g., DOS-based systems */
+#  else					/* e.g., DOS-based systems */
   		fd = fileno(stderr);	/* this normally cannot be redirected */
-# endif
+#  endif
   		if ((fd >= 0)
   		 && (close(0) >= 0)
   		 && (fd = dup(fd)) == 0
   		 && (in = fdopen(fd, "r")) != 0)
   			*stdin = *in;
-#endif	/* SYS_UNIX */
+#  endif /* SYS_WINNT */
+# endif /* SYS_UNIX */
 #endif /* DISP_X11 */
 
   		(void)slowreadf(bp, &nline);
-  		set_rdonly(bp, bp->b_fname, MDREADONLY);
+#if (OPT_DOSFILES) && (SYS_WINNT)
+		/* 
+		 * FIXME  
+		 *
+		 * In a Win32 environment, there's a bug that I,
+		 * Clark Morgan, don't know how to fix (properly).
+		 *
+		 * bug:  User's $HOME/vile.rc is terminated with CR/LF.
+		 *       User pipes input into vile (e.g., set | vile).
+		 *         When the data from the pipe is read by slowreadf() 
+		 *         above, that function will turn off the global dos mode.
+		 *       Next, the editor will read vile.rc and be unable to
+		 *         parse the contents of that file because it won't
+		 *         strip CRs when global dos mode is reset.
+		 *
+		 * hack fix: when the editor reads from a pipe in a Win32
+		 *           env, force global dos mode to be set (again).
+		 *
+		 * There must be a more elegant fix...
+		 *
+		 * FIXME 
+		 */
+		set_global_b_val(MDDOS, CRLF_LINES);
+#endif
+		set_rdonly(bp, bp->b_fname, MDREADONLY);
 		(void)ffclose();
 
 		if (is_empty_buf(bp)) {

@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.299 1997/03/15 15:35:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.300 1997/03/20 18:03:04 cmorgan Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -1275,8 +1275,26 @@ typedef unsigned char VIDEO_ATTR;
 #define	VAUL	0x20			/* underline			*/
 #define	VAITAL	0x40			/* italics			*/
 #define	VABOLD	0x80			/* bold				*/
-#define VAOWNER 0x0f00			/* owner mask			*/
-#define VACOLOR 0xf000			/* color mask			*/
+#define VAOWNER 0x0700			/* owner mask		*/
+#define VASPCOL 0x0800			/* specific color   */
+#define VACOLOR 0xf000			/* color mask		*/
+#define VACOL_0 (VASPCOL)		/* color palette index 0 */
+#define VACOL_1 (VASPCOL+1)		/* etc.				*/
+#define VACOL_2 (VASPCOL+2)
+#define VACOL_3 (VASPCOL+3)
+#define VACOL_4 (VASPCOL+4)
+#define VACOL_5 (VASPCOL+5)
+#define VACOL_6 (VASPCOL+6)
+#define VACOL_7 (VASPCOL+7)
+#define VACOL_8 (VASPCOL+8)
+#define VACOL_9 (VASPCOL+9)
+#define VACOL_A (VASPCOL+0xA)
+#define VACOL_B (VASPCOL+0xB)
+#define VACOL_C (VASPCOL+0xC)
+#define VACOL_D (VASPCOL+0xD)
+#define VACOL_E (VASPCOL+0xE)
+#define VACOL_F (VASPCOL+0xF)
+
 #define VCOLORNUM(attr) (((attr) & VACOLOR) >> 12)
 #define VCOLORATTR(num) ((num) << 12)
 
