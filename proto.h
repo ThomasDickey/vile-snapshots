@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.303 1998/09/22 23:00:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.304 1998/09/29 23:43:58 tom Exp $
  *
  */
 
@@ -1013,6 +1013,11 @@ extern	int	x_key_events_ready	(void);
 #if OPT_MENUS
 extern	int	x_menu_height		(void);
 #endif
+
+#if OPT_MENUS_COLORED  
+extern	int	x_menu_background	(void);
+extern	int	x_menu_foreground	(void);
+#endif /* OPT_MENUS_COLORED */
 
 #if OPT_WORKING
 extern	void	x_working		(void);

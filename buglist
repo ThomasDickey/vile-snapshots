@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.344 1998/08/17 22:03:50 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.347 1998/09/30 01:37:55 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1090,20 +1090,35 @@ in glob.c
 
 [I believe he's suggesting it be installed this way - tom]
 
+-- 97-03-08 (Otto Lind <otto.lind@softwire.com>)
+
+I've been a user of vile since vile-3.33, and have noticed an obnoxious
+bug which has appeared in later versions (I'm at 7.0).  If you try and
+execute the vi sequence:
+
+        1,$s:/:_:
+
+it reports "[No pattern.]" when pressing the first ':'. The following
+does work:
+
+        1,$s^/^_^
+
+But my fingers are hardwired to use : as the substitution delimiter.
+
 -- 97-04-02 (Clark Morgan <cmorgan@aracnet.com>)
 
 type this command (use path approp for your version of win95):
 
-      :w !c:\windows\command\more 
- 
-...  vile should pipe the buffer to the more command and permit the user 
-to scroll through the text in a "subshell" and then print a 
-[Press return to continue] prompt when more exits.  But instead, vile 
-writes no output to the bottom of the screen and does not prompt for user 
-input.  It's as if the entire pipe operation was discarded. 
- 
-[98-03-17: Fixed when w32pipes mode is enabled.  Otherwise, write pipes 
-are badly broken for DOS and all variants of Windows.] 
+      :w !c:\windows\command\more
+
+...  vile should pipe the buffer to the more command and permit the user
+to scroll through the text in a "subshell" and then print a
+[Press return to continue] prompt when more exits.  But instead, vile
+writes no output to the bottom of the screen and does not prompt for user
+input.  It's as if the entire pipe operation was discarded.
+
+[98-03-17: Fixed when w32pipes mode is enabled.  Otherwise, write pipes
+are badly broken for DOS and all variants of Windows.]
 
 -- 97-04-23 (Ron Olsen <ronolsen@lucent.com>)
 
@@ -1173,6 +1188,22 @@ Purify, xvile exited (I think the linewrap logic is involved, he uses it in his
 .vilerc).  However, I'd not told Purify to follow child processed (which is
 needed for X).  Doing that, I had no repeat of the problem.  - tom]
 
+-- 97-06-27 (Curt Smith <csmith@ATLANTA.ViewCall.net>)
+
+One xvile problem that only manifests itself on svr4 boxes is that when
+exec'ing a shell via:  ^x!  or reading in a new file with wild cards, xvile is
+sent a SIGSTP due to an attempt to fool with stdout/stderr or some such?
+
+This problem has come and gone and doesn't exist on non-SVR4 systems like
+Linux, DEC Unix that I've issued.  Does exist on UnixWare, NCR Unix and
+Solaris.
+
+I had verson of 6.x xvile that did not have this problem but had other X
+problems.  I compiled 7.0 and now this problem is back.
+
+[the fix for this is to use the +fork option, or use the forkOnStartup resource
+since spawning a new xvile process establishes a new process group - tom]
+
 -- 97-07-07 (Larry Gensch <gensch@zk3.dec.com>)
 
 I have noticed another oddity in the 7.1 version of vile:  I use the window
@@ -1195,7 +1226,22 @@ put both
     set readonly-on-readonly
     set view-on-readonly
 
-in vile.rc and have them work. 
+in vile.rc and have them work.
+
+-- 97-08-26 (Ed Henderson <Ed.Henderson@micron.com>)
+
+I have been using vile for quite some time now. I use the file/function
+name completion a lot.
+
+Recently I started using Solaris. Now when I press Tab the vile (xvile)
+window enters some sort of selected state. The border changes to include
+a thin highlighted region around the inside perimeter, and futher keystrokes
+have no effect. A second press of the tab key clears this condition.
+
+When completing a filename, I must press tab once, which completes the name
+and enters the selected state, then press tab again to clear the selected
+state. I generally hit tab one too many/few times and am already typing the
+next 10 commands :-), so I get really screwed up.
 
 -- 97-09-02 (tom)
 
@@ -1206,6 +1252,69 @@ preamble).
 
 format-til does not work on rectangular regions (it should also take
 into account the comment-prefix).
+
+-- 97-09-11 (Keith Williams <kurris@hotmail.com>)
+
+In xvile, do the following:
+
+    - select a word with the mouse (double-click)
+    - move the cursor to a line above the selection (ie: type "kkk")
+    - open a line (either 'o' or 'O')
+    - note that the text and selection behave correctly
+    - press ESC and then undo the line opening
+    - note that the text moves up, but the selection does not!
+
+-- 97-09-16 (lar3ry gensch <lar3ry@tiac.net>)
+
+The new menu code puts a tiny bar across the top of the screen even if no menus
+are defined.  That is, if I do not create menus but the menuing code is enabled
+in xvile, it will still put up a tiny (5- or so- pixel) menubar without any
+menu buttons in it.  This is visually distracting and wastes some screen
+real-estate.
+
+-- 97-09-17 (Robert Chady <chady@concentric.net>)
+
+There is one feature that I have not been able to find in vile.  Was wondering
+if you could tell me if I'm missing it, or if it really isnt there.  If it isnt
+there, maybe you could put it in :)
+
+The feature is the ability to have reverse wraparound.  This is for when you
+backspace to the beginning of the line, rather than have to exit edit mode, go
+into command mode, move up a line, and continue erasing the line, have it
+automatically reverse wraparound.  This is similar to emacs/joe/etc/etc and is
+a very nice feature when you are trying to edit part of a sentence that is on
+multiple lines.
+
+[the arrow keys and others that generate escape sequences such as home/end
+can move the cursor around in edit mode, though this is not exactly what
+he's asking for - tom]
+
+-- 97-11-12 (tom)
+
+have seen recent references to {min} {,max} and similar in regular expressions
+for POSIX vi.  I want that.
+
+[98-01-19]
+have a partial implementation, will integrate after 8.0 (winvile and minibuffer
+are higher priority).
+
+-- 97-11-12 (Scott Waldon <waldon@engineous.com>)
+
+I was introduced to vile about 2 years ago and am really enjoying using it.
+However, there is one little but very anoying bug that I am experiencing.  I
+switched to using vile about the same time that I switched to CDE and dtterms
+(instead of xterms).  In a dtterm the status line on the bottom is constantly
+overwritten by some arbitrary line from the file forcing me to ^L constantly to
+keep from being confused by stray "}" or other statements...
+
+...Essentially, open any file, goto the bottom such that the last line lines up
+just above the message line.  Then <Shift>H and <k> which should scroll the
+screen down by one and overwrite the message line.  When I was capturing the
+script output it also did it on the scroll down as well.
+
+[this is a bug in dtterm:  for example, scrolling lines 1-22 will cause line 23
+to be written to line 22 rather than clearing line 22.  The fix is to disable
+scrolling regions (csr) in the terminfo description - tom]
 
 -- 97-11-27 (tom)
 
@@ -1261,6 +1370,68 @@ UWIN:
 
 	+ appears to be same "vt100" emulator as gnu-win32 (perhaps it is).
 
+-- 97-12-08 (paul)
+
+as far as i can tell, procedures now share a namespace with built-in
+functions, is that right?  i see that if i "source pictmode.rc" i no longer
+have to type ""run pic".  i can just type ":pic" instead.  this is neat.
+
+questions:
+    - can i bind a key to the new command "pic" at this point?  i don't
+	seem to be able to.  it seems like macros would be obsolete if
+	i could do this.
+
+    - can i define a procedure with acts as an "operator"?  i.e. can i
+	define a procedure which should be named "xxx-til"?  i can imagine
+	that with the perl hooks, it will be very tempting to write new
+	buffer-filtering stuff in perl (like sean's enhanced paragraph
+	formatter), and it would be really nice to define those as
+	operators (even if only line-oriented operations were supported, that
+	would be a big win), and bind them to a key.
+
+-- 97-12-10 (Ilya Zakharevich <ilya@math.ohio-state.edu>)
+
+In article <199712091406.JAA18712@postman.opengroup.org> you write:
+> Highlights since 7.2:
+>       + beginnings of perl interface
+
+Perl needs (to make the debugger visual) a file viewer which can be accessable
+both by user, and by the *driver* program (say, via a pipe).  Is it possible to
+use vile for this (start it with an option to read commands from a pipe)?
+
+An ability to highlight current line and use different colors for breakable
+lines and lines with breakpoints would be also welcome.
+
+> 	+ change $shell to use $COMSPEC on OS/2, MS-DOS, etc.
+
+Hmm, I think it is a big loss.  (Though I have no idea what was the previous
+state.) The only reasonable way is to use VILE_SHELL, if not defined, then
+SHELL, if not defined, then use COMSPEC.
+
+This gives enough flexibility on both the systems which like *nixish access
+from *nixish tools, and those who do not.
+
+-- 97-12-15 (Billy Little <billy_little@hso.link.com>)
+
+is there any way to get the highlighting behavior when the highlighting begins
+with a mouse double-click to behave the same way it does when in an xterm?
+Specifically, if I double-click on some text in an xterm window, and without
+releasing the mouse button after the second click, begin moving the pointer,
+the xterm will highlight only the text associated with whole words.
+
+-- 98-01-30 (Matthias Buelow <token@wicx50.informatik.uni-wuerzburg.de>)
+
+things about vile that would be nice...
+
+Backspacing over the beginning of line (at least when a newline has been
+inserted in the current insertion/append command, like in vi) and something
+like a jump-scroll (scrolling not one line but a couple of lines when going
+over the last line of the current page, like in emacs) are imho a good idea.
+
+...yanking text (for example, yanking to mark) could move the cursor to the
+mark instead of keeping it at the current location (that would be like vi does
+it).
+
 -- 98-02-08 (tom)
 
 Two users report a problem with xvile linked with Motif 2.0 on Linux.
@@ -1290,6 +1461,15 @@ After upgrading to gcc 2.7.2.3, I found that it is due to a bug in gcc; when
 optimizing it loses some code.  Turning off optimization makes the problem go
 away (tom).
 
+-- 98-03-11 (Richard A Ward <wardra@rss.rockwell.com>)
+
+I sometimes use a global command like
+
+	:g/LtADI/.-1,.+1d
+
+to delete a multiple line groups.  A file segment follows that I would use such
+a command on.  Vile doesn't allow this command.  Vi does.
+
 -- 98-04-12 (tom)
 
 OS/2 pipes hang in a write-to-pipe (nothing to do with recent changes for
@@ -1297,3 +1477,277 @@ Win32).  The EMX configuration can read/write pipes.
 
 OS/2 mouse code probably eats too many CPU cycles; since coding that, I've
 noticed that OS/2 is sometimes reluctant to switch windows vs EMX windows.
+
+-- 98-05-12 (Sean Ahern <ahern@llnl.gov>)
+
+I've got some characters in a file that are showing up as \x93.  I'd like to do
+a search and replace to change them to something else.  I can insert these
+characters just fine with the ^VNNN method.  However, I can't seem to type them
+in the mini-buffer as something to search for.  All I end up getting is the
+three-letter string "x93" as the search pattern.
+
+-- 98-05-25 (tom)
+
+if I edit a :<number>, it doesn't necessarily get interpreted as a jump to line
+<number>.
+
+[98-07-27] checking this, I don't see that aspect, but do see that I cannot
+edit a :<number> with an arrow key, since the arrow causes the <number> state
+to be terminated, and start on the name.  There'll always be the seam, but I
+might be able to fix this by tinkering with eol_range so it would accept
+left/right arrows.
+
+-- 98-05-27 (Kevin Buettner)
+
+Position yourself at the end of the makefile for vile or xvile.  Search for
+".*".  (No double quotes.) Then hit 'n'.  Try it repeatedly.  Notice that you
+won't wrap to the beginning of the buffer.
+
+BTW, this same behavior occurs for both '^' and '$' as search patterns.  Note
+that both of these are zero width assertions.  Also note that '.*' can match
+the empty string.
+
+-- 98-05-30 (Radek Liboska <liboska@tereza.uochb.cas.cz>)
+
+Do you plan to add/(to correct?) support for deadkeys to xvile?
+
+The problem is here:  the usage of latin-2 characters is problematic due to
+impossibility to insert characters like "r acute", "u circle" and many others,
+e.g.  all capitals
+
+ (Aacute...) from the keyboard.
+
+I wrote a map that works correctly (r=  =  racute,
+
+ R+  =  Rhatchek), it's OK, however the more elegant method
+is to use Xkb, not such keycodes map.
+
+Xvile by default, without the map, reads and displays latin2 characters
+correctly, as they are typed (it's necessary to set setenv LC_CTYPE cs before
+the xvile is started - OK) With one mistake:  the deadkey (=/+) does not acts
+like deadkey.  It inserts ' or hatchek (V) and after then the letter.  (e.g.
+'A instead od Á).  Maybe it is an error in X.  But it must can be solved.
+
+-- 98-06-16 (Jim Crigler <crigler@seo.com>)
+
+This may be specific to the fonts I'm using.  When I compiled xvile
+with
+        ./configure --prefix=/usr/local --with-perl --with-screen=Xaw
+        make
+on Linux (RH5), I can't see the decenders from g, q, y, etc.  This happens with
+both lucidatypewriter and courier in various sizes.  On Solaris 2.4 at work
+(same configure), it only happens with certain fonts.  In both cases I use only
+"real" fonts.  Sizes:
+
+	10/12/14/18  (18 is almost too big to be unusable)
+
+Actually, here's some more data:  It seems to happen when the window gets
+resized, either via the window manager or by setting the $font variable.  (I
+have some font sizes preset in a pseudo-menu I bring up in the command line via
+a key mapping.  It helps when someone else needs to look at code over my
+shoulder to bump up to 18pt.) I frequently resize xvile via the window manager.
+
+[I cannot reproduce this - tom]
+
+-- 98-06-17 (Abigail <abigail@fnx.com>)
+
+first:
+I use c-mode all the time; but not for C coding.  I use it for Perl coding.
+However, in Perl '#' is the start of a comment, and not the beginning of a C
+pre-processor directive (if at the beginning of the line).
+
+I want '>>' to shift line starting with '#' as well, and don't want the cursor
+to jump to column 0 when typing '#' as the first non-whitespace char.  Hence, I
+always #ifdef out the relevant sections of the code that takes care of this
+special handling.
+
+another:
+If you just typed a line of indented text, and have autoindent on, and you hit
+return, the cursor goes to the next line, and is lined up with the previous
+line.  Just as it should be.  Now I use backspace because I want to stop
+indentation - or at least have less indentation.  However, if I hit return
+after hitting the backspace key a few times (and no other character in
+between), the cursor lines up again with the original indented line - not with
+the backspaced one.
+
+Wouldn't it be nice to have an option of "aligning" with the blank line?  Such
+that if you backspace away indentation, then hit return, vile remembers you
+wanted to decrease indentation?
+
+-- 98-06-18 (Brian Moore <bem@news.cmc.net>)
+
+I want to be able to do:
+
+define-mode mail
+    define-submode mail suffixes \\(^\\(/tmp/mutt-[a-z]\\+-[0-9]\\+-[0-9]\\+\\)\\|\\(.followup\\|.letter\\)\\)$
+    define-submode mail wm 8
+    define-submode mail read-hook "del-sig"
+
+In short, it'd be cool to be able to set hooks based on suffixes or other
+signs-o-mode.
+
+It'd be a bit cleaner than hacking '~if &not &seq $majormode "mail"'
+stuff at the start of a procedure.
+
+-- 98-06-23 (Quang Ngo <quang@usa.net>)
+
+Watcom compiler version 10 has a very nice vi editor.  It allows you to
+scroll the buffer up/down 1 line using the ^E and ^Y while in the editing
+mode, not just the command mode.  I find this very useful.  Vile only
+supports these 2 keys in command mode.  Could you please add this feature?
+
+next-buffer is there, but previous-buffer is missing.  ^^ or :e# goes back
+to last buffer, but that's not quite the opposite of next-buffer.  Please
+add this command too. ;-)
+
+-- 98-06-24 (Clark Morgan)
+
+If a vile user changes the value of a universal string mode (e.g.,
+backup-style), the old value is carefully saved away in set_mode_value(), but
+NOT _freed_ after the change.
+
+-- 98-06-25 (Paul Fox)
+
+officemate ... used to have his palette string set to:
+	set palette "7 4 2 14 1 5 3 0"
+somehow this in combination with his desktop colors gave him white on
+white with vile.exe
+
+[the number of colors increased to 16, making the palette too short.  we
+should repeat the palette to fill out the number of colors, or set $ncolors
+to match the palette - tom]
+
+-- 98-08-18 (Kevin Buettner)
+
+(Note to Tom:  We still need to add necessary support to vile so that
+shell.pl will work.  At present, it only works with xvile.)
+
+-- 98-08-21 (George <g12345@ibm.net>)
+
+Is there a way to use a register (named or not) as a search key?  As in,
+"aye  - can I search on "a?
+
+[no - one can set the $search variable, but doing it from a register is
+indirect - I should modify the user variables so that %a refers to register a,
+etc.  - tom]
+
+-- 98-08-21 (tom)
+
+the [Registers] buffer "should" update '<' after each keystroke, but doesn't
+seem to unless I do something call calls update(TRUE).
+
+-- 98-09-01 (Otavio Exel <oexel@economatica.com.br>)
+
+1) is there a way to access the registers from inside a store-macro? I
+mean the oposite of load-register; something like:
+
+    setv %myvar $register-a
+
+2) let's say I have the string "s/foo/bar/g" in %myvar; is there a way
+I can "play" this ex-command? something like:
+
+    execute-ex-command %myvar
+
+for some reason I don't want to use..
+
+    load-register a &cat &cat ":" %myvar ^M
+    execute-register a
+
+3) again, from inside a store-macro, how do I find out if there's a
+region defined in the current buffer and, if possible, where the
+region is?
+
+-- 98-09-01 (Clark Morgan)
+
+1) Invoke winvile (8.0l for this test case). 
+2) Using the system menu, change font to r_ansi, pitch 9, normal. 
+   Notice in the message line that winvile emits a status message 
+   stating that the font has been changed to r_ansi -- so far, so good. 
+3) Change font to Courier New, pitch 9, normal. 
+   Notice that the message line still says that the font has been changed 
+   to r_ansi, even though winvile changed the font to Courier New. 
+ 
+If I enable pop-up messages before step 1 and press the ':' key after  
+step 3, I see that winvile has indeed recorded a separate (and correct) 
+status message for each font change.  The bug here is that the second 
+font status message is not flushed to the status line. 
+
+-- 98-09-02 (paul)
+
+my officemate just pointed out that showmatch in winvile doesn't. 
+ 
+you can see that it pauses, but the temporary cursor position doesn't get 
+flushed to the screen (or something like that). 
+
+[I spent a couple of hours studying this without a solution.  If I call
+Sleep(), the events are simply postponed until the timeout ends.  Possibly
+waiting for an event of some sort would work - tom]
+
+-- 98-09-03 (Clark Morgan)
+
+-- one
+I've got a case where visual-matches highlighting doesn't work. 
+ 
+   :se visual-matches brightred 
+   <colorize source file> 
+   /pattern_x 
+   n 
+   N 
+   <no problems so far, works great> 
+   =             ; erase current visual-matches highlighting 
+   n             ; whoops, no visual match highlight  <<< 
+   /pattern_x    ; still no visual match highlight    <<< 
+   /pattern_y    ; visual match highlight works again 
+   /pattern_x    ; still working 
+
+-- another
+Invoke winvile. 
+Set flash. 
+ 
+Every time I search for: 
+ 
+   /^pattern 
+ 
+winvile flashes the screen.  Simply pressing '/' followed by '^' causes 
+an immediate flash. 
+ 
+Not a problem with console vile. 
+
+-- 98-09-03 (tom)
+
+wishlist:
+implement ~foreach iterator.  Add CMDFUNC flags to macro definition
+and to describe-bindings view.  Add $#, $*, $0 ... $$n to variables.
+
+-- 98-09-07 (Clark Morgan)
+
+When I invoke winvile from a dos box like so: 
+ 
+    winvile -geometry 80x37 
+ 
+I notice that 90% of the time the mode and commmand lines are positioned
+beneath the win95 task bar.  This requires that I use the mouse to move the
+editor's window up a half-inch or so.  'Twould be nice if the editor's entire
+working area was visible. 
+ 
+Here's the relevant font info from my vile.rc: 
+ 
+~if &sequal $progname "winvile" 
+    set-variable $font "courier new,9" 
+    ... 
+~endif 
+ 
+I'm using a 17-inch monitor, 1024x768, 256 colors. 
+
+-- 98-09-09 (tom)
+
+xvile doesn't build with unproto on SunOS because I get a -B option that K&R cc
+doesn't grok.
+
+-- 98-09-24 (Clark Morgan)
+
+If I attempt to set the geometry to 80x39 when using the font string 
+"r_ansi,8", the number of rows gets coerced to 37 in ResizeClient.
+
+[there's something in the initialization which is using the original fontsize
+to determine the limit on the number of rows - tom]

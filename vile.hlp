@@ -3202,6 +3202,11 @@ X Window System specifics
 			appears in a "highlighted" or "selected" area of
 			text.
 
+	menuBackground
+	menuForeground	Optional (OPT_MENUS_COLORED, works with Motif) resources
+			for setting the background and foreground colors of
+			menubar and pulldown menus.
+
 	modeline.focusForeground
 	modeline.focusBackground   Foreground/Background color of the mode
 			line corresponding to the window with focus, i.e.
@@ -3890,4 +3895,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.368 1998/09/23 00:25:29 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.369 1998/09/29 23:57:54 tom Exp $

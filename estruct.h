@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.361 1998/08/17 00:00:39 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.362 1998/09/29 23:43:08 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -501,6 +501,7 @@
 
 	/* menus */
 #define	OPT_MENUS	(DISP_X11 && (MOTIF_WIDGETS||ATHENA_WIDGETS))
+#define OPT_MENUS_COLORED 0	/* (MOTIF_WIDGETS && OPT_MENUS) */
 
 /*
  * If selections will be used to communicate between vile and other

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_0t
+MANIFEST for vile, version v8_0u
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -109,6 +109,7 @@ undo.c                          support for "undo"
 version.c                       version & usage messages
 vile.1                          man-page for VILE
 vile.hlp                        help-file
+vile.spec                       rpm spec file (sample)
 vms2unix.c                      VMS/UNIX compatibility support functions
 vmsbuild.com                    VAX/VMS DCL build script
 vmspipe.c                       pipe-filter support for VMS
@@ -130,6 +131,7 @@ x11.c                           X11 (Xt, Motif or Openlook) terminal driver
 xshell.sh                       wrapper/sample script for xvile
 doc                             subdirectory
 doc/config.doc                  configuration-instructions for VILE
+doc/hilite.doc                  readme for hilite.pl and syntax.pl
 doc/macros.doc                  documentation for VILE macros
 doc/menus.doc                   description of xvile (Xm and Xaw) menus
 doc/modes.doc                   overview of modes/majormodes
@@ -145,9 +147,11 @@ macros/vile-pager               use vile as a pager
 perl                            subdirectory
 perl/glob2re.pl                 utility-script for vile's hypertext
 perl/hgrep.pl                   utility-script for vile's hypertext
+perl/hilite.pl                  keyword-highlighting for perl
 perl/manfilt.pl                 Perl filter for man-pages
 perl/search.pl                  perl lookalike for vile's search commands
 perl/shell.pl                   spawn a shell via a pty
+perl/syntax.pl                  syntax-parsing for perl highlighting
 perl/tailf.pl                   do a "tail -f"
 perl/visit.pl                   utility-script for vile's hypertext
 visvile                         subdirectory

@@ -16,7 +16,8 @@ Preconditions
   stored in the same directory as this document.  When reading oleauto.doc,
   note that:
 
-  - step 1 (building the editor) is optional if using pre-built software,
+  - step 1 (building the editor) is optional if using pre-built versions
+    of _both_ winvile.exe and visvile.dll .
 
   - step 2 (configuring the editor as a server) is mandatory, and
 
@@ -26,16 +27,20 @@ Preconditions
 
 Installation
 ============
-1) Obtain or build visvile.dll, the Developer Studio add-in that actually
-   invokes winvile.  Building visvile.dll is simple.
+1) Obtain or build visvile.dll, a Developer Studio add-in that actually
+   invokes winvile.  To build visvile, follow these steps:
 
-   a) Use Developer Studio to open the visvile source directory as a
+   a) First build winvile using the syntax described in oleauto.doc .
+      This is an important step, since the build process creates a file
+      called winviletlb.h that is included by visvile.dll's sources.
+
+   b) Use Developer Studio to open the visvile source directory as a
       project.
 
-   b) Set the "active project configuration" (see the Build Menu) as
+   c) Set the "active project configuration" (see the Build Menu) as
       "VisVile - Win32 Release".
 
-   c) Press F7 (which builds visvile.dll in the Release subdirectory).
+   d) Press F7 (which builds visvile.dll in the Release subdirectory).
 
 2) Copy Release/visvile.dll to a directory location of your choice.
    It may or may not be important for the destination directory to be a
@@ -73,7 +78,6 @@ automatically loaded as an add-in.
 
 Configuration Options
 =====================
-There aren't many, yet.
 
 Option Name       Explanation
 -----------       -----------

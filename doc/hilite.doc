@@ -1,0 +1,36 @@
+Date: Mon, 28 Sep 1998 19:37:47 -0700 (PDT) 
+From: "Kuntal M. Daftary" <daftary@cisco.com> 
+Subject: syntax hiliting 
+ 
+now that the latest patch is out, i can forward you guys this syntax 
+hiliting perl library i have been using for some time.  
+ 
+the library utilizes the concept of syntax definitions where in the user 
+defines the syntax for each different language - like the keywords, 
+identifiers, types, varibales, constructs, constants, comments, etc. 
+the library then uses the majormode to decide which syntax definition to 
+use and hilites the file accordingly using a common hiliting procedure. 
+ 
+the library includes examples for perl, tcl and c languages. 
+ 
+optionally, one can define the hiliting procedure rather than using the 
+builtin one (example for "mailmode" included). 
+ 
+the following two lines need to be added to .vilerc 
+ 
+---------------------------------------- 
+perl "Vile::register 'synon', 'synon', 'Syntax Hilighting, do', 'syntax.pl'" 
+perl "Vile::register 'synoff', 'synoff', 'Syntax Hilighting, undo', 'syntax.pl'" 
+---------------------------------------- 
+ 
+this way :synon turns on hiliting and :synoff turns off hiliting. 
+ 
+also put the attached files in your ~/.vile/perl directory. 
+ 
+warning: be warned that the hiliting is a little slow, and not 100% 
+robust. it is not as clean as vim's :-( due to the simplistic approach. 
+but maybe with a concept of "contained" it can be improved. 
+ 
+ 
+Kuntal Daftary 
+daftary@cisco.com 

@@ -1,8 +1,8 @@
 /*
- * 	X11 support, Dave Lemke, 11/91
+ *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.189 1998/09/19 22:52:06 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.192 1998/09/29 23:51:35 tom Exp $
  *
  */
 
@@ -177,6 +177,13 @@
 #define XtCMenuHeight "MenuHeight"
 #endif
 
+#if OPT_MENUS_COLORED
+#define XtNmenuBackground "menuBackground"
+#define XtNmenuForeground "menuForeground"
+#define XtCMenuBackground "MenuBackground"
+#define XtCMenuForeground "MenuForeground"
+#endif
+
 #define MENU_HEIGHT_DEFAULT 20
 
 #define MINCOLS	30
@@ -233,7 +240,7 @@ typedef struct _text_win {
     /* X stuff */
     Window	win;		/* window corresponding to screen */
     XtAppContext
-    		app_context;	/* application context */
+		app_context;	/* application context */
     Widget	top_widget;	/* top level widget */
     Widget	screen;		/* screen widget */
 #if ATHENA_WIDGETS
@@ -244,10 +251,14 @@ typedef struct _text_win {
     Widget	pane;		/* panes in which scrollbars live */
     int		maxscrollbars;	/* how many scrollbars, sliders, etc. */
     Widget	*scrollbars;
-    				/* the scrollbars */
+				/* the scrollbars */
     int		nscrollbars;	/* number of currently active scroll bars */
 #if OL_WIDGETS
     Widget	*sliders;
+#endif
+#if OPT_MENUS_COLORED
+    Pixel       menubar_fg;     /* color of the menubar */
+    Pixel       menubar_bg;
 #endif
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
     Pixel	scrollbar_fg;
@@ -280,7 +291,7 @@ typedef struct _text_win {
     Dimension	top_height;	/* height of top widget as of last resize */
 
     int		fsrch_flags;	/* flags which indicate which fonts have
-    				 * been searched for
+				 * been searched for
 				 */
     XFontStruct *pfont;		/* Normal font */
     XFontStruct *pfont_bold;
@@ -312,7 +323,7 @@ typedef struct _text_win {
 		char_descent,
                 char_height;
     Bool	left_ink,	/* font has "ink" past bounding box on left */
-    		right_ink;	/* font has "ink" past bounding box on right */
+		right_ink;	/* font has "ink" past bounding box on right */
     char       *geometry;
     char       *starting_fontname;	/* name of font at startup */
     char       *fontname;		/* name of current font */
@@ -1457,7 +1468,7 @@ do_scroll_common:
 	    if (scrollmode == drag) {
 		int lcur = line_no(curwp->w_bufp, curwp->w_line.l);
 		int ltarg = (line_count(curwp->w_bufp) * pos
-			    	/ cur_win->scrollinfo[i].totlen) + 1;
+				/ cur_win->scrollinfo[i].totlen) + 1;
 		mvupwind(TRUE, lcur-ltarg);
 		(void)update(TRUE);
 	    }
@@ -1800,7 +1811,7 @@ static XtResource resources[] = {
 	sizeof(String *),
 	XtOffset(TextWindow, starting_fontname),
 	XtRImmediate,
-	XtDefaultFont 	/* used to be FONTNAME */
+	XtDefaultFont	/* used to be FONTNAME */
     },
     {
 	XtNforeground,
@@ -1891,6 +1902,26 @@ static XtResource resources[] = {
 	XtOffset(TextWindow, menu_height),
 	XtRImmediate,
 	(XtPointer) MENU_HEIGHT_DEFAULT
+    },
+#endif
+#if OPT_MENUS_COLORED
+    {
+	XtNmenuForeground,
+	XtCMenuForeground,
+	XtRPixel,
+	sizeof(Pixel),
+	XtOffset(TextWindow, menubar_fg),
+	XtRString,
+	XtDefaultForeground
+    },
+    {
+	XtNmenuBackground,
+	XtCMenuBackground,
+	XtRPixel,
+	sizeof(Pixel),
+	XtOffset(TextWindow, menubar_bg),
+	XtRString,
+	XtDefaultBackground
     },
 #endif
     {
@@ -2655,7 +2686,7 @@ x_preparse_args(
      * the return mask since the user may specify a position, but no size.
      */
     geo_mask = XParseGeometry(cur_win->geometry,
-    		&startx, &starty,
+		&startx, &starty,
 		&start_cols, &start_rows);
 
     cur_win->rows = (geo_mask & HeightValue) ? start_rows : 36;
@@ -2715,7 +2746,7 @@ x_preparse_args(
 #endif
 	    cur_win->pane_widget,
 	    XtNwidth,			x_width(cur_win)
-	    					+ cur_win->pane_width + 2,
+						+ cur_win->pane_width + 2,
 	    XtNheight,			x_height(cur_win),
 	    XtNbackground,		cur_win->bg,
 	    XtNbottom,			XtChainBottom,
@@ -2731,7 +2762,7 @@ x_preparse_args(
 	    bbWidgetClass,
 	    cur_win->top_widget,
 	    XtNwidth,			x_width(cur_win)
-	    					+ cur_win->pane_width + 2,
+						+ cur_win->pane_width + 2,
 	    XtNheight,			x_height(cur_win),
 	    XtNbackground,		cur_win->bg,
 	    NULL);
@@ -3066,7 +3097,6 @@ x_preparse_args(
 #if OPT_MENUS
 	    XmNtopAttachment,		XmATTACH_WIDGET,
 	    XmNtopWidget,		menub,
-	    XmNtopOffset,		3,
 #else
 	    XmNtopAttachment,		XmATTACH_FORM,
 #endif
@@ -3104,7 +3134,7 @@ x_preparse_args(
 	    cur_win->form_widget,
 	    XtNwidth,			cur_win->pane_width + 2,
 	    XtNheight,			x_height(cur_win)
-	    					- cur_win->char_height,
+						- cur_win->char_height,
 	    XtNx,			cur_win->scrollbar_on_left
 					    ? 0
 					    : x_width(cur_win),
@@ -3129,7 +3159,7 @@ x_preparse_args(
 	    cur_win->form_widget,
 	    XtNwidth,			cur_win->pane_width + 2,
 	    XtNheight,			x_height(cur_win)
-	    					- cur_win->char_height,
+						- cur_win->char_height,
 	    XtNx,			cur_win->scrollbar_on_left
 					    ? 0
 					    : x_width(cur_win),
@@ -3196,9 +3226,9 @@ x_preparse_args(
     XtAddEventHandler(
 	    cur_win->screen,
 	    (EventMask) (ButtonPressMask | ButtonReleaseMask
-	    	       | (cur_win->focus_follows_mouse ? PointerMotionMask
-		                                       : (Button1MotionMask | Button3MotionMask))
-	    	       | ExposureMask | VisibilityChangeMask),
+		       | (cur_win->focus_follows_mouse ? PointerMotionMask
+						       : (Button1MotionMask | Button3MotionMask))
+		       | ExposureMask | VisibilityChangeMask),
 	    TRUE,
 	    x_process_event,
 	    (XtPointer)0);
@@ -3281,7 +3311,7 @@ too_light_or_too_dark(
     Colormap colormap;
 
     XtVaGetValues(cur_win->screen,
-    	XtNcolormap,	&colormap,
+	XtNcolormap,	&colormap,
 	NULL);
 
     color.pixel = pixel;
@@ -3304,7 +3334,7 @@ alloc_shadows(
     unsigned long lred, lgreen, lblue, dred, dgreen, dblue;
 
     XtVaGetValues(cur_win->screen,
-    	XtNcolormap,	&colormap,
+	XtNcolormap,	&colormap,
 	NULL);
 
     color.pixel = pixel;
@@ -3542,7 +3572,7 @@ alternate_font(
 	goto done;
 
     /* substitute new weight and slant as appropriate */
-#define SUBST_FIELD(field) 				\
+#define SUBST_FIELD(field)				\
     do {						\
 	if ((field) != NULL) {				\
 	    char *fp = (field);				\
@@ -3585,9 +3615,22 @@ done:
 int
 x_menu_height(void)
 {
-	return cur_win->menu_height;
+    return cur_win->menu_height;
 }
-#endif
+#endif /* OPT_MENUS */
+
+#if OPT_MENUS_COLORED
+int
+x_menu_foreground(void)
+{
+    return cur_win->menubar_fg;
+}
+int
+x_menu_background(void)
+{
+    return cur_win->menubar_bg;
+}
+#endif /* OPT_MENUS_COLORED */
 
 int
 x_setfont(
@@ -3764,12 +3807,12 @@ x_scroll(
 	      x_pos(cur_win, 0), y_pos(cur_win, to));
     if (from < to)
 	XClearArea(dpy, cur_win->win,
-        	x_pos(cur_win, 0), y_pos(cur_win,from),
+		x_pos(cur_win, 0), y_pos(cur_win,from),
 		x_width(cur_win), (unsigned)((to-from) * cur_win->char_height),
 		FALSE);
     else
 	XClearArea(dpy, cur_win->win,
-        	x_pos(cur_win, 0), y_pos(cur_win,to+count),
+		x_pos(cur_win, 0), y_pos(cur_win,to+count),
 		x_width(cur_win), (unsigned)((from-to) * cur_win->char_height),
 		FALSE);
     if (cur_win->visibility == VisibilityPartiallyObscured) {
@@ -3987,7 +4030,7 @@ x_flush(void)
 
     /* sometimes we're the last to know about resizing...*/
     if (cur_win->rows > term.t_mrow)
-    	cur_win->rows = term.t_mrow;
+	cur_win->rows = term.t_mrow;
 
     for (r = 0; r < cur_win->rows; r++) {
 	if (!IS_DIRTY_LINE(r))
@@ -4072,7 +4115,7 @@ x_flush(void)
  *	- control characters	[0,0x1f] U [0x80,0x9f]
  *	- separators		[0x20,0x3f] U [0xa0,0xb9]
  *	- binding characters	[0x40,0x7f] U [0xc0,0xff]
- *  	- exceptions
+ *	- exceptions
  */
 static int  charClass[256] = {
 /* NUL  SOH  STX  ETX  EOT  ENQ  ACK  BEL */
@@ -4273,7 +4316,7 @@ int	c)
 	if (c == '\n' || isBlank(c))
 		/*EMPTY*/;
 	else if (isspecial(c) || (c == '\r') || !isPrint(c))
-	 	(void)tb_append(p, quotec);
+		(void)tb_append(p, quotec);
 	return (tb_append(p, c) != 0);
 }
 
@@ -4335,7 +4378,7 @@ SIZE_T	length)
 					(void)tb_append(p, '\n');
 			}
 			else if (f) {
-			    	char *pstr;
+				char *pstr;
 				/* we're _replacing_ the default
 					insertion command, so reinit */
 				tb_init(p, abortc);
@@ -4776,6 +4819,20 @@ multi_click(
 			(void) update(TRUE);
 		}
 		return;
+	case 4: 		/* document (doesn't include trailing newline) */
+		if (setcursor(nr,sc)) {
+			MARK saveDOT;
+			saveDOT = DOT;
+			(void) gotobob(0, 0);
+			(void) sel_begin();
+			(void) gotoeob(FALSE, 0);
+			(void) gotoeol(FALSE, 0);
+			(void) sel_extend(FALSE,TRUE);
+			DOT = saveDOT;
+			cur_win->did_select = True;
+			(void) update(TRUE);
+		}
+		return;
 	default:
 		/*
 		 * This provides a mechanism for getting rid of the
@@ -5100,7 +5157,7 @@ x_configure_window(
 
     if (ev->xconfigure.height == cur_win->top_height
      && ev->xconfigure.width == cur_win->top_width)
- 	return;
+	return;
 
     XtVaGetValues(cur_win->top_widget,
 	    XtNheight,	&new_height,
@@ -5491,7 +5548,7 @@ static int
 x_has_events(void)
 {
     if (cur_win->want_to_work == TRUE) {
-    	x_set_watch_cursor(TRUE);
+	x_set_watch_cursor(TRUE);
 	cur_win->want_to_work = FALSE;
     }
     return (XtAppPending(cur_win->app_context) & XtIMXEvent);
@@ -6056,7 +6113,7 @@ x_set_window_name(const char *name)
 char *
 x_get_window_name(void)
 {
-    	return x_window_name;
+	return x_window_name;
 }
 
 static void
