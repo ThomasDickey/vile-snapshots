@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.106 2002/02/01 01:28:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.107 2002/05/14 00:16:12 tom Exp $
  *
  */
 
@@ -549,7 +549,7 @@ fill_directory_buffer(BUFFER *bp, char *path, int dots)
     ULONG entries;
     HDIR hdir;
     APIRET rc;
-    int case_preserving = is_case_preserving(name);
+    int case_preserving = is_case_preserving(path);
 #else /* UNIX, VMS or MSDOS */
     char *leaf;
     DIR *dp;

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.5 2001/12/26 20:49:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.6 2002/05/14 00:07:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Basic
  * input text.
@@ -28,8 +28,8 @@ is_hex(char *s)
     int number = 0;
     int alpha = 0;
     while (*s != 0) {
-	if (isxdigit(*s)) {
-	    if (isalpha(*s))
+	if (isxdigit(CharOf(*s))) {
+	    if (isalpha(CharOf(*s)))
 	    	++alpha;
 	    else
 	    	++number;

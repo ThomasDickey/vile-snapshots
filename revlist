@@ -1,6 +1,6 @@
-revlist for vile, version v9_2zb
+revlist for vile-9.2zc, version v9_2zc
 --------------------------------------------------------------------------------
-CHANGES	1.684
+CHANGES	1.685
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -23,7 +23,7 @@ borland.c	1.30
 btree.c	1.13
 btree.h	1.4
 buffer.c	1.250
-buglist	1.395
+buglist	1.396
 builtflt.c	1.23
 chgdfunc.h	1.16
 cmdtbl	1.222
@@ -39,14 +39,14 @@ display.c	1.364
 djhandl.c	1.6
 dumbterm.c	1.17
 edef.h	1.300
-estruct.h	1.504
+estruct.h	1.505
 eval.c	1.308
 exec.c	1.246
 externs.c	1.8
 fences.c	1.80
 file.c	1.330
-filec.c	1.106
-fileio.c	1.165
+filec.c	1.107
+fileio.c	1.166
 finderr.c	1.108
 glob.c	1.75
 globals.c	1.46
@@ -60,7 +60,7 @@ isearch.c	1.54
 itbuff.c	1.15
 lckfiles.c	1.10
 line.c	1.151
-main.c	1.477
+main.c	1.478
 makefile.blc	1.17
 makefile.djg	1.30
 makefile.emx	1.5
@@ -73,7 +73,7 @@ map.c	1.95
 menu.c	1.42
 mkdirs.sh	1.5
 mkprlenv.wnt	1.8
-mktbls.c	1.121
+mktbls.c	1.122
 modes.c	1.244
 modetbl	1.208
 msgs.c	1.24
@@ -85,8 +85,8 @@ opers.c	1.78
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.29
-patchlev.h	1.277
-path.c	1.122
+patchlev.h	1.278
+path.c	1.123
 perl.xs	1.84
 proto.h	1.493
 pscreen.h	1.1
@@ -94,7 +94,7 @@ ptypemap	1.7
 random.c	1.261
 regexp.c	1.80
 region.c	1.107
-revlist	v9_2zb
+revlist	v9_2zc
 search.c	1.126
 select.c	1.137
 sinstall.sh	1.1
@@ -156,7 +156,7 @@ filters/ada-filt.l	1.9
 filters/ada.key	1.1
 filters/awk-filt.l	1.13
 filters/awk.key	1.2
-filters/bas-filt.l	1.5
+filters/bas-filt.l	1.6
 filters/basic.key	1.3
 filters/bat-filt.l	1.16
 filters/bat.key	1.4
@@ -227,7 +227,7 @@ filters/pas.key	1.1
 filters/pc.key	1.1
 filters/perl.key	1.5
 filters/perlfilt.l	1.36
-filters/pl-filt.c	1.31
+filters/pl-filt.c	1.32
 filters/pot.key	1.1
 filters/py-filt.l	1.10
 filters/py.key	1.1
@@ -240,7 +240,7 @@ filters/rexxfilt.l	1.6
 filters/sccs.key	1.1
 filters/sccsfilt.l	1.8
 filters/sed-filt.c	1.15
-filters/sh-filt.l	1.46
+filters/sh-filt.l	1.47
 filters/sh.key	1.4
 filters/sml-filt.l	1.3
 filters/sml.key	1.1
@@ -263,7 +263,7 @@ filters/vb.key	1.2
 filters/vile.key	1.8
 filters/vilefilt.l	1.20
 filters/vim.key	1.2
-filters/vl-filt.l	1.2
+filters/vl-filt.l	1.3
 filters/vlog.key	1.4
 filters/xres.key	1.2
 filters/xresfilt.l	1.13
@@ -291,7 +291,7 @@ macros/pictmode.rc	1.3
 macros/search.rc	1.3
 macros/shifts.rc	1.4
 macros/vile-pager	1.5
-macros/vileinit.rc	1.19
+macros/vileinit.rc	1.20
 macros/vilemenu.rc	1.2
 macros/vileperl.rc	1.7
 perl/Breadcrumbs.pm	1.4

@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.19 2002/01/12 19:17:57 tom Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.20 2002/05/13 23:19:44 tom Exp $
 ; This is a sample which may be installed as .vilerc (or vile.rc for non-Unix
 ; systems), or source'd as-is to provide quick initialization of some useful
 ; macros and settings.
@@ -42,7 +42,11 @@ bind-cmdmode-key goto-eol FN-E
 	; with the syntax filters).
 	setv $shell=/bin/sh
 
-	set resolve-links
+	~if &seq $os "cygwin"
+		set noresolve-links
+	~else
+		set resolve-links
+	~endif
 	set glob=on
 ~endif
 

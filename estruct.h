@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.504 2002/05/11 00:15:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.505 2002/05/13 23:25:01 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2621,7 +2621,11 @@ extern void _exit (int code);
 #if SYS_WINNT && defined(VILE_OLE) && defined(DISP_NTWIN)
 #define ExitProgram(code)   oleauto_exit(code)
 #else
+#if defined(VILE_ERROR_ABORT)
+extern void ExitProgram(int code);
+#else
 #define	ExitProgram(code)	exit(code)
+#endif
 #endif
 
 /*

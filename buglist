@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.395 2002/05/11 14:35:54 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.396 2002/05/15 01:15:42 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1512,6 +1512,10 @@ other than black.  The chief problem however is that under some circumstances
 the terminal modes are not properly saved/restored when executing a shell
 command (and a staircase effect results).  To see this, type
 	:r !date
+
+-- 01-01-06 (tom)
+
+shell commands do not work on QNX
 
 -- 01-01-22 (tom)
 

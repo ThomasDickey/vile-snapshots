@@ -15,9 +15,15 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.121 2002/02/04 00:31:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.122 2002/05/14 12:04:18 tom Exp $
  *
  */
+
+#if defined(__OS2__) && defined(__IBMC__) && (__IBMC__ >= 200)
+#define USE_OFFSETS 0
+#else
+#define USE_OFFSETS 1
+#endif
 
 /* stuff borrowed/adapted from estruct.h */
 
@@ -725,17 +731,25 @@ Name2Address(char *name, char *type)
 static void
 DefineOffset(FILE * fp)
 {
+#if USE_OFFSETS
     Fprintf(fp,
 	    "#ifndef\tMember_Offset\n\
 #define\tMember_Offset(T,M) ((int)(((long)&(((T*)0)->M))/\\\n\
 \t\t\t\t ((long)&(((T*)0)->Q1) - (long)&(((T*)0)->s_MAX))))\n\
 #endif\n");
+#else
+    Fprintf(fp,
+	    "#ifndef\tMember_Offset\n\
+#define\tMember_Offset(T,M) ((vile_ ## M)-1)\n\
+#endif\n");
+#endif
 }
 
 /* generate the index-struct (used for deriving ifdef-able index definitions) */
 static void
 WriteIndexStruct(FILE * fp, LIST * p, const char *ppref)
 {
+#if USE_OFFSETS
     char *s, temp[MAX_BUFFER], line[MAX_BUFFER], *vec[MAX_PARSE];
 
     BeginIf();
@@ -757,6 +771,34 @@ WriteIndexStruct(FILE * fp, LIST * p, const char *ppref)
     Fprintf(fp, "\tchar\ts_MAX;\n");
     Fprintf(fp, "\tchar\tQ1;\n");
     Fprintf(fp, "\t%c Index%s;\n\n", R_CURL, ppref);
+#else
+    char *s, temp[MAX_BUFFER], line[MAX_BUFFER], *vec[MAX_PARSE];
+    int count = 0;
+
+    BeginIf();
+    Fprintf(fp, "typedef\tenum\t%c\n", L_CURL);
+    Fprintf(fp, "\tMIN_%c_VALUES = 0\n", *ppref);
+    for (; p != 0; p = p->nst, count++) {
+	WriteIf(fp, p->Cond);
+	(void) Parse(strcpy(line, p->Name), vec);
+	Sprintf(temp, "\t,vile_%s", s = Name2Symbol(vec[1]));
+	free(s);
+	if (p->Note[0]) {
+	    (void) PadTo(32, temp);
+	    Sprintf(temp + strlen(temp), "/* %s */", p->Note);
+	}
+	Fprintf(fp, "%s\n", temp);
+    }
+    FlushIf(fp);
+
+    Sprintf(temp, "\t,NUM_%c_VALUES", *ppref);
+    (void) PadTo(32, temp);
+    Sprintf(temp + strlen(temp), "/* TABLESIZE(%c_valnames) -- %s */\n",
+	    toLower(*ppref), ppref);
+    Fprintf(nemode, "%s", temp);
+
+    Fprintf(fp, "\t%c Index%s;\n\n", R_CURL, ppref);
+#endif
 }
 
 /* generate the index-definitions */
@@ -784,13 +826,16 @@ WriteModeDefines(LIST * p, const char *ppref)
 
     Fprintf(nemode, "\n");
     FlushIf(nemode);
+
+#if USE_OFFSETS
     Sprintf(temp, "#define NUM_%c_VALUES\tMember_Offset(Index%s, s_MAX)",
 	    *ppref, ppref);
-
     (void) PadTo(32, temp);
     Sprintf(temp + strlen(temp), "/* TABLESIZE(%c_valnames) -- %s */\n",
 	    toLower(*ppref), ppref);
     Fprintf(nemode, "%s", temp);
+#endif
+
     Fprintf(nemode, "#define MAX_%c_VALUES\t%d\n\n", *ppref, count);
 }
 
