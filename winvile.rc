@@ -1,4 +1,8 @@
 //
 // Icon
 //
-VilewIcon ICON "pumpkin.ico"
+#ifndef VILE_ICON
+#define VILE_ICON "vile.ico"
+#endif
+
+VilewIcon ICON VILE_ICON
