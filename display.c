@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.334 2000/08/26 16:37:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.335 2000/09/12 09:01:11 tom Exp $
  *
  */
 
@@ -3072,7 +3072,7 @@ special_formatter(TBUFF **result, char *fs, WINDOW *wp)
 			execstr = temp;
 
 			strncpy0(temp, save_fs, fs + 1 - save_fs);
-			execstr = get_token(execstr, &tok, EOS);
+			execstr = get_token(execstr, &tok, EOS, (int *)0);
 			strcpy(temp, tokval(temp));
 
 			tb_free(&tok);

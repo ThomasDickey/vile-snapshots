@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.232 2000/09/05 01:51:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.234 2000/09/13 10:40:15 tom Exp $
  *
  */
 
@@ -282,8 +282,8 @@ makechrslist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
     bprintf("--- Terminal Character Settings %*P\n", term.cols - 1, '-');
     for (i = 0; TermChrs[i].name != 0; i++) {
 	bprintf("\n%s = %s",
-	    TermChrs[i].name,
-	    kcod2prc(*(TermChrs[i].value), temp));
+		TermChrs[i].name,
+		kcod2prc(*(TermChrs[i].value), temp));
     }
 }
 
@@ -308,16 +308,16 @@ static int
 chr_complete(int c, char *buf, unsigned *pos)
 {
     return kbd_complete(FALSE, c, buf, pos, (const char *) &TermChrs[0],
-	sizeof(TermChrs[0]));
+			sizeof(TermChrs[0]));
 }
 
 static int
 /*ARGSUSED*/
 chr_eol(
-    const char *buffer GCC_UNUSED,
-    unsigned cpos GCC_UNUSED,
-    int c GCC_UNUSED,
-    int eolchar GCC_UNUSED)
+	   const char *buffer GCC_UNUSED,
+	   unsigned cpos GCC_UNUSED,
+	   int c GCC_UNUSED,
+	   int eolchar GCC_UNUSED)
 {
     return isSpace(c);
 }
@@ -342,7 +342,7 @@ set_termchrs(int f GCC_UNUSED, int n GCC_UNUSED)
     /* get the table-entry */
     tb_scopy(&name, "");
     if ((s = kbd_reply("Terminal setting: ", &name, chr_eol,
-		' ', 0, chr_complete)) == TRUE) {
+		       ' ', 0, chr_complete)) == TRUE) {
 
 	j = chr_lookup(tb_values(name));
 	switch (TermChrs[j].how_to) {
@@ -672,7 +672,7 @@ static int
 update_binding_list(BUFFER *bp GCC_UNUSED)
 {
     return liststuff(BINDINGLIST_BufName, append_to_binding_list,
-	makebindlist, (int) last_whichcmds, (void *) last_lookup_string);
+		     makebindlist, (int) last_whichcmds, (void *) last_lookup_string);
 }
 
 static int
@@ -692,7 +692,7 @@ desbind(int f GCC_UNUSED, int n GCC_UNUSED)
 }
 
 static int
-describe_alternate_bindings(BINDINGS *bs)
+describe_alternate_bindings(BINDINGS * bs)
 {
     int code;
     bindings_to_describe = bs;
@@ -762,7 +762,7 @@ desfunc(int f GCC_UNUSED, int n GCC_UNUSED)
     described_cmd[0] = '^';
 
     fnp = kbd_engl("Describe function whose full name is: ",
-	described_cmd + 1);
+		   described_cmd + 1);
     if (fnp == NULL || engl2fnc(fnp) == NULL) {
 	s = no_such_function(fnp);
     } else {
@@ -804,7 +804,7 @@ prompt_describe_key(BINDINGS * bs)
     /* find the function bound to the key */
     if ((nptr = fnc2ntab(kcod2fnc(bs, c))) == NULL) {
 	mlwrite("Key sequence '%s' is not bound to anything.",
-	    outseq);
+		outseq);
 	return TRUE;
     }
 
@@ -816,7 +816,7 @@ prompt_describe_key(BINDINGS * bs)
     append_to_binding_list = FALSE;
 
     mlwrite("Key sequence '%s' is bound to function \"%s\"",
-	outseq, nptr->n_name);
+	    outseq, nptr->n_name);
 
     return s;
 }
@@ -927,9 +927,9 @@ show_onlinehelp(const CMDFUNC * cmd)
 	if (*text == SQUOTE)
 	    text++;
 	(void) lsprintf(outseq, "  (%s %s )",
-	    (cmd->c_flags & MOTION) ? " motion: " :
-	    (cmd->c_flags & OPER) ? " operator: " : "",
-	    text);
+			(cmd->c_flags & MOTION) ? " motion: " :
+			(cmd->c_flags & OPER) ? " operator: " : "",
+			text);
     } else {
 	(void) lsprintf(outseq, "  ( no help for this command )");
     }
@@ -944,10 +944,10 @@ show_onlinehelp(const CMDFUNC * cmd)
 	int i;
 	for (i = 0; cmd->c_args[i].pi_type != PT_UNKNOWN; i++) {
 	    (void) lsprintf(outseq, "  ( $%d = %s )", i + 1,
-		(cmd->c_args[i].pi_text != 0)
-		? cmd->c_args[i].pi_text
-		: choice_to_name(fsm_paramtypes_choices,
-		    cmd->c_args[i].pi_type));
+			    (cmd->c_args[i].pi_text != 0)
+			    ? cmd->c_args[i].pi_text
+			    : choice_to_name(fsm_paramtypes_choices,
+					     cmd->c_args[i].pi_type));
 	    if (!addline(curbp, outseq, -1))
 		return FALSE;
 	}
@@ -967,7 +967,7 @@ struct bindlist_data {
 
 static int
 btree_walk(BI_NODE * node, int (*func) (BI_NODE *, const void *),
-    const void *data)
+	   const void *data)
 {
     if (node) {
 	if (btree_walk(BI_LEFT(node), func, data))
@@ -1191,9 +1191,9 @@ makebindlist(int whichmask, void *mstring)
 	returns 1-based offset of match, or 0.  */
 int
 ourstrstr(
-    const char *haystack,
-    const char *needle,
-    int anchor)
+	     const char *haystack,
+	     const char *needle,
+	     int anchor)
 {
     if (anchor && *needle == '^') {
 	return strcmp(needle + 1, haystack) ? 0 : 1;
@@ -1258,14 +1258,14 @@ PATH_value(void)
 	(void) strcpy(mypath, prog_arg);
 	if ((tmp = vms_pathleaf(mypath)) == mypath)
 	    (void) strcpy(mypath,
-		current_directory(FALSE));
+			  current_directory(FALSE));
 	else
 	    *tmp = EOS;
 
 	if (!tb_init(&myfiles, EOS)
 	    || !tb_sappend(&myfiles, mypath)
 	    || !tb_sappend(&myfiles,
-		",SYS$SYSTEM:,SYS$LIBRARY:")
+			   ",SYS$SYSTEM:,SYS$LIBRARY:")
 	    || !tb_append(&myfiles, EOS))
 	    return NULL;
     }
@@ -1340,7 +1340,7 @@ ask_which_file(char *fname)
     static TBUFF *last;
 
     return mlreply_file("Which file: ", &last,
-	FILEC_READ | FILEC_PROMPT, fname);
+			FILEC_READ | FILEC_PROMPT, fname);
 }
 
 static void
@@ -1357,8 +1357,8 @@ list_which_fname(char *dirname, char *fname, int mode)
     if (dirname
 	&& dirname[0] != EOS) {
 	list_one_fname(SL_TO_BSL(
-		pathcat(fullpath, dirname, fname)),
-	    mode);
+				    pathcat(fullpath, dirname, fname)),
+		       mode);
     }
 }
 
@@ -1387,8 +1387,8 @@ list_which(LIST_ARGS)
 	return;
 
     bprintf("Show which %s-paths are tested for:\n\t%s\n(\"*\" marks found-files)\n",
-	(mode & FL_EXECABLE) ? "executable" : "source",
-	fname);
+	    (mode & FL_EXECABLE) ? "executable" : "source",
+	    fname);
 
     /* look in the current directory */
     if (flag & FL_CDIR) {
@@ -1475,8 +1475,8 @@ kcod2pstr(int c, char *seq)
  */
 int
 kcod2escape_seq(
-    int c,
-    char *ptr)
+		   int c,
+		   char *ptr)
 {
     char *base = ptr;
 
@@ -1729,7 +1729,7 @@ engl2fnc(const char *fname)
 	if ((r = strncmp(fname, nametbl[cur].n_name, len)) == 0) {
 	    /* Now find earliest matching entry */
 	    while (cur > lo
-		&& strncmp(fname, nametbl[cur - 1].n_name, len) == 0)
+		   && strncmp(fname, nametbl[cur - 1].n_name, len) == 0)
 		cur--;
 	    return nametbl[cur].n_cmd;
 
@@ -1826,8 +1826,8 @@ prc2engl(const char *kk)
  */
 char *
 kbd_engl(
-    const char *prompt,		/* null pointer to splice calls */
-    char *buffer)
+	    const char *prompt,	/* null pointer to splice calls */
+	    char *buffer)
 {
     if (kbd_engl_stat(prompt, buffer, 0) == TRUE)
 	return buffer;
@@ -1959,9 +1959,9 @@ kbd_erase_to_end(int column)
 #if OPT_CASELESS
 static int
 cs_strcmp(
-    int case_insensitive,
-    const char *s1,
-    const char *s2)
+	     int case_insensitive,
+	     const char *s1,
+	     const char *s2)
 {
     if (case_insensitive)
 	return stricmp(s1, s2);
@@ -1970,10 +1970,10 @@ cs_strcmp(
 
 static int
 cs_strncmp(
-    int case_insensitive,
-    const char *s1,
-    const char *s2,
-    SIZE_T n)
+	      int case_insensitive,
+	      const char *s1,
+	      const char *s2,
+	      SIZE_T n)
 {
     if (case_insensitive)
 	return strnicmp(s1, s2, n);
@@ -2004,11 +2004,11 @@ THIS_NAME(const char *p)
 /*ARGSUSED*/
 static const char *
 skip_partial(
-    int case_insensitive GCC_UNUSED,
-    char *buf,
-    SIZE_T len,
-    const char *table,
-    SIZE_T size_entry)
+		int case_insensitive GCC_UNUSED,
+		char *buf,
+		SIZE_T len,
+		const char *table,
+		SIZE_T size_entry)
 {
     const char *next = NEXT_DATA(table);
     const char *sp;
@@ -2029,11 +2029,11 @@ skip_partial(
  */
 static void
 show_partial(
-    int case_insensitive,
-    char *buf,
-    SIZE_T len,
-    const char *table,
-    SIZE_T size_entry)
+		int case_insensitive,
+		char *buf,
+		SIZE_T len,
+		const char *table,
+		SIZE_T size_entry)
 {
     const char *next = skip_partial(case_insensitive, buf, len, table, size_entry);
     const char *last = PREV_DATA(next);
@@ -2086,8 +2086,8 @@ struct compl_rec {
 /*ARGSUSED*/
 static void
 makecmpllist(
-    int case_insensitive,
-    void *cinfop)
+		int case_insensitive,
+		void *cinfop)
 {
     char *buf = c2ComplRec(cinfop)->buf;
     SIZE_T len = c2ComplRec(cinfop)->len;
@@ -2104,8 +2104,8 @@ makecmpllist(
     int i, j;
 
     for (p = NEXT_DATA(first), maxlen = strlen(THIS_NAME(first));
-	p != last;
-	p = NEXT_DATA(p)) {
+	 p != last;
+	 p = NEXT_DATA(p)) {
 	SIZE_T l = strlen(THIS_NAME(p));
 	if (l > maxlen)
 	    maxlen = l;
@@ -2116,7 +2116,7 @@ makecmpllist(
 	char b[NLINE];
 	(void) strncpy(b, buf, (SIZE_T) slashcol);
 	(void) strncpy(&b[slashcol], &(THIS_NAME(first))[slashcol],
-	    (len - slashcol));
+		       (len - slashcol));
 	b[slashcol + (len - slashcol)] = EOS;
 	bprintf("Completions prefixed by %s:\n", b);
     }
@@ -2154,11 +2154,11 @@ makecmpllist(
  */
 static void
 show_completions(
-    int case_insensitive,
-    char *buf,
-    SIZE_T len,
-    const char *table,
-    SIZE_T size_entry)
+		    int case_insensitive,
+		    char *buf,
+		    SIZE_T len,
+		    const char *table,
+		    SIZE_T size_entry)
 {
     struct compl_rec cinfo;
     BUFFER *bp;
@@ -2177,7 +2177,7 @@ show_completions(
     cinfo.table = table;
     cinfo.size_entry = size_entry;
     liststuff(COMPLETIONS_BufName, FALSE, makecmpllist, case_insensitive,
-	(void *) &cinfo);
+	      (void *) &cinfo);
 
     if (alreadypopped)
 	shrinkwrap();
@@ -2193,11 +2193,11 @@ show_completions(
  */
 static void
 scroll_completions(
-    int case_insensitive,
-    char *buf,
-    SIZE_T len,
-    const char *table,
-    SIZE_T size_entry)
+		      int case_insensitive,
+		      char *buf,
+		      SIZE_T len,
+		      const char *table,
+		      SIZE_T size_entry)
 {
     BUFFER *bp = find_b_name(COMPLETIONS_BufName);
     if (bp == NULL)
@@ -2228,16 +2228,19 @@ popdown_completions(void)
  */
 static SIZE_T
 fill_partial(
-    int case_insensitive GCC_UNUSED,
-    char *buf,
-    SIZE_T pos,
-    const char *first,
-    const char *last,
-    SIZE_T size_entry)
+		int case_insensitive GCC_UNUSED,
+		char *buf,
+		SIZE_T pos,
+		const char *first,
+		const char *last,
+		SIZE_T size_entry)
 {
     const char *p;
     SIZE_T n = pos;
     const char *this_name = THIS_NAME(first);
+
+    TRACE(("fill_partial(%d:%.*s) first=%s, last=%s\n", 
+	    pos, (int)pos, buf, THIS_NAME(first), THIS_NAME(last)));
 
 #if 0				/* case insensitive reply correction doesn't work reliably yet */
     if (!clexec && case_insensitive) {
@@ -2254,12 +2257,19 @@ fill_partial(
     }
 #endif
 
+    if (first == last
+     || (first = NEXT_DATA(first)) == last) {
+	TRACE(("...empty list\n"));
+	return n;
+    }
+
     for_ever {
 	buf[n] = this_name[n];	/* add the next char in */
 	buf[n + 1] = EOS;
+	TRACE(("...added(%d:%c)\n", n, buf[n]));
 
 	/* scan through the candidates */
-	for (p = NEXT_DATA(first); p != last; p = NEXT_DATA(p)) {
+	for (p = first; p != last; p = NEXT_DATA(p)) {
 	    if (StrNcmp(&THIS_NAME(p)[n], &buf[n], 1) != 0) {
 		buf[n] = EOS;
 		if (n == pos
@@ -2273,6 +2283,7 @@ fill_partial(
 		    )
 		    kbd_alarm();
 		kbd_flush();	/* force out alarm or partial completion */
+		TRACE(("...fill_partial %d\n", n));
 		return n;
 	    }
 	}
@@ -2347,12 +2358,12 @@ kbd_unquery(void)
  */
 int
 kbd_complete(
-    int case_insensitive,
-    int c,			/* TESTC, NAMEC or isreturn() */
-    char *buf,
-    unsigned *pos,
-    const char *table,
-    SIZE_T size_entry)
+		int case_insensitive,
+		int c,		/* TESTC, NAMEC or isreturn() */
+		char *buf,
+		unsigned *pos,
+		const char *table,
+		SIZE_T size_entry)
 {
     SIZE_T cpos = *pos;
     const char *nbp;		/* first ptr to entry in name binding table */
@@ -2382,8 +2393,8 @@ kbd_complete(
 	    if (c == TESTC) {
 		show_partial(case_insensitive, buf, cpos, nbp, size_entry);
 	    } else if (Strcmp(buf, THIS_NAME(nbp)) == 0 ||	/* exact? */
-		    NEXT_NAME(nbp) == NULL ||
-		StrNcmp(buf, NEXT_NAME(nbp), strlen(buf)) != 0) {
+		       NEXT_NAME(nbp) == NULL ||
+		       StrNcmp(buf, NEXT_NAME(nbp), strlen(buf)) != 0) {
 		/* exact or only one like it.  print it */
 		if (!clexec) {
 #if 0				/* case insensitive reply correction doesn't work reliably yet */
@@ -2405,7 +2416,7 @@ kbd_complete(
 		    unkeystroke(c);
 		/* return complete name */
 		(void) strncpy0(buf, THIS_NAME(nbp),
-		    (SIZE_T) (NLINE - 1));
+				(SIZE_T) (NLINE - 1));
 		*pos = strlen(buf);
 #if OPT_POPUPCHOICE
 		if (gvalpopup_choices != POPUP_CHOICES_OFF
@@ -2417,8 +2428,9 @@ kbd_complete(
 	    } else {
 		/* try for a partial match against the list */
 		*pos = fill_partial(case_insensitive, buf, cpos, nbp,
-		    skip_partial(case_insensitive, buf, cpos, nbp, size_entry),
-		    size_entry);
+				    skip_partial(case_insensitive, buf,
+						 cpos, nbp, size_entry),
+				    size_entry);
 		testcol = kbd_length();
 	    }
 #if OPT_POPUPCHOICE
@@ -2452,7 +2464,11 @@ kbd_complete(
 #if OPT_POPUPCHOICE
     cmplcol = 0;
 #endif
-    mlwarn("[No match for '%s']", buf);		/* no match */
+    if (clexec) {
+	mlwarn("[No match for '%s']", buf);	/* no match */
+    } else {
+	kbd_alarm();
+    }
     buf[*pos = cpos] = EOS;
     return FALSE;
 }
@@ -2463,8 +2479,8 @@ kbd_complete(
  */
 static int
 is_shift_cmd(
-    const char *buffer,
-    unsigned cpos)
+		const char *buffer,
+		unsigned cpos)
 {
     int c = *buffer;
     if (isRepeatable(c)) {
@@ -2501,10 +2517,10 @@ is_shift_cmd(
 
 static int
 eol_command(
-    const char *buffer,
-    unsigned cpos,
-    int c,
-    int eolchar)
+	       const char *buffer,
+	       unsigned cpos,
+	       int c,
+	       int eolchar)
 {
     /*
      * Handle special case of repeated-character implying repeat-count
@@ -2520,15 +2536,14 @@ eol_command(
 
     return (c == eolchar)
 	|| (
-	cpos != 0 && cpos < 3
-	&& (
-	    (!ismostpunct(c)
-		&& ismostpunct(buffer[cpos - 1])
-	    )
-	    || ((c != '!' && ismostpunct(c))
-		&& (buffer[cpos - 1] == '!' || !ismostpunct(buffer[cpos - 1]))
-	    )
-	)
+	       cpos != 0 && cpos < 3
+	       && ((!ismostpunct(c)
+		    && ismostpunct(buffer[cpos - 1]))
+		   || ((c != '!' && ismostpunct(c))
+		       && (buffer[cpos - 1] == '!'
+			   || !ismostpunct(buffer[cpos - 1]))
+		   )
+	       )
 	);
 }
 
@@ -2538,9 +2553,9 @@ eol_command(
  */
 static int
 cmd_complete(
-    int c,
-    char *buf,
-    unsigned *pos)
+		int c,
+		char *buf,
+		unsigned *pos)
 {
     int status;
 #if OPT_HISTORY
@@ -2585,12 +2600,12 @@ kbd_engl_stat(const char *prompt, char *buffer, int stated)
 #endif
     kbd_flags |= stated;
     code = kbd_reply(
-	prompt,			/* no-prompt => splice */
-	&temp,			/* in/out buffer */
-	eol_command,
-	' ',			/* eolchar */
-	kbd_flags,		/* allow blank-return */
-	cmd_complete);
+			prompt,	/* no-prompt => splice */
+			&temp,	/* in/out buffer */
+			eol_command,
+			' ',	/* eolchar */
+			kbd_flags,	/* allow blank-return */
+			cmd_complete);
     if (len > tb_length(temp))
 	len = tb_length(temp);
     strncpy0(buffer, tb_values(temp), len);
@@ -2722,7 +2737,7 @@ rename_namebst(const char *oldname, const char *newname)
     /* add the new name */
     strip_brackets(name, newname);
     if ((insert_namebst(name, prior->n_cmd,
-		prior->n_flags & NBST_READONLY)) != TRUE)
+			prior->n_flags & NBST_READONLY)) != TRUE)
 	return FALSE;
 
     /* delete the old (but don't free the data) */
@@ -2753,10 +2768,10 @@ build_namebst(const NTAB * nptr, int lo, int hi)
  */
 static int
 kbd_complete_bst(
-    int case_insensitive GCC_UNUSED,
-    int c,			/* TESTC, NAMEC or isreturn() */
-    char *buf,
-    unsigned *pos)
+		    int case_insensitive GCC_UNUSED,
+		    int c,	/* TESTC, NAMEC or isreturn() */
+		    char *buf,
+		    unsigned *pos)
 {
     unsigned cpos = *pos;
     int status = FALSE;
@@ -2767,7 +2782,7 @@ kbd_complete_bst(
 
     if ((nptr = btree_parray(&namebst, buf, cpos)) != 0) {
 	status = kbd_complete(FALSE, c, buf, pos, (const char *) nptr,
-	    sizeof(*nptr));
+			      sizeof(*nptr));
 	free(TYPECAST(char, nptr));
     } else
 	kbd_alarm();

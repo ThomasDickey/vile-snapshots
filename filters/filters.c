@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.74 2000/08/28 10:28:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.77 2000/09/14 10:41:11 tom Exp $
  *
  */
 
@@ -54,6 +54,14 @@ int vile_keywords;
 
 static KEYWORD **hashtable;
 static CLASS *classes;
+
+/*
+ * flt_bfr_*() function data
+ */
+static char *flt_bfr_text = 0;
+static char *flt_bfr_attr = "";
+static unsigned flt_bfr_used = 0;
+static unsigned flt_bfr_size = 0;
 
 /******************************************************************************
  * Private functions                                                          *
@@ -338,6 +346,60 @@ do_alloc(char *ptr, unsigned need, unsigned *have)
 	*have = need;
     }
     return ptr;
+}
+
+/*
+ * The flt_bfr_*() functions are used for managing a possibly multi-line buffer
+ * that will be written as one attributed region.
+ */
+void
+flt_bfr_append(char *text, int length)
+{
+    flt_bfr_text = do_alloc(flt_bfr_text, flt_bfr_used + length, &flt_bfr_size);
+    strncpy(flt_bfr_text + flt_bfr_used, text, length);
+    flt_bfr_used += length;
+}
+
+void
+flt_bfr_begin(char *attr)
+{
+    flt_bfr_finish();
+    flt_bfr_attr = attr;
+}
+
+void
+flt_bfr_embed(char *text, int length, char *attr)
+{
+    char *save = flt_bfr_attr;
+
+    flt_bfr_finish();
+    flt_puts(text, length, attr);
+    flt_bfr_attr = save;
+}
+
+void
+flt_bfr_error(void)
+{
+    if (flt_bfr_used) {
+	flt_bfr_attr = class_attr(NAME_ERROR);
+	flt_bfr_finish();
+    }
+}
+
+void
+flt_bfr_finish(void)
+{
+    if (flt_bfr_used) {
+	flt_puts(flt_bfr_text, flt_bfr_used, flt_bfr_attr ? flt_bfr_attr : "");
+    }
+    flt_bfr_used = 0;
+    flt_bfr_attr = "";
+}
+
+int
+flt_bfr_length(void)
+{
+    return flt_bfr_used;
 }
 
 void

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.31 2000/08/09 23:42:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.32 2000/09/14 01:31:08 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -39,31 +39,6 @@ save_here(char *text, int length)
     *s = 0;
 }
 
-/*
- * Buffer text for here-documents, since most characters are attributed
- * as string, which would be a lot of overhead to mark it up.
- */
-static char    *save_bfr;
-static unsigned save_max;
-static unsigned save_len;
-
-static void
-add_to_quoted(char *text, int length)
-{
-    save_bfr = do_alloc(save_bfr, save_len + length, &save_max);
-    strncpy(save_bfr + save_len, text, length);
-    save_len += length;
-}
-
-static void
-flush_quoted(void)
-{
-    if (save_len) {
-	flt_puts(save_bfr, save_len, String_attr);
-	save_len = 0;
-    }
-}
-
 static void
 init_filter(int before GCC_UNUSED)
 {
@@ -85,7 +60,7 @@ do_filter(FILE *input)
     BEGIN(NORMAL);
     while (yylex() > 0) {
     }
-    flush_quoted();
+    flt_bfr_finish();
 }
 
 %}
@@ -133,46 +108,33 @@ INTEGER		[-+]?([0-9]+)
 
 <NORMAL>\\.		|
 <NORMAL>{SSTRING}	{ WriteToken(String_attr); }
-<NORMAL>\"		{ add_to_quoted(yytext, yyleng); BEGIN(QUOTED); }
+<NORMAL>\"		{ BeginQuote(QUOTED, String_attr); }
 
 <NORMAL>\<\<{SPACE}*{QIDENT} {
-			    BEGIN(HEREDOC);
 			    save_here(yytext, yyleng);
-			    add_to_quoted(yytext, yyleng);
+			    BeginQuote(HEREDOC, String_attr);
 			}
-<HEREDOC>\\\$		{ add_to_quoted(yytext, yyleng); }
+<HEREDOC>\\\$		{ flt_bfr_append(yytext, yyleng); }
 <HEREDOC>{IDENT1}	{
 			    if (here_exp) {
-				flush_quoted();
-				WriteToken(Ident_attr);
+				flt_bfr_embed(yytext, yyleng, Ident_attr);
 			    } else {
-				add_to_quoted(yytext, yyleng);
+				flt_bfr_append(yytext, yyleng);
 			    }
 			}
 <HEREDOC>^{QIDENT}	{
-			    add_to_quoted(yytext, yyleng);
+			    flt_bfr_append(yytext, yyleng);
 			    if (!strcmp(here_tag, yytext)) {
-				flush_quoted();
+				flt_bfr_finish();
 				BEGIN(NORMAL);
 			    }
 			}
-<HEREDOC>[^\n]		{ add_to_quoted(yytext, yyleng); }
-<HEREDOC>\n		{
-			    flush_quoted();
-			    flt_putc(yytext[0]);
-			}
+<HEREDOC>[^\n]+		{ flt_bfr_append(yytext, yyleng); }
+<HEREDOC>\n		{ flt_bfr_append(yytext, yyleng); }
 
-<QUOTED>\\.		{ add_to_quoted(yytext, yyleng); }
+<QUOTED>\\.		{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>{IDENT1}	|
-<QUOTED>{IDENT2}	{ flush_quoted();
-			  WriteToken(Ident_attr);
-			}
-<QUOTED>[^\n\"]		{ add_to_quoted(yytext, yyleng); }
-<QUOTED>\n		{
-			    flush_quoted();
-			    flt_putc(yytext[0]);
-			}
-<QUOTED>\"		{ add_to_quoted(yytext, yyleng);
-			  flush_quoted();
-			  BEGIN(NORMAL);
-			}
+<QUOTED>{IDENT2}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); }
+<QUOTED>[^\n\"]+	{ flt_bfr_append(yytext, yyleng); }
+<QUOTED>\n		{ flt_bfr_append(yytext, yyleng); }
+<QUOTED>\"		{ FinishQuote(NORMAL); }

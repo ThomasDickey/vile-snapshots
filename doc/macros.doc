@@ -246,9 +246,13 @@ sections may be read in any order.
 
 Misc macro syntax features
 --------------------------
-	Any line beginning with a semi-colon (;) or double-quote (")
-	character is ignored.  The semi-colon is inherited from MicroEMACS,
-	the double-quote (") is for vi compatibility.
+	A semi-colon (;) or double-quote (") denotes a comment that extends
+	from the delimiter to end of line.  Note that the double-quote also
+	delimits string arguments, but the command parser correctly
+	distinguishes the various use cases.
+	
+	The semi-colon is inherited from MicroEMACS, the double-quote is for
+	vi compatibility.
 
 	Lines ending with '\' are joined before interpretation.
 
@@ -774,6 +778,12 @@ Functions
 
 	    &query  "S"		    Present "S" to the user, and return
 					their typed response.
+
+	    &dquery  "S" "D"	    Present "S" to the user, and return
+					their typed response.  If "D" is given,
+					use that as the default response.
+					Otherwise use the previous response
+					as the default.
 
 	    &path   "N" "P"	    The "N" keyword tells which field to extract
 				    from the pathname "P":
@@ -1326,6 +1336,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.58 2000/08/25 23:34:52 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.61 2000/09/14 11:12:21 cmorgan Exp $
 -----------------------------------
 

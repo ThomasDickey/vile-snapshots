@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.221 2000/09/05 02:15:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.225 2000/09/13 10:13:35 tom Exp $
  *
  */
 
@@ -1114,10 +1114,11 @@ int (*complete)(DONE_ARGS)) /* handles completion */
 }
 
 /*
- * this one is called for @"interactive" variables, and the &query function
+ * Prompt for strings, used for @"interactive" variables, and the &query
+ * function.
  */
 char *
-user_reply(const char *prompt)
+user_reply(const char *prompt, const char *dft_val)
 {
 	static TBUFF *replbuf;
 	int save_no_msgs;
@@ -1126,6 +1127,11 @@ user_reply(const char *prompt)
 
 	save_no_msgs = no_msgs; no_msgs = FALSE;
 	save_clexec = clexec; clexec = FALSE;
+
+	if (dft_val != error_val) {
+		TRACE(("user_reply, given default value %s\n", dft_val));
+		tb_scopy(&replbuf, dft_val);
+	}
 
 	status = kbd_reply(prompt, &replbuf,
 			eol_history, '\n',
@@ -1225,6 +1231,9 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 			int first = *cpos + margin;
 			int old_clexec = clexec;
 			int old_named  = isnamedcmd;
+			int old_edited = edited;
+			int save_dot = DOT.o;
+			unsigned oldcpos = *cpos;
 
 			/*
 			 * Reset flags that might cause a recursion into the
@@ -1265,11 +1274,16 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 				DOT.o = llength(DOT.l);
 
 			/* Do something reasonable if user tried to page up
-			 * in the minibuffer
+			 * in the minibuffer.  In particular, do not add the
+			 * character to the buffer.
 			 */
 			if ((first == DOT.o)
-			 && (cfp->c_flags & MOTION))
+			 && (cfp->c_flags & MOTION)) {
 				kbd_alarm();
+				DOT.o = save_dot;
+				*cpos = oldcpos;
+				edited = old_edited;
+			}
 		} else
 			kbd_alarm();
 	/* FIXME: Below are some hacks for making it appear that we're
@@ -1296,15 +1310,16 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 	} else if (miniedit && cfp != 0) {
 		kbd_alarm();
 	} else {
+		LINE *lp = DOT.l;
 		miniedit = FALSE;
 		if (no_echo) {
 			char tmp = (char) c;
 			tb_bappend(buf, &tmp, 1);
-		} else {
+		} else if (llength(lp) >= margin) {
 			show1Char(c);
 			tb_init(buf, EOS);
-			tb_bappend(buf, DOT.l->l_text + margin,
-				   llength(DOT.l) - margin);
+			tb_bappend(buf, lp->l_text + margin,
+				   llength(lp) - margin);
 		}
 		*cpos += 1;
 		edited = TRUE;
@@ -1454,8 +1469,9 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 	tb_unput(*extbuf);	/* FIXME: trim null */
 
 	if (clexec) {
+		int actual;
 		tbreserve(extbuf);
-		execstr = get_token(execstr, extbuf, eolchar);
+		execstr = get_token(execstr, extbuf, eolchar, &actual);
 		StrToBuff(*extbuf); /* FIXME: token should use TBUFF */
 		status = (tb_length(*extbuf) != 0);
 		if (status) {	/* i.e., we got some input */
@@ -1490,8 +1506,8 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 			/*
 			 * Splice for multi-part command
 			 */
-			if (*execstr != EOS) {
-				set_end_string(eolchar ? eolchar : ' ');
+			if (actual != EOS) {
+				set_end_string(actual);
 			} else {
 				set_end_string('\n');
 			}

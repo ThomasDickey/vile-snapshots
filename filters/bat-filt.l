@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.12 2000/08/20 22:53:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.14 2000/09/14 01:00:16 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DOS (and
  * similar, such as W95, NT) batch file.
@@ -20,34 +20,10 @@ static char *String_attr;
 
 static int setting;
 
-/*
- * Buffer text for quoted text, allowing variables.
- */
-static char    *save_bfr;
-static unsigned save_max;
-static unsigned save_len;
-
-static void
-add_to_quoted(char *text, int length)
+static char *
+variable_attr(char *text)
 {
-    save_bfr = do_alloc(save_bfr, save_len + length, &save_max);
-    strncpy(save_bfr + save_len, text, length);
-    save_len += length;
-}
-
-static void
-flush_quoted(void)
-{
-    if (save_len) {
-	flt_puts(save_bfr, save_len, String_attr);
-	save_len = 0;
-    }
-}
-
-static void
-write_variable(char *text, int length)
-{
-    char *attr = ci_keyword_attr(yytext);
+    char *attr = ci_keyword_attr(text);
     int isvar = (setting || *text == '%');
 
     if ((attr == 0 || *attr == 0) && isvar) {
@@ -56,7 +32,13 @@ write_variable(char *text, int length)
     } else if (isvar) {
 	attr = Ident2_attr;
     }
-    flt_puts(text, length, attr);
+    return attr;
+}
+
+static void
+write_variable(char *text, int length)
+{
+    flt_puts(text, length, variable_attr(text));
 }
 
 static void
@@ -78,7 +60,7 @@ do_filter(FILE *input)
     BEGIN(INITIAL);
     while (yylex() > 0) {
     }
-    flush_quoted();
+    flt_bfr_finish();
 }
 
 %}
@@ -107,7 +89,10 @@ IDENT2		({PARAM}|{VARIABLE})
 
 <INITIAL>{SET}			{ WriteToken(ci_keyword_attr(yytext)); setting = 1; }
 <INITIAL>=			{ ECHO; setting=0; }
-<INITIAL>\"			{ add_to_quoted(yytext, yyleng); BEGIN(QUOTED); }
+<INITIAL>\"			{ BEGIN(QUOTED);
+				  flt_bfr_begin(String_attr);
+				  flt_bfr_append(yytext, yyleng);
+				}
 
 <INITIAL>^{BLANK}*:{BLANK}*{IDENT} { WriteToken(Ident2_attr); }
 
@@ -120,9 +105,9 @@ IDENT2		({PARAM}|{VARIABLE})
 
 <INITIAL>\n			{ ECHO; setting = 0; }
 
-<QUOTED>{IDENT2}		{ flush_quoted(); write_variable(yytext, yyleng); }
-<QUOTED>[^\n\"]			{ add_to_quoted(yytext, yyleng); }
-<QUOTED>[\"\n]			{ add_to_quoted(yytext, yyleng);
-				  flush_quoted();
+<QUOTED>{IDENT2}		{ flt_bfr_embed(yytext, yyleng, variable_attr(yytext)); }
+<QUOTED>(\\\"|[^\n\"])+		{ flt_bfr_append(yytext, yyleng); }
+<QUOTED>(.|\n)			{ flt_bfr_append(yytext, yyleng);
+				  flt_bfr_finish();
 				  BEGIN(INITIAL);
 				}

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.32 2000/09/04 22:28:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.34 2000/09/13 23:35:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PERL input
  * text.
@@ -42,37 +42,13 @@ save_here(char *text, int length)
 	text++;
     }
     *s = 0;
-}
-
-/*
- * Buffer text for here-documents, since most characters are attributed
- * as string, which would be a lot of overhead to mark it up.
- */
-static char    *save_bfr;
-static unsigned save_max;
-static unsigned save_len;
-
-static void
-add_to_here(char *text, int length)
-{
-    save_bfr = do_alloc(save_bfr, save_len + length, &save_max);
-    strncpy(save_bfr + save_len, text, length);
-    save_len += length;
-}
-
-static void
-flush_here(void)
-{
-    if (save_len) {
-	flt_puts(save_bfr, save_len, String_attr);
-	save_len = 0;
-    }
+    flt_bfr_begin(String_attr);
 }
 
 static void
 end_pattern(void)
 {
-    flush_here();
+    flt_bfr_finish();
     BEGIN(CODE);
 }
 
@@ -81,7 +57,7 @@ add_to_pattern(char *text)
 {
     static int first, delim, count, escaped, need;
 
-    if (!save_len) {
+    if (!flt_bfr_length()) {
 	first = delim = count = escaped = need = 0;
 	if (isalpha(*text))
 	    first = *text;
@@ -90,7 +66,7 @@ add_to_pattern(char *text)
 	if (delim)
 	    need = 2;
     }
-    if (save_len == 1 && !delim) {
+    if (flt_bfr_length() == 1 && !delim) {
 	if (!isalpha(*text) && !isspace(*text)) {
 	    delim = *text;
 	    need = (first == 's' || first == 'y' || first == 't') ? 3 : 2;
@@ -114,7 +90,7 @@ add_to_pattern(char *text)
     if (delim == 0 && !escaped && *text == ';') {
 	return 0;
     }
-    add_to_here(text, 1);
+    flt_bfr_append(text, 1);
     return 1;
 }
 
@@ -140,7 +116,7 @@ do_filter(FILE *input)
     BEGIN(CODE);
     while (yylex() > 0) {
     }
-    flush_here();
+    flt_bfr_finish();
 }
 
 %}
@@ -171,29 +147,26 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 <CODE><<{BLANK}{QIDENT}	{
 			    BEGIN(HERE);
 			    save_here(yytext, yyleng);
-			    add_to_here(yytext, yyleng);
+			    flt_bfr_append(yytext, yyleng);
 			}
 <HERE>{IDENT}		{
 			    if (here_exp) {
-				flush_here();
+				flt_bfr_finish();
 				WriteToken(Ident_attr);
 			    } else {
-				add_to_here(yytext, yyleng);
+				flt_bfr_append(yytext, yyleng);
 			    }
 			}
 <HERE>^{QIDENT}		{
-			    add_to_here(yytext, yyleng);
+			    flt_bfr_append(yytext, yyleng);
 			    if (!strcmp(here_tag, yytext)) {
-				flush_here();
+				flt_bfr_finish();
 				BEGIN(CODE);
 			    }
 			}
 <HERE>\\.		|
-<HERE>[^\n]		{ add_to_here(yytext, yyleng); }
-<HERE>\n		{
-			    flush_here();
-			    flt_putc(yytext[0]);
-			}
+<HERE>[^\n]		{ flt_bfr_append(yytext, yyleng); }
+<HERE>\n		{ flt_bfr_append(yytext, yyleng); }
 
 <CODE>[!=]"~"{BLANK}	{ WriteToken(""); BEGIN(PATTERN); }
 <PATTERN>[^\n]		{ if (!add_to_pattern(yytext)) { end_pattern(); ECHO; } }

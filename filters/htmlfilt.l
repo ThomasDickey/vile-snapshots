@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.22 2000/08/09 23:18:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.24 2000/09/14 10:40:26 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -95,6 +95,7 @@ do_filter(FILE *input)
     BEGIN(INITIAL);
     while (yylex() > 0) {
     }
+    flt_bfr_error();
 }
 
 %}
@@ -120,12 +121,11 @@ ESCAPED		&{IDENT};
 
 <HTMLCODE>(\/)?{IDENT}	{ html_command(yytext); }
 
-<INITIAL>"<!--"		{ WriteToken(Comment_attr);
-			  BEGIN(HTMLNOTE);           }
-<HTMLNOTE>[^-]+		{ WriteToken(Comment_attr); }
-<HTMLNOTE>"-"+[^->]*	{ WriteToken(Comment_attr); }
-<HTMLNOTE>"-"+"->"	{ WriteToken(Comment_attr);
-			  BEGIN(INITIAL);            }
+<INITIAL>"<!--"		{ BeginQuote(HTMLNOTE, Comment_attr); }
+<HTMLNOTE>[\n]		{ flt_bfr_append(yytext, yyleng); }
+<HTMLNOTE>[^\n-]+	{ flt_bfr_append(yytext, yyleng); }
+<HTMLNOTE>[-]+[^-\>\n]*	{ flt_bfr_append(yytext, yyleng); }
+<HTMLNOTE>[-]+"->"	{ FinishQuote(INITIAL); }
 
 <INITIAL>{ESCAPED}	|
 <HTMLCODE>{STRING}	{ WriteToken(String_attr); }
@@ -137,7 +137,8 @@ ESCAPED		&{IDENT};
 
 <JAVACODE>^{SPACE}*"<"{SPACE}*(\/)?{IDENT}{SPACE}*">" { may_resume_html(yytext); }
 
-<JAVACODE>"/*"		{ WriteToken(Comment_attr); BEGIN(JAVANOTE); }
-<JAVANOTE>[^*]*		{ WriteToken(Comment_attr); }
-<JAVANOTE>"*"+[^*/]*	{ WriteToken(Comment_attr); }
-<JAVANOTE>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(JAVACODE); }
+<JAVACODE>"/*"		{ BeginQuote(JAVANOTE, Comment_attr); }
+<JAVANOTE>\n		{ flt_bfr_append(yytext, yyleng); }
+<JAVANOTE>[^*\n]+	{ flt_bfr_append(yytext, yyleng); }
+<JAVANOTE>[*]+[^*/]*	{ flt_bfr_append(yytext, yyleng); }
+<JAVANOTE>[*]+"/"	{ FinishQuote(JAVACODE); }

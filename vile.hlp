@@ -2442,6 +2442,7 @@ Programmed procedures and macros
 	&chr		1	integer to char conversion
 	&cclass		1	character class (see "show-printable")
 	&divide		2	division
+	&dquery		2	prompt user for input, given default value
 	&env		1	retrieve a system environment variable
 	&error		1	true if the parameter was ERROR
 	&equal		2	logical equality
@@ -5088,4 +5089,4 @@ Problems
 
 Copyright 1995-2000 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.499 2000/08/25 10:50:27 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.500 2000/09/12 11:18:51 tom Exp $

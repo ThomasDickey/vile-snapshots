@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.18 2000/08/28 10:31:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.19 2000/09/14 11:12:22 cmorgan Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -70,15 +70,29 @@ do_filter(FILE *input)
     }
 }
 
+/*
+ * With regard to the comment macros defined below, note that QUOTECMT1
+ * handles " as cmt delim at BOL.  QUOTECMT2 handles many cases of " as a
+ * trailing cmt delim, but will not handle this:
+ *
+ *    write-message "x" "tricky "cmt"
+ *
+ * vile's command parser gets this right, but it would appear that the
+ * editor's macro language comment syntax cannot be scanned with a
+ * context-free tool.
+ */
+
 %}
 
-SPACE		[ \t]*
+SPACE		[ \t]+
 NUMBER		[0-9]+
 NAME		[a-zA-Z_][a-zA-Z_0-9]*(-[a-zA-Z_0-9]+)*
 
-PREPROC		^{SPACE}\~[a-z]+
+PREPROC		\~[a-z]+
 
-COMMENT		^{SPACE}[";].*
+SEMICMT		;.*
+QUOTECMT1	^[ \t]*\".*
+QUOTECMT2	\"[^"]*$
 
 CTRLA		\001
 CTRLV		\026
@@ -98,6 +112,9 @@ VARIABLE	[$%]{NAME}
 
 %%
 
+{QUOTECMT1}	{ WriteToken(Comment_attr); }
+SPACE		;
+{SEMICMT}	{ WriteToken(Comment_attr); }
 ^S$		{ WriteToken(Keyword_attr); }
 ^[CBSL]:	{ WriteToken(Keyword_attr); BEGIN(ACTION); }
 <ACTION>[^\n:]*	{ WriteToken(Action_attr); BEGIN(NORMAL); }
@@ -118,4 +135,4 @@ VARIABLE	[$%]{NAME}
 {SSTRING}	|
 {DSTRING}	{ WriteToken(String_attr); }
 
-{COMMENT}	{ WriteToken(Comment_attr); }
+{QUOTECMT2}	{ WriteToken(Comment_attr); }

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.13 2000/08/09 23:40:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.14 2000/09/14 01:41:20 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an ordinary text file
  */
@@ -17,30 +17,6 @@ static char *Ident2_attr;
 static char *Keyword_attr;
 static char *Number_attr;
 static char *String_attr;
-
-/*
- * Buffer text for quoted-strings
- */
-static char    *save_bfr;
-static unsigned save_max;
-static unsigned save_len;
-
-static void
-add_to_quoted(char *text, int length)
-{
-    save_bfr = do_alloc(save_bfr, save_len + length + 1, &save_max);
-    strncpy(save_bfr + save_len, text, length + 1);
-    save_len += length;
-}
-
-static void
-flush_quoted(void)
-{
-    if (save_len) {
-	flt_puts(save_bfr, save_len, String_attr);
-	save_len = 0;
-    }
-}
 
 static int
 mixedcase(const char *name)
@@ -74,7 +50,7 @@ do_filter(FILE *input)
     BEGIN(NORMAL);
     while (yylex() > 0) {
     }
-    flush_quoted();
+    flt_bfr_finish();
 }
 
 %}
@@ -101,27 +77,27 @@ URL		[A-Za-z]+"://"[0-9a-zA-Z%/.~_#-]+
 <NORMAL>[A-Z]\'{KEYWORD} { ECHO; }
 
 <NORMAL>{KEYWORD}	{ WriteToken(mixedcase(yytext) ? "" : Keyword_attr); }
-
 <NORMAL>{COMMENT}	{ WriteToken(Comment_attr); }
-
 <NORMAL>{NUMBER}	{ WriteToken(Number_attr); }
+<NORMAL>{EMAIL}		{ WriteToken(Ident2_attr); }
+<NORMAL>{URL}		{ WriteToken(Ident2_attr); }
 
-<NORMAL,QUOTED>{EMAIL}	{ flush_quoted(); WriteToken(Ident2_attr); }
-<NORMAL,QUOTED>{URL}	{ flush_quoted(); WriteToken(Ident2_attr); }
+<QUOTES,QUOTED>{EMAIL}	{ flt_bfr_embed(yytext, yyleng, Ident2_attr); }
+<QUOTES,QUOTED>{URL}	{ flt_bfr_embed(yytext, yyleng, Ident2_attr); }
 
 <NORMAL>\(\"\)		|
 <NORMAL>\'.\'		{ ECHO; }
 
-<NORMAL>\"		{ BEGIN(QUOTED); add_to_quoted(yytext, yyleng); }
-<QUOTED>\"		{ add_to_quoted(yytext, yyleng); flush_quoted(); BEGIN(NORMAL); }
-<QUOTED>.		{ add_to_quoted(yytext, yyleng); }
-<QUOTED>^[\n]		{ flush_quoted(); ECHO; BEGIN(NORMAL); }
-<QUOTED>[\n]		{ flush_quoted(); ECHO; }
+<NORMAL>\"		{ BeginQuote(QUOTED, String_attr); }
+<QUOTED>\"		{ FinishQuote(NORMAL); }
+<QUOTED>.		{ flt_bfr_append(yytext, yyleng); }
+<QUOTED>^[\n]		{ FinishQuote(NORMAL); }
+<QUOTED>[\n]		{ flt_bfr_append(yytext, yyleng); }
 
-<NORMAL>\`\`		{ BEGIN(QUOTES); add_to_quoted(yytext, yyleng); }
-<QUOTES>\'\'		{ add_to_quoted(yytext, yyleng); flush_quoted(); BEGIN(NORMAL); }
-<QUOTES>.		{ add_to_quoted(yytext, yyleng); }
-<QUOTES>^[\n]		{ flush_quoted(); ECHO; BEGIN(NORMAL); }
-<QUOTES>[\n]		{ flush_quoted(); ECHO; }
+<NORMAL>\`\`		{ BeginQuote(QUOTES, String_attr); }
+<QUOTES>\'\'		{ FinishQuote(NORMAL); }
+<QUOTES>.		{ flt_bfr_append(yytext, yyleng); }
+<QUOTES>^[\n]		{ FinishQuote(NORMAL); }
+<QUOTES>[\n]		{ flt_bfr_append(yytext, yyleng); }
 
 <NORMAL>.		{ ECHO; }

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.434 2000/09/05 01:47:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.436 2000/09/12 11:10:48 tom Exp $
  *
  */
 
@@ -294,7 +294,7 @@ extern char * get_xshellflags (void);
 
 /* eval.c */
 extern char * get_directory(void);
-extern char * get_token (char *src, TBUFF **tok, int eolchar);
+extern char * get_token (char *src, TBUFF **tok, int eolchar, int *actual);
 extern char * mac_tokval (TBUFF **tok);
 extern char * mklower (char *str);
 extern char * mktrimmed (char *str);
@@ -490,7 +490,7 @@ extern	void	scwrite (int row, int col, int nchar, const char *outstr, VIDEO_ATTR
 #endif
 
 /* input.c */
-extern char *user_reply(const char *prompt);
+extern char *user_reply(const char *prompt, const char *dftval);
 extern int dotcmdbegin (void);
 extern int dotcmdfinish (void);
 extern int end_string (void);
