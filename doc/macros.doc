@@ -186,6 +186,7 @@ Creating, executing, storing macros
 	may be abbreviated) include
 
 		bool
+		buffer
 		directory
 		enum		(see below)
 		file
@@ -801,6 +802,9 @@ Functions
 
 	  These all return string values:
 
+	    &default "MODENAME"     Retrieves initial/default value for the
+					given mode or state variable.
+
 	    &global "MODENAME"	    Retrieves universal/global mode setting.
 
 	    &indirect "S"	    Evaluate value of "S" as a
@@ -827,6 +831,12 @@ Functions
 				    The search order is fixed: current, home,
 				    bin, startup, path, libdir.  Note that
 				    the directory lists may overlap.
+
+	    &qpasswd  "S"	    Present "S" to the user and return their
+					response.  Each typed character is
+					echoed as '*'.  The response is not
+					recallable via the editor's history
+					mechanism.
 
 	    &query  "S"		    Present "S" to the user, and return
 					their typed response.
@@ -1386,6 +1396,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.72 2001/05/20 21:14:03 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.75 2001/08/22 00:27:36 tom Exp $
 -----------------------------------
 

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.467 2001/06/13 22:15:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.470 2001/08/26 15:21:44 tom Exp $
  *
  */
 
@@ -20,6 +20,7 @@ extern "C" {
 #endif
 
 extern SIGT catchintr (int ACTUAL_SIG_ARGS);
+extern char *init_state_value(int n);
 extern char *strncpy0 (char *t, const char *f, SIZE_T l);
 extern char *vl_strncpy (char *dest, const char *src, size_t destlen);
 extern int call_cmdfunc (const CMDFUNC *p, int f, int n);
@@ -28,6 +29,7 @@ extern int rdonly (void);
 extern int writeall (int f, int n, int promptuser, int leaving, int autowriting, int all);
 extern void charinit (void);
 extern void do_repeats (int *cp, int *fp, int *np);
+extern void init_mode_value(struct VAL *, MODECLASS c, int n);
 extern void not_interrupted (void);
 extern void setup_handler (int sig, void (*disp) (int ACTUAL_SIG_ARGS));
 extern void tidy_exit (int code);
@@ -363,10 +365,10 @@ extern void set_ctrans (const char *value);
 
 #if OPT_MACRO_ARGS
 extern void restore_arguments(BUFFER *bp);
-extern void save_arguments(BUFFER *bp);
+extern int save_arguments(BUFFER *bp);
 #else
 #define restore_arguments(cfp) /*nothing*/
-#define save_arguments(cfp) /*nothing*/
+#define save_arguments(cfp) 1
 #endif
 
 #if OPT_SHOW_COLORS && OPT_UPBUFF
@@ -448,7 +450,7 @@ extern void init_filec(const char *buffer_name);
 #endif
 
 /* fileio.c */
-extern int ffaccess (char *fn, int mode);
+extern int ffaccess (char *fn, UINT mode);
 extern int ffclose (void);
 extern int ffexists (char *p);
 extern int ffhasdata (void);
@@ -699,6 +701,7 @@ extern int combine_choices (const FSM_CHOICES *choices, const char *string);
 extern int find_mode (BUFFER *bp, const char *mode, int global, VALARGS *args);
 extern int getfillcol(BUFFER *bp);
 extern int len_record_sep(BUFFER *bp);
+extern int lookup_valnames(const char *rp, const struct VALNAMES *table);
 extern int mode_eol (EOL_ARGS);
 extern int set_mode_value (BUFFER *bp, const char *cp, int defining, int setting, int global, VALARGS *args, const char *rp);
 extern int string_to_number (const char *from, int *np);

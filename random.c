@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.255 2001/04/24 21:50:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.256 2001/08/17 18:23:21 tom Exp $
  *
  */
 
@@ -1912,6 +1912,7 @@ vl_atol(char *str, int base, int *failed)
  * if ANSI C compiler available, convert a string to an unsigned long,
  * trapping all possible conversion errors.
  */
+#if HAVE_STRTOUL
 ULONG
 vl_atoul(char *str, int base, int *failed)
 {
@@ -1945,6 +1946,7 @@ vl_atoul(char *str, int base, int *failed)
     return atoi(str);
 #endif
 }
+#endif
 
 #ifndef vl_stricmp
 /*

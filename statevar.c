@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.54 2001/06/13 22:16:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.55 2001/08/21 00:18:42 tom Exp $
  */
 
 #include	"estruct.h"
@@ -348,7 +348,7 @@ int var_AUTOCOLORHOOK(TBUFF **rp, const char *vp)
 
 int var_BCHARS(TBUFF **rp, const char *vp)
 {
-	return any_ro_INT(rp, vp, curbp->b_bytecount);
+	return curbp ? any_ro_INT(rp, vp, curbp->b_bytecount) : FALSE;
 }
 
 int var_BFLAGS(TBUFF **rp, const char *vp)
@@ -366,7 +366,7 @@ int var_BFLAGS(TBUFF **rp, const char *vp)
 
 int var_BLINES(TBUFF **rp, const char *vp)
 {
-	return any_ro_INT(rp, vp, curbp->b_linecount);
+	return curbp ? any_ro_INT(rp, vp, curbp->b_linecount) : FALSE;
 }
 
 #if DISP_NTWIN
@@ -429,7 +429,7 @@ int var_CBUFNAME(TBUFF **rp, const char *vp)
 
 int var_BWINDOWS(TBUFF **rp, const char *vp)
 {
-	return any_ro_INT(rp, vp, curbp->b_nwnd);
+	return curbp ? any_ro_INT(rp, vp, curbp->b_nwnd) : FALSE;
 }
 
 #if OPT_HOOKS
@@ -516,7 +516,7 @@ int var_CURCHAR (TBUFF **rp, const char *vp)
 	if (rp) {
 		render_int(rp, vl_getcchar() + 1);
 		return TRUE;
-	} else if (vp) {
+	} else if (vp && curbp) {
 		return gotochr(TRUE, strtol(vp,0,0));
 	} else {
 		return FALSE;
@@ -529,7 +529,7 @@ int var_CURCOL(TBUFF **rp, const char *vp)
 	if (rp) {
 		render_int(rp, getccol(FALSE) + 1);
 		return TRUE;
-	} else if (vp) {
+	} else if (vp && curbp) {
 		return gotocol(TRUE, strtol(vp,0,0));
 	} else {
 		return FALSE;
@@ -541,7 +541,7 @@ int var_CURLINE(TBUFF **rp, const char *vp)
 	if (rp) {
 		render_int(rp, getcline());
 		return TRUE;
-	} else if (vp) {
+	} else if (vp && curbp) {
 		return gotoline(TRUE, strtol(vp,0,0));
 	} else {
 		return FALSE;
@@ -567,7 +567,7 @@ int var_CWLINE(TBUFF **rp, const char *vp)
 	if (rp) {
 		render_int(rp, getlinerow());
 		return TRUE;
-	} else if (vp) {
+	} else if (vp && curbp) {
 		return forwline(TRUE, strtol(vp,0,0) - getlinerow());
 	} else {
 		return FALSE;
@@ -785,7 +785,7 @@ int var_IDENTIF(TBUFF **rp, const char *vp)
 	if (rp) {
 		lgrabtext(rp, vl_ident);
 		return TRUE;
-	} else if (vp) {
+	} else if (vp && curbp) {
 		return lrepltext(vl_ident, vp);
 	} else {
 		return FALSE;
@@ -871,7 +871,7 @@ int var_LINE(TBUFF **rp, const char *vp)
 	if (rp) {
 		lgrabtext(rp, (CHARTYPE)0);
 		return TRUE;
-	} else if (vp) {
+	} else if (vp && curbp) {
 		return lrepltext((CHARTYPE)0, vp);
 	} else {
 		return FALSE;
@@ -880,13 +880,13 @@ int var_LINE(TBUFF **rp, const char *vp)
 
 int var_LLENGTH(TBUFF **rp, const char *vp)
 {
-	return any_ro_INT(rp, vp, llength(DOT.l));
+	return curbp ? any_ro_INT(rp, vp, llength(DOT.l)) : FALSE;
 }
 
 #if OPT_MAJORMODE
 int var_MAJORMODE(TBUFF **rp, const char *vp)
 {
-	return any_ro_STR(rp, vp, (curbp->majr != 0) ? curbp->majr->name : "");
+	return any_ro_STR(rp, vp, (curbp != 0 && curbp->majr != 0) ? curbp->majr->name : "");
 }
 
 int var_MAJORMODEHOOK(TBUFF **rp, const char *vp)
@@ -1066,7 +1066,7 @@ int var_PATHNAME(TBUFF **rp, const char *vp)
 	if (rp) {
 		lgrabtext(rp, vl_pathn);
 		return TRUE;
-	} else if (vp) {
+	} else if (vp && curbp) {
 		return lrepltext(vl_pathn, vp);
 	} else {
 		return FALSE;
@@ -1110,7 +1110,7 @@ int var_QIDENTIF(TBUFF **rp, const char *vp)
 	if (rp) {
 		lgrabtext(rp, vl_qident);
 		return TRUE;
-	} else if (vp) {
+	} else if (vp && curbp) {
 		return lrepltext(vl_qident, vp);
 	} else {
 		return FALSE;
@@ -1142,7 +1142,7 @@ int var_SEARCH(TBUFF **rp, const char *vp)
 	if (rp) {
 		tb_scopy(rp, searchpat);
 		return TRUE;
-	} else if (vp) {
+	} else if (vp && curbp) {
 		(void)strcpy(searchpat, vp);
 		FreeIfNeeded(gregexp);
 		gregexp = regcomp(searchpat, b_val(curbp, MDMAGIC));
@@ -1284,7 +1284,7 @@ int var_WLINES(TBUFF **rp, const char *vp)
 	if (rp) {
 		render_int(rp, curwp->w_ntrows);
 		return TRUE;
-	} else if (vp) {
+	} else if (vp && curwp) {
 		return resize(TRUE, strtol(vp,0,0));
 	} else {
 		return FALSE;
@@ -1296,7 +1296,7 @@ int var_WORD(TBUFF **rp, const char *vp)
 	if (rp) {
 		lgrabtext(rp, vl_nonspace);
 		return TRUE;
-	} else if (vp) {
+	} else if (vp && curbp) {
 		return lrepltext(vl_nonspace, vp);
 	} else {
 		return FALSE;

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.225 2001/06/13 18:58:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.227 2001/08/21 09:55:45 tom Exp $
  *
  */
 
@@ -61,7 +61,6 @@ static struct VALNAMES *major_valnames;
 
 static int did_attach_mmode;
 static const char **my_mode_list;	/* copy of 'all_modes[]' */
-#define MODE_CLASSES 5
 #define is_bool_type(type) ((type) == VALTYPE_BOOL || (type) == VALTYPE_MAJOR)
 
 static MAJORMODE_LIST *lookup_mm_list(const char *name);
@@ -79,7 +78,6 @@ static void relist_majormodes(void);
 
 #else
 
-#define MODE_CLASSES 3
 #define ModeName(s) s
 #define init_my_mode_list()	/* nothing */
 #define is_bool_type(type) ((type) == VALTYPE_BOOL)
@@ -1231,7 +1229,7 @@ mode_eol(const char *buffer GCC_UNUSED, unsigned cpos GCC_UNUSED, int c, int eol
     return (c == ' ' || c == eolchar);
 }
 
-static int
+int
 lookup_valnames(const char *rp, const struct VALNAMES *table)
 {
     register int j;
@@ -1254,17 +1252,18 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 
     TRACE(("find_mode(%s) %s\n", mode, global ? "global" : "local"));
 
-    for (mode_class = 0; mode_class < MODE_CLASSES; mode_class++) {
+    for (mode_class = 0; mode_class < END_MODE; mode_class++) {
 	memset(args, 0, sizeof(*args));
 	switch (mode_class) {
-	default:		/* universal modes */
+	default:
+	case UNI_MODE:		/* universal modes */
 	    args->names = g_valnames;
 	    args->global = global_g_values.gv;
 	    args->local = ((global !=FALSE)
 			   ? args->global
 			   : (struct VAL *)0);
 	    break;
-	case 1:		/* buffer modes */
+	case BUF_MODE:		/* buffer modes */
 	    args->names = b_valnames;
 	    args->global = global_b_values.bv;
 	    args->local = ((global == TRUE)
@@ -1273,7 +1272,7 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 			      ? bp->b_values.bv
 			      : (struct VAL *)0));
 	    break;
-	case 2:		/* window modes */
+	case WIN_MODE:		/* window modes */
 	    args->names = w_valnames;
 	    args->global = global_w_values.wv;
 	    args->local = ((global == TRUE)
@@ -1283,7 +1282,7 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 			      : (struct VAL *)0));
 	    break;
 #if OPT_MAJORMODE
-	case 3:		/* major modes */
+	case MAJ_MODE:		/* major modes */
 	    args->names = major_valnames;
 	    args->global = major_g_vals;
 	    args->local = ((global == TRUE)
@@ -1292,7 +1291,7 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 			      ? major_l_vals
 			      : (struct VAL *)0));
 	    break;
-	case 4:		/* major submodes (qualifiers) */
+	case SUB_MODE:		/* major submodes (qualifiers) */
 	    if (my_majormodes != 0) {
 		size_t n = strlen(rp);
 

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_2n
+MANIFEST for vile, version v9_2o
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -198,6 +198,7 @@ filters/latex.key               latex keywords
 filters/latexflt.l              LaTeX syntax filter for vile
 filters/lex-filt.l              lex syntax filter for vile
 filters/lex.key                 keywords for lex + c
+filters/lispfilt.l              syntax filter for lisp
 filters/m4-filt.c               syntax filter for M4
 filters/m4.key                  keywords for M4 syntax filter
 filters/mail.key                keywords for mail-filter
@@ -285,9 +286,11 @@ macros/XVile.ad                 sample X resource file for vile
 macros/color-ls.rc              sample macro: read output of "color ls"
 macros/dates.rc                 demo of &date function
 macros/digraphs.rc              macros for inserting digraphs
+macros/gnugpg.rc                GNU gpg macros
 macros/manpage.rc               macros for man-page filtering/display
 macros/palettes.rc              sample color schemes
 macros/pictmode.rc              macros to support "picture-mode" editing
+macros/search.rc                find a file in one of several locations
 macros/shifts.rc                macros to shift words left/right
 macros/vile-pager               use vile as a pager
 macros/vileinit.rc              sample initialization file

@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.150 2001/03/03 17:19:53 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.151 2001/08/26 15:21:29 tom Exp $
  *
  */
 
@@ -348,7 +348,7 @@ ffwopen(char *fn, int forced)
 
 /* wrapper for 'access()' */
 int
-ffaccess(char *fn, int mode)
+ffaccess(char *fn, UINT mode)
 {
 	int status;
 #if HAVE_ACCESS

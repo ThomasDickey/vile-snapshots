@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.14 2001/02/18 01:19:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.15 2001/08/22 21:42:28 tom Exp $
  */
 
 #include <windows.h>
@@ -768,7 +768,7 @@ compute_foot_hdr_pos(int  ydpi,    /* dots (pixels) per inch in y axis */
                      int  vertres  /* max vertical, printable pixels   */
                      )
 {
-    int    foot_offs, halfchar;
+    int    halfchar;
     double ymin;
 
     /*
@@ -796,7 +796,7 @@ compute_foot_hdr_pos(int  ydpi,    /* dots (pixels) per inch in y axis */
      * is subtracted from the footer position so that the _bottom_ of the
      * footer text will align with the desired margin.
      */
-    foot_offs = yfootpos = minmar->top + minmar->bottom + vertres -
+    yfootpos = minmar->top + minmar->bottom + vertres -
                                              ((int) (ymin * ydpi)) - ychar;
 
     /*

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.113 2001/05/23 21:12:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.115 2001/08/22 21:41:34 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -13,13 +13,13 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include        "estruct.h"
-#include        "edef.h"
-#include        "pscreen.h"
-#include        "patchlev.h"
-#include        "winvile.h"
-#include	"nefsms.h"
-#include	"nefunc.h"
+#include "estruct.h"
+#include "edef.h"
+#include "pscreen.h"
+#include "patchlev.h"
+#include "winvile.h"
+#include "nefsms.h"
+#include "nefunc.h"
 
 #undef RECT			/* FIXME: symbol conflict */
 
@@ -1189,7 +1189,7 @@ ntwinio_font_frm_str(
     }
     hwnd = cur_win->text_hwnd;
     face_specified = (str_rslts.face[0] != '\0');
-    if (!(hdc = get_DC_with_Font(GetMyFont(0)))) {
+    if ((hdc = get_DC_with_Font(GetMyFont(0))) == 0) {
 	(void) last_w32_error(use_mb);
 	return (FALSE);
     }
@@ -1292,7 +1292,7 @@ ntwinio_current_font(void)
 	    return ("out of memory");
     }
     hwnd = cur_win->text_hwnd;
-    if (!(hdc = get_DC_with_Font(GetMyFont(0)))) {
+    if ((hdc = get_DC_with_Font(GetMyFont(0))) == 0) {
 	char *msg = NULL;
 	fmt_win32_error(W32_SYS_ERROR, &msg, 0);
 	return (msg);
@@ -2392,7 +2392,6 @@ GripWndProc(
 	DeleteObject(brush);
 	EndPaint(hWnd, &ps);
 	return (0);
-	break;
     }
     return (DefWindowProc(hWnd, message, wParam, lParam));
 }
@@ -3402,27 +3401,31 @@ WinMain(
 
     argv[argc = 0] = "VILE";
 
-    for (ptr = lpCmdLine; *ptr != '\0';) {
-	char delim = ' ';
+    if (ffaccess(lpCmdLine, FL_READABLE)) {
+	argv[++argc] = lpCmdLine;
+    } else {
+	for (ptr = lpCmdLine; *ptr != '\0';) {
+	    char delim = ' ';
 
-	while (*ptr == ' ')
-	    ptr++;
+	    while (*ptr == ' ')
+		ptr++;
 
-	if (*ptr == '"') {
-	    delim = *ptr++;
+	    if (*ptr == '"') {
+		delim = *ptr++;
+	    }
+	    if (*argv[argc]) {
+		TRACE(("argv[%d]:%s\n", argc, argv[argc]));
+		++argc;
+	    }
+	    argv[argc] = ptr;
+	    if (argc + 1 >= maxargs) {
+		break;
+	    }
+	    while (*ptr != delim && *ptr != '\0')
+		ptr++;
+	    if (*ptr == delim)
+		*ptr++ = '\0';
 	}
-	if (*argv[argc]) {
-	    TRACE(("argv[%d]:%s\n", argc, argv[argc]));
-	    ++argc;
-	}
-	argv[argc] = ptr;
-	if (argc + 1 >= maxargs) {
-	    break;
-	}
-	while (*ptr != delim && *ptr != '\0')
-	    ptr++;
-	if (*ptr == delim)
-	    *ptr++ = '\0';
     }
     if (*argv[argc]) {
 	TRACE(("argv[%d]:%s\n", argc, argv[argc]));

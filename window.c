@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.97 2000/11/04 12:34:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.98 2001/08/22 23:23:54 tom Exp $
  *
  */
 
@@ -136,12 +136,11 @@ vile_refresh(int f, int n GCC_UNUSED)
 }
 
 /*
- * The command make the next window (next => down the screen) the current
+ * The command makes the next window (next => down the screen) the current
  * window. There are no real errors, although the command does nothing if
  * there is only 1 window on the screen.
  *
  * with an argument this command finds the <n>th window from the top
- *
  */
 int
 nextwind(int f, int n)

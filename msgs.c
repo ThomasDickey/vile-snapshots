@@ -4,7 +4,7 @@
  * Support functions for "popup-msgs" mode.
  * Written by T.E.Dickey for vile (august 1994).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/msgs.c,v 1.20 1999/12/24 01:08:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/msgs.c,v 1.21 2001/08/23 00:37:52 tom Exp $
  */
 #include "estruct.h"
 
@@ -125,7 +125,7 @@ popup_msgs(void)
 		return;
 
 	if (!is_empty_buf(bp)) {
-		if ((curwp == 0) || sgarbf) {
+		if ((curwp == 0) || sgarbf || global_g_val(GMDPOPUP_MSGS) == -TRUE) {
 			return;		/* CAN'T popup yet */
 		}
 		if (popupbuff(bp) == FALSE) {

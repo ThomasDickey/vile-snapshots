@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.236 2001/05/20 16:28:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.237 2001/08/23 00:34:38 tom Exp $
  *
  */
 
@@ -881,6 +881,7 @@ suckitin(BUFFER *bp, int copy, int lockfl)
 {
     int s = TRUE;
 
+    TRACE(("suckitin(%s, %s)\n", bp->b_bname, copy ? "copy" : "new"));
     if (copy) {
 	WINDOW *wp;
 
@@ -1445,6 +1446,7 @@ popupbuff(BUFFER *bp)
 {
     WINDOW *wp;
 
+    TRACE(("popupbuff(%s) nwnd=%d\n", bp->b_bname, bp->b_nwnd));
     if (!curbp) {
 	curbp = bp;		/* possibly at startup time */
 	curwp->w_bufp = curbp;
@@ -1753,13 +1755,12 @@ listbuffers(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 vl_set_args(int f, int n)
 {
-    int cnt;
     BUFFER *bp;
 
     if (end_named_cmd()) {
 	return listbuffers(f, n);
     }
-    if ((cnt = any_changed_buf(&bp)) != 0) {
+    if (any_changed_buf(&bp) != 0) {
 	mlforce("Buffer %s is modified.  Use :args! to override",
 		bp->b_bname);
 	return FALSE;

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.289 2001/05/20 23:02:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.296 2001/08/26 18:34:21 tom Exp $
  *
  */
 
@@ -43,12 +43,13 @@ typedef struct PROC_ARGS {
 
 static PROC_ARGS *arg_stack;
 
+static SIZE_T s2size(const char *s);
 static char **init_vars_cmpl(void);
 static char *get_statevar_val(int vnum);
 static const char *s2offset(const char *s, const char *n);
-static int lookup_statevar(const char *vname);
 static int SetVarValue(VWRAP * var, const char *name, const char *value);
-static SIZE_T s2size(const char *s);
+static int lookup_statevar(const char *vname);
+static void FindVar(char *var, VWRAP * vd);
 #endif
 
 /*--------------------------------------------------------------------------*/
@@ -585,6 +586,47 @@ render_date(TBUFF ** result, char *format, time_t stamp)
     }
 }
 
+static void
+default_mode_value(TBUFF ** result, char *name)
+{
+    VALARGS args;
+    VWRAP vd;
+    int mode_class, mode_name;
+    struct VAL mode;
+
+    FindVar(name, &vd);
+    switch (vd.v_type) {
+    case VW_STATEVAR:
+	tb_scopy(result, init_state_value(vd.v_num));
+	break;
+    case VW_MODE:
+	for (mode_class = UNI_MODE; mode_class <= WIN_MODE; mode_class++) {
+	    switch (mode_class) {
+	    default:
+	    case UNI_MODE:	/* universal modes */
+		args.names = g_valnames;
+		break;
+	    case BUF_MODE:	/* buffer modes */
+		args.names = b_valnames;
+		break;
+	    case WIN_MODE:	/* window modes */
+		args.names = w_valnames;
+		break;
+	    }
+	    if ((mode_name = lookup_valnames(name, args.names)) >= 0) {
+		init_mode_value(&mode, mode_class, mode_name);
+		args.global = &mode;
+		args.local = args.global;
+		tb_scopy(result, string_mode_val(&args));
+		break;
+	    }
+	}
+	break;
+    default:
+	tb_init(result, EOS);	/* FIXME: handle %name and &ind name */
+    }
+}
+
 #define MAXARGS 3
 
 /*
@@ -602,6 +644,7 @@ run_func(int fnum)
     int args_numeric, args_boolean, ret_numeric, ret_boolean;
     int bools[MAXARGS];
     int i, nargs;
+    int is_error = FALSE;
     long value = 0;
     long nums[MAXARGS];
 
@@ -621,8 +664,11 @@ run_func(int fnum)
     for (i = 0; i < nargs; i++) {
 	args[i] = 0;
 	if ((arg[i] = mac_tokval(&args[i])) == 0
-	    || (args[i]->tb_errs))
+	    || (arg[i] == error_val)
+	    || (args[i]->tb_errs)) {
 	    arg[i] = error_val;
+	    is_error = TRUE;
+	}
 	tb_free(&result);	/* in case mac_tokval() called us */
 	TPRINTF(("...arg[%d] = '%s'\n", i, arg[i]));
 	if (args_numeric)
@@ -644,10 +690,16 @@ run_func(int fnum)
 	value = nums[0] * nums[1];
 	break;
     case UFDIV:
-	value = nums[0] / nums[1];
+	if (nums[1] == 0)
+	    is_error = TRUE;
+	if (!is_error)
+	    value = nums[0] / nums[1];
 	break;
     case UFMOD:
-	value = nums[0] % nums[1];
+	if (nums[1] <= 0)
+	    is_error = TRUE;
+	if (!is_error)
+	    value = nums[0] % nums[1];
 	break;
     case UFNEG:
 	value = -nums[0];
@@ -680,6 +732,7 @@ run_func(int fnum)
 	value = (nums[0] == nums[1]);
 	break;
     case UFERROR:
+	is_error = FALSE;
 	value = (arg[0] == error_val);
 	break;
     case UFLESS:
@@ -698,7 +751,10 @@ run_func(int fnum)
 	value = (strcmp(arg[0], arg[1]) > 0);
 	break;
     case UFINDIRECT:
-	tb_scopy(&result, tokval(arg[0]));
+	if ((cp = tokval(arg[0])) != error_val)
+	    tb_scopy(&result, cp);
+	else
+	    is_error = TRUE;
 	break;
     case UFAND:
 	value = (bools[0] && bools[1]);
@@ -735,7 +791,8 @@ run_func(int fnum)
 	break;
     case UFRANDOM:		/* FALLTHRU */
     case UFRND:
-	value = rand() % absol(nums[0]);
+	if (!is_error)
+	    value = rand() % absol(nums[0]);
 	value++;		/* return 1 to N */
 	break;
     case UFABS:
@@ -745,24 +802,30 @@ run_func(int fnum)
 	value = ourstrstr(arg[0], arg[1], FALSE);
 	break;
     case UFENV:
-	tb_scopy(&result, vile_getenv(arg[0]));
+	if (!is_error)
+	    tb_scopy(&result, vile_getenv(arg[0]));
 	break;
     case UFBIND:
-	tb_scopy(&result, prc2engl(arg[0]));
+	if (!is_error)
+	    tb_scopy(&result, prc2engl(arg[0]));
+	break;
+    case UFDEFAULT:
+	if (!is_error)
+	    default_mode_value(&result, arg[0]);
 	break;
     case UFREADABLE:		/* FALLTHRU */
     case UFRD:
-	value = ((arg[0] != error_val) &&
+	value = (!is_error &&
 		 doglob(arg[0]) &&
 		 cfg_locate(arg[0], FL_CDIR | FL_READABLE) != NULL);
 	break;
     case UFWRITABLE:
-	value = ((arg[0] != error_val) &&
+	value = (!is_error &&
 		 doglob(arg[0]) &&
 		 cfg_locate(arg[0], FL_CDIR | FL_WRITEABLE) != NULL);
 	break;
     case UFEXECABLE:
-	value = ((arg[0] != error_val) &&
+	value = (!is_error &&
 		 doglob(arg[0]) &&
 		 cfg_locate(arg[0], FL_CDIR | FL_EXECABLE) != NULL);
 	break;
@@ -774,13 +837,14 @@ run_func(int fnum)
 #endif
 	break;
     case UFFTIME:
-	if ((bp = find_any_buffer(arg[0])) != 0
+	if (!is_error
+	    && (bp = find_any_buffer(arg[0])) != 0
 	    && !is_internalname(bp->b_fname))
 	    value = file_modified(bp->b_fname);
 	break;
     case UFLOCMODE:
     case UFGLOBMODE:
-	{
+	if (!is_error) {
 	    VALARGS vargs;
 	    if (find_mode(curbp, arg[0],
 			  (fnum == UFGLOBMODE), &vargs) != TRUE)
@@ -789,48 +853,71 @@ run_func(int fnum)
 	}
 	break;
     case UFDQUERY:
-	cp = user_reply(arg[0], arg[1]);
-	tb_scopy(&result, cp ? cp : error_val);
+	if (!is_error) {
+	    if ((cp = user_reply(arg[0], arg[1])) != 0
+		&& (cp != error_val))
+		tb_scopy(&result, cp);
+	    else
+		is_error = TRUE;
+	}
+	break;
+    case UFQPASSWD:
+	if (!is_error) {
+	    qpasswd = TRUE;
+	    if ((cp = user_reply(arg[0], NULL)) != 0
+		&& (cp != error_val))
+		tb_scopy(&result, cp);
+	    else
+		is_error = TRUE;
+	    qpasswd = FALSE;
+	}
 	break;
     case UFQUERY:
-	cp = user_reply(arg[0], error_val);
-	tb_scopy(&result, cp ? cp : error_val);
+	if (!is_error) {
+	    if ((cp = user_reply(arg[0], error_val)) != 0
+		&& (cp != error_val))
+		tb_scopy(&result, cp);
+	    else
+		is_error = TRUE;
+	}
 	break;
     case UFLOOKUP:
 	if ((i = combine_choices(fsm_lookup_choices, arg[0])) > 0)
 	    tb_scopy(&result, SL_TO_BSL(cfg_locate(arg[1], i)));
 	break;
     case UFPATH:
-	switch (choice_to_code(fsm_path_choices, arg[0], strlen(arg[0]))) {
-	case PATH_END:
-	    cp = pathleaf(arg[1]);
-	    if ((cp = strchr(cp, '.')) != 0)
-		tb_scopy(&result, SL_TO_BSL(cp));
-	    break;
-	case PATH_FULL:
-	    tb_scopy(&result, arg[1]);
-	    tb_alloc(&result, NFILEN);
-	    SL_TO_BSL(lengthen_path(tb_values(result)));
-	    break;
-	case PATH_HEAD:
-	    SL_TO_BSL(path_head(&result, arg[1]));
-	    break;
-	case PATH_ROOT:
-	    tb_scopy(&result, SL_TO_BSL(pathleaf(arg[1])));
-	    if ((cp = strchr(tb_values(result), '.')) != 0)
-		*cp = EOS;
-	    break;
-	case PATH_SHORT:
-	    tb_scopy(&result, arg[1]);
-	    tb_alloc(&result, NFILEN);
-	    SL_TO_BSL(shorten_path(tb_values(result), FALSE));
-	    break;
-	case PATH_TAIL:
-	    tb_scopy(&result, pathleaf(arg[1]));
-	    break;
-	default:
-	    tb_scopy(&result, error_val);
-	    break;
+	if (!is_error) {
+	    switch (choice_to_code(fsm_path_choices, arg[0], strlen(arg[0]))) {
+	    case PATH_END:
+		cp = pathleaf(arg[1]);
+		if ((cp = strchr(cp, '.')) != 0)
+		    tb_scopy(&result, SL_TO_BSL(cp));
+		break;
+	    case PATH_FULL:
+		tb_scopy(&result, arg[1]);
+		tb_alloc(&result, NFILEN);
+		SL_TO_BSL(lengthen_path(tb_values(result)));
+		break;
+	    case PATH_HEAD:
+		SL_TO_BSL(path_head(&result, arg[1]));
+		break;
+	    case PATH_ROOT:
+		tb_scopy(&result, SL_TO_BSL(pathleaf(arg[1])));
+		if ((cp = strchr(tb_values(result), '.')) != 0)
+		    *cp = EOS;
+		break;
+	    case PATH_SHORT:
+		tb_scopy(&result, arg[1]);
+		tb_alloc(&result, NFILEN);
+		SL_TO_BSL(shorten_path(tb_values(result), FALSE));
+		break;
+	    case PATH_TAIL:
+		tb_scopy(&result, pathleaf(arg[1]));
+		break;
+	    default:
+		is_error = TRUE;
+		break;
+	    }
 	}
 	break;
     case UFPATHCAT:
@@ -850,23 +937,25 @@ run_func(int fnum)
 	extract_token(&result, arg[0], "\t ", arg[1]);
 	break;
     case UFREGISTER:
-	i = reg2index(*arg[0]);
-	if ((i = index2ukb(i)) < NKREGS
-	    && i >= 0) {
-	    KILL *kp = kbs[i].kbufh;
-	    while (kp != 0) {
-		tb_bappend(&result,
-			   (char *) (kp->d_chunk),
-			   KbSize(i, kp));
-		kp = kp->d_next;
+	if (!is_error) {
+	    i = reg2index(*arg[0]);
+	    if ((i = index2ukb(i)) < NKREGS
+		&& i >= 0) {
+		KILL *kp = kbs[i].kbufh;
+		while (kp != 0) {
+		    tb_bappend(&result,
+			       (char *) (kp->d_chunk),
+			       KbSize(i, kp));
+		    kp = kp->d_next;
+		}
+		tb_append(&result, EOS);
+		break;
 	    }
-	    tb_append(&result, EOS);
-	    break;
 	}
 	/* FALLTHRU */
     default:
 	TRACE(("unknown function #%d\n", fnum));
-	tb_scopy(&result, error_val);
+	is_error = TRUE;
 	break;
     }
 
@@ -875,11 +964,13 @@ run_func(int fnum)
     else if (ret_boolean)
 	render_boolean(&result, value);
 
-    TPRINTF(("-> '%s'\n", tb_values(result)));
+    TPRINTF(("-> %s'%s'\n",
+	     is_error ? "*" : "",
+	     is_error ? error_val : tb_values(result)));
     for (i = 0; i < nargs; i++) {
 	tb_free(&args[i]);
     }
-    return tb_values(result);
+    return is_error ? error_val : tb_values(result);
 }
 
 /* find a temp variable */
@@ -1259,7 +1350,7 @@ SetVarValue(VWRAP * var, const char *name, const char *value)
 
 	/* make the user hit a key */
 	if (ABORTED(keystroke())) {
-	    mlforce("[Aborted]");
+	    mlwarn("[Aborted]");
 	    status = FALSE;
 	}
     }
@@ -1704,6 +1795,9 @@ read_argument(TBUFF ** paramp, const PARAM_INFO * info)
 		prompt = "Boolean";
 		complete = complete_boolean;
 		break;
+	    case PT_BUFFER:
+		prompt = "Buffer";
+		break;
 	    case PT_DIR:
 		prompt = "Directory";
 		break;
@@ -1766,15 +1860,23 @@ read_argument(TBUFF ** paramp, const PARAM_INFO * info)
 
 	if (info->pi_type == PT_FILE) {
 	    char fname[NFILEN];
+
 	    status = mlreply_file(tb_values(temp), (TBUFF **) 0,
 				  FILEC_UNKNOWN, fname);
 	    if (status != ABORT)
 		tb_scopy(paramp, fname);
 	} else if (info->pi_type == PT_DIR) {
 	    char fname[NFILEN];
+
 	    status = mlreply_dir(tb_values(temp), (TBUFF **) 0, fname);
 	    if (status != ABORT)
 		tb_scopy(paramp, fname);
+	} else if (info->pi_type == PT_BUFFER) {
+	    char bname[NBUFN];
+
+	    status = ask_for_bname(tb_values(temp), bname, sizeof(bname));
+	    if (status != ABORT)
+		tb_scopy(paramp, bname);
 	} else {
 	    status = kbd_reply(tb_values(temp),
 			       paramp,	/* in/out buffer */
@@ -1796,7 +1898,7 @@ read_argument(TBUFF ** paramp, const PARAM_INFO * info)
  * When first executing a macro, save the remainder of the argument string
  * as an array of strings.
  */
-void
+int
 save_arguments(BUFFER *bp)
 {
     PROC_ARGS *p = typealloc(PROC_ARGS);
@@ -1805,6 +1907,8 @@ save_arguments(BUFFER *bp)
     char temp[NBUFN];
     const CMDFUNC *cmd = engl2fnc(strip_brackets(temp, bp->b_bname));
     int ok = TRUE;
+    int status = TRUE;
+    char *cp;
 
     if (cmd != 0 && cmd->c_args != 0) {
 	for (max_args = 0;
@@ -1821,15 +1925,23 @@ save_arguments(BUFFER *bp)
     tb_scopy(&(p->all_args[num_args++]), bp->b_bname);
 
     while (num_args < max_args + 1) {
-	if (ok)
-	    ok = (read_argument(
-				   &(p->all_args[num_args]),
-				   &(cmd->c_args[num_args - 1])) == TRUE);
-	if (ok)
-	    tb_scopy(&(p->all_args[num_args]),
-		     tokval(tb_values(p->all_args[num_args])));
-	else
+	if (ok) {
+	    status = read_argument(&(p->all_args[num_args]),
+				   &(cmd->c_args[num_args - 1]));
+	    if (status == ABORT)
+		break;
+	    ok = (status == TRUE);
+	}
+	if (ok) {
+	    if ((cp = tokval(tb_values(p->all_args[num_args]))) != error_val) {
+		tb_scopy(&(p->all_args[num_args]), cp);
+	    } else {
+		status = ABORT;
+		break;
+	    }
+	} else {
 	    tb_scopy(&(p->all_args[num_args]), "");
+	}
 	TPRINTF(("...ARG%d:%s\n", num_args, tb_values(p->all_args[num_args])));
 	num_args++;
     }
@@ -1837,6 +1949,8 @@ save_arguments(BUFFER *bp)
     p->num_args = num_args - 1;
 
     updatelistvariables();
+    TRACE(("...save_arguments ->%d\n", status));
+    return status;
 }
 
 /*

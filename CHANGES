@@ -1,5 +1,93 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20010826 (o)
+	> Clark Morgan:
+	+ correct return code from set_files_to_edit() when no buffer can be
+	  found or created.
+	+ updates to vile.hlp:
+	  a) refine w32pipes description as well as adding updates for
+	     WinME/W2K
+	  b) documented unmark-buffer
+	+ doc/w32modes.doc now mentions WinME and W2K.
+	+ add macros/gnugpg.rc, examples of using GNU gpg to encrypt/decrypt
+	  a buffer.
+	+ added &qpasswd, which solicits a password string from the keyboard. 
+	  Each typed character is echoed as '*'.  The password is not
+	  recallable via vile's usual history mechanism.  This feature enhances
+	  the security of the gpg macro wrappers (which have been successfully
+	  tested on Unix and Windows).  The only fly in the ointment is the
+	  brief time the passphrase is visible at the top of the buffer that's
+	  being encrypted/decrypted.
+	> Shawn Halpenny:
+	+ add lisp syntax highlighter (lispfilt.l)
+	> Tom Dickey:
+	+ indent'd history.c, main.c, search.c
+	+ add search.rc macro (based on discussion with clemens fischer
+	  <rabat@web.de>).
+	+ change a few places (search.c, eval.c) which used mlforce() to
+	  display "Aborted" messages to use mlwarn().
+	+ several changes to improve error handling in macros (prompted by
+	  reports by Clark Morgan):
+	  + modify run_func() to ensure that the pointer error_val is returned
+	    on an error condition.  Previously the corresponding string "ERROR"
+	    was returned rather than the special pointer value, preventing
+	    run_func() from detecting operations on erroneous data.
+	  + return error_val from run_func() if the built-in function
+	    parameters were error_val, except for special cases such as the
+	    &error function.
+	  + add error-checking for divide-by-zero in &divide, and &modulo.
+	  + return error_val from run_func() for built-in functions &dquery,
+	    &qpasswd, &query if the user presses ESC to abort the input.
+	  + check for ABORT return in prompts for missing macro parameters,
+	    to cancel execution of the corresponding macro.
+	+ modify hst_append() and related logic to store quoted tokens in
+	  [History] if the eolchar is whitespace, and if the token contains
+	  embedded whitespace or quote characters.  The tokens presented for
+	  editing command history are dequoted.
+	+ modify hst_append() to ensure that if the glue character is a return
+	  or newline, then vile will interpret that as a blank to insert
+	  between tokens.  This case happens when prompting for macro
+	  parameters (reported by Clark Morgan).
+	+ set umask before calling mkdir, in case user's umask has been
+	  mistreated, e.g., by certain mail programs that remove execute-flags
+	  from the umask.
+	+ minor updates to configure script macros, for ncurses
+	  (CF_CURSES_CPPFLAGS, CF_MAKEFLAGS, CF_NCURSES_CPPFLAGS,
+	  CF_NCURSES_VERSION, CF_PROG_EXT).
+	+ modify logic of popup-msgs to keep it from popping up [Messages]
+	  before the end of initialization.  This would happen for example
+	  if $pagelen were altered, since 9.2m change to set need_update
+	  flag rather than call vile_refresh() for mode-settings which affect
+	  the screen (report by Clark Morgan).
+	+ add 'buffer' to the types of parameters which may be given in a
+	  macro template (report by Clark Morgan).
+	+ add logic to pl-filt.c to handle case such as the second pattern in
+		if(/pat1/ || /pat2/)
+	+ correct implementation of is_PREPRO() in pl-filt.c, which matched
+	  "#!" rather than the documented C-style "# line <number> <filename>".
+	+ correct two problems in write_PATTERN() in pl-filt.c, noticed in
+	  check_po script:
+	  a) parse square-bracketed ranges
+	  b) correct string address at the end of the loop.
+	+ corrected expressions for strings in rexxfilt.l; backslash does not
+	  act as an escape character.
+	+ corrected special cases for $endtext and $rem in fdl-filt.l
+	+ adjust ifdef's for strftime() to use it on win32.
+	+ add several null-pointer checks in statevar.c
+	+ use &default function to make vile-pager script a little more
+	  portable with respect to the start-filename (report by Clark Morgan).
+	+ implement &default built-in function, which returns the initial or
+	  default value for modes and some state variables.
+	+ rewrote global_val_init(), splitting out functions init_mode_value()
+	  and init_state_value() to implement &default functions, which return
+	  the initial/default value of the corresponding mode or state variable.
+	+ reduce casts, fix signed/unsigned mismatch in prc2kcod().
+	+ add missing ifdef around vl_atoul() in case no strtoul() is available
+	  (report by Larry Gensch, on Tru64 5.1).
+	+ modify ntwinio.c to check if the given argument list matches an
+	  existing filename, and open that if so.  This allows one to use
+	  SendTo to open files with blanks in their names.
+
  20010613 (n)
 	> Tom Dickey:
 	+ indent'd modes.c and os2vio.c
@@ -25,6 +113,9 @@ Changes for vile 9.3 (released ??? ??? ?? 2000)
 	+ when popup-menu is inactive, if text is selected, right-click copies
 	  to w32clipboard; otherwise right-click pastes from w32clipboard.
 	> Tom Dickey:
+	+ replace the vile_refresh() calls in modes.c with need_update flag,
+	  since vile_refresh() set sgarbf, which prevented _all_ screen updates
+	  including messages.
 	+ implement a simple example of macros to insert or display timestamps
 	  for the current buffer (macros/dates.rc).
 	+ modify prc2kcod() to recognize "M-" (meta) in combination with

@@ -55,15 +55,7 @@
  *	not (yet) correspond to :-commands.  Before implementing, probably will
  *	have to make TESTC a settable mode.
  *
- *	Make the display updating work for more than simply erasing/printing
- *	the entire response.  This is adequate for scrolling, but won't support
- *	inline editing.
- *
- *	Implement other ksh-style inline command editing.
- *
- *	Allow left/right scrolling of input lines (when they get too long).
- *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.58 2001/04/29 18:40:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.68 2001/08/26 23:30:25 tom Exp $
  *
  */
 
@@ -72,48 +64,52 @@
 
 #if	OPT_HISTORY
 
+#define HST_QUOTES 1
+
 #define	tb_args(p)	tb_values(p), (int)tb_length(p)
 #define	lp_args(p)	p->l_text, llength(p)
 
-typedef	struct	{
-	TBUFF **buffer;
-	unsigned * position;
-	int	(*endfunc) (EOL_ARGS);
-	int	eolchar;
-	UINT	options;
-	} HST;
+#undef isGraph
+#define	isGraph(c)	(!isSpecial(c) && !isSpace(c) && isPrint(c))
 
-/*--------------------------------------------------------------------------*/
-static	void	stopMyBuff (void);
-
-static	TBUFF	*MyText;	/* current command to display */
-static	int	MyGlue,		/* most recent eolchar */
-		MyLevel;	/* logging iff level is 1 */
+typedef struct {
+    TBUFF **buffer;
+    unsigned *position;
+    int (*endfunc) (EOL_ARGS);
+    int eolchar;
+    UINT options;
+} HST;
 
 /*--------------------------------------------------------------------------*/
 
-static BUFFER *
-makeMyBuff(void)
-{
-	register BUFFER *bp;
+static TBUFF *MyText;		/* current command to display */
+static int MyGlue;		/* most recent eolchar */
+static int MyLevel;		/* logging iff level is 1 */
 
-	if (!global_g_val(GMDHISTORY)) {
-		bp = 0;
-	} else if ((bp = make_ro_bp(HISTORY_BufName, BFINVS)) == 0) {
-		stopMyBuff();
-	}
-	return bp;
-}
+/*--------------------------------------------------------------------------*/
 
 static void
 stopMyBuff(void)
 {
-	register BUFFER *bp;
+    BUFFER *bp;
 
-	if ((bp = find_b_name(HISTORY_BufName)) != 0)
-		(void)zotbuf(bp);
+    if ((bp = find_b_name(HISTORY_BufName)) != 0)
+	(void) zotbuf(bp);
 
-	tb_free(&MyText);
+    tb_free(&MyText);
+}
+
+static BUFFER *
+makeMyBuff(void)
+{
+    BUFFER *bp;
+
+    if (!global_g_val(GMDHISTORY)) {
+	bp = 0;
+    } else if ((bp = make_ro_bp(HISTORY_BufName, BFINVS)) == 0) {
+	stopMyBuff();
+    }
+    return bp;
 }
 
 /*
@@ -123,12 +119,12 @@ stopMyBuff(void)
 static int
 willGlue(void)
 {
-	if ((tb_length(MyText) != 0) && (isPrint(MyGlue) || MyGlue == '\r')) {
-		register int c = tb_values(MyText)[0];
-		if ((c != SHPIPE_LEFT[0]) || isRepeatable(c))
-			return 1;
-	}
-	return 0;
+    if ((tb_length(MyText) != 0) && (isPrint(MyGlue) || MyGlue == '\r')) {
+	int c = tb_values(MyText)[0];
+	if ((c != SHPIPE_LEFT[0]) || isRepeatable(c))
+	    return 1;
+    }
+    return 0;
 }
 
 /*
@@ -139,13 +135,13 @@ willGlue(void)
  * The shift-commands also are a (similar) special case.
  */
 static int
-willExtend(const char * src, int srclen)
+willExtend(const char *src, int srclen)
 {
-	if ((tb_length(MyText) == 0)
-	 && (srclen > 0)) {
-		return (src[0] == SHPIPE_LEFT[0]) || isRepeatable(src[0]);
-	}
-	return FALSE;
+    if ((tb_length(MyText) == 0)
+	&& (srclen > 0)) {
+	return (src[0] == SHPIPE_LEFT[0]) || isRepeatable(src[0]);
+    }
+    return FALSE;
 }
 
 /*
@@ -154,48 +150,225 @@ willExtend(const char * src, int srclen)
  * 'srclen'.
  */
 static int
-sameLine(LINE * lp, char * src, int srclen)
+sameLine(LINE *lp, char *src, int srclen)
 {
-	if (srclen <= 0)
-		return 0;
-	else {
-		register int	dstlen = llength(lp);
+    if (srclen <= 0)
+	return 0;
+    else {
+	int dstlen = llength(lp);
 
-		if (dstlen >= srclen) {
-			if (!memcmp(lp->l_text, src, (SIZE_T)srclen)) {
-				if (isRepeatable(*src)
-				 && isRepeatable(lp->l_text[0])
-				 && dstlen != srclen)
-					return -1;
-				return (dstlen - srclen);
-			}
-		}
+	if (dstlen >= srclen) {
+	    if (!memcmp(lp->l_text, src, (SIZE_T) srclen)) {
+		if (isRepeatable(*src)
+		    && isRepeatable(lp->l_text[0])
+		    && dstlen != srclen)
+		    return -1;
+		return (dstlen - srclen);
+	    }
 	}
-	return -1;
+    }
+    return -1;
 }
 
 /*
- * Returns the length of the argument from the given line
+ * Given a starting offset and index limit for src, find the index of the
+ * character that ends the parameter.
  */
 static int
-parseArg(HST * parm, LINE * lp)
+endOfParm(HST * parm, char *src, int offset, int limit)
 {
-	int	len = llength(lp);
+    int n;
 
-	if (len > 0) {
-		if (willExtend(lp_args(lp))) {
-			return len;
-		} else {
-			register char	*s = lp->l_text;
-			register int	n;
-
-			for (n = willGlue()+tb_length(MyText); n < len; n++)
-				if ((*parm->endfunc)(s, n, s[n], parm->eolchar))
-					break;
-			return n;
-		}
+    if (limit > 0) {
+	if (willExtend(src, limit)) {
+	    n = limit;
+	} else {
+#if HST_QUOTES
+	    int quoted = (src[offset] == DQUOTE);
+	    int escaped = FALSE;
+#endif
+	    for (n = offset; n < limit; n++) {
+#if HST_QUOTES
+		if (quoted) {
+		    if (escaped) {
+			escaped = FALSE;
+		    } else if (src[n] == BACKSLASH) {
+			escaped = TRUE;
+		    } else if (n != offset && (src[n] == src[offset])) {
+			n++;
+			break;
+		    }
+		} else
+#endif
+		if ((*parm->endfunc) (src, n, src[n], parm->eolchar))
+		    break;
+	    }
 	}
-	return 0;
+    } else {
+	n = 0;
+    }
+    return n;
+}
+
+/*
+ * Returns the index of the character that ends the current argument on the
+ * given line.
+ */
+static int
+parseArg(HST * parm, LINE *lp)
+{
+    return endOfParm(parm,
+		     lp->l_text,
+		     willGlue() + tb_length(MyText),
+		     llength(lp));
+}
+
+/*
+ * Returns true if the buffer is not the first token on the current history
+ * line, and if it contains blanks or quotes which would confuse us when
+ * parsing.
+ */
+static int
+needQuotes(TBUFF * src)
+{
+#if HST_QUOTES
+    char *values = tb_values(src);
+    ALLOC_T last = tb_length(src);
+    ALLOC_T n;
+
+    if (last != 0) {
+	for (n = 0; n < last; n++) {
+	    int ch = CharOf(values[n]);
+	    if (ch == SQUOTE
+		|| ch == DQUOTE
+		|| ch == BACKSLASH
+		|| !isGraph(ch))
+		return TRUE;
+	}
+    } else if (tb_length(MyText)) {
+	return TRUE;
+    }
+#endif
+    return FALSE;
+}
+
+/*
+ * Appends the buffer, with quotes
+ */
+static void
+appendQuoted(TBUFF ** dst, TBUFF * src)
+{
+    char *values = tb_values(src);
+    ALLOC_T last = tb_length(src);
+    ALLOC_T n;
+
+    TRACE(("appendQuoted\n"));
+    tb_append(dst, DQUOTE);
+    for (n = 0; n < last; n++) {
+	int ch = CharOf(values[n]);
+	switch (ch) {
+	case DQUOTE:
+	case BACKSLASH:
+	    tb_append(dst, BACKSLASH);
+	    tb_append(dst, ch);
+	    break;
+	case '\b':
+	    tb_sappend(dst, "\\b");
+	    break;
+	case '\t':
+	    tb_sappend(dst, "\\t");
+	    break;
+	case '\r':
+	    tb_sappend(dst, "\\r");
+	    break;
+	case '\n':
+	    tb_sappend(dst, "\\n");
+	    break;
+	default:
+	    /* as for other characters, including nonprinting ones, they are
+	     * not a problem
+	     */
+	    tb_append(dst, ch);
+	    break;
+	}
+    }
+    tb_append(dst, DQUOTE);
+}
+
+#if HST_QUOTES
+/*
+ * Reverses appendQuoted() by stripping the quotes and returning an allocated
+ * buffer with the text.  The associated length is returned via the 'actual'
+ * parameter.
+ */
+static char *
+stripQuotes(char *src, int len, int eolchar, int *actual)
+{
+    char *dst = 0;
+
+    if (len > 0) {
+	TRACE(("stripQuotes(%.*s)\n", len, src));
+	if ((dst = malloc((size_t) len + 1)) != 0) {
+	    int j, k;
+	    int quoted = FALSE;
+	    int escaped = FALSE;
+
+	    for (j = k = 0; j < len; j++) {
+		if (escaped) {
+		    escaped = FALSE;
+		    switch (src[j]) {
+		    case DQUOTE:
+		    case BACKSLASH:
+		    default:
+			dst[k++] = src[j];
+			break;
+		    case 'b':
+			dst[k++] = '\b';
+			break;
+		    case 't':
+			dst[k++] = '\t';
+			break;
+		    case 'r':
+			dst[k++] = '\r';
+			break;
+		    case 'n':
+			dst[k++] = '\n';
+			break;
+		    }
+		} else if (src[j] == BACKSLASH) {
+		    escaped = TRUE;
+		} else if (src[j] == DQUOTE && src[0] == DQUOTE) {
+		    quoted = !quoted;
+		} else if (!quoted && src[j] == eolchar) {
+		    break;
+		} else {
+		    dst[k++] = src[j];
+		}
+	    }
+	    dst[k] = EOS;
+	    *actual = k;
+	}
+    }
+    return dst;
+}
+#endif
+
+static void
+glueBufferToResult(TBUFF ** dst, TBUFF * src, int glue)
+{
+    int shell_cmd = ((tb_length(*dst) != 0 && isShellOrPipe(tb_values(*dst)))
+		     || (tb_length(*dst) != 0 && isShellOrPipe(tb_values(src))));
+
+    if (willGlue())
+	(void) tb_append(dst, MyGlue);
+
+    if (!shell_cmd
+	&& isSpace(glue)
+	&& needQuotes(src)) {
+	appendQuoted(dst, src);
+    } else {
+	(void) tb_bappend(dst, tb_args(src));
+    }
 }
 
 /******************************************************************************/
@@ -203,138 +376,143 @@ parseArg(HST * parm, LINE * lp)
 void
 hst_reset(void)
 {
-	MyLevel = 0;
-	(void)tb_init(&MyText, esc_c);
+    MyLevel = 0;
+    (void) tb_init(&MyText, esc_c);
 }
 
 void
 hst_init(int c)
 {
-	if (++MyLevel == 1) {
-		(void)tb_init(&MyText, esc_c);
-		MyGlue = EOS;
-		if (c != EOS)
-			(void)tb_append(&MyText, c);
-	}
+    if (++MyLevel == 1) {
+	(void) tb_init(&MyText, esc_c);
+	MyGlue = EOS;
+	if (c != EOS)
+	    (void) tb_append(&MyText, c);
+    }
 }
 
 void
 hst_glue(int c)
 {
-	/* ensure we don't repeat '/' delimiter */
-	if (tb_length(MyText) == 0
-	 || tb_values(MyText)[0] != c)
-		MyGlue = c;
+    /* ensure we don't repeat '/' delimiter */
+    if (tb_length(MyText) == 0
+	|| tb_values(MyText)[0] != c)
+	MyGlue = c;
 }
 
 void
 hst_append(TBUFF * cmd, int glue)
 {
-	static	int	skip = 1;		/* e.g., after "!" */
+    static int skip = 1;	/* e.g., after "!" */
 
-	if (clexec || !vl_echo)			/* non-interactive? */
-		return;
+    if (clexec || !vl_echo || qpasswd) {
+	/* noninteractive, $disinp=FALSE, or querying for password */
 
-	TRACE(("hst_append(cmd=%d:%d:%s)\n",
-		willExtend(tb_values(cmd), tb_length(cmd)),
-		(int)tb_length(cmd),
-		tb_visible(cmd)));
-	TRACE(("...MyText        :%d:%s\n", tb_length(MyText), tb_visible(MyText)));
-	if (willExtend(tb_values(cmd), tb_length(cmd))
-	 && tb_length(cmd) > (SIZE_T)skip) {
-		kbd_pushback(cmd, skip);
-	}
+	return;
+    }
+    if (isreturn(glue))
+	glue = ' ';
 
-	if (willGlue())
-		(void)tb_append(&MyText, MyGlue);
-	(void)tb_bappend(&MyText, tb_values(cmd), tb_length(cmd));
-	TRACE(("...MyText        :%d:%s\n", tb_length(MyText), tb_visible(MyText)));
-	MyGlue = glue;
+    TRACE(("hst_append(cmd=%d:%d:%s) glue='%c'\n",
+	   willExtend(tb_args(cmd)),
+	   (int) tb_length(cmd),
+	   tb_visible(cmd),
+	   glue));
+    TRACE(("...MyText        :%d:%s\n", tb_length(MyText), tb_visible(MyText)));
+    if (willExtend(tb_args(cmd))
+	&& tb_length(cmd) > (SIZE_T) skip) {
+	kbd_pushback(cmd, skip);
+    }
+
+    glueBufferToResult(&MyText, cmd, glue);
+    TRACE(("...MyText        :%d:%s\n", tb_length(MyText), tb_visible(MyText)));
+    MyGlue = glue;
 }
 
 void
 hst_append_s(char *cmd, int glue)
 {
-	TBUFF *p = tb_string(cmd);
-	hst_append(p, glue);
-	tb_free(&p);
+    TBUFF *p = tb_string(cmd);
+    hst_append(p, glue);
+    tb_free(&p);
 }
 
 void
-hst_remove(const char * cmd)
+hst_remove(const char *cmd)
 {
-	if (MyLevel == 1) {
-		TBUFF	*temp	= 0;
-		unsigned len	= tb_length(tb_scopy(&temp, cmd)) - 1;
+    if (MyLevel == 1) {
+	TBUFF *temp = 0;
+	unsigned len = tb_length(tb_scopy(&temp, cmd)) - 1;
 
-		while (*cmd++)
-			tb_unput(MyText);
-		kbd_kill_response(temp, &len, killc);
-		tb_free(&temp);
-	}
+	TRACE(("hst_remove(%s)\n", cmd));
+	while (*cmd++)
+	    tb_unput(MyText);
+	kbd_kill_response(temp, &len, killc);
+	tb_free(&temp);
+    }
 }
 
 void
 hst_flush(void)
 {
-	register BUFFER *bp;
-	register WINDOW *wp;
-	register LINE	*lp;
+    BUFFER *bp;
+    WINDOW *wp;
+    LINE *lp;
 
-	if (MyLevel <= 0)
-		return;
-	if (MyLevel-- != 1)
-		return;
+    if (MyLevel <= 0)
+	return;
+    if (MyLevel-- != 1)
+	return;
 
-	if ((tb_length(MyText) != 0)
-	 && ((bp = makeMyBuff()) != 0)) {
+    if ((tb_length(MyText) != 0)
+	&& ((bp = makeMyBuff()) != 0)) {
 
-		/* suppress if this is the same as previous line */
-		if (((lp = lback(buf_head(bp))) != 0)
-		 && (lp != buf_head(bp))
-		 && (sameLine(lp, tb_args(MyText)) == 0)) {
-			(void)tb_init(&MyText, esc_c);
-			return;
-		 }
+	/* suppress if this is the same as previous line */
+	if (((lp = lback(buf_head(bp))) != 0)
+	    && (lp != buf_head(bp))
+	    && (sameLine(lp, tb_args(MyText)) == 0)) {
+	    (void) tb_init(&MyText, esc_c);
+	    return;
+	}
 
-		if (!addline(bp, tb_args(MyText))) {
-			stopMyBuff();
-			return;
+	if (!addline(bp, tb_args(MyText))) {
+	    stopMyBuff();
+	    return;
+	}
+
+	/* patch: reuse logic from slowreadf()? */
+	for_each_visible_window(wp) {
+	    if (wp->w_bufp == bp) {
+		wp->w_flag |= WFFORCE;
+		if (wp == curwp)
+		    continue;
+		/* force dot to the beginning of last-line */
+		wp->w_force = -1;
+		if (wp->w_dot.l != lback(buf_head(bp))) {
+		    wp->w_dot.l = lback(buf_head(bp));
+		    wp->w_dot.o = 0;
+		    wp->w_flag |= WFMOVE;
 		}
-
-		/* patch: reuse logic from slowreadf()? */
-		for_each_visible_window(wp) {
-			if (wp->w_bufp == bp) {
-				wp->w_flag |= WFFORCE;
-				if (wp == curwp)
-					continue;
-				/* force dot to the beginning of last-line */
-				wp->w_force = -1;
-				if (wp->w_dot.l != lback(buf_head(bp))) {
-					wp->w_dot.l = lback(buf_head(bp));
-					wp->w_dot.o = 0;
-					wp->w_flag |= WFMOVE;
-				}
-			}
-		}
-		updatelistbuffers();	/* force it to show current sizes */
-		(void)tb_init(&MyText, esc_c);
-	 }
+	    }
+	}
+	updatelistbuffers();	/* force it to show current sizes */
+	(void) tb_init(&MyText, esc_c);
+    }
 }
 
 /*ARGSUSED*/
 int
 showhistory(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	register BUFFER *bp = makeMyBuff();
+    BUFFER *bp = makeMyBuff();
 
-	if (!global_g_val(GMDHISTORY)) {
-		mlforce("history mode is not set");
-		return FALSE;
-	} else if (bp == 0 || popupbuff(bp) == FALSE) {
-		return no_memory("show-history");
-	}
-	return TRUE;
+    if (!global_g_val(GMDHISTORY)) {
+	mlforce("history mode is not set");
+	return FALSE;
+    } else if (bp == 0 || popupbuff(bp) == FALSE) {
+	return no_memory("show-history");
+    }
+    return TRUE;
 }
 
 /*
@@ -344,118 +522,120 @@ showhistory(int f GCC_UNUSED, int n GCC_UNUSED)
  * user may scroll through.
  */
 static LINE *
-hst_find (
-HST *	parm,
-BUFFER *bp,
-LINE *	lp,
-int	direction)
+hst_find(HST * parm, BUFFER *bp, LINE *lp, int direction)
 {
-	LINE	*base	= buf_head(bp),
-		*lp0	= lp;
+    LINE *base = buf_head(bp);
+    LINE *lp0 = lp;
 
-	if ((lp0 == 0)
-	 || ((lp == base) && (direction > 0))) {
+    if ((lp0 == 0)
+	|| ((lp == base) && (direction > 0))) {
+	return 0;
+    }
+
+    for_ever {
+	if (direction > 0) {
+	    if (lp == lback(base))	/* cannot wrap-around */
 		return 0;
+	    lp = lforw(lp);
+	} else
+	    lp = lback(lp);
+	if (lp == base)
+	    return 0;		/* empty or no matches */
+
+	if (!lisreal(lp)
+	    || ((ALLOC_T) llength(lp) <= tb_length(MyText) + willGlue())
+	    || (sameLine(lp, tb_args(MyText)) < 0))
+	    continue;		/* prefix mismatches */
+
+	if (willGlue()) {	/* avoid conflicts setall/set */
+	    int len = tb_length(MyText);
+	    if (len > 0
+		&& (len > 1 || !isPunct(tb_values(MyText)[0]))
+		&& llength(lp) > len
+		&& lp->l_text[len] != MyGlue)
+		continue;
 	}
 
-	for_ever {
-		if (direction > 0) {
-			if (lp == lback(base))	/* cannot wrap-around */
-				return 0;
-			lp = lforw(lp);
-		} else
-			lp = lback(lp);
-		if (lp == base)
-			return 0;		/* empty or no matches */
+	/* avoid picking up lines with range-spec, since this is too
+	 * cumbersome to splice in 'namedcmd()'.
+	 */
+	if (islinespecchar(lp->l_text[0]))
+	    continue;
 
-		if (!lisreal(lp)
-		 || ((ALLOC_T)llength(lp) <= tb_length(MyText)+willGlue())
-		 || (sameLine(lp, tb_args(MyText)) < 0))
-			continue;		/* prefix mismatches */
-
-		if (willGlue()) {		/* avoid conflicts setall/set */
-			register int len = tb_length(MyText);
-			if (len > 0
-			 && (len > 1 || !isPunct(tb_values(MyText)[0]))
-			 && llength(lp) > len
-			 && lp->l_text[len] != MyGlue)
-				continue;
-		}
-
-		/* avoid picking up lines with range-spec, since this is too
-		 * cumbersome to splice in 'namedcmd()'.
-		 */
-		if (islinespecchar(lp->l_text[0]))
-			continue;
-
-		/* '/' and '?' are not (yet) :-commands.  Don't display them
-		 * in the command-name scrolling.
-		 */
-		if (tb_length(MyText) == 0) {
-			if (lp->l_text[0] == '/'
-			 || lp->l_text[0] == '?')
-				continue;
-		}
-
-		/* compare the argument that will be shown for the original
-		 * and current lines.
-		 */
-		if (lisreal(lp0)) {
-			int	n0 = parseArg(parm, lp0),
-				n1 = parseArg(parm, lp);
-			if (n0 != 0
-			 && n1 != 0
-			 && n0 == n1
-			 && sameLine(lp, lp0->l_text, n0) >= 0)
-				continue;
-		}
-
-		return lp;
+	/* '/' and '?' are not (yet) :-commands.  Don't display them
+	 * in the command-name scrolling.
+	 */
+	if (tb_length(MyText) == 0) {
+	    if (lp->l_text[0] == '/'
+		|| lp->l_text[0] == '?')
+		continue;
 	}
+
+	/* compare the argument that will be shown for the original
+	 * and current lines.
+	 */
+	if (lisreal(lp0)) {
+	    int n0 = parseArg(parm, lp0);
+	    int n1 = parseArg(parm, lp);
+	    if (n0 != 0
+		&& n1 != 0
+		&& n0 == n1
+		&& sameLine(lp, lp0->l_text, n0) >= 0)
+		continue;
+	}
+
+	return lp;
+    }
 }
 
 /*
  * Update the display of the currently-scrollable buffer on the prompt-line.
  */
 static void
-hst_display(
-HST *	parm,
-char *	src,
-int	srclen)
+hst_display(HST * parm, char *src, int srclen)
 {
-	/* kill the whole buffer */
-	*(parm->position) = tb_length(*(parm->buffer));
-	wminip->w_dot.o = llength(wminip->w_dot.l);
-	kbd_kill_response(*(parm->buffer), parm->position, killc);
+    TRACE(("hst_display(%.*s) eolchar='%c'\n",
+	   srclen, src,
+	   isreturn(parm->eolchar) ? ' ' : parm->eolchar));
 
-	if (src != 0) {
-		int	keylen	= tb_length(MyText) + willGlue();
-		int	uselen	= srclen - keylen;
-		register char	*s = src + keylen;
-		register int    n  = 0;
+    /* kill the whole buffer */
+    *(parm->position) = tb_length(*(parm->buffer));
+    wminip->w_dot.o = llength(wminip->w_dot.l);
+    kbd_kill_response(*(parm->buffer), parm->position, killc);
 
-		if (willExtend(src,srclen)) {
-			n = uselen;
-		} else {
-			while (uselen-- > 0) {
-				if ((*parm->endfunc)(s, n, s[n], parm->eolchar))
-					break;
-				n++;
-			}
-		}
-		*parm->position = kbd_show_response(parm->buffer, s, n, parm->eolchar, parm->options);
-	}
+    if (src != 0) {
+	char *stripped;
+	int keylen = tb_length(MyText) + willGlue();
+	int n = endOfParm(parm, src, keylen, srclen) - keylen;
+
+	src += keylen;
+	stripped = src;
+#if HST_QUOTES
+	if (!isShellOrPipe(tb_values(MyText))
+	    && (*src == DQUOTE || isSpace(parm->eolchar)))
+	    stripped = stripQuotes(src, n,
+				   isSpace(parm->eolchar) ? ' ' : parm->eolchar,
+				   &n);
+#endif
+	TRACE(("hst_display offset=%d, string='%.*s'\n", keylen, n, stripped));
+	*parm->position = kbd_show_response(parm->buffer,
+					    stripped,
+					    n,
+					    parm->eolchar, parm->options);
+#if HST_QUOTES
+	if (stripped != 0 && stripped != src)
+	    free(stripped);
+#endif
+    }
 }
 
 /*
  * Update the display using a LINE as source
  */
 static void
-display_LINE(
-HST *	parm,
-LINE *	lp)
+display_LINE(HST * parm, LINE *lp)
 {
-	hst_display(parm, lp_args(lp));
+    hst_display(parm, lp_args(lp));
 }
 
 /*
@@ -464,136 +644,130 @@ LINE *	lp)
 static void
 display_TBUFF(HST * parm, TBUFF * tp)
 {
-	hst_display(parm, tb_args(tp));
+    hst_display(parm, tb_args(tp));
 }
 
 /*
  * Perform common scrolling functions for arrow-keys and ESC-mode.
  */
-static	TBUFF *	original;	/* save 'buffer' on first-scroll */
-static	int	any_edit,	/* true iff any edit happened */
-		direction,	/* current scrolling +/- */
-		distance;	/* distance from original entry */
+static TBUFF *h_original;	/* save 'buffer' on first-scroll */
+static int h_was_edited;	/* true iff any edit happened */
+static int h_direction;		/* current scrolling +/- */
+static int h_distance;		/* distance from original entry */
 
 static LINE *
-hst_scroll(LINE * lp1, HST * parm)
+hst_scroll(LINE *lp1, HST * parm)
 {
-	BUFFER	*bp = makeMyBuff();
-	LINE	*lp0 = buf_head(bp),
-		*lp2 = hst_find(parm, bp, lp1, direction);
+    BUFFER *bp = makeMyBuff();
+    LINE *lp0 = buf_head(bp);
+    LINE *lp2 = hst_find(parm, bp, lp1, h_direction);
 
-	if (lp1 != lp2) {
-		if (lp2 == 0) {
-			if (direction+distance == 0) {
-				lp1 = lp0;
-				distance = 0;
-				display_TBUFF(parm, original);
-			} else {
-				if (lp1 == lp0)	/* nothing to scroll for */
-					distance = 0;
-				kbd_alarm();
-			}
-			return lp1;
-		} else {
-			distance += direction;
-			display_LINE(parm, lp2);
-			any_edit++;
-			return lp2;
-		}
+    if (lp1 != lp2) {
+	if (lp2 == 0) {
+	    if (h_direction + h_distance == 0) {
+		lp1 = lp0;
+		h_distance = 0;
+		display_TBUFF(parm, h_original);
+	    } else {
+		if (lp1 == lp0)	/* nothing to scroll for */
+		    h_distance = 0;
+		kbd_alarm();
+	    }
+	    return lp1;
+	} else {
+	    h_distance += h_direction;
+	    display_LINE(parm, lp2);
+	    h_was_edited++;
+	    return lp2;
 	}
-	return 0;
+    }
+    return 0;
 }
-
-#undef isgraph
-#define	isgraph(c)	(!isSpecial(c) && !isSpace(c) && isPrint(c))
 
 /*
  * Invoked on an escape-character, this processes history-editing until another
  * escape-character is entered.
  */
 int
-edithistory (
-TBUFF **buffer,
-unsigned * position,
-int *	given,
-UINT	options,
-int	(*endfunc) (EOL_ARGS),
-int	eolchar)
+edithistory(
+	       TBUFF ** buffer,
+	       unsigned *position,
+	       int *given,
+	       UINT options,
+	       int (*endfunc) (EOL_ARGS),
+	       int eolchar)
 {
-	HST	param;
-	BUFFER	*bp;
-	LINE	*lp1, *lp2;
-	int	escaped	= FALSE;
+    HST param;
+    BUFFER *bp;
+    LINE *lp1, *lp2;
+    int escaped = FALSE;
+    int c = *given;
 
-	register int	c = *given;
+    if (!isSpecial(c)) {
+	if (is_edit_char(c)
+	    || ABORTED(c)
+	    || (c == quotec)
+	    || isSpace(c)
+	    || !isCntrl(c))
+	    return FALSE;
+    }
 
-	if (!isSpecial(c)) {
-		if (is_edit_char(c)
-		 || ABORTED(c)
-		 || (c == quotec)
-		 || isSpace(c)
-		 || !isCntrl(c))
-			return FALSE;
+    if ((bp = makeMyBuff()) == 0)	/* something is very wrong */
+	return FALSE;
+
+    if ((lp1 = buf_head(bp)) == 0)
+	return FALSE;
+
+    /* slightly better than global data... */
+    param.buffer = buffer;
+    param.position = position;
+    param.endfunc = endfunc;
+    param.eolchar = (eolchar == '\n') ? '\r' : eolchar;
+    param.options = options;
+
+    h_was_edited = 0;
+    h_distance = 0;
+
+    /* save the original buffer, since we expect to scroll it */
+    if (tb_copy(&h_original, MyText)) {
+	/* make 'original' look just like a complete command... */
+	glueBufferToResult(&h_original, *buffer, isreturn(eolchar) ? ' ' : eolchar);
+    }
+
+    /* process char-commands */
+    for_ever {
+	const CMDFUNC *p;
+
+	/* If the character is bound to up/down scrolling, scroll the
+	 * history.
+	 */
+	h_direction = 0;	/* ...unless we find scrolling-command */
+	if ((p = DefaultKeyBinding(c)) != 0) {
+	    if (CMD_U_FUNC(p) == backline)
+		h_direction = -1;
+	    else if (CMD_U_FUNC(p) == forwline)
+		h_direction = 1;
 	}
+	if (ABORTED(c)) {
+	    *given = c;
+	    return FALSE;
 
-	if ((bp = makeMyBuff()) == 0)		/* something is very wrong */
-		return FALSE;
+	} else if ((h_direction != 0) && (escaped || !isGraph(c))) {
 
-	if ((lp1 = buf_head(bp)) == 0)
-		return FALSE;
+	    if ((lp2 = hst_scroll(lp1, &param)) != 0)
+		lp1 = lp2;
+	    else		/* cannot scroll */
+		kbd_alarm();
+	} else if (!escaped) {
+	    *given = c;
+	    if (h_was_edited)
+		unkeystroke(c);
+	    return h_was_edited;
 
-	/* slightly better than global data... */
-	param.buffer   = buffer;
-	param.position = position;
-	param.endfunc  = endfunc;
-	param.eolchar  = eolchar == '\n' ? '\r' : eolchar;
-	param.options  = options;
+	} else
+	    kbd_alarm();
 
-	any_edit = 0;
-	distance = 0;
-
-	/* save the original buffer, since we expect to scroll it */
-	if (tb_copy(&original, MyText)) {
-		/* make 'original' look just like a complete command... */
-		if (willGlue())
-			(void)tb_append(&original, MyGlue);
-		(void)tb_sappend(&original, tb_values(*buffer));
-	}
-
-	/* process char-commands */
-	for_ever {
-		register const CMDFUNC *p;
-
-		/* If the character is bound to up/down scrolling, scroll the
-		 * history.
-		 */
-		direction = 0;	/* ...unless we find scrolling-command */
-		if ((p = DefaultKeyBinding(c)) != 0) {
-			if (CMD_U_FUNC(p) == backline)
-				direction = -1;
-			else if (CMD_U_FUNC(p) == forwline)
-				direction = 1;
-		}
-		if (ABORTED(c)) {
-			*given = c;
-			return FALSE;
-
-		} else if ((direction != 0) && (escaped || !isgraph(c))) {
-
-			if ((lp2 = hst_scroll(lp1, &param)) != 0)
-				lp1 = lp2;
-			else	/* cannot scroll */
-				kbd_alarm();
-		} else if (!escaped) {
-			*given = c;
-			if (any_edit)
-				unkeystroke(c);
-			return any_edit;
-
-		} else
-			kbd_alarm();
-
-		c = keystroke();
-	}
+	c = keystroke();
+    }
 }
-#endif	/* OPT_HISTORY */
+#endif /* OPT_HISTORY */

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.475 2001/04/24 22:05:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.479 2001/08/22 21:36:50 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -129,6 +129,11 @@
 # define CPP_SUBS_BEFORE_QUOTE	1
 #endif
 
+#if CC_TURBO
+# undef HAVE_SYS_UTIME_H
+# undef HAVE_UTIME
+#endif
+
 #if CC_DJGPP
 # define HAVE_UNISTD_H		1
 #endif
@@ -174,6 +179,10 @@
 # define HAVE_STRRCHR   1
 #endif
 
+#ifndef HAVE_STRFTIME
+# define HAVE_STRFTIME	1	/* if your system has the strftime() function */
+#endif
+
 #ifndef HAVE_STRTOUL
 # define HAVE_STRTOUL	1	/* if your system has the strtoul() function */
 #endif
@@ -215,6 +224,7 @@
 #  define HAVE_ACCESS 0	/* 'access()' is reported to not work properly */
 # endif
 # if !defined(__DECC)
+#  undef  HAVE_STRFTIME	/* not present */
 #  undef  HAVE_QSORT
 #  define HAVE_QSORT 0	/* VAX-C's 'qsort()' is definitely broken */
 #  define CC_CANNOT_INIT_UNIONS 1
@@ -964,6 +974,17 @@ typedef enum {
 } MMQ_CHOICES;
 
 typedef enum {
+	UNI_MODE = 0
+	, BUF_MODE
+	, WIN_MODE
+#if OPT_MAJORMODE
+	, MAJ_MODE
+	, SUB_MODE
+#endif
+	, END_MODE
+} MODECLASS;
+
+typedef enum {
 	PATH_UNKNOWN = ENUM_UNKNOWN
 	, PATH_END
 	, PATH_FULL
@@ -976,6 +997,7 @@ typedef enum {
 typedef enum {
 	PT_UNKNOWN = ENUM_UNKNOWN
 	, PT_BOOL
+	, PT_BUFFER
 	, PT_DIR
 	, PT_ENUM
 	, PT_FILE

@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.112 2001/05/20 19:35:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.114 2001/08/22 21:42:46 tom Exp $
  *
  */
 
@@ -1391,6 +1391,13 @@ dump_statevars(void)
 		"#endif",
 		"",
 		""
+		"typedef enum {",
+		};
+	static const char *const middle1[] = {
+		"\tNum_StateVars",
+		"} enumStateVars;",
+		"",
+		""
 		};
 	static const char *const middle2[] = {
 		"",
@@ -1410,14 +1417,13 @@ dump_statevars(void)
 		"",
 		};
 	register LIST *p;
-	register int count;
 #if OPT_IFDEF_MODES
 	char	*s;
 #endif
 
 	BeginIf();
-	for (p = all_statevars, count = 0; p != 0; p = p->nst) {
-		if (!count++)
+	for (p = all_statevars; p != 0; p = p->nst) {
+		if (p == all_statevars)
 			init_statevars();
 #if OPT_IFDEF_MODES
 		WriteIf(nevars, p->Cond);
@@ -1426,8 +1432,17 @@ dump_statevars(void)
 		free(s);
 	}
 	FlushIf(nevars);
-
 	write_lines(nevars, middle);
+
+	for (p = all_statevars; p != 0; p = p->nst) {
+#if OPT_IFDEF_MODES
+		WriteIf(nevars, p->Cond);
+#endif
+		Fprintf(nevars, "\tVAR_%s,\n", p->Func);
+	}
+	FlushIf(nevars);
+
+	write_lines(nevars, middle1);
 	/* emit the variable get/set routine prototypes */
 	for (p = all_statevars; p != 0; p = p->nst) {
 #if OPT_IFDEF_MODES

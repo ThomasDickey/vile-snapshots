@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.240 2001/05/20 20:10:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.243 2001/08/26 15:55:00 tom Exp $
  *
  */
 
@@ -1198,7 +1198,7 @@ ourstrstr(const char *haystack, const char *needle, int anchor)
 	int hl = strlen(haystack);
 	const char *hp = haystack;
 	while (hl >= nl && *hp) {
-	    if (!strncmp(hp, needle, nl))
+	    if (!strncmp(hp, needle, (size_t)nl))
 		return hp - haystack + 1;
 	    hp++;
 	    hl--;
@@ -1209,7 +1209,7 @@ ourstrstr(const char *haystack, const char *needle, int anchor)
 #endif /* OPT_REBIND || OPT_EVAL */
 
 static char *
-locate_fname(char *dirname, char *fname, int mode)
+locate_fname(char *dirname, char *fname, UINT mode)
 {
     static char fullpath[NFILEN];	/* expanded path */
 
@@ -1222,7 +1222,7 @@ locate_fname(char *dirname, char *fname, int mode)
 }
 
 static char *
-locate_file_in_list(char *list, char *fname, int mode)
+locate_file_in_list(char *list, char *fname, UINT mode)
 {
     const char *cp;
     char *sp;
@@ -1287,7 +1287,7 @@ char *
 cfg_locate(char *fname, UINT which)
 {
     char *sp;
-    int mode = (which & (FL_EXECABLE | FL_WRITEABLE | FL_READABLE));
+    UINT mode = (which & (FL_EXECABLE | FL_WRITEABLE | FL_READABLE));
 
     /* take care of special cases */
     if (!fname || !fname[0] || isSpace(fname[0]))
@@ -1340,26 +1340,24 @@ ask_which_file(char *fname)
 }
 
 static void
-list_one_fname(char *fname, int mode)
+list_one_fname(char *fname, UINT mode)
 {
     bprintf("\n%s\t%s", ffaccess(fname, mode) ? "*" : "", fname);
 }
 
 static void
-list_which_fname(char *dirname, char *fname, int mode)
+list_which_fname(char *dirname, char *fname, UINT mode)
 {
     char fullpath[NFILEN];	/* expanded path */
 
     if (dirname
 	&& dirname[0] != EOS) {
-	list_one_fname(SL_TO_BSL(
-				    pathcat(fullpath, dirname, fname)),
-		       mode);
+	list_one_fname(SL_TO_BSL(pathcat(fullpath, dirname, fname)), mode);
     }
 }
 
 static void
-list_which_file_in_list(char *list, char *fname, int mode)
+list_which_file_in_list(char *list, char *fname, UINT mode)
 {
     const char *cp;
     char dirname[NFILEN];
@@ -1750,51 +1748,53 @@ prc2kcod(const char *kk)
     UINT kcod;			/* code to return */
     UINT pref = 0;		/* key prefixes */
     int len = strlen(kk);
-    const UCHAR *k = (const UCHAR *) kk;
+    UCHAR ch;
 
-    if (len > 3 && *(k + 2) == '-') {
-	if (*k == '^') {
-	    if (isCntrl(cntl_a) && *(k + 1) == toalpha(cntl_a))
+    if (len > 3 && *(kk + 2) == '-') {
+	if (*kk == '^') {
+	    ch = (UCHAR) (kk[1]);
+	    if (isCntrl(cntl_a) && ch == toalpha(cntl_a))
 		pref = CTLA;
-	    if (isCntrl(cntl_x) && *(k + 1) == toalpha(cntl_x))
+	    if (isCntrl(cntl_x) && ch == toalpha(cntl_x))
 		pref = CTLX;
-	    if (isCntrl(poundc) && *(k + 1) == toalpha(poundc))
+	    if (isCntrl(poundc) && ch == toalpha(poundc))
 		pref = SPEC;
-	} else if (!strncmp((const char *) k, "FN", (SIZE_T) 2)) {
+	} else if (!strncmp(kk, "FN", (SIZE_T) 2)) {
 	    pref = SPEC;
 	}
 	if (pref != 0)
-	    k += 3;
+	    kk += 3;
     } else if (len > 1) {
-	if (*k == cntl_a)
+	ch = (UCHAR) (kk[0]);
+	if (ch == cntl_a)
 	    pref = CTLA;
-	else if (*k == cntl_x)
+	else if (ch == cntl_x)
 	    pref = CTLX;
-	else if (*k == poundc)
+	else if (ch == poundc)
 	    pref = SPEC;
 	if (pref != 0) {
-	    k++;
-	    if (len > 2 && *k == '-')
-		k++;
+	    kk++;
+	    if (len > 2 && *kk == '-')
+		kk++;
 	}
     }
 
-    if (strlen(k) > 2 && !strncmp((const char *) k, "M-", (SIZE_T) 2)) {
+    if (strlen(kk) > 2 && !strncmp(kk, "M-", 2)) {
 	pref |= HIGHBIT;
-	k += 2;
+	kk += 2;
     }
 
-    if (*k == '^' && *(k + 1) != EOS) {		/* control character */
-	kcod = *(k + 1);
+    if (*kk == '^' && kk[1] != EOS) {	/* control character */
+	kcod = (UCHAR) kk[1];
 	if (isLower(kcod))
 	    kcod = toUpper(kcod);
 	kcod = tocntrl(kcod);
-	k += 2;
+	kk += 2;
     } else {			/* any single char, control or not */
-	kcod = *k++;
+	kcod = (UCHAR) (*kk++);
     }
 
-    if (*k != EOS)		/* we should have eaten the whole thing */
+    if (*kk != EOS)		/* we should have eaten the whole thing */
 	return -1;
 
     return (int) (pref | kcod);
@@ -2463,7 +2463,7 @@ kbd_complete(
     cmplcol = 0;
 #endif
     buf[*pos = cpos] = EOS;
-    if ((flags & (KBD_MAYBEC|KBD_MAYBEC2)) != 0) {
+    if ((flags & (KBD_MAYBEC | KBD_MAYBEC2)) != 0) {
 	return (cpos != 0);
     } else {
 	if (clexec) {
