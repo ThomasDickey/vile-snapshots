@@ -17,7 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.18 2001/12/21 13:41:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.19 2002/02/26 23:33:49 cmorgan Exp $
  */
 
 #include "w32vile.h"
@@ -62,7 +62,6 @@ extern "C"
 int
 oleauto_init(OLEAUTO_OPTIONS *opts)
 {
-    char           *dummy = NULL;
     HRESULT        hr;
     LPCLASSFACTORY pcf = NULL;
 
@@ -630,12 +629,24 @@ vile_oa::get_InsertMode(VARIANT_BOOL *pbool)
     return NOERROR;
 }
 
+// ForegroundWindow() is not very useful on Win2K or XP...
+// See MSDN's description of SetForegroundWindow() for further details.
+// As an alternative, use vile_oa::get_MainHwnd() to obtain a handle
+// to the editor's main window and call SetForegoundWindow() directly.
+// See wvwrap.cpp for an example.
 STDMETHODIMP
 vile_oa::ForegroundWindow()
 {
     if (! m_bVisible)
         put_Visible(TRUE);   /* Force window to be visible, first. */
     ::SetForegroundWindow(m_hwnd);
+    return NOERROR;
+}
+
+STDMETHODIMP
+vile_oa::get_MainHwnd(LONG *phwnd /* for VB compatibility */)
+{
+    *phwnd = (LONG) m_hwnd;   // ugh
     return NOERROR;
 }
 

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.492 2002/02/17 18:20:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.493 2002/02/27 10:24:40 tom Exp $
  *
  */
 
@@ -588,6 +588,7 @@ extern int indentlen (LINEPTR lp);
 extern int ins (void);
 extern int ins_mode (WINDOW *wp);
 extern int inschar (int c, int *backsp_limit_p);
+extern int is_cindent_char (BUFFER *bp, int ch);
 extern int previndent (int *bracefp);
 
 #if OPT_EVAL
@@ -747,6 +748,7 @@ extern struct VAL * get_submode_valx (BUFFER *bp, int n, int *m);
 extern void infer_majormode (BUFFER *bp);
 extern void set_majormode_rexp (const char *name, int n, const char *pat);
 extern void set_submode_val (const char *name, int n, int value);
+extern void set_submode_txt (const char *name, int n, char * value);
 #else
 #define infer_majormode(bp) fix_cmode(bp, (global_b_val(MDCMOD) && has_C_suffix(bp)))
 #endif

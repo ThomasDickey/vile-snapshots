@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.474 2002/02/18 00:43:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.475 2002/02/27 10:55:23 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -942,6 +942,9 @@ no_memory(const char *s)
 #define DFT_CSUFFIX "\\.\\(\\([Cchis]\\)\\|CC\\|cc\\|cpp\\|cxx\\|hxx\\|scm\\)$"
 #endif
 
+#define DFT_FENCE_CHARS "{}()[]"
+#define DFT_CINDENT_CHARS ":#" DFT_FENCE_CHARS
+
 /*
  * For the given class/mode, initialize the VAL struct to the default value
  * for that mode.
@@ -1118,6 +1121,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setPAT(VAL_PARAGRAPHS, DFT_PARAGRAPHS);
 	    setPAT(VAL_SECTIONS, DFT_SECTIONS);
 	    setPAT(VAL_SENTENCES, DFT_SENTENCES);
+	    setTXT(VAL_CINDENT_CHARS, DFT_CINDENT_CHARS);	/* C-style indent flags */
 	    setTXT(VAL_FENCES, "{}()[]");	/* fences */
 	    setTXT(VAL_TAGS, "tags");	/* tags filename */
 #ifdef MDCHK_MODTIME
@@ -1457,6 +1461,7 @@ global_val_init(void)
     set_submode_val("c", VAL_SWIDTH, 8);	/* C file shiftwidth */
     set_submode_val("c", VAL_TAB, 8);	/* C file tab stop */
     set_submode_val("c", MDCINDENT, TRUE);	/* C-style indent */
+    set_submode_txt("c", VAL_CINDENT_CHARS, DFT_CINDENT_CHARS);		/* C-style indent flags */
 
     set_majormode_rexp("c", MVAL_SUFFIXES, DFT_CSUFFIX);
 #endif

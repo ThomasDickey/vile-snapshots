@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.69 2001/12/14 00:13:12 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.70 2002/02/26 23:37:11 cmorgan Exp $
 #
 #
 !include <ntwin32.mak>
@@ -62,6 +62,12 @@ CFG=vile
 !ERROR An invalid configuration is specified.
 !ENDIF
 
+# $(cflags), defined via ntwin32.mak, is a critical compiler resource.
+# This variable controls what OS features, such as a mouse wheel, can be
+# accessed via include files.
+CFLWIN32     = $(cflags:-W3=)      # strip out warning option
+CFLWIN32     = $(CFLWIN32:-c=)     # strip out -c flag
+
 # remove the "#" to get debugging info (and a larger executable)
 CC_DEBUG     = -W4 #$(cdebug)
 LD_DEBUG     = #$(ldebug)
@@ -88,7 +94,7 @@ MY_LDOPT = -pdb:none
 DISP_DEF = -DDISP_NTCONS
 TARGET   = vile
 CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
-	   -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(MY_CCOPT)
+	   -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(MY_CCOPT) $(CFLWIN32)
 LDFLAGS  = -nologo $(MY_LDOPT)
 SCREEN   = ntconio
 LIBS     = $(LD_DEBUG) $(conlflags) $(conlibsmt) user32.lib comdlg32.lib \
@@ -99,7 +105,7 @@ LIBS     = $(LD_DEBUG) $(conlflags) $(conlibsmt) user32.lib comdlg32.lib \
 DISP_DEF = -DDISP_NTWIN
 TARGET   = winvile
 CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
-	   -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(MY_CCOPT)
+	   -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(MY_CCOPT) $(CFLWIN32)
 LDFLAGS  = -nologo /subsystem:windows /incremental:no $(MY_LDOPT)
 SCREEN   = ntwinio
 LIBS     = $(LD_DEBUG) $(guilflags) $(guilibsmt) ole32.lib shell32.lib \
@@ -110,7 +116,7 @@ EXTRA    = winvile.res
 !IF "$(PROGNAME)" != "" && "$(PROGNAME)" != "$(TARGET)"
 !MESSAGE Overriding target name to $(PROGNAME)
 TARGET   = $(PROGNAME)
-CFLAGS   = $(CFLAGS) -DPROGRAM_NAME=\"$(PROGNAME)\"
+CFLAGS   = $(CFLAGS) -DPROGRAM_NAME=\"$(PROGNAME)\" $(CFLWIN32)
 !endif
 
 TARGET   = $(TARGET).exe
@@ -216,7 +222,7 @@ OBJ = 	main.obj $(SCREEN).obj \
 	$(cc) $(CFLAGS) -c $< -Fo$@
 
 .cpp.obj:
-	$(cc) $(CFLAGS) $(CFLAGS) -c $< -Fo$@
+	$(cc) $(CFLAGS) -c $< -Fo$@
 
 all :: $(PERLCFG) $(TARGET) $(WRAPUTIL)
 

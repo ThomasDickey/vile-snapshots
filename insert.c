@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.135 2002/01/09 00:57:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.136 2002/02/27 10:54:26 tom Exp $
  *
  */
 
@@ -133,7 +133,7 @@ openup(int f, int n)
 
     (void) gotobol(TRUE, 1);
 
-    /* if we are in C mode and this is a default <NL> */
+    /* if we are using C-indents and this is a default <NL> */
     if (allow_aindent && n == 1 &&
 	(b_val(curbp, MDCINDENT) || b_val(curbp, MDAIND)) &&
 	!is_header_line(DOT, curbp)) {
@@ -683,6 +683,18 @@ blanks_on_line(void)
     return code;
 }
 
+/*
+ * Check if we're to interpret the given character ch for C-style indenting.
+ */
+int
+is_cindent_char(BUFFER *bp, int ch)
+{
+    return (bp != 0)
+	&& b_val(bp, MDCINDENT)
+	&& (b_val_ptr(bp, VAL_CINDENT_CHARS) != 0)
+	&& (strchr(b_val_ptr(bp, VAL_CINDENT_CHARS), ch) != 0);
+}
+
 int
 inschar(int c, int *backsp_limit_p)
 {
@@ -822,9 +834,9 @@ inschar(int c, int *backsp_limit_p)
     /* do the appropriate insertion */
     if (allow_aindent && b_val(curbp, MDCINDENT)) {
 	int dir;
-	if (is_user_fence(c, &dir) && dir == REVERSE) {
+	if (is_cindent_char(curbp, c) && is_user_fence(c, &dir) && dir == REVERSE) {
 	    return insbrace(1, c);
-	} else if (c == '#' && is_c_mode(curbp)) {
+	} else if (c == '#' && is_cindent_char(curbp, '#')) {
 	    return inspound();
 	}
     }
@@ -982,7 +994,7 @@ int
 previndent(int *bracefp)
 {
     int ind;
-    int cmode = allow_aindent && is_c_mode(curbp) && b_val(curbp, MDCINDENT);
+    int cmode = allow_aindent && is_cindent_char(curbp, '#');
 
     if (bracefp)
 	*bracefp = FALSE;
@@ -1006,7 +1018,7 @@ previndent(int *bracefp)
 	int lc = lastchar(DOT.l);
 	int c = lgetc(DOT.l, lc);
 	int dir;
-	*bracefp = (lc >= 0 && (c == ':' ||
+	*bracefp = (lc >= 0 && ((c == ':' && is_cindent_char(curbp, ':')) ||
 				(is_user_fence(c, &dir) && dir == FORWARD)));
 
     }

@@ -35,6 +35,9 @@ library Winvile
         [propget, helpstring("True if editor minimized.")]
         HRESULT IsMinimized([out, retval] VARIANT_BOOL* retval);
 
+        [propget, helpstring("Returns winvile's main hwnd")]
+        HRESULT MainHwnd([out, retval] LONG* retval);
+
         [propget, helpstring("Returns the parent of the object.")]
         HRESULT Parent([out, retval] IVileAuto** retval);
 

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.242 2002/02/17 23:36:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.243 2002/02/27 10:40:58 tom Exp $
  *
  */
 
@@ -3528,6 +3528,18 @@ set_submode_val(const char *name, int n, int value)
     if ((p = lookup_mm_data(name)) != 0) {
 	struct VAL *q = get_sm_vals(p);
 	q[n].v.i = value;
+	make_local_val(q, n);
+    }
+}
+
+void
+set_submode_txt(const char *name, int n, char *value)
+{
+    MAJORMODE *p;
+    TRACE(("set_submode_txt(%s, %d, %s)\n", name, n, value));
+    if ((p = lookup_mm_data(name)) != 0) {
+	struct VAL *q = get_sm_vals(p);
+	q[n].v.p = strmalloc(value);
 	make_local_val(q, n);
     }
 }

@@ -44,6 +44,8 @@ class CVile
         HWND     DsHwnd() { return ds_hwnd; }
         HRESULT  FileOpen(BSTR filename, long lineno);
                         // A negative lineno is the same as BOF.
+        void     FgWindow();
+                        // pop winvile to foreground
         HRESULT  VileCmd(const char *cmd,
                          bool       restore_wdw,
                          bool       force_connection = TRUE);

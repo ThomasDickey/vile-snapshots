@@ -1,5 +1,38 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20020228 (z)
+	> Clark Morgan:
+	+ makefiles converted to DevStudio V6.0
+	+ visvile modified to pop winvile to foreground on Win2K/XP
+	+ fix clipped text in configuration dialog (at various geometries)
+	+ if the build log from an unsuccessful build is placed in winvile's
+	  error buffer (visvile config option), the editor's CWD is changed to
+	  match the build log's parent directory.  Without this change,
+	  visvile's CWD defaults to <WinDir>\system32 on a Win2K host.
+	+ remove compiler warnings from w32reg.c
+	+ wheelmouse didn't work on my wife's laptop (uses an el cheapo USB
+	  mouse) so I'm submitting an official patch to enable WM_WHEELMOUSE
+	  support.  Adding this support requires mucking with the makefile a
+	  bit.
+	+ added a static child window that shows winvile row/col geometry as
+	  winvile is resized (Win2K/NT/XP only).  I could only test this on a
+	  single screen geometry (i.e., laptop's 1024 x 768).  Someone should
+	  try resizing winvile on a 2K/NT/XP host with these screen settings: 
+	  800x600, 1280 x 1024, 1115 x 864 .  Let me know if you see text
+	  clipping in the child window under these conditions.
+	+ following tested on WinME/98 and Win2K:
+	  + remove all but one warning from automation-based modules.
+	  + add get_MainHwnd() method to automation-based version of winvile.
+	  + modify wvwrap to pop winvile to foreground on a Win2K host.
+	  + modify wvwrap to restore winvile window if minimized
+	+ vile.hlp tweaks (typos, omissions, and minor formatting).
+	> Tom Dickey:
+	+ split-out specialized logic for cindent's character list as
+	  cindent-chars mode so appropriate pieces can be applied to other
+	  modes such as esqlmode and cppmode.
+	+ filter scrollbar-tracking events to make winvile's scrollbars work
+	  for files longer than 65536 lines.
+
  20020217 (y)
 	> Tom Dickey:
 	+ indent'd tags.c
