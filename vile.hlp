@@ -1281,12 +1281,15 @@ Editor modes
 		printable set of "high bit" (i.e. 8-bit) characters.
 		Defaults to 0.  Most foreign (relative to me!) users would
 		set this to 160, the first printable character in the upper
-		range of the ISO 8859/1 character set.  (U)
+		range of the ISO 8859/1 character set.  Characters 128-159 are
+		control characters in the ISO scheme (e.g., ISO 8859-1).  (U)
 
 	printing-high The integer value representing the last character of
 		the printable set of "high bit" (i.e. 8-bit) characters.
 		Defaults to 0.  Set this to 255 for ISO 8859/1
-		compatibility.  (U)
+		compatibility.  The printing-low and printing-high modes
+		are not necessary if your system supports the locale
+		functions.  (U)
 
 	readonly (ro) Prevent writing a buffer to its associated file.  Unlike
 		"view" mode (see below) which prevents any modifications to
@@ -3505,4 +3508,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.336 1997/12/17 01:37:19 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.337 1998/02/07 21:14:33 tom Exp $

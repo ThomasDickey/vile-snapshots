@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.59 1997/12/01 00:05:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.60 1998/02/07 14:22:00 tom Exp $
  *
  */
 
@@ -27,7 +27,7 @@
 #define	user_SHELL()	getenv("SHELL")
 #endif
 
-#ifdef __EMX__
+#if SYS_OS2_EMX
 #define SHELL_C "/c"
 #else
 #define SHELL_C "-c"

@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.305 1997/11/27 15:20:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.306 1998/02/07 20:24:46 tom Exp $
  *
  */
 
@@ -23,6 +23,11 @@
 #include	"edef.h"	/* global definitions */
 #include	"nevars.h"
 #include	"nefunc.h"
+
+#if OPT_LOCALE
+#include	<locale.h>
+#include	<ctype.h>
+#endif
 
 #if CC_NEWDOSCC
 #include <io.h>
@@ -86,11 +91,15 @@ MainProgram(int argc, char *argv[])
 	*ekey = EOS;
 #endif
 
+#if OPT_LOCALE
+	setlocale(LC_CTYPE, "");
+#endif
+
 #if OPT_NAMEBST
 	build_namebst(nametbl, 0, nametblsize - 1);
 #endif
 	global_val_init();	/* global buffer values */
-	charinit();	/* character types -- we need these pretty early  */
+	charinit();		/* character types -- we need these early  */
 	winit(FALSE);		/* command-line */
 #if !SYS_UNIX
 	expand_wild_args(&argc, &argv);
@@ -1604,6 +1613,79 @@ unarg_func(int f GCC_UNUSED, int n GCC_UNUSED) /* dummy function for binding to 
 	return TRUE;
 }
 
+/*----------------------------------------------------------------------------*/
+
+#if OPT_SHOW_CTYPE
+
+/* list the current chrs into the current buffer */
+/* ARGSUSED */
+static void
+makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
+{
+	static const struct {
+		UINT	mask;
+		const char *name;
+	} table[] = {
+		{ _upper,	"Upr" },
+		{ _lower,	"Lwr" },
+		{ _digit,	"Num" },
+		{ _space,	"Spc" },
+		{ _bspace,	"DEL" },
+		{ _cntrl,	"CTL" },
+		{ _print,	"Prn" },
+		{ _punct,	"Pun" },
+		{ _ident,	"id" },
+		{ _pathn,	"path" },
+		{ _wild,	"*" },
+		{ _linespec,	"arg" },
+		{ _fence,	"()" },
+		{ _nonspace,	"!S" },
+		{ _qident,	"qid" },
+#if OPT_WIDE_CTYPES
+		{ _scrtch,	"tmp" },
+		{ _shpipe,	"sh" },
+#endif
+		{ 0,		0 }
+	};
+	register UINT i, j;
+
+	bprintf("--- Printable Characters %*P\n", term.t_ncol-1, '-');
+	for (i = 0; i < N_chars; i++) {
+		bprintf("\n%d\t", i);
+		if ((i == '\n') || (i == '\t')) /* vtlistc() may not do these */
+			bprintf("^%c", '@' | i);
+#if OPT_LOCALE
+		else if (!isprint(i) && i > 127 && i < 160) /* C1 controls? */
+			bprintf(
+				global_w_val(WMDNONPRINTOCTAL)
+				? "\\%3o"
+				: "\\x%2x",
+				i);
+#endif
+		else
+			bprintf("%c", i);
+		bputc('\t');
+		for (j = 0; table[j].name != 0; j++) {
+			if (j != 0)
+				bputc(' ');
+			bprintf("%*s",
+				strlen(table[j].name),
+				(_chartypes_[i] & table[j].mask)
+					? table[j].name
+					: "-");
+		}
+	}
+}
+
+int
+desprint(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+	return liststuff(PRINTABLECHARS_BufName, FALSE, makectypelist, 0, (void *)0);
+}
+
+#endif /* OPT_SHOW_CTYPE */
+
+/*----------------------------------------------------------------------------*/
 
 /* initialize our version of the "chartypes" stuff normally in ctypes.h */
 /* also called later, if charset-affecting modes change, for instance */
@@ -1612,32 +1694,23 @@ charinit(void)
 {
 	register int c;
 
+	/* If we're using the locale functions, set our flags based on its
+	 * tables.  Note that just because you have 'setlocale()' doesn't mean
+	 * that the tables are present or correct.  But this is a start.
+	 */
+#if OPT_LOCALE
+	for (c = 0; c < N_chars; c++) {
+		_chartypes_[c] = 0;
+		if (iscntrl(c))  _chartypes_[c] |= _cntrl;
+		if (isdigit(c))  _chartypes_[c] |= _digit;
+		if (islower(c))  _chartypes_[c] |= _lower;
+		if (isprint(c))  _chartypes_[c] |= _print;
+		if (ispunct(c))  _chartypes_[c] |= _punct;
+		if (isspace(c))  _chartypes_[c] |= _space;
+		if (isupper(c))  _chartypes_[c] |= _upper;
+	}
+#else /* ! OPT_LOCALE */
 	(void)memset((char *)_chartypes_, 0, sizeof(_chartypes_));
-
-	/* legal in pathnames */
-	_chartypes_['.'] =
-		_chartypes_['_'] =
-		_chartypes_['~'] =
-		_chartypes_['-'] =
-		_chartypes_['*'] =
-		_chartypes_['/'] = _pathn;
-
-	/* legal in "identifiers" */
-	_chartypes_['_'] |= _ident|_qident;
-	_chartypes_[':'] |= _qident;
-#if SYS_VMS
-	_chartypes_['$'] |= _ident|_qident;
-#endif
-
-	/* whitespace */
-	_chartypes_[' '] =
-#if OPT_ISO_8859
-		_chartypes_[0xa0] =
-#endif
-		_chartypes_['\t'] =
-		_chartypes_['\r'] =
-		_chartypes_['\n'] =
-		_chartypes_['\f'] = _space;
 
 	/* control characters */
 	for (c = 0; c < ' '; c++)
@@ -1646,26 +1719,26 @@ charinit(void)
 
 	/* lowercase */
 	for (c = 'a'; c <= 'z'; c++)
-		_chartypes_[c] |= _lower|_pathn|_ident|_qident;
+		_chartypes_[c] |= _lower;
 #if OPT_ISO_8859
 	for (c = 0xc0; c <= 0xd6; c++)
-		_chartypes_[c] |= _lower|_pathn|_ident|_qident;
-#endif
+		_chartypes_[c] |= _lower;
 	for (c = 0xd8; c <= 0xde; c++)
-		_chartypes_[c] |= _lower|_pathn|_ident|_qident;
+		_chartypes_[c] |= _lower;
+#endif
 	/* uppercase */
 	for (c = 'A'; c <= 'Z'; c++)
-		_chartypes_[c] |= _upper|_pathn|_ident|_qident;
+		_chartypes_[c] |= _upper;
 #if OPT_ISO_8859
 	for (c = 0xdf; c <= 0xf6; c++)
-		_chartypes_[c] |= _upper|_pathn|_ident|_qident;
+		_chartypes_[c] |= _upper;
 	for (c = 0xf8; c <= 0xff; c++)
-		_chartypes_[c] |= _upper|_pathn|_ident|_qident;
+		_chartypes_[c] |= _upper;
 #endif
 
 	/* digits */
 	for (c = '0'; c <= '9'; c++)
-		_chartypes_[c] |= _digit|_pathn|_ident|_qident|_linespec;
+		_chartypes_[c] |= _digit;
 
 	/* punctuation */
 	for (c = '!'; c <= '/'; c++)
@@ -1684,6 +1757,34 @@ charinit(void)
 	/* printable */
 	for (c = ' '; c <= '~'; c++)
 		_chartypes_[c] |= _print;
+
+	/* whitespace */
+	_chartypes_[' ']  |= _space;
+#if OPT_ISO_8859
+	_chartypes_[0xa0] |= _space;
+#endif
+	_chartypes_['\t'] |= _space;
+	_chartypes_['\r'] |= _space;
+	_chartypes_['\n'] |= _space;
+	_chartypes_['\f'] |= _space;
+
+#endif /* OPT_LOCALE */
+
+	/* legal in pathnames */
+	_chartypes_['.'] |= _pathn;
+	_chartypes_['_'] |= _pathn;
+	_chartypes_['~'] |= _pathn;
+	_chartypes_['-'] |= _pathn;
+	_chartypes_['*'] |= _pathn;
+	_chartypes_['/'] |= _pathn;
+
+	/* legal in "identifiers" */
+	_chartypes_['_'] |= _ident|_qident;
+	_chartypes_[':'] |= _qident;
+#if SYS_VMS
+	_chartypes_['$'] |= _ident|_qident;
+#endif
+
 	c = global_g_val(GVAL_PRINT_LOW);
 	if (c < HIGHBIT) c = HIGHBIT;
 	while ( c <= global_g_val(GVAL_PRINT_HIGH) && c < N_chars)
@@ -1746,14 +1847,18 @@ charinit(void)
 #endif
 
 	for (c = 0; c < N_chars; c++) {
+		if (!(isSpace(c)))
+			_chartypes_[c] |= _nonspace;
+		if (isDigit(c))
+			_chartypes_[c] |= _linespec;
+		if (isAlpha(c) || isDigit(c))
+			_chartypes_[c] |= _ident|_pathn|_qident;
 #if OPT_WIDE_CTYPES
 		if (isSpace(c) || isPrint(c))
 			_chartypes_[c] |= _shpipe;
 		if (ispath(c))
 			_chartypes_[c] |= _scrtch;
 #endif
-		if ((_chartypes_[c] & _space) == 0)
-			_chartypes_[c] |= _nonspace;
 	}
 
 }

@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.168 1997/11/10 01:20:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.169 1998/02/07 17:40:40 tom Exp $
  *
  */
 
@@ -2544,6 +2544,9 @@ x_preparse_args(
 	    (ArgList)0,
 	    0);
 
+    if (cur_win->fork_on_startup)
+	(void) newprocessgroup(TRUE,1);
+
     if (cur_win->bg == cur_win->fg)
 	cur_win->fg = BlackPixel(dpy,DefaultScreen(dpy));
     if (cur_win->bg == cur_win->fg)
@@ -3208,10 +3211,6 @@ x_preparse_args(
 
     cur_win->base_width = -1;	/* force base width to be set when configured */
     XtRealizeWidget(cur_win->top_widget);
-
-    /* We can't test this until after the widget's realized */
-    if (cur_win->fork_on_startup)
-	(void) newprocessgroup(TRUE,1);
 
     cur_win->win = XtWindow(cur_win->screen);
 
@@ -4272,7 +4271,7 @@ add2paste(
 TBUFF	**p,
 int	c)
 {
-	if (c == '\n' || isblank(c))
+	if (c == '\n' || isBlank(c))
 		/*EMPTY*/;
 	else if (isspecial(c) || (c == '\r') || !isPrint(c))
 	 	(void)tb_append(p, quotec);

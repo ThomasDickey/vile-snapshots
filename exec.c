@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.148 1997/12/01 23:34:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.149 1998/02/07 17:38:52 tom Exp $
  *
  */
 
@@ -1518,7 +1518,7 @@ setup_dobuf(BUFFER *bp, WHBLOCK **result)
 		i = lp->l_used;
 
 		/* trim leading whitespace */
-		while (i-- > 0 && isblank(*eline))
+		while (i-- > 0 && isBlank(*eline))
 			++eline;
 
 		/* if there's nothing here, don't bother */
@@ -1661,7 +1661,7 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 		{
 			char *src = eline;
 			char *dst = eline;
-			while (isblank(*src))
+			while (isBlank(*src))
 				src++;
 			while ((*dst++ = *src++) != EOS)
 				;
@@ -1679,7 +1679,7 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 			continue;
 		}
 		eline = einit;
-		while (isblank(*eline))
+		while (isBlank(*eline))
 			++eline;
 
 		/* Skip comments and blank lines.
@@ -1785,7 +1785,7 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 			int code;
 
 			/* skip past the directive */
-			while (*eline && !isblank(*eline))
+			while (*eline && !isBlank(*eline))
 				++eline;
 			code = begin_directive(&eline, dirnum, whlist, bp, &lp);
 			if (code == DDIR_FAILED) {

@@ -1,5 +1,23 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (tom)	980208 (d)
+ 	+ reformatted proto.h, ordering prototypes alphabetically.
+ 	+ make column shown by ^G the same as for the ruler (reported by David
+	  Letcher <David_Letcher@writeme.com>).
+ 	+ add command show-printable to show exactly what vile does with the
+	  character classes.
+ 	+ newer autoconf configure macro circumvents problems generating
+	  config.h due to limited sed buffer size on antiquated systems (e.g.,
+	  HP-UX 9.x, SCO 3.x).
+ 	+ updated configure test, to avoid use of broken IRIX 6.2 nsl library.
+	+ add configure option --with-locale to allow use of i18n support via
+	  setlocale function.
+	+ use new symbol SYS_OS2_EMX to avoid nonstandard use of 'defined'
+	  keyword in OPT_CASELESS preprocessor expression (reported by Adam
+	  Denton).
+	+ move the call that forks xvile up to the first place where it could
+	  be used, to minimize data space.
+
  (tom)	971219 (c)
 	+ correction to CF_CURSES_TERMCAP configure test so that SVr4 systems
 	  that do not have a prototype for tgoto, but still require curses.h

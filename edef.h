@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.219 1997/12/09 00:01:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.220 1998/02/07 15:40:34 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -295,6 +295,9 @@ decl_init_const( char BINDINGLIST_BufName[],	"[Binding List]");
 # if OPT_TERMCHRS
 decl_init_const( char TERMINALCHARS_BufName[],	"[Terminal Chars]");
 # endif
+#endif
+#if OPT_SHOW_CTYPE
+decl_init_const( char PRINTABLECHARS_BufName[],	"[Printable Chars]");
 #endif
 #if OPT_POPUPCHOICE
 decl_init_const( char COMPLETIONS_BufName[],	"[Completions]");

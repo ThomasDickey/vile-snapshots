@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/manfilt.c,v 1.20 1997/05/25 23:04:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/manfilt.c,v 1.21 1998/02/07 20:54:04 tom Exp $
  *
  */
 
@@ -75,6 +75,10 @@ extern	char *	realloc	( char *ptr, size_t size );
 #endif
 
 #include <stdio.h>
+
+#if OPT_LOCALE
+#include <locale.h>
+#endif
 #include <ctype.h>
 
 #if MISSING_EXTERN__FILBUF
@@ -534,6 +538,10 @@ int
 main(int argc, char **argv)
 {
 	int n;
+
+#if OPT_LOCALE
+	setlocale(LC_CTYPE, "");
+#endif
 
 	if (argc > 1) {
 		for (n = 1; n < argc; n++) {

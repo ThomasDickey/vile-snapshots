@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.335 1997/12/04 00:37:07 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.336 1998/02/08 23:22:10 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1333,3 +1333,21 @@ UWIN:
 	  of the other flavors).
 
 	+ appears to be same "vt100" emulator as gnu-win32 (perhaps it is).
+
+-- 98-02-08 (tom)
+
+Two users report a problem with xvile linked with Motif 2.0 on Linux.
+(John Gotts <jgotts@engin.umich.edu> and Gary Ross <gdr@hooked.net>).
+
+I am unable to reproduce the bug, but did find a bug in Purify which caused
+realloc to clear its argument when invoked immediately after a fork.
+
+According to these reports, the x_open function is being invoked twice, which
+is incorrect; it breaks initialization, causing the scrollbar data to be null,
+resulting in a core dump.
+
+On the basis of earlier reports (and from reading news groups) I suggested that
+it might be a conflict with glibc2 vs libc5 (no), that the OPT_WORKING code
+might be a problem (no), and that forking xvile might be a problem with Motif
+(no).  Compiler optimization level may be related (both reports were for -O2
+and up).

@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.49 1997/12/19 10:32:01 bod Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.50 1998/02/07 14:48:23 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -1235,7 +1235,9 @@ AC_REQUIRE([CF_CHECK_CACHE])
 SYSTEM_NAME=`echo "$cf_cv_system_name"|tr ' ' -`
 cf_have_X_LIBS=no
 case $SYSTEM_NAME in
-irix5*) ;;
+changequote(,)dnl
+irix[56]*) ;;
+changequote([,])dnl
 clix*)
 	# FIXME: modify the library lookup in autoconf to
 	# allow _s.a suffix ahead of .a
