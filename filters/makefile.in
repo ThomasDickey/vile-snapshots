@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.63 1999/12/23 00:47:51 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.67 1999/12/26 22:18:04 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -78,8 +78,10 @@ C_ALL	= \
 	vile-c-filt$x \
 	vile-crypt$x \
 	vile-key-filt$x \
+	vile-m4-filt$x \
 	vile-manfilt$x \
-	vile-pas-filt$x
+	vile-pas-filt$x \
+	vile-tags-filt$x
 
 # filters in lex/flex require state support
 LEX_ALL = \
@@ -90,11 +92,11 @@ LEX_ALL = \
 	vile-cweb-filt$x \
 	vile-dcl-filt$x \
 	vile-diff-filt$x \
+	vile-esql-filt$x \
 	vile-fdl-filt$x \
 	vile-html-filt$x \
 	vile-latex-filt$x \
 	vile-lex-filt$x \
-	vile-m4-filt$x \
 	vile-mail-filt$x \
 	vile-make-filt$x \
 	vile-mms-filt$x \
@@ -102,11 +104,11 @@ LEX_ALL = \
 	vile-perl-filt$x \
 	vile-py-filt$x \
 	vile-rcs-filt$x \
+	vile-rexx-filt$x \
 	vile-sccs-filt$x \
 	vile-sh-filt$x \
 	vile-spell-filt$x \
 	vile-sql-filt$x \
-	vile-tags-filt$x \
 	vile-tbl-filt$x \
 	vile-tc-filt$x \
 	vile-tcl-filt$x \
@@ -151,6 +153,9 @@ vile-dcl-filt$x : dcl-filt$o $(CF_DEPS)
 vile-diff-filt$x : difffilt$o $(CF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ difffilt$o $(LF_ARGS)
 
+vile-esql-filt$x : esqlfilt$o $(CF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ esqlfilt$o $(LF_ARGS)
+
 vile-fdl-filt$x : fdl-filt$o $(LF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ fdl-filt$o $(LF_ARGS)
 
@@ -192,6 +197,9 @@ vile-py-filt$x : py-filt$o $(LF_DEPS)
 
 vile-rcs-filt$x : rcs-filt$o $(LF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ rcs-filt$o $(LF_ARGS)
+
+vile-rexx-filt$x : rexxfilt$o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ rexxfilt$o $(LF_ARGS)
 
 vile-sccs-filt$x : sccsfilt$o $(LF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ sccsfilt$o $(LF_ARGS)
@@ -255,9 +263,11 @@ INSTALL_LEX_BIN = \
 	$(BINDIR)/vile-awk-filt$x \
 	$(BINDIR)/vile-bat-filt$x \
 	$(BINDIR)/vile-cfg-filt$x \
+	$(BINDIR)/vile-cweb-filt$x \
 	$(BINDIR)/vile-dcl-filt$x \
 	$(BINDIR)/vile-fdl-filt$x \
 	$(BINDIR)/vile-diff-filt$x \
+	$(BINDIR)/vile-esql-filt$x \
 	$(BINDIR)/vile-html-filt$x \
 	$(BINDIR)/vile-latex-filt$x \
 	$(BINDIR)/vile-lex-filt$x \
@@ -269,6 +279,7 @@ INSTALL_LEX_BIN = \
 	$(BINDIR)/vile-perl-filt$x \
 	$(BINDIR)/vile-py-filt$x \
 	$(BINDIR)/vile-rcs-filt$x \
+	$(BINDIR)/vile-rexx-filt$x \
 	$(BINDIR)/vile-sccs-filt$x \
 	$(BINDIR)/vile-sh-filt$x \
 	$(BINDIR)/vile-spell-filt$x \
@@ -289,8 +300,10 @@ INSTALL_LEX_TXT = \
 	$(DATADIR)/awk.keywords \
 	$(DATADIR)/bat.keywords \
 	$(DATADIR)/csh.keywords \
+	$(DATADIR)/cweb.keywords \
 	$(DATADIR)/dcl.keywords \
 	$(DATADIR)/diff.keywords \
+	$(DATADIR)/esql.keywords \
 	$(DATADIR)/fdl.keywords \
 	$(DATADIR)/html.keywords \
 	$(DATADIR)/imake.keywords \
@@ -306,6 +319,7 @@ INSTALL_LEX_TXT = \
 	$(DATADIR)/py.keywords \
 	$(DATADIR)/pot.keywords \
 	$(DATADIR)/rcs.keywords \
+	$(DATADIR)/rexx.keywords \
 	$(DATADIR)/sccs.keywords \
 	$(DATADIR)/sh.keywords \
 	$(DATADIR)/spell.rc \
@@ -374,8 +388,10 @@ $(BINDIR)/vile-bat-filt$x :	vile-bat-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-c-filt$x :	vile-c-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-crypt$x :	vile-crypt$x		; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-cfg-filt$x :	vile-cfg-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-cweb-filt$x :	vile-cweb-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-dcl-filt$x :	vile-dcl-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-diff-filt$x :	vile-diff-filt$x	; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-esql-filt$x :	vile-esql-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-fdl-filt$x :	vile-fdl-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-html-filt$x :	vile-html-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-key-filt$x :	vile-key-filt$x		; $(INSTALL_PROGRAM) $? $@
@@ -391,6 +407,7 @@ $(BINDIR)/vile-pas-filt$x :	vile-pas-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-perl-filt$x :	vile-perl-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-py-filt$x :	vile-py-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-rcs-filt$x :	vile-rcs-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-rexx-filt$x :	vile-rexx-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-sccs-filt$x :	vile-sccs-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-sh-filt$x :	vile-sh-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-spell-filt$x :	vile-spell-filt$x	; $(INSTALL_PROGRAM) $? $@
@@ -416,8 +433,10 @@ $(DATADIR)/bat.keywords :	$(srcdir)/bat.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/c.keywords :		$(srcdir)/c.key		; $(INSTALL_DATA) $? $@
 $(DATADIR)/cpp.keywords :	$(srcdir)/cpp.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/csh.keywords :	$(srcdir)/csh.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/cweb.keywords :	$(srcdir)/cweb.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/dcl.keywords :	$(srcdir)/dcl.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/diff.keywords :	$(srcdir)/diff.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/esql.keywords :	$(srcdir)/esql.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/fdl.keywords :	$(srcdir)/fdl.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/html.keywords :	$(srcdir)/html.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/imake.keywords :	$(srcdir)/imake.key	; $(INSTALL_DATA) $? $@
@@ -434,6 +453,7 @@ $(DATADIR)/perl.keywords :	$(srcdir)/perl.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/py.keywords :	$(srcdir)/py.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/pot.keywords :	$(srcdir)/pot.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/rcs.keywords :	$(srcdir)/rcs.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/rexx.keywords :	$(srcdir)/rexx.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/sccs.keywords :	$(srcdir)/sccs.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/sh.keywords :	$(srcdir)/sh.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/sql.keywords :	$(srcdir)/sql.key	; $(INSTALL_DATA) $? $@

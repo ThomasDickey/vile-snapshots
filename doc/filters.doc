@@ -122,6 +122,7 @@ The following are implemented:
 	vile-cweb-filt	(CWEBx)
 	vile-dcl-filt	(VMS DCL batchfiles)
 	vile-diff-filt	(diff/patch files)
+	vile-esql-filt	(embedded SQL with C/C++)
 	vile-html-filt	(HTML with embedded JavaScript)
 	vile-latex-filt	(LaTeX or TeX)
 	vile-lex-filt	(lex)
@@ -129,13 +130,14 @@ The following are implemented:
 	vile-m4-filt	(m4)
 	vile-mail-filt	(mail folders)
 	vile-make-filt	(make)
-	vile-manfilt	(manpage)
+	vile-manfilt	(manual-page)
 	vile-mms-filt	(VMS makefiles)
 	vile-nr-filt	(nroff)
 	vile-pas-filt	(Pascal)
 	vile-perl-filt	(Perl)
 	vile-py-filt	(Python)
 	vile-rcs-filt	(RCS archives)
+	vile-rexx-filt	(REXX)
 	vile-sccs-filt	(SCCS archives)
 	vile-sh-filt	(sh/ksh/csh)
 	vile-spell-filt	(ispell highlights misspelled words)
@@ -151,13 +153,21 @@ The following are implemented:
 	vile-xs-filt	(Perl extension)
 	vile-yacc-filt	(yacc)
 
+Not all majormodes require a special filter for highlighting, since they
+use the same syntax as other majormodes:
 
-BUGS (1999/3/8)
+	cppmode		C++ uses C filter
+	cshmode		C-shell uses shell filter
+	imakemode	Imake uses C filter
+	javamode	Java uses C filter
+	jsmode		JavaScript uses C filter
+	potmode		Message libraries use shell filter
+
+
+NOTE
 ----
-
-Not all filters use a keywords file (yet).
 
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.15 1999/12/24 14:40:17 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.17 1999/12/27 02:30:26 tom Exp $

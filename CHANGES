@@ -1,5 +1,22 @@
 Changes for vile 9.1 (released ??? ??? ??, 1999)
 
+ (tom) 991226 (k)
+ 	+ disable autocolor in manpage.rc macros, which have txtmode set.
+ 	+ suppress autocolor when 'working...' message is active.
+ 	+ modify filters.c to always initialize predefined classes whenever
+	  a symbol table is created.  It was done before only for the first
+	  symbol table, which meant that some filters using multiple symbol
+	  tables were not able to use class names for keyword attributes.
+	+ change cpp.key's inclusion of c.key to ".include" to avoid forcing
+	  cweb filter, which includes cpp.key, to keep track of C and C++
+	  tables.
+ 	+ split-out cweb.key, install vile-cweb-filt
+	+ add syntax filter for embedded SQL (esqlfilt.l)
+	+ add syntax filter for REXX (rexxfilt.l)
+	+ minor fix to c-filt.l in write_number(): recognize "..." string.
+	+ correct some missing .key files in the install rule for makefile.wnt
+	+ correct some forward references from 9.0j (ntconio.c, ntwinio.c).
+
  (tom) 991224 (j)
 	+ add cygwin to list of platforms that must open text files in binary
 	  mode, to see trailing carriage-returns on a line in vileinit.rc

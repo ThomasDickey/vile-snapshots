@@ -3,13 +3,13 @@
  * Author : Jukka Keto, jketo@cs.joensuu.fi
  * Date   : 30.12.1994
  * Modifications:  kevin buettner and paul fox  2/95
- * 		string literal ("Literal") support --  ben stoltz
+ *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.47 1999/12/24 18:11:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.49 1999/12/27 02:07:27 tom Exp $
  *
  * Features:
- * 	- Reads the keyword file ".vile.keywords" from the home directory.
+ *	- Reads the keyword file ".vile.keywords" from the home directory.
  *	  Keyword file consists lines "keyword:attribute" where
  *	  keyword is any alphanumeric string [#a-zA-Z0-9_] followed
  *	  by colon ":" and attribute character; "I" for italic,
@@ -253,6 +253,7 @@ static char *
 write_number(FILE * fp, char *s)
 {
     char *base = s;
+    char *attr = Number_attr;
     int radix = (*s == '0')
 		? ((s[1] == 'x' || s[1] == 'X') ? 16
 		: (!isdigit(s[1])) ? 10 : 8) : 10;
@@ -376,10 +377,16 @@ write_number(FILE * fp, char *s)
     if (!found || IsDigitX(*s) || dot > 1) { /* something is run-on to a number */
 	while (IsDigitX(*s))
 	    s++;
-	write_string(fp, base, s - base, Error_attr);
+	if (dot > 0
+	 && (s - base) == 3
+	 && !strncmp(base, "...", 3)) {
+	    attr = "";
+	} else { 
+	    attr = Error_attr;
+	}
     } else {
-	write_token(fp, base, s - base, Number_attr);
     }
+    write_token(fp, base, s - base, attr);
     return s;
 }
 
@@ -530,7 +537,7 @@ do_filter(FILE * input, FILE * output)
 	    } else if (isIdent(*s)) {
 		s = extract_identifier(output, s);
 	    } else if (isdigit(*s)
-	    		|| (*s == '.' && (isdigit(s[1]) || s[1] =='.'))) {
+			|| (*s == '.' && (isdigit(s[1]) || s[1] =='.'))) {
 		s = write_number(output, s);
 	    } else if (*s == '#') {
 		char *t = s;

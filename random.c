@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.226 1999/12/24 17:25:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.227 1999/12/25 15:25:12 tom Exp $
  *
  */
 
@@ -1355,7 +1355,7 @@ autocolor()
 
     WINDOW *wp;
     int do_update = FALSE;
-    if (reading_msg_line)
+    if (reading_msg_line || vile_is_busy)
 	return;
     for_each_visible_window(wp) {
 	if (b_is_recentlychanged(wp->w_bufp)

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.69 1999/12/24 13:58:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.70 1999/12/27 01:46:46 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -12,8 +12,6 @@
 #include <shellapi.h>
 #include <stdlib.h>
 #include <math.h>
-
-#define	termdef	1		/* don't define "term" external */
 
 #include        "estruct.h"
 #include        "edef.h"
@@ -515,7 +513,7 @@ AdjustResizing(HWND hwnd, WPARAM fwSide, RECT * rect)
 }
 
 static void
-ResizeClient()
+ResizeClient(void)
 {
     int h, w;
     RECT crect;
@@ -1176,7 +1174,7 @@ nteeol(void)
 
 #if	OPT_FLASH
 static void
-flash_display()
+flash_display(void)
 {
     RECT rect;
     HDC hDC;
@@ -2384,7 +2382,7 @@ ntgetch(void)
  */
 
 static int
-nttypahead()
+nttypahead(void)
 {
 #if FIXME
 #endif

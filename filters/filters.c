@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.59 1999/12/24 14:33:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.61 1999/12/27 01:43:53 tom Exp $
  *
  */
 
@@ -30,7 +30,7 @@
 #endif
 
 #define VERBOSE(level,params)		if (verbose >= level) printf params
-#define NONNULL(s) 			((s) != 0) ? (s) : "<null>"
+#define NONNULL(s)			((s) != 0) ? (s) : "<null>"
 
 #define	typecallocn(cast,ntypes)	(cast *)calloc(sizeof(cast),ntypes)
 
@@ -87,7 +87,27 @@ CreateSymbolTable(char *classname)
 	p->next = classes;
 	classes = p;
 	hashtable = p->data;
+
 	VERBOSE(1, ("CreateSymbolTable(%s)\n", classname));
+
+	/*
+	 * Mark all of the standard predefined classes when we first create a
+	 * symbol table.  Some filters may define their own special classes,
+	 * and not all filters use all of these classes, but it's a lot simpler
+	 * than putting the definitions into every ".key" file.
+	 */
+	insert_keyword(NAME_ACTION, ATTR_ACTION, 1);
+	insert_keyword(NAME_COMMENT, ATTR_COMMENT, 1);
+	insert_keyword(NAME_ERROR, ATTR_ERROR, 1);
+	insert_keyword(NAME_IDENT, ATTR_IDENT, 1);
+	insert_keyword(NAME_IDENT2, ATTR_IDENT2, 1);
+	insert_keyword(NAME_KEYWORD, ATTR_KEYWORD, 1);
+	insert_keyword(NAME_KEYWRD2, ATTR_KEYWRD2, 1);
+	insert_keyword(NAME_LITERAL, ATTR_LITERAL, 1);
+	insert_keyword(NAME_NUMBER, ATTR_NUMBER, 1);
+	insert_keyword(NAME_PREPROC, ATTR_PREPROC, 1);
+	insert_keyword(NAME_TYPES, ATTR_TYPES, 1);
+
     }
 }
 
@@ -127,6 +147,9 @@ ExecMeta(char *param)
     meta_ch = *param;
 }
 
+/*
+ * Include a symbol table from another key-file.
+ */
 static void
 ExecSource(char *param)
 {
@@ -134,7 +157,7 @@ ExecSource(char *param)
     int save_eqls = eqls_ch;
 
     CreateSymbolTable(param);
-    ReadKeywords(MY_NAME);
+    ReadKeywords(MY_NAME);	/* provide default values for this table */
     ReadKeywords(param);
     set_symbol_table(filter_name);
 
@@ -217,7 +240,7 @@ static FILE *
 OpenKeywords(char *classname)
 {
 #define OPEN_IT(p) if ((fp = fopen(p, "r")) != 0) { \
-    			VERBOSE(1,("Opened %s\n", p)); return fp; } else { \
+			VERBOSE(1,("Opened %s\n", p)); return fp; } else { \
 			VERBOSE(2,("..skip %s\n", p)); }
 #define FIND_IT(p) sprintf p; OPEN_IT(name)
 
@@ -363,6 +386,7 @@ ReadKeywords(char *classname)
 
     VERBOSE(1, ("ReadKeywords(%s)\n", classname));
     if ((kwfile = OpenKeywords(classname)) != NULL) {
+	int linenum = 0;
 	while (readline(kwfile, &line, &line_len) != 0) {
 
 	    name = skip_blanks(line);
@@ -371,6 +395,7 @@ ReadKeywords(char *classname)
 	    if (ParseDirective(name))
 		continue;
 
+	    VERBOSE(2, ("line %3d:", ++linenum));
 	    parse_keyword(name, 0);
 	}
 	fclose(kwfile);
@@ -656,7 +681,7 @@ skip_ident(char *src)
 {
     while (*src != '\0' && isprint(*src) && !isspace(*src)) {
 	if (*src == eqls_ch
-	 || *src == meta_ch) {
+	    || *src == meta_ch) {
 	    break;
 	}
 	src++;
@@ -691,7 +716,7 @@ write_string(FILE * fp, char *src, int length, char *marker)
 		if (src[n])
 		    fputc(src[n], fp);
 	    } else {
-		write_token(fp, src, 
+		write_token(fp, src,
 		    ((n < length) && (src[n] == '\n'))
 		    ? (n + 1) : n, marker);
 	    }
@@ -725,24 +750,12 @@ main(int argc, char **argv)
     setlocale(LC_CTYPE, "");
 #endif
 
+    /* get verbose option */
+    (void) ProcessArgs(argc, argv, 0);
+
     CreateSymbolTable(filter_name);
 
     Default_attr = strmalloc(NAME_KEYWORD);
-
-    insert_keyword(NAME_ACTION, ATTR_ACTION, 1);
-    insert_keyword(NAME_COMMENT, ATTR_COMMENT, 1);
-    insert_keyword(NAME_ERROR, ATTR_ERROR, 1);
-    insert_keyword(NAME_IDENT, ATTR_IDENT, 1);
-    insert_keyword(NAME_IDENT2, ATTR_IDENT2, 1);
-    insert_keyword(NAME_KEYWORD, ATTR_KEYWORD, 1);
-    insert_keyword(NAME_KEYWRD2, ATTR_KEYWRD2, 1);
-    insert_keyword(NAME_LITERAL, ATTR_LITERAL, 1);
-    insert_keyword(NAME_NUMBER, ATTR_NUMBER, 1);
-    insert_keyword(NAME_PREPROC, ATTR_PREPROC, 1);
-    insert_keyword(NAME_TYPES, ATTR_TYPES, 1);
-
-    /* get verbose option */
-    (void) ProcessArgs(argc, argv, 0);
 
     init_filter(1);
 
