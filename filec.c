@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.110 2002/10/09 23:35:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.111 2002/11/02 00:10:41 tom Exp $
  *
  */
 
@@ -164,6 +164,7 @@ makeString(BUFFER *bp, LINE *lp, char *text, size_t len)
     LINE *np;
     int extra = (len != 0 && is_slashc(text[len - 1])) ? 2 : 3;
 
+    beginDisplay();
     if ((np = lalloc((int) len + extra, bp)) == NULL) {
 	lp = 0;
     } else {
@@ -177,6 +178,7 @@ makeString(BUFFER *bp, LINE *lp, char *text, size_t len)
 	set_lforw(np, lp);
 	lp = np;
     }
+    endofDisplay();
     return lp;
 }
 
@@ -507,35 +509,33 @@ sortMyBuff(BUFFER *bp)
     LINE **slp;
 
     b_clr_counted(bp);
-    n = vl_line_count(bp);
-    if (n <= 0)
-	return;			/* Nothing to sort */
+    if ((n = vl_line_count(bp)) > 0) {
+	beginDisplay();
+	if ((sortvec = typecallocn(LINE *, (size_t) n)) != NULL) {
+	    slp = sortvec;
+	    for_each_line(lp, bp) {
+		*slp++ = lp;
+	    }
+	    qsort((char *) sortvec, (size_t) n, sizeof(LINE *), qs_pathcmp);
 
-    sortvec = typecallocn(LINE *, (size_t)n);
-    if (sortvec == NULL)
-	return;			/* Can't sort it .. have to get by unsorted */
+	    plp = buf_head(bp);
+	    slp = sortvec;
+	    while (n-- > 0) {
+		lp = *slp++;
+		set_lforw(plp, lp);
+		set_lback(lp, plp);
+		plp = lp;
+	    }
+	    lp = buf_head(bp);
+	    set_lforw(plp, lp);
+	    set_lback(lp, plp);
+	    remove_duplicates(bp);
+	    b_clr_counted(bp);
 
-    slp = sortvec;
-    for_each_line(lp, bp) {
-	*slp++ = lp;
+	    free(sortvec);
+	}
+	endofDisplay();
     }
-    qsort((char *) sortvec, (size_t) n, sizeof(LINE *), qs_pathcmp);
-
-    plp = buf_head(bp);
-    slp = sortvec;
-    while (n-- > 0) {
-	lp = *slp++;
-	set_lforw(plp, lp);
-	set_lback(lp, plp);
-	plp = lp;
-    }
-    lp = buf_head(bp);
-    set_lforw(plp, lp);
-    set_lback(lp, plp);
-    remove_duplicates(bp);
-    b_clr_counted(bp);
-
-    free((char *) sortvec);
 }
 #endif /* USE_QSORT */
 
@@ -820,6 +820,7 @@ makeMyList(BUFFER *bp, char *name)
     char *slashocc;
     int len = strlen(name);
 
+    beginDisplay();
     if (is_slashc(name[len - 1]))
 	len++;
 
@@ -843,6 +844,7 @@ makeMyList(BUFFER *bp, char *name)
 	    bp->b_index_list[n++] = lp->l_text;
     }
     bp->b_index_list[n] = 0;
+    endofDisplay();
 }
 
 #if NO_LEAKS
@@ -850,8 +852,10 @@ static void
 freeMyList(BUFFER *bp)
 {
     if (bp != 0) {
+	beginDisplay();
 	FreeAndNull(bp->b_index_list);
 	bp->b_index_size = 0;
+	endofDisplay();
     }
 }
 

@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.88 2002/10/09 19:47:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.89 2002/11/02 16:41:25 tom Exp $
  *
  */
 
@@ -112,6 +112,7 @@ inout_popen(FILE ** fr, FILE ** fw, char *cmd)
 
     } else {			/* child */
 
+	beginDisplay();
 	append_libdir_to_path();
 	if (fw) {
 	    (void) close(0);
@@ -137,6 +138,7 @@ inout_popen(FILE ** fr, FILE ** fw, char *cmd)
 	}
 	(void) close(rp[0]);
 	exec_sh_c(cmd);
+	endofDisplay();
 
     }
     return TRUE;
@@ -251,6 +253,7 @@ system_SHELL(char *cmd)
     if (cpid) {			/* parent */
 	int child;
 	int status;
+
 	beginDisplay();
 	while ((child = wait(&status)) != cpid) {
 	    if (child < 0 && errno == EINTR) {
@@ -263,8 +266,10 @@ system_SHELL(char *cmd)
 #endif
 	return 0;
     } else {
+	beginDisplay();
 	exec_sh_c(cmd);
 	(void) write(2, "cannot exec\n", 13);
+	endofDisplay();
 	return -1;
     }
 

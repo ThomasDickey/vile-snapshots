@@ -1,10 +1,10 @@
-%x NORMAL HEREDOC QUOTED QUOTED2 SUBST
+%x NORMAL HEREDOC QUOTED SUBST
 
 %o6000
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.50 2002/10/21 00:25:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.51 2002/11/05 23:56:33 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -180,6 +180,8 @@ WILDCARD	(\?|\*)
 WILDNAME	({NAME}|{WILDCARD})
 FILENAME	(([./]{WILDNAME}+)|({WILDNAME}+[./]{WILDNAME}*)|({NAME}*{WILDCARD})|\.+\/+)+
 
+INTEGER		[-+]?([0-9]+)
+
 BACKTIC		`
 ACTION		[\.{}]
 IDENT		[a-zA-Z_]{NAME}*
@@ -187,12 +189,10 @@ QIDENT		({SSTRING}|{DSTRING}|[^ \"'$\t\n])+
 IDENT0		[-]+[0-9]*[a-zA-Z_-]+[0-9a-zA-Z_-]*
 IDENT1		\${NAME}+
 IDENT2		\$\{{IDENT}\}
-IDENT2L		\$\{{IDENT}
+IDENT2L		\$\{({IDENT}|{INTEGER})
 IDENT2R		\}
 IDENTEQLS	[a-zA-Z_]{NAME}*=
 IDENTX		\$[\*@#\?\$!-]
-
-INTEGER		[-+]?([0-9]+)
 
 %%
 
@@ -204,9 +204,6 @@ INTEGER		[-+]?([0-9]+)
 <NORMAL>"#"[^\n]*	{ WriteToken(Comment_attr); }
 
 <NORMAL>^{SPACE}*:	{ color_delimiter(yytext, yyleng, Action_attr); }
-
-<NORMAL>{BACKTIC}	{ handle_backtic(); WriteToken(Action_attr); }
-<NORMAL>{ACTION}	{ WriteToken(Action_attr); }
 
 <NORMAL>{INTEGER}	{ WriteToken(Number_attr); }
 
@@ -220,6 +217,9 @@ INTEGER		[-+]?([0-9]+)
 <NORMAL>\\.		|
 <NORMAL>{SSTRING}	{ WriteToken(String_attr); }
 <NORMAL>\"		{ push_stk(QUOTED); BeginQuote(QUOTED, String_attr); }
+
+<NORMAL>{BACKTIC}	{ handle_backtic(); WriteToken(Action_attr); }
+<NORMAL>{ACTION}	{ WriteToken(Action_attr); }
 
 <NORMAL>\<\<[-]?{SPACE}*{QIDENT} {
 			    int n;
@@ -264,16 +264,13 @@ INTEGER		[-+]?([0-9]+)
 <HEREDOC>.		{ flt_bfr_append(yytext, yyleng); }
 
 <QUOTED>{BACKTIC}	{ handle_backtic(); WriteToken(Action_attr); }
-<QUOTED>\\		{ flt_bfr_embed(yytext, yyleng, Action_attr); push_stk(QUOTED2); }
+<QUOTED>\\.		{ flt_bfr_embed(yytext, 1, Action_attr); flt_bfr_append(yytext + 1, yyleng - 1); }
 <QUOTED>{IDENT1}	|
 <QUOTED>{IDENT2}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); }
 <QUOTED>{IDENT2L}	{ if (embed_or_append(yytext, yyleng)) push_stk(SUBST); }
 <QUOTED>[^`\n\\\"$]+	{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>[\n$]		{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>\"		{ FinishQuote(NORMAL); pop_stk(); }
-
-<QUOTED2>{BACKTIC}	{ handle_backtic(); WriteToken(Action_attr); }
-<QUOTED2>(.|\n)		{ flt_bfr_embed(yytext, yyleng, Action_attr); pop_stk(); }
 
 <SUBST>{BACKTIC}	{ WriteToken(Action_attr); handle_backtic(); }
 <SUBST>{IDENT2R}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); pop_stk(); }

@@ -1,5 +1,39 @@
 Changes for vile 9.4 (released ??? ??? ?? ????)
 
+ 20021105 (h)
+	> Clark Morgan:
+	+ change home_dir() function to check for $HOME before $HOMEPATH, etc.,
+	  on win32.  Otherwise home_dir() may return something like
+	  c:\/usr/cmorgan, which performs badly.
+	> Danny Zerkel:
+	+ add a few Perl 5.6 reserved words, highlight binary values, and
+	  version numbers.
+	> Tom Dickey:
+	+ modify logic of compute_majormodes_order() to avoid skipping items
+	  in the list of majormodes.  This fixes the relative ordering of
+	  "rc" versus "vile" modes.  Because some items were skipped, the
+		"nr" after "sh"
+	  	"rc" after "vile"
+	  rules caused the second one to be ignored (reported by Clark Morgan).
+	+ modify pathcat() so the MS-DOS configuration will not attempt to
+	  supply an extra slash when concatenating strings such as "c:" and
+	  "/usr/cmorgan" (report by Clark Morgan).
+	+ correct allocation size of argv in ntwinio.c, which did not allow
+	  enough space.
+	+ correct handling of escaped backtic in sh-filt.l
+	+ add syntax filters and corresponding modes for assembler (GNU and M$),
+	  info and texinfo.
+	+ add beginDisplay/endofDisplay macros in several places to work with
+	  the assertions in trace.c
+	+ add assertions to trace.c in doalloc/dofree to check for places where
+	  beginDisplay/endofDisplay should be used to prevent the OPT_WORKING
+	  code from interrupting malloc/free calls.
+	+ improve error-checking for numbers in perl filter.
+	+ implement pot-filt.l, to highlight ".po" files.  Using sh-filt.l was
+	  not satisfactory since the quoting rules were not close enough.
+	+ modify configure script to fix existence-style ifdef's for crypt,
+	  setbuffer, strerror.
+
  20021027 (g)
 	> Tom Dickey:
 	+ improve perl filter by recognizing q[] and q() quote-like operators.
@@ -159,7 +193,8 @@ Changes for vile 9.4 (released ??? ??? ?? ????)
 	  line before checking for a label.  This happened to work until 9.2u
 	  indented macros as they are stored (reportd by Adam Denton).
 	+ modify built-in spell filter to work with encrypted files.
-	+ improve check for flex's version (patch by Danny Zerkel <dzerkel@cas.org>).
+	+ improve check for flex's version (patch by Danny Zerkel
+	  <dzerkel@cas.org>).
 	+ correct check for mkdtemp() in create_save_dir() (reported by
 	  D J Hawkey Jr <hawkeyd@visi.com>).
 	+ add vile's patches to RPM spec (patch by Mark Milhollan

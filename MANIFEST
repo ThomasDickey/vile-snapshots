@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_3g
+MANIFEST for vile, version v9_3h
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -155,6 +155,11 @@ doc/visvile.doc                 document visvile.dll
 filters                         subdirectory
 filters/ada-filt.l              ada syntax highlighter for vile
 filters/ada.key                 Ada95 keywords
+filters/as-filt.l               syntax filter for (GNU) assembler
+filters/as.key                  keywords for assembler-filter
+filters/as386.key               assembler keywords for i386
+filters/asm-filt.l              syntax filter for M$ assembler files
+filters/asm.key                 keywords for M$ assembler files
 filters/awk-filt.l              awk syntax highlighter for vile
 filters/awk.key                 keywords for awk syntax highlighting
 filters/bas-filt.l              syntax filter for BASIC
@@ -194,6 +199,7 @@ filters/html.key                keywords for vile-html-filt
 filters/htmlfilt.l              HTML syntax filter for vile
 filters/imake.key               keywords for imake-filter
 filters/imakeflt.l              syntax filter for Imakefile's
+filters/infofilt.l              syntax filter for GNU info files
 filters/java.key                java keywords
 filters/js.key                  javascript keywords
 filters/key-filt.c              syntax filter for vile keyword files
@@ -231,6 +237,7 @@ filters/pc.key                  keywords for printcap syntax highlighting
 filters/perl.key                keywords for perl syntax filter
 filters/perlfilt.l              Perl syntax filter for vile
 filters/pl-filt.c               syntax highlighter for perl
+filters/pot-filt.l              syntax filter for gettext ".po" files
 filters/pot.key                 keywords for pot (gettext) mode
 filters/ps-filt.l               syntax filter for PostScript files
 filters/ps.key                  keywords for PostScript syntax filter
@@ -263,6 +270,8 @@ filters/tc-filt.l               termcap syntax highlighting filter for vile
 filters/tc.key                  termcap keywords for syntax highlighting
 filters/tcl-filt.l              tcl/tk syntax highlighting filter for vile
 filters/tcl.key                 tcl/tk keywords
+filters/texi.key                keywords for texinfo syntax filter
+filters/texifilt.l              syntax filter for texinfo
 filters/ti-filt.l               terminfo syntax highlighting filter for vile
 filters/ti.key                  terminfo keywords
 filters/txt-filt.l              syntax filter for ordinary text

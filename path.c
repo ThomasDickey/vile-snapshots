@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.126 2002/10/20 11:32:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.129 2002/11/05 23:41:48 tom Exp $
  *
  *
  */
@@ -313,49 +313,51 @@ pathcat(char *dst, const char *path, char *leaf)
     char *s;
     size_t have;
 
-    leaf = vl_strncpy(save_leaf, leaf, NFILEN);		/* in case leaf is in dst */
+    leaf = vl_strncpy(save_leaf, leaf, NFILEN);		/* leaf may be in dst */
 
     if (path == 0
-	|| *path == EOS)
-	return strcpy(dst, leaf);
+	|| *path == EOS) {
+	(void) strcpy(dst, leaf);
+    } else {
 
-    path = vl_strncpy(save_path, path, NFILEN);		/* in case path is in dst */
+	path = vl_strncpy(save_path, path, NFILEN);	/* path may be in dst */
 
 #if OPT_MSDOS_PATH
-    if (is_msdos_drive((char *) path) != 0
-	&& is_msdos_drive(leaf) == 0) {
-	have = strlen(strcpy(dst, path));
-	if (have + strlen(leaf) + 2 < NFILEN) {
-	    s = dst + have - 1;
-	    if (!is_slashc(*s))
-		*(++s) = SLASHC;
-	    (void) strcpy(s + 1, leaf);
-	}
-	return dst;
-    }
-#endif
-    if (is_absolute_pathname(leaf))
-	return strcpy(dst, leaf);
-
-    have = strlen(strcpy(dst, path));
-    if (have + strlen(leaf) + 2 < NFILEN) {
-	s = dst + have - 1;
-
-#if OPT_VMS_PATH
-	if (!is_vms_pathname(dst, TRUE))	/* could be DecShell */
-#endif
-	    if (!is_slashc(*s)) {
-		*(++s) = SLASHC;
+	if (is_msdos_drive(save_path) != 0
+	    && is_msdos_drive(leaf) == 0) {
+	    have = strlen(strcpy(dst, path));
+	    if (have + strlen(leaf) + 2 < NFILEN) {
+		s = dst + have - 1;
+		if (!is_slashc(*s) && !is_slashc(*leaf))
+		    *(++s) = SLASHC;
+		(void) strcpy(s + 1, leaf);
 	    }
-
-	(void) strcpy(s + 1, leaf);
-    }
-#if OPT_VMS_PATH
-    if (is_vms_pathname(path, -TRUE)
-	&& is_vms_pathname(leaf, -TRUE)
-	&& !is_vms_pathname(dst, -TRUE))
-	(void) strcpy(dst, leaf);
+	} else
 #endif
+	if (is_absolute_pathname(leaf)) {
+	    (void) strcpy(dst, leaf);
+	} else {
+	    have = strlen(strcpy(dst, path));
+	    if (have + strlen(leaf) + 2 < NFILEN) {
+		s = dst + have - 1;
+
+#if OPT_VMS_PATH
+		if (!is_vms_pathname(dst, TRUE))	/* could be DecShell */
+#endif
+		    if (!is_slashc(*s)) {
+			*(++s) = SLASHC;
+		    }
+
+		(void) strcpy(s + 1, leaf);
+	    }
+#if OPT_VMS_PATH
+	    if (is_vms_pathname(path, -TRUE)
+		&& is_vms_pathname(leaf, -TRUE)
+		&& !is_vms_pathname(dst, -TRUE))
+		(void) strcpy(dst, leaf);
+#endif
+	}
+    }
     return dst;
 }
 
@@ -482,20 +484,19 @@ home_dir(void)
     if ((result = getenv("SYS$LOGIN")) == 0)
 	result = getenv("HOME");
 #else
+    result = getenv("HOME");
 #if SYS_WINNT
-    if ((result = getenv("USERPROFILE")) == 0 &&
-	(result = getenv("HOMESHARE")) == 0) {
-	/* M$ copies from VMS, but does not learn from its mistakes... */
-	if ((result = getenv("HOMEPATH")) != 0) {
-	    static char desktop[NFILEN];
-	    char *drive = getenv("HOMEDRIVE");
-	    result = pathcat(desktop, drive, result);
-	} else {
-	    result = getenv("HOME");
+    if (result == 0) {
+	if ((result = getenv("USERPROFILE")) == 0 &&
+	    (result = getenv("HOMESHARE")) == 0) {
+	    /* M$ copies from VMS, but does not learn from its mistakes... */
+	    if ((result = getenv("HOMEPATH")) != 0) {
+		static char desktop[NFILEN];
+		char *drive = getenv("HOMEDRIVE");
+		result = pathcat(desktop, drive, result);
+	    }
 	}
     }
-#else
-    result = getenv("HOME");
 #endif
 #endif
     TRACE(("home_dir ->%s\n", TRACE_NULL(result)));
@@ -1105,187 +1106,187 @@ canonpath(char *ss)
     char *p, *pp;
     char *s;
 
-    TRACE(("canonpath '%s'\n", ss));
-    if ((s = is_appendname(ss)) != 0)
-	return (canonpath(s) != 0) ? ss : 0;
+    TRACE((T_CALLED "canonpath '%s'\n", str_visible(ss)));
+    if ((s = is_appendname(ss)) != 0) {
+	returnString((canonpath(s) != 0) ? ss : 0);
+    } else {
 
-    s = ss;
+	s = ss;
 
-    if (!*s)
-	return s;
+	if (!*s)
+	    returnString(s);
 
 #if OPT_MSDOS_PATH
 #if !OPT_CASELESS
-    (void) mklower(ss);		/* MS-DOS is case-independent */
+	(void) mklower(ss);	/* MS-DOS is case-independent */
 #endif
-    if (is_slashc(*ss))
-	*ss = SLASHC;
-    /* pretend the drive designator isn't there */
-    if ((s = is_msdos_drive(ss)) == 0)
-	s = ss;
+	if (is_slashc(*ss))
+	    *ss = SLASHC;
+	/* pretend the drive designator isn't there */
+	if ((s = is_msdos_drive(ss)) == 0)
+	    s = ss;
 #endif
 
 #if SYS_UNIX
-    (void) home_path(s);
+	(void) home_path(s);
 #endif
 
 #if OPT_VMS_PATH
-    /*
-     * If the code in 'lengthen_path()', as well as the scattered calls on
-     * 'fgetname()' are correct, the path given to this procedure should
-     * be a fully-resolved VMS pathname.  The logic in filec.c will allow a
-     * unix-style name, so we'll fall-thru if we find one.
-     */
-    if (is_vms_pathname(s, -TRUE)) {
-	return mkupper(ss);
-    }
+	/*
+	 * If the code in 'lengthen_path()', as well as the scattered calls on
+	 * 'fgetname()' are correct, the path given to this procedure should
+	 * be a fully-resolved VMS pathname.  The logic in filec.c will allow a
+	 * unix-style name, so we'll fall-thru if we find one.
+	 */
+	if (is_vms_pathname(s, -TRUE)) {
+	    returnString(mkupper(ss));
+	}
 #endif
 
 #if SYS_UNIX || OPT_MSDOS_PATH || OPT_VMS_PATH
-    if (!is_slashc(*s)) {
-	mlforce("BUG: canonpath '%s'", s);
-	return ss;
-    }
-    *s = SLASHC;
-
-    /*
-     * If the system supports symbolic links (most UNIX systems do), we
-     * cannot do dead reckoning to resolve the pathname.  We've made this a
-     * user-mode because some systems have problems with NFS timeouts which
-     * can make running vile _slow_.
-     */
-#ifdef GMDRESOLVE_LINKS
-    if (global_g_val(GMDRESOLVE_LINKS)) {
-	char temp[NFILEN];
-	char *leaf;
-	char *head = resolve_directory(s, &leaf);
-	if (head != 0) {
-	    if (leaf != 0)
-		(void) strcpy(s, pathcat(temp, head, leaf));
-	    else
-		(void) strcpy(s, head);
+	if (!is_slashc(*s)) {
+	    mlforce("BUG: canonpath '%s'", s);
+	    returnString(ss);
 	}
-    } else
+	*s = SLASHC;
+
+	/*
+	 * If the system supports symbolic links (most UNIX systems do), we
+	 * cannot do dead reckoning to resolve the pathname.  We've made this a
+	 * user-mode because some systems have problems with NFS timeouts which
+	 * can make running vile _slow_.
+	 */
+#ifdef GMDRESOLVE_LINKS
+	if (global_g_val(GMDRESOLVE_LINKS)) {
+	    char temp[NFILEN];
+	    char *leaf;
+	    char *head = resolve_directory(s, &leaf);
+	    if (head != 0) {
+		if (leaf != 0)
+		    (void) strcpy(s, pathcat(temp, head, leaf));
+		else
+		    (void) strcpy(s, head);
+	    }
+	} else
 #endif
-    {
-	p = pp = s;
+	{
+	    p = pp = s;
 
 #if SYS_APOLLO
-	if (!is_slashc(p[1])) {	/* could be something like "/usr" */
-	    char *cwd = current_directory(FALSE);
-	    char temp[NFILEN];
-	    if (!strncmp(cwd, "//", 2)
-		&& strlen(cwd) > 2
-		&& (p = strchr(cwd + 2, '/')) != 0) {
-		(void) strcpy(strcpy(temp, cwd) + (p + 1 - cwd), s);
-		(void) strcpy(s, temp);
+	    if (!is_slashc(p[1])) {	/* could be something like "/usr" */
+		char *cwd = current_directory(FALSE);
+		char temp[NFILEN];
+		if (!strncmp(cwd, "//", 2)
+		    && strlen(cwd) > 2
+		    && (p = strchr(cwd + 2, '/')) != 0) {
+		    (void) strcpy(strcpy(temp, cwd) + (p + 1 - cwd), s);
+		    (void) strcpy(s, temp);
+		}
 	    }
-	}
-	p = s + 1;		/* allow for leading "//" */
+	    p = s + 1;		/* allow for leading "//" */
 #endif
 
-	p++;
-	pp++;			/* leave the leading slash */
-	while (*pp) {
-	    if (is_slashc(*pp)) {
-		pp++;
-		continue;
-	    }
-	    if (*pp == '.' && is_slashc(*(pp + 1))) {
-		pp += 2;
-		continue;
-	    }
-	    break;
-	}
-	while (*pp) {
-	    if (is_slashc(*pp)) {
-		while (is_slashc(*(pp + 1)))
+	    p++;
+	    pp++;		/* leave the leading slash */
+	    while (*pp) {
+		if (is_slashc(*pp)) {
 		    pp++;
-		if (p > s && !is_slashc(*(p - 1)))
-		    *p++ = SLASHC;
-		if (*(pp + 1) == '.') {
-		    if (*(pp + 2) == EOS) {
-			/* change "/." at end to "" */
-			*(p - 1) = EOS;		/* and we're done */
-			break;
-		    }
-		    if (is_slashc(*(pp + 2))) {
-			pp += 2;
-			continue;
-		    } else if (*(pp + 2) == '.' && (is_slashc(*(pp + 3))
-						    || *(pp + 3) == EOS)) {
-			while (p - 1 > s && is_slashc(*(p - 1)))
-			    p--;
-			while (p > s && !is_slashc(*(p - 1)))
-			    p--;
-			if (p == s)
-			    *p++ = SLASHC;
-			pp += 3;
-			continue;
-		    }
+		    continue;
 		}
-		pp++;
-		continue;
-	    } else {
-		*p++ = *pp++;
+		if (*pp == '.' && is_slashc(*(pp + 1))) {
+		    pp += 2;
+		    continue;
+		}
+		break;
 	    }
+	    while (*pp) {
+		if (is_slashc(*pp)) {
+		    while (is_slashc(*(pp + 1)))
+			pp++;
+		    if (p > s && !is_slashc(*(p - 1)))
+			*p++ = SLASHC;
+		    if (*(pp + 1) == '.') {
+			if (*(pp + 2) == EOS) {
+			    /* change "/." at end to "" */
+			    *(p - 1) = EOS;	/* and we're done */
+			    break;
+			}
+			if (is_slashc(*(pp + 2))) {
+			    pp += 2;
+			    continue;
+			} else if (*(pp + 2) == '.' && (is_slashc(*(pp + 3))
+							|| *(pp + 3) == EOS)) {
+			    while (p - 1 > s && is_slashc(*(p - 1)))
+				p--;
+			    while (p > s && !is_slashc(*(p - 1)))
+				p--;
+			    if (p == s)
+				*p++ = SLASHC;
+			    pp += 3;
+			    continue;
+			}
+		    }
+		    pp++;
+		    continue;
+		} else {
+		    *p++ = *pp++;
+		}
+	    }
+	    if (p > s && is_slashc(*(p - 1)))
+		p--;
+	    if (p == s)
+		*p++ = SLASHC;
+	    *p = EOS;
 	}
-	if (p > s && is_slashc(*(p - 1)))
-	    p--;
-	if (p == s)
-	    *p++ = SLASHC;
-	*p = EOS;
-    }
 #endif /* SYS_UNIX || SYS_MSDOS */
 
 #if OPT_VMS_PATH
-    if (!is_vms_pathname(ss, -TRUE)) {
-	char *tt = skip_string(ss);
+	if (!is_vms_pathname(ss, -TRUE)) {
+	    char *tt = skip_string(ss);
 
-	/*
-	 * If we're not looking at "/" or some other path that ends
-	 * with a slash, see if we can match the path to a directory
-	 * file.  If so, force a slash on the end so that the unix2vms
-	 * conversion will show a directory.
-	 */
-	if (tt[-1] != SLASHC) {
-	    struct stat sb;
+	    /*
+	     * If we're not looking at "/" or some other path that ends
+	     * with a slash, see if we can match the path to a directory
+	     * file.  If so, force a slash on the end so that the unix2vms
+	     * conversion will show a directory.
+	     */
+	    if (tt[-1] != SLASHC) {
+		struct stat sb;
 #if SYS_VMS
-	    (void) strcpy(tt, ".DIR");
+		(void) strcpy(tt, ".DIR");
 #else
-	    (void) mklower(ss);
+		(void) mklower(ss);
 #endif
-	    if ((file_stat(ss, &sb) >= 0)
-		&& S_ISDIR(sb.st_mode))
-		(void) strcpy(tt, "/");
-	    else
-		*tt = EOS;
-	}
+		if ((file_stat(ss, &sb) >= 0)
+		    && S_ISDIR(sb.st_mode))
+		    (void) strcpy(tt, "/");
+		else
+		    *tt = EOS;
+	    }
 
-	/* FIXME: this is a hack to prevent this function from
-	 * returning device-level strings, since (at the moment) I
-	 * don't have anything that returns a list of the mounted
-	 * devices on a VMS system.
-	 */
-	if (!strcmp(ss, "/")) {
-	    (void) strcpy(ss, current_directory(FALSE));
-	    if ((tt = strchr(ss, ':')) != 0)
-		(void) strcpy(tt + 1, "[000000]");
-	    else
-		(void) strcat(ss, ":");
-	    (void) mkupper(ss);
-	} else {
-	    unix2vms_path(ss, ss);
+	    /* FIXME: this is a hack to prevent this function from
+	     * returning device-level strings, since (at the moment) I
+	     * don't have anything that returns a list of the mounted
+	     * devices on a VMS system.
+	     */
+	    if (!strcmp(ss, "/")) {
+		(void) strcpy(ss, current_directory(FALSE));
+		if ((tt = strchr(ss, ':')) != 0)
+		    (void) strcpy(tt + 1, "[000000]");
+		else
+		    (void) strcat(ss, ":");
+		(void) mkupper(ss);
+	    } else {
+		unix2vms_path(ss, ss);
+	    }
 	}
-    }
 #endif
 
 #if OPT_CASELESS
-    case_correct_path(ss, ss);
+	case_correct_path(ss, ss);
 #endif
-
-    TRACE((" -> '%s' canonpath\n", ss));
-    return ss;
+    }
+    returnString(ss);
 }
 
 char *

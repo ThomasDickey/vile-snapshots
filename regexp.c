@@ -16,7 +16,7 @@
  *
  *		ted, 01/01
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.82 2002/10/20 14:56:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.83 2002/11/02 16:55:19 tom Exp $
  *
  */
 
@@ -364,9 +364,13 @@ regcomp(const char *origexp, int magic)
 
     len = strlen(origexp) + 1;
     if (explen < 2 * len + 20) {
+
+	beginDisplay();
 	if (exp)
 	    free(exp);
 	exp = castalloc(char, 2 * len + 20);
+	endofDisplay();
+
 	if (exp == NULL) {
 	    regerror("couldn't allocate exp copy");
 	    return NULL;
@@ -394,7 +398,9 @@ regcomp(const char *origexp, int magic)
     }
 
     /* Allocate space. */
+    beginDisplay();
     r = typeallocplus(regexp, regsize);
+    endofDisplay();
     if (r == NULL) {
 	regerror("out of space");
 	return NULL;
@@ -453,9 +459,11 @@ regcomp(const char *origexp, int magic)
     }
 #if NO_LEAKS
     if (exp != 0) {
+	beginDisplay();
 	free(exp);
 	exp = 0;
 	explen = 0;
+	endofDisplay();
     }
 #endif
 #ifdef REGDEBUG

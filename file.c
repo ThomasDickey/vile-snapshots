@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.337 2002/10/14 23:10:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.340 2002/11/05 01:27:03 tom Exp $
  */
 
 #include "estruct.h"
@@ -1297,109 +1297,108 @@ quickreadf(BUFFER *bp, int *nlinep)
     L_NUM nlines;
     RECORD_SEP rscode;
     UCHAR *buffer;
-#if OPT_ENCRYPT
-    int rc;
-#endif
+    int rc = FIOSUC;
 
-    TRACE(("quickreadf(buffer=%s, file=%s)\n", bp->b_bname, bp->b_fname));
+    TRACE((T_CALLED "quickreadf(buffer=%s, file=%s)\n", bp->b_bname, bp->b_fname));
 
+    beginDisplay();
     if ((length = ffsize()) < 0) {
 	mlwarn("[Can't size file]");
-	return FIOERR;
+	rc = FIOERR;
     }
-
     /* avoid malloc(0) problems down below; let slowreadf() do the work */
-    if (length == 0
-	|| (buffer = castalloc(UCHAR, (size_t) length)) == NULL)
-	return FIOMEM;
-
+    else if (length == 0
+	     || (buffer = castalloc(UCHAR, (size_t) length)) == NULL) {
+	rc = FIOMEM;
+    }
 #if OPT_ENCRYPT
-    if ((rc = vl_resetkey(curbp, (const char *) buffer)) != TRUE) {
+    else if ((rc = vl_resetkey(curbp, (const char *) buffer)) != TRUE) {
 	free(buffer);
-	return rc;
     }
 #endif
-
-    if ((length = ffread((char *) buffer, length)) < 0) {
+    else if ((length = ffread((char *) buffer, length)) < 0) {
 	free(buffer);
 	mlerror("reading");
-	return FIOERR;
-    }
+	rc = FIOERR;
+    } else {
 #if OPT_ENCRYPT
-    if (b_val(bp, MDCRYPT)
-	&& bp->b_cryptkey[0]) {	/* decrypt the file */
-	vl_setup_encrypt(bp->b_cryptkey);
-	vl_encrypt_blok((char *) buffer, (UINT) length);
-    }
+	if (b_val(bp, MDCRYPT)
+	    && bp->b_cryptkey[0]) {	/* decrypt the file */
+	    vl_setup_encrypt(bp->b_cryptkey);
+	    vl_encrypt_blok((char *) buffer, (UINT) length);
+	}
 #endif
+	/*
+	 * Analyze the file to determine its format:
+	 */
+	rscode = guess_recordseparator(bp, buffer, length, &nlines);
 
-    /*
-     * Analyze the file to determine its format:
-     */
-    rscode = guess_recordseparator(bp, buffer, length, &nlines);
+	/*
+	 * Modify readin()'s setting for newline mode if needed:
+	 */
+	if (buffer[length - 1] != (rscode == RS_CR ? '\r' : '\n')) {
+	    set_b_val(bp, MDNEWLINE, FALSE);
+	}
 
-    /*
-     * Modify readin()'s setting for newline mode if needed:
-     */
-    if (buffer[length - 1] != (rscode == RS_CR ? '\r' : '\n')) {
-	set_b_val(bp, MDNEWLINE, FALSE);
-    }
+	/* allocate all of the line structs we'll need */
+	if ((bp->b_LINEs = typeallocn(LINE, nlines)) == NULL) {
+	    FreeAndNull(buffer);
+	    ffrewind();
+	    rc = FIOMEM;
+	} else {
+	    bp->b_ltext = buffer;
+	    bp->b_ltext_end = bp->b_ltext + length;
+	    bp->b_bytecount = length;
+	    bp->b_linecount = nlines;
+	    bp->b_LINEs_end = bp->b_LINEs + nlines;
 
-    /* allocate all of the line structs we'll need */
-    if ((bp->b_LINEs = typeallocn(LINE, nlines)) == NULL) {
-	FreeAndNull(buffer);
-	ffrewind();
-	return FIOMEM;
-    }
-    bp->b_ltext = buffer;
-    bp->b_ltext_end = bp->b_ltext + length;
-    bp->b_bytecount = length;
-    bp->b_linecount = nlines;
-    bp->b_LINEs_end = bp->b_LINEs + nlines;
-
-    /* loop through the buffer again, creating
-       line data structure for each line */
-    for (lp = bp->b_LINEs, offset = 0; lp != bp->b_LINEs_end; ++lp) {
-	B_COUNT next = next_recordseparator(buffer, length, rscode, offset);
-	if (next == offset)
-	    break;
+	    /* loop through the buffer again, creating
+	       line data structure for each line */
+	    for (lp = bp->b_LINEs, offset = 0; lp != bp->b_LINEs_end; ++lp) {
+		B_COUNT next = next_recordseparator(buffer, length, rscode, offset);
+		if (next == offset)
+		    break;
 #if !SMALLER
-	lp->l_number = ++lineno;
+		lp->l_number = ++lineno;
 #endif
-	lp->l_used = next - offset - 1;
-	if (!b_val(bp, MDNEWLINE) && next == length)
-	    lp->l_used += 1;
-	lp->l_size = lp->l_used + 1;
-	lp->l_text = (char *) (buffer + offset);
-	set_lforw(lp, lp + 1);
-	if (lp != bp->b_LINEs)
-	    set_lback(lp, lp - 1);
-	lsetclear(lp);
-	lp->l_nxtundo = null_ptr;
+		lp->l_used = next - offset - 1;
+		if (!b_val(bp, MDNEWLINE) && next == length)
+		    lp->l_used += 1;
+		lp->l_size = lp->l_used + 1;
+		lp->l_text = (char *) (buffer + offset);
+		set_lforw(lp, lp + 1);
+		if (lp != bp->b_LINEs)
+		    set_lback(lp, lp - 1);
+		lsetclear(lp);
+		lp->l_nxtundo = null_ptr;
 #if OPT_LINE_ATTRS
-	lp->l_attrs = NULL;
+		lp->l_attrs = NULL;
 #endif
-	offset = next;
+		offset = next;
+	    }
+	    lp--;		/* point at last line again */
+
+	    /* connect the end of the list */
+	    set_lforw(lp, buf_head(bp));
+	    set_lback(buf_head(bp), lp);
+
+	    /* connect the front of the list */
+	    set_lback(bp->b_LINEs, buf_head(bp));
+	    set_lforw(buf_head(bp), bp->b_LINEs);
+
+	    init_b_traits(bp);
+
+	    *nlinep = nlines;
+
+	    set_record_sep(bp, rscode);
+	    strip_if_dosmode(bp);
+
+	    b_clr_counted(bp);
+	    rc = FIOSUC;
+	}
     }
-    lp--;			/* point at last line again */
-
-    /* connect the end of the list */
-    set_lforw(lp, buf_head(bp));
-    set_lback(buf_head(bp), lp);
-
-    /* connect the front of the list */
-    set_lback(bp->b_LINEs, buf_head(bp));
-    set_lforw(buf_head(bp), bp->b_LINEs);
-
-    init_b_traits(bp);
-
-    *nlinep = nlines;
-
-    set_record_sep(bp, rscode);
-    strip_if_dosmode(bp);
-
-    b_clr_counted(bp);
-    return FIOSUC;
+    endofDisplay();
+    returnCode(rc);
 }
 #endif /* ! SYS_MSDOS */
 
@@ -1583,11 +1582,11 @@ slowreadf(BUFFER *bp, int *nlinep)
     time_t last_updated = time((time_t *) 0);
 #endif
 
-    TRACE(("slowreadf(buffer=%s, file=%s)\n", bp->b_bname, bp->b_fname));
+    TRACE((T_CALLED "slowreadf(buffer=%s, file=%s)\n", bp->b_bname, bp->b_fname));
 
 #if OPT_ENCRYPT
     if ((s = vl_resetkey(curbp, curbp->b_fname)) != TRUE)
-	return s;
+	returnCode(s);
 #endif
     b_set_counted(bp);		/* make 'addline()' do the counting */
     b_set_reading(bp);
@@ -1670,7 +1669,7 @@ slowreadf(BUFFER *bp, int *nlinep)
 #endif
     init_b_traits(bp);
     b_clr_reading(bp);
-    return s;
+    returnCode(s);
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.37 2002/10/27 17:01:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.39 2002/11/01 01:50:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -297,6 +297,16 @@ is_NUMBER(char *s, int *err)
 
 	if ((s == base) && (ch == '+' || ch == '-')) {
 	    /* EMPTY */ ;
+	} else if ((s == base) && (ch == 'v')) {
+	    radix = 11;
+	} else if (radix == 11) {
+	    if (ch != '_') {
+		if (isdigit(ch)) {
+		    value = 1;
+		} else if (ch != '.' || !isdigit(s[-1])) {
+		    break;
+		}
+	    }
 	} else if (ch == '.') {
 	    if (the_last - s > 1
 		&& s[1] == '.') {
@@ -319,6 +329,9 @@ is_NUMBER(char *s, int *err)
 		} else if (s[1] == 'x') {
 		    radix = 16;
 		    s++;
+		} else if (s[1] == 'b') {
+		    radix = 2;
+		    s++;
 		} else {
 		    radix = 8;
 		}
@@ -336,10 +349,23 @@ is_NUMBER(char *s, int *err)
 	} else {
 	    if (((state || (radix == 10)) && isdigit(ch))
 		|| ((radix == 16) && isxdigit(ch))
-		|| ((radix == 8) && (ch >= '0' && ch < '8')))
+		|| ((radix == 8) && (ch >= '0' && ch < '8'))
+		|| ((radix == 2) && (ch >= '0' && ch < '2'))) {
 		value = 1;
-	    else
+	    } else {
+		if (value) {
+		    while (s != the_last) {
+			ch = CharOf(*s);
+			if (isalnum(ch)) {
+			    *err = 1;
+			    ++s;
+			} else {
+			    break;
+			}
+		    }
+		}
 		break;
+	    }
 	}
 	s++;
     }
@@ -998,6 +1024,10 @@ do_filter(FILE * input GCC_UNUSED)
 			parens = 0;
 		    flt_putc(*s++);
 		    had_op = 0;
+		} else if ((ok = is_NUMBER(s, &err)) != 0) {
+		    had_op = 0;
+		    flt_puts(s, ok, err ? Error_attr : Number_attr);
+		    s += ok;
 		} else if ((ok = is_KEYWORD(s)) != 0) {
 		    if (is_QUOTE(s, &ignore)) {
 			state = ePATTERN;
@@ -1022,10 +1052,6 @@ do_filter(FILE * input GCC_UNUSED)
 		} else if ((ok = is_String(s, &err)) != 0) {
 		    had_op = 0;
 		    s = put_embedded(s, ok, err ? Error_attr : String_attr);
-		} else if ((ok = is_NUMBER(s, &err)) != 0) {
-		    had_op = 0;
-		    flt_puts(s, ok, err ? Error_attr : Number_attr);
-		    s += ok;
 		} else {
 		    if (parens) {
 			if (strchr("|&=~!", *s) != 0)

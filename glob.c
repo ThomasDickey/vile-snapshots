@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.76 2002/10/20 11:38:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.78 2002/11/05 20:39:42 tom Exp $
  *
  */
 
@@ -89,8 +89,9 @@ huh ? ?
 /* the expanded list is defined outside of the functions because if we
  * handle ellipsis, the generating function must be recursive.
  */
-static size_t myMax, myLen;	/* length and index of the expanded list */
-static char **myVec;		/* the expanded list */
+static size_t myMax = 0;	/* length and index of the expanded list */
+static size_t myLen = 0;	/* length and index of the expanded list */
+static char **myVec = 0;	/* the expanded list */
 
 /*--------------------------------------------------------------------------*/
 int
@@ -134,24 +135,30 @@ string_has_wildcards(const char *item)
 static int
 record_a_match(char *item)
 {
+    int result = TRUE;
+
+    beginDisplay();
     if (item != 0 && *item != EOS) {
-	if ((item = strmalloc(item)) == 0)
-	    return no_memory("glob-match");
-
-	if (myLen + 2 >= myMax) {
-	    myMax = myLen + 2;
-	    if (myVec == 0)
-		myVec = typeallocn(char *, myMax);
-	    else
-		myVec = typereallocn(char *, myVec, myMax);
+	if ((item = strmalloc(item)) == 0) {
+	    result = no_memory("glob-match");
+	} else {
+	    if (myLen + 2 >= myMax) {
+		myMax = myLen + 2;
+		if (myVec == 0)
+		    myVec = typeallocn(char *, myMax);
+		else
+		    myVec = typereallocn(char *, myVec, myMax);
+	    }
+	    if (myVec == 0) {
+		result = no_memory("glob-pointers");
+	    } else {
+		myVec[myLen++] = item;
+		myVec[myLen] = 0;
+	    }
 	}
-	if (myVec == 0)
-	    return no_memory("glob-pointers");
-
-	myVec[myLen++] = item;
-	myVec[myLen] = 0;
     }
-    return TRUE;
+    endofDisplay();
+    return result;
 }
 
 #if !SMALLER || UNIX_GLOBBING
@@ -926,11 +933,13 @@ char **
 glob_free(char **list_of_items)
 {
     register int len;
+    beginDisplay();
     if (list_of_items != 0) {
 	for (len = 0; list_of_items[len] != 0; len++)
 	    free(list_of_items[len]);
 	free((char *) list_of_items);
     }
+    endofDisplay();
     return 0;
 }
 

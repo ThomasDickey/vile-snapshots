@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.366 2002/10/09 19:37:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.367 2002/11/02 16:25:12 tom Exp $
  *
  */
 
@@ -3852,25 +3852,23 @@ newscreensize(int h, int w)
 	) {
 	chg_width = w;
 	chg_height = h;
-	return;
-    }
-    chg_width = chg_height = 0;
-    if ((h > term.maxrows) || (w > term.maxcols)) {
-	int or, oc;
-	or = term.maxrows;
-	oc = term.maxcols;
-	term.maxrows = h;
-	term.maxcols = w;
-	if (!vtinit()) {	/* allocation failure */
-	    term.maxrows = or;
-	    term.maxcols = oc;
-	    return;
+    } else {
+	chg_width = chg_height = 0;
+	if ((h > term.maxrows) || (w > term.maxcols)) {
+	    int or, oc;
+	    or = term.maxrows;
+	    oc = term.maxcols;
+	    term.maxrows = h;
+	    term.maxcols = w;
+	    if (!vtinit()) {	/* allocation failure */
+		term.maxrows = or;
+		term.maxcols = oc;
+		return;
+	    }
 	}
+	if (newlength(TRUE, h) && newwidth(TRUE, w))
+	    (void) update(TRUE);
     }
-    if (!newlength(TRUE, h) || !newwidth(TRUE, w))
-	return;
-
-    (void) update(TRUE);
 }
 
 #if OPT_WORKING
@@ -3880,6 +3878,7 @@ newscreensize(int h, int w)
 static void
 start_working(void)
 {
+    TRACE2(("start_working\n"));
     setup_handler(SIGALRM, imworking);
     (void) alarm(1);
     im_timing = TRUE;
@@ -3891,6 +3890,7 @@ start_working(void)
 static void
 stop_working(void)
 {
+    TRACE2(("stop_working\n"));
     if (mpresf) {		/* erase leftover working-message */
 	int save_row = ttrow;
 	int save_col = ttcol;
@@ -3918,67 +3918,84 @@ imworking(int ACTUAL_SIG_ARGS GCC_UNUSED)
     static int flip;
     static int skip;
 
-    signal_was = SIGALRM;	/* remember this was an alarm */
-
-    if (vile_is_busy)		/* brute force, for debugging */
-	return;
-
-    /* (if GMDWORKING is _not_ set, or MDTERSE is set, we're allowed
-     * to erase, but not to write.  and if we do erase, we don't
-     * reschedule the alarm, since setting the mode will call us
-     * again to start things up)
+    TRACE2(("imworking(%d)\n", signo));
+    /* (if GMDWORKING is _not_ set, or MDTERSE is set, we're allowed to erase,
+     * but not to write.  If we do erase, we don't reschedule the alarm, since
+     * setting the mode will call us again to start things up)
      */
-
-    if (im_displaying || !i_displayed) {	/* look at the semaphore first! */
-	/*EMPTY */ ;
-    } else if (im_waiting(-1)) {
-	im_timing = FALSE;
-	stop_working();
-	return;
-    } else if (ShowWorking()) {
-	if (skip) {
-	    skip = FALSE;
-	} else {
-#if DISP_X11
-	    x_working();
-#else
-	    static const char *const msg[] =
-	    {"working", "..."};
-	    char result[20];
-	    result[0] = EOS;
-	    if (cur_working != 0
-		&& cur_working != old_working) {
-		char temp[20];
-		int len = cur_working > 999999L ? 10 : 6;
-
-		old_working = cur_working;
-		strcat(result, right_num(temp, len, cur_working));
-		if (len == 10)
-		    /*EMPTY */ ;
-		else if (max_working != 0) {
-		    strcat(result, " ");
-		    strcat(result, right_num(temp, 2,
-					     (100 * cur_working) / max_working));
-		    strcat(result, "%");
-		} else
-		    strcat(result, " ...");
+    if (allow_working_msg()) {
+	TRACE2(("...allow_working_msg\n"));
+	if (im_waiting(-1)) {
+	    TRACE2(("...im_waiting(-1)\n"));
+	    im_timing = FALSE;
+	    stop_working();
+	} else if (ShowWorking()) {
+	    TRACE2(("...ShowWorking()\n"));
+	    if (skip) {
+		TRACE2(("...skipped()\n"));
+		skip = FALSE;
 	    } else {
-		strcat(result, msg[flip]);
-		strcat(result, msg[!flip]);
-	    }
-	    kbd_overlay(result);
-	    kbd_flush();
+#if DISP_X11
+		x_working();
+#else
+		static const char *const msg[] =
+		{"working", "..."};
+		char result[20];
+
+		TRACE2(("...FINALLY!()\n"));
+		result[0] = EOS;
+		if (cur_working != 0
+		    && cur_working != old_working) {
+		    char temp[20];
+		    int len = cur_working > 999999L ? 10 : 6;
+
+		    old_working = cur_working;
+		    strcat(result, right_num(temp, len, cur_working));
+		    if (len == 10)
+			/*EMPTY */ ;
+		    else if (max_working != 0) {
+			strcat(result, " ");
+			strcat(result, right_num(temp, 2,
+						 (100 * cur_working) / max_working));
+			strcat(result, "%");
+		    } else
+			strcat(result, " ...");
+		} else {
+		    strcat(result, msg[flip]);
+		    strcat(result, msg[!flip]);
+		}
+		kbd_overlay(result);
+		kbd_flush();
 #endif
+	    }
+	    start_working();
+	    flip = !flip;
+	} else {
+	    TRACE2(("...NOT ShowWorking()\n"));
+	    stop_working();
+	    skip = TRUE;
 	}
     } else {
-	stop_working();
-	skip = TRUE;
-	return;
+	TRACE2(("... NOT allow_working_msg(%d/%d/%d)%s ShowWorking\n",
+		vile_is_busy, im_displaying, !i_displayed,
+		ShowWorking()? "" : " NOT"));
+	if (ShowWorking()) {	/* keep the timer running */
+	    start_working();
+	    flip = !flip;
+	}
     }
-    start_working();
-    flip = !flip;
 }
 #endif /* OPT_WORKING */
+
+/*
+ * Returns true if we should/could show a "working..." message or other busy
+ * indicator, assuming that 'working' mode is set.
+ */
+int
+allow_working_msg(void)
+{
+    return !(vile_is_busy || im_displaying || !i_displayed);
+}
 
 /*
  * Maintain a flag that records whether we're waiting for keyboard input.  As a

@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.42 2002/10/09 19:46:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.43 2002/11/02 00:17:01 tom Exp $
  *
  */
 
@@ -25,14 +25,15 @@ typedef struct _tb_list {
 
 static TB_LIST *all_tbuffs;
 
-#define	AllocatedBuffer(q)	tb_remember(q);
-#define	FreedBuffer(q)		tb_forget(q);
+#define	AllocatedBuffer(q)	tb_remember(q)
+#define	FreedBuffer(q)		tb_forget(q)
 
 static void
 tb_remember(TBUFF * p)
 {
-    TB_LIST *q = typealloc(TB_LIST);
+    TB_LIST *q;
 
+    q = typealloc(TB_LIST);
     q->buff = p;
     q->link = all_tbuffs;
     all_tbuffs = q;
@@ -43,7 +44,8 @@ tb_forget(TBUFF * p)
 {
     TB_LIST *q, *r;
 
-    for (q = all_tbuffs, r = 0; q != 0; r = q, q = q->link)
+    beginDisplay();
+    for (q = all_tbuffs, r = 0; q != 0; r = q, q = q->link) {
 	if (q->buff == p) {
 	    if (r != 0)
 		r->link = q->link;
@@ -52,6 +54,8 @@ tb_forget(TBUFF * p)
 	    free((char *) q);
 	    break;
 	}
+    }
+    endofDisplay();
 }
 
 void
@@ -78,6 +82,8 @@ TBUFF *
 tb_alloc(TBUFF ** p, size_t n)
 {
     TBUFF *q = *p;
+
+    beginDisplay();
     if (q == 0) {
 	q = *p = typealloc(TBUFF);
 	q->tb_data = typeallocn(char, q->tb_size = n);
@@ -86,10 +92,11 @@ tb_alloc(TBUFF ** p, size_t n)
 	q->tb_endc = esc_c;
 	q->tb_data[0] = 0;	/* appease Purify */
 	q->tb_errs = FALSE;
-	AllocatedBuffer(q)
+	AllocatedBuffer(q);
     } else if (n >= q->tb_size) {
 	q->tb_data = typereallocn(char, q->tb_data, q->tb_size = (n * 2));
     }
+    endofDisplay();
     return q;
 }
 
@@ -117,12 +124,14 @@ tb_free(TBUFF ** p)
 {
     TBUFF *q = *p;
 
+    beginDisplay();
     if (q != 0) {
-	FreedBuffer(q)
-	    free(q->tb_data);
+	FreedBuffer(q);
+	free(q->tb_data);
 	free((char *) q);
     }
     *p = 0;
+    endofDisplay();
 }
 
 /*******(storage)************************************************************/

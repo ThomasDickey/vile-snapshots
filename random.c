@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.265 2002/10/20 11:25:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.266 2002/11/02 00:53:51 tom Exp $
  *
  */
 
@@ -1328,55 +1328,58 @@ ch_fname(BUFFER *bp, const char *fname)
     /*
      * ch_fname() can receive a very long filename string from capturecmd().
      */
+    beginDisplay();
     if ((np = castalloc(char, strlen(fname) + NFILEN)) == NULL) {
 	bp->b_fname = out_of_mem;
 	bp->b_fnlen = strlen(bp->b_fname);
 	no_memory("ch_fname");
-	return;
-    }
-    strcpy(np, fname);
+    } else {
+	strcpy(np, fname);
 
-    /* produce a full pathname, unless already absolute or "internal" */
-    if (!isInternalName(np))
-	(void) lengthen_path(np);
+	/* produce a full pathname, unless already absolute or "internal" */
+	if (!isInternalName(np))
+	    (void) lengthen_path(np);
 
-    len = strlen(np) + 1;
+	len = strlen(np) + 1;
 
-    if (bp->b_fname == 0 || strcmp(bp->b_fname, np)) {
+	if (bp->b_fname == 0 || strcmp(bp->b_fname, np)) {
 
-	if (bp->b_fname && bp->b_fnlen < len) {
-	    /* don't free it yet -- it _may_ have been passed in as
-	     * the current file-name
-	     */
-	    holdp = bp->b_fname;
-	    bp->b_fname = NULL;
-	}
-
-	if (!bp->b_fname) {
-	    bp->b_fname = strmalloc(np);
-	    if (!bp->b_fname) {
-		bp->b_fname = out_of_mem;
-		bp->b_fnlen = strlen(bp->b_fname);
-		no_memory("ch_fname");
-		(void) free(np);
-		return;
+	    if (bp->b_fname && bp->b_fnlen < len) {
+		/* don't free it yet -- it _may_ have been passed in as
+		 * the current file-name
+		 */
+		holdp = bp->b_fname;
+		bp->b_fname = NULL;
 	    }
-	    bp->b_fnlen = len;
+
+	    if (!bp->b_fname) {
+		bp->b_fname = strmalloc(np);
+		if (!bp->b_fname) {
+		    bp->b_fname = out_of_mem;
+		    bp->b_fnlen = strlen(bp->b_fname);
+		    no_memory("ch_fname");
+		    (void) free(np);
+		    endofDisplay();
+		    return;
+		}
+		bp->b_fnlen = len;
+	    }
+
+	    /* it'll fit, leave len untouched */
+	    (void) strcpy(bp->b_fname, np);
+
+	    if (holdp != out_of_mem)
+		FreeIfNeeded(holdp);
+	    updatelistbuffers();
 	}
-
-	/* it'll fit, leave len untouched */
-	(void) strcpy(bp->b_fname, np);
-
-	if (holdp != out_of_mem)
-	    FreeIfNeeded(holdp);
-	updatelistbuffers();
-    }
 #ifdef	MDCHK_MODTIME
-    (void) get_modtime(bp, &(bp->b_modtime));
-    bp->b_modtime_at_warn = 0;
+	(void) get_modtime(bp, &(bp->b_modtime));
+	bp->b_modtime_at_warn = 0;
 #endif
-    fileuid_set_if_valid(bp, fname);
-    (void) free(np);
+	fileuid_set_if_valid(bp, fname);
+	(void) free(np);
+    }
+    endofDisplay();
 }
 
 #if OPT_HOOKS
@@ -1474,6 +1477,7 @@ pushd_popd_set_dir(const char *dir)
 static int
 dirstack_extend(const char *dir, const char *fnname)
 {
+    beginDisplay();
     if (dirs_idx >= dirs_len) {
 	if (dirs_len == 0) {
 	    dirs_len = 16;
@@ -1491,6 +1495,7 @@ dirstack_extend(const char *dir, const char *fnname)
     if (!dirstack[dirs_idx])
 	return (no_memory(fnname));
     strcpy(dirstack[dirs_idx++], dir);
+    endofDisplay();
     return (TRUE);
 }
 
@@ -1498,8 +1503,10 @@ static int
 do_popd(int uindx,		/* user-specified dirstack index */
 	int sign)
 {
-    int i, j, rc;
+    int i, j;
+    int rc = TRUE;
 
+    beginDisplay();
     if ((uindx == 0 && sign > 0) || (uindx == dirs_idx && sign < 0)) {
 	char *path;
 
@@ -1507,30 +1514,30 @@ do_popd(int uindx,		/* user-specified dirstack index */
 	 * handle special case:  pop top stack entry (the virtual cwd) and
 	 * then cd to the next entry on the directory stack.
 	 */
-
 	path = dirstack[dirs_idx - 1];
 	if ((rc = pushd_popd_set_dir(path)) == TRUE) {
 	    (void) free(path);
 	    dirstack[--dirs_idx] = NULL;	/* reuse == death */
 	}
-	return (rc);
-    }
-    if (sign > 0) {
-	/* rationalize +idx notation with actual dirstack index */
+    } else {
+	if (sign > 0) {
+	    /* rationalize +idx notation with actual dirstack index */
 
-	uindx--;		/* user-based index includes virtual cwd at top-of-stack */
-	uindx = (dirs_idx - 1) - uindx;
-    }
-    (void) free(dirstack[uindx]);
-    dirstack[uindx] = NULL;	/* mark empty */
+	    uindx--;		/* user-based index includes virtual cwd at top-of-stack */
+	    uindx = (dirs_idx - 1) - uindx;
+	}
+	(void) free(dirstack[uindx]);
+	dirstack[uindx] = NULL;	/* mark empty */
 
-    /* shrink the stack by one element */
-    for (i = j = 0; i < dirs_idx; i++) {
-	if (dirstack[i])
-	    dirstack[j++] = dirstack[i];
+	/* shrink the stack by one element */
+	for (i = j = 0; i < dirs_idx; i++) {
+	    if (dirstack[i])
+		dirstack[j++] = dirstack[i];
+	}
+	dirstack[--dirs_idx] = NULL;	/* stack has shrunk, reuse == death */
     }
-    dirstack[--dirs_idx] = NULL;	/* stack has shrunk, reuse == death */
-    return (TRUE);
+    endofDisplay();
+    return (rc);
 }
 
 static int
@@ -1541,6 +1548,8 @@ do_pushd(int uindx,		/* user-specified dirstack index */
     char oldcwd[NFILEN], *path;
 
     strcpy(oldcwd, current_directory(TRUE));
+
+    beginDisplay();
     if ((uindx == 0 && sign > 0) || (uindx == dirs_idx && sign < 0)) {
 	/*
 	 * handle special case:  swap the top stack entry (the virtual cwd)
@@ -1553,26 +1562,29 @@ do_pushd(int uindx,		/* user-specified dirstack index */
 	    (void) free(path);
 	    dirstack[dirs_idx - 1] = castalloc(char, strlen(oldcwd) + 1);
 	    if (!dirstack[dirs_idx - 1])
-		return (no_memory("do_pushd"));
-	    strcpy(dirstack[dirs_idx - 1], oldcwd);
+		rc = no_memory("do_pushd");
+	    else
+		strcpy(dirstack[dirs_idx - 1], oldcwd);
 	}
-	return (rc);
-    }
-    if (sign > 0) {
-	/* rationalize +idx notation with actual dirstack index */
+    } else {
+	if (sign > 0) {
+	    /* rationalize +idx notation with actual dirstack index */
 
-	uindx--;		/* user-based index includes virtual cwd at top-of-stack */
-	uindx = (dirs_idx - 1) - uindx;
-    }
-    if ((rc = pushd_popd_set_dir(dirstack[uindx])) == TRUE) {
-	/* all is well, update dirstack */
+	    uindx--;		/* user-based index includes virtual cwd at top-of-stack */
+	    uindx = (dirs_idx - 1) - uindx;
+	}
+	if ((rc = pushd_popd_set_dir(dirstack[uindx])) == TRUE) {
+	    /* all is well, update dirstack */
 
-	(void) free(dirstack[uindx]);
-	dirstack[uindx] = castalloc(char, strlen(oldcwd) + 1);
-	if (!dirstack[uindx])
-	    return (no_memory("do_pushd"));
-	strcpy(dirstack[uindx], oldcwd);
+	    (void) free(dirstack[uindx]);
+	    dirstack[uindx] = castalloc(char, strlen(oldcwd) + 1);
+	    if (!dirstack[uindx])
+		rc = no_memory("do_pushd");
+	    else
+		strcpy(dirstack[uindx], oldcwd);
+	}
     }
+    endofDisplay();
     return (rc);
 }
 
@@ -1828,10 +1840,12 @@ vl_dirs_clear(int f GCC_UNUSED, int n GCC_UNUSED)
     int i;
 
     if (dirstack) {
+	beginDisplay();
 	for (i = 0; i < dirs_idx; i++)
 	    (void) free(dirstack[i]);
 	(void) free(dirstack);
 	dirstack = NULL;
+	endofDisplay();
     }
     dirs_idx = dirs_len = 0;
     return (display_dirstack(DIRS_OPT));

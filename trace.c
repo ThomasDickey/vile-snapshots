@@ -1,13 +1,14 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.34 2002/10/27 15:02:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.36 2002/11/02 16:44:46 tom Exp $
  *
  */
 
 #include "estruct.h"
 #include "edef.h"
 #include <ctype.h>
+#include <assert.h>
 
 #if SYS_WINNT
 #include <io.h>
@@ -40,6 +41,19 @@ extern int fflush(FILE * fp);
 #undef	free
 #endif /* DOALLOC */
 
+/*
+ * If we implement OPT_WORKING, this means we have a timer periodically
+ * interrupting the program to write a "working..." message.  Some systems do
+ * not work properly, especially if malloc/free are interrupted.  We use
+ * beginDisplay/endofDisplay markers to delimit critical regions where we
+ * should not be interrupted.
+ */
+#if OPT_WORKING
+#define check_opt_working()	assert(!allow_working_msg())
+#else
+#define check_opt_working()	/* nothing */
+#endif
+
 static const char *bad_form;	/* magic address for fail_alloc() */
 
 static char *visible_result;
@@ -52,6 +66,8 @@ static int trace_depth;
 void
 Trace(const char *fmt,...)
 {
+    static int nested;
+
     int save_err;
     va_list ap;
     static FILE *fp;
@@ -59,37 +75,42 @@ Trace(const char *fmt,...)
     HANDLE myMutex = CreateMutex(NULL, FALSE, NULL);
     WaitForSingleObject(myMutex, INFINITE);
 #endif
-    beginDisplay();
-    save_err = errno;
-    va_start(ap, fmt);
 
-    if (fp == NULL)
-	fp = fopen("Trace.out", "w");
-    if (fp == NULL)
-	abort();
+    if (!nested++) {
+	beginDisplay();
+	save_err = errno;
+	va_start(ap, fmt);
 
-    if (fmt != bad_form) {
-	fprintf(fp, "%s", trace_indent(trace_depth, '|'));
-	if (!strncmp(fmt, T_CALLED, T_LENGTH)) {
-	    ++trace_depth;
-	} else if (!strncmp(fmt, T_RETURN, T_LENGTH)) {
-	    if (trace_depth == 0) {
-		fprintf(fp, "BUG: called/return mismatch\n");
-	    } else {
-		--trace_depth;
+	if (fp == NULL)
+	    fp = fopen("Trace.out", "w");
+	if (fp == NULL)
+	    abort();
+
+	if (fmt != bad_form) {
+	    fprintf(fp, "%s", trace_indent(trace_depth, '|'));
+	    if (!strncmp(fmt, T_CALLED, T_LENGTH)) {
+		++trace_depth;
+	    } else if (!strncmp(fmt, T_RETURN, T_LENGTH)) {
+		if (trace_depth == 0) {
+		    fprintf(fp, "BUG: called/return mismatch\n");
+		} else {
+		    --trace_depth;
+		}
 	    }
+	    vfprintf(fp, fmt, ap);
+	    (void) fflush(fp);
+	} else {
+	    (void) fclose(fp);
+	    (void) fflush(stdout);
+	    (void) fflush(stderr);
 	}
-	vfprintf(fp, fmt, ap);
-	(void) fflush(fp);
-    } else {
-	(void) fclose(fp);
-	(void) fflush(stdout);
-	(void) fflush(stderr);
-    }
 
-    va_end(ap);
-    errno = save_err;
-    endofDisplay();
+	va_end(ap);
+	errno = save_err;
+	endofDisplay();
+    }
+    --nested;
+
 #if SYS_WINNT
     ReleaseMutex(myMutex);
     CloseHandle(myMutex);
@@ -459,6 +480,7 @@ doalloc(char *oldp, unsigned amount)
 {
     register char *newp;
 
+    check_opt_working();
     count_alloc += (oldp == 0);
     LOG_LEN("allocate", amount);
     LOG_PTR("  old = ", oldp);
@@ -489,6 +511,7 @@ do_calloc(unsigned nmemb, unsigned size)
 void
 dofree(void *oldp)
 {
+    check_opt_working();
     count_freed++;
     LOG_PTR("dealloc ", oldp);
 
@@ -677,6 +700,25 @@ trace_window(WINDOW *wp)
 	imdying(10);
     }
 }
+
+#if OPT_WORKING && (OPT_TRACE > 1)
+#undef beginDisplay
+void
+beginDisplay(void)
+{
+    Trace(T_CALLED "beginDisplay(%d)\n", ++im_displaying);
+}
+
+#undef endofDisplay
+void
+endofDisplay(void)
+{
+    if (im_displaying) {
+	--im_displaying;
+    }
+    returnVoid();		/* matches beginDisplay */
+}
+#endif
 
 #if NO_LEAKS
 void
