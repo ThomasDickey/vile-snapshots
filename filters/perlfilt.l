@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.38 2003/05/03 15:28:07 Danny.Zerkel Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.39 2003/05/20 20:38:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PERL input
  * text.
@@ -28,96 +28,9 @@ static char *here_tag;
 static unsigned here_len;
 static int here_exp;
 
-static void
-save_here(char *text, int length)
-{
-    char *s = here_tag = do_alloc(here_tag, length, &here_len);
-    here_exp = 1;
-    while (length--) {
-	if (isIdent(CharOf(*text))) {
-	    *s++ = *text;
-	} else if (*text == '\'') {
-	    here_exp = 0;
-	}
-	text++;
-    }
-    *s = 0;
-    flt_bfr_begin(String_attr);
-}
-
-static void
-end_pattern(void)
-{
-    flt_bfr_finish();
-    BEGIN(CODE);
-}
-
-static int
-add_to_pattern(char *text)
-{
-    static int first, delim, count, escaped, need;
-
-    if (!flt_bfr_length()) {
-	first = delim = count = escaped = need = 0;
-	if (isalpha(CharOf(*text)))
-	    first = *text;
-	else
-	    first = delim = *text;
-	if (delim)
-	    need = 2;
-    }
-    if (flt_bfr_length() == 1 && !delim) {
-	if (!isalpha(CharOf(*text)) && !isspace(CharOf(*text))) {
-	    delim = *text;
-	    need = (first == 's' || first == 'y' || first == 't') ? 3 : 2;
-	}
-    }
-    if (escaped) {
-	escaped = 0;
-    } else {
-	if (*text == '\\') {
-	    escaped = 1;
-	} else {
-	    if (need && (count == need)) {
-		if (!isalpha(CharOf(*text))) {
-		    return 0;
-		}
-	    } else if (*text == delim) {
-		count++;
-	    }
-	}
-    }
-    if (delim == 0 && !escaped && *text == ';') {
-	return 0;
-    }
-    flt_bfr_append(text, 1);
-    return 1;
-}
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *input)
-{
-    yyin = input;
-
-    Comment_attr = class_attr(NAME_COMMENT);
-    Preproc_attr = class_attr(NAME_PREPROC);
-    Keyword_attr = class_attr(NAME_KEYWORD);
-    Ident_attr   = class_attr(NAME_IDENT);
-    String_attr  = class_attr(NAME_LITERAL);
-    Number_attr  = class_attr(NAME_NUMBER);
-
-    here_exp = 0;
-
-    BEGIN(CODE);
-    while (yylex() > 0) {
-    }
-    flt_bfr_error();
-}
+static int add_to_pattern(char *text);
+static void end_pattern(void);
+static void save_here(char *text, int length);
 
 %}
 
@@ -198,3 +111,96 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL}|{BINARY}|{VERSION})
 			}
 <POD>^=cut{BLANK}\n	{ WriteToken(Comment_attr); BEGIN(CODE); }
 <POD>.*			{ WriteToken(Comment_attr); }
+
+%%
+
+static void
+save_here(char *text, int length)
+{
+    char *s = here_tag = do_alloc(here_tag, length, &here_len);
+    here_exp = 1;
+    while (length--) {
+	if (isIdent(CharOf(*text))) {
+	    *s++ = *text;
+	} else if (*text == '\'') {
+	    here_exp = 0;
+	}
+	text++;
+    }
+    *s = 0;
+    flt_bfr_begin(String_attr);
+}
+
+static void
+end_pattern(void)
+{
+    flt_bfr_finish();
+    BEGIN(CODE);
+}
+
+static int
+add_to_pattern(char *text)
+{
+    static int first, delim, count, escaped, need;
+
+    if (!flt_bfr_length()) {
+	first = delim = count = escaped = need = 0;
+	if (isalpha(CharOf(*text)))
+	    first = *text;
+	else
+	    first = delim = *text;
+	if (delim)
+	    need = 2;
+    }
+    if (flt_bfr_length() == 1 && !delim) {
+	if (!isalpha(CharOf(*text)) && !isspace(CharOf(*text))) {
+	    delim = *text;
+	    need = (first == 's' || first == 'y' || first == 't') ? 3 : 2;
+	}
+    }
+    if (escaped) {
+	escaped = 0;
+    } else {
+	if (*text == '\\') {
+	    escaped = 1;
+	} else {
+	    if (need && (count == need)) {
+		if (!isalpha(CharOf(*text))) {
+		    return 0;
+		}
+	    } else if (*text == delim) {
+		count++;
+	    }
+	}
+    }
+    if (delim == 0 && !escaped && *text == ';') {
+	return 0;
+    }
+    flt_bfr_append(text, 1);
+    return 1;
+}
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *inputs)
+{
+    yyin = inputs;
+
+    Comment_attr = class_attr(NAME_COMMENT);
+    Preproc_attr = class_attr(NAME_PREPROC);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    Ident_attr   = class_attr(NAME_IDENT);
+    String_attr  = class_attr(NAME_LITERAL);
+    Number_attr  = class_attr(NAME_NUMBER);
+
+    here_exp = 0;
+
+    BEGIN(CODE);
+    while (yylex() > 0) {
+    }
+    flt_bfr_error();
+}

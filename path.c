@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.134 2003/05/04 22:47:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.135 2003/05/25 20:21:27 tom Exp $
  *
  *
  */
@@ -1192,20 +1192,6 @@ canonpath(char *ss)
 #endif
 	{
 	    p = pp = s;
-
-#if SYS_APOLLO
-	    if (!is_slashc(p[1])) {	/* could be something like "/usr" */
-		char *cwd = current_directory(FALSE);
-		char temp[NFILEN];
-		if (!strncmp(cwd, "//", 2)
-		    && strlen(cwd) > 2
-		    && (p = strchr(cwd + 2, '/')) != 0) {
-		    (void) strcpy(strcpy(temp, cwd) + (p + 1 - cwd), s);
-		    (void) strcpy(s, temp);
-		}
-	    }
-	    p = s + 1;		/* allow for leading "//" */
-#endif
 
 	    p++;
 	    pp++;		/* leave the leading slash */

@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.123 2003/05/10 20:18:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.125 2003/05/25 23:34:52 tom Exp $
  *
  */
 
@@ -1031,7 +1031,7 @@ typedef struct {
 } ENCODEREG;
 
 static void
-encode_one_attribute(TBUFF ** result, int count, char *hyper, VIDEO_ATTR attr)
+encode_one_attribute(TBUFF ** result, int count, char *hypercmd, VIDEO_ATTR attr)
 {
     char temp[80];
 
@@ -1053,9 +1053,9 @@ encode_one_attribute(TBUFF ** result, int count, char *hyper, VIDEO_ATTR attr)
 	tb_sappend(result, temp);
     }
 #if OPT_HYPERTEXT
-    if (hyper != 0) {
+    if (hypercmd != 0) {
 	tb_append(result, 'H');
-	tb_sappend(result, hyper);
+	tb_sappend(result, hypercmd);
 	tb_append(result, EOS);
     }
 #endif
@@ -1214,7 +1214,7 @@ static int
 encode_region(void)
 {
     ENCODEREG work;
-    int status = FALSE;
+    int status;
     L_NUM base_line;
     L_NUM last_line;
     L_NUM total, n;

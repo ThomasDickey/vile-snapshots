@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.9 2003/02/10 01:07:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.11 2003/05/24 00:49:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -20,7 +20,7 @@ DefineFilter("ruby");
 #define isIdent(c)   (isalnum(CharOf(c)) || c == '_')
 
 #ifdef DEBUG
-#define DPRINTF(params) if(flt_options['d'])printf params
+#define DPRINTF(params) if(FltOptions('d'))printf params
 #else
 #define DPRINTF(params)		/*nothing */
 #endif
@@ -292,7 +292,7 @@ is_NUMBER(char *s, int *err)
 	    if (ch != '_') {
 		if (isdigit(ch)) {
 		    value = 1;
-		} else if (ch != '.' || !isdigit(s[-1])) {
+		} else if (ch != '.' || !isdigit(CharOf(s[-1]))) {
 		    break;
 		}
 	    }
@@ -397,7 +397,7 @@ end_marker(char *s, char *marker, int only)
 
     return (the_last - s > len
 	    && !strncmp(s, marker, len)
-	    && isspace(s[len])
+	    && isspace(CharOf(s[len]))
 	    && (!only || (s[len] == '\n')));
 }
 
@@ -504,7 +504,7 @@ is_REGEXP(char *s, int left_delim, int right_delim)
 	}
 	if (s != base && *s == right_delim) {
 	    ++s;
-	    while (s < the_last && isalpha(*s)) {
+	    while (s < the_last && isalpha(CharOf(*s))) {
 		++s;
 	    }
 	    found = s - base;
@@ -559,7 +559,7 @@ is_Regexp(char *s, int *delim)
     } else if (s + 4 < the_last
 	       && s[0] == '%'
 	       && s[1] == 'r'
-	       && !isalnum(s[2])) {
+	       && !isalnum(CharOf(s[2]))) {
 
 	*delim = balanced_delimiter(s + 2);
 	found = 2 + is_REGEXP(s + 2, s[2], *delim);
@@ -747,7 +747,7 @@ put_REGEXP(char *s, int length, int delim)
 	if (s != base && *s == delim) {
 	    flt_bfr_append(s, 1);
 	    last = ++s;
-	    while (s < the_last && isalpha(*s)) {
+	    while (s < the_last && isalpha(CharOf(*s))) {
 		++s;
 	    }
 	    flt_bfr_embed(s, s - last, Keyword_attr);
@@ -882,7 +882,7 @@ do_filter(FILE *input GCC_UNUSED)
 		} else {
 		    if (strchr("()|&=~!,;", *s) != 0)
 			had_op = 1;
-		    else if (!isspace(*s))
+		    else if (!isspace(CharOf(*s)))
 			had_op = 0;
 		    flt_putc(*s++);
 		}

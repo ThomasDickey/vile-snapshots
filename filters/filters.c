@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.87 2003/02/26 22:40:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.88 2003/05/24 00:49:25 tom Exp $
  *
  */
 
@@ -21,8 +21,8 @@
 #define DOT_TO_HIDE_IT ""
 #endif
 
-#define VERBOSE(level,params)		if (flt_options['v'] >= level) mlforce params
-#define NONNULL(s)			((s) != 0) ? (s) : "<null>"
+#define VERBOSE(level,params)	if (FltOptions('v') >= level) mlforce params
+#define NONNULL(s)		((s) != 0) ? (s) : "<null>"
 
 #define HASH_LENGTH 256
 
@@ -73,7 +73,7 @@ static unsigned len_keyword_file = 0;
  * Private functions                                                          *
  ******************************************************************************/
 
-static char *
+static const char *
 AttrsOnce(KEYWORD * entry)
 {
     entry->kw_used = 999;
@@ -459,7 +459,7 @@ flt_initialize(void)
     abbr_ch = '*';
     meta_ch = '.';
     eqls_ch = ':';
-    flt_options['v'] = 0;
+    FltOptions('v') = 0;
 
     flt_free_symtab();
 }

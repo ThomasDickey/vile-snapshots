@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.10 2000/09/14 02:09:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.11 2003/05/20 20:38:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a Python script
  */
@@ -17,28 +17,6 @@ static char *Ident2_attr;
 static char *Keyword_attr;
 static char *Number_attr;
 static char *String_attr;
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *input)
-{
-    yyin = input;
-
-    Comment_attr = class_attr(NAME_COMMENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    BEGIN(NORMAL);
-    while (yylex() > 0) {
-    }
-    flt_bfr_finish();
-}
 
 %}
 
@@ -77,3 +55,27 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL})[L]?|{REAL}
 <QUOTE3>[\n]		{ flt_bfr_append(yytext, yyleng); }
 
 <NORMAL>.		{ ECHO; }
+
+%%
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *inputs)
+{
+    yyin = inputs;
+
+    Comment_attr = class_attr(NAME_COMMENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    Number_attr  = class_attr(NAME_NUMBER);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    BEGIN(NORMAL);
+    while (yylex() > 0) {
+    }
+    flt_bfr_finish();
+}

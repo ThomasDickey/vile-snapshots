@@ -17,12 +17,12 @@
  * distributable status.  This version of vile is distributed under the
  * terms of the GNU Public License (see COPYING).
  *
- * Copyright (c) 1992-2002 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1992-2003 by Paul Fox and Thomas Dickey
  *
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.502 2003/05/05 00:12:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.506 2003/05/27 00:33:30 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -87,7 +87,7 @@ static void get_executable_dir(void);
 static void global_val_init(void);
 static void main_loop(void);
 static void make_startup_file(char *name);
-static void siginit(void);
+static void siginit(int enabled);
 static void start_debug_log(int ac, char **av);
 
 extern const int nametblsize;
@@ -174,7 +174,7 @@ MainProgram(int argc, char *argv[])
 #endif
 	setlocale(LC_ALL, env);	/* set locale according to environment vars */
     }
-#endif
+#endif /* OPT_LOCALE */
 
 #if OPT_NAMEBST
     build_namebst(nametbl, 0, nametblsize - 1);
@@ -224,7 +224,7 @@ MainProgram(int argc, char *argv[])
      * FIXME: we only know how to do this for displays that open the
      * terminal in the same way for command-line and screen.
      */
-    siginit();
+    siginit(TRUE);
 #if OPT_DUMBTERM
     if (isatty(fileno(stdin))
 	&& isatty(fileno(stdout))) {
@@ -509,7 +509,7 @@ MainProgram(int argc, char *argv[])
 #endif
 
     if (!tt_opened)
-	siginit();
+	siginit(TRUE);
     (void) open_terminal((TERM *) 0);
     term.kopen();		/* open the keyboard */
     term.rev(FALSE);
@@ -1561,7 +1561,7 @@ global_val_init(void)
     }
 #else
     helpfile = default_help_file();
-    startup_file = default_startup_file();
+    startup_file = strmalloc(default_startup_file());
     startup_path = default_startup_path();
     libdir_path = default_libdir_path();
 #if OPT_MENUS
@@ -1677,52 +1677,80 @@ dos_crit_handler(void)
 #  endif
 #endif
 
+/*
+ * Setup signal handlers, if 'enabled'.  Otherwise reset to default all of the
+ * ones that pointed to imdying().  The latter is used only in ExitProgram() to
+ * ensure that abort() can really generate a core dump.
+ */
 static void
-siginit(void)
+siginit(int enabled)
 {
+    /* *INDENT-OFF* */
+    static const struct {
+	int signo;
+	void (*handler) (int ACTUAL_SIG_ARGS);
+    } table[] = {
+#if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
+#if defined(SIGINT)
+	{ SIGINT, catchintr },
+#endif
+#endif
 #if SYS_UNIX
-    setup_handler(SIGINT, catchintr);
-    setup_handler(SIGHUP, imdying);
-#ifdef SIGBUS
-    setup_handler(SIGBUS, imdying);
+#if defined(SIGHUP)
+	{ SIGHUP, imdying },
 #endif
-#ifdef SIGSYS
-    setup_handler(SIGSYS, imdying);
+#if defined(SIGBUS)
+	{ SIGBUS, imdying },
 #endif
-    setup_handler(SIGSEGV, imdying);
-    setup_handler(SIGTERM, imdying);
-/* #define VILE_DEBUG 1 */
+#if defined(SIGILL)
+	{ SIGILL, imdying },
+#endif
+#if defined(SIGFPE)
+	{ SIGFPE, imdying },
+#endif
+#if defined(SIGSYS)
+	{ SIGSYS, imdying },
+#endif
+	{ SIGSEGV, imdying },
+	{ SIGTERM, imdying },
 #ifdef VILE_DEBUG
-    setup_handler(SIGQUIT, imdying);
+	{ SIGQUIT, imdying },
 #else
-    setup_handler(SIGQUIT, SIG_IGN);
+	{ SIGQUIT, SIG_IGN },
 #endif
-    setup_handler(SIGPIPE, SIG_IGN);
+	{ SIGPIPE, SIG_IGN },
 #if defined(SIGWINCH) && ! DISP_X11
-    setup_handler(SIGWINCH, sizesignal);
+	{ SIGWINCH, sizesignal },
 #endif
-#else
-# if SYS_MSDOS
-    setup_handler(SIGINT, catchintr);
-#  if CC_DJGPP
+#endif /* SYS_UNIX */
+    };
+    /* *INDENT-ON* */
+
+    unsigned n;
+
+    for (n = 0; n < TABLESIZE(table); ++n) {
+	if (enabled)
+	    setup_handler(table[n].signo, table[n].handler);
+	else if (table[n].handler == imdying)
+	    setup_handler(table[n].signo, SIG_DFL);
+    }
+
+#if SYS_MSDOS
+# if CC_DJGPP
     _go32_want_ctrl_break(TRUE);
     setcbrk(FALSE);
     want_ctrl_c(TRUE);
     hard_error_catch_setup();
-#  else
-#   if CC_WATCOM
+# else
+#  if CC_WATCOM
     {
 	/* clean up Warning from Watcom C */
 	void *ptrfunc = wat_crit_handler;
 	_harderr(ptrfunc);
     }
-#   else			/* CC_TURBO */
+#  else				/* CC_TURBO */
     _harderr(dos_crit_handler);
-#   endif
 #  endif
-# endif
-# if SYS_OS2 || SYS_WINNT
-    setup_handler(SIGINT, catchintr);
 # endif
 #endif
 }
@@ -2194,24 +2222,24 @@ charinit(void)
      */
 #if OPT_LOCALE
     for (c = 0; c < N_chars; c++) {
-	vl_chartypes_[c] = 0;
+	vlCTYPE(c) = 0;
 	if (sys_iscntrl(c))
-	    vl_chartypes_[c] |= vl_cntrl;
+	    vlCTYPE(c) |= vl_cntrl;
 	if (sys_isdigit(c))
-	    vl_chartypes_[c] |= vl_digit;
+	    vlCTYPE(c) |= vl_digit;
 	if (sys_islower(c))
-	    vl_chartypes_[c] |= vl_lower;
+	    vlCTYPE(c) |= vl_lower;
 	if (sys_isprint(c))
-	    vl_chartypes_[c] |= vl_print;
+	    vlCTYPE(c) |= vl_print;
 	if (sys_ispunct(c))
-	    vl_chartypes_[c] |= vl_punct;
+	    vlCTYPE(c) |= vl_punct;
 	if (sys_isspace(c))
-	    vl_chartypes_[c] |= vl_space;
+	    vlCTYPE(c) |= vl_space;
 	if (sys_isupper(c))
-	    vl_chartypes_[c] |= vl_upper;
+	    vlCTYPE(c) |= vl_upper;
 #ifdef vl_xdigit
 	if (sys_isxdigit(c))
-	    vl_chartypes_[c] |= vl_xdigit;
+	    vlCTYPE(c) |= vl_xdigit;
 #endif
 	vl_uppercase[c] = toupper(c);
 	vl_lowercase[c] = tolower(c);
@@ -2221,99 +2249,99 @@ charinit(void)
 
     /* control characters */
     for (c = 0; c < ' '; c++)
-	vl_chartypes_[c] |= vl_cntrl;
-    vl_chartypes_[127] |= vl_cntrl;
+	vlCTYPE(c) |= vl_cntrl;
+    vlCTYPE(127) |= vl_cntrl;
 
     /* lowercase */
     for (c = 'a'; c <= 'z'; c++)
-	vl_chartypes_[c] |= vl_lower;
+	vlCTYPE(c) |= vl_lower;
 #if OPT_ISO_8859
     for (c = 0xc0; c <= 0xd6; c++)
-	vl_chartypes_[c] |= vl_lower;
+	vlCTYPE(c) |= vl_lower;
     for (c = 0xd8; c <= 0xde; c++)
-	vl_chartypes_[c] |= vl_lower;
+	vlCTYPE(c) |= vl_lower;
 #endif
     /* uppercase */
     for (c = 'A'; c <= 'Z'; c++)
-	vl_chartypes_[c] |= vl_upper;
+	vlCTYPE(c) |= vl_upper;
 #if OPT_ISO_8859
     for (c = 0xdf; c <= 0xf6; c++)
-	vl_chartypes_[c] |= vl_upper;
+	vlCTYPE(c) |= vl_upper;
     for (c = 0xf8; c <= 0xff; c++)
-	vl_chartypes_[c] |= vl_upper;
+	vlCTYPE(c) |= vl_upper;
 #endif
 
     /*
      * If you want to do this properly, compile-in locale support.
      */
     for (c = 0; c < N_chars; c++) {
-	vl_uppercase[c] = (char )c;
-	vl_lowercase[c] = (char )c;
+	vl_uppercase[c] = (char) c;
+	vl_lowercase[c] = (char) c;
 	if (isAlpha(c)) {
 	    if (isUpper(c)) {
-		vl_lowercase[c] = (char )(c ^ DIFCASE);
+		vl_lowercase[c] = (char) (c ^ DIFCASE);
 	    } else {
-		vl_uppercase[c] = (char )(c ^ DIFCASE);
+		vl_uppercase[c] = (char) (c ^ DIFCASE);
 	    }
 	}
     }
 
     /* digits */
     for (c = '0'; c <= '9'; c++)
-	vl_chartypes_[c] |= vl_digit;
+	vlCTYPE(c) |= vl_digit;
 #ifdef vl_xdigit
     /* hex digits */
     for (c = '0'; c <= '9'; c++)
-	vl_chartypes_[c] |= vl_xdigit;
+	vlCTYPE(c) |= vl_xdigit;
     for (c = 'a'; c <= 'f'; c++)
-	vl_chartypes_[c] |= vl_xdigit;
+	vlCTYPE(c) |= vl_xdigit;
     for (c = 'A'; c <= 'F'; c++)
-	vl_chartypes_[c] |= vl_xdigit;
+	vlCTYPE(c) |= vl_xdigit;
 #endif
 
     /* punctuation */
     for (c = '!'; c <= '/'; c++)
-	vl_chartypes_[c] |= vl_punct;
+	vlCTYPE(c) |= vl_punct;
     for (c = ':'; c <= '@'; c++)
-	vl_chartypes_[c] |= vl_punct;
+	vlCTYPE(c) |= vl_punct;
     for (c = '['; c <= '`'; c++)
-	vl_chartypes_[c] |= vl_punct;
+	vlCTYPE(c) |= vl_punct;
     for (c = L_CURLY; c <= '~'; c++)
-	vl_chartypes_[c] |= vl_punct;
+	vlCTYPE(c) |= vl_punct;
 #if OPT_ISO_8859
     for (c = 0xa1; c <= 0xbf; c++)
-	vl_chartypes_[c] |= vl_punct;
+	vlCTYPE(c) |= vl_punct;
 #endif
 
     /* printable */
     for (c = ' '; c <= '~'; c++)
-	vl_chartypes_[c] |= vl_print;
+	vlCTYPE(c) |= vl_print;
 
     /* whitespace */
-    vl_chartypes_[' '] |= vl_space;
+    vlCTYPE(' ') |= vl_space;
 #if OPT_ISO_8859
-    vl_chartypes_[0xa0] |= vl_space;
+    vlCTYPE(0xa0) |= vl_space;
 #endif
-    vl_chartypes_['\t'] |= vl_space;
-    vl_chartypes_['\r'] |= vl_space;
-    vl_chartypes_['\n'] |= vl_space;
-    vl_chartypes_['\f'] |= vl_space;
+    vlCTYPE('\t') |= vl_space;
+    vlCTYPE('\r') |= vl_space;
+    vlCTYPE('\n') |= vl_space;
+    vlCTYPE('\f') |= vl_space;
 
 #endif /* OPT_LOCALE */
 
     /* legal in pathnames */
-    vl_chartypes_['.'] |= vl_pathn;
-    vl_chartypes_['_'] |= vl_pathn;
-    vl_chartypes_['~'] |= vl_pathn;
-    vl_chartypes_['-'] |= vl_pathn;
-    vl_chartypes_['*'] |= vl_pathn;
-    vl_chartypes_['/'] |= vl_pathn;
+    vlCTYPE('.') |= vl_pathn;
+    vlCTYPE('_') |= vl_pathn;
+    vlCTYPE('~') |= vl_pathn;
+    vlCTYPE('-') |= vl_pathn;
+    vlCTYPE('*') |= vl_pathn;
+    vlCTYPE('/') |= vl_pathn;
 
     /* legal in "identifiers" */
-    vl_chartypes_['_'] |= vl_ident | vl_qident;
-    vl_chartypes_[':'] |= vl_qident;
+    vlCTYPE('_') |= vl_ident | vl_qident;
+    vlCTYPE(':') |= vl_qident;
 #if SYS_VMS
-    vl_chartypes_['$'] |= vl_ident | vl_qident;
+    vlCTYPE('$') |= vl_ident | vl_qident;
 #endif
 
     c = global_g_val(GVAL_PRINT_LOW);
@@ -2329,84 +2357,84 @@ charinit(void)
     if (c < HIGHBIT)
 	c = HIGHBIT;
     while (c <= global_g_val(GVAL_PRINT_HIGH) && c < N_chars)
-	vl_chartypes_[c++] |= vl_print;
+	vlCTYPE(c++) |= vl_print;
 
 #if DISP_X11
     for (c = 0; c < N_chars; c++) {
 	if (isPrint(c) && !gui_isprint(c)) {
-	    vl_chartypes_[c] &= ~vl_print;
+	    vlCTYPE(c) &= ~vl_print;
 	}
     }
 #endif
     /* backspacers: ^H, rubout */
-    vl_chartypes_['\b'] |= vl_bspace;
-    vl_chartypes_[127] |= vl_bspace;
+    vlCTYPE('\b') |= vl_bspace;
+    vlCTYPE(127) |= vl_bspace;
 
     /* wildcard chars for most shells */
-    vl_chartypes_['*'] |= vl_wild;
-    vl_chartypes_['?'] |= vl_wild;
+    vlCTYPE('*') |= vl_wild;
+    vlCTYPE('?') |= vl_wild;
 #if !OPT_VMS_PATH
 #if SYS_UNIX
-    vl_chartypes_['~'] |= vl_wild;
+    vlCTYPE('~') |= vl_wild;
 #endif
-    vl_chartypes_[L_BLOCK] |= vl_wild;
-    vl_chartypes_[R_BLOCK] |= vl_wild;
-    vl_chartypes_[L_CURLY] |= vl_wild;
-    vl_chartypes_[R_CURLY] |= vl_wild;
-    vl_chartypes_['$'] |= vl_wild;
-    vl_chartypes_['`'] |= vl_wild;
+    vlCTYPE(L_BLOCK) |= vl_wild;
+    vlCTYPE(R_BLOCK) |= vl_wild;
+    vlCTYPE(L_CURLY) |= vl_wild;
+    vlCTYPE(R_CURLY) |= vl_wild;
+    vlCTYPE('$') |= vl_wild;
+    vlCTYPE('`') |= vl_wild;
 #endif
 
     /* ex mode line specifiers */
-    vl_chartypes_[','] |= vl_linespec;
-    vl_chartypes_['%'] |= vl_linespec;
-    vl_chartypes_['-'] |= vl_linespec;
-    vl_chartypes_['+'] |= vl_linespec;
-    vl_chartypes_[';'] |= vl_linespec;
-    vl_chartypes_['.'] |= vl_linespec;
-    vl_chartypes_['$'] |= vl_linespec;
-    vl_chartypes_['\''] |= vl_linespec;
+    vlCTYPE(',') |= vl_linespec;
+    vlCTYPE('%') |= vl_linespec;
+    vlCTYPE('-') |= vl_linespec;
+    vlCTYPE('+') |= vl_linespec;
+    vlCTYPE(';') |= vl_linespec;
+    vlCTYPE('.') |= vl_linespec;
+    vlCTYPE('$') |= vl_linespec;
+    vlCTYPE('\'') |= vl_linespec;
 
     /* fences */
-    vl_chartypes_[L_CURLY] |= vl_fence;
-    vl_chartypes_[R_CURLY] |= vl_fence;
-    vl_chartypes_[L_PAREN] |= vl_fence;
-    vl_chartypes_[R_PAREN] |= vl_fence;
-    vl_chartypes_[L_BLOCK] |= vl_fence;
-    vl_chartypes_[R_BLOCK] |= vl_fence;
+    vlCTYPE(L_CURLY) |= vl_fence;
+    vlCTYPE(R_CURLY) |= vl_fence;
+    vlCTYPE(L_PAREN) |= vl_fence;
+    vlCTYPE(R_PAREN) |= vl_fence;
+    vlCTYPE(L_BLOCK) |= vl_fence;
+    vlCTYPE(R_BLOCK) |= vl_fence;
 
 #if OPT_VMS_PATH
-    vl_chartypes_[L_BLOCK] |= vl_pathn;		/* actually, "<", ">" too */
-    vl_chartypes_[R_BLOCK] |= vl_pathn;
-    vl_chartypes_['$'] |= vl_pathn;
-    vl_chartypes_[':'] |= vl_pathn;
-    vl_chartypes_[';'] |= vl_pathn;
+    vlCTYPE(L_BLOCK) |= vl_pathn;	/* actually, "<", ">" too */
+    vlCTYPE(R_BLOCK) |= vl_pathn;
+    vlCTYPE('$') |= vl_pathn;
+    vlCTYPE(':') |= vl_pathn;
+    vlCTYPE(';') |= vl_pathn;
 #endif
 
 #if OPT_MSDOS_PATH
-    vl_chartypes_[BACKSLASH] |= vl_pathn;
-    vl_chartypes_[':'] |= vl_pathn;
+    vlCTYPE(BACKSLASH) |= vl_pathn;
+    vlCTYPE(':') |= vl_pathn;
 #endif
 
 #if OPT_WIDE_CTYPES
     /* scratch-buffer-names (usually superset of vl_pathn) */
-    vl_chartypes_[(unsigned) SCRTCH_LEFT[0]] |= vl_scrtch;
-    vl_chartypes_[(unsigned) SCRTCH_RIGHT[0]] |= vl_scrtch;
-    vl_chartypes_[' '] |= vl_scrtch;	/* ...to handle "[Buffer List]" */
+    vlCTYPE(SCRTCH_LEFT[0]) |= vl_scrtch;
+    vlCTYPE(SCRTCH_RIGHT[0]) |= vl_scrtch;
+    vlCTYPE(' ') |= vl_scrtch;	/* ...to handle "[Buffer List]" */
 #endif
 
     for (c = 0; c < N_chars; c++) {
 	if (!(isSpace(c)))
-	    vl_chartypes_[c] |= vl_nonspace;
+	    vlCTYPE(c) |= vl_nonspace;
 	if (isDigit(c))
-	    vl_chartypes_[c] |= vl_linespec;
+	    vlCTYPE(c) |= vl_linespec;
 	if (isAlpha(c) || isDigit(c))
-	    vl_chartypes_[c] |= vl_ident | vl_pathn | vl_qident;
+	    vlCTYPE(c) |= vl_ident | vl_pathn | vl_qident;
 #if OPT_WIDE_CTYPES
 	if (isSpace(c) || isPrint(c))
-	    vl_chartypes_[c] |= vl_shpipe;
+	    vlCTYPE(c) |= vl_shpipe;
 	if (ispath(c))
-	    vl_chartypes_[c] |= vl_scrtch;
+	    vlCTYPE(c) |= vl_scrtch;
 #endif
     }
     returnVoid();
@@ -2722,14 +2750,17 @@ make_startup_file(char *name)
 
 #ifdef VILE_ERROR_ABORT
 #undef ExitProgram		/* in case it is oleauto_exit() */
+
 void
 ExitProgram(int code)
 {
     char *env;
     if (code != GOODEXIT
 	&& (env = getenv("VILE_ERROR_ABORT")) != 0
-	&& *env != '\0')
+	&& *env != '\0') {
+	siginit(FALSE);
 	abort();
+    }
     exit(code);
 }
 #endif

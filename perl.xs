@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.87 2002/08/30 19:18:34 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.89 2003/05/25 23:56:26 tom Exp $
  */
 
 /*#
@@ -507,9 +507,9 @@ int
 perl_call_sub(void *data, int oper, int f, int n)
 {
     AV *av = data;	/* callback is an array containing: */
-    SV **name;		/* the registered name, */
-    SV **sub;		/* a sub name or coderef to call, */
-    SV **req;		/* and an [optional] file to require */
+    SV **name = 0;	/* the registered name, */
+    SV **sub = 0;	/* a sub name or coderef to call, */
+    SV **req = 0;	/* and an [optional] file to require */
 
     switch (av_len(av))
     {
@@ -1683,7 +1683,8 @@ FindMode(char *mode, int isglobal, VALARGS *args)
 {
     int status = FALSE;
     int literal = (toktyp(mode) == TOK_LITSTR);
-    char *value;
+    const char *value;
+    char *result = 0;
 
     if (literal)
 	status = find_mode(curbp, mode, isglobal, args);
@@ -1722,8 +1723,23 @@ FindMode(char *mode, int isglobal, VALARGS *args)
 	}
     }
 
+    if (value == error_val) {
+	result = error_val;
+    } else if (value != 0) {
+	result = strmalloc(value);
+    } else {
+	value = "";
+    }
     TRACE(("value of %s(%s) = %s\n", status ? "mode" : "", mode, value));
-    return value;
+    return result;
+}
+
+static void
+FreeMode(char *value)
+{
+    /* we made a copy to avoid possibly writing on const (perl 5.005_03) */
+    if (value != 0 && value != error_val)
+	free(value);
 }
 
 /* A version of set_curwp that does nothing but the bare essentials. We
@@ -2380,7 +2396,7 @@ set(...)
 		    }
 		}
 	    } else {
-		const char *val;
+		const char *val = 0;
 
 		if (modenames)
 		    modenames[nmodenames++] = mode;
@@ -2416,6 +2432,7 @@ set(...)
 		if (mode != NULL) {
 		    value = FindMode(mode, isglobal, &args);
 		    XPUSHs(sv_2mortal(newSVpv(value, 0)));
+		    FreeMode(value);
 		}
 	    }
 	}
@@ -2426,6 +2443,7 @@ set(...)
 		value = FindMode(mode, isglobal, &args);
 		XPUSHs(sv_2mortal(newSVpv(mode, 0)));
 		XPUSHs(sv_2mortal(newSVpv(value, 0)));
+		FreeMode(value);
 	    }
 	    free(modenames);
 	}
@@ -2624,7 +2642,7 @@ watchfd(fd, watchtypestr, ...)
 
     PREINIT:
 	char *cmd;
-	int   watchtype;
+	int   watchtype = -1;
 
 
     PPCODE:
@@ -3186,8 +3204,8 @@ current_buffer(...)
 	Vile::current_buffer = 1
 
     PREINIT:
-	VileBuf *callbuf;
-	VileBuf *newbuf;
+	VileBuf *callbuf = 0;
+	VileBuf *newbuf = 0;
 
     PPCODE:
 	if (items > 2)

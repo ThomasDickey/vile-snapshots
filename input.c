@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.258 2003/05/05 00:29:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.259 2003/05/24 00:49:25 tom Exp $
  *
  */
 
@@ -665,7 +665,7 @@ screen2tbuff(TBUFF ** result, CHARTYPE inclchartype)
     } else if (b_is_directory(curbp)
 	       && inclchartype == SCREEN_STRING) {
 	whole_line = 1;
-	inclchartype = (CHARTYPE) ~0;
+	inclchartype = (CHARTYPE) ~ 0;
     }
 
     if (whole_line
@@ -1559,7 +1559,7 @@ kbd_reply(const char *prompt,	/* put this out first */
     int lastch;
     unsigned newpos;
     TBUFF *buf = 0;
-    char *result;
+    const char *result;
 
     TRACE((T_CALLED "kbd_reply(prompt=%s, extbuf=%s, options=%#x)\n",
 	   TRACE_NULL(prompt),

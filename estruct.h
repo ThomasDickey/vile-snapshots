@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.529 2003/03/17 23:27:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.533 2003/05/25 20:20:53 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -81,10 +81,6 @@
 
 #endif /* os_chosen */
 
-#ifdef apollo
-# define SYS_APOLLO 1		/* FIXME: still more ifdefs to autoconf */
-#endif
-
 #ifdef sun
 # define SYS_SUNOS 1		/* FIXME: need to tweak lint ifdefs */
 #endif
@@ -124,10 +120,6 @@
 
 #ifndef CC_WATCOM
 #define CC_WATCOM		0	/* WATCOM C/386 version 9.0 or above */
-#endif
-
-#ifndef SYS_APOLLO
-#define SYS_APOLLO		0	/* Apollo Domain		*/
 #endif
 
 #ifndef SYS_MSDOS
@@ -291,15 +283,6 @@
 #include <sys/wait.h>	/* 'wait()' */
 #endif
 
-/* definitions for testing apollo version with gcc warnings */
-#if SYS_APOLLO
-# ifdef __GNUC__		/* only tested for SR10.3 with gcc 1.36 */
-#  ifndef _APOLLO_SOURCE	/* ...defined in gcc 2.4.5 */
-#  define _APOLLO_SOURCE	/* appease gcc by forcing extern-defs */
-#  endif
-# endif
-#endif
-
 #ifndef SIGT
 /* choose between void and int signal handler return type.
   "typedefs?  we don't need no steenking typedefs..." */
@@ -407,6 +390,10 @@
 
 #ifndef DISP_X11
 #define DISP_X11	0
+#endif
+
+#ifndef USE_TERMINFO
+#define USE_TERMINFO	0
 #endif
 
 #ifndef XTOOLKIT
@@ -1383,7 +1370,8 @@ typedef USHORT CHARTYPE;
 /* these parallel the ctypes.h definitions, except that
 	they force the char to valid range first */
 #define CharOf(c)   ((unsigned char)(c))
-#define istype(m,c) ((vl_chartypes_[CharOf(c)] & (m)) != 0)
+#define vlCTYPE(c)  vl_chartypes_[CharOf(c)]
+#define istype(m,c) ((vlCTYPE(c) & (m)) != 0)
 
 #define isAlnum(c)	istype(vl_lower|vl_upper|vl_digit, c)
 #define isAlpha(c)	istype(vl_lower|vl_upper, c)
@@ -2668,10 +2656,6 @@ typedef struct KILLREG {
 
 #include <stdarg.h>
 
-#if DISP_X11 && SYS_APOLLO
-#define SYSV_STRINGS	/* <strings.h> conflicts with <string.h> */
-#endif
-
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -2750,7 +2734,7 @@ extern void ExitProgram(int code);
 #undef GCC_UNUSED
 #endif
 
-#if GCC_PRINTF
+#ifdef GCC_PRINTF
 #define GCC_PRINTFLIKE(fmt,var) __attribute__((format(printf,fmt,var)))
 #else
 #define GCC_PRINTFLIKE(fmt,var) /*nothing*/
@@ -2903,6 +2887,16 @@ extern void ExitProgram(int code);
 #include	<X11/Intrinsic.h>
 #include	<X11/StringDefs.h>
 #endif
+
+/*
+ * workarounds for defective versions of gcc, e.g., defining a random set of
+ * names as "built-in".
+ */
+#if defined(__GNUC__) && defined(__GNUC_MINOR__)
+#if (__GNUC__ == 3 && __GNUC_MINOR__ == 3)
+#define exp vl_exp	/* gcc 3.3 */
+#endif
+#endif /* gcc workarounds */
 
 /*
  * Local prototypes (must follow NO_LEAKS definition)

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/infofilt.l,v 1.1 2002/11/03 18:05:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/infofilt.l,v 1.2 2003/05/20 20:38:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an info file.
  * (An extension of "text" mode).
@@ -20,41 +20,7 @@ static char *Keyword_attr;
 static char *Number_attr;
 static char *String_attr;
 
-static int
-mixedcase(const char *name)
-{
-    if (strlen(name) == 1)
-	return 1;
-    while (*name) {
-	int ch = (*name++ & 0xff);
-	if (isalpha(ch) && islower(ch))
-	    return 1;
-    }
-    return 0;
-}
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *input)
-{
-    yyin = input;
-
-    Action_attr  = class_attr(NAME_ACTION);
-    Comment_attr = class_attr(NAME_COMMENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    BEGIN(NORMAL);
-    while (yylex() > 0) {
-    }
-    flt_bfr_finish();
-}
+static int mixedcase(const char *name);
 
 %}
 
@@ -107,3 +73,41 @@ URL		[A-Za-z]+"://"[0-9a-zA-Z%/.~_#?=-]+
 \177			{ WriteToken(Action_attr); }
 
 <NORMAL>.		{ ECHO; }
+
+%%
+
+static int
+mixedcase(const char *name)
+{
+    if (strlen(name) == 1)
+	return 1;
+    while (*name) {
+	int ch = (*name++ & 0xff);
+	if (isalpha(ch) && islower(ch))
+	    return 1;
+    }
+    return 0;
+}
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *inputs)
+{
+    yyin = inputs;
+
+    Action_attr  = class_attr(NAME_ACTION);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    Number_attr  = class_attr(NAME_NUMBER);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    BEGIN(NORMAL);
+    while (yylex() > 0) {
+    }
+    flt_bfr_finish();
+}

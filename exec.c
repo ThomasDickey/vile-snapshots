@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.256 2003/03/17 23:22:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.258 2003/05/24 15:54:38 tom Exp $
  *
  */
 
@@ -49,7 +49,8 @@ static int token_ended_line;	/* did the last token end at end of line? */
 typedef struct locals {
     struct locals *next;
     char *name;
-    char *value;
+    char *m_value;		/* malloc'd value */
+    const char *p_value;	/* pure value */
 } LOCALS;
 
 typedef struct {
@@ -1189,6 +1190,7 @@ decode_parameter_info(TBUFF * tok, PARAM_INFO * result)
     char name[NSTRING];
     char text[NSTRING];
     char *s = vl_strncpy(name, tb_values(tok), sizeof(name));
+    int code;
 
     if ((s = strchr(s, '=')) != 0) {
 	vl_strncpy(text, tokval(s + 1), sizeof(text));
@@ -1199,8 +1201,9 @@ decode_parameter_info(TBUFF * tok, PARAM_INFO * result)
     if ((s = strchr(name, ':')) != 0)
 	*s++ = EOS;
 
-    result->pi_type = choice_to_code(fsm_paramtypes_choices,
-				     name, strlen(name));
+    code = choice_to_code(fsm_paramtypes_choices, name, strlen(name));
+    /* split-up to work around gcc bug */
+    result->pi_type = (PARAM_TYPES) code;
     if (result->pi_type >= 0) {
 	result->pi_text = *text ? strmalloc(text) : 0;
 #if OPT_ENUM_MODES
@@ -1496,8 +1499,9 @@ push_variable(char *name)
     p = typealloc(LOCALS);
     p->next = ifstk.locals;
     p->name = strmalloc(name);
-    p->value = tokval(name);
-    if (p->value == error_val) {
+    p->m_value = 0;
+    p->p_value = tokval(name);
+    if (p->p_value == error_val) {
 	/* special case: so we can delete vars */
 	if (toktyp(name) != TOK_TEMPVAR) {
 	    free(p->name);
@@ -1507,14 +1511,15 @@ push_variable(char *name)
     } else {
 	/* FIXME: this won't handle embedded nulls */
 	if (find_mode(curbp, (*name == '$') ? (name + 1) : name, -TRUE, &args)
-	    && must_quote_token(p->value, strlen(p->value))) {
+	    && must_quote_token(p->p_value, strlen(p->p_value))) {
 	    TBUFF *tmp = 0;
-	    append_quoted_token(&tmp, p->value, strlen(p->value));
+	    append_quoted_token(&tmp, p->p_value, strlen(p->p_value));
 	    tb_append(&tmp, EOS);
-	    p->value = tb_values(tmp);
+	    p->p_value = tb_values(tmp);
 	    free(tmp);
 	} else {
-	    p->value = strmalloc(p->value);
+	    p->m_value = strmalloc(p->p_value);
+	    p->p_value = 0;
 	}
     }
 
@@ -1530,16 +1535,18 @@ static void
 pop_variable(void)
 {
     LOCALS *p = ifstk.locals;
+    const char *value = (p->p_value != 0) ? p->p_value : p->m_value;
 
     TRACE((T_CALLED "pop_variable()\n"));
 
     ifstk.locals = p->next;
-    TPRINTF(("...pop_variable(%s) %s\n", p->name, p->value));
-    if (!strcmp(p->value, error_val)) {
+    TPRINTF(("...pop_variable(%s) %s\n", p->name, value));
+    if (!strcmp(value, error_val)) {
 	rmv_tempvar(p->name);
     } else {
-	set_state_variable(p->name, p->value);
-	free(p->value);
+	set_state_variable(p->name, value);
+	if (p->m_value != 0)
+	    free(p->m_value);
     }
     free(p->name);
     free((char *) p);
@@ -1588,6 +1595,7 @@ dname_to_dirnum(char **cmdpp, int length)
 {
     DIRECTIVE dirnum = D_UNKNOWN;
     int n;
+    int code;
     const char *ptr = (*cmdpp);
 
     if ((--length > 0)
@@ -1596,7 +1604,9 @@ dname_to_dirnum(char **cmdpp, int length)
 	    if (!isAlnum(ptr[n]))
 		length = n;
 	}
-	dirnum = choice_to_code(fsm_directive_choices, ptr, length);
+	code = choice_to_code(fsm_directive_choices, ptr, length);
+	/* split-up to work around gcc bug */
+	dirnum = (DIRECTIVE) code;
 	if (dirnum < 0)
 	    dirnum = D_UNKNOWN;
 	else

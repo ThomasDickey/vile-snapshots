@@ -20,7 +20,11 @@
  *
  *		ted, 02/03
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.98 2003/03/10 00:14:43 tom Exp $
+ *	  - add test-driver
+ *
+ *		ted, 05/03
+ *
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.106 2003/05/26 23:03:42 tom Exp $
  *
  */
 
@@ -50,6 +54,59 @@
  */
 
 #include "estruct.h"
+
+#ifdef DEBUG_REGEXP
+#define realdef			/* Make global definitions not external */
+#endif
+
+#ifdef DEBUG_REGEXP
+
+# include <ctype.h>
+
+# undef  beginDisplay
+# define beginDisplay()		/* nothing */
+# undef  endofDisplay
+# define endofDisplay()		/* nothing */
+
+# undef  istype
+# undef  isAlnum
+# undef  isAlpha
+# undef  isCntrl
+# undef  isDigit
+# undef  isLower
+# undef  isPrint
+# undef  isPunct
+# undef  isSpace
+# undef  isUpper
+# undef  toUpper
+# undef  toLower
+# undef  isident
+# undef  isXDigit
+
+# define isAlnum(c)	isalnum(c)
+# define isAlpha(c)	isalpha(c)
+# define isCntrl(c)	iscntrl(c)
+# define isDigit(c)	isdigit(c)
+# define isLower(c)	islower(c)
+# define isPrint(c)	isprint(c)
+# define isPunct(c)	ispunct(c)
+# define isSpace(c)	isspace(c)
+# define isUpper(c)	isupper(c)
+# define toUpper(c)	toupper(c)
+# define toLower(c)	tolower(c)
+# define isident(c)     isalnum(c)
+# define isXDigit(c)	isxdigit(c)
+
+/* #define OPT_TRACE 1 */
+/* #define REGDEBUG  1 */
+
+# define visible_buff(s,n,e) s
+# if OPT_TRACE
+#  undef  TRACE
+#  define TRACE(p) printf p
+# endif
+#endif
+
 #include "edef.h"
 
 #if OPT_TRACE
@@ -334,7 +391,7 @@ static int op_length;		/* ...corresponding operand-length */
 #define MAGICMETA   "?+()<>{}|"
 #define NOMAGICMETA "?+()<>{}|*[] .~"
 
-static void
+static int
 regmassage(const char *in_text,
 	   size_t in_size,
 	   char *out_text,
@@ -348,8 +405,13 @@ regmassage(const char *in_text,
     for (n = 0; n < in_size; ++n) {
 	if (in_text[n] == BACKSLASH) {	/* remove \ from these metas */
 	    if ((n + 1) >= in_size) {
+#ifdef FAIL_TRAILING_BS
+		mlforce("trailing backslash");
+		return FALSE;
+#else
 		*nxt++ = BACKSLASH;
 		break;
+#endif
 	    }
 	    if (in_text[n + 1] != EOS && strchr(metas, in_text[n + 1])) {
 		++n;
@@ -363,6 +425,7 @@ regmassage(const char *in_text,
     }
     *nxt = EOS;
     *out_size = (nxt - out_text);
+    return TRUE;
 }
 
 /*
@@ -418,7 +481,8 @@ regcomp(const char *exp_text, size_t exp_len, int magic)
 	explen = 2 * len + 20;
     }
 
-    regmassage(exp_text, exp_len, exp, &parsed_len, magic);
+    if (!regmassage(exp_text, exp_len, exp, &parsed_len, magic))
+	return NULL;
     TRACE(("after regmassage: '%s'\n", exp));
 
     /* First pass: determine size, legality. */
@@ -1409,11 +1473,23 @@ RegStrChr2(const char *s, unsigned length, int c)
 	    case 'S':
 		matched = !is_SPACE(c);
 		break;
+	    case 'u':
+		matched = is_UPPER(c);
+		break;
+	    case 'U':
+		matched = !is_UPPER(c);
+		break;
 	    case 'w':
 		matched = is_ALNUM(c);
 		break;
 	    case 'W':
 		matched = !is_ALNUM(c);
+		break;
+	    case 'x':
+		matched = is_XDIGIT(c);
+		break;
+	    case 'X':
+		matched = !is_XDIGIT(c);
 		break;
 	    }
 	} else {
@@ -1567,10 +1643,8 @@ regmatch(char *prog, int found)
 {
     char *scan;			/* Current node. */
     char *next;			/* Next node. */
-    char *last;			/* end of operand, if any */
 
     if ((scan = prog) != NULL) {
-	last = OPERAND(scan) + OPSIZE(scan);
 #ifdef REGDEBUG
 	if (scan != NULL && regnarrate) {
 	    if (reginput < regnomore) {
@@ -1969,10 +2043,6 @@ regrepeat(const char *p)
     char *scan = reginput;
     unsigned size = OPSIZE(p);
     const char *opnd = OPERAND(p);
-    const char *last = scan + size;
-
-    if (last > regnomore)
-	last = regnomore;
 
     switch (OP(p)) {
     case ANY:
@@ -1980,7 +2050,7 @@ regrepeat(const char *p)
 	scan += count;
 	break;
     case EXACTLY:
-	while (scan < last) {
+	while (scan < regnomore) {
 	    if (!SAME(*opnd, *scan))
 		break;
 	    count++;
@@ -2000,145 +2070,145 @@ regrepeat(const char *p)
 	}
 	break;
     case ALPHA:
-	while (scan < last && is_ALPHA(*scan)) {
+	while (scan < regnomore && is_ALPHA(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NALPHA:
-	while (scan < last && !is_ALPHA(*scan)) {
+	while (scan < regnomore && !is_ALPHA(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case ALNUM:
-	while (scan < last && is_ALNUM(*scan)) {
+	while (scan < regnomore && is_ALNUM(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NALNUM:
-	while (scan < last && !is_ALNUM(*scan)) {
+	while (scan < regnomore && !is_ALNUM(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case BLANK:
-	while (scan < last && is_BLANK(*scan)) {
+	while (scan < regnomore && is_BLANK(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NBLANK:
-	while (scan < last && !is_BLANK(*scan)) {
+	while (scan < regnomore && !is_BLANK(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case CNTRL:
-	while (scan < last && is_CNTRL(*scan)) {
+	while (scan < regnomore && is_CNTRL(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NCNTRL:
-	while (scan < last && !is_CNTRL(*scan)) {
+	while (scan < regnomore && !is_CNTRL(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case DIGIT:
-	while (scan < last && is_DIGIT(*scan)) {
+	while (scan < regnomore && is_DIGIT(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NDIGIT:
-	while (scan < last && !is_DIGIT(*scan)) {
+	while (scan < regnomore && !is_DIGIT(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case GRAPH:
-	while (scan < last && is_GRAPH(*scan)) {
+	while (scan < regnomore && is_GRAPH(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NGRAPH:
-	while (scan < last && !is_GRAPH(*scan)) {
+	while (scan < regnomore && !is_GRAPH(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case LOWER:
-	while (scan < last && is_LOWER(*scan)) {
+	while (scan < regnomore && is_LOWER(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NLOWER:
-	while (scan < last && !is_LOWER(*scan)) {
+	while (scan < regnomore && !is_LOWER(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case PRINT:
-	while (scan < last && is_PRINT(*scan)) {
+	while (scan < regnomore && is_PRINT(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NPRINT:
-	while (scan < last && !is_PRINT(*scan)) {
+	while (scan < regnomore && !is_PRINT(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case PUNCT:
-	while (scan < last && is_PUNCT(*scan)) {
+	while (scan < regnomore && is_PUNCT(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NPUNCT:
-	while (scan < last && !is_PUNCT(*scan)) {
+	while (scan < regnomore && !is_PUNCT(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case SPACE:
-	while (scan < last && is_SPACE(*scan)) {
+	while (scan < regnomore && is_SPACE(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NSPACE:
-	while (scan < last && !is_SPACE(*scan)) {
+	while (scan < regnomore && !is_SPACE(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case UPPER:
-	while (scan < last && is_UPPER(*scan)) {
+	while (scan < regnomore && is_UPPER(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NUPPER:
-	while (scan < last && !is_UPPER(*scan)) {
+	while (scan < regnomore && !is_UPPER(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case XDIGIT:
-	while (scan < last && is_XDIGIT(*scan)) {
+	while (scan < regnomore && is_XDIGIT(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NXDIGIT:
-	while (scan < last && !is_XDIGIT(*scan)) {
+	while (scan < regnomore && !is_XDIGIT(*scan)) {
 	    count++;
 	    scan++;
 	}
@@ -2460,3 +2530,282 @@ lregexec(
 	return s;
     }
 }
+
+#ifdef DEBUG_REGEXP
+int ignorecase = FALSE;
+
+void
+mlforce(const char *dummy,...)
+{
+    printf("? %s\n", dummy);
+}
+
+void
+regerror(const char *msg)
+{
+    printf("? %s\n", msg);
+}
+
+static char *
+get_string(FILE *fp, unsigned *length, int linenum)
+{
+    static char *result = 0;
+    static unsigned have = 0;
+
+    int ch;
+    int escaped = 0;
+    int value = 0;
+    int literal = -1;
+
+    if (result == 0) {
+	result = malloc(have = BUFSIZ);
+    }
+    *length = 0;
+    for (;;) {
+	ch = fgetc(fp);
+	if (ch == EOF || ferror(fp)) {
+	    *length = 0;
+	    if (result != 0) {
+		have = 0;
+		free(result);
+		result = 0;
+	    }
+	    break;
+	} else if (ch == '\n') {
+	    break;
+	} else if (escaped) {
+	    if (escaped == 1) {
+		switch (ch) {
+		case '\\':
+		    value = ch;
+		    break;
+		case 's':
+		    value = ' ';
+		    break;
+		case 'n':
+		    value = '\n';
+		    break;
+		case 'r':
+		    value = '\r';
+		    break;
+		case 't':
+		    value = '\t';
+		    break;
+		default:
+		    if (isdigit(ch)) {
+			value = ch - '0';
+			escaped = -2;
+		    } else {
+			value = ch;
+		    }
+		}
+		if (escaped > 0)
+		    escaped = 0;
+	    } else if (isdigit(ch)) {
+		value = (value * 8) + (ch - '0');
+		++escaped;
+	    } else {
+		fprintf(stderr,
+			"line %d: expected 3 digits per octal escape\n", linenum);
+		escaped = 0;
+	    }
+	} else if (ch == '\\' && !literal) {
+	    escaped = 1;
+	    value = 0;
+	} else {
+	    value = ch;
+	}
+	if (!escaped) {
+	    if (*length + 2 >= have) {
+		result = realloc(result, have *= 2);
+	    }
+	    result[*length] = value;
+	    *length += 1;
+	    if (literal < 0)
+		literal = (value == '#' || isupper(value)) ? 1 : 0;
+	}
+    }
+    if (result != 0)
+	result[*length] = 0;
+    return (*length != 0) ? result : 0;
+}
+
+static void
+put_string(char *s, unsigned length, int literal)
+{
+    unsigned n;
+
+    for (n = 0; n < length; ++n) {
+	if (literal) {
+	    putchar(CharOf(s[n]));
+	} else {
+	    switch (s[n]) {
+	    case '\\':
+		fputs("\\\\", stdout);
+		break;
+	    case ' ':
+		fputs("\\s", stdout);
+		break;
+	    case '\n':
+		fputs("\\n", stdout);
+		break;
+	    case '\r':
+		fputs("\\r", stdout);
+		break;
+	    case '\t':
+		fputs("\\t", stdout);
+		break;
+	    default:
+		if (CharOf(s[n]) < ' ' || CharOf(s[n]) > '~') {
+		    printf("\\%03o", CharOf(s[n]));
+		} else {
+		    putchar(CharOf(s[n]));
+		}
+	    }
+	}
+    }
+    putchar('\n');
+}
+
+/*
+ * Read script containing patterns (p), test-data (q) and results (r).  The
+ * first character of each line is its type.  Comments begin with '#'.  Use an
+ * uppercase p/q/r to suppress backslash interpretation of the line, e.g., to
+ * simplify typing patterns.  Lines beginning with '?' are error messages.
+ * Other lines are converted to comments.
+ *
+ * The output of the test driver contains the comment lines, p- and q-lines as
+ * well as the computed r-lines.  Because special characters are encoded as
+ * backslash sequences, it is simple to compare the driver's input and output
+ * using "diff", to see where a test differs.
+ */
+static void
+test_regexp(FILE *fp)
+{
+    char *s;
+    int linenum = 0;
+    int literal;
+    int subexp;
+    unsigned offset;
+    unsigned length;
+    regexp *pattern = 0;
+
+    while ((s = get_string(fp, &length, ++linenum)) != 0) {
+	literal = 0;
+	switch (*s) {
+	case 'P':
+	    literal = 1;
+	    /* FALLTHRU */
+	case 'p':
+	    put_string(s, length, literal);
+	    /* compile pattern */
+	    if (pattern != 0)
+		free(pattern);
+	    ++s, --length;
+	    pattern = regcomp(s, length, TRUE);
+	    break;
+	case 'Q':
+	    literal = 1;
+	    /* FALLTHRU */
+	case 'q':
+	    put_string(s, length, literal);
+	    /* compute results */
+	    ++s, --length;
+	    if (pattern != 0) {
+		for (offset = 0; offset <= length; ++offset) {
+		    if (regexec(pattern, s, s + length, offset, length)) {
+			for (subexp = 0; subexp < NSUBEXP; ++subexp) {
+			    if (pattern->startp[subexp] != 0
+				&& pattern->endp[subexp] != 0
+				&& (pattern->endp[subexp] >=
+				    pattern->startp[subexp])) {
+				unsigned mlen =
+				pattern->endp[subexp] -
+				pattern->startp[subexp];
+				if (mlen <= 1) {
+				    printf("r%d [%d:%d] -> [%d]",
+					   subexp, offset, length - mlen,
+					   pattern->startp[subexp] - s);
+				} else {
+				    printf("r%d [%d:%d] -> [%d:%d]",
+					   subexp, offset, length - 1,
+					   pattern->startp[subexp] - s,
+					   pattern->endp[subexp] - s - 1);
+				}
+				put_string(pattern->startp[subexp], mlen, FALSE);
+			    } else if (pattern->startp[subexp] != 0
+				       && pattern->endp[subexp] != 0) {
+				printf("? mlen = %d\n",
+				       pattern->endp[subexp] -
+				       pattern->startp[subexp]);
+			    } else if (pattern->startp[subexp] != 0) {
+				printf("? null end[%d] pointer\n", subexp);
+			    } else if (pattern->endp[subexp] != 0) {
+				printf("? null start[%d] pointer\n", subexp);
+			    }
+			}
+		    }
+		}
+	    }
+	    break;
+	case '#':
+	    put_string(s, length, TRUE);
+	    break;
+	case 'R':
+	case 'r':
+	    /* absorb - see 'q' case */
+	    break;
+	case '?':
+	    /* absorb - see 'p' case */
+	    break;
+	default:
+	    putchar('#');
+	    put_string(s, length, TRUE);
+	    break;
+	}
+    }
+    if (pattern != 0)
+	free(pattern);
+}
+
+int
+main(int argc, char *argv[])
+{
+    int n;
+
+#if 0
+    for (n = 0; n < 256; ++n) {
+	printf("%3d [%2X] %c%c%c%c%c%c%c%c%c%c%c%c\n",
+	       n, n,
+	       is_ALPHA(n) ? 'A' : '-',
+	       is_ALNUM(n) ? 'a' : '-',
+	       is_BLANK(n) ? 'B' : '-',
+	       is_CNTRL(n) ? 'C' : '-',
+	       is_DIGIT(n) ? 'D' : '-',
+	       is_GRAPH(n) ? 'G' : '-',
+	       is_LOWER(n) ? 'L' : '-',
+	       is_PRINT(n) ? 'P' : '-',
+	       is_PUNCT(n) ? 'p' : '-',
+	       is_SPACE(n) ? 'S' : '-',
+	       is_UPPER(n) ? 'U' : '-',
+	       is_XDIGIT(n) ? 'X' : '-');
+    }
+#endif
+
+    if (argc > 1) {
+	for (n = 1; n < argc; ++n) {
+	    FILE *fp = fopen(argv[n], "r");
+	    if (fp != 0) {
+		test_regexp(fp);
+		fclose(fp);
+	    } else {
+		perror(argv[n]);
+		return EXIT_FAILURE;
+	    }
+	}
+    } else {
+	test_regexp(stdin);
+    }
+    return EXIT_SUCCESS;
+}
+#endif

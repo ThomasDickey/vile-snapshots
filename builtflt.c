@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.29 2003/02/10 11:51:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.30 2003/05/24 00:49:25 tom Exp $
  *
  */
 
@@ -106,7 +106,7 @@ process_params(void)
     char *value;
 
     memset(flt_options, 0, sizeof(flt_options));
-    flt_options['t'] = tabstop_val(curbp);
+    FltOptions('t') = tabstop_val(curbp);
     while (*s != EOS) {
 	s = skip_cblanks(s);
 	if (*s == '-') {
@@ -121,8 +121,8 @@ process_params(void)
 		    break;
 		case 't':
 		    if ((value = param_value(&s)) != 0) {
-			if ((flt_options['t'] = atoi(value)) <= 0)
-			    flt_options['t'] = 8;
+			if ((FltOptions('t') = atoi(value)) <= 0)
+			    FltOptions('t') = 8;
 			free(value);
 		    }
 		    break;
@@ -132,7 +132,7 @@ process_params(void)
 	    s = skip_ctext(s);
 	}
     }
-    vile_keywords = !flt_options['k'];
+    vile_keywords = !FltOptions('k');
     return !vile_keywords;
 }
 
@@ -167,7 +167,7 @@ chop_newline(char *s)
 }
 
 void
-flt_echo(char *string, int length)
+flt_echo(const char *string, int length)
 {
     while (length-- > 0)
 	flt_putc(*string++);
@@ -250,7 +250,7 @@ flt_input(char *buffer, int max_size)
     return used;
 }
 
-char *
+const char *
 flt_name(void)
 {
     return current_filter ? current_filter->filter_name : "";
@@ -278,7 +278,7 @@ flt_putc(int ch)
 }
 
 void
-flt_puts(char *string, int length, char *marker)
+flt_puts(const char *string, int length, const char *marker)
 {
     char bfr1[NSTRING];
     char bfr2[NSTRING];
@@ -295,7 +295,7 @@ flt_puts(char *string, int length, char *marker)
 	flt_echo(string, length);
 	save_mark(FALSE);
 	if (apply_attribute()) {
-	    int save_shape = regionshape;
+	    REGIONSHAPE save_shape = regionshape;
 	    regionshape = EXACT;
 	    (void) attributeregion();
 	    videoattribute = 0;

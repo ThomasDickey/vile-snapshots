@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.7 2000/11/04 20:22:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.8 2003/05/20 20:38:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to RCS archives.
  */
@@ -15,6 +15,26 @@ DefineFilter("rcs");
 static char *Ident2_attr;
 static char *Number_attr;
 static char *String_attr;
+
+static void add_to_quoted(char *text, int length);
+static void flush_quoted(void);
+
+%}
+
+NUMBER		[0-9]+(\.[0-9]+)*
+NAME		[a-zA-Z0-9]+
+
+%%
+
+<INITIAL>[\n]		{ ECHO; }
+<INITIAL>{NAME}		{ WriteToken(keyword_attr(yytext)); }
+<INITIAL>{NUMBER}	{ WriteToken(Number_attr); }
+<INITIAL>"@"		{ add_to_quoted(yytext, yyleng); BEGIN(QUOTED); }
+<QUOTED>[^@\n]*		{ add_to_quoted(yytext, yyleng); }
+<QUOTED>@		{ add_to_quoted(yytext, yyleng); flush_quoted(); BEGIN(INITIAL); }
+<QUOTED>[\n]		{ flush_quoted(); ECHO; }
+
+%%
 
 /*
  * Returns true if the parameter points to an identifier
@@ -90,9 +110,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input)
+do_filter(FILE *inputs)
 {
-    yyin = input;
+    yyin = inputs;
 
     Ident2_attr = class_attr(NAME_IDENT2);
     Number_attr = class_attr(NAME_NUMBER);
@@ -103,18 +123,3 @@ do_filter(FILE *input)
     }
     flush_quoted();
 }
-
-%}
-
-NUMBER		[0-9]+(\.[0-9]+)*
-NAME		[a-zA-Z0-9]+
-
-%%
-
-<INITIAL>[\n]		{ ECHO; }
-<INITIAL>{NAME}		{ WriteToken(keyword_attr(yytext)); }
-<INITIAL>{NUMBER}	{ WriteToken(Number_attr); }
-<INITIAL>"@"		{ add_to_quoted(yytext, yyleng); BEGIN(QUOTED); }
-<QUOTED>[^@\n]*		{ add_to_quoted(yytext, yyleng); }
-<QUOTED>@		{ add_to_quoted(yytext, yyleng); flush_quoted(); BEGIN(INITIAL); }
-<QUOTED>[\n]		{ flush_quoted(); ECHO; }

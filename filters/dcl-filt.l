@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.11 2000/05/29 18:42:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.12 2003/05/20 20:38:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DCL files.
  *
@@ -36,9 +36,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input)
+do_filter(FILE *inputs)
 {
-    yyin = input;
+    yyin = inputs;
 
     Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);

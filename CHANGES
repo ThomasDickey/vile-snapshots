@@ -1,5 +1,51 @@
 Changes for vile 9.4 (released ??? ??? ?? ????)
 
+ 20030526 (q)
+	> Danny Zerkel:
+	+ revert part of regexp.c changes in regmatch(), which caused pattern
+		"^ *case"
+	  to not match lines with more than one blank.
+	> Paul Fox:
+	+ modify ansi.c to get screensize from system.
+	+ modify display.c to ensure default $modeline-format is interpreted
+	  when building with SMALLER.
+	> Tom Dickey:
+	+ correct logic in hst_display(), which did not check for the case
+	  where a shell command was being appended to an empty result.  The
+	  code only checked if the result was not a shell command before
+	  splitting the source into tokens.  This would happen for a sequence
+	  of commands such as
+		:!ls foo
+		:!mv bar foo
+		:e!
+		:!<uparrow>
+	  Then scrolling back through history would show only "!mv" and "!ls"
+	  rather than the complete command.
+	+ indent'd termio.c
+	+ removed ifdef's for SYS_APOLLO.
+	+ minor fix to imdying(), shows the list of files only if 'wrote' was
+	  set, just in case none could be written.
+	+ modify imdying() so email is always sent on a failure if
+	  VILE_ERROR_ABORT is defined.  This helps distinguish accidentally
+	  typing 'Q' versus a failure.
+	+ modify ExitProgram() to reset fatal-error signals back to default,
+	  so abort() will work properly, i.e., make a core dump.  Modify
+	  imdying() so that if VILE_ERROR_ABORT is defined, ExitProgram()
+	  is called rather than abort().  The latter calls abort() if the
+	  environment variable $VILE_ERROR_ABORT is set.
+	+ add cases for 'u', 'U', 'x' and 'X' to RegStrChr2(), making the
+	  [:upper:] and [:xdigit:] regular expression character classes work.
+	+ modify configure script to suppress -Winline if using gcc 3.3, since
+	  that feature is broken.
+	+ tested with gcc 3.3 and g++ 3.3, modifying several interfaces to use
+	  'const'.  gcc 3.x also introduces more nonstandard name-pollution.
+	+ add configure check/warning for flex 2.5.31, which has broken support
+	  for the "-P" option used for built-in filters.
+	+ reorder lex-based filters to allow building with flex 2.5.31, which
+	  introduces several incompatibilities with respect to flex 2.5.4
+	  and lex (report by Brendan O'Dea).
+	+ add makefile rules to generate test-programs for btree.c, regexp.c
+
  20030510 (p)
 	> Danny Zerkel:
 	+ revert 9.3o change for pl-filt.c, since "!" should be allowed as

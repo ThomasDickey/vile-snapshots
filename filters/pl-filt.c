@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.67 2003/05/10 19:05:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.70 2003/05/24 15:19:03 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -24,7 +24,7 @@ DefineFilter("perl");
 #define ATLEAST(s,n) (the_last - (s) > (n))
 
 #ifdef DEBUG
-#define DPRINTF(params) if(flt_options['d'])printf params
+#define DPRINTF(params) if(FltOptions('d'))printf params
 #else
 #define DPRINTF(params)		/*nothing */
 #endif
@@ -83,17 +83,6 @@ stateName(States state)
 	result = "?";
     }
     return result;
-}
-
-static int
-line_length(char *s)
-{
-    char *base = s;
-    while (MORE(s)) {
-	if (*++s == '\n')
-	    break;
-    }
-    return (s == base) ? 1 : (s - base);
 }
 #endif
 
@@ -333,7 +322,7 @@ is_NUMBER(char *s, int *err)
 	    if (ch != '_') {
 		if (isdigit(ch)) {
 		    value = 1;
-		} else if (ch != '.' || !isdigit(s[-1])) {
+		} else if (ch != '.' || !isdigit(CharOf(s[-1]))) {
 		    break;
 		}
 	    }
@@ -598,6 +587,19 @@ after_blanks(char *s)
     return result;
 }
 
+static int
+line_size(char *s)
+{
+    char *base = s;
+
+    while (MORE(s)) {
+	if (*s == '\n')
+	    break;
+	s++;
+    }
+    return s - base;
+}
+
 /*
  * The only place that perlfilt.l recognizes a PATTERN is after "!~" or "=~". 
  * Doing that in other places gets complicated - the reason for moving to C.
@@ -677,7 +679,7 @@ add_to_PATTERN(char *s)
 	need = 2;
 
     DPRINTF(("\n*add_to_PATTERN(skip=%d, text=%.*s)\n", skip,
-	     line_length(s), s));
+	     line_size(s), s));
     if (ATLEAST(s, need + skip)) {
 	int delim = 0;
 	int delim2 = 0;
@@ -710,7 +712,7 @@ add_to_PATTERN(char *s)
 
 	    DPRINTF(("*start%d  %c%c\n->%.*s\n",
 		     need, delim, delim2,
-		     line_length(s), s));
+		     line_size(s), s));
 
 	    next = s;
 	    while (MORE(s)) {
@@ -751,7 +753,7 @@ add_to_PATTERN(char *s)
 			if (!ignored && (*s == delim2)) {
 			    DPRINTF(("*finish%d %c%c\n->%.*s\n",
 				     need, delim, delim2,
-				     line_length(s), s));
+				     line_size(s), s));
 			    /*
 			     * check for /pattern/.../pattern/
 			     */
@@ -778,7 +780,7 @@ add_to_PATTERN(char *s)
 		break;
 	    s++;
 	}
-	DPRINTF(("*finally\n->%.*s\n", line_length(s), s));
+	DPRINTF(("*finally\n->%.*s\n", line_size(s), s));
 	return (s - base);
     }
     return 0;
@@ -877,19 +879,6 @@ is_String(char *s, int *err)
     if (!found)
 	found = is_ESCAPED(s);
     return found;
-}
-
-static int
-line_size(char *s)
-{
-    char *base = s;
-
-    while (MORE(s)) {
-	if (*s == '\n')
-	    break;
-	s++;
-    }
-    return s - base;
 }
 
 static char *
@@ -1154,7 +1143,7 @@ do_filter(FILE *input GCC_UNUSED)
 		    state = eIGNORED;
 		    flt_puts(s, 1, Preproc_attr);
 		    break;
-		} else if (!isspace(*s))
+		} else if (!isspace(CharOf(*s)))
 		    ++in_stmt;
 
 		if (*s == BACKSLASH && ATLEAST(s, 2) && s[1] == BQUOTE) {

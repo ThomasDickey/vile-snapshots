@@ -5,7 +5,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.5 2003/05/03 00:03:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.6 2003/05/20 20:38:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
@@ -23,126 +23,19 @@ static char *Ident_attr;
 static char *Number_attr;
 static char *String_attr;
 
-#include <fltstack.h>
-
-static void
-begin_section(char *name)
-{
-    WriteToken(keyword_attr(name));
-    if (!strcmp(name, "%description")
-     || !strcmp(name, "%changelog")
-     || !strcmp(name, "%package")) {
-	new_state(TEXT);
-    } else {
-	new_state(NORMAL);
-    }
-}
-
-static char *
-meta_variable(char *name)
-{
-    char *attr = keyword_attr(name);
-    return (attr != 0) ? attr : Ident_attr;
-}
-
 static int strip_tabs;
 static char *here_tag;
 static unsigned here_len;
 static int here_exp;
 
-static void
-save_here(char *text, int length)
-{
-    char *s = here_tag = do_alloc(here_tag, length, &here_len);
+#include <fltstack.h>
 
-    here_exp = 1;
-    while (length--) {
-	if (isQuote(*text)) {
-	    here_exp = 0;
-	} else if (strchr(" \t", *text) != 0) {
-	    if (s != here_tag)
-		break;
-	} else if (strchr("<->", *text) == 0) {
-	    *s++ = *text;
-	}
-	text++;
-    }
-    *s = 0;
-}
-
-static int
-embed_or_append(char *text, int length)
-{
-    if (here_exp) {
-	flt_bfr_embed(text, length, meta_variable(yytext));
-    } else {
-	flt_bfr_append(text, length);
-    }
-    return here_exp;
-}
-
-static int
-got_here(char *text, int length)
-{
-    int pass, j, k;
-
-    for (pass = 0; pass < 2; pass++) {
-	for (j = k = 0; j < length; j++) {
-	    if (isQuote(text[j])) {
-		if (pass)
-		    flt_bfr_embed(text + j, 1, Error_attr);
-	    } else {
-		if (text[j] != here_tag[k++])
-		    return 0;
-		if (pass)
-		    flt_bfr_append(text + j, 1);
-	    }
-	}
-    }
-    return 1;
-}
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-/*
- * string passed to this routine is in the format:
- *
- *    [<white>]:
- */
-static void
-color_delimiter(char *text, int size, char *attr)
-{
-    char delim[2];
-
-    delim[0] = text[--size];       /* save the trailing delimiter */
-    delim[1] = text[size] = '\0';  /* chop the trailing delimiter */
-    if (size)
-	flt_puts(text, size , "");
-    flt_puts(delim, 1, attr);
-}
-
-static void
-do_filter(FILE *input)
-{
-    yyin = input;
-
-    Action_attr  = class_attr(NAME_ACTION);
-    Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident_attr   = class_attr(NAME_IDENT2);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    here_exp = 0;
-    begin_state(NORMAL);
-    while (yylex() > 0) {
-    }
-    flt_bfr_error();
-    end_state();
-}
+static char * meta_variable(char *name);
+static int embed_or_append(char *text, int length);
+static int got_here(char *text, int length);
+static void begin_section(char *name);
+static void color_delimiter(char *text, int size, char *attr);
+static void save_here(char *text, int length);
 
 %}
 
@@ -260,3 +153,119 @@ SECTION		%{IDENT}
 <SUBST>{IDENT2R}	{ flt_bfr_embed(yytext, yyleng, meta_variable(yytext)); pop_state(); }
 <SUBST>\"		{ push_state(QUOTED); BeginQuote(QUOTED, String_attr); }
 <SUBST>[^"}]+		{ flt_bfr_embed(yytext, yyleng, ""); }
+
+%%
+
+static void
+begin_section(char *name)
+{
+    WriteToken(keyword_attr(name));
+    if (!strcmp(name, "%description")
+     || !strcmp(name, "%changelog")
+     || !strcmp(name, "%package")) {
+	new_state(TEXT);
+    } else {
+	new_state(NORMAL);
+    }
+}
+
+static char *
+meta_variable(char *name)
+{
+    char *attr = keyword_attr(name);
+    return (attr != 0) ? attr : Ident_attr;
+}
+
+static void
+save_here(char *text, int length)
+{
+    char *s = here_tag = do_alloc(here_tag, length, &here_len);
+
+    here_exp = 1;
+    while (length--) {
+	if (isQuote(*text)) {
+	    here_exp = 0;
+	} else if (strchr(" \t", *text) != 0) {
+	    if (s != here_tag)
+		break;
+	} else if (strchr("<->", *text) == 0) {
+	    *s++ = *text;
+	}
+	text++;
+    }
+    *s = 0;
+}
+
+static int
+embed_or_append(char *text, int length)
+{
+    if (here_exp) {
+	flt_bfr_embed(text, length, meta_variable(yytext));
+    } else {
+	flt_bfr_append(text, length);
+    }
+    return here_exp;
+}
+
+static int
+got_here(char *text, int length)
+{
+    int pass, j, k;
+
+    for (pass = 0; pass < 2; pass++) {
+	for (j = k = 0; j < length; j++) {
+	    if (isQuote(text[j])) {
+		if (pass)
+		    flt_bfr_embed(text + j, 1, Error_attr);
+	    } else {
+		if (text[j] != here_tag[k++])
+		    return 0;
+		if (pass)
+		    flt_bfr_append(text + j, 1);
+	    }
+	}
+    }
+    return 1;
+}
+
+/*
+ * string passed to this routine is in the format:
+ *
+ *    [<white>]:
+ */
+static void
+color_delimiter(char *text, int size, char *attr)
+{
+    char delim[2];
+
+    delim[0] = text[--size];       /* save the trailing delimiter */
+    delim[1] = text[size] = '\0';  /* chop the trailing delimiter */
+    if (size)
+	flt_puts(text, size , "");
+    flt_puts(delim, 1, attr);
+}
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *inputs)
+{
+    yyin = inputs;
+
+    Action_attr  = class_attr(NAME_ACTION);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Error_attr   = class_attr(NAME_ERROR);
+    Ident_attr   = class_attr(NAME_IDENT2);
+    Number_attr  = class_attr(NAME_NUMBER);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    here_exp = 0;
+    begin_state(NORMAL);
+    while (yylex() > 0) {
+    }
+    flt_bfr_error();
+    end_state();
+}

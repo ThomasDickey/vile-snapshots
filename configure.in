@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.186 $)
+AC_REVISION($Revision: 1.189 $)
 AC_PREREQ(2.13.20020210)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.186 2003/05/04 21:27:26 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.189 2003/05/27 01:05:37 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -152,6 +152,21 @@ if test "$VILE_BUILTIN_FILTERS" != none ; then
 		elif ( expr $LEX_VERSION \< 2.5 >/dev/null )
 		then
 			AC_MSG_ERROR(Sorry - your version of flex is too old: $LEX_VERSION)
+		elif ( expr $LEX_VERSION \>= 2.6 >/dev/null )
+		then
+			AC_MSG_ERROR(Sorry - your version of flex is too unstable: $LEX_VERSION)
+		else
+			LEX_SUBVERSION=`echo "$LEX_VERSION" | sed -e 's/^2.5.//'`
+			if test -z "$LEX_SUBVERSION"
+			then
+				AC_MSG_ERROR(This version of flex cannot compile builtin filters)
+			elif test $LEX_SUBVERSION = 4a
+			then
+				CF_VERBOSE(good)
+			elif ( expr $LEX_SUBVERSION \> 4 >/dev/null )
+			then
+				AC_MSG_ERROR(This version of flex cannot compile builtin filters)
+			fi
 		fi
 	fi
 	test -n "$cf_missed" && AC_MSG_ERROR(Not all filter names were found: $cf_missed)
@@ -588,7 +603,11 @@ AC_ARG_WITH(fakevms,
 AC_ARG_WITH(no-leaks,
 	[  --with-no-leaks         test: free permanent memory, analyze leaks],
 	[AC_DEFINE(NO_LEAKS)
-	 test -z "${with_dmalloc}${with_dbmalloc}${with_purify}" && AC_DEFINE(DOALLOC,10000)
+	 cf_doalloc=".${with_dmalloc}${with_dbmalloc}${with_purify}"
+	 case ${cf_doalloc} in #(vi
+	 *yes*) ;;
+	 *) AC_DEFINE(DOALLOC,10000) ;;
+	 esac
 	 with_no_leaks=yes],
 	[with_no_leaks=])
 
@@ -600,14 +619,7 @@ AC_ARG_WITH(trace,
 
 test -n "${with_trace}${with_no_leaks}" && EXTRAOBJS="$EXTRAOBJS trace.o"
 
-AC_ARG_WITH(warnings,
-	[  --with-warnings         test: turn on GCC compiler warnings],
-	[with_warnings="$withval"])
-if test -n "$with_warnings"
-then
-	CF_GCC_ATTRIBUTES
-	CF_GCC_WARNINGS
-fi
+CF_WITH_WARNINGS
 
 ###	Do these last, since they rely on a properly constructed config.h
 

@@ -5,7 +5,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.33 2003/05/04 00:10:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.35 2003/05/24 00:49:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TeX or LaTeX
  * input text.
@@ -66,72 +66,10 @@ static int braces;
 
 #include <fltstack.h>
 
-static void
-write_keyword(void)
-{
-    char *attr;
-    if (flt_options['a'])
-	attr = Keyword_attr;
-    else
-	attr = keyword_attr(yytext);
-    if (!attr || !*attr)
-	attr = "";	/* not Keyword_attr! */
-    WriteToken(attr);
-}
-
-static void
-write_define(int keylen)
-{
-    int save = yytext[keylen];
-    yytext[keylen] = '\0';
-    flt_puts(yytext, keylen, flt_options['a'] ? Keyword_attr : keyword_attr(yytext));
-    yytext[keylen] = save;
-    flt_puts(yytext + keylen, yyleng - keylen, Number_attr);
-}
-
-static void
-write_param(void)
-{
-    WriteToken(Ident2_attr);
-}
-
-static void
-write_text(char *attr)
-{
-    WriteToken(braces ? Ident2_attr : attr);
-}
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *input)
-{
-    yyin = input;
-
-    Action_attr  = class_attr(NAME_ACTION);
-
-    Comment_attr = class_attr(NAME_COMMENT);
-    Keyword_attr = class_attr(NAME_KEYWORD);
-    Ident_attr   = class_attr(NAME_IDENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    Math_attr    = class_attr(NAME_MATH);
-    Math_c_attr  = class_attr(NAME_MATH_C);
-    Section_attr = class_attr(NAME_SECTION);
-    Subsection_attr = class_attr(NAME_SUBSECTION);
-
-    braces = 0;
-
-    begin_state(TEXT);
-    while (yylex() > 0) {
-    }
-    end_state();
-}
+static void write_define(int keylen);
+static void write_keyword(void);
+static void write_param(void);
+static void write_text(char *attr);
 
 %}
 
@@ -221,3 +159,72 @@ NUMBER		({INTEGER}|{REAL})
 
 \{			{ WriteToken(Action_attr); ++braces; }
 \} 			{ WriteToken(Action_attr); if (braces) --braces; }
+
+%%
+
+static void
+write_keyword(void)
+{
+    char *attr;
+    if (FltOptions('a'))
+	attr = Keyword_attr;
+    else
+	attr = keyword_attr(yytext);
+    if (!attr || !*attr)
+	attr = "";	/* not Keyword_attr! */
+    WriteToken(attr);
+}
+
+static void
+write_define(int keylen)
+{
+    int save = yytext[keylen];
+    yytext[keylen] = '\0';
+    flt_puts(yytext, keylen, FltOptions('a') ? Keyword_attr : keyword_attr(yytext));
+    yytext[keylen] = save;
+    flt_puts(yytext + keylen, yyleng - keylen, Number_attr);
+}
+
+static void
+write_param(void)
+{
+    WriteToken(Ident2_attr);
+}
+
+static void
+write_text(char *attr)
+{
+    WriteToken(braces ? Ident2_attr : attr);
+}
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *inputs)
+{
+    yyin = inputs;
+
+    Action_attr  = class_attr(NAME_ACTION);
+
+    Comment_attr = class_attr(NAME_COMMENT);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    Ident_attr   = class_attr(NAME_IDENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    Number_attr  = class_attr(NAME_NUMBER);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    Math_attr    = class_attr(NAME_MATH);
+    Math_c_attr  = class_attr(NAME_MATH_C);
+    Section_attr = class_attr(NAME_SECTION);
+    Subsection_attr = class_attr(NAME_SUBSECTION);
+
+    braces = 0;
+
+    begin_state(TEXT);
+    while (yylex() > 0) {
+    }
+    end_state();
+}

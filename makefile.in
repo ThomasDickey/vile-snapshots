@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.184 2003/05/03 11:09:14 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.186 2003/05/25 19:34:47 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -428,7 +428,7 @@ distclean ::
 
 mostlyclean ::
 	- $(RM) *.[oi] o$(TARGET) $(BUILTHDRS) $(BUILTSRCS) $(MKTBLS) \
-	    builtflt.h core *~ *.BAK *.bb* *.da *.gcov
+	    builtflt.h core core.* *~ *.BAK *.bb* *.da *.gcov
 
 clean :: mostlyclean
 	- $(RM) $(ALL)
@@ -438,6 +438,7 @@ distclean :: clean
 	- test -d filters && rmdir filters
 
 realclean: distclean
+	- $(RM) test_*$x
 	- $(RM) tags TAGS vile-perl-api.* pod2html-*
 
 lint: $(BUILTHDRS)
@@ -622,6 +623,12 @@ termio.o:	nefunc.h
 version.o:	patchlev.h
 word.o:		nefunc.h
 x11.o:		nefunc.h
+
+test_btree$x:	btree.c
+	$(CC) -o $@ -DDEBUG_BTREE $(CPPFLAGS) $(CFLAGS) btree.c $(LDFLAGS)
+
+test_regexp$x:	regexp.c
+	$(CC) -o $@ -DDEBUG_REGEXP $(CPPFLAGS) $(CFLAGS) regexp.c $(LDFLAGS)
 
 # dependency-rules for install/installdirs
 $(BINDIR)/$(TARGET):		$(TARGET)

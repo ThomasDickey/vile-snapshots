@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.9 2003/02/15 11:53:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.10 2003/05/20 20:38:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to SCCS files.
  */
@@ -20,29 +20,6 @@ static char *Error_attr;
 static char *String_attr;
 
 #include <fltstack.h>
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *input)
-{
-    yyin = input;
-
-    Marker_attr  = class_attr("Marker");
-    Insert_attr  = class_attr("Insert");
-    Delete_attr  = class_attr("Delete");
-    Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    begin_state(INITIAL);
-    while (yylex() > 0) {
-    }
-    end_state();
-}
 
 %}
 
@@ -82,3 +59,28 @@ UNEXPANDED	"%"[A-Z]"%"
 
 <DELETE>.		|
 <DELETE>[^%@\n]*	{ WriteToken(Delete_attr); }
+
+%%
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *inputs)
+{
+    yyin = inputs;
+
+    Marker_attr  = class_attr("Marker");
+    Insert_attr  = class_attr("Insert");
+    Delete_attr  = class_attr("Delete");
+    Comment_attr = class_attr(NAME_COMMENT);
+    Error_attr   = class_attr(NAME_ERROR);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    begin_state(INITIAL);
+    while (yylex() > 0) {
+    }
+    end_state();
+}

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.517 2003/05/04 13:52:55 Mark.Robinson Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.518 2003/05/24 00:49:25 tom Exp $
  *
  */
 
@@ -253,7 +253,7 @@ extern int col2offs (WINDOW *wp, LINEPTR lp, C_NUM col);
 #endif
 
 #if OPT_MLFORMAT || OPT_POSFORMAT || OPT_TITLE
-extern void special_formatter(TBUFF **result, char *fs, WINDOW *wp);
+extern void special_formatter(TBUFF **result, const char *fs, WINDOW *wp);
 #endif
 
 #if OPT_WORKING
@@ -282,7 +282,7 @@ extern int did_hard_error_occur (void);
 #endif
 
 /* statevar.c */
-extern char * vile_getenv(char *s);
+extern const char * vile_getenv(const char *s);
 
 #if OPT_EVAL
 extern char * get_cdpath (void);
@@ -314,7 +314,7 @@ extern char * render_boolean (TBUFF **rp, int i);
 extern char * render_int (TBUFF **rp, int i);
 extern char * render_long (TBUFF **rp, long i);
 extern char * skip_space_tab(char *src);
-extern char * tokval (char *tokn);
+extern const char * tokval (char *tokn);
 extern const char * skip_cblanks (const char *str);
 extern const char * skip_cstring (const char *str);
 extern const char * skip_ctext (const char *str);
@@ -324,10 +324,10 @@ extern int is_truem (const char *val);
 extern int mac_literalarg (TBUFF **tok);
 extern int mac_token (TBUFF **tok);
 extern int macroize (TBUFF **p, TBUFF *src, int skip);
-extern int must_quote_token (char * values, unsigned last);
+extern int must_quote_token (const char * values, unsigned last);
 extern int scan_bool (const char *s );
 extern int toktyp (const char *tokn);
-extern void append_quoted_token (TBUFF ** dst, char * values, unsigned last);
+extern void append_quoted_token (TBUFF ** dst, const char * values, unsigned last);
 
 #ifdef const
 #define skip_blanks(s) skip_cblanks(s)
@@ -711,7 +711,7 @@ void purge_msgs (void);
 extern REGEXVAL * free_regexval (REGEXVAL *rp);
 extern REGEXVAL * new_regexval (const char *pattern, int magic);
 extern char * get_record_sep (BUFFER *bp);
-extern char * string_mode_val (VALARGS *args);
+extern const char * string_mode_val (VALARGS *args);
 extern const FSM_CHOICES * name_to_choices (const char *name);
 extern const char * choice_to_name (const FSM_CHOICES *choices, int code);
 extern int adjvalueset (const char *cp, int defining, int setting, int global, VALARGS *args);
