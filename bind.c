@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.150 1997/04/08 01:07:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.151 1997/05/25 22:56:18 tom Exp $
  *
  */
 
@@ -71,7 +71,7 @@ int
 help(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register BUFFER *bp;	/* buffer pointer to help */
-	const char *fname;	/* ptr to file returned by flook() */
+	char *fname;		/* ptr to file returned by flook() */
 	int alreadypopped;
 
 	/* first check if we are already here */
@@ -629,7 +629,7 @@ to_tabstop(char *buffer)
 	register int	cpos = converted_len(buffer);
 	if (cpos & 7)
 		(void)strcat(buffer, "\t");
-	return strend(buffer);
+	return skip_string(buffer);
 }
 
 /* convert a key binding, padding to the next multiple of 8 columns */
@@ -815,9 +815,9 @@ char *sub)	/* substring to look for */
 
 int
 startup(
-const char *sfname)	/* name of startup file  */
+char *sfname)			/* name of startup file  */
 {
-	const char *fname;	/* resulting file name to execute */
+	char *fname;		/* resulting file name to execute */
 
 	/* look up the startup file */
 	fname = flook(sfname, (FL_HERE|FL_HOME)|FL_READABLE);
@@ -837,9 +837,9 @@ const char *sfname)	/* name of startup file  */
 	asked and possible
 */
 
-const char *
+char *
 flook(
-const char *fname,	/* base file name to search for */
+char *fname,		/* base file name to search for */
 int hflag)		/* Look in the HOME environment variable first? */
 {
 	register char *home;	/* path to home directory */

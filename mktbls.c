@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.78 1997/03/15 15:13:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.79 1997/05/19 00:47:50 tom Exp $
  *
  */
 
@@ -159,6 +159,7 @@ static	LIST	*all_names,
 		*all__CMDFs,	/* data for extern-lines in nefunc.h */
 		*all_envars,
 		*all_ufuncs,
+		*all_fsms,	/* FSM tables */
 		*all_modes,	/* data for name-completion of modes */
 		*all_gmodes,	/* data for GLOBAL modes */
 		*all_bmodes,	/* data for BUFFER modes */
@@ -166,77 +167,10 @@ static	LIST	*all_names,
 
 	int	main ( int argc, char **argv );
 
-static	int	isspace (int c);
-static	int	isprint (int c);
-
-static	char *	Alloc (unsigned len);
-static	char *	StrAlloc (const char *s);
-static	LIST *	ListAlloc (void);
-
 static	void	badfmt (const char *s);
-static	void	badfmt2 (const char *s, int col);
-
-static	void	WriteLines (FILE *fp, const char *const *list, int count);
-static	FILE *	OpenHeader (const char *name, char **argv);
-
-static	void	InsertSorted (LIST **headp, const char *name, const char *func, const char *data, const char *cond, const char *note);
-static	void	InsertOnEnd (LIST **headp, const char *name);
-
-static	char *	append (char *dst, const char *src);
-static	char *	formcond (const char *c1, const char *c2);
-static	int	LastCol (char *buffer);
-static	char *	PadTo (int col, char *buffer);
-static	int	two_conds (int c, char *cond);
-static	void	set_binding (int btype, int c, char *cond, char *func);
-static	int	Parse (char *input, char **vec);
-
-static	void	BeginIf (void);
-static	void	WriteIf (FILE *fp, const char *cond);
 static	void	FlushIf (FILE *fp);
-
-static	char *	AbbrevMode (char *src);
-static	char *	NormalMode (char *src);
-static	const char * c2TYPE (int c);
-static	void	CheckModes ( char *name );
-static	char *	Mode2Key (char *type, char *name, char *cond);
-static	char *	Name2Symbol (char *name);
-static	char *	Name2Address (char *name, char *type);
-
-static	void	DefineOffset (FILE *fp);
-static	void	WriteIndexStruct (FILE *fp, LIST *p, const char *ppref);
-static	void	WriteModeDefines (LIST *p, const char *ppref);
-static	void	WriteModeSymbols (LIST *p);
-
 static	void	save_all_modes (const char *type, char *normal, const char *abbrev, char *cond);
-static	void	dump_all_modes (void);
-
-static	void	save_bindings (char *s, char *func, char *cond);
-static	void	dump_bindings (void);
-
-static	void	save_bmodes (char *type, char **vec);
-static	void	dump_bmodes (void);
-
-static	void	start_evar_h (char **argv);
-static	void	finish_evar_h (void);
-static	void	init_envars (void);
-static	void	save_envars (char **vec);
-static	void	dump_envars (void);
-
-static	void	save_funcs (char *func, char *flags, char *cond, char *old_cond, char *help);
-static	void	dump_funcs (FILE *fp, LIST *head);
-
-static	void	save_gmodes (char *type, char **vec);
-static	void	dump_gmodes (void);
-
-static	void	save_names (char *name, char *func, char *cond);
-static	void	dump_names (void);
-
-static	void	init_ufuncs (void);
-static	void	save_ufuncs (char **vec);
-static	void	dump_ufuncs (void);
-
-static	void	save_wmodes (char *type, char **vec);
-static	void	dump_wmodes (void);
+static	void	free_LIST (LIST **p);
 
 	/* definitions for sections of cmdtbl */
 #define	SECT_CMDS 0
@@ -245,6 +179,7 @@ static	void	dump_wmodes (void);
 #define	SECT_GBLS 3
 #define	SECT_BUFF 4
 #define	SECT_WIND 5
+#define	SECT_FSMS 6
 
 	/* definitions for indices to 'asciitbl[]' vs 'kbindtbl[]' */
 #define ASCIIBIND 0
@@ -257,11 +192,12 @@ static	char *conditions[LEN_CHRSET];
 static	const char *tblname   [MAX_BIND] = {"asciitbl", "ctlxtbl", "metatbl", "spectbl" };
 static	const char *prefname  [MAX_BIND] = {"",         "CTLX|",   "CTLA|",   "SPEC|" };
 
+static	char *fsm_name;
 static	char *inputfile;
 static	int l = 0;
 static	FILE *cmdtbl;
 static	FILE *nebind, *neprot, *nefunc, *nename;
-static	FILE *nevars, *nemode, *nefkeys;
+static	FILE *nevars, *nemode, *nefkeys, *nefsms;
 static	jmp_buf my_top;
 
 /******************************************************************************/
@@ -1121,7 +1057,7 @@ dump_bmodes(void)
 
 /******************************************************************************/
 static void
-start_evar_h(char **argv)
+start_vars_h(char **argv)
 {
 	static const char *const head[] = {
 		"",
@@ -1146,7 +1082,7 @@ start_evar_h(char **argv)
 }
 
 static void
-finish_evar_h(void)
+finish_vars_h(void)
 {
 	if (nevars)
 		Fprintf(nevars, "\n#endif /* OPT_EVAL */\n");
@@ -1231,6 +1167,102 @@ dump_envars(void)
 #endif
 	}
 	FlushIf(nevars);
+}
+
+/******************************************************************************/
+static void
+save_fsms(char **vec)
+{
+	InsertSorted(&all_fsms, vec[1], "", vec[2], vec[3], vec[0]);
+}
+
+static void
+init_fsms(void)
+{
+	char name[BUFSIZ];
+	int n;
+
+	if (fsm_name == 0)
+		badfmt("Missing table name");
+
+	(void)strcpy(name, fsm_name);
+	for (n = 0; fsm_name[n] != '\0'; n++)
+		fsm_name[n] = toupper(fsm_name[n]);
+	fprintf(nefsms, "\n");
+	fprintf(nefsms, "#if OPT_%s_CHOICES\n", fsm_name);
+	fprintf(nefsms, "static const\n");
+	fprintf(nefsms, "FSM_CHOICES fsm_%s_choices[] = %c\n", name, L_CURL);
+}
+
+static void
+dump_fsms(void)
+{
+	static const char *const middle[] = {
+		"\tEND_CHOICES\t/* ends table for name-completion */",
+		"};",
+		};
+	char	temp[MAX_BUFFER];
+	register LIST *p;
+	register int count;
+
+	if (all_fsms != 0) {
+		BeginIf();
+		for (p = all_fsms, count = 0; p != 0; p = p->nst) {
+			if (!count++)
+				init_fsms();
+#if OPT_IFDEF_MODES
+			WriteIf(nefsms, p->Cond);
+#endif
+			Sprintf(temp, "\t{ \"%s\",", p->Name);
+			Fprintf(nefsms, "%s%s },\n", PadTo(40, temp), p->Data);
+		}
+		FlushIf(nefsms);
+
+		write_lines(nefsms, middle);
+		Fprintf(nefsms, "#endif /* OPT_%s_CHOICES */\n", fsm_name);
+
+		free_LIST(&all_fsms);
+
+		free(fsm_name);
+		fsm_name = 0;
+	}
+}
+
+/******************************************************************************/
+static void
+start_fsms_h(char **argv, char *name)
+{
+	static const char *const head[] = {
+		"#if OPT_ENUM_MODES",
+		"",
+		"#define ENUM_ILLEGAL   (-2)",
+		"#define ENUM_UNKNOWN   (-1)",
+		"#define END_CHOICES    { (char *)0, ENUM_ILLEGAL }",
+		"",
+		"typedef struct {",
+		"\tconst char * choice_name;",
+		"\tint    choice_code;",
+		"} FSM_CHOICES;",
+		"",
+		"struct FSM {",
+		"\tconst char * mode_name;",
+		"\tconst FSM_CHOICES * choices;",
+		"};"
+		};
+
+	if (!nefsms) {
+		nefsms = OpenHeader("nefsms.h", argv);
+		write_lines(nefsms, head);
+	}
+	dump_fsms();
+	fsm_name = StrAlloc(name);
+}
+
+static void
+finish_fsms_h(void)
+{
+	if (nefsms)
+		Fprintf(nefsms, "\n#endif /* OPT_ENUM_MODES */\n");
 }
 
 /******************************************************************************/
@@ -1485,7 +1517,6 @@ dump_wmodes(void)
 }
 
 /******************************************************************************/
-#if NO_LEAKS
 static void
 free_LIST (LIST **p)
 {
@@ -1502,6 +1533,7 @@ free_LIST (LIST **p)
 	}
 }
 
+#if NO_LEAKS
 /*
  * Free all memory allocated within 'mktbls'. This is used both for debugging
  * as well as for allowing 'mktbls' to be an application procedure that is
@@ -1588,17 +1620,21 @@ main(int argc, char *argv[])
 				break;
 			case 'e':
 				section = SECT_VARS;
-				start_evar_h(argv);
+				start_vars_h(argv);
 				break;
 			case 'f':
 				section = SECT_FUNC;
-				start_evar_h(argv);
+				start_vars_h(argv);
 				break;
 			case 'g':
 				section = SECT_GBLS;
 				break;
 			case 'b':
 				section = SECT_BUFF;
+				break;
+			case 't':
+				section = SECT_FSMS;
+				start_fsms_h(argv, vec[2]);
 				break;
 			case 'w':
 				section = SECT_WIND;
@@ -1687,6 +1723,10 @@ main(int argc, char *argv[])
 				(void)strcpy(fcond, vec[3]);
 				break;
 
+			case SECT_FSMS:
+				save_fsms(vec);
+				break;
+
 			case SECT_VARS:
 				if (r < 2 || r > 3)
 					badfmt("looking for char *envars[]");
@@ -1747,8 +1787,11 @@ main(int argc, char *argv[])
 	if (all_envars) {
 		dump_envars();
 		dump_ufuncs();
-		finish_evar_h();
+		finish_vars_h();
 	}
+
+	dump_fsms();
+	finish_fsms_h();
 
 	if (all_wmodes || all_bmodes) {
 		nemode = OpenHeader("nemode.h", argv);

@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.2 1997/02/09 17:44:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.3 1997/05/25 21:08:36 tom Exp $
  *
  */
 #include "estruct.h"
@@ -32,6 +32,8 @@ extern	int	fflush ( FILE *fp );
 #undef	free
 #endif	/* DOALLOC */
 
+static const char *bad_form;
+
 void
 Trace(const char *fmt, ...)
 {
@@ -44,7 +46,7 @@ Trace(const char *fmt, ...)
 		abort();
 
 	va_start(ap,fmt);
-	if (fmt != 0) {
+	if (fmt != bad_form) {
 		vfprintf(fp, fmt, ap);
 		va_end(ap);
 		(void)fflush(fp);
@@ -125,7 +127,7 @@ fail_alloc(char *msg, char *ptr)
 #if NO_LEAKS
 	show_alloc();
 #endif
-	Trace((char *)0);
+	Trace(bad_form);
 	abort();
 }
 

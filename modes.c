@@ -7,7 +7,7 @@
  * Original code probably by Dan Lawrence or Dave Conroy for MicroEMACS.
  * Major extensions for vile by Paul Fox, 1991
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.84 1997/03/30 22:39:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.86 1997/05/26 13:40:25 tom Exp $
  *
  */
 
@@ -22,25 +22,14 @@
 #define isLocalVal(valptr)          ((valptr)->vp == &((valptr)->v))
 #define makeLocalVal(valptr)        ((valptr)->vp = &((valptr)->v))
 
-/*
- * The symbol tables stored in FSM_CHOICES lists are sorted by the 'choice_name'
- * field, with a final null entry so that name-completion works on the lists.
- */
-#if OPT_ENUM_MODES
-#define ENUM_ILLEGAL   (-2)
-#define ENUM_UNKNOWN   (-1)
-#define END_CHOICES    { (char *)0, ENUM_ILLEGAL }
+/* FIXME */
+#define OPT_COLOR_CHOICES	OPT_COLOR
+#define OPT_BOOL_CHOICES	1
+#define OPT_POPUP_CHOICES	OPT_POPUPCHOICE
+#define OPT_BACKUP_CHOICES	OPT_FILEBACK
+#define OPT_HILITE_CHOICES	OPT_HILITEMATCH
 
-typedef struct {
-	const char * choice_name;
-	int    choice_code;
-} FSM_CHOICES;
-
-struct FSM {
-	const char * mode_name;
-	const FSM_CHOICES * choices;
-};
-#endif
+#include "nefsms.h"
 
 /*--------------------------------------------------------------------------*/
 
@@ -125,7 +114,7 @@ size_val(const struct VALNAMES *names, struct VAL *values)
 /*
  * Returns a mode-value formatted as a string
  */
-const char *
+char *
 string_mode_val(VALARGS *args)
 {
 	register const struct VALNAMES *names = args->names;
@@ -575,42 +564,6 @@ legal_glob_mode(const char *base)
  */
 #if OPT_ENUM_MODES
 
-	/*
-	 * These names and codes match the ANSI color codes.
-	 */
-static const
-FSM_CHOICES fsm_color_choices[] = {	/* names of colors */
-	{ "black",     0 },
-	{ "blue",      4 },
-	{ "cyan",      6 },
-#if DISP_TERMCAP || DISP_IBMPC	/* FIXME: implement this for all drivers */
-	{ "default",   ENUM_UNKNOWN },
-#endif
-	{ "green",     2 },
-	{ "magenta",   5 },
-	{ "red",       1 },
-	{ "white",     7 },
-	{ "yellow",    3 },
-	END_CHOICES
-	};
-
-static const
-FSM_CHOICES fsm_bool_choices[] = {
-	{ "false",     FALSE },
-	{ "true",      TRUE  },
-	END_CHOICES
-};
-
-#if OPT_POPUPCHOICE
-static const
-FSM_CHOICES fsm_popup_choices[] = {
-	{ "delayed",   POPUP_CHOICES_DELAYED},
-	{ "immediate", POPUP_CHOICES_IMMED},
-	{ "off",       POPUP_CHOICES_OFF},
-	END_CHOICES
-};
-#endif
-
 #if NEVER
 FSM_CHOICES fsm_error[] = {
 	{ "beep",      1},
@@ -620,77 +573,24 @@ FSM_CHOICES fsm_error[] = {
 };
 #endif
 
-#if OPT_FILEBACK
-static const
-FSM_CHOICES fsm_backupstyle[] = {
-	{ "off",       0},
-	{ ".bak",      1},
-#if SYS_UNIX
-	{ "tilde",     2},
-	/* "tilde_N_existing", */
-	/* "tilde_N", */
-#endif
-	END_CHOICES
-};
-#endif
-
-#if OPT_HILITEMATCH
-static const
-FSM_CHOICES fsm_mono_attributes[] = {
-	{ "bold",       VABOLD  },
-	{ "color",      VACOLOR },
-	{ "italic",     VAITAL  },
-	{ "none",       0       },
-	{ "reverse",    VAREV   },
-	{ "underline",  VAUL    },
-#if OPT_COLOR && FIXME_VM
-	{ "black",      VACOL_0 },  /* DOS-specific color lookup */
-	{ "red",        VACOL_1 },  /* etc.                      */
-	{ "green",      VACOL_2 },
-	{ "yellow",     VACOL_3 },
-	{ "blue",       VACOL_4 },
-	{ "magenta",    VACOL_5 },
-	{ "cyan",       VACOL_6 },
-	{ "white",      VACOL_7 },
-	{ "c0",     	VACOL_0 },  /* Color 0, generic color lookup */
-	{ "c1",     	VACOL_1 },  /* etc.                          */
-	{ "c2",     	VACOL_2 },
-	{ "c3",     	VACOL_3 },
-	{ "c4",     	VACOL_4 },
-	{ "c5",     	VACOL_5 },
-	{ "c6",     	VACOL_6 },
-	{ "c7",     	VACOL_7 },
-	{ "c8",     	VACOL_8 },
-	{ "c9",     	VACOL_9 },
-	{ "c10",    	VACOL_A },
-	{ "c11",    	VACOL_B },
-	{ "c12",    	VACOL_C },
-	{ "c13",    	VACOL_D },
-	{ "c14",    	VACOL_E },
-	{ "c15",    	VACOL_F },
-#endif
-	END_CHOICES
-};
-#endif
-
-static const
+static
 struct FSM fsm_tbl[] = {
 	{ "*bool",           fsm_bool_choices  },
-#if OPT_COLOR
+#if OPT_COLOR_CHOICES
 	{ "fcolor",          fsm_color_choices },
 	{ "bcolor",          fsm_color_choices },
 #endif
-#if OPT_POPUPCHOICE
+#if OPT_POPUP_CHOICES
 	{ "popup-choices",   fsm_popup_choices },
 #endif
 #if NEVER
 	{ "error",           fsm_error },
 #endif
-#if OPT_FILEBACK
-	{ "backup-style",    fsm_backupstyle },
+#if OPT_BACKUP_CHOICES
+	{ "backup-style",    fsm_backup_choices },
 #endif
-#if OPT_HILITEMATCH
-	{ "visual-matches",  fsm_mono_attributes },
+#if OPT_HILITE_CHOICES
+	{ "visual-matches",  fsm_hilite_choices },
 #endif
 };
 
@@ -1159,7 +1059,7 @@ delglobmode(int f GCC_UNUSED, int n GCC_UNUSED)	/* prompt and delete a global ed
  */
 /*ARGSUSED*/
 int
-chgd_autobuf(CHGD_ARGS)
+chgd_autobuf(VALARGS *args GCC_UNUSED, int glob_vals, int testing GCC_UNUSED)
 {
 	if (glob_vals)
 		sortlistbuffers();
@@ -1168,7 +1068,7 @@ chgd_autobuf(CHGD_ARGS)
 
 /*ARGSUSED*/
 int
-chgd_buffer(CHGD_ARGS)
+chgd_buffer(VALARGS *args GCC_UNUSED, int glob_vals, int testing GCC_UNUSED)
 {
 	if (!glob_vals) {	/* i.e., ":setl" */
 		if (curbp == 0)
@@ -1180,7 +1080,7 @@ chgd_buffer(CHGD_ARGS)
 }
 
 int
-chgd_charset(CHGD_ARGS)
+chgd_charset(VALARGS *args, int glob_vals, int testing)
 {
 	if (!testing) {
 		charinit();
@@ -1190,7 +1090,7 @@ chgd_charset(CHGD_ARGS)
 
 #if OPT_COLOR
 int
-chgd_color(CHGD_ARGS)
+chgd_color(VALARGS *args, int glob_vals, int testing)
 {
 	if (!testing) {
 		if (&args->local->vp->i == &gfcolor)
@@ -1202,12 +1102,110 @@ chgd_color(CHGD_ARGS)
 	}
 	return TRUE;
 }
+
+#endif	/* OPT_COLOR */
+
+#if OPT_EVAL
+static void
+set_fsm_choice(const char *name, const FSM_CHOICES *choices)
+{
+	size_t n;
+	for (n = 0; n < TABLESIZE(fsm_tbl); n++) {
+		if (!strcmp(name, fsm_tbl[n].mode_name)) {
+			fsm_tbl[n].choices = choices;
+			break;
+		}
+	}
+}
+#endif	/* OPT_EVAL */
+
+#if OPT_COLOR
+static int
+reset_color(int n)
+{
+	if (global_g_val(n) > ncolors) {
+		set_global_g_val(n, global_g_val(n) % ncolors);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+/*
+ * Set the number of colors to a subset of that which is configured.  The main
+ * use for this is to switch between 16-colors and 8-colors, though it should
+ * work for setting any power of 2 up to the NCOLORS value.
+ */
+int set_ncolors(int n)
+{
+	static int initialized;
+#if OPT_ENUM_MODES
+	static FSM_CHOICES *my_colors;
+	static FSM_CHOICES *my_hilite;
+	const FSM_CHOICES *the_colors, *the_hilite;
+	size_t s, d;
+#endif
+
+	if (n > NCOLORS || n < 2)
+		return FALSE;
+	if (!initialized)
+		initialized = n;
+	if (n > initialized)
+		return FALSE;
+	ncolors = n;
+	if (reset_color(GVAL_FCOLOR)
+	 || reset_color(GVAL_BCOLOR)) {
+		vile_refresh(FALSE,0);
+	}
+
+#if OPT_ENUM_MODES
+	if (ncolors == NCOLORS) {
+		the_colors = fsm_color_choices;
+		the_hilite = fsm_hilite_choices;
+	} else {
+		my_colors = typecallocn(FSM_CHOICES,TABLESIZE(fsm_color_choices));
+		my_hilite = typecallocn(FSM_CHOICES,TABLESIZE(fsm_hilite_choices));
+		the_colors = my_colors;
+		the_hilite = my_hilite;
+		for (s = d = 0; s < TABLESIZE(fsm_color_choices)-1; s++) {
+			my_colors[d] = fsm_color_choices[s];
+			if (my_colors[d].choice_code > 0) {
+				if (!(my_colors[d].choice_code %= ncolors))
+					continue;
+			}
+			if (strncmp(my_colors[d].choice_name, "bright", 6))
+				d++;
+		}
+		my_colors[d].choice_name = 0;
+
+		for (s = d = 0; s < TABLESIZE(fsm_hilite_choices)-1; s++) {
+			my_hilite[d] = fsm_hilite_choices[s];
+			if (my_hilite[d].choice_code & VASPCOL) {
+				unsigned code = my_hilite[d].choice_code % NCOLORS;
+				if (code != 0) {
+					if ((code %= ncolors) == 0)
+						continue;
+					my_hilite[d].choice_code = VASPCOL | code;
+				}
+				if (strncmp(my_hilite[d].choice_name, "bright", 6))
+					d++;
+			} else {
+				d++;
+			}
+		}
+		my_hilite[d].choice_name = 0;
+	}
+	set_fsm_choice("fcolor", the_colors);
+	set_fsm_choice("bcolor", the_colors);
+	set_fsm_choice("visual-matches", the_hilite);
+#endif /* OPT_ENUM_MODES */
+	return TRUE;
+}
 #endif	/* OPT_COLOR */
 
 	/* Report mode that cannot be changed */
 /*ARGSUSED*/
 int
-chgd_disabled(CHGD_ARGS)
+chgd_disabled(VALARGS *args, int glob_vals GCC_UNUSED, int testing GCC_UNUSED)
 {
 	mlforce("[Cannot change \"%s\" ]", args->names->name);
 	return FALSE;
@@ -1216,7 +1214,7 @@ chgd_disabled(CHGD_ARGS)
 	/* Change "fences" mode */
 /*ARGSUSED*/
 int
-chgd_fences(CHGD_ARGS)
+chgd_fences(VALARGS *args, int glob_vals GCC_UNUSED, int testing)
 {
 	if (!testing) {
 		/* was even number of fence pairs specified? */
@@ -1236,7 +1234,7 @@ chgd_fences(CHGD_ARGS)
 
 	/* Change a "major" mode */
 int
-chgd_major(CHGD_ARGS)
+chgd_major(VALARGS *args, int glob_vals, int testing)
 {
 	/* prevent major-mode changes for scratch-buffers */
 	if (testing) {
@@ -1252,7 +1250,7 @@ chgd_major(CHGD_ARGS)
 
 	/* Change a major mode that affects the windows on the buffer */
 int
-chgd_major_w(CHGD_ARGS)
+chgd_major_w(VALARGS *args, int glob_vals, int testing)
 {
 	if (testing) {
 		if (!chgd_major(args, glob_vals, testing))
@@ -1267,7 +1265,7 @@ chgd_major_w(CHGD_ARGS)
 	/* Change something on the mode/status line */
 /*ARGSUSED*/
 int
-chgd_status(CHGD_ARGS)
+chgd_status(VALARGS *args GCC_UNUSED, int glob_vals, int testing)
 {
 	if (!testing) {
 		set_winflags(glob_vals, WFSTAT);
@@ -1278,7 +1276,7 @@ chgd_status(CHGD_ARGS)
 	/* Change a mode that affects the windows on the buffer */
 /*ARGSUSED*/
 int
-chgd_window(CHGD_ARGS)
+chgd_window(VALARGS *args GCC_UNUSED, int glob_vals, int testing)
 {
 	if (!testing) {
 		set_winflags(glob_vals, WFHARD);
@@ -1290,7 +1288,7 @@ chgd_window(CHGD_ARGS)
 #if OPT_WORKING
 /*ARGSUSED*/
 int
-chgd_working(CHGD_ARGS)
+chgd_working(VALARGS *args GCC_UNUSED, int glob_vals, int testing GCC_UNUSED)
 {
 	if (glob_vals)
 		imworking(0);
@@ -1301,7 +1299,7 @@ chgd_working(CHGD_ARGS)
 	/* Change the xterm-mouse mode */
 /*ARGSUSED*/
 int
-chgd_xterm(CHGD_ARGS)
+chgd_xterm(VALARGS *args GCC_UNUSED, int glob_vals, int testing GCC_UNUSED)
 {
 #if	OPT_XTERM
 	if (glob_vals) {
@@ -1318,7 +1316,7 @@ chgd_xterm(CHGD_ARGS)
 	/* Change a mode that affects the search-string highlighting */
 /*ARGSUSED*/
 int
-chgd_hilite(CHGD_ARGS)
+chgd_hilite(VALARGS *args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing)
 {
 	if (!testing)
 		attrib_matches();

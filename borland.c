@@ -9,7 +9,7 @@
  * Note: Visual flashes are not yet supported.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.18 1996/11/07 02:00:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.19 1997/05/26 11:46:46 tom Exp $
  *
  */
 
@@ -59,7 +59,7 @@ static	void	borkclose (void);
 #if OPT_COLOR
 static	void	borfcol   (int);
 static	void	borbcol   (int);
-static	void	borspal   (char *);
+static	void	borspal   (const char *);
 #endif
 
 #if OPT_ICURSOR
@@ -68,9 +68,8 @@ static	void	boricursor(int);
 
 int	cfcolor = -1;		/* current forground color */
 int	cbcolor = -1;		/* current background color */
-int	ctrans[NCOLORS];
 /* ansi to ibm color translation table */
-char *initpalettestr = "0 4 2 14 1 5 3 7";  /* 15 is too bright */
+static	const char *initpalettestr = "0 4 2 6 1 5 3 7 8 12 10 14 9 13 11 15";
 /* black, red, green, yellow, blue, magenta, cyan, white   */
 
 static	void	borscroll (int,int,int);
@@ -190,13 +189,10 @@ borbcol(int color)		/* set the current background color */
 }
 
 static void
-borspal(char *thePalette)	/* reset the palette registers */
+borspal(const char *thePalette)	/* reset the palette registers */
 {
 	borflush();
-    	/* this is pretty simplistic.  big deal. */
-	(void)sscanf(thePalette,"%i %i %i %i %i %i %i %i",
-	    	&ctrans[0], &ctrans[1], &ctrans[2], &ctrans[3],
-	    	&ctrans[4], &ctrans[5], &ctrans[6], &ctrans[7] );
+	set_ctrans(thePalette);
 }
 #endif
 

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.243 1997/05/07 10:44:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.244 1997/05/26 13:30:02 tom Exp $
  *
  */
 
@@ -56,8 +56,8 @@ extern int gotoeob (int f, int n);
 
 /* bind.c */
 extern int no_such_function (const char *fname);
-extern int startup (const char *sfname);
-extern const char *flook (const char *fname, int hflag);
+extern int startup (char *sfname);
+extern char *flook (char *fname, int hflag);
 extern char *kcod2pstr (int c, char *seq);
 extern int kcod2escape_seq (int c, char *ptr);
 extern int fnc2kcod (const CMDFUNC *);
@@ -85,7 +85,7 @@ extern char *give_accelerator ( char * );
 
 /* buffer.c */
 extern WINDOW *bp2any_wp (BUFFER *bp);
-extern void imply_alt (const char *fname, int copy, int lockfl);
+extern void imply_alt (char *fname, int copy, int lockfl);
 extern BUFFER *find_b_file (const char *fname);
 extern BUFFER *find_b_hist(int number);
 extern BUFFER *find_alt (void);
@@ -202,52 +202,67 @@ extern int is_falsem (const char *val);
 extern int stol (const char *val);
 #endif
 #if OPT_EVAL
-extern const char *gtenv (const char *vname);
+extern char *gtenv (const char *vname);
 #endif
 #if OPT_EVAL || !SMALLER
 extern char *mkupper (char *str);
 #endif
 extern char *mklower (char *str);
 extern char *mktrimmed (char *str);
+extern const char *skip_cblanks (const char *str);
+extern const char *skip_cstring (const char *str);
+extern const char *skip_ctext (const char *str);
+#ifdef const
+#define skip_blanks(s) skip_cblanks(s)
+#define skip_string(s) skip_cstring(s)
+#define skip_text(s) skip_ctext(s)
+#else
+extern char *skip_blanks (char *str);
+extern char *skip_string (char *str);
+extern char *skip_text (char *str);
+#endif
 #if OPT_EVAL
 extern int set_variable (char *name);
 #endif
 #if OPT_EVAL || OPT_COLOR
 extern int set_palette (const char *value);
 #endif
+#if OPT_COLOR
+extern void set_ctrans (const char *value);
+#endif
 
 /* exec.c */
 extern int end_named_cmd (void);
 extern int more_named_cmd (void);
 extern int dobuf (BUFFER *bp);
-extern int dofile (const char *fname);
+extern int dofile (char *fname);
 extern int execute (const CMDFUNC *execfunc, int f, int n);
 #if OPT_PROCEDURES
 extern int run_procedure (const char *name);
 #endif
 
 /* file.c */
-extern time_t file_modified (const char *path);
+extern time_t file_modified (char *path);
 #ifdef MDCHK_MODTIME
 extern int ask_shouldchange (BUFFER *bp);
 extern int get_modtime (BUFFER *bp, time_t *the_time);
-extern void set_modtime (BUFFER *bp, const char *fn);
-extern int check_modtime (BUFFER *bp, const char *fn);
+extern void set_modtime (BUFFER *bp, char *fn);
+extern int check_modtime (BUFFER *bp, char *fn);
 extern int check_visible_modtimes (void);
 #endif
 extern void set_last_file_edited(const char *);
 extern int no_such_file (const char *fname);
-extern int same_fname (const char *fname, BUFFER *bp, int lengthen);
-extern int getfile (const char *fname, int lockfl);
-extern int readin (const char *fname, int lockfl, BUFFER *bp, int mflg);
+extern int same_fname (char *fname, BUFFER *bp, int lengthen);
+extern int getfile (char *fname, int lockfl);
+extern int readin (char *fname, int lockfl, BUFFER *bp, int mflg);
 extern int bp2readin (BUFFER *bp, int lockfl);
 extern int slowreadf (BUFFER *bp, int *nlinep);
 extern void makename (char *bname, const char *fname);
 extern void unqname (char *name);
 extern int writeout (const char *fn, BUFFER *bp, int forced, int msgf);
 extern int writeregion (void);
-extern int kwrite (const char *fn, int msgf);
-extern int ifile (const char *fname, int belowthisline, FILE *haveffp);
+extern int kwrite (char *fn, int msgf);
+extern int ifile (char *fname, int belowthisline, FILE *haveffp);
 extern SIGT imdying (int ACTUAL_SIG_ARGS);
 extern void markWFMODE (BUFFER *bp);
 #if OPT_ENCRYPT
@@ -267,12 +282,12 @@ extern int mlreply_dir (const char *prompt, TBUFF **buf, char *result);
 extern char *filec_expand (void);
 
 /* fileio.c */
-extern int ffropen (const char *fn);
-extern int ffwopen (const char *fn, int forced);
-extern int ffaccess (const char *fn, int mode);
-extern int ffronly (const char *fn);
+extern int ffropen (char *fn);
+extern int ffwopen (char *fn, int forced);
+extern int ffaccess (char *fn, int mode);
+extern int ffronly (char *fn);
 extern off_t ffsize (void);
-extern int ffexists (const char *p);
+extern int ffexists (char *p);
 #if !(SYS_MSDOS || SYS_WIN31)
 extern int ffread (char *buf, long len);
 extern void ffseek (long n);
@@ -370,7 +385,7 @@ extern int inschar (int c, int *backsp_limit_p);
 extern int previndent (int *bracefp);
 extern int indentlen (LINE *lp);
 #if OPT_EVAL
-extern const char *current_modename (void);
+extern char *current_modename (void);
 #endif
 #if SMALLER	/* cancel 'neproto.h' */
 extern int newline (int f, int n);
@@ -442,7 +457,7 @@ void purge_msgs (void);
 /* modes.c */
 extern int string_to_number (const char *from, int *np);
 extern int adjvalueset (const char *cp, int setting, int global, VALARGS *args);
-extern const char *string_mode_val (VALARGS *args);
+extern char *string_mode_val (VALARGS *args);
 extern REGEXVAL *new_regexval (const char *pattern, int magic);
 extern void copy_mvals (int maximum, struct VAL *dst, struct VAL *src);
 #if OPT_UPBUFF
@@ -451,16 +466,19 @@ extern void save_vals (int maximum, struct VAL *gbl, struct VAL *dst, struct VAL
 extern void free_local_vals (const struct VALNAMES *names, struct VAL *gbl, struct VAL *val);
 extern int find_mode (const char *mode, int global, VALARGS *args);
 extern int mode_eol (EOL_ARGS);
+#if OPT_EVAL || OPT_COLOR
+extern int set_ncolors(int ncolors);
+#endif
 
 /* npopen.c */
 #if SYS_UNIX || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
-extern FILE * npopen (const char *cmd, const char *type);
+extern FILE * npopen (char *cmd, const char *type);
 extern void npclose (FILE *fp);
-extern int inout_popen (FILE **fr, FILE **fw, const char *cmd);
+extern int inout_popen (FILE **fr, FILE **fw, char *cmd);
 extern int softfork (void);
 #endif
 #if SYS_UNIX || SYS_OS2 || SYS_WINNT
-extern int system_SHELL (const char *cmd);
+extern int system_SHELL (char *cmd);
 #endif
 #if SYS_MSDOS || SYS_WIN31 || (SYS_OS2 && CC_CSETPP) || TEST_DOS_PIPES
 extern void npflush (void);
@@ -478,27 +496,27 @@ extern int operator (int f, int n, OpsFunc fn, const char *str);
 
 /* path.c */
 #if OPT_MSDOS_PATH
-extern char * is_msdos_drive (const char *path);
+extern char * is_msdos_drive (char *path);
 #endif
 #if OPT_VMS_PATH
 extern int is_vms_pathname (const char *path, int option);
-extern char * vms_pathleaf (const char *path);
-extern char * unix_pathleaf (const char *path);
+extern char * vms_pathleaf (char *path);
+extern char * unix_pathleaf (char *path);
 #endif
 #if SYS_UNIX
 extern char * home_path (char *path);
 #endif
-extern char * pathleaf (const char *path);
-extern char * pathcat (char *dst, const char *path, const char *leaf);
-extern char * last_slash (const char *fn);
+extern char * pathleaf (char *path);
+extern char * pathcat (char *dst, const char *path, char *leaf);
+extern char * last_slash (char *fn);
 extern char * shorten_path (char *path, int keep_cwd);
 extern char * lengthen_path (char *path);
-extern int is_pathname (const char *path);
-extern int maybe_pathname (const char *fn);
-extern char * is_appendname (const char *fn);
+extern int is_pathname (char *path);
+extern int maybe_pathname (char *fn);
+extern char * is_appendname (char *fn);
 extern int is_internalname (const char *fn);
 extern int is_scratchname (const char *fn);
-extern int is_directory (const char *path);
+extern int is_directory (char *path);
 #if (SYS_UNIX||SYS_VMS||OPT_MSDOS_PATH) && OPT_PATHLOOKUP
 extern const char *parse_pathlist (const char *list, char *result);
 #endif
@@ -508,6 +526,9 @@ extern void bsl_to_sl_inplace (char *p);
 #endif
 #if OPT_CASELESS && SYS_OS2
 extern int is_case_preserving (const char *name);
+#endif
+#if OPT_VMS_PATH
+extern char *strip_version(char *path);
 #endif
 
 /* random.c */
@@ -526,9 +547,9 @@ extern int gocol (int n);
 extern int is_user_fence (int ch, int *sdirp);
 extern int fmatchindent (int c);
 extern void catnap (int milli, int watchinput);
-extern const char * current_directory (int force);
+extern char * current_directory (int force);
 #if OPT_EVAL
-extern const char * previous_directory (void);
+extern char * previous_directory (void);
 #endif
 extern int set_directory (const char *dir);
 extern void ch_fname (BUFFER *bp, const char *fname);
@@ -599,7 +620,7 @@ extern int tttypahead (void);
 extern int open_terminal (TERM *termp);
 extern void null_t_setfor (int f);
 extern void null_t_setback (int b);
-extern void null_t_setpal (char *p);
+extern void null_t_setpal (const char *p);
 extern void null_t_scroll (int f, int t, int n);
 extern void null_t_pflush (void);
 extern void null_t_icursor (int c);
@@ -764,7 +785,7 @@ extern VIDEO *scread (VIDEO *vp, int row);
 extern const char * curr_dir_on_drive (int drive);
 extern int curdrive (void);
 extern int setdrive (int d);
-extern void update_dos_drv_dir (const char * cwd);
+extern void update_dos_drv_dir (char * cwd);
 # if CC_WATCOM
      extern int dos_crit_handler (unsigned deverror, unsigned errcode, unsigned *devhdr);
 # else

@@ -4,7 +4,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.80 1997/03/31 00:40:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.81 1997/05/25 22:59:30 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -298,13 +298,13 @@ tag_search(char *tag, int taglen, int initial)
  *	separated word in "path", counting from 0
  */
 static void
-nth_name(char *buf, char *path, int n)
+nth_name(char *buf, const char *path, int n)
 {
 	while (n-- > 0) {
-		while (*path &&  isspace(*path)) path++;
-		while (*path && !isspace(*path)) path++;
+		path = skip_cblanks(path);
+		path = skip_ctext(path);
 	}
-	while (*path &&  isspace(*path)) path++;
+	path = skip_cblanks(path);
 	while (*path && !isspace(*path)) *buf++ = *path++;
 	*buf = EOS;
 }
@@ -316,7 +316,7 @@ gettagsfile(int n, int *endofpathflagp)
 #ifdef	MDCHK_MODTIME
 	time_t current;
 #endif
-	const char *tagsfile;
+	char *tagsfile;
 	BUFFER *tagbp;
 	char tagbufname[NBUFN];
 	char tagfilename[NFILEN];
@@ -405,7 +405,7 @@ cheap_tag_scan(LINEPTR oldlp, char *name, SIZE_T taglen)
 	retlp = NULL;
 	lp = lforw(oldlp);
 	while (lp != oldlp) {
-		if (llength(lp) > namelen) {
+		if (llength(lp) > (int)namelen) {
 			if (!strncmp(lp->l_text, name, namelen)) {
 				retlp = lp;
 				break;
@@ -500,6 +500,9 @@ pushuntag(char *fname, int lineno, char *tag)
 		free_untag(utp);
 		return;
 	}
+#if OPT_VMS_PATH
+	strip_version(utp->u_fname);
+#endif
 
 	utp->u_lineno = lineno;
 	utp->u_stklink = untaghead;

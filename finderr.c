@@ -2,7 +2,7 @@
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  * rewritten to use regular expressions, 1995 by T.Dickey (dickey@clark.net)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.62 1997/04/11 11:16:15 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.64 1997/05/26 14:29:03 tom Exp $
  *
  */
 
@@ -291,11 +291,11 @@ load_patterns(void)
  * if count is out of range.
  */
 static ERR_PATTERN *
-next_pattern(int count)
+next_pattern(ALLOC_T count)
 {
 	ERR_PATTERN *result = 0;
 
-	if (count >= 0 && count < exp_count)
+	if (count < exp_count)
 		result = &exp_table[count];
 	return (result);
 }
@@ -396,7 +396,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 		 * last time.
 		 */
 		if (lisreal(dotp)) {
-			int	count = 0;
+			ALLOC_T	count = 0;
 
 			while ((exp = next_pattern(count++)) != 0
 			  && !lregexec(exp->exp_comp, dotp, 0, llength(dotp)))

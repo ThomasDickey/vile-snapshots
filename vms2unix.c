@@ -3,7 +3,7 @@
  *
  *	Miscellaneous routines for UNIX/VMS compatibility.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.26 1997/05/01 16:29:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.27 1997/05/26 13:15:44 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -152,7 +152,7 @@ leading_uc(char * dst, char * src)
 	*dst = EOS;
 	if ((*base) && (dst = getenv(base)) != 0) {
 		c = strlen(base);
-		while (isspace(*dst))	dst++;
+		dst = skip_blanks(dst);
 		(void)strcpy(base, dst);
 		return (c);
 	}
@@ -188,7 +188,7 @@ path_suffix(char *path)
 	char *leaf = pathleaf(path);
 	char *type = strchr(leaf, '.');
 	if (type == 0)
-		type = strend(leaf);
+		type = skip_string(leaf);
 	return type;
 }
 
@@ -197,7 +197,7 @@ path_version(char *path)
 {
 	char *vers = strchr(path, SEMICOLON);
 	if (vers == 0)
-		vers = strend(path);
+		vers = skip_string(path);
 	return vers;
 }
 
@@ -299,7 +299,7 @@ unix2vms_path(char *dst, const char *src)
 	&&  (*s == SLASHC)) {
 		leaf_dot = DotPrefix(++s);
 		if ((t = strchr(s, SLASHC)) == 0)
-			t = strend(s);
+			t = skip_string(s);
 		else if (t[1] == EOS)
 			on_top = TRUE;
 		while (s < t)
@@ -451,7 +451,7 @@ char *
 vms_path2dir(const char *src)
 {
 	static	char	buffer[NFILEN];
-	register char	*s	= strend(strcpy(buffer, src));
+	register char	*s	= skip_string(strcpy(buffer, src));
 
 	if (s != buffer && *(--s) == RBRACK) {
 		(void)strcpy(s, DirType);
@@ -502,8 +502,7 @@ vms2unix_path(char *dst, const char *src)
 		*s = strcpy(tmp, src),	/* ... to permit src == dst */
 		*d;
 
-	if ((s = strchr(s, SEMICOLON)) != NULL)	/* trim off version */
-		*s = EOS;
+	strip_version(s);
 
 	/* look for node specification */
 	if ((s = strchr(base, COLON)) != 0
@@ -685,8 +684,7 @@ int	vms_fix_umask (const char *filespec)
 	char	thisspec[NAM$C_MAXRSS],	/* filename string area	*/
 		prevspec[NAM$C_MAXRSS],	/* filename string area	*/
 		rsa[NAM$C_MAXRSS],	/* resultant string area	*/
-		esa[NAM$C_MAXRSS],	/* expanded string area (search)*/
-		*s;
+		esa[NAM$C_MAXRSS];	/* expanded string area (search)*/
 
 	unsigned status;
 
@@ -712,8 +710,7 @@ int	vms_fix_umask (const char *filespec)
 	 * if the user is going to write a new version in the middle of a range,
 	 * but is close enough.
 	 */
-	if ((s = strchr(strcpy(prevspec, filespec), ';')))
-		*s = EOS;
+	strip_version(strcpy(prevspec, filespec), ';');
 	strcat(prevspec, ";-1");
 
 	fab = cc$rms_fab;

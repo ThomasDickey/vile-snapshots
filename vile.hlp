@@ -84,7 +84,7 @@ Command Prefixes
 	how you count them) command "prefixes" exist.  These keystrokes,
 	in combination with another key, can be bound as a pair to execute
 	any vile function.  The default values for these prefixes are
-                Key:                    Bound to dummy function:
+		Key:			Bound to dummy function:
 		^X     Control-X 	cntl_x-prefix
 		^A     Control-A 	cntl_a-prefix
 		#      poundsign	function-prefix
@@ -1433,21 +1433,15 @@ Editor modes
 		emphasized according to the value of this mode: "none",
 		"underline", "bold", "italic", or "reverse".  Additionally,
 		on systems which support color, this mode may be used to set
-		the text foreground color using one of these values:
-
-		Environment	Mode Value
-		===========	==========
-		DOS		black (or "c0"), red (c1), green (c2), 
-				yellow (c3), blue (c4), magenta (c5), 
-				cyan (c6), white (c7)
+		the text foreground color using any of the color values.
 
 		The '=' command can be used to clear this sort of
-                highlighting, until the next search is done for a different
-                pattern.  Note that setting this mode can significantly
-                slow down the editor's operation when complex or frequently
-                occurring patterns are used, since vile will need to scan
-                the entire buffer for matches on any change to the buffer. 
-                (B)
+		highlighting, until the next search is done for a different
+		pattern.  Note that setting this mode can significantly
+		slow down the editor's operation when complex or frequently
+		occurring patterns are used, since vile will need to scan
+		the entire buffer for matches on any change to the buffer. 
+		(B)
 
 	warn-rename  When using ":e" to find a file that has the same name
 		as another buffer, vile will normally offer for you to edit
@@ -3217,12 +3211,13 @@ DOS specifics
 	"local" mode, so that the rest of your buffers will be unaffected.
 
 	If you wish to change the screen colors which correspond to vile's
-	internal notion of black, red, green, yellow, blue, magenta, cyan,
-	and white, put a line in your vile.rc which resets the "palette"
-	variable.  By default its value is "0 4 2 14 1 5 3 7", which
-	associates each of the above colors with the appropriate PC color
-	attribute.  The palette values are masked with 7 before being used
-	as background colors, to prevent blinking characters.
+	internal notion of black, red, green, yellow, blue, magenta, cyan, and
+	white, and their bright version, put a line in your vile.rc which
+	resets the "palette" variable.  By default its value is "0 4 2 6 1 5 3
+	7 8 12 10 14 9 13 11 15" which associates each of the above colors with
+	the appropriate PC color attribute.  Under MS-DOS, the palette values
+	are masked with 7 before being used as background colors, to prevent
+	blinking characters.
 
 
 Differences from vi
@@ -3461,4 +3456,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.321 1997/05/07 22:54:07 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.322 1997/05/26 13:34:49 tom Exp $

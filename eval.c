@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.140 1997/03/30 22:46:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.141 1997/05/26 13:28:48 tom Exp $
  *
  */
 
@@ -47,7 +47,7 @@ static	const char **list_of_modes;	/* list for name-completion */
 
 static	SIZE_T	s2size ( char *s );
 static	char *	getkill (void);
-static	const char * ltos ( int val );
+static	char *	ltos ( int val );
 static	char *	s2offset ( char *s, char *n );
 static	int	PromptAndSet ( char *var, int f, int n );
 static	int	SetVarValue ( VDESC *var, char *value );
@@ -378,11 +378,11 @@ const char *vname)	/* name of user variable to fetch */
 	return (errorm);
 }
 
-const char *
+char *
 gtenv(const char *vname)	/* name of environment variable to retrieve */
 {
 	register int vnum;	/* ordinal number of var referenced */
-	register const char *value = errorm;
+	register char *value = errorm;
 	BUFFER *bp;
 
 	if (vname[0] != EOS) {
@@ -427,7 +427,7 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 		ElseIf( EVSRES )	value = sres;
 		ElseIf( EVDEBUG )	value = ltos(macbug);
 		ElseIf( EVSTATUS )	value = ltos(cmdstatus);
-		ElseIf( EVPALETTE )	value = palstr;
+		ElseIf( EVPALETTE )	value = tb_values(palstr);
 		ElseIf( EVLASTKEY )	value = l_itoa(lastkey);
 		ElseIf( EVCURCHAR )
 			if (curbp && !is_empty_buf(curbp)) {
@@ -500,10 +500,16 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 
 		ElseIf( EVSTARTUP_PATH ) value = startup_path;
 
+#if OPT_COLOR
+		ElseIf( EVNCOLORS )	value = l_itoa(ncolors);
+#endif
+
 		ElseIf( EVNTILDES )	value = l_itoa(ntildes);
 
 		EndIf
 	}
+	if (value == 0)
+		value = errorm;
 	return value;
 }
 
@@ -903,6 +909,10 @@ char *value)	/* value to set to */
 		ElseIf( EVEXITHOOK )   (void)strcpy(exithook, value);
 #endif
 
+#if OPT_COLOR
+		ElseIf( EVNCOLORS )	status = set_ncolors(atoi(value));
+#endif
+
 		ElseIf( EVNTILDES )
 			ntildes = atoi(value);
 			if (ntildes > 100)
@@ -967,6 +977,75 @@ char *value)	/* value to set to */
 }
 #endif
 
+const char *
+skip_cblanks(const char *src)
+{
+	while (isspace(*src))
+		src++;
+	return src;
+}
+
+const char *
+skip_cstring(const char *src)
+{
+	return src + strlen(src);
+}
+
+const char *
+skip_ctext(const char *src)
+{
+	while (*src != EOS && !isspace(*src))
+		src++;
+	return src;
+}
+
+/* If we've #define'd const, it's because it doesn't work.  Conversely, if
+ * it's not #define'd, we really need distinct string functions.
+ */
+#ifndef const
+char *
+skip_blanks(char *src)
+{
+	while (isspace(*src))
+		src++;
+	return src;
+}
+
+char *
+skip_string(char *src)
+{
+	return src + strlen(src);
+}
+
+char *
+skip_text(char *src)
+{
+	while (*src != EOS && !isspace(*src))
+		src++;
+	return src;
+}
+#endif
+
+#if OPT_COLOR
+void
+set_ctrans(const char *thePalette)
+{
+	int n = 0, value;
+	char *next;
+
+	while (*thePalette != EOS) {
+		thePalette = skip_cblanks(thePalette);
+		value = (int) strtol(thePalette, &next, 0);
+		if (next == thePalette)
+			break;
+		thePalette = next;
+		ctrans[n] = value;
+		if (++n >= NCOLORS)
+			break;
+	}
+}
+#endif
+
 /*
  * This function is used in several terminal drivers.
  */
@@ -974,10 +1053,10 @@ char *value)	/* value to set to */
 int
 set_palette(const char *value)
 {
-	(void)strncpy0(palstr, value, (SIZE_T)(NSTRING));
+	palstr = tb_scopy(&palstr, value);
 #if OPT_COLOR
 	if (term.t_setpal != null_t_setpal) {
-		TTspal(palstr);
+		TTspal(tb_values(palstr));
 		vile_refresh(FALSE,0);
 		return TRUE;
 	}
@@ -1115,7 +1194,7 @@ const char *tokn)		/* token to evaluate */
 				(void)strncpy(buf,
 					bp->b_dot.l->l_text + bp->b_dot.o,
 					(SIZE_T)blen);
-				buf[blen] = EOS;
+				buf[blen] = (char)EOS;
 
 				/* and step the buffer's line ptr
 					ahead a line */
@@ -1235,7 +1314,7 @@ const char *tokn GCC_UNUSED)	/* label name to find */
 	return(1);
 }
 
-static const char *
+static char *
 ltos(		/* numeric logical to string logical */
 int val)	/* value to translate */
 {
@@ -1288,8 +1367,7 @@ mktrimmed(register char *str)	/* trim whitespace */
 		if (isspace(*str)) {
 			if (dst != base)
 				*dst++ = ' ';
-			while (isspace(*str))
-				str++;
+			str = skip_blanks(str);
 		} else {
 			*dst++ = *str++;
 		}

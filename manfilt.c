@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/manfilt.c,v 1.19 1997/03/14 10:38:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/manfilt.c,v 1.20 1997/05/25 23:04:38 tom Exp $
  *
  */
 
@@ -138,7 +138,7 @@ extern int main ( int argc, char **argv );
 
 static CHARCELL * allocate_cell ( void );
 static LINEDATA * allocate_line ( void );
-static int ansi_escape ( FILE *ifp, int level, int ident );
+static int ansi_escape ( FILE *ifp );
 static int cell_code ( LINEDATA *line, size_t col);
 static int half_down ( int level );
 static int half_up ( int level );
@@ -274,7 +274,7 @@ put_cell(int c, int level, int ident)
  * Interpret equivalent overstrike/underline for an ANSI escape sequence.
  */
 static int
-ansi_escape(FILE *ifp, int level, int ident)
+ansi_escape(FILE *ifp)
 {
 	int	code = ATR_NORMAL;
 	int	c;
@@ -487,7 +487,7 @@ ManFilter(FILE *ifp)
 		case ESCAPE:
 			switch (fgetc(ifp)) {
 			case '[':
-				esc_mode = ansi_escape(ifp, ident, level);
+				esc_mode = ansi_escape(ifp);
 				break;
 			case '\007':
 			case '7':

@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.104 1997/03/15 16:00:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.105 1997/05/25 23:06:36 tom Exp $
  *
  */
 
@@ -905,7 +905,7 @@ index2reg(int c)
 	else if (c == SEL_KREG)
 		n = '.';
 #endif
-	else if (c >= 10 && c < TABLESIZE(kbs))
+	else if (c >= 10 && c < (int)TABLESIZE(kbs))
 		n = (c - 10 + 'a');
 	else
 		n = '?';

@@ -1,12 +1,30 @@
 Changes for vile 7.2 (released ??? ??? ??, 1997)
 
+(tom)	970526 (d)
+	+ add $ncolors variable to allow run-time modification of the meaning
+	  of colors (e.g., white).
+	+ change $palette to a dynamically allocated string.
+	+ modify termcap and IBM terminal drivers to support 16 colors.  Note
+	  that the termcap driver can do this only when configured against a
+	  terminfo library (inspired by a patch from Clark Morgan).
+	+ modify mktbls to generate the enumerated choices tables (i.e., for
+	  color, visual-matches) to simplify ifdef'ing these between the
+	  8-color and 16-color configurations.
+	+ undo some of the const parameters of functions, thereby eliminating
+	  most of the places where casts were used to remove const.
+	+ modify VMS processing of tags to strip file's version number
+	  (adapted from fix by Adam Denton <adenton@genre.com>).
+	+ modify bclear() to free attributes before removing the buffer's
+	  lines, thereby making it faster (patch by Ian Jamison).
+
 (tom)	970513 (c)
 	+ set local buffer mode for 'dos' in slowreadf(), which fixes the
 	  problem of that function modifying the global mode when piping a file
 	  to vile, hence causing syntax errors in vile.rc when it contains
-	  trailing carriage-returns (file.c).
+	  trailing carriage-returns (file.c) (analysis by Clark Morgan).
 	+ correct missing VASEL flag that caused 'q' command on OS/2 to not
-	  display highlighting, missed in 7.0b (os2vio.c).
+	  display highlighting, missed in 7.0b (os2vio.c) (reported by George
+	  Eccles <geccles@ibm.net>)
 	+ implement 'flash' for WinNT (ntconio.c)
 
 (tom)	970513 (b)

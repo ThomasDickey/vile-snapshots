@@ -3,7 +3,7 @@
  * Modified from a really old version of "borland.c" (before the VIO
  * stuff went in there.)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.10 1997/05/15 01:02:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.11 1997/05/26 13:41:40 tom Exp $
  */
 
 #include "estruct.h"
@@ -54,11 +54,11 @@ static	void	vio_flush  (void);
 #if OPT_COLOR
 static	void	vio_fcol   (int);
 static	void	vio_bcol   (int);
-static	void	vio_spal   (char *);
+#define vio_spal   set_ctrans
 #else
 #define	vio_fcol   null_t_setfor
 #define	vio_bcol   null_t_setback
-#define	vio_spal   null_t_setpal
+#define vio_spal   null_t_setpal
 #endif
 
 #if	SCROLLCODE
@@ -72,18 +72,7 @@ static	int	scinit     (int);
 int	cfcolor = -1;		/* current foreground color */
 int	cbcolor = -1;		/* current background color */
 
-/* ANSI to IBM color translation table: */
-int	ctrans[NCOLORS] = 
-{
-	0,		/* black */
-	4,		/* red */
-	2,		/* green */
-	14,		/* yellow */
-	1,		/* blue */
-	5,		/* magenta */
-	3,		/* cyan */
-	7		/* white */
-};
+static	const char *initpalettestr = "0 4 2 6 1 5 3 7 8 12 10 14 9 13 11 15";
 
 /*
  * Standard terminal interface dispatch table. Most of the fields point into
@@ -117,7 +106,7 @@ TERM term = {
 	vio_cres,
 	vio_fcol,
 	vio_bcol,
-	vio_spal,
+	set_ctrans,
 	vio_scroll,
 	null_t_pflush,
 	null_t_icursor,
@@ -252,18 +241,6 @@ vio_bcol(int color)
 
 	cbcolor  = color;
 	TextAttr = AttrColor(cbcolor, cfcolor);
-}
-
-/*
- * Reset the palette registers.
- */
-void
-vio_spal(char *thePalette)
-{
-	/* this is pretty simplistic.  big deal. */
-	(void)sscanf(thePalette, "%i %i %i %i %i %i %i %i",
-	    	&ctrans[0], &ctrans[1], &ctrans[2], &ctrans[3],
-	    	&ctrans[4], &ctrans[5], &ctrans[6], &ctrans[7]);
 }
 #endif
 
@@ -432,6 +409,7 @@ vio_open(void)
 	}
 
 #if OPT_COLOR
+	set_ctrans(initpalettestr);
 	vio_fcol(gfcolor);
 	vio_bcol(gbcolor);
 #endif

@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.116 1997/04/07 09:39:13 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.117 1997/05/26 01:19:56 tom Exp $
  *
  */
 
@@ -90,7 +90,7 @@ copy_file (const char *src, const char *dst)
 #endif
 
 static int
-write_backup_file(const char *orig, const char *backup)
+write_backup_file(const char *orig, char *backup)
 {
 	int s;
 
@@ -140,7 +140,7 @@ write_backup_file(const char *orig, const char *backup)
 	    buf[0].tv_usec = 0;
 	    buf[1].tv_sec = ostat.st_mtime;
 	    buf[1].tv_usec = 0;
-	    s = utimes((char *)backup, buf);
+	    s = utimes(backup, buf);
 	    if (s != 0) {
 		    (void)unlink(backup);
 		    return FALSE;
@@ -152,7 +152,7 @@ write_backup_file(const char *orig, const char *backup)
 	    struct utimbuf buf;
 	    buf.actime = ostat.st_atime;
 	    buf.modtime = ostat.st_mtime;
-	    s = utime((char *)backup, &buf);
+	    s = utime(backup, &buf);
 	    if (s != 0) {
 		    (void)unlink(backup);
 		    return FALSE;
@@ -175,7 +175,7 @@ write_backup_file(const char *orig, const char *backup)
 }
 
 static int
-make_backup (const char *fname)
+make_backup (char *fname)
 {
 	int	ok	= TRUE;
 
@@ -191,11 +191,11 @@ make_backup (const char *fname)
 				|| t == s	/* i.e. leading char is '.' */
 #endif
 			)
-				t = strend(s);	/* then just append */
+				t = skip_string(s); /* then just append */
 			(void)strcpy(t, ".bak");
 #if SYS_UNIX
 		} else if (strcmp(gvalfileback, "tilde") == 0) {
-			t = strend(s);
+			t = skip_string(s);
 #if ! HAVE_LONG_FILENAMES
 			if (t - s >= MAX_FN_LEN) {
 				if (t - s == MAX_FN_LEN &&
@@ -228,7 +228,7 @@ make_backup (const char *fname)
  * Open a file for reading.
  */
 int
-ffropen(const char *fn)
+ffropen(char *fn)
 {
 	fileispipe = FALSE;
 	eofflag = FALSE;
@@ -276,7 +276,7 @@ ffropen(const char *fn)
  * (cannot create).
  */
 int
-ffwopen(const char *fn, int forced)
+ffwopen(char *fn, int forced)
 {
 #if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
 	char	*name;
@@ -325,9 +325,7 @@ ffwopen(const char *fn, int forced)
 #if     SYS_VMS
 	char	temp[NFILEN];
 	register int	fd;
-	char *s = strchr(fn = strcpy(temp, fn), ';');
-	if (s != 0)
-		*s = EOS;
+	strip_version(fn = strcpy(temp, fn));
 
 	if (is_appendname(fn)
 	||  is_directory(fn)
@@ -349,11 +347,11 @@ ffwopen(const char *fn, int forced)
 
 /* wrapper for 'access()' */
 int
-ffaccess(const char *fn, int mode)
+ffaccess(char *fn, int mode)
 {
 #if HAVE_ACCESS
 	return (!isInternalName(fn)
-	   &&   access((char *)SL_TO_BSL(fn), mode) == 0);
+	   &&   access(SL_TO_BSL(fn), mode) == 0);
 #else
 	int	fd;
 	switch (mode) {
@@ -379,7 +377,7 @@ ffaccess(const char *fn, int mode)
 
 /* is the file read-only?  true or false */
 int
-ffronly(const char *fn)
+ffronly(char *fn)
 {
 	if (isShellOrPipe(fn)) {
 		return TRUE;
@@ -448,11 +446,11 @@ ffsize(void)
 #if SYS_UNIX || SYS_VMS || SYS_OS2 || SYS_WINNT
 
 int
-ffexists(const char *p)
+ffexists(char *p)
 {
 	struct stat statbuf;
 	if (!isInternalName(p)
-	 && stat((char *)SL_TO_BSL(p), &statbuf) == 0) {
+	 && stat(SL_TO_BSL(p), &statbuf) == 0) {
 		return TRUE;
 	}
         return FALSE;
@@ -463,7 +461,7 @@ ffexists(const char *p)
 #if SYS_MSDOS || SYS_WIN31
 
 int
-ffexists(const char *p)
+ffexists(char *p)
 {
 	if (!isInternalName(p)
 	 && ffropen(SL_TO_BSL(p)) == FIOSUC) {

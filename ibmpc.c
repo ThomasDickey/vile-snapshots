@@ -8,7 +8,7 @@
  * Modified by Pete Ruczynski (pjr) for auto-sensing and selection of
  * display type.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.80 1996/04/14 23:37:50 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.81 1997/05/26 11:33:38 tom Exp $
  *
  */
 
@@ -255,13 +255,10 @@ extern	void	ibmkclose (void);
 #if	OPT_COLOR
 extern	void	ibmfcol   (int);
 extern	void	ibmbcol   (int);
-extern	void	ibmspal   (char *);
 
 int	cfcolor = -1;		/* current forground color */
 int	cbcolor = -1;		/* current background color */
-int	ctrans[NCOLORS];
-/* ansi to ibm color translation table */
-static	const char *initpalettestr = "0 4 2 14 1 5 3 7";
+static	const char *initpalettestr = "0 4 2 6 1 5 3 7 8 12 10 14 9 13 11 15";
 /* black, red, green, yellow, blue, magenta, cyan, white   */
 #endif
 extern	void	ibmscroll (int,int,int);
@@ -335,7 +332,7 @@ TERM    term    = {
 #if	OPT_COLOR
 	ibmfcol,
 	ibmbcol,
-	ibmspal,
+	set_ctrans,
 #else
 	null_t_setfor,
 	null_t_setback,
@@ -483,15 +480,6 @@ int color)		/* color to set */
 	if (color < 0)
 		color = C_BLACK;
 	cbcolor = ctrans[color];
-}
-
-void
-ibmspal(char *thePalette)	/* reset the palette registers */
-{
-    	/* this is pretty simplistic.  big deal. */
-	(void)sscanf(thePalette, "%i %i %i %i %i %i %i %i",
-	    	&ctrans[0], &ctrans[1], &ctrans[2], &ctrans[3],
-	    	&ctrans[4], &ctrans[5], &ctrans[6], &ctrans[7] );
 }
 #endif
 

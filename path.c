@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.77 1997/02/08 12:42:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.78 1997/05/25 23:33:44 tom Exp $
  *
  *
  */
@@ -48,7 +48,7 @@ static	char * resolve_directory ( char *path_name, char **file_namep );
 #endif
 
 static	char * canonpath ( char *ss );
-static	int is_absolute_pathname( const char *path );
+static	int is_absolute_pathname( char *path );
 static	int is_relative_pathname( const char *path );
 
 #if OPT_CASELESS
@@ -111,15 +111,15 @@ readdir(DIR *dp)
  * Otherwise, return null.
  */
 char *
-is_msdos_drive(const char *path)
+is_msdos_drive(char *path)
 {
 #if OPT_UNC_PATH
 	if (is_slashc(path[0]) && is_slashc(path[1]))
-		return (char *)(path+1);
+		return (path+1);
 #endif
 	if (isalpha(path[0]) && path[1] == ':')
-		return (char *)(path+2);
-	return NULL;
+		return (path+2);
+	return 0;
 }
 #endif
 
@@ -230,10 +230,10 @@ int	option)		/* true:directory, false:file, -true:don't care */
  * Returns a pointer to the argument's last path-leaf (i.e., filename).
  */
 char *
-vms_pathleaf(const char *path)
+vms_pathleaf(char *path)
 {
 	register char	*s;
-	for (s = strend(path);
+	for (s = skip_string(path);
 		s > path && !strchr(":]", s[-1]);
 			s--)
 		;
@@ -250,14 +250,14 @@ vms_pathleaf(const char *path)
 #endif
 
 char *
-unix_pathleaf(const char *path)
+unix_pathleaf(char *path)
 {
 	register char *s = last_slash(path);
 	if (s == 0) {
 #if OPT_MSDOS_PATH
 		if (!(s = is_msdos_drive(path)))
 #endif
-		s = (char *)path;
+		s = path;
 	} else
 		s++;
 	return s;
@@ -265,7 +265,7 @@ unix_pathleaf(const char *path)
 
 #if OPT_VMS_PATH
 char *
-pathleaf(const char *path)
+pathleaf(char *path)
 {
 	if (is_vms_pathname(path, -TRUE))
 		return vms_pathleaf(path);
@@ -277,7 +277,7 @@ pathleaf(const char *path)
  * Concatenates a directory and leaf name to form a full pathname
  */
 char *
-pathcat (char *dst, const char *path, const char *leaf)
+pathcat (char *dst, const char *path, char *leaf)
 {
 	char	save_path[NFILEN];
 	char	save_leaf[NFILEN];
@@ -317,12 +317,12 @@ pathcat (char *dst, const char *path, const char *leaf)
  * last one (so we can locate the path-leaf).
  */
 char *
-last_slash(const char *fn)
+last_slash(char *fn)
 {
 	register char *s;
 
 	if (*fn != EOS)
-		for (s = strend(fn); s > fn; s--)
+		for (s = skip_string(fn); s > fn; s--)
 			if (is_slashc(s[-1]))
 				return s - 1;
 	return 0;
@@ -407,7 +407,7 @@ home_path(char *path)
 {
 	if (*path == '~') {
 		char	temp[NFILEN];
-		const char *s;
+		char *s;
 		char *d;
 
 		/* parse out the user-name portion */
@@ -713,7 +713,7 @@ resolve_directory(
 				  || (namelen == 2 && de->d_name[1] == '.')))
 					continue;
 
-				if (mount_point || de->d_ino == thisino) {
+				if (mount_point || (de->d_ino == thisino)) {
 					len = tnp - temp_name;
 					if (tb_alloc(&last_temp, len + namelen + 1) == 0)
 						break;
@@ -837,7 +837,7 @@ case_correct_path(char *old_file, char *new_file)
 	}
 
 	/* Canonicalize each pathname prefix. */
-	end = strend(old_file);
+	end = skip_string(old_file);
 	while (current < end) {
 		next = strchr(current, SLASHC);
 		if (!next)
@@ -935,7 +935,7 @@ case_correct_path(char *old_file, char *new_file)
 	}
 
 	/* Canonicalize each pathname prefix. */
-	end = strend(old_file);
+	end = skip_string(old_file);
 	while (current < end) {
 		next = strchr(current, SLASHC);
 		if (!next)
@@ -1122,7 +1122,7 @@ canonpath(char *ss)
 
 #if OPT_VMS_PATH
 	if (!is_vms_pathname(ss, -TRUE)) {
-		char *tt = strend(ss);
+		char *tt = skip_string(ss);
 
 		/*
 		 * If we're not looking at "/" or some other path that ends
@@ -1174,7 +1174,7 @@ char *
 shorten_path(char *path, int keep_cwd)
 {
 	char	temp[NFILEN];
-	const char *cwd;
+	char *cwd;
 	char *ff;
 	char *slp;
 	char *f;
@@ -1469,7 +1469,7 @@ lengthen_path(char *path)
  * unix, begins with a '/').
  */
 static int
-is_absolute_pathname(const char *path)
+is_absolute_pathname(char *path)
 {
 	char	*f;
 	if ((f = is_appendname(path)) != 0)
@@ -1533,7 +1533,7 @@ is_relative_pathname(const char *path)
  *	VMS can accept UNIX-style /-delimited pathnames.
  */
 int
-is_pathname(const char *path)
+is_pathname(char *path)
 {
 	return is_relative_pathname(path)
 	   ||  is_absolute_pathname(path);
@@ -1544,7 +1544,7 @@ is_pathname(const char *path)
  * path delimiters.
  */
 int
-maybe_pathname(const char *fn)
+maybe_pathname(char *fn)
 {
 	if (is_pathname(fn))	/* test the obvious stuff */
 		return TRUE;
@@ -1569,15 +1569,14 @@ maybe_pathname(const char *fn)
  * internal name!), otherwise null.
  */
 char *
-is_appendname(const char *fn)
+is_appendname(char *fn)
 {
 	if (fn != 0) {
 		if (isAppendToName(fn)) {
 			fn += 2;	/* skip the ">>" prefix */
-			while (isspace(*fn))
-				fn++;
+			fn = skip_blanks(fn);
 			if (!isInternalName(fn))
-				return (char *)fn;
+				return fn;
 		}
 	}
 	return 0;
@@ -1615,7 +1614,7 @@ is_scratchname(const char *fn)
  * Test if the given path is a directory
  */
 int
-is_directory(const char * path)
+is_directory(char * path)
 {
 #if OPT_VMS_PATH
 	register char *s;
@@ -1654,7 +1653,7 @@ is_directory(const char * path)
 	 * as a dir.
 	 */
 	if (is_slashc(path[0]) && is_slashc(path[1])) {
-		char *end = strend(path);
+		char *end = skip_string(path);
 		int slashes = 0;
 		if (end > path && is_slashc(end[-1]))
 			end--;
@@ -1666,7 +1665,7 @@ is_directory(const char * path)
 			return 1;
 	}
 #endif
-	return ( (stat((char *)SL_TO_BSL(path), &sb) >= 0)
+	return ( (stat(SL_TO_BSL(path), &sb) >= 0)
 #if SYS_OS2 && CC_CSETPP
 		&& ((sb.st_mode & S_IFDIR) != 0)
 #else
@@ -1847,6 +1846,21 @@ slconv(const char *f, char *t, char oc, char nc)
 	*t-- = '\0';
 
 	return retp;
+}
+#endif
+
+#if OPT_VMS_PATH
+/*
+ * Strip the VMS version number, so the resulting path implicitly applies to
+ * the current version.
+ */
+char *
+strip_version(char *path)
+{
+	char *verp = strrchr(path, ';');
+	if (verp != 0)
+		*verp = EOS;
+	return path;
 }
 #endif
 

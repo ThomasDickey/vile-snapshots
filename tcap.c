@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.89 1997/04/23 01:42:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.90 1997/05/26 12:06:42 tom Exp $
  *
  */
 
@@ -111,29 +111,25 @@ static char *vb;	/* visible-bell */
  * platform on which it's been tested is Linux, with an IBM-PC compatible
  * display.  Also, the color names are hardcoded.  The termcap must have
  * the following capabilities set:
- *	Co (hardcoded to NCOLORS)
+ *	Co (limited to 1 .. (NCOLORS-1)
  *	AF (e.g., "\E[%a+c\036%dm")
  *	AB (e.g., "\E[%a+c\050%dm")
  *	oc (e.g., "\E[0m")
- *
- * Using termcap alone, we cannot get "yellow" on IBM-PC, since that's a
- * combination of bold+(fcolor=3).  We cannot make that automatically with a
- * termcap expression (without making a special case).  It's possible to do
- * this with terminfo, however (FIXME).
  */
 
 #define NO_COLOR (-1)
-#define	Num2Color(n) ((n >= 0) ? ctrans[(n) & (NCOLORS-1)] : NO_COLOR)
+#define	Num2Color(n) ((n >= 0) ? ctrans[(n) & (ncolors-1)] : NO_COLOR)
 
+static	char	*AF;
+static	char	*AB;
 static	char	*Sf;
 static	char	*Sb;
 static	char	*OrigColors;
 static	int	have_bce;
 
-static	int	ctrans[NCOLORS];
-	/* ansi to ibm color translation table */
-static	const char initpalettestr[] = { "0 1 2 3 4 5 6 7" };
-	/* black, red, green, yellow, blue, magenta, cyan, white   */
+	/* ANSI: black, red, green, yellow, blue, magenta, cyan, white   */
+static	const char ANSI_palette[] = { "0 1 2 3 4 5 6 7" };
+static	const char UNKN_palette[] = { "0 4 2 6 1 5 3 7 8 12 10 14 9 13 11 15" };
 /*
  * We don't really _know_ what the default colors are set to, so the initial
  * values of the current_[fb]color are set to an illegal value to force the
@@ -225,7 +221,7 @@ static void tcapscrollregion(int top, int bot);
 #if OPT_COLOR
 static void tcapfcol ( int color );
 static void tcapbcol ( int  color);
-static void tcapspal ( char *s );
+static void tcapspal ( const char *s );
 #endif
 
 #if OPT_VIDEO_ATTRS
@@ -328,8 +324,8 @@ tcapopen(void)
 	,{ CAPNAME("te","rmcup"), &TE }		/* end cursor-motion program */
 	,{ CAPNAME("ti","smcup"), &TI }		/* initialize cursor-motion program */
 #if	OPT_COLOR
-	,{ CAPNAME("AF","setaf"), &Sf }		/* set ANSI foreground-color */
-	,{ CAPNAME("AB","setab"), &Sb }		/* set ANSI background-color */
+	,{ CAPNAME("AF","setaf"), &AF }		/* set ANSI foreground-color */
+	,{ CAPNAME("AB","setab"), &AB }		/* set ANSI background-color */
 	,{ CAPNAME("Sf","setf"),  &Sf }		/* set foreground-color */
 	,{ CAPNAME("Sb","setb"),  &Sb }		/* set background-color */
 	,{ CAPNAME("op","op"), &OrigColors }	/* set to original color pair */
@@ -378,6 +374,11 @@ tcapopen(void)
 	 && (term.t_ncol = TGETNUM(CAPNAME("co","cols"))) < 0){
 		term.t_ncol = 80;
 	}
+
+#if OPT_COLOR
+	if ((j = TGETNUM(CAPNAME("Co","colors"))) > 0)
+		set_ncolors(j);
+#endif
 
 	/* are we probably an xterm?  */
 	i_am_xterm = FALSE;
@@ -467,9 +468,16 @@ tcapopen(void)
 	/* clear with current bcolor */
 	have_bce = TGETFLAG(CAPNAME("ut","bce")) > 0;
 
+#if	OPT_VIDEO_ATTRS
 	if (OrigColors == 0)
 		OrigColors = ME;
-	set_palette(initpalettestr);
+#endif
+	if (ncolors == 8 && AF != 0 && AB != 0) {
+		Sf = AF;
+		Sb = AB;
+		set_palette(ANSI_palette);
+	} else
+		set_palette(UNKN_palette);
 #endif
 #if OPT_VIDEO_ATTRS
 	if (US == 0 && UE == 0) {	/* if we don't have underline, do bold */
@@ -828,12 +836,9 @@ tcapbcol(int color)
 }
 
 static void
-tcapspal(char *thePalette)	/* reset the palette registers */
+tcapspal(const char *thePalette)	/* reset the palette registers */
 {
-    	/* this is pretty simplistic.  big deal. */
-	(void)sscanf(thePalette,"%i %i %i %i %i %i %i %i",
-	    	&ctrans[0], &ctrans[1], &ctrans[2], &ctrans[3],
-	    	&ctrans[4], &ctrans[5], &ctrans[6], &ctrans[7] );
+	set_ctrans(thePalette);
 	reinitialize_colors();
 }
 #endif /* OPT_COLOR */

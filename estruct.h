@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.306 1997/05/01 00:04:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.307 1997/05/26 01:27:42 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -351,6 +351,7 @@
 
 /* various color stuff */
 #define	OPT_COLOR (DISP_ANSI || IBM_VIDEO || DISP_TERMCAP)
+#define	OPT_16_COLOR (IBM_VIDEO || DISP_TERMCAP)
 
 #define OPT_DUMBTERM (DISP_TERMCAP || DISP_VMSVT)
 
@@ -719,7 +720,7 @@ extern char *rindex (const char *s, int c);
 #define NPAT	128			/* # of bytes, pattern		*/
 #define HUGE	(1<<(BITS_PER_INT-2))	/* Huge number			*/
 #define	NLOCKS	100			/* max # of file locks active	*/
-#if DISP_X11
+#if DISP_X11 || DISP_TERMCAP || IBM_VIDEO
 #define	NCOLORS	16			/* number of supported colors	*/
 #else
 #define	NCOLORS	8			/* number of supported colors	*/
@@ -742,7 +743,7 @@ extern char *rindex (const char *s, int c);
 #define MAXCOLS	200			/* max # cols per screen	*/
 
 #define C_BLACK 0
-#define C_WHITE (NCOLORS-1)
+#define C_WHITE (ncolors-1)
 
 #define N_chars 256		/* must be a power-of-2		*/
 #define HIGHBIT	0x0080		/* the meta bit			*/
@@ -1807,7 +1808,7 @@ typedef struct	{
 	int	(*t_rez) (char *f);	/* change screen resolution	*/
 	void	(*t_setfor) (int f);	/* set foreground color		*/
 	void	(*t_setback) (int b);	/* set background color		*/
-	void	(*t_setpal) (char *p);	/* set color palette		*/
+	void	(*t_setpal) (const char *p); /* set color palette	*/
 	void	(*t_scroll) (int from, int to, int n); /* scroll region	*/
 	void	(*t_pflush) (void);	/* really flush 		*/
 	void	(*t_icursor) (int c);	/* set cursor shape for insertion */

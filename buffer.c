@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.156 1997/05/13 00:45:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.157 1997/05/25 22:30:28 tom Exp $
  *
  */
 
@@ -513,7 +513,7 @@ find_alt(void)
 /* make '#' buffer in noautobuffer-mode, given filename */
 void
 imply_alt(
-const char * fname,
+char *	fname,
 int	copy,
 int	lockfl)
 {
@@ -1705,7 +1705,13 @@ bclear(register BUFFER *bp)
 		(bp->b_rmbuff)(bp);
 #endif
 	b_clr_changed(bp);		/* Not changed		*/
+
 	freeundostacks(bp,TRUE);	/* do this before removing lines */
+	FreeAndNull(bp->b_nmmarks);     /* free the named marks */
+#if OPT_SELECTIONS
+	free_attribs(bp);
+#endif
+
 	while ((lp=lforw(buf_head(bp))) != buf_head(bp)) {
 		lremove(bp,lp);
 		lfree(lp,bp);
@@ -1728,10 +1734,6 @@ bclear(register BUFFER *bp)
 	bp->b_mark = nullmark;		/* Invalidate "mark"	*/
 #endif
 	bp->b_lastdot = nullmark;	/* Invalidate "mark"	*/
-	FreeAndNull(bp->b_nmmarks);	/* free the named marks */
-#if OPT_SELECTIONS
-	free_attribs(bp);
-#endif
 
 	b_set_counted(bp);
 	bp->b_bytecount = 0;
