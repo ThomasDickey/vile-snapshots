@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.70 2000/01/13 00:31:53 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.71 2000/01/14 00:47:09 kev Exp $
  */
 
 /*#
@@ -366,6 +366,8 @@ static int recursecount = 0;
 static int
 do_perl_cmd(SV *cmd, int inplace)
 {
+    int old_isnamedcmd;
+
     use_ml_as_prompt = 0;
 
     if (perl_interp || perl_init()) {
@@ -398,6 +400,12 @@ do_perl_cmd(SV *cmd, int inplace)
 	    IoLINES(GvIO((GV*)curvbp->perl_handle)) = 0;  /* initialise $. */
 	}
 
+	/* Make sure that mlreply_dir and mlreply_file will actually prompt
+	   the user.  It is necessary to do this because isnamedcmd was not
+	   getting set when invoked through a binding. */
+	old_isnamedcmd = isnamedcmd;
+	isnamedcmd = TRUE;
+
 	recursecount++;
 
 #if PDEBUG
@@ -419,6 +427,7 @@ do_perl_cmd(SV *cmd, int inplace)
 	sv_dump(svcurbuf);
 #endif
 
+	isnamedcmd = old_isnamedcmd;
 	recursecount--;
 	if (recursecount == 0) {
 	    sv_setsv(svcurbuf, &sv_undef);
@@ -1925,10 +1934,37 @@ keystroke(...)
   #
   # =for html <br><br>
   #
+  # =item mlreply_no_opts PROMPT
+  #
+  # =item mlreply_no_opts PROMPT, INITIALVALUE
+  #
+  # Prompts the user with the given prompt and (optional) supplied
+  # initial value.  All printable characters may be entered by the
+  # user without any special escapes.
+  #
+  # Returns the user's response string.  If the user aborts
+  # (via the use of the escape key) the query, an undef is
+  # returned.
+  #
+  # =for html <br><br>
+  #
+  # =item mlreply_shell PROMPT
+  #
+  # =item mlreply_shell PROMPT, INITIALVALUE
+  #
+  # Like mlreply, but provide completions suitable for fetching shell
+  # commands.
+  #
+  # =for html <br><br>
+  #
 
 void
 mlreply(prompt, ...)
     char *prompt
+
+    ALIAS:
+	Vile::mlreply_no_opts = 1
+	Vile::mlreply_shell = 2
 
     PREINIT:
 	char buf[NLINE];
@@ -1944,7 +1980,17 @@ mlreply(prompt, ...)
 	else
 	    buf[0] = EOS;
 
-	status = mlreply(prompt, buf, sizeof(buf));
+	switch (ix) {
+	    case 1:
+		status = mlreply_no_opts(prompt, buf, sizeof(buf));
+		break;
+	    case 2:
+		status = mlreply_no_bs(prompt, buf, sizeof(buf));
+		break;
+	    default:
+		status = mlreply(prompt, buf, sizeof(buf));
+		break;
+	}
 #if OPT_HISTORY
 	if (status == TRUE)
 	    hst_glue('\r');
@@ -2042,51 +2088,6 @@ mlreply_file(prompt, ...)
 	XPUSHs((status == TRUE || status == FALSE)
 		 ? sv_2mortal(newSVpv(buf, 0))
 		 : &sv_undef);
-
-
-  #
-  # =item mlreply_no_opts PROMPT
-  #
-  # =item mlreply_no_opts PROMPT, INITIALVALUE
-  #
-  # Prompts the user with the given prompt and (optional) supplied
-  # initial value.  All printable characters may be entered by the
-  # user without any special escapes.
-  #
-  # Returns the user's response string.  If the user aborts
-  # (via the use of the escape key) the query, an undef is
-  # returned.
-  #
-  # =for html <br><br>
-  #
-
-void
-mlreply_no_opts(prompt, ...)
-    char *prompt
-
-    PREINIT:
-	char buf[NLINE];
-	int status;
-
-    PPCODE:
-	if (items == 2) {
-	    strncpy(buf, SvPV(ST(1),na), NLINE-1);
-	    buf[NLINE-1] = EOS;
-	}
-	else if (items > 2)
-	    croak("Too many arguments to mlreply_no_opts");
-	else
-	    buf[0] = EOS;
-
-	status = mlreply_no_opts(prompt, buf, sizeof(buf));
-#if OPT_HISTORY
-	if (status == TRUE)
-	    hst_glue('\r');
-#endif
-	XPUSHs((status == TRUE || status == FALSE)
-		 ? sv_2mortal(newSVpv(buf, 0))
-		 : &sv_undef);
-
 
   #
   # =item selection_buffer

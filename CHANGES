@@ -1,5 +1,47 @@
 Changes for vile 9.1 (released ??? ??? ??, 1999)
 
+ 20000114 (s)
+ 	> Kevin Buettner:
+	+ perl.xs (do_perl_cmd):  Partially revert changes from 9.0p regarding
+	  the clexec/isnamedcmd/no_msgs flags.  We (once again) set isnamedcmd
+	  to TRUE in order to cause mlreply_dir and mlreply_file to prompt the
+	  user when a perl command is invoked via a key binding. 
+	  (mlreply_no_opts): Remove. 
+	  (mlreply): Make mlreply_no_opts and mlreply_shell aliases with 
+	  slightly different functionality. 
+	+ perl/capture.pm: 
+	  + New documentation. 
+	  + New command, async-capture-command, for displaying 
+	    the documentation. 
+	  + Use mlreply_shell in order to provide the appropriate shell
+	    completions.  [Requested by Paul Fox.]
+	  + Remember last command run.  [Also requested by Paul Fox.] 
+	  + Added work-around to prevent [Buffer not found] message from
+	    displaying when Vile::Buffer::edit is asked to find an internal
+	    buffer.  (Does getfile2bp really need to call mlforce() to print
+	    this message out?)
+	+ perl/shell.pm: 
+	  + New documentation. 
+	  + New command, shell-help, for displaying the documentation. 
+	  + Handle partial (incomplete) terminal control sequences. 
+	    [Fixes bugs reported by Paul Fox.] 
+	  + gdb annotation support.  (Use --fullname with gdb to make 
+	    use of this.) 
+	  + Facilities for supporting upcoming gdb.pm. 
+	  + Revise mechanism for escaping from shell.  (Expect it to 
+	    be revised even more though.) 
+	> Clark Morgan:
+	+ modify mailmode to support mutt's temporary file names 
+	+ modify nttypahead() to exit immediately during an autocolor operation.
+	+ add section on 'Color Basics' to vile.hlp, integrated/revised with
+	  description of color syntax highlighting (with feedback from Brendan
+	  O'Dea and Paul Fox).
+	> Tom Dickey:
+	+ modify suffix qualifiers of cshmode and mailmode to avoid matching
+	  directory names.
+	+ corrected status checks on return from prompt_scheme_name(), which
+	  may be ABORT (reported by Paul Fox).
+
  20000112 (r)
  	> Kevin Buettner:
 	+ correct two variables in perl.xs which were incorrectly typed as

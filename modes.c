@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.193 2000/01/12 02:55:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.194 2000/01/13 11:45:39 tom Exp $
  *
  */
 
@@ -3613,7 +3613,7 @@ define_scheme(int f GCC_UNUSED, int n GCC_UNUSED)
 	char *name;
 	int status;
 
-	if ((status = prompt_scheme_name(&name, TRUE)) != FALSE) {
+	if ((status = prompt_scheme_name(&name, TRUE)) == TRUE) {
 		PALETTES *p = alloc_scheme(name);
 		while ((status = prompt_scheme_value(p)) < 0)
 			continue;
@@ -3634,7 +3634,7 @@ remove_scheme(int f GCC_UNUSED, int n GCC_UNUSED)
 
 	if (my_schemes == 0 || my_schemes->name == 0) {
 		status = FALSE;
-	} else if ((status = prompt_scheme_name(&name, FALSE)) != FALSE) {
+	} else if ((status = prompt_scheme_name(&name, FALSE)) == TRUE) {
 		status = free_scheme(name);
 	}
 	update_scratch(COLOR_SCHEMES_BufName, update_schemelist);

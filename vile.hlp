@@ -48,9 +48,10 @@ Getting along with vile						(version 9.0)
 	If your screen hops around a lot when you scroll, see the "Note on
 	Scrolling" section near the bottom of this file.
 
+
+
 General Remarks
 ---------------
-
 	vile holds text in "buffers".  Usually, these correspond to a file
 	that you are editing, but not always.  For instance, a buffer
 	might be used to display this help text, or to hold the output
@@ -77,9 +78,10 @@ General Remarks
 	English speaking sites.  See the section on "8-Bit Operation" for
 	more information.
 
+
+
 Command Prefixes
 ----------------
-
 	To extend the vi command set in vile, two (or three, depending on
 	how you count them) command "prefixes" exist.  These keystrokes,
 	in combination with another key, can be bound as a pair to execute
@@ -101,9 +103,10 @@ Command Prefixes
 	is bound to '#2', then it is also probably available with key F2
 	on your keyboard.)
 
+
+
 Buffer manipulation commands:
 -----------------------------
-
 	vile stores buffers in a sorted list.  Depending on the
 	setting of the "autobuffer" mode, this list is either sorted
 	in "most-recently-used" order (this is the vile default), or in a
@@ -218,9 +221,10 @@ Buffer manipulation commands:
 		isn't as necessary now that the buffer list is maintained
 		dynamically...]
 
+
+
 Window manipulation commands:
 -----------------------------
-
 	^X-2	Make Two windows.  Splits the current window in half. This
 		is the usual way to create a new window.
 	^K or ^X-0	Get rid of (Kill) this window.
@@ -267,7 +271,7 @@ Window manipulation commands:
 	commands (which take their args (number of rows or columns
 	respectively) before you type the ":").
 
-	[ Personally, I put the following bindings in my .vilerc:
+	[ I put the following bindings in my startup file (.vilerc):
 	    bind-key split-current-window ^T	; split into 'T'wo windows
 	    bind-key next-window ^N		; 'N'ext window
 	    bind-key previous-window ^P		; 'P'revious window
@@ -276,9 +280,10 @@ Window manipulation commands:
 	(These would be the default, but ^N, ^P, and ^T have other meanings
 	in real vi (all of which have alternate bindings in vile.) ]
 
+
+
 File manipulation commands:
 ---------------------------
-
 	The usual ":e", ":r", ":f", ":w" commands are available, though
 	only ":e!" and ":w!" are available of the "!" options.  The ":r"
 	command reads the named file in after the current line.  To read a
@@ -317,9 +322,10 @@ File manipulation commands:
 		is _not_ an operator, but writes the specified register to
 		the named file.
 
+
+
 Shell Access
 ------------
-
 	Anywhere a filename is valid, a command name is also
 	valid, entered in the form "!shell-command".  The whole line is
 	handed to the shell, and the read or write operation is done on
@@ -364,9 +370,10 @@ Shell Access
 	writing macros) will suppress the "Press return to continue" message
 	after the command runs.
 
+
+
 Text manipulation command:
 --------------------------
-
 	Remember, these are only the new or different commands.  The
 	standard vi set should still work.
 
@@ -666,9 +673,10 @@ Text manipulation command:
 	    to create your own tags files, or have other tools that do so,
 	    you should be aware of these limitations.
 
+
+
 Miscellaneous commands
 ----------------------
-
 	^A-d	Remove blank lines ("deblank").  If the cursor is on a blank
 		line, then it and any blank lines surrounding it will be
 		removed.  If a non-blank line, then any immediately following
@@ -870,6 +878,8 @@ Miscellaneous commands
 	show-variables -- displays the list of vile state $variables and
 		temporary %variables, and their values.
 
+
+
 New Registers
 -------------
 	In addition to the usual "a through "z, and "1 through "9, vile
@@ -888,6 +898,8 @@ New Registers
 
 	The register name '"' (" is double-quote) is a synonym for the default
 	unnamed register, which is also sometimes referred to as register 0.
+
+
 
 Completion
 ----------
@@ -916,18 +928,20 @@ Completion
 	    brackets around characters that you must type to make the
 	    command unique.
 
+
+
 Arrow keys
 ----------
-
 	vile will understand your terminal's arrow keys, as long as they
 	are described correctly in the termcap/terminfo database.
 	The keys are interpreted as function keys, and are by default bound
 	to the up, down, left, and right screen motions.  These bindings
 	are honored in insert mode as well as command mode.
 
+
+
 Rectangular regions
 -------------------
-
 	Just as the regions defined by vi's commands and motions can either
 	be "exact", or encompass "full lines", regions in vile can in
 	addition be "rectangular".  The easiest way to use a rectangular
@@ -973,9 +987,10 @@ Rectangular regions
 	arguably a bug, and may be fixed.  In the meantime, you've been
 	warned. ]
 
+
+
 Editor modes
 ------------
-
 	Modes come in three "flavors".  They are universal, and affect the
 	editor generally, or are associated with either buffers or with
 	windows, and are usually inherited from a set of "global" buffer
@@ -1662,9 +1677,10 @@ Editor modes
 		termcap entry must contain the string "xterm" for this to
 		work.  (U)
 
+
+
 8-Bit Operation
 ---------------
-
 	vile allows input, manipulation, and display of all 256 possible
 	byte-wide characters.  (Double-wide characters are not supported.)
 
@@ -1726,16 +1742,18 @@ Editor modes
 	character, since this is used internally to terminate the search
 	string.)
 
+
+
 Command History
 ---------------
-
 	You may scroll through the list of previous replies to the :-prompt
 	by using the up- or down-arrow special keys on your keyboard (if
 	your configuration supports it).
 
+
+
 Editing the Minibuffer
 ----------------------
-
 	The minibuffer (i.e., the last line on the screen, aka the :-prompt)
 	can be edited using arrow keys, the delete character, or by toggling to
 	vi-mode with the ^G (mini-edit) character.  In mini-edit mode, you may
@@ -1748,9 +1766,10 @@ Editing the Minibuffer
 	entered, e.g., a :set command will display the variables entered for
 	preceding :set commands.
 
+
+
 Special Character Expansion
 ---------------------------
-
 	As in vi, the % and # characters typed while responding to a prompt
 	will expand to the current or "alternate" filename.
 
@@ -1766,9 +1785,10 @@ Special Character Expansion
 
 	Any of these expansions can be suppressed by prefixing with a '\'.
 
+
+
 Key Rebinding
 -------------
-
 	There is a key rebinding facility (if vile is built to include it),
 	which is invoked as follows.  One must know the "english" name for the
 	command being rebound.  Use ":show-commands" or ":apropos string"
@@ -2049,9 +2069,10 @@ Key Rebinding
 
 	To undo an abbreviation, use "unabbreviate".
 
+
+
 Special "Terminal" Key Rebinding
 --------------------------------
-
 	In addition to the above binding mechanism for vile commands, other
 	keystrokes to the editor are rebindable using the "set-terminal"
 	command.  These keystrokes are mostly derived directly from the
@@ -2074,6 +2095,8 @@ Special "Terminal" Key Rebinding
 	suspend			from tty settings	(^Z)
 	test-completions	?
 	word-kill		from tty settings	(^W)
+
+
 
 Flow-control
 ------------
@@ -2103,9 +2126,10 @@ Flow-control
 	The action of the "flow-control-enable" command will be reversed
 	if it is given any argument.
 
+
+
 Recorded macros
 ---------------
-
 	The first type of macro in vile is for temporary, quick macro
 	usage, and lets you record a set of keystrokes as you execute
 	vile commands.  You can then replay those keystrokes with a
@@ -2135,9 +2159,10 @@ Recorded macros
 	which makes the current file writable and writes it.  (Again, use
 	^V to get the CR characters into the .vilerc file.)
 
+
+
 Programmed procedures and macros
 --------------------------------
-
 	[
 	  Note 1:  the information presented in this section of the help file
 	  is a subset of "doc/macros.doc", which is supplied with the vile
@@ -2443,11 +2468,14 @@ Programmed procedures and macros
 	changed.
 
 	The following hooks are currently implemented:
-	$buffer-hook	run when switching to a buffer
-	$cd-hook	run when changing directories
-	$exit-hook	run when quitting
-	$read-hook	run after a file is read
-	$write-hook	run before a file is written
+	$autocolor-hook		applies syntax coloring to modified buffers
+				    when the keyboard is idle for a
+				    user-cofigurable time period
+	$buffer-hook		run when switching to a buffer
+	$cd-hook		run when changing directories
+	$exit-hook		run when quitting
+	$read-hook		run after a file is read
+	$write-hook		run before a file is written
 
 	Be careful with "buffer-hook".  Executing commands in the hook
 	which themselves switch buffers is not recommended.  In general,
@@ -2631,9 +2659,10 @@ Programmed procedures and macros
 	      | information...			       |/
 	      o----------------------------------------o
 
+
+
 Regular Expressions
 -------------------
-
 	Searches use regular expressions, which, as in vi, may be magic
 	by default or not.
 
@@ -2720,9 +2749,10 @@ Regular Expressions
 	and perl will replace with "Abc".  This is somewhat more useful for
 	capitalizing words.
 
+
+
 Command files
 -------------
-
 	On startup (in the absence of '@' arguments -- see Invocation
 	below), vile will attempt to read the file ".vilerc" in the current
 	directory, then in $HOME, and then in several host-specific
@@ -2742,7 +2772,7 @@ Command files
 
 	Files can be executed at any time with the ":source" (or
 	":execute-file") command.  There are control structures available,
-	such as ~while, ~if, etc.  Refer to the file macros.doc which
+	such as ~while, ~if, etc.  Refer to the file doc/macros.doc which
 	is distributed with vile for more information.
 
 	Nesting of source'd files is limited to a depth of ten, to prevent
@@ -2751,6 +2781,8 @@ Command files
 	The ';' character can be used as a comment character in command
 	files, but not necessarily on the same line as valid commands.  Put
 	your comments on separate lines to be safe.
+
+
 
 Invocation
 ----------
@@ -2861,6 +2893,8 @@ Invocation
 		file, and will bypass any normal startup file (i.e.
 		.vilerc) or environment variable (i.e. $VILEINIT).
 
+
+
 Encryption
 ----------
 	vile implements an interface to the UNIX crypt function, like
@@ -2885,9 +2919,9 @@ Encryption
 	then insert the file into it (with ":r").
 
 
+
 Crash Recovery
 --------------
-
 	The "vi -r" option, used to recover an edited buffer after a system
 	crash, is not present in vile.  If vile itself crashes (usually
 	(though infrequently :-) due to a bug, but perhaps due to an
@@ -2899,9 +2933,9 @@ Crash Recovery
 	work.
 
 
+
 Mode line customization
 -----------------------
-
 	At the bottom of each window is a mode (or "status") line which
 	is used for displaying certain characteristics of the window and
 	the buffer associated with it.  On most displays, this mode line
@@ -2974,21 +3008,546 @@ Mode line customization
 
 	    "%-%i%- %b %m:: :%f:is : :%=%F: : %-%-%-%-:%l:(:,:%c::):%S::%-%-:%|"
 
+
+
+Color basics
+------------
+	The editor's support of color varies from host to host.  On some
+	hosts, such as VMS and DOS, limited capability exists.  On other
+	hosts, full-blown syntax coloring is provided for a wide variety of
+	languages and tools.  Prior to discussing the ins and outs of
+	syntax coloring, it helps to first describe several key color
+	features and concepts.
+
+	Console/standard vile versus GUI vile
+	-------------------------------------
+	Depending on the host, vile comes in two flavors:
+
+	+ console (or "standard") vile, which displays text with block
+	  character, cursor-based addressing.
+
+	+ GUI vile (aka, winvile on a win32 host and xvile on a Unix host),
+	  which displays text using the host's GUI APIs.
+
+	In general, GUI vile supports a richer set of color features and
+	capabilities than console vile.
+
+	Color palette
+	-------------
+	Depending on the capabilities of the host operating system and the
+	underlying display hardware, vile supports a palette of up to 16
+	colors.  The editor's color names are fixed, as shown in this list:
+
+		External          Internal
+		User Name         vile Name
+		--------          ---------
+		black                C0
+		red                  C1
+		green                C2
+		brown                C3
+		blue                 C4
+		magenta              C5
+		cyan                 C6
+		lightgray            C7
+		gray                 C8
+		brightred            C9
+		brightgreen          CA
+		yellow               CB
+		brightblue           CC
+		brightmagenta        CD
+		brightcyan           CE
+		white                CF
+
+	However, when a color X server and color display are available,
+	xvile supports the mapping of arbitrary RGB values to the above
+	color names via its color resources (refer to the topic "X
+	Resources" in this help file).  So, for example, the following line
+	in an .Xdefaults or .Xresources file maps "gray" above to red:
+
+	    XVile.color.fcolor8: rgb:ff/0/0
+	or
+	    XVile.color.fcolor8: red
+
+	Display attributes
+	------------------
+	vile supports bold, italic, underline, and reverse display
+	attributes.  These attributes may be used to modify/enhance any of
+	the existing colors (e.g., bold blue), or render text as a "color"
+	in its own right (e.g., configure the editor to highlight all
+	matched search strings in the reverse attribute).
+
+	Show-colors command
+	-------------------
+	The show-colors command (.i.e., ":show-colors") displays the
+	editor's current color and attribute mappings.
+
+	Xterms, terminfo, and termcap (Unix hosts only)
+	-----------------------------------------------
+	Note that on some unix hosts it's possible to run standard vile in
+	a color xterm and thereby gain access to an expanded color palette
+	(albeit often limited to 8 colors).  However, this is only possible
+	when:
+
+	a) your terminal type (specified via the $TERM environment var)
+	   supports color, and
+
+	b) vile is compiled and linked with the terminfo library.
+
+	Hint 1:  On linux hosts, the "xterm" terminal type supports 8
+	colors (e.g., ensure that "export TERM=xterm" or csh equiv is
+	included in your shell startup file).
+
+	Hint 2:  To determine if the editor was compiled with terminfo,
+	type :show-variables and examine the value of $cfgopts.  If this
+	variable includes the string "terminfo", you've got a shot.  If
+	"termcap" is listed instead, vile's color palette is limited to
+	black and white (i.e., no color).  Assuming your host supports
+	terminfo, the following build commands force the editor to use that
+	library:
+
+	    $ make clean; ./configure --with-ncurses; make
+
+	For additional hints and help, try this URL:
+
+	    http://www.clark.net/pub/dickey/xterm/xterm.faq.html#no_color
+
+	Visual matching (VM)
+	--------------------
+	All hosts support visual-matches mode, which highlights search text
+	with either a simple color (no modifiers) or a display attribute.
+	To see the list of supported colors and attributes, type:
+
+	    :set visual-matches=<TAB><TAB>
+
+	To learn more about this mode, search for "visual-matches"
+	elsewhere in this help file.
+
+	Foreground color (FC)
+	---------------------
+	On hosts and display hardware that support it, the editor's
+	foreground color may be set to a simple color value (no attribute
+	modifiers allowed).  Type:
+
+	    :set fcolor=<TAB><TAB>
+
+	for a list of supported colors.
+
+	Background color (BC)
+	---------------------
+	On hosts and display hardware that support it, bcolor mode sets the
+	editor's background color.  Bcolor utilizes the same color list
+	as fcolor.
+
+	Attribute control sequences (ACS)
+	---------------------------------
+	A buffer may be manually or programmatically encoded with strings
+	that cause the editor to render text in arbitrary color/attribute
+	sequences.  For example, consider the following data:
+
+	   ^A3C1:red text, ^A4B:bold text
+
+	Given a suitable command, vile will render this as:
+
+	    <begin red>red<end red> text, <begin bold>bold<end bold> text
+
+	It's possible to mix colors and attribute as well:
+
+	   ^A8BC1:bold red text
+
+	which is rendered as:
+
+	   ^A8BC1:<begin bold&red>bold red<end bold&red> text
+
+	These sequences are the building blocks of syntax coloring.  For a
+	more detailed discussion of attribute control sequences, refer to
+	the topic "Writing your own filters" in this help file.
+
+	Syntax coloring (SC)
+	--------------------
+	vile colors a buffer via these steps:
+
+	1) an external filter (e.g., vile-c-filt) is run and
+	   subsequently reads an optional keywords file and a color
+	   specification file.  The latter maps classes of language
+	   keywords/elements to user-specified colors and display
+	   attributes.
+	2) the filter reads the buffer being colored from stdin and
+	   encodes language keywords/elements with attribute control
+	   sequences.
+	3) the filter writes its results to stdout, which vile reads back
+	   and uses as control information to color the buffer.
+	4) the editor redraws its display, appropriately rendering all
+	   attribute-encoded keywords (e.g., "if", "while") and other
+	   syntactic elements (e.g., strings and numbers), based on
+	   the information embedded in the filter's output.
+
+	Host capability matrix
+	----------------------
+
+            Color         VMS    VMS              Win32  Win32  Unix   Unix
+           Feature       (std)  (GUI)  DOS  OS/2  (std)  (GUI)  (std)  (GUI)
+           -------       -----  -----  ---  ----  -----  -----  -----  -----
+	Visual Matching    Y      Y     Y     Y     Y      Y      Y      Y
+	Foreground Color   N      Y     Y     Y     Y      Y     [4]     Y
+	Background Color   N      Y     Y     Y     Y      Y     [4]     Y
+	Attr. Sequences	   Y      Y     Y     Y     Y      Y     [5]     Y
+	Syntax Coloring    N      N     N    [1]   [2]    [3]    [5]     Y
+
+	Note 1:  vile's filter mechanism blocks (hangs) when processing
+		 "large" buffers.  Consequently, syntax coloring is not
+		 recommended.
+
+	Note 2:  No issues for WinNT.  On a win95/98 host (which uses a
+		 16-bit shell by default), syntax coloring works well when
+		 a 32-bit replacement shell is available (e.g., MKS shell,
+		 bash, Thompson Toolkit shell, etc.).  See doc/w32modes.doc
+		 for more information.
+
+	Note 3:  No issues for WinNT.  On a win95/98 host, if a 32-bit
+		 shell is available, then disable force-console mode (set
+		 noforce-console) to avoid transient console windows when
+		 an external filter is invoked.  See doc/w32modes.doc for
+		 more details.  Note that regardless of which shell is
+		 used, w32pipes mode must be enabled.
+
+	Note 4:  Requires a terminfo terminal type that supports color.
+
+	Note 5:  If a terminal type supporting color is not
+		 available, then "coloring" is limited to the use of
+		 attributes like bold, underline, etc.
+
+
+
+Syntax coloring
+---------------
+	vile's source distribution includes an extensive set of external
+	filter programs that color many varieties of text, including (but
+	not limited to):
+
+	    C source, Perl source, HTML, shell scripts
+
+	A filter is typically named "vile-xxx-filt", where "xxx" denotes
+	the type of text being filtered, and is also usually the same name
+	of the corresponding vile "majormode".  This table lists example
+	paired filter and majormode names:
+
+	    Language                    Majormode
+	    Name       Filter Name      Name
+	    --------   -----------      --------
+	    C          vile-c-filt      cmode
+	    HTML       vile-html-filt   htmlmode
+	    Perl       vile-perl-filt   perlmode
+	    sh         vile-sh-filt     shmode
+
+	[ Majormodes are an interesting subject in their own right, but
+	  won't be discussed much here.  For more info, refer to the help
+	  topic "Editor modes" in this help file, as well as the file
+	  doc/modes.doc. ]
+
+	Take note that previous releases of vile utilized a syntax
+	filtering system that actually applied color attributes to a target
+	buffer, thereby damaging the editor's undo history.  vile version
+	8.3 (and later) utilizes a new command, called
+	"attribute-from-filter-til", which applies coloring information
+	directly from the filter's output stream without modifying the
+	affected buffer.
+
+	The remainder of this section of the help file includes a
+	step-by-step description of syntax coloring configuration, as well
+	as pointers to related features.
+
+	Prerequisites
+	-------------
+	a) be familiar with the help topic entitled "Color basics".
+	b) ensure the target host supports syntax coloring.
+	c) if on a Unix host, compile and link the editor from the source
+	   distribution.  This step is optional on a win32 host, as
+	   precompiled binaries (editor and filters) are available from
+	   ftp://ftp.clark.net/pub/dickey/vile .  Note that almost all
+	   filters require preprocessing with flex (not a standard Windows
+	   tool) prior to compilation.
+	d) if you currently use the syntax coloring system that existed
+	   prior to vile version 8.3, then find and delete all instances of
+	   these files:
+
+		Non-Unix Host     Unix Host
+		-------------     ---------
+		vile.keywords     .vile.keywords
+		vile-c-filt.exe   vile-c-filt
+
+	e) if cmode is disabled, re-enable it (i.e., remove "set nocmode"
+	   from vile's startup file).  If cmode was disabled in the past
+	   because its default settings were not acceptable, be aware that
+	   this feature is configurable.  This example shows how four of
+	   cmode's parameters might be changed within vile's startup file:
+
+		define-mode c
+		~with define-submode c
+		    suffixes='\.\(\([Cchis]\)\|CC\|cc\|cpp)$'
+		    ts=4
+		    sw=4
+		    nocindent
+		~endwith
+
+	Configuration recipe
+	--------------------
+
+	This section outlines a procedure for customizing the installation
+	of vile.  If you have enough diskspace to install all of the filters,
+	you would normally use vile as it is installed from the build process.
+	However, some users want to reduce the configuration to fit within
+	a disk quota on an ISP's shell account.
+
+	1) create a directory (hereafter referred to as COLORDIR) to store
+	   the editor's external color filters and keyword files.  If you
+	   use csh (or clone) as your Unix shell, add COLORDIR to your
+	   PATH.  In this procedure, COLORDIR is a full pathname, e.g.,
+
+	   	/home/stevie
+
+	2) list all available filters in the vile source directory using
+	   one of these commands:
+
+		$ ls filters/vile*filt
+		$ dir filters\vile*filt.exe
+
+	   If you use a win32 host and have elected to use precompiled
+	   binaries, unzip the filters archive and list its contents.
+	   Henceforth, use this archive to satisfy any recipe step that
+	   requires files from the source distribution's "filters"
+	   subdirectory.
+
+	3) select the filters that suit your needs and copy them to
+	   COLORDIR.
+
+	4) most, but not all, filters are paired with language-specific
+	   keywords files, which are stored in the filters subdirectory and
+	   use this naming convention:
+
+		<filter_name>.key
+
+	   Examples:
+		c.key    => C language keywords, which is read by vile-c-filt
+		html.key => HTML keywords, which is read by vile-html-filt
+
+	   For each filter selected in step 3 above, if a paired keywords
+	   file exists, then copy:
+
+		<filter_name>.key to COLORDIR/<filter_name>.keywords .
+
+	   You may have noticed that some of the filter names are rather
+	   cryptic (e.g., what language does vile-tc-filt parse?).  Look at
+	   the comments in the first few lines of the language-specific
+	   keywords file to determine the filter's purpose.
+
+	5) copy filters/filters.rc to COLORDIR.  Filters.rc creates major
+	   modes for all supported syntax filters.
+
+	6) edit your startup file (vile.rc or .vilerc) and add this line:
+
+		source filters.rc
+
+	7) copy filters/vile.key to COLORDIR/vile.keywords (note name change).
+
+	8) export these environment variable settings:
+
+		VILE_STARTUP_PATH=COLORDIR
+		VILE_LIBDIR_PATH=COLORDIR
+
+	Basic configuration is now complete.  Filters.rc installs several
+	stored procedures, including:
+
+	    Macro Name          Binding  Function
+	    ----------          -------  --------
+	    HighlightFilterMsg   ^X-q    Colors the current buffer if a
+					 majormode and filter exist for same.
+	    HighlightClear       ^X-Q    Clears the current buffer's color
+					 attributes.
+
+	Testing the configuration
+	-------------------------
+	Assuming vile-c-filt was selected as a filter, do:
+
+	- edit a C source file
+	- examine the editor's modeline and ensure that "cmode" is in effect
+	- type ^X-q
+
+	If all is well, various elements of the C program will be
+	highlighted/colored.  You may not particularly care for the color
+	attributes chosen, but that's configurable (keep reading :-) ).
+	If nothing happened, skip down to the troubleshooting section.
+
+	Read-hook
+	---------
+	Typing ^X-q each time a new file is opened gets old after awhile.
+	To force the editor to take over this task, add this line to your
+	startup file:
+
+	    setv $read-hook HighlightFilterMsg
+
+	This setting initiates syntax coloring whenever a new file is
+	edited.  However, note that the read-hook won't initiate syntax
+	coloring when a buffer's contents change, which brings us to the
+	next topic.
+
+	Autocolor
+	---------
+	It's possible to automatically initiate syntax coloring when the
+	editor detects no active input during a user-configurable interval.
+	If this sounds appealing, add the following to your startup file:
+
+	    set autocolor=2000   ; change to suit individual tastes
+	    setv $autocolor-hook HighlightFilterMsg
+
+	These settings initiate an automatic syntax coloring check whenever
+	2 seconds of idle time elapses (autocolor's argument is scaled in
+	milliseconds).  Note that autocolor won't actually invoke a syntax
+	filter unless it detects a modified buffer.
+
+	To disable this feature, set autocolor to 0 (zero).
+
+	Note that "autocolor" is a buffer mode and as such, can be enabled
+	globally, but disabled for one or more buffers where coloring is
+	inappropriate.  I.E, type ":setl autocolor=0" to disable the
+	automatic syntax coloring for a particular buffer.
+
+	For obvious reasons, this feature is less "intrusive" on fast
+	hardware.
+
+	Changing color/attribute mappings
+	---------------------------------
+	Filters will color text based on the contents of the file
+	COLORDIR/vile.keywords .  This file's configuration syntax is
+	described in detail in doc/filters.doc .  We'll hit the high points
+	here:
+
+	- a line that begins with ':' is a comment
+	- language elements are grouped into classes, each of which is
+	  assigned a color, using this syntax:
+
+	    .class <name>:<ACS>
+
+	  where:
+
+	    <name>      ::= an arbitrary alphanumeric string.
+	    <ACS>       ::= { C<hexdigit> | U | I | B | R }
+	    C<hexdigit> ::= internal vile color name
+	      U         ::= underline attribute
+	      I         ::= italic attribute
+	      B         ::= bold attribute
+	      R         ::= reverse attribute
+
+	An example keyword file might contain:
+
+	    .class Action:BC2
+	    .class Comment:BC1
+	    .class Error:CA
+	    :.class Ident:R
+	    .class Ident2:C6
+	    .class Keyword:C3
+	    .class Keyword2:BC1
+	    .class Literal:UC5
+	    .class Number:C6
+	    .class Preproc:C2
+	    .class Type:CD
+
+	The "Comment" class defines the color attribute applied to a
+	language's comments, which will be rendered in "B"old "C"olor "1".
+	"Literal" applies to string literals, which will be shown as
+	"U"nderlined "C"olor "5".  "Keyword" applies to a language's
+	reserved words (e.g., "if", "while", "break"), which will be
+	encoded as "C"olor "3".  And so forth.  Note that few filters use
+	all of the classes listed in this file.
+
+	As should be obvious at this point, color configuration is effected
+	by editing vile.keywords and applying individual tastes and
+	preferences.
+
+	For completeness sake, it should be noted that the mapping of
+	language tokens (e.g., "int", "static", "while") to vile.keyword's
+	generic classes occurs in the individual language-specific keyword
+	files.  In general, a language-specific keyword file (e.g.,
+	COLORDIR/awk.keywords, COLORDIR/perl.keywords, COLORDIR/c.keywords)
+	provides only part of the filter's behavior -- much of its action
+	is encoded in its source, which for most filters is written in
+	"flex".  It is not expected that users will need or want to edit
+	these files.
+
+	Troubleshooting
+	---------------
+	Try this checklist when syntax coloring doesn't work:
+
+	- Does your display hardware and/or host support color?  Type
+	  ":show-colors" to list current capabilities.  If
+	  colors/attributes appear to be missing, reread the "Color basics"
+	  topic in this help file.
+
+	- Select a filter and invoke it from the command line, like so:
+
+		$ COLORDIR/<filter_name> -vq
+
+	  The filter should show that it opened vile.keywords and an
+	  associated language-specific keywords file (if it exists).
+	  Here's an example taken from a Unix host:
+
+		$ .vile/vile-c-filt -vq
+		CreateSymbolTable(c)
+		ReadKeywords(vile)
+		Opened /home/user1/.vile/vile.keywords  <---- good
+		ReadKeywords(c)
+		Opened /home/user1/.vile/c.keywords     <---- good
+		CreateSymbolTable(cpre)
+
+	  If the filter can't find the required keyword file(s), syntax
+	  coloring configuration is incomplete.
+
+	- If everything looks legit, but coloring still doesn't work, try
+	  adding COLORDIR to your PATH (required by some shells, but not
+	  others).
+
+	Man pages
+	---------
+	It's also possible to syntax color Unix man pages, although the
+	procedure is not tied to a majormode.  Refer to the help topic
+	entitled 'Filtering "man" pages' for further information.
+
+	Spell checking (Unix hosts only)
+	--------------------------------
+	The editor is capable of spell checking the current buffer (with
+	ispell) and subsequently highlighting all misspelled words in the
+	Keyword class color (as specified in vile.keywords).  If this
+	feature sounds useful, then:
+
+	- copy filters/spell.rc to COLORDIR
+	- copy filters/vile-spell-filt to COLORDIR
+	- add this line to your startup file:
+
+		source COLORDIR/filters.rc
+
+	Spell.rc installs ^X-i as the keybinding that initiates spell
+	checking.
+
+	Further reading
+	---------------
+	More information on syntax coloring can be found in the file
+	doc/filters.doc, in the vile source directory.
+
+
+
 Filtering "man" pages
 ---------------------
-
 	When used in conjunction with the vile-manfilt program (supplied as
 	source file "manfilt.c"), either vile or xvile may be used to filter
 	and view manual pages.  xvile will even display (with your font set
 	properly) certain portions of the manual page text in bold or
 	italics as appropriate.
 
-	The file manpage.rc (found in the vile source directory, and also
-	copied below) contains a macro which is bound to ^X-m.  It will
-	prompt for a manual page, filter it, attach attributes and display
-	it in the current window.  The text of manpage.rc may be either
-	incorporated verbatim into your .vilerc file or may be read from
-	your .vilerc as follows:
+	The file macros/manpage.rc (found in the vile source directory,
+	with portions copied below) contains a macro which is bound to
+	^X-m.  It will prompt for a manual page, filter it, attach
+	attributes and display it in the current window.  The text of
+	manpage.rc may be either incorporated verbatim into your .vilerc
+	file or may be read from your .vilerc as follows:
 
 		source ~/manpage.rc
 
@@ -3016,146 +3575,47 @@ Filtering "man" pages
 
 		^A-AG
 
-	Here is the macro from the file manpage.rc:
-	;;
+	Here is the macro from macros/manpage.rc:
+
 	;; Macros for obtaining manual pages and then attributing them.
 	;;
 	;; Author: Kevin Buettner
-
-	29 store-macro
-		set-variable %manpage &query "man page? "
-		~if &or &seq %manpage "ERROR" & seq %manpage ""
-			~return
-		~endif
-		set-variable %manpagebuf &cat "<" &cat %manpage ">"
-		set terse
-		~force select-buffer %manpagebuf
-		~if &not $status
-			~hidden edit-file &cat "!man " &cat %manpage " | vile-manfilt"
-			~hidden rename-buffer %manpagebuf
-			~hidden error-buffer %manpagebuf
-			write-message "[Attaching attributes...]"
-			~hidden goto-beginning-of-file
-			~hidden setl noview
-			~hidden attribute-cntl_a-sequences-til end-of-file
-			~hidden unmark-buffer
-			~hidden setl view
-			goto-beginning-of-file
-			write-message "[Done formatting manual page.]"
-		~endif
-		set noterse
-	~endm
-	bind-key execute-macro-29 ^X-m
-
-Syntax coloring
----------------
-	vile comes with a set of external filter programs which can
-	help it color the text of many varieties of text.  For
-	instance, C program text may be displayed with keywords and
-	comments highlighted in a similar fashion to the man page
-	filtering described above.  [ The man page filter is handled
-	differently because it not only has to add color, but it
-	removes the overstriking normally produced by the "man"
-	command.  ] The filters that assist in the coloring process
-	are installed in vile's "lib" directory.  (This directory is
-	added to the $PATH environment variable when vile searches for
-	external programs to run.)  The filters are typically named
-	"vile-xxx-filt", where "xxx" denotes the type of text being
-	filtered, and is also usually the name for the vile "majormode"
-	which is used when editing that kind of text.  Thus the C
-	language filter is called vile-c-filt, the filter for TCL is
-	called vile-tcl-filt, and the filter for HTML is vile-html-filt.
-	Unlike previous releases of vile which relied on the filter
-	actually being applied to the current buffer, therefore
-	changing the buffers contents, and damaging the undo history,
-	this release utilizes a new vile command, called
-	"attribute-from-filter-til", which is an operator that applies
-	coloring information taken directly from the filter's output
-	stream without modifying the buffer.
-
-	Using external filters to provide coloring doesn't provide
-	what one would describe as "tightly integrated syntax
-	coloring".  But many people find it more than adequate, and
-	the advantages in modularity are clear.
-
-	Here is a procedure one might use to invoke the colorizer.
-	This filter is provided in the source in filters/filters.rc:
-
-	store-procedure HighlightFilter
-	    ~local $curcol $curline
-	    ~local %filtername
-	    ~hidden goto-beginning-of-file
-	    ~if &sin $majormode "sh"
-		~hidden attribute-from-filter end-of-file "vile-sh-filt"
-	    ~else
-		set-variable %filtername &cat &cat "vile-" $majormode "-filt"
-		~hidden attribute-from-filter-til end-of-file %filtername
+	store-procedure ShowManpage "Prompt for, and display a manual-page"
+	    ~local %filter %manpage %manpagebuf $error-buffer
+	    set-variable %filter &lookup e+l+p &cat vile-manfilt $exec-suffix
+	    ~if &seq %filter ""
+		write-message "[Cannot find manpage-filter]"
+		~return
 	    ~endif
-	    write-message "[Attaching attributes...]"
+	    set-variable %manpage &query "man page? "
+	    ~if &or &seq %manpage "ERROR" &seq %manpage ""
+		~return
+	    ~endif
+	    set-variable %manpagebuf &cat "<" &cat %manpage ">"
+	    set terse
+	    ~force select-buffer %manpagebuf
+	    ~if &not $status
+		edit-file &cat "!man " &cat %manpage &cat " | " %filter
+		setl txtmode
+		setl autocolor=0
+		~force rename-buffer %manpagebuf
+		~force error-buffer %manpagebuf
+		write-message "[Attaching bold and underline attributes...]"
+		goto-beginning-of-file
+		setl noview
+		attribute-cntl_a-sequences-til end-of-file
+		unmark-buffer
+		setl view
+		goto-beginning-of-file
+		write-message "[Done formatting manual page.]"
+	    ~endif
+	    set noterse
 	~endm
+	bind-key ShowManpage ^X-m
 
-	This procedure can be tied to the "read-hook" variable by
-	adding "set read-hook HighlightFilter" to your .vilerc.  This
-	will cause coloring to be invoked every time you edit a new
-	file.  Adding something like "bind-key HighlightFilter ^X-q"
-	(already present in filters/filters.rc) provides a convenient
-	way of reapplying the coloring after a succession of edits to
-	the buffer.
+	Note that macros/manpage.rc also provides a macro that attaches
+	attributes to any man page displayed in the editor's current buffer.
 
-	It is also possible to have vile color your text for you when
-	you're not busy.  To do so, you'll need to tie the
-	HighlightFilter procedure (or some other suitable procedure)
-	to the "autocolor-hook" variable.  You'll also need to change
-	"autocolor" to be non-zero.  It represents the number of milliseconds
-	to wait after your most recent modification (and all
-	subsequent keypresses) to attempt to re-color the buffer.  For
-	example, adding the following two lines would cause your text
-	to be automatically recolored after waiting two seconds from
-	your most recent modification and all subsequent activity
-	(keypresses) occuring less than two seconds apart.
-
-	    set autocolor=2000
-	    set autocolor-hook HighlightFilter
-
-	Note that "autocolor" is a buffer mode and as such, you
-	can enable it globally, but disable it for certain particular
-	buffers that you don't wish to be automatically colored.  I.e,
-	do "setl autocolor=0" to disable the automatic syntax coloring
-	for a particular buffer.
-
-	The filter programs do their work based on the contents of the file
-	.vile.keywords (or vile.keywords depending on your configuration),
-	which contains a set of "keyword class descriptor" pairs.  An
-	example keyword file might contain:
-
-	    Action:BC1
-	    Comment:C1
-	    Ident:R
-	    Ident2:C6
-	    Keyword:BC3
-	    Keyword2:BC1
-	    Literal:UC5
-	    Number:C6
-	    Preproc:C2
-	    Type:BC2
-
-	The "Comment" keyword is a pseudo-keyword which determines the
-	attribute given to a language's comments, which will be given
-	"B"old "C"olor "1".  "Literal" applies to string literals,
-	which will be "U"nderlined "C"olor "5".  "Ident" applies to
-	identifier values ("R"everse), etc.  This file provides the
-	global coloring scheme for all the filters.  The association
-	of specific language filters to the generic "keyword classes"
-	are given in language specific mapping files, which are referred
-	to by the individual filters.  In general, the specific language
-	keyword list (e.g. awk.keywords, c.keywords, perl.keywords,
-	sh.keywords) provide only part of the filter's behavior --
-	much of its action is encoded in its source, which for most
-	filters is written in "lex".  (Actually, the GNU program "flex"
-	may be required.)
-
-	More information on syntax coloring filters can be found in
-	the file doc/filters.doc, in the vile source directory.
 
 
 Writing your own filters
@@ -3208,6 +3668,8 @@ Writing your own filters
 
 		^A15IB:Bold and italic
 
+
+
 Hypertext
 ---------
 	Vile does not currently supply a builtin key binding for
@@ -3237,9 +3699,10 @@ Hypertext
 	default action of selecting the word under the cursor will
 	occur instead.
 
+
+
 X Window System specifics
 -------------------------
-
 	If you are using xvile under X11, the following additions are
 	available:
 
@@ -3678,7 +4141,6 @@ X Window System specifics
 
 DOS specifics
 -------------
-
 	The .vilerc file is called vile.rc under DOS.
 
 	vile is perfectly happy (and even tries very hard) to use the
@@ -3729,20 +4191,6 @@ DOS specifics
 	returns, and forces "nodos" mode, so that they don't come back when
 	you write the file.  In both cases, "dos" mode becomes a so-called
 	"local" mode, so that the rest of your buffers will be unaffected.
-
-	Vile supports a 16-color palette under DOS, which includes:
-
-		black, red, green, brown, blue, magenta, cyan,
-		lightgray, gray, brightred, brightgreen, yellow,
-		brightblue, brightmagenta, brightcyan, white
-
-	If you wish to change vile's internal notion of these colors, put
-	a line in your vile.rc which resets the "palette" variable.  By
-	default its value is "0 4 2 6 1 5 3 7 8 12 10 14 9 13 11 15",
-	which associates each of the above colors with the appropriate
-	PC color attribute.  Under MS-DOS, the palette values are masked
-	with 7 before being used as background colors, to prevent blinking
-	characters.
 
 
 
@@ -3821,9 +4269,6 @@ VMS specifics
 
 Win32 specifics
 ---------------
-
-	Flavors
-	-------
 	The editor may be invoked/built as a console or GUI application.
 	The former is known as vile.exe and the latter as winvile.exe .
 	For the remainder of this section of the help file, a generic
@@ -4061,10 +4506,8 @@ Win32 specifics
 
 
 
-
 Differences from vi
 -------------------
-
 	Of course, this really isn't vi.  Some of the following differences
 	deserve changing, others do not.
 
@@ -4116,9 +4559,10 @@ Differences from vi
 
 		bind-key whole-lines _
 
+
+
 Sample .vilerc
 --------------
-
 	Here's a sample .vilerc, to help get you started with the
 	syntax and style of vile macros:
 
@@ -4180,9 +4624,10 @@ Sample .vilerc
 	bind-key execute-macro-3 ^A-K
 	bind-key execute-macro-4 ^A-M
 
+
+
 Notes on TERM types and Scrolling
 ---------------------------------
-
 	vile will determine the window size in one of three ways: first it
 	will ask the tty driver (using a TIOCGWINSZ ioctl call under UNIX).
 	Failing that, it will use the LINES and COLUMNS environment
@@ -4242,9 +4687,9 @@ Notes on TERM types and Scrolling
 	)
 
 
+
 Credits (last updated Jan, 2000)
 --------------------------------
-
 	Since version 6.1, Tom Dickey has been maintaining the "official"
 	source tree, and release responsibilities.  Paul Fox maintains the
 	mailing lists.
@@ -4310,6 +4755,7 @@ Credits (last updated Jan, 2000)
             -- Paul Fox
 
 
+
 Where to Get It
 ---------------
 	Up-to-date copies of vile, including executables for DOS, Win32 and
@@ -4326,9 +4772,10 @@ Where to Get It
 	metalabs.unc.edu (Linux), hobbes.nmsu.edu (OS/2) and the VMS Freeware
 	CDROM's.
 
+
+
 Problems
 --------
-
 	Send bug reports to
 		vile-bugs@foxharp.boston.ma.us
 
@@ -4337,4 +4784,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.464 2000/01/13 02:44:16 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.470 2000/01/14 11:32:43 tom Exp $
