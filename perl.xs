@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.27 1998/07/03 00:29:42 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.28 1998/07/25 18:43:16 kev Exp $
  */
 
 /*#
@@ -111,6 +111,19 @@
 #define G_VOID G_SCALAR
 #endif
 
+/* Prior to perl5.005, the PL_ prefix wasn't used for things such
+   as PL_rs.  Define the PL_ macros that we use if necessary. */
+
+#include <patchlevel.h>		/* This is perl's patchlevel.h */
+
+#if PATCHLEVEL < 5
+#define PL_incgv incgv
+#define PL_rs rs
+#define PL_ofslen ofslen
+#define PL_ofs ofs
+#define PL_orslen ors
+#define PL_orslen orslen
+#endif
 
 /* for vile */
 #include "estruct.h"
@@ -912,7 +925,7 @@ perl_init(void)
 
     /* Add our own paths to the front of @INC */
 #ifdef HELP_LOC
-    av_unshift(av = GvAVn(incgv), 2);
+    av_unshift(av = GvAVn(PL_incgv), 2);
     av_store(av, 0, newSVpv(lengthen_path(strcpy(temp,"~/.vile/perl")),0));
     sv = newSVpv(HELP_LOC,0);
     sv_catpv(sv, "perl");
@@ -928,7 +941,7 @@ perl_init(void)
 	len = strlen(vile_path) - 1;
 	if (len >= 0 && is_slashc(vile_path[len]))
 	    vile_path[len] = '\0'; /* Chop trailing path delim */
-	av_unshift(av = GvAVn(incgv), 1);
+	av_unshift(av = GvAVn(PL_incgv), 1);
 	sv = newSVpv(vile_path, 0);
 	sv_catpv(sv, (char *) perl_subdir);
 	av_store(av, 0, sv);
@@ -2509,7 +2522,7 @@ READLINE(vbp)
 	     * the DLL.  So we have our own...  */
 	    SV *svrs = perl_get_sv("main::/", FALSE);
 #else
-#           define svrs rs
+#           define svrs PL_rs
 #endif
 
 	    if (RsSNARF(svrs)) {
@@ -3300,8 +3313,8 @@ PRINT(vbp, ...)
 		int i;
 
 		for (i = 2; i < items; i++) {
-		    if (ofslen > 0)
-			sv_catpvn(tmp, ofs, ofslen);
+		    if (PL_ofslen > 0)
+			sv_catpvn(tmp, PL_ofs, PL_ofslen);
 
 		    sv_catsv(tmp, ST(i));
 		}
@@ -3319,11 +3332,11 @@ PRINT(vbp, ...)
 		char *arg = SvPV(ST(i), len);
 		api_dotinsert(vbp, arg, len);
 		i++;
-		if (i < items && ofslen > 0)
-		    api_dotinsert(vbp, ofs, ofslen);
+		if (i < items && PL_ofslen > 0)
+		    api_dotinsert(vbp, PL_ofs, PL_ofslen);
 	    }
-	    if (orslen > 0)
-		api_dotinsert(vbp, ors, orslen);
+	    if (PL_orslen > 0)
+		api_dotinsert(vbp, PL_ors, PL_orslen);
 	}
 
   #

@@ -1,5 +1,10 @@
 Changes for vile 8.1 (released ??? ??? ??, 1998)
 
+ (kev) 980725 (g)
+ 	+ perl.xs (incgv, rs, ofslen, ofs, ors, orslen): Added PL_ prefix
+	  to these for perl5.005.  Defined these in terms of the old
+	  non-prefixed names for older versions of perl5.
+
  (tom) 980717 (f)
 	+ corrected return-value of do_a_submode(), which was hiding a problem
 	  in the call on new_regexval() from set_mode_value().
