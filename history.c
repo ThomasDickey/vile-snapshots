@@ -63,7 +63,7 @@
  *
  *	Allow left/right scrolling of input lines (when they get too long).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.43 1998/04/23 09:18:54 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.44 1998/04/28 09:36:25 kev Exp $
  *
  */
 
@@ -128,7 +128,7 @@ stopMyBuff(void)
 static int
 willGlue(void)
 {
-	if ((tb_length(MyText) != 0) && isPrint(MyGlue)) {
+	if ((tb_length(MyText) != 0) && (isPrint(MyGlue) || MyGlue == '\r')) {
 		register int c = tb_values(MyText)[0];
 		if ((c != SHPIPE_LEFT[0]) || isRepeatable(c))
 			return 1;
@@ -537,7 +537,7 @@ int	eolchar)
 	param.buffer   = buffer;
 	param.position = position;
 	param.endfunc  = endfunc;
-	param.eolchar  = eolchar;
+	param.eolchar  = eolchar == '\n' ? '\r' : eolchar;
 	param.options  = options;
 
 	any_edit = 0;

@@ -1,5 +1,58 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (kev) 980427 (y)
+	+ history.c (WillGlue): Allow '\r' to be glued.
+	  (edithistory): Transform '\n' into '\r' for insertion into the
+	  history buffer.
+	+ input.c (eol_history): Allow '\r' to match '\n'.
+	+ modes.c (choice_to_code): Do case insensitive comparisons.  This
+	  permits TRUE and FALSE to be used as boolean values as well as
+	  'true' and 'false'.  (The perl interface was being given the
+	  uppercase values to return.  Though it could be argued that I
+	  should maybe convert these to 0 and 1...)
+	  (adjvalueset, set_mode_value): Split functionality of adjvalueset
+	  into adjvalueset which (still) does the prompting and the 
+	  new function set_mode_value which does the setting.  Having
+	  a setter which does no prompting makes it easier to call from
+	  other places (like the perl interface.)
+	+ proto.h (set_mode_value): New declaration.
+	+ perl.xs (perl_prompt, perldo_prompt): More or less renamed
+	  from the old perl and perldo.  perl and perldo still exist,
+	  but they are small wrappers which make managing the history
+	  easier.
+	  (current_position): Alias for dot.
+	  (READLINE, mlreply, mlreply_no_opts, mlreply_file, mlreply_dir):
+	  Put calls to hst_glue() in so that the history mechansism will
+	  work right.
+	  (Vile::set, Vile::get, Vile::Buffer::set, Vile::Buffer::get):
+	  New methods.
+
+	  Brendan O'Dea contributed the following changes to perl.xs:
+
+	    I have nuked the original perldo/replace_line mechanism
+	    and arranged such that both perl and perldo feed a string
+	    to eval to the same [static] function after getting the
+	    user's input.
+
+	    The perldo wrapper massages the string into an implicit
+	    loop if required in pretty much the same way as Perl does
+	    for the -n/-p options.
+
+	    Additionally I've modified the way PRINT works to the
+	    minibuffer so that it handles embedded newlines and joins
+	    on $,
+
+	    The options format is almost the same as used by perl, and
+	    defaults to `-lpi' which was how it originally worked. 
+	    Example:
+
+		:r $MAIL :%perldo print if /^From /^M-00ni
+
+	    Two minor problems are that the history pastes the options
+	    onto the command, and there is a minor glitch with `-lpi'
+	    which causes a trailing newline to be appended to the
+	    buffer.
+
  (tom) 980426 (x)
 	+ modify :-line line specification parsing so that statements such
 	  as

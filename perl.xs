@@ -58,6 +58,8 @@ static MGVTBL svcurbuf_accessors = {
 static int perl_init(void);
 static void xs_init(void);
 static void perl_eval(char *string);
+static int  perl_prompt(void);
+static int  perldo_prompt(void);
 
 /* When no region is specified, this will cause the entire buffer to
    be selected without moving DOT. */
@@ -100,6 +102,22 @@ newVBrv(SV *rv, VileBuf *sp)
     return sv_bless(rv, gv_stashpv("Vile::Buffer", TRUE));
 }
 
+static VileBuf *
+getVB(SV *sv, char **croakmessage_ptr)
+{
+    VileBuf *vbp = 0;
+    if (sv_isa(sv, "Vile::Buffer")) {
+	vbp = (VileBuf *)SvIV((SV*)GvSV((GV*)SvRV(sv)));
+	if (vbp == 0) {
+	    *croakmessage_ptr = "buffer no longer exists";
+	}
+    }
+    else {
+	*croakmessage_ptr = "buffer of wrong type";
+    }
+    return vbp;
+}
+
 void
 perl_free_handle(void *handle)
 {
@@ -119,21 +137,12 @@ perl_free_handle(void *handle)
 
 static int recursecount = 0;
 
-int
-perl(int f GCC_UNUSED, int n GCC_UNUSED)
+static int
+do_perl_cmd(char *cmd, int inplace)
 {
-    register int status;
-    char buf[NLINE];	/* buffer to receive command into */
     int old_discmd; 
     int old_isnamedcmd; 
 
-    buf[0] = EOS;
-    if ((status = mlreply_no_opts("Perl command: ", buf, sizeof(buf))) != TRUE)
-	    return(status);
-
-    hst_flush(); 
-    hst_init(EOS); 
- 
     use_ml_as_prompt = 0; 
  
     if (perl_interp || perl_init()) {
@@ -156,7 +165,7 @@ perl(int f GCC_UNUSED, int n GCC_UNUSED)
 	    /* Initialize some of the fields in curvbp */ 
 	    curvbp->region = region; 
 	    curvbp->regionshape = regionshape; 
-	    curvbp->inplace_edit = 0; 
+	    curvbp->inplace_edit = inplace; 
      
 	    sv_setsv(svcurbuf, newVBrv(sv_2mortal(newSV(0)), curvbp));
 	}
@@ -176,7 +185,7 @@ perl(int f GCC_UNUSED, int n GCC_UNUSED)
 	printf("\nbefore eval\n");
         sv_dump(svcurbuf);
 #endif
-	perl_eval(buf);
+	perl_eval(cmd);
 #if PDEBUG
 	printf("after eval\n");
         sv_dump(svcurbuf);
@@ -188,7 +197,6 @@ perl(int f GCC_UNUSED, int n GCC_UNUSED)
  
 	if (recursecount == 0) {
 	    SvREFCNT_dec(SvRV(svcurbuf));
-
 	    api_command_cleanup();
 	}
 
@@ -205,130 +213,288 @@ perl(int f GCC_UNUSED, int n GCC_UNUSED)
 	return FALSE;
 }
 
-static int 
-replace_line(void) 
-{ 
-    char *str; 
-    STRLEN length; 
- 
-    if (SvOK(GvSV(defgv))) { 
-	str = SvPV(GvSV(defgv), length); 
-	if (   length == llength(DOT.l)  
-	    && strncmp(str, DOT.l->l_text, length) == 0) 
-	{ 
-	    /* Don't uselessly fill up the undo buffers... */ 
-	    return TRUE; 
-	} 
-	ldelete(llength(DOT.l), TRUE); 
-	/* Now add the right stuff back in... */ 
-	while (length-- > 0) { 
-	    if (*str == '\n') 
-		lnewline(); 
-	    else 
-		linsert(1,*str); 
-	    str++; 
-	} 
-    } 
-    else { 
-	ldelete(llength(DOT.l) + 1, TRUE); 
-    } 
-    return TRUE; 
-} 
- 
+/* 
+ * Prompt for and execute a perl command.
+ *
+ * This function is actually only a wrapper for perl_prompt below to make
+ * the history management easier.
+ */
+int
+perl(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    int status;
+
+#if OPT_HISTORY
+    if (recursecount == 0)
+	hst_init(EOS);
+#endif
+
+    status = perl_prompt();
+
+#if OPT_HISTORY
+    if (recursecount == 0)
+	hst_flush();
+#endif
+
+    return status;
+}
+
+static int
+perl_prompt(void)
+{
+    register int status;
+    char buf[NLINE];	/* buffer to receive command into */
+
+    buf[0] = EOS;
+    if ((status = mlreply_no_opts("Perl command: ", buf, sizeof(buf))) != TRUE)
+	    return(status);
+
+    return do_perl_cmd(buf, FALSE);
+}
+
+#define isoctal(c) ((c) >= '0' && (c) <= '7')
+static int octal(char **s)
+{
+    int oct = 0;
+    int i = (**s > '3') ? 2 : 3;
+
+    while (i-- && isoctal(**s))
+    {
+	oct *= 8;
+	oct += *((*s)++) - '0';
+    }
+
+    return oct;
+}
+
 int 
-perldo(int f GCC_UNUSED, int n GCC_UNUSED) 
-{ 
-    register int status; 
-    char buf[NLINE];	/* buffer to receive command into */ 
-    REGION region; 
-    char *err; 
-    STRLEN length; 
-    static char perldo_dcl[] = "sub Vile::perldo {"; 
-    SV *sv; 
-    dSP; 
- 
-    buf[0] = EOS; 
-    if ((status = mlreply_no_opts("Perl command: ", buf, sizeof(buf))) != TRUE) 
-	    return(status); 
- 
-    use_ml_as_prompt = 0; 
- 
-    if (!perl_interp) { 
-	if (!perl_init()) { 
-	    return FALSE; 
-	} 
-	SPAGAIN; 
-    } 
- 
-    if ((status = get_fl_region(&region)) != TRUE) { 
-	return status; 
-    } 
- 
-    length = strlen(buf); 
-    sv = newSV(length + sizeof(perldo_dcl)-1 + 1); 
-    sv_setpvn(sv, perldo_dcl, sizeof(perldo_dcl)-1); 
-    sv_catpvn(sv, buf, length); 
-    sv_catpvn(sv, "}", 1); 
-    perl_eval_sv(sv, G_DISCARD | G_NOARGS); 
-    SvREFCNT_dec(sv); 
-    err = SvPV(GvSV(errgv), length); 
- 
-    if (length) 
-	goto error; 
- 
- 
-#if 0 
-    lines_changed = 
-    total_changes = 0; 
-#endif 
-    ENTER; 
-    SAVETMPS; 
- 
-    sv_setsv(svcurbuf, newVBrv(sv_2mortal(newSV(0)), api_bp2vbp(curbp)));
- 
-    DOT.l = region.r_orig.l;	    /* Current line.	    */ 
-    DOT.o = 0; 
-    do { 
-	LINEPTR nextline = lforw(DOT.l); 
- 
-	sv_setpvn(GvSV(defgv), DOT.l->l_text, llength(DOT.l)); 
-	PUSHMARK(sp); 
-	perl_call_pv("Vile::perldo", G_SCALAR | G_EVAL); 
-	err = SvPV(GvSV(errgv), length); 
-	if (length != 0) 
-	    break; 
-	SPAGAIN; 
-	if (SvTRUEx(POPs)) { 
-	    if (replace_line() != TRUE) { 
-		PUTBACK; 
-		break; 
-	    } 
-	} 
-	PUTBACK; 
- 
-	DOT.l = nextline; 
-	DOT.o = 0; 
-    } while (!sameline(DOT, region.r_end)); 
- 
-    SvREFCNT_dec(SvRV(svcurbuf)); 
- 
-    FREETMPS; 
-    LEAVE; 
- 
-#if 0 
-    if (do_report(total_changes)) { 
-	    mlforce("[%d change%s on %d line%s]", 
-		    total_changes, PLURAL(total_changes), 
-		    lines_changed, PLURAL(lines_changed)); 
-    } 
-#endif 
-    if (length == 0) 
-	return TRUE; 
-error: 
-    err[length - 1] = '\0'; 
-    mlforce("%s", err); 
-    return FALSE; 
-} 
+perldo(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    int status;
+
+#if OPT_HISTORY
+    hst_init(EOS);
+#endif
+
+    status = perldo_prompt();
+
+#if OPT_HISTORY
+    hst_flush();
+#endif
+
+    return status;
+}
+
+static int
+perldo_prompt(void)
+{
+    register int status;
+    char buf[NLINE];	/* buffer to receive command into */
+    char obuf[NLINE];	/* buffer for options */
+    SV *cmd;		/* constructed command string */
+
+#define	OPT_i	001
+#define	OPT_n	002
+#define	OPT_p	004
+#define	OPT_l	010
+#define	OPT_a	020
+    int opts = 0;
+    char *o = obuf;
+    char *split = "' '";
+
+#define	RS_PARA	0776
+#define	RS_NONE	0777
+    int i_rs = '\n';
+    int o_rs = RS_NONE;
+
+    buf[0] = EOS;
+    if ((status = mlreply_no_opts("Perl command: ", buf, sizeof(buf))) != TRUE)
+	return status;
+
+#if OPT_HISTORY
+    hst_glue('\r');
+#endif
+
+    strcpy(obuf, "-lpi");
+    if ((status = mlreply_no_opts("options: ", obuf, sizeof(obuf))) != TRUE)
+	return status;
+
+    /* skip optional leading `-' */
+    if (*o == '-')
+	o++;
+
+    /* parse options */
+    while (*o)
+	switch (*o)
+	{
+	case 'a': opts |= OPT_a; o++; break;
+	case 'i': opts |= OPT_i; o++; break;
+	case 'n': opts &= ~OPT_p; opts |= OPT_n; o++; break;
+	case 'p': opts &= ~OPT_n; opts |= OPT_p; o++; break;
+	case 'l':
+	    opts |= OPT_l;
+	    o++;
+	    if (isoctal(*o))
+		o_rs = octal(&o);
+	    else
+		o_rs = i_rs;
+
+	    break;
+
+	case '0':
+	    /* special cases: 00, 0777 */
+	    if (*++o == '0' && !isoctal(*(o+1)))
+	    {
+		i_rs = RS_PARA;
+		o++;
+	    }
+	    else if (!strncmp(o, "777", 3))
+	    {
+		i_rs = RS_NONE;
+		o += 3;
+	    }
+	    else
+		i_rs = octal(&o);
+
+	    break;
+
+	case 'F':
+	    opts |= OPT_a; /* implied */
+	    if (*++o == '/' || *o == '"' || *o == '\'')
+	    {
+		char sep = *o;
+		char esc = 0;
+
+		split = o++;
+		while (*o)
+		{
+		    if (*o == sep && !esc)
+		    {
+			o++;
+			break;
+		    }
+
+		    if (*o++ == '\\')
+			esc ^= 1;
+		    else
+			esc = 0;
+		}
+
+		if (*o && *o != ' ')
+		{
+		    mlforce("[no closing %c]", sep);
+		    return FALSE;
+		}
+	    }
+	    else if (*o)
+	    {
+		split = o++;
+		while (*o && *o != ' ') o++;
+	    }
+	    else
+	    {
+		mlforce("[-F requires an argument]");
+		return FALSE;
+	    }
+
+	    if (*o)
+		*o++ = 0; /* terminate */
+		/* FALLTHRU */
+	    else
+		break;
+
+	case ' ':
+	    while (*o == ' ') o++;
+	    if (!*o)
+		break; /* trailing spaces */
+
+	    if (*o == '-' && *(o+1))
+	    {
+		o++;
+		break;
+	    }
+
+	    /* FALLTHRU */
+
+	default:
+	    mlforce("[invalid option -%s]", o);
+	    return FALSE;
+	}
+
+    /* construct command: block with localised $/ and $\ */
+    cmd = newSVpv("{local $/=", 0); /*}*/
+    if (i_rs == RS_NONE)
+	sv_catpv(cmd, "undef");
+    else if (i_rs == RS_PARA)
+	sv_catpv(cmd, "''");
+    else
+	sv_catpvf(cmd, "\"\\x%02x\"", i_rs);
+
+    sv_catpv(cmd, ";local $\\=");
+    if (o_rs == RS_NONE)
+	sv_catpv(cmd, "undef");
+    else if (o_rs == RS_PARA)
+	sv_catpv(cmd, "\"\\n\\n\"");
+    else
+	sv_catpvf(cmd, "\"\\x%02x\"", o_rs);
+
+    /* set default output handle */
+    sv_catpv(cmd, ";my $_save_fh=select ");
+    if (opts & OPT_i)
+	sv_catpv(cmd, "$Vile::current_buffer"); /* -i goes to buffer */
+    else
+	sv_catpv(cmd, "STDOUT"); /* mini */
+
+    /* implicit loop for -n/-p */
+    if (opts & (OPT_n|OPT_p))
+    {
+	sv_catpv(cmd, ";LINE:while(<$Vile::current_buffer>){"); /*}*/
+	if (opts & OPT_l)
+	    sv_catpv(cmd, "chomp;");
+
+	/* autosplit to @F */
+	if (opts & OPT_a)
+	{
+	    sv_catpv(cmd, "@F=split ");
+	    if (*split == '/' || *split == '"' || *split == '\'')
+		sv_catpv(cmd, split);
+	    else
+	    {
+		char delim;
+		char *try = "'~#\200\1";
+		/* try to find a delimiter not in the string */
+		while (*try && strchr(split, *try)) try++;
+		delim = *try;
+		sv_catpvf(cmd, "q%c%s%c", delim, split, delim);
+	    }
+
+	    sv_catpv(cmd, ";");
+	}
+    }
+    else
+	sv_catpv(cmd, ";");
+
+    /* add the command */
+    sv_catpv(cmd, buf);
+
+    /* close the loop */
+    if (opts & (OPT_n|OPT_p))
+    {
+/*{*/	sv_catpv(cmd, "}");
+	if (opts & OPT_p)
+	    sv_catpv(cmd, "continue{print}");
+    }
+    else
+	sv_catpv(cmd, ";");
+
+    /* reset handle and close block */
+/*{*/ sv_catpv(cmd, "select $_save_fh}");
+
+    status = do_perl_cmd(SvPV(cmd, na), opts & OPT_i);
+    SvREFCNT_dec(cmd);
+
+    return status;
+}
 
 static int
 svcurbuf_set(SV *sv, MAGIC *mg)
@@ -933,7 +1099,7 @@ have_length:
 /* Note: The commentary below prefixed with # characters may be
    retrieved via
 
-   	perl -ne 'print $1 if /^#((\s|$).*)$/s' perl.xs
+   	perl -ne 'print $1 if /^\s?#((\s|$).*)$/s' perl.xs
 */
 
 MODULE = Vile	PACKAGE = Vile
@@ -1079,28 +1245,36 @@ PRINT(vbp, ...)
 
     CODE:
 	if (vbp2bp(vbp) == bminip) {
-	    int i;
-	    char *text = 0;
-	    STRLEN sz = 0;
-	    for (i = 1; i < items; i++) {
-		STRLEN len;
-		char *arg = SvPV(ST(i), len);
+	    if (items > 0) {
+		SV *tmp = newSVsv(ST(1));
+		char *text;
+		char *nl;
+		int i;
 
-		if ((text = realloc(text, sz + len + 1)))
-		{
-		    memcpy(text + sz, arg, len);
-		    text[sz += len] = 0;
+		for (i = 2; i < items; i++) {
+		    if (ofslen > 0)
+			sv_catpvn(tmp, ofs, ofslen);
+
+		    sv_catsv(tmp, ST(i));
 		}
-		else
-		    break;
-	    }
 
-	    if (text && sz >= 1) {
-		if (text[sz-1] == '\n')
-		    text[sz-1] = 0;
-		mlforce("%s", text);
-		use_ml_as_prompt = 1;
-		free(text);
+		text = SvPV(tmp, na);
+		while (text) {
+		    if ((nl = strchr(text, '\n')) != NULL) {
+			*nl = 0;
+			while (*++nl == '\n')
+			    ;
+
+			if (!*nl)
+			    nl = 0;
+		    }
+
+		    mlforce("%s", text);
+		    use_ml_as_prompt = 1;
+		    text = nl;
+		}
+
+		SvREFCNT_dec(tmp);
 	    }
 	}
 	else {
@@ -1194,6 +1368,10 @@ READLINE(vbp)
 		prompt[len] = 0;
 	    }
 	    status = mlreply_no_opts(prompt, buf, sizeof(buf));
+#if OPT_HISTORY
+	    if (status == TRUE)
+		hst_glue('\r');
+#endif
 	    EXTEND(sp,1);
 	    if (status != TRUE && status != FALSE) {
 		PUSHs(&sv_undef);
@@ -1617,11 +1795,16 @@ setregion(vbp, ...)
 # 					# them before the previous 
 # 					# line. 
 #
+# 	Note: current_position is an alias for dot.
+#
  
 void 
 dot(vbp, ...) 
     VileBuf *vbp
  
+    ALIAS:
+	current_position = 1
+
     PREINIT:
 	I32 gimme;  
  
@@ -2004,6 +2187,158 @@ Warn(warning)
 	/* don't know if this actually works... */
 	sv_catpv(GvSV(errgv),warning);
 
+ #
+ # Vile::set PAIRLIST
+ # Vile::get LIST
+ # Vile::Buffer::set BUFOBJ PAIRLIST
+ # Vile::Buffer::get BUFOBJ LIST
+ #
+ #	Provides access to Vile's various modes, buffer and otherwise.
+ #	
+ #	For the set methods, PAIRLIST should be a list of key => value
+ #	pairs, where key is a mode name and value is an appropriate
+ #	value for that mode.  When used in an array context, the resulting
+ #	key => value pairs are returned.  (The value may be a different,
+ #	but equivalent string than originally specified.)  When used in
+ #	an array context, either the package name or buffer object is
+ #	returned (depending on how it was invoked) in order that the
+ #	result may be used as the target of further method calls.
+ #
+ #	When one of the get forms is used, a list of modes should
+ #	be supplied.  When used in an array context, a list of
+ #	key => value pairs is returned.  When used in a scalar
+ #	context, only one mode name may be supplied and the value
+ #	associated with this mode is returned.
+ #
+ #	The methods in Vile::Buffer attempt to get the local modes
+ #	associated with the buffer (falling back to the global ones
+ #	if no specific local mode has been specified up to this point).
+ #
+ #	Note: Access to certain internal attributes such as the buffer
+ #	name and file name are not provided via this mechanism yet.
+ #	There is no good reason for this other than that vile does
+ #	not provide access to these attributes via its set command.
+ #
+
+void
+set(...)
+
+    ALIAS:
+	Vile::get = 1
+	Vile::Buffer::set = 2
+	Vile::Buffer::get = 3
+
+    PREINIT:
+	int argno;
+	int isglobal;
+	int issetter;
+	char *mode;
+	int status;
+	VALARGS args;
+	I32 gimme;
+	char **modenames;
+	int nmodenames = 0;
+
+    PPCODE:
+	argno    = 0;
+	isglobal = (ix == 0 || ix == 1);
+	issetter = (ix == 0 || ix == 2);
+	gimme    = GIMME_V;
+	mode     = NULL;		/* just in case it never gets set */
+
+	if (!isglobal /* one of the Vile::Buffer methods */) {
+	    char *croakmess;
+	    VileBuf *vbp;
+
+	    /* Need a buffer object */
+	    vbp = getVB(ST(argno), &croakmess);
+	    argno++;
+
+	    if (vbp == 0) 
+		croak("Vile::Buffer::set: %s", croakmess);
+
+	    isglobal = 0;
+	}
+	else {
+	    /* We're in the Vile module.  See if we're called via
+	       Vile->set */
+	    if (strcmp(SvPV(ST(argno), na), "Vile") == 0)
+		argno++;
+	}
+
+	nmodenames = 0;
+	modenames = NULL;
+	if (gimme == G_ARRAY) {
+	    int n = items - argno + 1;		/* +1 in case of odd set */
+	    if (!issetter)
+		n *= 2;
+	    if (n > 0) {
+		modenames = typeallocn(char *, n);
+		if (modenames == NULL)
+		    croak("Can't allocate space");
+	    }
+	}
+
+	while (argno < items) {
+	    mode = SvPV(ST(argno), na);
+	    argno++;
+	    status = find_mode(mode, isglobal, &args);
+
+	    if (status != TRUE) {
+		if (modenames)
+		    free(modenames);
+		croak("set: Invalid mode %s", mode);
+	    }
+
+	    if (modenames)
+		modenames[nmodenames++] = mode;
+
+	    if (issetter) {
+		char *val;
+		val = NULL;
+		if (argno >= items) {
+		    if (args.names->type == VALTYPE_BOOL) {
+			val = "1";
+		    }
+		    else
+			croak("set: value required for %s", mode);
+		}
+		else {
+		    val = SvPV(ST(argno), na);
+		    argno++;
+		}
+
+		if (set_mode_value(mode, TRUE, isglobal, &args, val) != TRUE) {
+		    if (modenames)
+			free(modenames);
+		    croak("set: Invalid value %s for mode %s", val, mode);
+		}
+	    }
+
+	}
+
+	if (modenames == NULL) {
+	    if (issetter) {
+		if (isglobal)
+		    XPUSHs(sv_2mortal(newSVpv("Vile", 0)));
+		else
+		    XPUSHs(ST(0));	/* Buffer object */
+	    }
+	    else {
+		if (mode != NULL)
+		    XPUSHs(sv_2mortal(newSVpv(string_mode_val(&args), 0)));
+	    }
+	}
+	else {
+	    int i;
+	    for (i = 0; i < nmodenames; i++) {
+		mode = modenames[i];
+		status = find_mode(mode, isglobal, &args);
+		XPUSHs(sv_2mortal(newSVpv(mode, 0)));
+		XPUSHs(sv_2mortal(newSVpv(string_mode_val(&args), 0)));
+	    }
+	    free(modenames);
+	}
  
  
 #
@@ -2040,7 +2375,10 @@ mlreply(prompt, ...)
 	    buf[0] = EOS; 
  
 	status = mlreply(prompt, buf, sizeof(buf)); 
- 
+#if OPT_HISTORY
+	if (status == TRUE)
+	    hst_glue('\r');
+#endif
 	RETVAL = (status == TRUE || status == FALSE) 
 	         ? newSVpv(buf, 0) : newSVsv(&sv_undef); 
  
@@ -2079,7 +2417,10 @@ mlreply_no_opts(prompt, ...)
 	    buf[0] = EOS; 
  
 	status = mlreply_no_opts(prompt, buf, sizeof(buf)); 
- 
+#if OPT_HISTORY
+	if (status == TRUE)
+	    hst_glue('\r');
+#endif
 	RETVAL = (status == TRUE || status == FALSE) 
 	         ? newSVpv(buf, 0) : newSVsv(&sv_undef); 
  
@@ -2119,7 +2460,10 @@ mlreply_file(prompt, ...)
 	 
 	buf[0] = EOS;
 	status = mlreply_file(prompt, &last, FILEC_UNKNOWN, buf); 
- 
+#if OPT_HISTORY
+	if (status == TRUE)
+	    hst_glue('\r');
+#endif
 	RETVAL = (status == TRUE || status == FALSE)
 	         ? newSVpv(buf, 0) : newSVsv(&sv_undef); 
  
@@ -2159,7 +2503,10 @@ mlreply_dir(prompt, ...)
 	 
 	buf[0] = EOS;
 	status = mlreply_dir(prompt, &last, buf);
- 
+#if OPT_HISTORY
+	if (status == TRUE)
+	    hst_glue('\r');
+#endif
 	RETVAL = (status == TRUE || status == FALSE)
 	         ? newSVpv(buf, 0) : newSVsv(&sv_undef);
  
