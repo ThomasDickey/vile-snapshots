@@ -1,5 +1,12 @@
 Changes for vile 7.5/8.0 (released ??? ??? ?, 1998)
 
+ (kev) 980522 (k)
+ 	+ perl.xs (mlreply, mlreply_dir, mlreply_file, mlreply_no_opts):
+	  Use the PPCODE: directive instead of the CODE: directive.  Get
+	  rid of assigning RETVAL and the OUTPUT: directive.  Use XPUSHs
+	  to return the values.  Also changed the type to void instead of
+	  SV *.
+
  (tom) 980521 (j)
  	+ modify first item in VILE_STARTUP_PATH to be $(datadir).
  	+ add *.pl to makefile.in's install rules if configured --with-perl

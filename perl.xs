@@ -1658,7 +1658,7 @@ keystroke(...)
   # returned.
   #
 
-SV *
+void
 mlreply(prompt, ...)
     char *prompt
 
@@ -1666,7 +1666,7 @@ mlreply(prompt, ...)
 	char buf[NLINE];
 	int status;
 
-    CODE:
+    PPCODE:
 	if (items == 2) {
 	    strncpy(buf, SvPV(ST(1),na), NLINE-1);
 	    buf[NLINE-1] = EOS;
@@ -1681,12 +1681,10 @@ mlreply(prompt, ...)
 	if (status == TRUE)
 	    hst_glue('\r');
 #endif
-	RETVAL = (status == TRUE || status == FALSE)
+	XPUSHs((status == TRUE || status == FALSE)
 	         ? sv_2mortal(newSVpv(buf, 0))
-		 : &sv_undef;
+		 : &sv_undef);
 
-    OUTPUT:
-	RETVAL
 
   #
   # =item mlreply_dir PROMPT
@@ -1703,7 +1701,7 @@ mlreply(prompt, ...)
   # returned.
   #
 
-SV *
+void
 mlreply_dir(prompt, ...)
     char *prompt
 
@@ -1726,12 +1724,10 @@ mlreply_dir(prompt, ...)
 	if (status == TRUE)
 	    hst_glue('\r');
 #endif
-	RETVAL = (status == TRUE || status == FALSE)
+	XPUSHs((status == TRUE || status == FALSE)
 	         ? sv_2mortal(newSVpv(buf, 0))
-		 : &sv_undef;
+		 : &sv_undef);
 
-    OUTPUT:
-	RETVAL
 
   #
   # =item mlreply_file PROMPT
@@ -1748,7 +1744,7 @@ mlreply_dir(prompt, ...)
   # returned.
   #
 
-SV *
+void
 mlreply_file(prompt, ...)
     char *prompt
 
@@ -1757,7 +1753,7 @@ mlreply_file(prompt, ...)
 	static TBUFF *last;
 	int status;
 
-    CODE:
+    PPCODE:
 	if (items == 2) {
 	    tb_scopy(&last, SvPV(ST(1),na));
 	}
@@ -1771,12 +1767,10 @@ mlreply_file(prompt, ...)
 	if (status == TRUE)
 	    hst_glue('\r');
 #endif
-	RETVAL = (status == TRUE || status == FALSE)
+	XPUSHs((status == TRUE || status == FALSE)
 	         ? sv_2mortal(newSVpv(buf, 0))
-		 : &sv_undef;
+		 : &sv_undef);
 
-    OUTPUT:
-	RETVAL
 
   #
   # =item mlreply_no_opts PROMPT
@@ -1792,7 +1786,7 @@ mlreply_file(prompt, ...)
   # returned.
   #
 
-SV *
+void
 mlreply_no_opts(prompt, ...)
     char *prompt
 
@@ -1800,7 +1794,7 @@ mlreply_no_opts(prompt, ...)
 	char buf[NLINE];
 	int status;
 
-    CODE:
+    PPCODE:
 	if (items == 2) {
 	    strncpy(buf, SvPV(ST(1),na), NLINE-1);
 	    buf[NLINE-1] = EOS;
@@ -1815,12 +1809,10 @@ mlreply_no_opts(prompt, ...)
 	if (status == TRUE)
 	    hst_glue('\r');
 #endif
-	RETVAL = (status == TRUE || status == FALSE)
+	XPUSHs((status == TRUE || status == FALSE)
 	         ? sv_2mortal(newSVpv(buf, 0))
-		 : &sv_undef;
+		 : &sv_undef);
 
-    OUTPUT:
-	RETVAL
 
  #
  # =item selection_buffer
