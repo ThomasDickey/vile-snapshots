@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.110 1998/07/15 23:41:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.111 1998/10/06 00:11:29 tom Exp $
  *
  */
 
@@ -412,7 +412,18 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 	int	c;		/* command character */
 	int backsp_limit;
 	static ITBUFF *insbuff;
+	static int nested;
 	int osavedmode;
+
+	/*
+	 * Prevent recursion of insert-chars (it's confusing).
+	 */
+	if (nested++
+	 || (curbp == bminip)) {
+		kbd_alarm();
+		nested--;
+		return FALSE;
+	}
 
 	if (DOT_ARGUMENT) {
 		max_count = cur_count + dotcmdcnt;
@@ -421,8 +432,10 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 
 	if (playback && (insbuff != 0))
 		itb_first(insbuff);
-	else if (!itb_init(&insbuff, abortc))
+	else if (!itb_init(&insbuff, abortc)) {
+		nested--;
 		return FALSE;
+	}
 
 	if (insertmode == FALSE)
 		set_insertmode(INSERT);
@@ -580,6 +593,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 
 	set_insertmode(FALSE);
 	savedmode = osavedmode;
+	nested--;
 	return (status);
 }
 
