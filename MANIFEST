@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_4h
+MANIFEST for vile, version v9_4i
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -322,6 +322,7 @@ macros/digraphs.rc              macros for inserting digraphs
 macros/gnugpg.rc                GNU gpg macros
 macros/loaderrs.rc              macro to perform load-error-expressions
 macros/manpage.rc               macros for man-page filtering/display
+macros/modes.rc                 settings for majormodes (except filtername)
 macros/palettes.rc              sample color schemes
 macros/pictmode.rc              macros to support "picture-mode" editing
 macros/search.rc                find a file in one of several locations

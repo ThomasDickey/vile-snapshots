@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.76 2004/06/15 21:14:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.77 2004/08/08 20:36:55 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -991,10 +991,21 @@ check_keyword(char *s, int ok, AfterKey * state)
 
     switch (ok) {
     case 2:
-	state->may_have_pattern = !strncmp(s, "if", ok);
+	state->may_have_pattern = (!strncmp(s, "if", ok)
+				   || !strncmp(s, "eq", ok)
+				   || !strncmp(s, "ge", ok)
+				   || !strncmp(s, "gt", ok)
+				   || !strncmp(s, "le", ok)
+				   || !strncmp(s, "lt", ok)
+				   || !strncmp(s, "ne", ok)
+				   || !strncmp(s, "or", ok));
 	break;
     case 3:
 	state->has_no_pattern = !strncmp(s, "sub", ok);
+	state->may_have_pattern = (!strncmp(s, "and", ok)
+				   || !strncmp(s, "cmp", ok)
+				   || !strncmp(s, "not", ok)
+				   || !strncmp(s, "xor", ok));
 	break;
     case 4:
 	state->may_have_pattern = !strncmp(s, "grep", ok);

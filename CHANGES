@@ -1,5 +1,18 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20040808 (i)
+	> Mark Robinson:
+	+ split-out modes.rc from filters.rc to make configuration more
+	  flexible, e.g., for --disable-filters.
+ 	> Tom Dickey:
+	+ add named operators (eq, ge, gt, le, lt, ne, or, and, cmp, not, xor)
+	  to perl syntax highlighter check for tokens that may precede a
+	  pattern (report by Daniel L Ashbrook).
+	+ fix escaping within strings for tcmode; it was looking only for ":"
+	  or newline, but any character could be escaped.
+	+ fix highlighting of aliases without description in tcmode and timode.
+	+ add ".tic" as a suffix for timode.
+
  20040620 (h)
  	> Tom Dickey:
 	+ correct which-keywords to work with 9.4e change that appends "mode"

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.14 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.15 2004/08/08 18:56:50 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of terminfo
  */
@@ -43,7 +43,10 @@ STRING		"="(\\.|\^.|[^,\^\\])*
 
 ^"#"[^\n]*			{ WriteToken(Comment_attr); }
 
-^{ALIAS}","{SPACE}*[\n]		{ WriteToken(Ident_attr); BEGIN(CAPS); }
+^{ALIAS}","			{ flt_puts(yytext, yyleng - 1, Ident_attr);
+				  flt_putc(',');
+				  BEGIN(CAPS);
+				}
 ^({ALIAS}"|")+			{ WriteToken(Ident_attr); BEGIN(DESC); }
 <DESC>[^,\n]*			{ WriteToken(Comment_attr); BEGIN(GAPS); }
 <GAPS,VALS>({COMMA}|{ESCNL})*	{ commented = 0; ECHO; BEGIN(CAPS); }
