@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.380 2003/07/27 16:53:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.383 2003/11/12 22:08:56 tom Exp $
  *
  */
 
@@ -2587,7 +2587,7 @@ modeline_show(WINDOW *wp, int lchar)
 static const char *
 rough_position(WINDOW *wp)
 {
-    LINE *lp = wp->w_line.l;
+    LINEPTR lp = wp->w_line.l;
     int rows = wp->w_ntrows;
     const char *msg = 0;
 
@@ -2852,7 +2852,9 @@ special_formatter(TBUFF ** result, const char *fs, WINDOW *wp)
 
     if (((int) tb_length(*result) < term.cols)
 	&& (right_len = strlen(right_ms)) != 0) {
-	for (n = term.cols - (int) tb_length(*result) - right_len; n > 0; n--)
+	for (n = term.cols - (int) tb_length(*result) - right_len;
+	     n > 0;
+	     n--)
 	    tb_append(result, lchar);
 	if ((n = term.cols - right_len) < 0) {
 	    col = right_len + n;
@@ -3036,11 +3038,11 @@ reframe_cursor_position(WINDOW *wp)
     /* if not a requested reframe, check for a needed one */
     if ((wp->w_flag & WFFORCE) == 0) {
 	/* initial update in main.c may not set these first... */
-	if (wp->w_dot.l == (LINE *) 0) {
+	if (!valid_line_wp(wp->w_dot.l, wp)) {
 	    wp->w_dot.l = lforw(win_head(wp));
 	    wp->w_dot.o = 0;
 	}
-	if (wp->w_line.l == (LINE *) 0) {
+	if (!valid_line_wp(wp->w_line.l, wp)) {
 	    wp->w_line.l = wp->w_dot.l;
 	    wp->w_line.o = 0;
 	}
@@ -3222,24 +3224,31 @@ de_extend_lines(void)
     register int i;
 
     for_each_visible_window(wp) {
-	lp = wp->w_line.l;
-	i = TopRow(wp);
+	if ((lp = wp->w_line.l) == NULL) {
+	    /* this should not happen */
+	    mlforce("BUG:  lost w_line for %s", wp->w_bufp->b_bname);
+	    lp = win_head(wp);
+	    wp->w_toprow = 0;
+	}
+	if (valid_line_wp(lp, wp)) {
+	    i = TopRow(wp);
 
-	while (i < mode_row(wp)) {
-	    if (i >= 0
-		&& (vscreen[i]->v_flag & VFEXT) != 0) {
-		if ((wp != curwp)
-		    || (lp != wp->w_dot.l)
-		    || ((i != currow)
-			&& (curcol < col_limit(wp)))) {
-		    update_screen_line(wp, lp, i);
-		    vteeol();
-		    /* this line no longer is extended */
-		    vscreen[i]->v_flag &= ~VFEXT;
+	    while (i < mode_row(wp)) {
+		if (i >= 0
+		    && (vscreen[i]->v_flag & VFEXT) != 0) {
+		    if ((wp != curwp)
+			|| (lp != wp->w_dot.l)
+			|| ((i != currow)
+			    && (curcol < col_limit(wp)))) {
+			update_screen_line(wp, lp, i);
+			vteeol();
+			/* this line no longer is extended */
+			vscreen[i]->v_flag &= ~VFEXT;
+		    }
 		}
+		i += line_height(wp, lp);
+		lp = lforw(lp);
 	    }
-	    i += line_height(wp, lp);
-	    lp = lforw(lp);
 	}
     }
 }
@@ -3265,14 +3274,22 @@ update(int force /* force update past type ahead? */ )
     origrow = ttrow;
     origcol = ttcol;
 
-    if (clhide || !is_visible_window(curwp))
+    if (clhide || (valid_window(curwp) && !is_visible_window(curwp)))
 	return TRUE;
-    if (!curbp || !vscreen || !curwp)	/* not initialized */
+
+    /*
+     * If not initialized, just return.
+     */
+    if (!valid_buffer(curbp)
+	|| !vscreen
+	|| !valid_window(curwp))
 	return FALSE;
-    /* don't try to update if we got called via a read-hook on a window
+
+    /*
+     * Don't try to update if we got called via a read-hook on a window
      * that isn't complete.
      */
-    if (curwp->w_bufp == 0
+    if (!valid_buffer(curwp->w_bufp)
 	|| curwp->w_bufp->b_nwnd == 0
 	|| curwp->w_ntrows < 1)
 	return FALSE;
@@ -3581,7 +3598,7 @@ mlmsg(const char *fmt, va_list * app)
 	 * so save it now */
 	tb_init(&mlsave, EOS);
 #if OPT_POPUP_MSGS
-	if (global_g_val(GMDPOPUP_MSGS) || (curwp == 0)) {
+	if (global_g_val(GMDPOPUP_MSGS) || !valid_window(curwp)) {
 	    TRACE(("mlmsg popup_msgs #1 for '%s'\n", fmt));
 	    popup_msgs();
 	    msg_putc('\n');

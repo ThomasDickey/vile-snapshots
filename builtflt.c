@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.34 2003/11/03 20:45:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.36 2003/11/13 00:19:58 tom Exp $
  *
  */
 
@@ -51,7 +51,7 @@ parse_filtername(const char *major_name, const char **params)
 
     *params = 0;
 
-    if (curbp != 0
+    if (valid_buffer(curbp)
 	&& curbp->majr != 0
 	&& !strcmp(curbp->majr->name, major_name)
 	&& (temp = b_val_ptr(curbp, VAL_FILTERNAME)) != 0) {
@@ -152,6 +152,17 @@ save_mark(int first)
 }
 
 #ifdef HAVE_LIBDL
+
+#ifdef RTLD_NOW
+#define my_RTLD RTLD_NOW
+#else
+#ifdef RTLD_LAZY
+#define my_RTLD RTLD_LAZY
+#else
+make an error
+#endif
+#endif
+
 static int
 load_filter(const char *name)
 {
@@ -173,7 +184,7 @@ load_filter(const char *name)
 	    pathcat(filename, filename, leafname);
 	    TRACE(("load_filter(%s) %s\n", filename, defining));
 	    ++tried;
-	    if ((obj = dlopen(filename, RTLD_NOW)) != 0) {
+	    if ((obj = dlopen(filename, my_RTLD)) != 0) {
 		found = 1;
 		if ((def = dlsym(obj, defining)) == 0) {
 		    dlclose(obj);

@@ -24,7 +24,7 @@
  *
  *		ted, 05/03
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.107 2003/06/04 17:47:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.108 2003/11/11 22:33:26 tom Exp $
  *
  */
 
@@ -310,12 +310,15 @@ typedef enum {
  			(p)[4] = CharOf(n)
 
 /*
- * RSIMPLE/RCOMPLX operations have a different layout: OP(), NEXT(), and
- * RR_MIN(), RR_MAX() are used to extract their data.
+ * RSIMPLE/RCOMPLX operations have a different layout:  OP(), NEXT(), and
+ * RR_MIN(), RR_MAX() are used to extract their data, i.e., the minimum and
+ * maximum repeat counts, respectively.  A zero repeat-count means that the
+ * value is unspecified.
  */
-#define RR_LEN		5	/* chars in a RSIMPLE/RCOMPLX */
-#define RR_MIN(p) ((p)[3])	/* minimum repeat count (0 is unspecified) */
-#define RR_MAX(p) ((p)[4])	/* maximum repeat count (0 is unspecified) */
+#define RR_BYTES  sizeof(int)
+#define RR_LEN		3 + (2 * RR_BYTES)	/* sizeof(RSIMPLE/RCOMPLX) */
+#define RR_MIN(p) ((p)[3])
+#define RR_MAX(p) ((p)[3 + RR_BYTES])
 
 #define SAME(a,b) (ignorecase ? nocase_eq(a,b) : (CharOf(a) == CharOf(b)))
 #define STRSKIP(s) ((s) + strlen(s))
@@ -749,6 +752,48 @@ encode_zero_or_one(char *ret)
 }
 
 /*
+ * The minimum/maximum repeat counts are stored as an unaligned integer.
+ */
+typedef union {
+    int int_value;
+    char chr_value[sizeof(int)];
+} UNALIGNED_INT;
+
+#define GET_UNALIGNED(macro) \
+    UNALIGNED_INT temp; \
+    memcpy(temp.chr_value, &(macro(op)), sizeof(int)); \
+    return temp.int_value
+
+static int
+get_RR_MIN(char *op)
+{
+    GET_UNALIGNED(RR_MIN);
+}
+
+static int
+get_RR_MAX(char *op)
+{
+    GET_UNALIGNED(RR_MAX);
+}
+
+#define SET_UNALIGNED(macro) \
+    UNALIGNED_INT temp; \
+    temp.int_value = value; \
+    memcpy(&(macro(op)), temp.chr_value, sizeof(int))
+
+static void
+set_RR_MIN(char *op, int value)
+{
+    SET_UNALIGNED(RR_MIN);
+}
+
+static void
+set_RR_MAX(char *op, int value)
+{
+    SET_UNALIGNED(RR_MAX);
+}
+
+/*
  - regpiece - something followed by possible [*+?]
  *
  * Note that the branching code sequences used for ? and the general cases
@@ -826,8 +871,8 @@ regpiece(int *flagp, int at_bop)
 	    regtail(ret, next);	/* Either */
 	    loop = regnode(RCOMPLX);
 	    if (loop != &regdummy) {
-		RR_MIN(loop) = (char) lo;
-		RR_MAX(loop) = (char) hi;
+		set_RR_MIN(loop, lo);
+		set_RR_MAX(loop, hi);
 	    }
 	    regtail(loop, ret);	/* loop back */
 	    regtail(next, regnode(BRANCH));	/* or */
@@ -1208,8 +1253,8 @@ regnode(int op)
     switch (op) {
     case RSIMPLE:
     case RCOMPLX:
-	RR_MIN(ptr) = 0;
-	RR_MAX(ptr) = 0;
+	set_RR_MIN(ptr, 0);
+	set_RR_MAX(ptr, 0);
 	break;
     case ANYOF:
     case ANYBUT:
@@ -1263,8 +1308,8 @@ regrange(int op, char *opnd, int lo, int hi)
     if (regcode == &regdummy)
 	return;
     *opnd = (char) op;
-    RR_MIN(opnd) = (char) lo;
-    RR_MAX(opnd) = (char) hi;
+    set_RR_MIN(opnd, lo);
+    set_RR_MAX(opnd, hi);
 }
 
 /*
@@ -1926,14 +1971,17 @@ regmatch(char *prog, int found)
 
 		next = OPERAND(scan);
 		if (OP(next) == RCOMPLX) {
-		    if ((RR_MAX(next) == 0
-			 || found + 1 < RR_MAX(next))
+		    int max = get_RR_MAX(next);
+		    int min = get_RR_MIN(next);
+
+		    if ((max == 0
+			 || found + 1 < max)
 			&& regmatch(next, found + 1)) {
-			found = RR_MIN(next);
+			found = min;
 		    }
 
-		    if (RR_MIN(next) == 0
-			|| found >= RR_MIN(next))
+		    if (min == 0
+			|| found >= min)
 			return (1);
 		    return (0);
 
@@ -1985,8 +2033,8 @@ regmatch(char *prog, int found)
 		    rpt = OPERAND(scan);
 		    break;
 		default:	/* RSIMPLE */
-		    min = RR_MIN(scan);
-		    max = RR_MAX(scan);
+		    min = get_RR_MIN(scan);
+		    max = get_RR_MAX(scan);
 		    rpt = scan + RR_LEN;
 		    break;
 		}
@@ -2477,11 +2525,11 @@ regprop(char *op)
 	(void) sprintf(STRSKIP(buf), "%s%c", OP(op) == RSIMPLE
 		       ? "RSIMPLE"
 		       : "RCOMPLX", L_CURL);
-	if (RR_MIN(op))
-	    (void) sprintf(STRSKIP(buf), "%d", RR_MIN(op));
+	if (get_RR_MIN(op))
+	    (void) sprintf(STRSKIP(buf), "%d", get_RR_MIN(op));
 	strcat(buf, ",");
-	if (RR_MAX(op))
-	    (void) sprintf(STRSKIP(buf), "%d", RR_MAX(op));
+	if (get_RR_MAX(op))
+	    (void) sprintf(STRSKIP(buf), "%d", get_RR_MAX(op));
 	(void) sprintf(STRSKIP(buf), "%c", R_CURL);
 	p = NULL;
 	break;

@@ -1,9 +1,31 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20031220 (d)
+ 	> Tom Dickey:
+	+ modify pl-filt.c to handle
+		sub y { }
+	  i.e., not treat the "y" as the beginning of a pattern.
+	+ modify perl.xs to allow for $VILE_LIBDIR_PATH to be a list of paths.
+	  Only add the corresponding xxx/perl names to @INC if they correspond
+	  to a real directory.
+	+ rewrote pascal syntax filter in lex, adding highlighting for numbers,
+	  and TurboC, Delphi comments.
+	+ improve pascal keywords.
+	+ relax check for dlopen() by assuming that at least RTLD_LAZY is
+	  defined.  This works for SunOS 4.1.4.
+	+ add a check in de_extend_lines() for a null wp->w_line.l, recover
+	  by resetting to the buffer-head (report by George Eccles).
+	+ add some more debugging code, calls to valid_buffer(), valid_window()
+	  and new functions valid_line_bp(), valid_line_wp().
+	+ change minimum/maximum repeat counts for regular expressions from a
+	  byte to an integer (report by George Eccles).
+	+ modify "dist" rule in makefile.wnt to make it set the name of the
+	  zip-file based on the executable.  Add a ".map" file to the zip file.
+
  20031105 (c)
  	> Tom Dickey:
 	+ improved check for dlsym to make loadable filters work on Solaris and
-	  IRIX64.
+	  IRIX64 (tested with gcc).
 	+ make "--disable-echo" apply to making the loadable filters.
 	+ use EXEEXT and OBJEXT in generated makefiles.
 	+ corrected parameter to lookup_filter(); it did not account for the

@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.89 2003/05/25 23:56:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.90 2003/12/12 22:43:11 tom Exp $
  */
 
 /*#
@@ -1045,6 +1045,19 @@ svcurbuf_set(pTHX_ SV *sv, MAGIC *mg)
     return 1;
 }
 
+static void
+prepend_include(char *path)
+{
+    AV   *av;
+    SV   *sv;
+
+    if (is_directory(path)) {
+	av_unshift(av = GvAVn(PL_incgv), 1);
+	sv = newSVpv(path, 0);
+	av_store(av, 0, sv);
+    }
+}
+
 static int
 perl_init(void)
 {
@@ -1070,20 +1083,20 @@ perl_init(void)
 
     /* Add our own paths to the front of @INC */
 #ifdef HELP_LOC
-    av_unshift(av = GvAVn(PL_incgv), 2);
-    av_store(av, 0, newSVpv(lengthen_path(strcpy(temp,"~/.vile/perl")),0));
-    av_store(av, 1, newSVpv(lengthen_path(pathcat(temp,HELP_LOC,"perl")),0));
+    prepend_include(lengthen_path(strcpy(temp, "~/.vile/perl")));
+    prepend_include(lengthen_path(pathcat(temp, HELP_LOC, "perl")));
 #endif
     /* Always recognize environment variable */
     if ((vile_path = getenv("VILE_LIBDIR_PATH")) != 0)
     {
+	const char *cp = vile_path;
 	/*
 	 * "patch" @INC to look (first) for scripts in the directory
 	 * %VILE_LIBDIR_PATH%\\perl .
 	 */
-	av_unshift(av = GvAVn(PL_incgv), 1);
-	sv = newSVpv(pathcat(temp, vile_path, "perl"), 0);
-	av_store(av, 0, sv);
+	while ((cp = parse_pathlist(cp, vile_path)) != 0) {
+	    prepend_include(pathcat(temp, cp, "perl"));
+	}
     }
 
     /* Obtain handles to specific perl variables, creating them

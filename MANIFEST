@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_4c
+MANIFEST for vile, version v9_4d
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -237,7 +237,7 @@ filters/mk-key.awk              generate install/uninstall rules for keyword fil
 filters/mms-filt.l              mms syntax filter for vile
 filters/nr-filt.l               nroff syntax highlighting filter for vile
 filters/nr.key                  keywords for nroff filter
-filters/pas-filt.c              Pascal syntax filter for vile
+filters/pas-filt.l              Pascal syntax filter for vile
 filters/pas.key                 keywords for pascal highlighting filter
 filters/pc.key                  keywords for printcap syntax highlighting
 filters/perl.key                keywords for perl syntax filter

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.266 2003/05/04 13:52:55 Mark.Robinson Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.267 2003/11/13 00:35:55 tom Exp $
  *
  */
 
@@ -1332,13 +1332,13 @@ ourstrstr(const char *haystack, const char *needle, int anchor)
 #endif /* OPT_REBIND || OPT_EVAL */
 
 static char *
-locate_fname(char *dirname, char *fname, UINT mode)
+locate_fname(char *dir_name, char *fname, UINT mode)
 {
     static char fullpath[NFILEN];	/* expanded path */
 
-    if (dirname
-	&& dirname[0] != EOS
-	&& ffaccess(pathcat(fullpath, dirname, fname), mode))
+    if (dir_name
+	&& dir_name[0] != EOS
+	&& ffaccess(pathcat(fullpath, dir_name, fname), mode))
 	return (fullpath);
 
     return 0;
@@ -1349,11 +1349,11 @@ locate_file_in_list(char *list, char *fname, UINT mode)
 {
     const char *cp;
     char *sp;
-    char dirname[NFILEN];
+    char dir_name[NFILEN];
 
     cp = list;
-    while ((cp = parse_pathlist(cp, dirname)) != 0) {
-	if ((sp = locate_fname(dirname, fname, mode)) != 0)
+    while ((cp = parse_pathlist(cp, dir_name)) != 0) {
+	if ((sp = locate_fname(dir_name, fname, mode)) != 0)
 	    return sp;
     }
     return 0;
@@ -1469,13 +1469,13 @@ list_one_fname(char *fname, UINT mode)
 }
 
 static void
-list_which_fname(char *dirname, char *fname, UINT mode)
+list_which_fname(char *dir_name, char *fname, UINT mode)
 {
     char fullpath[NFILEN];	/* expanded path */
 
-    if (dirname
-	&& dirname[0] != EOS) {
-	list_one_fname(SL_TO_BSL(pathcat(fullpath, dirname, fname)), mode);
+    if (dir_name
+	&& dir_name[0] != EOS) {
+	list_one_fname(SL_TO_BSL(pathcat(fullpath, dir_name, fname)), mode);
     }
 }
 
@@ -1483,11 +1483,11 @@ static void
 list_which_file_in_list(char *list, char *fname, UINT mode)
 {
     const char *cp;
-    char dirname[NFILEN];
+    char dir_name[NFILEN];
 
     cp = list;
-    while ((cp = parse_pathlist(cp, dirname)) != 0) {
-	list_which_fname(dirname, fname, mode);
+    while ((cp = parse_pathlist(cp, dir_name)) != 0) {
+	list_which_fname(dir_name, fname, mode);
     }
 }
 
