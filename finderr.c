@@ -2,7 +2,7 @@
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  * rewritten to use regular expressions, 1995 by T.Dickey (dickey@clark.net)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.70 1998/04/30 09:19:03 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.71 1998/07/10 10:32:06 tom Exp $
  *
  */
 
@@ -281,6 +281,8 @@ load_patterns(void)
 		for (n = 0; n < TABLESIZE(predefined); n++)
 			addline(bp, predefined[n], -1);
 		set_rdonly(bp, bp->b_fname, MDVIEW);
+		free_patterns();
+	} else if (b_is_changed(bp) || ((L_NUM)exp_count != bp->b_linecount)) {
 		free_patterns();
 	}
 	bsizes(bp);

@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.162 1998/07/01 23:43:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.163 1998/07/10 10:44:09 tom Exp $
  *
  */
 
@@ -542,8 +542,8 @@ namedcmd(int f, int n)
 	Steve Kirkendall
 */
 static const char *
-linespec(
-register const char	*s,	/* start of the line specifier */
+parse_linespec(
+register const char *s,		/* start of the line specifier */
 LINEPTR		*markptr)	/* where to store the mark's value */
 {
 	int		num;
@@ -698,15 +698,15 @@ CMDFLAGS	*flagp)
 		scan++;
 		*flagp |= (FROM|TO);
 	} else {
-		scan = linespec(scan, &toline);
+		scan = parse_linespec(scan, &toline);
 		*flagp |= FROM;
 		if (toline == null_ptr)
-			fromline = DOT.l;
+			toline = DOT.l;
 		fromline = toline;
 		while (*scan == ',') {
 			fromline = toline;
 			scan++;
-			scan = linespec(scan, &toline);
+			scan = parse_linespec(scan, &toline);
 			*flagp |= TO;
 			if (toline == null_ptr) {
 				/* faulty line spec */

@@ -2097,7 +2097,7 @@ Programmed procedures and macros
 	$modified	is current buffer modified or not?
 	$ntildes	percent of window filled by ~ chars, at end of buffer
 	$ocwd		previous directory			(read only)
-	$os		operating system ("unix", "dos", "vms", "os/2") (rd. o.)
+	$os		"unix", "dos", "vms", "os/2", "win32"	(read only)
 	$pagelen	number of screen lines in use by editor
 	$pagewid	current screen width
 	$palette	current palette string
@@ -3487,6 +3487,11 @@ Win32 specifics
 	reference to "vile" refers to both the console and GUI editor,
 	unless otherwise stated.
 
+	Winvile accepts these command-line options in addition to the
+	standard ones:
+
+	-geometry geom	Initial window dimensions in columns and rows.
+
 	Heritage
 	--------
 	The Win32 version of vile supports almost all of the features
@@ -3500,12 +3505,12 @@ Win32 specifics
 	Internally, vile uses two radically different mechanisms for piping
 	data to and from the shell.  One mechanism uses temporary files and
 	the other simply calls native Win32 services (no temp files).  This
-	dichotomy exists because the original Win95 console shell (command.com)
-	accesses the floppy drive each and every time a process communicates
-	with it via a pipe and the OS R2 shell abruptly hangs under similar
-	conditions.  By default, then, on a WinNT host, vile's pipes are
-	implemented with Win32 services and via temp files on a Win95 host.
-	If the user's replacement Win95 shell does not exhibit problems
+	dichotomy exists because the NT shell (cmd.exe) handles native
+	pipes relatively cleanly, but the Win95/98 shell (command.com) does
+	not.  If using Win95/98, refer to the file doc\w32modes.doc for the
+	gory details.  By default, then, on a WinNT host, vile's pipes are
+	implemented with Win32 services and via temp files on a Win95/98
+	host.  If the user's replacement shell does not exhibit problems
 	similar to those described above (e.g., Thompson Toolkit Shell),
 	vile may be forced to use native Win32 pipes by setting the global
 	mode "w32pipes" (e.g., "se w32pipes").
@@ -3565,12 +3570,12 @@ Win32 specifics
 	-----
 	force-console   Boolean indicating whether or not winvile forces
 			console creation prior to initiating a native read
-			pipe or filter region operation.  Must be set when the
-			host shell doesn't properly communicate with consoles
-			created as a side effect of the CreateProcess() API.
-			Reset by default unless Win95's command.com is the
-			current shell.  Note:  this mode is applicable only
-			when w32pipes is set. (U)
+			pipe or filter region operation.  Must be set when
+			the host shell doesn't properly communicate with
+			consoles created as a side effect of the
+			CreateProcess() API.  Reset by default unless
+			command.com is the current shell.  Note:  this mode
+			is applicable only when w32pipes is set.  (U)
 
 	scroll-pause	An integer indicating the time in milliseconds to
 			wait after scrolling the display.  A value of zero,
@@ -3826,4 +3831,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.359 1998/07/03 23:40:36 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.360 1998/07/10 10:39:22 cmorgan Exp $

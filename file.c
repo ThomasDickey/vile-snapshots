@@ -5,12 +5,16 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.227 1998/05/30 11:44:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.228 1998/07/10 00:20:22 tom Exp $
  *
  */
 
 #include	"estruct.h"
 #include        "edef.h"
+
+#if SYS_WINNT
+#include	<io.h>			/* for mktemp */
+#endif
 
 static	int	bp2swbuffer(BUFFER *bp, int ask_rerun, int lockfl);
 static	int	kifile(char *fname);

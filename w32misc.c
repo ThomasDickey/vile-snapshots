@@ -7,10 +7,11 @@
  * =======
  * -- This code has not been tested with NT 3.51 .
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.4 1998/07/08 01:01:06 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.5 1998/07/10 00:00:20 tom Exp $
  */
 
 #include <windows.h>
+#include <io.h>
 #include <conio.h>
 #include <assert.h>
 #include <stdio.h>

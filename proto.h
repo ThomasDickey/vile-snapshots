@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.288 1998/07/08 01:23:14 Chris.Sherman Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.289 1998/07/10 00:06:00 tom Exp $
  *
  */
 
@@ -626,7 +626,7 @@ extern int softfork (void);
 extern int system_SHELL (char *cmd);
 #endif
 
-#if SYS_MSDOS || SYS_WIN31 || (SYS_OS2 && CC_CSETPP) || TEST_DOS_PIPES
+#if SYS_MSDOS || SYS_WIN31 || SYS_WINNT || (SYS_OS2 && CC_CSETPP) || TEST_DOS_PIPES
 extern void npflush (void);
 #endif
 
