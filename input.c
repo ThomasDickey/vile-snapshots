@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.178 1998/04/26 21:52:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.179 1998/04/28 09:36:25 kev Exp $
  *
  */
 
@@ -593,7 +593,7 @@ kbd_seq(void)
 }
 
 /*
- * Get a command-key, suppressing the mapping 
+ * Get a command-key, suppressing the mapping
  */
 int
 kbd_seq_nomap(void)
@@ -1008,8 +1008,8 @@ int
 /*ARGSUSED*/
 eol_history(const char * buffer GCC_UNUSED, unsigned cpos GCC_UNUSED, int c, int eolchar)
 {
-	if (isPrint(eolchar)) {
-		if (c == eolchar)
+	if (isPrint(eolchar) || eolchar == '\r') {
+		if (c == eolchar || (eolchar == '\r' && c == '\n'))
 			return TRUE;
 	}
 	return FALSE;

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.113 1998/04/23 11:07:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.114 1998/04/28 09:36:25 kev Exp $
  *
  */
 
@@ -725,9 +725,11 @@ choice_to_code (const FSM_CHOICES *choices, const char *name)
 {
 	int code = ENUM_ILLEGAL;
 	register int i;
+	char	temp[64];
+	(void)mklower(strncpy0(temp, name, sizeof(temp)));
 
 	for (i = 0; choices[i].choice_name != 0; i++) {
-		if (strcmp(name, choices[i].choice_name) == 0) {
+		if (strcmp(temp, choices[i].choice_name) == 0) {
 			code = choices[i].choice_code;
 			break;
 		}
@@ -842,16 +844,13 @@ VALARGS *args)			/* symbol-table entry for the mode */
 	const struct VALNAMES *names = args->names;
 	struct VAL     *values = args->local;
 	struct VAL     *globls = args->global;
-	REGEXVAL *r;
 
-	struct VAL oldvalue;
 	char prompt[NLINE];
 	char respbuf[NFILEN];
 	int no = !strncmp(cp, "no", 2);
-	const char *rp = no ? cp+2 : cp;
-	int nval, status = TRUE;
+	const char *rp = NULL;
+	int status = TRUE;
 	int unsetting = !setting && !global;
-	int changed = FALSE;
 
 	if (no && !is_bool_type(names->type))
 		return FALSE;		/* this shouldn't happen */
@@ -889,14 +888,54 @@ VALARGS *args)			/* symbol-table entry for the mode */
 			return status;
 		if (!strlen(rp = respbuf))
 			return FALSE;
+	}
+#if OPT_HISTORY
+	else
+		hst_glue(' ');
+#endif
+	status = set_mode_value(cp, setting, global, args, rp);
+
+	return status;
+}
+
+int
+set_mode_value(const char *cp, int setting, int global, VALARGS *args, const char *rp)
+{
+	const struct VALNAMES *names = args->names;
+	struct VAL     *values = args->local;
+	struct VAL     *globls = args->global;
+	REGEXVAL *r;
+
+	struct VAL oldvalue;
+	int no = !strncmp(cp, "no", 2);
+	int nval, status = TRUE;
+	int unsetting = !setting && !global;
+	int changed = FALSE;
+
+	if (rp == NULL) {
+		rp = no ? cp+2 : cp;
+	}
+	else {
+		if (no && !is_bool_type(names->type))
+			return FALSE;		/* this shouldn't happen */
+
+		/*
+		 * Check if we're allowed to change this mode in the current context.
+		 */
+		if ((names->side_effect != 0)
+		 && !(*(names->side_effect))(args, (values==globls), TRUE)) {
+			return FALSE;
+		}
+
 #if defined(GMD_GLOB) || defined(GVAL_GLOB)
 		if (!strcmp(names->name, "glob")
 		 && !legal_glob_mode(rp))
-		 	return FALSE;
+			return FALSE;
 #endif
 #if OPT_ENUM_MODES
-		 if ((rp = legal_fsm(rp)) == 0)
-		    return FALSE;
+		(void) is_fsm(names);		/* evaluated for its side effects */
+		if ((rp = legal_fsm(rp)) == 0)
+			return FALSE;
 #endif
 		/* Test after fsm, to allow translation */
 		if (is_bool_type(names->type)) {
@@ -904,10 +943,6 @@ VALARGS *args)			/* symbol-table entry for the mode */
 				return FALSE;
 		}
 	}
-#if OPT_HISTORY
-	else
-		hst_glue(' ');
-#endif
 
 	/* save, to simplify no-change testing */
 	(void)copy_val(&oldvalue, values);

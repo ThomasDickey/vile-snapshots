@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.276 1998/04/26 21:31:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.277 1998/04/28 09:36:25 kev Exp $
  *
  */
 
@@ -578,6 +578,7 @@ extern char *string_mode_val (VALARGS *args);
 extern int adjvalueset (const char *cp, int setting, int global, VALARGS *args);
 extern int find_mode (const char *mode, int global, VALARGS *args);
 extern int mode_eol (EOL_ARGS);
+extern int set_mode_value(const char *cp, int setting, int global, VALARGS *args, const char *rp);
 extern int string_to_number (const char *from, int *np);
 extern void copy_mvals (int maximum, struct VAL *dst, struct VAL *src);
 extern void free_local_vals (const struct VALNAMES *names, struct VAL *gbl, struct VAL *val);
