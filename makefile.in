@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.159 2000/01/30 23:24:15 kev Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.164 2000/03/18 01:38:27 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -38,7 +38,7 @@ INSTALL_DATA	= @INSTALL_DATA@
 
 EXTRA_CFLAGS	= @EXTRA_CFLAGS@
 CFLAGS		= @CFLAGS@ $(EXTRA_CFLAGS)
-LIBS		= @LIBS@
+LIBS		= @FILTER_LIBS@ @LIBS@
 LINT		= @LINT@
 
 x		= @PROG_EXT@
@@ -48,6 +48,7 @@ X_LIBS		= @X_LIBS@
 SCREEN		= @SCREEN@
 TARGET		= @TARGET@$x
 
+AWK		= @AWK@
 PERL		= @PERL@
 PERLLIB		= @perl_lib_path@
 INSTALL_SCRIPT	= $(srcdir)/sinstall.sh $(PERL) $(INSTALL_PROGRAM)
@@ -244,9 +245,13 @@ BUILTHDRS = nebind.h neproto.h neexec.h nefunc.h nemode.h nename.h nevars.h nefk
 # built from perl.xs
 BUILTSRCS = perl.c
 
+# built-in filters, if any
+BUILTLIBS = @BUILTLIBS@
+
 # The following are optional (non-core):
 #	api.o
 #	btree.o
+#	builtflt.o
 #	history.o
 #	isearch.o
 #	npopen.o
@@ -266,10 +271,13 @@ OBJ = $(SCREEN).o \
 
 ALL =	$(TARGET)
 
+all \
+install ::
+	cd filters && $(MAKE) @cf_cv_makeflags@ $@
 all ::	$(ALL)
 
-$(TARGET): $(BUILTHDRS) $(OBJ)
-	-mv $(TARGET) o$(TARGET)
+$(TARGET): $(BUILTHDRS) $(OBJ) $(BUILTLIBS)
+	- mv $(TARGET) o$(TARGET)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ $(OBJ) $(X_LIBS) $(LIBS)
 
 vile.man: vile.1
@@ -301,6 +309,11 @@ nevars.h :	nemode.h
 
 nemode.h:	modetbl $(MKTBLS)
 	$(MKTBLS) $(srcdir)/modetbl
+
+builtflt.o :	builtflt.h
+
+builtflt.h :
+	$(AWK) -f $(srcdir)/filters/mk-0th.awk <$(srcdir)/filters/genmake.mak list="@VILE_BUILTIN_FILTERS@" >$@
 
 $(MKTBLS):  $(srcdir)/mktbls.c
 	@ECHO_LD@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) \
@@ -362,7 +375,7 @@ installdirs: $(INSTALL_DIRS)
 
 uninstall-$(TARGET) \
 uninstall ::
-	-$(RM) $(INSTALL_FILES)
+	- $(RM) $(INSTALL_FILES)
 
 # The makefile is technically dependent upon the config.status file, but
 # gmake gets overly ambitious and remakes the makefile too often.
@@ -378,18 +391,25 @@ makefile: makefile.in
 config.status: configure
 	$(SHELL) ./config.status --recheck
 
+uninstall \
+mostlyclean \
+clean \
+distclean ::
+	- test -f filters/makefile && cd filters && $(MAKE) @cf_cv_makeflags@ $@
+
 mostlyclean ::
-	-$(RM) *.[oi] o$(TARGET) $(BUILTHDRS) $(BUILTSRCS) $(MKTBLS) \
-	    core *~ *.BAK *.bb* *.da *.gcov
+	- $(RM) *.[oi] o$(TARGET) $(BUILTHDRS) $(BUILTSRCS) $(MKTBLS) \
+	    builtflt.h core *~ *.BAK *.bb* *.da *.gcov
 
 clean :: mostlyclean
-	-$(RM) $(ALL)
+	- $(RM) $(ALL)
 
 distclean :: clean
-	-$(RM) makefile config.status config.cache config.log config.h
+	- $(RM) makefile config.status config.cache config.log config.h
+	- test -d filters && rmdir filters
 
 realclean: distclean
-	-$(RM) tags TAGS vile-perl-api.* pod2html-*
+	- $(RM) tags TAGS vile-perl-api.* pod2html-*
 
 lint: $(BUILTHDRS)
 	$(LINT) $(CPPFLAGS) $(SRC) $(LIBS)
@@ -569,17 +589,6 @@ perl.c: $(srcdir)/perl.xs $(srcdir)/ptypemap
 		-typemap $(PERLLIB)/ExtUtils/typemap \
 		-typemap ptypemap \
 		$(srcdir)/perl.xs > $@
-
-all \
-install \
-uninstall \
-mostlyclean \
-clean \
-distclean ::
-	cd filters && $(MAKE) @cf_cv_makeflags@ $@
-
-distclean ::
-	- rmdir filters
 
 $(OBJ): estruct.h nemode.h edef.h neproto.h proto.h config.h
 

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_1d
+MANIFEST for vile, version v9_1e
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -24,6 +24,7 @@ btree.c                         balanced-binary (AVL) tree functions
 btree.h                         interface of btree.c
 buffer.c                        buffer-management
 buglist                         bug-list
+builtflt.c                      interface from vile to built-in filters
 chgdfunc.h                      prototypes for mode-functions with side-effects
 cmdtbl                          used by 'mktbls' to generate VILE's command-tables
 config.emx                      configure-ifdefs for EMX (OS/2)
@@ -176,6 +177,7 @@ filters/filterio.c              main program and I/O for external filters
 filters/filters.c               common utilities for filtering
 filters/filters.h               interface/definitions for filtering utilities
 filters/filters.rc              sample majormodes, and corresponding filters
+filters/genmake.mak             makefile template-data for genmake.awk
 filters/html.key                keywords for vile-html-filt
 filters/htmlfilt.l              HTML syntax filter for vile
 filters/imake.key               keywords for imake-filter
@@ -191,6 +193,7 @@ filters/m4.key                  keywords for M4 syntax filter
 filters/mail.key                keywords for mail-filter
 filters/mailfilt.l              mail syntax highlighting filter for vile
 filters/make.key                keywords for makefile syntax highlighter
+filters/makefile.2nd            rules for filters/makefile
 filters/makefile.djg            makefile for DJGPP (vile-utilities)
 filters/makefile.emx            makefile for OS/2 EMX (vile utilities)
 filters/makefile.icc            makefile for OS/2 IBM CSet (vile utilities)
@@ -198,6 +201,10 @@ filters/makefile.in             makefile for vile filters
 filters/makefile.wnt            makefile for filters with Visual C++
 filters/makefilt.l              makefile syntax filter for vile
 filters/manfilt.c               manpage-filter
+filters/mk-0th.awk              construct builtflt.h
+filters/mk-1st.awk              script to generate lists of built-in/external filters
+filters/mk-2nd.awk              script to generate rules for building filters
+filters/mk-key.awk              generate install/uninstall rules for keyword files
 filters/mms-filt.l              mms syntax filter for vile
 filters/nr-filt.l               nroff syntax highlighting filter for vile
 filters/nr.key                  keywords for nroff filter

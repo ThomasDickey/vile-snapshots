@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.68 2000/02/28 11:30:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.69 2000/03/18 00:34:28 tom Exp $
  *
  */
 
@@ -118,7 +118,7 @@ ExecSource(char *param)
     flt_make_symtab(param);
     flt_read_keywords(MY_NAME);	/* provide default values for this table */
     flt_read_keywords(param);
-    set_symbol_table(filter_def.filter_name);
+    set_symbol_table(flt_name());
 
     meta_ch = save_meta;
     eqls_ch = save_eqls;
@@ -625,14 +625,6 @@ set_symbol_table(const char *classname)
 	}
     }
     return 0;
-}
-
-char *
-skip_blanks(char *src)
-{
-    while (isspace(*src))
-	src++;
-    return (src);
 }
 
 char *

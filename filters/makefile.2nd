@@ -1,0 +1,101 @@
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.5 2000/03/18 19:34:58 tom Exp $
+#
+
+.SUFFIXES: .l .c .i $o
+
+.l$o:
+@RULE_CC@
+	@ECHO_CC@$(LEX) -t $< > $*.c
+	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(CFLAGS) $*.c
+	-$(RM) $*.c
+.c.i:
+@RULE_CC@
+	@ECHO_CC@$(CPP) -C $(CPPFLAGS) $(QUOTDEFS) $< >$@
+.c$o:
+@RULE_CC@
+	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(QUOTDEFS) $(CFLAGS) $<
+
+LF_DEPS = filterio$o filters$o
+LF_ARGS = $(LF_DEPS) $(LEXLIB)
+
+CF_DEPS = filterio$o filters$o
+CF_ARGS = $(CF_DEPS)
+
+PROGS	= \
+	vile-crypt$x \
+	vile-manfilt$x
+
+ALL = 	$(PROGS) $(C_ALL) @MAKE_LEX@ $(LEX_ALL)
+LOBJS = filters$o $(C_OBJ) @MAKE_LEX@ $(LEX_OBJ)
+
+all:	$(ALL) @LIBBUILTFLT@
+
+check: $(TARGET)
+	@echo Sorry, no batch tests available.
+
+INSTALL_FILES = \
+	$(BINDIR)/vile-crypt$x \
+	$(BINDIR)/vile-manfilt$x \
+	$(DATADIR)/filters.rc \
+	$(DATADIR)/spell.rc $(INSTALL_C) @MAKE_LEX@ $(INSTALL_LEX)
+
+install :: $(INSTALL_DIRS) $(INSTALL_FILES)
+
+installdirs: $(INSTALL_DIRS)
+
+uninstall ::
+	-$(RM) $(INSTALL_FILES)
+
+# defining this target, though technically (i think) correct, causes
+#  the make to fail on machines which don't have autoconf, i.e. most of them.
+#configure: configure.in aclocal.m4
+#	autoconf
+
+config.status: configure
+	$(SHELL) ./config.status --recheck
+
+mostlyclean:
+	-$(RM) *.[oi] o$(TARGET) $(BUILTSRCS) core *~ *.BAK $(LEX_OUTPUT_ROOT).* *.bb* *.da *.gcov @LIBBUILTFLT@
+
+clean: mostlyclean
+	-$(RM) $(ALL)
+
+distclean: clean
+	-$(RM) makefile config.status config.cache config.log config.h
+
+realclean: distclean
+	-$(RM) tags TAGS
+
+lint:
+	$(LINT) $(CPPFLAGS) c-filt.c
+	$(LINT) $(CPPFLAGS) ecrypt.c
+	$(LINT) $(CPPFLAGS) manfilt.c
+	$(LINT) $(CPPFLAGS) pas-filt.c
+
+tags:
+	ctags *.[chyl]
+
+TAGS:
+	etags *.[chyl]
+
+dotags:
+	dotags *.[chyl]
+
+@LIB_PREFIX@vlflt.a : $(LOBJS)
+	$(AR) $(AR_OPTS) $@ $(LOBJS)
+	$(RANLIB) $@
+
+vile-crypt$x :	ecrypt$o	; $(CC) -o $@ ecrypt$o $(LDFLAGS) $(LIBS)
+vile-manfilt$x : manfilt$o	; $(CC) -o $@ manfilt$o $(LDFLAGS) $(LIBS)
+
+$(BINDIR)/vile-crypt$x :	vile-crypt$x		; $(INSTALL) $? $@
+$(BINDIR)/vile-manfilt$x :	vile-manfilt$x		; $(INSTALL) $? $@
+
+$(DATADIR)/filters.rc :		$(srcdir)/filters.rc	; $(INSTALL_DATA) $? $@
+$(DATADIR)/spell.rc :		$(srcdir)/spell.rc	; $(INSTALL_DATA) $? $@
+
+$(INSTALL_DIRS):
+	$(SHELL) ${top_srcdir}/mkdirs.sh $@
+
+ALWAYS:
+

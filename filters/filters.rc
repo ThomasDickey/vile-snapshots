@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.115 2000/03/13 00:02:14 tom Exp $
+; $Id: filters.rc,v 1.116 2000/03/17 10:31:04 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -22,6 +22,7 @@ define-mode awk
 ~with define-submode awk
 	suf '\.awk$'
 	pre '^#!\s*\/.*awk\>\(\s*-[a-z]\+\)*$'
+	cindent
 	comment-prefix '^\s*#'
 	comments   '^\s*#\s\+\s*$'
 ~endwith

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.10 2000/02/28 11:58:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.12 2000/03/17 01:56:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of awk
  * input text.
@@ -66,9 +66,9 @@ PATTERN		"/"(\\\.|[^ /\n])*"/"
 
 <CODE>"/"		{ ECHO; }
 
-"{"			{ if (!nesting++) { BEGIN(CODE); } }
+"{"			{ ECHO; if (!nesting++) { BEGIN(CODE); } }
 
-"}"			{ if (--nesting == 0) { BEGIN(MATCHING); } }
+"}"			{ ECHO; if (--nesting == 0) { BEGIN(MATCHING); } }
 
 ^{BLANK}*#!.*$		{ WriteToken(Preproc_attr); }
 

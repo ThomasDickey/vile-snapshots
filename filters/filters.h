@@ -1,9 +1,11 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.38 2000/02/28 12:06:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.40 2000/03/18 00:43:52 tom Exp $
  */
 
 #ifndef FILTERS_H
 #define FILTERS_H 1
+
+#ifndef _estruct_h
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -85,6 +87,8 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 #define GCC_UNUSED /*nothing*/
 #endif
 
+#endif /* _estruct_h */
+
 #define MY_NAME "vile"
 
 /*
@@ -164,14 +168,10 @@ typedef struct {
 	void (*DoFilter)(FILE *in);
 } FILTER_DEF;
 
-extern FILTER_DEF filter_def;
-
 /*
  * This is redefinable so we can make a list of all built-in filter definitions
  */
-#ifndef ActualFilter
-#define ActualFilter(name) filter_def
-#endif
+extern FILTER_DEF filter_def;
 
 /*
  * We'll put a DefineFilter() in each filter program
@@ -179,7 +179,15 @@ extern FILTER_DEF filter_def;
 #define DefineFilter(name) \
 static void init_filter(int before); \
 static void do_filter(FILE *Input); \
-FILTER_DEF ActualFilter(name) = { name, init_filter, do_filter }
+FILTER_DEF filter_def = { name, init_filter, do_filter }
+
+#if defined(FLEX_SCANNER) && defined(filter_def)
+#undef yywrap
+#define ECHO flt_echo(yytext, yyleng);
+#define YY_INPUT(buf,result,max_size) result = flt_input(buf,max_size)
+#define YY_NEVER_INTERACTIVE 1
+#define YY_FATAL_ERROR(msg) flt_failed(msg);
+#endif
 
 /*
  * Declared in the filters.c file.
@@ -200,7 +208,6 @@ extern char *do_alloc(char *ptr, unsigned need, unsigned *have);
 extern char *keyword_attr(char *name);
 extern char *lowercase_of(char *name);
 extern char *readline(FILE *fp, char **ptr, unsigned *len);
-extern char *skip_blanks(char *src);
 extern char *skip_ident(char *src);
 extern int set_symbol_table(const char *classname);
 extern long hash_function(const char *id);
@@ -211,12 +218,19 @@ extern void insert_keyword(const char *ident, const char *attribute, int classfl
 extern void parse_keyword(char *name, int classflag);
 
 /*
- * Declared in filterio.c
+ * Declared in filterio.c and/or builtflt.c
  */
+extern char *flt_name(void);
+extern char *skip_blanks(char *src);
 extern char *strmalloc(const char *src);
-extern void mlforce(const char *fmt, ...);
+extern int flt_input(char *buffer, int max_size);
+extern int flt_start(char *name);
+extern void flt_echo(char *string, int length);
+extern void flt_failed(const char *msg);
+extern void flt_finish(void);
 extern void flt_putc(int ch);
 extern void flt_puts(char *string, int length, char *attribute);
+extern void mlforce(const char *fmt, ...);
 
 #define WriteToken(attr) flt_puts(yytext, yyleng, attr)
 #define WriteToken2(attr,len) flt_puts(yytext+len, yyleng-len, attr)

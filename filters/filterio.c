@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.4 2000/02/28 12:06:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.5 2000/03/18 00:35:49 tom Exp $
  *
  */
 
@@ -61,6 +61,12 @@ ProcessArgs(int argc, char *argv[], int flag)
  * Public functions                                                           *
  ******************************************************************************/
 
+char *
+flt_name(void)
+{
+    return filter_def.filter_name;
+}
+
 void
 flt_putc(int ch)
 {
@@ -85,6 +91,14 @@ mlforce(const char *fmt, ...)
     vprintf(fmt, ap);
     va_end(ap);
     putchar('\n');
+}
+
+char *
+skip_blanks(char *src)
+{
+    while (isspace(*src))
+	src++;
+    return (src);
 }
 
 char *
