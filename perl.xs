@@ -3,9 +3,9 @@
  *
  * Author: Kevin Buettner, Brendan O'Dea
  *
- * (with acknowledgments to the authors of the nvi perl interface as
- * Sean Ahern who has contributed snippets of code here and there and
- * many valuable suggestions.)
+ * (with acknowledgments to the authors of the nvi perl interface and
+ * to Sean Ahern who has contributed snippets of code here and there
+ * and many valuable suggestions.)
  *
  * Created: Fall, 1997
  *
@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.24 1998/05/27 10:52:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.25 1998/06/07 01:28:31 kev Exp $
  */
 
 /*#
@@ -129,14 +129,6 @@ static MGVTBL svcurbuf_accessors = {
 	NULL, svcurbuf_set, NULL, NULL, NULL
 };
 
-static SV *svrs;		/* The input record separator, or $/
-                                 * Normally, this is available via the
-				 * rs macro, but apparently perl5.00402
-				 * on win32 systems don't export the
-				 * necessary symbol from the DLL.  So
-				 * we have our own...
-				 */
-
 static int perl_init(void);
 static void xs_init(void);
 static int  perl_prompt(void);
@@ -217,8 +209,13 @@ perl_default_region(void)
     MK.o  = 0;
     regionshape = FULLLINE;
     haveregion = NULL;
-    if (getregion(&region))
+    if (getregion(&region)) {
 	haveregion = &region;
+	/* This should really go in getregion(), but other parts of
+	   vile break when we do this. */
+	if (is_header_line(region.r_end, curbp) && !b_val(curbp, MDNEWLINE))
+	    region.r_size--;
+    }
     DOT = save_DOT;
 }
 
@@ -236,6 +233,8 @@ newVBrv(SV *rv, VileBuf *sp)
 	sv_setiv(GvSV((GV*)sp->perl_handle), (IV) sp);
 	SvREFCNT_inc(sp->perl_handle);
 	sv_magic(sp->perl_handle, rv, 'q', Nullch, 0);
+	gv_IOadd((GV*)sp->perl_handle);
+	IoLINES(GvIO((GV*)sp->perl_handle)) = 0;	/* initialise $. */
     }
     else
 	SvREFCNT_inc(sp->perl_handle);
@@ -304,6 +303,8 @@ do_perl_cmd(SV *cmd, int inplace)
 		    mlforce("BUG: getregion won't return TRUE in perl.xs.");
 		}
 	    }
+	    if (is_header_line(region.r_end, curbp) && !b_val(curbp, MDNEWLINE))
+		region.r_size--;
 
 	    /* Initialize some of the fields in curvbp */
 	    curvbp->region = region;
@@ -311,6 +312,7 @@ do_perl_cmd(SV *cmd, int inplace)
 	    curvbp->inplace_edit = inplace;
 
 	    sv_setsv(svcurbuf, newVBrv(sv_2mortal(newSV(0)), curvbp));
+	    IoLINES(GvIO((GV*)curvbp->perl_handle)) = 0;  /* initialise $. */
 	}
 
 	/* We set the following stuff up in the event that we call
@@ -928,7 +930,7 @@ perl_init(void)
 	    vile_path[len] = '\0'; /* Chop trailing path delim */
 	av_unshift(av = GvAVn(incgv), 1);
 	sv = newSVpv(vile_path, 0);
-	sv_catpv(sv, perl_subdir);
+	sv_catpv(sv, (char *) perl_subdir);
 	av_store(av, 0, sv);
     }
 
@@ -949,10 +951,6 @@ perl_init(void)
     sv_magic(svcurbuf, NULL, '~', svcurbuf_name, strlen(svcurbuf_name));
     mg_find(svcurbuf, '~')->mg_virtual = &svcurbuf_accessors;
     SvMAGICAL_on(svcurbuf);
-
-    /* Get sv for $/, the input record separator.  See comment
-       above (where svrs is declared) for why we don't use rs.  */
-    svrs = perl_get_sv("main::/", FALSE);
 
     /* Some things are better (or easier) to do in perl... */
     perl_eval_pv("$SIG{__WARN__}='Vile::Warn';"
@@ -2504,6 +2502,15 @@ READLINE(vbp)
 	    int (*f)(SV**,VileBuf*,char*,int);
 	    char *rsstr;
 	    int rslen;
+#ifdef HAVE_BROKEN_PERL_RS
+	    /* The input record separator, or $/ Normally, this is
+	     * available via the rs macro, but apparently perl5.00402
+	     * on win32 systems don't export the necessary symbol from
+	     * the DLL.  So we have our own...  */
+	    SV *svrs = perl_get_sv("main::/", FALSE);
+#else
+#           define svrs rs
+#endif
 
 	    if (RsSNARF(svrs)) {
 		f = svgetregion;
@@ -2529,17 +2536,22 @@ READLINE(vbp)
 
 	    if (gimme == G_VOID || gimme == G_SCALAR) {
 		SV *sv;
-		(void) f(&sv, vbp, rsstr, rslen);
+		if (f(&sv, vbp, rsstr, rslen))
+		    IoLINES(GvIO((GV*)vbp->perl_handle))++; /* increment $. */
+
 		if (gimme == G_SCALAR) {
 		    XPUSHs(sv_2mortal(sv));
 		}
 	    }
 	    else { /* wants an array */
 		SV *sv;
+		int lines = 0;
 
 		while (f(&sv, vbp, rsstr, rslen)) {
 		    XPUSHs(sv_2mortal(sv));
+		    lines++;
 		}
+		IoLINES(GvIO((GV*)vbp->perl_handle)) = lines; /* set $. */
 	    }
 	    if (vbp->inplace_edit) {
 		DOT = old_DOT;
@@ -3450,6 +3462,10 @@ set_region(vbp, ...)
 	if (getregion(&vbp->region) != TRUE) {
 	    croak("set_region: Unable to set the region");
 	}
+	if (is_header_line(vbp->region.r_end, curbp)
+	    && !b_val(curbp, MDNEWLINE))
+		vbp->region.r_size--;
+	IoLINES(GvIO((GV*)vbp->perl_handle)) = 0;  /* reset $. */
 	vbp->regionshape = regionshape;
 	DOT = vbp->region.r_orig;
 	vbp->dot_inited = 1;
@@ -3467,7 +3483,7 @@ set_region(vbp, ...)
 	    XPUSHs(sv_2mortal(newSVpv(
 		vbp->regionshape == FULLLINE ? "fullline" :
 		vbp->regionshape == EXACT    ? "exact"
-		                            : "rectangle",    0 )));
+		                             : "rectangle",  0 )));
 	}
 
 

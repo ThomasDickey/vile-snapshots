@@ -1,10 +1,11 @@
-revlist for vile-8.0, version v8_0
+revlist for vile-8.0a, version v8_0a
 --------------------------------------------------------------------------------
-CHANGES	1.176
+CHANGES	1.177
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
 CHANGES.R6	1.1
+CHANGES.R7	1.1
 COPYING	1.1
 INSTALL	1.6
 MANIFEST	none
@@ -85,16 +86,16 @@ os2keys.h	1.1
 os2pipe.c	1.4
 os2vio.c	1.19
 pas-filt.c	1.2
-patchlev.h	1.122
+patchlev.h	1.123
 path.c	1.84
-perl.xs	1.24
+perl.xs	1.25
 proto.h	1.285
 pscreen.h	1.1
 ptypemap	1.5
 random.c	1.191
 regexp.c	1.65
 region.c	1.89
-revlist	v8_0
+revlist	v8_0a
 search.c	1.111
 select.c	1.69
 spawn.c	1.128
