@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.67 1999/04/18 18:41:17 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.68 1999/04/28 00:18:03 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -787,6 +787,32 @@ test "$prefix" != "$exec_prefix" && $1="[$]$1 $prefix/lib $prefix/lib/$2"
 fi
 test "$prefix" != /usr/local     && $1="[$]$1 /usr/local/lib /usr/local/lib/$2"
 test "$prefix" != /usr           && $1="[$]$1 /usr/lib /usr/lib/$2"
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Some 'make' programs support $(MAKEFLAGS), some $(MFLAGS), to pass 'make'
+dnl options to lower-levels.  It's very useful for "make -n" -- if we have it.
+dnl (GNU 'make' does both :-)
+AC_DEFUN([CF_MAKEFLAGS],
+[
+AC_MSG_CHECKING([for makeflags variable])
+AC_CACHE_VAL(cf_cv_makeflags,[
+	cf_cv_makeflags=''
+	for cf_option in '-$(MAKEFLAGS)' '$(MFLAGS)' 
+	do
+		cat >cf_makeflags.tmp <<CF_EOF
+all :
+	echo '.$cf_option'
+CF_EOF
+		set cf_result=`${MAKE-make} -f cf_makeflags.tmp 2>/dev/null`
+		if test "$cf_result" != "."
+		then
+			cf_cv_makeflags=$cf_option
+			break
+		fi
+	done
+	rm -f cf_makeflags.tmp])
+AC_MSG_RESULT($cf_cv_makeflags)
+AC_SUBST(cf_cv_makeflags)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl

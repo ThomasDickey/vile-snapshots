@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.134 1999/04/23 13:15:01 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.137 1999/04/28 10:34:12 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -346,7 +346,7 @@ config.status: configure
 
 mostlyclean ::
 	-$(RM) *.[oi] o$(TARGET) $(BUILTHDRS) $(BUILTSRCS) $(MKTBLS) \
-	    core *~ *.BAK
+	    core *~ *.BAK *.bb* *.da *.gcov
 
 clean :: mostlyclean
 	-$(RM) $(ALL)
@@ -540,7 +540,7 @@ uninstall \
 mostlyclean \
 clean \
 distclean ::
-	cd filters && $(MAKE) -k$(MAKEFLAGS) $@
+	cd filters && $(MAKE) @cf_cv_makeflags@ $@
 
 distclean ::
 	- rmdir filters

@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.108 $)
+AC_REVISION($Revision: 1.109 $)
 AC_PREREQ(2.12.971222)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.108 1999/04/18 20:29:19 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.109 1999/04/28 00:09:40 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -15,6 +15,7 @@ AC_CONFIG_HEADER(config.h:config_h.in)
 CF_CHECK_CACHE
 
 ###	checks for alternative programs
+CF_MAKEFLAGS
 AC_PROG_CC
 AC_PROG_CPP
 AC_GCC_TRADITIONAL

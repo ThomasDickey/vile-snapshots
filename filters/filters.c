@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.39 1999/03/09 01:17:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.42 1999/04/27 23:35:43 tom Exp $
  *
  */
 
@@ -27,6 +27,9 @@
 #define DOT_TO_HIDE_IT ""
 #endif
 
+#define VERBOSE(level,params)		if (verbose >= level) printf params
+#define NONNULL(s) 			((s) != 0) ? (s) : "<null>"
+
 #define	typecallocn(cast,ntypes)	(cast *)calloc(sizeof(cast),ntypes)
 
 #define HASH_LENGTH 256
@@ -37,7 +40,8 @@ struct _keyword {
     char *kw_name;
     char *kw_attr;
     unsigned kw_size;	/* strlen(kw_name) */
-    unsigned kw_flag;	/* nonzero for classes */
+    unsigned short kw_flag;	/* nonzero for classes */
+    unsigned short kw_used;	/* nonzero for classes */
     KEYWORD *next;
 };
 
@@ -60,10 +64,19 @@ static KEYWORD **hashtable;
 static CLASS *classes;
 static int meta_ch = '.';
 static int eqls_ch = ':';
+static int verbose;
+static int k_used;
 
 /******************************************************************************
  * Private functions                                                          *
  ******************************************************************************/
+
+static char *
+AttrsOnce(KEYWORD *entry)
+{
+    entry->kw_used = 999;
+    return NONNULL(entry->kw_attr);
+}
 
 static void
 CreateSymbolTable(char *classname)
@@ -131,6 +144,28 @@ Free (char *ptr)
 	free(ptr);
 }
 
+static KEYWORD *
+IsClass(char *name)
+{
+    KEYWORD *hash_id;
+    if ((hash_id = FindIdentifier(name)) != 0
+     && hash_id->kw_flag != 0) {
+	return hash_id;
+    }
+    return 0;
+}
+
+static KEYWORD *
+IsKeyword(char *name)
+{
+    KEYWORD *hash_id;
+    if ((hash_id = FindIdentifier(name)) != 0
+     && hash_id->kw_flag == 0) {
+	return hash_id;
+    }
+    return 0;
+}
+
 /*
  * Find the first occurrence of a file in the canonical search list:
  *	the current directory
@@ -144,7 +179,9 @@ Free (char *ptr)
 static FILE *
 OpenKeywords(char *classname)
 {
-#define OPEN_IT(p) if ((fp = fopen(p, "r")) != 0) { TRACE(("Opened %s\n", p)) return fp; }
+#define OPEN_IT(p) if ((fp = fopen(p, "r")) != 0) { \
+    			VERBOSE(1,("Opened %s\n", p)); return fp; } else { \
+			VERBOSE(2,("..skip %s\n", p)); }
 #define FIND_IT(p) sprintf p; OPEN_IT(name)
 
     static char *name;
@@ -261,7 +298,10 @@ ParseKeyword(char *name, int classflag)
 	TrimBlanks(name);
     }
 
-    TRACE(("ParseKeyword: name=%s, attr=\"%s\" (%d)\n", name, args, classflag))
+    VERBOSE(2,("parsed\tname \"%s\"\tattr \"%s\"%s\n",
+	name,
+	NONNULL(args),
+	(classflag || IsClass(name)) ? " - class" : ""));
 
     if (*name && args) {
 	insert_keyword(name, args, classflag);
@@ -275,6 +315,39 @@ ParseKeyword(char *name, int classflag)
     }
 }
 
+static int
+ProcessArgs(int argc, char *argv[], int flag)
+{
+    int n;
+    char *s, *value;
+
+    for (n = 1; n < argc; n++) {
+	s = argv[n];
+	if (*s == '-') {
+	    while (*++s) {
+		switch(*s) {
+		case 'k':
+		    value = s[1] ? s+1 : ((n < argc) ? argv[++n] : "");
+		    if (flag) {
+			ReadKeywords(value);
+			k_used++;
+		    }
+		    break;
+		case 'v':
+		    if (!flag) verbose++;
+		    break;
+		default:
+		    fprintf(stderr, "unknown option %c\n", *s);
+		    exit(1);
+		}
+	    }
+	} else {
+	    break;
+	}
+    }
+    return n;
+}
+
 static void
 ReadKeywords(char *classname)
 {
@@ -283,7 +356,7 @@ ReadKeywords(char *classname)
     char *name;
     unsigned line_len = 0;
 
-    TRACE(("ReadKeywords(%s)\n", classname))
+    VERBOSE(1,("ReadKeywords(%s)\n", classname));
     if ((kwfile = OpenKeywords(classname)) != NULL) {
 	while (readline(kwfile, &line, &line_len) != 0) {
 
@@ -350,10 +423,12 @@ ci_keyword_attr(char *text)
 char *
 class_attr(char *name)
 {
-    KEYWORD *hash_id;
-    if ((hash_id = FindIdentifier(name)) != 0
-     && hash_id->kw_flag != 0)
+    KEYWORD *hash_id = IsClass(name);
+    if (hash_id != 0) {
+	VERBOSE(hash_id->kw_used, ("class_attr(%s) = %s\n",
+		name, AttrsOnce(hash_id)));
 	return hash_id->kw_attr;
+    }
     return 0;
 }
 
@@ -415,34 +490,29 @@ insert_keyword(const char *ident, const char *attribute, int classflag)
 	nxt = first = NULL;
 	Index = hash_function(ident);
 	first = hashtable[Index];
-	if ((nxt = (KEYWORD *)malloc(sizeof(struct _keyword))) != NULL) {
+	if ((nxt = typecallocn(KEYWORD,1)) != NULL) {
 	    nxt->kw_name = strmalloc(ident);
 	    nxt->kw_size = strlen(nxt->kw_name);
 	    nxt->kw_attr = strmalloc(attribute);
 	    nxt->kw_flag = classflag;
+	    nxt->kw_used = 2;
 	    nxt->next = first;
 	    hashtable[Index] = nxt;
 	} else {
-	    TRACE(("insert_keyword: cannot allocate\n"))
+	    VERBOSE(1,("insert_keyword: cannot allocate\n"));
 	    return;
 	}
     }
-    TRACE(("insert_keyword: nxt %p, kw_name %s, kw_size %i, kw_attr \"%s\", next %p\n",
-	nxt,
+    VERBOSE(3,("...\tname \"%s\"\tattr \"%s\"\n",
 	nxt->kw_name,
-	nxt->kw_size,
-	nxt->kw_attr,
-	nxt->next))
+	NONNULL(nxt->kw_attr)));
 }
 
 char *
 keyword_attr(char *name)
 {
-    KEYWORD *hash_id;
-    if ((hash_id = FindIdentifier(name)) != 0
-     && hash_id->kw_flag == 0)
-	return hash_id->kw_attr;
-    return 0;
+    KEYWORD *hash_id = IsKeyword(name);
+    return hash_id ? hash_id->kw_attr : 0;
 }
 
 char *
@@ -555,7 +625,6 @@ write_token(FILE *fp, char *string, int length, char *marker)
 int
 main(int argc, char **argv)
 {
-    int k_used = 0;
     int n;
 
 #if OPT_LOCALE
@@ -575,28 +644,14 @@ main(int argc, char **argv)
     insert_keyword(NAME_PREPROC, ATTR_PREPROC, 1);
     insert_keyword(NAME_TYPES,   ATTR_TYPES,   1);
 
-    init_filter(1);
-    ReadKeywords(MY_NAME);
+    /* get verbose option */
+    (void) ProcessArgs(argc, argv, 0);
 
-    for (n = 1; n < argc; n++) {
-	char *s = argv[n];
-	if (*s == '-') {
-	    while (*++s) {
-		char *value = s[1] ? s+1 : ((n < argc) ? argv[++n] : "");
-		switch(*s) {
-		case 'k':
-		    ReadKeywords(value);
-		    k_used++;
-		    break;
-		default:
-		    fprintf(stderr, "unknown option %c\n", *s);
-		    exit(1);
-		}
-	    }
-	} else {
-	    break;
-	}
-    }
+    init_filter(1);
+
+    ReadKeywords(MY_NAME);
+    n = ProcessArgs(argc, argv, 1);
+
     if (!k_used) {
 	if (strcmp(MY_NAME, filter_name)) {
 	    ReadKeywords(filter_name);
