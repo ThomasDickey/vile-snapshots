@@ -1,5 +1,24 @@
 Changes for vile 9.4 (released ??? ??? ?? ????)
 
+ 20021027 (g)
+	> Tom Dickey:
+	+ improve perl filter by recognizing q[] and q() quote-like operators.
+	+ improve rpm filter to avoid exiting text area on embedded "%" names,
+	  added several keywords to rpm.key
+	+ modify suffix rule for terminfo (timode) to allow nrmode to pick up
+	  ncurses' terminfo.tail, and corrected preamble for nrmode, which used
+	  the wrong quote character.
+	+ add yankmotion mode, to control whether the cursor should be moved
+	  as in vi after yanking text (discussion with George Eccles and Paul
+	  Fox).
+	+ modify ifdef's to allow builtin-filters to be tested with the
+	  configure --no-leaks code.
+	+ improved perl filter by recognizing a pattern at the beginning of
+	  a statement, or after the word "split" (the latter was reported by
+	  Duncan Sargeant).
+	+ fix a place where 9.3f changes quoted a token which was already a
+	  quoted string (report by George Eccles).
+
  20021023 (f)
 	> Clark Morgan:
 	+ update list of filters in config.doc

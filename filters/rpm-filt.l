@@ -4,7 +4,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.1 2002/10/11 18:03:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.2 2002/10/27 16:26:22 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
@@ -27,7 +27,8 @@ begin_section(char *name)
 {
     WriteToken(keyword_attr(name));
     if (!strcmp(name, "%description")
-     || !strcmp(name, "%changelog")) {
+     || !strcmp(name, "%changelog")
+     || !strcmp(name, "%package")) {
 	BEGIN(TEXT);
     } else {
 	BEGIN(NORMAL);
@@ -199,13 +200,10 @@ SECTION		%{IDENT}
 
 <NORMAL>{SECTION}	{ begin_section(yytext); }
 
-<TEXT>[^\n \t]*		{ if (*yytext == '%') {
-			      begin_section(yytext);
-			  } else {
-			      WriteToken(String_attr);
-			  }
-			}
-<TEXT>{SPACE}		{ ECHO; }
+<TEXT>^"%"[^\n \t]*	{ begin_section(yytext); }
+<TEXT>{IDENT1}		|
+<TEXT>{IDENT2}		{ WriteToken(keyword_attr(yytext)); }
+<TEXT>[^%\n]*		{ WriteToken(String_attr); }
 <TEXT>\n		{ ECHO; }
 
 <NORMAL>{IDENT0}	|

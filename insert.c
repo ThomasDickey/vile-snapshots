@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.138 2002/10/19 15:28:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.139 2002/10/28 01:10:15 tom Exp $
  *
  */
 
@@ -535,7 +535,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 		if (b_val(wp0->w_bufp, MDSHOWMODE))
 		    wp0->w_flag |= WFMODE;
 		unkeystroke(c);
-		goto leave;
+		goto leave_ins;
 	    }
 #endif
 	    if (!itb_append(&insbuff, c)) {
@@ -576,7 +576,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 	 */
 	if (ABORTED(c)) {
 #if OPT_MOUSE
-	  leave:
+	  leave_ins:
 #endif
 	    /* an unfortunate Vi-ism that ensures one
 	       can always type "ESC a" if you're not sure

@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.160 2002/10/11 17:14:09 tom Exp $
+; $Id: filters.rc,v 1.161 2002/10/27 15:53:06 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -317,9 +317,9 @@ define-mode nr
 ~with define-submode nr
 	after "sh"
 	suf '\.\(\([1-9ln][a-z]\?\)\|me\|ms\|man\)$'
-	pre '^\.\\\''
-	comment-prefix	'^\.\\\''
-	comments	'^\.\\\'\s*$'
+	pre '^\.\\"'
+	comment-prefix	'^\.\\"'
+	comments	'^\.\\"\s*$'
 ~endwith
 
 define-mode pas
@@ -526,7 +526,7 @@ define-mode tcl
 define-mode ti
 ~with define-submode ti
 	before "sh"
-	suf '\(\.ti\|\.tinfo\|\<terminfo[^/]*\)$'
+	suf '\(\.ti\|\.tinfo\|\<terminfo\(\.src\)\?\)$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
 ~endwith

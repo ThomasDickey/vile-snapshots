@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.61 2002/10/09 23:38:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.62 2002/10/27 14:52:24 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -15,8 +15,16 @@
 # define HAVE_STRING_H 1
 #endif
 
+#ifndef NO_LEAKS
+#define NO_LEAKS 0
+#endif
+
 #ifndef OPT_LOCALE
 #define OPT_LOCALE 0
+#endif
+
+#ifndef OPT_TRACE
+#define OPT_TRACE 0
 #endif
 
 #include <sys/types.h>		/* sometimes needed to get size_t */
@@ -293,5 +301,9 @@ extern char *strmalloc(const char *src);
 			flt_bfr_append(yytext, yyleng);\
 			flt_bfr_finish();\
 			BEGIN(state)
+
+#if NO_LEAKS
+#include <trace.h>
+#endif
 
 #endif /* FILTERS_H */

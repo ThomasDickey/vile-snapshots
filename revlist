@@ -1,6 +1,6 @@
-revlist for vile, version v9_3f
+revlist for vile, version v9_3g
 --------------------------------------------------------------------------------
-CHANGES	1.698
+CHANGES	1.700
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -40,7 +40,7 @@ djhandl.c	1.6
 dumbterm.c	1.17
 edef.h	1.304
 estruct.h	1.513
-eval.c	1.314
+eval.c	1.315
 exec.c	1.250
 externs.c	1.8
 fences.c	1.82
@@ -54,13 +54,13 @@ gppconio.c	1.2
 history.c	1.72
 ibmpc.c	1.96
 input.c	1.247
-insert.c	1.138
+insert.c	1.139
 install.sh	1.5
 isearch.c	1.54
 itbuff.c	1.16
 lckfiles.c	1.11
 line.c	1.151
-main.c	1.484
+main.c	1.485
 makefile.blc	1.17
 makefile.djg	1.31
 makefile.emx	1.5
@@ -75,17 +75,17 @@ mkdirs.sh	1.5
 mkprlenv.wnt	1.8
 mktbls.c	1.125
 modes.c	1.248
-modetbl	1.212
+modetbl	1.213
 msgs.c	1.24
 npopen.c	1.88
 ntconio.c	1.76
 ntwinio.c	1.132
 oneliner.c	1.98
-opers.c	1.83
+opers.c	1.84
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.29
-patchlev.h	1.287
+patchlev.h	1.288
 path.c	1.126
 perl.xs	1.87
 proto.h	1.503
@@ -94,7 +94,7 @@ ptypemap	1.7
 random.c	1.265
 regexp.c	1.82
 region.c	1.110
-revlist	v9_3f
+revlist	v9_3g
 search.c	1.126
 select.c	1.140
 sinstall.sh	1.1
@@ -105,14 +105,14 @@ tbuff.c	1.42
 tcap.c	1.145
 tcap.h	1.8
 termio.c	1.193
-trace.c	1.33
+trace.c	1.34
 trace.h	1.19
 ucrypt.c	1.15
 undo.c	1.84
 version.c	1.54
-vile-9.3.spec	1.5
+vile-9.3.spec	1.6
 vile.1	1.30
-vile.hlp	1.556
+vile.hlp	1.557
 vile.wmconfig	1.1
 vms2unix.c	1.36
 vmsbuild.com	1.37
@@ -185,8 +185,8 @@ filters/fdl-filt.l	1.8
 filters/fdl.key	1.4
 filters/filterio.c	1.16
 filters/filters.c	1.84
-filters/filters.h	1.61
-filters/filters.rc	1.160
+filters/filters.h	1.62
+filters/filters.rc	1.161
 filters/genmake.c	1.4
 filters/genmake.mak	1.17
 filters/html.key	1.6
@@ -213,7 +213,7 @@ filters/makefile.icc	1.3
 filters/makefile.in	1.72
 filters/makefile.wnt	1.30
 filters/makefilt.l	1.46
-filters/manfilt.c	1.30
+filters/manfilt.c	1.31
 filters/mk-0th.awk	1.5
 filters/mk-0th.bat	1.6
 filters/mk-1st.awk	1.7
@@ -227,9 +227,9 @@ filters/nr.key	1.1
 filters/pas-filt.c	1.14
 filters/pas.key	1.1
 filters/pc.key	1.1
-filters/perl.key	1.5
+filters/perl.key	1.6
 filters/perlfilt.l	1.36
-filters/pl-filt.c	1.34
+filters/pl-filt.c	1.37
 filters/pot.key	1.1
 filters/ps-filt.l	1.2
 filters/ps.key	1.2
@@ -241,8 +241,8 @@ filters/rcs-filt.l	1.7
 filters/rcs.key	1.1
 filters/rexx.key	1.1
 filters/rexxfilt.l	1.6
-filters/rpm-filt.l	1.1
-filters/rpm.key	1.2
+filters/rpm-filt.l	1.2
+filters/rpm.key	1.3
 filters/sccs.key	1.1
 filters/sccsfilt.l	1.8
 filters/sed-filt.c	1.16

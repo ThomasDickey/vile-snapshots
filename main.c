@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.484 2002/10/20 13:30:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.485 2002/10/27 15:47:25 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1120,6 +1120,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setINT(MDUNDO_DOS_TRIM, FALSE);	/* undo dos trimming */
 	    setINT(MDVIEW, FALSE);	/* view-only */
 	    setINT(MDWRAP, FALSE);	/* wrap */
+	    setINT(MDYANKMOTION, TRUE);	/* yank-motion */
 	    setINT(VAL_ASAVECNT, 256);	/* autosave count */
 	    setINT(VAL_PERCENT_CRLF, 50);	/* threshold for crlf conversion */
 	    setINT(VAL_RECORD_SEP, RS_DEFAULT);

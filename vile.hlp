@@ -1863,6 +1863,9 @@ Editor modes
 		termcap entry must contain the string "xterm" for this to
 		work.  (U)
 
+	yankmotion (ym) Yanking text will cause cursor movement (just like
+		vi) if the motion is left or up.  (B)
+
 
 
 8-Bit Operation
@@ -5746,4 +5749,4 @@ Problems
 
 Copyright 1995-2002 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.556 2002/10/15 20:29:50 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.557 2002/10/28 01:44:38 tom Exp $

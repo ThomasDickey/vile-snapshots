@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.314 2002/10/20 23:24:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.315 2002/10/26 12:01:52 tom Exp $
  *
  */
 
@@ -678,7 +678,11 @@ static void
 render_string(TBUFF ** rp)
 {
     char *value = tb_values(*rp);
-    if (value != error_val && *value != EOS && toktyp(value) != TOK_LITSTR) {
+
+    if (value != error_val
+	&& *value != EOS
+	&& toktyp(value) != TOK_LITSTR
+	&& toktyp(value) != TOK_QUOTSTR) {
 	UINT j;
 	UINT have = strlen(value);	/* FIXME: assumes we used EOS */
 	UINT need = 2 + have;
