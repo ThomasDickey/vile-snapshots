@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.258 2002/02/18 01:07:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.259 2002/04/30 11:43:48 tom Exp $
  *
  */
 
@@ -5592,8 +5592,7 @@ gui_resize(int cols, int rows)
     /* This should cause a ConfigureNotify event */
 }
 
-static
-int
+static int
 check_scrollbar_allocs(void)
 {
     int newmax = cur_win->rows / 2;

@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.76 2002/02/04 00:37:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.78 2002/05/05 00:44:22 tom Exp $
  *
  */
 
@@ -145,8 +145,8 @@ operdel(int f, int n)
     lines_deleted = 0;
     status = vile_op(f, n, killregion,
 		     ((regionshape == FULLLINE)
-		     ? "Delete of full lines"
-		     : "Delete"));
+		      ? "Delete of full lines"
+		      : "Delete"));
     if (do_report(lines_deleted))
 	mlforce("[%d lines deleted]", lines_deleted);
     return status;
@@ -213,10 +213,15 @@ int
 operyank(int f, int n)
 {
     MARK savedot;
+    REGION region;
     int s;
+
     savedot = DOT;
     opcmd = OPDEL;
     s = vile_op(f, n, yankregion, "Yank");
+    if (getregion(&region) == TRUE) {
+	savedot = region.r_orig;
+    }
     DOT = savedot;
     return s;
 }

@@ -32,9 +32,9 @@ static int
 linsert_chars(char *s, int len)
 {
     /* I wrote the code this way both for efficiency reasons and
-       so that the MARK denoting the end of the range wouldn't
-       be moved to one of the newly inserted lines.
-    */
+     * so that the MARK denoting the end of the range wouldn't
+     * be moved to one of the newly inserted lines.
+     */
     int nlcount = 0;
     int nlatend = 0;
     int nlsuppress = 0;
@@ -48,15 +48,14 @@ linsert_chars(char *s, int len)
 	    DOT.l = lback(DOT.l);
 	    DOT.o = llength(DOT.l);
 	}
-	if (s[len-1] == '\n') {
+	if (s[len - 1] == '\n') {
 	    if (len > 1)
 		nlsuppress = TRUE;
 	    if (!mdnewline) {
 		make_local_b_val(curbp, MDNEWLINE);
 		set_b_val(curbp, MDNEWLINE, TRUE);
 	    }
-	}
-	else {
+	} else {
 	    if (mdnewline) {
 		make_local_b_val(curbp, MDNEWLINE);
 		set_b_val(curbp, MDNEWLINE, FALSE);
@@ -64,11 +63,10 @@ linsert_chars(char *s, int len)
 	}
     }
 
-    if (s[len-1] == '\n') {
+    if (s[len - 1] == '\n') {
 	if (!mdnewline
 	    && lforw(DOT.l) == buf_head(curbp)
-	    && DOT.o == llength(DOT.l))
-	{
+	    && DOT.o == llength(DOT.l)) {
 	    nlsuppress = TRUE;
 	    make_local_b_val(curbp, MDNEWLINE);
 	    set_b_val(curbp, MDNEWLINE, TRUE);
@@ -76,15 +74,15 @@ linsert_chars(char *s, int len)
 	if (!nlsuppress) {
 
 	    /* We implicitly get a newline by inserting anything at
-	       the head of a buffer (which includes the empty buffer
-	       case).  So if we actually insert a newline, we'll end
-	       up getting two of them.  (Which is something we don't
-	       want unless MDNEWLINE is TRUE.) */
-
+	     * the head of a buffer (which includes the empty buffer
+	     * case).  So if we actually insert a newline, we'll end
+	     * up getting two of them.  (Which is something we don't
+	     * want unless MDNEWLINE is TRUE.)
+	     */
 	    lnewline();
 	    nlcount++;
-	    DOT.l = lback(DOT.l);		/* back up DOT to the newly */
-	    DOT.o = llength(DOT.l);		/* inserted line */
+	    DOT.l = lback(DOT.l);	/* back up DOT to the newly */
+	    DOT.o = llength(DOT.l);	/* inserted line */
 	}
 	nlatend = 1;
 	len--;
@@ -96,14 +94,13 @@ linsert_chars(char *s, int len)
 	    nlcount++;
 	    s++;
 	    len--;
-	}
-	else {
+	} else {
 	    int i;
 	    /* Find next newline so we can do block insert; We
-	       start at 1, because we know the first character
-	       can't be a newline. */
-	    for (i = 1; i < len && s[i] != '\n'; i++)
-		;
+	     * start at 1, because we know the first character
+	     * can't be a newline.
+	     */
+	    for (i = 1; i < len && s[i] != '\n'; i++) ;
 	    linsert(i, *s);
 	    if (i > 1) {
 		memcpy(DOT.l->l_text + DOT.o - i + 1, s + 1, i - 1);
@@ -157,7 +154,7 @@ lreplace(char *s, int len)
     lp->l_used = len;
 
     /* FIXME: Handle embedded newlines */
-    for (i=len-1, t=lp->l_text; i >=0; i--)
+    for (i = len - 1, t = lp->l_text; i >= 0; i--)
 	t[i] = s[i];
 
     /* We'd normally need a call to chg_buff here, but I don't want
@@ -175,10 +172,10 @@ lreplace(char *s, int len)
 	if (wp->w_lastdot.l == lp && wp->w_lastdot.o > len)
 	    wp->w_lastdot.o = len;
     }
-    do_mark_iterate(mp,
-		    if (mp->l == lp && mp->o > len)
-			mp->o = len;
-    );
+    do_mark_iterate(mp, {
+	if (mp->l == lp && mp->o > len)
+	    mp->o = len;
+    });
 #if OPT_LINE_ATTRS
     FreeAndNull(lp->l_attrs);
 #endif
@@ -187,7 +184,7 @@ lreplace(char *s, int len)
 }
 
 void
-api_setup_fake_win(VileBuf *vbp, int do_delete)
+api_setup_fake_win(VileBuf * vbp, int do_delete)
 {
     if (curwp_visible == 0)
 	curwp_visible = curwp;
@@ -195,8 +192,7 @@ api_setup_fake_win(VileBuf *vbp, int do_delete)
     if (vbp->fwp) {
 	curwp = vbp->fwp;
 	curbp = curwp->w_bufp;
-    }
-    else {
+    } else {
 	(void) push_fake_win(vbp->bp);
 	vbp->fwp = curwp;
 	vbp->changed = 0;
@@ -207,8 +203,8 @@ api_setup_fake_win(VileBuf *vbp, int do_delete)
 	/* Do lazy delete; FALSE means don't put text in kill buffer */
 	status = ldelete(vbp->ndel, FALSE);
 	vbp->ndel = 0;
-	if ( status == FALSE
-	  || (lforw(DOT.l) == buf_head(curbp) && DOT.o >= llength(DOT.l))) {
+	if (status == FALSE
+	    || (lforw(DOT.l) == buf_head(curbp) && DOT.o >= llength(DOT.l))) {
 	    make_local_b_val(curbp, MDNEWLINE);
 	    set_b_val(curbp, MDNEWLINE, FALSE);
 	}
@@ -252,18 +248,18 @@ MARK *
 api_mark_iterator(BUFFER *bp, int *iterp)
 {
     MARK *mp = NULL;
-    VileBuf  *vbp = bp2vbp(bp);
+    VileBuf *vbp = bp2vbp(bp);
 
     if (vbp != NULL) {
 	switch (*iterp) {
-	    case 0:
-		mp = &vbp->region.r_orig;
-		break;
-	    case 1:
-		mp = &vbp->region.r_end;
-		break;
-	    default:
-		break;
+	case 0:
+	    mp = &vbp->region.r_orig;
+	    break;
+	case 1:
+	    mp = &vbp->region.r_end;
+	    break;
+	default:
+	    break;
 	}
 	(*iterp)++;
     }
@@ -276,10 +272,9 @@ api_mark_iterator(BUFFER *bp, int *iterp)
  * it attempts to use the line number information to more efficiently
  * find the line in question.  It will also position DOT at the beginning
  * of the line.
- *
  */
 int
-api_gotoline(VileBuf *vbp, int lno)
+api_gotoline(VileBuf * vbp, int lno)
 {
 #if !SMALLER
     int count;
@@ -308,8 +303,7 @@ api_gotoline(VileBuf *vbp, int lno)
     if (lp != buf_head(bp) && lno == lp->l_number) {
 	DOT.l = lp;
 	return TRUE;
-    }
-    else {
+    } else {
 	DOT.l = buf_head(bp);
 	return FALSE;
     }
@@ -320,16 +314,15 @@ api_gotoline(VileBuf *vbp, int lno)
 }
 
 int
-api_aline(VileBuf *vbp, int lno, char *line, int len)
+api_aline(VileBuf * vbp, int lno, char *line, int len)
 {
     api_setup_fake_win(vbp, TRUE);
 
     if (lno >= 0 && lno < vl_line_count(vbp->bp)) {
-	api_gotoline(vbp, lno+1);
+	api_gotoline(vbp, lno + 1);
 	linsert_chars(line, len);
 	lnewline();
-    }
-    else {	/* append to the end */
+    } else {			/* append to the end */
 	gotoline(FALSE, 0);
 	gotoeol(FALSE, 0);
 	lnewline();
@@ -340,7 +333,8 @@ api_aline(VileBuf *vbp, int lno, char *line, int len)
 }
 
 int
-api_dotinsert(VileBuf *vbp, char *text, int len) {
+api_dotinsert(VileBuf * vbp, char *text, int len)
+{
 
     /* Set up the fake window; but we'll do any pending deletes
        ourselves. */
@@ -356,7 +350,7 @@ api_dotinsert(VileBuf *vbp, char *text, int len) {
 	status = ldelete(vbp->ndel, FALSE);
 	vbp->ndel = 0;
 	if (status == FALSE
-	 || (lforw(DOT.l) == buf_head(curbp) && DOT.o >= llength(DOT.l))) {
+	    || (lforw(DOT.l) == buf_head(curbp) && DOT.o >= llength(DOT.l))) {
 	    make_local_b_val(curbp, MDNEWLINE);
 	    set_b_val(curbp, MDNEWLINE, FALSE);
 	}
@@ -366,7 +360,7 @@ api_dotinsert(VileBuf *vbp, char *text, int len) {
 }
 
 int
-api_dline(VileBuf *vbp, int lno)
+api_dline(VileBuf * vbp, int lno)
 {
     int status = TRUE;
 
@@ -374,17 +368,16 @@ api_dline(VileBuf *vbp, int lno)
 
     if (lno > 0 && lno <= vl_line_count(vbp->bp)) {
 	api_gotoline(vbp, lno);
-	gotobol(TRUE,TRUE);
+	gotobol(TRUE, TRUE);
 	status = ldelete(llength(DOT.l) + 1, FALSE);
-    }
-    else
+    } else
 	status = FALSE;
 
     return status;
 }
 
 int
-api_gline(VileBuf *vbp, int lno, char **linep, int *lenp)
+api_gline(VileBuf * vbp, int lno, char **linep, int *lenp)
 {
     int status = TRUE;
 
@@ -402,16 +395,15 @@ api_gline(VileBuf *vbp, int lno, char **linep, int *lenp)
 				   when given a zero length.)
 				 */
 	}
-    }
-    else
+    } else
 	status = FALSE;
 
     return status;
 }
 
-#if 0		/* Not used. */
+#if 0				/* Not used. */
 int
-api_dotgline(VileBuf *vbp, char **linep, int *lenp, int *neednewline)
+api_dotgline(VileBuf * vbp, char **linep, int *lenp, int *neednewline)
 {
 
     api_setup_fake_win(vbp, TRUE);
@@ -422,12 +414,11 @@ api_dotgline(VileBuf *vbp, char **linep, int *lenp, int *neednewline)
 
     /* FIXME: Handle rectangular regions. */
 
-    if (   is_header_line(DOT, curbp)
-	|| (   DOT.l == vbp->region.r_end.l
-	    && (   vbp->regionshape == FULLLINE
-		|| (   vbp->regionshape == EXACT
-		    && DOT.o >= vbp->region.r_end.o))))
-    {
+    if (is_header_line(DOT, curbp)
+	|| (DOT.l == vbp->region.r_end.l
+	    && (vbp->regionshape == FULLLINE
+		|| (vbp->regionshape == EXACT
+		    && DOT.o >= vbp->region.r_end.o)))) {
 	return FALSE;
     }
 
@@ -439,33 +430,30 @@ api_dotgline(VileBuf *vbp, char **linep, int *lenp, int *neednewline)
     }
 
     if (*lenp < 0)
-	*lenp = 0;	/* Make sure return length is non-negative */
+	*lenp = 0;		/* Make sure return length is non-negative */
 
     if (*lenp == 0) {
-	*linep = "";	/* Make sure we pass back a zero length,
-			       null terminated value when the length
-			       is zero.  Otherwise perl gets confused.
-			       (It thinks it should calculate the length
-			       when given a zero length.)
-			     */
+	*linep = "";		/* Make sure we pass back a zero length,
+				   null terminated value when the length
+				   is zero.  Otherwise perl gets confused.
+				   (It thinks it should calculate the length
+				   when given a zero length.)
+				 */
     }
 
     if (vbp->inplace_edit) {
 	if (vbp->regionshape == EXACT && DOT.l == vbp->region.r_end.l) {
 	    vbp->ndel = *lenp;
 	    *neednewline = 0;
-	}
-	else {
+	} else {
 	    vbp->ndel = *lenp + 1;
 	    *neednewline = 1;
 	}
-    }
-    else {
+    } else {
 	if (vbp->regionshape == EXACT && DOT.l == vbp->region.r_end.l) {
 	    DOT.o += *lenp;
 	    *neednewline = 0;
-	}
-	else {
+	} else {
 	    DOT.l = lforw(DOT.l);
 	    DOT.o = 0;
 	    *neednewline = 1;
@@ -473,10 +461,10 @@ api_dotgline(VileBuf *vbp, char **linep, int *lenp, int *neednewline)
     }
     return TRUE;
 }
-#endif	/* Not used */
+#endif /* Not used */
 
 int
-api_sline(VileBuf *vbp, int lno, char *line, int len)
+api_sline(VileBuf * vbp, int lno, char *line, int len)
 {
     int status = TRUE;
 
@@ -484,27 +472,26 @@ api_sline(VileBuf *vbp, int lno, char *line, int len)
 
     if (lno > 0 && lno <= vl_line_count(vbp->bp)) {
 	api_gotoline(vbp, lno);
-	if (   DOT.l->l_text != line
-	    && (   llength(DOT.l) != len
+	if (DOT.l->l_text != line
+	    && (llength(DOT.l) != len
 		|| memcmp(line, DOT.l->l_text, len) != 0)) {
 	    lreplace(line, len);
 	    vbp->changed = 1;
 	}
-    }
-    else
+    } else
 	status = FALSE;
 
     return status;
 }
 
 int
-api_iline(VileBuf *vbp, int lno, char *line, int len)
+api_iline(VileBuf * vbp, int lno, char *line, int len)
 {
-    return api_aline(vbp, lno-1, line, len);
+    return api_aline(vbp, lno - 1, line, len);
 }
 
 int
-api_lline(VileBuf *vbp, int *lnop)
+api_lline(VileBuf * vbp, int *lnop)
 {
     *lnop = vl_line_count(vbp->bp);
     return TRUE;
@@ -524,14 +511,14 @@ api_fscreen(char *name)
 }
 
 int
-api_delregion(VileBuf *vbp)
+api_delregion(VileBuf * vbp)
 {
 
     api_setup_fake_win(vbp, TRUE);
 
     haveregion = NULL;
     DOT = vbp->region.r_orig;
-    MK  = vbp->region.r_end;
+    MK = vbp->region.r_end;
     regionshape = vbp->regionshape;
 
     if (vbp->regionshape == FULLLINE) {
@@ -542,29 +529,28 @@ api_delregion(VileBuf *vbp)
 }
 
 int
-api_motion(VileBuf *vbp, char *mstr)
+api_motion(VileBuf * vbp, char *mstr)
 {
     const CMDFUNC *cfp;
     char *mp;
-    int   c, f, n, s;
+    int c, f, n, s;
     int status;
     int saved_clexec, saved_vl_echo, saved_vl_msgs, saved_isnamedcmd;
 
     if (mstr == NULL)
 	return FALSE;
 
-    status  = TRUE;
+    status = TRUE;
 
-    saved_clexec     = clexec;
-    saved_vl_msgs    = vl_msgs;
-    saved_vl_echo    = vl_echo;
+    saved_clexec = clexec;
+    saved_vl_msgs = vl_msgs;
+    saved_vl_echo = vl_echo;
     saved_isnamedcmd = isnamedcmd;
 
-    clexec     = FALSE;		/* Not executing a command line */
-    vl_msgs    = FALSE;		/* Don't display commands / arg counts */
-    vl_echo    = FALSE;		/* Don't display input */
+    clexec = FALSE;		/* Not executing a command line */
+    vl_msgs = FALSE;		/* Don't display commands / arg counts */
+    vl_echo = FALSE;		/* Don't display input */
     isnamedcmd = FALSE;		/* Not a named command */
-
 
     api_setup_fake_win(vbp, TRUE);
 
@@ -589,19 +575,18 @@ api_motion(VileBuf *vbp, char *mstr)
 		    (void) kbd_seq();
 		status = FALSE;
 		break;
-	    }
-	    else
-		break;			/* okay, it's ours */
+	    } else
+		break;		/* okay, it's ours */
 	}
 
 	f = FALSE;
 	n = 1;
 
-	do_repeats(&c,&f,&n);
+	do_repeats(&c, &f, &n);
 
 	/* and execute the command */
 	cfp = DefaultKeyBinding(c);
-	if ( (cfp != NULL) && ((cfp->c_flags & (GOAL|MOTION)) != 0))
+	if ((cfp != NULL) && ((cfp->c_flags & (GOAL | MOTION)) != 0))
 	    s = execute(cfp, f, n);
 	else {
 	    while (mapped_ungotc_avail())
@@ -611,16 +596,16 @@ api_motion(VileBuf *vbp, char *mstr)
 	}
     }
 
-    clexec     = saved_clexec;
-    vl_msgs    = saved_vl_msgs;
-    vl_echo    = saved_vl_echo;
+    clexec = saved_clexec;
+    vl_msgs = saved_vl_msgs;
+    vl_echo = saved_vl_echo;
     isnamedcmd = saved_isnamedcmd;
 
     return status;
 }
 
 int
-api_edit(char *fname, VileBuf **retvbpp)
+api_edit(char *fname, VileBuf ** retvbpp)
 {
     BUFFER *bp;
     if (fname == NULL) {
@@ -629,8 +614,7 @@ api_edit(char *fname, VileBuf **retvbpp)
 	sprintf(bufname, "[unnamed-%d]", ++unnamed_cnt);
 	bp = bfind(bufname, 0);
 	bp->b_active = TRUE;
-    }
-    else {
+    } else {
 	bp = getfile2bp(fname, FALSE, FALSE);
 	if (bp == 0) {
 	    *retvbpp = 0;
@@ -644,7 +628,7 @@ api_edit(char *fname, VileBuf **retvbpp)
 }
 
 int
-api_swscreen(VileBuf *oldsp, VileBuf *newsp)
+api_swscreen(VileBuf * oldsp, VileBuf * newsp)
 {
     /*
      * Calling api_command_cleanup nukes various state, like DOT
@@ -671,17 +655,17 @@ api_swscreen(VileBuf *oldsp, VileBuf *newsp)
      *
      * Anyhow, there's a lot of issues here requiring careful
      * consideration.  Which is why I haven't already done it.
-     *		- kev 4/3/1998
+     *          - kev 4/3/1998
      *
      * Okay, I put in the stuff for detaching and reattaching fake
      * windows, but the above noted caveats still apply.
-     *		- kev 4/18/1998
+     *          - kev 4/18/1998
      *
      * I decided that the fake window stuff was too much of a hack
      * So I blew it away.  The rest of vile has limited knowledge
      * of fake windows now where it needs it.  This knowledge is
      * buried in the macro "for_each_visible_window".
-     *		- kev 4/20/1998
+     *          - kev 4/20/1998
      */
 
     curwp = curwp_visible ? curwp_visible : curwp;
@@ -715,8 +699,6 @@ api_update(void)
  * do an efficient implementation for vile.
  */
 
-
-
 /* Propagate DOT for the fake windows that need it;
    Also do any outstanding (deferred) deletes. */
 static void
@@ -739,18 +721,16 @@ propagate_dot(void)
 	    if (curwp_visible && curwp_visible->w_bufp == wp->w_bufp) {
 		curwp_visible->w_dot = wp->w_dot;
 		curwp_visible->w_flag |= WFHARD;
-	    }
-	    else {
+	    } else {
 		int found = 0;
 		WINDOW *pwp;
 		for_each_window(pwp) {
 		    if (wp->w_bufp == pwp->w_bufp
-			&& !is_fake_window(pwp))
-		    {
+			&& !is_fake_window(pwp)) {
 			found = 1;
 			pwp->w_dot = wp->w_dot;
 			pwp->w_flag |= WFHARD;
-			break;		/* out of inner for_each_window */
+			break;	/* out of inner for_each_window */
 		    }
 		}
 		if (!found) {
@@ -780,7 +760,7 @@ api_command_cleanup(void)
 	if (bp2vbp(bp) != NULL) {
 	    bp2vbp(bp)->fwp = 0;
 	    bp2vbp(bp)->dot_inited = 0;		/* for next time */
-	    bp2vbp(bp)->dot_changed = 0;		/* ditto */
+	    bp2vbp(bp)->dot_changed = 0;	/* ditto */
 	    if (bp2vbp(bp)->changed) {
 		int buf_flag_says_changed = b_is_changed(bp);
 		chg_buff(bp, WFHARD);
@@ -835,9 +815,9 @@ api_bp2vbp(BUFFER *bp)
 	    vbp->bp = bp;
 	    vbp->regionshape = FULLLINE;
 	    vbp->region.r_orig.l =
-	    vbp->region.r_end.l  = buf_head(bp);
+		vbp->region.r_end.l = buf_head(bp);
 	    vbp->region.r_orig.o =
-	    vbp->region.r_end.o  = 0;
+		vbp->region.r_end.o = 0;
 	    vbp->dot_inited = 0;
 	    vbp->dot_changed = 0;
 	    vbp->ndel = 0;

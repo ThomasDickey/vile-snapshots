@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.73 2002/02/04 00:32:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.74 2002/05/01 00:08:07 tom Exp $
  *
  */
 
@@ -938,7 +938,7 @@ static void
 mousemove(int *sel_pending,
 	  COORD * first,
 	  COORD * current,
-	  MARK * lmbdn_mark,
+	  MARK *lmbdn_mark,
 	  int rect_rgn)
 {
     int dummy;

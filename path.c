@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.119 2002/02/15 00:58:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.122 2002/05/07 23:27:06 tom Exp $
  *
  *
  */
@@ -36,12 +36,12 @@
 # define S_ISREG(m)  (((m) & S_IFMT) == S_IFREG)
 #endif
 
-#ifndef S_IFCHR
-#define S_IFCHR S_IFREG
+#ifndef S_IFIFO
+#define S_IFIFO S_IFREG
 #endif
 
-#if !defined(S_ISCHR) && defined(S_IFMT) && defined(S_IFCHR)
-# define S_ISCHR(m)  (((m) & S_IFMT) == S_IFCHR)
+#if !defined(S_ISFIFO) && defined(S_IFMT) && defined(S_IFIFO)
+# define S_ISFIFO(m)  (((m) & S_IFMT) == S_IFIFO)
 #endif
 
 #if SYS_WINNT
@@ -242,10 +242,10 @@ is_vms_pathname(const char *path, int option)
 	this = VMSPATH_BEGIN_FILE;
 
     return (option == TRUE && (this == VMSPATH_END_DIR))	/* dir? */
-	||(option == TRUE && (this == VMSPATH_END_DEV))		/* dev? */
-	||(option == FALSE && (this >= VMSPATH_BEGIN_FILE))	/* file? */
-	||(option == -TRUE && (this >= VMSPATH_END_DIR	/* anything? */
-			       || this < VMSPATH_BEGIN_DIR));
+	|| (option == TRUE && (this == VMSPATH_END_DEV))	/* dev? */
+	|| (option == FALSE && (this >= VMSPATH_BEGIN_FILE))	/* file? */
+	|| (option == -TRUE && (this >= VMSPATH_END_DIR		/* anything? */
+				|| this < VMSPATH_BEGIN_DIR));
 }
 #endif
 
@@ -1801,7 +1801,7 @@ is_directory(char *path)
 static int
 is_filemode(struct stat *sb)
 {
-    return (S_ISREG(sb->st_mode) || S_ISCHR(sb->st_mode));
+    return (S_ISREG(sb->st_mode) || S_ISFIFO(sb->st_mode));
 }
 
 /*

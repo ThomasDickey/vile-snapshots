@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.136 2002/02/27 10:54:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.137 2002/05/05 20:26:02 tom Exp $
  *
  */
 
@@ -624,7 +624,8 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 #endif
 
 	/* do we need to do an auto-save? */
-	if (b_val(curbp, MDASAVE)) {
+	if (b_val(curbp, MDASAVE)
+	    && !b_val(curbp, MDREADONLY)) {
 	    curbp->b_acount--;
 	    if (curbp->b_acount <= 0) {
 		(void) update(TRUE);

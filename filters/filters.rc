@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.151 2002/02/27 11:09:05 tom Exp $
+; $Id: filters.rc,v 1.154 2002/05/05 19:00:17 J.Chris.Coppick Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -95,7 +95,7 @@ define-mode cweb
 ; excludes the if-block.
 define-mode dcl
 ~with define-submode dcl
-	suf '\.com$'
+	suf '\.\(com\|tpu\)$'
 	comment-prefix	'^\s*\$!'
 	comments	'^\s*\$!\s*$'
 	ignorecase
@@ -483,8 +483,9 @@ define-mode tc
 
 define-mode tcl
 ~with define-submode tcl
+	before "sh"
 	suf '\.\(tcl\|exp\)$'
-	pre '^#!\s*\/.*wish[0-9.]*\>\(\s*-[a-z]\+\)*\s*$'
+	pre '^#!\s*\/.*\(wish\|wishx\|tclsh\|tcl\|expectk\)[0-9.]*\>\(\s*-[a-z]\+\)*\s*$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
 ~endwith

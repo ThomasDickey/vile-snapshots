@@ -60,11 +60,9 @@ CDROM's.
 ------------------------------------------------------
 Send bug reports to
 	bugs@vile.cx
-	vile-bugs@foxharp.boston.ma.us
 
 Requests to be put on the announcement list should go to
 	announce-request@vile.cx
-	vile-announce-request@foxharp.boston.ma.us
 
 ------------------------------------------------------
 
@@ -528,5 +526,5 @@ Oct, 2000
     + added pushd, popd, dirs commands with accompanying [DirStack].
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.84 2000/11/04 12:14:23 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.85 2002/05/07 00:39:42 cmorgan Exp $
 -------------------------------

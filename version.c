@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.52 2002/02/17 18:35:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.53 2002/04/30 11:52:07 tom Exp $
  *
  */
 
@@ -34,7 +34,7 @@ print_usage(void)
 #endif
 	"-sstring       or +/string to search for \"string\"",
 #if OPT_TAGS
-#if DISP_X11		/* because -title is predefined */
+#if DISP_X11			/* because -title is predefined */
 	"-Ttagname      to look up a tag",
 #else
 	"-ttagname      to look up a tag",

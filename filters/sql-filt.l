@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.15 2002/02/14 00:25:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.17 2002/05/01 00:43:03 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of SQL script
  * - T.Dickey
@@ -15,7 +15,7 @@ DefineFilter("sql");
 
 static char *Action_attr;
 static char *Comment_attr;
-static char *Error_attr;;
+static char *Error_attr;
 static char *Ident_attr;
 static char *Keyword_attr;
 static char *Number_attr;
@@ -51,7 +51,7 @@ do_filter(FILE *input)
 
 SPACE		[ \t]*
 
-ACTION		@
+ACTION		@[@]?
 
 COMMENT1	^{SPACE}--[^\n]*
 

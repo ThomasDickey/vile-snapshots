@@ -1,3 +1,4 @@
+# $Header: /users/source/archives/vile.vcs/perl/RCS/dict.pm,v 1.3 2002/05/06 23:27:51 tom Exp $
 package dict;
 
 use Net::Dict;
@@ -40,6 +41,7 @@ sub dict {
                 push @mtch, $mtch;
             }
         }
+        Vile::working($work);
         print "No definitions of $find...\n";
         sleep 1;
         $find = Vile::mlreply_opts("Do you mean? ", @mtch);
@@ -111,7 +113,7 @@ This is a dictionary and thesaurus extension for [x]vile  written
 written  using  the  vile-perl-api. It uses the Dictionary Server
 Protocol (DICT) described in RFC 2229.
 
-On invokation, it prompts the user for the  word  or  phrase  for
+On invocation, it prompts the user for the  word  or  phrase  for
 which to search the meaning. By default it provides the choice of
 the "punctuated-word" and the "whole-word" under the cursor.  The
 user  can  cycle  through  the default options by hitting the TAB
@@ -128,7 +130,7 @@ list  of  closely  matching  words. This functionality allows the
 user to approximate the spelling of the word  (or  even  truncate
 it) when the exact spelling or the word is not known.
 
-=head1 CAEVATS
+=head1 CAVEATS
 
 This extension utilizes the Net::Dict perl package. If it is  not
 available  on  your  system,  it  can  be downloaded from CPAN or

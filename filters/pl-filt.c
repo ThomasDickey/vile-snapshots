@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.24 2002/01/17 01:20:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.30 2002/05/05 19:45:18 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -22,7 +22,15 @@ DefineFilter("perl");
 
 #define PAREN_SLASH "(/"	/* FIXME: (/pattern/) could be composite */
 
+#define QUOTE_DELIMS "#:/?|!:%`',{}"
+
 #define isIdent(c) (isalnum(CharOf(c)) || c == '_')
+
+#if 0
+#define DPRINTF(params) if(0)printf params
+#else
+#define DPRINTF(params)		/*nothing */
+#endif
 
 typedef enum {
     eCODE
@@ -55,7 +63,7 @@ static int
 is_BLANK(char *s)
 {
     int found = 0;
-    while ((*s == ' ') || (*s == '\t')) {
+    while ((s != the_last) && ((*s == ' ') || (*s == '\t'))) {
 	found++;
 	s++;
     }
@@ -66,7 +74,7 @@ static int
 is_INTEGER(char *s)
 {
     int found = 0;
-    while (isdigit(CharOf(*s))) {
+    while ((s != the_last) && isdigit(CharOf(*s))) {
 	found++;
 	s++;
     }
@@ -324,8 +332,11 @@ is_COMMENT(char *s)
 
     if (*t++ == '#') {
 	while (t != the_last) {
-	    if (*t == '\n')
-		break;
+	    if (*t == '\n') {
+		if ((t + 1) == the_last
+		    || t[1] != '#')
+		    break;
+	    }
 	    t++;
 	}
 	s = t;
@@ -449,6 +460,24 @@ skip_BLANKS(char *s)
 }
 
 /*
+ * Return the first character, skipping optional blanks
+ */
+static int
+after_blanks(char *s)
+{
+    int result = '\0';
+
+    while (s != the_last) {
+	if (!isspace(CharOf(*s))) {
+	    result = CharOf(*s);
+	    break;
+	}
+	++s;
+    }
+    return result;
+}
+
+/*
  * FIXME: the only place that perlfilt.l recognizes a PATTERN is after "!~"
  * or "=~".  Doing that in other places gets complicated - the reason for
  * moving to C.
@@ -464,43 +493,124 @@ begin_PATTERN(char *s)
     return 0;
 }
 
+/*
+ * If we're pointing to a quote-like operator, return its length.
+ */
+static int
+is_QUOTE(char *s, int *delims)
+{
+    char *base = s;
+
+    *delims = 0;
+    switch (*s++) {
+    case 'm':
+	*delims = 2;
+	if (isIdent(*s))
+	    s = base;
+	break;
+    case 't':
+	*delims = 3;
+	if (*s++ != 'r' || isIdent(*s))
+	    s = base;
+	break;
+    case 's':			/* FALLTHRU */
+    case 'y':
+	*delims = 3;
+	if (isIdent(*s))
+	    s = base;
+	break;
+    case 'q':
+	*delims = 2;
+	if (isIdent(*s)) {
+	    switch (*s) {
+	    case 'q':
+	    case 'x':
+	    case 'w':
+	    case 'r':
+		*delims = 2;
+		++s;
+		if (isIdent(*s))
+		    s = base;
+		break;
+	    default:
+		s = base;
+		break;
+	    }
+	}
+	break;
+    default:
+	s = base;
+	break;
+    }
+    if (s != base) {
+	int test = after_blanks(s);
+	DPRINTF(("is_Quote(%.*s:%c)", s - base, base, test));
+	if (test == '#' && isspace(*s))
+	    test = 0;
+	if ((test == 0) || (strchr(QUOTE_DELIMS, test) == 0))
+	    s = base;
+	DPRINTF(("is_QUOTE(%.*s)",
+		 (s != base) ? (s - base) : 1,
+		 (s != base) ? base : ""));
+    }
+    return (s - base);
+}
+
 static int
 add_to_PATTERN(char *s)
 {
     char *base = s;
     char *next;
-    int first = CharOf(*s);
-    int need = (first == 's' || first == 'y' || first == 't') ? 3 : 2;	/* number of delims we'll see */
-    /* FIXME: 't' for 'tr' */
+    int need;
+    int skip = is_QUOTE(s, &need);
 
-    if (the_last - s > need) {
-	int delim = *s;
+    if (skip == 0)
+	need = 2;
+
+    DPRINTF(("before(%d:%s)", skip, s));
+    if (the_last - s > need + skip) {
+	int delim = 0;
 	int escaped = 0;
+	int comment = 0;
+	int bracketed = 0;
 
-	while (isalpha(CharOf(delim))) {
-	    if (s != the_last) {
-		delim = *++s;
-	    }
+	s += skip;
+	while ((s != the_last) && isspace(CharOf(*s))) {
+	    s++;
 	}
+	if (s != the_last) {
+	    delim = *s++;
+	}
+	if (delim == 0)
+	    return 0;
 	if (delim == L_CURLY) {
 	    delim = R_CURLY;
-	    need = 1;
 	}
+	DPRINTF(("need(%c:%d)", delim, need));
+	need--;
 	next = s;
 	while (s != the_last) {
-	    if (!escaped && (*s == ESC)) {
+	    if (comment) {
+		if (*s == '\n')
+		    comment = 0;
+	    } else if (!escaped && (*s == ESC)) {
 		escaped = 1;
 	    } else {
 		if (!escaped) {
+		    if (*s == L_CURLY)
+			++bracketed;
+		    if (*s == R_CURLY)
+			if (--bracketed < 0)
+			    bracketed = 0;	/* oops */
+		    if (*s == '#' && delim == R_CURLY && !bracketed)
+			comment = 1;
 		    if (*s == delim) {
-			if (--need == 0) {
-			    s++;
+			DPRINTF(("DELIM%d%c(%.*s)", need, delim,
+				 the_last - s, s));
+			if (--need <= 0) {
+			    ++s;
 			    break;
 			}
-		    } else if (s != next
-			       && delim == R_CURLY
-			       && *s == L_CURLY) {
-			++need;
 		    }
 		}
 		escaped = 0;
@@ -513,6 +623,7 @@ add_to_PATTERN(char *s)
 		break;
 	    s++;
 	}
+	DPRINTF(("after(%s)", s));
 	return (s - base);
     }
     return 0;
@@ -524,46 +635,56 @@ add_to_PATTERN(char *s)
 static char *
 write_PATTERN(char *s, int len)
 {
-    int x_modifier = 0;
+    int delimiter = 0;
+    int delims;
+    int skip = is_QUOTE(s, &delims);
     int n;
+    int first;
+    int leading = 0;
+    int comment = 0;
+    int escaped = 0;
+    int range = 0;
 
-    for (n = len - 1; n > 0; n--) {
-	if (isalpha(s[n])) {
-	    if (s[n] == 'x') {
-		x_modifier = 1;
-		break;
-	    }
-	} else {
-	    break;
-	}
+    DPRINTF(("write(%.*s)", len, s));
+    if (skip) {
+	flt_puts(s, skip, Keyword_attr);
+	s += skip;
+	len -= skip;
     }
 
-    if (x_modifier) {		/* handle whitespace and comments */
-	int first;
-	int comment = 0;
-	int escaped = 0;
-	int range = 0;
+    skip = skip_BLANKS(s) - s;
+    if (skip) {
+	s += skip;
+	len -= skip;
+    }
+    delimiter = *s;
 
-	for (n = first = 0; n < len; n++) {
-	    if (escaped) {
-		escaped = 0;
-	    } else if (s[n] == ESC) {
-		escaped = 1;
-	    } else if ((s[n] == ' ' || s[n] == '\t') && !comment) {
-		flt_puts(s + first, (n - first - 0), String_attr);
-		flt_putc(s[n]);
+    for (n = first = 0; n < len; n++) {
+	if (escaped) {
+	    escaped = 0;
+	} else if (s[n] == ESC) {
+	    escaped = 1;
+	} else if ((s[n] == ' ' || s[n] == '\t') && !escaped && !comment &&
+		   (leading || after_blanks(s + n) == '#')) {
+	    flt_puts(s + first, (n - first - 0), String_attr);
+	    flt_putc(s[n]);
+	    first = n + 1;
+	} else if (s[n] == '\n') {
+	    leading = 1;
+	    if (comment) {
+		flt_puts(s + first, (n - first + 1), Comment_attr);
+		comment = 0;
 		first = n + 1;
-	    } else if ((s[n] == L_BLOCK) && !comment) {
+	    }
+	} else {
+	    leading = 0;
+	    if ((s[n] == L_BLOCK) && !comment) {
 		range = 1;
 	    } else if ((s[n] == R_BLOCK) && range) {
 		range = 0;
-	    } else if (s[n] == '\n') {
-		if (comment) {
-		    flt_puts(s + first, (n - first + 1), Comment_attr);
-		    comment = 0;
-		    first = n + 1;
-		}
-	    } else if ((s[n] == '#') && !range) {
+	    } else if ((s[n] == '#')
+		       && (delimiter == L_CURLY || (n > 0 && s[n - 1] == '\t'))
+		       && !range) {
 		if (!comment) {
 		    flt_puts(s + first, (n - first - 1), String_attr);
 		    comment = 1;
@@ -571,10 +692,10 @@ write_PATTERN(char *s, int len)
 		}
 	    }
 	}
-	flt_puts(s + first, (len - first), comment ? Comment_attr : String_attr);
-    } else {
-	flt_puts(s, len, String_attr);
     }
+    if (comment)
+	first += (skip_BLANKS(s) - s);
+    flt_puts(s + first, (len - first), comment ? Comment_attr : String_attr);
     s += len;
     return s;
 }
@@ -716,6 +837,7 @@ do_filter(FILE * input GCC_UNUSED)
     int had_op = 0;
     int if_wrd = 0;
     int if_old = 0;
+    int ignore;
 
     Comment_attr = class_attr(NAME_COMMENT);
     Error_attr = class_attr(NAME_ERROR);
@@ -759,6 +881,8 @@ do_filter(FILE * input GCC_UNUSED)
 	    }
 	    if_old = if_wrd;
 	    if_wrd = 0;
+	    DPRINTF(("state:%d, in_line:%d, had_op:%d, chr(%c)\n",
+		     state, in_line, had_op, *s));
 	    switch (state) {
 	    case eCODE:
 		if ((marker = begin_HERE(s, &quoted)) != 0) {
@@ -778,6 +902,7 @@ do_filter(FILE * input GCC_UNUSED)
 		    flt_puts(s, ok, Preproc_attr);
 		    s += ok;
 		} else if ((ok = is_COMMENT(s)) != 0) {
+		    ok -= (skip_BLANKS(s) - s);
 		    flt_puts(s, ok, Comment_attr);
 		    s += ok;
 		    if_wrd = if_old;
@@ -785,13 +910,13 @@ do_filter(FILE * input GCC_UNUSED)
 		    flt_puts(s, ok, "");
 		    s += ok;
 		    if_wrd = if_old;
-		} else if ((if_old || (had_op && parens)) && (*s == '/')) {
+		} else if ((if_old || had_op) && (*s == '/' || *s == '?')) {
 		    state = ePATTERN;
 		} else if (*s == L_PAREN) {
 		    parens++;
 		    had_op = 1;
 		    flt_putc(*s++);
-		    if (*s == '/') {
+		    if (*s == '/' || *s == '?') {
 			state = ePATTERN;
 		    }
 		} else if (*s == R_PAREN) {
@@ -800,22 +925,14 @@ do_filter(FILE * input GCC_UNUSED)
 		    flt_putc(*s++);
 		    had_op = 0;
 		} else if ((ok = is_KEYWORD(s)) != 0) {
+		    if (is_QUOTE(s, &ignore)) {
+			state = ePATTERN;
+			break;
+		    }
 		    save = s[ok];
 		    s[ok] = 0;
 		    if (!strcmp(s, "__END__"))
 			state = eIGNORED;
-		    if (ispunct(CharOf(save))
-			&& strchr("[]<>()", save) == 0
-			&& (!strcmp(s, "s")
-			    || !strcmp(s, "q")
-			    || !strcmp(s, "qq")
-			    || !strcmp(s, "y")
-			    || !strcmp(s, "m")
-			    || !strcmp(s, "tr"))) {
-			state = ePATTERN;
-			s[ok] = save;
-			break;
-		    }
 		    had_op = 0;
 		    flt_puts(s, ok, keyword_attr(s));
 		    if_wrd = (ok == 2 && !strncmp(s, "if", ok));
@@ -841,6 +958,9 @@ do_filter(FILE * input GCC_UNUSED)
 			    had_op = 1;
 			else if (!isspace(CharOf(*s)))
 			    had_op = 0;
+		    } else {
+			if (strchr("=~", *s) != 0)
+			    had_op = 1;
 		    }
 		    flt_putc(*s++);
 		}
@@ -858,7 +978,7 @@ do_filter(FILE * input GCC_UNUSED)
 		break;
 	    case ePATTERN:
 		s = skip_BLANKS(s);
-		if ((ok = is_IDENT(s)) != 0) {
+		if ((ok = is_IDENT(s)) != 0 && !is_QUOTE(s, &ignore)) {
 		    s = put_IDENT(s, ok, &had_op, &if_wrd);
 		} else if ((ok = add_to_PATTERN(s)) != 0) {
 		    s = write_PATTERN(s, ok);

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tagsfilt.c,v 1.6 2000/11/04 20:18:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tagsfilt.c,v 1.7 2002/05/01 19:43:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a tags file.  It's done best
  * in C because the file consists only of columns of data that are delimited
@@ -30,7 +30,7 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input GCC_UNUSED)
+do_filter(FILE * input GCC_UNUSED)
 {
     static unsigned used;
     static char *line;
@@ -38,22 +38,22 @@ do_filter(FILE *input GCC_UNUSED)
     char *s, *t;
 
     Comment_attr = class_attr(NAME_COMMENT);
-    Ident_attr   = class_attr(NAME_IDENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
+    Ident_attr = class_attr(NAME_IDENT);
+    Ident2_attr = class_attr(NAME_IDENT2);
     Literal_attr = class_attr(NAME_LITERAL);
-    Number_attr  = class_attr(NAME_NUMBER);
+    Number_attr = class_attr(NAME_NUMBER);
 
     while (flt_gets(&line, &used) != NULL) {
 	s = line;
 	if (*s != '!') {
 	    t = skip_field(s);
-	    flt_puts(s, t-s, Ident_attr);
+	    flt_puts(s, t - s, Ident_attr);
 	    if (*t == '\t') {
 		flt_putc(*t++);
 	    }
 	    s = t;
 	    t = skip_field(s);
-	    flt_puts(s, t-s, Ident2_attr);
+	    flt_puts(s, t - s, Ident2_attr);
 	    if (*t == '\t') {
 		flt_putc(*t++);
 	    }
@@ -61,7 +61,7 @@ do_filter(FILE *input GCC_UNUSED)
 	    if (isdigit(CharOf(*s))) {
 		while (isdigit(CharOf(*t)))
 		    t++;
-		flt_puts(s, t-s, Number_attr);
+		flt_puts(s, t - s, Number_attr);
 	    } else if (ispunct(CharOf(*s))) {
 		t++;
 		while (*t != 0 && *t != *s) {
@@ -70,7 +70,7 @@ do_filter(FILE *input GCC_UNUSED)
 		    if (*t != 0)
 			t++;
 		}
-		flt_puts(s, t-s, Literal_attr);
+		flt_puts(s, t - s, Literal_attr);
 	    }
 	    s = t;
 	}

@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.150 2002/02/17 20:52:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.151 2002/04/30 11:51:59 tom Exp $
  *
  */
 
@@ -424,12 +424,12 @@ linsert(int n, int c)
 		wp->w_lastdot.o += n;
 	}
     }
-    do_mark_iterate(mp,
-		    if (mp->l == lp1) {
-		    if (mp->o > doto)
-		    mp->o += n;
-		    }
-    ) ;
+    do_mark_iterate(mp, {
+	if (mp->l == lp1) {
+	    if (mp->o > doto)
+		mp->o += n;
+	}
+    });
 #if OPT_LINE_ATTRS
     if (lp1->l_attrs)
 	lattr_shift(curbp, lp1, doto, n);
@@ -543,14 +543,14 @@ lnewline(void)
 		wp->w_lastdot.o -= doto;
 	}
     }
-    do_mark_iterate(mp,
-		    if (mp->l == lp1) {
-		    if (mp->o < doto)
-		    mp->l = lp2;
-		    else
-		    mp->o -= doto;
-		    }
-    ) ;
+    do_mark_iterate(mp, {
+	if (mp->l == lp1) {
+	    if (mp->o < doto)
+		mp->l = lp2;
+	    else
+		mp->o -= doto;
+	}
+    });
 #if OPT_LINE_ATTRS
     FreeAndNull(lp1->l_attrs);
 #endif
@@ -670,14 +670,14 @@ ldelete(B_COUNT nchars, int kflag)
 		    wp->w_lastdot.o = doto;
 	    }
 	}
-	do_mark_iterate(mp,
-			if (mp->l == dotp
-			    && mp->o > doto) {
-			mp->o -= chunk;
-			if (mp->o < doto)
-			mp->o = doto;
-			}
-	) ;
+	do_mark_iterate(mp, {
+	    if (mp->l == dotp
+		&& mp->o > doto) {
+		mp->o -= chunk;
+		if (mp->o < doto)
+		    mp->o = doto;
+	    }
+	});
 #if OPT_LINE_ATTRS
 	lattr_shift(curbp, dotp, doto, -chunk);
 #endif
@@ -828,12 +828,12 @@ ldelnewline(void)
 	    wp->w_lastdot.o += len;
 	}
     }
-    do_mark_iterate(mp,
-		    if (mp->l == lp2) {
-		    mp->l = lp1;
-		    mp->o += len;
-		    }
-    ) ;
+    do_mark_iterate(mp, {
+	if (mp->l == lp2) {
+	    mp->l = lp1;
+	    mp->o += len;
+	}
+    });
 #if OPT_LINE_ATTRS
     FreeAndNull(lp2->l_attrs);
 #endif

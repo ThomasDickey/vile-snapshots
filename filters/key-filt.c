@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.13 2001/01/06 01:40:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.14 2002/05/01 19:43:39 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile keyword file.  It's
  * done best in C because the delimiters may change as a result of processing
@@ -91,10 +91,11 @@ ExecTable(char *param)
 {
     char *t = skip_ident(param);
     flt_puts(param, t - param, Literal_attr);
-    flt_puts(t, strlen(t), *t == '\n' ? ""  : Error_attr);
+    flt_puts(t, strlen(t), *t == '\n' ? "" : Error_attr);
 }
 
-static int parse_directive(char *line)
+static int
+parse_directive(char *line)
 {
     /* *INDENT-OFF* */
     static struct {
@@ -111,6 +112,7 @@ static int parse_directive(char *line)
 	{ "table",   ExecTable    },
     };
     /* *INDENT-ON* */
+
     unsigned n, len;
     char *s;
 
@@ -120,7 +122,7 @@ static int parse_directive(char *line)
 	    for (n = 0; n < sizeof(table) / sizeof(table[0]); n++) {
 		if (!strncmp(s, table[n].name, len)) {
 		    s = skip_blanks(s + len);
-		    flt_puts(line, s-line, Ident_attr);
+		    flt_puts(line, s - line, Ident_attr);
 		    (*table[n].func) (s);
 		    return 1;
 		}
@@ -148,11 +150,11 @@ do_filter(FILE * input GCC_UNUSED)
      * Unlike most filters, we make a copy of the attributes, since we will be
      * manipulating the class symbol table.
      */
-    Action_attr  = strmalloc(class_attr(NAME_ACTION));
+    Action_attr = strmalloc(class_attr(NAME_ACTION));
     Comment_attr = strmalloc(class_attr(NAME_COMMENT));
-    Error_attr   = strmalloc(class_attr(NAME_ERROR));
-    Ident_attr   = strmalloc(class_attr(NAME_IDENT));
-    Ident2_attr  = strmalloc(class_attr(NAME_IDENT2));
+    Error_attr = strmalloc(class_attr(NAME_ERROR));
+    Ident_attr = strmalloc(class_attr(NAME_IDENT));
+    Ident2_attr = strmalloc(class_attr(NAME_IDENT2));
     Literal_attr = strmalloc(class_attr(NAME_LITERAL));
 
     meta_ch = '.';

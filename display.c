@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.363 2002/02/18 00:41:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.364 2002/05/07 11:03:20 pgf Exp $
  *
  */
 
@@ -2486,6 +2486,10 @@ modeline_modes(BUFFER *bp, char **msptr)
     register size_t mcnt = 0;
 
     PutMajormode(bp);
+#if COMPLETE_FILES || COMPLETE_DIRS
+    if (b_is_directory(bp))
+	PutModename("%c%s", "directory");
+#endif
 #if !OPT_MAJORMODE
     PutMode(MDCMOD, "cmode");
 #endif

@@ -1,3 +1,4 @@
+# $Header: /users/source/archives/vile.vcs/perl/RCS/man.pm,v 1.3 2002/05/06 23:27:51 tom Exp $
 package man;
 
 use Vile;
@@ -26,13 +27,14 @@ sub man {
 
     foreach $cb (Vile::buffers) {
         if ($cb->buffername eq "<man:$man>") {
+	    Vile::working($work);
             Vile->current_buffer($cb);
             return;
         }
     }
 
     print "";
-    open(MAN, "man $man |") || do { print "$!\n"; return; };
+    open(MAN, "man $man |") || do { print "$!\n"; Vile::working($work); return; };
 
     $cb = new Vile::Buffer;
     $cb->buffername("<man:$man>");
@@ -85,7 +87,7 @@ In [x]vile
 =head1 DESCRIPTION
 
 This is a Unix manual pages viewer  for [x]vile written using the
-vile-perl-api. On invokation, it prompts the user for the keyword
+vile-perl-api. On invocation, it prompts the user for the keyword
 for which to show the manual page, and provides an initial choice
 of the "punctuated-word"  and the  "whole-word" under the cursor.
 The user can cycle through the default initial choices by hitting
@@ -95,7 +97,7 @@ The manual page is presented  in a new buffer unless a buffer for
 that manual page already exists. The  manual  page  is  formatted
 with bold and underline attributes as appropriate.
 
-=head1 CAEVATS
+=head1 CAVEATS
 
 None.
 
