@@ -1,5 +1,16 @@
 Changes for vile 6.2 (released ??? ??? ??, 1996)
 
+(tom)	961006 (d)
+	+ correct filling of blanks for non-bce terminals, so the filling is
+	  used only for color terminals (tcap.c).
+
+(kev)	961004 (c)
+	+ x11.c (update_scrollbar_sizes):  Make sure that grips are
+	  managed properly when multiple windows are created at
+	  startup.  Fixes David Snyder's "xvile -h" bug where it was
+	  not possible to resize the two windows by grabbing the
+	  resize grips.
+
 (tom)	961004 (b)
 	+ rename 'refresh()' to 'vile_refresh()', 'filter()' to 'vile_filter()',
 	  to avoid naming-conflict when including <curses.h> to support terminfo
