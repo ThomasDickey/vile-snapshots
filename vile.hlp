@@ -1015,6 +1015,8 @@ Editor modes
 		buffers include:
 			[Binding List]
 			[Buffer List]
+			[Color Palette]
+			[Error Expressions]
 			[Major Modes]
 			[Map Sequences]
 			[Map! Sequences]
@@ -3717,8 +3719,8 @@ Win32 specifics
 	vile may be forced to use native Win32 pipes by setting the global
 	mode "w32pipes" (e.g., "se w32pipes").
 
-	Mouse
-	-----
+	Mouse (GUI and Console)
+	-----------------------
 	Selecting and dragging with the left mouse button yanks text to the
 	unnamed register.  Press a control key during the selection to
 	sweep out a rectangular region.  Extend the selection beyond the
@@ -3728,6 +3730,12 @@ Win32 specifics
 
 	Change vile's window focus via left mouse button clicks (when
 	multiple windows are displayed).
+
+	Winvile Mouse
+	-------------
+	Pressing the right mouse button pops up a menu of editor commands.
+	Currently, the only menu selection is "Open...", which executes the
+	"winopen" command (described below).
 
 	Clipboard
 	---------
@@ -3810,6 +3818,31 @@ Win32 specifics
 
 		hgrep.pl glob2re.pl visit.pl search.pl hilite.pl syntax.pl
 
+	Commands
+	--------
+	winopen		Launches the Windows common open dialog box to open
+			one or more files within the editor.  Note that if
+			this dialog box opens files outside the editor's
+			current working directroy (cwd), then Windows (and
+			vile) implicitly change the cwd to match that of
+			the opened files.  This command _is_ available from
+			console vile.
+
+	winopen-nocd	Same as "winopen", except the editor's cwd remains
+			unchanged.
+
+	Commands
+	--------
+	winopen		Launches the Windows common open dialog box to open
+			one or more files within the editor.  Note that if
+			this dialog box opens files outside the editor's
+			current working directroy (cwd), then Windows (and
+			vile) implicitly change the cwd to match that of
+			the opened files.  This command _is_ available from
+			console vile.
+
+	winopen-nocd	Same as "winopen", except the editor's cwd remains
+			unchanged.
 	Modes
 	-----
 	force-console   Boolean indicating whether or not winvile forces
@@ -4078,4 +4111,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.410 1999/05/11 01:02:23 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.413 1999/05/18 22:51:47 tom Exp $

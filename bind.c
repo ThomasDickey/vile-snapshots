@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.192 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.193 1999/05/18 00:26:54 tom Exp $
  *
  */
 
@@ -320,6 +320,25 @@ bindkey(int f GCC_UNUSED, int n GCC_UNUSED)
 	return rebind_key(key_to_bind(kcmd), kcmd);
 }
 
+static int
+mac_token2kcod(int check)
+{
+	static TBUFF *tok;
+	char *value;
+	int c;
+
+	if ((value = mac_tokval(&tok)) == 0) {
+		c = -1;
+	} else {
+		c = prc2kcod(value);
+
+		if (c < 0 && check)
+			mlforce("[Illegal key-sequence \"%s\"]", value);
+	}
+
+	return c;
+}
+
 /*
  * Prompt-for and return the key-code to bind.
  */
@@ -333,9 +352,7 @@ key_to_bind(register const CMDFUNC *kcmd)
 
 	/* if running a command line, get a token rather than keystrokes */
 	if (clexec) {
-		char tok[NSTRING];
-		mac_tokval(tok);
-		c = prc2kcod(tok);
+		c = mac_token2kcod(FALSE);
 	} else {
 		/* perhaps we only want a single key, not a sequence */
 		/*	(see more comments below) */
@@ -454,13 +471,8 @@ unbindkey(int f GCC_UNUSED, int n GCC_UNUSED)
 
 	/* get the command sequence to unbind */
 	if (clexec) {
-		char tok[NSTRING];
-		mac_tokval(tok);	/* get the next token */
-		c = prc2kcod(tok);
-		if (c < 0) {
-			mlforce("[Illegal key-sequence \"%s\"]",tok);
+		if ((c = mac_token2kcod(TRUE)) < 0)
 			return FALSE;
-		}
 	} else {
 		c = kbd_seq();
 		if (c < 0) {
@@ -651,13 +663,8 @@ deskey(int f GCC_UNUSED, int n GCC_UNUSED)	/* describe the command for a certain
 
 	/* check to see if we are executing a command line */
 	if (clexec) {
-		char tok[NSTRING];
-		mac_tokval(tok);	/* get the next token */
-		c = prc2kcod(tok);
-		if (c < 0) {
-			mlforce("[Illegal key-sequence \"%s\"]",tok);
+		if ((c = mac_token2kcod(TRUE)) < 0)
 			return(FALSE);
-		}
 	} else {
 		c = kbd_seq_nomap();
 		if (c < 0) {

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_3c
+MANIFEST for vile, version v8_3d
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -123,10 +123,12 @@ w32reg.c                        Winvile OLE registration code
 w32reg.h                        interface of w32reg
 watch.c                         watch file-descriptors & timers
 window.c                        window-management functions
+winvile.h                       definitions for winvile
 winvile.odl                     interface description for Winvile OLE
 winvile.rc                      resource definitions for winvile
 word.c                          commands that operate upon words or paragraphs
 wordmov.c                       cursor-movement commands (e.g., word, spaces)
+wvwrap.cpp                      wrapper for winvile, e.g., from NT Explorer
 x11.c                           X11 (Xt, Motif or Openlook) terminal driver
 xshell.sh                       wrapper/sample script for xvile
 doc                             subdirectory

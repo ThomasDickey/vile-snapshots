@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.11 1999/04/20 01:17:05 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.12 1999/05/17 22:00:49 tom Exp $
  */
 
 #include	"estruct.h"
@@ -22,10 +22,10 @@ static char *x_shell;	/* $XSHELL environment is "$xshell" state variable */
 
 #if OPT_PROCEDURES
 static int
-any_HOOK(char *rp, const char *vp, HOOK *hook)
+any_HOOK(TBUFF **rp, const char *vp, HOOK *hook)
 {
 	if (rp) {
-		strcpy(rp, hook->proc);
+		tb_scopy(rp, hook->proc);
 		return TRUE;
 	} else if (vp) {
 		(void)strcpy(hook->proc, vp);
@@ -131,19 +131,20 @@ get_directory(void)
 }
 #endif
 
-/* access the default kill buffer.  result buffer must be at least NSTRING */
+/* access the default kill buffer */
 static char *
-getkill(char *rp)
+getkill(TBUFF **rp)
 {
 	if (!kbs[0].kbufh) {
-		*rp = EOS;
+		tb_init(rp, EOS);
 	} else {
-		(void)strncpy(rp, (char *)(kbs[0].kbufh->d_chunk),
-				kbs[0].kused);
-		rp[NSTRING-1] = EOS;
+		int n = index2ukb(0);
+		tb_bappend(rp, (char *)(kbs[n].kbufh->d_chunk),
+				kbs[n].kused);
+		tb_append(rp, EOS);
 	}
 
-	return rp;
+	return tb_values(*rp);
 }
 
 #if OPT_EVAL
@@ -179,11 +180,11 @@ cfgopts(void)
 #endif
 
 #if OPT_EVAL
-int var_ABUFNAME(char *rp, const char *vp)
+int var_ABUFNAME(TBUFF **rp, const char *vp)
 {
 	BUFFER *bp;
 	if (rp) {
-		strcpy(rp, ((bp = find_alt()) != 0) ? bp->b_bname : "");
+		tb_scopy(rp, ((bp = find_alt()) != 0) ? bp->b_bname : "");
 		return TRUE;
 	} else if (vp) {
 		return ABORT;  /* read-only */
@@ -193,7 +194,7 @@ int var_ABUFNAME(char *rp, const char *vp)
 	}
 }
 
-int var_BCHARS(char *rp, const char *vp)
+int var_BCHARS(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_int(rp, curbp->b_bytecount);
@@ -205,7 +206,7 @@ int var_BCHARS(char *rp, const char *vp)
 	}
 }
 
-int var_BLINES(char *rp, const char *vp)
+int var_BLINES(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_int(rp, curbp->b_linecount);
@@ -218,16 +219,16 @@ int var_BLINES(char *rp, const char *vp)
 }
 
 #if OPT_PROCEDURES
-int var_BUFHOOK(char *rp, const char *vp)
+int var_BUFHOOK(TBUFF **rp, const char *vp)
 {
 	return any_HOOK(rp, vp, &bufhook);
 }
 #endif
 
-int var_CBUFNAME(char *rp, const char *vp)
+int var_CBUFNAME(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, curbp->b_bname);
+		tb_scopy(rp, curbp->b_bname);
 		return TRUE;
 	} else if (vp) {
 		if (curbp) {
@@ -241,16 +242,16 @@ int var_CBUFNAME(char *rp, const char *vp)
 }
 
 #if OPT_PROCEDURES
-int var_CDHOOK(char *rp, const char *vp)
+int var_CDHOOK(TBUFF **rp, const char *vp)
 {
 	return any_HOOK(rp, vp, &cdhook);
 }
 #endif
 
-int var_CFGOPTS(char *rp, const char *vp)
+int var_CFGOPTS(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, cfgopts());
+		tb_scopy(rp, cfgopts());
 		return TRUE;
 	} else if (vp) {
 		return ABORT;  /* read-only */
@@ -259,10 +260,10 @@ int var_CFGOPTS(char *rp, const char *vp)
 	}
 }
 
-int var_CFNAME(char *rp, const char *vp)
+int var_CFNAME(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, (curbp && curbp->b_fname) ? curbp->b_fname : "");
+		tb_scopy(rp, (curbp && curbp->b_fname) ? curbp->b_fname : "");
 		return TRUE;
 	} else if (vp) {
 		if (curbp) {
@@ -275,7 +276,7 @@ int var_CFNAME(char *rp, const char *vp)
 	}
 }
 
-int var_CURCHAR(char *rp, const char *vp)
+int var_CURCHAR(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		if (curbp && !is_empty_buf(curbp)) {
@@ -284,7 +285,7 @@ int var_CURCHAR(char *rp, const char *vp)
 			else
 				render_int(rp, char_at(DOT));
 		} else {
-			strcpy(rp, error_val);
+			tb_scopy(rp, error_val);
 		}
 		return TRUE;
 	} else if (vp) {
@@ -308,7 +309,7 @@ int var_CURCHAR(char *rp, const char *vp)
 }
 
 #if OPT_ENCRYPT
-int var_CRYPTKEY(char *rp, const char *vp)
+int var_CRYPTKEY(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		return FALSE;  /* write-only */
@@ -324,7 +325,7 @@ int var_CRYPTKEY(char *rp, const char *vp)
 }
 #endif
 
-int var_CURCOL(char *rp, const char *vp)
+int var_CURCOL(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_int(rp, getccol(FALSE) + 1);
@@ -336,7 +337,7 @@ int var_CURCOL(char *rp, const char *vp)
 	}
 }
 
-int var_CURLINE(char *rp, const char *vp)
+int var_CURLINE(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_int(rp, getcline());
@@ -349,10 +350,10 @@ int var_CURLINE(char *rp, const char *vp)
 }
 
 #if OPT_SHELL
-int var_CWD(char *rp, const char *vp)
+int var_CWD(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, current_directory(FALSE));
+		tb_scopy(rp, current_directory(FALSE));
 		return TRUE;
 	} else if (vp) {
 		return set_directory(vp);
@@ -362,7 +363,7 @@ int var_CWD(char *rp, const char *vp)
 }
 #endif
 
-int var_CWLINE(char *rp, const char *vp)
+int var_CWLINE(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_int(rp, getlinerow());
@@ -374,7 +375,7 @@ int var_CWLINE(char *rp, const char *vp)
 	}
 }
 
-int var_DEBUG(char *rp, const char *vp)
+int var_DEBUG(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_boolean(rp, tracemacros);
@@ -388,10 +389,10 @@ int var_DEBUG(char *rp, const char *vp)
 }
 
 #if OPT_SHELL
-int var_DIRECTORY(char *rp, const char *vp)
+int var_DIRECTORY(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, get_directory());
+		tb_scopy(rp, get_directory());
 		return TRUE;
 	} else if (vp) {
 		SetEnv(&directory, vp);
@@ -402,7 +403,7 @@ int var_DIRECTORY(char *rp, const char *vp)
 }
 #endif
 
-int var_DISCMD(char *rp, const char *vp)
+int var_DISCMD(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_boolean(rp, !no_msgs);
@@ -415,7 +416,7 @@ int var_DISCMD(char *rp, const char *vp)
 	}
 }
 
-int var_DISINP(char *rp, const char *vp)
+int var_DISINP(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_boolean(rp, !no_echo);
@@ -428,7 +429,7 @@ int var_DISINP(char *rp, const char *vp)
 	}
 }
 
-int var_EOC(char *rp, const char *vp)
+int var_EOC(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_boolean(rp, ev_end_of_cmd ? 1 : 0);
@@ -441,18 +442,18 @@ int var_EOC(char *rp, const char *vp)
 }
 
 #if OPT_PROCEDURES
-int var_EXITHOOK(char *rp, const char *vp)
+int var_EXITHOOK(TBUFF **rp, const char *vp)
 {
 	return any_HOOK(rp, vp, &exithook);
 }
 #endif
 
 #if DISP_X11||DISP_NTWIN
-int var_FONT(char *rp, const char *vp)
+int var_FONT(TBUFF **rp, const char *vp)
 {
 #if SYS_WINNT && defined(DISP_NTWIN)
 	if (rp) {
-		strcpy(rp, ntwinio_current_font());
+		tb_scopy(rp, ntwinio_current_font());
 		return TRUE;
 	} else if (vp) {
 		return ntwinio_font_frm_str(vp, FALSE);
@@ -462,7 +463,7 @@ int var_FONT(char *rp, const char *vp)
 #endif
 #if DISP_X11
 	if (rp) {
-		strcpy(rp, x_current_fontname());
+		tb_scopy(rp, x_current_fontname());
 		return TRUE;
 	} else if (vp) {
 		return x_setfont(vp);
@@ -473,7 +474,7 @@ int var_FONT(char *rp, const char *vp)
 }
 #endif
 
-int var_FWD_SEARCH(char *rp, const char *vp)
+int var_FWD_SEARCH(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_boolean(rp, last_srch_direc == FORWARD);
@@ -486,10 +487,10 @@ int var_FWD_SEARCH(char *rp, const char *vp)
 	}
 }
 
-int var_HELPFILE(char *rp, const char *vp)
+int var_HELPFILE(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, helpfile);
+		tb_scopy(rp, helpfile);
 		return TRUE;
 	} else if (vp) {
 		SetEnv(&helpfile, vp);
@@ -500,10 +501,10 @@ int var_HELPFILE(char *rp, const char *vp)
 }
 
 #if DISP_X11
-int var_ICONNAM(char *rp, const char *vp)
+int var_ICONNAM(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, x_get_icon_name());
+		tb_scopy(rp, x_get_icon_name());
 		return TRUE;
 	} else if (vp) {
 		x_set_icon_name(vp);
@@ -514,7 +515,7 @@ int var_ICONNAM(char *rp, const char *vp)
 }
 #endif
 
-int var_IDENTIF(char *rp, const char *vp)
+int var_IDENTIF(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		lgrabtext(rp, vl_ident);
@@ -526,7 +527,7 @@ int var_IDENTIF(char *rp, const char *vp)
 	}
 }
 
-int var_KILL(char *rp, const char *vp)
+int var_KILL(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		getkill(rp);
@@ -538,7 +539,7 @@ int var_KILL(char *rp, const char *vp)
 	}
 }
 
-int var_LASTKEY(char *rp, const char *vp)
+int var_LASTKEY(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_int(rp, lastkey);
@@ -551,10 +552,10 @@ int var_LASTKEY(char *rp, const char *vp)
 	}
 }
 
-int var_LIBDIR_PATH(char *rp, const char *vp)
+int var_LIBDIR_PATH(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, libdir_path);
+		tb_scopy(rp, libdir_path);
 		return TRUE;
 	} else if (vp) {
 		SetEnv(&libdir_path, vp);
@@ -564,7 +565,7 @@ int var_LIBDIR_PATH(char *rp, const char *vp)
 	}
 }
 
-int var_LINE(char *rp, const char *vp)
+int var_LINE(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		lgrabtext(rp, (CHARTYPE)0);
@@ -576,7 +577,7 @@ int var_LINE(char *rp, const char *vp)
 	}
 }
 
-int var_LLENGTH(char *rp, const char *vp)
+int var_LLENGTH(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_int(rp, llength(DOT.l));
@@ -589,10 +590,10 @@ int var_LLENGTH(char *rp, const char *vp)
 }
 
 #if OPT_MAJORMODE
-int var_MAJORMODE(char *rp, const char *vp)
+int var_MAJORMODE(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, (curbp->majr != 0) ? curbp->majr->name : "");
+		tb_scopy(rp, (curbp->majr != 0) ? curbp->majr->name : "");
 		return TRUE;
 	} else if (vp) {
 		return ABORT;  /* read-only */
@@ -602,10 +603,10 @@ int var_MAJORMODE(char *rp, const char *vp)
 }
 #endif
 
-int var_MATCH(char *rp, const char *vp)
+int var_MATCH(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, tb_length(tb_matched_pat)
+		tb_scopy(rp, tb_length(tb_matched_pat)
 					? tb_values(tb_matched_pat) : "");
 		return TRUE;
 	} else if (vp) {
@@ -615,10 +616,10 @@ int var_MATCH(char *rp, const char *vp)
 	}
 }
 
-int var_MODE(char *rp, const char *vp)
+int var_MODE(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, current_modename());
+		tb_scopy(rp, current_modename());
 		return TRUE;
 	} else if (vp) {
 		return ABORT;  /* read-only */
@@ -628,13 +629,13 @@ int var_MODE(char *rp, const char *vp)
 }
 
 #if OPT_MLFORMAT
-int var_MLFORMAT(char *rp, const char *vp)
+int var_MLFORMAT(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		if (modeline_format == 0)
 			mlforce("BUG: modeline_format uninitialized");
 		else
-		    	strcpy(rp, modeline_format);
+		    	tb_scopy(rp, modeline_format);
 		return TRUE;
 	} else if (vp) {
 		SetEnv(&modeline_format, vp);
@@ -646,7 +647,7 @@ int var_MLFORMAT(char *rp, const char *vp)
 }
 #endif
 
-int var_MODIFIED(char *rp, const char *vp)
+int var_MODIFIED(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_boolean(rp, curbp && b_is_changed(curbp));
@@ -659,7 +660,7 @@ int var_MODIFIED(char *rp, const char *vp)
 }
 
 #if OPT_COLOR
-int var_NCOLORS(char *rp, const char *vp)
+int var_NCOLORS(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_int(rp, ncolors);
@@ -670,13 +671,13 @@ int var_NCOLORS(char *rp, const char *vp)
 	return FALSE;
 }
 #else
-int var_NCOLORS(char *rp GCC_UNUSED, const char *vp GCC_UNUSED)
+int var_NCOLORS(TBUFF **rp GCC_UNUSED, const char *vp GCC_UNUSED)
 {
 	return FALSE;
 }
 #endif
 
-int var_NTILDES(char *rp, const char *vp)
+int var_NTILDES(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_int(rp, ntildes);
@@ -692,10 +693,10 @@ int var_NTILDES(char *rp, const char *vp)
 }
 
 #if OPT_SHELL
-int var_OCWD(char *rp, const char *vp)
+int var_OCWD(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, previous_directory());
+		tb_scopy(rp, previous_directory());
 		return TRUE;
 	} else if (vp) {
 		return ABORT;  /* read-only */
@@ -705,10 +706,10 @@ int var_OCWD(char *rp, const char *vp)
 }
 #endif
 
-int var_OS(char *rp, const char *vp)
+int var_OS(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, opersys);
+		tb_scopy(rp, opersys);
 		return TRUE;
 	} else if (vp) {
 		return ABORT;  /* read-only */
@@ -717,7 +718,7 @@ int var_OS(char *rp, const char *vp)
 	}
 }
 
-int var_PAGELEN(char *rp, const char *vp)
+int var_PAGELEN(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_int(rp, term.rows);
@@ -734,7 +735,7 @@ int var_PAGELEN(char *rp, const char *vp)
 	}
 }
 
-int var_CURWIDTH(char *rp, const char *vp)
+int var_CURWIDTH(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_int(rp, term.cols);
@@ -751,10 +752,10 @@ int var_CURWIDTH(char *rp, const char *vp)
 	}
 }
 
-int var_PALETTE(char *rp, const char *vp)
+int var_PALETTE(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, tb_length(tb_curpalette)
+		tb_scopy(rp, tb_length(tb_curpalette)
 					? tb_values(tb_curpalette) : "");
 		return TRUE;
 	} else if (vp) {
@@ -764,10 +765,10 @@ int var_PALETTE(char *rp, const char *vp)
 	}
 }
 
-int var_PATCHLEVEL(char *rp, const char *vp)
+int var_PATCHLEVEL(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, PATCHLEVEL);
+		tb_scopy(rp, PATCHLEVEL);
 		return TRUE;
 	} else if (vp) {
 		return ABORT;  /* read-only */
@@ -776,7 +777,7 @@ int var_PATCHLEVEL(char *rp, const char *vp)
 	}
 }
 
-int var_PATHNAME(char *rp, const char *vp)
+int var_PATHNAME(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		lgrabtext(rp, vl_pathn);
@@ -788,7 +789,7 @@ int var_PATHNAME(char *rp, const char *vp)
 	}
 }
 
-int var_PENDING(char *rp, const char *vp)
+int var_PENDING(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_boolean(rp, keystroke_avail());
@@ -800,7 +801,7 @@ int var_PENDING(char *rp, const char *vp)
 	}
 }
 
-int var_PROCESSID(char *rp, const char *vp)
+int var_PROCESSID(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 #if SYS_UNIX
@@ -822,10 +823,10 @@ int var_PROCESSID(char *rp, const char *vp)
 	}
 }
 
-int var_PROGNAME(char *rp, const char *vp)
+int var_PROGNAME(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, prognam);
+		tb_scopy(rp, prognam);
 		return TRUE;
 	} else if (vp) {
 		return ABORT;  /* read-only */
@@ -834,7 +835,7 @@ int var_PROGNAME(char *rp, const char *vp)
 	}
 }
 
-int var_QIDENTIF(char *rp, const char *vp)
+int var_QIDENTIF(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		lgrabtext(rp, vl_qident);
@@ -847,29 +848,29 @@ int var_QIDENTIF(char *rp, const char *vp)
 }
 
 #if OPT_PROCEDURES
-int var_RDHOOK(char *rp, const char *vp)
+int var_RDHOOK(TBUFF **rp, const char *vp)
 {
 	return any_HOOK(rp, vp, &readhook);
 }
 #endif
 
-int var_REPLACE(char *rp, const char *vp)
+int var_REPLACE(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-	    	strcpy(rp, replacepat);
+	    	tb_scopy(rp, tb_values(replacepat));
 		return TRUE;
 	} else if (vp) {
-		(void)strcpy(replacepat, vp);
+		tb_scopy(&replacepat, vp);
 		return TRUE;
 	} else {
 		return FALSE;
 	}
 }
 
-int var_SEARCH(char *rp, const char *vp)
+int var_SEARCH(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-	    	strcpy(rp, searchpat);
+	    	tb_scopy(rp, searchpat);
 		return TRUE;
 	} else if (vp) {
 		(void)strcpy(searchpat, vp);
@@ -881,7 +882,7 @@ int var_SEARCH(char *rp, const char *vp)
 	}
 }
 
-int var_SEED(char *rp, const char *vp)
+int var_SEED(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_int(rp, seed);
@@ -896,10 +897,10 @@ int var_SEED(char *rp, const char *vp)
 }
 
 #if OPT_SHELL
-int var_SHELL(char *rp, const char *vp)
+int var_SHELL(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, get_shell());
+		tb_scopy(rp, get_shell());
 		return TRUE;
 	} else if (vp) {
 		SetEnv(&shell, vp);
@@ -910,10 +911,10 @@ int var_SHELL(char *rp, const char *vp)
 }
 #endif
 
-int var_SRES(char *rp, const char *vp)
+int var_SRES(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, screen_desc);
+		tb_scopy(rp, screen_desc);
 		return TRUE;
 	} else if (vp) {
 		return term.setdescrip(vp);
@@ -922,10 +923,10 @@ int var_SRES(char *rp, const char *vp)
 	}
 }
 
-int var_STARTUP_FILE(char *rp, const char *vp)
+int var_STARTUP_FILE(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, startup_file);
+		tb_scopy(rp, startup_file);
 		return TRUE;
 	} else if (vp) {
 		SetEnv(&startup_file, vp);
@@ -935,10 +936,10 @@ int var_STARTUP_FILE(char *rp, const char *vp)
 	}
 }
 
-int var_STARTUP_PATH(char *rp, const char *vp)
+int var_STARTUP_PATH(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, startup_path);
+		tb_scopy(rp, startup_path);
 		return TRUE;
 	} else if (vp) {
 		SetEnv(&startup_path, vp);
@@ -955,7 +956,7 @@ void setcmdstatus(int s)
 	lastcmdstatus = s;
 }
 
-int var_STATUS(char *rp, const char *vp)
+int var_STATUS(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_boolean(rp, lastcmdstatus);
@@ -969,10 +970,10 @@ int var_STATUS(char *rp, const char *vp)
 }
 
 #if SYS_WINNT
-int var_TITLE(char *rp, const char *vp)
+int var_TITLE(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, w32_wdw_title());
+		tb_scopy(rp, w32_wdw_title());
 		return TRUE;
 	} else if (vp) {
 		term.title((char *) vp);
@@ -984,10 +985,10 @@ int var_TITLE(char *rp, const char *vp)
 #endif
 
 #if DISP_X11
-int var_TITLE(char *rp, const char *vp)
+int var_TITLE(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, x_get_window_name());
+		tb_scopy(rp, x_get_window_name());
 		return TRUE;
 	} else if (vp) {
 		x_set_window_name(vp);
@@ -998,7 +999,7 @@ int var_TITLE(char *rp, const char *vp)
 }
 #endif
 
-int var_TPAUSE(char *rp, const char *vp)
+int var_TPAUSE(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_int(rp, term.pausecount);
@@ -1011,10 +1012,10 @@ int var_TPAUSE(char *rp, const char *vp)
 	}
 }
 
-int var_VERSION(char *rp, const char *vp)
+int var_VERSION(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, version);
+		tb_scopy(rp, version);
 		return TRUE;
 	} else if (vp) {
 		return ABORT;  /* read-only */
@@ -1023,7 +1024,7 @@ int var_VERSION(char *rp, const char *vp)
 	}
 }
 
-int var_WLINES(char *rp, const char *vp)
+int var_WLINES(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_int(rp, curwp->w_ntrows);
@@ -1035,7 +1036,7 @@ int var_WLINES(char *rp, const char *vp)
 	}
 }
 
-int var_WORD(char *rp, const char *vp)
+int var_WORD(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		lgrabtext(rp, vl_nonspace);
@@ -1048,17 +1049,17 @@ int var_WORD(char *rp, const char *vp)
 }
 
 #if OPT_PROCEDURES
-int var_WRHOOK(char *rp, const char *vp)
+int var_WRHOOK(TBUFF **rp, const char *vp)
 {
 	return any_HOOK(rp, vp, &writehook);
 }
 #endif
 
 #if DISP_X11 && OPT_SHELL
-int var_XDISPLAY(char *rp, const char *vp)
+int var_XDISPLAY(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, get_xdisplay());
+		tb_scopy(rp, get_xdisplay());
 		return TRUE;
 	} else if (vp) {
 		SetEnv(&x_display, vp);
@@ -1068,10 +1069,10 @@ int var_XDISPLAY(char *rp, const char *vp)
 	}
 }
 
-int var_XSHELL(char *rp, const char *vp)
+int var_XSHELL(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, get_xshell());
+		tb_scopy(rp, get_xshell());
 		return TRUE;
 	} else if (vp) {
 		SetEnv(&x_shell, vp);

@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.95 1999/03/26 10:57:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.96 1999/05/17 09:48:39 tom Exp $
  *
  */
 
@@ -1401,7 +1401,7 @@ dump_statevars(void)
 		};
 	static const char *const middle2[] = {
 		"",
-		"typedef int (StateFunc)(char *resultp, const char *valuep);",
+		"typedef int (StateFunc)(TBUFF **resultp, const char *valuep);",
 		"",
 		"",
 		"#ifdef realdef",
@@ -1440,7 +1440,7 @@ dump_statevars(void)
 #if OPT_IFDEF_MODES
 		WriteIf(nevars, p->Cond);
 #endif
-		Fprintf(nevars, "int var_%s(char *resp, const char *valp);\n",
+		Fprintf(nevars, "int var_%s(TBUFF **resp, const char *valp);\n",
 					p->Func);
 	}
 	FlushIf(nevars);

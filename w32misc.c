@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.14 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.15 1999/05/17 02:14:52 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <errno.h>
 #include <process.h>
+#include <commdlg.h>
+#include <direct.h>
 
 #include "estruct.h"
 #include "edef.h"
@@ -754,4 +756,183 @@ w32_wdw_title(void)
             break;
     }
     return ((nchars) ? buf : error_val);
+}
+
+/* --------------------------------------------------------------------- */
+/* -------- commdlg-based routines that open and save files ------------ */
+/* --------------------------------------------------------------------- */
+
+static OPENFILENAME ofn;
+static int          ofn_initialized;
+
+static void
+ofn_init(void)
+{
+    static char         custFilter[128] = "All Files (*.*)\0*.*\0";
+    static char         filter[]        =
+"C/C++ Files (*.c;*.cpp;*.h;*.rc)\0*.c;*.cpp;*.h;*.rc\0Text Files (*.txt)\0*.txt\0\0";
+
+    memset(&ofn, 0, sizeof(ofn));
+    ofn.lStructSize       = sizeof(ofn);
+    ofn.lpstrFilter       = filter;
+    ofn.lpstrCustomFilter = custFilter;
+    ofn.nMaxCustFilter    = sizeof(custFilter);
+    ofn_initialized       = TRUE;
+}
+
+
+
+/*
+ * FUNCTION
+ *   commdlg_open_files(int chdir_allowed)
+ *
+ *   chdir_allowed - permissible for GetOpenFileName() to cd to the
+ *                   folder that stores the file(s) the user opens.
+ *
+ * DESCRIPTION
+ *   Use the Windows common dialog library to open one or more files.
+ *
+ * RETURNS
+ *   Boolean, T -> all is well.  F -> error noted and reported.
+ */
+
+static int
+commdlg_open_files(int chdir_allowed)
+{
+#define RET_BUF_SIZE_ (24 * 1024)
+
+    int   chdir_mask, i, len, nfile, rc = TRUE;
+    DWORD errcode;
+    char  *filebuf, oldcwd[FILENAME_MAX], newcwd[FILENAME_MAX], *cp;
+
+    oldcwd[0]  = newcwd[0] = '\0';
+    chdir_mask = (chdir_allowed) ? 0 : OFN_NOCHANGEDIR;
+    filebuf    = malloc(RET_BUF_SIZE_);
+    if (! filebuf)
+        return (no_memory("commdlg_open_files()"));
+    filebuf[0] = '\0';
+    if (! ofn_initialized)
+        ofn_init();
+    ofn.lpstrInitialDir = _getcwd(oldcwd, sizeof(oldcwd));
+    ofn.lpstrFile       = filebuf;
+    ofn.nMaxFile        = RET_BUF_SIZE_;
+    ofn.Flags           = (OFN_PATHMUSTEXIST | OFN_HIDEREADONLY |
+                          OFN_ALLOWMULTISELECT | OFN_EXPLORER) | chdir_mask;
+#if DISP_NTWIN
+    ofn.hwndOwner       = winvile_hwnd();
+#else
+    ofn.hwndOwner       = GetForegroundWindow();
+#endif
+    if (! GetOpenFileName(&ofn))
+    {
+        /* user CANCEL'd the dialog box (errcode 0), else some other error. */
+
+        if ((errcode = CommDlgExtendedError()) != 0)
+        {
+            mlforce("CommDlgExtendedError() returns err code %d", errcode);
+            rc = FALSE;
+        }
+        free(filebuf);
+        return (rc);
+    }
+
+    /*
+     * Got a list of one or more files in filebuf (each nul-terminated).
+     * Make one pass through the list to count the number of files
+     * returned.  If #files > 0, then first file in the list is actually
+     * the returned files' folder (er, directory).
+     */
+    cp    = filebuf;
+    nfile = 0;
+    for (;;)
+    {
+        len = strlen(cp);
+        if (len == 0)
+            break;
+        nfile++;
+        cp += len + 1;  /* skip filename and its terminator */
+    }
+    if (nfile)
+    {
+        BUFFER *bp, *first_bp;
+        char   *dir, tmp[FILENAME_MAX * 2], *nxtfile;
+        int    have_dir;
+
+        if (chdir_allowed)
+        {
+            /* tell editor cwd changed, if it did... */
+
+            if (! _getcwd(newcwd, sizeof(newcwd)))
+            {
+                free(filebuf);
+                mlerror("_getcwd() failed");
+                return (FALSE);
+            }
+            if (strcmp(newcwd, oldcwd) != 0)
+            {
+                if (! set_directory(newcwd))
+                {
+                    free(filebuf);
+                    return (FALSE);
+                }
+            }
+        }
+        if (nfile > 1)
+        {
+            /* first "file" in the list is actually a folder */
+
+            have_dir = 1;
+            dir      = filebuf;
+            cp       = dir + strlen(dir) + 1;
+            nfile--;
+        }
+        else
+        {
+            have_dir = 0;
+            cp       = filebuf;
+        }
+        for (i = 0, first_bp = NULL; rc && i < nfile; i++)
+        {
+            if (have_dir)
+            {
+                sprintf(tmp, "%s\\%s", dir, cp);
+                nxtfile = tmp;
+            }
+            else
+                nxtfile = cp;
+            if ((bp = getfile2bp(nxtfile, FALSE, FALSE)) == 0)
+                rc = FALSE;
+            else
+            {
+                bp->b_flag |= BFARGS;   /* treat this as an argument */
+                if (! first_bp)
+                    first_bp = bp;
+                cp += strlen(cp) + 1;
+            }
+        }
+        if (rc)
+            rc = swbuffer(first_bp);  /* editor switches to 1st buffer */
+    }
+
+    /* Cleanup */
+    free(filebuf);
+    return (rc);
+
+#undef RET_BUF_SIZE_
+}
+
+
+
+int
+winopen_nocd(int f, int n)
+{
+    return (commdlg_open_files(FALSE));
+}
+
+
+
+int
+winopen(int f, int n)
+{
+    return (commdlg_open_files(TRUE));
 }

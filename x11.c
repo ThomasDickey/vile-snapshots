@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.209 1999/05/11 00:55:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.210 1999/05/19 00:53:10 tom Exp $
  *
  */
 
@@ -312,12 +312,12 @@ typedef struct _text_win {
     GC		revcursgc;
     GC		modeline_focus_gc;	/* GC for modeline w/ focus */
     GC		modeline_gc;		/* GC for other modelines  */
-    GC		colors_fgc[16];
-    GC		colors_bgc[16];
+    GC		colors_fgc[NCOLORS];
+    GC		colors_bgc[NCOLORS];
     Pixel	fg;
     Pixel	bg;
-    Pixel	colors_fg[16];
-    Pixel	colors_bg[16];
+    Pixel	colors_fg[NCOLORS];
+    Pixel	colors_bg[NCOLORS];
     Pixel	modeline_fg;
     Pixel	modeline_bg;
     Pixel	modeline_focus_fg;
@@ -445,6 +445,7 @@ static	void	x_fcol   ( int color ),
 		x_bcol   ( int color );
 #endif
 
+static	void	x_setpal(const char *s);
 static	void	x_scroll(int from, int to, int count);
 
 static	int	x_watchfd(int fd, WATCHTYPE type, long *idp);
@@ -540,7 +541,7 @@ TERM	    term = {
     nullterm_setdescrip,
     nullterm_setfore,
     nullterm_setback,
-    nullterm_setpal,		/* no palette */
+    x_setpal,			/* no palette */
     x_scroll,
     x_flush,
     nullterm_icursor,
@@ -2904,6 +2905,7 @@ x_preparse_args(
 	    gcmask, &gcvals);
 
     for (i = 0; i < NCOLORS; i++) {
+	ctrans[i] = i;;
 	if ( screen_depth == 1
 	  || cur_win->colors_fg[i] == cur_win->colors_bg[i]
 	  || ( cur_win->colors_fg[i] == cur_win->fg
@@ -3759,9 +3761,10 @@ x_setfont(
 		XSetFont(dpy, cur_win->revselgc, pfont->fid);
 	    }
 	    for (i = 0; i < NCOLORS; i++) {
-		if (cur_win->colors_fgc[i] != cur_win->textgc) {
-		    XSetFont(dpy, cur_win->colors_fgc[i], pfont->fid);
-		    XSetFont(dpy, cur_win->colors_bgc[i], pfont->fid);
+		int j = ctrans[i];
+		if (cur_win->colors_fgc[j] != cur_win->textgc) {
+		    XSetFont(dpy, cur_win->colors_fgc[j], pfont->fid);
+		    XSetFont(dpy, cur_win->colors_bgc[j], pfont->fid);
 		}
 	    }
 
@@ -3879,6 +3882,13 @@ wait_for_scroll(
     }
 }
 
+static void
+x_setpal(const char *thePalette)
+{
+	set_ctrans(thePalette);
+	x_touch(cur_win, 0, 0, cur_win->cols, cur_win->rows);
+	x_flush();
+}
 
 static void
 x_scroll(
@@ -3965,8 +3975,8 @@ flush_line(
     else if (attr & VAML)
 	fore_gc = back_gc = cur_win->modeline_gc;
     else if (attr & (VACOLOR)) {
-	fore_gc = cur_win->colors_fgc[VCOLORNUM(attr)];
-	back_gc = cur_win->colors_bgc[VCOLORNUM(attr)];
+	fore_gc = cur_win->colors_fgc[ctrans[VCOLORNUM(attr)]];
+	back_gc = cur_win->colors_bgc[ctrans[VCOLORNUM(attr)]];
     }
     else {
 	fore_gc = cur_win->textgc;

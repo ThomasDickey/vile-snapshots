@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.33 1999/03/19 10:52:33 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.35 1999/05/18 00:59:34 tom Exp $
  *
  */
 
@@ -155,6 +155,7 @@ tb_stuff(TBUFF *p, int c)
 		p->tb_endc = c;
 }
 #endif
+
 /*
  * append a character to the temp-buff
  */
@@ -217,6 +218,7 @@ tb_bappend(TBUFF **p, const char *s, ALLOC_T len)
 	}
 	return *p;
 }
+
 /*
  * append a string to the temp-buff
  */
@@ -225,6 +227,26 @@ tb_sappend(TBUFF **p, const char *s)
 {
 	if (s != 0)
 		(void) tb_bappend(p, s, strlen(s));
+	return *p;
+}
+
+/*
+ * append a string to the temp-buff, assume there may be a null on the end of
+ * target which is removed.
+ */
+TBUFF *
+tb_sappend0(TBUFF **p, const char *s)
+{
+	if (s != 0) {
+		TBUFF *q = *p;
+		if (q != 0
+		 && q->tb_used > 0
+		 && q->tb_data[q->tb_used-1] == EOS) {
+			q->tb_used--;
+		}
+		tb_bappend(p, s, strlen(s));
+		tb_append(p, EOS);
+	}
 	return *p;
 }
 

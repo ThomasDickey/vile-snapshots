@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.42 1999/05/10 23:41:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.44 1999/05/19 01:28:44 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -17,6 +17,7 @@
 #include        "estruct.h"
 #include        "edef.h"
 #include        "pscreen.h"
+#include        "winvile.h"
 
 #undef RECT	/* FIXME: symbol conflict */
 
@@ -1349,6 +1350,7 @@ ntopen(void)
 {
 	TRACE(("ntopen\n"))
 
+	set_colors(NCOLORS);
 	set_palette(initpalettestr);
 }
 
@@ -1612,14 +1614,42 @@ ntgetch(void)
 		case WM_RBUTTONDOWN:
 			TRACE(("GETC:RBUTTONDOWN %s\n", which_window(msg.hwnd)))
 			if (msg.hwnd == cur_win->text_hwnd) {
-				if (buttondown) {
-					(void)sel_release();
-					(void)update(TRUE);
+				static HMENU hmenu;
+				POINT	     point;
+
+				if (hmenu == NULL) {
+					hmenu = LoadMenu(vile_hinstance,
+							 "WinvilePopMenu");
+					hmenu = GetSubMenu(hmenu, 0);
 				}
+				point.x = LOWORD(msg.lParam);
+				point.y = HIWORD(msg.lParam);
+				ClientToScreen(msg.hwnd, &point);
+				TrackPopupMenu(hmenu,
+					       0,
+					       point.x,
+					       point.y,
+					       0,
+					       msg.hwnd,
+					       NULL) ;
 			} else {
 				DispatchMessage(&msg);
 			}
 			break;
+
+		case WM_COMMAND:
+		    if (LOWORD(msg.wParam) == IDM_OPEN) {
+			winopen(0, 0);
+
+			/*
+			 * workaround repaint bug--sometimes cursor hangs in
+			 * mini-buffer and screen is not updated.
+			 */
+			update(FALSE);
+		    }
+		    else
+			DispatchMessage(&msg);
+		    break;
 
 		case WM_MOUSEMOVE:
 			if (buttondown) {
@@ -1658,7 +1688,6 @@ ntgetch(void)
 
 		default:
 			TRACE(("GETC:default(%s)\n", message2s(msg.message)))
-		case WM_COMMAND:
 		case WM_KEYUP:
 		case WM_NCHITTEST:
 		case WM_NCMOUSEMOVE:

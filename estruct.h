@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.391 1999/04/18 18:41:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.393 1999/05/19 00:24:38 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -376,6 +376,7 @@
 /* various color stuff */
 #define	OPT_COLOR (DISP_ANSI || IBM_VIDEO || DISP_TERMCAP)
 #define	OPT_16_COLOR (IBM_VIDEO || DISP_TERMCAP)
+#define OPT_COLOR_PALETTE (OPT_COLOR || DISP_X11)
 
 #define OPT_DUMBTERM (DISP_TERMCAP || DISP_VMSVT)
 
@@ -463,6 +464,7 @@
 #define OPT_WORDCOUNT   !SMALLER		/* "count-words" command" */
 
 /* "show" commands for the optional features */
+#define OPT_SHOW_COLORS	!SMALLER && OPT_COLOR_PALETTE /* "show-colors" */
 #define OPT_SHOW_CTYPE	!SMALLER		/* "show-printable" */
 #define OPT_SHOW_EVAL   !SMALLER && OPT_EVAL	/* "show-variables" */
 #define OPT_SHOW_MAPS   !SMALLER 		/* display mapping for ":map" */

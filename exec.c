@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.181 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.182 1999/05/18 01:42:10 tom Exp $
  *
  */
 
@@ -795,10 +795,11 @@ char *cline,	/* command line to execute */
 int execflag,
 int f, int n)
 {
-	int status;		/* return status of function */
+	int status = TRUE;	/* return status of function */
 	int oldcle;		/* old contents of clexec flag */
 	const char *oldestr;	/* original exec string */
-	char token[NSTRING];	/* next token off of command line */
+	TBUFF *tok = 0;
+	char *token;		/* next token off of command line */
 	const CMDFUNC *cfp;
 
 	set_end_string(EOS);
@@ -806,9 +807,9 @@ int f, int n)
 	execstr = cline;	/* and set this one as current */
 
 	do {
-		if ((status = mac_tokval(token)) != TRUE) { /* grab first token */
+		if ((token = mac_tokval(&tok)) == 0) { /* grab first token */
 			execstr = oldestr;
-			return status;
+			return FALSE;
 		}
 		if (*token == ':') {	/* allow leading ':' on line */
 			register int j;
@@ -821,33 +822,35 @@ int f, int n)
 	 * be hidden in variables), then it must be a leading argument */
 	if (toktyp(token) != TOK_LITSTR || isDigit(token[0])) {
 		f = TRUE;
-		n = strtol(strcpy(token, tokval(token)),0,0);
+		n = strtol(tokval(token),0,0);
 
 		/* and now get the command to execute */
-		if ((status = mac_tokval(token)) != TRUE) {
+		if ((token = mac_tokval(&tok)) == 0) {
 			execstr = oldestr;
-			return status;
+			return FALSE;
 		}
 	}
 
 	/* and match the token to see if it exists */
 	if ((cfp = engl2fnc(token)) == NULL) {
-		execstr = oldestr;
-		return no_such_function(token);
+		status = no_such_function(token);
+	} else {
+		/* save the arguments and go execute the command */
+		oldcle = clexec;		/* save old clexec flag */
+		clexec = execflag;		/* in cline execution */
+		/*
+		 * Flag the first time through for some commands -- e.g.  subst
+		 * must know to not prompt for strings again, and pregion must
+		 * only restart the p-lines buffer once for each command.
+		 */
+		calledbefore = FALSE;
+		status = execute(cfp,f,n);
+		setcmdstatus(status);
+		clexec = oldcle;
 	}
 
-	/* save the arguments and go execute the command */
-	oldcle = clexec;		/* save old clexec flag */
-	clexec = execflag;		/* in cline execution */
-	/* flag the first time through for some commands -- e.g. subst
-		must know to not prompt for strings again, and pregion
-		must only restart the p-lines buffer once for each
-		command. */
-	calledbefore = FALSE;
-	status = execute(cfp,f,n);
-	setcmdstatus(status);
-	clexec = oldcle;
 	execstr = oldestr;
+	tb_free(&tok);
 	return status;
 }
 
@@ -975,11 +978,13 @@ int f, int n)
 const char *
 get_token(
 const char *src,	/* source string */
-char *tok,		/* destination token string */
+TBUFF **tok,		/* destination token string */
 int eolchar)
 {
 	register int quotef = EOS; /* nonzero iff the current string quoted */
-	register int c, i, d;
+	register int c, i, d, chr;
+
+	tb_init(tok, EOS);
 
 	/* first scan past any whitespace in the source string */
 	while (isSPorTAB(*src))
@@ -993,14 +998,14 @@ int eolchar)
 			if (*src == EOS)
 				break;
 			switch (c = *src++) {
-				case 'r':	*tok++ = '\r'; break;
-				case 'n':	*tok++ = '\n'; break;
-				case 't':	*tok++ = '\t';  break;
-				case 'b':	*tok++ = '\b';  break;
-				case 'f':	*tok++ = '\f'; break;
-				case 'a':	*tok++ = '\a'; break;
-				case 's':	*tok++ = ' '; break;
-				case 'e':	*tok++ = ESC; break;
+				case 'r':	chr = '\r';	break;
+				case 'n':	chr = '\n';	break;
+				case 't':	chr = '\t';	break;
+				case 'b':	chr = '\b';	break;
+				case 'f':	chr = '\f';	break;
+				case 'a':	chr = '\a';	break;
+				case 's':	chr = ' ';	break;
+				case 'e':	chr = ESC;	break;
 
 				case 'x':
 				case 'X':
@@ -1019,7 +1024,7 @@ int eolchar)
 						c = (c * 16) + d;
 						src++;
 					}
-					*tok++ = (char)c;
+					chr = (char)c;
 					break;
 
 				default:
@@ -1032,7 +1037,7 @@ int eolchar)
 							c = (c * 8) + (*src++ - '0');
 						}
 					}
-					*tok++ = (char)c;
+					chr = (char)c;
 			}
 		} else {
 			/* check for the end of the token */
@@ -1055,8 +1060,9 @@ int eolchar)
 				}
 			}
 
-			*tok++ = *src++;	/* record the character */
+			chr = *src++;	/* record the character */
 		}
+		tb_append(tok, chr);
 	}
 
 	/* scan past any whitespace remaining in the source string */
@@ -1064,7 +1070,7 @@ int eolchar)
 		++src;
 	token_ended_line = isreturn(*src) || *src == EOS;
 
-	*tok = EOS;
+	tb_append(tok, EOS);
 	return src;
 }
 
@@ -1107,7 +1113,7 @@ int	skip)
 
 /* fetch and isolate the next token from execstr */
 int
-mac_token(char *tok)
+mac_token(TBUFF **tok)
 {
 	int savcle;
 	const char *oldstr = execstr;
@@ -1123,16 +1129,17 @@ mac_token(char *tok)
 }
 
 /* fetch and isolate and evaluate the next token from execstr */
-int
+char *
 mac_tokval(	/* get a macro line argument */
-char *tok)	/* buffer to place argument */
+TBUFF **tok)	/* buffer to place argument */
 {
-	if (mac_token(tok)) {
+	if (mac_token(tok) != 0) {
 		/* evaluate it */
-		(void)strcpy(tok, tokval(tok));
-		return TRUE;
+		(void)tb_scopy(tok, tokval(tb_values(*tok)));
+		return tb_values(*tok);
 	}
-	return FALSE;
+	tb_free(tok);
+	return 0;
 }
 
 int
@@ -1548,16 +1555,18 @@ begin_directive(
 	LINEPTR *lpp)
 {
 	int status = DDIR_COMPLETE; /* assume directive is self-contained */
-	char argtkn[NSTRING];
+	TBUFF *argtkn = 0;
+	char *value;
 	const char *old_execstr = execstr;
 
 	execstr = *cmdpp;
 
 	switch (dirnum) {
 	case D_LOCAL:
-		while (mac_token(argtkn) == TRUE) {
-			if (push_variable(argtkn) != TRUE) {
-				mlforce("[cannot save '%s']", argtkn);
+		while (mac_token(&argtkn) == TRUE) {
+			value = tb_values(argtkn);
+			if (push_variable(value) != TRUE) {
+				mlforce("[cannot save '%s']", value);
 				status = DDIR_FAILED;
 				break;
 			}
@@ -1566,10 +1575,10 @@ begin_directive(
 
 	case D_WHILE:
 		if (!ifstk.disabled) {
-			if (mac_tokval(argtkn) != TRUE) {
+			if ((value = mac_tokval(&argtkn)) == 0) {
 				status = DDIR_INCOMPLETE;
 				break;
-			} else if (scan_bool(argtkn) != TRUE) {
+			} else if (scan_bool(value) != TRUE) {
 				if (navigate_while(lpp, whlist) != TRUE)
 					status = unbalanced_directive(dirnum);
 			}
@@ -1598,9 +1607,9 @@ begin_directive(
 		if (!ifstk.disabled) {
 			ifstk.fired = FALSE;
 			ifstk.disabled = ifstk.level;
-			if (mac_tokval(argtkn) != TRUE)
+			if ((value = mac_tokval(&argtkn)) == 0)
 				status = DDIR_INCOMPLETE;
-			else if (scan_bool(argtkn) == TRUE) {
+			else if (scan_bool(value) == TRUE) {
 				ifstk.disabled = 0;
 				ifstk.fired = TRUE;
 			}
@@ -1614,11 +1623,11 @@ begin_directive(
 			if (ifstk.fired) {
 				if (!ifstk.disabled)
 					ifstk.disabled = ifstk.level;
-			} else if (mac_tokval(argtkn) != TRUE) {
+			} else if ((value = mac_tokval(&argtkn)) == 0) {
 				status = DDIR_INCOMPLETE;
 			} else if (!ifstk.fired
 			  && ifstk.disabled == ifstk.level
-			  && (scan_bool(argtkn) == TRUE)) {
+			  && (scan_bool(value) == TRUE)) {
 				ifstk.disabled = 0;
 				ifstk.fired = TRUE;
 			}
@@ -1654,23 +1663,25 @@ begin_directive(
 
 	case D_GOTO:
 		if (!ifstk.disabled) {
-			char label[NPAT];
-			register LINEPTR glp;	/* line to goto */
+			TBUFF *label = 0;
+			LINEPTR glp;	/* line to goto */
 
 			/* grab label to jump to */
-			*cmdpp = (char *)get_token(*cmdpp, label, EOS);
+			*cmdpp = (char *)get_token(*cmdpp, &label, EOS);
 #if MAYBE
 			/* i think a simple re-eval would get us variant
 			 * targets, i.e. ~goto %somelabel.  */
-			strcpy(label, tokval(label));
+			tb_scopy(label, tokval(tb_values(label)));
 #endif
-			glp = label2lp(bp, label);
+			value = tb_values(label);
+			glp = label2lp(bp, value);
 			if (glp == 0) {
-				mlforce("[No such label \"%s\"]", label);
+				mlforce("[No such label \"%s\"]", value);
 				status = DDIR_FAILED;
 			} else {
 				*lpp = glp;
 			}
+			tb_free(&label);
 		}
 		break;
 
@@ -1710,6 +1721,7 @@ begin_directive(
 		break;
 	}
 	execstr = old_execstr;
+	tb_free(&argtkn);
 	return status;
 }
 

@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.29 1999/03/20 16:00:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.30 1999/05/18 01:47:50 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -193,9 +193,11 @@ get_action_fonc ( char *action )
 static int
 is_bind ( char *action )
 {
-    char tok[NSTRING];
-    (void) get_token(action, tok, EOS);
-    if (engl2fnc(tok) != NULL)
+    static TBUFF *tok;
+
+    (void) get_token(action, &tok, EOS);
+    if (tb_length(tok) != 0
+     && engl2fnc(tb_values(tok)) != NULL)
         return 1;
 
     return 0;
@@ -207,9 +209,11 @@ is_bind ( char *action )
 static char *
 is_cmd ( char *action )
 {
-    char tok[NSTRING];
-    char *result = (char *)get_token(action, tok, EOS);
-    if (!strcmp(tok, "cmd"))
+    static TBUFF *tok;
+    char *result = (char *)get_token(action, &tok, EOS);
+
+    if (tb_length(tok) != 0
+     && !strcmp(tb_values(tok), "cmd"))
         return result;
 
     return 0;

@@ -23,7 +23,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.375 1999/05/10 22:34:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.378 1999/05/18 10:33:25 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -1170,6 +1170,8 @@ global_val_init(void)
 #endif
 	}
 	libdir_path = strmalloc(s);
+
+	tb_init(&replacepat, EOS);
 }
 
 #if SYS_UNIX || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT || SYS_VMS
@@ -2160,6 +2162,20 @@ strncpy0(char *t, const char *f, SIZE_T l)
     if (l)
 	t[l-1] = EOS;
     return t;
+}
+
+/*
+ * This is probably more efficient for copying short strings into a large
+ * fixed-size buffer, because strncpy always zero-pads the destination to
+ * the given length.
+ */
+char *
+vl_strncpy(char *dest, const char *src, size_t destlen)
+{
+    size_t srclen = strlen(src) + 1;
+    if (srclen > destlen)
+	srclen = destlen;
+    return strncpy0(dest, src, srclen);
 }
 
 #if defined(SA_RESTART)

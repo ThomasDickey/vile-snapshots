@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.274 1999/04/30 10:31:00 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.275 1999/05/18 22:11:28 tom Exp $
  *
  */
 
@@ -257,6 +257,7 @@ dofmt(const char *fmt, va_list *app)
 						}
 						ivalue = -ivalue;
 						(*outfunc)('-');
+						nchars++;
 					}
 					n = dfputi(outfunc, (UINT)ivalue, 10);
 					break;
@@ -267,6 +268,7 @@ dofmt(const char *fmt, va_list *app)
 				if (lvalue < 0) {
 					lvalue = -lvalue;
 					(*outfunc)('-');
+					nchars++;
 				}
 				n = dfputli(outfunc, (ULONG)lvalue, 10);
 				break;

@@ -1,10 +1,15 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.43 1999/04/18 15:28:32 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.47 1999/05/19 01:14:24 tom Exp $
 #
 #
 !include <ntwin32.mak>
+
+# you can override the icon to suit your taste (e.g,. vile, kitchen-sink,
+# or V-eye pumpkin).
+
+ICON	= vile
 
 !IF "$(CFG)" == ""
 CFG=vile
@@ -72,7 +77,8 @@ CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
            -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(DBGOPTS)
 LDFLAGS  = -nologo -pdb:none
 SCREEN   = ntconio
-LIBS     = $(LD_DEBUG) $(conlflags) $(conlibsmt) user32.lib $(VILE_PERL_LIB)
+LIBS     = $(LD_DEBUG) $(conlflags) $(conlibsmt) user32.lib comdlg32.lib \
+           $(VILE_PERL_LIB)
 !endif
 
 !IF  "$(CFG)" == "winvile" || "$(CFG)" == "winvile-with-perl"
@@ -90,6 +96,7 @@ EXTRA    = winvile.res
 CFLAGS   = $(CFLAGS) -DVILE_OLE
 OLEOBJS  = w32ole.obj w32reg.obj w32ole.res
 OLESRCS  = w32ole.cpp w32reg.c
+WRAPUTIL = wvwrap.exe
 EXTRA    =
 OLELIBS  = ole32.lib uuid.lib oleaut32.lib
 !endif
@@ -158,17 +165,12 @@ OBJ = 	main.obj $(SCREEN).obj \
 .cpp.obj:
 	$(cc) $(CFLAGS) $(CFLAGS) -c $< -Fo$@
 
-all :: $(PERLCFG) $(TARGET)
+all :: $(PERLCFG) $(TARGET) $(WRAPUTIL)
 
 $(TARGET): 	$(BUILTHDRS) $(OBJ)
 	$(link) $(LDFLAGS) $(OBJ) $(LIBS) -out:$(TARGET)
 
-# you can override the icon to suit your taste (e.g,. vile, kitchen-sink,
-# or V-eye pumpkin).
-
-ICON	= vile
-
-winvile.res :	winvile.rc
+winvile.res :	winvile.rc winvile.h
 	$(RC) -DVILE_ICON="$(ICON).ico" -Iicons winvile.rc
 
 # collect some perl environment info
@@ -200,11 +202,14 @@ vile-perl-api.pod: perl.xs
 vile-perl-api.doc: vile-perl-api.pod
 	perl -e "use Pod::Text; pod2text(\"$?\");" > $@
 
+wvwrap.exe: wvwrap.obj
+ 	$(link) $(LDFLAGS) wvwrap.obj $(LIBS) -out:$(@)
+
 mktbls.exe:  mktbls.c
 	$(cc) $(CFLAGS) mktbls.c -Fomktbls -link $(CON_LDFLAGS)
 
 w32ole.res: w32ole.rc winvile.tlb
-    $(RC) $(DISP_DEF) -Iicons w32ole.rc
+    $(RC) $(DISP_DEF) -DVILE_ICON="$(ICON).ico" -Iicons w32ole.rc
 
 winviletlb.h winvile.tlb: winvile.odl
     midl -h winviletlb.h -tlb winvile.tlb winvile.odl
@@ -244,6 +249,7 @@ glob.obj:	dirstuff.h
 globals.obj:	nefunc.h
 main.obj:	chgdfunc.h nevars.h
 modes.obj:	chgdfunc.h nefsms.h
+ntwinio.obj:	winvile.h pscreen.h
 opers.obj:	nefunc.h
 path.obj:	dirstuff.h
 perl.obj:	api.h
@@ -258,3 +264,4 @@ w32misc.obj:	nefunc.h
 w32ole.obj:	w32ole.h winviletlb.h w32reg.h
 w32reg.obj:	w32reg.h
 word.obj:	nefunc.h
+wvwrap.obj: w32reg.h w32ole.h winviletlb.h
