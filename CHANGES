@@ -1,5 +1,9 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (tom) 980316 (h) 
+ 	+ correct logic that shifts minibuffer back on return from kbd_reply,
+	  had not set curwp.
+
  (pgf) 980315 (g) 
 	+ documentation and usage improvements for vile-crypt, in crypt.c, 
 	  vile.hlp, and vile.1. 
