@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.281 1996/10/30 13:58:58 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.282 1996/11/11 22:11:46 tom Exp $
  *
  */
 
@@ -72,6 +72,9 @@ main(int argc, char *argv[])
 	int helpflag = FALSE;		/* do we need help at start? */
 	REGEXVAL *search_exp = 0;	/* initial search-pattern */
 	const char *msg;
+#if DISP_X11 && !XTOOLKIT
+	int do_newgroup = FALSE;	/* do we spawn at start? */
+#endif
 #if OPT_TAGS
 	int didtag = FALSE;		/* look up a tag to start? */
 	char *tname = NULL;
@@ -126,7 +129,6 @@ main(int argc, char *argv[])
 		}
 #endif
 
-
 		/* Process Switches */
 		if (*param == '-') {
 			++param;
@@ -154,6 +156,8 @@ main(int argc, char *argv[])
 					if (strcmp(param, "foreground") == 0
 					 || strcmp(param, "fg") == 0)
 						x_setforeground(argv[carg]);
+					else if (!strcmp(param, "fork"))
+						do_newgroup = TRUE;
 					else
 						x_setfont(argv[carg]);
 				} else
@@ -343,6 +347,16 @@ main(int argc, char *argv[])
 	}
 #endif
 
+#if DISP_X11 && !XTOOLKIT
+	/* newprocessgroup() forks, but won't do what we need here */
+	if (do_newgroup)
+	{
+		int pid = 0;
+		if ((pid=fork()) < 0)
+			fprintf(stderr, "%s: could not fork\n", prog_arg);
+		else if (pid > 0) exit(0);
+	}
+#endif
 	/* initialize the editor */
 
 	if (!tt_opened)
@@ -1905,6 +1919,10 @@ newprocessgroup(int f, int n)
 
 	    if (pid > 0)
 		tidy_exit(GOODEXIT);
+	    else if (pid < 0) {
+		fputs("cannot fork\n", stderr);
+		tidy_exit(BADEXIT);
+	    }
     }
 # ifndef VMS
 #  ifdef HAVE_SETSID

@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.316 1996/10/22 00:31:01 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.317 1996/11/11 22:11:46 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -777,16 +777,6 @@ does not do function keys.  (CSet C/C++ version works properly except for
 interaction with EMX).
 
 ------------------------
-    I tried to change the pointer shape of Xvile to something that is more
-    noticeable.  With Xterm, hpterm actually, I am able to do it with:
-
-    hpterm*pointerShape:    iron_cross
-    hpterm*pointerColor:    red	
-
-    This scheme somehow doesn't work on the Xvile windows. I was wondering if
-    this was because Xvile does not manage the pointer resources? 
-
-------------------------
 given a :map! of:
     map! #9 foobar
 then when Fn-9 is pressed in insert mode, you get "foobar" in the buffer.
@@ -914,17 +904,6 @@ yields:
 instead of also providing "fool".
 
 ------------------------
-xvile (not vile) eats the -t option if you leave any space between
-the option and its argument.  Thus,
-  xvile -t donut
-_won't_ look in "tags" for "donut" then go edit the file referenced; while,
-  xvile -tdonut
-will, or for that matter
-  vile -t donut
-
-[ we should at least add an alias for -t ]
-
-------------------------
 
 I think there is a bug for th motif version of VILE. If I have two
 windows opened, I drag the resize button with my mouse to resize the top
@@ -946,12 +925,7 @@ buffers automatically on startup i.e.  execute the show-buffers command on
 startup.  [I realise that you haven't fully implemented the + command line
 option in vile ]
 
-------------"
-	'Could we have a XVile resource to set the color of the mouse cursor ?
-	Maybe XVile.mouse.color. This would make it easier to highlight blocks
-	of text.'
-
-------------"
+------------
 using '&' in pc-vile as the word-expansion replacement for ':' in regular
 vile may someday conflict if we want to spawn stuff in the background
 in VMS or win32 vile.  clearly the expansion chars should be made

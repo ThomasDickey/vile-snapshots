@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.65 1996/10/03 01:02:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.66 1996/11/11 22:11:46 tom Exp $
  *
  */
 
@@ -25,7 +25,7 @@
 #define USE_QSORT 1
 #endif
 
-#if MISSING_EXTERN_ENVIRON
+#if (MISSING_EXTERN_ENVIRON || __DJGPP__ >= 2)
 extern char **environ;
 #endif
 

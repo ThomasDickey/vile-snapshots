@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.33 1996/06/28 20:35:15 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.34 1996/11/11 22:11:46 tom Exp $
  *
  */
 
@@ -24,20 +24,21 @@ print_usage (void)
 	"-v             to edit in \"view\" mode -- no changes permitted",
 	"-R             to edit files \"read-only\" -- no writes permitted",
 #if OPT_ENCRYPT
-	"-kcryptkey     for encrypted files",
+	"-kcryptkey     for encrypted files (same as -K)",
 #endif
 #if DISP_X11
 	"-name name     to change program name for X resources",
-	"-title name	to set name in title bar",
+	"-wm name       to set name in title bar",
 	"-fg color      to change foreground color",
 	"-bg color      to change background color",
 	"-fn fontname   to change font",
-	"-display displayname to change the default display",
+	"-fork          to spawn xvile immediately on startup",
+	"-display       displayname to change the default display",
 	"-rv            for reverse video",
-	"-geometry CxR	to set initial size to R rows and C columns",
+	"-geometry CxR  to set initial size to R rows and C columns",
 	"-xrm Resource  to change an xvile resource",
-	"-leftbar	Put scrollbar(s) on left",
-	"-rightbar	Put scrollbar(s) on right (default)",
+	"-leftbar       Put scrollbar(s) on left",
+	"-rightbar      Put scrollbar(s) on right (default)",
 #endif
 #if DISP_IBMPC || DISP_BORLAND
 	"-2             25-line mode",
@@ -49,12 +50,12 @@ print_usage (void)
 	"(see help file for more screen resolutions)",
 #endif
 	"-V             for version info",
-	"use @filename to run filename as commands",
-	" (this will suppress .vilerc)" };
-	register int	j;
+	"use @cmdfile to run cmdfile as commands (this will suppress .vilerc)"
+	};
+	register SIZE_T	j;
 
 	ttclean(TRUE);
-	(void)fprintf(stderr, "usage: %s [-flags] [@cmdfile] files...\n", 
+	(void)fprintf(stderr, "usage: %s [-flags] [@cmdfile] files...\n",
 		prog_arg);
 	for (j = 0; j < TABLESIZE(options); j++)
 		(void)fprintf(stderr, "\t%s\n", options[j]);
@@ -70,15 +71,15 @@ getversion(void)
 #if SYS_UNIX || SYS_VMS
 	/*
 	 * We really would like to have the date at which this program was
-	 * linked, but a.out doesn't have that in general.  COFF files do. 
+	 * linked, but a.out doesn't have that in general.  COFF files do.
 	 * Getting the executable's modification-time is a reasonable
 	 * compromise.
 	 */
-	(void) lsprintf(version_string, "%s %s%s for %s", 
+	(void) lsprintf(version_string, "%s %s%s for %s",
 				prognam, version, PATCHLEVEL, opersys);
 	{
 		const char *s;
-		if ((s = flook(prog_arg, 
+		if ((s = flook(prog_arg,
 				(FL_EXECDIR|FL_PATH)|FL_EXECABLE)) != NULL) {
 			time_t mtime = file_modified(s);
 			if (mtime != 0) {
@@ -92,7 +93,7 @@ getversion(void)
 #else
 # if SYS_MSDOS || SYS_OS2 || SYS_WINNT
 #  if defined(__DATE__) && !SMALLER
-	(void)lsprintf(version_string,"%s %s%s for %s, built %s %s with %s", 
+	(void)lsprintf(version_string,"%s %s%s for %s, built %s %s with %s",
 		prognam, version, PATCHLEVEL, opersys, __DATE__, __TIME__,
 #   if CC_WATCOM
 		"Watcom C/386"
