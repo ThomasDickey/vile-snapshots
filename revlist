@@ -1,6 +1,6 @@
-revlist for vile, version v7_2q
+revlist for vile, version v7_2r
 --------------------------------------------------------------------------------
-CHANGES	1.114
+CHANGES	1.115
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -14,8 +14,8 @@ README.MENU	1.5
 README.PC	1.12
 aclocal.m4	1.39
 ansi.c	1.31
-api.c	1.2
-api.h	1.1
+api.c	1.3
+api.h	1.2
 basic.c	1.95
 bind.c	1.166
 borland.c	1.22
@@ -29,7 +29,7 @@ chgdfunc.h	1.4
 cmdtbl	1.146
 config_h.in	1.2
 configure	none
-configure.in	1.69
+configure.in	1.70
 crypt.c	1.18
 csrch.c	1.27
 descrip.mms	1.35
@@ -65,7 +65,7 @@ main.c	1.305
 makefile.blc	1.7
 makefile.djg	1.23
 makefile.icc	1.8
-makefile.in	1.92
+makefile.in	1.93
 makefile.tbc	1.22
 makefile.wat	1.24
 makefile.wnt	1.19
@@ -87,17 +87,17 @@ oneliner.c	1.87
 opers.c	1.59
 os2pipe.c	1.3
 os2vio.c	1.14
-patchlev.h	1.75
+patchlev.h	1.76
 path.c	1.80
-perl.xs	1.2
+perl.xs	1.3
 pictmode.rc	1.1
-proto.h	1.261
+proto.h	1.262
 pscreen.h	1.1
-ptypemap	1.2
+ptypemap	1.3
 random.c	1.188
 regexp.c	1.64
 region.c	1.82
-revlist	v7_2q
+revlist	v7_2r
 search.c	1.107
 select.c	1.57
 spawn.c	1.122

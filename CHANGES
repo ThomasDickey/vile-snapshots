@@ -1,5 +1,36 @@
 Changes for vile 7.3 (released ??? ??? ??, 1997)
 
+ (kev)  971203 (r)
+	+ api.c (lreplace): Fix marks up.  This won't always be right,
+	  but at least it'll be closer.  We need a way to modify marks
+	  and attributes from perl.
+	  (setup_fake_win): changed return type to int.
+	  (api_fscreen, api_edit, api_swscreen, api_bp2sp): new functions.
+	  (sp2bp, bp2sp): Removed these macros.
+	+ api.h (api_swscreen, api_fscreen, api_bp2sp): declared these
+	  functions.
+	  (sp2bp, bp2sp): macros moved from api.c.
+	+ configure.in (LINK_PREFIX): set this variable.  (From Brendan
+	  O'Dea.)
+	  (CFLAGS, LIBS): Use $perl_bin_path instead of perl in the
+	  --with-perl section.
+	+ makefile.in (LINK): Prepend LINK_PREFIX as determined by
+	  configure to the link command.  (From Brendan O'Dea.)
+	+ perl.xs (newVIrv): Don't allocate api private part here. (It's
+	  allocated in api_bp2sp now.)  The second parameter has also
+	  changed; changed all callers.
+	  (perl): Print error messages and warnings to message line.
+	  (perl_init): Setup warning handler.  Also tie STDOUT and STDERR
+	  so that output to these filehandles will be printed on the
+	  message line.  (Thanks to Brendan O'Dea.)
+	  (perl_eval): New function.
+	  (Msg): Rewritten to handle multiple arguments. (From Brendan O'Dea.)
+	  (GetLines): new function which fetches all lines in the range.
+	  (Edit, FindScreen, SwitchScreen, Warn): New functions.
+	+ proto.h (perl_free_private): removed.
+	  (perl_free_handle): added.
+	+ ptypemap (T_VI): Translate C null pointers to perl undefs.
+
  (tom)	971128 (q)
 	+ modify tagignorecase mode to use lowercased keys in the binary-tree,
 	  and applying tagignorecase mode to the search within the tagged file,
