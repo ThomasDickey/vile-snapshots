@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.255 2003/02/23 17:22:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.257 2003/03/09 14:10:36 tom Exp $
  *
  */
 
@@ -2028,7 +2028,11 @@ int
 chgd_hilite(VALARGS * args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing)
 {
     if (!testing) {
+#if OPT_HILITEMATCH
+	if (curbp->b_highlight & HILITE_ON)
+	    curbp->b_highlight |= HILITE_DIRTY;
 	attrib_matches();
+#endif
 #if OPT_COLOR
 	set_winflags(glob_vals, WFHARD | WFCOLR);
 	need_update = TRUE;

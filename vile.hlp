@@ -1487,6 +1487,14 @@ Editor modes
 		For more information, see the section describing the ":map"
 		command, below.  (U)
 
+	overlap-matches Modifies the highlighting shown by visual-matches to
+		control whether overlapping matches are shown.  For some
+		conditions, setting this to false will present a more natural
+		view, e.g., "\a+", which would match sequences of alphabetic
+		characters.  In the normal case (show overlap), each time a new
+		match begins vile will toggle the highlighting and produce an
+		irregular effect.  (B)
+
 	paragraphs A regular expression defining where the "next-paragraph"
 		('}') and "previous-paragraph" ('{') commands will go. (B)
 
@@ -3662,7 +3670,8 @@ Color basics
 
 	Note 1:  vile's filter mechanism blocks (hangs) when processing
 		 "large" buffers.  Consequently, syntax coloring is not
-		 recommended.
+		 recommended, except if one could use the builtin-filters
+		 configuration.
 
 	Note 2:  Requires a terminfo terminal type that supports color.
 
@@ -5756,4 +5765,4 @@ Problems
 
 Copyright 1995-2002 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.560 2002/12/23 00:23:53 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.562 2003/03/09 11:33:07 tom Exp $

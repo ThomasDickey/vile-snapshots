@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.115 2003/02/18 00:14:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.118 2003/03/11 00:21:50 tom Exp $
  *
  */
 
@@ -1045,13 +1045,17 @@ encode_one_attribute(TBUFF ** result, int count, char *hyper, VIDEO_ATTR attr)
 	tb_append(result, 'I');
 
     if (attr & VACOLOR) {
-	lsprintf(temp, "C%d:", VCOLORNUM(attr));
+	lsprintf(temp, "C%X", VCOLORNUM(attr));
 	tb_sappend(result, temp);
     }
 #if OPT_HYPERTEXT
-    if (hyper != 0)
+    if (hyper != 0) {
+	tb_append(result, 'H');
 	tb_sappend(result, hyper);
+	tb_append(result, EOS);
+    }
 #endif
+    tb_sappend(result, ":");
 }
 
 static void
@@ -1090,6 +1094,7 @@ encode_attributes(LINE *lp, BUFFER *bp, REGION * top_region)
 	L_NUM this_line = line_no(bp, lp);
 
 	tb_init(&result, EOS);
+	memset(&ar_temp, 0, sizeof(ar_temp));
 
 	/*
 	 * Make a list of the attribute-regions which include this line.

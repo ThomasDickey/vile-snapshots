@@ -1,6 +1,6 @@
-revlist for vile, version v9_3l
+revlist for vile, version v9_3m
 --------------------------------------------------------------------------------
-CHANGES	1.713
+CHANGES	1.716
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -35,12 +35,12 @@ csrch.c	1.31
 curses.c	1.20
 descrip.mms	1.43
 dirstuff.h	1.24
-display.c	1.370
+display.c	1.371
 djhandl.c	1.6
 dumbterm.c	1.17
 edef.h	1.310
 estruct.h	1.527
-eval.c	1.319
+eval.c	1.320
 exec.c	1.255
 externs.c	1.8
 fences.c	1.82
@@ -53,14 +53,14 @@ globals.c	1.47
 gppconio.c	1.2
 history.c	1.72
 ibmpc.c	1.97
-input.c	1.254
+input.c	1.255
 insert.c	1.140
 install.sh	1.6
 isearch.c	1.57
 itbuff.c	1.17
 lckfiles.c	1.11
-line.c	1.155
-main.c	1.498
+line.c	1.159
+main.c	1.499
 makefile.blc	1.17
 makefile.djg	1.31
 makefile.emx	1.5
@@ -74,8 +74,8 @@ menu.c	1.42
 mkdirs.sh	1.5
 mkprlenv.wnt	1.8
 mktbls.c	1.127
-modes.c	1.255
-modetbl	1.216
+modes.c	1.257
+modetbl	1.217
 msgs.c	1.24
 npopen.c	1.89
 ntconio.c	1.76
@@ -85,21 +85,21 @@ opers.c	1.86
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.29
-patchlev.h	1.293
+patchlev.h	1.294
 path.c	1.131
 perl.xs	1.87
-proto.h	1.515
+proto.h	1.516
 pscreen.h	1.1
 ptypemap	1.7
 random.c	1.270
-regexp.c	1.94
-region.c	1.115
-revlist	v9_3l
-search.c	1.129
+regexp.c	1.98
+region.c	1.118
+revlist	v9_3m
+search.c	1.133
 select.c	1.142
 sinstall.sh	1.1
 spawn.c	1.176
-statevar.c	1.70
+statevar.c	1.72
 tags.c	1.119
 tbuff.c	1.43
 tcap.c	1.152
@@ -110,9 +110,9 @@ trace.h	1.20
 ucrypt.c	1.15
 undo.c	1.84
 version.c	1.54
-vile-9.3.spec	1.10
+vile-9.3.spec	1.11
 vile.1	1.30
-vile.hlp	1.560
+vile.hlp	1.562
 vile.wmconfig	1.1
 vms2unix.c	1.37
 vmsbuild.com	1.37

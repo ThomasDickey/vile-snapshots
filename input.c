@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.254 2003/02/19 00:04:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.255 2003/03/11 00:16:57 tom Exp $
  *
  */
 
@@ -630,11 +630,33 @@ kbd_seq_nomap(void)
 int
 screen_string(char *buf, int bufn, CHARTYPE inclchartype)
 {
-    register int i = 0;
-    MARK mk;
+    static TBUFF *temp;
+    int rc;
+    int len;
 
-    mk = DOT;
+    if ((rc = screen2tbuff(&temp, inclchartype)) == TRUE) {
+	if ((len = tb_length(temp)) >= bufn)
+	    len = bufn - 1;
+	strncpy0(buf, tb_values(temp), len + 1);
+    } else {
+	*buf = EOS;
+    }
+    return rc;
+}
 
+/* get a string consisting of inclchartype characters from the current
+	position.  if inclchartype is 0, return everything to eol */
+int
+screen2tbuff(TBUFF ** result, CHARTYPE inclchartype)
+{
+    int i = 0;
+    MARK save_dot;
+    int first = -1;
+    int last = -1;
+
+    save_dot = DOT;
+
+    tb_init(result, EOS);
     /* if from gototag(), grab from the beginning of the string */
     if (b_val(curbp, MDTAGWORD)
 	&& inclchartype == vl_ident
@@ -648,16 +670,18 @@ screen_string(char *buf, int bufn, CHARTYPE inclchartype)
 	    }
 	}
     }
-    while (i < (bufn - 1) && !is_at_end_of_line(DOT)) {
-	buf[i] = (char) char_at(DOT);
+    while (!is_at_end_of_line(DOT)) {
+	last = CharOf(char_at(DOT));
+	if (first < 0)
+	    first = last;
 #if OPT_WIDE_CTYPES
 	if (i == 0) {
 	    if (inclchartype & vl_scrtch) {
-		if (buf[0] != SCRTCH_LEFT[0])
+		if (first != SCRTCH_LEFT[0])
 		    inclchartype &= ~vl_scrtch;
 	    }
 	    if (inclchartype & vl_shpipe) {
-		if (buf[0] != SHPIPE_LEFT[0])
+		if (first != SHPIPE_LEFT[0])
 		    inclchartype &= ~vl_shpipe;
 	    }
 	}
@@ -665,26 +689,26 @@ screen_string(char *buf, int bufn, CHARTYPE inclchartype)
 	/* allow "[!command]" */
 	if ((inclchartype & vl_scrtch)
 	    && (i == 1)
-	    && (buf[1] == SHPIPE_LEFT[0])) {
+	    && (last == SHPIPE_LEFT[0])) {
 	    /*EMPTY */ ;
 	    /* guard against things like "[Buffer List]" on VMS */
 	} else if ((inclchartype & vl_pathn)
-		   && !ispath(buf[i])
+		   && !ispath(last)
 		   && (inclchartype == vl_pathn)) {
 	    break;
 	} else
 #endif
-	if (inclchartype && !istype(inclchartype, buf[i]))
+	if (inclchartype && !istype(inclchartype, last))
 	    break;
+	tb_append(result, last);
 	DOT.o++;
 	i++;
 #if OPT_WIDE_CTYPES
 	if (inclchartype & vl_scrtch) {
-	    if ((i < bufn)
-		&& (inclchartype & vl_pathn)
+	    if ((inclchartype & vl_pathn)
 		&& ispath(char_at(DOT)))
 		continue;
-	    if (buf[i - 1] == SCRTCH_RIGHT[0])
+	    if (last == SCRTCH_RIGHT[0])
 		break;
 	}
 #endif
@@ -697,15 +721,14 @@ screen_string(char *buf, int bufn, CHARTYPE inclchartype)
     } else
 #endif
     if (inclchartype & vl_scrtch) {
-	if (buf[i - 1] != SCRTCH_RIGHT[0])
-	    i = 0;
+	if (last != SCRTCH_RIGHT[0])
+	    tb_init(result, EOS);
     }
 #endif
 
-    buf[i] = EOS;
-    DOT = mk;
+    DOT = save_dot;
 
-    return buf[0] != EOS;
+    return tb_length(*result) != 0;
 }
 
 /*

@@ -1,5 +1,23 @@
 Changes for vile 9.4 (released ??? ??? ?? ????)
 
+ 20030310 (m)
+	> Tom Dickey:
+	+ revise lgettext() and screen_string() to use TBUFF's directly, fixing
+	  the ^X-, macro broken in 9.3k.
+	+ fixes to avoid adding a trailing null to the "$search" variable.
+	+ correct parenthesis in dfputf(), which truncated "%f" format used to
+	  display "count-words" result.
+	+ implement logic for hypertext commands in "encode-attributes-til".
+	+ fix misplaced ":" appended in "encode-attributes-til".
+	+ add mode overlap-matches, to control whether highlighting for the
+	  visual-matches mode should skip to the next character, or past the
+	  current match when checking.
+	+ correct comparison in EXACTLY case of regrepeat(), which broke logic
+	  for "  *$" pattern - two blanks (reported by Danny Zerkel).
+	+ correct limit check in regrepeat(), which must account for the
+	  operand size directly since it is no longer null-terminated.
+	  Fixes match for patterns such as "X*$" (reported by Danny Zerkel).
+
  20030226 (l)
 	> Tom Dickey:
 	+ remove special check in kbd_putc() to advance the cursor, since fix

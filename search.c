@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.129 2003/02/26 14:03:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.133 2003/03/09 18:33:12 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -616,6 +616,7 @@ attrib_matches(void)
 {
 #if OPT_HILITEMATCH
     MARK origdot;
+    MARK nextdot;
     int status;
     REGIONSHAPE oregionshape = regionshape;
     VIDEO_ATTR vattr;
@@ -642,10 +643,16 @@ attrib_matches(void)
     origdot = DOT;
     DOT.l = buf_head(curbp);
     DOT.o = 0;
+    nextdot = DOT;
 
     scanboundry(FALSE, DOT, FORWARD);
     do {
-	movenext(&(DOT), FORWARD);
+	if (b_val(curbp, MDHILITEOVERLAP)) {
+	    movenext(&(DOT), FORWARD);
+	} else {
+	    movenext(&nextdot, FORWARD);
+	    DOT = nextdot;
+	}
 	status = scanner(gregexp, FORWARD, FALSE, (int *) 0);
 	if (status != TRUE)
 	    break;
@@ -664,6 +671,13 @@ attrib_matches(void)
 	}
 	MK.l = DOT.l;
 	MK.o = DOT.o + gregexp->mlen;
+
+	/* provide a location for the next non-overlapping match */
+	nextdot = MK;
+	if (gregexp->mlen > 0)
+	    nextdot.o -= 1;
+
+	/* show highlighting from DOT to MK */
 	regionshape = EXACT;
 	videoattribute |= VOWN_MATCHES;
 	status = attributeregion();
@@ -713,6 +727,13 @@ readpattern(
     char temp[NPAT];
     int status = TRUE;
 
+    TRACE((T_CALLED "readpattern(%s, %s, %p, %d, %d)\n",
+	   prompt ? prompt : "",
+	   tb_visible(*apat),
+	   srchexpp,
+	   c,
+	   fromscreen));
+
     if (fromscreen) {
 	if ((status = screen_string(temp, sizeof(temp), vl_ident)) == TRUE) {
 	    if (tb_init(apat, EOS) == 0
@@ -721,7 +742,7 @@ readpattern(
 	    }
 	}
 	if (status != TRUE)
-	    return status;
+	    returnCode(status);
     } else {
 	/* don't expand #, %, :, and never process backslashes
 	   since they're handled by regexp directly for the
@@ -748,13 +769,13 @@ readpattern(
 				tb_length(*apat),
 				b_val(curbp, MDMAGIC));
 	    if (!*srchexpp)
-		return FALSE;
+		returnCode(FALSE);
 	}
     } else if (status == FALSE && tb_length(*apat) != 0) {	/* Old one */
 	status = TRUE;
     }
 
-    return status;
+    returnCode(status);
 }
 
 /*

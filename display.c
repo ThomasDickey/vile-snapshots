@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.370 2002/12/23 00:24:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.371 2003/03/09 14:37:10 tom Exp $
  *
  */
 
@@ -180,7 +180,7 @@ dfputf(OutFunc outfunc, double s)
 
     /* break it up */
     i = (UINT) s;
-    f = (UINT) (s - (double) i) * 100;
+    f = (UINT) ((s - (double) i) * 100);
 
     /* send out the integer portion */
     n += dfputi(outfunc, i, 10);

@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.70 2003/02/25 01:02:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.72 2003/03/09 18:34:04 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1252,6 +1252,9 @@ var_REPLACE(TBUFF ** rp, const char *vp)
     }
 }
 
+/*
+ * Note that searchpat is stored without a trailing null.
+ */
 int
 var_SEARCH(TBUFF ** rp, const char *vp)
 {
@@ -1259,7 +1262,8 @@ var_SEARCH(TBUFF ** rp, const char *vp)
 	tb_copy(rp, searchpat);
 	return TRUE;
     } else if (vp && curbp) {
-	tb_scopy(&searchpat, vp);
+	(void) tb_init(&searchpat, EOS);
+	(void) tb_sappend(&searchpat, vp);
 	beginDisplay();
 	FreeIfNeeded(gregexp);
 	endofDisplay();

@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.155 2003/02/17 10:59:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.159 2003/03/11 00:19:30 tom Exp $
  *
  */
 
@@ -269,7 +269,7 @@ insspace(int f, int n)
 }
 
 /*
- * Insert string forward into text.
+ * Insert string forward into text.  The string may include embedded nulls.
  *
  * If 's' is null, treat as ""
  * If 'len' is non-zero, insert exactly this amount.  Pad if needed.
@@ -278,19 +278,16 @@ int
 lstrinsert(const char *s, int len)
 {
     const char *p = s;
-    int n, b = 0;
+    int n = len;
+    int b = 0;
 
-    if (len <= 0)
-	n = VL_HUGE;
-    else
-	n = len;
-    while (p && *p && n) {
+    while (p && n > 0) {
 	b++;
 	if (!linsert(1, *p++))
 	    return FALSE;
 	n--;
     }
-    if (n && len > 0) {		/* need to pad? */
+    if (n > 0 && len > 0) {	/* need to pad? */
 	if (!linsert(n, ' '))
 	    return FALSE;
 	b += n;
@@ -720,13 +717,10 @@ ldelete(B_COUNT nchars, int kflag)
  * of chars of type "type"
  */
 #if OPT_EVAL
-char *
+void
 lgrabtext(TBUFF ** rp, CHARTYPE type)
 {
-    int need = llength(DOT.l) + 2;
-    tb_alloc(rp, need);
-    (void) screen_string(tb_values(*rp), need, type);
-    return tb_values(*rp);
+    (void) screen2tbuff(rp, type);
 }
 #endif
 

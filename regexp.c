@@ -20,7 +20,7 @@
  *
  *		ted, 02/03
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.94 2003/02/27 02:01:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.98 2003/03/10 00:14:43 tom Exp $
  *
  */
 
@@ -1567,14 +1567,25 @@ regmatch(char *prog, int found)
 {
     char *scan;			/* Current node. */
     char *next;			/* Next node. */
+    char *last;			/* end of operand, if any */
 
-    scan = prog;
+    if ((scan = prog) != NULL) {
+	last = OPERAND(scan) + OPSIZE(scan);
 #ifdef REGDEBUG
-    if (scan != NULL && regnarrate)
-	TRACE(("%2d%s(%.*s\n",
-	       scan - reg_program, regprop(scan),
-	       regnomore - reginput, reginput));
+	if (scan != NULL && regnarrate) {
+	    if (reginput < regnomore) {
+		TRACE(("%2d%s %d{%.*s}\n",
+		       scan - reg_program, regprop(scan),
+		       regnomore - reginput,
+		       regnomore - reginput, reginput));
+	    } else {
+		TRACE(("%2d%s %d{}\n",
+		       scan - reg_program, regprop(scan),
+		       regnomore - reginput));
+	    }
+	}
 #endif
+    }
     while (scan != NULL) {
 #ifdef REGDEBUG
 	if (regnarrate)
@@ -1873,7 +1884,7 @@ regmatch(char *prog, int found)
 	case STAR:		/* FALLTHROUGH */
 	case PLUS:
 	    {
-		char nxtch;
+		int nxtch;
 		int no;
 		char *save;
 		int min;
@@ -1884,7 +1895,7 @@ regmatch(char *prog, int found)
 		 * Lookahead to avoid useless match attempts
 		 * when we know what character comes next.
 		 */
-		nxtch = EOS;
+		nxtch = -1;
 		if (OP(next) == EXACTLY)
 		    nxtch = *OPERAND(next);
 
@@ -1916,8 +1927,8 @@ regmatch(char *prog, int found)
 
 		while (no >= min) {
 		    /* If it could work, try it. */
-		    if ((nxtch == EOS
-			 || reginput == regnomore
+		    if ((nxtch == -1
+			 || reginput >= regnomore
 			 || SAME(*reginput, nxtch))
 			&& regmatch(next, found))
 			return (1);
@@ -1955,176 +1966,179 @@ static int
 regrepeat(const char *p)
 {
     int count = 0;
-    char *scan;
-    const char *opnd;
+    char *scan = reginput;
+    unsigned size = OPSIZE(p);
+    const char *opnd = OPERAND(p);
+    const char *last = scan + size;
 
-    scan = reginput;
-    opnd = OPERAND(p);
+    if (last > regnomore)
+	last = regnomore;
+
     switch (OP(p)) {
     case ANY:
 	count = regnomore - scan;
 	scan += count;
 	break;
     case EXACTLY:
-	while (scan < regnomore) {
-	    if (SAME(*opnd, *scan))
+	while (scan < last) {
+	    if (!SAME(*opnd, *scan))
 		break;
 	    count++;
 	    scan++;
 	}
 	break;
     case ANYOF:
-	while (scan != regnomore && RegStrChr2(opnd, OPSIZE(p), *scan) != 0) {
+	while (scan < regnomore && RegStrChr2(opnd, size, *scan) != 0) {
 	    count++;
 	    scan++;
 	}
 	break;
     case ANYBUT:
-	while (scan != regnomore && RegStrChr2(opnd, OPSIZE(p), *scan) == 0) {
+	while (scan < regnomore && RegStrChr2(opnd, size, *scan) == 0) {
 	    count++;
 	    scan++;
 	}
 	break;
     case ALPHA:
-	while (scan != regnomore && is_ALPHA(*scan)) {
+	while (scan < last && is_ALPHA(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NALPHA:
-	while (scan != regnomore && !is_ALPHA(*scan)) {
+	while (scan < last && !is_ALPHA(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case ALNUM:
-	while (scan != regnomore && is_ALNUM(*scan)) {
+	while (scan < last && is_ALNUM(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NALNUM:
-	while (scan != regnomore && !is_ALNUM(*scan)) {
+	while (scan < last && !is_ALNUM(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case BLANK:
-	while (scan != regnomore && is_BLANK(*scan)) {
+	while (scan < last && is_BLANK(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NBLANK:
-	while (scan != regnomore && !is_BLANK(*scan)) {
+	while (scan < last && !is_BLANK(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case CNTRL:
-	while (scan != regnomore && is_CNTRL(*scan)) {
+	while (scan < last && is_CNTRL(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NCNTRL:
-	while (scan != regnomore && !is_CNTRL(*scan)) {
+	while (scan < last && !is_CNTRL(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case DIGIT:
-	while (scan != regnomore && is_DIGIT(*scan)) {
+	while (scan < last && is_DIGIT(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NDIGIT:
-	while (scan != regnomore && !is_DIGIT(*scan)) {
+	while (scan < last && !is_DIGIT(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case GRAPH:
-	while (scan != regnomore && is_GRAPH(*scan)) {
+	while (scan < last && is_GRAPH(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NGRAPH:
-	while (scan != regnomore && !is_GRAPH(*scan)) {
+	while (scan < last && !is_GRAPH(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case LOWER:
-	while (scan != regnomore && is_LOWER(*scan)) {
+	while (scan < last && is_LOWER(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NLOWER:
-	while (scan != regnomore && !is_LOWER(*scan)) {
+	while (scan < last && !is_LOWER(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case PRINT:
-	while (scan != regnomore && is_PRINT(*scan)) {
+	while (scan < last && is_PRINT(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NPRINT:
-	while (scan != regnomore && !is_PRINT(*scan)) {
+	while (scan < last && !is_PRINT(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case PUNCT:
-	while (scan != regnomore && is_PUNCT(*scan)) {
+	while (scan < last && is_PUNCT(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NPUNCT:
-	while (scan != regnomore && !is_PUNCT(*scan)) {
+	while (scan < last && !is_PUNCT(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case SPACE:
-	while (scan != regnomore && is_SPACE(*scan)) {
+	while (scan < last && is_SPACE(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NSPACE:
-	while (scan != regnomore && !is_SPACE(*scan)) {
+	while (scan < last && !is_SPACE(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case UPPER:
-	while (scan != regnomore && is_UPPER(*scan)) {
+	while (scan < last && is_UPPER(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NUPPER:
-	while (scan != regnomore && !is_UPPER(*scan)) {
+	while (scan < last && !is_UPPER(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case XDIGIT:
-	while (scan != regnomore && is_XDIGIT(*scan)) {
+	while (scan < last && is_XDIGIT(*scan)) {
 	    count++;
 	    scan++;
 	}
 	break;
     case NXDIGIT:
-	while (scan != regnomore && !is_XDIGIT(*scan)) {
+	while (scan < last && !is_XDIGIT(*scan)) {
 	    count++;
 	    scan++;
 	}
