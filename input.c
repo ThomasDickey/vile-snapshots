@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.179 1998/04/28 09:36:25 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.180 1998/05/05 23:50:09 tom Exp $
  *
  */
 
@@ -1075,14 +1075,13 @@ int (*complete)(DONE_ARGS)) /* handles completion */
 }
 
 /*
- * We use the ^G (position) command to toggle between insert/command mode in
- * the minibuffer.
+ * We use the editc character to toggle between insert/command mode in the
+ * minibuffer.  This is normally bound to ^G (the position command).
  */
 static int
 isMiniEdit(int c)
 {
-	if (isspecial(c)
-	 || (c == editc))
+	if (c == editc)
 		return TRUE;
 	if (miniedit) {
 		const CMDFUNC *cfp = kcod2fnc(c);
@@ -1206,6 +1205,12 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 				kbd_alarm();
 		} else
 			kbd_alarm();
+	/* FIMXE:  reject non-motion commands for now, since we haven't
+	 * resolved what to do with the minibuffer if someone inserts a
+	 * newline.
+	 */
+	} else if (miniedit && cfp != 0) {
+		kbd_alarm();
 	} else {
 		miniedit = FALSE;
 		show1Char(c);
@@ -1256,6 +1261,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 	register UINT backslashes; /* are we quoting the next expandable char? */
 	UINT dontmap = (options & KBD_NOMAP);
 	int firstch = TRUE;
+	int lastch;
 	unsigned newpos;
 	TBUFF *buf = 0;
 
@@ -1287,10 +1293,12 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 			 && !editingShellCmd(tb_values(*extbuf),options)) {
 				cpos =
 				newpos = tb_length(*extbuf);
-				if ((*complete)(NAMEC, tbreserve(extbuf), &newpos))
+				if ((*complete)(NAMEC, tbreserve(extbuf), &newpos)) {
 					StrToBuff(*extbuf);
-				else
+				} else {
+					status = ABORT;
 					tb_put(extbuf, cpos, EOS);
+				}
 			}
 			/*
 			 * Splice for multi-part command
@@ -1328,9 +1336,13 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 	cpos = kbd_show_response(&buf, tb_values(*extbuf), tb_length(*extbuf), eolchar, options);
 	backslashes = 0; /* by definition, there is an even
 					number of backslashes */
+	c = -1;			/* initialize 'lastch' */
+
 	for_ever {
 		int	EscOrQuo = (quotef ||
 				((backslashes & 1) != 0));
+
+		lastch = c;
 
 		/*
 		 * Get a character from the user. If not quoted, treat escape
@@ -1377,8 +1389,10 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 		done = FALSE;
 		if (c == '\n') {
 			done = TRUE;
-		} else if (!EscOrQuo && !is_edit_char(c)) {
-			tb_values(buf)[tb_length(buf)] = EOS; /* FIXME */
+		} else if (!EscOrQuo
+		    && !is_edit_char(c)
+		    && !isMiniEdit(c)) {
+			BuffToStr(buf);
 			if ((*endfunc)(tb_values(buf),tb_length(buf),c,eolchar)) {
 				done = TRUE;
 			}
@@ -1450,7 +1464,14 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 			continue;
 		} else
 #endif
-		if (ABORTED(c) && !quotef && !dontmap) {
+		/*
+		 * If editc and abortc are the same, don't abort unless the
+		 * user presses it twice in a row.
+		 */
+		if ((c != editc || c == lastch)
+		  && ABORTED(c)
+		  && !quotef
+		  && !dontmap) {
 			tb_init(&buf, abortc);
 			status = esc_func(FALSE, 1);
 			break;
@@ -1489,7 +1510,10 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 			}
 			backslashes = countBackSlashes(buf, cpos);
 
-		} else if (firstch == TRUE && !quotef && !isMiniEdit(c)) {
+		} else if (firstch == TRUE
+		  && !quotef
+		  && !isMiniEdit(c)
+		  && !isspecial(c)) {
 			/* clean the buffer on the first char typed */
 			unkeystroke(c);
 			kbd_kill_response(buf, &cpos, killc);

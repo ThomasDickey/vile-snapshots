@@ -1,5 +1,21 @@
 Changes for vile 7.5/8.0 (released ??? ??? ?, 1998)
 
+ (tom) 980506 (c)
+	+ modify getregion() to handle the special case where a region is given
+	  extending to the end of file, e.g., "^A~]", when DOT is on the last
+	  section, will set DOT to the first line past the file, e.g., the
+	  buf_head line (reported by Adam Denton).
+	+ modify return from kbd_reply() so that macros behave more
+	  consistently with interactive use, by returning an ABORT when
+	  name-completion fails.
+	+ modify handling of mini-edit character to allow it to be bound to the
+	  same code as abortc (e.g., escape).
+	+ correct a case where entering mini-edit character would allow name
+	  completion to exit from kbd_reply().
+	+ modify handling of minibuffer editing commands so that non-motion
+	  commands (such as 'i' and 'a') are treated as errors rather than
+	  implicitly inserting them into the buffer.
+
  (tom) 980503 (b)
  	> patch by Clark Morgan
 	+ correct bug that made winvile font-dialog die on Win95, using example
