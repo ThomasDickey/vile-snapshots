@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.174 1998/03/14 17:49:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.175 1998/03/16 11:25:34 tom Exp $
  *
  */
 
@@ -1082,13 +1082,46 @@ isMiniEdit(int c, int mode)
 	return FALSE;
 }
 
+/*
+ * Shift the minibuffer left/right to keep the cursor visible, as well as the
+ * prompt, if that's feasible.
+ */
+static void
+shiftMiniBuffer(int offs)
+{
+	static const int slack = 5;
+	int shift = w_val(wminip,WVAL_SIDEWAYS);
+	int adjust;
+	BUFFER *savebp;
+	WINDOW *savewp;
+	MARK savemk;
+
+	beginDisplay();
+	savebp = curbp;
+	savewp = curwp;
+	savemk = MK;
+
+	curbp  = bminip;
+	curwp  = wminip;
+
+	adjust = offs - (shift + LastMsgCol - 1);
+	if (adjust >= 0)
+		mvrightwind(TRUE, 1+adjust);
+	else if (shift > 0 && (slack + adjust) < 0)
+		mvleftwind(TRUE, slack-adjust);
+
+	curbp = savebp;
+	curwp = savewp;
+	MK = savemk;
+
+	kbd_flush();
+	endofDisplay();
+}
+
 static int
 editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int *mode, int margin)
 {
-	static const int slack = 5;
 	int edited = FALSE;
-	int shift = w_val(wminip,WVAL_SIDEWAYS);
-	int adjust;
 	const CMDFUNC *cfp = kcod2fnc(c);
 	int savedexecmode = insertmode;
 	BUFFER *savebp;
@@ -1169,15 +1202,7 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int *mode, int margin)
 		edited = TRUE;
 	}
 
-	/*
-	 * Shift the minibuffer left/right to keep the cursor visible, as
-	 * well as the prompt, if that's feasible.
-	 */
-	adjust = DOT.o - (shift + LastMsgCol - 1);
-	if (adjust >= 0)
-		mvrightwind(TRUE, 1+adjust);
-	else if (shift > 0 && (slack + adjust) < 0)
-		mvleftwind(TRUE, slack-adjust);
+	shiftMiniBuffer(DOT.o);
 
 	curbp = savebp;
 	curwp = savewp;
@@ -1476,7 +1501,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 #endif
 	reading_msg_line = FALSE;
 	tb_free(&buf);
-	mvleftwind(TRUE, w_val(wminip,WVAL_SIDEWAYS));
+	shiftMiniBuffer(0);
 
 	TRACE(("reply:%d:%d:%s\n", status,
 		(int) tb_length(*extbuf),
