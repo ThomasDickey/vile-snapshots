@@ -23,7 +23,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.378 1999/05/18 10:33:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.379 1999/05/23 18:21:24 cmorgan Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -612,6 +612,11 @@ begin:
 	}
 #endif
 	(void)update(FALSE);
+
+#if DISP_NTWIN
+	/* Draw winvile's main window, for the very first time. */
+	winvile_start();
+#endif
 
 #if OPT_POPUP_MSGS
 	if (global_g_val(GMDPOPUP_MSGS) && (startstat != TRUE)) {

@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.102 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.103 1999/05/23 21:13:52 tom Exp $
  *
  */
 
@@ -1084,12 +1084,14 @@ gonmmark(int c)
 {
 	register MARK *markp;
 	MARK tmark;
-	int found;
 
 	if (!isLower(c) && c != '\'') {
 		mlforce("[Invalid mark name]");
 		return FALSE;
 	}
+
+	/* save current dot */
+	tmark = DOT;
 
 	markp = NULL;
 
@@ -1099,32 +1101,15 @@ gonmmark(int c)
 		markp = &(curbp->b_nmmarks[c-'a']);
 	}
 
-	found = FALSE;
 	/* if we have any named marks, and the one we want isn't null */
-	if (markp != NULL && !samepoint((*markp), nullmark)) {
-		register LINE *lp;
-		for_each_line(lp, curbp) {
-			if ((*markp).l == lp) {
-				found = TRUE;
-				break;
-			}
-		}
-	}
-	if (!found) {
+	if ((markp != 0) ? !restore_dot(*markp) : TRUE) {
 		mlforce("[Mark not set]");
 		return (FALSE);
 	}
 
-	/* save current dot */
-	tmark = DOT;
-
-	/* move to the selected mark */
-	DOT = *markp;
-
 	if (!doingopcmd)	/* reset last-dot-mark to old dot */
 		curwp->w_lastdot = tmark;
 
-	curwp->w_flag |= WFMOVE;
 	return (TRUE);
 }
 

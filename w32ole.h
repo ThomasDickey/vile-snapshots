@@ -10,7 +10,7 @@
  *
  *                samples\com\oleaut\hello\hello .
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.h,v 1.4 1999/05/17 02:34:43 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.h,v 1.5 1999/05/22 11:49:54 cmorgan Exp $
  */
 
 #ifndef W32OLE_H
@@ -71,7 +71,6 @@ public:
     STDMETHOD(get_Visible)(VARIANT_BOOL *pbool);
     STDMETHOD(ForegroundWindow)();
     STDMETHOD(Minimize)();
-    STDMETHOD(Open)(BSTR filename);
     STDMETHOD(Quit)();
     STDMETHOD(Restore)();
     STDMETHOD(VileKeys)(BSTR keys);

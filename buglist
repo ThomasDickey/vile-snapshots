@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.356 1999/03/08 11:26:55 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.358 1999/05/23 23:21:05 cmorgan Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1605,21 +1605,6 @@ for some reason I don't want to use..
 region defined in the current buffer and, if possible, where the
 region is?
 
--- 98-09-01 (Clark Morgan)
-
-1) Invoke winvile (8.0l for this test case).
-2) Using the system menu, change font to r_ansi, pitch 9, normal.
-   Notice in the message line that winvile emits a status message
-   stating that the font has been changed to r_ansi -- so far, so good.
-3) Change font to Courier New, pitch 9, normal.
-   Notice that the message line still says that the font has been changed
-   to r_ansi, even though winvile changed the font to Courier New.
-
-If I enable pop-up messages before step 1 and press the ':' key after
-step 3, I see that winvile has indeed recorded a separate (and correct)
-status message for each font change.  The bug here is that the second
-font status message is not flushed to the status line.
-
 -- 98-09-02 (paul)
 
 my officemate just pointed out that showmatch in winvile doesn't.
@@ -1653,38 +1638,10 @@ wishlist:
 implement ~foreach iterator.  Add CMDFUNC flags to macro definition
 and to describe-bindings view.  Add $#, $*, $0 ... $$n to variables.
 
--- 98-09-07 (Clark Morgan)
-
-When I invoke winvile from a dos box like so:
-
-    winvile -geometry 80x37
-
-I notice that 90% of the time the mode and commmand lines are positioned
-beneath the win95 task bar.  This requires that I use the mouse to move the
-editor's window up a half-inch or so.  'Twould be nice if the editor's entire
-working area was visible.
-
-Here's the relevant font info from my vile.rc:
-
-~if &sequal $progname "winvile"
-    set-variable $font "courier new,9"
-    ...
-~endif
-
-I'm using a 17-inch monitor, 1024x768, 256 colors.
-
 -- 98-09-09 (tom)
 
 xvile doesn't build with unproto on SunOS because I get a -B option that K&R cc
 doesn't grok.
-
--- 98-09-24 (Clark Morgan)
-
-If I attempt to set the geometry to 80x39 when using the font string
-"r_ansi,8", the number of rows gets coerced to 37 in ResizeClient.
-
-[there's something in the initialization which is using the original fontsize
-to determine the limit on the number of rows - tom]
 
 -- 99-02-11 (tom)
 

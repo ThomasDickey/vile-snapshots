@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.346 1999/05/19 01:05:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.348 1999/05/23 20:13:34 tom Exp $
  *
  */
 
@@ -736,6 +736,7 @@ extern int gocol (int n);
 extern int is_user_fence (int ch, int *sdirp);
 extern int line_report (L_NUM before);
 extern int liststuff (const char *name, int appendit, void (*)(LIST_ARGS), int iarg, void *vargp);
+extern int restore_dot(MARK saved_dot);
 extern int set_directory (const char *dir);
 extern void catnap (int milli, int watchinput);
 extern void ch_fname (BUFFER *bp, const char *fname);
@@ -1009,6 +1010,7 @@ extern int  w32_system(const char *cmd);
 extern int  w32_system_winvile(const char *cmd, int pressret);
 extern char *w32_wdw_title();
 extern void *winvile_hwnd(void);
+extern void winvile_start(void);
 #endif
 
 /* watchfd.c */

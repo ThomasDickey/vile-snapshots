@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.44 1999/05/19 01:28:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.46 1999/05/23 23:24:55 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -116,12 +116,13 @@ static	HCURSOR	hglass_cursor;
 static	HCURSOR	arrow_cursor;
 static	int	nLineHeight = 10;
 static	int	nCharWidth = 8;
-static	int	caret_disabled = FALSE;
+static	int	caret_disabled = TRUE;
 static	int	caret_visible = 0;
 static	int	caret_exists = 0;
 static	int	vile_in_getfkey = 0;
 static	int	vile_resizing = FALSE;	/* rely on repaint_window if true */
 static	int	dont_update_sb = FALSE;
+static	int	desired_wdw_state, gui_resize_in_progress;
 static	DWORD	default_fcolor;
 static	DWORD	default_bcolor;
 
@@ -401,7 +402,6 @@ Background(HDC hdc)
 void
 gui_resize(int cols, int rows)
 {
-	static int level;
 	RECT crect;
 	RECT wrect;
 	int main_wide;
@@ -409,8 +409,37 @@ gui_resize(int cols, int rows)
 	int text_wide;
 	int text_high;
 
-	level++;
-	TRACE(("gui_resize(%d x %d) begin %d\n", rows, cols, level))
+	/*
+	 * There's an undesirable feedback loop between gui_resize() and
+	 * ResizeClient() when the user changes the font.  Here's how it
+	 * goes:
+	 *
+	 * - user changes font
+	 * - use_font() is eventually called
+	 * - use_font() calls gui_resize()
+	 * - gui_resize calls MoveWindow(cur_win->main_hwnd, ...) which triggers
+	 *	 a call to MainWndProc(), which calls ResizeClient()
+	 * - ResizeClient() calls gui_resize()
+	 *
+	 * ResizeClient(), unfortunately, recomputes the editor's rows and
+	 * cols and sometimes gets it wrong, especially when the number of
+	 * rows exceeds a magic value (e.g., 37 rows on a 1024 x 768
+	 * screen).
+	 *
+	 * To stop the feedback loop, check to see if an instance of
+	 * gui_resize() is active, and if so, exit.
+	 *
+	 * Note:  even though "gui_resize_in_progress" breaks the
+	 * aforementioned feedback loop, bear in mind that it's still not
+	 * possible to define a screen geometry that's greater the dimensions
+	 * of the current desktop.  This restriction is enforced by Windows
+	 * when the first ShowWindow() call is made from winvile_start().
+	 */
+	if (gui_resize_in_progress)
+		return;
+	gui_resize_in_progress = TRUE;
+
+	TRACE(("gui_resize(%d x %d)\n", rows, cols))
 	TraceWindowRect(cur_win->main_hwnd);
 	TraceClientRect(cur_win->main_hwnd);
 
@@ -457,8 +486,8 @@ gui_resize(int cols, int rows)
 #if OPT_SCROLLBARS
 	update_scrollbar_sizes();
 #endif
-	TRACE(("... gui_resize finish %d\n", level))
-	level--;
+	TRACE(("... gui_resize finish\n"))
+	gui_resize_in_progress = FALSE;
 }
 
 static int
@@ -556,7 +585,6 @@ AdjustResizing(HWND hwnd, WPARAM fwSide, RECT *rect)
 static void
 ResizeClient()
 {
-	static int level;
 	int h, w;
 	RECT crect;
 
@@ -565,8 +593,13 @@ ResizeClient()
 		return;
 	}
 
-	level++;
-	TRACE(("ResizeClient begin %d, currently %dx%d\n", level, term.rows, term.cols))
+	/*
+	 * See comments in gui_resize() for an explanation of
+	 * gui_resize_in_progress.
+	 */
+	if (gui_resize_in_progress)
+		return;
+	TRACE(("ResizeClient begin, currently %dx%d\n", term.rows, term.cols))
 	TraceWindowRect(cur_win->main_hwnd);
 	TraceClientRect(cur_win->main_hwnd);
 	GetClientRect(cur_win->main_hwnd, &crect);
@@ -603,8 +636,7 @@ ResizeClient()
 	}
 
 	gui_resize(w, h);
-	TRACE(("...ResizeClient finish %d\n", level))
-	level--;
+	TRACE(("...ResizeClient finish\n"))
 }
 
 #define LTGRAY_COLOR 140
@@ -907,6 +939,7 @@ static void set_font(void)
 			movecursor(saverow, savecol);
 			use_font(vile_font, FALSE);
 			vile_refresh(FALSE,0);
+			update(FALSE);
 		} else {
 			mlforce("[Cannot create font]");
 		}
@@ -1639,17 +1672,17 @@ ntgetch(void)
 
 		case WM_COMMAND:
 		    if (LOWORD(msg.wParam) == IDM_OPEN) {
-			winopen(0, 0);
+				winopen(0, 0);
 
-			/*
-			 * workaround repaint bug--sometimes cursor hangs in
-			 * mini-buffer and screen is not updated.
-			 */
-			update(FALSE);
-		    }
-		    else
-			DispatchMessage(&msg);
-		    break;
+				/*
+				 * workaround repaint bug--sometimes cursor hangs in
+				 * mini-buffer and screen is not updated.
+				 */
+				update(FALSE);
+			}
+			else
+				DispatchMessage(&msg);
+			break;
 
 		case WM_MOUSEMOVE:
 			if (buttondown) {
@@ -2374,7 +2407,7 @@ LONG FAR PASCAL MainWndProc(
 }
 
 static BOOL
-InitInstance(HINSTANCE hInstance, int nCmdShow)
+InitInstance(HINSTANCE hInstance)
 {
 	WNDCLASS  wc;
 
@@ -2498,8 +2531,6 @@ InitInstance(HINSTANCE hInstance, int nCmdShow)
 	get_font(&vile_logfont);
 	use_font(vile_font, FALSE);
 
-	ShowWindow(cur_win->main_hwnd, nCmdShow);
-	UpdateWindow(cur_win->main_hwnd);
 	return (TRUE);
 }
 
@@ -2666,8 +2697,9 @@ WinMain(
 	if (oa_opts.invisible)
 		nCmdShow = SW_HIDE;
 #endif
+	desired_wdw_state = nCmdShow;
 
-	if (!InitInstance(hInstance, nCmdShow))
+	if (!InitInstance(hInstance))
 		return (FALSE);
 
 	/*
@@ -2714,6 +2746,88 @@ void *
 winvile_hwnd(void)
 {
 	return (cur_win->main_hwnd);
+}
+
+/*
+ * To prevent drawing winvile's main frame twice during startup (once for
+ * the default font/geometry and then again when the user specifies
+ * his/her preferences), this entry point is provided to do the job just
+ * once.  Called from main.c .
+ */
+void
+winvile_start(void)
+{
+    RECT desktop, vile, tray;
+    int  moved_window = 0;
+    HWND tray_hwnd, desktop_hwnd;
+
+    /*
+     * Before displaying the main window, see if its bottom border lies
+     * beneath the Win95/NT taskbar.  If so, move the frame up out of the
+     * way (hope this code works for Win98, too :-) ).
+     */
+    tray_hwnd    = FindWindow("Shell_TrayWnd", NULL);
+    desktop_hwnd = GetDesktopWindow();
+    GetWindowRect(desktop_hwnd, &desktop);
+    GetWindowRect(cur_win->main_hwnd, &vile);
+    if (tray_hwnd != NULL)
+    {
+        GetWindowRect(tray_hwnd, &tray);
+        if (vile.bottom > tray.top)
+        {
+            /*
+             * Could be a conflict...but only if the taskbar is parked
+             * horizontally, at bottom of screen.
+             */
+
+            if ((tray.bottom + 10 >= desktop.bottom) &&
+                (tray.right - tray.left + 10 >= desktop.right - desktop.left))
+            {
+                int diff = vile.bottom - tray.top + 5;
+
+                if (vile.top - diff >= desktop.top)
+                {
+                    /* editor's title bar won't be shifted offscreen. */
+
+                    MoveWindow(cur_win->main_hwnd,
+                               vile.left,
+                               vile.top - diff,
+                               vile.right - vile.left,
+                               vile.bottom - vile.top,
+                               FALSE);
+                    moved_window = 1;
+                }
+            }
+        }
+    }
+    if (! moved_window)
+    {
+        /*
+         * no conflict with the task bar...but is the editor's bottom edge
+         * below the deskop rect?
+         */
+
+        if (vile.bottom > desktop.bottom)
+        {
+            int diff = vile.bottom - desktop.bottom + 5;
+
+            if (vile.top - diff >= desktop.top)
+            {
+                /* editor's title bar won't be shifted offscreen. */
+
+                MoveWindow(cur_win->main_hwnd,
+                           vile.left,
+                           vile.top - diff,
+                           vile.right - vile.left,
+                           vile.bottom - vile.top,
+                           FALSE);
+            }
+        }
+    }
+    ShowWindow(cur_win->main_hwnd, desired_wdw_state);
+    UpdateWindow(cur_win->main_hwnd);
+    caret_disabled = FALSE;
+    fshow_cursor();
 }
 
 #ifdef VILE_OLE

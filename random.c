@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.194 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.195 1999/05/23 20:59:38 tom Exp $
  *
  */
 
@@ -217,6 +217,28 @@ line_report(L_NUM before)
 		else
 			mlwrite("[%d more lines]", after - before);
 		return TRUE;
+	}
+	return FALSE;
+}
+
+/*
+ * Restore a saved value of DOT when it is possible that the buffer may have
+ * been modified since the value was saved.  In that case, leave DOT as is.
+ */
+int
+restore_dot(MARK saved_dot)
+{
+	if (samepoint(DOT, saved_dot)) {
+		return TRUE;
+	} else if (!samepoint(saved_dot, nullmark)) {
+		LINE	*lp;
+		for_each_line(lp, curbp) {
+			if (lp == saved_dot.l) {
+				DOT = saved_dot;
+				curwp->w_flag |= WFMOVE;
+				return TRUE;
+			}
+		}
 	}
 	return FALSE;
 }

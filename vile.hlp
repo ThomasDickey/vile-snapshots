@@ -2743,8 +2743,8 @@ Encryption
 	vile implements an interface to the Unix crypt function, like
 	standard vi, and can apply this to your buffers either
 	automatically (via a mode setting) or manually (via an explicit
-	command).  The algorithm is reversible, so crypting a previously
-	crypted buffer will undo that encryption.
+	command).  The algorithm is reversible, so encrypting a previously
+	encrypted buffer will undo that encryption.
 
 	The encryption key for a buffer will be a) inherited from the
 	global cryptkey which was set via the vile command line (-k) if it
@@ -2756,7 +2756,7 @@ Encryption
 	If "crypt" mode is on, then when the buffer is written the user
 	will be prompted for the encryption key to use if none has yet been
 	set.  If "crypt" mode is on, and an encryption key has been set,
-	then the buffer will be crypted when read.  In practice this means
+	then the buffer will be encrypted when read.  In practice this means
 	you need to read the file, then set crypt mode, then reread the
 	file.  (Or, equivalently, create the buffer, set crypt mode, and
 	then insert the file into it (with ":r").
@@ -2765,12 +2765,12 @@ Encryption
 	externally, via the "vile-crypt" program.  vile-crypt will
 	encrypt/decrypt a file.  You can use "-k key" to supply the key on
 	the commandline, and "-m" to treat the file as a mail message -- in
-	that case, only text after the first blank line will be crypted.
+	that case, only text after the first blank line will be encrypted.
 	Text to be encrypted can be specified as filenames on the command
 	line, or provided as the standard input.  All output appears on
 	stdout.  On systems with a getpass() library routine, the user will
 	be prompted for the encryption key if it is not given on the
-	command line.  To accomodate systems (such as linux) where the
+	command line.  To accommodate systems (such as linux) where the
 	getpass() library routine is not interruptible from the keyboard,
 	entering a crypt-key password which ends in ^C will cause the
 	program to quit.
@@ -3700,7 +3700,9 @@ Win32 specifics
 	standard ones:
 
 	-geometry <C>x<R>      Initial window dimensions in Columns and Rows
-				 (ex:  -geometry 80x30).
+				 (ex:  -geometry 80x30).  Note:  the specified
+				 geometry may not exceed the bounds of the
+				 current desktop screen.
 	-fn       <fontspec>   Initial font (or -font).  The "Winvile Font"
 				 section below describes <fontspec> syntax.
 
@@ -3823,7 +3825,7 @@ Win32 specifics
 	winopen		Launches the Windows common open dialog box to open
 			one or more files within the editor.  Note that if
 			this dialog box opens files outside the editor's
-			current working directroy (cwd), then Windows (and
+			current working directory (cwd), then Windows (and
 			vile) implicitly change the cwd to match that of
 			the opened files.  This command _is_ available from
 			console vile.
@@ -3831,18 +3833,6 @@ Win32 specifics
 	winopen-nocd	Same as "winopen", except the editor's cwd remains
 			unchanged.
 
-	Commands
-	--------
-	winopen		Launches the Windows common open dialog box to open
-			one or more files within the editor.  Note that if
-			this dialog box opens files outside the editor's
-			current working directroy (cwd), then Windows (and
-			vile) implicitly change the cwd to match that of
-			the opened files.  This command _is_ available from
-			console vile.
-
-	winopen-nocd	Same as "winopen", except the editor's cwd remains
-			unchanged.
 	Modes
 	-----
 	force-console   Boolean indicating whether or not winvile forces
@@ -4111,4 +4101,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.413 1999/05/18 22:51:47 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.415 1999/05/23 23:22:39 cmorgan Exp $

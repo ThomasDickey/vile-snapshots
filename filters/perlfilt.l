@@ -1,8 +1,8 @@
-%x CODE HERE POD IGNORED
+%x CODE HERE PATTERN POD IGNORED
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.20 1999/05/01 01:47:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.21 1999/05/22 19:21:14 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PERL input
  * text.
@@ -67,6 +67,55 @@ flush_here(void)
 	write_token(yyout, save_bfr, save_len, String_attr);
 	save_len = 0;
     }
+}
+
+static void
+end_pattern(void)
+{
+    flush_here();
+    BEGIN(CODE);
+}
+
+static int
+add_to_pattern(char *text)
+{
+    static int first, delim, count, escaped, need;
+
+    if (!save_len) {
+	first = delim = count = escaped = need = 0;
+	if (isalpha(*text))
+	    first = *text;
+	else
+	    first = delim = *text;
+	if (delim)
+	    need = 2;
+    }
+    if (save_len == 1 && !delim) {
+	if (!isalpha(*text) && !isspace(*text)) {
+	    delim = *text;
+	    need = (first == 's') ? 3 : 2;
+	}
+    }
+    if (escaped) {
+	escaped = 0;
+    } else {
+	if (*text == '\\') {
+	    escaped = 1;
+	} else {
+	    if (need && (count == need)) {
+		if (!isalpha(*text)) {
+		    return 0;
+		}
+	    } else if (*text == delim) {
+		count++;
+	    }
+	}
+    }
+    if (delim == 0 && !escaped && *text == ';') {
+	return 0;
+    }
+    add_to_here(text, 1);
+    return 1;
 }
 
 void
@@ -139,6 +188,10 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 			    flush_here();
 			    fputc(yytext[0], yyout);
 			}
+
+<CODE>[!=]"~"{BLANK}	{ WriteToken(""); BEGIN(PATTERN); }
+<PATTERN>[^\n]		{ if (!add_to_pattern(yytext)) { end_pattern(); ECHO; } }
+<PATTERN>[\n]		{ end_pattern(); ECHO; }
 
 <CODE>^{BLANK}*#!.*$	{ WriteToken(Preproc_attr); }
 

@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.182 1999/05/18 01:42:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.183 1999/05/23 21:01:56 tom Exp $
  *
  */
 
@@ -549,18 +549,8 @@ seems like we need one more check here -- is it from a .exrc file?
 	regionshape = EXACT;
 
 	/* don't use this if the command modifies! */
-	if (flags & NOMOVE) {
-		if (!samepoint(DOT, save_DOT)) {
-			DOT = save_DOT;
-			/* if an update() was called somewhere along
-			   the way (as a result of mlyesno, for instance),
-			   then we _have_ moved, so resetting DOT to
-			   it's first value constitutes another one. */
-			/* i think at worst this means an extra call to
-			   reframe...  */
-			curwp->w_flag |= WFMOVE;
-		}
-	}
+	if (flags & NOMOVE)
+		restore_dot(save_DOT);
 
 	return status;
 }

@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.210 1999/05/19 00:53:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.212 1999/05/23 20:45:29 tom Exp $
  *
  */
 
@@ -1997,8 +1997,8 @@ static XtResource color_resources[] = {
 	XtRPixel,
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_fg[1]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
+	XtRString,
+	(XtPointer) "rgb:ff/0/0"
     },
     {
 	XtNbcolor1,
@@ -2015,8 +2015,8 @@ static XtResource color_resources[] = {
 	XtRPixel,
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_fg[2]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
+	XtRString,
+	(XtPointer) "rgb:0/ff/0"
     },
     {
 	XtNbcolor2,
@@ -2033,8 +2033,8 @@ static XtResource color_resources[] = {
 	XtRPixel,
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_fg[3]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
+	XtRString,
+	(XtPointer) "rgb:a5/2a/2a"
     },
     {
 	XtNbcolor3,
@@ -2051,8 +2051,8 @@ static XtResource color_resources[] = {
 	XtRPixel,
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_fg[4]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
+	XtRString,
+	(XtPointer) "rgb:0/0/ff"
     },
     {
 	XtNbcolor4,
@@ -2069,8 +2069,8 @@ static XtResource color_resources[] = {
 	XtRPixel,
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_fg[5]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
+	XtRString,
+	(XtPointer) "rgb:ff/0/ff"
     },
     {
 	XtNbcolor5,
@@ -2087,8 +2087,8 @@ static XtResource color_resources[] = {
 	XtRPixel,
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_fg[6]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
+	XtRString,
+	(XtPointer) "rgb:0/ff/ff"
     },
     {
 	XtNbcolor6,
@@ -2105,8 +2105,8 @@ static XtResource color_resources[] = {
 	XtRPixel,
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_fg[7]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
+	XtRString,
+	(XtPointer) "rgb:e6/e6/e6"
     },
     {
 	XtNbcolor7,
@@ -2123,8 +2123,8 @@ static XtResource color_resources[] = {
 	XtRPixel,
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_fg[8]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
+	XtRString,
+	(XtPointer) "rgb:be/be/be"
     },
     {
 	XtNbcolor8,
@@ -2141,8 +2141,8 @@ static XtResource color_resources[] = {
 	XtRPixel,
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_fg[9]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
+	XtRString,
+	(XtPointer) "rgb:ff/7f/7f"
     },
     {
 	XtNbcolor9,
@@ -2159,8 +2159,8 @@ static XtResource color_resources[] = {
 	XtRPixel,
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_fg[10]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
+	XtRString,
+	(XtPointer) "rgb:7f/ff/7f"
     },
     {
 	XtNbcolorA,
@@ -2177,8 +2177,8 @@ static XtResource color_resources[] = {
 	XtRPixel,
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_fg[11]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
+	XtRString,
+	(XtPointer) "rgb:ff/ff/0"
     },
     {
 	XtNbcolorB,
@@ -2195,8 +2195,8 @@ static XtResource color_resources[] = {
 	XtRPixel,
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_fg[12]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
+	XtRString,
+	(XtPointer) "rgb:7f/7f/ff"
     },
     {
 	XtNbcolorC,
@@ -2213,8 +2213,8 @@ static XtResource color_resources[] = {
 	XtRPixel,
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_fg[13]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
+	XtRString,
+	(XtPointer) "rgb:ff/7f/ff"
     },
     {
 	XtNbcolorD,
@@ -2231,8 +2231,8 @@ static XtResource color_resources[] = {
 	XtRPixel,
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_fg[14]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
+	XtRString,
+	(XtPointer) "rgb:7f/ff/ff"
     },
     {
 	XtNbcolorE,
@@ -2249,8 +2249,8 @@ static XtResource color_resources[] = {
 	XtRPixel,
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_fg[15]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
+	XtRString,
+	(XtPointer) "rgb:ff/ff/ff"
     },
     {
 	XtNbcolorF,
@@ -5205,7 +5205,7 @@ x_process_event(
 		cur_win->sel_scroll_id = (XtIntervalId) 0;
 	    }
 	    if (cur_win->did_select && !cur_win->selection_sets_DOT) {
-		DOT = cur_win->prevDOT;
+		restore_dot(cur_win->prevDOT);
 		(void)update(TRUE);
 	    }
 	    cur_win->did_select = False;

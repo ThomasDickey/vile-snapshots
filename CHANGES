@@ -1,5 +1,51 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+(tom) 990523 (e)
+	+ add/use new function restore_dot() to guard against restoring DOT to
+	  a value which no longer points into the current buffer, e.g., after
+	  modifying it.  This fixes a core dump in xvile when selecting in the
+	  [Registers] buffer.
+	+ improve perl syntax filter by parsing patterns following =~ and =!
+	  operators.  (Patterns may also be in other places).
+	+ comment-out save/restore of $CFLAGS in configure.in via the
+	  saved_CFLAGS, since that interferes with configuration on HP-UX 10.20
+	  with HP's ANSI compiler, which does not support ANSI C without
+	  specifying an option.  As a result, all of the checks for missing
+	  function prototypes failed, as well as the checks for terminfo vs
+	  termcap (reported by Micheal Finken).
+	+ simplify mlerror, allowing for the possibility that strerror may
+	  return a null pointer.
+	+ correct quoting for configure script's --with-exec-macros option,
+	  which prevented users from setting that values (reported by Michael
+	  Finken <finkenm@hotmail.com>).
+	+ turn off crypting during reads/writes to a pipe.  This is needed in
+	  crypt mode in order to support macros that pipe text to an external
+	  program for filtering.  Without this change, instead of the actual
+	  text, the encrypted text is sent to the external programs which will
+	  most likely result in incorrect behavior.  (patch by Daniel Palermo
+	  <palermo@puzzle.rsn.hp.com>).
+	+ provide default colors for xvile similar to those used by vile for
+	  fcolor1 through fcolor15 (patch by Brendan O'Dea).
+	> patches by Clark Morgan:
+	+ removed duplicate winopen and winopen-nocd documentation from
+	  vile.hlp 
+	+ winvile only paints its frame once at startup. 
+	+ added logic to ensure the the winvile frame is completely exposed on
+	  the desktop (i.e., not clipped by taskbar or painted offscreen). 
+	+ further changes to permit a winvile user to specify any geometry that
+	  lies within the region bounded by the current desktop screen.
+	+ setting winvile font via dialog box now repaints screen (in all
+	  cases) and flushes status message to mini-buffer. 
+	+ fixed a couple of minor problems with wvwrap when setting winvile's
+	  current working directory.  Wvwrap also makes sure the editor is
+	  visible. 
+	+ finally, a rather big change, I've dumped the oleauto Open method. 
+	  As it turns out, this was a bad idea.  I saw cases 2nite where the
+	  editor was "simultaneously" changing its working directory and
+	  opening a file.  Not good.  This kind of race condition is avoided
+	  when VileKeys() "drives" the editor because all of winvile's commands
+	  are serialized via a Windows message queue. 
+
 (tom) 990519 (d)
 	+ remove fragment of code in c-filt.c which left it incorrectly parsing
 	  "string1""string2" (reported by Alex Wetmore).

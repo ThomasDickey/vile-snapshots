@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.69 1999/05/07 22:46:09 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.70 1999/05/22 15:04:01 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -1075,7 +1075,7 @@ changequote()
 define(U_TURN_BACK, ]) 
 changequote([, ]) 
 
-AC_DEFUN(CF_PROG_PERL,
+AC_DEFUN([CF_PROG_PERL],
 [# find perl binary
 AC_MSG_CHECKING([for ifelse([$1],,perl,[perl-$1])])
 AC_CACHE_VAL(cf_cv_prog_PERL,
