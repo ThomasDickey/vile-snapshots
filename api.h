@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.5 1998/03/22 12:06:15 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.6 1998/03/24 10:14:15 kev Exp $
  */
 typedef struct {
 	BUFFER    * bp; 
@@ -10,6 +10,9 @@ typedef struct {
 	int         dot_inited;		/* Has dot been initialized 
 	                                   for api_dotgline? */ 
 	int         changed;		/* Were any changes done? */ 
+	int         dot_changed;	/* DOT explicitly changed -- 
+					   implies that DOT should 
+					   be propogated */ 
 #if OPT_PERL
 	void      * perl_handle;	/* perl visible handle to this 
 					   data structure */

@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.77 1997/11/09 22:32:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.78 1998/03/24 10:14:15 kev Exp $
  *
  */
 
@@ -1128,4 +1128,14 @@ pop_fake_win(WINDOW *oldwp)
     free((char *)wp);
     return bp;
 }
+ 
+/* 
+ * Return TRUE if wp is a fake window 
+ */ 
+int 
+is_fake_win(WINDOW *wp) 
+{ 
+    return wp->w_toprow < 0; 
+} 
+ 
 #endif

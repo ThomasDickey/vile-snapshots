@@ -1,5 +1,19 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (kev) 980324 (m) 
+	+ api.h (dot_changed): New field in SCR structure. 
+ 	+ api.c (api_gotoline): Prevent enormous amounts of looping 
+	  for outrageous count values. 
+	  (api_dotgline): Fixed bug which caused <$curscr> operator 
+	  to go into infinite loop. 
+	  (api_command_cleanup): Added code for propagating DOT. 
+	  (api_bp2sp): Initialize dot_changed field. 
+	+ perl.xs (perl_init): Add our own search paths to @INC. 
+	  (dot): New method for getting/setting DOT. 
+	  (GetUserInput): Removed. 
+	+ proto.h (is_fake_win): Declared. 
+	+ window.c (is_fake_win): New function. 
+ 
  (kev) 980321 (l) 
  	+ api.c (api_setup_fake_win, api_dotgline, api_command_cleanup, 
 	  api_bp2sp):  Rearranged initialization of DOT so that it will 

@@ -284,6 +284,8 @@ static int perl_init(void)
     char *embedding[] = { "", "-e", "0" };
     char *bootargs[]  = { "VI", NULL };
     SV   *svminiscr; 
+    AV   *av; 
+    SV   *sv; 
 
     perl_interp = perl_alloc();
     perl_construct(perl_interp);
@@ -297,6 +299,13 @@ static int perl_init(void)
     perl_call_argv("VI::bootstrap", G_DISCARD, bootargs);
     perl_eval("$SIG{__WARN__}='VI::Warn'");
 
+    /* Add our own paths to the front @INC */ 
+    av_unshift(av = GvAVn(incgv), 2); 
+    av_store(av, 0, newSVpv("~/.vile/perl",0)); 
+    sv = newSVpv(HELP_LOC,0); 
+    sv_catpv(sv, "perl"); 
+    av_store(av, 1, sv); 
+ 
     
     /* Obtain handles to specific perl variables, creating them
        if they do not exist. */
@@ -871,35 +880,118 @@ setregion(screen, ...)
 		                            : "rectangle",    0 ))); 
 	} 
  
-char * 
-GetUserInput(screen) 
+ 
+# dot BUFOBJ 
+# dot BUFOBJ LINENUM 
+# dot BUFOBJ LINENUM, OFFSET 
+#  
+# 	Returns the current value of dot (which represents the the 
+# 	current position in the buffer).  When used in a scalar 
+# 	context returns, the line number of dot.  When used in an 
+# 	array context, returns the line number and position within the 
+# 	line. 
+#  
+# 	When supplied with one argument, the line number, dot is set to 
+# 	the beginning of that line.  When supplied with two arguments, 
+# 	both the line number and offset components are set. 
+#  
+# 	The line number may also be the special character '$' which 
+# 	represents the last line of the buffer. 
+#  
+# 	Examples: 
+#  
+# 	$linenum = $curscr->dot;	# Fetch the line number at which dot 
+# 					# is located. 
+#  
+# 	$curscr->dot($curscr->dot+1);	# Advance dot by one line 
+# 	$curscr->dot($curscr->dot('$') - 1); 
+# 					# Set dot to the penultimate line of 
+# 					# the buffer. 
+#  
+# 	$curscr->dot(25, 6);		# Set dot to line 25, character 6 
+#  
+# 	($ln,$off) = $curscr->dot;	# Fetch the current position 
+# 	$curscr->dot($ln+1,$off-1);	# and advance one line, but 
+# 					# back one character. 
+#  
+# 	$curscr->inplace_edit(1); 
+# 	$curscr->setregion(scalar($curscr->dot), $curscr->dot+5); 
+# 	@lines = <$curscr>; 
+# 	$curscr->dot($curscr->dot - 1); 
+# 	print $curscr @lines; 
+# 					# The above block takes (at 
+# 					# most) six lines starting at 
+# 					# the line DOT is on and moves 
+# 					# them before the previous 
+# 					# line. 
+ 
+void 
+dot(screen, ...) 
 	VI screen 
  
 	PREINIT: 
-	int status; 
-	char buf[NLINE]; 
-	char prompt[NLINE]; 
+	SCR *scrp;  
+	I32 gimme;  
  
 	PPCODE: 
-	buf[0] = EOS; 
-	strcpy(prompt, "(perl input) "); 
-	if (use_ml_as_prompt && !is_empty_buf(bminip)) { 
-	    LINE *lp = lback(buf_head(bminip)); 
-	    int len = llength(lp); 
-	    if (len > NLINE-1) 
-		len = NLINE-1; 
-	    strncpy(prompt, lp->l_text, len); 
-	    prompt[len] = 0; 
+	scrp = (SCR *)screen;  
+	api_setup_fake_win(scrp);  
+	if ( items > 3) { 
+	    croak("Invalid number of arguments");  
 	} 
-	status = mlreply_no_opts(prompt, buf, sizeof(buf)); 
-	EXTEND(sp,1); 
-	if (!status) { 
-	    PUSHs(&sv_undef); 
+	else if (items > 1) { 
+	    I32 linenum; 
+	    /* Expect a line number or '$' */ 
+	    if (!SvIOKp(ST(1)) && strcmp(SvPV(ST(1),na),"$") == 0) { 
+		linenum = line_count(curbp); 
+	    } 
+	    else { 
+		linenum = SvIV(ST(1)); 
+		if (linenum < 1) { 
+		    linenum = 1; 
+		} 
+		else if (linenum > line_count(curbp)) { 
+		    linenum = line_count(curbp); 
+		} 
+	    } 
+ 
+	    api_gotoline(scrp, linenum); 
+ 
+	    if (items == 3) { 
+		I32 offset; 
+		/* Expect an offset within the line or '$' */ 
+		if (!SvIOKp(ST(2)) && strcmp(SvPV(ST(2),na),"$") == 0) { 
+		    offset = llength(DOT.l); 
+		} 
+		else { 
+		    offset = SvIV(ST(2)); 
+		    if (offset < 0) { 
+			offset = 0; 
+		    } 
+		    else if (offset > llength(DOT.l)) { 
+			offset = llength(DOT.l); 
+		    } 
+		} 
+		DOT.o = offset; 
+	    } 
+	    /* Don't allow api_dotgline to change dot if dot is explicitly 
+	       set.  OTOH, simply querying dot doesn't count. */ 
+	    scrp->dot_inited = TRUE;  
+	    /* Indicate that DOT has been explicitly changed which means 
+	       that changes to DOT will be propogated upon return to vile */ 
+	    scrp->dot_changed = TRUE; 
 	} 
-	else { 
-	    use_ml_as_prompt = 0; 
-	    PUSHs(sv_2mortal(newSVpv(buf,0))); 
+	gimme = GIMME_V; 
+	if (gimme == G_SCALAR) { 
+	    XPUSHs(sv_2mortal(newSViv(line_no(curbp, DOT.l)))); 
 	} 
+	else if (gimme == G_ARRAY) { 
+	    XPUSHs(sv_2mortal(newSViv(line_no(curbp, DOT.l)))); 
+	    XPUSHs(sv_2mortal(newSViv(DOT.o))); 
+	} 
+ 
+ 
+ 
  
 # 
 # Various mlreply functions.  I lack sufficient imagination right now 
