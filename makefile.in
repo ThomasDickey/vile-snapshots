@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.151 1999/11/08 11:14:44 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.152 1999/11/11 02:04:17 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -43,7 +43,6 @@ LINT		= @LINT@
 
 x		= @PROG_EXT@
 
-X_CFLAGS	= @X_CFLAGS@
 X_LIBS		= @X_LIBS@
 
 SCREEN		= @SCREEN@
@@ -75,7 +74,7 @@ QUOTDEFS	= \
 		-DVILE_ICON=\"icons/$(ICON)$(ICON_SUFFIX)\" \
 		-DVILE_LIBDIR_PATH=\"'@VILE_LIBDIR_PATH@'\" \
 		-DVILE_STARTUP_PATH=\"'@VILE_STARTUP_PATH@'\"
-CPPFLAGS	= -I. -I$(srcdir) $(X_CFLAGS) \
+CPPFLAGS	= -I. -I$(srcdir) \
 		-DHAVE_CONFIG_H @CPPFLAGS@
 
 LDFLAGS		= @IMAKE_LOADFLAGS@

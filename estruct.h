@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.431 1999/11/09 22:23:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.432 1999/11/11 00:39:36 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2490,7 +2490,7 @@ extern void _exit (int code);
 # if HAVE_SELECT_H
 # include <select.h>
 # endif
-# if HAVE_SYS_SELECT_H
+# if USE_SYS_SELECT_H
 # include <sys/select.h>
 # endif
 #endif

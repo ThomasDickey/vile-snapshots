@@ -48,8 +48,6 @@ OS/2 are found at
 
 which is mirrored at
 	ftp://ftp.phred.org/pub/vile/
-	ftp://ftp.ci.uminho.pt/pub/mirrors/vile/
-	http://ciumix.ci.uminho.pt/mirrors/vile/
 
 Development patches are found at
 	ftp://ftp.clark.net/pub/dickey/vile/patches/
@@ -374,5 +372,5 @@ Nov, 1999
     dialog, better integration with the Windows Explorer and DevStudio.
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.76 1999/11/09 02:07:46 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.77 1999/11/11 11:10:37 tom Exp $
 -------------------------------

@@ -1,5 +1,5 @@
 .\" obligatory man page for vile
-.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.22 1999/11/06 20:12:44 tom Exp $
+.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.24 1999/11/11 11:14:24 tom Exp $
 .TH VILE 1
 .SH NAME
 vile, xvile \- \fBVI L\fRike \fBE\fRmacs
@@ -164,24 +164,33 @@ display certain portions of the manual
 page text in bold or italics as appropriate.
 See the help file for details.
 .PP
-Likewise, there is a
+Likewise, there are several language filters, e.g.,
 .I vile-c-filt
-program which can embolden, underline, or perform coloring on C program
-source code.   (And again, two versions of the source, in C and in "flex",
-are available.) Again, see the help file for more information.
+for C,
+which can embolden, underline, or perform coloring on program
+source code.
+Again, see the help file for more information.
 .PP
 The program
 .I vile-crypt
 can be used to encrypt/decrypt files using the same algorithm as
-.IR vile 's
-internal crypt algorithm.  The encryption key can be specified on the
+.IR microEmac 's
+internal crypt algorithm.
+This program, which uses public domain code written by
+by Dana Hoggatt, is no longer used in vile, though it is provided for
+compatibility.
+(Vile uses the
+.I crypt(3)
+function which is available on most Unix systems, and is able to read and
+write files compatibly with vi).
+The encryption key can be specified on the
 command line with "-k key", and "-m" can be used to treat the file as a
 mail message; in that case, only text after the first blank line will be
-crypted, leaving the headers intact and only affecting the body of the
+encrypted, leaving the headers intact and only affecting the body of the
 message.  Text to be encrypted can be specified as filenames on the command
 line, or provided as the standard input.  On systems with a getpass()
 library routine, the user will be prompted for the encryption key if it is
-not given on the command line.  To accomodate systems (such as linux) where
+not given on the command line.  To accommodate systems (such as linux) where
 the getpass() library routine is not interruptible from the keyboard,
 entering a crypt-key password which ends in ^C will cause the program to
 quit.  See the help file for more information on
