@@ -1,5 +1,5 @@
 
-README for vile, version 9.0
+README for vile, version 9.1
 -----------------------------
 
 vile is a text editor which is extremely compatible with vi in terms
@@ -371,6 +371,9 @@ Nov, 1999
     Further improvements have been made to winvile: drag/drop, file open
     dialog, better integration with the Windows Explorer and DevStudio.
 
+Jan, 2000
+    vile 9.1 is released.
+
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.77 1999/11/11 11:10:37 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.78 2000/01/15 19:34:55 tom Exp $
 -------------------------------

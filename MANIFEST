@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_0t
+MANIFEST for vile, version v9_1
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -107,7 +107,7 @@ trace.h                         development: trace to logfile
 ucrypt.c                        interface to Unix crypt(1)
 undo.c                          support for "undo"
 version.c                       version & usage messages
-vile-9.0.spec                   sample RPM script for vile
+vile-9.1.spec                   sample RPM script for vile
 vile.1                          man-page for VILE
 vile.hlp                        help-file
 vile.wmconfig                   windowmaker config file for vile
