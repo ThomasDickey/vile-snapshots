@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.261 2003/05/24 00:49:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.263 2003/06/18 22:14:57 tom Exp $
  *
  */
 
@@ -67,10 +67,12 @@ find_BufferList(void)
 BUFFER *
 find_bp(BUFFER *bp1)
 {
-    BUFFER *bp;
-    for_each_buffer(bp) {
-	if (bp == bp1)
-	    return bp;
+    if (bp1 != NULL) {
+	BUFFER *bp;
+	for_each_buffer(bp) {
+	    if (bp == bp1)
+		return bp;
+	}
     }
     return 0;
 }
@@ -248,13 +250,13 @@ zotwp(BUFFER *bp)
 
     /* Delete window instances... */
     for_each_window(wp) {
-	if (wp->w_bufp == bp && wheadp->w_wndp != NULL) {
+	if (wp->w_bufp == bp && valid_window(wheadp->w_wndp)) {
 	    dummy.w_wndp = wp->w_wndp;
 	    s = delwp(wp);
 	    wp = &dummy;
 	}
     }
-    if (obp != NULL)
+    if (valid_buffer(obp))
 	s = swbuffer(obp);
 
     returnCode(s);
@@ -339,7 +341,7 @@ TrackAlternate(BUFFER *newbp)
 
     if (!updating_list) {
 	MarkUnused(newbp);
-	if ((bp = find_latest()) != 0) {
+	if (valid_buffer(bp = find_latest())) {
 	    newbp->b_last_used = (bp->b_last_used + 1);
 	} else {		/* shouldn't happen... */
 	    newbp->b_last_used = 1;
@@ -353,7 +355,7 @@ hist_lookup(int c)
 {
     BUFFER *bp = find_b_hist(c);
 
-    return (bp != 0) ? bp->b_bname : 0;
+    return valid_buffer(bp) ? bp->b_bname : 0;
 }
 
 /* returns the buffer corresponding to the given number in the history */
@@ -383,8 +385,8 @@ static void
 run_buffer_hook(void)
 {
     if (!reading_msg_line
-	&& curbp != 0
-	&& curwp != 0
+	&& valid_buffer(curbp)
+	&& valid_window(curwp)
 	&& curwp->w_bufp == curbp) {
 	run_a_hook(&bufhook);
     }
@@ -588,7 +590,7 @@ imply_alt(char *fname, int copy, int lockfl)
     nfname[sizeof(nfname) - 1] = '\0';
     (void) lengthen_path(nfname);
     if (global_g_val(GMDIMPLYBUFF)
-	&& curbp != 0
+	&& valid_buffer(curbp)
 	&& curbp->b_fname != 0
 	&& !same_fname(nfname, curbp, FALSE)
 	&& !isInternalName(fname)) {
@@ -607,7 +609,7 @@ imply_alt(char *fname, int copy, int lockfl)
 	    bp->b_active = TRUE;
 	    ch_fname(bp, nfname);
 	    make_local_b_val(bp, MDNEWLINE);
-	    if (curwp != 0 && curwp->w_bufp == curbp) {
+	    if (valid_window(curwp) && curwp->w_bufp == curbp) {
 		top = line_no(curbp, curwp->w_line.l);
 		now = line_no(curbp, DOT.l);
 	    } else
@@ -883,7 +885,7 @@ prevbuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 	if ((bp = curbp) == 0)
 	    bp = bheadp;
 	stopatbp = bp;
-	while ((bp != 0) && (bp = bp->b_bufp) != 0) {
+	while (valid_buffer(bp) && (bp = bp->b_bufp) != 0) {
 	    /* get the next buffer in the list */
 	    /* if that one's invisible, skip it and try again */
 	    if (!b_is_invisible(bp))
@@ -917,9 +919,9 @@ make_current(BUFFER *nbp)
     if (!updating_list && global_g_val(GMDABUFF)) {
 	if (nbp != bheadp) {	/* remove nbp from the list */
 	    bp = bheadp;
-	    while (bp != 0 && bp->b_bufp != nbp)
+	    while (valid_buffer(bp) && bp->b_bufp != nbp)
 		bp = bp->b_bufp;
-	    if (bp != 0)
+	    if (valid_buffer(bp))
 		bp->b_bufp = nbp->b_bufp;
 
 	    /* put it at the head */
@@ -998,7 +1000,7 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 
     TRACE(("swbuffer(%s) nwnd=%d\n", bp->b_bname, bp->b_nwnd));
     if (curbp == bp
-	&& curwp != 0
+	&& valid_window(curwp)
 	&& DOT.l != 0
 	&& curwp->w_bufp == bp) {	/* no switching to be done */
 
@@ -1255,9 +1257,9 @@ killbuffer(int f, int n)
     MARK save_DOT;
     MARK save_TOP;
     int animated = (f
-		    && (curwp != 0)
+		    && valid_window(curwp)
 		    && (n > 1)
-		    && (curbp != 0)
+		    && valid_buffer(curbp)
 		    && (curbp == find_BufferList()));
     int special = animated && (DOT.o == 2);
 
@@ -1411,7 +1413,7 @@ zotbuf(BUFFER *bp)
 	   delete all such fake windows */
 	for_each_window(wp) {
 	    if (is_fake_window(wp)
-		&& wp->w_bufp == bp && wheadp->w_wndp != NULL) {
+		&& wp->w_bufp == bp && valid_window(wheadp->w_wndp)) {
 		dummy.w_wndp = wp->w_wndp;
 		(void) delwp(wp);
 		wp = &dummy;
@@ -1475,7 +1477,7 @@ renamebuffer(BUFFER *rbp, char *bufname)
     if (bp == curbp)
 	return (ABORT);		/* no change */
 
-    if (bp != 0)
+    if (valid_buffer(bp))
 	return FALSE;		/* name already in use */
 
 #if OPT_NAMEBST
@@ -1564,13 +1566,13 @@ sortlistbuffers(void)
 
     if (global_g_val(GMDABUFF)) {
 	c = 1;
-	while ((bp = find_nth_used(c++)) != 0) {
+	while (valid_buffer(bp = find_nth_used(c++))) {
 	    bp->b_relink = newhead;
 	    newhead = bp;
 	}
     } else {
 	c = countBuffers();
-	while ((bp = find_nth_created(c--)) != 0) {
+	while (valid_buffer(bp = find_nth_created(c--))) {
 	    bp->b_relink = newhead;
 	    newhead = bp;
 	}
@@ -1802,7 +1804,7 @@ update_scratch(const char *name, UpBuffFunc func)
 {
     BUFFER *bp = find_b_name(name);
 
-    if (bp != 0) {
+    if (valid_buffer(bp)) {
 	bp->b_upbuff = func;
 	b_set_obsolete(bp);
     }
@@ -2178,7 +2180,7 @@ make_bp(const char *fname, UINT flags)
     makename(bname, fname);
     unqname(bname);
 
-    if ((bp = bfind(bname, flags)) != 0)
+    if (valid_buffer(bp = bfind(bname, flags)))
 	ch_fname(bp, fname);
     return bp;
 }
@@ -2192,7 +2194,7 @@ make_ro_bp(const char *bname, UINT flags)
 {
     BUFFER *bp;
 
-    if ((bp = bfind(bname, flags)) != 0) {
+    if (valid_buffer(bp = bfind(bname, flags))) {
 	b_set_invisible(bp);
 	b_clr_scratch(bp);	/* make it nonvolatile */
 	bp->b_active = TRUE;

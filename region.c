@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.125 2003/05/25 23:34:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.126 2003/06/17 23:39:48 tom Exp $
  *
  */
 
@@ -878,7 +878,7 @@ getregion(REGION * rp)
     /*
      * If the buffer is completely empty, the region has to match.
      */
-    if (curbp != 0 && is_empty_buf(curbp)) {
+    if (valid_buffer(curbp) && is_empty_buf(curbp)) {
 	memset(rp, 0, sizeof(*rp));
 	rp->r_orig.l = rp->r_end.l = buf_head(curbp);
 	return TRUE;

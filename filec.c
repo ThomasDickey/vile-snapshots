@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.112 2003/02/16 17:22:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.113 2003/06/18 21:38:00 tom Exp $
  *
  */
 
@@ -858,7 +858,7 @@ makeMyList(BUFFER *bp, char *name)
 static void
 freeMyList(BUFFER *bp)
 {
-    if (bp != 0) {
+    if (valid_buffer(bp)) {
 	beginDisplay();
 	FreeAndNull(bp->b_index_list);
 	bp->b_index_size = 0;
@@ -1177,7 +1177,7 @@ mlreply_file(const char *prompt, TBUFF ** buffer, UINT flag, char *result)
     static TBUFF *last;
     char Reply[NFILEN];
     int (*complete) (DONE_ARGS) = no_completion;
-    int had_fname = (curbp != 0
+    int had_fname = (valid_buffer(curbp)
 		     && curbp->b_fname != 0
 		     && curbp->b_fname[0] != EOS);
     int do_prompt = (clexec || isnamedcmd || (flag & FILEC_PROMPT));

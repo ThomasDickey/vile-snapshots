@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.350 2003/05/26 15:19:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.351 2003/06/18 22:25:36 tom Exp $
  */
 
 #include "estruct.h"
@@ -619,7 +619,7 @@ set_files_to_edit(const char *prompt, int appflag)
 		}
 	    }
 	}
-	if (firstbp != 0)
+	if (find_bp(firstbp) != 0)
 	    status = bp2swbuffer(firstbp, FALSE, TRUE);
     }
     return status;
@@ -1419,7 +1419,7 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
     int s;
     int nline;
 #if OPT_ENCRYPT
-    int local_crypt = (bp != 0)
+    int local_crypt = valid_buffer(bp)
     && is_local_val(bp->b_values.bv, MDCRYPT);
 #endif
 

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.258 2003/05/24 00:49:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.259 2003/06/18 21:40:01 tom Exp $
  *
  */
 
@@ -1287,7 +1287,7 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 	    args->global = global_b_values.bv;
 	    args->local = ((global == TRUE)
 			   ? args->global
-			   : ((bp != 0)
+			   : (valid_buffer(bp)
 			      ? bp->b_values.bv
 			      : (struct VAL *)0));
 	    break;
@@ -1306,7 +1306,7 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 	    args->global = major_g_vals;
 	    args->local = ((global == TRUE)
 			   ? args->global
-			   : ((bp != 0)
+			   : (valid_buffer(bp)
 			      ? major_l_vals
 			      : (struct VAL *)0));
 	    break;
@@ -1382,7 +1382,7 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 		&& is_local_val(my_vals, k)) {
 		TRACE(("...found submode %s\n", b_valnames[k].name));
 		if (global == FALSE) {
-		    if (bp != 0
+		    if (valid_buffer(bp)
 			&& (bp->majr == 0
 			    || strcmp(bp->majr->name, p->name))) {
 			TRACE(("...not applicable\n"));
@@ -1390,7 +1390,7 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 		    }
 		    args->names = b_valnames + k;
 		    args->global = my_vals + k;
-		    args->local = ((bp != 0)
+		    args->local = (valid_buffer(bp)
 				   ? bp->b_values.bv + k
 				   : (struct VAL *) 0);
 		} else {
@@ -2864,7 +2864,7 @@ attach_mmode(BUFFER *bp, const char *name)
     int n;
     VALARGS args;
 
-    if (bp != 0) {
+    if (valid_buffer(bp)) {
 	if (bp->majr != 0
 	    && strcmp(bp->majr->name, name) != 0)
 	    (void) detach_mmode(bp, bp->majr->name);
@@ -2917,7 +2917,7 @@ detach_mmode(BUFFER *bp, const char *name)
     size_t n;
     MAJORMODE *mp;
 
-    if (bp != 0
+    if (valid_buffer(bp)
 	&& (mp = bp->majr) != 0
 	&& !strcmp(mp->name, name)) {
 	TRACE(("detach_mmode '%s', given '%s'\n", name, mp->name));

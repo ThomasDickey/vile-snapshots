@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.104 2002/11/02 00:24:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.105 2003/06/18 21:45:36 tom Exp $
  *
  */
 
@@ -1077,7 +1077,7 @@ getlinerow(void)
 void
 init_window(WINDOW *wp, BUFFER *bp)
 {
-    if (bp != 0) {
+    if (valid_buffer(bp)) {
 	wp->w_line.l = lforw(buf_head(bp));
 	wp->w_line.o = 0;
 	wp->w_dot.l = lforw(buf_head(bp));
@@ -1183,7 +1183,7 @@ push_fake_win(BUFFER *bp)
     WINDOW *oldwp = 0;
     WINDOW *wp;
 
-    if (bp != 0) {
+    if (valid_buffer(bp)) {
 	if ((wp = alloc_WINDOW()) != NULL) {
 	    oldwp = curwp;
 	    curwp = wp;
