@@ -1,0 +1,221 @@
+;                                                                               
+; this procedure implements a primitive ascii picture-drawing mode.  
+;		pgf, may '95
+
+; motions are accomplished with the usual h, j, k, and l keys
+; (the arrow keys do _not_ work here).  in addition, the u, i,
+; n, and m keys will perform diagonal motions.  look at your
+; keyboard to see why these were chosen.
+
+; normally, entering the motion characters (h, j, k, l, u, i, n, m)
+; will draw appropriate box outlines, using the -, |, /, and \ characters.
+
+; lines will be drawn instead with a specific character if the 'c' command
+; is given -- you will be prompted for a character.  this can be
+; cancelled, to revert lines to their "natural" rendition, with the
+; 'C' command.  for example, to draw with a '+' character, you would
+; use "c+" and when finished, would cancel with "C".
+
+; the ^T command will allow you to enter a string of text.  this
+; text will accumulate until ESC, CR, or NL is typed.
+
+; all other input will be inserted as-is, with no cursor movement.  so
+; the space bar can be used to "erase" previously drawn stuff.
+
+; space for the picture must be pre-allocated, with, for example:
+;		80i <ESC>yy24p
+;                                                                           
+; start this up with "run pic"
+; to bind it to a key instead, change it to a "NN store-macro", and
+; then bind "execute-macro NN" to the key you want.
+store-procedure replc
+	; never replace a newline 
+	~if &equ $char 0xA
+		~return
+	~endif
+
+	~if &seq %userchar &chr 0
+		replace-character %linechar
+	~else
+		replace-character %userchar
+	~endif
+~endm
+store-procedure pic
+	set-variable %keywas &chr 0
+	set-variable %userchar &chr 0
+	set-variable %linechar &chr 0
+	write-message "entering picture, end with ESC"
+	redraw-display
+	~while 1
+		set-variable %keywas &gtk
+
+		; was it ESC?  quit if so.
+		~if &seq %keywas &chr 0x1b
+			~break
+		~endif
+
+	; Rectangular Lines:  h, j, k, l
+		~if &seq %keywas h
+			~force backward-character
+			set-variable %linechar -
+			run replc
+			~goto redraw
+		~endif
+		~if &seq %keywas l
+			~force forward-character
+			set-variable %linechar -
+			run replc
+			~goto redraw
+		~endif
+		~if &seq %keywas j
+			~force down-line
+			set-variable %linechar |
+			run replc
+			~goto redraw
+		~endif
+		~if &seq %keywas k
+			~force up-line
+			set-variable %linechar |
+			run replc
+			~goto redraw
+		~endif
+
+	; Diagonal Lines:  u, i, n, m
+		~if &seq %keywas u
+			~force up-line
+			~force backward-character
+			set-variable %linechar \\
+			run replc
+			~goto redraw
+		~endif
+		~if &seq %keywas i
+			~force up-line
+			~force forward-character
+			set-variable %linechar /
+			run replc
+			~goto redraw
+		~endif
+		~if &seq %keywas n
+			~force down-line
+			~force backward-character
+			set-variable %linechar /
+			run replc
+			~goto redraw
+		~endif
+		~if &seq %keywas m
+			~force down-line
+			~force forward-character
+			set-variable %linechar \\
+			run replc
+			~goto redraw
+		~endif
+
+	; Rectangular Motions:  ^H, ^L, ^J, ^K
+		; was it ^H
+		~if &seq %keywas &chr 0x8
+			~force backward-character
+			~goto redraw
+		~endif
+		
+		; was it ^L
+		~if &seq %keywas &chr 0xC
+			~force forward-character
+			~goto redraw
+		~endif
+
+		; was it ^J
+		~if &seq %keywas &chr 0xA
+			~force down-line
+			~goto redraw
+		~endif
+
+		; was it ^K
+		~if &seq %keywas &chr 0xB
+			~force up-line
+			~goto redraw
+		~endif
+	; Diagonal Motions:  ^U, ^I, ^N, ^M
+		; was it ^U
+		~if &seq %keywas &chr 0x15
+			~force up-line
+			~force backward-character
+			~goto redraw
+		~endif
+		; was it ^I
+		~if &seq %keywas &chr 0x9	
+			~force up-line
+			~force forward-character
+			~goto redraw
+		~endif
+		; was it ^N
+		~if &seq %keywas &chr 0xE
+			~force down-line
+			~force backward-character
+			~goto redraw
+		~endif
+		; was it ^M
+		~if &seq %keywas &chr 0xD
+			~force down-line
+			~force forward-character
+			~goto redraw
+		~endif
+
+	; Text:  ^Ttext to be entered<CR>
+		; was it ^T
+		~if &seq %keywas &chr 0x14
+			write-message "entering text, end with CR"
+			redraw-display
+			set-variable %textkey 0
+			~while 1
+				set-variable %textkey &gtk
+				; was it CR (^M)
+				~if &seq %textkey &chr 0xD
+					~break
+				~endif
+				; was it LF (^J)
+				~if &seq %textkey &chr 0xA
+					~break
+				~endif
+				; was it ESC (^[)
+				~if &seq %textkey &chr 0x1B
+					~break
+				~endif
+				; was it BS (^H) or DEL?
+				~if &or &seq %textkey &chr 0x7f &seq %textkey &chr 0x8
+					~force backward-character
+					replace-character &chr 0x20
+					~force backward-character
+					set-variable %textkey &chr $char
+				~endif
+				replace-character %textkey
+				~force forward-character
+				redraw-display
+			~endwhile
+			write-message "text done, drawing lines again"
+			~goto redraw
+		~endif
+
+	; user-selected lines:  'c' to set the linechar, 'C' to cancel
+		~if &seq %keywas c
+			write-message "enter char to draw with: "
+			set-variable %userchar &gtk
+			write-message &cat "will draw with: " %userchar
+			~goto redraw
+		~endif
+		~if &seq %keywas C
+			write-message "will draw normal lines again"
+			set-variable %userchar &chr 0
+			~goto redraw
+		~endif
+
+
+	; Everything else is self inserting
+		replace-character %keywas
+
+	*redraw
+
+		redraw-display
+	~endwhile
+	write-message "picture mode done"
+~endm
+

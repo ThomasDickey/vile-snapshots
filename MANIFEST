@@ -1,0 +1,108 @@
+MANIFEST for vile, version v6_0
+--------------------------------------------------------------------------------
+MANIFEST                        this file
+CHANGES                         Change-log for VILE
+CHANGES.R3                      Vile 3.0 change-log
+CHANGES.R4                      Vile 4.0 change-log
+COPYING                         GPL copyright (for 'configure')
+INSTALL                         installation instructions for VILE
+README                          overview of VILE (read first)
+README.CFG                      configuration-instructions for VILE
+README.PC                       instructions for PC's (MS-DOS, etc.)
+aclocal.m4                      VILE-specific autoconf macros
+ansi.c                          ANSI terminal driver
+basic.c                         basic cursor-movement
+bind.c                          key-bindings & low-level command-completion
+borland.c                       BORLAND terminal driver
+buffer.c                        buffer-management
+buglist                         bug-list
+c-filt.c                        VILE attribute-filter for C files
+c-filt.flx                      FLEX filter for C programs
+chgdfunc.h                      prototypes for mode-functions with side-effects
+cmdtbl                          used by 'mktbls' to generate VILE's command-tables
+config_h.in                     template for config.h
+configure.in                    used by 'autoconf' to generate 'configure'
+crypt.c                         encryption (from uEmacs)
+csrch.c                         current-line character-scanning commands
+descrip.mms                     VAX/VMS MMS build-script
+dirstuff.h                      interfaces for UNIX-like directory functions
+display.c                       message & screen formatting & display
+djhandl.c                       CTL/C & interrupt handling for DJGCC
+dumbterm.c                      DUMB terminal driver
+edef.h                          global variable definitions
+epath.h                         external-pathname definitions
+estruct.h                       master include/struct definitions
+eval.c                          expression-evaluation
+exec.c                          command (':', macros) execution
+externs.c                       external data (via edef.h)
+fences.c                        functions for parenthesis/ifdef balancing
+file.c                          read/write/lookup disk files (high-level)
+filec.c                         filename-completion functions
+fileio.c                        low-level file I/O functions
+finderr.c                       error-finder
+glob.c                          globbing (wildcard & environment-variable substitution)
+globals.c                       ed/vi/ex style global commands
+gppconio.c                      patched console I/O support for DJGCC
+history.c                       command-history
+ibmpc.c                         IBM PC terminal driver (direct I/O)
+input.c                         various input-routines
+insert.c                        functions for character-insertion
+install.sh                      install-script, needed for configure
+isearch.c                       incremental-search commands
+itbuff.c                        support functions for wide-character strings
+lckfiles.c                      locked-files support
+line.c                          line-management functions
+macros.doc                      documentation for VILE macros
+main.c                          main program of VILE
+makefile.blc                    makefile for Win32 with Borland C++
+makefile.djg                    makefile for DJGCC
+makefile.icc                    makefile for C Set++ 2.x (OS/2)
+makefile.in                     used by 'configure' to generate a makefile
+makefile.tbc                    makefile for TurboC (MS-DOS)
+makefile.wat                    makefile for Watcom (MS-DOS) with wmake
+makefile.wnt                    makefile for Win32 with Microsoft Visual C++
+manfilt.c                       VILE attribute-filter for man-page (nroff-output)
+manfilt.pl                      Perl filter for man-pages
+manpage.rc                      macros for man-page filtering/display
+map.c                           map and map! commands
+mkdirs.sh                       script to make directory-hierarchy
+mktbls.c                        utility for constructing VILE's command & mode tables
+modes.c                         mode-command support
+modetbl                         used by 'mktbls' to generate mode tables
+msgs.c                          pop-up message support
+npopen.c                        pipe-command support
+ntconio.c                       Win32 console terminal driver
+oneliner.c                      commands that operate upon single lines
+opers.c                         operator-commands (that use motions)
+os2pipe.c                       OS/2 pipe support
+os2vio.c                        OS/2 video terminal driver
+patchlev.h                      patch-level
+path.c                          functions that manipulate pathnames
+pictmode.rc                     macros to support "picture-mode" editing
+proto.h                         function prototypes
+random.c                        miscellaneous functions
+regexp.c                        regular expression functions
+region.c                        region-manipulation
+revlist                         revision-list for VILE
+search.c                        functions for search-commands
+select.c                        selection-handling functions
+spawn.c                         functions for spawning subprocesses
+tags.c                          support for vi-style "tags"
+tbuff.c                         temporary-buffer management functions
+tcap.c                          TERMCAP terminal driver
+termio.c                        low-level terminal I/O support
+tipc.c                          TI-PC terminal driver
+undo.c                          support for "undo"
+version.c                       version & usage messages
+vile.1                          man-page for VILE
+vile.hlp                        help-file
+vms2unix.c                      VMS/UNIX compatibility support functions
+vms_link.opt                    VAX/VMS linker script
+vmsbuild.com                    VAX/VMS DCL build script
+vmspipe.c                       pipe-filter support for VMS
+vmsshare.opt                    VAX/VMS linker script to use shared-libraries
+vmsvt.c                         VMS terminal driver
+window.c                        window-management functions
+word.c                          commands that operate upon words or paragraphs
+wordmov.c                       cursor-movement commands (e.g., word, spaces)
+x11.c                           X11 (Xt, Motif or Openlook) terminal driver

@@ -1,0 +1,32 @@
+;;
+;; Macros for obtaining manual pages and then attributing them.
+;;
+;; Author: Kevin Buettner
+;;
+;; $Header: /users/source/archives/vile.vcs/RCS/manpage.rc,v 1.2 1994/10/27 14:28:04 pgf Exp $
+;;
+
+29 store-macro
+	set-variable %manpage @"man page? "
+	~if &or &seq %manpage "ERROR" & seq %manpage ""
+		~return
+	~endif
+	set-variable %manpagebuf &cat "<" &cat %manpage ">"
+	set terse
+	~force select-buffer %manpagebuf
+	~if &not $status
+		edit-file &cat "!man " &cat %manpage " | vile-manfilt"
+		~force rename-buffer %manpagebuf
+		~force error-buffer %manpagebuf
+		write-message "[Attaching bold and underline attributes...]"
+		goto-beginning-of-file
+		setl noview
+		attribute-cntl_a-sequences-til end-of-file
+		unmark-buffer
+		setl view
+		goto-beginning-of-file
+		write-message "[Done formatting manual page.]"
+	~endif
+	set noterse
+~endm
+bind-key execute-macro-29 ^X-m

@@ -1,0 +1,587 @@
+
+
+Programmed Macros in vile
+==========================
+
+	[ The following documentation is copied almost verbatim from
+	chapter 13 of "MicroEMACS Full Screen Text Editor Reference Manual,
+	Version 3.10 March 19, 1989" The copyright for that document is
+	"(C)opyright 1988, 1989 by Brian Straight and Daniel M. Lawrence". 
+	I have done a global substitute of "vile" for "MicroEMACS", and
+	adjusted the document in various other small ways to make it match
+	vile's current functionality.  (Paul Fox, 4/94) ]
+
+	[ Some more examples of vile macros can be found in the file
+	vile.hlp.  ]
+
+	Macros are programs that are used to customize the editor and to
+	perform complicated editing tasks.  They may be stored in files or
+	buffers and may be executed using an appropriate command, or bound
+	to a particular keystroke.  The execute-macro-<n> commands cause
+	the macro, numbered from 1 to 40, to be executed.  The execute-file
+	command allows you to execute a macro stored in a disk file, and
+	the execute-buffer command allows you to execute a macro stored in
+	a buffer.  Macros are stored for easy execution by executing files
+	that contain the store-macro command.
+
+	If you need more than 40 macros, named macros, called procedures,
+	can be used.  The store-procedure command takes a string argument
+	which is the name of a procedure to store.  These procedures then
+	can be executed with the run command.  Also, giving the name of a
+	stored procedure within another macro will execute that named
+	procedure as if it had been called up with the run command.
+
+	There are many different aspects to this macro language.  Editor
+	commands are the various commands that manipulate text, buffers,
+	windows, et cetera, within the editor.  Directives are commands
+	which control what lines get executed within a macro.  Also there
+	are various types of variables.  Environmental variables both
+	control and report on different aspects of the editor.  User
+	variables hold string values which may be changed and inspected. 
+	Buffer variables allow text to be placed into variables. 
+	Interactive variable allow the program to prompt the user for
+	information.  Functions can be used to manipulate all these
+	variables.
+
+
+
+Comments
+--------
+	Any line beginning with a semi-colon (;) or double-quote (")
+	character is ignored.  The semi-colon is inherited from MicroEMACS,
+	the double-quote is for vi compatibility.
+
+Constants
+---------
+	All constants and variable contents are stored as strings of
+	characters.  Numbers are stored digit by digit as characters.  This
+	allows the variables to be "typeless", not having different
+	variables types be legal in different contexts.  This has the
+	disadvantage of forcing the user to be more careful about the
+	context of the statements variables are placed in, but in turn
+	gives them more flexibility in where they can place variables. 
+	Needless to say, this also allows the expression evaluator to be
+	both concise and quick.
+
+	Wherever statements need to have arguments, it is legal to place
+	constants.  A constant is a double quote character, followed by a
+	string of characters, and terminated by another double quote
+	character.  To represent various special characters within a
+	constant, the backslash (\) character is used.  The character
+	following the backslash is interpreted according to the following
+	table:
+
+	Sequence        Result
+	\n              ^J      newline character
+	\r              ^M      carriage return
+	\\              \       backslash
+	\b              ^H      backspace
+	\f              ^L      formfeed
+	\t              ^I      tab
+	\a              ^G      bell
+	\s                      space
+	\"              "       quote
+	\xNN		0xNN	the character in hex
+	\NNN		NNN	the character in octal
+
+	Any character not in the table which follows a backslash will be
+	passed unmodified.  This action is similar to the ^V
+	quote-character command available from the keyboard.
+
+	The double quotes around constants are not needed if the constant
+	contains no internal white space and it also does not happen to
+	meet the rules for any other commands, directives, variables, or
+	functions.  This is reasonably useful for numeric constants.
+
+
+Variables
+---------
+	Variables can be used to return values within expressions, as
+	repeat counts to editing commands, or as text to be inserted into
+	buffers and messages.  The value of these variables is set using
+	the set-variable command.  The shorter form, "setv", may also
+	always be used.  For example, to set the current column position to
+	64, the following macro line would be used:
+
+		set-variable curcol 64
+
+	or to have the contents of %name inserted at the point in the
+	current buffer, the command to use would be:
+
+		insert-string %name
+
+
+
+Environmental Variables
+-----------------------
+	These variables are used to change different aspects of the way the
+	editor works.  Also they will return the current settings if used
+	as part of an expression.  All environmental variable names begin
+	with a dollar sign ($) and are in lower case.
+
+	$abufname	[READ ONLY] Name of the "other" buffer, the one most
+			recently visited.  This is what you would get if you
+			typed '#' at a prompt.
+
+	$buffer-hook	Name of procedure to run when switching to a buffer.
+
+	$cbufname	Name of the current buffer.
+
+	$cd-hook	Name of procedure to run when changing directories.
+
+	$cfilname	File name of the current buffer.
+
+	$char		Ascii value of the character currently at the
+			point.
+
+	$curcol 	Current column of point in current buffer.
+
+	$curline	Current line of point in current buffer.
+
+	$cwd		[READ ONLY] Current directory.
+
+	$cwline 	Current display line in current window.
+
+	$debug		Flag to trigger macro debugging.
+
+	$directory	Controls location of temp files.  unused.
+
+	$discmd 	Flag to disable the echoing of messages on the
+			command line.
+
+	$disinp 	Flag to disable the echoing of characters
+			during command line input.
+
+	$exit-hook	Name of procedure to run when quitting.
+
+	$flicker	Flicker Flag set to TRUE if IBM CGA set to
+			FALSE for most others.
+
+	$font		under X11, contains the name of the current font.
+
+	$iconname	under X11, contains current icon name.
+
+	$identifier	the name of the current "identifier-like" word under
+			the cursor.
+
+	$kill		This contains the first 127 characters currently
+			in the kill buffer and can be used to set the
+			contents of the kill buffer.
+
+	$lastkey	[READ ONLY] Last keyboard character typed.
+
+	$line		The current line in the current buffer can be
+			retrieved and set with this environment variable.
+
+	$llength	[READ ONLY] Returns the number of characters in
+			the current line.
+
+	$match		[READ ONLY] Last string matched in a search.
+
+	$mode		[READ ONLY] "insert" or "command" mode.
+
+	$ocwd		[READ ONLY] Previous directory.
+
+	$os		[READ ONLY] Operating system for which was vile was
+			built.  Currently "unix", "dos", "vms", "os/2".
+
+	$pagelen	Number of screen lines used currently.
+
+	$pagewid	Number of screen columns used currently.
+
+	$palette	string used to control the color mappings in some
+			versions.  The usual form consists of digits setting
+			the red, green, and blue levels.
+
+	$pathname	[READ ONLY] current "path-like" word, under the cursor.
+
+	$pending	[READ ONLY] Flag to determine if there are user
+			keystrokes waiting to be processed.
+
+	$progname	[READ ONLY] Contains the string "vile" or "xvile",
+			as appropriate.
+
+	$qidentifier	the name of the current "qualified-identifier-like"
+			word under the cursor, useful for C++ programmers.
+
+	$replace	Current default replace string.
+
+	$search 	Current default search string.
+
+	$seed		Integer seed of the random number generator.
+
+	$shell		Name of the shell program for spawned commands.
+
+	$sres		Current  screen resolution on a PC.  Values:
+			  "2",	   "25",    "80x25",
+			  "4",	   "43",    "80x43",
+			  "5",	   "50",    "80x50",
+			  "80x14", "80x28",
+			  "40x12", "40x21", "40x25", "40x28", "40x50"
+
+	$status 	[READ  ONLY] Status of the success of the last
+			command (TRUE or FALSE).  This is usually used with
+			~force to check on the success of a search, or a
+			file operation.
+
+	$title		Under X11, the current window title.
+
+	$tpause 	On a PC, time to pause for paren matching.
+
+	$version	[READ  ONLY] Contains  the  current  vile version number.
+
+	$wline		Number of display lines in current window.
+
+	$word		[READ ONLY] The current "word" under the cursor.
+
+	$write-hook	Name of procedure to run before a file is written
+
+
+User variables
+--------------
+	User variables allow you, the user, to store strings and manipulate
+	them.  These strings can be pieces of text, numbers (in text form),
+	or the logical values TRUE and FALSE.  These variables can be
+	combined, tested, inserted into buffers, and otherwise used to
+	control the way your macros execute.  All users variable names must
+	begin with a percent sign (%) and may contain any printing
+	characters.
+
+
+Interactive variables
+---------------------
+	Interactive variables are actually a method to prompt the user for
+	a string.  This is done by using an at sign (@) followed either
+	with a quoted string, or a variable containing a string.  The
+	string is then placed on the bottom line, and the editor waits for
+	the user to type in a string.  Then the string typed in by the
+	user is returned as the value of the interactive variable.  For
+	example:
+
+		set-variable %quest "What file? "
+		find-file @%quest
+
+	will ask the user for a file name, and then attempt to find it. 
+	Note also that complex expressions can be built up with these
+	operators, such as:
+
+	@&cat &cat "File to decode[" %default "]: "
+
+		which prompts the user with the concatenated string.
+
+
+Functions
+---------
+	Functions can be used to manipulate variables in various ways. 
+	Functions can have one, two, or three arguments.  These arguments
+	will always be placed after the function on the current command
+	line.  For example, if we wanted to increase the current fill
+	column by two, using the set-variable command, we would write:
+
+		setv $fillcol &add $fillcol 2
+		 \      \      \      \     \____second operand
+		  \      \      \      \_________first operand
+		   \      \      \_______________function to execute
+		    \      \_____________________variable to set
+		     \___________________________set-variable command
+
+	Function names always begin with the ampersand (&) character, and
+	are only significant to the first three characters after the
+	ampersand.  Functions will normally expect one of three types of
+	arguments, and will automatically convert types when needed.
+
+	<num>         an ascii string of digits which is interpreted
+		      as a numeric value.  Any string which does not
+		      start with a digit or a minus sign (-) will be
+		      considered zero.
+
+
+	<str>         An  arbitrary  string  of  characters.  At the
+		      moment, strings are limited to  128 characters
+		      in length.
+
+	<log>         A  logical  value  consisting  of  the  string
+		      "TRUE" or "FALSE".   Numeric strings will also
+		      evaluate to "FALSE" if they are equal to zero,
+		      and "TRUE" if they  are  non-zero.   Arbitrary
+		      text strings will have the value of "FALSE".
+
+	A list of the currently available functions follows: Functions are
+	always used in lower case, the uppercase letters in the function
+	table are the short form of the function (i.e.  &div for &divide).
+
+	Numeric Functions:      (returns <num>)
+
+	&ADD            <num> <num>     Add two numbers
+	&SUB            <num> <num>     Subtract the second number from the
+					first
+	&TIMes          <num> <num>     Multiply two numbers
+	&DIVide         <num> <num>     Divide the first number by the second
+					giving an integer result
+	&MOD            <num> <num>     Return the reminder of dividing the
+					first number by the second
+	&NEGate         <neg>           Multiply the arg by -1
+	&LENgth         <str>           Returns length of string
+	&SINdex         <str1> <str2>   Finds the position of <str2> within
+					<str1>. Returns zero if not found.
+	&ASCii          <str>           Return the ascii code of the first
+					character in <str>
+	&RND            <num>           Returns a random integer between 1 and
+					<num>
+	&ABS            <num>           Returns the absolute value of <num>
+
+	String manipulation functions:  (returns <str>)
+
+	&CAT            <str> <str>     Concatenate the two strings to form
+					one
+	&LEFt           <str> <num>     return the <num> leftmost characters
+					from <str>
+	&RIGht          <str> <num>     return the <num> rightmost characters
+					from <str>
+	&MID            <str> <num1> <num2>
+					Starting from <num1> position in <str>,
+					return <num2> characters.
+	&UPPer          <str>           Uppercase <str>
+	&LOWer          <str>           lowercase <str>
+	&CHR            <num>           return a string with the character
+					represented by ascii code <num>
+	&GTK                            return a string containing a single
+					keystroke from the user
+	&ENV            <str>           If the operating system is capable,
+					this returns the environment string
+	associated
+					with <str>
+	&BIND           <str>           return the function name bound to the
+					keystroke <str>
+
+	Logical Testing functions:      (returns <log>)
+
+	&NOT            <log>           Return the opposite logical value
+	&AND            <log1> <log2>   Returns TRUE if BOTH logical arguments
+					are TRUE
+	&OR             <log1> <log2>   Returns TRUE if either argument
+					is TRUE
+	&EQUal          <num> <num>     If <num> and <num> are numerically
+					equal, return TRUE
+	&LESs           <num1> <num2>   If <num1> is less than <num2>, return
+					TRUE.
+	&GREater        <num1> <num2>   If <num1> is greater than, or equal to
+					<num2>, return TRUE.
+	&SEQual         <str1> <str2>   If the two strings are the same,
+					return TRUE.
+	&SLEss          <str1> <str2>   If <str1> is less alphabetically than
+					<str2>, return TRUE.
+	&SGReater       <str1> <str2>   If <str1> is alphabetically greater
+					than or equal to <str2>, return TRUE.
+	&RD          	<str>           Is the named file <str> readable?
+	&WR          	<str>           Is the named file <str> writable?
+
+	Special Functions:
+
+	&GLObal		<modename>	retrieves global mode setting
+	&LOCal		<modename>	retrieves local mode setting
+
+	&INDirect       <str>           Evaluate <str> as a variable.
+
+	This last function deserves more explanation.  The &IND function
+	evaluates its argument, takes the resulting string, and then uses
+	it as a variable name.  For example, given the following code
+	sequence:
+
+		; set up reference table
+
+		setv %one        "elephant"
+		setv %two        "giraffe"
+		setv %three      "donkey"
+
+		setv %index "two"
+		insert-string &ind %index
+
+	the string "giraffe" would have been inserted at the point in the
+	current buffer.  This indirection can be safely nested up to about
+	10 levels.
+
+
+Directives
+----------
+	Directives are commands which only operate within an executing
+	macro, i.e.  they do not make sense as a single command.  As such,
+	they cannot be called up singly or bound to keystroke.  Used within
+	macros, they control what lines are executed and in what order.
+
+	Directives always start with the tilde (~) character and must be
+	the first thing placed on a line.  Directives executed
+	interactively (via the execute-command- line command) will be
+	ignored.
+
+
+    ~ENDM Directive
+    ---------------
+	This directive is used to terminate a macro being stored.  For
+	example, if a file is being executed contains the text:
+
+		;       Read in a file in view mode, and make the window red
+		;	(color is only settable on some platforms, e.g. DOS)
+
+		26      store-macro
+			find-file @"File to view: "
+			set-mode "view"
+			set-mode bcolor "red"
+		~endm
+
+		write-message "[Consult macro has been loaded]"
+
+	only the lines between the store-macro command and the ~ENDM
+	directive are stored in macro 26.  Both numbered macros and named
+	procedures (via the store-procedure command) should be terminated
+	with this directive.
+
+
+    ~FORCE Directive
+    ----------------
+	When a macro is executed, if any command fails, the macro is
+	terminated at that point.  If a line is preceded by a ~FORCE
+	directive, execution continues whether the command succeeds or not. 
+	For example:
+
+		set-variable %quest "What file? "
+		find-file @%quest
+		~force set-mode bcolor "red"
+		goto-beginning-of-file	
+		insert-string "this is a new first line in that file\n"
+
+	will function correctly even if this version of the editor does not
+	support color.  (Currently, only the DOS version supports color.)
+
+
+    ~IF, ~ELSE, and ~ENDIF Directives
+    ---------------------------------
+	This directive allows statements to be executed only if a condition
+	specified in the directive is met.  Every line following the ~IF
+	directive, until the first ~ELSE or ~ENDIF directive, is only
+	executed if the expression following the ~IF directive evaluates to
+	a TRUE value.  For example, the following macro segment creates the
+	portion of a text file automatically.
+
+	    ~if &sequal %curplace "timespace vortex"
+		    insert-string "First, rematerialize\n"
+	    ~endif
+	    ~if &sequal %planet "earth"     ;If we have landed on earth...
+		~if &sequal %time "late 20th century"  ;and we are then
+			write-message "Contact U.N.I.T."
+		~else
+			insert-string "Investigate the situation....\n"
+			insert-string "(SAY 'stay here Sara')\n"
+		~endif
+	    ~else
+		setv %conditions @"Atmosphere conditions outside? "
+		~if &sequal %conditions "safe"
+			insert-string &cat "Go outside......" "\n"
+			insert-string "lock the door\n"
+		~else
+			insert-string "Dematerialize..try somewhen else"
+			newline
+		~endif
+	    ~endif
+
+
+    ~GOTO Directive
+    ---------------
+	Flow can be controlled within a macro using the ~GOTO directive. 
+	It takes as an argument a label.  A label consists of a line
+	starting with an asterisk (*) and then an alphanumeric label.  Only
+	labels in the currently executing macro can be jumped to, and
+	trying to jump to a non-existing label terminates execution of a
+	macro.  For example..
+
+		;Create a block of DATA statements for a BASIC program
+
+			insert-string "1000 DATA "
+			setv %linenum 1000
+
+		*nxtin
+			update-screen           ;make sure we see the changes
+			setv %data @"Next number: "
+			~if &equal %data 0
+				~goto finish
+			~endif
+
+			~if &greater $curcol 60
+				2 delete-previous-character
+				newline
+				setv %linenum &add %linenum 10
+				insert-string &cat %linenum " DATA "
+			~endif
+
+			insert-string &cat %data ", "
+			~goto nxtin
+
+		*finish
+
+			2 delete-previous-character
+			newline
+
+
+    ~WHILE and ~ENDWHILE Directives
+    -------------------------------
+	This directive allows you to set up repetitive tasks easily and
+	efficiently.  If a group of statements need to be executed while a
+	certain condition is true, enclose them with a while loop.  For
+	example,
+
+		~while &less $curcol 70
+			insert-string &cat &cat "[" <stuff "]"
+		~endwhile
+
+	places items from buffer "stuff" in the current line until the
+	cursor is at or past column 70.  While loops may be nested and can
+	contain and be the targets of ~GOTOs with no ill effects.  Using a
+	while loop to enclose a repeated task will run much faster than the
+	corresponding construct using ~IFs.
+
+
+    ~BREAK Directive
+    ----------------
+	This directive allows the user to abort out of the currently most
+	inner while loop, regardless of the condition.  It is often used to
+	abort processing for error conditions.  For example:
+
+	;       Read in files and substitute "begining" with "beginning"
+
+		setv %filename <list
+		~while &not &seq %filename "<end>"
+			~force  find-file %filename
+			~if &seq $status FALSE
+				write-message "[File read error]"
+				~break
+			~endif
+			beginning-of-file
+			replace-string "begining" "beginning"
+			save-file
+			setv %filename <list
+		~endwhile
+
+	This while loop will process files until the list is exhausted or
+	there is an error while reading a file.
+
+
+    ~RETURN Directive
+    -----------------
+	The ~RETURN Directive causes the current macro to exit, either
+	returning to the caller (if any) or to interactive mode.  For
+	example:
+
+	;       Check the monitor type and setv %mtyp
+
+		~if &sres "CGA"
+			setv %mtyp 1
+		~else
+			setv %mtyp 2
+			~return
+		~endif
+
+		insert-string "You are on an old machine!\n"
+
+-----------------------------------
+  $Header: /users/source/archives/vile.vcs/RCS/macros.doc,v 1.11 1995/11/08 14:38:59 pgf Exp $
+-----------------------------------

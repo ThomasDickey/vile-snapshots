@@ -1,0 +1,78 @@
+
+Running vile on a PC...
+-------------------------------
+
+vile can be built for DOS, OS/2, Windows/NT or Windows/95
+
+DOS information
+----------------
+under DOS, you're best off using a DOS extender of some kind.  either
+the Watcom or DJGPP compiler suites may be used -- DJGPP gives you a
+faster executable, but the Watcom compiler is about 10 times faster.
+you can use Turbo or Borland C as well, but neither of those support an
+extender, so you end up only being able to edit files that fit in memory.
+if you do this, be sure to '#define SMALLER 1' in estruct.h, to save as
+much code space as possible.
+
+if you build with Watcom, you'll need to have both vile.exe and dos4gw.exe
+in your path to run vile.
+
+if you build with DJGPP, you'll need to have both vile.exe and go32.exe
+in your path to run vile.
+
+let me know about bugs/oddities when you use vile on a PC -- i probably don't
+use it as much as you do.
+
+(it's quite possible that the DOS makefiles are a little out of date --
+refer to the UNIX makefile (makefile.in) for correct current list of source
+and object files.)
+
+oh -- there are three possible screen drivers in the source distribution
+that should work, with varying degrees of success:
+	borland.c (need #define BORLAND in estruct.h or makefile): this
+		uses the "conio" routines that come with Turbo C or Borland
+		C++.  Again, the trouble with this under DOS is that the
+		Borland compilers don't produce a dos-extender 32 bit app,
+		so you're _severely_ limited as to filesize.  but the DJGPP
+		libraries emulate the borland screen i/o routines, so this
+		screen driver is used there as well.
+
+	ibmpc.c (need #define IBMPC in estruct.h or makefile): goes
+		straight to the video controller and the screen, should
+		support most popular video modes on CGA/EGA/VGA cards. 
+		this is fine under regular DOS, but starts causing problems
+		in a Windows DOS-box, due to its direct video accesses.
+
+	ansi.c (need #define ANSI in estruct.h or makefile):  uses ANSI.SYS.
+		this may be more portable than ibmpc.c, since it relies on
+		the ansi driver for its cursor/scrolling/color services. 
+		if you can change the resolution of your screen (to 43 or
+		50 line mode) with your ansi driver, just use the
+		"screen-rows" and/or "screen-columns" vile commands to make
+		its idea of the size match your physical screen, and
+		you'll be all set.  (i've only tested it with a free/public
+		replacement program called NNANSI.  i got my copy from a
+		simtel mirror.  i can probably find you a copy if you need
+		it.)
+
+
+OS/2 information:
+-----------------
+
+i believe vile can be built with the Borland compiler, or IBM CSET. be
+aware that vile is NOT a PM program.  the two builds use the borland.c
+or os2vio.c screen drivers, respectively.
+
+WIN32 information (Windows NT and 95):
+--------------------------------------
+either Visual C++ or the Borland compiler can be used. see the makefiles
+for details.  the screen driver is ntconio.c -- this is a console-mode
+only port.
+
+
+--------------------------------------------------------
+paul fox, pgf@foxharp.boston.ma.us (home)
+
+------------------------
+$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.1 1996/03/29 16:15:14 pgf Exp $
+------------------------

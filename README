@@ -1,0 +1,305 @@
+
+README for vile, version 6.0
+-----------------------------
+
+vile is a text editor which is extremely compatible with vi in terms
+of "finger feel".  in addition, it has extended capabilities in many areas,
+notably multi-file editing and viewing, key rebinding, and real X window
+system support.
+
+the authors of vile are Paul Fox, Tom Dickey, and Kevin Buettner.
+
+many patches have been contributed by a lot of users.  we thank them.
+
+more recent additions to this README appear near the bottom.  that is, most
+of the newest stuff is at the end, not up here where you are.
+
+visit
+	ftp://id.wing.net/pub/pgf/vile
+to be sure it's still the latest.
+
+impatient?  just type "./configure; make", and get a cup of coffee, decaf
+if necessary.  
+
+want X11 support?  you'd better look at README.CFG, although 
+"./configure --with-screen=x11"; make" may well do what you want.
+
+if you like vile, and wish to be informed of new releases, let me
+know -- i maintain a mailing list for that purpose.  don't worry -- the
+volume won't fill your inbox.
+
+paul fox, pgf@foxharp.boston.ma.us
+
+kevin buettner can be reached at kev@primenet.com
+tom dickey can be reached at dickey@clark.net
+
+------------------------------------------------------
+
+original README, from February, 1992:
+
+VILE -- VI Like Emacs: a vi workalike put together from Micro-Emacs by Paul Fox
+-------------------------------------------------------------------------------
+
+	This editor grew out of a frustration that although lots of
+	eager programmers have tackled rewrites of Emacs, with new and
+	better features (not to mention free source), I've not seen
+	anything similar done with the Second True Editor.  (The
+	First, of course, being /bin/ed)
+
+	So I took a copy of MicroEmacs 3.9 (which I've since
+	discovered was out of date, unfortunately) and turned it
+	into a vi "feel-alike".  It retains the multiple
+	buffer/multiple window features of uemacs, but the
+	"finger-feel", if you will, is very much that of vi.  It is
+	definitely not a clone, in that some substantial stuff is
+	missing, and the screen doesn't look quite the same.  But what
+	matters most is that one's "muscle memory" does the right thing
+	to the text in front of you, and that is what vile tries to do
+	for vi users.   THIS IS NOT A "CLONE"!  But it feels good.
+	(Put another way, the things that you tend to type over and
+	over probably work -- things done less frequently, like configuring
+	a .exrc file, are quite different.)
+
+	This is the second really public release of vile.  Users of
+	previous versions will hopefully find many new features -- see the
+	CHANGES file for details.
+
+	The collective developers of Micro-Emacs should be
+	complimented that the changes were as easy as they were.  The
+	code was pretty clean and well designed before I started on
+	it.  I'm not sure that the same can be said anymore... 
+
+	The major benefits over standard vi include:
+		- multiple files open at once
+		- multiple windows on the screen
+		- a larger set of operator commands
+		- the possibility of porting to your favorite micro.
+		- "next error" cursor positioning after compilation
+	      [	- infinite undo  -pgf 7/93 ]
+	Of course, it _may_ lack some of vi's reliability. :-)
+	[but not much -- it's _very_ stable these days. -pgf 1/95]
+
+	Take a look at vile.hlp for more information about features
+	and differences. 
+
+	In general, I suspect that the quality of the code is roughly
+	on a par with MicroEmacs.  I've been using vile regularly under
+	both SunOS and 386 UNIX for almost two years [more like 5 years
+	now, on a lot more platforms than that -pgf 12/94], with no major
+	problems (that haven't been fixed).  Version three was built and
+	used by many others on the net, and their feedback was invaluable. 
+	I think all of the reported bugs have been fixed, and hopefully not
+	too many new ones introduced.
+
+	I have not run this much on a small system, and not much at all on
+	DOS.  Pete Rusczinski has done an excellent job of porting
+	version three to DOS -- his changes are now incorporated here (as
+	of version 3.20), but since in general the DOS version has been
+	less well exercised than the UNIX version, it probably harbors
+	more bugs.
+
+	Hope you enjoy -- 
+
+	Paul G. Fox	June, 1991, and February, 1992
+
+p.s. By the way, I'm _not_ the same Paul Fox who wrote Crisp, the Brief
+	work-alike.
+
+
+-----------------------
+
+September, 1992
+
+I don't have much to add to the original README -- vile has gotten a lot
+better since I first released it, thanks to a lot of users and a lot of
+bug reports.  It compiles and runs without modification on most major UNIXes,
+and under DOS.  It offers vi finger feel, and most (not all) of its features.
+I hope it fills someone's need out there.  -pgf 9/92
+
+(Special thanks to Dave Lemke and Pete Rucszinski, for X and DOS support,
+and (in no particular order) to Eric Krohn, Willem Kasdorp, J.C.Webber,
+Warren Vik, Julia Harper, Chris Sherman, Thomas Woo, Yanek Martinson, Miura
+Masahiro, Tom Dickey for lots of bug reports and suggestions and patience.)
+
+------------------------------
+
+April, 1993
+
+Well, here's an update on vile.  The first release was a long time
+ago (a couple of years?).  Tom Dickey has been contributing a _whole_ lot
+of good changes.  vile now runs on VMS, and is much more stable on DOS
+thanks to Tom.  For me, vile is becoming an "old" program -- I first worked
+on it in 1989 sometime.  So it's been fun to have someone contributing
+fixes so energetically.  Thanks Tom.
+
+One thing that's changed since I first started vile is that "lots of eager
+programmers" have now tackled rewrites of vi.  There are several good work-
+alikes out there: elvis (the "king" :-), xvi, vim, stevie, and recent
+versions of vip-mode in GNU emacs.  [add "nvi" to that list.  and whatever
+happened to xvi?  -pgf 12/94]  From what little I've used any of
+these, they all seem like real good programs.  vile feels different from
+most of them, mainly due to its roots in MicroEmacs.  You may or may not
+like it.  If you don't, try one of the others.  There's certainly no reason
+to not have a vi-like editor on just about any machine you choose.  (yeah,
+I know -- I'm assuming you _want_ a vi-like editor...  :-)  Enjoy.
+
+Oh yes -- building it.  On UNIX, type "make", and choose one of the predefined
+targets.  Like "make linux". [ not anymore -- use "configure; make"  -pgf 12/94]
+
+DOS makefiles are named after the compiler they support:  makefile.tbc for
+Turbo-C, makefile.wat.  There is support in "makefile" for Microsoft-C, but
+it's next to useless -- if anyone puts together a good "nmake" makefile,
+could you pass it along?  [that support isn't there anymore.  -pgf 12/94]
+
+The Watcom C/386 v9.0 compiler should also work -- the makefile to use is
+makefile.wat.
+
+The latest version of vile is usually available for ftp at "ftp.cayman.com",
+in the pub/vile directory.  [not anymore -- it's at "id.wing.net" in the
+"pub/pgf/vile" directory.  -pgf 12/94] Sometimes there's a compiled DOS
+binary there too.  I don't maintain a mailing list, or anything like that
+to inform folks of new releases -- you just sort of have to check once in a
+while, or send me mail...  [ I've set up a mailing list -- contact me to be
+added -pgf 7/93]
+
+paul
+
+------------------------------
+
+July, 1993
+
+More new features:  infinite undo, modification time checking, and, at
+long last, primitive support for the :map command.  [:map is now fully
+functional -pgf, 12/94] I've also received patches that let vile compile
+for DOS with the DJ GCC compiler.  Have I mentioned filename completion? 
+Tom Dickey provided that and variable/modename/command completion too.
+
+If you would like to be informed, via email, of new vile releases (bearing
+in mind that the newest release may be _more_ likely to be buggy, rather
+than _less_), please send me mail, and I will add you to my list.  The email
+will probably contain a capsule summary of the most recent changes to the
+code.
+
+Thanks to Tuan Dang for the Watcom and DJ GCC work.  I don't know much
+about djgpp, the DOS port of djgcc, but take a look at makefile.djg.
+
+
+pgf
+
+
+-------------------------------
+
+March, 1994
+
+The X support in xvile has been given a huge boost with contributions from
+Kevin Buettner -- scrollbars, Motif widget support make it feel like a real
+application...  We now have rectangular regions.  DOS support is getting
+better all the time.  The major version number got bumped to 4 somewhere
+along the line, because Tom and I were getting tired of 3.  There are quite
+a few new "modes", some to support vi functionality, some altogether new. 
+We should have keyboard selections and highlighted regions soon...
+
+pgf, pgf@foxharp.boston.ma.us
+
+
+-------------------------------
+December, 1994
+
+hmmmm -- lets see.  new stuff.  see the CHANGES and help files for details.
+
+	- vile is now completely autoconf'ed -- you should be able to type
+	either "./configure; make" or "./configure --with-screen=x11" to build
+	it on any (unix-like) platform. 
+
+	- :map and :map! are now much more complete, but still by no means
+	done.  expect to have to edit your favorite macros to make
+	them work.
+
+	- :abbr now works.
+
+	- along with proper :map support comes proper function key support.
+	function keys defined for your terminal in the termcap/info database
+	are now premapped and can be bound to as #-1 etc.  so those of
+	you with ESC [ 10 ~ style function keys should be happy now.
+
+	- mouse clicks which move the cursor now count as proper motion
+	commands in both xvile and vile-in-an-xterm.  this means, for
+	instance, that '' or `` will get you back to where you were before
+	you clicked the mouse, and you can apply operators to mouse
+	movements.  for example -- click the mouse somewhere, hit 'd' to
+	start a delete operation, and click the mouse somewhere else.  the
+	text between the two mouse-click locations will be deleted.
+
+	- on-line help (just a single line) for every function, available
+	with describe-{bindings,function,key} commands.
+
+	- new modes to better control beeping and the "working..." message.
+
+	- autowrite mode now supported, on a global or buffer-by-buffer basis.
+
+	- popup windows now adjust their size to their contents -- less screen
+	space is wasted for small window, and more is used for big windows.
+
+	- file and command completion is now more emacs/bash/tcsh-like, in
+	that possible choices are shown when you hit a second TAB key.  this
+	can be tuned via a new mode, "popup-choices"
+
+	- "quoted" motions, which highlight the text they will act on.  type
+	a 'q', and start moving around, then type another 'q'.
+
+	- various fixes to the macro language, for core dumps and usability.
+
+	- file.bak and file~ backup files now supported.
+
+	- infinite (?) screen sizes should now be supported under X.
+
+	- it's now possible to break lines by putting ^M in the replacement
+	pattern.
+
+	- selections, the modelines, and the cursor, under xvile, can all
+	have different colors.
+
+	- color support for termcap, at least on the linux console.
+
+	- put'ing from registers (i.e. 'p' and 'P' commands) should be much
+	faster.
+
+	- multiple (error) messages arising from running a macro or a startup
+	file will now accumulate in a new popup window.
+
+	- a simple, probably incomplete file-locking protocol is available,
+	but is not compiled in by default.  the organization which
+	contributed the code (Baan Development) uses it to aid their
+	multi-user development.  turn on OPT_LCKFILES in estruct.h and
+	"set usefilelock" in your .vilerc to play with it.
+
+	- Windows NT support -- console mode only.  anyone want to port this
+	to the Windows95 console?  it's probably not hard, though i haven't
+	looked into it very hard.
+
+	- lots of bug fixes
+
+-------------------------------
+Febrary, 1995
+	xvile now supports color attributes, which means we can do some
+	primitive syntax coloring of C programs, using the external filter,
+	"c-filt".  this is still pretty new stuff.  expect it to get better
+	with age.
+
+
+-------------------------------
+November, 1995
+	lots of new users in the last year, due to better advertising
+	and inclusion in some of the big linux and freebsd archives.
+	support for NT and OS/2 has gotten much better, and lots of
+	little bugs have been fixed, and features added.  Win32 support
+	is very good these days, thanks mostly to the efforts of Rick
+	Sladkey.
+
+-------------------------------
+June, 1996
+	gee, i don't remember _what_ we've done recently.  enjoy.
+
+-------------------------------
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.53 1996/06/18 21:14:56 pgf Exp $
+-------------------------------

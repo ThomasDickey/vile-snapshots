@@ -1,0 +1,96 @@
+%x COMMENT
+
+%{
+/* Filter to add vile "attribution" sequences to selected bits of C/C++ */
+/* input text. */
+
+/* You gotta use flex for this beast - hence the COMMENT start state */
+/* written by Alistair G. Crooks (agc@uts.amdahl.com) */
+
+#include <stdio.h>
+
+
+#define BOLD	"B"
+#define ULINE	"U"
+#define ITALIC	"I"
+#define COLOR1	"C1"
+#define COLOR2	"C2"
+#define COLOR3	"C3"
+#define COLOR4	"C4"
+
+/* customize here, using the above set of defines... */
+
+char keyword_attr[] = BOLD;
+char preproc_attr[] = BOLD;
+char comment_attr[] = ULINE;
+
+/* ...end customization */
+
+#define CTL_A	'\001'
+
+int
+#ifdef __STDC__
+main(int argc, char **argv)
+#else
+main(argc, argv)
+int	argc;
+char	**argv;
+#endif
+{
+	extern FILE	*yyin;
+
+	if (argc == 1) {
+		yyin = stdin;
+	} else if ((yyin = fopen(argv[1], "r")) == (FILE *) NULL) {
+		(void) fprintf(stderr, "can't open %s\n", argv[1]);
+		exit(1);
+	}
+	while (yylex() > 0) {
+	}
+	exit(0);
+}
+
+%}
+
+%%
+
+#[ \t]*if	|
+#[ \t]*if(n)?def	|
+#[ \t]*else	|
+#[ \t]*endif	|
+#[ \t]*define	|
+#[ \t]*error	|
+#[ \t]*include	|
+#[ \t]*undef	{ printf("%c%i%s:%s", CTL_A, yyleng, preproc_attr, yytext); }
+
+break		|
+case		|
+continue	|
+default		|
+do		|
+else		|
+extern		|
+for		|
+goto		|
+if		|
+return		|
+sizeof		|
+static		|
+struct		|
+switch		|
+typedef		|
+union		|
+while		{ printf("%c%i%s:%s", CTL_A, yyleng, keyword_attr, yytext); }
+
+
+"/*"		{ printf("%c2%s:/*", CTL_A, comment_attr); BEGIN(COMMENT); }
+<COMMENT>[^*]*	{ printf("%c%i%s:%s", CTL_A, yyleng, comment_attr, yytext); }
+<COMMENT>"*"+[^*/]*	{ printf("%c%i%s:%s", CTL_A, yyleng, comment_attr, yytext); }
+<COMMENT>"*"+"/"	{ printf("%c%i%s:%s", CTL_A, yyleng, comment_attr, yytext); BEGIN(0); }
+
+"//".*$		{ printf("%c%i%s:%s", CTL_A, yyleng, comment_attr, yytext); }
+
+[a-zA-Z_][a-zA-Z_0-9]*	|
+\"(\\\.|[^\"])*\"	{ printf("%s", yytext); }
+
+

@@ -1,0 +1,113 @@
+#
+# makefile for vile using DJGCC 1.09 and  GNU's MAKE 3.58
+#
+# T.DANG (dang@cogit.ign.fr)
+#
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.19 1996/05/02 22:14:26 pgf Exp $
+#
+#
+
+CC = gcc
+LONGARGS = gcc
+
+DEBUG = -g
+#OPTIM =
+
+#DEBUG =
+OPTIM = -O2
+
+# Use these two lines for the IBM/PC display (not DPMI compatible).
+#CFLAGS= -Wall $(DEBUG) $(OPTIM) -DDISP_IBMPC -Dscrn_chosen 
+#DISP_SRC = ibmpc.c
+
+# Use these two lines for the Borland/CONIO display (DPMI compatible).
+CFLAGS= -Wall $(DEBUG) $(OPTIM) -DDISP_BORLAND -Dscrn_chosen 
+DISP_SRC = borland.c gppconio.c
+
+# these are normal editable headers
+HDRS = estruct.h epath.h edef.h proto.h dirstuff.h
+
+# these headers are built by the mktbls program from the information in cmdtbl
+# and in modetbl
+BUILTHDRS = nebind.h nefunc.h nemode.h nename.h nevars.h
+
+SRC = 	main.c $(DISP_SRC) basic.c bind.c buffer.c crypt.c \
+	csrch.c display.c eval.c exec.c externs.c fences.c file.c filec.c \
+	fileio.c finderr.c glob.c globals.c history.c \
+	input.c insert.c itbuff.c isearch.c \
+	line.c modes.c msgs.c npopen.c oneliner.c opers.c \
+	path.c random.c regexp.c \
+	region.c search.c select.c spawn.c \
+	tags.c tbuff.c termio.c undo.c \
+	version.c window.c word.c wordmov.c map.c djhandl.c
+
+OBJ =	$(SRC:.c=.o)
+
+%.o:	%.c estruct.h nemode.h edef.h proto.h 
+	$(CC) $(CFLAGS) -c $< -o $@ 
+
+vile: 	$(BUILTHDRS) $(OBJ)
+	$(CC) $(CFLAGS) -o vile $(OBJ) -lpc 
+	coff2exe vile
+	-stubedit vile.exe globbing=no
+
+dist:	vile
+	strip vile
+	coff2exe vile
+	-stubedit vile.exe globbing=no
+	pkzip pcvile.zip readme.pc readme vile.exe \
+		vile.hlp pictmode.rc digraphs.rc \\djgpp\\bin\\go32.exe
+
+
+
+# for my poor slow omnibook, i do incremental linking when working on
+# just a couple of modules...
+NOBJ = $(OBJ)
+NOBJ := $(filter-out ibmpc.o, $(NOBJ))
+NOBJ := $(filter-out filec.o, $(NOBJ))
+NOBJ := $(filter-out glob.o, $(NOBJ))
+XOBJ =  ibmpc.o filec.o glob.o
+
+rvile.o: $(NOBJ)
+	ld -r -o rvile.o $(NOBJ) -L/djgpp/lib -lpc -lc -lgcc
+
+ivile: $(XOBJ) rvile.o
+	ld -o vile /djgpp/lib/crt0.o rvile.o $(XOBJ) -L/djgpp/lib -lpc -lc -lgcc
+	coff2exe vile
+
+nebind.h \
+nefunc.h \
+nename.h \
+nevars.h :	cmdtbl mktbls.exe
+	mktbls.exe cmdtbl
+
+nemode.h:	modetbl mktbls.exe
+	mktbls.exe modetbl
+
+mktbls.exe:  mktbls.c
+	$(CC) mktbls.c -o mktbls
+	coff2exe mktbls
+	rm mktbls
+
+clean:
+	rm mktbls.exe
+	rm *.o
+	rm $(BUILTHDRS)
+
+bind.o:		epath.h nefunc.h
+eval.o:		nevars.h
+exec.o:		nefunc.h
+externs.o:	nebind.h nename.h neproto.h nefunc.h
+filec.o:	dirstuff.h
+glob.o:		dirstuff.h
+globals.o:	nefunc.h
+main.o:		chgdfunc.h nevars.h
+modes.o:	chgdfunc.h
+opers.o:	nefunc.h
+path.o:		dirstuff.h
+random.o:	nefunc.h
+select.o:	nefunc.h
+spawn.o:	nefunc.h
+termio.o:	nefunc.h
+version.o:	patchlev.h
+word.o:		nefunc.h
