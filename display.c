@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.239 1997/11/09 22:55:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.240 1997/11/12 19:23:30 tom Exp $
  *
  */
 
@@ -464,6 +464,7 @@ vtfree(void)
 			freeVIDEO(vscreen[i]);
 		}
 		free ((char *)vscreen);
+		vscreen = 0;
 	}
 
 #if	! MEMMAP
@@ -472,6 +473,7 @@ vtfree(void)
 			freeVIDEO(pscreen[i]);
 		}
 		free ((char *)pscreen);
+		pscreen = 0;
 	}
 #endif
 	FreeIfNeeded (lmap);
@@ -815,7 +817,6 @@ kbd_flush(void)
 	int ok;
 
 	beginDisplay();
-	TRACE(("SHOW:%2d:%.*s\n", llength(wminip->w_dot.l), llength(wminip->w_dot.l), wminip->w_dot.l->l_text));
 	if (vscreen != 0) {
 		int row = term.t_nrow - 1;
 
@@ -824,8 +825,13 @@ kbd_flush(void)
 		ok = (wminip != 0
 		   && wminip->w_dot.l != 0
 		   && wminip->w_dot.l->l_text != 0);
-		if (ok)
+		if (ok) {
+			TRACE(("SHOW:%2d:%.*s\n",
+				llength(wminip->w_dot.l),
+				llength(wminip->w_dot.l),
+				wminip->w_dot.l->l_text));
 			vtset(wminip->w_dot.l, wminip);
+		}
 
 		vteeol();
 		if (my_overlay[0] != EOS) {

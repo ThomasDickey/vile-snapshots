@@ -3,7 +3,7 @@
  *
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.67 1997/10/07 23:26:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.68 1997/11/12 01:07:39 tom Exp $
  *
  */
 
@@ -165,6 +165,8 @@ undolog(char *s, LINEPTR lp)
 static int
 OkUndo(void)
 {
+	if (curbp == bminip)
+		return FALSE;
 #define SCRATCH 1
 #if SCRATCH
 	if (b_is_scratch(curbp))

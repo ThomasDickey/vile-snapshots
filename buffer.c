@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.164 1997/11/06 23:57:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.165 1997/11/12 01:06:06 tom Exp $
  *
  */
 
@@ -1844,6 +1844,9 @@ void
 chg_buff(register BUFFER *bp, register USHORT flag)
 {
 	register WINDOW *wp;
+
+	if (bp == bminip)
+		return;
 
 	b_clr_counted(bp);
 	b_match_attrs_dirty(bp);

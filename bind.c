@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.164 1997/11/07 01:57:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.165 1997/11/12 14:21:24 tom Exp $
  *
  */
 
@@ -1326,12 +1326,15 @@ kbd_putc(int c)
 {
 	BUFFER *savebp;
 	WINDOW *savewp;
+	MARK savemk;
 
 	beginDisplay();
 	savebp = curbp;
 	savewp = curwp;
 	curbp = bminip;
 	curwp = wminip;
+	savemk = MK;
+	MK = DOT;
 	if ((kbd_expand <= 0) && isreturn(c)) {
 		kbd_erase_to_end(0);
 	} else {
@@ -1348,6 +1351,7 @@ kbd_putc(int c)
 	}
 	curbp = savebp;
 	curwp = savewp;
+	MK = savemk;
 	endofDisplay();
 }
 
@@ -1365,12 +1369,15 @@ kbd_erase(void)
 {
 	BUFFER *savebp;
 	WINDOW *savewp;
+	MARK savemk;
 
 	beginDisplay();
 	savebp = curbp;
 	savewp = curwp;
 	curbp = bminip;
 	curwp = wminip;
+	savemk = MK;
+	MK = DOT;
 	if (DOT.o > 0) {
 		DOT.o -= 1;
 		ldelete(1, FALSE);
@@ -1380,6 +1387,7 @@ kbd_erase(void)
 #endif
 	curbp = savebp;
 	curwp = savewp;
+	MK = savemk;
 	endofDisplay();
 }
 
@@ -1388,12 +1396,15 @@ kbd_erase_to_end(int column)
 {
 	BUFFER *savebp;
 	WINDOW *savewp;
+	MARK savemk;
 
 	beginDisplay();
 	savebp = curbp;
 	savewp = curwp;
 	curbp = bminip;
 	curwp = wminip;
+	savemk = MK;
+	MK = DOT;
 	if (llength(DOT.l) > 0) {
 		DOT.o = column;
 		ldelete(llength(DOT.l) - DOT.o, FALSE);
@@ -1401,6 +1412,7 @@ kbd_erase_to_end(int column)
 	}
 	curbp = savebp;
 	curwp = savewp;
+	MK = savemk;
 	endofDisplay();
 }
 

@@ -1,5 +1,10 @@
 Changes for vile 7.3 (released ??? ??? ??, 1997)
 
+ (tom)	971112 (p)
+ 	+ correct logic for minibuffer by ensuring that it is not marked for
+	  undo, and that the value of MK is save/restored when modifying
+	  the minibuffer.
+
  (tom)	971109 (o)
  	+ correct range of scrolling region in ansi.c
  	+ correct treatment in xshell.sh for no-arguments.
