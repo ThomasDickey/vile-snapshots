@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.16 2000/06/07 23:06:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.18 2000/08/17 00:21:06 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4 
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -28,6 +28,7 @@ DefineFilter("m4");
 #define isNamex(c)  (isalnum(c) || (c) == '_')
 
 static char *Comment_attr;
+static char *Error_attr;
 static char *Ident_attr;
 static char *Literal_attr;
 static char *Number_attr;
@@ -38,9 +39,15 @@ typedef struct {
     unsigned used, have;
 } Quote;
 
+typedef struct {
+    char *name;
+    void (*func) (char **);
+} Funcs;
+
 #define isQuote(s,n) (n.used && !strncmp(s, n.text, n.used))
 
-#define write_quote(output,n) flt_puts(n.text, n.used, "")
+#define write_quote(n) flt_puts(n.text, n.used, "")
+#define wrong_quote(n) flt_puts(n.text, n.used, Error_attr)
 
 static Quote leftquote, rightquote;
 static Quote leftcmt, rightcmt;
@@ -93,34 +100,65 @@ ChangeComment(char **args)
 }
 
 static char *
-parse_arglist(char *s, char ***args)
+parse_arglist(char *name, char *s, char ***args, int *parens)
 {
-    char *t = SkipBlanks(s);
     char *r;
     char *v;
-    unsigned count, used;
+    int quoted;
+    unsigned count;
+    unsigned used;
+    char *t;
+    int processing;
 
-    if (*t == L_PAREN) {
-	count = 0;		/* always have a null on the end */
+    t = SkipBlanks(s);
+    if (*parens == 0) {
+	quoted = 0;
+	count = 0;
 	used = 0;
-	t++;
+	if (*t == L_PAREN) {
+	    processing = 1;
+	    *args = (char **) do_alloc((char *) 0, sizeof(*args) *
+				       (count + 4), &used);
+	    (*args)[count++] = strmalloc(name);
+	    (*args)[count] = 0;
+	    t++;
+	} else {
+	    processing = 0;
+	}
+    } else {
+	processing = 1;
+	quoted = (*parens > 0);
+	count = count_of(*args);
+	used = sizeof(*args) * (count + 2);	/* guess... */
+    }
+
+    if (processing) {
 	for (;;) {
-	    /* FIXME: m4 could accept newlines in an arglist */
 	    r = t = SkipBlanks(t);
 	    while ((*t != ',') && (*t != R_PAREN) && *t)
 		t++;
-	    v = (char *)malloc(1 + t - r);
-	    if (t != r)
-		strncpy(v, r, t - r);
-	    v[t - r] = 0;
-	    *args = (char **) do_alloc((char *) (*args), sizeof(*args) *
-		(count + 2), &used);
-	    (*args)[count++] = v;
+	    if (*t == ',' || *t == R_PAREN) {
+		v = (char *) malloc(1 + t - r);
+		if (t != r)
+		    strncpy(v, r, t - r);
+		v[t - r] = 0;
+		*args = (char **) do_alloc((char *) (*args), sizeof(*args) *
+					   (count + 2), &used);
+		(*args)[count++] = v;
+	    }
 	    (*args)[count] = 0;
-	    if (*t == R_PAREN) {
+	    if (isQuote(t, leftquote)) {
+		t += leftquote.used;
+		quoted = 1;
+	    } else if (isQuote(t, rightquote)) {
+		t += rightquote.used;
+		quoted = 0;
+	    } else if (*t == R_PAREN && !quoted) {
 		t++;
+		*parens = 0;
 		break;
 	    } else if (!*t) {
+		*parens = quoted ? 1 : -1;
 		break;
 	    }
 	    t++;
@@ -142,13 +180,11 @@ free_arglist(char **args)
     }
 }
 
-static char *
-handle_directive(char *name, char *s)
+static Funcs *
+our_directive(char *name)
 {
-    static struct {
-	char *name;
-	void (*func) (char **);
-    } table[] = {
+    static Funcs table[] =
+    {
 	{
 	    "changequote", ChangeQuote
 	},
@@ -156,22 +192,49 @@ handle_directive(char *name, char *s)
 	    "changecom", ChangeComment
 	},
     };
+    Funcs *result = 0;
     size_t n;
 
     for (n = 0; n < sizeof(table) / sizeof(table[0]); n++) {
 	if (!strcmp(name, table[n].name)) {
-	    char **args = 0;
-	    s = parse_arglist(s, &args);
-	    table[n].func(args);
-	    free_arglist(args);
+	    result = table + n;
 	    break;
 	}
+    }
+    return result;
+}
+
+static void
+handle_directive(char ***args, int *parens)
+{
+    Funcs *ptr;
+
+    if (*args != 0 && *parens == 0) {
+	if ((ptr = our_directive((*args)[0])) != 0) {
+	    ptr->func(*args + 1);
+	}
+	free_arglist(*args);
+	*parens = 0;
+	*args = 0;
+    }
+}
+
+/*
+ * We really do not need to parse argument lists except for those that modify
+ * the delimiters we'll use for subsequent parsing.
+ */
+static char *
+parse_directive(char *name, char *s, char ***args, int *parens)
+{
+    if (our_directive(name) != 0) {
+	s = parse_arglist(name, s, args, parens);
+	handle_directive(args, parens);
     }
     return s;
 }
 
 static char *
-extract_identifier(char *s)
+extract_identifier(char *s, char ***args, int *parens)
 {
     static char *name;
     static unsigned have;
@@ -207,7 +270,7 @@ extract_identifier(char *s)
 	} else {
 	    flt_puts(show, s - show, Ident_attr);
 	}
-	s = handle_directive(name, s);
+	s = parse_directive(name, s, args, parens);
     }
     return s;
 }
@@ -296,7 +359,7 @@ write_literal(char *s, int *literal)
 	    flt_puts(buffer, used, Literal_attr);
 	    used = 0;
 	}
-	write_quote(fp, rightquote);
+	write_quote(rightquote);
     } else {
 	buffer = do_alloc(buffer, used + need + 1, &have);
 	strncpy(buffer + used, s, need);
@@ -316,7 +379,6 @@ write_comment(char *s, int *level)
 static void
 init_filter(int before)
 {
-    /* FIXME: make these settable by class definitions */
     if (before) {
 	insert_keyword(NAME_L_QUOTE, L_QUOTE, 1);
 	insert_keyword(NAME_R_QUOTE, R_QUOTE, 1);
@@ -332,7 +394,8 @@ do_filter(FILE * input GCC_UNUSED)
     static char *line;
 
     char *s;
-    int literal, comment;
+    char **args;
+    int literal, comment, parens;
 
     new_quote(&leftquote, class_attr(NAME_L_QUOTE));
     new_quote(&rightquote, class_attr(NAME_R_QUOTE));
@@ -340,37 +403,42 @@ do_filter(FILE * input GCC_UNUSED)
     new_quote(&rightcmt, class_attr(NAME_R_CMT));
 
     Comment_attr = class_attr(NAME_COMMENT);
+    Error_attr = class_attr(NAME_ERROR);
     Ident_attr = class_attr(NAME_IDENT);
     Literal_attr = class_attr(NAME_LITERAL);
     Number_attr = class_attr(NAME_NUMBER);
 
+    args = 0;
     literal = 0;
     comment = 0;
+    parens = 0;
 
     while (flt_gets(&line, &used) != NULL) {
 	s = line;
 	while (*s) {
-	    /*
-	     * Quoted literals can nest, and override comments
-	     */
-	    if (literal) {
+	    if (parens != 0) {
+		s = parse_directive(args[0], s, &args, &parens);
+	    } else if (literal) {
+		/*
+		 * Quoted literals can nest, and override comments
+		 */
 		s = write_literal(s, &literal);
 	    } else if (isQuote(s, leftquote)) {
-		write_quote(output, leftquote);
+		write_quote(leftquote);
 		s += leftquote.used;
 		literal++;
 		s = write_literal(s, &literal);
 	    } else if (isQuote(s, rightquote)) {
-		write_quote(output, rightquote);
+		wrong_quote(rightquote);
 		s += rightquote.used;
 		if (--literal > 0)
 		    s = write_literal(s, &literal);
 		else
 		    literal = 0;
+	    } else if (comment) {
 		/*
 		 * Comments don't nest
 		 */
-	    } else if (comment) {
 		s = write_comment(s, &comment);
 		comment = 0;
 	    } else if (isQuote(s, leftcmt)) {
@@ -382,7 +450,7 @@ do_filter(FILE * input GCC_UNUSED)
 		s += rightcmt.used;
 		comment = 0;
 	    } else if (isIdent(*s)) {
-		s = extract_identifier(s);
+		s = extract_identifier(s, &args, &parens);
 	    } else if (isdigit(*s)) {
 		s = write_number(s);
 	    } else {

@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.88 2000/06/23 22:15:10 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.89 2000/08/16 01:18:25 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -384,10 +384,17 @@ if test ".$ac_cv_func_initscr" != .yes ; then
 	cf_term_lib=""
 	cf_curs_lib=""
 
+	if test ".$cf_cv_ncurses_version" != .no
+	then
+		cf_check_list="ncurses curses cursesX"
+	else
+		cf_check_list="cursesX curses ncurses"
+	fi
+
 	# Check for library containing tgoto.  Do this before curses library
 	# because it may be needed to link the test-case for initscr.
 	AC_CHECK_FUNC(tgoto,[cf_term_lib=predefined],[
-		for cf_term_lib in termcap termlib unknown
+		for cf_term_lib in $cf_check_list termcap termlib unknown
 		do
 			AC_CHECK_LIB($cf_term_lib,tgoto,[break])
 		done
@@ -395,7 +402,7 @@ if test ".$ac_cv_func_initscr" != .yes ; then
 
 	# Check for library containing initscr
 	test "$cf_term_lib" != predefined && test "$cf_term_lib" != unknown && LIBS="-l$cf_term_lib $cf_save_LIBS"
-	for cf_curs_lib in cursesX curses ncurses xcurses jcurses unknown
+	for cf_curs_lib in $cf_check_list xcurses jcurses unknown
 	do
 		AC_CHECK_LIB($cf_curs_lib,initscr,[break])
 	done
@@ -410,6 +417,8 @@ if test ".$ac_cv_func_initscr" != .yes ; then
 			[cf_result=no])
 		AC_MSG_RESULT($cf_result)
 		test $cf_result = no && AC_ERROR(Cannot link curses library)
+	elif test "$cf_curs_lib" = "$cf_term_lib" ; then
+		:
 	elif test "$cf_term_lib" != predefined ; then
 		AC_MSG_CHECKING(if we need both $cf_curs_lib and $cf_term_lib libraries)
 		AC_TRY_LINK([#include <${cf_cv_ncurses_header-curses.h}>],
@@ -501,6 +510,9 @@ both) #(vi
 	;;
 curses.h) #(vi
 	AC_DEFINE_UNQUOTED(NEED_CURSES_H)
+	;;
+term.h) #(vi
+	AC_DEFINE_UNQUOTED(NEED_TERM_H)
 	;;
 termcap.h) #(vi
 	AC_DEFINE_UNQUOTED(NEED_TERMCAP_H)
@@ -1146,6 +1158,12 @@ CF_MISSING_CHECK(${ac_func}, ${ac_tr_func})dnl
 done
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl Write a debug message to config.log, along with the line number in the
+dnl configure script.
+AC_DEFUN([CF_MSG_LOG],[
+echo "(line __oline__) testing $* ..." 1>&AC_FD_CC
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl Look for the SVr4 curses clone 'ncurses' in the standard places, adjusting
 dnl the CPPFLAGS variable.
 dnl
@@ -1467,8 +1485,8 @@ dnl Check for definitions & structures needed for window size-changing
 dnl FIXME: check that this works with "snake" (HP-UX 10.x)
 AC_DEFUN([CF_SIZECHANGE],
 [
-AC_MSG_CHECKING([declaration of size-change])
-AC_CACHE_VAL(cf_cv_sizechange,[
+AC_REQUIRE([CF_STRUCT_TERMIOS])
+AC_CACHE_CHECK(declaration of size-change, cf_cv_sizechange,[
     cf_cv_sizechange=unknown
     cf_save_CFLAGS="$CFLAGS"
 
@@ -1516,13 +1534,19 @@ do
 	CFLAGS="$cf_save_CFLAGS"
 	if test "$cf_cv_sizechange" = yes ; then
 		echo "size-change succeeded ($cf_opts)" >&AC_FD_CC
-		test -n "$cf_opts" && AC_DEFINE_UNQUOTED($cf_opts)
+		test -n "$cf_opts" && cf_cv_sizechange="$cf_opts"
 		break
 	fi
 done
-	])
-AC_MSG_RESULT($cf_cv_sizechange)
-test $cf_cv_sizechange != no && AC_DEFINE(HAVE_SIZECHANGE)
+])
+if test "$cf_cv_sizechange" != no ; then
+	AC_DEFINE(HAVE_SIZECHANGE)
+	case $cf_cv_sizechange in #(vi
+	NEED*)
+		AC_DEFINE_UNQUOTED($cf_cv_sizechange )
+		;;
+	esac
+fi
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl	Shorthand macro for substituting things that the user may override
@@ -1539,6 +1563,40 @@ AC_MSG_RESULT([$]$2)
 AC_SUBST($2)
 cf_cv_subst_$2=[$]$2])
 $2=${cf_cv_subst_$2}
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Some machines require _POSIX_SOURCE to completely define struct termios.
+dnl If so, define SVR4_TERMIO
+AC_DEFUN([CF_STRUCT_TERMIOS],[
+AC_CHECK_HEADERS( \
+termio.h \
+termios.h \
+unistd.h \
+)
+if test "$ISC" = yes ; then
+	AC_CHECK_HEADERS( sys/termio.h )
+fi
+if test "$ac_cv_header_termios_h" = yes ; then
+	case "$CFLAGS" in
+	*-D_POSIX_SOURCE*)
+		termios_bad=dunno ;;
+	*)	termios_bad=maybe ;;
+	esac
+	if test "$termios_bad" = maybe ; then
+	AC_MSG_CHECKING(whether termios.h needs _POSIX_SOURCE)
+	AC_TRY_COMPILE([#include <termios.h>],
+		[struct termios foo; int x = foo.c_iflag],
+		termios_bad=no, [
+		AC_TRY_COMPILE([
+#define _POSIX_SOURCE
+#include <termios.h>],
+			[struct termios foo; int x = foo.c_iflag],
+			termios_bad=unknown,
+			termios_bad=yes AC_DEFINE(SVR4_TERMIO))
+			])
+	AC_MSG_RESULT($termios_bad)
+	fi
+fi
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check for declaration of sys_nerr and sys_errlist in one of stdio.h and
@@ -1672,7 +1730,7 @@ for P in int void; do
 for Q in int void; do
 for R in int char; do
 for S in "" const; do
-
+	CF_MSG_LOG(loop variables [P:[$]P, Q:[$]Q, R:[$]R, S:[$]S])
 	AC_TRY_COMPILE([$CHECK_DECL_HDRS],
 	[extern $Q OutChar($R);
 	extern $P tputs ($S char *string, int nlines, $Q (*_f)($R));
@@ -1708,7 +1766,7 @@ dnl $1=uppercase($2)
 AC_DEFUN([CF_UPPER],
 [
 changequote(,)dnl
-$1=`echo $2 | tr '[a-z]' '[A-Z]'`
+$1=`echo "$2" | sed y%abcdefghijklmnopqrstuvwxyz./-%ABCDEFGHIJKLMNOPQRSTUVWXYZ___%`
 changequote([,])dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
@@ -1741,7 +1799,8 @@ cf_x_athena_lib=""
 for cf_path in default \
 	/usr/contrib/X11R6 \
 	/usr/contrib/X11R5 \
-	/usr/lib/X11R5
+	/usr/lib/X11R5 \
+	/usr/local
 do
 
 	if test -z "$cf_x_athena_include" ; then

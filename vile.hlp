@@ -2331,6 +2331,7 @@ Programmed procedures and macros
 
 			perl        -> editor includes perl interpreter
 			oleauto     -> editor supports OLE automation.
+			curses      -> editor uses curses terminal driver
 			termcap     -> editor reads TERMCAP db for screen info.
 			terminfo    -> editor reads TERMINFO db for screen info.
 
@@ -2355,6 +2356,7 @@ Programmed procedures and macros
 	$fence-limit	iteration limit for complex fences
 	$filename-expr	actual pattern for %F in [Error Expressions]
 	$filename-ic	ignore case in filename completion	(read only)
+	$filter-list	list of builtin-filters			(read only)
 	$font		current font name (X11/winvile versions only)
 	$forward-search	search direction, true=forward
 	$helpfile	help-filename (vile.hlp)
@@ -5085,4 +5087,4 @@ Problems
 
 Copyright 1995-2000 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.497 2000/08/09 09:06:12 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.498 2000/08/16 10:47:39 tom Exp $

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.15 2000/08/09 23:30:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.16 2000/08/16 00:57:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
@@ -110,7 +110,7 @@ DOTNAME		(\.)+{CAPNAME}
 ALIAS		[a-zA-Z_\.0-9+-]+
 
 NUMBER		"#"[0-9]+
-STRING		(\\[:]|\\\n|[^:\n])*
+STRING		[^#:\\\n](\\[:]|\\\n|[^:\n])*
 
 %%
 

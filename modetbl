@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.178 2000/07/24 11:09:37 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.179 2000/08/16 10:47:07 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -188,8 +188,8 @@ string
 "bflags"	BFLAGS			# status flags for current buffer
 "blines"	BLINES			# lines in current buffer
 "brightness"	BRIGHTNESS	DISP_NTWIN	# intensity of normal, bold
-"bwindows"	BWINDOWS		# windows open on current buffer
 "buffer-hook"	BUFHOOK		OPT_HOOKS	# procedure to run when entering buf
+"bwindows"	BWINDOWS		# windows open on current buffer
 "cbufname"	CBUFNAME		# current buffer name
 "cd-hook"	CDHOOK		OPT_HOOKS	# procedure to run when cd'ing
 "cdpath"	CDPATH		OPT_PATHLOOKUP	# runtime copy of CDPATH env var
@@ -214,6 +214,7 @@ string
 "exit-hook"	EXITHOOK	OPT_HOOKS	# procedure to run when quitting
 "filename-expr"	FILENAME_EXPR	OPT_FINDERR	# regular expression for %F
 "filename-ic"	FILENAME_IC		# true if we set OPT_CASELESS
+"filter-list"	FILTER_LIST	OPT_FILTER	# list of builtin-filters
 "font"		FONT		DISP_X11||DISP_NTWIN	# current font
 "forward-search" FWD_SEARCH		# search-direction (true if forward)
 "helpfile"	HELPFILE		# helpfile (vile.hlp)

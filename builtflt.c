@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.14 2000/08/09 23:10:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.15 2000/08/16 11:13:15 tom Exp $
  *
  */
 
@@ -12,6 +12,7 @@
 #ifdef _builtflt_h
 
 #include <edef.h>
+#include <nevars.h>
 #include <stdarg.h>
 
 static FILTER_DEF *current_filter;
@@ -308,12 +309,36 @@ flt_start(char *name)
     return FALSE;
 }
 
+static TBUFF *filter_list;
+
+int var_FILTER_LIST(TBUFF **rp, const char *vp)
+{
+    int n;
+
+    if (rp) {
+	if (filter_list == 0) {
+	    for (n = 0; builtflt[n] != 0; n++) {
+		if (n)
+		    tb_sappend0(&filter_list, " ");
+		tb_sappend0(&filter_list, builtflt[n]->filter_name);
+	    }
+	}
+	tb_scopy(rp, tb_values(filter_list));
+	return TRUE;
+    } else if (vp) {
+	return ABORT;  /* read-only */
+    } else {
+	return FALSE;
+    }
+}
+
 #if NO_LEAKS
 void
 flt_leaks(void)
 {
     flt_free_symtab();
     FreeIfNeeded(default_attr);
+    tb_free(&filter_list);
 }
 #endif
 

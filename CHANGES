@@ -1,5 +1,26 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000816 (r)
+	> Tom Dickey:
+	+ add logic to m4-filt.c to handle argument lists that span multiple
+	  lines.
+	+ highlight unbalanced quote in m4-filt.c as an error.
+	+ modify majormode suffix matching to use the ignorecase mode values
+	  for those systems that are normally case-sensitive, making this work
+	  for names such as "FOO.BAT" which happen to be uppercase.
+	+ suppress autocolor when doingsweep is true, e.g., in multimotion().
+	+ add variable $filter-list to show all of the builtin-filters.
+	+ modify win32 scripts to avoid redirecting the output of 'echo',
+	  which apparently goes to stderr on w95 (reported by Clark Morgan).
+	+ minor fixes for configure script macro CF_CURSES_LIBS,
+	  CF_CURSES_TERMCAP, CF_SIZECHANGE, CF_TYPE_OUTCHAR, CF_UPPER,
+	  CF_X_ATHENA from lynx, xterm and tin.
+ 	+ newer config.guess, config.sub, from lynx 2.8.4dev.7
+	+ fix starting condition of STRING in tc-filt.l
+	+ add pcmode, for printcap.
+	+ refine xresmode to require that mixed-case names match only in an
+	  app-defaults directory, to avoid matching things such as MD5sums.
+
  20000809 (q)
 	> J. Chris Coppick, with some advice from Brendan O'Dea:
 	+ cleanup of Vileserv.pm and vileget (version 1.2)
