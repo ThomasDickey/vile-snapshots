@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.10 1999/12/14 11:18:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.11 1999/12/29 17:48:18 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
@@ -102,9 +102,7 @@ do_filter(FILE *input, FILE *output)
 
 %}
 
-BLANK		[ \t]
-CAPCHAR		[^\.| \t\n:=]
-CAPNAME		{CAPCHAR}+
+CAPNAME		[^\.| \t\n:=]+
 DOTNAME		(\.)+{CAPNAME}
 
 ALIAS		[a-zA-Z_\.0-9+-]+
@@ -121,7 +119,8 @@ STRING		(\\[:]|\\\n|[^:\n])*
 ^{ALIAS}:			{ WriteToken(Ident_attr); BEGIN(GAPS); }
 
 <DESC>[^:\n]*			{ WriteToken(Comment_attr); BEGIN(GAPS); }
-<GAPS,VALS>(:|:\\\n\t)*		{ commented=0; ECHO; BEGIN(CAPS); }
+<GAPS,VALS>(:|:\\\n\t)+		{ commented=0; ECHO; BEGIN(CAPS); }
+<GAPS,CAPS>\n(\t)+		{ WriteString(Error_attr); }
 <CAPS>{CAPNAME}			{ write_capname(yytext, yyleng); begin_value(yytext); }
 <CAPS>{DOTNAME}			{ WriteToken(Comment_attr); commented = 1; begin_value(yytext); }
 <VALS>{NUMBER}			{ WriteToken(commented ? Comment_attr : Number_attr); BEGIN(GAPS); }

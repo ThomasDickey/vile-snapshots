@@ -27,7 +27,7 @@
 # Consult the macro $(PERL_SCRIPTS) in the file makefile.wnt to ascertain the
 # current list of vile-based perl scripts known to work in a Win32 environment.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/mkprlenv.wnt,v 1.5 1999/05/23 23:40:20 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/mkprlenv.wnt,v 1.6 1999/12/29 17:17:30 tom Exp $
 #
     perl <<
         foreach $$dir (@INC)
@@ -112,6 +112,12 @@
                 if (! -d $$script_dir && ! mkdir($$script_dir, 0755))
                 {
                     print "error: can't create \"$$script_dir\": $$!\n";
+                    exit(1);
+                }
+                $$script_sub = $$script_dir . "\\Vile";
+                if (! -d $$script_sub && ! mkdir($$script_sub, 0755))
+                {
+                    print "error: can't create \"$$script_sub\": $$!\n";
                     exit(1);
                 }
 #

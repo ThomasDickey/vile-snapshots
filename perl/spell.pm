@@ -1,5 +1,10 @@
+package spell;
+
 use IPC::Open2;
 use Vile;
+require Vile::Exporter;
+@ISA = 'Vile::Exporter';
+%REGISTRY = (spell => [\&spell, 'spellcheck the current buffer (ispell)']);
 
 sub spell {
     my $work = Vile::working(0);

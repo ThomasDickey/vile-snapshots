@@ -1,5 +1,3 @@
-package Vile::Search;
-
 #
 # This package contains perl subroutines which are intended as a
 # drop in replacement for vile's search facilities.  Not all features
@@ -10,7 +8,18 @@ package Vile::Search;
 #
 # Usage
 # -----
-# :perl require "search.pl";
+# :perl use search;
+
+package search;
+
+require Vile::Exporter;
+@ISA = 'Vile::Exporter';
+%REGISTRY = (
+  'perl-fsearch'     => [ motion => \&fsearch, "perl forward search", 'M-/' ],
+  'perl-rsearch'     => [ motion => \&rsearch, "perl reverse search", 'M-?' ],
+  'perl-search-next' => [ motion => \&searchnext, "perl search next", 'M-n' ],
+  'perl-search-prev' => [ motion => \&searchprev, "perl search prev", 'M-N' ],
+);
 
 *CHUNKSIZE = \100;
 my $direction = '';
@@ -222,23 +231,5 @@ sub searchnext {
 sub searchprev {
     $direction eq 'forward' ? rsearch('noprompt') : fsearch('noprompt');
 }
-
-#
-# Register the above as Vile procedures
-#
-
-Vile::register_motion 'perl-fsearch' => \&fsearch, "Forward search with perl";
-Vile::register_motion 'perl-rsearch' => \&rsearch, "Reverse search with perl";
-Vile::register_motion 'perl-search-next' => \&searchnext, "Search next";
-Vile::register_motion 'perl-search-prev' => \&searchprev, "Search prev";
-
-#
-# Set up the standard keybindings
-#
-
-Vile::command("bind-key perl-fsearch /");
-Vile::command("bind-key perl-rsearch ?");
-Vile::command("bind-key perl-search-next n");
-Vile::command("bind-key perl-search-prev N");
 
 1;

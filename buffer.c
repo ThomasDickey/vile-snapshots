@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.214 1999/12/24 16:56:14 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.215 1999/12/29 14:21:46 kev Exp $
  *
  */
 
@@ -1140,13 +1140,17 @@ killbuffer(int f, int n)
 	if (!f)
 		n = 1;
 	for_ever {
+		BUFFER *bp_next;
 		bufn[0] = EOS;
 		if ((s=ask_for_bname("Kill buffer: ", bufn, sizeof(bufn))) != TRUE)
 			break;
 
 #if !SMALLER	/* allow user to kill a glob'd expression. */
 		s = 0;
-		for_each_buffer(bp) {
+		for (bp = bheadp; bp; bp = bp_next) {
+			/* Fetch next buffer prior to possible destruction */
+			bp_next = bp->b_bufp;
+			/* Attempt match and kill if match okay */
 			if (glob_match_leaf(bp->b_bname, bufn)) {
 				if (kill_that_buffer(bp))
 					s++;

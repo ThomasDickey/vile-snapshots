@@ -1,5 +1,14 @@
+package shell;
+
 use IO::Pty;
 require POSIX;
+require Vile::Exporter;
+
+@ISA = 'Vile::Exporter';
+%REGISTRY = (
+    'start-shell'  => [ \&shell, 'start an interactive shell' ],
+    'resume-shell' => [ \&resume_shell, 'resume interactive shell' ],
+);
 
 my %shells = ();
 
@@ -239,7 +248,7 @@ sub shell {
 	print $pty chr($c);
     }
 
-    print STDOUT 'Editor resumed.  Use ":perl resume_shell" to return.';
+    print STDOUT 'Editor resumed.  Use ":resume-shell" to return.';
     Vile::update();
 
     Vile::working($oldworking);			# restore "working..." message

@@ -1,3 +1,9 @@
+package lock;
+
+require Vile::Exporter;
+@ISA = 'Vile::Exporter';
+%REGISTRY = ('lock' => [ \&lock, 'lock vile session' ]);
+
 sub getpass {
     local ($text) = @_;
     print "Enter password to $text: ";
@@ -37,17 +43,13 @@ lock - lock a vile session
 
 =head1 SYNOPSIS
 
-require "lock.pl"
+In .vilerc:
 
-In .vilerc
+    perl "use lock"
 
-perl "Vile::register 'lock', 'lock', 'Lock Vile Session', 'lock.pl'"
+In [x]vile:
 
-In [x]vile
-
-:lock
-
-:perl lock
+    :lock
 
 =head1 DESCRIPTION
 

@@ -1,6 +1,3 @@
-#!/usr/bin/perl -w
-#
-# hgrep.pl
 #
 #   This script is meant to be used with [x]vile's perl interface to
 #   provide a nifty recursive grep facility complete with hypertext
@@ -14,7 +11,7 @@
 #
 # Installation
 # ------------
-#   
+#
 #   Place hgrep.pl, glob2re.pl, and visit.pl in either ~/.vile/perl
 #   or in /usr/local/share/vile/perl.  (The exact location of the
 #   latter may vary depending on how you configured [x]vile.
@@ -46,45 +43,50 @@
 #
 # Additional Notes
 # ----------------
-#   
+#
 #   As not much has been written about it yet, this module is an
 #   example of how to use the perl interface.
 #
 #				- kev (4/3/1998)
 #
 
-
-use File::Find;
-use FileHandle;
-use English;
-require 'glob2re.pl';
 require 'visit.pl';
 
-my $rgrep_oldspat = '';
-my $rgrep_oldroot = '.';
+package hgrep;
+
+use File::Find;
+use English;
+
+require 'glob2re.pl';
+require Vile::Exporter;
+@ISA = 'Vile::Exporter';
+%REGISTRY = (hgrep => [ \&hgrep, 'recursive grep' ]);
+
+my $hgrep_oldspat = '';
+my $hgrep_oldroot = '.';
 
 sub hgrep {
 
     my ($spat, $root, $fpat) = @_;
 
     if (!defined($spat)) {
-	$spat = Vile::mlreply_no_opts("Pattern to search for? ", $rgrep_oldspat);
+	$spat = Vile::mlreply_no_opts("Pattern to search for? ", $hgrep_oldspat);
 	return if !defined($spat);
     }
-    $rgrep_oldspat = $spat;
+    $hgrep_oldspat = $spat;
 
     while (!defined($root)) {
-	$root = Vile::mlreply_dir("Directory to search in? ", $rgrep_oldroot);
+	$root = Vile::mlreply_dir("Directory to search in? ", $hgrep_oldroot);
 	return if !defined($root);
     }
-    $rgrep_oldroot = $root;
+    $hgrep_oldroot = $root;
 
     while (!defined($fpat)) {
 	$fpat = Vile::mlreply_no_opts("File name pattern? ", "*");
 	return if !defined($fpat);
     }
 
-    my $resbuf = new Vile::Buffer "rgrep $spat $root $fpat";
+    my $resbuf = new Vile::Buffer "hgrep $spat $root $fpat";
 
     print $resbuf "Results of searching for /$spat/ in $root with filter $fpat...\n---------------\n";
 
@@ -92,25 +94,25 @@ sub hgrep {
 
     my $code = '
     find(
-	sub { 
-	    if (-f && -T && $_ ne "tags" && /' 
-    .                  $fpat 
+	sub {
+	    if (-f && -T && $_ ne "tags" && /'
+    .                  $fpat
     .                      '/) {
 		my $fname = $File::Find::name;
 		if (open SFILE, "<$_") {
 		    local($_);
 		    while (<SFILE>) {
-			if (/' 
+			if (/'
     .                        $spat
     .                            '/) {
 			    chomp;
 			    s/^(.*?)('
     .			        $spat
-    .                                ')/$1 . "\x01" 
-                                           . length($2) 
-                                           . q#BHperl "visit(\'#
+    .                                ')/$1 . "\x01"
+                                           . length($2)
+                                           . q#BC4Hperl "visit(\'#
 					   . $fname
-					   . qq(\',) 
+					   . qq(\',)
 					   . $INPUT_LINE_NUMBER
 					   . q(,)
 					   . length($1)
@@ -137,10 +139,16 @@ sub hgrep {
     else {
 	print $resbuf "\n\n";
 	$Vile::current_buffer = $resbuf;
+	# Don't let syntax coloring wipe out the hypertext links
+	$resbuf->set(autocolor => 0);
+	# Turn on highlighting (and hypertext links), clear modified
+	# status, and position the cursor on the first match
 	$resbuf->setregion(1,'$')
 	       ->attribute_cntl_a_sequences
 	       ->unmark
 	       ->dot(3);
+	# Set up error finder
+	Vile::command("error-buffer " . $resbuf->buffername);
     }
 }
 

@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.62 1999/12/24 20:37:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.63 1999/12/29 14:21:46 kev Exp $
  */
 
 /*#
@@ -136,6 +136,8 @@
 #endif
 
 #undef MARK			/* Perl unnecessarily defines this */
+
+#define PDEBUG 0		/* For debugging reference counts */
 
 /* for vile */
 #include "estruct.h"
@@ -261,20 +263,21 @@ newVBrv(SV *rv, VileBuf *sp)
 	sp->perl_handle = newGVgen("Vile::Buffer");
 	GvSV((GV*)sp->perl_handle) = newSV(0);
 	sv_setiv(GvSV((GV*)sp->perl_handle), (IV) sp);
-	SvREFCNT_inc(sp->perl_handle);
-	sv_magic(sp->perl_handle, rv, 'q', Nullch, 0);
+	sv_magic(sp->perl_handle, NULL, 'q', Nullch, 0);
 	gv_IOadd((GV*)sp->perl_handle);
 	IoLINES(GvIO((GV*)sp->perl_handle)) = 0;	/* initialise $. */
     }
-    else
-	SvREFCNT_inc(sp->perl_handle);
 
     sv_upgrade(rv, SVt_RV);
     SvRV(rv) = sp->perl_handle;
     SvREFCNT_inc(SvRV(rv));
-
     SvROK_on(rv);
-    return sv_bless(rv, gv_stashpv("Vile::Buffer", TRUE));
+    rv = sv_bless(rv, gv_stashpv("Vile::Buffer", TRUE));
+#if PDEBUG
+    fprintf(stderr, "newVBrv: ");
+    sv_dump(rv);
+#endif
+    return rv;
 }
 
 static VileBuf *
@@ -296,6 +299,10 @@ getVB(SV *sv, char **croakmessage_ptr)
 void
 perl_free_handle(void *handle)
 {
+#if PDEBUG
+    fprintf(stderr, "In perl_free_handle: ");
+    sv_dump((SV*)handle);
+#endif
     /*
      * Zero out perl's handle to the VileBuf structure
      */
@@ -320,14 +327,10 @@ newVWrv(SV *rv, VileWin vw)
 {
     sv_upgrade(rv, SVt_RV);
     SvRV(rv) = newSViv((IV)win2id(vw));
-#if 0
-    /* Is this needed? */
-    SvREFCNT_inc(SvRV(rv));
-#endif
     SvROK_on(rv);
     rv = sv_bless(rv, gv_stashpv("Vile::Window", TRUE));
-#define DEBUG_newVWrv 0
-#if DEBUG_newVWrv
+#if PDEBUG
+    fprintf(stderr, "newVWrv: ");
     sv_dump(rv);
 #endif
     return rv;
@@ -381,7 +384,11 @@ do_perl_cmd(SV *cmd, int inplace)
 	    curvbp->regionshape = regionshape;
 	    curvbp->inplace_edit = inplace;
 
-	    sv_setsv(svcurbuf, newVBrv(sv_2mortal(newSV(0)), curvbp));
+	    {
+		SV *sv = newVBrv(newSV(0), curvbp);
+		sv_setsv(svcurbuf, sv);
+		SvREFCNT_dec(sv);
+	    }
 	    IoLINES(GvIO((GV*)curvbp->perl_handle)) = 0;  /* initialise $. */
 	}
 
@@ -395,9 +402,8 @@ do_perl_cmd(SV *cmd, int inplace)
 	isnamedcmd = TRUE;
 	recursecount++;
 
-#define PDEBUG 0
 #if PDEBUG
-	printf("\nbefore eval\n");
+	fprintf(stderr, "do_perl_command: before eval:\n");
 	sv_dump(svcurbuf);
 #endif
 	sv_setpv(GvSV(errgv),"");
@@ -411,7 +417,7 @@ do_perl_cmd(SV *cmd, int inplace)
 	else
 	    perl_eval_sv(cmd, G_DISCARD|G_NOARGS|G_KEEPERR);
 #if PDEBUG
-	printf("after eval\n");
+	fprintf(stderr, "do_perl_command: after eval: \n");
 	sv_dump(svcurbuf);
 #endif
 
@@ -420,7 +426,7 @@ do_perl_cmd(SV *cmd, int inplace)
 	isnamedcmd = old_isnamedcmd;
 
 	if (recursecount == 0) {
-	    SvREFCNT_dec(SvRV(svcurbuf));
+	    sv_setsv(svcurbuf, &sv_undef);
 	    api_command_cleanup();
 	}
 
@@ -962,9 +968,9 @@ svcurbuf_set(SV *sv, MAGIC *mg)
 	api_swscreen(NULL, vbp);
     }
     else {
-	/* FIXME: Print out warning about reseting things */
-	/* Reset to curbp */
-	sv_setsv(svcurbuf, newVBrv(sv_2mortal(newSV(0)), api_bp2vbp(curbp)));
+	SV *sv = newVBrv(newSV(0), api_bp2vbp(curbp));
+	sv_setsv(svcurbuf, sv);
+	SvREFCNT_dec(sv);
     }
     return 1;
 }

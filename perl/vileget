@@ -21,7 +21,7 @@
 
 =head1 NAME
 
-vileget - Pass file edit requests to a xvile editor running Vileserv.
+vileget - Pass file edit requests to a vile editor running Vileserv.
 
 =head1 SYNOPSIS
 
@@ -30,13 +30,13 @@ vileget [B<-n>] [B<-c>] [B<-w>] [I<file> ...]
 =head1 DESCRIPTION
 
 Vileget can be used to load files into an already running instance
-of xvile.  Xvile should have already loaded and
-started the Vileserv perl module. (See the Vileserv documentation
-for more detail.)
+of vile or xvile.  The editor should have already loaded and started
+the Vileserv perl module.  (See the Vileserv documentation for more
+detail.)
 
-By default, if vileget cannot connect to a running instance of xvile,
-it tries to start one under the silly assumption that any xvile it
-launches will automagically load and start the Vileserv module.
+By default, if vileget cannot connect to a running instance of the
+editor it tries to start a new one (xvile).  This will only work
+correctly if you have configured vile to start Vileserv automatically.
 
 =head1 COMMAND-LINE OPTIONS
 
@@ -44,21 +44,21 @@ launches will automagically load and start the Vileserv module.
 
 =item B<-c>
 
-With this option, vileget will change the current working directory
-of the running xvile to be the directory in which vileget is being run,
-in addition to loading any requested files.
+With this option, vileget will change the current working directory of
+the running vile to be the directory in which vileget is being run, in
+addition to loading any requested files.
 
 =item B<-n>
 
 This tells vileget NOT to try starting a new instance of xvile if
-necessary.  If vileget cannot connect to a running xvile, it will
-just die with a connection error instead.
+necessary.  If vileget cannot connect to a running vile, it will just
+die with a connection error instead.
 
 =item B<-w>
 
-Vileget waits for given file(s) to be written by xvile before exiting.
-To use this option, you must use an appropriate writehook procedure
-in xvile.  Here's an example:
+Vileget waits for given file(s) to be written by vile before exiting. 
+To use this option, you must use an appropriate writehook procedure in
+vile.  Here's an example:
 
 	store-procedure wh
 	   perl &cat &cat "Vileserv::writehook '" $cfilname "'"

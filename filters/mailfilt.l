@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.8 1999/12/05 23:12:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.9 1999/12/29 15:07:39 pgf Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mail
  */
@@ -20,12 +20,9 @@ static char *String_attr;
 static void
 write_label(char *text, int size)
 {
-    static char *name;
-    static unsigned used;
-    name = do_alloc(name, size, &used);
-    strcpy(name, text);
-    name[--size] = 0;
-    write_token(yyout, text, size, keyword_attr(name));
+    char *lname = lowercase_of(text);
+    lname[--size] = 0;
+    write_token(yyout, text, size, keyword_attr(lname));
     fputc(':', yyout);
 }
 
@@ -56,9 +53,9 @@ BLANK		[ \t]
 
 BEGIN_HEADER	^"From "{EMAIL}
 
-LABEL		^[A-Z]([A-Za-z-]+):
+LABEL		^[A-Za-z]([A-Za-z-]+):
 
-NAME		[a-zA-Z0-9_.#-]+
+NAME		[a-zA-Z0-9_+.#-]+
 ADDRESS		({NAME}|\.)+
 EMAIL		{NAME}@{ADDRESS}
 

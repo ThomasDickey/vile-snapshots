@@ -1,7 +1,15 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/config.emx,v 1.1 1997/12/01 00:52:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/config.emx,v 1.2 1999/12/29 23:09:24 tom Exp $
  *
  * hand-generated configuration for EMX (gcc) on OS/2
+ *
+ * This assumes the termcap library which comes bundled with EMX.  It will
+ * build a minimally-functional version of vile:
+ *	(a) arrow- and function-keys do not work
+ *	(b) the screensize is 24x80
+ *	(c) colors are (well not good)
+ * You should use the configure script, with ncurses 5.0 to solve these
+ * problems.
  */
 
 #define scrn_chosen  1
@@ -23,3 +31,5 @@
 #define OUTC_RETURN
 #define SIGRET /*nothing*/
 #define SIGT void
+
+#define VILE_STARTUP_PATH "/usr/local/share/vile"
