@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.68 2003/01/09 01:41:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.70 2003/02/25 01:02:19 tom Exp $
  */
 
 #include	"estruct.h"
@@ -136,7 +136,7 @@ any_rw_EXPR(TBUFF ** rp, const char *vp, TBUFF ** value)
 	    return TRUE;
 	}
     } else if (vp) {
-	regexp *exp = regcomp(vp, TRUE);
+	regexp *exp = regcomp(vp, strlen(vp), TRUE);
 	if (exp != 0) {
 	    beginDisplay();
 	    free(exp);
@@ -1256,14 +1256,16 @@ int
 var_SEARCH(TBUFF ** rp, const char *vp)
 {
     if (rp) {
-	tb_scopy(rp, searchpat);
+	tb_copy(rp, searchpat);
 	return TRUE;
     } else if (vp && curbp) {
-	(void) strcpy(searchpat, vp);
+	tb_scopy(&searchpat, vp);
 	beginDisplay();
 	FreeIfNeeded(gregexp);
 	endofDisplay();
-	gregexp = regcomp(searchpat, b_val(curbp, MDMAGIC));
+	gregexp = regcomp(tb_values(searchpat),
+			  tb_length(searchpat),
+			  b_val(curbp, MDMAGIC));
 	return TRUE;
     } else {
 	return FALSE;

@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.40 2002/12/18 00:02:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.41 2003/02/26 13:49:49 tom Exp $
  *
  */
 
@@ -193,17 +193,9 @@ visible_buff(const char *buffer, int length, int eos)
 	int c = buffer[j] & 0xff;
 	if (eos && !c) {
 	    break;
-	} else if (isprint(c)) {
-	    result[k++] = (char) c;
-	    result[k] = '\0';
 	} else {
-	    if (c >= 128)
-		sprintf(result + k, "\\%03o", c);
-	    else if (c == 127)
-		strcpy(result + k, "^?");
-	    else
-		sprintf(result + k, "^%c", c | '@');
-	    k = strlen(result);
+	    vl_vischr(result + k, c);
+	    k += strlen(result + k);
 	}
     }
     result[k] = 0;

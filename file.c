@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.343 2003/02/18 00:24:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.344 2003/02/21 15:08:04 tom Exp $
  */
 
 #include "estruct.h"
@@ -2541,7 +2541,7 @@ imdying(int ACTUAL_SIG_ARGS)
 	}
     }
     term.cursorvis(TRUE);	/* ( this might work ;-) */
-    if (signo > 2) {
+    if (signo != SIGHUP && signo != SIGINT) {
 	ttclean(FALSE);
 	abort();
     }
@@ -2555,7 +2555,7 @@ imdying(int ACTUAL_SIG_ARGS)
     }
 #endif
 
-    tidy_exit(wrote ? BADEXIT : GOODEXIT);
+    tidy_exit(BADEXIT);
     /* NOTREACHED */
     SIGRET;
 }

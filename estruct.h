@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.526 2003/02/17 23:38:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.527 2003/02/23 20:32:05 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1450,7 +1450,7 @@ typedef struct regexp {
 	char *startp[NSUBEXP];
 	char *endp[NSUBEXP];
 	size_t mlen;		/* convenience:  endp[0] - startp[0] */
-	char regstart;		/* Internal use only. */
+	int regstart;		/* Internal use only. */
 	char reganch;		/* Internal use only. */
 	int regmust;		/* Internal use only. */
 	unsigned regmlen;	/* Internal use only. */

@@ -1,5 +1,23 @@
 Changes for vile 9.4 (released ??? ??? ?? ????)
 
+ 20030226 (l)
+	> Tom Dickey:
+	+ remove special check in kbd_putc() to advance the cursor, since fix
+	  in 9.3k using after_linsert() function duplicated this, making the
+	  cursor move twice for each character inserted in the minibuffer.
+	+ fix a sign-extension in hash_function() (filters.c), which could make
+	  a negative hash code.
+	+ modify regexp.c and callers to pass length into regcomp(), making
+	  its interface not rely upon whether the pattern is a null-terminated
+	  string (prompted by recent change for KBD_0CHAR, which dated from
+	  980312).
+	+ add more keywords for js.key
+	+ correct handling of backtic in here-document by sh-filt.l when
+	  command-substitution happens to be disabled.
+	+ modify imdying() to always exit with an error status.
+	+ amend changes to editMiniBuffer(), which did not allow arrow-key
+	  movement unless the ^G toggle was used.
+
  20030217 (k)
 	> Clark Morgan:
 	+ make ^X-s reflect the documentation in vile.hlp by implementing a

@@ -5,7 +5,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995-2000 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.118 2002/12/14 18:08:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.119 2003/02/23 17:23:30 tom Exp $
  *
  */
 #include "estruct.h"
@@ -579,7 +579,7 @@ cheap_buffer_scan(BUFFER *bp, char *patrn, int dir)
 {
     LINE *lp;
     LINE *result = 0;
-    regexp *exp = regcomp(patrn, FALSE);
+    regexp *exp = regcomp(patrn, strlen(patrn), FALSE);
 #ifdef MDTAGIGNORECASE
     int savecase = ignorecase;
     if (b_val(bp, MDTAGIGNORECASE))

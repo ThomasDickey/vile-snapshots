@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.267 2002/12/15 20:14:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.270 2003/02/26 14:22:01 tom Exp $
  *
  */
 
@@ -1997,3 +1997,45 @@ vl_stricmp(const char *a, const char *b)
     }
 }
 #endif
+
+/*
+ * Format a visible representation of the given character, returns the buffer
+ * address to simplify using this in formatting a whole buffer.
+ */
+char *
+vl_vischr(char *buffer, int ch)
+{
+    ch = CharOf(ch);
+    if (isPrint(ch)) {
+	buffer[0] = (char) ch;
+	buffer[1] = '\0';
+    } else {
+	if (ch >= 128)
+	    sprintf(buffer, "\\%03o", ch);
+	else if (ch == 127)
+	    strcpy(buffer, "^?");
+	else
+	    sprintf(buffer, "^%c", ch | '@');
+    }
+    return buffer;
+}
+
+/*
+ * Construct a TBUFF that holds a null-terminated, visible representation of
+ * the given buffer.
+ */
+TBUFF *
+tb_visbuf(const char *buffer, size_t len)
+{
+    char temp[20];
+    size_t n;
+    TBUFF *result = 0;
+
+    if (buffer != 0 && len != 0
+	&& tb_init(&result, EOS) != 0) {
+	for (n = 0; n < len; ++n) {
+	    tb_sappend0(&result, vl_vischr(temp, buffer[n]));
+	}
+    }
+    return result;
+}

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.511 2003/02/18 00:15:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.515 2003/02/26 13:56:23 tom Exp $
  *
  */
 
@@ -856,7 +856,10 @@ extern char * home_path (char *path);
 
 /* random.c */
 extern L_NUM line_no (BUFFER *the_buffer, LINEPTR the_line);
+extern L_NUM vl_line_count (BUFFER *the_buffer);
+extern TBUFF * tb_visbuf (const char *buffer, size_t len);
 extern char * current_directory (int force);
+extern char * vl_vischr (char *buffer, int ch);
 extern int catnap (int milli, int watchinput);
 extern int fmatchindent (int c);
 extern int getccol (int bflg);
@@ -868,12 +871,11 @@ extern int line_report (L_NUM before);
 extern int liststuff (const char *name, int appendit, void (*)(LIST_ARGS), int iarg, void *vargp);
 extern int restore_dot(MARK saved_dot);
 extern int set_directory (const char *dir);
+extern long vl_atol (char *str, int base, int *failed);
 extern void autocolor (void);
 extern void ch_fname (BUFFER *bp, const char *fname);
-extern void set_directory_from_file(BUFFER *bp);
+extern void set_directory_from_file (BUFFER *bp);
 extern void set_rdonly (BUFFER *bp, const char *name, int mode);
-extern L_NUM vl_line_count (BUFFER *the_buffer);
-extern long vl_atol(char *str, int base, int *failed);
 
 #ifdef HAVE_STRTOUL
 extern ULONG vl_atoul(char *str, int base, int *failed);
@@ -927,7 +929,7 @@ extern void update_dos_drv_dir (char * cwd);
 #endif
 
 /* regexp.c */
-extern regexp * regcomp (const char *origexp, int magic);
+extern regexp * regcomp (const char *origexp, size_t exp_len, int magic);
 extern int regexec (regexp *prog, char *string, char *stringend, int startoff, int endoff);
 extern int lregexec (regexp *prog, LINEPTR lp, int startoff, int endoff);
 
@@ -965,7 +967,7 @@ extern TBUFF * encode_attributes(LINE *lp, BUFFER *bp, REGION * top_region);
 /* search.c */
 extern int findpat (int f, int n, regexp *exp, int direc);
 extern int fsearch (int f, int n, int marking, int fromscreen);
-extern int readpattern (const char *prompt, char *apat, regexp **srchexpp, int c, int fromscreen);
+extern int readpattern (const char *prompt, TBUFF **apat, regexp **srchexpp, int c, int fromscreen);
 extern int scanner (regexp *exp, int direct, int wrapok, int *wrappedp);
 extern void attrib_matches (void);
 extern void regerror (const char *s);

@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.126 2002/02/04 00:30:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.129 2003/02/26 14:03:53 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -18,7 +18,7 @@ static char const notfoundmsg[] = "Not found";
 static char const hitendmsg[] = "Search reached %s without matching pattern";
 
 static int rsearch(int f, int n, int dummy, int fromscreen);
-static void movenext(MARK * pdot, int dir);
+static void movenext(MARK *pdot, int dir);
 static void savematch(MARK curpos, size_t matchlen);
 
 static void
@@ -84,7 +84,7 @@ fsearch(int f, int n, int marking, int fromscreen)
      */
 
     if (!marking) {
-	status = readpattern("Search: ", searchpat, &gregexp,
+	status = readpattern("Search: ", &searchpat, &gregexp,
 			     lastkey, fromscreen);
 	if (status != TRUE)
 	    return status;
@@ -167,7 +167,7 @@ forwhunt(int f, int n)
 	n = 1;
 
     /* Make sure a pattern exists */
-    if (searchpat[0] == EOS) {
+    if (tb_length(searchpat) == 0) {
 	mlforce("[No pattern set]");
 	return FALSE;
     }
@@ -246,7 +246,7 @@ rsearch(int f, int n, int dummy GCC_UNUSED, int fromscreen)
     /* ask the user for the regular expression to search for, and
      * find n'th occurrence.
      */
-    status = readpattern("Reverse search: ", searchpat, &gregexp,
+    status = readpattern("Reverse search: ", &searchpat, &gregexp,
 			 EOS, fromscreen);
     if (status != TRUE)
 	return status;
@@ -305,7 +305,7 @@ backhunt(int f, int n)
 	n = 1;
 
     /* Make sure a pattern exists */
-    if (searchpat[0] == EOS) {
+    if (tb_length(searchpat) == 0) {
 	mlforce("[No pattern set]");
 	return FALSE;
     }
@@ -537,7 +537,7 @@ scanner(
 
 #if OPT_HILITEMATCH
 static int hilite_suppressed;
-static char savepat[NPAT];
+static TBUFF *savepat = 0;
 static int save_igncase;
 static int save_magic;
 static BUFFER *save_curbp;
@@ -559,12 +559,17 @@ need_to_rehilite(void)
 
     if ((curbp->b_highlight & (HILITE_ON | HILITE_DIRTY)) ==
 	(HILITE_ON | HILITE_DIRTY) ||
-	strcmp(searchpat, savepat) != 0 ||
+	tb_length(searchpat) != tb_length(savepat) ||
+	(tb_length(searchpat) != 0 &&
+	 tb_length(savepat) != 0 &&
+	 memcmp(tb_values(searchpat),
+		tb_values(savepat),
+		tb_length(savepat))) ||
 	save_igncase != ignorecase ||
 	save_vattr != b_val(curbp, VAL_HILITEMATCH) ||
 	save_magic != b_val(curbp, MDMAGIC) ||
 	(!hilite_suppressed && save_curbp != curbp)) {
-	(void) strcpy(savepat, searchpat);
+	tb_copy(&savepat, searchpat);
 	save_igncase = ignorecase;
 	save_vattr = (VIDEO_ATTR) b_val(curbp, VAL_HILITEMATCH);
 	save_magic = b_val(curbp, MDMAGIC);
@@ -620,7 +625,7 @@ attrib_matches(void)
     if (!need_to_rehilite())
 	return;
 
-    if (searchpat[0] == EOS || gregexp == NULL)
+    if (tb_length(searchpat) == 0 || gregexp == NULL)
 	return;
 
 /* #define track_hilite 1 */
@@ -681,11 +686,15 @@ regerror(const char *s)
 int
 scrsearchpat(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    int s;
-    s = readpattern("", searchpat, &gregexp, EOS, TRUE);
-    mlwrite("Search pattern is now %s", searchpat);
+    int status;
+    TBUFF *temp = 0;
+
+    status = readpattern("", &searchpat, &gregexp, EOS, TRUE);
+    temp = tb_visbuf(tb_values(searchpat), tb_length(searchpat));
+    mlwrite("Search pattern is now %s", temp ? tb_values(temp) : "null");
+    tb_free(&temp);
     last_srch_direc = FORWARD;
-    return s;
+    return status;
 }
 
 /*
@@ -696,15 +705,21 @@ scrsearchpat(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 readpattern(
 	       const char *prompt,
-	       char *apat,
+	       TBUFF ** apat,
 	       regexp ** srchexpp,
 	       int c,
 	       int fromscreen)
 {
-    int status;
+    char temp[NPAT];
+    int status = TRUE;
 
     if (fromscreen) {
-	status = screen_string(apat, NPAT, vl_ident);
+	if ((status = screen_string(temp, sizeof(temp), vl_ident)) == TRUE) {
+	    if (tb_init(apat, EOS) == 0
+		|| tb_bappend(apat, temp, strlen(temp)) == 0) {
+		status = FALSE;
+	    }
+	}
 	if (status != TRUE)
 	    return status;
     } else {
@@ -713,17 +728,29 @@ readpattern(
 	   search pattern, and in delins() for the replacement
 	   pattern */
 	hst_glue(c);
-	status = kbd_string(prompt, apat, NPAT, c, KBD_EXPPAT | KBD_0CHAR,
-			    no_completion);
+	/*
+	 * kbd_reply() expects a trailing null, to simplify calls from
+	 * kbd_string().
+	 */
+	if (tb_values(*apat) != 0)
+	    tb_append(apat, EOS);
+	status = kbd_reply(prompt, apat,
+			   eol_history, c,
+			   KBD_EXPPAT | KBD_0CHAR,
+			   no_completion);
+	if (tb_length(*apat) != 0)
+	    tb_unput(*apat);	/* trim the trailing null */
     }
     if (status == TRUE) {
 	if (srchexpp) {		/* compile it */
 	    FreeIfNeeded(*srchexpp);
-	    *srchexpp = regcomp(searchpat, b_val(curbp, MDMAGIC));
+	    *srchexpp = regcomp(tb_values(*apat),
+				tb_length(*apat),
+				b_val(curbp, MDMAGIC));
 	    if (!*srchexpp)
 		return FALSE;
 	}
-    } else if (status == FALSE && *apat != EOS) {	/* Old one */
+    } else if (status == FALSE && tb_length(*apat) != 0) {	/* Old one */
 	status = TRUE;
     }
 
@@ -760,7 +787,7 @@ scanboundry(int wrapok, MARK dot, int dir)
  *  don't return it.  will wrap, and doesn't set motion flags.
  */
 static void
-movenext(MARK * pdot, int dir)
+movenext(MARK *pdot, int dir)
 {
     register LINE *curline;
     register int curoff;
