@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.73 1997/03/15 15:52:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.74 1997/10/07 09:48:47 kev Exp $
  *
  */
 
@@ -281,6 +281,7 @@ mvupwind(int f, int n)
 	}
 
 	curwp->w_line.l = lp;
+	curwp->w_line.o = 0;
 	curwp->w_flag |= WFHARD | WFMODE;
 
 	/* is it still in the window */
@@ -397,6 +398,7 @@ onlywind(int f GCC_UNUSED, int n GCC_UNUSED)
         wheadp->w_wndp = NULL;
 
         curwp->w_line.l = adjust_back(curwp, curwp->w_line.l, curwp->w_toprow);
+	curwp->w_line.o = 0;
         curwp->w_ntrows = term.t_nrow-2;
         curwp->w_toprow = 0;
         curwp->w_flag  |= WFMODE|WFHARD|WFSBAR;
@@ -464,6 +466,7 @@ delwp(WINDOW *thewp)
 		wp = thewp->w_wndp;
                 wp->w_line.l = adjust_back(wp, wp->w_line.l,
 						thewp->w_ntrows+1);
+		wp->w_line.o = 0;
 		wp->w_ntrows += thewp->w_ntrows+1;
 		wp->w_toprow = thewp->w_toprow;
 		if (thewp == wheadp)
@@ -563,6 +566,7 @@ splitw(int f, int n)
 				ntrl--;
 			} else {
 	                        curwp->w_line.l = lforw(curwp->w_line.l);
+				curwp->w_line.o = 0;
 			}
 		}
                 curwp->w_ntrows = ntru; /* new size */
@@ -574,6 +578,7 @@ splitw(int f, int n)
                 wp->w_ntrows = ntrl;
 		/* try to keep lower from reframing */
 		wp->w_line.l = adjust_forw(wp, wp->w_line.l, ntru+1);
+		wp->w_line.o = 0;
 		wp->w_dot.l = wp->w_line.l;
 		wp->w_dot.o = 0;
 		/* update the split history */
@@ -603,6 +608,7 @@ splitw(int f, int n)
 		wp->w_dot.o = 0;
 		/* adjust lower window topline */
 		curwp->w_line.l = adjust_forw(curwp, curwp->w_line.l, ntru);
+		curwp->w_line.o = 0;
 		/* update the split history */
 		wp->w_split_hist <<= 1;
 		curwp->w_split_hist = wp->w_split_hist | 1;
@@ -648,9 +654,11 @@ enlargewind(int f, int n)
         }
         if (curwp->w_wndp == adjwp) {           /* Shrink below.        */
                 adjwp->w_line.l  = adjust_forw(adjwp, adjwp->w_line.l, n);
+		adjwp->w_line.o  = 0;
                 adjwp->w_toprow += n;
         } else {                                /* Shrink above.        */
                 curwp->w_line.l  = adjust_back(curwp, curwp->w_line.l, n);
+		curwp->w_line.o  = 0;
                 curwp->w_toprow -= n;
         }
         curwp->w_ntrows += n;
@@ -686,9 +694,11 @@ shrinkwind(int f, int n)
         }
         if (curwp->w_wndp == adjwp) {           /* Grow below.          */
                 adjwp->w_line.l  = adjust_back(adjwp, adjwp->w_line.l, n);
+		adjwp->w_line.o  = 0;
                 adjwp->w_toprow -= n;
         } else {                                /* Grow above.          */
                 curwp->w_line.l  = adjust_forw(curwp, curwp->w_line.l, n);
+		curwp->w_line.o  = 0;
                 curwp->w_toprow += n;
         }
         curwp->w_ntrows -= n;
