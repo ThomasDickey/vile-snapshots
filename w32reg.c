@@ -2,7 +2,7 @@
  * w32ole.cpp:  Winvile OLE registration code (currently only used
  *              for OLE automation).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32reg.c,v 1.3 1998/09/03 10:15:45 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32reg.c,v 1.4 1999/03/19 10:53:12 pgf Exp $
  */
 
 #include <windows.h>
@@ -568,7 +568,7 @@ make_editor_path(char *path /* must be at least NFILEN chars long */)
      * is always initialized to "." on a win32 host (bummer).
      */
     sprintf(name, "%s.exe", prognam);
-    if ((s = flook(name, FL_PATH|FL_EXECABLE)) != 0)
+    if ((s = cfg_locate(name, FL_PATH|FL_EXECABLE)) != 0)
         strcpy(path, sl_to_bsl(s));
     else
     {

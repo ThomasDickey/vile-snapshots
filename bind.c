@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.188 1998/12/17 03:17:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.189 1999/03/19 11:26:42 pgf Exp $
  *
  */
 
@@ -39,7 +39,7 @@ static	KBIND *	kcode2kbind ( int code );
 		( (k == &f_cntl_a_func)\
 		||(k == &f_cntl_x_func)\
 		||(k == &f_poundc_func)\
-		||(k == &f_unarg_func)\
+		||(k == &f_reptc_func)\
 		||(k == &f_esc_func)\
 		)
 
@@ -47,7 +47,7 @@ static	char *	kcod2prc (int c, char *seq);
 static	int	install_bind (int c, const CMDFUNC *kcmd, const CMDFUNC **oldfunc);
 static	int	key_to_bind ( const CMDFUNC *kcmd );
 static	int	rebind_key ( int c, const CMDFUNC *kcmd );
-static	int	strinc (const char *sourc, const char *sub);
+static	int	ourstrstr (const char *sourc, const char *sub);
 static	int	unbindchar ( int c );
 static	int	update_binding_list ( BUFFER *bp );
 static	void	makebindlist (LIST_ARGS);
@@ -69,6 +69,9 @@ static	int	prc2kcod ( const char *kk );
 #if OPT_REBIND
 static	KBIND	*KeyBindings = kbindtbl;
 #endif
+
+static void kbd_puts(const char *s);
+static void kbd_puts_maybe(char *s);
 
 /*----------------------------------------------------------------------------*/
 
@@ -96,7 +99,7 @@ old_namebst (BI_NODE *a)
 		}
 		free(TYPECAST(char,BI_KEY(a)));
 	}
-	free(a);
+	free(TYPECAST(char,a));
 }
 
 static void
@@ -127,7 +130,7 @@ int
 help(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register BUFFER *bp;	/* buffer pointer to help */
-	char *fname;		/* ptr to file returned by flook() */
+	char *hname;
 	int alreadypopped;
 
 	/* first check if we are already here */
@@ -136,21 +139,21 @@ help(int f GCC_UNUSED, int n GCC_UNUSED)
 		return FALSE;
 
 	if (bp->b_active == FALSE) { /* never been used */
-		fname = flook(helpfile, FL_ANYWHERE|FL_READABLE);
-		if (fname == NULL) {
+		hname = cfg_locate(helpfile, FL_ANYWHERE|FL_READABLE);
+		if (!hname) {
 			mlforce("[Sorry, can't find the help information]");
 			(void)zotbuf(bp);
 			return(FALSE);
 		}
 		alreadypopped = (bp->b_nwnd != 0);
 		/* and read the stuff in */
-		if (readin(fname, 0, bp, TRUE) == FALSE ||
+		if (readin(hname, 0, bp, TRUE) == FALSE ||
 				popupbuff(bp) == FALSE) {
 			(void)zotbuf(bp);
 			return(FALSE);
 		}
 		set_bname(bp, HELP_BufName);
-		set_rdonly(bp, fname, MDVIEW);
+		set_rdonly(bp, hname, MDVIEW);
 
 		make_local_b_val(bp,MDIGNCASE); /* easy to search, */
 		set_b_val(bp,MDIGNCASE,TRUE);
@@ -297,21 +300,13 @@ show_termchrs(int f GCC_UNUSED, int n GCC_UNUSED)
 }
 #endif /* OPT_TERMCHRS */
 
-static void
-ostring(	/* output a string of output characters */
-char *s)	/* string to output */
-{
-	if (discmd)
-		kbd_puts(s);
-}
-
 /* bindkey:	add a new key to the key binding table		*/
 
 /* ARGSUSED */
 int
 bindkey(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	register const CMDFUNC *kcmd; /* ptr to the requested function to bind to */
+	register const CMDFUNC *kcmd;
 	char cmd[NLINE];
 	char *fnp;
 
@@ -337,14 +332,14 @@ key_to_bind(register const CMDFUNC *kcmd)
 
 	mlprompt("...to keyboard sequence (type it exactly): ");
 
-	/* get the command sequence to bind */
+	/* if running a command line, get a token rather than keystrokes */
 	if (clexec) {
 		char tok[NSTRING];
-		mac_tokval(tok);	/* get the next token */
+		mac_tokval(tok);
 		c = prc2kcod(tok);
 	} else {
 		/* perhaps we only want a single key, not a sequence */
-		/* 	(see more comments below) */
+		/*	(see more comments below) */
 		if (isSpecialCmd(kcmd))
 			c = keystroke();
 		else
@@ -353,7 +348,7 @@ key_to_bind(register const CMDFUNC *kcmd)
 
 	if (c >= 0) {
 		/* change it to something we can print as well */
-		ostring(kcod2prc(c, outseq));
+		kbd_puts_maybe(kcod2prc(c, outseq));
 		hst_append_s(outseq, FALSE);
 	} else {
 		mlforce("[Not a proper key-sequence]");
@@ -398,10 +393,10 @@ register const CMDFUNC *kcmd)
 			cntl_x = c;
 		if (kcmd == &f_poundc_func)
 			poundc = c;
-		if (kcmd == &f_unarg_func)
+		if (kcmd == &f_reptc_func)
 			reptc = c;
 		if (kcmd == &f_esc_func)
-			abortc = c;
+			esc_c = c;
 	}
 }
 
@@ -475,10 +470,8 @@ unbindkey(int f GCC_UNUSED, int n GCC_UNUSED)
 		}
 	}
 
-	/* change it to something we can print as well */
-	ostring(kcod2prc(c, outseq));
+	kbd_puts_maybe(kcod2prc(c, outseq));
 
-	/* if it isn't bound, bitch */
 	if (unbindchar(c) == FALSE) {
 		mlforce("[Key not bound]");
 		return(FALSE);
@@ -493,6 +486,7 @@ unbindchar(int c)		/* command key to unbind */
     register KBIND *kbp;	/* pointer into the command table */
     register KBIND *skbp;	/* saved pointer into the command table */
 
+    /* if it's a simple character, it will be in the asciitbl[] array */
     if (!isspecial(c))
     {
 	if (asciitbl[c])
@@ -509,7 +503,7 @@ unbindchar(int c)		/* command key to unbind */
     if (kbp->k_code == c)
     {
 	KeyBindings = kbp->k_link;
-	free(kbp);
+	free(TYPECAST(char,kbp));
 	return TRUE;
     }
 
@@ -520,7 +514,7 @@ unbindchar(int c)		/* command key to unbind */
 	{
 	    /* relink previous */
 	    skbp->k_link = kbp->k_link;
-	    free(kbp);
+	    free(TYPECAST(char,kbp));
 	    return TRUE;
 	}
 
@@ -559,7 +553,7 @@ unbindchar(int c)		/* command key to unbind */
 		   into it with view mode			*/
 
 /* remember whether we last did "apropos" or "describe-bindings" */
-static char *last_apropos_string;
+static char *last_lookup_string;
 static CMDFLAGS last_whichcmds;
 static int append_to_binding_list;
 
@@ -568,14 +562,14 @@ static int
 update_binding_list(BUFFER *bp GCC_UNUSED)
 {
 	return liststuff(BINDINGLIST_BufName, append_to_binding_list,
-		makebindlist, (int)last_whichcmds, (void *)last_apropos_string);
+		makebindlist, (int)last_whichcmds, (void *)last_lookup_string);
 }
 
 /* ARGSUSED */
 int
 desbind(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	last_apropos_string = (char *)0;
+	last_lookup_string = (char *)0;
 	last_whichcmds = 0;
 
 	return update_binding_list((BUFFER *)0);
@@ -585,7 +579,7 @@ desbind(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 desmotions(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	last_apropos_string = (char *)0;
+	last_lookup_string = (char *)0;
 	last_whichcmds = MOTION;
 	return update_binding_list((BUFFER *)0);
 }
@@ -594,29 +588,31 @@ desmotions(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 desopers(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	last_apropos_string = (char *)0;
+	last_lookup_string = (char *)0;
 	last_whichcmds = OPER;
 	return update_binding_list((BUFFER *)0);
 }
 
+/* lookup function by substring */
 /* ARGSUSED */
 int
-desapro(int f GCC_UNUSED, int n GCC_UNUSED)	/* Apropos (List functions that match a substring) */
+dessubstr(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register int    s;
-	static char mstring[NSTRING];	/* string to match cmd names to */
+	static char substring[NSTRING];
 
-	s = mlreply("Apropos string: ", mstring, sizeof(mstring));
+	s = mlreply("Apropos string: ", substring, sizeof(substring));
 	if (s != TRUE)
 		return(s);
 
-	last_apropos_string = mstring;
+	last_lookup_string = substring;
 	last_whichcmds = 0;
 	return update_binding_list((BUFFER *)0);
 }
 
 static char described_cmd[NLINE+1];	/* string to match cmd names to */
 
+/* lookup up function by name */
 /* ARGSUSED */
 int
 desfunc(int f GCC_UNUSED, int n GCC_UNUSED)	/* describe-function */
@@ -624,7 +620,7 @@ desfunc(int f GCC_UNUSED, int n GCC_UNUSED)	/* describe-function */
 	register int    s;
 	char *fnp;
 
-	/* force an exact match by strinc() later on from makefuncdesc() */
+	/* force an exact match by ourstrstr() later on from makefuncdesc() */
 	described_cmd[0] = '^';
 
 	fnp = kbd_engl("Describe function whose full name is: ",
@@ -632,7 +628,7 @@ desfunc(int f GCC_UNUSED, int n GCC_UNUSED)	/* describe-function */
 	if (fnp == NULL || engl2fnc(fnp) == NULL) {
 		s = no_such_function(fnp);
 	} else {
-		last_apropos_string = described_cmd;
+		last_lookup_string = described_cmd;
 		last_whichcmds = 0;
 		append_to_binding_list = TRUE;
 		s = update_binding_list((BUFFER *)0);
@@ -641,20 +637,18 @@ desfunc(int f GCC_UNUSED, int n GCC_UNUSED)	/* describe-function */
 	return s;
 }
 
+/* lookup up function by key */
 /* ARGSUSED */
 int
 deskey(int f GCC_UNUSED, int n GCC_UNUSED)	/* describe the command for a certain key */
 {
-	register int c;		/* key to describe */
+	register int c;		/* character to describe */
 	char outseq[NSTRING];	/* output buffer for command sequence */
 	const NTAB *nptr;	/* name table pointer */
 	int s;
 
 	/* prompt the user to type us a key to describe */
 	mlprompt("Describe the function bound to this key sequence: ");
-
-	/* get the command sequence to describe
-	   change it to something we can print as well */
 
 	/* check to see if we are executing a command line */
 	if (clexec) {
@@ -686,7 +680,7 @@ deskey(int f GCC_UNUSED, int n GCC_UNUSED)	/* describe the command for a certain
 	/* describe it */
 	described_cmd[0] = '^';
 	(void)strcpy(described_cmd + 1, nptr->n_name);
-	last_apropos_string = described_cmd;
+	last_lookup_string = described_cmd;
 	last_whichcmds = 0;
 	append_to_binding_list = TRUE;
 	s = update_binding_list((BUFFER *)0);
@@ -807,9 +801,8 @@ makebind_func(BI_NODE *node, const void *d)
     if (data->min && (int) strlen(BI_KEY(node)) <= data->min)
 	return 0;
 
-    /* if we are executing an apropos command
-       and current string doesn't include the search string */
-    if (data->apropos && !strinc(BI_KEY(node), data->apropos))
+    /* failed lookup by substring? */
+    if (data->apropos && !ourstrstr(BI_KEY(node), data->apropos))
 	return 0;
 
     /* add in the command name */
@@ -1010,7 +1003,7 @@ void *mstring)		/* match string if partial list, NULL to list all */
 		/* if we are executing an apropos command
 		   and current string doesn't include the search string */
 		if (mstring
-		 && (strinc(nametbl[j].n_name, (char *)mstring) == FALSE))
+		 && !ourstrstr(nametbl[j].n_name, (char *)mstring))
 			continue;
 
 		ok = makefuncdesc(j, listed);
@@ -1030,66 +1023,47 @@ void *mstring)		/* match string if partial list, NULL to list all */
 /* much like the "standard" strstr, but if the substring starts
 	with a '^', we discard it and force an exact match.  */
 static int
-strinc(			/* does source include sub? */
-const char *sourc,	/* string to search in */
-const char *sub)	/* substring to look for */
+ourstrstr(
+const char *haystack,
+const char *needle)
 {
-	const char *sp;		/* ptr into source */
-	const char *nxtsp;	/* next ptr into source */
-	const char *tp;		/* ptr into substring */
-	int exact = (*sub == '^');
-
-	if (exact)
-		sub++;
-
-	/* for each character in the source string */
-	sp = sourc;
-	while (*sp) {
-		tp = sub;
-		nxtsp = sp;
-
-		/* is the substring here? */
-		while (*tp) {
-			if (*nxtsp++ != *tp)
-				break;
-			tp++;
+	if (*needle == '^') {
+		return strcmp(needle+1, haystack) ? FALSE : TRUE;
+	} else {
+		int nl = strlen(needle);
+		int hl = strlen(haystack);
+		while (hl >= nl && *haystack) {
+			if (!strncmp(haystack, needle, nl))
+				return TRUE;
+			haystack++;
+			hl--;
 		}
-
-		if ((*tp == EOS) && (!exact || *nxtsp == EOS))
-			return(TRUE);
-
-		if (exact) /* we only get one chance */
-			break;
-
-		/* no, onward */
-		sp++;
+		return FALSE;
 	}
-	return(FALSE);
 }
 
 #endif /* OPT_REBIND */
 
 
-/*	Look up the existence of a file along the normal or PATH
-	environment variable. Look first in the HOME directory if
-	asked and possible
-*/
+/* config files that vile is interested in may live in various places,
+ * and which may be constrained to various r/w/x modes.  the files may
+ * be
+ *  in the current directory,
+ *  in the HOME directory,
+ *  along a special "path" variable called "VILE_STARTUP_PATH",
+ *  they may be in the directory where we found the vile executable itself,
+ *  or they may be along the user's PATH.
+ * in addition, they may be readable, writeable, or executable.
+ */
 
 char *
-flook(
-char *fname,		/* base file name to search for */
-UINT hflag)		/* Look in the HOME environment variable first? */
+cfg_locate(
+char *fname,		/* what we're looking for */
+UINT which)		/* flags specifying where to look */
 {
-	register char *home;	/* path to home directory */
-#if ENVFUNC && OPT_PATHLOOKUP
-	register const char *path; /* environmental PATH variable */
-#endif
-	static char fspec[NSTRING];	/* full path spec to search */
-#if SYS_VMS
-	register char *sp;	/* pointer into path spec */
-	static TBUFF *myfiles;
-#endif
-	int	mode = (hflag & (FL_EXECABLE|FL_WRITEABLE|FL_READABLE));
+	const char *cp;
+	static char fullpath[NFILEN];  /* expanded path */
+	int	mode = (which & (FL_EXECABLE|FL_WRITEABLE|FL_READABLE));
 
 	/* take care of special cases */
 	if (!fname || !fname[0] || isSpace(fname[0]))
@@ -1097,82 +1071,85 @@ UINT hflag)		/* Look in the HOME environment variable first? */
 	else if (isShellOrPipe(fname))
 		return fname;
 
-	if (hflag & FL_HERE) {
+	/* look in the current directory */
+	if (which & FL_CDIR) {
 		if (ffaccess(fname, mode)) {
 			return(fname);
 		}
 	}
 
-#if ENVFUNC
-
-	if (hflag & FL_HOME) {
-		home = getenv("HOME");
-		if (home != NULL) {
+	/* look in the home directory */
+	if (which & FL_HOME) {
+		cp = getenv("HOME");
+		if (cp != NULL) {
 			/* try home dir file spec */
-			if (ffaccess(pathcat(fspec,home,fname), mode)) {
-				return(fspec);
+			if (ffaccess(pathcat(fullpath,cp,fname), mode)) {
+				return(fullpath);
 			}
 		}
 	}
 
-#endif	/* ENVFUNC */
-
-	if (hflag & FL_EXECDIR) { /* is it where we found the executable? */
+	/* look in vile's bin directory */
+	if (which & FL_EXECDIR) { /* is it where we found the executable? */
 		if (exec_pathname
 		 && exec_pathname[0] != EOS
-		 && ffaccess(pathcat(fspec, exec_pathname, fname), mode))
-			return(fspec);
+		 && ffaccess(pathcat(fullpath, exec_pathname, fname), mode))
+			return(fullpath);
 	}
 
-	if (hflag & FL_TABLE) {
-		/* then look it up via the table method */
-		path = startup_path;
-		while ((path = parse_pathlist(path, fspec)) != 0) {
-			if (ffaccess(pathcat(fspec, fspec, fname), mode)) {
-				return(fspec);
+	/* look along "VILE_STARTUP_PATH" */
+	if (which & FL_STARTPATH) {
+		cp = startup_path;
+		while ((cp = parse_pathlist(cp, fullpath)) != 0) {
+			if (ffaccess(pathcat(fullpath, fullpath,
+						fname), mode)) {
+				return(fullpath);
 			}
 		}
 	}
 
-	if (hflag & FL_PATH) {
+	/* look along "PATH" */
+	if (which & FL_PATH) {
 
-#if ENVFUNC
 #if OPT_PATHLOOKUP
 		/* then look along $PATH */
 #if SYS_VMS
 		/* On VAX/VMS, the PATH environment variable is only the
 		 * current-dir.  Fake up an acceptable alternative.
 		 */
+		static TBUFF *myfiles;
 		if (!tb_length(myfiles)) {
 			char	mypath[NFILEN];
 
 			(void)strcpy(mypath, prog_arg);
-			if ((sp = vms_pathleaf(mypath)) == mypath)
-				(void)strcpy(mypath, current_directory(FALSE));
+			if ((cp = vms_pathleaf(mypath)) == mypath)
+				(void)strcpy(mypath,
+					current_directory(FALSE));
 			else
-				*sp = EOS;
+				*cp = EOS;
 
 			if (!tb_init(&myfiles, EOS)
 			 || !tb_sappend(&myfiles, mypath)
-			 || !tb_sappend(&myfiles, ",SYS$SYSTEM:,SYS$LIBRARY:")
+			 || !tb_sappend(&myfiles,
+					",SYS$SYSTEM:,SYS$LIBRARY:")
 			 || !tb_append(&myfiles, EOS))
 			return NULL;
 		}
-		path = tb_values(myfiles);
+		cp = tb_values(myfiles);
 #else	/* UNIX or MSDOS */
-		path = getenv("PATH");	/* get the PATH variable */
+		cp = getenv("PATH");	/* get the PATH variable */
 #endif
-		while ((path = parse_pathlist(path, fspec)) != 0) {
-			if (ffaccess(pathcat(fspec, fspec, fname), mode)) {
-				return(fspec);
+		while ((cp = parse_pathlist(cp, fullpath)) != 0) {
+			if (ffaccess(pathcat(fullpath,
+					fullpath, fname), mode)) {
+				return(fullpath);
 			}
 		}
 #endif	/* OPT_PATHLOOKUP */
-#endif	/* ENVFUNC */
 
 	}
 
-	return NULL;	/* no such luck */
+	return NULL;
 }
 
 /* translate a keycode to its binding-string */
@@ -1309,7 +1286,7 @@ char *seq)	/* destination string for sequence */
 static KBIND *
 kcode2kbind(register int code)
 {
-	register KBIND	*kbp;	/* pointer into a binding table */
+	register KBIND	*kbp;
 
 #if OPT_REBIND
 	for (kbp = KeyBindings; kbp != kbindtbl; kbp = kbp->k_link) {
@@ -1381,16 +1358,15 @@ fnc2pstr(const CMDFUNC *f)
 #endif
 
 /* fnc2engl: translate a function pointer to the english name for
-		that function
+		that function.  prefer long names to short ones.
 */
 #if OPT_EVAL || OPT_REBIND
 static const NTAB *
 fnc2ntab(const CMDFUNC *cfp)
 {
-	register const NTAB *nptr;	/* pointer into the name table */
-	register const NTAB *shortnptr = NULL; /* pointer into the name table */
+	register const NTAB *nptr;
+	register const NTAB *shortnptr = NULL;
 
-	/* skim through the table, looking for a match */
 	for (nptr = nametbl; nptr->n_cmd; nptr++) {
 		if (nptr->n_cmd == cfp) {
 			/* if it's a long name, return it */
@@ -1419,7 +1395,7 @@ fnc2engl(const CMDFUNC *cfp)
 
 /* engl2fnc: match name to a function in the names table
 	translate english name to function pointer
- 		 return any match or NULL if none
+		 return any match or NULL if none
  */
 #define BINARY_SEARCH_IS_BROKEN 0
 #if OPT_NAMEBST
@@ -1489,9 +1465,9 @@ engl2fnc(const char *fname)	/* name to attempt to match */
 #if OPT_EVAL || OPT_REBIND
 static int
 prc2kcod(
-const char *kk)		/* name of key to translate to Command key form */
+const char *kk)	/* printable name to convert */
 {
-	register UINT c;	/* key sequence to return */
+	register UINT kcod;	/* code to return */
 	register UINT pref = 0;	/* key prefixes */
 	register int len = strlen(kk);
 	register const UCHAR *k = (const UCHAR *)kk;
@@ -1526,20 +1502,19 @@ const char *kk)		/* name of key to translate to Command key form */
 		}
 	}
 
-	/* a control char? */
-	if (*k == '^' && *(k+1) != EOS) {
-		c = *(k+1);
-		if (isLower(c)) c = toUpper(c);
-		c = tocntrl(c);
+	if (*k == '^' && *(k+1) != EOS) { /* control character */
+		kcod = *(k+1);
+		if (isLower(kcod)) kcod = toUpper(kcod);
+		kcod = tocntrl(kcod);
 		k += 2;
 	} else {		/* any single char, control or not */
-		c = *k++;
+		kcod = *k++;
 	}
 
 	if (*k != EOS)		/* we should have eaten the whole thing */
 		return -1;
 
-	return (int)(pref|c);
+	return (int)(pref|kcod);
 }
 #endif
 
@@ -1547,21 +1522,21 @@ const char *kk)		/* name of key to translate to Command key form */
 #if OPT_EVAL
 /* translate printable code (like "M-r") to english command name */
 const char *
-prc2engl(		/* string key name to binding name.... */
-const char *skey)	/* name of key to get binding for */
+prc2engl(		/* printable form of keycode to "english" form */
+const char *kk)		/* printable name to convert */
 {
-	const char *bindname;
-	int c;
+	const char *englname;
+	int kcod;
 
-	c = prc2kcod(skey);
-	if (c < 0)
+	kcod = prc2kcod(kk);
+	if (kcod < 0)
 		return "ERROR";
 
-	bindname = fnc2engl(kcod2fnc(c));
-	if (bindname == NULL)
-		bindname = "ERROR";
+	englname = fnc2engl(kcod2fnc(kcod));
+	if (englname == NULL)
+		englname = "ERROR";
 
-	return bindname;
+	return englname;
 }
 #endif
 
@@ -1627,12 +1602,20 @@ kbd_putc(int c)
 }
 
 /* put a string to the keyboard-prompt */
-void
+static void
 kbd_puts(const char *s)
 {
 	while (*s)
 		kbd_putc(*s++);
 }
+
+static void
+kbd_puts_maybe(char *s)
+{
+	if (discmd) while (*s)
+		kbd_putc(*s++);
+}
+
 
 /* erase a character from the display by wiping it out */
 void
@@ -1838,7 +1821,7 @@ makecmpllist(
     int i, j;
 
     for (p = NEXT_DATA(first), maxlen = strlen(THIS_NAME(first));
-         p != last;
+	 p != last;
 	 p = NEXT_DATA(p)) {
 	SIZE_T l = strlen(THIS_NAME(p));
 	if (l > maxlen)
@@ -1847,12 +1830,12 @@ makecmpllist(
 
     slashcol = (int)(pathleaf(buf) - buf);
     if (slashcol != 0) {
-        char b[NLINE];
-        (void)strncpy(b, buf, (SIZE_T)slashcol);
-        (void)strncpy(&b[slashcol], &(THIS_NAME(first))[slashcol],
+	char b[NLINE];
+	(void)strncpy(b, buf, (SIZE_T)slashcol);
+	(void)strncpy(&b[slashcol], &(THIS_NAME(first))[slashcol],
 			(len-slashcol));
-        b[slashcol+(len-slashcol)] = EOS;
-        bprintf("Completions prefixed by %s:\n", b);
+	b[slashcol+(len-slashcol)] = EOS;
+	bprintf("Completions prefixed by %s:\n", b);
     }
 
     cmplcols = term.t_ncol / (maxlen - slashcol + 1);
@@ -2510,10 +2493,10 @@ unsigned *pos)
 /* FIXME: reuse logic from makefuncdesc() */
 char *give_accelerator ( char *bname )
 {
-	size_t 			i, n;
-	register KBIND 	*kbp;
-	const CMDFUNC 	*cmd;
-	static char 	outseq[NLINE];
+	size_t			i, n;
+	register KBIND	*kbp;
+	const CMDFUNC	*cmd;
+	static char	outseq[NLINE];
 
 	for (n=0; nametbl[n].n_name != 0; n++)
 	{

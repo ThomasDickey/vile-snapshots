@@ -407,7 +407,7 @@ api_gline(VileBuf *vbp, int lno, char **linep, int *lenp)
 	*lenp = llength(DOT.l);
 	if (*lenp == 0) {
 	    *linep = "";	/* Make sure we pass back a zero length,
-	                           null terminated value when the length
+				   null terminated value when the length
 				   is zero.  Otherwise perl gets confused.
 				   (It thinks it should calculate the length
 				   when given a zero length.)
@@ -434,9 +434,9 @@ api_dotgline(VileBuf *vbp, char **linep, int *lenp, int *neednewline)
     /* FIXME: Handle rectangular regions. */
 
     if (   is_header_line(DOT, curbp)
-        || (   DOT.l == vbp->region.r_end.l
+	|| (   DOT.l == vbp->region.r_end.l
 	    && (   vbp->regionshape == FULLLINE
-	        || (   vbp->regionshape == EXACT
+		|| (   vbp->regionshape == EXACT
 		    && DOT.o >= vbp->region.r_end.o))))
     {
 	return FALSE;
@@ -497,7 +497,7 @@ api_sline(VileBuf *vbp, int lno, char *line, int len)
 	api_gotoline(vbp, lno);
 	if (   DOT.l->l_text != line
 	    && (   llength(DOT.l) != len
-	        || memcmp(line, DOT.l->l_text, len) != 0)) {
+		|| memcmp(line, DOT.l->l_text, len) != 0)) {
 	    lreplace(line, len);
 	    vbp->changed = 1;
 	}
@@ -581,7 +581,7 @@ api_motion(VileBuf *vbp, char *mstr)
 
     mp = mstr + strlen(mstr);
 
-    mapungetc(abortc | NOREMAP);
+    mapungetc(esc_c | NOREMAP);
     /* Should we allow remapping?  Seems to me like it introduces too
        many variables. */
     while (mp-- > mstr) {
@@ -595,7 +595,7 @@ api_motion(VileBuf *vbp, char *mstr)
 
 	if (ABORTED(c)) {
 	    if (mapped_ungotc_avail()) {
-		/* Not our abortc */
+		/* Not our esc_c */
 		while (mapped_ungotc_avail())
 		    (void) kbd_seq();
 		status = FALSE;
@@ -756,7 +756,7 @@ propagate_dot(void)
 		WINDOW *pwp;
 		for_each_window(pwp) {
 		    if (wp->w_bufp == pwp->w_bufp
-		        && !is_fake_window(pwp))
+			&& !is_fake_window(pwp))
 		    {
 			found = 1;
 			pwp->w_dot = wp->w_dot;

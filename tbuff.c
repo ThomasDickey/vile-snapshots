@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.32 1998/11/30 11:52:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.33 1999/03/19 10:52:33 pgf Exp $
  *
  */
 
@@ -84,7 +84,7 @@ tb_alloc(TBUFF **p, ALLOC_T n)
 		q->tb_data = typeallocn(char, q->tb_size = n);
 		q->tb_used = 0;
 		q->tb_last = 0;
-		q->tb_endc = abortc;
+		q->tb_endc = esc_c;
 		q->tb_data[0] = 0;	/* appease Purify */
 		AllocatedBuffer(q)
 	} else if (n >= q->tb_size) {
@@ -198,7 +198,7 @@ tb_copy(TBUFF **d, TBUFF *s)
 		if ((p = tb_init(d, s->tb_endc)) != 0)
 			p = tb_bappend(d, s->tb_data, s->tb_used);
 	} else
-		p = tb_init(d, abortc);
+		p = tb_init(d, esc_c);
 	return p;
 }
 
@@ -259,7 +259,7 @@ tb_string(const char *s)
 int
 tb_get(TBUFF *p, ALLOC_T n)
 {
-	register int	c = abortc;
+	register int	c = esc_c;
 
 	if (p != 0)
 		c = (n < p->tb_used) ? p->tb_data[n] : p->tb_endc;
@@ -311,7 +311,7 @@ tb_next(TBUFF *p)
 {
 	if (p != 0)
 		return tb_get(p, p->tb_last++);
-	return abortc;
+	return esc_c;
 }
 #endif
 
@@ -336,7 +336,7 @@ tb_peek(TBUFF *p)
 {
 	if (p != 0)
 		return tb_get(p, p->tb_last);
-	return abortc;
+	return esc_c;
 }
 #endif  /* NEEDED */
 

@@ -32,7 +32,7 @@
 #
 # For example, consider the following entry:
 #
-# 	somefunc	ABSM|MOTION		BSD|DOS
+#	somefunc	ABSM|MOTION		BSD|DOS
 #		"funkycom"
 #		'^X-F'
 #		'FN-2'				DOS
@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.167 1999/03/08 00:04:06 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.168 1999/03/19 11:45:46 pgf Exp $
 #
 #
 
@@ -241,14 +241,12 @@ opercopy	OPER|(RANGE|EXTRA)
 	"copy-til"
 	"c"
 	<copy text in the region>
-kbd_mac_begin	NONE
+kbd_mac_startstop	NONE
+	"end-keyboard-macro"		!FEWNAMES
 	"begin-keyboard-macro"		!FEWNAMES
 	'^X-('
-	<begin recording a macro of keystrokes>
-kbd_mac_end	NONE
-	"end-keyboard-macro"		!FEWNAMES
 	'^X-)'
-	<end recording a macro of keystrokes>
+	<begin or end recording a macro of keystrokes>
 kbd_mac_exec	REDO|UNDO|VIEWOK
 	"execute-keyboard-macro"	!FEWNAMES
 	'^X-&'
@@ -428,7 +426,7 @@ delwind		NONE
 	'^K'
 	'^X-0'
 	<destroy the current window, unless it is the last one>
-forceblank	REDO|UNDO		OPT_AEDIT
+forceblank	REDO|UNDO
 	"delete-blank-lines"		!FEWNAMES
 	"force-blank-lines"		!FEWNAMES
 	'^A-d'
@@ -468,7 +466,7 @@ desopers	NONE			OPT_REBIND
 desprint	NONE			OPT_SHOW_CTYPE
 	"show-printable"
 	<show the printable characters, with types>
-desapro		NONE			OPT_REBIND
+dessubstr	NONE			OPT_REBIND
 	"apropos"
 	"list-commands-apropos-to"
 	<look up command names containing a string>
@@ -578,10 +576,6 @@ flipchar	REDO|UNDO
 	"flip-character"		!FEWNAMES
 	'~'
 	<exchange upper and lowercase for the current character>
-fnclabel	NONE			DISP_HP150
-	"label-function-key"		!FEWNAMES
-	"label-fkey"
-	<label the given function key>
 forwdelchar	REDO|UNDO
 	"delete-next-character"		!FEWNAMES
 	'x'
@@ -766,7 +760,7 @@ gotoline	ABSM|MOTION|FL|(RANGE)
 	'G'
 	<go to the CNT'th line.  unspecified CNT means end of buffer>
 # golinenmmark and goexactnmmark are special cases--
-# 	no ABSM even though they are absolute, since these are the commands
+#	no ABSM even though they are absolute, since these are the commands
 #	that use the last-dot-mark
 golinenmmark	MOTION|FL
 	"goto-named-mark"		!FEWNAMES
@@ -1021,11 +1015,11 @@ operchg		OPER|REDO|UNDO
 	"delete-and-insert-chars-til"	!FEWNAMES
 	'c'
 	<insert text, replacing that in the region>
-operdetab	OPER|REDO|UNDO|GLOBOK|(RANGE)	OPT_AEDIT
+operdetab	OPER|REDO|UNDO|GLOBOK|(RANGE)
 	"detab-lines-til"		!FEWNAMES
 	'^A- '
 	<convert tabs to spaces in the region>
-operentab	OPER|REDO|UNDO|GLOBOK|(RANGE)	OPT_AEDIT
+operentab	OPER|REDO|UNDO|GLOBOK|(RANGE)
 	"entab-lines-til"		!FEWNAMES
 	'^A-^I'
 	<convert spaces to tabs where possible in the region>
@@ -1118,12 +1112,12 @@ opersubst	OPER|REDO|UNDO|GLOBOK|(RANGE|EXTRA)
 	"s"
 	'^X-s'
 	<perform a text substitution over the region>
-opertrim	REDO|UNDO|GLOBOK|UNDO|(RANGE)	OPT_AEDIT
+opertrim	REDO|UNDO|GLOBOK|UNDO|(RANGE)
 	"trim-lines-til"		!FEWNAMES
 	"trim"
 	'^A-t'
 	<trim trailing whitespace from lines in the region>
-operblank       REDO|UNDO|GLOBOK|UNDO|(RANGE)   OPT_AEDIT
+operblank       REDO|UNDO|GLOBOK|UNDO|(RANGE)
 	"blank-region"
 	"blank"
 	'^A-b'
@@ -1184,9 +1178,9 @@ prevwind	NONE
 	"previous-window"		!FEWNAMES
 	'^X-O'
 	<move to the previous window>
-pipecmd		NONE			OPT_SHELL
-	"pipe-command"			!FEWNAMES
+capturecmd	NONE			OPT_SHELL
 	"capture-command"		!FEWNAMES
+	"pipe-command"			!FEWNAMES
 	'^X-!'
 	<run a command, capturing its output in the [Output] buffer>
 putafter	REDO|UNDO
@@ -1452,7 +1446,7 @@ forwredo	NONE
 unabbr		NONE|(EXRCOK|BANG|EXTRA)
 	"unabbreviate"
 	<delete an abbreviation>
-unarg_func		NONE
+reptc_func		NONE
 	"universal-argument"		!FEWNAMES
 	'K'
 	<supply a numeric CNT to a command. sets CNT to 4, 16, 64, 256, etc.>
@@ -1500,7 +1494,7 @@ vglobals	NONE
 viewfile	NONE
 	"view-file"
 	<bring given file or existing buffer into window, mark it \"view-only\">
-waitfile	NONE 			SYS_WINNT&&defined(VILE_OLE)
+waitfile	NONE			SYS_WINNT&&defined(VILE_OLE)
 	"wait-file"
 	<wait for file to grow larger than 0 bytes, timeout specified as arg>
 writeallchanged	NONE|(VI_NL)
@@ -1526,10 +1520,10 @@ yankline	NONE
 mouse_motion	ABSM|MOTION		OPT_XTERM||DISP_X11
 	'FN-M'				KEY_Mouse
 	<dummy command to support mouse movements internally>
-copy_to_clipboard NONE 			DISP_X11
+copy_to_clipboard NONE			DISP_X11
 	"copy-to-clipboard"
 	<copies the currently highlighted selection to the cut buffer>
-paste_from_clipboard REDO|UNDO 		DISP_X11
+paste_from_clipboard REDO|UNDO		DISP_X11
 	"paste-from-clipboard"
 	<pastes the contents of the cut buffer>
 xterm_mouse_t	NONE			(OPT_XTERM>=3)
@@ -1589,7 +1583,7 @@ zzquit		NONE|(BANG|VI_NL)
 #
 # - Clark Morgan  July, 1998
 #
-cbrdcpy_unnamed NONE 			SYS_WINNT
+cbrdcpy_unnamed NONE			SYS_WINNT
 	"copy-unnamed-reg-to-clipboard"
 	'ALT+INSERT'			W32KY
 	<copies the unnamed register selection to the windows clipboard>

@@ -2041,12 +2041,16 @@ Recorded macros
 ---------------
 
 	The first type of macro in vile is for temporary, quick macro
-	usage, and lets you record a macro as you execute vile commands.
-	You can then replay those keystrokes with a single key.
+	usage, and lets you record a set of keystrokes as you execute
+	vile commands.  You can then replay those keystrokes with a
+	single key.
 
-	^X-(	Begin recording a keyboard macro.  The keystrokes you type
-		are recorded, until you use ^X-).
-	^X-)	Finish recording a keyboard macro.
+	^X-(	Begin or end the recording a keyboard macro.  The
+	^X-)	keystrokes you type are recorded.  For compatibility
+		with previous versions of vile (where separate
+		commands were necessary), these two commands are now
+		both bound to the same function.  The start/stop
+		capability is now a toggle, and requires only one command.
 	^X-&	Execute the keyboard macro.
 	^X-^	Copy recorded keyboard macro to a named register, for saving,
 		or for execution using '@a', as below.  (Type "a^X^ )
@@ -2645,7 +2649,7 @@ Invocation
 
 	VILE_HELP_FILE
 		override the name of the help file, normally "vile.hlp".
-	VILE_LIBDIR_FILE
+	VILE_LIBDIR_PATH
 		override the search path for filter programs, normally
 		the library-directory on UNIX systems.
 	VILE_STARTUP_FILE
@@ -2716,7 +2720,7 @@ Encryption
 	externally, via the "vile-crypt" program.  vile-crypt will
 	encrypt/decrypt a file.  You can use "-k key" to supply the key on
 	the commandline, and "-m" to treat the file as a mail message -- in
-	that case, only text after the first blank line will be crypted. 
+	that case, only text after the first blank line will be crypted.
 	Text to be encrypted can be specified as filenames on the command
 	line, or provided as the standard input.  All output appears on
 	stdout.  On systems with a getpass() library routine, the user will
@@ -3568,13 +3572,21 @@ DOS specifics
 VMS specifics
 -------------
 
-	Vile recognizes either VMS- or Unix-style pathnames and '~' is
+	vile recognizes either VMS- or Unix-style pathnames and '~' is
 	supported as a shortcut for SYS$LOGIN (e.g., :e ~/login.com).
 	However, filename completion only works for Unix-style pathnames,
 	since those allow us to implement directory and filenames in the
 	same syntax.
 
 	Reading from a pipe works; writing to a pipe is not implemented.
+
+	Command-Line Switches
+	---------------------
+	vile accepts these command-line options in addition to the
+	standard ones:
+
+	-80		force 80-column mode (N/A for VT52 terminals)
+	-132		force 132-column mode (N/A for VT52 terminals)
 
 	Modes
 	-----
@@ -4028,4 +4040,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.397 1999/03/09 11:02:00 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.400 1999/03/20 16:35:01 cmorgan Exp $

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.113 1999/03/07 21:12:43 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.114 1999/03/19 10:51:51 pgf Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -39,7 +39,7 @@ bool							# GMD prefix
 	"remap"		REMAP		0		# should mappings be reapplied
 	"remapfirst"	REMAPFIRST	0		# should 1st char of a map be remapped?
 	"resolve-links"	RESOLVE_LINKS	0		HAVE_SYMLINK # cache/resolve directory names (can be slow if NFS times-out)
-	"ShowRam"	RAMSIZE		0		OPT_RAMSIZE	# show ram-usage
+	"ShowRam"	HEAPSIZE	0		OPT_HEAPSIZE	# show heap usage
 	"SameBangs"	SAMEBANGS	0		# use same "!!" data for ^X-!
 	"working"	WORKING		chgd_working	OPT_WORKING # "working" message
 	"usefilelock"	USEFILELOCK	0		OPT_LCKFILES # okay use filelocks
@@ -214,7 +214,6 @@ string
 "pid"		PROCESSID		# vile's process-id
 "progname"	PROGNAME		# returns current prog name - "vile"
 "qidentifier"	QIDENTIF		# current qualified identifier
-"ram"		RAM		OPT_RAMSIZE	# ram in use by malloc
 "read-hook"	RDHOOK		OPT_PROCEDURES	# procedure to run when reading
 "replace"	REPLACE			# replacement pattern
 "search"	SEARCH			# search pattern
@@ -259,6 +258,7 @@ string
 "neg"	NEG		MONAMIC		# negate
 "not"	NOT		MONAMIC		# logical not
 "or"	OR		DYNAMIC		# logical or
+"que"	QUERY		MONAMIC		# query the user
 "rd"	READABLE	MONAMIC		# is a file readable?
 "rig"	RIGHT		DYNAMIC		# right string(string, pos)
 "rnd"	RND		MONAMIC		# get a random number
@@ -269,7 +269,6 @@ string
 "sub"	SUB		DYNAMIC		# subtraction
 "tim"	TIMES		DYNAMIC		# multiplication
 "tri"	TRIM		MONAMIC		# trims leading/trailing/repeated whitespace
-"tru"	TRUTH		MONAMIC		# Truth of the universe logical test
 "upp"	UPPER		MONAMIC		# uppercase string
 "wr"	WRITABLE	MONAMIC		# is a file writeable?
 

@@ -1,15 +1,16 @@
 /*	ESTRUCT:	Structure and preprocessor defines for
 			vile.  Reshaped from the original, which
-			was for MicroEMACS 3.9
+			was for microemacs.
 
-			vile is by Paul Fox
+			vile is by Paul Fox, Tom Dickey, Kevin Buettner,
+			Rick Sladkey, Clark Morgan, and many others.
 			MicroEmacs was written by Dave G. Conroy
-			modified by Steve Wilhite, George Jones
-			substantially modified by Daniel Lawrence
+			modified by Steve Wilhite, George Jones,
+			greatly modified by Daniel Lawrence.
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.379 1999/03/09 11:24:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.383 1999/03/20 22:19:28 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -36,15 +37,15 @@
 #undef SYS_MSDOS
 #undef SYS_WIN31
 
-#define SYS_MSDOS	0			/* MS-DOS			*/
-#define SYS_WIN31	0			/* Windows 3.1			*/
-#define SYS_OS2		0			/* son of DOS			*/
-#define SYS_OS2_EMX	0			/* Unix'ed OS2			*/
-#define SYS_WINNT	0			/* Windows/NT			*/
+#define SYS_MSDOS       0       /* MS-DOS                       */
+#define SYS_WIN31       0       /* Windows 3.1                  */
+#define SYS_OS2         0       /* son of DOS                   */
+#define SYS_OS2_EMX     0       /* Unix'ed OS2                  */
+#define SYS_WINNT       0       /* Windows/NT                   */
 
 /*	Compiler definitions			*/
-#define CC_MSC		0	/* Microsoft C compile version 3 & 4 & 5 & 6 */
-#define CC_TURBO	0	/* Turbo C/MSDOS or Borland C++ */
+#define CC_MSC		0	/* Microsoft C versions 3 & 4 & 5 & 6 */
+#define CC_TURBO	0	/* Turbo C or Borland C++ */
 #define CC_WATCOM	0	/* WATCOM C/386 version 9.0 or above */
 #define CC_DJGPP	0	/* DJ's GCC version 1.09 */
 #define CC_CSETPP	0	/* IBM C Set ++ 2.x */
@@ -94,7 +95,7 @@
 #define SYS_MSDOS  0
 #endif
 
-#ifdef __GO32__  	/* DJ's GCC version 1.09 */
+#ifdef __GO32__ 	/* DJ's GCC version 1.09 */
 #undef SYS_MSDOS
 #define SYS_MSDOS  1
 #undef CC_DJGPP
@@ -199,7 +200,7 @@
 # define SYS_WIN31 0
 #endif
 #ifndef SYS_WINNT
-# define SYS_WINNT 	0
+# define SYS_WINNT	0
 #endif
 #if defined(VMS) || defined(__VMS) /* predefined by DEC's VMS compilers */
 # define SYS_VMS    1
@@ -333,27 +334,19 @@
 #undef HAVE_POLL
 #endif
 
-#if SYS_UNIX || SYS_MSDOS || SYS_WIN31 || SYS_VMS || SYS_OS2 || SYS_WINNT
-#define	ENVFUNC	1
-#else
-#define	ENVFUNC	0
-#endif
-
 /* ====================================================================== */
 #ifndef scrn_chosen
 /*	Terminal Output definitions		*/
 /* choose ONLY one of the following */
 #define DISP_TERMCAP	SYS_UNIX	/* Use TERMCAP			*/
-#define DISP_ANSI	0		/* ANSI escape sequences	*/
-#define DISP_AT386	0		/* AT style 386 unix console	*/
+#define DISP_ANSI	0		/* ansi escape sequences	*/
 #define	DISP_VMSVT	SYS_VMS		/* various VMS terminal entries	*/
 #define	DISP_BORLAND	0		/* Borland console I/O routines */
-#define	DISP_IBMPC	(SYS_MSDOS && !DISP_BORLAND && !DISP_ANSI) /* IBM-PC CGA/MONO/EGA driver */
+#define	DISP_IBMPC	(SYS_MSDOS && !DISP_BORLAND && !DISP_ANSI)
 #define	DISP_X11	0		/* X Window System */
 #define DISP_NTCONS	0		/* Windows/NT console		*/
 #define DISP_NTWIN	0		/* Windows/NT screen/windows	*/
 #define DISP_VIO	SYS_OS2		/* OS/2 VIO (text mode)		*/
-#define	DISP_HP150	0		/* (not supported)		*/
 #endif
 
 /* ====================================================================== */
@@ -388,8 +381,8 @@
 				   if you edit DOS-created files under UNIX   */
 #define	OPT_REVSTA	1	/* Status line appears in reverse video       */
 #define	OPT_CFENCE	1	/* do fence matching in CMODE		      */
-#define	OPT_LCKFILES	0	/* create lock files (file.lck style) 	      */
-#define	OPT_TAGS	1	/* tags support  			      */
+#define OPT_LCKFILES	0	/* create lock files (file.lck style)	      */
+#define OPT_TAGS	1	/* tags support 			      */
 #define	OPT_PROCEDURES	1	/* named procedures			      */
 #define	OPT_PATHLOOKUP	1	/* search $PATH for startup and help files    */
 #define	OPT_SCROLLCODE	1	/* code in display.c for scrolling the screen.
@@ -439,7 +432,6 @@
 #define OPT_UNC_PATH	(SYS_WINNT)
 
 /* individual features that are (normally) controlled by SMALLER */
-#define OPT_AEDIT       !SMALLER		/* advanced editing options: e.g. en/detabbing	*/
 #define OPT_B_LIMITS    !SMALLER		/* left-margin */
 #define OPT_ENUM_MODES  !SMALLER		/* fixed-string modes */
 #define OPT_EVAL        !SMALLER		/* expression-evaluation */
@@ -495,7 +487,7 @@
 #define	OPT_XTERM	0	/* vile doesn't recognize xterm mouse */
 #endif
 
- 	/* combine select/yank (for mouse support) */
+	/* combine select/yank (for mouse support) */
 #define OPT_SEL_YANK    ((DISP_X11 && XTOOLKIT) || SYS_WINNT || SYS_OS2)
 
 	/* any mouse capability */
@@ -520,7 +512,7 @@
  * Unix vi-style file encryption is available only on some platforms
  */
 #if HAVE_CRYPT
-#define OPT_ENCRYPT     1
+#define OPT_ENCRYPT     !SMALLER
 #else
 #define OPT_ENCRYPT     0
 #endif
@@ -537,13 +529,13 @@
 /*
  * Configuration options for globbing
  */
-#define	OPT_GLOB_ENVIRON	ENVFUNC && !SMALLER
+#define	OPT_GLOB_ENVIRON	!SMALLER
 #define	OPT_GLOB_ELLIPSIS	SYS_VMS || SYS_UNIX || SYS_OS2 || SYS_WINNT || (SYS_MSDOS && !SMALLER)
 #define	OPT_GLOB_PIPE		SYS_UNIX && OPT_SHELL
 #define	OPT_GLOB_RANGE		SYS_UNIX || SYS_OS2 || SYS_WINNT || (SYS_MSDOS && !SMALLER)
 
 /*	Debugging options	*/
-#define	OPT_RAMSIZE		0  /* dynamic RAM memory usage tracking */
+#define	OPT_HEAPSIZE		0  /* track heap usage */
 #define OPT_DEBUGMACROS		0  /* $debug triggers macro debugging	*/
 #define	OPT_VISIBLE_MACROS	0  /* update display during keyboard macros*/
 
@@ -623,20 +615,8 @@ extern char *rindex (const char *s, int c);
 # define HAVE_STRERROR		1
 #endif
 
-#if CC_NEWDOSCC && ! CC_DJGPP && ! CC_CSETPP
-#undef peek
-#undef poke
-#define	peek(a,b,c,d)	movedata(a,b,FP_SEG(c),FP_OFF(c),d)
-#define	poke(a,b,c,d)	movedata(FP_SEG(c),FP_OFF(c),a,b,d)
-#define	movmem(a, b, c)		memcpy(b, a, c)
-#endif
-
 #if  CC_WATCOM
 #include      <string.h>
-#endif
-
-#if  CC_WATCOM || CC_DJGPP
-#define	movmem(a, b, c)		memcpy(b, a, c)
 #endif
 
 #if CC_MSC
@@ -656,6 +636,11 @@ extern char *rindex (const char *s, int c);
 #define FOPEN_WRITE	"w"
 #define FOPEN_APPEND	"a"
 #define FOPEN_UPDATE	"w+"
+#endif
+
+#if SYS_VMS
+#undef  FOPEN_READ
+#define FOPEN_READ "r", "shr=get,upd"
 #endif
 
 #if OPT_MSDOS_PATH && !SYS_OS2_EMX	/* DOS path / to \ conversions */
@@ -742,9 +727,9 @@ extern int MainProgram(int argc, char *argv[]);
 #endif
 
 #if	DISP_IBMPC
-#define	MEMMAP	1
+#define	FRAMEBUF	1
 #else
-#define	MEMMAP	0
+#define	FRAMEBUF	0
 #endif
 
 #if SYS_OS2
@@ -774,12 +759,18 @@ extern int MainProgram(int argc, char *argv[]);
 #ifdef  MAXPATHLEN			/* usually in <sys/param.h>	*/
 #define NFILEN	MAXPATHLEN		/* # of bytes, file name	*/
 #else
+#if SYS_MSDOS && CC_TURBO
+#define NFILEN	128			/* # of bytes, file name	*/
+#else
 #define NFILEN	256			/* # of bytes, file name	*/
 #endif
+#endif
+
 #define NBUFN	21			/* # of bytes, buffername, incl. null*/
 #define NLINE	256			/* # of bytes, input line	*/
-#define	NSTRING	128			/* # of bytes, string buffers	*/
-#define NPAT	128			/* # of bytes, pattern		*/
+#define	NSTRING	144			/* # of bytes, string buffers	*/
+#define NPAT	144			/* # of bytes, pattern		*/
+#define NKEYLEN	20			/* # of bytes, crypt key	*/
 #define HUGE	(1<<(BITS_PER_INT-2))	/* Huge number			*/
 #define	NLOCKS	100			/* max # of file locks active	*/
 #if DISP_X11 || DISP_TERMCAP || IBM_VIDEO
@@ -824,10 +815,10 @@ extern int MainProgram(int argc, char *argv[]);
 #define NOREMAP    0x00800		/* unremappable */
 #define YESREMAP   0x01000		/* override noremap */
 #define REMAPFLAGS (NOREMAP|YESREMAP)
-#define W32_KEY    0x02000		/* special Win32 keys 		*/
+#define W32_KEY    0x02000		/* special Win32 keys		*/
 #define W32_SHIFT  0x04000		/* shift was held down		*/
 #define W32_CTRL   0x08000		/* control was held down	*/
-#define W32_ALT    0x10000		/* alt was held down  		*/
+#define W32_ALT    0x10000		/* alt was held down		*/
 #define W32_NOMOD  (~(W32_KEY|W32_SHIFT|W32_CTRL|W32_ALT))
 
 #define kcod2key(c)	((c) & (UINT)(N_chars-1)) /* strip off the above prefixes */
@@ -843,18 +834,16 @@ extern int MainProgram(int argc, char *argv[]);
 #undef	FALSE
 #undef	TRUE
 #undef	ABORT
-#undef	FAILED
 #undef	SORTOFTRUE
 
 #define FALSE	0			/* False, no, bad, etc. 	*/
 #define TRUE	1			/* True, yes, good, etc.	*/
 #define ABORT	2			/* Death, ESC, abort, etc.	*/
-#define	FAILED	3			/* not-quite fatal false return	*/
-#define	SORTOFTRUE	4		/* really!	*/
+#define	SORTOFTRUE	3		/* really!	*/
 
-#define	STOP	0			/* keyboard macro not in use	*/
-#define	PLAY	1			/*	"     "	  playing	*/
-#define	RECORD	2			/*	"     "   recording	*/
+/* keystroke replay states */
+#define	PLAY	'P'
+#define	RECORD	'R'
 
 #define QUOTED	TRUE
 #define NOQUOTED	FALSE
@@ -869,17 +858,17 @@ typedef enum {
 	RECTANGLE
 } REGIONSHAPE;
 
-/* flook options */
+/* cfg_locate options */
 #define FL_EXECABLE  iBIT(0)	/* maps to X_OK */
 #define FL_WRITEABLE iBIT(1)	/* maps to W_OK */
 #define FL_READABLE  iBIT(2)	/* maps to R_OK */
-#define FL_HERE      iBIT(3)	/* look in current directory */
+#define FL_CDIR      iBIT(3)	/* look in current directory */
 #define FL_HOME      iBIT(4)	/* look in home directory */
 #define FL_EXECDIR   iBIT(5)	/* look in execution directory */
-#define FL_TABLE     iBIT(6)	/* look in table */
+#define FL_STARTPATH iBIT(6)	/* look in environment "VILE_STARTUP_PATH" */
 #define FL_PATH      iBIT(7)	/* look along execution-path */
 
-#define FL_ANYWHERE  (FL_HERE|FL_HOME|FL_EXECDIR|FL_TABLE|FL_PATH)
+#define FL_ANYWHERE  (FL_CDIR|FL_HOME|FL_EXECDIR|FL_STARTPATH|FL_PATH)
 
 /* definitions for name-completion */
 #define	NAMEC		name_cmpl /* char for forcing name-completion */
@@ -914,7 +903,7 @@ typedef enum {
 typedef UINT WATCHTYPE;
 
 /* reserve space for ram-usage option */
-#if OPT_RAMSIZE
+#if OPT_HEAPSIZE
 #define	LastMsgCol	(term.t_ncol - 10)
 #else
 #define	LastMsgCol	(term.t_ncol - 1)
@@ -923,11 +912,11 @@ typedef UINT WATCHTYPE;
 /*
  * directions for the scan routines.
  */
-#define	FORWARD	0			/* forward direction		*/
-#define REVERSE	1			/* backwards direction		*/
+#define	FORWARD	0
+#define REVERSE	1
 
 	/* nonfatal codes */
-#define FIOFUN  -1			/* File I/O, eod of file/bad line*/
+#define FIOBAD  -1			/* File I/O, truncation		*/
 #define FIOSUC  0			/* File I/O, success.		*/
 #define FIOEOF  1			/* File I/O, end of file.	*/
 	/* error codes */
@@ -992,8 +981,6 @@ typedef UINT WATCHTYPE;
 #define	PATHCHR	':'
 #endif
 
-/* how big is the ascii rep. of an int? */
-#define	INTWIDTH	sizeof(int) * 3
 
 /*	Macro argument token types					*/
 
@@ -1009,9 +996,8 @@ typedef UINT WATCHTYPE;
 #define	TKSTR	9			/* quoted string literal	*/
 #define	TKCMD	10			/* command name			*/
 
-/*	Internal defined functions					*/
 
-#define	nextab(a)	(((a / curtabval) + 1) * curtabval)
+#define	nexttabcol(a)	(((a / curtabval) + 1) * curtabval)
 
 #define NEXT_COLUMN(col, c, list, tabs) \
 		((c == '\t' && !list) \
@@ -1108,7 +1094,7 @@ typedef USHORT CHARTYPE;
 # define interrupted() (am_interrupted != 0)
 #endif
 
-#define ABORTED(c) ((c) == abortc || (c) == intrc || interrupted())
+#define ABORTED(c) ((c) == esc_c || (c) == intrc || interrupted())
 
 /*
  * Definitions etc. for regexp(3) routines.
@@ -1222,7 +1208,7 @@ typedef struct	LINE {
 	LINEPTR l_fp;			/* Link to the next line	*/
 	LINEPTR l_bp;			/* Link to the previous line	*/
 	union {
-		SIZE_T	l_sze;		/* Allocated size 		*/
+		SIZE_T	l_sze;		/* Allocated size		*/
 		C_NUM	l_fo;		/* forward undo dot offs (undo only) */
 	} l_s_fo;
 	union {
@@ -1331,11 +1317,11 @@ typedef struct MARK {
  * characters, is kept in a region structure.  Used by the region commands.
  */
 typedef struct	{
-	MARK 	r_orig;			/* Origin LINE address. 	*/
+	MARK	r_orig; 		/* Origin LINE address. 	*/
 	MARK	r_end;			/* Ending LINE address. 	*/
 	C_NUM	r_leftcol;		/* Leftmost column. 		*/
 	C_NUM	r_rightcol;		/* Rightmost column. 		*/
-	B_COUNT	r_size; 		/* Length in characters.	*/
+	B_COUNT r_size; 		/* Length in characters.	*/
 #if OPT_SELECTIONS
 	USHORT	r_attr_id;		/* id of corresponding display  */
 #endif
@@ -1361,9 +1347,9 @@ typedef UCHAR VIDEO_ATTR;
 #define	VAITAL	iBIT(6)			/* italics			*/
 #define	VABOLD	iBIT(7)			/* bold				*/
 #define VAOWNER ((VIDEO_ATTR)0x0700)	/* owner mask			*/
-#define VASPCOL ((VIDEO_ATTR)0x0800)	/* specific color   		*/
+#define VASPCOL ((VIDEO_ATTR)0x0800)	/* specific color		*/
 #define VACOLOR ((VIDEO_ATTR)0xf000)	/* color mask			*/
-#define VACOL_0 (VASPCOL)		/* color palette index 0 	*/
+#define VACOL_0 (VASPCOL)		/* color palette index 0	*/
 #define VACOL_1 (VASPCOL+1)		/* etc.				*/
 #define VACOL_2 (VASPCOL+2)
 #define VACOL_3 (VASPCOL+3)
@@ -1530,15 +1516,15 @@ struct VALNAMES {
 
 /* these are window properties affecting window appearance _only_ */
 typedef struct	{
-	MARK 	w_dt;		/* Line containing "."	       */
+	MARK	w_dt;		/* Line containing "."	       */
 		/* i don't think "mark" needs to be here -- I think it
 			could safely live only in the buffer -pgf */
 #if WINMARK
-	MARK 	w_mk;	        /* Line containing "mark"      */
+	MARK	w_mk;		/* Line containing "mark"      */
 #endif
-	MARK 	w_ld;	        /* Line containing "lastdotmark"*/
-	MARK 	w_tld;	        /* Line which may become "lastdotmark"*/
-	MARK 	w_ln;		/* Top line in the window (offset used in linewrap) */
+	MARK	w_ld;		/* Line containing "lastdotmark"*/
+	MARK	w_tld;		/* Line which may become "lastdotmark"*/
+	MARK	w_ln;		/* Top line in the window (offset used in linewrap) */
 #if OPT_MOUSE
 	int	insmode;
 #endif
@@ -1605,20 +1591,22 @@ typedef struct {
 #endif
 
 /*
- * Text is kept in buffers. A buffer header, described below, exists for every
- * buffer in the system. The buffers are kept in a big list, so that commands
- * that search for a buffer by name can find the buffer header. There is a
- * safe store for the dot and mark in the header, but this is only valid if
- * the buffer is not being displayed (that is, if "b_nwnd" is 0). The text for
- * the buffer is kept in a circularly linked list of lines, with a pointer to
- * the header line in "b_line"	Buffers may be "Inactive" which means the files associated with them
- * have not been read in yet. These get read in at "use buffer" time.
+ * Text is kept in buffers.  A buffer header, described below, exists
+ * for every buffer in the system.  The buffers are kept in a big
+ * list, so that commands that search for a buffer by name can find
+ * the buffer header.  There is a safe store for the dot and mark in
+ * the header, but this is only valid if the buffer is not being
+ * displayed (that is, if "b_nwnd" is 0).  The text for the buffer is
+ * kept in a circularly linked list of lines, with a pointer to the
+ * header line in "b_line" Buffers may be "Inactive" which means the
+ * files associated with them have not been read in yet.  These get
+ * read in at "use buffer" time.
  */
 
 typedef struct	BUFFER {
-	MARK 	b_line;		/* Link to the header LINE (offset unused) */
+	MARK	b_line; 	/* Link to the header LINE (offset unused) */
 	struct	BUFFER *b_bufp; 	/* Link to next BUFFER		*/
-	MARK 	*b_nmmarks;		/* named marks a-z		*/
+	MARK	*b_nmmarks;		/* named marks a-z		*/
 #if OPT_SELECTIONS
 	AREGION	*b_attribs;		/* attributed regions		*/
 #endif
@@ -1633,26 +1621,26 @@ typedef struct	BUFFER {
 	L_NUM	b_linecount;		/* no. lines in buffer		*/
 	L_NUM	b_lines_on_disk;	/* no. lines as of last read/write */
 	LINEPTR b_udstks[2];		/* undo stack pointers		*/
-	MARK 	b_uddot[2];		/* Link to "." before undoable op*/
+	MARK	b_uddot[2];		/* Link to "." before undoable op*/
 	short	b_udstkindx;		/* which of above to use	*/
 	LINEPTR b_udtail;		/* tail of undo backstack	*/
 	LINEPTR b_udlastsep;		/* last stack separator pushed	*/
 	int	b_udcount;		/* how many undo's we can do	*/
 	LINEPTR	b_LINEs;		/* block-malloced LINE structs */
-	LINEPTR	b_LINEs_end;		/* end of 	"	"	" */
-	LINEPTR	b_freeLINEs;		/* list of free " 	"	" */
+	LINEPTR b_LINEs_end;		/* end of	"	"	" */
+	LINEPTR b_freeLINEs;		/* list of free "	"	" */
 	UCHAR	*b_ltext;		/* block-malloced text */
 	UCHAR	*b_ltext_end;		/* end of block-malloced text */
 	LINEPTR	b_ulinep;		/* pointer at 'Undo' line	*/
 	int	b_active;		/* window activated flag	*/
-	UINT	b_nwnd;		        /* Count of windows on buffer   */
-	UINT	b_flag;		        /* Flags 		        */
+	UINT	b_nwnd; 		/* Count of windows on buffer	*/
+	UINT	b_flag; 		/* Flags			*/
 	short	b_acount;		/* auto-save count	        */
 	char	*b_fname;		/* File name			*/
 	int	b_fnlen;		/* length of filename		*/
 	char	b_bname[NBUFN]; 	/* Buffer name			*/
 #if	OPT_ENCRYPT
-	char	b_key[NPAT];		/* current encrypted key	*/
+	char	b_cryptkey[NKEYLEN];	/* encryption key		*/
 #endif
 #ifdef	MDCHK_MODTIME
 	time_t	b_modtime;		/* file's last-modification time */
@@ -1665,7 +1653,7 @@ typedef struct	BUFFER {
 #if	OPT_B_LIMITS
 	int	b_lim_left;		/* extra left-margin (cf:show-reg) */
 #endif
-	struct	BUFFER *b_relink; 	/* Link to next BUFFER (sorting) */
+	struct	BUFFER *b_relink;	/* Link to next BUFFER (sorting) */
 	int	b_created;
 	int	b_last_used;
 #if OPT_HILITEMATCH
@@ -1713,8 +1701,8 @@ typedef struct	BUFFER {
 #define set_b_val_rexp(bp,which,val) b_val_rexp(bp,which) = val
 
 #define window_b_val(wp,val) \
- 	((wp != 0 && wp->w_bufp != 0) \
- 		? b_val(wp->w_bufp,val) \
+	((wp != 0 && wp->w_bufp != 0) \
+		? b_val(wp->w_bufp,val) \
 		: global_b_val(val))
 
 #define make_local_b_val(bp,which)  \
@@ -1855,7 +1843,7 @@ extern MARK *api_mark_iterator(BUFFER *bp, int *iter);
  * windows are kept in a big list, in top to bottom screen order, with the
  * listhead at "wheadp". Each window contains its own values of dot and mark.
  * The flag field contains some bits that are set by commands to guide
- * redisplay. Although this is a bit of a compromise in terms of decoupling,
+ * redisplay; although this is a bit of a compromise in terms of decoupling,
  * the full blown redisplay is just too expensive to run for every input
  * character.
  */
@@ -1866,7 +1854,7 @@ typedef struct	WINDOW {
 	W_TRAITS w_traits;		/* features of the window we should */
 					/*  remember between displays */
 	struct	WINDOW *w_wndp; 	/* Next window			*/
-	BUFFER  *w_bufp; 		/* Buffer displayed in window	*/
+	BUFFER	*w_bufp;		/* Buffer displayed in window	*/
 	int	w_toprow;	        /* Origin 0 top row of window   */
 	int	w_ntrows;	        /* # of rows of text in window  */
 	int	w_force; 	        /* If non-zero, forcing row.    */
@@ -2034,7 +2022,7 @@ typedef struct  VIDEO {
 #define ReqBcolor(vp) gbcolor
 #endif
 
-#define VFCHG	iBIT(0) 		/* Changed flag			*/
+#define VFCHG	iBIT(0) 		/* Changed flag 		*/
 #define	VFEXT	iBIT(1)			/* extended (beyond column 80)	*/
 #define	VFREV	iBIT(2)			/* reverse video status		*/
 #define	VFREQ	iBIT(3)			/* reverse video request	*/
@@ -2136,7 +2124,7 @@ typedef struct {
 
 
 /* when a command is referenced by bound key (like h,j,k,l, or "dd"), it
- *	is looked up one of two ways: single character 7-bit ascii commands (by
+ *	is looked up one of two ways: single character 8-bit ascii commands (by
  *	far the majority) are simply indexed into an array of CMDFUNC pointers.
  *	Other commands (those with ^A, ^X, or SPEC prefixes) are searched for
  *	in a binding table, made up of KBIND structures.  This structure
@@ -2150,7 +2138,7 @@ typedef struct  k_bind {
 #if !SYS_WINNT
 	short	k_code; 		/* Key code			*/
 #else
-	int  	k_code; 		/* Key code			*/
+	int	k_code; 		/* Key code			*/
 #endif
 	const CMDFUNC *k_cmd;
 #if OPT_REBIND
@@ -2215,7 +2203,7 @@ typedef struct  k_bind {
 #define CMD_TYPE (CMD_PROC | CMD_PERL) /* type mask */
 
 #define SPECIAL_BANG_ARG -42	/* arg passed as 'n' to functions which
- 					were invoked by their "xxx!" name */
+					were invoked by their "xxx!" name */
 
 /* definitions for 'mlreply_file()' and other filename-completion */
 #define	FILEC_REREAD   4
@@ -2250,7 +2238,7 @@ typedef struct  k_bind {
 	kill registers are logically a stream of ascii characters, however
 	due to unpredictable size, are implemented as a linked
 	list of chunks. (The d_ prefix is for "deleted" text, as k_
-	was taken up by the keycode structure)
+	was taken up by the keycode structure.)
 */
 
 typedef	struct KILL {
@@ -2267,18 +2255,6 @@ typedef struct KILLREG {
 } KILLREG;
 
 #define	KbSize(i,p)	((p->d_next != 0) ? KBLOCK : kbs[i].kused)
-
-/*
- * Incremental search defines.
- */
-#if	OPT_ISRCH
-
-#define	CMDBUFLEN	256	/* Length of our command buffer */
-
-#define IS_REVERSE	tocntrl('R')	/* Search backward */
-#define	IS_FORWARD	tocntrl('F')	/* Search forward */
-
-#endif
 
 #ifndef NULL
 # define NULL 0
@@ -2427,6 +2403,19 @@ extern void _exit (int code);
 #define TEST_DOS_PIPES	0
 #endif
 
+/* heap size tracking */
+#if	OPT_HEAPSIZE
+#undef	realloc
+#define	realloc	track_realloc
+#undef	calloc
+#define	calloc(n,m)	track_malloc((n)*(m))
+#undef	malloc
+#define	malloc	track_malloc
+#undef	free
+#define	free	track_free
+#endif
+
+
 #undef TRACE
 
 #if USE_DBMALLOC || USE_DMALLOC
@@ -2479,18 +2468,6 @@ extern void _exit (int code);
  */
 #if	!CHECK_PROTOTYPES
 #include "nefkeys.h"
-#endif
-
-/*	Dynamic RAM tracking and reporting redefinitions	*/
-#if	OPT_RAMSIZE
-#undef	realloc
-#define	realloc	reallocate
-#undef	calloc
-#define	calloc(n,m)	allocate((n)*(m))
-#undef	malloc
-#define	malloc	allocate
-#undef	free
-#define	free	release
 #endif
 
 /* for debugging VMS pathnames on UNIX... */

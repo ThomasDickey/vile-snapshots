@@ -3,13 +3,13 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.64 1999/03/07 23:35:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.65 1999/03/19 11:43:01 pgf Exp $
  *
  */
 
 #include	"estruct.h"
-#include        "edef.h"
-#include        "nefunc.h"
+#include	"edef.h"
+#include	"nefunc.h"
 
 extern REGION *haveregion;
 
@@ -56,7 +56,7 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 #if OPT_MOUSE
 			if (curwp != wp0) {
 				unkeystroke(c);
-			    	doingopcmd = FALSE;
+				doingopcmd = FALSE;
 				return FALSE;
 			}
 #endif
@@ -289,13 +289,13 @@ operrshift(int f, int n)
 int
 operwrite(int f, int n)
 {
-        register int    s;
-        char fname[NFILEN];
+	register int	s;
+	char fname[NFILEN];
 
 	if (ukb != 0) {
-	        if ((s=mlreply_file("Write to file: ", (TBUFF **)0,
+		if ((s=mlreply_file("Write to file: ", (TBUFF **)0,
 				FILEC_WRITE|FILEC_PROMPT, fname)) != TRUE)
-	                return s;
+			return s;
 		return kwrite(fname,TRUE);
 	} else {
 		opcmd = OPOTHER;
@@ -364,7 +364,6 @@ opersubstagain(int f, int n)
 	return vile_op(f,n,subst_again_region,"Substitute-again");
 }
 
-#if OPT_AEDIT
 int
 operentab(int f, int n)
 {
@@ -372,9 +371,7 @@ operentab(int f, int n)
 	opcmd = OPOTHER;
 	return vile_op(f,n,entab_region,"Spaces-->Tabs");
 }
-#endif
 
-#if OPT_AEDIT
 int
 operdetab(int f, int n)
 {
@@ -382,9 +379,7 @@ operdetab(int f, int n)
 	opcmd = OPOTHER;
 	return vile_op(f,n,detab_region,"Tabs-->Spaces");
 }
-#endif
 
-#if OPT_AEDIT
 int
 opertrim(int f, int n)
 {
@@ -392,16 +387,13 @@ opertrim(int f, int n)
 	opcmd = OPOTHER;
 	return vile_op(f,n,trim_region,"Trim whitespace");
 }
-#endif
 
-#if OPT_AEDIT
 int
 operblank(int f, int n)
 {
 	opcmd = OPOTHER;
 	return vile_op(f,n,blank_region,"Blanking");
 }
-#endif
 
 int
 operopenrect(int f, int n)

@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.41 1998/09/03 10:15:12 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.43 1999/03/20 16:35:01 cmorgan Exp $
  *
  */
 
@@ -61,6 +61,10 @@ print_usage (void)
 #endif
 	"(see help file for more screen resolutions)",
 #endif
+#if SYS_VMS
+	"-80            80-column mode",
+	"-132           132-column mode",
+#endif
 	"-V             for version info",
 	"use @cmdfile to run cmdfile as commands (this will suppress .vilerc)"
 	};
@@ -94,7 +98,7 @@ getversion(void)
 				prognam, version, PATCHLEVEL, opersys);
 	{
 		char *s;
-		if ((s = flook(prog_arg,
+		if ((s = cfg_locate(prog_arg,
 				(FL_EXECDIR|FL_PATH)|FL_EXECABLE)) != NULL) {
 			time_t mtime = file_modified(s);
 			if (mtime != 0) {
@@ -124,7 +128,7 @@ getversion(void)
 #    ifdef __BORLANDC__
 		"Borland C++"
 #    else
-                "Turbo C"
+		"Turbo C"
 #    endif
 #   endif
 #   if CC_CSETPP
@@ -144,11 +148,47 @@ getversion(void)
 	return version_string;
 }
 
+
+/* i'm not even going to try to justify this.  -pgf */
+static void
+personals(int n)
+{
+#if !SMALLER
+	char **cmdp = NULL;
+
+	static char *pgfcmds[] = {
+		"bind-key split-current-window ^T",
+		"bind-key next-window ^N",
+		"bind-key previous-window ^P",
+		"set ai atp nobl ul=0 sw=4 csw=4 timeoutlen=50 check-modtime"
+		    " visual-matches=underline",
+		NULL
+	};
+
+	if (n == 11)
+		cmdp = pgfcmds;
+
+	if (n == -11)
+		*(int *)(1) = 42;  /* test core dumps */
+
+	if (!cmdp)
+		return;
+
+	while (*cmdp) {
+		(void)docmd(*cmdp, TRUE, FALSE, 1);
+		cmdp++;
+	}
+#endif
+
+}
+
 /* ARGSUSED */
 int
-showversion(int f GCC_UNUSED, int n GCC_UNUSED)
+showversion(int f GCC_UNUSED, int n)
 {
+	personals(n);
 	mlforce(getversion());
+
 	return TRUE;
 }
 

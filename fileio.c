@@ -2,12 +2,12 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.135 1999/03/08 11:13:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.136 1999/03/19 11:48:06 pgf Exp $
  *
  */
 
 #include	"estruct.h"
-#include        "edef.h"
+#include	"edef.h"
 
 #if SYS_VMS
 #include	<file.h>
@@ -34,8 +34,8 @@ static	int	count_fline;	/* # of lines read with 'ffgetline()' */
 static void
 free_fline(void)
 {
-	FreeAndNull(fline);
-	flen = 0;
+	FreeAndNull(fflinebuf);
+	fflinelen = 0;
 }
 
 #if OPT_FILEBACK
@@ -210,7 +210,7 @@ make_backup (char *fname)
 #endif
 #endif /* SYS_UNIX */
 		} else {
-			mlwrite("BUG: bad fileback value");
+			mlforce("BUG: bad fileback value");
 			return FALSE;
 		}
 
@@ -228,16 +228,16 @@ int
 ffropen(char *fn)
 {
 	fileispipe = FALSE;
-	eofflag = FALSE;
+	fileeof = FALSE;
 
 #if OPT_SHELL
 	if (isShellOrPipe(fn)) {
 		ffp = 0;
 #if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
-	        ffp = npopen(fn+1, FOPEN_READ);
+		ffp = npopen(fn+1, FOPEN_READ);
 #endif
 #if SYS_VMS
-	        ffp = vms_rpipe(fn+1, 0, (char *)0);
+		ffp = vms_rpipe(fn+1, 0, (char *)0);
 		/* really a temp-file, but we cannot fstat it to get size */
 #endif
 		if (ffp == 0) {
@@ -258,8 +258,8 @@ ffropen(char *fn)
 	} else if ((ffp=fopen(fn, FOPEN_READ)) == NULL) {
 		if (errno != ENOENT
 #if SYS_OS2 && CC_CSETPP
-                 && errno != ENOTEXIST
-                 && errno != EBADNAME
+		 && errno != ENOTEXIST
+		 && errno != EBADNAME
 #endif
 		 && errno != EINVAL) {	/* a problem with Linux to DOS-files */
 			mlerror("opening for read");
@@ -268,7 +268,7 @@ ffropen(char *fn)
 		return (FIOFNF);
 	}
 
-        return (FIOSUC);
+	return (FIOSUC);
 }
 
 /*
@@ -285,8 +285,8 @@ ffwopen(char *fn, int forced)
 #if OPT_SHELL
 	if (isShellOrPipe(fn)) {
 		if ((ffp=npopen(fn+1, mode)) == NULL) {
-	                mlerror("opening pipe for write");
-	                return (FIOERR);
+			mlerror("opening pipe for write");
+			return (FIOERR);
 		}
 		fileispipe = TRUE;
 	} else
@@ -338,13 +338,13 @@ ffwopen(char *fn, int forced)
 		return (FIOERR);
 	}
 #else
-        if ((ffp=fopen(fn, FOPEN_WRITE)) == NULL) {
-                mlerror("opening for write");
-                return (FIOERR);
-        }
+	if ((ffp=fopen(fn, FOPEN_WRITE)) == NULL) {
+		mlerror("opening for write");
+		return (FIOERR);
+	}
 #endif
 #endif
-        return (FIOSUC);
+	return (FIOSUC);
 }
 
 /* wrapper for 'access()' */
@@ -381,12 +381,12 @@ ffaccess(char *fn, int mode)
 			ffclose();
 			status = TRUE;
 		} else {
-        		status = FALSE;
+			status = FALSE;
 		}
 		break;
 	case FL_WRITEABLE:
-	        if ((fd=open(SL_TO_BSL(fn), O_WRONLY|O_APPEND)) < 0) {
-	                status = FALSE;
+		if ((fd=open(SL_TO_BSL(fn), O_WRONLY|O_APPEND)) < 0) {
+			status = FALSE;
 		} else {
 			(void)close(fd);
 			status = TRUE;
@@ -414,6 +414,16 @@ ffronly(char *fn)
 	TRACE(("ffronly(fn=%s) = %d\n", fn, status))
 	return status;
 }
+
+#if	OPT_ENCRYPT
+static int ffcrypting = FALSE;
+
+void
+ffdocrypt(int crypting)
+{
+	ffcrypting = crypting;
+}
+#endif
 
 B_COUNT
 ffsize(void)
@@ -572,7 +582,7 @@ ffclose(void)
 {
 	int s = 0;
 
-	free_fline();	/* free this since we do not need it anymore */
+	free_fline();
 
 #if SYS_UNIX || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
 #if OPT_SHELL
@@ -589,14 +599,14 @@ ffclose(void)
 	{
 		s = fclose(ffp);
 	}
-        if (s != 0) {
+	if (s != 0) {
 		mlerror("closing");
-                return(FIOERR);
-        }
+		return(FIOERR);
+	}
 #else
-        (void)fclose(ffp);
+	(void)fclose(ffp);
 #endif
-        return (FIOSUC);
+	return (FIOSUC);
 }
 
 /*
@@ -606,7 +616,7 @@ ffclose(void)
 int
 ffputline(const char *buf, int nbuf, const char *ending)
 {
-        register int    i;
+	register int	i;
 	for (i = 0; i < nbuf; ++i)
 		if (ffputc(char2int(buf[i])) == FIOERR)
 			return FIOERR;
@@ -617,12 +627,12 @@ ffputline(const char *buf, int nbuf, const char *ending)
 		ending++;
 	}
 
-        if (ferror(ffp)) {
-                mlerror("writing");
-                return (FIOERR);
-        }
+	if (ferror(ffp)) {
+		mlerror("writing");
+		return (FIOERR);
+	}
 
-        return (FIOSUC);
+	return (FIOSUC);
 }
 
 /*
@@ -635,22 +645,22 @@ ffputc(int c)
 	char	d = (char)c;
 
 #if	OPT_ENCRYPT
-	if (cryptflag)
+	if (ffcrypting)
 		d = vl_encrypt_char(d);
 #endif
 	fputc(d, ffp);
 
-        if (ferror(ffp)) {
-                mlerror("writing");
-                return (FIOERR);
-        }
+	if (ferror(ffp)) {
+		mlerror("writing");
+		return (FIOERR);
+	}
 
-        return (FIOSUC);
+	return (FIOSUC);
 }
 
 /*
  * Read a line from a file, and store the bytes in an allocated buffer.
- * "flen" is the length of the buffer. Reallocate and copy as necessary.
+ * "fflinelen" is the length of the buffer. Reallocate and copy as necessary.
  * Check for I/O errors. Return status.
  */
 
@@ -658,45 +668,26 @@ int
 ffgetline(
 int *lenp)	/* to return the final length */
 {
-        register int c;		/* current character read */
-        register ALLOC_T i;	/* current index into fline */
-	register char *tmpline;	/* temp storage for expanding line */
+	register int c;
+	register ALLOC_T i;	/* current index into fflinebuf */
 
-	/* if we are at the end...return it */
-	if (eofflag)
+	if (fileeof)
 		return(FIOEOF);
 
-	/* if we don't have an fline, allocate one */
-	if (fline == NULL)
-		if ((fline = castalloc(char,flen = NSTRING)) == NULL)
-			return(FIOMEM);
+	/* be sure there's a buffer */
+	if (!fflinebuf)
+		fflinebuf = castalloc(char,fflinelen = NSTRING);
+	if (!fflinebuf)
+		return(FIOMEM);
 
-	/* read the line in */
+	/* accumulate to a newline */
 	i = 0;
 	for_ever {
-#if NEVER && OPT_WORKING && ! HAVE_RESTARTABLE_PIPEREAD
-/* i think some older kernels may lose data if a signal is
-received after some data has been tranferred to the user's buffer, so
-i don't think this code is safe... */
-		for_ever {
-			/* clear our signal memory.  this should
-			  become a bitmap if we need to notice more than
-			  just alarm signals */
-			signal_was = 0;
-			errno = 0;
-			c = fgetc(ffp);
-			if (!ferror(ffp) || errno != EINTR ||
-					signal_was != SIGALRM)
-				break;
-			clearerr(ffp);
-		}
-#else
 		c = fgetc(ffp);
-#endif
 		if (feof(ffp) || ferror(ffp))
 			break;
 #if	OPT_ENCRYPT
-		if (cryptflag)
+		if (ffcrypting)
 			c = vl_encrypt_char(c);
 #endif
 		if (c == '\n')
@@ -706,42 +697,41 @@ i don't think this code is safe... */
 			*lenp = 0;
 			return FIOABRT;
 		}
-                fline[i++] = (char)c;
-		/* if it's longer, get more room */
-                if (i >= flen) {
+		fflinebuf[i++] = (char)c;
+		/* grow our buffer -- be sure it grows fast enough */
+		if (i >= fflinelen) {
 			/* "Small" exponential growth - EJK */
-			ALLOC_T growth = (flen >> 3) + NSTRING;
-			if ((tmpline = castalloc(char,flen+growth)) == NULL)
-                		return(FIOMEM);
-                	(void)memcpy(tmpline, fline, (SIZE_T)flen);
-                	flen += growth;
-			free(fline);
-                	fline = tmpline;
-                }
+			ALLOC_T growth = (fflinelen >> 3) + NSTRING;
+			fflinelen += growth;
+			fflinebuf = castrealloc(char,fflinebuf,fflinelen);
+			if (!fflinebuf) {
+				fflinelen = 0;
+				return(FIOMEM);
+			}
+		}
 #if OPT_WORKING
 		cur_working++;
 #endif
-        }
+	}
 
 
 	*lenp = i;	/* return the length, not including final null */
-        fline[i] = EOS;
+	fflinebuf[i] = EOS;
 
-	/* test for any errors that may have occurred */
-        if (c == EOF) {
+	if (c == EOF) {  /* problems? */
 		if (!feof(ffp) && ferror(ffp)) {
 			mlerror("reading");
 			return(FIOERR);
-                }
+		}
 
-                if (i != 0)
-			eofflag = TRUE;
+		if (i != 0) /* got something */
+			fileeof = TRUE;
 		else
 			return(FIOEOF);
-        }
+	}
 
 	count_fline++;
-        return (eofflag ? FIOFUN : FIOSUC);
+	return (fileeof ? FIOBAD : FIOSUC);
 }
 
 /*

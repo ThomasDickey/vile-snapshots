@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.330 1999/03/09 10:58:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.332 1999/03/20 16:58:48 tom Exp $
  *
  */
 
@@ -39,10 +39,10 @@ extern int interrupted (void);
 extern char *strmalloc (const char *s);
 #endif
 
-#if OPT_RAMSIZE
-extern char *reallocate (char *mp, unsigned nbytes);
-extern char *allocate (unsigned nbytes);
-extern void release (char *mp);
+#if OPT_HEAPSIZE
+extern char *track_realloc (char *mp, unsigned nbytes);
+extern char *track_malloc (unsigned nbytes);
+extern void track_free (char *mp);
 #endif
 
 /* screen-drivers */
@@ -89,7 +89,7 @@ extern int gotoeob (int f, int n);
 #endif
 
 /* bind.c */
-extern char *flook (char *fname, UINT hflag);
+extern char *cfg_locate (char *fname, UINT hflag);
 extern char *kbd_engl (const char *prompt, char *buffer);
 extern char *kcod2pstr (int c, char *seq);
 extern const CMDFUNC *engl2fnc (const char *fname);
@@ -105,7 +105,6 @@ extern void kbd_erase (void);
 extern void kbd_erase_to_end (int column);
 extern void kbd_init (void);
 extern void kbd_putc (int c);
-extern void kbd_puts (const char *s);
 extern void kbd_unquery (void);
 extern void popdown_completions (void);
 
@@ -165,10 +164,6 @@ extern void set_bname (BUFFER *bp, const char *name);
 extern void sortlistbuffers (void);
 extern void unchg_buff (BUFFER *bp, USHORT flag);
 extern void undispbuff (BUFFER *bp, WINDOW *wp);
-
-#if BEFORE
-extern char *get_bname (BUFFER *bp);
-#endif
 
 #if !OPT_MAJORMODE
 extern int has_C_suffix (BUFFER *bp);
@@ -294,6 +289,8 @@ extern char *gtenv (const char *vname);
 extern int   rmenv(const char *name);
 extern int   set_variable (const char *name);
 extern int   stenv(const char *name, const char *value);
+#else
+#define gtenv(name) getenv(name)
 #endif
 
 #if OPT_EVAL || DISP_X11
@@ -377,6 +374,9 @@ extern int ffronly (char *fn);
 extern int ffropen (char *fn);
 extern int ffwopen (char *fn, int forced);
 extern B_COUNT ffsize (void);
+#if	OPT_ENCRYPT
+extern void ffdocrypt (int crypting);
+#endif
 
 #if !(SYS_MSDOS || SYS_WIN31)
 extern int ffread (char *buf, long len);
@@ -435,6 +435,7 @@ extern int get_recorded_char (int eatit);
 extern int is_edit_char (int c);
 extern int kbd_delimiter (void);
 extern int kbd_is_pushed_back (void);
+extern int kbd_mac_recording (void);
 extern int kbd_replaying (int match);
 extern int kbd_reply (const char *prompt, TBUFF **extbuf, int (*efunc)(EOL_ARGS), int eolchar, UINT options, int (*cfunc)(DONE_ARGS));
 extern int kbd_seq (void);
@@ -535,6 +536,7 @@ extern int index2ukb (int inx);
 extern int kinsert (int c);
 extern int kinsertlater (int c);
 extern int ldelete (long n, int kflag);
+extern int lreplc(LINEPTR lp, C_NUM off, int c);
 extern int linsert (int n, int c);
 extern int lnewline (void);
 extern int lstrinsert (const char *s, int len);
@@ -548,8 +550,8 @@ extern void lremove (BUFFER *bp, LINEPTR lp);
 extern void ltextfree (LINEPTR lp, BUFFER *bp);
 
 #if OPT_EVAL
-extern char * getctext (CHARTYPE type);
-extern int putctext (CHARTYPE type, const char *iline);
+extern char * lgrabtext (CHARTYPE type);
+extern int lrepltext (CHARTYPE type, const char *iline);
 #endif
 
 #if SMALLER	/* cancel neproto.h */
@@ -813,6 +815,8 @@ extern	int	sel_yank	(int reg);
 extern	int	sel_attached	(void);
 extern	BUFFER *sel_buffer	(void);
 #endif
+#else
+#define	do_sweep(flag) /*nothing*/
 #endif /* OPT_SELECTIONS */
 
 /* spawn.c */
@@ -868,6 +872,9 @@ extern void null_t_setfor (int f);
 extern void null_t_setpal (const char *p);
 extern void null_t_title (char *t);
 extern void null_t_unwatchfd (int fd, long id);
+extern void null_kopen(void);
+extern void null_kclose(void);
+extern int  null_cres(const char *res);
 extern void ttclean (int f);
 extern void ttclose (void);
 extern void ttflush (void);
@@ -982,7 +989,7 @@ extern void shrinkwrap (void);
 extern void winit (int screen);
 
 #if OPT_EVAL
-extern int getwpos (void);
+extern int getlinerow (void);
 #endif
 
 #if SMALLER	/* cancel neproto.h */

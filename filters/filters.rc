@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.43 1999/03/07 20:48:47 tom Exp $
+; $Id: filters.rc,v 1.45 1999/03/20 17:13:19 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -141,7 +141,7 @@ define-mode m4
 define-mode mail
 ~with define-submode mail
 	suf "\\([Mm]ail\\>\\|\\<mbox$\\)"
-	pre "^From "
+	pre "^\\(From \\|To: \\)"
 ~endwith
 
 define-mode make
@@ -206,7 +206,7 @@ define-mode perl
 define-mode sh
 ~with define-submode sh
 	suf "\\.sh$"
-	pre "^#!\\s*\\/.*sh\\>\\(\\s*-[a-z]\\+\\)*$"
+	pre "^#!\\s*\\/.*sh\\>\\s*\\(-[a-z]\\+\\s*\\)*$"
 	comment-prefix	"^\\s*[:#]"
 	comments	"^\\s*[:#]\\s*$"
 	fence-if   "^\\s*\\<if\\>"

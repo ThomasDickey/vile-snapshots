@@ -8,14 +8,14 @@
  * Modified by Pete Ruczynski (pjr) for auto-sensing and selection of
  * display type.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.89 1998/11/11 21:56:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.90 1999/03/19 11:17:29 pgf Exp $
  *
  */
 
 #define	termdef	1			/* don't define "term" external */
 
-#include        "estruct.h"
-#include        "edef.h"
+#include	"estruct.h"
+#include	"edef.h"
 
 #if DISP_BORLAND || !DISP_IBMPC
 #error misconfigured:  DISP_IBMPC should be defined if using ibmpc.c
@@ -36,7 +36,7 @@
 #endif
 
 #define NROW	50			/* Max Screen size.		*/
-#define NCOL    80			/* Edit if you want to.         */
+#define NCOL	80			/* Edit if you want to. 	*/
 #define	MARGIN	8			/* size of minimum margin and	*/
 #define	SCRSIZ	64			/* scroll size for extended lines */
 #define	NPAUSE	200			/* # times thru update to pause */
@@ -239,7 +239,7 @@ static	int	ibm_opened,
 
 static	int	egaexist = FALSE;	/* is an EGA card available?	*/
 
-					/* Forward references.          */
+					/* Forward references.		*/
 extern  void	ibmmove   (int,int);
 extern  void	ibmeeol   (void);
 extern  void	ibmeeop   (void);
@@ -286,10 +286,10 @@ static	const struct {
 	{"Z\107",     KEY_Home},
 	{"Z\117",     KEY_End},
 	/* editing */
-        {"ZR",        KEY_Insert},
+	{"ZR",	      KEY_Insert},
 	{"Z\123",     KEY_Delete},
 	/* function keys */
-        {"Z;",      KEY_F1},
+	{"Z;",	    KEY_F1},
 	{"Z<",      KEY_F2},
 	{"Z=",      KEY_F3},
 	{"Z>",      KEY_F4},
@@ -298,7 +298,7 @@ static	const struct {
 	{"ZA",      KEY_F7},
 	{"ZB",      KEY_F8},
 	{"ZC",      KEY_F9},
-        {"ZD",      KEY_F10},
+	{"ZD",	    KEY_F10},
 };
 
 static int current_ibmtype;
@@ -556,7 +556,7 @@ const char *res)	/* resolution to change to */
 	register int i;		/* index */
 	int	status = FALSE;
 
-	if (!res || !strcmp(res, "?")) 	/* find the default configuration */
+	if (!res || !strcmp(res, "?"))	/* find the default configuration */
 		res = "default";
 
 	/* try for a name match on all drivers, until we find it
@@ -761,7 +761,7 @@ ibmopen(void)
 	maxkbdrate();   /* set the keyboard rate to max */
 #endif
 	for (i = TABLESIZE(keyseqs); i--; ) {
-	 	int len = strlen(keyseqs[i].seq);
+		int len = strlen(keyseqs[i].seq);
 		if (keyseqs[i].seq[0] == 'Z') {
 			keyseqs[i].seq[0] = '\0';
 		}
@@ -848,7 +848,7 @@ int newtype)		/* type of adapter to init for */
 	 */
 	if (rows > 25) {
 		rg.h.ah = 0x12;		/* alternate select function code    */
-		rg.h.bl = 0x20;		/* alt. print screen routine         */
+		rg.h.bl = 0x20; 	/* alt. print screen routine	     */
 		INTX86(0x10, &rg, &rg);	/* VIDEO - SELECT ALTERNATE PRTSCRN  */
 	}
 
@@ -1053,7 +1053,7 @@ scwrite(		/* write a line out*/
 		while ((inp(0x3da) & 8) == 0)
 			;
 		/* and send the string out */
-		movmem(sline, scptr[row]+col, nchar*sizeof(short));
+		memcpy(scptr[row]+col, sline, nchar*sizeof(short));
 	}
 }
 
@@ -1073,7 +1073,7 @@ scread(VIDEO *vp, int row)
 		else
 			tidy_exit(BADEXIT);
 	}
-	movmem(scptr[row], &sline[0], term.t_ncol*sizeof(short));
+	memcpy(&sline[0], scptr[row], term.t_ncol*sizeof(short));
 	for (i = 0; i < term.t_ncol; i++)
 		vp->v_text[i] = sline[i];
 	return vp;

@@ -7,7 +7,7 @@
  *  Author:  Curtis Smith
  *  Last Updated: 07/14/87
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.42 1999/02/11 11:32:52 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.44 1999/03/20 16:40:11 cmorgan Exp $
  *
  */
 
@@ -24,11 +24,15 @@
 #include	<smgtrmptr.h>		/* to get SMG$K_??? definitions	*/
 #include	<smg$routines.h>
 
+#define COLS_132 "\033[?3h"
+#define COLS_80  "\033[?3l"
+
 /** Forward references **/
 static	void	vmsscrollregion (int top, int bot);
 static	void	vmsscroll_reg (int from, int to, int n);
 static	void	vmsscroll_delins (int from, int to, int n);
 static	void	vmsopen	(void);
+static	void	vmsclose (void);
 static	void	vmskopen (void);
 static	void	vmskclose (void);
 static	void	vmsmove (int row, int col);
@@ -81,9 +85,9 @@ TERM	term	= {
 	8,				/* Size of scroll region	*/
 	100,				/* # times thru update to pause */
 	vmsopen,			/* Open terminal at the start	*/
-	ttclose,			/* Close terminal at end	*/
-	vmskopen,			/* Open keyboard		*/
-	vmskclose,			/* Close keyboard		*/
+	vmsclose,			/* Close terminal at end	*/
+	null_kopen,			/* Open keyboard		*/
+	null_kclose,			/* Close keyboard		*/
 	ttgetc,				/* Get character from keyboard	*/
 	ttputc,				/* Put character to display	*/
 	tttypahead,			/* char ready for reading	*/
@@ -612,27 +616,6 @@ vmsopen(void)
 }
 
 
-/***
- *  vmskopen  -  Open keyboard (not used)
- *
- *  Nothing returned
- ***/
-static void
-vmskopen(void)
-{
-}
-
-
-/***
- *  vmskclose  -  Close keyboard (not used)
- *
- *  Nothing returned
- ***/
-static void
-vmskclose(void)
-{
-}
-
 /* copied/adapted from 'tcap.c' 19-apr-1993 dickey@software.org */
 
 /* move howmany lines starting at from to to */
@@ -710,40 +693,52 @@ vmsscrollregion(int top, int bot)
 static int
 vmscres(const char *res)
 {
-#define COLS_132 "\033[?3h"
-#define COLS_80  "\033[?3l"
-
     char buf[NLINE];
     int  rc = FALSE;
 
     if (tc.t_type == TT$_VT52)
     {
-        mlforce("[sres not supported for VT52-style terminals]");
-        return (rc);
+	mlforce("[sres not supported for VT52-style terminals]");
+	return (rc);
     }
 
     strcpy(buf, res);
     mkupper(buf);
     if (strcmp(buf, "WIDE") == 0)
     {
-        ttputs(COLS_132);
-        term.t_ncol = 132;
-        rc          = TRUE;
+	ttputs(COLS_132);
+	term.t_ncol = 132;
+	rc	    = TRUE;
     }
     else if (strcmp(buf, "NORMAL") == 0)
     {
-        ttputs(COLS_80);
-        term.t_ncol = 80;
-        rc          = TRUE;
+	ttputs(COLS_80);
+	term.t_ncol = 80;
+	rc	    = TRUE;
     }
     else
-        mlforce("[invalid sres value (use NORMAL or WIDE)]");
+	mlforce("[invalid sres value (use NORMAL or WIDE)]");
     if (rc)
-        newwidth(1, term.t_ncol);
+	newwidth(1, term.t_ncol);
     return (rc);
+}
 
-#undef COLS_132
-#undef COLS_80
+
+
+static void
+vmsclose(void)
+{
+    if (tc.t_type != TT$_VT52)
+    {
+	/*
+	 * Restore terminal width to previous state (if necessary) and then
+	 * cleanup as usual.
+	 */
+
+	if (tc.t_width != term.t_ncol)
+	    ttputs((tc.t_width == 80) ? COLS_80 : COLS_132);
+    }
+    ttclose();
 }
 
 
@@ -769,7 +764,7 @@ vmsbeep(void)
 	{
 		static char *seq[][2] =
 		{
-			{ NULL, NULL },                /* vtflash = off */
+			{ NULL, NULL },		       /* vtflash = off */
 			{ VTFLASH_NORMSEQ, VTFLASH_REVSEQ }, /* reverse */
 			{ VTFLASH_REVSEQ, VTFLASH_NORMSEQ }, /* normal  */
 		};

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.138 1999/03/09 11:09:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.140 1999/03/20 18:47:00 tom Exp $
  *
  */
 
@@ -200,7 +200,7 @@ string_mode_val(VALARGS *args)
 	case VALTYPE_MAJOR:
 #endif
 	case VALTYPE_BOOL:
-		return values->vp->i ? truem : falsem;
+		return values->vp->i ? "TRUE" : "FALSE";
 	case VALTYPE_ENUM:
 #if OPT_ENUM_MODES
 		{
@@ -415,7 +415,7 @@ makemodelist(int local, void *ptr)
 	nflag = listvalueset(bb, FALSE, FALSE, b_valnames, local_b_vals, globl_b_vals);
 	nflg2 = listvalueset(ww, nflag, FALSE, w_valnames, local_w_vals, global_w_values.wv);
 	if (!(nflag || nflg2))
-	 	bputc('\n');
+		bputc('\n');
 	bputc('\n');
 
 	bprintf("--- %s settings %*P\n",
@@ -693,7 +693,7 @@ legal_glob_mode(const char *base)
 #endif
 	if (!strcmp(base, "off")
 	 || !strcmp(base, "on"))
-	 	return TRUE;
+		return TRUE;
 
 	mlforce("[Illegal value for glob: '%s']", base);
 	return FALSE;
@@ -706,13 +706,13 @@ legal_glob_mode(const char *base)
  *
  * It is meant to handle the following sorts of things:
  *
- * 	:set popup-choices off
- * 	:set popup-choices immediate
- * 	:set popup-choices delayed
+ *	:set popup-choices off
+ *	:set popup-choices immediate
+ *	:set popup-choices delayed
  *
- * 	:set error quiet
- * 	:set error beep
- * 	:set error flash
+ *	:set error quiet
+ *	:set error beep
+ *	:set error flash
  */
 #if OPT_ENUM_MODES
 
@@ -857,12 +857,12 @@ static int
 fsm_complete(int c, char *buf, unsigned *pos)
 {
     if (isDigit(*buf)) {		/* allow numbers for colors */
-	if (c != NAMEC)  		/* put it back (cf: kbd_complete) */
+	if (c != NAMEC) 		/* put it back (cf: kbd_complete) */
 	    unkeystroke(c);
 	return isSpace(c);
     }
     return kbd_complete(FALSE, c, buf, pos,
-                        (const char *)(fsm_tbl[fsm_idx].choices),
+			(const char *)(fsm_tbl[fsm_idx].choices),
 			sizeof (FSM_CHOICES) );
 }
 #endif	/* OPT_ENUM_MODES */
@@ -919,7 +919,7 @@ VALARGS *args)			/* symbol-table entry for the mode */
 #endif
 
 		status = kbd_string(prompt, respbuf, sizeof(respbuf), eolchar,
-		               opts, complete);
+			       opts, complete);
 		if (status != TRUE)
 			return status;
 		if (!strlen(rp = respbuf))
@@ -1282,7 +1282,7 @@ do_a_mode(int kind, int global)
 {
 	VALARGS	args;
 	register int	s;
-	static TBUFF *cbuf; 	/* buffer to receive mode name into */
+	static TBUFF *cbuf;	/* buffer to receive mode name into */
 
 	/* prompt the user and get an answer */
 	tb_scopy(&cbuf, "");
@@ -1965,7 +1965,7 @@ major_complete(int c, char *buf, unsigned *pos)
 static int
 prompt_majormode(char **result, int defining)
 {
-	static TBUFF *cbuf; 	/* buffer to receive mode name into */
+	static TBUFF *cbuf;	/* buffer to receive mode name into */
 	int status;
 
 	/* prompt the user and get an answer */
@@ -2143,7 +2143,7 @@ static int ok_subqual(MAJORMODE *ptr, char *name)
 static int
 prompt_submode(MAJORMODE *ptr, char **result, int defining)
 {
-	static TBUFF *cbuf; 	/* buffer to receive mode name into */
+	static TBUFF *cbuf;	/* buffer to receive mode name into */
 	register const char *rp;
 	int status;
 
@@ -2269,7 +2269,7 @@ free_majormode(const char *name)
 					free(TYPECAST(char,my_majormodes[j].qual[k].shortname));
 				}
 				free(ptr->name);
-				free(ptr);
+				free(TYPECAST(char,ptr));
 				do {
 					my_majormodes[j] = my_majormodes[j+1];
 				} while (my_majormodes[j++].name != 0);
@@ -2487,9 +2487,9 @@ alloc_mode(const char *name, int predef)
 	}
 
 	(void) majorname(temp, name, TRUE);
-	major_valnames[j].name        = strmalloc(temp);
+	major_valnames[j].name	      = strmalloc(temp);
 	major_valnames[j].shortname   = strmalloc(name);
-	major_valnames[j].type        = VALTYPE_MAJOR;
+	major_valnames[j].type	      = VALTYPE_MAJOR;
 	major_valnames[j].side_effect = chgd_major_w;
 
 	memset(major_valnames+k, 0, sizeof(*major_valnames));
@@ -2701,6 +2701,7 @@ remove_mode(int f GCC_UNUSED, int n GCC_UNUSED)
 	return status;
 }
 
+#if !OPT_CASELESS
 /*
  * For the given majormode (by index into my_majormodes[]), return the
  * corresponding buffer mode value.
@@ -2711,6 +2712,7 @@ get_mm_b_val(int n, int m)
 	struct VAL *bv = get_sm_vals(my_majormodes[n].data);
 	return (bv[m].vp->i);
 }
+#endif
 
 /*
  * Returns the regular expression for the given indices, checking that the

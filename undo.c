@@ -3,7 +3,7 @@
  *
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.70 1998/10/31 16:41:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.71 1999/03/19 11:15:01 pgf Exp $
  *
  */
 
@@ -151,7 +151,7 @@ undolog(char *s, LINEPTR lp)
 	else if (lispurestacksep(lp))t= "purestacksep";
 	else if (lisstacksep(lp))t= "stacksep";
 	else if (lispatch(lp))	t = "patch";
-	else 			t = "unknown";
+	else			t = "unknown";
 
 	dbgwrite("%s %s lp 0x%x",s,t,lp);
 }
@@ -522,7 +522,7 @@ freshstack(int stkindx)
 		plp->l_nextsep = null_ptr;
 		if (curbp->b_udtail == null_ptr) {
 			if (curbp->b_udcount != 0) {
-				mlwrite("BUG: null tail with non-0 undo count");
+				mlforce("BUG: null tail with non-0 undo count");
 				curbp->b_udcount = 0;
 			}
 			curbp->b_udtail = plp;
@@ -560,7 +560,7 @@ freshstack(int stkindx)
 				do {
 					lp = newtail;
 					if (newtail == curbp->b_udlastsep)
-						mlwrite("BUG: tail passed lastsep");
+						mlforce("BUG: tail passed lastsep");
 					newtail = newtail->l_nxtundo;
 					lfree(lp,curbp);
 				} while (newtail != null_ptr);
@@ -679,7 +679,7 @@ undoworker(int stkindx)
 
 	if (nopops) {
 		if (stkindx == BACK && curbp->b_udcount != 0) {
-			mlwrite("BUG: nopop, non-0 undo count");
+			mlforce("BUG: nopop, non-0 undo count");
 		}
 		return (FALSE);
 	}
@@ -717,7 +717,7 @@ undoworker(int stkindx)
 		curbp->b_udlastsep = null_ptr;  /* it's only a hint */
 		if (curbp->b_udtail == lp) {
 			if (curbp->b_udcount != 0) {
-				mlwrite("BUG: popped tail; non-0 undo count");
+				mlforce("BUG: popped tail; non-0 undo count");
 				curbp->b_udcount = 0;
 			}
 			/* dbgwrite("clearing tail 0x%x and lastsep 0x%x", curbp->b_udtail,
@@ -783,7 +783,7 @@ lineundo(int f GCC_UNUSED, int n GCC_UNUSED)
 
 	if (lforw(ulp) != lforw(lp) ||
 	    lback(ulp) != lback(lp)) {
-	    	/* then the last change affected more than one line,
+		/* then the last change affected more than one line,
 			and we can't use the saved U-line */
 		dumpuline(curbp->b_ulinep);
 		kbd_alarm();

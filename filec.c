@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.83 1998/12/14 11:54:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.84 1999/03/19 11:21:18 pgf Exp $
  *
  */
 
@@ -172,7 +172,7 @@ makeString(BUFFER *bp, LINE * lp, char * text, SIZE_T len)
 		lp = 0;
 	} else {
 		(void)strcpy(np->l_text, text);
-		np->l_text[len+extra-1] = 0; 	/* clear scan indicator */
+		np->l_text[len+extra-1] = 0;	/* clear scan indicator */
 		llength(np) -= extra;	/* hide the null and scan indicator */
 
 
@@ -320,7 +320,7 @@ already_scanned(char * path)
 		    if (lp->l_text[llength(lp)+1])
 			return TRUE;
 		    else
-			break; 	/* name should not occur more than once */
+			break;	/* name should not occur more than once */
 		}
 	}
 
@@ -479,7 +479,7 @@ qs_pathcmp(const void *lpp1, const void *lpp2)
 	    return -1;
 	else		/* Don't care if the other one has slash or not... */
 	    return 1;	/* ...returning 1 for two equal elements won't do  */
-	    		/* any harm. */
+			/* any harm. */
     }
     else
 	return r;
@@ -598,7 +598,7 @@ fillMyBuff(char * name)
 #endif
 #if USE_QSORT
 			(void)makeString(MyBuff,
-			                 buf_head(MyBuff),
+					 buf_head(MyBuff),
 					 path,
 					 (SIZE_T) strlen(path));
 #else	/* !USE_QSORT */
@@ -659,7 +659,7 @@ fillMyBuff(char * name)
 				SIZE_T have = llength(lp);
 				if (have == need
 				 && !memcmp(lp->l_text, temp, need))
-				 	found = -1;
+					found = -1;
 				else if (have >= want
 				 && !memcmp(lp->l_text, path, want)) {
 					found = 1;
@@ -693,7 +693,7 @@ fillMyBuff(char * name)
 				(void) mklower(s);
 
 			if (isDotname(s))
-			 	continue;
+				continue;
 
 			if (only_dir) {
 				if (!FoundDirectory(path))
@@ -711,7 +711,7 @@ fillMyBuff(char * name)
 			(void)bs_find(path, strlen(path), MyBuff, (LINEPTR*)0);
 
 		} while (entries = 1,
-		         DosFindNext(hdir, &fb, sizeof(fb), &entries) == NO_ERROR
+			 DosFindNext(hdir, &fb, sizeof(fb), &entries) == NO_ERROR
 				 && entries == 1);
 
 		DosFindClose(hdir);
@@ -748,7 +748,7 @@ fillMyBuff(char * name)
 #else
 # if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
 			if (isDotname(leaf))
-			 	continue;
+				continue;
 # endif
 #endif
 			if (only_dir) {
@@ -771,7 +771,7 @@ fillMyBuff(char * name)
 			s = path;
 #endif
 			(void)makeString(MyBuff,
-			                 buf_head(MyBuff),
+					 buf_head(MyBuff),
 					 s,
 					 (SIZE_T) strlen(s));
 #else	/* !USE_QSORT */
@@ -899,7 +899,7 @@ path_completion(int c, char *buf, unsigned *pos)
 		if (MyBuff == 0) {
 			if (MyName == 0
 			 || (MyBuff = bs_init(MyName)) == 0)
-			 	return FALSE;
+				return FALSE;
 		}
 
 		/*
@@ -1139,7 +1139,7 @@ char *	result)
 		else
 			*Reply = EOS;
 
-	        s = kbd_string(prompt, Reply, sizeof(Reply),
+		s = kbd_string(prompt, Reply, sizeof(Reply),
 			'\n', KBD_OPTIONS|KBD_MAYBEC, complete);
 		freeMyList();
 
@@ -1152,7 +1152,7 @@ char *	result)
 			  || ((s = mlyesno("Reread current buffer")) == TRUE)))
 				(void)strcpy(Reply, curbp->b_fname);
 			else
-	                	return s;
+				return s;
 		} else if (kbd_is_pushed_back() && isShellOrPipe(Reply)) {
 			/*
 			 * The first call on 'kbd_string()' split the text off
@@ -1160,12 +1160,12 @@ char *	result)
 			 * colon-commands, but is inappropriate for filename
 			 * prompting.  Read the rest of the text into Reply.
 			 */
-		        s = kbd_string(prompt, Reply+1, sizeof(Reply)-1,
+			s = kbd_string(prompt, Reply+1, sizeof(Reply)-1,
 				'\n', KBD_OPTIONS|KBD_MAYBEC, complete);
 		}
-        } else if (!screen_to_bname(Reply)) {
+	} else if (!screen_to_bname(Reply)) {
 		return FALSE;
-        }
+	}
 	if (flag >= FILEC_UNKNOWN && is_appendname(Reply) != 0) {
 		mlforce("[file is not a legal input]");
 		return FALSE;
@@ -1194,7 +1194,7 @@ char *	result)
 	if (flag <= FILEC_WRITE) {	/* we want to write a file */
 		if (!isInternalName(Reply)
 		 && !same_fname(Reply, curbp, TRUE)
-		 && flook(Reply, FL_HERE|FL_READABLE)) {
+		 && cfg_locate(Reply, FL_CDIR|FL_READABLE)) {
 			if (mlyesno("File exists, okay to overwrite") != TRUE) {
 				mlwrite("File not written");
 				return FALSE;
@@ -1237,9 +1237,9 @@ char *	result)
 		if (s != TRUE)
 			return s;
 
-        } else if (!screen_to_bname(Reply)) {
+	} else if (!screen_to_bname(Reply)) {
 		return FALSE;
-        }
+	}
 
 	(void)tb_scopy(buffer, strcpy(result, Reply));
 	return TRUE;

@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.66 1999/02/11 00:47:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.67 1999/03/19 11:33:19 pgf Exp $
  *
  */
 
@@ -51,7 +51,7 @@ npopen (char *cmd, const char *type)
 		return NULL;
 
 	if (*type == 'r') {
-  		if (inout_popen(&ff, (FILE **)0, cmd) != TRUE)
+		if (inout_popen(&ff, (FILE **)0, cmd) != TRUE)
 			return NULL;
 		return ff;
 	} else {
@@ -100,7 +100,7 @@ inout_popen(FILE **fr, FILE **fw, char *cmd)
 		return FALSE;
 
 	fileispipe = TRUE;
-	eofflag = FALSE;
+	fileeof = FALSE;
 	if (pipe_pid) { /* parent */
 
 		if (fr) {
@@ -276,8 +276,8 @@ softfork(void)
 	return fpid;
 }
 
-#endif  /* SYS_UNIX */
-#endif 	/* TEST_DOS_PIPES */
+#endif /* SYS_UNIX */
+#endif /* TEST_DOS_PIPES */
 
 #if SYS_MSDOS || SYS_WIN31 || SYS_WINNT || TEST_DOS_PIPES
 #include <fcntl.h>		/* defines O_RDWR */
@@ -437,7 +437,7 @@ inout_popen(FILE **fr, FILE **fw, char *cmd)
 
 	TRACE(("inout_popen(fr=%p, fw=%p, cmd='%s')\n", fr, fw, cmd))
 	fileispipe = TRUE;
-	eofflag = FALSE;
+	fileeof = FALSE;
 #ifdef GMDW32PIPES
 	if (global_g_val(GMDW32PIPES))
 	    return (w32_inout_popen(fr, fw, cmd));

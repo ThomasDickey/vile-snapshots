@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.191 1998/04/28 10:18:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.192 1999/03/19 10:58:20 pgf Exp $
  *
  */
 
@@ -255,18 +255,15 @@ LINEPTR the_line)
 			it = the_buffer->b_linecount + 1;
 		return it;
 #else
-		register LINE	*lp;		/* current line */
-		register L_NUM	numlines = 0;	/* # of lines before point */
+		LINE	*lp;
+		L_NUM	line_num = 1;
 
 		for_each_line(lp, the_buffer) {
-			/* if we are on the specified line, record it */
-			if (lp == the_line)
+			if (lp == the_line)  /* found current line? */
 				break;
-			++numlines;
+			++line_num;
 		}
-
-		/* and return the resulting count */
-		return(numlines + 1);
+		return(line_num);
 #endif
 	}
 	return 0;
@@ -338,33 +335,29 @@ getoff(
 C_NUM goal,
 C_NUM *rcolp)
 {
-	register C_NUM c;		/* character being scanned */
-	register C_NUM i;		/* index into current line */
-	register C_NUM col;	/* current cursor column   */
-	register C_NUM llen;	/* length of line in bytes */
+	int curchar;
+	C_NUM offs;
+	C_NUM ccol = 0;
+	C_NUM llen = llength(DOT.l);
 
-	col = 0;
-	llen = llength(DOT.l);
+	/* calculate column as we move across line */
+	for (offs = w_left_margin(curwp); offs < llen; ++offs) {
 
-	/* scan the line until we are at or past the target column */
-	for (i = w_left_margin(curwp); i < llen; ++i) {
-		/* upon reaching the target, drop out */
-		if (col >= goal)
+		if (ccol >= goal)
 			break;
 
-		/* advance one character */
-		c = lgetc(DOT.l, i);
-		col = next_column(c,col);
+		/* move right */
+		curchar = lgetc(DOT.l, offs);
+		ccol = next_column(curchar,ccol);
 	}
 
 	if (rcolp)
-		*rcolp = col;
+		*rcolp = ccol;
 
-	/* and tell whether we made it */
-	if (col >= goal)
-		return i;	/* we made it */
-	else
-		return col - goal; /* else how far short (in spaces) we were */
+	if (ccol >= goal)
+		return offs;	/* we made it */
+	else /* else how far short (in spaces) we were */
+		return ccol - goal;
 }
 
 /* really set column, based on counting from 0, for internal use */
@@ -422,7 +415,6 @@ twiddle(int f GCC_UNUSED, int n GCC_UNUSED)
 
 
 
-#if OPT_AEDIT
 /*
  * Force zero or more blank lines at dot.  no argument leaves no blanks.
  * Lines will be deleted or added as needed to match the argument if it
@@ -470,7 +462,7 @@ forceblank(int f, int n)
 		DOT.o = 0;
 		backchar(TRUE,nchar);
 		s = ldelete((B_COUNT)nchar, FALSE);
-	} else { 			/* insert (n_arg - nld) lines */
+	} else {			/* insert (n_arg - nld) lines */
 		n_arg = n_arg - nld;
 		while (s && n_arg--)
 			s = lnewline();
@@ -484,7 +476,6 @@ forceblank(int f, int n)
 	return s;
 }
 
-#endif
 
 /* '~' is the traditional vi flip: flip a char and advance one */
 int
@@ -586,13 +577,12 @@ int
 writemsg(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register int status;
-	char buf[NPAT];		/* buffer to receive message into */
+	char buf[NPAT];
 
 	buf[0] = EOS;
 	if ((status = mlreply("Message to write: ", buf, sizeof(buf))) != TRUE)
 		return(status);
 
-	/* write the message out */
 	mlforce("%s",buf);
 	return(TRUE);
 }
@@ -613,7 +603,7 @@ void
 catnap(int milli, int watchinput)
 {
     if (milli == 0)
-    	return;
+	return;
 #if DISP_X11
     if (watchinput)
 	x_typahead(milli);
@@ -809,7 +799,7 @@ curdrive(void)
 # if CC_CSETPP
 	d = _getdrive();
 # else
-	_dos_getdrive(&d);  	/* A=1 B=2 ... */
+	_dos_getdrive(&d);	/* A=1 B=2 ... */
 # endif
 	return drive2char((d-1) & 0xff);
 #else

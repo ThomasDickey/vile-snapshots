@@ -1,8 +1,109 @@
 Changes for vile 8.3 (released ??? ??? ??, 1998)
 
+(tom) 990320 (p)
+	+ add an install-rule to filters/makefile.wnt
+	+ eliminate restriction on number of command-line arguments in winvile
+	  (reported by Ed Henderson).
+	+ make VILE_LIBDIR_PATH settable from the environment, as per
+	  documentation (patch by Brendan O'Dea).
+	+ add/use init_b_traits() function, to ensure that switching to a
+	  buffer which was source'd while hidden does not copy bogus values
+	  for the associated line pointers back to the window traits (fixes
+	  a core dump reported by Paul Fox).
+	+ modify addline(), bclear(), ifile() to prevent malloc/free from being
+	  interrupted by 'working' mode.
+	+ minor fixes to mail highlighting filter, to allow "To: " prefix
+	  (reported by Paul Fox).
+	> patches from Clark Morgan:
+	+ modify home_path() to work around problem on VMS where
+		$ vile ~/com/defs.com 
+	  does not work, nor does tab completion, e.g.,
+		:e ~/com/d<TAB> 
+	  (the latter was also reported by Ed Henderson).
+	+ vile restores original terminal width when it exits (mimics the eph
+	  editor's behavior). 
+	+ added "-132" and "-80" command-line switches to set screen width from
+	  command line. 
+	+ correct computation of prog_arg for VMS, which is used as part of the
+	  command-line help message.
+	+ modify definition of FOPEN_READ for VMS to allow shared reads from
+	  files (reported by Ed Henderson, analysis by Clark Morgan).
+	> patches from Paul Fox:
+	+ revised macros.doc, touching all previously untouched parts.
+	  it's now a little more vile-specific, and a little "tighter".
+	+ rewrite strinc() in terms of strcmp()/strncmp(), rename.
+	  (bind.c)
+	+ converted confusing (to me) do/while() loops to simple while()
+	  (search.c)
+	+ collapsed keyboard polling code (fcntl version) to single place.
+	  (termio.c)
+	+ fixed imdying() to:  a) leave a core even if there's a problem
+	  saving buffers, b) try all temp directories, rather than quitting
+	  on first failure, c) try $TMPDIR first, and current directory
+	  last, on all systems, d) warn user that files may be in current
+	  directory.  future:  on write error, should try again in other
+	  directories.  (file.c)
+	+ fix bug where assigning BFEXEC in dofile() was tromping possibly
+	  existing flags (like BFCHG, leading to loss of buffer changes)
+	  (exec.c)
+	+ revised/rewrote entabline/detabline algorithms.  entabline() no
+	  longer needs to calle detabline() first.  (region.c)
+	+ fixed return status of nextbuffer()/prevbuffer when in
+	  noautobuffer mode.  previously did swbuffer to current buffer,
+	  which succeeds.  now you can safely loop through the buffers, and
+	  know when to stop.  (this makes the new example in macros.doc
+	  work.) (buffer.c)
+	+ rationalize comments, comment wording, and code grouping (basic.c
+	  line.c buffer.c file.c edef.h eval.c bind.c random.c fences.c
+	  insert.c search.c window.c word.c display.c main.c input.c)
+	+ collapse updext_before()/updext_past() into single routine.
+	  purely mechanical -- could perhaps be improved.  show keyboard
+	  macro "[recording]" state on modelines (display.c)
+	+ begin in state HEADER rather than state BODY (filters/mailfilt.l)
+	+ add new &query function, to (eventually) replace interactive
+	  @variables.  (eval.c)
+	+ collapse starting/stopping of keyboard macro into single
+	  function, which acts as toggle.  leave both key-bindings ( '^X-('
+	  and '^X-)' ) but one is now redundant.  (input.c vile.hlp)
+	+ changed sense, somewhat, of kbd and dot macro state variables:
+	  now a two state boolean, rather than a three state.  well, i
+	  think it's nicer.  (input.c line.c)
+	+ simplify macbug code to take advantage of vararg-capable
+	  mlforce() (eval.c exec.c)
+	+ revised window grow/shrink algorithms (window.c)
+	+ more logical variable naming/grouping (file.c edef.h select.c
+	  npopen.c eval.c insert.c search.c display.c bind.c)
+	+ change all BUG mlwrites to mlforce (file.c undo.c others)
+	+ further encapsulate "crypting" knowledge -- create as ffdocrypt()
+	  accessor for "ffcrypting".  (file.c ucrypt.c)
+	+ renamed rewritten functions, minor algorithm changes (e.g.  use
+	  castrealloc() rather than castalloc()/memcpy() (line.c, file.c)
+	+ added lreplc() function, which can safely replace single
+	  characters on a line.  (line.c)
+	+ eliminated old "#ifdef BEFORE/#if NEVER/unused" code and
+	  variables.  (buffer.c, file.c edef.h spawn.c)
+	+ uniform use of tb_xxx prefix on TBUFFs.  (edef.h)
+	+ removed $truth variable (eval.c)
+	+ removed $ramsize variable (eval.c)
+	+ guard against possible null pointer dereference of b_fname (eval.c)
+	+ remove ENVFUNC ifdefs -- i think all our systems have them (eval.c
+	  bind.c)
+	+ removed OPT_AEDIT ifdefs.  they weren't protecting much.
+	  (region.c opers.c)
+	+ added more generic null TERM struct routines, deleted unneeded
+	  screen-specific ones.  (termio.c ansi.c vmsvt.c x11.c tcap.c)
+	+ hmmm.  should i even mention this one?  :-) (you guys should
+	  clearly follow suit.) (version.c)
+	+ minor supporting changes (proto.h estruct.h tags.c filec.c
+	  w32reg.c menu.c cmdtbl modetbl1 tbuff.c history.c)
+	+ comment cleanup, formatting, vestigial code and ifdef removal,
+	  increased NSTRING/NPAT.  who needs powers of two?  (estruct.h)
+	+ moved incremental search support def'ns to isearch.c (estruct.h
+	  isearch.c)
+	+ removed id.wing.net from suggested site list from README
+
  (tom) 990309 (o)
- 	+ change logic of newwidth() and newheight() functions to avoid use
-	  of uemacs changes (Paul Fox).
+ 	+ rewrite logic of newwidth() and newheight() (Paul Fox).
 	+ modify treatment of 'fillcol' mode so that a zero is interpreted to
 	  use the 'wrapmargin' value, and negative values are, like
 	  'wrapmargin', counted from the current right-margin (prompted by
@@ -12,8 +113,8 @@ Changes for vile 8.3 (released ??? ??? ??, 1998)
  	+ remove crypt-til operator; this would not work properly on portions
 	  of a file.
  	+ write ucrypt.c to use Unix crypt(1) if available.
- 	+ remove Dan Lawrence's code from crypt.c, move it to filters as
-	  ecrypt.c, for building standalone vile-crypt filter.
+	+ rename crypt.c, move it to filters as ecrypt.c, for building
+	  standalone vile-crypt.  will be phased out.
  	+ set "vilemode" for macros and procedure buffers, to simplify syntax
 	  highlighting of internal buffers.
  	+ modify syntax filters so that keyword classes and their instances

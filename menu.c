@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.27 1998/11/30 11:33:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.29 1999/03/20 16:00:29 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -89,13 +89,13 @@ menu_filename(void)
         if (menurc == NULL || *menurc == EOS)
                 menurc = default_menu;
 
-        return flook(menurc, FL_ANYWHERE|FL_READABLE);
+        return cfg_locate(menurc, FL_ANYWHERE|FL_READABLE);
 }
 
 static char *
 startup_filename(void)
 {
-        return flook(startup_file, FL_ANYWHERE|FL_READABLE);
+        return cfg_locate(startup_file, FL_ANYWHERE|FL_READABLE);
 }
 
 static void
@@ -121,7 +121,7 @@ static void common_action ( char *action )
         int status;
         char path[NFILEN];
 
-        lsprintf(path, "%s/%s", exec_pathname, prog_arg);
+        pathcat(path, exec_pathname, prog_arg);
 
         if ((pid = fork()) > 0) {
             while (wait(&status) >= 0)
@@ -264,7 +264,7 @@ int parse_menu ( const char *rc_filename )
                 else
                 {
                     fclose (fp);
-                    return FAILED;
+                    return FALSE;
                 }
                 break;
 
@@ -327,7 +327,7 @@ int parse_menu ( const char *rc_filename )
                 if (n != 2)
                 {
                     fclose (fp);
-                    return FAILED;
+                    return FALSE;
                 }
                 Nb_Token++;
                 break;
@@ -688,8 +688,7 @@ void do_menu ( Widget menub )
 
     if ((rc = parse_menu (menurc)) != TRUE)
     {
-        if (rc == FAILED)
-            puts ("Error parsing menu-file");
+        mlforce("Error parsing menu-file");
         return;
     }
 #if OPT_TRACE

@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.184 1999/03/08 11:41:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.185 1999/03/19 11:50:56 pgf Exp $
  *
  */
 
@@ -79,7 +79,7 @@ static	int	sindex ( const char *sourc, const char *pattern );
 
 /*--------------------------------------------------------------------------*/
 
-#if	ENVFUNC && OPT_EVAL && OPT_SHELL
+#if	OPT_EVAL && OPT_SHELL
 static char *
 GetEnv(char *s)
 {
@@ -137,12 +137,12 @@ cfgopts(void)
     static const char *opts[] =
     {
 #if SYS_WINNT && defined(VILE_OLE)
-        "oleauto",
+	"oleauto",
 #endif
 #if OPT_PERL
-        "perl",
+	"perl",
 #endif
-        NULL             /* End of list marker */
+	NULL		 /* End of list marker */
     };
     static TBUFF *optstring;
 
@@ -154,7 +154,7 @@ cfgopts(void)
 	    if (tb_length(optstring))
 		optstring = tb_append(&optstring, ',');
 	    optstring = tb_sappend(&optstring, *lclopt);
-        }
+	}
 	optstring = tb_append(&optstring, EOS);
     }
     return (tb_values(optstring));
@@ -373,10 +373,6 @@ const char *fname)	/* name of function to evaluate */
 	case UFTRIM:
 		it = mktrimmed(arg1);
 		break;
-	case UFTRUTH:
-		/* is it the answer to everything? */
-		it = ltos(l_strtol(arg1) == 42);
-		break;
 	case UFASCII:
 		it = l_itoa((int)arg1[0]);
 		break;
@@ -411,11 +407,11 @@ const char *fname)	/* name of function to evaluate */
 		break;
 	case UFREADABLE:
 		it = ltos(doglob(arg1)
-			&& flook(arg1, FL_HERE|FL_READABLE) != NULL);
+			&& cfg_locate(arg1, FL_CDIR|FL_READABLE) != NULL);
 		break;
 	case UFWRITABLE:
 		it = ltos(doglob(arg1)
-			&& flook(arg1, FL_HERE|FL_WRITEABLE) != NULL);
+			&& cfg_locate(arg1, FL_CDIR|FL_WRITEABLE) != NULL);
 		break;
 	case UFLOCMODE:
 	case UFGLOBMODE:
@@ -423,6 +419,32 @@ const char *fname)	/* name of function to evaluate */
 		if (find_mode(curbp, arg1, (fnum == UFGLOBMODE), &args) != TRUE)
 			break;
 		it = string_mode_val(&args);
+		}
+		break;
+	case UFQUERY:
+		{
+		    static TBUFF *replbuf;
+		    int odiscmd;
+		    int	oclexec;
+		    int status;
+
+		    odiscmd = discmd; discmd = TRUE;
+		    oclexec = clexec; clexec = FALSE;
+
+		    status = kbd_reply(arg1, &replbuf,
+				    eol_history, '\n',
+				    KBD_EXPAND|KBD_QUOTES,
+				    no_completion);
+
+		    discmd = odiscmd;
+		    clexec = oclexec;
+
+		    if (status == ABORT)
+			    return(errorm);
+
+		    /* FIXME: assumes EOS added by kbd_reply */
+		    strcpy(result, tb_values(replbuf));
+		    it = result;
 		}
 		break;
 	default:
@@ -482,9 +504,6 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 		If( EVPAGELEN )		value = l_itoa(term.t_nrow);
 		ElseIf( EVCURCOL )	value = l_itoa(getccol(FALSE) + 1);
 		ElseIf( EVCURLINE )	value = l_itoa(getcline());
-#if OPT_RAMSIZE
-		ElseIf( EVRAM )		value = l_itoa((int)(envram / 1024l));
-#endif
 		ElseIf( EVFLICKER )	value = ltos(flickcode);
 		ElseIf( EVCURWIDTH )	value = l_itoa(term.t_ncol);
 		ElseIf( EVBCHARS )
@@ -497,11 +516,12 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 		ElseIf( EVABUFNAME )	value = ((bp = find_alt()) != 0)
 						? bp->b_bname
 						: "";
-		ElseIf( EVCFNAME )	value = curbp ? curbp->b_fname : "";
+		ElseIf( EVCFNAME )	value = (curbp && curbp->b_fname) ?
+						curbp->b_fname : "";
 		ElseIf( EVSRES )	value = sres;
 		ElseIf( EVDEBUG )	value = ltos(macbug);
 		ElseIf( EVSTATUS )	value = ltos(cmdstatus);
-		ElseIf( EVPALETTE )	value = tb_values(palstr);
+		ElseIf( EVPALETTE )	value = tb_values(tb_curpalette);
 		ElseIf( EVLASTKEY )	value = l_itoa(lastkey);
 		ElseIf( EVCURCHAR )
 			if (curbp && !is_empty_buf(curbp)) {
@@ -518,19 +538,19 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 		ElseIf( EVSEED )	value = l_itoa(seed);
 		ElseIf( EVDISINP )	value = ltos(disinp);
 		ElseIf( EVWLINES )	value = l_itoa(curwp->w_ntrows);
-		ElseIf( EVCWLINE )	value = l_itoa(getwpos());
+		ElseIf( EVCWLINE )	value = l_itoa(getlinerow());
 		ElseIf( EVFWD_SEARCH )	value = ltos(last_srch_direc == FORWARD);
 		ElseIf( EVSEARCH )	value = pat;
 		ElseIf( EVREPLACE )	value = rpat;
-		ElseIf( EVMATCH )	value = tb_length(patmatch)
-						? tb_values(patmatch)
+		ElseIf( EVMATCH )	value = tb_length(tb_matched_pat)
+						? tb_values(tb_matched_pat)
 						: "";
 		ElseIf( EVMODE )	value = current_modename();
 		ElseIf( EVEOC )		value = l_itoa(ev_end_of_cmd ? 1 : 0);
 #if OPT_MLFORMAT
 		ElseIf( EVMLFORMAT )
 			if (modeline_format == 0)
-				mlwrite("BUG: modeline_format uninitialized");
+				mlforce("BUG: modeline_format uninitialized");
 			value = modeline_format;
 #endif
 
@@ -544,11 +564,11 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 						? curbp->majr->name
 						: "";
 #endif
-		ElseIf( EVLINE )	value = getctext((CHARTYPE)0);
-		ElseIf( EVWORD )	value = getctext(vl_nonspace);
-		ElseIf( EVIDENTIF )	value = getctext(vl_ident);
-		ElseIf( EVQIDENTIF )	value = getctext(vl_qident);
-		ElseIf( EVPATHNAME )	value = getctext(vl_pathn);
+		ElseIf( EVLINE )	value = lgrabtext((CHARTYPE)0);
+		ElseIf( EVWORD )	value = lgrabtext(vl_nonspace);
+		ElseIf( EVIDENTIF )	value = lgrabtext(vl_ident);
+		ElseIf( EVQIDENTIF )	value = lgrabtext(vl_qident);
+		ElseIf( EVPATHNAME )	value = lgrabtext(vl_pathn);
 #if SYS_UNIX
 		ElseIf( EVPROCESSID )	value = l_itoa(getpid());
 #else
@@ -967,7 +987,7 @@ const char *value)	/* value to set to */
 		ElseIf( EVCRYPTKEY )
 			if (cryptkey != 0)
 				free(cryptkey);
-			cryptkey = malloc(NPAT);
+			cryptkey = malloc(NKEYLEN);
 			vl_make_encrypt_key (cryptkey, value);
 #endif
 		ElseIf( EVDISCMD )
@@ -983,7 +1003,7 @@ const char *value)	/* value to set to */
 			status = resize(TRUE, atoi(value));
 
 		ElseIf( EVCWLINE )
-			status = forwline(TRUE, atoi(value) - getwpos());
+			status = forwline(TRUE, atoi(value) - getlinerow());
 
 #if OPT_MLFORMAT
 		ElseIf( EVMLFORMAT )
@@ -1005,11 +1025,11 @@ const char *value)	/* value to set to */
 		ElseIf( EVTPAUSE )
 			term.t_pause = atoi(value);
 
-		ElseIf( EVLINE ) 	status = putctext((CHARTYPE)0, value);
-		ElseIf( EVWORD )	status = putctext(vl_nonspace, value);
-		ElseIf( EVIDENTIF )	status = putctext(vl_ident, value);
-		ElseIf( EVQIDENTIF )	status = putctext(vl_qident, value);
-		ElseIf( EVPATHNAME )	status = putctext(vl_pathn, value);
+		ElseIf( EVLINE )	status = lrepltext((CHARTYPE)0, value);
+		ElseIf( EVWORD )	status = lrepltext(vl_nonspace, value);
+		ElseIf( EVIDENTIF )	status = lrepltext(vl_ident, value);
+		ElseIf( EVQIDENTIF )	status = lrepltext(vl_qident, value);
+		ElseIf( EVPATHNAME )	status = lrepltext(vl_pathn, value);
 
 #if SYS_WINNT && defined(DISP_NTWIN)
 		ElseIf( EVFONT ) status = ntwinio_font_frm_str(value, FALSE);
@@ -1090,30 +1110,14 @@ const char *value)	/* value to set to */
 	   that effect here. */
 
 	if (macbug) {
-		char	outline[NLINE];
-		(void)strcpy(outline, "(((");
-
-		/* assignment status */
-		(void)strcat(outline, ltos(status));
-		(void)strcat(outline, ":");
-
 		/* variable name */
-		if (var->v_type == TKENV) {
-			(void)strcat(outline, "&");
-			(void)strcat(outline, envars[var->v_num]);
-		} else if (var->v_type == TKENV) {
-			(void)strcat(outline, "%");
-			(void)strcat(outline, var->v_ptr->u_name);
-		}
-		(void)strcat(outline, ":");
+		if (var->v_type == TKENV)
+			mlforce("(((%s:&%s:%s)))",
+				ltos(status), envars[var->v_num], value);
+		else if (var->v_type == TKENV)
+			mlforce("(((%s:%%%s:%s)))",
+				ltos(status), var->v_ptr->u_name, value);
 
-		/* and lastly the value we tried to assign */
-		(void)strcat(outline, value);
-		(void)strcat(outline, ")))");
-
-
-		/* write out the debug line */
-		mlforce("%s",outline);
 		(void)update(TRUE);
 
 		/* and get the keystroke to hold the output */
@@ -1203,10 +1207,10 @@ set_ctrans(const char *thePalette)
 int
 set_palette(const char *value)
 {
-	palstr = tb_scopy(&palstr, value);
+	tb_curpalette = tb_scopy(&tb_curpalette, value);
 #if OPT_COLOR
 	if (term.t_setpal != null_t_setpal) {
-		TTspal(tb_values(palstr));
+		TTspal(tb_values(tb_curpalette));
 		vile_refresh(FALSE,0);
 		return TRUE;
 	}
@@ -1223,7 +1227,7 @@ set_palette(const char *value)
 char *
 l_itoa(int i)		/* integer to translate to a string */
 {
-	static char result[INTWIDTH+1];	/* resulting string */
+	static char result[32];	/* resulting string */
 	(void)lsprintf(result,"%d",i);
 	return result;
 }
@@ -1233,7 +1237,7 @@ l_itoa(int i)		/* integer to translate to a string */
 static char *
 l_utoh(unsigned i)
 {
-	static char result[INTWIDTH+1];	/* resulting string */
+	static char result[32];	/* resulting string */
 	(void)lsprintf(result,"%x",i);
 	return result;
 }
@@ -1245,11 +1249,20 @@ l_utoh(unsigned i)
 static int
 l_strtol(const char *s)
 {
-	if (s[0] == '\'' &&
-	    s[2] == '\'' &&
-	    s[3] == EOS)
-	    return s[1];
-	return (int)strtol(s, (char **)0, 0);
+	char *ns;
+	long l;
+
+	if (s[0] == '\'' && s[2] == '\'' && s[3] == EOS)
+		return s[1];
+
+	l = strtol(s, &ns, 0);
+
+	/* the endpointer better point at a 0, otherwise
+	 * it wasn't all digits */
+	if (*s && !*ns)
+		return (int)l;
+
+	return 0;
 }
 #endif
 
@@ -1297,12 +1310,11 @@ tokval(				/* find the value of a token */
 const char *tokn)		/* token to evaluate */
 {
 #if OPT_EVAL
-	register int status;	/* error return */
-	register BUFFER *bp;	/* temp buffer pointer */
-	register B_COUNT blen;	/* length of buffer argument */
-	register int distmp;	/* temporary discmd flag */
-
-	int	oclexec;
+	int status;	/* error return */
+	BUFFER *bp;	/* temp buffer pointer */
+	B_COUNT blen;	/* length of buffer argument */
+	int distmp;	/* temporary discmd flag */
+	int oclexec;
 
 	static TBUFF *tkbuf;
 	static TBUFF *tkargbuf;
@@ -1508,9 +1520,9 @@ ltos(		/* numeric logical to string logical */
 int val)	/* value to translate */
 {
 	if (val)
-		return(truem);
+		return("TRUE");
 	else
-		return(falsem);
+		return("FALSE");
 }
 #endif
 
@@ -1563,7 +1575,7 @@ mktrimmed(register char *str)	/* trim whitespace */
 	}
 	if (dst != base
 	 && isSpace(dst[-1]))
-	 	dst--;
+		dst--;
 	*dst = EOS;
 	return base;
 }

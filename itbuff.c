@@ -7,7 +7,7 @@
  *	To do:	add 'itb_ins()' and 'itb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/itbuff.c,v 1.12 1998/04/28 10:17:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/itbuff.c,v 1.13 1999/03/19 10:51:09 pgf Exp $
  *
  */
 
@@ -82,7 +82,7 @@ itb_alloc(ITBUFF **p, ALLOC_T n)
 		q->itb_data = typeallocn(int, q->itb_size = n);
 		q->itb_used = 0;
 		q->itb_last = 0;
-		q->itb_endc = abortc;
+		q->itb_endc = esc_c;
 		AllocatedBuffer(q)
 	} else if (n >= q->itb_size) {
 		q->itb_data = typereallocn(int, q->itb_data,
@@ -179,7 +179,7 @@ itb_copy(ITBUFF **d, ITBUFF *s)
 				;
 		}
 	} else
-		p = itb_init(d, abortc);
+		p = itb_init(d, esc_c);
 	return p;
 }
 
@@ -264,7 +264,7 @@ itb_insert(ITBUFF **p, int c)
 int
 itb_get(ITBUFF *p, ALLOC_T n)
 {
-	register int	c = abortc;
+	register int	c = esc_c;
 
 	if (p != 0)
 		c = (n < p->itb_used) ? p->itb_data[n] : p->itb_endc;
@@ -333,7 +333,7 @@ itb_next(ITBUFF *p)
 {
 	if (p != 0)
 		return itb_get(p, p->itb_last++);
-	return abortc;
+	return esc_c;
 }
 
 /*
@@ -349,7 +349,7 @@ itb_last(ITBUFF *p)
 		p->itb_used--;
 		return c;
 	}
-	return abortc;
+	return esc_c;
 }
 
 #if NEEDED
@@ -374,7 +374,7 @@ itb_peek(ITBUFF *p)
 {
 	if (p != 0)
 		return itb_get(p, p->itb_last);
-	return abortc;
+	return esc_c;
 }
 
 /*******(bulk-data)************************************************************/

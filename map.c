@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.85 1999/02/01 11:19:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.86 1999/03/19 11:32:42 pgf Exp $
  *
  */
 
@@ -58,7 +58,7 @@ struct maprec {
 	int		irv;		/* system defined mapping: The	*/
 					/*   (wide) character code to	*/
 					/*   replace a matched sequence by */
-	char          *	srv;		/* user defined mapping: This	*/
+	char	      * srv;		/* user defined mapping: This	*/
 					/*   is the string to replace a	*/
 					/*   matched sequence by	*/
 };
@@ -381,8 +381,8 @@ static void
 addtomap(
     struct maprec **mpp,
     const char * ks,
-    int         kslen,
-    UINT        flags,
+    int 	kslen,
+    UINT	flags,
     int		irv,
     char *	srv)
 {
@@ -623,12 +623,12 @@ mapgetc(void)
 
     if (!tgetc_avail() && mapgetc_ungotcnt > 0) {
 	    if (infloopcount++ > global_g_val(GVAL_MAPLENGTH)) {
-		(void)itb_init(&mapgetc_ungottenchars, abortc);
+		(void)itb_init(&mapgetc_ungottenchars, esc_c);
 		mapgetc_ungotcnt = 0;
 		mlforce("[Infinite loop detected in %s sequence]",
 			    (insertmode) ? "map!" : "map");
 		catnap(1000,FALSE);  /* FIXME: be sure message gets out */
-		return abortc|NOREMAP;
+		return esc_c|NOREMAP;
 	    }
 	    mapgetc_ungotcnt--;
 	    return itb_last(mapgetc_ungottenchars) | remapflag;
@@ -689,7 +689,7 @@ mapped_c(int remap, int raw)
     }
 
     do {
-	(void)itb_init(&mappedchars, abortc);
+	(void)itb_init(&mappedchars, esc_c);
 
 	matched = maplookup(c, &mappedchars, mp, mapgetc, mapped_c_avail, mapped_c_start, TRUE);
 
@@ -770,7 +770,7 @@ abbr_check(int *backsp_limit_p)
 	return;
     abbr_curr_off = DOT.o;
     abbr_search_lim = *backsp_limit_p;
-    (void)itb_init(&abbr_chars, abortc);
+    (void)itb_init(&abbr_chars, esc_c);
     matched = maplookup(abbr_getc(), &abbr_chars, abbr_map,
 	abbr_getc, abbr_c_avail, abbr_c_start, FALSE);
 
@@ -844,7 +844,7 @@ maplookup(
 		 * which is a subset of the other.  vi matches the shorter
 		 * one.
 		 */
-	        if ((*start)()) {
+		if ((*start)()) {
 		    had_start = TRUE;
 		    if (!global_g_val(GMDMAPLONGER)) {
 			break;

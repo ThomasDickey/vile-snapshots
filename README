@@ -1,5 +1,5 @@
 
-README for vile, version 8.1
+README for vile, version 8.3
 -----------------------------
 
 vile is a text editor which is extremely compatible with vi in terms
@@ -18,7 +18,6 @@ of the newest stuff is at the end, not up here where you are.
 visit
 	ftp://ftp.clark.net/pub/dickey/vile
 	ftp://ftp.phred.org/pub/vile
-	ftp://id.wing.net/pub/pgf/vile
 to be sure it's still the latest.
 
 impatient?  just type "./configure; make", and get a cup of coffee, decaf
@@ -343,5 +342,5 @@ Oct, 1998
 
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.70 1998/12/21 10:47:19 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.71 1999/03/19 10:49:32 pgf Exp $
 -------------------------------

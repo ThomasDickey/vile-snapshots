@@ -7,14 +7,14 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.112 1999/03/09 10:57:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.113 1999/03/19 11:57:35 pgf Exp $
  *
  */
 
 #include	"estruct.h"
 #include	"edef.h"
 
-#define	DOT_ARGUMENT	((dotcmdmode == PLAY) && dotcmdarg)
+#define	DOT_ARGUMENT	((dotcmdactive == PLAY) && dotcmdarg)
 
 #define	BackspaceLimit() (b_val(curbp,MDBACKLIMIT) && autoindented <= 0)\
 			? DOT.o\
@@ -78,7 +78,7 @@ wrap_at_col(int c)
 
 	if (b_val(curbp, MDWRAP)
 	 && (n = getfillcol(curbp)) > 0)
-	 	return (getccol(FALSE) > n);
+		return (getccol(FALSE) > n);
 
 	return FALSE;
 }
@@ -153,7 +153,7 @@ openup(int f, int n)
 int
 openup_no_aindent(int f, int n)
 {
-    	int s;
+	int s;
 	int oallow = allow_aindent;
 	allow_aindent = FALSE;
 	s = openup(f,n);
@@ -184,7 +184,7 @@ opendown(int f, int n)
 int
 opendown_no_aindent(int f, int n)
 {
-    	int s;
+	int s;
 	int oallow = allow_aindent;
 	allow_aindent = FALSE;
 	s = opendown(f,n);
@@ -233,7 +233,7 @@ insert(int f, int n)
 int
 insert_no_aindent(int f, int n)
 {
-    	int s;
+	int s;
 	int oallow = allow_aindent;
 	allow_aindent = FALSE;
 	s = ins_n_times(f,n,TRUE);
@@ -342,7 +342,7 @@ replacechar(int f, int n)
 		c = cbuf[0];
 	} else {
 		set_insertmode(REPLACECHAR);  /* need to fool SPEC prefix code */
-		if (dotcmdmode != PLAY)
+		if (dotcmdactive != PLAY)
 			(void)update(FALSE);
 		c = keystroke();
 		if (ABORTED(c)) {
@@ -432,7 +432,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 
 	if (playback && (insbuff != 0))
 		itb_first(insbuff);
-	else if (!itb_init(&insbuff, abortc)) {
+	else if (!itb_init(&insbuff, esc_c)) {
 		nested--;
 		return FALSE;
 	}
@@ -451,7 +451,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 		/*
 		 * Read another character from the insertion-string.
 		 */
-		c = abortc;
+		c = esc_c;
 		if (playback) {
 			if (*splice && !itb_more(insbuff))
 				playback = FALSE;
@@ -459,7 +459,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 				c = itb_next(insbuff);
 		}
 		if (!playback) {
-			if (dotcmdmode != PLAY)
+			if (dotcmdactive != PLAY)
 				(void)update(FALSE);
 
 			c = mapped_keystroke();
@@ -473,8 +473,8 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 			 * buffer.
 			 */
 			if (curwp != wp0) {
-			    	/* end insert mode for window we started in */
-			    	wp0->w_traits.insmode = FALSE;
+				/* end insert mode for window we started in */
+				wp0->w_traits.insmode = FALSE;
 				if (b_val(wp0->w_bufp, MDSHOWMODE))
 				    wp0->w_flag |= WFMODE;
 				unkeystroke(c);
@@ -489,7 +489,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 
 
 		if (isspecial(c)) {
-		    	/* if we're allowed to honor SPEC bindings,
+			/* if we're allowed to honor SPEC bindings,
 				then see if it's bound to something, and
 				execute it */
 			const CMDFUNC *cfp = kcod2fnc(c);
@@ -542,7 +542,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 			status = TRUE;
 			break;
 		} else if ((c & HIGHBIT) && b_val(curbp, MDMETAINSBIND)) {
-		    	/* if we're allowed to honor meta-character bindings,
+			/* if we're allowed to honor meta-character bindings,
 				then see if it's bound to something, and
 				insert it if not */
 			const CMDFUNC *cfp = kcod2fnc(c);
@@ -576,14 +576,14 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 
 #if OPT_CFENCE
 		/* check for CMODE fence matching */
-	        if (b_val(curbp, MDSHOWMAT))
+		if (b_val(curbp, MDSHOWMAT))
 			fmatch(c);
 #endif
 
-		/* check auto-save mode */
+		/* do we need to do an auto-save? */
 		if (b_val(curbp, MDASAVE)) {
-			if (--curbp->b_acount <= 0) {
-				/* and save the file if needed */
+			curbp->b_acount--;
+			if (curbp->b_acount <= 0) {
 				(void)update(TRUE);
 				filesave(FALSE, 0);
 				curbp->b_acount = b_val(curbp,VAL_ASAVECNT);
@@ -698,7 +698,7 @@ inschar(int c, int *backsp_limit_p)
 				  || (lgetc(DOT.l,DOT.o-1) == '^'
 				  && last_insert_char == '^'))
 			      && isallspace(DOT.l,w_left_margin(curwp),
-			                          DOT.o-2))) {
+						  DOT.o-2))) {
 				int goal, col, sw;
 
 				sw = shiftwid_val(curbp);
@@ -821,11 +821,9 @@ istring(int f, int n, int mode)
 		return(status);
 
 
-	if (f == FALSE)
-		n = 1;
+	if (!f) n = 1;
 
-	if (n < 0)
-		n = - n;
+	if (n < 0) n = -n;
 
 	set_insertmode(mode);
 
@@ -833,7 +831,7 @@ istring(int f, int n, int mode)
 
 	/* insert it */
 	while (n--) {
-		tp = &tstring[0];
+		tp = tstring;
 		while (*tp) {
 			status = inschar(*tp++,&backsp_limit);
 			if (status != TRUE) {
@@ -980,7 +978,7 @@ nextindent(int *bracefp)
 		of the next non-blank line otherwise */
 	fc = firstchar(DOT.l);
 	if (fc < 0 && (   forwword(FALSE,1) == FALSE
-	               || (fc = firstchar(DOT.l)) < 0)) {
+		       || (fc = firstchar(DOT.l)) < 0)) {
 		if (bracefp)
 			*bracefp = FALSE;
 		DOT = MK;
@@ -1048,7 +1046,7 @@ indentlen(LINE *lp)
 		if (!isSpace(c))
 			break;
 		if (c == '\t')
-			ind = nextab(ind);
+			ind = nexttabcol(ind);
 		else
 			++ind;
 	}
@@ -1120,7 +1118,7 @@ tab(int f, int n)
 		return linsert(n, '\t');
 
 	ccol = getccol(FALSE);
-	return linsert((nextab(ccol) - ccol) + (n-1)*curtabval,' ');
+	return linsert((nexttabcol(ccol) - ccol) + (n-1)*curtabval,' ');
 }
 
 /*ARGSUSED*/
@@ -1146,7 +1144,7 @@ shiftwidth(int f GCC_UNUSED, int n GCC_UNUSED)
 	 */
 
 	(void) gocol(0);
-    	logical_col = 0;
+	logical_col = 0;
 	space_count = 0;
 	all_white = TRUE;
 	while (DOT.o < char_index) {
@@ -1162,7 +1160,7 @@ shiftwidth(int f GCC_UNUSED, int n GCC_UNUSED)
 
 	    if (c == '\t') {
 		logical_col += curtabval - (logical_col % curtabval);
-    	    } else {
+	    } else {
 		logical_col++;
 	    }
 

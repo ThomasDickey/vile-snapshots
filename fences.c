@@ -8,7 +8,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.66 1999/02/12 10:22:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.68 1999/03/20 16:34:20 tom Exp $
  *
  */
 
@@ -47,12 +47,13 @@
 #define BlkEnd   b_val_rexp(curbp, VAL_FENCE_END)->reg
 
 #define CurrentChar() \
- 	(is_at_end_of_line(DOT) ? '\n' : char_at(DOT))
+	(is_at_end_of_line(DOT) ? '\n' : char_at(DOT))
 #define InDirection(sdir) \
- 	((sdir == REVERSE) ? backchar(FALSE, 1) : forwchar(FALSE, 1))
+	((sdir == REVERSE) ? backchar(FALSE, 1) : forwchar(FALSE, 1))
 
 #define direction_of(sdir) (((sdir) == FORWARD) ? "forward" : "backward")
 
+#undef  min
 #define min(a,b)	((a) < (b) ? (a) : (b))
 #define HARD_LIMIT(bp) (bp->b_linecount * min(bp->b_linecount,b_val(bp,VAL_FENCE_LIMIT)))
 
@@ -103,7 +104,7 @@ next_line(int sdir)
 	if (is_header_line(DOT,curbp)) {
 		return FALSE;
 	} else if (interrupted()) {
-	    	kbd_alarm();
+		kbd_alarm();
 		return ABORT;
 	}
 	return TRUE;
@@ -118,7 +119,7 @@ static char *typeof_complex(int code)
 	case CPP_ELIF:		s = "CPP_ELIF";		break;
 	case CPP_ELSE:		s = "CPP_ELSE";		break;
 	case CPP_ENDIF:		s = "CPP_ENDIF";	break;
-	default: 		s = "CPP_UNKNOWN";	break;
+	default:		s = "CPP_UNKNOWN";	break;
 	}
 	return s;
 }
@@ -222,7 +223,7 @@ complex_fence(int sdir, int key, int group, int level, int *newkey)
 	    int status = next_line(sdir);
 
 	    if (status != TRUE)
-	    	return status;
+		return status;
 
 	    savedot = DOT;
 	    savecount = count;
@@ -250,7 +251,7 @@ complex_fence(int sdir, int key, int group, int level, int *newkey)
 				    TRACE(("done calling find_one_complex (%s)\n", status == ABORT ? "abort" : "fail"))
 				    that = CPP_UNKNOWN;
 				    if (status == ABORT)
-				    	return status;
+					return status;
 				    break;
 				}
 				TRACE_COMPLEX
@@ -498,12 +499,12 @@ int sdir)	/* direction to scan if we're not on a fence to begin with */
 {
 	MARK	oldpos; 		/* original pointer */
 	MARK	oldpre;
-	register int ofence = 0;	/* open fence */
+	int ofence = 0;
 	int s, i;
 	int key = CPP_UNKNOWN;
 	int fch;
 
-	/* save the original cursor position */
+	/* save position */
 	oldpos = DOT;
 
 	TRACE(("getfence, starting at %d.%d\n", line_no(curbp, DOT.l), DOT.o))
@@ -519,7 +520,6 @@ int sdir)	/* direction to scan if we're not on a fence to begin with */
 			ch = COMMENT_FENCE_CH;
 			sdir = (key == BLK_BEGIN) ? FORWARD : REVERSE;
 		} else if (sdir == FORWARD) {
-			/* get the current character */
 			if (oldpos.o < llength(oldpos.l)) {
 				do {
 					ch = char_at(oldpos);
@@ -530,7 +530,6 @@ int sdir)	/* direction to scan if we're not on a fence to begin with */
 				return FALSE;
 			}
 		} else {
-			/* get the current character */
 			if (oldpos.o >= 0) {
 				do {
 					ch = char_at(oldpos);
@@ -555,7 +554,6 @@ int sdir)	/* direction to scan if we're not on a fence to begin with */
 			fch = PAIRED_FENCE_CH;
 	}
 
-	/* setup proper matching fence */
 	if (fch >= 0) {
 		if ((key = match_simple()) == BLK_UNKNOWN)
 			return(FALSE);

@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.65 1999/03/09 10:56:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.66 1999/03/19 11:56:41 pgf Exp $
  *
  */
 
@@ -82,7 +82,7 @@ wrapword(int f, int n)
 	if (!ldelete(to_delete, FALSE))
 		return(FALSE);
 
-	/* put in a end of line */
+	/* put in newline */
 	if (!newline(FALSE,1))
 		return FALSE;
 
@@ -405,8 +405,8 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 	if (pastline != buf_head(curbp))
 		pastline = lforw(pastline);
 
- 	finished = FALSE;
- 	while (finished != TRUE) {  /* i.e. is FALSE or SORTOFTRUE */
+	finished = FALSE;
+	while (finished != TRUE) {  /* i.e. is FALSE or SORTOFTRUE */
 		if (DOT.l == pastline)	/* FIXME */
 			return setmark();
 		while (dot_at_section_break()) {
@@ -537,10 +537,10 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 						some spaces should be tabs */
 					if (b_val(curbp,MDTABINSERT))
 						entabline((void *)TRUE, 0, 0);
-			                if (lnewline() == FALSE)
+					if (lnewline() == FALSE)
 						return FALSE;
 					clength = 0;
-				        fmt_insert(secondindent,' ');
+					fmt_insert(secondindent,' ');
 					firstflag = TRUE;
 				}
 
@@ -607,7 +607,7 @@ wordcount(int f GCC_UNUSED, int n GCC_UNUSED)
 	long size;		/* size of region left to count */
 	register int ch;	/* current character to scan */
 	register int wordflag;	/* are we in a word now? */
-	register int lastword;	/* were we just in a word? */
+	register int lastflag;	/* were we just in a word? */
 	long nwords;		/* total # of words */
 	long nchars;		/* total number of chars */
 	int nlines;		/* total number of lines in region */
@@ -624,7 +624,7 @@ wordcount(int f GCC_UNUSED, int n GCC_UNUSED)
 	size   = region.r_size;
 
 	/* count up things */
-	lastword = FALSE;
+	lastflag = FALSE;
 	nchars = 0L;
 	nwords = 0L;
 	nlines = 0;
@@ -642,9 +642,9 @@ wordcount(int f GCC_UNUSED, int n GCC_UNUSED)
 		}
 
 		/* and tabulate it */
-		if (((wordflag = isident(ch)) != 0) && !lastword)
+		if (((wordflag = isident(ch)) != 0) && !lastflag)
 			++nwords;
-		lastword = wordflag;
+		lastflag = wordflag;
 		++nchars;
 	}
 
