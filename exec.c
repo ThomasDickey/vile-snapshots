@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.190 1999/07/02 00:16:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.191 1999/07/15 22:24:30 tom Exp $
  *
  */
 
@@ -975,6 +975,8 @@ int eolchar)
 	register int c, i, d, chr;
 
 	tb_init(tok, EOS);
+	if (src == 0)
+		return src;
 
 	/* first scan past any whitespace in the source string */
 	while (isSPorTAB(*src))

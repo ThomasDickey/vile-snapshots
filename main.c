@@ -23,7 +23,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.382 1999/06/14 23:11:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.387 1999/07/17 17:56:10 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -801,8 +801,8 @@ get_executable_dir(void)
 		prog_arg = strmalloc(t);
 		*t = EOS;
 		exec_pathname = strmalloc(lengthen_path(strcpy(temp, s)));
-	} else
-		free(s);
+	}
+	free(s);
 #endif
 }
 
@@ -1185,6 +1185,20 @@ global_val_init(void)
 	libdir_path = strmalloc(s);
 
 	tb_init(&replacepat, EOS);
+
+#if	OPT_MLFORMAT
+	modeline_format = strmalloc(
+	    "%-%i%- %b %m:: :%f:is : :%=%F: : :%l:(:,:%c::) :%p::% :%S%-%-%|"
+	);
+#endif
+#if	OPT_POSFORMAT
+	position_format = strmalloc(
+	    "Line %{$curline}d of %{$blines}d,\
+ Col %{$curcol}d of %{$lcols}d,\
+ Char %{$curchar}d of %{$bchars}d\
+ (%P%%) char is 0x%{$char}x or 0%{$char}o"
+	);
+#endif
 }
 
 #if SYS_UNIX || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT || SYS_VMS
@@ -1585,11 +1599,15 @@ quit(int f, int n GCC_UNUSED)
 		free_local_vals(b_valnames, global_b_values.bv, global_b_values.bv);
 		free_local_vals(w_valnames, global_w_values.wv, global_w_values.wv);
 
+		FreeAndNull(libdir_path);
 		FreeAndNull(startup_path);
 		FreeAndNull(gregexp);
 		tb_free(&tb_matched_pat);
 #if	OPT_MLFORMAT
 		FreeAndNull(modeline_format);
+#endif
+#if	OPT_POSFORMAT
+		FreeAndNull(position_format);
 #endif
 		FreeAndNull(helpfile);
 		FreeAndNull(startup_file);

@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.12 1999/06/13 18:25:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.14 1999/07/17 18:06:31 tom Exp $
  *
  */
 #include "estruct.h"
@@ -379,12 +379,15 @@ show_alloc(void)
 
 		for (j = 0; j < nowPending; j++) {
 			if (area[j].text) {
-				if (count++ < 10)
-					Trace("...%5d) %5ld bytes in alloc #%-5d @%p\n",
+				if (count++ < 50)
+					Trace("...%5d) %5ld bytes in alloc #%-5d @%p %s\n",
 						j,
 						area[j].size,
 						area[j].note,
-						area[j].text);
+						area[j].text,
+						visible_buff(area[j].text,
+							     area[j].size,
+							     FALSE));
 				total += area[j].size;
 			}
 		}

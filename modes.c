@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.156 1999/06/16 09:42:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.164 1999/07/17 17:58:29 tom Exp $
  *
  */
 
@@ -68,9 +68,10 @@ typedef struct {
 } MAJORMODE_LIST;
 
 static MAJORMODE_LIST *my_majormodes;
-static struct VALNAMES *major_valnames;
+static M_VALUES global_m_values;	/* dummy, for convenience */
 static struct VAL *major_g_vals;	/* on/off values of major modes */
 static struct VAL *major_l_vals;	/* dummy, for convenience */
+static struct VALNAMES *major_valnames;
 
 static const char **my_mode_list;	/* copy of 'all_modes[]' */
 #define MODE_CLASSES 5
@@ -1764,6 +1765,21 @@ count_modes (void)
 }
 
 /*
+ * Returns true if the given pointer is in all_modes[].  We use this to check
+ * whether a name is in the original const array or not, so we can free it.
+ */
+static int
+in_all_modes(const char *name)
+{
+	unsigned n;
+	for (n = 0; all_modes[n] != 0; n++) {
+		if (all_modes[n] == name)
+			return TRUE;
+	}
+	return FALSE;
+}
+
+/*
  * Return a list of only the modes that can be set with ":setv", ignoring
  * artifacts such as "all".
  */
@@ -1928,7 +1944,10 @@ remove_per_major(size_t count, const char *name)
 
 		for (j = 0; j < count; j++) {
 			if (strcmp(my_mode_list[j], name) == 0) {
-				free(TYPECAST(char,my_mode_list[j]));
+				if (my_mode_list != all_modes
+				 && !in_all_modes(my_mode_list[j])) {
+					free(TYPECAST(char,my_mode_list[j]));
+				}
 				count--;
 				for (k = j; k <= count; k++)
 					my_mode_list[k] = my_mode_list[k+1];
@@ -2068,6 +2087,23 @@ init_sm_vals (struct VAL *dst)
 }
 
 /*
+ * Free data allocated in get_sm_vals().
+ */
+static void
+free_sm_vals(MAJORMODE *ptr)
+{
+	MINORMODE *p;
+
+	while (ptr->sm != 0) {
+		p = ptr->sm;
+		ptr->sm = p->sm_next;
+		free_local_vals(b_valnames, global_b_values.bv, p->sm_vals.bv);
+		free(p->sm_name);
+		free(p);
+	}
+}
+
+/*
  * Using the currently specified 'group' qualifier, lookup the corresponding
  * MINORMODE structure and return a pointer to the B_VALUES VALS data.  If
  * no structure is found, create one.
@@ -2181,7 +2217,7 @@ static int ok_subqual(MAJORMODE *ptr, char *name)
 	if ((j = lookup_valnames(name, q_valnames)) >= 0) {
 		args.names  = q_valnames;
 		args.local  = ptr->mq.qv;
-		args.global = args.local;
+		args.global = global_m_values.mv;
 	} else {
 		return FALSE;
 	}
@@ -2318,9 +2354,16 @@ free_majormode(const char *name)
 				free_local_vals(m_valnames, major_g_vals, ptr->mm.mv);
 				free_local_vals(b_valnames, global_b_values.bv, get_sm_vals(ptr));
 				for (k = 0; k < MAX_M_VALUES; k++) {
+					free_val(m_valnames+k, my_majormodes[j].data->mm.mv+k);
 					free(TYPECAST(char,my_majormodes[j].qual[k].name));
 					free(TYPECAST(char,my_majormodes[j].qual[k].shortname));
 				}
+				for (k = 0; k < MAX_Q_VALUES; k++) {
+					free_val(q_valnames+k, my_majormodes[j].data->mq.qv+k);
+					free(TYPECAST(char,my_majormodes[j].subq[k].name));
+					free(TYPECAST(char,my_majormodes[j].subq[k].shortname));
+				}
+				free_sm_vals(ptr);
 				free(ptr->name);
 				free(TYPECAST(char,ptr));
 				do {
@@ -2409,14 +2452,12 @@ extend_VAL_array(struct VAL *ptr, size_t item, size_t len)
 static void
 set_qualifier(const struct VALNAMES *names, struct VAL *values, const char *s)
 {
+	free_val(names, values);
 	switch (names->type) {
 	case VALTYPE_STRING:
-		if (values->v.p)
-			free(values->v.p);
 		values->v.p = strmalloc(s);
 		break;
 	case VALTYPE_REGEX:
-		free_regexval(values->v.r);
 		values->v.r = new_regexval(s, TRUE);
 		break;
 	}
@@ -2658,7 +2699,7 @@ do_a_submode(int defining)
 		qualifier   = TRUE;
 		args.names  = m_valnames;
 		args.local  = ptr->mm.mv;
-		args.global = args.local;
+		args.global = global_m_values.mv;
 	} else if ((j = lookup_valnames(rp, b_valnames)) >= 0) {
 		args.names  = b_valnames;
 		args.local  = get_sm_vals(ptr);
@@ -3317,6 +3358,12 @@ mode_leaks(void)
 	while (my_schemes != 0 && my_schemes->name != 0)
 		if (!free_scheme(my_schemes->name))
 			break;
+	if (my_schemes != 0) {	/* it's ok to free the default scheme */
+		FreeAndNull(my_schemes->list);
+		FreeAndNull(my_schemes->name);
+		free(my_schemes);
+	}
+	FreeAndNull(my_scheme_choices);
 #endif
 
 #if OPT_ENUM_MODES && OPT_COLOR
@@ -3337,7 +3384,11 @@ mode_leaks(void)
 
 	FreeAndNull(major_g_vals);
 	FreeAndNull(major_l_vals);
-	if (my_mode_list != all_modes) {
+	if (my_mode_list != all_modes
+	 && my_mode_list != 0) {
+		int j = count_modes();
+		while (j > 0)
+			remove_per_major(j--, my_mode_list[0]);
 		FreeAndNull(my_mode_list);
 	}
 	FreeAndNull(major_valnames);

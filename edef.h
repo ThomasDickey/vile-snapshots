@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.251 1999/07/03 02:14:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.252 1999/07/15 09:36:06 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -145,6 +145,9 @@ decl_init( int curgoal, -1 );		/* column goal			*/
 decl_uninit( const char *execstr );	/* string being executed	*/
 #if OPT_MLFORMAT
 decl_uninit( char *modeline_format );	/* modeline formatting string */
+#endif
+#if OPT_POSFORMAT
+decl_uninit( char *position_format );	/* position formatting string */
 #endif
 decl_init( int	eolexist, TRUE );	/* does clear to EOL exist	*/
 decl_uninit( int revexist );		/* does reverse video exist?	*/

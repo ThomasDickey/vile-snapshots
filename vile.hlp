@@ -2124,6 +2124,7 @@ Programmed procedures and macros
 	$abufname	alternate buffer name (i.e. last visited) (read only)
 	$bchars		number of characters in current buffer	(read only)
 	$blines		number of lines in current buffer	(read only)
+	$bwindows	number of windows open on current buffer(read only)
 	$buffer-hook	name of procedure to run when switching to a buffer
 	$cbufname	current buffer name
 	$cd-hook	name of procedure to run when changing directories
@@ -2136,6 +2137,7 @@ Programmed procedures and macros
 	$cfilname	current file name
 	$char		character under the cursor
 	$cryptkey	encryption key				(write only)
+	$curchar	character offset in file
 	$curcol		current column position of cursor
 	$curline	current line in file
 	$cwd		current directory
@@ -2154,6 +2156,7 @@ Programmed procedures and macros
 	$identifier	current punctuated word
 	$kill		some of the kill register		(read only)
 	$lastkey	last keyboard char struck
+	$lcols		length of current line, in columns	(read only)
 	$libdir-path	appended to $PATH when running filters
 	$line		text of current line
 	$llength	length of current line			(read only)
@@ -2173,6 +2176,7 @@ Programmed procedures and macros
 	$pathname	current path-like word
 	$pending	typeahead pending flag			(read only)
 	$pid		returns vile's process-id		(read only)
+	$position-format format of ^G command.  see "Mode line customization".
 	$progname	returns "vile" or "xvile" or "winvile".	(read only)
 	$qidentifier	current qualified name (as with C++ ::)
 	$read-hook	name of procedure to run after a file is read
@@ -2851,6 +2855,7 @@ Mode line customization
 		%|	eighty column indicator
 		%%	percent sign
 		%:	colon
+		%{name}	any internal mode/variable value, given its name
 
 	Some of the format specifiers (%f, %F, %m, %l, %c, %p, %S, %L) are
 	conditionally displayed.  For example "%m" will display the major
@@ -4138,4 +4143,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.423 1999/07/06 01:08:48 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.425 1999/07/17 18:35:00 tom Exp $

@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.193 1999/07/03 13:39:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.194 1999/07/17 18:02:57 tom Exp $
  *
  */
 
@@ -2261,8 +2261,11 @@ void	bp_leaks(void)
 {
 	register BUFFER *bp;
 
-	if (bminip != 0)
+	if (bminip != 0) {
+		b_clr_changed(bminip);	/* discard any changes */
+		bclear(bminip);
 		FreeBuffer(bminip);
+	}
 	while ((bp = bheadp) != 0) {
 		b_clr_changed(bp);	/* discard any changes */
 		bclear(bheadp);

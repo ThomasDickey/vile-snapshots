@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.129 1999/06/20 21:33:58 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.132 1999/07/16 09:55:29 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -173,13 +173,15 @@ string
 "abufname"	ABUFNAME		# alternate buffer name (i.e. '#')
 "bchars"	BCHARS			# chars in current buffer
 "blines"	BLINES			# lines in current buffer
-"cbufname"	CBUFNAME		# current buffer name
+"bwindows"	BWINDOWS		# windows open on current buffer
 "buffer-hook"	BUFHOOK		OPT_HOOKS	# procedure to run when entering buf
+"cbufname"	CBUFNAME		# current buffer name
 "cd-hook"	CDHOOK		OPT_HOOKS	# procedure to run when cd'ing
 "cfgopts"	CFGOPTS			# "interesting" compiled options (comma-delimited)
 "cfilname"	CFNAME			# current file name
-"char"		CURCHAR			# current character under the cursor
+"char"		CHAR			# current character under the cursor
 "cryptkey"	CRYPTKEY	OPT_ENCRYPT # write-only encryption-key
+"curchar"	CURCHAR		!SMALLER # current character index in buffer
 "curcol"	CURCOL			# current column pos of cursor
 "curline"	CURLINE			# current line in file
 "cwd"		CWD		OPT_SHELL # current directory
@@ -197,6 +199,7 @@ string
 "identifier"	IDENTIF			# current identifier
 "kill"		KILL			# kill buffer (read only)
 "lastkey"	LASTKEY			# last keyboard char struck
+"lcols"		LCOLS			# length of current line, in columns
 "libdir-path"	LIBDIR_PATH		# library directory(s)
 "line"		LINE			# text of current line
 "llength"	LLENGTH			# length of current line
@@ -216,6 +219,7 @@ string
 "pathname"	PATHNAME		# current path-like word
 "pending"	PENDING			# type ahead pending flag
 "pid"		PROCESSID		# vile's process-id
+"position-format" POSFORMAT	OPT_POSFORMAT # position format string
 "progname"	PROGNAME		# returns current prog name - "vile"
 "qidentifier"	QIDENTIF		# current qualified identifier
 "read-hook"	RDHOOK		OPT_HOOKS	# procedure to run when reading
@@ -227,8 +231,8 @@ string
 "startup-file"	STARTUP_FILE		# the name of the startup-file (e.g., .vilerc)
 "startup-path"	STARTUP_PATH		# where to find the startup-file (e.g., .)
 "status"	STATUS			# returns the status of the last command
-"tpause"	TPAUSE			# length to pause for paren matching
 "title"		TITLE		DISP_X11||SYS_WINNT	# window title
+"tpause"	TPAUSE			# length to pause for paren matching
 "version"	VERSION			# current version number
 "wlines"	WLINES			# # of lines in current window
 "word"		WORD			# current word

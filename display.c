@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.288 1999/07/05 21:22:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.291 1999/07/17 21:57:29 tom Exp $
  *
  */
 
@@ -383,13 +383,6 @@ vtinit(void)
     register int i;
     register VIDEO *vp;
 
-#if	OPT_MLFORMAT
-    if (!modeline_format)
-	modeline_format = strmalloc(
-	    "%-%i%- %b %m:: :%f:is : :%=%F: : :%l:(:,:%c::) :%p::% :%S%-%-%|"
-	);
-#endif
-
     /* allocate new display memory */
     if (vtalloc() == FALSE) /* if we fail, only serious if not a realloc */
 	return (vscreen != NULL);
@@ -618,12 +611,6 @@ vtlistc(int c)
 	    vtputc('^');
 	    vtputc(toalpha(c));
 	}
-}
-
-static int
-vtgetc(int col)
-{
-	return vscreen[vtrow]->v_text[col];
 }
 
 static void
@@ -1475,9 +1462,11 @@ int *screencolp)
 	 * Find the current column.  Reuse the ruler column-value if we
 	 * computed it.
 	 */
+#ifdef WMDRULER
 	if (w_val(curwp,WMDRULER))
 		col = curwp->w_ruler_col + w_left_margin(curwp) - 1;
 	else
+#endif
 		col = dot_to_vcol(curwp) + w_left_margin(curwp);
 
 #ifdef WMDLINEWRAP
@@ -2555,7 +2544,7 @@ int	colto)		/* first column on screen */
  * formatted.  You can change the modeline format by hacking at this
  * routine.  Called by "update" any time there is a dirty window.
  */
-#if OPT_MLFORMAT
+#if OPT_MLFORMAT || OPT_POSFORMAT
 static void
 mlfs_prefix(
     char **fsp,
@@ -2745,58 +2734,54 @@ rough_position(WINDOW *wp)
 	return msg;
 }
 
-static void
-modeline(WINDOW *wp)
+#if OPT_MLFORMAT || OPT_POSFORMAT
+
+#define L_CURL '{'
+#define R_CURL '}'
+
+static int
+percentage(WINDOW *wp)
 {
-#if OPT_MLFORMAT
-    char *fs = modeline_format;
-    int fc;
+    L_NUM val;
+    BUFFER *bp = wp->w_bufp;
+
+#ifdef WMDRULER
+    if (w_val(wp,WMDRULER) && !is_empty_buf(bp))
+	val = wp->w_ruler_line;
+    else
 #endif
-    char temp[NFILEN];
+	val = line_no(bp, wp->w_dot.l);
+
+    return (val * 100) / line_count(bp);
+}
+
+/*
+ * Format special single-use messages, i.e., the modeline format, which has
+ * a number of special variables that we would like to output quickly.
+ */
+void
+special_formatter(TBUFF **result, char *fs, WINDOW *wp)
+{
+    BUFFER *bp;
+    char *ms;
+    char *save_fs;
     char left_ms[NFILEN*2];
     char right_ms[NFILEN*2];
-    char *ms;
-    register int n;
-    int lchar;
+    char temp[NFILEN];
     int col;
+    int fc;
+    int lchar;
+    int need_eighty_column_indicator;
     int right_len;
-    int need_eighty_column_indicator = FALSE;
-    register BUFFER *bp;
+    register int n;
 
-    term.cursorvis(FALSE);
+    tb_init(result, EOS);
+
     left_ms[0] = right_ms[0] = EOS;
     ms = left_ms;
+    need_eighty_column_indicator = FALSE;
 
-    n = mode_row(wp);		/* Location. */
-#if OPT_VIDEO_ATTRS
-    {
-	VIDEO_ATTR attr;
-	if (wp == curwp)
-	    attr = VAMLFOC;
-	else
-	    attr = VAML;
-#if	OPT_REVSTA
-#ifdef	GVAL_MCOLOR
-	if (global_g_val(GVAL_MCOLOR) & VASPCOL)
-	    attr |= VCOLORATTR(global_g_val(GVAL_MCOLOR) & 0xf);
-	else
-	    attr |= global_g_val(GVAL_MCOLOR);
-#else
-	    attr |= VAREV;
-#endif
-#endif
-	vscreen[n]->v_flag |= VFCHG;
-	set_vattrs(n, 0, attr, term.cols);
-    }
-#else
-    vscreen[n]->v_flag |= VFCHG | VFREQ | VFCOL;/* Redraw next time. */
-#endif
-#if	OPT_COLOR
-    ReqFcolor(vscreen[n]) = gfcolor;
-    ReqBcolor(vscreen[n]) = gbcolor;
-#endif
     bp = wp->w_bufp;
-    vtmove(n, 0);				/* Seek to right line. */
     if (wp == curwp) {				/* mark the current buffer */
 	lchar = '=';
     } else {
@@ -2808,7 +2793,6 @@ modeline(WINDOW *wp)
 	    lchar = '-';
     }
 
-#if OPT_MLFORMAT
     while (*fs) {
 	if (*fs != '%')
 	    *ms++ = *fs++;
@@ -2877,8 +2861,7 @@ modeline(WINDOW *wp)
 			    case 'l' : val = wp->w_ruler_line; break;
 			    case 'L' : val = line_count(wp->w_bufp); break;
 			    case 'c' : val = wp->w_ruler_col; break;
-			    case 'p' : val = wp->w_ruler_line*100
-					     / line_count(wp->w_bufp); break;
+			    case 'p' : val = percentage(wp); break;
 			}
 			mlfs_prefix(&fs, &ms, lchar);
 			ms = lsprintf(ms, "%d", val);
@@ -2889,6 +2872,10 @@ modeline(WINDOW *wp)
 		    break;
 
 #endif
+		case 'P':
+		    ms = lsprintf(ms, "%d", percentage(wp));
+		    break;
+
 		case 'S' :
 		    if (
 #ifdef WMDRULER
@@ -2902,6 +2889,60 @@ modeline(WINDOW *wp)
 		    else
 			mlfs_skipfix(&fs);
 		    break;
+		case L_CURL:
+		    save_fs = fs;
+		    while (*fs != EOS && *fs != R_CURL)
+			fs++;
+
+		    if (fs != save_fs) {
+			int flag = clexec;
+			const char *save_execstr;
+			TBUFF *tok = 0;
+
+			save_execstr = execstr;
+			clexec = TRUE;
+			execstr = temp;
+
+			strncpy0(temp, save_fs, fs + 1 - save_fs);
+			execstr = get_token(execstr, &tok, EOS);
+			strcpy(temp, tokval(temp));
+
+			tb_free(&tok);
+			execstr = save_execstr;
+			clexec = flag;
+		    } else {
+			*temp = EOS;
+		    }
+		    if (*fs != EOS)
+			fs++;
+		    save_fs = fs;
+		    /*
+		     * Allow an optional <number><format> on the end of the
+		     * token, to reformat it.  Don't bother reformatting if
+		     * it is just a 'd' added to make the string unambiguous.
+		     */
+		    while (isDigit(*fs))
+			fs++;
+		    if (isAlpha(*fs)) {
+			if ((*fs != 'd' || fs != save_fs)) {
+			    char format[NSTRING];
+
+			    format[0] = '%';
+			    strncpy0(format+1, save_fs, fs + 2 - save_fs);
+			    if (strchr("dDxXo", *fs)) {
+				int value = scan_int(temp);
+				ms = lsprintf(ms, format, value);
+			    } else {
+				ms = lsprintf(ms, format, temp);
+			    }
+			} else {
+			    ms = lsprintf(ms, "%s", temp);
+			}
+			fs++;
+		    } else {
+			ms = lsprintf(ms, "%s", temp);
+		    }
+		    break;
 		default :
 		    *ms++ = '%';
 		    *ms++ = *(fs-1);
@@ -2909,7 +2950,111 @@ modeline(WINDOW *wp)
 	    }
 	}
     }
+    *ms++ = EOS;
+
+    tb_bappend(result, left_ms, strlen(left_ms));
+
+    if (((int) tb_length(*result) < term.cols)
+     && (right_len = strlen(right_ms)) != 0) {
+	for (n = term.cols - tb_length(*result) - right_len; n > 0; n--)
+	    tb_append(result, lchar);
+	if ((n = term.cols - right_len) < 0) {
+	    col = right_len + n;
+	    n = -n;
+	} else {
+	    col = right_len;
+	    n = 0;
+	}
+	if ((col < term.cols)
+	 && (n < right_len))
+	    tb_bappend(result, right_ms + n, term.cols - col);
+    }
+
+    if (need_eighty_column_indicator) {		/* mark column 80 */
+	int left = -nu_width(wp);
+#ifdef WMDLINEWRAP
+	if (!w_val(wp,WMDLINEWRAP))
+#endif
+	 left += w_val(wp,WVAL_SIDEWAYS);
+	n = term.cols + left;
+	col = 80 - left;
+
+	if ((n > 80) && (col >= 0)) {
+	    for (n = tb_length(*result); n < col; n++)
+		tb_append(result, lchar);
+	    if (tb_values(*result)[col] == lchar)
+		tb_values(*result)[col] = '|';
+	}
+    }
+}
+#endif
+
+static void
+modeline(WINDOW *wp)
+{
+#if OPT_MLFORMAT
+    static TBUFF *result;
+#else
+    BUFFER *bp;
+    char temp[NFILEN];
+    int col;
+    int lchar;
+    int right_len;
+    char left_ms[NFILEN*2];
+    char *ms;
+    char right_ms[NFILEN*2];
+#endif
+    register int n;
+
+    term.cursorvis(FALSE);
+
+    n = mode_row(wp);		/* Location. */
+#if OPT_VIDEO_ATTRS
+    {
+	VIDEO_ATTR attr;
+	if (wp == curwp)
+	    attr = VAMLFOC;
+	else
+	    attr = VAML;
+#if	OPT_REVSTA
+#ifdef	GVAL_MCOLOR
+	if (global_g_val(GVAL_MCOLOR) & VASPCOL)
+	    attr |= VCOLORATTR(global_g_val(GVAL_MCOLOR) & 0xf);
+	else
+	    attr |= global_g_val(GVAL_MCOLOR);
+#else
+	    attr |= VAREV;
+#endif
+#endif
+	vscreen[n]->v_flag |= VFCHG;
+	set_vattrs(n, 0, attr, term.cols);
+    }
+#else
+    vscreen[n]->v_flag |= VFCHG | VFREQ | VFCOL;/* Redraw next time. */
+#endif
+#if	OPT_COLOR
+    ReqFcolor(vscreen[n]) = gfcolor;
+    ReqBcolor(vscreen[n]) = gbcolor;
+#endif
+    vtmove(n, 0);				/* Seek to right line. */
+
+#if OPT_MLFORMAT
+    special_formatter(&result, modeline_format, wp);
+    vtputsn(tb_values(result), tb_length(result));
 #else	/* hard-coded format */
+    bp = wp->w_bufp;
+    if (wp == curwp) {				/* mark the current buffer */
+	lchar = '=';
+    } else {
+#if	OPT_REVSTA
+	if (revexist)
+	    lchar = ' ';
+	else
+#endif
+	    lchar = '-';
+    }
+    left_ms[0] = right_ms[0] = EOS;
+    ms = left_ms;
     ms = lsprintf(ms, "%c%c%c %s ",
 	lchar, modeline_show(wp, lchar), lchar, bp->b_bname);
     if (modeline_modes(bp, &ms))
@@ -2918,7 +3063,7 @@ modeline(WINDOW *wp)
     && (shorten_path(strcpy(temp,bp->b_fname), FALSE))
     && !eql_bname(bp,temp)) {
 	if (is_internalname(temp)) {
-	    for (n = term.cols - (13 + strlen(temp) + (int)(ms - left_ms));
+	    for (n = term.cols - (13 + strlen(temp));
 			n > 0; n--)
 		*ms++ = lchar;
 	} else {
@@ -2933,7 +3078,6 @@ modeline(WINDOW *wp)
     else
 #endif
      (void) lsprintf(right_ms, " %s %3p", rough_position(wp), lchar);
-#endif /* OPT_MLFORMAT */
 
     *ms++ = EOS;
     right_len = strlen(right_ms);
@@ -2948,20 +3092,21 @@ modeline(WINDOW *wp)
     else
 	n = 0;
     vtputsn(right_ms+n, term.cols - vtcol);
-    if (need_eighty_column_indicator) {		/* mark column 80 */
-	int left = -nu_width(wp);
+    col = -nu_width(wp);
 #ifdef WMDLINEWRAP
-	if (!w_val(wp,WMDLINEWRAP))
+    if (!w_val(wp,WMDLINEWRAP))
 #endif
-	 left += w_val(wp,WVAL_SIDEWAYS);
-	n = term.cols + left;
-	col = 80 - left;
+	 col += w_val(wp,WVAL_SIDEWAYS);
+    n = term.cols + col;
+    col = 80 - col;
 
-	if ((n > 80) && (col >= 0) && (vtgetc(col) == lchar)) {
-	    vtcol = col;
-	    vtputc('|');
-	}
+    if ((n > 80)
+     && (col >= 0)
+     && (vscreen[vtrow]->v_text[col] == lchar)) {
+	vtcol = col;
+	vtputc('|');
     }
+#endif /* OPT_MLFORMAT */
     term.cursorvis(TRUE);
 }
 

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.218 1999/07/04 21:19:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.220 1999/07/16 00:52:26 tom Exp $
  *
  */
 
@@ -468,8 +468,7 @@ VWRAP *vd)		/* structure to hold type and ptr */
 #if !SMALLER
 		 else {
 			VALARGS	args;
-			if (is_mode_name(&var[1],
-				    TRUE, &args) == TRUE) {
+			if (is_mode_name(&var[1], TRUE, &args) == TRUE) {
 				vd->v_type = VW_MODE;
 			}
 		}
@@ -959,6 +958,26 @@ const char *tokn)
 
 #if OPT_EVAL
 
+static void
+read_execstr(TBUFF **paramp)
+{
+    *paramp = 0;
+    if (execstr == 0
+     && more_named_cmd()) {
+	kbd_putc(' ');
+	if (kbd_reply( (char *)0,	/* no-prompt => splice */
+			paramp,		/* in/out buffer */
+			eol_history,
+			'\n',		/* expect a newline or return */
+			0,		/* no expansion, etc. */
+			no_completion) == TRUE) {
+	    execstr = tb_values(*paramp);
+	}
+    }
+    if (execstr == 0)
+	execstr = "";
+}
+
 /*
  * When first executing a macro, save the remainder of the argument string
  * as an array of strings.
@@ -971,23 +990,10 @@ save_arguments(BUFFER *bp)
     int max_args = 2;
     const char *temp;
     const char *oldexec = execstr;
-    TBUFF *params = 0;
+    TBUFF *params;
 
     TRACE(("save_arguments(%s)%s\n", bp->b_bname, execstr))
-    if (execstr == 0
-     && more_named_cmd()) {
-	kbd_putc(' ');
-	if (kbd_reply( (char *)0,	/* no-prompt => splice */
-			&params,	/* in/out buffer */
-			eol_history,
-			'\n',	/* expect a newline or return */
-			0,		/* no expansion, etc. */
-			no_completion) == TRUE) {
-	    execstr = tb_values(params);
-	}
-    }
-    if (execstr == 0)
-	execstr = "";
+    read_execstr(&params);
     for (temp = execstr; *temp; temp++) {
 	if (isSpace(*temp))
 	    max_args++;
@@ -1141,10 +1147,10 @@ statevar_arg_eval(const char *argp)
 	    if (vnum != ILLEGAL_NUM)
 		result = get_statevar_val(vnum);
 #if !SMALLER
-	    {
+	    else {
 		VALARGS	args;
 		if (is_mode_name(argp, TRUE, &args) == TRUE)
-		    return string_mode_val(&args);
+		    result = string_mode_val(&args);
 	    }
 #endif
 	}
@@ -1199,7 +1205,7 @@ directive_arg_eval(const char *argp)
 
 typedef const char * (ArgEvalFunc)(const char *argp);
 
-ArgEvalFunc *eval_func[] = {
+static ArgEvalFunc *eval_func[] = {
     simple_arg_eval,		/* TOK_NULL */
     query_arg_eval,		/* TOK_QUERY */
     buffer_arg_eval,		/* TOK_BUFLINE */
@@ -1264,6 +1270,27 @@ is_falsem(const char *val)
 }
 
 #if OPT_EVAL
+int
+evaluate(int f, int n)
+{
+	TBUFF *params, *temp = 0;
+	const char *oldexec = execstr;
+	char *cmd;
+	int code = FALSE;
+
+	read_execstr(&params);
+
+	TRACE(("EVAL %s\n", tb_values(params)))
+	if ((cmd = mac_tokval(&temp)) != 0) {
+	    TRACE(("...docmd %s\n", cmd))
+	    code = docmd(cmd, TRUE, f, n);
+	    tb_free(&temp);
+	}
+	tb_free(&params);
+	execstr = oldexec;
+	return code;
+}
+
 /* use this as a wrapper when evaluating an array index, etc., that cannot
  * be negative.
  */
