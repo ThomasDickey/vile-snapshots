@@ -1,9 +1,12 @@
 %s NORMAL ACTION
 
+%o6000
+%a3000
+
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.22 2002/12/23 00:13:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.23 2003/05/03 00:03:17 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey

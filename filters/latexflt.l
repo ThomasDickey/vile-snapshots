@@ -1,8 +1,11 @@
 %s TEXT VERBATIM QUOTE_TT QUOTED MATH MATHC
 
+%o6000
+%a3000
+
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.30 2003/02/15 15:58:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.33 2003/05/04 00:10:50 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TeX or LaTeX
  * input text.
@@ -29,6 +32,9 @@
  *
  * Because LaTeX simply has so many macros, it is not worth spending time to
  * build (or use) a .keywords file.  In texmode, this is useful.
+ *
+ * Note: '@' is legal in some TeX library files, so it is added to the NAME
+ * pattern.
  */
 
 #include <filters.h>
@@ -132,9 +138,6 @@ do_filter(FILE *input)
 SPACE		[ \t]
 NONSPACE	[^ \t]
 
-/*
- * '@' is legal in some TeX library files.
- */
 NAME		[a-zA-Z@]+
 NONNAME		[^a-zA-Z@]
 MIXED_ALNUM	({NAME}[0-9.-_]+)+{NAME}?
@@ -180,7 +183,9 @@ NUMBER		({INTEGER}|{REAL})
 <VERBATIM>[^\n]*		{ WriteToken(String_attr); }
 
 <TEXT,MATH,MATHC,QUOTED>"|"	{ WriteToken(String_attr);
-			  if (FLT_STATE == QUOTED)
+			  if (braces != 0)
+			      ;
+			  else if (FLT_STATE == QUOTED)
 			      pop_state();
 			  else
 			      push_state(QUOTED);

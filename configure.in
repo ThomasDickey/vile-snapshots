@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.184 $)
+AC_REVISION($Revision: 1.186 $)
 AC_PREREQ(2.13.20020210)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.184 2003/03/18 01:49:35 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.186 2003/05/04 21:27:26 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -145,8 +145,7 @@ if test "$VILE_BUILTIN_FILTERS" != none ; then
 
 	VILE_BUILTIN_FILTERS="$cf_found"
 	if test -n "$cf_lexed" ; then
-		AC_MSG_CHECKING(version of $LEX)
-		LEX_VERSION=`$LEX --version 2>&1 | sed -e 's/^.* //;s/^[[^0-9]]*//'`
+		CF_LEX_VERSION
 		if test -z "$LEX_VERSION"
 		then
 			AC_MSG_ERROR(You need flex to compile builtin filters)
@@ -154,7 +153,6 @@ if test "$VILE_BUILTIN_FILTERS" != none ; then
 		then
 			AC_MSG_ERROR(Sorry - your version of flex is too old: $LEX_VERSION)
 		fi
-		AC_MSG_RESULT($LEX_VERSION)
 	fi
 	test -n "$cf_missed" && AC_MSG_ERROR(Not all filter names were found: $cf_missed)
 fi
@@ -464,6 +462,7 @@ mkdir \
 mkdtemp \
 poll \
 putenv \
+realpath \
 select \
 setbuffer \
 setgid \

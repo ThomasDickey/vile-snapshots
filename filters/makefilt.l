@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.46 2002/07/04 22:21:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.47 2003/05/03 12:16:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -92,7 +92,7 @@ write_keyword(char *text, int size, int prepro, int caseless)
     text[size] = 0;
     attr = caseless
 	 ? ci_keyword_attr(text)
-    	 : keyword_attr(text);
+	 : keyword_attr(text);
     /*
      * Some symbols cannot be preceded by tabs - we put those in the "premake"
      * table.
@@ -135,25 +135,23 @@ write_delimited_unit(char *text, char **attr, char **gaps)
 
     panchor = pwhite = text;
     while (isspace(CharOf(*pwhite))) {
-        pwhite++;
+	pwhite++;
     }
     if (pwhite > panchor)
-        flt_puts(panchor, pwhite - panchor, *gaps);
+	flt_puts(panchor, pwhite - panchor, *gaps);
     panchor = ptoken = pwhite;
     while (*ptoken && (! isspace(CharOf(*ptoken))))
-        ptoken++;
+	ptoken++;
     flt_puts(panchor, ptoken - panchor, *attr);
-    if (isspace(CharOf(*ptoken)))
-    {
-        panchor = ptoken;
-        pwhite  = ptoken + 1;  /* advance beyond initial white space byte */
-        while (isspace(CharOf(*pwhite)))
-            pwhite++;
-        flt_puts(panchor, pwhite - panchor, *gaps);
-        pnxt_unit = pwhite;
-    }
-    else
-        pnxt_unit = ptoken;
+    if (isspace(CharOf(*ptoken))) {
+	panchor = ptoken;
+	pwhite	= ptoken + 1;  /* advance beyond initial white space byte */
+	while (isspace(CharOf(*pwhite)))
+	    pwhite++;
+	flt_puts(panchor, pwhite - panchor, *gaps);
+	pnxt_unit = pwhite;
+    } else
+	pnxt_unit = ptoken;
     return (pnxt_unit);
 }
 
@@ -163,27 +161,24 @@ write_delimited_unit(char *text, char **attr, char **gaps)
  *    ([<white>]<token>[<white>]|\\\n)+<single delimiter>
  */
 static void
-write_delimited(char *text, int size, char *attr)
+write_delimited(char *text, int size, int less, char *attr)
 {
-    char *cp, delim[2];
+    char *cp;
     char *gaps = "";
+    int save = text[size - less];
 
-    delim[0] = text[size - 1];         /* save the trailing delimiter */
-    delim[1] = text[size - 1] = '\0';  /* chop the trailing delimiter */
+    text[size - less] = '\0';
     cp       = text;
-    do
-    {
-        if (*cp == '\\' && cp[1] == '\n')
-        {
-            flt_puts(cp, 2, gaps);
-            cp += 2;
-        }
-        else
-            cp = write_delimited_unit(cp, &attr, &gaps);
-    }
-    while (*cp);
+    do {
+	if (*cp == '\\' && cp[1] == '\n') {
+	    flt_puts(cp, 2, gaps);
+	    cp += 2;
+	} else
+	    cp = write_delimited_unit(cp, &attr, &gaps);
+    } while (*cp);
 
-    flt_puts(delim, 1, gaps);
+    text[size - less] = save;
+    flt_puts(text + size - less, less, gaps);
 }
 
 static void
@@ -243,9 +238,14 @@ OPER		[+:?]?=
 
 <NORMAL>^{SPACE}*[\.]{NAME}{SPACE}*:[:]? { write_keyword(yytext, yyleng, 0, 0); }
 
-<NORMAL>^({SPACE}*{NAME}{SPACE}*|\\\n)+: { write_delimited(yytext, yyleng, Keyword_attr); }
+<NORMAL>^({SPACE}*{NAME}{SPACE}*|\\\n)+: { write_delimited(yytext, yyleng, 1, Keyword_attr); }
 
-<NORMAL>^{SPACE}*{NAME}{SPACE}*{OPER}	{ write_delimited(yytext, yyleng, Ident2_attr); }
+<NORMAL>^{SPACE}*{NAME}{SPACE}*{OPER}	{
+				  int oper = 1;
+				  if (strchr("+:?", yytext[yyleng - 2]) != 0)
+				      ++oper;
+				  write_delimited(yytext, yyleng, oper, Ident2_attr);
+				}
 
 <NORMAL>{MACRO}			{ WriteToken(Ident2_attr); }
 

@@ -3280,6 +3280,9 @@ Invocation
 		library-directory on UNIX systems.  This sets the
 		$libdir-path variable, which is appended to your $PATH
 		variable when running filter commands on UNIX and Win32.
+	VILE_PWD
+		if set, assume invoking shell's "$PWD" variable is valid,
+		and use that rather than an initial getcwd() call.
 	VILE_STARTUP_FILE
 		override the name of the startup file, normally ".vilerc"
 		(or "vile.rc" for non-UNIX systems).
@@ -5765,4 +5768,4 @@ Problems
 
 Copyright 1995-2002 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.562 2003/03/09 11:33:07 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.563 2003/05/04 22:39:36 tom Exp $

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.372 2003/03/17 23:14:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.373 2003/05/04 16:54:03 tom Exp $
  *
  */
 
@@ -3546,6 +3546,10 @@ mlmsg(const char *fmt, va_list * app)
     int do_crlf = (strchr(fmt, '\n') != 0
 		   || strchr(fmt, '\r') != 0);
 
+    if (no_minimsgs) {
+	kbd_alarm();
+	return;
+    }
     if (quiet)
 	return;
 

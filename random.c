@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.270 2003/02/26 14:22:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.272 2003/05/04 22:49:20 tom Exp $
  *
  */
 
@@ -46,7 +46,11 @@
 				 */
 #define DIRS_SUPPRESS 2		/* if DirStack buffer on screen, kill it. */
 
+static int did_chdir = FALSE;	/* set when $PWD is no longer valid */
+
 #if OPT_SHELL
+
+static char prevdir[NFILEN];
 
 static int display_dirstack(int);
 static int pushd_popd_active, dirs_add_active;
@@ -57,8 +61,8 @@ static int pushd_popd_active, dirs_add_active;
  * The top element of the stack is always understood to be <cwd>, but is
  * _not_ stored in the array.
  */
-static int dirs_idx,		/* next array cell that can store a dir path */
-  dirs_len;			/* #cells allocated in dirstack              */
+static int dirs_idx;		/* next array cell that can store a dir path */
+static int dirs_len;		/* #cells allocated in dirstack */
 static char **dirstack;
 
 #endif
@@ -95,12 +99,11 @@ set_rdonly(BUFFER *bp, const char *name, int mode)
 	the given name, and calling "func" with a couple of args to fill in
 	the buffer */
 int
-liststuff(
-	     const char *name,
-	     int appendit,
-	     void (*func) (LIST_ARGS),	/* ptr to function to execute */
-	     int iarg,
-	     void *vargp)
+liststuff(const char *name,
+	  int appendit,
+	  void (*func) (LIST_ARGS),	/* ptr to function to execute */
+	  int iarg,
+	  void *vargp)
 {
     register BUFFER *bp;
     register int s;
@@ -236,10 +239,9 @@ showcpos(int f GCC_UNUSED, int n GCC_UNUSED)
     if (numlines == 0 && numchars == 0)
 	mlforce("File is empty");
     else
-	mlforce(
-		   "Line %d of %d, Col %d of %d, Char %ld of %ld (%ld%%) char is 0x%x or 0%o",
-		   predlines + 1, numlines, col + 1, ecol,
-		   predchars + 1, numchars, ratio, curchar, curchar);
+	mlforce("Line %d of %d, Col %d of %d, Char %ld of %ld (%ld%%) char is 0x%x or 0%o",
+		predlines + 1, numlines, col + 1, ecol,
+		predchars + 1, numchars, ratio, curchar, curchar);
 #endif
     return TRUE;
 }
@@ -898,7 +900,25 @@ current_directory(int force)
     if (!force && cwd)
 	return cwd;
 #ifdef HAVE_GETCWD
-    cwd = getcwd(current_dirname, NFILEN);
+#ifdef HAVE_REALPATH
+    /*
+     * For slow (read:  simulated) filesystems, a getcwd() can be very slow. 
+     * We always make a call to this function during startup, but wish to avoid
+     * the overhead of getcwd() in that case.  However, it is not unusual to
+     * invoke vile from other applications, which do not set $PWD.  In that
+     * case, the result from this function would be incorrect, and lots of
+     * things break.
+     *
+     * Given the choice between broken and slow behavior, we can resolve it
+     * with another environment variable, set in the user's shell.
+     */
+    s = ((did_chdir != 0 || getenv("VILE_PWD") == 0)
+	 ? 0
+	 : getenv("PWD"));
+    cwd = realpath(s ? s : ".", current_dirname);
+    if (cwd == 0)
+#endif
+	cwd = getcwd(current_dirname, NFILEN);
 #else
 # ifdef HAVE_GETWD
     cwd = getwd(current_dirname);
@@ -1087,8 +1107,6 @@ pwd(int f GCC_UNUSED, int n GCC_UNUSED)
     return TRUE;
 }
 
-static char prevdir[NFILEN];
-
 static int
 cd_and_pwd(char *path)
 {
@@ -1097,11 +1115,12 @@ cd_and_pwd(char *path)
 #endif
 
 #if CC_CSETPP
-    if (_chdir(SL_TO_BSL(path)) == 0)
-#else
-    if (chdir(SL_TO_BSL(path)) == 0)
+#undef  chdir
+#define chdir(p) _chdir(p)
 #endif
-    {
+
+    if (chdir(SL_TO_BSL(path)) == 0) {
+	did_chdir = TRUE;
 	if (dirs_add_active) {
 	    /* the directory is legit -- that's all we care about */
 
