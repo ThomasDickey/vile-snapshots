@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.160 1998/05/27 10:47:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.161 1998/05/29 00:53:00 tom Exp $
  *
  */
 
@@ -1961,7 +1961,7 @@ dobuf(BUFFER *bp)	/* buffer to execute */
  * Common function for startup-file, and for :so command.
  */
 int
-do_source(char *fname, int n)
+do_source(char *fname, int n, int optional)
 {
 	register int status;	/* return status of name query */
 	char *fspec;		/* full file spec */
@@ -1977,7 +1977,7 @@ do_source(char *fname, int n)
 
 	/* if it isn't around */
 	if (fspec == NULL)
-		return no_such_file(fname);
+		return optional ? TRUE : no_such_file(fname);
 
 	/* otherwise, execute it */
 	while (n-- > 0)
@@ -2000,7 +2000,7 @@ int f GCC_UNUSED, int n)	/* default flag and numeric arg to pass on to file */
 	if ((status = mlreply_file("File to execute: ", &last, FILEC_READ, fname)) != TRUE)
 		return status;
 
-	return do_source(fname, n);
+	return do_source(fname, n, FALSE);
 }
 #endif
 

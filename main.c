@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.324 1998/05/27 11:05:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.325 1998/05/29 01:06:58 tom Exp $
  *
  */
 
@@ -418,7 +418,7 @@ MainProgram(int argc, char *argv[])
 	   command-line startup file, i.e. 'vile @mycmds'
 	 */
 	if (vileinit && *vileinit) {
-		if ((startstat = do_source(vileinit,1)) != TRUE)
+		if ((startstat = do_source(vileinit,1, FALSE)) != TRUE)
 			goto begin;
 		free(startup_file);
 		startup_file = strmalloc(vileinit);
@@ -468,7 +468,7 @@ MainProgram(int argc, char *argv[])
 				(void)zotbuf(vbp);
 			}
 		} else {  /* find and run .vilerc */
-			startstat = do_source(startup_file, 1);
+			startstat = do_source(startup_file, 1, TRUE);
 			if (startstat != TRUE)
 				goto begin;
 		}
@@ -540,9 +540,23 @@ MainProgram(int argc, char *argv[])
 	(void)update(FALSE);
 
 #if OPT_POPUP_MSGS
+	if (global_g_val(GMDPOPUP_MSGS) && (startstat != TRUE)) {
+		bp = bfind(MESSAGES_BufName, BFSCRTCH);
+		bsizes(bp);
+		if (bp->b_linecount > 1) {
+			popup_msgs();
+			*mlsave = EOS;
+		}
+	}
 	if (global_g_val(GMDPOPUP_MSGS) == -TRUE)
 		set_global_g_val(GMDPOPUP_MSGS, FALSE);
 #endif
+
+	/* We won't always be able to show messages before the screen is
+	 * initialized.  Give it one last chance.
+	 */
+	if ((startstat != TRUE) && *mlsave)
+		mlforce("%s", mlsave);
 
 	/* process commands */
 	loop();

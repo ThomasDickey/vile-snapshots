@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.224 1998/05/12 22:42:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.225 1998/05/29 00:08:07 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -119,9 +119,10 @@ decl_uninit( TBUFF *save_shell[2] );	/* last ":!" or ^X-!  command	*/
 
 decl_uninit( char sres[NBUFN] );	/* current screen resolution	*/
 
+decl_uninit( char mlsave[NSTRING] );	/* last message, if postponed	*/
 decl_uninit( char pat[NPAT] );		/* Search pattern		*/
 decl_uninit( char rpat[NPAT] );		/* replacement pattern		*/
-decl_uninit( int  last_srch_direc );		/* Direction of last search */
+decl_uninit( int  last_srch_direc );	/* Direction of last search */
 
 #if OPT_PROCEDURES
 decl_uninit( char cdhook[NBUFN] );	/* proc to run when change dir */
