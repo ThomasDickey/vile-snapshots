@@ -1,6 +1,6 @@
-revlist for vile, version v7_3z
+revlist for vile, version v7_3za
 --------------------------------------------------------------------------------
-CHANGES	1.149
+CHANGES	1.150
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -41,19 +41,19 @@ djhandl.c	1.6
 dumbterm.c	1.12
 edef.h	1.222
 estruct.h	1.347
-eval.c	1.157
+eval.c	1.158
 exec.c	1.155
 externs.c	1.6
 fences.c	1.46
 file.c	1.225
 filec.c	1.81
 fileio.c	1.125
-finderr.c	1.69
+finderr.c	1.70
 glob.c	1.58
 glob2re.pl	1.1
 globals.c	1.42
 gppconio.c	1.2
-hgrep.pl	1.2
+hgrep.pl	1.3
 history.c	1.44
 ibmpc.c	1.87
 input.c	1.179
@@ -93,18 +93,18 @@ os2keys.h	1.1
 os2pipe.c	1.4
 os2vio.c	1.18
 pas-filt.c	1.1
-patchlev.h	1.105
+patchlev.h	1.106
 path.c	1.83
 perl-api.doc	1.1
-perl.xs	1.11
+perl.xs	1.12
 pictmode.rc	1.1
-proto.h	1.277
+proto.h	1.278
 pscreen.h	1.1
 ptypemap	1.5
 random.c	1.191
 regexp.c	1.65
 region.c	1.87
-revlist	v7_3z
+revlist	v7_3za
 search.c	1.110
 select.c	1.67
 shell.pl	1.2

@@ -1,5 +1,21 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (kev) 980429 (za)
+	+ finderr.c (predefined): Add hgrep pattern to the predefined
+	  regular expressions for the error finder.  (Patch from Clark
+	  Morgan.)
+	+ hgrep.pl: Added Clark's error finder comment.
+	  Removed comment about me about to make massive changes which'll
+	  change the interface drastically.
+	  (hgrep): Don't search in files named 'tags'.  (Suggested by
+	  Clark Morgan.)
+	+ eval.c, proto.h (stenv): New function for setting vile's
+	  variables (from perl or whereever).
+	+ perl.xs (working): Added OPT_WORKING ifdefs.  (Description
+	  of problem from Clark Morgan.)
+	  (set): Handle perl variables as well as modes.
+	  (buffers): New method which retrieves a list of all buffers.
+
  (tom) 980429 (z)
  	+ trim trailing whitespace from .c and .h files
 	+ implement font-selection in winvile, added to control menu.  This

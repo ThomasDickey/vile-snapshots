@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.277 1998/04/28 09:36:25 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.278 1998/04/30 09:19:03 kev Exp $
  *
  */
 
@@ -284,6 +284,7 @@ extern char *skip_text (char *str);
 
 #if OPT_EVAL
 extern char *gtenv (const char *vname);
+extern int   stenv(const char *name, const char *value);
 extern int set_variable (const char *name);
 #endif
 

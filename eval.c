@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.157 1998/04/28 10:16:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.158 1998/04/30 09:19:03 kev Exp $
  *
  */
 
@@ -742,6 +742,25 @@ PromptAndSet(const char *name, int f, int n)
 		mlforce("[Cannot set %s to %s]", var, value);
 	/* and return it */
 	return(status);
+}
+
+int
+stenv(const char *name, const char *value)
+{
+	register int status;	/* status return */
+	VDESC vd;		/* variable num/type */
+	char var[NLINE];
+
+	/* check the legality and find the var */
+	var[0] = '$';
+	strcpy(var+1, name);
+	FindVar(var, &vd);
+	if (vd.v_type == ILLEGAL_NUM) {
+		return(FALSE);
+	}
+	/* and set the appropriate value */
+	status = SetVarValue(&vd, (char *) value);
+	return status;
 }
 
 /* entrypoint from modes.c, used to set environment variables */
