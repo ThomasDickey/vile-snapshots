@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.18 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.20 2004/08/08 19:34:58 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
@@ -33,7 +33,7 @@ DOTNAME		(\.)+{CAPNAME}
 ALIAS		[a-zA-Z_\.0-9+-]+
 
 NUMBER		"#"[0-9]+
-STRING		[^#:\\\n](\\[:]|\\\n|[^:\n])*
+STRING		[^#:\\\n](\\[.\n]|[^:\n])*
 
 %%
 
@@ -41,7 +41,7 @@ STRING		[^#:\\\n](\\[:]|\\\n|[^:\n])*
 \n\n				{ ECHO; BEGIN(INITIAL); }
 
 ^({ALIAS}"|"|(\\\n\t)*)*	{ WriteToken(Ident_attr); BEGIN(DESC); }
-^{ALIAS}:			{ WriteToken(Ident_attr); BEGIN(GAPS); }
+^{ALIAS}			{ WriteToken(Ident_attr); BEGIN(GAPS); }
 
 <DESC>[^:\n]*			{ WriteToken(Comment_attr); BEGIN(GAPS); }
 <GAPS,VALS>(:|:\\\n\t)+		{ commented=0; ECHO; BEGIN(CAPS); }

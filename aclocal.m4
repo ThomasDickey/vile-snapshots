@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.131 2004/06/17 00:53:21 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.132 2004/08/08 15:41:58 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -1015,7 +1015,7 @@ if test "$GCC" = yes ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_WARNINGS version: 15 updated: 2003/07/05 18:42:30
+dnl CF_GCC_WARNINGS version: 16 updated: 2004/07/23 14:40:34
 dnl ---------------
 dnl Check if the compiler supports useful warning options.  There's a few that
 dnl we don't use, simply because they're too noisy:
@@ -1026,6 +1026,13 @@ dnl	-Wtraditional (combines too many unrelated messages, only a few useful)
 dnl	-Wwrite-strings (too noisy, but should review occasionally).  This
 dnl		is enabled for ncurses using "--enable-const".
 dnl	-pedantic
+dnl
+dnl Parameter:
+dnl	$1 is an optional list of gcc warning flags that a particular
+dnl		application might want to use, e.g., "no-unused" for
+dnl		-Wno-unused
+dnl Special:
+dnl	If $with_ext_const is "yes", add a check for -Wwrite-strings
 dnl
 AC_DEFUN([CF_GCC_WARNINGS],
 [
@@ -1052,7 +1059,7 @@ EOF
 		Wpointer-arith \
 		Wshadow \
 		Wstrict-prototypes \
-		Wundef $cf_warn_CONST
+		Wundef $cf_warn_CONST $1
 	do
 		CFLAGS="$cf_save_CFLAGS $EXTRA_CFLAGS -$cf_opt"
 		if AC_TRY_EVAL(ac_compile); then
@@ -2516,9 +2523,12 @@ AC_SUBST($3)dnl
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_WARNINGS version: 4 updated: 2003/05/24 15:01:41
+dnl CF_WITH_WARNINGS version: 5 updated: 2004/07/23 14:40:34
 dnl ----------------
 dnl Combine the checks for gcc features into a configure-script option
+dnl
+dnl Parameters:
+dnl	$1 - see CF_GCC_WARNINGS
 AC_DEFUN([CF_WITH_WARNINGS],
 [
 if ( test "$GCC" = yes || test "$GXX" = yes )
@@ -2531,7 +2541,7 @@ AC_ARG_WITH(warnings,
 AC_MSG_RESULT($cf_opt_with_warnings)
 if test "$cf_opt_with_warnings" != no ; then
 	CF_GCC_ATTRIBUTES
-	CF_GCC_WARNINGS
+	CF_GCC_WARNINGS([$1])
 fi
 fi
 ])dnl
