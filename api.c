@@ -522,7 +522,7 @@ api_lline(VileBuf *vbp, int *lnop)
 }
 
 VileBuf *
-api_fscreen(int id, char *name)
+api_fscreen(char *name)
 {
     BUFFER *bp;
 
@@ -631,7 +631,7 @@ api_motion(VileBuf *vbp, char *mstr)
 }
 
 int
-api_edit(VileBuf *vbp, char *fname, VileBuf **retvbpp)
+api_edit(char *fname, VileBuf **retvbpp)
 {
     BUFFER *bp;
     if (fname == NULL) {

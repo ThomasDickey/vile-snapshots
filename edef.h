@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.227 1998/05/30 20:29:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.228 1998/07/01 23:34:25 Larry.Gensch Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -80,7 +80,7 @@ decl_uninit( int am_interrupted );	/* have we been interrupted/ */
 decl_init( int autoindented , -1);	/* how many chars (not cols) indented */
 decl_uninit( int isnamedcmd );		/* are we typing a command name */
 decl_uninit( int calledbefore );	/* called before during this command? */
-decl_uninit( CHARTYPE _chartypes_[N_chars] );	/* character types	*/
+decl_uninit( CHARTYPE vl_chartypes_[N_chars] );	/* character types	*/
 decl_uninit( int reading_msg_line );	/* flag set during msgline reading */
 decl_uninit( jmp_buf read_jmp_buf );	/* for setjmp/longjmp on SIGINT */
 #ifndef insertmode

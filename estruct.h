@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.356 1998/05/27 00:54:37 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.358 1998/07/02 10:12:06 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -131,7 +131,7 @@
 # define HAVE_STRERROR		1
 # define HAVE_SYS_UTIME_H	1
 # define CPP_SUBS_BEFORE_QUOTE	1
-# define HAVE_LOSING_SWITCH_WITH_STRUCTURE_OFFSET	1
+# define CC_CANNOT_OFFSET_CASES	1
 #endif
 
 #if CC_DJGPP
@@ -220,6 +220,7 @@
 # endif
 # define SIGT void
 # define SIGRET
+# define CC_CANNOT_OFFSET_CASES 1
 #else
 # define SYS_VMS    0
 #endif
@@ -982,7 +983,7 @@ typedef UINT WATCHTYPE;
 			? (col + 1) \
 			: (col + ((c & HIGHBIT) ? 4 : 2))))
 
-/* these are the bits that go into the _chartypes_ array */
+/* these are the bits that go into the vl_chartypes_ array */
 /* the macros below test for them */
 #if OPT_WIDE_CTYPES
 #define chrBIT(n) lBIT(n)
@@ -990,55 +991,55 @@ typedef UINT WATCHTYPE;
 #define chrBIT(n) iBIT(n)
 #endif
 
-#define _upper    chrBIT(0)		/* upper case */
-#define _lower    chrBIT(1)		/* lower case */
-#define _digit    chrBIT(2)		/* digits */
-#define _space    chrBIT(3)		/* whitespace */
-#define _bspace   chrBIT(4)		/* backspace character (^H, DEL, and user's) */
-#define _cntrl    chrBIT(5)		/* control characters, including DEL */
-#define _print    chrBIT(6)		/* printable */
-#define _punct    chrBIT(7)		/* punctuation */
-#define _ident    chrBIT(8)		/* is typically legal in "normal" identifier */
-#define _pathn    chrBIT(9)		/* is typically legal in a file's pathname */
-#define _wild     chrBIT(10)		/* is typically a shell wildcard char */
-#define _linespec chrBIT(11)		/* ex-style line range: 1,$ or 13,15 or % etc.*/
-#define _fence    chrBIT(12)		/* a fence, i.e. (, ), [, ], {, } */
-#define _nonspace chrBIT(13)		/* non-whitespace */
-#define _qident   chrBIT(14)		/* is typically legal in "qualified" identifier */
+#define vl_upper    chrBIT(0)		/* upper case */
+#define vl_lower    chrBIT(1)		/* lower case */
+#define vl_digit    chrBIT(2)		/* digits */
+#define vl_space    chrBIT(3)		/* whitespace */
+#define vl_bspace   chrBIT(4)		/* backspace character (^H, DEL, and user's) */
+#define vl_cntrl    chrBIT(5)		/* control characters, including DEL */
+#define vl_print    chrBIT(6)		/* printable */
+#define vl_punct    chrBIT(7)		/* punctuation */
+#define vl_ident    chrBIT(8)		/* is typically legal in "normal" identifier */
+#define vl_pathn    chrBIT(9)		/* is typically legal in a file's pathname */
+#define vl_wild     chrBIT(10)		/* is typically a shell wildcard char */
+#define vl_linespec chrBIT(11)		/* ex-style line range: 1,$ or 13,15 or % etc.*/
+#define vl_fence    chrBIT(12)		/* a fence, i.e. (, ), [, ], {, } */
+#define vl_nonspace chrBIT(13)		/* non-whitespace */
+#define vl_qident   chrBIT(14)		/* is typically legal in "qualified" identifier */
 
 #if OPT_WIDE_CTYPES
-#define _scrtch   chrBIT(15)		/* legal in scratch-buffer names */
-#define _shpipe   chrBIT(16)		/* legal in shell/pipe-buffer names */
+#define vl_scrtch   chrBIT(15)		/* legal in scratch-buffer names */
+#define vl_shpipe   chrBIT(16)		/* legal in shell/pipe-buffer names */
 
 #define	screen_to_bname(buf)\
-	screen_string(buf,sizeof(buf),(CHARTYPE)(_pathn|_scrtch|_shpipe))
+	screen_string(buf,sizeof(buf),(CHARTYPE)(vl_pathn|vl_scrtch|vl_shpipe))
 typedef	ULONG CHARTYPE;
 #else
 #define	screen_to_bname(buf)\
-	screen_string(buf,sizeof(buf),(CHARTYPE)(_pathn))
+	screen_string(buf,sizeof(buf),(CHARTYPE)(vl_pathn))
 typedef USHORT CHARTYPE;
 #endif
 
 /* these parallel the ctypes.h definitions, except that
 	they force the char to valid range first */
-#define istype(m,c) ((_chartypes_[((UINT)(c))&((UINT)(N_chars-1))] & (m)) != 0)
+#define istype(m,c) ((vl_chartypes_[((UINT)(c))&((UINT)(N_chars-1))] & (m)) != 0)
 
-#define isAlnum(c)	istype(_lower|_upper|_digit, c)
-#define isAlpha(c)	istype(_lower|_upper, c)
-#define isCntrl(c)	istype(_cntrl, c)
-#define isDigit(c)	istype(_digit, c)
-#define isLower(c)	istype(_lower, c)
-#define isPrint(c)	istype(_print, c)
-#define isPunct(c)	istype(_punct, c)
-#define isSpace(c)	istype(_space, c)
-#define isUpper(c)	istype(_upper, c)
+#define isAlnum(c)	istype(vl_lower|vl_upper|vl_digit, c)
+#define isAlpha(c)	istype(vl_lower|vl_upper, c)
+#define isCntrl(c)	istype(vl_cntrl, c)
+#define isDigit(c)	istype(vl_digit, c)
+#define isLower(c)	istype(vl_lower, c)
+#define isPrint(c)	istype(vl_print, c)
+#define isPunct(c)	istype(vl_punct, c)
+#define isSpace(c)	istype(vl_space, c)
+#define isUpper(c)	istype(vl_upper, c)
 
-#define isbackspace(c)	(istype(_bspace, c) || (c) == backspc)
-#define isfence(c)	istype(_fence, c)
-#define isident(c)	istype(_ident, c)
-#define islinespecchar(c)	istype(_linespec, c)
-#define ispath(c)	istype(_pathn, c)
-#define iswild(c)	istype(_wild, c)
+#define isbackspace(c)	(istype(vl_bspace, c) || (c) == backspc)
+#define isfence(c)	istype(vl_fence, c)
+#define isident(c)	istype(vl_ident, c)
+#define islinespecchar(c)	istype(vl_linespec, c)
+#define ispath(c)	istype(vl_pathn, c)
+#define iswild(c)	istype(vl_wild, c)
 
 /* macro for cases where return & newline are equivalent */
 #define	isreturn(c)	((c == '\r') || (c == '\n'))
@@ -1110,7 +1111,7 @@ typedef struct regexp {
 /*
  * Definitions for 'tbuff.c' (temporary/dynamic char-buffers)
  */
-typedef	struct	_tbuff	{
+typedef	struct	vl_tbuff	{
 	char *	tb_data;	/* the buffer-data */
 	ALLOC_T	tb_size;	/* allocated size */
 	ALLOC_T	tb_used;	/* total used in */
@@ -1121,7 +1122,7 @@ typedef	struct	_tbuff	{
 /*
  * Definitions for 'itbuff.c' (temporary/dynamic int-buffers)
  */
-typedef	struct	_itbuff	{
+typedef	struct	vl_itbuff	{
 	int *	itb_data;	/* the buffer-data */
 	ALLOC_T	itb_size;	/* allocated size */
 	ALLOC_T	itb_used;	/* total used in */
@@ -1162,8 +1163,8 @@ typedef	long		B_COUNT;	/* byte-count */
 
 	/* Some lint's do, many don't like this */
 #ifdef lint
-#undef  HAVE_LOSING_SWITCH_WITH_STRUCTURE_OFFSET
-#define HAVE_LOSING_SWITCH_WITH_STRUCTURE_OFFSET 1
+#undef  CC_CANNOT_OFFSET_CASES
+#define CC_CANNOT_OFFSET_CASES 1
 #endif
 
 /*
@@ -1393,8 +1394,8 @@ typedef UCHAR VIDEO_ATTR;
  * region should be displayed; eg. inverse video, underlined, etc.
  */
 
-typedef struct _aregion {
-	struct _aregion	*ar_next;
+typedef struct vl_aregion {
+	struct vl_aregion	*ar_next;
 	REGION		ar_region;
 	VIDEO_ATTR	ar_vattr;
 	REGIONSHAPE	ar_shape;
@@ -2020,6 +2021,13 @@ typedef struct  VIDEO {
 typedef	int	(*CmdFunc) (int f, int n);
 
 typedef	struct {
+#if CC_CANNOT_INIT_UNIONS
+	void	*c_union;
+#define CMD_U_FUNC(p) (CmdFunc)((p)->c_union)
+#define CMD_U_BUFF(p) (BUFFER*)((p)->c_union)
+#define CMD_U_PERL(p) (void  *)((p)->c_union)
+#define INIT_UNION(n) n
+#else	/* C can init unions */
 	union {
 		CmdFunc c_func;
 		BUFFER *c_buff;
@@ -2027,6 +2035,12 @@ typedef	struct {
 		void *c_perl;	/* Perl 5 'AV' type */
 #endif
 	} cu;
+	/* using the union gives us some type-checking and eliminates casts */
+#define CMD_U_FUNC(p) ((p)->cu.c_func)
+#define CMD_U_BUFF(p) ((p)->cu.c_buff)
+#define CMD_U_PERL(p) ((p)->cu.c_perl)
+#define INIT_UNION(n) {n}
+#endif /* CC_CANNOT_INIT_UNIONS */
 	CMDFLAGS c_flags;	/* what sort of command is it? */
 #if OPT_ONLINEHELP
 	const char *c_help;	/* short help message for the command */

@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.325 1998/05/29 01:06:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.327 1998/07/02 10:03:29 tom Exp $
  *
  */
 
@@ -1650,24 +1650,24 @@ makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 		ULONG	mask;
 		const char *name;
 	} table[] = {
-		{ _upper,	"Upr" },
-		{ _lower,	"Lwr" },
-		{ _digit,	"Num" },
-		{ _space,	"Spc" },
-		{ _bspace,	"DEL" },
-		{ _cntrl,	"CTL" },
-		{ _print,	"Prn" },
-		{ _punct,	"Pun" },
-		{ _ident,	"id" },
-		{ _pathn,	"path" },
-		{ _wild,	"*" },
-		{ _linespec,	"arg" },
-		{ _fence,	"()" },
-		{ _nonspace,	"!S" },
-		{ _qident,	"qid" },
+		{ vl_upper,	"Upr" },
+		{ vl_lower,	"Lwr" },
+		{ vl_digit,	"Num" },
+		{ vl_space,	"Spc" },
+		{ vl_bspace,	"DEL" },
+		{ vl_cntrl,	"CTL" },
+		{ vl_print,	"Prn" },
+		{ vl_punct,	"Pun" },
+		{ vl_ident,	"id" },
+		{ vl_pathn,	"path" },
+		{ vl_wild,	"*" },
+		{ vl_linespec,	"arg" },
+		{ vl_fence,	"()" },
+		{ vl_nonspace,	"!S" },
+		{ vl_qident,	"qid" },
 #if OPT_WIDE_CTYPES
-		{ _scrtch,	"tmp" },
-		{ _shpipe,	"sh" },
+		{ vl_scrtch,	"tmp" },
+		{ vl_shpipe,	"sh" },
 #endif
 		{ 0,		0 }
 	};
@@ -1694,7 +1694,7 @@ makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 				bputc(' ');
 			bprintf("%*s",
 				strlen(table[j].name),
-				(_chartypes_[i] & table[j].mask)
+				(vl_chartypes_[i] & table[j].mask)
 					? table[j].name
 					: "-");
 		}
@@ -1724,165 +1724,165 @@ charinit(void)
 	 */
 #if OPT_LOCALE
 	for (c = 0; c < N_chars; c++) {
-		_chartypes_[c] = 0;
-		if (iscntrl(c))  _chartypes_[c] |= _cntrl;
-		if (isdigit(c))  _chartypes_[c] |= _digit;
-		if (islower(c))  _chartypes_[c] |= _lower;
-		if (isprint(c))  _chartypes_[c] |= _print;
-		if (ispunct(c))  _chartypes_[c] |= _punct;
-		if (isspace(c))  _chartypes_[c] |= _space;
-		if (isupper(c))  _chartypes_[c] |= _upper;
+		vl_chartypes_[c] = 0;
+		if (iscntrl(c))  vl_chartypes_[c] |= vl_cntrl;
+		if (isdigit(c))  vl_chartypes_[c] |= vl_digit;
+		if (islower(c))  vl_chartypes_[c] |= vl_lower;
+		if (isprint(c))  vl_chartypes_[c] |= vl_print;
+		if (ispunct(c))  vl_chartypes_[c] |= vl_punct;
+		if (isspace(c))  vl_chartypes_[c] |= vl_space;
+		if (isupper(c))  vl_chartypes_[c] |= vl_upper;
 	}
 #else /* ! OPT_LOCALE */
-	(void)memset((char *)_chartypes_, 0, sizeof(_chartypes_));
+	(void)memset((char *)vl_chartypes_, 0, sizeof(vl_chartypes_));
 
 	/* control characters */
 	for (c = 0; c < ' '; c++)
-		_chartypes_[c] |= _cntrl;
-	_chartypes_[127] |= _cntrl;
+		vl_chartypes_[c] |= vl_cntrl;
+	vl_chartypes_[127] |= vl_cntrl;
 
 	/* lowercase */
 	for (c = 'a'; c <= 'z'; c++)
-		_chartypes_[c] |= _lower;
+		vl_chartypes_[c] |= vl_lower;
 #if OPT_ISO_8859
 	for (c = 0xc0; c <= 0xd6; c++)
-		_chartypes_[c] |= _lower;
+		vl_chartypes_[c] |= vl_lower;
 	for (c = 0xd8; c <= 0xde; c++)
-		_chartypes_[c] |= _lower;
+		vl_chartypes_[c] |= vl_lower;
 #endif
 	/* uppercase */
 	for (c = 'A'; c <= 'Z'; c++)
-		_chartypes_[c] |= _upper;
+		vl_chartypes_[c] |= vl_upper;
 #if OPT_ISO_8859
 	for (c = 0xdf; c <= 0xf6; c++)
-		_chartypes_[c] |= _upper;
+		vl_chartypes_[c] |= vl_upper;
 	for (c = 0xf8; c <= 0xff; c++)
-		_chartypes_[c] |= _upper;
+		vl_chartypes_[c] |= vl_upper;
 #endif
 
 	/* digits */
 	for (c = '0'; c <= '9'; c++)
-		_chartypes_[c] |= _digit;
+		vl_chartypes_[c] |= vl_digit;
 
 	/* punctuation */
 	for (c = '!'; c <= '/'; c++)
-		_chartypes_[c] |= _punct;
+		vl_chartypes_[c] |= vl_punct;
 	for (c = ':'; c <= '@'; c++)
-		_chartypes_[c] |= _punct;
+		vl_chartypes_[c] |= vl_punct;
 	for (c = '['; c <= '`'; c++)
-		_chartypes_[c] |= _punct;
+		vl_chartypes_[c] |= vl_punct;
 	for (c = LBRACE; c <= '~'; c++)
-		_chartypes_[c] |= _punct;
+		vl_chartypes_[c] |= vl_punct;
 #if OPT_ISO_8859
 	for (c = 0xa1; c <= 0xbf; c++)
-		_chartypes_[c] |= _punct;
+		vl_chartypes_[c] |= vl_punct;
 #endif
 
 	/* printable */
 	for (c = ' '; c <= '~'; c++)
-		_chartypes_[c] |= _print;
+		vl_chartypes_[c] |= vl_print;
 
 	/* whitespace */
-	_chartypes_[' ']  |= _space;
+	vl_chartypes_[' ']  |= vl_space;
 #if OPT_ISO_8859
-	_chartypes_[0xa0] |= _space;
+	vl_chartypes_[0xa0] |= vl_space;
 #endif
-	_chartypes_['\t'] |= _space;
-	_chartypes_['\r'] |= _space;
-	_chartypes_['\n'] |= _space;
-	_chartypes_['\f'] |= _space;
+	vl_chartypes_['\t'] |= vl_space;
+	vl_chartypes_['\r'] |= vl_space;
+	vl_chartypes_['\n'] |= vl_space;
+	vl_chartypes_['\f'] |= vl_space;
 
 #endif /* OPT_LOCALE */
 
 	/* legal in pathnames */
-	_chartypes_['.'] |= _pathn;
-	_chartypes_['_'] |= _pathn;
-	_chartypes_['~'] |= _pathn;
-	_chartypes_['-'] |= _pathn;
-	_chartypes_['*'] |= _pathn;
-	_chartypes_['/'] |= _pathn;
+	vl_chartypes_['.'] |= vl_pathn;
+	vl_chartypes_['_'] |= vl_pathn;
+	vl_chartypes_['~'] |= vl_pathn;
+	vl_chartypes_['-'] |= vl_pathn;
+	vl_chartypes_['*'] |= vl_pathn;
+	vl_chartypes_['/'] |= vl_pathn;
 
 	/* legal in "identifiers" */
-	_chartypes_['_'] |= _ident|_qident;
-	_chartypes_[':'] |= _qident;
+	vl_chartypes_['_'] |= vl_ident|vl_qident;
+	vl_chartypes_[':'] |= vl_qident;
 #if SYS_VMS
-	_chartypes_['$'] |= _ident|_qident;
+	vl_chartypes_['$'] |= vl_ident|vl_qident;
 #endif
 
 	c = global_g_val(GVAL_PRINT_LOW);
 	if (c < HIGHBIT) c = HIGHBIT;
 	while ( c <= global_g_val(GVAL_PRINT_HIGH) && c < N_chars)
-		_chartypes_[c++] |= _print;
+		vl_chartypes_[c++] |= vl_print;
 
 	/* backspacers: ^H, rubout */
-	_chartypes_['\b'] |= _bspace;
-	_chartypes_[127] |= _bspace;
+	vl_chartypes_['\b'] |= vl_bspace;
+	vl_chartypes_[127] |= vl_bspace;
 
 	/* wildcard chars for most shells */
-	_chartypes_['*'] |= _wild;
-	_chartypes_['?'] |= _wild;
+	vl_chartypes_['*'] |= vl_wild;
+	vl_chartypes_['?'] |= vl_wild;
 #if !OPT_VMS_PATH
 #if SYS_UNIX
-	_chartypes_['~'] |= _wild;
+	vl_chartypes_['~'] |= vl_wild;
 #endif
-	_chartypes_[LBRACK] |= _wild;
-	_chartypes_[RBRACK] |= _wild;
-	_chartypes_[LBRACE] |= _wild;
-	_chartypes_[RBRACE] |= _wild;
-	_chartypes_['$'] |= _wild;
-	_chartypes_['`'] |= _wild;
+	vl_chartypes_[LBRACK] |= vl_wild;
+	vl_chartypes_[RBRACK] |= vl_wild;
+	vl_chartypes_[LBRACE] |= vl_wild;
+	vl_chartypes_[RBRACE] |= vl_wild;
+	vl_chartypes_['$'] |= vl_wild;
+	vl_chartypes_['`'] |= vl_wild;
 #endif
 
 	/* ex mode line specifiers */
-	_chartypes_[','] |= _linespec;
-	_chartypes_['%'] |= _linespec;
-	_chartypes_['-'] |= _linespec;
-	_chartypes_['+'] |= _linespec;
-	_chartypes_[';'] |= _linespec;
-	_chartypes_['.'] |= _linespec;
-	_chartypes_['$'] |= _linespec;
-	_chartypes_['\''] |= _linespec;
+	vl_chartypes_[','] |= vl_linespec;
+	vl_chartypes_['%'] |= vl_linespec;
+	vl_chartypes_['-'] |= vl_linespec;
+	vl_chartypes_['+'] |= vl_linespec;
+	vl_chartypes_[';'] |= vl_linespec;
+	vl_chartypes_['.'] |= vl_linespec;
+	vl_chartypes_['$'] |= vl_linespec;
+	vl_chartypes_['\''] |= vl_linespec;
 
 	/* fences */
-	_chartypes_[LBRACE] |= _fence;
-	_chartypes_[RBRACE] |= _fence;
-	_chartypes_[LPAREN] |= _fence;
-	_chartypes_[RPAREN] |= _fence;
-	_chartypes_[LBRACK] |= _fence;
-	_chartypes_[RBRACK] |= _fence;
+	vl_chartypes_[LBRACE] |= vl_fence;
+	vl_chartypes_[RBRACE] |= vl_fence;
+	vl_chartypes_[LPAREN] |= vl_fence;
+	vl_chartypes_[RPAREN] |= vl_fence;
+	vl_chartypes_[LBRACK] |= vl_fence;
+	vl_chartypes_[RBRACK] |= vl_fence;
 
 #if OPT_VMS_PATH
-	_chartypes_[LBRACK] |= _pathn;	/* actually, "<", ">" too */
-	_chartypes_[RBRACK] |= _pathn;
-	_chartypes_['$'] |= _pathn;
-	_chartypes_[':'] |= _pathn;
-	_chartypes_[';'] |= _pathn;
+	vl_chartypes_[LBRACK] |= vl_pathn;	/* actually, "<", ">" too */
+	vl_chartypes_[RBRACK] |= vl_pathn;
+	vl_chartypes_['$'] |= vl_pathn;
+	vl_chartypes_[':'] |= vl_pathn;
+	vl_chartypes_[';'] |= vl_pathn;
 #endif
 
 #if OPT_MSDOS_PATH
-	_chartypes_['\\'] |= _pathn;
-	_chartypes_[':'] |= _pathn;
+	vl_chartypes_['\\'] |= vl_pathn;
+	vl_chartypes_[':'] |= vl_pathn;
 #endif
 
 #if OPT_WIDE_CTYPES
-	/* scratch-buffer-names (usually superset of _pathn) */
-	_chartypes_[(unsigned)SCRTCH_LEFT[0]]  |= _scrtch;
-	_chartypes_[(unsigned)SCRTCH_RIGHT[0]] |= _scrtch;
-	_chartypes_[' '] |= _scrtch;	/* ...to handle "[Buffer List]" */
+	/* scratch-buffer-names (usually superset of vl_pathn) */
+	vl_chartypes_[(unsigned)SCRTCH_LEFT[0]]  |= vl_scrtch;
+	vl_chartypes_[(unsigned)SCRTCH_RIGHT[0]] |= vl_scrtch;
+	vl_chartypes_[' '] |= vl_scrtch;	/* ...to handle "[Buffer List]" */
 #endif
 
 	for (c = 0; c < N_chars; c++) {
 		if (!(isSpace(c)))
-			_chartypes_[c] |= _nonspace;
+			vl_chartypes_[c] |= vl_nonspace;
 		if (isDigit(c))
-			_chartypes_[c] |= _linespec;
+			vl_chartypes_[c] |= vl_linespec;
 		if (isAlpha(c) || isDigit(c))
-			_chartypes_[c] |= _ident|_pathn|_qident;
+			vl_chartypes_[c] |= vl_ident|vl_pathn|vl_qident;
 #if OPT_WIDE_CTYPES
 		if (isSpace(c) || isPrint(c))
-			_chartypes_[c] |= _shpipe;
+			vl_chartypes_[c] |= vl_shpipe;
 		if (ispath(c))
-			_chartypes_[c] |= _scrtch;
+			vl_chartypes_[c] |= vl_scrtch;
 #endif
 	}
 
@@ -2165,7 +2165,7 @@ static int
 cmd_mouse_motion(const CMDFUNC *cfp)
 {
 #if (OPT_XTERM || DISP_X11)
-	return cfp && cfp->cu.c_func == mouse_motion;
+	return cfp && CMD_U_FUNC(cfp) == mouse_motion;
 #else
 	return FALSE;
 #endif

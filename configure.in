@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.86 $)
+AC_REVISION($Revision: 1.88 $)
 AC_PREREQ(2.12.971222)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.86 1998/05/22 02:02:51 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.88 1998/07/02 10:09:02 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -70,20 +70,22 @@ AC_ARG_WITH(perl,
 	 if test "$perl_bin_path" = no; then
 	    AC_ERROR([perl not found])
 	 fi
-	 $perl_bin_path -e 'require 5.003' || {
-	    AC_ERROR([perl version must be 5.003 or greater])
+	 $perl_bin_path -e 'require 5.004' || {
+	    AC_ERROR([perl version must be 5.004 or greater])
 	 }
 	 perl_lib_path=`$perl_bin_path -MConfig -e 'print $Config{privlib}'`
 	 AC_DEFINE(OPT_PERL)
 	 EXTRAOBJS="$EXTRAOBJS perl.o"
-	 LINK_PREFIX=`$perl_bin_path -MConfig -e 'print $Config{shrpenv}'` 
-	 ac_link="$LINK_PREFIX $ac_link" 
+	 LINK_PREFIX=`$perl_bin_path -MConfig -e 'print $Config{shrpenv}'`
+	 ac_link="$LINK_PREFIX $ac_link"
 	 CFLAGS="$CFLAGS `$perl_bin_path -MExtUtils::Embed -e ccopts`"
 	 LIBS="$LIBS `$perl_bin_path -MExtUtils::Embed -e ldopts`"
-	 EXTRA_INSTALL="$EXTRA_INSTALL \$(INSTALL_PERL)"])
+	 EXTRA_INSTALL_DIRS="$EXTRA_INSTALL_DIRS \$(INSTALL_PERL_DIRS)"
+	 EXTRA_INSTALL_FILES="$EXTRA_INSTALL_FILES \$(INSTALL_PERL_FILES)"])
 AC_SUBST(perl_lib_path)
 AC_SUBST(perl_bin_path)
-AC_SUBST(EXTRA_INSTALL)
+AC_SUBST(EXTRA_INSTALL_DIRS)
+AC_SUBST(EXTRA_INSTALL_FILES)
 
 # X11 checks will sometimes add to CFLAGS.  We want the state of CFLAGS
 # prior to these checks
@@ -158,21 +160,8 @@ CF_FP_ISREADY
 ###	checks for compiler characteristics
 AC_CONST
 CF_ANSI_CC_REQD
-
-# I haven't found a "losing" compiler to check the following on.  I gather
-# that some losing compiler's can be found on pyramid's, aix, and Apple's AUX2.
-# (Lint on several platforms will complain, even when the compiler won't).
-AC_MSG_CHECKING([if switch cases work with structure offsets])
-AC_CACHE_VAL(cf_cv_case_offsetof,[
-	AC_TRY_COMPILE([],
-	[struct foo {int a,b;};
-	 extern getpid();
-	 switch(getpid()){case ((int) &(((struct foo *)0)->b)) : printf("foo"); } ],
-	[cf_cv_case_offsetof=yes],
-	[cf_cv_case_offsetof=no])
-	])
-AC_MSG_RESULT($cf_cv_case_offsetof)
-test $cf_cv_case_offsetof = no && AC_DEFINE(HAVE_LOSING_SWITCH_WITH_STRUCTURE_OFFSET)
+CF_CC_INIT_UNIONS
+CF_CC_OFFSETOF_CASES
 
 ###	checks for system services and user specified options
 AC_LONG_FILE_NAMES
@@ -394,7 +383,7 @@ if test -n "$cf_x_athena" ; then
 	[cf_Xaw_scrollbars=$withval],
 	[cf_Xaw_scrollbars=no])
     AC_MSG_RESULT($cf_Xaw_scrollbars)
-    
+
     if test "$cf_Xaw_scrollbars" = no ; then
 	AC_DEFINE(OPT_KEV_SCROLLBARS)
 	AC_DEFINE(OPT_KEV_DRAGGING)

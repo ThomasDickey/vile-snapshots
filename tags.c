@@ -4,7 +4,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.89 1998/04/28 10:18:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.90 1998/07/01 23:34:51 Larry.Gensch Exp $
  *
  */
 #include	"estruct.h"
@@ -260,7 +260,7 @@ gototag(int f GCC_UNUSED, int n GCC_UNUSED)
 	                return (s);
 		taglen = b_val(curbp,VAL_TAGLEN);
 	} else {
-		s = screen_string(tagname, sizeof(tagname), _ident);
+		s = screen_string(tagname, sizeof(tagname), vl_ident);
 		taglen = 0;
 	}
 

@@ -8,7 +8,7 @@
  * Extensions for vile by Paul Fox
  * Revised to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.48 1998/05/07 01:40:47 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.49 1998/07/01 10:37:35 tom Exp $
  *
  */
 
@@ -54,7 +54,7 @@ match_complex(LINE *lp)
 	size_t j, k;
 
 	for (j = 0; j < TABLESIZE(modes); j++) {
-		/* fix for HAVE_LOSING_SWITCH_WITH_STRUCTURE_OFFSET */
+		/* fix for CC_CANNOT_OFFSET_CASES */
 		switch (modes[j]) {
 		case CPP_IF:		k = VAL_FENCE_IF;	break;
 		case CPP_ELIF:		k = VAL_FENCE_ELIF;	break;

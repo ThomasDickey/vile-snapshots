@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.25 1998/06/07 01:28:31 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.26 1998/07/01 23:51:04 tom Exp $
  */
 
 /*#
@@ -3250,7 +3250,7 @@ new(...)
 
 	name = (items == 1) ? NULL : (char *)SvPV(ST(1),na);
 
-	(void) api_edit(NULL, name, &newvbp);
+	(void) api_edit(name, &newvbp);
 
 	RETVAL = newvbp;
 

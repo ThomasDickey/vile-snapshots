@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.250 1998/05/29 01:03:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.251 1998/07/01 10:37:43 tom Exp $
  *
  */
 
@@ -2518,7 +2518,7 @@ char	**msptr)
 	register char *ms = msptr ? *msptr : 0;
 	register SIZE_T mcnt = 0;
 
-#if SYS_VMS || HAVE_LOSING_SWITCH_WITH_STRUCTURE_OFFSET
+#if CC_CANNOT_OFFSET_CASES
 	PutMajormode(bp)
 #if !OPT_MAJORMODE
 	PutMode(MDCMOD,		"cmode")

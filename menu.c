@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.20 1998/05/30 12:23:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.21 1998/07/02 01:03:29 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -36,9 +36,6 @@
 #endif
 
 /* Locals */
-#define MAX_ITEM_MENU_LIST  50
-static int nb_item_menu_list = 0;
-static Widget pm_buffer [MAX_ITEM_MENU_LIST];
 static Widget cascade;
 
 /* Tokens of the rc file */
@@ -563,7 +560,11 @@ static void add_callback(Widget w, XtCallbackProc function, XtPointer closure)
 /************************************************************************/
 static void post_buffer_list ( Widget w GCC_UNUSED, XtPointer client GCC_UNUSED, XEvent *ev GCC_UNUSED, Boolean *ok  GCC_UNUSED)
 {
-    int     i, n=nb_item_menu_list;
+    static int in_item_menu_list = 0;   /* number allocated */
+    static int nb_item_menu_list = 0;   /* number in use */
+    static Widget *pm_buffer;
+
+    int     i, n = nb_item_menu_list;
     BUFFER  *bp;
     char    string[NBUFN+2+NFILEN], temp[1+NFILEN], *p;
     Widget  pm = (Widget) client;
@@ -583,7 +584,19 @@ static void post_buffer_list ( Widget w GCC_UNUSED, XtPointer client GCC_UNUSED,
         sprintf(temp, "_%d", nb_item_menu_list);
         TRACE(("ACCEL(%s) = %s\n", temp, string));
 
-        if (pm_buffer [nb_item_menu_list] == NULL)
+        if (nb_item_menu_list + 2 >= in_item_menu_list)
+        {
+	    int m = in_item_menu_list;
+            in_item_menu_list = (in_item_menu_list + 3) * 2;
+            if (pm_buffer != 0)
+                pm_buffer = typereallocn(Widget,pm_buffer,in_item_menu_list);
+            else
+                pm_buffer = typeallocn(Widget,in_item_menu_list);
+	    while (m < in_item_menu_list)
+	        pm_buffer[m++] = 0;
+        }
+
+        if (pm_buffer [nb_item_menu_list] == 0)
         {
             pm_buffer [nb_item_menu_list] = do_button (pm, string, temp, 'B');
         }
@@ -702,9 +715,6 @@ void do_menu ( Widget menub )
             break;
         }
     }
-
-    for (i=0; i<MAX_ITEM_MENU_LIST; i++)
-        pm_buffer[i] = NULL;
 }
 /************************************************************************/
 
