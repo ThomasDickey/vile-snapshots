@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.164 1998/09/01 10:12:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.165 1998/10/30 02:41:29 bod Exp $
  *
  */
 
@@ -1099,6 +1099,13 @@ storemac(int f, int n)
 	register struct BUFFER *bp;	/* pointer to macro buffer */
 	char bname[NBUFN];		/* name of buffer to use */
 
+	/* can't store macros interactively */
+	if (!clexec)
+	{
+	    mlforce("[Cannot store macros interactively]");
+	    return FALSE;
+	}
+
 	/* must have a numeric argument to this function */
 	if (f == FALSE) {
 		mlforce("[No macro specified]");
@@ -1153,6 +1160,13 @@ storeproc(int f, int n)
 	if (f == TRUE)
 		return storemac(f, n);
 
+	/* can't store procedures interactively */
+	if (!clexec)
+	{
+	    mlforce("[Cannot store procedures interactively]");
+	    return FALSE;
+	}
+
 	/* get the name of the procedure */
 	tb_scopy(&name, "");
 	if ((status = kbd_reply("Procedure name: ", &name,
@@ -1161,7 +1175,7 @@ storeproc(int f, int n)
 
 #if OPT_ONLINEHELP
 	/* get optional help string */
-	if (more_named_cmd())
+	if (!token_ended_line)
 	{
 	    tb_scopy(&helpstring, "");
 	    if ((status = kbd_reply("help info: ", &helpstring,

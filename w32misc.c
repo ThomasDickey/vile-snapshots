@@ -6,7 +6,7 @@
  * =======
  * -- This code has not been tested with NT 3.51 .
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.10 1998/09/23 22:21:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.11 1998/11/02 01:58:54 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -330,9 +330,11 @@ w32_system(const char *cmd)
 #if DISP_NTWIN
 /*
  * FUNCTION
- *   w32_system_winvile(const char *cmd)
+ *   w32_system_winvile(const char *cmd, int pressret)
  *
- *   cmd - command string to be be passed to a Win32 command interpreter.
+ *   cmd      - command string to be be passed to a Win32 command interpreter.
+ *
+ *   pressret - Boolean, T -> display prompt and wait for response
  *
  * DESCRIPTION
  *   Executes a system() call in the context of a Win32 GUI application,
@@ -343,7 +345,8 @@ w32_system(const char *cmd)
  *
  *   a) the GUI requires explicit console allocation prior to exec'ing
  *      "cmd", and
- *   b) said console stays "up" until explicitly dismissed by the user.
+ *   b) said console stays "up" until explicitly dismissed by the user if
+ *      "pressret" is TRUE.
  *
  * ACKNOWLEDGMENTS
  *   I had no idea a Win32 GUI app could exec a console command until I
@@ -355,7 +358,7 @@ w32_system(const char *cmd)
  */
 
 int
-w32_system_winvile(const char *cmd)
+w32_system_winvile(const char *cmd, int pressret)
 {
 #define PRESS_ANY_KEY "\n[Press any key to continue]"
 
@@ -402,19 +405,22 @@ w32_system_winvile(const char *cmd)
         INPUT_RECORD ir;
 
         (void) _cwait(&rc, (int) pi.hProcess, 0);
-        (void) WriteFile(si.hStdOutput,
-                         PRESS_ANY_KEY,
-                         sizeof(PRESS_ANY_KEY) - 1,
-                         &dummy,
-                         NULL);
-        for (;;)
+        if (pressret)
         {
-            /* Wait for a single key of input from user. */
+            (void) WriteFile(si.hStdOutput,
+                             PRESS_ANY_KEY,
+                             sizeof(PRESS_ANY_KEY) - 1,
+                             &dummy,
+                             NULL);
+            for (;;)
+            {
+                /* Wait for a single key of input from user. */
 
-            if (! ReadConsoleInput(si.hStdInput, &ir, 1, &dummy))
-                break;      /* What?? */
-            if (ir.EventType == KEY_EVENT && ir.Event.KeyEvent.bKeyDown)
-                break;
+                if (! ReadConsoleInput(si.hStdInput, &ir, 1, &dummy))
+                    break;      /* What?? */
+                if (ir.EventType == KEY_EVENT && ir.Event.KeyEvent.bKeyDown)
+                    break;
+            }
         }
         (void) CloseHandle(pi.hProcess);
         (void) CloseHandle(pi.hThread);

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_2
+MANIFEST for vile, version v8_2a
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -107,7 +107,7 @@ trace.c                         development: trace to logfile
 trace.h                         development: trace to logfile
 undo.c                          support for "undo"
 version.c                       version & usage messages
-vile-8.1.spec                   rpm spec file (sample)
+vile-8.2.spec                   rpm spec file (sample)
 vile.1                          man-page for VILE
 vile.hlp                        help-file
 vms2unix.c                      VMS/UNIX compatibility support functions
@@ -125,6 +125,7 @@ w32reg.h                        interface of w32reg
 watch.c                         watch file-descriptors & timers
 window.c                        window-management functions
 winvile.odl                     interface description for Winvile OLE
+winvile.rc                      resource definitions for winvile
 word.c                          commands that operate upon words or paragraphs
 wordmov.c                       cursor-movement commands (e.g., word, spaces)
 x11.c                           X11 (Xt, Motif or Openlook) terminal driver
@@ -139,6 +140,9 @@ doc/oleauto.doc                 document Winvile OLE
 doc/perl.doc                    notes about perl interface to vile
 doc/visvile.doc                 document visvile.dll
 doc/w32modes.doc                describe win32-specific modes
+icons                           subdirectory
+icons/pumpkin.ico               V-eyes pumpkin icon
+icons/sink.ico                  kitchen-sink icon (J.R.Sladkey)
 macros                          subdirectory
 macros/digraphs.rc              macros for inserting digraphs
 macros/manpage.rc               macros for man-page filtering/display

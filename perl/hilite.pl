@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/hilite.pl,v 1.2 1998/10/01 10:10:23 tom Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/hilite.pl,v 1.3 1998/11/02 02:03:14 Ryan.Murray Exp $
 #
 # See syntax.pl (and hilite.doc).
 #
@@ -140,7 +140,7 @@ sub syntaxc {
             [ '"', '"', '\\\\"', 1, -1 ],
         ],
         "comment" => [
-            [ '/\*', '\*/', undef, 0, 0 ],
+            [ '/\*', '\*/', undef, 0, 1 ],
         ],
     );
 }

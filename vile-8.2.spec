@@ -1,12 +1,12 @@
 Summary: VILE VI Like Emacs editor
 Name: vile
-Version: 8.1
+Version: 8.2
 Release: 1
 Copyright: Freely Distributable, copyright statements must be maintained
 Group: Applications/Editors
-Source: ftp.clark.net:/pub/dickey/vile/vile-8.1.tgz
+Source: ftp.clark.net:/pub/dickey/vile/vile-8.2.tgz
 Packager: Radek Liboska <liboska@uochb.cas.cz>
-#Patch1 : vile-8.1.patch
+#Patch1 : vile-8.2.patch
 
 %description
 Vile is a text editor which is extremely compatible with vi in terms

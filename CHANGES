@@ -1,3 +1,33 @@
+Changes for vile 8.3 (released ??? ??? ??, 1998)
+
+ (tom) 981101 (a)
+ 	+ add icon for winvile (V-eyes 'pumpkin').
+	+ corrections to hilite.pl and syntax.pl, so it works for C comments
+	  (patch by Ryan Murray).
+ 	+ modify tokval() function to eliminate fixed-buffer limits for
+	  '@' prompts and '<' buffer-variables (reported by Clark Morgan).
+	+ add 'undoable' mode, as a performance convenience for filtering.
+	  Note that this purges the undo stack, because it suppresses update
+	  of the undo stack while changes may occur to the buffer.  Also,
+	  during filtering it prevents vile from retaining the buffer's contents
+	  in the kill buffer.
+	+ minor fixes for memory-leaks & test code for that (main.c, fileio.c,
+	  modes.c)
+	+ modify dfputli and dfputi to output unsigned values to use in $pid
+	  conversion.
+	+ correct storeproc() so that it detects if tokens follow a macro's
+	  name on lines read from source'd file.  These tokens are used for
+	  annotating macros in describe-bindings (report by Clark Morgan, patch
+	  by Brendan O'Dea).
+	> patches by Clark Morgan:
+	+ modify so that preceding :!<cmd> with an argument suppresses the
+	  [Press return to continue] prompt for winvile,
+	+ update/expand macros.doc
+	+ correct a limit-check when returning a buffer variable (eval.c).
+	+ convert $pid to unsigned hex rather than decimal on Win32.
+	+ make it possible to create vile-perl-api.doc on a win32 host. 
+	+ add detail to README.PC with respect to building embedded perl. 
+
 Changes for vile 8.2 (released Sun Oct 25, 1998)
 
  (tom) 981025 (c)

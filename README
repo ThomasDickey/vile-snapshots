@@ -336,12 +336,12 @@ May, 1998
 -------------------------------
 
 Oct, 1998
-    vile 8.1 is released.  This is primarily a bugfix release--refer to
-    the CHANGES files for details.  Tom Dickey continues to improve
-    winvile, which now supports scroll bars and two new command-line
-    options that control the editor's geometry and font.
+    vile 8.1 and 8.2 are released.  These are primarily bugfix releases.
+    Refer to the CHANGES files for details.  Tom Dickey continues to
+    improve winvile, which now supports scroll bars and two new
+    command-line options that control the editor's geometry and font.
 
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.68 1998/10/24 16:33:27 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.69 1998/10/30 02:54:37 cmorgan Exp $
 -------------------------------

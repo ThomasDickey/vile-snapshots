@@ -101,7 +101,7 @@ best results in EMX, you should build with the autoconf version and
 ncurses.  this requires a number of tools:
 
 	+ you will have to regenerate the configure script, using
-	  autoconf 2.12, with the patches from 
+	  autoconf 2.12, with the patches from
 
 	  http://www.clark.net/pub/dickey/autoconf/autoconf.html
 
@@ -149,16 +149,18 @@ information, including build instructions.
 
 the following table summarizes all possible makefile.wnt build options:
 
-component option(s)  required nmake command-line [1]
-========= =========  ===============================
-vile      <none>     nmake -f makefile.wnt
-vile      perl       nmake -f makefile.wnt CFG=vile-with-perl
-winvile   <none>     nmake -f makefile.wnt CFG=winvile
-winvile   perl       nmake -f makefile.wnt CFG=winvile-with-perl
-winvile   ole        nmake -f makefile.wnt CFG=winvile OPT=ole-auto
-winvile   perl, ole  nmake -f makefile.wnt CFG=winvile-with-perl OPT=ole-auto
+component option(s)   required nmake command-line [1]
+========= =========   ===============================
+vile      <none>      nmake -f makefile.wnt
+vile      perl    [2] nmake -f makefile.wnt CFG=vile-with-perl
+winvile   <none>      nmake -f makefile.wnt CFG=winvile
+winvile   perl        nmake -f makefile.wnt CFG=winvile-with-perl
+winvile   ole         nmake -f makefile.wnt CFG=winvile OPT=ole-auto
+winvile   perl,ole[2] nmake -f makefile.wnt CFG=winvile-with-perl OPT=ole-auto
 
 [1] by default, all builds compile and link vile-c-filt.exe (when necessary).
+[2] this option requires prior installation of perl.  refer to the section
+    entitled "Perl preconditions" below.
 
 More about makefile.wnt
 -----------------------
@@ -192,6 +194,23 @@ c) run this command to initialize Dev Studio env vars:
 
 d) use one of the nmake command-lines shown above
 
+Perl preconditions
+------------------
+before building vile with an embedded perl interpreter:
+
+1) install the [binary] perl Win32 port located at this URL:
+
+   http://www.perl.com/CPAN-local/ports/win32/Standard/x86/
+
+2) initialize the environment variable VILE_LIBRARY_PATH to point to a
+   writable "root" directory where vile's perl scripts will be installed.
+
+note that one of CPAN's popular perl binary releases did not export an
+important symbol.  this omission has been handled in vile's sources, but
+there is a nontrivial performance impact associated with the workaround.
+search for the symbol HAVE_BROKEN_PERL_RS in makefile.wnt to see if your
+version of perl is affected.
+
 --------------------------------------------------------
 tom dickey, dickey@clark.net
 
@@ -199,5 +218,5 @@ tom dickey, dickey@clark.net
 paul fox, pgf@foxharp.boston.ma.us (home)
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.16 1998/10/26 02:15:55 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.17 1998/10/30 01:43:51 cmorgan Exp $
 ------------------------

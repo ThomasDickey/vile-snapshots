@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.133 1998/10/24 15:55:54 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.135 1998/11/02 01:59:23 cmorgan Exp $
  *
  */
 
@@ -390,7 +390,7 @@ spawn1(int rerun, int pressret)
 #endif
 #if SYS_WINNT
 # if DISP_NTWIN
-	w32_system_winvile(line);
+	w32_system_winvile(line, pressret);
 # else
 	w32_system(line);
 # endif
@@ -557,7 +557,6 @@ write_data_to_pipe(void *writefp)
         fwrite((char *)kp->d_chunk, 1, (SIZE_T)KbSize(ukb,kp), fw);
         kp = kp->d_next;
     }
-    ukb = 0;   /* was modified by kregciruclate() */
 #if SYS_UNIX && ! TEST_DOS_PIPES
     (void)fflush(fw);
     (void)fclose(fw);
@@ -656,7 +655,9 @@ filterregion(void)
         return s;
     }
 
-    killregion();
+    if ((s = begin_kill()) != TRUE)
+    	return s;
+
     if (!softfork())
     {
 #if !(SYS_WINNT && defined(GMDW32PIPES))
@@ -697,6 +698,7 @@ filterregion(void)
     npclose(fr);
     (void)firstnonwhite(FALSE,1);
     (void)setmark();
+    end_kill();
     return s;
 #else
     mlforce("[Region filtering not available -- try buffer filtering]");

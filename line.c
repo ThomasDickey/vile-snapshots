@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.112 1998/09/22 23:45:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.114 1998/11/02 01:24:04 tom Exp $
  *
  */
 
@@ -31,6 +31,7 @@ static	int	ldelnewline (void);
 static	int	PutChar(int n, REGIONSHAPE shape);
 
 #if OPT_SHOW_REGS && OPT_UPBUFF
+static	int	will_relist_regs;
 static	void	relist_registers (void);
 #else
 #define relist_registers()
@@ -141,11 +142,13 @@ ltextfree(register LINE *lp, register BUFFER *bp)
 }
 
 /*
- * Delete line "lp". Fix all of the links that might point at it (they are
- * moved to offset 0 of the next line. Unlink the line from whatever buffer it
- * might be in. The buffers are updated too; the magic
- * conditions described in the above comments don't hold here.
- * Memory is not released, so line can be saved in undo stacks.
+ * Delete line "lp".  Fix all of the links that might point at it (they are
+ * moved to offset 0 of the next line.  Unlink the line from whatever buffer it
+ * might be in.  The buffers are updated too; the magic conditions described in
+ * the above comments don't hold here.
+ *
+ * Memory is not released unless the buffer is marked noundoable, so line can
+ * be saved in undo stacks.
  */
 void
 lremove(register BUFFER *bp, register LINEPTR lp)
@@ -240,6 +243,14 @@ lremove(register BUFFER *bp, register LINEPTR lp)
 #endif /* OPT_VIDEO_ATTRS */
 	set_lforw(lback(lp), lforw(lp));
 	set_lback(lforw(lp), lback(lp));
+
+	/*
+	 * If we've disable undo stack, we'll have to free the line to avoid
+	 * a memory leak.
+	 */
+	if (!b_val(bp, MDUNDOABLE)) {
+		lfree(lp, bp);
+	}
 }
 
 int
@@ -815,6 +826,25 @@ ksetup(void)
 
 }
 
+static void
+free_kbs(int n)
+{
+	KILL *kp;	/* ptr to scan kill buffer chunk list */
+
+	/* first, delete all the chunks */
+	kbs[n].kbufp = kbs[n].kbufh;
+	while (kbs[n].kbufp != NULL) {
+		kp = kbs[n].kbufp->d_next;
+		free((char *)(kbs[n].kbufp));
+		kbs[n].kbufp = kp;
+	}
+
+	/* and reset all the kill buffer pointers */
+	kbs[n].kbufh = kbs[n].kbufp = NULL;
+	kbs[n].kused = 0;
+	kbs[n].kbwidth = 0;
+}
+
 /*
  * clean up the old contents of a kill register.
  * if called from other than kinsert, only does anything in the case where
@@ -825,20 +855,8 @@ void
 kdone(void)
 {
 	if ((kregflag & KNEEDCLEAN) && kbs[ukb].kbufh != NULL) {
-		KILL *kp;	/* ptr to scan kill buffer chunk list */
-
-		/* first, delete all the chunks */
-		kbs[ukb].kbufp = kbs[ukb].kbufh;
-		while (kbs[ukb].kbufp != NULL) {
-			kp = kbs[ukb].kbufp->d_next;
-			free((char *)(kbs[ukb].kbufp));
-			kbs[ukb].kbufp = kp;
-		}
-
-		/* and reset all the kill buffer pointers */
-		kbs[ukb].kbufh = kbs[ukb].kbufp = NULL;
-		kbs[ukb].kused = 0;
-		kbs[ukb].kbwidth = kregwidth = 0;
+		free_kbs(ukb);
+		kregwidth = 0;
 		kcharpending = -1;
 	}
 	kregflag &= ~KNEEDCLEAN;
@@ -1041,26 +1059,37 @@ usekreg(int f, int n)
 	return(status);
 }
 
+static int lastkb;
+
+/*
+ * Returns the index in kbs[] of the next kill-buffer we will write into.
+ */
+static int
+nextkb(void)
+{
+	int n = lastkb;
+
+	if ((kbs[n].kbflag & (KLINES|KRECT|KAPPEND))
+	 && !(kbs[n].kbflag & KYANK)) {
+		if (--n < 0) n = 9;
+	}
+	return n;
+}
+
 /* buffers 0 through 9 are circulated automatically for full-line deletes */
 /* we re-use one of them until the KLINES flag is on, then we advance */
 /* to the next */
 void
 kregcirculate(int killing)
 {
-	static	short	lastkb;	/* index of the real "0 */
-
 	if (ukb >= 10) /* then the user specified a lettered buffer */
 		return;
 
 	/* we only allow killing into the real "0 */
 	/* ignore any other buffer spec */
 	if (killing) {
-		if ((kbs[lastkb].kbflag & (KLINES|KRECT|KAPPEND)) &&
-			! (kbs[lastkb].kbflag & KYANK)) {
-			if (--lastkb < 0) lastkb = 9;
-			kbs[lastkb].kbflag = 0;
-		}
-		ukb = lastkb;
+		ukb = lastkb = nextkb();
+		kbs[lastkb].kbflag = 0;
 	} else {
 		/* let 0 pass unmolested -- it is the default */
 		if (ukb == 0) {
@@ -1073,6 +1102,63 @@ kregcirculate(int killing)
 			else
 				ukb = (lastkb + ukb) % 10;
 		}
+	}
+}
+
+static	struct	{
+	int	started;
+	int	next_kb;
+	int	last_kb;
+	int	save_ukb;
+	int	kregflg;
+	KILLREG	killreg;
+} undo_kill;
+
+static int kb_size(int ii, KILL *kp)
+{
+	int size = 0;
+	if (kp != 0) {
+		if (kp->d_next != 0)
+			size = kb_size(ii, kp->d_next);
+		size += KbSize(ii, kp);
+	}
+	return size;
+}
+
+/*
+ * Kill a region, saving it into the kill-buffer.  If the buffer that we're
+ * modifying is not-undoable, save information so that we can restore the
+ * kill buffer after we're done.  We use this in filtering, for performance
+ * reasons.
+ */
+int
+begin_kill(void)
+{
+	if ((undo_kill.started = !b_val(curbp, MDUNDOABLE))) {
+		static KILLREG unused;
+		int num = nextkb();
+		undo_kill.last_kb = lastkb;
+		undo_kill.next_kb = num;
+		undo_kill.kregflg = kregflag;
+		undo_kill.killreg = kbs[num];
+		kbs[num] = unused;
+	}
+	return killregion();
+}
+
+void
+end_kill(void)
+{
+	if (undo_kill.started) {
+		free_kbs(undo_kill.next_kb);
+		kbs[undo_kill.next_kb] = undo_kill.killreg;
+		kregflag = undo_kill.kregflg;
+		ukb = 0;	/* was modified by kregcirculate() */
+		lastkb = undo_kill.last_kb;
+#if OPT_SHOW_REGS && OPT_UPBUFF
+		will_relist_regs = FALSE;
+		relist_registers();
+#endif
 	}
 }
 
@@ -1569,8 +1655,6 @@ void *dummy GCC_UNUSED)
 	}
 	lsettrimmed(DOT.l);
 }
-
-static int will_relist_regs;
 
 /*ARGSUSED*/
 int

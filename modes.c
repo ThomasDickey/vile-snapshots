@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.119 1998/07/17 10:25:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.121 1998/10/31 17:27:18 tom Exp $
  *
  */
 
@@ -1559,6 +1559,19 @@ chgd_major(VALARGS *args, int glob_vals, int testing)
 	return TRUE;
 }
 
+	/* Change the "undoable" mode */
+int
+chgd_undoable(VALARGS *args, int glob_vals, int testing)
+{
+	if (chgd_major(args, glob_vals, testing)) {
+		if (!testing
+		 && !(args->local->v.i))
+			freeundostacks(curbp,TRUE);
+		return TRUE;
+	}
+	return FALSE;
+}
+
 	/* Change a major mode that affects the windows on the buffer */
 int
 chgd_major_w(VALARGS *args, int glob_vals, int testing)
@@ -2610,7 +2623,9 @@ mode_leaks(void)
 
 	FreeAndNull(major_g_vals);
 	FreeAndNull(major_l_vals);
-	FreeAndNull(my_mode_list);
+	if (my_mode_list != all_modes) {
+		FreeAndNull(my_mode_list);
+	}
 	FreeAndNull(major_valnames);
 #endif
 }

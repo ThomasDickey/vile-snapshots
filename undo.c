@@ -3,7 +3,7 @@
  *
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.69 1998/04/28 10:19:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.70 1998/10/31 16:41:00 tom Exp $
  *
  */
 
@@ -167,6 +167,8 @@ OkUndo(void)
 {
 	if (curbp == bminip)
 		return FALSE;
+	if (!b_val(curbp, MDUNDOABLE))
+		return FALSE;
 #define SCRATCH 1
 #if SCRATCH
 	if (b_is_scratch(curbp))
@@ -289,20 +291,18 @@ tag_for_undo(LINEPTR lp)
 }
 
 /* Change all PURESTACKSEPS on the stacks to STACKSEPS, so that undo won't
- * reset the BFCHG bit.  This should be called anytime a non-undable change is
+ * reset the BFCHG bit.  This should be called anytime a non-undoable change is
  * made to a buffer.
  */
 void
 nounmodifiable(BUFFER *bp)
 {
 	register LINE *tlp;
-	for (tlp = *BACKSTK(bp); tlp != NULL;
-				tlp = tlp->l_nxtundo) {
+	for (tlp = *BACKSTK(bp); tlp != NULL; tlp = tlp->l_nxtundo) {
 		if (lispurestacksep(tlp))
 			tlp->l_used = STACKSEP;
 	}
-	for (tlp = *FORWSTK(bp); tlp != NULL;
-				tlp = tlp->l_nxtundo) {
+	for (tlp = *FORWSTK(bp); tlp != NULL; tlp = tlp->l_nxtundo) {
 		if (lispurestacksep(tlp))
 			tlp->l_used = STACKSEP;
 	}
@@ -641,7 +641,7 @@ undoworker(int stkindx)
 			lfree(lp,curbp);
 			continue;
 		}
-		if (lforw(lback(lp)) != lforw(lp)) { /* theres something there */
+		if (lforw(lback(lp)) != lforw(lp)) { /* there's something there */
 			if (lforw(lforw(lback(lp))) == lforw(lp)) {
 				/* then there is exactly one line there */
 				/* alp is the line to remove */

@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.32 1998/10/01 10:14:08 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.34 1998/11/02 01:39:14 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -80,6 +80,7 @@ CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
 LDFLAGS  = -nologo /nologo /subsystem:windows /incremental:no -pdb:none
 SCREEN   = ntwinio
 LIBS     = $(LD_DEBUG) $(guilflags) $(guilibsmt) $(VILE_PERL_LIB) $(OLELIBS)
+EXTRA    = winvile.res
 !endif
 
 !IF "$(OPT)" == "ole-auto"
@@ -145,7 +146,7 @@ OBJ = 	main.obj $(SCREEN).obj \
 	tags.obj tbuff.obj termio.obj undo.obj \
 	version.obj window.obj word.obj wordmov.obj map.obj \
 	w32cbrd.obj w32misc.obj w32pipe.obj $(PERLOBJS) \
-	$(OLEOBJS)
+	$(OLEOBJS) $(EXTRA)
 
 .c.obj:
 	$(cc) $(CFLAGS) -c $< -Fo$@
@@ -157,6 +158,9 @@ all: $(PERLCFG) $(TARGET) $(UTILS)
 
 $(TARGET): 	$(BUILTHDRS) $(OBJ)
 	$(link) $(LDFLAGS) $(OBJ) $(LIBS) -out:$(TARGET)
+
+winvile.res :	winvile.rc
+	$(RC) -Iicons winvile.rc
 
 # collect some perl environment info
 $(PERLCFG): mkprlenv.wnt
@@ -180,6 +184,12 @@ nemode.h:	modetbl mktbls.exe
 perl.c: perl.xs ptypemap
     perl $(VILE_PERL_UTILS)\xsubpp -typemap $(VILE_PERL_UTILS)\typemap \
         -typemap ptypemap perl.xs > $@
+
+vile-perl-api.pod: perl.xs
+	perl -lne "print if s/^\s{1,2}#\s{0,1}//" perl.xs > $@
+
+vile-perl-api.doc: vile-perl-api.pod
+	perl -e "use Pod::Text; pod2text(\"$?\");" > $@
 
 mktbls.exe:  mktbls.c
 	$(cc) $(CFLAGS) mktbls.c -Fomktbls -link $(CON_LDFLAGS)
