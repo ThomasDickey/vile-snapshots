@@ -14,9 +14,9 @@ otherwise, use this canned build script:
 in either case, before building the editor, edit descrip.mms or
 vmsbuild.com to specify the compiler of your choice.
 
-to build xvile, use either of these commands as appropriate:
+to build xvile, use this command (which dynamically configures
+the X build environment):
 
-    $ mms/macro="__XVILE__=1"
     $ @vmsbuild xvile
 
 Tested systems

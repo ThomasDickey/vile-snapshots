@@ -1,5 +1,42 @@
 Changes for vile 9.1 (released ??? ??? ??, 1999)
 
+ (tom) 991209 (d)
+	+ implement "before" and "after" qualifiers for majormodes.
+ 	+ add C++ majormode cppmode,
+ 	+ change prompt for majormode in procedure parameter lists to allow
+	  mixed case.
+ 	+ add ".table" and ".default" to filter interpreter.
+	+ add a syntax filter for vile's .key files, use that to fix some
+	  errors in make.key, tcl.key .
+ 	+ add a syntax filter for Lynx config file.
+	+ add '_' to URL patterns, used in txt and mail filters.
+ 	+ corrected DSTRINGS definition in awk syntax filter, which did not
+	  handle quoted backslash.
+	+ allow '+' in alias in termcap syntax filter.
+	+ add variable $error-buffer, use this in manpage.rc to avoid losing
+	  the setting when creating a manpage buffer.
+	+ add error-patterns for ncurses tic and atac.
+ 	+ implement ".merge" in filter keyword files, needed for C and HTML
+	  filters.
+	+ improve C syntax filter:
+	  + marking misspelled preprocessor keywords as an error.
+	  + marking numbers run-on to names as an error,
+	  + marking unexpected escapes as an error,
+ 	+ minor fixes of ifdef's for glob_match_leaf(), for building with
+	  configure --disable-extensions.
+	> patches by Clark Morgan:
+	+ add the Win32 common dialog "save as" feature to both console
+	  vile and winvile.
+	+ update vile.hlp was updated to reflect recent
+	  questions about macros.doc
+	+ split-out the win32 command-specific code (e.g., winopen, winsave,
+	  etc) from w32misc.c to a new file called w32cmd.c
+	+ add a note about obscure "unsetl view" side-effect of the :f command
+	+ add special case to expand_wild_args() for VMS to handle +/string
+	  syntax.
+	+ update README.VMS for building xvile
+	+ fix for VAXC to include icons/vile.xbm
+
  (tom) 991202 (c)
 	+ modified vmsbuild.com and descrip.mms (untested) to build the Motif
 	  version with menus, the X toolkit version without (based on discussion

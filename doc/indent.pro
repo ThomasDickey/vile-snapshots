@@ -24,6 +24,8 @@
 -sob
 /* continuation indent of 0 spaces */
 -ci0 
+/* force space before semicolon on same line */
+-ss
 
 /* for vile */
 -T size_t

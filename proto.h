@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.402 1999/11/24 20:05:47 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.403 1999/12/04 18:51:00 tom Exp $
  *
  */
 
@@ -420,6 +420,7 @@ extern void ffrewind (void);
 
 /* finderr.c */
 #if OPT_FINDERR
+extern const char * get_febuff (void);
 extern void set_febuff (const char *name);
 #endif
 

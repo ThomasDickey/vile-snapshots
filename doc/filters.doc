@@ -79,7 +79,8 @@ string is interpreted as follows:
 
 	  If the second string matches a keyword class (or in fact, any other
 	  keyword), the highlighting attributes of that keyword are used.  An
-	  empty attribute string implies "Keyword".
+	  empty attribute string implies the default class, which usually
+	  is "Keyword".
 
 	  If it does not match a keyword, it must be a set of highlighting
 	  attributes, which will be used for the first string.
@@ -88,7 +89,12 @@ The keyword file reader supports a limited include facility.  If a line begins
 with ".include", it reads from the given keyword file.  A few filters (such as
 html) require multiple symbol tables; these include using ".merge".  In either
 case, the parameter of the include is the root name of the keyword file, e.g.,
-"c" for "c.key".
+"c" for "c.key".  Use the ".table" directive to simply switch to a different
+symbol table in the same file with the same effect as ".merge".
+
+Use the ".default" directive to change the default class.  The parameter must
+be the name of a class which has already been defined.  Omit the parameter to
+reset the default back to "Keyword".
 
 You can change the characters assigned to ':' and '.' using ".equals" and
 ".meta" directives, respectively.
@@ -107,12 +113,14 @@ The following are implemented:
 	vile-awk-filt	(awk)
 	vile-bat-filt	(DOS batchfiles)
 	vile-c-filt	(C language)
+	vile-cfg-filt	(Lynx configure file)
 	vile-cweb-filt	(CWEBx)
 	vile-dcl-filt	(VMS DCL batchfiles)
 	vile-diff-filt	(diff/patch files)
 	vile-html-filt	(HTML with embedded JavaScript)
 	vile-latex-filt	(LaTeX or TeX)
 	vile-lex-filt	(lex)
+	vile-key-filt	(Vile keyword files)
 	vile-m4-filt	(m4)
 	vile-mail-filt	(mail folders)
 	vile-make-filt	(make)
@@ -147,4 +155,4 @@ Not all filters use a keywords file (yet).
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.11 1999/11/24 01:57:26 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.13 1999/12/09 00:29:28 tom Exp $

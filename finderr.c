@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-1999 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.82 1999/11/24 22:12:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.84 1999/12/04 18:51:10 tom Exp $
  *
  */
 
@@ -125,6 +125,8 @@ char *const predefined[] =
     "^[^:]\\+: %V directory `%[^']'",	/* GNU make */
     "%T at %F line %L.*",	/* perl 5 */
     "%F\\[%L\\]:%T",		/* hgrep */
+    "^\"%[^\"]\", line %L, col %C, %T",		/* ncurses, atac */
+    "^\"%[^\"]\", line %L, %T",	/* ncurses */
 };
 
 static ERR_PATTERN *exp_table = 0;
@@ -135,6 +137,12 @@ set_febuff(const char *name)
 {
     (void) strncpy0(febuff, name, NBUFN);
     newfebuff = TRUE;
+}
+
+const char *
+get_febuff(void)
+{
+    return febuff;
 }
 
 /*
@@ -500,7 +508,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 	    ALLOC_T count = 0;
 
 	    while ((exp = next_pattern(count++)) != 0
-		&& !lregexec(exp->exp_comp, dotp, 0, llength(dotp)));
+		&& !lregexec(exp->exp_comp, dotp, 0, llength(dotp))) ;
 
 	    if (exp != 0) {
 		decode_exp(exp);

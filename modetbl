@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.158 1999/11/05 11:56:19 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.160 1999/12/09 11:03:06 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -163,6 +163,9 @@ int							# VAL_ prefix
 regex							# MVAL_ prefix
 	"PREamble"	PREAMBLE	0		# match against file header to turn on mode
 	"SUFfixes"	SUFFIXES	0		# match against filenames to turn on mode
+string
+	"before"	BEFORE		chgd_mm_order	# check mode before given
+	"after"		AFTER		chgd_mm_order	# check mode after given
 
 .qualifier
 string
@@ -196,6 +199,7 @@ string
 "discmd"	DISCMD			# display commands on command line
 "disinp"	DISINP			# display command line input characters
 "end-of-cmd"	EOC			# true if they ended the cmd with <CR>
+"error-buffer"	ERROR_BUFFER	OPT_FINDERR	# buffer to use for find-next-error
 "exec-suffix"	EXEC_SUFFIX		# suffix to append when looking for execable programs
 "exit-hook"	EXITHOOK	OPT_HOOKS	# procedure to run when quitting
 "font"		FONT		DISP_X11||DISP_NTWIN	# current font

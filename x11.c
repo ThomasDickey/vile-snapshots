@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.233 1999/11/10 00:09:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.234 1999/12/10 01:36:52 cmorgan Exp $
  *
  */
 
@@ -3349,7 +3349,11 @@ x_preparse_args(
 # if HAVE_LIBXPM
 #  include <icons/vile.xpm>
 # else
-#  include <icons/vile.xbm>
+#  ifndef VMS
+#   include <icons/vile.xbm>
+#  else
+#   include "icons/vile.xbm"
+#  endif
 # endif
 #endif
 	XWMHints *hints = XGetWMHints(dpy, XtWindow(cur_win->top_widget));

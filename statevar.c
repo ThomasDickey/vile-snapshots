@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.28 1999/11/10 00:09:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.29 1999/12/04 18:51:23 tom Exp $
  */
 
 #include	"estruct.h"
@@ -511,6 +511,21 @@ int var_EOC(TBUFF **rp, const char *vp)
 		return FALSE;
 	}
 }
+
+#if OPT_FINDERR
+int var_ERROR_BUFFER(TBUFF **rp, const char *vp)
+{
+	if (rp) {
+		tb_scopy(rp, get_febuff());
+		return TRUE;
+	} else if (vp) {
+		set_febuff(vp);
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+#endif
 
 int var_EXEC_SUFFIX(TBUFF **rp, const char *vp)
 {
