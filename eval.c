@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.135 1996/10/22 00:42:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.136 1996/12/17 11:41:17 tom Exp $
  *
  */
 
@@ -494,6 +494,8 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 				SetEnv(&directory, DftEnv("TMP", P_tmpdir));
 			value = directory;
 
+		ElseIf( EVHELPFILE )	value = helpfile;
+
 		ElseIf( EVNTILDES )	value = l_itoa(ntildes);
 
 
@@ -880,6 +882,9 @@ char *value)	/* value to set to */
 
 		ElseIf( EVDIRECTORY )
 			SetEnv(&directory, value);
+
+		ElseIf( EVHELPFILE )
+			SetEnv(&helpfile, value);
 
 #if OPT_PROCEDURES
 		ElseIf( EVCDHOOK )     (void)strcpy(cdhook, value);

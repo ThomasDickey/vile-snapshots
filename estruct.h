@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.293 1996/11/07 02:00:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.294 1996/12/17 11:44:12 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -798,8 +798,7 @@ typedef enum {
 
 /* indices into pathname[] array (epath.h) */
 #define PATH_STARTUP_NAME	0
-#define PATH_HELPFILE_NAME	1
-#define PATH_TABLEDIRS		2
+#define PATH_TABLEDIRS		1
 
 /* definitions for name-completion */
 #define	NAMEC		name_cmpl /* char for forcing name-completion */

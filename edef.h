@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.202 1996/11/18 11:25:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.203 1996/12/17 11:41:43 tom Exp $
  */
 
 /* I know this declaration stuff is really ugly, and I probably won't ever
@@ -265,6 +265,7 @@ decl_uninit( FILE *ffp );		/* File pointer, all functions. */
 decl_uninit( int fileispipe );
 decl_uninit( int eofflag );		/* end-of-file flag */
 decl_init ( L_NUM help_at, -1 );	/* position in help-file */
+decl_uninit( char *helpfile );
 
 decl_init( const char hexdigits[], "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 

@@ -6,7 +6,7 @@
 /*	possible names and paths of help files under different OSs	*/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/epath.h,v 1.20 1996/02/28 03:51:24 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/epath.h,v 1.21 1996/12/17 11:38:28 tom Exp $
  */
 
 /* first two entries are default startup and help files, the rest are
@@ -20,7 +20,6 @@ const char * const pathname[] =
 #if	SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
 {
 	"vile.rc",
-	"vile.hlp",
 	"\\sys\\public\\",
 	"\\usr\\bin\\",
 	"\\bin\\",
@@ -31,7 +30,6 @@ const char * const pathname[] =
 #if	SYS_UNIX
 {
 	".vilerc",
-	"vile.hlp",
 #ifdef HELP_LOC
 #ifndef lint	/* makefile gives inconsistent quoting for lint, compiler */
 	HELP_LOC,
@@ -46,7 +44,6 @@ const char * const pathname[] =
 #if	SYS_VMS
 {
 	"vile.rc",
-	"vile.hlp",
 	"sys$login:",
 	"",
 	"sys$sysdevice:[vmstools]"

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.73 1996/10/22 00:09:19 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.74 1996/12/17 11:39:44 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -145,6 +145,7 @@ int							# VAL_ prefix
 "flicker"	FLICKER			# flicker suppression
 "font"		FONT		DISP_X11	# current font
 "forward-search" FWD_SEARCH		# search-direction (true if forward)
+"helpfile"	HELPFILE		# helpfile (vile.hlp)
 "iconname"	ICONNAM		DISP_X11	# current font
 "identifier"	IDENTIF			# current identifier
 "kill"		KILL			# kill buffer (read only)

@@ -1,6 +1,6 @@
-revlist for vile, version v6_3b
+revlist for vile, version v6_3c
 --------------------------------------------------------------------------------
-CHANGES	1.22
+CHANGES	1.23
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -13,7 +13,7 @@ README.PC	1.11
 aclocal.m4	1.22
 ansi.c	1.28
 basic.c	1.92
-bind.c	1.140
+bind.c	1.141
 borland.c	1.18
 buffer.c	1.150
 buglist	1.319
@@ -32,10 +32,10 @@ dirstuff.h	1.23
 display.c	1.222
 djhandl.c	1.5
 dumbterm.c	1.8
-edef.h	1.202
-epath.h	1.20
-estruct.h	1.293
-eval.c	1.135
+edef.h	1.203
+epath.h	1.21
+estruct.h	1.294
+eval.c	1.136
 exec.c	1.131
 externs.c	1.5
 fences.c	1.39
@@ -56,7 +56,7 @@ itbuff.c	1.10
 lckfiles.c	1.7
 line.c	1.103
 macros.doc	1.12
-main.c	1.283
+main.c	1.284
 makefile.blc	1.4
 makefile.djg	1.19
 makefile.icc	1.4
@@ -71,7 +71,7 @@ map.c	1.68
 mkdirs.sh	1.2
 mktbls.c	1.74
 modes.c	1.78
-modetbl	1.73
+modetbl	1.74
 msgs.c	1.14
 npopen.c	1.53
 ntconio.c	1.18
@@ -79,15 +79,15 @@ oneliner.c	1.83
 opers.c	1.57
 os2pipe.c	1.1
 os2vio.c	1.8
-patchlev.h	1.18
+patchlev.h	1.19
 path.c	1.75
 pictmode.rc	1.1
 proto.h	1.230
 random.c	1.182
 regexp.c	1.61
 region.c	1.79
-revlist	v6_3b
-search.c	1.105
+revlist	v6_3c
+search.c	1.106
 select.c	1.51
 spawn.c	1.114
 tags.c	1.78
@@ -98,7 +98,7 @@ tipc.c	1.1
 undo.c	1.65
 version.c	1.34
 vile.1	1.15
-vile.hlp	1.306
+vile.hlp	1.307
 vms2unix.c	1.18
 vmsbuild.com	1.11
 vmspipe.c	1.12

@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.283 1996/11/17 21:23:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.284 1996/12/17 11:41:28 tom Exp $
  *
  */
 
@@ -664,7 +664,7 @@ loop(void)
 }
 
 /* attempt to locate the executable that contains our code.
-* leave its directory name in pathname[EXEC_DIR], and shorten prog_arg
+* leave its directory name in exec_pathname and shorten prog_arg
 * to the simple filename (no path).
 */
 static void 
@@ -951,6 +951,7 @@ global_val_init(void)
 
 	set_global_w_val(WVAL_SIDEWAYS,	0);	/* list-mode */
 
+	helpfile = strmalloc("vile.hlp");
 }
 
 #if SYS_UNIX || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT || SYS_VMS
