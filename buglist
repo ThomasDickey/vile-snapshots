@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.382 2000/07/10 02:50:34 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.385 2000/10/16 02:33:24 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1563,3 +1563,32 @@ The problem appears to be that Vile::Buffer does not implement an OPEN
 method, and the re-opens of STDIN/STDOUT/STDERR to the pty in the child
 appear to be calling it for some reason I've not yet had a chance to
 track down.
+
+-- 00-10-11 (cmorgan)
+
+    invoke winvile
+    :!ls 
+    <don't type a char at keyboard to dismiss transient console>
+    <click close button to close transient console>
+    <winvile exits (eek)>
+
+    duplicated on NT and 98, using various shells
+
+-- 00-10-15 (tom)
+
+xvile will build with perl 5.6.0, but the Vileserv scripts do not work
+properly.  For the time being, recommend building with perl 5.004
+
+-- 00-10-15 (tom)
+
+To build on HPUX 11.0, you must define __10_10_COMPAT_CODE, because HP
+has defined a bogus (non-varargs) prototype for tparm().
+
+-- 00-10-15 (tom)
+
+The curses.c driver is still experimental.  It has really only been tested
+with ncurses on Linux.  There are some problems displaying on backgrounds
+other than black.  The chief problem however is that under some circumstances
+the terminal modes are not properly saved/restored when executing a shell
+command (and a staircase effect results).  To see this, type
+	:r !date

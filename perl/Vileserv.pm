@@ -94,6 +94,7 @@ sub start {
       #         exec server daemon...
 
       close DAEMON;
+      untie *STDOUT;
       open(STDOUT, ">&EDITOR") || die "can't dup EDITOR to STDOUT";
       $| = 1;
       &vileserv;

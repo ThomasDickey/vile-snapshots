@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.206 2000/09/25 09:50:30 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.208 2000/10/16 01:54:53 tom Exp $
 #
 #
 
@@ -524,6 +524,9 @@ des_c_key	NONE			OPT_REBIND
 des_s_key	NONE			OPT_REBIND
 	"describe-selmode-key"
 	<show the function bound to a given key in selection-mode>
+vl_dirs		NONE			OPT_SHELL
+	"dirs"
+	<list internal directory stack in scratch buffer>
 dotcmdplay	UNDO
 	"repeat-last-cmd"		!FEWNAMES
 	'.'
@@ -1237,6 +1240,9 @@ perldo		OPER|REDO|UNDO|GLOBOK|RANGE|EXTRA		OPT_PERL
 	"perldo-til"
 	"perldo"
 	<run a perl command on each line in a range>
+popd		NONE			OPT_SHELL
+	"popd"
+	<implements bash's popd semantics (i.e., cd `pop dirstack`)>
 poswind		GOAL
 	"position-window"		!FEWNAMES
 	'z'
@@ -1249,6 +1255,9 @@ prevwind	NONE
 	"previous-window"		!FEWNAMES
 	'^X-O'
 	<move to the previous window.  repeat with CNT>
+pushd		NONE			OPT_SHELL
+	"pushd"
+	<implements bash's pushd semantics (i.e., cd \"dir\", push \"dir\" on dirstack)>
 capturecmd	NONE			OPT_SHELL
 	"capture-command"		!FEWNAMES
 	"pipe-command"			!FEWNAMES

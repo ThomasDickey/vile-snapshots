@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.236 2000/10/01 20:38:17 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.239 2000/10/16 01:58:38 tom Exp $
  *
  */
 
@@ -39,6 +39,34 @@
 #include <lib$routines.h>
 #endif
 
+#define DIRS_FORCE    0		/* force DirStack buffer on screen if dirs_idx > 0.
+				 * If DirStack on screen and dirs_idx == 0, kill
+				 * buffer (if possible).
+				 */
+#define DIRS_OPT      1		/* update dirstack display if DirStack buffer on
+				 * screen.  If not on screen, do nothing.  If
+				 * DirStack on screen and dirs_idx == 0,
+				 * kill buffer (if possible).
+				 */
+#define DIRS_SUPPRESS 2		/* if DirStack buffer on screen, kill it. */
+
+#if OPT_SHELL
+
+static int display_dirstack(int);
+static int pushd_popd_active;
+
+/* 
+ * Implement "dirstack" with an extensible array of pointers to char
+ *
+ * The top element of the stack is always understood to be <cwd>, but is
+ * _not_ stored in the array.
+ */
+static int dirs_idx,		/* next array cell that can store a dir path */
+  dirs_len;			/* #cells allocated in dirstack              */
+static char **dirstack;
+
+#endif
+
 /*--------------------------------------------------------------------------*/
 
 /*
@@ -72,11 +100,11 @@ set_rdonly(BUFFER *bp, const char *name, int mode)
 	the buffer */
 int
 liststuff(
-    const char *name,
-    int appendit,
-    void (*func) (LIST_ARGS),	/* ptr to function to execute */
-    int iarg,
-    void *vargp)
+	     const char *name,
+	     int appendit,
+	     void (*func) (LIST_ARGS),	/* ptr to function to execute */
+	     int iarg,
+	     void *vargp)
 {
     register BUFFER *bp;
     register int s;
@@ -209,9 +237,9 @@ showcpos(int f GCC_UNUSED, int n GCC_UNUSED)
 	mlforce("File is empty");
     else
 	mlforce(
-	    "Line %d of %d, Col %d of %d, Char %ld of %ld (%ld%%) char is 0x%x or 0%o",
-	    predlines + 1, numlines, col + 1, ecol,
-	    predchars + 1, numchars, ratio, curchar, curchar);
+		   "Line %d of %d, Col %d of %d, Char %ld of %ld (%ld%%) char is 0x%x or 0%o",
+		   predlines + 1, numlines, col + 1, ecol,
+		   predchars + 1, numchars, ratio, curchar, curchar);
 #endif
     return TRUE;
 }
@@ -282,8 +310,8 @@ vl_line_count(BUFFER *the_buffer)
 
 L_NUM
 line_no(			/* return the number of the given line */
-    BUFFER *the_buffer,
-    LINEPTR the_line)
+	   BUFFER *the_buffer,
+	   LINEPTR the_line)
 {
     L_NUM line_num = 0;
 
@@ -383,8 +411,8 @@ gotochr(int f, int n)
  */
 int
 getcol(
-    MARK mark,
-    int actual)
+	  MARK mark,
+	  int actual)
 {
     register C_NUM c, i;
     register C_NUM col = 0;
@@ -431,8 +459,8 @@ gotocol(int f, int n)
 /*	also, if non-null, return the column we _did_ reach in *rcolp */
 int
 getoff(
-    C_NUM goal,
-    C_NUM * rcolp)
+	  C_NUM goal,
+	  C_NUM * rcolp)
 {
     int curchar;
     C_NUM offs;
@@ -535,7 +563,7 @@ forceblank(int f, int n)
     lp1 = DOT.l;
     /* scan backward */
     while (firstchar(lp1) < 0 &&
-	(lp2 = lback(lp1)) != buf_head(curbp))
+	   (lp2 = lback(lp1)) != buf_head(curbp))
 	lp1 = lp2;
     lp2 = lp1;
 
@@ -544,7 +572,7 @@ forceblank(int f, int n)
 
     /* scan forward */
     while ((lp2 = lforw(lp2)) != buf_head(curbp) &&
-	firstchar(lp2) < 0) {
+	   firstchar(lp2) < 0) {
 	++nld;
 	if (nld > n_arg)
 	    nchar += llength(lp2) + 1;
@@ -568,7 +596,7 @@ forceblank(int f, int n)
 
     /* scan forward */
     while ((firstchar(DOT.l) < 0) &&
-	(DOT.l != buf_head(curbp)))
+	   (DOT.l != buf_head(curbp)))
 	DOT.l = lforw(DOT.l);
 
     return s;
@@ -1088,6 +1116,9 @@ cd_and_pwd(char *path)
 #endif
 	run_a_hook(&cdhook);
 	updatelistbuffers();
+
+	/* if dirstack on screen, update it */
+	(void) display_dirstack(DIRS_OPT);
 	return TRUE;
     }
     return FALSE;
@@ -1110,12 +1141,12 @@ set_directory(const char *dir)
 {
 #define CHANGE_FAILED "[Couldn't change to \"%s\"]"
 
-    char  exdir[NFILEN], *exdp, cdpathdir[NFILEN], tmp[NFILEN];
+    char exdir[NFILEN], *exdp, cdpathdir[NFILEN], tmp[NFILEN];
     const char *cdpath = 0;
 #if SYS_MSDOS || SYS_OS2
-    int   curd = curdrive();
+    int curd = curdrive();
 #endif
-    int   outlen;
+    int outlen;
 
     upmode();
 
@@ -1208,7 +1239,7 @@ set_directory(const char *dir)
 			    *tmp = '\0';
 			    sprintf(newdir, "%s%s", cdpathdir, &exdp[1]);
 			} else if (*tmp == ':' &&
-			    *exdp == LBRACK) {
+				   *exdp == LBRACK) {
 			    /*
 			     * Concatenating rooted logical
 			     * with dir.
@@ -1397,3 +1428,353 @@ autocolor(void)
 
 #endif
 }
+
+#if OPT_SHELL
+
+/*
+ * provide a mechanism to prevent set_directory() from updating 
+ * dirstack wdw/buffer.
+ */
+static int
+pushd_popd_set_dir(const char *dir)
+{
+    int rc;
+
+    pushd_popd_active = TRUE;
+    rc = set_directory(dir);
+    pushd_popd_active = FALSE;
+    return (rc);
+}
+
+static int
+do_popd(int uindx,		/* user-specified dirstack index */
+	int sign)
+{
+    int i, j, rc;
+
+    if ((uindx == 0 && sign > 0) || (uindx == dirs_idx && sign < 0)) {
+	char *path;
+
+	/*
+	 * handle special case:  pop top stack entry (the virtual cwd) and
+	 * then cd to the next entry on the directory stack.
+	 */
+
+	path = dirstack[dirs_idx - 1];
+	if ((rc = pushd_popd_set_dir(path)) == TRUE) {
+	    (void) free(path);
+	    dirstack[--dirs_idx] = NULL;	/* reuse == death */
+	}
+	return (rc);
+    }
+    if (sign > 0) {
+	/* rationalize +idx notation with actual dirstack index */
+
+	uindx--;		/* user-based index includes virtual cwd at top-of-stack */
+	uindx = (dirs_idx - 1) - uindx;
+    }
+    (void) free(dirstack[uindx]);
+    dirstack[uindx] = NULL;	/* mark empty */
+
+    /* shrink the stack by one element */
+    for (i = j = 0; i < dirs_idx; i++) {
+	if (dirstack[i])
+	    dirstack[j++] = dirstack[i];
+    }
+    dirstack[--dirs_idx] = NULL;	/* stack has shrunk, reuse == death */
+    return (TRUE);
+}
+
+static int
+do_pushd(int uindx,		/* user-specified dirstack index */
+	 int sign)
+{
+    int rc;
+    char oldcwd[NFILEN], *path;
+
+    strcpy(oldcwd, current_directory(TRUE));
+    if ((uindx == 0 && sign > 0) || (uindx == dirs_idx && sign < 0)) {
+	/*
+	 * handle special case:  swap the top stack entry (the virtual cwd)
+	 * and the next entry on the directory stack and then cd to top
+	 * new top of stack.
+	 */
+
+	path = dirstack[dirs_idx - 1];
+	if ((rc = pushd_popd_set_dir(path)) == TRUE) {
+	    (void) free(path);
+	    dirstack[dirs_idx - 1] = castalloc(char, strlen(oldcwd) + 1);
+	    if (!dirstack[dirs_idx - 1])
+		return (no_memory("do_pushd"));
+	    strcpy(dirstack[dirs_idx - 1], oldcwd);
+	}
+	return (rc);
+    }
+    if (sign > 0) {
+	/* rationalize +idx notation with actual dirstack index */
+
+	uindx--;		/* user-based index includes virtual cwd at top-of-stack */
+	uindx = (dirs_idx - 1) - uindx;
+    }
+    if ((rc = pushd_popd_set_dir(dirstack[uindx])) == TRUE) {
+	/* all is well, update dirstack */
+
+	(void) free(dirstack[uindx]);
+	dirstack[uindx] = castalloc(char, strlen(oldcwd) + 1);
+	if (!dirstack[uindx])
+	    return (no_memory("do_pushd"));
+	strcpy(dirstack[uindx], oldcwd);
+    }
+    return (rc);
+}
+
+/* supported syntax:  pushd {dir | [{+|-}n]} */
+int
+pushd(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    char oldcwd[NFILEN], newcwd[NFILEN], *tmp, *cp;
+    static TBUFF *last;
+    int rc, sign, dirlocn;
+
+    newcwd[0] = '\0';
+    if ((rc = mlreply_dir("Directory: ", &last, newcwd)) == ABORT)
+	return (rc);
+    mktrimmed(newcwd);
+    cp = newcwd;
+    if (rc == FALSE || *cp == '\0') {
+	/* empty response, swap cwd with top stack entry */
+
+	if (last && ((tmp = tb_values(last)) != NULL) && *tmp) {
+	    /* add an empty response to list of user inputs */
+
+	    tb_scopy(&last, "");
+	}
+	if (dirs_idx == 0)
+	    mlforce("Empty directory stack, nothing to swap");
+	else
+	    rc = do_pushd(0, 1);
+    } else if (rc == TRUE) {
+	/* extend dirstack if necessary */
+
+	if (dirs_idx >= dirs_len) {
+	    if (dirs_len == 0) {
+		dirs_len = 16;
+		dirstack = castalloc(char *, dirs_len * sizeof(dirstack[0]));
+	    } else {
+		dirs_len *= 2;
+		dirstack = castrealloc(char *,
+				       dirstack,
+				       dirs_len * sizeof(dirstack[0]));
+	    }
+	    if (!dirstack)
+		return (no_memory("pushd"));
+	}
+
+	/* handle simple case first:  pushd without +|-n arg */
+	if (*cp != '+' && *cp != '-') {
+	    strcpy(oldcwd, current_directory(TRUE));
+	    if ((rc = pushd_popd_set_dir(newcwd)) != TRUE)
+		return (rc);
+
+	    /* all is well, update dirstack */
+	    dirstack[dirs_idx] = castalloc(char, strlen(oldcwd) + 1);
+	    if (!dirstack[dirs_idx])
+		return (no_memory("pushd"));
+	    strcpy(dirstack[dirs_idx++], oldcwd);
+	} else {
+	    if (dirs_idx == 0) {
+		mlforce("Empty directory stack, nothing to swap");
+		rc = FALSE;
+	    } else {
+		sign = (*cp == '-') ? -1 : 1;
+		cp++;
+		rc = FALSE;
+		if (isDigit(*cp++)) {
+		    while (*cp && isDigit(*cp))
+			cp++;
+		    if (*cp == '\0')
+			rc = TRUE;
+		}
+		if (!rc) {
+		    mlforce("Invalid pushd syntax,  usage:  pushd [{+|-}n]");
+		    return (rc);
+		}
+		dirlocn = atoi(newcwd + 1);	/* FIXME: atoi is a bug */
+		if (dirlocn > dirs_idx) {
+		    /*
+		     * not "dirs_idx - 1" because cwd is a virtual member
+		     * of the directory stack.
+		     */
+
+		    mlforce("Pushd index out-of-range");
+		    return (FALSE);
+		}
+		rc = do_pushd(dirlocn, sign);
+	    }
+	}
+    }
+    /* else rc == SORTOFTRUE */
+
+    if (rc == TRUE)
+	vl_dirs(0, 0);		/* show directory stack */
+    return (rc);
+}
+
+/* supported syntax:  popd [{+|-}n] */
+int
+popd(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    char *cp, newcwd[NFILEN];
+    static TBUFF *last;
+    int sign = 0, rc, dirlocn;
+
+    rc = mlreply2("Directory stack entry: ", &last);
+    if (rc == ABORT)
+	return (rc);
+    if (dirs_idx == 0) {
+	mlforce("Empty directory stack, nothing to pop");
+	return (FALSE);
+    }
+    if (last) {
+	(void) strncpy(newcwd, tb_values(last), sizeof(newcwd) - 1);
+	newcwd[sizeof(newcwd) - 1] = '\0';
+    } else
+	newcwd[0] = '\0';
+    mktrimmed(newcwd);
+    if (newcwd[0] == '\0') {
+	/*
+	 * this is:  popd
+	 *
+	 * strip top directory from stack (which is just cwd) and
+	 * cd to next element on dir stack
+	 */
+
+	if ((rc = do_popd(0, 1)) == TRUE)
+	    (void) vl_dirs(0, 0);
+	return (rc);
+    }
+
+    /* ck user input */
+    cp = newcwd;
+    rc = FALSE;
+    if (*cp == '-' || *cp == '+') {
+	sign = (*cp == '-') ? -1 : 1;
+	cp++;
+	if (isDigit(*cp++)) {
+	    while (*cp && isDigit(*cp))
+		cp++;
+	    if (*cp == '\0')
+		rc = TRUE;
+	}
+    }
+    if (!rc) {
+	mlforce("Invalid popd syntax,  usage:  popd [{+|-}n]");
+	return (rc);
+    }
+    dirlocn = atoi(newcwd + 1);	/* FIXME: atoi is a bug */
+    if (dirlocn > dirs_idx) {
+	/*
+	 * not "dirs_idx - 1" because cwd is a virtual member of the
+	 * directory stack.
+	 */
+
+	mlforce("Popd index out-of-range");
+	return (FALSE);
+    }
+    if ((rc = do_popd(dirlocn, sign)) == TRUE)
+	(void) vl_dirs(0, 0);
+    return (rc);
+}
+
+static int
+kill_dirstack_buffer(void)
+{
+    BUFFER *bp;
+    int killed, nwdw, ndirstack_wdw;
+    WINDOW *wp;
+
+    killed = FALSE;
+    if ((bp = find_b_name(DIRSTACK_BufName)) == NULL)
+	return (killed);	/* buffer doesn't exist */
+    if (bp->b_nwnd == 0)
+	return (zotwp(bp));	/* no windows on buffer -- kill it */
+
+    /* if there is only one window, we're not killing anything */
+    if (wheadp->w_wndp == NULL)
+	return (killed);
+
+    nwdw = ndirstack_wdw = 0;
+    for_each_visible_window(wp) {
+	nwdw++;
+	if (wp->w_bufp == bp)
+	    ndirstack_wdw++;
+    }
+    if (nwdw > ndirstack_wdw)
+	killed = zotwp(bp);	/* Okay to kill it */
+    return (killed);
+}
+
+/* 2 levels of indirection :-) */
+static void
+dirstack_lister(int unused1 GCC_UNUSED, void *unused2 GCC_UNUSED)
+{
+    int i, up, dn;
+    char bufup[128], bufdn[128], rslt[NFILEN * 2];
+
+    up = 0;
+    dn = dirs_idx;
+    sprintf(bufup, "+%d", up);
+    sprintf(bufdn, "-%d", dn);
+    sprintf(rslt, "%4s%4s  %s", bufup, bufdn, current_directory(TRUE));
+    bprintf("%s", rslt);
+    for (i = dirs_idx - 1; i >= 0; i--) {
+	up++;
+	dn--;
+	sprintf(bufup, "+%d", up);
+	sprintf(bufdn, "-%d", dn);
+	sprintf(rslt, "\n%4s%4s  %s", bufup, bufdn, dirstack[i]);
+	bprintf("%s", rslt);
+    }
+}
+
+/*
+ * action is one of: DIRS_OPT, DIRS_FORCE, DIRS_SUPPRESS
+ */
+static int
+display_dirstack(int action)
+{
+    if (pushd_popd_active)
+	return (TRUE);
+    if (action == DIRS_SUPPRESS) {
+	/* if DirStack buffer onscreen, kill it if possible */
+
+	return (kill_dirstack_buffer());
+    }
+    if (action == DIRS_OPT && find_b_name(DIRSTACK_BufName) == NULL)
+	return (TRUE);		/* dirstack buffer not onscreen, nothing to do */
+    if (dirs_idx == 0) {
+	/* directory stack is empty. */
+
+	int one_liner = TRUE;
+
+	if (find_b_name(DIRSTACK_BufName) != NULL) {
+	    /* try to kill it and its window(s), if any. */
+
+	    one_liner = kill_dirstack_buffer();
+	}
+	return ((one_liner) ?
+		pwd(TRUE, 1) /* show cwd in message line. */
+		: FALSE);
+    }
+
+    /* else create a DirStack buffer and populate it. */
+    return (liststuff(DIRSTACK_BufName, FALSE, dirstack_lister, 0, NULL));
+}
+
+int
+vl_dirs(int f, int n GCC_UNUSED)
+{
+    return (display_dirstack((f) ? DIRS_SUPPRESS : DIRS_FORCE));
+}
+
+#endif /* OPT_SHELL */

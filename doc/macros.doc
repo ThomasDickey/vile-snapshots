@@ -9,7 +9,6 @@ Thanks
 
 Programmed Macros in vile
 ==========================
-
 	vile presents a couple of forms of what are commonly called
 	"macros".  This document presents information on those
 	written in the builtin "macro language".  (The other form of
@@ -34,7 +33,6 @@ Programmed Macros in vile
 	Finally, there is a set of functions that can act on
 	variables, to concatenate them, compare them, increment them,
 	change their representation, etc.
-
 
 	Each of these language aspects will be described in turn, but first
 	the execution framework must be explained.
@@ -113,9 +111,9 @@ Creating, executing, storing macros
 	programs don't lend themselves to easy recall (quick, what does
 	macro 22 do?).  But this format was an integral part of vile for
 	many years, simply because named macros could not be bound to
-	keystrokes.  Thankfully, this restriction has recently been removed
-	and so, in general, numbered macros are obsolete.  However, vile's
-	help file and other related documents still heavily use this format.
+	keystrokes.  Thankfully, this restriction has been removed and so,
+	in general, numbered macros are obsolete.  However, vile's help
+	file and other related documents still heavily use this format. 
 	Consequently, familiarity with this outdated syntax is a must.
 
     Named macros
@@ -264,7 +262,7 @@ Limits
 
 
 Strings
----------
+-------
 	Like many simple language, the macro language operates
 	exclusively on strings.  That is to say, variables are
 	always of type "string", and need not be declared in
@@ -326,6 +324,7 @@ Variables
 
 	An assignment may use either an equals (=) sign, or whitespace
 	to delimit the left/right sides of the assignment, as shown.
+
 
 Temporary variables
 -------------------
@@ -418,7 +417,8 @@ State Variables
 
 	$debug          Boolean value which enables runtime tracing
 			of macro execution.  This can be set in the
-			~trace command as well as via set-variable.
+			~trace command (described in detail below) as
+			well as via set-variable.
 
 	$directory      Location of temp files.  This is unused, but
 			its initial value is set from the user's
@@ -603,7 +603,6 @@ State Variables
 	$xshell-flags   Command-line flags after $xshell, normally "-c"
 
 
-
 Mode variables
 --------------
 	You may set and use the values of the editor modes (i.e., universal
@@ -669,7 +668,7 @@ Functions
 		- any other string will be interpreted as 0.
 
 	 - Boolean (or "logical") arguments will be interpreted as
-	     follows (without regard to upper/lowercase):
+	   follows (without regard to upper/lowercase):
 		- Logically "true" values:
 		    "true", "t", "yes", "y", "on", and non-zero numerics.
 
@@ -826,7 +825,6 @@ Directives
 	prefixed with the ~ character, and they are always in all
 	lowercase.
 
-
     ~endm
     -----
 	The "store-procedure" and "store-macro" commands both indicate
@@ -863,7 +861,6 @@ Directives
 	completion of the macro, after the current position has been restored
 	from the values saved with the ~local directive.
 
-
     ~if, ~elseif, ~else, and ~endif
     ------------------------------
 	These control execution of macro commands in the expected manner.
@@ -885,7 +882,6 @@ Directives
 	   ~endif
 	   write-message &cat "The current line is a " %comment-type
 
-
     ~goto
     -----
 	What would a decent programming language be without a "goto"?
@@ -901,8 +897,6 @@ Directives
 
 	   *foundtop
 	       write-message "At top of buffer"
-
-
 
     ~while and ~endwhile
     --------------------
@@ -924,7 +918,6 @@ Directives
 	       ~endwhile
 
 	       write-message &cat &cat %howmany " appearances of " %lookfor
-
 
     ~break
     ------
@@ -966,7 +959,6 @@ Directives
 	       set-variable %msg  &cat %msg " buffers."
 	       write-message %msg
 
-
     ~return
     -------
 	This causes immediate exit of the current macro, back to the
@@ -996,7 +988,6 @@ Directives
 	side effects, i.e., modifying the display.  If these are
 	distracting, use ~hidden to suppress display updates until the
 	macro completes.
-
 
     ~with, ~elsewith and ~endwith
     -----------------------------
@@ -1183,13 +1174,13 @@ Editor commands
 	that obstacle with the use of an interactive variable:
 
 		store-procedure flippara
-			setv %dflt 1
-			setv %quest @&cat &cat "Flip how many para [" %dflt "]? "
-			~if &sequal %quest ""
-				setv %quest %dflt
-			~endif
-			up-paragraph
-			%quest flip-til down-paragraph
+		    setv %dflt 1
+		    setv %quest @&cat &cat "Flip how many para [" %dflt "]? "
+		    ~if &sequal %quest ""
+			    setv %quest %dflt
+		    ~endif
+		    up-paragraph
+		    %quest flip-til down-paragraph
 		~endm
 
 
@@ -1338,6 +1329,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.62 2000/10/01 20:38:17 cmorgan Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.63 2000/10/15 21:19:42 cmorgan Exp $
 -----------------------------------
 

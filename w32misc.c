@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.26 2000/10/10 23:33:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.27 2000/10/15 21:16:30 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -404,6 +404,73 @@ w32_system(const char *cmd)
 
 
 #if DISP_NTWIN
+
+static int
+get_console_handles(STARTUPINFO *psi, SECURITY_ATTRIBUTES *psa)
+{
+    CONSOLE_CURSOR_INFO cci;
+
+    psi->hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+    psi->dwFlags    = STARTF_USESTDHANDLES;
+
+    /* If it's possible to fetch data via hStdOutput, assume all is well. */
+    if (GetConsoleCursorInfo(psi->hStdOutput, &cci))
+    {
+        psi->hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+        psi->hStdError = GetStdHandle(STD_ERROR_HANDLE);
+        return (TRUE);
+    }
+
+    /*
+     * Else assume that winvile was started from a shell and that stdout
+     * and stdin (and maybe stderr) have been redirected to handles that
+     * can't be accessed by the parent process.  This is known to occur
+     * with the CYGWIN shell(s) on a WinNT host.  In this case, workaround
+     * these issues:
+     *
+     * Numero Uno:  the stdin and stdout handles returned by GetStdHandle()
+     *              are worthless.  Workaround:  get the real handles by
+     *              opening CONIN$ and CONOUT$.  We don't look for a stderr
+     *              handle because I couldn't find any mention of CONERR$
+     *              in MSDN.  Additionally, the CYGWIN shells will create
+     *              stderr if it doesn't exist.
+     *
+     * Numero Dos:  a dynamically console created in the context of a CYGWIN
+     *              shell sets its foreground and background colors to the
+     *              same value (usually black).  Not so easy to read the
+     *              text :-( . Workaround: force contrasting colors (white
+     *              text on black bgrnd).  Someday we ought to let the users
+     *              choose the colors via a win32-specific mode.
+     */
+    if ((psi->hStdInput = CreateFile("CONIN$",
+                                     GENERIC_READ,
+                                     FILE_SHARE_READ,
+                                     psa,
+                                     OPEN_EXISTING,
+                                     FILE_ATTRIBUTE_NORMAL,
+                                     NULL)) == INVALID_HANDLE_VALUE)
+    {
+        mlforce("std input handle creation failed");
+        return (FALSE);
+    }
+    if ((psi->hStdOutput = CreateFile("CONOUT$",
+                                      GENERIC_WRITE,
+                                      FILE_SHARE_WRITE,
+                                      psa,
+                                      OPEN_EXISTING,
+                                      FILE_ATTRIBUTE_NORMAL,
+                                      NULL)) == INVALID_HANDLE_VALUE)
+    {
+        mlforce("std output handle creation failed");
+        return (FALSE);
+    }
+    psi->dwFlags         |= STARTF_USEFILLATTRIBUTE;
+    psi->dwFillAttribute  = FOREGROUND_RED|FOREGROUND_GREEN|FOREGROUND_BLUE;
+    return (TRUE);
+}
+
+
+
 /*
  * FUNCTION
  *   w32_system_winvile(const char *cmd, int *pressret)
@@ -443,11 +510,14 @@ w32_system_winvile(const char *cmd, int *pressret)
     char                 *cmdstr;
     int                  no_shell, freestr, rc = -1;
     PROCESS_INFORMATION  pi;
+    SECURITY_ATTRIBUTES  sa;
     STARTUPINFO          si;
 
     memset(&si, 0, sizeof(si));
     si.cb    = sizeof(si);
     no_shell = W32_SKIP_SHELL(cmd);
+    memset(&sa, 0, sizeof(sa));
+    sa.nLength = sizeof(sa);
     if (no_shell)
     {
         /*
@@ -466,6 +536,7 @@ w32_system_winvile(const char *cmd, int *pressret)
     }
     else
     {
+        sa.bInheritHandle = TRUE;
         if ((cmdstr = mk_shell_cmd_str((char *) cmd, &freestr, TRUE)) == NULL)
         {
             /* heap exhausted! */
@@ -480,16 +551,19 @@ w32_system_winvile(const char *cmd, int *pressret)
             mlforce("console creation failed");
             return (rc);
         }
+        if (! get_console_handles(&si, &sa))
+        {
+            (void) FreeConsole();
+            if (freestr)
+                free(cmdstr);
+            return (rc);
+        }
         SetConsoleTitle(cmd);
-        si.dwFlags    = STARTF_USESTDHANDLES;
-        si.hStdInput  = GetStdHandle(STD_INPUT_HANDLE);
-        si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
-        si.hStdError  = GetStdHandle(STD_ERROR_HANDLE);
     }
     if (CreateProcess(NULL,
                       cmdstr,
-                      NULL,
-                      NULL,
+                      &sa,
+                      &sa,
                       ! no_shell,       /* Inherit handles */
                       0,
                       NULL,
@@ -507,21 +581,39 @@ w32_system_winvile(const char *cmd, int *pressret)
             (void) _cwait(&rc, (int) pi.hProcess, 0);
             if (*pressret)
             {
-                (void) WriteFile(si.hStdOutput,
-                                 PRESS_ANY_KEY,
-                                 sizeof(PRESS_ANY_KEY) - 1,
-                                 &dummy,
-                                 NULL);
-                for_ever
+                if (! WriteFile(si.hStdOutput,
+                                PRESS_ANY_KEY,
+                                sizeof(PRESS_ANY_KEY) - 1,
+                                &dummy,
+                                NULL))
                 {
-                    /* Wait for a single key of input from user. */
+                    mlforce("dynamic console write failed");
+                    rc = -1;
+                }
+                else
+                {
+                    for_ever
+                    {
+                        /* Wait for a single key of input from user. */
 
-                    if (! ReadConsoleInput(si.hStdInput, &ir, 1, &dummy))
-                        break;      /* What?? */
-                    if (ir.EventType == KEY_EVENT && ir.Event.KeyEvent.bKeyDown)
-                        break;
+                        if (! ReadConsoleInput(si.hStdInput, &ir, 1, &dummy))
+                        {
+                            mlforce("dynamic console read failed");
+                            rc = -1;
+                            break;
+                        }
+                        if (ir.EventType == KEY_EVENT && 
+                                                    ir.Event.KeyEvent.bKeyDown)
+                        {
+                            break;
+                        }
+                    }
                 }
             }
+        }
+        else
+        {
+            rc = 0;
         }
         (void) CloseHandle(pi.hProcess);
         (void) CloseHandle(pi.hThread);
@@ -591,8 +683,8 @@ w32_keybrd_reopen(int pressret)
                 break;
             }
         }
+        fputc('\n', stdout);
     }
-    fputc('\n', stdout);  /* upspace for next invocation of shell */
     term.kopen();
     kbd_erase_to_end(0);
 #endif

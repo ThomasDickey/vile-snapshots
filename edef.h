@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.273 2000/05/19 00:54:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.274 2000/10/15 21:24:51 cmorgan Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -317,6 +317,9 @@ decl_init_const( char TERMINALCHARS_BufName[],	"[Terminal Chars]");
 #endif
 #if OPT_COLOR_SCHEMES
 decl_init_const( char COLOR_SCHEMES_BufName[],	"[Color Schemes]");
+#endif
+#if OPT_SHELL
+decl_init_const( char DIRSTACK_BufName[],	"[DirStack]");
 #endif
 #if OPT_SHOW_COLORS
 decl_init_const( char PALETTE_COLORS_BufName[],	"[Color Palette]");
