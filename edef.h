@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.262 1999/12/14 11:44:53 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.264 1999/12/19 11:46:27 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -169,6 +169,7 @@ decl_uninit( int miniedit );		/* editing minibuffer with vi-cmds */
 decl_uninit( int no_msgs);		/* suppress command output?	*/
 decl_uninit( int no_errs);		/* suppress bells/alarms?	*/
 decl_uninit( int no_echo);		/* echo user input 		*/
+decl_init( int in_autocolor, FALSE );	/* Autocoloring			*/
 
 decl_uninit( int vtrow );		/* Row location of SW cursor	*/
 decl_uninit( int vtcol );		/* Column location of SW cursor */
@@ -179,6 +180,11 @@ decl_init( int ntildes, 100 );		/* number of tildes displayed at eob
 					  (expressed as percent of window) */
 #if OPT_COLOR
 decl_init( int ncolors, NCOLORS );	/* total number of colors displayable */
+#if DISP_NTWIN
+decl_init( int rgb_gray, 140 );
+decl_init( int rgb_normal, 180 );
+decl_init( int rgb_bright, 255 );
+#endif
 #endif
 
 /* Special characters, used in keyboard control (some values are set on

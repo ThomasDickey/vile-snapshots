@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.130 1999/11/15 23:35:00 Ryan.Murray Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.131 1999/12/18 02:20:14 tom Exp $
  *
  */
 
@@ -1559,31 +1559,33 @@ execkreg(int f, int n)
 	relist_registers();
 
 	/* make sure there is something to execute */
-	jj = index2ukb(j);
-	kp = kbs[jj].kbufh;
-	if (kp == NULL)
-		return TRUE;		/* not an error, just nothing */
+	do {
+		jj = index2ukb(j);
+		kp = kbs[jj].kbufh;
+		if (kp == NULL)
+			return TRUE;	/* not an error, just nothing */
 
-	/* count the kchunks */
-	kbcount = 0;
-	tkp = kp;
-	while (tkp != NULL) {
-		kbcount++;
-		tkp = tkp->d_next;
-	}
-	/* process them in reverse order */
-	while (kbcount) {
-		whichkb = kbcount;
+		/* count the kchunks */
+		kbcount = 0;
 		tkp = kp;
-		while (--whichkb)
+		while (tkp != NULL) {
+			kbcount++;
 			tkp = tkp->d_next;
-		i = KbSize(jj,tkp);
-		sp = (char *)tkp->d_chunk+i-1;
-		while (i--) {
-			mapungetc((*sp--)|YESREMAP);
 		}
-		kbcount--;
-	}
+		/* process them in reverse order */
+		while (kbcount) {
+			whichkb = kbcount;
+			tkp = kp;
+			while (--whichkb)
+				tkp = tkp->d_next;
+			i = KbSize(jj,tkp);
+			sp = (char *)tkp->d_chunk+i-1;
+			while (i--) {
+				mapungetc((*sp--)|YESREMAP);
+			}
+			kbcount--;
+		}
+	} while (--n > 0);
 	return TRUE;
 }
 

@@ -1,5 +1,80 @@
 Changes for vile 9.1 (released ??? ??? ??, 1999)
 
+ (kev) 991219 (g)
+	+ cmdtbl, buffer.c:  Added binding / support for ^X-_ aka
+	  "historical-buffer-to-current-window".  [Requested by Mike J.  Bell.]
+	+ random.c (autocolor):  Save/restore pre_op_dot.  Fixes bug reported
+	  by Paul Fox:  "if autocoloring kicks in between an operation and the
+	  motion that completes it (e.g.  'd' and 'w'), the operation acts on
+	  the wrong selected region -- i think it acts on 'dot to top of
+	  buffer'."
+	+ improve set-window (actually swbuffer()) by initializing a window's
+	  traits, e.g., position, from the buffer's traits.
+	+ buffer.c (swbuffer_lfl):  Make sure window count gets decremented for
+	  the window being replaced even if buffer we're replacing it with is
+	  already on-screen (fixes a core dump in set-window, reported by Clark
+	  Morgan).
+	+ fileio.c (ffclose): Use mlwrite() instead of mlforce(). 
+	+ edef.h (in_autocolor): New variable. 
+	+ display.c (mlerase, mlwrite):  Use in_autocolor to determine whether
+	  or not to position the cursor on the message line. 
+	+ random.c (autocolor): Set autocolor as appropriate. 
+	+ macros/vileinit.rc, vile.hlp:  Revise so that autocolor timeouts are
+	  in milliseconds. 
+	+ termio.c (ttgetc): Likewise. 
+	+ x11.c (x_start_autocolor_timer): Ditto. 
+	> Clark Morgan:
+	+ ifdef'd autocolor mode and logic with OPT_COLOR to accommodate VMS,
+	  which does not support syntax highlighting anyway.
+	+ fix vmsbuild.com for the case of building xvile.exe with VAXC, adding
+	  menu.obj to vms_link.opt _before_ the CRT.  That ensures that the
+	  linker looks for menu.obj in the cwd, not in sys$library.
+	> Tom Dickey:
+	+ improve logic of repaint_window(), so it paints long chunks rather
+	  than single characters.  This makes the screen paint properly when
+	  switching to an Italic font.
+	+ refine logic for gui_resize_in_progress in ntwinio.c so that it
+	  only affects the case where a font-sizechange is in progress.
+	  This restores the behavior of 8.3d, which allows a user to specify
+	  $pagewid and $pagelen in vile.rc to control the initial screensize
+	  (reported by George Young <gryoung@nortelnetworks.com>).
+	+ add $brightness variable to winvile, allowing users to customize the
+	  overall intensity of colors, to accommodate different monitors
+	  (prompted by Chris Green <cgreen@x-1.net>).
+	+ modify backspacelimit mode to allow backspacing through a newline
+	  when nobackspacelimit is specified (request by Todd Moody
+	  <tmoody@mailhost.sju.edu>).
+	+ change Kevin's use of in_autocolor which suppresses message-output to
+	  make that part of ~hidden behavior.
+	+ remove elif/else clauses from m4mode "do" group, since they interfere
+	  too much with balancing square brackets intermixed with parentheses.
+	+ implement poll()-based watchfd/autocolor support.
+	+ implement BeOS-specific watchfd/autocolor support, by rearranging
+	  logic used for catnap(): beos_has_input(), beos_can_output() and
+	  beos_napms().
+	+ make repeat-count apply to @register commands.  This repeats the
+	  entire command, and is not necessarily compatible with vi: some
+	  implementations do not recognize a repeat count, and other, e.g.,
+	  SVr3 repeat the last command in the register contents.  elvis does
+	  the former, nvi does the latter, and vim repeats the entire string.
+	  It's fortunate that the simpler implementation is more useful
+	  (requested by Ed Henderson).
+	+ modify vilefilt.l to recognize .vilemenu syntax.
+	+ modify menu.c to allow double-quote as comment-marker.
+	+ remove full-line behavior from goto-char command.
+	+ correct behavior of "Clear Highlighting (below)" menu entry in sample
+	  vilemenu.rc which did not clear the final line of a buffer (sorry - I
+	  misplaced the original report).
+	+ add some pointer checks to swbuffer(), getcol() and gocol(), so
+	  piping to vile works properly when trying to initialize window's
+	  traits.
+	+ add a note about set-window to vile.hlp
+	+ improve coloring of literals in vilefilt.l by interpreting strings
+	  beginning with ^A, ^X or escape.
+	+ modify c-filt.c show nested-comment as error.
+	+ fix c-filt.c to highlight properly a number immediately after a
+	  leading "#", to accommodate non-standard usage by GCC's preprocessor.
+
  (kev) 991214 (f)
  	+ buffer.c (chg_buff, unchg_buff): Set the "recently changed"
 	  flag for syntax coloring purposes.

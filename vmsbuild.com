@@ -1,4 +1,4 @@
-$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.32 1999/12/13 00:21:29 cmorgan Exp $
+$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.33 1999/12/17 01:34:44 cmorgan Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
 $! Screen Configurations
@@ -33,9 +33,10 @@ $ if "''hlp'" .eqs. "HELP" .or. -
 $ goto start
 $!
 $ vaxc_config:
-$    comp   = "__vaxc__=1"
-$    CFLAGS = "/VAXC"
-$    DEFS   = ",HAVE_STRERROR"
+$    comp       = "__vaxc__=1"
+$    CFLAGS     = "/VAXC"
+$    DEFS       = ",HAVE_STRERROR"
+$    using_vaxc = 1
 $    if f$trnlnm("SYS") .eqs. "" then define sys sys$library:
 $    return
 $!
@@ -59,6 +60,7 @@ $! pickup user's compiler choice, if any
 $! -----------------------------------------------------------
 $!
 $ comp = ""
+$ using_vaxc = 0
 $ if "''p2'" .nes. "" 
 $ then
 $    comp = f$edit(p2, "UPCASE")
@@ -142,7 +144,6 @@ $  if "''comp'" .nes. "" then goto screen_config
 $  if f$search("SYS$SYSTEM:VAXC.EXE").nes.""
 $  then
 $   gosub vaxc_config
-$   write optf "sys$library:vaxcrtl.exe/share"
 $  else
 $   if f$search("SYS$SYSTEM:DECC$COMPILER.EXE").nes.""
 $   then
@@ -216,6 +217,7 @@ $MAIN:
 $!
 $   write optf "sys$share:decw$xlibshr.exe/share"
 $ endif
+$ if using_vaxc .eq. 1 then write optf "sys$library:vaxcrtl.exe/share"
 $ close optf
 $! -------------- vms_link.opt is created -------------
 $ if f$edit("''p1'", "UPCASE") .eqs. "VMS_LINK.OPT"

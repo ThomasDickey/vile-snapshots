@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.30 1999/12/14 11:44:53 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.31 1999/12/19 17:10:58 tom Exp $
  */
 
 #include	"estruct.h"
@@ -269,6 +269,41 @@ int var_BLINES(TBUFF **rp, const char *vp)
 		return FALSE;
 	}
 }
+
+#if DISP_NTWIN
+static int
+parse_rgb(const char **src, int dft)
+{
+	char *dst = 0;
+	int result;
+
+	*src = skip_cblanks(*src);
+	result = strtol(*src, &dst, 0);
+	if (dst != 0)
+		*src = dst;
+	if (dst == 0 || (*dst != 0 && !isSpace(*dst)) || result <= 0 || result > 255)
+		result = dft;
+	return result;
+}
+
+int var_BRIGHTNESS(TBUFF **rp, const char *vp)
+{
+	char temp[80];
+
+	if (rp) {
+		lsprintf(temp, "%d %d %d", rgb_gray, rgb_normal, rgb_bright);
+		tb_scopy(rp, temp);
+		return TRUE;
+	} else if (vp) {
+		rgb_gray = parse_rgb(&vp, 140);
+		rgb_normal = parse_rgb(&vp, 180);
+		rgb_bright = parse_rgb(&vp, 255);
+		return vile_refresh(FALSE,1);
+	} else {
+		return FALSE;
+	}
+}
+#endif
 
 #if OPT_HOOKS
 int var_BUFHOOK(TBUFF **rp, const char *vp)

@@ -354,6 +354,9 @@ State Variables
 
 	$blines         [READ ONLY] Number of lines in current buffer.
 
+	$brightness	RGB levels for gray, normal, bright in the 0-255 range
+			(winvile version only)
+
 	$buffer-hook    Name of procedure to run when switching to a buffer.
 
 	$bwindows       [READ ONLY] Number of windows open on current buffer.
@@ -1190,6 +1193,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.37 1999/11/25 00:02:08 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.38 1999/12/19 11:50:04 tom Exp $
 -----------------------------------
 

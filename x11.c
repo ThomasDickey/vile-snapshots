@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.235 1999/12/14 11:44:53 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.237 1999/12/19 23:33:14 tom Exp $
  *
  */
 
@@ -6469,13 +6469,15 @@ static XtIntervalId x_autocolor_timeout_id;
 void
 x_start_autocolor_timer()
 {
-    int secs = global_b_val(VAL_AUTOCOLOR);
+#if OPT_COLOR&&!SMALLER 
+    int millisecs = global_b_val(VAL_AUTOCOLOR);
     x_stop_autocolor_timer();
-    if (secs > 0)
+    if (millisecs > 0)
 	x_autocolor_timeout_id = XtAppAddTimeOut(cur_win->app_context,
-						 (unsigned long) secs * 1000,
+						 (unsigned long) millisecs,
 						 x_autocolor_timeout,
 						 (XtPointer) 0);
+#endif
 }
 
 void

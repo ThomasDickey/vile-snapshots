@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.216 1999/12/14 11:44:53 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.221 1999/12/18 14:33:02 tom Exp $
  *
  */
 
@@ -384,7 +384,8 @@ int actual)	/* false: effective column (expand tabs) */
 	register C_NUM c, i;
 	register C_NUM col = 0;
 
-	if (llength(mark.l) > 0) {
+	if (mark.l != 0
+	 && llength(mark.l) > 0) {
 		if (actual) {
 			col = offs2col(curwp, mark.l, mark.o) - nu_width(curwp);
 		} else {
@@ -460,14 +461,16 @@ gocol(int n)
 {
 	register int offs;	/* column number the cursor is on */
 
-	offs = getoff(n, (C_NUM *)0);
+	if (DOT.l != 0) {
+		offs = getoff(n, (C_NUM *)0);
 
-	if (offs >= 0) {
-		DOT.o = offs;
-		return TRUE;
+		if (offs >= 0) {
+			DOT.o = offs;
+			return TRUE;
+		}
+
+		DOT.o = llength(DOT.l) - 1;
 	}
-
-	DOT.o = llength(DOT.l) - 1;
 	return FALSE;
 
 }
@@ -690,6 +693,44 @@ userbeep(int f GCC_UNUSED, int n GCC_UNUSED)
 }
 #endif /* !SMALLER */
 
+#   ifdef __BEOS__
+/*
+ * BeOS's select() is declared in socket.h, so the configure script
+ * does not see it.  That's just as well, since that function works
+ * only for sockets.  This (using snooze and ioctl) was distilled from
+ * Be's patch for ncurses which uses a separate thread to simulate
+ * select().
+ *
+ * FIXME: the return values from the ioctl aren't very clear if we get
+ * interrupted.
+ */
+int
+beos_has_input(int fd)
+{
+	int n = 0, howmany;
+
+	/* this does not appear in any header-file */
+	howmany = ioctl(fd, 'ichr', &n);
+	return (howmany >= 0 && n > 0);
+}
+
+int
+beos_can_output(int fd)
+{
+	int n = 0, howmany;
+
+	/* this is a guess, based on the 'ichr' example, and seems to work */
+	howmany = ioctl(fd, 'ochr', &n);
+	return (howmany >= 0 && n > 0);
+}
+
+void
+beos_napms(int milli)
+{
+	snooze(milli * 1000);
+}
+#endif
+
 /*
  * Delay for the given number of milliseconds.  If "watchinput" is true,
  * then user input will abort the delay.  Return true if we did find user input.
@@ -748,31 +789,18 @@ catnap(int milli, int watchinput)
 		return found;
 #  else
 #   ifdef __BEOS__
-	/*
-	 * BeOS's select() is declared in socket.h, so the configure script does
-	 * not see it.  That's just as well, since that function works only for
-	 * sockets.  This (using snooze and ioctl) was distilled from Be's patch
-	 * for ncurses which uses a separate thread to simulate select().
-	 *
-	 * FIXME: the return values from the ioctl aren't very clear if we get
-	 * interrupted.
-	 */
 	if (watchinput) {
-		bigtime_t d;
-		bigtime_t useconds = (milli ? milli : 1) * 1000;
-		int n, howmany;
+		int d;
+		if (milli <= 0) milli = 1;
 
-		for (d = 0; d < useconds; d += 5000) {
-			n = 0;
-			howmany = ioctl(0, 'ichr', &n);
-			if (howmany >= 0 && n > 0) {
+		for (d = 0; d < milli; d += 5) {
+			if (beos_has_input(0))
 				return TRUE;
-			}
 			if (milli > 0)
-				snooze(5000);
+				beos_napms(5);
 		}
 	} else if (milli > 0) {
-		snooze(milli * 1000);
+		beos_napms(milli);
 	}
 #   else
 
@@ -1339,6 +1367,8 @@ run_readhook(void)
 void
 autocolor()
 {
+#if OPT_COLOR&&!SMALLER 
+
     WINDOW *wp;
     int do_update = FALSE;
     if (reading_msg_line)
@@ -1347,14 +1377,20 @@ autocolor()
 	if (b_is_recentlychanged(wp->w_bufp)
 	 && b_val(wp->w_bufp, VAL_AUTOCOLOR) > 0) {
 	    WINDOW *oldwp;
+	    MARK   save_pre_op_dot = pre_op_dot;	/* ugly hack */
 	    oldwp = push_fake_win(wp->w_bufp);
+	    in_autocolor = TRUE;
 	    if (run_a_hook(&autocolorhook)) {
 		b_clr_recentlychanged(wp->w_bufp);
 		do_update = TRUE;
 	    }
+	    in_autocolor = FALSE;
 	    pop_fake_win(oldwp);
+	    pre_op_dot = save_pre_op_dot;
 	}
     }
     if (do_update)
 	update(FALSE);
+
+#endif
 }

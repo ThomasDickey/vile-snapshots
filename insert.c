@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.122 1999/11/27 14:04:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.123 1999/12/19 11:36:59 tom Exp $
  *
  */
 
@@ -737,6 +737,10 @@ inschar(int c, int *backsp_limit_p)
 				}
 				if (col < goal)
 					linsert(goal - col,' ');
+			} else if (isbackspace(c)
+			 && !b_val(curbp,MDBACKLIMIT)
+			 && (DOT.o <= *backsp_limit_p)) {
+				backspace();
 			} else {
 				/* have we backed thru a "word" yet? */
 				int saw_word = FALSE;

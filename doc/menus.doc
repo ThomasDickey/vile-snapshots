@@ -1,4 +1,4 @@
--- $Header: /users/source/archives/vile.vcs/doc/RCS/menus.doc,v 1.5 1999/10/10 18:13:17 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/menus.doc,v 1.6 1999/12/18 01:17:15 tom Exp $
 -- adapted from description by Philippe Chassany (20/02/1997)
 -- e-mail: phil@cln46ks.der.edf.fr
 
@@ -40,7 +40,9 @@ type of entry, subsequent fields delimited by colon:
 	    correspond with the vile commands for switching buffers,
 	    e.g., _0, _1 ...
 
-Lines beginning with '#' are ignored, as is text after a tab character.
+Lines beginning with '"' or ';' are ignored.  character.  Lines beginning with
+'#', or text after a tab also are ignored, but we may drop this feature at some
+point, to make it more consistent with vile's macro files.
 
 The special keyword "cmd" tells the menu function to invoke the following
 keyword as a :-line command, so that commands which must solicit input
@@ -54,7 +56,7 @@ B:Edit .vilerc:edit_rc
 B:Parse .vilerc:parse_rc
 B:Edit .vilemenu:edit_mrc
 B:Quit:quit
-#
+;
 C:Editing
 B:Apply Highlighting:cmd HighlightFilter
 B:Clear Highlighting (above):clear-attributes-til beginning-of-file
@@ -73,12 +75,12 @@ S
 B:Files:capture-command "ls -l"
 B:Processes:capture-command "ps"
 B:Users:capture-command "w"
-#
+;
 C:Buffers
 B:Show Current Only:delete-other-windows
 B:Toggle Show:toggle-buffer
 L:list_buff
-#
+;
 C:Fixed Fonts
 B:5x8:setv $font 5x8
 B:7x14:setv $font 7x14
@@ -87,7 +89,7 @@ B:8x16:setv $font 8x16
 B:9x15:setv $font 9x15
 B:10x20:setv $font 10x20
 B:12x24:setv $font 12x24
-#
+;
 C:Nice Fonts
 B:10pt:setv $font "-*-lucidatypewriter-*-r-normal-sans-10-*-*-*-*-0-iso8859-1"
 B:12pt:setv $font "-*-lucidatypewriter-*-r-normal-sans-12-*-*-*-*-0-iso8859-1"
@@ -95,7 +97,7 @@ B:14pt:setv $font "-*-lucidatypewriter-*-r-normal-sans-14-*-*-*-*-0-iso8859-1"
 B:16pt:setv $font "-*-lucidatypewriter-*-r-normal-sans-16-*-*-*-*-0-iso8859-1"
 B:18pt:setv $font "-*-lucidatypewriter-*-r-normal-sans-18-*-*-*-*-0-iso8859-1"
 B:20pt:setv $font "-*-lucidatypewriter-*-r-normal-sans-20-*-*-*-*-0-iso8859-1"
-#
+;
 C:Help:help
 B:About:version
 S

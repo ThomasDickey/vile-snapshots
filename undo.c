@@ -3,7 +3,7 @@
  *
  * written for vile: Copyright (c) 1990, 1995-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.73 1999/10/31 23:24:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.74 1999/12/16 23:46:57 kev Exp $
  *
  */
 
@@ -426,6 +426,8 @@ forwredo(int f, int n)
 void
 mayneedundo(void)
 {
+	if (in_autocolor)
+		return;
 	needundocleanup = TRUE;
 }
 

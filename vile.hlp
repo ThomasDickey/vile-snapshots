@@ -168,6 +168,11 @@ Buffer manipulation commands:
 		the "[Output]" buffer, if you wish to preserve its
 		contents, but run a new command.
 
+	:set-window   Set the current window to the specified buffer.  This
+		is useful especially when you have split the screen into a
+		number of windows and want to override the automatic layout of
+		"#" and "%" buffers.
+
 	:rewind	Go to the first buffer.  This is used only in 'noautobuffer'
 		(vi-style buffering) mode.  It does nothing in "autobuffer"
 		mode.  Remember that "autobuffer" mode is the default.
@@ -1048,9 +1053,9 @@ Editor modes
 	autocolor (ac) Automatic syntax coloring.  If set to zero, 
 		automatic syntax coloring is disabled.  Otherwise, it
 		should be set to a small positive integer which represents
-		the number of seconds to wait before invoking the
+		the number of milliseconds to wait before invoking the
 		"autocolor-hook" hook.  The editor will wait the
-		specified number of seconds for a "quiet interval" during
+		specified amount of time for a "quiet interval" during
 		which the user hasn't pressed any keys.
 
 	autowrite (aw)  vile will write out any changed buffers for which
@@ -2170,8 +2175,10 @@ Programmed procedures and macros
 			s	scratch, will be removed when popped down
 			u	unread
 	$blines		number of lines in current buffer	(read only)
-	$bwindows	number of windows open on current buffer(read only)
+	$brightness	RGB levels for gray, normal, bright in the 0-255 range
+			(winvile version only)
 	$buffer-hook	name of procedure to run when switching to a buffer
+	$bwindows	number of windows open on current buffer(read only)
 	$cbufname	current buffer name
 	$cdpath		editor's copy of the $CDPATH env var (read/write)
 	$cd-hook	name of procedure to run when changing directories
@@ -3088,7 +3095,7 @@ Syntax coloring
 	you're not busy.  To do so, you'll need to tie the
 	HighlightFilter procedure (or some other suitable procedure)
 	to the "autocolor-hook" variable.  You'll also need to change
-	"autocolor" to be non-zero.  It represents the number of seconds
+	"autocolor" to be non-zero.  It represents the number of milliseconds
 	to wait after your most recent modification (and all
 	subsequent keypresses) to attempt to re-color the buffer.  For
 	example, adding the following two lines would cause your text
@@ -4294,4 +4301,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.455 1999/12/14 11:44:53 kev Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.459 1999/12/19 11:49:38 tom Exp $
