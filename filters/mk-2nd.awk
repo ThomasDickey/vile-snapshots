@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-2nd.awk,v 1.10 2003/11/02 22:22:24 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-2nd.awk,v 1.12 2003/11/06 00:38:42 tom Exp $
 #
 # Generate makefile rules for vile's external and built-in filters.  We will
 # build each filter only one way, to avoid conflict with the generated files. 
@@ -95,22 +95,22 @@ END	{
 			printf "\t@echo compiling %s\n", file[i]
 		    if (type[i] == "l") {
 			printf "\t%s$(LEX) -P%s_ -t %s/%s > %s.c\n", show, name[i], from, file[i], root[i]
-			printf "\t%s$(CC) -c -fPIC $(CPPFLAGS) $(CFLAGS) -Dfilter_def=define_%s %s/%s.c\n", show, name[i], ".", root[i]
-			printf "\t%s $(RM) %s.c\n", show, root[i]
+			printf "\t%s$(CC) -c $(SH_CFLAGS) $(CPPFLAGS) $(CFLAGS) -Dfilter_def=define_%s %s/%s.c\n", show, name[i], ".", root[i]
+			printf "\t%s-$(RM) %s.c\n", show, root[i]
 		    } else {
-			printf "\t%s$(CC) -c -fPIC $(CPPFLAGS) $(CFLAGS) -Dfilter_def=define_%s %s/%s.c\n", show, name[i], from, root[i]
+			printf "\t%s$(CC) -c $(SH_CFLAGS) $(CPPFLAGS) $(CFLAGS) -Dfilter_def=define_%s %s/%s.c\n", show, name[i], from, root[i]
 		    }
 		}
 		print ""
 		for (i = 0; i < count; i++) {
 		    printf "%s : %s$o\n", prog[i], root[i]
-		    printf "\t$(LINK) $(LDFLAGS) -o $@ -shared $?\n"
+		    printf "\t%s$(LINK) $(LDFLAGS) -o $@ $(SH_LDFLAGS) $?\n", show
 		    print ""
 		}
 		print "# dependency-rules for install/installdirs (%s)", mode
 		for (i = 0; i < count; i++) {
 		    src = prog[i];
-		    dst = sprintf("$(LIBDIR)/%s", src);
+		    dst = sprintf("$(BINDIR)/%s", src);
 		    printf "%s :\t%s\t\t; $(INSTALL_PROGRAM) $? $@\n", dst, src
 		}
 	    }

@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.33 2003/11/02 19:29:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.34 2003/11/03 20:45:31 tom Exp $
  *
  */
 
@@ -394,7 +394,7 @@ flt_start(char *name)
     TRACE(("flt_start(%s)\n", name));
     if (flt_lookup(name)
 #ifdef HAVE_LIBDL
-	&& (current_filter->loaded || load_filter(name))
+	&& (current_filter->loaded || load_filter(current_filter->filter_name))
 #endif
 	) {
 	MARK save_dot;

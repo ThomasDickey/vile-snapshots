@@ -1,7 +1,7 @@
 Summary: VILE VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/RCS/vile-9.4.spec,v 1.3 2003/11/02 16:46:59 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/vile-9.4.spec,v 1.4 2003/11/05 02:10:52 tom Exp $
 Name: vile
-Version: 9.4b
+Version: 9.4c
 # each patch should update the version
 Release: 1
 Copyright: GPL
@@ -10,6 +10,7 @@ URL: ftp://invisible-island.net/vile
 Source0: vile-9.4.tgz
 Patch1: vile-9.4a.patch.gz
 Patch2: vile-9.4b.patch.gz
+Patch3: vile-9.4c.patch.gz
 # each patch should add itself to this list
 Packager: Thomas Dickey <dickey@invisible-island.net>
 BuildRoot: %{_tmppath}/%{name}-root
@@ -24,6 +25,7 @@ rebinding, and real X window system support.
 %setup -q -n vile-9.4
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 # each patch should add itself to this list
 
 %build
@@ -70,6 +72,9 @@ install xvile.wmconfig $RPM_BUILD_ROOT/%{_sysconfdir}/X11/wmconfig/xvile
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Tue Nov 04 2003 Thomas Dickey
+- added patch for 9.4c
 
 * Sun Nov 02 2003 Thomas Dickey
 - added patch for 9.4b

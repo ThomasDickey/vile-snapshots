@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.199 $)
+AC_REVISION($Revision: 1.202 $)
 AC_PREREQ(2.13.20020210)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.199 2003/11/02 23:00:35 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.202 2003/11/05 02:05:25 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -820,20 +820,55 @@ AC_SUBST(FILTER_LIBS)
 AC_SUBST(LIBBUILTFLT)
 
 if test "$VILE_LOADABLE_FILTERS" != none ; then
-	AC_CHECK_LIB(dl,dlsym,[
-		LIBS="-ldl $LIBS"
-		test "$GCC" = yes && CFLAGS="-rdynamic $CFLAGS"
-	AC_TRY_LINK([#include <dlfcn.h>],[
-		void *obj;
-		if ((obj = dlopen("filename", RTLD_NOW)) != 0) {
-			if (dlsym(obj, "symbolname") == 0) {
-			dlclose(obj);
-			}
-		}],[
-		AC_DEFINE(HAVE_LIBDL)],[
-		AC_MSG_ERROR(Cannot link test program for libdl)])
-	],[AC_MSG_ERROR(Cannot find libdl)])
+	cf_have_dlsym=no
+	cf_have_libdl=no
+
+	AC_CHECK_FUNC(dlsym,cf_have_dlsym=yes,[
+		AC_CHECK_LIB(dl,dlsym,[
+			cf_have_dlsym=yes
+			cf_have_libdl=yes])])
+
+	if test "$cf_have_dlsym" = yes ; then
+		test "$cf_have_libdl" = yes && LIBS="-ldl $LIBS"
+		if test "$GCC" = yes ; then
+
+			# FIXME:  this doesn't work (gcc doesn't give an error
+			# on an unrecognized option).
+			cf_opt_rdynamic=no
+			cf_save_CFLAGS="$CFLAGS"
+			CFLAGS="-Wall -rdynamic $CFLAGS"
+			AC_MSG_CHECKING(if gcc has -rdynamic option)
+			AC_TRY_LINK([#include <stdio.h>],
+				    [printf("Hello");],
+				    [cf_opt_rdynamic=yes],
+				    [cf_opt_rdynamic=no])
+			AC_MSG_RESULT($cf_opt_rdynamic)
+			test "$cf_opt_rdynamic" = no && CFLAGS="$cf_save_CFLAGS"
+
+			SH_CFLAGS="-fPIC"
+			SH_LDFLAGS="-shared"
+		else
+			# this works for Solaris and IRIX64
+			SH_CFLAGS="-KPIC"
+			SH_LDFLAGS="-G"
+		fi
+
+		AC_TRY_LINK([#include <dlfcn.h>],[
+			void *obj;
+			if ((obj = dlopen("filename", RTLD_NOW)) != 0) {
+				if (dlsym(obj, "symbolname") == 0) {
+				dlclose(obj);
+				}
+			}],[
+			AC_DEFINE(HAVE_LIBDL)],[
+			AC_MSG_ERROR(Cannot link test program for libdl)])
+	else
+		AC_MSG_ERROR(Cannot find dlsym function)
+	fi
 fi
+
+AC_SUBST(SH_CFLAGS)
+AC_SUBST(SH_LDFLAGS)
 
 AC_CHECK_PROGS(SPELL_PROG, ispell spell, [])
 case .$SPELL_PROG in

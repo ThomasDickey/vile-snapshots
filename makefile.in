@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.188 2003/11/02 23:13:28 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.189 2003/11/03 23:55:50 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -43,7 +43,8 @@ CFLAGS		= @CFLAGS@ $(EXTRA_CFLAGS)
 LIBS		= @FILTER_LIBS@ @LIBS@
 LINT		= @LINT@
 
-x		= @PROG_EXT@
+x		= @EXEEXT@
+o		= .@OBJEXT@
 
 X_LIBS		= @X_LIBS@
 
@@ -90,12 +91,12 @@ MANDIR		= $(DESTDIR)$(mandir)
 
 INSTALL_DIRS    = $(BINDIR) $(DATADIR) $(MANDIR) @EXTRA_INSTALL_DIRS@
 
-.SUFFIXES: .c .i .o
+.SUFFIXES: .c .i $o
 
 .c.i:
 @RULE_CC@
 	@ECHO_CC@$(CPP) -C $(CPPFLAGS) $(QUOTDEFS) $< >$@
-.c.o:
+.c$o:
 @RULE_CC@
 	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(QUOTDEFS) $(CFLAGS) -DHELP_LOC=\"$(datadir)\" $<
 
@@ -273,15 +274,15 @@ BUILTLIBS = @BUILTLIBS@
 #	spawn.o
 #	statevar.o
 #	ucrypt.o
-OBJ = $(SCREEN).o \
-	main.o basic.o bind.o buffer.o csrch.o \
-	display.o dumbterm.o eval.o exec.o externs.o fences.o file.o \
-	filec.o fileio.o finderr.o glob.o globals.o \
-	input.o insert.o itbuff.o lckfiles.o line.o map.o \
-	modes.o msgs.o oneliner.o opers.o path.o random.o \
-	regexp.o region.o search.o tags.o \
-	tbuff.o termio.o undo.o version.o \
-	watch.o window.o word.o wordmov.o @EXTRAOBJS@
+OBJ = $(SCREEN)$o \
+	main$o basic$o bind$o buffer$o csrch$o \
+	display$o dumbterm$o eval$o exec$o externs$o fences$o file$o \
+	filec$o fileio$o finderr$o glob$o globals$o \
+	input$o insert$o itbuff$o lckfiles$o line$o map$o \
+	modes$o msgs$o oneliner$o opers$o path$o random$o \
+	regexp$o region$o search$o tags$o \
+	tbuff$o termio$o undo$o version$o \
+	watch$o window$o word$o wordmov$o @EXTRAOBJS@
 
 ALL =	$(TARGET)
 
@@ -328,7 +329,7 @@ nevars.h :	nemode.h
 nemode.h:	modetbl $(MKTBLS)
 	$(MKTBLS) $(srcdir)/modetbl
 
-builtflt.o :	builtflt.h
+builtflt$o :	builtflt.h
 
 builtflt.h :
 	$(AWK) -f $(srcdir)/filters/mk-0th.awk <$(srcdir)/filters/genmake.mak static="@VILE_BUILT_IN_FILTERS@" dynamic="@VILE_LOADABLE_FILTERS@" >$@
@@ -600,30 +601,30 @@ perl.c: $(srcdir)/perl.xs $(srcdir)/ptypemap
 
 $(OBJ): estruct.h nemode.h edef.h neproto.h proto.h config.h
 
-api.o:		api.h
-bind.o:		nefunc.h btree.h
-btree.o:	btree.h
-eval.o:		nevars.h
-exec.o:		neexec.h nefunc.h
-externs.o:	nebind.h nename.h neproto.h nefunc.h
-filec.o:	dirstuff.h
-glob.o:		dirstuff.h
-globals.o:	nefunc.h
-main.o:		chgdfunc.h nevars.h
-modes.o:	chgdfunc.h nefsms.h
-opers.o:	nefunc.h
-path.o:		dirstuff.h
-perl.o:		api.h
-random.o:	nefunc.h
-select.o:	nefunc.h
-statevar.o:	nevars.h
-spawn.o:	nefunc.h
-tags.o:		btree.h
-tcap.o:		tcap.h
-termio.o:	nefunc.h
-version.o:	patchlev.h
-word.o:		nefunc.h
-x11.o:		nefunc.h
+api$o :		api.h
+bind$o :	nefunc.h btree.h
+btree$o :	btree.h
+eval$o :	nevars.h
+exec$o :	neexec.h nefunc.h
+externs$o :	nebind.h nename.h neproto.h nefunc.h
+filec$o :	dirstuff.h
+glob$o :	dirstuff.h
+globals$o :	nefunc.h
+main$o :	chgdfunc.h nevars.h
+modes$o :	chgdfunc.h nefsms.h
+opers$o :	nefunc.h
+path$o :	dirstuff.h
+perl$o :	api.h
+random$o :	nefunc.h
+select$o :	nefunc.h
+statevar$o :	nevars.h
+spawn$o :	nefunc.h
+tags$o :	btree.h
+tcap$o :	tcap.h
+termio$o :	nefunc.h
+version$o :	patchlev.h
+word$o :	nefunc.h
+x11$o :		nefunc.h
 
 test_btree$x:	btree.c
 	$(CC) -o $@ -DDEBUG_BTREE $(CPPFLAGS) $(CFLAGS) btree.c $(LDFLAGS)
@@ -735,6 +736,6 @@ $(INSTALL_DIRS):
 ALWAYS:
 
 depend : $(BUILTHDRS) $(OBJ)
-	makedepend $(CPPFLAGS) -- $(CFLAGS) -- `echo $(OBJ) | sed -e 's/\.o/.c/g'`
+	makedepend $(CPPFLAGS) -- $(CFLAGS) -- `echo $(OBJ) | sed -e 's/\.@OBJEXT@/.c/g'`
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.

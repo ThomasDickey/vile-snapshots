@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-1st.awk,v 1.9 2003/11/02 22:22:24 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-1st.awk,v 1.10 2003/11/06 00:38:29 tom Exp $
 #
 # Generate makefile lists for vile's external and built-in filters.  We will
 # build each filter only one way (external _or_ built-in).  This script uses
@@ -68,7 +68,7 @@ END	{
 	    } else {
 		dump_list("%s", "C_DYN", prog, ".c");
 		dump_list("%s", "LEX_DYN", prog, ".l");
-		dump_list("$(LIBDIR)/%s", "INSTALL_DYN_C", prog, ".c");
-		dump_list("$(LIBDIR)/%s", "INSTALL_DYN_LEX", prog, ".l");
+		dump_list("$(BINDIR)/%s", "INSTALL_DYN_C", prog, ".c");
+		dump_list("$(BINDIR)/%s", "INSTALL_DYN_LEX", prog, ".l");
 	    }
 	}

@@ -1,5 +1,17 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20031105 (c)
+ 	> Tom Dickey:
+	+ improved check for dlsym to make loadable filters work on Solaris and
+	  IRIX64.
+	+ make "--disable-echo" apply to making the loadable filters.
+	+ use EXEEXT and OBJEXT in generated makefiles.
+	+ corrected parameter to lookup_filter(); it did not account for the
+	  $filtername symbol, e.g., as used for cshmode to invoke vile-sh-filt.
+	+ corrected ifdef's in cfgopts() used to build xvile's $cfgopts values. 
+	  The ifdef's used "#ifdef" rather than "#if", causing all possible
+	  values to be shown (from 9.3e).
+
  20031102 (b)
 	> Brendan O'Dea:
 	+ add code to support dynamic loading of syntax filters which are
