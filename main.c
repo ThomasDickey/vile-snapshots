@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.294 1997/05/15 01:16:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.295 1997/05/25 22:55:50 tom Exp $
  *
  */
 
@@ -454,7 +454,7 @@ main(int argc, char *argv[])
 				(void)zotbuf(vbp);
 			}
 		} else {  /* find and run .vilerc */
-			const char *fname;
+			char *fname;
 			/* if .vilerc is one of the input files....
 					don't clobber it */
 #if SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
@@ -724,12 +724,6 @@ strmalloc(const char *s)
 	return ns;
 }
 #endif
-
-char *
-strend(const char *s)
-{
-	return (char *)(s + strlen(s));
-}
 
 int
 no_memory(const char *s)

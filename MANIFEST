@@ -1,4 +1,4 @@
-MANIFEST for vile, version v7_1c
+MANIFEST for vile, version v7_1d
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -95,7 +95,6 @@ tags.c                          support for vi-style "tags"
 tbuff.c                         temporary-buffer management functions
 tcap.c                          TERMCAP terminal driver
 termio.c                        low-level terminal I/O support
-tipc.c                          TI-PC terminal driver
 trace.c                         development: trace to logfile
 trace.h                         development: trace to logfile
 undo.c                          support for "undo"
@@ -110,4 +109,3 @@ window.c                        window-management functions
 word.c                          commands that operate upon words or paragraphs
 wordmov.c                       cursor-movement commands (e.g., word, spaces)
 x11.c                           X11 (Xt, Motif or Openlook) terminal driver
-z100bios.asm                    obsolete z100 bios

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.77 1997/04/12 00:47:53 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.78 1997/05/26 01:31:06 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -158,6 +158,7 @@ int							# VAL_ prefix
 "mode"		MODE			# are we inserting/overwriting/command
 "modeline-format" MLFORMAT	OPT_MLFORMAT # modeline format string
 "modified"	MODIFIED		# is current buffer modified?
+"ncolors"	NCOLORS			# number of colors displayed
 "ntildes"	NTILDES			# number of tildes displayed at eob
 "ocwd"		OCWD			# previous directory
 "os"		OS			# what os are we on?
@@ -224,3 +225,66 @@ int							# VAL_ prefix
 "tru"	TRUTH		MONAMIC		# Truth of the universe logical test
 "upp"	UPPER		MONAMIC		# uppercase string
 "wr"	WRITABLE	MONAMIC		# is a file writeable?
+
+.table color
+"default"	ENUM_UNKNOWN	DISP_TERMCAP||DISP_IBMPC # FIXME: implement this for all drivers
+"black"		0
+"red"		1
+"green"		2
+"yellow"	3		!OPT_16_COLOR
+"brown"		3		OPT_16_COLOR
+"blue"		4
+"magenta"	5
+"cyan"		6
+"white"		7		!OPT_16_COLOR
+"lightgray"	7		OPT_16_COLOR
+"gray"		8		OPT_16_COLOR
+"brightred"	9		OPT_16_COLOR
+"brightgreen"	10		OPT_16_COLOR
+"yellow"	11		OPT_16_COLOR
+"brightblue"	12		OPT_16_COLOR
+"brightmagenta"	13		OPT_16_COLOR
+"brightcyan"	14		OPT_16_COLOR
+"white"		15		OPT_16_COLOR
+
+.table bool
+"false"		FALSE
+"true"		TRUE
+
+.table popup
+"delayed"	POPUP_CHOICES_DELAYED
+"immediate"	POPUP_CHOICES_IMMED
+"off"		POPUP_CHOICES_OFF
+
+.table backup
+"off"		0
+".bak"		1
+"tilde"		2		SYS_UNIX
+# "tilde_N_existing", */
+# "tilde_N", */
+
+.table hilite
+"bold"		VABOLD 
+"color"		VACOLOR
+"italic"	VAITAL 
+"none"		0
+"reverse"	VAREV
+"underline"	VAUL
+"black"		VACOL_0		OPT_COLOR
+"red"		VACOL_1		OPT_COLOR
+"green"		VACOL_2		OPT_COLOR
+"yellow"	VACOL_3		OPT_COLOR&&!OPT_16_COLOR
+"brown"		VACOL_3		OPT_COLOR&&OPT_16_COLOR
+"blue"		VACOL_4		OPT_COLOR
+"magenta"	VACOL_5		OPT_COLOR
+"cyan"		VACOL_6		OPT_COLOR
+"white"		VACOL_7		OPT_COLOR&&!OPT_16_COLOR
+"lightgray"	VACOL_7		OPT_COLOR&&OPT_16_COLOR
+"gray"		VACOL_8		OPT_COLOR&&OPT_16_COLOR
+"brightred"	VACOL_9		OPT_COLOR&&OPT_16_COLOR
+"brightgreen"	VACOL_A		OPT_COLOR&&OPT_16_COLOR
+"yellow"	VACOL_B		OPT_COLOR&&OPT_16_COLOR
+"brightblue"	VACOL_C		OPT_COLOR&&OPT_16_COLOR
+"brightmagenta"	VACOL_D		OPT_COLOR&&OPT_16_COLOR
+"brightcyan"	VACOL_E		OPT_COLOR&&OPT_16_COLOR
+"white"		VACOL_F		OPT_COLOR&&OPT_16_COLOR

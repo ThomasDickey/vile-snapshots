@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.101 1997/03/15 15:48:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.102 1997/05/25 23:15:16 tom Exp $
  *
  */
 
@@ -1270,7 +1270,7 @@ quote(int f, int n)
 }
 
 #if OPT_EVAL
-const char *
+char *
 current_modename(void)
 {
 	switch (savedmode) {

@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.54 1997/02/09 20:08:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.55 1997/05/25 23:25:16 tom Exp $
  *
  */
 
@@ -320,7 +320,7 @@ char	*pattern)
 	if (wild == pattern) {	/* top-level, first leaf is wild */
 		if (*path == EOS)
 			(void)strcpy(path, ".");
-		leaf = strend(path) + 1;
+		leaf = skip_string(path) + 1;
 	} else {
 		len = (int)(wild - pattern) - 1;
 		if (*(s = path) != EOS) {
@@ -347,7 +347,7 @@ char	*pattern)
 		}
 #endif
 		else {
-			leaf = strend(path) + 1;
+			leaf = skip_string(path) + 1;
 		}
 	}
 
@@ -384,7 +384,7 @@ char	*pattern)
 				continue;
 			if (next != 0) {	/* there are more leaves */
 				if (!string_has_wildcards(next)) {
-					s = strend(leaf);
+					s = skip_string(leaf);
 					*s++ = SLASHC;
 					(void)strcpy(s, next);
 					if (ffexists(path)
@@ -461,7 +461,7 @@ char	*pattern)
 		if (len != 0)
 			strncpy(s, pattern, len)[len] = EOS;
 	}
-	leaf = strend(path) + 1;
+	leaf = skip_string(path) + 1;
 
 	if (next != 0) {
 		save = next[-1];
@@ -496,7 +496,7 @@ char	*pattern)
 
 			if (next != 0) {	/* there are more leaves */
 				if (!string_has_wildcards(next)) {
-					s = strend(leaf);
+					s = skip_string(leaf);
 					*s++ = SLASHC;
 					(void)strcpy(s, next);
 					if (!record_a_match(path)) {
@@ -608,7 +608,7 @@ glob_from_pipe(const char *pattern)
 			 * Split the buffer up.  If 'single', split on all
 			 * whitespace, otherwise only on newlines.
 			 */
-			for (s = tmp; s-tmp < len; s++) {
+			for (s = tmp; (SIZE_T)(s-tmp) < len; s++) {
 				if ((single && isspace(*s))
 				 || (!single && (*s == '\n' || *s == EOS))) {
 					*d = EOS;
@@ -709,14 +709,14 @@ expand_environ(char *pattern)
  *	an option.  (For example, the DOS-wildcards won't match "..\*\*.bak").
  */
 static int
-expand_pattern (const char *item)
+expand_pattern (char *item)
 {
 	int	result = FALSE;
 #if OPT_VMS_PATH && !SYS_UNIX
 	DIR	*dp;
 	DIRENT	*de;
 
-	if ((dp = opendir((char *)SL_TO_BSL(item))) != 0) {
+	if ((dp = opendir(SL_TO_BSL(item))) != 0) {
 		result = TRUE;
 		while ((de = readdir(dp)) != 0) {
 			char	temp[NFILEN];
@@ -952,7 +952,7 @@ expand_wild_args(int *argcp, char ***argvp)
 			while (*the_arg != EOS) {
 				item = strchr(the_arg, ',');
 				if (item == 0)
-					item = strend(the_arg);
+					item = skip_string(the_arg);
 				else
 					*item++ = EOS;
 				newvec[k++] = the_arg;

@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.209 1997/05/07 22:54:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.210 1997/05/25 23:14:52 tom Exp $
  */
 
 /* I know this declaration stuff is really ugly, and I probably won't ever
@@ -27,33 +27,33 @@ decl_uninit( char *prog_arg );		/* argv[0] from main.c */
 decl_init( char *exec_pathname, ".");	/* replaced at runtime with path-head of argv[0] */
 
 #if DISP_X11
-decl_init( const char prognam[], "xvile");
+decl_init( char prognam[], "xvile");
 #else
-decl_init( const char prognam[], "vile");
+decl_init( char prognam[], "vile");
 #endif
 
-decl_init( const char version[], "version 7.1");
+decl_init( char version[], "version 7.1");
 
 #ifdef SYSTEM_NAME
-decl_init( const char opersys[], SYSTEM_NAME);
+decl_init( char opersys[], SYSTEM_NAME);
 #else
 #if SYS_UNIX
-decl_init( const char opersys[], "unix");
+decl_init( char opersys[], "unix");
 #endif
 #if SYS_VMS
-decl_init( const char opersys[], "vms");
+decl_init( char opersys[], "vms");
 #endif
 #if SYS_MSDOS
-decl_init( const char opersys[], "dos");
+decl_init( char opersys[], "dos");
 #endif
 #if SYS_WIN31
-decl_init( const char opersys[], "windows 3.1");
+decl_init( char opersys[], "windows 3.1");
 #endif
 #if SYS_OS2
-decl_init( const char opersys[], "os/2");
+decl_init( char opersys[], "os/2");
 #endif
 #if SYS_WINNT
-decl_init( const char opersys[], "win32");
+decl_init( char opersys[], "win32");
 #endif
 #endif
 
@@ -166,6 +166,9 @@ decl_init( int ttcol, HUGE );           /* Column location of HW cursor */
 decl_uninit( int taboff	);		/* tab offset for display	*/
 decl_init( int ntildes, 100 );		/* number of tildes displayed at eob
 					  (expressed as percent of window) */
+#if OPT_COLOR
+decl_init( int ncolors, NCOLORS );	/* total number of colors displayable */
+#endif
 
 /* Special characters, used in keyboard control (some values are set on
  * initialization in termio.c).
@@ -244,14 +247,17 @@ decl_uninit( struct VAL *relisting_b_vals );
 decl_uninit( struct VAL *relisting_w_vals );
 #endif
 
-decl_init( const char out_of_mem[], "OUT OF MEMORY" );
-decl_init( const char errorm[], "ERROR" ); /* error literal		*/
-decl_init( const char truem[], "TRUE" );   /* true literal		*/
-decl_init( const char falsem[], "FALSE" ); /* false literal		*/
+decl_init( char out_of_mem[], "OUT OF MEMORY" );
+decl_init( char errorm[], "ERROR" );	/* error literal		*/
+decl_init( char truem[], "TRUE" );	/* true literal			*/
+decl_init( char falsem[], "FALSE" );	/* false literal		*/
 
 decl_init( int	cmdstatus, TRUE );	/* last command status		*/
 #if OPT_EVAL || OPT_COLOR
-decl_uninit( char palstr[NSTRING] );	/* palette string		*/
+decl_uninit( TBUFF *palstr );		/* palette string		*/
+#endif
+#if OPT_COLOR
+decl_uninit( int ctrans[NCOLORS] );	/* color translation table	*/
 #endif
 decl_uninit( char *fline );		/* dynamic return line		*/
 decl_uninit( ALLOC_T flen );		/* current length of fline	*/

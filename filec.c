@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.72 1997/02/09 20:59:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.73 1997/05/25 23:05:46 tom Exp $
  *
  */
 
@@ -536,7 +536,9 @@ static int
 fillMyBuff(char * name)
 {
 	int count = 0;
+#if !OPT_VMS_PATH
 	SIZE_T dots = 0;
+#endif
 	register char	*s;
 #if SYS_OS2
 	FILEFINDBUF3 fb;

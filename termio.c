@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.147 1997/03/15 15:51:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.148 1997/05/25 20:22:46 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -1123,7 +1123,7 @@ static int null_cres(char *res GCC_UNUSED) { return(FALSE); }
  */
 /*ARGSUSED*/ void null_t_setfor (int f GCC_UNUSED) { }
 /*ARGSUSED*/ void null_t_setback (int b GCC_UNUSED) { }
-/*ARGSUSED*/ void null_t_setpal (char *p GCC_UNUSED) { }
+/*ARGSUSED*/ void null_t_setpal (const char *p GCC_UNUSED) { }
 /*ARGSUSED*/ void null_t_scroll (int f GCC_UNUSED, int t GCC_UNUSED, int n GCC_UNUSED) { }
 /*ARGSUSED*/ void null_t_pflush (void) { }
 /*ARGSUSED*/ void null_t_icursor (int c GCC_UNUSED) { }

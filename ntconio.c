@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.22 1997/05/14 20:44:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.23 1997/05/26 11:46:28 tom Exp $
  *
  */
 
@@ -18,7 +18,7 @@
 #define	SCRSIZ	64			/* scroll size for extended lines */
 #define	NPAUSE	200			/* # times thru update to pause */
 
-#define	AttrColor(b,f)	((WORD)(((ctrans[b] & 7) << 4) | (ctrans[f] & 15)))
+#define	AttrColor(b,f)	((WORD)(((ctrans[b] & 15) << 4) | (ctrans[f] & 15)))
 
 static	int	ntgetch		(void);
 static	void	ntmove		(int, int);
@@ -36,7 +36,6 @@ static	void	ntkclose	(void);
 #if OPT_COLOR
 static	void	ntfcol		(int);
 static	void	ntbcol		(int);
-static	void	ntspal		(char *);
 #endif
 static	void	ntflush		(void);
 static	void	ntscroll	(int, int, int);
@@ -59,11 +58,10 @@ static int	nfcolor = -1;		/* normal foreground color */
 static int	nbcolor = -1;		/* normal background color */
 static int	crow = -1;		/* current row */
 static int	ccol = -1;		/* current col */
-static int	ctrans[NCOLORS];	/* color translation table */
 static int	keyboard_open = FALSE;	/* keyboard is open */
 
 /* ansi to ibm color translation table */
-static char *initpalettestr = "0 4 2 14 1 5 3 7";
+static	const char *initpalettestr = "0 4 2 6 1 5 3 7 8 12 10 14 9 13 11 15";
 /* black, red, green, yellow, blue, magenta, cyan, white   */
 
 static	char	linebuf[NCOL];
@@ -101,7 +99,7 @@ TERM    term    = {
 #if OPT_COLOR
 	ntfcol,
 	ntbcol,
-	ntspal,
+	set_ctrans,
 #else
 	null_t_setfor,
 	null_t_setback,
@@ -166,15 +164,6 @@ ntbcol(int color)		/* set the current background color */
 {
 	scflush();
 	nbcolor = cbcolor = color;
-}
-
-static void
-ntspal(char *thePalette)	/* reset the palette registers */
-{
-    	/* this is pretty simplistic.  big deal. */
-	sscanf(thePalette, "%i %i %i %i %i %i %i %i",
-		&ctrans[0], &ctrans[1], &ctrans[2], &ctrans[3],
-		&ctrans[4], &ctrans[5], &ctrans[6], &ctrans[7]);
 }
 #endif
 

@@ -119,7 +119,7 @@ close_pipes(void)
 }
 
 int
-inout_popen(FILE **infile, FILE **outfile, const char *command)
+inout_popen(FILE **infile, FILE **outfile, char *command)
 {
 	HFILE save_in, save_out, save_err;
 	HFILE fd;

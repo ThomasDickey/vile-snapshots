@@ -1,6 +1,6 @@
 #
 # 'vile' and 'mktbls' makefile for IBM C Set ++ 2.x (OS/2)
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.5 1997/01/10 11:07:43 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.6 1997/05/26 14:59:10 tom Exp $
 #
 
 # 
@@ -29,7 +29,7 @@ SCREEN = os2vio
 MKTBLS = .\mktbls$E
 TARGET = vile$E
 
-BUILTHDRS = nebind.h nefunc.h nemode.h nename.h nevars.h
+BUILTHDRS = nebind.h neproto.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nefsms.h
 
 all:	$(TARGET)
 
@@ -215,6 +215,7 @@ nename.h :	cmdtbl $(MKTBLS)
 	$(MKTBLS) cmdtbl
 
 nevars.h \
+nefsms.h \
 nemode.h:	modetbl $(MKTBLS)
 	@echo making $@
 	$(MKTBLS) modetbl

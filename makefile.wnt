@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.15 1997/03/22 17:00:43 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.16 1997/05/26 14:59:10 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -14,7 +14,7 @@ HDRS = estruct.h edef.h proto.h dirstuff.h
 
 # these headers are built by the mktbls program from the information in cmdtbl
 # and in modetbl
-BUILTHDRS = nebind.h nefunc.h nemode.h nename.h nevars.h
+BUILTHDRS = nebind.h neproto.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nefsms.h
 
 SRC = 	main.c ntconio.c basic.c bind.c buffer.c crypt.c \
 	csrch.c display.c eval.c exec.c externs.c \
@@ -50,10 +50,11 @@ $(OBJ):	estruct.h
 
 nebind.h \
 nefunc.h \
-nename.h \
-nevars.h :	cmdtbl mktbls.exe
+nename.h :	cmdtbl mktbls.exe
 	mktbls.exe cmdtbl
 
+nevars.h \
+nefsms.h \
 nemode.h:	modetbl mktbls.exe
 	mktbls.exe modetbl
 

@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.41 1997/02/09 19:41:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.42 1997/05/25 20:27:58 tom Exp $
  *
  */
 
@@ -57,7 +57,7 @@ int	off)
 
 	while (off < llength(lp)) {
 		n = lgetc(lp,off++);
-		if ((d - temp < sizeof(temp)-2) && isident(n))
+		if (((size_t)(d - temp) < sizeof(temp)-2) && isident(n))
 			*d++ = (char)n;
 		else
 			break;

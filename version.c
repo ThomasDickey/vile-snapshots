@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.35 1997/03/15 15:52:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.36 1997/05/25 22:59:46 tom Exp $
  *
  */
 
@@ -65,7 +65,6 @@ print_usage (void)
 const char *
 getversion(void)
 {
-
 	if (*version_string)
 		return version_string;
 #if SYS_UNIX || SYS_VMS
@@ -78,7 +77,7 @@ getversion(void)
 	(void) lsprintf(version_string, "%s %s%s for %s",
 				prognam, version, PATCHLEVEL, opersys);
 	{
-		const char *s;
+		char *s;
 		if ((s = flook(prog_arg,
 				(FL_EXECDIR|FL_PATH)|FL_EXECABLE)) != NULL) {
 			time_t mtime = file_modified(s);

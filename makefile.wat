@@ -3,7 +3,7 @@
 # based on the original makefile of vile 3.46 (see the original makefile)
 # T.DANG (dang@cogit.ign.fr)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wat,v 1.22 1997/01/10 11:07:43 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wat,v 1.23 1997/05/26 14:56:00 tom Exp $
 #
 # if you use the watcom version of vile, you may want to "set DOS4G=quiet"
 # to suppress the DOS 4G/W banner that comes up from the Rational Systems
@@ -35,7 +35,7 @@ HDRS = estruct.h edef.h proto.h dirstuff.h
 
 # these headers are built by the mktbls program from the information in cmdtbl
 # and in modetbl
-BUILTHDRS = nebind.h neproto.h nefunc.h nemode.h nename.h nevars.h nefkeys.h
+BUILTHDRS = nebind.h neproto.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nefsms.h
 
 SRC = 	main.c $(SCREEN).c basic.c bind.c buffer.c crypt.c &
 	csrch.c display.c eval.c exec.c externs.c &
@@ -82,6 +82,7 @@ nename.h :	cmdtbl MKTBLS.EXE
 	MKTBLS.EXE cmdtbl
 
 nevars.h &
+nefsms.h &
 nemode.h:	modetbl MKTBLS.EXE
 	MKTBLS.EXE modetbl
 

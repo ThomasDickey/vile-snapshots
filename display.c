@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.230 1997/05/08 02:20:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.231 1997/05/26 12:15:54 tom Exp $
  *
  */
 
@@ -41,7 +41,9 @@ static	int *lmap;
 
 static	int	i_displayed;		/* false until we're in screen-mode */
 static	int	im_displaying;		/* flag set during screen updates */
+#if OPT_WORKING
 static	int	im_timing;
+#endif
 
 #define mark2col(wp, mk)  offs2col(wp, mk.l, mk.o)
 

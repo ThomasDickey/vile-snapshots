@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.57 1997/04/11 11:16:15 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.58 1997/05/26 13:24:58 tom Exp $
  *
  */
 
@@ -34,10 +34,10 @@
 static int pipe_pid;
 #endif
 
-static void exec_sh_c(const char *cmd);
+static void exec_sh_c(char *cmd);
 
 FILE *
-npopen (const char *cmd, const char *type)
+npopen (char *cmd, const char *type)
 {
 	FILE *ff;
 
@@ -59,7 +59,7 @@ npopen (const char *cmd, const char *type)
 #if SYS_UNIX
 
 int
-inout_popen(FILE **fr, FILE **fw, const char *cmd)
+inout_popen(FILE **fr, FILE **fw, char *cmd)
 {
 	int rp[2];
 	int wp[2];
@@ -144,9 +144,10 @@ npclose (FILE *fp)
 }
 
 static void
-exec_sh_c(const char *cmd)
+exec_sh_c(char *cmd)
 {
-	const char *sh, *shname;
+	static char bin_sh[] = "/bin/sh";
+	char *sh, *shname;
 	int i;
 
 #ifndef NOFILE
@@ -157,8 +158,8 @@ exec_sh_c(const char *cmd)
 		(void) close (i);
 
 	if ((sh = user_SHELL()) == NULL || *sh == EOS) {
-		sh = "/bin/sh";
-		shname = "sh";
+		sh = bin_sh;
+		shname = pathleaf(sh);
 	} else {
 		shname = last_slash(sh);
 		if (shname == NULL) {
@@ -198,7 +199,7 @@ process_exit_status(int status)
 
 
 int
-system_SHELL(const char *cmd)
+system_SHELL(char *cmd)
 {
 	int cpid;
 
@@ -352,7 +353,7 @@ readPipe(const char *cmd, int in, int out)
 }
 
 FILE *
-npopen (const char *cmd, const char *type)
+npopen (char *cmd, const char *type)
 {
 	FILE *ff = 0;
 
@@ -369,7 +370,7 @@ npopen (const char *cmd, const char *type)
  * on SYS_MSDOS, we don't need both at the same instant.
  */
 int
-inout_popen(FILE **fr, FILE **fw, const char *cmd)
+inout_popen(FILE **fr, FILE **fw, char *cmd)
 {
 	char		*type = (fw != 0) ? "w" : "r";
 	static FILE	*pp = 0;
@@ -430,7 +431,7 @@ softfork(void)	/* dummy function to make filter-region work */
 
 #if TEST_DOS_PIPES
 int
-system_SHELL(const char *cmd)	/* dummy function */
+system_SHELL(char *cmd)	/* dummy function */
 {
 	return 0;
 }

@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.132 1997/03/15 15:48:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.133 1997/05/25 22:36:38 tom Exp $
  *
  */
 
@@ -1885,7 +1885,7 @@ int f GCC_UNUSED, int n)	/* default flag and numeric arg to pass on to file */
 {
 	register int status;	/* return status of name query */
 	char fname[NFILEN];	/* name of file to execute */
-	const char *fspec;	/* full file spec */
+	char *fspec;		/* full file spec */
 	static	TBUFF	*last;
 
 	if ((status = mlreply_file("File to execute: ", &last, FILEC_READ, fname)) != TRUE)
@@ -1912,7 +1912,7 @@ int f GCC_UNUSED, int n)	/* default flag and numeric arg to pass on to file */
 
 int
 dofile(
-const char *fname)	/* file name to execute */
+char *fname)		/* file name to execute */
 {
 	register BUFFER *bp;	/* buffer to place file to execute */
 	register int status;	/* results of various calls */

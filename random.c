@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.184 1997/03/15 16:02:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.185 1997/05/26 13:29:58 tom Exp $
  *
  */
 
@@ -718,7 +718,7 @@ static char	current_dirname[NFILEN];
 /* Return a string naming the current directory.  If we're unable to read the
  * directory name, return "."; otherwise we'll expect a fully-resolved path.
  */
-const char *
+char *
 current_directory(int force)
 {
 	char *s;
@@ -867,7 +867,7 @@ curr_dir_on_drive(int drive)
 }
 
 void
-update_dos_drv_dir(const char *cwd)
+update_dos_drv_dir(char *cwd)
 {
 	char	*s;
 
@@ -915,7 +915,7 @@ pwd(int f GCC_UNUSED, int n GCC_UNUSED)
 static char prevdir[NFILEN];
 
 static int
-cd_and_pwd(const char *path)
+cd_and_pwd(char *path)
 {
 #if OPT_PROCEDURES
 	static int cdhooking;
@@ -923,7 +923,7 @@ cd_and_pwd(const char *path)
 #if CC_CSETPP
 	if (_chdir(SL_TO_BSL(path)) == 0)
 #else
-	if (chdir((char *)SL_TO_BSL(path)) == 0)
+	if (chdir(SL_TO_BSL(path)) == 0)
 #endif
 	{
 #if SYS_UNIX
@@ -953,7 +953,7 @@ cd_and_pwd(const char *path)
 }
 
 #if OPT_EVAL
-const char *
+char *
 previous_directory(void)
 {
 	if (*prevdir)
@@ -1086,7 +1086,7 @@ ch_fname(BUFFER *bp, const char *fname)
 		if (!bp->b_fname) {
 			bp->b_fname = strmalloc(np);
 			if (!bp->b_fname) {
-				bp->b_fname = (char *)out_of_mem;
+				bp->b_fname = out_of_mem;
 				bp->b_fnlen = strlen(bp->b_fname);
 				return;
 			}

@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.327 1997/05/02 00:20:59 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.328 1997/05/26 14:19:53 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1235,18 +1235,6 @@ in glob.c
 	[DOC] and configuration [CONFIG].
 
 [I believe he's suggesting it be installed this way - tom]
-
--- 97-03-22 (tom)
-
-Mixing color with visual-matches is ok, but there's two problems (so I've
-ifdef'd it with FIXME_VM):
-
-	+ it's not implemented for anything except ntconio.c
-
-	+ it won't work properly with the name-completion logic, since the
-	  extended table isn't sorted.
-
-[I'm holding more changes for 7.2, so I can autogenerate the table - tom]
 
 -- 97-04-02 (Clark Morgan <cmorgan@aracnet.com>)
 

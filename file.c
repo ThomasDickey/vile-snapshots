@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.209 1997/05/15 01:15:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.210 1997/05/25 23:24:52 tom Exp $
  *
  */
 
@@ -42,12 +42,12 @@ static	int	quickreadf(BUFFER *bp, int *nlinep);
  */
 #if	defined(MDCHK_MODTIME) || SYS_VMS || SYS_UNIX
 time_t
-file_modified(const char *path)
+file_modified(char *path)
 {
 	struct stat	statbuf;
 	time_t		the_time = 0;
 
-	if (stat((char *)SL_TO_BSL(path), &statbuf) >= 0
+	if (stat(SL_TO_BSL(path), &statbuf) >= 0
 #if CC_CSETPP
 	 && (statbuf.st_mode & S_IFREG) == S_IFREG)
 #else
@@ -68,7 +68,7 @@ file_modified(const char *path)
 static int
 PromptModtime (
 BUFFER	*bp,
-const char *fname,
+char *fname,
 const char *question,
 int	iswrite)
 {
@@ -131,7 +131,7 @@ get_modtime (BUFFER *bp, time_t *the_time)
 }
 
 void
-set_modtime(BUFFER *bp, const char *fn)
+set_modtime(BUFFER *bp, char *fn)
 {
 	time_t	current;
 
@@ -142,7 +142,7 @@ set_modtime(BUFFER *bp, const char *fn)
 }
 
 int
-check_modtime(BUFFER *bp, const char *fn)
+check_modtime(BUFFER *bp, char *fn)
 {
 	int status = TRUE;
 
@@ -233,11 +233,11 @@ no_such_file(const char * fname)
 
 #if OPT_VMS_PATH
 static char *
-version_of(const char *fname)
+version_of(char *fname)
 {
 	register char	*s = strchr(fname, ';');
 	if (s == 0)
-		s = strend(fname);
+		s = skip_string(fname);
 	return s;
 }
 
@@ -270,7 +270,7 @@ resolve_filename(BUFFER *bp)
  * a loop.
  */
 int
-same_fname(const char *fname, BUFFER *bp, int lengthen)
+same_fname(char *fname, BUFFER *bp, int lengthen)
 {
 	char	temp[NFILEN];
 
@@ -560,7 +560,7 @@ bp2swbuffer(BUFFER *bp, int ask_rerun, int lockfl)
 
 int
 getfile(
-const char *fname,	/* file name to find */
+char *fname,		/* file name to find */
 int lockfl)		/* check the file for locks? */
 {
         register BUFFER *bp;
@@ -676,7 +676,7 @@ grab_lck_file(BUFFER *bp, char *fname)
 /* ARGSUSED */
 int
 readin(
-const char    *fname,	/* name of file to read */
+char    *fname,		/* name of file to read */
 int	lockfl,		/* check for file locks? */
 register BUFFER *bp,	/* read into this buffer */
 int	mflg)		/* print messages? */
@@ -1158,7 +1158,7 @@ makename(char *bname, const char *fname)
 	register int j;
 	char	temp[NFILEN];
 
-	fcp = strend(strcpy(temp, fname));
+	fcp = skip_string(strcpy(temp, fname));
 #if OPT_VMS_PATH
 	if (is_vms_pathname(temp, TRUE)) {
 		(void)strcpy(bname, "NoName");
@@ -1170,8 +1170,7 @@ makename(char *bname, const char *fname)
 				fcp--)
 				;
 		(void)strncpy0(bname, fcp, NBUFN);
-		if ((bcp = strchr(bname, ';')) != 0)	/* strip version */
-			*bcp = EOS;
+		strip_version (bname);
 		(void)mklower(bname);
 		return;
 	}
@@ -1224,7 +1223,7 @@ makename(char *bname, const char *fname)
 
 #else	/* !(SYS_UNIX||SYS_VMS||SYS_MSDOS) */
 
-	bcp = strend(fcp);
+	bcp = skip_string(fcp);
 	{
 		register char *cp2 = bname;
 		strcpy0(bname, bcp, NBUFN);
@@ -1568,7 +1567,7 @@ int	forced)
  * displayed.
  */
 int
-kwrite(const char *fn, int msgf)
+kwrite(char *fn, int msgf)
 {
 	register KILL *kp;		/* pointer into kill register */
 	register int	nline;
@@ -1673,7 +1672,7 @@ filename(int f GCC_UNUSED, int n GCC_UNUSED)
  * status of the read.
  */
 int
-ifile(const char *fname, int belowthisline, FILE *haveffp)
+ifile(char *fname, int belowthisline, FILE *haveffp)
 {
 	register LINEPTR prevp;
 	register LINEPTR newlp;
