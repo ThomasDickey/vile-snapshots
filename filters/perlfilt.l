@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.39 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.40 2004/11/23 22:41:08 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PERL input
  * text.
@@ -59,7 +59,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL}|{BINARY}|{VERSION})
 
 %%
 
-<CODE><<{QIDENT}	{
+<CODE>"<<"{QIDENT}	{
 			    BEGIN(HERE);
 			    save_here(yytext, yyleng);
 			    flt_bfr_append(yytext, yyleng);

@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.316 2004/10/24 22:06:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.318 2004/12/03 00:20:18 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -21,9 +21,9 @@ extern "C" {
  *	globals. -pgf
  */
 #ifdef realdef
-# define decl_init_const(thing,value) EXTERN_CONST thing = value
-# define decl_init(thing,value) thing = value
-# define decl_uninit(thing) thing
+# define decl_init_const(thing,value) DECL_EXTERN_CONST(thing) = value
+# define decl_init(thing,value) DECL_EXTERN(thing) = value
+# define decl_uninit(thing) DECL_EXTERN(thing)
 #else
 # define decl_init_const(thing,value) extern const thing
 # define decl_init(thing,value) extern thing
@@ -161,7 +161,7 @@ decl_init( int	eolexist, TRUE );	/* does clear to EOL exist	*/
 decl_uninit( int revexist );		/* does reverse video exist?	*/
 
 #ifdef realdef
-	MARK	nullmark = { NULL, 0 };
+DECL_EXTERN(MARK nullmark) = { NULL, 0 };
 #else
 extern	MARK	nullmark;
 #endif

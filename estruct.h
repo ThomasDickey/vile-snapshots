@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.553 2004/11/03 01:10:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.556 2004/12/03 00:35:06 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -69,9 +69,14 @@
 #define SYS_OS2    1
 #endif
 
-#ifdef __GO32__ 	/* DJ's GCC version 1.09 */
+#ifdef __GO32__		/* DJ's GCC version 1.09 */
 #define SYS_MSDOS  1
 #define CC_DJGPP   1
+#endif
+
+#ifdef __LCC__
+#define SYS_WINNT	1
+#define CC_LCC_WIN32	1
 #endif
 
 #ifdef _MSC_VER
@@ -110,6 +115,10 @@
 #define CC_DJGPP		0	/* DJ's GCC version 1.09 */
 #endif
 
+#ifndef CC_LCC_WIN32
+#define CC_LCC_WIN32		0	/* Lcc-win32 */
+#endif
+
 #ifndef CC_MSC
 #define CC_MSC			0	/* Microsoft C versions 3 & 4 & 5 & 6 */
 #endif
@@ -127,19 +136,19 @@
 #endif
 
 #ifndef SYS_CYGWIN
-#define SYS_CYGWIN	     	0       /* Unix'ed Win32                */
+#define SYS_CYGWIN		0	/* Unix'ed Win32		*/
 #endif
 
 #ifndef SYS_MSDOS
-#define SYS_MSDOS       	0       /* MS-DOS                       */
+#define SYS_MSDOS		0	/* MS-DOS			*/
 #endif
 
 #ifndef SYS_OS2
-#define SYS_OS2         	0       /* son of DOS                   */
+#define SYS_OS2			0	/* son of DOS			*/
 #endif
 
 #ifndef SYS_OS2_EMX
-#define SYS_OS2_EMX     	0       /* Unix'ed OS2                  */
+#define SYS_OS2_EMX		0	/* Unix'ed OS2			*/
 #endif
 
 #ifndef SYS_SUNOS
@@ -147,15 +156,15 @@
 #endif
 
 #ifndef SYS_UNIX
-#define SYS_UNIX       		0       /* Unix & friends               */
+#define SYS_UNIX		0	/* Unix & friends		*/
 #endif
 
 #ifndef SYS_VMS
-#define SYS_VMS       		0       /* OpenVMS                      */
+#define SYS_VMS			0	/* OpenVMS			*/
 #endif
 
 #ifndef SYS_WINNT
-#define SYS_WINNT       	0       /* Windows/NT                   */
+#define SYS_WINNT		0	/* Windows/NT			*/
 #endif
 
 /* As of version 3.51 of vile, CC_NEWDOSCC should be correct for Turbo,
@@ -163,7 +172,7 @@
  * probably correct for MSC (Microsoft C) and ZTC (Zortech), but I'm not
  * sure of those.  (It implies a lot of ANSI and POSIX behavior.)
  */
-#if CC_TURBO || CC_WATCOM || CC_MSC || CC_DJGPP || SYS_WINNT || CC_CSETPP || CC_MSVC
+#if CC_TURBO || CC_WATCOM || CC_MSC || CC_DJGPP || SYS_WINNT || CC_CSETPP || CC_MSVC || CC_LCC_WIN32
 # define CC_NEWDOSCC 1
 #endif
 
@@ -191,9 +200,12 @@
 #endif
 
 #if SYS_WINNT && !CC_TURBO
-# define HAVE_PUTENV		1
 # define HAVE_SYS_UTIME_H	1
 # define HAVE_UTIME		1
+#endif
+
+#if SYS_WINNT
+# define HAVE_PUTENV		1
 #endif
 
 /*
@@ -483,8 +495,8 @@
 #define VILE_SOMEDAY 0
 
 /* various terminal stuff */
-#define IBM_VIDEO 	(SYS_MSDOS || SYS_OS2 || SYS_WINNT)
-#define CRLF_LINES 	(SYS_MSDOS || SYS_OS2 || SYS_WINNT)
+#define IBM_VIDEO	(SYS_MSDOS || SYS_OS2 || SYS_WINNT)
+#define CRLF_LINES	(SYS_MSDOS || SYS_OS2 || SYS_WINNT)
 
 /* various color stuff */
 #define	OPT_COLOR (DISP_ANSI || IBM_VIDEO || DISP_TERMCAP || DISP_CURSES || DISP_X11)
@@ -500,7 +512,7 @@
 #define	OPT_REVSTA	1	/* Status line appears in reverse video       */
 #define	OPT_CFENCE	1	/* do fence matching in CMODE		      */
 #define OPT_LCKFILES	0	/* create lock files (file.lck style)	      */
-#define OPT_TAGS	1	/* tags support 			      */
+#define OPT_TAGS	1	/* tags support				      */
 #define	OPT_PROCEDURES	1	/* macro language procedures		      */
 #define	OPT_PATHLOOKUP	1	/* search $PATH for startup and help files    */
 #define	OPT_SCROLLCODE	1	/* code in display.c for scrolling the screen.
@@ -620,8 +632,8 @@
 #define OPT_SHOW_COLORS	(!SMALLER && OPT_COLOR)	/* "show-colors" */
 #define OPT_SHOW_CTYPE	!SMALLER		/* "show-printable" */
 #define OPT_SHOW_EVAL   (!SMALLER && OPT_EVAL)	/* "show-variables" */
-#define OPT_SHOW_MAPS   !SMALLER 		/* display mapping for ":map" */
-#define OPT_SHOW_MARKS  !SMALLER 		/* "show-marks" */
+#define OPT_SHOW_MAPS   !SMALLER		/* display mapping for ":map" */
+#define OPT_SHOW_MARKS  !SMALLER		/* "show-marks" */
 #define OPT_SHOW_REGS   !SMALLER		/* "show-registers" */
 #define OPT_SHOW_TAGS   (!SMALLER && OPT_TAGS)	/* ":tags" displays tag-stack */
 
@@ -648,7 +660,7 @@
 #define	OPT_XTERM	0	/* vile doesn't recognize xterm mouse */
 #endif
 
- 	/* implement window title */
+	/* implement window title */
 #define OPT_TITLE	(SYS_WINNT | DISP_X11 | OPT_XTERM)
 
 	/* combine select/yank (for mouse support) */
@@ -801,7 +813,14 @@ extern char *rindex (const char *s, int c);
 
 /*	System dependent library redefinitions, structures and includes	*/
 
-#if CC_NEWDOSCC && ! CC_CSETPP
+#if CC_CSETPP
+#elif CC_LCC_WIN32
+#include <direct.h>		/* chdir */
+#define cwait(i,j,k) _cwait(i,j,k)
+#define utime(i,j)   _utime(i,j)
+#define SP_NOTREPORTED 0x4000	/* wingdi.h */
+#define WHEEL_DELTA 120		/* winuser.h */
+#elif CC_NEWDOSCC && ! CC_CSETPP
 #include <dos.h>
 # define HAVE_STRERROR		1
 #endif
@@ -1047,7 +1066,7 @@ extern void endofDisplay(void);
 #undef	ABORT
 #undef	SORTOFTRUE
 
-#define FALSE	0			/* False, no, bad, etc. 	*/
+#define FALSE	0			/* False, no, bad, etc.		*/
 #define TRUE	1			/* True, yes, good, etc.	*/
 #define ABORT	2			/* Death, ESC, abort, etc.	*/
 #define	SORTOFTRUE	3		/* really!	*/
@@ -1448,8 +1467,8 @@ typedef USHORT CHARTYPE;
 #define	DIFCNTRL	0x40
 #define toUpper(c)	vl_uppercase[CharOf(c)]
 #define toLower(c)	vl_lowercase[CharOf(c)]
-#define tocntrl(c)	((c)^DIFCNTRL)
-#define toalpha(c)	((c)^DIFCNTRL)
+#define tocntrl(c)	(((unsigned)(c))^DIFCNTRL)
+#define toalpha(c)	(((unsigned)(c))^DIFCNTRL)
 
 #define nocase_eq(bc,pc) (CharOf(bc) == CharOf(pc) || (toUpper(bc) == toUpper(pc)))
 
@@ -1560,6 +1579,19 @@ typedef	long		B_COUNT;	/* byte-count */
 #endif
 
 /*
+ * The Intel compiler's warnings regarding externs which have not been
+ * previously declared applies to data items as well as functions.  Use these
+ * macros to hide the extra declaration.
+ */
+#if defined(__INTEL_COMPILER)
+# define DECL_EXTERN_CONST(name) extern const name; EXTERN_CONST name
+# define DECL_EXTERN(name)       extern       name;              name
+#else
+# define DECL_EXTERN_CONST(name) EXTERN_CONST name
+# define DECL_EXTERN(name)                    name
+#endif
+
+/*
  * Control structures
  */
 #define	for_ever for(;;)
@@ -1608,7 +1640,7 @@ typedef struct	LINE {
 	} l;
 #if OPT_LINE_ATTRS
 	UCHAR  *l_attrs;		/* indexes into the line_attr_tbl
-	                                   hash table */
+					   hash table */
 #endif
 }	LINE;
 
@@ -1653,7 +1685,7 @@ typedef struct	LINE {
 	 * Macros for referencing fields in the LINE struct.
 	 */
 #define lgetc(lp, n)		char2int(lvalue(lp)[(n)])
-#define lputc(lp, n, c) 	(lvalue(lp)[(n)]=(char)(c))
+#define lputc(lp, n, c)		(lvalue(lp)[(n)]=(char)(c))
 #define lvalue(lp)		((lp)->l_text)
 #define llength(lp)		((lp)->l_used)
 #define line_length(lp)		(llength(lp)+len_rs) /* counting recordsep */
@@ -1702,11 +1734,11 @@ typedef struct MARK {
  * characters, is kept in a region structure.  Used by the region commands.
  */
 typedef struct	{
-	MARK	r_orig; 		/* Origin LINE address. 	*/
-	MARK	r_end;			/* Ending LINE address. 	*/
-	C_NUM	r_leftcol;		/* Leftmost column. 		*/
-	C_NUM	r_rightcol;		/* Rightmost column. 		*/
-	B_COUNT r_size; 		/* Length in characters.	*/
+	MARK	r_orig;			/* Origin LINE address.		*/
+	MARK	r_end;			/* Ending LINE address.		*/
+	C_NUM	r_leftcol;		/* Leftmost column.		*/
+	C_NUM	r_rightcol;		/* Rightmost column.		*/
+	B_COUNT r_size;			/* Length in characters.	*/
 #if OPT_SELECTIONS
 	USHORT	r_attr_id;		/* id of corresponding display  */
 #endif
@@ -1814,7 +1846,7 @@ typedef struct vl_aregion {
 
 /* Hash table entry for line attribute indices. */
 typedef struct vl_line_attr_entry {
-    	VIDEO_ATTR	vattr;
+	VIDEO_ATTR	vattr;
 	char		in_use;
 }	LINE_ATTR_ENTRY;
 
@@ -2019,8 +2051,8 @@ typedef int FUID;
 typedef	int	(*UpBuffFunc) ( struct BUFFER * );
 
 typedef struct	BUFFER {
-	MARK	b_line; 	/* Link to the header LINE (offset unused) */
-	struct	BUFFER *b_bufp; 	/* Link to next BUFFER		*/
+	MARK	b_line;		/* Link to the header LINE (offset unused) */
+	struct	BUFFER *b_bufp;		/* Link to next BUFFER		*/
 	MARK	*b_nmmarks;		/* named marks a-z		*/
 #if OPT_SELECTIONS
 	AREGION	*b_attribs;		/* attributed regions		*/
@@ -2049,13 +2081,13 @@ typedef struct	BUFFER {
 	LINEPTR	b_ulinep;		/* pointer at 'Undo' line	*/
 	int	b_active;		/* window activated flag	*/
 	int	b_refcount;		/* counts levels of source'ing	*/
-	UINT	b_nwnd; 		/* Count of windows on buffer	*/
-	UINT	b_flag; 		/* Flags			*/
+	UINT	b_nwnd;			/* Count of windows on buffer	*/
+	UINT	b_flag;			/* Flags			*/
 	short	b_inuse;		/* nonzero if executing macro	*/
 	short	b_acount;		/* auto-save count		*/
 	char	*b_fname;		/* File name			*/
 	int	b_fnlen;		/* length of filename		*/
-	char	b_bname[NBUFN]; 	/* Buffer name			*/
+	char	b_bname[NBUFN];		/* Buffer name			*/
 #if	OPT_ENCRYPT
 	char	b_cryptkey[NKEYLEN];	/* encryption key		*/
 #endif
@@ -2290,7 +2322,7 @@ extern MARK *api_mark_iterator(BUFFER *bp, int *iter);
 typedef struct	WINDOW {
 	W_TRAITS w_traits;		/* features of the window we should */
 					/* remember between displays	*/
-	struct	WINDOW *w_wndp; 	/* Next window			*/
+	struct	WINDOW *w_wndp;		/* Next window			*/
 	BUFFER	*w_bufp;		/* Buffer displayed in window	*/
 	int	w_toprow;		/* Origin 0 top row of window	*/
 	int	w_ntrows;		/* # of rows of text in window	*/
@@ -2366,10 +2398,10 @@ typedef struct	WINDOW {
  * one terminal type.
  */
 typedef struct	{
-	int	maxrows;		/* max rows count 		*/
-	int	rows; 			/* current row count		*/
-	int	maxcols; 		/* max column count		*/
-	int	cols; 			/* current column count		*/
+	int	maxrows;		/* max rows count		*/
+	int	rows;			/* current row count		*/
+	int	maxcols;		/* max column count		*/
+	int	cols;			/* current column count		*/
 	int	pausecount;		/* # times thru update to pause */
 	void	(*open) (void);		/* Open terminal at the start.	*/
 	void	(*close) (void);	/* Close terminal at end.	*/
@@ -2390,7 +2422,7 @@ typedef struct	{
 	void	(*setpal) (const char *p); /* set color palette	*/
 	void	(*setccol) (int c);	/* set cursor color		*/
 	void	(*scroll) (int from, int to, int n); /* scroll region	*/
-	void	(*pflush) (void);	/* really flush 		*/
+	void	(*pflush) (void);	/* really flush			*/
 	void	(*icursor) (int c);	/* set cursor shape for insertion */
 	void	(*set_title) (const char *t); /* set window title	*/
 	int	(*watchfd)(int, WATCHTYPE, long *);
@@ -2434,7 +2466,7 @@ typedef struct  VIDEO {
 #define ReqBcolor(vp) gbcolor
 #endif
 
-#define VFCHG	iBIT(0) 		/* Changed flag 		*/
+#define VFCHG	iBIT(0)			/* Changed flag			*/
 #define	VFEXT	iBIT(1)			/* extended (beyond column 80)	*/
 #define	VFREV	iBIT(2)			/* reverse video status		*/
 #define	VFREQ	iBIT(3)			/* reverse video request	*/
@@ -2548,7 +2580,7 @@ typedef struct {
 #endif
 
 typedef struct  k_bind {
-	int	k_code; 		/* Key code			*/
+	int	k_code;			/* Key code			*/
 	const CMDFUNC *k_cmd;
 #if OPT_REBIND
 	struct  k_bind *k_link;

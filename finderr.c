@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2003 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.120 2004/06/15 22:12:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.123 2004/12/08 00:48:20 tom Exp $
  *
  */
 
@@ -28,6 +28,8 @@ typedef struct {
     char *exp_text;
     regexp *exp_comp;
     int words[W_LAST];
+    int lBase;
+    int cBase;
 } ERR_PATTERN;
 
 static LINE *getdot(BUFFER *bp);
@@ -36,6 +38,9 @@ static void putdotback(BUFFER *bp, LINE *dotp);
 static char febuff[NBUFN];	/* name of buffer to find errors in */
 static int newfebuff = TRUE;	/* is the name new since last time? */
 
+/*
+ * These variables are set as a side-effect of decode_exp().
+ */
 static TBUFF *fe_verb;
 static TBUFF *fe_file;
 static TBUFF *fe_text;
@@ -43,6 +48,17 @@ static int cC_base;
 static int lL_base;
 static long fe_colm;
 static long fe_line;
+
+/*
+ * Beginning of line.
+ */
+#define P_BOL	"^"
+
+/*
+ * Text from running "ant", which puts the program name before each message,
+ * in square brackets.
+ */
+#define P_ANT	P_BOL "\\(\\s\\+\\[[^]]\\+\\]\\s\\+\\)\\?"
 
 /*
  * This is the list of predefined regular expressions for the error
@@ -78,9 +94,9 @@ static long fe_line;
 static const
 char *const predefined[] =
 {
-    "^\"%[^\" \t]\", line %L:%T",	/* various C compilers */
-    "^%F:\\s*%L:%C:\\s*%T",	/* antic */
-    "^%F:\\s*%L:\\s*%T",	/* "grep -n" */
+    P_ANT "\"%[^\" \t]\", line %L:%T",	/* various C compilers */
+    P_ANT "%F:\\s*%L:%C:\\s*%T",	/* antic */
+    P_ANT "%F:\\s*%L:\\s*%T",	/* "grep -n" */
 
 #if SYS_VMS
     "[ \t]*At line number %L in %[^;].*",	/* crude support for DEC C
@@ -130,8 +146,10 @@ char *const predefined[] =
 #endif
 
     /* Borland C++ */
+#if CC_NEWDOSCC
     "^Error\\( [^ ]\\+\\)\\? %F %L: %T",
     "^Warning\\( [^ ]\\+\\)\\? %F %L: %T",
+#endif
 
     "^%B:%L:%T",		/* "pp" in scratch buf */
     "^[^:]\\+: %V directory `%[^']'",	/* GNU make */
@@ -234,7 +252,7 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
     char *last = first + want;
 
     (void) memset(errp, 0, sizeof(*errp));
-    TPRINTF(("error-pattern %.*s\n", want, first));
+    TPRINTF(("error-pattern %.*s\n", (int) want, first));
 
     /* In the first pass, find the number of fields we'll substitute.
      * Then allocate a new string that's a genuine regular expression
@@ -271,13 +289,13 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 		    break;
 		case 'c':
 		case 'C':
-		    cC_base = ((*src) == 'C');
+		    errp->cBase = ((*src) == 'C');
 		    APP_S(number);
 		    errp->words[W_COLM] = ++word;
 		    break;
 		case 'l':
 		case 'L':
-		    lL_base = ((*src) == 'L');
+		    errp->lBase = ((*src) == 'L');
 		    APP_S(number);
 		    errp->words[W_LINE] = ++word;
 		    break;
@@ -480,6 +498,8 @@ decode_exp(ERR_PATTERN * exp)
 	    *(lookup[j].number) = 0;
 	}
     }
+    cC_base = exp->cBase;
+    lL_base = exp->lBase;
     fe_colm = cC_base;
 
     /*
@@ -772,10 +792,13 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
     }
     /* it's an absolute move */
     curwp->w_lastdot = DOT;
-    if ((fe_line + lL_base) >= curbp->b_lines_on_disk)
+    if (fe_line <= lL_base) {
+	status = gotobob(f, n);
+    } else if ((fe_line - lL_base) >= curbp->b_lines_on_disk) {
 	status = gotoeob(f, n);
-    else
+    } else {
 	status = gotoline(TRUE, -(curbp->b_lines_on_disk - fe_line + lL_base));
+    }
     goto_column();
 
     oerrline = fe_line;
@@ -875,7 +898,7 @@ make_err_regex_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 	    int k, first = TRUE;
 	    if (j >= exp_count)
 		break;
-	    bprintf("\n%7d ", j);
+	    bprintf("\n%7d ", (int) j);
 	    bprintf("%.*s\n", llength(lp), lp->l_text);
 	    bprintf("%.*s%s", ERR_PREFIX, " ", exp_table[j].exp_text);
 	    for (k = 0; k < W_LAST; k++) {

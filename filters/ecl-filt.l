@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ecl-filt.l,v 1.2 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ecl-filt.l,v 1.3 2004/11/23 22:37:09 tom Exp $
  *
  * Filter to add vile "attribution" sequences to Prolog/ECLiPSe code
  *
@@ -25,7 +25,7 @@ BRCOMMENT1	"/*"[/]?(([^*][/]+)|[^/])*"*/"
 
 KEYWORD		[a-z][a-zA-Z0-9_]*
 
-STARTQUERY	^[:?]-/[a-z \t\n]
+STARTQUERY	^[:?]"-/"[a-z \t\n]
 
 SSTRING		\'(\\.|\\\n|[^'\\])*\'
 DSTRING		\"(\\.|\\\n|[^"\\])*\"

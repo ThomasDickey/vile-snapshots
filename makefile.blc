@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Borland C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.17 2001/09/18 09:10:38 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.18 2004/12/06 19:43:51 tom Exp $
 #
 # Tested with
 #	Borland C++ 5.5.1
@@ -83,6 +83,10 @@ OBJ = 	main.obj $(SCREEN).obj basic.obj bind.obj btree.obj buffer.obj \
 
 .cpp.obj:
 	$(CC) $(CFLAGS) -c $<
+
+all :		$(TARGET).exe
+
+sources :	$(BUILTHDRS)
 
 $(TARGET).exe: 	$(BUILTHDRS) $(OBJ) $(RESFILE)
 	$(CC) $(LDFLAGS) -e$(TARGET).exe @&&!

@@ -1,5 +1,70 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20041207 (l)
+	> Clark Morgan:
+	+ modify special treatment of "#" which prevents it from being shifted
+	  with ">>" by disabling that when cindent is unset.
+	+ reenable SHIFT+INSERT in the win32 mini-buffer (for both vile.exe and
+	  winvile.exe).  Unfortunately, the cygwin shell eats SHIFT+INSERT for
+	  console vile (mini-buffer input only), but I don't think I can do
+	  much about that.  So, now, it's once again possible to:
+		$ vile somefile
+		/<shift+insert>     <- search for string sitting on clipboard
+ 	> Tom Dickey:
+	+ correct computation for 0-based versus 1-based column/line values in
+	  the error-finder; the values were computed but not saved in the
+	  compiled error expression's state.
+	+ improve complex fences for adamode.
+	+ add ".termcap" and ".terminfo" suffixes for respective majormodes.
+	+ add ".jad" suffix for javamode for Java Disassembler.
+	+ add a few ex-commands: nu, j!, wq!
+	+ change kbd_reply() to check if the current value is the ERROR token,
+	  and to clear it in that case.  This fixes a bug which would show the
+	  trailing null (since the computed length for ERROR ignores the TBUFF
+	  length), e.g.,
+	  	setv $title=ERROR\^@
+	+ modify statevars.c to make read/write of $title consistent, i.e.,
+	  will warn that it cannot be set in the termcap configuration.
+	+ correct logic for changing the xterm-mouse via the termcap driver. 
+	  It was not opening or closing the keyboard, not both, which would
+	  leave xterm switched from the alternate screen.
+	+ modify [Messages] buffer so that it is only invisible, not a scratch
+	  buffer.  The latter makes it be automatically removed after viewing
+	  and closing the window.
+	+ fix search scanner to know about left-margin property.
+	+ review/repair logic for OPT_CACHE_VCOL in dot_to_vcol(), in
+	  particular making it work properly with [Registers] and similar
+	  buffers having a left-margin property (reported by Paul Fox).
+	+ fixes to build with Intel 8.0 compiler on Linux:
+	  + add check for _XOPEN_SOURCE, _POSIX_C_SOURCE in configure script.
+	  + add macros DECL_EXTERN_CONST() and DECL_EXTERN().
+	  + turn off its so-called default gcc-compatibility and set compiler
+	    warnings specially.
+	+ fixes to build with Borland C++BuilderX 1.0.  It requires a rename
+	  of regexec/regcomp to avoid calling like-named functions in a DLL.
+	+ fixes to build with lcc-win32 (though its makefile-generator is
+	  limited and requires one to edit the makefile).
+	+ correct configure script macro CF_FUNC_ICONV so the script does not
+	  exit with an error if the system does not happen to have iconv.
+	+ some fixes to compile filters with Tru64 4.0g's lex/flex:
+	  + ensure angle brackets in patterns are quoted
+	  + put whitespace between command/value in options such as "%o3000".
+	+ add pattern for "ant" (Java make-program) to a few of the patterns
+	  in finderr.c
+	+ modify ".table" command in filters parsing to read the user's color
+	  definitions, e.g., from .vile.keywords, as is done in a ".source"
+	  command.
+	+ add a ".brief" to filters parsing, which uses "?" to match zero or
+	  all of the following characters, in constrast to ".abbrev" which uses
+	  "*" to match zero or more of the following characters.
+	+ modify sql-filt.l to distinguish between SQL*PLUS and SQL, PL/SQL.
+	  The latter delimit statements with semicolons, while the former makes
+	  that optional, using newlines.
+	+ modify call on insert_keyword() to use the given name, e.g., a class
+	  rather than its attribute.  This fixes a bug exposed in sql-filt.l
+	  by changing sql.key to use ".default" to simplify it.
+	+ add check for setlocale() returning null.
+
  20041107 (k)
  	> Tom Dickey:
 	+ modify glob_match_leaf() to work with 8-bit characters.
@@ -74,10 +139,10 @@ Changes for vile 9.5 (released ??? ??? ?? ????)
 	+ add some discussion of character classes to vile.hlp
 	+ fixes for vile-9.4.spec, adds vile-pager to list of installed files
 	  and installs manpage in the normal man-directory (patch by Radek
-	  Liboska). 
+	  Liboska).
 	+ add configure option --with-iconv, use that to extend termcap driver
 	  to allow it to handle encodings other than Latin-1, e.g., Latin-2
-	  (request by Radek Liboska). 
+	  (request by Radek Liboska).
 	+ extend workaround for UTF-8 locale in termcap driver to translate
 	  UTF-8 input to Latin-1.
 	+ improve/extend checks for locales which correspond to 8-bit character
@@ -206,7 +271,7 @@ Changes for vile 9.5 (released ??? ??? ?? ????)
 	  no suffixes.
 	+ add ".hpp" to suffixes for cppmode.
 	+ add ".el" to suffixes for lispmode.
-	+ add an "-s" option to c-filt.c, for JavaScript (to support jsmode). 
+	+ add an "-s" option to c-filt.c, for JavaScript (to support jsmode).
 	  Use this to control whether to allow regular expressions in certain
 	  cases.
 

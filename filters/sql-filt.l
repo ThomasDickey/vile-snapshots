@@ -1,9 +1,9 @@
-%s CODE ACTION COMMENT COMMENT1
+%s CODE ACTION SERVER COMMENT COMMENT1
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.18 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.20 2004/12/07 23:19:45 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of SQL script
  * - T.Dickey
@@ -48,21 +48,41 @@ HOSTVAR		":"{IDENT}
 %%
 
 <CODE>\n		|
-<CODE>^{SPACE}		{ ECHO; leading = 1; }
+<CODE>^{SPACE}		{ ECHO; }
 
 <CODE>{LABEL}		|
-<CODE>{ACTION}		{ WriteToken(Action_attr); BEGIN(ACTION); leading = 0; }
-<ACTION>\n		{ ECHO; BEGIN(CODE); }
-<ACTION>[^\n]*		{ WriteToken(String_attr); BEGIN(CODE); }
+<CODE>{ACTION}		{ WriteToken(Action_attr);
+			    if (leading) {
+				BEGIN(ACTION);
+				leading = 0;
+			    } else {
+				BEGIN(SERVER);
+			    }
+			}
+<ACTION>\n		{ ECHO; BEGIN(CODE); leading = 1; }
+<ACTION>[^\n]*		{ WriteToken(String_attr); }
+
+<SERVER>{IDENT}		{ WriteToken(""); }
+<SERVER>"."		{ WriteToken(""); }
+<SERVER>";"		{ ECHO; BEGIN(CODE); leading = 1; }
+<SERVER>.		{ ECHO; BEGIN(CODE); }
 
 <CODE>{IDENT}		{   char *text = lowercase_of(yytext);
 			    char *attr = ci_keyword_attr(text);
 			    if (attr == Comment_attr) {
 				WriteToken(leading ? attr : Error_attr);
 				BEGIN(COMMENT1);
-			    } else if (attr == Action_attr) {
+			    } else if (leading
+				    && attr == 0
+				    && set_symbol_table("sqlplus")
+				    && (attr = ci_keyword_attr(text)) != 0) {
+				set_symbol_table(filter_def.filter_name);
 				WriteToken(attr);
 				BEGIN(ACTION);
+				/* FIXME: a few commands have keywords, such
+				 * as "set".
+				 */
+				leading = 0;
 			    } else {
 				WriteToken(attr);
 				leading = 0;
@@ -77,6 +97,8 @@ HOSTVAR		":"{IDENT}
 <CODE>{NUMBER}		{ WriteToken(Number_attr); leading = 0; }
 
 <CODE>{STRING}		{ WriteToken(String_attr); leading = 0; }
+
+<CODE>";"		{ ECHO; leading = 1; }
 
 <CODE>--[^\n]*		{ WriteToken(Comment_attr); BEGIN(COMMENT1); }
 <COMMENT1>[^\n]*	{ WriteToken(Comment_attr); }

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.12 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.13 2004/11/23 22:37:45 tom Exp $
  *
  * Filter to add vile "attribution" sequences to embedded SQL with C/C++.
  * - T.Dickey
@@ -39,7 +39,7 @@ SSTRING		\'(\\.|[^'\\])*\'
 DSTRING		\"(\\.|[^"\\]|\\\n)*\"
 STRINGS		({SSTRING}|{DSTRING})
 
-INCLUDE		(<[^>]+>|\"[^"]+\")
+INCLUDE		("<"[^>]+">"|\"[^"]+\")
 
 IDENT		[a-zA-Z_][a-zA-Z_0-9]*
 

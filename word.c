@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.75 2004/06/09 01:06:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.76 2004/12/07 00:58:37 tom Exp $
  *
  */
 
@@ -273,8 +273,11 @@ backword(int f, int n)
     return (forwchar(TRUE, 1));
 }
 
-int
-joinregion(void)
+/*
+ * If not 'exact', will adjust whitespace at the join-position.
+ */
+static int
+join_region(int exact)
 {
     register int status;
     register int doto, c;
@@ -302,14 +305,18 @@ joinregion(void)
 	    (void) setmark();
 	    if (forwline(FALSE, 1) != TRUE)
 		break;
-	    (void) firstnonwhite(FALSE, 1);
+	    if (exact) {
+		(void) gotobol(FALSE, 1);
+	    } else {
+		(void) firstnonwhite(FALSE, 1);
+	    }
 
 	    done = ((DOT.l == end) || (lforw(DOT.l) == end));
 	    if (killregionmaybesave(FALSE) != TRUE)
 		break;
 
 	    doto = DOT.o;
-	    if (doto == 0) {
+	    if (doto == 0 || exact) {
 		/*EMPTY */ ;
 	    }
 	    /* join at column 0 to empty line */
@@ -327,6 +334,18 @@ joinregion(void)
 	}
     }
     return status;
+}
+
+int
+joinregion(void)
+{
+    return join_region(FALSE);
+}
+
+int
+joinregion_x(void)
+{
+    return join_region(TRUE);
 }
 
 int

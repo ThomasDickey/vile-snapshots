@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.116 2004/10/30 14:56:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.117 2004/11/19 19:53:18 tom Exp $
  *
  */
 
@@ -40,6 +40,10 @@
 
 #if defined(MISSING_EXTERN_ENVIRON) || (defined(__DJGPP__) && __DJGPP__ >= 2)
 extern char **environ;
+#endif
+
+#if CC_LCC_WIN32
+#define environ _environ
 #endif
 
 #define	SLASH (EOS+1)		/* less than everything but EOS */

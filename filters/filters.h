@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.83 2004/11/05 22:33:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.85 2004/12/03 00:16:59 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -274,7 +274,7 @@ FILTER_DEF filter_def = { name, 1, init_filter, do_filter, options }
  */
 extern FILE *yyin;
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__INTEL_COMPILER)
 extern int yylex(void);
 #ifndef yywrap
 extern int yywrap(void);
@@ -310,7 +310,8 @@ extern void yyset_out (FILE * out_str);
 typedef struct _keyword KEYWORD;
 
 extern char *default_attr;
-extern int abbr_ch;
+extern int zero_or_more;
+extern int zero_or_all;
 extern int eqls_ch;
 extern int meta_ch;
 extern int vile_keywords;

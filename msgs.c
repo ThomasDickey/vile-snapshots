@@ -4,7 +4,7 @@
  * Support functions for "popup-msgs" mode.
  * Written by T.E.Dickey for vile (august 1994).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/msgs.c,v 1.25 2003/06/18 21:40:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/msgs.c,v 1.26 2004/12/06 01:13:12 tom Exp $
  */
 #include "estruct.h"
 
@@ -18,10 +18,9 @@
 static BUFFER *
 create_msgs(void)
 {
-    BUFFER *bp = bfind(MESSAGES_BufName, BFSCRTCH);
+    BUFFER *bp = bfind(MESSAGES_BufName, BFINVS);
 
     if (valid_buffer(bp)) {
-	b_set_scratch(bp);
 	b_set_invisible(bp);
 	bp->b_active = TRUE;
     }

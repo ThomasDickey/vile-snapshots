@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.14 2004/05/15 11:49:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.15 2004/11/23 22:35:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DCL files.
  *
@@ -36,6 +36,57 @@ static char *Number_attr;
 static char *String_attr;
 
 static char *look_for = 0;
+
+static void handle_ident(char *text, int length);
+static void handle_newline(void);
+static void handle_literal(char *text, int length);
+
+%}
+
+BLANK		[ \t]
+LABEL		[a-zA-Z0-9_]+
+IDENT		[a-zA-Z_][$a-zA-Z0-9_]*
+OPTION		"/"{IDENT}
+
+PARAM		'{IDENT}
+
+LABELLINE	{LABEL}{BLANK}*:$
+LABELPLUS	{LABEL}{BLANK}*:{BLANK}+
+
+INLINECOMMENT	![^\n]*
+COMMENT		^({BLANK}*)($)?({BLANK}*)(![^\n]*)?
+
+NUMBER		([0-9]+)|(%[dD][0-9]+)|(%[oO][0-7]+)|(%[xX][a-fA-F0-9]+)
+
+STRING		\"([^"\n]|(""))*\"
+
+%%
+
+<NORMAL>^{BLANK}*@	{ WriteToken(Action_attr); }
+<NORMAL>\032		{ WriteToken(Action_attr); }
+
+<NORMAL>{LABELLINE}	|
+<NORMAL>{LABELPLUS}	{ WriteToken(Ident2_attr); }
+
+<NORMAL>{IDENT}		{ handle_ident(yytext, yyleng); }
+
+<NORMAL>{OPTION}	{ WriteToken(Ident_attr); }
+
+<NORMAL>{PARAM}		{ WriteToken(Ident2_attr); }
+
+<NORMAL>{INLINECOMMENT}	|
+<NORMAL>{COMMENT}	{ WriteToken(Comment_attr); }
+
+<NORMAL>{NUMBER}	{ WriteToken(Number_attr); }
+
+<NORMAL>{STRING}	{ WriteToken(String_attr); }
+
+<NORMAL>[\n]		{ handle_newline(); }
+
+<LITERAL>[^\n]+		{ handle_literal(yytext, yyleng); }
+<LITERAL>[\n]		{ ECHO; }
+
+%%
 
 static void
 handle_ident(char *text, int length)
@@ -90,53 +141,6 @@ handle_literal(char *text, int length)
 	flt_puts(text, length, attr);
     }
 }
-
-%}
-
-BLANK		[ \t]
-LABEL		[a-zA-Z0-9_]+
-IDENT		[a-zA-Z_][$a-zA-Z0-9_]*
-OPTION		"/"{IDENT}
-
-PARAM		'{IDENT}
-
-LABELLINE	{LABEL}{BLANK}*:$
-LABELPLUS	{LABEL}{BLANK}*:{BLANK}+
-
-INLINECOMMENT	![^\n]*
-COMMENT		^({BLANK}*)($)?({BLANK}*)(![^\n]*)?
-
-NUMBER		([0-9]+)|(%[dD][0-9]+)|(%[oO][0-7]+)|(%[xX][a-fA-F0-9]+)
-
-STRING		\"([^"\n]|(""))*\"
-
-%%
-
-<NORMAL>^{BLANK}*@	{ WriteToken(Action_attr); }
-<NORMAL>\032		{ WriteToken(Action_attr); }
-
-<NORMAL>{LABELLINE}	|
-<NORMAL>{LABELPLUS}	{ WriteToken(Ident2_attr); }
-
-<NORMAL>{IDENT}		{ handle_ident(yytext, yyleng); }
-
-<NORMAL>{OPTION}	{ WriteToken(Ident_attr); }
-
-<NORMAL>{PARAM}		{ WriteToken(Ident2_attr); }
-
-<NORMAL>{INLINECOMMENT}	|
-<NORMAL>{COMMENT}	{ WriteToken(Comment_attr); }
-
-<NORMAL>{NUMBER}	{ WriteToken(Number_attr); }
-
-<NORMAL>{STRING}	{ WriteToken(String_attr); }
-
-<NORMAL>[\n]		{ handle_newline(); }
-
-<LITERAL>[^\n]+		{ handle_literal(yytext, yyleng); }
-<LITERAL>[\n]		{ ECHO; }
-
-%%
 
 static void
 init_filter(int before GCC_UNUSED)

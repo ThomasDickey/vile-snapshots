@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.524 2004/11/01 22:01:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.526 2004/12/06 01:12:11 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -161,6 +161,7 @@ MainProgram(int argc, char *argv[])
 	 * can be found by stripping the "UTF-8" string, and also that both
 	 * locales are installed.
 	 */
+#define nonnull(s) ((s) ? (s) : "<null>")
 #if DISP_TERMCAP || DISP_X11
 	if (((env = getenv("LC_ALL")) != 0 && *env != 0) ||
 	    ((env = getenv("LC_CTYPE")) != 0 && *env != 0) ||
@@ -195,20 +196,23 @@ MainProgram(int argc, char *argv[])
 	 * corresponding encoding.
 	 */
 	vl_encoding = nl_langinfo(CODESET);
-	if (strstr(vl_encoding, "ASCII") == 0
-	    && strstr(vl_encoding, "ANSI") == 0
-	    && strncmp(vl_encoding, "ISO-8859", 8) != 0
-	    && strncmp(vl_encoding, "ISO 8859", 8) != 0
-	    && strncmp(vl_encoding, "ISO_8859", 8) != 0
-	    && strncmp(vl_encoding, "ISO8859", 8) != 0
-	    && strncmp(vl_encoding, "8859", 4) != 0) {
+	if (vl_locale == 0
+	    || vl_encoding == 0
+	    || (strstr(vl_encoding, "ASCII") == 0
+		&& strstr(vl_encoding, "ANSI") == 0
+		&& strncmp(vl_encoding, "ISO-8859", 8) != 0
+		&& strncmp(vl_encoding, "ISO 8859", 8) != 0
+		&& strncmp(vl_encoding, "ISO_8859", 8) != 0
+		&& strncmp(vl_encoding, "ISO8859", 8) != 0
+		&& strncmp(vl_encoding, "8859", 4) != 0)) {
 	    vl_locale = setlocale(LC_ALL, "C");
 	    vl_encoding = nl_langinfo(CODESET);
 	}
-#else
-	/* meaningless, but we need a value */
-	vl_encoding = "8bit";
 #endif
+	if (vl_locale == 0)
+	    vl_locale = "built-in";
+	if (vl_encoding == 0)
+	    vl_encoding = "8bit";	/* meaningless, but we need a value */
 
 	/* make our own copy of the strings */
 	vl_locale = strmalloc(vl_locale);
@@ -754,7 +758,7 @@ MainProgram(int argc, char *argv[])
 
 #if OPT_POPUP_MSGS
     if (global_g_val(GMDPOPUP_MSGS) && (startstat != TRUE)) {
-	bp = bfind(MESSAGES_BufName, BFSCRTCH);
+	bp = bfind(MESSAGES_BufName, BFINVS);
 	bsizes(bp);
 	TRACE(("Checking size of popup messages: %d\n", bp->b_linecount));
 	if (bp->b_linecount > 1) {

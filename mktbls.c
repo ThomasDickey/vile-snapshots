@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.131 2004/05/28 20:22:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.132 2004/12/03 00:01:22 tom Exp $
  *
  */
 
@@ -911,7 +911,7 @@ dump_all_modes(void)
 	"#endif /* realdef */",
 	"",
 	"#ifdef realdef",
-	"EXTERN_CONST char *const all_modes[] = {",
+	"DECL_EXTERN_CONST(char *const all_modes[]) = {",
     };
     static const char *const bottom[] =
     {
@@ -1135,7 +1135,7 @@ dump_mmodes(void)
 	"} M_VALUES;",
 	"",
 	"#ifdef realdef",
-	"EXTERN_CONST struct VALNAMES m_valnames[MAX_M_VALUES+1] = {",
+	"DECL_EXTERN_CONST(struct VALNAMES m_valnames[MAX_M_VALUES+1]) = {",
     };
     static const char *const bottom[] =
     {
@@ -1186,7 +1186,7 @@ dump_all_submodes(void)
 	"",
 	"#if OPT_MAJORMODE",
 	"#ifdef realdef",
-	"EXTERN_CONST char *const all_submodes[] = {",
+	"DECL_EXTERN_CONST(char *const all_submodes[]) = {",
     };
     static const char *const bottom[] =
     {
@@ -1281,7 +1281,7 @@ dump_qmodes(void)
 	"} Q_VALUES;",
 	"",
 	"#ifdef realdef",
-	"EXTERN_CONST struct VALNAMES q_valnames[MAX_Q_VALUES+1] = {",
+	"DECL_EXTERN_CONST(struct VALNAMES q_valnames[MAX_Q_VALUES+1]) = {",
     };
     static const char *const bottom[] =
     {
@@ -1330,7 +1330,7 @@ dump_bmodes(void)
 	"} B_VALUES;",
 	"",
 	"#ifdef realdef",
-	"EXTERN_CONST struct VALNAMES b_valnames[] = {",
+	"DECL_EXTERN_CONST(struct VALNAMES b_valnames[]) = {",
     };
     static const char *const bottom[] =
     {
@@ -1394,7 +1394,7 @@ init_statevars(void)
 	"/*\tlist of recognized state variables\t*/",
 	"",
 	"#ifdef realdef",
-	"EXTERN_CONST char *const statevars[] = {"
+	"DECL_EXTERN_CONST(char *const statevars[]) = {"
     };
     static int done;
 
@@ -1441,7 +1441,7 @@ dump_statevars(void)
 	"",
 	"",
 	"#ifdef realdef",
-	"StateFunc *statevar_func[] = {",
+	"DECL_EXTERN(StateFunc *statevar_func[]) = {",
 	""
     };
     static const char *const tail[] =
@@ -1515,7 +1515,7 @@ init_fsms(void)
     Fprintf(nefsms, "#ifndef realdef\n");
     Fprintf(nefsms, "extern const FSM_CHOICES fsm_%s_choices[];\n", name);
     Fprintf(nefsms, "#else\n");
-    Fprintf(nefsms, "EXTERN_CONST FSM_CHOICES fsm_%s_choices[] = %c\n",
+    Fprintf(nefsms, "DECL_EXTERN_CONST(FSM_CHOICES fsm_%s_choices[]) = %c\n",
 	    name, L_CURL);
 }
 
@@ -1623,7 +1623,10 @@ save_funcs(
     Sprintf(temp, "extern int %s ( int f, int n );", func);
     InsertOnEnd(&all_funcs, temp);
 
-    s = append(strcpy(temp, "\tEXTERN_CONST CMDFUNC f_"), func);
+    s = strcpy(temp, "\t");
+    s = append(s, "DECL_EXTERN_CONST(CMDFUNC f_");
+    s = append(s, func);
+    s = append(s, ")");
     (void) PadTo(32, temp);
     s = append(s, "= {\n\tINIT_UNION(");
     s = append(s, func);
@@ -1681,7 +1684,7 @@ dump_gmodes(void)
 	"} G_VALUES;",
 	"",
 	"#ifdef realdef",
-	"EXTERN_CONST struct VALNAMES g_valnames[] = {",
+	"DECL_EXTERN_CONST(struct VALNAMES g_valnames[]) = {",
     };
     static const char *const bottom[] =
     {
@@ -1757,7 +1760,7 @@ init_ufuncs(void)
 	"#define SRET		0x0400",
 	"",
 	"#ifdef realdef",
-	"EXTERN_CONST UFUNC vl_ufuncs[] = {",
+	"DECL_EXTERN_CONST(UFUNC vl_ufuncs[]) = {",
     };
     static int done;
     LIST *p;
@@ -1844,7 +1847,7 @@ dump_wmodes(void)
 	"} W_VALUES;",
 	"",
 	"#ifdef realdef",
-	"EXTERN_CONST struct VALNAMES w_valnames[] = {",
+	"DECL_EXTERN_CONST(struct VALNAMES w_valnames[]) = {",
     };
     static const char *bottom[] =
     {

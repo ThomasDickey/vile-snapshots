@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.529 2004/11/01 00:41:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.532 2004/12/07 00:46:26 tom Exp $
  *
  */
 
@@ -819,6 +819,7 @@ extern void ntcons_reopen(void);
 
 /* oneliner.c */
 extern int llineregion (void);
+extern int nlineregion (void);
 extern int plineregion (void);
 extern int pplineregion (void);
 extern int subst_again_region (void);
@@ -953,6 +954,9 @@ extern void update_dos_drv_dir (char * cwd);
 #endif
 
 /* regexp.c */
+#define regcomp  vl_regcomp
+#define regexec  vl_regexec
+#define lregexec vl_lregexec
 extern regexp * regcomp (const char *origexp, size_t exp_len, int magic);
 extern int regexec (regexp *prog, char *string, char *stringend, int startoff, int endoff);
 extern int lregexec (regexp *prog, LINEPTR lp, int startoff, int endoff);
@@ -1312,6 +1316,7 @@ extern int isnewviwordf (void);
 extern int isnewwordb (void);
 extern int isnewwordf (void);
 extern int joinregion (void);
+extern int joinregion_x (void);
 extern void fmatch (int rch);
 extern void setchartype (void);
 

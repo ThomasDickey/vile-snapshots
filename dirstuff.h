@@ -4,7 +4,7 @@
  *	Definitions to interface to unix-like DIRECTORY(3) procedures.
  *	Include this after "estruct.h"
  *
- * $Header: /users/source/archives/vile.vcs/RCS/dirstuff.h,v 1.26 2004/10/30 14:54:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/dirstuff.h,v 1.27 2004/11/19 19:49:27 tom Exp $
  *
  */
 
@@ -43,7 +43,7 @@
 #    include <ndir.h>
 #   else
 #    if SYS_WINNT
-#     if CC_MSVC
+#     if CC_MSVC || CC_LCC_WIN32
 #      include <direct.h>
 #     else
 #      include <dirent.h>

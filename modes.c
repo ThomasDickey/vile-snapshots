@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.280 2004/10/30 19:29:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.281 2004/12/06 22:39:41 tom Exp $
  *
  */
 
@@ -231,7 +231,7 @@ string_val(const struct VALNAMES *names, struct VAL *values)
     const char *s = 0;
 
     switch (names->type) {
-#if	OPT_ENUM_MODES		/* will show the enum name too */
+#if OPT_ENUM_MODES		/* will show the enum name too */
     case VALTYPE_ENUM:
 	s = choice_to_name(valname_to_choices(names), values->vp->i);
 	break;
@@ -2016,15 +2016,14 @@ chgd_xterm(BUFFER *bp GCC_UNUSED,
 	   int glob_vals,
 	   int testing GCC_UNUSED)
 {
-#if	OPT_XTERM
-    if (glob_vals) {
+#if OPT_XTERM
+    if (glob_vals && !testing) {
 	int new_state = global_g_val(GMDXTERM_MOUSE);
-	set_global_g_val(GMDXTERM_MOUSE, TRUE);
-	if (!new_state)
-	    term.kclose();
-	else
-	    term.kopen();
+	set_global_g_val(GMDXTERM_MOUSE, !new_state);
+	term.kclose();
 	set_global_g_val(GMDXTERM_MOUSE, new_state);
+	term.kopen();
+	vile_refresh(FALSE, 0);
     }
 #endif
     return TRUE;

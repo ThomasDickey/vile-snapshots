@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.197 2004/10/30 16:40:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.198 2004/12/02 19:42:40 tom Exp $
  *
  */
 
@@ -152,8 +152,8 @@ error "No termios or sgtty"
 #if USE_FCNTL
 
 #include	<fcntl.h>
-char kbd_char;			/* one char of typeahead, gotten during poll    */
-int kbd_char_good;		/* is a char in kbd_char?                       */
+static char kbd_char;		/* one char of typeahead, gotten during poll    */
+static int kbd_char_good;	/* is a char in kbd_char?                       */
 
 /*
  * putting the input tty in polling mode lets us check for
@@ -218,9 +218,12 @@ set_kbd_polling(int yes)
 # endif
 #endif
 
-struct termios otermios, ntermios;
+static struct termios otermios;
 
-char tobuf[TBUFSIZ];		/* terminal output buffer */
+#if !DISP_X11
+static struct termios ntermios;
+static char tobuf[TBUFSIZ];	/* terminal output buffer */
+#endif
 
 void
 vl_save_tty(void)

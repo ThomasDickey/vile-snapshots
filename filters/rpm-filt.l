@@ -1,11 +1,11 @@
 %x META TEXT NORMAL HEREDOC QUOTED QUOTED2 SUBST
 
-%o6000
-%a3000
+%o 6000
+%a 3000
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.6 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.7 2004/11/24 01:01:38 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */

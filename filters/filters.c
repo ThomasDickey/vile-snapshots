@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.89 2003/11/13 00:34:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.91 2004/11/11 00:13:34 tom Exp $
  *
  */
 
@@ -44,7 +44,8 @@ struct _classes {
 };
 
 char *default_attr;
-int abbr_ch = '*';
+int zero_or_more = '*';		/* zero or more of the following */
+int zero_or_all = '?';		/* zero or all of the following */
 int meta_ch = '.';
 int eqls_ch = ':';
 int vile_keywords;
@@ -83,7 +84,13 @@ AttrsOnce(KEYWORD * entry)
 static void
 ExecAbbrev(char *param)
 {
-    abbr_ch = *param;
+    zero_or_more = *param;
+}
+
+static void
+ExecBrief(char *param)
+{
+    zero_or_all = *param;
 }
 
 static void
@@ -104,6 +111,7 @@ ExecDefault(char *param)
     if (is_class(param)) {
 	free(default_attr);
 	default_attr = strmalloc(param);
+	VERBOSE(1, ("set default_attr '%s' %p\n", default_attr, default_attr));
     } else {
 	*s = save;
 	VERBOSE(1, ("not a class:%s", param));
@@ -148,6 +156,7 @@ static void
 ExecTable(char *param)
 {
     flt_make_symtab(param);
+    flt_read_keywords(MY_NAME);	/* provide default values for this table */
 }
 
 static KEYWORD *
@@ -259,6 +268,7 @@ ParseDirective(char *line)
     } table[] = {
 	/* *INDENT-OFF* */
 	{ "abbrev",  ExecAbbrev   },
+	{ "brief",   ExecBrief    },
 	{ "class",   ExecClass    },
 	{ "default", ExecDefault  },
 	{ "equals",  ExecEquals   },
@@ -328,6 +338,7 @@ class_attr(char *name)
 	VERBOSE(hash_id->kw_used, ("class_attr(%s) = %s",
 				   name, AttrsOnce(hash_id)));
 	name = result = hash_id->kw_attr;
+	VERBOSE(1, ("-> %p\n", result));
     }
     return result;
 }
@@ -456,7 +467,8 @@ flt_initialize(void)
 	free(default_attr);
     default_attr = strmalloc(NAME_KEYWORD);
 
-    abbr_ch = '*';
+    zero_or_more = '*';
+    zero_or_all = '?';
     meta_ch = '.';
     eqls_ch = ':';
     FltOptions('v') = 0;
@@ -494,7 +506,6 @@ flt_make_symtab(char *classname)
 	insert_keyword(NAME_NUMBER, ATTR_NUMBER, 1);
 	insert_keyword(NAME_PREPROC, ATTR_PREPROC, 1);
 	insert_keyword(NAME_TYPES, ATTR_TYPES, 1);
-
     }
 }
 
@@ -575,17 +586,36 @@ insert_keyword(const char *ident, const char *attribute, int classflag)
     int Index;
     char *mark;
 
-    if ((mark = strchr(ident, abbr_ch)) != 0
+    VERBOSE(2, ("insert_keyword(%s, %s, %d)\n",
+		ident,
+		attribute,
+		classflag));
+
+    if ((mark = strchr(ident, zero_or_more)) != 0
 	&& (mark != ident)) {
 	char *temp = strmalloc(ident);
 
 	mark = temp + (mark - ident);
-	while (*mark == abbr_ch) {
+	while (*mark == zero_or_more) {
 	    *mark = 0;
 	    insert_keyword(temp, attribute, classflag);
 	    if ((mark[0] = mark[1]) != 0) {
-		*(++mark) = '*';
+		*(++mark) = zero_or_more;
 	    }
+	}
+	free(temp);
+	return;
+    } else if ((mark = strchr(ident, zero_or_all)) != 0
+	       && (mark != ident)) {
+	char *temp = strmalloc(ident);
+
+	mark = temp + (mark - ident);
+	if (*mark == zero_or_all) {
+	    *mark = 0;
+	    insert_keyword(temp, attribute, classflag);
+	    while ((mark[0] = mark[1]) != 0)
+		++mark;
+	    insert_keyword(temp, attribute, classflag);
 	}
 	free(temp);
 	return;
@@ -649,6 +679,7 @@ keyword_attr(char *name)
 	while ((hash_id = is_class(result)) != 0)
 	    result = hash_id->kw_attr;
     }
+    VERBOSE(1, ("keyword_attr(%s) = %p %s\n", name, result, NONNULL(result)));
     return result;
 }
 
@@ -718,7 +749,15 @@ parse_keyword(char *name, int classflag)
 	    VERBOSE(2, ("using attr \"%s\"", args));
 	}
 	if ((hash_id = FindIdentifier(args)) != 0) {
-	    insert_keyword(name, hash_id->kw_attr, classflag);
+	    /*
+	     * Insert the classname rather than the hash_id->kw_attr value,
+	     * since insert_keyword makes a copy of the string we pass to it.
+	     * Retrieving the attribute from the copy will give the unique
+	     * attribute string belonging to the class, so it is possible at
+	     * runtime to compare pointers from keyword_attr() to determine if
+	     * two tokens have the same class.  sql-filt.l uses this feature.
+	     */
+	    insert_keyword(name, args, classflag);
 	}
     }
 }
