@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.22 1998/12/30 12:42:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.23 1999/02/10 12:03:01 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -165,5 +165,8 @@ extern void write_token(FILE *fp, char *string, int length, char *attribute);
 
 #define WriteString(attr) write_string(yyout, yytext, yyleng, attr)
 #define WriteToken(attr) write_token(yyout, yytext, yyleng, attr)
+
+#define WriteString2(attr,len) write_string(yyout, yytext+len, yyleng-len, attr)
+#define WriteToken2(attr,len) write_token(yyout, yytext+len, yyleng-len, attr)
 
 #endif /* FILTERS_H */

@@ -8,7 +8,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.63 1999/02/01 01:51:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.66 1999/02/12 10:22:11 tom Exp $
  *
  */
 
@@ -53,6 +53,9 @@
 
 #define direction_of(sdir) (((sdir) == FORWARD) ? "forward" : "backward")
 
+#define min(a,b)	((a) < (b) ? (a) : (b))
+#define HARD_LIMIT(bp) (bp->b_linecount * min(bp->b_linecount,b_val(bp,VAL_FENCE_LIMIT)))
+
 #if !OPT_MAJORMODE
 #define limit_iterations() /* nothing */
 #endif
@@ -64,6 +67,7 @@
 #define start_fence_op(sdir, oldpos, oldpre) \
 	TRACE(("...start_fence_op\n")) \
 	oldpos = DOT; \
+	oldpre = pre_op_dot; \
 	if (doingopcmd && sdir == REVERSE) { \
 		forwchar(TRUE,1); \
 		pre_op_dot = DOT; \
@@ -331,7 +335,7 @@ finish:
 static int
 find_complex(int sdir, int *newkey)
 {
-	int s = FALSE;
+	int rc = FALSE;
 	int key = CPP_UNKNOWN;
 	int group = -1;
 	MARK	oldpos, oldpre;
@@ -348,15 +352,18 @@ find_complex(int sdir, int *newkey)
 		sdir = (key == CPP_ENDIF)
 			? REVERSE
 			: FORWARD;
-		s = complex_fence(sdir, key, group, 0, newkey);
-		test_fence_op(s, oldpos, oldpre);
+		rc = complex_fence(sdir, key, group, 0, newkey);
+		test_fence_op(rc, oldpos, oldpre);
 #if OPT_MAJORMODE
-		if (s)
+		if (rc)
 		    break;
 #endif
 	    }
 	}
-	return s;
+#if OPT_MAJORMODE
+	TRACE(("...find_complex %d (iterations left %ld of %d)\n", rc, hard_limit, HARD_LIMIT(curbp)))
+#endif
+	return rc;
 }
 
 /*
@@ -398,7 +405,7 @@ static void
 limit_iterations(void)
 {
 	bsizes(curbp);
-	hard_limit = curbp->b_linecount;
+	hard_limit = HARD_LIMIT(curbp);
 }
 #endif
 

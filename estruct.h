@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.373 1999/01/08 02:56:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.374 1999/02/11 11:27:50 cmorgan Exp $
  */
 
 #ifndef _estruct_h
@@ -2463,6 +2463,15 @@ extern void _exit (int code);
 #define	malloc	allocate
 #undef	free
 #define	free	release
+#endif
+
+/* Definitions for hardwired VT-compatible flash esc sequences. */
+#if OPT_FLASH
+#define VTFLASH_OFF     0
+#define VTFLASH_REVERSE 1
+#define VTFLASH_NORMAL  2
+#define VTFLASH_REVSEQ  "\033[?5h"
+#define VTFLASH_NORMSEQ "\033[?5l"
 #endif
 
 /* for debugging VMS pathnames on UNIX... */

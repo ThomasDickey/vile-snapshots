@@ -339,6 +339,8 @@ Environmental Variables
 
 	$lastkey	[READ ONLY] Last keyboard character typed.
 
+	$libdir-path	Augment $PATH when running filters.
+
 	$line		The current line in the current buffer can be
 			retrieved and set with this environment variable.
 
@@ -1105,5 +1107,5 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.11 1999/01/26 22:43:10 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.13 1999/02/11 22:04:24 tom Exp $
 -----------------------------------

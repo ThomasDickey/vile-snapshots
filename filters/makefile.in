@@ -1,10 +1,12 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.30 1999/01/01 13:08:01 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.34 1999/02/11 00:22:09 tom Exp $
 #
 
 #### Start of system configuration section. ####
 
-srcdir		= @srcdir@
 VPATH		= @srcdir@
+
+top_srcdir	= @top_srcdir@
+srcdir		= @srcdir@
 
 CC		= @CC@
 CPP		= @CPP@
@@ -31,7 +33,8 @@ prefix		= @prefix@
 exec_prefix	= @exec_prefix@
 
 manext		= 1
-bindir		= @bindir@
+libdir		= @libdir@
+bindir		= @VILE_LIBDIR_PATH@
 datadir		= @datadir@/vile
 mandir		= @mandir@/man$(manext)
 
@@ -68,11 +71,17 @@ LF_ARGS = filters.o $(LEXLIB)
 CF_DEPS = filters.o
 CF_ARGS = filters.o
 
-ALL = \
+# filters in "C" are easy to port
+C_ALL	= \
+	vile-c-filt$x \
+	vile-manfilt$x \
+	vile-pas-filt$x
+
+# filters in lex/flex require state support
+LEX_ALL = \
 	vile-ada-filt$x \
 	vile-awk-filt$x \
 	vile-bat-filt$x \
-	vile-c-filt$x \
 	vile-dcl-filt$x \
 	vile-cweb-filt$x \
 	vile-html-filt$x \
@@ -80,9 +89,7 @@ ALL = \
 	vile-lex-filt$x \
 	vile-mail-filt$x \
 	vile-make-filt$x \
-	vile-manfilt$x \
 	vile-nr-filt$x \
-	vile-pas-filt$x \
 	vile-perl-filt$x \
 	vile-sh-filt$x \
 	vile-sql-filt$x \
@@ -91,6 +98,8 @@ ALL = \
 	vile-ti-filt$x \
 	vile-vile-filt$x \
 	vile-yacc-filt$x
+
+ALL = 	$(C_ALL) @MAKE_LEX@ $(LEX_ALL)
 
 all:	$(ALL)
 
@@ -163,20 +172,26 @@ vile-yacc-filt$x : yaccfilt.o $(LF_DEPS)
 check: $(TARGET)
 	@echo Sorry, no batch tests available.
 
-INSTALL_FILES = \
+INSTALL_C = \
+	$(bindir)/vile-c-filt$x \
+	$(bindir)/vile-manfilt$x \
+	$(bindir)/vile-pas-filt$x \
+	$(datadir)/c.keywords \
+	$(datadir)/filters.rc \
+	$(datadir)/pas.keywords \
+	$(datadir)/vile.keywords
+
+INSTALL_LEX = \
 	$(bindir)/vile-ada-filt$x \
 	$(bindir)/vile-awk-filt$x \
 	$(bindir)/vile-bat-filt$x \
-	$(bindir)/vile-c-filt$x \
 	$(bindir)/vile-dcl-filt$x \
 	$(bindir)/vile-html-filt$x \
 	$(bindir)/vile-latex-filt$x \
 	$(bindir)/vile-lex-filt$x \
 	$(bindir)/vile-mail-filt$x \
 	$(bindir)/vile-make-filt$x \
-	$(bindir)/vile-manfilt$x \
 	$(bindir)/vile-nr-filt$x \
-	$(bindir)/vile-pas-filt$x \
 	$(bindir)/vile-perl-filt$x \
 	$(bindir)/vile-sh-filt$x \
 	$(bindir)/vile-sql-filt$x \
@@ -188,9 +203,7 @@ INSTALL_FILES = \
 	$(datadir)/ada.keywords \
 	$(datadir)/awk.keywords \
 	$(datadir)/bat.keywords \
-	$(datadir)/c.keywords \
 	$(datadir)/dcl.keywords \
-	$(datadir)/filters.rc \
 	$(datadir)/html.keywords \
 	$(datadir)/java.keywords \
 	$(datadir)/js.keywords \
@@ -199,15 +212,15 @@ INSTALL_FILES = \
 	$(datadir)/mail.keywords \
 	$(datadir)/make.keywords \
 	$(datadir)/nr.keywords \
-	$(datadir)/pas.keywords \
 	$(datadir)/perl.keywords \
 	$(datadir)/sh.keywords \
 	$(datadir)/sql.keywords \
 	$(datadir)/tc.keywords \
 	$(datadir)/tcl.keywords \
 	$(datadir)/ti.keywords \
-	$(datadir)/vile.keywords \
 	$(datadir)/yacc.keywords
+
+INSTALL_FILES = $(INSTALL_C) @MAKE_LEX@ $(INSTALL_LEX)
 
 install: $(INSTALL_DIRS) \
 	$(INSTALL_FILES)
@@ -302,7 +315,7 @@ $(datadir)/vile.keywords :	$(srcdir)/vile.key	; $(INSTALL_DATA) $? $@
 $(datadir)/yacc.keywords :	$(srcdir)/yacc.key	; $(INSTALL_DATA) $? $@
 
 $(INSTALL_DIRS):
-	$(SHELL) ${srcdir}/mkdirs.sh $@
+	$(SHELL) ${top_srcdir}/mkdirs.sh $@
 
 ALWAYS:
 

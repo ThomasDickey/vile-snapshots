@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.352 1999/02/01 02:40:33 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.355 1999/02/12 11:16:49 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1687,3 +1687,21 @@ If I attempt to set the geometry to 80x39 when using the font string
 
 [there's something in the initialization which is using the original fontsize
 to determine the limit on the number of rows - tom]
+
+-- 99-02-11 (tom)
+
+Steen Savstrup Kristensen <steen@saturn.emi.dtu.dk> reports that he needs to
+use "EXTRA_CFLAGS  = -n32 -mips4" to get xvile to build properly on IRIX.
+SGI (IRIX's vendor) is transitioning from an old (-o32) 32-bit architecture
+to 64-bit (with -n32 used for compatibility).  I do not yet know how to write
+a configure test that will set this properly.
+
+Also, from examining config.log, the 64-bit compiler complains about casts
+of addresses to 'int'.  This may be a problem (i.e., cause configure tests
+to go awry).
+
+-- 99-02-12 (tom)
+
+The lex filters will not build with old versions of lex, since those do not
+support %x.  We can support new versions of lex, but really recommend using
+flex, since even the newer versions of lex apparently have more bugs.

@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.113 1998/12/29 16:19:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.114 1999/02/11 11:27:14 cmorgan Exp $
  *
  */
 
@@ -1005,10 +1005,40 @@ static void
 tcapbeep(void)
 {
 #if OPT_FLASH
-	if (global_g_val(GMDFLASH)
-	 && vb != NULL) {
-		putpad(vb);
-	} else
+	int hit = 0;
+
+	if (global_g_val(GMDFLASH))
+	{
+		if (vb)
+		{
+			putpad(vb);
+			hit = 1;
+		}
+	}
+	if (! hit)
+	{
+		static char *seq[][2] =
+		{
+			{ NULL, NULL },                /* vtflash = off */
+			{ VTFLASH_NORMSEQ, VTFLASH_REVSEQ }, /* reverse */
+			{ VTFLASH_REVSEQ, VTFLASH_NORMSEQ }, /* normal  */
+		};
+		char *str1, *str2;
+		int  val;
+
+		val  = global_g_val(GVAL_VTFLASH);
+		str1 = seq[val][0];
+		if (str1)
+		{
+			str2 = seq[val][1];
+			putpad(str1);
+			TTflush();
+			catnap(150, FALSE);
+			putpad(str2);
+			hit = 1;
+		}
+	}
+	if (! hit)
 #endif
 	ttputc(BEL);
 }

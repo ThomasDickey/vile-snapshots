@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.17 1999/01/07 03:01:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.18 1999/02/10 12:03:23 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PERL input
  * text.
@@ -157,8 +157,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
 <CODE>\n\n=[a-z].*	{ 
 			    fputs("\n\n", yyout); 
-			    yyleng -= 2; yytext += 2; /* skip newlines */ 
-			    WriteToken(Comment_attr); 
+			    WriteToken2(Comment_attr,2); 
 			    BEGIN(POD); 
 			} 
 <POD>^=cut\n		{ WriteToken(Comment_attr); BEGIN(CODE); } 

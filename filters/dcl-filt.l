@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.5 1998/12/25 22:51:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.6 1999/02/12 11:35:36 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DCL files.
  *
@@ -85,6 +85,7 @@ PARAM		'{IDENT}
 
 LABEL		{IDENT}{BLANK}*:({BLANK}+|$)
 
+INLINECOMMENT	![^\n]*
 COMMENT		^({BLANK}*)($)?({BLANK}*)(![^\n]*)?
 
 NUMBER		([0-9]+)|(%[dD][0-9]+)|(%[oO][0-7]+)|(%[xX][a-fA-F0-9]+)
@@ -104,6 +105,7 @@ STRING		\"([^"\n]|(""))*\"
 
 {PARAM}			{ WriteToken(Ident2_attr); }
 
+{INLINECOMMENT}		|
 {COMMENT}		{ WriteToken(Comment_attr); }
 
 {NUMBER}		{ WriteToken(Number_attr); }

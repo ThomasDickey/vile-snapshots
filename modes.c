@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.133 1999/02/01 02:55:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.134 1999/02/11 11:27:55 cmorgan Exp $
  *
  */
 
@@ -32,6 +32,7 @@
 #define OPT_BACKUP_CHOICES	OPT_FILEBACK
 #define OPT_HILITE_CHOICES	OPT_HILITEMATCH
 #define OPT_RECORDFORMAT_CHOICES SYS_VMS
+#define OPT_VTFLASHSEQ_CHOICES OPT_FLASH
 
 #include "nefsms.h"
 
@@ -732,6 +733,9 @@ struct FSM fsm_tbl[] = {
 	{ "mcolor",          fsm_hilite_choices },
 	{ "visual-matches",  fsm_hilite_choices },
 	{ "mini-hilite",     fsm_hilite_choices },
+#endif
+#if OPT_VTFLASHSEQ_CHOICES
+	{ "vtflash",         fsm_vtflashseq_choices },
 #endif
 #if SYS_VMS
 	{ "record-format",   fsm_recordformat_choices },
@@ -2004,7 +2008,7 @@ init_sm_vals (struct VAL *dst)
  * MINORMODE structure and return a pointer to the B_VALUES VALS data.  If
  * no structure is found, create one.
  *
- * We maintain the list of MINORMODE structures in the order they are defined. 
+ * We maintain the list of MINORMODE structures in the order they are defined.
  * This has the desirable side-effect of returning immediately for the default
  * "" group.
  */
