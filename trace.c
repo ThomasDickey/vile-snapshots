@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.33 2002/10/20 14:36:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.34 2002/10/27 15:02:52 tom Exp $
  *
  */
 
@@ -169,6 +169,7 @@ visible_buff(const char *buffer, int length, int eos)
 	    break;
 	} else if (isprint(c)) {
 	    result[k++] = (char) c;
+	    result[k] = '\0';
 	} else {
 	    if (c >= 128)
 		sprintf(result + k, "\\%03o", c);

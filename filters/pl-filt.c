@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.34 2002/10/15 22:04:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.37 2002/10/27 17:01:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -7,7 +7,11 @@
 
 #include <filters.h>
 
+#ifdef DEBUG
+DefineOptFilter("perl", "d");
+#else
 DefineFilter("perl");
+#endif
 
 #define ESC     '\\'
 #define SQUOTE  '\''
@@ -20,15 +24,16 @@ DefineFilter("perl");
 #define L_BLOCK '['
 #define R_BLOCK ']'
 
-#define QUOTE_DELIMS "#:/?|!:%`',{}"
+#define QUOTE_DELIMS "#:/?|!:%`',{}[]()"
 /* from Perl's S_scan_str() */
 #define LOOKUP_TERM "([{< )]}> )]}>"
 
-#define isIdent(c) (isalnum(CharOf(c)) || c == '_')
-#define isBlank(c)  ((c) == ' ' || (c) == '\t')
+#define isIdent(c)   (isalnum(CharOf(c)) || c == '_')
+#define isBlank(c)   ((c) == ' ' || (c) == '\t')
+#define isPattern(c) ((c) == '/' || (c) == '?')
 
-#if 0
-#define DPRINTF(params) if(0)printf params
+#ifdef DEBUG
+#define DPRINTF(params) if(flt_options['d'])printf params
 #else
 #define DPRINTF(params)		/*nothing */
 #endif
@@ -56,6 +61,34 @@ static char *Number_attr;
 static char *the_file;
 static char *the_last;
 static size_t the_size;
+
+#ifdef DEBUG
+static char *
+stateName(States state)
+{
+    char *result;
+    switch (state) {
+    case eCODE:
+	result = "CODE";
+	break;
+    case eHERE:
+	result = "HERE";
+	break;
+    case ePATTERN:
+	result = "PATTERN";
+	break;
+    case ePOD:
+	result = "POD";
+	break;
+    case eIGNORED:
+	result = "IGNORED";
+	break;
+    default:
+	result = "?";
+    }
+    return result;
+}
+#endif
 
 /******************************************************************************
  * Lexical functions that match a particular token type                       *
@@ -528,7 +561,7 @@ is_QUOTE(char *s, int *delims)
     if ((len = (s - base)) != 0) {
 	switch (len) {
 	case 1:
-	    if (*base == 'm') {
+	    if (*base == 'm' || *base == 'q') {
 		*delims = 2;
 	    } else if (*base == 's' || *base == 'y') {
 		*delims = 3;
@@ -719,7 +752,8 @@ is_Option(char *s)
 
     if (*s == '-'
 	&& ((s + 1) != the_last)
-	&& isalpha(CharOf(s[1])))
+	&& isalpha(CharOf(s[1]))
+	&& !isIdent(CharOf(s[2])))
 	found = 2;
     return found;
 }
@@ -812,6 +846,22 @@ put_remainder(char *s, char *attr, int quoted)
     return put_newline(s);
 }
 
+/*
+ * Check for special cases of keywords after which we may expect a pattern
+ * that does not have to be inside parentheses.
+ */
+static int
+check_keyword(char *s, int ok)
+{
+    switch (ok) {
+    case 2:
+	return !strncmp(s, "if", ok);
+    case 5:
+	return !strncmp(s, "split", ok);
+    }
+    return 0;
+}
+
 static char *
 put_IDENT(char *s, int ok, int *had_op, int *if_wrd)
 {
@@ -823,7 +873,7 @@ put_IDENT(char *s, int ok, int *had_op, int *if_wrd)
     attr = keyword_attr(s);
     s[ok] = save;
     flt_puts(s, ok, (attr != 0 && *attr != '\0') ? attr : Ident2_attr);
-    *if_wrd = (ok == 2 && !strncmp(s, "if", ok));
+    *if_wrd = check_keyword(s, ok);
     return s + ok;
 }
 
@@ -847,6 +897,7 @@ do_filter(FILE * input GCC_UNUSED)
     char *s;
     char *marker = 0;
     int in_line = -1;
+    int in_stmt = 0;
     int ok;
     int err;
     int save;
@@ -899,10 +950,12 @@ do_filter(FILE * input GCC_UNUSED)
 	    }
 	    if_old = if_wrd;
 	    if_wrd = 0;
-	    DPRINTF(("state:%d, in_line:%d, had_op:%d, chr(%c)\n",
-		     state, in_line, had_op, *s));
+	    DPRINTF(("(%s(%c) line:%d stmt:%d if:%d op:%d)\n",
+		     stateName(state), *s, in_line, in_stmt, if_wrd, had_op));
 	    switch (state) {
 	    case eCODE:
+		if (!isspace(*s))
+		    ++in_stmt;
 		if ((marker = begin_HERE(s, &quoted)) != 0) {
 		    state = eHERE;
 		    s = put_remainder(s, String_attr, quoted);
@@ -931,13 +984,13 @@ do_filter(FILE * input GCC_UNUSED)
 		    flt_puts(s, ok, "");
 		    s += ok;
 		    if_wrd = if_old;
-		} else if ((if_old || had_op) && (*s == '/' || *s == '?')) {
+		} else if ((if_old || had_op || (in_stmt == 1)) && isPattern(*s)) {
 		    state = ePATTERN;
 		} else if (*s == L_PAREN) {
 		    parens++;
 		    had_op = 1;
 		    flt_putc(*s++);
-		    if (*s == '/' || *s == '?') {
+		    if (isPattern(*s)) {
 			state = ePATTERN;
 		    }
 		} else if (*s == R_PAREN) {
@@ -956,13 +1009,13 @@ do_filter(FILE * input GCC_UNUSED)
 			state = eIGNORED;
 		    had_op = 0;
 		    flt_puts(s, ok, keyword_attr(s));
-		    if_wrd = (ok == 2 && !strncmp(s, "if", ok));
+		    if_wrd = check_keyword(s, ok);
 		    s[ok] = save;
 		    s += ok;
 		} else if ((ok = is_Option(s)) != 0) {
 		    had_op = 0;
 		    flt_puts(s, ok, Keyword_attr);
-		    if_wrd = (ok == 2 && !strncmp(s, "if", ok));
+		    if_wrd = check_keyword(s, ok);
 		    s += ok;
 		} else if ((ok = is_IDENT(s)) != 0) {
 		    s = put_IDENT(s, ok, &had_op, &if_wrd);
@@ -980,6 +1033,8 @@ do_filter(FILE * input GCC_UNUSED)
 			else if (!isspace(CharOf(*s)))
 			    had_op = 0;
 		    } else {
+			if (*s == ';')
+			    in_stmt = 0;
 			if (strchr("=~", *s) != 0)
 			    had_op = 1;
 		    }

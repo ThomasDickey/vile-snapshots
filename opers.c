@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995-2002 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.83 2002/10/11 14:12:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.84 2002/10/27 15:46:29 tom Exp $
  *
  */
 
@@ -227,7 +227,7 @@ operyank(int f, int n)
      * the beginning of the region, to match vi's behavior.  Otherwise leave
      * DOT where it is.
      */
-    if (s == TRUE) {
+    if (s == TRUE && b_val(curbp, MDYANKMOTION)) {
 	if (line_no(curbp, post_op_dot.l) != 0
 	    && line_no(curbp, post_op_dot.l) < line_no(curbp, savedot.l)) {
 	    savedot = post_op_dot;
