@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.66 2000/01/02 20:44:22 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.68 2000/01/07 01:42:46 kev Exp $
  */
 
 /*#
@@ -366,9 +366,6 @@ static int recursecount = 0;
 static int
 do_perl_cmd(SV *cmd, int inplace)
 {
-    int save_no_msgs;
-    int old_isnamedcmd;
-
     use_ml_as_prompt = 0;
 
     if (perl_interp || perl_init()) {
@@ -401,14 +398,6 @@ do_perl_cmd(SV *cmd, int inplace)
 	    IoLINES(GvIO((GV*)curvbp->perl_handle)) = 0;  /* initialise $. */
 	}
 
-	/* We set the following stuff up in the event that we call
-	   one of the mlreply methods.  If they are not set up this
-	   way, we won't always be prompted... */
-	clexec = FALSE;
-	save_no_msgs = no_msgs;
-	no_msgs = FALSE;
-	old_isnamedcmd = isnamedcmd;	/* for mlreply_dir */
-	isnamedcmd = TRUE;
 	recursecount++;
 
 #if PDEBUG
@@ -431,9 +420,6 @@ do_perl_cmd(SV *cmd, int inplace)
 #endif
 
 	recursecount--;
-	no_msgs = save_no_msgs;
-	isnamedcmd = old_isnamedcmd;
-
 	if (recursecount == 0) {
 	    sv_setsv(svcurbuf, &sv_undef);
 	    api_command_cleanup();
@@ -2065,7 +2051,7 @@ mlreply_file(prompt, ...)
   #
   # Prompts the user with the given prompt and (optional) supplied
   # initial value.  All printable characters may be entered by the
-  # without any special escapes.
+  # user without any special escapes.
   #
   # Returns the user's response string.  If the user aborts
   # (via the use of the escape key) the query, an undef is
@@ -2223,7 +2209,7 @@ selection_buffer(...)
   # pairs, where key is a mode name and value is an appropriate value
   # for that mode.  When used in an array context, the resulting key =>
   # value pairs are returned.  (The value may be a different, but
-  # equivalent string than originally specified.) When used in an array
+  # equivalent string than originally specified.) When used in a scalar
   # context, either the package name or buffer object is returned
   # (depending on how it was invoked) in order that the result may be
   # used as the target of further method calls.

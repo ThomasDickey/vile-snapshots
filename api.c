@@ -204,15 +204,13 @@ api_setup_fake_win(VileBuf *vbp, int do_delete)
 
     if (vbp->fwp) {
 	curwp = vbp->fwp;
+	curbp = curwp->w_bufp;
     }
     else {
 	(void) push_fake_win(vbp->bp);
 	vbp->fwp = curwp;
 	vbp->changed = 0;
     }
-
-    /* Should we call make_current() for this? */
-    curbp = curwp->w_bufp;
 
     if (vbp->ndel > 0 && do_delete) {
 	int status;
@@ -807,6 +805,7 @@ api_command_cleanup(void)
 
     curwp_visible = 0;
 
+    /* Not needed? */
     if (curbp != curwp->w_bufp)
 	make_current(curwp->w_bufp);
 

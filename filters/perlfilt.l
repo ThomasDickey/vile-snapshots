@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.22 1999/11/20 14:32:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.24 2000/01/07 03:10:37 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PERL input
  * text.
@@ -143,8 +143,9 @@ do_filter(FILE *input, FILE *output)
 
 BLANK		[ \t]*
 
-SSTRING		\'(\\.|[^'\\])*\'
-DSTRING		\"(\\.|[^"\\])*\"
+ESCAPED		\\.
+SSTRING		\'(\\.|\\\n|[^'\\])*\'
+DSTRING		\"(\\.|\\\n|[^"\\])*\"
 STRINGS		({SSTRING}|{DSTRING})
 
 KEYWORD		[a-zA-Z_][a-zA-Z_0-9]*
@@ -204,6 +205,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
 <CODE>{IDENT}		{ WriteToken(Ident_attr); }
 
+<CODE>{ESCAPED}		|
 <CODE>{STRINGS}		{ WriteString(String_attr); }
 
 <IGNORED>[^\n]*		{ WriteToken(Comment_attr); }
@@ -213,5 +215,5 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 			    WriteToken2(Comment_attr,2);
 			    BEGIN(POD);
 			}
-<POD>^=cut\n		{ WriteToken(Comment_attr); BEGIN(CODE); }
+<POD>^=cut{BLANK}\n	{ WriteToken(Comment_attr); BEGIN(CODE); }
 <POD>.*			{ WriteToken(Comment_attr); }

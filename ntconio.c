@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.53 1999/12/27 01:43:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.54 2000/01/07 01:55:47 cmorgan Exp $
  *
  */
 
@@ -746,13 +746,31 @@ ntgetch(void)
     INPUT_RECORD ir;
     DWORD nr;
     int key;
+#ifdef VAL_AUTOCOLOR
+    int milli_ac, orig_milli_ac;
+#endif
 
     if (saveCount > 0) {
 	saveCount--;
 	return savedChar;
     }
-
+#ifdef VAL_AUTOCOLOR
+    orig_milli_ac = global_b_val(VAL_AUTOCOLOR);
+#endif
     for_ever {
+#ifdef VAL_AUTOCOLOR
+	milli_ac = orig_milli_ac;
+	while (milli_ac > 0) {
+	    if (PeekConsoleInput(hConsoleInput, &ir, 1, &nr) == 0)
+		break;		/* ?? system call failed ?? */
+	    if (nr > 0)
+		break;		/* something in the queue */
+	    Sleep(20);		/* sleep a bit, but be responsive to keybd input */
+	    milli_ac -= 20;
+	}
+	if (orig_milli_ac && milli_ac <= 0)
+	    autocolor();
+#endif
 	if (!ReadConsoleInput(hConsoleInput, &ir, 1, &nr))
 	    imdying(0);
 	switch (ir.EventType) {

@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.111 1999/12/30 01:49:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.112 2000/01/07 01:42:46 kev Exp $
  *
  */
 
@@ -403,7 +403,6 @@ sel_yank(int reg)
 {
     REGIONSHAPE save_shape;
     WINDOW *save_wp;
-    BUFFER *save_bp;
     int save_tabs;
 
     if (selbufp == NULL)
@@ -418,7 +417,6 @@ sel_yank(int reg)
      * is used in tab and offset computations when we're doing a rectangular
      * selection, e.g., in getoff().
      */
-    save_bp    = curbp;
     save_shape = regionshape;
     save_tabs  = curtabval;
 
@@ -434,7 +432,6 @@ sel_yank(int reg)
 
     pop_fake_win(save_wp);
 
-    curbp       = save_bp;
     regionshape = save_shape;
     curtabval   = save_tabs;
 
