@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.175 1998/09/07 20:04:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.176 1998/09/19 22:52:06 kev Exp $
  *
  */
 
@@ -1112,6 +1112,20 @@ zotbuf(register BUFFER *bp)	/* kill the buffer pointed to by bp */
 		mlforce("[Buffer is being displayed]");
 		return (FALSE);
 	}
+	if (is_fake_window(wheadp))  {
+		WINDOW *wp;
+		WINDOW dummy;
+		/* Not on screen, but a fake window might refer to it.  So
+		   delete all such fake windows */
+		for_each_window(wp) {
+			if (is_fake_window(wp) 
+			 && wp->w_bufp == bp && wheadp->w_wndp != NULL) {
+				dummy.w_wndp = wp->w_wndp;
+				s = delwp(wp);
+				wp = &dummy;
+			}
+		}
+	}
 #else
 	if (curbp == bp) {
 		didswitch = TRUE;
@@ -1120,7 +1134,9 @@ zotbuf(register BUFFER *bp)	/* kill the buffer pointed to by bp */
 			return FALSE;
 		}
 	}
-	if (bp->b_nwnd != 0)  { /* then it's on the screen somewhere */
+	if (bp->b_nwnd != 0 || is_fake_window(wheadp))  {
+	        		/* then it's on the screen somewhere 
+				   or there are fake windows to worry about */
 		(void)zotwp(bp);
 		if (find_bp(bp) == 0) /* delwp must have zotted us */
 			return TRUE;
