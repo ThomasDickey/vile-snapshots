@@ -1490,6 +1490,10 @@ Editor modes
 	paragraphs A regular expression defining where the "next-paragraph"
 		('}') and "previous-paragraph" ('{') commands will go. (B)
 
+	percent-crlf Percentage of total lines which must end with CR/LF for
+		vile to automatically convert buffer's recordseparator to
+		crlf.  (B)
+
 	pin-tagstack If set, the editor does not change windows when
 		executing tag locate/pop commands.  Put another way, all
 		tag push and pop operations are "pinned" to the current
@@ -5783,4 +5787,4 @@ Problems
 
 Copyright 1995-2002 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.550 2002/06/26 00:30:19 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.551 2002/07/03 00:32:10 tom Exp $

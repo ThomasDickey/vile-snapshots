@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.154 2002/05/05 19:00:17 J.Chris.Coppick Exp $
+; $Id: filters.rc,v 1.156 2002/07/03 10:55:00 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -235,6 +235,12 @@ define-mode lex
 	cindent-chars &cat ':#' $fences
 ~endwith
 
+define-mode log
+~with define-submode log
+	suf '\(\(run\|make\)\.out\|\.log[^/]*\)$'
+	before make
+~endwith
+
 ; actually, m4 used for autoconf scripts, which is Bourne-shell
 define-mode m4
 ~with define-submode m4
@@ -262,16 +268,20 @@ define-mode mail
 
 define-mode make
 ~with define-submode make
-	suf '\([Mm]akefile[^/]*\|\.mak\|\.mk\)$'
+	suf '\([Mm]akefile[^/]*\|make\..*\|\.mak\|\.mk\)$'
 	comment-prefix	'^\s*[!#]'
 	comments	'^\s*[!#]\s*$'
-~if &sin $os 'win32'
-	ignorecase
+~elsewith define-submode make group 'gnumake'
+	fence-if   '^[ ]*if'
+	fence-else '^[ ]*else\>'
+	fence-fi   '^[ ]*endif\>'
 ~elsewith define-submode make group 'nmake'
 	fence-if   '^\s*!if'
-	fence-elif '^\s*!elseif'
+	fence-elif '^\s*!else\s*if'
 	fence-else '^\s*!else\>'
 	fence-fi   '^\s*!endif\>'
+~if &sin $os 'win32'
+	ignorecase
 ~endif
 ~endwith
 

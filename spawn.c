@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.171 2002/04/30 23:57:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.172 2002/07/03 00:01:10 tom Exp $
  *
  */
 
@@ -308,10 +308,9 @@ spawn(int f, int n GCC_UNUSED)
  * Note that for 'capturecmd()', we must retain a leading "!".
  */
 static int
-ShellPrompt(
-	       TBUFF ** holds,
-	       char *result,
-	       int rerun)	/* TRUE/FALSE: spawn, -TRUE: capturecmd */
+ShellPrompt(TBUFF ** holds,
+	    char *result,
+	    int rerun)		/* TRUE/FALSE: spawn, -TRUE: capturecmd */
 {
     register int s;
     register size_t len;
@@ -346,7 +345,7 @@ ShellPrompt(
 			    rerun == -TRUE ? "" : ": ", bang);
 	}
 
-	if ((s = mlreply_no_bs(temp, line + 1, NLINE)) != TRUE)
+	if ((s = mlreply_no_bs(temp, line + 1, NLINE - 1)) != TRUE)
 	    return s;
     }
     if (line[1] == EOS)
@@ -459,7 +458,6 @@ spawn1(int rerun, int pressret)
 #endif
 }
 
-#if SYS_UNIX || SYS_MSDOS || SYS_VMS || SYS_OS2 || SYS_WINNT
 /*
  * Pipe a one line command into a window
  */
@@ -467,15 +465,16 @@ spawn1(int rerun, int pressret)
 int
 capturecmd(int f, int n)
 {
-    int allocd_storage, s;
-    register BUFFER *bp;	/* pointer to buffer to zot */
-    char line[NLINE],		/* command line send to shell */
-     *final_cmd;		/* possibly edited command line */
+    int s;
+#if SYS_UNIX || SYS_MSDOS || SYS_VMS || SYS_OS2 || SYS_WINNT
+    int allocd_storage;
+    BUFFER *bp;			/* pointer to buffer to zot */
+    char line[NLINE];		/* command line send to shell */
+    char *final_cmd;		/* possibly edited command line */
 
     /* get the command to pipe in */
     hst_init('!');
-    s = ShellPrompt(&tb_save_shell[!global_g_val(GMDSAMEBANGS)],
-		    line, -TRUE);
+    s = ShellPrompt(&tb_save_shell[!global_g_val(GMDSAMEBANGS)], line, -TRUE);
     hst_flush();
 
     /* prompt ok? */
@@ -490,38 +489,28 @@ capturecmd(int f, int n)
     final_cmd = line;
 #endif
 
-    /* take care of autowrite */
-    if (writeall(f, n, FALSE, FALSE, TRUE, FALSE) != TRUE)
-	return FALSE;
+    if ((s = writeall(f, n, FALSE, FALSE, TRUE, FALSE)) == TRUE) {
+	if ((s = ((bp = bfind(OUTPUT_BufName, 0)) != NULL)) == TRUE) {
+	    W_VALUES *save_wvals = save_window_modes(bp);
 
-    if ((s = ((bp = bfind(OUTPUT_BufName, 0)) != NULL)) != TRUE)
-	return s;
-    if ((s = popupbuff(bp)) != TRUE)
-	return s;
-    ch_fname(bp, final_cmd);
+	    if ((s = popupbuff(bp)) == TRUE) {
+		ch_fname(bp, final_cmd);
+		bp->b_active = FALSE;	/* force a re-read */
+		if ((s = swbuffer_lfl(bp, FALSE, FALSE)) == TRUE)
+		    set_rdonly(bp, line, MDVIEW);
+	    }
+	    restore_window_modes(bp, save_wvals);
+	}
+    }
 #if OPT_FINDPATH
     if (allocd_storage)
 	(void) free(final_cmd);
 #endif
-    bp->b_active = FALSE;	/* force a re-read */
-    if ((s = swbuffer_lfl(bp, FALSE, FALSE)) != TRUE)
-	return s;
-    set_rdonly(bp, line, MDVIEW);
-
-    return (s);
-}
 
 #else /* ! SYS_UNIX */
 
-/*
- * Pipe a one line command into a window
- */
-int
-capturecmd(int f, int n)
-{
-    register int s;		/* return status from CLI */
-    register WINDOW *wp;	/* pointer to new window */
-    register BUFFER *bp;	/* pointer to buffer to zot */
+    WINDOW *wp;			/* pointer to new window */
+    BUFFER *bp;			/* pointer to buffer to zot */
     static char oline[NLINE];	/* command line send to shell */
     char line[NLINE];		/* command line send to shell */
     WINDOW *ocurwp;		/* save the current window during delete */
@@ -558,12 +547,12 @@ capturecmd(int f, int n)
 	return (s);
 
     /* split the current window to make room for the command output */
-    if (splitwind(FALSE, 1) == FALSE)
-	return (FALSE);
+    if ((s = splitwind(FALSE, 1)) != TRUE)
+	return (s);
 
     /* and read the stuff in */
-    if (getfile(filnam, FALSE) == FALSE)
-	return (FALSE);
+    if ((s = getfile(filnam, FALSE)) != TRUE)
+	return (s);
 
     /* overwrite its buffer name for consistency */
     set_bname(curbp, OUTPUT_BufName);
@@ -579,9 +568,10 @@ capturecmd(int f, int n)
 
     /* and get rid of the temporary file */
     unlink(filnam);
-    return AfterShell();
-}
+    s = AfterShell();
 #endif /* SYS_UNIX */
+    return (s);
+}
 
 #if SYS_UNIX || SYS_MSDOS || (SYS_OS2 && CC_CSETPP) || SYS_WINNT
 /*

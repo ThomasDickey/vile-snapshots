@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995-2002 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.80 2002/06/30 20:12:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.81 2002/07/02 21:45:19 tom Exp $
  *
  */
 
@@ -218,10 +218,24 @@ operyank(int f, int n)
 
     savedot = DOT;
     opcmd = OPDEL;
+    wantregion = &region;
     s = vile_op(f, n, yankregion, "Yank");
-    if (getregion(&region) == TRUE
-	&& !samepoint(region.r_orig, region.r_end)) {
-	savedot = region.r_orig;
+    wantregion = 0;
+    /*
+     * If the associated motion was to the left, or up, we want to set DOT to
+     * the beginning of the region, to match vi's behavior.  Otherwise leave
+     * DOT where it is.
+     */
+    if (s == TRUE) {
+	if (line_no(curbp, region.r_orig.l) != 0
+	    && line_no(curbp, region.r_orig.l) < line_no(curbp, savedot.l)) {
+	    savedot = region.r_orig;
+	} else if (getregion(&region) == TRUE
+		   && !samepoint(region.r_orig, region.r_end)) {
+	    if (sameline(region.r_orig, savedot)
+		&& region.r_orig.o < savedot.o)
+		savedot = region.r_orig;
+	}
     }
     DOT = savedot;
     return s;

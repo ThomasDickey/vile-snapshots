@@ -1,5 +1,22 @@
 Changes for vile 9.4 (released ??? ??? ?? ????)
 
+ 20020703 (b)
+	> Tom Dickey:
+	+ correct missing limit-check in repaint_window(), which caused winvile
+	  to GPF if resizing beyond its initially allocated 256x128 size.
+	+ add a dummy log-file majormode, to distinguish some makefiles from
+	  logfiles.
+	+ add some features of GNU make to makefilt.l and make.key that are
+	  useful in conditional evaluation.
+	+ add percent-crlf mode, which controls the threshold at which the
+	  whole file will be considered DOS-format (CRLF record separators)
+	  if the given percentage already ends with CR/LF.
+	+ save/restore window modes such as linewrap when rereading a file,
+	  or when executing a shell command.
+	+ amend change to operyank() to also set the cursor position to the
+	  beginning of the yanked region when it is before the current position,
+	  e.g., by typing y?pattern or y1G (reported by Clark Morgan).
+
  20020630 (a)
 	> Clark Morgan:
 	+ document configure-script options for color syntax highlighting.

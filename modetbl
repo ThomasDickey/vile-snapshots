@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.208 2002/02/27 10:39:03 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.209 2002/07/03 00:18:17 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -131,6 +131,7 @@ int							# VAL_ prefix
 	"C-TabStop"	C_TAB		chgd_major_w	!OPT_MAJORMODE # tab spacing for C buffers
 	"fence-limit"	FENCE_LIMIT	0		OPT_MAJORMODE # fence iteration-limit
 	"FillCol"	FILL		0		# column for paragraph reformat, and line break
+	"percent-crlf"	PERCENT_CRLF	0		# threshold for converting to DOS-mode
 	"record-length" RECORD_LENGTH	0		SYS_VMS	# specify record-length to use
 	"ShiftWidth"	SWIDTH		0		# shiftwidth for ^T/^D/<</>>
 	"TabStop"	TAB		chgd_major_w	# tab spacing for most buffers

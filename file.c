@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.330 2002/05/11 00:28:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.332 2002/07/03 00:35:27 tom Exp $
  */
 
 #include "estruct.h"
@@ -34,15 +34,6 @@
 #define isFileMode(mode) (mode & S_IFREG) == S_IFREG
 #else
 #define isFileMode(mode) (mode & S_IFMT) == S_IFREG
-#endif
-
-#if OPT_DOSFILES
-/* give DOS the benefit of the doubt on ambiguous files */
-# if CRLF_LINES
-#  define MORETHAN >=
-# else
-#  define MORETHAN >
-# endif
 #endif
 
 /*--------------------------------------------------------------------------*/
@@ -501,6 +492,7 @@ fileread(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     int s;
     char fname[NFILEN];
+    W_VALUES *save_wvals;
 
     if (more_named_cmd()) {
 	if ((s = mlreply_file("Replace with file: ", (TBUFF **) 0,
@@ -539,8 +531,12 @@ fileread(int f GCC_UNUSED, int n GCC_UNUSED)
 
     /* we want no errors or complaints, so mark it unchanged */
     b_clr_changed(curbp);
+
+    save_wvals = save_window_modes(curbp);
     s = readin(fname, TRUE, curbp, TRUE);
     set_buffer_name(curbp);
+    restore_window_modes(curbp, save_wvals);
+
     return s;
 }
 
@@ -987,6 +983,14 @@ getfile(
 }
 
 #if OPT_DOSFILES
+static int
+check_percent_crlf(BUFFER *bp, int doslines, int unixlines)
+{
+    double total = (doslines + unixlines) * b_val(bp, VAL_PERCENT_CRLF);
+    double value = (doslines * 100);
+    return (value >= total);
+}
+
 /*
  * Scan a buffer to see if it contains more lines terminated by CR-LF than by
  * LF alone.  If so, set the DOS-mode to true, otherwise false.
@@ -1008,7 +1012,7 @@ apply_dosmode(BUFFER *bp, int doslines, int unixlines)
 	    result = FALSE;
 	}
     } else {
-	result = (doslines MORETHAN unixlines);
+	result = check_percent_crlf(bp, doslines, unixlines);
     }
     TRACE2(("apply_dosmode %d dos:%d unix:%d\n", result, doslines, unixlines));
 
@@ -1223,7 +1227,7 @@ guess_recordseparator(BUFFER *bp, UCHAR * buffer, B_COUNT length, L_NUM * lines)
 	if (global_b_val(MDDOS)) {
 	    if ((bp->b_flag & BFEXEC) != 0) {
 		result = (count_dos && !count_unix) ? RS_CRLF : RS_LF;
-	    } else if (count_dos MORETHAN count_unix) {
+	    } else if (check_percent_crlf(bp, count_dos, count_unix)) {
 		result = RS_CRLF;
 	    }
 	}

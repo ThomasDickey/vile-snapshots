@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.301 2002/06/26 00:24:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.302 2002/07/02 00:06:57 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -91,6 +91,7 @@ decl_uninit( int lastkey );		/* last keystoke (tgetc)	*/
 decl_uninit( int lastcmd );		/* last command	(kbd_seq)	*/
 decl_uninit( REGIONSHAPE regionshape );	/* shape of region		*/
 decl_init (REGION *haveregion, 0);
+decl_init (REGION *wantregion, 0);
 #if OPT_VIDEO_ATTRS
 decl_uninit( VIDEO_ATTR videoattribute );
 					/* attribute to set in call to

@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.107 2002/02/03 20:40:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.108 2002/07/02 22:27:20 tom Exp $
  *
  */
 
@@ -839,6 +839,14 @@ set_rect_columns(REGION * rp)
     }
 }
 
+static int
+found_region(REGION * rp)
+{
+    if (wantregion != 0)
+	*wantregion = *rp;
+    return TRUE;
+}
+
 /*
  * This routine figures out the bounds of the region in the current window, and
  * fills in the fields of the "REGION" structure pointed to by "rp".  Because
@@ -887,7 +895,7 @@ getregion(REGION * rp)
 	    rp->r_size = rp->r_end.o - rp->r_orig.o;
 	    set_rect_columns(rp);
 	}
-	return TRUE;
+	return found_region(rp);
     }
 #if !SMALLER
     if (b_is_counted(curbp)) {	/* we have valid line numbers */
@@ -930,7 +938,7 @@ getregion(REGION * rp)
 		    set_rect_columns(rp);
 		}
 		rp->r_size = fsize;
-		return TRUE;
+		return found_region(rp);
 	    }
 	}
     } else
@@ -963,7 +971,7 @@ getregion(REGION * rp)
 			set_rect_columns(rp);
 		    }
 		    rp->r_size = fsize;
-		    return TRUE;
+		    return found_region(rp);
 		}
 	    }
 	    if (lback(blp) != buf_head(curbp)) {
@@ -981,7 +989,7 @@ getregion(REGION * rp)
 			set_rect_columns(rp);
 		    }
 		    rp->r_size = bsize;
-		    return TRUE;
+		    return found_region(rp);
 		}
 	    }
 	}
