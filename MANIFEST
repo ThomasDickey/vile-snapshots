@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_1q
+MANIFEST for vile, version v9_1r
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -215,6 +215,7 @@ filters/nr-filt.l               nroff syntax highlighting filter for vile
 filters/nr.key                  keywords for nroff filter
 filters/pas-filt.c              Pascal syntax filter for vile
 filters/pas.key                 keywords for pascal highlighting filter
+filters/pc.key                  keywords for printcap syntax highlighting
 filters/perl.key                keywords for perl syntax filter
 filters/perlfilt.l              Perl syntax filter for vile
 filters/pot.key                 keywords for pot (gettext) mode

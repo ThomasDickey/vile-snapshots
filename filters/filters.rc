@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.124 2000/07/27 02:26:16 tom Exp $
+; $Id: filters.rc,v 1.125 2000/08/16 00:50:00 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -280,6 +280,14 @@ define-mode pas
 	suf '\.\(p\|pas\)$'
 ~endwith
 
+define-mode pc
+~with define-submode pc
+	suf '\(\<printcap[^/]*\)$'
+	filtername	'vile-tc-filt -k pc'
+	comment-prefix	'^\s*[:#]'
+	comments	'^\s*[:#]\s*$'
+~endwith
+
 ; 'do' should really be a separate group, but since ambiguous fence-fi is
 ; very expensive to resolve, we combine it with the similar 'while' group.
 define-mode perl
@@ -475,7 +483,7 @@ define-mode xres
 	~if $filename-ic
 		suf '\(\.Xdefaults\|\.ad\)$'
 	~else
-		suf '\(/[A-Z]\?[A-Z][a-z0-9-]\+\|\.Xdefaults\|\.ad\)$'
+		suf '\(app-defaults/[A-Z]\?[A-Z][a-z0-9-]\+\|\.Xdefaults\|\.ad\)$'
 	~endif
 	comment-prefix	'^\s*!'
 	comments	'^\s*!\s*$'

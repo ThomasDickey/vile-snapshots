@@ -458,6 +458,8 @@ State Variables
 	$filename-ic	[READ ONLY] Boolean indicating if the host system's
 			filenames are matched ignoring their case.
 
+	$filter-list	[READ ONLY] list of builtin-filters.
+
 	$font           Name of the current font (in xvile/winvile only).
 
 	$forward-search Boolean value indicating search direction.
@@ -1320,6 +1322,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.55 2000/07/25 10:13:15 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.56 2000/08/16 11:03:39 tom Exp $
 -----------------------------------
 

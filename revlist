@@ -1,6 +1,6 @@
-revlist for vile, version v9_1q
+revlist for vile, version v9_1r
 --------------------------------------------------------------------------------
-CHANGES	1.607
+CHANGES	1.609
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -13,7 +13,7 @@ MANIFEST	none
 README	1.81
 README.PC	1.25
 README.VMS	1.5
-aclocal.m4	1.88
+aclocal.m4	1.89
 ansi.c	1.40
 api.c	1.27
 api.h	1.12
@@ -24,7 +24,7 @@ btree.c	1.11
 btree.h	1.3
 buffer.c	1.220
 buglist	1.382
-builtflt.c	1.14
+builtflt.c	1.15
 chgdfunc.h	1.11
 cmdtbl	1.204
 config.emx	1.2
@@ -74,8 +74,8 @@ menu.c	1.37
 mkdirs.sh	1.5
 mkprlenv.wnt	1.7
 mktbls.c	1.107
-modes.c	1.203
-modetbl	1.178
+modes.c	1.204
+modetbl	1.179
 msgs.c	1.20
 npopen.c	1.82
 ntconio.c	1.58
@@ -85,16 +85,16 @@ opers.c	1.71
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.27
-patchlev.h	1.238
+patchlev.h	1.239
 path.c	1.101
 perl.xs	1.73
 proto.h	1.428
 pscreen.h	1.1
 ptypemap	1.7
-random.c	1.233
+random.c	1.234
 regexp.c	1.70
 region.c	1.103
-revlist	v9_1q
+revlist	v9_1r
 search.c	1.119
 select.c	1.127
 sinstall.sh	1.1
@@ -112,7 +112,7 @@ undo.c	1.76
 version.c	1.48
 vile-9.1.spec	1.2
 vile.1	1.25
-vile.hlp	1.497
+vile.hlp	1.498
 vile.wmconfig	1.1
 vms2unix.c	1.34
 vmsbuild.com	1.34
@@ -143,7 +143,7 @@ doc/config.doc	1.4
 doc/dir.doc	1.2
 doc/filters.doc	1.20
 doc/indent.pro	1.3
-doc/macros.doc	1.55
+doc/macros.doc	1.56
 doc/menus.doc	1.6
 doc/modes.doc	1.7
 doc/oleauto.doc	1.6
@@ -175,9 +175,9 @@ filters/fdl-filt.l	1.7
 filters/fdl.key	1.3
 filters/filterio.c	1.8
 filters/filters.c	1.73
-filters/filters.h	1.47
-filters/filters.rc	1.124
-filters/genmake.c	1.1
+filters/filters.h	1.48
+filters/filters.rc	1.125
+filters/genmake.c	1.2
 filters/genmake.mak	1.6
 filters/html.key	1.6
 filters/htmlfilt.l	1.22
@@ -189,7 +189,7 @@ filters/latex.key	1.2
 filters/latexflt.l	1.18
 filters/lex-filt.l	1.19
 filters/lex.key	1.4
-filters/m4-filt.c	1.16
+filters/m4-filt.c	1.18
 filters/m4.key	1.3
 filters/mail.key	1.3
 filters/mailfilt.l	1.12
@@ -203,17 +203,18 @@ filters/makefile.wnt	1.27
 filters/makefilt.l	1.31
 filters/manfilt.c	1.27
 filters/mk-0th.awk	1.4
-filters/mk-0th.bat	1.4
+filters/mk-0th.bat	1.5
 filters/mk-1st.awk	1.6
-filters/mk-1st.bat	1.4
+filters/mk-1st.bat	1.5
 filters/mk-2nd.awk	1.7
-filters/mk-2nd.bat	1.4
+filters/mk-2nd.bat	1.5
 filters/mk-key.awk	1.2
 filters/mms-filt.l	1.5
 filters/nr-filt.l	1.11
 filters/nr.key	1.1
 filters/pas-filt.c	1.12
 filters/pas.key	1.1
+filters/pc.key	1.1
 filters/perl.key	1.5
 filters/perlfilt.l	1.30
 filters/pot.key	1.1
@@ -237,7 +238,7 @@ filters/tags.key	1.1
 filters/tagsfilt.c	1.5
 filters/tbl-filt.l	1.6
 filters/tbl.key	1.1
-filters/tc-filt.l	1.15
+filters/tc-filt.l	1.16
 filters/tc.key	1.2
 filters/tcl-filt.l	1.9
 filters/tcl.key	1.9

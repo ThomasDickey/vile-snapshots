@@ -2,7 +2,7 @@
  * Generate fragments of filters/makefile (for platforms without useful
  * shell scripting tools)
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.c,v 1.1 2000/08/08 22:00:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.c,v 1.2 2000/08/16 09:59:38 tom Exp $
  *
  */
 #include <stdlib.h>
@@ -17,8 +17,10 @@
 #define MAXFIELD 3
 #define SELFIELD 2
 
+static char *program = "";
+
 static int
-parse(char *buffer, char *list[MAXFIELD])
+parse(char *buffer, const char *list[MAXFIELD])
 {
     unsigned len = strlen(buffer);
     int n = 0;
@@ -47,6 +49,44 @@ parse(char *buffer, char *list[MAXFIELD])
     return 0;
 }
 
+static void
+substitute(char *output, const char *data, const char **list)
+{
+    char *d = output;
+    const char *s = data;
+
+    if (*program != 0) {
+	sprintf(d, "%s ", program);
+	d += strlen(d);
+    }
+    while (*s != 0) {
+	if (*s == '%') {
+	    switch (*++s) {
+	    case '%':
+		*d++ = *s;
+		break;
+	    case 'b':
+		*d++ = '\\';
+		break;
+	    case 'i':
+	    case 'j':
+	    case 'k':
+		strcpy(d, list[*s - 'i']);
+		d += strlen(d);
+		break;
+	    default:
+		s--;
+		break;
+	    }
+	} else {
+	    *d++ = *s;
+	}
+	*d = 0;
+	s++;
+    }
+    *d = 0;
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -58,11 +98,12 @@ main(int argc, char *argv[])
     int use_c = 0;
     int use_l = 0;
     int count = 0;
+    int filter = 1;
     int verbose = 0;
     char *s;
     char *d;
-    char *program = 0;
 
+    (void) parse(strcpy(input, ""), list);
     for (n = 1; n < argc; n++) {
 	s = argv[n];
 	if (*s == '-') {
@@ -74,8 +115,12 @@ main(int argc, char *argv[])
 		case 'l':
 		    use_l = 1;
 		    break;
+		case 'n':
+		    filter = 0;	/* don't substitute */
+		    break;
 		case 'x':
-		    program = ++s;
+		    if ((program = ++s) == 0)
+			program = "";
 		    s += strlen(s) - 1;
 		    break;
 		case 'v':
@@ -85,63 +130,39 @@ main(int argc, char *argv[])
 	    }
 	} else {
 	    data[count++] = s;
-	    if (verbose)
+	    if (!filter) {
+		substitute(output, s, list);
+		printf("%s\n", output);
+	    } else if (verbose)
 		printf("$ %s\n", s);
 	}
     }
-    if (!use_c && !use_l) {
-	use_c = 1;
-	use_l = 1;
-    }
 
-    while (fgets(input, sizeof(input), stdin) != 0) {
-	if (verbose)
-	    printf(">%s", input);
-	if (parse(input, list)) {
+    if (filter) {
+	if (!use_c && !use_l) {
+	    use_c = 1;
+	    use_l = 1;
+	}
+
+	while (fgets(input, sizeof(input), stdin) != 0) {
 	    if (verbose)
-		for (n = 0; n < MAXFIELD; n++)
-		    printf("\t%d '%s'\n", n, list[n]);
-	    if (!use_c && !strcmp(list[SELFIELD], "c"))
-		continue;
-	    if (!use_l && !strcmp(list[SELFIELD], "l"))
-		continue;
-	    for (n = 0; n < count; n++) {
-		d = output;
-		if (program != 0) {
-		    sprintf(d, "%s ", program);
-		    d += strlen(d);
-		}
-		for (s = data[n]; *s != 0; s++) {
-		    if (*s == '%') {
-			switch (*++s) {
-			case '%':
-			    *d++ = *s;
-			    *d = 0;
-			    break;
-			case 'b':
-			    *d++ = '\\';
-			    *d = 0;
-			    break;
-			case 'i':
-			case 'j':
-			case 'k':
-			    strcpy(d, list[*s - 'i']);
-			    d += strlen(d);
-			    break;
-			default:
-			    s--;
-			    break;
-			}
+		printf(">%s", input);
+	    if (parse(input, list)) {
+		if (verbose)
+		    for (n = 0; n < MAXFIELD; n++)
+			printf("\t%d '%s'\n", n, list[n]);
+		if (!use_c && !strcmp(list[SELFIELD], "c"))
+		    continue;
+		if (!use_l && !strcmp(list[SELFIELD], "l"))
+		    continue;
+		for (n = 0; n < count; n++) {
+		    substitute(output, data[n], list);
+		    if (*program != 0) {
+			system(output);	/* won't work on VMS */
+			fflush(stdout);
 		    } else {
-			*d++ = *s;
-			*d = 0;
+			puts(output);
 		    }
-		}
-		if (program != 0) {
-		    system(output);	/* won't work on VMS */
-		    fflush(stdout);
-		} else {
-		    puts(output);
 		}
 	    }
 	}
