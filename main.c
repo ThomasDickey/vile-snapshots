@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.498 2003/02/25 00:44:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.499 2003/03/08 15:51:32 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -60,7 +60,7 @@
 #define sys_isxdigit(n) isxdigit(n)
 #endif
 
-#endif	/* OPT_LOCALE */
+#endif /* OPT_LOCALE */
 
 #if CC_NEWDOSCC
 #include <io.h>
@@ -1212,6 +1212,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #endif
 #ifdef MDHILITE
 	    setINT(MDHILITE, TRUE);	/* syntax-highlighting */
+#endif
+#ifdef MDHILITEOVERLAP
+	    setINT(MDHILITEOVERLAP, TRUE);	/* overlap visual-matches */
 #endif
 #ifdef MDLOCKED
 	    setINT(MDLOCKED, FALSE);	/* LOCKED */

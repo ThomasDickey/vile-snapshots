@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.515 2003/02/26 13:56:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.516 2003/03/11 00:11:09 tom Exp $
  *
  */
 
@@ -568,6 +568,7 @@ extern int mlreply_reg_count (int state, int *retp, int *next);
 extern int mlyesno (const char *prompt);
 extern int no_completion (DONE_ARGS);
 extern int read_quoted(int count, int verbose);
+extern int screen2tbuff (TBUFF **buf, CHARTYPE inclchartype);
 extern int screen_string (char *buf, int bufn, CHARTYPE inclchartype);
 extern int start_kbm (int n, int macnum, ITBUFF *ptr);
 extern int tgetc (int quoted);
@@ -665,8 +666,8 @@ extern void lremove (BUFFER *bp, LINEPTR lp);
 extern void ltextfree (LINEPTR lp, BUFFER *bp);
 
 #if OPT_EVAL
-extern char * lgrabtext (TBUFF **rp, CHARTYPE type);
 extern int lrepltext (CHARTYPE type, const char *iline, int ilen);
+extern void lgrabtext (TBUFF **rp, CHARTYPE type);
 #endif
 
 #if SMALLER	/* cancel neproto.h */

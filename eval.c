@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.319 2002/12/30 19:34:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.320 2003/03/09 18:28:12 tom Exp $
  *
  */
 
@@ -1163,10 +1163,12 @@ get_statevar_val(int vnum)
     tb_init(&result, EOS);
     s = (*statevar_func[vnum]) (&result, (const char *) NULL);
 
-    if (s == TRUE)
+    if (s == TRUE) {
+	tb_append(&result, EOS);	/* trailing null, just in case... */
 	return tb_values(result);
-    else
+    } else {
 	return error_val;
+    }
 }
 
 /*
@@ -1288,6 +1290,8 @@ PromptAndSet(const char *name, int f, int n)
     char var[NLINE];
     char prompt[NLINE];
 
+    TRACE((T_CALLED "PromptAndSet(%s, %d, %d)\n", name, f, n));
+
     /* look it up -- vd will describe the variable */
     FindVar(vl_strncpy(var, name, sizeof(var)), &vd);
 
@@ -1301,19 +1305,22 @@ PromptAndSet(const char *name, int f, int n)
 	status = adjvalueset(var + 1, FALSE, TRUE, -TRUE, &args);
     } else {
 	static TBUFF *tmp;
+
+	tb_init(&tmp, EOS);
 	if (f == TRUE) {	/* new (numeric) value passed as arg */
 	    render_int(&tmp, n);
 	} else {		/* get it from user */
-	    if (vd.v_type == VW_STATEVAR)
+	    if (vd.v_type == VW_STATEVAR) {
+		/* FIXME: this really should allow embedded nulls */
 		tb_scopy(&tmp, get_statevar_val(vd.v_num));
-	    else {
+	    } else {
 		/* must be temp var */
 		tb_scopy(&tmp, (vd.v_ptr->u_value) ? vd.v_ptr->u_value : "");
 	    }
 	    (void) lsprintf(prompt, "Value of %s: ", var);
 	    status = mlreply2(prompt, &tmp);
 	    if (status != TRUE)
-		return status;
+		returnCode(status);
 	}
 
 	status = SetVarValue(&vd, var, tb_values(tmp));
@@ -1325,7 +1332,7 @@ PromptAndSet(const char *name, int f, int n)
 	}
     }
 
-    return status;
+    returnCode(status);
 }
 
 static void
