@@ -4,7 +4,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.3 2002/12/11 01:58:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.4 2002/12/30 15:41:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
@@ -22,7 +22,7 @@ static char *Ident_attr;
 static char *Number_attr;
 static char *String_attr;
 
-#include "fltstack.h"
+#include <fltstack.h>
 
 static void
 begin_section(char *name)

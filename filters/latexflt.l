@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.19 2002/12/11 01:11:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.20 2002/12/30 15:41:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LaTeX input
  * text.
@@ -31,7 +31,7 @@ static char *Section_attr;	/* subsection */
 static char *String_attr;
 static char *Subsection_attr;	/* section */
 
-#include "fltstack.h"
+#include <fltstack.h>
 
 static void
 init_filter(int before GCC_UNUSED)

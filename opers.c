@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995-2002 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.84 2002/10/27 15:46:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.85 2003/01/03 01:15:09 tom Exp $
  *
  */
 
@@ -167,7 +167,7 @@ chgreg(void)
 	return stringrect();
     } else {
 	killregion();
-	if (regionshape == FULLLINE) {
+	if (regionshape == FULLLINE && !is_empty_buf(curbp)) {
 	    if (backline(FALSE, 1) == TRUE)
 		/* backline returns FALSE at top of buf */
 		return opendown(TRUE, 1);

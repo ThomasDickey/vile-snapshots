@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.68 2002/12/23 02:07:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.71 2002/12/30 17:36:49 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -19,21 +19,21 @@
 #define OPT_FILTER 0
 #endif
 
+#ifndef OPT_LOCALE
+#define OPT_LOCALE 0
+#endif
+
 /* If we are using built-in filters, we can use many definitions from estruct.h
  * that may resolve to functions in ../vile
  */
 #if OPT_FILTER
 
-#include "estruct.h"
+#include <estruct.h>
 
 #else
 
 #ifndef NO_LEAKS
 #define NO_LEAKS 0
-#endif
-
-#ifndef OPT_LOCALE
-#define OPT_LOCALE 0
 #endif
 
 #ifndef OPT_TRACE
@@ -88,9 +88,6 @@ extern	int	printf	( const char *fmt, ... );
 extern	int	sscanf	( const char *src, const char *fmt, ... );
 #endif
 
-#if OPT_LOCALE
-#include <locale.h>
-#endif
 
 #if defined(VMS)
 #include	<stsdef.h>
@@ -121,7 +118,7 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 extern	char *home_dir(void);
 
 typedef enum { D_UNKNOWN = -1, D_KNOWN = 0 } DIRECTIVE;
-extern DIRECTIVE dname_to_dirnum(char **cmdp, size_t length);
+extern DIRECTIVE dname_to_dirnum(char **cmdp, int length);
 
 typedef struct { int dummy; } CMDFUNC;
 extern const CMDFUNC * engl2fnc(const char *fname);
@@ -130,6 +127,10 @@ extern int vl_lookup_func(const char *name);
 
 #endif /* OPT_FILTER */
 #endif /* _estruct_h */
+
+#if OPT_LOCALE
+#include <locale.h>
+#endif
 
 #include <ctype.h>
 #define CharOf(c)   ((unsigned char)(c))
