@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.319 1999/12/19 10:45:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.320 1999/12/22 11:04:05 kev Exp $
  *
  */
 
@@ -2751,6 +2751,7 @@ char	**msptr)
 #endif
 	PutMode(MDREADONLY,	"read-only")
 	PutMode(MDVIEW,		"view-only")
+	PutMode(MDLOADING,	"loading")
 #if OPT_LCKFILES
 	PutMode(MDLOCKED,	"locked by")
 	if (ms != 0 && b_val(bp, MDLOCKED))

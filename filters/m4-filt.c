@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.9 1999/08/06 21:45:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.11 1999/12/22 00:19:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4 
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -54,7 +54,7 @@ SkipBlanks(char *src)
 }
 
 static void
-new_quote (Quote *q, char *s)
+new_quote(Quote * q, char *s)
 {
     q->used = strlen(s);
     q->text = do_alloc(q->text, q->used, &(q->have));
@@ -78,7 +78,7 @@ static void
 ChangeQuote(char **args)
 {
     if (args != 0) {
-	new_quote(&leftquote,  count_of(args) > 0 ? args[0] : L_QUOTE);
+	new_quote(&leftquote, count_of(args) > 0 ? args[0] : L_QUOTE);
 	new_quote(&rightquote, count_of(args) > 1 ? args[1] : R_QUOTE);
     }
 }
@@ -87,13 +87,13 @@ static void
 ChangeComment(char **args)
 {
     if (args != 0) {
-	new_quote(&leftcmt,  count_of(args) > 0 ? args[0] : L_CMT);
+	new_quote(&leftcmt, count_of(args) > 0 ? args[0] : L_CMT);
 	new_quote(&rightcmt, count_of(args) > 1 ? args[1] : R_CMT);
     }
 }
 
 static char *
-parse_arglist(FILE *fp, char *s, char ***args)
+parse_arglist(FILE * fp, char *s, char ***args)
 {
     char *t = SkipBlanks(s);
     char *r;
@@ -101,19 +101,20 @@ parse_arglist(FILE *fp, char *s, char ***args)
     unsigned count, used;
 
     if (*t == L_PAREN) {
-	count = 0;	/* always have a null on the end */
-	used  = 0;
+	count = 0;		/* always have a null on the end */
+	used = 0;
 	t++;
-	for(;;) {
+	for (;;) {
 	    /* FIXME: m4 could accept newlines in an arglist */
 	    r = t = SkipBlanks(t);
 	    while ((*t != ',') && (*t != R_PAREN) && *t)
 		t++;
 	    v = malloc(1 + t - r);
 	    if (t != r)
-	    	strncpy(v, r, t - r);
-	    v[t-r] = 0;
-	    *args = (char **)do_alloc((char *)(*args), sizeof(*args)*(count+2), &used);
+		strncpy(v, r, t - r);
+	    v[t - r] = 0;
+	    *args = (char **) do_alloc((char *) (*args), sizeof(*args) *
+		(count + 2), &used);
 	    (*args)[count++] = v;
 	    (*args)[count] = 0;
 	    if (*t == R_PAREN) {
@@ -124,7 +125,7 @@ parse_arglist(FILE *fp, char *s, char ***args)
 	    }
 	    t++;
 	}
-	write_string(fp, s, t-s, "");
+	write_string(fp, s, t - s, "");
 	return t;
     }
     return s;
@@ -142,18 +143,22 @@ free_arglist(char **args)
 }
 
 static char *
-handle_directive(FILE *fp, char *name, char *s)
+handle_directive(FILE * fp, char *name, char *s)
 {
     static struct {
 	char *name;
-	void (*func)(char **);
+	void (*func) (char **);
     } table[] = {
-	{ "changequote", ChangeQuote },
-	{ "changecom", ChangeComment },
+	{
+	    "changequote", ChangeQuote
+	},
+	{
+	    "changecom", ChangeComment
+	},
     };
     size_t n;
 
-    for (n = 0; n < sizeof(table)/sizeof(table[0]); n++) {
+    for (n = 0; n < sizeof(table) / sizeof(table[0]); n++) {
 	if (!strcmp(name, table[n].name)) {
 	    char **args = 0;
 	    s = parse_arglist(fp, s, &args);
@@ -166,7 +171,7 @@ handle_directive(FILE *fp, char *name, char *s)
 }
 
 static char *
-extract_identifier(FILE *fp, char *s)
+extract_identifier(FILE * fp, char *s)
 {
     static char *name;
     static unsigned have;
@@ -191,7 +196,7 @@ extract_identifier(FILE *fp, char *s)
 	if (has_cpp) {
 	    name[0] = '#';
 	}
-	strncpy(name+has_cpp, base, s - base);
+	strncpy(name + has_cpp, base, s - base);
 	name[(s - base) + has_cpp] = 0;
 	if (!strcmp(name, "dnl")) {
 	    /* FIXME: GNU m4 may accept an argument list here */
@@ -220,7 +225,7 @@ has_endofcomment(char *s, int *level)
 	    ++s;
 	}
     }
-    return(s - base);
+    return (s - base);
 }
 
 static int
@@ -240,11 +245,11 @@ has_endofliteral(char *s, int *level)
 	    ++s;
 	}
     }
-    return(s - base);
+    return (s - base);
 }
 
 static char *
-write_number(FILE *fp, char *s)
+write_number(FILE * fp, char *s)
 {
     char *base = s;
     int radix = (*s == '0') ? ((s[1] == 'x' || s[1] == 'X') ? 16 : 8) : 10;
@@ -256,7 +261,7 @@ write_number(FILE *fp, char *s)
 	s++;
 	switch (radix) {
 	case 8:
-	    done = !isdigit(*s) || (*s == '8') || (*s == '9'); 
+	    done = !isdigit(*s) || (*s == '8') || (*s == '9');
 	    break;
 	case 10:
 	    done = !isdigit(*s);
@@ -271,22 +276,37 @@ write_number(FILE *fp, char *s)
 }
 
 static char *
-write_literal(FILE *fp, char *s, int *literal)
+write_literal(FILE * fp, char *s, int *literal)
 {
+    static char *buffer;
+    static unsigned have;
+    static unsigned used;
+
     unsigned c_length = has_endofliteral(s, literal);
+    unsigned need = c_length;
+
     if (*literal == 0) {
-	if (c_length > rightquote.used) {
-	    write_token(fp, s, c_length - rightquote.used, Literal_attr);
+	if (need > rightquote.used) {
+	    need -= rightquote.used;
+	    buffer = do_alloc(buffer, used + need + 1, &have);
+	    strncpy(buffer + used, s, need);
+	    used += need;
+	}
+	if (used) {
+	    write_token(fp, buffer, used, Literal_attr);
+	    used = 0;
 	}
 	write_quote(fp, rightquote);
     } else {
-	write_token(fp, s, c_length, Literal_attr);
+	buffer = do_alloc(buffer, used + need + 1, &have);
+	strncpy(buffer + used, s, need);
+	used += need;
     }
     return s + c_length;
 }
 
 static char *
-write_comment(FILE *fp, char *s, int *level)
+write_comment(FILE * fp, char *s, int *level)
 {
     int c_length = has_endofcomment(s, level);
     write_string(fp, s, c_length, Comment_attr);
@@ -300,13 +320,13 @@ init_filter(int before)
     if (before) {
 	insert_keyword(NAME_L_QUOTE, L_QUOTE, 1);
 	insert_keyword(NAME_R_QUOTE, R_QUOTE, 1);
-	insert_keyword(NAME_L_CMT,   L_CMT,   1);
-	insert_keyword(NAME_R_CMT,   R_CMT,   1);
+	insert_keyword(NAME_L_CMT, L_CMT, 1);
+	insert_keyword(NAME_R_CMT, R_CMT, 1);
     }
 }
 
 void
-do_filter(FILE *input, FILE *output)
+do_filter(FILE * input, FILE * output)
 {
     static unsigned used;
     static char *line;
@@ -314,15 +334,15 @@ do_filter(FILE *input, FILE *output)
     char *s;
     int literal, comment;
 
-    new_quote(&leftquote,  class_attr(NAME_L_QUOTE));
+    new_quote(&leftquote, class_attr(NAME_L_QUOTE));
     new_quote(&rightquote, class_attr(NAME_R_QUOTE));
-    new_quote(&leftcmt,    class_attr(NAME_L_CMT));
-    new_quote(&rightcmt,   class_attr(NAME_R_CMT));
+    new_quote(&leftcmt, class_attr(NAME_L_CMT));
+    new_quote(&rightcmt, class_attr(NAME_R_CMT));
 
     Comment_attr = class_attr(NAME_COMMENT);
-    Ident_attr   = class_attr(NAME_IDENT);
+    Ident_attr = class_attr(NAME_IDENT);
     Literal_attr = class_attr(NAME_LITERAL);
-    Number_attr  = class_attr(NAME_NUMBER);
+    Number_attr = class_attr(NAME_NUMBER);
 
     literal = 0;
     comment = 0;
@@ -347,9 +367,9 @@ do_filter(FILE *input, FILE *output)
 		    s = write_literal(output, s, &literal);
 		else
 		    literal = 0;
-	    /*
-	     * Comments don't nest
-	     */
+		/*
+		 * Comments don't nest
+		 */
 	    } else if (comment) {
 		s = write_comment(output, s, &comment);
 		comment = 0;

@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.57 1999/12/20 21:30:15 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.58 1999/12/22 11:04:05 kev Exp $
  */
 
 /*#
@@ -1048,6 +1048,7 @@ void perl_exit()
     perl_run(perl_interp);	/* process END blocks */
     perl_destruct(perl_interp);	/* global destructors */
     perl_free(perl_interp);
+    perl_interp = 0;
 }
 
 /* Register any extra external extensions */
@@ -1084,7 +1085,7 @@ static char *
 stringify_coderef(SV *coderef) {
     char buf[40];
     int idx = 0;
-    int badstore = 0;
+    int cantstore = 0;
 
     if (CRarray == 0) {
 	/* Short name to keep the size of strings short on the vile side */
@@ -1102,15 +1103,16 @@ stringify_coderef(SV *coderef) {
 	}
 	else {
 	    freeCRidx = SvIV(*svp);
-	    SvREFCNT_dec(*svp);
 	}
 	if (av_store(CRarray, (I32) idx, SvREFCNT_inc(coderef)) == 0) {
-	    badstore = 1;
+	    cantstore = 1;
 	    SvREFCNT_dec(coderef);
 	}
     }
+    else
+	cantstore = 1;
 
-    if (freeCRidx < 0 || badstore) {
+    if (cantstore) {
 	av_push(CRarray, SvREFCNT_inc(coderef));
 	idx = av_len(CRarray);
     }
@@ -1119,7 +1121,26 @@ stringify_coderef(SV *coderef) {
     return strdup(buf);
 }
 
+#define HAVE_BROKEN_PERL_ANON_SUB_DEALLOC 1
+
+#if HAVE_BROKEN_PERL_ANON_SUB_DEALLOC
+static int CRs_tofree_maxsize = 0;
+static int CRs_tofree_idx = 0;
+static SV **CRs_tofree = 0;
+#endif /* HAVE_BROKEN_PERL_ANON_SUB_DEALLOC */
+
 void
+perl_free_deferred()
+{
+#if HAVE_BROKEN_PERL_ANON_SUB_DEALLOC
+    while (CRs_tofree_idx > 0) {
+	CRs_tofree_idx--;
+	SvREFCNT_dec(CRs_tofree[CRs_tofree_idx]);
+    }
+#endif /* HAVE_BROKEN_PERL_ANON_SUB_DEALLOC */
+}
+
+int
 perl_free_callback(char *callback)
 {
     int idx;
@@ -1133,26 +1154,44 @@ perl_free_callback(char *callback)
 	if (!SvROK(*svp) || SvTYPE(SvRV(*svp)) != SVt_PVCV)
 	    return;	/* Most likely freed already (?) */
 
-/* FIXME: There are problems with doing SvREFCNT_dec when perl_free_callback
-   is called from within the very code (an anonymous subroutine) that is
-   being freed!
 
-   sv_2mortal() is not really the right thing to do either -- in fact,
-   perl will give warnings about attempting to free something too soon,
-   but we do want to do some sort of deferred delete.  Perhaps there's
-   a function not documented on the perlguts page for doing this?  If
-   not, we should probably add the necessary deferred delete cleanup
-   machinery and make sure it gets invoked from api_command_cleanup()
-   in api.c. */
-#if 0
-#if 0
-	SvREFCNT_dec(*svp);	/* This should deallocate it */
-#else
-	sv_2mortal(*svp);	/* Defer deallocation */
-#endif
-#endif
+	/* I used to have the following line in the code here:
 
-	svfreeCRidx = SvREFCNT_inc(newSViv(freeCRidx));
+		SvREFCNT_dec(*svp);
+
+	   But I now think this is wrong.  The reason is that while
+	   the av_store does not increment the reference count of the
+	   thing you're storing into the array, it does appear to
+	   decrement the reference count (and potentially free) the
+	   thing being replaced.
+
+	   So we won't decrement the reference count here.  If
+	   we did it here, we'd be doing it twice which is wrong. */
+
+#if HAVE_BROKEN_PERL_ANON_SUB_DEALLOC
+	/* There's a bug in perl5.00503 (and probably other
+	   versions as well) in which perl tries to look
+	   at some memory associated with a coderef after
+	   it's been freed.  Perhaps it was freed too early;
+	   I don't know.  I have been able to reproduce this
+	   problem in an ordinary (extension free) perl program,
+	   so I do know that there's a bug in perl.
+
+	   So here's how we work around it... we'll increment
+	   the reference count and stash the coderef away
+	   so that we can decrement it at a later time when
+	   it'll (hopefully) be safer to do so. */
+
+	SvREFCNT_inc(*svp);
+	if (CRs_tofree_idx >= CRs_tofree_maxsize) {
+	    int oldsize = CRs_tofree_maxsize;
+	    CRs_tofree_maxsize += 4;
+	    GROW(CRs_tofree, SV*, oldsize, CRs_tofree_maxsize);
+	}
+	CRs_tofree[CRs_tofree_idx++] = *svp;
+#endif /* HAVE_BROKEN_PERL_ANON_SUB_DEALLOC */
+
+	svfreeCRidx = newSViv(freeCRidx);
 	if (av_store(CRarray, (I32) idx, svfreeCRidx) == 0) {
 	    /* Not successful (!) */
 	    SvREFCNT_dec(svfreeCRidx);

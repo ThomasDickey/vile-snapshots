@@ -1283,6 +1283,10 @@ Editor modes
 	list	(li) The buffer will be displayed with tabs and newlines made
 		visible, instead of as whitespace. (W)
 
+	loading A flag whose state may display in the mode/status line,
+		used by the capture.pl script to show when asynchronous data is
+		loading. (B)
+
 	magic Honor unescaped regular expression metacharacters in search
 		strings.  See the section "Regular Expressions" for more
 		detail.  (B)
@@ -4301,4 +4305,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.459 1999/12/19 11:49:38 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.460 1999/12/22 11:22:14 tom Exp $

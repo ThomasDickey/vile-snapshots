@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.238 1999/12/20 21:31:57 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.239 1999/12/21 11:12:55 tom Exp $
  *
  */
 
@@ -6474,7 +6474,7 @@ x_unwatchfd(int fd GCC_UNUSED, long id)
 
 static XtIntervalId x_autocolor_timeout_id;
 
-void
+static void
 x_start_autocolor_timer()
 {
 #if OPT_COLOR&&!SMALLER
@@ -6488,7 +6488,7 @@ x_start_autocolor_timer()
 #endif
 }
 
-void
+static void
 x_stop_autocolor_timer()
 {
     if (x_autocolor_timeout_id != 0)
@@ -6496,7 +6496,7 @@ x_stop_autocolor_timer()
     x_autocolor_timeout_id = 0;
 }
 
-void
+static void
 x_autocolor_timeout(XtPointer data GCC_UNUSED, XtIntervalId *id GCC_UNUSED)
 {
     if (kqempty(cur_win)) {
