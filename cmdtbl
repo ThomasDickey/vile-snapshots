@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.150 1998/03/14 14:31:39 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.151 1998/03/18 01:55:18 tom Exp $
 #
 #
 
@@ -1208,7 +1208,6 @@ quickexit	NONE|(BANG|NL)
 	<leave the editor, writing modified buffers as needed>
 quote		REDO|UNDO
 	"quote-next-character"		!FEWNAMES
-	'^V'
 	<insert the next character literally, CNT times>
 vile_refresh	NONE
 	"clear-and-redraw"		!FEWNAMES

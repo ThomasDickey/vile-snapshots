@@ -1,5 +1,14 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (tom) 980317 (i)
+	+ remove binding of quote-next-character to ^V (reported by Keith
+	  Williams <kurris@hotmail.com>, recommended by Paul Fox).
+ 	+ add an AIX-specific pattern to finderr.c (patch by Michael Finken
+	  <finken@conware.de>).
+	+ correct w32pipe.c to re-open stdin on the first available descriptor
+	  (i.e., 0) when cleaning up after a filter operation (patch by Clark
+	  Morgan).
+
  (tom) 980316 (h) 
  	+ correct logic that shifts minibuffer back on return from kbd_reply,
 	  had not set curwp.

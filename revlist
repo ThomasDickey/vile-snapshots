@@ -1,6 +1,6 @@
-revlist for vile, version v7_3h
+revlist for vile, version v7_3i
 --------------------------------------------------------------------------------
-CHANGES	1.129
+CHANGES	1.131
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -22,11 +22,11 @@ borland.c	1.22
 btree.c	1.2
 btree.h	1.2
 buffer.c	1.167
-buglist	1.337
+buglist	1.338
 c-filt.c	1.6
 c-filt.flx	1.1
 chgdfunc.h	1.4
-cmdtbl	1.150
+cmdtbl	1.151
 config.emx	1.1
 config_h.in	1.2
 configure	none
@@ -48,7 +48,7 @@ fences.c	1.44
 file.c	1.220
 filec.c	1.80
 fileio.c	1.122
-finderr.c	1.66
+finderr.c	1.67
 glob.c	1.57
 globals.c	1.41
 gppconio.c	1.1
@@ -90,7 +90,7 @@ opers.c	1.61
 os2keys.h	1.1
 os2pipe.c	1.3
 os2vio.c	1.15
-patchlev.h	1.87
+patchlev.h	1.88
 path.c	1.81
 perl.xs	1.3
 pictmode.rc	1.1
@@ -100,7 +100,7 @@ ptypemap	1.3
 random.c	1.190
 regexp.c	1.64
 region.c	1.83
-revlist	v7_3h
+revlist	v7_3i
 search.c	1.108
 select.c	1.58
 spawn.c	1.124
@@ -119,7 +119,7 @@ vms2unix.c	1.31
 vmsbuild.com	1.17
 vmspipe.c	1.12
 vmsvt.c	1.31
-w32pipe.c	1.3
+w32pipe.c	1.4
 window.c	1.77
 word.c	1.59
 wordmov.c	1.18
