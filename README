@@ -1,5 +1,5 @@
 
-README for vile, version 9.1
+README for vile, version 9.2
 -----------------------------
 
 vile is a text editor which is extremely compatible with vi in terms
@@ -446,5 +446,5 @@ Jan, 2000
       without quoting.  This allows ^E and ^Y as commands within an insert.
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.81 2000/06/17 11:44:59 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.82 2000/10/16 10:08:01 tom Exp $
 -------------------------------
