@@ -3,14 +3,14 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.3 2000/01/31 00:23:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.4 2000/02/10 11:30:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to SCCS files.
  */
 
 #include <filters.h>
 
-char *filter_name = "sccs";
+DefineFilter("sccs");
 
 static char *Marker_attr;
 static char *Insert_attr;
@@ -49,12 +49,12 @@ popstate(void)
     return value;
 }
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;

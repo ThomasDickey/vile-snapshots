@@ -3,14 +3,14 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.10 2000/01/31 00:21:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.11 2000/02/10 11:30:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of terminfo
  */
 
 #include <filters.h>
 
-char *filter_name = "ti";
+DefineFilter("ti");
 
 static char *Action_attr;
 static char *Comment_attr;
@@ -45,12 +45,12 @@ check_name(char *name)
     return attr;
 }
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.28 2000/01/31 00:22:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.29 2000/02/10 11:30:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -13,7 +13,7 @@
 
 #include <filters.h>
 
-char *filter_name = "make";
+DefineFilter("make");
 
 static char *Comment_attr;
 static char *Error_attr;
@@ -97,12 +97,12 @@ missing_quote(char *text, int length)
     String_attr = save;
 }
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;

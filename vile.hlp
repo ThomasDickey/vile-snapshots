@@ -650,6 +650,11 @@ Text manipulation command:
 	first requested, it will be used instead of a file found by
 	searching the tags setting, and of course will remain visible.
 
+	Take note that the tag locate and pop commands, by default, move
+	the cursor out of the current window if the target tag is located
+	in one of the editor's other windows.  To "pin" all locate and pop
+	actions to the current window, set pin-tagstack mode.
+
 	The name of the default tags file may be changed with "set tags"
 	(see "tags" under "Editor modes", below).  If multiple filenames
 	are given in the "tags" setting (separated by whitespace), they are
@@ -1371,6 +1376,11 @@ Editor modes
 	paragraphs A regular expression defining where the "next-paragraph"
 		('}') and "previous-paragraph" ('{') commands will go. (B)
 
+	pin-tagstack If set, the editor does not change windows when
+		executing tag locate/pop commands.  Put another way, all
+		tag push and pop operations are "pinned" to the current
+		window. (U)
+
 	popup-choices (pc) Must be set to one of the following three
 		values: "off", "immediate", or "delayed".  When enabled
 		with either "immediate" or "delayed", vile pops up the
@@ -1440,13 +1450,15 @@ Editor modes
 	resolve-links Controls whether vile fully resolves file names in
 		cases where some path components are symbolic links.  This
 		makes vile smarter about symbolic links that provide
-		multiple paths to a given file (preventing multiple
-		unintentional edits of the same physical file via different
-		pathnames).  It may trigger long timeouts on systems where
-		symbolic links are used in conjunction with NFS automounted
-		directories.  (Note that this does not detect or prevent
-		multiple edits caused by hard file links -- only symbolic
-		ones.) (U)
+		multiple paths to a given file, and ensures that files are
+		always represented in vile by their "true" names.  (This
+		can prevent multiple unintentional edits of the same
+		physical file via different pathnames -- but see also
+		"unique-buffers", below.)  It may trigger long timeouts on
+		systems where symbolic links are used in conjunction with
+		NFS automounted directories.  (Note that this does not
+		detect or prevent multiple edits caused by hard file
+		links -- only symbolic ones.) (U)
 
 	ruler Shows the current line and column in the status line, as
 		well as what percentage of the current buffer's lines lie
@@ -1587,6 +1599,16 @@ Editor modes
 	undolimit (ul) Sets a limit on how many undoable buffer-changing
 		commands will be saved.  If set to 0, there is no limit,
 		and all changes are undoable.  The default value is 10. (B)
+
+	unique-buffers When vile is asked to read a file into a buffer, it
+		will first check to be sure that it doesn't already have a
+		copy of that file, by the same or a different name.  This
+		can prevent multiple unintentional edits of a file which
+		appears twice in the filesystem due to hard or soft links.
+		On UNIX systems vile uses the combination of filesystem
+		device and inode to check for uniqueness.  vile will
+		represent the file by the first name used to refer to it.
+		May be a no-op on non-UNIX systems.  (U)
 
 	unprintable-as-octal (uo) If an 8-bit character is non-printing, it
 		will normally be displayed in hex.  This setting will force
@@ -2253,6 +2275,7 @@ Programmed procedures and macros
 	$disinp		display command line input characters (boolean)
 	$end-of-cmd	true if user ended the cmd with <CR>
 	$error-buffer   buffer name assigned to the error-buffer
+	$exec-path	where to find vile			(read only)
 	$exec-suffix	suffix, if any, for execable programs	(read only)
 	$exit-hook	name of procedure to run when quitting
 	$fence-limit	iteration limit for complex fences
@@ -4849,4 +4872,4 @@ Problems
 
 Copyright 1995-2000 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.473 2000/01/30 22:01:36 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.476 2000/02/10 03:30:35 tom Exp $

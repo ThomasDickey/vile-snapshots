@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.81 2000/01/30 23:33:19 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.83 2000/02/11 02:07:59 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -93,6 +93,7 @@ static int dont_update_sb = FALSE;
 static int enable_popup = TRUE;
 static int font_resize_in_progress;
 static int gui_resize_in_progress;
+static int initialized = FALSE;	/* winvile open for business */
 static int nCharWidth = 8;
 static int nLineHeight = 10;
 static int vile_in_getfkey = 0;
@@ -1221,6 +1222,7 @@ ntscroll(int from, int to, int n)
     HDC hDC;
     HBRUSH brush;
     RECT region;
+    RECT tofill;
 
     scflush();
     if (to == from)
@@ -1258,9 +1260,14 @@ ntscroll(int from, int to, int n)
 	&region,		/* address of structure with scroll rectangle */
 	&region,		/* address of structure with clip rectangle */
 	(HRGN) 0,		/* handle of update region */
-	NULL,			/* address of structure for update rectangle */
+	&tofill,		/* address of structure for update rectangle */
 	SW_ERASE | SW_INVALIDATE	/* scrolling flags */
 	);
+    TRACE(("ntscroll tofill: (%d,%d)/(%d,%d)\n",
+	    tofill.left, tofill.top,
+	    tofill.right, tofill.bottom));
+
+    RedrawWindow(cur_win->text_hwnd, &tofill, NULL, RDW_ERASENOW);
 }
 
 /*
@@ -2392,7 +2399,7 @@ ntgetch(void)
 		if (buttondown) {
 		    int dummy;
 
-		    /* 
+		    /*
 		     * Update editor's current cursor position, if that
 		     * position is still within cur_win->text_hwnd .
 		     */
@@ -2404,7 +2411,7 @@ ntgetch(void)
 			 * just terminated within a vile window.  Note
 			 * however that, due to autoscroll, the cursor
 			 * might not now be positioned within
-			 * cur_win->main_hwnd--but that doesn't matter. 
+			 * cur_win->main_hwnd--but that doesn't matter.
 			 * If the user selected at least one char of
 			 * text, yank it to the unnamed register.
 			 */
@@ -2760,6 +2767,10 @@ MainWndProc(
 
     case WM_EXITSIZEMOVE:
 	ResizeClient();
+	if (initialized) {
+	    mlwrite("columns: %d, rows: %d", term.cols, term.rows);
+	    update(TRUE);	/* Force cursor out of message line */
+	}
 	return (DefWindowProc(hWnd, message, wParam, lParam));
 
     case WM_DROPFILES:
@@ -3198,6 +3209,7 @@ winvile_start(void)
     UpdateWindow(cur_win->main_hwnd);
     caret_disabled = FALSE;
     fshow_cursor();
+    initialized = TRUE;
 }
 
 /*

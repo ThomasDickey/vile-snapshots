@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.7 2000/01/31 00:23:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.8 2000/02/10 11:30:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of SQL script
  * - T.Dickey
@@ -11,7 +11,7 @@
 
 #include <filters.h>
 
-char *filter_name = "sql";
+DefineFilter("sql");
 
 static char *Action_attr;
 static char *Comment_attr;
@@ -20,12 +20,12 @@ static char *Keyword_attr;
 static char *Number_attr;
 static char *String_attr;
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;

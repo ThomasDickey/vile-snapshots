@@ -3,14 +3,14 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.6 2000/01/31 00:23:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.7 2000/02/10 11:30:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an X resource file.
  */
 
 #include <filters.h>
 
-char *filter_name = "xres";
+DefineFilter("xres");
 
 static char *Comment_attr;
 static char *Ident2_attr;
@@ -61,12 +61,12 @@ quoted_name(char *text, int length)
     }
 }
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;

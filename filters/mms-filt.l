@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.3 2000/01/31 00:22:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.4 2000/02/10 11:30:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VMS mms script
  * - T.Dickey
@@ -9,7 +9,7 @@
 
 #include <filters.h>
 
-char *filter_name = "mms";
+DefineFilter("mms");
 
 static char *Comment_attr;
 static char *Ident2_attr;
@@ -48,12 +48,12 @@ write_keyword(char *text, int size)
 	fputc(':', yyout);
 }
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;

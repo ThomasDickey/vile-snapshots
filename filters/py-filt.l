@@ -3,14 +3,14 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.5 2000/01/31 00:21:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.6 2000/02/10 11:30:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a Python script
  */
 
 #include <filters.h>
 
-char *filter_name = "py";
+DefineFilter("py");
 
 static char *Comment_attr;
 static char *Ident2_attr;
@@ -42,12 +42,12 @@ flush_quoted(void)
     }
 }
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;

@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.64 2000/01/31 00:21:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.65 2000/02/10 11:35:14 tom Exp $
  *
  */
 
@@ -60,6 +60,8 @@ static unsigned TrimBlanks(char *src);
 static void ReadKeywords(char *classname);
 static void RemoveList(KEYWORD * k);
 
+static FILE *my_out;
+static FILE *my_in;
 static KEYWORD **hashtable;
 static CLASS *classes;
 static char *Default_attr;
@@ -159,7 +161,7 @@ ExecSource(char *param)
     CreateSymbolTable(param);
     ReadKeywords(MY_NAME);	/* provide default values for this table */
     ReadKeywords(param);
-    set_symbol_table(filter_name);
+    set_symbol_table(filter_def.filter_name);
 
     meta_ch = save_meta;
     eqls_ch = save_eqls;
@@ -723,26 +725,29 @@ main(int argc, char **argv)
     setlocale(LC_CTYPE, "");
 #endif
 
+    my_in = stdin;
+    my_out = stdout;
+
     /* get verbose option */
     (void) ProcessArgs(argc, argv, 0);
 
-    CreateSymbolTable(filter_name);
+    CreateSymbolTable(filter_def.filter_name);
 
     Default_attr = strmalloc(NAME_KEYWORD);
 
-    init_filter(1);
+    filter_def.InitFilter(1);
 
     ReadKeywords(MY_NAME);
     n = ProcessArgs(argc, argv, 1);
 
     if (!k_used) {
-	if (strcmp(MY_NAME, filter_name)) {
-	    ReadKeywords(filter_name);
+	if (strcmp(MY_NAME, filter_def.filter_name)) {
+	    ReadKeywords(filter_def.filter_name);
 	}
     }
-    set_symbol_table(filter_name);
+    set_symbol_table(filter_def.filter_name);
 
-    init_filter(0);
+    filter_def.InitFilter(0);
 
     if (quit) {
 	/* 
@@ -755,29 +760,27 @@ main(int argc, char **argv)
 	 */
 
 	char *name;
-	FILE *fp;
 
 #if defined(_WIN32)
 	name = "NUL";
 #else
 	name = "/dev/null";
 #endif
-	if ((fp = fopen(name, "r")) != NULL) {
-	    do_filter(fp, stdout);
-	    fclose(fp);
+	if ((my_in = fopen(name, "r")) != 0) {
+	    filter_def.DoFilter(my_in, my_out);
+	    fclose(my_in);
 	}
     } else if (n < argc) {
 	char *name = argv[n++];
-	FILE *fp = fopen(name, "r");
-	if (fp != 0) {
-	    do_filter(fp, stdout);
-	    fclose(fp);
+	if ((my_in = fopen(name, "r")) != 0) {
+	    filter_def.DoFilter(my_in, my_out);
+	    fclose(my_in);
 	}
     } else {
-	do_filter(stdin, stdout);
+	filter_def.DoFilter(my_in, my_out);
     }
-    fflush(stdout);
-    fclose(stdout);
+    fflush(my_out);
+    fclose(my_out);
     exit(GOODEXIT);
 }
 

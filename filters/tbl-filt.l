@@ -3,14 +3,14 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tbl-filt.l,v 1.3 2000/01/31 00:21:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tbl-filt.l,v 1.4 2000/02/10 11:30:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile mktbls datafile.
  */
 
 #include <filters.h>
 
-char *filter_name = "tbl";
+DefineFilter("tbl");
 
 static char *Comment_attr;
 static char *Ident2_attr;
@@ -56,12 +56,12 @@ mixedcase(const char *name)
     return 0;
 }
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;

@@ -1,21 +1,21 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.2 1999/04/17 14:21:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.3 2000/02/10 11:30:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
 
 #include <filters.h>
 
-char *filter_name = "spell";
+DefineFilter("spell");
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     FILE *fp;

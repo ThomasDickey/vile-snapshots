@@ -2,6 +2,8 @@
 
 %{
 /*
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/fdl-filt.l,v 1.5 2000/02/10 11:37:55 tom Exp $
+ *
  * Filter to add vile "attribution" sequences to selected bits of fdl
  * input text.  This treats all of the text area as quoted, except for
  * out-of-bounds text.  Fields are shown as variable.
@@ -9,7 +11,7 @@
 
 #include <filters.h>
 
-char *filter_name = "fdl";
+DefineFilter("fdl");
 
 static char *Comment_attr;
 static char *Ident2_attr;
@@ -33,12 +35,12 @@ handle_keyword(char *name)
     }
 }
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;

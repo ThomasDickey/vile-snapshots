@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.439 2000/01/30 23:16:29 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.441 2000/02/10 23:39:00 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -406,6 +406,7 @@
 #define OPT_EXEC_MACROS 40
 #endif
 #endif
+				/* force buffers to be unique */
 
   /* NOTE:  OPT_ICURSOR is _only_ supported by borland.c for a PC build
      and ntconio.c for a win32 build!! */
@@ -1754,6 +1755,16 @@ typedef struct {
 #define for_each_modegroup(bp,n,m,vals) vals = bp->b_values.bv;
 #endif
 
+#if SYS_UNIX
+typedef struct {
+	dev_t dev;
+	ino_t ino;
+	int   valid;		/* are dev and ino good? */
+} FUID;
+#else
+typedef int FUID;
+#endif
+
 /*
  * Text is kept in buffers.  A buffer header, described below, exists
  * for every buffer in the system.  The buffers are kept in a big
@@ -1785,7 +1796,7 @@ typedef struct	BUFFER {
 	L_NUM	b_linecount;		/* no. lines in buffer		*/
 	L_NUM	b_lines_on_disk;	/* no. lines as of last read/write */
 	LINEPTR b_udstks[2];		/* undo stack pointers		*/
-	MARK	b_uddot[2];		/* Link to "." before undoable op*/
+	MARK	b_uddot[2];		/* Link to "." before undoable op */
 	short	b_udstkindx;		/* which of above to use	*/
 	LINEPTR b_udtail;		/* tail of undo backstack	*/
 	LINEPTR b_udlastsep;		/* last stack separator pushed	*/
@@ -1803,6 +1814,9 @@ typedef struct	BUFFER {
 	char	*b_fname;		/* File name			*/
 	int	b_fnlen;		/* length of filename		*/
 	char	b_bname[NBUFN]; 	/* Buffer name			*/
+#if SYS_UNIX
+	FUID	b_fileuid;		/* file unique id (dev/ino on unix) */
+#endif
 #if	OPT_ENCRYPT
 	char	b_cryptkey[NKEYLEN];	/* encryption key		*/
 #endif

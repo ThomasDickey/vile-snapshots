@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.9 1999/12/26 22:04:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.10 2000/02/10 11:30:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Cwebx input
  * text.  Also useful for Cweb
@@ -13,7 +13,7 @@
 
 #include <filters.h>
 
-char *filter_name = "cweb";
+DefineFilter("cweb");
 
 #define NAME_TeX_command "TeX_command"
 #define NAME_TeX_comment "TeX_comment"
@@ -35,7 +35,7 @@ static char *Cweb_code_autre;
 
 static int in_code;	/* FIXME: should implement a stack */
 
-void
+static void
 init_filter(int before)
 {
     if (before) {
@@ -47,7 +47,7 @@ init_filter(int before)
     }
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;

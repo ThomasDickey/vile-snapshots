@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.217 2000/01/05 02:49:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.218 2000/02/09 11:34:52 pgf Exp $
  *
  */
 
@@ -436,7 +436,7 @@ histbuff0(int f, int n, int this_window)
 int
 histbuff(int f, int n)
 {
-    	return histbuff0(f, n, FALSE);
+	return histbuff0(f, n, FALSE);
 }
 
 /*
@@ -446,7 +446,7 @@ histbuff(int f, int n)
 int
 histbuff_to_current_window(int f, int n)
 {
-    	return histbuff0(f, n, TRUE);
+	return histbuff0(f, n, TRUE);
 }
 
 /*
@@ -2006,6 +2006,7 @@ bfind(const char *bname, UINT bflag)
 	bp->b_acount = b_val(bp, VAL_ASAVECNT);
 	bp->b_fname = NULL;
 	ch_fname(bp, "");
+	fileuid_invalidate(bp);
 #if	OPT_ENCRYPT
 	if (!b_is_temporary(bp)
 	 && cryptkey != 0 && *cryptkey != EOS) {

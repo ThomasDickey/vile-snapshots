@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.267 2000/01/30 23:16:29 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.268 2000/02/09 11:33:49 pgf Exp $
  */
 
 #include	"estruct.h"
@@ -99,7 +99,7 @@ int	iswrite)
 
 		if (check_against != current) {
 			(void)lsprintf(prompt,
-			"%sFile for buffer \"%s\" has changed %son disk.  %s",
+			"%sFile for \"%s\" has changed %son disk.  %s",
 				remind, bp->b_bname, again, question);
 			if ((status = mlyesno( prompt )) != TRUE)
 				mlerase();
@@ -145,7 +145,7 @@ check_modtime(BUFFER *bp, char *fn)
 {
 	int status = TRUE;
 
-	if (PromptModtime(bp, fn, "Read from disk", FALSE) == TRUE) {
+	if (PromptModtime(bp, fn, "Reread", FALSE) == TRUE) {
 #if OPT_LCKFILES
 		/* release own lock before read the file again */
 		if ( global_g_val(GMDUSEFILELOCK) ) {
@@ -162,7 +162,7 @@ static int
 inquire_modtime(BUFFER *bp, char *fn)
 {
 	register int status;
-	if ((status = PromptModtime(bp, fn, "Continue write", TRUE)) != TRUE
+	if ((status = PromptModtime(bp, fn, "Write", TRUE)) != TRUE
 	 && (status != SORTOFTRUE)) {
 		mlforce("[Write aborted]");
 		return FALSE;
@@ -334,6 +334,53 @@ same_fname(char *fname, BUFFER *bp, int lengthen)
 	TRACE(("=>%d\n", status));
 	return (status);
 }
+
+
+/* support for "unique-buffers" mode -- file uids. */
+
+int
+fileuid_get(const char *fname, FUID *fuid)
+{
+#if	SYS_UNIX
+	struct stat sb;
+	if (stat(fname, &sb) == 0) {
+		fuid->ino = sb.st_ino;
+		fuid->dev = sb.st_dev;
+		fuid->valid = TRUE;
+		return TRUE;
+	}
+	return FALSE;
+#endif
+}
+
+void
+fileuid_set(BUFFER *bp, FUID *fuid)
+{
+#if	SYS_UNIX
+	bp->b_fileuid = *fuid;  /* struct copy */
+#endif
+}
+
+void
+fileuid_invalidate(BUFFER *bp)
+{
+#if	SYS_UNIX
+	bp->b_fileuid.ino = 0;
+	bp->b_fileuid.dev = 0;
+	bp->b_fileuid.valid = FALSE;
+#endif
+}
+
+int
+fileuid_same(BUFFER *bp, FUID *fuid)
+{
+#if	SYS_UNIX
+	return (bp->b_fileuid.valid && fuid->valid &&
+		bp->b_fileuid.ino == fuid->ino &&
+		bp->b_fileuid.dev == fuid->dev);
+#endif
+}
+
 
 /*
  * Set the buffer-name based on the filename
@@ -508,6 +555,8 @@ int cmdline)
 	register int	s;
 	char bname[NBUFN];	/* buffer name to put file */
 	char nfname[NFILEN];	/* canonical form of 'fname' */
+	FUID fuid;
+	int have_fuid = FALSE;
 
 	/* user may have renamed buffer to look like filename */
 	if (cmdline
@@ -522,22 +571,36 @@ int cmdline)
 			mlforce("[Buffer not found]");
 			return 0;
 		}
+		if (global_g_val(GMDUNIQ_BUFS)) {
+		    have_fuid = fileuid_get(nfname, &fuid);
+		    for_each_buffer(bp) {
+			    /* is the same unique file */
+			    if (have_fuid && fileuid_same(bp, &fuid)) {
+				    return bp;
+			    }
+		    }
+		}
 		for_each_buffer(bp) {
 			/* is it here by that filename? */
 			if (same_fname(nfname, bp, FALSE)) {
 				return bp;
 			}
 		}
+
 		/* it's not here */
 		makename(bname, nfname);	    /* New buffer name.     */
 		/* make sure the buffer name doesn't exist */
 		while ((bp = find_b_name(bname)) != NULL) {
 			if ( !b_is_changed(bp) && is_empty_buf(bp) &&
 					!ffexists(bp->b_fname)) {
-				/* empty and unmodified -- then it's okay
-					to re-use this buffer */
+				/* empty, unmodified, and non-existent --
+				    then it's okay to re-use this buffer */
 				bp->b_active = FALSE;
 				ch_fname(bp, nfname);
+				if (have_fuid)
+					fileuid_set(bp, &fuid);
+				else
+					fileuid_invalidate(bp);
 				return bp;
 			}
 			/* make a new name if it conflicts */
@@ -558,6 +621,8 @@ int cmdline)
 		}
 		/* switch and read it in. */
 		ch_fname(bp, nfname);
+		if (have_fuid)
+			fileuid_set(bp, &fuid);
 	}
 	return bp;
 }

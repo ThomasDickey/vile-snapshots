@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.7 1999/03/07 19:18:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.8 2000/02/10 11:30:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DCL files.
  *
@@ -21,7 +21,7 @@
 
 #include <filters.h>
 
-char *filter_name = "dcl";
+DefineFilter("dcl");
 
 static char *Action_attr;
 static char *Comment_attr;
@@ -49,7 +49,7 @@ add_abbrev(const char *name, int size, const char *attr)
     }
 }
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
     /* This looks ugly, but not many languages support abbreviations.  So we
@@ -59,7 +59,7 @@ init_filter(int before GCC_UNUSED)
 	for_each_keyword(add_abbrev);
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;

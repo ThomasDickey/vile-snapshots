@@ -3,14 +3,14 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.9 1999/12/29 15:07:39 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.10 2000/02/10 11:30:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mail
  */
 
 #include <filters.h>
 
-char *filter_name = "mail";
+DefineFilter("mail");
 
 static char *Action_attr;
 static char *Comment_attr;
@@ -26,12 +26,12 @@ write_label(char *text, int size)
     fputc(':', yyout);
 }
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;
