@@ -1,7 +1,37 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (tom) 980412 (r)
+ 	+ modify configure script and makefile.in to allow for DOS-style
+	  suffixes (e.g., ".exe"), needed for OS/2 EMX.
+ 	+ fix pathname support for OS/2 EMX by allowing MS-DOS-style drive
+	  letters (estruct.h, path.c).
+ 	+ suppress 'working...' message while writing to a pipe (reported by
+	  Clark Morgan).
+ 	+ add rule to make c-filt to makefile.djg
+ 	+ add writePipe() function to make MS-DOS version able to write to a
+	  pipe.
+	+ use backslash-form for path in c-filt.c on Win32 (Clark Morgan).
+	> clipboard support for vile/winvile under Win32 (Clark Morgan):
+	+ Permits Win32 users to copy the unnamed register contents to the
+	  Windows clipboard.  Functionality is bound to Alt+Insert.
+	+ Adds stubs for two additional clipboard-related features.  Stubs are
+	  bound to Ctl+Insert and Shift+Insert.
+	+ Adds a new Win32 source file (w32cbrd.c).
+	+ Revises the "Win32 specifics" section of the help file to talk about
+	  Win32 features.
+	> new implementation of w32pipe.c (Clark Morgan):
+	+ reset ukb to zero in filterregion() to avoid having insfile() insert
+	  file/pipe input into a kill register, rather than the current buffer
+	  on platforms where softfork() is faked.
+	+ w32pipe.c module documentation lists limitation of native win32
+	  pipes.
+	+ winvile.exe and vile.exe are now built with thread-safe libraries,
+	  because
+	+ spawn.c's filterregion() routine has been modified to create separate
+	  writer and reader threads in a Win32 env.
+
  (kev) 980409 (q)
- 	+ api.c (api_setup_fake_win): Added another parameter to this
+	+ api.c (api_setup_fake_win): Added another parameter to this
 	  function which controls whether the deferred deletes get
 	  done or not.  Fixed all callers.
 	  (api_dotinsert, api_dotgline, api_setup_fake_win, api_bp2vbp,

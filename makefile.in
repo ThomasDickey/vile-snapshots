@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.98 1998/03/21 16:04:05 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.99 1998/04/12 19:52:58 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -42,11 +42,13 @@ CFLAGS		= @CFLAGS@ $(EXTRA_CFLAGS)
 LIBS		= @LIBS@
 LINT		= @LINT@
 
+x		= @PROG_EXT@
+
 X_CFLAGS	= @X_CFLAGS@
 X_LIBS		= @X_LIBS@
 
 SCREEN		= @SCREEN@
-TARGET		= @TARGET@
+TARGET		= @TARGET@$x
 
 PERL		= @perl_bin_path@
 PERLLIB		= @perl_lib_path@
@@ -68,7 +70,7 @@ CPPFLAGS	= -I. -I$(srcdir) $(X_CFLAGS) \
 		-DVILE_STARTUP_PATH=\"@VILE_STARTUP_PATH@\" \
 		-DHAVE_CONFIG_H @CPPFLAGS@
 
-LDFLAGS		= 
+LDFLAGS		=
 
 INSTALL_DIRS    = $(bindir) $(datadir) $(mandir)
 
@@ -177,7 +179,7 @@ DEV_DISTFILES = $(DISTFILES) $(DEVELOPER_ONLY)
 
 SRC = $(SCREEN).c $(VILESRC)
 
-MKTBLS = ./mktbls
+MKTBLS = ./mktbls$x
 
 # these headers are built by the mktbls program from the information in cmdtbl
 # and in modetbl
@@ -201,24 +203,24 @@ OBJ = $(SCREEN).o \
 	tbuff.o termio.o undo.o version.o \
 	window.o word.o wordmov.o @EXTRAOBJS@
 
-all:	$(TARGET) vile-manfilt vile-c-filt vile-crypt
+all:	$(TARGET) vile-manfilt$x vile-c-filt$x vile-crypt$x
 
 $(TARGET): $(BUILTHDRS) $(OBJ)
 	-mv $(TARGET) o$(TARGET)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $(TARGET) $(OBJ) $(X_LIBS) $(LIBS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ $(OBJ) $(X_LIBS) $(LIBS)
 
 vile.man: vile.1
 	nroff -man vile.1 | col -b >vile.man
 
-vile-manfilt: manfilt.o
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o vile-manfilt manfilt.o
+vile-manfilt$x : manfilt.o
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ manfilt.o
 
-vile-c-filt: c-filt.o
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o vile-c-filt c-filt.o
+vile-c-filt$x : c-filt.o
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ c-filt.o
 
-vile-crypt: $(srcdir)/crypt.c
+vile-crypt$x : $(srcdir)/crypt.c
 	@ECHO_LD@$(CC) -DSTANDALONE $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) \
-	    -o vile-crypt  $(srcdir)/crypt.c
+	    -o $@ $(srcdir)/crypt.c
 
 nebind.h \
 nefkeys.h \
@@ -242,9 +244,9 @@ check: $(TARGET)
 
 install: $(INSTALL_DIRS) \
 	$(bindir)/$(TARGET) \
-	$(bindir)/vile-manfilt \
-	$(bindir)/vile-c-filt \
-	$(bindir)/vile-crypt \
+	$(bindir)/vile-manfilt$x \
+	$(bindir)/vile-c-filt$x \
+	$(bindir)/vile-crypt$x \
 	$(mandir)/$(TARGET).$(manext) \
 	$(datadir)/vile.hlp
 	@echo 'Completed installation.'
@@ -253,9 +255,9 @@ installdirs: $(INSTALL_DIRS)
 
 uninstall:
 	-$(RM) $(bindir)/$(TARGET) \
-		$(bindir)/vile-manfilt \
-		$(bindir)/vile-c-filt \
-		$(bindir)/vile-crypt \
+		$(bindir)/vile-manfilt$x \
+		$(bindir)/vile-c-filt$x \
+		$(bindir)/vile-crypt$x \
 		$(mandir)/$(TARGET).$(manext) \
 		$(datadir)/vile.hlp
 
@@ -278,7 +280,7 @@ mostlyclean:
 	    core *~ *.BAK
 
 clean: mostlyclean
-	-$(RM) $(TARGET) vile-manfilt vile-c-filt vile-crypt
+	-$(RM) $(TARGET) vile-manfilt$x vile-c-filt$x vile-crypt$x
 
 distclean: clean
 	-$(RM) makefile config.status config.cache config.log config.h
@@ -314,7 +316,7 @@ devtarball:	$(DEV_DISTFILES) /tmp/vilevers release_warnings
 	done
 #	tar -cf - `cat .fname` | gzip >`cat .fname`dev.tar.gz
 	gtar -czf `cat .fname`dev.tar.gz `cat .fname`
-	@echo Created `cat .fname`dev.tar.gz 
+	@echo Created `cat .fname`dev.tar.gz
 	rm -rf `cat .fname` .fname
 
 #	 this builds vile-N.N.tar.gz, for general release
@@ -329,7 +331,7 @@ tarball:	$(DISTFILES) /tmp/vilevers release_warnings
 	    || { echo copying $$file instead; cp -p $$file `cat .fname`; }; \
 	done
 	gtar -czf `cat .fname`.tar.gz `cat .fname`
-	@echo Created `cat .fname`.tar.gz 
+	@echo Created `cat .fname`.tar.gz
 	rm -rf `cat .fname` .fname
 
 #	 this builds vileN.Nshar, for general release
@@ -386,7 +388,7 @@ patch:	/tmp/vilevers
 	do								 \
 	  rcsdiff -c -u -r$$filerev $$file 2>/dev/null || true		;\
 	done  >patch$$ovilevers-$$vilevers 				;\
-	echo Created patch$$ovilevers-$$vilevers 
+	echo Created patch$$ovilevers-$$vilevers
 
 dpatch:
 	co -p$(PATCH_AGAINST) revlist |			 		 \
@@ -492,21 +494,21 @@ word.o:		nefunc.h
 x11.o:		nefunc.h
 
 # dependency-rules for install/installdirs
-$(bindir)/$(TARGET):       $(TARGET) 
+$(bindir)/$(TARGET):       $(TARGET)
 	$(INSTALL_PROGRAM) $(TARGET) $@
-$(bindir)/vile-manfilt:    vile-manfilt 
-	$(INSTALL_PROGRAM) vile-manfilt $@
-$(bindir)/vile-c-filt:     vile-c-filt 
-	$(INSTALL_PROGRAM) vile-c-filt $@
-$(bindir)/vile-crypt:     vile-crypt 
-	$(INSTALL_PROGRAM) vile-crypt $@
+$(bindir)/vile-manfilt$x : vile-manfilt$x
+	$(INSTALL_PROGRAM) vile-manfilt$x $@
+$(bindir)/vile-c-filt$x :  vile-c-filt$x
+	$(INSTALL_PROGRAM) vile-c-filt$x $@
+$(bindir)/vile-crypt$x :   vile-crypt$x
+	$(INSTALL_PROGRAM) vile-crypt$x $@
 
-$(mandir)/vile.$(manext):  $(srcdir)/vile.1 
+$(mandir)/vile.$(manext):  $(srcdir)/vile.1
 	$(INSTALL_DATA)    $(srcdir)/vile.1 $@
-$(mandir)/xvile.$(manext): $(srcdir)/vile.1 
+$(mandir)/xvile.$(manext): $(srcdir)/vile.1
 	$(INSTALL_DATA)    $(srcdir)/vile.1 $@
 
-$(datadir)/vile.hlp:       $(srcdir)/vile.hlp 
+$(datadir)/vile.hlp:       $(srcdir)/vile.hlp
 	$(INSTALL_DATA)    $(srcdir)/vile.hlp $@
 
 $(INSTALL_DIRS):

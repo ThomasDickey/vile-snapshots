@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.62 1998/03/14 00:07:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.63 1998/04/11 17:16:40 tom Exp $
  *
  */
 
@@ -326,6 +326,8 @@ readPipe(const char *cmd, int in, int out)
 {
 	int old0, old1, old2;
 
+	TRACE(("readPipe(cmd='%s', in=%d, out=%d)\n", cmd, in, out))
+
 	TTkclose();	/* close the keyboard in case of error */
 
 	/* save and redirect stdin, stdout, and stderr */
@@ -357,6 +359,31 @@ readPipe(const char *cmd, int in, int out)
 	return fdopen(out, "r");
 }
 
+#if SYS_MSDOS
+static void
+writePipe(const char *cmd)
+{
+	int old0;
+
+	TRACE(("writePipe(cmd='%s')\n", cmd))
+
+	TTkclose();	/* close the keyboard in case of error */
+
+	(void)fclose(*myWrtr);
+	*myWrtr = fopen(myName[0], "r");
+
+	old0 = dup(0);
+	dup2(fileno(*myWrtr), 0);
+
+	myRval = system(cmd);
+
+	/* restore old std... */
+	dup2(old0, 0); close(old0);
+
+	TTkopen();	/* reopen the keyboard */
+}
+#endif
+
 FILE *
 npopen (char *cmd, const char *type)
 {
@@ -381,6 +408,7 @@ inout_popen(FILE **fr, FILE **fw, char *cmd)
 	static FILE	*pp = 0;
 	int		fd;
 
+	TRACE(("inout_popen(fr=%p, fw=%p, cmd='%s')\n", fr, fw, cmd))
 #ifdef GMDW32PIPES
 	if (global_g_val(GMDW32PIPES))
 	    return (w32_inout_popen(fr, fw, cmd));
@@ -438,6 +466,10 @@ npclose (FILE *fp)
 	    w32_npclose(fp);
 	    return;
 	}
+#endif
+#if SYS_MSDOS
+	if (myWrtr != 0 && myPipe == 0)
+		writePipe(myCmds);
 #endif
 	closePipe(&myWrtr);
 	closePipe(&myPipe);

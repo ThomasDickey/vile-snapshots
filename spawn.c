@@ -1,9 +1,13 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.124 1998/02/21 12:32:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.125 1998/04/06 03:00:00 cmorgan Exp $
  *
  */
+
+#ifdef _WIN32
+# include    <process.h>
+#endif
 
 #include	"estruct.h"
 #include	"edef.h"
@@ -521,56 +525,112 @@ pipecmd(int f, int n)
 }
 #endif /* SYS_UNIX */
 
+#if SYS_UNIX || SYS_MSDOS || (SYS_OS2 && CC_CSETPP) || SYS_WINNT
+/*
+ * write_data_to_pipe() exists to facilitate execution of a Win32 thread.
+ * All other host operating systems are simply victims.
+ */
+static void
+write_data_to_pipe(void *writefp)
+{
+    FILE *fw;
+    KILL *kp;       /* pointer into kill register */
+
+    fw = writefp;
+    kregcirculate(FALSE);
+    kp = kbs[ukb].kbufh;
+    while (kp != NULL) 
+    {
+        fwrite((char *)kp->d_chunk, 1, (SIZE_T)KbSize(ukb,kp), fw);
+        kp = kp->d_next;
+    }
+    ukb = 0;   /* was modified by kregciruclate() */
+#if SYS_UNIX && ! TEST_DOS_PIPES
+    (void)fflush(fw);
+    (void)fclose(fw);
+    ExitProgram (GOODEXIT);
+    /* NOTREACHED */
+#else
+    npflush();  /* fake multi-processing */
+#endif
+#if SYS_WINNT          
+    /* 
+     * If this function is invoked by a thread, then that thread (not 
+     * the parent process) must close write pipe.  We generalize this
+     * function so that all Win32 execution environments (threaded or
+     * not) use the same code.
+     */
+    (void)fflush(fw);
+    (void)fclose(fw);
+#endif
+}
+#endif
+
 /* run a region through an external filter, replace it with its output */
 int
 filterregion(void)
 {
 /* FIXX work on this for OS2, need inout_popen support, or named pipe? */
 #if SYS_UNIX || SYS_MSDOS || (SYS_OS2 && CC_CSETPP) || SYS_WINNT
-	static char oline[NLINE];	/* command line send to shell */
-	char	line[NLINE];	/* command line send to shell */
-	FILE *fr, *fw;
-	int s;
+    static char oline[NLINE];   /* command line send to shell */
+    char    line[NLINE];    /* command line send to shell */
+    FILE *fr, *fw;
+    int s;
 
-	/* get the filter name and its args */
-	if ((s=mlreply_no_bs("!", oline, NLINE)) != TRUE)
-		return(s);
-	(void)strcpy(line,oline);
-	if ((s = inout_popen(&fr, &fw, line)) != TRUE) {
-		mlforce("[Couldn't open pipe or command]");
-		return s;
-	}
+    /* get the filter name and its args */
+    if ((s=mlreply_no_bs("!", oline, NLINE)) != TRUE)
+        return(s);
+    (void)strcpy(line,oline);
+    if ((s = inout_popen(&fr, &fw, line)) != TRUE) {
+        mlforce("[Couldn't open pipe or command]");
+        return s;
+    }
 
-	killregion();
-	if (!softfork()) {
-		KILL *kp;		/* pointer into kill register */
-		kregcirculate(FALSE);
-		kp = kbs[ukb].kbufh;
-		while (kp != NULL) {
-			fwrite((char *)kp->d_chunk, 1, (SIZE_T)KbSize(ukb,kp), fw);
-			kp = kp->d_next;
-		}
-#if SYS_UNIX && ! TEST_DOS_PIPES
-		(void)fflush(fw);
-		(void)fclose(fw);
-		ExitProgram (GOODEXIT);
-		/* NOTREACHED */
+    killregion();
+    if (!softfork()) 
+    {
+#if !(SYS_WINNT && defined(GMDW32PIPES))
+        write_data_to_pipe(fw);
 #else
-		npflush();	/* fake multi-processing */
+        /* This is a Win32 environment with compiled Win32 pipe support. */
+        if (global_g_val(GMDW32PIPES))
+        {
+            /* 
+             * w32pipes mode enabled -- create child thread to blast
+             * region to write pipe.
+             */
+
+            if (_beginthread(write_data_to_pipe, 0, fw) == -1)
+            {
+                mlforce("[Can't create Win32 write pipe]");
+                (void) fclose(fw);
+                (void) npclose(fr);
+                return (FALSE);
+            }
+        }
+        else
+        {
+            /* 
+             * Single-threaded parent process writes region to pseudo
+             * write pipe (temp file).
+             */
+
+            write_data_to_pipe(fw);
+        }
 #endif
-	}
-#if !(SYS_OS2 && CC_CSETPP)
-	(void)fclose(fw);
+    }
+#if ! ((SYS_OS2 && CC_CSETPP) || SYS_WINNT)
+    (void)fclose(fw);
 #endif
-	DOT.l = lback(DOT.l);
-	s = ifile((char *)0,TRUE,fr);
-	npclose(fr);
-	(void)firstnonwhite(FALSE,1);
-	(void)setmark();
-	return s;
+    DOT.l = lback(DOT.l);
+    s = ifile((char *)0,TRUE,fr);
+    npclose(fr);
+    (void)firstnonwhite(FALSE,1);
+    (void)setmark();
+    return s;
 #else
-	mlforce("[Region filtering not available -- try buffer filtering]");
-	return FALSE;
+    mlforce("[Region filtering not available -- try buffer filtering]");
+    return FALSE;
 #endif
 }
 

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.109 1998/03/14 04:43:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.111 1998/04/12 15:22:07 tom Exp $
  *
  */
 
@@ -361,7 +361,7 @@ static	/*ARGSUSED*/ WINDOW *ptr2WINDOW(void *p) { return 0; }
 /* list the current modes into the current buffer */
 /* ARGSUSED */
 static
-void	
+void
 makemodelist(int local, void *ptr)
 {
 	static
@@ -671,16 +671,16 @@ legal_glob_mode(const char *base)
 }
 #endif
 
-/* 
+/*
  * FSM stands for fixed string mode, so called because the strings which the
  * user is permitted to enter are non-arbitrary (fixed).
- * 
+ *
  * It is meant to handle the following sorts of things:
  *
  * 	:set popup-choices off
  * 	:set popup-choices immediate
  * 	:set popup-choices delayed
- * 
+ *
  * 	:set error quiet
  * 	:set error beep
  * 	:set error flash
@@ -783,7 +783,7 @@ is_fsm(const struct VALNAMES *names)
 }
 
 /*
- * Test if we're processing an enum-valued mode.  If so, lookup the mode value. 
+ * Test if we're processing an enum-valued mode.  If so, lookup the mode value.
  * We'll allow a numeric index also (e.g., for colors).  Note that we're
  * returning the table-value in that case, so we'll have to ensure that we
  * don't corrupt the table.
@@ -896,7 +896,7 @@ VALARGS *args)			/* symbol-table entry for the mode */
 #if OPT_ENUM_MODES
 		 if ((rp = legal_fsm(rp)) == 0)
 		    return FALSE;
-#endif  
+#endif
 		/* Test after fsm, to allow translation */
 		if (is_bool_type(names->type)) {
 			if (!string_to_bool(rp, &setting))
@@ -1758,7 +1758,7 @@ insert_per_major(size_t count, const char *name)
 	if (name != 0) {
 		size_t j, k;
 
-		TRACE(("insert_per_major %d %s\n", count, name))
+		TRACE(("insert_per_major %ld %s\n", (long) count, name))
 
 		for (j = 0; j < count; j++) {
 			if (strcmp(my_mode_list[j], name) > 0)
@@ -1793,7 +1793,7 @@ remove_per_major(size_t count, const char *name)
 }
 
 /*
- * Lookup a majormode's data area, given its short name, e.g., "c" vs "cmode". 
+ * Lookup a majormode's data area, given its short name, e.g., "c" vs "cmode".
  * We store the majormodes in an array to simplify name completion, though this
  * complicates definition and removal.
  */
@@ -1811,7 +1811,7 @@ lookup_mm_data(const char *name)
 }
 
 /*
- * Lookup a majormode's data area, given its short name, e.g., "c" vs "cmode". 
+ * Lookup a majormode's data area, given its short name, e.g., "c" vs "cmode".
  * We store the majormodes in an array to simplify name completion, though this
  * complicates definition and removal.
  */
@@ -1958,7 +1958,7 @@ attach_mmode(BUFFER *bp, const char *name)
 		}
 		return (bp->majr != 0);
 	}
-	
+
 	return FALSE;
 }
 
@@ -1987,7 +1987,7 @@ detach_mmode(BUFFER *bp, const char *name)
 		bp->majr = 0;
 		return TRUE;
 	}
-	
+
 	return FALSE;
 }
 
@@ -2091,7 +2091,7 @@ extend_VAL_array(struct VAL *ptr, size_t item, size_t len)
 {
 	size_t j, k;
 
-	TRACE(("extend_VAL_array %p item %d of %d\n", ptr, item, len))
+	TRACE(("extend_VAL_array %p item %ld of %ld\n", ptr, (long)item, (long)len))
 
 	if (ptr == 0) {
 		ptr = typeallocn(struct VAL, len + 1);
@@ -2152,7 +2152,7 @@ relist_majormodes(void)
 
 /* list the current modes into the current buffer */
 /* ARGSUSED */
-static void	
+static void
 makemajorlist(int local, void *ptr GCC_UNUSED)
 {
 	int j;

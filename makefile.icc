@@ -1,6 +1,6 @@
 #
 # 'vile' and 'mktbls' makefile for IBM C Set ++ 2.x (OS/2)
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.9 1997/11/30 21:29:44 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.10 1998/04/12 20:39:51 tom Exp $
 #
 
 #
@@ -41,7 +41,7 @@ clean:
 	-del $(MKTBLS)
 
 clobber:	clean
-	-del $(TARGET)
+	-del *$E
 
 #		*List Macros*
 
@@ -110,8 +110,13 @@ VILE_DEPS =  \
 version:
 	@-del version$O
 
-$(TARGET): version $(VILE_DEPS)
+$(TARGET) : version $(VILE_DEPS)
   $(CC) $(CFLAGS) $(VILE_DEPS) /Fe$@
+
+FILT_DEPS = c-filt$O
+
+vile-c-filt$E : $(FILT_DEPS)
+  $(CC) $(CFLAGS) $(FILT_DEPS) /Fe$@
 
 #		*Individual File Dependencies*
 VILE_CFG=	estruct.h nefkeys.h nemode.h edef.h proto.h
@@ -125,6 +130,8 @@ btree$O:	$(VILE_CFG) btree.c 	btree.h
 buffer$O:	$(VILE_CFG) buffer.c
 
 crypt$O:	$(VILE_CFG) crypt.c
+
+c-filt$O:	c-filt.c
 
 csrch$O:	$(VILE_CFG) csrch.c
 

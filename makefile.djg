@@ -3,7 +3,7 @@
 #
 # T.DANG (dang@cogit.ign.fr)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.23 1997/11/26 16:16:52 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.24 1998/04/12 15:00:04 tom Exp $
 #
 #
 
@@ -17,11 +17,11 @@ DEBUG = -g
 OPTIM = -O2
 
 # Use these two lines for the IBM/PC display (not DPMI compatible).
-#CFLAGS= -Wall $(DEBUG) $(OPTIM) -DDISP_IBMPC -Dscrn_chosen 
+#CFLAGS= -Wall $(DEBUG) $(OPTIM) -DDISP_IBMPC -Dscrn_chosen
 #DISP_SRC = ibmpc.c
 
 # Use these two lines for the Borland/CONIO display (DPMI compatible).
-CFLAGS= -Wall $(DEBUG) $(OPTIM) -DDISP_BORLAND -Dscrn_chosen 
+CFLAGS= -Wall $(DEBUG) $(OPTIM) -DDISP_BORLAND -Dscrn_chosen
 DISP_SRC = borland.c gppconio.c
 
 # these are normal editable headers
@@ -43,15 +43,20 @@ SRC = 	main.c $(DISP_SRC) basic.c bind.c btree.c buffer.c crypt.c \
 
 OBJ =	$(SRC:.c=.o)
 
-%.o:	%.c estruct.h nemode.h edef.h proto.h 
-	$(CC) $(CFLAGS) -c $< -o $@ 
+%.o:	%.c estruct.h nemode.h edef.h proto.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
-vile: 	$(BUILTHDRS) $(OBJ)
-	$(CC) $(CFLAGS) -o vile $(OBJ) -lpc 
-	coff2exe vile
+vile : 	$(BUILTHDRS) $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $(OBJ) -lpc
+	coff2exe $@
 	-stubedit vile.exe globbing=no
 
-dist:	vile
+c-filt : c-filt.o
+	$(CC) $(CFLAGS) -o $@ c-filt.o -lpc
+	coff2exe $@
+	-stubedit $@.exe globbing=no
+
+dist :	vile
 	strip vile
 	coff2exe vile
 	-stubedit vile.exe globbing=no

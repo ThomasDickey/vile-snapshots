@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.29 1998/02/21 12:37:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.30 1998/04/08 06:55:00 cmorgan Exp $
  *
  */
 
@@ -17,6 +17,7 @@
 #define	MARGIN	8			/* size of minimum margin and	*/
 #define	SCRSIZ	64			/* scroll size for extended lines */
 #define	NPAUSE	200			/* # times thru update to pause */
+#define NOKYMAP (-1)
 
 #define	AttrColor(b,f)	((WORD)(((ctrans[b] & 15) << 4) | (ctrans[f] & 15)))
 
@@ -483,6 +484,9 @@ static struct {
 	VK_RIGHT,	KEY_Right,	0,
 	VK_UP,		KEY_Up,		0,
 	VK_DOWN,	KEY_Down,	0,
+	VK_INSERT,	KEY_F33,   	LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED,
+	VK_INSERT,	KEY_F34,   	LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED,
+	VK_INSERT,	KEY_F35,   	SHIFT_PRESSED,
 	VK_INSERT,	KEY_Insert,	0,
 	VK_DELETE,	KEY_Delete,	0,
 	VK_HELP,	KEY_Help,	0,
@@ -522,31 +526,33 @@ static int saveCount = 0;
 static int
 decode_key_event(INPUT_RECORD *irp)
 {
-	int key;
-	int i;
+    int key;
+    int i;
 
-	if (!irp->Event.KeyEvent.bKeyDown)
-		return -1;
+    if (!irp->Event.KeyEvent.bKeyDown)
+        return (NOKYMAP);
 
-	key = (unsigned char) irp->Event.KeyEvent.uChar.AsciiChar;
-	if (key != 0)
-		return key;
+    key = (unsigned char) irp->Event.KeyEvent.uChar.AsciiChar;
+    if (key != 0)
+        return key;
 
-	for (i = 0; keyxlate[i].windows; i++) {
-		if (keyxlate[i].windows
-		    == irp->Event.KeyEvent.wVirtualKeyCode) {
-			if (keyxlate[i].shift != 0
-			    && !(keyxlate[i].shift
-				 & irp->Event.KeyEvent.dwControlKeyState))
-				continue;
-			key = keyxlate[i].vile;
-			break;
-		}
-	}
-	if (key == 0)
-		return -1;
+    for (i = 0; keyxlate[i].windows; i++)
+    {
+        if (keyxlate[i].windows == irp->Event.KeyEvent.wVirtualKeyCode)
+        {
+            if (keyxlate[i].shift != 0 && 
+                  !(keyxlate[i].shift & irp->Event.KeyEvent.dwControlKeyState))
+            {
+                continue;
+            }
+            key = keyxlate[i].vile;
+            break;
+        }
+    }
+    if (key == 0)
+        return (NOKYMAP);
 
-	return key;
+    return key;
 }
 
 static void
@@ -644,7 +650,7 @@ ntgetch(void)
 
 		case KEY_EVENT:
 			key = decode_key_event(&ir);
-			if (key < 0)
+			if (key == NOKYMAP)
 				continue;
 			if (ir.Event.KeyEvent.wRepeatCount > 1) {
 				saveCount = ir.Event.KeyEvent.wRepeatCount - 1;

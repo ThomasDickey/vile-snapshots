@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.81 1997/12/06 00:50:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.82 1998/04/12 19:49:12 tom Exp $
  *
  *
  */
@@ -40,6 +40,22 @@
 # include <direct.h>
 # define curdrive() (_getdrive() + ('A' - 1))
 # define curr_dir_on_drive(d) _getdcwd(toUpper(d) - ('A' - 1), temp, sizeof(temp))
+#endif
+
+#if SYS_OS2_EMX
+# define curdrive() _getdrive()
+static char *
+curr_dir_on_drive(int d)
+{
+	static char buffer[NFILEN];
+	char *s;
+	if (_getcwd1(buffer, d) < 0)
+		return 0;
+	/* EMX 0.9b documents _getcwd1 fixes slashes, but it doesn't work */
+	for (s = buffer; *s; s++)
+		if (*s == '\\') *s = '/';
+	return buffer;
+}
 #endif
 
 #ifdef GMDRESOLVE_LINKS
@@ -101,8 +117,8 @@ DIRENT *
 readdir(DIR *dp)
 {
 	static	DIRENT	dbfr;
-	return (fread(&dbfr, sizeof(dbfr), 1, dp)\
-				? &dbfr\
+	return (fread(&dbfr, sizeof(dbfr), 1, dp)
+				? &dbfr
 				: (DIRENT *)0);
 }
 #endif
@@ -808,7 +824,7 @@ case_correct_path(char *old_file, char *new_file)
 		else
 			len = strlen(old_file);
 		(void)memcpy(new_file, old_file, len);
-		new_file[len] = '\0';
+		new_file[len] = EOS;
 		(void)mklower(new_file);
 		if (!next)
 			return 0;
@@ -846,7 +862,7 @@ case_correct_path(char *old_file, char *new_file)
 			next = end;
 		len = next - current;
 		(void)memcpy(sofar, current, len);
-		sofar[len] = '\0';
+		sofar[len] = EOS;
 		h = FindFirstFile(new_file, &fd);
 		if (h != INVALID_HANDLE_VALUE) {
 			FindClose(h);
@@ -881,7 +897,7 @@ is_case_preserving(const char *name)
 
 		drive_name[0] = name[0];
 		drive_name[1] = name[1];
-		drive_name[2] = '\0';
+		drive_name[2] = EOS;
 		rc = DosQueryFSAttach(drive_name, 0, FSAIL_QUERYNAME,
 			pbuffer, &len);
 		if (rc == NO_ERROR) {
@@ -944,7 +960,7 @@ case_correct_path(char *old_file, char *new_file)
 			next = end;
 		len = next - current;
 		(void)memcpy(sofar, current, len);
-		sofar[len] = '\0';
+		sofar[len] = EOS;
 		hdir = HDIR_CREATE;
 		entries = 1;
 		rc = DosFindFirst(new_file, &hdir,
@@ -1435,7 +1451,11 @@ lengthen_path(char *path)
 		cwd = curr_dir_on_drive(drive!=EOS?drive:curdrive());
 		if (!cwd) {
 			temp[0] = drive;
+#if SYS_OS2_EMX
+			(void)strcpy(temp + 1, ":/");
+#else
 			(void)strcpy(temp + 1, ":\\");
+#endif
 			cwd = temp;
 		}
 #else
@@ -1802,7 +1822,7 @@ closedir(DIR *dirp)
 
 #endif /* SYS_WINNT */
 
-#if OPT_MSDOS_PATH
+#if OPT_MSDOS_PATH && !SYS_OS2_EMX
 static char *slconv ( const char *f, char *t, char oc, char nc );
 static char slconvpath[NFILEN * 2];
 
@@ -1827,11 +1847,13 @@ sl_to_bsl(const char *p)
 /*
  * Use this function to tidy up and put the path-slashes into internal form.
  */
+#ifndef bsl_to_sl_inplace
 void
 bsl_to_sl_inplace(char *p)
 {
 	(void)slconv(p, p, '\\', '/');
 }
+#endif
 
 static char *
 slconv(const char *f, char *t, char oc, char nc)
@@ -1845,7 +1867,7 @@ slconv(const char *f, char *t, char oc, char nc)
 		f++;
 		t++;
 	}
-	*t-- = '\0';
+	*t-- = EOS;
 
 	return retp;
 }

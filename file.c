@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.221 1998/03/31 23:59:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.223 1998/04/12 15:26:54 tom Exp $
  *
  */
 
@@ -177,7 +177,7 @@ check_visible_modtimes (void)
 }
 #endif	/* MDCHK_MODTIME */
 
-#if SYS_UNIX
+#if SYS_UNIX || SYS_MSDOS
 #define	CleanToPipe()	if (fileispipe) ttclean(TRUE)
 
 static void
@@ -1524,8 +1524,10 @@ int	forced)
 	if (msgf == TRUE)
 		mlwrite("[Writing...]");
 
-	if (isShellOrPipe(given_fn))
+	if (isShellOrPipe(given_fn)) {
+		beginDisplay();
 		CleanToPipe();
+	}
 
         lp = rp->r_orig.l;
         nline = 0;                              /* Number of lines     */
@@ -1593,8 +1595,10 @@ int	forced)
 			bp->b_lines_on_disk = nline;
 	}
 
-	if (isShellOrPipe(given_fn))
+	if (isShellOrPipe(given_fn)) {
 		CleanAfterPipe(TRUE);
+		endofDisplay();
+	}
 
         if (s != FIOSUC)                        /* Some sort of error.  */
                 return FALSE;
