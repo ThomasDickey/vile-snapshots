@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.289 1998/07/10 00:06:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.290 1998/07/17 09:54:39 cmorgan Exp $
  *
  */
 
@@ -730,26 +730,29 @@ extern int regexec (regexp *prog, char *string, char *stringend, int startoff, i
 extern int lregexec (regexp *prog, LINE *lp, int startoff, int endoff);
 
 /* region.c */
-extern int blank_region (void);
-extern int cryptregion (void);
-extern int detab_region (void);
-extern int detabline (void *flagp, int l, int r);
-extern int entab_region (void);
-extern int entabline (void *flagp, int l, int r);
-extern int flipregion (void);
-extern int get_fl_region (REGION *rp);
-extern int getregion (REGION *rp);
-extern int killregion (void);
-extern int killregionmaybesave (int save);
-extern int lowerregion (void);
-extern int openregion (void);
-extern int shiftlregion (void);
-extern int shiftrregion (void);
-extern int stringrect (void);
-extern int trim_region (void);
-extern int trimline (void *flagp, int l, int r);
-extern int upperregion (void);
-extern int yankregion (void);
+typedef int (*DORGNLINES)(int (*)(REGN_ARGS), void *, int);
+
+extern int        blank_region (void);
+extern int        cryptregion (void);
+extern int        detab_region (void);
+extern int        detabline (void *flagp, int l, int r);
+extern int        entab_region (void);
+extern int        entabline (void *flagp, int l, int r);
+extern int        flipregion (void);
+extern DORGNLINES get_do_lines_rgn(void);
+extern int        get_fl_region (REGION *rp);
+extern int        getregion (REGION *rp);
+extern int        killregion (void);
+extern int        killregionmaybesave (int save);
+extern int        lowerregion (void);
+extern int        openregion (void);
+extern int        shiftlregion (void);
+extern int        shiftrregion (void);
+extern int        stringrect (void);
+extern int        trim_region (void);
+extern int        trimline (void *flagp, int l, int r);
+extern int        upperregion (void);
+extern int        yankregion (void);
 
 #if NEEDED
 extern int charprocreg (int (*)(int));

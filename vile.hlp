@@ -3529,8 +3529,15 @@ Win32 specifics
 	---------
 	Copy data from the unnamed register to the windows clipboard via
 	the copy-unnamed-reg-to-clipboard command (bound to Alt+Insert).
-	The paste-from-clipboard command copies data from the clipboard
-	to the current buffer (bound to Shift+Insert).
+	Copy data from a named register or region to the clipboard (a la
+	vile's ^W operator) via the copy-to-clipboard command (bound to
+	Ctrl+Insert).  The paste-from-clipboard command copies data from
+	the clipboard to the current buffer (bound to Shift+Insert).  Some
+	examples, assuming <CI> => Ctrl+Insert and <AI> => Alt+Insert:
+
+		4yy<AI>  ;copy 4 lines from unnamed reg to clipboard
+		"a<CI>   ;copy register 'a' to clipboard
+		<CI>3w   ;copy 3 words to clipboard
 
 	Utilities
 	---------
@@ -3831,4 +3838,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.360 1998/07/10 10:39:22 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.361 1998/07/17 09:54:39 cmorgan Exp $

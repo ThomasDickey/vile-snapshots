@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.173 1998/05/22 00:03:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.174 1998/07/16 00:47:13 tom Exp $
  *
  */
 
@@ -677,6 +677,37 @@ nextbuffer(int f GCC_UNUSED, int n GCC_UNUSED)	/* switch to the next buffer in t
 	/* we're back to the top -- they were all invisible */
 	return swbuffer(stopatbp);
 }
+
+#if !SMALLER
+/* ARGSUSED */
+int
+prevbuffer(int f GCC_UNUSED, int n GCC_UNUSED)	/* switch to the previous buffer in the buffer list */
+{
+	register BUFFER *bp;	/* eligible buffer to switch to*/
+	register BUFFER *stopatbp;	/* eligible buffer to switch to*/
+
+	if (global_g_val(GMDABUFF)) {	/* go forward thru buffer-list */
+		if ((bp = curbp) == 0)
+			bp = bheadp;
+		stopatbp = bp;
+		while ((bp != 0) && (bp = bp->b_bufp) != 0) {
+			/* get the next buffer in the list */
+			/* if that one's invisible, skip it and try again */
+			if (!b_is_invisible(bp))
+				return swbuffer(bp);
+		}
+	} else {			/* go backward thru args-list */
+		if ((stopatbp = curbp) == 0)
+			stopatbp = find_nth_created(1);
+		else if ((bp = find_nth_created(curbp->b_created - 1)) != 0)
+			stopatbp = bp;
+		else
+			mlforce("[No more files to edit]");
+	}
+	/* we're back to the top -- they were all invisible */
+	return swbuffer(stopatbp);
+}
+#endif /* !SMALLER */
 
 /* bring nbp to the top of the list, where curbp usually lives */
 void

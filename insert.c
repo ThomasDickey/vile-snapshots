@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.109 1998/05/15 01:06:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.110 1998/07/15 23:41:13 tom Exp $
  *
  */
 
@@ -987,11 +987,16 @@ nextindent(int *bracefp)
 static int
 doindent(int ind)
 {
-	register int i;
+	register int i, j;
 
 	/* first clean up existing leading whitespace */
+	if ((i = firstchar(DOT.l)) >= 0)
+		j = DOT.o - i;
+	else
+		j = 0;
+	if (j < 0)
+		j = 0;
 	DOT.o = w_left_margin(curwp);
-	i = firstchar(DOT.l);
 	if (i > 0)
 		(void)ldelete((B_COUNT)i,FALSE);
 
@@ -1014,6 +1019,7 @@ doindent(int ind)
 	if (!autoindented)
 		autoindented = -1;
 
+	DOT.o += j;	/* put dot back pointing to the same text as before */
 	return TRUE;
 }
 

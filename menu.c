@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.21 1998/07/02 01:03:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.22 1998/07/17 09:49:18 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -23,6 +23,7 @@
 #include <Xm/MainW.h>
 #include <Xm/CascadeB.h>
 #include <Xm/SeparatoG.h>
+#include <Xm/RowColumn.h>
 #include <Xm/PushBG.h>
 #include <Xm/ToggleB.h>
 #endif
@@ -442,6 +443,8 @@ static Widget do_button ( Widget pm, char *nom, char *accel, int the_class )
         case 'S':
             wc = xmSeparatorGadgetClass;
             break;
+        default:
+            /* FALLTHRU */
         case 'B':
             wc = xmPushButtonGadgetClass;
             break;

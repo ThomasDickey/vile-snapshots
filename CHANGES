@@ -1,5 +1,27 @@
 Changes for vile 8.1 (released ??? ??? ??, 1998)
 
+ (tom) 980717 (f)
+	+ corrected return-value of do_a_submode(), which was hiding a problem
+	  in the call on new_regexval() from set_mode_value().
+	+ correction to fences-begin and fences-end logic, to account for the
+	  size of the matched text when doing a reverse sweep.  Only one
+	  character from fences-end was selected, so that deleting a C-style
+	  comment would leave a '/' (reported by Clark Morgan).
+	+ add a couple of null-pointer checks in modes.c, to fix a case
+	  when 'comments' submode is not initialized.
+	+ implement previous-buffer command (requested by Quang Ngo
+	  <quang@usa.net>).
+	+ modify doindent() to adjust dot to point to the same text on exit as
+	  it did on entry.  This fixes an instance of autoindent in cmode where
+	  inserting a right-brace character at the wrapmargin caused the brace
+	  to be inserted _before_ the wrapped word (reported by Michel Oey
+	  <michel@cs.vu.nl>).
+	+ corrected missing brackets in configure.in that caused --with-scr=xm
+	  to be misinterpreted.
+	+ modify win32 clipboard support to enable the copying of an arbitrary
+	  region or named register to the windows clipboard (patch by Clark
+	  Morgan).
+
  (tom) 980710 (e)
  	+ correct recompilation of [Error Expressions], by adding a check if
 	  the buffer is marked as changed, or if the number of lines in it
@@ -34,7 +56,7 @@ Changes for vile 8.1 (released ??? ??? ??, 1998)
 	> patches by Clark Morgan:
 	+ fix for a problem reported by Paul Fox:  when a dos box has scroll
 	  bars (window size smaller than buffer size), then :!<dir> displays
-	  its output in a switched screen context that the user can't examine. 
+	  its output in a switched screen context that the user can't examine.
 	  This applies to console vile only (winvile has much worse problems in
 	  the same scenario :-).
 	+ changes to make -!  use the same code path as filter-region and

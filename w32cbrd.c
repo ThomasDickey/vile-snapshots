@@ -13,7 +13,7 @@
  *    Subsequent copies do not show this cursor.  On an NT 4.0 host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.6 1998/07/09 23:59:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.7 1998/07/15 00:56:26 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -25,119 +25,50 @@
 
 #define  CLIPBOARD_BUSY      "Clipboard currently busy"
 #define  CLIPBOARD_COPYING   "[Copying...]"
+#define  CLIPBOARD_COPY_FAIL "Clipboad copy failed"
+#define  CLIPBOARD_COPY_MEM  "Insufficient memory for copy operation"
 #define  _SPC_               ' '
 #define  _TAB_               '\t'
 #define  _TILDE_             '~'
 
-static char ctrl_lookup[] = "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_";
+typedef struct rgn_cpyarg_struct
+{
+    unsigned      nbyte, nline;
+    unsigned char *dst;
+} RGN_CPYARG;
 
-static int  map_and_insert(unsigned, unsigned *);
+static char ctrl_lookup[] = "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_";
 
 /* ------------------------------------------------------------------ */
 
-/*
- * Copy contents of unnamed register to Windows clipboard.  The control
- * flow is shamelessly copied from kwrite.  Bound to Alt+Insert.
- */
-int
-cbrdcpy_unnamed(int unused1, int unused2)
+static void
+report_cbrdstats(unsigned nbyte, unsigned nline, char *direction)
 {
-    register unsigned       c;
-    HGLOBAL                 hClipMem;
-    register int            i;
-    KILL                    *kp;      /* pointer into unnamed register */
-    DWORD                   nbyte;
-    unsigned                nline;
-    int                     rc;
-    register unsigned char  *src, *dst;
+    char buf[128];
 
-    kregcirculate(FALSE);
-
-    /* make sure there is something to put */
-    if (kbs[ukb].kbufh == NULL)
+    if (! global_b_val(MDTERSE))
     {
-        ukb = 0;
-        mlforce("Nothing to copy");
-        return (FALSE);     /* not an error, just nothing */
+        _snprintf(buf,
+                  sizeof(buf),
+                  "[Copied %u line%s, %u bytes %s clipboard]",
+                  nline,
+                  PLURAL(nline),
+                  nbyte - 1,   /* subtract terminating nul */
+                  direction);
+        mlwrite(buf);
     }
+    else
+        mlforce("[%d lines]", nline);
+}
 
-    /* tell us we're writing */
-    mlwrite(CLIPBOARD_COPYING);
-    nline = 0;
-    nbyte = 0;
 
-    /*
-     * Make 2 passes over the data.  1st pass counts the data and
-     * adjusts for the fact that:
-     *
-     * 1) each '\n' must be warped to "\r\n" to satisfy clipboard APIs.
-     * 2) unprintable data (modulo tabs) must be warped to a printable
-     *    equivalent.
-     */
-    kp = kbs[ukb].kbufh;
-    while (kp != NULL)
-    {
-        i      = KbSize(ukb, kp);
-        src    = (char *) kp->d_chunk;
-        nbyte += i;
-        while (i--)
-        {
-            if ((c = *src++) == '\n')
-            {
-                nline++;
-                nbyte++;                 /* must prepend '\r'             */
-            }
-            else if (c < _SPC_ && c != _TAB_) /* assumes ASCII char set   */
-                nbyte++;                 /* account for '^' meta char     */
-            else if (c > _TILDE_)        /* assumes ASCII char set        */
-                nbyte += 3;              /* account for '\xdd' meta chars */
-        }
-        kp = kp->d_next;
-    }
-    nbyte++;   /* Room for terminating null */
 
-    /* 2nd pass -- alloc storage for data and copy to clipboard. */
-    if ((hClipMem = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE, nbyte)) == NULL)
-    {
-        ukb = 0;
-        mlforce("Insufficient memory for copy operation");
-        return (FALSE);
-    }
-    dst = GlobalLock(hClipMem);
-    kp  = kbs[ukb].kbufh;
-    while (kp != NULL)
-    {
-        i   = KbSize(ukb, kp);
-        src = (char *) kp->d_chunk;
-        while (i--)
-        {
-            if ((c = *src++) == '\n')
-            {
-                *dst++ = '\r';
-                *dst++ = '\n';
-            }
-            else if ((c >= _SPC_ && c <= _TILDE_) || (c == _TAB_))
-                *dst++ = c;
-            else if (c < _SPC_)
-            {
-                *dst++ = '^';
-                *dst++ = ctrl_lookup[c];
-            }
-            else
-            {
-                /* c > _TILDE_ */
+/* The memory block handle _must_ be unlocked before calling this fn. */
+static int
+setclipboard(HGLOBAL hClipMem, unsigned nbyte, unsigned nline)
+{
+    int rc, i;
 
-                *dst++ = '\\';
-                *dst++ = 'x';
-                *dst++ = hexdigits[(c & 0xf0) >> 4];
-                *dst++ = hexdigits[c & 0xf];
-            }
-        }
-        kp = kp->d_next;
-    }
-    *dst = '\0';
-    ukb  = 0;
-    GlobalUnlock(hClipMem);
     for (rc = i = 0; i < 8 && (! rc); i++)
     {
         /* Try to open clipboard */
@@ -158,32 +89,310 @@ cbrdcpy_unnamed(int unused1, int unused2)
     CloseClipboard();
     if (! rc)
     {
-        mlforce("Clipboad copy failed");
+        mlforce(CLIPBOARD_COPY_FAIL);
         GlobalFree(hClipMem);
     }
     else
-    {
-        /* success */
-
-        if (! global_b_val(MDTERSE))
-        {
-            char buf[128];
-
-            _snprintf(buf,
-                      sizeof(buf),
-                      "[Copied %u line%s, %u bytes to clipboard]",
-                      nline,
-                      PLURAL(nline),
-                      nbyte - 1);   /* subtract terminating nul */
-            mlwrite(buf);
-        }
-        else
-            mlforce("[%d lines]", nline);
-    }
+        report_cbrdstats(nbyte, nline, "to");  /* success */
     return (rc);
 }
 
 
+
+/* Count lines and nonbuffer data added during "copy to clipboard" operation. */
+static void
+cbrd_count_meta_data(int           len,
+                     unsigned      *nbyte,
+                     unsigned      *nline,
+                     unsigned char *src)
+{
+    register unsigned c;
+
+    while (len--)
+    {
+        if ((c = *src++) == '\n')
+        {
+            (*nline)++;
+            (*nbyte)++;              /* API requires CR/LF terminator */
+        }
+        else if (c < _SPC_ && c != _TAB_) /* assumes ASCII char set   */
+            (*nbyte)++;              /* account for '^' meta char     */
+        else if (c > _TILDE_)        /* assumes ASCII char set        */
+            (*nbyte) += 3;           /* account for '\xdd' meta chars */
+    }
+}
+
+
+
+/*
+ * This function is called to process each logical line of data in a
+ * user-selected region.  It counts the number of bytes of data in the line.
+ */
+static int
+count_rgn_data(void *argp, int l, int r)
+{
+    RGN_CPYARG *cpyp;
+    int        len;
+    LINE       *lp;
+
+    lp = DOT.l;
+
+    /* Rationalize offsets */
+    if (llength(lp) < l)
+        return (TRUE);
+    if (r > llength(lp))
+        r = llength(lp);
+    cpyp = argp;
+    if (r == llength(lp) || regionshape == RECTANGLE)
+    {
+        /* process implied newline */
+
+        cpyp->nline++;
+        cpyp->nbyte += 2;   /* CBRD API maps NL -> CR/LF */
+    }
+    len          = r - l;
+    cpyp->nbyte += len;
+    cbrd_count_meta_data(len, &cpyp->nbyte, &cpyp->nline, lp->l_text + l);
+    return (TRUE);
+}
+
+
+
+static void
+cbrd_copy_and_xlate(int len, unsigned char **cbrd_ptr, unsigned char *src)
+{
+    register unsigned c;
+    unsigned char     *dst = *cbrd_ptr;
+
+    while (len--)
+    {
+        if ((c = *src++) == '\n')
+        {
+            *dst++ = '\r';
+            *dst++ = '\n';
+        }
+        else if ((c >= _SPC_ && c <= _TILDE_) || (c == _TAB_))
+            *dst++ = c;
+        else if (c < _SPC_)
+        {
+            *dst++ = '^';
+            *dst++ = ctrl_lookup[c];
+        }
+        else
+        {
+            /* c > _TILDE_ */
+
+            *dst++ = '\\';
+            *dst++ = 'x';
+            *dst++ = hexdigits[(c & 0xf0) >> 4];
+            *dst++ = hexdigits[c & 0xf];
+        }
+    }
+    *cbrd_ptr = dst;
+}
+
+
+
+/*
+ * This function is called to process each logical line of data in a
+ * user-selected region.  It copies region data to a buffer allocated on
+ * the heap.
+ */
+static int
+copy_rgn_data(void *argp, int l, int r)
+{
+    RGN_CPYARG *cpyp;
+    int        len;
+    LINE       *lp;
+
+    lp = DOT.l;
+
+    /* Rationalize offsets */
+    if (llength(lp) < l)
+        return (TRUE);
+    if (r > llength(lp))
+        r = llength(lp);
+    cpyp = argp;
+    len  = r - l;
+    cbrd_copy_and_xlate(len, &cpyp->dst, lp->l_text + l);
+    if (r == llength(lp) || regionshape == RECTANGLE)
+    {
+        /* process implied newline */
+
+        *cpyp->dst++ = '\r';
+        *cpyp->dst++ = '\n';
+    }
+    return (TRUE);
+}
+
+
+
+/*
+ * Copy contents of [un]named register to Windows clipboard.  The control
+ * flow is shamelessly copied from kwrite().
+ */
+static int
+cbrd_reg_copy(void)
+{
+    HGLOBAL                 hClipMem;
+    register int            i;
+    KILL                    *kp;      /* pointer into [un]named register */
+    DWORD                   nbyte;
+    unsigned                nline;
+    unsigned char           *dst;
+
+    /* make sure there is something to put */
+    if (kbs[ukb].kbufh == NULL)
+    {
+        mlforce("Nothing to copy");
+        return (FALSE);     /* not an error, just nothing */
+    }
+
+    /* tell us we're writing */
+    mlwrite(CLIPBOARD_COPYING);
+    nline = 0;
+    nbyte = 0;
+
+    /*
+     * Make 2 passes over the data.  1st pass counts the data and
+     * adjusts for the fact that:
+     *
+     * 1) each '\n' must be warped to "\r\n" to satisfy clipboard APIs.
+     * 2) unprintable data (modulo tabs) must be warped to a printable
+     *    equivalent.
+     */
+    for (kp = kbs[ukb].kbufh; kp; kp = kp->d_next)
+    {
+        i      = KbSize(ukb, kp);
+        nbyte += i;
+        cbrd_count_meta_data(i, &nbyte, &nline, kp->d_chunk);
+    }
+    nbyte++;   /* Add room for terminating null */
+
+    /* 2nd pass -- alloc storage for data and copy to clipboard. */
+    if ((hClipMem = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE, nbyte)) == NULL)
+    {
+        mlforce(CLIPBOARD_COPY_MEM);
+        return (FALSE);
+    }
+    dst = GlobalLock(hClipMem);
+    for (kp = kbs[ukb].kbufh; kp; kp = kp->d_next)
+        cbrd_copy_and_xlate((int) KbSize(ukb, kp), &dst, kp->d_chunk);
+    *dst = '\0';
+    GlobalUnlock(hClipMem);
+    return (setclipboard(hClipMem, nbyte, nline));
+}
+
+
+
+/*
+ * Copy contents of unnamed register to Windows clipboard.
+ *
+ * Bound to Alt+Insert.
+ */
+int
+cbrdcpy_unnamed(int unused1, int unused2)
+{
+    int rc;
+
+    kregcirculate(FALSE);
+    rc  = cbrd_reg_copy();
+    ukb = 0;
+    return (rc);
+}
+
+
+/*
+ * Copy the currently-selected region (i.e., the range of lines from DOT to
+ * MK, inclusive) to the windows clipboard.  Lots of code has been borrowed
+ * and/or adapted from operyank() and writereg().
+ */
+static int
+cbrdcpy_region(void)
+{
+    RGN_CPYARG              cpyarg;
+    DORGNLINES              dorgn;
+    HGLOBAL                 hClipMem;
+    MARK                    odot;
+    int                     rc;
+
+    mlwrite("[Copying...]");
+    odot         = DOT;          /* do_lines_in_region() moves DOT. */
+    cpyarg.nbyte = cpyarg.nline = 0;
+    dorgn        = get_do_lines_rgn();
+
+    /*
+     * Make 2 passes over the data.  1st pass counts the data and
+     * adjusts for the fact that:
+     *
+     * 1) each '\n' must be warped to "\r\n" to satisfy clipboard APIs.
+     * 2) unprintable data (modulo tabs) must be warped to a printable
+     *    equivalent.
+     */
+    rc  = dorgn(count_rgn_data, &cpyarg, TRUE);
+    DOT = odot;
+    if (!rc)
+        return (FALSE);
+    cpyarg.nbyte++;        /* Terminating nul */
+
+    /* 2nd pass -- alloc storage for data and copy to clipboard. */
+    if ((hClipMem = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE,
+                                cpyarg.nbyte)) == NULL)
+    {
+        mlforce(CLIPBOARD_COPY_MEM);
+        return (FALSE);
+    }
+    cpyarg.dst = GlobalLock(hClipMem);
+
+    /*
+     * Pass #2 -> The actual copy (don't need to restore DOT, that
+     * is handled by opercbrdcpy().
+     */
+    rc = dorgn(copy_rgn_data, &cpyarg, TRUE);
+    GlobalUnlock(hClipMem);
+    if (! rc)
+    {
+        GlobalFree(hClipMem);
+        return (FALSE);
+    }
+    *cpyarg.dst = '\0';
+    return (setclipboard(hClipMem, cpyarg.nbyte, cpyarg.nline));
+}
+
+
+
+/*
+ * Copy contents of specified region or register to Windows clipboard.
+ * This command is an operaor and mimics the functionality of ^W, but
+ * mimics operyank()'s implemenation.
+ *
+ * Bound to Ctrl+Insert.
+ */
+int
+opercbrdcpy(int f, int n)
+{
+    if (ukb != 0)
+        return (cbrd_reg_copy());
+    else
+    {
+        MARK odot;
+        int  rc;
+
+        odot  = DOT;
+        opcmd = OPDEL;
+        rc    = vile_op(f, n, cbrdcpy_region, "Clipboard copy");
+        DOT   = odot;   /* cursor does not move */
+        return (rc);
+    }
+}
+
+/* ------------------- Paste Functionality ----------------------- */
+
+static int  map_and_insert(unsigned, unsigned *);
+
+typedef struct { unsigned val; char *str; } MAP;
+
+/* --------------------------------------------------------------- */
 
 /*
  * Paste contents of windows clipboard (if TEXT) to current buffer.
@@ -289,54 +498,20 @@ cbrdpaste(int f, int n)
     }
     else
     {
-        char buf[128];
-
         /*
          * Success.  Fiddle with dot and mark again (another chunk of doput()
          * code).  "Tha' boy shore makes keen use of cut and paste."
          */
+
 		swapmark();                           /* I understand this. */
         if (is_header_line(DOT, curbp))
             DOT.l = lback(DOT.l);             /* This is a mystery. */
-
-        if (! global_b_val(MDTERSE))
-        {
-            _snprintf(buf,
-                      sizeof(buf),
-                      "[Copied %u line%s, %u bytes from clipboard]",
-                      nline,
-                      PLURAL(nline),
-                      nbyte);
-            mlwrite(buf);
-        }
-        else
-        {
-            _snprintf(buf, sizeof(buf), "[%d line%s]", nline, PLURAL(nline));
-            mlforce(buf);
-        }
+        report_cbrdstats(nbyte, nline, "from");
     }
     return (rc);
 }
 
 
-
-/*
- * Copy contents of specified region or register to Windows clipboard.
- * This command is an operaor and should mimic ^W.
- *
- * Unimplemented.  Bound to Ctrl+Insert.
- */
-int
-opercbrdcpy(int f, int n)
-{
-    mlforce("[oper clipboard copy (unimplemented)]");
-    return (TRUE);
-}
-
-
-/* --------------------------------------------------------------- */
-
-typedef struct { unsigned val; char *str; } MAP;
 
 static int
 map_compare(const void *elem1, const void *elem2)
@@ -355,7 +530,7 @@ map_and_insert(unsigned c,       /* ANSI char to insert   */
                unsigned *nbyte   /* total #chars inserted */
                )
 {
-    int  rc;
+    int  rc, tmp;
     MAP  key, *rslt_p;
     char *str;
 

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.118 1998/05/30 11:31:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.119 1998/07/17 10:25:48 tom Exp $
  *
  */
 
@@ -158,7 +158,8 @@ string_val(const struct VALNAMES *names, struct VAL *values)
 		s = values->vp->p;
 		break;
 	case VALTYPE_REGEX:
-		s = values->vp->r->pat;
+		if (values->vp->r)
+			s = values->vp->r->pat;
 		break;
 	}
 
@@ -204,6 +205,8 @@ string_mode_val(VALARGS *args)
 	case VALTYPE_STRING:
 		return NonNull(values->vp->p);
 	case VALTYPE_REGEX:
+		if (values->vp->r == 0)
+			break;
 		return NonNull(values->vp->r->pat);
 	}
 	return errorm;
@@ -897,6 +900,7 @@ VALARGS *args)			/* symbol-table entry for the mode */
 		hst_glue(' ');
 #endif
 	status = set_mode_value(cp, setting, global, args, rp);
+	TRACE(("...adjvalueset(%s)=%d\n", cp, status))
 
 	return status;
 }
@@ -1017,8 +1021,10 @@ set_mode_value(const char *cp, int setting, int global, VALARGS *args, const cha
 			break;
 
 		case VALTYPE_REGEX:
-			if ((r = new_regexval(rp, TRUE)) == 0)
+			if ((r = new_regexval(rp, TRUE)) == 0) {
+				values->vp->r = new_regexval("", TRUE);
 				return FALSE;
+			}
 			values->vp->r = r;
 			break;
 
@@ -2426,7 +2432,7 @@ do_a_submode(int defining)
 	 */
 	relist_settings();
 	relist_majormodes();
-	return TRUE;
+	return status;
 }
 
 /* ARGSUSED */

@@ -5,7 +5,7 @@
  * commands. Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.89 1998/05/12 22:40:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.90 1998/07/17 09:54:39 cmorgan Exp $
  *
  */
 
@@ -1059,4 +1059,12 @@ int	ll, int	rr)		/* offsets of of chars to be processed */
 	if (changed)
 	    chg_buff(curbp, WFHARD);
 	return TRUE;
+}
+
+
+/* Helper function for vile commands that must access do_lines_in_region(). */
+DORGNLINES
+get_do_lines_rgn(void)
+{
+    return (do_lines_in_region);
 }
