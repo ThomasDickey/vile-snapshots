@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.209 2000/11/04 11:24:06 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.210 2000/11/11 01:49:13 cmorgan Exp $
 #
 #
 
@@ -1346,6 +1346,12 @@ revsearch	ABSM|MOTION|NOMINI
 	"reverse-search"		!FEWNAMES
 	'N'
 	<search for previous pattern in opposite direction from before>
+sel_all		NONE			OPT_SELECTIONS&&OPT_SEL_YANK
+	"select-all"	!FEWNAMES
+	<select all text in current buffer and yank to unnamed buffer>
+sel_clear	NONE			OPT_SELECTIONS
+	"selection-clear"	!FEWNAMES
+	<clear text selection's highlight attributes>
 sel_motion	ABSM|MOTION|NOMINI	OPT_SELECTIONS
 	"selection"
 	'^S'
@@ -1638,6 +1644,12 @@ winopen_nocd	NONE			SYS_WINNT
 winopen      	NONE			SYS_WINNT
 	"winopen"
 	<launch Windows common dialog box to open file(s), CWD changes as side effect>
+winpg_setup    	NONE			SYS_WINNT&&DISP_NTWIN
+	"winpage-setup"
+	<launch Windows common page setup dialog>
+winprint      	NONE			SYS_WINNT&&DISP_NTWIN
+	"winprint"
+	<print current buffer or selection>
 winsave_nocd	NONE			SYS_WINNT
 	"winsave-nocd"
 	<launch Windows common dialog box to save current buffer, CWD is unmodified>

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.335 2000/09/12 09:01:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.336 2000/11/15 11:28:08 kev Exp $
  *
  */
 
@@ -86,6 +86,8 @@ typedef	void	(*OutFunc) (int c);
 static	OutFunc	dfoutfn;
 
 static	int	endofline(char *s, int n);
+static  int	offs2col0(WINDOW *wp, LINEPTR lp, C_NUM offset,
+                          C_NUM *cache_offset, int *cache_column);
 static	int	texttest (int vrow, int prow);
 static	int	updext(int col, int excess, int use_excess);
 static	int	updpos(int *screenrowp, int *screencolp);
@@ -1150,6 +1152,13 @@ int force)	/* force update past type ahead? */
 						owp->w_flag |= WFMODE;
 			}
 		}
+#ifdef WMDLINEWRAP
+		/* Make sure that movements in very long wrapped lines
+		   get updated properly.  */
+		if (w_val(wp,WMDLINEWRAP) && line_height(wp, wp->w_dot.l) 
+		                                            > wp->w_ntrows)
+			wp->w_flag |= WFMOVE;
+#endif
 #if OPT_CACHE_VCOL
 		if (wp->w_flag & ( WFEDIT | WFHARD | WFMODE | WFKILLS | WFINS ))
 			wp->w_traits.w_left_dot = nullmark;
@@ -1428,6 +1437,13 @@ kill_tildes:
 		}
 		else if (want + wp->w_line.o < 0) {
 			wp->w_line.o = -want;
+			wp->w_flag |= WFHARD;
+			wp->w_flag &= ~WFFORCE;
+		}
+	}
+	else if (!w_val(wp,WMDLINEWRAP)) {
+		if (wp->w_line.o < 0) {
+			wp->w_line.o = 0;
 			wp->w_flag |= WFHARD;
 			wp->w_flag &= ~WFFORCE;
 		}
@@ -1876,14 +1892,24 @@ updlineattrs(WINDOW *wp)
 {
     int row;
     LINEPTR lp;
+    int linewrap = 0;
+    
+#ifdef WMDLINEWRAP
+    linewrap = w_val(wp,WMDLINEWRAP);
+#endif
 
     row = wp->w_toprow;
     lp = wp->w_line.l;
     while (row < wp->w_toprow + wp->w_ntrows && lp != win_head(wp)) {
+	int save_offset = w_left_margin(wp);
+	int save_column = 0;
 	if (lp->l_attrs) {
 	    C_NUM start_col, end_col;
 	    int i, a;
-	    i = 0;
+	    if (wp->w_line.o < 0)
+		i = col2offs(wp, lp, -(wp->w_line.o * term.cols));
+	    else
+		i = 0;
 	    for (;;) {
 		if (lp->l_attrs[i] == 0)
 		    break;		/* get out if at end */
@@ -1892,14 +1918,24 @@ updlineattrs(WINDOW *wp)
 		a = lp->l_attrs[i];
 		if (a == 0)
 		    break;		/* get out if at end */
-		start_col = offs2col(wp, lp, i);
+		start_col = offs2col0(wp, lp, i, &save_offset, &save_column);
 		i++;
 		while (lp->l_attrs[i] == a)
 		    i++;		/* find run of same attr */
 		if (start_col < w_left_margin(wp))
 		    start_col = w_left_margin(wp);
-		end_col = offs2col(wp, lp, i) - 1;
-		mergeattr(wp, row, start_col, end_col, line_attr_tbl[a].vattr);
+		end_col = offs2col0(wp, lp, i, &save_offset, &save_column) - 1;
+	        if (!linewrap)
+		    mergeattr(wp, row, start_col, end_col,
+			      line_attr_tbl[a].vattr);
+		else {
+		    int adjrow = row + start_col / term.cols + wp->w_line.o;
+		    if (adjrow < mode_row(wp))
+			mergeattr(wp, adjrow,
+				  start_col % term.cols,
+				  end_col % term.cols,
+				  line_attr_tbl[a].vattr);
+		}
 	    }
 	}
 	row += line_height(wp, lp);
@@ -1952,13 +1988,15 @@ mergeattr(WINDOW *wp, int row, int start_col, int end_col, VIDEO_ATTR attr)
  * since it is simpler than handling ^M^J in one case, and we really only want
  * to know if we're in the record-separator.
  */
-int
-offs2col(
+static int
+offs2col0(
 WINDOW	*wp,
 LINEPTR	lp,
-C_NUM	offset)
+C_NUM	offset,
+C_NUM   *cache_offset,
+int     *cache_column)
 {
-	int	column = 0;
+	int	column;
 
 	/* this makes the how-much-to-select calculation easier above */
 	if (offset < 0) {
@@ -1976,11 +2014,21 @@ C_NUM	offset)
 #endif
 				w_val(wp,WVAL_SIDEWAYS);
 		C_NUM	n, c;
+		C_NUM	start_offset;
+
 
 		if (offset > length + 1)
 			offset = length + 1;
 
-		for (n = w_left_margin(wp); n < offset; n++) {
+		if (cache_offset && cache_column && *cache_offset < offset) {
+			start_offset = *cache_offset;
+			column = *cache_column;
+		} else {
+			start_offset = w_left_margin(wp);
+			column = 0;
+		}
+
+		for (n = start_offset; n < offset; n++) {
 			c = (n == length) ? '\n' : lp->l_text[n];
 			if (isPrint(c) || (c == last)) {
 				column++;
@@ -1990,9 +2038,23 @@ C_NUM	offset)
 				column = ((column / tabs) + 1) * tabs;
 			}
 		}
+
+		if (cache_offset && cache_column) {
+			*cache_offset = offset;
+			*cache_column = column;
+		}
+
 		column += (nu_width(wp) + w_left_margin(wp) - left);
 	}
 	return column;
+}
+
+int offs2col(
+WINDOW *wp,
+LINEPTR lp,
+C_NUM offset)
+{
+  return offs2col0(wp, lp, offset, 0, 0);
 }
 
 /*
@@ -3187,12 +3249,9 @@ modeline(WINDOW *wp)
 	    attr = VAML;
 #if	OPT_REVSTA
 #ifdef	GVAL_MCOLOR
-	if (global_g_val(GVAL_MCOLOR) & VASPCOL)
-	    attr |= VCOLORATTR(global_g_val(GVAL_MCOLOR) & 0xf);
-	else
-	    attr |= global_g_val(GVAL_MCOLOR);
+	attr |= (global_g_val(GVAL_MCOLOR) & ~VASPCOL);
 #else
-	    attr |= VAREV;
+	attr |= VAREV;
 #endif
 #endif
 	vscreen[n]->v_flag |= VFCHG;

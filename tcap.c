@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.138 2000/10/09 00:52:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.139 2000/11/15 11:27:42 kev Exp $
  *
  */
 
@@ -982,7 +982,7 @@ tcapattr(UINT attr)
 		attr &= ~(VASPCOL|VACOLOR);
 	}
 	if (attr & VASPCOL) {
-		attr = VCOLORATTR((attr & (NCOLORS - 1)));
+		attr = VCOLORATTR((VCOLORNUM(attr) & (NCOLORS - 1)));
 	} else {
 		attr &= ~(VAML|VAMLFOC);
 	}

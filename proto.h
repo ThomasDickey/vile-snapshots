@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.443 2000/11/04 18:22:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.445 2000/11/15 10:54:18 tom Exp $
  *
  */
 
@@ -295,6 +295,7 @@ extern char * get_xshellflags (void);
 /* eval.c */
 extern char * get_directory(void);
 extern char * get_token (char *src, TBUFF **tok, int eolchar, int *actual);
+extern char * get_token2 (char *src, TBUFF **tok, int eolchar, int *actual);
 extern char * mac_tokval (TBUFF **tok);
 extern char * mklower (char *str);
 extern char * mktrimmed (char *str);
@@ -507,12 +508,12 @@ extern int kbd_delimiter (void);
 extern int kbd_is_pushed_back (void);
 extern int kbd_mac_recording (void);
 extern int kbd_replaying (int match);
-extern int kbd_reply (const char *prompt, TBUFF **extbuf, int (*efunc)(EOL_ARGS), int eolchar, UINT options, int (*cfunc)(DONE_ARGS));
+extern int kbd_reply (const char *prompt, TBUFF **extbuf, int (*efunc)(EOL_ARGS), int eolchar, KBD_OPTIONS options, int (*cfunc)(DONE_ARGS));
 extern int kbd_seq (void);
 extern int kbd_seq_nomap (void);
-extern int kbd_show_response (TBUFF **dst, char *src, unsigned bufn, int eolchar, UINT options);
-extern int kbd_string (const char *prompt, char *extbuf, unsigned bufn, int eolchar, UINT options, int (*func)(DONE_ARGS));
-extern int kbd_string2 (const char *prompt, TBUFF **result, int eolchar, UINT options, int (*complete)(DONE_ARGS));
+extern int kbd_show_response (TBUFF **dst, char *src, unsigned bufn, int eolchar, KBD_OPTIONS options);
+extern int kbd_string (const char *prompt, char *extbuf, unsigned bufn, int eolchar, KBD_OPTIONS options, int (*func)(DONE_ARGS));
+extern int kbd_string2 (const char *prompt, TBUFF **result, int eolchar, KBD_OPTIONS options, int (*complete)(DONE_ARGS));
 extern int kbm_started (int macnum, int force);
 extern int keystroke (void);
 extern int keystroke8 (void);

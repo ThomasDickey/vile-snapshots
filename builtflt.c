@@ -1,18 +1,17 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.18 2000/10/05 10:45:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.19 2000/11/11 11:40:07 tom Exp $
  *
  */
 
-#include <estruct.h>
-
-#include <builtflt.h>
+#include "estruct.h"
+#include "builtflt.h"
 
 #ifdef _builtflt_h
 
-#include <edef.h>
-#include <nevars.h>
+#include "edef.h"
+#include "nevars.h"
 #include <stdarg.h>
 
 static FILTER_DEF *current_filter;

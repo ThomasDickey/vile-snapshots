@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.95 2000/10/01 22:15:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.96 2000/11/13 01:04:21 tom Exp $
  *
  */
 
@@ -1203,7 +1203,7 @@ char *	result)
 			 * colon-commands, but is inappropriate for filename
 			 * prompting.  Read the rest of the text into Reply.
 			 */
-			s = kbd_string(prompt, Reply+1, sizeof(Reply)-1,
+			s = kbd_string(prompt, Reply, sizeof(Reply),
 				'\n', KBD_OPTIONS|KBD_MAYBEC, complete);
 		}
 		/*

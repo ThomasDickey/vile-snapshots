@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.236 2000/10/01 23:14:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.237 2000/11/11 01:49:13 cmorgan Exp $
  *
  */
 
@@ -1492,6 +1492,7 @@ kcod2escape_seq(
 #define CTRLPLUS  "Ctrl+"
 #define SHIFTPLUS "Shift+"
 #define W32INSERT "Insert"
+#define W32DELETE "Delete"
     else if (c & W32_KEY) {
 	if (c & W32_SHIFT) {
 	    strcpy(ptr, SHIFTPLUS);
@@ -1509,6 +1510,9 @@ kcod2escape_seq(
 	if (c == VK_INSERT) {
 	    strcpy(ptr, W32INSERT);
 	    ptr += sizeof(W32INSERT) - 1;
+	} else if (c == VK_DELETE) {
+	    strcpy(ptr, W32DELETE);
+	    ptr += sizeof(W32DELETE) - 1;
 	} else
 	    *ptr++ = c;		/* Pickup <modifier>+...<single_char> */
 	*ptr = EOS;

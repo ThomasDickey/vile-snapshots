@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.107 2000/02/27 21:48:21 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.108 2000/11/11 11:39:18 tom Exp $
  *
  */
 
@@ -24,7 +24,7 @@
 /* stuff borrowed/adapted from estruct.h */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include <config.h>
 #undef DOALLOC	/* since we're not linking with trace.c */
 #else	/* !defined(HAVE_CONFIG_H) */
 

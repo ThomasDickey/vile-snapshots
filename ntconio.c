@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.58 2000/07/24 22:56:33 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.59 2000/11/15 11:27:42 kev Exp $
  *
  */
 
@@ -381,7 +381,7 @@ ntrev(UINT attr)
     cfcolor = nfcolor;
     if (attr) {
 	if (attr & VASPCOL)
-	    cfcolor = (attr & (NCOLORS - 1));
+	    cfcolor = (VCOLORNUM(attr) & (NCOLORS - 1));
 	else if (attr == VABOLD)
 	    cfcolor |= FOREGROUND_INTENSITY;
 	else if (attr == VAITAL)

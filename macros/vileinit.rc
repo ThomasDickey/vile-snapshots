@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.14 2000/09/22 10:06:04 tom Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.15 2000/11/12 18:00:56 tom Exp $
 ; This is a sample which may be installed as .vilerc (or vile.rc for non-Unix
 ; systems), or source'd as-is to provide quick initialization of some useful
 ; macros and settings.
@@ -151,7 +151,7 @@ bind-key hyper-next ^X-^M
 ~endif
 
 ; Variants on grep of the current token.  You need GNU grep for the -w (word)
-; option.
+; option.  VMS has a native search utility.
 ~if &seq $pathlist-separator ":"
 	use-register f load-register "!grep -n -w : *.in *.m4 *.[chly] *.def *.cc *.cpp *.xs"
 	use-register g load-register "!egrep -n : *.[chly] *.def *.cc *.cpp *.xs"
@@ -161,6 +161,10 @@ bind-key hyper-next ^X-^M
 ~elseif &or &seq $os "dos" &seq $os "win32"
 	use-register f load-register "!grep -n -w & *.in *.m4 *.c *.h *.def *.cc *.cpp *.xs"
 	use-register g load-register "!egrep -n & *.c *.h *.def *.cc *.cpp *.xs"
+~elseif &seq $os "vms"
+	use-register f load-register "!search/exact *.c,*.h,*.com,*.mms &"
+	use-register g load-register "!search *.c,*.h,*.com,*.mms &"
+	use-register j load-register "!search [...]*.c,*.h,*.com,*.mms &"
 ~endif
 
 source vileperl.rc

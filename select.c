@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.129 2000/10/01 20:29:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.130 2000/11/11 01:49:13 cmorgan Exp $
  *
  */
 
@@ -63,7 +63,7 @@ static void purge_line_attribs(BUFFER *bp, REGION * rp, REGIONSHAPE rs,
  *
  * selbufp and selregion are used to represent a highlighted selection.
  *
- * When starbufp or selbufp are NULL, the corresponding AREGION (startregion or
+ * When startbufp or selbufp are NULL, the corresponding AREGION (startregion or
  * selregion) is not attached to any buffer and is invalid.
  */
 
@@ -447,6 +447,26 @@ sel_yank(int reg)
     /* put cursor back on screen...is there a cheaper way to do this?  */
     (void) update(FALSE);
     return TRUE;
+}
+
+/* select all text in curbp and yank to unnamed register */
+int
+sel_all(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    int  rc;
+    MARK savedot;
+
+    savedot = DOT;
+    gotobob(0, 0);
+    sel_begin();
+    gotoeob(0, 0);
+    gotoeol(0, 0);
+    (void) sel_setshape(EXACT);
+    rc  = sel_extend(TRUE, TRUE);
+    DOT = savedot;
+    if (rc)
+        sel_yank(0);
+    return (rc);
 }
 
 #if NEEDED
@@ -2000,5 +2020,14 @@ purge_line_attribs(BUFFER *bp, REGION * rp, REGIONSHAPE rs, int owner)
     }
 #endif /* OPT_LINE_ATTRS */
 }
+
+/* release selection, if any */
+int
+sel_clear(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    sel_release();
+    return (TRUE);
+}
+
 
 #endif /* OPT_SELECTIONS */

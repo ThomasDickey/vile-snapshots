@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.228 2000/10/02 01:34:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.230 2000/11/15 10:54:12 tom Exp $
  *
  */
 
@@ -844,7 +844,7 @@ expandChar(
 TBUFF **buf,
 unsigned * position,
 int	c,
-UINT	options)
+KBD_OPTIONS	options)
 {
 	register int	cpos = *position;
 	register char *	cp;
@@ -1000,7 +1000,7 @@ TBUFF	**dst,		/* string with escapes */
 char	*src,		/* string w/o escapes */
 unsigned bufn,		/* # of chars we read from 'src[]' */
 int	eolchar,
-UINT	options)
+KBD_OPTIONS	options)
 {
 	register unsigned k;
 
@@ -1092,7 +1092,7 @@ const char *prompt,	/* put this out first */
 char *extbuf,		/* the caller's (possibly full) buffer */
 unsigned bufn,		/* the length of  " */
 int eolchar,		/* char we can terminate on, in addition to '\n' */
-UINT options,		/* KBD_EXPAND/KBD_QUOTES, etc. */
+KBD_OPTIONS options,	/* KBD_EXPAND/KBD_QUOTES, etc. */
 int (*complete)(DONE_ARGS)) /* handles completion */
 {
 	int code;
@@ -1112,7 +1112,7 @@ kbd_string2(
 const char *prompt,	/* put this out first */
 TBUFF **result,		/* the caller's (possibly full) buffer */
 int eolchar,		/* char we can terminate on, in addition to '\n' */
-UINT options,		/* KBD_EXPAND/KBD_QUOTES, etc. */
+KBD_OPTIONS options,	/* KBD_EXPAND/KBD_QUOTES, etc. */
 int (*complete)(DONE_ARGS)) /* handles completion */
 {
 	return kbd_reply(prompt, result, eol_history, eolchar, options, complete);
@@ -1436,7 +1436,7 @@ read_quoted(int count, int inscreen)
 }
 
 static int
-may_complete(TBUFF *data, UINT options)
+may_complete(TBUFF *data, KBD_OPTIONS options)
 {
 	int result = ABORT;
 
@@ -1465,7 +1465,7 @@ const char *prompt,		/* put this out first */
 TBUFF **extbuf,			/* the caller's (possibly full) buffer */
 int (*endfunc)(EOL_ARGS),	/* parsing with 'eolchar' delimiter */
 int eolchar,			/* char we can terminate on, in addition to '\n' */
-UINT options,			/* KBD_EXPAND/KBD_QUOTES */
+KBD_OPTIONS options,		/* KBD_EXPAND/KBD_QUOTES */
 int (*complete)(DONE_ARGS))	/* handles completion */
 {
 	int	c;
@@ -1484,6 +1484,9 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 	unsigned newpos;
 	TBUFF *buf = 0;
 
+	TRACE(("kbd_reply(prompt=%s, extbuf=%s, options=%#x)\n\tclexec=%d,\n\tpushed_back=%d\n",
+		prompt, tb_visible(*extbuf), options, clexec, pushed_back));
+
 	miniedit = FALSE;
 	set_end_string(EOS);	/* ...in case we don't set it elsewhere */
 	tb_unput(*extbuf);	/* FIXME: trim null */
@@ -1491,8 +1494,12 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 	if (clexec) {
 		int actual;
 		tbreserve(extbuf);
-		execstr = get_token(execstr, extbuf, eolchar, &actual);
-		StrToBuff(*extbuf); /* FIXME: token should use TBUFF */
+		TRACE(("...getting token from: %s\n", execstr));
+		execstr = ((options & KBD_REGLUE) != 0 && pushed_back)
+			? get_token2(execstr, extbuf, eolchar, &actual)
+			: get_token(execstr, extbuf, eolchar, &actual);
+		StrToBuff(*extbuf); /* FIXME: get_token should use TBUFF */
+		TRACE(("...got token, result:  %s\n", tb_visible(*extbuf)));
 		status = (tb_length(*extbuf) != 0);
 		if (status) {	/* i.e., we got some input */
 #if !SMALLER
