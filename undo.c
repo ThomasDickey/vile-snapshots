@@ -3,7 +3,7 @@
  *
  * written for vile: Copyright (c) 1990, 1995-2001 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.81 2001/09/18 09:49:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.82 2002/01/09 00:28:09 tom Exp $
  *
  */
 
@@ -628,7 +628,7 @@ copyline(register LINE *lp)
     set_lback(nlp, lback(lp));
     /* copy the rest */
     if (lp->l_text && nlp->l_text)
-	(void) memcpy(nlp->l_text, lp->l_text, (SIZE_T) lp->l_used);
+	(void) memcpy(nlp->l_text, lp->l_text, (size_t) lp->l_used);
     return nlp;
 }
 
@@ -811,7 +811,7 @@ lineundo(int f GCC_UNUSED, int n GCC_UNUSED)
     copy_for_undo(lp);
 
     if (ntext && lp->l_text) {
-	(void) memcpy(ntext, ulp->l_text, (SIZE_T) llength(ulp));
+	(void) memcpy(ntext, ulp->l_text, (size_t) llength(ulp));
 	ltextfree(lp, curbp);
     }
 
@@ -915,7 +915,7 @@ linesmatch(register LINE *lp1, register LINE *lp2)
 	return FALSE;
     if (llength(lp1) == 0)
 	return TRUE;
-    return !memcmp(lp1->l_text, lp2->l_text, (SIZE_T) llength(lp1));
+    return !memcmp(lp1->l_text, lp2->l_text, (size_t) llength(lp1));
 }
 
 int

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.236 2001/12/30 19:51:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.240 2002/01/12 00:25:36 tom Exp $
  *
  */
 
@@ -346,7 +346,7 @@ listvalueset(
 		    ok = FALSE;
 		    break;
 		}
-		if (size_val(names + j, values + j) > ONE_COL) {
+		if (size_val(names + j, values + j) >= ONE_COL) {
 		    show[j] += 1;
 		    passes = 2;
 		}
@@ -417,7 +417,7 @@ listvalueset(
 			ModeName(names[j].name),
 			padded, ' ');
 	    } else {
-		VALARGS args;	/* patch */
+		VALARGS args;	/* FIXME */
 		args.names = names + j;
 		args.local = values + j;
 		args.global = 0;
@@ -548,7 +548,6 @@ settab(int f, int n)
     if (f && n >= 1) {
 	make_local_b_val(curbp, val);
 	set_b_val(curbp, val, n);
-	curtabval = n;
 	for_each_visible_window(wp)
 	    if (wp->w_bufp == curbp)
 	    wp->w_flag |= WFHARD;
@@ -558,7 +557,7 @@ settab(int f, int n)
     }
     if (!global_b_val(MDTERSE) || !f)
 	mlwrite("[%sabs are %d columns apart, using %s value.]", whichtabs,
-		curtabval,
+		tabstop_val(curbp),
 		is_local_b_val(curbp, val) ? "local" : "global");
     return TRUE;
 }
@@ -889,7 +888,7 @@ fsm_size(const FSM_CHOICES * list)
 const FSM_CHOICES *
 name_to_choices(const char *name)
 {
-    SIZE_T i;
+    size_t i;
     const FSM_CHOICES *result = 0;
 
     fsm_idx = -1;
@@ -912,7 +911,7 @@ valname_to_choices(const struct VALNAMES *names)
 static int
 is_fsm(const struct VALNAMES *names)
 {
-    register SIZE_T i;
+    register size_t i;
 
     if (names->type == VALTYPE_ENUM
 	|| names->type == VALTYPE_STRING) {
@@ -1476,10 +1475,6 @@ adjustmode(int kind, int global)
     /* if the settings are up, redisplay them */
     relist_settings();
     relist_majormodes();
-
-    if (curbp) {
-	curtabval = tabstop_val(curbp);
-    }
 
     return s;
 }
@@ -3710,11 +3705,13 @@ set_current_scheme(PALETTES * p)
     TRACE(("set_current_scheme\n"));
     current_scheme = p->code;
 
-    if (p->fcol != q->fcol
-	|| p->bcol != q->bcol
-	|| p->ccol != q->ccol
-	|| p->attr != q->attr
-	|| !same_string(p->list, q->list)) {
+    if (p != 0
+	&& q != 0
+	&& (p->fcol != q->fcol
+	    || p->bcol != q->bcol
+	    || p->ccol != q->ccol
+	    || p->attr != q->attr
+	    || !same_string(p->list, q->list))) {
 
 	if (p->list != 0 && p->list[0] != 0)
 	    set_palette(p->list);

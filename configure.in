@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.164 $)
+AC_REVISION($Revision: 1.167 $)
 AC_PREREQ(2.12.971222)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.164 2001/12/30 18:32:40 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.167 2002/01/10 21:19:18 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -44,15 +44,32 @@ AC_CONST
 CF_CC_INIT_UNIONS
 
 ###	options to control how much we build
+AC_MSG_CHECKING(if you wish to build only core functions)
 CF_ARG_DISABLE(extensions,
 	[  --disable-extensions    test: build only core functions],
-	[AC_DEFINE(SMALLER)
-	 AC_DEFINE(FEWNAMES) cf_extensions=no],
-	[EXTRAOBJS="$EXTRAOBJS api.o btree.o history.o isearch.o select.o statevar.o ucrypt.o"; cf_extensions=yes])
+	[DISABLE_EXTS=yes],
+	[DISABLE_EXTS=no])
+AC_MSG_RESULT($DISABLE_EXTS)
+if test "$DISABLE_EXTS" = yes ; then
+	AC_DEFINE(SMALLER)
+	AC_DEFINE(FEWNAMES)
+	cf_extensions=no
+else
+	EXTRAOBJS="$EXTRAOBJS api.o btree.o history.o isearch.o select.o statevar.o ucrypt.o"
+	cf_extensions=yes
+fi
+
+AC_MSG_CHECKING(if you wish to disable shell/external commands)
 CF_ARG_DISABLE(shell,
 	[  --disable-shell         test: disable shell/external commands],
-	[AC_DEFINE(OPT_SHELL,0)],
-	[EXTRAOBJS="$EXTRAOBJS npopen.o spawn.o"])
+	[DISABLE_SHELL=yes],
+	[DISABLE_SHELL=no])
+AC_MSG_RESULT($DISABLE_SHELL)
+if test "$DISABLE_SHELL" = yes ; then
+	AC_DEFINE(OPT_SHELL,0)
+else
+	EXTRAOBJS="$EXTRAOBJS npopen.o spawn.o"
+fi
 
 ###	use option --with-cflags to set default CFLAGS
 AC_MSG_CHECKING(for CFLAGS options)
@@ -74,6 +91,17 @@ elif test -z "$CFLAGS" ; then
 fi
 AC_MSG_RESULT($cflags)
 
+AC_MSG_CHECKING(if you want to build syntax filters)
+CF_ARG_DISABLE(filters,
+	[  --disable-filters       do not build syntax filters],
+	[with_filters=no],
+	[with_filters=yes])
+AC_MSG_RESULT($with_filters)
+
+MAKE_FILTERS=
+AC_SUBST(MAKE_FILTERS)
+
+if test "$with_filters" = yes ; then
 AC_MSG_CHECKING(if you want built-in syntax filters)
 AC_ARG_WITH(builtin-filters,
 [  --with-builtin-filters=XX specify filters to compile built-in vs external
@@ -128,6 +156,10 @@ if test "$VILE_BUILTIN_FILTERS" != none ; then
 		AC_MSG_RESULT($LEX_VERSION)
 	fi
 	test -n "$cf_missed" && AC_MSG_ERROR(Not all filter names were found: $cf_missed)
+fi
+else
+	VILE_BUILTIN_FILTERS=none
+	MAKE_FILTERS="#"
 fi
 
 AC_SUBST(VILE_BUILTIN_FILTERS)
@@ -686,7 +718,7 @@ fi
 if test "$VILE_BUILTIN_FILTERS" != none ; then
 	EXTRAOBJS="$EXTRAOBJS builtflt.o"
 	CFLAGS="-I\$(srcdir)/filters $CFLAGS"
-	FILTER_LIBS="-Lfilters -lvlflt $LIBS"
+	FILTER_LIBS="-Lfilters -lvlflt"
 	LIBBUILTFLT="${LIB_PREFIX}vlflt.a"
 	BUILTLIBS="$BUILTLIBS filters/$LIBBUILTFLT"
 	AC_DEFINE(OPT_FILTER)

@@ -55,7 +55,7 @@
  *	not (yet) correspond to :-commands.  Before implementing, probably will
  *	have to make TESTC a settable mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.71 2001/12/07 00:56:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.72 2002/01/09 00:30:55 tom Exp $
  *
  */
 
@@ -155,7 +155,7 @@ sameLine(LINE *lp, char *src, int srclen)
 	int dstlen = llength(lp);
 
 	if (dstlen >= srclen) {
-	    if (!memcmp(lp->l_text, src, (SIZE_T) srclen)) {
+	    if (!memcmp(lp->l_text, src, (size_t) srclen)) {
 		if (isRepeatable(*src)
 		    && isRepeatable(lp->l_text[0])
 		    && dstlen != srclen)
@@ -360,7 +360,7 @@ hst_append(TBUFF * cmd, int glue)
 	   glue));
     TRACE(("...MyText        :%d:%s\n", tb_length(MyText), tb_visible(MyText)));
     if (willExtend(tb_args(cmd))
-	&& tb_length(cmd) > (SIZE_T) skip) {
+	&& tb_length(cmd) > (size_t) skip) {
 	kbd_pushback(cmd, skip);
     }
 
@@ -483,7 +483,7 @@ hst_find(HST * parm, BUFFER *bp, LINE *lp, int direction)
 	    return 0;		/* empty or no matches */
 
 	if (!lisreal(lp)
-	    || ((ALLOC_T) llength(lp) <= tb_length(MyText) + willGlue())
+	    || ((size_t) llength(lp) <= tb_length(MyText) + willGlue())
 	    || (sameLine(lp, tb_args(MyText)) < 0))
 	    continue;		/* prefix mismatches */
 

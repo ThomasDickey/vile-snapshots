@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.110 2001/11/27 19:06:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.114 2002/01/12 13:38:02 tom Exp $
  *
  *
  */
@@ -30,6 +30,10 @@
 
 #if !defined(S_ISDIR) && defined(S_IFMT) && defined(S_IFDIR)
 # define S_ISDIR(m)  (((m) & S_IFMT) == S_IFDIR)
+#endif
+
+#if !defined(S_ISREG) && defined(S_IFMT) && defined(S_IFREG)
+# define S_ISREG(m)  (((m) & S_IFMT) == S_IFREG)
 #endif
 
 #if SYS_WINNT
@@ -555,7 +559,7 @@ home_path(char *path)
 #define CPN_CACHE_MASK (CPN_CACHE_SIZE-1)
 
 #if !defined(HAVE_SETITIMER) || !defined(HAVE_SIGACTION)
-#define TimedStat stat
+#define TimedStat file_stat
 #else /* !defined(HAVE_SETITIMER) */
 
 #define TimedStat stat_with_timeout
@@ -609,7 +613,7 @@ stat_with_timeout(const char *path, struct stat *statbuf)
 	retval = -1;
 	stat_errno = EINTR;
     } else {
-	retval = stat(path, statbuf);
+	retval = file_stat(path, statbuf);
 	stat_errno = errno;
     }
 
@@ -643,7 +647,7 @@ resolve_directory(char *path_name, char **file_namep)
     char *tnp;			/* temp name pointer */
     char *temp_path;		/* the path that we've determined */
 
-    ALLOC_T len;		/* temporary for length computations */
+    size_t len;		/* temporary for length computations */
 
     static struct cpn_cache {
 	dev_t ce_dev;
@@ -691,7 +695,7 @@ resolve_directory(char *path_name, char **file_namep)
 	    target[got] = EOS;
 
 	    if (tb_alloc(&last_temp,
-			 (ALLOC_T) (strlen(temp_name) + got + 1)) == 0)
+			 (size_t) (strlen(temp_name) + got + 1)) == 0)
 		return NULL;
 
 	    temp_name = tb_values(last_temp);
@@ -769,7 +773,7 @@ resolve_directory(char *path_name, char **file_namep)
 	dev_t dotdev;
 	ino_t dotino;
 	char mount_point;
-	SIZE_T namelen = 0;
+	size_t namelen = 0;
 
 	len = tnp - temp_name;
 	if (tb_alloc(&last_temp, 4 + len) == 0)
@@ -1223,7 +1227,7 @@ canonpath(char *ss)
 #else
 	    (void) mklower(ss);
 #endif
-	    if ((stat(SL_TO_BSL(ss), &sb) >= 0)
+	    if ((file_stat(ss, &sb) >= 0)
 		&& S_ISDIR(sb.st_mode))
 		(void) strcpy(tt, "/");
 	    else
@@ -1289,7 +1293,7 @@ shorten_path(char *path, int keep_cwd)
 
     if ((slp = strchr(cwd, '[')) != 0
 	&& (slp == cwd
-	    || !strncmp(cwd, path, (SIZE_T) (slp - cwd)))) {	/* same device? */
+	    || !strncmp(cwd, path, (size_t) (slp - cwd)))) {	/* same device? */
 	ff += (slp - cwd);
 	cwd = slp;
 	(void) strcpy(temp, "[");	/* hoping for relative-path */
@@ -1768,14 +1772,29 @@ is_directory(char *path)
 	    return 1;
     }
 #endif
-    return ((stat(SL_TO_BSL(path), &sb) >= 0)
-#if SYS_OS2 && CC_CSETPP
-	    && ((sb.st_mode & S_IFDIR) != 0)
-#else
-	    && S_ISDIR(sb.st_mode)
-#endif
-	);
+    return ((file_stat(path, &sb) >= 0) && S_ISDIR(sb.st_mode));
+}
 
+/*
+ * Test if the given path is a regular file, i.e., one that we might open.
+ */
+int
+is_file(char *path)
+{
+    struct stat sb;
+
+    return ((file_stat(path, &sb) >= 0) && S_ISREG(sb.st_mode));
+}
+
+/*
+ * Test if the given path is not a regular file, i.e., one that we won't open.
+ */
+int
+is_nonfile(char *path)
+{
+    struct stat sb;
+
+    return ((file_stat(path, &sb) >= 0) && !S_ISREG(sb.st_mode));
 }
 
 /*

@@ -4,14 +4,14 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.239 2001/12/26 23:19:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.244 2002/01/12 16:40:13 tom Exp $
  *
  */
 
-#include	"estruct.h"
-#include	"edef.h"
-#include	"nefunc.h"
-#include	"nefsms.h"
+#include "estruct.h"
+#include "edef.h"
+#include "nefunc.h"
+#include "nefsms.h"
 
 #define isSPorTAB(c) ((c) == ' ' || (c) == '\t')
 
@@ -181,13 +181,12 @@ execute_named_command(int f, int n)
     /* and now get the function name to execute */
     for_ever {
 	if (cmode == 0) {	/* looking for range-spec, if any */
-	    status = kbd_reply(
-				  (char *) 0,	/* no-prompt => splice */
-				  &lspec,	/* in/out buffer */
-				  eol_range,
-				  EOS,	/* may be a conflict */
-				  0,	/* no expansion, etc. */
-				  no_completion);
+	    status = kbd_reply((char *) 0,	/* no-prompt => splice */
+			       &lspec,	/* in/out buffer */
+			       eol_range,
+			       EOS,	/* may be a conflict */
+			       0,	/* no expansion, etc. */
+			       no_completion);
 	    c = end_string();
 	    if (status != TRUE && status != FALSE) {
 		if (status == SORTOFTRUE) {
@@ -334,7 +333,7 @@ execute_named_command(int f, int n)
 	   must be willing to go _down_ from there.  Seems easiest
 	   to special case the commands that prefer going up */
 	if (cfp == &f_insfile) {
-/* EMPTY *//* works okay, or acts down normally */ ;
+	    /* EMPTY */ ;
 	} else if (cfp == &f_lineputafter) {
 	    cfp = &f_lineputbefore;
 	    fromline = lforw(fromline);
@@ -421,8 +420,8 @@ execute_named_command(int f, int n)
 	    maybe_num = FALSE;
 	}
     } else {
-	maybe_reg =
-	    maybe_num = FALSE;
+	maybe_reg = FALSE;
+	maybe_num = FALSE;
     }
 
     if (maybe_reg || maybe_num) {
@@ -438,8 +437,7 @@ execute_named_command(int f, int n)
 		break;
 	    if (that == 2) {
 		if (is_empty_buf(curbp)) {
-		    mlforce(
-			       "[No line count possible in empty buffer '%s']", fnp);
+		    mlforce("[No line count possible in empty buffer '%s']", fnp);
 		    return FALSE;
 		}
 		swapmark();
@@ -1093,7 +1091,7 @@ macroize(TBUFF ** p, TBUFF * src, int skip)
     int count = 0;
 
     if (tb_init(p, esc_c) != 0) {
-	ALLOC_T n, len = tb_length(src);
+	size_t n, len = tb_length(src);
 	char *txt = tb_values(src);
 
 	TRACE(("macroizing %s\n", tb_visible(src)));
@@ -1122,12 +1120,10 @@ mac_tokens(void)
 
     while (s != 0 && *s != EOS) {
 	if (isSpace(*s)) {
-	    while (isSpace(*s))
-		s++;
+	    s = skip_cblanks(s);
 	} else if (*s != EOS) {
 	    result++;
-	    while (*s != EOS && !isSpace(*s))
-		s++;
+	    s = skip_ctext(s);
 	}
     }
     return result;
@@ -1348,7 +1344,7 @@ storemac(int f, int n)
     return setup_macro_buffer((TBUFF *) 0, n);
 }
 
-#if	OPT_PROCEDURES
+#if OPT_PROCEDURES
 /*
  * Set up a procedure buffer and flag to store all executed command lines
  * there.  'n' is the macro number to use.
@@ -1407,6 +1403,14 @@ execproc(int f, int n)
 }
 
 #endif
+
+static char *
+skip_space_tab(char *src)
+{
+    while (isBlank(*src))
+	++src;
+    return src;
+}
 
 #if ! SMALLER
 /*
@@ -1617,12 +1621,11 @@ navigate_while(LINEPTR * lpp, WHLOOP * whlist)
 }
 
 static int
-begin_directive(
-		   char **const cmdpp,
-		   DIRECTIVE dirnum,
-		   WHLOOP * whlist,
-		   BUFFER *bp,
-		   LINEPTR * lpp)
+begin_directive(char **const cmdpp,
+		DIRECTIVE dirnum,
+		WHLOOP * whlist,
+		BUFFER *bp,
+		LINEPTR * lpp)
 {
     int status = DDIR_COMPLETE;	/* assume directive is self-contained */
     TBUFF *argtkn = 0;
@@ -1773,8 +1776,7 @@ begin_directive(
 	}
 	/* FALLTHRU */
     case D_WITH:
-	while (isBlank(*execstr))
-	    execstr++;
+	execstr = skip_space_tab(execstr);
 	tb_scopy(&with_prefix, execstr);
 	status = DDIR_COMPLETE;
 	break;
@@ -1873,8 +1875,7 @@ setup_dobuf(BUFFER *bp, WHLOOP ** result)
 		    if (!twhp->w_there) {
 			twhp->w_there = whp->w_here;
 			if (twhp->w_type == D_WHILE) {
-			    whp->w_there =
-				twhp->w_here;
+			    whp->w_there = twhp->w_here;
 			    break;
 			}
 		    }
@@ -1882,11 +1883,10 @@ setup_dobuf(BUFFER *bp, WHLOOP ** result)
 		}
 		if (!twhp) {
 		    /* no while for an endwhile */
-		    mlforce(
-			       "[%s doesn't follow %s in '%s']",
-			       directive_name(D_ENDWHILE),
-			       directive_name(D_WHILE),
-			       bp->b_bname);
+		    mlforce("[%s doesn't follow %s in '%s']",
+			    directive_name(D_ENDWHILE),
+			    directive_name(D_WHILE),
+			    bp->b_bname);
 		    status = FALSE;
 		    break;
 		}
@@ -1952,6 +1952,80 @@ line_in_buffer(BUFFER *bp, LINE *test_lp)
     return FALSE;
 }
 
+#if ! SMALLER
+static void
+compute_indent(char *cmd, int length, int *indent, int *indstate)
+{
+    static BUFFER *save;
+
+    /* reset caller's indent-state if we switched to a new macro */
+    if (macrobuffer == 0
+	|| macrobuffer != save) {
+	save = macrobuffer;
+	if (indent != 0) {
+	    *indent = 0;
+	    *indstate = 0;
+	}
+    }
+    if (cmd != 0
+	&& length != 0) {
+	DIRECTIVE dirnum;
+	char *base = cmd;
+	int here = *indstate;
+	int next = 0;
+
+	cmd = skip_blanks(cmd);
+	dirnum = dname_to_dirnum(cmd, (size_t) (length - (cmd - base)));
+	switch (dirnum) {
+	case D_IF:		/* FALLTHRU */
+	case D_WHILE:		/* FALLTHRU */
+	case D_WITH:
+	    next = 1;
+	    break;
+	case D_ELSE:		/* FALLTHRU */
+	case D_ELSEIF:		/* FALLTHRU */
+	case D_ELSEWITH:
+	    --here;
+	    next = 1;
+	    break;
+	case D_ENDIF:		/* FALLTHRU */
+	case D_ENDM:		/* FALLTHRU */
+	case D_ENDWHILE:	/* FALLTHRU */
+	case D_ENDWITH:
+	    --here;
+	    break;
+	default:
+	    break;
+	}
+	*indstate = next;
+	if ((*indent += here) < 0)
+	    *indent = 0;
+    }
+}
+
+static char *
+add_indent(char *dst, int indent)
+{
+    while (indent-- > 0) {
+	*dst++ = '\t';
+    }
+    return dst;
+}
+#endif
+
+static void
+handle_endm(void)
+{
+    if (macrobuffer != 0) {
+	macrobuffer->b_dot.l = lforw(buf_head(macrobuffer));
+	macrobuffer->b_dot.o = 0;
+	macrobuffer = 0;
+#if !SMALLER
+	compute_indent((char *) 0, 0, (int *) 0, (int *) 0);
+#endif
+    }
+}
+
 static int
 perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 {
@@ -1965,8 +2039,10 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
     char *cmdp;			/* text to execute */
     int save_clhide = clhide;
     int save_no_errs = no_errs;
+    int indent = 0;
+    int indstate = 0;
 
-    static BUFFER *dobuferrbp;
+    static BUFFER *dobuferrbp = 0;
 
     bp->b_inuse++;
 
@@ -1987,35 +2063,44 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 		break;
 	    }
 	    cmdp = linebuf + glue;
-	    glue = 0;
 	} else {
-	    if (linebuf != 0)
-		free(linebuf);
+	    FreeIfNeeded(linebuf);
 
-	    if ((linebuf = cmdp = castalloc(char, linlen + 1)) == 0) {
+#if !SMALLER
+	    compute_indent(lp->l_text, linlen, &indent, &indstate);
+#endif
+	    if ((linebuf = cmdp = castalloc(char, indent + linlen + 1)) == 0) {
 		status = no_memory("during macro execution");
 		break;
 	    }
 	}
 
-	if (linlen != 0)
-	    (void) strncpy(cmdp, lp->l_text, linlen);
-	cmdp[linlen] = EOS;	/* make sure it ends */
+	if (linlen == 0) {
+	    cmdp[0] = EOS;	/* make sure it ends */
+	} else {
+	    char *src;
+	    char *dst;
+#if !SMALLER
+	    if (!glue) {
+		cmdp = add_indent(cmdp, indent);
+	    }
+#endif
+	    (void) memcpy(cmdp, lp->l_text, linlen);
+	    cmdp[linlen] = EOS;	/* make sure it ends */
+
+	    src = skip_space_tab(cmdp);
+	    dst = cmdp;
+	    /* compress out extra leading whitespace */
+	    while ((*dst++ = *src++) != EOS)
+		/* EMPTY */ ;
+	    linlen -= (size_t) (src - dst);
+	}
+	glue = 0;
 
 	TPRINTF(("%s:%d (%d/%d):%s\n", bp->b_bname,
 		 line_no(bp, lp),
 		 ifstk.level, ifstk.disabled,
 		 cmdp));
-
-	/* compress out leading whitespace */
-	{
-	    char *src = cmdp;
-	    char *dst = cmdp;
-	    while (isBlank(*src))
-		src++;
-	    while ((*dst++ = *src++) != EOS) ;
-	    linlen -= (size_t) (src - dst);
-	}
 
 	/*
 	 * If the last character on the line is a backslash, glue the
@@ -2027,9 +2112,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	    glue = linlen + (size_t) (cmdp - linebuf) - 1;
 	    continue;
 	}
-	cmdp = linebuf;
-	while (isBlank(*cmdp))
-	    ++cmdp;
+	cmdp = skip_space_tab(linebuf);
 
 	/* Skip comments and blank lines.
 	 * ';' for uemacs backward compatibility, and
@@ -2040,7 +2123,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	    || *cmdp == EOS) {
 	    continue;
 	}
-#if	OPT_DEBUGMACROS
+#if OPT_DEBUGMACROS
 	/* echo lines and get user confirmation when debugging */
 	if (tracemacros) {
 	    mlforce("<<<%s:%d/%d:%s>>>", bp->b_bname,
@@ -2076,16 +2159,12 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 
 	    /* service the ~endm directive here */
 	    if (dirnum == D_ENDM && !ifstk.disabled) {
-		if (!macrobuffer) {
-		    mlforce(
-			       "[No macro definition in progress]");
+		if (macrobuffer == 0) {
+		    mlforce("[No macro definition in progress]");
 		    status = FALSE;
 		    break;
 		}
-		macrobuffer->b_dot.l =
-		    lforw(buf_head(macrobuffer));
-		macrobuffer->b_dot.o = 0;
-		macrobuffer = NULL;
+		handle_endm();
 		continue;
 	    }
 	} else {
@@ -2093,9 +2172,9 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	}
 
 	/* if macro store is on, just salt this away */
-	if (macrobuffer) {
+	if (macrobuffer != 0) {
 	    /* allocate the space for the line */
-	    if (addline(macrobuffer, cmdp, -1) == FALSE) {
+	    if (addline(macrobuffer, linebuf, -1) == FALSE) {
 		mlforce("[Out of memory while storing macro]");
 		status = FALSE;
 		break;
@@ -2137,15 +2216,11 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	} else if (*cmdp != DIRECTIVE_CHAR) {
 	    /* prefix lines with "WITH" value, if any */
 	    if (tb_length(with_prefix)) {
-		long adj = cmdp - linebuf;
-		char *temp = (char *) malloc(
-						tb_length(with_prefix) +
-						strlen(cmdp) + 2);
-		(void) lsprintf(temp, "%s %s",
-				tb_values(with_prefix), cmdp);
+		char *temp = (char *) malloc(tb_length(with_prefix)
+					     + strlen(cmdp) + 2);
+		(void) lsprintf(temp, "%s %s", tb_values(with_prefix), cmdp);
 		free(linebuf);
-		linebuf = temp;
-		cmdp = linebuf + adj;
+		cmdp = linebuf = temp;
 	    }
 	}
 #endif
@@ -2188,8 +2263,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	}
     }
 
-    if (linebuf != 0)
-	free(linebuf);
+    FreeIfNeeded(linebuf);
 
     if (--(bp->b_inuse) < 0)
 	bp->b_inuse = 0;
@@ -2238,7 +2312,7 @@ dobuf(BUFFER *bp, int limit)
 		    pop_buffer(&save_ifstk);
 		}
 
-		macrobuffer = NULL;
+		handle_endm();
 		free_all_whiles(whlist);
 
 		if (status != TRUE)

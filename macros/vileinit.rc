@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.18 2001/09/23 19:21:17 tom Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.19 2002/01/12 19:17:57 tom Exp $
 ; This is a sample which may be installed as .vilerc (or vile.rc for non-Unix
 ; systems), or source'd as-is to provide quick initialization of some useful
 ; macros and settings.
@@ -115,7 +115,7 @@ bind-key next-cur-identifier ^X-,
 ; Take the identifier under the cursor, wrap it in '<', '>' and search for it.
 ; in the alternate buffer.
 store-procedure next-alt-identifier "Find current token in alternate buffer"
-	~local %osearch $identifier
+	~local %osearch
 	set-variable %osearch $identifier
 	alternate-buffer
 	~force search-forward &cat '\<' &cat %osearch '\>'

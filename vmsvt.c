@@ -14,7 +14,7 @@
  *   -- support wide and narrow screen resolutions,
  *   -- support visual bells.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.54 2000/11/15 11:27:42 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.55 2002/01/09 00:28:12 tom Exp $
  *
  */
 
@@ -291,7 +291,7 @@ vmsattr(UINT attr)
 	}
 
 	if (attr != last) {
-		register SIZE_T n;
+		register size_t n;
 		register char *s;
 		UINT	diff = attr ^ last;
 		int	ends = FALSE;

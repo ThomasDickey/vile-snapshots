@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.465 2001/12/30 19:46:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.469 2002/01/11 21:35:12 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1242,7 +1242,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #define DFT_FILENAME_EXPR "\\([a-zA-Z]:\\)\\?[^ \t\":*?<>|]"
 #else
 #if OPT_VMS_PATH
-#define DFT_FILENAME_EXPR "[-/\\w.;\[\]<>$:]"
+#define DFT_FILENAME_EXPR "[-/\\w.;\\[\\]<>$:]"
 #else /* UNIX-style */
 #define DFT_FILENAME_EXPR "[-/\\w.~]"
 #endif
@@ -1389,10 +1389,10 @@ init_state_value(int which)
 /*
  * Cache the length of kbindtbl[].
  */
-static ALLOC_T
+static size_t
 len_kbindtbl(void)
 {
-    static ALLOC_T result = 0;
+    static size_t result = 0;
     if (result == 0)
 	while (kbindtbl[result].k_cmd != 0)
 	    result++;
@@ -1407,7 +1407,7 @@ static void
 copy_kbindtbl(BINDINGS * dst)
 {
     KBIND *result;
-    ALLOC_T len = len_kbindtbl();
+    size_t len = len_kbindtbl();
 
     if (dst->kb_special == kbindtbl) {
 	if ((result = typecallocn(KBIND, len)) == 0) {
@@ -1909,7 +1909,9 @@ quit(int f, int n GCC_UNUSED)
 	wp_leaks();
 	bp_leaks();
 	vt_leaks();
+#if !SMALLER
 	ev_leaks();
+#endif
 	mode_leaks();
 	vars_leaks();
 	fileio_leaks();
@@ -2213,6 +2215,15 @@ charinit(void)
 #endif
 
     c = global_g_val(GVAL_PRINT_LOW);
+
+    /*
+     * Guard against setting printing-high before printing-low while we have a
+     * buffer which may be repainted and possibly trashing the display.
+     */
+    if (c == 0
+     && global_g_val(GVAL_PRINT_HIGH) >= 254)
+	c = 160;
+
     if (c < HIGHBIT)
 	c = HIGHBIT;
     while (c <= global_g_val(GVAL_PRINT_HIGH) && c < N_chars)
@@ -2479,7 +2490,7 @@ showmemory(int f, int n)
 #endif /* SYS_MSDOS */
 
 char *
-strncpy0(char *t, const char *f, SIZE_T l)
+strncpy0(char *t, const char *f, size_t l)
 {
     (void) strncpy(t, f, l);
     if (l)

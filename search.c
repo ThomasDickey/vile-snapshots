@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.124 2001/12/21 12:43:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.125 2002/01/09 00:27:29 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -19,7 +19,7 @@ static char const hitendmsg[] = "Search reached %s without matching pattern";
 
 static int rsearch(int f, int n, int dummy, int fromscreen);
 static void movenext(MARK * pdot, int dir);
-static void savematch(MARK curpos, SIZE_T matchlen);
+static void savematch(MARK curpos, size_t matchlen);
 
 static void
 not_found_msg(int wrapok, int dir)
@@ -735,7 +735,7 @@ readpattern(
  */
 
 static void
-savematch(MARK curpos, SIZE_T matchlen)
+savematch(MARK curpos, size_t matchlen)
 {
     tb_init(&tb_matched_pat, EOS);
     tb_bappend(&tb_matched_pat, &(curpos.l->l_text[curpos.o]), matchlen);

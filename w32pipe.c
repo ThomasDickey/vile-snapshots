@@ -60,7 +60,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.29 2001/12/06 00:52:21 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.30 2002/01/10 22:37:50 tom Exp $
  */
 
 #define HAVE_FCNTL_H 1
@@ -117,7 +117,7 @@ inout_popen(FILE **fr, FILE **fw, char *cmd)
 {
     TRACE(("inout_popen(fr=%p, fw=%p, cmd='%s')\n", fr, fw, cmd));
 
-    fileispipe = TRUE;
+    ffstatus = file_is_pipe;
     fileeof = FALSE;
     append_libdir_to_path();
 #ifdef GMDW32PIPES

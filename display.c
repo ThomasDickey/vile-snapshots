@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.355 2001/12/30 21:28:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.359 2002/01/09 00:29:50 tom Exp $
  *
  */
 
@@ -54,7 +54,6 @@ static int *lmap;
 #endif
 
 static int i_displayed;		/* false until we're in screen-mode */
-static int im_displaying;	/* flag set during screen updates */
 static int mpresf;		/* zero if message-line empty */
 #if OPT_WORKING
 static int im_timing;
@@ -388,7 +387,7 @@ video_alloc(VIDEO ** vpp)
     (void) memset((char *) vp, 0, sizeof(VIDEO) + term.maxcols - 4);
 
 #if OPT_VIDEO_ATTRS
-    vp->v_attrs = typecallocn(VIDEO_ATTR, (ALLOC_T) term.maxcols);
+    vp->v_attrs = typecallocn(VIDEO_ATTR, (size_t) term.maxcols);
     if (vp->v_attrs == 0) {
 	free((char *) vp);
 	return FALSE;
@@ -503,6 +502,8 @@ vtmove(int row, int col)
     vtcol = col;
 }
 
+static int vt_tabstop;
+
 /*
  * Write a character to the virtual screen.  The virtual row and column are
  * updated.  Only print characters if they would be "visible".  If the line is
@@ -552,7 +553,7 @@ vtputc(int c)
     } else if (c == '\t') {
 	do {
 	    vtputc(' ');
-	} while (((vtcol + horscroll) % curtabval) != 0
+	} while (((vtcol + horscroll) % vt_tabstop) != 0
 		 && vtcol < lastcol);
     } else if (c == '\n') {
 	return;
@@ -614,6 +615,7 @@ vtset(LINEPTR lp, WINDOW *wp)
     int list = w_val(wp, WMDLIST);
 
     vt_octal = w_val(wp, WMDNONPRINTOCTAL);
+    vt_tabstop = tabstop_val(wp->w_bufp);
 
 #ifdef WMDLINEWRAP
     /*
@@ -653,7 +655,7 @@ vtset(LINEPTR lp, WINDOW *wp)
 		}
 	    } else {
 		if (c == '\t')
-		    k += (curtabval - (k % curtabval));
+		    k += (vt_tabstop - (k % vt_tabstop));
 		else if (isPrint(c))
 		    k++;
 		fill = ' ';
@@ -725,6 +727,7 @@ vtset(LINEPTR lp, WINDOW *wp)
 #ifdef WMDLINEWRAP
     allow_wrap = 0;
 #endif
+    TRACE2(("TEXT %4d:%.*s\n", vtrow, term.cols - 1, vscreen[vtrow]->v_text));
 }
 
 /*
@@ -741,7 +744,7 @@ vteeol(void)
 #endif
 	    if (n >= 0) {
 		(void) memset(&vscreen[vtrow]->v_text[n],
-			      ' ', (SIZE_T) (term.cols - n));
+			      ' ', (size_t) (term.cols - n));
 	    }
 	vtcol = term.cols;
     }
@@ -762,11 +765,12 @@ static UINT scrflags;
 
 /* line to virtual column */
 int
-mk_to_vcol(MARK mark, int expanded, int base, int col)
+mk_to_vcol(MARK mark, int expanded, BUFFER *bp, int col, int adjust)
 {
-    int i = base;
+    int i = b_left_margin(bp) + adjust;
     int c;
     int lim;
+    int t = tabstop_val(bp);
     LINEPTR lp;
     int extra = ((!global_g_val(GMDALTTABPOS) && !insertmode) ? 1 : 0);
 
@@ -782,7 +786,7 @@ mk_to_vcol(MARK mark, int expanded, int base, int col)
     while (i < lim) {
 	c = lgetc(lp, i++);
 	if (c == '\t' && !expanded) {
-	    col += curtabval - (col % curtabval);
+	    col += t - (col % t);
 	} else {
 	    if (!isPrint(c)) {
 		col += (c & HIGHBIT) ? 3 : 1;
@@ -805,6 +809,7 @@ mk_to_vcol(MARK mark, int expanded, int base, int col)
 static int
 dot_to_vcol(WINDOW *wp)
 {
+    BUFFER *bp = wp->w_bufp;
     int result;
 #if OPT_CACHE_VCOL
     W_TRAITS *wt = &(wp->w_traits);
@@ -928,30 +933,32 @@ dot_to_vcol(WINDOW *wp)
 	if (wt->w_left_dot.o > 0) {
 	    wt->w_left_col = mk_to_vcol(wt->w_left_dot,
 					w_val(wp, WMDLIST),
-					w_left_margin(wp),
+					bp,
+					0,
 					0);
 	    TRACE(("...cache w_left_col %d\n", wt->w_left_col));
 	}
     }
     result = mk_to_vcol(wp->w_dot,
 			w_val(wp, WMDLIST),
-			wt->w_left_dot.o + use_off,
-			wt->w_left_col);
+			bp,
+			wt->w_left_col,
+			wt->w_left_dot.o + use_off - b_left_margin(bp));
 #if OPT_TRACE
-    check = mk_to_vcol(wp->w_dot, w_val(wp, WMDLIST), w_left_margin(wp), 0);
+    check = mk_to_vcol(wp->w_dot, w_val(wp, WMDLIST), bp, 0, 0);
     if (check != result) {
 	TRACE(("dot_to_vcol result %d check %d (off=%d, shift=%d)\n",
 	       result, check, wp->w_dot.o, shift));
 	kbd_alarm();
 	TRACE(("-> OOPS:%s %d vs %d+%d %d\n",
-	       wp->w_bufp->b_bname,
+	       bp->b_bname,
 	       wp->w_dot.o,
 	       wt->w_left_dot.o, use_off,
 	       wt->w_left_col));
     }
 #endif
 #else
-    result = mk_to_vcol(wp->w_dot, w_val(wp, WMDLIST), w_left_margin(wp), 0);
+    result = mk_to_vcol(wp->w_dot, w_val(wp, WMDLIST), bp, 0, 0);
 #endif
     return result;
 }
@@ -1258,7 +1265,7 @@ kbd_openup(void)
 	    (void) memcpy(
 			     pscreen[i]->v_text,
 			     pscreen[i + 1]->v_text,
-			     (SIZE_T) (term.cols));
+			     (size_t) (term.cols));
 #if OPT_VIDEO_ATTRS
 	    (void) memcpy(
 			     pscreen[i]->v_attrs,
@@ -1266,7 +1273,7 @@ kbd_openup(void)
 			     alen);
 #endif
 	}
-	(void) memset(pscreen[i]->v_text, ' ', (SIZE_T) (term.cols));
+	(void) memset(pscreen[i]->v_text, ' ', (size_t) (term.cols));
 #if OPT_VIDEO_ATTRS
 	(void) memset(pscreen[i]->v_attrs, VADIRTY, alen);
 #endif
@@ -1512,7 +1519,7 @@ typedef struct {
 } SAVEWIN;
 
 static SAVEWIN *recomp_tbl;
-static ALLOC_T recomp_len;
+static size_t recomp_len;
 
 static void
 recompute_buffer(BUFFER *bp)
@@ -1521,7 +1528,7 @@ recompute_buffer(BUFFER *bp)
     register SAVEWIN *tbl;
 
     struct VAL b_vals[MAX_B_VALUES];
-    ALLOC_T num = 0;
+    size_t num = 0;
     BUFFER *savebp = curbp;
     WINDOW *savewp = curwp;
     int mygoal = curgoal;
@@ -2145,7 +2152,7 @@ texttest(int vrow, int prow)
     struct VIDEO *vpv = vscreen[vrow];	/* virtual screen image */
     struct VIDEO *vpp = PScreen(prow);	/* physical screen image */
 
-    return (!memcmp(vpv->v_text, vpp->v_text, (SIZE_T) term.cols));
+    return (!memcmp(vpv->v_text, vpp->v_text, (size_t) term.cols));
 }
 
 /*
@@ -2186,7 +2193,7 @@ simple_scroll(int inserts)
     int i, j, k;
     int rows, cols;
     int first, match, count, ptarget = 0, vtarget = 0;
-    SIZE_T end;
+    size_t end;
     int longmatch, longcount;
     int longinplace, inplace;	/* count of lines which are already
 				   in the right place */
@@ -2311,7 +2318,7 @@ simple_scroll(int inserts)
 	for (i = 0; i < count; i++) {
 	    vpp = PScreen(to + i);
 	    vpv = vscreen[to + i];
-	    (void) memcpy(vpp->v_text, vpv->v_text, (SIZE_T) cols);
+	    (void) memcpy(vpp->v_text, vpv->v_text, (size_t) cols);
 	}
 #if OPT_VIDEO_ATTRS && !FRAMEBUF
 #define SWAP_ATTR_PTR(a, b) do { VIDEO_ATTR *temp = pscreen[a]->v_attrs;  \
@@ -2476,7 +2483,7 @@ static int
 modeline_modes(BUFFER *bp, char **msptr)
 {
     register char *ms = msptr ? *msptr : 0;
-    register SIZE_T mcnt = 0;
+    register size_t mcnt = 0;
 
     PutMajormode(bp);
 #if !OPT_MAJORMODE
@@ -3205,8 +3212,6 @@ de_extend_lines(void)
 	lp = wp->w_line.l;
 	i = TopRow(wp);
 
-	curtabval = tabstop_val(wp->w_bufp);
-
 	while (i < mode_row(wp)) {
 	    if (i >= 0
 		&& (vscreen[i]->v_flag & VFEXT) != 0) {
@@ -3224,7 +3229,6 @@ de_extend_lines(void)
 	    lp = lforw(lp);
 	}
     }
-    curtabval = tabstop_val(curbp);
 }
 
 /*
@@ -3328,7 +3332,6 @@ update(int force /* force update past type ahead? */ )
 	    if (wp->w_flag) {
 		if ((wp->w_flag & ~(WFMOVE)) && !updated++)
 		    term.cursorvis(FALSE);
-		curtabval = tabstop_val(wp->w_bufp);
 		/* if the window has changed, service it */
 		reframe_cursor_position(wp);	/* check the framing */
 		if (wp->w_flag & (WFKILLS | WFINS)) {
@@ -3354,7 +3357,6 @@ update(int force /* force update past type ahead? */ )
 		wp->w_force = 0;
 	    }
 	}
-	curtabval = tabstop_val(curbp);
 
 	/* Recalculate the current hardware cursor location.  If true, we've
 	 * done a horizontal scroll.
@@ -3978,28 +3980,6 @@ im_waiting(int flag)
     }
     return waiting;
 }
-
-#if defined(SIGWINCH) || OPT_WORKING
-/*
- * Set the semaphore so that we don't try to do I/O while we're being
- * interrupted.
- */
-void
-beginDisplay(void)
-{
-    im_displaying++;
-}
-
-/*
- * Reset the semaphore.
- */
-void
-endofDisplay(void)
-{
-    if (im_displaying)
-	im_displaying--;
-}
-#endif
 
 #if OPT_PSCREEN
 /* Most of the code in this section is for making the message line work

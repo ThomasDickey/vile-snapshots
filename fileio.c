@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.154 2001/12/24 01:16:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.161 2002/01/12 13:47:18 tom Exp $
  *
  */
 
@@ -89,10 +89,10 @@ write_backup_file(const char *orig, char *backup)
 
     struct stat ostat, bstat;
 
-    if (stat(SL_TO_BSL(orig), &ostat) != 0)
+    if (file_stat(orig, &ostat) != 0)
 	return FALSE;
 
-    if (stat(SL_TO_BSL(backup), &bstat) == 0) {		/* the backup file exists */
+    if (file_stat(backup, &bstat) == 0) {	/* the backup file exists */
 
 #if SYS_UNIX
 	/* same file, somehow? */
@@ -218,13 +218,68 @@ make_backup(char *fname)
 #endif /* OPT_FILEBACK */
 
 /*
+ * Definitions for file_stat()
+ */
+typedef struct {
+    int rc;
+    char fn[NFILEN];
+    struct stat sb;
+} CACHE_STAT;
+
+#define MAX_CACHE_STAT 2
+
+/*
+ * Cache the most recent few stat() calls on the filesystem.  If the 'sb'
+ * pointer is null, purge our cache entry for the corresponding file.  We
+ * usually purge only when asking for the modification-time of a file, since
+ * that may change externally.
+ */
+int
+file_stat(const char *fn, struct stat *sb)
+{
+    static CACHE_STAT cache[MAX_CACHE_STAT];
+
+    int rc = 0;
+    unsigned n;
+    int found = FALSE;
+
+    for (n = 0; n < TABLESIZE(cache); ++n) {
+	if (!strcmp(fn, cache[n].fn)) {
+	    found = TRUE;
+	    break;
+	}
+    }
+    if (sb != 0) {
+	if (!found) {
+	    for (n = TABLESIZE(cache) - 1; n != 0; --n) {
+		if (strlen(cache[n].fn) == 0)
+		    break;
+	    }
+	    cache[n].rc = stat(SL_TO_BSL(strcpy(cache[n].fn, fn)),
+			       &(cache[n].sb));
+	}
+	rc = cache[n].rc;
+	*sb = cache[n].sb;
+    } else if (found) {
+	vl_strncpy(cache[n].fn, "", NFILEN);
+    }
+    TRACE(("file_stat(%s) = %d%s\n", fn, rc,
+	   (found
+	    ? ((sb != 0)
+	       ? " cached"
+	       : " purged")
+	    : "")));
+    return rc;
+}
+
+/*
  * Open a file for reading.
  */
 int
 ffropen(char *fn)
 {
-    fileispipe = FALSE;
     fileeof = FALSE;
+    ffstatus = file_is_closed;
 
     TRACE(("ffropen(fn=%s)\n", fn));
 #if OPT_SHELL
@@ -242,16 +297,23 @@ ffropen(char *fn)
 	    return (FIOERR);
 	}
 
-	fileispipe = TRUE;
+	ffstatus = file_is_pipe;
 	count_fline = 0;
 
     } else
 #endif
     if (is_directory(fn)) {
+#if COMPLETE_FILES || COMPLETE_DIRS
+	ffstatus = file_is_internal;	/* will store directory as buffer */
+	return (FIOSUC);
+#else
 	set_errno(EISDIR);
 	mlerror("opening directory");
 	return (FIOERR);
-
+#endif
+    } else if (is_nonfile(fn)) {
+	mlforce("[Not a file: %s]", fn);
+	return (FIOERR);
     } else if ((ffp = fopen(SL_TO_BSL(fn), FOPEN_READ)) == NULL) {
 	if (errno != ENOENT
 #if SYS_OS2 && CC_CSETPP
@@ -263,8 +325,9 @@ ffropen(char *fn)
 	    return (FIOERR);
 	}
 	return (FIOFNF);
+    } else {
+	ffstatus = file_is_external;
     }
-
     return (FIOSUC);
 }
 
@@ -280,23 +343,26 @@ ffwopen(char *fn, int forced)
     char *mode = FOPEN_WRITE;
 
     TRACE(("ffwopen(fn=%s, forced=%d)\n", fn, forced));
+    ffstatus = file_is_closed;
 #if OPT_SHELL
     if (isShellOrPipe(fn)) {
 	if ((ffp = npopen(fn + 1, mode)) == NULL) {
 	    mlerror("opening pipe for write");
 	    return (FIOERR);
 	}
-	fileispipe = TRUE;
+	ffstatus = file_is_pipe;
     } else
 #endif
     {
 	if ((name = is_appendname(fn)) != NULL) {
 	    fn = name;
 	    mode = FOPEN_APPEND;
-	}
-	if (is_directory(fn)) {
+	} else if (is_directory(fn)) {
 	    set_errno(EISDIR);
 	    mlerror("opening directory");
+	    return (FIOERR);
+	} else if (is_nonfile(fn)) {
+	    mlforce("[Not a file: %s]", fn);
 	    return (FIOERR);
 	}
 #if OPT_FILEBACK
@@ -319,7 +385,7 @@ ffwopen(char *fn, int forced)
 	    mlerror("opening for write");
 	    return (FIOERR);
 	}
-	fileispipe = FALSE;
+	ffstatus = file_is_external;
     }
 #else
 #if     SYS_VMS
@@ -340,6 +406,7 @@ ffwopen(char *fn, int forced)
 	return (FIOERR);
     }
 #endif
+    ffstatus = file_is_external;
 #endif
     return (FIOSUC);
 }
@@ -495,7 +562,7 @@ ffexists(char *p)
 
     struct stat statbuf;
     if (!isInternalName(p)
-	&& stat(SL_TO_BSL(p), &statbuf) == 0) {
+	&& file_stat(p, &statbuf) == 0) {
 	status = TRUE;
     }
 #endif
@@ -537,7 +604,7 @@ ffread(char *buf, long len)
     else
 	result = -1;
 # else
-    result = read(fileno(ffp), buf, (SIZE_T) len);
+    result = read(fileno(ffp), buf, (size_t) len);
     if (result >= 0)
 	fseek(ffp, len, 1);	/* resynchronize stdio */
 # endif
@@ -583,28 +650,33 @@ ffclose(void)
 
     free_fline();
 
+    if (ffp != 0) {
 #if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
 #if OPT_SHELL
-    if (fileispipe) {
-	npclose(ffp);
-	mlwrite("[Read %d lines%s]",
-		count_fline,
-		interrupted()? "- Interrupted" : "");
+	if (ffstatus == file_is_pipe) {
+	    npclose(ffp);
+	    mlwrite("[Read %d lines%s]",
+		    count_fline,
+		    interrupted()? "- Interrupted" : "");
 #ifdef MDCHK_MODTIME
-	(void) check_visible_files_changed();
+	    (void) check_visible_files_changed();
 #endif
-    } else
+	} else
 #endif
-    {
-	s = fclose(ffp);
-    }
-    if (s != 0) {
-	mlerror("closing");
-	return (FIOERR);
-    }
+	{
+	    s = fclose(ffp);
+	}
+	if (s != 0) {
+	    mlerror("closing");
+	    return (FIOERR);
+	}
 #else
-    (void) fclose(ffp);
+	(void) fclose(ffp);
 #endif
+    }
+    ffp = 0;
+    ffbuffer = 0;
+    ffstatus = file_is_closed;
     return (FIOSUC);
 }
 
@@ -644,7 +716,7 @@ ffputc(int c)
     char d = (char) c;
 
 #if OPT_ENCRYPT
-    if (ffcrypting && !fileispipe)
+    if (ffcrypting && (ffstatus != file_is_pipe))
 	d = vl_encrypt_char(d);
 #endif
     putc(d, ffp);
@@ -655,6 +727,20 @@ ffputc(int c)
     }
 
     return (FIOSUC);
+}
+
+/* "Small" exponential growth - EJK */
+static int
+realloc_linebuf(void)
+{
+    size_t growth = (fflinelen >> 3) + NSTRING;
+    fflinelen += growth;
+    fflinebuf = castrealloc(char, fflinebuf, fflinelen);
+    if (!fflinebuf) {
+	fflinelen = 0;
+	return (FALSE);
+    }
+    return (TRUE);
 }
 
 /*
@@ -668,7 +754,7 @@ int
 ffgetline(int *lenp)
 {
     int c;
-    ALLOC_T i;			/* current index into fflinebuf */
+    size_t i;			/* current index into fflinebuf */
     int end_of_line = (global_b_val(VAL_RECORD_SEP) == RS_CR) ? '\r' : '\n';
 
     if (fileeof)
@@ -680,53 +766,66 @@ ffgetline(int *lenp)
     if (!fflinebuf)
 	return (FIOMEM);
 
-    /* accumulate to a newline */
     i = 0;
-    for_ever {
-	c = getc(ffp);
-	if (feof(ffp) || ferror(ffp))
-	    break;
-#if OPT_ENCRYPT
-	if (ffcrypting && !fileispipe)
-	    c = vl_encrypt_char(c);
-#endif
-	if (c == end_of_line)
-	    break;
-	if (interrupted()) {
-	    free_fline();
-	    *lenp = 0;
-	    return FIOABRT;
-	}
-	fflinebuf[i++] = (char) c;
-	/* grow our buffer -- be sure it grows fast enough */
-	if (i >= fflinelen) {
-	    /* "Small" exponential growth - EJK */
-	    ALLOC_T growth = (fflinelen >> 3) + NSTRING;
-	    fflinelen += growth;
-	    fflinebuf = castrealloc(char, fflinebuf, fflinelen);
-	    if (!fflinebuf) {
-		fflinelen = 0;
-		return (FIOMEM);
-	    }
-	}
-#if OPT_WORKING
-	cur_working++;
-#endif
-    }
-
-    *lenp = i;			/* return the length, not including final null */
-    fflinebuf[i] = EOS;
-
-    if (c == EOF) {		/* problems? */
-	if (!feof(ffp) && ferror(ffp)) {
-	    mlerror("reading");
-	    return (FIOERR);
-	}
-
-	if (i != 0)		/* got something */
+#if COMPLETE_FILES || COMPLETE_DIRS
+    if (ffstatus == file_is_internal) {
+	if (ffcursor == buf_head(ffbuffer)) {
+	    ffcursor = 0;
 	    fileeof = TRUE;
-	else
 	    return (FIOEOF);
+	}
+	if (llength(ffcursor) > 0) {
+	    i = fflinelen = llength(ffcursor);
+	    if (!realloc_linebuf())
+		return (FIOMEM);
+	    memcpy(fflinebuf, ffcursor->l_text, i);
+	}
+	fflinebuf[i] = EOS;
+	ffcursor = lforw(ffcursor);
+	*lenp = i;		/* return the length, not including final null */
+    } else
+#endif
+    {
+	/* accumulate to a newline */
+	for_ever {
+	    c = getc(ffp);
+	    if (feof(ffp) || ferror(ffp))
+		break;
+#if OPT_ENCRYPT
+	    if (ffcrypting && (ffstatus != file_is_pipe))
+		c = vl_encrypt_char(c);
+#endif
+	    if (c == end_of_line)
+		break;
+	    if (interrupted()) {
+		free_fline();
+		*lenp = 0;
+		return FIOABRT;
+	    }
+	    fflinebuf[i++] = (char) c;
+	    /* grow our buffer -- be sure it grows fast enough */
+	    if (i >= fflinelen
+		&& !realloc_linebuf())
+		return (FIOMEM);
+#if OPT_WORKING
+	    cur_working++;
+#endif
+	}
+
+	*lenp = i;		/* return the length, not including final null */
+	fflinebuf[i] = EOS;
+
+	if (c == EOF) {		/* problems? */
+	    if (!feof(ffp) && ferror(ffp)) {
+		mlerror("reading");
+		return (FIOERR);
+	    }
+
+	    if (i != 0)		/* got something */
+		fileeof = TRUE;
+	    else
+		return (FIOEOF);
+	}
     }
 
     count_fline++;

@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.82 2001/12/23 18:40:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.83 2002/01/09 00:40:20 tom Exp $
  */
 
 /*#
@@ -151,8 +151,6 @@
 #include "edef.h"
 
 #include "api.h"
-
-extern REGION *haveregion;
 
 static PerlInterpreter *perl_interp;
 static int use_ml_as_prompt;

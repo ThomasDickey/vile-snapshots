@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.119 2001/12/05 10:06:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.120 2002/01/09 20:23:34 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -796,8 +796,8 @@ GetMyFont(VIDEO_ATTR attr)
 	return GetMyFont(VAUL);
     } else if (!MyFonts[n].used) {
 	LOGFONT logfont = vile_logfont;
-	logfont.lfItalic = (attr & VAITAL) != 0;
-	logfont.lfUnderline = (attr & VAUL) != 0;
+	logfont.lfItalic = (BYTE) (attr & VAITAL) != 0;
+	logfont.lfUnderline = (BYTE) (attr & VAUL) != 0;
 	if (attr & VABOLD)
 	    logfont.lfWeight = FW_SEMIBOLD;
 	if ((MyFonts[n].font = CreateFontIndirect(&logfont)) != 0) {

@@ -7,7 +7,7 @@
  *	To do:	add 'itb_ins()' and 'itb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/itbuff.c,v 1.13 1999/03/19 10:51:09 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/itbuff.c,v 1.14 2002/01/09 00:30:55 tom Exp $
  *
  */
 
@@ -74,7 +74,7 @@ itb_leaks(void)
  * ensure that the given temp-buff has as much space as specified
  */
 ITBUFF *
-itb_alloc(ITBUFF **p, ALLOC_T n)
+itb_alloc(ITBUFF **p, size_t n)
 {
 	register ITBUFF *q = *p;
 	if (q == 0) {
@@ -128,7 +128,7 @@ itb_free(ITBUFF **p)
  * put a character c at the nth position of the temp-buff.  make it the last.
  */
 static ITBUFF *
-itb_put(ITBUFF **p, ALLOC_T n, int c)
+itb_put(ITBUFF **p, size_t n, int c)
 {
 	register ITBUFF *q;
 
@@ -158,7 +158,7 @@ ITBUFF *
 itb_append(ITBUFF **p, int c)
 {
 	register ITBUFF *q = *p;
-	register ALLOC_T n = (q != 0) ? q->itb_used : 0;
+	register size_t n = (q != 0) ? q->itb_used : 0;
 
 	return itb_put(p, n, c);
 }
@@ -174,7 +174,7 @@ itb_copy(ITBUFF **d, ITBUFF *s)
 	if (s != 0) {
 		if ((p = itb_init(d, s->itb_endc)) != 0) {
 			int	*ptr = s->itb_data;
-			ALLOC_T len = s->itb_used;
+			size_t len = s->itb_used;
 			while ((len-- != 0) && itb_append(&p, *ptr++) != 0)
 				;
 		}
@@ -187,7 +187,7 @@ itb_copy(ITBUFF **d, ITBUFF *s)
  * append a binary data to the temp-buff
  */
 ITBUFF *
-itb_bappend(ITBUFF **p, const char *s, ALLOC_T len)
+itb_bappend(ITBUFF **p, const char *s, size_t len)
 {
 	while ((len-- != 0) && itb_append(p, (int)(*s++)) != 0)
 		;
@@ -209,7 +209,7 @@ itb_sappend( ITBUFF **p, const char *s)
 }
 
 void
-itb_delete(ITBUFF *p, ALLOC_T cnt)
+itb_delete(ITBUFF *p, size_t cnt)
 {
 	int *from, *to, *used;
 
@@ -262,7 +262,7 @@ itb_insert(ITBUFF **p, int c)
  * get the nth character from the temp-buff
  */
 int
-itb_get(ITBUFF *p, ALLOC_T n)
+itb_get(ITBUFF *p, size_t n)
 {
 	register int	c = esc_c;
 
@@ -291,10 +291,10 @@ itb_unput(ITBUFF *p)
  * Reset the iteration-count
  */
 static
-ALLOC_T
-itb_seek(ITBUFF *p, ALLOC_T seekto, int whence)
+size_t
+itb_seek(ITBUFF *p, size_t seekto, int whence)
 {
-	ALLOC_T olast;
+	size_t olast;
 
 	if (p == 0)
 		return 0;
@@ -391,7 +391,7 @@ itb_values(ITBUFF *p)
 /*
  * returns the length of the data
  */
-ALLOC_T
+size_t
 itb_length(ITBUFF *p)
 {
 	return (p != 0) ? p->itb_used : 0;

@@ -16,7 +16,7 @@
  *
  *		ted, 01/01
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.79 2001/09/18 09:49:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.80 2002/01/09 00:32:02 tom Exp $
  *
  */
 
@@ -350,10 +350,10 @@ regcomp(const char *origexp, int magic)
     register regexp *r;
     register char *scan;
     register char *longest;
-    register ALLOC_T len;
+    register size_t len;
     int flags;
     static char *exp;
-    static ALLOC_T explen;
+    static size_t explen;
 
     if (origexp == NULL) {
 	regerror("NULL argument");

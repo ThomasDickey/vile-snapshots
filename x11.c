@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.253 2001/02/13 23:54:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.254 2002/01/09 00:32:09 tom Exp $
  *
  */
 
@@ -470,8 +470,8 @@ static	int	set_character_class(char *s);
 static	void	x_touch (TextWindow tw, int sc, int sr, UINT ec, UINT er);
 static	void	x_paste_selection (Atom selection);
 static	void	x_own_selection(Atom selection);
-static	Boolean	x_get_selected_text(UCHAR **datp, SIZE_T *lenp);
-static	Boolean	x_get_clipboard_text(UCHAR **datp, SIZE_T *lenp);
+static	Boolean	x_get_selected_text(UCHAR **datp, size_t *lenp);
+static	Boolean	x_get_clipboard_text(UCHAR **datp, size_t *lenp);
 static	Boolean	x_convert_selection (Widget w, Atom *selection, Atom *target,
 			Atom *type, XtPointer *value, ULONG *length,
 			int *format);
@@ -3928,7 +3928,7 @@ alternate_font(
     XFontStruct *fsp = NULL;
     if (cur_win->fontname == NULL
      || cur_win->fontname[0] != '-'
-     || (newname = castalloc(char, (SIZE_T)strlen(cur_win->fontname)+32)) == NULL)
+     || (newname = castalloc(char, (size_t)strlen(cur_win->fontname)+32)) == NULL)
 	return NULL;
 
     /* copy initial two fields */
@@ -4717,7 +4717,7 @@ static int
 copy_paste(
 TBUFF	**p,
 char	*value,
-SIZE_T	length)
+size_t	length)
 {
 	WINDOW	*wp = row2window(ttrow);
 	BUFFER	*bp = (wp != 0) ? wp->w_bufp : 0;
@@ -4764,7 +4764,7 @@ SIZE_T	length)
 					insertion command, so reinit */
 				tb_init(p, esc_c);
 				pstr = fnc2pstr(f);
-				tb_bappend(p, pstr + 1, (ALLOC_T) *pstr);
+				tb_bappend(p, pstr + 1, (size_t) *pstr);
 			}
 #endif
 		}
@@ -4807,8 +4807,8 @@ x_get_selection(
 		&& ((s = fnc2pstr(&f_insert_no_aindent)) != NULL);
 
 	if (tb_init(&PasteBuf, esc_c)) {
-		if ((do_ins && !tb_bappend(&PasteBuf, s+1, (ALLOC_T)*s))
-		 || !copy_paste(&PasteBuf, (char *)value, (SIZE_T) *length)
+		if ((do_ins && !tb_bappend(&PasteBuf, s+1, (size_t)*s))
+		 || !copy_paste(&PasteBuf, (char *)value, (size_t) *length)
 		 || (do_ins && !tb_append(&PasteBuf, esc_c)))
 			tb_free(&PasteBuf);
 	}
@@ -4822,7 +4822,7 @@ x_paste_selection(Atom selection)
     if (cur_win->have_selection && selection == XA_PRIMARY) {
 	/* local transfer */
 	UCHAR  *data;
-	SIZE_T len_st;
+	size_t len_st;
 	ULONG len_ul;
 
 	Atom	type      = XA_STRING;
@@ -4850,11 +4850,11 @@ x_paste_selection(Atom selection)
 static Boolean
 x_get_selected_text(
     UCHAR **datp,
-    SIZE_T *lenp)
+    size_t *lenp)
 {
     UCHAR	*data = 0;
     UCHAR	*dp = 0;
-    SIZE_T	length;
+    size_t	length;
     KILL	*kp;		/* pointer into kill register */
 
     /* FIXME: Can't select message line */
@@ -4871,7 +4871,7 @@ x_get_selected_text(
 	return False;
 
     while (kp != NULL) {
-	SIZE_T len = KbSize(SEL_KREG,kp);
+	size_t len = KbSize(SEL_KREG,kp);
 	(void)memcpy((char *)dp, (char *)kp->d_chunk, len);
 	kp = kp->d_next;
 	dp += len;
@@ -4885,11 +4885,11 @@ x_get_selected_text(
 static Boolean
 x_get_clipboard_text(
     UCHAR **datp,
-    SIZE_T *lenp)
+    size_t *lenp)
 {
     UCHAR	*data = 0;
     UCHAR	*dp = 0;
-    SIZE_T	length;
+    size_t	length;
     KILL	*kp;		/* pointer into kill register */
 
     for (length = 0, kp = kbs[CLIP_KREG].kbufh; kp; kp = kp->d_next)
@@ -4900,7 +4900,7 @@ x_get_clipboard_text(
 	return False;
 
     while (kp != NULL) {
-	SIZE_T len = KbSize(CLIP_KREG,kp);
+	size_t len = KbSize(CLIP_KREG,kp);
 	(void)memcpy((char *)dp, (char *)kp->d_chunk, len);
 	kp = kp->d_next;
 	dp += len;
@@ -4960,9 +4960,9 @@ x_convert_selection(
 	*type   = XA_STRING;
 	*format = 8;
 	if (*selection == XA_PRIMARY)
-	    return x_get_selected_text((UCHAR **)value, (SIZE_T *)length);
+	    return x_get_selected_text((UCHAR **)value, (size_t *)length);
 	else	/* CLIPBOARD */
-	    return x_get_clipboard_text((UCHAR **)value, (SIZE_T *)length);
+	    return x_get_clipboard_text((UCHAR **)value, (size_t *)length);
     }
 
     return False;
@@ -6304,7 +6304,7 @@ x_key_press(
     int		num;
 
     register int i;
-    register SIZE_T n;
+    register size_t n;
 
     static const struct {
 	KeySym  key;

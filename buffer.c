@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.240 2001/12/21 12:38:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.245 2002/01/11 22:37:21 tom Exp $
  *
  */
 
@@ -865,7 +865,6 @@ make_current(BUFFER *nbp)
 	run_buffer_hook();
     }
 #endif
-    curtabval = tabstop_val(curbp);
 
 #if OPT_TITLE
     set_editor_title();
@@ -1074,7 +1073,7 @@ undispbuff(BUFFER *bp, WINDOW *wp)
     }
 }
 
-#if	!OPT_MAJORMODE
+#if !OPT_MAJORMODE
 /* return true iff c-mode is active for this buffer */
 static int
 cmode_active(BUFFER *bp)
@@ -1090,7 +1089,7 @@ cmode_active(BUFFER *bp)
 int
 tabstop_val(BUFFER *bp)
 {
-#if	OPT_MAJORMODE
+#if OPT_MAJORMODE
     int i = b_val(bp, VAL_TAB);
 #else
     int i = b_val(bp, (cmode_active(bp) ? VAL_C_TAB : VAL_TAB));
@@ -1104,7 +1103,7 @@ tabstop_val(BUFFER *bp)
 int
 shiftwid_val(BUFFER *bp)
 {
-#if	OPT_MAJORMODE
+#if OPT_MAJORMODE
     int i = b_val(bp, VAL_SWIDTH);
 #else
     int i = b_val(bp, (cmode_active(bp) ? VAL_C_SWIDTH : VAL_SWIDTH));
@@ -1114,7 +1113,7 @@ shiftwid_val(BUFFER *bp)
     return i;
 }
 
-#if	!OPT_MAJORMODE
+#if !OPT_MAJORMODE
 int
 has_C_suffix(BUFFER *bp)
 {
@@ -1538,15 +1537,17 @@ togglelistbuffers(int f, int n)
 void
 buffer_flags(char *dst, BUFFER *bp)
 {
+    if (b_is_directory(bp))
+	*dst++ = ('d');
     if (b_is_scratch(bp))
 	*dst++ = ('s');
-    else if (!(bp->b_active))
+    if (!(bp->b_active))
 	*dst++ = ('u');
-    else if (b_is_implied(bp))
+    if (b_is_implied(bp))
 	*dst++ = ('a');
-    else if (b_is_invisible(bp))
+    if (b_is_invisible(bp))
 	*dst++ = ('i');
-    else if (b_is_changed(bp))
+    if (b_is_changed(bp))
 	*dst++ = ('m');
     *dst = EOS;
 }
@@ -1564,6 +1565,7 @@ footnote(int c)
 	int flag;
     } table[] = {
 	{ "automatic",	0 },
+	{ "directory",	0 },
 	{ "invisible",	0 },
 	{ "modified",	0 },
 	{ "scratch",	0 },
@@ -1571,7 +1573,7 @@ footnote(int c)
     };
     /* *INDENT-ON* */
 
-    SIZE_T j, next;
+    size_t j, next;
 
     for (j = next = 0; j < TABLESIZE(table); j++) {
 	if (c != 0) {
@@ -1629,7 +1631,7 @@ makebufflist(int unused GCC_UNUSED, void *dummy GCC_UNUSED)
     /* output the list of buffers */
     for_each_buffer(bp) {
 	/* skip those buffers which don't get updated when changed */
-#if	OPT_UPBUFF
+#if OPT_UPBUFF
 	if (!update_on_chg(bp)) {
 	    continue;
 	}
@@ -1676,12 +1678,11 @@ makebufflist(int unused GCC_UNUSED, void *dummy GCC_UNUSED)
     if (curlp != null_ptr) {
 	(void) bsizes(curbp);
 	(void) lsprintf(temp, "%7ld", curbp->b_bytecount);
-	(void) memcpy(curlp->l_text + 6, temp,
-		      (SIZE_T) strlen(temp));
+	(void) memcpy(curlp->l_text + 6, temp, strlen(temp));
     }
 }
 
-#if	OPT_UPBUFF
+#if OPT_UPBUFF
 /*
  * (Re)compute the contents of the buffer-list.  Use the flag 'updating_list'
  * as a semaphore to avoid adjusting the last used/created indices while
@@ -1729,7 +1730,7 @@ update_scratch(const char *name, UpBuffFunc func)
 int
 listbuffers(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-#if	OPT_UPBUFF
+#if OPT_UPBUFF
     int status;
 
     show_all = f;		/* save this to use in automatic updating */
@@ -1809,11 +1810,7 @@ addline(BUFFER *bp, const char *text, int len)
  * Add a LINE filled with the given text after the specified LINE.
  */
 int
-add_line_at(
-	       BUFFER *bp,
-	       LINEPTR prevp,
-	       const char *text,
-	       int len)
+add_line_at(BUFFER *bp, LINEPTR prevp, const char *text, int len)
 {
     LINEPTR newlp;
     LINEPTR nextp;
@@ -1828,7 +1825,7 @@ add_line_at(
 
     lp = newlp;
     if (ntext > 0)
-	(void) memcpy(lp->l_text, text, (SIZE_T) ntext);
+	(void) memcpy(lp->l_text, text, (size_t) ntext);
 
     /* try to maintain byte/line counts? */
     if (b_is_counted(bp)) {
@@ -1892,7 +1889,7 @@ next_buffer_line(const char *bname)
     tb_init(&lbuf, EOS);
     tb_bappend(&lbuf,
 	       bp->b_dot.l->l_text + bp->b_dot.o,
-	       (SIZE_T) blen);
+	       (size_t) blen);
     tb_append(&lbuf, EOS);
 
     /* move forward, for next time */
@@ -2050,7 +2047,7 @@ bfind(const char *bname, UINT bflag)
     bp->b_fname = NULL;
     ch_fname(bp, "");
     fileuid_invalidate(bp);
-#if	OPT_ENCRYPT
+#if OPT_ENCRYPT
     if (!b_is_temporary(bp)
 	&& cryptkey != 0 && *cryptkey != EOS) {
 	(void) strcpy(bp->b_cryptkey, cryptkey);
@@ -2177,6 +2174,12 @@ bclear(BUFFER *bp)
 #endif
     bp->b_lastdot = nullmark;	/* Invalidate "mark"    */
 
+#if COMPLETE_FILES || COMPLETE_DIRS
+    FreeAndNull(bp->b_index_list);
+    bp->b_index_size = 0;
+    bp->b_index_counter = 0;
+#endif
+
     b_set_counted(bp);
     bp->b_bytecount = 0;
     bp->b_linecount = 0;
@@ -2239,7 +2242,7 @@ chg_buff(BUFFER *bp, USHORT flag)
 	b_set_changed(bp);
     }
     b_set_recentlychanged(bp);
-#if	OPT_UPBUFF
+#if OPT_UPBUFF
     if (update_on_chg(bp))
 	updatelistbuffers();
 #endif
@@ -2277,7 +2280,7 @@ unchg_buff(BUFFER *bp, USHORT flag)
 	    if (wp->w_bufp == bp)
 		wp->w_flag |= flag;
 	}
-#if	OPT_UPBUFF
+#if OPT_UPBUFF
 	if (update_on_chg(bp))
 	    updatelistbuffers();
 #endif
@@ -2456,7 +2459,7 @@ set_editor_title(void)
 #endif
 
 /* For memory-leak testing (only!), releases all buffer storage. */
-#if	NO_LEAKS
+#if NO_LEAKS
 void
 bp_leaks(void)
 {

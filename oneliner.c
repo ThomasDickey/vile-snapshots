@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.95 2001/09/18 09:49:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.96 2002/01/09 00:31:32 tom Exp $
  */
 
 #include	"estruct.h"
@@ -173,9 +173,9 @@ substreg1(int needpats, int use_opts)
 
 		if (gregexp) {
 			FreeIfNeeded(substexp);
-			substexp = castalloc(regexp,(ALLOC_T)(gregexp->size));
+			substexp = castalloc(regexp,(size_t)(gregexp->size));
 			(void)memcpy((char *)substexp, (char *)gregexp,
-							(SIZE_T)gregexp->size);
+							(size_t)gregexp->size);
 		}
 
 		tpat[0] = 0;
@@ -425,7 +425,7 @@ static int
 delins(regexp *exp, char *sourc)
 {
 	register char *src;
-	register ALLOC_T dlength;
+	register size_t dlength;
 	register int c;
 	register int no;
 	int s;
@@ -455,7 +455,7 @@ delins(regexp *exp, char *sourc)
 		len_delins = dlength + 1;
 	}
 
-	(void)memcpy(buf_delins, exp->startp[0], (SIZE_T)dlength);
+	(void)memcpy(buf_delins, exp->startp[0], (size_t)dlength);
 	buf_delins[dlength] = EOS;
 
 	if (ldelete((long) dlength, FALSE) != TRUE) {

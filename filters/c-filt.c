@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.60 2001/04/25 09:22:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.61 2002/01/06 20:37:32 pgf Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  */
@@ -308,7 +308,7 @@ write_literal(char *s, int *literal, int escaped)
 }
 
 static char *
-parse_prepro(char *s)
+parse_prepro(char *s, int *literal)
 {
     char *attr;
     char *ss = s + 1;
@@ -347,11 +347,17 @@ parse_prepro(char *s)
 	while (*tt != 0) {
 	    int ch = *tt++;
 	    if (*ss == '<') {
-		if (ch == '>')
+		*literal = 1;
+		if (ch == '>') {
+		    *literal = 0;
 		    break;
+		}
 	    } else if (*ss == '"') {
-		if (ch == '"' && (tt != ss + 1))
+		*literal = 1;
+		if (ch == '"' && (tt != ss + 1)) {
+		    *literal = 0;
 		    break;
+		}
 	    } else if (isspace(ch)) {
 		break;
 	    } else {
@@ -418,7 +424,7 @@ do_filter(FILE * input GCC_UNUSED)
 		break;
 	    } else if (!escaped && !comment && *s == '#' && firstnonblank(s, line)
 		&& set_symbol_table("cpre")) {
-		s = parse_prepro(s);
+		s = parse_prepro(s, &literal);
 		set_symbol_table(filter_def.filter_name);
 	    } else if (comment && *s) {
 		if ((c_length = has_endofcomment(s)) > 0) {

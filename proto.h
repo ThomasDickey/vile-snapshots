@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.480 2001/12/25 16:31:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.487 2002/01/12 13:49:36 tom Exp $
  *
  */
 
@@ -21,7 +21,7 @@ extern "C" {
 
 extern SIGT catchintr (int ACTUAL_SIG_ARGS);
 extern char *init_state_value(int n);
-extern char *strncpy0 (char *t, const char *f, SIZE_T l);
+extern char *strncpy0 (char *t, const char *f, size_t l);
 extern char *vl_strncpy (char *dest, const char *src, size_t destlen);
 extern int call_cmdfunc (const CMDFUNC *p, int f, int n);
 extern int no_memory (const char *s);
@@ -77,7 +77,8 @@ extern int getgoal (LINEPTR dlp);
 extern int gonmmark (int c);
 extern int lastchar (LINEPTR lp);
 extern int next_column (int c, int col);
-extern int next_sw(int col);
+extern int next_sw (int col);
+extern int next_tabcol (int col);
 extern int nextchar (LINEPTR lp, int off);
 extern int setmark (void);
 extern void swapmark (void);
@@ -101,7 +102,7 @@ extern char *kcod2pstr (int c, char *seq);
 extern const CMDFUNC *engl2fnc (const char *fname);
 extern const CMDFUNC *kcod2fnc (BINDINGS *bs, int c);
 extern int fnc2kcod (const CMDFUNC *);
-extern int kbd_complete (UINT flags, int c, char *buf, UINT *pos, const char *table, SIZE_T size_entry);
+extern int kbd_complete (UINT flags, int c, char *buf, UINT *pos, const char *table, size_t size_entry);
 extern int kbd_engl_stat (const char *prompt, char *buffer, int stated);
 extern int kbd_length (void);
 extern int kcod2escape_seq (int c, char *ptr);
@@ -204,7 +205,7 @@ void update_scratch (const char *name, UpBuffFunc func);
 extern char *lsprintf (char *buf, const char *fmt, ...) VILE_PRINTF(2,3);
 extern int col_limit (WINDOW *wp);
 extern int im_waiting (int flag);
-extern int mk_to_vcol (MARK mark, int expanded, int base, int col);
+extern int mk_to_vcol (MARK mark, int expanded, BUFFER *bp, int col, int adjust);
 extern int nu_width (WINDOW *wp);
 extern int offs2col (WINDOW *wp, LINEPTR lp, C_NUM offset);
 extern int update (int force);
@@ -235,14 +236,6 @@ extern void getscreensize (int *widthp, int *heightp);
 #if defined(SIGWINCH)
 extern SIGT sizesignal (int ACTUAL_SIG_ARGS);
 #endif
-#endif
-
-#ifndef beginDisplay
-extern void beginDisplay (void);
-#endif
-
-#ifndef endofDisplay
-extern void endofDisplay (void);
 #endif
 
 #ifdef WMDLINEWRAP
@@ -451,11 +444,13 @@ extern int mlreply_dir (const char *prompt, TBUFF **buf, char *result);
 extern int mlreply_file (const char *prompt, TBUFF **buf, UINT flag, char *result);
 
 #if COMPLETE_FILES || COMPLETE_DIRS
+extern int fill_directory_buffer(BUFFER *bp, char *path, int dots);
 extern int path_completion (DONE_ARGS);
 extern void init_filec(const char *buffer_name);
 #endif
 
 /* fileio.c */
+extern B_COUNT ffsize (void);
 extern int ffaccess (char *fn, UINT mode);
 extern int ffclose (void);
 extern int ffexists (char *p);
@@ -465,8 +460,9 @@ extern int ffputline (const char *buf, int nbuf, const char *ending);
 extern int ffronly (char *fn);
 extern int ffropen (char *fn);
 extern int ffwopen (char *fn, int forced);
-extern B_COUNT ffsize (void);
-#if	OPT_ENCRYPT
+extern int file_stat (const char *fn, struct stat *sb);
+
+#if OPT_ENCRYPT
 extern void ffdocrypt (int crypting);
 #endif
 
@@ -608,14 +604,14 @@ extern int backhunt (int f, int n);
 #endif
 
 /* itbuff.c */
-ALLOC_T	 itb_length (ITBUFF *p);
-ITBUFF * itb_alloc (ITBUFF **p, ALLOC_T n);
+size_t	 itb_length (ITBUFF *p);
+ITBUFF * itb_alloc (ITBUFF **p, size_t n);
 ITBUFF * itb_append (ITBUFF **p, int c);
-ITBUFF * itb_bappend (ITBUFF **, const char *s, ALLOC_T len);
+ITBUFF * itb_bappend (ITBUFF **, const char *s, size_t len);
 ITBUFF * itb_copy (ITBUFF **d, ITBUFF *s);
 ITBUFF * itb_init (ITBUFF **p, int c);
 ITBUFF * itb_sappend (ITBUFF **, const char *s);
-int	 itb_get (ITBUFF *p, ALLOC_T n);
+int	 itb_get (ITBUFF *p, size_t n);
 int	 itb_last (ITBUFF *p);
 int	 itb_more (ITBUFF *p);
 int	 itb_next (ITBUFF *p);
@@ -627,7 +623,7 @@ void	 itb_stuff (ITBUFF *p, int c);
 
 #if NEEDED
 ITBUFF * itb_insert (ITBUFF **p, int c);
-void	 itb_delete (ITBUFF *p, ALLOC_T cnt);
+void	 itb_delete (ITBUFF *p, size_t cnt);
 void	 itb_unnext (ITBUFF *p);
 void	 itb_unput (ITBUFF *p);
 #endif
@@ -803,7 +799,9 @@ extern char * shorten_path (char *path, int keep_cwd);
 extern const char *parse_pathlist (const char *list, char *result);
 extern int find_in_path_list(const char *path_list, char *path);
 extern int is_directory (char *path);
+extern int is_file (char *path);
 extern int is_internalname (const char *fn);
+extern int is_nonfile (char *path);
 extern int is_pathname (char *path);
 extern int is_scratchname (const char *fn);
 extern int maybe_pathname (char *fn);
@@ -1038,20 +1036,20 @@ extern int cmdlinetag (const char *t);
 #endif /* OPT_TAGS */
 
 /* tbuff.c */
-ALLOC_T	tb_length (TBUFF *p);
-TBUFF *	tb_alloc (TBUFF **p, ALLOC_T n);
+size_t	tb_length (TBUFF *p);
+TBUFF *	tb_alloc (TBUFF **p, size_t n);
 TBUFF *	tb_append (TBUFF **p, int c);
-TBUFF *	tb_bappend (TBUFF **p, const char *s, ALLOC_T len);
+TBUFF *	tb_bappend (TBUFF **p, const char *s, size_t len);
 TBUFF *	tb_copy (TBUFF **d, TBUFF *s);
 TBUFF *	tb_init (TBUFF **p, int c);
-TBUFF *	tb_insert (TBUFF **p, ALLOC_T n, int c);
-TBUFF *	tb_put (TBUFF **p, ALLOC_T n, int c);
+TBUFF *	tb_insert (TBUFF **p, size_t n, int c);
+TBUFF *	tb_put (TBUFF **p, size_t n, int c);
 TBUFF *	tb_sappend (TBUFF **p, const char *s);
 TBUFF *	tb_sappend0 (TBUFF **p, const char *s);
 TBUFF *	tb_scopy (TBUFF **p, const char *s);
 TBUFF *	tb_string (const char *s);
 char *	tb_values (TBUFF *p);
-int	tb_get (TBUFF *p, ALLOC_T n);
+int	tb_get (TBUFF *p, size_t n);
 int	tb_more (TBUFF *p);
 int	tb_next (TBUFF *p);
 int	tb_peek (TBUFF *p);
@@ -1401,7 +1399,7 @@ extern	int	fprintf	(FILE *fp, const char *fmt, ...);
 extern	int	fputs	(const char *s, FILE *fp);
 #endif
 #if MISSING_EXTERN_FREAD
-extern	int	fread	(char *ptr, SIZE_T size, SIZE_T nmemb, FILE *fp);
+extern	int	fread	(char *ptr, size_t size, size_t nmemb, FILE *fp);
 #endif
 #if MISSING_EXTERN_FREE
 extern void	free	(void *ptr);
@@ -1410,7 +1408,7 @@ extern void	free	(void *ptr);
 extern	int	fseek	(FILE *fp, long offset, int whence);
 #endif
 #if MISSING_EXTERN_FWRITE
-extern	int	fwrite	(const char *ptr, SIZE_T size, SIZE_T nmemb, FILE *fp);
+extern	int	fwrite	(const char *ptr, size_t size, size_t nmemb, FILE *fp);
 #endif
 #if MISSING_EXTERN_GETCWD && HAVE_GETCWD
 extern	char *	getcwd (char *buffer, int len);
@@ -1488,7 +1486,7 @@ extern void qsort (void *base, size_t nmemb, size_t size, int (*compar)(char **a
 #endif
 #endif
 #if MISSING_EXTERN_READ
-extern	int	read	(int fd, char *buffer, SIZE_T size);
+extern	int	read	(int fd, char *buffer, size_t size);
 #endif
 #if MISSING_EXTERN_READLINK
 extern	int	readlink (const char *path, char *buffer, size_t size);

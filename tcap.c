@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.140 2000/12/03 21:04:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.141 2002/01/09 00:27:59 tom Exp $
  *
  */
 
@@ -268,7 +268,7 @@ tcapopen(void)
 #endif
 	char *t;
 	char *tv_stype;
-	SIZE_T i;
+	size_t i;
 	int j;
 	static int already_open = 0;
 

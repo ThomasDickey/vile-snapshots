@@ -4,7 +4,7 @@
  * Support functions for "popup-msgs" mode.
  * Written by T.E.Dickey for vile (august 1994).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/msgs.c,v 1.21 2001/08/23 00:37:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/msgs.c,v 1.22 2002/01/09 00:31:32 tom Exp $
  */
 #include "estruct.h"
 
@@ -78,7 +78,7 @@ msg_putc(int c)
 		if (tb_init(&ss, EOS) != 0
 		 && tb_bappend(&ss,
 			(DOT.o > 0) ? DOT.l->l_text : "?",
-			(ALLOC_T)len) != 0
+			(size_t)len) != 0
 		 && tb_append(&ss, EOS) != 0) {
 			TRACE(("msg:%s\n",
 				visible_buff(tb_values(ss),

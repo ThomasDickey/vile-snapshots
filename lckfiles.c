@@ -20,7 +20,7 @@
  *		buffer will be marked readonly.  the .lck file will be
  *		deleted at most of the appropriate times.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/lckfiles.c,v 1.8 1998/04/28 10:17:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/lckfiles.c,v 1.9 2002/01/09 00:27:05 tom Exp $
  *
  */
 
@@ -40,7 +40,7 @@ get_lock_owner(char *lockfile, char *who, int n)
 	FILE *fp;
 	int l;
 	if ( (fp = fopen(lockfile,FOPEN_READ)) != (FILE *)0 ) {
-		l = read(fileno(fp),who,(SIZE_T)(n-1));
+		l = read(fileno(fp),who,(size_t)(n-1));
 		if ( l < 0 ) {
 			(void)strcpy(who,"'Can't read .lck'");
 		} else {

@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.169 2001/12/13 00:30:20 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.170 2002/01/09 00:27:41 tom Exp $
  *
  */
 
@@ -320,7 +320,7 @@ char	*result,
 int	rerun)		/* TRUE/FALSE: spawn, -TRUE: capturecmd */
 {
 	register int	s;
-	register SIZE_T	len;
+	register size_t	len;
 	static	const char bang[] = SHPIPE_LEFT;
 	BUFFER *bp;
 	int	cb	= any_changed_buf(&bp),
@@ -608,7 +608,7 @@ write_kreg_to_pipe(void *writefp)
     kp = kbs[ukb].kbufh;
     while (kp != NULL)
     {
-	fwrite((char *)kp->d_chunk, 1, (SIZE_T)KbSize(ukb,kp), fw);
+	fwrite((char *)kp->d_chunk, 1, (size_t)KbSize(ukb,kp), fw);
 	kp = kp->d_next;
     }
 #if SYS_UNIX && ! TEST_DOS_PIPES
@@ -647,7 +647,7 @@ write_region_to_pipe(void *writefp)
     LINEPTR lp = DOT.l;
 
     while (lp != last) {
-	fwrite((char *)lp->l_text, sizeof(char), (SIZE_T)llength(lp), fw);
+	fwrite((char *)lp->l_text, sizeof(char), (size_t)llength(lp), fw);
 	putc('\n', fw);
 	lp = lforw(lp);
     }

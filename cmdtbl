@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.219 2001/12/22 17:55:20 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.220 2002/01/12 16:49:15 tom Exp $
 #
 #
 
@@ -1143,13 +1143,14 @@ operflip	OPER|REDO|UNDO|GLOBOK|(RANGE)
 	"~"
 	'^A-~'
 	<exchange upper and lowercase on characters in the region>
-# RANGE commented out, since it's not done....
-operglobals	(/*RANGE|*/BANG|EXTRA|DFLALL)
+# FIXME: RANGE is not done perhaps should be...
+operglobals	(BANG|EXTRA|DFLALL)
 	"global"
 	"g"
 	"v!"
 	<perform command on all lines containing the given pattern>
-opervglobals	(/*RANGE|*/BANG|EXTRA|DFLALL)
+# FIXME: RANGE is not done perhaps should be...
+opervglobals	(BANG|EXTRA|DFLALL)
 	"inverse-global"
 	"vglobal"
 	"g!"

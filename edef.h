@@ -3,10 +3,10 @@
  *
  *  based on microemacs code worked originally by Dave G. Conroy,
  *  modified by Steve Wilhite, George Jones, Daniel Lawrence.
-*/
+ */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.292 2001/12/26 23:19:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.298 2002/01/12 17:37:13 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -89,6 +89,7 @@ decl_uninit( int insertmode );		/* are we inserting or overwriting? */
 decl_uninit( int lastkey );		/* last keystoke (tgetc)	*/
 decl_uninit( int lastcmd );		/* last command	(kbd_seq)	*/
 decl_uninit( REGIONSHAPE regionshape );	/* shape of region		*/
+decl_init (REGION *haveregion, 0);
 #if OPT_VIDEO_ATTRS
 decl_uninit( VIDEO_ATTR videoattribute );
 					/* attribute to set in call to
@@ -153,7 +154,6 @@ decl_uninit( char *position_format );	/* position formatting string */
 #endif
 decl_init( int	eolexist, TRUE );	/* does clear to EOL exist	*/
 decl_uninit( int revexist );		/* does reverse video exist?	*/
-decl_uninit( int curtabval );		/* current tab width		*/
 
 #ifdef realdef
 	MARK	nullmark = { NULL, 0 };
@@ -262,6 +262,8 @@ decl_init( int cmd_count, 0 );		/* 1..n for procedure execution	*/
 decl_init( int tracemacros, FALSE );	/* macro tracing flag		*/
 #endif
 
+decl_init ( int im_displaying, 0 );	/* flag set during screen updates */
+
 #if OPT_WORKING
 decl_uninit( B_COUNT max_working );	/* 100% value for slowreadf	*/
 decl_uninit( B_COUNT cur_working );	/* current-value for slowreadf	*/
@@ -294,16 +296,19 @@ decl_uninit( int ctrans[NCOLORS] );	/* color translation table	*/
 decl_uninit( int kbd_expand );		/* -1 kbd_putc shows tab as space */
 					/* +1 kbd_putc shows cr as ^M */
 
+/*--------------------------------------------------------------------------*/
 
-decl_uninit( FILE *ffp );		/* File pointer, all functions. */
+decl_init( FFType ffstatus, file_is_closed );
+decl_init( FILE *ffp, 0 );		/* File pointer, all functions. */
+decl_uninit( BUFFER *ffbuffer );	/* buffer to read from */
+decl_uninit( LINE *ffcursor );		/* ...and current line read */
 decl_uninit( char *fflinebuf );		/* current buffer for file reads */
-decl_uninit( ALLOC_T fflinelen );	/* fflinebuf length */
 decl_uninit( int count_fline );		/* # of lines read with 'ffgetline()' */
+decl_uninit( int fileeof );		/* found eof */
+decl_uninit( size_t fflinelen );	/* fflinebuf length */
 
 /*--------------------------------------------------------------------------*/
 
-decl_uninit( int fileispipe );
-decl_uninit( int fileeof );		/* found eof */
 decl_init ( L_NUM help_at, -1 );	/* position in help-file */
 decl_uninit( char *helpfile );
 decl_init( char vl_pathsep, PATHCHR );	/* $pathlist-separator */

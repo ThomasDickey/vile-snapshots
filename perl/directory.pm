@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/directory.pm,v 1.6 2000/01/07 01:24:45 bod Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/directory.pm,v 1.7 2002/01/10 00:36:45 tom Exp $
 # (see dir.doc)
 
 package directory;
@@ -11,6 +11,7 @@ require 'mime.pl' unless $^O eq 'MSWin32';
 
 sub dir {
     my ($dir) = @_;
+    my $width = Vile::get('$pagewid');
     my $len = 30;
     my ($cb, $cwd, $sub, @subdirs, @subfils, $i, $last, $spaces);
     my $work = Vile::working(0);
@@ -38,6 +39,12 @@ sub dir {
     );
 
     $dir = Vile::mlreply_dir "Directory? ", "." if (! length($dir));
+
+    if ($width >= 80) {
+	    $width = $width - 57;
+    } else {
+	    $width = 14;
+    }
 
     do { print "[Aborted]"; Vile::working($work); return; } if (! defined $dir);
     $dir = scalar(Vile->get("&path full $dir"));
@@ -95,7 +102,7 @@ sub dir {
         $cb->dot($i+1+5, 0);
         if (defined ($subdirs[$i])) {
             my ($sub, $ind, $mod, $uid, $siz) = @{$subdirs[$i]};
-            $substr = substr($sub, 0, 13);
+            $substr = substr($sub, 0, 14);
             $str = sprintf(" % 4o %8s %s", $mod, $uid, $substr);
             print $cb $str, " "x($len-length($str)), "| ";
             $cb->setregion($i+1+5, 0, $i+1+5, length($str));
@@ -108,7 +115,7 @@ sub dir {
         $cb->dot($i+1+5, '$$');
         if (defined ($subfils[$i])) {
             my ($sub, $ind, $mod, $uid, $siz) = @{$subfils[$i]};
-            $substr = substr($sub, 0, 14);
+            $substr = substr($sub, 0, $width);
             $siz = substr($siz, 0, 10);
             $str = sprintf("% 4o %8s %10s %s", $mod, $uid, $siz, $substr);
             print $cb $str, "\n";

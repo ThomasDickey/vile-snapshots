@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.15 2001/12/30 20:30:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.16 2002/01/09 00:23:54 tom Exp $
  */
 
 #include	"estruct.h"
@@ -98,7 +98,7 @@ static int can_color = FALSE;
 static void
 initialize(void)
 {
-    SIZE_T i;
+    size_t i;
     int j;
     static int already_open = 0;
 

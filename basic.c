@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.113 2001/09/18 09:49:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.116 2002/01/09 22:58:42 tom Exp $
  *
  */
 
@@ -14,40 +14,50 @@
 
 #define	RegexpLen(exp) ((exp->mlen) ? (int)(exp->mlen) : 1)
 
-static	int	getnmmarkname ( int *cp );
-static	void	skipblanksb (void);
-static	void	skipblanksf (void);
-
 /* utility routine for 'forwpage()' and 'backpage()' */
 static int
 full_pages(int f, int n)
 {
-	if (f == FALSE) {
-		n = curwp->w_ntrows - 2;	/* Default scroll.	*/
-		if (n <= 0)			/* Don't blow up if the */
-			n = 1;			/* window is tiny.	*/
-	}
-#if	OPT_CVMVAS
-	else if (n > 0)				/* Convert from pages	*/
-		n *= curwp->w_ntrows;		/* to lines.		*/
+    if (f == FALSE) {
+	n = curwp->w_ntrows - 2;	/* Default scroll.      */
+	if (n <= 0)		/* Don't blow up if the */
+	    n = 1;		/* window is tiny.  */
+    }
+#if OPT_CVMVAS
+    else if (n > 0)		/* Convert from pages */
+	n *= curwp->w_ntrows;	/* to lines.  */
 #endif
-	return n;
+    return n;
 }
 
 /* utility routine for 'forwhpage()' and 'backhpage()' */
 static int
 half_pages(int f, int n)
 {
-	if (f == FALSE) {
-		n = curwp->w_ntrows / 2;	/* Default scroll.	*/
-		if (n <= 0)			/* Forget the overlap	*/
-			n = 1;			/* if tiny window.	*/
-	}
-#if	OPT_CVMVAS
-	else if (n > 0)				/* Convert from pages	*/
-		n *= curwp->w_ntrows/2;		/* to lines.		*/
+    if (f == FALSE) {
+	n = curwp->w_ntrows / 2;	/* Default scroll.  */
+	if (n <= 0)		/* Forget the overlap */
+	    n = 1;		/* if tiny window.  */
+    }
+#if OPT_CVMVAS
+    else if (n > 0)		/* Convert from pages */
+	n *= curwp->w_ntrows / 2;	/* to lines.  */
 #endif
-	return n;
+    return n;
+}
+
+static void
+skipblanksf(void)
+{
+    while (lforw(DOT.l) != buf_head(curbp) && is_empty_line(DOT))
+	DOT.l = lforw(DOT.l);
+}
+
+static void
+skipblanksb(void)
+{
+    while (lback(DOT.l) != buf_head(curbp) && is_empty_line(DOT))
+	DOT.l = lback(DOT.l);
 }
 
 /*
@@ -59,8 +69,8 @@ half_pages(int f, int n)
 int
 gotobol(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	DOT.o  = w_left_margin(curwp);
-	return mvleftwind(TRUE, w_val(curwp,WVAL_SIDEWAYS));
+    DOT.o = w_left_margin(curwp);
+    return mvleftwind(TRUE, w_val(curwp, WVAL_SIDEWAYS));
 }
 
 /*
@@ -72,22 +82,23 @@ gotobol(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 backchar(int f, int n)
 {
-	register LINE	*lp;
+    LINE *lp;
 
-	if (f == FALSE) n = 1;
-	if (n < 0)
-		return (forwchar(f, -n));
-	while (n--) {
-		if (DOT.o == w_left_margin(curwp)) {
-			if ((lp=lback(DOT.l)) == buf_head(curbp))
-				return (FALSE);
-			DOT.l  = lp;
-			DOT.o  = llength(lp);
-			curwp->w_flag |= WFMOVE;
-		} else
-			DOT.o--;
-	}
-	return (TRUE);
+    if (f == FALSE)
+	n = 1;
+    if (n < 0)
+	return (forwchar(f, -n));
+    while (n--) {
+	if (DOT.o == w_left_margin(curwp)) {
+	    if ((lp = lback(DOT.l)) == buf_head(curbp))
+		return (FALSE);
+	    DOT.l = lp;
+	    DOT.o = llength(lp);
+	    curwp->w_flag |= WFMOVE;
+	} else
+	    DOT.o--;
+    }
+    return (TRUE);
 }
 
 /*
@@ -99,16 +110,17 @@ int
 backchar_to_bol(int f, int n)
 {
 
-	if (f == FALSE) n = 1;
-	if (n < 0)
-		return forwchar_to_eol(f, -n);
-	while (n--) {
-		if (DOT.o == w_left_margin(curwp))
-			return doingopcmd;
-		else
-			DOT.o--;
-	}
-	return TRUE;
+    if (f == FALSE)
+	n = 1;
+    if (n < 0)
+	return forwchar_to_eol(f, -n);
+    while (n--) {
+	if (DOT.o == w_left_margin(curwp))
+	    return doingopcmd;
+	else
+	    DOT.o--;
+    }
+    return TRUE;
 }
 
 /*
@@ -119,17 +131,17 @@ backchar_to_bol(int f, int n)
 int
 gotoeol(int f, int n)
 {
-	if (f == TRUE) {
-		if (n > 0)
-			--n;
-		else if (n < 0)
-			++n;
-		if (forwline(f,n) != TRUE)
-			return FALSE;
-	}
-	DOT.o  = llength(DOT.l);
-	curgoal = VL_HUGE;
-	return (TRUE);
+    if (f == TRUE) {
+	if (n > 0)
+	    --n;
+	else if (n < 0)
+	    ++n;
+	if (forwline(f, n) != TRUE)
+	    return FALSE;
+    }
+    DOT.o = llength(DOT.l);
+    curgoal = VL_HUGE;
+    return (TRUE);
 }
 
 /*
@@ -141,28 +153,28 @@ gotoeol(int f, int n)
 int
 forwchar(int f, int n)
 {
-	if (f == FALSE) n = 1;
-	if (n < 0)
-		return (backchar(f, -n));
-	while (n--) {
-		/* if an explicit arg was given, allow us to land
-			on the newline, else skip it */
-		if (is_at_end_of_line(DOT) ||
-				(f == FALSE && !insertmode &&
-				llength(DOT.l) && DOT.o == llength(DOT.l) - 1)
-								) {
-			if (is_header_line(DOT, curbp) ||
-					is_last_line(DOT,curbp))
-				return (FALSE);
-			DOT.l  = lforw(DOT.l);
-			DOT.o  = w_left_margin(curwp);
-			curwp->w_flag |= WFMOVE;
-		} else
-			DOT.o++;
-	}
-	return (TRUE);
+    if (f == FALSE)
+	n = 1;
+    if (n < 0)
+	return (backchar(f, -n));
+    while (n--) {
+	/* if an explicit arg was given, allow us to land
+	   on the newline, else skip it */
+	if (is_at_end_of_line(DOT) ||
+	    (f == FALSE && !insertmode &&
+	     llength(DOT.l) && DOT.o == llength(DOT.l) - 1)
+	    ) {
+	    if (is_header_line(DOT, curbp) ||
+		is_last_line(DOT, curbp))
+		return (FALSE);
+	    DOT.l = lforw(DOT.l);
+	    DOT.o = w_left_margin(curwp);
+	    curwp->w_flag |= WFMOVE;
+	} else
+	    DOT.o++;
+    }
+    return (TRUE);
 }
-
 
 /*
  * Implements the vi "l" command.
@@ -176,26 +188,29 @@ forwchar(int f, int n)
 int
 forwchar_to_eol(int f, int n)
 {
-	int nwas = n;
-	int lim;
-	if (f == FALSE) n = 1;
-	if (n < 0) return backchar_to_bol(f, -n);
-	if (n == 0) return TRUE;
-
-	/* normally, we're confined to the text on the line itself.  if
-	  we're doing an opcmd, then we're allowed to move to the newline
-	  as well, to take care of the internal cases:  's', 'x', and '~'. */
-	if (doingopcmd || insertmode)
-		lim = llength(DOT.l);
-	else
-		lim = llength(DOT.l) - 1;
-	do {
-		if (DOT.o >= lim)
-			return n != nwas; /* return ok if we moved at all */
-		else
-			DOT.o++;
-	} while (--n != 0);
+    int nwas = n;
+    int lim;
+    if (f == FALSE)
+	n = 1;
+    if (n < 0)
+	return backchar_to_bol(f, -n);
+    if (n == 0)
 	return TRUE;
+
+    /* normally, we're confined to the text on the line itself.  if
+       we're doing an opcmd, then we're allowed to move to the newline
+       as well, to take care of the internal cases:  's', 'x', and '~'. */
+    if (doingopcmd || insertmode)
+	lim = llength(DOT.l);
+    else
+	lim = llength(DOT.l) - 1;
+    do {
+	if (DOT.o >= lim)
+	    return n != nwas;	/* return ok if we moved at all */
+	else
+	    DOT.o++;
+    } while (--n != 0);
+    return TRUE;
 }
 
 /*
@@ -207,35 +222,36 @@ forwchar_to_eol(int f, int n)
 int
 gotoline(int f, int n)
 {
-	register int status;	/* status return */
+    int status;	/* status return */
 
-	MARK odot;
+    MARK odot;
 
-	if (f == FALSE) {
-		return(gotoeob(f,n));
-	}
+    if (f == FALSE) {
+	return (gotoeob(f, n));
+    }
 
-	if (n == 0)		/* if a bogus argument...then leave */
-		return(FALSE);
+    if (n == 0)			/* if a bogus argument...then leave */
+	return (FALSE);
 
-	odot = DOT;
+    odot = DOT;
 
-	DOT.o  = w_left_margin(curwp);
-	if (n < 0) {
-		DOT.l  = lback(buf_head(curbp));
-		status = backline(f, -n - 1 );
-	} else {
-		DOT.l  = lforw(buf_head(curbp));
-		status = forwline(f, n-1);
-	}
-	if (status != TRUE) {
-		DOT = odot;
-		return status;
-	}
-	(void)firstnonwhite(FALSE,1);
-	curwp->w_flag |= WFMOVE;
-	return TRUE;
+    DOT.o = w_left_margin(curwp);
+    if (n < 0) {
+	DOT.l = lback(buf_head(curbp));
+	status = backline(f, -n - 1);
+    } else {
+	DOT.l = lforw(buf_head(curbp));
+	status = forwline(f, n - 1);
+    }
+    if (status != TRUE) {
+	DOT = odot;
+	return status;
+    }
+    (void) firstnonwhite(FALSE, 1);
+    curwp->w_flag |= WFMOVE;
+    return TRUE;
 }
+
 /*
  * Goto the beginning of the buffer. Massive adjustment of dot. This is
  * considered to be hard motion; it really isn't if the original value of dot
@@ -245,10 +261,10 @@ gotoline(int f, int n)
 int
 gotobob(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	DOT.l  = lforw(buf_head(curbp));
-	DOT.o  = w_left_margin(curwp);
-	curwp->w_flag |= WFMOVE;
-	return (TRUE);
+    DOT.l = lforw(buf_head(curbp));
+    DOT.o = w_left_margin(curwp);
+    curwp->w_flag |= WFMOVE;
+    return (TRUE);
 }
 
 /*
@@ -258,9 +274,9 @@ gotobob(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 gotoeob(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	DOT.l  = lback(buf_head(curbp));
-	curwp->w_flag |= WFMOVE;
-	return firstnonwhite(FALSE,1);
+    DOT.l = lback(buf_head(curbp));
+    curwp->w_flag |= WFMOVE;
+    return firstnonwhite(FALSE, 1);
 }
 
 /*
@@ -271,21 +287,21 @@ gotoeob(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 gotobos(int f, int n)
 {
-	int	nn = curwp->w_ntrows;
-	if (!f || n <= 0)
-		n = 1;
+    int nn = curwp->w_ntrows;
+    if (!f || n <= 0)
+	n = 1;
 
-	DOT.l = curwp->w_line.l;
-	while (--n != 0) {
-		if (is_last_line(DOT,curbp))
-			break;
-		nn -= line_height(curwp, DOT.l);
-		DOT.l = lforw(DOT.l);
-	}
+    DOT.l = curwp->w_line.l;
+    while (--n != 0) {
+	if (is_last_line(DOT, curbp))
+	    break;
+	nn -= line_height(curwp, DOT.l);
+	DOT.l = lforw(DOT.l);
+    }
 
-	if (nn <= 0)		/* we went past the end of window */
-		curwp->w_flag |= WFMOVE;
-	return firstnonwhite(FALSE,1);
+    if (nn <= 0)		/* we went past the end of window */
+	curwp->w_flag |= WFMOVE;
+    return firstnonwhite(FALSE, 1);
 }
 
 /*
@@ -297,26 +313,26 @@ gotobos(int f, int n)
 int
 gotomos(int f GCC_UNUSED, int n)
 {
-	register LINEPTR lp, head;
-	int	half = (curwp->w_ntrows+1) / 2;
+    LINEPTR lp, head;
+    int half = (curwp->w_ntrows + 1) / 2;
 
-	head = buf_head(curbp);
+    head = buf_head(curbp);
+    for (n = 0, lp = curwp->w_line.l; lp != head; lp = lforw(lp)) {
+	if (n < half)
+	    DOT.l = lp;
+	if ((n += line_height(curwp, lp)) >= curwp->w_ntrows)
+	    break;
+    }
+    if (n < curwp->w_ntrows) {	/* then we hit eof before eos */
+	half = (n + 1) / 2;	/* go back up */
 	for (n = 0, lp = curwp->w_line.l; lp != head; lp = lforw(lp)) {
-		if (n < half)
-			DOT.l = lp;
-		if ((n += line_height(curwp, lp)) >= curwp->w_ntrows)
-			break;
+	    DOT.l = lp;
+	    if ((n += line_height(curwp, lp)) >= half)
+		break;
 	}
-	if (n < curwp->w_ntrows) {	/* then we hit eof before eos */
-		half = (n+1) / 2;	/* go back up */
-		for (n = 0, lp = curwp->w_line.l; lp != head; lp = lforw(lp)) {
-			DOT.l = lp;
-			if ((n += line_height(curwp, lp)) >= half)
-				break;
-		}
-	}
+    }
 
-	return firstnonwhite(FALSE,1);
+    return firstnonwhite(FALSE, 1);
 }
 
 /*
@@ -327,33 +343,33 @@ gotomos(int f GCC_UNUSED, int n)
 int
 gotoeos(int f, int n)
 {
-	int nn;
-	if (f == FALSE || n <= 0)
-		n = 1;
+    int nn;
+    if (f == FALSE || n <= 0)
+	n = 1;
 
-	/* first get to the end */
-	DOT.l = curwp->w_line.l;
-	nn = curwp->w_ntrows;
-	while ((nn -= line_height(curwp,DOT.l)) > 0) {
-		if (is_last_line(DOT,curbp))
-			break;
-		DOT.l = lforw(DOT.l);
-	}
+    /* first get to the end */
+    DOT.l = curwp->w_line.l;
+    nn = curwp->w_ntrows;
+    while ((nn -= line_height(curwp, DOT.l)) > 0) {
+	if (is_last_line(DOT, curbp))
+	    break;
+	DOT.l = lforw(DOT.l);
+    }
 #ifdef WMDLINEWRAP
-	/* adjust if we pointed to a line-fragment */
-	if (w_val(curwp,WMDLINEWRAP)
-	 && nn < 0
-	 && DOT.l != curwp->w_line.l)
-		DOT.l = lback(DOT.l);
+    /* adjust if we pointed to a line-fragment */
+    if (w_val(curwp, WMDLINEWRAP)
+	&& nn < 0
+	&& DOT.l != curwp->w_line.l)
+	DOT.l = lback(DOT.l);
 #endif
-	/* and then go back up */
-	/* (we're either at eos or eof) */
-	while (--n != 0) {
-		if (sameline(DOT, curwp->w_line))
-			break;
-		DOT.l = lback(DOT.l);
-	}
-	return firstnonwhite(FALSE,1);
+    /* and then go back up */
+    /* (we're either at eos or eof) */
+    while (--n != 0) {
+	if (sameline(DOT, curwp->w_line))
+	    break;
+	DOT.l = lback(DOT.l);
+    }
+    return firstnonwhite(FALSE, 1);
 }
 
 /*
@@ -366,31 +382,34 @@ gotoeos(int f, int n)
 int
 forwline(int f, int n)
 {
-	register LINE	*dlp;
+    LINE *dlp;
 
-	if (f == FALSE) n = 1;
-	if (n < 0) return (backline(f, -n));
-	if (n == 0) return TRUE;
-
-	/* set the "goal" column if necessary */
-	if (curgoal < 0)
-		curgoal = getccol(FALSE);
-
-	/* loop downwards */
-	dlp = DOT.l;
-	do {
-		register LINE *nlp = lforw(dlp);
-		if (nlp == buf_head(curbp)) {
-			return FALSE;
-		}
-		dlp = nlp;
-	} while (--n != 0);
-
-	/* set dot */
-	DOT.l  = dlp;
-	DOT.o  = getgoal(dlp);
-	curwp->w_flag |= WFMOVE;
+    if (f == FALSE)
+	n = 1;
+    if (n < 0)
+	return (backline(f, -n));
+    if (n == 0)
 	return TRUE;
+
+    /* set the "goal" column if necessary */
+    if (curgoal < 0)
+	curgoal = getccol(FALSE);
+
+    /* loop downwards */
+    dlp = DOT.l;
+    do {
+	LINE *nlp = lforw(dlp);
+	if (nlp == buf_head(curbp)) {
+	    return FALSE;
+	}
+	dlp = nlp;
+    } while (--n != 0);
+
+    /* set dot */
+    DOT.l = dlp;
+    DOT.o = getgoal(dlp);
+    curwp->w_flag |= WFMOVE;
+    return TRUE;
 }
 /*
  * Implements the vi "^" command.
@@ -402,14 +421,14 @@ forwline(int f, int n)
 int
 firstnonwhite(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	DOT.o  = firstchar(DOT.l);
-	if (DOT.o < w_left_margin(curwp)) {
-		if (llength(DOT.l) <= w_left_margin(curwp))
-			DOT.o = w_left_margin(curwp);
-		else
-			DOT.o = llength(DOT.l) - 1;
-	}
-	return TRUE;
+    DOT.o = firstchar(DOT.l);
+    if (DOT.o < w_left_margin(curwp)) {
+	if (llength(DOT.l) <= w_left_margin(curwp))
+	    DOT.o = w_left_margin(curwp);
+	else
+	    DOT.o = llength(DOT.l) - 1;
+    }
+    return TRUE;
 }
 
 /* ARGSUSED */
@@ -417,10 +436,10 @@ firstnonwhite(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 lastnonwhite(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	DOT.o  = lastchar(DOT.l);
-	if (DOT.o < w_left_margin(curwp))
-		DOT.o = w_left_margin(curwp);
-	return TRUE;
+    DOT.o = lastchar(DOT.l);
+    if (DOT.o < w_left_margin(curwp))
+	DOT.o = w_left_margin(curwp);
+    return TRUE;
 }
 #endif
 
@@ -429,12 +448,12 @@ lastnonwhite(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 firstchar(LINE *lp)
 {
-	int off = w_left_margin(curwp);
-	while ( off < llength(lp) && isBlank(lgetc(lp, off)) )
-		off++;
-	if (off == llength(lp))
-		return -1;
-	return off;
+    int off = w_left_margin(curwp);
+    while (off < llength(lp) && isBlank(lgetc(lp, off)))
+	off++;
+    if (off == llength(lp))
+	return -1;
+    return off;
 }
 
 /* return the offset of the next non-white character on the line,
@@ -442,12 +461,12 @@ firstchar(LINE *lp)
 int
 nextchar(LINE *lp, int off)
 {
-	while (off < llength(lp)) {
-		if (!isSpace(lgetc(lp,off)))
-			return off;
-		off++;
-	}
-	return -1;
+    while (off < llength(lp)) {
+	if (!isSpace(lgetc(lp, off)))
+	    return off;
+	off++;
+    }
+    return -1;
 }
 
 /* return the offset of the last non-white character on the line
@@ -455,10 +474,10 @@ nextchar(LINE *lp, int off)
 int
 lastchar(LINE *lp)
 {
-	int off = llength(lp)-1;
-	while ( off >= 0 && isSpace(lgetc(lp, off)) )
-		off--;
-	return off;
+    int off = llength(lp) - 1;
+    while (off >= 0 && isSpace(lgetc(lp, off)))
+	off--;
+    return off;
 }
 
 /*
@@ -469,12 +488,13 @@ lastchar(LINE *lp)
 int
 forwbline(int f, int n)
 {
-	int s;
+    int s;
 
-	if (f == FALSE) n = 1;
-	if ((s = forwline(f,n)) != TRUE)
-		return (s);
-	return firstnonwhite(FALSE,1);
+    if (f == FALSE)
+	n = 1;
+    if ((s = forwline(f, n)) != TRUE)
+	return (s);
+    return firstnonwhite(FALSE, 1);
 }
 
 /*
@@ -485,12 +505,13 @@ forwbline(int f, int n)
 int
 backbline(int f, int n)
 {
-	int s;
+    int s;
 
-	if (f == FALSE) n = 1;
-	if ((s = backline(f,n)) != TRUE)
-		return (s);
-	return firstnonwhite(FALSE,1);
+    if (f == FALSE)
+	n = 1;
+    if ((s = backline(f, n)) != TRUE)
+	return (s);
+    return firstnonwhite(FALSE, 1);
 }
 
 /*
@@ -501,30 +522,31 @@ backbline(int f, int n)
 int
 backline(int f, int n)
 {
-	register LINE	*dlp;
+    LINE *dlp;
 
-	if (f == FALSE) n = 1;
-	if (n < 0)
-		return (forwline(f, -n));
+    if (f == FALSE)
+	n = 1;
+    if (n < 0)
+	return (forwline(f, -n));
 
-	/* can't move up? */
-	if (is_first_line(DOT, curbp))
-		return(FALSE);
+    /* can't move up? */
+    if (is_first_line(DOT, curbp))
+	return (FALSE);
 
-	/* set the "goal" column if necessary */
-	if (curgoal < 0)
-		curgoal = getccol(FALSE);
+    /* set the "goal" column if necessary */
+    if (curgoal < 0)
+	curgoal = getccol(FALSE);
 
-	/* loop upwards */
-	dlp = DOT.l;
-	while (n-- && lback(dlp) != buf_head(curbp))
-		dlp = lback(dlp);
+    /* loop upwards */
+    dlp = DOT.l;
+    while (n-- && lback(dlp) != buf_head(curbp))
+	dlp = lback(dlp);
 
-	/* set dot */
-	DOT.l  = dlp;
-	DOT.o  = getgoal(dlp);
-	curwp->w_flag |= WFMOVE;
-	return (TRUE);
+    /* set dot */
+    DOT.l = dlp;
+    DOT.o = getgoal(dlp);
+    curwp->w_flag |= WFMOVE;
+    return (TRUE);
 }
 
 /*
@@ -533,49 +555,50 @@ backline(int f, int n)
 int
 gotobop(int f, int n)
 {
-	MARK odot;
-	int was_on_empty;
-	int fc;
+    MARK odot;
+    int was_on_empty;
+    int fc;
 
-	if (!f) n = 1;
+    if (!f)
+	n = 1;
 
-	was_on_empty = is_empty_line(DOT);
-	odot = DOT;
+    was_on_empty = is_empty_line(DOT);
+    odot = DOT;
 
+    fc = firstchar(DOT.l);
+    if (doingopcmd &&
+	((fc >= 0 && DOT.o <= fc) || fc < 0) &&
+	!is_first_line(DOT, curbp)) {
+	backchar(TRUE, DOT.o + 1);
+	pre_op_dot = DOT;
+    }
+    while (n) {
+	if (findpat(TRUE, 1, b_val_rexp(curbp, VAL_PARAGRAPHS)->reg,
+		    REVERSE) != TRUE) {
+	    (void) gotobob(f, n);
+	} else if (is_empty_line(DOT)) {
+	    /* special case -- if we found an empty line,
+	       and it's adjacent to where we started,
+	       skip all adjacent empty lines, and try again */
+	    if ((was_on_empty && lforw(DOT.l) == odot.l) ||
+		(n > 0 && llength(lforw(DOT.l)) == 0)) {
+		/* then we haven't really found what we
+		   wanted.  keep going */
+		skipblanksb();
+		continue;
+	    }
+	}
+	n--;
+    }
+    if (doingopcmd) {
 	fc = firstchar(DOT.l);
-	if (doingopcmd &&
-		((fc >= 0 && DOT.o <= fc) || fc < 0) &&
-		!is_first_line(DOT,curbp)) {
-		backchar(TRUE,DOT.o+1);
-		pre_op_dot = DOT;
+	if (!sameline(DOT, odot) &&
+	    (pre_op_dot.o > lastchar(pre_op_dot.l)) &&
+	    ((fc >= 0 && DOT.o <= fc) || fc < 0)) {
+	    regionshape = FULLLINE;
 	}
-	while (n) {
-		if (findpat(TRUE, 1, b_val_rexp(curbp,VAL_PARAGRAPHS)->reg,
-							REVERSE) != TRUE) {
-			(void)gotobob(f,n);
-		} else if (is_empty_line(DOT)) {
-			/* special case -- if we found an empty line,
-				and it's adjacent to where we started,
-				skip all adjacent empty lines, and try again */
-			if ( (was_on_empty && lforw(DOT.l) == odot.l) ||
-				(n > 0 && llength(lforw(DOT.l)) == 0) ) {
-				/* then we haven't really found what we
-					wanted.  keep going */
-				skipblanksb();
-				continue;
-			}
-		}
-		n--;
-	}
-	if (doingopcmd) {
-		fc = firstchar(DOT.l);
-		if (!sameline(DOT,odot) &&
-			(pre_op_dot.o > lastchar(pre_op_dot.l)) &&
-			((fc >= 0 && DOT.o <= fc) || fc < 0)) {
-			regionshape = FULLLINE;
-		}
-	}
-	return TRUE;
+    }
+    return TRUE;
 }
 
 /*
@@ -584,78 +607,65 @@ gotobop(int f, int n)
 int
 gotoeop(int f, int n)
 {
-	MARK odot;
-	int was_at_bol;
-	int was_on_empty;
-	int fc;
+    MARK odot;
+    int was_at_bol;
+    int was_on_empty;
+    int fc;
 
-	if (!f) n = 1;
+    if (!f)
+	n = 1;
 
+    fc = firstchar(DOT.l);
+    was_on_empty = is_empty_line(DOT);
+    was_at_bol = ((fc >= 0 && DOT.o <= fc) || fc < 0);
+    odot = DOT;
+
+    while (n) {
+	if (findpat(TRUE, 1, b_val_rexp(curbp, VAL_PARAGRAPHS)->reg,
+		    FORWARD) != TRUE) {
+	    DOT = curbp->b_line;
+	} else if (is_empty_line(DOT)) {
+	    /* special case -- if we found an empty line. */
+	    /* either as the very next line, or at the end of
+	       our search */
+	    if ((was_on_empty && lback(DOT.l) == odot.l) ||
+		(n > 0 && llength(lback(DOT.l)) == 0)) {
+		/* then we haven't really found what we
+		   wanted.  keep going */
+		skipblanksf();
+		continue;
+	    }
+	}
+	n--;
+    }
+    if (doingopcmd) {
+	/* if we're now at the beginning of a line and we can back up,
+	   do so to avoid eating the newline and leading whitespace */
 	fc = firstchar(DOT.l);
-	was_on_empty = is_empty_line(DOT);
-	was_at_bol = ((fc >= 0 && DOT.o <= fc) || fc < 0);
-	odot = DOT;
-
-	while (n) {
-		if (findpat(TRUE, 1, b_val_rexp(curbp,VAL_PARAGRAPHS)->reg,
-						FORWARD) != TRUE) {
-			DOT = curbp->b_line;
-		} else if (is_empty_line(DOT)) {
-			/* special case -- if we found an empty line. */
-			/* either as the very next line, or at the end of
-				our search */
-			if ( (was_on_empty && lback(DOT.l) == odot.l) ||
-				(n > 0 && llength(lback(DOT.l)) == 0) ) {
-				/* then we haven't really found what we
-					wanted.  keep going */
-				skipblanksf();
-				continue;
-			}
-		}
-		n--;
+	if (((fc >= 0 && DOT.o <= fc) || fc < 0) &&
+	    !is_first_line(DOT, curbp) &&
+	    !sameline(DOT, odot)) {
+	    backchar(TRUE, DOT.o + 1);
 	}
-	if (doingopcmd) {
-		/* if we're now at the beginning of a line and we can back up,
-		  do so to avoid eating the newline and leading whitespace */
-		fc = firstchar(DOT.l);
-		if (((fc >= 0 && DOT.o <= fc) || fc < 0) &&
-			!is_first_line(DOT,curbp) &&
-			!sameline(DOT,odot) ) {
-			backchar(TRUE,DOT.o+1);
-		}
-		/* if we started at the start of line, eat the whole line */
-		if (!sameline(DOT,odot) && was_at_bol)
-			regionshape = FULLLINE;
-	}
-	return TRUE;
-}
-
-static void
-skipblanksf(void)
-{
-	while (lforw(DOT.l) != buf_head(curbp) && is_empty_line(DOT))
-		DOT.l = lforw(DOT.l);
-}
-
-static void
-skipblanksb(void)
-{
-	while (lback(DOT.l) != buf_head(curbp) && is_empty_line(DOT))
-		DOT.l = lback(DOT.l);
+	/* if we started at the start of line, eat the whole line */
+	if (!sameline(DOT, odot) && was_at_bol)
+	    regionshape = FULLLINE;
+    }
+    return TRUE;
 }
 
 #if OPT_STUTTER_SEC_CMD
 getstutter(void)
 {
-	int thiskey;
-	if (!clexec) {
-		thiskey = lastkey;
-		kbd_seq();
-		if (thiskey != lastkey) {
-			return FALSE;
-		}
+    int thiskey;
+    if (!clexec) {
+	thiskey = lastkey;
+	kbd_seq();
+	if (thiskey != lastkey) {
+	    return FALSE;
 	}
-	return TRUE;
+    }
+    return TRUE;
 }
 #endif
 
@@ -667,14 +677,14 @@ int
 gotobosec(int f, int n)
 {
 #if OPT_STUTTER_SEC_CMD
-	if (!getstutter())
-		return FALSE;
+    if (!getstutter())
+	return FALSE;
 #endif
-	if (findpat(f, n, b_val_rexp(curbp,VAL_SECTIONS)->reg,
-							REVERSE) != TRUE) {
-		(void)gotobob(f,n);
-	}
-	return TRUE;
+    if (findpat(f, n, b_val_rexp(curbp, VAL_SECTIONS)->reg,
+		REVERSE) != TRUE) {
+	(void) gotobob(f, n);
+    }
+    return TRUE;
 }
 
 /*
@@ -685,14 +695,14 @@ int
 gotoeosec(int f, int n)
 {
 #if OPT_STUTTER_SEC_CMD
-	if (!getstutter())
-		return FALSE;
+    if (!getstutter())
+	return FALSE;
 #endif
-	if (findpat(f, n, b_val_rexp(curbp,VAL_SECTIONS)->reg,
-							FORWARD) != TRUE) {
-		DOT = curbp->b_line;
-	}
-	return TRUE;
+    if (findpat(f, n, b_val_rexp(curbp, VAL_SECTIONS)->reg,
+		FORWARD) != TRUE) {
+	DOT = curbp->b_line;
+    }
+    return TRUE;
 }
 
 /*
@@ -702,45 +712,45 @@ gotoeosec(int f, int n)
 int
 gotobosent(int f, int n)
 {
-	MARK savepos;
-	int looped = 0;
-	int extra;
-	int empty = is_empty_line(DOT);
-	register regexp *exp;
-	register int s = TRUE;
+    MARK savepos;
+    int looped = 0;
+    int extra;
+    int empty = is_empty_line(DOT);
+    regexp *exp;
+    int s = TRUE;
 
-	savepos = DOT;
-	exp = b_val_rexp(curbp,VAL_SENTENCES)->reg;
+    savepos = DOT;
+    exp = b_val_rexp(curbp, VAL_SENTENCES)->reg;
 
-	while (s && (is_at_end_of_line(DOT) || isSpace(char_at(DOT)))) {
-		s = backchar(TRUE,1);
-		if (is_empty_line(DOT) && !empty)
-			return TRUE;
+    while (s && (is_at_end_of_line(DOT) || isSpace(char_at(DOT)))) {
+	s = backchar(TRUE, 1);
+	if (is_empty_line(DOT) && !empty)
+	    return TRUE;
+    }
+  top:
+    extra = 0;
+    if (findpat(f, n, exp, REVERSE) != TRUE) {
+	return gotobob(f, n);
+    }
+    s = forwchar(TRUE, RegexpLen(exp));
+    while (s && (is_at_end_of_line(DOT) || isSpace(char_at(DOT)))) {
+	s = forwchar(TRUE, 1);
+	extra++;
+    }
+    if (n == 1 && samepoint(savepos, DOT)) {	/* try again */
+	if (looped > 10)
+	    return FALSE;
+	s = backchar(TRUE, RegexpLen(exp) + extra + looped);
+	while (s && is_at_end_of_line(DOT)) {
+	    if (!empty && is_empty_line(DOT))
+		return TRUE;
+	    s = backchar(TRUE, 1);
 	}
- top:
-	extra = 0;
-	if (findpat(f, n, exp, REVERSE) != TRUE) {
-		return gotobob(f,n);
-	}
-	s = forwchar(TRUE, RegexpLen(exp));
-	while (s && (is_at_end_of_line(DOT) || isSpace(char_at(DOT)))) {
-		s = forwchar(TRUE,1);
-		extra++;
-	}
-	if (n == 1 && samepoint(savepos,DOT)) { /* try again */
-		if (looped > 10)
-			return FALSE;
-		s = backchar(TRUE, RegexpLen(exp) + extra + looped);
-		while (s && is_at_end_of_line(DOT)) {
-			if (!empty && is_empty_line(DOT))
-				return TRUE;
-			s = backchar(TRUE,1);
-		}
-		looped++;
-		goto top;
+	looped++;
+	goto top;
 
-	}
-	return TRUE;
+    }
+    return TRUE;
 }
 
 /*
@@ -750,34 +760,33 @@ gotobosent(int f, int n)
 int
 gotoeosent(int f, int n)
 {
-	register regexp *exp;
-	register int s;
-	int empty = is_empty_line(DOT);
+    regexp *exp;
+    int s;
+    int empty = is_empty_line(DOT);
 
-	exp = b_val_rexp(curbp,VAL_SENTENCES)->reg;
-	/* if we're on the end of a sentence now, don't bother scanning
-		further, or we'll miss the immediately following sentence */
-	if (!(lregexec(exp, DOT.l, DOT.o, llength(DOT.l)) &&
-				exp->startp[0] - DOT.l->l_text == DOT.o)) {
-		if (findpat(f, n, exp, FORWARD) != TRUE) {
-			DOT = curbp->b_line;
-		} else if (empty || !is_at_end_of_line(DOT)) {
-			s = forwchar(TRUE, RegexpLen(exp));
-			while (s && (is_at_end_of_line(DOT) || isSpace(char_at(DOT)))) {
-				LINEPTR lp = DOT.l;
-				s = forwchar(TRUE,1);
-				if (lp != DOT.l)
-					break;
-			}
-		}
-	} else {
-		s = forwchar(TRUE, RegexpLen(exp));
-		while (s && (is_at_end_of_line(DOT) || isSpace(char_at(DOT))))
-			s = forwchar(TRUE,1);
+    exp = b_val_rexp(curbp, VAL_SENTENCES)->reg;
+    /* if we're on the end of a sentence now, don't bother scanning
+       further, or we'll miss the immediately following sentence */
+    if (!(lregexec(exp, DOT.l, DOT.o, llength(DOT.l)) &&
+	  exp->startp[0] - DOT.l->l_text == DOT.o)) {
+	if (findpat(f, n, exp, FORWARD) != TRUE) {
+	    DOT = curbp->b_line;
+	} else if (empty || !is_at_end_of_line(DOT)) {
+	    s = forwchar(TRUE, RegexpLen(exp));
+	    while (s && (is_at_end_of_line(DOT) || isSpace(char_at(DOT)))) {
+		LINEPTR lp = DOT.l;
+		s = forwchar(TRUE, 1);
+		if (lp != DOT.l)
+		    break;
+	    }
 	}
-	return TRUE;
+    } else {
+	s = forwchar(TRUE, RegexpLen(exp));
+	while (s && (is_at_end_of_line(DOT) || isSpace(char_at(DOT))))
+	    s = forwchar(TRUE, 1);
+    }
+    return TRUE;
 }
-
 
 /*
  * This routine, given a pointer to a LINE, and the current cursor goal
@@ -787,41 +796,48 @@ gotoeosent(int f, int n)
 int
 getgoal(LINE *dlp)
 {
-	register int	c;
-	register int	col;
-	register int	newcol;
-	register int	dbo;
+    int c;
+    int col;
+    int newcol;
+    int dbo;
 
-	col = 0;
-	dbo = w_left_margin(curwp);
-	while (dbo < llength(dlp)) {
-		c = lgetc(dlp, dbo);
-		newcol = next_column(c,col);
-		if (newcol > curgoal)
-			break;
-		col = newcol;
-		++dbo;
-	}
-	return (dbo);
+    col = 0;
+    dbo = w_left_margin(curwp);
+    while (dbo < llength(dlp)) {
+	c = lgetc(dlp, dbo);
+	newcol = next_column(c, col);
+	if (newcol > curgoal)
+	    break;
+	col = newcol;
+	++dbo;
+    }
+    return (dbo);
 }
 
 int
 next_sw(int col)
 {
-	int width = shiftwid_val(curbp);
-	return (((col / width) + 1) * width);
+    int width = shiftwid_val(curbp);
+    return (((col / width) + 1) * width);
+}
+
+int
+next_tabcol(int col)
+{
+    int t = tabstop_val(curbp);
+    return (((col / t) + 1) * t);
 }
 
 /* return the next column index, given the current char and column */
 int
 next_column(int c, int col)
 {
-	if (c == '\t')
-		return nexttabcol(col,curtabval);
-	else if (!isPrint(c))
-		return col+2;
-	else
-		return col+1;
+    if (c == '\t')
+	return next_tabcol(col);
+    else if (!isPrint(c))
+	return col + ((c & HIGHBIT) ? 4 : 2);
+    else
+	return col + 1;
 }
 
 /*
@@ -833,27 +849,27 @@ next_column(int c, int col)
 int
 forwpage(int f, int n)
 {
-	register LINEPTR lp;
-	int	status;
+    LINEPTR lp;
+    int status;
 
-	if ((n = full_pages(f,n)) < 0)
-		return backpage(f, -n);
+    if ((n = full_pages(f, n)) < 0)
+	return backpage(f, -n);
 
-	if ((status = (lforw(DOT.l) != buf_head(curbp))) == TRUE) {
-		lp = curwp->w_line.l;
-		n -= line_height(curwp,lp);
-		while (lp != buf_head(curbp)) {
-			lp = lforw(lp);
-			if ((n -= line_height(curwp,lp)) < 0)
-				break;
-		}
-		if (n < 0)
-			curwp->w_line.l = lp;
-		DOT.l  = lp;
-		(void)firstnonwhite(FALSE,1);
-		curwp->w_flag |= WFHARD|WFMODE;
+    if ((status = (lforw(DOT.l) != buf_head(curbp))) == TRUE) {
+	lp = curwp->w_line.l;
+	n -= line_height(curwp, lp);
+	while (lp != buf_head(curbp)) {
+	    lp = lforw(lp);
+	    if ((n -= line_height(curwp, lp)) < 0)
+		break;
 	}
-	return status;
+	if (n < 0)
+	    curwp->w_line.l = lp;
+	DOT.l = lp;
+	(void) firstnonwhite(FALSE, 1);
+	curwp->w_flag |= WFHARD | WFMODE;
+    }
+    return status;
 }
 
 /*
@@ -864,29 +880,29 @@ forwpage(int f, int n)
 int
 backpage(int f, int n)
 {
-	register LINEPTR lp;
-	int	status;
+    LINEPTR lp;
+    int status;
 
-	if ((n = full_pages(f,n)) < 0)
-		return forwpage(f, -n);
+    if ((n = full_pages(f, n)) < 0)
+	return forwpage(f, -n);
 
-	lp = curwp->w_line.l;
-	if (lback(lp) != buf_head(curbp)) {
-		while ((n -= line_height(curwp,lp)) >= 0
-		  &&   lback(lp) != buf_head(curbp))
-			lp = lback(lp);
-		curwp->w_line.l = lp;
-		(void)gotoeos(FALSE,1);
-		curwp->w_flag |= WFHARD|WFMODE;
-		status = TRUE;
-	} else if (DOT.l != lp) {
-		DOT.l = lp;
-		curwp->w_flag |= WFHARD|WFMODE;
-		status = TRUE;
-	} else {
-		status = FALSE;
-	}
-	return status;
+    lp = curwp->w_line.l;
+    if (lback(lp) != buf_head(curbp)) {
+	while ((n -= line_height(curwp, lp)) >= 0
+	       && lback(lp) != buf_head(curbp))
+	    lp = lback(lp);
+	curwp->w_line.l = lp;
+	(void) gotoeos(FALSE, 1);
+	curwp->w_flag |= WFHARD | WFMODE;
+	status = TRUE;
+    } else if (DOT.l != lp) {
+	DOT.l = lp;
+	curwp->w_flag |= WFHARD | WFMODE;
+	status = TRUE;
+    } else {
+	status = FALSE;
+    }
+    return status;
 }
 
 /*
@@ -901,28 +917,28 @@ backpage(int f, int n)
 int
 forwhpage(int f, int n)
 {
-	register LINEPTR  llp, dlp;
-	int	status;
+    LINEPTR llp, dlp;
+    int status;
 
-	if ((n = half_pages(f,n)) < 0)
-		return backhpage(f, -n);
+    if ((n = half_pages(f, n)) < 0)
+	return backhpage(f, -n);
 
-	llp = curwp->w_line.l;
-	dlp = DOT.l;
-	if ((status = (lforw(dlp) != buf_head(curbp))) == TRUE) {
-		n -= line_height(curwp,dlp);
-		while (lforw(dlp) != buf_head(curbp)) {
-			llp = lforw(llp);
-			dlp = lforw(dlp);
-			if ((n -= line_height(curwp,dlp)) < 0)
-				break;
-		}
-		curwp->w_line.l = llp;
-		DOT.l  = dlp;
-		curwp->w_flag |= WFHARD|WFKILLS;
+    llp = curwp->w_line.l;
+    dlp = DOT.l;
+    if ((status = (lforw(dlp) != buf_head(curbp))) == TRUE) {
+	n -= line_height(curwp, dlp);
+	while (lforw(dlp) != buf_head(curbp)) {
+	    llp = lforw(llp);
+	    dlp = lforw(dlp);
+	    if ((n -= line_height(curwp, dlp)) < 0)
+		break;
 	}
-	(void)firstnonwhite(FALSE,1);
-	return status;
+	curwp->w_line.l = llp;
+	DOT.l = dlp;
+	curwp->w_flag |= WFHARD | WFKILLS;
+    }
+    (void) firstnonwhite(FALSE, 1);
+    return status;
 }
 
 /*
@@ -937,28 +953,28 @@ forwhpage(int f, int n)
 int
 backhpage(int f, int n)
 {
-	register LINEPTR llp, dlp;
-	int	status;
+    LINEPTR llp, dlp;
+    int status;
 
-	if ((n = half_pages(f,n)) < 0)
-		return forwhpage(f, -n);
+    if ((n = half_pages(f, n)) < 0)
+	return forwhpage(f, -n);
 
-	llp = curwp->w_line.l;
-	dlp = DOT.l;
-	if ((status = (lback(dlp) != buf_head(curbp))) == TRUE) {
-		n -= line_height(curwp,dlp);
-		while (lback(dlp) != buf_head(curbp)) {
-			llp = lback(llp);
-			dlp = lback(dlp);
-			if ((n -= line_height(curwp,dlp)) < 0)
-				break;
-		}
-		curwp->w_line.l = llp;
-		DOT.l  = dlp;
-		curwp->w_flag |= WFHARD|WFINS;
+    llp = curwp->w_line.l;
+    dlp = DOT.l;
+    if ((status = (lback(dlp) != buf_head(curbp))) == TRUE) {
+	n -= line_height(curwp, dlp);
+	while (lback(dlp) != buf_head(curbp)) {
+	    llp = lback(llp);
+	    dlp = lback(dlp);
+	    if ((n -= line_height(curwp, dlp)) < 0)
+		break;
 	}
-	(void)firstnonwhite(FALSE,1);
-	return status;
+	curwp->w_line.l = llp;
+	DOT.l = dlp;
+	curwp->w_flag |= WFHARD | WFINS;
+    }
+    (void) firstnonwhite(FALSE, 1);
+    return status;
 }
 
 /*
@@ -968,34 +984,35 @@ backhpage(int f, int n)
 int
 forw_row(int f, int n)
 {
-	int code = TRUE;
-	int col, next;
+    int code = TRUE;
+    int col, next;
 
-	if (f == FALSE) n = 1;
-	if (n < 0) {
-		code = back_row(f, -n);
-	} else if (n > 0) {
+    if (f == FALSE)
+	n = 1;
+    if (n < 0) {
+	code = back_row(f, -n);
+    } else if (n > 0) {
 
-		/* set the "goal" column if necessary */
-		if (curgoal < 0)
-			curgoal = getccol(FALSE);
+	/* set the "goal" column if necessary */
+	if (curgoal < 0)
+	    curgoal = getccol(FALSE);
 
-		col = curgoal;
-		next = col;
+	col = curgoal;
+	next = col;
 
-		while ((n-- > 0) && (code == TRUE)) {
-			int save = next;
-			next += term.cols;
-			if (gotocol(TRUE, next + 1) == FALSE) {
-				curgoal %= term.cols;
-				gotocol(TRUE, save);
-				code = forwline(TRUE, 1);
-			} else {
-				curgoal = next;
-			}
-		}
+	while ((n-- > 0) && (code == TRUE)) {
+	    int save = next;
+	    next += term.cols;
+	    if (gotocol(TRUE, next + 1) == FALSE) {
+		curgoal %= term.cols;
+		gotocol(TRUE, save);
+		code = forwline(TRUE, 1);
+	    } else {
+		curgoal = next;
+	    }
 	}
-	return code;
+    }
+    return code;
 }
 
 /*
@@ -1005,103 +1022,104 @@ forw_row(int f, int n)
 int
 back_row(int f, int n)
 {
-	int code = TRUE;
-	int col, next;
+    int code = TRUE;
+    int col, next;
 
-	if (f == FALSE) n = 1;
-	if (n < 0) {
-		code = forw_row(f, -n);
-	} else if (n > 0) {
+    if (f == FALSE)
+	n = 1;
+    if (n < 0) {
+	code = forw_row(f, -n);
+    } else if (n > 0) {
 
-		/* set the "goal" column if necessary */
-		if (curgoal < 0)
-			curgoal = getccol(FALSE);
+	/* set the "goal" column if necessary */
+	if (curgoal < 0)
+	    curgoal = getccol(FALSE);
 
-		col = curgoal;
-		next = col;
+	col = curgoal;
+	next = col;
 
-		while ((n-- > 0) && (code == TRUE)) {
-			next -= term.cols;
-			if (next < 0) {
-				if ((code = backline(TRUE, 1)) == TRUE
-				 && llength(DOT.l) >= curgoal) {
-					next = llength(DOT.l) / term.cols;
-					next = (next * term.cols) + curgoal;
-					curgoal = next;
-				}
-			} else {
-				if ((code = gotocol(TRUE, next + 1)) == TRUE)
-					curgoal = next;
-			}
+	while ((n-- > 0) && (code == TRUE)) {
+	    next -= term.cols;
+	    if (next < 0) {
+		if ((code = backline(TRUE, 1)) == TRUE
+		    && llength(DOT.l) >= curgoal) {
+		    next = llength(DOT.l) / term.cols;
+		    next = (next * term.cols) + curgoal;
+		    curgoal = next;
 		}
+	    } else {
+		if ((code = gotocol(TRUE, next + 1)) == TRUE)
+		    curgoal = next;
+	    }
 	}
-	return code;
+    }
+    return code;
 }
 
 #if OPT_SHOW_MARKS
 static int
-show_mark (int count, BUFFER *bp, MARK mark, int name)
+show_mark(int count, BUFFER *bp, MARK mark, int name)
 {
-	static int tab = 8; /* no b_val(bp,VAL_TAB) -- set_rdonly uses 8 */
-	static int stop;
+    static int tab = 8;		/* no b_val(bp,VAL_TAB) -- set_rdonly uses 8 */
+    static int stop;
 
-	if (!samepoint(mark, nullmark)) {
+    if (!samepoint(mark, nullmark)) {
 
-		if (!count) {
-			bprintf("\nMark  Line     Column");
-			if (stop == 0) {
-				stop = ((DOT.o + tab - 1) / tab) * tab;
-			}
-			bprintf("%*PText", stop - DOT.o, ' ');
-			bprintf("\n----  -------- ------");
-			bprintf("%*P----", stop - DOT.o, ' ');
-		}
-
-		bprintf("\n%c     %8d %8d",
-			name,
-			line_no(bp, mark.l),
-			mk_to_vcol(mark, FALSE, b_left_margin(bp), 0) + 1);
-		if (llength(mark.l) > 0) {
-			bprintf("%*P%*S",
-				stop - DOT.o, ' ',
-				llength(mark.l),
-				mark.l->l_text);
-		}
-		return 1;
+	if (!count) {
+	    bprintf("\nMark  Line     Column");
+	    if (stop == 0) {
+		stop = ((DOT.o + tab - 1) / tab) * tab;
+	    }
+	    bprintf("%*PText", stop - DOT.o, ' ');
+	    bprintf("\n----  -------- ------");
+	    bprintf("%*P----", stop - DOT.o, ' ');
 	}
-	return 0;
+
+	bprintf("\n%c     %8d %8d",
+		name,
+		line_no(bp, mark.l),
+		mk_to_vcol(mark, FALSE, bp, 0, 0) + 1);
+	if (llength(mark.l) > 0) {
+	    bprintf("%*P%*S",
+		    stop - DOT.o, ' ',
+		    llength(mark.l),
+		    mark.l->l_text);
+	}
+	return 1;
+    }
+    return 0;
 }
 
 static void
-makemarkslist (int value GCC_UNUSED, void *dummy GCC_UNUSED)
+makemarkslist(int value GCC_UNUSED, void *dummy GCC_UNUSED)
 {
-	BUFFER *bp = (BUFFER *)dummy;
-	WINDOW *wp;
-	int n;
-	int done = 0;
+    BUFFER *bp = (BUFFER *) dummy;
+    WINDOW *wp;
+    int n;
+    int done = 0;
 
-	bprintf("Named marks for %s\n", bp->b_bname);
-	set_b_val(curbp, VAL_TAB, b_val(bp,VAL_TAB));
+    bprintf("Named marks for %s\n", bp->b_bname);
+    set_b_val(curbp, VAL_TAB, b_val(bp, VAL_TAB));
 
-	for_each_window(wp) {
-		if (wp->w_bufp == bp)
-			done += show_mark(done, bp, wp->w_lastdot, '\'');
+    for_each_window(wp) {
+	if (wp->w_bufp == bp)
+	    done += show_mark(done, bp, wp->w_lastdot, '\'');
+    }
+    if (bp->b_nmmarks != 0) {
+	for (n = 0; n < 26; n++) {
+	    done += show_mark(done, bp, bp->b_nmmarks[n], n + 'a');
 	}
-	if (bp->b_nmmarks != 0) {
-		for (n = 0; n < 26; n++) {
-			done += show_mark(done, bp, bp->b_nmmarks[n], n + 'a');
-		}
-	}
-	if (done)
-		bprintf("\n\n%d mark%s", done, PLURAL(done));
-	else
-		bprintf("\n(none)");
+    }
+    if (done)
+	bprintf("\n\n%d mark%s", done, PLURAL(done));
+    else
+	bprintf("\n(none)");
 }
 
 int
 showmarks(int f, int n GCC_UNUSED)
 {
-	return liststuff(MARKS_BufName, FALSE, makemarkslist, f, (void *)curbp);
+    return liststuff(MARKS_BufName, FALSE, makemarkslist, f, (void *) curbp);
 }
 
 #if OPT_UPBUFF
@@ -1109,7 +1127,7 @@ showmarks(int f, int n GCC_UNUSED)
 static int
 update_marklist(BUFFER *bp GCC_UNUSED)
 {
-	return showmarks(FALSE,1);
+    return showmarks(FALSE, 1);
 }
 #endif
 
@@ -1124,55 +1142,89 @@ update_marklist(BUFFER *bp GCC_UNUSED)
 int
 setnmmark(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	int c,i;
+    int c, i;
 
-	if (clexec || isnamedcmd) {
-		int status;
-		static char cbuf[2];
-		if ((status=mlreply("Set mark: ", cbuf, 2)) != TRUE)
-			return status;
-		c = cbuf[0];
-	} else {
-		c = keystroke();
-		if (ABORTED(c))
-			return ABORT;
+    if (clexec || isnamedcmd) {
+	int status;
+	static char cbuf[2];
+	if ((status = mlreply("Set mark: ", cbuf, 2)) != TRUE)
+	    return status;
+	c = cbuf[0];
+    } else {
+	c = keystroke();
+	if (ABORTED(c))
+	    return ABORT;
+    }
+
+    if (c < 'a' || c > 'z') {
+	mlforce("[Invalid mark name]");
+	return FALSE;
+    }
+
+    if (curbp->b_nmmarks == NULL) {
+	curbp->b_nmmarks = typeallocn(struct MARK, 26);
+	if (curbp->b_nmmarks == NULL)
+	    return no_memory("named-marks");
+	for (i = 0; i < 26; i++) {
+	    curbp->b_nmmarks[i] = nullmark;
 	}
+    }
 
-	if (c < 'a' || c > 'z') {
-		mlforce("[Invalid mark name]");
-		return FALSE;
-	}
+    curbp->b_nmmarks[c - 'a'] = DOT;
+    mlwrite("[Mark %c set]", c);
+    update_scratch(MARKS_BufName, update_marklist);
+    return TRUE;
+}
 
-	if (curbp->b_nmmarks == NULL) {
-		curbp->b_nmmarks = typeallocn(struct MARK,26);
-		if (curbp->b_nmmarks == NULL)
-			return no_memory("named-marks");
-		for (i = 0; i < 26; i++) {
-			curbp->b_nmmarks[i] = nullmark;
-		}
-	}
+/*
+ * Get the name of the mark to use.  interactively, "last dot" is represented
+ * by stuttering the goto-mark command.  From the command line, it's always
+ * named ' or `.  I suppose this is questionable.
+ */
+static int
+getnmmarkname(int *cp)
+{
+    int c;
+    int thiskey;
+    int useldmark;
 
-	curbp->b_nmmarks[c-'a'] = DOT;
-	mlwrite("[Mark %c set]",c);
-	update_scratch(MARKS_BufName, update_marklist);
-	return TRUE;
+    if (clexec || isnamedcmd) {
+	int status;
+	static char cbuf[2];
+	if ((status = mlreply("Goto mark: ", cbuf, 2)) != TRUE)
+	    return status;
+	c = cbuf[0];
+	useldmark = (c == '\'' || c == '`');
+    } else {
+	thiskey = lastkey;
+	c = keystroke();
+	if (ABORTED(c))
+	    return ABORT;
+	useldmark = (lastkey == thiskey);	/* usually '' or `` */
+    }
+
+    if (useldmark)
+	c = '\'';
+
+    *cp = c;
+    return TRUE;
 }
 
 /* ARGSUSED */
 int
 golinenmmark(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	int c;
-	register int s;
+    int c;
+    int s;
 
-	s = getnmmarkname(&c);
-	if (s != TRUE)
-		return s;
-	s = gonmmark(c);
-	if (s != TRUE)
-		return s;
+    s = getnmmarkname(&c);
+    if (s != TRUE)
+	return s;
+    s = gonmmark(c);
+    if (s != TRUE)
+	return s;
 
-	return firstnonwhite(FALSE,1);
+    return firstnonwhite(FALSE, 1);
 
 }
 
@@ -1180,96 +1232,63 @@ golinenmmark(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 goexactnmmark(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	int c;
-	register int s;
+    int c;
+    int s;
 
-	s = getnmmarkname(&c);
-	if (s != TRUE)
-		return s;
+    s = getnmmarkname(&c);
+    if (s != TRUE)
+	return s;
 
-	return gonmmark(c);
+    return gonmmark(c);
 }
 
 /* ARGSUSED */
 int
 gorectnmmark(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	int c;
-	register int s;
+    int c;
+    int s;
 
-	s = getnmmarkname(&c);
-	if (s != TRUE)
-		return s;
+    s = getnmmarkname(&c);
+    if (s != TRUE)
+	return s;
 
-	regionshape = RECTANGLE;
-	return gonmmark(c);
-}
-
-/* get the name of the mark to use.  interactively, "last dot" is
-	represented by stuttering the goto-mark command.  from
-	the command line, it's always named ' or `.  I suppose
-	this is questionable. */
-static int
-getnmmarkname(int *cp)
-{
-	int c;
-	int thiskey;
-	int useldmark;
-
-	if (clexec || isnamedcmd) {
-		int status;
-		static char cbuf[2];
-		if ((status=mlreply("Goto mark: ", cbuf, 2)) != TRUE)
-			return status;
-		c = cbuf[0];
-		useldmark = (c == '\'' || c == '`');
-	} else {
-		thiskey = lastkey;
-		c = keystroke();
-		if (ABORTED(c))
-			return ABORT;
-		useldmark = (lastkey == thiskey);  /* usually '' or `` */
-	}
-
-	if (useldmark)
-		c = '\'';
-
-	*cp = c;
-	return TRUE;
+    regionshape = RECTANGLE;
+    return gonmmark(c);
 }
 
 int
 gonmmark(int c)
 {
-	register MARK *markp;
-	MARK tmark;
+    MARK *markp;
+    MARK tmark;
 
-	if (!isLower(c) && c != '\'') {
-		mlforce("[Invalid mark name]");
-		return FALSE;
-	}
+    if (!isLower(c) && c != '\'') {
+	mlforce("[Invalid mark name]");
+	return FALSE;
+    }
 
-	/* save current dot */
-	tmark = DOT;
+    /* save current dot */
+    tmark = DOT;
 
-	markp = NULL;
+    markp = NULL;
 
-	if (c == '\'') { /* use the 'last dot' mark */
-		markp = &(curwp->w_lastdot);
-	} else if (curbp->b_nmmarks != NULL) {
-		markp = &(curbp->b_nmmarks[c-'a']);
-	}
+    if (c == '\'') {		/* use the 'last dot' mark */
+	markp = &(curwp->w_lastdot);
+    } else if (curbp->b_nmmarks != NULL) {
+	markp = &(curbp->b_nmmarks[c - 'a']);
+    }
 
-	/* if we have any named marks, and the one we want isn't null */
-	if ((markp != 0) ? !restore_dot(*markp) : TRUE) {
-		mlforce("[Mark not set]");
-		return (FALSE);
-	}
+    /* if we have any named marks, and the one we want isn't null */
+    if ((markp != 0) ? !restore_dot(*markp) : TRUE) {
+	mlforce("[Mark not set]");
+	return (FALSE);
+    }
 
-	if (!doingopcmd)	/* reset last-dot-mark to old dot */
-		curwp->w_lastdot = tmark;
+    if (!doingopcmd)		/* reset last-dot-mark to old dot */
+	curwp->w_lastdot = tmark;
 
-	return (TRUE);
+    return (TRUE);
 }
 
 /*
@@ -1279,17 +1298,17 @@ gonmmark(int c)
 int
 setmark(void)
 {
-	MK = DOT;
-	return (TRUE);
+    MK = DOT;
+    return (TRUE);
 }
 
 /* ARGSUSED */
 int
 gomark(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	DOT = MK;
-	curwp->w_flag |= WFMOVE;
-	return (TRUE);
+    DOT = MK;
+    curwp->w_flag |= WFMOVE;
+    return (TRUE);
 }
 
 /* this odd routine puts us at the internal mark, plus an offset of lines */
@@ -1298,18 +1317,18 @@ gomark(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 godotplus(int f, int n)
 {
-	int s;
-	if (!f || n == 1) {
-		return firstnonwhite(FALSE,1);
-	}
-	if (n < 1)
-		return (FALSE);
-	s = forwline(TRUE,n-1);
-	if (s && is_header_line(DOT, curbp))
-		s = backline(FALSE,1);
-	if (s == TRUE)
-		(void)firstnonwhite(FALSE,1);
-	return s;
+    int s;
+    if (!f || n == 1) {
+	return firstnonwhite(FALSE, 1);
+    }
+    if (n < 1)
+	return (FALSE);
+    s = forwline(TRUE, n - 1);
+    if (s && is_header_line(DOT, curbp))
+	s = backline(FALSE, 1);
+    if (s == TRUE)
+	(void) firstnonwhite(FALSE, 1);
+    return s;
 }
 
 /*
@@ -1320,17 +1339,17 @@ godotplus(int f, int n)
 void
 swapmark(void)
 {
-	MARK odot;
+    MARK odot;
 
-	if (samepoint(MK, nullmark)) {
-		mlforce("BUG: No mark ");
-		return;
-	}
-	odot = DOT;
-	DOT = MK;
-	MK = odot;
-	curwp->w_flag |= WFMOVE;
+    if (samepoint(MK, nullmark)) {
+	mlforce("BUG: No mark ");
 	return;
+    }
+    odot = DOT;
+    DOT = MK;
+    MK = odot;
+    curwp->w_flag |= WFMOVE;
+    return;
 }
 
 #if OPT_MOUSE
@@ -1342,91 +1361,91 @@ swapmark(void)
 int
 setwmark(int row, int col)
 {
-	MARK	save;
-	register LINEPTR dlp;
+    MARK save;
+    LINEPTR dlp;
 
-	save = DOT;
-	if (row == mode_row(curwp)) {
-		(void) gotoeos(FALSE,1);
-		DOT.l = lforw(DOT.l);
-		DOT.o = w_left_margin(curwp);
-	} else {	/* move to the right row */
-		row -= curwp->w_toprow + curwp->w_line.o;
-		    /*
-		     * In the statement above, wp->w_line.o will
-		     * normally be zero.  But when the top line of the
-		     * window is wrapped and the beginning of the line
-		     * is not visible, it will have the number of
-		     * lines that would appear before the top line
-		     * negated.  (E.g, if the wrapped line occupied
-		     * 2 lines before the top window line, then wp->w_line.o
-		     * will have the value -2.)
-		     */
+    save = DOT;
+    if (row == mode_row(curwp)) {
+	(void) gotoeos(FALSE, 1);
+	DOT.l = lforw(DOT.l);
+	DOT.o = w_left_margin(curwp);
+    } else {			/* move to the right row */
+	row -= curwp->w_toprow + curwp->w_line.o;
+	/*
+	 * In the statement above, wp->w_line.o will
+	 * normally be zero.  But when the top line of the
+	 * window is wrapped and the beginning of the line
+	 * is not visible, it will have the number of
+	 * lines that would appear before the top line
+	 * negated.  (E.g, if the wrapped line occupied
+	 * 2 lines before the top window line, then wp->w_line.o
+	 * will have the value -2.)
+	 */
 
-		dlp = curwp->w_line.l;	/* get pointer to 1st line */
-		while ((row -= line_height(curwp,dlp)) >= 0
-		  &&   dlp != buf_head(curbp))
-			dlp = lforw(dlp);
-		DOT.l = dlp;			/* set dot line pointer */
+	dlp = curwp->w_line.l;	/* get pointer to 1st line */
+	while ((row -= line_height(curwp, dlp)) >= 0
+	       && dlp != buf_head(curbp))
+	    dlp = lforw(dlp);
+	DOT.l = dlp;		/* set dot line pointer */
 
-		/* now move the dot over until near the requested column */
+	/* now move the dot over until near the requested column */
 #ifdef WMDLINEWRAP
-		if (w_val(curwp,WMDLINEWRAP))
-			col += term.cols * (row+line_height(curwp,dlp));
+	if (w_val(curwp, WMDLINEWRAP))
+	    col += term.cols * (row + line_height(curwp, dlp));
 #endif
-		DOT.o = col2offs(curwp, dlp, col);
+	DOT.o = col2offs(curwp, dlp, col);
 
 #ifdef OPT_MOUSE_NEWLINE
-		/* don't allow the cursor to be set past end of line unless we
-		 * are in insert mode
-		 */
-		if (DOT.o >= llength(dlp) && DOT.o > w_left_margin(curwp) &&
-					!insertmode)
-			DOT.o--;
+	/* don't allow the cursor to be set past end of line unless we
+	 * are in insert mode
+	 */
+	if (DOT.o >= llength(dlp) && DOT.o > w_left_margin(curwp) &&
+	    !insertmode)
+	    DOT.o--;
 #endif
-	}
-	if (is_header_line(DOT, curwp->w_bufp)) {
-		DOT.l = lback(DOT.l);
-		DOT.o = llength(DOT.l);
-	}
-	MK  = DOT;
-	DOT = save;
-	return TRUE;
+    }
+    if (is_header_line(DOT, curwp->w_bufp)) {
+	DOT.l = lback(DOT.l);
+	DOT.o = llength(DOT.l);
+    }
+    MK = DOT;
+    DOT = save;
+    return TRUE;
 }
 
 /*
  * Given row & column from the screen, set the curwp and DOT values.
  */
 int
-setcursor (int row, int col)
+setcursor(int row, int col)
 {
-	register WINDOW *wp0 = curwp;
-	register WINDOW *wp1;
-	MARK saveMK;
+    WINDOW *wp0 = curwp;
+    WINDOW *wp1;
+    MARK saveMK;
 
-	if ((wp1 = row2window(row)) == 0)
-		return FALSE;
-	if (doingsweep && curwp != wp1)
-		return FALSE;
-	saveMK = MK;
-	if (set_curwp(wp1)
-	 && setwmark(row, col)) {
-		if (insertmode != FALSE
-		 && b_val(wp1->w_bufp, MDVIEW)
-		 && b_val(wp1->w_bufp, MDSHOWMODE)) {
-			if (b_val(wp0->w_bufp, MDSHOWMODE))
-				wp0->w_flag |= WFMODE;
-			if (b_val(wp1->w_bufp, MDSHOWMODE))
-				wp1->w_flag |= WFMODE;
-			insertmode = FALSE;
-		}
-		DOT = MK;
-		if (wp0 == wp1)
-			MK = saveMK;
-		curwp->w_flag |= WFMOVE;
-		return TRUE;
-	}
-
+    if ((wp1 = row2window(row)) == 0)
 	return FALSE;
+    if (doingsweep && curwp != wp1)
+	return FALSE;
+    saveMK = MK;
+    if (set_curwp(wp1)
+	&& setwmark(row, col)) {
+	if (insertmode != FALSE
+	    && b_val(wp1->w_bufp, MDVIEW)
+	    && b_val(wp1->w_bufp, MDSHOWMODE)) {
+	    if (b_val(wp0->w_bufp, MDSHOWMODE))
+		wp0->w_flag |= WFMODE;
+	    if (b_val(wp1->w_bufp, MDSHOWMODE))
+		wp1->w_flag |= WFMODE;
+	    insertmode = FALSE;
+	}
+	DOT = MK;
+	if (wp0 == wp1)
+	    MK = saveMK;
+	curwp->w_flag |= WFMOVE;
+	return TRUE;
+    }
+
+    return FALSE;
 }
 #endif

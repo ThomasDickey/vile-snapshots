@@ -3,7 +3,7 @@
  *
  *	Miscellaneous routines for UNIX/VMS compatibility.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.35 2001/12/23 20:24:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.36 2002/01/12 12:51:47 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -113,7 +113,7 @@ vms_creat(char *filename)
 	 * been specified.
 	 */
 	if (my_rfm == FAB$C_UDF) {
-		if (stat(filename, &sb) == 0) {
+		if (file_stat(filename, &sb) == 0) {
 			my_rfm = sb.st_fab_rfm;
 			my_len = sb.st_fab_mrs;
 			/* Ignore the old record attributes, since 'cr' is the

@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.57 2001/12/30 15:29:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.59 2002/01/12 17:21:07 tom Exp $
  */
 
 #include	"estruct.h"
@@ -295,6 +295,9 @@ cfgopts(void)
 {
     static const char *opts[] =
     {
+#if !OPT_SHELL
+	"noshell",
+#endif
 #if SYS_WINNT && defined(VILE_OLE)
 	"oleauto",
 #endif

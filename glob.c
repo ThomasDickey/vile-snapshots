@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.73 2001/09/18 09:49:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.74 2002/01/09 00:27:11 tom Exp $
  *
  */
 
@@ -89,7 +89,7 @@
 /* the expanded list is defined outside of the functions because if we
  * handle ellipsis, the generating function must be recursive.
  */
-static	SIZE_T	myMax, myLen;	/* length and index of the expanded list */
+static	size_t	myMax, myLen;	/* length and index of the expanded list */
 static	char **	myVec;		/* the expanded list */
 
 /*--------------------------------------------------------------------------*/
@@ -316,7 +316,7 @@ char	*pattern)
 	DIRENT	*de;
 	int	result	= TRUE;
 	char	save	= 0; /* warning suppression */
-	SIZE_T	len;
+	size_t	len;
 	char	*leaf;
 	char	*wild	= wild_leaf(pattern);
 	char	*next	= next_leaf(wild);
@@ -449,7 +449,7 @@ char	*pattern)
 
 	int	result	= TRUE;
 	char	save = 0; /* warning suppression */
-	SIZE_T	len;
+	size_t	len;
 	char	*leaf;
 	char	*wild	= wild_leaf(pattern);
 	char	*next	= next_leaf(wild);
@@ -573,7 +573,7 @@ glob_from_pipe(const char *pattern)
 	FILE	*cf;
 	char	tmp[NFILEN];
 	int	result = FALSE;
-	register SIZE_T len;
+	register size_t len;
 	register char *s, *d;
 
 #ifdef GVAL_GLOB
@@ -617,7 +617,7 @@ glob_from_pipe(const char *pattern)
 			 * Split the buffer up.  If 'single', split on all
 			 * whitespace, otherwise only on newlines.
 			 */
-			for (s = tmp; (SIZE_T)(s-tmp) < len; s++) {
+			for (s = tmp; (size_t)(s-tmp) < len; s++) {
 				if ((single && isSpace(*s))
 				 || (!single && (*s == '\n' || *s == EOS))) {
 					*d = EOS;
@@ -792,7 +792,7 @@ expand_pattern (char *item)
 	{
 	char	builtup[NFILEN];
 	char	pattern[NFILEN];
-	SIZE_T	first	= myLen;
+	size_t	first	= myLen;
 
 	(void)strcpy(pattern, item);
 	*builtup = EOS;
