@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.138 1996/12/09 01:15:30 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.139 1997/01/19 15:40:57 tom Exp $
 #
 #
 
@@ -303,6 +303,7 @@ cbuf10		REDO
 	<execute [Macro 10]>
 cbuf11		REDO			!SMALLER
 	"execute-macro-11"		!FEWNAMES
+	'FN-!'				KEY_F11
 	<execute [Macro 11]>
 cbuf12		REDO			!SMALLER
 	'FN-@'				KEY_F12
@@ -341,48 +342,63 @@ cbuf20		REDO			!SMALLER
 	"execute-macro-20"		!FEWNAMES
 	<execute [Macro 20]>
 cbuf21		REDO			!SMALLER
+	'FN-\241'			KEY_F21
 	"execute-macro-21"		!FEWNAMES
 	<execute [Macro 21]>
 cbuf22		REDO			!SMALLER
+	'FN-\242'			KEY_F22
 	"execute-macro-22"		!FEWNAMES
 	<execute [Macro 22]>
 cbuf23		REDO			!SMALLER
+	'FN-\243'			KEY_F23
 	"execute-macro-23"		!FEWNAMES
 	<execute [Macro 23]>
 cbuf24		REDO			!SMALLER
+	'FN-\244'			KEY_F24
 	"execute-macro-24"		!FEWNAMES
 	<execute [Macro 24]>
 cbuf25		REDO			!SMALLER
+	'FN-\245'			KEY_F25
 	"execute-macro-25"		!FEWNAMES
 	<execute [Macro 25]>
 cbuf26		REDO			!SMALLER
+	'FN-\246'			KEY_F26
 	"execute-macro-26"		!FEWNAMES
 	<execute [Macro 26]>
 cbuf27		REDO			!SMALLER
+	'FN-\247'			KEY_F27
 	"execute-macro-27"		!FEWNAMES
 	<execute [Macro 27]>
 cbuf28		REDO			!SMALLER
+	'FN-\250'			KEY_F28
 	"execute-macro-28"		!FEWNAMES
 	<execute [Macro 28]>
 cbuf29		REDO			!SMALLER
+	'FN-\251'			KEY_F29
 	"execute-macro-29"		!FEWNAMES
 	<execute [Macro 29]>
 cbuf30		REDO			!SMALLER
+	'FN-\252'			KEY_F30
 	"execute-macro-30"		!FEWNAMES
 	<execute [Macro 30]>
 cbuf31		REDO			!SMALLER
+	'FN-\253'			KEY_F31
 	"execute-macro-31"		!FEWNAMES
 	<execute [Macro 31]>
 cbuf32		REDO			!SMALLER
+	'FN-\254'			KEY_F32
 	"execute-macro-32"		!FEWNAMES
 	<execute [Macro 32]>
 cbuf33		REDO			!SMALLER
+	'FN-\255'			KEY_F33
 	"execute-macro-33"		!FEWNAMES
 	<execute [Macro 33]>
 cbuf34		REDO			!SMALLER
+	'FN-\256'			KEY_F34
 	"execute-macro-34"		!FEWNAMES
 	<execute [Macro 34]>
 cbuf35		REDO			!SMALLER
+	'FN-\257'			KEY_F35
 	"execute-macro-35"		!FEWNAMES
 	<execute [Macro 35]>
 cbuf36		REDO			!SMALLER
@@ -482,7 +498,6 @@ enlargewind	NONE
 esc_func	NONE
 	"abort-command"			!FEWNAMES
 	'^['
-	'FN-!'				KEY_F11
 	<the abort key, normally bound to ESC; it terminates lots of things>
 flow_control_enable	NONE		SYS_UNIX
 	"flow-control-enable"

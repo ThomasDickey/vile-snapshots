@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.199 1997/01/10 11:07:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.200 1997/01/19 15:40:57 tom Exp $
  *
  */
 
@@ -796,7 +796,7 @@ int	mflg)		/* print messages? */
 			wp->w_line.l = lforw(buf_head(bp));
 			wp->w_dot.l  = lforw(buf_head(bp));
 			wp->w_dot.o  = 0;
-#ifdef WINMARK
+#if WINMARK
 			wp->w_mark = nullmark;
 #endif
 			wp->w_lastdot = nullmark;

@@ -7,7 +7,7 @@
  * Original code probably by Dan Lawrence or Dave Conroy for MicroEMACS.
  * Major extensions for vile by Paul Fox, 1991
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.78 1996/10/03 01:02:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.79 1997/01/19 15:40:58 tom Exp $
  *
  */
 
@@ -703,7 +703,7 @@ choice_to_name (const FSM_CHOICES *choices, int code)
 static const FSM_CHOICES *
 name_to_choices (const struct VALNAMES *names)
 {
-	register int i;
+	register SIZE_T i;
 
 	for (i = 1; i < TABLESIZE(fsm_tbl); i++)
 		if (strcmp(fsm_tbl[i].mode_name, names->name) == 0)
@@ -715,13 +715,13 @@ name_to_choices (const struct VALNAMES *names)
 static int
 is_fsm(const struct VALNAMES *names)
 {
-	register int i;
+	register SIZE_T i;
 
 	if (names->type == VALTYPE_ENUM
 	 || names->type == VALTYPE_STRING) {
 		for (i = 1; i < TABLESIZE(fsm_tbl); i++) {
 			if (strcmp(fsm_tbl[i].mode_name, names->name) == 0) {
-				fsm_idx = i;
+				fsm_idx = (int)i;
 				return TRUE;
 			}
 		}

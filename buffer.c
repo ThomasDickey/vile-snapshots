@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.150 1996/10/17 10:44:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.151 1997/01/19 15:40:57 tom Exp $
  *
  */
 
@@ -1120,7 +1120,7 @@ popupbuff(BUFFER *bp)
 			wp->w_line.l = lforw(buf_head(bp));
 			wp->w_dot.l  = lforw(buf_head(bp));
 			wp->w_dot.o  = 0;
-#ifdef WINMARK
+#if WINMARK
 			wp->w_mark = nullmark;
 #endif
 			wp->w_lastdot = nullmark;

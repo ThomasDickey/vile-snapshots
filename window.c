@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.71 1996/10/17 10:44:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.72 1997/01/19 15:40:58 tom Exp $
  *
  */
 
@@ -36,6 +36,10 @@ set_curwp (WINDOW *wp)
 	if (wp == curwp)
 		return (TRUE);
 	curwp = wp;
+#if !WINMARK
+	/* FIXME: this wouldn't be necessary if MK were stored per-buffer */
+	MK = nullmark;
+#endif
 	make_current(curwp->w_bufp);
 	upmode();
 	updatelistbuffers();

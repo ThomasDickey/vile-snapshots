@@ -18,7 +18,7 @@
  * transfering the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.51 1996/03/24 13:38:16 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.52 1997/01/19 15:40:58 tom Exp $
  *
  */
 
@@ -257,7 +257,9 @@ sel_extend(int wiping, int include_dot)
 			MK = orig_region;
 		}
 	}
-	getregion(&a);
+	if (getregion(&a) == FALSE) {
+		return FALSE;
+	}
 	DOT = working_dot;
 
 	/*
@@ -281,7 +283,9 @@ sel_extend(int wiping, int include_dot)
 			}
 		}
 	}
-	getregion(&b);
+	if (getregion(&b) == FALSE) {
+		return FALSE;
+	}
 
 	/*
 	 * The two regions, 'a' and 'b' are _usually_ identical, except for the
@@ -610,6 +614,7 @@ multimotion(int f, int n)
 	MARK savemark;
 	MARK realdot;
 	char	temp[NLINE];
+	BUFFER *origbp = curbp;
 	static int wassweephack = FALSE;
 
 	/* Use the repeat-count as a shortcut to specify the type of selection. 
@@ -658,7 +663,8 @@ multimotion(int f, int n)
 		/* get the next command from the keyboard */
 		c = kbd_seq();
 
-		if (ABORTED(c)) {
+		if (ABORTED(c)
+		 || curbp != origbp) {
 			doingsweep = FALSE;
 			mlforce("[Sweeping: Aborted]");
 			sel_release();

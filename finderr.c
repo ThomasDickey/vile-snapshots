@@ -2,7 +2,7 @@
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  * rewritten to use regular expressions, 1995 by T.Dickey (dickey@clark.net)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.59 1996/10/03 01:02:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.60 1997/01/19 20:10:21 tom Exp $
  *
  */
 
@@ -247,7 +247,7 @@ load_patterns(void)
 {
 	BUFFER	*bp;
 	LINE	*lp;
-	int	n;
+	SIZE_T	n;
 
 	/* find the error-expressions buffer */
 	if ((bp = find_b_name(ERRORS_BufName)) == 0) {
