@@ -17,12 +17,12 @@
  * distributable status.  This version of vile is distributed under the
  * terms of the GNU Public License (see COPYING).
  *
- * Copyright (c) 1992-2003 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1992-2005 by Paul Fox and Thomas Dickey
  *
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.534 2005/01/23 01:07:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.535 2005/01/24 22:21:57 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */

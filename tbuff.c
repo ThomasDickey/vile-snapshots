@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.59 2005/01/23 16:09:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.60 2005/01/24 22:09:32 tom Exp $
  *
  */
 
@@ -76,6 +76,36 @@ tb_leaks(void)
 #define	FreedBuffer(q)
 #endif
 
+#if OPT_TRACE
+static void
+valid_tbuff(TBUFF *p)
+{
+    int ok = TRUE;
+
+    if (p != 0) {
+	if (p->tb_errs) {
+	    if ((p->tb_size != 0 || p->tb_used != 0) || (p->tb_data != 0))
+		ok = FALSE;
+	} else {
+	    if ((p->tb_size != 0 || p->tb_used != 0) && (p->tb_data == 0))
+		ok = FALSE;
+	    if ((p->tb_size == 0 && p->tb_used == 0) && (p->tb_data != 0))
+		ok = FALSE;
+	}
+	if (!ok) {
+	    TRACE(("inconsistent TBUFF %p(errs %d, size %d, used %d, data %p)\n",
+		   p,
+		   p->tb_errs,
+		   p->tb_size,
+		   p->tb_used,
+		   p->tb_data));
+	}
+    }
+}
+#else
+#define valid_tbuff(p)		/* nothing */
+#endif /* OPT_TRACE */
+
 /*******(initialization)*****************************************************/
 
 /*
@@ -87,6 +117,7 @@ tb_alloc(TBUFF **p, size_t n)
     TBUFF *q = *p;
 
     beginDisplay();
+    valid_tbuff(q);
     if (q == 0) {
 	if ((q = typealloc(TBUFF)) != 0) {
 	    if ((q->tb_data = typeallocn(char, q->tb_size = n)) != 0) {
@@ -100,7 +131,7 @@ tb_alloc(TBUFF **p, size_t n)
 		tb_free(&q);
 	    }
 	}
-    } else if (!isTB_ERRS(q) && n >= q->tb_size) {
+    } else if (!isTB_ERRS(q) && (n >= q->tb_size || q->tb_data == 0)) {
 	q->tb_data = typereallocn(char, q->tb_data, q->tb_size = (n * 2));
 	if (q->tb_data == 0)
 	    tb_free(&q);
@@ -135,7 +166,9 @@ tb_error(TBUFF **p)
 {
     TBUFF *result = tb_init(p, EOS);
     if (result != 0) {
-	FreeAndNull(result->tb_data);
+	result->tb_size = 0;
+	result->tb_used = 0;
+	FreeIfNeeded(result->tb_data);
 	result->tb_errs = TRUE;
     }
     return result;
@@ -150,6 +183,7 @@ tb_free(TBUFF **p)
     TBUFF *q = *p;
 
     beginDisplay();
+    valid_tbuff(q);
     if (q != 0) {
 	FreedBuffer(q);
 	FreeIfNeeded(q->tb_data);

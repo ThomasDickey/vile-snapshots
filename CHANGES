@@ -1,5 +1,10 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20050124 (o)
+	> Tom Dickey:
+	+ correct change to tb_error() which freed data buffer without also
+	  resetting the corresponding size recorded for the buffer.
+
  20050124 (n)
 	> Clark Morgan:
 	+ remove deprecated SHGetMalloc() from w32oo.cpp, tested on WinXP, 2K,

@@ -1,6 +1,6 @@
 /*
- * $Id: btree.c,v 1.20 2005/01/20 21:45:52 tom Exp $
- * Copyright 1997-1999 by Thomas E. Dickey
+ * $Id: btree.c,v 1.21 2005/01/24 22:21:38 tom Exp $
+ * Copyright 1997-2005 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
  * algorithm is taken from "The Art of Computer Programming -- Volume 3 --

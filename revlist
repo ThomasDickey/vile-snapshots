@@ -1,6 +1,6 @@
-revlist for vile, version v9_4n
+revlist for vile-9.4o, version v9_4o
 --------------------------------------------------------------------------------
-CHANGES	1.786
+CHANGES	1.787
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -20,7 +20,7 @@ api.h	1.12
 basic.c	1.121
 bind.c	1.280
 borland.c	1.32
-btree.c	1.20
+btree.c	1.21
 btree.h	1.4
 buffer.c	1.282
 buglist	1.399
@@ -47,7 +47,7 @@ fences.c	1.82
 file.c	1.367
 filec.c	1.121
 fileio.c	1.175
-finderr.c	1.128
+finderr.c	1.129
 glob.c	1.81
 globals.c	1.48
 gppconio.c	1.2
@@ -60,7 +60,7 @@ isearch.c	1.60
 itbuff.c	1.25
 lckfiles.c	1.11
 line.c	1.168
-main.c	1.534
+main.c	1.535
 makefile.blc	1.18
 makefile.djg	1.32
 makefile.emx	1.5
@@ -85,7 +85,7 @@ opers.c	1.90
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.31
-patchlev.h	1.318
+patchlev.h	1.319
 path.c	1.147
 perl.xs	1.99
 plugin.c	1.1
@@ -96,14 +96,14 @@ ptypemap	1.7
 random.c	1.282
 regexp.c	1.110
 region.c	1.131
-revlist	v9_4n
+revlist	v9_4o
 search.c	1.136
 select.c	1.154
 sinstall.sh	1.1
 spawn.c	1.184
 statevar.c	1.92
 tags.c	1.127
-tbuff.c	1.59
+tbuff.c	1.60
 tcap.c	1.156
 tcap.h	1.9
 termio.c	1.198
@@ -112,9 +112,9 @@ trace.h	1.21
 ucrypt.c	1.15
 undo.c	1.88
 version.c	1.56
-vile-9.4.spec	1.16
+vile-9.4.spec	1.17
 vile.1	1.30
-vile.hlp	1.596
+vile.hlp	1.597
 vile.wmconfig	1.1
 vms2unix.c	1.40
 vmsbuild.com	1.42
