@@ -13,6 +13,8 @@
 #define IDM_REDO          111
 #define IDM_FAVORITES     112
 #define IDM_SELECT_ALL    113
+#define IDM_PRINT         114
+#define IDM_PAGE_SETUP    115
 
 /* About dialog box defns. */
 

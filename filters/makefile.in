@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.70 2000/03/17 11:38:29 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.71 2001/01/04 00:12:47 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -37,7 +37,7 @@ prefix		= @prefix@
 exec_prefix	= @exec_prefix@
 
 libdir		= @libdir@
-bindir		= @VILE_LIBDIR_PATH@
+bindir		= @filters_bindir@
 datadir		= @datadir@/vile
 
 #### End of system configuration section. ####

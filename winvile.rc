@@ -45,3 +45,12 @@ BEGIN
     CTEXT           "",IDM_ABOUT_COPYRIGHT,4,36,180,51,SS_SUNKEN //set @ runtime
     LTEXT           "",IDM_ABOUT_PROGNAME,32,8,148,18            //set @ runtime
 END
+
+PrintCancelDlg DIALOG DISCARDABLE  0, 0, 156, 60
+STYLE WS_VISIBLE | WS_POPUP | WS_CAPTION
+CAPTION "Cancel Printing"
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "Cancel",IDCANCEL,80,22,50,14
+    ICON            "VilewIcon",-1,21,19,20,20
+END

@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.276 2000/11/04 17:48:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.277 2001/01/03 23:16:04 cmorgan Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -305,6 +305,9 @@ decl_uninit( char *startup_path );
 decl_uninit( char *libdir_path );
 
 decl_init_const( char hexdigits[], "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+#if SYS_WINNT
+decl_init_const( char ctrldigits[], "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_");
+#endif
 
 /*--------------------------------------------------------------------------*/
 

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.38 2000/10/27 02:02:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.39 2001/01/03 23:28:48 cmorgan Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -70,6 +70,23 @@ init_filter(int before GCC_UNUSED)
 {
 }
 
+/*
+ * string passed to this routine is in the format:
+ *
+ *    [<white>]:
+ */
+static void
+color_delimiter(char *text, int size, char *attr)
+{
+    char delim[2];
+
+    delim[0] = text[--size];       /* save the trailing delimiter */
+    delim[1] = text[size] = '\0';  /* chop the trailing delimiter */
+    if (size)
+	flt_puts(text, size , "");
+    flt_puts(delim, 1, attr);
+}
+
 static void
 do_filter(FILE *input)
 {
@@ -122,7 +139,8 @@ INTEGER		[-+]?([0-9]+)
 
 <NORMAL>"#"[^\n]*	{ WriteToken(Comment_attr); }
 
-<NORMAL>^{SPACE}*:	|
+<NORMAL>^{SPACE}*:	{ color_delimiter(yytext, yyleng, Action_attr); }
+
 <NORMAL>{ACTION}	{ WriteToken(Action_attr); }
 
 <NORMAL>{INTEGER}	{ WriteToken(Number_attr); }

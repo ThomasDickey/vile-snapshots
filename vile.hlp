@@ -393,7 +393,7 @@ Shell Access
 	"dirs" lists the directory stack in a scratch buffer.  Note that the
 	directory stack is zero-based.	Precede this command with an argument
 	to kill the buffer.  "dirs-clear" clears the stack and kills the
-	scratch buffer.  "dirs-add" adds a directory to stack[top - 1], 
+	scratch buffer.  "dirs-add" adds a directory to stack[top - 1],
 	but does not affect cwd, which makes this command useful for
 	initializing the stack from a macro or startup file.
 
@@ -769,16 +769,16 @@ Miscellaneous commands
 
 		The command parsing is done with regular expressions.  Vile
 		compiles these from the buffer [Error Expressions], which are a
-		set of regular expressions with extra embedded information. 
+		set of regular expressions with extra embedded information.
 		Unescaped '%' followed by 'V', 'B', 'F', 'L', 'C' or 'T'
 		substitute verb (Entering/Leaving for gmake), buffer (i.e.,
 		scratch buffer with a bracketed name), file, line, column and
 		text fields.
-		
+
 		The line and column numbers are 1-based, treating tab character
 		as a single column.  Use %l and %c, respectively for 0-based
 		values.
-		
+
 		The V, B, F, T substitutions are for nonblank fields, which is
 		not always enough, so vile additionally recognizes a range in
 		brackets, e.g.,
@@ -1478,6 +1478,8 @@ Editor modes
 		to wait until TAB is pressed a second time before popping
 		up the completion choices.  (U)
 
+	popup-menu Enables/disables the popup menu in winvile.  (U)
+
 	popup-msgs (pm) When enabled, vile pops up the [Messages] buffer
 		showing the text that was written to the message line.
 		Closing the window clears its content until the next
@@ -1976,7 +1978,7 @@ Key Rebinding
 	There are four key binding tables:
 
 		default - for commands in screen mode as well as those that do
-			not fit naturally into one of the specialized modes. 
+			not fit naturally into one of the specialized modes.
 			This is initialized by compiled-in definitions for
 			normal (0-127) and special (function and meta-key)
 			definitions.
@@ -3986,7 +3988,7 @@ Debugging features
 			effective mechanism for debugging macros.  Type
 			":se nopm" to disable popup-msgs.
 
-	~trace/$debug	use vile's builtin macro tracing to see what the 
+	~trace/$debug	use vile's builtin macro tracing to see what the
 			macros really do.  The ~trace command sets the
 			$debug variable, which controls whether vile
 			appends to the [Trace] buffer a copy of each line
@@ -4645,7 +4647,7 @@ Win32 specifics
 
 	-console               Start editor in a new console environment if
 				 stdin is redirected (i.e., input is taken
-				 from a redirected file or from a pipe). 
+				 from a redirected file or from a pipe).
 				 If this option is not set when stdin is
 				 redirected, console mouse features are
 				 unavailable (this problem is most often
@@ -4714,7 +4716,7 @@ Win32 specifics
 	"Font"		described below.
 	"Menu"		disables the popup menu and instead transforms the
 			right mouse button into a hot key that copies the
-			contents of the unnamed register to the clipboard. 
+			contents of the unnamed register to the clipboard.
 			When the popup menu is disabled, selection with the
 			left mouse, followed by a right mouse click,
 			provides a quick means of copying highlighted
@@ -4728,10 +4730,13 @@ Win32 specifics
 	"Paste"		pastes clipboard contents (if text) into current
 			buffer.
 	"Delete"   	deletes current text selection into unnamed register.
+	"Select All"    selects all text in the current buffer.
 
 	The first five popup menu entries are added to the system menu (in
-	the upper left corner of the window).  Use the "Menu" entry in that
-	menu to re-enable the popup menu.
+	the upper left corner of the window).  The system menu also includes
+	two selections that support the traditional Windows printing
+	interface.  Use the "Menu" entry in that menu to re-enable the
+	popup menu.
 
 	Clipboard
 	---------
@@ -4743,7 +4748,7 @@ Win32 specifics
 	the clipboard to the current buffer (bound to Shift+Insert).
 	Finally, the cut-to-clipboard command deletes the current text
 	selection and copies same to both the clipboard and the unnamed
-	register (bound to Shift+Delete).  Some examples, assuming 
+	register (bound to Shift+Delete).  Some examples, assuming
 	<CI> => Ctrl+Insert and <AI> => Alt+Insert:
 
 		4yy<AI>  ;copy 4 lines from unnamed reg to clipboard
@@ -4829,7 +4834,7 @@ Win32 specifics
 	Commands
 	--------
 	delete-text-selection
-			Delete the current text selection to the 
+			Delete the current text selection to the
 			unnamed register.  Bound to Alt+Delete.
 
 	reset-rgb-palette
@@ -4846,7 +4851,7 @@ Win32 specifics
 	winopen [dir]	Launches the Windows common open dialog box to open
 			one or more files within the editor.  The optional
 			"dir" argument specifies the initial browse
-			directory (default is current working directory). 
+			directory (default is current working directory).
 			Note that if this dialog box opens files outside
 			the editor's cwd, then Windows (and vile)
 			implicitly change the cwd to match that of the
@@ -4856,6 +4861,14 @@ Win32 specifics
 	winopen-nocd [dir]
 			Same as "winopen", except the editor's cwd remains
 			unchanged.
+
+	winpage-setup	launch Windows common page setup dialog (winvile only).
+			Use this command to set page attributes before
+			invoking winprint.
+
+	winprint	print current buffer (winvile only).  Note that
+			neither color nor display attributes are rendered
+			at this time.
 
 	winsave	[dir]	Launches the Windows common save dialog box to save
 			the current buffer in a file of the user's choice.
@@ -5183,4 +5196,4 @@ Problems
 
 Copyright 1995-2000 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.508 2000/11/11 01:49:13 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.510 2001/01/04 00:43:49 tom Exp $

@@ -27,12 +27,13 @@
 # Consult the macro $(PERL_SCRIPTS) in the file makefile.wnt to ascertain the
 # current list of vile-based perl scripts known to work in a Win32 environment.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/mkprlenv.wnt,v 1.7 1999/12/31 16:53:57 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/mkprlenv.wnt,v 1.8 2001/01/03 01:27:14 tom Exp $
 #
-    perl <<
+    perl -w <<
+	require Config;
         foreach $$dir (@INC)
         {
-            $$lib="$$dir\\CORE\\perl.lib";
+            $$lib="$$dir\\CORE\\" . $$Config::Config{'libperl'};
             last if (-f $$lib);
 
         }

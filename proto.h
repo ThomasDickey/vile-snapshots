@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.445 2000/11/15 10:54:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.447 2001/01/06 12:43:09 tom Exp $
  *
  */
 
@@ -25,7 +25,7 @@ extern char *vl_strncpy (char *dest, const char *src, size_t destlen);
 extern int call_cmdfunc (const CMDFUNC *p, int f, int n);
 extern int no_memory (const char *s);
 extern int rdonly (void);
-extern int writeall (int f, int n, int promptuser, int leaving, int autowriting);
+extern int writeall (int f, int n, int promptuser, int leaving, int autowriting, int all);
 extern void charinit (void);
 extern void do_repeats (int *cp, int *fp, int *np);
 extern void not_interrupted (void);
@@ -395,6 +395,7 @@ extern int getfile (char *fname, int lockfl);
 extern int ifile (char *fname, int belowthisline, FILE *haveffp);
 extern int kwrite (char *fn, int msgf);
 extern int no_file_found (void);
+extern int no_file_name (const char *fname);
 extern int no_such_file (const char *fname);
 extern int readin (char *fname, int lockfl, BUFFER *bp, int mflg);
 extern int same_fname (char *fname, BUFFER *bp, int lengthen);
@@ -1069,6 +1070,11 @@ extern FILE *vms_rpipe (const char *cmd, int fd, const char *input_file);
 /* w32isms */
 #if SYS_WINNT
 
+#define  PASS_HIGH(c)        ((int)(c) <= print_high && (int)(c) >= print_low)
+#define  _SPC_               ' '
+#define  _TAB_               '\t'
+#define  _TILDE_             '~'
+
 #define W32_SKIP_SHELL(cmd)  (strnicmp(cmd, \
                                        W32_START_STR, \
                                        W32_START_STR_LEN) == 0)
@@ -1115,6 +1121,7 @@ extern int  parse_font_str(const char *fontstr, FONTSTR_OPTIONS *results);
 extern void restore_console_title(void);
 extern void set_console_title(const char *title);
 extern int  stdin_data_available(void);
+extern void w32_center_window(void *child_hwnd, void *parent_hwnd);
 extern int  w32_CreateProcess(char *cmd, int no_wait);
 extern int  w32_del_selection(int copy_to_clipboard);
 extern int  w32_inout_popen(FILE **fr, FILE **fw, char *cmd);
@@ -1126,9 +1133,10 @@ extern int  w32_system_winvile(const char *cmd, int *pressret);
 extern char *w32_wdw_title();
 extern int  winopen_dir(const char *dir);
 extern int  winsave_dir(const char *dir);
+extern void winvile_cleanup(void);
 extern int  winvile_cursor(int visible, int queue_change);
 extern int  winvile_cursor_state(int visible, int queue_change);
-extern void *winvile_hwnd(void);
+extern void *winvile_hwnd(void);       /* winvile's main window */
 extern void winvile_start(void);
 #endif
 

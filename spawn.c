@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.160 2000/07/10 02:41:33 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.161 2001/01/06 12:34:02 tom Exp $
  *
  */
 
@@ -200,7 +200,7 @@ bktoshell(int f, int n)		/* suspend and wait to wake up */
 	int forced = (f && n == SPECIAL_BANG_ARG); /* then it was :stop! */
 
 	/* take care of autowrite */
-	if (!forced && writeall(f,n,FALSE,TRUE,TRUE) != TRUE)
+	if (!forced && writeall(f,n,FALSE,TRUE,TRUE,FALSE) != TRUE)
 		return FALSE;
 
 	beginDisplay();
@@ -366,7 +366,7 @@ spawn1(int rerun, int pressret)
 #endif	/* COMMON_SH_PROMPT */
 
 	/* take care of autowrite */
-	if (writeall(FALSE,1,FALSE,TRUE,TRUE) != TRUE)
+	if (writeall(FALSE,1,FALSE,TRUE,TRUE,FALSE) != TRUE)
 		return FALSE;
 
 #if SYS_UNIX
@@ -469,7 +469,7 @@ capturecmd(int f, int n)
 		return s;
 
 	/* take care of autowrite */
-	if (writeall(f,n,FALSE,FALSE,TRUE) != TRUE)
+	if (writeall(f,n,FALSE,FALSE,TRUE,FALSE) != TRUE)
 		return FALSE;
 
 	if ((s = ((bp = bfind(OUTPUT_BufName, 0)) != NULL)) != TRUE)

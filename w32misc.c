@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.28 2000/11/04 11:24:06 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.29 2001/01/03 23:17:53 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -24,6 +24,8 @@
 #define SHEXE            "sh.exe"
 #define SHEXE_LEN        (sizeof(SHEXE) - 1)
 #define SHELL_C_LEN      (sizeof(" -c ") - 1)
+
+#undef  RECT			     /* FIXME: symbol conflict */
 
 extern REGION *haveregion;
 
@@ -606,8 +608,27 @@ w32_system_winvile(const char *cmd, int *pressret)
         /* Success */
 
         DWORD        dummy;
+        HWND         hwnd;
+        int          i;
         INPUT_RECORD ir;
 
+        for (i = 0; i < 5; i++)
+        {
+            if ((hwnd = FindWindow(NULL, cmd)) != NULL)
+            {
+                /*
+                 * If the spawned console's close button is pressed, both
+                 * the console _and_ winvile are killed.  Not good.
+                 * Prevent that using code borrowed from Charles Petzold.
+                 */
+
+                (void) EnableMenuItem(GetSystemMenu(hwnd, FALSE),
+                                      SC_CLOSE,
+                                      MF_GRAYED);
+                break;
+            }
+            Sleep(200);
+        }
         if (! no_shell)
         {
             (void) _cwait(&rc, (int) pi.hProcess, 0);
@@ -635,7 +656,7 @@ w32_system_winvile(const char *cmd, int *pressret)
                             rc = -1;
                             break;
                         }
-                        if (ir.EventType == KEY_EVENT && 
+                        if (ir.EventType == KEY_EVENT &&
                                                     ir.Event.KeyEvent.bKeyDown)
                         {
                             break;
@@ -1018,7 +1039,7 @@ w32_del_selection(int copy_to_cbrd)
     shape   = delrp.ar_shape;
     savedot = DOT;
 
-    /* 
+    /*
      * Region to delete is now accessible via delrp.  Mimic the code
      * executed by operdel().  The actual code executed depends upon
      * whether or not the region is rectangular.
@@ -1121,3 +1142,28 @@ w32_keybrd_write(char *data)
     }
     return (rc);
 }
+
+
+
+#ifdef DISP_NTWIN
+
+/* Center a child window (usually a dialog box) over a parent. */
+void
+w32_center_window(HWND child_hwnd, HWND parent_hwnd)
+{
+    int  w, h;
+    RECT crect,			/* child rect */
+         prect;			/* parent rect */
+
+    GetWindowRect(parent_hwnd, &prect);
+    GetWindowRect(child_hwnd, &crect);
+    w = crect.right - crect.left;
+    h = crect.bottom - crect.top;
+    MoveWindow(child_hwnd,
+               prect.left + ((prect.right - prect.left) / 2 - w / 2),
+               prect.top + ((prect.bottom - prect.top) / 2 - h / 2),
+               w,
+               h,
+               TRUE);
+}
+#endif

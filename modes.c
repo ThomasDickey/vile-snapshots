@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.207 2000/11/15 11:27:42 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.208 2001/01/06 12:25:13 tom Exp $
  *
  */
 
@@ -86,6 +86,8 @@ static void relist_majormodes(void);
 #define relist_majormodes() /* nothing */
 
 #endif /* OPT_MAJORMODE */
+
+#define is_str_type(type) ((type) == VALTYPE_REGEX || (type) == VALTYPE_STRING)
 
 /*--------------------------------------------------------------------------*/
 
@@ -966,7 +968,6 @@ VALARGS *args)			/* symbol-table entry for the mode */
 	int no = !strncmp(cp, "no", 2);
 	const char *rp = NULL;
 	int status = TRUE;
-	int unsetting = !setting && !global;
 
 	if (no && !is_bool_type(names->type))
 		return FALSE;		/* this shouldn't happen */
@@ -982,11 +983,10 @@ VALARGS *args)			/* symbol-table entry for the mode */
 
 	/* get a value if we need one */
 	if ((end_string() == '=')
-	 || (!is_bool_type(names->type) && !unsetting)) {
+	 || (!is_bool_type(names->type) && setting)) {
 		int	regex = (names->type == VALTYPE_REGEX);
 		int	opts = regex ? 0 : KBD_NORMAL;
-		int	eolchar = (names->type == VALTYPE_REGEX
-				|| names->type == VALTYPE_STRING) ? '\n' : ' ';
+		int	eolchar = is_str_type(names->type) ? '\n' : ' ';
 		int	(*complete) (DONE_ARGS) = no_completion;
 
 		respbuf[0] = EOS;
@@ -1005,6 +1005,8 @@ VALARGS *args)			/* symbol-table entry for the mode */
 			return status;
 		if (!strlen(rp = respbuf))
 			return FALSE;
+	} else if (!setting) {
+		rp = is_str_type(names->type) ? "" : "0";
 	}
 #if OPT_HISTORY
 	else

@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.386 2000/10/27 00:49:30 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.388 2001/01/06 00:40:16 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -924,14 +924,6 @@ implement [Mac-style], like [Dos-style].
 
 modify xvile blink_interval to use 2/3 duty-cycle
 
--- 96-11-21 (Philippe Le Foll <phillf@fridu.com>)
-
-	Would you know why 'vile' break GNU bash on NT.
-
-	Vile Readme tell than vile give back the tty in state in find it it
-	look not being true under NT.  And if you start vile from bash when
-	comming back you loose the echo on command line.
-
 -- 96-11-22 (tom)
 
 it should be possible to recode the tcap.c mouse-motion to use 'select()' to
@@ -1276,15 +1268,6 @@ use vile for this (start it with an option to read commands from a pipe)?
 An ability to highlight current line and use different colors for breakable
 lines and lines with breakpoints would be also welcome.
 
-> 	+ change $shell to use $COMSPEC on OS/2, MS-DOS, etc.
-
-Hmm, I think it is a big loss.  (Though I have no idea what was the previous
-state.) The only reasonable way is to use VILE_SHELL, if not defined, then
-SHELL, if not defined, then use COMSPEC.
-
-This gives enough flexibility on both the systems which like *nixish access
-from *nixish tools, and those who do not.
-
 -- 97-12-15 (Billy Little <billy_little@hso.link.com>)
 
 is there any way to get the highlighting behavior when the highlighting begins
@@ -1563,43 +1546,6 @@ The problem appears to be that Vile::Buffer does not implement an OPEN
 method, and the re-opens of STDIN/STDOUT/STDERR to the pty in the child
 appear to be calling it for some reason I've not yet had a chance to
 track down.
-
--- 00-10-11 (cmorgan)
-
-    invoke winvile
-    :!ls 
-    <don't type a char at keyboard to dismiss transient console>
-    <click close button to close transient console>
-    <winvile exits (eek)>
-
-    duplicated on NT and 98, using various shells
-
-    Looking at this under the DevStudio debugger, the current behavior is
-    apparently a Win32 kernel bug/feature.  The situation is like so:
-
-        +---------------------+
-        | winvile process     |        +---------+
-        | waiting for Alloc'd |<======>| console |
-        | console thread to   |        +---------+
-        | exit                |
-        +---------------------+
-
-    Apparently the alloc'd console and winvile process share critical
-    kernel resources.  Consquently, when the console close button is
-    clicked and the console is destroyed, the kernel simply rolls up
-    winvile.  I tried working around this with a try/catch loop, to no
-    avail.  The problem can be avoided in the parent by calling
-    FreeConsole() after spawning the child.  But then the console handles
-    saved away by the parent are worthless and it's not possible to write a
-    "press any key to continue" message in the console window.
-    
-    I suspect that problems like these caused the vim team to rely on
-    vimrun.exe for its shell and pipe I/O.
-
--- 00-10-15 (tom)
-
-xvile will build with perl 5.6.0, but the Vileserv scripts do not work
-properly.  For the time being, recommend building with perl 5.004
 
 -- 00-10-15 (tom)
 
