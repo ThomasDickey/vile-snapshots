@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.94 1999/11/27 20:20:11 tom Exp $
+; $Id: filters.rc,v 1.95 1999/12/03 02:13:52 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -402,7 +402,7 @@ define-mode txt
 
 define-mode xres
 ~with define-submode xres
-	suf '\(/[A-Z]\?[A-Z][a-z0-9-]\+$\|\.ad$\)'
+	suf '\(/[A-Z]\?[A-Z][a-z0-9-]\+$\|\.Xdefaults\|\.ad$\)'
 	comment-prefix	'^\s*!'
 	comments	'^\s*!\s*$'
 ~endwith

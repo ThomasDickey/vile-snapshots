@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.50 1999/11/10 01:23:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.51 1999/11/28 20:07:34 tom Exp $
  *
  */
 
@@ -684,6 +684,7 @@ main(int argc, char **argv)
 
     insert_keyword(NAME_ACTION,  ATTR_ACTION,  1);
     insert_keyword(NAME_COMMENT, ATTR_COMMENT, 1);
+    insert_keyword(NAME_ERROR,   ATTR_ERROR,   1);
     insert_keyword(NAME_IDENT,   ATTR_IDENT,   1);
     insert_keyword(NAME_IDENT2,  ATTR_IDENT2,  1);
     insert_keyword(NAME_KEYWORD, ATTR_KEYWORD, 1);
