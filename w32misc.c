@@ -1,13 +1,12 @@
 /*
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
- * Written by Clark Morgan for vile (may 1998).
  *
  * Caveats
  * =======
  * -- This code has not been tested with NT 3.51 .
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.7 1998/09/03 10:15:40 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.8 1998/09/09 00:59:54 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -314,10 +313,7 @@ w32_system(const char *cmd)
     {
         /* heap exhausted! */
 
-        mlforce("insufficient memory to invoke shell");
-
-        /* Give user a chance to read message--more will surely follow. */
-        Sleep(3000);
+        (void) no_memory("w32_system()");
         return (-1);
     }
     set_console_title(cmd);
@@ -327,6 +323,113 @@ w32_system(const char *cmd)
     restore_console_title();
     return (rc);
 }
+
+
+
+#ifdef DISP_NTWIN
+/*
+ * FUNCTION
+ *   w32_system_winvile(const char *cmd)
+ *
+ *   cmd - command string to be be passed to a Win32 command interpreter.
+ *
+ * DESCRIPTION
+ *   Executes a system() call in the context of a Win32 GUI application,
+ *   taking care to ensure that the user's command string is properly
+ *   quoted if get_shell() points to a bourne shell clone.
+ *
+ *   "In the context of a Win32 GUI application" means that:
+ *
+ *   a) the GUI requires explicit console allocation prior to exec'ing
+ *      "cmd", and
+ *   b) said console stays "up" until explicitly dismissed by the user.
+ *
+ * ACKNOWLEDGMENTS
+ *   I had no idea a Win32 GUI app could exec a console command until I
+ *   browsed the win32 gvim code.
+ *
+ * RETURNS
+ *   If memory/console allocation fails, -1.
+ *   Else whatever the executed command returns.
+ */
+
+int
+w32_system_winvile(const char *cmd)
+{
+#define PRESS_ANY_KEY "\n[Press any key to continue]"
+
+    char                 *cmdstr;
+    int                  freestr, rc = -1;
+    PROCESS_INFORMATION  pi;
+    STARTUPINFO          si;
+
+    if ((cmdstr = mk_shell_cmd_str((char *) cmd, &freestr, TRUE)) == NULL)
+    {
+        /* heap exhausted! */
+
+        (void) no_memory("w32_system_winvile()");
+        return (rc);
+    }
+    if (! AllocConsole())
+    {
+        if (freestr)
+            free(cmdstr);
+        mlforce("console creation failed");
+        return (rc);
+    }
+    SetConsoleTitle(cmd);
+    memset(&si, 0, sizeof(si));
+    si.cb          = sizeof(si);
+    si.dwFlags     = STARTF_USESTDHANDLES;
+    si.hStdInput   = GetStdHandle(STD_INPUT_HANDLE);
+    si.hStdOutput  = GetStdHandle(STD_OUTPUT_HANDLE);
+    si.hStdError   = GetStdHandle(STD_ERROR_HANDLE);
+    if (CreateProcess(NULL,
+                      cmdstr,
+                      NULL,
+                      NULL,
+                      TRUE,       /* Inherit handles */
+                      0,
+                      NULL,
+                      NULL,
+                      &si,
+                      &pi))
+    {
+        /* Success */
+
+        DWORD        dummy;
+        INPUT_RECORD ir;
+
+        (void) _cwait(&rc, (int) pi.hProcess, 0);
+        (void) WriteFile(si.hStdOutput,
+                         PRESS_ANY_KEY,
+                         sizeof(PRESS_ANY_KEY) - 1,
+                         &dummy,
+                         NULL);
+        for (;;)
+        {
+            /* Wait for a single key of input from user. */
+
+            if (! ReadConsoleInput(si.hStdInput, &ir, 1, &dummy))
+                break;      /* What?? */
+            if (ir.EventType == KEY_EVENT && ir.Event.KeyEvent.bKeyDown)
+                break;
+        }
+        (void) CloseHandle(pi.hProcess);
+        (void) CloseHandle(pi.hThread);
+    }
+    else
+    {
+        /* Bummer */
+
+        mlforce("unable to exec console command");
+    }
+    if (freestr)
+        free(cmdstr);
+    FreeConsole();
+    return (rc);
+}
+#endif /* DISP_NTWIN */
 
 
 
