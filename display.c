@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.398 2005/01/23 19:45:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.399 2005/03/15 02:23:43 tom Exp $
  *
  */
 
@@ -1844,6 +1844,9 @@ update_line_attrs(WINDOW *wp)
 		    i = col2offs(wp, lp, 0);
 		else
 		    i = 0;
+	    }
+	    if (!linewrap && w_val(wp, WMDNUMBER) && w_val(wp, WVAL_SIDEWAYS)) {
+		i += NU_WIDTH;
 	    }
 	    /* If i > 0, make sure it indexes a valid attribute.  */
 	    if (i > 0) {

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.30 2005/02/15 23:54:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.36 2005/03/25 02:06:00 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -18,12 +18,16 @@ DefineFilter("ruby");
 #endif
 
 #define isIdent(c)   (isalnum(CharOf(c)) || c == '_')
+#define isIdent0(c)  (isalpha(CharOf(c)) || c == '_')
 
 #ifdef DEBUG
 #define DPRINTF(params) if(FltOptions('d'))printf params
 #else
 #define DPRINTF(params)		/*nothing */
 #endif
+
+#define Parsed(var,tok) var = tok; \
+	DPRINTF(("...%s: %d\n", tokenType(var), ok))
 
 typedef enum {
     eALIAS
@@ -33,6 +37,20 @@ typedef enum {
     ,eHERE
     ,ePOD
 } States;
+
+typedef enum {
+    tNULL
+    ,tBLANK
+    ,tCHAR
+    ,tCOMMENT
+    ,tHERE
+    ,tKEYWORD
+    ,tNUMBER
+    ,tOPERATOR
+    ,tREGEXP
+    ,tSTRING
+    ,tVARIABLE
+} TType;
 
 static char *Comment_attr;
 static char *Error_attr;
@@ -75,6 +93,49 @@ stateName(States state)
 	break;
     case ePOD:
 	result = "POD";
+	break;
+    }
+    return result;
+}
+
+static char *
+tokenType(TType type)
+{
+    char *result = "?";
+
+    switch (type) {
+    case tNULL:
+	result = "No Token";
+	break;
+    case tBLANK:
+	result = "BLANK";
+	break;
+    case tCHAR:
+	result = "CHAR";
+	break;
+    case tCOMMENT:
+	result = "COMMENT";
+	break;
+    case tHERE:
+	result = "HERE";
+	break;
+    case tKEYWORD:
+	result = "KEYWORD";
+	break;
+    case tNUMBER:
+	result = "NUMBER";
+	break;
+    case tOPERATOR:
+	result = "OPERATOR";
+	break;
+    case tREGEXP:
+	result = "REGEXP";
+	break;
+    case tSTRING:
+	result = "STRING";
+	break;
+    case tVARIABLE:
+	result = "VARIABLE";
 	break;
     }
     return result;
@@ -164,16 +225,22 @@ is_QIDENT(char *s)
 {
     char *base = s;
     int ch;
+    int leading = 1;
 
     while (s != the_last) {
 	ch = CharOf(*s);
-	if (isIdent(ch)
-	    || ch == BQUOTE
-	    || ch == SQUOTE
-	    || ch == DQUOTE)
+	if (leading && isIdent0(ch)) {
+	    leading = 0;
 	    s++;
-	else
+	} else if (!leading && isIdent(ch)) {
+	    s++;
+	} else if (ch == BQUOTE
+		   || ch == SQUOTE
+		   || ch == DQUOTE) {
+	    s++;
+	} else {
 	    break;
+	}
     }
     return s - base;
 }
@@ -187,7 +254,7 @@ is_KEYWORD(char *s)
 {
     int found = 0;
 
-    if (!isdigit(CharOf(s[0]))) {
+    if (isIdent0(CharOf(s[0]))) {
 	while ((s + found < the_last) && isIdent(s[found])) {
 	    ++found;
 	}
@@ -503,6 +570,86 @@ skip_BLANKS(char *s)
 }
 
 /*
+ * Return the number of characters if an operator is found, otherwise zero.
+ */
+static int
+is_OPERATOR(char *s)
+{
+    int found = 0;
+#define OPS(s) { s, sizeof(s) - 1 }
+    static const struct {
+	const char *ops;
+	int len;
+    } table[] = {
+	/* 3 */
+	OPS("&&="),
+	    OPS("**="),
+	    OPS("..."),
+	    OPS("<<="),
+	    OPS("<=>"),
+	    OPS("==="),
+	    OPS(">>="),
+	    OPS("[]="),
+	    OPS("||="),
+	/* 2 */
+	    OPS("!="),
+	    OPS("!~"),
+	    OPS("%="),
+	    OPS("&&"),
+	    OPS("&="),
+	    OPS("**"),
+	    OPS("*="),
+	    OPS("+="),
+	    OPS("-="),
+	    OPS(".."),
+	    OPS("/="),
+	    OPS("::"),
+	    OPS("<<"),
+	    OPS("<="),
+	    OPS("=="),
+	    OPS("=>"),
+	    OPS("=~"),
+	    OPS(">="),
+	    OPS(">>"),
+	    OPS("[]"),
+	    OPS("^="),
+	    OPS("|="),
+	    OPS("||"),
+	/* 1 */
+	    OPS("!"),
+	    OPS("&"),
+	    OPS("("),
+	    OPS(")"),
+	    OPS("*"),
+	    OPS("+"),
+	    OPS(","),
+	    OPS("-"),
+	    OPS(";"),
+	    OPS("="),
+	    OPS("["),
+	    OPS("]"),
+	    OPS("^"),
+	    OPS("{"),
+	    OPS("|"),
+	    OPS("}"),
+	    OPS("~"),
+    };
+
+    if (ispunct(*s)) {
+	unsigned n;
+	for (n = 0; n < TABLESIZE(table); ++n) {
+	    if ((the_last - s) >= table[n].len
+		&& table[n].ops[0] == *s
+		&& !memcmp(s, table[n].ops, table[n].len)) {
+		found = table[n].len;
+		break;
+	    }
+	}
+    }
+    return found;
+}
+
+/*
  * Do the real work for is_Regexp().  Documentation is vague, but the parser
  * appears to use the same quoting type for each nesting level.
  */
@@ -709,6 +856,11 @@ var_embedded(char *s)
     return found ? found + 1 : 0;
 }
 
+/*
+ * FIXME: var_embedded() can recognize a multi-line embedded variable, but
+ * this function is called for each line.  Probably should redo the output
+ * so this is called at the end of the here-document, etc.
+ */
 static char *
 put_embedded(char *s, int len, char *attr)
 {
@@ -717,7 +869,8 @@ put_embedded(char *s, int len, char *attr)
 
     for (j = k = 0; j < len; j++) {
 	if ((j == 0 || (s[j - 1] != BACKSLASH))
-	    && (id = var_embedded(s + j)) != 0) {
+	    && (id = var_embedded(s + j)) != 0
+	    && (id + j) < len) {
 	    if (j != k)
 		flt_puts(s + k, j - k, attr);
 	    flt_puts(s + j, id, Ident2_attr);
@@ -769,6 +922,15 @@ put_KEYWORD(char *s, int ok, int *had_op)
     s[ok] = save;
     flt_puts(s, ok, attr);
     *had_op = (attr == Keyword_attr);
+    return s + ok;
+}
+
+static char *
+put_OPERATOR(char *s, int ok, int *had_op)
+{
+    flt_puts(s, ok, "");
+    if (strchr("(|&=~!,;", *s) != 0)
+	*had_op = 1;
     return s + ok;
 }
 
@@ -849,6 +1011,8 @@ do_filter(FILE *input GCC_UNUSED)
     unsigned actual = 0;
     size_t request = 0;
     States state = eCODE;
+    TType this_tok = tNULL;
+    TType last_tok = tNULL;
     char *s;
     char *marker = 0;
     int in_line = -1;
@@ -894,6 +1058,8 @@ do_filter(FILE *input GCC_UNUSED)
 	while (s != the_last) {
 	    if (*s == '\n') {
 		in_line = -1;
+		if (state == eCODE)
+		    had_op = 1;
 	    } else {
 		in_line++;
 	    }
@@ -907,18 +1073,21 @@ do_filter(FILE *input GCC_UNUSED)
 	    case eALIAS:
 	    case eDEF:
 		if ((ok = is_COMMENT(s)) != 0) {
-		    DPRINTF(("...COMMENT: %d\n", ok));
+		    Parsed(this_tok, tCOMMENT);
 		    s = put_COMMENT(s, ok);
 		} else if ((ok = is_BLANK(s)) != 0) {
-		    DPRINTF(("...BLANK: %d\n", ok));
+		    Parsed(this_tok, tBLANK);
 		    flt_puts(s, ok, "");
 		    s += ok;
 		} else if ((ok = is_KEYWORD(s)) != 0) {
-		    DPRINTF(("...KEYWORD: %d\n", ok));
+		    Parsed(this_tok, tKEYWORD);
 		    s = put_KEYWORD(s, ok, &had_op);
 		    state = eCODE;
+		} else if ((ok = is_OPERATOR(s)) != 0) {
+		    Parsed(this_tok, tOPERATOR);
+		    s = put_OPERATOR(s, ok, &had_op);
+		    state = eCODE;
 		} else {
-		    /* FIXME: use is_OPERATOR here? */
 		    flt_putc(*s++);
 		    state = eCODE;
 		}
@@ -934,26 +1103,31 @@ do_filter(FILE *input GCC_UNUSED)
 		 */
 	    case eCLASS:
 		if ((ok = is_COMMENT(s)) != 0) {
-		    DPRINTF(("...COMMENT: %d\n", ok));
+		    Parsed(this_tok, tCOMMENT);
 		    s = put_COMMENT(s, ok);
 		} else if ((ok = is_BLANK(s)) != 0) {
-		    DPRINTF(("...BLANK: %d\n", ok));
+		    Parsed(this_tok, tBLANK);
 		    flt_puts(s, ok, "");
 		    s += ok;
 		} else if ((ok = is_KEYWORD(s)) != 0) {
-		    DPRINTF(("...KEYWORD: %d\n", ok));
+		    Parsed(this_tok, tKEYWORD);
 		    s = put_KEYWORD(s, ok, &had_op);
 		    state = eCODE;
+		} else if ((ok = is_OPERATOR(s)) != 0) {
+		    Parsed(this_tok, tOPERATOR);
+		    s = put_OPERATOR(s, ok, &had_op);
+		    state = eCODE;
 		} else {
-		    do {
-			flt_putc(*s++);
-		    } while (*s == '<');
+		    flt_putc(*s++);
 		    state = eCODE;
 		}
 		had_op = 1;	/* kludge - in case a "class" precedes regex */
 		break;
 	    case eCODE:
-		if ((marker = begin_HERE(s, &quote_here, &strip_here)) != 0) {
+		if ((last_tok == tKEYWORD || last_tok == tOPERATOR)
+		    && (marker = begin_HERE(s, &quote_here, &strip_here)) != 0) {
+		    ok = 1;	/* FIXME: should allow other tokens on line */
+		    Parsed(this_tok, tHERE);
 		    state = eHERE;
 		    s = put_remainder(s, String_attr, quote_here);
 		} else if ((in_line < 0 && begin_POD(s + 1))
@@ -963,17 +1137,17 @@ do_filter(FILE *input GCC_UNUSED)
 		    flt_putc(*s++);	/* write the newline */
 		    s = put_remainder(s, Comment_attr, 1);
 		} else if ((ok = is_COMMENT(s)) != 0) {
-		    DPRINTF(("...COMMENT: %d\n", ok));
+		    Parsed(this_tok, tCOMMENT);
 		    s = put_COMMENT(s, ok);
 		} else if ((ok = is_BLANK(s)) != 0) {
-		    DPRINTF(("...BLANK: %d\n", ok));
+		    Parsed(this_tok, tBLANK);
 		    flt_puts(s, ok, "");
 		    s += ok;
 		} else if (had_op && (ok = is_Regexp(s, &delim)) != 0) {
-		    DPRINTF(("...REGEXP: %d\n", ok));
+		    Parsed(this_tok, tREGEXP);
 		    s = put_REGEXP(s, ok, delim);
 		} else if ((ok = is_CHAR(s, &err)) != 0) {
-		    DPRINTF(("...CHAR: %d\n", ok));
+		    Parsed(this_tok, tCHAR);
 		    had_op = 0;
 		    if (err) {
 			flt_error("not a number");
@@ -983,7 +1157,7 @@ do_filter(FILE *input GCC_UNUSED)
 		    }
 		    s += ok;
 		} else if ((ok = is_NUMBER(s, &err)) != 0) {
-		    DPRINTF(("...NUMBER: %d\n", ok));
+		    Parsed(this_tok, tNUMBER);
 		    had_op = 0;
 		    if (err) {
 			flt_error("not a number");
@@ -993,7 +1167,7 @@ do_filter(FILE *input GCC_UNUSED)
 		    }
 		    s += ok;
 		} else if ((ok = is_KEYWORD(s)) != 0) {
-		    DPRINTF(("...KEYWORD: %d\n", ok));
+		    Parsed(this_tok, tKEYWORD);
 		    if (ok == 5 && !strncmp(s, "alias", ok))
 			state = eALIAS;
 		    else if (ok == 5 && !strncmp(s, "class", ok))
@@ -1002,14 +1176,15 @@ do_filter(FILE *input GCC_UNUSED)
 			state = eDEF;
 		    s = put_KEYWORD(s, ok, &had_op);
 		} else if ((ok = is_VARIABLE(s)) != 0) {
-		    DPRINTF(("...VARIABLE: %d\n", ok));
+		    Parsed(this_tok, tVARIABLE);
 		    s = put_VARIABLE(s, ok);
 		    had_op = 0;
-		} else if (s + 2 <= the_last && !strncmp(s, "?\"", 2)) {
-		    DPRINTF(("...VARIABLE: %d\n", 2));
-		    s = put_VARIABLE(s, 2);	/* csv.rb uses it, undocumented */
+		} else if (s + (ok = 2) <= the_last && !strncmp(s, "?\"", ok)) {
+		    Parsed(this_tok, tVARIABLE);
+		    s = put_VARIABLE(s, ok);	/* csv.rb uses it, undocumented */
 		    had_op = 0;
 		} else if ((ok = is_String(s, &delim, &err)) != 0) {
+		    Parsed(this_tok, tSTRING);
 		    had_op = 0;
 		    if (*s == '%') {
 			flt_puts(s, 2, Keyword_attr);
@@ -1032,11 +1207,11 @@ do_filter(FILE *input GCC_UNUSED)
 			}
 			s += ok;
 		    }
+		} else if ((ok = is_OPERATOR(s)) != 0) {
+		    Parsed(this_tok, tOPERATOR);
+		    s = put_OPERATOR(s, ok, &had_op);
 		} else {
-		    /* FIXME: use is_OPERATOR here? */
-		    if (strchr("(|&=~!,;", *s) != 0)
-			had_op = 1;
-		    else if (!isspace(CharOf(*s)))
+		    if (!isspace(CharOf(*s)))
 			had_op = 0;
 		    flt_putc(*s++);
 		}
@@ -1053,6 +1228,29 @@ do_filter(FILE *input GCC_UNUSED)
 		if (end_POD(s))
 		    state = eCODE;
 		s = put_remainder(s, Comment_attr, 1);
+		break;
+	    }
+
+	    switch (this_tok) {
+	    case tNULL:
+	    case tBLANK:
+	    case tCOMMENT:
+		continue;
+	    case tCHAR:
+	    case tHERE:
+	    case tNUMBER:
+	    case tREGEXP:
+	    case tSTRING:
+		last_tok = this_tok;
+		break;
+	    case tKEYWORD:
+		last_tok = this_tok;
+		break;
+	    case tOPERATOR:
+		last_tok = this_tok;
+		break;
+	    case tVARIABLE:
+		last_tok = this_tok;
 		break;
 	    }
 	}

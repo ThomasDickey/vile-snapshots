@@ -1,5 +1,24 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20050324 (s)
+	> Tom Dickey:
+	+ improve rubyfilt.c
+	  + check for token beginning here-document cannot begin with a digit.
+	  + improve operator-parsing, use that to fix a case where "<<"
+	    operator was confused with the beginning of a here-document.
+	  + treat newline as a statement terminator (report by Paul van
+	    Tilburg).
+	+ correct a loop limit in on_double_click(), used by winvile.  Double
+	  clicking on the first line of a file would (depending on content and
+	  the build configuration) set the beginning of the region before the
+	  line.
+	+ add VILE_HELP_FILE to the list of environment variables managed by the
+	  Inno Setup script.
+	+ fix a missing include for w32vile.h needed to compile filters on
+	  win32 (also reported by Larry Gensch).
+	+ correct extent of highlighting in update_line_attrs() when number
+	  mode is active.
+
  20050313 (r)
 	> Tom Dickey:
 	+ modify environment variable lookup for win32 to look in the registry

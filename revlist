@@ -1,6 +1,6 @@
-revlist for vile, version v9_4r
+revlist for vile, version v9_4s
 --------------------------------------------------------------------------------
-CHANGES	1.807
+CHANGES	1.811
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -11,7 +11,7 @@ COPYING	1.3
 INSTALL	1.6
 MANIFEST	none
 README	1.90
-README.PC	1.31
+README.PC	1.32
 README.VMS	1.5
 aclocal.m4	1.142
 ansi.c	1.45
@@ -35,7 +35,7 @@ csrch.c	1.32
 curses.c	1.20
 descrip.mms	1.46
 dirstuff.h	1.27
-display.c	1.398
+display.c	1.399
 djhandl.c	1.6
 dumbterm.c	1.18
 edef.h	1.320
@@ -85,7 +85,7 @@ opers.c	1.90
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.31
-patchlev.h	1.325
+patchlev.h	1.326
 path.c	1.147
 perl.xs	1.100
 plugin.c	1.1
@@ -96,9 +96,9 @@ ptypemap	1.7
 random.c	1.282
 regexp.c	1.110
 region.c	1.131
-revlist	v9_4r
+revlist	v9_4s
 search.c	1.137
-select.c	1.156
+select.c	1.157
 sinstall.sh	1.1
 spawn.c	1.184
 statevar.c	1.94
@@ -112,9 +112,9 @@ trace.h	1.22
 ucrypt.c	1.15
 undo.c	1.88
 version.c	1.57
-vile-9.4.spec	1.20
+vile-9.4.spec	1.21
 vile.1	1.30
-vile.hlp	1.598
+vile.hlp	1.599
 vile.wmconfig	1.1
 vms2unix.c	1.40
 vmsbuild.com	1.42
@@ -195,9 +195,9 @@ filters/est-filt.l	1.3
 filters/est.key	1.1
 filters/fdl-filt.l	1.9
 filters/fdl.key	1.4
-filters/filterio.c	1.25
+filters/filterio.c	1.26
 filters/filters.c	1.98
-filters/filters.h	1.90
+filters/filters.h	1.91
 filters/filters.rc	1.200
 filters/fltstack.h	1.9
 filters/genmake.c	1.4
@@ -262,7 +262,7 @@ filters/rexx.key	1.1
 filters/rexxfilt.l	1.7
 filters/rpm-filt.l	1.8
 filters/rpm.key	1.3
-filters/rubyfilt.c	1.30
+filters/rubyfilt.c	1.36
 filters/sccs.key	1.1
 filters/sccsfilt.l	1.11
 filters/sed-filt.c	1.20
@@ -332,7 +332,7 @@ macros/vileinit.rc	1.25
 macros/vilemenu.rc	1.2
 macros/vileperl.rc	1.7
 macros/which.rc	1.14
-package/winvile.iss	1.3
+package/winvile.iss	1.4
 perl/Breadcrumbs.pm	1.4
 perl/CaptHook.pm	1.1
 perl/Glob2re.pm	1.1
