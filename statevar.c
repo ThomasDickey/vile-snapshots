@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.85 2004/12/06 23:36:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.86 2004/12/14 01:07:26 tom Exp $
  */
 
 #include	"estruct.h"
@@ -424,9 +424,11 @@ var_BCHARS(TBUFF **rp, const char *vp)
 int
 var_BFLAGS(TBUFF **rp, const char *vp)
 {
+    char temp[80];
+
     if (rp) {
-	tb_init(rp, EOS);
-	buffer_flags(tb_values(*rp), curbp);
+	buffer_flags(temp, curbp);
+	tb_scopy(rp, temp);
 	return TRUE;
     } else if (vp) {
 	return ABORT;		/* read-only */

@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.274 2004/12/02 01:47:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.275 2004/12/15 20:16:31 tom Exp $
  *
  */
 
@@ -488,7 +488,7 @@ static void x_own_selection(Atom selection);
 static Boolean x_get_selected_text(UCHAR ** datp, size_t *lenp);
 static Boolean x_get_clipboard_text(UCHAR ** datp, size_t *lenp);
 static Boolean x_convert_selection(Widget w, Atom * selection, Atom * target,
-				   Atom * type, XtPointer * value, ULONG * length,
+				   Atom * type, XtPointer *value, ULONG * length,
 				   int *format);
 static void extend_selection(TextWindow tw, int nr, int nc, Bool wipe);
 static void x_process_event(Widget w, XtPointer unused, XEvent * ev,
@@ -513,7 +513,7 @@ static Boolean alloc_shadows(Pixel pixel, Pixel * light, Pixel * dark);
 #endif
 static XFontStruct *query_font(TextWindow tw, const char *fname);
 static void configure_bar(Widget w, XEvent * event, String * params,
-			  Cardinal * num_params);
+			  Cardinal *num_params);
 static int check_scrollbar_allocs(void);
 static void kqinit(TextWindow tw);
 static int kqempty(TextWindow tw);
@@ -1405,7 +1405,7 @@ static void
 do_scroll(Widget w,
 	  XEvent * event,
 	  String * params,
-	  Cardinal * num_params)
+	  Cardinal *num_params)
 {
     static enum {
 	none, forward, backward, drag
@@ -1534,7 +1534,7 @@ static void
 resize_bar(Widget w,
 	   XEvent * event,
 	   String * params,
-	   Cardinal * num_params)
+	   Cardinal *num_params)
 {
     static int motion_permitted = False;
     static int root_y;
@@ -2006,7 +2006,7 @@ static XtResource resources[] =
 	sizeof(int),
 	XtOffset(TextWindow, blink_interval),
 	XtRImmediate,
-	(XtPointer) - 666	/* 2/3 second; only when highlighted */
+	(XtPointer) -666	/* 2/3 second; only when highlighted */
     },
 };
 
@@ -2019,7 +2019,7 @@ static XtResource color_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_fg[0]),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.fg
+	(XtPointer) &cur_win_rec.fg
     },
     {
 	XtNbcolor0,
@@ -2028,7 +2028,7 @@ static XtResource color_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_bg[0]),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
     },
     {
 	XtNfcolor1,
@@ -2046,7 +2046,7 @@ static XtResource color_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_bg[1]),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
     },
     {
 	XtNfcolor2,
@@ -2064,7 +2064,7 @@ static XtResource color_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_bg[2]),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
     },
     {
 	XtNfcolor3,
@@ -2082,7 +2082,7 @@ static XtResource color_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_bg[3]),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
     },
     {
 	XtNfcolor4,
@@ -2100,7 +2100,7 @@ static XtResource color_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_bg[4]),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
     },
     {
 	XtNfcolor5,
@@ -2118,7 +2118,7 @@ static XtResource color_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_bg[5]),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
     },
     {
 	XtNfcolor6,
@@ -2136,7 +2136,7 @@ static XtResource color_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_bg[6]),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
     },
     {
 	XtNfcolor7,
@@ -2154,7 +2154,7 @@ static XtResource color_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_bg[7]),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
     },
     {
 	XtNfcolor8,
@@ -2172,7 +2172,7 @@ static XtResource color_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_bg[8]),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
     },
     {
 	XtNfcolor9,
@@ -2190,7 +2190,7 @@ static XtResource color_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_bg[9]),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
     },
     {
 	XtNfcolorA,
@@ -2208,7 +2208,7 @@ static XtResource color_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_bg[10]),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
     },
     {
 	XtNfcolorB,
@@ -2226,7 +2226,7 @@ static XtResource color_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_bg[11]),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
     },
     {
 	XtNfcolorC,
@@ -2244,7 +2244,7 @@ static XtResource color_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_bg[12]),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
     },
     {
 	XtNfcolorD,
@@ -2262,7 +2262,7 @@ static XtResource color_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_bg[13]),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
     },
     {
 	XtNfcolorE,
@@ -2280,7 +2280,7 @@ static XtResource color_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_bg[14]),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
     },
     {
 	XtNfcolorF,
@@ -2298,7 +2298,7 @@ static XtResource color_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, colors_bg[15]),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
     },
 };
 
@@ -2313,7 +2313,7 @@ static XtResource scrollbar_resources[] =
 	XtOffset(TextWindow, scrollbar_fg),
 #if OLD_RESOURCES
 	XtRPixel,
-	(XtPointer) & cur_win_rec.fg
+	(XtPointer) &cur_win_rec.fg
 #else
 	XtRString,
 	"#b6dab2cab6da"
@@ -2327,7 +2327,7 @@ static XtResource scrollbar_resources[] =
 	XtOffset(TextWindow, scrollbar_bg),
 #if OLD_RESOURCES
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
 #else
 	XtRString,
 	"#9e7996589e79"
@@ -2344,7 +2344,7 @@ static XtResource scrollbar_resources[] =
 	(XtPointer) False
 #else
 	XtRBool,
-	(XtPointer) & cur_win_rec.slider_is_solid
+	(XtPointer) &cur_win_rec.slider_is_solid
 #endif				/* OLD_RESOURCES */
     },
 };
@@ -2360,7 +2360,7 @@ static XtResource modeline_resources[] =
 	XtOffset(TextWindow, modeline_fg),
 #if OLD_RESOURCES
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
 #else
 	XtRString,
 	"#ffffffffffff"
@@ -2374,7 +2374,7 @@ static XtResource modeline_resources[] =
 	XtOffset(TextWindow, modeline_bg),
 #if OLD_RESOURCES
 	XtRPixel,
-	(XtPointer) & cur_win_rec.fg
+	(XtPointer) &cur_win_rec.fg
 #else
 	XtRString,
 	"#70006ca37000"
@@ -2388,7 +2388,7 @@ static XtResource modeline_resources[] =
 	XtOffset(TextWindow, modeline_focus_fg),
 #if OLD_RESOURCES
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
 #else
 	XtRString,
 	"#ffffffffffff"
@@ -2402,7 +2402,7 @@ static XtResource modeline_resources[] =
 	XtOffset(TextWindow, modeline_focus_bg),
 #if OLD_RESOURCES
 	XtRPixel,
-	(XtPointer) & cur_win_rec.fg
+	(XtPointer) &cur_win_rec.fg
 #else
 	XtRString,
 	"#70006ca37000"
@@ -2419,7 +2419,7 @@ static XtResource selection_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, selection_fg),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
     },
     {
 	XtNbackground,
@@ -2428,7 +2428,7 @@ static XtResource selection_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, selection_bg),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.fg
+	(XtPointer) &cur_win_rec.fg
     },
 };
 
@@ -2451,7 +2451,7 @@ static XtResource cursor_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, cursor_fg),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.fg
+	(XtPointer) &cur_win_rec.fg
     },
     {
 	XtNbackground,
@@ -2460,7 +2460,7 @@ static XtResource cursor_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, cursor_bg),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
     },
 };
 
@@ -2473,7 +2473,7 @@ static XtResource pointer_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, pointer_fg),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.fg
+	(XtPointer) &cur_win_rec.fg
     },
     {
 	XtNbackground,
@@ -2482,7 +2482,7 @@ static XtResource pointer_resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, pointer_bg),
 	XtRPixel,
-	(XtPointer) & cur_win_rec.bg
+	(XtPointer) &cur_win_rec.bg
     },
     {
 	XtNnormalShape,
@@ -4917,7 +4917,7 @@ x_convert_selection(Widget w GCC_UNUSED,
 		    Atom * selection,
 		    Atom * target,
 		    Atom * type,
-		    XtPointer * value,
+		    XtPointer *value,
 		    ULONG * length,
 		    int *format)
 {
@@ -5698,7 +5698,7 @@ static void
 configure_bar(Widget w,
 	      XEvent * event,
 	      String * params,
-	      Cardinal * num_params)
+	      Cardinal *num_params)
 {
     WINDOW *wp;
     int i;
@@ -6199,7 +6199,7 @@ x_typahead(int milli)
 	    timeoutid = XtAppAddTimeOut(cur_win->app_context,
 					(ULONG) milli,
 					x_typahead_timeout,
-					(XtPointer) & timedout);
+					(XtPointer) &timedout);
 	} else
 	    timedout = 1;
 
@@ -6259,211 +6259,89 @@ x_key_press(Widget w GCC_UNUSED,
 
     int i;
     size_t n;
-
+    /* *INDENT-OFF* */
     static const struct {
 	KeySym key;
 	int code;
     } escapes[] = {
 	/* Arrow keys */
-	{
-	    XK_Up, KEY_Up
-	},
-	{
-	    XK_Down, KEY_Down
-	},
-	{
-	    XK_Right, KEY_Right
-	},
-	{
-	    XK_Left, KEY_Left
-	},
+	{ XK_Up,	KEY_Up },
+	{ XK_Down,	KEY_Down },
+	{ XK_Right,	KEY_Right },
+	{ XK_Left,	KEY_Left },
 	/* page scroll */
-	{
-	    XK_Next, KEY_Next
-	},
-	{
-	    XK_Prior, KEY_Prior
-	},
-	{
-	    XK_Home, KEY_Home
-	},
-	{
-	    XK_End, KEY_End
-	},
+	{ XK_Next,	KEY_Next },
+	{ XK_Prior,	KEY_Prior },
+	{ XK_Home,	KEY_Home },
+	{ XK_End,	KEY_End },
 	/* editing */
-	{
-	    XK_Insert, KEY_Insert
-	},
-	{
-	    XK_Delete, KEY_Delete
-	},
-	{
-	    XK_Find, KEY_Find
-	},
-	{
-	    XK_Select, KEY_Select
-	},
+	{ XK_Insert,	KEY_Insert },
+	{ XK_Delete,	KEY_Delete },
+	{ XK_Find,	KEY_Find },
+	{ XK_Select,	KEY_Select },
 	/* command keys */
-	{
-	    XK_Menu, KEY_Menu
-	},
-	{
-	    XK_Help, KEY_Help
-	},
+	{ XK_Menu,	KEY_Menu },
+	{ XK_Help,	KEY_Help },
 	/* function keys */
-	{
-	    XK_F1, KEY_F1
-	},
-	{
-	    XK_F2, KEY_F2
-	},
-	{
-	    XK_F3, KEY_F3
-	},
-	{
-	    XK_F4, KEY_F4
-	},
-	{
-	    XK_F5, KEY_F5
-	},
-	{
-	    XK_F6, KEY_F6
-	},
-	{
-	    XK_F7, KEY_F7
-	},
-	{
-	    XK_F8, KEY_F8
-	},
-	{
-	    XK_F9, KEY_F9
-	},
-	{
-	    XK_F10, KEY_F10
-	},
-	{
-	    XK_F11, KEY_F11
-	},
-	{
-	    XK_F12, KEY_F12
-	},
-	{
-	    XK_F13, KEY_F13
-	},
-	{
-	    XK_F14, KEY_F14
-	},
-	{
-	    XK_F15, KEY_F15
-	},
-	{
-	    XK_F16, KEY_F16
-	},
-	{
-	    XK_F17, KEY_F17
-	},
-	{
-	    XK_F18, KEY_F18
-	},
-	{
-	    XK_F19, KEY_F19
-	},
-	{
-	    XK_F20, KEY_F20
-	},
+	{ XK_F1,	KEY_F1 },
+	{ XK_F2,	KEY_F2 },
+	{ XK_F3,	KEY_F3 },
+	{ XK_F4,	KEY_F4 },
+	{ XK_F5,	KEY_F5 },
+	{ XK_F6,	KEY_F6 },
+	{ XK_F7,	KEY_F7 },
+	{ XK_F8,	KEY_F8 },
+	{ XK_F9,	KEY_F9 },
+	{ XK_F10,	KEY_F10 },
+	{ XK_F11,	KEY_F11 },
+	{ XK_F12,	KEY_F12 },
+	{ XK_F13,	KEY_F13 },
+	{ XK_F14,	KEY_F14 },
+	{ XK_F15,	KEY_F15 },
+	{ XK_F16,	KEY_F16 },
+	{ XK_F17,	KEY_F17 },
+	{ XK_F18,	KEY_F18 },
+	{ XK_F19,	KEY_F19 },
+	{ XK_F20,	KEY_F20 },
 #if defined(XK_F21) && defined(KEY_F21)
-	{
-	    XK_F21, KEY_F21
-	},
-	{
-	    XK_F22, KEY_F22
-	},
-	{
-	    XK_F23, KEY_F23
-	},
-	{
-	    XK_F24, KEY_F24
-	},
-	{
-	    XK_F25, KEY_F25
-	},
-	{
-	    XK_F26, KEY_F26
-	},
-	{
-	    XK_F27, KEY_F27
-	},
-	{
-	    XK_F28, KEY_F28
-	},
-	{
-	    XK_F29, KEY_F29
-	},
-	{
-	    XK_F30, KEY_F30
-	},
-	{
-	    XK_F31, KEY_F31
-	},
-	{
-	    XK_F32, KEY_F32
-	},
-	{
-	    XK_F33, KEY_F33
-	},
-	{
-	    XK_F34, KEY_F34
-	},
-	{
-	    XK_F35, KEY_F35
-	},
+	{ XK_F21,	KEY_F21 },
+	{ XK_F22,	KEY_F22 },
+	{ XK_F23,	KEY_F23 },
+	{ XK_F24,	KEY_F24 },
+	{ XK_F25,	KEY_F25 },
+	{ XK_F26,	KEY_F26 },
+	{ XK_F27,	KEY_F27 },
+	{ XK_F28,	KEY_F28 },
+	{ XK_F29,	KEY_F29 },
+	{ XK_F30,	KEY_F30 },
+	{ XK_F31,	KEY_F31 },
+	{ XK_F32,	KEY_F32 },
+	{ XK_F33,	KEY_F33 },
+	{ XK_F34,	KEY_F34 },
+	{ XK_F35,	KEY_F35 },
 #endif
 	/* keypad function keys */
-	{
-	    XK_KP_F1, KEY_KP_F1
-	},
-	{
-	    XK_KP_F2, KEY_KP_F2
-	},
-	{
-	    XK_KP_F3, KEY_KP_F3
-	},
-	{
-	    XK_KP_F4, KEY_KP_F4
-	},
+	{ XK_KP_F1,	KEY_KP_F1 },
+	{ XK_KP_F2,	KEY_KP_F2 },
+	{ XK_KP_F3,	KEY_KP_F3 },
+	{ XK_KP_F4,	KEY_KP_F4 },
 #if defined(XK_KP_Up)
-	{
-	    XK_KP_Up, KEY_Up
-	},
-	{
-	    XK_KP_Down, KEY_Down
-	},
-	{
-	    XK_KP_Right, KEY_Right
-	},
-	{
-	    XK_KP_Left, KEY_Left
-	},
-	{
-	    XK_KP_Next, KEY_Next
-	},
-	{
-	    XK_KP_Prior, KEY_Prior
-	},
-	{
-	    XK_KP_Home, KEY_Home
-	},
-	{
-	    XK_KP_End, KEY_End
-	},
-	{
-	    XK_KP_Insert, KEY_Insert
-	},
-	{
-	    XK_KP_Delete, KEY_Delete
-	},
+	{ XK_KP_Up,	KEY_Up },
+	{ XK_KP_Down,	KEY_Down },
+	{ XK_KP_Right,	KEY_Right },
+	{ XK_KP_Left,	KEY_Left },
+	{ XK_KP_Next,	KEY_Next },
+	{ XK_KP_Prior,	KEY_Prior },
+	{ XK_KP_Home,	KEY_Home },
+	{ XK_KP_End,	KEY_End },
+	{ XK_KP_Insert, KEY_Insert },
+	{ XK_KP_Delete, KEY_Delete },
+#endif
+#ifdef  XK_ISO_Left_Tab					
+	{ XK_ISO_Left_Tab, KEY_Tab },	/* with shift, becomes back-tab */
 #endif
     };
+    /* *INDENT-ON* */
 
     if (ev->type != KeyPress)
 	return;
@@ -6490,7 +6368,7 @@ x_key_press(Widget w GCC_UNUSED,
 			&keysym, (XComposeStatus *) 0);
 #endif
 
-    TRACE(("x_key_press(0x%4X) = %.*s (%s%s%s%s%s%s%s%s)\n",
+    TRACE((T_CALLED "x_key_press(0x%4X) = %.*s (%s%s%s%s%s%s%s%s)\n",
 	   (int) keysym,
 	   ((num > 0 && keysym < 256) ? num : 0),
 	   buffer,
@@ -6517,18 +6395,36 @@ x_key_press(Widget w GCC_UNUSED,
 
 	for (n = 0; n < TABLESIZE(escapes); n++) {
 	    if (keysym == escapes[n].key) {
+		TRACE(("ADD-FKEY %#x\n", escapes[n].code));
 		kqadd(cur_win, modifier | escapes[n].code);
-		return;
+		break;
 	    }
 	}
-    } else if (num == 1 && (ev->xkey.state & Mod1Mask))
-	buffer[0] |= HIGHBIT;
+    } else {
+	int modifier = 0;
 
-    /* FIXME: Should do something about queue full conditions */
-    if (num > 0) {
-	for (i = 0; i < num && !kqfull(cur_win); i++)
-	    kqadd(cur_win, char2int(buffer[i]));
+	if (ev->xkey.state & ShiftMask)
+	    modifier |= mod_SHIFT;
+	if (modifier != 0)
+	    modifier |= mod_KEY;
+	TRACE(("modifier %#x\n", modifier));
+
+	if (num == 1 && (ev->xkey.state & Mod1Mask))
+	    buffer[0] |= HIGHBIT;
+
+	/* FIXME: Should do something about queue full conditions */
+	for (i = 0; i < num && !kqfull(cur_win); i++) {
+	    int ch = CharOf(buffer[i]);
+	    if (isCntrl(ch)) {
+		TRACE(("ADD-CTRL %#x\n", ch));
+		kqadd(cur_win, modifier | ch);
+	    } else {
+		TRACE(("ADD-CHAR %#x\n", ch));
+		kqadd(cur_win, ch);
+	    }
+	}
     }
+    returnVoid();
 }
 
 /*

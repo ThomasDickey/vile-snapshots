@@ -6,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.27 2004/11/24 01:01:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.28 2004/12/10 00:44:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -79,7 +79,13 @@ SPACE		;
 ^[CBSL]:	{ WriteToken(Keyword_attr); BEGIN(ACTION); }
 <ACTION>[^\n:]*	{ WriteToken(Action_attr); BEGIN(NORMAL); }
 
-{PREPROC}	{ WriteToken(is_prepro(yytext, yyleng) ? Keyword_attr : Error_attr); }
+{PREPROC}	{ if (is_prepro(yytext, yyleng)) {
+		      WriteToken(Keyword_attr);
+		  } else {
+		      flt_error("unexpected directive");
+		      WriteToken(Error_attr);
+		  }
+	        }
 
 {NAME}		{ WriteToken(is_funckey(yytext) ? String_attr : command_attr(yytext)); }
 

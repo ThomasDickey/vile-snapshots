@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.20 2004/08/08 19:34:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.21 2004/12/10 00:42:50 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
@@ -45,7 +45,8 @@ STRING		[^#:\\\n](\\[.\n]|[^:\n])*
 
 <DESC>[^:\n]*			{ WriteToken(Comment_attr); BEGIN(GAPS); }
 <GAPS,VALS>(:|:\\\n\t)+		{ commented=0; ECHO; BEGIN(CAPS); }
-<GAPS,CAPS>\n(\t)+		{ WriteToken(Error_attr); }
+<GAPS,CAPS>\n(\t)+		{ flt_error("unexpected whitespace");
+				  WriteToken(Error_attr); }
 <CAPS>{CAPNAME}			{ write_capname(yytext, yyleng); begin_value(yytext); }
 <CAPS>{DOTNAME}			{ WriteToken(Comment_attr); commented = 1; begin_value(yytext); }
 <VALS>{NUMBER}			{ WriteToken(commented ? Comment_attr : Number_attr); BEGIN(GAPS); }
@@ -92,10 +93,13 @@ write_capname(char *name, int len)
     flt_puts(name, (len >= 2) ? 2 : len, check_name(name));
     if (len > 2) {
 	char *attr = Error_attr;
-	if (len == 3 && name[2] == '@')
+	if (len == 3 && name[2] == '@') {
 	    attr = "";
-	else if (len > 3 && name[2] == '#' && ok_number(name + 3))
+	} else if (len > 3 && name[2] == '#' && ok_number(name + 3)) {
 	    attr = Number_attr;
+	} else {
+	    flt_error("unexpected token");
+	}
 	flt_puts(name + 2, len - 2, attr);
     }
 }

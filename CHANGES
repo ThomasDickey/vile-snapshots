@@ -1,5 +1,63 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20041215 (m)
+ 	> Tom Dickey:
+	+ modify x11.c, ntconio.c and ntwinio.c to make modifiers work with tab
+	  key, e.g., to add shift-key as a back-tab key.
+	+ add macro show-each-buffer (file showeach.rc), which splits up the
+	  screen into equal chunks to display as many of the non-scratch
+	  buffers as possible.
+	+ modify macro parameter evaluation so it does not attempt to compute
+	  a value for function tokens or goto-labels.  Otherwise pathnames such
+	  as "~\foo" look like macro directives and produce an error.
+	+ correct slash/backslash translation (win32, etc) for some of the
+	  built-in functions; the translated result was not actually the return
+	  value:  &path and &pcat.
+	+ correct flags in modetbl used to annotate trace of &seq and a few
+	  other operators.
+	+ correct length computed for $bflags variable; an empty string was
+	  returned.
+	+ add a section on command-line options to doc/filters.doc
+	+ add macro which-filter to show which locations would be checked for
+	  an external filter.  If the filter happens to be built-in, this is
+	  also noted, in the message line.
+	+ improve 'eval' command, provide for mixture of functions and other
+	  tokens which are passed to the script interpreter.
+	+ modify SpellFilter macro to use the results from [Filter Messages]
+	  with the error-finder to step through the misspellings.
+	+ add macro show-filtermsgs to show syntax filter messages, setting the
+	  list to the error-buffer to provide simple stepping through the
+	  errors which are found.
+	+ add commands popup-buffer and popdown-buffer, which open/close
+	  windows for the given buffer rather than changing the current window
+	  to show a different buffer.  The popup-buffer command is a wrapper
+	  for the existing logic used for help and similar commands.  The
+	  popdown-buffer command differs from delete-window by closing all
+	  windows for the given buffer.
+	+ remove the pre-9.4e workarounds for set-highlighting and
+	  which-keywords macros.
+	+ modify kdb_reply() to shift the minibuffer left/right as needed after
+	  doing the initial tab of a name-completion, in case that left the
+	  cursor position past the end of the line (report by Paul Fox).
+	+ add new operators to make it simpler for macros to check for
+	  features: &isa, &classof and &mclass.
+	+ modify historical-buffer to allow tab/back-tab to cycle through the
+	  first 9 buffers, solves the problem of seeing more than the first
+	  few possibilities on the message line.  Toggling with the repeated
+	  '_' selects the first buffer shown.
+	+ add back-tab to termcap/terminfo driver as a bindable key.
+	+ modify configure script to make builtflt.h part of $(BUILTHDRS) to
+	  simplify "make sources" rule.
+	+ modify htmlfilt.l to match </script> in the middle of a line to
+	  accommodate pages where the script is given by a "src=".
+	+ add filtermsgs mode, for built-in filters to report syntax errors
+	  into [Filter Messages] buffer so that one may use the error finder to
+	  locate these (motivated by a 200,000 line xml file).
+	+ correct state manipulation in xml-filt.l, which was confused by
+	  CDATA pattern.
+	+ correct $CPPFLAGS for linting configurations with built-in filters.
+	+ correct typo in configure script from 9.4k fixes for iconv_open().
+
  20041207 (l)
 	> Clark Morgan:
 	+ modify special treatment of "#" which prevents it from being shifted

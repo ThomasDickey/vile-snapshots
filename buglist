@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.398 2003/06/30 00:21:40 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.399 2004/12/15 01:27:01 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -369,12 +369,7 @@ pasting to a view-only buffer does not generate an error message.
        fix the core dumps.  I'll look into seeing if there is some protocol
        which we're not observing with regard to maximization.  -kev]
 
-------------------
-      - I would like an option whereby if I have more than one file on
-        the command line, the display opens with one window per buffer,
-        so I can visibly see all the files available.
 ----------------------
-
 
 if you have lines like
 	123

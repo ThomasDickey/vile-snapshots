@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.91 2004/11/11 00:13:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.92 2004/12/10 02:12:23 tom Exp $
  *
  */
 
@@ -391,6 +391,7 @@ void
 flt_bfr_error(void)
 {
     if (flt_bfr_used) {
+	flt_error("unterminated buffer");
 	flt_bfr_attr = class_attr(NAME_ERROR);
 	flt_bfr_finish();
     }

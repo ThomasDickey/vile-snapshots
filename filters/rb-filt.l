@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rb-filt.l,v 1.9 2004/11/23 22:41:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rb-filt.l,v 1.10 2004/12/10 00:32:33 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a Ruby script
  * based on the Python filter.
@@ -90,6 +90,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL})[L]?|{REAL}
                             if (save_here(yytext, yyleng)) {
 				PushQuote(HERE, String_attr);
 			    } else {
+				flt_error("not a here-document");
 				WriteToken(Error_attr);
 			    }
                         }

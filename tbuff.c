@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.49 2004/10/26 17:55:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.50 2004/12/12 16:30:45 tom Exp $
  *
  */
 
@@ -116,6 +116,18 @@ tb_init(TBUFF **p, int c)
     q->tb_endc = c;		/* code to return if no-more-data */
     q->tb_errs = FALSE;
     return (*p = q);
+}
+
+/*
+ * Set a temp-buff to error-state
+ */
+TBUFF *
+tb_error(TBUFF **p)
+{
+    TBUFF *result = tb_init(p, EOS);
+    if (result != 0)
+	result->tb_errs = TRUE;
+    return result;
 }
 
 /*

@@ -1,13 +1,31 @@
-; $Id: spell.rc,v 1.3 2002/06/30 17:44:47 tom Exp $
+; $Id: spell.rc,v 1.4 2004/12/13 00:35:02 tom Exp $
 
 store-procedure SpellFilter "Highlight misspelled words in the current buffer"
-    ~local $filtername
-    ~local $curcol $curline
-    ~hidden goto-beginning-of-file
-    ~if &filter "spell"
-	~hidden attribute-directly end-of-file "spell"
-    ~else
-	~hidden attribute-from-filter end-of-file "vile-spell-filt"
-    ~endif
+	~local $filtername
+	~local $curcol $curline $filtermsgs
+	~local %original
+	~if &filter "spell"
+		setv %original=$cbufname
+		~if &isa buffer '[Filter Messages]'
+			~quiet kill-buffer '[Filter Messages]'
+		~endif
+		~if &isa buffer '[Spelling Errors]'
+			~quiet kill-buffer '[Spelling Errors]'
+		~endif
+		set filtermsgs
+		HighlightClear
+		~hidden attribute-directly end-of-file "spell"
+		; don't let anyone else write there, e.g., buffer-hooks
+		set nofiltermsgs
+		~if &isa buffer '[Filter Messages]'
+			~quiet buffer '[Filter Messages]'
+			~quiet rename-buffer '[Spelling Errors]'
+			~quiet error-buffer '[Spelling Errors]'
+			~quiet eval &cat 'buffer ' %original
+		~endif
+	~else
+		~hidden goto-beginning-of-file
+		~hidden attribute-from-filter end-of-file "vile-spell-filt"
+	~endif
 ~endm
 bind-key SpellFilter ^X-i

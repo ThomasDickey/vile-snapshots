@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.281 2004/12/06 22:39:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.284 2004/12/12 17:18:58 tom Exp $
  *
  */
 
@@ -20,6 +20,9 @@
 
 #define isLocalVal(valptr)          ((valptr)->vp == &((valptr)->v))
 #define makeLocalVal(valptr)        ((valptr)->vp = &((valptr)->v))
+
+#define NO_PREFIX	"no"
+#define noPrefix(mode)	(!strncmp(mode, NO_PREFIX, 2))
 
 #include "nefsms.h"
 
@@ -178,7 +181,7 @@ void
 set_winflags(int glob_vals, USHORT flags)
 {
     if (glob_vals) {
-	register WINDOW *wp;
+	WINDOW *wp;
 	for_each_visible_window(wp) {
 	    if ((wp->w_bufp == NULL)
 		|| !b_is_scratch(wp->w_bufp)
@@ -265,8 +268,8 @@ size_val(const struct VALNAMES *names, struct VAL *values)
 const char *
 string_mode_val(VALARGS * args)
 {
-    register const struct VALNAMES *names = args->names;
-    register struct VAL *values = args->local;
+    const struct VALNAMES *names = args->names;
+    struct VAL *values = args->local;
     static TBUFF *result;
     switch (names->type) {
 #if OPT_MAJORMODE
@@ -301,13 +304,12 @@ string_mode_val(VALARGS * args)
  * values in the first array that are local.
  */
 static int
-listvalueset(
-		const char *which,
-		int nflag,
-		int local,
-		const struct VALNAMES *names,
-		struct VAL *values,
-		struct VAL *globvalues)
+listvalueset(const char *which,
+	     int nflag,
+	     int local,
+	     const struct VALNAMES *names,
+	     struct VAL *values,
+	     struct VAL *globvalues)
 {
     int show[MAX_G_VALUES + MAX_B_VALUES + MAX_W_VALUES];
     int any = 0;
@@ -317,7 +319,7 @@ listvalueset(
     int perline;
     int percol;
     int total;
-    register int j, pass;
+    int j, pass;
 
     if (ncols > MAXCOLS)
 	ncols = MAXCOLS;
@@ -374,7 +376,7 @@ listvalueset(
      * Now, go back and display the values
      */
     for (pass = 1; pass <= passes; pass++) {
-	register int line, col, k;
+	int line, col, k;
 	int offsets[MAXCOLS + 1];
 
 	offsets[0] = 0;
@@ -414,7 +416,7 @@ listvalueset(
 	    padded = (col + 1) < perline ? ONE_COL : 1;
 	    if (is_bool_type(names[j].type)) {
 		bprintf("%s%s%*P",
-			values[j].vp->i ? "  " : "no",
+			values[j].vp->i ? "  " : NO_PREFIX,
 			ModeName(names[j].name),
 			padded, ' ');
 	    } else {
@@ -464,8 +466,8 @@ makemodelist(int local, void *ptr)
     static const char ww[] = "Window";
     int nflag, nflg2;
 
-    register WINDOW *localwp = ptr2WINDOW(ptr);		/* alignment okay */
-    register BUFFER *localbp = localwp->w_bufp;
+    WINDOW *localwp = ptr2WINDOW(ptr);	/* alignment okay */
+    BUFFER *localbp = localwp->w_bufp;
     struct VAL *local_b_vals = localbp->b_values.bv;
     struct VAL *local_w_vals = localwp->w_values.wv;
     struct VAL *globl_b_vals = global_b_values.bv;
@@ -519,7 +521,7 @@ makemodelist(int local, void *ptr)
 int
 settab(int f, int n)
 {
-    register WINDOW *wp;
+    WINDOW *wp;
 #if OPT_MAJORMODE
     int val = VAL_TAB;
     const char *whichtabs = "T";
@@ -587,7 +589,7 @@ getfillcol(BUFFER *bp)
  * Release storage of a REGEXVAL struct
  */
 REGEXVAL *
-free_regexval(register REGEXVAL * rp)
+free_regexval(REGEXVAL * rp)
 {
     if (rp != 0) {
 	beginDisplay();
@@ -605,7 +607,7 @@ free_regexval(register REGEXVAL * rp)
 REGEXVAL *
 new_regexval(const char *pattern, int magic)
 {
-    register REGEXVAL *rp;
+    REGEXVAL *rp;
 
     beginDisplay();
     if ((rp = typealloc(REGEXVAL)) != 0) {
@@ -644,7 +646,7 @@ free_val(const struct VALNAMES *names, struct VAL *values)
 static int
 copy_val(struct VAL *dst, struct VAL *src)
 {
-    register int local = isLocalVal(src);
+    int local = isLocalVal(src);
 
     *dst = *src;
     if (local)
@@ -653,12 +655,11 @@ copy_val(struct VAL *dst, struct VAL *src)
 }
 
 void
-copy_mvals(
-	      int maximum,
-	      struct VAL *dst,
-	      struct VAL *src)
+copy_mvals(int maximum,
+	   struct VAL *dst,
+	   struct VAL *src)
 {
-    register int n;
+    int n;
     for (n = 0; n < maximum; n++)
 	(void) copy_val(&dst[n], &src[n]);
 }
@@ -671,13 +672,12 @@ copy_mvals(
  */
 #if OPT_UPBUFF
 void
-save_vals(
-	     int maximum,
-	     struct VAL *gbl,
-	     struct VAL *dst,
-	     struct VAL *src)
+save_vals(int maximum,
+	  struct VAL *gbl,
+	  struct VAL *dst,
+	  struct VAL *src)
 {
-    register int n;
+    int n;
     for (n = 0; n < maximum; n++)
 	if (copy_val(&dst[n], &src[n]))
 	    make_global_val(src, gbl, n);
@@ -689,12 +689,11 @@ save_vals(
  * all other storage associated with a buffer or window.
  */
 void
-free_local_vals(
-		   const struct VALNAMES *names,
-		   struct VAL *gbl,
-		   struct VAL *val)
+free_local_vals(const struct VALNAMES *names,
+		struct VAL *gbl,
+		struct VAL *val)
 {
-    register int j;
+    int j;
 
     for (j = 0; names[j].name != 0; j++) {
 	if (is_local_val(val, j)) {
@@ -752,7 +751,7 @@ legal_glob_mode(const char *base)
 {
 #ifdef GVAL_GLOB		/* string */
     if (isShellOrPipe(base)) {
-	register const char *s = base;
+	const char *s = base;
 	int count = 0;
 	while (*s != EOS) {
 	    if (*s == '%') {
@@ -907,7 +906,7 @@ valname_to_choices(const struct VALNAMES *names)
 static int
 is_fsm(const struct VALNAMES *names)
 {
-    register size_t i;
+    size_t i;
 
     if (names->type == VALTYPE_ENUM
 	|| names->type == VALTYPE_STRING) {
@@ -975,12 +974,11 @@ fsm_complete(DONE_ARGS)
  * Lookup the mode named with 'cp[]' and adjust its value.
  */
 int
-adjvalueset(
-	       const char *cp,	/* name of the mode we are changing */
-	       int defining,	/* for majormodes, suppress side_effect */
-	       int setting,	/* true if setting, false if unsetting */
-	       int global,
-	       VALARGS * args)
+adjvalueset(const char *cp,	/* name of the mode we are changing */
+	    int defining,	/* for majormodes, suppress side_effect */
+	    int setting,	/* true if setting, false if unsetting */
+	    int global,
+	    VALARGS * args)
 {				/* symbol-table entry for the mode */
     const struct VALNAMES *names = args->names;
     struct VAL *values = args->local;
@@ -988,7 +986,7 @@ adjvalueset(
 
     char prompt[NLINE];
     char respbuf[NFILEN];
-    int no = !strncmp(cp, "no", 2);
+    int no = noPrefix(cp);
     const char *rp = NULL;
     int status;
 
@@ -1064,7 +1062,7 @@ set_mode_value(BUFFER *bp, const char *cp, int defining, int setting, int
     REGEXVAL *r;
 
     struct VAL oldvalue;
-    int no = !strncmp(cp, "no", 2);
+    int no = noPrefix(cp);
     int nval, status;
     int unsetting = !setting && !global;
     int changed = FALSE;
@@ -1218,8 +1216,8 @@ set_mode_value(BUFFER *bp, const char *cp, int defining, int setting, int
 int
 listmodes(int f, int n GCC_UNUSED)
 {
-    register WINDOW *wp = curwp;
-    register int s;
+    WINDOW *wp = curwp;
+    int s;
 
     TRACE((T_CALLED "listmodes(f=%d)\n", f));
 
@@ -1253,7 +1251,7 @@ mode_eol(const char *buffer GCC_UNUSED, unsigned cpos GCC_UNUSED, int c, int eol
 int
 lookup_valnames(const char *rp, const struct VALNAMES *table)
 {
-    register int j;
+    int j;
 
     for (j = 0; table[j].name != 0; j++) {
 	if (!strcmp(rp, table[j].name)
@@ -1264,109 +1262,22 @@ lookup_valnames(const char *rp, const struct VALNAMES *table)
     return -1;
 }
 
-int
-find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
+static const char *
+strip_no(const char *mode)
 {
-    register const char *rp = !strncmp(mode, "no", 2) ? mode + 2 : mode;
-    register int mode_class;
-    register int j;
+    return noPrefix(mode) ? (mode + 2) : mode;
+}
 
-    TRACE2(("find_mode(%s) %s\n", mode, global ? "global" : "local"));
-
-    for (mode_class = 0; mode_class < END_MODE; mode_class++) {
-	memset(args, 0, sizeof(*args));
-	switch (mode_class) {
-	default:
-	case UNI_MODE:		/* universal modes */
-	    args->names = g_valnames;
-	    args->global = global_g_values.gv;
-	    args->local = ((global !=FALSE)
-			   ? args->global
-			   : (struct VAL *)0);
-	    break;
-	case BUF_MODE:		/* buffer modes */
-	    args->names = b_valnames;
-	    args->global = global_b_values.bv;
-	    args->local = ((global == TRUE)
-			   ? args->global
-			   : (valid_buffer(bp)
-			      ? bp->b_values.bv
-			      : (struct VAL *)0));
-	    break;
-	case WIN_MODE:		/* window modes */
-	    args->names = w_valnames;
-	    args->global = global_w_values.wv;
-	    args->local = ((global == TRUE)
-			   ? args->global
-			   : ((curwp != 0)
-			      ? curwp->w_values.wv
-			      : (struct VAL *)0));
-	    break;
 #if OPT_MAJORMODE
-	case MAJ_MODE:		/* major modes */
-	    args->names = major_valnames;
-	    args->global = major_g_vals;
-	    args->local = ((global == TRUE)
-			   ? args->global
-			   : (valid_buffer(bp)
-			      ? major_l_vals
-			      : (struct VAL *)0));
-	    break;
-	case SUB_MODE:		/* major submodes (qualifiers) */
-	    if (my_majormodes != 0) {
-		size_t n = strlen(rp);
+/*
+ * Find a submode value for the current majormode.
+ */
+int
+find_submode(BUFFER *bp, const char *mode, int global, VALARGS * args)
+{
+    const char *rp = strip_no(mode);
+    int j;
 
-		for (j = 0; my_majormodes[j].shortname; j++) {
-		    MAJORMODE_LIST *p = my_majormodes + j;
-		    size_t len = strlen(p->shortname);
-
-		    if (n >= len
-			&& !strncmp(rp, p->shortname, len)
-			&& (lookup_valnames(rp, p->qual)) >= 0) {
-			args->names = p->qual;
-			args->global = p->data->mm.mv;
-			args->local = ((global !=FALSE)
-				       ? args->global
-				       : (struct VAL *)0);
-			break;
-		    }
-		}
-	    }
-	    break;
-#endif
-	}
-	if (args->names != 0
-	    && args->local != 0) {
-	    if ((j = lookup_valnames(rp, args->names)) >= 0) {
-		args->names += j;
-		args->local += j;
-		args->global +=j;
-		TRACE(("...found class %d %s\n", mode_class, rp));
-#if OPT_MAJORMODE
-		if (mode_class == 3) {
-		    const char *it = ((bp->majr != 0)
-				      ? bp->majr->shortname
-				      : "?");
-		    make_global_val(args->local, args->global, 0);
-		    if (global) {
-			MAJORMODE_LIST *ptr =
-			lookup_mm_list(it);
-			args->local[0].v.i =
-			    (ptr != 0 && ptr->flag);
-			;
-		    } else {
-			char temp[NSTRING];
-			majorname(temp, it, TRUE);
-			make_local_val(args->local, 0);
-			args->local[0].v.i = !strcmp(temp, rp);
-		    }
-		}
-#endif
-		return TRUE;
-	    }
-	}
-    }
-#if OPT_MAJORMODE
     /* major submodes (buffers) */
     if (my_majormodes != 0) {
 	int k = 0;
@@ -1404,6 +1315,132 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 	    }
 	}
     }
+    return FALSE;
+}
+#endif
+
+/*
+ * Check if the given mode exists for the given class.  If so, fill in its
+ * data and return true.  Otherwise return false.  The 'args' data is filled
+ * in unless there is no such mode class.
+ */
+int
+find_mode_class(BUFFER *bp, const char *mode, int global, VALARGS * args, MODECLASS mode_class)
+{
+    const char *rp = strip_no(mode);
+    int j;
+
+    memset(args, 0, sizeof(*args));
+    switch (mode_class) {
+    default:
+    case UNI_MODE:		/* universal modes */
+	args->names = g_valnames;
+	args->global = global_g_values.gv;
+	args->local = ((global !=FALSE)
+		       ? args->global
+		       : (struct VAL *)0);
+	break;
+    case BUF_MODE:		/* buffer modes */
+	args->names = b_valnames;
+	args->global = global_b_values.bv;
+	args->local = ((global == TRUE)
+		       ? args->global
+		       : (valid_buffer(bp)
+			  ? bp->b_values.bv
+			  : (struct VAL *)0));
+	break;
+    case WIN_MODE:		/* window modes */
+	args->names = w_valnames;
+	args->global = global_w_values.wv;
+	args->local = ((global == TRUE)
+		       ? args->global
+		       : ((curwp != 0)
+			  ? curwp->w_values.wv
+			  : (struct VAL *)0));
+	break;
+#if OPT_MAJORMODE
+    case MAJ_MODE:		/* major modes */
+	args->names = major_valnames;
+	args->global = major_g_vals;
+	args->local = ((global == TRUE)
+		       ? args->global
+		       : (valid_buffer(bp)
+			  ? major_l_vals
+			  : (struct VAL *)0));
+	break;
+    case SUB_MODE:		/* major submodes (qualifiers) */
+	if (my_majormodes != 0) {
+	    size_t n = strlen(rp);
+
+	    for (j = 0; my_majormodes[j].shortname; j++) {
+		MAJORMODE_LIST *p = my_majormodes + j;
+		size_t len = strlen(p->shortname);
+
+		if (n >= len
+		    && !strncmp(rp, p->shortname, len)
+		    && (lookup_valnames(rp, p->qual)) >= 0) {
+		    args->names = p->qual;
+		    args->global = p->data->mm.mv;
+		    args->local = ((global !=FALSE)
+				   ? args->global
+				   : (struct VAL *)0);
+		    break;
+		}
+	    }
+	}
+	break;
+#endif
+    }
+    if (args->names != 0
+	&& args->local != 0) {
+	if ((j = lookup_valnames(rp, args->names)) >= 0) {
+	    args->names += j;
+	    args->local += j;
+	    args->global +=j;
+	    TRACE(("...found class %d %s\n", mode_class, rp));
+#if OPT_MAJORMODE
+	    if (mode_class == MAJ_MODE) {
+		const char *it = ((bp->majr != 0)
+				  ? bp->majr->shortname
+				  : "?");
+		make_global_val(args->local, args->global, 0);
+		if (global) {
+		    MAJORMODE_LIST *ptr = lookup_mm_list(it);
+		    args->local[0].v.i = (ptr != 0 && ptr->flag);
+		} else {
+		    char temp[NSTRING];
+		    majorname(temp, it, TRUE);
+		    make_local_val(args->local, 0);
+		    args->local[0].v.i = !strcmp(temp, rp);
+		}
+	    }
+#endif
+	    return TRUE;
+	}
+    }
+    return FALSE;
+}
+
+/*
+ * Search the list of modes across all classes to find the first match, and
+ * fill in the corresponding data, returning true.  If no match is found,
+ * return false.
+ */
+int
+find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
+{
+    MODECLASS mode_class;
+
+    TRACE2(("find_mode(%s) %s\n", mode, global ? "global" : "local"));
+
+    for (mode_class = 0; mode_class < END_MODE; mode_class++) {
+	if (find_mode_class(bp, mode, global, args, mode_class))
+	    return TRUE;
+    }
+#if OPT_MAJORMODE
+    if (find_submode(bp, mode, global, args)) {
+	return TRUE;
+    }
 #endif
     TRACE2(("...not found\n"));
     return FALSE;
@@ -1416,7 +1453,7 @@ static int
 do_a_mode(int kind, int global)
 {
     VALARGS args;
-    register int s;
+    int s;
     static TBUFF *cbuf;		/* buffer to receive mode name into */
 
     /* prompt the user and get an answer */
@@ -1791,9 +1828,8 @@ chgd_fences(BUFFER *bp GCC_UNUSED, VALARGS * args, int glob_vals GCC_UNUSED, int
 
 	if (len & 1) {
 	    value[len - 1] = EOS;
-	    mlwrite(
-		       "[Fence-pairs not in pairs:  truncating to \"%s\"",
-		       value);
+	    mlwrite("[Fence-pairs not in pairs:  truncating to \"%s\"",
+		    value);
 	    return FALSE;
 	}
     }
@@ -2077,7 +2113,7 @@ chgd_hilite(BUFFER *bp, VALARGS * args GCC_UNUSED, int glob_vals GCC_UNUSED, int
 int
 is_varmode(const char *name)
 {
-    return (strncmp(name, "no", 2)
+    return (!noPrefix(name)
 	    && strcmp(name, "all"));
 }
 
@@ -2220,7 +2256,7 @@ ModeName(const char *name)
 static char *
 majorname(char *dst, const char *majr, int flag)
 {
-    (void) lsprintf(dst, "%s%smode", flag ? "" : "no", majr);
+    (void) lsprintf(dst, "%s%smode", flag ? "" : NO_PREFIX, majr);
     return dst;
 }
 
@@ -2872,7 +2908,7 @@ static int
 prompt_submode(MAJORMODE * ptr, char **result, int defining)
 {
     static TBUFF *cbuf;		/* buffer to receive mode name into */
-    register const char *rp;
+    const char *rp;
     int status;
 
     /* prompt the user and get an answer */
@@ -2886,7 +2922,7 @@ prompt_submode(MAJORMODE * ptr, char **result, int defining)
 	    continue;
 	} else if ((status = ok_submode(tb_values(cbuf))) == TRUE) {
 	    *result = tb_values(cbuf);
-	    rp = !strncmp(*result, "no", 2) ? *result + 2 : *result;
+	    rp = strip_no(*result);
 	    status = check_majormode_name(rp, defining);
 	}
 	break;
@@ -3256,8 +3292,8 @@ makemajorlist(int local, void *ptr GCC_UNUSED)
 int
 list_majormodes(int f, int n GCC_UNUSED)
 {
-    register WINDOW *wp = curwp;
-    register int s;
+    WINDOW *wp = curwp;
+    int s;
 
     TRACE((T_CALLED "list_majormodes(f=%d)\n", f));
 
@@ -3412,7 +3448,7 @@ do_a_submode(int defining)
     int j, k;
     int qualifier = FALSE;
     char temp[NSTRING];
-    char *rp;
+    const char *rp;
 
     if ((status = prompt_majormode(&name, FALSE)) != TRUE)
 	return status;
@@ -3425,7 +3461,7 @@ do_a_submode(int defining)
 	return status;
     }
 
-    rp = !strncmp(subname, "no", 2) ? subname + 2 : subname;
+    rp = strip_no(subname);
     if ((j = lookup_valnames(rp, m_valnames)) >= 0) {
 	qualifier = TRUE;
 	args.names = m_valnames;

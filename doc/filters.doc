@@ -33,7 +33,7 @@ the compiled-in filter name.  For example, on a Unix host, the C filter
 
 	[ If $VILE_STARTUP_PATH is not defined, the filter checks the
 	"prefix" directory specified when all filters were compiled
-	(default path is /usr/local/share/vile/vile.keyords). ]
+	(default path is /usr/local/share/vile/vile.keywords). ]
 
 and then here:
 
@@ -146,6 +146,38 @@ You can modify the behavior slightly, by giving an absolute pathname with the
 language keywords, if any.
 
 
+OPTIONS
+-------
+
+A few options are common to all filters:
+
+  -d	is recognized when the filters have been compiled with "DEBUG" defined.
+	This is used in the more complicated filters such as perl and ruby to
+	show the parsing.
+
+  -k FILE
+
+  -q	exits the filter before writing the marked-up output.  This happens
+	after processing the class definitions, so it is useful in combination
+	with the -v option to simply obtain the class information.
+
+  -t	holds the tabstop setting, which can be used in a filter for column
+	computations.
+
+  -v	verbose, turns on extra output which can be used for troubleshooting
+	configuration problems.
+
+The C syntax filter recognizes additional options to customize it for Java and
+JavaScript:
+
+  -j	Extend name- and literal-syntax to include Java.
+
+  -p	Disallow preprocessor lines.
+
+  -s	for JavaScript (to support jsmode).  This controls whether to allow
+	regular expressions in certain cases.
+
+
 PROGRAMS
 --------
 
@@ -230,4 +262,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.32 2004/11/11 00:47:06 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.33 2004/12/14 00:47:49 tom Exp $

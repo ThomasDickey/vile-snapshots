@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.268 2004/11/06 01:12:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.274 2004/12/15 20:34:17 tom Exp $
  *
  */
 
@@ -358,23 +358,6 @@ hist_lookup(int c)
     return valid_buffer(bp) ? bp->b_bname : 0;
 }
 
-/* returns the buffer corresponding to the given number in the history */
-static int
-lookup_hist(BUFFER *bp1)
-{
-    BUFFER *bp;
-    int count = -1;
-
-    for_each_buffer(bp) {
-	if (!b_is_temporary(bp)) {
-	    count++;
-	    if (bp == bp1)
-		return count;
-	}
-    }
-    return -1;			/* no match */
-}
-
 /*
  * Run the $buffer-hook procedure, if it is defined.  Note that we must not do
  * this if curwp->w_bufp != curbp, since that would break the use of DOT and MK
@@ -395,37 +378,47 @@ run_buffer_hook(void)
 #define run_buffer_hook()	/*EMPTY */
 #endif
 
+#define HIST_SHOW 9
+
 static int
-hist_show(void)
+hist_show(int lo_limit, int hi_limit, int cycle)
 {
-    BUFFER *bp;
     int i = 0;
-    char line[NLINE];
+    int first = -1;
+    char line[(HIST_SHOW + 1) * (NBUFN + 10)];
     BUFFER *abp = (BUFFER *) 0;
+
+    TRACE((T_CALLED "hist_show(%d..%d) %d\n", lo_limit, hi_limit, cycle));
 
     if (!global_g_val(GMDABUFF))
 	abp = find_alt();
 
     (void) strcpy(line, "");
-    for_each_buffer(bp) {
-	if (!b_is_temporary(bp)) {
-	    if (bp != curbp) {	/* don't bother with current */
-		(void) lsprintf(line + strlen(line), "  %d%s%s %s",
-				i,
-				b_is_changed(bp) ? "*" : "",
-				(abp && abp == bp) ? "#" : "",
-				bp->b_bname);
-	    }
-	    if (++i > 9)	/* limit to single-digit */
-		break;
+    for (i = lo_limit; i <= hi_limit; ++i) {
+	int j = ((i - lo_limit) + cycle) % (hi_limit + 1 - lo_limit) + lo_limit;
+	BUFFER *bp = find_b_hist(j);
+
+	if (bp != 0 && bp != curbp) {
+	    if (first < 0)
+		first = j;
+	    (void) lsprintf(line + strlen(line), "  %d%s%s %s",
+			    j,
+			    b_is_changed(bp) ? "*" : "",
+			    (abp && abp == bp) ? "#" : "",
+			    bp->b_bname);
 	}
     }
-    if (strcmp(line, "")) {
+    if (first >= 0) {
 	mlforce("%s", line);
-	return TRUE;
-    } else {
-	return FALSE;
     }
+    returnCode(first);
+}
+
+static int
+valid_history_index(int hist)
+{
+    BUFFER *bp;
+    return ((bp = find_b_hist(hist)) != 0 && bp != curbp);
 }
 
 /*
@@ -450,23 +443,47 @@ histbuff0(int f, int n, int this_window)
 {
     int thiskey, c;
     BUFFER *bp = 0;
+    int cycle = 0;
+    int first = 0;
     char *bufn;
 
     if (f == FALSE) {
-	if (!hist_show())
-	    return FALSE;
-	thiskey = lastkey;
-	c = keystroke8();
-	mlerase();
-	if (c == thiskey) {
-	    c = lookup_hist(bp = find_alt());
-	} else if (isDigit(c)) {
-	    c = c - '0';
-	} else {
-	    if (!isreturn(c))
-		unkeystroke(c);
-	    return FALSE;
+	int hi_limit = HIST_SHOW;
+	int lo_limit = 1;
+
+	/* verify that we have a list which we can display */
+	while (!valid_history_index(hi_limit) && hi_limit > 1) {
+	    --hi_limit;
 	}
+	if (valid_history_index(0))
+	    lo_limit = 0;
+	if (lo_limit > hi_limit)
+	    return FALSE;
+
+	thiskey = lastkey;
+	do {
+	    if ((first = hist_show(lo_limit, hi_limit, cycle)) < 0)
+		return FALSE;
+	    c = keystroke();
+	    mlerase();
+	    if (c == KEY_Tab) {
+		if (++cycle >= hi_limit)
+		    cycle = 0;
+		c = -1;
+	    } else if (isBackTab(c)) {
+		if (--cycle < 0)
+		    cycle = hi_limit - 1;
+		c = -1;
+	    } else if (c == thiskey) {
+		c = first;
+	    } else if (isDigit(c)) {
+		c = c - '0';
+	    } else {
+		if (!isreturn(c))
+		    unkeystroke(c);
+		return FALSE;
+	    }
+	} while (c < 0);
     } else {
 	c = n;
     }
@@ -502,7 +519,6 @@ histbuff(int f, int n)
     if (!clexec)
 	vile_is_busy = FALSE;
     return (rc);
-
 }
 
 /*
@@ -755,6 +771,30 @@ ask_for_bname(char *prompt, char *bufn, size_t len)
 }
 
 /*
+ * Prompt for a buffer name, ignoring if we cannot find it (creating it then).
+ */
+#define ASK_FOR_NEW_BNAME(prompt, status, bufn, bp) \
+    bufn[0] = EOS; \
+    if ((status = ask_for_bname(prompt, bufn, sizeof(bufn))) != TRUE \
+	&& (status != SORTOFTRUE)) \
+	returnCode(status); \
+    if ((bp = find_buffer(bufn)) == 0) { \
+	bp = bfind(bufn, 0); \
+    }
+
+/*
+ * Prompt for a existing-buffer name, warning if we cannot find it.
+ */
+#define ASK_FOR_OLD_BNAME(prompt, status, bufn, bp) \
+    bufn[0] = EOS; \
+    if ((status = ask_for_bname(prompt, bufn, sizeof(bufn))) != TRUE \
+	&& (status != SORTOFTRUE)) \
+	returnCode(status); \
+    if ((bp = find_any_buffer(bufn)) == 0) { \
+	returnCode(FALSE); \
+    }
+
+/*
  * Attach a buffer to a window. The
  * values of dot and mark come from the buffer
  * if the use count is 0. Otherwise, they come
@@ -769,17 +809,13 @@ usebuffer(int f GCC_UNUSED, int n GCC_UNUSED)
     char bufn[NBUFN];
 
     TRACE((T_CALLED "usebuffer()\n"));
-    bufn[0] = EOS;
-    if ((s = ask_for_bname("Use buffer: ", bufn, sizeof(bufn))) != TRUE
-	&& (s != SORTOFTRUE))
-	returnCode(s);
-    if ((bp = find_any_buffer(bufn)) == 0)	/* Try buffer */
-	returnCode(FALSE);
+    ASK_FOR_OLD_BNAME("Use buffer: ", s, bufn, bp);
     returnCode(swbuffer(bp));
 }
 
 /*
- * Just like "select-buffer", but we will create the buffer if it does not exist.
+ * Just like "select-buffer", but we will create the buffer if it does not
+ * exist.
  */
 int
 edit_buffer(int f GCC_UNUSED, int n GCC_UNUSED)
@@ -789,18 +825,14 @@ edit_buffer(int f GCC_UNUSED, int n GCC_UNUSED)
     char bufn[NBUFN];
 
     TRACE((T_CALLED "edit_buffer()\n"));
-    bufn[0] = EOS;
-    if ((s = ask_for_bname("Use buffer: ", bufn, sizeof(bufn))) != TRUE
-	&& (s != SORTOFTRUE))
-	returnCode(s);
-    if ((bp = find_buffer(bufn)) == 0) {
-	bp = bfind(bufn, 0);
-    }
+    ASK_FOR_NEW_BNAME("Edit buffer: ", s, bufn, bp);
     returnCode(swbuffer(bp));
 }
 
 #if !SMALLER
-/* ARGSUSED */
+/*
+ * Set the current window to display the given buffer.
+ */
 int
 set_window(int f GCC_UNUSED, int n GCC_UNUSED)
 {
@@ -808,15 +840,43 @@ set_window(int f GCC_UNUSED, int n GCC_UNUSED)
     int s;
     char bufn[NBUFN];
 
-    bufn[0] = EOS;
-    if ((s = ask_for_bname("Set window to buffer: ", bufn, sizeof(bufn))) != TRUE
-	&& (s != SORTOFTRUE))
-	return s;
-    if ((bp = find_any_buffer(bufn)) == 0)	/* Try buffer */
-	return FALSE;
-    return swbuffer_lfl(bp, TRUE, TRUE);
+    TRACE((T_CALLED "set_window()\n"));
+    ASK_FOR_OLD_BNAME("Set window to buffer: ", s, bufn, bp);
+    returnCode(swbuffer_lfl(bp, TRUE, TRUE));
 }
-#endif
+
+/*
+ * Open a window for the given buffer.
+ */
+int
+popup_buffer(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    BUFFER *bp;
+    int s;
+    char bufn[NBUFN];
+
+    TRACE((T_CALLED "popup_buffer()\n"));
+    ASK_FOR_OLD_BNAME("Popup buffer: ", s, bufn, bp);
+    if (bp->b_nwnd == 0)
+	returnCode(popupbuff(bp));
+    returnCode(TRUE);
+}
+
+/*
+ * Close all windows which display the given buffer.
+ */
+int
+popdown_buffer(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    BUFFER *bp;
+    int s;
+    char bufn[NBUFN];
+
+    TRACE((T_CALLED "popdown_buffer()\n"));
+    ASK_FOR_OLD_BNAME("Popdown buffer: ", s, bufn, bp);
+    returnCode(zotwp(bp));
+}
+#endif /* !SMALLER */
 
 /* switch back to the first buffer (i.e., ":rewind") */
 /* ARGSUSED */
@@ -1090,7 +1150,7 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 	else
 	    clone_window(curwp, wp);
     } else
-#endif
+#endif /* !SMALLER */
 	/* get it already on the screen if possible */
     if (bp->b_nwnd != 0) {	/* then it's on the screen somewhere */
 	if ((wp = bp2any_wp(bp)) == 0)
@@ -1697,7 +1757,7 @@ footnote(int c)
 #else
 #define	MakeNote(c)	bputc(c)
 #define	ShowNotes()
-#endif
+#endif /* !SMALLER */
 
 /*
  * This routine rebuilds the text in the buffer that holds the buffer list.  It

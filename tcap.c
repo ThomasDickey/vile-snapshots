@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.155 2004/10/21 23:10:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.156 2004/12/10 23:03:06 tom Exp $
  *
  */
 
@@ -116,6 +116,7 @@ static const struct {
     { CAPNAME("kh","khome"),	KEY_Home },		/* home */
     { CAPNAME("kH","kll"),	KEY_End },		/* end (variant) */
     { CAPNAME("@7","kend"),	KEY_End },		/* end */
+    { CAPNAME("kB","kcbt"),	KEY_BackTab },		/* back-tab */
     /* page scroll */
     { CAPNAME("kN","knp"),	KEY_Next },		/* next page */
     { CAPNAME("kP","kpp"),	KEY_Prior },		/* previous page */

@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.11 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.12 2004/12/11 01:37:42 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -108,4 +108,8 @@ WORD		{ALPHA}({ALPHA}|{DIGIT})*
 
 %%
 
-{WORD}		{ WriteToken(keyword_attr(yytext)); }
+{WORD}		{ char *attr = keyword_attr(yytext);
+		  if (attr != 0)
+		      flt_error(yytext);
+		  WriteToken(attr);
+		}

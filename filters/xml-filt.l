@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.11 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.12 2004/12/09 22:09:24 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of XML input
  * text.
@@ -25,7 +25,14 @@ static char *Number_attr;
 static char *String_attr;
 static char *Error_attr;
 
-static char **Tags;
+typedef struct {
+    char *name;
+    int line;
+    int col;
+}
+XMLTAGS;
+
+static XMLTAGS *Tags;
 static unsigned Num_tags = 0;
 static int In_error = 0;
 
@@ -61,14 +68,14 @@ VALUE		#{IDENT}
 
 <INITIAL,INLINE>"<"	{ WriteToken(Action_attr); push_state(XMLTAG); }
 
-<XMLTAG>"![CDATA["	{ WriteToken(Keyword_attr); BEGIN(XMLCDATA); flt_bfr_begin(String_attr); }
+<XMLTAG>"![CDATA["	{ WriteToken(Keyword_attr); push_state(XMLCDATA); flt_bfr_begin(String_attr); }
 
 <XMLTAG>(\/)?">"	|
 <XMLATTR>(\/)?">"	{ xml_close(yytext); pop_state(); }
 
-<XMLTAG>(\/)?{IDENT}	{ xml_command(yytext); BEGIN(XMLATTR); }
+<XMLTAG>(\/)?{IDENT}	{ xml_command(yytext); new_state(XMLATTR); }
 
-<XMLCDATA>"]]"		{ flt_bfr_finish(); WriteToken(Keyword_attr); BEGIN(XMLTAG); }
+<XMLCDATA>"]]"		{ flt_bfr_finish(); WriteToken(Keyword_attr); pop_state(); }
 <XMLCDATA>[\n]		|
 <XMLCDATA>.		{ flt_bfr_append(yytext, yyleng); }
 
@@ -114,22 +121,25 @@ xml_command(char *text)
     char *attr = xml_attr(name);
 
     if (!ending) {
-	unsigned need = sizeof(char *) * Num_tags;
+	unsigned need = sizeof(XMLTAGS) * Num_tags;
 	static unsigned have = 0;
 
-	Tags = type_alloc(char *, Tags, need, &have);
-	Tags[Num_tags++] = strmalloc(text);
+	Tags = type_alloc(XMLTAGS, Tags, need, &have);
+	Tags[Num_tags].name = strmalloc(text);
+	Tags[Num_tags].line = flt_get_line();
+	Tags[Num_tags].col = flt_get_col();
+	++Num_tags;
 
 	flt_puts(text, strlen(text), attr);
     } else {
 	int bad = 0;
 
 	if (Num_tags == 0
-	|| strcmp(text + 1, Tags[Num_tags - 1]) != 0) {
+	|| strcmp(text + 1, Tags[Num_tags - 1].name) != 0) {
 	    /*
 	     * If we already reported an error, and this (new erroneous) tag
 	     * does, in fact, correctly match a non-current opening tag, then
-	     * pop the stack back to the that tag (i.e., attempt to re-sync)
+	     * pop the stack back to that tag (i.e., attempt to re-sync)
 	     * and report as OK.
 	     */
 	    bad = 1;
@@ -137,14 +147,16 @@ xml_command(char *text)
 		unsigned t = Num_tags - 2;
 		int found = 0;
 		do {
-		    if (!strcmp(text + 1, Tags[t])) {
+		    if (!strcmp(text + 1, Tags[t].name)) {
 			found = 1;
 			break;
 		    }
 		} while (t-- != 0);
 		if (found) {	/* Matched lower tag */
-		    while (Num_tags - 1 > t)
-			free(Tags[--Num_tags]);
+		    while (Num_tags - 1 > t) {
+			--Num_tags;
+			free(Tags[Num_tags].name);
+		    }
 		    In_error = 0;
 		    bad = 0;
 		}
@@ -153,10 +165,14 @@ xml_command(char *text)
 	if (bad) {
 	    attr = Error_attr;
 	    In_error = 1;
+	    if (Num_tags > 1)
+		flt_error("expected tag:%s", Tags[Num_tags - 1].name);
+	    else
+		flt_error("mismatched tag");
 	}
 
 	if (Num_tags > 0)
-	    free(Tags[--Num_tags]);
+	    free(Tags[--Num_tags].name);
 
 	flt_puts(text, strlen(text), attr);
     }
@@ -167,7 +183,7 @@ xml_close(char *text)
 {
     if (text[0] == '/') {
 	if (Num_tags > 0)
-	    free(Tags[--Num_tags]);
+	    free(Tags[--Num_tags].name);
     }
 
     flt_puts(text, strlen(text), Action_attr);
@@ -198,11 +214,13 @@ do_filter(FILE *inputs)
 
     if (Tags != 0) {
 	while (Num_tags > 0)
-	    free(Tags[--Num_tags]);
+	    free(Tags[--Num_tags].name);
 #if NO_LEAKS
 	free(Tags);
 	Tags = 0;
 #endif
     }
+    if (Num_tags > 1)
+	flt_error("expected tag:%s", Tags[Num_tags - 1].name);
     end_state();
 }

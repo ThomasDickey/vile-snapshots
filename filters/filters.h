@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.85 2004/12/03 00:16:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.86 2004/12/09 22:03:07 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -353,14 +353,17 @@ extern void parse_keyword(char *name, int classflag);
  * Declared in filterio.c and/or builtflt.c
  */
 extern char *flt_gets(char **ptr, unsigned *len);
-extern const char *flt_name(void);
 extern char *flt_put_blanks(char *string);
 extern char *skip_blanks(char *src);
+extern const char *flt_name(void);
 extern int chop_newline(char *s);
+extern int flt_get_col(void);
+extern int flt_get_line(void);
 extern int flt_input(char *buffer, int max_size);
 extern int flt_lookup(char *name);
 extern int flt_start(char *name);
 extern void flt_echo(const char *string, int length);
+extern void flt_error(const char *fmt, ...);
 extern void flt_failed(const char *msg);
 extern void flt_finish(void);
 extern void flt_putc(int ch);

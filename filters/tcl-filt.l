@@ -4,7 +4,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.13 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.14 2004/12/10 00:43:07 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TCL/TK script.
  *
@@ -71,7 +71,7 @@ NONUMBER	{SIGN}?({NODECIMAL}|{NOOCTAL}|{NOHEXADECIMAL}|{NOREAL})
 
 {ACTION}		{ WriteToken(Action_attr); }
 
-{NONUMBER}		{ WriteToken(Error_attr); }
+{NONUMBER}		{ flt_error("not a number"); WriteToken(Error_attr); }
 {NUMBER}		{ WriteToken(Number_attr); }
 
 {IDENT1}	|

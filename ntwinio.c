@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.135 2004/10/20 01:02:04 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.136 2004/12/15 15:58:32 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -1689,6 +1689,33 @@ ntkclose(void)
 {				/* close the keyboard */
 }
 
+#define isModified(state) (state & \
+		(LEFT_CTRL_PRESSED \
+		 | RIGHT_CTRL_PRESSED \
+		 | LEFT_ALT_PRESSED \
+		 | RIGHT_ALT_PRESSED \
+		 | SHIFT_PRESSED))
+
+static int
+modified_key(int key, DWORD state)
+{
+    key |= mod_KEY;
+    if (state & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED))
+	key |= mod_CTRL;
+    if (state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED))
+	key |= mod_ALT;
+    if (state & SHIFT_PRESSED)
+	key |= mod_SHIFT;
+
+    return key;
+}
+
+/*
+ * The so-called extended keys include the function keys, non-digit keys on
+ * the numeric keypad, the cursor-keypad and editing keypad.  The treatment of
+ * the tab key is inconsistent:  We can get a tab with control modifier, but a
+ * shift-tab will still yield a WM_CHAR later.
+ */
 static struct keyxlate_struct {
     int windows;
     int vile;
@@ -1784,19 +1811,8 @@ decode_key_event(KEY_EVENT_RECORD * irp)
 	     * pageup/pagedown and arrow key bindings that would be lost if we
 	     * used the Win32-only definition.
 	     */
-	    if (state &
-		(LEFT_CTRL_PRESSED
-		 | RIGHT_CTRL_PRESSED
-		 | LEFT_ALT_PRESSED
-		 | RIGHT_ALT_PRESSED
-		 | SHIFT_PRESSED)) {
-		key = mod_KEY | keyp->vile;
-		if (state & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED))
-		    key |= mod_CTRL;
-		if (state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED))
-		    key |= mod_ALT;
-		if (state & SHIFT_PRESSED)
-		    key |= mod_SHIFT;
+	    if (isModified(state)) {
+		key = modified_key(keyp->vile, state);
 		if (keyxlate[i].vile == '2') {
 		    if ((key & mod_CTRL) && ((key & mod_ALT) == 0)) {
 			/* either ^2 or ^@, => nul char */
@@ -2807,6 +2823,15 @@ ntgetch(void)
 	case WM_CHAR:
 	    TRACE(("GETC:CHAR:%#x\n", msg.wParam));
 	    result = msg.wParam;
+	    /*
+	     * Check for modifieers on control keys such as tab.
+	     */
+	    if ((result < 256) && isCntrl(result)) {
+		DWORD state = get_keyboard_state();
+		state &= ~(LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED);
+		if (isModified(state))
+		    result = modified_key(result, state);
+	    }
 	    if (result == ESC) {
 		sel_release();
 		(void) update(TRUE);

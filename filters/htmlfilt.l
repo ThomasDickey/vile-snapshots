@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.30 2004/03/19 23:20:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.32 2004/12/11 01:35:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -69,7 +69,7 @@ ESCAPED		&({IDENT}|{HEXNUM});
 <JAVACODE>{INTEGER}	{ WriteToken(Number_attr); }
 <JAVACODE>"//"[^\n]*	{ WriteToken(Comment_attr); }
 
-<JAVACODE>^{SPACE}*"<"{SPACE}*(\/)?{IDENT}{SPACE}*">" { may_resume_html(yytext); }
+<JAVACODE>"<"{SPACE}*(\/)?{IDENT}{SPACE}*">" { may_resume_html(yytext); }
 
 <JAVACODE>"/*"		{ BeginQuote(JAVANOTE, Comment_attr); }
 <JAVANOTE>\n		{ flt_bfr_append(yytext, yyleng); }
@@ -103,11 +103,6 @@ html_command(char *text)
     }
 }
 
-/*
- * JavaScript has a number of syntactic ambiguities built into it.  Let's
- * assume that we're guaranteed that the </server> or </script> command
- * appears at the beginning of a line.
- */
 static void
 may_resume_html(char *text)
 {

@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.271 2004/12/06 23:37:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.273 2004/12/13 01:09:22 tom Exp $
  *
  */
 
@@ -722,6 +722,7 @@ screen2tbuff(TBUFF **result, CHARTYPE inclchartype)
 	}
 #endif
     }
+    tb_append(result, EOS);
 
 #if OPT_WIDE_CTYPES
 #if OPT_VMS_PATH
@@ -1836,6 +1837,7 @@ kbd_reply(const char *prompt,	/* put this out first */
 					     tbreserve(&buf), &cpos));
 		    }
 		    firstch = FALSE;
+		    shiftMiniBuffer(cpos + margin);
 		    continue;
 		}
 	    }

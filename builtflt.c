@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.38 2004/06/09 01:03:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.43 2004/12/11 15:21:06 tom Exp $
  *
  */
 
@@ -278,6 +278,71 @@ flt_gets(char **ptr, unsigned *len)
 }
 
 /*
+ * Return the line number at which we are about to write a token.
+ */
+int
+flt_get_line(void)
+{
+    return line_no(curbp, mark_out.l);
+}
+
+/*
+ * Return the column/offset for the current token.
+ */
+int
+flt_get_col(void)
+{
+    return offs2col(curwp, mark_out.l, mark_out.o + 1);
+}
+
+#ifdef MDFILTERMSGS
+/*
+ * Clear the text from [Filter Messages].
+ */
+static void
+init_flt_error(void)
+{
+    BUFFER *bp;
+    if (b_val(curbp, MDFILTERMSGS)) {
+	if ((bp = find_b_name(FLTMSGS_BufName)) != 0) {
+	    b_clr_changed(bp);	/* so bclear does not prompt */
+	    bclear(bp);
+	}
+    }
+}
+#else
+#define init_flt_error()	/* nothing */
+#endif
+
+/*
+ * Log an error detected by the syntax filter.
+ */
+void
+flt_error(const char *fmt,...)
+{
+#ifdef MDFILTERMSGS
+    if (b_val(curbp, MDFILTERMSGS)) {
+	char *filename = (curbp != 0) ? curbp->b_fname : "<stdin>";
+	BUFFER *bp;
+	va_list ap;
+
+	if ((bp = make_ro_bp(FLTMSGS_BufName, BFINVS)) != 0) {
+	    (void) b2printf(bp, "%s: %d:%d: ",
+			    filename,
+			    flt_get_line(),
+			    flt_get_col());
+
+	    va_start(ap, fmt);
+	    (void) b2vprintf(bp, fmt, ap);
+	    va_end(ap);
+
+	    (void) b2printf(bp, "\n");
+	}
+    }
+#endif
+}
+
+/*
  * This function is used from flex to read chunks from the input file.  We'll
  * make it simple by ending each read at the end of a line; some long lines
  * will be split across successive reads.
@@ -420,6 +485,7 @@ flt_start(char *name)
 	mark_out = mark_in;
 	tb_init(&gets_data, 0);
 
+	init_flt_error();
 	flt_initialize();
 	flt_make_symtab(current_filter->filter_name);
 

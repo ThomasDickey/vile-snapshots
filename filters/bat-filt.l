@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.17 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.18 2004/12/10 00:17:39 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DOS (and
  * similar, such as W95, NT) batch file.
@@ -102,8 +102,10 @@ write_label(char *text, int length)
     unsigned limit = (len <= LABEL) ? length : (LABEL + next - text);
 
     flt_puts(text, limit, Ident2_attr);
-    if (len > LABEL)
+    if (len > LABEL) {
+	flt_error("label too long");
 	flt_puts(next + LABEL, strlen(next + LABEL), Error_attr);
+    }
 }
 
 static void

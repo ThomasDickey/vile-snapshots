@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/asm-filt.l,v 1.2 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/asm-filt.l,v 1.3 2004/12/10 00:16:37 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of M$ assembler files.
  */
@@ -52,8 +52,10 @@ FORMAT		"%"[.*0-9l#+-]*[cdeEfFgGisuxX]
 <NORMAL>";"[^\n]*	{ WriteToken(Comment_attr); }
 
 <NORMAL>{NUMBER}	{ WriteToken(Number_attr); }
-<NORMAL>[0-9]{NUMBER}{NAME}+ { WriteToken(Error_attr); }
-
+<NORMAL>[0-9]{NUMBER}{NAME}+ {
+			  flt_error("not a number");
+			  WriteToken(Error_attr);
+			}
 <QUOTE1>[<>]		{ WriteToken(Action_attr); }
 <QUOTE1>[^\n<>]*	{ WriteToken(String_attr); }
 <QUOTE1>\n		{ ECHO; BEGIN(NORMAL); }

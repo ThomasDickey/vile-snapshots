@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.20 2004/12/07 23:19:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.21 2004/12/10 00:41:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of SQL script
  * - T.Dickey
@@ -70,7 +70,12 @@ HOSTVAR		":"{IDENT}
 <CODE>{IDENT}		{   char *text = lowercase_of(yytext);
 			    char *attr = ci_keyword_attr(text);
 			    if (attr == Comment_attr) {
-				WriteToken(leading ? attr : Error_attr);
+				if (leading) {
+				    WriteToken(attr);
+				} else {
+				    flt_error("illegal position for comment");
+				    WriteToken(Error_attr);
+				}
 				BEGIN(COMMENT1);
 			    } else if (leading
 				    && attr == 0

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.10 2004/03/19 00:14:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.11 2004/12/10 00:24:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Imakefile
  *
@@ -58,7 +58,8 @@ OPER		[+:?]?=
 <NORMAL>^{SPACE}\@		{ if (yyleng)
 				    flt_puts(yytext, yyleng-1, "");
 				  flt_puts("@", 1, String_attr); }
-<NORMAL>\\{SPACE}+\n		{ WriteToken(Error_attr); continued = 1; }
+<NORMAL>\\{SPACE}+\n		{ flt_error("trailing whitespace");
+				  WriteToken(Error_attr); continued = 1; }
 <NORMAL>\\[\n]			{ WriteToken(String_attr); continued = 1; }
 <NORMAL>[\n]			{ ECHO; continued = 0; }
 <NORMAL>\\["']			{ WriteToken(String_attr); }
@@ -70,7 +71,8 @@ OPER		[+:?]?=
 <COMMENT>\n			{ FinishQuote(NORMAL); }
 
 <QUOTE1,QUOTE2>{MACRO}		{ flt_bfr_embed(yytext, yyleng, Ident2_attr); }
-<QUOTE1,QUOTE2>\\{SPACE}+\n	{ flt_bfr_embed(yytext, yyleng, Error_attr); }
+<QUOTE1,QUOTE2>\\{SPACE}+\n	{ flt_error("trailing whitespace");
+				  flt_bfr_embed(yytext, yyleng, Error_attr); }
 <QUOTE1,QUOTE2>\\\n		{ flt_bfr_append(yytext, yyleng); }
 
 <QUOTE1>(\\.|[^\n\'])		{ flt_bfr_append(yytext, yyleng); }
@@ -211,8 +213,14 @@ write_keyword(char *text, int size, int prepro, int caseless)
     }
     text[size] = save;
 
-    if (before)
-	flt_puts(base, before, ((tabs && notabs) || nospcs) ? Error_attr : "");
+    if (before) {
+	if ((tabs && notabs) || nospcs) {
+	    flt_error("unexpected whitespace");
+	    flt_puts(base, before, Error_attr);
+	} else {
+	    flt_puts(base, before, "");
+	}
+    }
 
     if (attr == Comment_attr) {	/* for XCOMM */
 	BEGIN(COMMENT);		/* BeginQuote(COMMENT) */
@@ -317,6 +325,7 @@ missing_quote(char *text, int length)
 {
     char *save = String_attr;
     String_attr = Error_attr;
+    flt_error("missing quote");
     flt_bfr_append(text, length);
     flt_bfr_finish();
     BEGIN(NORMAL);

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.556 2004/12/03 00:35:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.558 2004/12/15 13:34:31 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1452,11 +1452,20 @@ typedef USHORT CHARTYPE;
 #define ispath(c)	istype(vl_pathn, c)
 #define iswild(c)	istype(vl_wild, c)
 
+#define KEY_Space	' '
+#define KEY_Tab		'\t'
+
 /* macro for cases where return & newline are equivalent */
 #define	isreturn(c)	((c == '\r') || (c == '\n'))
 
 /* macro for whitespace (non-return) */
 #define	isBlank(c)      ((c == '\t') || (c == ' '))
+
+#if OPT_KEY_MODIFY
+#define isBackTab(c)	((c) == KEY_BackTab || (((c) & mod_SHIFT) != 0 && CharOf(c) == KEY_Tab))
+#else
+#define isBackTab(c)	((c) == KEY_BackTab)
+#endif
 
 #define	isGraph(c)	(!isSpecial(c) && !isSpace(c) && isPrint(c))
 
@@ -2958,8 +2967,10 @@ extern void ExitProgram(int code);
 
 #if OPT_TRACE > 1
 #define TRACE2(params) TRACE(params)
+#define return2Code(c)  returnCode(c)
 #else
 #define TRACE2(params) /*nothing*/
+#define return2Code(c)  return(c)
 #endif
 
 #if OPT_EVAL || OPT_DEBUGMACROS
