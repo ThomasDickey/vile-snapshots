@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.51 1996/04/16 02:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.52 1996/08/05 12:51:57 pgf Exp $
  *
  */
 
@@ -716,7 +716,7 @@ expand_pattern (const char *item)
 	DIR	*dp;
 	DIRENT	*de;
 
-	if ((dp = opendir(SL_TO_BSL(item))) != 0) {
+	if ((dp = opendir((char *)SL_TO_BSL(item))) != 0) {
 		result = TRUE;
 		while ((de = readdir(dp)) != 0) {
 			char	temp[NFILEN];

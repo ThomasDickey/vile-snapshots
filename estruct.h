@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.286 1996/05/28 01:45:22 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.287 1996/08/05 12:51:57 pgf Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -190,6 +190,7 @@
 # define SYS_VMS    1
 # define HAVE_GETCWD 1
 # if defined(__DECC) && !defined(__alpha)
+#  undef HAVE_ACCESS
 #  define HAVE_ACCESS 0	/* 'access()' is reported to not work properly */
 # endif
 # if !defined(__DECC)

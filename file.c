@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.193 1996/08/09 10:10:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.196 1996/08/13 03:00:08 pgf Exp $
  *
  */
 
@@ -47,7 +47,7 @@ file_modified(const char *path)
 	struct stat	statbuf;
 	time_t		the_time = 0;
 
-	if (stat(SL_TO_BSL(path), &statbuf) >= 0
+	if (stat((char *)SL_TO_BSL(path), &statbuf) >= 0
 #if CC_CSETPP
 	 && (statbuf.st_mode & S_IFREG) == S_IFREG)
 #else
@@ -1763,16 +1763,16 @@ imdying(int ACTUAL_SIG_ARGS)
 {
 #if SYS_UNIX
 #if HAVE_MKDIR
-	static const char dirnam[NSTRING] = "/tmp/vileDXXXXXX";
+	static char dirnam[NSTRING] = "/tmp/vileDXXXXXX";
 #else
-	static const char dirnam[NSTRING] = "/tmp";
+	static char dirnam[NSTRING] = "/tmp";
 	char temp[NFILEN];
 #endif
 #else
 #if HAVE_MKDIR && !SYS_MSDOS && !SYS_OS2
-	static const char dirnam[NSTRING] = "vileDXXXXXX";
+	static char dirnam[NSTRING] = "vileDXXXXXX";
 #else
-	static const char dirnam[NSTRING] = "";
+	static char dirnam[NSTRING] = "";
 	char temp[NFILEN];
 #endif
 #endif
@@ -1813,7 +1813,7 @@ imdying(int ACTUAL_SIG_ARGS)
 			b_is_changed(bp)) {
 #if HAVE_MKDIR && !SYS_MSDOS && !SYS_OS2
 			if (!created) {
-				(void)mktemp((char *)dirnam);
+				(void)mktemp(dirnam);
 				if(mkdir(dirnam,0700) != 0) {
 					tidy_exit(BADEXIT);
 				}

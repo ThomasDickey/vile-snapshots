@@ -1,6 +1,20 @@
 
 Changes for vile 6.1 (released ???)
 
+(pgf) 960812 (c)
+	+ removed const from dirnam[] buffer in imdying.  removed cast
+	  to (char *) which prevented any compiler in the world from
+	  showing us this error.  grrr.  i hope no one else loses
+	  work because of this one.  (file.c)
+
+	+ fix minor warning from extern'd prototype in buffer.c.
+
+	+ removed vile.man production rule from makefile.in.
+
+	+ applied changes from martin zinser (m.zinser@gsi.de) for VMS
+	  builds -- mostly casts, and some changes to the vms build scripts.
+
+
 (jrs)	960809 (b)
 
 	+ on NT reset the console input mode after a shell escape to fix
@@ -28,7 +42,6 @@ Changes for vile 6.1 (released ???)
 	  (ntconio.c)
 
 (pgf)	960717 (a)
-
 	+ applied rick's changes for proper operation in an NT command
 	  window with scrollbars.  (ntconio.c)
 

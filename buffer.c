@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.146 1996/08/09 10:10:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.148 1996/08/13 03:06:48 pgf Exp $
  *
  */
 
@@ -281,8 +281,6 @@ MarkUnused(register BUFFER *bp)
 static void
 FreeBuffer(BUFFER *bp)
 {
-	void clobber_save_curbp(BUFFER *bp);
-
 	if (bp->b_fname != out_of_mem)
 		FreeIfNeeded(bp->b_fname);
 
@@ -296,7 +294,10 @@ FreeBuffer(BUFFER *bp)
 	delink_bp(bp);
 	if (curbp == bp)
 		curbp = NULL;
+
+#if OPT_HILITEMATCH
 	clobber_save_curbp(bp);
+#endif
 	free((char *) bp);			/* Release buffer block */
 }
 

@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.1 1996/06/19 04:16:00 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.182 1996/08/05 12:51:57 pgf Exp $
  *
  */
 
@@ -920,7 +920,7 @@ cd_and_pwd(const char *path)
 #if CC_CSETPP
 	if (_chdir(SL_TO_BSL(path)) == 0)
 #else
-	if (chdir(SL_TO_BSL(path)) == 0)
+	if (chdir((char *)SL_TO_BSL(path)) == 0)
 #endif
 	{
 #if SYS_UNIX
