@@ -831,11 +831,14 @@ Miscellaneous commands
 	show-mapped!-chars -- displays the strings mapped for insert mode
 		with ":map!".  (synonymous with ":map!<CR>")
 
-	show-system-mapped-chars -- displays the strings mapped to
-		represent the terminal's function keys.
+	show-printable -- displays a table of the printable characters,
+		with associated types.
 
 	show-registers -- displays the current contents of the named and
 		numbered registers.
+
+	show-system-mapped-chars -- displays the strings mapped to
+		represent the terminal's function keys.
 
 	show-tagstack -- displays the contents of the "tags stack", the
 		list of locations from which the ":ta" or '^]' commands have
@@ -3779,4 +3782,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.350 1998/04/30 23:49:21 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.351 1998/05/13 00:50:15 tom Exp $

@@ -1,7 +1,7 @@
 /*	Crypt:	Encryption routines for MicroEMACS
  *		written by Dana Hoggatt and Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/crypt.c,v 1.21 1998/04/28 10:13:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/crypt.c,v 1.22 1998/05/13 10:43:06 pgf Exp $
  *
  */
 
@@ -108,6 +108,8 @@ main(int argc, char **argv)
 	char *prog = argv[0];
 	int mailmode = 0;
 
+	key[0] = 0;
+
 	/* -m for mailmode:  leaves headers intact (up to first blank line)
 	 * then crypts the rest.  i use this for encrypting mail messages
 	 * in mh folders.  */
@@ -126,7 +128,8 @@ main(int argc, char **argv)
 	    key[sizeof(key)-1] = '\0';
 	    argc -= 2;
 	    argv += 2;
-	} if (argc > 1 && argv[1][0] == '-') {
+	}
+	if (argc > 1 && argv[1][0] == '-') {
 	    fprintf(stderr,
 		"usage: %s [-m] [-k crypt-key] [file ...]\n"
 		"  where crypt-key will be prompted for if not specified\n"
@@ -135,7 +138,8 @@ main(int argc, char **argv)
 		prog
 	    );
 	    exit(1);
-	} else {
+	}
+	if (!key[0]) {
 #if HAVE_GETPASS
 	    char *userkey;
 	    userkey = getpass("Enter key: ");
@@ -157,7 +161,7 @@ main(int argc, char **argv)
 #else
 	    fprintf(stderr,
 		"usage: %s [-m] -k crypt-key [file ...]\n"
-		"  where '-k crypt-key' must be specified on this system\n"
+		"  where '-k crypt-key' is required (no prompting on this system)\n"
 		"  and -m will force \"mail-mode\", which leaves text before\n"
 		"  the first empty line of a file (i.e. headers) intact.\n",
 		prog

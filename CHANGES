@@ -1,5 +1,18 @@
 Changes for vile 7.5/8.0 (released ??? ??? ?, 1998)
 
+ (tom) 980513 (f)
+ 	+ replace global variable curswval with the corresponding function
+	  calls, make nextsw a function next_sw(), so that shift-width is
+	  computed correctly as needed (reported by abigail@fnx.com and Ian A
+	  Watson <watson_ian_a@lilly.com>)
+	+ correct handling of command-line options in crypt.c (patch by
+	  Paul Fox).
+	+ correct missing check for empty line in screen_string, which would
+	  cause a core dump if :show-variables were run on an empty buffer
+	  (reported by Ed Henderson <enhenderson@micron.com>, patch by Kevin
+	  Buettner).
+ 	+ updated modes.doc to match implementation of fences.
+
  (kev) 980511 (e)
 	+ api.c (api_motion): Revised the settings for the following
 	  global flags: clexec, discmd, disinp, isnamedcmd.  Some of

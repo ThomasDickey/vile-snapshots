@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.182 1998/05/11 09:54:27 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.183 1998/05/12 23:33:03 kev Exp $
  *
  */
 
@@ -615,6 +615,7 @@ screen_string (char *buf, int bufn, CHARTYPE inclchartype)
 	/* if from gototag(), grab from the beginning of the string */
 	if (b_val(curbp, MDTAGWORD)
 	 && inclchartype == _ident
+	 && DOT.o > 0
 	 && istype(inclchartype, char_at(DOT))) {
 		while ( DOT.o > 0 ) {
 			DOT.o--;
@@ -1237,7 +1238,8 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 				   llength(DOT.l) - margin);
 		}
 		else {
-			tb_bappend(buf, &c, 1);
+			char tmp = c;
+			tb_bappend(buf, &tmp, 1);
 		}
 		*cpos += 1;
 		edited = TRUE;

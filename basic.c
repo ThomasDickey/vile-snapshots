@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.97 1998/04/28 10:14:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.98 1998/05/12 23:31:06 tom Exp $
  *
  */
 
@@ -801,6 +801,13 @@ getgoal(LINE *dlp)
 		++dbo;
 	}
 	return (dbo);
+}
+
+int
+next_sw(int col)
+{
+	int width = shiftwid_val(curbp);
+	return (((col / width) + 1) * width);
 }
 
 /* return the next column index, given the current char and column */

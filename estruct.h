@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.348 1998/04/30 23:49:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.349 1998/05/12 22:41:16 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -972,7 +972,6 @@ typedef UINT WATCHTYPE;
 /*	Internal defined functions					*/
 
 #define	nextab(a)	(((a / curtabval) + 1) * curtabval)
-#define	nextsw(a)	(((a / curswval) + 1) * curswval)
 
 #define NEXT_COLUMN(col, c, list, tabs) \
 		((c == '\t' && !list) \

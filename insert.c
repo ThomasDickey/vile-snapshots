@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.107 1998/04/28 10:17:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.108 1998/05/12 23:35:39 tom Exp $
  *
  */
 
@@ -687,7 +687,7 @@ inschar(int c, int *backsp_limit_p)
 			                          DOT.o-2))) {
 				int goal, col, sw;
 
-				sw = curswval;
+				sw = shiftwid_val(curbp);
 				if (autoindented >=0)
 					*backsp_limit_p = w_left_margin(curwp);
 				col = getccol(FALSE);
@@ -889,7 +889,7 @@ indented_newline(void)
 	skipindent = 0;
 
 	if (cmode && bracef)
-		indentwas = nextsw(indentwas);
+		indentwas = next_sw(indentwas);
 
 	return doindent(indentwas);
 }
@@ -908,7 +908,7 @@ indented_newline_above(void)
 	if (backline(TRUE,1) == FALSE)
 		return FALSE;
 	if (cmode && bracef)
-		indentwas = nextsw(indentwas);
+		indentwas = next_sw(indentwas);
 
 	return doindent(indentwas);
 }
@@ -1156,7 +1156,7 @@ shiftwidth(int f GCC_UNUSED, int n GCC_UNUSED)
 	 * as the tab column, delete the spaces before the insert point
 	 * & insert a tab; otherwise, insert spaces as required.
 	 */
-	add_spaces = curswval - (logical_col % curswval);
+	add_spaces = next_sw(logical_col) - logical_col;
 	if (space_count + add_spaces > curtabval) {
 	    space_count = curtabval - add_spaces;
 	}
