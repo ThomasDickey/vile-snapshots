@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-1999 by Paul Fox and Tom Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.78 1999/09/04 00:22:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.80 1999/10/17 17:07:41 tom Exp $
  *
  */
 
@@ -19,10 +19,11 @@
 #define W_LINE  2
 #define W_COLM  3
 #define W_TEXT  4
+#define W_LAST	5
 
 typedef struct {
     regexp *exp_comp;
-    int words[5];
+    int words[W_LAST];
 } ERR_PATTERN;
 
 static LINE *getdot(BUFFER *bp);
@@ -322,6 +323,8 @@ load_patterns(void)
     if (exp_count == 0) {
 	exp_count = bp->b_linecount;
 	exp_table = typeallocn(ERR_PATTERN, exp_count);
+	for (n = 0; n < W_LAST; n++)
+	    exp_table->words[n] = -1;
 
 	n = 0;
 	for_each_line(lp, bp)
@@ -450,15 +453,17 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 	 * already have tracked them, but since we seem to
 	 * have jumped out of sequence we need to recalibrate
 	 * the directory stack against our current position.
-	 *
 	 */
 	while (tdotp != dotp) {
 
 	    if (lisreal(tdotp)) {
 		ALLOC_T count = 0;
 
-		while ((exp = next_pattern(count++)) != 0
-		    && !lregexec(exp->exp_comp, tdotp, 0, llength(tdotp)));
+		while ((exp = next_pattern(count++)) != 0) {
+		    if (exp->words[W_VERB] > 0)
+			if (lregexec(exp->exp_comp, tdotp, 0, llength(tdotp)))
+			    break;
+		}
 
 		if (exp != 0) {
 		    decode_exp(exp);
@@ -476,6 +481,9 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 				free(dirs[l--]);
 			}
 		    }
+		} else if (interrupted()) {
+		    kbd_alarm();
+		    return ABORT;
 		}
 	    }
 	    tdotp = lforw(tdotp);

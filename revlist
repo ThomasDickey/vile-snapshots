@@ -1,6 +1,6 @@
-revlist for vile, version v8_3w
+revlist for vile, version v8_3x
 --------------------------------------------------------------------------------
-CHANGES	1.459
+CHANGES	1.465
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -17,7 +17,7 @@ ansi.c	1.40
 api.c	1.20
 api.h	1.11
 basic.c	1.111
-bind.c	1.207
+bind.c	1.208
 borland.c	1.30
 btree.c	1.5
 btree.h	1.3
@@ -32,11 +32,11 @@ configure.in	1.120
 csrch.c	1.29
 descrip.mms	1.41
 dirstuff.h	1.23
-display.c	1.305
+display.c	1.308
 djhandl.c	1.6
 dumbterm.c	1.17
 edef.h	1.258
-estruct.h	1.425
+estruct.h	1.426
 eval.c	1.255
 exec.c	1.206
 externs.c	1.7
@@ -44,7 +44,7 @@ fences.c	1.73
 file.c	1.259
 filec.c	1.91
 fileio.c	1.139
-finderr.c	1.78
+finderr.c	1.80
 glob.c	1.64
 globals.c	1.44
 gppconio.c	1.2
@@ -71,37 +71,37 @@ menu.c	1.34
 mkdirs.sh	1.4
 mkprlenv.wnt	1.5
 mktbls.c	1.105
-modes.c	1.185
+modes.c	1.186
 modetbl	1.157
 msgs.c	1.19
 npopen.c	1.77
 ntconio.c	1.49
-ntwinio.c	1.58
+ntwinio.c	1.59
 oneliner.c	1.91
 opers.c	1.67
 os2keys.h	1.1
 os2pipe.c	1.4
 os2vio.c	1.26
-patchlev.h	1.194
+patchlev.h	1.195
 path.c	1.98
 perl.xs	1.55
 proto.h	1.394
 pscreen.h	1.1
 ptypemap	1.5
-random.c	1.211
+random.c	1.212
 regexp.c	1.65
 region.c	1.100
-revlist	v8_3w
+revlist	v8_3x
 search.c	1.117
 select.c	1.104
 sinstall.sh	1.1
 spawn.c	1.146
 statevar.c	1.23
-tags.c	1.101
+tags.c	1.102
 tbuff.c	1.36
 tcap.c	1.128
 tcap.h	1.4
-termio.c	1.174
+termio.c	1.175
 trace.c	1.15
 trace.h	1.9
 ucrypt.c	1.11
@@ -232,7 +232,7 @@ icons/vile.ico	1.3
 icons/vile.xbm	1.1
 icons/vile.xpm	1.1
 macros/digraphs.rc	1.1
-macros/manpage.rc	1.7
+macros/manpage.rc	1.8
 macros/palettes.rc	1.5
 macros/pictmode.rc	1.3
 macros/vile-pager	1.2

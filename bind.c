@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.207 1999/10/03 20:34:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.208 1999/10/11 22:18:47 tom Exp $
  *
  */
 
@@ -90,12 +90,17 @@ static void
 old_namebst (BI_NODE *a)
 {
 	if (!(a->value.n_flags & NBST_READONLY)) {
-		if (a->value.n_cmd != 0) {
+		CMDFUNC *cmd = TYPECAST(CMDFUNC,a->value.n_cmd);
+		if (cmd != 0) {
 #if OPT_ONLINEHELP
-			if (a->value.n_cmd->c_help)
-				free(TYPECAST(char,a->value.n_cmd->c_help));
+			if (cmd->c_help)
+				free(TYPECAST(char,cmd->c_help));
 #endif
-			free(TYPECAST(char,a->value.n_cmd));
+#if OPT_MACRO_ARGS
+			if (cmd->c_args)
+				free(cmd->c_args);
+#endif
+			free(cmd);
 		}
 		free(TYPECAST(char,BI_KEY(a)));
 	}
@@ -2650,7 +2655,7 @@ unsigned *pos)
 
 	if ((nptr = btree_parray(&namebst, buf, cpos)) != 0) {
 		status = kbd_complete(FALSE, c, buf, pos, (const char *)nptr, sizeof(*nptr));
-		free((char *)nptr);
+		free(TYPECAST(char,nptr));
 	} else
 		kbd_alarm();
 	return status;

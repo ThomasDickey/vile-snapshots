@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.185 1999/10/10 17:59:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.186 1999/10/11 22:08:33 tom Exp $
  *
  */
 
@@ -3213,6 +3213,7 @@ free_scheme(char *name)
 	 && (p = find_scheme(name)) != 0) {
 		UINT code = p->code;
 
+		TRACE(("free_scheme(%s)\n", name));
 		free (p->name);
 		if (p->list != 0) free (p->list);
 		while (p->name != 0) {
@@ -3227,6 +3228,7 @@ free_scheme(char *name)
 
 		return TRUE;
 	}
+	TRACE(("cannot free_scheme(%s)\n", name));
 	return FALSE;
 }
 
@@ -3518,15 +3520,28 @@ void
 mode_leaks(void)
 {
 #if OPT_COLOR_SCHEMES
-	while (my_schemes != 0 && my_schemes->name != 0)
-		if (!free_scheme(my_schemes->name))
-			break;
-	if (my_schemes != 0) {	/* it's ok to free the default scheme */
-		FreeAndNull(my_schemes->list);
-		FreeAndNull(my_schemes->name);
-		free(my_schemes);
+	if (my_schemes != 0) {
+		int last;
+		for (last = 0; my_schemes[last].name != 0; last++)
+			;
+		if (--last >= 0) {
+			while (my_schemes != 0 && my_schemes[last].name != 0) {
+				if (!free_scheme(my_schemes[last].name)) {
+					if (last <= 0)
+						break;
+					last = 0;
+				} else if (last > 0) {
+					last--;
+				}
+			}
+		}
+		if (my_schemes != 0) {	/* it's ok to free the default scheme */
+			FreeAndNull(my_schemes->list);
+			FreeAndNull(my_schemes->name);
+			free(my_schemes);
+		}
+		FreeAndNull(my_scheme_choices);
 	}
-	FreeAndNull(my_scheme_choices);
 #endif
 
 #if OPT_ENUM_MODES && OPT_COLOR

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.58 1999/09/30 20:36:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.59 1999/10/18 09:42:24 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -735,7 +735,8 @@ static void nticursor(int cmode)
 }
 #endif
 
-static int fhide_cursor(void)
+static int
+fhide_cursor(void)
 {
 	TRACE(("fhide_cursor pos %#lx,%#lx (visible:%d, exists:%d)\n", ttrow, ttcol, caret_visible, caret_exists))
 	if(caret_visible) {
@@ -749,7 +750,8 @@ static int fhide_cursor(void)
 	return 0;
 }
 
-static void fshow_cursor(void)
+static void
+fshow_cursor(void)
 {
 	int x, y;
 	POINT z;
@@ -1638,20 +1640,18 @@ MouseClickSetPos(POINT *result, int *onmode)
 	TRACE(("GETC:setcursor(%d, %d)\n", result->y, result->x))
 
 	/*
-	 * If we're getting a button-down in a window, allow it to begin a
-	 * selection.  A button-down on its modeline will allow resizing the
-	 * window.
+	 * If we're getting a button-down in a window, allow it to maybe begin
+	 * a selection (if the mouse has actually moved).  A button-down on
+	 * its modeline will allow resizing the window.
 	 */
 	*onmode = FALSE;
 	if ((wp = row2window(result->y)) != 0) {
 		if (result->y == mode_row(wp)) {
 			*onmode = TRUE;
-			sel_release();
 			return TRUE;
 		}
 		return setcursor(result->y, result->x);
 	}
-	sel_release();
 	return FALSE;
 }
 
@@ -1675,16 +1675,128 @@ adjust_window(WINDOW *wp, POINT *current, POINT *latest)
 	return FALSE;
 }
 
+/*
+ * FUNCTION
+ *   mousemove(int    *sel_pending,
+ *             int    onmode,
+ *             POINT  *first,
+ *             POINT  *latest,
+ *             MARK   *lmbdn_mark,
+ *             WINDOW *wp)
+ *
+ *   sel_pending - Boolean, T -> client has recorded a left mouse button (LMB)
+ *                 click, and so, a selection is pending.
+ *
+ *   onmode      - Boolean, T -> left mouse button was initially clicked
+ *                 down on a mode line.
+ *
+ *   first       - editor row/col coordinates where LMB was initially recorded.
+ *
+ *   latest      - during the mouse move, assuming the LMB is still down,
+ *                 "latest" represents the editor's current row/col
+ *                 position w/in the same window where "first" was recorded.
+ *
+ *   lmbdn_mark  - editor MARK when LMB was initially recorded.
+ *
+ *   wp          - pointer to editor window where LMB was initially recorded.
+ *
+ * DESCRIPTION
+ *   Using several state variables, this function handles all the semantics
+ *   of a left mouse button "MOVE" event.  The semantics are as follows:
+ *
+ *   1) This function will not be called unless that LMB is down (enforced
+ *      by client).
+ *   2) if the LMB was initially clicked down on a mode line, then the only
+ *      operation that can occur is window resizing.
+ *   3) if not #2 above, then a LMB move within the current editor window
+ *      selects a region of text.  Later, when the user releases the LMB, that
+ *      text is yanked to the unnamed register (the yank code is not handled
+ *      in this function).
+ *
+ * RETURNS
+ *   None
+ */
+static void
+mousemove(int    *sel_pending,
+          int    onmode,
+          POINT  *first,
+          POINT  *latest,
+          MARK   *lmbdn_mark,
+          WINDOW *wp)
+
+{
+    POINT current;
+    int   dummy;
+
+    fhide_cursor();
+    GetMousePos(&current);
+    TRACE(("GETC:MOUSEMOVE (%d,%d)\n", current.x, current.y));
+
+    /* If on mode line, move window. */
+    if (onmode)
+    {
+        if (! adjust_window(wp, &current, latest))
+        {
+            /*
+             * left mouse button still down, but cursor moved off mode
+             * line.  Update latest to keep track of cursor in case
+             * it wanders back on the mode line.
+             */
+
+            *latest = current;
+        }
+        return;
+    }
+
+    if (*sel_pending)
+    {
+        /*
+         * Selection pending.  If the mouse has moved at least one char,
+         * start a selection.
+         */
+
+        if (MouseClickSetPos(latest, &dummy))
+        {
+            /* ignore mouse jitter */
+
+            if (latest->x != first->x || latest->y != first->y)
+            {
+                *sel_pending = FALSE;
+                DOT          = *lmbdn_mark;
+                (void) sel_begin();
+                (void) update(TRUE);
+            }
+            else
+                return;
+        }
+    }
+
+    if (wp != row2window(current.y))
+    {
+        /* mouse moved into a different editor window. */
+
+        return;
+    }
+    if (!setcursor(current.y, current.x))
+        return;
+    if (get_keyboard_state() & (LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED))
+        (void) sel_setshape(RECTANGLE);
+    if (! sel_extend(TRUE, TRUE))
+        return;
+    (void) update(TRUE);
+}
+
 static int
 ntgetch(void)
 {
 	static DWORD lastclick = 0;
-	static int clicks = 0;
+	static int clicks = 0, onmode;
 
 	DWORD dword;
 	DWORD thisclick;
 	int buttondown = FALSE;
-	int onmode = FALSE;
+	int sel_pending = FALSE;	/* Selection pending */
+	MARK lmbdn_mark;		/* left mouse button down here */
 	int have_focus = 0;
 	int result = 0;
 	KEY_EVENT_RECORD ker;
@@ -1766,13 +1878,16 @@ ntgetch(void)
 		case WM_LBUTTONDOWN:
 			TRACE(("GETC:LBUTTONDOWN %s\n", which_window(msg.hwnd)))
 			if (msg.hwnd == cur_win->text_hwnd) {
+				/* Clear current selection, a la notepad. */
+				sel_release();
+				/* Allow click to change window focus. */
 				if (MouseClickSetPos(&first, &onmode)) {
 					fhide_cursor();
-					that_wp = row2window(first.y);
-					(void)sel_begin();
-					(void)update(TRUE);
-					buttondown = TRUE;
-					latest = first;
+					sel_pending = buttondown = TRUE;
+					lmbdn_mark  = DOT;
+					latest      = first;
+					that_wp     = row2window(first.y);
+					(void)update(TRUE); /* for wdw change */
 				}
 			} else {
 				DispatchMessage(&msg);
@@ -1784,7 +1899,8 @@ ntgetch(void)
 			if (msg.hwnd == cur_win->text_hwnd) {
 				fhide_cursor();
 
-				thisclick = GetTickCount();
+				sel_pending = FALSE;
+				thisclick   = GetTickCount();
 				TRACE(("CLICK %d/%d\n", lastclick, thisclick))
 					if (thisclick - lastclick < clicktime) {
 					clicks++;
@@ -1835,6 +1951,13 @@ ntgetch(void)
 		case WM_MBUTTONDOWN:
 			TRACE(("GETC:MBUTTONDOWN %s\n", which_window(msg.hwnd)))
 			if (msg.hwnd == cur_win->text_hwnd) {
+				/*
+				 * Don't leave stray cursor glyphs in text
+				 * window when paste_selection() updates
+				 * screen.
+				 */
+
+				fhide_cursor();
 				if (MouseClickSetPos(&latest, &onmode)
 				 && !onmode) {
 					sel_yank(0);
@@ -1842,6 +1965,7 @@ ntgetch(void)
 					paste_selection();
 				}
 				(void)update(TRUE);
+				fshow_cursor();
 			} else {
 				DispatchMessage(&msg);
 			}
@@ -1854,8 +1978,17 @@ ntgetch(void)
 					invoke_popup_menu(msg);
 				} else if (MouseClickSetPos(&latest, &onmode)) {
 					if (!onmode) {
+						/*
+						 * Don't drop cursor glyphs
+						 * in msg buffer when
+						 * clipboard routines
+						 * report status.
+						 */
+
+						fhide_cursor();
 						sel_yank(0);
 						cbrdcpy_unnamed(FALSE,1);
+						fshow_cursor();
 					}
 					(void)update(TRUE);
 				}
@@ -1875,32 +2008,15 @@ ntgetch(void)
 
 		case WM_MOUSEMOVE:
 			if (buttondown) {
-				POINT current;
-
-				fhide_cursor();
-
-				GetMousePos(&current);
-				TRACE(("GETC:MOUSEMOVE (%d,%d)%s\n",
-					current.x, current.y,
-					buttondown ? " selecting" : ""));
-
-				if (onmode
-				 && adjust_window(that_wp, &current, &latest))
-					break;
-
-				if (that_wp != row2window(current.y))
-					break;
-				if (!setcursor(current.y, current.x))
-					break;
-
-				if (get_keyboard_state()
-				 & (LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED))
-					(void)sel_setshape(RECTANGLE);
-				if (!sel_extend(TRUE, TRUE))
-					break;
-				(void)update(TRUE);
-			} else
+			       mousemove(&sel_pending,
+					 onmode,
+					 &first,
+					 &latest,
+					 &lmbdn_mark,
+					 that_wp);
+			} else {
 				DispatchMessage(&msg);
+			}
 			break;
 
 		default:
@@ -2800,7 +2916,7 @@ WinMain(
 
 	/*
 	 * If our working directory is ${HOMEDRIVE}${HOME} and we're given a
-	 * filename, try to set the working directory based on the last one. 
+	 * filename, try to set the working directory based on the last one.
 	 * Drag/drop would only do this for us if we registered for each file
 	 * type; otherwise it's useful when we have the window already open.
 	 */

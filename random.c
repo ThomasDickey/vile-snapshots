@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.211 1999/10/10 17:38:18 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.212 1999/10/17 23:38:38 tom Exp $
  *
  */
 
@@ -693,8 +693,6 @@ userbeep(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 catnap(int milli, int watchinput)
 {
-    if (milli == 0)
-	return FALSE;
 #if DISP_X11
     if (watchinput)
 	x_typahead(milli);

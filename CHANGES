@@ -1,43 +1,73 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+ (tom) 991019 (x)
+ 	+ minor fixes for OPT_CACHE_VCOL, to take into account list and number
+	  modes.
+ 	+ fix a typo in manpage.rc that let empty responses pass by.
+	+ save/restore token's column when processing tags (patch by Ed
+	  Henderson).
+	+ change tttypahead() to use catnap() in preference to ioctl(FIONREAD),
+	  since SCO OpenServer's FIONREAD can be used only for sockets (says
+	  Bela Lubkin), while select and poll are a little more flexible.  This
+	  makes cursor keys work with the terminfo version.
+	+ make entering/leaving check in finderr.c faster by checking only the
+	  regular expressions that contain the %V (verb) token.
+	+ minor fixes to no-leak code in modes.c
+	+ fix memory leak from not freeing macro parameters (bind.c)
+	> patch by Clark Morgan, for winvile cursor/selection code:
+	+ a left mouse button click in the editor's text window clears the
+	  current selection (a la notepad and word).
+	+ don't start a selection until the cursor actually moves at least 1
+	  char.  This change helps prevent a window selection with left mouse
+	  button from also being interpreted as "start new selection", thus
+	  wiping out the current contents of the unnamed register.
+	+ turn off cursor prior to copying to clipboard via right mouse button.
+	+ turn off cursor prior to pasting with middle mouse button.
+	+ these changes appear to now prevent the editor from dropping stray
+	  cursor glyphs in the text windows (although the editor will still
+	  occasionally leave cursor glyphs in the message window due, perhaps,
+	  to race conditions between the GDI and the editor's event loop).
+	+ a couple of minor fixes for shrinking/enlarging a window via a left
+	  mouse button drag of the mode line.
+
  (tom) 991010 (w)
- 	+ add syntax filter for Python scripts, and associated pymode.
- 	+ correct bug in ^X-^, which did not copy special characters such as
+	+ add syntax filter for Python scripts, and associated pymode.
+	+ correct bug in ^X-^, which did not copy special characters such as
 	  arrow keys.
- 	+ correct bug introduced in rewrite of ^X-( and ^X-) command for 8.3,
+	+ correct bug introduced in rewrite of ^X-( and ^X-) command for 8.3,
 	  which left ^X-) on the end of the recorded text (reported by George
 	  Eccles, analysis by Paul Fox).
 	+ add $kbd-macro variable to show the contents of the keyboard macro.
- 	+ install perl modules as data, not scripts (patch by Ryan Murray).
+	+ install perl modules as data, not scripts (patch by Ryan Murray).
 	+ minor fixes with EXTERN_CONST definition to allow building xvile and
 	  vile with g++ on Linux.
- 	+ remove unused/obsolete code for dot-replays-macro in input.c
- 	+ modify write_message() in perl.xs to erase the message line if the
+	+ remove unused/obsolete code for dot-replays-macro in input.c
+	+ modify write_message() in perl.xs to erase the message line if the
 	  message is empty, e.g., in the end of lock.pl
- 	+ correct handling of leading blanks for '#' comments in xs-filt.c
- 	+ add VAREV to special case handling of terminfo/termcap no_color_video.
- 	+ disallow execution of '<' register, i.e., by "@<".
+	+ correct handling of leading blanks for '#' comments in xs-filt.c
+	+ add VAREV to special case handling of terminfo/termcap no_color_video.
+	+ disallow execution of '<' register, i.e., by "@<".
 	> patches by Clark Morgan:
 	+ $cfgopts now shows whether a Unix-hosted editor uses TERMCAP or
-	  TERMINFO screen DB. 
+	  TERMINFO screen DB.
 	+ directory lookup via CDPATH enabled on all hosts (previously only
 	  supported on UNIX), but only tested on VMS, Unix, and Win32 (don't
-	  have access to DOS, OS/2, BEOS). 
-	+ documented win32 double/triple click feature. 
+	  have access to DOS, OS/2, BEOS).
+	+ documented win32 double/triple click feature.
 	+ added $cdpath, which is the editor's copy of the external CDPATH
-	  environment variable.  This state variable is read/write. 
-	+ The components of $CDPATH are glob'd before use, which means that 
-	  specifying things like: 
-	      Unix: 
-		export CDPATH="~/srcdir:~/blddir" # quotes prevent tilde expn 
-	      Win32 (using a unix clone of the Bourne shell): 
-		export CDPATH=c:/pro*/dev*/vc;e:/cm/projects 
-	  will work. 
+	  environment variable.  This state variable is read/write.
+	+ The components of $CDPATH are glob'd before use, which means that
+	  specifying things like:
+	      Unix:
+		export CDPATH="~/srcdir:~/blddir" # quotes prevent tilde expn
+	      Win32 (using a unix clone of the Bourne shell):
+		export CDPATH=c:/pro*/dev*/vc;e:/cm/projects
+	  will work.
 
  (tom) 991004 (v)
- 	+ remove the VT52-style fallback_arrows[] entry, from 8.3u, since it is
+	+ remove the VT52-style fallback_arrows[] entry, from 8.3u, since it is
 	  too easy to confuse it with type-ahead (reported by Clark Morgan).
- 	+ change testing order in configure script for 'const', to build on
+	+ change testing order in configure script for 'const', to build on
 	  HP-UX (reported by Michael Finken <finkenm@hotmail.com>).
 	+ make functions attributeregion() attribute_cntl_a_sequences() and
 	  attribute_from_filter() interruptible.
@@ -45,24 +75,24 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	  the last line since the region-shape is set to EXACT unless
 	  overridden.
 	+ merge clear-attributes-til with attribute-normal-til.
- 	+ fix (partly) the lack of syntax highlighting when editing filters.rc
+	+ fix (partly) the lack of syntax highlighting when editing filters.rc
 	  or other initialization file by reevaluating the majormode of the
 	  current buffer after all buffers are loaded during initialization.
- 	+ change a typealloc(CMDFUNC) to use typecalloc, so the c_args pointer
+	+ change a typealloc(CMDFUNC) to use typecalloc, so the c_args pointer
 	  is initialized.
- 	+ change ifdef in tgetc() which relates to older Linux kernels (up to
+	+ change ifdef in tgetc() which relates to older Linux kernels (up to
 	  early 2.0) to BUG_LINUX_2_0_INTR, so it is disabled.  This does not
 	  appear to malfunction with 2.0.36, so we can enter quoted ^C's.
 	+ remove ABORTED() check from read_quoted(), since that prevents us
 	  from entered an escape or similar character (such as intr) when
 	  quoted (see 8.3k).
- 	+ change sysmapped_c() to return early if term.getch() returns a -1,
+	+ change sysmapped_c() to return early if term.getch() returns a -1,
 	  since we don't want to try to map that: an indefinite stream of
 	  EOF's can come out of ttgetc in at least one instance on Linux.
- 	+ eliminate use of yytext in local functions of filters, since that does
+	+ eliminate use of yytext in local functions of filters, since that does
 	  not work with SCO's lex (fdl-filt.l, xs-filt.l).
- 	+ add vile-txt-filt, vile-xs-filt to makefile.wnt
- 	+ modify makefile.wnt to set related $(cdebug) and $(ldebug) when
+	+ add vile-txt-filt, vile-xs-filt to makefile.wnt
+	+ modify makefile.wnt to set related $(cdebug) and $(ldebug) when
 	  DBG symbol is set.
 	+ modify expansion of tilde by winvile to take into account $HOMEDRIVE,
 	  used on WinNT to denote the drive on which a user's desktop is
@@ -74,20 +104,20 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	> patches by Clark Morgan:
 	+ sever vile/winvile's dependence on $COMSPEC and additionally permit
 	  launching apps that are neither blocked by the editor nor launched by
-	  a shell. 
+	  a shell.
 	+ add command to swap the Ctrl+Insert and Alt+Insert bindings.  Patch
 	  triggered by Alex Wetmore's comments (many months ago) that he felt
-	  the current clipboard bindings were not optimal for use: 
+	  the current clipboard bindings were not optimal for use:
 	  a) with the left mouse button (which always copies text to the
 	     unnamed buffer), and
 	  b) by experienced Windows users who will expect Ctrl+Insert (a
 	     Windows Standard key binding) to copy data to the clipboard
-	     without being prompted for a region. 
+	     without being prompted for a region.
 	+ include rms.h from estruct.h to make nefsms.h compiler properly on
 	  VMS (fixes a problem introduced by restructuring of modetbl in 8.3o).
 
  (tom) 990926 (u)
- 	+ allow adjustment of window size in win32 versions (vile, winvile) by
+	+ allow adjustment of window size in win32 versions (vile, winvile) by
 	  dragging the modeline.  Clicking on a modeline clears the selection.
 	+ modify drag/drop logic in winvile to set the current working
 	  directory to the last dropped file.
@@ -1582,7 +1612,7 @@ Changes for vile 8.1 (released Fri Oct 02, 1998)
 	  beginning with an '*'.
 	+ modify behavior of next-tags so that continued matches do not push
 	  the tags stack, but remain at the same level as the initial match
-	  (requed by Ed Henderson).
+	  (requested by Ed Henderson).
 	+ correct typo in change to imdying for the non-Unix case (patch by
 	  Clark Morgan).
 
