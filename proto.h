@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.249 1997/06/07 21:27:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.250 1997/06/07 23:33:54 tom Exp $
  *
  */
 
@@ -237,6 +237,7 @@ extern void set_ctrans (const char *value);
 extern int end_named_cmd (void);
 extern int more_named_cmd (void);
 extern int dobuf (BUFFER *bp);
+extern int docmd (char *cline, int f, int n);
 extern int dofile (char *fname);
 extern int execute (const CMDFUNC *execfunc, int f, int n);
 #if OPT_PROCEDURES

@@ -3,7 +3,7 @@
  *
  *	Miscellaneous routines for UNIX/VMS compatibility.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.27 1997/05/26 13:15:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.28 1997/06/09 22:39:26 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -710,7 +710,7 @@ int	vms_fix_umask (const char *filespec)
 	 * if the user is going to write a new version in the middle of a range,
 	 * but is close enough.
 	 */
-	strip_version(strcpy(prevspec, filespec), ';');
+	strip_version(strcpy(prevspec, filespec));
 	strcat(prevspec, ";-1");
 
 	fab = cc$rms_fab;

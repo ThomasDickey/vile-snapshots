@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.139 1997/01/19 15:40:57 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.140 1997/06/19 23:19:17 tom Exp $
 #
 #
 
@@ -257,163 +257,163 @@ kbd_mac_save	NONE
 	"save-keyboard-macro"
 	'^X-^'
 	<save a previously recorded macro of keystrokes to a named register>
-cbuf1		REDO
+cbuf1		REDO			OPT_EXEC_MACROS
 	"execute-macro-1"		!FEWNAMES
 	'FN-1'				KEY_F1
 	'FN-P'				KEY_KP_F1
 	<execute [Macro 1]>
-cbuf2		REDO
+cbuf2		REDO			OPT_EXEC_MACROS>1
 	"execute-macro-2"		!FEWNAMES
 	'FN-2'				KEY_F2
 	'FN-Q'				KEY_KP_F2
 	<execute [Macro 2]>
-cbuf3		REDO
+cbuf3		REDO			OPT_EXEC_MACROS>2
 	"execute-macro-3"		!FEWNAMES
 	'FN-3'				KEY_F3
 	'FN-R'				KEY_KP_F3
 	<execute [Macro 3]>
-cbuf4		REDO
+cbuf4		REDO			OPT_EXEC_MACROS>3
 	"execute-macro-4"		!FEWNAMES
 	'FN-4'				KEY_F4
 	'FN-S'				KEY_KP_F4
 	<execute [Macro 4]>
-cbuf5		REDO
+cbuf5		REDO			OPT_EXEC_MACROS>4
 	"execute-macro-5"		!FEWNAMES
 	'FN-5'				KEY_F5
 	<execute [Macro 5]>
-cbuf6		REDO
+cbuf6		REDO			OPT_EXEC_MACROS>5
 	"execute-macro-6"		!FEWNAMES
 	'FN-6'				KEY_F6
 	<execute [Macro 6]>
-cbuf7		REDO
+cbuf7		REDO			OPT_EXEC_MACROS>6
 	"execute-macro-7"		!FEWNAMES
 	'FN-7'				KEY_F7
 	<execute [Macro 7]>
-cbuf8		REDO
+cbuf8		REDO			OPT_EXEC_MACROS>7
 	"execute-macro-8"		!FEWNAMES
 	'FN-8'				KEY_F8
 	<execute [Macro 8]>
-cbuf9		REDO
+cbuf9		REDO			OPT_EXEC_MACROS>8
 	"execute-macro-9"		!FEWNAMES
 	'FN-9'				KEY_F9
 	<execute [Macro 9]>
-cbuf10		REDO
+cbuf10		REDO			OPT_EXEC_MACROS>9
 	'FN-0'				KEY_F10
 	"execute-macro-10"		!FEWNAMES
 	<execute [Macro 10]>
-cbuf11		REDO			!SMALLER
+cbuf11		REDO			OPT_EXEC_MACROS>10
 	"execute-macro-11"		!FEWNAMES
 	'FN-!'				KEY_F11
 	<execute [Macro 11]>
-cbuf12		REDO			!SMALLER
+cbuf12		REDO			OPT_EXEC_MACROS>11
 	'FN-@'				KEY_F12
 	"execute-macro-12"		!FEWNAMES
 	<execute [Macro 12]>
-cbuf13		REDO			!SMALLER
+cbuf13		REDO			OPT_EXEC_MACROS>12
 	'FN-#'				KEY_F13
 	"execute-macro-13"		!FEWNAMES
 	<execute [Macro 13]>
-cbuf14		REDO			!SMALLER
+cbuf14		REDO			OPT_EXEC_MACROS>13
 	'FN-$'				KEY_F14
 	"execute-macro-14"		!FEWNAMES
 	<execute [Macro 14]>
-cbuf15		REDO			!SMALLER
+cbuf15		REDO			OPT_EXEC_MACROS>14
 	'FN-%'				KEY_F15
 	"execute-macro-15"		!FEWNAMES
 	<execute [Macro 15]>
-cbuf16		REDO			!SMALLER
+cbuf16		REDO			OPT_EXEC_MACROS>15
 	'FN-^'				KEY_F16
 	"execute-macro-16"		!FEWNAMES
 	<execute [Macro 16]>
-cbuf17		REDO			!SMALLER
+cbuf17		REDO			OPT_EXEC_MACROS>16
 	'FN-&'				KEY_F17
 	"execute-macro-17"		!FEWNAMES
 	<execute [Macro 17]>
-cbuf18		REDO			!SMALLER
+cbuf18		REDO			OPT_EXEC_MACROS>17
 	'FN-*'				KEY_F18
 	"execute-macro-18"		!FEWNAMES
 	<execute [Macro 18]>
-cbuf19		REDO			!SMALLER
+cbuf19		REDO			OPT_EXEC_MACROS>18
 	'FN-('				KEY_F19
 	"execute-macro-19"		!FEWNAMES
 	<execute [Macro 19]>
-cbuf20		REDO			!SMALLER
+cbuf20		REDO			OPT_EXEC_MACROS>19
 	'FN-)'				KEY_F20
 	"execute-macro-20"		!FEWNAMES
 	<execute [Macro 20]>
-cbuf21		REDO			!SMALLER
+cbuf21		REDO			OPT_EXEC_MACROS>20
 	'FN-\241'			KEY_F21
 	"execute-macro-21"		!FEWNAMES
 	<execute [Macro 21]>
-cbuf22		REDO			!SMALLER
+cbuf22		REDO			OPT_EXEC_MACROS>21
 	'FN-\242'			KEY_F22
 	"execute-macro-22"		!FEWNAMES
 	<execute [Macro 22]>
-cbuf23		REDO			!SMALLER
+cbuf23		REDO			OPT_EXEC_MACROS>22
 	'FN-\243'			KEY_F23
 	"execute-macro-23"		!FEWNAMES
 	<execute [Macro 23]>
-cbuf24		REDO			!SMALLER
+cbuf24		REDO			OPT_EXEC_MACROS>23
 	'FN-\244'			KEY_F24
 	"execute-macro-24"		!FEWNAMES
 	<execute [Macro 24]>
-cbuf25		REDO			!SMALLER
+cbuf25		REDO			OPT_EXEC_MACROS>24
 	'FN-\245'			KEY_F25
 	"execute-macro-25"		!FEWNAMES
 	<execute [Macro 25]>
-cbuf26		REDO			!SMALLER
+cbuf26		REDO			OPT_EXEC_MACROS>25
 	'FN-\246'			KEY_F26
 	"execute-macro-26"		!FEWNAMES
 	<execute [Macro 26]>
-cbuf27		REDO			!SMALLER
+cbuf27		REDO			OPT_EXEC_MACROS>26
 	'FN-\247'			KEY_F27
 	"execute-macro-27"		!FEWNAMES
 	<execute [Macro 27]>
-cbuf28		REDO			!SMALLER
+cbuf28		REDO			OPT_EXEC_MACROS>27
 	'FN-\250'			KEY_F28
 	"execute-macro-28"		!FEWNAMES
 	<execute [Macro 28]>
-cbuf29		REDO			!SMALLER
+cbuf29		REDO			OPT_EXEC_MACROS>28
 	'FN-\251'			KEY_F29
 	"execute-macro-29"		!FEWNAMES
 	<execute [Macro 29]>
-cbuf30		REDO			!SMALLER
+cbuf30		REDO			OPT_EXEC_MACROS>29
 	'FN-\252'			KEY_F30
 	"execute-macro-30"		!FEWNAMES
 	<execute [Macro 30]>
-cbuf31		REDO			!SMALLER
+cbuf31		REDO			OPT_EXEC_MACROS>30
 	'FN-\253'			KEY_F31
 	"execute-macro-31"		!FEWNAMES
 	<execute [Macro 31]>
-cbuf32		REDO			!SMALLER
+cbuf32		REDO			OPT_EXEC_MACROS>31
 	'FN-\254'			KEY_F32
 	"execute-macro-32"		!FEWNAMES
 	<execute [Macro 32]>
-cbuf33		REDO			!SMALLER
+cbuf33		REDO			OPT_EXEC_MACROS>32
 	'FN-\255'			KEY_F33
 	"execute-macro-33"		!FEWNAMES
 	<execute [Macro 33]>
-cbuf34		REDO			!SMALLER
+cbuf34		REDO			OPT_EXEC_MACROS>33
 	'FN-\256'			KEY_F34
 	"execute-macro-34"		!FEWNAMES
 	<execute [Macro 34]>
-cbuf35		REDO			!SMALLER
+cbuf35		REDO			OPT_EXEC_MACROS>34
 	'FN-\257'			KEY_F35
 	"execute-macro-35"		!FEWNAMES
 	<execute [Macro 35]>
-cbuf36		REDO			!SMALLER
+cbuf36		REDO			OPT_EXEC_MACROS>35
 	"execute-macro-36"		!FEWNAMES
 	<execute [Macro 36]>
-cbuf37		REDO			!SMALLER
+cbuf37		REDO			OPT_EXEC_MACROS>36
 	"execute-macro-37"		!FEWNAMES
 	<execute [Macro 37]>
-cbuf38		REDO			!SMALLER
+cbuf38		REDO			OPT_EXEC_MACROS>37
 	"execute-macro-38"		!FEWNAMES
 	<execute [Macro 38]>
-cbuf39		REDO			!SMALLER
+cbuf39		REDO			OPT_EXEC_MACROS>38
 	"execute-macro-39"		!FEWNAMES
 	<execute [Macro 39]>
-cbuf40		REDO			!SMALLER
+cbuf40		REDO			OPT_EXEC_MACROS>39
 	"execute-macro-40"		!FEWNAMES
 	<execute [Macro 40]>
 delwind		NONE

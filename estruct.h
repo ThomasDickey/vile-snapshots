@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.309 1997/06/07 21:20:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.310 1997/06/19 23:51:32 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -384,6 +384,15 @@
 				   stuttered in real vi, I prefer them not
 				   to be */
 #define OPT_ICURSOR	0	/* use an insertion cursor if possible */
+
+#ifndef OPT_EXEC_MACROS		/* total numbered macros (see mktbls.c) */
+#if SMALLER
+#define OPT_EXEC_MACROS 10
+#else
+#define OPT_EXEC_MACROS 40
+#endif
+#endif
+
   /* NOTE:  OPT_ICURSOR is _only_ supported by borland.c for a PC build
      and ntconio.c for a win32 build!! */
 #define OPT_TITLE	(SYS_WINNT)	/* use an window title if possible */

@@ -1,5 +1,17 @@
 Changes for vile 7.2 (released ??? ??? ??, 1997)
 
+(tom)	970619 (f)
+	+ modify ":set" command so that it does not force a mode to be set,
+	  but instead shows the local buffer and window settings.
+	+ correct missing error-test in logic that sets regular-expression
+	  modes (reported by Philippe Chassany).
+	+ add configure option to specify the total numbered macros available,
+	  e.g., execute-macro-1, ifdef'd with OPT_EXEC_MACROS (requested by
+	  Philippe Chassany).
+	+ modify xvile menus to allow arbitrary command line rather than
+	  bound functions (exec.c, menu.c).
+	+ correct spurious parameter in vms2unix.c, from 7.1d changes.
+
 (tom)	970607 (e)
 	+ modify VMS terminal driver, vmsvt.c, to work when invoked from a
 	  command-file, i.e., get terminal characteristics from SYS$COMMAND
