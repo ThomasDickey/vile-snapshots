@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.77 2001/03/23 00:44:29 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.78 2001/08/25 18:50:37 tom Exp $
  */
 
 /*#
@@ -1665,7 +1665,7 @@ FindMode(char *mode, int isglobal, VALARGS *args)
 	    char new_mode[NLINE];
 	    new_mode[0] = '$';
 	    vl_strncpy(new_mode+1, mode, sizeof(new_mode)-1);
-	    value = (char *)tokval(new_mode);
+	    value = tokval(new_mode);
 	} else {
 	    /*
 	     * A function should be legal anywhere a variable value is.
@@ -1681,13 +1681,13 @@ FindMode(char *mode, int isglobal, VALARGS *args)
 		if (isSpace(*execstr)) {
 		    *execstr++ = 0;
 		}
-		value = (char *)tokval(tb_values(temp));
+		value = tokval(tb_values(temp));
 		tb_free(&temp);
 
 		execstr = save_str;
 		clexec = save_flag;
 	    } else {
-		value = (char *)tokval(mode);
+		value = tokval(mode);
 	    }
 	}
     }

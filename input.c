@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.235 2001/04/29 19:52:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.237 2001/08/25 17:37:24 tom Exp $
  *
  */
 
@@ -815,6 +815,8 @@ showChar(int c)
 
 	save_expand = kbd_expand;
 	kbd_expand = 1;	/* show all controls */
+	if (qpasswd)
+		c = '*';
 	kbd_putc(c);
 	kbd_expand = save_expand;
 }
@@ -824,7 +826,6 @@ show1Char(int c)
 {
 	if (!vl_echo)
 		return;
-
 	showChar(c);
 	kbd_flush();
 }
@@ -1119,29 +1120,45 @@ int (*complete)(DONE_ARGS)) /* handles completion */
 }
 
 /*
- * Prompt for strings, used for @"interactive" variables, and the &query
- * function.
+ * Prompt for strings, used for @"interactive" variables, and the &query,
+ * &dquery, and &qpasswd functions.
  */
 char *
 user_reply(const char *prompt, const char *dft_val)
 {
-	static TBUFF *replbuf;
-	int save_vl_msgs;
-	int save_clexec;
-	int status;
+	static TBUFF *replbuf, *passwdbuf;
+
+	TBUFF **ptb;
+	int   save_vl_msgs, save_clexec, status;
 
 	save_vl_msgs = vl_msgs; vl_msgs = TRUE;
 	save_clexec = clexec; clexec = FALSE;
 
-	if (dft_val != error_val) {
-		TRACE(("user_reply, given default value %s\n", dft_val));
-		tb_scopy(&replbuf, dft_val);
+	if (! qpasswd)
+	    ptb = &replbuf;
+	else {
+	    /* 
+	     * Querying user for a password.  Store result in an alternate
+	     * buffer, the value of which is _not_ reused (so that it can't
+	     * be recalled via &query or &dquery or an @ var).
+	     */
+
+	    if (passwdbuf)
+		tb_free(&passwdbuf);
+	    ptb = &passwdbuf;
 	}
 
-	status = kbd_reply(prompt, &replbuf,
-			eol_history, '\n',
-			KBD_EXPAND|KBD_QUOTES,
-			no_completion);
+	if (dft_val != error_val) {
+		TRACE(("user_reply, given default value %s\n", dft_val));
+		tb_scopy(ptb, dft_val);
+	}
+
+	status = kbd_reply(prompt,
+			   ptb,
+			   eol_history,
+			   '\n',
+			   KBD_EXPAND|KBD_QUOTES,
+			   no_completion);
 
 	vl_msgs = save_vl_msgs;
 	clexec = save_clexec;
@@ -1149,8 +1166,7 @@ user_reply(const char *prompt, const char *dft_val)
 	if (status == ABORT)
 		return NULL;
 	else /* FIXME: assumes EOS added by kbd_reply */
-		return tb_values(replbuf);
-
+		return tb_values(*ptb);
 }
 
 #define isMiniMotion(f) (((f) & MOTION) && !((f) & (ABSM|FL|NOMINI)))
@@ -1310,9 +1326,11 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 	} else {
 		LINE *lp = DOT.l;
 		miniedit = FALSE;
-		if (!vl_echo) {
+		if (!vl_echo || qpasswd) {
 			char tmp = (char) c;
 			tb_bappend(buf, &tmp, 1);
+			if (qpasswd)
+				show1Char(c);
 		} else if (llength(lp) >= margin) {
 			show1Char(c);
 			tb_init(buf, EOS);
@@ -1483,6 +1501,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 	int lastch;
 	unsigned newpos;
 	TBUFF *buf = 0;
+	char *result;
 
 	TRACE(("kbd_reply(prompt=%s, extbuf=%s, options=%#x)\n\tclexec=%d,\n\tpushed_back=%d\n",
 		prompt, tb_visible(*extbuf), options, clexec, pushed_back));
@@ -1523,8 +1542,12 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 			if (!(options & KBD_NOEVAL)) {
 				buf = tb_copy(&buf, *extbuf);
 				tb_append(&buf, EOS); /* FIXME: for tokval() */
-				(void)tb_scopy(extbuf,
-					tokval(tb_values(buf)));
+				result = tokval(tb_values(buf));
+				if (result == error_val) {
+					result = "";
+					status = ABORT;
+				}
+				(void)tb_scopy(extbuf, result);
 				tb_free(&buf);
 				tb_unput(*extbuf); /* trim the null */
 			}
@@ -1809,7 +1832,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 	tb_free(&buf);
 	shiftMiniBuffer(0);
 
-	TRACE(("reply:%d:%d:%s\n", status,
+	TRACE(("reply:(status=%d, length=%d):%s\n", status,
 		(int) tb_length(*extbuf),
 		tb_visible(*extbuf)));
 	tb_append(extbuf, EOS);	/* FIXME */

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rexxfilt.l,v 1.5 2000/02/28 11:58:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rexxfilt.l,v 1.6 2001/08/21 21:19:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of REXX source
  * - T.Dickey
@@ -39,8 +39,8 @@ do_filter(FILE *input)
 }
 %}
 
-SSTRING		\'(\\.|[^'\\])*\'
-DSTRING		\"(\\.|[^"\\])*\"
+SSTRING		\'([^'])*\'
+DSTRING		\"([^"])*\"
 STRINGS		({SSTRING}|{DSTRING})
 
 KEYWORD		[a-zA-Z@#$!?_][a-zA-Z0-9.@#$!?_]*

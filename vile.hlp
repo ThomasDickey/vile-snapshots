@@ -194,6 +194,10 @@ Buffer manipulation commands
 		(vi-style buffering) mode.  It does nothing in "autobuffer"
 		mode.  Remember that "autobuffer" mode is the default.
 
+	:unmark-buffer	Clears the "modified" status of a buffer.  Useful
+		for the creation of temporary buffer(s) that are discarded
+		when the editor exits.
+
 	:b	Edit a buffer.  Recalls the named buffer.  Does not look for
 		a file of that name.  Will find "invisible" buffers.
 
@@ -649,7 +653,7 @@ Text manipulation command:
 		that tag completion is supported, so it's possible to type a
 		partial tagname and then press TAB to force vile to
 		complete the name, assuming it's unique.  If not unique,
-		press TAB twice to see a list of all possible completions. 
+		press TAB twice to see a list of all possible completions.
 		Example (using the vile sources):
 
 			:ta is_sl<TAB>
@@ -1236,10 +1240,10 @@ Editor modes
 		behavior.) (B)
 
 	cindent C-style indentation.  Helps maintain current indentation
-		level automatically during insert, like autoindent, above. 
+		level automatically during insert, like autoindent, above.
 		If a line ends with a '{', '(', or ':', then the next line
 		indents further.  If a line begins with a '}' or ')', it is
-		lined up with the line containing the matching '{' or '('. 
+		lined up with the line containing the matching '{' or '('.
 		(B)
 
 	cmode   C-code mode.  A built-in majormode, also useful for other
@@ -2528,6 +2532,7 @@ Programmed procedures and macros
 	&chr		1	integer to char conversion
 	&cclass		1	character class (see "show-printable")
 	&date		2	format 2nd param with 1st, like strftime.
+	&default	1	initial/default value for mode or state variable
 	&divide		2	division
 	&dquery		2	prompt user for input, given default value
 	&env		1	retrieve a system environment variable
@@ -2555,6 +2560,7 @@ Programmed procedures and macros
 	&path		2	extract/translate pathname (see below for args)
 	&pcat		2	concatenate directory and filename
 	&pquote		1	quote pathname if needed, e.g., embedded spaces
+	&qpasswd	1	prompt user for password string
 	&query		1	prompt user for input
 	&random		1	get a random number from 1 to n
 	&rd		1	is a file readable
@@ -3448,24 +3454,26 @@ Color basics
 		 "large" buffers.  Consequently, syntax coloring is not
 		 recommended.
 
-	Note 2:  No issues for WinNT.  On a win95/98 host (which uses a
-		 16-bit shell by default), syntax coloring works well when
+	Note 2:  No issues for WinNT/W2K.  On a Win9x/WinME host (which uses
+		 a 16-bit shell by default), syntax coloring works well when
 		 a 32-bit replacement shell is available (e.g., MKS shell,
-		 bash, Thompson Toolkit shell, etc.).  See doc/w32modes.doc
-		 for more information.
+		 Cygwin's bash, etc.) and w32pipes mode is enabled.  If a
+		 32-bit shell is unavailable, avoid syntax coloring.  See
+		 doc/w32modes.doc for more information.
 
-	Note 3:  No issues for WinNT.  On a win95/98 host, if a 32-bit
-		 shell is available, then disable force-console mode (set
-		 noforce-console) to avoid transient console windows when
-		 an external filter is invoked.  See doc/w32modes.doc for
-		 more details.  Note that regardless of which shell is
-		 used, w32pipes mode must be enabled.
+	Note 3:  No issues for WinNT/W2K.  On a Win9x/WinME host, if a 32-bit
+		 shell is available, then enable w32pipes mode and disable
+		 force-console mode (e.g., set w32pipes noforce-console).
+		 Disabling force-console precludes creation of transient
+		 console windows when external filters are invoked.  If a
+		 32-bit shell is unavailable, avoid syntax coloring.  See
+		 doc/w32modes.doc for more details.
 
 	Note 4:  Requires a terminfo terminal type that supports color.
 
-	Note 5:  If a terminal type supporting color is not
-		 available, then "coloring" is limited to the use of
-		 attributes like bold, underline, etc.
+	Note 5:  If a terminal type supporting color is unavailable, then
+		 "coloring" is limited to the use of attributes like bold,
+		 underline, etc.
 
 
 
@@ -3994,7 +4002,7 @@ Working in a project hierarchy
 
 	Assume also that most of the development work takes place in the
 	"src" directory and that this is a C/C++ project.
-	
+
 	Once an appropriate tags file has been created in the src directory
 	(using the ctags program), vile's tags interface provides quick
 	access to the most frequently modified project files.  But what
@@ -4002,8 +4010,8 @@ Working in a project hierarchy
 	it possible for vile's tags interface to access the C/C++ files in
 	the aforementioned directories when the editor's cwd is set as
 	"src"?  The answer is an emphatic "Yes".  This can be done using at
-	least two different mechanisms. 
-	
+	least two different mechanisms.
+
 	Exuberant ctags
 	---------------
 	Assuming the Exuberant Ctags program is available (written by Darren
@@ -4013,7 +4021,7 @@ Working in a project hierarchy
 
 		ctags -R . '*.[ch]' '*.cpp'
 
-	   This command drops out a tags file in the root directory that 
+	   This command drops out a tags file in the root directory that
 	   includes tags for all three subordinate directories.
 	   Repeat this step as necessary whenever significant changes are
 	   occur within the project hierarchy.
@@ -4028,7 +4036,7 @@ Working in a project hierarchy
 	to symbols in _all_ project source files, provided that the
 	editor's current working directory is set as either src, include,
 	or lib.
-	
+
 	It's important to note that Exuberant Ctags has been ported to many
 	hosts (including VMS) and supports many languages other than C.
 
@@ -4062,7 +4070,7 @@ Working in a project hierarchy
 	access a large number of files or directories spread across an
 	arbitrarily complex hierarchy.  This feature requires a small
 	amount of configuration before it can be used.
-	
+
 	To begin with, specify a directory hierarchy via the $findpath
 	state variable using this syntax:
 
@@ -4092,7 +4100,7 @@ Working in a project hierarchy
 
 
 	Note 1:  The "d" option specifies that find should restrict its
-	search solely to files of type "d" (i.e., directories). 
+	search solely to files of type "d" (i.e., directories).
 
 	Note 2:  An empty string argument disables find-cfg mode.
 
@@ -4960,14 +4968,16 @@ Win32 specifics
 	data to and from the shell.  One mechanism uses temporary files and
 	the other simply calls native Win32 services (no temp files).  This
 	dichotomy exists because the NT shell (cmd.exe) handles native
-	pipes relatively cleanly, but the Win95/98 shell (command.com) does
-	not.  If using Win95/98, refer to the file doc/w32modes.doc for the
-	gory details.  By default, then, on a WinNT host, vile's pipes are
-	implemented with Win32 services and via temp files on a Win95/98
-	host.  If the user's replacement shell does not exhibit problems
-	similar to those described above (e.g., Thompson Toolkit Shell),
-	vile may be forced to use native Win32 pipes by setting the global
-	mode "w32pipes" (e.g., "se w32pipes").
+	pipes cleanly, but command.com, Microsoft's 16-bit Win9X/WinME
+	shell, does not.  If using command.com, refer to the file
+	doc/w32modes.doc for the gory details.  Consequently, on
+	WinNT/Win2K hosts, the global mode w32pipes is set by default and
+	vile's pipe operations are implemented via Win32 services.  On
+	Win9X/WinME hosts, this mode is disabled by default and the editor
+	falls back to temp files.  Take note that 32-bit shells (e.g.,
+	Cygwin's bash, MKS's shell) properly handle native pipe operations
+	on Win9X/WinME hosts.  In that context, it's appropriate and highly
+	desirable to manually enable "w32pipes" (e.g., "se w32pipes").
 
 	Paths
 	-----
@@ -4983,13 +4993,31 @@ Win32 specifics
 	specified in the $COMSPEC environment variable.  This default may
 	be overridden by setting $shell from within vile.rc .  Example:
 
-		set-variable $shell "c:\\usr\\binw\\sh.exe"
+		set-variable $shell 'c:\usr\binw\sh.exe'
 
 	As is true on other hosts, external processes are normally started
 	under the control of a shell.  To forego the shell entirely, prefix
 	the command string with "start ".  Example:
 
 		:!start calc           # start the windows calculator
+
+ 	Finally, it may be necessary to pass one or more flags to the shell
+	invoked via the :sh command (e.g., force execution of a special
+	login script).  Passing such flag(s) via $shell is not a workable
+	solution.  Instead, use a macro similar to the following that
+	supercedes the builtin :sh command:
+
+		store-procedure sh
+		   ; pass -L (login) flag to MKS shell, assumes sh is
+		   ; reachable from $PATH
+		   ~local %sh
+		   setv %sh="sh -L"
+		   ~if &seq $progname "winvile"
+		       1 shell-command &cat "start " %sh
+		   ~else
+		       1 shell-command %sh
+		   ~endif
+		~endm
 
 	Mouse (GUI and Console)
 	-----------------------
@@ -5200,8 +5228,8 @@ Win32 specifics
 			pipe or filter region operation.  Must be set when
 			the host shell doesn't properly communicate with
 			consoles created as a side effect of the
-			CreateProcess() API.  Reset by default on a Win95/98
-			host, since command.com exhibits this problem.
+			CreateProcess() API.  Reset by default on Win9x/WinME
+			hosts, since command.com exhibits this problem.
 			Note:  this mode is applicable only when w32pipes
 			is set.  (U)
 
@@ -5263,7 +5291,7 @@ Win32 specifics
 		; etc
 	    ~endif
 
-	Windows 95/98 Considerations
+	Win9x/WinME Considerations
 	----------------------------
 	Refer to the file doc/w32modes.doc for a discussion of the optimum
 	settings of force-console and w32pipes.
@@ -5552,4 +5580,4 @@ Problems
 
 Copyright 1995-2001 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.522 2001/06/13 22:46:54 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.524 2001/08/21 10:05:49 tom Exp $

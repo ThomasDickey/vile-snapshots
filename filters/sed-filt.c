@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.12 2001/04/24 21:41:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.13 2001/08/22 00:01:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to sed scripts.
  */
@@ -336,6 +336,7 @@ do_filter(FILE * input GCC_UNUSED)
 		    switch (*s) {
 		    case 's':
 			next = ExpectSubsParams;
+			break;
 		    case 'y':
 			next = ExpectTransParams;
 			break;

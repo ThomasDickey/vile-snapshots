@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/fdl-filt.l,v 1.7 2000/08/09 23:51:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/fdl-filt.l,v 1.8 2001/08/21 20:52:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of fdl
  * input text.  This treats all of the text area as quoted, except for
@@ -30,8 +30,8 @@ handle_keyword(char *name)
     } else if (!strcmp(name, "$text")) {
 	BEGIN(PRETEXT);
 	next_state = TEXT;
-    } else if (!strcmp(name, "$endtext")) {
-	BEGIN(PRETEXT);
+    } else {
+	BEGIN(INITIAL);
     }
 }
 
@@ -77,6 +77,7 @@ KEYWORD		$[a-zA-Z_][a-zA-Z_0-9]*
 			  }
 			}
 
+<NOTE>[\n]		{ ECHO; BEGIN(INITIAL); }
 <NOTE>{REMAINDER}	{ WriteToken(Comment_attr);
 			  BEGIN(INITIAL); }
 

@@ -1,0 +1,137 @@
+; $Header: /users/source/archives/vile.vcs/macros/RCS/gnugpg.rc,v 1.1 2001/08/17 22:11:53 cmorgan Exp $
+
+; included below is a collection of macros that use GNU's gpg
+; encryption package in a win32 or Unix environment.  On a
+; win32 host, these macros work best when using a 32-bit shell
+; (e.g., _not_ command.com) with vile's w32pipes mode enabled.
+
+;                            CAVEAT
+
+;        These macros carefully minimize exposure of the user's
+;        passphrase.  For example, the passphrase is not echoed at
+;        the keyboard and it's passed to gpg via a pipe (i.e., not on
+;        the command line or from a disk file).  However, when passed
+;        via a pipe, the passphrase is visible for a short period of
+;        time at the top of the current buffer.  The duration of
+;        exposure is directly proportional to the speed of the host
+;        and its IPC implementation.
+
+; --------
+; use gpg to decrypt a disk file, storing the decrypted contents
+; in a scratch buffer that will be forgotten when the editor exits.
+; --------
+store-procedure decrypt-file file="GPG-encrypted-file? "
+    ~local %tmpbuf %tmpfile %cmd %phrase
+    setv %phrase  &qpasswd "GPG PassPhrase? "
+    ~if &error %phrase
+        ~return                                    ; abort if cancel'd
+    ~endif
+    setv %phrase &cat %phrase "\n"                 ; this matters
+    setv %tmpbuf "[GPG scratch buffer]"
+    setv %tmpfile "GPG_scratch_buffer"
+
+    ; step 1, kill desired scratch buffer if it exists
+    ~force buffer %tmpbuf
+    ~if $status
+        unmark-buffer
+        ; switch to some other, existing buffer
+        buffer '[History]'
+        kill-buffer %tmpbuf
+    ~endif
+
+    ; step 2, create new instance of scratch buffer.  Note that edit-file
+    ; won't open a file that looks like a scratch buffer if the latter
+    ; doesn't exist.  workaround by simply renaming the buffer
+    edit-file %tmpfile
+    rename %tmpbuf
+
+    ; step 3, decrypt
+    setv %cmd="gpg --no-secmem-warning --batch --passphrase-fd 0 -d "
+    setv %cmd=&cat %cmd $1
+    insert-string %phrase
+    ~force up-line-at-bol
+    filter-til end-of-file %cmd
+    ; ensure scratch buffer disappears when editor exits, unless explicitly
+    ; written back by user
+    unmark-buffer
+~endm
+
+; --------
+; use gpg to decrypt the current buffer, marking the buffer as unmodified
+; so that its contents will be discarded when the editor exits.
+; --------
+store-procedure decrypt-buffer
+    ~local %cmd %phrase
+    setv %phrase  &qpasswd "GPG PassPhrase? "
+    ~if &error %phrase
+        ~return                                    ; abort if cancel'd
+    ~endif
+    setv %phrase &cat %phrase "\n"                 ; this matters
+
+    setv %cmd="gpg --no-secmem-warning --batch --passphrase-fd 0 -d"
+    beginning-of-file
+    ; kill auto indent before inserting, else vile strips leading
+    ; whitespace from 1st line in buffer (don't know why)
+    ~local $autoindent
+    setv $autoindent=false
+    insert-string %phrase
+    ~force up-line-at-bol
+    filter-til end-of-file %cmd
+    ; ensure buffer disappears when editor exits, unless explicitly written
+    ; back by user
+    unmark-buffer
+~endm
+
+; use gpg to symmetrically encrypt the current buffer
+store-procedure encrypt-buffer file="Destination filename? "
+    ~local %cmd %phrase1 %phrase2
+    setv %phrase1  &qpasswd "GPG PassPhrase? "
+    ~if &error %phrase1
+        ~return                                    ; abort if cancel'd
+    ~endif
+    setv %phrase2  &qpasswd "Repeat PassPhrase: "
+    ~if &error %phrase2
+        ~return                                    ; abort if cancel'd
+    ~endif
+    ~if &not &seq %phrase2 %phrase1
+        write-message "PassPhrase mismatch"
+        ~return
+    ~endif
+    setv %phrase1 &cat %phrase1 "\n"                 ; this matters
+    setv %cmd="gpg --no-secmem-warning -ac --batch --passphrase-fd 0"
+    beginning-of-file
+    ; kill auto indent before inserting, else vile strips leading
+    ; whitespace from 1st line in buffer (don't know why)
+    ~local $autoindent
+    setv $autoindent=false
+    insert-string %phrase1
+    ~force up-line-at-bol
+    filter-til end-of-file %cmd
+    ; make current buffer names match filename selected above
+    ~if &not &seq $cbufname $1
+        rename $1
+    ~endif
+    file $1
+~endm
+
+; --------
+; use gpg to clearsign the current buffer (useful for posting
+; gpg-signed USENET articles)
+; --------
+store-procedure clearsign
+    ~local %cmd %phrase
+    setv %phrase  &qpasswd "GPG PassPhrase? "
+    ~if &error %phrase
+        ~return                                    ; abort if cancel'd
+    ~endif
+    setv %phrase &cat %phrase "\n"                 ; this matters
+    setv %cmd="gpg --no-secmem-warning --clearsign --batch --passphrase-fd 0"
+    beginning-of-file
+    ; kill auto indent before inserting, else vile strips leading
+    ; whitespace from 1st line in buffer (don't know why)
+    ~local $autoindent
+    setv $autoindent=false
+    insert-string %phrase
+    ~force up-line-at-bol
+    filter-til end-of-file %cmd
+~endm

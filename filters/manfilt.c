@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.27 2000/06/18 20:09:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.28 2001/08/21 22:25:55 tom Exp $
  *
  */
 
@@ -257,6 +257,7 @@ ansi_escape(FILE * ifp, int last_code)
     int c;
 
     while ((c = fgetc(ifp)) != EOF) {
+	c = CharOf(c);
 	if (isdigit(c)) {
 	    value = (value * 10) + (c - '0');
 	    digits++;
@@ -474,6 +475,7 @@ ManFilter(FILE * ifp)
     int esc_mode = ATR_NORMAL;
 
     while ((c = fgetc(ifp)) != EOF) {
+	c = CharOf(c);
 	switch (c) {
 	case '\b':
 	    backspace();

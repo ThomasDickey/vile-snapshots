@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.234 2001/04/08 00:32:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.236 2001/08/25 18:53:23 tom Exp $
  *
  */
 
@@ -1184,7 +1184,7 @@ decode_parameter_info(TBUFF * tok, PARAM_INFO * result)
     char *s = vl_strncpy(name, tb_values(tok), sizeof(name));
 
     if ((s = strchr(s, '=')) != 0) {
-	strcpy(text, tokval(s + 1));
+	vl_strncpy(text, tokval(s + 1), sizeof(text));
 	*s = EOS;
     } else {
 	text[0] = EOS;
@@ -1486,8 +1486,8 @@ push_variable(char *name)
     p = typealloc(LOCALS);
     p->next = ifstk.locals;
     p->name = strmalloc(name);
-    p->value = (char *) tokval(name);
-    if (!strcmp(p->value, error_val)) {
+    p->value = tokval(name);
+    if (p->value == error_val) {
 	/* special case: so we can delete vars */
 	if (toktyp(name) != TOK_TEMPVAR) {
 	    free(p->name);
@@ -2202,37 +2202,38 @@ dobuf(BUFFER *bp, int limit)
 	save_cmd_count = cmd_count;
 
 	/* macro arguments are readonly, so we do this once */
-	save_arguments(bp);
-	vl_msgs = FALSE;
+	if (save_arguments(bp) != ABORT) {
+	    vl_msgs = FALSE;
 
-	for (counter = 1; counter <= limit; counter++) {
-	    if (dobufnesting == 1)
-		cmd_count = counter;
+	    for (counter = 1; counter <= limit; counter++) {
+		if (dobufnesting == 1)
+		    cmd_count = counter;
 
 #if ! SMALLER
-	    if (setup_dobuf(bp, &whlist) != TRUE) {
-		status = FALSE;
-	    } else
+		if (setup_dobuf(bp, &whlist) != TRUE) {
+		    status = FALSE;
+		} else
 #else
-	    whlist = NULL;
+		whlist = NULL;
 #endif
-	    {
-		IFSTK save_ifstk;
-		push_buffer(&save_ifstk);
-		status = perform_dobuf(bp, whlist);
-		pop_buffer(&save_ifstk);
+		{
+		    IFSTK save_ifstk;
+		    push_buffer(&save_ifstk);
+		    status = perform_dobuf(bp, whlist);
+		    pop_buffer(&save_ifstk);
+		}
+
+		macrobuffer = NULL;
+		free_all_whiles(whlist);
+
+		if (status != TRUE)
+		    break;
 	    }
 
-	    macrobuffer = NULL;
-	    free_all_whiles(whlist);
-
-	    if (status != TRUE)
-		break;
+	    restore_arguments(bp);
+	    vl_msgs = save_vl_msgs;
+	    cmd_count = save_cmd_count;
 	}
-
-	restore_arguments(bp);
-	vl_msgs = save_vl_msgs;
-	cmd_count = save_cmd_count;
     } else {
 	mlwarn("[Too many levels of files]");
     }

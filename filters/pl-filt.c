@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.16 2001/05/19 00:00:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.20 2001/08/22 00:13:02 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -17,6 +17,8 @@ DefineFilter("perl");
 #define R_CURLY '}'
 #define L_PAREN '('
 #define R_PAREN ')'
+#define L_BLOCK '['
+#define R_BLOCK ']'
 
 #define PAREN_SLASH "(/"	/* FIXME: (/pattern/) could be composite */
 
@@ -54,6 +56,17 @@ is_BLANK(char *s)
 {
     int found = 0;
     while ((*s == ' ') || (*s == '\t')) {
+	found++;
+	s++;
+    }
+    return found;
+}
+
+static int
+is_INTEGER(char *s)
+{
+    int found = 0;
+    while (isdigit(CharOf(*s))) {
 	found++;
 	s++;
     }
@@ -124,9 +137,9 @@ is_KEYWORD(char *s)
 	    }
 	    s++;
 	    quote++;
-	} else if (isalpha(ch)
+	} else if (isalpha(CharOf(ch))
 		   || ch == '_'
-		   || (s != base && (isdigit(ch))))
+		   || (s != base && (isdigit(CharOf(ch)))))
 	    s++;
 	else
 	    break;
@@ -145,7 +158,7 @@ is_QIDENT(char *s)
     while (s != the_last) {
 	ch = CharOf(*s);
 	if (isalpha(ch)
-	    || (s != base && isdigit(ch))
+	    || (s != base && isdigit(CharOf(ch)))
 	    || ch == '_'
 	    || ch == SQUOTE
 	    || ch == DQUOTE)
@@ -319,23 +332,34 @@ is_COMMENT(char *s)
     return (s - base);
 }
 
-/* preprocessor stuff is a comment with '!' in the second position */
+/* preprocessor stuff:
+ *
+ *	/^#\s*line\s+(\d+)\s*(?:\s"([^"]+)")?\s*$/
+ */
 static int
 is_PREPROC(char *s)
 {
     char *base = s;
-    char *t = is_BLANK(s) + s;
+    int skip;
+    int err;
 
-    if (*t++ == '#') {
-	if (*t == '!') {
-	    while (t != the_last) {
-		if (*t == '\n')
-		    break;
-		t++;
-	    }
-	    s = t;
-	}
+    s += is_BLANK(s);
+    if (*s++ != '#')
+	return 0;
+    s += is_BLANK(s);
+    if (strncmp(s, "line", 4))
+	return 0;
+    if ((skip = is_BLANK(s += 4)) == 0)
+	return 0;
+    if ((skip = is_INTEGER(s += skip)) == 0)
+	return 0;
+    s += is_BLANK(s += skip);
+    if (*s == DQUOTE) {
+	s += is_STRINGS(s, &err, DQUOTE);
+	if (err)
+	    return 0;
     }
+    s += is_BLANK(s);
     return (s - base);
 }
 
@@ -412,7 +436,7 @@ skip_BLANKS(char *s)
     char *base = s;
 
     while (s != the_last) {
-	if (!isspace(*s)) {
+	if (!isspace(CharOf(*s))) {
 	    break;
 	}
 	++s;
@@ -424,7 +448,7 @@ skip_BLANKS(char *s)
 }
 
 /*
- * FIXME: the only place that vileperl.l recognizes a PATTERN is after "!~"
+ * FIXME: the only place that perlfilt.l recognizes a PATTERN is after "!~"
  * or "=~".  Doing that in other places gets complicated - the reason for
  * moving to C.
  */
@@ -452,7 +476,7 @@ add_to_PATTERN(char *s)
 	int delim = *s;
 	int escaped = 0;
 
-	while (isalpha(delim)) {
+	while (isalpha(CharOf(delim))) {
 	    if (s != the_last) {
 		delim = *++s;
 	    }
@@ -517,6 +541,7 @@ write_PATTERN(char *s, int len)
 	int first;
 	int comment = 0;
 	int escaped = 0;
+	int range = 0;
 
 	for (n = first = 0; n < len; n++) {
 	    if (escaped) {
@@ -527,13 +552,17 @@ write_PATTERN(char *s, int len)
 		flt_puts(s + first, (n - first - 0), String_attr);
 		flt_putc(s[n]);
 		first = n + 1;
+	    } else if ((s[n] == L_BLOCK) && !comment) {
+		range = 1;
+	    } else if ((s[n] == R_BLOCK) && range) {
+		range = 0;
 	    } else if (s[n] == '\n') {
 		if (comment) {
 		    flt_puts(s + first, (n - first + 1), Comment_attr);
 		    comment = 0;
 		    first = n + 1;
 		}
-	    } else if (s[n] == '#') {
+	    } else if ((s[n] == '#') && !range) {
 		if (!comment) {
 		    flt_puts(s + first, (n - first - 1), String_attr);
 		    comment = 1;
@@ -541,7 +570,7 @@ write_PATTERN(char *s, int len)
 		}
 	    }
 	}
-	flt_puts(s, (len - first), comment ? Comment_attr : String_attr);
+	flt_puts(s + first, (len - first), comment ? Comment_attr : String_attr);
     } else {
 	flt_puts(s, len, String_attr);
     }
@@ -674,6 +703,7 @@ do_filter(FILE * input GCC_UNUSED)
     int save;
     int quoted = 0;
     int parens = 0;
+    int had_op = 0;
 
     Comment_attr = class_attr(NAME_COMMENT);
     Error_attr = class_attr(NAME_ERROR);
@@ -738,8 +768,11 @@ do_filter(FILE * input GCC_UNUSED)
 		} else if ((ok = is_BLANK(s)) != 0) {
 		    flt_puts(s, ok, "");
 		    s += ok;
+		} else if (had_op && parens && (*s == '/')) {
+		    state = ePATTERN;
 		} else if (*s == L_PAREN) {
 		    parens++;
+		    had_op = 1;
 		    flt_putc(*s++);
 		    if (*s == '/') {
 			state = ePATTERN;
@@ -748,12 +781,13 @@ do_filter(FILE * input GCC_UNUSED)
 		    if (--parens < 0)
 			parens = 0;
 		    flt_putc(*s++);
+		    had_op = 0;
 		} else if ((ok = is_KEYWORD(s)) != 0) {
 		    save = s[ok];
 		    s[ok] = 0;
 		    if (!strcmp(s, "__END__"))
 			state = eIGNORED;
-		    if (ispunct(save)
+		    if (ispunct(CharOf(save))
 			&& strchr("[]<>()", save) == 0
 			&& (!strcmp(s, "s")
 			    || !strcmp(s, "q")
@@ -765,21 +799,32 @@ do_filter(FILE * input GCC_UNUSED)
 			s[ok] = save;
 			break;
 		    }
+		    had_op = 0;
 		    flt_puts(s, ok, keyword_attr(s));
 		    s[ok] = save;
 		    s += ok;
 		} else if ((ok = is_Option(s)) != 0) {
+		    had_op = 0;
 		    flt_puts(s, ok, Keyword_attr);
 		    s += ok;
 		} else if ((ok = is_IDENT(s)) != 0) {
+		    had_op = 0;
 		    flt_puts(s, ok, Ident2_attr);
 		    s += ok;
 		} else if ((ok = is_String(s, &err)) != 0) {
+		    had_op = 0;
 		    s = put_embedded(s, ok, err ? Error_attr : String_attr);
 		} else if ((ok = is_NUMBER(s, &err)) != 0) {
+		    had_op = 0;
 		    flt_puts(s, ok, err ? Error_attr : Number_attr);
 		    s += ok;
 		} else {
+		    if (parens) {
+			if (strchr("|&=~!", *s) != 0)
+			    had_op = 1;
+			else if (!isspace(CharOf(*s)))
+			    had_op = 0;
+		    }
 		    flt_putc(*s++);
 		}
 		break;
@@ -801,15 +846,13 @@ do_filter(FILE * input GCC_UNUSED)
 		} else {
 		    flt_putc(*s++);
 		}
+		had_op = 0;
 		state = eCODE;
 		break;
 	    case ePOD:
 		if (end_POD(s))
 		    state = eCODE;
 		s = put_remainder(s, Comment_attr, 1);
-		break;
-	    default:
-		flt_putc(*s++);
 		break;
 	    }
 	}

@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.287 2001/06/12 08:57:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.289 2001/08/23 20:57:19 tom Exp $
  */
 
 #include	"estruct.h"
@@ -17,6 +17,12 @@
 #define	vl_mkdir(path,mode) mkdir(path)
 #else
 #define	vl_mkdir(path,mode) mkdir(path,mode)
+#endif
+
+#if HAVE_UMASK
+#define vl_umask(n) umask(n)
+#else
+#define vl_umask(n) n
 #endif
 
 #if CC_NEWDOSCC
@@ -552,8 +558,10 @@ set_files_to_edit(const char *prompt, int appflag)
 			       FILEC_READ | FILEC_EXPAND,
 			       fname)) == TRUE) {
 	while ((actual = filec_expand()) != 0) {
-	    if ((bp = getfile2bp(actual, !clexec, FALSE)) == 0)
+	    if ((bp = getfile2bp(actual, !clexec, FALSE)) == 0) {
+		status = FALSE;
 		break;
+	    }
 	    bp->b_flag |= BFARGS;	/* treat this as an argument */
 	    if (firstbp == 0) {
 		firstbp = bp;
@@ -2158,6 +2166,7 @@ int create_save_dir(char *dirnam);
 int
 create_save_dir(char *dirnam)
 {
+    int result = FALSE;
 #if HAVE_MKDIR && !SYS_MSDOS && !SYS_OS2
     static char *tbl[] =
     {
@@ -2183,15 +2192,18 @@ create_save_dir(char *dirnam)
     }
     for (; n < TABLESIZE(tbl); n++) {
 	if (is_directory(tbl[n])) {
+	    int omask = vl_umask(0077);
 	    (void) pathcat(dirnam, tbl[n], "vileDXXXXXX");
 	    (void) mktemp(dirnam);
 	    /* on failure, keep going */
-	    if (vl_mkdir(dirnam, 0700) == 0)
-		return TRUE;
+	    result = (vl_mkdir(dirnam, 0700) == 0);
+	    (void) vl_umask(omask);
+	    if (result)
+		break;
 	}
     }
 #endif /* no mkdir, or dos, or os/2 */
-    return FALSE;
+    return result;
 }
 
 #if SYS_UNIX

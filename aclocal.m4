@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.97 2001/04/24 21:57:50 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.98 2001/08/23 20:32:08 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -396,8 +396,8 @@ cf_cv_ncurses_header=curses.h
 for cf_header in \
 	curses.h \
 	ncurses.h \
-	ncurses/ncurses.h \
-	ncurses/curses.h
+	ncurses/curses.h \
+	ncurses/ncurses.h
 do
 AC_TRY_COMPILE([#include <${cf_header}>],
 	[initscr(); tgoto("?", 0,0)],
@@ -1168,6 +1168,7 @@ AC_CACHE_VAL(cf_cv_makeflags,[
 	for cf_option in '-$(MAKEFLAGS)' '$(MFLAGS)'
 	do
 		cat >cf_makeflags.tmp <<CF_EOF
+SHELL = /bin/sh
 all :
 	@ echo '.$cf_option'
 CF_EOF
@@ -1238,12 +1239,14 @@ dnl ---------------------------------------------------------------------------
 dnl Look for the SVr4 curses clone 'ncurses' in the standard places, adjusting
 dnl the CPPFLAGS variable so we can include its header.
 dnl
-dnl The header files may be installed as either curses.h, or ncurses.h
-dnl (obsolete).  If not installed for overwrite, the curses.h file would be
-dnl in an ncurses subdirectory (e.g., /usr/include/ncurses), but someone may
-dnl have installed overwriting the vendor's curses.  Only very old versions
-dnl (pre-1.9.2d, the first autoconf'd version) of ncurses don't define
-dnl either __NCURSES_H or NCURSES_VERSION in the header.
+dnl The header files may be installed as either curses.h, or ncurses.h (would
+dnl be obsolete, except that some packagers prefer this name to distinguish it
+dnl from a "native" curses implementation).  If not installed for overwrite,
+dnl the curses.h file would be in an ncurses subdirectory (e.g.,
+dnl /usr/include/ncurses), but someone may have installed overwriting the
+dnl vendor's curses.  Only very old versions (pre-1.9.2d, the first autoconf'd
+dnl version) of ncurses don't define either __NCURSES_H or NCURSES_VERSION in
+dnl the header.
 dnl
 dnl If the installer has set $CFLAGS or $CPPFLAGS so that the ncurses header
 dnl is already in the include-path, don't even bother with this, since we cannot
@@ -1253,10 +1256,10 @@ AC_DEFUN([CF_NCURSES_CPPFLAGS],
 [
 AC_CACHE_CHECK(for ncurses header in include-path, cf_cv_ncurses_h,[
 	for cf_header in \
+		curses.h \
 		ncurses.h \
-		ncurses/ncurses.h \
 		ncurses/curses.h \
-		curses.h
+		ncurses/ncurses.h
 	do
 	AC_TRY_COMPILE([#include <$cf_header>],[
 #ifdef NCURSES_VERSION
@@ -1387,8 +1390,10 @@ AC_DEFUN([CF_NCURSES_VERSION],
 AC_CACHE_CHECK(for ncurses version, cf_cv_ncurses_version,[
 	cf_cv_ncurses_version=no
 	cf_tempfile=out$$
+	rm -f $cf_tempfile
 	AC_TRY_RUN([
 #include <${cf_cv_ncurses_header-curses.h}>
+#include <stdio.h>
 int main()
 {
 	FILE *fp = fopen("$cf_tempfile", "w");
@@ -1407,8 +1412,7 @@ int main()
 #endif
 	exit(0);
 }],[
-	cf_cv_ncurses_version=`cat $cf_tempfile`
-	rm -f $cf_tempfile],,[
+	cf_cv_ncurses_version=`cat $cf_tempfile`],,[
 
 	# This will not work if the preprocessor splits the line after the
 	# Autoconf token.  The 'unproto' program does that.
@@ -1431,7 +1435,10 @@ EOF
 		test -n "$cf_out" && cf_cv_ncurses_version="$cf_out"
 		rm -f conftest.out
 	fi
-])])
+])
+	rm -f $cf_tempfile
+])
+test "$cf_cv_ncurses_version" = no || AC_DEFINE(NCURSES)
 ])
 dnl ---------------------------------------------------------------------------
 dnl Within AC_OUTPUT, check if the given file differs from the target, and
@@ -1483,6 +1490,7 @@ cygwin*)
     ;;
 esac
 AC_SUBST(PROG_EXT)
+test -n "$PROG_EXT" && AC_DEFINE_UNQUOTED(PROG_EXT,"$PROG_EXT")
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check for Perl, given the minimum version, to ensure that required features

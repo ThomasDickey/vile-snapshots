@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.194 2001/06/13 18:54:58 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.197 2001/08/22 00:22:23 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -292,6 +292,7 @@ string
 "cclass"	CCLASS		1|STR|SRET	# character-class
 "chr"		CHR		1|NUM		# integer to char conversion
 "date"		DATE		2|NUM|SRET	# formatted date/timestamp
+"default"	DEFAULT		1|STR|SRET	# return initial/default value for mode or state-variable
 "divide"	DIV		2|NUM|NRET	# division
 "dquery"	DQUERY		2|STR|SRET	# query the user, given default value
 "env"		ENV		1|STR|SRET	# retrieve a system environment var
@@ -319,6 +320,7 @@ string
 "path"		PATH		2|STR|SRET	# transform pathnames
 "pcat"		PATHCAT		2|STR|SRET	# concat directory and filename
 "pquote"	PATHQUOTE	1|STR|SRET	# quote pathname if needed
+"qpasswd"	QPASSWD		1|STR|SRET	# query user for password, echo '*'
 "query"		QUERY		1|STR|SRET	# query the user
 "random"	RANDOM		1|NUM|NRET	# get a random number
 "rd"		RD		1|BRET		# is a file readable?
@@ -459,6 +461,7 @@ string
 
 .table paramtypes
 "bool"		PT_BOOL
+"buffer"	PT_BUFFER
 "directory"	PT_DIR
 "enum"		PT_ENUM
 "file"		PT_FILE
