@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.34 2000/04/21 09:45:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.35 2000/04/26 09:10:26 tom Exp $
  */
 
 #include	"estruct.h"
@@ -17,6 +17,7 @@ static char *directory;	/* $TMP environment is "$directory" state variable */
 #if DISP_X11
 static char *x_display;	/* $DISPLAY environment is "$xdisplay" state variable */
 static char *x_shell;	/* $XSHELL environment is "$xshell" state variable */
+static char *x_shellflags;	/* flags separating "$xshell" from command */
 #endif
 #endif
 #if OPT_PATHLOOKUP
@@ -112,9 +113,15 @@ get_xshell(void)
 		SetEnv(&x_shell, DftEnv("XSHELL", "xterm"));
 	return x_shell;
 }
-#endif
 
-#if OPT_EVAL && DISP_X11 && OPT_SHELL
+char *
+get_xshellflags(void)
+{
+	if (x_shellflags == 0)
+		SetEnv(&x_shellflags, DftEnv("XSHELLFLAGS", "-c"));
+	return x_shellflags;
+}
+
 char *
 get_xdisplay(void)
 {
@@ -1322,6 +1329,19 @@ int var_XSHELL(TBUFF **rp, const char *vp)
 		return TRUE;
 	} else if (vp) {
 		SetEnv(&x_shell, vp);
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+
+int var_XSHELLFLAGS(TBUFF **rp, const char *vp)
+{
+	if (rp) {
+		tb_scopy(rp, get_xshellflags());
+		return TRUE;
+	} else if (vp) {
+		SetEnv(&x_shellflags, vp);
 		return TRUE;
 	} else {
 		return FALSE;

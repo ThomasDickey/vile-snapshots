@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_1f
+MANIFEST for vile, version v9_1g
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -259,10 +259,12 @@ icons/vile.xbm                  sample icon, for X bitmap
 icons/vile.xpm                  sample icon, for xpm library
 macros                          subdirectory
 macros/XVile.ad                 sample X resource file for vile
+macros/color-ls.rc              sample macro: read output of "color ls"
 macros/digraphs.rc              macros for inserting digraphs
 macros/manpage.rc               macros for man-page filtering/display
 macros/palettes.rc              sample color schemes
 macros/pictmode.rc              macros to support "picture-mode" editing
+macros/shifts.rc                macros to shift words left/right
 macros/vile-pager               use vile as a pager
 macros/vileinit.rc              sample initialization file
 macros/vilemenu.rc              sample menu for xvile

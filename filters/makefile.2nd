@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.5 2000/03/18 19:34:58 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.6 2000/04/26 09:41:12 tom Exp $
 #
 
 .SUFFIXES: .l .c .i $o
@@ -85,8 +85,8 @@ dotags:
 	$(AR) $(AR_OPTS) $@ $(LOBJS)
 	$(RANLIB) $@
 
-vile-crypt$x :	ecrypt$o	; $(CC) -o $@ ecrypt$o $(LDFLAGS) $(LIBS)
-vile-manfilt$x : manfilt$o	; $(CC) -o $@ manfilt$o $(LDFLAGS) $(LIBS)
+vile-crypt$x :	ecrypt$o	; $(CC) -o $@ ecrypt$o $(LDFLAGS)
+vile-manfilt$x : manfilt$o	; $(CC) -o $@ manfilt$o $(LDFLAGS)
 
 $(BINDIR)/vile-crypt$x :	vile-crypt$x		; $(INSTALL) $? $@
 $(BINDIR)/vile-manfilt$x :	vile-manfilt$x		; $(INSTALL) $? $@

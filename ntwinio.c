@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.87 2000/04/25 10:40:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.88 2000/04/26 08:59:22 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -647,7 +647,7 @@ ResetRGBPalette(int f, int n)
     int first = f ? n : 0;
     int last = f ? n+1 : NCOLORS;
 
-    for (code = first; code < last; code++) {
+    for (code = first; code < last && code < NCOLORS; code++) {
 	red = green = blue = 0;
 	if (code & 1)
 	    red = rgb_normal;

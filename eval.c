@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.268 2000/03/14 10:40:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.269 2000/04/28 22:52:41 tom Exp $
  *
  */
 
@@ -573,7 +573,7 @@ run_func(int fnum)
 	ret_numeric = vl_ufuncs[fnum].f_code & NRET;
 	ret_boolean = vl_ufuncs[fnum].f_code & BRET;
 
-	TPRINTF(("** evaluate '%s' (0x%x), %d args",
+	TPRINTF(("** evaluate '%s' (0x%x), %d args\n",
 			vl_ufuncs[fnum].f_name,
 			vl_ufuncs[fnum].f_code,
 			nargs));
@@ -584,7 +584,7 @@ run_func(int fnum)
 		if ((arg[i] = mac_tokval(&args[i])) == 0)
 			return error_val;
 		tb_free(&result); /* in case mac_tokval() called us */
-		TPRINTF(("...arg[%d] = '%s'", i, arg[i]));
+		TPRINTF(("...arg[%d] = '%s'\n", i, arg[i]));
 		if (args_numeric)
 			nums[i] = scan_int(arg[i]);
 		else if (args_boolean)
@@ -807,7 +807,7 @@ run_func(int fnum)
 	else if (ret_boolean)
 		render_boolean(&result, i);
 
-	TPRINTF(("-> '%s'", tb_values(result)));
+	TPRINTF(("-> '%s'\n", tb_values(result)));
 	for (i = 0; i < nargs; i++) {
 		tb_free(&args[i]);
 	}

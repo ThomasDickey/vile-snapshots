@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2000 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.89 2000/03/15 00:24:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.90 2000/04/28 22:52:36 tom Exp $
  *
  */
 
@@ -174,7 +174,7 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
     char *last = first + want;
 
     (void) memset(errp, 0, sizeof(*errp));
-    TPRINTF(("error-pattern %*S", want, first));
+    TPRINTF(("error-pattern %*S\n", want, first));
 
     /* In the first pass, find the number of fields we'll substitute.
      * Then allocate a new string that's a genuine regular expression
@@ -271,7 +271,7 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 	}
     }
     if (temp != 0) {
-	TPRINTF(("-> %s", temp));
+	TPRINTF(("-> %s\n", temp));
 	exp = regcomp(temp, TRUE);
 	free(temp);
     }

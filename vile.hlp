@@ -2335,6 +2335,7 @@ Programmed procedures and macros
 	$write-hook	name of procedure to run before a file is written
 	$xdisplay	the value to set $DISPLAY when running $xshell.
 	$xshell		name of the terminal program for spawned xvile commands.
+	$xshell-flags	command-line flags after $xshell, normally "-e"
 
 	In addition to the state variables, you may set and use the values
 	of the editor modes (i.e., universal modes, buffer-only modes or
@@ -4977,4 +4978,4 @@ Problems
 
 Copyright 1995-2000 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.484 2000/04/25 10:45:52 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.485 2000/04/26 09:16:01 tom Exp $

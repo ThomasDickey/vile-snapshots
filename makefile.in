@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.166 2000/04/24 23:46:35 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.168 2000/05/02 00:38:19 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -178,10 +178,12 @@ PERL_SRC = \
 
 
 MACRO_SRC = \
+	$(srcdir)/macros/color-ls.rc \
 	$(srcdir)/macros/digraphs.rc \
 	$(srcdir)/macros/manpage.rc \
 	$(srcdir)/macros/palettes.rc \
 	$(srcdir)/macros/pictmode.rc \
+	$(srcdir)/macros/shifts.rc \
 	$(srcdir)/macros/vileinit.rc \
 	$(srcdir)/macros/vileperl.rc
 
@@ -324,10 +326,12 @@ check: $(TARGET)
 	@echo Sorry, no batch tests available.
 
 INSTALL_MACRO_FILES = \
+	$(DATADIR)/color-ls.rc \
 	$(DATADIR)/digraphs.rc \
 	$(DATADIR)/manpage.rc \
 	$(DATADIR)/palettes.rc \
 	$(DATADIR)/pictmode.rc \
+	$(DATADIR)/shifts.rc \
 	$(DATADIR)/vileinit.rc \
 	$(DATADIR)/vileperl.rc
 
@@ -631,6 +635,8 @@ $(BINDIR)/@TARGET@-pager:	$(srcdir)/macros/vile-pager
 	sed -e 's/ vile / @TARGET@ /' $(srcdir)/macros/vile-pager >$@
 	chmod 755 $@
 
+$(DATADIR)/color-ls.rc:		$(srcdir)/macros/color-ls.rc
+	$(INSTALL_DATA)		$(srcdir)/macros/color-ls.rc $@
 $(DATADIR)/digraphs.rc:		$(srcdir)/macros/digraphs.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/digraphs.rc $@
 $(DATADIR)/manpage.rc:		$(srcdir)/macros/manpage.rc
@@ -639,6 +645,8 @@ $(DATADIR)/palettes.rc:		$(srcdir)/macros/palettes.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/palettes.rc $@
 $(DATADIR)/pictmode.rc:		$(srcdir)/macros/pictmode.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/pictmode.rc $@
+$(DATADIR)/shifts.rc:		$(srcdir)/macros/shifts.rc
+	$(INSTALL_DATA)		$(srcdir)/macros/shifts.rc $@
 $(DATADIR)/vileinit.rc:		$(srcdir)/macros/vileinit.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/vileinit.rc $@
 $(DATADIR)/vileperl.rc:		$(srcdir)/macros/vileperl.rc

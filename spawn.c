@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.154 2000/03/13 01:44:54 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.156 2000/04/28 00:38:53 tom Exp $
  *
  */
 
@@ -86,7 +86,9 @@ static void x_window_SHELL(const char *cmd)
 			tmp = tb_scopy(&tmp, get_xshell());
 			if (cmd != 0) {
 				tb_unput(tmp);
-				tmp = tb_sappend(&tmp, " -e ");
+				tmp = tb_sappend(&tmp, " ");
+				tmp = tb_sappend(&tmp, get_xshellflags());
+				tmp = tb_sappend(&tmp, " ");
 				tmp = tb_sappend(&tmp, cmd);
 				tmp = tb_append(&tmp, EOS);
 			}
@@ -233,6 +235,7 @@ pressreturn(void)
 
 	mlforce("[Press return to continue]");
 	/* loop for a CR, a space, or a : to do another named command */
+	reading_msg_line = TRUE;
 	while ((c = keystroke()) != '\r' &&
 			c != '\n' &&
 			c != ' ' &&
@@ -243,6 +246,7 @@ pressreturn(void)
 		}
 	}
 	kbd_erase_to_end(0);
+	reading_msg_line = FALSE;
 }
 
 /* ARGSUSED */
