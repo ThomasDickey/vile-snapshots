@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_0b
+MANIFEST for vile, version v8_0c
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -128,6 +128,7 @@ doc/macros.doc                  documentation for VILE macros
 doc/menus.doc                   description of xvile (Xm and Xaw) menus
 doc/modes.doc                   overview of modes/majormodes
 doc/perl.doc                    notes about perl interface to vile
+doc/w32modes.doc                describe win32-specific modes
 macros                          subdirectory
 macros/digraphs.rc              macros for inserting digraphs
 macros/manpage.rc               macros for man-page filtering/display

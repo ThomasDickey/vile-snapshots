@@ -873,7 +873,7 @@ New Registers
 
 Completion
 ----------
-	Many responses to vile prompts need not be typed in their entirety. 
+	Many responses to vile prompts need not be typed in their entirety.
 	vile can complete the response for you.  This applies to command
 	names, file names, vile modes, vile variables, tags and the
 	"terminal characters".
@@ -3524,6 +3524,8 @@ Win32 specifics
 	---------
 	Copy data from the unnamed register to the windows clipboard via
 	the copy-unnamed-reg-to-clipboard command (bound to Alt+Insert).
+	The paste-from-clipboard command copies data from the clipboard
+	to the current buffer (bound to Shift+Insert).
 
 	Utilities
 	---------
@@ -3580,6 +3582,11 @@ Win32 specifics
 			(msec).  (U)
 
 	w32pipes	See discussion of pipes above.  (U)
+
+	Windows 95/98 Considerations
+	----------------------------
+	Refer to the file doc\w32modes.doc for a discussion of the optimum
+	settings of force-console and w32pipes.
 
 
 
@@ -3819,4 +3826,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.357 1998/07/01 23:19:24 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.359 1998/07/03 23:40:36 cmorgan Exp $

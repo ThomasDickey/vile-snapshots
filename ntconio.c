@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.34 1998/05/19 11:04:47 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.35 1998/07/03 00:23:54 tom Exp $
  *
  */
 
@@ -11,6 +11,11 @@
 
 #include        "estruct.h"
 #include        "edef.h"
+
+/* 
+ * Define this if you want to kernel fault win95 when ctrl brk is pressed.
+ */
+#undef DONT_USE_ON_WIN95
 
 #define NROW	128			/* Max Screen size.		*/
 #define NCOL    256			/* Edit if you want to.         */
@@ -441,7 +446,7 @@ ntkopen(void)	/* open the keyboard */
 	if (hConsoleOutput)
 		SetConsoleActiveScreenBuffer(hConsoleOutput);
 	keyboard_open = TRUE;
-#ifdef YOU_WANT_TO_KERNEL_FAULT_WIN95_WHEN_CTRL_BRK_IS_PRESSED
+#ifdef DONT_USE_ON_WIN95
 	SetConsoleCtrlHandler(NULL, TRUE);
 #endif
 	SetConsoleMode(hConsoleInput, ENABLE_MOUSE_INPUT|ENABLE_WINDOW_INPUT);
@@ -457,7 +462,7 @@ ntkclose(void)	/* close the keyboard */
 	keyboard_was_closed = TRUE;
 	if (hOldConsoleOutput)
 		SetConsoleActiveScreenBuffer(hOldConsoleOutput);
-#ifdef YOU_WANT_TO_KERNEL_FAULT_WIN95_WHEN_CTRL_BRK_IS_PRESSED
+#ifdef DONT_USE_ON_WIN95
 	SetConsoleCtrlHandler(NULL, FALSE);
 #endif
 }

@@ -525,7 +525,7 @@ Changes for vile 7.4 (released Fri May 1, 1998)
 	  (READLINE): Rewritten to handle the record separator correctly;
 	  call svgetline, svgetregion, or svgettors as appropriate.
 	  (attribute_cntl_a_sequences): Pass the region shape when calling
-	  attribute_cntl_a_sequences_over_region().
+	  attribute_cntl_a_seqs_in_region().
 	  (fetch, attribute, buffername, filename): New methods.
 	  (Warn): Minor cleanup.
 	  (mlreply, mlreply_no_opts, mlreply_file, mlreply_dir):  Allow
@@ -537,12 +537,12 @@ Changes for vile 7.4 (released Fri May 1, 1998)
 	  (keystroke, working, update, watchfd, unwatchfd) New methods.
 	  Also throughout this file (perl.xs), there was a lot of minor
 	  reformatting.  A few new comments were even added.
-	+ proto.h (renamebuffer, attributeregion_over_region, null_t_watchfd,
+	+ proto.h (renamebuffer, attributeregion_in_region, null_t_watchfd,
 	  null_t_unwatchfd, watchfd, unwatchfd, dowatchcallback,
 	  detach_fake_windows, reattach_fake_windows): Declared.
-	  (attribute_cntl_a_sequences_over_region): New parameter.
-	+ select.c (attributeregion_over_region): New function.
-	  (attribute_cntl_a_sequences_over_region): New parameter for passing
+	  (attribute_cntl_a_seqs_in_region): New parameter.
+	+ select.c (attributeregion_in_region): New function.
+	  (attribute_cntl_a_seqs_in_region): New parameter for passing
 	  the shape of the region.  Use shape parameter for setting region
 	  up properly.
 	+ shell.pl, tailf.pl: New example perl scripts.  Not really complete
@@ -749,8 +749,8 @@ Changes for vile 7.4 (released Fri May 1, 1998)
 	  (setregion, dot): Handle '$' and '$$'.
 	  (setregion): Return the buffer object in a scalar context.
 	  (attribute_cntl_a_sequences, unmark): New functions.
-	+ proto.h (attribute_cntl_a_sequences_over_region): Declared.
-	+ select.c (attribute_cntl_a_sequences_over_region): New
+	+ proto.h (attribute_cntl_a_seqs_in_region): Declared.
+	+ select.c (attribute_cntl_a_seqs_in_region): New
 	  function.
 
  (kev) 980324 (m)

@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.98 1998/05/12 23:31:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.99 1998/07/03 00:07:41 tom Exp $
  *
  */
 
@@ -1234,7 +1234,7 @@ setwmark(int row, int col)
 #endif
 		DOT.o = col2offs(curwp, dlp, col);
 
-#if dont_allow_mouse_to_select_newline
+#ifdef OPT_MOUSE_NEWLINE
 		/* don't allow the cursor to be set past end of line unless we
 		 * are in insert mode
 		 */
