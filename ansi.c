@@ -4,7 +4,7 @@
  * "termio.c". It compiles into nothing if not an ANSI device.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.28 1996/04/14 23:37:50 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.29 1997/11/07 11:03:29 tom Exp $
  */
 
 
@@ -357,9 +357,13 @@ ansiparm(register int n)
 static void
 ansiopen(void)
 {
-	strcpy(sres, "NORMAL");
-	revexist = TRUE;
-	ttopen();
+	static int already_open = FALSE;
+	if (!already_open) {
+		already_open = TRUE;
+		strcpy(sres, "NORMAL");
+		revexist = TRUE;
+		ttopen();
+	}
 }
 
 static void

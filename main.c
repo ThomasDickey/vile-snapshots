@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.303 1997/10/25 12:03:51 Alex.Wetmore Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.304 1997/11/06 23:20:30 tom Exp $
  *
  */
 
@@ -60,7 +60,7 @@ extern const int nametblsize;
 					goto usage
 
 int
-main(int argc, char *argv[])
+MainProgram(int argc, char *argv[])
 {
 	int tt_opened;
 	register BUFFER *bp;		/* temp buffer pointer */
@@ -287,7 +287,7 @@ main(int argc, char *argv[])
 	/* if stdin isn't a terminal, assume the user is trying to pipe a
 	 * file into a buffer.
 	 */
-#if SYS_UNIX || SYS_VMS || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
+#if SYS_UNIX || SYS_VMS || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || DISP_NTCONS
 	if (!isatty(fileno(stdin))) {
 #if !DISP_X11
 #if SYS_UNIX
@@ -604,7 +604,7 @@ loop(void)
 		c = kbd_seq();
 
 		/* if there is something on the command line, clear it */
-		if (mpresf != 0) {
+		if (kbd_length() > 0) {
 			mlerase();
 			if (s != SORTOFTRUE) /* did nothing due to typeahead */
 				(void)update(FALSE);
@@ -1427,15 +1427,6 @@ quit(int f, int n GCC_UNUSED)
 	siguninit();
 #if OPT_WORKING
 	setup_handler(SIGALRM, SIG_IGN);
-#if NEEDED	/* i'm not sure when we'd end up with a "working..."
-			left on the line, and if we _do_ need to
-			clear it, i'd like to figure out how to
-			clear just that, so the last message written
-			by the editor doesn't get tromped */
-	/* force the message line clear */
-	mpresf = 1;
-	mlerase();
-#endif
 #endif
 #if NO_LEAKS
 	{
@@ -1783,6 +1774,13 @@ charinit(void)
 #undef	malloc
 #undef	free
 
+typedef	struct {
+	size_t	length;
+	unsigned magic;
+} RAMSIZE;
+
+#define MAGIC_RAM 0x12345678
+
 	/* display the amount of RAM currently malloc'ed */
 static void
 display_ram_usage (void)
@@ -1795,32 +1793,44 @@ display_ram_usage (void)
 
 		if (saverow >= 0 && saverow < term.t_nrow
 		 && savecol >= 0 && savecol < term.t_ncol) {
-			movecursor(term.t_nrow-1, LastMsgCol);
-#if	OPT_COLOR
-			TTforg(gfcolor);
-			TTbacg(gbcolor);
-#endif
 			(void)lsprintf(mbuf, "[%ld]", envram);
-			kbd_puts(mbuf);
+			kbd_overlay(mbuf);
+			kbd_flush();
 			movecursor(saverow, savecol);
-			TTflush();
 		}
 	}
 	endofDisplay();
+}
+
+static char *old_ramsize(char *mp)
+{
+	RAMSIZE *p = (RAMSIZE *)(mp - sizeof(RAMSIZE));
+
+	if (p->magic == MAGIC_RAM) {
+		mp = (char *)p;
+		envram -= p->length;
+	}
+	return mp;
+}
+
+static char *new_ramsize(char *mp, unsigned nbytes)
+{
+	RAMSIZE *p = (RAMSIZE *)mp;
+	if (p != 0) {
+		p->length = nbytes;
+		p->magic  = MAGIC_RAM;
+		envram += nbytes;
+		mp = (char *)((long)p + sizeof(RAMSIZE));
+	}
+	return mp;
 }
 
 	/* reallocate mp with nbytes and track */
 char *reallocate(char *mp, unsigned nbytes)
 {
 	if (mp != 0) {
-		mp -= sizeof(SIZE_T);
-		envram -= *((SIZE_T *)mp);
-		nbytes += sizeof(SIZE_T);
-		mp = realloc(mp, nbytes);
-		if (mp != 0) {
-			*((SIZE_T *)mp) = nbytes;
-			envram += nbytes;
-		}
+		nbytes += sizeof(RAMSIZE);
+		mp = new_ramsize(realloc(old_ramsize(mp), nbytes), nbytes);
 		display_ram_usage();
 	} else
 		mp = allocate(nbytes);
@@ -1833,12 +1843,10 @@ unsigned nbytes)	/* # of bytes to allocate */
 {
 	char *mp;	/* ptr returned from malloc */
 
-	nbytes += sizeof(SIZE_T);
+	nbytes += sizeof(RAMSIZE);
 	if ((mp = malloc(nbytes)) != 0) {
 		(void)memset(mp, 0, nbytes);	/* so we can use for calloc */
-		*((SIZE_T *)mp) = nbytes;
-		envram += nbytes;
-		mp += sizeof(SIZE_T);
+		mp = new_ramsize(mp, nbytes);
 		display_ram_usage();
 	}
 
@@ -1850,9 +1858,7 @@ void
 release(char *mp)	/* chunk of RAM to release */
 {
 	if (mp) {
-		mp -= sizeof(SIZE_T);
-		envram -= *((SIZE_T *)mp);
-		free(mp);
+		free(old_ramsize(mp));
 		display_ram_usage();
 	}
 }

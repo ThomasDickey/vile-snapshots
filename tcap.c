@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.96 1997/10/17 19:21:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.97 1997/11/05 23:40:13 tom Exp $
  *
  */
 
@@ -601,8 +601,10 @@ tcapkopen(void)
 #endif
 	if (!keyboard_open) {
 		keyboard_open = TRUE;
-		if (TI)
+		if (TI) {
 			putnpad(TI, (int)strlen(TI));
+			ttrow = ttcol = -1;	/* 'ti' may move the cursor */
+		}
 		if (KS)
 			putpad(KS);
 	}

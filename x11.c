@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.165 1997/10/27 12:17:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.166 1997/11/04 00:15:30 tom Exp $
  *
  */
 
@@ -28,6 +28,7 @@
 #include	"estruct.h"
 #include	"edef.h"
 #include	"nefunc.h"
+#include	"pscreen.h"
 
 #include	<X11/cursorfont.h>
 
@@ -181,21 +182,6 @@
 #define MINCOLS	30
 #define MINROWS MINWLNS
 #define MAXSBS	((MAXROWS) / 2)
-
-/* The following set of definitions comprise the interface to pscreen
- * in display.c.  They should perhaps be moved to a header file so
- * that other screen interfaces can make use of them.
- */
-extern VIDEO **pscreen;
-#define IS_DIRTY_LINE(r)	(pscreen[(r)]->v_flag & VFCHG)
-#define IS_DIRTY(r,c)		(pscreen[(r)]->v_attrs[(c)] & VADIRTY)
-#define IS_REVERSED(r,c)	((pscreen[(r)]->v_attrs[(c)] & (VAREV|VASEL)) != 0)
-#define MARK_LINE_DIRTY(r)	(pscreen[(r)]->v_flag |= VFCHG)
-#define MARK_CELL_DIRTY(r,c)	(pscreen[(r)]->v_attrs[(c)] |= VADIRTY)
-#define CLEAR_LINE_DIRTY(r)	(pscreen[(r)]->v_flag &= ~VFCHG)
-#define CLEAR_CELL_DIRTY(r,c)	(pscreen[(r)]->v_attrs[(c)] &= ~VADIRTY)
-#define CELL_TEXT(r,c)		(pscreen[(r)]->v_text[(c)])
-#define CELL_ATTR(r,c)		(pscreen[(r)]->v_attrs[(c)])
 
 /* Blinking cursor toggle...defined this way to leave room for future
  * cursor flags.

@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.167 1997/10/07 00:15:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.169 1997/11/08 12:14:01 tom Exp $
  *
  */
 
@@ -721,11 +721,11 @@ remove_backslashes(TBUFF *buf)
 /* count backslashes so we can tell at any point whether we have the current
  * position escaped by one.
  */
-static int
-countBackSlashes(TBUFF * buf, int len)
+static UINT
+countBackSlashes(TBUFF * buf, UINT len)
 {
 	char *buffer = tb_values(buf);
-	register int	count;
+	register UINT	count;
 
 	if (len && buffer[len-1] == BACKSLASH) {
 		count = 1;
@@ -754,22 +754,7 @@ show1Char(int c)
 {
 	if (disinp) {
 		showChar(c);
-		TTflush();
-	}
-}
-
-static void
-eraseChar(int c)
-{
-	if (disinp) {
-		kbd_erase();
-		if (!isPrint(c)) {
-			kbd_erase();		/* e.g. back up over ^H */
-		    	if (c & HIGHBIT) {
-			    kbd_erase();	/* e.g. back up over \200 */
-			    kbd_erase();
-			}
-		}
+		kbd_flush();
 	}
 }
 
@@ -788,7 +773,7 @@ expandChar(
 TBUFF **buf,
 unsigned * position,
 int	c,
-int	options)
+UINT	options)
 {
 	register int	cpos = *position;
 	register char *	cp;
@@ -881,7 +866,7 @@ int	options)
 			showChar(c);
 		}
 		tb_put(buf, cpos, EOS);
-		TTflush();
+		kbd_flush();
 	}
 	*position = cpos;
 	return TRUE;
@@ -910,7 +895,7 @@ kbd_kill_response(TBUFF * buffer, unsigned * position, int c)
 
 	while (cpos > 0) {
 		cpos--;
-		eraseChar(buf[cpos]);
+		kbd_erase();
 		if (c == wkillc) {
 			if (!isSpace(buf[cpos])) {
 				if (cpos > 0 && isSpace(buf[cpos-1]))
@@ -922,7 +907,7 @@ kbd_kill_response(TBUFF * buffer, unsigned * position, int c)
 			break;
 	}
 	if (disinp)
-		TTflush();
+		kbd_flush();
 
 	tb_put(&buffer, *position = cpos, EOS);
 }
@@ -937,7 +922,7 @@ TBUFF	**dst,		/* string with escapes */
 char	*src,		/* string w/o escapes */
 unsigned bufn,		/* maximum # of chars we read from 'src[]' */
 int	eolchar,
-int	options)
+UINT	options)
 {
 	register int c;
 	register ALLOC_T k;
@@ -968,7 +953,7 @@ int	options)
 	for (k = 0; k < tb_length(*dst) - 1; k++)
 		showChar(tb_values(*dst)[k]);
 	if (disinp)
-		TTflush();
+		kbd_flush();
 	return tb_length(*dst) - 1;
 }
 
@@ -1024,7 +1009,7 @@ const char *prompt,	/* put this out first */
 char *extbuf,		/* the caller's (possibly full) buffer */
 unsigned bufn,		/* the length of  " */
 int eolchar,		/* char we can terminate on, in addition to '\n' */
-int options,		/* KBD_EXPAND/KBD_QUOTES, etc. */
+UINT options,		/* KBD_EXPAND/KBD_QUOTES, etc. */
 int (*complete)(DONE_ARGS)) /* handles completion */
 {
 	int code;
@@ -1052,7 +1037,7 @@ const char *prompt,		/* put this out first */
 TBUFF **extbuf,			/* the caller's (possibly full) buffer */
 int (*endfunc)(EOL_ARGS),	/* parsing with 'eolchar' delimiter */
 int eolchar,			/* char we can terminate on, in addition to '\n' */
-int options,			/* KBD_EXPAND/KBD_QUOTES */
+UINT options,			/* KBD_EXPAND/KBD_QUOTES */
 int (*complete)(DONE_ARGS))	/* handles completion */
 {
 	int	c;
@@ -1062,8 +1047,8 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 	int	shell;
 
 	register int quotef;	/* are we quoting the next char? */
-	register int backslashes; /* are we quoting the next expandable char? */
-	int dontmap = (options & KBD_NOMAP);
+	register UINT backslashes; /* are we quoting the next expandable char? */
+	UINT dontmap = (options & KBD_NOMAP);
 	int firstch = TRUE;
 	unsigned newpos;
 	TBUFF *buf = 0;
@@ -1144,8 +1129,8 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 		/* if we echoed ^V, erase it now */
 		if (quotef) {
 			firstch = FALSE;
-			eraseChar(quotec);
-			TTflush();
+			kbd_erase();
+			kbd_flush();
 		}
 
 		/* If it is a <ret>, change it to a <NL> */

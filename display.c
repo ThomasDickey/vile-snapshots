@@ -5,12 +5,13 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.236 1997/10/07 00:04:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.238 1997/11/08 01:56:41 tom Exp $
  *
  */
 
 #include	"estruct.h"
 #include        "edef.h"
+#include        "pscreen.h"
 
 #define	NU_WIDTH 8
 
@@ -41,6 +42,7 @@ static	int *lmap;
 
 static	int	i_displayed;		/* false until we're in screen-mode */
 static	int	im_displaying;		/* flag set during screen updates */
+static	int	mpresf;			/* zero if message-line empty */
 #if OPT_WORKING
 static	int	im_timing;
 #endif
@@ -668,7 +670,7 @@ vtset(LINEPTR lp, WINDOW *wp)
 
 	while ((vtcol <= term.t_ncol)
 #ifdef WMDLINEWRAP
-	  &&   (vtrow < mode_row(wp))
+	  &&   ((vtrow == term.t_nrow-1) || (vtrow < mode_row(wp)))
 #endif
 	  &&   (n > 0)) {
 		if (list)
@@ -724,7 +726,7 @@ upscreen(int f GCC_UNUSED, int n GCC_UNUSED)
 }
 #endif
 
-static	int	scrflags;
+static	UINT	scrflags;
 
 /* line to virtual column */
 static int
@@ -759,6 +761,91 @@ l_to_vcol (WINDOW *wp, int base)
 			col != 0 && wp->w_dot.o < llength(lp))
 		col--;
 	return col;
+}
+
+void
+kbd_openup(void)
+{
+#if !MEMMAP && !OPT_PSCREEN
+	int i;
+	size_t alen = sizeof(VIDEO_ATTR) * term.t_ncol;
+#endif
+	kbd_flush();
+	bottomleft();
+	TTputc('\n');
+	TTputc('\r');
+	TTflush();
+#if !MEMMAP && !OPT_PSCREEN
+	if (pscreen != 0) {
+		for (i = 0; i < term.t_nrow-1; ++i) {
+			(void)memcpy(
+				pscreen[i]->v_text,
+				pscreen[i+1]->v_text,
+				(SIZE_T)(term.t_ncol));
+			(void)memcpy(
+				pscreen[i]->v_attrs,
+				pscreen[i+1]->v_attrs,
+				alen);
+		}
+		(void)memset(pscreen[i]->v_text, ' ', (SIZE_T)(term.t_ncol));
+		(void)memset(pscreen[i]->v_attrs, VADIRTY, alen);
+	}
+#endif
+}
+
+/* cannot be allocated since it's used by OPT_RAMSIZE */
+static char my_overlay[20];
+
+/* save/erase text for the overlay on the message line */
+void
+kbd_overlay(const char *s)
+{
+	my_overlay[0] = EOS;
+	if ((mpresf = (s != 0 && *s != EOS)) != 0) {
+		strncpy(my_overlay, s, sizeof(my_overlay)-1);
+	}
+}
+
+void
+kbd_flush(void)
+{
+	int ok;
+
+	beginDisplay();
+	TRACE(("SHOW:%2d:%.*s\n", llength(wminip->w_dot.l), llength(wminip->w_dot.l), wminip->w_dot.l->l_text));
+	if (vscreen != 0) {
+		int row = term.t_nrow - 1;
+
+		vtmove(row, 0);
+
+		ok = (wminip != 0
+		   && wminip->w_dot.l != 0
+		   && wminip->w_dot.l->l_text != 0);
+		if (ok)
+			vtset(wminip->w_dot.l, wminip);
+
+		vteeol();
+		if (my_overlay[0] != EOS) {
+			int n = term.t_ncol - strlen(my_overlay) - 1;
+			if (n > 0) {
+				(void)memcpy(&vscreen[row]->v_text[n],
+					my_overlay,
+					strlen(my_overlay));
+#if OPT_VIDEO_ATTRS
+				(void)memset(&vscreen[row]->v_attrs[n],
+					0,
+					sizeof(VIDEO_ATTR)*strlen(my_overlay));
+#endif
+			}
+		}
+		vscreen[row]->v_flag |= VFCHG;
+		updateline(row, 0, term.t_ncol);
+		if (ok)
+			movecursor(row,
+				offs2col(wminip, wminip->w_dot.l, wminip->w_dot.o));
+	}
+	TTflush();
+	endofDisplay();
 }
 
 /*
@@ -1321,12 +1408,11 @@ static void
 updgar(void)
 {
 #if !MEMMAP && !OPT_PSCREEN
-	register char *txt;
 	register int j;
 #endif
 	register int i;
 
-	for (i = 0; i < term.t_nrow-1; ++i) {
+	for (i = 0; i < term.t_nrow; ++i) {
 		vscreen[i]->v_flag |= VFCHG;
 #if	OPT_REVSTA
 		vscreen[i]->v_flag &= ~VFREV;
@@ -1336,12 +1422,11 @@ updgar(void)
 		CurBcolor(vscreen[i]) = gbcolor;
 #endif
 #if	! MEMMAP && ! OPT_PSCREEN
-		txt = pscreen[i]->v_text;
 		for (j = 0; j < term.t_ncol; ++j) {
-			txt[j] = ' ';
+			CELL_TEXT(i,j) = ' ';
 #if OPT_VIDEO_ATTRS
 			/* FIXME: Color? */
-			pscreen[i]->v_attrs[j] = 0;
+			CELL_ATTR(i,j) = 0;
 #endif /* OPT_VIDEO_ATTRS */
 		}
 #endif
@@ -1354,19 +1439,10 @@ updgar(void)
 	movecursor(0, 0);		 /* Erase the screen. */
 	TTeeop();
 #else
-	bottomleft();
-	TTeeol();
+	kbd_erase_to_end(0);
 #endif
 	sgarbf = FALSE;			 /* Erase-page clears */
-	mpresf = 0;			 /* the message area. */
-	if (mlsave[0]) {
-		TRACE(("MSG:%s\n", mlsave))
-		mlforce("%s", mlsave);
-	}
-#if	OPT_COLOR
-	else
-		mlerase();		/* needs to be cleared if colored */
-#endif
+	kbd_flush();
 }
 
 /*	updupd:	update the physical screen from the virtual screen	*/
@@ -1385,7 +1461,7 @@ int force GCC_UNUSED)	/* forced update flag */
 	scrflags = 0;
 #endif
 
-	for (i = 0; i < term.t_nrow-1; ++i) {
+	for (i = 0; i < term.t_nrow; ++i) {
 		/* for each line that needs to be updated*/
 		if ((vscreen[i]->v_flag & (VFCHG|VFCOL)) != 0) {
 #if !DISP_X11
@@ -1858,10 +1934,10 @@ scrolls(int inserts)	/* returns true if it does something */
 			      pscreen[a] = pscreen[b];	\
 			      pscreen[b] = temp; } one_time
 #define CLEAR_PLINE(a)  do {						\
-			    pscreen[a]->v_flag |= VFCHG;		\
+			    MARK_LINE_DIRTY(a);				\
 			    for (j = 0; j < term.t_ncol; j++) {		\
-				pscreen[a]->v_text[j] = ' ';		\
-				pscreen[a]->v_text[j] = 0; /* FIXME: color */ \
+				CELL_TEXT(a,j) = ' ';			\
+				CELL_TEXT(a,j) = 0; /* FIXME: color */	\
 			    }						\
 			  } one_time
 		if (from < to) {
@@ -1894,7 +1970,7 @@ scrolls(int inserts)	/* returns true if it does something */
 		    /* FIXME: color */
 		    for (i = from; i < to; i++)
 			for (j = 0; j < term.t_ncol; j++)
-			    pscreen[i+count]->v_attrs[j] = 0;
+			    CELL_ATTR(i+count,j) = 0;
 		    for (i = count-1; i >= 0; i--)
 			SWAP_ATTR_PTR(from+i, to+i);
 
@@ -1903,7 +1979,7 @@ scrolls(int inserts)	/* returns true if it does something */
 		    /* FIXME: color */
 		    for (i = to; i < from; i++)
 			for (j = 0; j < term.t_ncol; j++)
-			    pscreen[i]->v_attrs[j] = 0;
+			    CELL_ATTR(i,j) = 0;
 		    for (i = 0; i < count; i++)
 			SWAP_ATTR_PTR(from+i, to+i);
 		}
@@ -2088,9 +2164,9 @@ updateline(
 
     vc  = &vscreen[row]->v_text[colfrom];
     evc = &vscreen[row]->v_text[colto];
-    pc  = &pscreen[row]->v_text[colfrom];
     va  = &vscreen[row]->v_attrs[colfrom];
-    pa  = &pscreen[row]->v_attrs[colfrom];
+    pc  = &CELL_TEXT(row,colfrom);
+    pa  = &CELL_ATTR(row,colfrom);
 
     while (vc < evc) {
 	if (*vc != *pc || VATTRIB(*va) != VATTRIB(*pa)) {
@@ -2105,7 +2181,7 @@ updateline(
     }
 
     if (nchanges > 0)
-	pscreen[row]->v_flag |= VFCHG;
+	MARK_LINE_DIRTY(row);
     vscreen[row]->v_flag &= ~(VFCHG | VFCOL); /* mark virtual line updated */
 }
 
@@ -2136,7 +2212,7 @@ int	colto)		/* first column on screen */
 #if OPT_VIDEO_ATTRS
 	register VIDEO_ATTR *ap1 = VideoAttr(vp1);
 	register VIDEO_ATTR *ap2 = VideoAttr(vp2);
-	int Blank = 0;		/* FIXME: Color? */
+	VIDEO_ATTR Blank = 0;	/* FIXME: Color? */
 #else
 	int rev;		/* reverse video flag */
 	int req;		/* reverse video request flag */
@@ -2166,13 +2242,8 @@ int	colto)		/* first column on screen */
 
 		/* scan through the line and dump it to the screen and
 		   the virtual screen array				*/
-#if DISP_X11
-		x_putline(row, cp1 + xl, colto - xl);
-#endif
 		for (; xl < colto; xl++) {
-#if !DISP_X11
 			TTputc(cp1[xl]);
-#endif
 			++ttcol;
 			cp2[xl] = cp1[xl];
 		}
@@ -2272,13 +2343,8 @@ int	colto)		/* first column on screen */
 		while ((j < xx) && (attr == VATTRIB(ap1[j])))
 			j++;
 		TTattr(attr);
-#if DISP_X11
-		x_putline(row, cp1 + xl, j - xl);
-#endif
 		for (; xl < j; xl++) {
-#if !DISP_X11
 			TTputc(cp1[xl]);
-#endif
 			++ttcol;
 			cp2[xl] = cp1[xl];
 			ap2[xl] = ap1[xl];
@@ -2300,13 +2366,8 @@ int	colto)		/* first column on screen */
 	TTrev(rev);
 #endif
 
-#if DISP_X11
-	x_putline(row, cp1 + xl, xx - xl + 1);
-#endif
 	for (; xl < xr; xl++) {		/* Ordinary. */
-#if !DISP_X11
 		TTputc(cp1[xl]);
-#endif
 		++ttcol;
 		cp2[xl] = cp1[xl];
 	}
@@ -2888,35 +2949,6 @@ bottomleft(void)
 	movecursor(term.t_nrow-1, 0);
 }
 
-/* Erase the message-line from the current position */
-static void
-erase_remaining_msg (int column)
-{
-	beginDisplay();
-#if !OPT_RAMSIZE
-	if (eolexist == TRUE)
-		TTeeol();
-	else
-#endif
-	{
-		register int i;
-#if OPT_RAMSIZE
-		int	limit = global_g_val(GMDRAMSIZE)
-				? LastMsgCol
-				: term.t_ncol - 1;
-#else
-		int	limit = term.t_ncol - 1;
-#endif
-		for (i = ttcol; i < limit; i++)
-			TTputc(' ');
-		ttrow = term.t_nrow-2;	/* force the move! */
-		movecursor(term.t_nrow-1, column);
-	}
-	TTflush();
-	endofDisplay();
-}
-
-
 /*
  * Erase the message line. This is a special routine because the message line
  * is not considered to be part of the virtual screen. It always works
@@ -2926,17 +2958,8 @@ void
 mlerase(void)
 {
 	beginDisplay();
-	if (mpresf != 0) {
-		bottomleft();
-		if (discmd != FALSE) {
-#if	OPT_COLOR
-			TTforg(gfcolor);
-			TTbacg(gbcolor);
-#endif
-			erase_remaining_msg(0);
-			mpresf = 0;
-		}
-	}
+	kbd_erase_to_end(0);
+	kbd_flush();
 	endofDisplay();
 }
 
@@ -3025,6 +3048,9 @@ static void
 mlmsg(const char *fmt, va_list *app)
 {
 	static	int	recur;
+	int	end_at;
+	int	do_crlf = (strchr(fmt, '\n') != 0
+			|| strchr(fmt, '\r') != 0);
 
 	if (recur++) {
 		/*EMPTY*/;
@@ -3042,15 +3068,7 @@ mlmsg(const char *fmt, va_list *app)
 		  dfoutfn = mlsavec;
 		dofmt(fmt,app);
 	} else {
-
-#if	OPT_COLOR
-		/* set up the proper colors for the command line */
-		TTforg(gfcolor);
-		TTbacg(gbcolor);
-#endif
-
 		beginDisplay();
-		bottomleft();
 
 		kbd_expand = -1;
 #if	OPT_POPUP_MSGS
@@ -3067,13 +3085,20 @@ mlmsg(const char *fmt, va_list *app)
 #endif
 		  dfoutfn = kbd_putc;
 
-		dofmt(fmt,app);
-		kbd_expand = 0;
+		if (*fmt != '\n') {
+			kbd_erase_to_end(0);
+			dofmt(fmt,app);
+			kbd_expand = 0;
 
-		/* if we can, erase to the end of screen */
-		erase_remaining_msg(ttcol);
-		mpresf = (mpresf >= 0) ? ttcol : -ttcol;
-		mlsave[0] = EOS;
+			/* if we can, erase to the end of screen */
+			end_at = wminip->w_dot.o;
+			kbd_erase_to_end(end_at);
+			mlsave[0] = EOS;
+			kbd_flush();
+		}
+		if (do_crlf) {
+			kbd_openup();
+		}
 		endofDisplay();
 	}
 	recur--;
@@ -3251,17 +3276,13 @@ start_working(void)
 static void
 stop_working(void)
 {
-	if (mpresf < 0) {	/* erase leftover working-message */
+	if (mpresf) {	/* erase leftover working-message */
 		int	save_row = ttrow;
 		int	save_col = ttcol;
-		int	erase_at = -(mpresf+1);
-		if (erase_at < save_col && reading_msg_line)
-			erase_at = save_col;
-		movecursor(term.t_nrow-1, erase_at);
-		erase_remaining_msg(erase_at);
+		kbd_overlay(0);
+		kbd_flush();
 		movecursor(save_row, save_col);
 		TTflush();
-		mpresf = 0;
 	}
 }
 
@@ -3304,37 +3325,30 @@ imworking (int ACTUAL_SIG_ARGS GCC_UNUSED)
 		if (skip) {
 			skip = FALSE;
 		} else {
-			int	save_row = ttrow;
-			int	save_col = ttcol;
-			int	show_col = LastMsgCol - 10;
-
-			if (show_col < 0)
-				show_col = 0;
-			movecursor(term.t_nrow-1, show_col);
+			char	result[20];
+			result[0] = EOS;
 			if (cur_working != 0
 			 && cur_working != old_working) {
 				char	temp[20];
 				int	len = cur_working > 999999L ? 10 : 6;
 
 				old_working = cur_working;
-				kbd_puts(right_num(temp, len, cur_working));
+				strcat(result, right_num(temp, len, cur_working));
 				if (len == 10)
 					/*EMPTY*/;
 				else if (max_working != 0) {
-					kbd_putc(' ');
-					kbd_puts(right_num(temp, 2,
+					strcat(result, " ");
+					strcat(result, right_num(temp, 2,
 						(100 * cur_working) / max_working));
-					kbd_putc('%');
+					strcat(result, "%");
 				} else
-					kbd_puts(" ...");
+					strcat(result, " ...");
 			} else {
-				kbd_puts(msg[ flip]);
-				kbd_puts(msg[!flip]);
+				strcat(result, msg[ flip]);
+				strcat(result, msg[!flip]);
 			}
-			movecursor(save_row, save_col);
-			if (mpresf >= 0)
-				mpresf = -(mpresf+1);
-			TTflush();
+			kbd_overlay(result);
+			kbd_flush();
 #if DISP_X11
 			x_working();
 #endif

@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.107 1997/10/06 23:30:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.108 1997/11/01 01:48:53 tom Exp $
  *
  */
 
@@ -125,6 +125,7 @@ ltextfree(register LINE *lp, register BUFFER *bp)
 
 	ltextp = (UCHAR *)lp->l_text;
 	if (ltextp) {
+		lp->l_text = NULL;
 		if (bp->b_ltext) { /* could it be in the big range? */
 			if (ltextp < bp->b_ltext || ltextp >= bp->b_ltext_end) {
 				poison(ltextp, lp->l_size);
@@ -136,7 +137,6 @@ ltextfree(register LINE *lp, register BUFFER *bp)
 			poison(ltextp, lp->l_size);
 			free((char *)ltextp);
 		}
-		lp->l_text = NULL;
 	} /* else nothing to free */
 }
 

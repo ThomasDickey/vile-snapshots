@@ -1,4 +1,4 @@
-MANIFEST for vile, version v7_2m
+MANIFEST for vile, version v7_2n
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -79,6 +79,7 @@ modetbl                         used by 'mktbls' to generate mode tables
 msgs.c                          pop-up message support
 npopen.c                        pipe-command support
 ntconio.c                       Win32 console terminal driver
+ntwinio.c                       GUI terminal driver for WinNT
 oneliner.c                      commands that operate upon single lines
 opers.c                         operator-commands (that use motions)
 os2pipe.c                       OS/2 pipe support
@@ -88,6 +89,7 @@ path.c                          functions that manipulate pathnames
 perl.xs                         Perl/C interface wrapper
 pictmode.rc                     macros to support "picture-mode" editing
 proto.h                         function prototypes
+pscreen.h                       interface for PSCREEN struct
 ptypemap                        perl-interface type map
 random.c                        miscellaneous functions
 regexp.c                        regular expression functions

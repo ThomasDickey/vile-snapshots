@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.163 1997/10/25 12:53:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.164 1997/11/06 23:57:08 tom Exp $
  *
  */
 
@@ -1140,9 +1140,9 @@ namebuffer(int f GCC_UNUSED, int n GCC_UNUSED)	/*	Rename the current buffer	*/
 #if OPT_NAMEBST
 	if (is_scratchname(curbp->b_bname)) {
 		char procname[NBUFN];
-		if (rename_namebst(&namebst,
-				strip_brackets(procname, curbp->b_bname),
-				bufn) != TRUE)
+		(void) strip_brackets(procname, curbp->b_bname);
+		if (lookup_namebst(TRUE, namebst, procname)
+		 && rename_namebst(&namebst, procname, bufn) != TRUE)
 			return FALSE;
 	}
 #endif

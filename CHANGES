@@ -1,5 +1,27 @@
 Changes for vile 7.3 (released ??? ??? ??, 1997)
 
+ (tom)	971108 (n)
+ 	+ more CSet unsigned/signed compiler warning fixes (estruct.h)
+ 	+ don't reopen terminal in ansi.c if it is already open.
+ 	+ correct handling of rename-buffer when it is a scratch buffer that
+	  does not happen to be a stored procedure.
+	+ recorrect lookup_namebst() call in engl2fnc(); it should always allow
+	  partial match.  Fixed by adding a third mode where the lexical first
+	  match will be returned rather than the middle one in a range.
+ 	+ correct tab-position in ntconio.c
+ 	+ modify borland.c to reset colors when exiting or running a shell.
+	+ change tcapkopen() to reflect possibility that terminal
+	  initialization string moves the cursor.
+ 	+ add simple gui terminal driver for WinNT (ntwinio.c, makefile.wnt).
+	  Built with Microsoft Visual C++ 4.1, both with IDE and makefile.wnt.
+	  Use "nmake -f makefile.wnt cfg=ntvile".
+	+ integrated related patch by Clark Morgan for repainting the screen
+	  correctly after a :stop command. 
+ 	+ rewrote internals of command/message line to make it a one-line
+	  minibuffer, including mods for OPT_RAMSIZE and OPT_WORKING.  Tested
+	  Linux (for tcap.c, x11.c, ansi.c), OS/2 (os2vio.c), WinNT (ntconio.c,
+	  ntwinio.c), VMS (vmsvt.c), djgpp (borland.c).
+
  (tom)	971028 (m)
 	+ correct inverted parameter in call on lookup_namebst().
 	+ compiler warnings from Solaris (unsigned vs signed in bind.c, ifdef

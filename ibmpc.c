@@ -8,7 +8,7 @@
  * Modified by Pete Ruczynski (pjr) for auto-sensing and selection of
  * display type.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.81 1997/05/26 11:33:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.83 1997/11/08 00:56:36 tom Exp $
  *
  */
 
@@ -782,8 +782,8 @@ ibmclose(void)
 	current_ibmtype = ctype; /* ...so subsequent TTopen restores us */
 
 	dtype = CDMONO;		/* ...force monochrome */
-	bottomleft();
-	TTeeol();		/* ...force colors _off_ */
+	kbd_erase_to_end(0);	/* ...force colors _off_ */
+	kbd_flush();
 }
 
 void

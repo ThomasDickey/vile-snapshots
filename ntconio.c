@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.23 1997/05/26 11:46:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.24 1997/10/03 21:16:16 tom Exp $
  *
  */
 
@@ -259,7 +259,7 @@ ntputc(int ch)
 		scflush();
 		do
 			linebuf[bufpos++] = ' ';
-		while (bufpos % 8 != 0);
+		while ((ccol + bufpos) % 8 != 0);
 		break;
 
 	case '\r':
