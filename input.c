@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.261 2003/07/27 19:06:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.262 2004/03/21 18:27:20 tom Exp $
  *
  */
 
@@ -1228,7 +1228,7 @@ isMiniEdit(int c)
     const CMDFUNC *cfp = ((miniedit)
 			  ? CommandKeyBinding(c)
 			  : InsertKeyBinding(c));
-    return ((c == editc) || ((cfp != 0) && isMiniMotion(cfp->c_flags)));
+    return ((c == editc) || miniedit || ((cfp != 0) && isMiniMotion(cfp->c_flags)));
 }
 
 /*
@@ -1379,14 +1379,18 @@ editMinibuffer(TBUFF ** buf, unsigned *cpos, int c, int margin, int quoted)
 	edited = editMinibuffer(buf, cpos, fakeKeyCode(&f_forwchar_to_eol),
 				margin, quoted);
 	miniedit = FALSE;
+    } else if (isSpecial(c) || (miniedit && (cfp != 0))) {
 	/*
 	 * Reject other non-motion commands for now.  We haven't a good way to
 	 * update the minibuffer if someone inserts a newline, so we couldn't
 	 * implement insert except as a special case (see above).
 	 */
-    } else if (isSpecial(c) || (miniedit && (cfp != 0))) {
 	kbd_alarm();
     } else {
+	/*
+	 * If it is not a command, drop out of miniedit mode and append the
+	 * character to the buffer.
+	 */
 	LINE *lp = DOT.l;
 	miniedit = FALSE;
 	if (!vl_echo || qpasswd) {

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.264 2003/11/03 01:33:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.269 2004/03/21 23:59:08 tom Exp $
  *
  */
 
@@ -43,7 +43,8 @@ static const char **my_varmodes;	/* list for modename-completion */
 
 #if OPT_MAJORMODE
 typedef struct {
-    char *name;			/* copy of MAJORMODE.name */
+    char *shortname;		/* copy of MAJORMODE.shortname */
+    char *longname;		/* copy of MAJORMODE.longname */
     MAJORMODE *data;		/* pointer to actual data */
     int init;			/* predefined during initialization */
     int flag;			/* true when majormode is active/usable */
@@ -480,7 +481,7 @@ makemodelist(int local, void *ptr)
     if (local && (localbp->majr != 0)) {
 	bprintf("--- \"%s\" settings, if different than \"%s\" majormode %*P\n",
 		localbp->b_bname,
-		localbp->majr->name,
+		localbp->majr->shortname,
 		term.cols - 1, '-');
 	globl_b_vals = get_sm_vals(localbp->majr);
     } else
@@ -1314,12 +1315,12 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 	    if (my_majormodes != 0) {
 		size_t n = strlen(rp);
 
-		for (j = 0; my_majormodes[j].name; j++) {
+		for (j = 0; my_majormodes[j].shortname; j++) {
 		    MAJORMODE_LIST *p = my_majormodes + j;
-		    size_t len = strlen(p->name);
+		    size_t len = strlen(p->shortname);
 
 		    if (n >= len
-			&& !strncmp(rp, p->name, len)
+			&& !strncmp(rp, p->shortname, len)
 			&& (lookup_valnames(rp, p->qual)) >= 0) {
 			args->names = p->qual;
 			args->global = p->data->mm.mv;
@@ -1343,7 +1344,7 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 #if OPT_MAJORMODE
 		if (mode_class == 3) {
 		    const char *it = ((bp->majr != 0)
-				      ? bp->majr->name
+				      ? bp->majr->shortname
 				      : "?");
 		    make_global_val(args->local, args->global, 0);
 		    if (global) {
@@ -1370,13 +1371,13 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 	int k = 0;
 	size_t n = strlen(rp);
 
-	for (j = 0; my_majormodes[j].name; j++) {
+	for (j = 0; my_majormodes[j].shortname; j++) {
 	    MAJORMODE_LIST *p = my_majormodes + j;
 	    struct VAL *my_vals = get_sm_vals(p->data);
-	    size_t len = strlen(p->name);
+	    size_t len = strlen(p->shortname);
 
 	    if (n >= len
-		&& !strncmp(rp, p->name, len)
+		&& !strncmp(rp, p->shortname, len)
 		&& (k = lookup_valnames(rp + len + (rp[len] == '-'),
 					b_valnames)) >= 0
 		&& is_local_val(my_vals, k)) {
@@ -1384,7 +1385,7 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 		if (global == FALSE) {
 		    if (valid_buffer(bp)
 			&& (bp->majr == 0
-			    || strcmp(bp->majr->name, p->name))) {
+			    || strcmp(bp->majr->shortname, p->shortname))) {
 			TRACE(("...not applicable\n"));
 			return FALSE;
 		    }
@@ -2168,7 +2169,11 @@ static char *
 per_major(char *dst, const char *majr, int code, int brief)
 {
     if (brief) {
-	(void) lsprintf(dst, "%s%s", majr, m_valnames[code].shortname);
+	if (!strcmp(m_valnames[code].shortname, "X")) {
+	    *dst = EOS;
+	} else {
+	    (void) lsprintf(dst, "%s%s", majr, m_valnames[code].shortname);
+	}
     } else {
 	(void) lsprintf(dst, "%s-%s", majr, m_valnames[code].name);
     }
@@ -2228,7 +2233,7 @@ count_majormodes(void)
     size_t n = 0;
 
     if (my_majormodes != 0) {
-	for (n = 0; my_majormodes[n].name != 0; n++)
+	for (n = 0; my_majormodes[n].shortname != 0; n++)
 	    continue;
     }
     return n;
@@ -2241,7 +2246,7 @@ get_mm_number(int n, int m)
 
     if (mv[m].vp->i != 0) {
 	TRACE(("get_mm_number(%s) %d\n",
-	       my_majormodes[n].name,
+	       my_majormodes[n].shortname,
 	       mv[m].vp->i));
 	return mv[m].vp->i;
     }
@@ -2262,7 +2267,7 @@ get_mm_rexp(int n, int m)
 	&& mv[m].vp->r->pat[0] != 0
 	&& mv[m].vp->r->reg != 0) {
 	TRACE(("get_mm_rexp(%s) %s\n",
-	       my_majormodes[n].name,
+	       my_majormodes[n].shortname,
 	       mv[m].vp->r->pat));
 	return mv[m].vp->r->reg;
     }
@@ -2276,7 +2281,7 @@ get_mm_string(int n, int m)
 
     if (mv[m].vp->p != 0) {
 	TRACE(("get_mm_string(%s) %s\n",
-	       my_majormodes[n].name,
+	       my_majormodes[n].shortname,
 	       mv[m].vp->p));
 	return mv[m].vp->p;
     }
@@ -2309,7 +2314,7 @@ show_majormode_order(char *tag)
     tb_sappend0(&order, tag);
     for (n = 0; majormodes_order[n] >= 0; n++) {
 	tb_sappend0(&order, " ");
-	tb_sappend0(&order, my_majormodes[majormodes_order[n]].name);
+	tb_sappend0(&order, my_majormodes[majormodes_order[n]].shortname);
     }
     TRACE(("%s\n", tb_values(order)));
 }
@@ -2328,11 +2333,11 @@ put_majormode_before(unsigned j, char *s)
 
     TRACE(("put_majormode_before(%d:%s, %s)\n",
 	   j,
-	   my_majormodes[majormodes_order[j]].name,
+	   my_majormodes[majormodes_order[j]].shortname,
 	   s));
 
     for (k = 0; (kk = majormodes_order[k]) >= 0; k++) {
-	t = my_majormodes[kk].name;
+	t = my_majormodes[kk].shortname;
 	if (strcmp(t, s) <= 0
 	    && (found < 0 || strcmp(told, t) < 0)) {
 	    found = k;
@@ -2351,7 +2356,7 @@ put_majormode_before(unsigned j, char *s)
 	show_majormode_order("after:");
     } else if (found < 0) {
 	TPRINTF(("cannot put %s before %s (not found)\n",
-		 my_majormodes[majormodes_order[j]].name,
+		 my_majormodes[majormodes_order[j]].shortname,
 		 s));
 	TRACE(("...did not find %s\n", s));
     }
@@ -2370,13 +2375,13 @@ put_majormode_after(unsigned j, char *s)
 
     TRACE(("put_majormode_after(%d:%s, %s)\n",
 	   j,
-	   my_majormodes[majormodes_order[j]].name,
+	   my_majormodes[majormodes_order[j]].shortname,
 	   s));
 
     for (k = count_majormodes() - 1;
 	 k >= 0 && (kk = majormodes_order[k]) >= 0;
 	 k--) {
-	t = my_majormodes[kk].name;
+	t = my_majormodes[kk].shortname;
 	if (strcmp(t, s) >= 0
 	    && (found < 0 || strcmp(told, t) > 0)) {
 	    found = k;
@@ -2395,7 +2400,7 @@ put_majormode_after(unsigned j, char *s)
 	show_majormode_order("after:");
     } else if (found < 0) {
 	TPRINTF(("cannot put %s after %s (not found)\n",
-		 my_majormodes[majormodes_order[j]].name,
+		 my_majormodes[majormodes_order[j]].shortname,
 		 s));
 	TRACE(("...did not find %s\n", s));
     }
@@ -2529,7 +2534,7 @@ found_per_submode(const char *majr, int code)
 static size_t
 insert_per_major(size_t count, const char *name)
 {
-    if (name != 0) {
+    if (name != 0 && *name != EOS) {
 	size_t j, k;
 	int found;
 
@@ -2580,8 +2585,8 @@ lookup_mm_data(const char *name)
 {
     size_t n;
     if (my_majormodes != 0) {
-	for (n = 0; my_majormodes[n].name != 0; n++) {
-	    if (!strcmp(name, my_majormodes[n].name))
+	for (n = 0; my_majormodes[n].shortname != 0; n++) {
+	    if (!strcmp(name, my_majormodes[n].shortname))
 		return my_majormodes[n].data;
 	}
     }
@@ -2598,8 +2603,8 @@ lookup_mm_list(const char *name)
 {
     size_t n;
     if (my_majormodes != 0) {
-	for (n = 0; my_majormodes[n].name != 0; n++) {
-	    if (!strcmp(name, my_majormodes[n].name))
+	for (n = 0; my_majormodes[n].shortname != 0; n++) {
+	    if (!strcmp(name, my_majormodes[n].shortname))
 		return my_majormodes + n;
 	}
     }
@@ -2616,8 +2621,8 @@ predef_majormode(const char *name)
     int status = FALSE;
 
     if (my_majormodes != 0) {
-	for (n = 0; my_majormodes[n].name != 0; n++) {
-	    if (!strcmp(name, my_majormodes[n].name)) {
+	for (n = 0; my_majormodes[n].shortname != 0; n++) {
+	    if (!strcmp(name, my_majormodes[n].shortname)) {
 		status = my_majormodes[n].init;
 		break;
 	    }
@@ -2640,10 +2645,21 @@ check_majormode_name(const char *name, int defining)
     return status;
 }
 
+/* name-completion for "longname" */
 int
 major_complete(DONE_ARGS)
 {
-    return kbd_complete(PASS_DONE_ARGS, (const char *) &my_majormodes[0],
+    return kbd_complete(PASS_DONE_ARGS,
+			(const char *) &my_majormodes[0].longname,
+			sizeof(my_majormodes[0]));
+}
+
+/* name-completion for "shortname" */
+static int
+short_major_complete(DONE_ARGS)
+{
+    return kbd_complete(PASS_DONE_ARGS,
+			(const char *) &my_majormodes[0].shortname,
 			sizeof(my_majormodes[0]));
 }
 
@@ -2661,7 +2677,7 @@ prompt_majormode(char **result, int defining)
 			    KBD_NORMAL,		/* FIXME: KBD_MAYBEC if !defining */
 			    (defining || clexec)
 			    ? no_completion
-			    : major_complete)) == TRUE) {
+			    : short_major_complete)) == TRUE) {
 	/* check for legal name (alphanumeric) */
 	if ((status = is_identifier(tb_values(cbuf))) != TRUE) {
 	    mlwarn("[Not an identifier: %s]", tb_values(cbuf));
@@ -2892,8 +2908,8 @@ attach_mmode(BUFFER *bp, const char *name)
 
     if (valid_buffer(bp)) {
 	if (bp->majr != 0
-	    && strcmp(bp->majr->name, name) != 0)
-	    (void) detach_mmode(bp, bp->majr->name);
+	    && strcmp(bp->majr->shortname, name) != 0)
+	    (void) detach_mmode(bp, bp->majr->shortname);
 
 	TRACE(("attach_mmode '%s' to '%s'\n", name, bp->b_bname));
 	if ((bp->majr = lookup_mm_data(name)) != 0) {
@@ -2946,8 +2962,8 @@ detach_mmode(BUFFER *bp, const char *name)
 
     if (valid_buffer(bp)
 	&& (mp = bp->majr) != 0
-	&& !strcmp(mp->name, name)) {
-	TRACE(("detach_mmode '%s', given '%s'\n", name, mp->name));
+	&& !strcmp(mp->shortname, name)) {
+	TRACE(("detach_mmode '%s', given '%s'\n", name, mp->shortname));
 	/* readjust the buffer's modes */
 	for (n = 0; n < MAX_B_VALUES; n++) {
 	    if (!is_local_b_val(bp, n)
@@ -2986,11 +3002,11 @@ free_majormode(const char *name)
 
     if (ptr != 0) {
 	int init = TRUE;
-	for (j = 0; my_majormodes[j].name != 0; j++) {
+	for (j = 0; my_majormodes[j].shortname != 0; j++) {
 	    if (my_majormodes[j].data == ptr) {
 		init = my_majormodes[j].init;
 		for_each_buffer(bp) {
-		    if (detach_mmode(bp, my_majormodes[j].name)) {
+		    if (detach_mmode(bp, my_majormodes[j].shortname)) {
 			set_winflags(TRUE, WFHARD | WFMODE);
 		    }
 		}
@@ -3009,13 +3025,14 @@ free_majormode(const char *name)
 		    free(TYPECAST(char, my_majormodes[j].subq[k].shortname));
 		}
 		free_sm_vals(ptr);
-		free(ptr->name);
+		free(ptr->shortname);
+		free(ptr->longname);
 		free(TYPECAST(char, ptr));
 		endofDisplay();
 
 		do {
 		    my_majormodes[j] = my_majormodes[j + 1];
-		} while (my_majormodes[j++].name != 0);
+		} while (my_majormodes[j++].shortname != 0);
 		break;
 	    }
 	}
@@ -3190,12 +3207,12 @@ makemajorlist(int local, void *ptr GCC_UNUSED)
 	int count = count_majormodes();
 	if (show_active_majormodes(0))
 	    bputc('\n');
-	for (j = 0; my_majormodes[j].name != 0; j++) {
+	for (j = 0; my_majormodes[j].shortname != 0; j++) {
 	    if (local)
-		TheMajor = my_majormodes[j].name;
+		TheMajor = my_majormodes[j].shortname;
 	    data = my_majormodes[j].data;
 	    bprintf("--- \"%s\" majormode settings %*P(%d:%d)%*P\n",
-		    my_majormodes[j].name,
+		    my_majormodes[j].shortname,
 		    term.cols - 12, '-',
 		    find_majormode_order(j) + 1,
 		    count,
@@ -3249,10 +3266,11 @@ list_majormodes(int f, int n GCC_UNUSED)
 }
 
 int
-alloc_mode(const char *name, int predef)
+alloc_mode(const char *shortname, int predef)
 {
     size_t j, k;
     int n;
+    char longname[NSTRING];
     char temp[NSTRING];
 
     if (major_valnames == 0) {
@@ -3268,15 +3286,15 @@ alloc_mode(const char *name, int predef)
 	endofDisplay();
 	for (j = k++; j != 0; j--) {
 	    major_valnames[j] = major_valnames[j - 1];
-	    if (strcmp(major_valnames[j - 1].shortname, name) < 0) {
+	    if (strcmp(major_valnames[j - 1].shortname, shortname) < 0) {
 		break;
 	    }
 	}
     }
 
-    (void) majorname(temp, name, TRUE);
-    major_valnames[j].name = strmalloc(temp);
-    major_valnames[j].shortname = strmalloc(name);
+    (void) majorname(longname, shortname, TRUE);
+    major_valnames[j].name = strmalloc(longname);
+    major_valnames[j].shortname = strmalloc(shortname);
     major_valnames[j].type = VALTYPE_MAJOR;
     major_valnames[j].side_effect = chgd_major_w;
 
@@ -3299,18 +3317,26 @@ alloc_mode(const char *name, int predef)
 	endofDisplay();
 	for (j = k++; j != 0; j--) {
 	    my_majormodes[j] = my_majormodes[j - 1];
-	    if (strcmp(my_majormodes[j - 1].name, name) < 0) {
+	    if (strcmp(my_majormodes[j - 1].shortname, shortname) < 0) {
 		break;
 	    }
 	}
     }
 
     beginDisplay();
-    my_majormodes[j].data = typecalloc(MAJORMODE);
-    my_majormodes[j].name = my_majormodes[j].data->name = strmalloc(name);
+
+    my_majormodes[j].shortname = strmalloc(shortname);
+    my_majormodes[j].longname = strmalloc(longname);
+
     my_majormodes[j].init = predef;
     my_majormodes[j].flag = TRUE;
+
+    my_majormodes[j].data = typecalloc(MAJORMODE);
+    my_majormodes[j].data->shortname = my_majormodes[j].shortname;
+    my_majormodes[j].data->longname = my_majormodes[j].longname;
+
     memset(my_majormodes + k, 0, sizeof(*my_majormodes));
+
     endofDisplay();
 
     /* copy array to get types, then overwrite the name-pointers */
@@ -3330,9 +3356,9 @@ alloc_mode(const char *name, int predef)
     for (k = 0; k < MAX_M_VALUES; k++) {
 	reset_qualifier(m_valnames + k, my_majormodes[j].data->mm.mv + k);
 	my_majormodes[j].qual[k].name =
-	    strmalloc(per_major(temp, name, k, TRUE));
+	    strmalloc(per_major(temp, shortname, k, TRUE));
 	my_majormodes[j].qual[k].shortname =
-	    strmalloc(per_major(temp, name, k, FALSE));
+	    strmalloc(per_major(temp, shortname, k, FALSE));
     }
 
     /*
@@ -3341,11 +3367,11 @@ alloc_mode(const char *name, int predef)
      */
     if (!predef) {
 	j = extend_mode_list((MAX_M_VALUES + 2) * 2);
-	j = insert_per_major(j, majorname(temp, name, FALSE));
-	j = insert_per_major(j, majorname(temp, name, TRUE));
+	j = insert_per_major(j, majorname(longname, shortname, FALSE));
+	j = insert_per_major(j, majorname(longname, shortname, TRUE));
 	for (n = 0; n < MAX_M_VALUES; n++) {
-	    j = insert_per_major(j, per_major(temp, name, n, TRUE));
-	    j = insert_per_major(j, per_major(temp, name, n, FALSE));
+	    j = insert_per_major(j, per_major(temp, shortname, n, TRUE));
+	    j = insert_per_major(j, per_major(temp, shortname, n, FALSE));
 	}
     }
 
@@ -3519,21 +3545,33 @@ test_by_suffix(int n, BUFFER *bp)
     int result = -1;
 
     if (my_majormodes[n].flag) {
-	regexp *exp = get_mm_rexp(n, MVAL_SUFFIXES);
+	regexp *exp;
 	int savecase = ignorecase;
+	char *fullname = bp->b_fname;
+	TBUFF *savename = 0;
+
 #if OPT_CASELESS || SYS_VMS
 	ignorecase = TRUE;
 #else
 	ignorecase = get_mm_b_val(n, MDIGNCASE);
 #endif
-	if (exp != 0
-	    && regexec(exp, bp->b_fname, (char *) 0, 0, -1)) {
+	if ((exp = b_val_rexp(bp, VAL_STRIPSUFFIX)->reg) != 0
+	    && regexec(exp, fullname, (char *) 0, 0, -1)) {
+	    tb_scopy(&savename, fullname);
+	    strcpy(tb_values(savename) + (exp->startp[0] - fullname),
+		   exp->endp[0]);
+	    fullname = tb_values(savename);
+	}
+
+	if ((exp = get_mm_rexp(n, MVAL_SUFFIXES)) != 0
+	    && regexec(exp, fullname, (char *) 0, 0, -1)) {
 	    TRACE(("test_by_suffix(%s) %s\n",
-		   bp->b_fname,
-		   my_majormodes[n].name));
+		   fullname,
+		   my_majormodes[n].shortname));
 	    result = n;
 	}
 	ignorecase = savecase;
+	tb_free(&savename);
     }
     return result;
 }
@@ -3570,7 +3608,7 @@ test_by_preamble(int n, BUFFER *bp GCC_UNUSED, LINE *lp)
 	    && lregexec(exp, lp, 0, llength(lp))) {
 	    TRACE(("test_by_preamble(%s) %s\n",
 		   bp->b_fname,
-		   my_majormodes[n].name));
+		   my_majormodes[n].shortname));
 	    result = n;
 	}
 	ignorecase = savecase;
@@ -3585,7 +3623,7 @@ need_suffix_and_preamble(int n)
 	&& get_mm_rexp(n, MVAL_SUFFIXES) != 0
 	&& get_mm_rexp(n, MVAL_PREAMBLE) != 0) {
 	TRACE(("need both suffix/preamble for %s\n",
-	       my_majormodes[n].name));
+	       my_majormodes[n].shortname));
 	return TRUE;
     }
     return FALSE;
@@ -3634,8 +3672,8 @@ infer_majormode(BUFFER *bp)
 		}
 	    }
 	    if (result >= 0) {
-		TPRINTF(("...inferred majormode %s\n", my_majormodes[result].name));
-		attach_mmode(bp, my_majormodes[result].name);
+		TPRINTF(("...inferred majormode %s\n", my_majormodes[result].shortname));
+		attach_mmode(bp, my_majormodes[result].shortname);
 	    }
 	}
     }
@@ -3724,7 +3762,7 @@ int
 reset_majormode(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     if (curbp->majr != 0)
-	(void) detach_mmode(curbp, curbp->majr->name);
+	(void) detach_mmode(curbp, curbp->majr->shortname);
     infer_majormode(curbp);
     set_winflags(TRUE, WFMODE);
     return TRUE;
@@ -4267,9 +4305,9 @@ mode_leaks(void)
 #endif
 
 #if OPT_MAJORMODE
-    while (my_majormodes != 0 && my_majormodes->name != 0) {
+    while (my_majormodes != 0 && my_majormodes->shortname != 0) {
 	char temp[NSTRING];
-	free_majormode(strcpy(temp, my_majormodes->name));
+	free_majormode(strcpy(temp, my_majormodes->shortname));
     }
     FreeAndNull(my_majormodes);
 

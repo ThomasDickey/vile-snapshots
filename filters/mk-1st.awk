@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-1st.awk,v 1.10 2003/11/06 00:38:29 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-1st.awk,v 1.11 2004/03/17 22:57:27 tom Exp $
 #
 # Generate makefile lists for vile's external and built-in filters.  We will
 # build each filter only one way (external _or_ built-in).  This script uses
@@ -24,7 +24,7 @@ BEGIN	{
 	!/^#/ {
 	    # command-line parameters aren't available until we're matching
 	    if (first == 1) {
-		Len = split(list,List,/,/)
+		Len = split(list,List,/[, ]/)
 		if (mode == "loadable") {
 		    suffix = "$(so)";
 		} else {

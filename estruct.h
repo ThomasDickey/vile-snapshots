@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.539 2003/11/12 01:51:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.541 2004/03/20 11:48:24 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -551,7 +551,7 @@
 /* the "working..." message -- we must have the alarm() syscall, and
    system calls must be restartable after an interrupt by default or be
    made restartable with sigaction() */
-#define OPT_WORKING (!SMALLER && HAVE_ALARM && HAVE_RESTARTABLE_PIPEREAD)
+#define OPT_WORKING (!SMALLER && defined(HAVE_ALARM) && defined(HAVE_RESTARTABLE_PIPEREAD))
 
 #define OPT_SCROLLBARS (XTOOLKIT | DISP_NTWIN)	/* scrollbars */
 
@@ -1940,13 +1940,14 @@ typedef struct MINORMODE {
 } MINORMODE;
 
 typedef struct {
-	char *name;
+	char *shortname;	/* name without "mode" suffix */
+	char *longname;		/* name with "mode" suffix */
 	M_VALUES mm;
 	Q_VALUES mq;
 	MINORMODE *sm;
 } MAJORMODE;
 
-#define is_c_mode(bp) (bp->majr != 0 && !strcmp(bp->majr->name, "c"))
+#define is_c_mode(bp) (bp->majr != 0 && !strcmp(bp->majr->shortname, "c"))
 #define fix_cmode(bp,value)	/* nothing */
 #define for_each_modegroup(bp,n,m,vals) \
 	for (vals = get_submode_vals(bp, n = m); vals != 0; vals = get_submode_valx(bp, m, &n))

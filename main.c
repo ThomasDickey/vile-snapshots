@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.513 2003/11/12 21:09:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.515 2004/03/21 22:43:36 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1014,6 +1014,8 @@ no_memory(const char *s)
 #define DFT_CSUFFIX "\\.\\(\\([CchisS]\\)\\|CC\\|cc\\|cpp\\|cxx\\|hxx\\|scm\\)$"
 #endif
 
+#define DFT_STRIPSUFFIX "\\(\\.orig\\|~\\)$"
+
 #define DFT_FENCE_CHARS "{}()[]"
 #define DFT_CINDENT_CHARS ":#" DFT_FENCE_CHARS
 
@@ -1225,11 +1227,17 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #ifdef VAL_AUTOCOLOR
 	    setINT(VAL_AUTOCOLOR, 0);	/* auto syntax coloring timeout */
 #endif
-#ifdef VAL_HILITEMATCH
-	    setINT(VAL_HILITEMATCH, 0);		/* no hilite */
+#ifdef VAL_C_SWIDTH
+	    setINT(VAL_C_SWIDTH, 8);	/* C file shiftwidth */
+#endif
+#ifdef VAL_C_TAB
+	    setINT(VAL_C_TAB, 8);	/* C file tab stop */
 #endif
 #ifdef VAL_FENCE_LIMIT
 	    setINT(VAL_FENCE_LIMIT, 10);	/* fences iteration timeout */
+#endif
+#ifdef VAL_HILITEMATCH
+	    setINT(VAL_HILITEMATCH, 0);		/* no hilite */
 #endif
 #ifdef VAL_LOCKER
 	    setTXT(VAL_LOCKER, "");	/* Name locker */
@@ -1240,11 +1248,8 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #ifdef VAL_RECORD_LENGTH
 	    setINT(VAL_RECORD_LENGTH, 0);
 #endif
-#ifdef VAL_C_SWIDTH
-	    setINT(VAL_C_SWIDTH, 8);	/* C file shiftwidth */
-#endif
-#ifdef VAL_C_TAB
-	    setINT(VAL_C_TAB, 8);	/* C file tab stop */
+#ifdef VAL_STRIPSUFFIX
+	    setPAT(VAL_STRIPSUFFIX, DFT_STRIPSUFFIX);
 #endif
 	default:
 	    setIntValue(d, 0);
@@ -1312,7 +1317,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #endif
 
 #define DFT_MLFORMAT \
-"%-%i%- %b %m:: :%f:is : :%=%F: : :%l:(:,:%c::) :%p::% :%S%-%-%|"
+"%-%i%- %b %m:: :%f:is : :%=%F: : :%l:(:,:%c::) :%p::% :%C:char ::%S%-%-%|"
 
 #define DFT_POSFORMAT \
 "Line %{$curline}d of %{$blines}d,\

@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.148 2003/11/12 01:55:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.149 2004/03/18 01:15:46 tom Exp $
  *
  */
 
@@ -1803,7 +1803,7 @@ attribute_directly(void)
 
 	    if (filtername == 0
 		&& curbp->majr != 0)
-		filtername = curbp->majr->name;
+		filtername = curbp->majr->shortname;
 
 	    if (filtername != 0
 		&& flt_start(filtername)) {

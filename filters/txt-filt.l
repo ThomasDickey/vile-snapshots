@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.16 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.17 2004/03/21 15:08:31 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an ordinary text file
  */
@@ -22,7 +22,7 @@ static int mixedcase(const char *name);
 
 %}
 
-COMMENT		^-[-]+[ \t]+[^\n]+\n
+COMMENT		(^(-[-]+[ \t]+[^\n]+))|([ \t]*-[ \t-]*)\n
 
 KEYWORD		([a-zA-Z_][a-zA-Z0-9_.]*|[A-Z][+/&][A-Z])
 

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.383 2003/11/12 22:08:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.385 2004/03/21 22:21:11 tom Exp $
  *
  */
 
@@ -2480,7 +2480,7 @@ mlfs_skipfix(const char **fsp)
 	if (b_val(bp, mode)) PutModename("%c%s", name)
 
 #if OPT_MAJORMODE
-#define PutMajormode(bp) if (bp->majr != 0) PutModename("%c%smode", bp->majr->name)
+#define PutMajormode(bp) if (bp->majr != 0) PutModename("%c%s", bp->majr->longname)
 #else
 #define PutMajormode(bp)	/*nothing */
 #endif
@@ -2768,6 +2768,20 @@ special_formatter(TBUFF ** result, const char *fs, WINDOW *wp)
 		    mlfs_skipfix(&fs);
 		break;
 
+#endif
+#ifdef WMDSHOWCHAR
+	    case 'C':
+		if (w_val(wp, WMDSHOWCHAR) && !is_empty_buf(wp->w_bufp)) {
+		    int curchar = (is_at_end_of_line(wp->w_dot)
+				   ? '\n'
+				   : char_at(wp->w_dot));
+		    sprintf(temp, "%02X", curchar);
+		    mlfs_prefix(&fs, &ms, lchar);
+		    ms = lsprintf(ms, "%s", temp);
+		    mlfs_suffix(&fs, &ms, lchar);
+		} else
+		    mlfs_skipfix(&fs);
+		break;
 #endif
 	    case 'P':
 		ms = lsprintf(ms, "%d", percentage(wp));
@@ -3363,6 +3377,10 @@ update(int force /* force update past type ahead? */ )
 		wp->w_ruler_col = col;
 		wp->w_flag |= WFMODE;
 	    }
+#ifdef WMDSHOWCHAR
+	} else if (w_val(wp, WMDSHOWCHAR)) {
+	    wp->w_flag |= WFMODE;
+#endif
 	} else if (wp->w_flag & WFSTAT) {
 	    wp->w_flag |= WFMODE;
 	}

@@ -74,6 +74,11 @@ General Remarks
 	you have two windows to the same buffer, and make a change in one,
 	you can undo it in the other.
 
+	vile supports many, many "modes" (aka options), which are
+	eventually explained in the section entitled "Editor modes".  But
+	do note that this help file makes references to modes before the
+	concept is fully described.  It's a chicken and egg problem....
+
 	vile is 8-bit clean, allowing it to be used more easily at non-
 	English speaking sites.  See the section on "8-Bit Operation" for
 	more information.
@@ -1419,6 +1424,9 @@ Editor modes
 	ignorecase (ic) Text searches normally match the pattern exactly.
 		With this set, searches are case-insensitive. (B)
 
+	ignoresuffix (is) Ignore (remove) the given pattern from a filename
+		before matching it for majormode suffixes.  (B)
+
 	implybuffer (ib) Causes vile to create a buffer when you write to a new
 		file, or read from one (e.g., with ":r").  (U)
 
@@ -1618,6 +1626,9 @@ Editor modes
 		number of columns a line will shift by if the '<<' or '>>'
 		commands are used, and it chooses the next column stop for
 		the cursor if a '^T' or '^D' is typed during insert mode. (B)
+
+	showchar (sc) Controls whether the modeline can show the %C formatted
+		character at the current editing position (W).
 
 	showformat (sf) Controls when/whether recordseparator information is
 		shown in the status line.  Values are "always", "differs" to
@@ -3415,25 +3426,26 @@ Mode line customization
 	format specifiers which may appear in the format control strings
 	are as follows:
 
+		%b	buffer name
+		%c	column number if "ruler" is set
+		%C	character value at current edit-position.
+		%f	file name when not internal buffer and when not the
+			same as the buffer name.
+		%F	internal buffer name
 		%i	insert/overwrite/replace mode indicator, displayed
 			only when in insert, overwrite, or replace mode.
 			When not in one of these modes, the separator
 			character (often "-", "=", or " ") will be displayed.
-		%b	buffer name
-		%f	file name when not internal buffer and when not the
-			same as the buffer name.
-		%F	internal buffer name
+		%l	line number to be displayed if "ruler" is set
+		%L	number of lines in buffer, if ruler is set
 		%m	major mode(s), e.g., cmode, view-only, etc.  Displayed
 			in square brackets.
-		%l	line number to be displayed if "ruler" is set
-		%c	column number if "ruler" is set
 		%p	line number as percentage of number of lines if
 			"ruler" is set
 		%P	line number as percentage of number of lines
 		%S	rough position of window with respect to buffer (top,
 			bot, all, emp, mid) when ruler not set (or ruler is
 			set, but buffer is empty).
-		%L	number of lines in buffer, if ruler is set
 		%=	middle separator; should appear at most once in a
 			format string.  This indicates where to separate the
 			left and right hand portions of the mode line with a
@@ -3445,7 +3457,7 @@ Mode line customization
 		%:	colon
 		%{name}	any internal mode/variable value, given its name
 
-	Some of the format specifiers (%f, %F, %m, %l, %c, %p, %S, %L) are
+	Some of the format specifiers (%f, %F, %m, %l, %c, %p, %S, %L, %C) are
 	conditionally displayed.  For example "%m" will display the major
 	modes only if there are some major modes set or if the buffer has
 	been modified (which is sort of a major mode).  Similarly, "%F" and
@@ -3466,7 +3478,7 @@ Mode line customization
 
 	The default format control string is as follows:
 
-	    "%-%i%- %b %m:: :%f:is : :%=%F: : :%l:(:,:%c::) :%p::% :%S%-%-%|"
+	    "%-%i%- %b %m:: :%f:is : :%=%F: : :%l:(:,:%c::) :%p::% :%C:char ::%S%-%-%|"
 
 	Mode lines for some versions of vile previous to version 4.7 can be
 	obtained with the following format string.  This will remove the
@@ -3894,6 +3906,9 @@ Syntax coloring
 					 majormode and filter exist for same.
 	    HighlightClear       ^X-Q    Clears the current buffer's color
 					 attributes.
+	    set-highlighting     <none>  Attach a major mode to a buffer
+	    			         and re-color same.  More about
+					 this below.
 
 	For a simple go/no-go test, do:
 
@@ -4040,6 +4055,26 @@ Syntax coloring
 
 	- Some users have made the mistake of explicitly specifying
 	  a filter via the filtername mode.  Don't do that.
+
+	Attaching/Forcing a buffer's majormode
+	--------------------------------------
+	For the most part, when vile visits a file, the correct majormode
+	is attached to the file's buffer and appropriate syntax coloring
+	ensues.  But there are times when vile may choose the wrong
+	majormode and/or not specify one at all (the latter case most
+	likely occurs when the file's suffix doesn't match any of the
+	possibilities listed in filters.rc).  The result is either
+	inappropriate or _no_ highlighting.  In this situation, use the
+	"set-highlighting" macro to explicitly specify the desired
+	majormode.
+
+	For example, suppose I'm editing an older copy of a C++ source file
+	called main.cpp, which has been renamed to main.cpp.old .  In this
+	scenario, vile will not attach a majormode to main.cpp.old's
+	buffer and consequently will not color the buffer.  To set the
+	proper majormode and force syntax coloring, simply type:
+
+		:set-highlighting cpp
 
 	Man pages
 	---------
@@ -4272,7 +4307,7 @@ Working in a project hierarchy
 	Note 1:  The "d" option specifies that find should restrict its
 	search solely to files of type "d" (i.e., directories).  The "f"
 	option adds a "-follow" operand to the commandline, which directs
-	find to follow symbolic links.  Note that -follow is appropriate 
+	find to follow symbolic links.  Note that -follow is appropriate
 	for the GNU tool chain, SunOS v5.7, and possibly other hosts.
 	Check your local find (1) man page for compatibility.
 
@@ -5549,9 +5584,9 @@ Sample .vilerc
 	Here's a sample .vilerc, to help get you started with the
 	syntax and style of vile macros:
 
+	source vileinit.rc
 	set autoindent
 	set fillcol 75
-	set cmode
 	set c-tabstop 4
 
 	; sitting on a brace, run the C code block through indent
@@ -5770,4 +5805,4 @@ Problems
 
 Copyright 1995-2003 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.568 2003/08/04 22:46:30 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.573 2004/03/21 23:33:42 tom Exp $

@@ -1,5 +1,63 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20040321 (e)
+	> Clark Morgan:
+	+ document set-highlighting macro in vile.hlp
+	+ update/revise some details in doc/modes.doc relating to cmode:
+	  + remove any mention of "set cmode" as a (presently) useful command.
+	  + list "setl [no]{majormode}" as essential majormode features [as
+	    near as I can tell, "setl {majormode}" is the only mechanism
+	    available for a user to explicitly attach a majormode to a buffer]
+	  + update the history of majormodes to reflect the way things were in
+	    the past, but not now.  This is done primarily by changing the
+	    grammatical tense of various sentences.
+ 	> Tom Dickey:
+	+ add mode "ignoresuffix", which tells vile to strip the given pattern
+	  from a filename before matching majormode suffixes against it.
+	+ add mode "showchar", which turns on a field in the modeline that
+	  tells what the character value is at the current editing position.
+	+ modify pregion() to reset the "counted" state on the buffer, to work
+	  around a case on win32, where CRLF_LINES is set, the "p" command's
+	  output did not count the extra byte per line for ^M's.  When saving
+	  [p-lines] to a file, it was truncated.
+	+ modify isMiniEdit() to always return true if miniedit mode is set.
+	  That allows one to use ^Ga to toggle miniedit mode and append to
+	  the buffer shown from a previous command rather than having it
+	  erased (discussion with George Eccles).
+	+ modify mac_tokval() to avoid calling tb_scopy() if the result from
+	  tokval() is the original pointer, fixes an overlapping memcpy warning
+	  from valgrind.
+	+ fix incremental-search's initialization, broken in 9.3l (report by
+	  Richard Mitchell).
+	+ improve COMMENT expression in txt-filt.l to include the lines of
+	  dashes in vile.hlp (report by Clark Morgan).
+	+ fix to avoid putting dummy entries into the list of all modes when
+	  a corresponding short modename does not exist for a given submode of
+	  a majormode.  That was making ":set <tab><tab>" show names such as
+	  "RCSX" and "cppX".
+	+ fix a couple of places reported by gcc -Wundef on OS/2, e.g., the
+	  OPT_WORKING macro.
+	+ modify htmlfilt.l to use caseless comparison for HTML keywords.
+	+ improve configure-script checks for dbmalloc and dmalloc.
+	+ modify preamble pattern for pymode to work with
+		#!/usr/bin/python2.3 -S
+	+ modified [a-z] expression to [\a] in preamble for awkmode, cshmode,
+	  sedmode, shmode, tclmode to allow uppercase options.
+	+ add ".jsp" to jsmode suffixes.
+	+ fix imake filter to handle a case where XCOMM comment contained a
+	  colon; it was highlighted as if it were a makefile target.
+	+ modify name-completion for majormode names used as macro parameters
+	  to use the long name (with "mode" ending) rather than the short
+	  name, for consistency (suggested by Clark Morgan).
+	+ modify filters/*.awk to ensure that space-separated lists for the
+	  --with-builtin-filters, etc., options are handled properly.  Both
+	  comma-separated and space-separated lists are permitted now (report
+	  by Clark Morgan).
+	+ fix missing assignments from 9.4b changes to $builtins and $loadable
+	  variables in configure script, which caused build to fail if explicit
+	  list was given for --with-builtin-filters or --with-loadable-filters
+	  (report by Clark Morgan).
+
  20031220 (d)
  	> Tom Dickey:
 	+ modify pl-filt.c to handle
@@ -30,7 +88,7 @@ Changes for vile 9.5 (released ??? ??? ?? ????)
 	+ use EXEEXT and OBJEXT in generated makefiles.
 	+ corrected parameter to lookup_filter(); it did not account for the
 	  $filtername symbol, e.g., as used for cshmode to invoke vile-sh-filt.
-	+ corrected ifdef's in cfgopts() used to build xvile's $cfgopts values. 
+	+ corrected ifdef's in cfgopts() used to build xvile's $cfgopts values.
 	  The ifdef's used "#ifdef" rather than "#if", causing all possible
 	  values to be shown (from 9.3e).
 
@@ -57,7 +115,7 @@ Changes for vile 9.5 (released ??? ??? ?? ????)
 	  schemes.  Loadable filters ran about 50% slower than the builtin
 	  filters, while external filters ran about 5 times slower (ymmv).
 	+ use AC_EXEEXT in configure script.
-	+ modify configure script check for imake's $CFLAGS to ensure that 
+	+ modify configure script check for imake's $CFLAGS to ensure that
 	  imake or xmkmf was found.
 
  20031008 (a)

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.9 2003/05/24 00:49:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.10 2004/03/19 00:14:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Imakefile
  *
@@ -25,7 +25,7 @@ static int continued;
 
 static int preprocessor(char *text, int size);
 static void missing_quote(char *text, int length);
-static void write_delimited(char *text, int size, char *attr);
+static void write_delimited(char *text, int size, char *attr, int first);
 static void write_keyword(char *text, int size, int prepro, int caseless);
 
 %}
@@ -49,9 +49,9 @@ OPER		[+:?]?=
 
 <NORMAL>^{SPACE}*[\.]{NAME}{SPACE}*:[:]? { write_keyword(yytext, yyleng, 0, 0); }
 
-<NORMAL>^({SPACE}*{NAME}{SPACE}*|\\\n)+: { write_delimited(yytext, yyleng, Keyword_attr); }
+<NORMAL>^({SPACE}*{NAME}{SPACE}*|\\\n)+: { write_delimited(yytext, yyleng, Keyword_attr, 1); }
 
-<NORMAL>^{SPACE}*{NAME}{SPACE}*{OPER}	{ write_delimited(yytext, yyleng, Ident2_attr); }
+<NORMAL>^{SPACE}*{NAME}{SPACE}*{OPER}	{ write_delimited(yytext, yyleng, Ident2_attr, 0); }
 
 <NORMAL>{MACRO}			{ WriteToken(Ident2_attr); }
 
@@ -241,25 +241,24 @@ write_delimited_unit(char *text, char **attr, char **gaps)
 
     panchor = pwhite = text;
     while (isspace(CharOf(*pwhite))) {
-        pwhite++;
+	pwhite++;
     }
     if (pwhite > panchor)
-        flt_puts(panchor, pwhite - panchor, *gaps);
+	flt_puts(panchor, pwhite - panchor, *gaps);
     panchor = ptoken = pwhite;
     while (*ptoken && (! isspace(CharOf(*ptoken))))
-        ptoken++;
+	ptoken++;
     flt_puts(panchor, ptoken - panchor, *attr);
-    if (isspace(CharOf(*ptoken)))
-    {
-        panchor = ptoken;
-        pwhite  = ptoken + 1;  /* advance beyond initial white space byte */
-        while (isspace(CharOf(*pwhite)))
-            pwhite++;
-        flt_puts(panchor, pwhite - panchor, *gaps);
-        pnxt_unit = pwhite;
+    if (isspace(CharOf(*ptoken))) {
+	panchor = ptoken;
+	pwhite	= ptoken + 1;  /* advance beyond initial white space byte */
+	while (isspace(CharOf(*pwhite)))
+	    pwhite++;
+	flt_puts(panchor, pwhite - panchor, *gaps);
+	pnxt_unit = pwhite;
+    } else {
+	pnxt_unit = ptoken;
     }
-    else
-        pnxt_unit = ptoken;
     return (pnxt_unit);
 }
 
@@ -269,23 +268,44 @@ write_delimited_unit(char *text, char **attr, char **gaps)
  *    ([<white>]<token>[<white>]|\\\n)+<single delimiter>
  */
 static void
-write_delimited(char *text, int size, char *attr)
+write_delimited(char *text, int size, char *attr, int first)
 {
     char *cp, delim[2];
     char *gaps = "";
+
+    /*
+     * Workaround for special case of XCOMM line containing a colon.
+     */
+    if (first) {
+	char *temp = skip_blanks(text);
+	char *test = skip_ident(temp);
+	int save = *test;
+	int same;
+
+	*test = '\0';
+	same = (keyword_attr(temp) == Comment_attr);
+	*test = save;
+
+	if ((test - temp == 5) && same) {
+	    BEGIN(COMMENT);	/* BeginQuote(COMMENT) */
+	    flt_bfr_begin(Comment_attr);
+	    flt_bfr_append(text, size);
+	    return;
+	}
+    }
 
     delim[0] = text[size - 1];         /* save the trailing delimiter */
     delim[1] = text[size - 1] = '\0';  /* chop the trailing delimiter */
     cp       = text;
     do
     {
-        if (*cp == '\\' && cp[1] == '\n')
-        {
-            flt_puts(cp, 2, gaps);
-            cp += 2;
-        }
-        else
-            cp = write_delimited_unit(cp, &attr, &gaps);
+	if (*cp == '\\' && cp[1] == '\n')
+	{
+	    flt_puts(cp, 2, gaps);
+	    cp += 2;
+	}
+	else
+	    cp = write_delimited_unit(cp, &attr, &gaps);
     }
     while (*cp);
 

@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.36 2003/11/13 00:19:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.37 2004/03/18 01:16:08 tom Exp $
  *
  */
 
@@ -53,7 +53,7 @@ parse_filtername(const char *major_name, const char **params)
 
     if (valid_buffer(curbp)
 	&& curbp->majr != 0
-	&& !strcmp(curbp->majr->name, major_name)
+	&& !strcmp(curbp->majr->shortname, major_name)
 	&& (temp = b_val_ptr(curbp, VAL_FILTERNAME)) != 0) {
 	if (!strncmp(temp, prefix, sizeof(prefix) - 1)) {
 	    char *base = temp + sizeof(prefix) - 1;

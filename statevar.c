@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.77 2003/11/12 01:26:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.78 2004/03/18 01:15:55 tom Exp $
  */
 
 #include	"estruct.h"
@@ -964,7 +964,7 @@ int
 var_MAJORMODE(TBUFF ** rp, const char *vp)
 {
     return any_ro_STR(rp, vp, ((valid_buffer(curbp) && curbp->majr != 0)
-			       ? curbp->majr->name
+			       ? curbp->majr->shortname
 			       : ""));
 }
 
