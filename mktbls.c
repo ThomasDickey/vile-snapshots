@@ -5,7 +5,7 @@
  *	included in main.c
  *
  *	Copyright (c) 1990 by Paul Fox
- *	Copyright (c) 1995-1999 by Paul Fox and Thomas Dickey
+ *	Copyright (c) 1995-2002 by Paul Fox and Thomas Dickey
  *
  *	See the file "cmdtbl" for input data formats, and "estruct.h" for
  *	the output structures.
@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.122 2002/05/14 12:04:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.123 2002/06/26 00:27:58 tom Exp $
  *
  */
 
