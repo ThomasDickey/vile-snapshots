@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.72 1997/06/07 12:24:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.73 1997/08/15 23:52:18 tom Exp $
  * 
  */
 
@@ -131,7 +131,7 @@ makemaplist(int dummy GCC_UNUSED, void *mapp)
 	    if (mapstr) {
     		    if (mapp && (struct maprec *)mapp == abbr_map) {
 			    /* the abbr map is stored inverted */
-			    for (i = depth; i > 0; )
+			    for (i = depth; i != 0; )
 				bputc(tb_values(lhsstr)[--i]);
 		    } else {
 			    if (mp->flags & MAPF_NOREMAP) {
@@ -148,7 +148,7 @@ makemaplist(int dummy GCC_UNUSED, void *mapp)
 	    }
 	    mp = mp->dlink;
 	}
-	else if (depth > 0)
+	else if (depth != 0)
 	    mp = lhsstack[--depth];
 	else
 	    break;

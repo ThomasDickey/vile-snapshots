@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.78 1997/05/26 01:31:06 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.79 1997/08/13 23:06:45 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -59,7 +59,7 @@ int							# VAL_ prefix
 	"timeoutlen"	TIMEOUTVAL	0		# how long to catnap for more input
 	"timeoutlen-user" TIMEOUTUSERVAL 0		# how long to catnap for more input
 regex							# VAL_ prefix
-	"C-SUFfixes"	CSUFFIXES	0		# match against filenames to turn on c-mode
+	"C-SUFfixes"	CSUFFIXES	0		!OPT_MAJORMODE # match against filenames to turn on c-mode
 string							# VAL_ prefix
 	"backup-style"  BACKUPSTYLE	0		OPT_FILEBACK # file backup style
 	"expand-chars"	EXPAND_CHARS	0		# list of chars we can expand (%,#,:)
@@ -73,7 +73,7 @@ bool							# MD prefix
 	"AutoWrite"	AUTOWRITE	0		# auto-write when shelling out
 	"BackspaceLimit" BACKLIMIT	0		# backspace limited in insert mode
 	"check-modtime" CHK_MODTIME	0		!SMALLER # check buffer-modtime
-	"cmode"		CMOD		chgd_major_w	# C indentation and fence match
+	"cmode"		CMOD		chgd_major_w	!OPT_MAJORMODE # C indentation and fence match
 	"crypt"		CRYPT		0		OPT_ENCRYPT	# encrytion mode active
 	"dos"		DOS		chgd_major_w	# "dos" mode -- lines end in crlf
 	"IgnoreCase"	IGNCASE		chgd_hilite	# Exact matching for searches
@@ -95,8 +95,8 @@ enum
 	"visual-matches"  HILITEMATCH	chgd_hilite	OPT_HILITEMATCH # highlight all search matches
 int							# VAL_ prefix
 	"AutoSaveCNT"	ASAVECNT	0		# how often auto-saves occur
-	"C-ShiftWidth"	C_SWIDTH	0		# shift-width for C buffers
-	"C-TabStop"	C_TAB		chgd_major_w	# tab spacing for C buffers
+	"C-ShiftWidth"	C_SWIDTH	0		!OPT_MAJORMODE # shift-width for C buffers
+	"C-TabStop"	C_TAB		chgd_major_w	!OPT_MAJORMODE # tab spacing for C buffers
 	"FillCol"	FILL		0		# column for paragraph reformat, and line break
 	"ShiftWidth"	SWIDTH		0		# shiftwidth for ^T/^D/<</>>
 	"TabStop"	TAB		chgd_major_w	# tab spacing for most buffers
@@ -124,6 +124,16 @@ bool							# WMD prefix
 	"Terse-SELections" TERSELECT	0		OPT_SELECTIONS # don't display extent of selections on message line
 int							# VAL_ prefix
 	"SIDEways"	SIDEWAYS	chgd_major_w	# sideways offset for display
+
+# Put the majormode definitions after buffers to simplify logic in mktbls.
+# The arguments of .majormode are the predefined majormodes and submodes.
+
+.majormode c	tabstop
+.majormode c	shiftwidth
+regex							# MVAL_ prefix
+	"PREamble"	PREAMBLE	0		# match against file header to turn on mode
+	"SUFfixes"	SUFFIXES	0		# match against filenames to turn on mode
+
 #
 # The "environment" variables are similar to modes, but are not so neatly
 # organized into groups of universal/buffer/window.

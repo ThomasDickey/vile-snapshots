@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.140 1997/06/19 23:19:17 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.141 1997/07/30 23:07:57 tom Exp $
 #
 #
 
@@ -416,6 +416,12 @@ cbuf39		REDO			OPT_EXEC_MACROS>38
 cbuf40		REDO			OPT_EXEC_MACROS>39
 	"execute-macro-40"		!FEWNAMES
 	<execute [Macro 40]>
+define_mode	NONE			OPT_MAJORMODE
+	"define-mode"
+	<define a major mode, i.e., a collection of buffer modes>
+define_submode	NONE			OPT_MAJORMODE
+	"define-submode"
+	<define a submode within a major mode>
 delwind		NONE
 	"delete-window"			!FEWNAMES
 	'^K'
@@ -1193,6 +1199,12 @@ vile_refresh	NONE
 	"clear-and-redraw"		!FEWNAMES
 	'^L'
 	<redraw the screen>
+remove_mode	NONE			OPT_MAJORMODE
+	"remove-mode"
+	<delete the definition of a major mode>
+remove_submode	NONE			OPT_MAJORMODE
+	"remove-submode"
+	<delete the special definition of a submode from a major mode>
 reposition	NONE			!SMALLER
 	"redraw-display"
 	<redraw, cursor at center, or CNT'th line, or CNT'th from end if neg>
@@ -1331,6 +1343,10 @@ listmodes	NONE
 	"showmodes"
 	"showgmodes"
 	<report values of all mode settings>
+list_majormodes	NONE			OPT_MAJORMODE
+	"list-majormodes"		!FEWNAMES
+	"show-majormodes"
+	<report values of all majormode settings>
 listvars	NONE			OPT_SHOW_EVAL
 	"list-variables"		!FEWNAMES
 	"show-variables"

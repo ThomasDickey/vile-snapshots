@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.157 1997/05/25 22:30:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.158 1997/08/11 23:37:39 tom Exp $
  *
  */
 
@@ -22,12 +22,15 @@ static	int	show_BufferList ( BUFFER *bp );
 static	void	run_buffer_hook (void);
 #endif
 
+#if	!OPT_MAJORMODE
+static	int	cmode_active ( BUFFER *bp );
+#endif
+
 static	BUFFER *find_BufferList (void);
 static	BUFFER *find_b_number ( const char *number  );
 static	BUFFER *find_latest (void);
 static	BUFFER *find_nth_created ( int n );
 static	BUFFER *find_nth_used ( int n );
-static	int	cmode_active ( BUFFER *bp );
 static	int	countBuffers (void);
 static	int	hist_show (void);
 static	int	lookup_hist ( BUFFER *bp );
@@ -560,8 +563,8 @@ int	lockfl)
 					}
 				}
 				set_b_val(bp, MDNEWLINE, b_val(savebp,MDNEWLINE));
-				make_local_b_val(bp, MDCMOD); /* local, as in 'readin()' */
-				set_b_val(bp, MDCMOD, (global_b_val(MDCMOD) && has_C_suffix(bp)));
+				setm_by_suffix(bp);
+				setm_by_preamble(bp);
 			} else
 				readin(fname, lockfl, bp, FALSE);
 
@@ -847,22 +850,27 @@ register WINDOW *wp)
 	}
 }
 
+#if	!OPT_MAJORMODE
 /* return true iff c-mode is active for this buffer */
 static int
 cmode_active(register BUFFER *bp)
 {
 	if (is_local_b_val(bp,MDCMOD))
-		return b_val(bp, MDCMOD);
+		return is_c_mode(bp);
 	else
-		return (b_val(bp, MDCMOD) && has_C_suffix(bp));
+		return (is_c_mode(bp) && has_C_suffix(bp));
 }
-
+#endif
 
 /* return the correct tabstop setting for this buffer */
 int
 tabstop_val(register BUFFER *bp)
 {
+#if	OPT_MAJORMODE
+	int i = b_val(bp, VAL_TAB);
+#else
 	int i = b_val(bp, (cmode_active(bp) ? VAL_C_TAB : VAL_TAB));
+#endif
 	if (i == 0) return 1;
 	return i;
 }
@@ -871,11 +879,16 @@ tabstop_val(register BUFFER *bp)
 int
 shiftwid_val(register BUFFER *bp)
 {
+#if	OPT_MAJORMODE
+	int i = b_val(bp, VAL_SWIDTH);
+#else
 	int i = b_val(bp, (cmode_active(bp) ? VAL_C_SWIDTH : VAL_SWIDTH));
+#endif
 	if (i == 0) return 1;
 	return i;
 }
 
+#if	!OPT_MAJORMODE
 int
 has_C_suffix(register BUFFER *bp)
 {
@@ -891,6 +904,7 @@ has_C_suffix(register BUFFER *bp)
 	ignorecase = save;
 	return s;
 }
+#endif
 
 /*
  * Dispose of a buffer, by name.  If this is a screen-command, pick the name up
@@ -1739,7 +1753,7 @@ bclear(register BUFFER *bp)
 	bp->b_bytecount = 0;
 	bp->b_linecount = 0;
 
-	free_local_vals(b_valuenames, global_b_values.bv, bp->b_values.bv);
+	free_local_vals(b_valnames, global_b_values.bv, bp->b_values.bv);
 
 	return (TRUE);
 }

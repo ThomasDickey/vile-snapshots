@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.76 1997/06/19 23:45:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.77 1997/08/16 13:13:46 tom Exp $
  *
  */
 
@@ -888,7 +888,7 @@ path_completion(int c, char *buf, unsigned *pos)
 	} else if (action) {
 		char	*s;
 		char	path[NFILEN];
-		size_t	oldlen,
+		unsigned oldlen,
 			newlen;
 
 		/* initialize only on demand */

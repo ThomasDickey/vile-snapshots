@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.155 1997/05/29 22:37:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.156 1997/08/11 21:50:21 tom Exp $
  *
  */
 
@@ -4014,7 +4014,7 @@ SIZE_T	length)
 
 	status = TRUE;
 
-	if (bp != NULL && (b_val(bp,MDCMOD) || b_val(bp,MDAIND))) {
+	if (bp != NULL && (is_c_mode(bp) || b_val(bp,MDAIND))) {
 
 #if OLD_PASTE
 		/*

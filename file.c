@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.210 1997/05/25 23:24:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.211 1997/08/11 23:38:28 tom Exp $
  *
  */
 
@@ -785,11 +785,11 @@ int	mflg)		/* print messages? */
 
 	}
 
-	/* set C mode for C files */
-	make_local_b_val(bp, MDCMOD); /* make it local for all, so that
-					subsequent changes to global value
-					will _not_ affect this buffer */
-	set_b_val(bp, MDCMOD, (global_b_val(MDCMOD) && has_C_suffix(bp)));
+	/*
+	 * Set the majormode if the file's suffix matches.
+	 */
+	setm_by_suffix(bp);
+	setm_by_preamble(bp);
 
 	for_each_window(wp) {
 		if (wp->w_bufp == bp) {

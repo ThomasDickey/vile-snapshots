@@ -1,5 +1,17 @@
 Changes for vile 7.2 (released ??? ??? ??, 1997)
 
+(tom)	970816 (g)
+	+ correct type mismatch in filec.c when sizeof(size_t) !=
+	  sizeof(unsigned) (reported by Larry Gensch <gensch@zk3.dec.com>).
+	+ modify vmsbuild.com to tell MMS (or MMK) to ignore warnings,
+	  workaround for an inconsistency between versions of DEC C
+	  (suggested by Andy Harper).
+	+ initial implementation of majormodes, which supports grouping of
+	  buffer modes, together with qualifiers (e.g., cmode and c-suffixes).
+	  New commands include define-mode, define-submode, remove-mode,
+	  remove-submode, list-majormodes.  (Most changes are in mktbls.c and
+	  modes.c).
+
 (tom)	970619 (f)
 	+ modify ":set" command so that it does not force a mode to be set,
 	  but instead shows the local buffer and window settings.

@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.144 1997/06/07 21:17:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.145 1997/07/04 19:55:21 tom Exp $
  *
  */
 
@@ -43,8 +43,6 @@ typedef struct	{
 	UVAR *	v_ptr;	/* pointer, if it's a user-variable */
 	} VDESC;
 
-static	const char **list_of_modes;	/* list for name-completion */
-
 static	SIZE_T	s2size ( char *s );
 static	char *	getkill (void);
 static	char *	ltos ( int val );
@@ -55,8 +53,6 @@ static	int	ernd (void);
 static	int	gtlbl ( const char *tokn );
 static	int	l_strtol ( const char *s );
 static	int	sindex ( const char *sourc, const char *pattern );
-static	int	OnlyMode ( const char *name );
-static	const char *const * AllModes (void);
 #endif
 
 /*--------------------------------------------------------------------------*/
@@ -121,7 +117,7 @@ makevarslist(int dum1 GCC_UNUSED, void *ptr)
 static int
 is_mode_name(const char *name, int showall, VALARGS *args)
 {
-	if (OnlyMode(name)) {
+	if (is_varmode(name)) {
 		if (find_mode(name, -TRUE, args)) {
 			if (!showall && !strcmp(name, args->names->shortname))
 				return FALSE;
@@ -159,7 +155,7 @@ listvars(int f, int n)
 	register char *v;
 	register const char *vv;
 	static	const char fmt[] = { "$%s = %*S\n" };
-	const char *const *Names = f ? AllModes() : envars;
+	const char *const *Names = f ? list_of_modes() : envars;
 	int	showall = f ? (n > 1) : FALSE;
 
 	/* collect data for environment-variables, since some depend on window */
@@ -608,39 +604,6 @@ fvar:
 }
 
 /*
- * Test for mode-names that we'll not show in the variable name-completion.
- */
-static int
-OnlyMode (const char *name)
-{
-	return (strncmp(name, "no", 2)
-	   &&   strcmp(name, "all"));
-}
-
-/*
- * Return a list of only the modes that can be set with ":setv", ignoring
- * artifacts such as "all".
- */
-static const char *const *
-AllModes (void)
-{
-	if (list_of_modes == 0) {
-		const char *const *s;
-		const char **d;
-		size_t n;
-		for (n = 0; all_modes[n] != 0; n++)
-			;
-		list_of_modes = typeallocn(const char *, n + 1);
-		for (s = all_modes, d = list_of_modes; (*d = *s) != 0; s++) {
-			if (OnlyMode(*d)) {
-				d++;
-			}
-		}
-	}
-	return list_of_modes;
-}
-
-/*
  * Handles name-completion for variables.  Note that since the first character
  * can be either a '$' or '%', we'll postpone name-completion until we've seen
  * a '$'.
@@ -655,7 +618,7 @@ unsigned *pos)
 	if (buf[0] == '$') {
 		*pos -= 1;	/* account for leading '$', not in tables */
 		status = kbd_complete(FALSE, c, buf+1, pos,
-				(const void *)AllModes(), sizeof(list_of_modes[0]));
+				(const void *)list_of_modes(), sizeof(char *));
 		*pos += 1;
 	} else {
 		if (c != NAMEC) /* cancel the unget */
@@ -1446,7 +1409,6 @@ ev_leaks(void)
 	}
 	FreeAndNull(shell);
 	FreeAndNull(directory);
-	FreeAndNull(list_of_modes);
 #endif
 }
 #endif	/* NO_LEAKS */

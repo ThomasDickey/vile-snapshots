@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.250 1997/06/07 23:33:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.251 1997/08/13 00:19:57 tom Exp $
  *
  */
 
@@ -99,7 +99,9 @@ extern int swbuffer_lfl (BUFFER *bp, int lockfl);
 extern void undispbuff (BUFFER *bp, WINDOW *wp);
 extern int tabstop_val (BUFFER *bp);
 extern int shiftwid_val (BUFFER *bp);
+#if !OPT_MAJORMODE
 extern int has_C_suffix (BUFFER *bp);
+#endif
 extern int delink_bp (BUFFER *bp);
 extern int zotbuf (BUFFER *bp);
 extern int zotwp (BUFFER *bp);
@@ -473,6 +475,20 @@ extern int mode_eol (EOL_ARGS);
 #if OPT_EVAL || OPT_COLOR
 extern int set_ncolors(int ncolors);
 #endif
+#if OPT_EVAL || OPT_MAJORMODE
+extern int is_varmode ( const char *name );
+extern const char *const * list_of_modes (void);
+#endif
+#if OPT_MAJORMODE
+extern int alloc_mode(const char *name, int predef);
+extern void set_majormode_rexp(const char *name, int n, const char *pat);
+extern void set_submode_val(const char *name, int n, int value);
+extern void setm_by_suffix (BUFFER *bp);
+extern void setm_by_preamble (BUFFER *bp);
+#else
+#define setm_by_suffix(bp) fix_cmode(bp, (global_b_val(MDCMOD) && has_C_suffix(bp)))
+#define setm_by_preamble(bp) /* nothing */
+#endif
 
 /* npopen.c */
 #if SYS_UNIX || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
@@ -736,16 +752,17 @@ ALLOC_T	 itb_length (ITBUFF *p);
 
 #if NO_LEAKS
 extern	void bind_leaks (void);
-extern	void onel_leaks (void);
-extern	void path_leaks (void);
+extern	void bp_leaks (void);
+extern	void ev_leaks (void);
+extern	void itb_leaks (void);
 extern	void kbs_leaks (void);
 extern	void map_leaks (void);
-extern	void itb_leaks (void);
+extern	void mode_leaks (void);
+extern	void onel_leaks (void);
+extern	void path_leaks (void);
 extern	void tb_leaks (void);
-extern	void wp_leaks (void);
-extern	void bp_leaks (void);
 extern	void vt_leaks (void);
-extern	void ev_leaks (void);
+extern	void wp_leaks (void);
 #endif
 
 #if DISP_X11

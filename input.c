@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.165 1997/06/07 21:27:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.166 1997/08/15 23:51:33 tom Exp $
  *
  */
 
@@ -605,7 +605,7 @@ screen_string (char *buf, int bufn, CHARTYPE inclchartype)
 		if ((inclchartype & _scrtch)
 		 && (i == 1)
 		 && (buf[1] == SHPIPE_LEFT[0])) {
-			;
+			/*EMPTY*/;
 		/* guard against things like "[Buffer List]" on VMS */
 		} else if ((inclchartype & _pathn)
 		 && !ispath(buf[i])
@@ -952,9 +952,9 @@ int	options)
 				tb_append(dst, BACKSLASH); /* add extra */
 		} else if (strchr(global_g_val_ptr(GVAL_EXPAND_CHARS),c) != 0) {
 			if (c == EXPC_RPAT && !(options & KBD_EXPPAT))
-				;
+				/*EMPTY*/;
 			else if (c == EXPC_SHELL && !(options & KBD_SHPIPE))
-				;
+				/*EMPTY*/;
 			else if ((options & KBD_QUOTES)
 			 && (options & KBD_EXPAND))
 				tb_append(dst, BACKSLASH); /* add extra */
@@ -1183,7 +1183,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 			  && !(shell && isprint(c))
 			  && (c == TESTC || c == NAMEC))) {
 				if (shell && isreturn(c)) {
-					;
+					/*EMPTY*/;
 				} else if ((*complete)(c, tbreserve(&buf), &cpos)) {
 					done = TRUE;
 					if (c != NAMEC) /* cancel the unget */

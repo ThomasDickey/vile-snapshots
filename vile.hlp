@@ -948,6 +948,14 @@ Editor modes
 	changes to the respective global mode, until the "local" value is
 	set independently of the global one.
 
+	You can also define new modes, called "majormodes", which are
+	collections of buffer mode values, together with qualifiers that
+	automatically assign a majormode to new buffers.  Vile has one
+	built-in majormode, "c" (displayed as "cmode").  The associated
+	majormode values are named according to the corresponding buffer
+	modes, e.g., the "c" majormode's tabstop is predefined as
+	"c-tabstop", or "cts" for short.
+
 	To set or change a global mode, use ":set".  To remove the mode,
 	use ":unset", ":setno", or ":set" with the modename prefixed with
 	"no".
@@ -961,9 +969,22 @@ Editor modes
 	sense when used with universal modes, since there is only one
 	copy of these.
 
+	To define majormodes, use ":define-mode".  To remove the majormode,
+	use ":remove-mode".  Some keywords (e.g., suffixes) are
+	automatically associated with each majormode.  To associate a
+	buffer mode with a majormode, use ":define-submode".  To remove the
+	association, use ":remove-submode".  Once associated, submodes can
+	be set and unset just like regular buffer modes.  Use
+	":show-majormodes" to display the list of majormodes with their
+	associated submodes.  The ":setall" command displays the names of
+	the majormodes only, showing which are currently enabled (i.e.,
+	vile compares each new buffer against the preamble and suffixes to
+	determine if the majormode should be set for that buffer.  Only one
+	majormode can be set for a buffer.
+
 	The possible modes, with synonyms in parentheses, and a trailing U,
-	B or W indicating whether the mode is universal, or belongs to
-	buffers or windows, are:
+	M, B or W indicating whether the mode is universal, or belongs to
+	majormodes, buffers or windows, are:
 
 	alt-tabpos (atp) If set, vile will position the cursor over tab and
 		control characters the way emacs would, that is, at the
@@ -979,6 +1000,7 @@ Editor modes
 		buffers include:
 			[Binding List]
 			[Buffer List]
+			[Major Modes]
 			[Map Sequences]
 			[Map! Sequences]
 			[Registers]
@@ -1050,32 +1072,19 @@ Editor modes
 		will cause all visible buffers (those currently in windows)
 		to have their times checked immediately.
 
-	cmode   C-code mode.  Also useful for other languages.  Maintains
-		current indentation level automatically during insert, like
-		autoindent, above.  If a line ends with a '{', '(', or ':',
-		then the next line indents further.  If a line begins with
-		a '}' or ')', it is lined up with the line containing the
-		matching '{' or '('.  If a line starting with '#' is
-		inserted it is moved to column 1.  Additionally, if a line
-		begins with a '#' character, it will not shift right with
-		the '>>' command.  If the global cmode is set, then the
-		buffer's C mode is turned on automatically only for files
-		whose names are matched by the c-suffixes regular
-		expression (see below).  (B)
+	cmode   C-code mode.  A built-in majormode.  Also useful for other
+		languages.  Maintains current indentation level
+		automatically during insert, like autoindent, above.  If a
+		line ends with a '{', '(', or ':', then the next line
+		indents further.  If a line begins with a '}' or ')', it is
+		lined up with the line containing the matching '{' or '('. 
+		If a line starting with '#' is inserted it is moved to
+		column 1.  Additionally, if a line begins with a '#'
+		character, it will not shift right with the '>>' command. (M)
 
 	crypt	Causes files to be encrypted.  This is NOT compatible
 		with the UNIX crypt(1) routines, and may not be built
 		into your version of vile by default. (B)
-
-	c-shiftwidth (csw) Sets the value for the shiftwidth (see below)
-		which will be used if a file is in cmode.  (B)
-
-	c-tabstop (cts) Sets the value for spacing of tabstops which will
-		be used if a file is in cmode.  (B)
-
-	c-suffixes (csuf) A regular expression describing filenames for
-		which cmode will be set.  This is arguably misnamed, since
-		the regular expression need not describe only suffixes. (U)
 
 	comments A regular expression defining commented paragraph
 		delimiters.  This is used in addition to the "paragraphs"
@@ -1246,6 +1255,12 @@ Editor modes
 		(e.g., .vilerc) sets it, all messages will be popped
 		up, then the mode will be initialized to "false".  (U)
 
+	preamble (pre) A regular expression describing the first line of
+		filenames for which the corresponding majormode will be
+		set.  For example, you may have a majormode "sh", with
+		sh-preamble set to "^#\s*!\s*\/.*sh\>" to match the
+		lines "# ! /bin/sh", "#!/bin/csh -f", etc.  (M)
+
 	printing-low The integer value representing the first of the
 		printable set of "high bit" (i.e. 8-bit) characters.
 		Defaults to 0.  Most foreign (relative to me!) users would
@@ -1340,6 +1355,11 @@ Editor modes
 		when formatting a paragraph.  By default this option is
 		turned on.  When disabled, the format routiine will insert
 		only one space after each sentence.  (U)
+
+	suffixes (suf) A regular expression describing filenames for which
+		the corresponding majormode will be set.  This is arguably
+		misnamed, since the regular expression need not describe
+		only suffixes.  (M)
 
 	tabinsert (ti) Allow the physical insertion of tab characters into
 		the buffer.  If turned off ("notabinsert"), and an attempt
@@ -2580,7 +2600,7 @@ Mode line customization
 		%f	file name when not internal buffer and when not the
 			same as the buffer name.
 		%F	internal buffer name
-		%m	major mode(s), e.g, cmode, view-only, etc.  Displayed
+		%m	major mode(s), e.g., cmode, view-only, etc.  Displayed
 			in square brackets.
 		%l	line number to be displayed if "ruler" is set
 		%c	column number if "ruler" is set
@@ -3461,4 +3481,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.323 1997/05/27 02:03:44 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.324 1997/08/15 09:46:56 tom Exp $

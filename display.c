@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.231 1997/05/26 12:15:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.233 1997/08/15 23:57:26 tom Exp $
  *
  */
 
@@ -2396,15 +2396,23 @@ mlfs_skipfix(char **fsp)
 }
 #endif /* OPT_MLFORMAT */
 
-#define PutMode(mode,name) \
-	if (b_val(bp, mode)) { \
+#define PutModename(format, name) { \
 		if (ms != 0) { \
-			ms = lsprintf(ms, "%c%s", \
+			ms = lsprintf(ms, format, \
 				mcnt ? ' ' : '[', \
 				name); \
 		} \
 		mcnt++; \
 	}
+
+#define PutMode(mode,name) \
+	if (b_val(bp, mode)) PutModename("%c%s", name)
+
+#if OPT_MAJORMODE
+#define PutMajormode(bp) if (bp->majr != 0) PutModename("%c%smode", bp->majr->name)
+#else
+#define PutMajormode(bp) /*nothing*/
+#endif
 
 static int
 modeline_modes(
@@ -2415,7 +2423,10 @@ char	**msptr)
 	register SIZE_T mcnt = 0;
 
 #if SYS_VMS || HAVE_LOSING_SWITCH_WITH_STRUCTURE_OFFSET
+	PutMajormode(bp)
+#if !OPT_MAJORMODE
 	PutMode(MDCMOD,		"cmode")
+#endif
 #if OPT_ENCRYPT
 	PutMode(MDCRYPT,	"crypt")
 #endif
@@ -2430,20 +2441,23 @@ char	**msptr)
 		int   mode;
 		const char *name;
 	} table[] = {
-		 {MDCMOD,    "cmode"}
-#if OPT_ENCRYPT
-		,{MDCRYPT,   "crypt"}
+#if !OPT_MAJORMODE
+		{MDCMOD,    "cmode"},
 #endif
-		,{MDDOS,     "dos-style"}
-		,{MDREADONLY,"read-only"}
-		,{MDVIEW,    "view-only"}
+#if OPT_ENCRYPT
+		{MDCRYPT,   "crypt"},
+#endif
+		{MDDOS,     "dos-style"},
+		{MDREADONLY,"read-only"},
+		{MDVIEW,    "view-only"},
 #if OPT_LCKFILES
-		,{MDLOCKED,  "locked by"}  /* keep this last */
+		{MDLOCKED,  "locked by"},  /* keep this last */
 #endif
 	};
 	register SIZE_T j;
 
-	for (j = mcnt = 0; j < TABLESIZE(table); j++) {
+	PutMajormode(bp)
+	for (j = 0; j < TABLESIZE(table); j++) {
 		PutMode(table[j].mode, table[j].name)
 	}
 #endif

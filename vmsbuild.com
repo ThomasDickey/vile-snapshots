@@ -1,4 +1,4 @@
-$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.12 1997/05/13 00:32:14 tom Exp $
+$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.13 1997/08/16 12:34:28 tom Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
 $! Tested with:
@@ -302,7 +302,7 @@ $	write sys$output "** made xvile.com"
 $	exit
 $
 $  else
-$   mms/macro=('comp','mmstar','arch') 'p2
+$   mms/ignore=warning/macro=('comp','mmstar','arch') 'p2
 $  endif
 $ exit
 $ make: subroutine
