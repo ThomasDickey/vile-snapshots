@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.200 2000/05/18 01:29:12 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.201 2000/05/18 10:20:14 tom Exp $
 #
 #
 
@@ -203,6 +203,10 @@ bind_c_key	NONE			OPT_REBIND
 	"bind-cmdmode-key"
 	"rebind-cmdmode-key"
 	<bind a keystroke to a function effective in command mode>
+bind_s_key	NONE			OPT_REBIND
+	"bind-selmode-key"
+	"rebind-selmode-key"
+	<bind a keystroke to a function effective in select mode>
 bktoshell	NONE|(BANG)		OPT_SHELL
 	"suspend"
 	"suspend!"
@@ -474,6 +478,10 @@ des_c_bind	NONE			OPT_REBIND
 	"describe-cmdmode-bindings"
 	"show-cmdmode-bindings"
 	<show a list of all commands that may be executed in command-editing mode>
+des_s_bind	NONE			OPT_REBIND
+	"describe-selmode-bindings"
+	"show-selmode-bindings"
+	<show a list of all commands that may be executed in selection mode>
 descolors	NONE			OPT_SHOW_COLORS
 	"list-colors"
 	"show-colors"
@@ -511,6 +519,9 @@ des_i_key	NONE			OPT_REBIND
 des_c_key	NONE			OPT_REBIND
 	"describe-cmdmode-key"
 	<show the function bound to a given key in command-mode>
+des_s_key	NONE			OPT_REBIND
+	"describe-selmode-key"
+	<show the function bound to a given key in selection-mode>
 dotcmdplay	UNDO
 	"repeat-last-cmd"		!FEWNAMES
 	'.'
@@ -1515,6 +1526,9 @@ unbind_i_key	NONE			OPT_REBIND
 unbind_c_key	NONE			OPT_REBIND
 	"unbind-cmdmode-key"
 	<break the binding between a keystroke and a function in command-mode>
+unbind_s_key	NONE			OPT_REBIND
+	"unbind-selmode-key"
+	<break the binding between a keystroke and a function in selection-mode>
 undo		NONE
 	"undo-change"			!FEWNAMES
 	'u'

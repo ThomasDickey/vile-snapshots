@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.427 2000/05/18 01:22:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.428 2000/05/18 10:12:36 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -1262,6 +1262,7 @@ global_val_init(void)
 	for (i = 0; i < N_chars; i++) {
 		const CMDFUNC *cfp;
 
+		sel_bindings.kb_normal[i] = dft_bindings.kb_normal[i];
 		ins_bindings.kb_normal[i] =
 		cmd_bindings.kb_normal[i] = 0;
 		if (i < 32

@@ -1891,8 +1891,54 @@ Key Rebinding
 	Function and meta-key bindings are available in insert mode, as
 	well as in command mode.  (But only via either the "meta bit" or
 	ESC sequence form -- the '#' prefix will not work in insert mode.)
-	So the following macro will work correctly in both command and
-	insert modes:
+	There are four key binding tables:
+
+		default - for commands in screen mode as well as those that do
+			not fit naturally into one of the specialized modes. 
+			This is initialized by compiled-in definitions for
+			normal (0-127) and special (function and meta-key)
+			definitions.
+
+			bind-key
+			describe-bindings
+			describe-key
+			unbind-key
+
+		cmdmode - for command editing.  This is initialized with the
+			special keys from the default table, as well as the
+			control characters that are associated with movement,
+			e.g., ^N and ^P.
+
+			bind-cmdmode-key
+			describe-cmdmode-key
+			show-cmdmode-bindings
+			unbind-cmdmode-key
+
+		insmode - for insertion.  This is initialized with the special
+			keys from the default table, as well as the control
+			characters that are associated with movement, e.g., ^N
+			and ^P.  The insert-exec mode controls whether those
+			control characters are interpreted or inserted.
+
+			bind-insmode-key
+			describe-insmode-bindings
+			describe-insmode-key
+			unbind-insmode-key
+
+		selmode - for selection highlighting, i.e., multimotion.
+			This is initially the same as the default binding
+			table, but may be customized.
+
+			bind-selmode-key
+			describe-selmode-bindings
+			describe-selmode-key
+			unbind-selmode-key
+
+	The following macro will work correctly in both command and insert
+	modes.  Note that you must specify the insert mode (insmode) binding
+	separately; default bindings are not inherited automatically because
+	they may conflict with the bindings used for exiting or modifying
+	text within insert mode.
 
 		15 store-macro
 			insert-string "fprintf(stderr, \""
@@ -1906,8 +1952,10 @@ Key Rebinding
 		~endm
 		; bind to function key f
 		bind-key execute-macro-15 #-f
+		bind-insmode-key execute-macro-15 #-f
 		; also bind to meta-A
 		bind-key execute-macro-15 M-A
+		bind-insmode-key execute-macro-15 M-A
 
 	Actually the "meta-insert-bindings" setting controls whether meta-
 	keys will have their bound effect when in insert mode.  If this
@@ -4979,4 +5027,4 @@ Problems
 
 Copyright 1995-2000 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.486 2000/05/12 01:32:44 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.487 2000/05/19 10:15:58 tom Exp $

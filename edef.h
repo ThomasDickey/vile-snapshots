@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.271 2000/05/17 10:33:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.273 2000/05/19 00:54:02 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -245,8 +245,9 @@ decl_uninit( int dotcmdrep );		/* original dot-command repeat-count */
 
 #if OPT_EVAL
 decl_init( int seed, 123 );		/* random number seed		*/
-decl_init( int cmd_count, 0 );		/* 1..n for procedure execution	*/
 #endif
+
+decl_init( int cmd_count, 0 );		/* 1..n for procedure execution	*/
 
 #if OPT_EVAL || OPT_DEBUGMACROS
 decl_init( int tracemacros, FALSE );	/* macro tracing flag		*/
@@ -396,6 +397,7 @@ extern KBIND kbindtbl[];
 extern BINDINGS dft_bindings;
 extern BINDINGS ins_bindings;
 extern BINDINGS cmd_bindings;
+extern BINDINGS sel_bindings;
 
 /* vars useful for writing procedures that are : commands */
 decl_uninit(int ev_end_of_cmd);

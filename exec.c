@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.219 2000/05/12 01:22:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.221 2000/05/19 01:53:06 tom Exp $
  *
  */
 
@@ -44,6 +44,7 @@ typedef struct WHLOOP {
 static int token_ended_line;  /* did the last token end at end of line? */
 
 #if !SMALLER
+
 typedef struct locals {
 	struct locals *next;
 	char *name;
@@ -59,14 +60,18 @@ typedef struct {
 	LOCALS *locals;
 	TBUFF *prefix;
 	} IFSTK;
-#else
+
+static TBUFF *line_prefix;
+
+#else	/* SMALLER */
+
 typedef struct {
 	int disabled;		/* nonzero to disable execution */
 	} IFSTK;		/* just a dummy variable to simplify ifdef's */
+
 #endif
 
 static IFSTK ifstk;
-static TBUFF *line_prefix;
 
 /* while storing away a macro, this is where it goes.
  * if NULL, we're not storing a macro.  */
@@ -2138,6 +2143,7 @@ dobuf(BUFFER *bp, int limit)	/* buffer to execute */
 	WHLOOP *whlist;
 	int save_no_msgs;
 	int save_cmd_count;
+	int counter;
 
 	static int dobufnesting; /* flag to prevent runaway recursion */
 
@@ -2151,7 +2157,9 @@ dobuf(BUFFER *bp, int limit)	/* buffer to execute */
 		save_arguments(bp);
 		no_msgs = TRUE;
 
-		for (cmd_count = 1; cmd_count <= limit; cmd_count++) {
+		for (counter = 1; counter <= limit; counter++) {
+			if (dobufnesting == 1)
+				cmd_count = counter;
 
 #if ! SMALLER
 			if (setup_dobuf(bp, &whlist) != TRUE) {

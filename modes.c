@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.196 2000/04/25 01:50:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.197 2000/05/19 00:55:26 tom Exp $
  *
  */
 
@@ -1576,7 +1576,6 @@ reset_color(int n)
 #if OPT_ENUM_MODES
 static FSM_CHOICES *my_colors;
 static FSM_CHOICES *my_hilite;
-#endif
 
 static int
 choosable_color(const char *name, int n)
@@ -1592,6 +1591,7 @@ choosable_color(const char *name, int n)
 	}
 	return (n == C_BLACK) || (n == NCOLORS-1);
 }
+#endif
 
 /*
  * Set the number of colors to a subset of that which is configured.  The main
