@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.299 1997/09/01 23:15:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.300 1997/09/04 23:14:58 tom Exp $
  *
  */
 
@@ -436,7 +436,7 @@ main(int argc, char *argv[])
 				bprintf("%s", vileinit);
 				/* if we leave it scratch, swbuffer(obp) 
 					may zot it, and we may zot it again */
-				b_clr_flags(vbp,BFSCRTCH);
+				b_clr_scratch(vbp);
 				set_rdonly(vbp, vbp->b_fname, MDVIEW);
 
 				/* go execute it! */

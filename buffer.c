@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.159 1997/08/30 00:51:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.160 1997/09/04 23:12:58 tom Exp $
  *
  */
 
@@ -1105,6 +1105,7 @@ namebuffer(int f GCC_UNUSED, int n GCC_UNUSED)	/*	Rename the current buffer	*/
 
 	set_bname(curbp, bufn);		/* copy buffer name to structure */
 	curwp->w_flag |= WFMODE;	/* make mode line replot */
+	b_clr_scratch(curbp);		/* if renamed, we must want it */
 	mlerase();
 	updatelistbuffers();
 	return(TRUE);

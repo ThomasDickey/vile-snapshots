@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.316 1997/08/30 01:10:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.317 1997/09/04 23:12:31 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -1689,6 +1689,7 @@ typedef struct	BUFFER {
 #define b_clr_recentlychanged(bp) b_clr_flags(bp, BFRCHG)
 #define b_clr_counted(bp)       b_clr_flags(bp, BFSIZES)
 #define b_clr_obsolete(bp)      b_clr_flags(bp, BFUPBUFF)
+#define b_clr_scratch(bp)       b_clr_flags(bp, BFSCRTCH)
 
 #if OPT_HILITEMATCH
 #define b_match_attrs_dirty(bp)	(bp)->b_highlight |= HILITE_DIRTY

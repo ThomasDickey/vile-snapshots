@@ -1,5 +1,19 @@
 Changes for vile 7.2 (released ??? ??? ??, 1997)
 
+(tom)	970903 (k)
+	+ modify rename-buffer so that if we rename a buffer, we'll clear the
+	  flag that marks it for removal when popped-down.
+	+ modify show-modes command so that it will format more than 3 columns
+	  if the screen is wide enough.
+	+ correct logic of delfrommap(), which dumped core when unmapping
+	  a single-character map (reported by Paul Fox).
+	+ modify show-majormodes so that giving a count will make it show all
+	  of the submodes prefixed by the majormode name, e.g., c-suffixes
+	  (suggested by Paul Fox).
+	+ modify documentation to use "define-majormode" and "remove-majormode"
+	  for clarity, other related fixes to documentation (suggested by Paul
+	  Fox).
+
 (tom)	970902 (j)
 	+ correct logic in find_mode() that did not find majormode qualifiers
 	  for majormodes that began similarly (e.g., "com" masked by "c").

@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.78 1997/08/22 09:32:58 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.79 1997/09/04 23:15:04 tom Exp $
  *
  */
 
@@ -202,7 +202,7 @@ bs_init(const char * name)
 	register BUFFER *bp;
 
 	if ((bp = bfind(name, BFINVS)) != 0) {
-		b_clr_flags(bp, BFSCRTCH);	/* make it nonvolatile */
+		b_clr_scratch(bp);	/* make it nonvolatile */
 		(void)bclear(bp);
 		bp->b_active = TRUE;
 	}

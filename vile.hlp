@@ -970,9 +970,9 @@ Editor modes
 	sense when used with universal modes, since there is only one
 	copy of these.
 
-	To define majormodes, use ":define-mode".  To remove the majormode,
-	use ":remove-mode".  Some keywords (e.g., suffixes) are
-	automatically associated with each majormode.  To associate a
+	To define majormodes, use ":define-majormode".  To remove the
+	majormode, use ":remove-majormode".  Some keywords (e.g., suffixes)
+	are automatically associated with each majormode.  To associate a
 	buffer mode with a majormode, use ":define-submode".  To remove the
 	association, use ":remove-submode".  Once associated, submodes can
 	be set and unset just like regular buffer modes.  Use
@@ -1087,10 +1087,10 @@ Editor modes
 		with the UNIX crypt(1) routines, and may not be built
 		into your version of vile by default. (B)
 
-	comment-prefix A regular expression denoting the portion of a line that
-		is replicated and untouched, except for leading indention when
-		doing text formatting.  The expression should begin with "^",
-		e.g., the default value
+	comment-prefix A regular expression denoting the portion of a line
+		that is replicated and untouched, except for leading
+		indentation when doing text formatting.  The expression
+		should begin with "^", e.g., the default value
 			^\s*\(\s*[#*>]\)\+
 		is useful for matching shell comments (#), multi-line C
 		comments (*) and email (>).  (B)
@@ -3493,4 +3493,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.327 1997/09/01 23:01:17 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.328 1997/09/04 00:42:37 tom Exp $

@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.332 1997/09/02 18:06:26 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.333 1997/09/04 23:56:27 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1241,16 +1241,104 @@ input.  It's as if the entire pipe operation was discarded.
 visible, but is not, since the "Read xx lines" message overwrites it, the fix
 would be to propagate the error up better - tom]
 
+-- 97-04-23 (Ron Olsen <ronolsen@lucent.com>)
+
+I recently built version 7.0h of vile and xvile on my UnixWare 2.03 system.
+
+vile and xvile (X11 version) seem to work well, but I'm having a problem with
+filename completion with the MOTIF/menu version of xvile:
+
+I have to hit TAB three times to get the list of possible completions, and then
+when I enter the completion and hit Enter, xvile ignores the Enter key until I
+use the mouse to scroll a window, and then hit Enter again.  It looks as if
+there are circumstances in which keyboard input is being ignored.
+
+I also have minor pixelization problem with the MOTIF version:  a thin red
+border gets drawn around my window the second time I hit TAB during filename
+completion.
+
 -- 97-04-30 (tom)
 
 Piping to vile in WinNT console works, but the mouse doesn't work after
 reopening the console.
 
+-- 97-05-16 (Richard A Ward <wardra@nb.rockwell.com>)
+
+I just started using vile 7.1 and I think there may be a new bug.  When I
+delete a large number of lines and try to undo, vile seems to hang.
+
+-- 97-05-25 (Guido Socher <eedgus@aken104>)
+
+Quoted motion should be usable as ranges for the colon commands.  I.e., you
+type "q:  motion-command q" and only complete lines are marked.  The cursor
+jumps to the command input line as soon as you type the final q and prints the
+range (e.g., 3,28).
+
 -- 97-06-05 (tom)
 
 The 'map' functions should allow mappings with embedded nulls.
+
+-- 97-06-12 (Adam Denton <adenton@genre.com>)
+
+I often have two vile windows open w/ different files in each.  It is
+difficult, however, to make both windows have the SAME file from this point, as
+if you repond to the "_" (underscore) command with a file that's in another
+window, vile doesn't put that file in the current window; it simply changes you
+to the other window.  So I end up killing the extra window and re-making it
+(^^K ^^X-2) whenever I need 2 views of the same file, which is quite often.
+
+[i know of no way to force this.  it annoys me too.  i can picture two
+possibilities:
+    1) a command that forces the current window to a particular buffer, or
+    2) a command that forces the current window to its _previous_ buffer, since
+	most of the time i want this i a) had two views on a buffer,
+	b) typed ":e someotherfile", and now c) want to get back to my
+	two views, with the cursor position correctly.  i'm not sure how
+	easy or natural it would be to restore the cursor position with
+	option 1).
+
+paul]
+
+-- 97-06-24 (Peter Gallasch <gal@adv.magwien.gv.at>)
+
+No core dump was made, and no file in /tmp/ was created
+
+[Reports a problem where xvile 7.1 exited with SIGIOT, no apparent reason.  I
+tried duplicating it, with limited success:  after running several hours with
+Purify, xvile exited (I think the linewrap logic is involved, he uses it in his
+.vilerc).  However, I'd not told Purify to follow child processed (which is
+needed for X).  Doing that, I had no repeat of the problem.  - tom]
+
+-- 97-07-07 (Larry Gensch <gensch@zk3.dec.com>)
+
+I have noticed another oddity in the 7.1 version of vile:  I use the window
+manager fvwm2.0.45, and use the following focus policies:
+
+Style "*"	ClickToFocus, RandomPlacement, SmartPlacement
+GlobalOpts	ClickToFocusPassesClick,ClickToFocusRases
+
+When xvile is launched from an xterm, it occasionally doesn't auto-focus like
+it used to.  In other words, I have always expected xvile to become the window
+with the focus when it pops up (even if the cursor isn't in the window).  Has
+something changed between the last 6.x version and version 7 that would cause
+this behavior?
+
+-- 97-08-18 (Paul Laub <P_Laub@fccc.edu>)
+
+The setting readonly-on-readonly fails to work in dos (vile 7.1).  I want to
+put both
+
+    set readonly-on-readonly
+    set view-on-readonly
+
+in vile.rc and have them work. 
 
 -- 97-09-02 (tom)
 
 The majormode code leaks memory in the qualifiers (e.g., suffixes and
 preamble).
+
+-- 97-09-04 (tom)
+
+format-til does not work on rectangular regions (it should also take
+into account the comment-prefix).
