@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.330 1997/08/25 10:14:22 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.331 1997/09/01 23:23:17 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -903,12 +903,6 @@ selectable.  not a big deal yet....
 
 ------------------
 
-Global "cmode" is on.  Edit a new (empty) buffer.  "cmode" is off for that
-buffer.  Do a ":unsetl cmode".  This should have no affect.  What it actually
-does is turn "cmode" on!
-
------------------
-
 "visual-matches" mode should be conditional on file size, or perhaps
 on time taken to do the search...
 
@@ -1181,10 +1175,6 @@ probably should use WINMARK logic, but it's too late (pre-7.0) to do this now.
 
 -- 97-01-17 (tom)
 
-make tcap.c & x11.c have keydefs up to 64 for the former, F35 for the latter.
-
--- 97-01-17 (tom)
-
 mouse-clicking should set the position so I can use ` or ' to jump back.
 
 -- 97-01-18 (Paul Fox <pgf@foxharp.boston.ma.us>)
@@ -1251,21 +1241,10 @@ input.  It's as if the entire pipe operation was discarded.
 visible, but is not, since the "Read xx lines" message overwrites it, the fix
 would be to propagate the error up better - tom]
 
--- 97-04-21 (Joseph F. Garvey <garvey@garveys.raleigh.ibm.com>)
-
-There needs to be a mode (":set tagignorecase", ":set tagnoignorecase") to turn
-case sensitivity on/off when matching tags in column one of a tags file.
-
-[Perhaps for 7.2 - tom]
-
 -- 97-04-30 (tom)
 
 Piping to vile in WinNT console works, but the mouse doesn't work after
 reopening the console.
-
--- 97-05-01 (tom)
-
-The $startup-file variable should be set by the command-line '@' option.
 
 -- 97-06-05 (tom)
 

@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.297 1997/08/13 00:20:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.299 1997/09/01 23:15:42 tom Exp $
  *
  */
 
@@ -407,6 +407,8 @@ main(int argc, char *argv[])
 	if (vileinit && *vileinit) {
 		if ((startstat = startup(vileinit)) != TRUE)
 			goto begin;
+		free(startup_file);
+		startup_file = strmalloc(vileinit);
 	} else {
 
 		/* now vileinit is the contents of their VILEINIT variable */
@@ -944,7 +946,12 @@ global_val_init(void)
 	/* where do comments start and end, for formatting them */
 	set_global_b_val_rexp(VAL_COMMENTS,
 		new_regexval(
-			"^\\s*/\\?[#*>]\\+/\\?\\s*$",
+			"^\\s*/\\?\\(\\s*[#*>]\\)\\+/\\?\\s*$",
+			TRUE));
+
+	set_global_b_val_rexp(VAL_CMT_PREFIX,
+		new_regexval(
+			"^\\s*\\(\\s*[#*>]\\)\\+",
 			TRUE));
 
 	/* where do sections start? */

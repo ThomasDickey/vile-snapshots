@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.145 1997/07/04 19:55:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.146 1997/09/01 22:40:50 tom Exp $
  *
  */
 
@@ -1302,7 +1302,7 @@ char *str)		/* string to upper case */
 	sp = str;
 	while (*sp) {
 		if (islower(*sp))
-			*sp += 'A' - 'a';
+			*sp = toupper(*sp);
 		++sp;
 	}
 	return(str);
@@ -1318,7 +1318,7 @@ char *str)		/* string to lower case */
 	sp = str;
 	while (*sp) {
 		if (isupper(*sp))
-			*sp += 'a' - 'A';
+			*sp = tolower(*sp);
 		++sp;
 	}
 	return(str);

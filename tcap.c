@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.91 1997/06/07 13:33:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.92 1997/08/30 12:53:48 tom Exp $
  *
  */
 
@@ -70,6 +70,14 @@
 	extern char *tparam (char *cstring, char *buf, int size, ...);
 #    endif
 #  endif
+#endif
+
+#if HAVE_TPARM	/* usually terminfo */
+#define MY_TPARM(cap,code) tparm(cap, code)
+#else
+#if HAVE_TPARAM	/* GNU termcap */
+#define MY_TPARM(cap,code) tparam(cap, (char *)0, 0, code)
+#endif
 #endif
 
 static char *CM, *CE, *CL, *SO, *SE;
@@ -203,7 +211,8 @@ static const struct {
     { CAPNAME("FP","kf35"),	KEY_F35 }
 };
 
-static int  tcapcres ( char *cres );
+static int  colors_are_really_ANSI (void);
+static int  tcapcres (char *cres);
 static void putnpad(char *str, int n);
 static void putpad(char *str);
 static void tcapbeep (void);
@@ -212,11 +221,11 @@ static void tcapeeol (void);
 static void tcapeeop (void);
 static void tcapkclose (void);
 static void tcapkopen (void);
-static void tcapmove(int row, int col);
+static void tcapmove (int row, int col);
 static void tcapopen (void);
-static void tcapscroll_delins(int from, int to, int n);
-static void tcapscroll_reg(int from, int to, int n);
-static void tcapscrollregion(int top, int bot);
+static void tcapscroll_delins (int from, int to, int n);
+static void tcapscroll_reg (int from, int to, int n);
+static void tcapscrollregion (int top, int bot);
 
 #if OPT_COLOR
 static void tcapfcol ( int color );
@@ -475,6 +484,8 @@ tcapopen(void)
 	if (ncolors == 8 && AF != 0 && AB != 0) {
 		Sf = AF;
 		Sb = AB;
+		set_palette(ANSI_palette);
+	} else if (colors_are_really_ANSI()) {
 		set_palette(ANSI_palette);
 	} else
 		set_palette(UNKN_palette);
@@ -765,6 +776,34 @@ tcapscrollregion(int top,int bot)
 }
 
 #if	OPT_COLOR
+/*
+ * This ugly hack is designed to work around an incompatibility built into
+ * non BSD-derived systems that implemented color based on a SVr4 manpage.
+ */
+static int
+colors_are_really_ANSI (void)
+{
+	int ok = FALSE;
+	int n;
+	char cmp[BUFSIZ], *t;
+
+	if (Sf != 0 && Sb != 0 && ncolors == 8) {
+		for (n = 0; n < ncolors; n++) {
+			(void)lsprintf(cmp, "\033[4%dm", n);
+			if ((t = MY_TPARM(Sb, n)) == 0 || strcmp(t, cmp))
+				break;
+			free(t);
+			(void)lsprintf(cmp, "\033[3%dm", n);
+			if ((t = MY_TPARM(Sf, n)) == 0 || strcmp(t, cmp))
+				break;
+			free(t);
+		}
+		if (n >= ncolors)	/* everything matched */
+			ok = TRUE;
+	}
+	return ok;
+}
+
 static void
 show_ansi_colors (void)
 {
@@ -778,28 +817,16 @@ show_ansi_colors (void)
 			putpad(OrigColors);
 	}
 
-#if HAVE_TPARM
 	if ((shown_fcolor != NO_COLOR)
-	 && (t = tparm(Sf, shown_fcolor)) != 0)
-		putpad(t);
-	if ((shown_bcolor != NO_COLOR)
-	 && (t = tparm(Sb, shown_bcolor)) != 0)
-		putpad(t);
-#else
-#if HAVE_TPARAM
-	if ((shown_fcolor != NO_COLOR)
-	 && (t = tparam(Sf, (char *)0, 0, shown_fcolor)) != 0) {
+	 && (t = MY_TPARM(Sf, shown_fcolor)) != 0) {
 		putpad(t);
 		(free)(t);
 	}
 	if ((shown_bcolor != NO_COLOR)
-	 && (t = tparam(Sb, (char *)0, 0, shown_bcolor)) != 0) {
+	 && (t = MY_TPARM(Sb, shown_bcolor)) != 0) {
 		putpad(t);
 		(free)(t);
 	}
-#endif
-#endif
-
 }
 
 static void

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.79 1997/08/13 23:06:45 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.82 1997/09/01 23:01:38 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -85,6 +85,7 @@ bool							# MD prefix
 	"ShowMatch"	SHOWMAT		0		# show matching braces during insert
 	"ShowMoDe"	SHOWMODE	chgd_major	# show insert/replace/command mode
 	"TabInsert"	TABINSERT	0		# okay to insert tab chars
+	"TagignoreCase"	TAGIGNORECASE	0		!SMALLER # ignore upper/lower case in tags
 	"TagRelative"	TAGSRELTIV	0		# tags are relative to tagsfile path
 	"TagWord"	TAGWORD		0		# apply tag to whole word, not only string at cursor
 	"terse"		TERSE		0		# be terse -- suppress messages
@@ -109,6 +110,7 @@ string							# VAL_ prefix
 	"tags"		TAGS		0		# list of tags files
 regex							# VAL_ prefix
 	"comments"	COMMENTS	0		# matches leading comment for comment reformatting
+	"comment-prefix" CMT_PREFIX	0		# prefix to ignore/preserve when formatting comment
 	"paragraphs"	PARAGRAPHS	0		# delimits a paragraph
 	"sections"	SECTIONS	0		# delimits a section
 	"sentences"	SENTENCES	0		# delimits a sentence

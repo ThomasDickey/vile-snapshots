@@ -1,5 +1,27 @@
 Changes for vile 7.2 (released ??? ??? ??, 1997)
 
+(tom)	970901 (i)
+	+ if the command-line '@' option is used, set the $startup-file
+	  variable to correspond to the startup file which is used.
+	+ add tagignorecase mode, which causes tag searches to be done ignoring
+	  case (requested by Joseph F. Garvey <garvey@garveys.raleigh.ibm.com>).
+	+ initialize last_eolchar in docmd() so that 'set' command works
+	  properly in a macro.
+	+ add %B substition for error-buffer regular expressions to allow
+	  using [Standard Input] and other scratch buffers as error buffers.
+	+ modify format-til command to treat '#' specially when in cmode, so
+	  no whitespace is inserted after it.
+	+ modify format-til command to support comment-prefix mode and handle
+	  repeated prefix, so that, for example, vile can now format multiple
+	  levels of email replies.
+	+ add comment-prefix mode, which specifies a regular expression that
+	  controls the portion of a line which is prefixed when formatting.
+	+ modify default setting of comments mode to make repeated prefix
+	  match (e.g., "> > >", is different from "> >").
+	+ ensure that imdying() always exits (reported by Clark Morgan).
+	+ workaround for incompatible interpretation of termcap Sf/Sb
+	  capability with BSD vs SYSV platforms (tcap.c).
+
 (tom)	970829 (h)
 	+ correct initialization of $palstr on OS/2.
 	+ correct some of the signed/unsigned warnings from IBM CSet compiler.
@@ -34,7 +56,7 @@ Changes for vile 7.2 (released ??? ??? ??, 1997)
 	  sizeof(unsigned) (reported by Larry Gensch <gensch@zk3.dec.com>).
 	+ modify vmsbuild.com to tell MMS (or MMK) to ignore warnings,
 	  workaround for an inconsistency between versions of DEC C
-	  (suggested by Andy Harper).
+	  (suggested by Andy Harper and Adam Denton).
 	+ initial implementation of majormodes, which supports grouping of
 	  buffer modes, together with qualifiers (e.g., cmode and c-suffixes).
 	  New commands include define-mode, define-submode, remove-mode,
