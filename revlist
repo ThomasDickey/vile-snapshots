@@ -1,6 +1,6 @@
-revlist for vile, version v9_3t
+revlist for vile, version v9_3u
 --------------------------------------------------------------------------------
-CHANGES	1.726
+CHANGES	1.727
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -30,10 +30,10 @@ cmdtbl	1.228
 config.emx	1.2
 config_h.in	1.2
 configure	none
-configure.in	1.189
+configure.in	1.190
 csrch.c	1.31
 curses.c	1.20
-descrip.mms	1.43
+descrip.mms	1.44
 dirstuff.h	1.24
 display.c	1.379
 djhandl.c	1.6
@@ -85,7 +85,7 @@ opers.c	1.87
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.29
-patchlev.h	1.301
+patchlev.h	1.302
 path.c	1.135
 perl.xs	1.89
 proto.h	1.520
@@ -94,7 +94,7 @@ ptypemap	1.7
 random.c	1.272
 regexp.c	1.107
 region.c	1.126
-revlist	v9_3t
+revlist	v9_3u
 search.c	1.134
 select.c	1.147
 sinstall.sh	1.1
@@ -110,7 +110,7 @@ trace.h	1.20
 ucrypt.c	1.15
 undo.c	1.84
 version.c	1.54
-vile-9.3.spec	1.19
+vile-9.3.spec	1.20
 vile.1	1.30
 vile.hlp	1.566
 vile.wmconfig	1.1
@@ -193,7 +193,7 @@ filters/fdl-filt.l	1.9
 filters/fdl.key	1.4
 filters/filterio.c	1.22
 filters/filters.c	1.88
-filters/filters.h	1.78
+filters/filters.h	1.80
 filters/filters.rc	1.173
 filters/fltstack.h	1.7
 filters/genmake.c	1.4
@@ -260,7 +260,7 @@ filters/rubyfilt.c	1.11
 filters/sccs.key	1.1
 filters/sccsfilt.l	1.10
 filters/sed-filt.c	1.19
-filters/sh-filt.l	1.56
+filters/sh-filt.l	1.57
 filters/sh.key	1.4
 filters/sml-filt.l	1.4
 filters/sml.key	1.1

@@ -5,7 +5,7 @@
 # estruct.h to make sure the correct one is #defined as "1", and the others
 # all as "0".
 #
-# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.43 2002/08/25 21:46:36 Jouk.Jansen Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.44 2003/07/04 16:52:03 tom Exp $
 
 # Editor Configuration Note
 # -------------------------
@@ -190,6 +190,7 @@ CC_DEFS = ,HAVE_STRERROR
 nebind.h \
 nefkeys.h \
 nefunc.h \
+neproto.h \
 nename.h :	cmdtbl $(MKTBLS)
 	MKTBLS cmdtbl
 

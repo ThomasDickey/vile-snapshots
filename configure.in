@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.189 $)
+AC_REVISION($Revision: 1.190 $)
 AC_PREREQ(2.13.20020210)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.189 2003/05/27 01:05:37 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.190 2003/07/09 01:20:13 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -23,7 +23,7 @@ AC_PROG_INSTALL
 
 AC_PROG_AWK
 AC_PROG_RANLIB
-AC_DECL_YYTEXT
+case $host_os in hpux*) CPPFLAGS="-DYYCHAR_ARRAY $CPPFLAGS";; esac; AC_DECL_YYTEXT
 
 CF_SUBST(archiver,AR,ar)
 CF_SUBST(archiver options,AR_OPTS,rv)

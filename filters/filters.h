@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.78 2003/05/24 15:37:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.80 2003/07/09 01:16:30 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -224,12 +224,6 @@ extern int vl_lookup_func(const char *name);
 typedef void (*EachKeyword)(const char *name, int size, const char *attr);
 
 /*
- * lex should declare these:
- */
-extern FILE *yyin;
-extern int yylex(void);
-
-/*
  * Declared in the language-specific lex file
  */
 typedef struct {
@@ -270,9 +264,17 @@ FILTER_DEF filter_def = { name, init_filter, do_filter, options }
 #define YY_STACK_USED 0
 #endif
 
+/*
+ * lex should declare these:
+ */
+extern FILE *yyin;
+
+#if defined(__GNUC__)
+extern int yylex(void);
 #ifndef yywrap
 extern int yywrap(void);
 #endif
+#endif /* __GNUC__ */
 
 /*
  * 2003/5/20 - "new" flex 2.5.31:

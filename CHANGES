@@ -1,5 +1,17 @@
 Changes for vile 9.4 (released ??? ??? ?? ????)
 
+ 20030708 (u)
+	> Tom Dickey:
+	+ modify parsing of here-document tags in sh-filt.l to allow '-', '<'
+	  and '>' characters if the tag is quoted.  This is used in some recent
+	  shar-files, e.g., cone.shar
+	+ modify filters.h to allow HP's lex program to be used:
+	  + put declarations for yylex() and yywrap() in gcc-specific ifdef
+	  + add definition of YYCHAR_ARRAY to prevent redefinition of yytext[]
+	    which caused failure to compile because HP's compiler refused to
+	    compare char* and unsigned char* pointers.
+	+ correct a missing dependency for neproto.h in descrip.mms
+
  20030630 (t)
 	> Tom Dickey:
 	+ add VMS to the OPT_CASELESS ifdef's, allowing majormodes to be
