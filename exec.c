@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.133 1997/05/25 22:36:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.137 1997/06/07 21:30:01 tom Exp $
  *
  */
 
@@ -33,7 +33,7 @@ typedef	enum {
 
 #define isSPorTAB(c) ((c) == ' ' || (c) == '\t')
 
-static	int	rangespec(char *specp, LINEPTR *fromlinep, LINEPTR *tolinep, CMDFLAGS *flagp);
+static	int	rangespec(const char *specp, LINEPTR *fromlinep, LINEPTR *tolinep, CMDFLAGS *flagp);
 
 /*	The !WHILE directive in the execution language needs to
 	stack references to pending whiles. These are stored linked
@@ -84,7 +84,7 @@ static IFSTK ifstk;
 
 /*ARGSUSED*/
 static int
-eol_range(char * buffer, int cpos, int c, int eolchar GCC_UNUSED)
+eol_range(const char * buffer, unsigned cpos, int c, int eolchar GCC_UNUSED)
 {
 	if (is_edit_char(c))
 		return FALSE;
@@ -161,7 +161,7 @@ execute_named_command(int f, int n)
 	LINEPTR toline;		/* second linespec */
 	MARK	save_DOT;
 	MARK	last_DOT;
-	char lspec[NLINE];	/* text of line spec */
+	static TBUFF *lspec;	/* text of line spec */
 	char cspec[NLINE];	/* text of command spec */
 	int cmode = 0;
 	int c;
@@ -169,7 +169,7 @@ execute_named_command(int f, int n)
 	int maybe_reg, maybe_num;
 	CMDFLAGS lflag, flags;
 
-	lspec[0] = EOS;
+	tb_scopy(&lspec, "");
 	last_DOT = DOT;
 
 	/* prompt the user to type a named command */
@@ -180,8 +180,7 @@ execute_named_command(int f, int n)
 		if (cmode == 0) {	/* looking for range-spec, if any */
 			status = kbd_reply(
 				(char *)0,	/* no-prompt => splice */
-				lspec,		/* in/out buffer */
-				sizeof(lspec),
+				&lspec,		/* in/out buffer */
 				eol_range,
 				EOS,		/* may be a conflict */
 				0,		/* no expansion, etc. */
@@ -241,7 +240,7 @@ execute_named_command(int f, int n)
 					(void)keystroke(); /* eat the delete */
 				if (--cmode <= 1) {
 					cmode = 0;
-					hst_remove(lspec);
+					hst_remove(tb_values(lspec));
 				}
 			} else if ((status == ABORT) || (lastkey == killc)) {
 				return status;
@@ -251,7 +250,7 @@ execute_named_command(int f, int n)
 					cmode--;
 					break;
 				} else {
-					if (lspec[0] == EOS) {
+					if (tb_length(lspec) <= 1) {
 						return status;
 					} else {
 						break;	/* range-only */
@@ -279,7 +278,7 @@ execute_named_command(int f, int n)
 	}
 
 	/* parse the accumulated lspec */
-	if (rangespec(lspec, &fromline, &toline, &lflag) != TRUE) {
+	if (rangespec(tb_values(lspec), &fromline, &toline, &lflag) != TRUE) {
 		mlforce("[Improper line range]");
 		return FALSE;
 	}
@@ -528,14 +527,14 @@ namedcmd(int f, int n)
 /* parse an ex-style line spec -- code culled from elvis, file ex.c, by
 	Steve Kirkendall
 */
-static char *
+static const char *
 linespec(
-register char	*s,		/* start of the line specifier */
+register const char	*s,	/* start of the line specifier */
 LINEPTR		*markptr)	/* where to store the mark's value */
 {
 	int		num;
 	LINE		*lp;	/* where the linespec takes us */
-	register char	*t;
+	register const char *t;
 	int		status;
 
 	(void)setmark();
@@ -647,12 +646,12 @@ LINEPTR		*markptr)	/* where to store the mark's value */
 */
 static int
 rangespec(
-char		*specp,		/* string containing a line range */
+const char	*specp,		/* string containing a line range */
 LINEPTR		*fromlinep,	/* first linespec */
 LINEPTR		*tolinep,	/* second linespec */
 CMDFLAGS	*flagp)
 {
-	register char	*scan;		/* used to scan thru specp */
+	register const char *scan;	/* used to scan thru specp */
 	LINEPTR		fromline;	/* first linespec */
 	LINEPTR		toline;		/* second linespec */
 
@@ -1038,10 +1037,10 @@ char *tok)	/* buffer to place argument */
 
 int
 macliteralarg(	/* get a macro line argument */
-char *tok)	/* buffer to place argument */
+TBUFF **tok)	/* buffer to place argument */
 {
 	/* grab everything on this line, literally */
-	(void)strcpy(tok, execstr);
+	(void)tb_scopy(tok, execstr);
 	execstr += strlen(execstr);
 	token_ended_line = TRUE;
 	return TRUE;
@@ -1604,7 +1603,7 @@ static const char *TraceIndent(int level, const char *eline)
 }
 #define TRACE_INDENT(level, eline) TraceIndent(level, eline)
 #else
-#define TRACE_INDENT(level, eline) /* nothing */
+#define TRACE_INDENT(level, eline) "" /* nothing */
 #endif
 
 static int

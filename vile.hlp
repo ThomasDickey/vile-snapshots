@@ -3210,14 +3210,19 @@ DOS specifics
 	you write the file.  In both cases, "dos" mode becomes a so-called
 	"local" mode, so that the rest of your buffers will be unaffected.
 
-	If you wish to change the screen colors which correspond to vile's
-	internal notion of black, red, green, yellow, blue, magenta, cyan, and
-	white, and their bright version, put a line in your vile.rc which
-	resets the "palette" variable.  By default its value is "0 4 2 6 1 5 3
-	7 8 12 10 14 9 13 11 15" which associates each of the above colors with
-	the appropriate PC color attribute.  Under MS-DOS, the palette values
-	are masked with 7 before being used as background colors, to prevent
-	blinking characters.
+	Vile supports a 16-color palette under DOS, which includes:
+
+		black, red, green, brown, blue, magenta, cyan, 
+		lightgray, gray, brightred, brightgreen, yellow,
+		brightblue, brightmagenta, brightcyan, white
+
+	If you wish to change vile's internal notion of these colors, put
+	a line in your vile.rc which resets the "palette" variable.  By
+	default its value is "0 4 2 6 1 5 3 7 8 12 10 14 9 13 11 15",
+	which associates each of the above colors with the appropriate 
+	PC color attribute.  Under MS-DOS, the palette values are masked 
+	with 7 before being used as background colors, to prevent blinking 
+	characters.
 
 
 Differences from vi
@@ -3456,4 +3461,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.322 1997/05/26 13:34:49 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.323 1997/05/27 02:03:44 cmorgan Exp $

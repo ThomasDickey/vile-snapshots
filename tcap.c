@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.90 1997/05/26 12:06:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.91 1997/06/07 13:33:39 tom Exp $
  *
  */
 
@@ -790,12 +790,12 @@ show_ansi_colors (void)
 	if ((shown_fcolor != NO_COLOR)
 	 && (t = tparam(Sf, (char *)0, 0, shown_fcolor)) != 0) {
 		putpad(t);
-		free(t);
+		(free)(t);
 	}
 	if ((shown_bcolor != NO_COLOR)
 	 && (t = tparam(Sb, (char *)0, 0, shown_bcolor)) != 0) {
 		putpad(t);
-		free(t);
+		(free)(t);
 	}
 #endif
 #endif

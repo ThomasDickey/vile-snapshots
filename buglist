@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.328 1997/05/26 14:19:53 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.329 1997/06/06 10:36:53 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1274,3 +1274,7 @@ reopening the console.
 -- 97-05-01 (tom)
 
 The $startup-file variable should be set by the command-line '@' option.
+
+-- 97-06-05 (tom)
+
+The 'map' functions should allow mappings with embedded nulls.

@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.73 1997/05/25 23:05:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.75 1997/06/07 21:25:00 tom Exp $
  *
  */
 
@@ -833,7 +833,7 @@ freeMyList(void)
 #endif
 
 static void
-force_output(int c, char *buf, int *pos)
+force_output(int c, char *buf, unsigned *pos)
 {
 	kbd_putc(c);
 	TTflush();
@@ -864,7 +864,7 @@ init_filec(const char *buffer_name)
  * return it would be too slow.
  */
 int
-path_completion(int c, char *buf, int *pos)
+path_completion(int c, char *buf, unsigned *pos)
 {
 	int	code	= FALSE,
 		action	= (c == NAMEC || c == TESTC),
@@ -888,7 +888,7 @@ path_completion(int c, char *buf, int *pos)
 	} else if (action) {
 		char	*s;
 		char	path[NFILEN];
-		int	oldlen,
+		size_t	oldlen,
 			newlen;
 
 		/* initialize only on demand */
@@ -1220,8 +1220,8 @@ char *	result)
 	}
 #endif
 	if (clexec || isnamedcmd) {
-		if (tb_values((*buffer)) != 0)
-			(void)strcpy(Reply, tb_values((*buffer)));
+		if (tb_values(*buffer) != 0)
+			(void)strcpy(Reply, tb_values(*buffer));
 		else
 			*Reply = EOS;
 

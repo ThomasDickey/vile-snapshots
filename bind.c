@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.151 1997/05/25 22:56:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.156 1997/06/07 21:23:31 tom Exp $
  *
  */
 
@@ -164,7 +164,7 @@ makechrslist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
  * Find a special-character definition, given the name
  */
 static int
-chr_lookup(char *name)
+chr_lookup(const char *name)
 {
 	register int	j;
 	for (j = 0; TermChrs[j].name != 0; j++)
@@ -178,7 +178,7 @@ chr_lookup(char *name)
  * 'kbd_reply()' to setup the mode-name completion and query displays.
  */
 static int
-chr_complete(int c, char *buf, int *pos)
+chr_complete(int c, char *buf, unsigned *pos)
 {
 	return kbd_complete(FALSE, c, buf, pos, (const char *)&TermChrs[0],
 		sizeof(TermChrs[0]));
@@ -187,8 +187,8 @@ chr_complete(int c, char *buf, int *pos)
 static int
 /*ARGSUSED*/
 chr_eol(
-	char * buffer GCC_UNUSED,
-	int cpos GCC_UNUSED,
+	const char * buffer GCC_UNUSED,
+	unsigned cpos GCC_UNUSED,
 	int c GCC_UNUSED,
 	int eolchar GCC_UNUSED)
 {
@@ -209,15 +209,15 @@ int
 set_termchrs(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register int s, j;
-	char	name[NLINE];
+	static	TBUFF *name;
 	int c;
 
 	/* get the table-entry */
-	*name = EOS;
-	if ((s = kbd_reply("Terminal setting: ", name, sizeof(name), chr_eol,
+	tb_scopy(&name, "");
+	if ((s = kbd_reply("Terminal setting: ", &name, chr_eol,
 		' ', 0, chr_complete)) == TRUE) {
 
-		j = chr_lookup(name);
+		j = chr_lookup(tb_values(name));
 		switch (TermChrs[j].how_to) {
 		case 's':
 		default:
@@ -1624,7 +1624,7 @@ popdown_completions(void)
 /*
  * Attempt to partial-complete the string, char at a time
  */
-static int
+static SIZE_T
 fill_partial(
 int	case_insensitive GCC_UNUSED,
 char	*buf,
@@ -1634,7 +1634,7 @@ const char *last,
 SIZE_T	size_entry)
 {
 	register const char *p;
-	register int	n = pos;
+	register SIZE_T	n = pos;
 	const char *this_name = THIS_NAME(first);
 
 #if 0 /* case insensitive reply correction doesn't work reliably yet */
@@ -1735,7 +1735,7 @@ kbd_complete(
 int	case_insensitive,
 int	c,		/* TESTC, NAMEC or isreturn() */
 char	*buf,
-int	*pos,
+unsigned *pos,
 const char *table,
 SIZE_T	size_entry)
 {
@@ -1855,7 +1855,7 @@ SIZE_T	size_entry)
  */
 static int
 is_shift_cmd(
-char	*buffer,
+const char *buffer,
 int	cpos)
 {
 	register int c = *buffer;
@@ -1893,8 +1893,8 @@ int	cpos)
 
 static int
 eol_command(
-char *	buffer,
-int	cpos,
+const char * buffer,
+unsigned cpos,
 int	c,
 int	eolchar)
 {
@@ -1932,7 +1932,7 @@ static int
 cmd_complete(
 int	c,
 char	*buf,
-int	*pos)
+unsigned *pos)
 {
 	register int status;
 #if OPT_HISTORY
@@ -1942,7 +1942,7 @@ int	*pos)
 	 * ">>>").
 	 */
 	if ((*pos > 1) && is_shift_cmd(buf, *pos)) {
-		int	len = 1;
+		unsigned len = 1;
 		char	tmp[NLINE];
 		tmp[0] = *buf;
 		tmp[1] = EOS;
@@ -1970,26 +1970,32 @@ const char *prompt,
 char	*buffer)
 {
 	int	kbd_flags = KBD_EXPCMD|KBD_NULLOK|((NAMEC != ' ') ? 0 : KBD_MAYBEC);
+	int	code;
+	static	TBUFF *temp;
+	ALLOC_T	len = NLINE;
 
-	*buffer = EOS;
+	tb_scopy(&temp, "");
 #if COMPLETE_FILES
 	init_filec(FILECOMPLETION_BufName);
 #endif
-	return kbd_reply(
+	code = kbd_reply(
 		prompt,		/* no-prompt => splice */
-		buffer,		/* in/out buffer */
-		NLINE,		/* sizeof(buffer) */
+		&temp,		/* in/out buffer */
 		eol_command,
 		' ',		/* eolchar */
 		kbd_flags,	/* allow blank-return */
 		cmd_complete);
+	if (len > tb_length(temp))
+		len = tb_length(temp);
+	strncpy0(buffer, tb_values(temp), len);
+	return code;
 }
 
 #if OPT_MENUS
 /* FIXME: reuse logic from makefuncdesc() */
 char *give_accelerator ( char *bname )
 {
-	int 			i, n;
+	size_t 			i, n;
 	register KBIND 	*kbp;
 	const CMDFUNC 	*cmd;
 	static char 	outseq[NLINE];

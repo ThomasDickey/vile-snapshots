@@ -7,7 +7,7 @@
  *  Author:  Curtis Smith
  *  Last Updated: 07/14/87
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.29 1996/04/14 23:37:50 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.30 1997/06/07 18:14:34 tom Exp $
  *
  */
 
@@ -42,6 +42,7 @@ extern	int	eolexist, revexist;
 extern	char	sres[];
 
 /** SMG stuff (just like termcap) */
+static	int	initialized;
 static	int	termtype;
 static	char *	begin_reverse;
 static	char *	end_reverse;
@@ -128,6 +129,11 @@ putpad_tgoto(request_code, parm1, parm2)
 	register char * cp;
 	
 	register int i;
+
+	if (!initialized) {
+		printf("\n");
+		return;
+	}
 
 	/* Set the arguments into the arg_list array
 	 */
@@ -322,7 +328,7 @@ vmsgtty(void)
 	short fd;
 	int status;
 	struct iosb iostatus;
-	$DESCRIPTOR(devnam, "SYS$INPUT");
+	$DESCRIPTOR(devnam, "SYS$COMMAND");
 
 	/* Assign input to a channel */
 	status = sys$assign(&devnam, &fd, 0, 0);
@@ -430,6 +436,7 @@ vmsopen(void)
 	for (i = TABLESIZE(keyseqs); i--; ) {
 		addtosysmap(keyseqs[i].seq, strlen(keyseqs[i].seq), keyseqs[i].code);
 	}
+	initialized = TRUE;
 }
 
 

@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.3 1997/05/25 21:08:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.4 1997/06/07 13:31:31 tom Exp $
  *
  */
 #include "estruct.h"
@@ -278,7 +278,7 @@ do_calloc (unsigned nmemb, unsigned size)
  * Entrypoint so we can validate pointers
  */
 void
-dofree(char *oldp)
+dofree(void *oldp)
 {
 	count_freed++;
 	LOG_PTR("dealloc ", oldp)

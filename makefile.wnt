@@ -1,12 +1,12 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.16 1997/05/26 14:59:10 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.17 1997/05/27 09:59:12 cmorgan Exp $
 #
 #
 !include <ntwin32.mak>
 
-CFLAGS = $(cvars) $(cdebug) -nologo -DFIXME_VM -DWIN32_LEAN_AND_MEAN -G4 -Dscrn_chosen 
+CFLAGS = $(cvars) $(cdebug) -nologo -DWIN32_LEAN_AND_MEAN -G4 -Dscrn_chosen 
 LDFLAGS = -nologo -pdb:none
 
 # these are normal editable headers

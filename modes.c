@@ -7,7 +7,7 @@
  * Original code probably by Dan Lawrence or Dave Conroy for MicroEMACS.
  * Major extensions for vile by Paul Fox, 1991
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.86 1997/05/26 13:40:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.89 1997/06/07 21:31:49 tom Exp $
  *
  */
 
@@ -692,7 +692,7 @@ legal_fsm(const char *val)
 }
 
 static int
-fsm_complete(int c, char *buf, int *pos)
+fsm_complete(int c, char *buf, unsigned *pos)
 {
     if (isdigit(*buf)) {		/* allow numbers for colors */
 	if (c != NAMEC)  		/* put it back (cf: kbd_complete) */
@@ -873,7 +873,7 @@ listmodes(int f GCC_UNUSED, int n GCC_UNUSED)
  * 'kbd_reply()' to setup the mode-name completion and query displays.
  */
 static int
-mode_complete(int c, char *buf, int *pos)
+mode_complete(DONE_ARGS)
 {
 	return kbd_complete(FALSE, c, buf, pos,
 		(const void *)&all_modes[0], sizeof(all_modes[0]));
@@ -881,7 +881,7 @@ mode_complete(int c, char *buf, int *pos)
 
 int
 /*ARGSUSED*/
-mode_eol(char * buffer GCC_UNUSED, int cpos GCC_UNUSED, int c, int eolchar)
+mode_eol(const char * buffer GCC_UNUSED, unsigned cpos GCC_UNUSED, int c, int eolchar)
 {
 	return (c == ' ' || c == eolchar);
 }
@@ -944,32 +944,33 @@ do_a_mode(int kind, int global)
 {
 	VALARGS	args;
 	register int	s;
-	static char cbuf[NLINE]; 	/* buffer to receive mode name into */
+	static TBUFF *cbuf; 	/* buffer to receive mode name into */
 
 	/* prompt the user and get an answer */
+	tb_scopy(&cbuf, "");
 	if ((s = kbd_reply(
 		global	? "Global value: "
 			: "Local value: ",
-		cbuf, (int)sizeof(cbuf)-1,
+		&cbuf,
 		mode_eol, '=', KBD_NORMAL|KBD_LOWERC, mode_complete)) != TRUE)
 		return ((s == FALSE) ? SORTOFTRUE : s);
 
-	if (!strcmp(cbuf,"all")) {
+	if (!strcmp(tb_values(cbuf), "all")) {
 		hst_glue(' ');
 		return listmodes(FALSE,1);
 	}
 
-	if ((s = find_mode(cbuf, global, &args)) != TRUE) {
+	if ((s = find_mode(tb_values(cbuf), global, &args)) != TRUE) {
 #if OPT_EVAL
-		if (!global && (s = find_mode(cbuf, TRUE, &args)) == TRUE) {
-			mlforce("[Not a local mode: \"%s\"]", cbuf);
+		if (!global && (s = find_mode(tb_values(cbuf), TRUE, &args)) == TRUE) {
+			mlforce("[Not a local mode: \"%s\"]", tb_values(cbuf));
 			return FALSE;
 		}
-		return set_variable(cbuf);
+		return set_variable(tb_values(cbuf));
 #else
-		mlforce("[Not a legal set option: \"%s\"]", cbuf);
+		mlforce("[Not a legal set option: \"%s\"]", tb_values(cbuf));
 #endif
-	} else if ((s = adjvalueset(cbuf, kind, global, &args)) != 0) {
+	} else if ((s = adjvalueset(tb_values(cbuf), kind, global, &args)) != 0) {
 		if (s == TRUE)
 			mlerase();	/* erase the junk */
 		return s;

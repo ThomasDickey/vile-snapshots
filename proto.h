@@ -4,12 +4,14 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.244 1997/05/26 13:30:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.249 1997/06/07 21:27:42 tom Exp $
  *
  */
 
 extern int main (int argc, char **argv);
+#ifndef strmalloc
 extern char *strmalloc (const char *s);
+#endif
 extern char *strend (const char *s);
 extern void tidy_exit (int code);
 extern int no_memory (const char *s);
@@ -76,7 +78,7 @@ extern void kbd_puts (const char *s);
 extern void kbd_erase (void);
 extern void kbd_init (void);
 extern void kbd_unquery (void);
-extern int kbd_complete (int case_insensitive, int c, char *buf, int *pos, const char *table, SIZE_T size_entry);
+extern int kbd_complete (int case_insensitive, int c, char *buf, unsigned *pos, const char *table, SIZE_T size_entry);
 extern int kbd_engl_stat (const char *prompt, char *buffer);
 extern void popdown_completions (void);
 #if OPT_MENUS
@@ -222,7 +224,7 @@ extern char *skip_string (char *str);
 extern char *skip_text (char *str);
 #endif
 #if OPT_EVAL
-extern int set_variable (char *name);
+extern int set_variable (const char *name);
 #endif
 #if OPT_EVAL || OPT_COLOR
 extern int set_palette (const char *value);
@@ -326,7 +328,7 @@ extern void hst_glue (int c);
 extern void hst_append (char *cmd, int glue);
 extern void hst_remove (const char *cmd);
 extern void hst_flush (void);
-extern int edithistory (char *buffer, int *position, int *given, int options, int (*func)(EOL_ARGS), int eolchar);
+extern int edithistory (TBUFF **buffer, unsigned *position, int *given, int options, int (*func)(EOL_ARGS), int eolchar);
 #else
 #define hst_init(c)
 #define hst_glue(c)
@@ -365,12 +367,13 @@ extern int end_string (void);
 extern void set_end_string (int c);
 extern int kbd_delimiter (void);
 extern int is_edit_char (int c);
-extern void kbd_kill_response (char *buf, int *position, int c);
-extern int kbd_show_response (char *dst, char *src, int bufn, int eolchar, int options);
+extern void kbd_kill_response (TBUFF *buf, unsigned *position, int c);
+extern int kbd_show_response (TBUFF **dst, char *src, unsigned bufn, int eolchar, int options);
+extern int eol_history(EOL_ARGS);
 extern int kbd_is_pushed_back (void);
 extern void kbd_pushback (char *buffer, int skip);
-extern int kbd_string (const char *prompt, char *extbuf, int bufn, int eolchar, int options, int (*func)(DONE_ARGS));
-extern int kbd_reply (const char *prompt, char *extbuf, int bufn, int (*efunc)(EOL_ARGS), int eolchar, int options, int (*cfunc)(DONE_ARGS));
+extern int kbd_string (const char *prompt, char *extbuf, unsigned bufn, int eolchar, int options, int (*func)(DONE_ARGS));
+extern int kbd_reply (const char *prompt, TBUFF **extbuf, int (*efunc)(EOL_ARGS), int eolchar, int options, int (*cfunc)(DONE_ARGS));
 extern int dotcmdbegin (void);
 extern int dotcmdfinish (void);
 extern void dotcmdstop (void);
@@ -677,7 +680,7 @@ extern const char * token (const char *src, char *tok, int eolchar);
 extern int ffgetline (int *lenp);
 extern int macroize (TBUFF **p, const char *src, const char *ref);
 extern int macarg (char *tok);
-extern int macliteralarg (char *tok);
+extern int macliteralarg (TBUFF **tok);
 extern void fmatch (int rch);
 
 /* tbuff.c */
@@ -695,6 +698,7 @@ TBUFF *	tb_scopy (TBUFF **p, const char *s);
 void	tb_first (TBUFF *p);
 int	tb_more (TBUFF *p);
 int	tb_next (TBUFF *p);
+TBUFF * tb_put(TBUFF **p, ALLOC_T n, int c);
 void	tb_unnext (TBUFF *p);
 int	tb_peek (TBUFF *p);
 char *	tb_values (TBUFF *p);
@@ -726,6 +730,7 @@ void	 itb_unnext (ITBUFF *p);
 #endif
 	
 int	 itb_peek (ITBUFF *p);
+int *	 itb_values (ITBUFF *p);
 ALLOC_T	 itb_length (ITBUFF *p);
 
 #if NO_LEAKS

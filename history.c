@@ -63,7 +63,7 @@
  *
  *	Allow left/right scrolling of input lines (when they get too long).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.34 1997/03/15 15:48:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.38 1997/06/07 21:31:03 tom Exp $
  *
  */
 
@@ -76,8 +76,8 @@
 #define	lp_args(p)	p->l_text, llength(p)
 
 typedef	struct	{
-	char *	buffer;
-	int *	position;
+	TBUFF **buffer;
+	unsigned * position;
 	int	(*endfunc) (EOL_ARGS);
 	int	eolchar;
 	int	options;
@@ -247,12 +247,13 @@ void
 hst_remove(const char * cmd)
 {
 	if (MyLevel == 1) {
-		char	temp[NLINE];
-		int	len	= strlen(strcpy(temp, cmd));
+		TBUFF	*temp	= 0;
+		unsigned len	= tb_length(tb_scopy(&temp, cmd)) - 1;
 
 		while (*cmd++)
 			tb_unput(MyText);
 		kbd_kill_response(temp, &len, killc);
+		tb_free(&temp);
 	}
 }
 
@@ -351,7 +352,7 @@ int	direction)
 			return 0;		/* empty or no matches */
 
 		if (!lisreal(lp)
-		 || (llength(lp) <= tb_length(MyText)+willGlue())
+		 || ((ALLOC_T)llength(lp) <= tb_length(MyText)+willGlue())
 		 || (sameLine(lp, tb_args(MyText)) < 0))
 			continue;		/* prefix mismatches */
 
@@ -405,7 +406,7 @@ HST *	parm,
 char *	src,
 int	srclen)
 {
-	kbd_kill_response(parm->buffer, parm->position, killc);
+	kbd_kill_response(*(parm->buffer), parm->position, killc);
 
 	if (src != 0) {
 		int	keylen	= tb_length(MyText) + willGlue();
@@ -492,11 +493,11 @@ hst_scroll(LINE * lp1, HST * parm)
  */
 int
 edithistory (
-char *	buffer,
-int *	position,
+TBUFF **buffer,
+unsigned * position,
 int *	given,
 int	options,
-int	(*endfunc) ( EOL_ARGS ),
+int	(*endfunc) (EOL_ARGS),
 int	eolchar)
 {
 	HST	param;
@@ -539,7 +540,7 @@ int	eolchar)
 		/* make 'original' look just like a complete command... */
 		if (willGlue())
 			(void)tb_append(&original, MyGlue);
-		(void)tb_sappend(&original, buffer);
+		(void)tb_sappend(&original, tb_values(*buffer));
 	}
 
 	/* process char-commands */

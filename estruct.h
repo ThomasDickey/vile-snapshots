@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.307 1997/05/26 01:27:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.309 1997/06/07 21:20:55 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -1918,8 +1918,8 @@ typedef	struct {
 /*
  * Other useful argument templates
  */
-#define EOL_ARGS  char * buffer, int cpos, int c, int eolchar
-#define DONE_ARGS int c, char *buf, int *pos
+#define EOL_ARGS  const char * buffer, unsigned cpos, int c, int eolchar
+#define DONE_ARGS int c, char *buf, unsigned *pos
 #define LIST_ARGS int flag, void *ptr
 #define REGN_ARGS void *flagp, int l, int r
 
