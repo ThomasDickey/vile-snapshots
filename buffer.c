@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.218 2000/02/09 11:34:52 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.219 2000/03/13 02:58:58 tom Exp $
  *
  */
 
@@ -2058,6 +2058,24 @@ make_bp (const char *fname, UINT flags)
 
 	if ((bp = bfind(bname, flags)) != 0)
 		ch_fname(bp, fname);
+	return bp;
+}
+
+/*
+ * Create a buffer to display the output of various utility commands, e.g.,
+ * [Output].
+ */
+BUFFER *
+make_ro_bp(const char *bname, UINT flags)
+{
+	BUFFER *bp;
+
+	if ((bp = bfind(bname, flags)) != 0) {
+		b_set_invisible(bp);
+		b_clr_scratch(bp); /* make it nonvolatile */
+ 		bp->b_active = TRUE;
+		set_rdonly(bp, non_filename(), MDVIEW);
+	}
 	return bp;
 }
 

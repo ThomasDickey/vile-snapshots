@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.214 1999/12/24 01:08:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.217 2000/03/14 00:35:32 tom Exp $
  *
  */
 
@@ -1461,7 +1461,7 @@ push_variable(char *name)
 {
 	LOCALS *p;
 
-	TRACE(("push_variable: {%s}%s\n", name, execstr));
+	TPRINTF(("...push_variable: {%s}%s", name, execstr));
 
 	switch (toktyp(name)) {
 	case TOK_STATEVAR:
@@ -1505,8 +1505,9 @@ static void
 pop_variable(void)
 {
 	LOCALS *p = ifstk.locals;
+
 	ifstk.locals = p->next;
-	TRACE(("pop_variable(%s) %s\n", p->name, p->value));
+	TPRINTF(("...pop_variable(%s) %s", p->name, p->value));
 	if (!strcmp(p->value, error_val)) {
 		rmv_tempvar(p->name);
 	} else {
@@ -1520,7 +1521,7 @@ pop_variable(void)
 static void
 push_buffer(IFSTK *save)
 {
-	static const IFSTK new_ifstk = {0,0,0,EXACT,0,0,0}; /* all 0's */
+	static const IFSTK new_ifstk = {0,0,FALSE,EXACT,0,0,0}; /* all 0's */
 
 	*save  = ifstk;
 	save->shape = regionshape;
@@ -1765,6 +1766,16 @@ begin_directive(
 	case D_UNKNOWN:
 	case D_ENDM:
 		break;
+
+	case D_TRACE:
+		if (!ifstk.disabled) {
+			if ((value = mac_tokval(&argtkn)) == 0) {
+				mlforce("[Trace is %s]", tracemacros ? "on" : "off");
+			} else {
+				tracemacros = scan_bool(value);
+			}
+		}
+		break;
 	}
 	execstr = old_execstr;
 	tb_free(&argtkn);
@@ -1955,6 +1966,11 @@ perform_dobuf(BUFFER *bp, WHLOOP *whlist)
 		if (linlen != 0)
 			(void)strncpy(cmdp, lp->l_text, linlen);
 		cmdp[linlen] = EOS;	/* make sure it ends */
+
+		TPRINTF(("%s:%d (%d/%d):%s", bp->b_bname,
+			line_no(bp, lp),
+			ifstk.level, ifstk.disabled,
+			cmdp));
 
 		/* compress out leading whitespace */
 		{

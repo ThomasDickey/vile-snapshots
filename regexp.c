@@ -11,7 +11,7 @@
  *
  *		pgf, 11/91
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.68 2000/01/15 01:07:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.69 2000/03/14 02:50:33 tom Exp $
  *
  */
 
@@ -271,7 +271,7 @@ regmassage(const char *old, char *nxt, int magic)
  */
 
 regexp *
-regcomp(char *origexp, int magic)
+regcomp(const char *origexp, int magic)
 {
 	register regexp *r;
 	register char *scan;

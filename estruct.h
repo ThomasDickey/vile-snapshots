@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.441 2000/02/10 23:39:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.442 2000/03/13 11:27:02 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -919,6 +919,7 @@ typedef	enum {
 	, D_WITH
 	, D_ELSEWITH
 	, D_ENDWITH
+	, D_TRACE
 #endif
 } DIRECTIVE;
 
@@ -2615,6 +2616,12 @@ extern void _exit (int code);
 /* Normally defined in "trace.h" */
 #ifndef TRACE
 #define TRACE(p) /* nothing */
+#endif
+
+#if OPT_EVAL || OPT_DEBUGMACROS
+#define TPRINTF(p) if (tracemacros) tprintf p
+#else
+#define TPRINTF(p) /* nothing */
 #endif
 
 #if DISP_X11 && NEED_X_INCLUDES

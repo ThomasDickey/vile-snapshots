@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2000 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.86 2000/01/15 13:54:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.88 2000/03/14 03:00:34 tom Exp $
  *
  */
 
@@ -174,6 +174,7 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
     char *last = first + want;
 
     (void) memset(errp, 0, sizeof(*errp));
+    TPRINTF(("error-pattern %*S", want, first));
 
     /* In the first pass, find the number of fields we'll substitute.
      * Then allocate a new string that's a genuine regular expression
@@ -192,7 +193,9 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 		    mark = W_VERB;
 		    break;
 		case 'F':
-		    mark = W_FILE;
+		    APP_S(before);
+		    APP_S(tb_values(filename_expr));
+		    APP_S(after);
 		    break;
 		case 'B':
 		    APP_S("\\(\\[[^:]\\+]\\)");
@@ -262,10 +265,12 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 	    dst = temp = typeallocn(char, want);
 	    if (dst == 0)
 		break;
-	} else
+	} else {
 	    *dst = EOS;
+	}
     }
     if (temp != 0) {
+	TPRINTF(("-> %s", temp));
 	exp = regcomp(temp, TRUE);
 	free(temp);
     }
@@ -282,6 +287,7 @@ free_patterns(void)
 	while (exp_count != 0)
 	    free((char *) (exp_table[--exp_count].exp_comp));
 	free((char *) exp_table);
+	exp_table = 0;
     }
 }
 

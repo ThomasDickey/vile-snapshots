@@ -1,5 +1,5 @@
 /*
- * $Id: btree.c,v 1.10 1999/12/27 01:41:24 tom Exp $
+ * $Id: btree.c,v 1.11 2000/03/13 02:02:35 tom Exp $
  * Copyright 1997-1999 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
@@ -17,10 +17,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#if defined(DEBUG_BTREE)
 #if !defined(DEBUG_BTREE) && !defined(NDEBUG)
 #define NDEBUG
 #endif
+
+#if defined(DEBUG_BTREE)
 #if defined(OPT_TRACE) || defined(DOALLOC)
 #include "trace.h"
 #endif

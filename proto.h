@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.416 2000/02/27 21:48:21 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.420 2000/03/14 02:50:48 tom Exp $
  *
  */
 
@@ -142,6 +142,7 @@ extern BUFFER *find_b_name (const char *name);
 extern BUFFER *find_bp (BUFFER *bp1);
 extern BUFFER *getfile2bp (const char *fname, int ok_to_ask, int cmdline);
 extern BUFFER *make_bp (const char *fname, UINT flags);
+extern BUFFER *make_ro_bp(const char *bname, UINT flags);
 extern WINDOW *bp2any_wp (BUFFER *bp);
 extern char *add_brackets(char *dst, const char *src);
 extern char *hist_lookup ( int c );
@@ -213,6 +214,7 @@ extern void mlwarn (const char *fmt, ...) VILE_PRINTF(1,2);
 extern void mlwrite (const char *fmt, ...) VILE_PRINTF(1,2);
 extern void movecursor (int row, int col);
 extern void newscreensize (int h, int w);
+extern void tprintf (const char *fmt, ...) VILE_PRINTF(1,2);
 extern void upmode (void);
 
 #if !DISP_X11
@@ -832,7 +834,7 @@ extern void update_dos_drv_dir (char * cwd);
 #endif
 
 /* regexp.c */
-extern regexp * regcomp (char *origexp, int magic);
+extern regexp * regcomp (const char *origexp, int magic);
 extern int regexec (regexp *prog, char *string, char *stringend, int startoff, int endoff);
 extern int lregexec (regexp *prog, LINEPTR lp, int startoff, int endoff);
 
@@ -1078,7 +1080,7 @@ extern int  parse_font_str(const char *fontstr, FONTSTR_OPTIONS *results);
 extern void restore_console_title(void);
 extern void set_console_title(const char *title);
 extern int  stdin_data_available(void);
-extern int  w32_cbrd_has_text_data(void);
+extern int  w32_CreateProcess(char *cmd, int no_wait);
 extern int  w32_del_selection(int copy_to_clipboard);
 extern int  w32_inout_popen(FILE **fr, FILE **fw, char *cmd);
 extern void w32_keybrd_reopen(int pressret);
@@ -1257,9 +1259,6 @@ extern	int	fclose	(FILE *fp);
 #if MISSING_EXTERN_FCLOSE
 extern	int	fflush	(FILE *fp);
 #endif
-#if MISSING_EXTERN_FGETC
-extern	int	fgetc	(FILE *fp);
-#endif
 #if MISSING_EXTERN_FILENO && !defined(fileno)
 extern	int	fileno	(FILE *fp);
 #endif
@@ -1268,9 +1267,6 @@ extern	int	fork	(void);
 #endif
 #if MISSING_EXTERN_FPRINTF
 extern	int	fprintf	(FILE *fp, const char *fmt, ...);
-#endif
-#if MISSING_EXTERN_FPUTC
-extern	int	fputc	(int c, FILE *fp);
 #endif
 #if MISSING_EXTERN_FPUTS
 extern	int	fputs	(const char *s, FILE *fp);

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.84 2000/02/27 21:57:31 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.85 2000/03/13 01:50:48 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -1260,15 +1260,27 @@ ntscroll(int from, int to, int n)
 	RowToPixel(to - from),	/* amount of vertical scrolling */
 	&region,		/* address of structure with scroll rectangle */
 	&region,		/* address of structure with clip rectangle */
-	(HRGN) 0,		/* handle of update region */
-	&tofill,		/* address of structure for update rectangle */
-	SW_ERASE | SW_INVALIDATE	/* scrolling flags */
+	NULL,			/* handle of update region */
+	&tofill,		/* invalidated rectangle */
+	0			/* scrolling flags */
 	);
+
+    /* Erase invalidated rectangle */
     TRACE(("ntscroll tofill: (%d,%d)/(%d,%d)\n",
 	    tofill.left, tofill.top,
 	    tofill.right, tofill.bottom));
+    hDC = GetDC(cur_win->text_hwnd);
+    nt_set_colors(hDC, cur_atr);
+    brush = Background(hDC);
+    FillRect(hDC, &tofill, brush);
+    DeleteObject(brush);
+    ReleaseDC(cur_win->text_hwnd, hDC);
 
-    RedrawWindow(cur_win->text_hwnd, &tofill, NULL, RDW_ERASENOW);
+    /*
+     * force text_hwnd's WindProc to service a WM_PAINT message -- gives
+     * faster screen updates.
+     */
+    UpdateWindow(cur_win->text_hwnd);
 }
 
 /*
@@ -1719,8 +1731,10 @@ handle_builtin_menu(WPARAM code)
 	if (b_val(curbp, MDVIEW))
 	    return rdonly();
 	mayneedundo();
+	fhide_cursor();
 	cbrdpaste(FALSE, FALSE);
 	update(FALSE);
+	fshow_cursor();
 	break;
     case IDM_REDO:
 	forwredo(FALSE, FALSE);
@@ -1751,8 +1765,10 @@ handle_builtin_menu(WPARAM code)
 	if (b_val(curbp, MDVIEW))
 	    return rdonly();
 	mayneedundo();
+	fhide_cursor();
 	w32_del_selection(LOWORD(code) == IDM_CUT);
 	update(FALSE);
+	fshow_cursor();
 	break;
     default:
 	result = FALSE;

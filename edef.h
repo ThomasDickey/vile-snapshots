@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.267 2000/01/30 23:16:29 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.269 2000/03/14 02:40:00 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -337,7 +337,11 @@ decl_init_const( char FILECOMPLETION_BufName[],	"[FileCompletion]");
 decl_init_const( char DIRCOMPLETION_BufName[],	"[DirCompletion]");
 #endif
 decl_init_const( char OUTPUT_BufName[],		"[Output]");
+#if OPT_EVAL || OPT_DEBUGMACROS
+decl_init_const( char TRACE_BufName[],		"[Trace]");
+#endif
 #if OPT_FINDERR
+decl_uninit( TBUFF *filename_expr );
 decl_init_const( char ERRORS_BufName[],		"[Error Expressions]");
 #endif
 #if OPT_HISTORY

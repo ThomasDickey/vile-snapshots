@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.32 2000/02/10 02:42:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.33 2000/03/14 02:59:33 tom Exp $
  */
 
 #include	"estruct.h"
@@ -555,6 +555,22 @@ int var_EOC(TBUFF **rp, const char *vp)
 }
 
 #if OPT_FINDERR
+int var_FILENAME_EXPR(TBUFF **rp, const char *vp)
+{
+	if (rp) {
+		tb_scopy(rp, tb_values(filename_expr));
+		return TRUE;
+	} else if (vp) {
+		regexp *exp = regcomp(vp, TRUE);
+		if (exp != 0) {
+			free(exp);
+			tb_scopy(&filename_expr, vp);
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
 int var_ERROR_BUFFER(TBUFF **rp, const char *vp)
 {
 	if (rp) {

@@ -1,5 +1,42 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000314 (d)
+ 	+ Brendan O'Dea:
+	+ modify perl.xs to allow perl operators to be used with a range.  Also
+	  clears the VIEWOK flag for operators.
+	> Clark Morgan:
+	+ winvile:  turn off cursor during menu-based cut/delete/paste ops
+	  (avoid stray cursor glyphs).
+	+ winvile:  fix repaint bug that was introduced when "fixing" the
+	  occluded notepad update bug in 9.1a.
+	+ fix winvile ":sh" command, which used to pop up a separate window,
+	  but does not as of 9.1 In 9.1, ":sh" on a win32 host is executed as
+	  "$shell {-c|/c} $shell" .  As it turns out, cmd.exe's intrepretation
+	  of the /c switch is to run the specified command and exit
+	  immediately.  The fix is to simply launch $shell via CreateProcess().
+	> Tom Dickey:
+	+ modify SetVarValue() to make it handle mode values, which were being
+	  ignored.  This makes
+	  	~local report
+	  work properly (reported by Clark Morgan).
+	+ add variable $filename-expr, to specify the actual pattern used for
+	  %F in [Error Expressions].  On DOS and Win32, this is initialized to
+	  a more complex pattern, to accommodate drive letters.
+	+ allow invisible buffers such as [Trace] to be the error-buffer.
+	+ add macro command "~trace", which sets or reports the value of the
+	  $debug variable.
+	+ modify treatment of $debug to trace into internal buffer [Trace].
+	+ fix ifdef's in btree.c to disable assert's when not debugging.
+	+ improve sqlmode preamble, making it more distinct from batmode.
+	+ improve cshmode complex fence patterns for foreach and switch.
+	+ revert the change to ffgetline().  For some reason, fread() runs more
+	  slowly when vile is rendering a manpage than fgetc().  Change all
+	  fgetc() and fputc() calls to getc() and putc(), since as macros they
+	  generally will run faster than the functions, as noted by Clark
+	  Morgan.
+	+ correction to 9.1c's change for shpreamble: it omitted a '?' (0/1)
+	  around the options pattern.
+
  20000228 (c)
 	> Clark Morgan:
 	+ added cut-to-clipboard (windows Cut) and delete-text-selection
