@@ -1,5 +1,31 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (kev) 980330 (n) 
+ 	+ api.c (api_gotoline): Make sure that we can move off of 
+	  buf_head if presently on it.  (This fixes a bug in which 
+	  it was sometimes impossible to move dot.  setrange also 
+	  exhibited a similar bug.) 
+	+ cmdtbl (perl): Allow perl to be run in view mode. 
+	+ perl.xs (perl): Set/restore clexec, discmd, and isnamedcmd 
+	  so that calls to the various mlreply functions will work 
+	  from within perl.  (Thanks to Sean Ahern for bug reports 
+	  and patches.) 
+	  (perl_init): Call lengthen_path to expand ~ to the user's 
+	  home directory.  (Thanks again to Sean Ahern for bug 
+	  reports and patches.) 
+	  (sv2linenum, sv2offset): New functions for converting 
+	  '$' and '$$' to either line number or offsets within 
+	  lines. 
+	  (VileCommand): Renamed to command. 
+	  (inplace_edit, setregion, dot, mlreply, mlreply_no_opts, 
+	  mlreply_file, mlreply_dir): Added documentation. 
+	  (setregion, dot): Handle '$' and '$$'. 
+	  (setregion): Return the buffer object in a scalar context. 
+	  (attribute_cntl_a_sequences, unmark): New functions. 
+	+ proto.h (attribute_cntl_a_sequences_over_region): Declared. 
+	+ select.c (attribute_cntl_a_sequences_over_region): New 
+	  function. 
+ 
  (kev) 980324 (m) 
 	+ api.h (dot_changed): New field in SCR structure. 
  	+ api.c (api_gotoline): Prevent enormous amounts of looping 

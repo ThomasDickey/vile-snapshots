@@ -18,7 +18,7 @@
  * transfering the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.58 1998/03/14 14:32:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.59 1998/03/30 10:15:53 kev Exp $
  *
  */
 
@@ -793,6 +793,16 @@ operattrcaseq(int f, int n)
       return vile_op(f,n,attribute_cntl_a_sequences,
                       "Attribute ^A sequences");
 }
+ 
+int 
+attribute_cntl_a_sequences_over_region(REGION *rp) 
+{ 
+    DOT = rp->r_orig; 
+    MK  = rp->r_end; 
+    haveregion = 0; 
+    return attribute_cntl_a_sequences(); 
+} 
+ 
   
 /*
  * attribute_cntl_a_sequences can take quite a while when processing a region

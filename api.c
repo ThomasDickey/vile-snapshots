@@ -236,9 +236,11 @@ api_gotoline(SCR *sp, int lno)
 	lp = lback(lp);
 	count++;
     }
-    while (count > 0 && lp != buf_head(bp)) { 
+    while (count > 0) {  
 	lp = lforw(lp);
 	count--;
+	if (lp == buf_head(bp)) 
+	    break; 
     }
 
     DOT.o = 0;

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.267 1998/03/24 10:14:15 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.268 1998/03/30 10:15:53 kev Exp $
  *
  */
 
@@ -774,6 +774,7 @@ extern	int	sel_yank	(int reg);
 extern	int	sel_attached	(void);
 extern	BUFFER *sel_buffer	(void);
 #endif
+extern	int	attribute_cntl_a_sequences_over_region(REGION *rp); 
 #endif /* OPT_SELECTIONS */
 
 /* spawn.c */
