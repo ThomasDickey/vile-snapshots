@@ -9,9 +9,6 @@
 
 #include "api.h"
 
-#define sp2bp(sp) (sp)->bp
-#define bp2sp(bp) ((SCR *) (bp)->b_api_private)
-
 static WINDOW *curwp_after;
 
 /* Maybe this should go in line.c ? */
@@ -38,6 +35,7 @@ lreplace(char *s, int len)
     LINE *lp = DOT.l;
     int i;
     char *t;
+    WINDOW *wp;
 
     copy_for_undo(lp);
 
@@ -74,10 +72,21 @@ lreplace(char *s, int len)
        api_command_cleanup below.
      */
 
+    for_each_window(wp) {
+	if (wp->w_dot.l == lp && wp->w_dot.o > len)
+	    wp->w_dot.o = len;
+	if (wp->w_lastdot.l == lp && wp->w_lastdot.o > len)
+	    wp->w_lastdot.o = len;
+    }
+    do_mark_iterate(mp,
+		    if (mp->l == lp && mp->o > len)
+			mp->o = len;
+    );
+
     return TRUE;
 }
 
-static int
+static void
 setup_fake_win(SCR *sp)
 {
     if (curwp_after == 0)
@@ -241,6 +250,48 @@ api_lline(SCR *sp, int *lnop)
     return TRUE;
 }
 
+SCR *
+api_fscreen(int id, char *name)
+{
+    BUFFER *bp;
+
+    bp = find_b_file(name);
+
+    if (bp)
+	return api_bp2sp(bp);
+    else
+	return 0;
+}
+
+/* FIXME: return SCR * for retbpp */
+int
+api_edit(SCR *sp, char *fname, SCR **retspp, int newscreen)
+{
+    BUFFER *bp;
+    if (fname == NULL) {
+	/* FIXME: This should probably give you a truly anonymous buffer */
+	fname = (char *) UNNAMED_BufName;
+    }
+    bp = getfile2bp(fname, FALSE, FALSE);
+    if (bp == 0) {
+	*retspp = 0;
+	return 1;
+    }
+    *retspp = api_bp2sp(bp);
+    setup_fake_win(*retspp);
+    return !swbuffer_lfl(bp, FALSE);
+}
+
+int
+api_swscreen(SCR *oldsp, SCR *newsp)
+{
+    api_command_cleanup();		/* pop the fake windows */
+
+    swbuffer(sp2bp(oldsp));
+    swbuffer(sp2bp(newsp));
+    curwp_after = curwp;
+}
+
 /*
  * The following are not in the nvi API. But I needed them in order to
  * do an efficient implementation for vile.
@@ -271,7 +322,6 @@ api_command_cleanup(void)
 	make_current(curwp->w_bufp);
 }
 
-
 void
 api_free_private(void *vsp)
 {
@@ -279,9 +329,30 @@ api_free_private(void *vsp)
 
     if (sp) {
 	sp->bp->b_api_private = 0;
+#if OPT_PERL
 	perl_free_handle(sp->perl_handle);
+#endif
 	free(sp);
     }
+}
+
+/* Given a buffer pointer, returns a pointer to a SCR structure,
+ * creating it if necessary.
+ */
+SCR *
+api_bp2sp(BUFFER *bp)
+{
+    SCR *sp;
+
+    sp = bp2sp(bp);
+    if (sp == 0) {
+	sp = typecalloc(SCR);
+	if (sp != 0) {
+	    bp->b_api_private = sp;
+	    sp->bp = bp;
+	}
+    }
+    return sp;
 }
 
 #endif

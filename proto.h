@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.261 1997/11/27 15:19:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.262 1997/12/03 20:57:06 kev Exp $
  *
  */
 
@@ -1111,7 +1111,7 @@ extern	void	vms_dir2path	(char *path);
 #if OPT_PERL
 /* perl.xs (perl.c) */
 extern	void	perl_default_region(void);
-extern	void	perl_free_private(void *);
+extern	void	perl_free_handle(void *);
 
 /* api.c */
 extern void api_free_private(void *);

@@ -14,3 +14,10 @@ extern	int	api_gline(SCR *, int, char **, int *);
 extern	int	api_sline(SCR *, int, char *, int);
 extern	int	api_iline(SCR *, int, char *, int);
 extern	int	api_lline(SCR *, int *);
+extern	int	api_swscreen(SCR *, SCR *);
+extern	SCR *	api_fscreen(int, char *);
+
+extern	SCR *	api_bp2sp(BUFFER *bp);
+
+#define sp2bp(sp) (((SCR *)(sp))->bp)
+#define bp2sp(bp) ((SCR *) (bp)->b_api_private)

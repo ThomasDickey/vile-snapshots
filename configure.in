@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.69 $)
+AC_REVISION($Revision: 1.70 $)
 AC_PREREQ(2.12)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.69 1997/11/27 21:07:59 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.70 1997/12/03 20:57:06 kev Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -55,8 +55,9 @@ AC_ARG_WITH(perl,
 	 perl_lib_path=`$perl_bin_path -MConfig -e 'print $Config{privlib}'`
 	 AC_DEFINE(OPT_PERL)
 	 EXTRAOBJS="$EXTRAOBJS perl.o"
-	 CFLAGS="$CFLAGS `perl -MExtUtils::Embed -e ccopts`"
-	 LIBS="$LIBS `perl -MExtUtils::Embed -e ldopts`"])
+	 LINK_PREFIX=`$perl_bin_path -MConfig -e 'print $Config{shrpenv}'` 
+	 CFLAGS="$CFLAGS `$perl_bin_path -MExtUtils::Embed -e ccopts`"
+	 LIBS="$LIBS `$perl_bin_path -MExtUtils::Embed -e ldopts`"])
 AC_SUBST(perl_lib_path)
 AC_SUBST(perl_bin_path)
 
@@ -158,6 +159,7 @@ AC_SUBST(X_LIBS)
 AC_SUBST(X_EXTRA_LIBS)
 AC_SUBST(SCREEN)
 AC_SUBST(TARGET)
+AC_SUBST(LINK_PREFIX)
 dnl
 dnl The killpg test and the tests for the presence of certain functions on
 dnl a particular operating system are done prior to the checks for existence
