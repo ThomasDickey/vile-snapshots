@@ -3,7 +3,7 @@
 ;;
 ;; Author: Kevin Buettner
 ;;
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.11 2000/06/09 10:43:52 tom Exp $
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.12 2000/06/13 08:59:39 tom Exp $
 ;;
 
 store-procedure ShowManpage "Prompt for, and display a manual-page"
@@ -60,7 +60,7 @@ store-procedure ShowFormatted "Render the current buffer with nroff -man or -ms"
 	set terse
 	~force kill-buffer %manpagebuf
 	setv %type &path end $cfilname
-	~if &seq %type ".html"
+	~if &seq $majormode "html"
 		edit-file &cat "!cat " &cat $cfilname &cat " | lynx -stdin -with_backspaces -dump | " %filter
 	~elseif &seq %type ".ms"
 		edit-file &cat "!tbl " &cat $cfilname &cat " | nroff -ms | " %filter

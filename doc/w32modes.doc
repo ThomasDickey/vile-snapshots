@@ -100,7 +100,7 @@ Optimum Console Vile Settings
 Entries in the table marked  ?  have not been tested.  If your host
 environment matches an untested entry in the table and you have validated
 various mode settings, please send your results to the "vile-bugs" mailing
-list:  vile-bugs@foxharp.boston.ma.us .
+list:  bugs@vile.cx ( vile-bugs@foxharp.boston.ma.us ).
 
 host   shell         w32pipes  force-console  trade-offs/comments
 
@@ -122,7 +122,7 @@ Optimum Winvile Settings
 Entries in the table marked  ?  have not been tested.  If your host
 environment matches an untested entry in the table and you have validated
 various mode settings, please send your results to the "vile-bugs" mailing
-list:  vile-bugs@foxharp.boston.ma.us .
+list:  bugs@vile.cx ( vile-bugs@foxharp.boston.ma.us ).
 
 host   shell         w32pipes  force-console  trade-offs/comments
 
@@ -142,4 +142,4 @@ Note 2:  If 16-bit apps will _not_ be invoked, it's safe to unset
 Note 3:  explicitly specify a path to the shell in vile.rc via the $shell
          state variable (e.g., setv $shell 'c:\usr\binw\sh.exe').
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/w32modes.doc,v 1.6 2000/01/13 00:28:36 cmorgan Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/w32modes.doc,v 1.7 2000/06/17 11:46:33 tom Exp $

@@ -16,7 +16,7 @@ more recent additions to this README appear near the bottom.  that is, most
 of the newest stuff is at the end, not up here where you are.
 
 visit
-	ftp://ftp.clark.net/pub/dickey/vile
+	ftp://dickey.his.com/vile
 	ftp://ftp.phred.org/pub/vile
 to be sure it's still the latest.
 
@@ -39,18 +39,19 @@ volume won't fill your inbox.
 
 paul fox, pgf@foxharp.boston.ma.us (original author)
 kevin buettner, kev@primenet.com
-tom dickey, dickey@clark.net (current maintainer)
+tom dickey, dickey@herndon4.his.com (current maintainer)
 
 ------------------------------------------------------
 Up-to-date copies of vile, including executables for DOS, Win32 and
 OS/2 are found at
-	ftp://ftp.clark.net/pub/dickey/vile/
+	ftp://dickey.his.com/vile/
 
 which is mirrored at
 	ftp://ftp.phred.org/pub/vile/
 
 Development patches are found at
-	ftp://ftp.clark.net/pub/dickey/vile/patches/
+	ftp://dickey.his.com/vile/patches/
+	ftp://ftp.phred.org/pub/vile/patches/
 
 In addition, we have distributed copies at other sites, including
 metalabs.unc.edu (Linux), hobbes.nmsu.edu (OS/2) and the VMS Freeware
@@ -58,9 +59,11 @@ CDROM's.
 
 ------------------------------------------------------
 Send bug reports to
+	bugs@vile.cx
 	vile-bugs@foxharp.boston.ma.us
 
 Requests to be put on the announcement list should go to
+	announce-request@vile.cx
 	vile-announce-request@foxharp.boston.ma.us
 
 ------------------------------------------------------
@@ -443,5 +446,5 @@ Jan, 2000
       without quoting.  This allows ^E and ^Y as commands within an insert.
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.79 2000/01/30 20:23:33 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.81 2000/06/17 11:44:59 tom Exp $
 -------------------------------

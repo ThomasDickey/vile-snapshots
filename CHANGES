@@ -1,5 +1,20 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000617 (l)
+	+ updates to config.guess and config.sub (patch by Kevin Buettner,
+	  and resync with version from PCRE 3.2).
+	+ update ftp and web-site pointers to reflect demise of ClarkNet
+	  (reminder by Clark Morgan).
+	+ use new function search_mode_list() to make binary search of the
+	  my_mode_list[] array, to make it faster, since strcmp calls when
+	  searching this array were the largest component in initializing
+	  majormodes.
+	+ correct length computation in finderr.c for %F token, which caused
+	  heap corruption on win32 (cf: 9.1d).
+	+ use $majormode rather than file suffix in manpage.rc to check for
+	  HTML files, since the suffix is too easily confused by double-dot
+	  suffixes.
+
  20000609 (k)
 	> Tom Dickey:
 	+ add command attribute-directly, to invoke internal filter on the

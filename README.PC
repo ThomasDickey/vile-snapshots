@@ -125,7 +125,7 @@ ncurses.  this requires a number of tools:
 	+ you will have to regenerate the configure script, using
 	  autoconf 2.12, with the patches from
 
-	  http://www.clark.net/pub/dickey/autoconf/autoconf.html
+	  http://dickey.his.com/autoconf/autoconf.html
 
 	+ you'll need ksh (build or obtain a copy of pdksh 5.2.13 or
 	  better).
@@ -134,10 +134,10 @@ ncurses.  this requires a number of tools:
 
 the termcap library distributed with EMX does not work well.  use ncurses:
 
-	+ ncurses 4.2, with patches through September 1998, from
+	+ ncurses 4.2 or later, with patches through September 1998, from
 
-	  http://ftp.clark.net/pub/dickey/ncurses/ncurses.faq.html
-	  ftp://ftp.clark.net/pub/dickey/ncurses/4.2
+	  http://dickey.his.com/ncurses/ncurses.faq.html
+	  ftp://dickey.his.com/ncurses/
 
 	+ use '$TERM=ansi', or start customizing from that.
 
@@ -238,11 +238,11 @@ internal perl API.  See this URL for more details:
     http://www.activestate.com/ActivePerl/docs/Perl-Win32/perlwin32faq10.html
 
 --------------------------------------------------------
-tom dickey, dickey@clark.net
+tom dickey, dickey@herndon4.his.com
 
 --------------------------------------------------------
 paul fox, pgf@foxharp.boston.ma.us (home)
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.24 2000/02/10 03:25:22 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.25 2000/06/17 02:44:25 tom Exp $
 ------------------------
