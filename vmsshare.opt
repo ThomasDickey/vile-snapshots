@@ -1,8 +1,0 @@
-! $Header: /users/source/archives/vile.vcs/RCS/vmsshare.opt,v 1.1 1995/02/10 03:36:49 pgf Exp $
-!
-! Linking against a sharable library makes the .EXE-file smaller.
-sys$library:vaxcrtl.exe/share
-!
-! Uncomment these lines if building XVILE:
-!sys$library:decw$xlibshr.exe/share
-!sys$library:decw$xtshr.exe/share

@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.197 1996/06/18 21:14:56 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.198 1996/09/05 01:20:07 tom Exp $
  */
 
 /* I know this declaration stuff is really ugly, and I probably won't ever
@@ -33,6 +33,9 @@ decl_init( const char prognam[], "vile");
 
 decl_init( const char version[], "version 6.0");
 
+#ifdef SYSTEM_NAME
+decl_init( const char opersys[], SYSTEM_NAME);
+#else
 #if SYS_UNIX
 decl_init( const char opersys[], "unix");
 #endif
@@ -50,6 +53,7 @@ decl_init( const char opersys[], "os/2");
 #endif
 #if SYS_WINNT
 decl_init( const char opersys[], "win32");
+#endif
 #endif
 
 decl_uninit( int am_interrupted );	/* have we been interrupted/ */

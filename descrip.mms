@@ -11,15 +11,8 @@
 # all as "0".  If you use tcap.c, you'll need libtermcap.a too.  If you use
 # x11.c, you'll need libX11.a too.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.30 1996/08/05 12:51:57 pgf Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.31 1996/09/05 01:59:48 pgf Exp $
 
-# for regular vile, use these:
-.IFDEF __VILE__
-SCREEN = vmsvt
-LIBS =
-TARGET = vile.exe
-SCRDEF = "DISP_VMSVT","scrn_chosen"
-.ENDIF
 # for building the X version, xvile, use these:
 #SCREEN = x11simp
 #LIBS = #-lX11
@@ -38,7 +31,14 @@ SCREEN = x11
 LIBS = #-lX11
 TARGET = xvile.exe
 SCRDEF = "MOTIF_WIDGETS","XTOOLKIT","DISP_X11","scrn_chosen"
+.ELSE
+# for regular vile, use these:
+SCREEN = vmsvt
+LIBS =
+TARGET = vile.exe
+SCRDEF = "DISP_VMSVT","scrn_chosen"
 .ENDIF
+
 # if you want the help file (vile.hlp) to go somewhere other than your $PATH
 #  or one of the hard-code paths in epath.h  (it goes to the same place vile
 #  does by default)
@@ -249,6 +249,12 @@ $(MKTBLS) : mktbls.obj $(OPTFILE)
 
 $(TARGET) : $(OBJ), vms_link.opt, descrip.mms $(OPTFILE)
 	$(LINK) $(LINKFLAGS) main.obj, $(SCREEN).obj, vms_link/opt 
+
+vms_link.opt :
+	@vmsbuild vile.exe vms_link_opt
+
+vms_link.opt :
+	@vmsbuild vms_link_opt
 
 # Runs VILE from the current directory (used for testing)
 vile.com :
