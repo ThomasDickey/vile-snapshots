@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.141 1997/07/30 23:07:57 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.143 1997/09/04 22:58:58 tom Exp $
 #
 #
 
@@ -417,6 +417,7 @@ cbuf40		REDO			OPT_EXEC_MACROS>39
 	"execute-macro-40"		!FEWNAMES
 	<execute [Macro 40]>
 define_mode	NONE			OPT_MAJORMODE
+	"define-majormode"
 	"define-mode"
 	<define a major mode, i.e., a collection of buffer modes>
 define_submode	NONE			OPT_MAJORMODE
@@ -1200,6 +1201,7 @@ vile_refresh	NONE
 	'^L'
 	<redraw the screen>
 remove_mode	NONE			OPT_MAJORMODE
+	"remove-majormode"
 	"remove-mode"
 	<delete the definition of a major mode>
 remove_submode	NONE			OPT_MAJORMODE
@@ -1346,7 +1348,7 @@ listmodes	NONE
 list_majormodes	NONE			OPT_MAJORMODE
 	"list-majormodes"		!FEWNAMES
 	"show-majormodes"
-	<report values of all majormode settings>
+	<report values of all majormode settings (use CNT for verbose listing)>
 listvars	NONE			OPT_SHOW_EVAL
 	"list-variables"		!FEWNAMES
 	"show-variables"

@@ -4,7 +4,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.82 1997/09/01 22:57:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.83 1997/09/05 00:03:17 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -413,6 +413,8 @@ cheap_tag_scan(LINEPTR oldlp, char *name, SIZE_T taglen)
 		= b_val(curbp,MDTAGIGNORECASE)
 		? my_strncasecmp
 		: strncmp;
+#else
+#define compare strncmp
 #endif
 
 	/* force a match of the tab delimiter if we're supposed to do

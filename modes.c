@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.98 1997/09/02 18:02:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.100 1997/09/05 00:14:11 tom Exp $
  *
  */
 
@@ -16,8 +16,7 @@
 #include	"chgdfunc.h"
 
 #define	NonNull(s)	((s == 0) ? "" : s)
-#define	ONE_COL	26
-#define	NCOLS	3
+#define	ONE_COL	(80/3)
 
 #define isLocalVal(valptr)          ((valptr)->vp == &((valptr)->v))
 #define makeLocalVal(valptr)        ((valptr)->vp = &((valptr)->v))
@@ -71,6 +70,7 @@ static const char **my_mode_list;	/* copy of 'all_modes[]' */
 
 static MAJORMODE * lookup_mm_data(const char *name);
 static MAJORMODE_LIST * lookup_mm_list(const char *name);
+static const char *ModeName(const char *name);
 static int attach_mmode(BUFFER *bp, const char *name);
 static int detach_mmode(BUFFER *bp, const char *name);
 static int enable_mmode(const char *name, int flag);
@@ -83,10 +83,11 @@ static void relist_majormodes(void);
 #else
 
 #define MODE_CLASSES 3
-#define is_bool_type(type) ((type) == VALTYPE_BOOL)
-#define relist_majormodes() /* nothing */
+#define ModeName(s) s
 #define init_my_mode_list() /* nothing */
+#define is_bool_type(type) ((type) == VALTYPE_BOOL)
 #define my_mode_list all_modes
+#define relist_majormodes() /* nothing */
 
 #endif /* OPT_MAJORMODE */
 
@@ -131,7 +132,7 @@ same_val(const struct VALNAMES *names, struct VAL *tst, struct VAL *ref)
 		  &&	(ref->vp->r->pat != 0)
 		  &&	!strcmp(tst->vp->r->pat, ref->vp->r->pat);
 	default:
-		mlforce("BUG: bad type %s %d", names->name, names->type);
+		mlforce("BUG: bad type %s %d", ModeName(names->name), names->type);
 	}
 
 	return FALSE;
@@ -168,7 +169,7 @@ string_val(const struct VALNAMES *names, struct VAL *values)
 static int
 size_val(const struct VALNAMES *names, struct VAL *values)
 {
-	return strlen(names->name)
+	return strlen(ModeName(names->name))
 		+ 3
 		+ strlen(NonNull(string_val(names, values)));
 }
@@ -220,11 +221,15 @@ struct VAL *globvalues)
 	int	show[MAX_G_VALUES+MAX_B_VALUES+MAX_W_VALUES];
 	int	any	= 0,
 		passes	= 1,
+		ncols	= term.t_ncol / ONE_COL,
 		padded,
 		perline,
 		percol,
 		total;
 	register int j, pass;
+
+	if (ncols > MAXCOLS)
+		ncols = MAXCOLS;
 
 	/*
 	 * First, make a list of values we want to show.
@@ -277,7 +282,7 @@ struct VAL *globvalues)
 	 */
 	for (pass = 1; pass <= passes; pass++) {
 		register int	line, col, k;
-		int	offsets[NCOLS+1];
+		int	offsets[MAXCOLS+1];
 
 		offsets[0] = 0;
 		if (pass == 1) {
@@ -285,17 +290,17 @@ struct VAL *globvalues)
 				if (show[j] == pass)
 					percol++;
 			}
-			for (j = 1; j < NCOLS; j++) {
+			for (j = 1; j < ncols; j++) {
 				offsets[j]
-					= (percol + NCOLS - j) / NCOLS
+					= (percol + ncols - j) / ncols
 					+ offsets[j-1];
 			}
-			perline = NCOLS;
+			perline = ncols;
 		} else {	/* these are too wide for ONE_COL */
 			offsets[1] = total;
 			perline = 1;
 		}
-		offsets[NCOLS] = total;
+		offsets[ncols] = total;
 
 		line = 0;
 		col  = 0;
@@ -316,7 +321,7 @@ struct VAL *globvalues)
 			if (is_bool_type(names[j].type)) {
 				bprintf("%s%s%*P",
 					values[j].vp->i ? "  " : "no",
-					names[j].name,
+					ModeName(names[j].name),
 					padded, ' ');
 			} else {
 				VALARGS args;	/* patch */
@@ -324,7 +329,7 @@ struct VAL *globvalues)
 				args.local  = values+j;
 				args.global = 0;
 				bprintf("  %s=%s%*P",
-					names[j].name,
+					ModeName(names[j].name),
 					string_mode_val(&args),
 					padded, ' ');
 			}
@@ -1325,8 +1330,6 @@ chgd_color(VALARGS *args, int glob_vals, int testing)
 	return TRUE;
 }
 
-#endif	/* OPT_COLOR */
-
 #if OPT_EVAL
 static void
 set_fsm_choice(const char *name, const FSM_CHOICES *choices)
@@ -1341,7 +1344,6 @@ set_fsm_choice(const char *name, const FSM_CHOICES *choices)
 }
 #endif	/* OPT_EVAL */
 
-#if OPT_COLOR
 static int
 reset_color(int n)
 {
@@ -1634,6 +1636,22 @@ per_submode(char *dst, const char *majr, int code, int brief)
 		(void) lsprintf(dst, "%s-%s", majr, b_valnames[code].name);
 	}
 	return dst;
+}
+
+static char *TheMajor;
+
+static const char *
+ModeName(const char *name)
+{
+	if (TheMajor != 0) {
+		static char *dst;
+		if (dst != 0)
+			free(dst);
+		dst = malloc(strlen(TheMajor) + strlen(name) + 3);
+		(void) lsprintf(dst, "%s-%s", TheMajor, name);
+		return dst;
+	}
+	return name;
 }
 
 /* format the name of a majormode */
@@ -2075,14 +2093,16 @@ relist_majormodes(void)
 /* list the current modes into the current buffer */
 /* ARGSUSED */
 static void	
-makemajorlist(int local GCC_UNUSED, void *ptr GCC_UNUSED)
+makemajorlist(int local, void *ptr GCC_UNUSED)
 {
 	int j;
 	int nflag;
 	MAJORMODE *data;
 
 	if (my_majormodes != 0) {
-		for (j = 0; my_majormodes[j].name; j++) {
+		for (j = 0; my_majormodes[j].name != 0; j++) {
+			if (local)
+				TheMajor = my_majormodes[j].name;
 			nflag = 0;
 			data = my_majormodes[j].data;
 			bprintf("--- \"%s\" majormode settings %*P\n",
@@ -2100,6 +2120,7 @@ makemajorlist(int local GCC_UNUSED, void *ptr GCC_UNUSED)
 				bputc('\n');
 		}
 	}
+	TheMajor = 0;
 }
 
 /* ARGSUSED */

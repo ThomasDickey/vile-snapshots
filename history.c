@@ -63,7 +63,7 @@
  *
  *	Allow left/right scrolling of input lines (when they get too long).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.38 1997/06/07 21:31:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.39 1997/09/04 23:15:01 tom Exp $
  *
  */
 
@@ -102,7 +102,7 @@ makeMyBuff(void)
 		bp = 0;
 	} else if ((bp = bfind(MyBuff, BFINVS)) != 0) {
 		b_set_invisible(bp);
-		b_clr_flags(bp, BFSCRTCH); /* make it nonvolatile */
+		b_clr_scratch(bp); /* make it nonvolatile */
 		set_rdonly(bp, non_filename(), MDVIEW);
 	} else {
 		stopMyBuff();

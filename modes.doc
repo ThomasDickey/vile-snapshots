@@ -34,7 +34,20 @@ It is currently set as a boolean - if active before a buffer is
 loaded, then vile checks the file suffix to see if it matches the
 c-suffixes mode, and if so, sets the C mode for the buffer.  C mode
 can be explicitly set by a ":setl cmode", and unset by ":setl
-nocmode".
+nocmode".  In the new scheme,
+
+	+ vile will search the list of all active majormodes, first
+	  testing if any match with the majormode's suffixes, then if
+	  any preamble (first line regular expression) matches.
+
+	  The search is in alphabetic order, by majormode name.  The
+	  first match each, of suffixes and preamble terminate the
+	  search, but a match of preamble overrides a match of suffixes.
+
+	+ majormodes can be disabled (e.g., ":set nocmode"), as before.
+	  However, there is no global sense of majormode; unsetting a
+	  buffer's local value of a majormode simply makes it not have a
+	  majormode associated with it.
 
 
 Commands
@@ -42,11 +55,11 @@ Commands
 
 These are the commands which I think are necessary:
 
-	define-mode {majormode}
+	define-majormode {majormode}
 
 	define-submode {majormode} {minormode}[={value}]
 
-	remove-mode {majormode}
+	remove-majormode {majormode}
 
 	remove-submode {majormode} {minormode}
 
@@ -55,10 +68,11 @@ The {majormode} is a new symbol.
 The {minormode} can be any one of the existing buffer modes, except for
 a {majormode}.
 	
+
 Example
 -------
 
-	define-mode c
+	define-majormode c
 	; Declares a mode 'c', and corresponding symbol 'cmode'
 
 	define-submode c suffixes=\\.\\(\\([Cchisyl]\\)\\|CC\\|cc|cpp\\|cxx\\|hxx\\|scm\\)$
@@ -70,8 +84,17 @@ Example
 	; Defines the 'c' tabstops and shiftwidth.  If no "define-submode"
 	; command is given, no separate symbol is defined.
 
-The "define-mode" command
--------------------------
+As an example, to define a new major mode for perl programming, you might
+include the following in your .vilerc file:
+
+	define-majormode perl
+	define-submode perl preamble "^#.*perl\\>"
+	define-submode perl suffixes "\\.pl$"
+	define-submode perl shiftwidth 4
+
+
+The "define-majormode" command
+------------------------------
 
 This takes a single argument, a majormode name.  To follow existing
 convention, the string "mode" is automatically appended to the given
@@ -81,7 +104,7 @@ be associated with a buffer (none need be associated).  After
 definition, a majormode can be set or unset just like any other buffer
 mode:
 
-	define-mode c
+	define-majormode c
 	; defines "cmode"
 
 	set cmode
@@ -113,6 +136,7 @@ to the majormode's values.  (To keep the bookkeeping straight, modifying
 a global buffer mode must also modify the copies of non-local buffer
 mode values).
 
+
 The "define-submode" command
 ----------------------------
 
@@ -130,6 +154,12 @@ solely by the define-submode command:
 	suffixes
 		The filename suffix which is tested to trigger
 		association with a majormode (e.g., c-suffixes)
+
+		Note that since the default value for the c-suffixes mode
+		is a regular expression that will match some other file
+		types (C++ files, for instance), if you define a new major
+		mode for one of those suffixes you may want to reset
+		c-suffixes to something less inclusive.
 
 	preamble
 		Regular expression, matched against the beginning of a
@@ -153,22 +183,24 @@ solely by the define-submode command:
 Other features which should be controlled by majormodes include limiting
 the scope of the entab and detab commands.
 
-The "remove-mode" command"
---------------------------
+
+The "remove-majormode" command"
+-------------------------------
 
 This command has two forms:
 
-	remove-mode {majormode}
+	remove-majormode {majormode}
 
 		This removes the definition of the majormode.  Buffers
 		that were associated with the mode revert to no
 		majormode.
 
 or
-	remove-mode {majormode} {name}
+	remove-majormode {majormode} {name}
 
 		This removes the value of {name} from {majormode},
 		leaving it set to the global value, if any.
+
 
 The "remove-submode" command"
 -----------------------------
@@ -176,5 +208,5 @@ The "remove-submode" command"
 Remove the special association of a submode from a majormode.
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/modes.doc,v 1.1 1997/07/17 00:46:39 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/modes.doc,v 1.2 1997/09/04 01:14:27 tom Exp $
 -------------------------------

@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.75 1997/08/29 10:31:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.76 1997/09/03 17:25:42 tom Exp $
  *
  */
 
@@ -424,7 +424,9 @@ addtomap(
 static int
 delfrommap(struct maprec **mpp, const char * ks)
 {
+    struct maprec **save_m = mpp;
     struct maprec ***mstk = 0;
+    const char *save_k = ks;
     int depth = 0;
     int pass;
 
@@ -432,6 +434,9 @@ delfrommap(struct maprec **mpp, const char * ks)
 	return FALSE;
 
     for (pass = 0; pass < 2; pass++) {
+	mpp   = save_m;
+	ks    = save_k;
+	depth = 0;
 	while (*mpp && *ks) {
 	    if (pass)
 		mstk[depth] = mpp;
@@ -446,8 +451,8 @@ delfrommap(struct maprec **mpp, const char * ks)
 
 	if (*ks)
 	    return FALSE;		/* not in map */
-	if (pass)
-	    mstk = typeallocn(struct maprec **, depth);
+	if (!pass)
+	    mstk = typecallocn(struct maprec **, depth+1);
     }
 
     depth--;
