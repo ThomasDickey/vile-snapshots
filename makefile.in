@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.86 1997/10/07 18:50:15 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.87 1997/10/09 09:28:46 kev Exp $
 #
 
 #### Start of system configuration section. ####
@@ -47,6 +47,9 @@ X_LIBS		= @X_LIBS@
 
 SCREEN		= @SCREEN@
 TARGET		= @TARGET@
+
+PERL		= @perl_bin_path@
+PERLLIB		= @perl_lib_path@
 
 prefix		= @prefix@
 exec_prefix	= @exec_prefix@
@@ -402,6 +405,12 @@ populate:
 	for file in $(DEV_DISTFILES); do \
 	test -f $$file || co $$file ;\
 	done
+
+perl.c: $(srcdir)/perl.xs $(srcdir)/ptypemap
+	$(PERL) $(PERLLIB)/ExtUtils/xsubpp \
+		-typemap $(PERLLIB)/ExtUtils/typemap \
+		-typemap $(srcdir)/ptypemap \
+		$(srcdir)/perl.xs > $@
 
 $(OBJ): estruct.h nemode.h edef.h neproto.h proto.h config.h
 

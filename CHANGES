@@ -1,5 +1,13 @@
 Changes for vile 7.3 (released ??? ??? ??, 1997)
 
+(kev)	971009 (i)
+	+ perl.xs, ptypemap:  New files.  Beginnings of perl interface
+	  for vile.
+	+ cmdtbl (perl): New command enabled only when --with-perl
+	  supplied as an option to the configure script.
+	+ configure.in, makefile.in: perl related changes.
+	+ (fix typo in xshell.sh - tom)
+
 (tom)	971008 (h)
 	+ correct typo in stubbed-out code for $xshell, add $xdisplay and
 	  example script 'xshell.sh' which can be used to run a shell command

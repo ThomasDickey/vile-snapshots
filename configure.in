@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.66 $)
+AC_REVISION($Revision: 1.67 $)
 AC_PREREQ(2.12)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.66 1997/10/08 10:36:08 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.67 1997/10/09 09:28:46 kev Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -37,6 +37,27 @@ if test -n "$cflags"; then
 elif test -z "$CFLAGS" ; then
 	CFLAGS="-O"
 fi
+
+AC_PATH_PROGS(perl_bin_path, perl5 perl, no)
+AC_ARG_WITH(perl,
+	[ --with-perl              enable use of Perl as an extension language],
+	[
+	 if test "$perl_bin_path" = no; then
+	    echo "Fatal configure error: perl not found."
+	    exit 1
+	 fi
+	 $perl_bin_path -e 'require 5.003' || {
+	    echo "Fatal configure error: perl version must be 5.003 or greater."
+	    exit 1
+	 }
+	 perl_lib_path=`$perl_bin_path -MConfig -e 'print $Config{privlib}'`
+	 AC_DEFINE(OPT_PERL)
+	 EXTRAOBJS="$EXTRAOBJS perl.o"
+	 CFLAGS="$CFLAGS `perl -MExtUtils::Embed -e ccopts`"
+	 LIBS="$LIBS `perl -MExtUtils::Embed -e ldopts`"])
+AC_SUBST(perl_lib_path)
+AC_SUBST(perl_bin_path)
+
 
 # X11 checks will sometimes add to CFLAGS.  We want the state of CFLAGS
 # prior to these checks
