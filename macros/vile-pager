@@ -1,0 +1,23 @@
+#!/bin/sh
+# This is a simple script that uses the vi-clone 'vile' as a pager to show
+# highlighted text.  It's a lot easier to work with large listings than 'more'
+# or 'less'
+# - T.Dickey (dickey@clark.net)
+TMP=/tmp/rc$$
+trap "rm -f $TMP" 0 1 2 5 15
+cat >$TMP <<EOF/
+set glob=on
+source ~/.vilerc
+set nopopup-msgs
+store-procedure OnRead
+	setl noview
+	1 goto-line
+	attribute-cntl_a-sequences-til end-of-file
+	unmark
+	setl view
+	1 goto-line
+	setv \$buffer-hook ""
+~endm
+setv \$buffer-hook "OnRead"
+EOF/
+vile-manfilt $* | vile @$TMP

@@ -277,12 +277,12 @@ File manipulation commands:
 	command reads the named file in after the current line.  To read a
 	file before the first line, use ":0r".  File completion works like
 	command completion: using the TAB and '?' keys you can complete or
-	see next character choices.  Additionally, on unix hosts, backquotes 
-	may be used to invoke a shell command that returns the path of a 
-	desired file.  For example: 
- 
-		:e `which locks`       # csh looks for script called "locks" 
-		:e `type -path locks`  # bash equivalent 
+	see next character choices.  Additionally, on unix hosts, backquotes
+	may be used to invoke a shell command that returns the path of a
+	desired file.  For example:
+
+		:e `which locks`       # csh looks for script called "locks"
+		:e `type -path locks`  # bash equivalent
 
 	The commands ":ww" and ":wwq" correspond roughly to ":w" and ":wq",
 	but they each write all modified buffers, rather than just the
@@ -690,7 +690,7 @@ Miscellaneous commands
 
 		The command parsing is done with regular expressions.  Vile
 		compiles these from the buffer [Error Expressions], which are a
-		set of regular expressions with extra embedded information. 
+		set of regular expressions with extra embedded information.
 		Unescaped '%' followed by 'V', 'B', 'F', 'L', 'C' or 'T'
 		substitute verb (Entering/Leaving for gmake), buffer (i.e.,
 		scratch buffer with a bracketed name), file, line, column and
@@ -864,9 +864,9 @@ New Registers
 	to be able to see what key sequence led to a problem...]
 
 	The register name '.' contains the current selected text in xvile.
-	Also in xvile, the register name ';' is a synonym for the clipboard. 
-	Other versions of vile permit use of '.' and ';' as supplemental  
-	register storage. 
+	Also in xvile, the register name ';' is a synonym for the clipboard.
+	Other versions of vile permit use of '.' and ';' as supplemental
+	register storage.
 
 	The register name '"' is a synonym for the default unnamed register,
 	which is also sometimes referred to as register 0.
@@ -1094,7 +1094,7 @@ Editor modes
 		automatically during insert, like autoindent, above.  If a
 		line ends with a '{', '(', or ':', then the next line
 		indents further.  If a line begins with a '}' or ')', it is
-		lined up with the line containing the matching '{' or '('. 
+		lined up with the line containing the matching '{' or '('.
 		If a line starting with '#' is inserted it is moved to
 		column 1.  Additionally, if a line begins with a '#'
 		character, it will not shift right with the '>>' command. (M)
@@ -1512,7 +1512,7 @@ Editor modes
 		pattern.  Note that setting this mode can significantly
 		slow down the editor's operation when complex or frequently
 		occurring patterns are used, since vile will need to scan
-		the entire buffer for matches on any change to the buffer. 
+		the entire buffer for matches on any change to the buffer.
 		(B)
 
 	warn-rename  When using ":e" to find a file that has the same name
@@ -2643,7 +2643,7 @@ Encryption
 	to your buffers either automatically (via a mode setting) or
 	manually (via an explicit command).  The algorithm is reversible,
 	so crypting a previously crypted buffer or region will undo that
-	encryption. 
+	encryption.
 
 	The encryption key for a buffer will be a) inherited from the
 	global cryptkey which was set via the vile command line (-k) if it
@@ -2651,7 +2651,7 @@ Encryption
 	obtained from the user interactively.  The details of this are a
 	little messy, and should probably be cleaned up somewhat.  The
 	buffer's key will remain active until changed or reset.
-	
+
 	If "crypt" mode is on, then when the buffer is written the user
 	will be prompted for the encryption key to use in none has yet been
 	set.  If "crypt" mode is on, and an encryption key has been set,
@@ -2666,19 +2666,19 @@ Encryption
 	single equivalent region once.
 
 	vile's encryption algorithm is also available externally, via the
-	"vile-crypt" program built from the same sources.  vile-crypt will 
-	encrypt/decrypt a file using vile's crypt algorithm.  You can use 
-	"-k key" to supply the key on the commandline, and "-m" to treat 
-	the file as a mail message -- in that case, only text after the 
-	first blank line will be crypted.  Text to be encrypted can be 
-	specified as filenames on the command line, or provided as the 
-	standard input.  All output appears on stdout.  On systems with 
-	a getpass() library routine, the user will be prompted for the 
-	encryption key if it is not given on the command line.  To 
-	accomodate systems (such as linux) where the getpass() library 
-	routine is not interruptible from the keyboard, entering a 
-	crypt-key password which ends in ^C will cause the program to quit. 
-	
+	"vile-crypt" program built from the same sources.  vile-crypt will
+	encrypt/decrypt a file using vile's crypt algorithm.  You can use
+	"-k key" to supply the key on the commandline, and "-m" to treat
+	the file as a mail message -- in that case, only text after the
+	first blank line will be crypted.  Text to be encrypted can be
+	specified as filenames on the command line, or provided as the
+	standard input.  All output appears on stdout.  On systems with
+	a getpass() library routine, the user will be prompted for the
+	encryption key if it is not given on the command line.  To
+	accomodate systems (such as linux) where the getpass() library
+	routine is not interruptible from the keyboard, entering a
+	crypt-key password which ends in ^C will cause the program to quit.
+
 
 Crash Recovery
 --------------
@@ -2898,88 +2898,88 @@ Filtering C programs
 	starting point for creating similar coloring mechanisms for other
 	languages.
 
-Writing your own filters 
------------------------- 
-	Filters may be written as either an external program or with 
-	the Perl interface.  Both the manual page filter and the C 
-	program colorizer are examples of external programs which do 
-	the filtering.  The hgrep.pl perl script is an example of a 
-	filter which uses the vile's interface to Perl. 
- 
-	Regardless, the goal of the filter is to embed in the text 
-	a control sequences which describe how the subsequent text 
-	should be attributed by the vile command 
-	 
-		attribute-cntl_a-sequences-til 
- 
-	(See above for examples of how to use this command.) 
- 
-	The control sequences take the following form: 
- 
-		^A<Count><Attr>: 
- 
-	<Count> is a sequence of digits representing the number of 
-	characters following the ':' to be attributed. 
- 
-	<Attr> is a sequence of characters which indicates how to 
-	attribute the required number of characters following the 
-	':'.  The following sequences are recognized by vile: 
- 
-		I		-- italic 
-		B		-- bold 
-		R		-- reverse (or inverse) video 
-		U		-- underline 
-		C<hex digit>	-- color number (one of 16) 
-		H<command>\0	-- hypertext command 
- 
-	The <command> for hypertext commands may be any sequence of 
-	characters except for newlines and null characters.  A null 
-	character must terminate the hypertext command.  The command 
-	should be a valid vile command such as you might enter into 
-	your .vilerc file. 
- 
-	The attribute characters may be used together in any 
-	combination.  So, for example, you could use the following 
-	to make some text appear both bold and italic: 
- 
-		^A15IB:Bold and italic 
- 
-Hypertext 
---------- 
-	Vile does not currently supply a builtin key binding for 
-	executing hypertext commands.  The following macro and 
-	key binding will cause the space bar to be bound to a macro 
-	which will follow a hypertext link when the cursor is placed 
-	on top of it.  If no hypertext link is present, then the 
-	normal default action of advancing one character to the 
-	right is taken: 
- 
-	    22 store-macro 
-		~force execute-hypertext-command 
-		~if  &not $status 
-		    ~force forward-character-to-eol 
-		~endif 
-	    ~endm 
-	    bind-key execute-macro-22 \  
- 
-	[ Note to Paul and Tom:  Maybe we should just add a little 
-	  bit of code to make this the default binding for space bar? 
-	  Or is some other key binding preferable?  In any event, 
-	  it'll only take 7 or 8 lines to do the job... ] 
- 
-	When using xvile, double clicking on a hypertext link will 
-	cause the hypertext command to be executed.  If no hypertext 
-	command is associated with the text under the cursor, the 
-	default action of selecting the word under the cursor will 
-	occur instead. 
- 
+Writing your own filters
+------------------------
+	Filters may be written as either an external program or with
+	the Perl interface.  Both the manual page filter and the C
+	program colorizer are examples of external programs which do
+	the filtering.  The hgrep.pl perl script is an example of a
+	filter which uses the vile's interface to Perl.
+
+	Regardless, the goal of the filter is to embed in the text
+	a control sequences which describe how the subsequent text
+	should be attributed by the vile command
+
+		attribute-cntl_a-sequences-til
+
+	(See above for examples of how to use this command.)
+
+	The control sequences take the following form:
+
+		^A<Count><Attr>:
+
+	<Count> is a sequence of digits representing the number of
+	characters following the ':' to be attributed.
+
+	<Attr> is a sequence of characters which indicates how to
+	attribute the required number of characters following the
+	':'.  The following sequences are recognized by vile:
+
+		I		-- italic
+		B		-- bold
+		R		-- reverse (or inverse) video
+		U		-- underline
+		C<hex digit>	-- color number (one of 16)
+		H<command>\0	-- hypertext command
+
+	The <command> for hypertext commands may be any sequence of
+	characters except for newlines and null characters.  A null
+	character must terminate the hypertext command.  The command
+	should be a valid vile command such as you might enter into
+	your .vilerc file.
+
+	The attribute characters may be used together in any
+	combination.  So, for example, you could use the following
+	to make some text appear both bold and italic:
+
+		^A15IB:Bold and italic
+
+Hypertext
+---------
+	Vile does not currently supply a builtin key binding for
+	executing hypertext commands.  The following macro and
+	key binding will cause the space bar to be bound to a macro
+	which will follow a hypertext link when the cursor is placed
+	on top of it.  If no hypertext link is present, then the
+	normal default action of advancing one character to the
+	right is taken:
+
+	    22 store-macro
+		~force execute-hypertext-command
+		~if  &not $status
+		    ~force forward-character-to-eol
+		~endif
+	    ~endm
+	    bind-key execute-macro-22 \
+
+	[ Note to Paul and Tom:  Maybe we should just add a little
+	  bit of code to make this the default binding for space bar?
+	  Or is some other key binding preferable?  In any event,
+	  it'll only take 7 or 8 lines to do the job... ]
+
+	When using xvile, double clicking on a hypertext link will
+	cause the hypertext command to be executed.  If no hypertext
+	command is associated with the text under the cursor, the
+	default action of selecting the word under the cursor will
+	occur instead.
+
 X Window System specifics
 -------------------------
 
 	If you are using xvile under X11, the following additions are
 	available:
 
-	Mouse Buttons 
+	Mouse Buttons
 	-------------
 
 	1 -	Sets cursor position and the start of the selection when
@@ -3030,40 +3030,40 @@ X Window System specifics
 	uppercase with ^A-u^S.	Remember that some operators (e.g. the
 	shell-filtering operator, '!') are only capable of working on full
 	lines of text.
- 
-	Clipboard 
-	--------- 
- 
-	Data may be exchanged between many X applications via the 
-	PRIMARY selection.  This selection is set and manipulated as 
-	described in the above section entitled "Mouse Buttons". 
- 
-	Other applications, most notably OpenLook applications, use 
-	the CLIPBOARD selection to exchange data between applications.  
-	On many Sun keyboards, selected text is moved to the clipboard 
-	by pressing the "Copy" key and pasted by pressing the "Paste" 
-	key.  If you find that you can not paste text selected in 
-	xvile in other applications or vice-versa, it may well be that 
-	these applications use the CLIPBOARD selection instead of the 
-	PRIMARY selection.  (The other mechanism used among really old 
-	applications involves the use of a ring of cut buffers.) 
- 
-	xvile provides two commands for manipulating with the 
-	clipboard.  These are copy-to-clipboard and 
-	paste-from-clipboard.  When copy-to-clipboard is executed, the 
-	contents of the current selection are copied to the special 
-	clipboard kill register (denoted by ';' in the register list).  
-	When an application requests the clipboard selection, xvile 
-	gives it the contents of this kill register.  The 
-	paste-from-clipboard command requests clipboard data from the 
-	current owner of the CLIPBOARD selection. 
- 
-	Users of Sun systems may want to put the following key 
-	bindings in their .vilerc file in order to make use of the 
-	Copy and Paste keys found on their keyboards: 
- 
-		bind-key copy-to-clipboard #-^ 
-		bind-key paste-from-clipboard #-* 
+
+	Clipboard
+	---------
+
+	Data may be exchanged between many X applications via the
+	PRIMARY selection.  This selection is set and manipulated as
+	described in the above section entitled "Mouse Buttons".
+
+	Other applications, most notably OpenLook applications, use
+	the CLIPBOARD selection to exchange data between applications.
+	On many Sun keyboards, selected text is moved to the clipboard
+	by pressing the "Copy" key and pasted by pressing the "Paste"
+	key.  If you find that you can not paste text selected in
+	xvile in other applications or vice-versa, it may well be that
+	these applications use the CLIPBOARD selection instead of the
+	PRIMARY selection.  (The other mechanism used among really old
+	applications involves the use of a ring of cut buffers.)
+
+	xvile provides two commands for manipulating with the
+	clipboard.  These are copy-to-clipboard and
+	paste-from-clipboard.  When copy-to-clipboard is executed, the
+	contents of the current selection are copied to the special
+	clipboard kill register (denoted by ';' in the register list).
+	When an application requests the clipboard selection, xvile
+	gives it the contents of this kill register.  The
+	paste-from-clipboard command requests clipboard data from the
+	current owner of the CLIPBOARD selection.
+
+	Users of Sun systems may want to put the following key
+	bindings in their .vilerc file in order to make use of the
+	Copy and Paste keys found on their keyboards:
+
+		bind-key copy-to-clipboard #-^
+		bind-key paste-from-clipboard #-*
 
 	Scrollbars
 	----------
@@ -3459,16 +3459,16 @@ DOS specifics
 
 	Vile supports a 16-color palette under DOS, which includes:
 
-		black, red, green, brown, blue, magenta, cyan, 
+		black, red, green, brown, blue, magenta, cyan,
 		lightgray, gray, brightred, brightgreen, yellow,
 		brightblue, brightmagenta, brightcyan, white
 
 	If you wish to change vile's internal notion of these colors, put
 	a line in your vile.rc which resets the "palette" variable.  By
 	default its value is "0 4 2 6 1 5 3 7 8 12 10 14 9 13 11 15",
-	which associates each of the above colors with the appropriate 
-	PC color attribute.  Under MS-DOS, the palette values are masked 
-	with 7 before being used as background colors, to prevent blinking 
+	which associates each of the above colors with the appropriate
+	PC color attribute.  Under MS-DOS, the palette values are masked
+	with 7 before being used as background colors, to prevent blinking
 	characters.
 
 
@@ -3489,7 +3489,7 @@ Win32 specifics
 	--------
 	The Win32 version of vile supports almost all of the features
 	and changes listed directly above in the section entitled
-	"DOS specifics", with the exception that the editor's screen 
+	"DOS specifics", with the exception that the editor's screen
 	resolution cannot be changed using command-line switches or
 	the sres command.
 
@@ -3502,7 +3502,7 @@ Win32 specifics
 	accesses the floppy drive each and every time a process communicates
 	with it via a pipe and the OS R2 shell abruptly hangs under similar
 	conditions.  By default, then, on a WinNT host, vile's pipes are
-	implemented with Win32 services and via temp files on a Win95 host. 
+	implemented with Win32 services and via temp files on a Win95 host.
 	If the user's replacement Win95 shell does not exhibit problems
 	similar to those described above (e.g., Thompson Toolkit Shell),
 	vile may be forced to use native Win32 pipes by setting the global
@@ -3521,7 +3521,7 @@ Win32 specifics
 	Clipboard
 	---------
 	Copy data from the unnamed register to the windows clipboard via
-	the copy-unnamed-reg-to-clipboard command (bound to Alt+Insert). 
+	the copy-unnamed-reg-to-clipboard command (bound to Alt+Insert).
 
 	Utilities
 	---------
@@ -3540,8 +3540,8 @@ Win32 specifics
 
 	    http://www.perl.com/CPAN-local/ports/win32/Standard/x86/
 
-	If you acquire (i.e., do not personally build) a copy of 
-	"perl-embedded" vile, these external configuration steps are 
+	If you acquire (i.e., do not personally build) a copy of
+	"perl-embedded" vile, these external configuration steps are
 	necessary:
 
 	1) Obtain the [binary] perl distribution from the aforementioned
@@ -3549,17 +3549,18 @@ Win32 specifics
 	   other items, is a required DLL and the usual perl packages.
 
 	2) [Optional] To invoke vile-based perl scripts distributed with the
-	   editor, copy the scripts to a directory of your choice and create
-	   an exported environment variable called VILE_LIBRARY_PATH that 
-	   points to same.  The list of scripts known to work in a Win32 
+	   editor, create an exported environment variable called
+	   VILE_LIBRARY_PATH that specifies a directory of your choice.  Then
+	   create a subdirectory called %VILE_LIBRARY_PATH%\perl and copy the
+	   scripts to same.  The list of scripts known to work in a Win32
 	   environment includes:
 
 		hgrep.pl glob2re.pl visit.pl
 
-	Modes 
-	----- 
-	force-console   Boolean indicating whether or not winvile forces 
-			console creation prior to initiating a native read 
+	Modes
+	-----
+	force-console   Boolean indicating whether or not winvile forces
+			console creation prior to initiating a native read
 			pipe or filter region operation.  Must be set when the
 			host shell doesn't properly communicate with consoles
 			created as a side effect of the CreateProcess() API.
@@ -3567,16 +3568,16 @@ Win32 specifics
 			current shell.  Note:  this mode is applicable only
 			when w32pipes is set. (U)
 
-	scroll-pause	An integer indicating the time in milliseconds to  
-			wait after scrolling the display.  A value of zero, 
-			the default, disables this mode.  This mode is 
-			necessary when rapid scrolling operations cause 
-			improper screen refresh by the console editor 
-			(should only be a problem with inexpensive video 
-			HW).  Typical values, if required, are 20-80 
-			(msec).  (U) 
- 
-	w32pipes	See discussion of pipes above.  (U) 
+	scroll-pause	An integer indicating the time in milliseconds to
+			wait after scrolling the display.  A value of zero,
+			the default, disables this mode.  This mode is
+			necessary when rapid scrolling operations cause
+			improper screen refresh by the console editor
+			(should only be a problem with inexpensive video
+			HW).  Typical values, if required, are 20-80
+			(msec).  (U)
+
+	w32pipes	See discussion of pipes above.  (U)
 
 
 
@@ -3789,7 +3790,7 @@ Credits
 	Dave Lemke; he also contributed code for new features, including the
 	original native X support.  Eric Krohn has done some excellent testing
 	and enhancement.  The implementation of rectangles and their operations
-	was inspired by code from the 'notgnu' editor, by Julie Melbin. 
+	was inspired by code from the 'notgnu' editor, by Julie Melbin.
 	Patches to support OS/2 came from Charles Moschel and for Windows/NT
 	from Joe Greer and Clark Morgan.  Clark Morgan and Greg McFarlane seem
 	to run full regression tests on each new release, and always seem to
@@ -3816,4 +3817,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.352 1998/05/19 11:08:40 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.353 1998/05/24 11:54:37 cmorgan Exp $

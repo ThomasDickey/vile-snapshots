@@ -1,4 +1,4 @@
-MANIFEST for vile, version v7_4k
+MANIFEST for vile, version v7_4l
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -93,7 +93,6 @@ ptypemap                        perl-interface type map
 random.c                        miscellaneous functions
 regexp.c                        regular expression functions
 region.c                        region-manipulation
-revlist                         revision-list for VILE
 search.c                        functions for search-commands
 select.c                        selection-handling functions
 spawn.c                         functions for spawning subprocesses
@@ -131,6 +130,7 @@ macros                          subdirectory
 macros/digraphs.rc              macros for inserting digraphs
 macros/manpage.rc               macros for man-page filtering/display
 macros/pictmode.rc              macros to support "picture-mode" editing
+macros/vile-pager               use vile as a pager
 perl                            subdirectory
 perl/glob2re.pl                 utility-script for vile's hypertext
 perl/hgrep.pl                   utility-script for vile's hypertext

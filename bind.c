@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.177 1998/05/22 00:03:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.178 1998/05/23 21:41:04 tom Exp $
  *
  */
 
@@ -1309,7 +1309,6 @@ int c)	/* key to find what is bound to it */
 	return asciitbl[c];
 }
 
-#if !SMALLER
 /* fnc2kcod: translate a function pointer to a keycode */
 int
 fnc2kcod(const CMDFUNC *f)
@@ -1334,7 +1333,6 @@ fnc2kcod(const CMDFUNC *f)
 
 	return -1;	/* none found */
 }
-#endif
 
 /* fnc2pstr: translate a function pointer to a pascal-string that a user
 	could enter.  returns a pointer to a static array */
