@@ -1,11 +1,11 @@
 /*
  * find the next error in mentioned in the shell output window.
  * written for vile by paul fox.
- * rewritten to use regular expressions by T.Dickey (dickey@clark.net)
+ * rewritten to use regular expressions by T.Dickey
  *
  * Copyright (c) 1990-2000 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.90 2000/04/28 22:52:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.92 2000/06/17 02:44:49 tom Exp $
  *
  */
 
@@ -150,6 +150,8 @@ get_febuff(void)
  * Convert a given error-pattern to regular expression
  */
 
+#define	APP_T(S) if (pass == 1) want += strlen(S); \
+		 else dst = lsprintf(dst, "%s", S)
 #define	APP_S(S) if (pass == 1) want += sizeof(S); \
 		 else dst = lsprintf(dst, "%s", S)
 #define APP_C    if (pass != 1) *dst++ = *src
@@ -194,7 +196,7 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 		    break;
 		case 'F':
 		    APP_S(before);
-		    APP_S(tb_values(filename_expr));
+		    APP_T(tb_values(filename_expr));
 		    APP_S(after);
 		    errp->words[W_FILE] = ++word;
 		    break;
@@ -263,7 +265,7 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 	    }
 	}
 	if (pass == 1) {
-	    dst = temp = typeallocn(char, want);
+	    dst = temp = typeallocn(char, want + 1);
 	    if (dst == 0)
 		break;
 	} else {

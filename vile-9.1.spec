@@ -4,9 +4,9 @@ Version: 9.1
 Release: 1
 Copyright: GPL
 Group: Applications/Editors
-URL: ftp://ftp.clark.net/pub/dickey/vile
+URL: ftp://dickey.his.com/vile
 Source0: vile-9.1.tgz
-Packager: Thomas Dickey <dickey@clark.net>
+Packager: Thomas Dickey <dickey@herndon4.his.com>
 
 %description
 Vile is a text editor which is extremely compatible with vi in terms of

@@ -3225,7 +3225,7 @@ Color basics
 
 	For additional hints and help, try this URL:
 
-	    http://www.clark.net/pub/dickey/xterm/xterm.faq.html#no_color
+	    http://dickey.his.com/xterm/xterm.faq.html#no_color
 
 	Visual matching (VM)
 	--------------------
@@ -3377,11 +3377,11 @@ Syntax coloring
 	a) be familiar with the help topic entitled "Color basics".
 	b) ensure the target host supports syntax coloring.
 	c) if on a Unix host, compile and link the editor from the source
-	   distribution.  This step is optional on a win32 host, as
-	   precompiled binaries (editor and filters) are available from
-	   ftp://ftp.clark.net/pub/dickey/vile .  Note that almost all
-	   filters require preprocessing with flex (not a standard Windows
-	   tool) prior to compilation.
+	   distribution.  This step is optional on a win32 host, as precompiled
+	   binaries (editor and filters) are available from
+	   ftp://dickey.his.com/vile/ .  Note that almost all filters require
+	   preprocessing with flex (not a standard Windows tool) prior to
+	   compilation.
 	d) if you currently use the syntax coloring system that existed
 	   prior to vile version 8.3, then find and delete all instances of
 	   these files:
@@ -4939,8 +4939,8 @@ Credits (last updated Jan, 2000)
 
 	This code has been written by a _lot_ of people, with help from a
 	lot more sending in bug reports, fixes, and suggestions.  The
-	authors of vile are Tom Dickey (dickey@clark.net) and Kevin Buettner
-	(kev@primenet.com), and Paul Fox (pgf@foxharp.boston.ma.us).
+	authors of vile are Tom Dickey (dickey@herndon4.his.com) and Kevin
+	Buettner (kev@primenet.com), and Paul Fox (pgf@foxharp.boston.ma.us).
 
 	Names appearing within comments in the micro-Emacs source code are:
 	Dave Conroy, Daniel Lawrence, John Gamble, Roger Ove, Dana Hoggatt,
@@ -5004,13 +5004,14 @@ Where to Get It
 ---------------
 	Up-to-date copies of vile, including executables for DOS, Win32 and
 	OS/2 are found at
-		ftp://ftp.clark.net/pub/dickey/vile/
+		ftp://dickey.his.com/vile/
 
 	which is mirrored at
 		ftp://ftp.phred.org/pub/vile/
 
 	Development patches are found at
-		ftp://ftp.clark.net/pub/dickey/vile/patches/
+		ftp://dickey.his.com/vile/patches/
+		ftp://ftp.phred.org/pub/vile/patches/
 
 	In addition, we have distributed copies at other sites, including
 	metalabs.unc.edu (Linux), hobbes.nmsu.edu (OS/2) and the VMS Freeware
@@ -5021,11 +5022,13 @@ Where to Get It
 Problems
 --------
 	Send bug reports to
+		bugs@vile.cx
 		vile-bugs@foxharp.boston.ma.us
 
 	Requests to be put on the announcement list should go to
+		announce-request@vile.cx
 		vile-announce-request@foxharp.boston.ma.us
 
 Copyright 1995-2000 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.488 2000/06/09 10:05:25 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.490 2000/06/17 11:44:23 tom Exp $

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.199 2000/06/07 00:58:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.201 2000/06/17 11:20:09 tom Exp $
  *
  */
 
@@ -2249,20 +2249,62 @@ static void compute_majormodes_order(void)
 	}
 }
 
+/*
+ * Search my_mode_list[] for the given name, using 'count' for the array size.
+ * We don't use bsearch because we need to handle insertions into the list.
+ * If we find it, and will_insert is true, return -1, otherwise the index.
+ * If we do not find it, return the closest index if will_insert is true,
+ * otherwise -1.
+ */
+static int
+search_mode_list(const char *name, int count, int will_insert)
+{
+	int prev = -1;
+	int next = 0;
+	int lo = 0;
+	int hi = count;
+	int cmp;
+	const char *test;
+
+	while (lo < hi) {
+		next = (lo + hi + 0) / 2;
+		if (next == prev) {	/* didn't find it - stop iterating */
+			if (will_insert) {
+				next = strcmp(name, my_mode_list[lo]) > 0
+					? hi : lo;
+			} else {
+				next = -1;
+			}
+			break;
+		}
+		prev = next;
+		test = (next < count)
+			? my_mode_list[next]
+			: strcmp("\177", "\377") < 0
+				? "\377"
+				: "\177";
+		if ((cmp = strcmp(name, test)) == 0) {
+			if (will_insert)
+				next = -1;
+			break;
+		} else if (cmp > 0) {
+			lo = next;
+		} else {
+			hi = next;
+		}
+	}
+	return next;
+}
+
 static int
 found_per_submode(const char *majr, int code)
 {
-	size_t n;
 	char temp[NSTRING];
 
 	init_my_mode_list();
 
 	(void) per_submode(temp, majr, code, TRUE);
-	for (n = 0; my_mode_list[n] != 0; n++) {
-		if (!strcmp(my_mode_list[n], temp))
-			return TRUE;
-	}
-	return FALSE;
+	return search_mode_list(temp, count_modes(), FALSE) >= 0;
 }
 
 /*
@@ -2273,16 +2315,15 @@ insert_per_major(size_t count, const char *name)
 {
 	if (name != 0) {
 		size_t j, k;
+		int found;
 
 		TRACE(("insert_per_major %ld %s\n", (long) count, name));
-
-		for (j = 0; j < count; j++) {
-			if (strcmp(my_mode_list[j], name) > 0)
-				break;
+		if ((found = search_mode_list(name, count, TRUE)) >= 0) {
+			j = found;
+			for (k = ++count; k != j; k--)
+				my_mode_list[k] = my_mode_list[k-1];
+			my_mode_list[j] = strmalloc(name);
 		}
-		for (k = ++count; k != j; k--)
-			my_mode_list[k] = my_mode_list[k-1];
-		my_mode_list[j] = strmalloc(name);
 	}
 	return count;
 }
@@ -2294,19 +2335,18 @@ static size_t
 remove_per_major(size_t count, const char *name)
 {
 	if (name != 0) {
+		int found;
 		size_t j, k;
 
-		for (j = 0; j < count; j++) {
-			if (strcmp(my_mode_list[j], name) == 0) {
-				if (my_mode_list != all_modes
-				 && !in_all_modes(my_mode_list[j])) {
-					free(TYPECAST(char,my_mode_list[j]));
-				}
-				count--;
-				for (k = j; k <= count; k++)
-					my_mode_list[k] = my_mode_list[k+1];
-				break;
+		if ((found = search_mode_list(name, count, FALSE)) >= 0) {
+			j = found;
+			if (my_mode_list != all_modes
+			 && !in_all_modes(my_mode_list[j])) {
+				free(TYPECAST(char,my_mode_list[j]));
 			}
+			count--;
+			for (k = j; k <= count; k++)
+				my_mode_list[k] = my_mode_list[k+1];
 		}
 	}
 	return count;

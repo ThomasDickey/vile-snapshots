@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.380 2000/04/20 10:52:39 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.381 2000/06/17 02:44:36 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -145,7 +145,7 @@ reconnect input and capture output.)  some commands like latex prompt for
 more input when partway done.
 
 ========(VMS-VILE)=============================================================
-Unfinished items on vax/vms (dickey@clark.net):
+Unfinished items on vax/vms [tom]
 
 	+ if the current directory has changed, offer to restore it on exit.
 	  (Note that if the _device_ portion has changed, the original
