@@ -3,7 +3,7 @@
 # based on the original makefile of vile 3.46 (see the original makefile)
 # T.DANG (dang@cogit.ign.fr)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wat,v 1.25 1999/03/08 11:23:13 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wat,v 1.26 1999/03/26 00:28:53 tom Exp $
 #
 # if you use the watcom version of vile, you may want to "set DOS4G=quiet"
 # to suppress the DOS 4G/W banner that comes up from the Rational Systems
@@ -45,7 +45,7 @@ SRC = 	main.c $(SCREEN).c &
 	input.c insert.c itbuff.c isearch.c &
 	line.c map.c modes.c msgs.c npopen.c &
 	oneliner.c opers.c path.c random.c regexp.c &
-	region.c search.c select.c spawn.c &
+	region.c search.c select.c spawn.c statevar.c &
 	tags.c tbuff.c termio.c ucrypt.c undo.c &
 	version.c window.c word.c wordmov.c
 
@@ -57,7 +57,7 @@ OBJ = 	main.obj $(SCREEN).obj &
 	input.obj insert.obj itbuff.obj isearch.obj &
 	line.obj map.obj modes.obj msgs.obj npopen.obj &
 	oneliner.obj opers.obj path.obj random.obj regexp.obj &
-	region.obj search.obj select.obj spawn.obj &
+	region.obj search.obj select.obj spawn.obj statevar.obj &
 	tags.obj tbuff.obj termio.obj ucrypt.obj undo.obj &
 	version.obj window.obj word.obj wordmov.obj
 
@@ -112,6 +112,7 @@ opers.obj:	nefunc.h
 path.obj:	dirstuff.h
 random.obj:	nefunc.h
 select.obj:	nefunc.h
+statevar.obj:	nevars.h
 spawn.obj:	nefunc.h
 termio.obj:	nefunc.h
 version.obj:	patchlev.h

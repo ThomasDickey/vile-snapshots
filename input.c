@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.191 1999/03/19 11:29:29 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.192 1999/03/24 11:45:43 pgf Exp $
  *
  */
 
@@ -169,7 +169,7 @@ unsigned *pos)
 int
 mlyesno(const char *prompt)
 {
-	char c; 		/* input character */
+	char c;			/* input character */
 
 	/* in case this is right after a shell escape */
 	if (!update(TRUE))
@@ -1083,6 +1083,34 @@ int (*complete)(DONE_ARGS)) /* handles completion */
 	return code;
 }
 
+/*
+ * this one is called for @"interactive" variables, and the &query function
+ */
+const char *
+user_reply(const char *prompt)
+{
+	static TBUFF *replbuf;
+	int odiscmd;
+	int oclexec;
+	int status;
+
+	odiscmd = discmd; discmd = TRUE;
+	oclexec = clexec; clexec = FALSE;
+
+	status = kbd_reply(prompt, &replbuf,
+			eol_history, '\n',
+			KBD_EXPAND|KBD_QUOTES,
+			no_completion);
+
+	discmd = odiscmd;
+	clexec = oclexec;
+
+	if (status == ABORT)
+		return NULL;
+	else /* FIXME: assumes EOS added by kbd_reply */
+		return tb_values(replbuf);
+
+}
 /*
  * We use the editc character to toggle between insert/command mode in the
  * minibuffer.  This is normally bound to ^G (the position command).

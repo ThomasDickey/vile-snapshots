@@ -3,7 +3,7 @@
 #
 # T.DANG (dang@cogit.ign.fr)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.28 1999/03/08 11:21:46 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.29 1999/03/26 00:25:19 tom Exp $
 #
 #
 
@@ -37,7 +37,7 @@ SRC = 	main.c $(DISP_SRC) basic.c bind.c btree.c buffer.c \
 	input.c insert.c itbuff.c isearch.c \
 	line.c modes.c msgs.c npopen.c oneliner.c opers.c \
 	path.c random.c regexp.c \
-	region.c search.c select.c spawn.c \
+	region.c search.c select.c spawn.c statevar.c \
 	tags.c tbuff.c termio.c ucrypt.c undo.c \
 	version.c window.c word.c wordmov.c map.c djhandl.c
 
@@ -109,6 +109,7 @@ opers.o:	nefunc.h
 path.o:		dirstuff.h
 random.o:	nefunc.h
 select.o:	nefunc.h
+statevar.o:	nevars.h
 spawn.o:	nefunc.h
 termio.o:	nefunc.h
 version.o:	patchlev.h

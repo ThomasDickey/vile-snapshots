@@ -2,7 +2,7 @@
  * Unix crypt(1)-style interface.
  * Written by T.E.Dickey for vile (March 1999).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.6 1999/03/19 12:03:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.9 1999/03/25 11:26:02 tom Exp $
  *
  */
 
@@ -84,19 +84,14 @@ vl_encrypt_char(int ch)
  * key from the user.
  */
 void
-vl_make_encrypt_key (char *dst, char *src)
+vl_make_encrypt_key (char *dst, const char *src)
 {
     char key[LEN_CLEAR];
     char salt[2];
 
     memcpy(key,  src,  sizeof(key));
     memcpy(salt, src,  sizeof(salt));
-
-    while (*src)
-	*src++ = 0;
-
-    crypt(key, salt);
-    memcpy(dst,  key,  LEN_CRYPT);
+    memcpy(dst, (char *)crypt(key, salt), LEN_CRYPT);
     dst[LEN_CRYPT] = 0;
 
     TRACE(("made encryption key(%s)\n", dst))

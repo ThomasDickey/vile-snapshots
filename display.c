@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.270 1999/03/20 22:47:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.271 1999/03/24 11:47:39 pgf Exp $
  *
  */
 
@@ -1156,7 +1156,7 @@ reframe(WINDOW *wp)
 	wp->w_line.o = 0;
 
 	/* w_force specifies which line of the window dot should end up on */
-	/*	positive --> lines from the top 			*/
+	/*	positive --> lines from the top				*/
 	/*	negative --> lines from the bottom			*/
 	/*	zero --> middle of window				*/
 
@@ -1910,13 +1910,16 @@ int	on)		/* start highlighting */
 }
 
 #if CAN_SCROLL
-/* optimize out scrolls (line breaks, and newlines) */
-/* arg. chooses between looking for inserts or deletes */
+/* optimize simple scrolled screen region movements.
+ * arg. chooses between looking for inserts or deletes.
+ * original code by Roger Ove, for an early version of
+ * MicroEMACS.  used by permission.
+ */
 static int
 scrolls(int inserts)	/* returns true if it does something */
 {
-	struct	VIDEO *vpv ;	/* virtual screen image */
-	struct	VIDEO *vpp ;	/* physical screen image */
+	struct	VIDEO *vpv;	/* virtual screen image */
+	struct	VIDEO *vpp;	/* physical screen image */
 	int	i, j, k ;
 	int	rows, cols ;
 	int	first, match, count, ptarget = 0, vtarget = 0;
@@ -1926,22 +1929,22 @@ scrolls(int inserts)	/* returns true if it does something */
 					   in the right place */
 	int	from, to;
 
-	if (term.t_scroll == null_t_scroll) /* no way to scroll */
+	if (term.t_scroll == null_t_scroll) /* can't scroll */
 		return FALSE;
 
 	rows = term.t_nrow -1;
 	cols = term.t_ncol ;
 
+	/* find first line that doesn't match */
 	first = -1 ;
-	for (i = 0; i < rows; i++) {	/* find first wrong line */
+	for (i = 0; i < rows; i++) {
 		if (!texttest(i,i)) {
 			first = i;
 			break;
 		}
 	}
-
 	if (first < 0)
-		return FALSE;		/* no text changes */
+		return FALSE;		/* there isn't one */
 
 	vpv = vscreen[first] ;
 	vpp = PScreen(first) ;
@@ -1960,7 +1963,7 @@ scrolls(int inserts)	/* returns true if it does something */
 		from = vtarget = first + 1 ;
 	}
 
-	/* find the matching shifted area */
+	/* can we find that text elsewhere ? */
 	longmatch = -1;
 	longcount = 0;
 	longinplace = 0;
@@ -1997,7 +2000,6 @@ scrolls(int inserts)	/* returns true if it does something */
 		}
 	}
 
-	/* do the scroll */
 	if (match>0 && count>2) {		 /* got a scroll */
 		/* move the count lines starting at ptarget to match */
 		/* mlwrite("scrolls: move the %d lines starting at %d to %d",

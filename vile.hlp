@@ -85,8 +85,8 @@ Command Prefixes
 	in combination with another key, can be bound as a pair to execute
 	any vile function.  The default values for these prefixes are
 		Key:			Bound to dummy function:
-		^X     Control-X 	cntl_x-prefix
-		^A     Control-A 	cntl_a-prefix
+		^X     Control-X	cntl_x-prefix
+		^A     Control-A	cntl_a-prefix
 		#      poundsign	function-prefix
 	If you find any of these keys hard to type, or would prefer that
 	they are all control characters (or all non-control), they can
@@ -847,8 +847,8 @@ Miscellaneous commands
 		associated with the TTY driver, i.e. backspace, interrupt,
 		suspend, etc.
 
-	show-variables -- displays the list of vile $variables and user
-		%variables, and their values.
+	show-variables -- displays the list of vile state $variables and
+		temporary %variables, and their values.
 
 New Registers
 -------------
@@ -934,7 +934,7 @@ Rectangular regions
 		full-line regions. (uppercase, lowercase, flip-case, and
 		blank, respectively)
 
-	p P 	The 'put'ting commands know whether the text being 'put' was
+	p P	The 'put'ting commands know whether the text being 'put' was
 		originally rectangular, and will do a rectangular insert
 		of the text, in front of or behind the cursor.  The
 		cursor position defines the upper left corner of the
@@ -1195,6 +1195,11 @@ Editor modes
 		column at which autowrapping and region formatting will
 		break lines.  If zero, use the wrapmargin.  If negative,
 		count from the right margin.  (B)
+
+	filtername (fn)  Specify a syntax-highlighting filter, for a given
+		majormode.  This is used in the filters.rc file, to handle
+		special cases where different sets of keywords are applicable
+		to a common syntax, e.g., C, C++ and Java.  (B)
 
 	flash   If your terminal can, will flash the screen rather than
 		beeping on errors.  No audible or visible indication will
@@ -1537,7 +1542,7 @@ Editor modes
 
 			Mode Value   Mode Semantics
 
-			off 	     feature disabled (default)
+			off	     feature disabled (default)
 			reverse      on err -> switch screen to normal then
 			                       reverse video.
 			normal       on err -> switch screen to reverse then
@@ -1734,7 +1739,7 @@ Key Rebinding
 		bind-key incremental-search /
 		bind-key reverse-incremental-search ?
 	 To make ^N and ^P switch windows instead of cause motion by lines,
- 	  try:
+	  try:
 		bind-key next-window ^N
 		bind-key previous-window ^P
 	 To cause the space bar to move forward by pages, as in the "more"
@@ -2096,8 +2101,8 @@ Programmed procedures and macros
 	There are some built-in variables that can be used in macros to gain
 	access to parts of vile status, and parts of the current buffer.
 	Built-in variables are accessed by name, prefixed with the '$'
-	character.  There are two types of built-in variables (the environment
-	variables, and mode values).  The environment variables are:
+	character.  There are two types of built-in variables (the so-called
+	"state" variables, and mode values).  The state variables are:
 
 	$abufname	alternate buffer name (i.e. last visited) (read only)
 	$bchars		number of characters in current buffer	(read only)
@@ -2172,10 +2177,10 @@ Programmed procedures and macros
 	$xdisplay	the value to set $DISPLAY when running $xshell.
 	$xshell		name of the terminal program for spawned xvile commands.
 
-	In addition to the environment variables, you may set and use the
-	values of the editor modes (i.e., universal modes, buffer-only modes or
-	window-only modes), e.g., "setv $dos=true".  The global values of the
-	editor modes are not visible to the expression evaluator.
+	In addition to the state variables, you may set and use the values
+	of the editor modes (i.e., universal modes, buffer-only modes or
+	window-only modes), e.g., "setv $dos=true".  The global values of
+	the editor modes are not visible to the expression evaluator.
 
 	User-defined variables can also be set and used; their names are
 	prefixed with the '%' character.
@@ -2215,7 +2220,7 @@ Programmed procedures and macros
 	&sgr	2	string logical greater than
 	&ind	1	evaluate indirect value
 	&and	2	logical and
-	&or 	2	logical or
+	&or	2	logical or
 	&len	1	string length
 	&upp	1	uppercase string
 	&low	1	lower case string
@@ -2225,6 +2230,7 @@ Programmed procedures and macros
 	&chr	1	integer to char conversion
 	&gtk	0	get 1 character
 	&gts	0	get keycode sequence, e.g., #1
+	&que	1	prompt user for input
 	&rnd	1	get a random number from 1 to n
 	&abs	1	absolute value of a number
 	&sin	2	find the index of second string in first
@@ -2598,9 +2604,9 @@ Command files
 
 	On startup (in the absence of '@' arguments -- see Invocation
 	below), vile will attempt to read the file ".vilerc" in the current
-	directory, and then in $HOME, and will execute the commands found
-	therein.  [This file is called "vile.rc" under DOS, and is searched
-	for in the current directory and along the PATH.]  It is possible to
+	directory, then in $HOME, and then in several host-specific
+	locations (this file is called "vile.rc" on non-Unix hosts).  If
+	found, vile executes the commands found therein.  It is possible to
 	nest such executions.  For example, you might keep your general
 	default settings in your home directory, and put the following
 	lines in a .vilerc in a directory in which you prefer tabs be set
@@ -2627,13 +2633,43 @@ Command files
 
 Invocation
 ----------
+	vile searches for a startup file in these locations (and in the
+	order listed):
 
-	As mentioned above, vile normally looks for files called "./.vilerc"
-	and "$HOME/.vilerc", and executes the first one found.  If the
-	variable VILEINIT is set in the environment, it is used as a set of
-	vile commands to initialize the editor.  As a not-very-useful
-	example of a VILEINIT sequence, the following setting will exactly
-	recreate the default (i.e. no VILEINIT variable) behavior:
+		current working directory
+		the directory specify by $HOME
+		the vile executable directory
+		if $VILE_STARTUP_PATH exists
+			if host is Unix
+				search each colon-delimited directory
+				          specified by this env var
+			else if host is PC
+				search each semi-colon-delimited directory
+				          specified by this env var
+			else /* host is VMS */
+				search each comma-delimited directory
+				          specified by this symbol
+			end if
+		else
+			if host is Unix
+				search /usr/local/lib:/usr/local:/usr/lib
+			else if host is PC
+				search \sys\public;\usr\bin;\bin;\
+			else /* host is VMS */
+				search sys$login,sys$device:[vmstools],
+					sys$library
+			end if
+		end if
+		if host != VMS
+			search each directory in $PATH
+		else
+			search sys$system,sys$library
+		end if
+
+	If the variable VILEINIT is set in the environment, it is used as a
+	set of vile commands to initialize the editor.  As a
+	not-very-useful example of a VILEINIT sequence, the following
+	setting recreates portions of the default initialization behavior:
 
 		export VILEINIT
 		VILEINIT="
@@ -2756,12 +2792,12 @@ Mode line customization
 	text displayed in the window.
 
 	The editor variable "modeline-format" is set to a string which
-	controls formatting of mode lines.  This variable is user settable and
-	thus may be used to customize the display of mode lines.  The
+	controls formatting of mode lines.  This variable is user settable
+	and thus may be used to customize the display of mode lines.  The
 	format specifiers which may appear in the format control strings
 	are as follows:
 
-		%i 	insert/overwrite/replace mode indicator, displayed
+		%i	insert/overwrite/replace mode indicator, displayed
 			only when in insert, overwrite, or replace mode.
 			When not in one of these modes, the separator
 			character (often "-", "=", or " ") will be displayed.
@@ -2868,7 +2904,7 @@ Filtering "man" pages
 	;; Author: Kevin Buettner
 
 	29 store-macro
-		set-variable %manpage @"man page? "
+		set-variable %manpage &query "man page? "
 		~if &or &seq %manpage "ERROR" & seq %manpage ""
 			~return
 		~endif
@@ -3225,7 +3261,7 @@ X Window System specifics
 	-name name	Name used for resource lookups.
 	-title name	Name to be displayed in titlebar.
 	-geometry geom	Initial window dimensions in columns and rows.
-	-iconic 	Start xvile iconified.
+	-iconic		Start xvile iconified.
 	-xrm Resource	Specify or change an X resource internal to xvile.
 
 	Additional xvile command line arguments
@@ -3289,9 +3325,9 @@ X Window System specifics
 			text.
 
 	menuBackground
-	menuForeground	Optional (OPT_MENUS_COLORED, works with Motif) resources
-			for setting the background and foreground colors of
-			menubar and pulldown menus.
+	menuForeground	Optional (OPT_MENUS_COLORED, works with Motif)
+			resources for setting the background and foreground
+			colors of menubar and pulldown menus.
 
 	modeline.focusForeground
 	modeline.focusBackground   Foreground/Background color of the mode
@@ -3710,7 +3746,7 @@ Win32 specifics
 	Winvile Font
 	------------
 	Winvile's font may be set via a command-line switch or from within
-	the editor by modifying the $font environment variable.  In either
+	the editor by modifying the built-in $font state variable.  In either
 	case, a <fontspec> string describes the desired font, where:
 
 	<fontspec>  :== [<face>,]<size>[,<style>]
@@ -3731,8 +3767,8 @@ Win32 specifics
 
 	Cmdline Examples		Internal Examples
 	****************                *****************
-	-fn 'Letter Gothic,8'   	:setv $font r_ansi,7
-	-font r_ansi,8,bold     	:setv $font 8
+	-fn 'Letter Gothic,8'		:setv $font r_ansi,7
+	-font r_ansi,8,bold		:setv $font 8
 
 			Vile.rc Example
 			***************
@@ -3767,8 +3803,8 @@ Win32 specifics
 
 	2) [Optional] To invoke vile-based perl scripts distributed with the
 	   editor, create an exported environment variable called
-	   VILE_LIBRARY_PATH that specifies a directory of your choice.  Then
-	   create a subdirectory called %VILE_LIBRARY_PATH%\perl and copy the
+	   VILE_LIBDIR_PATH that specifies a directory of your choice.  Then
+	   create a subdirectory called %VILE_LIBDIR_PATH%\perl and copy the
 	   scripts to same.  The list of scripts known to work in a Win32
 	   environment includes:
 
@@ -3902,7 +3938,7 @@ Sample .vilerc
 	~endm
 
 	; spelling keystroke: write the buffer, invoke ispell, and force
-	; 	it to be read back in.
+	;	it to be read back in.
 	2 store-macro
 		write-file
 		; suppress "press return" with "1" argument to shell-command
@@ -4038,6 +4074,6 @@ Problems
 	Requests to be put on the announcement list should go to
 		vile-announce-request@foxharp.boston.ma.us
 
-Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
+Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.400 1999/03/20 16:35:01 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.404 1999/03/27 15:43:54 tom Exp $

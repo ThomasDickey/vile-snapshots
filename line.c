@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.118 1999/03/20 16:36:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.119 1999/03/24 11:45:28 pgf Exp $
  *
  */
 
@@ -335,7 +335,7 @@ linsert(int n, int c)
 	register char	*ntext;
 	SIZE_T	nsize;
 
-	lp1 = DOT.l;				/* Current line 	*/
+	lp1 = DOT.l;				/* Current line		*/
 	if (lp1 == buf_head(curbp)) {		/* At the end: special	*/
 		if (DOT.o != 0) {
 			mlforce("BUG: linsert");
@@ -674,12 +674,10 @@ int kflag)	/* put killed text in kill buffer flag */
  */
 #if OPT_EVAL
 char *
-lgrabtext(CHARTYPE type)
+lgrabtext(char *rp, CHARTYPE type)
 {
-	static char rline[NSTRING];	/* line to return */
-
-	(void)screen_string(rline, NSTRING, type);
-	return rline;
+	(void)screen_string(rp, NSTRING, type);
+	return rp;
 }
 #endif
 

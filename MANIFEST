@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_2p
+MANIFEST for vile, version v8_2q
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -95,6 +95,7 @@ search.c                        functions for search-commands
 select.c                        selection-handling functions
 sinstall.sh                     wrapper for installing perl-scripts
 spawn.c                         functions for spawning subprocesses
+statevar.c                      functions to set/get state-variables
 tags.c                          support for vi-style "tags"
 tbuff.c                         temporary-buffer management functions
 tcap.c                          TERMCAP terminal driver
@@ -151,6 +152,7 @@ filters/bat.key                 dos batchfile keywords
 filters/c-filt.c                c filter
 filters/c-filt.flx              original flex-based c-filter
 filters/c.key                   keywords for C
+filters/csh.key                 keywords for csh/tcsh syntax highlighting filter
 filters/cwebfilt.l              cwebx syntax filter for vile
 filters/dcl-filt.l              VAX dcl syntax highlighting filter for vile
 filters/dcl.key                 dcl keywords

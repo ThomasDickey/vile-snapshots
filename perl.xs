@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.32 1999/03/07 21:45:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.36 1999/03/26 10:31:46 tom Exp $
  */
 
 /*#
@@ -932,11 +932,11 @@ perl_init(void)
     av_store(av, 1, sv);
 #endif
     /* Always recognize environment variable */
-    if ((vile_path = getenv("VILE_LIBRARY_PATH")) != 0)
+    if ((vile_path = getenv("VILE_LIBDIR_PATH")) != 0)
     {
 	/*
 	 * "patch" @INC to look (first) for scripts in the directory
-	 * %VILE_LIBRARY_PATH%\\perl .
+	 * %VILE_LIBDIR_PATH%\\perl .
 	 */
 	len = strlen(vile_path) - 1;
 	if (len >= 0 && is_slashc(vile_path[len]))
@@ -2091,8 +2091,8 @@ set(...)
 		    }
 		}
 	    } else {
-		char *val;
-		val = gtenv(mode);
+		const char *val;
+		val = tokval(mode);
 		if (val == errorm) {
 		    if (modenames)
 			free(modenames);
@@ -2111,7 +2111,7 @@ set(...)
 			val = SvPV(ST(argno), na);
 			argno++;
 		    }
-		    status = stenv(mode, val);
+		    status = set_state_variable(mode, val);
 
 		    if (status != TRUE) {
 			if (modenames) free(modenames);
@@ -2135,7 +2135,7 @@ set(...)
 		    if (status == TRUE)
 			XPUSHs(sv_2mortal(newSVpv(string_mode_val(&args), 0)));
 		    else
-			XPUSHs(sv_2mortal(newSVpv(gtenv(mode), 0)));
+			XPUSHs(sv_2mortal(newSVpv((char *)tokval(mode), 0)));
 		}
 	    }
 	}
@@ -2150,7 +2150,7 @@ set(...)
 		}
 		else {
 		    XPUSHs(sv_2mortal(newSVpv(mode, 0)));
-		    XPUSHs(sv_2mortal(newSVpv(gtenv(mode), 0)));
+		    XPUSHs(sv_2mortal(newSVpv((char *)tokval(mode), 0)));
 		}
 	    }
 	    free(modenames);

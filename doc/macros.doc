@@ -1,40 +1,40 @@
 
-Thanks 
-====== 
-	This document, and the macro language it describes, owes 
-	a debt of thanks to Dan Lawrence and his MicroEMACS text 
-	editor.  Many of the features described herein first appeared 
-	in this form in MicroEMACS. 
- 
+Thanks
+======
+	This document, and the macro language it describes, owes
+	a debt of thanks to Dan Lawrence and his MicroEMACS text
+	editor.  Many of the features described herein first appeared
+	in this form in MicroEMACS.
+
 
 Programmed Macros in vile
 ==========================
 
-	vile presents a couple of forms of what are commonly called 
-	"macros".  This document presents information on those 
-	written in the builtin "macro language".  (The other form of 
-	macro is a "keyboard macro", a simple stored sequence of vile 
-	keystrokes, which can be replayed on command.) Macros written 
-	in the macro language can be bound to keys, run from files or 
-	buffers, given names (in which case they're known as 
-	"procedures"), and in the last case, those names may be 
-	directly introduced into vile's command set. 
- 
-	The language can execute any valid vile command, using one of it's  
-	"named" forms.  I.e. the command that would be executed would 
-	be "down-line", "forward-line", or "next-line", but it would 
-	not work to write the macro to use 'j'. 
- 
-	vile commands can be linked together in repetitive or 
-	conditional ways using various builtin directives (e.g.  
-	"if", "else", "while", "break", etc), and intermediate 
-	results can be stored in string-valued temporary variables.  
-	Other forms of variable can be used to reference parts of 
-	vile's current state, e.g. the current line number.  
-	Finally, there is a set of functions that can act on 
-	variables, to concatenate them, compare them, increment them, 
-	change their representation, etc. 
- 
+	vile presents a couple of forms of what are commonly called
+	"macros".  This document presents information on those
+	written in the builtin "macro language".  (The other form of
+	macro is a "keyboard macro", a simple stored sequence of vile
+	keystrokes, which can be replayed on command.) Macros written
+	in the macro language can be bound to keys, run from files or
+	buffers, given names (in which case they're known as
+	"procedures"), and in the last case, those names may be
+	directly introduced into vile's command set.
+
+	The language can execute any valid vile command, using one of it's
+	"named" forms.  I.e. the command that would be executed would
+	be "down-line", "forward-line", or "next-line", but it would
+	not work to write the macro to use 'j'.
+
+	vile commands can be linked together in repetitive or
+	conditional ways using various builtin directives (e.g.
+	"if", "else", "while", "break", etc), and intermediate
+	results can be stored in string-valued temporary variables.
+	Other forms of variable can be used to reference parts of
+	vile's current state, e.g. the current line number.
+	Finally, there is a set of functions that can act on
+	variables, to concatenate them, compare them, increment them,
+	change their representation, etc.
+
 
 	Each of these language aspects will be described in turn, but first
 	the execution framework must be explained.
@@ -46,29 +46,29 @@ Creating, executing, storing macros
 	a file or buffer and subsequently executed with one of these editor
 	commands:
 
-	       command          applies to    example 
-	       -------          ----------    ------- 
-	       execute-buffer   buffer        execute-buffer cfgcmds 
-	       execute-file     disk file     execute-file ~/.projcfg 
-	       source           disk file     source c:/utils/proj.cfg 
+	       command          applies to    example
+	       -------          ----------    -------
+	       execute-buffer   buffer        execute-buffer cfgcmds
+	       execute-file     disk file     execute-file ~/.projcfg
+	       source           disk file     source c:/utils/proj.cfg
 
 	The most common example of this usage is vile's startup file,
 	which is "sourced" during the editor's invocation.  Typically, the
 	startup file configures the user's preferences and looks something
 	like this:
 
-	       set ai 
-	       set ts=4 
-	       set flash 
-	       <etc.> 
+	       set ai
+	       set ts=4
+	       set flash
+	       <etc.>
 
 	A startup/configuration file might also use macro language
 	directives to conditionally configure the editor.  For example, if
 	xvile executes this startup file fragment:
 
-	       ~if &sequal $progname "xvile" 
-		   set-variable $title $cbufname 
-	       ~endif 
+	       ~if &sequal $progname "xvile"
+		   set-variable $title $cbufname
+	       ~endif
 
 	then the editor's X window titlebar changes.  However, "standard"
 	vile (i.e., non-gui vile) ignores this fragment and thus, a single
@@ -86,9 +86,9 @@ Creating, executing, storing macros
 	The numbered macro syntax looks like so:
 
 	        <number> store-macro
-		    <language element> 
-		       ... 
-		    <language element> 
+		    <language element>
+		       ...
+		    <language element>
 	        ~endm
 
 	A numbered macro is executed using this command:
@@ -101,8 +101,8 @@ Creating, executing, storing macros
 
 	Here's an actual example:
 
-		30 store-macro 
-		    write-message "this is a test macro" 
+		30 store-macro
+		    write-message "this is a test macro"
 	        ~endm
 	        bind-key execute-macro-30 #h
 
@@ -123,38 +123,38 @@ Creating, executing, storing macros
 	A named macro, aka "stored procedure", uses this syntax:
 
 	        store-procedure <unique-name> ["help-string"]
-		    <language element> 
-		       ... 
-		    <language element> 
+		    <language element>
+		       ...
+		    <language element>
 	        ~endm
 
 	where:
 
 	unique-name    is an alpha-numeric identifier that does not conflict
-		      with the name of any existing editor command (the 
-		      show-commands command generates a list of all existing 
-		      commands). 
- 
-		      Note:  due to vile's use of the underscore ('_') as a 
-		      command terminator, this character should _not_ be 
-		      used as a word separator within "unique-name". 
-		      Instead, use either a hypen ('-') or mixed case 
-		      alphabetics. 
+		      with the name of any existing editor command (the
+		      show-commands command generates a list of all existing
+		      commands).
+
+		      Note:  due to vile's use of the underscore ('_') as a
+		      command terminator, this character should _not_ be
+		      used as a word separator within "unique-name".
+		      Instead, use either a hypen ('-') or mixed case
+		      alphabetics.
 
 	help-string    is an optional description of the macro.  This string
-		      is displayed in the listing created by show-commands. 
+		      is displayed in the listing created by show-commands.
 
 	A stored procedure is executed by simply referencing its name.  To
 	bind a keystroke to this macro, use this command:
 
-	       bind-key <unique-name> <keystroke> 
+	       bind-key <unique-name> <keystroke>
 
 	Here's the stored procedure equivalent of macro number 30 above:
 
-	       store-procedure write-msg-tst "displays test message" 
-		   write-message "this is a test macro" 
-	       ~endm 
-	       bind-key write-msg-tst #h 
+	       store-procedure write-msg-tst "displays test message"
+		   write-message "this is a test macro"
+	       ~endm
+	       bind-key write-msg-tst #h
 
 	Two mechanisms now exist for executing this macro:
 
@@ -165,7 +165,7 @@ Creating, executing, storing macros
 	  invoked from another macro, from a startup/configuration file, or
 	  from vile's command line, like so:
 
-	       :write-msg-tst 
+	       :write-msg-tst
 
     Storing macros
     --------------
@@ -190,283 +190,283 @@ Misc macro syntax features
 	character is ignored.  The semi-colon is inherited from MicroEMACS,
 	the double-quote is for vi compatibility.
 
-	 Lines ending with '\' are joined before interpretation. 
+	 Lines ending with '\' are joined before interpretation.
 
 
 Limits
 ------
-	 Generally speaking, the length of a constant or variable may not 
-	 exceed 127 bytes of storage.  Then again, there are cases where 
-	 this limit is bumped up to 255 bytes, particularly when a command 
-	 requires a filename as an argument.  But to be on the safe side 
-	 when coding a macro, assume that any string exceeding 127 bytes 
-	 will be truncated. 
+	 Generally speaking, the length of a constant or variable may not
+	 exceed 127 bytes of storage.  Then again, there are cases where
+	 this limit is bumped up to 255 bytes, particularly when a command
+	 requires a filename as an argument.  But to be on the safe side
+	 when coding a macro, assume that any string exceeding 127 bytes
+	 will be truncated.
 
 
-Strings 
+Strings
 ---------
-	Like many simple language, the macro language operates 
-	exclusively on strings.  That is to say, variables are 
-	always of type "string", and need not be declared in 
-	advance. 
- 
-	Strings are surrounded by double quotes.  As in C-like 
-	languages, a few special characters may be represented 
-	using an "escape" notation, using a backslash and another 
-	character to represent the "special" character: 
- 
-	Escape code     Actual character 
-	\n              newline character      (control-J) 
-	\r              carriage return        (control-M) 
-	\\              backslash              (itself: '\') 
-	\b              backspace              (control-H) 
-	\f              formfeed               (control-L) 
-	\t              tab                    (control-I) 
-	\a              bell                   (control-G) 
-	\s              space                  (ascii SPACE) 
-	\"              quote                  (the '"' character) 
-	\xNN            the character in hex   (i.e. 0xNN) 
-	\NNN            the character in octal (i.e. 0NNN) 
-	\C (any char)   itself 
- 
-	It is permissible to omit the double quotes surrounding a 
-	string if the parser will not confuse it with another element 
-	of the macro language, and if it contains no whitespace, but 
-	it's probably better practice to use the quotes all the time, 
-	to reinforce the idea that all values are strings. 
+	Like many simple language, the macro language operates
+	exclusively on strings.  That is to say, variables are
+	always of type "string", and need not be declared in
+	advance.
+
+	Strings are surrounded by double quotes.  As in C-like
+	languages, a few special characters may be represented
+	using an "escape" notation, using a backslash and another
+	character to represent the "special" character:
+
+	Escape code     Actual character
+	\n              newline character      (control-J)
+	\r              carriage return        (control-M)
+	\\              backslash              (itself: '\')
+	\b              backspace              (control-H)
+	\f              formfeed               (control-L)
+	\t              tab                    (control-I)
+	\a              bell                   (control-G)
+	\s              space                  (ascii SPACE)
+	\"              quote                  (the '"' character)
+	\xNN            the character in hex   (i.e. 0xNN)
+	\NNN            the character in octal (i.e. 0NNN)
+	\C (any char)   itself
+
+	It is permissible to omit the double quotes surrounding a
+	string if the parser will not confuse it with another element
+	of the macro language, and if it contains no whitespace, but
+	it's probably better practice to use the quotes all the time,
+	to reinforce the idea that all values are strings.
 
 
 Variables
 ---------
-	As noted above, variables hold strings.  These strings may 
-	represent words, text, numerical values, logical values, etc, 
-	depending on the context in which they are used.  There 
-	are several distinct classes of variables, distinguished 
-	syntactically by the character preceding their name. 
- 
-	Class                  Example 
-	-----                  ------- 
-	Temporary variable     %foo 
-	State variable         $curcol 
-	Buffer variable        <main.c 
-	Interactive variable   @"Enter a filename: " 
- 
-	All temporary variables, and some state variables, may be 
-	assigned to, using the "set-variable" command, or "setv" 
-	for short: 
+	As noted above, variables hold strings.  These strings may
+	represent words, text, numerical values, logical values, etc,
+	depending on the context in which they are used.  There
+	are several distinct classes of variables, distinguished
+	syntactically by the character preceding their name.
 
-	    set-variable $search "new pattern to look for" 
-	    setv %index "1" 
+	Class                  Example
+	-----                  -------
+	Temporary variable     %foo
+	State variable         $curcol
+	Buffer variable        <main.c
+	Interactive variable   @"Enter a filename: "
 
-Temporary variables 
--------------- 
-	Temporary variables are used in macros to hold intermediate 
-	values.  They are only temporarly in that they aren't a 
-	"fixed" part of vile -- but they _are_ persistent across 
-	invocations of one or more macros.  (That is, they have 
-	global scope.) Temporary variables are prefixed with the % 
-	character, and their names may be constructed from any 
-	printing character. 
+	All temporary variables, and some state variables, may be
+	assigned to, using the "set-variable" command, or "setv"
+	for short:
+
+	    set-variable $search "new pattern to look for"
+	    setv %index "1"
+
+Temporary variables
+--------------
+	Temporary variables are used in macros to hold intermediate
+	values.  They are only temporarly in that they aren't a
+	"fixed" part of vile -- but they _are_ persistent across
+	invocations of one or more macros.  (That is, they have
+	global scope.) Temporary variables are prefixed with the %
+	character, and their names may be constructed from any
+	printing character.
 
 
-State Variables 
+State Variables
 -----------------------
-	State variables allow a macro to refer to and change some 
-	aspects of vile's behavior.  State variables are prefixed 
-	with a $ character, and are always referred to in lowercase.  
-	Not all state variables are settable -- some are read-only, 
-	and are so marked in the table below. 
+	State variables allow a macro to refer to and change some
+	aspects of vile's behavior.  State variables are prefixed
+	with a $ character, and are always referred to in lowercase.
+	Not all state variables are settable -- some are read-only,
+	and are so marked in the table below.
 
-	$abufname       [READ ONLY] Name of the "other" buffer, the one most 
+	$abufname       [READ ONLY] Name of the "other" buffer, the one most
 			recently visited.  This is what you would get if you
-			typed '#' at a prompt.  (E.g. ":e #") 
+			typed '#' at a prompt.  (E.g. ":e #")
 
-	$bchars         [READ ONLY] Number of characters in current buffer. 
+	$bchars         [READ ONLY] Number of characters in current buffer.
 
-	$blines         [READ ONLY] Number of lines in current buffer. 
+	$blines         [READ ONLY] Number of lines in current buffer.
 
-	$buffer-hook    Name of procedure to run when switching to a buffer. 
+	$buffer-hook    Name of procedure to run when switching to a buffer.
 
-	$cbufname       The current buffer's "buffername".  (As opposed 
-			to the name of the file it may contain.) 
+	$cbufname       The current buffer's "buffername".  (As opposed
+			to the name of the file it may contain.)
 
-	$cd-hook        Name of procedure to run when changing directories. 
+	$cd-hook        Name of procedure to run when changing directories.
 
-	$cfgopts        [READ ONLY] Comma-delimited list of "interesting" 
-		        compiled options.  Currently tracked options include: 
+	$cfgopts        [READ ONLY] Comma-delimited list of "interesting"
+		        compiled options.  Currently tracked options include:
 
-		        perl        -> editor includes perl interpreter 
-		        oleauto     -> editor supports OLE automation. 
+		        perl        -> editor includes perl interpreter
+		        oleauto     -> editor supports OLE automation.
 
-		        If none of the above options are available, $cfgopts 
-		        will be empty (""). 
+		        If none of the above options are available, $cfgopts
+		        will be empty ("").
 
-	$cfilname       Full pathname of the current buffer, unless it 
-			is a special vile buffer, in which case it will 
-			return the empty string. 
+	$cfilname       Full pathname of the current buffer, unless it
+			is a special vile buffer, in which case it will
+			return the empty string.
 
-	$char           Decimal representation of the ASCII character at 
-		        the cursor location. 
+	$char           Decimal representation of the ASCII character at
+		        the cursor location.
 
-	$cryptkey       [WRITE ONLY] encryption key. 
+	$cryptkey       [WRITE ONLY] encryption key.
 
-	$curcol         The cursor's column number (counting from 1). 
+	$curcol         The cursor's column number (counting from 1).
 
-	$curline        The cursor's line number (counting from 1). 
+	$curline        The cursor's line number (counting from 1).
 
-	$cwd            Current working directory. 
+	$cwd            Current working directory.
 
-	$cwline         The relative line number of the cursor in the 
-			current window. 
+	$cwline         The relative line number of the cursor in the
+			current window.
 
-	$debug          Boolean value which enables runtime tracing 
-			of macro execution. 
+	$debug          Boolean value which enables runtime tracing
+			of macro execution.
 
-	$directory      Location of temp files.  This is unused, but 
-			it's initial value is set from the user's 
-			TMP environment variable. 
+	$directory      Location of temp files.  This is unused, but
+			it's initial value is set from the user's
+			TMP environment variable.
 
-	$discmd         Boolean value which will prevent vile from 
-			printing some status messages. 
+	$discmd         Boolean value which will prevent vile from
+			printing some status messages.
 
-	$disinp         Boolean value which will prevent vile from 
-			echoing ?????? 
+	$disinp         Boolean value which will prevent vile from
+			echoing ??????
 
-	$end-of-cmd     Boolean which is true if user entered the cmd with a 
-		        carriage return (Some commands may expect to 
-		        receive additional arguments if their name is 
-		        terminated with a space character rather than 
-		        a carriage return.) 
+	$end-of-cmd     Boolean which is true if user entered the cmd with a
+		        carriage return (Some commands may expect to
+		        receive additional arguments if their name is
+		        terminated with a space character rather than
+		        a carriage return.)
 
-	$exit-hook      Name of procedure to run when quitting. 
+	$exit-hook      Name of procedure to run when quitting.
 
-	$flicker        On certain, bad old hardware, this may make 
-			for a more pleasant display.  Ignored on all 
-			but PC CGA displays. 
+	$flicker        On certain, bad old hardware, this may make
+			for a more pleasant display.  Ignored on all
+			but PC CGA displays.
 
-	$font           Name of the current font (in xvile/winvile only). 
+	$font           Name of the current font (in xvile/winvile only).
 
-	$forward-search Boolean value indicating search direction. 
+	$forward-search Boolean value indicating search direction.
 
-	$helpfile       Filename referred to when help is requested (usually 
-		        vile.hlp). 
+	$helpfile       Filename referred to when help is requested (usually
+		        vile.hlp).
 
-	$iconname       With xvile, contains current icon name. 
+	$iconname       With xvile, contains current icon name.
 
-	$identifier     The current "identifier-like" word under the cursor. 
+	$identifier     The current "identifier-like" word under the cursor.
 
-	$kill           [READ ONLY]  This is vile's "unnamed" yank register, 
-			which contains the result of the last line-oriented 
-			yank or delete.  Actually, it may be truncated, 
-			but will contain at least 127 characters. 
+	$kill           [READ ONLY]  This is vile's "unnamed" yank register,
+			which contains the result of the last line-oriented
+			yank or delete.  Actually, it may be truncated,
+			but will contain at least 127 characters.
 
-	$lastkey        [READ ONLY]  Character most recently entered at 
-			the keyboard. 
+	$lastkey        [READ ONLY]  Character most recently entered at
+			the keyboard.
 
-	$libdir-path    This value will be used to augment the user's PATH 
-			environment variable when running filters, so that 
-			vile-specific filters needn't clutter general purpose 
-			bin directories. 
+	$libdir-path    This value will be used to augment the user's PATH
+			environment variable when running filters, so that
+			vile-specific filters needn't clutter general purpose
+			bin directories.
 
-	$line           Contains the text of the current line of the 
-			current buffer. 
+	$line           Contains the text of the current line of the
+			current buffer.
 
-	$llength        [READ ONLY] The length (in characters, not columns) 
-			of the current line. 
+	$llength        [READ ONLY] The length (in characters, not columns)
+			of the current line.
 
-	$majormode      [READ ONLY] Current majormode, if any. 
+	$majormode      [READ ONLY] Current majormode, if any.
 
-	$match          [READ ONLY] After a successful search, contains 
-			the text that matched the search pattern. 
+	$match          [READ ONLY] After a successful search, contains
+			the text that matched the search pattern.
 
-	$mode           [READ ONLY] "insert", "command", or "overwrite" mode. 
+	$mode           [READ ONLY] "insert", "command", or "overwrite" mode.
 
-	$modeline-format Format of mode lines.  See "Mode line customization" 
-			in the vile help file. 
+	$modeline-format Format of mode lines.  See "Mode line customization"
+			in the vile help file.
 
-	$modified       [READ ONLY] is current buffer modified or not? 
+	$modified       [READ ONLY] is current buffer modified or not?
 
-	$ncolors        Number of displayed colors, must be power of two. 
+	$ncolors        Number of displayed colors, must be power of two.
 
-	$ntildes        Percent of window filled by ~ chars, at end of buffer. 
+	$ntildes        Percent of window filled by ~ chars, at end of buffer.
 
-	$ocwd           [READ ONLY]  Previous current directory. 
+	$ocwd           [READ ONLY]  Previous current directory.
 
-	$os             [READ ONLY]  "Operating system" for which was vile 
-			was built.  Currently "unix", "dos", "vms", "os/2", 
-			"win32". 
+	$os             [READ ONLY]  "Operating system" for which was vile
+			was built.  Currently "unix", "dos", "vms", "os/2",
+			"win32".
 
-	$pagelen        Length of the vile screen. 
+	$pagelen        Length of the vile screen.
 
-	$pagewid        Width of the vile screen. 
+	$pagewid        Width of the vile screen.
 
-	$palette        Some versions of vile implement screen coloring. 
-			The variable consists of digits which control 
-			the current color set, usually one digit per 
-			color. 
+	$palette        Some versions of vile implement screen coloring.
+			The variable consists of digits which control
+			the current color set, usually one digit per
+			color.
 
-	$patchlevel     [READ ONLY] current patch-level (empty for release). 
+	$patchlevel     [READ ONLY] current patch-level (empty for release).
 
-	$pathname       [READ ONLY] current "path-like" word, under the 
-			cursor. 
+	$pathname       [READ ONLY] current "path-like" word, under the
+			cursor.
 
-	$pending        [READ ONLY]  Boolean which is true when the user 
-			has "typed ahead", i.e. there are waiting keystrokes. 
+	$pending        [READ ONLY]  Boolean which is true when the user
+			has "typed ahead", i.e. there are waiting keystrokes.
 
-	$pid            [READ ONLY]  vile's process-id. 
+	$pid            [READ ONLY]  vile's process-id.
 
-	$progname       [READ ONLY] The string "vile" "xvile", or "winvile" 
-			as appropriate. 
+	$progname       [READ ONLY] The string "vile" "xvile", or "winvile"
+			as appropriate.
 
-	$qidentifier    the name of the current "qualified-identifier-like" 
+	$qidentifier    the name of the current "qualified-identifier-like"
 			word under the cursor, useful for C++ programmers.
 
-	$read-hook      Name of procedure to run after a file is read. 
+	$read-hook      Name of procedure to run after a file is read.
 
-	$replace        The current replacement strings, used in 
-			substitutions. 
+	$replace        The current replacement strings, used in
+			substitutions.
 
-	$search         The current search pattern. 
+	$search         The current search pattern.
 
-	$seed           The seed for the internal random number generator. 
+	$seed           The seed for the internal random number generator.
 
-	$shell          Name of the shell program for spawned commands. 
+	$shell          Name of the shell program for spawned commands.
 
-	$sres           Current screen size on a DOS PC (meaningless on a 
+	$sres           Current screen size on a DOS PC (meaningless on a
 			Win32 host).  Values:
-			    "2",     "25",    "80x25", 
-			    "4",     "43",    "80x43", 
-			    "5",     "50",    "80x50", 
-			    "80x14", "80x28", 
-			    "40x12", "40x21", "40x25", "40x28", "40x50" 
+			    "2",     "25",    "80x25",
+			    "4",     "43",    "80x43",
+			    "5",     "50",    "80x50",
+			    "80x14", "80x28",
+			    "40x12", "40x21", "40x25", "40x28", "40x50"
 
-	$startup-file   The name of the startup file (e.g. .vilerc) 
+	$startup-file   The name of the startup file (e.g. .vilerc)
 
-	$startup-path   Where to find the startup file 
+	$startup-path   Where to find the startup file
 
-	$status         [READ  ONLY]  Boolean representing success of 
-			most recent command.  Since a failed command will 
-			usually cause an entire macro to fail, the 
-			~force directive is often used to suppress a 
-			command's failure.  $status preserves its exit status. 
+	$status         [READ  ONLY]  Boolean representing success of
+			most recent command.  Since a failed command will
+			usually cause an entire macro to fail, the
+			~force directive is often used to suppress a
+			command's failure.  $status preserves its exit status.
 
-	$title          The current window title (X11, win32 versions only). 
+	$title          The current window title (X11, win32 versions only).
 
-	$tpause         On a PC, the amount of time to pause for showmatch 
-			mode paren matching. 
+	$tpause         On a PC, the amount of time to pause for showmatch
+			mode paren matching.
 
-	$version        [READ ONLY] Contains vile's version string. 
+	$version        [READ ONLY] Contains vile's version string.
 
-	$wline          Height of current window. 
+	$wline          Height of current window.
 
-	$word           [READ ONLY] The "word" at the cursor location. 
+	$word           [READ ONLY] The "word" at the cursor location.
 
-	$write-hook     Name of procedure to run before a file is written 
+	$write-hook     Name of procedure to run before a file is written
 
-	$xdisplay       The value to set $DISPLAY when running $xshell. 
- 
-	$xshell         Name of the terminal program for spawned xvile 
-			commands. 
+	$xdisplay       The value to set $DISPLAY when running $xshell.
+
+	$xshell         Name of the terminal program for spawned xvile
+			commands.
 
 
 
@@ -474,7 +474,7 @@ Mode variables
 --------------
 	You may set and use the values of the editor modes (i.e., universal
 	modes, buffer-only modes or window-only modes) as if they were
-	state variables (e.g., "setv $errorbells=true").  The global 
+	state variables (e.g., "setv $errorbells=true").  The global
 	values of the editor modes are not visible to the expression
 	evaluator.
 
@@ -492,169 +492,169 @@ Buffer variables
 
 Interactive variables
 ---------------------
-	Interactive variables are not actually "variables" at all -- 
-	they're really more like functions that return a string, 
-	entered by the user in response to a prompt.  The prompt 
-	is the name of the "variable". 
- 
-	They are so similar to a query function that there is 
-	function which serves this exact purpose, and which should be 
-	used in preference.  Thus, one might have previously written: 
- 
-	       set-variable %file @"What file?" 
+	Interactive variables are not actually "variables" at all --
+	they're really more like functions that return a string,
+	entered by the user in response to a prompt.  The prompt
+	is the name of the "variable".
 
-	Instead, one should now write: 
+	They are so similar to a query function that there is
+	function which serves this exact purpose, and which should be
+	used in preference.  Thus, one might have previously written:
 
-	       set-variable %file &query "What file?" 
+	       set-variable %file @"What file?"
+
+	Instead, one should now write:
+
+	       set-variable %file &query "What file?"
 
 
 Functions
 ---------
-	Functions always return strings.  Functions can take 0, 1, 2, 
-	or 3 arguments.  Function names always begin with the & character. 
-	Tasks that are usually implemented as "operators" in other 
-	languages are implemented as functions in vile's macro language.  
-	Thus, for example, arithmetic division which is usually 
-	written as "6 / 2" is written as "&div 6 2".  (I believe this 
-	is sometimes called "prefix" notation, as opposed to the 
-	normal operator "infix" notation, or the "postfix" notation 
-	used on a stack-oriented calculator, i.e. "6 2 /".) 
- 
-	Depending on the function, arguments may be expected to 
-	represent generic strings, numeric values, or logical 
-	(boolean) values. 
- 
-	- Numeric arguments can be any of the following: 
-		- hexadecimal values (digits beginning with leading "0x") 
-		- octal values (digits beginning with leading "0") 
-		- decimal values (other strings of digits) 
-		- character constants (single character in single quotes: 'C') 
-		- any other string will be interpreted as 0. 
- 
-	 - Boolean (or "logical) arguments will be interpreted as 
-	     follows (without regard to upper/lowercase): 
-		- Logically "true" values: 
-		    "true", "t", "yes", "y", "on", and non-zero numerics. 
- 
-		- Logically "false" values: 
-		    "false", "f", "no", "n", "off", and zero-valued numerics 
- 
-	 - String arguments may currently be up to 127 characters in length. 
- 
-	Function names are always preceded by the & character, and 
-	can usually be shortened to just three characters, though 
-	there is little reason to do so. 
- 
-	Arithmetic functions -- 
- 
-	  These all return numeric values: 
- 
-	    &add    "N1" "N2"       Add "N1" and "N2". 
-	    &sub    "N1" "N2"       Subtract "N2" from "N1". 
-	    &times  "N1" "N2"       Multiply "N1" by "N2". 
-	    &divide "N1" "N2"       Divide the "N1" by "N2" 
-	    &mod    "N1" "N2"       Divide the "N1" by "N2", return remainder. 
-	    &negate "N"             Return -(N). 
-	    &ascii  "S"	            Return the ascii code of the first 
-					    character in "S"  
-	    &rnd    "N"		    Random number between 1 and "N"  
-	    &abs    "N"		    Absolute value of "N"  
- 
-	String manipulation functions -- 
- 
-	  These two return numeric values: 
- 
-	    &length "S"	            Returns length of string "S". 
-	    &sindex "S1" "S2"       Returns index of "S2" within "S1", or 0. 
- 
-	  The rest return strings: 
- 
-	    &cat    "S1" "S2"	    Concatenate S1 and string "S". 
-	    &left   "S" "N"	    Extract first "N" characters from "S"  
-	    &right  "S" "N"	    Extract chars from postition "N" onward. 
-	    &mid    "S" "N1" "N2"   Extract "N2" chars at position "N1". 
-	    &upper  "S"	            Return uppercase version of "S". 
-	    &lower  "S"	            Return lowercase version of "S". 
-	    &chr    "N"	            Converts numeric "N" to an ascii character. 
-	    &gtk		    Get a single raw keystroke from the user. 
-	    &gts		    Get a complete vile key sequence from user. 
-	    &bind   "S"	            Return the function name bound to the 
-					keysequence "S". 
-	    &env    "S"	            Return the value of the user's environment 
-					variable named "S". 
-	    &trim   "S"	            Remove whitespace at either end of "S", 
-					reduce multiple spaces within "S" 
-					to a just one space each. 
- 
-	Boolean/logical functions -- 
- 
-	  These all return TRUE or FALSE: 
- 
-	    &not    "B"		    Return inverse of boolean "B". 
-	    &and    "B1" "B2"	    Return logical AND of "B1" and "B2". 
-	    &or	    "B1" "B2"	    Return logical OR of "B1" adn "B2". 
- 
-	    &equal  "N1" "N2"	    Is "N1" numerically equal to "N2"? 
-	    &less   "N1" "N2"	    Is "N1" numerically less than "N2"? 
-	    &greater "N1" "N2"	    Is "N1" numerically greater than "N2"? 
- 
-	    &sequal "S1" "S2"	    Is "S1" the same string as "S2"? 
-	    &sless  "S1" "S2"	    Is "S1" lexically less than "S2"? 
-	    &sgreater "S1" "S2"     Is "S1" lexically greater or equal to "S2"? 
- 
-	    &rd	    "S"		    Is the named file "S" readable? 
-	    &wr	    "S"		    Is the named file "S" writable? 
- 
-	Miscellaneous functions -- 
- 
-	  These all return string values: 
- 
-	    &global "MODENAME"	    Retrieves universal/global mode setting. 
-	    &local  "MODENAME"	    Retrieves local mode setting (for 
-					current buffer). 
- 
-	    &query  "S"	            Present "S" to the user, and return 
-					their typed response. 
- 
-	    &indirect "S"	    Evaluate value of "S" as a 
-					macro language variable itself. 
-					Thus if %foo has value "HOME", 
-					then &env &indirect %foo will 
-					return the home directory pathname. 
+	Functions always return strings.  Functions can take 0, 1, 2,
+	or 3 arguments.  Function names always begin with the & character.
+	Tasks that are usually implemented as "operators" in other
+	languages are implemented as functions in vile's macro language.
+	Thus, for example, arithmetic division which is usually
+	written as "6 / 2" is written as "&div 6 2".  (I believe this
+	is sometimes called "prefix" notation, as opposed to the
+	normal operator "infix" notation, or the "postfix" notation
+	used on a stack-oriented calculator, i.e. "6 2 /".)
+
+	Depending on the function, arguments may be expected to
+	represent generic strings, numeric values, or logical
+	(boolean) values.
+
+	- Numeric arguments can be any of the following:
+		- hexadecimal values (digits beginning with leading "0x")
+		- octal values (digits beginning with leading "0")
+		- decimal values (other strings of digits)
+		- character constants (single character in single quotes: 'C')
+		- any other string will be interpreted as 0.
+
+	 - Boolean (or "logical) arguments will be interpreted as
+	     follows (without regard to upper/lowercase):
+		- Logically "true" values:
+		    "true", "t", "yes", "y", "on", and non-zero numerics.
+
+		- Logically "false" values:
+		    "false", "f", "no", "n", "off", and zero-valued numerics
+
+	 - String arguments may currently be up to 127 characters in length.
+
+	Function names are always preceded by the & character, and
+	can usually be shortened to just three characters, though
+	there is little reason to do so.
+
+	Arithmetic functions --
+
+	  These all return numeric values:
+
+	    &add    "N1" "N2"       Add "N1" and "N2".
+	    &sub    "N1" "N2"       Subtract "N2" from "N1".
+	    &times  "N1" "N2"       Multiply "N1" by "N2".
+	    &divide "N1" "N2"       Divide the "N1" by "N2"
+	    &mod    "N1" "N2"       Divide the "N1" by "N2", return remainder.
+	    &negate "N"             Return -(N).
+	    &ascii  "S"	            Return the ascii code of the first
+					    character in "S"
+	    &rnd    "N"		    Random number between 1 and N
+	    &abs    "N"		    Absolute value of "N"
+
+	String manipulation functions --
+
+	  These two return numeric values:
+
+	    &length "S"	            Returns length of string "S".
+	    &sindex "S1" "S2"       Returns index of "S2" within "S1", or 0.
+
+	  The rest return strings:
+
+	    &cat    "S1" "S2"	    Concatenate S1 and string "S".
+	    &left   "S" "N"	    Extract first "N" characters from "S"
+	    &right  "S" "N"	    Extract chars from postition "N" onward.
+	    &mid    "S" "N1" "N2"   Extract "N2" chars at position "N1".
+	    &upper  "S"	            Return uppercase version of "S".
+	    &lower  "S"	            Return lowercase version of "S".
+	    &chr    "N"	            Converts numeric "N" to an ascii character.
+	    &gtk		    Get a single raw keystroke from the user.
+	    &gts		    Get a complete vile key sequence from user.
+	    &bind   "S"	            Return the function name bound to the
+					keysequence "S".
+	    &env    "S"	            Return the value of the user's environment
+					variable named "S".
+	    &trim   "S"	            Remove whitespace at either end of "S",
+					reduce multiple spaces within "S"
+					to a just one space each.
+
+	Boolean/logical functions --
+
+	  These all return TRUE or FALSE:
+
+	    &not    "B"		    Return inverse of boolean "B".
+	    &and    "B1" "B2"	    Return logical AND of "B1" and "B2".
+	    &or	    "B1" "B2"	    Return logical OR of "B1" adn "B2".
+
+	    &equal  "N1" "N2"	    Is "N1" numerically equal to "N2"?
+	    &less   "N1" "N2"	    Is "N1" numerically less than "N2"?
+	    &greater "N1" "N2"	    Is "N1" numerically greater than "N2"?
+
+	    &sequal "S1" "S2"	    Is "S1" the same string as "S2"?
+	    &sless  "S1" "S2"	    Is "S1" lexically less than "S2"?
+	    &sgreater "S1" "S2"     Is "S1" lexically greater or equal to "S2"?
+
+	    &rd	    "S"		    Is the named file "S" readable?
+	    &wr	    "S"		    Is the named file "S" writable?
+
+	Miscellaneous functions --
+
+	  These all return string values:
+
+	    &global "MODENAME"	    Retrieves universal/global mode setting.
+	    &local  "MODENAME"	    Retrieves local mode setting (for
+					current buffer).
+
+	    &query  "S"	            Present "S" to the user, and return
+					their typed response.
+
+	    &indirect "S"	    Evaluate value of "S" as a
+					macro language variable itself.
+					Thus if %foo has value "HOME",
+					then &env &indirect %foo will
+					return the home directory pathname.
 
 
 Directives
 ----------
-	The macro language has the capability for controlling flow 
-	and repetition through conditional, branching, and looping 
-	instructions.  Complex text processing or user input tasks 
-	can be constructed in this way.  The keywords that introduce 
-	this control are called "directives".  They are always 
-	prefixed with the ~ character, and they are always in all 
-	lowercase. 
- 
- 
-    ~endm 
-    ----- 
-	The "store-procedure" and "store-macro" commands both indicate 
-	the start of the body of a macro routine.  ~endm indicates 
-	the end of that routine. 
- 
-    ~force 
-    ------ 
-	To prevent a failed command from terminating the macro which 
-	invokes it, the ~force directive can be used to "hide" a 
-	bad return code.  For instanace, the "up-line" command might 
-	fail if executed at the top of a buffer.  "~force up-line" 
-	will suppress the failure.  The $status variable can be used 
-	to determine whether the command succeeded or not. 
+	The macro language has the capability for controlling flow
+	and repetition through conditional, branching, and looping
+	instructions.  Complex text processing or user input tasks
+	can be constructed in this way.  The keywords that introduce
+	this control are called "directives".  They are always
+	prefixed with the ~ character, and they are always in all
+	lowercase.
 
-    ~hidden 
-    ------- 
+
+    ~endm
+    -----
+	The "store-procedure" and "store-macro" commands both indicate
+	the start of the body of a macro routine.  ~endm indicates
+	the end of that routine.
+
+    ~force
+    ------
+	To prevent a failed command from terminating the macro which
+	invokes it, the ~force directive can be used to "hide" a
+	bad return code.  For instanace, the "up-line" command might
+	fail if executed at the top of a buffer.  "~force up-line"
+	will suppress the failure.  The $status variable can be used
+	to determine whether the command succeeded or not.
+
+    ~hidden
+    -------
 	You can suppress not only the check for success or failure of a macro
-	as in ~force, but also the screen refresh, making macros run more 
+	as in ~force, but also the screen refresh, making macros run more
 	rapidly.  For example
-  
+
 	    30 store-macro
 		    write-message "[Attaching C/C++ attributes...]"
 		    ~local $curcol $curline
@@ -663,146 +663,146 @@ Directives
 		    write-message "[Attaching C/C++ attributes...done ]"
 	    ~endm
 	    bind-key execute-macro-30 ^X-q
-  
+
 	causes the screen updates from moving the current position to the
 	beginning of the file and then filtering (which moves the position to
 	the end-of-file) to be suppressed.  The screen will be updated after
 	completion of the macro, after the current position has been restored
-	from the values saved with the ~local directive. 
-  
-  
-    ~if, ~elseif, ~else, and ~endif 
-    ------------------------------ 
-	These control execution of macro commands in the expected manner. 
-	The ~if directive is followed by a string which is evaluated 
-	for truth or falsehood according to the rules outlines for 
-	boolean variables, above.  The following fragment demonstrates the 
-	use of this family of directives: 
- 
-	   beginning-of-line 
-	   ; test for '#' 
-	   ~if &equ $char 35 
-	       set-variable %coment-type "shell comment" 
-	   ; test for ';' 
-	   ~elseif &equ $char 59 
-	       set-variable %comment-type "vile macro language comment" 
-	   ~else 
-	       write-message "Not an expected comment type" 
-	       ~return 
-	   ~endif 
-	   write-message &cat "The current line is a " %comment-type 
- 
-  
-    ~goto 
-    ----- 
-	What would a decent programming language be without a "goto"? 
-	The ~goto directive is followed by the name of a label.  Labels 
-	may appear anywhere in the current macro definition, and 
-	are themselves preceded with a * character. 
- 
-	       ~force up-line 
-	       if &not $status 
-		       ~goto foundtop 
-	       ... 
-	       ... 
- 
-	   *foundtop 
-	       write-message "At top of buffer" 
- 
-  
-  
-    ~while and ~endwhile 
-    -------------------- 
-	The block of statements bracketed by ~while and ~endwhile are 
-	executed repeatedly, until the condition being tested by 
-	~while becomes false. 
-  
-	       ; how many occurrences of a given pattern in a buffer? 
-	       set nowrapscan 
-	       set-variable %lookfor somepattern 
-	       ; we'll count one too many 
-	       set-variable %howmany "-1" 
- 
-	       set-variable %continue yes 
-	       ~while %continue 
-		   ~force search-forward %lookfor 
-		   set-variable %continue $status 
-		   set-variable %howmany &add %howmany "1" 
-	       ~endwhile 
- 
-	       write-message &cat &cat %howmany " appearances of " %lookfor 
-  
-  
-    ~break 
-    ------ 
-	The ~break directive allows early termination of an enclosing 
-	while-loop.  Extending the above example: 
- 
- 
-	       ; count the occurrences of a pattern in all buffers 
-	       set nowrapscan 
-	       set noautobuffer 
-	       rewind 
- 
-	       set-variable %lookfor pgf 
-	       set-variable %howmany "0" 
-	       set-variable %buffers "1" 
-	       set-variable %cont yes 
- 
-	       ~while true 
-		   goto-beginning-of-file 
-		   ~while true 
-		       ~force search-forward %lookfor  
-		       ~if &not $status 
-			   ~break 
-		       ~endif 
-		       set-variable %howmany &add %howmany "1" 
-		   ~endwhile 
-		   ~force next-buffer 
-		   ~if &not $status 
-		       ~break 
-		   ~endif 
-		   set-variable %buffers &add %buffers "1" 
-	       ~endwhile 
- 
-	       set-variable %msg  %lookfor 
-	       set-variable %msg  &cat " appeared " 
-	       set-variable %msg  &cat %howmany  
-	       set-variable %msg  &cat %msg " times in " 
-	       set-variable %msg  &cat %msg %buffers 
-	       set-variable %msg  &cat %msg " buffers." 
-	       write-message %msg 
-  
-  
-    ~return 
-    ------- 
-	This causes immediate exit of the current macro, back to the 
-	calling macro, or to user control, as approriate. 
-  
-    ~local 
-    ------ 
-        The ~LOCAL directive causes the variables which are listed to 
-        be saved at that point (once if the directive is within a loop), 
-        and automatically restored at the end of the current macro. 
-        If the directive specifies a temporary variable which was not 
-        defined before, it will be deleted rather than restored. 
+	from the values saved with the ~local directive.
 
-        For example: 
+
+    ~if, ~elseif, ~else, and ~endif
+    ------------------------------
+	These control execution of macro commands in the expected manner.
+	The ~if directive is followed by a string which is evaluated
+	for truth or falsehood according to the rules outlines for
+	boolean variables, above.  The following fragment demonstrates the
+	use of this family of directives:
+
+	   beginning-of-line
+	   ; test for '#'
+	   ~if &equ $char 35
+	       set-variable %coment-type "shell comment"
+	   ; test for ';'
+	   ~elseif &equ $char 59
+	       set-variable %comment-type "vile macro language comment"
+	   ~else
+	       write-message "Not an expected comment type"
+	       ~return
+	   ~endif
+	   write-message &cat "The current line is a " %comment-type
+
+
+    ~goto
+    -----
+	What would a decent programming language be without a "goto"?
+	The ~goto directive is followed by the name of a label.  Labels
+	may appear anywhere in the current macro definition, and
+	are themselves preceded with a * character.
+
+	       ~force up-line
+	       if &not $status
+		       ~goto foundtop
+	       ...
+	       ...
+
+	   *foundtop
+	       write-message "At top of buffer"
+
+
+
+    ~while and ~endwhile
+    --------------------
+	The block of statements bracketed by ~while and ~endwhile are
+	executed repeatedly, until the condition being tested by
+	~while becomes false.
+
+	       ; how many occurrences of a given pattern in a buffer?
+	       set nowrapscan
+	       set-variable %lookfor somepattern
+	       ; we'll count one too many
+	       set-variable %howmany "-1"
+
+	       set-variable %continue yes
+	       ~while %continue
+		   ~force search-forward %lookfor
+		   set-variable %continue $status
+		   set-variable %howmany &add %howmany "1"
+	       ~endwhile
+
+	       write-message &cat &cat %howmany " appearances of " %lookfor
+
+
+    ~break
+    ------
+	The ~break directive allows early termination of an enclosing
+	while-loop.  Extending the above example:
+
+
+	       ; count the occurrences of a pattern in all buffers
+	       set nowrapscan
+	       set noautobuffer
+	       rewind
+
+	       set-variable %lookfor pgf
+	       set-variable %howmany "0"
+	       set-variable %buffers "1"
+	       set-variable %cont yes
+
+	       ~while true
+		   goto-beginning-of-file
+		   ~while true
+		       ~force search-forward %lookfor
+		       ~if &not $status
+			   ~break
+		       ~endif
+		       set-variable %howmany &add %howmany "1"
+		   ~endwhile
+		   ~force next-buffer
+		   ~if &not $status
+		       ~break
+		   ~endif
+		   set-variable %buffers &add %buffers "1"
+	       ~endwhile
+
+	       set-variable %msg  %lookfor
+	       set-variable %msg  &cat " appeared "
+	       set-variable %msg  &cat %howmany
+	       set-variable %msg  &cat %msg " times in "
+	       set-variable %msg  &cat %msg %buffers
+	       set-variable %msg  &cat %msg " buffers."
+	       write-message %msg
+
+
+    ~return
+    -------
+	This causes immediate exit of the current macro, back to the
+	calling macro, or to user control, as approriate.
+
+    ~local
+    ------
+        The ~LOCAL directive causes the variables which are listed to
+        be saved at that point (once if the directive is within a loop),
+        and automatically restored at the end of the current macro.
+        If the directive specifies a temporary variable which was not
+        defined before, it will be deleted rather than restored.
+
+        For example:
 
 		~local $curcol $curline
 
-        will restore the cursor position. 
+        will restore the cursor position.
 
 
-    ~with, ~elsewith and ~endwith 
-    ----------------------------- 
-        Tokens following the ~WITH directive will be prepended to succeeding 
-        lines of macro until the next ~ENDWITH directive, or the end of the 
-        current macro.  This is useful for simplifying majormode directives, 
-        which are repetitive.  Use ~ELSEWITH as a convenience for fences; 
-        otherwise it functions just as ~WITH does. 
+    ~with, ~elsewith and ~endwith
+    -----------------------------
+        Tokens following the ~WITH directive will be prepended to succeeding
+        lines of macro until the next ~ENDWITH directive, or the end of the
+        current macro.  This is useful for simplifying majormode directives,
+        which are repetitive.  Use ~ELSEWITH as a convenience for fences;
+        otherwise it functions just as ~WITH does.
 
-        For example, use 
+        For example, use
 
 		define-mode txt
 		~with define-submode txt
@@ -811,7 +811,7 @@ Directives
 			comments "^\\s*/\\?--\\s+/\\?\\s*$"
 		~endwith
 
-        rather than 
+        rather than
 
 		define-mode txt
 		define-submode txt suf "\\.txt$"
@@ -822,54 +822,54 @@ Directives
 
 Editor commands
 ---------------
-        The "show-commands" command lists _all_ available editor commands. 
-        This is, admittedly, a large list and generally grows with 
-        successive releases of the editor.  Fortunately, most editor 
-        commands include short help strings that describe their purpose. 
-        To winnow the list to a particular area of interest, use the 
-        "apropos" command (e.g., "apropos append").  The format of the 
-        "apropos" and "show-commands" listing is as follows: 
+        The "show-commands" command lists _all_ available editor commands.
+        This is, admittedly, a large list and generally grows with
+        successive releases of the editor.  Fortunately, most editor
+        commands include short help strings that describe their purpose.
+        To winnow the list to a particular area of interest, use the
+        "apropos" command (e.g., "apropos append").  The format of the
+        "apropos" and "show-commands" listing is as follows:
 
 		command-name             optional-key-binding(s)
 		optional-command-name-aliases
 		(help-string)
 
-        Commands fall into three broad categories:  simple, motion, operator. 
+        Commands fall into three broad categories:  simple, motion, operator.
 
     Simple commands
     ---------------
-        A simple command neither acts on a region nor does it explicitly 
-        move the cursor through a region (the "region" concept is explained 
-        in the "Motion commands" section below).  An example of a simple 
-        command is "find-tag", and here's the listing returned by 
-        show-commands: 
- 
-		"find-tag"               ^] 
-		  or            "ta" 
-		  or            "tag" 
+        A simple command neither acts on a region nor does it explicitly
+        move the cursor through a region (the "region" concept is explained
+        in the "Motion commands" section below).  An example of a simple
+        command is "find-tag", and here's the listing returned by
+        show-commands:
+
+		"find-tag"               ^]
+		  or            "ta"
+		  or            "tag"
 		  ( look up the given (or under-cursor) name as a "tag" )
 
-        From the perspective of writing a macro, it can be seen that 
-        find-tag has two aliases, either of which may be substituted for 
-        the "find-tag" name within a macro definition.  Notice that the 
-        help string mentions a "name" argument and sure enough, if you type 
-        ":find-tag" within the editor, you'll be prompted for a "Tag name". 
-        This gives us enough information to write a contrived macro that 
-        finds a fixed tag name: 
- 
-		 store-procedure tryit 
-			 tag "filterregion" 
-		 ~endm 
- 
-        Note also that some help strings include a "CNT" keyword, which 
-        indicates that the command name may be preceded by an integer count 
-        that repeats the command action that many times (default CNT value 
-        is 1).  For example, here's the "join-lines" listing: 
+        From the perspective of writing a macro, it can be seen that
+        find-tag has two aliases, either of which may be substituted for
+        the "find-tag" name within a macro definition.  Notice that the
+        help string mentions a "name" argument and sure enough, if you type
+        ":find-tag" within the editor, you'll be prompted for a "Tag name".
+        This gives us enough information to write a contrived macro that
+        finds a fixed tag name:
+
+		 store-procedure tryit
+			 tag "filterregion"
+		 ~endm
+
+        Note also that some help strings include a "CNT" keyword, which
+        indicates that the command name may be preceded by an integer count
+        that repeats the command action that many times (default CNT value
+        is 1).  For example, here's the "join-lines" listing:
 
 		"join-lines"     J
 		  ( join CNT lines together with the current one )
 
-        And here's a macro that joins 4 lines: 
+        And here's a macro that joins 4 lines:
 
 		store-procedure join4
 			4 join-lines
@@ -877,29 +877,29 @@ Editor commands
 
     Motion commands
     ---------------
-        Motions move the cursor and, consequently, may be used to define a 
-        region.  This latter property is an important aspect of an 
-        "operator command".  The "show-motions" command lists the editor's 
-        motion commands. 
+        Motions move the cursor and, consequently, may be used to define a
+        region.  This latter property is an important aspect of an
+        "operator command".  The "show-motions" command lists the editor's
+        motion commands.
 
-        Within a macro, the following general syntax invokes a motion: 
+        Within a macro, the following general syntax invokes a motion:
 
 		[count] region-spec
 
-        The optional "count" specifies the number of affected region-specs 
-        (default value is 1).  An example motion is "back-line", and here 
-        is its show-commands listing: 
+        The optional "count" specifies the number of affected region-specs
+        (default value is 1).  An example motion is "back-line", and here
+        is its show-commands listing:
 
 		"back-line"              k         #-A
-		  or    "previous-line" 
-		  or    "up-arrow" 
-		  or    "up-line" 
+		  or    "previous-line"
+		  or    "up-arrow"
+		  or    "up-line"
 		  (motion: move up CNT lines )
 
-        Note that the help string is prefixed with the word "motion", which 
-        unambiguously identifies the nature of this command.  Given the 
-        above information, we can write a contrived macro to move the 
-        cursor up three lines: 
+        Note that the help string is prefixed with the word "motion", which
+        unambiguously identifies the nature of this command.  Given the
+        above information, we can write a contrived macro to move the
+        cursor up three lines:
 
 		store-procedure upthree
 			3 back-line
@@ -918,20 +918,20 @@ Editor commands
 	where:
 
 	region-spec    may be replaced with any motion command or the special
-		       word "lines" (the latter is a synonym for a single 
-		       buffer line). 
+		       word "lines" (the latter is a synonym for a single
+		       buffer line).
 
 	count          optionally specifies the number of region-specs
-		       affected by oper-name (default value is 1). 
+		       affected by oper-name (default value is 1).
 
 	args           denotes optional string arguments(s) required by
-		       some operators (e.g., "filter-til"). 
+		       some operators (e.g., "filter-til").
 
 	An example operator is "flip-til", and here's its show-commands
 	info:
 
 		"flip-til"               ^A-~
-		  or    "~" 
+		  or    "~"
 		  (operator:  exchange upper and lowercase on characters in the
 		  region) (may follow global command)
 
@@ -1031,9 +1031,9 @@ Example startup file
 
 	~if &not &equal 0 &sindex $cfgopts "perl"
 	    store-procedure hgrep
-		perl "require 'hgrep.pl'" 
-		perl hgrep 
-		error-buffer $cbufname 
+		perl "require 'hgrep.pl'"
+		perl hgrep
+		error-buffer $cbufname
 	    ~endm
 	~endif
 
@@ -1056,6 +1056,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.14 1999/03/19 10:40:05 pgf Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.15 1999/03/24 23:40:50 pgf Exp $
 -----------------------------------
- 
+

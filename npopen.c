@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.67 1999/03/19 11:33:19 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.68 1999/03/24 11:43:39 pgf Exp $
  *
  */
 
@@ -22,7 +22,8 @@
 #endif
 
 #if OPT_EVAL
-#define	user_SHELL()	gtenv("shell")
+#include "nevars.h"
+#define	user_SHELL()	get_shell()
 #else
 #define	user_SHELL()	getenv("SHELL")
 #endif

@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.125 1999/03/19 11:48:57 pgf Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.130 1999/03/26 12:04:55 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -198,7 +198,7 @@ VILESRC = main.c api.c basic.c bind.c btree.c buffer.c csrch.c \
 	filec.c fileio.c finderr.c glob.c globals.c \
 	history.c input.c insert.c isearch.c itbuff.c lckfiles.c line.c map.c \
 	modes.c msgs.c npopen.c oneliner.c opers.c path.c random.c \
-	regexp.c region.c search.c select.c spawn.c tags.c \
+	regexp.c region.c search.c select.c spawn.c statevar.c tags.c \
 	tbuff.c termio.c ucrypt.c undo.c version.c \
 	watch.c window.c word.c wordmov.c
 
@@ -228,17 +228,22 @@ BUILTHDRS = nebind.h neproto.h neexec.h nefunc.h nemode.h nename.h nevars.h nefk
 BUILTSRCS = perl.c
 
 # The following are optional (non-core):
+#	api.o
 #	btree.o
+#	history.o
+#	isearch.o
 #	npopen.o
+#	select.o
 #	spawn.o
+#	statevar.o
 #	ucrypt.o
 OBJ = $(SCREEN).o \
-	main.o api.o basic.o bind.o buffer.o csrch.o \
+	main.o basic.o bind.o buffer.o csrch.o \
 	display.o dumbterm.o eval.o exec.o externs.o fences.o file.o \
 	filec.o fileio.o finderr.o glob.o globals.o \
-	history.o input.o insert.o isearch.o itbuff.o lckfiles.o line.o map.o \
+	input.o insert.o itbuff.o lckfiles.o line.o map.o \
 	modes.o msgs.o oneliner.o opers.o path.o random.o \
-	regexp.o region.o search.o select.o tags.o \
+	regexp.o region.o search.o tags.o \
 	tbuff.o termio.o undo.o version.o \
 	watch.o window.o word.o wordmov.o @EXTRAOBJS@
 
@@ -269,12 +274,14 @@ nebind.h \
 nefkeys.h \
 neexec.h \
 nefunc.h \
-neproto.h \
+neproto.h :	nename.h
+
 nename.h :	cmdtbl $(MKTBLS)
 	$(MKTBLS) $(srcdir)/cmdtbl
 
 nefsms.h \
-nevars.h \
+nevars.h :	nemode.h
+
 nemode.h:	modetbl $(MKTBLS)
 	$(MKTBLS) $(srcdir)/modetbl
 
@@ -304,7 +311,7 @@ INSTALL_PERL_FILES = \
 
 INSTALL_FILES = \
 	$(bindir)/$(TARGET) \
-	$(mandir)/$(TARGET).$(manext) \
+	$(mandir)/@TARGET@.$(manext) \
 	$(datadir)/vile.hlp @EXTRA_INSTALL_FILES@
 
 install :: $(INSTALL_DIRS) \
@@ -446,7 +453,7 @@ patch:	/tmp/vilevers
 	echo Created patch$$ovilevers-$$vilevers
 
 dpatch:
-	co -p$(PATCH_AGAINST) revlist | 				 \
+	co -p$(PATCH_AGAINST) revlist |					 \
 	while read file filerev						;\
 	do								 \
 	  rcsdiff -c -u -r$$filerev $$file 2>/dev/null || true		;\
@@ -547,6 +554,7 @@ path.o:		dirstuff.h
 perl.o:		api.h
 random.o:	nefunc.h
 select.o:	nefunc.h
+statevar.o:	nevars.h
 spawn.o:	nefunc.h
 tags.o:		btree.h
 tcap.o:		tcap.h

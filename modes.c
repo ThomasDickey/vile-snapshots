@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.140 1999/03/20 18:47:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.141 1999/03/24 11:44:14 pgf Exp $
  *
  */
 
@@ -195,6 +195,7 @@ string_mode_val(VALARGS *args)
 {
 	register const struct VALNAMES *names = args->names;
 	register struct VAL     *values = args->local;
+	static char result[NSTRING];
 	switch(names->type) {
 #if OPT_MAJORMODE
 	case VALTYPE_MAJOR:
@@ -211,7 +212,7 @@ string_mode_val(VALARGS *args)
 		}
 #endif				/* else, fall-thru to use int-code */
 	case VALTYPE_INT:
-		return l_itoa(values->vp->i);
+		return render_int(result, values->vp->i);
 	case VALTYPE_STRING:
 		return NonNull(values->vp->p);
 	case VALTYPE_REGEX:
@@ -1304,7 +1305,7 @@ do_a_mode(int kind, int global)
 			mlforce("[Not a local mode: \"%s\"]", tb_values(cbuf));
 			return FALSE;
 		}
-		return set_variable(tb_values(cbuf));
+		return set_state_variable(tb_values(cbuf),NULL);
 #else
 		mlforce("[Not a legal set option: \"%s\"]", tb_values(cbuf));
 #endif

@@ -1,5 +1,5 @@
-;                                                                               
-; this procedure implements a primitive ascii picture-drawing mode.  
+;
+; this procedure implements a primitive ascii picture-drawing mode.
 ;		pgf, may '95
 
 ; motions are accomplished with the usual h, j, k, and l keys
@@ -24,12 +24,12 @@
 
 ; space for the picture must be pre-allocated, with, for example:
 ;		80i <ESC>yy24p
-;                                                                           
+;
 ; start this up with "run pic"
 ; to bind it to a key instead, change it to a "NN store-macro", and
 ; then bind "execute-macro NN" to the key you want.
 store-procedure replc
-	; never replace a newline 
+	; never replace a newline
 	~if &equ $char 0xA
 		~return
 	~endif
@@ -84,7 +84,7 @@ store-procedure pic
 		~if &seq %keywas u
 			~force up-line
 			~force backward-character
-			set-variable %linechar \\
+			set-variable %linechar "\\"
 			run replc
 			~goto redraw
 		~endif
@@ -105,7 +105,7 @@ store-procedure pic
 		~if &seq %keywas m
 			~force down-line
 			~force forward-character
-			set-variable %linechar \\
+			set-variable %linechar "\\"
 			run replc
 			~goto redraw
 		~endif
@@ -116,7 +116,7 @@ store-procedure pic
 			~force backward-character
 			~goto redraw
 		~endif
-		
+
 		; was it ^L
 		~if &seq %keywas &chr 0xC
 			~force forward-character
@@ -142,7 +142,7 @@ store-procedure pic
 			~goto redraw
 		~endif
 		; was it ^I
-		~if &seq %keywas &chr 0x9	
+		~if &seq %keywas &chr 0x9
 			~force up-line
 			~force forward-character
 			~goto redraw

@@ -1,6 +1,6 @@
 #
 # 'vile' and 'mktbls' makefile for IBM C Set ++ 2.x (OS/2)
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.12 1999/03/08 11:22:29 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.13 1999/03/26 00:26:04 tom Exp $
 #
 
 #
@@ -93,6 +93,7 @@ VILE_DEPS =  \
  region$O \
  search$O \
  select$O \
+ statevar$O \
  spawn$O \
  tags$O \
  tbuff$O \
@@ -185,6 +186,8 @@ region$O:	$(VILE_CFG) region.c
 search$O:	$(VILE_CFG) search.c
 
 select$O:	$(VILE_CFG) select.c 	nefunc.h
+
+statevar$O:	$(VILE_CFG) statevar.c 	nevars.h
 
 spawn$O:	$(VILE_CFG) spawn.c 	nefunc.h
 

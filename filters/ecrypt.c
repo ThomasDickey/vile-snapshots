@@ -1,7 +1,7 @@
 /*	Crypt:	Encryption routines for MicroEMACS
  *		written by Dana Hoggatt and Paul Fox.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.2 1999/03/09 00:55:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.3 1999/03/27 14:10:46 tom Exp $
  *
  */
 
@@ -297,7 +297,7 @@ main(int argc, char **argv)
 	if (!key[0]) {
 #if HAVE_GETPASS
 	    char *userkey;
-	    userkey = getpass("Enter key: ");
+	    userkey = (char *)getpass("Enter key: ");
 
 	    /* HACK -- the linux version of getpass is not
 	     * interruptible.  this means there's no way to abort

@@ -1,5 +1,75 @@
 Changes for vile 8.3 (released ??? ??? ??, 1998)
 
+(tom) 990327 (q)
+	+ add filtername mode, to handle special filter cases for java, js, csh
+	  majormodes.
+	+ modify makefiles to allow vile to compile on *IX systems with the gnu
+	  make -j option, to run several C compilers at the same time.  The -t
+	  option to lex is at least portable to Solaris lex and flex.  Uses
+	  redirection (patch by Ryan Murray).
+	+ correct a couple of VMS-specific problems:  assignment through a
+	  const pointer in cfg_locate, and implicit string concatenation in
+	  personals (patch by Clark Morgan).
+	+ rename VILE_LIBRARY_PATH to VILE_LIBDIR_PATH
+	+ correct limit-expression in add_brackets() function, which left
+	  trash on the end if the buffer name was too long.
+	+ update the list of files suppressed by --disable-extensions.
+	+ add configure option --with-purify.
+	+ modify configure-script so --with-no-leaks option does not require
+	  --with-trace.
+	+ correct error in 8.2p changes to ucrypt.c, i.e., incorrect workaround
+	  for a case where a cast was needed.
+	+ revised change to HighlightFilter to add HighlightFilterMsg which
+	  writes the "Attaching attributes..." message, leaving the
+	  HighlightFilter macro quiet and more suitable for use in $read-hook.
+	+ minor changes to make Paul's changes build with perl, tracing
+	  and disabled extensions/shell.
+	> patches from Paul Fox (includes some documentation from Clark Morgan):
+	+ combined eval.c/sindex() and bind.c/ourstrstr() into single
+	  routine.
+	+ remove redundant mktrimmed() calls when doing buffer lookup.
+	  (buffer.c)
+	+ moved code for grabbing next line from buffer from eval.c to
+	  new routine next_buffer_line() in buffer.c
+	+ give credit to Roger Ove for scroll optimization code in
+	  display.c
+	+ random number generator now based on rand() -- it's present
+	  in MSDEV and all UNIXes i know of, but we may need a configure
+	  check eventually.  (eval.c)
+	+ removed mostly redundant numeric token type.  explicit check
+	  for digits in exec.c instead.
+	+ major overhaul of how vile's $state (formerly "environment")
+	  variables are implemented.  new file, statevar.c, contains
+	  support routines, each of which is responsible for both
+	  getting and setting a single variable.  dispatch is handled
+	  by new table set up by mktbls.c.  this eliminates two of
+	  the big switches in eval.c.  the result pointer arg to
+	  these routines should probably be a tbuff, which would allow
+	  unlimited variable lengths.  (eval.c, mktbls.c)
+	+ the code that runs vile &functions has become more table-driven
+	  as well.  modetbl now contains information on the return
+	  type of the functions, and the types of the arguments.  this
+	  cleans up the per-function code somewhat.  (eval.c, mktbls.c)
+	+ code for @interactive variables and &query function collapsed
+	  to single new user_reply() routine.  (eval.c, statevar.c,
+	  input.c)
+	+ various other cleanup and name revisions in eval.c:  "user"
+	  variables are now "temporary" variables, and "environment"
+	  variables are now "state" variables.  utility routines (like
+	  ltos(), i_ltoa(), stol()) renamed to render_xxx() to create
+	  a string, and scan_xxx() to decode a string.
+	+ collapsed the stenv() and set_variable() routines into a single
+	  entrypoint useable from both exec.c and modes.c.
+	+ split temp and state variable lookup from their evaluation,
+	  so the lookup can be done in just one routine.  (eval.c)
+	+ token evaluation (tokval()) now table driven.  i don't know
+	  if it's much cleaner, but i think it's better.  it's certainly
+	  different.  (no, modetbls is not involved, nor should it be. :-)
+	+ minor change to HighlightFilter in filters/filters.rc to cause
+	  it to not try and color [Special] buffers.
+	+ quoting fix in macros/pic.rc
+	+ supporting changes:  estruct.h, makefile.in, vile.hlp.
+
 (tom) 990320 (p)
 	+ add an install-rule to filters/makefile.wnt
 	+ eliminate restriction on number of command-line arguments in winvile
@@ -16,14 +86,14 @@ Changes for vile 8.3 (released ??? ??? ??, 1998)
 	  (reported by Paul Fox).
 	> patches from Clark Morgan:
 	+ modify home_path() to work around problem on VMS where
-		$ vile ~/com/defs.com 
+		$ vile ~/com/defs.com
 	  does not work, nor does tab completion, e.g.,
-		:e ~/com/d<TAB> 
+		:e ~/com/d<TAB>
 	  (the latter was also reported by Ed Henderson).
 	+ vile restores original terminal width when it exits (mimics the eph
-	  editor's behavior). 
+	  editor's behavior).
 	+ added "-132" and "-80" command-line switches to set screen width from
-	  command line. 
+	  command line.
 	+ correct computation of prog_arg for VMS, which is used as part of the
 	  command-line help message.
 	+ modify definition of FOPEN_READ for VMS to allow shared reads from
@@ -103,23 +173,23 @@ Changes for vile 8.3 (released ??? ??? ??, 1998)
 	+ removed id.wing.net from suggested site list from README
 
  (tom) 990309 (o)
- 	+ rewrite logic of newwidth() and newheight() (Paul Fox).
+	+ rewrite logic of newwidth() and newheight() (Paul Fox).
 	+ modify treatment of 'fillcol' mode so that a zero is interpreted to
 	  use the 'wrapmargin' value, and negative values are, like
 	  'wrapmargin', counted from the current right-margin (prompted by
 	  discussion with Kuntal M Daftary).
 	+ minor fixes for ti-filt.c (handle "\\," and terminfo entries without
 	  aliases or descriptions).
- 	+ remove crypt-til operator; this would not work properly on portions
+	+ remove crypt-til operator; this would not work properly on portions
 	  of a file.
- 	+ write ucrypt.c to use Unix crypt(1) if available.
+	+ write ucrypt.c to use Unix crypt(1) if available.
 	+ rename crypt.c, move it to filters as ecrypt.c, for building
 	  standalone vile-crypt.  will be phased out.
- 	+ set "vilemode" for macros and procedure buffers, to simplify syntax
+	+ set "vilemode" for macros and procedure buffers, to simplify syntax
 	  highlighting of internal buffers.
- 	+ modify syntax filters so that keyword classes and their instances
+	+ modify syntax filters so that keyword classes and their instances
 	  can be treated distinctly.
- 	+ correct missing backslash in QUOTDEFS in makefile.in
+	+ correct missing backslash in QUOTDEFS in makefile.in
 	+ review/simplified/corrected comment-prefixes and comments modes
 	  in filters.rc
 	+ correct logic of version_of() function, which did not ensure that
@@ -139,12 +209,12 @@ Changes for vile 8.3 (released ??? ??? ??, 1998)
 	+ add $pid environment variable for VMS
 
  (tom) 990212 (n)
- 	+ increase size of underline cursor for OPT_ICURSOR in ntconio.c
- 	+ correct dcl-filt.l to handle inline comments
- 	+ add bash-specific keywords to sh.key (reported by Paul Fox).
- 	+ add missing assignment to save pre_op_dot in fences.c (reported by
+	+ increase size of underline cursor for OPT_ICURSOR in ntconio.c
+	+ correct dcl-filt.l to handle inline comments
+	+ add bash-specific keywords to sh.key (reported by Paul Fox).
+	+ add missing assignment to save pre_op_dot in fences.c (reported by
 	  Clark Morgan, from VC++ 6.0 warnings)
- 	+ correct check for return-value of open_region_filter(), which did
+	+ correct check for return-value of open_region_filter(), which did
 	  not look for abort of command, resulting in hanging while trying
 	  to close a pipe that was not open (reported by Paul Fox).
 	+ change cast in CF_CC_OFFSETOF_CASES to 'long', to accommodate SGI's
@@ -154,14 +224,14 @@ Changes for vile 8.3 (released ??? ??? ??, 1998)
 	  fence-limit times the buffer length as the hard limit.  This is
 	  still proportional to the buffer length, rather than allowing
 	  geometric increase with the fences groups.
- 	+ add configure option --with-libdir-path to allow override of the
+	+ add configure option --with-libdir-path to allow override of the
 	  default $(libdir)/vile.  Make this alterable with new variable
 	  $libdir-path.
- 	+ change install-directory for filter programs to $(libdir)/vile, to
+	+ change install-directory for filter programs to $(libdir)/vile, to
 	  avoid clutter (suggested by Paul Fox).
- 	+ modify some filters to avoid incrementing yytext since it may be an
+	+ modify some filters to avoid incrementing yytext since it may be an
 	  array.
- 	+ add configure-check for state support in lex/flex, so we do not
+	+ add configure-check for state support in lex/flex, so we do not
 	  try to compile with programs that will not succeed.
 	+ correct limit-check in dname_to_dirnum(), missed a case when fixing
 	  for 8.2l, which caused pictmode.rc to not read properly.
@@ -181,9 +251,9 @@ Changes for vile 8.3 (released ??? ??? ??, 1998)
 	+ implement mode mcolor, which lets user set the color of the
 	  modelines.  The choices are the same as for visual-matches (request
 	  by Han Leushuis <jgamleus@cs.uu.nl>).
- 	+ update 'doingsweep' in one place only, do_sweep(), to ensure that the
+	+ update 'doingsweep' in one place only, do_sweep(), to ensure that the
 	  TTcursor() calls nest properly when a selection is aborted.
- 	+ add vt220 7- and 8-bit function key definitions to vmsvt.c (request
+	+ add vt220 7- and 8-bit function key definitions to vmsvt.c (request
 	  by Clark Morgan).
 	+ removed a FIXME in termio.c for read_vms_tty's assignment to nibuf,
 	  having confirmed that the document for the sys$qiow()'s read function
@@ -193,14 +263,14 @@ Changes for vile 8.3 (released ??? ??? ??, 1998)
 	+ prevent dobuf() from being interrupted by 'working' mode.
 
  (tom) 990126 (l)
- 	+ add "~elsewith" directive to simplify use of fences in vile macros.
+	+ add "~elsewith" directive to simplify use of fences in vile macros.
 	+ minor change to kbd_reply to allow abortc to be <control><space>,
 	  though otherwise nulls are still ignored in that function (request by
 	  Christian Lindig <lindig@ips.cs.tu-bs.de>)
 	+ implement crude iteration-limit for complex fences to guard against
 	  blowup in error-handling.
- 	+ correct/restore handling of keyboard interruption in complex fences
- 	+ add rules to filters/makefile.wnt so that if $(LEX) is set, the
+	+ correct/restore handling of keyboard interruption in complex fences
+	+ add rules to filters/makefile.wnt so that if $(LEX) is set, the
 	  build will use that for the lex/flex program and make the lex-based
 	  filters.
 	+ add yywrap() dummy function to filters.c to reduce dependency on libs.
@@ -221,17 +291,17 @@ Changes for vile 8.3 (released ??? ??? ??, 1998)
 	  otherwise see the EOF from the previous file reading operation, e.g.,
 	  if the file did not end with a newline.  Likewise set fileispipe,
 	  just in case it would be needed.
- 	+ correct inconsistent spelling of cache variable in CF_TERMCAP_LIBS,
+	+ correct inconsistent spelling of cache variable in CF_TERMCAP_LIBS,
 	  which caused the configure script to ignore a predefined termcap or
 	  terminfo library.
- 	+ correct order of -lXmu vs -lXext in Athena-widget configure test.
- 	+ resync configure scripts against autoconf 2.13 + patches
+	+ correct order of -lXmu vs -lXext in Athena-widget configure test.
+	+ resync configure scripts against autoconf 2.13 + patches
 	+ modify is_vms_pathname(), is_version() to accept a '.' to delimit
 	  version number (reported by Clark Morgan).
- 	+ implement $sres, i.e., 80/132 column switching for vmsvt.c (patch
+	+ implement $sres, i.e., 80/132 column switching for vmsvt.c (patch
 	  by Clark Morgan).
- 	+ update version number for Vileserv, missed in 8.2j
- 	+ rename some operators that accept a range to end with "-til", for
+	+ update version number for Vileserv, missed in 8.2j
+	+ rename some operators that accept a range to end with "-til", for
 	  consistency (reported by Paul Fox, Clark Morgan).
 	+ other improvements to perlfilt.l, e.g., underscores in numbers,
 	  a POD-format,, suggested by Brendan O'Dea.
@@ -255,11 +325,11 @@ Changes for vile 8.3 (released ??? ??? ??, 1998)
 	  vile-pfilt.pl (John P Cavanaugh <cavanaug@elwom4.ecn.purdue.edu>).
 
  (tom) 981229 (j)
- 	+ modify majormode preamble logic to set ignorecase if the majormode
+	+ modify majormode preamble logic to set ignorecase if the majormode
 	  sets ignorecase.
- 	+ modify tcap.c to use no_color_video capability to avoid overwriting
+	+ modify tcap.c to use no_color_video capability to avoid overwriting
 	  colors with nonfunctioning video attributes.
- 	+ modify html syntax filter to handle embedded JavaScript.
+	+ modify html syntax filter to handle embedded JavaScript.
 	+ add filters for ada, awk, DOS batchfile, VAX DCL, Java, JavsScript,
 	  mail, nroff, sql, tcl/tk, termcap, terminfo, yacc
 	+ correct dependencies in filters/makefile.in for keywords files, which
@@ -278,11 +348,11 @@ Changes for vile 8.3 (released ??? ??? ??, 1998)
 	+ add csh mode to filters.rc
 
  (tom) 981222 (i)
- 	+ modify expand_pattern() to handle Unix-style wildcards on VMS (reported
+	+ modify expand_pattern() to handle Unix-style wildcards on VMS (reported
 	  by Clark Morgan).
- 	+ add configure option --with-fakevms, for testing VMS port.
- 	+ change Cpp keyword in vile-c-filt to Preproc, for consistency.
- 	+ move filter programs to filters subdirectory.  Split-out the keyfile
+	+ add configure option --with-fakevms, for testing VMS port.
+	+ change Cpp keyword in vile-c-filt to Preproc, for consistency.
+	+ move filter programs to filters subdirectory.	 Split-out the keyfile
 	  and symbol management to new file filters.c, and used that to
 	  enhance the original vile-c-filt so it no longer has line-length
 	  limitations.  Added lex-based filters for cwebx, html, latex, make,
@@ -317,13 +387,13 @@ Changes for vile 8.3 (released ??? ??? ??, 1998)
 	  dates on files even without writing the file.
 
  (tom) 981201 (g)
- 	+ fix minor memory-leaks (main.c, bind.c, select.c)
+	+ fix minor memory-leaks (main.c, bind.c, select.c)
 	+ modify finderr.c to use the given filename and ignore the associated
 	  buffer name when looking for matching buffers in case we have multiple
 	  files with similar names.  Modify getfile() to check first if the
 	  given parameter is a filename, rather than preferring match on a
 	  buffer name.
- 	+ optimize tb_bappend and tb_sappend using memcpy rather than loop on
+	+ optimize tb_bappend and tb_sappend using memcpy rather than loop on
 	  tb_put.
 	+ add checks for empty/missing filename to dobuf() and getfile() and
 	  menu.c to prevent core dump when using "Edit .vilerc" menu entry and
@@ -334,7 +404,7 @@ Changes for vile 8.3 (released ??? ??? ??, 1998)
 	+ restore part of logic in C/C++ comment formatting modified in 8.0p;
 	  which introduced the undesired behavior of not formatting the first
 	  line of a comment (patch by Clark Morgan).
- 	+ implement VMS-specific modes for record-format and record-size
+	+ implement VMS-specific modes for record-format and record-size
 	  (initiated/tested by Clark Morgan).
 	+ change default search pattern for VMS to include only current
 	  versions of each file, unless mode "allversions" is set (request by
@@ -345,7 +415,7 @@ Changes for vile 8.3 (released ??? ??? ??, 1998)
 	  configuring with --srcdir.
 	+ updated config.guess, config.sub from Lynx, adds cases for os390 and
 	  clix.
- 	+ update documentation to indicate that vile has been tested on NT 3.51
+	+ update documentation to indicate that vile has been tested on NT 3.51
 	  (patch by Clark Morgan).
 	+ correct path separator in default $startup-path for VMS, which would
 	  prevent vile from reading vile.rc from a system directory (patch by
@@ -364,7 +434,7 @@ Changes for vile 8.3 (released ??? ??? ??, 1998)
 	  you have to set up a write-hook procedure.  See the doc for vileget.
 
  (tom) 981114 (e)
- 	+ corrected TTcursor logic interaction with xterm-mouse so the cursor
+	+ corrected TTcursor logic interaction with xterm-mouse so the cursor
 	  does not remain invisible after extending a selection.
 	+ modify so that xvile can be build with --disable-extensions
 	+ correct ifdef for SYS_VMS which was hiding ifdefs for setsid
@@ -395,7 +465,7 @@ Changes for vile 8.3 (released ??? ??? ??, 1998)
 	  stating that readonly-on-readonly did not work on DOS).
 
  (tom) 981112 (d)
- 	+ correct/simplify handling of string literals in vile-c-filt, which did
+	+ correct/simplify handling of string literals in vile-c-filt, which did
 	  not treat single quotes and double quotes symmetrically.
 	+ correct an error in vile-c-filt which caused the ending quote of
 	  a string to be ignored if it appeared in the first column.
@@ -451,17 +521,17 @@ Changes for vile 8.3 (released ??? ??? ??, 1998)
 	+ document environment variables in vile man-page.
 
  (tom) 981101 (a)
- 	+ add icon for winvile (V-eyes 'pumpkin').
+	+ add icon for winvile (V-eyes 'pumpkin').
 	+ corrections to hilite.pl and syntax.pl, so it works for C comments
 	  (patch by Ryan Murray).
- 	+ modify tokval() function to eliminate fixed-buffer limits for
+	+ modify tokval() function to eliminate fixed-buffer limits for
 	  '@' prompts and '<' buffer-variables (reported by Clark Morgan).
 	+ add 'undoable' mode, as a performance convenience for filtering.
 	  Note that this purges the undo stack, because it suppresses update
 	  of the undo stack while changes may occur to the buffer.  Also,
 	  during filtering it prevents vile from retaining the buffer's contents
 	  in the kill buffer (prompted by a report by Holger Kummert
- 	  <kummert@nentec.de>).
+	  <kummert@nentec.de>).
 	+ minor fixes for memory-leaks & test code for that (main.c, fileio.c,
 	  modes.c)
 	+ modify dfputli and dfputi to output unsigned values to use in $pid
@@ -486,7 +556,7 @@ Changes for vile 8.2 (released Sun Oct 25, 1998)
 	  if I simply run xvile -"V".
 
  (tom) 981024 (b)
- 	+ modify glob-expansion to always recognize "~" as a synonym for
+	+ modify glob-expansion to always recognize "~" as a synonym for
 	  $HOME if Unix-style passwd interface does not return anything
 	  useful (adapted from a patch by Ed Henderson).
 	+ rename vile.spec to vile-8.1.spec, change configure option to use
@@ -494,7 +564,7 @@ Changes for vile 8.2 (released Sun Oct 25, 1998)
 	  ** This is not an 8.3 filename, but is used only on Linux.
 	+ modify to use X11R6 input method and dead key support (patch by
 	  Stanislav Meduna <stano@trillian.eunet.sk>).
- 	+ correct click-timeout value for xvile, overlooked in 8.1u (reported
+	+ correct click-timeout value for xvile, overlooked in 8.1u (reported
 	  by Ryan Murray).
 	+ minor fixes to menu.c so that xvile builds on OpenVMS 7.2 with DEC C.
 	> patches by Clark Morgan (mostly for visvile):
@@ -553,7 +623,7 @@ Changes for vile 8.2 (released Sun Oct 25, 1998)
 Changes for vile 8.1 (released Fri Oct 02, 1998)
 
  (tom) 981002 (w)
- 	+ modify xterm mouse-click handling so that clicking on the left margin
+	+ modify xterm mouse-click handling so that clicking on the left margin
 	  when the window is right-shifted always shifts it left.  Before, if
 	  a tab fell on the left margin, the effective column was still in the
 	  visible part of the window.
@@ -561,11 +631,11 @@ Changes for vile 8.1 (released Fri Oct 02, 1998)
 	  an extra cell to be highlighted when doing full-line selection.
 
  (tom) 981001 (v)
- 	+ updated install-rules for perl scripts.
+	+ updated install-rules for perl scripts.
 	+ set was_clean flag in all instances of ttclean(), fixing a problem
 	  where TTkopen() was not invoked on return from :sh command (reported
 	  by Ryan Murray).
- 	+ strip trailing ^M's from hilite.pl and syntax.pl, add those to the
+	+ strip trailing ^M's from hilite.pl and syntax.pl, add those to the
 	  list of Perl scripts in vile.hlp and makefiles (report/patch by
 	  Clark Morgan).
 	+ pass-through $(OPT) value in recursive-make in makefile.wnt (patch
@@ -591,7 +661,7 @@ Changes for vile 8.1 (released Fri Oct 02, 1998)
 	  c and tcl (Kuntal M Daftary).
 	+ modify os2vio.c so that when running vile in fullscreen mode, bright
 	  colors are used rather than blinking colors.
- 	+ undo incorrect use of VFCOL mask from my 7.2q change, which caused
+	+ undo incorrect use of VFCOL mask from my 7.2q change, which caused
 	  the pscreen array to record VAREV attributes on shifted-in rows.
 	+ minor optimization in vtset function to perform better on very long
 	  lines.
@@ -604,14 +674,14 @@ Changes for vile 8.1 (released Fri Oct 02, 1998)
 	  (patch by Clark Morgan).
 
  (tom) 980925 (t)
- 	+ correct two errors in AdjustedWidth and AdjustedHeight, making
+	+ correct two errors in AdjustedWidth and AdjustedHeight, making
 	  winvile resize properly when maximized, as well as not jumping when
 	  resizing after changing fontsize.
 	+ keep caret in winvile invisible until ttrow,ttcol point to a legal
 	  position, i.e., until initialization is complete.
 
  (tom) 980922 (s)
- 	+ correct caret position and size in winvile after changing fontsize.
+	+ correct caret position and size in winvile after changing fontsize.
 	+ modify putctext() function to support setv of $word, $identifier,
 	  $qidentifier and $pathname.
 	+ rename "$wline" to "$wlines", add "$bchars" and "$blines" to return
@@ -639,7 +709,7 @@ Changes for vile 8.1 (released Fri Oct 02, 1998)
 	  his library lacks XmCreatePullDownWindow, which is not simple to fix.
 
  (kev) 980919 (r)
- 	+ buffer.c (zotbuf): Kill any fake windows associated with
+	+ buffer.c (zotbuf): Kill any fake windows associated with
 	  the buffer we're about to kill.
 	+ select.c (hyperspray): Only execute the first found hypertext
 	  command.
@@ -749,8 +819,8 @@ Changes for vile 8.1 (released Fri Oct 02, 1998)
 	  to override the check for -lcurses).
 	+ correct handling of configure --without-perl, which still tried to
 	  use perl (reported by Ryan Murray).
- 	+ add autoconf macro CF_PROG_PERL, based on macro from Brendan O'Dea.
- 	+ remove x_quit function, using normal imdying function to handle
+	+ add autoconf macro CF_PROG_PERL, based on macro from Brendan O'Dea.
+	+ remove x_quit function, using normal imdying function to handle
 	  SIGHUP and SIGTERM for xvile (reported by Shawn Halpenny).
 	> patches by Clark Morgan:
 	+ remove spurious rumor in doc/visvile.doc
@@ -785,10 +855,10 @@ Changes for vile 8.1 (released Fri Oct 02, 1998)
 
  (tom) 980816 (j)
 
- 	+ implement a simple usage/popup for winvile.
- 	+ correct a problem with cursor-droppings in winvile when the mouse
+	+ implement a simple usage/popup for winvile.
+	+ correct a problem with cursor-droppings in winvile when the mouse
 	  is clicked on the modeline.
- 	+ implement scrollbars for winvile (ntwinio.c)
+	+ implement scrollbars for winvile (ntwinio.c)
 	> patches by Clark Morgan:
 	+ changes to allow winvile to be built as an OLE automation server.
 	  Included with this patch are several new files, including one called
@@ -808,7 +878,7 @@ Changes for vile 8.1 (released Fri Oct 02, 1998)
 	+ updated config.guess, config.sub based on automake 1.3.
 	+ combine some logic in file.c with new function strip_if_dosmode().
 	+ correct typo in perl.xs from 8.0g
- 	+ change win32 _snprintf calls to lsprintf, to build with Borland C++.
+	+ change win32 _snprintf calls to lsprintf, to build with Borland C++.
 	+ modify makefile.wnt to build with Perl 5.004, which is missing a
 	  global for 'rs' on win32 (patch by Clark Morgan, analysis by Kevin).
 	+ modified Clark's change so that the Win32-specific keycodes are returned
@@ -830,7 +900,7 @@ Changes for vile 8.1 (released Fri Oct 02, 1998)
 	  for reuse in other applications (e.g., xterm).
 
  (kev) 980725 (g)
- 	+ perl.xs (incgv, rs, ofslen, ofs, ors, orslen): Added PL_ prefix
+	+ perl.xs (incgv, rs, ofslen, ofs, ors, orslen): Added PL_ prefix
 	  to these for perl5.005.  Defined these in terms of the old
 	  non-prefixed names for older versions of perl5.
 
@@ -857,14 +927,14 @@ Changes for vile 8.1 (released Fri Oct 02, 1998)
 	  Morgan).
 
  (tom) 980710 (e)
- 	+ correct recompilation of [Error Expressions], by adding a check if
+	+ correct recompilation of [Error Expressions], by adding a check if
 	  the buffer is marked as changed, or if the number of lines in it
 	  has changed.  If [Error Expressions] was popped up to view its
 	  contents, that worked, but otherwise (e.g., in .vilerc), it did not
 	  trigger the recompile (reported by Brian Moore).
- 	+ change winvile -geometry parameter to COLSxROWS, for consistency with
+	+ change winvile -geometry parameter to COLSxROWS, for consistency with
 	  X Window applications (e.g., xterm), and documented in vile.hlp.
- 	+ correct parsing of line-specification when a leading ',' is used,
+	+ correct parsing of line-specification when a leading ',' is used,
 	  e.g., ":,$d" (reported by hymie! <hymie@lactose.smart.net>).
 	+ documentation updates (patch by Clark Morgan).
 	+ modify logic in tags.c so that tags completion works when some of the
@@ -874,7 +944,7 @@ Changes for vile 8.1 (released Fri Oct 02, 1998)
 	+ correct offset for ending null in kbd_string(), which was beyond
 	  buffer limit - bug from 7.3f (patch by Chris Sherman
 	  <sherman@unx.sas.com>).
- 	+ implement -geometry command-line option for winvile, and corresponding
+	+ implement -geometry command-line option for winvile, and corresponding
 	  modifiable $pagelen and $pagewid values.
 	+ modify configure script to accept --with-screen=xaw and
 	  --with-screen=xm, i.e., lowercase screen values (reported by Ryan
@@ -883,7 +953,7 @@ Changes for vile 8.1 (released Fri Oct 02, 1998)
 	  dir|winvile.  Tested on Win95 _and_ NT (patch by Clark Morgan).
 
  (tom) 980703 (c)
- 	+ remove spurious 'void' in perl.xs which caused items to be miscounted
+	+ remove spurious 'void' in perl.xs which caused items to be miscounted
 	  (report by Kuntal M Daftary, patch by Kevin Buettner).
 	+ shorten identifiers to no more than 31 characters (reported by
 	  Graeme Miller).
@@ -905,7 +975,7 @@ Changes for vile 8.1 (released Fri Oct 02, 1998)
 	+ dynamically allocate pm_buffer array in menu.c, eliminating limit on
 	  number of menu items (reported by William Yuan
 	  <yuan@bucket.its.unimelb.edu.au>).
- 	+ new configure macro CF_CC_INIT_UNIONS checks for compilers that
+	+ new configure macro CF_CC_INIT_UNIONS checks for compilers that
 	  cannot initialize a union, e.g, a K&R compiler using unproto.
 	  Ifdef'd union in CMDFUNC to work in that case.
 	+ correct spelling of EXTRA_LOAD_FLAGS in CF_IMAKE_CFLAGS configure
@@ -923,7 +993,7 @@ Changes for vile 8.1 (released Fri Oct 02, 1998)
 	  Brendan O'Dea).
 
  (kev) 980606 (a)
- 	+ perl.xs (svrs): No longer a global static variable.
+	+ perl.xs (svrs): No longer a global static variable.
 	  (perl_init): Don't initialize svrs here anymore.  Also, stifle
 	  compiler warning.
 	  (READLINE): Declare and initialize svrs here, but only for

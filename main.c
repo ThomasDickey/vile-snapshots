@@ -11,11 +11,12 @@
  *
  *	microemacs was initially turned into "VI Like Emacs", a.k.a.
  *	vile, by paul fox.  tom dickey and kevin buettner made huge
- *	contributions along the way, as did rick sladkey and clark
- *	morgan.  vile is now principally maintained by tom dickey.
+ *	contributions along the way, as did rick sladkey and other
+ *	people (see CHANGES* for details).  vile is now principally
+ *	maintained by tom dickey.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.365 1999/03/20 23:06:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.367 1999/03/27 15:05:56 tom Exp $
  *
  */
 
@@ -968,6 +969,7 @@ global_val_init(void)
 #endif
 #if	!OPT_MAJORMODE
 	set_global_b_val(MDCMOD,	FALSE); /* C mode */
+	set_global_b_val_ptr(VAL_FILTERNAME, strmalloc(""));
 #endif
 #ifdef MDCRYPT
 	set_global_b_val(MDCRYPT,	FALSE);	/* crypt */

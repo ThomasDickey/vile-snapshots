@@ -3,11 +3,11 @@
 ;;
 ;; Author: Kevin Buettner
 ;;
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.1 1994/10/27 14:28:04 tom Exp $
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.2 1999/03/24 23:43:15 pgf Exp $
 ;;
 
 29 store-macro
-	set-variable %manpage @"man page? "
+	set-variable %manpage &query "man page? "
 	~if &or &seq %manpage "ERROR" & seq %manpage ""
 		~return
 	~endif

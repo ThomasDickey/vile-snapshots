@@ -1,16 +1,14 @@
-/*	EVAL.C:	Expression evaluation functions for
-		MicroEMACS
-
-	written 1986 by Daniel Lawrence
+/*
+ *	eval.c -- function and variable evaluation
+ *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.185 1999/03/19 11:50:56 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.189 1999/03/27 14:20:31 tom Exp $
  *
  */
 
 #include	"estruct.h"
 #include	"edef.h"
 #include	"nevars.h"
-#include	"patchlev.h"
 
 #define	FUNC_NAMELEN	4
 
@@ -18,148 +16,30 @@
 #define	MODE_NUM	-2
 #define	USER_NUM	-3
 
-#if SYS_OS2 || SYS_OS2_EMX
-#  define SHELL_NAME "COMSPEC"
-#  define SHELL_PATH "cmd.exe"
-#else
-#  if SYS_WINNT
-#    define SHELL_NAME "COMSPEC"
-#    define SHELL_PATH (is_winnt() ? "cmd.exe" : "command.com")
-#  else
-#    if SYS_MSDOS
-#      define SHELL_NAME "COMSPEC"
-#      define SHELL_PATH "command.com"
-#    else
-#      define SHELL_NAME "SHELL"
-#      define SHELL_PATH "/bin/sh"
-#    endif
-#  endif
-#endif
-
-/* When the command interpretor needs to get a variable's name, rather than its
- * value, it is passed back as a VDESC variable description structure.  The
- * v_num field is an index into the appropriate variable table.
- */
-
-	/* macros for environment-variable switch */
-	/*  (if your compiler balks with "non-constant case expression" */
-#if CC_CANNOT_OFFSET_CASES
-#define	If(N)		if (vnum == N) {
-#define	ElseIf(N)	} else If(N)
-#define	Otherwise	} else {
-#define	EndIf		}
-#else			/* more compact if it works... */
-#define	If(N)		switch (vnum) { case N: {
-#define	ElseIf(N)	break; } case N: {
-#define	Otherwise	break; } default: {
-#define	EndIf		}}
-#endif
 
 #if OPT_EVAL
+
+/* "generic" variable wrapper, to insulate some users of variables
+ * from needing to distinguish the different types */
 typedef struct	{
 	int	v_type;	/* type of variable */
-	int	v_num;	/* index, if it's an environment-variable */
-	UVAR *	v_ptr;	/* pointer, if it's a user-variable */
+	int	v_num;	/* index, for state vars */
+	UVAR *	v_ptr;	/* pointer, for temp vars */
 	} VDESC;
 
 static	SIZE_T	s2size ( char *s );
-static	char *	getkill (void);
-static	char *	ltos ( int val );
+static	UVAR *	lookup_tempvar( const char *vname);
 static	char *	s2offset ( char *s, char *n );
-#if (SYS_WINNT||SYS_VMS)
-static	char *	l_utoh(unsigned i);
-#endif
 static	int	PromptAndSet ( const char *var, int f, int n );
 static	int	SetVarValue ( VDESC *var, const char *value );
-static	int	ernd (void);
-static	int	gtlbl ( const char *tokn );
-static	int	l_strtol ( const char *s );
-static	int	sindex ( const char *sourc, const char *pattern );
+static	int	lookup_func(const char *name);
+static	int	lookup_statevar(const char *vname);
+static const char *get_tempvar_val(UVAR *p);
+static const char *run_func(int fnum);
 #endif
 
 /*--------------------------------------------------------------------------*/
 
-#if	OPT_EVAL && OPT_SHELL
-static char *
-GetEnv(char *s)
-{
-	register char *v = getenv(s);
-	return v ? v : "";
-}
-
-static char *
-DftEnv(
-register char	*name,
-register char	*dft)
-{
-	name = GetEnv(name);
-	return (*name == EOS) ? dft : name;
-}
-
-static void
-SetEnv(
-char	**namep,
-const char *value)
-{
-	FreeIfNeeded(*namep);
-	*namep = strmalloc(value);
-}
-#else
-#define	GetEnv(s)	""
-#define	DftEnv(s,d)	d
-#define	SetEnv(np,s)	(*(np) = strmalloc(s))
-#endif
-
-#if OPT_EVAL && OPT_SHELL
-static char *shell;	/* $SHELL environment is "$shell" variable */
-static char *directory;	/* $TMP environment is "$directory" variable */
-#if DISP_X11
-static char *x_display;	/* $DISPLAY environment is "$xdisplay" variable */
-static char *x_shell;	/* $XSHELL environment is "$xshell" variable */
-#endif
-#endif
-
-#if OPT_EVAL && OPT_SHELL
-char *
-get_shell(void)
-{
-	if (shell == 0)
-		SetEnv(&shell, DftEnv(SHELL_NAME, SHELL_PATH));
-	return shell;
-}
-#endif
-
-#if OPT_EVAL
-/* Return comma-delimited list of "interesting" options. */
-static char *
-cfgopts(void)
-{
-    static const char *opts[] =
-    {
-#if SYS_WINNT && defined(VILE_OLE)
-	"oleauto",
-#endif
-#if OPT_PERL
-	"perl",
-#endif
-	NULL		 /* End of list marker */
-    };
-    static TBUFF *optstring;
-
-    if (optstring == 0) {
-	const char **lclopt;
-
-	optstring = tb_init(&optstring, EOS);
-	for (lclopt = opts; *lclopt; lclopt++) {
-	    if (tb_length(optstring))
-		optstring = tb_append(&optstring, ',');
-	    optstring = tb_sappend(&optstring, *lclopt);
-	}
-	optstring = tb_append(&optstring, EOS);
-    }
-    return (tb_values(optstring));
-}
-#endif
 
 #if OPT_SHOW_EVAL
 /* list the current vars into the current buffer */
@@ -170,11 +50,11 @@ makevarslist(int dum1 GCC_UNUSED, void *ptr)
 	register UVAR *p;
 	register int j;
 
-	bprintf("--- Environment variables %*P\n", term.t_ncol-1, '-');
+	bprintf("--- State variables %*P\n", term.t_ncol-1, '-');
 	bprintf("%s", (char *)ptr);
-	for (p = user_vars, j = 0; p != 0; p = p->next) {
+	for (p = temp_vars, j = 0; p != 0; p = p->next) {
 		if (!j++)
-			bprintf("--- User variables %*P", term.t_ncol-1, '-');
+			bprintf("--- Temporary variables %*P", term.t_ncol-1, '-');
 		bprintf("\n%%%s = %s", p->u_name, p->u_value);
 	}
 }
@@ -202,11 +82,15 @@ get_listvalue(const char *name, int showall)
 {
 	VALARGS args;
 	register int	s;
+	int vnum;
 
 	if ((s = is_mode_name(name, showall, &args)) == TRUE)
 		return string_mode_val(&args);
-	else if (s == SORTOFTRUE)
-		return gtenv(name);
+	else if (s == SORTOFTRUE) {
+		vnum = lookup_statevar(name);
+		if (vnum != ILLEGAL_NUM)
+		    return get_statevar_val(vnum);
+	}
 	return 0;
 }
 #endif /* OPT_SHOW_EVAL */
@@ -223,10 +107,10 @@ listvars(int f, int n)
 	register char *v;
 	register const char *vv;
 	static	const char fmt[] = { "$%s = %*S\n" };
-	const char *const *Names = f ? list_of_modes() : envars;
+	const char *const *Names = f ? list_of_modes() : statevars;
 	int	showall = f ? (n > 1) : FALSE;
 
-	/* collect data for environment-variables, since some depend on window */
+	/* collect data for state-variables, since some depend on window */
 	for (s = t = 0; Names[s] != 0; s++) {
 		if ((vv = get_listvalue(Names[s], showall)) != 0)
 			t += strlen(Names[s]) + strlen(fmt) + strlen(vv);
@@ -256,414 +140,260 @@ listvars(int f, int n)
 #endif /* OPT_SHOW_EVAL */
 
 #if OPT_EVAL
-static const char *
-gtfun(			/* evaluate a function */
-const char *fname)	/* name of function to evaluate */
+
+/*
+ * find a function in the function list
+ */
+static int
+lookup_func(const char *name)
 {
-	register int fnum;		/* index to function to eval */
-	const char *it = errorm;
-	char arg0[FUNC_NAMELEN];
-	char arg1[NSTRING];		/* value of first argument */
-	char arg2[NSTRING];		/* value of second argument */
-	char arg3[NSTRING];		/* value of third argument */
-	static char result[2 * NSTRING];	/* string result */
+	char downcased[FUNC_NAMELEN];
+	int fnum;
 
-	*arg1 = *arg2 = *arg3 = EOS;
-	if (!fname[0])
-		return(it);
+	if (!*name)
+		return ILLEGAL_NUM;
 
-	/* look the function up in the function table */
-	mklower(strncpy0(arg0, fname, FUNC_NAMELEN)); /* case-independent */
+	/* find the function -- truncate and case-convert it first */
+	mklower(strncpy0(downcased, name, FUNC_NAMELEN));
+
 	for (fnum = 0; fnum < NFUNCS; fnum++)
-		if (strcmp(arg0, funcs[fnum].f_name) == 0)
-			break;
+		if (strcmp(downcased, funcs[fnum].f_name) == 0)
+			return fnum;
 
-	/* return errorm on a bad reference */
-	if (fnum == NFUNCS)
-		return(errorm);
+	return ILLEGAL_NUM;
+}
 
-	/* if needed, retrieve the first argument */
-	if (funcs[fnum].f_type >= MONAMIC) {
-		if (mac_tokval(arg1) != TRUE)
+/*
+ * execute a builtin function
+ */
+static const char *
+run_func(int fnum)
+{
+	char arg[3][NSTRING];			/* function arguments */
+	int nums[3];
+	int bools[3];
+	static char result[2 * NSTRING];	/* function result */
+	int i, nargs;
+	int args_numeric, args_boolean, ret_numeric, ret_boolean;
+
+
+	arg[0][0] = arg[1][0] = arg[2][0] = EOS;
+
+	nargs = funcs[fnum].n_args & NARGMASK;
+	args_numeric = funcs[fnum].n_args & NUM;
+	args_boolean = funcs[fnum].n_args & BOOL;
+
+	ret_numeric = funcs[fnum].n_args & NRET;
+	ret_boolean = funcs[fnum].n_args & BRET;
+
+	/* fetch required arguments */
+	for (i = 0; i < nargs; i++) {
+		if (mac_tokval(arg[i]) != TRUE)
 			return(errorm);
-
-		/* if needed, retrieve the second argument */
-		if (funcs[fnum].f_type >= DYNAMIC) {
-			if (mac_tokval(arg2) != TRUE)
-				return(errorm);
-
-			/* if needed, retrieve the third argument */
-			if (funcs[fnum].f_type >= TRINAMIC)
-				if (mac_tokval(arg3) != TRUE)
-					return(errorm);
-		}
+		if (args_numeric)
+			nums[i] = scan_int(arg[i]);
+		else if (args_boolean)
+			bools[i] = scan_bool(arg[i]);
 	}
 
-	/* and now evaluate it! */
+
 	switch (fnum) {
 	case UFADD:
-		it = l_itoa(l_strtol(arg1) + l_strtol(arg2));
+		i = nums[0] + nums[1];
 		break;
 	case UFSUB:
-		it = l_itoa(l_strtol(arg1) - l_strtol(arg2));
+		i = nums[0] - nums[1];
 		break;
 	case UFTIMES:
-		it = l_itoa(l_strtol(arg1) * l_strtol(arg2));
+		i = nums[0] * nums[1];
 		break;
 	case UFDIV:
-		it = l_itoa(l_strtol(arg1) / l_strtol(arg2));
+		i = nums[0] / nums[1];
 		break;
 	case UFMOD:
-		it = l_itoa(l_strtol(arg1) % l_strtol(arg2));
+		i = nums[0] % nums[1];
 		break;
 	case UFNEG:
-		it = l_itoa(-l_strtol(arg1));
+		i = -nums[0];
 		break;
 	case UFCAT:
-		it = strcat(strcpy(result, arg1), arg2);
+		strcat(strcpy(result, arg[0]), arg[1]);
 		break;
 	case UFLEFT:
-		it = strncpy0(result, arg1, s2size(arg2)+1);
+		strncpy0(result, arg[0], s2size(arg[1])+1);
 		break;
 	case UFRIGHT:
-		it = strcpy(result, s2offset(arg1,arg2));
+		strcpy(result, s2offset(arg[0],arg[1]));
 		break;
 	case UFMID:
-		it = strncpy0(result, s2offset(arg1,arg2), s2size(arg3)+1);
+		strncpy0(result, s2offset(arg[0],arg[1]),
+					    s2size(arg[2])+1);
 		break;
 	case UFNOT:
-		it = ltos(stol(arg1) == FALSE);
+		i = !bools[0];
 		break;
 	case UFEQUAL:
-		it = ltos(l_strtol(arg1) == l_strtol(arg2));
+		i = (nums[0] == nums[1]);
 		break;
 	case UFLESS:
-		it = ltos(l_strtol(arg1) < l_strtol(arg2));
+		i = (nums[0] < nums[1]);
 		break;
 	case UFGREATER:
-		it = ltos(l_strtol(arg1) > l_strtol(arg2));
+		i = (nums[0] > nums[1]);
 		break;
 	case UFSEQUAL:
-		it = ltos(strcmp(arg1, arg2) == 0);
+		i = (strcmp(arg[0], arg[1]) == 0);
 		break;
 	case UFSLESS:
-		it = ltos(strcmp(arg1, arg2) < 0);
+		i = (strcmp(arg[0], arg[1]) < 0);
 		break;
 	case UFSGREAT:
-		it = ltos(strcmp(arg1, arg2) > 0);
+		i = (strcmp(arg[0], arg[1]) > 0);
 		break;
 	case UFIND:
-		it = tokval(arg1);
+		strcpy(result, tokval(arg[0]));
 		break;
 	case UFAND:
-		it = ltos(stol(arg1) && stol(arg2));
+		i = (bools[0] && bools[1]);
 		break;
 	case UFOR:
-		it = ltos(stol(arg1) || stol(arg2));
+		i = (bools[0] || bools[1]);
 		break;
 	case UFLENGTH:
-		it = l_itoa((int)strlen(arg1));
+		i = (int)strlen(arg[0]);
 		break;
 	case UFUPPER:
-		it = mkupper(arg1);
+		mkupper(strcpy(result, arg[0]));
 		break;
 	case UFLOWER:
-		it = mklower(arg1);
+		mklower(strcpy(result, arg[0]));
 		break;
 	case UFTRIM:
-		it = mktrimmed(arg1);
+		mktrimmed(result, arg[0]);
 		break;
 	case UFASCII:
-		it = l_itoa((int)arg1[0]);
+		i = (int)arg[0][0];
 		break;
 	case UFCHR:
-		result[0] = (char)l_strtol(arg1);
+		result[0] = (char)nums[0];
 		result[1] = EOS;
-		it = result;
 		break;
 	case UFGTKEY:
 		result[0] = (char)keystroke_raw8();
 		result[1] = EOS;
-		it = result;
 		break;
 	case UFGTSEQ:
 		(void)kcod2escape_seq(kbd_seq_nomap(), result);
-		it = result;
 		break;
 	case UFRND:
-		it = l_itoa((ernd() % absol(l_strtol(arg1))) + 1);
+		i = rand() % absol(nums[0]);
+		i++;  /* return 1 to N */
 		break;
 	case UFABS:
-		it = l_itoa(absol(l_strtol(arg1)));
+		i = absol(nums[0]);
 		break;
 	case UFSINDEX:
-		it = l_itoa(sindex(arg1, arg2));
+		i = ourstrstr(arg[0], arg[1], FALSE);
 		break;
 	case UFENV:
-		it = GetEnv(arg1);
+		strcpy(result, GetEnv(arg[0]));
 		break;
 	case UFBIND:
-		it = prc2engl(arg1);
+		strcpy(result, prc2engl(arg[0]));
 		break;
 	case UFREADABLE:
-		it = ltos(doglob(arg1)
-			&& cfg_locate(arg1, FL_CDIR|FL_READABLE) != NULL);
+		i = (doglob(arg[0]) &&
+			cfg_locate(arg[0], FL_CDIR|FL_READABLE) != NULL);
 		break;
 	case UFWRITABLE:
-		it = ltos(doglob(arg1)
-			&& cfg_locate(arg1, FL_CDIR|FL_WRITEABLE) != NULL);
+		i = (doglob(arg[0]) &&
+			cfg_locate(arg[0], FL_CDIR|FL_WRITEABLE) != NULL);
 		break;
 	case UFLOCMODE:
 	case UFGLOBMODE:
-		{ VALARGS args;
-		if (find_mode(curbp, arg1, (fnum == UFGLOBMODE), &args) != TRUE)
+		{ VALARGS vargs;
+		if (find_mode(curbp, arg[0],
+				(fnum == UFGLOBMODE), &vargs) != TRUE)
 			break;
-		it = string_mode_val(&args);
+		strcpy(result, string_mode_val(&vargs));
 		}
 		break;
 	case UFQUERY:
-		{
-		    static TBUFF *replbuf;
-		    int odiscmd;
-		    int	oclexec;
-		    int status;
-
-		    odiscmd = discmd; discmd = TRUE;
-		    oclexec = clexec; clexec = FALSE;
-
-		    status = kbd_reply(arg1, &replbuf,
-				    eol_history, '\n',
-				    KBD_EXPAND|KBD_QUOTES,
-				    no_completion);
-
-		    discmd = odiscmd;
-		    clexec = oclexec;
-
-		    if (status == ABORT)
-			    return(errorm);
-
-		    /* FIXME: assumes EOS added by kbd_reply */
-		    strcpy(result, tb_values(replbuf));
-		    it = result;
+		{ const char *cp;
+		    cp = user_reply(arg[0]);
+		    strcpy(result, cp ? cp : errorm);
 		}
 		break;
 	default:
-		it = errorm;
+		strcpy(result, errorm);
 		break;
 	}
-	return it;
+
+	if (ret_numeric)
+		render_int(result, i);
+	else if (ret_boolean)
+		render_boolean(result, i);
+
+	return result;
 }
 
-static const char *
-gtusr(			/* look up a user var's value */
-const char *vname)	/* name of user variable to fetch */
+/* find a temp variable */
+static UVAR *
+lookup_tempvar(const char *name)
 {
 	register UVAR	*p;
 
-	if (vname[0] != EOS) {
-		for (p = user_vars; p != 0; p = p->next)
-			if (!strcmp(vname, p->u_name))
-				return p->u_value;
+	if (*name) {
+		for (p = temp_vars; p != 0; p = p->next)
+			if (!strcmp(name, p->u_name))
+				return p;
 	}
-	return (errorm);
+	return NULL;
 }
 
-char *
-gtenv(const char *vname)	/* name of environment variable to retrieve */
+/* get a temp variable's value */
+static const char *
+get_tempvar_val(UVAR *p)
+{
+	static char result[NSTRING];
+	(void)strncpy0(result, p->u_value, NSTRING);
+	return result;
+}
+
+/* find a state variable */
+static int
+lookup_statevar(const char *name)
 {
 	register int vnum;	/* ordinal number of var referenced */
-	register char *value = errorm;
-	BUFFER *bp;
+	if (!*name)
+		return ILLEGAL_NUM;
 
-	if (vname[0] != EOS) {
+	/* scan the list, looking for the referenced name */
+	for (vnum = 0; statevars[vnum] != 0; vnum++)
+		if (strcmp(name, statevars[vnum]) == 0)
+			return vnum;
 
-		/* scan the list, looking for the referenced name */
-		for (vnum = 0; envars[vnum] != 0; vnum++)
-			if (strcmp(vname, envars[vnum]) == 0)
-				break;
-
-		/* return errorm on a bad reference */
-		if (envars[vnum] == 0) {
-#if !SMALLER
-			VALARGS	args;
-
-			if (is_mode_name(vname, TRUE, &args) == TRUE)
-				value = string_mode_val(&args);
-#endif
-			return (value);
-		}
-
-
-		/* otherwise, fetch the appropriate value */
-
-		/* NOTE -- if you get a compiler error from this code, find
-			the definitions of If and ElseIf up above, and add your
-			system to the set of those with broken compilers that need
-			to use ifs instead of a switch statement */
-
-		If( EVPAGELEN )		value = l_itoa(term.t_nrow);
-		ElseIf( EVCURCOL )	value = l_itoa(getccol(FALSE) + 1);
-		ElseIf( EVCURLINE )	value = l_itoa(getcline());
-		ElseIf( EVFLICKER )	value = ltos(flickcode);
-		ElseIf( EVCURWIDTH )	value = l_itoa(term.t_ncol);
-		ElseIf( EVBCHARS )
-			bsizes(curbp);
-			value = l_itoa(curbp->b_bytecount);
-		ElseIf( EVBLINES )
-			bsizes(curbp);
-			value = l_itoa(curbp->b_linecount);
-		ElseIf( EVCBUFNAME )	value = curbp->b_bname;
-		ElseIf( EVABUFNAME )	value = ((bp = find_alt()) != 0)
-						? bp->b_bname
-						: "";
-		ElseIf( EVCFNAME )	value = (curbp && curbp->b_fname) ?
-						curbp->b_fname : "";
-		ElseIf( EVSRES )	value = sres;
-		ElseIf( EVDEBUG )	value = ltos(macbug);
-		ElseIf( EVSTATUS )	value = ltos(cmdstatus);
-		ElseIf( EVPALETTE )	value = tb_values(tb_curpalette);
-		ElseIf( EVLASTKEY )	value = l_itoa(lastkey);
-		ElseIf( EVCURCHAR )
-			if (curbp && !is_empty_buf(curbp)) {
-				value = is_at_end_of_line(DOT)
-					? l_itoa('\n')
-					: l_itoa(char_at(DOT));
-			}
-
-		ElseIf( EVDISCMD )	value = ltos(discmd);
-		ElseIf( EVPATCHLEVEL )	value = PATCHLEVEL;
-		ElseIf( EVVERSION )	value = version;
-		ElseIf( EVPROGNAME )	value = prognam;
-		ElseIf( EVOS )		value = opersys;
-		ElseIf( EVSEED )	value = l_itoa(seed);
-		ElseIf( EVDISINP )	value = ltos(disinp);
-		ElseIf( EVWLINES )	value = l_itoa(curwp->w_ntrows);
-		ElseIf( EVCWLINE )	value = l_itoa(getlinerow());
-		ElseIf( EVFWD_SEARCH )	value = ltos(last_srch_direc == FORWARD);
-		ElseIf( EVSEARCH )	value = pat;
-		ElseIf( EVREPLACE )	value = rpat;
-		ElseIf( EVMATCH )	value = tb_length(tb_matched_pat)
-						? tb_values(tb_matched_pat)
-						: "";
-		ElseIf( EVMODE )	value = current_modename();
-		ElseIf( EVEOC )		value = l_itoa(ev_end_of_cmd ? 1 : 0);
-#if OPT_MLFORMAT
-		ElseIf( EVMLFORMAT )
-			if (modeline_format == 0)
-				mlforce("BUG: modeline_format uninitialized");
-			value = modeline_format;
-#endif
-
-		ElseIf( EVMODIFIED )	value = ltos(curbp && b_is_changed(curbp));
-		ElseIf( EVKILL )	value = getkill();
-		ElseIf( EVTPAUSE )	value = l_itoa(term.t_pause);
-		ElseIf( EVPENDING )	value = ltos(keystroke_avail());
-		ElseIf( EVLLENGTH )	value = l_itoa(llength(DOT.l));
-#if OPT_MAJORMODE
-		ElseIf( EVMAJORMODE )	value = (curbp->majr != 0)
-						? curbp->majr->name
-						: "";
-#endif
-		ElseIf( EVLINE )	value = lgrabtext((CHARTYPE)0);
-		ElseIf( EVWORD )	value = lgrabtext(vl_nonspace);
-		ElseIf( EVIDENTIF )	value = lgrabtext(vl_ident);
-		ElseIf( EVQIDENTIF )	value = lgrabtext(vl_qident);
-		ElseIf( EVPATHNAME )	value = lgrabtext(vl_pathn);
-#if SYS_UNIX
-		ElseIf( EVPROCESSID )	value = l_itoa(getpid());
-#else
-# if (SYS_WINNT || SYS_VMS)
-		/* translate pid to hex, because:
-		 *    a) most Win32 PID's are huge,
-		 *    b) VMS PID's are traditionally displayed in hex.
-		 */
-		ElseIf( EVPROCESSID )	value = l_utoh((unsigned) getpid());
-# endif
-#endif
-#if OPT_SHELL
-		ElseIf( EVCWD )		value = current_directory(FALSE);
-		ElseIf( EVOCWD )	value = previous_directory();
-#endif
-#if OPT_PROCEDURES
-		ElseIf( EVCDHOOK )	value = cdhook;
-		ElseIf( EVRDHOOK )	value = readhook;
-		ElseIf( EVWRHOOK )	value = writehook;
-		ElseIf( EVBUFHOOK )	value = bufhook;
-		ElseIf( EVEXITHOOK )	value = exithook;
-#endif
-#if SYS_WINNT && defined(DISP_NTWIN)
-		ElseIf( EVFONT )	value = ntwinio_current_font();
-#endif
-#if OPT_SHELL
-#if HAVE_PUTENV
-		ElseIf( EVLIBDIR_PATH )	value = libdir_path;
-#endif
-#if DISP_X11
-		ElseIf( EVFONT )	value = x_current_fontname();
-		ElseIf( EVTITLE )	value = x_get_window_name();
-		ElseIf( EVICONNAM )	value = x_get_icon_name();
-		ElseIf( EVXDISPLAY )
-			if (x_display == 0)
-				SetEnv(&x_display, DftEnv("DISPLAY", "unix:0"));
-			value = x_display;
-		ElseIf( EVXSHELL )
-			if (x_shell == 0)
-				SetEnv(&x_shell, DftEnv("XSHELL", "xterm"));
-			value = x_shell;
-#endif
-#if SYS_WINNT
-		ElseIf( EVTITLE )	value = w32_wdw_title();
-#endif
-		ElseIf( EVSHELL )
-			value = get_shell();
-
-		ElseIf( EVDIRECTORY )
-			if (directory == 0)
-				SetEnv(&directory, DftEnv("TMP", P_tmpdir));
-			value = directory;
-#endif
-
-		ElseIf( EVHELPFILE )	value = helpfile;
-
-		ElseIf( EVSTARTUP_FILE ) value = startup_file;
-
-		ElseIf( EVSTARTUP_PATH ) value = startup_path;
-
-#if OPT_COLOR
-		ElseIf( EVNCOLORS )	value = l_itoa(ncolors);
-#endif
-
-		ElseIf( EVNTILDES )	value = l_itoa(ntildes);
-		ElseIf( EVCFGOPTS )	value = cfgopts();
-
-		EndIf
-	}
-	if (value == 0)
-		value = errorm;
-	return value;
+	return ILLEGAL_NUM;
 }
 
-static char *
-getkill(void)		/* return some of the contents of the kill buffer */
+
+/* get a state variable's value */
+char *
+get_statevar_val(int vnum)
 {
-	register SIZE_T size;	/* max number of chars to return */
-	static char value[NSTRING];	/* temp buffer for value */
+	static char result[NSTRING*2];
+	int s;
 
-	if (kbs[0].kbufh == NULL)
-		/* no kill buffer....just a null string */
-		value[0] = EOS;
-	else {
-		/* copy in the contents... */
-		if (kbs[0].kused < NSTRING)
-			size = kbs[0].kused;
-		else
-			size = NSTRING - 1;
-		(void)strncpy(value, (char *)(kbs[0].kbufh->d_chunk), size);
-		value[size] = EOS;
-	}
+	if (vnum == ILLEGAL_NUM)
+		return errorm;
 
-	/* and return the constructed value */
-	return(value);
+	s = (*statevar_func[vnum])(result, (const char *)NULL);
+
+	if (s == TRUE)
+		return result;
+	else
+		return errorm;
+
 }
 
 static void
@@ -671,70 +401,61 @@ FindVar(		/* find a variables type and name */
 char *var,		/* name of var to get */
 VDESC *vd)		/* structure to hold type and ptr */
 {
-	register UVAR *p;
-	register int vnum;	/* subscript in variable arrays */
-	register int vtype;	/* type to return */
+	UVAR *p;
 
-fvar:
-	vtype = vnum = ILLEGAL_NUM;
+	vd->v_type = vd->v_num = ILLEGAL_NUM;
 	vd->v_ptr = 0;
 
 	if (!var[1]) {
-		vd->v_type = vtype;
+		vd->v_type = ILLEGAL_NUM;
 		return;
 	}
+
 	switch (var[0]) {
-
-		case '$': /* check for legal enviromnent var */
-			for (vnum = 0; envars[vnum] != 0; vnum++)
-				if (strcmp(&var[1], envars[vnum]) == 0) {
-					vtype = TKENV;
-					break;
-				}
+	case '$': /* check for legal state var */
+		vd->v_num = lookup_statevar(var+1);
+		if (vd->v_num != ILLEGAL_NUM)
+			vd->v_type = TKENV;
 #if !SMALLER
-			if (vtype == ILLEGAL_NUM) {
-				VALARGS	args;
-
-				if (is_mode_name(&var[1], TRUE, &args) == TRUE) {
-					vnum  = MODE_NUM;
-					vtype = TKENV;
-				}
+		 else {
+			VALARGS	args;
+			if (is_mode_name(&var[1],
+				    TRUE, &args) == TRUE) {
+				vd->v_num  = MODE_NUM;
+				vd->v_type = TKENV;
 			}
+		}
 #endif
-			break;
+		break;
 
-		case '%': /* check for existing legal user variable */
-			for (p = user_vars; p != 0; p = p->next)
-				if (!strcmp(var+1, p->u_name)) {
-					vtype = TKVAR;
-					vnum  = USER_NUM;
-					vd->v_ptr = p;
-					break;
-				}
-			if (vd->v_ptr == 0) {
-				if ((p = typealloc(UVAR)) != 0
-				 && (p->u_name = strmalloc(var+1)) != 0) {
-					p->next    = user_vars;
-					p->u_value = 0;
-					user_vars  = vd->v_ptr = p;
-					vtype = TKVAR;
-					vnum  = USER_NUM;
-				}
+	case '%': /* check for existing legal temp variable */
+		vd->v_ptr = lookup_tempvar(var+1);
+		if (vd->v_ptr) {
+			vd->v_type = TKVAR;
+			vd->v_num  = USER_NUM;
+		} else {
+			p = typealloc(UVAR);
+			if (p &&
+			    (p->u_name = strmalloc(var+1)) != 0) {
+				p->next    = temp_vars;
+				p->u_value = 0;
+				temp_vars  = vd->v_ptr = p;
+				vd->v_type = TKVAR;
+				vd->v_num  = USER_NUM;
 			}
-			break;
+		}
+		break;
 
-		case '&':	/* indirect operator? */
-			if (strncmp(var, "&ind", FUNC_NAMELEN) == 0) {
-				/* grab token, and eval it */
-				execstr = get_token(execstr, var, EOS);
-				(void)strcpy(var, tokval(var));
-				goto fvar;
-			}
+	case '&':	/* indirect operator? */
+		if (strncmp(var, "&ind", FUNC_NAMELEN) == 0) {
+			/* grab token, and eval it */
+			execstr = get_token(execstr, var, EOS);
+			(void)strcpy(var, tokval(var));
+			FindVar(var,vd);  /* recursive, but probably safe */
+		}
+		break;
 	}
 
-	/* return the results */
-	vd->v_num = vnum;
-	vd->v_type = vtype;
 }
 
 /*
@@ -762,17 +483,20 @@ unsigned *pos)
 	return status;
 }
 
+/*
+ * this is the externally bindable command function.
+ * assign a variable a new value -- any type of variable.
+ */
 int
-setvar(int f, int n)		/* set a variable */
-	/* note: numeric arg can overide prompted value */
+setvar(int f, int n)
 {
-	register int status;	/* status return */
+	int status;
 	static TBUFF *var;
 
 	/* first get the variable to set.. */
 	if (var == 0)
 		tb_scopy(&var, "");
-	status = kbd_reply("Variable to set: ", &var,
+	status = kbd_reply("Variable name: ", &var,
 		mode_eol, '=', KBD_NOEVAL|KBD_LOWERC, vars_complete);
 	if (status != TRUE)
 		return(status);
@@ -782,18 +506,17 @@ setvar(int f, int n)		/* set a variable */
 static int
 PromptAndSet(const char *name, int f, int n)
 {
-	register int status;	/* status return */
-	VDESC vd;		/* variable num/type */
+	int status;
+	VDESC vd;
 	char var[NLINE];
 	char prompt[NLINE];
-	char value[NLINE];	/* value to set variable to */
+	char value[NLINE];
 
-	/* check the legality and find the var */
+	/* look it up -- vd will describe the variable */
 	FindVar(strcpy(var, name), &vd);
 
-	/* if its not legal....bitch */
 	if (vd.v_type == ILLEGAL_NUM) {
-		mlforce("[No such variable as '%s']", var);
+		mlforce("[Can't find variable '%s']", var);
 		return(FALSE);
 	} else if (vd.v_type == TKENV && vd.v_num == MODE_NUM) {
 		VALARGS	args;
@@ -802,10 +525,9 @@ PromptAndSet(const char *name, int f, int n)
 		return adjvalueset(var+1, TRUE, -TRUE, &args);
 	}
 
-	/* get the value for that variable */
-	if (f == TRUE)
-		(void)strcpy(value, l_itoa(n));
-	else {
+	if (f == TRUE) {  /* new (numeric) value passed as arg */
+		(void)render_int(value, n);
+	} else {  /* get it from user */
 		value[0] = EOS;
 		(void)lsprintf(prompt, "Value of %s: ", var);
 		status = mlreply(prompt, value, sizeof(value));
@@ -813,316 +535,119 @@ PromptAndSet(const char *name, int f, int n)
 			return(status);
 	}
 
-	/* and set the appropriate value */
 	status = SetVarValue(&vd, value);
 
 	if (status == ABORT)
 		mlforce("[Variable %s is readonly]", var);
 	else if (status != TRUE)
 		mlforce("[Cannot set %s to %s]", var, value);
-	/* and return it */
+
 	return(status);
 }
 
-int
-stenv(const char *name, const char *value)
-{
-	register int status;	/* status return */
-	VDESC vd;		/* variable num/type */
-	char var[NLINE];
-
-	/* check the legality and find the var */
-	switch (toktyp(name)) {
-	case TKCMD:
-		var[0] = '$';
-		strcpy(var+1, name);
-		break;
-	default:
-		strcpy(var, name);
-		break;
-	}
-	FindVar(var, &vd);
-	if (vd.v_type == ILLEGAL_NUM) {
-		return(FALSE);
-	}
-	/* and set the appropriate value */
-	status = SetVarValue(&vd, value);
-	return status;
-}
-
 /*
- * Remove a user variable.  That's the only type of variable that we can remove.
+ * Remove a temp variable.  That's the only type of variable that we can remove.
  */
 int
-rmenv(const char *name)
+rmv_tempvar(const char *name)
 {
 	register UVAR *p, *q;
 
 	if (*name == '%')
 		name++;
 
-	for (p = user_vars, q = 0; p != 0; q = p, p = p->next) {
+	for (p = temp_vars, q = 0; p != 0; q = p, p = p->next) {
 		if (!strcmp(p->u_name, name)) {
-			TRACE(("rmenv(%s) ok\n", name))
+			TRACE(("rmv_tempvar(%s) ok\n", name))
 			if (q != 0)
 				q->next = p->next;
 			else
-				user_vars = p->next;
+				temp_vars = p->next;
 			free(p->u_value);
 			free(p->u_name);
 			free((char *)p);
 			return TRUE;
 		}
 	}
-	TRACE(("cannot rmenv(%s)\n", name))
+	TRACE(("cannot rmv_tempvar(%s)\n", name))
 	return FALSE;
 }
 
-/* entrypoint from modes.c, used to set environment variables */
-#if OPT_EVAL
+/* entrypoint from modes.c and exec.c, to set state variables (one
+ * interactive (from modes.c), one non-interactive) */
 int
-set_variable(const char *name)
+set_state_variable(const char *name, const char *value)
 {
-	char	temp[NLINE];
-	if (*name != '$')
-		(void) strcat(strcpy(temp, "$"), name);
-	else
-		(void) strcpy(temp, name);
-	return PromptAndSet(temp, FALSE, 0);
+	int status;
+	char var[NLINE];
+
+	/* it may not be "marked" yet -- unadorned names are assumed to
+	 *  be "state variables
+	 */
+	if (toktyp(name) == TKLIT) {
+		var[0] = '$';
+		strcpy(var+1, name);
+	} else {
+		strcpy(var, name);
+	}
+
+	if (value != NULL) { /* value supplied */
+		VDESC vd;
+		FindVar(var, &vd);
+		if (vd.v_type == ILLEGAL_NUM)
+			return FALSE;
+		status = SetVarValue(&vd, value);
+	} else { /* no value supplied:  interactive */
+		status = PromptAndSet(var, FALSE, 0);
+	}
+
+	return status;
 }
-#endif
+
+
+/* int set_statevar_val(int vnum, const char *value);  */
 
 static int
-SetVarValue(	/* set a variable */
-VDESC *var,	/* variable to set */
-const char *value)	/* value to set to */
+set_statevar_val(int vnum, const char *value)
 {
-	register UVAR *vptr;
-	register int vnum;	/* ordinal number of var referenced */
-	register int vtype;	/* type of variable to set */
-	register int status;	/* status return */
-	register int c;		/* translated character */
+	return (*statevar_func[vnum])((char *)NULL, value);
+}
 
-	/* simplify the vd structure (we are gonna look at it a lot) */
-	vptr = var->v_ptr;
-	vnum = var->v_num;
-	vtype = var->v_type;
+/* figure out what type of variable we're setting, and do so */
+static int
+SetVarValue(
+VDESC *var,		/* name */
+const char *value)	/* value */
+{
+	int status;
 
-	/* and set the appropriate value */
 	status = TRUE;
-	switch (vtype) {
-	case TKVAR: /* set a user variable */
-		FreeIfNeeded(vptr->u_value);
-		if ((vptr->u_value = strmalloc(value)) == 0)
+	switch (var->v_type) {
+	case TKVAR:
+		FreeIfNeeded(var->v_ptr->u_value);
+		if ((var->v_ptr->u_value = strmalloc(value)) == 0)
 			status = FALSE;
 		break;
 
-	case TKENV: /* set an environment variable */
-		status = TRUE;	/* by default */
-		If( EVCURCOL )
-			status = gotocol(TRUE, atoi(value));
-
-		ElseIf( EVCURLINE )
-			status = gotoline(TRUE, atoi(value));
-
-		ElseIf( EVFLICKER )
-			flickcode = stol(value);
-
-		ElseIf( EVCURWIDTH )
-#if DISP_X11 || DISP_NTWIN
-			gui_resize(atoi(value), term.t_nrow);
-#else
-			status = newwidth(TRUE, atoi(value));
-#endif
-
-		ElseIf( EVPAGELEN )
-#if DISP_X11 || DISP_NTWIN
-			gui_resize(term.t_ncol, atoi(value));
-#else
-			status = newlength(TRUE, atoi(value));
-#endif
-
-		ElseIf( EVCBUFNAME )
-			if (curbp) {
-				set_bname(curbp, value);
-				curwp->w_flag |= WFMODE;
-			}
-
-		ElseIf( EVCFNAME )
-			if (curbp) {
-				ch_fname(curbp, value);
-				curwp->w_flag |= WFMODE;
-			}
-
-		ElseIf( EVSRES )
-			status = TTrez(value);
-
-		ElseIf( EVDEBUG )
-			macbug = stol(value);
-
-		ElseIf( EVSTATUS )
-			cmdstatus = stol(value);
-
-		ElseIf( EVPALETTE )
-			status = set_palette(value);
-
-		ElseIf( EVLASTKEY )
-			lastkey = l_strtol(value);
-
-		ElseIf( EVCURCHAR )
-			if (curbp == NULL || b_val(curbp,MDVIEW))
-				status = rdonly();
-			else {
-				mayneedundo();
-				(void)ldelete(1L, FALSE); /* delete 1 char */
-				c = l_strtol(value);
-				if (c == '\n')
-					status = lnewline();
-				else
-					status = linsert(1, c);
-				(void)backchar(FALSE, 1);
-			}
-
-#if OPT_CRYPT
-		ElseIf( EVCRYPTKEY )
-			if (cryptkey != 0)
-				free(cryptkey);
-			cryptkey = malloc(NKEYLEN);
-			vl_make_encrypt_key (cryptkey, value);
-#endif
-		ElseIf( EVDISCMD )
-			discmd = stol(value);
-
-		ElseIf( EVSEED )
-			seed = atoi(value);
-
-		ElseIf( EVDISINP )
-			disinp = stol(value);
-
-		ElseIf( EVWLINES )
-			status = resize(TRUE, atoi(value));
-
-		ElseIf( EVCWLINE )
-			status = forwline(TRUE, atoi(value) - getlinerow());
-
-#if OPT_MLFORMAT
-		ElseIf( EVMLFORMAT )
-			SetEnv(&modeline_format, value);
-			upmode();
-#endif
-
-		ElseIf( EVFWD_SEARCH )
-			last_srch_direc = stol(value) ? FORWARD : REVERSE;
-
-		ElseIf( EVSEARCH )
-			(void)strcpy(pat, value);
-			FreeIfNeeded(gregexp);
-			gregexp = regcomp(pat, b_val(curbp, MDMAGIC));
-
-		ElseIf( EVREPLACE )
-			(void)strcpy(rpat, value);
-
-		ElseIf( EVTPAUSE )
-			term.t_pause = atoi(value);
-
-		ElseIf( EVLINE )	status = lrepltext((CHARTYPE)0, value);
-		ElseIf( EVWORD )	status = lrepltext(vl_nonspace, value);
-		ElseIf( EVIDENTIF )	status = lrepltext(vl_ident, value);
-		ElseIf( EVQIDENTIF )	status = lrepltext(vl_qident, value);
-		ElseIf( EVPATHNAME )	status = lrepltext(vl_pathn, value);
-
-#if SYS_WINNT && defined(DISP_NTWIN)
-		ElseIf( EVFONT ) status = ntwinio_font_frm_str(value, FALSE);
-#endif
-#if OPT_SHELL
-#if HAVE_PUTENV
-		ElseIf( EVLIBDIR_PATH ) SetEnv(&libdir_path, value);
-#endif
-#if DISP_X11
-		ElseIf( EVFONT ) status = x_setfont(value);
-		ElseIf( EVTITLE ) x_set_window_name(value);
-		ElseIf( EVICONNAM ) x_set_icon_name(value);
-		ElseIf( EVXDISPLAY ) SetEnv(&x_display, value);
-		ElseIf( EVXSHELL ) SetEnv(&x_shell, value);
-#endif
-#if SYS_WINNT
-		ElseIf( EVTITLE ) TTtitle((char *) value);
-#endif
-		ElseIf( EVCWD )
-			status = set_directory(value);
-
-		ElseIf( EVSHELL )
-			SetEnv(&shell, value);
-
-		ElseIf( EVDIRECTORY )
-			SetEnv(&directory, value);
-#endif
-
-		ElseIf( EVHELPFILE )
-			SetEnv(&helpfile, value);
-
-		ElseIf( EVSTARTUP_FILE )
-			SetEnv(&startup_file, value);
-
-		ElseIf( EVSTARTUP_PATH )
-			SetEnv(&startup_path, value);
-
-#if OPT_PROCEDURES
-		ElseIf( EVCDHOOK )     (void)strcpy(cdhook, value);
-		ElseIf( EVRDHOOK )     (void)strcpy(readhook, value);
-		ElseIf( EVWRHOOK )     (void)strcpy(writehook, value);
-		ElseIf( EVBUFHOOK )    (void)strcpy(bufhook, value);
-		ElseIf( EVEXITHOOK )   (void)strcpy(exithook, value);
-#endif
-
-#if OPT_COLOR
-		ElseIf( EVNCOLORS )	status = set_ncolors(atoi(value));
-#endif
-
-		ElseIf( EVNTILDES )
-			ntildes = atoi(value);
-			if (ntildes > 100)
-				ntildes = 100;
-
-		Otherwise
-			/* EVABUFNAME */
-			/* EVBLENGTH */
-			/* EVCFGOPTS */
-			/* EVPROGNAME */
-			/* EVPATCHLEVEL */
-			/* EVVERSION */
-			/* EVMATCH */
-			/* EVKILL */
-			/* EVPENDING */
-			/* EVLLENGTH */
-			/* EVMAJORMODE */
-			/* EVMODIFIED */
-			/* EVPROCESSID */
-			/* EVRAM */
-			/* EVMODE */
-			/* EVOS */
-			status = ABORT;	/* must be readonly */
-		EndIf
+	case TKENV:
+		status = set_statevar_val(var->v_num, value);
 		break;
 	}
-#if	OPT_DEBUGMACROS
-	/* if $debug == TRUE, every assignment will echo a statment to
-	   that effect here. */
 
-	if (macbug) {
-		/* variable name */
+#if	OPT_DEBUGMACROS
+	if (macbug) {  /* we tracing macros? */
 		if (var->v_type == TKENV)
-			mlforce("(((%s:&%s:%s)))",
-				ltos(status), envars[var->v_num], value);
+			mlforce("(((%s:&%s:%s)))", render_boolean(rp, status),
+					statevars[var->v_num], value);
 		else if (var->v_type == TKENV)
-			mlforce("(((%s:%%%s:%s)))",
-				ltos(status), var->v_ptr->u_name, value);
+			mlforce("(((%s:%%%s:%s)))", render_boolean(rp, status),
+					var->v_ptr->u_name, value);
 
 		(void)update(TRUE);
 
-		/* and get the keystroke to hold the output */
+		/* make the user hit a key */
 		if (ABORTED(keystroke())) {
-			mlforce("[Macro aborted]");
+			mlforce("[Aborted]");
 			status = FALSE;
 		}
 	}
@@ -1221,33 +746,37 @@ set_palette(const char *value)
 }
 #endif
 
-/*	l_itoa:	integer to ascii string.......... This is too
-		inconsistent to use the system's	*/
-
+/* represent integer as string */
 char *
-l_itoa(int i)		/* integer to translate to a string */
+render_int(char *rp, int i)		/* integer to translate to a string */
 {
-	static char result[32];	/* resulting string */
-	(void)lsprintf(result,"%d",i);
-	return result;
+	(void)lsprintf(rp,"%d",i);
+	return rp;
+}
+
+#if OPT_EVAL
+
+/* represent boolean as string */
+char *
+render_boolean( char *rp, int val)
+{
+	static char *bools[] = { "FALSE", "TRUE" };
+	return strcpy(rp, bools[val ? 1 : 0]);
 }
 
 #if (SYS_WINNT||SYS_VMS)
 /* unsigned to hex */
-static char *
-l_utoh(unsigned i)
+char *
+render_hex(char *rp, unsigned i)
 {
-	static char result[32];	/* resulting string */
-	(void)lsprintf(result,"%x",i);
-	return result;
+	(void)lsprintf(rp,"%x",i);
+	return rp;
 }
 #endif
 
-
-/* like strtol, but also allow character constants */
-#if OPT_EVAL
-static int
-l_strtol(const char *s)
+/* pull an integer out of a string.  allow 'c' character constants as well */
+int
+scan_int(const char *s)
 {
 	char *ns;
 	long l;
@@ -1264,144 +793,175 @@ l_strtol(const char *s)
 
 	return 0;
 }
+
 #endif
 
+/* pull a boolean value out of a string */
 int
-toktyp(			/* find the type of a passed token */
-const char *tokn)	/* token to analyze */
+scan_bool(const char *val)
+{
+	/* check for logical values */
+	if (is_falsem(val))
+		return(FALSE);
+	if (is_truem(val))
+		return(TRUE);
+
+	/* check for numeric truth (!= 0) */
+	return((strtol(val,0,0) != 0));
+}
+
+/* discriminate types of tokens */
+int
+toktyp(
+const char *tokn)
 {
 
-	/* no blanks!!! */
-	if (tokn[0] == EOS)
-		return(TKNUL);
-
-	/* a numeric literal? */
-	if (isDigit(tokn[0]))
-		return(TKLIT);
-
-	if (tokn[0] == '"')
-		return(TKSTR);
-
-	/* if it's any other single char, it must be itself */
-	if (tokn[1] == EOS)
-		return(TKCMD);
-
+	if (tokn[0] == EOS)     return TKNUL;
+	if (tokn[0] == '"')     return TKSTR;
 #if ! SMALLER
+	if (tokn[1] == EOS)     return TKLIT; /* only one character */
 	switch (tokn[0]) {
-		case '"':	return(TKSTR);
+		case '~':       return TKDIR;
+		case '@':       return TKARG;
+		case '<':       return TKBUF;
+		case '$':       return TKENV;
+		case '%':       return TKVAR;
+		case '&':       return TKFUN;
+		case '*':       return TKLBL;
 
-		case '~':	return(TKDIR);
-		case '@':	return(TKARG);
-		case '<':	return(TKBUF);
-		case '$':	return(TKENV);
-		case '%':	return(TKVAR);
-		case '&':	return(TKFUN);
-		case '*':	return(TKLBL);
-
-		default:	return(TKCMD);
+		default:        return TKLIT;
 	}
 #else
-	return(TKCMD);
+	return TKLIT;
 #endif
 }
 
+#if OPT_EVAL
+
+/* the argument simply represents itself */
+static const char *
+simple_arg_eval(const char *argp)
+{
+	return argp;
+}
+
+/* the returned value is the user's response to the specified prompt */
+static const char *
+interactive_arg_eval(const char *argp)
+{
+	argp = user_reply(tokval(argp+1));
+	return argp ? argp : errorm;
+}
+
+/* the returned value is the next line from the named buffer */
+static const char *
+buffer_arg_eval(const char *argp)
+{
+	argp = next_buffer_line(tokval(argp+1));
+	return argp ? argp : errorm;
+}
+
+/* expand it as a temp variable */
+static const char *
+tempvar_arg_eval(const char *argp)
+{
+	UVAR *p;
+	p = lookup_tempvar(argp+1);
+	return p ? get_tempvar_val(p) : errorm;
+}
+
+/* state variables are expanded.  if it's
+ * not an statevar, perhaps it'a a mode?
+ */
+static const char *
+statevar_arg_eval(const char *argp)
+{
+	int vnum;
+	vnum = lookup_statevar(argp+1);
+	if (vnum != ILLEGAL_NUM)
+		return get_statevar_val(vnum);
+#if !SMALLER
+	{
+	    VALARGS	args;
+	    if (is_mode_name(argp+1, TRUE, &args) == TRUE)
+		    return string_mode_val(&args);
+	}
+#endif
+	return errorm;
+}
+
+/* run a function to evalute it */
+static const char *
+function_arg_eval(const char *argp)
+{
+	int fnum = lookup_func(argp+1);
+	return (fnum != ILLEGAL_NUM) ? run_func(fnum) : errorm;
+}
+
+/* goto targets evaluate to their line number in the buffer */
+static const char *
+label_arg_eval(const char *argp)
+{
+	static char label[NSTRING];
+	LINE *lp = label2lp(curbp, argp);
+
+	if (lp)
+		return render_int(label, line_no(curbp, lp));
+	else
+		return "0";
+}
+
+/* the value of a quoted string begins just past the leading quote */
+static const char *
+qstring_arg_eval(const char *argp)
+{
+	return argp + 1;
+}
+
+
+static const char *
+directive_arg_eval(const char *argp)
+{
+#if SYS_UNIX
+	static TBUFF *tkbuf;
+	/* major hack alert -- the directives start with '~'.  on
+	 * unix, we'd also like to be able to expand ~user as
+	 * a home directory.  handily, these two uses don't
+	 * conflict.  too much. */
+	tb_alloc(&tkbuf, NFILEN);
+	return(lengthen_path(strcpy(tb_values(tkbuf), argp)));
+#else
+	return errorm;
+#endif
+}
+
+
+typedef const char * (ArgEvalFunc)(const char *argp);
+
+ArgEvalFunc *eval_func[] = {
+    simple_arg_eval,		/* TKNUL */
+    interactive_arg_eval,	/* TKARG */
+    buffer_arg_eval,		/* TKBUF */
+    tempvar_arg_eval,		/* TKVAR */
+    statevar_arg_eval,		/* TKENV */
+    function_arg_eval,		/* TKFUN */
+    directive_arg_eval,		/* TKDIR */
+    label_arg_eval,		/* TKLBL */
+    qstring_arg_eval,		/* TKSTR */
+    simple_arg_eval		/* TKLIT */
+};
+
+#endif /* OPT_EVAL */
+
+/* evaluate to the string-value of a token */
 const char *
-tokval(				/* find the value of a token */
-const char *tokn)		/* token to evaluate */
+tokval(const char *tokn)
 {
 #if OPT_EVAL
-	int status;	/* error return */
-	BUFFER *bp;	/* temp buffer pointer */
-	B_COUNT blen;	/* length of buffer argument */
-	int distmp;	/* temporary discmd flag */
-	int oclexec;
-
-	static TBUFF *tkbuf;
-	static TBUFF *tkargbuf;
-
-	switch (toktyp(tokn)) {
-		case TKNUL:	return("");
-
-		case TKARG:	/* interactive argument */
-				oclexec = clexec;
-
-				distmp = discmd;	/* echo it always! */
-				discmd = TRUE;
-				clexec = FALSE;
-				status = kbd_reply(tokval(&tokn[1]), &tkargbuf,
-						eol_history, '\n',
-						KBD_EXPAND|KBD_QUOTES,
-						no_completion);
-				discmd = distmp;
-				clexec = oclexec;
-
-				if (status == ABORT)
-					return(errorm);
-
-				/* FIXME: assumes EOS added by kbd_reply */
-				return(tb_values(tkargbuf));
-
-		case TKBUF:	/* buffer contents fetch */
-
-				/* grab the right buffer */
-				if ((bp = find_b_name(tokval(&tokn[1]))) == NULL)
-					return(errorm);
-
-				/* if the buffer is displayed, get the window
-				   vars instead of the buffer vars */
-				if (bp->b_nwnd != 0) {
-					curbp->b_dot = DOT;
-				}
-
-				/* make sure we are not at the end */
-				if (is_header_line(bp->b_dot,bp))
-					return(errorm);
-
-				/* grab the line as an argument */
-				blen = llength(bp->b_dot.l);
-				if (blen > bp->b_dot.o)
-					blen -= bp->b_dot.o;
-				else
-					blen = 0;
-
-				tb_init(&tkbuf, EOS);
-				tb_bappend(&tkbuf,
-					bp->b_dot.l->l_text + bp->b_dot.o,
-					(SIZE_T)blen);
-				tb_append(&tkbuf, EOS);
-
-				/* and step the buffer's line ptr
-					ahead a line */
-				bp->b_dot.l = lforw(bp->b_dot.l);
-				bp->b_dot.o = 0;
-
-				/* if displayed buffer, reset window ptr vars*/
-				if (bp->b_nwnd != 0) {
-					DOT.l = curbp->b_dot.l;
-					DOT.o = 0;
-					curwp->w_flag |= WFMOVE;
-				}
-
-				/* and return the spoils */
-				return(tb_values(tkbuf));
-
-		case TKVAR:	return(gtusr(tokn+1));
-		case TKENV:	return(gtenv(tokn+1));
-		case TKFUN:	return(gtfun(tokn+1));
-		case TKDIR:
-#if SYS_UNIX
-				tb_alloc(&tkbuf, NFILEN);
-				return(lengthen_path(strcpy(tb_values(tkbuf),
-							    tokn)));
-#else
-				return(errorm);
-#endif
-		case TKLBL:	return(l_itoa(gtlbl(tokn)));
-		case TKLIT:	return(tokn);
-		case TKSTR:	return(tokn+1);
-		case TKCMD:	return(tokn);
-	}
-	return errorm;
+	int toknum = toktyp(tokn);
+	if (toknum < 0 || toknum > MAXTOKTYPE)
+		return errorm;
+	return (*eval_func[toknum])(tokn);
 #else
 	return (toktyp(tokn) == TKSTR) ? tokn+1 : tokn;
 #endif
@@ -1439,22 +999,6 @@ is_falsem(const char *val)
 	   ||   !strcmp(temp, "off"));
 }
 
-#if OPT_EVAL || DISP_X11
-int
-stol(			/* convert a string to a numeric logical */
-const char *val)	/* value to check for stol */
-{
-	/* check for logical values */
-	if (is_falsem(val))
-		return(FALSE);
-	if (is_truem(val))
-		return(TRUE);
-
-	/* check for numeric truth (!= 0) */
-	return((atoi(val) != 0));
-}
-#endif
-
 #if OPT_EVAL
 /* use this as a wrapper when evaluating an array index, etc., that cannot
  * be negative.
@@ -1462,7 +1006,7 @@ const char *val)	/* value to check for stol */
 static SIZE_T
 s2size(char *s)
 {
-	int	n = atoi(s);
+	int	n = strtol(s,0,0);
 	if (n < 0)
 		n = 0;
 	return n;
@@ -1502,82 +1046,52 @@ label2lp (BUFFER *bp, const char *label)
 	return(result);
 }
 
-/* ARGSUSED */
-static int
-gtlbl(				/* find the line number of the given label */
-const char *tokn)		/* label name to find */
-{
-	LINE *lp = label2lp(curbp, tokn);
-	int result = 0;
-
-	if (lp != 0)
-		result = line_no(curbp, lp);
-	return(result);
-}
-
-static char *
-ltos(		/* numeric logical to string logical */
-int val)	/* value to translate */
-{
-	if (val)
-		return("TRUE");
-	else
-		return("FALSE");
-}
 #endif
 
 #if OPT_EVAL || !SMALLER
 char *
-mkupper(		/* make a string upper case */
-char *str)		/* string to upper case */
+mkupper(char *s)
 {
 	char *sp;
 
-	sp = str;
-	while (*sp) {
+	for (sp = s; *sp; sp++)
 		if (isLower(*sp))
 			*sp = toUpper(*sp);
-		++sp;
-	}
-	return(str);
+
+	return(s);
 }
 #endif
 
 char *
-mklower(		/* make a string lower case */
-char *str)		/* string to lower case */
+mklower(char *s)
 {
 	char *sp;
 
-	sp = str;
-	while (*sp) {
+	for (sp = s; *sp; sp++)
 		if (isUpper(*sp))
 			*sp = toLower(*sp);
-		++sp;
-	}
-	return(str);
+
+	return(s);
 }
 
 char *
-mktrimmed(register char *str)	/* trim whitespace */
+mktrimmed(char *rp, char *str)	/* trim whitespace */
 {
-	char *base = str;
-	register char *dst = str;
+	register char *dst = rp;
 
 	while (*str != EOS) {
 		if (isSpace(*str)) {
-			if (dst != base)
+			if (dst != rp)
 				*dst++ = ' ';
 			str = skip_blanks(str);
 		} else {
 			*dst++ = *str++;
 		}
 	}
-	if (dst != base
-	 && isSpace(dst[-1]))
+	if (dst != rp && isSpace(dst[-1]))
 		dst--;
 	*dst = EOS;
-	return base;
+	return rp;
 }
 
 int
@@ -1585,66 +1099,3 @@ absol(int x)		/* take the absolute value of an integer */
 {
 	return(x < 0 ? -x : x);
 }
-
-#if OPT_EVAL
-static int
-ernd(void)		/* returns a random integer */
-{
-	seed = absol(seed * 1721 + 10007);
-	return(seed);
-}
-
-static int
-sindex(			/* find pattern within source */
-const char *sourc,	/* source string to search */
-const char *pattern)	/* string to look for */
-{
-	int it = 0;		/* assume no match at all.. */
-	const char *sp;		/* ptr to current position to scan */
-	const char *csp;	/* ptr to source string during comparison */
-	const char *cp;		/* ptr to place to check for equality */
-
-	/* scanning through the source string */
-	sp = sourc;
-	while (*sp) {
-		/* scan through the pattern */
-		cp = pattern;
-		csp = sp;
-		while (*cp) {
-			if (!eq(*cp, *csp))
-				break;
-			++cp;
-			++csp;
-		}
-
-		/* was it a match? */
-		if (*cp == 0) {
-			it = (int)(sp - sourc) + 1;
-			break;
-		}
-		++sp;
-	}
-
-	return(it);
-}
-
-#endif /* OPT_EVAL */
-
-#if NO_LEAKS
-void
-ev_leaks(void)
-{
-#if OPT_EVAL
-	register UVAR *p;
-	while ((p = user_vars) != 0)
-		rmenv(p->u_name);
-
-	FreeAndNull(shell);
-	FreeAndNull(directory);
-#if DISP_X11
-	FreeAndNull(x_display);
-	FreeAndNull(x_shell);
-#endif
-#endif
-}
-#endif	/* NO_LEAKS */

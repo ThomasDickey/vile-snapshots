@@ -5,7 +5,7 @@
  *	included in main.c
  *
  *	Copyright (c) 1990 by Paul Fox
- *	Copyright (c) 1990, 1995 by Paul Fox and Tom Dickey
+ *	Copyright (c) 1995-1999 by Paul Fox and Tom Dickey
  *
  *	See the file "cmdtbl" for input data formats, and "estruct.h" for
  *	the output structures.
@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.92 1999/01/25 22:39:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.95 1999/03/26 10:57:45 tom Exp $
  *
  */
 
@@ -164,7 +164,7 @@ static	LIST	*all_names,
 		*all_funcs,	/* data for extern-lines in neproto.h */
 		*all__FUNCs,	/* data for {}-lines in nefunc.h */
 		*all__CMDFs,	/* data for extern-lines in nefunc.h */
-		*all_envars,
+		*all_statevars,
 		*all_ufuncs,
 		*all_fsms,	/* FSM tables */
 		*all_majors,	/* list of predefined major modes */
@@ -688,7 +688,7 @@ char	*name,
 char	*type)
 {
 	/*  "+ 10" for comfort */
-        unsigned len = strlen(name) + 10;
+	unsigned len = strlen(name) + 10;
 	char	*base = Alloc(len);
 	char	*temp;
 
@@ -1335,15 +1335,15 @@ start_vars_h(char **argv)
 		"",
 		"#if OPT_EVAL",
 		"",
-		"/*\tstructure to hold user variables and their definitions\t*/",
+		"/*\tstructure to hold temp variables and their definitions\t*/",
 		"",
 		"typedef struct UVAR {",
 		"\tstruct UVAR *next;",
-		"\tchar *u_name;\t\t/* name of user variable */",
-		"\tchar *u_value;\t\t\t\t/* value (string) */",
+		"\tchar *u_name;\t\t/* name of temp variable */",
+		"\tchar *u_value;\t\t/* value (string) */",
 		"} UVAR;",
 		"",
-		"decl_uninit( UVAR *user_vars );\t/* user variables */",
+		"decl_uninit( UVAR *temp_vars );\t/* temporary variables */",
 		"",
 		};
 
@@ -1362,14 +1362,14 @@ finish_vars_h(void)
 
 /******************************************************************************/
 static void
-init_envars(void)
+init_statevars(void)
 {
 	static const char *const head[] = {
 		"",
-		"/*\tlist of recognized environment variables\t*/",
+		"/*\tlist of recognized state variables\t*/",
 		"",
 		"#ifdef realdef",
-		"EXTERN_CONST char *const envars[] = {"
+		"EXTERN_CONST char *const statevars[] = {"
 		};
 	static	int	done;
 
@@ -1378,29 +1378,44 @@ init_envars(void)
 }
 
 static void
-save_envars(char **vec)
+save_statevars(char **vec)
 {
 	/* insert into 'all_modes' to provide for common name-completion
-	 * table, and into 'all_envars' to get name/index correspondence.
+	 * table, and into 'all_statevars' to get name/index correspondence.
 	 */
-	InsertSorted(&all_modes,  vec[1], "env",  "", formcond("OPT_EVAL", vec[3]), "");
-	InsertSorted(&all_envars, vec[1], vec[2], "", vec[3], vec[0]);
+	InsertSorted(&all_modes,  vec[1], "state",  "", formcond("OPT_EVAL", vec[3]), "");
+	InsertSorted(&all_statevars, vec[1], vec[2], "", vec[3], vec[0]);
 }
 
 static void
-dump_envars(void)
+dump_statevars(void)
 {
 	static const char *const middle[] = {
 		"\tNULL\t/* ends table for name-completion */",
 		"};",
 		"#else",
-		"extern const char *const envars[];",
+		"extern const char *const statevars[];",
 		"#endif",
 		"",
-		"/* \tand its preprocesor definitions\t\t*/",
 		""
 		};
-	char	temp[MAX_BUFFER];
+	static const char *const middle2[] = {
+		"",
+		"typedef int (StateFunc)(char *resultp, const char *valuep);",
+		"",
+		"",
+		"#ifdef realdef",
+		"StateFunc *statevar_func[] = {",
+		""
+		};
+	static const char *const tail[] = {
+		"\t(StateFunc *)NULL",
+		"};",
+		"#else",
+		"extern StateFunc *statevar_func[];",
+		"#endif /* realdef */",
+		"",
+		};
 	register LIST *p;
 	register int count;
 #if OPT_IFDEF_MODES
@@ -1408,9 +1423,9 @@ dump_envars(void)
 #endif
 
 	BeginIf();
-	for (p = all_envars, count = 0; p != 0; p = p->nst) {
+	for (p = all_statevars, count = 0; p != 0; p = p->nst) {
 		if (!count++)
-			init_envars();
+			init_statevars();
 #if OPT_IFDEF_MODES
 		WriteIf(nevars, p->Cond);
 #endif
@@ -1419,26 +1434,26 @@ dump_envars(void)
 	}
 	FlushIf(nevars);
 
-	for (p = all_envars, count = 0; p != 0; p = p->nst) {
-		if (!count++) {
-			write_lines(nevars, middle);
-			BeginIf();
-			WriteIndexStruct(nevars, all_envars, "Vars");
-		}
+	write_lines(nevars, middle);
+	/* emit the variable get/set routine prototypes */
+	for (p = all_statevars, count = 0; p != 0; p = p->nst) {
 #if OPT_IFDEF_MODES
 		WriteIf(nevars, p->Cond);
-		Sprintf(temp, "#define\tEV%s", p->Func);
-		(void)PadTo(24, temp);
-		Sprintf(temp + strlen(temp), "Member_Offset(IndexVars, %s)",
-			s = Name2Symbol(p->Name));
-		free(s);
-		Fprintf(nevars, "%s\n", temp);
-#else
-		Sprintf(temp, "#define\tEV%s", p->Func);
-		Fprintf(nevars, "%s%d\n", PadTo(24, temp), count-1);
 #endif
+		Fprintf(nevars, "int var_%s(char *resp, const char *valp);\n",
+					p->Func);
 	}
 	FlushIf(nevars);
+	write_lines(nevars, middle2);
+	/* emit the variable get/set routine table */
+	for (p = all_statevars, count = 0; p != 0; p = p->nst) {
+#if OPT_IFDEF_MODES
+		WriteIf(nevars, p->Cond);
+#endif
+		Fprintf(nevars, "\tvar_%s,\n", p->Func);
+	}
+	FlushIf(nevars);
+	write_lines(nevars, tail);
 }
 
 /******************************************************************************/
@@ -1688,17 +1703,20 @@ init_ufuncs(void)
 {
 	static const char *const head[] = {
 		"",
-		"/*\tlist of recognized user functions\t*/",
+		"/*\tlist of recognized macro language functions\t*/",
 		"",
 		"typedef struct UFUNC {",
 		"\tconst char *f_name;\t/* name of function */",
-		"\tint f_type;\t/* 1 = monamic, 2 = dynamic */",
+		"\tint n_args;",
 		"} UFUNC;",
 		"",
-		"#define\tNILNAMIC\t0",
-		"#define\tMONAMIC\t\t1",
-		"#define\tDYNAMIC\t\t2",
-		"#define\tTRINAMIC\t3",
+		"#define NARGMASK	0x000f",
+		"#define NUM		0x0010",
+		"#define BOOL		0x0020",
+		"#define STR		0x0040",
+		"#define NRET		0x0100",
+		"#define BRET		0x0200",
+		"#define SRET		0x0400",
 		"",
 		"#ifdef realdef",
 		"EXTERN_CONST UFUNC funcs[] = {",
@@ -1917,7 +1935,7 @@ free_mktbls (void)
 	free_LIST(&all_funcs);
 	free_LIST(&all__FUNCs);
 	free_LIST(&all__CMDFs);
-	free_LIST(&all_envars);
+	free_LIST(&all_statevars);
 	free_LIST(&all_ufuncs);
 	free_LIST(&all_modes);
 	free_LIST(&all_submodes);
@@ -2129,8 +2147,8 @@ main(int argc, char *argv[])
 
 			case SECT_VARS:
 				if (r < 2 || r > 3)
-					badfmt("looking for char *envars[]");
-				save_envars(vec);
+					badfmt("looking for char *statevars[]");
+				save_statevars(vec);
 				break;
 
 			case SECT_FUNC:
@@ -2188,8 +2206,8 @@ main(int argc, char *argv[])
 		Fprintf(nefunc, "\n#endif\n");
 	}
 
-	if (all_envars) {
-		dump_envars();
+	if (all_statevars) {
+		dump_statevars();
 		dump_ufuncs();
 		finish_vars_h();
 	}
