@@ -17,7 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.7 1999/05/10 23:30:00 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.8 1999/05/17 02:34:43 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -535,6 +535,40 @@ vile_oa::VileKeys(BSTR keys)
             break;
         }
         msg++;
+    }
+    return (hr);
+}
+
+STDMETHODIMP
+vile_oa::Open(BSTR filename)
+{
+    BUFFER  *bp, *bp_first;
+    char    *filespec = FROM_OLE_STRING(filename), **glob;
+    HRESULT hr        = NOERROR;
+    int     i;
+
+    if ((glob = glob_string(filespec)) == 0 || glob_length(glob) == 0)
+        mlforce("[No files found] %s", filespec);
+    else
+    {
+        for (i = 0, bp_first = NULL; hr == NOERROR && glob[i]; i++)
+        {
+            if ((bp = getfile2bp(glob[i], FALSE, FALSE)) == 0)
+                hr = E_UNEXPECTED;
+            else
+            {
+                bp->b_flag |= BFARGS;   /* treat this as an argument */
+                if (bp_first == NULL)
+                    bp_first = bp;
+            }
+        }
+        if (hr == NOERROR && bp_first)
+        {
+            if (! swbuffer(bp_first))   /* switch buffers            */
+                hr = E_UNEXPECTED;
+            update(FALSE);              /* force winvile to repaint  */
+        }
+        glob_free(glob);
     }
     return (hr);
 }

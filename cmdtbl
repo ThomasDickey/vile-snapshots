@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.168 1999/03/19 11:45:46 pgf Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.170 1999/05/17 03:10:10 tom Exp $
 #
 #
 
@@ -234,9 +234,6 @@ consearch	ABSM|MOTION
 	"continue-search"		!FEWNAMES
 	'n'
 	<search for previous pattern in same direction as before>
-wordcount	RANGE			OPT_WORDCOUNT
-	"count-words"
-	<count words, lines, and chars in the region>
 opercopy	OPER|(RANGE|EXTRA)
 	"copy-til"
 	"c"
@@ -453,6 +450,10 @@ desbind		NONE			OPT_REBIND
 	"show-commands"
 	"show-bindings"
 	<show a list of all commands>
+descolors	NONE			OPT_SHOW_COLORS
+	"list-colors"
+	"show-colors"
+	<show a list of all colors, as mapped by $palette>
 desmotions	NONE			OPT_REBIND
 	"list-motions"
 	"describe-motions"
@@ -1497,6 +1498,15 @@ viewfile	NONE
 waitfile	NONE			SYS_WINNT&&defined(VILE_OLE)
 	"wait-file"
 	<wait for file to grow larger than 0 bytes, timeout specified as arg>
+winopen_nocd	NONE			SYS_WINNT
+	"winopen-nocd"
+	<launch Windows common dialog box to open file(s), CWD is unmodified>
+winopen      	NONE			SYS_WINNT
+	"winopen"
+	<launch Windows common dialog box to open file(s), CWD changes as side effect>
+wordcount	RANGE			OPT_WORDCOUNT
+	"count-words"
+	<count words, lines, and chars in the region>
 writeallchanged	NONE|(VI_NL)
 	"ww"
 	"write-changed-buffers"		!FEWNAMES

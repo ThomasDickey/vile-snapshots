@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.90 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.91 1999/05/17 21:59:59 tom Exp $
  */
 
 #include	"estruct.h"
@@ -182,7 +182,7 @@ substreg1(int needpats, int use_opts)
 		status = readpattern("replacement string: ",
 				     &tpat[0], (regexp **)0, c, FALSE);
 
-		(void)strcpy(replacepat, tpat);
+		(void)tb_scopy(&replacepat, tpat);
 		if (status == ABORT)
 			/* if false, the pattern is null, which is okay... */
 			return FALSE;
@@ -361,7 +361,7 @@ substline(regexp *exp, int nth_occur, int printit, int globally, int *confirmp)
 				yes = TRUE;
 			}
 			if (yes) {
-				s = delins(exp, replacepat);
+				s = delins(exp, tb_values(replacepat));
 				if (s != TRUE)
 					return s;
 				if (!again++)

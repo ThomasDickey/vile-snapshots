@@ -138,7 +138,7 @@ Creating, executing, storing macros
 		      Note:  due to vile's use of the underscore ('_') as a
 		      command terminator, this character should _not_ be
 		      used as a word separator within "unique-name".
-		      Instead, use either a hypen ('-') or mixed case
+		      Instead, use either a hyphen ('-') or mixed case
 		      alphabetics.
 
 	help-string    is an optional description of the macro.  This string
@@ -195,12 +195,8 @@ Misc macro syntax features
 
 Limits
 ------
-	 Generally speaking, the length of a constant or variable may not
-	 exceed 127 bytes of storage.  Then again, there are cases where
-	 this limit is bumped up to 255 bytes, particularly when a command
-	 requires a filename as an argument.  But to be on the safe side
-	 when coding a macro, assume that any string exceeding 127 bytes
-	 will be truncated.
+	 The length of a variable name may not exceed 255 (NLINE-1) bytes of
+	 storage.  Most other strings are allocated dynamically.
 
 
 Strings
@@ -261,7 +257,7 @@ Variables
 Temporary variables
 --------------
 	Temporary variables are used in macros to hold intermediate
-	values.  They are only temporarly in that they aren't a
+	values.  They are only temporary in that they aren't a
 	"fixed" part of vile -- but they _are_ persistent across
 	invocations of one or more macros.  (That is, they have
 	global scope.) Temporary variables are prefixed with the %
@@ -323,7 +319,7 @@ State Variables
 			of macro execution.
 
 	$directory      Location of temp files.  This is unused, but
-			it's initial value is set from the user's
+			its initial value is set from the user's
 			TMP environment variable.
 
 	$discmd         Boolean value which will prevent vile from
@@ -340,10 +336,6 @@ State Variables
 
 	$exit-hook      Name of procedure to run when quitting.
 
-	$flicker        On certain, bad old hardware, this may make
-			for a more pleasant display.  Ignored on all
-			but PC CGA displays.
-
 	$font           Name of the current font (in xvile/winvile only).
 
 	$forward-search Boolean value indicating search direction.
@@ -357,8 +349,7 @@ State Variables
 
 	$kill           [READ ONLY]  This is vile's "unnamed" yank register,
 			which contains the result of the last line-oriented
-			yank or delete.  Actually, it may be truncated,
-			but will contain at least 127 characters.
+			yank or delete.
 
 	$lastkey        [READ ONLY]  Character most recently entered at
 			the keyboard.
@@ -453,7 +444,7 @@ State Variables
 	$title          The current window title (X11, win32 versions only).
 
 	$tpause         On a PC, the amount of time to pause for showmatch
-			mode paren matching.
+			mode parenthesis matching.
 
 	$version        [READ ONLY] Contains vile's version string.
 
@@ -539,8 +530,6 @@ Functions
 		- Logically "false" values:
 		    "false", "f", "no", "n", "off", and zero-valued numerics
 
-	 - String arguments may currently be up to 127 characters in length.
-
 	Function names are always preceded by the & character, and
 	can usually be shortened to just three characters, though
 	there is little reason to do so.
@@ -571,7 +560,7 @@ Functions
 
 	    &cat    "S1" "S2"	    Concatenate S1 and string "S".
 	    &left   "S" "N"	    Extract first "N" characters from "S"
-	    &right  "S" "N"	    Extract chars from postition "N" onward.
+	    &right  "S" "N"	    Extract chars from position "N" onward.
 	    &mid    "S" "N1" "N2"   Extract "N2" chars at position "N1".
 	    &upper  "S"	            Return uppercase version of "S".
 	    &lower  "S"	            Return lowercase version of "S".
@@ -592,7 +581,7 @@ Functions
 
 	    &not    "B"		    Return inverse of boolean "B".
 	    &and    "B1" "B2"	    Return logical AND of "B1" and "B2".
-	    &or	    "B1" "B2"	    Return logical OR of "B1" adn "B2".
+	    &or	    "B1" "B2"	    Return logical OR of "B1" and "B2".
 
 	    &equal  "N1" "N2"	    Is "N1" numerically equal to "N2"?
 	    &less   "N1" "N2"	    Is "N1" numerically less than "N2"?
@@ -644,7 +633,7 @@ Directives
     ------
 	To prevent a failed command from terminating the macro which
 	invokes it, the ~force directive can be used to "hide" a
-	bad return code.  For instanace, the "up-line" command might
+	bad return code.  For instance, the "up-line" command might
 	fail if executed at the top of a buffer.  "~force up-line"
 	will suppress the failure.  The $status variable can be used
 	to determine whether the command succeeded or not.
@@ -682,7 +671,7 @@ Directives
 	   beginning-of-line
 	   ; test for '#'
 	   ~if &equ $char 35
-	       set-variable %coment-type "shell comment"
+	       set-variable %comment-type "shell comment"
 	   ; test for ';'
 	   ~elseif &equ $char 59
 	       set-variable %comment-type "vile macro language comment"
@@ -777,7 +766,7 @@ Directives
     ~return
     -------
 	This causes immediate exit of the current macro, back to the
-	calling macro, or to user control, as approriate.
+	calling macro, or to user control, as appropriate.
 
     ~local
     ------
@@ -913,7 +902,7 @@ Editor commands
 
 	Within a macro, the following general syntax invokes an operator:
 
-		[count] oper-name region-spec [args...]
+		[count] operator-name region-spec [args...]
 
 	where:
 
@@ -922,7 +911,7 @@ Editor commands
 		       buffer line).
 
 	count          optionally specifies the number of region-specs
-		       affected by oper-name (default value is 1).
+		       affected by operator-name (default value is 1).
 
 	args           denotes optional string arguments(s) required by
 		       some operators (e.g., "filter-til").
@@ -1056,6 +1045,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.15 1999/03/24 23:40:50 pgf Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.17 1999/05/18 11:04:08 tom Exp $
 -----------------------------------
 

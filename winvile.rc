@@ -1,3 +1,5 @@
+#include "winvile.h"
+
 //
 // Icon
 //
@@ -6,3 +8,14 @@
 #endif
 
 VilewIcon ICON VILE_ICON
+
+//
+// Popup Menu
+//
+WinvilePopMenu MENU
+{
+    POPUP ""
+    {
+        MENUITEM "&Open...",           IDM_OPEN
+    }
+}

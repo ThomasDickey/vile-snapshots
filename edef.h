@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.242 1999/04/23 12:27:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.246 1999/05/19 10:25:14 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -125,7 +125,7 @@ decl_uninit( char screen_desc[NBUFN] );	/* rough description of screen  */
 
 decl_uninit( char mlsave[NSTRING] );	/* last message, if postponed	*/
 decl_uninit( char searchpat[NPAT] );	/* Search pattern		*/
-decl_uninit( char replacepat[NPAT] );	/* replacement pattern		*/
+decl_uninit( TBUFF *replacepat );	/* replacement pattern		*/
 decl_uninit( int  last_srch_direc );	/* Direction of last search */
 decl_uninit( regexp *gregexp );		/* compiled version of searchpat */
 decl_uninit( TBUFF *tb_matched_pat);	/* text that scan found */
@@ -179,7 +179,7 @@ decl_init( int ttcol, HUGE );		/* Column location of HW cursor */
 decl_uninit( int horscroll );		/* line offset when displaying	*/
 decl_init( int ntildes, 100 );		/* number of tildes displayed at eob
 					  (expressed as percent of window) */
-#if OPT_COLOR
+#if OPT_COLOR || DISP_X11
 decl_init( int ncolors, NCOLORS );	/* total number of colors displayable */
 #endif
 
@@ -258,10 +258,10 @@ decl_uninit( struct VAL *relisting_w_vals );
 decl_init( char out_of_mem[], "Out of Memory" );
 decl_init( char error_val[], "ERROR" );
 
-#if OPT_EVAL || OPT_COLOR
+#if OPT_EVAL || OPT_COLOR_PALETTE
 decl_uninit( TBUFF *tb_curpalette );	/* current colormap palete	*/
 #endif
-#if OPT_COLOR
+#if OPT_COLOR_PALETTE
 decl_uninit( int ctrans[NCOLORS] );	/* color translation table	*/
 #endif
 decl_uninit( int kbd_expand );		/* -1 kbd_putc shows tab as space */
@@ -293,6 +293,9 @@ decl_init_const( char BINDINGLIST_BufName[],	"[Binding List]");
 # if OPT_TERMCHRS
 decl_init_const( char TERMINALCHARS_BufName[],	"[Terminal Chars]");
 # endif
+#endif
+#if OPT_SHOW_COLORS
+decl_init_const( char PALETTE_COLORS_BufName[],	"[Color Palette]");
 #endif
 #if OPT_SHOW_CTYPE
 decl_init_const( char PRINTABLECHARS_BufName[],	"[Printable Chars]");

@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.120 1999/04/14 22:30:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.123 1999/05/17 23:59:35 tom Exp $
  *
  */
 
@@ -674,10 +674,12 @@ int kflag)	/* put killed text in kill buffer flag */
  */
 #if OPT_EVAL
 char *
-lgrabtext(char *rp, CHARTYPE type)
+lgrabtext(TBUFF **rp, CHARTYPE type)
 {
-	(void)screen_string(rp, NSTRING, type);
-	return rp;
+	int need = llength(DOT.l) + 2;
+	tb_alloc(rp, need);
+	(void)screen_string(tb_values(*rp), need, type);
+	return tb_values(*rp);
 }
 #endif
 
@@ -1032,7 +1034,6 @@ int
 usekreg(int f, int n)
 {
 	int c, i, status;
-	char tok[NSTRING];		/* command incoming */
 	static	char	cbuf[2];
 
 	/* take care of incrementing the buffer number, if we're replaying
@@ -1056,8 +1057,14 @@ usekreg(int f, int n)
 		kregflag |= KAPPEND;
 
 	if (clexec) {
-		mac_tokval(tok);	/* get the next token */
-		status = execute(engl2fnc(tok), f, n);
+		TBUFF *tok = 0;
+		char *name = mac_tokval(&tok);	/* get the next token */
+		if (name != 0) {
+			status = execute(engl2fnc(name), f, n);
+			tb_free(&tok);
+		} else {
+			status = FALSE;
+		}
 	} else if (isnamedcmd) {
 		status = namedcmd(f,n);
 	} else {

@@ -1,5 +1,31 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+(tom) 990519 (d)
+	+ remove fragment of code in c-filt.c which left it incorrectly parsing
+	  "string1""string2" (reported by Alex Wetmore).
+	+ implement $palette for xvile, allowing colors to be permuted.
+	+ add show-colors command, to show the color names and $palette values
+	+ change get_token() and mac_tokval() to use TBUFF's, making them
+	  independent of buffer length.
+	+ change replacepat to a TBUFF.
+	+ correct logic for $kill, which did not account for killbuffer
+	  rotation and was always pointing to the same index.
+	+ change statevar.c to return results in TBUFF's, making it independent
+	  of the caller's buffer size.  This fixes some trash after the display
+	  of $kill in show-variables.
+	> patches by Clark Morgan:
+	+ add winopen and winopen-cd commands to w32 vile.
+	+ hook the winvile right mouse button to the new winopen command.
+	+ Add an Open method to winvile ole automation server, which may be
+	  used to directly open a filename in the editor (thus avoiding the
+	  overhead of VileKeys). 
+	+ Added wvwrap.exe to the Win32 distribution.  This utility opens one
+	  or more files in a _single_ winvile instance via a right mouse click
+	  in the Windows Explorer.  For more details, please read
+	  doc/oleauto.doc . 
+	  [ Note: wvwrap.exe is Ed Henderson's brainchild and he wrote the 
+	    original version of the program.  Thanks, Ed! ] 
+
 (tom) 990510 (c)
 	+ fix an overlooked reset of lines read if we are reading via
 	  attribute-from-filter

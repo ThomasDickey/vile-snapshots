@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.184 1999/04/14 11:00:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.185 1999/05/17 10:34:10 tom Exp $
  *
  */
 
@@ -1175,7 +1175,7 @@ renamebuffer(BUFFER *rbp, char *bufname)
 	char bufn[NBUFN];	/* buffer to hold buffer name */
 	WINDOW *wp;
 
-	if (*mktrimmed(bufn, bufname) == EOS)
+	if (*mktrimmed(strcpy(bufn, bufname)) == EOS)
 		return(ABORT);
 
 	bp = find_b_name(bufn);

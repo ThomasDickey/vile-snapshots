@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.340 1999/05/10 23:41:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.346 1999/05/19 01:05:14 tom Exp $
  *
  */
 
@@ -21,7 +21,8 @@ extern "C" {
 
 extern SIGT catchintr (int ACTUAL_SIG_ARGS);
 extern char *strncpy0 (char *t, const char *f, SIZE_T l);
-extern int call_cmdfunc(const CMDFUNC *p, int f, int n);
+extern char *vl_strncpy (char *dest, const char *src, size_t destlen);
+extern int call_cmdfunc (const CMDFUNC *p, int f, int n);
 extern int no_memory (const char *s);
 extern int rdonly (void);
 extern int writeall (int f, int n, int promptuser, int leaving, int autowriting);
@@ -269,13 +270,13 @@ extern char *get_shell(void);
 extern char *get_xshell(void);
 extern char *get_xdisplay(void);
 extern char *get_directory(void);
-extern char *render_int (char *rp, int i);
-extern char *render_boolean ( char *rp, int i);
+extern char *render_int (TBUFF **rp, int i);
+extern char *render_boolean ( TBUFF **rp, int i);
 extern int scan_bool ( const char *s );
 extern int scan_int ( const char *s );
 extern char *mklower (char *str);
-extern char *mktrimmed (char *rp, char *str);
-extern const char * get_token (const char *src, char *tok, int eolchar);
+extern char *mktrimmed (char *str);
+extern const char * get_token (const char *src, TBUFF **tok, int eolchar);
 extern const char * tokval (const char *tokn);
 extern const char *skip_cblanks (const char *str);
 extern const char *skip_cstring (const char *str);
@@ -284,8 +285,8 @@ extern int absol (int x);
 extern int is_falsem (const char *val);
 extern int is_truem (const char *val);
 extern int mac_literalarg (TBUFF **tok);
-extern int mac_token(char *tok);
-extern int mac_tokval (char *tok);
+extern int mac_token(TBUFF **tok);
+extern char * mac_tokval (TBUFF **tok);
 extern int macroize (TBUFF **p, TBUFF *src, int skip);
 extern int toktyp (const char *tokn);
 
@@ -312,7 +313,7 @@ extern int   set_state_variable(const char *name, const char *value);
 extern int stol (const char *val);
 #endif
 
-#if OPT_EVAL || OPT_COLOR
+#if OPT_EVAL || OPT_COLOR_PALETTE
 extern int set_palette (const char *value);
 #endif
 
@@ -320,12 +321,12 @@ extern int set_palette (const char *value);
 extern char *mkupper (char *str);
 #endif
 
-#if OPT_COLOR
+#if OPT_COLOR_PALETTE
 extern void set_ctrans (const char *value);
 #endif
 
 #if (SYS_WINNT||SYS_VMS)
-extern char *render_hex(char *rp, unsigned i);
+extern char *render_hex(TBUFF **rp, unsigned i);
 #endif
 
 /* exec.c */
@@ -570,7 +571,7 @@ extern void lremove (BUFFER *bp, LINEPTR lp);
 extern void ltextfree (LINEPTR lp, BUFFER *bp);
 
 #if OPT_EVAL
-extern char * lgrabtext (char *rp, CHARTYPE type);
+extern char * lgrabtext (TBUFF **rp, CHARTYPE type);
 extern int lrepltext (CHARTYPE type, const char *iline);
 #endif
 
@@ -614,6 +615,10 @@ extern int set_mode_value(BUFFER *bp, const char *cp, int setting, int global, V
 extern int string_to_number (const char *from, int *np);
 extern void copy_mvals (int maximum, struct VAL *dst, struct VAL *src);
 extern void free_local_vals (const struct VALNAMES *names, struct VAL *gbl, struct VAL *val);
+
+#if OPT_SHOW_COLORS
+extern const char *get_color_name(int n);
+#endif
 
 #if OPT_EVAL || OPT_COLOR
 extern int set_colors(int ncolors);
@@ -874,6 +879,7 @@ TBUFF *	tb_init (TBUFF **p, int c);
 TBUFF *	tb_insert (TBUFF **p, ALLOC_T n, int c);
 TBUFF *	tb_put (TBUFF **p, ALLOC_T n, int c);
 TBUFF *	tb_sappend (TBUFF **p, const char *s);
+TBUFF *	tb_sappend0 (TBUFF **p, const char *s);
 TBUFF *	tb_scopy (TBUFF **p, const char *s);
 TBUFF *	tb_string (const char *s);
 char *	tb_values (TBUFF *p);

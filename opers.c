@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.65 1999/03/19 11:43:01 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.66 1999/05/18 00:22:27 tom Exp $
  *
  */
 
@@ -23,7 +23,6 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 	int thiskey;
 	int status;
 	const CMDFUNC *cfp;		/* function to execute */
-	char tok[NSTRING];		/* command incoming */
 	BUFFER *ourbp;
 #if OPT_MOUSE
 	WINDOW	*wp0 = curwp;
@@ -44,11 +43,15 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 		/* get the next command from the keyboard */
 		/* or a command line, as approp. */
 		if (clexec) {
-			mac_tokval(tok);	/* get the next token */
-			if (!strcmp(tok,"lines"))
-				cfp = &f_godotplus;
+			TBUFF *tok = 0;
+			char *value = mac_tokval(&tok);	/* get the next token */
+			if (value == 0)
+				cfp = 0;
+			else if (strcmp(value, "lines"))
+				cfp = engl2fnc(value);
 			else
-				cfp = engl2fnc(tok);
+				cfp = &f_godotplus;
+			tb_free(&tok);
 		} else {
 			thiskey = lastkey;
 			c = kbd_seq();
@@ -72,6 +75,7 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 		if (cfp)
 			mlerase();
 		else {
+			char tok[NSTRING];
 			if (!clexec)
 				lsprintf(tok, "(%d)", c);
 			no_such_function(tok);

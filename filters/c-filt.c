@@ -6,7 +6,7 @@
  * 		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.29 1999/04/28 22:22:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.30 1999/05/19 09:09:55 tom Exp $
  *
  * Features:
  * 	- Reads the keyword file ".vile.keywords" from the home directory.
@@ -339,26 +339,18 @@ do_filter(FILE *input, FILE *output)
 		    write_token(output, s, c_length, Comment_attr);
 		    s = s + c_length;
 		}
-	    } else if (*s) {
-		if (isQuote(*s))  {
-		    literal = (literal == 0) ? *s : 0;
-		    fputc(*s++, output);
-		    if (literal) {
-			s = write_literal(output, s, &literal);
-		    }
+	    } else if (isQuote(*s))  {
+		literal = (literal == 0) ? *s : 0;
+		fputc(*s++, output);
+		if (literal) {
+		    s = write_literal(output, s, &literal);
 		}
-
-		if (*s) {
-		    if (literal) {
-			fputc(*s++, output);
-		    } else if (isIdent(*s)) {
-			s = extract_identifier(output, s);
-		    } else if (isdigit(*s)) {
-			s = write_number(output, s);
-		    } else {
-			fputc(*s++, output);
-		    }
-		}
+	    } else if (isIdent(*s)) {
+		s = extract_identifier(output, s);
+	    } else if (isdigit(*s)) {
+		s = write_number(output, s);
+	    } else {
+		fputc(*s++, output);
 	    }
 	}
     }

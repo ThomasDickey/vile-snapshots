@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.191 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.202 1999/05/19 01:06:24 tom Exp $
  *
  */
 
@@ -31,14 +31,10 @@ typedef struct	{
 #define VW_MODE		3
 
 static	SIZE_T	s2size ( char *s );
-static	UVAR *	lookup_tempvar( const char *vname);
 static	char *	s2offset ( char *s, char *n );
 static	int	PromptAndSet ( const char *var, int f, int n );
 static	int	SetVarValue ( VWRAP *var, const char *value );
-static	int	lookup_func(const char *name);
 static	int	lookup_statevar(const char *vname);
-static const char *get_tempvar_val(UVAR *p);
-static const char *run_func(int fnum);
 #endif
 
 /*--------------------------------------------------------------------------*/
@@ -157,7 +153,7 @@ lookup_func(const char *name)
 		return ILLEGAL_NUM;
 
 	/* find the function -- truncate and case-convert it first */
-	mklower(strncpy0(downcased, name, FUNC_NAMELEN));
+	mklower(vl_strncpy(downcased, name, sizeof(downcased)));
 
 	for (fnum = 0; fnum < NFUNCS; fnum++)
 		if (strcmp(downcased, funcs[fnum].f_name) == 0)
@@ -172,15 +168,16 @@ lookup_func(const char *name)
 static const char *
 run_func(int fnum)
 {
-	char arg[3][NSTRING];			/* function arguments */
+	static TBUFF *result;		/* function result */
+
+	TBUFF *args[3];
+	char  *arg[3];			/* function arguments */
 	int nums[3];
 	int bools[3];
-	static char result[2 * NSTRING];	/* function result */
 	int i, nargs;
 	int args_numeric, args_boolean, ret_numeric, ret_boolean;
 
-
-	arg[0][0] = arg[1][0] = arg[2][0] = EOS;
+	tb_init(&result, EOS);
 
 	nargs = funcs[fnum].n_args & NARGMASK;
 	args_numeric = funcs[fnum].n_args & NUM;
@@ -189,16 +186,21 @@ run_func(int fnum)
 	ret_numeric = funcs[fnum].n_args & NRET;
 	ret_boolean = funcs[fnum].n_args & BRET;
 
+	TRACE(("evaluate %s (%#x)\n",
+			funcs[fnum].f_name,
+			funcs[fnum].n_args))
+
 	/* fetch required arguments */
 	for (i = 0; i < nargs; i++) {
-		if (mac_tokval(arg[i]) != TRUE)
+		args[i] = 0;
+		if ((arg[i] = mac_tokval(&args[i])) == 0)
 			return error_val;
+		TRACE(("...arg[%d] = '%s'\n", i, arg[i]))
 		if (args_numeric)
 			nums[i] = scan_int(arg[i]);
 		else if (args_boolean)
 			bools[i] = scan_bool(arg[i]);
 	}
-
 
 	switch (fnum) {
 	case UFADD:
@@ -220,17 +222,20 @@ run_func(int fnum)
 		i = -nums[0];
 		break;
 	case UFCAT:
-		strcat(strcpy(result, arg[0]), arg[1]);
+		tb_scopy(&result, arg[0]);
+		tb_sappend0(&result, arg[1]);
 		break;
 	case UFLEFT:
-		strncpy0(result, arg[0], s2size(arg[1])+1);
+		tb_bappend(&result, arg[0], s2size(arg[1])+1);
+		tb_append(&result, EOS);
 		break;
 	case UFRIGHT:
-		strcpy(result, s2offset(arg[0],arg[1]));
+		tb_scopy(&result, s2offset(arg[0], arg[1]));
 		break;
 	case UFMID:
-		strncpy0(result, s2offset(arg[0],arg[1]),
-					    s2size(arg[2])+1);
+		tb_bappend(&result, s2offset(arg[0], arg[1]),
+				    s2size(arg[2])+1);
+		tb_append(&result, EOS);
 		break;
 	case UFNOT:
 		i = !bools[0];
@@ -254,7 +259,7 @@ run_func(int fnum)
 		i = (strcmp(arg[0], arg[1]) > 0);
 		break;
 	case UFIND:
-		strcpy(result, tokval(arg[0]));
+		tb_scopy(&result, tokval(arg[0]));
 		break;
 	case UFAND:
 		i = (bools[0] && bools[1]);
@@ -266,27 +271,28 @@ run_func(int fnum)
 		i = (int)strlen(arg[0]);
 		break;
 	case UFUPPER:
-		mkupper(strcpy(result, arg[0]));
+		mkupper(tb_values(tb_scopy(&result, arg[0])));
 		break;
 	case UFLOWER:
-		mklower(strcpy(result, arg[0]));
+		mklower(tb_values(tb_scopy(&result, arg[0])));
 		break;
 	case UFTRIM:
-		mktrimmed(result, arg[0]);
+		mktrimmed(tb_values(tb_scopy(&result, arg[0])));
 		break;
 	case UFASCII:
 		i = (int)arg[0][0];
 		break;
 	case UFCHR:
-		result[0] = (char)nums[0];
-		result[1] = EOS;
+		tb_append(&result, (char)nums[0]);
+		tb_append(&result, EOS);
 		break;
 	case UFGTKEY:
-		result[0] = (char)keystroke_raw8();
-		result[1] = EOS;
+		tb_append(&result, (char)keystroke_raw8());
+		tb_append(&result, EOS);
 		break;
 	case UFGTSEQ:
-		(void)kcod2escape_seq(kbd_seq_nomap(), result);
+		(void)kcod2escape_seq(kbd_seq_nomap(), tb_values(result));
+		result->tb_used = strlen(tb_values(result));
 		break;
 	case UFRND:
 		i = rand() % absol(nums[0]);
@@ -299,10 +305,10 @@ run_func(int fnum)
 		i = ourstrstr(arg[0], arg[1], FALSE);
 		break;
 	case UFENV:
-		strcpy(result, vile_getenv(arg[0]));
+		tb_scopy(&result, vile_getenv(arg[0]));
 		break;
 	case UFBIND:
-		strcpy(result, prc2engl(arg[0]));
+		tb_scopy(&result, prc2engl(arg[0]));
 		break;
 	case UFREADABLE:
 		i = (doglob(arg[0]) &&
@@ -318,26 +324,30 @@ run_func(int fnum)
 		if (find_mode(curbp, arg[0],
 				(fnum == UFGLOBMODE), &vargs) != TRUE)
 			break;
-		strcpy(result, string_mode_val(&vargs));
+		tb_scopy(&result, string_mode_val(&vargs));
 		}
 		break;
 	case UFQUERY:
 		{ const char *cp;
 		    cp = user_reply(arg[0]);
-		    strcpy(result, cp ? cp : error_val);
+		    tb_scopy(&result, cp ? cp : error_val);
 		}
 		break;
 	default:
-		strcpy(result, error_val);
+		tb_scopy(&result, error_val);
 		break;
 	}
 
 	if (ret_numeric)
-		render_int(result, i);
+		render_int(&result, i);
 	else if (ret_boolean)
-		render_boolean(result, i);
+		render_boolean(&result, i);
 
-	return result;
+	TRACE(("-> '%s'\n", tb_values(result)))
+	for (i = 0; i < nargs; i++) {
+		tb_free(&args[i]);
+	}
+	return tb_values(result);
 }
 
 /* find a temp variable */
@@ -352,15 +362,6 @@ lookup_tempvar(const char *name)
 				return p;
 	}
 	return NULL;
-}
-
-/* get a temp variable's value */
-static const char *
-get_tempvar_val(UVAR *p)
-{
-	static char result[NSTRING];
-	(void)strncpy0(result, p->u_value, NSTRING);
-	return result;
 }
 
 /* find a state variable */
@@ -384,16 +385,17 @@ lookup_statevar(const char *name)
 char *
 get_statevar_val(int vnum)
 {
-	static char result[NSTRING*2];
+	static TBUFF *result;
 	int s;
 
 	if (vnum == ILLEGAL_NUM)
 		return error_val;
 
-	s = (*statevar_func[vnum])(result, (const char *)NULL);
+	tb_init(&result, EOS);
+	s = (*statevar_func[vnum])(&result, (const char *)NULL);
 
 	if (s == TRUE)
-		return result;
+		return tb_values(result);
 	else
 		return error_val;
 
@@ -449,10 +451,12 @@ VWRAP *vd)		/* structure to hold type and ptr */
 
 	case '&':	/* indirect operator? */
 		if (strncmp(var, "&ind", FUNC_NAMELEN) == 0) {
+			TBUFF *tok = 0;
 			/* grab token, and eval it */
-			execstr = get_token(execstr, var, EOS);
-			(void)strcpy(var, tokval(var));
+			execstr = get_token(execstr, &tok, EOS);
+			(void)vl_strncpy(var, tokval(tb_values(tok)), NLINE);
 			FindVar(var,vd);  /* recursive, but probably safe */
+			tb_free(&tok);
 		}
 		break;
 	}
@@ -514,7 +518,7 @@ PromptAndSet(const char *name, int f, int n)
 	char value[NLINE];
 
 	/* look it up -- vd will describe the variable */
-	FindVar(strcpy(var, name), &vd);
+	FindVar(vl_strncpy(var, name, sizeof(var)), &vd);
 
 	if (vd.v_type == VW_NOVAR) {
 		mlforce("[Can't find variable '%s']", var);
@@ -527,7 +531,8 @@ PromptAndSet(const char *name, int f, int n)
 	}
 
 	if (f == TRUE) {  /* new (numeric) value passed as arg */
-		(void)render_int(value, n);
+		static TBUFF *tmp;
+		(void)vl_strncpy(value, render_int(&tmp, n), sizeof(value));
 	} else {  /* get it from user */
 		value[0] = EOS;
 		(void)lsprintf(prompt, "Value of %s: ", var);
@@ -587,9 +592,9 @@ set_state_variable(const char *name, const char *value)
 	 */
 	if (toktyp(name) == TOK_LITSTR) {
 		var[0] = '$';
-		strcpy(var+1, name);
+		vl_strncpy(var+1, name, sizeof(var)-1);
 	} else {
-		strcpy(var, name);
+		vl_strncpy(var, name, sizeof(var));
 	}
 
 	if (value != NULL) { /* value supplied */
@@ -609,7 +614,7 @@ set_state_variable(const char *name, const char *value)
 static int
 set_statevar_val(int vnum, const char *value)
 {
-	return (*statevar_func[vnum])((char *)NULL, value);
+	return (*statevar_func[vnum])((TBUFF **)0, value);
 }
 
 /* figure out what type of variable we're setting, and do so */
@@ -708,7 +713,7 @@ skip_text(char *src)
 }
 #endif
 
-#if OPT_COLOR
+#if OPT_COLOR_PALETTE
 void
 set_ctrans(const char *thePalette)
 {
@@ -728,52 +733,117 @@ set_ctrans(const char *thePalette)
 }
 #endif
 
+#if OPT_SHOW_COLORS
+static void show_attr(int color, const char *attr, const char *name)
+{
+	bprintf(" %c%d%sC", CONTROL_A, strlen(name), attr);
+	if (color >= 0)
+		bprintf("%X", color);
+	bprintf(":%s", name);
+}
+/*
+ * This will show the foreground colors, which we can display with attributes.
+ */
+static void
+makecolorlist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
+{
+	int j, k;
+	REGION region;
+
+	bprintf("--- Color palette %*P\n", term.cols-1, '-');
+	bprintf("\nColor name       Internal  $palette   Examples\n");
+	for (j = -1; j < ncolors; j++) {
+		k = ctrans[j];
+		bprintf("\n%16s ", get_color_name(j));
+		bprintf("%d%*P", j, 10, ' ');
+		bprintf("%d%*P", k, 10, ' ');
+
+		show_attr(j, "",   "Normal");
+		show_attr(j, "B",  "Bold");
+		show_attr(j, "I",  "Italic");
+		show_attr(j, "U",  "Underline");
+		show_attr(j, "R",  "Reverse");
+	}
+	bprintf("\n");	/* tweak to ensure we get final line */
+
+	MK.l  = lback(buf_head(curbp));
+	MK.o  = 0;
+	DOT.l = lforw(buf_head(curbp));
+	DOT.o = 0;
+
+	if (getregion(&region) == TRUE)
+		attribute_cntl_a_seqs_in_region(&region, FULLLINE);
+}
+
+int
+descolors(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+	return liststuff(PALETTE_COLORS_BufName, FALSE, makecolorlist, 0, (void *)0);
+}
+
+#if OPT_UPBUFF
+static int
+update_colorlist(BUFFER *bp GCC_UNUSED)
+{
+	return descolors(FALSE, 1);
+}
+#endif	/* OPT_UPBUFF */
+
+#endif
+
 /*
  * This function is used in several terminal drivers.
  */
-#if OPT_EVAL || OPT_COLOR
+#if OPT_EVAL || OPT_COLOR_PALETTE
 int
 set_palette(const char *value)
 {
 	tb_curpalette = tb_scopy(&tb_curpalette, value);
-#if OPT_COLOR
-	if (term.setpal != nullterm_setpal) {
-		term.setpal(tb_values(tb_curpalette));
-		vile_refresh(FALSE,0);
-		return TRUE;
-	}
-	return FALSE;
-#else
-	return TRUE;
+#if OPT_COLOR_PALETTE
+	if (term.setpal == nullterm_setpal)
+		return FALSE;
+
+	update_scratch(PALETTE_COLORS_BufName, update_colorlist);
+	term.setpal(tb_values(tb_curpalette));
+	vile_refresh(FALSE,0);
 #endif
+	return TRUE;
 }
 #endif
 
 /* represent integer as string */
 char *
-render_int(char *rp, int i)		/* integer to translate to a string */
+render_int(TBUFF **rp, int i)		/* integer to translate to a string */
 {
-	(void)lsprintf(rp,"%d",i);
-	return rp;
+	char *p, *q;
+
+	p = tb_values(tb_alloc(rp, 32));
+	q = lsprintf(p,"%d",i);
+	(*rp)->tb_used = (q - p + 1);
+	return p;
 }
 
 #if OPT_EVAL
 
 /* represent boolean as string */
 char *
-render_boolean( char *rp, int val)
+render_boolean( TBUFF **rp, int val)
 {
 	static char *bools[] = { "FALSE", "TRUE" };
-	return strcpy(rp, bools[val ? 1 : 0]);
+	return tb_values(tb_scopy(rp, bools[val ? 1 : 0]));
 }
 
 #if (SYS_WINNT||SYS_VMS)
 /* unsigned to hex */
 char *
-render_hex(char *rp, unsigned i)
+render_hex(TBUFF **rp, unsigned i)
 {
-	(void)lsprintf(rp,"%x",i);
-	return rp;
+	char *p, *q;
+
+	p = tb_values(tb_alloc(rp, 32));
+	q = lsprintf(p,"%x",i);
+	(*rp)->tb_used = (q - p + 1);
+	return p;
 }
 #endif
 
@@ -868,9 +938,16 @@ buffer_arg_eval(const char *argp)
 static const char *
 tempvar_arg_eval(const char *argp)
 {
+	static TBUFF *tmp;
 	UVAR *p;
-	p = lookup_tempvar(argp+1);
-	return p ? get_tempvar_val(p) : error_val;
+	char *result;
+	if ((p = lookup_tempvar(argp+1)) != 0) {
+		tb_scopy(&tmp, p->u_value);
+		result = tb_values(tmp);
+	} else {
+		result = error_val;
+	}
+	return result;
 }
 
 /* state variables are expanded.  if it's
@@ -905,11 +982,11 @@ function_arg_eval(const char *argp)
 static const char *
 label_arg_eval(const char *argp)
 {
-	static char label[NSTRING];
+	static TBUFF *label;
 	LINE *lp = label2lp(curbp, argp);
 
 	if (lp)
-		return render_int(label, line_no(curbp, lp));
+		return render_int(&label, line_no(curbp, lp));
 	else
 		return "0";
 }
@@ -931,7 +1008,7 @@ directive_arg_eval(const char *argp)
 	 * unix, we'd also like to be able to expand ~user as
 	 * a home directory.  handily, these two uses don't
 	 * conflict.  too much. */
-	tb_alloc(&tkbuf, NFILEN);
+	tb_alloc(&tkbuf, NFILEN + strlen(argp));
 	return lengthen_path(strcpy(tb_values(tkbuf), argp));
 #else
 	return error_val;
@@ -1078,23 +1155,24 @@ mklower(char *s)
 }
 
 char *
-mktrimmed(char *rp, char *str)	/* trim whitespace */
+mktrimmed(char *str)	/* trim whitespace */
 {
-	register char *dst = rp;
+	char *base = str;
+	char *dst = str;
 
 	while (*str != EOS) {
 		if (isSpace(*str)) {
-			if (dst != rp)
+			if (dst != base)
 				*dst++ = ' ';
 			str = skip_blanks(str);
 		} else {
 			*dst++ = *str++;
 		}
 	}
-	if (dst != rp && isSpace(dst[-1]))
+	if (dst != base && isSpace(dst[-1]))
 		dst--;
 	*dst = EOS;
-	return rp;
+	return base;
 }
 
 int

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.144 1999/04/17 14:03:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.148 1999/05/19 01:35:58 tom Exp $
  *
  */
 
@@ -195,7 +195,7 @@ string_mode_val(VALARGS *args)
 {
 	register const struct VALNAMES *names = args->names;
 	register struct VAL     *values = args->local;
-	static char result[NSTRING];
+	static TBUFF *result;
 	switch(names->type) {
 #if OPT_MAJORMODE
 	case VALTYPE_MAJOR:
@@ -212,7 +212,7 @@ string_mode_val(VALARGS *args)
 		}
 #endif				/* else, fall-thru to use int-code */
 	case VALTYPE_INT:
-		return render_int(result, values->vp->i);
+		return render_int(&result, values->vp->i);
 	case VALTYPE_STRING:
 		return NonNull(values->vp->p);
 	case VALTYPE_REGEX:
@@ -1543,6 +1543,26 @@ int set_colors(int n)
 	return TRUE;
 }
 #endif	/* OPT_COLOR */
+
+#if OPT_SHOW_COLORS
+const char *get_color_name(int n)
+{
+	static char temp[80];
+#if OPT_COLOR_CHOICES
+	int j;
+	struct VALNAMES names;
+	const FSM_CHOICES *the_colors;
+	names.name = "fcolor";
+	the_colors = name_to_choices(&names);
+	for (j = 0; the_colors[j].choice_name != 0; j++) {
+		if (n == the_colors[j].choice_code)
+			return the_colors[j].choice_name;
+	}
+#endif
+	lsprintf(temp, "color #%d", n);
+	return temp;
+}
+#endif
 
 	/* Report mode that cannot be changed */
 /*ARGSUSED*/
