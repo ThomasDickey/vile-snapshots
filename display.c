@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.220 1996/10/04 23:55:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.221 1996/11/17 20:53:41 tom Exp $
  *
  */
 
@@ -835,43 +835,42 @@ int force)	/* force update past type ahead? */
 	}
 #endif
 
- restartupdate:
-
-	/* update any windows that need refreshing */
-	for_each_window(wp) {
-		if (wp->w_flag) {
-			curtabval = tabstop_val(wp->w_bufp);
-			/* if the window has changed, service it */
-			reframe(wp);	/* check the framing */
-			if (wp->w_flag & (WFKILLS|WFINS)) {
-				scrflags |= (wp->w_flag & (WFINS|WFKILLS));
-				wp->w_flag &= ~(WFKILLS|WFINS);
-			}
-			if ((wp->w_flag & ~(WFMODE)) == WFEDIT)
-				updone(wp);	/* update EDITed line */
-			else if (wp->w_flag & ~(WFMOVE))
-				updall(wp);	/* update all lines */
+	do {
+		/* update any windows that need refreshing */
+		for_each_window(wp) {
+			if (wp->w_flag) {
+				curtabval = tabstop_val(wp->w_bufp);
+				/* if the window has changed, service it */
+				reframe(wp);	/* check the framing */
+				if (wp->w_flag & (WFKILLS|WFINS)) {
+					scrflags |= (wp->w_flag & (WFINS|WFKILLS));
+					wp->w_flag &= ~(WFKILLS|WFINS);
+				}
+				if ((wp->w_flag & ~(WFMODE)) == WFEDIT)
+					updone(wp);	/* update EDITed line */
+				else if (wp->w_flag & ~(WFMOVE))
+					updall(wp);	/* update all lines */
 #if OPT_SCROLLBARS
-			if (wp->w_flag & (WFHARD | WFSBAR))
-				update_scrollbar(wp);
+				if (wp->w_flag & (WFHARD | WFSBAR))
+					update_scrollbar(wp);
 #endif /* OPT_SCROLLBARS */
 
 #if OPT_VIDEO_ATTRS
-			if (wp->w_flag & (WFHARD | WFEDIT))
-				updattrs(wp);
+				if (wp->w_flag & (WFHARD | WFEDIT))
+					updattrs(wp);
 #endif
-			if (scrflags || (wp->w_flag & (WFMODE|WFCOLR)))
-				modeline(wp);	/* update modeline */
-			wp->w_flag = 0;
-			wp->w_force = 0;
+				if (scrflags || (wp->w_flag & (WFMODE|WFCOLR)))
+					modeline(wp);	/* update modeline */
+				wp->w_flag = 0;
+				wp->w_force = 0;
+			}
 		}
-	}
-	curtabval = tabstop_val(curbp);
+		curtabval = tabstop_val(curbp);
 
-	/* recalc the current hardware cursor location */
-	if (updpos(&screenrow, &screencol))
-		/* if true, full horizontal scroll happened */
-		goto restartupdate;
+	/* Recalculate the current hardware cursor location.  If true, we've
+	 * done a horizontal scroll.
+	 */
+	} while (updpos(&screenrow, &screencol));
 
 	/* check for lines to de-extend */
 	upddex();
@@ -1197,6 +1196,7 @@ int *screencolp)
 	register int collimit;
 	int moved = FALSE;
 	int nuadj = is_empty_buf(curwp->w_bufp) ? 0 : nu_width(curwp);
+	int liadj = (w_val(curwp,WMDLIST)) ? 1 : 0;
 
 	/* find the current row */
 	lp = curwp->w_line.l;
@@ -1242,12 +1242,13 @@ int *screencolp)
 
 	/* ...adjust to offset from shift-margin */
 	curcol = col - w_val(curwp,WVAL_SIDEWAYS);
+	*screencolp = curcol;
 
 	/* if extended, flag so and update the virtual line image */
 	collimit = col_limit(curwp);
-	excess = curcol - collimit;
+	excess = curcol - collimit + liadj;
 	if ((excess > 0) || (excess == 0 &&
-			(DOT.o < llength(DOT.l) - 1 ))) {
+			(DOT.o >= llength(DOT.l) - 1 ))) {
 		if (w_val(curwp,WMDHORSCROLL)) {
 			(void)mvrightwind(TRUE, excess + collimit/2 );
 			moved = TRUE;
@@ -1268,7 +1269,6 @@ int *screencolp)
 			/* this line no longer is extended */
 			vscreen[currow]->v_flag &= ~VFEXT;
 		}
-		*screencolp = curcol;
 	}
 	if (!moved)
 		*screencolp += nuadj;

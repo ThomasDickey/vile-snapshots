@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.135 1996/11/11 22:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.138 1996/11/18 01:41:54 tom Exp $
  *
  */
 
@@ -151,7 +151,7 @@ typedef struct _text_win {
     Widget	form_widget;	/* form widget */
     Widget	pane;		/* panes in which scrollbars live */
     int		maxscrollbars;	/* how many scrollbars, sliders, etc. */
-    Widget	*scrollbars;	
+    Widget	*scrollbars;
     				/* the scrollbars */
     int		nscrollbars;	/* number of currently active scroll bars */
 #if OL_WIDGETS
@@ -182,7 +182,7 @@ typedef struct _text_win {
     UINT	pane_width;	/* full width of scrollbar pane */
     Dimension	top_width;	/* width of top widget as of last resize */
     Dimension	top_height;	/* height of top widget as of last resize */
-    				
+
     int		fsrch_flags;	/* flags which indicate which fonts have
     				 * been searched for
 				 */
@@ -259,6 +259,12 @@ typedef struct _text_win {
     int		kqhead;
     int		kqtail;
     int		kq[KQSIZE];
+
+    /* Special translations */
+    XtTranslations my_scrollbars_trans;
+#if NO_WIDGETS
+    XtTranslations my_resizeGrip_trans;
+#endif
 }           TextWindowRec, *TextWindow;
 
 
@@ -513,19 +519,6 @@ BbClassRec bbClassRec = {
 
 WidgetClass bbWidgetClass = (WidgetClass)&bbClassRec;
 
-static void set_pointer(Window win, Cursor cursor)
-{
-    XColor colordefs[2];		/* 0 is foreground, 1 is background */
-
-    XDefineCursor(dpy, win, cursor);
-
-    colordefs[0].pixel = cur_win->pointer_fg;
-    colordefs[1].pixel = cur_win->pointer_bg;
-    XQueryColors (dpy, DefaultColormap (dpy, DefaultScreen (dpy)),
-		  colordefs, 2);
-    XRecolorCursor (dpy, cursor, colordefs, colordefs+1);
-}
-
 /*ARGSUSED*/
 static XtGeometryResult
 bbPreferredSize(
@@ -561,6 +554,19 @@ bbGeometryManager(
 
 #endif /* NO_WIDGETS */
 
+static void set_pointer(Window win, Cursor cursor)
+{
+    XColor colordefs[2];		/* 0 is foreground, 1 is background */
+
+    XDefineCursor(dpy, win, cursor);
+
+    colordefs[0].pixel = cur_win->pointer_fg;
+    colordefs[1].pixel = cur_win->pointer_bg;
+    XQueryColors (dpy, DefaultColormap (dpy, DefaultScreen (dpy)),
+		  colordefs, 2);
+    XRecolorCursor (dpy, cursor, colordefs, colordefs+1);
+}
+
 #if !NO_WIDGETS
 static int dont_update_sb = FALSE;
 
@@ -590,7 +596,7 @@ JumpProc(
     if (value >= cur_win->nscrollbars)
 	return;
     set_scroll_window(value);
-    mvupwind(TRUE, 
+    mvupwind(TRUE,
              line_no(curwp->w_bufp, curwp->w_line.l) - cbs->new_location);
     dont_update_sb = TRUE;
     (void)update(TRUE);
@@ -642,12 +648,13 @@ update_scrollbar_sizes(void)
     newsbcnt=i;
 
     /* Create any needed new scrollbars and sliders */
-    for (i = cur_win->nscrollbars+1; i <= newsbcnt; i++) 
+    for (i = cur_win->nscrollbars+1; i <= newsbcnt; i++)
 	if (cur_win->scrollbars[i] == NULL) {
 	    cur_win->scrollbars[i] = XtVaCreateWidget(
 		    "scrollbar",
 		    scrollbarWidgetClass,
 		    cur_win->pane,
+		    XtNtranslations, cur_win->my_scrollbars_trans,
 		    NULL);
 	    XtAddCallback(cur_win->scrollbars[i],
 		    XtNsliderMoved, JumpProc, (XtPointer) i);
@@ -662,10 +669,10 @@ update_scrollbar_sizes(void)
 
     /* Unmanage current set of scrollbars */
     if (cur_win->nscrollbars > 0)
-	XtUnmanageChildren(cur_win->scrollbars, 
+	XtUnmanageChildren(cur_win->scrollbars,
 	                   (Cardinal) (cur_win->nscrollbars));
     if (cur_win->nscrollbars > 1)
-	XtUnmanageChildren(cur_win->sliders, 
+	XtUnmanageChildren(cur_win->sliders,
 	                   (Cardinal) (cur_win->nscrollbars - 1));
 
     /* Set sizes and positions on scrollbars and sliders */
@@ -706,7 +713,7 @@ update_scrollbar_sizes(void)
 			    (Cardinal) (cur_win->nscrollbars - 1));
 
     /* Manage the current set of scrollbars */
-    XtManageChildren(cur_win->scrollbars, 
+    XtManageChildren(cur_win->scrollbars,
 	                   (Cardinal) (cur_win->nscrollbars));
 
 
@@ -766,7 +773,7 @@ update_scrollbar_sizes(void)
 		NULL);
 
     /* Create any needed new scrollbars */
-    for (i = cur_win->nscrollbars+1; i <= newsbcnt; i++) 
+    for (i = cur_win->nscrollbars+1; i <= newsbcnt; i++)
 	if (cur_win->scrollbars[i] == NULL) {
 	    cur_win->scrollbars[i] = XtVaCreateWidget(
 		    "scrollbar",
@@ -777,6 +784,7 @@ update_scrollbar_sizes(void)
 		    XmNminimum,		1,
 		    XmNmaximum,		2,	/* so we don't get warning */
 		    XmNorientation,	XmVERTICAL,
+		    XmNtranslations,	cur_win->my_scrollbars_trans,
 		    NULL);
 	    XtAddCallback(cur_win->scrollbars[i],
 	            XmNvalueChangedCallback, JumpProc, (XtPointer) i);
@@ -792,7 +800,7 @@ update_scrollbar_sizes(void)
 
     /* Unmanage current set of scrollbars */
     if (cur_win->nscrollbars >= 0)
-	XtUnmanageChildren(cur_win->scrollbars, 
+	XtUnmanageChildren(cur_win->scrollbars,
 	                   (Cardinal) (cur_win->nscrollbars + 1));
 
     /* Set sizes on scrollbars */
@@ -820,7 +828,7 @@ update_scrollbar_sizes(void)
 	    NULL);
 
     /* Manage the current set of scrollbars */
-    XtManageChildren(cur_win->scrollbars, 
+    XtManageChildren(cur_win->scrollbars,
 	                   (Cardinal) (cur_win->nscrollbars + 1));
 
     /* Add event handlers for sashes */
@@ -864,6 +872,7 @@ update_scrollbar_sizes(void)
 			XtNborderWidth,		0,
 			XtNheight,		1,
 			XtNwidth,		1,
+			XtNtranslations,	cur_win->my_scrollbars_trans,
 			NULL);
 	}
 	else {
@@ -875,6 +884,7 @@ update_scrollbar_sizes(void)
 			XtNborderWidth,		0,
 			XtNheight,		1,
 			XtNwidth,		1,
+			XtNtranslations,	cur_win->my_scrollbars_trans,
 			NULL);
 	}
 
@@ -895,6 +905,7 @@ update_scrollbar_sizes(void)
 		    XtNborderWidth,	0,
 		    XtNheight,		1,
 		    XtNwidth,		1,
+		    XtNtranslations,	cur_win->my_resizeGrip_trans,
 		    NULL);
 
     /* Set sizes and positions on scrollbars and grips */
@@ -984,7 +995,7 @@ draw_thumb(
 	return;
 
     if (!dofill)
-	XClearArea(XtDisplay(w), XtWindow(w), cur_win->slider_is_3D ? 2 : 1, 
+	XClearArea(XtDisplay(w), XtWindow(w), cur_win->slider_is_3D ? 2 : 1,
 	           top, cur_win->pane_width-2, length, FALSE);
     else if (!cur_win->slider_is_3D)
 	XFillRectangle(XtDisplay(w), XtWindow(w), cur_win->scrollbargc,
@@ -1001,7 +1012,7 @@ draw_thumb(
 		      cur_win->scrollbargc,
 		      0, 0, cur_win->pane_width-2, (unsigned int) (tbot - top),
 		      2, top);
-	    
+
 	    top = tbot;
 	}
 	if (dofill & FILL_BOT) {
@@ -1112,7 +1123,7 @@ do_scroll(
     XEvent nev;
     int count;
 
-    /* 
+    /*
      * Return immediately if behind in processing motion events.  Note:
      * If this is taken out, scrolling is actually smoother, but sometimes
      * takes a while to catch up.  I should think that performance would
@@ -1200,7 +1211,7 @@ do_scroll_common:
 	case 'D' :	/* Drag */
 	    if (scrollmode == drag) {
 		int lcur = line_no(curwp->w_bufp, curwp->w_line.l);
-		int ltarg = (line_count(curwp->w_bufp) * pos 
+		int ltarg = (line_count(curwp->w_bufp) * pos
 			    	/ cur_win->scrollinfo[i].totlen) + 1;
 		mvupwind(TRUE, lcur-ltarg);
 		(void)update(TRUE);
@@ -1373,7 +1384,7 @@ update_scrollbar(
     {
 	int top, len;
 	lcnt  = max(lcnt, 1);
-	len   = (min(lcnt, wp->w_ntrows) * cur_win->scrollinfo[i].totlen 
+	len   = (min(lcnt, wp->w_ntrows) * cur_win->scrollinfo[i].totlen
 				/ lcnt) + 1;
 	top   = ((lnum-1) * cur_win->scrollinfo[i].totlen)
 		    / lcnt;
@@ -2164,11 +2175,12 @@ x_preparse_args(
     static XtActionsRec new_actions[] = {
 	{ "ConfigureBar", configure_bar }
     };
+    static String scrollbars_translations =
+	"#override \n\
+		Ctrl<Btn1Down>:ConfigureBar(Split) \n\
+		Ctrl<Btn2Down>:ConfigureBar(Kill) \n\
+		Ctrl<Btn3Down>:ConfigureBar(Only)";
     static String fallback_resources[]= {
-	"*scrollbar.translations:#override \\n\\\n\
-		Ctrl<Btn1Down>:ConfigureBar(Split) \\n\\\n\
-		Ctrl<Btn2Down>:ConfigureBar(Kill) \\n\\\n\
-		Ctrl<Btn3Down>:ConfigureBar(Only)",
 	"*scrollPane.background:grey80",
 	"*scrollbar.background:grey60",
 	NULL
@@ -2180,20 +2192,22 @@ x_preparse_args(
 	{ "DoScroll", do_scroll },
 	{ "ResizeBar", resize_bar }
     };
+    static String scrollbars_translations =
+	"#override \n\
+		Ctrl<Btn1Down>:ConfigureBar(Split) \n\
+		Ctrl<Btn2Down>:ConfigureBar(Kill) \n\
+		Ctrl<Btn3Down>:ConfigureBar(Only) \n\
+		<Btn1Down>:DoScroll(Forward) \n\
+		<Btn2Down>:DoScroll(StartDrag) \n\
+		<Btn3Down>:DoScroll(Backward) \n\
+		<Btn2Motion>:DoScroll(Drag) \n\
+		<BtnUp>:DoScroll(End)";
+    static String resizeGrip_translations =
+	"#override \n\
+		<BtnDown>:ResizeBar(Start) \n\
+		<BtnMotion>:ResizeBar(Drag) \n\
+		<BtnUp>:ResizeBar(End)";
     static String fallback_resources[]= {
-	"*scrollbar.translations:#override \\n\\\n\
-		Ctrl<Btn1Down>:ConfigureBar(Split) \\n\\\n\
-		Ctrl<Btn2Down>:ConfigureBar(Kill) \\n\\\n\
-		Ctrl<Btn3Down>:ConfigureBar(Only) \\n\\\n\
-		<Btn1Down>:DoScroll(Forward) \\n\\\n\
-		<Btn2Down>:DoScroll(StartDrag) \\n\\\n\
-		<Btn3Down>:DoScroll(Backward) \\n\\\n\
-		<Btn2Motion>:DoScroll(Drag) \\n\\\n\
-		<BtnUp>:DoScroll(End)",
-	"*resizeGrip.translations:#override \\n\\\n\
-		<BtnDown>:ResizeBar(Start) \\n\\\n\
-		<BtnMotion>:ResizeBar(Drag) \\n\\\n\
-		<BtnUp>:ResizeBar(End)",
 	NULL
     };
     static char stippled_pixmap_bits[] = { '\002', '\001' };
@@ -2238,7 +2252,7 @@ x_preparse_args(
 #endif
 
     XtGetApplicationResources(
-	    cur_win->top_widget, 
+	    cur_win->top_widget,
 	    (XtPointer)cur_win,
 	    resources,
 	    XtNumber(resources),
@@ -2351,7 +2365,7 @@ x_preparse_args(
     cur_win->rows = (geo_mask & HeightValue) ? start_rows : 36;
     cur_win->cols = (geo_mask & WidthValue) ? start_cols : 80;
 
-    /* 
+    /*
      * Fix up the geometry resource of top level shell providing initial
      * position if so requested by user.
      */
@@ -2424,7 +2438,7 @@ x_preparse_args(
 	    XtNyAddHeight,		TRUE,
 #else
 #if NO_WIDGETS
-	    XtNx,			cur_win->scrollbar_on_left 
+	    XtNx,			cur_win->scrollbar_on_left
 					    ? cur_win->pane_width+2
 					    : 0,
 	    XtNy,			0,
@@ -2448,7 +2462,7 @@ x_preparse_args(
     gcvals.foreground = cur_win->bg;
     gcvals.background = cur_win->fg;
     gcvals.font = cur_win->pfont->fid;
-    cur_win->reversegc = XCreateGC(dpy, 
+    cur_win->reversegc = XCreateGC(dpy,
             DefaultRootWindow(dpy),
 	    gcmask, &gcvals);
 
@@ -2463,7 +2477,7 @@ x_preparse_args(
 	} else {
 	    gcvals.foreground = cur_win->colors_fg[i];
 	    gcvals.background = cur_win->colors_bg[i];
-	    cur_win->colors_fgc[i] = XCreateGC(dpy, 
+	    cur_win->colors_fgc[i] = XCreateGC(dpy,
 		                               DefaultRootWindow(dpy),
 		                               gcmask, &gcvals);
 	    gcvals.foreground = cur_win->colors_bg[i];
@@ -2498,7 +2512,7 @@ x_preparse_args(
     }
 
     /*
-     * Initialize graphics context for display of normal modelines. 
+     * Initialize graphics context for display of normal modelines.
      * Portions of the modeline are never displayed in reverse video (wrt
      * the modeline) so there is no corresponding reverse video gc.
      */
@@ -2660,6 +2674,7 @@ x_preparse_args(
 #endif /* NO_WIDGETS */
 
     XtAppAddActions(cur_win->app_context, new_actions, XtNumber(new_actions));
+    cur_win->my_scrollbars_trans = XtParseTranslationTable(scrollbars_translations);
 
 #if MOTIF_WIDGETS
     cur_win->pane = XtVaCreateManagedWidget(
@@ -2696,6 +2711,7 @@ x_preparse_args(
 	    NULL);
 #else
 #if NO_WIDGETS
+    cur_win->my_resizeGrip_trans = XtParseTranslationTable(resizeGrip_translations);
     cur_win->pane = XtVaCreateManagedWidget(
 	    "scrollPane",
 	    bbWidgetClass,
@@ -2727,7 +2743,7 @@ x_preparse_args(
 #endif
 
     /*
-     * Move scrollbar to the left if requested via the resources. 
+     * Move scrollbar to the left if requested via the resources.
      * Note that this is handled elsewhere for NO_WIDGETS.
      */
     if (cur_win->scrollbar_on_left) {
@@ -2764,14 +2780,14 @@ x_preparse_args(
 
     XtAddEventHandler(
 	    cur_win->screen,
-	    (EventMask) (ButtonPressMask | ButtonReleaseMask 
+	    (EventMask) (ButtonPressMask | ButtonReleaseMask
 	    	       | (cur_win->focus_follows_mouse ? PointerMotionMask
 		                                       : ButtonMotionMask)
 	    	       | ExposureMask | VisibilityChangeMask),
 	    TRUE,
 	    x_process_event,
 	    (XtPointer)0);
-    
+
     XtAddEventHandler(
 	    cur_win->top_widget,
 	    StructureNotifyMask,
@@ -2791,13 +2807,7 @@ x_preparse_args(
 
     /* We can't test this until after the widget's realized */
     if (cur_win->fork_on_startup)
-    {
-	int pid = 0;
-	if ((pid=fork()) < 0)
-		fprintf(stderr, "%s: could not fork\n", prog_arg);
-	else if (pid > 0)
-		ExitProgram(BADEXIT);
-    }
+	(void) newprocessgroup(TRUE,1);
 
     cur_win->win = XtWindow(cur_win->screen);
 
@@ -2999,7 +3009,7 @@ query_font(
 	FreeIfNeeded(cur_win->fontname);
 	if ((fullname = x_get_font_atom_property(pf, atom_FONT)) != NULL
 	 && fullname[0] == '-') {
-	    /* 
+	    /*
 	     * Good. Not much work to do; the name was available via the FONT
 	     * property.
 	     */
@@ -3082,7 +3092,7 @@ query_font(
 
 	    fname = str;
 piecemeal_done:
-	    /* 
+	    /*
 	     * We will either use the name which was built up piecemeal or
 	     * the name which was originally passed to us to assign to
 	     * the fontname field.  We prefer the fully qualified name
@@ -3102,7 +3112,7 @@ alternate_font(
     char *newname, *np, *op;
     int cnt;
     XFontStruct *fsp = NULL;
-    if (cur_win->fontname == NULL 
+    if (cur_win->fontname == NULL
      || cur_win->fontname[0] != '-'
      || (newname = castalloc(char, (SIZE_T)strlen(cur_win->fontname)+32)) == NULL)
 	return NULL;
@@ -3194,7 +3204,7 @@ x_setfont(
 		XtVaSetValues(cur_win->top_widget,
 			XtNminHeight,	cur_win->base_height
 					    + MINROWS*cur_win->char_height,
-			XtNminWidth,	cur_win->base_width 
+			XtNminWidth,	cur_win->base_width
 					    + MINCOLS*cur_win->char_width,
 			XtNheightInc,	cur_win->char_height,
 			XtNwidthInc,	cur_win->char_width,
@@ -3337,7 +3347,7 @@ x_scroll(
 
     if (from == to)
 	return;			/* shouldn't happen */
-    
+
     XCopyArea(dpy, cur_win->win, cur_win->win, cur_win->textgc,
 	      x_pos(cur_win, 0), y_pos(cur_win, from),
 	      x_width(cur_win), (unsigned)(count * cur_win->char_height),
@@ -3552,7 +3562,7 @@ x_flush(void)
     if (cur_win->visibility == VisibilityFullyObscured || !cur_win->exposed)
 	return;		/* Why bother? */
 
-    /* 
+    /*
      * Write out cursor _before_ rest of the screen in order to avoid
      * flickering / winking effect noticable on some display servers.  This
      * means that the old cursor position (if different from the current
@@ -3611,7 +3621,7 @@ x_flush(void)
 	    attr = VATTRIB(CELL_ATTR(r,c));
 	    cleanlen = NONDIRTY_THRESH;
 	    c++;
-	    /* 
+	    /*
 	     * Scan until we find the end of line, a cell with a different
 	     * attribute, a sequence of NONDIRTY_THRESH non-dirty chars, or
 	     * the cursor position.
@@ -3889,7 +3899,7 @@ SIZE_T	length)
 #if OLD_PASTE
 		/*
 		 * If the cursor points before the first nonwhite on
-		 * the line, convert the insert into an 'O' command. 
+		 * the line, convert the insert into an 'O' command.
 		 * If it points to the end of the line, convert it into
 		 * an 'o' command.  Otherwise (if it is within the
 		 * nonwhite portion of the line), assume the user knows
@@ -4053,10 +4063,10 @@ x_convert_selection(
     if (!cur_win->have_selection)
 	return False;
 
-    /* 
+    /*
      * The ICCCM requires us to handle the following targets: TARGETS,
      * MULTIPLE, and TIMESTAMP.  MULTIPLE and TIMESTAMP are handled by
-     * the Xt intrinsics.  Below, we handle TARGETS, STRING, and TEXT. 
+     * the Xt intrinsics.  Below, we handle TARGETS, STRING, and TEXT.
      * The STRING and TEXT targets are what xvile uses to transfer
      * selected text to another client.  TARGETS is simply a list of
      * the targets we support (including the ones handled by the Xt
@@ -4131,7 +4141,7 @@ scroll_selection(
 
     row = (((long) rowcol) >> 16) & 0xffff;
     col = ((long) rowcol) & 0xffff;
-    if (row & 0x8000) 
+    if (row & 0x8000)
 	row |= -1 << 16;
     if (col & 0x8000)
 	col |= -1 << 16;
@@ -4149,7 +4159,7 @@ line_count_and_interval(
 	return 1;
     }
     else {
-	/* 
+	/*
 	 * FIXME: figure out a cleaner way to do this or something like it...
 	 */
 	if (scroll_count > 450)
@@ -4424,7 +4434,7 @@ x_process_event(
 
     case VisibilityNotify:
 	cur_win->visibility = ev->xvisibility.state;
-	XSetGraphicsExposures(dpy, cur_win->textgc, 
+	XSetGraphicsExposures(dpy, cur_win->textgc,
 			      cur_win->visibility != VisibilityUnobscured);
 	break;
 
@@ -4439,7 +4449,7 @@ x_process_event(
 	mev = compress_motion((XMotionEvent *) ev);
 	nc = mev->x / cur_win->char_width;
 	nr = mev->y / cur_win->char_height;
-	
+
 	if (nr < 0)
 	    nr = -1;	/* want to be out of bounds to force scrolling */
 	else if (nr > cur_win->rows)
@@ -4552,7 +4562,7 @@ x_configure_window(
 #endif
 		XtNminHeight,	cur_win->base_height
 				    + MINROWS*cur_win->char_height,
-		XtNminWidth,	cur_win->base_width 
+		XtNminWidth,	cur_win->base_width
 				    + MINCOLS*cur_win->char_width,
 		XtNheightInc,	cur_win->char_height,
 		XtNwidthInc,	cur_win->char_width,
@@ -4569,7 +4579,7 @@ x_configure_window(
 	    NULL);
     new_height = ((new_height - cur_win->base_height) / cur_win->char_height)
 			     * cur_win->char_height;
-    new_width = ((new_width - cur_win->base_width) / 
+    new_width = ((new_width - cur_win->base_width) /
 		    cur_win->char_width) * cur_win->char_width;
 #if MOTIF_WIDGETS
     XtVaSetValues(cur_win->form_widget,
@@ -4826,8 +4836,8 @@ focus_in:
 	    x_flush();
 	    break;
 	case LeaveNotify:
-	    if ( !ev->xcrossing.focus 
-	      || got_focus_event 
+	    if ( !ev->xcrossing.focus
+	      || got_focus_event
 	      || ev->xcrossing.detail == NotifyInferior)
 		return;
 	    goto focus_out;
@@ -4848,7 +4858,7 @@ x_wm_delwin(
     XEvent     *ev,
     Boolean    *continue_to_dispatch)
 {
-    if ( ev->type == ClientMessage 
+    if ( ev->type == ClientMessage
       && ev->xclient.message_type == atom_WM_PROTOCOLS
       && (Atom) ev->xclient.data.l[0] == atom_WM_DELETE_WINDOW) {
 	quit(FALSE, 0);		/* quit might not return */
@@ -4885,7 +4895,7 @@ x_move_events(void)
 	/* Get and dispatch next event */
 	XtAppNextEvent(cur_win->app_context, &ev);
 
-	/* 
+	/*
 	 * Ignore or save certain events which could get us into trouble with
 	 * reentrancy.
 	 */
@@ -4896,7 +4906,7 @@ x_move_events(void)
 		/* Ignore the event */
 		continue;
 
-	    case ClientMessage : 
+	    case ClientMessage :
 	    case SelectionClear :
 	    case SelectionNotify :
 	    case SelectionRequest :
@@ -4915,8 +4925,8 @@ x_move_events(void)
 	}
 
 	XtDispatchEvent(&ev);
-	
-	/* 
+
+	/*
 	 * If the event was a keypress, check it to see if it was an
 	 * interrupt character.  We check here to make sure that the
 	 * queue was non-empty, because not all keypresses put
@@ -5100,10 +5110,10 @@ display_cursor(
     }
 
     if (IS_DIRTY(ttrow,ttcol) && idp == (XtIntervalId *) 0)
-	return;	
+	return;
 
     if (cur_win->show_cursor) {
-	if ( cur_win->blink_interval > 0 
+	if ( cur_win->blink_interval > 0
 	  || ( cur_win->blink_interval < 0 && IS_REVERSED(ttrow, ttcol) )) {
 	    if (idp != (XtIntervalId *) 0 || !am_blinking) {
 		/* Set timer to get blinking */
@@ -5148,7 +5158,7 @@ display_cursor(
 	flush_line(&CELL_TEXT(ttrow,ttcol), 1,
 	    (unsigned int) VATTRIB(CELL_ATTR(ttrow,ttcol)), ttrow, ttcol);
 	XDrawRectangle(dpy, cur_win->win,
-	               IS_REVERSED(ttrow,ttcol) ? cur_win->cursgc 
+	               IS_REVERSED(ttrow,ttcol) ? cur_win->cursgc
 		                                : cur_win->revcursgc,
 	               x_pos(cur_win, ttcol), y_pos(cur_win, ttrow),
 		       (unsigned)(cur_win->char_width - 1),
@@ -5195,7 +5205,7 @@ x_getc(void)
 	 * update() will check for typeahead and will defer its processing
 	 * until there is nothing more in the keyboard queue.
 	 */
-	 
+
 	do {
 	    XEvent ev;
 	    XtAppNextEvent(cur_win->app_context, &ev);
@@ -5443,7 +5453,7 @@ x11_leaks(void)
 char x_window_name[NFILEN];
 char x_icon_name[NFILEN];
 
-void 
+void
 x_set_icon_name(char *name)
 {
 	XTextProperty Prop;
@@ -5464,7 +5474,7 @@ x_get_icon_name(void)
 	return x_icon_name;
 }
 
-void 
+void
 x_set_window_name(char *name)
 {
 	XTextProperty Prop;
@@ -5479,7 +5489,7 @@ x_set_window_name(char *name)
 	XSetWMName(dpy,XtWindow(cur_win->top_widget),&Prop);
 }
 
-char * 
+char *
 x_get_window_name(void)
 {
     	return x_window_name;

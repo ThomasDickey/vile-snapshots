@@ -1,5 +1,19 @@
 Changes for vile 6.3 (released ??? ??? ??, 1996)
 
+(tom)	961117 (g)
+	+ moved xvile's translation strings out of fallback resources, since
+	  these are ignored when a resource file is installed (e.g., in
+	  $HOME/XVile or /usr/lib/X11/app-defaults/XVile), causing the
+	  scrollbars to become unworkable.
+	+ use 'newprocessgroup()' rather than 'fork()' for xvile -fork.
+	+ correct threshold in updpos() so that when list mode is set, a ^J
+	  in the last screen column (e.g., 80) will be visible.
+	+ correct limits for whitespace-removal in 'inspound()' that caused
+	  lines to join when inserting a '#' after typing ^D in an open-line
+	  command (reported by Emil Rojas).
+	+ modify so that '~' is not escaped when echoing previous value for a
+	  string unless it was used in the special case of string replacement. 
+
 (tom)	961113 (f)
 	+ clarified special-character expansion in vile.hlp (Paul Fox).
 	+ add alias to xvile for "-t" option to prevent it from superceding the

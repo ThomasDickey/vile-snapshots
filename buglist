@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.317 1996/11/11 22:11:46 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.318 1996/11/17 23:33:09 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -930,29 +930,6 @@ using '&' in pc-vile as the word-expansion replacement for ':' in regular
 vile may someday conflict if we want to spawn stuff in the background
 in VMS or win32 vile.  clearly the expansion chars should be made
 selectable.  not a big deal yet....
-
-
---------------
-
-if a buffer contains a line that is exactly 80 chars long, and the 80th char is
-a control character, and so therefore takes 2 display columns, vile correctly
-puts in the '>' because the char can't be displayed, but there's no way to force
-the buffer "over" so you can see what the character really is.
-
-------------------------
- when i run xvile with resources in /usr/lib/X11/app-defaults/XVile,
- the resources are used and work just fine, but the scrollbar and
- resize widget are dead to the mouse.  the cursor changes to the
- double-arrow, but, um, 'clicks' are ignored.
-
- if i put the resources in .Xdefaults, everything works fine, including
- the scrollbar.
-
- vaxstation 3100, vax ultrix 4.4, R5ish X server.  this was the
- plain Xt xvile.
-
- i don't know if this is new to 6.0 -- i'm an optimistic upgrader and
- already removed my old versions.
 
 ------------------
 
