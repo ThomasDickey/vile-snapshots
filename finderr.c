@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2002 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.109 2002/06/26 00:27:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.110 2002/07/04 21:25:22 tom Exp $
  *
  */
 
@@ -117,7 +117,7 @@ char *const predefined[] =
     "^[ \t]*%F\\s*(%L)\\s*:%T",	/* MSVC++ */
 #endif
 
-    "^%[^(](%L)[ \t]\\?:%T",	/* weblint */
+    "^%[^\"(](%L)[ \t]\\?:%T",	/* weblint */
 #if SYS_UNIX && SYSTEM_HAS_LINT_PROG
     /* sys5 lint */
     "^    [^ \t]\\+[ \t]\\+%[^(](%L)$",

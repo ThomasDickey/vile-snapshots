@@ -133,8 +133,9 @@ Complex syntax coloring
 =======================
 vile also supports a mix of both internal and external filters, which
 facilitates configuration of the editor with as few or as many internal
-filters as desired.  Why this might be useful is explained shortly.  But
-first, study this list of editor filter names and language mappings:
+filters as desired.  But before describing how this is achieved, note the
+breadth of the following table of editor filter names and language
+mappings:
 
     Builtin      External
     Filter Name  Filter Name      Colors These Language(s)/Files
@@ -188,10 +189,10 @@ first, study this list of editor filter names and language mappings:
     xs           vile-xs-filt     Perl extension source files
     yacc         vile-yacc-filt   yacc and bison
 
-So, if the "--with-builtin-filters" option is selected, all of the
-internal filters listed above are bound into the editor.  "Wait a minute",
-you say, "I'll never use some of those filters--not in a hundred years."
-In that case, use this configure syntax:
+As you might expect, when the "--with-builtin-filters" option is selected,
+all of the internal filters listed above are bound into the editor.  "Hey,
+wait a minute", you say, "I'll never use some of those filters--not in a
+hundred years." In that case, use this configure syntax:
 
 	--with-builtin-filters="<filter_list>"
 
@@ -203,17 +204,24 @@ For example:
 	make
 	make install
 
-The above commands compile all filters as external executables, link 21
-filters into the editor, and copy the editor and external executables to an
-install tree [1].  Assuming the editor's startup file initiates syntax
-coloring [2], then at vile run time, the macro file filters.rc
-preferentially selects and executes internal filters when coloring a
-supported language or file format.  If the desired internal filter is not
-available, filters.rc starts a pipe and applies color attributes via the
-corresponsing external filter listed in the table above.
+The above commands:
 
-[1] Described below in the topic "Installing x(vile)".
-[2] Refer to the topics "Color basics" and "Syntax coloring" in vile.hlp
+    + compile vile [1],
+    + compile and link 21 filters into the final editor image,
+    + create the remaining, non-builtin filters as external executable
+      images, and
+    + copy the editor and external filters to an to an install tree [2].
+
+Assuming the editor's startup file initiates syntax coloring [3], then at
+vile run time, the macro file filters/filters.rc preferentially selects and
+executes internal filters when coloring a supported language or file
+format.  If a required internal filter is not available, filters.rc
+starts a pipe and applies color attributes via the corresponsing external
+filter listed in the table above.
+
+[1] Or xvile if you prefer.  See next topic.
+[2] Described below in the topic "Installing x(vile)".
+[3] Refer to the topics "Color basics" and "Syntax coloring" in vile.hlp
 
 
 Building xvile
@@ -436,5 +444,5 @@ without shell support, but perhaps not (ymmv).
 
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.9 2002/06/30 20:47:52 tom Exp $
+$Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.10 2002/08/25 20:26:48 cmorgan Exp $
 ------------------------

@@ -1,0 +1,77 @@
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/which.rc,v 1.1 2002/09/02 17:40:13 tom Exp $
+;;
+;; Show where vile looks for keyword file, and where it finds it.  If we
+;; always implemented built-in filters, the natural place for this would be
+;; within filters/filters.c - and no need for a macro.  But we may have
+;; configured with external filters.  Rather than maintain two chunks of
+;; similar C code, this is implemented as a macro (as an exercise ;-.
+
+store-procedure which-filename f='Filename'
+	~local %flag
+	newline
+	~if &rd $1
+		insert-string '* '
+	~else
+		insert-string '  '
+	~endif
+	insert-string $1
+~endm
+
+store-procedure which-keywords major="MajorMode" "Prompt for, and display location of keyword files"
+	~local %terse %path %leaf %suffix %pathdot %dothides %index
+	setv %terse=$terse
+	set terse
+	;
+	edit-buffer "[Which Keywords]"
+	setl noreadonly noview
+	~if &greater $bchars 0
+		goto-beginning-of-file
+		delete-lines-til end-of-file
+	~endif
+	setl noai
+	;
+	insert-string 'Show which keyword-files are tested for:'
+	newline
+	insert-string &cat &chr 9 &cat $1 'mode'
+	newline
+	insert-string '(* marks found-files)'
+	2 newline
+	;
+	setv %suffix='.keywords'
+	~if &seq $os "win32"
+		setv %dothides=''
+		setv %pathdot='.'
+	~elseif &seq $os "vms"
+		setv %dothides=''
+		setv %pathdot='[]'
+	~else
+		setv %dothides='.'
+		setv %pathdot='.'
+	~endif
+	;
+	setv %leaf=&cat $1 %suffix
+	insert-string '$cwd'
+	which-filename &cat %pathdot &cat $pathname-separator &cat %dothides %leaf
+	;
+	newline
+	insert-string '$HOME'
+	which-filename &cat '~' &cat $pathname-separator &cat %dothides %leaf
+	which-filename &cat '~' &cat $pathname-separator &cat %dothides &cat 'vile' &cat $pathname-separator %leaf
+	;
+	newline
+	insert-string '$startup-path'
+	setv %index=0
+	~while true
+		setv %path=&token %index $pathlist-separator $startup-path
+		~if &seq %path ''
+			~break
+		~endif
+		which-filename &cat %path &cat $pathname-separator %leaf
+		setv %index=&add %index 1
+	~endwhile
+	;
+	unmark-buffer
+	setl readonly view
+	goto-beginning-of-file
+	setv $terse=%terse
+~endm

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.129 2002/07/03 22:49:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.130 2002/08/26 23:58:44 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -1731,9 +1731,8 @@ static struct keyxlate_struct {
     { VK_F20,		KEY_F20 },
     /* Allow ^-6 to invoke the alternate-buffer command, a la Unix.  */
     { '6',		'6' },
-    /* A couple of possibilities for ^@ */
+    /* Support recognition of ^@ */
     { '2',		'2' },
-    { '@',		'@' },
     /* *INDENT-ON* */
 
 };
@@ -1757,6 +1756,7 @@ decode_key_event(KEY_EVENT_RECORD * irp)
     }
 #endif
 
+    key = NOKYMAP;
     for (i = 0, keyp = keyxlate; i < TABLESIZE(keyxlate); i++, keyp++) {
 	if (keyp->windows == irp->wVirtualKeyCode) {
 	    DWORD state = irp->dwControlKeyState;
@@ -1767,15 +1767,12 @@ decode_key_event(KEY_EVENT_RECORD * irp)
 	     *
 	     * ALT+F4 - This should _never_ be remapped by any user (nor
 	     * messed with by vile).
-	     *
-	     * SHIFT+6 - This is actually '^^' -- leave it alone.
-	     * SHIFT+2 - This is actually '^@' -- leave it alone.
+	     * 
+	     * SHIFT+6 - This is actually '^^' -- leave it alone. 
 	     */
 	    if ((keyp->windows == VK_F4
 		 && (state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)))
-		|| (keyp->windows == '6' && (state & SHIFT_PRESSED))
-		|| (keyp->windows == '@' && (state & SHIFT_PRESSED))
-		|| (keyp->windows == '2' && (state & SHIFT_PRESSED))) {
+		|| (keyp->windows == '6' && (state & SHIFT_PRESSED))) {
 		TRACE(("decode_key_event - special\n"));
 		break;
 	    }
@@ -1799,6 +1796,13 @@ decode_key_event(KEY_EVENT_RECORD * irp)
 		    key |= mod_ALT;
 		if (state & SHIFT_PRESSED)
 		    key |= mod_SHIFT;
+		if ((keyxlate[i].vile == '2') &&
+		    ((key & mod_CTRL) == mod_CTRL) &&
+		    ((key & mod_ALT) == 0)) {
+		    /* either ^2 or ^@, => nul char */
+
+		    key = 0;
+		}
 	    } else {
 		key = keyp->vile;
 	    }
@@ -1807,8 +1811,6 @@ decode_key_event(KEY_EVENT_RECORD * irp)
 	    break;
 	}
     }
-    if (key == 0)
-	return (NOKYMAP);
 
     return key;
 }

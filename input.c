@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.241 2002/05/01 00:01:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.243 2002/09/02 16:26:32 tom Exp $
  *
  */
 
@@ -110,8 +110,12 @@ TempDot(int init)
  */
 /*ARGSUSED*/
 int
-no_completion(int c GCC_UNUSED, char *buf GCC_UNUSED, unsigned *pos GCC_UNUSED)
+no_completion(DONE_ARGS)
 {
+    (void) flags;
+    (void) c;
+    (void) buf;
+    (void) pos;
     return FALSE;
 }
 
@@ -125,9 +129,7 @@ no_completion(int c GCC_UNUSED, char *buf GCC_UNUSED, unsigned *pos GCC_UNUSED)
 #if COMPLETE_FILES
 static int doing_shell;
 int
-shell_complete(int c,
-	       char *buf,
-	       unsigned *pos)
+shell_complete(DONE_ARGS)
 {
     int status;
     unsigned len = *pos;
@@ -148,7 +150,7 @@ shell_complete(int c,
 	}
     }
     len -= base;
-    status = path_completion(c, buf + base, &len);
+    status = path_completion(flags, c, buf + base, &len);
     *pos = len + base;
 
     return status;
@@ -1550,7 +1552,12 @@ kbd_reply(const char *prompt,	/* put this out first */
 		&& !editingShellCmd(tb_values(*extbuf), options)) {
 		cpos =
 		    newpos = tb_length(*extbuf);
-		if ((*complete) (NAMEC, tbreserve(extbuf), &newpos)) {
+		if ((options & KBD_MAYBEC2)
+		    && tb_length(*extbuf) > 1
+		    && (*tb_values(*extbuf) == '%')) {
+		    status = TRUE;
+		    tb_put(extbuf, cpos, EOS);
+		} else if ((*complete) (options, NAMEC, tbreserve(extbuf), &newpos)) {
 		    StrToBuff(*extbuf);
 		} else {
 		    status = may_complete(*extbuf, options);
@@ -1686,7 +1693,7 @@ kbd_reply(const char *prompt,	/* put this out first */
 		}
 		if (shell && isreturn(c)) {
 		    /*EMPTY */ ;
-		} else if ((*complete) (c, tbreserve(&buf), &cpos)) {
+		} else if ((*complete) (options, c, tbreserve(&buf), &cpos)) {
 		    done = TRUE;
 		    StrToBuff(buf);	/* FIXME */
 		    if (c != NAMEC)	/* cancel the unget */
@@ -1695,7 +1702,8 @@ kbd_reply(const char *prompt,	/* put this out first */
 		    StrToBuff(buf);	/* FIXME */
 		    if (done) {	/* stay til matched! */
 			kbd_unquery();
-			(void) ((*complete) (TESTC, tbreserve(&buf), &cpos));
+			(void) ((*complete) (options, TESTC,
+					     tbreserve(&buf), &cpos));
 		    }
 		    firstch = FALSE;
 		    continue;

@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.61 2002/04/30 23:48:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.62 2002/09/02 14:26:59 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1078,6 +1078,24 @@ var_PAGELEN(TBUFF ** rp, const char *vp)
     }
 }
 
+/* separator for lists of pathnames */
+int
+var_PATHCHR(TBUFF ** rp, const char *vp)
+{
+    if (rp) {
+	tb_append(rp, vl_pathchr);
+	tb_append(rp, EOS);
+	return TRUE;
+    } else if (vp) {
+	if (strlen(vp) == 1) {
+	    vl_pathchr = *vp;
+	    return TRUE;
+	}
+    }
+    return FALSE;
+}
+
+/* separator for levels of pathnames */
 int
 var_PATHSEP(TBUFF ** rp, const char *vp)
 {

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.20 2000/10/05 22:48:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.21 2002/07/04 20:56:32 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -85,7 +85,9 @@ do_filter(FILE *input)
 %}
 
 SPACE		[ \t]+
-NUMBER		[0-9]+
+DECIMAL		[0-9]+
+HEXADECIMAL	0[xX][0-9a-fA-F_]+
+NUMBER		({DECIMAL}|{HEXADECIMAL})
 NAME		[a-zA-Z_][a-zA-Z_0-9]*(-[a-zA-Z_0-9]+)*
 
 PREPROC		\~[a-z]+

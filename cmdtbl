@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.222 2002/02/03 20:36:25 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.223 2002/08/31 00:05:12 tom Exp $
 #
 #
 
@@ -1648,6 +1648,10 @@ usebuffer	NONE
 	"buffer"
 	"select-buffer"			!FEWNAMES
 	<switch to the given buffer; will not look for a file by that name>
+edit_buffer	NONE
+	"B"
+	"edit-buffer"			!FEWNAMES
+	<make or switch to the given buffer; will not look for a file by that name>
 usekreg		REDO
 	"use-register"			!FEWNAMES
 	'"'

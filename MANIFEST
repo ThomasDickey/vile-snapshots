@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_3b
+MANIFEST for vile, version v9_3d
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -298,6 +298,7 @@ macros/vile-pager               use vile as a pager
 macros/vileinit.rc              sample initialization file
 macros/vilemenu.rc              sample menu for xvile
 macros/vileperl.rc              sample initialization for perl scripts
+macros/which.rc                 script to show which keyword file is found by filters
 perl                            subdirectory
 perl/Breadcrumbs.pm             manages bookmarks for a set of files
 perl/CaptHook.pm                manage various types of hooks from perl

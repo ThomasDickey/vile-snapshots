@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.244 2002/05/01 00:35:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.245 2002/09/02 12:23:11 tom Exp $
  *
  */
 
@@ -949,14 +949,14 @@ legal_fsm(const char *val)
 }
 
 int
-fsm_complete(int c, char *buf, unsigned *pos)
+fsm_complete(DONE_ARGS)
 {
     if (isDigit(*buf)) {	/* allow numbers for colors */
 	if (c != NAMEC)		/* put it back (cf: kbd_complete) */
 	    unkeystroke(c);
 	return isSpace(c);
     }
-    return kbd_complete(0, c, buf, pos,
+    return kbd_complete(PASS_DONE_ARGS,
 			(const char *) (fsm_tbl[fsm_idx].choices),
 			sizeof(FSM_CHOICES));
 }
@@ -999,7 +999,7 @@ adjvalueset(
     if ((end_string() == '=')
 	|| (!is_bool_type(names->type) && setting)) {
 	int regex = (names->type == VALTYPE_REGEX);
-	int opts = regex ? 0 : KBD_NORMAL;
+	KBD_OPTIONS opts = regex ? 0 : KBD_NORMAL;
 	int eolchar = is_str_type(names->type) ? '\n' : ' ';
 	int (*complete) (DONE_ARGS) = no_completion;
 
@@ -1228,7 +1228,7 @@ mode_complete(DONE_ARGS)
 {
     init_my_mode_list();
 
-    return kbd_complete(0, c, buf, pos,
+    return kbd_complete(PASS_DONE_ARGS,
 			(const char *) &my_mode_list[0], sizeof(my_mode_list[0]));
 }
 
@@ -2565,7 +2565,7 @@ check_majormode_name(const char *name, int defining)
 int
 major_complete(DONE_ARGS)
 {
-    return kbd_complete(0, c, buf, pos, (const char *) &my_majormodes[0],
+    return kbd_complete(PASS_DONE_ARGS, (const char *) &my_majormodes[0],
 			sizeof(my_majormodes[0]));
 }
 
@@ -2603,9 +2603,9 @@ prompt_majormode(char **result, int defining)
 }
 
 static int
-submode_complete(int c, char *buf, unsigned *pos)
+submode_complete(DONE_ARGS)
 {
-    return kbd_complete(0, c, buf, pos, (const char *) &all_submodes[0],
+    return kbd_complete(PASS_DONE_ARGS, (const char *) &all_submodes[0],
 			sizeof(all_submodes[0]));
 }
 
@@ -3824,9 +3824,9 @@ alloc_scheme(const char *name)
 }
 
 static int
-scheme_complete(int c, char *buf, unsigned *pos)
+scheme_complete(DONE_ARGS)
 {
-    return kbd_complete(0, c, buf, pos, (const char *) &my_schemes[0],
+    return kbd_complete(PASS_DONE_ARGS, (const char *) &my_schemes[0],
 			sizeof(my_schemes[0]));
 }
 
@@ -3872,9 +3872,9 @@ static const struct VALNAMES scheme_values[] =
 /* *INDENT-ON* */
 
 static int
-scheme_value_complete(int c, char *buf, unsigned *pos)
+scheme_value_complete(DONE_ARGS)
 {
-    return kbd_complete(0, c, buf, pos,
+    return kbd_complete(PASS_DONE_ARGS,
 			(const char *) &scheme_values[0],
 			sizeof(scheme_values[0]));
 }

@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.480 2002/07/03 00:21:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.481 2002/08/27 22:47:42 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -143,6 +143,15 @@ MainProgram(int argc, char *argv[])
 	lsprintf(t, "%s.exe", prog_arg);
 	prog_arg = t;
     }
+#endif
+
+    /*
+     * Attempt to appease perl if we're running in a process which was setuid'd
+     * or setgid'd.
+     */
+#if defined(HAVE_SETUID) && defined(HAVE_SETGID) && defined(HAVE_GETEGID) && defined(HAVE_GETEUID)
+    setgid(getegid());
+    setuid(geteuid());
 #endif
 
     start_debug_log(argc, argv);

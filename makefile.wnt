@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.74 2002/06/30 21:15:30 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.75 2002/09/02 16:32:28 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -330,7 +330,8 @@ SCRIPTS	= \
 	macros\search.rc \
 	macros\shifts.rc \
 	macros\vileinit.rc \
-	macros\vileperl.rc
+	macros\vileperl.rc \
+	macros\which.rc
 
 !if "$(VILE_STARTUP_PATH)" == ""
 all ::

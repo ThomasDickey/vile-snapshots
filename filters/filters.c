@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.82 2002/06/30 19:34:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.83 2002/09/02 12:57:23 tom Exp $
  *
  */
 
@@ -218,15 +218,9 @@ OpenKeywords(char *classname)
 
     name = do_alloc(name, need, &have);
 
-#if DOT_HIDES_FILE
-    FIND_IT((name, "%s%c.%s", PATHDOT, PATHSEP, fname));
-    FIND_IT((name, "%s%c.%s", path, PATHSEP, fname));
-    sprintf(leaf, ".%s%c", MY_NAME, PATHSEP);
-#else
-    FIND_IT((name, "%s%c%s", PATHDOT, PATHSEP, fname));
-    FIND_IT((name, "%s%c%s", path, PATHSEP, fname));
-    sprintf(leaf, "%s%c", MY_NAME, PATHSEP);
-#endif
+    FIND_IT((name, "%s%c%s%s", PATHDOT, PATHSEP, DOT_TO_HIDE_IT, fname));
+    FIND_IT((name, "%s%c%s%s", path, PATHSEP, DOT_TO_HIDE_IT, fname));
+    sprintf(leaf, "%s%s%c", DOT_TO_HIDE_IT, MY_NAME, PATHSEP);
 
     FIND_IT((name, "%s%c%s%s", path, PATHSEP, leaf, fname));
 

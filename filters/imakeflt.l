@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.6 2001/12/26 20:49:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.7 2002/07/04 22:19:04 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Imakefile
  *
@@ -18,8 +18,10 @@ static char *Comment_attr;
 static char *Error_attr;
 static char *Ident2_attr;
 static char *Keyword_attr;
-static char *Prepro_attr;
+static char *Preproc_attr;
 static char *String_attr;
+
+static int continued;
 
 static char *
 skip_name(char *text)
@@ -47,43 +49,115 @@ preprocessor(char *text, int size)
 	set_symbol_table(filter_def.filter_name);
     }
     if (attr != 0) {
-	flt_puts(text, size, Prepro_attr);
+	flt_puts(text, size, Preproc_attr);
 	return 1;
     }
     return 0;
 }
 
-static void
-write_keyword(char *text, int size)
+/*
+ * If we're looking for tabs, only tabs (optionally followed by spaces) will
+ * do.
+ */
+static int
+want_tabs(char *text, int size)
 {
-    int colon = size > 1 && text[size-1] == ':';
-    int space = 0;
-    char *base = text;
+    int result = 0;
+    int spcs = 0;
+    int tabs = 0;
+    int n;
 
-    if (colon)
+    if (size > 0) {
+	for (n = 0; n < size; ++n) {
+	    if (text[n] == ' ') {
+		if (!tabs)
+			result = !continued;
+		++spcs;
+	    } else if (text[n] == '\t') {
+		if (spcs)
+			result = !continued;
+		++tabs;
+	    }
+	}
+	/* a little paranoia does not hurt */
+	if ((spcs == flt_options['t']) && !tabs)
+	    result = 1;
+    } else {
+	result = 1;	/* should not happen */
+    }
+    return result;
+}
+
+static void
+write_keyword(char *text, int size, int prepro, int caseless)
+{
+    int colon = 0;
+    int before = 0;
+    int after = 0;
+    int save;
+    int nospcs = 0;
+    int notabs = 0;
+    int tabs = 0;
+    char *base = text;
+    char *attr = "";
+
+    while (size > 1 && text[size - 1] == ':') {
 	text[--size] = 0;
+	++colon;
+    }
 
     while (isspace(CharOf(*text))) {
+	if (*text == '\t')
+	    tabs = 1;
 	text++;
 	size--;
-	space++;
+	before++;
     }
-    if (space)
-	flt_puts(base, space, "");
 
-    space = 0;
     while (isspace(CharOf(text[size-1]))) {
 	size--;
-	space++;
+	after++;
     }
 
-    flt_puts(text, size, keyword_attr(text));
+    save = text[size];
+    text[size] = 0;
+    attr = caseless
+	 ? ci_keyword_attr(text)
+    	 : keyword_attr(text);
+    /*
+     * Some symbols cannot be preceded by tabs - we put those in the "premake"
+     * table.
+     */
+    if ((attr == 0) && !continued && prepro) {
+	set_symbol_table("premake");
+	attr = caseless
+	     ? ci_keyword_attr(text)
+	     : keyword_attr(text);
+	set_symbol_table(flt_name());
+	notabs = (attr != 0);
+	if (attr == 0)
+	    nospcs = want_tabs(base, before);
+    } else {
+	nospcs = want_tabs(base, before);
+    }
+    text[size] = save;
 
-    if (space)
-	flt_puts(text + size, space, "");
+    if (before)
+	flt_puts(base, before, ((tabs && notabs) || nospcs) ? Error_attr : "");
 
-    if (colon)
-	flt_putc(':');
+    if (attr == Comment_attr) {	/* for XCOMM */
+	BEGIN(COMMENT);		/* BeginQuote(COMMENT) */
+	flt_bfr_begin(attr);
+	flt_bfr_append(text, size + after + colon);
+    } else {
+	flt_puts(text, size, attr);
+
+	if (after)
+	    flt_puts(text + size, after, "");
+
+	while (colon--)
+	    flt_putc(':');
+    }
 }
 
 /*
@@ -105,11 +179,6 @@ write_delimited_unit(char *text, char **attr, char **gaps)
     panchor = ptoken = pwhite;
     while (*ptoken && (! isspace(CharOf(*ptoken))))
         ptoken++;
-    if ((ptoken - panchor) == 5
-     && !strncmp(panchor, "XCOMM", 5)) {
-	*attr = Comment_attr;
-	*gaps = Comment_attr;
-    }
     flt_puts(panchor, ptoken - panchor, *attr);
     if (isspace(CharOf(*ptoken)))
     {
@@ -179,8 +248,10 @@ do_filter(FILE *input)
     Error_attr   = class_attr(NAME_ERROR);
     Ident2_attr  = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
-    Prepro_attr  = class_attr(NAME_PREPROC);
+    Preproc_attr = class_attr(NAME_PREPROC);
     String_attr  = class_attr(NAME_LITERAL);
+
+    continued = 0;
 
     BEGIN(NORMAL);
     while (yylex() > 0) {
@@ -197,23 +268,31 @@ NAME		[a-zA-Z_][a-zA-Z_0-9.-]+
 
 MACRO		([$]?\$\{{ID}\}|[$]?\${ID}|[$]?\$[A-Za-z@!%^&*?<]|\${SPACE}*\([^\)]+\))
 
+OPER		[+:?]?=
+
 %%
 
-<NORMAL>^{SPACE}*([^#])?include{SPACE}*	{ write_keyword(yytext, yyleng); }
+<NORMAL>^{SPACE}*[!]{NAME}{SPACE}*	{ write_keyword(yytext, yyleng, 1, 1); }
 
-<NORMAL>^{SPACE}*[\.!]{NAME}{SPACE}*:	{ write_keyword(yytext, yyleng); }
+<NORMAL>^{SPACE}*{NAME}{SPACE}*	{ write_keyword(yytext, yyleng, 1, 0); }
+
+<NORMAL>^{SPACE}*([-.])?include{SPACE}* { write_keyword(yytext, yyleng, 1, 0); }
+
+<NORMAL>^{SPACE}*[\.]{NAME}{SPACE}*:[:]? { write_keyword(yytext, yyleng, 0, 0); }
 
 <NORMAL>^({SPACE}*{NAME}{SPACE}*|\\\n)+: { write_delimited(yytext, yyleng, Keyword_attr); }
 
-<NORMAL>^{SPACE}*{NAME}{SPACE}*=	{ write_delimited(yytext, yyleng, Ident2_attr); }
+<NORMAL>^{SPACE}*{NAME}{SPACE}*{OPER}	{ write_delimited(yytext, yyleng, Ident2_attr); }
 
 <NORMAL>{MACRO}			{ WriteToken(Ident2_attr); }
 
 <NORMAL>^{SPACE}\@		{ if (yyleng)
 				    flt_puts(yytext, yyleng-1, "");
 				  flt_puts("@", 1, String_attr); }
-<NORMAL>\\{SPACE}+\n		{ WriteToken(Error_attr); }
-<NORMAL>\\["'\n]		{ WriteToken(String_attr); }
+<NORMAL>\\{SPACE}+\n		{ WriteToken(Error_attr); continued = 1; }
+<NORMAL>\\[\n]			{ WriteToken(String_attr); continued = 1; }
+<NORMAL>[\n]			{ ECHO; continued = 0; }
+<NORMAL>\\["']			{ WriteToken(String_attr); }
 <NORMAL>\'			{ BeginQuote(QUOTE1, String_attr); }
 <NORMAL>\"			{ BeginQuote(QUOTE2, String_attr); }
 
@@ -232,9 +311,6 @@ MACRO		([$]?\$\{{ID}\}|[$]?\${ID}|[$]?\$[A-Za-z@!%^&*?<]|\${SPACE}*\([^\)]+\))
 <QUOTE2>\"			{ FinishQuote(NORMAL); }
 
 <QUOTE1,QUOTE2>[\n]		{ missing_quote(yytext, yyleng); }
-
-<NORMAL>^{SPACE}*"XCOMM"$	{ WriteToken(Comment_attr); }
-<NORMAL>^{SPACE}*"XCOMM"[^A-Za-z0-9_] { BeginQuote(COMMENT, Comment_attr); }
 
 <NORMAL>\\[/]			{ WriteToken(String_attr); }
 <NORMAL>"/*"			{ BeginQuote(CCOMMENT, Comment_attr); }

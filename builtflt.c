@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.23 2002/02/12 22:48:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.24 2002/07/04 20:29:46 tom Exp $
  *
  */
 
@@ -79,31 +79,53 @@ parse_filtername(const char *major_name, const char **params)
 }
 #endif
 
+static char *
+param_value(const char **ptr)
+{
+    char *value = 0;
+    const char *s;
+    const char *t;
+
+    s = skip_cblanks(*ptr + 1);
+    t = skip_ctext(s);
+    if (t != s) {
+	value = strmalloc(s);
+	value[t - s] = EOS;
+	*ptr = t;
+    }
+    return value;
+}
+
 /*
- * All we're really interested in are the -k options.  Ignore -v and -q.
+ * All we're really interested in are the -k and -t options.  Ignore -v and -q.
  */
 static int
 process_params(void)
 {
     const char *s = current_params;
-    const char *t;
+    char *value;
 
     memset(flt_options, 0, sizeof(flt_options));
+    flt_options['t'] = tabstop_val(curbp);
     while (*s != EOS) {
 	s = skip_cblanks(s);
 	if (*s == '-') {
 	    while (*++s != EOS && !isSpace(*s)) {
 		flt_options[CharOf(*s)] += 1;
-		if (*s == 'k') {
-		    s = skip_cblanks(s + 1);
-		    t = skip_ctext(s);
-		    if (t != s) {
-			char *value = strmalloc(s);
-			value[t - s] = EOS;
+		switch (*s) {
+		case 'k':
+		    if ((value = param_value(&s)) != 0) {
 			flt_read_keywords(value);
 			free(value);
-			s = t;
 		    }
+		    break;
+		case 't':
+		    if ((value = param_value(&s)) != 0) {
+			if ((flt_options['t'] = atoi(value)) <= 0)
+			    flt_options['t'] = 8;
+			free(value);
+		    }
+		    break;
 		}
 	    }
 	} else {

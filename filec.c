@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.107 2002/05/14 00:16:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.109 2002/09/02 16:53:29 tom Exp $
  *
  */
 
@@ -45,11 +45,11 @@ extern char **environ;
 #define	SLASH (EOS+1)		/* less than everything but EOS */
 
 #if OPT_VMS_PATH
-#define	KBD_OPTIONS	KBD_NORMAL|KBD_UPPERC
+#define	KBD_FLAGS	KBD_NORMAL|KBD_UPPERC
 #endif
 
-#ifndef	KBD_OPTIONS
-#define	KBD_OPTIONS	KBD_NORMAL
+#ifndef	KBD_FLAGS
+#define	KBD_FLAGS	KBD_NORMAL
 #endif
 
 #ifndef FoundDirectory
@@ -891,7 +891,7 @@ init_filec(const char *buffer_name)
  * return it would be too slow.
  */
 int
-path_completion(int c, char *buf, unsigned *pos)
+path_completion(DONE_ARGS)
 {
     int code = FALSE;
     int action = (c == NAMEC || c == TESTC);
@@ -901,8 +901,9 @@ path_completion(int c, char *buf, unsigned *pos)
     int count;
 #endif
 
-    TRACE(("path_completion('%c' %d:\"%s\")\n",
-	   c, *pos, visible_buff(buf, (int) *pos, TRUE)));
+    TRACE(("path_completion(%#x '%c' %d:\"%s\")\n",
+	   flags, c, *pos, visible_buff(buf, (int) *pos, TRUE)));
+    (void) flags;
 #if OPT_VMS_PATH
     if (ignore && action) {	/* resolve scratch-name conflict */
 	if (is_vms_pathname(buf, -TRUE))
@@ -1199,7 +1200,7 @@ mlreply_file(const char *prompt, TBUFF ** buffer, UINT flag, char *result)
 	    *Reply = EOS;
 
 	status = kbd_string(prompt, Reply, sizeof(Reply),
-			    '\n', KBD_OPTIONS | KBD_MAYBEC, complete);
+			    '\n', KBD_FLAGS | KBD_MAYBEC, complete);
 	freeMyList(MyBuff);
 
 	if (status == ABORT)
@@ -1220,7 +1221,7 @@ mlreply_file(const char *prompt, TBUFF ** buffer, UINT flag, char *result)
 	     * prompting.  Read the rest of the text into Reply.
 	     */
 	    status = kbd_string(prompt, Reply, sizeof(Reply),
-				'\n', KBD_OPTIONS | KBD_MAYBEC, complete);
+				'\n', KBD_FLAGS | KBD_MAYBEC, complete);
 	}
 	/*
 	 * Not everyone expects to be able to write files whose names
@@ -1312,7 +1313,7 @@ mlreply_dir(const char *prompt, TBUFF ** buffer, char *result)
 
 	only_dir = TRUE;
 	status = kbd_string(prompt, Reply, sizeof(Reply), '\n',
-			    KBD_OPTIONS | KBD_MAYBEC, complete);
+			    KBD_FLAGS | KBD_MAYBEC, complete);
 	freeMyList(MyBuff);
 	only_dir = FALSE;
 	if (status != TRUE)

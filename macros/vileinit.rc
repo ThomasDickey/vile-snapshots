@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.20 2002/05/13 23:19:44 tom Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.21 2002/09/02 16:43:46 tom Exp $
 ; This is a sample which may be installed as .vilerc (or vile.rc for non-Unix
 ; systems), or source'd as-is to provide quick initialization of some useful
 ; macros and settings.
@@ -179,6 +179,7 @@ bind-key hyper-next ^X-^M
 source vileperl.rc
 source palettes.rc
 source filters.rc
+source which.rc
 ~if &not &error $ncolors
 setv $read-hook HighlightFilter
 set autocolor=5000

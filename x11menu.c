@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.3 2002/01/20 23:46:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.4 2002/08/25 20:58:17 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -64,12 +64,12 @@ gui_make_menu(void *menubar, char *nom, int the_class GCC_UNUSED)
     pm = (Widget) XmCreatePulldownMenu(menub, str, NULL, 0);
 #if OPT_MENUS_COLORED
     XtVaSetValues(pm,
-		  XtNforeground, x_menu_foreground(),
-		  XtNbackground, x_menu_background(),
+		  XtNforeground, (XtArgVal) (x_menu_foreground()),
+		  XtNbackground, (XtArgVal) (x_menu_background()),
 		  NULL);
     XtVaSetValues(menub,
-		  XtNforeground, x_menu_foreground(),
-		  XtNbackground, x_menu_background(),
+		  XtNforeground, (XtArgVal) (x_menu_foreground()),
+		  XtNbackground, (XtArgVal) (x_menu_background()),
 		  NULL);
 #endif /* OPT_MENUS_COLORED */
 
@@ -88,7 +88,7 @@ gui_make_menu(void *menubar, char *nom, int the_class GCC_UNUSED)
 
     if (the_class == 'H') {
 	XtVaSetValues(menub,
-		      XmNmenuHelpWidget, cascade,
+		      XmNmenuHelpWidget, (XtArgVal) (cascade),
 		      NULL);
     }
 #endif /* MOTIF_WIDGETS */
@@ -312,14 +312,16 @@ post_buffer_list(Widget w GCC_UNUSED,
 #if MOTIF_WIDGETS
 	    XmString xms = XmStringCreateSimple(string);
 	    XtVaSetValues(pm_buffer[nb_item_menu_list],
-			  XmNlabelString, xms, NULL);
+			  XmNlabelString, (XtArgVal) (xms),
+			  NULL);
 	    XmStringFree(xms);
 	    XtRemoveCallback(pm_buffer[nb_item_menu_list],
 			     XmNactivateCallback, list_proc_back, NULL);
 #endif
 #if ATHENA_WIDGETS
 	    XtVaSetValues(pm_buffer[nb_item_menu_list],
-			  XtNlabel, string, NULL);
+			  XtNlabel, (XtArgVal) (string),
+			  NULL);
 	    XtRemoveAllCallbacks(pm_buffer[nb_item_menu_list],
 				 XtNcallback);
 #endif
