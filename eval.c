@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.310 2002/09/02 14:37:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.312 2002/10/15 20:59:42 tom Exp $
  *
  */
 
@@ -608,7 +608,7 @@ path_quote(TBUFF ** result, const char *path)
 static void
 render_date(TBUFF ** result, char *format, time_t stamp)
 {
-#if HAVE_STRFTIME
+#ifdef HAVE_STRFTIME
     struct tm *tm = localtime(&stamp);
     char temp[NSTRING];
 
@@ -721,7 +721,7 @@ run_func(int fnum)
 
     tb_init(&result, EOS);
 
-    switch (fnum) {
+    switch ((UFuncCode) fnum) {
     case UFADD:
 	value = nums[0] + nums[1];
 	break;
@@ -777,20 +777,42 @@ run_func(int fnum)
 	is_error = FALSE;
 	value = (arg[0] == error_val);
 	break;
+    case UFLT:			/* FALLTHRU */
     case UFLESS:
 	value = (nums[0] < nums[1]);
 	break;
+    case UFLEQ:
+	value = (nums[0] <= nums[1]);
+	break;
+    case UFNEQ:
+	value = (nums[0] != nums[1]);
+	break;
+    case UFGT:			/* FALLTHRU */
     case UFGREATER:
 	value = (nums[0] > nums[1]);
+	break;
+    case UFGEQ:
+	value = (nums[0] >= nums[1]);
+	break;
+    case UFSNEQ:
+	value = (strcmp(arg[0], arg[1]) != 0);
 	break;
     case UFSEQUAL:
 	value = (strcmp(arg[0], arg[1]) == 0);
 	break;
+    case UFSLT:		/* FALLTHRU */
     case UFSLESS:
 	value = (strcmp(arg[0], arg[1]) < 0);
 	break;
+    case UFSLEQ:
+	value = (strcmp(arg[0], arg[1]) <= 0);
+	break;
+    case UFSGT:		/* FALLTHRU */
     case UFSGREAT:
 	value = (strcmp(arg[0], arg[1]) > 0);
+	break;
+    case UFSGEQ:
+	value = (strcmp(arg[0], arg[1]) >= 0);
 	break;
     case UFINDIRECT:
 	if ((cp = tokval(arg[0])) != error_val)
@@ -1005,7 +1027,7 @@ run_func(int fnum)
 	    }
 	}
 	/* FALLTHRU */
-    default:
+    case NFUNCS:
 	TRACE(("unknown function #%d\n", fnum));
 	is_error = TRUE;
 	break;

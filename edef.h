@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.303 2002/09/02 14:23:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.304 2002/10/11 13:44:16 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -105,6 +105,7 @@ decl_uninit( int doingopcmd );		/* operator command in progress */
 decl_uninit( int doingsweep );		/* operator command in progress */
 decl_uninit( int sweephack );		/* don't include dot when sweeping */
 decl_uninit( MARK pre_op_dot );		/* current pos. before operator cmd */
+decl_uninit( MARK post_op_dot );	/* current pos. after operator motion */
 
 decl_uninit( MARK scanboundpos );	/* where do searches end? */
 decl_uninit( int scanbound_is_header);	/* is scanboundpos the header line? */

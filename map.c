@@ -3,14 +3,14 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.95 2002/02/04 00:39:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.96 2002/10/09 19:53:34 tom Exp $
  *
  */
 
 #include "estruct.h"
 #include "edef.h"
 
-#ifdef DISP_NTWIN
+#if DISP_NTWIN
 # define NTWIN_CURSOR_MINWAIT 550   /* msec */
 #endif
 
@@ -101,7 +101,7 @@ static	int	maplookup(int c, ITBUFF **outp, struct maprec *mp, GetFunc get, Avail
 
 #define NUMKEYSTR (KBLOCK / 2)
 
-#if DOKEYLOG
+#ifdef DOKEYLOG
 int do_keylog = 1;
 #endif
 
@@ -505,7 +505,7 @@ save_keystroke(int c)
 	KILL *kp;
 	KILLREG *kr = &kbs[KEYST_KREG];
 
-#if DOKEYLOG
+#ifdef DOKEYLOG
 	if (do_keylog) {
 		static int keyfd = -1;
 		static char *tfilenam;
@@ -872,7 +872,7 @@ maplookup(
 
 		/* give it a little extra time... */
 		int timer = 0;
-#ifdef DISP_NTWIN
+#if DISP_NTWIN
 		int cursor_state = 0;
 #endif
 
@@ -889,7 +889,7 @@ maplookup(
 				timer = global_g_val(GVAL_TIMEOUTVAL);
 		}
 
-#ifdef DISP_NTWIN
+#if DISP_NTWIN
 		if (timer > NTWIN_CURSOR_MINWAIT) {
 			/*
 			 * editor waits for a potentially long time
@@ -904,7 +904,7 @@ maplookup(
 		}
 #endif
 		catnap(timer,TRUE);
-#ifdef DISP_NTWIN
+#if DISP_NTWIN
 		if (timer > NTWIN_CURSOR_MINWAIT) /* restore cursor state */
 			(void) winvile_cursor_state(cursor_state, FALSE);
 #endif

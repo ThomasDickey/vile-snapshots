@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.108 2002/05/01 15:46:00 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.112 2002/10/13 20:00:17 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -142,7 +142,7 @@ AC_DEFUN([CF_ANSI_QSORT],
 [
 AC_CACHE_CHECK(for standard qsort, cf_cv_ansi_qsort,[
 	AC_TRY_COMPILE([
-#if HAVE_STDLIB_H
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
 	int compare(const void *a, const void *b)
@@ -208,7 +208,7 @@ else
 fi
 AC_MSG_RESULT($cf_result)
 if test "$cf_result" = yes ; then
-	cf_result=`echo $1 | sed -e s@/@_@g`
+	cf_result=`echo $1 | sed -e s%/%_%g`
 	CF_UPPER(cf_result,$cf_result)
 	AC_DEFINE_UNQUOTED(HAVE$cf_result)
 fi
@@ -326,7 +326,7 @@ AC_TRY_COMPILE([
 #if USE_SYS_SELECT_H
 # include <sys/select.h>
 #else
-# if HAVE_SYS_TIME_H
+# ifdef HAVE_SYS_TIME_H
 #  include <sys/time.h>
 #  ifdef TIME_WITH_SYS_TIME
 #   include <time.h>
@@ -869,7 +869,8 @@ EOF
 		Wnested-externs \
 		Wpointer-arith \
 		Wshadow \
-		Wstrict-prototypes $cf_warn_CONST
+		Wstrict-prototypes \
+		Wundef $cf_warn_CONST
 	do
 		CFLAGS="$cf_save_CFLAGS $EXTRA_CFLAGS -$cf_opt"
 		if AC_TRY_EVAL(ac_compile); then
@@ -922,7 +923,7 @@ AC_REQUIRE([CF_HEADER_SELECT])
 AC_CACHE_CHECK(if we may include sys/resource.h with sys/wait.h,
 cf_cv_resource_with_wait,[
 AC_TRY_COMPILE([
-#if HAVE_SYS_TIME_H && (SELECT_WITH_TIME || !(HAVE_SELECT_H || HAVE_SYS_SELECT_H))
+#if defined(HAVE_SYS_TIME_H) && (defined(SELECT_WITH_TIME) || !(defined(HAVE_SELECT_H || defined(HAVE_SYS_SELECT_H))))
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
 # include <time.h>
@@ -946,7 +947,7 @@ AC_CACHE_CHECK(if we can include select.h with time.h,
 cf_cv_select_with_time,[
 AC_TRY_COMPILE([
 #include <sys/types.h>
-#if HAVE_SYS_TIME_H
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
 # include <time.h>
@@ -954,11 +955,11 @@ AC_TRY_COMPILE([
 #else
 #include <time.h>
 #endif
-#if HAVE_SELECT
-# if HAVE_SELECT_H
+#ifdef HAVE_SELECT
+# ifdef HAVE_SELECT_H
 # include <select.h>
 # endif
-# if HAVE_SYS_SELECT_H
+# ifdef HAVE_SYS_SELECT_H
 # include <sys/select.h>
 # endif
 #endif
@@ -1232,7 +1233,7 @@ struct zowie { int a; double b; struct zowie *c; char d; };
 extern struct zowie *$1();
 ],
 [
-#if HAVE_LIBXT		/* needed for SunOS 4.0.3 or 4.1 */
+#ifdef HAVE_LIBXT		/* needed for SunOS 4.0.3 or 4.1 */
 XtToolkitInitialize();
 #endif
 ],
@@ -1513,7 +1514,7 @@ EOF
 	cf_try="$ac_cpp conftest.$ac_ext 2>&AC_FD_CC | grep '^Autoconf ' >conftest.out"
 	AC_TRY_EVAL(cf_try)
 	if test -f conftest.out ; then
-		cf_out=`cat conftest.out | sed -e 's@^Autoconf @@' -e 's@^[[^"]]*"@@' -e 's@".*@@'`
+		cf_out=`cat conftest.out | sed -e 's%^Autoconf %%' -e 's%^[[^"]]*"%%' -e 's%".*%%'`
 		test -n "$cf_out" && cf_cv_ncurses_version="$cf_out"
 		rm -f conftest.out
 	fi
@@ -1569,12 +1570,12 @@ case ".[$]$1" in #(vi
   eval $1="[$]$1"
   case ".[$]$1" in #(vi
   .NONE/*)
-    $1=`echo [$]$1 | sed -e s@NONE@$ac_default_prefix@`
+    $1=`echo [$]$1 | sed -e s%NONE%$ac_default_prefix%`
     ;;
   esac
   ;; #(vi
 .NONE/*)
-  $1=`echo [$]$1 | sed -e s@NONE@$ac_default_prefix@`
+  $1=`echo [$]$1 | sed -e s%NONE%$ac_default_prefix%`
   ;;
 *)
   ifelse($2,,[AC_ERROR([expected a pathname, not \"[$]$1\"])],$2)
@@ -1925,10 +1926,10 @@ dnl For this check, and for CF_CURSES_TERMCAP, the $CHECK_DECL_HDRS variable
 dnl must point to a header file containing this (or equivalent):
 dnl
 dnl	#ifdef NEED_CURSES_H
-dnl	# if HAVE_NCURSES_NCURSES_H
+dnl	# ifdef HAVE_NCURSES_NCURSES_H
 dnl	#  include <ncurses/ncurses.h>
 dnl	# else
-dnl	#  if HAVE_NCURSES_H
+dnl	#  ifdef HAVE_NCURSES_H
 dnl	#   include <ncurses.h>
 dnl	#  else
 dnl	#   include <curses.h>
@@ -1936,10 +1937,10 @@ dnl	#  endif
 dnl	# endif
 dnl	#endif
 dnl
-dnl	#if HAVE_NCURSES_TERM_H
+dnl	#ifdef HAVE_NCURSES_TERM_H
 dnl	#  include <ncurses/term.h>
 dnl	#else
-dnl	# if HAVE_TERM_H
+dnl	# ifdef HAVE_TERM_H
 dnl	#  include <term.h>
 dnl	# endif
 dnl	#endif
@@ -2064,8 +2065,18 @@ AC_ARG_WITH(neXtaw,
 AC_CHECK_LIB(Xext,XextCreateExtension,
 	[LIBS="-lXext $LIBS"])
 
-cf_x_athena_include=""
 cf_x_athena_lib=""
+
+CF_X_ATHENA_CPPFLAGS($cf_x_athena)
+CF_X_ATHENA_LIBS($cf_x_athena)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Normally invoked by CF_X_ATHENA, with $1 set to the appropriate flavor of
+dnl the Athena widgets, e.g., Xaw, Xaw3d, neXtaw.
+AC_DEFUN([CF_X_ATHENA_CPPFLAGS],
+[
+cf_x_athena_root=ifelse($1,,Xaw,$1)
+cf_x_athena_include=""
 
 for cf_path in default \
 	/usr/contrib/X11R6 \
@@ -2073,10 +2084,9 @@ for cf_path in default \
 	/usr/lib/X11R5 \
 	/usr/local
 do
-
 	if test -z "$cf_x_athena_include" ; then
 		cf_save="$CPPFLAGS"
-		cf_test=X11/$cf_x_athena/SimpleMenu.h
+		cf_test=X11/$cf_x_athena_root/SimpleMenu.h
 		if test $cf_path != default ; then
 			CPPFLAGS="-I$cf_path/include $cf_save"
 			AC_MSG_CHECKING(for $cf_test in $cf_path)
@@ -2091,12 +2101,38 @@ do
 		AC_MSG_RESULT($cf_result)
 		if test "$cf_result" = yes ; then
 			cf_x_athena_include=$cf_path
+			break
 		else
 			CPPFLAGS="$cf_save"
 		fi
 	fi
+done
 
-	for cf_lib in "-l$cf_x_athena -lXmu" "-l${cf_x_athena}_s -lXmu_s"
+if test -z "$cf_x_athena_include" ; then
+	AC_MSG_WARN(
+[Unable to successfully find Athena header files with test program])
+elif test "$cf_x_athena_include" != default ; then
+	CPPFLAGS="$CPPFLAGS -I$cf_x_athena_include"
+fi
+])
+dnl ---------------------------------------------------------------------------
+dnl Normally invoked by CF_X_ATHENA, with $1 set to the appropriate flavor of
+dnl the Athena widgets, e.g., Xaw, Xaw3d, neXtaw.
+AC_DEFUN([CF_X_ATHENA_LIBS],
+[AC_REQUIRE([CF_X_TOOLKIT])
+cf_x_athena_root=ifelse($1,,Xaw,$1)
+cf_x_athena_lib=""
+
+for cf_path in default \
+	/usr/contrib/X11R6 \
+	/usr/contrib/X11R5 \
+	/usr/lib/X11R5 \
+	/usr/local
+do
+	for cf_lib in \
+		"-l$cf_x_athena_root -lXmu" \
+		"-l$cf_x_athena_root -lXpm -lXmu" \
+		"-l${cf_x_athena_root}_s -lXmu_s"
 	do
 		if test -z "$cf_x_athena_lib" ; then
 			cf_save="$LIBS"
@@ -2115,6 +2151,7 @@ do
 			AC_MSG_RESULT($cf_result)
 			if test "$cf_result" = yes ; then
 				cf_x_athena_lib="$cf_lib"
+				break
 			else
 				LIBS="$cf_save"
 			fi
@@ -2122,19 +2159,14 @@ do
 	done
 done
 
-if test -z "$cf_x_athena_include" ; then
-	AC_MSG_WARN(
-[Unable to successfully find Athena header files with test program])
-fi
-
 if test -z "$cf_x_athena_lib" ; then
 	AC_ERROR(
-[Unable to successfully link Athena library (-l$cf_x_athena) with test program])
+[Unable to successfully link Athena library (-l$cf_x_athena_root) with test program])
 fi
 
-CF_UPPER(CF_X_ATHENA_LIBS,HAVE_LIB_$cf_x_athena)
-AC_DEFINE_UNQUOTED($CF_X_ATHENA_LIBS)
-])dnl
+CF_UPPER(cf_x_athena_LIBS,HAVE_LIB_$cf_x_athena)
+AC_DEFINE_UNQUOTED($cf_x_athena_LIBS)
+])
 dnl ---------------------------------------------------------------------------
 dnl Check for Motif or Lesstif libraries (they should be indistinguishable)
 AC_DEFUN([CF_X_MOTIF],

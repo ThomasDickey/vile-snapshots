@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.27 2002/07/02 22:26:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.29 2002/10/14 22:31:27 tom Exp $
  *
  */
 
@@ -450,7 +450,7 @@ show_alloc(void)
     Trace("** allocator metrics:\n");
     Trace(fmt, "allocs:", count_alloc);
     Trace(fmt, "frees:", count_freed);
-    {
+    if (area != 0) {
 	register int j, count = 0;
 	register long total = 0;
 
@@ -474,6 +474,8 @@ show_alloc(void)
 	Trace(fmt, "segment-table length:", nowPending);
 	Trace(fmt, "current # of segments:", (long) count);
 	Trace(fmt, "maximum # of segments:", maxPending);
+	free(area);
+	area = 0;
     }
 #endif
 }
@@ -531,11 +533,24 @@ trace_line(LINE *lp, BUFFER *bp)
 }
 
 void
+trace_mark(char *name, MARK *mk, BUFFER *bp)
+{
+    Trace("%s %d.%d\n", name, line_no(bp, mk->l), mk->o);
+}
+
+void
 trace_region(REGION * rp, BUFFER *bp)
 {
-    Trace("region %d.%d .. %d.%d\n",
+    Trace("region %d.%d .. %d.%d (%s)\n",
 	  line_no(bp, rp->r_orig.l), rp->r_orig.o,
-	  line_no(bp, rp->r_end.l), rp->r_end.o);
+	  line_no(bp, rp->r_end.l), rp->r_end.o,
+	  (regionshape == EXACT
+	   ? "exact"
+	   : (regionshape == FULLLINE
+	      ? "full-line"
+	      : (regionshape == RECTANGLE
+		 ? "rectangle"
+		 : "?"))));
 }
 
 void

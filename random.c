@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.262 2002/05/22 00:01:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.264 2002/10/09 19:36:47 tom Exp $
  *
  */
 
@@ -14,12 +14,12 @@
 #include	"edef.h"
 #include	"nefunc.h"
 
-#if DISP_X11 && HAVE_X11_XPOLL_H
+#if DISP_X11 && defined(HAVE_X11_XPOLL_H)
 #include <X11/Xpoll.h>
 #endif
 
 #if SYS_UNIX
-#if HAVE_POLL && HAVE_POLL_H
+#if defined(HAVE_POLL) && defined(HAVE_POLL_H)
 # include <poll.h>
 #endif
 #endif
@@ -762,11 +762,11 @@ catnap(int milli, int watchinput)
 #endif
     {
 #if SYS_UNIX
-# if HAVE_SELECT && HAVE_TYPE_FD_SET
+# if defined(HAVE_SELECT) && defined(HAVE_TYPE_FD_SET)
 
 	struct timeval tval;
 	fd_set read_bits;
-#  if HAVE_SIGPROCMASK
+#  ifdef HAVE_SIGPROCMASK
 	sigset_t newset, oldset;
 	sigemptyset(&newset);
 	sigaddset(&newset, SIGALRM);
@@ -781,14 +781,14 @@ catnap(int milli, int watchinput)
 	tval.tv_usec = (milli % 1000) * 1000;	/* microseconds */
 	(void) select(1, &read_bits, (fd_set *) 0, (fd_set *) 0, &tval);
 
-#  if HAVE_SIGPROCMASK
+#  ifdef HAVE_SIGPROCMASK
 	sigprocmask(SIG_SETMASK, &oldset, (sigset_t *) 0);
 #  endif
 	if (watchinput)
 	    return FD_ISSET(0, &read_bits);
 
 # else
-#  if HAVE_POLL && HAVE_POLL_H
+#  if defined(HAVE_POLL) && defined(HAVE_POLL_H)
 
 	struct pollfd pfd;
 	int fdcnt;
@@ -893,10 +893,10 @@ current_directory(int force)
 
     if (!force && cwd)
 	return cwd;
-#if HAVE_GETCWD
+#ifdef HAVE_GETCWD
     cwd = getcwd(current_dirname, NFILEN);
 #else
-# if HAVE_GETWD
+# ifdef HAVE_GETWD
     cwd = getwd(current_dirname);
 # else
     {
@@ -1429,15 +1429,15 @@ autocolor(void)
 	    && b_val(bp, MDHILITE)
 #endif
 	    && b_val(bp, VAL_AUTOCOLOR) > 0) {
-	    WINDOW *oldwp;
-	    oldwp = push_fake_win(bp);
+	    BUFFER *oldbp = curbp;
+	    WINDOW *oldwp = push_fake_win(bp);
 	    in_autocolor = TRUE;
 	    if (run_a_hook(&autocolorhook)) {
 		b_clr_recentlychanged(bp);
 		do_update = TRUE;
 	    }
 	    in_autocolor = FALSE;
-	    pop_fake_win(oldwp);
+	    pop_fake_win(oldwp, oldbp);
 	}
     }
     if (do_update)
@@ -1921,7 +1921,7 @@ vl_atol(char *str, int base, int *failed)
  * if ANSI C compiler available, convert a string to an unsigned long,
  * trapping all possible conversion errors.
  */
-#if HAVE_STRTOUL
+#ifdef HAVE_STRTOUL
 ULONG
 vl_atoul(char *str, int base, int *failed)
 {

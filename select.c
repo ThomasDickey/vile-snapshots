@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.138 2002/06/30 17:42:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.140 2002/10/16 10:46:00 tom Exp $
  *
  */
 
@@ -410,36 +410,35 @@ sel_yank(int reg)
 {
     REGIONSHAPE save_shape;
     WINDOW *save_wp;
+    BUFFER *save_bp = curbp;
+    int code = FALSE;
 
-    if (selbufp == NULL)
-	return FALSE;		/* No selection to yank */
+    if ((save_wp = push_fake_win(selbufp)) != NULL) {
+	/*
+	 * We're not guaranteed that curbp and selbufp are the same.
+	 */
+	save_shape = regionshape;
 
-    if ((save_wp = push_fake_win(selbufp)) == NULL)
-	return FALSE;
+	curbp = selbufp;
 
-    /*
-     * We're not guaranteed that curbp and selbufp are the same.
-     */
-    save_shape = regionshape;
+	ukb = (short) reg;
+	kregflag = 0;
+	haveregion = &selregion.ar_region;
+	regionshape = selregion.ar_shape;
+	yankregion();
+	haveregion = NULL;
 
-    curbp = selbufp;
+	pop_fake_win(save_wp, save_bp);
 
-    ukb = (short) reg;
-    kregflag = 0;
-    haveregion = &selregion.ar_region;
-    regionshape = selregion.ar_shape;
-    yankregion();
-    haveregion = NULL;
+	regionshape = save_shape;
 
-    pop_fake_win(save_wp);
+	show_selection_position(TRUE);
 
-    regionshape = save_shape;
-
-    show_selection_position(TRUE);
-
-    /* put cursor back on screen...is there a cheaper way to do this?  */
-    (void) update(FALSE);
-    return TRUE;
+	/* put cursor back on screen...is there a cheaper way to do this?  */
+	(void) update(FALSE);
+	code = TRUE;
+    }
+    return code;
 }
 
 /* select all text in curbp and yank to unnamed register */
@@ -612,6 +611,7 @@ selectregion(void)
 
     savedot = DOT;
     savemark = MK;
+    memset(&region, 0, sizeof(region));
     if (haveregion) {		/* getregion() will clear this, so
 				   we need to save it */
 	region = *haveregion;

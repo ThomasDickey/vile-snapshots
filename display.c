@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.364 2002/05/07 11:03:20 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.366 2002/10/09 19:37:56 tom Exp $
  *
  */
 
@@ -3526,13 +3526,13 @@ mlmsg(const char *fmt, va_list * app)
 {
     static int recur;
     int end_at;
-#ifdef DISP_NTWIN
+#if DISP_NTWIN
     int cursor_state = 0;
 #endif
     int do_crlf = (strchr(fmt, '\n') != 0
 		   || strchr(fmt, '\r') != 0);
 
-#ifdef DISP_NTWIN
+#if DISP_NTWIN
     if (recur == 0) {
 	/*
 	 * Winvile internally manages its own cursor and this usually works
@@ -3598,7 +3598,7 @@ mlmsg(const char *fmt, va_list * app)
 	endofDisplay();
     }
     recur--;
-#ifdef DISP_NTWIN
+#if DISP_NTWIN
     if (recur == 0) {
 
 	/* restore previous cursor state if it was ON. */
@@ -3684,16 +3684,16 @@ void
 mlerror(const char *s)
 {
     const char *t = 0;
-#if HAVE_STRERROR
-#ifdef VMS
+#ifdef HAVE_STRERROR
+#if SYS_VMS
     if (errno == EVMSERR)
 	t = strerror(errno, vaxc$errno);
     else
-#endif /* VMS */
+#endif /* SYS_VMS */
     if (errno > 0)
 	t = strerror(errno);
 #else
-#if HAVE_SYS_ERRLIST
+#ifdef HAVE_SYS_ERRLIST
     if (errno > 0 && errno < sys_nerr)
 	t = sys_errlist[errno];
 #endif /* HAVE_SYS_ERRLIST */
@@ -3787,6 +3787,7 @@ tprintf(const char *fmt,...)
 
     WINDOW *save_wp;
     BUFFER *bp;
+    BUFFER *save_bp = curbp;
     W_TRAITS save_w_traits;
     OutFunc save_outfn;
 
@@ -3813,7 +3814,7 @@ tprintf(const char *fmt,...)
 	b_clr_changed(bp);
 	curwp->w_traits = save_w_traits;
 
-	pop_fake_win(save_wp);
+	pop_fake_win(save_wp, save_bp);
 	dfoutfn = save_outfn;
 	nested = FALSE;
     }

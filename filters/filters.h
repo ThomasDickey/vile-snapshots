@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.59 2002/06/30 17:38:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.61 2002/10/09 23:38:39 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -15,12 +15,16 @@
 # define HAVE_STRING_H 1
 #endif
 
+#ifndef OPT_LOCALE
+#define OPT_LOCALE 0
+#endif
+
 #include <sys/types.h>		/* sometimes needed to get size_t */
 
-#if HAVE_STDLIB_H
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #else
-# if !defined(HAVE_CONFIG_H) || MISSING_EXTERN_MALLOC
+# if !defined(HAVE_CONFIG_H) || defined(MISSING_EXTERN_MALLOC)
 extern	char *	malloc	( size_t len );
 # endif
 #endif
@@ -35,31 +39,31 @@ extern	char *	malloc	( size_t len );
 #include <string.h>
 #endif
 
-#if MISSING_EXTERN__FILBUF
+#ifdef MISSING_EXTERN__FILBUF
 extern	int	_filbuf	( FILE *fp );
 #endif
 
-#if MISSING_EXTERN__FLSBUF
+#ifdef MISSING_EXTERN__FLSBUF
 extern	int	_flsbuf	( int len, FILE *fp );
 #endif
 
-#if MISSING_EXTERN_FCLOSE
+#ifdef MISSING_EXTERN_FCLOSE
 extern	int	fclose	( FILE *fp );
 #endif
 
-#if MISSING_EXTERN_FPRINTF
+#ifdef MISSING_EXTERN_FPRINTF
 extern	int	fprintf	( FILE *fp, const char *fmt, ... );
 #endif
 
-#if MISSING_EXTERN_FPUTS
+#ifdef MISSING_EXTERN_FPUTS
 extern	int	fputs	( const char *s, FILE *fp );
 #endif
 
-#if MISSING_EXTERN_PRINTF
+#ifdef MISSING_EXTERN_PRINTF
 extern	int	printf	( const char *fmt, ... );
 #endif
 
-#if MISSING_EXTERN_SSCANF
+#ifdef MISSING_EXTERN_SSCANF
 extern	int	sscanf	( const char *src, const char *fmt, ... );
 #endif
 
@@ -202,12 +206,19 @@ FILTER_DEF filter_def = { name, init_filter, do_filter, options }
 
 #define DefineFilter(name) DefineOptFilter(name,0)
 
-#if defined(FLEX_SCANNER) && defined(filter_def)
+#if defined(FLEX_SCANNER)
+#if defined(filter_def)
 #undef yywrap
 #define ECHO flt_echo(yytext, yyleng);
 #define YY_INPUT(buf,result,max_size) result = flt_input(buf,max_size)
-#define YY_NEVER_INTERACTIVE 1
 #define YY_FATAL_ERROR(msg) flt_failed(msg);
+#endif
+/* quiet "gcc -Wunused" warnings */
+#define YY_NEVER_INTERACTIVE 1
+#define YY_ALWAYS_INTERACTIVE 0
+#define YY_MAIN 0
+#define YY_NO_UNPUT 1
+#define YY_STACK_USED 0
 #endif
 
 /*

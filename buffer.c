@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.251 2002/09/02 14:40:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.253 2002/10/17 00:24:02 tom Exp $
  *
  */
 
@@ -1027,7 +1027,7 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 	 */
 
 	trait_matches = 0;
-#ifdef WINMARK
+#if WINMARK
 #define TRAIT_MATCHES_NEEDED 5
 #else
 #define TRAIT_MATCHES_NEEDED 4
@@ -1035,7 +1035,7 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 	for_each_line(lp, bp) {
 	    if (lp == bp->b_dot.l && llength(lp) > bp->b_dot.o)
 		trait_matches++;
-#ifdef WINMARK
+#if WINMARK
 	    if (lp == bp->b_mark.l && llength(lp) > bp->b_mark.o)
 		trait_matches++;
 #endif
@@ -1081,7 +1081,7 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
     return suckitin(bp, (bp->b_nwnd++ == 0), lockfl);
 }
 
-#if NEEDED
+#if VILE_NEEDED
 /* check to ensure any buffer that thinks it's displayed _is_ displayed */
 void
 buf_win_sanity(void)
@@ -1413,10 +1413,9 @@ zotbuf(BUFFER *bp)
 	    (void) swbuffer(bp);
     } else {
 #if OPT_NAMEBST
-	if (is_scratchname(bp->b_bname)) {
-	    char procname[NBUFN];
-	    delete_namebst(strip_brackets(procname, bp->b_bname),
-			   TRUE);
+	if (tb_values(bp->b_procname) != 0) {
+	    delete_namebst(tb_values(bp->b_procname), TRUE);
+	    tb_free(&(bp->b_procname));
 	}
 #endif
 	FreeBuffer(bp);

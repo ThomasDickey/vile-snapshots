@@ -9,7 +9,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.80 2002/04/30 23:40:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.81 2002/10/09 13:43:16 tom Exp $
  *
  */
 
@@ -707,7 +707,7 @@ fmatch(int rch)
 	if (!backcharfailed)
 	    forwchar(FALSE, 1);
 	if (update(SORTOFTRUE) == TRUE) {
-#ifdef DISP_NTWIN
+#if DISP_NTWIN
 	    /*
 	     * For all flavors of the editor except winvile,
 	     * update() has made the cursor visible.  Winvile,

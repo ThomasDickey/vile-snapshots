@@ -4,7 +4,7 @@
  * "termio.c". It compiles into nothing if not an ANSI device.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.40 1999/09/19 20:09:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.41 2002/10/09 22:28:24 tom Exp $
  */
 
 
@@ -183,7 +183,7 @@ force_colors(int fc, int bc)
 }
 #endif
 
-#if BROKEN_REVERSE_VIDEO
+#ifdef BROKEN_REVERSE_VIDEO
 /* there was something wrong with this "fix".  the "else" of
 		the ifdef just uses "ESC [ 7 m" to set reverse
 		video, and it works under DOS for me....  but then, i
@@ -335,7 +335,7 @@ ansiparm(register int n)
 {
 	register int q,r;
 
-#if optimize_works /* i don't think it does, although it should, to be ANSI */
+#ifdef optimize_works /* i don't think it does, although it should, to be ANSI */
 	if (n == 1) return;
 #endif
 

@@ -155,6 +155,7 @@ The following are implemented:
 	vile-diff-filt	(diff/patch files)
 	vile-ecl-filt	(Prolog/ECLiPSe)
 	vile-esql-filt	(embedded SQL with C/C++)
+	vile-est-filt	(Enscript syntax-descriptions)
 	vile-html-filt	(HTML with embedded JavaScript)
 	vile-imake-filt	(imake)
 	vile-key-filt	(Vile keyword files)
@@ -169,10 +170,12 @@ The following are implemented:
 	vile-pas-filt	(Pascal)
 	vile-perl-filt	(Perl, in C)
 	vile-pl-filt	(Perl, in lex)
+	vile-ps-filt	(PostScript)
 	vile-py-filt	(Python)
 	vile-rc-filt	(Windows resource files)
 	vile-rcs-filt	(RCS archives)
 	vile-rexx-filt	(REXX)
+	vile-rpm-filt	(RPM ".spec" files)
 	vile-sccs-filt	(SCCS archives)
 	vile-sed-filt	(sed scripts)
 	vile-sh-filt	(sh/ksh/csh)
@@ -208,4 +211,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.24 2001/03/21 12:43:50 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.26 2002/10/16 00:26:19 tom Exp $

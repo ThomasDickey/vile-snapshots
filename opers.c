@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995-2002 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.81 2002/07/02 21:45:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.83 2002/10/11 14:12:22 tom Exp $
  *
  */
 
@@ -101,6 +101,7 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 
     /* and execute the motion */
     status = execute(cfp, f, n);
+    post_op_dot = DOT;
 
     if (status != TRUE) {
 	doingopcmd = FALSE;
@@ -227,14 +228,15 @@ operyank(int f, int n)
      * DOT where it is.
      */
     if (s == TRUE) {
-	if (line_no(curbp, region.r_orig.l) != 0
-	    && line_no(curbp, region.r_orig.l) < line_no(curbp, savedot.l)) {
-	    savedot = region.r_orig;
-	} else if (getregion(&region) == TRUE
-		   && !samepoint(region.r_orig, region.r_end)) {
+	if (line_no(curbp, post_op_dot.l) != 0
+	    && line_no(curbp, post_op_dot.l) < line_no(curbp, savedot.l)) {
+	    savedot = post_op_dot;
+	} else if (!samepoint(region.r_orig, region.r_end)) {
 	    if (sameline(region.r_orig, savedot)
-		&& region.r_orig.o < savedot.o)
+		&& sameline(region.r_end, savedot)
+		&& region.r_orig.o < savedot.o) {
 		savedot = region.r_orig;
+	    }
 	}
     }
     DOT = savedot;

@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.37 2002/02/04 00:42:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.38 2002/10/09 13:43:58 tom Exp $
  */
 
 #include "estruct.h"
@@ -25,7 +25,7 @@
 #define SHELL_C_LEN      (sizeof(" -c ") - 1)
 
 static int   host_type = HOST_UNDEF; /* nt or 95? */
-#ifndef DISP_NTWIN
+#if !DISP_NTWIN
 static char  saved_title[256];
 #endif
 
@@ -760,7 +760,7 @@ w32_system_winvile(const char *cmd, int *pressret)
 void
 w32_keybrd_reopen(int pressret)
 {
-#ifdef DISP_NTCONS
+#if DISP_NTCONS
     int c;
 
     if (pressret)
@@ -797,7 +797,7 @@ w32_keybrd_reopen(int pressret)
 void
 set_console_title(const char *title)
 {
-#ifndef DISP_NTWIN
+#if !DISP_NTWIN
     GetConsoleTitle(saved_title, sizeof(saved_title));
     SetConsoleTitle(title);
 #endif
@@ -808,7 +808,7 @@ set_console_title(const char *title)
 void
 restore_console_title(void)
 {
-#ifndef DISP_NTWIN
+#if !DISP_NTWIN
     SetConsoleTitle(saved_title);
 #endif
 }
@@ -1155,7 +1155,7 @@ w32_del_selection(int copy_to_cbrd)
 int
 w32_keybrd_write(char *data)
 {
-#ifdef DISP_NTCONS
+#if DISP_NTCONS
     HANDLE        hstdin;
     INPUT_RECORD  ir;
     DWORD         unused;
@@ -1165,7 +1165,7 @@ w32_keybrd_write(char *data)
     int           rc;
 
     rc = TRUE;
-#ifdef DISP_NTCONS
+#if DISP_NTCONS
     hstdin = GetStdHandle(STD_INPUT_HANDLE);
     memset(&ir, 0, sizeof(ir));
     ir.EventType               = KEY_EVENT;
@@ -1175,7 +1175,7 @@ w32_keybrd_write(char *data)
 #endif
     while (*data && rc)
     {
-#ifdef DISP_NTCONS
+#if DISP_NTCONS
         ir.Event.KeyEvent.uChar.AsciiChar = *data;
         rc = WriteConsoleInput(hstdin, &ir, 1, &unused);
 #else
@@ -1188,7 +1188,7 @@ w32_keybrd_write(char *data)
 
 
 
-#ifdef DISP_NTWIN
+#if DISP_NTWIN
 
 /* Center a child window (usually a dialog box) over a parent. */
 void

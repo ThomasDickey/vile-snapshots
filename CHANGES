@@ -1,5 +1,72 @@
 Changes for vile 9.4 (released ??? ??? ?? ????)
 
+ 20021016 (e)
+	> Clark Morgan:
+	+ correction to 9.3d change:  @<register> was busted (command mode) and
+	  :write-message "@stuff" caused vile to complain when '@' was pressed. 
+	+ I noticed recently that I could not use vile's file/directory
+	  traversal feature (on linux) to find the value of an errno.h macro
+	  (e.g., EINVAL).  As it turns out, linux puts these definitions in a
+	  directory that's referencedk via a symbolic link resident within
+	  /usr/include (other features such as the X11 includes files are
+	  handled similarly).  Seems that GNU's find won't traverse symbolic
+	  links without specifying an explicit option (it appears SunOS 5.7
+	  exhibits similar behavior and uses the exact same option name).  The
+	  enclosed patch adds "-follow" as an optional parameter to vile's
+	  file/directory traversal repertoire.
+	> Duncan Sargeant:
+	+ fix a small bug in the perl filter where pod code starting with
+	  "=cut" would not be filtered (it's a valid start and end marker for
+	  pod).
+	> Paul Fox:
+	+ make filters/makefile.in's LDFLAGS variable the same as in the
+	  top-level makefile to fix a case where flex libraries were not found
+	  in a nonstandard location.
+	> Tom Dickey:
+	+ add b_procname field to BUFFER, use that to save the given procedure
+	  name when storing a macro.  This fixes a problem when removing
+	  procedures whose name is longer than NBUFN-2, which could leave the
+	  key binding table pointing to a non-existent buffer, e.g., ^X-, for
+	  next-cur-identifier.
+	+ documented ~elsewith in doc/modes.doc (report by Adam Denton).
+	+ correct handling of "uc" keyword for perl filter in this line:
+		if ($diagType =~ uc $widgetType)
+	  It was being treated as a pattern delimiter.
+	+ add several short-named relational operators "&geq", "&gt", "&leq",
+	  "&lt", "&neq", "&sgeq", "&sgt", "&sleq", "&slt", "&sneq" to reduce
+	  the need for "&not" (suggested by Adam Denton).
+	+ change UFxxx variables to an enum, using this to check for unhandled
+	  cases in eval.c
+	+ repair missing mktemp() call in imydying(), broken in 9.3d changes
+	  (reports by George Eccles and Paul Fox).
+	+ add syntax filter for rpm ".spec" files.
+	+ add syntax filter for PostScript ".ps" files.
+	+ add syntax filter for enscript ".st" files.
+	+ make cursor-movement on a yank command match vi's, tested for various
+	  left/up motions such as yk, yh, yH, y1G, y0, y-, yb (report by
+	  George Eccles).
+	+ correct order of initialization in operyank() from 9.3b changes,
+	  which could cause a core dump (reported by George Eccles).
+	+ modify check for renaming the unnamed-buffer when writing it; do not
+	  rename it if the write was to a pipe (report by Paul Fox).
+	+ add definition for OWTOOLKIT_WARNING_DISABLED to x11.c, without which
+	  the Xol version cannot be compiled under Solaris 8.
+	+ add -Wundef flag for gcc warnings, modified ifdef's to make SYS_xxx,
+	  CC_xxx, DISP_xxx variables always defined as 0/1, and use #ifdef to
+	  check for the HAVE_xxx and similar variables rather than #if.
+	+ modify configure check for Athena (Xaw, etc) libraries to include
+	  Xpm, on which XFree86 4.x Xaw depends.  That allows xvile to be
+	  built on cygwin.
+	+ modify logic of pop_fake_win() to allow for the possibility that the
+	  current buffer is not related to the current window.  This can/did
+	  happen in tprintf(), for example, but could happen in one of the
+	  other calls.  In particular, if ~trace was enabled, that resulted in
+	  making ":ww" fail to write files which had no current window.
+	+ add pattern for hexadecimal character codes in htmlfilt.l
+	+ modify configure script to use '%' consistently as sed delimiter,
+	  rather than sometimes '@', to avoid problems with AFS.
+	+ update config.guess, config.sub
+	
  20020902 (d)
 	> Brendan O'Dea:
 	+ updates to allow vile to build with perl 5.8.0 (ifdef's checked for

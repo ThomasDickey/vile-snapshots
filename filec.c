@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.109 2002/09/02 16:53:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.110 2002/10/09 23:35:23 tom Exp $
  *
  */
 
@@ -38,7 +38,7 @@
 
 #define isDotname(leaf) (!strcmp(leaf, ".") || !strcmp(leaf, ".."))
 
-#if (MISSING_EXTERN_ENVIRON || __DJGPP__ >= 2)
+#if defined(MISSING_EXTERN_ENVIRON) || (defined(__DJGPP__) && __DJGPP__ >= 2)
 extern char **environ;
 #endif
 

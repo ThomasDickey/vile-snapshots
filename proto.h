@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.497 2002/09/02 14:34:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.502 2002/10/09 22:22:40 tom Exp $
  *
  */
 
@@ -624,7 +624,7 @@ void	 itb_first (ITBUFF *p);
 void	 itb_free (ITBUFF **p);
 void	 itb_stuff (ITBUFF *p, int c);
 
-#if NEEDED
+#if VILE_NEEDED
 ITBUFF * itb_insert (ITBUFF **p, int c);
 void	 itb_delete (ITBUFF *p, size_t cnt);
 void	 itb_unnext (ITBUFF *p);
@@ -869,7 +869,7 @@ extern void set_rdonly (BUFFER *bp, const char *name, int mode);
 extern L_NUM vl_line_count (BUFFER *the_buffer);
 extern long vl_atol(char *str, int base, int *failed);
 
-#if HAVE_STRTOUL
+#ifdef HAVE_STRTOUL
 extern ULONG vl_atoul(char *str, int base, int *failed);
 #else
 #define vl_atoul(str, base, failed) (ULONG)vl_atol(str, base, failed)
@@ -1027,9 +1027,10 @@ typedef struct findcfg_struct
                            /* ascii char that triggers a nonrecursive find;
                             * 0 (zero) indicates that this token is unset.
                             */
-    int        dirs_only; /* Boolean, T -> find only looks for directory
+    int        dirs_only;  /* Boolean, T -> find only looks for directory
                             * names.
                             */
+    int        follow;     /* Boolean, T -> follow symbolic links. */
 } FINDCFG;
 
 extern char *last_findcmd(void);
@@ -1249,7 +1250,7 @@ extern int resize (int f, int n);
 
 #if OPT_SEL_YANK || OPT_PERL || OPT_COLOR || OPT_EVAL || OPT_DEBUGMACROS
 extern WINDOW * push_fake_win(BUFFER *bp);
-extern BUFFER * pop_fake_win(WINDOW *oldwp);
+extern BUFFER * pop_fake_win(WINDOW *oldwp, BUFFER *oldbp);
 #endif
 
 #if OPT_PERL
@@ -1293,7 +1294,7 @@ extern	void	own_selection		(void);
 #endif	/* !XTOOKIT */
 
 #if OPT_MENUS
-#if NEED_X_INCLUDES
+#ifdef NEED_X_INCLUDES
 extern	Widget	x_menu_widget		(void);
 #endif
 extern	int	x_menu_height		(void);
@@ -1356,204 +1357,204 @@ extern	void	flt_leaks (void);
 #endif
 
 #if SYS_UNIX
-#if MISSING_EXTERN_ACCESS
+#ifdef MISSING_EXTERN_ACCESS
 extern	int	access	(const char *path, int mode);
 #endif
-#if MISSING_EXTERN_ALARM
+#ifdef MISSING_EXTERN_ALARM
 extern	UINT	alarm	(UINT secs);
 #endif
-#if MISSING_EXTERN_ATOI
+#ifdef MISSING_EXTERN_ATOI
 extern int	atoi	(const char *s);
 #endif
-#if MISSING_EXTERN_CHDIR
+#ifdef MISSING_EXTERN_CHDIR
 extern	int	chdir	(const char *path);
 #endif
-#if MISSING_EXTERN_CLOSE
+#ifdef MISSING_EXTERN_CLOSE
 extern	int	close	(int fd);
 #endif
-#if MISSING_EXTERN_CRYPT
+#ifdef MISSING_EXTERN_CRYPT
 extern	char *	crypt	(const char *key, const char *salt);
 #endif
-#if MISSING_EXTERN_DUP
+#ifdef MISSING_EXTERN_DUP
 extern	int	dup	(int fd);
 #endif
-#if MISSING_EXTERN_EXECLP
+#ifdef MISSING_EXTERN_EXECLP
 extern	int	execlp	(const char *path, ...);
 #endif
-#if MISSING_EXTERN_FCLOSE
+#ifdef MISSING_EXTERN_FCLOSE
 extern	int	fclose	(FILE *fp);
 #endif
-#if MISSING_EXTERN_FCLOSE
+#ifdef MISSING_EXTERN_FCLOSE
 extern	int	fflush	(FILE *fp);
 #endif
-#if MISSING_EXTERN_FILENO && !defined(fileno)
+#if defined(MISSING_EXTERN_FILENO) && !defined(fileno)
 extern	int	fileno	(FILE *fp);
 #endif
-#if MISSING_EXTERN_FORK
+#ifdef MISSING_EXTERN_FORK
 extern	int	fork	(void);
 #endif
-#if MISSING_EXTERN_FPRINTF
+#ifdef MISSING_EXTERN_FPRINTF
 extern	int	fprintf	(FILE *fp, const char *fmt, ...);
 #endif
-#if MISSING_EXTERN_FPUTS
+#ifdef MISSING_EXTERN_FPUTS
 extern	int	fputs	(const char *s, FILE *fp);
 #endif
-#if MISSING_EXTERN_FREAD
+#ifdef MISSING_EXTERN_FREAD
 extern	int	fread	(char *ptr, size_t size, size_t nmemb, FILE *fp);
 #endif
-#if MISSING_EXTERN_FREE
+#ifdef MISSING_EXTERN_FREE
 extern void	free	(void *ptr);
 #endif
-#if MISSING_EXTERN_FSEEK
+#ifdef MISSING_EXTERN_FSEEK
 extern	int	fseek	(FILE *fp, long offset, int whence);
 #endif
-#if MISSING_EXTERN_FWRITE
+#ifdef MISSING_EXTERN_FWRITE
 extern	int	fwrite	(const char *ptr, size_t size, size_t nmemb, FILE *fp);
 #endif
-#if MISSING_EXTERN_GETCWD && HAVE_GETCWD
+#if defined(MISSING_EXTERN_GETCWD) && defined(HAVE_GETCWD)
 extern	char *	getcwd (char *buffer, int len);
 #endif
-#if MISSING_EXTERN_GETENV
+#ifdef MISSING_EXTERN_GETENV
 extern	char *	getenv	(const char *name);
 #endif
-#if MISSING_EXTERN_GETPASS
+#ifdef MISSING_EXTERN_GETPASS
 extern	char *	getpass	(const char *prompt);
 #endif
-#if MISSING_EXTERN_GETHOSTNAME && HAVE_GETHOSTNAME
+#if defined(MISSING_EXTERN_GETHOSTNAME) && defined(HAVE_GETHOSTNAME)
 extern	int	gethostname (char *name, int len);
 #endif
-#if MISSING_EXTERN_GETPGRP
+#ifdef MISSING_EXTERN_GETPGRP
 extern	int	getpgrp	(int pid);
 #endif
-#if MISSING_EXTERN_GETPID
+#ifdef MISSING_EXTERN_GETPID
 extern	int	getpid	(void);
 #endif
-#if MISSING_EXTERN_GETUID
+#ifdef MISSING_EXTERN_GETUID
 extern	int	getuid	(void);
 #endif
-#if MISSING_EXTERN_GETWD && HAVE_GETWD
+#if defined(MISSING_EXTERN_GETWD) && defined(HAVE_GETWD)
 extern	char *	getwd	(char *buffer);
 #endif
-#if MISSING_EXTERN_IOCTL
+#ifdef MISSING_EXTERN_IOCTL
 extern	int	ioctl	(int fd, ULONG mask, caddr_t ptr);
 #endif
-#if MISSING_EXTERN_ISATTY
+#ifdef MISSING_EXTERN_ISATTY
 extern	int	isatty	(int fd);
 #endif
-#if MISSING_EXTERN_KILL
+#ifdef MISSING_EXTERN_KILL
 extern	int	kill	(int pid, int sig);
 #endif
-#if MISSING_EXTERN_KILLPG && HAVE_KILLPG
+#if defined(MISSING_EXTERN_KILLPG) && defined(HAVE_KILLPG)
 extern	int	killpg	(int pgrp, int sig);
 #endif
-#if MISSING_EXTERN_LONGJMP
+#ifdef MISSING_EXTERN_LONGJMP
 extern	void	longjmp	(jmp_buf env, int val);
 #endif
-#if MISSING_EXTERN_LSTAT
+#ifdef MISSING_EXTERN_LSTAT
 extern	int	lstat (const char *path, struct stat *sb);
 #endif
-#if MISSING_EXTERN_MEMSET
+#ifdef MISSING_EXTERN_MEMSET
 #ifndef memset	/* may be defined by dbmalloc */
 extern	void *	memset	(void *dst, int ch, size_t n);
 #endif
 #endif
-#if MISSING_EXTERN_MKDIR && HAVE_MKDIR
+#if defined(MISSING_EXTERN_MKDIR) && defined(HAVE_MKDIR)
 extern	int	mkdir	(const char *path, int mode);
 #endif
-#if MISSING_EXTERN_OPEN
+#ifdef MISSING_EXTERN_OPEN
 extern	int	open	(char *path, int flags);
 #endif
-#if MISSING_EXTERN_PERROR
+#ifdef MISSING_EXTERN_PERROR
 extern	void	perror	(const char *s);
 #endif
-#if MISSING_EXTERN_PIPE
+#ifdef MISSING_EXTERN_PIPE
 extern	int	pipe	(int filedes[2]);
 #endif
-#if MISSING_EXTERN_PRINTF
+#ifdef MISSING_EXTERN_PRINTF
 extern	int	printf	(const char *fmt, ...);
 #endif
-#if MISSING_EXTERN_PUTS
+#ifdef MISSING_EXTERN_PUTS
 extern	int	puts	(const char *s);
 #endif
-#if MISSING_EXTERN_QSORT
+#ifdef MISSING_EXTERN_QSORT
 #if ANSI_QSORT
 extern void qsort (void *base, size_t nmemb, size_t size, int (*compar)(const void *a, const void *b);
 #else
 extern void qsort (void *base, size_t nmemb, size_t size, int (*compar)(char **a, char **b);
 #endif
 #endif
-#if MISSING_EXTERN_READ
+#ifdef MISSING_EXTERN_READ
 extern	int	read	(int fd, char *buffer, size_t size);
 #endif
-#if MISSING_EXTERN_READLINK
+#ifdef MISSING_EXTERN_READLINK
 extern	int	readlink (const char *path, char *buffer, size_t size);
 #endif
-#if MISSING_EXTERN_SELECT && HAVE_SELECT && HAVE_TYPE_FD_SET
+#if defined(MISSING_EXTERN_SELECT) && defined(HAVE_SELECT) && defined(HAVE_TYPE_FD_SET)
 extern	int	select	(int numfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
 #endif
-#if MISSING_EXTERN_SETBUF
+#ifdef MISSING_EXTERN_SETBUF
 extern	void	setbuf	(FILE *fp, char *buffer);
 #endif
-#if MISSING_EXTERN_SETBUFFER
+#ifdef MISSING_EXTERN_SETBUFFER
 extern	void	setbuffer (FILE *fp, char *buffer, int size);
 #endif
-#if MISSING_EXTERN_SETITIMER && HAVE_SETITIMER
+#if defined(MISSING_EXTERN_SETITIMER) && defined(HAVE_SETITIMER)
 extern	int	setitimer (int which, const struct itimerval *value, struct itimerval *ovalue);
 #endif
-#if MISSING_EXTERN_SETJMP && !defined(setjmp)
+#if defined(MISSING_EXTERN_SETJMP) && !defined(setjmp)
 extern	int	setjmp	(jmp_buf env);
 #endif
-#if MISSING_EXTERN_SETPGRP
+#ifdef MISSING_EXTERN_SETPGRP
 #if SETPGRP_VOID
 extern	pid_t	setpgrp	(void);
 #else
 extern	int	setpgrp	(int pid, int pgid);
 #endif
 #endif
-#if MISSING_EXTERN_SETSID
+#ifdef MISSING_EXTERN_SETSID
 extern	pid_t	setsid	(void);
 #endif
-#if MISSING_EXTERN_SETVBUF
-#if SETVBUF_REVERSED
+#ifdef MISSING_EXTERN_SETVBUF
+#ifdef SETVBUF_REVERSED
 extern	int	setvbuf (FILE *fp, int mode, char *buffer, size_t size);
 #else
 extern	int	setvbuf (FILE *fp, char *buffer, int mode, size_t size);
 #endif
 #endif
-#if MISSING_EXTERN_SLEEP
+#ifdef MISSING_EXTERN_SLEEP
 extern	int	sleep	(UINT secs);
 #endif
-#if MISSING_EXTERN_SSCANF
+#ifdef MISSING_EXTERN_SSCANF
 extern	int	sscanf	(const char *src, const char *fmt, ...);
 #endif
-#if MISSING_EXTERN_STRERROR
+#ifdef MISSING_EXTERN_STRERROR
 extern	char *	strerror (int code);
 #endif
-#if MISSING_EXTERN_STRTOL
+#ifdef MISSING_EXTERN_STRTOL
 extern	long	strtol	(const char *nptr, char **endptr, int base);
 #endif
-#if MISSING_EXTERN_STRTOUL && HAVE_STRTOUL
+#if defined(MISSING_EXTERN_STRTOUL) && defined(HAVE_STRTOUL)
 extern	ULONG	strtoul	(const char *nptr, char **endptr, int base);
 #endif
-#if MISSING_EXTERN_SYSTEM
+#ifdef MISSING_EXTERN_SYSTEM
 extern	int	system	(const char *cmd);
 #endif
-#if MISSING_EXTERN_TIME
+#ifdef MISSING_EXTERN_TIME
 extern	time_t	time	(time_t *t);
 #endif
-#if MISSING_EXTERN_UNLINK
+#ifdef MISSING_EXTERN_UNLINK
 extern	int	unlink	(char *path);
 #endif
-#if MISSING_EXTERN_UTIME && HAVE_UTIME
+#if defined(MISSING_EXTERN_UTIME) && defined(HAVE_UTIME)
 extern	int	utime	(const char *path, const struct utimbuf *t);
 #endif
-#if MISSING_EXTERN_UTIMES && HAVE_UTIMES
+#if defined(MISSING_EXTERN_UTIMES) && defined(HAVE_UTIMES)
 extern	int	utimes	(const char *path, struct timeval *t);
 #endif
-#if MISSING_EXTERN_WAIT
+#ifdef MISSING_EXTERN_WAIT
 extern	int	wait	(int *sb);
 #endif
-#if MISSING_EXTERN_WRITE
+#ifdef MISSING_EXTERN_WRITE
 extern	int	write	(int fd, const char *buffer, int size);
 #endif
 #endif

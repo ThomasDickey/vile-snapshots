@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.87 2002/04/30 11:46:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.88 2002/10/09 19:47:36 tom Exp $
  *
  */
 
@@ -218,7 +218,7 @@ exec_sh_c(char *cmd)
     exit(-1);
 }
 
-#if LATER
+#if VILE_SOMEDAY
 
 int shellstatus;
 
@@ -233,7 +233,7 @@ process_exit_status(int status)
 	return (EXECUTION_SUCCESS);
 }
 
-#endif /* LATER */
+#endif /* VILE_SOMEDAY */
 
 int
 system_SHELL(char *cmd)
@@ -258,7 +258,7 @@ system_SHELL(char *cmd)
 	    }
 	}
 	endofDisplay();
-#if LATER
+#if VILE_SOMEDAY
 	shellstatus = process_exit_status(status);
 #endif
 	return 0;

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.130 2002/08/26 23:58:44 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.131 2002/10/07 23:33:59 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -1796,12 +1796,20 @@ decode_key_event(KEY_EVENT_RECORD * irp)
 		    key |= mod_ALT;
 		if (state & SHIFT_PRESSED)
 		    key |= mod_SHIFT;
-		if ((keyxlate[i].vile == '2') &&
-		    ((key & mod_CTRL) == mod_CTRL) &&
-		    ((key & mod_ALT) == 0)) {
-		    /* either ^2 or ^@, => nul char */
+		if (keyxlate[i].vile == '2') {
+		    if ((key & mod_CTRL) && ((key & mod_ALT) == 0)) {
+			/* either ^2 or ^@, => nul char */
 
-		    key = 0;
+			key = 0;
+		    } else if ((key & mod_SHIFT) &&
+			       ((key & (mod_ALT | mod_CTRL)) == 0)) {
+			/*
+			 * this will be mapped to '@' if we let Windows do
+			 * the translation
+			 */
+
+			key = NOKYMAP;
+		    }
 		}
 	    } else {
 		key = keyp->vile;

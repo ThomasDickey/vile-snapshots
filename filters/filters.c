@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.83 2002/09/02 12:57:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.84 2002/10/09 23:38:39 tom Exp $
  *
  */
 
@@ -9,7 +9,7 @@
 
 #define QUOTE '\''
 
-#if HAVE_LONG_FILE_NAMES
+#ifdef HAVE_LONG_FILE_NAMES
 #define KEYFILE_SUFFIX ".keywords"
 #else
 #define KEYFILE_SUFFIX ".key"

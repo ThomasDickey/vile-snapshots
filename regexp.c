@@ -16,7 +16,7 @@
  *
  *		ted, 01/01
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.80 2002/01/09 00:32:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.81 2002/10/09 19:51:30 tom Exp $
  *
  */
 
@@ -458,7 +458,7 @@ regcomp(const char *origexp, int magic)
 	explen = 0;
     }
 #endif
-#if REGDEBUG
+#ifdef REGDEBUG
     regdump(r);
 #endif
     return (r);

@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.192 2002/01/12 16:42:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.193 2002/10/09 19:57:04 tom Exp $
  *
  */
 
@@ -36,7 +36,7 @@ static void ttmiscinit (void);
 
 /* I suppose this config stuff should move to estruct.h */
 
-#if HAVE_TERMIOS_H && HAVE_TCGETATTR
+#if defined(HAVE_TERMIOS_H) && defined(HAVE_TCGETATTR)
 /* Note: <termios.h> is available on some systems, but in order to use it
  * a special library needs to be linked in.  This is the case on the NeXT
  * where libposix.a needs to be linked in.  Unfortunately libposix.a is buggy.
@@ -47,11 +47,11 @@ static void ttmiscinit (void);
 # define USE_POSIX_TERMIOS 1
 # define USE_FCNTL 1
 #else
-# if HAVE_TERMIO_H
+# ifdef HAVE_TERMIO_H
 #  define USE_TERMIO 1
 #  define USE_FCNTL 1
 # else
-#  if HAVE_SGTTY_H
+#  ifdef HAVE_SGTTY_H
 #   define USE_SGTTY 1
 #   define USE_FIONREAD 1
 #  else
@@ -67,20 +67,20 @@ error "No termios or sgtty"
 
 #if !defined(FIONREAD)
 /* try harder to get it */
-# if HAVE_SYS_FILIO_H
+# ifdef HAVE_SYS_FILIO_H
 #  include "sys/filio.h"
 # else /* if you have trouble including ioctl.h, try "sys/ioctl.h" instead */
-#  if HAVE_IOCTL_H
+#  ifdef HAVE_IOCTL_H
 #   include <ioctl.h>
 #  else
-#   if HAVE_SYS_IOCTL_H
+#   ifdef HAVE_SYS_IOCTL_H
 #    include <sys/ioctl.h>
 #   endif
 #  endif
 # endif
 #endif
 
-#if !defined(FIONREAD) && HAVE_SYS_SOCKET_H	/* SCO OpenServer v5 */
+#if !defined(FIONREAD) && defined(HAVE_SYS_SOCKET_H)	/* SCO OpenServer v5 */
 # include <sys/socket.h>
 #endif
 
@@ -101,7 +101,7 @@ error "No termios or sgtty"
 #  undef USE_FCNTL
 #  define USE_FIONREAD 1
 # endif
-# if HAVE_SELECT && HAVE_TYPE_FD_SET
+# if defined(HAVE_SELECT) && defined(HAVE_TYPE_FD_SET)
    /* Attempt to use the select call if possible to find out if input is
     * ready.  This will allow us to use the file descriptor watching
     * facilities.
@@ -110,10 +110,30 @@ error "No termios or sgtty"
 #  undef USE_FCNTL
 #  undef USE_FIONREAD
 # else
-#  if HAVE_POLL && HAVE_POLL_H
+#  if defined(HAVE_POLL) && defined(HAVE_POLL_H)
 #   define USE_POLL 1
 #  endif
 # endif
+#endif
+
+#ifndef USE_FIONREAD
+#define USE_FIONREAD 0
+#endif
+
+#ifndef USE_FCNTL
+#define USE_FCNTL 0
+#endif
+
+#ifndef USE_POLL
+#define USE_POLL 0
+#endif
+
+#ifndef USE_SGTTY
+#define USE_SGTTY 0
+#endif
+
+#ifndef USE_TERMIO
+#define USE_TERMIO 0
 #endif
 
 #if USE_POLL
@@ -122,6 +142,7 @@ error "No termios or sgtty"
 
 #ifndef O_NDELAY
 #undef USE_FCNTL
+#define USE_FCNTL 1
 #endif
 
 #if USE_FCNTL
@@ -178,7 +199,7 @@ set_kbd_polling(int yes)
 
 #include <termios.h>
 
-#if NEED_PTEM_H
+#ifdef NEED_PTEM_H
 /* they neglected to define struct winsize in termios.h -- it's only
    in termio.h	*/
 #include	<sys/stream.h>
@@ -234,8 +255,8 @@ ttopen(void)
 	vl_save_tty();
 
 #if !DISP_X11
-#if HAVE_SETVBUF
-# if SETVBUF_REVERSED
+#ifdef HAVE_SETVBUF
+# ifdef SETVBUF_REVERSED
 	setvbuf(stdout, _IOFBF, tobuf, TBUFSIZ);
 # else
 	setvbuf(stdout, tobuf, _IOFBF, TBUFSIZ);
@@ -360,7 +381,7 @@ ttunclean(void)
 /* original terminal characteristics and characteristics to use inside */
 struct	termio	otermio, ntermio;
 
-#if HAVE_SETBUFFER		/* setbuffer() isn't on most termio systems */
+#ifdef HAVE_SETBUFFER		/* setbuffer() isn't on most termio systems */
 char tobuf[TBUFSIZ];		/* terminal output buffer */
 #endif
 
@@ -398,7 +419,7 @@ ttopen(void)
 {
 	vl_save_tty();
 
-#if HAVE_SETBUFFER && !DISP_X11
+#if defined(HAVE_SETBUFFER) && !DISP_X11
 	setbuffer(stdout, tobuf, TBUFSIZ);
 #endif
 

@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.260 2002/08/25 21:41:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.262 2002/10/09 23:03:38 tom Exp $
  *
  */
 
@@ -34,7 +34,7 @@
 
 #include	<X11/cursorfont.h>
 
-#if defined(lint) && HAVE_X11_INTRINSICI_H
+#if defined(lint) && defined(HAVE_X11_INTRINSICI_H)
 #include	<X11/IntrinsicI.h>
 #endif
 
@@ -71,24 +71,32 @@
 #ifndef OPT_KEV_SCROLLBARS
 # if NO_WIDGETS
 #  define OPT_KEV_SCROLLBARS 1
+# else
+#  define OPT_KEV_SCROLLBARS 0
 # endif
 #endif
 
 #ifndef OPT_KEV_DRAGGING
 # if NO_WIDGETS
 #  define OPT_KEV_DRAGGING 1
+# else
+#  define OPT_KEV_DRAGGING 0
 # endif
 #endif
 
 #ifndef KEV_WIDGETS
 # if NO_WIDGETS || OPT_KEV_SCROLLBARS
 #  define KEV_WIDGETS 1
+# else
+#  define KEV_WIDGETS 0
 # endif
 #endif
 
 #ifndef OPT_XAW_SCROLLBARS
 # if ATHENA_WIDGETS && !OPT_KEV_SCROLLBARS
 #  define OPT_XAW_SCROLLBARS 1
+# else
+#  define OPT_XAW_SCROLLBARS 0
 # endif
 #endif
 
@@ -104,17 +112,17 @@
 #undef strrchr
 
 #if ATHENA_WIDGETS
-#if HAVE_LIB_XAW
+#ifdef HAVE_LIB_XAW
 #include	<X11/Xaw/Form.h>
 #include	<X11/Xaw/Grip.h>
 #include	<X11/Xaw/Scrollbar.h>
 #endif
-#if HAVE_LIB_XAW3D
+#ifdef HAVE_LIB_XAW3D
 #include	<X11/Xaw3d/Form.h>
 #include	<X11/Xaw3d/Grip.h>
 #include	<X11/Xaw3d/Scrollbar.h>
 #endif
-#if HAVE_LIB_NEXTAW
+#ifdef HAVE_LIB_NEXTAW
 #include	<X11/neXtaw/Form.h>
 #include	<X11/neXtaw/Grip.h>
 #include	<X11/neXtaw/Scrollbar.h>
@@ -123,6 +131,7 @@
 
 #if OL_WIDGETS
 #undef BANG
+#define OWTOOLKIT_WARNING_DISABLED
 #include	<Xol/OpenLook.h>
 #include	<Xol/Form.h>
 #include	<Xol/BulletinBo.h>
@@ -139,13 +148,13 @@
 #include	<Xm/PanedW.h>
 #include	<Xm/ScrollBar.h>
 #include	<Xm/SashP.h>
-#if defined(lint) && HAVE_XM_XMP_H
+#if defined(lint) && defined(HAVE_XM_XMP_H)
 #include	<Xm/XmP.h>
 #endif
 #endif /* MOTIF_WIDGETS */
 
 #if OPT_X11_ICON
-#if HAVE_LIBXPM
+#ifdef HAVE_LIBXPM
 #include <X11/xpm.h>
 #endif
 #endif
@@ -3594,13 +3603,13 @@ x_preparse_args(int *pargc, char ***pargv)
 #ifdef VILE_ICON
 # include VILE_ICON
 #else
-# if HAVE_LIBXPM
+# ifdef HAVE_LIBXPM
 #  include <icons/vile.xpm>
 # else
-#  ifndef VMS
-#   include <icons/vile.xbm>
-#  else
+#  if SYS_VMS
 #   include "icons/vile.xbm"
+#  else
+#   include <icons/vile.xbm>
 #  endif
 # endif
 #endif
@@ -3610,7 +3619,7 @@ x_preparse_args(int *pargc, char ***pargv)
 
 	if (hints) {
 	    hints->flags = IconPixmapHint;
-#if HAVE_LIBXPM
+#ifdef HAVE_LIBXPM
 	    XpmCreatePixmapFromData(dpy, DefaultRootWindow(dpy),
 				    vile, &hints->icon_pixmap, 0, 0
 		);
@@ -5776,7 +5785,7 @@ x_wm_delwin(Widget w GCC_UNUSED,
  * Return true if we want to disable reports of the cursor position because the
  * cursor really should be on the message-line.
  */
-#if UNUSED
+#if VILE_NEVER
 int
 x_on_msgline(void)
 {

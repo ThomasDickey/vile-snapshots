@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.243 2002/09/02 16:26:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.244 2002/10/09 13:31:53 tom Exp $
  *
  */
 
@@ -552,7 +552,7 @@ tgetc(int quoted)
 	if (setjmp(read_jmp_buf)) {
 	    c = kcod2key(intrc);
 	    TRACE(("setjmp/getc:%c (%#x)\n", c, c));
-#if defined(BUG_LINUX_2_0_INTR) && defined(DISP_TERMCAP)
+#if defined(BUG_LINUX_2_0_INTR) && DISP_TERMCAP
 	    /*
 	     * Linux bug (observed with kernels 1.2.13 & 2.0.0):
 	     * when interrupted, the _next_ character that
