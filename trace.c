@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.4 1997/06/07 13:31:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.5 1997/10/27 23:02:01 tom Exp $
  *
  */
 #include "estruct.h"
@@ -16,7 +16,7 @@
 #include <sys/time.h>
 #endif
 
-#if	defined(sun)
+#if	defined(sun) && !defined(__SVR4)
 extern	void	perror ( const char *s );
 extern	int	gettimeofday ( struct timeval *t, struct timezone *z );
 extern	int	vfprintf ( FILE *fp, const char *fmt, va_list v );

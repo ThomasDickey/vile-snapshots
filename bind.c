@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.162 1997/10/27 12:09:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.163 1997/10/29 01:16:12 tom Exp $
  *
  */
 
@@ -48,7 +48,7 @@ static	void	makebindlist (LIST_ARGS);
 
 #if OPT_NAMEBST
 static  NBST *lookup_namebst(const int fullmatch, NBST *head, const char *name);
-static int kbd_complete_bst( int case_insensitive, int c, char *buf, int *pos);
+static int kbd_complete_bst( int case_insensitive, int c, char *buf, unsigned *pos);
 #else
 #define kbd_complete_bst(case_insensitive, c, buf, pos) \
 	kbd_complete(case_insensitive, c, buf, pos, \
@@ -1156,7 +1156,7 @@ fnc2engl(const CMDFUNC *cfp)
 const CMDFUNC *
 engl2fnc(const char *fname)	/* name to attempt to match */
 {
-	NBST *n = lookup_namebst((*fname == EOS), namebst, fname);
+	NBST *n = lookup_namebst((*fname != EOS), namebst, fname);
 
 	if (n == NULL) return NULL;
 	else return n->n_cmd;
@@ -2283,9 +2283,9 @@ kbd_complete_bst(
 int	case_insensitive GCC_UNUSED,
 int	c,		/* TESTC, NAMEC or isreturn() */
 char	*buf,
-int	*pos)
+unsigned *pos)
 {
-	register SIZE_T cpos = *pos;
+	register unsigned cpos = *pos;
 	int status = FALSE;
 	NBST *firstmatch;
 
