@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.88 1999/06/13 18:15:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.91 1999/08/22 23:41:18 tom Exp $
  *
  */
 
@@ -122,10 +122,10 @@ force_slash(char * path)
  * Compare two paths lexically.
  */
 static int
-pathcmp(LINE * lp, char * text)
+pathcmp(const LINE * lp, const char * text)
 {
-    register char *l, *t;
-    register int lc, tc;
+    const char *l, *t;
+    int lc, tc;
 
     if (llength(lp) <= 0)	/* (This happens on the first insertion) */
 	return -1;
@@ -470,11 +470,10 @@ hybrid2unix(char *path)
 static int
 qs_pathcmp(const void *lpp1, const void *lpp2)
 {
-    int r = pathcmp(*(LINE *const*)lpp1, (* (LINE *const*) lpp2)->l_text);
+    const LINE *lp1 = *(const LINE *const*)lpp1;
+    int r = pathcmp(lp1, (* (const LINE *const*) lpp2)->l_text);
 
     if (r == 0) {
-	const LINE *lp1 = *(LINE *const*)lpp1;
-
 	if (llength(lp1) > 0 && is_slashc(lgetc(lp1, llength(lp1)-1)))
 	    return -1;
 	else		/* Don't care if the other one has slash or not... */
@@ -1073,14 +1072,14 @@ path_completion(int c, char *buf, unsigned *pos)
 		/* patch: how can I force buffer-update to show? */
 
 #if OPT_CASELESS
-		code = kbd_complete(TRUE, c, path, &newlen, (char *)&MyList[0], sizeof(MyList[0]));
+		code = kbd_complete(TRUE, c, path, &newlen, (const char *)&MyList[0], sizeof(MyList[0]));
 #if 0 /* case insensitive reply correction doesn't work reliably yet */
 		(void)strcpy(buf, path);
 #else
 		(void)strcat(buf, path+oldlen);
 #endif
 #else
-		code = kbd_complete(FALSE, c, path, &newlen, (char *)&MyList[0], sizeof(MyList[0]));
+		code = kbd_complete(FALSE, c, path, &newlen, (const char *)&MyList[0], sizeof(MyList[0]));
 		(void)strcat(buf, path+oldlen);
 #endif
 #if OPT_VMS_PATH

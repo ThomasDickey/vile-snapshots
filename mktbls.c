@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.98 1999/08/04 10:50:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.101 1999/08/20 00:54:59 tom Exp $
  *
  */
 
@@ -1475,10 +1475,12 @@ init_fsms(void)
 	(void)strcpy(name, fsm_name);
 	for (n = 0; fsm_name[n] != '\0'; n++)
 		fsm_name[n] = toUpper(fsm_name[n]);
-	fprintf(nefsms, "\n");
-	fprintf(nefsms, "#if OPT_%s_CHOICES\n", fsm_name);
-	fprintf(nefsms, "static const\n");
-	fprintf(nefsms, "FSM_CHOICES fsm_%s_choices[] = %c\n", name, L_CURL);
+	Fprintf(nefsms, "\n");
+	Fprintf(nefsms, "#if OPT_%s_CHOICES\n", fsm_name);
+	Fprintf(nefsms, "#ifndef realdef\n");
+	Fprintf(nefsms, "extern const FSM_CHOICES fsm_%s_choices[];\n", name);
+	Fprintf(nefsms, "#else\n");
+	Fprintf(nefsms, "const FSM_CHOICES fsm_%s_choices[] = %c\n", name, L_CURL);
 }
 
 static void
@@ -1506,6 +1508,7 @@ dump_fsms(void)
 		FlushIf(nefsms);
 
 		write_lines(nefsms, middle);
+		Fprintf(nefsms, "#endif\n");
 		Fprintf(nefsms, "#endif /* OPT_%s_CHOICES */\n", fsm_name);
 
 		free_LIST(&all_fsms);
@@ -1520,21 +1523,8 @@ static void
 start_fsms_h(char **argv, char *name)
 {
 	static const char *const head[] = {
-		"#if OPT_ENUM_MODES",
-		"",
-		"#define ENUM_ILLEGAL   (-2)",
-		"#define ENUM_UNKNOWN   (-1)",
-		"#define END_CHOICES    { (char *)0, ENUM_ILLEGAL }",
-		"",
-		"typedef struct {",
-		"\tconst char * choice_name;",
-		"\tint    choice_code;",
-		"} FSM_CHOICES;",
-		"",
-		"struct FSM {",
-		"\tconst char * mode_name;",
-		"\tconst FSM_CHOICES * choices;",
-		"};"
+		"#ifndef NEFSMS_H",
+		"#define NEFSMS_H 1",
 		};
 
 	if (!nefsms) {
@@ -1549,7 +1539,7 @@ static void
 finish_fsms_h(void)
 {
 	if (nefsms)
-		Fprintf(nefsms, "\n#endif /* OPT_ENUM_MODES */\n");
+		Fprintf(nefsms, "\n#endif /* NEFSMS_H */\n");
 }
 
 /******************************************************************************/
@@ -1707,7 +1697,7 @@ init_ufuncs(void)
 		"",
 		"typedef struct UFUNC {",
 		"\tconst char *f_name;\t/* name of function */",
-		"\tint n_args;",
+		"\tint f_code;",
 		"} UFUNC;",
 		"",
 		"#define NARGMASK	0x000f",
@@ -1719,7 +1709,7 @@ init_ufuncs(void)
 		"#define SRET		0x0400",
 		"",
 		"#ifdef realdef",
-		"EXTERN_CONST UFUNC funcs[] = {",
+		"EXTERN_CONST UFUNC vl_ufuncs[] = {",
 		};
 	static	int	done;
 
@@ -1739,7 +1729,7 @@ dump_ufuncs(void)
 	static	const char	*const middle[] = {
 		"};",
 		"#else",
-		"extern const UFUNC funcs[];",
+		"extern const UFUNC vl_ufuncs[];",
 		"#endif",
 		"",
 		"/* \tand its preprocesor definitions\t\t*/",

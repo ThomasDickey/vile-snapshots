@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.114 $)
+AC_REVISION($Revision: 1.115 $)
 AC_PREREQ(2.12.971222)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.114 1999/08/17 11:18:17 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.115 1999/08/22 11:58:45 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -513,6 +513,7 @@ atoi \
 bzero \
 chdir \
 close \
+crypt \
 dup \
 execlp \
 fclose \

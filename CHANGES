@@ -1,5 +1,32 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+(tom) 990822 (o)
+	+ add &pquote function to simplify use of &lookup when the result might
+	  contain spaces, and $exec-suffix variable.
+	+ add &cclass function, and set-char-class, unset-char-class and
+	  reset-char-classes commands.
+	+ add tbl-filt.l, for modetbl and cmdtbl highlighting.
+	+ add .login and .logout to csh mode.
+	+ modify pictmode to use ~local.
+	+ modify HighlightFilter and ShowManpage, ShowFormatted macros to use
+	  &lookup and related functions to construct the pathname of the filter
+	  program, bypassing possible reset of $PATH in the subshell.
+	+ add FL_LIBDIR to cases in cfg_locate(), corresponding to $libdir-path
+	+ add $pathlist-separator variables
+	+ add functions &word and &token for simple parsing of strings.
+	+ add functions &lookup, &path and &pcat to provide support for
+	  external pathname manipulation.
+	+ moved symbol table for DIRECTIVE to modes.c, to generate it from
+	  modetbl and incidentally fix an ambiguity in name resolution, since
+	  the old table was not automatically sorted.  Since it is handled as
+	  by the enumerated-mode value code, directive names are now processed
+	  ignoring case.
+	+ add &execable test for files.
+	+ add "&random" as alias for "&rnd", "&readable" as alias for "&rd",
+	  make all &function names long enough to be more readable.
+	+ add check for menufile-not-found in do_menu, to avoid passing a null
+	  pointer to fopen (reported by Graeme Miller).
+
 (tom) 990817 (n)
 	+ if .vilemenu is not found, return status to main.c so we can popup
 	  appropriate message.

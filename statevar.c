@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.18 1999/07/16 09:59:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.20 1999/08/23 00:13:16 tom Exp $
  */
 
 #include	"estruct.h"
@@ -467,6 +467,22 @@ int var_EOC(TBUFF **rp, const char *vp)
 	}
 }
 
+int var_EXEC_SUFFIX(TBUFF **rp, const char *vp)
+{
+	if (rp) {
+#if OPT_MSDOS_PATH || SYS_VMS
+		tb_scopy(rp, ".exe");
+#else
+		tb_scopy(rp, "");
+#endif
+		return TRUE;
+	} else if (vp) {
+		return ABORT;  /* read-only */
+	} else {
+		return FALSE;
+	}
+}
+
 #if OPT_HOOKS
 int var_EXITHOOK(TBUFF **rp, const char *vp)
 {
@@ -771,6 +787,20 @@ int var_PAGELEN(TBUFF **rp, const char *vp)
 	} else {
 		return FALSE;
 	}
+}
+
+int var_PATHSEP(TBUFF **rp, const char *vp)
+{
+	if (rp) {
+		tb_append(rp, vl_pathsep);
+		return TRUE;
+	} else if (vp) {
+		if (strlen(vp) == 1) {
+			vl_pathsep = *vp;
+			return TRUE;
+		}
+	}
+	return FALSE;
 }
 
 #if OPT_POSFORMAT

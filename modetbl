@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.132 1999/07/16 09:55:29 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.145 1999/08/22 23:56:15 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -191,6 +191,7 @@ string
 "discmd"	DISCMD			# display commands on command line
 "disinp"	DISINP			# display command line input characters
 "end-of-cmd"	EOC			# true if they ended the cmd with <CR>
+"exec-suffix"	EXEC_SUFFIX		# suffix to append when looking for execable programs
 "exit-hook"	EXITHOOK	OPT_HOOKS	# procedure to run when quitting
 "font"		FONT		DISP_X11||DISP_NTWIN	# current font
 "forward-search" FWD_SEARCH		# search-direction (true if forward)
@@ -216,6 +217,7 @@ string
 "pagewid"	CURWIDTH		# current screen width
 "palette"	PALETTE			# current palette string
 "patchlevel"	PATCHLEVEL		# current patch-level of vile (empty for release)
+"pathlist-separator" PATHSEP		# separator for lists of pathnames
 "pathname"	PATHNAME		# current path-like word
 "pending"	PENDING			# type ahead pending flag
 "pid"		PROCESSID		# vile's process-id
@@ -242,44 +244,86 @@ string
 
 # function name, id, numargs
 .functions
-"abs"	ABS		1|NUM|NRET	# absolute value of a number
-"add"	ADD		2|NUM|NRET	# add two numbers together
-"and"	AND		2|BOOL|BRET	# logical and
-"asc"	ASCII		1|NRET		# char to integer conversion
-"bin"	BIND		1|STR|SRET	# lookup what function name is bound to a key
-"cat"	CAT		2|STR|SRET	# concatenate string
-"chr"	CHR		1|NUM		# integer to char conversion
-"div"	DIV		2|NUM|NRET	# division
-"env"	ENV		1|STR|SRET	# retrieve a system environment var
-"equ"	EQUAL		2|NUM|BRET	# logical equality check
-"glo"	GLOBMODE	1|STR|SRET	# retrieve global setting
-"gre"	GREATER		2|NUM|BRET	# logical greater than
-"gtk"	GTKEY		0		# get 1 character
-"gts"	GTSEQ		0		# get keyboard-sequence (characters)
-"ind"	IND		1|STR|SRET	# evaluate indirect value
-"lef"	LEFT		2|STR|SRET	# left string(string, len)
-"len"	LENGTH		1|NRET		# string length
-"les"	LESS		2|NUM|BRET	# logical less than
-"loc"	LOCMODE		1|STR|SRET	# retrieve local setting
-"low"	LOWER		1|STR|SRET	# lower case string
-"mid"	MID		3|STR|SRET	# mid string(string, pos, len)
-"mod"	MOD		2|NUM|NRET	# modulo
-"neg"	NEG		1|NUM|NRET	# negate
-"not"	NOT		1|BOOL|BRET	# logical not
-"or"	OR		2|BOOL|BRET	# logical or
-"que"	QUERY		1|STR|SRET	# query the user
-"rd"	READABLE	1|BRET		# is a file readable?
-"rig"	RIGHT		2|STR|SRET	# right string(string, pos)
-"rnd"	RND		1|NUM|NRET	# get a random number
-"seq"	SEQUAL		2|BRET		# string logical equality check
-"sgr"	SGREAT		2|BRET		# string logical greater than
-"sin"	SINDEX		2|NRET		# find the index of one string in another
-"sle"	SLESS		2|STR|SRET	# string logical less than
-"sub"	SUB		2|NUM|NRET	# subtraction
-"tim"	TIMES		2|NUM|NRET	# multiplication
-"tri"	TRIM		1|STR|SRET	# trims leading/trailing/repeated whitespace
-"upp"	UPPER		1|STR|SRET	# uppercase string
-"wr"	WRITABLE	1|BRET		# is a file writeable?
+"abs"		ABS		1|NUM|NRET	# absolute value of a number
+"add"		ADD		2|NUM|NRET	# add two numbers together
+"and"		AND		2|BOOL|BRET	# logical and
+"ascii"		ASCII		1|NRET		# char to integer conversion
+"bind"		BIND		1|STR|SRET	# lookup what function name is bound to a key
+"cat"		CAT		2|STR|SRET	# concatenate string
+"cclass"	CCLASS		1|STR|SRET	# character-class
+"chr"		CHR		1|NUM		# integer to char conversion
+"divide"	DIV		2|NUM|NRET	# division
+"env"		ENV		1|STR|SRET	# retrieve a system environment var
+"execable"	EXECABLE	1|BRET		# is a file executable?
+"equal"		EQUAL		2|NUM|BRET	# logical equality check
+"global"	GLOBMODE	1|STR|SRET	# retrieve global setting
+"greater"	GREATER		2|NUM|BRET	# logical greater than
+"gtkey"		GTKEY		0		# get 1 character
+"gtsequence"	GTSEQ		0		# get keyboard-sequence (characters)
+"indirect"	INDIRECT	1|STR|SRET	# evaluate indirect value
+"left"		LEFT		2|STR|SRET	# left string(string, len)
+"length"	LENGTH		1|NRET		# string length
+"lessthan"	LESS		2|NUM|BRET	# logical less than
+"local"		LOCMODE		1|STR|SRET	# retrieve local setting
+"lookup"	LOOKUP		2|STR|SRET	# lookup an external file
+"lower"		LOWER		1|STR|SRET	# lower case string
+"middle"	MID		3|STR|SRET	# mid string(string, pos, len)
+"modulo"	MOD		2|NUM|NRET	# modulo
+"negate"	NEG		1|NUM|NRET	# negate
+"not"		NOT		1|BOOL|BRET	# logical not
+"or"		OR		2|BOOL|BRET	# logical or
+"path"		PATH		2|STR|SRET	# transform pathnames
+"pcat"		PATHCAT		2|STR|SRET	# concat directory and filename
+"pquote"	PATHQUOTE	1|STR|SRET	# quote pathname if needed
+"query"		QUERY		1|STR|SRET	# query the user
+"random"	RANDOM		1|NUM|NRET	# get a random number
+"rd"		RD		1|BRET		# is a file readable?
+"readable"	READABLE	1|BRET		# is a file readable?
+"right"		RIGHT		2|STR|SRET	# right string(string, pos)
+"rnd"		RND		1|NUM|NRET	# get a random number
+"sequal"	SEQUAL		2|BRET		# string logical equality check
+"sgreater"	SGREAT		2|BRET		# string logical greater than
+"sindex"	SINDEX		2|NRET		# find the index of one string in another
+"sless"		SLESS		2|STR|SRET	# string logical less than
+"subtract"	SUB		2|NUM|NRET	# subtraction
+"times"		TIMES		2|NUM|NRET	# multiplication
+"token"		TOKEN		3|STR|SRET	# select n'th token of string, given delims
+"trim"		TRIM		1|STR|SRET	# trims leading/trailing/repeated whitespace
+"upper"		UPPER		1|STR|SRET	# uppercase string
+"word"		WORD		2|STR|SRET	# select n'th word of string
+"writable"	WRITABLE	1|BRET		# is a file writeable?
+
+.table backup
+"off"		0
+".bak"		1
+"tilde"		2		SYS_UNIX
+# "tilde_N_existing", */
+# "tilde_N", */
+
+.table bool
+"false"		FALSE
+"true"		TRUE
+
+# These names are a little cryptic because I'm squeezing them into an 80-column
+# display for show-printable -TD
+.table charclass		OPT_SHOW_CTYPE	
+"upr"		vl_UPPER
+"lwr"		vl_LOWER
+"num"		vl_DIGIT
+"sp"		vl_SPACE
+"ctl"		vl_CNTRL
+"del"		vl_BSPACE
+"prn"		vl_PRINT
+"pun"		vl_PUNCT
+"id"		vl_IDENT
+"path"		vl_PATHN
+"wld"		vl_WILD
+"arg"		vl_LINESPEC
+"fn"		vl_FENCE
+"nsp"		vl_NONSPACE
+"qid"		vl_QIDENT
+"tmp"		vl_SCRTCH	OPT_WIDE_CTYPES
+"sh"		vl_SHPIPE	OPT_WIDE_CTYPES
 
 .table color
 "default"	ENUM_UNKNOWN	DISP_TERMCAP||DISP_IBMPC||DISP_X11 # FIXME: implement this for all drivers
@@ -302,21 +346,23 @@ string
 "brightcyan"	14		OPT_16_COLOR
 "white"		15		OPT_16_COLOR
 
-.table bool
-"false"		FALSE
-"true"		TRUE
-
-.table popup
-"delayed"	POPUP_CHOICES_DELAYED
-"immediate"	POPUP_CHOICES_IMMED
-"off"		POPUP_CHOICES_OFF
-
-.table backup
-"off"		0
-".bak"		1
-"tilde"		2		SYS_UNIX
-# "tilde_N_existing", */
-# "tilde_N", */
+.table directive		!SMALLER
+"if"		D_IF
+"elseif"	D_ELSEIF
+"else"		D_ELSE
+"endif"		D_ENDIF
+"goto"		D_GOTO
+"return"	D_RETURN
+"while"		D_WHILE
+"endwhile"	D_ENDWHILE
+"break"		D_BREAK
+"force"		D_FORCE
+"hidden"	D_HIDDEN
+"local"		D_LOCAL
+"with"		D_WITH
+"elsewith"	D_ELSEWITH
+"endwith"	D_ENDWITH
+"endm"		D_ENDM
 
 .table hilite
 "bold"		VABOLD
@@ -343,6 +389,30 @@ string
 "brightmagenta"	VACOL_D		OPT_COLOR&&OPT_16_COLOR
 "brightcyan"	VACOL_E		OPT_COLOR&&OPT_16_COLOR
 "white"		VACOL_F		OPT_COLOR&&OPT_16_COLOR
+
+.table lookup
+"readable"	FL_READABLE
+"writable"	FL_WRITEABLE
+"execable"	FL_EXECABLE
+"current"	FL_CDIR
+"home"		FL_HOME
+"bin"		FL_EXECDIR
+"startup"	FL_STARTPATH
+"path"		FL_PATH
+"libdir"	FL_LIBDIR
+
+.table path
+"head"		PATH_HEAD
+"tail"		PATH_TAIL
+"root"		PATH_ROOT
+"end"		PATH_END
+"short"		PATH_SHORT
+"full"		PATH_FULL
+
+.table popup
+"delayed"	POPUP_CHOICES_DELAYED
+"immediate"	POPUP_CHOICES_IMMED
+"off"		POPUP_CHOICES_OFF
 
 .table recordformat		SYS_VMS
 "udf"		FAB$C_UDF

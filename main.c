@@ -23,7 +23,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.390 1999/08/18 00:48:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.394 1999/08/22 02:11:49 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -32,6 +32,7 @@
 #include	"edef.h"	/* global declarations */
 #include	"nevars.h"
 #include	"nefunc.h"
+#include	"nefsms.h"
 
 #if OPT_LOCALE
 #include	<locale.h>
@@ -1174,7 +1175,7 @@ global_val_init(void)
 		}
 		if (!found) {
 			s = typeallocn(char, strlen(HELP_LOC) + 2 + strlen(startup_path));
-			lsprintf(s, "%s%c%s", HELP_LOC, PATHCHR, startup_path);
+			lsprintf(s, "%s%c%s", HELP_LOC, vl_pathsep, startup_path);
 			if (startup_path != NULL)	/* memory leak! */
 			    free(startup_path);
 			startup_path = s;
@@ -1753,78 +1754,6 @@ int poundc_func(int f GCC_UNUSED, int n GCC_UNUSED) { return TRUE; }
 
 /* ARGSUSED */
 int reptc_func(int f GCC_UNUSED, int n GCC_UNUSED) { return TRUE; }
-
-/*----------------------------------------------------------------------------*/
-
-#if OPT_SHOW_CTYPE
-
-/* list the current chrs into the current buffer */
-/* ARGSUSED */
-static void
-makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
-{
-	static const struct {
-		ULONG	mask;
-		const char *name;
-	} table[] = {
-		{ vl_upper,	"Upr" },
-		{ vl_lower,	"Lwr" },
-		{ vl_digit,	"Num" },
-		{ vl_space,	"Spc" },
-		{ vl_bspace,	"DEL" },
-		{ vl_cntrl,	"CTL" },
-		{ vl_print,	"Prn" },
-		{ vl_punct,	"Pun" },
-		{ vl_ident,	"id" },
-		{ vl_pathn,	"path" },
-		{ vl_wild,	"*" },
-		{ vl_linespec,	"arg" },
-		{ vl_fence,	"()" },
-		{ vl_nonspace,	"!S" },
-		{ vl_qident,	"qid" },
-#if OPT_WIDE_CTYPES
-		{ vl_scrtch,	"tmp" },
-		{ vl_shpipe,	"sh" },
-#endif
-		{ 0,		0 }
-	};
-	register UINT i, j;
-
-	bprintf("--- Printable Characters %*P\n", term.cols-1, '-');
-	for (i = 0; i < N_chars; i++) {
-		bprintf("\n%d\t", i);
-		if ((i == '\n') || (i == '\t')) /* vtlistc() may not do these */
-			bprintf("^%c", '@' | i);
-#if OPT_LOCALE
-		else if (!isprint(i) && i > 127 && i < 160) /* C1 controls? */
-			bprintf(
-				global_w_val(WMDNONPRINTOCTAL)
-				? "\\%3o"
-				: "\\x%2x",
-				i);
-#endif
-		else
-			bprintf("%c", i);
-		bputc('\t');
-		for (j = 0; table[j].name != 0; j++) {
-			if (j != 0)
-				bputc(' ');
-			bprintf("%*s",
-				strlen(table[j].name),
-				(vl_chartypes_[i] & table[j].mask)
-					? table[j].name
-					: "-");
-		}
-	}
-}
-
-int
-desprint(int f GCC_UNUSED, int n GCC_UNUSED)
-{
-	return liststuff(PRINTABLECHARS_BufName, FALSE, makectypelist, 0, (void *)0);
-}
-
-#endif /* OPT_SHOW_CTYPE */
 
 /*----------------------------------------------------------------------------*/
 

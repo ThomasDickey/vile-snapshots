@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.138 1999/05/22 14:00:29 Daniel.Palermo Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.139 1999/08/22 20:16:16 tom Exp $
  *
  */
 
@@ -394,7 +394,7 @@ ffaccess(char *fn, int mode)
 		break;
 	}
 #endif
-	TRACE(("ffaccess(fn=%s, mode=%d) = %d\n", fn, mode, status))
+	TRACE(("ffaccess(fn=%s, mode=%d) = %d\n", SL_TO_BSL(fn), mode, status))
 	return (status);
 }
 

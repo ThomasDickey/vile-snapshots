@@ -2,15 +2,16 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.222 1999/08/18 00:20:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.237 1999/08/23 01:18:15 tom Exp $
  *
  */
 
 #include	"estruct.h"
 #include	"edef.h"
 #include	"nevars.h"
+#include	"nefsms.h"
 
-#define	FUNC_NAMELEN	4
+#include	<ctype.h>
 
 #define	ILLEGAL_NUM	-1
 
@@ -44,6 +45,244 @@ static	int	PromptAndSet ( const char *var, int f, int n );
 static	int	SetVarValue ( VWRAP *var, const char *value );
 static	int	lookup_statevar(const char *vname);
 #endif
+
+
+/*--------------------------------------------------------------------------*/
+#if OPT_SHOW_CTYPE
+
+/* list the current character-classes into the current buffer */
+/* ARGSUSED */
+static void
+makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
+{
+	UINT i, j;
+	CHARTYPE k;
+	const char *s;
+
+	bprintf("--- Printable Characters %*P\n", term.cols-1, '-');
+	for (i = 0; i < N_chars; i++) {
+		bprintf("\n%d\t", i);
+		if ((i == '\n') || (i == '\t')) /* vtlistc() may not do these */
+			bprintf("^%c", '@' | i);
+#if OPT_LOCALE
+		else if (!isprint(i) && i > 127 && i < 160) /* C1 controls? */
+			bprintf(
+				global_w_val(WMDNONPRINTOCTAL)
+				? "\\%3o"
+				: "\\x%2x",
+				i);
+#endif
+		else
+			bprintf("%c", i);
+		bputc('\t');
+		for (j = 0; j != vl_UNUSED; j++) {
+			if ((s = choice_to_name(fsm_charclass_choices, j)) != 0) {
+				k = (1 << j);
+				if (j != 0)
+					bputc(' ');
+				bprintf("%*s",
+					strlen(s),
+					(vl_chartypes_[i] & k)
+						? s
+						: "-");
+			}
+		}
+	}
+}
+
+static int
+show_CharClasses(BUFFER *bp GCC_UNUSED)
+{
+	return liststuff(PRINTABLECHARS_BufName, FALSE, makectypelist, 0, (void *)0);
+}
+
+#if OPT_UPBUFF
+static void
+update_char_classes(void)
+{
+	update_scratch(PRINTABLECHARS_BufName, show_CharClasses);
+}
+#else
+#define update_char_classes() /*nothing*/
+#endif
+
+int
+desprint(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+	return show_CharClasses(curbp);
+}
+
+static int
+cclass_complete(int c, char *buf, unsigned *pos)
+{
+	return kbd_complete(FALSE, c, buf, pos,
+		(const char *)fsm_charclass_choices,
+		sizeof(fsm_charclass_choices[0]));
+}
+
+/*
+ * Using name-completion, we can only accept one name at a time - so the
+ * set/unset operations do not take a list.
+ */
+static int
+get_charclass_code(void)
+{
+	static TBUFF *var;
+	int status;
+
+	if (var == 0)
+		tb_scopy(&var, "");
+	status = kbd_reply("Character class: ", &var,
+		eol_history, '=', KBD_NOEVAL|KBD_LOWERC, cclass_complete);
+	return (status == TRUE)
+		? choice_to_code(
+			fsm_charclass_choices,
+			tb_values(var),
+			tb_length(var))
+		: -1;
+}
+
+/*
+ * Prompt for a regular expression that we can use to match single characters.
+ * Actually, regexp won't really tell us that much - so we'll get an expression
+ * and try it.
+ */
+static REGEXVAL *
+get_charclass_regexp(void)
+{
+	static TBUFF *var;
+	int status;
+
+	if (var == 0)
+		tb_scopy(&var, "");
+	status = kbd_reply("Character pattern: ", &var,
+		eol_history, '=', KBD_NOEVAL, no_completion);
+	return (status == TRUE)
+		? new_regexval(
+			tb_values(var),
+			TRUE)
+		: 0;
+}
+
+static int
+match_charclass_regexp(int ch, REGEXVAL *exp)
+{
+	char temp[2];
+	temp[0] = ch;
+
+	return regexec(exp->reg, temp, temp+1, 0, 0);
+}
+
+static int
+update_charclasses(char *tag, int count)
+{
+	if (count) {
+		mlwrite("[%s %d character%s]", tag, count, PLURAL(count));
+		update_char_classes();
+	} else {
+		mlwrite("[%s no characters]", tag);
+	}
+	return TRUE;
+}
+
+int
+set_charclass(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+	int ch;
+	int code;
+	int count;
+	REGEXVAL *exp;
+
+	if ((code = get_charclass_code()) > 0) {
+		code = (1 << code);
+		if ((exp = get_charclass_regexp()) != 0) {
+			for (count = 0, ch = 0; ch < N_chars; ch++) {
+				if (!istype(code, ch)
+				 && match_charclass_regexp(ch, exp)) {
+					vl_chartypes_[ch] |= code;
+					count++;
+				}
+			}
+			free_regexval(exp);
+			return update_charclasses("Set", count);
+		}
+	}
+	return FALSE;
+}
+
+int
+unset_charclass(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+	int ch;
+	int code;
+	int count;
+	REGEXVAL *exp;
+
+	if ((code = get_charclass_code()) > 0) {
+		code = (1 << code);
+		if ((exp = get_charclass_regexp()) != 0) {
+			for (count = 0, ch = 0; ch < N_chars; ch++) {
+				if (istype(code, ch)
+				 && match_charclass_regexp(ch, exp)) {
+					vl_chartypes_[ch] &= ~code;
+					count++;
+				}
+			}
+			free_regexval(exp);
+			return update_charclasses("Unset", count);
+		}
+	}
+	return FALSE;
+}
+
+int
+reset_charclasses(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+	charinit();
+	update_char_classes();
+	return TRUE;
+}
+
+#endif /* OPT_SHOW_CTYPE */
+
+/*
+ * Compute the intersection of the character classes in the argument.
+ */
+static CHARTYPE
+charclass_of(char *arg)
+{
+	CHARTYPE k = vl_chartypes_[char2int(*arg)];
+	if (*arg) {
+		while (*++arg) {
+			k &= vl_chartypes_[char2int(*arg)];
+		}
+	}
+	return k;
+}
+
+/*
+ * Make display of the intersection of the character classes in the argument.
+ */
+static void
+show_charclass(TBUFF **result, char *arg)
+{
+	UINT j;
+	CHARTYPE k = charclass_of(arg);
+	const char *s;
+
+#if OPT_SHOW_CTYPE
+	for (j = 0; j != vl_UNUSED; j++) {
+		if (((1 << j) & k) != 0
+		 && (s = choice_to_name(fsm_charclass_choices, j)) != 0) {
+			if (tb_length(*result))
+				tb_sappend0(result, "+");
+			tb_sappend0(result, s);
+		}
+	}
+#else /* well, show something, so we can compare against it */
+	lsprintf(tb_values(*result), "%X", k);
+#endif
+}
 
 /*--------------------------------------------------------------------------*/
 
@@ -184,25 +423,124 @@ listvars(int f, int n)
 #if OPT_EVAL
 
 /*
- * find a function in the function list
+ * Find a function in the function list.  The table is all lowercase, so we can
+ * compare ignoring case.  Check for any unique abbreviation of the table's
+ * names.
  */
 static int
 lookup_func(char *name)
 {
-	char downcased[FUNC_NAMELEN];
-	int fnum;
+    char downcased[NSTRING];
+    int fnum = ILLEGAL_NUM;
+    int n;
+    unsigned m;
 
-	if (!*name)
-		return ILLEGAL_NUM;
+    TRACE(("lookup_func(%s) ", name))
+    if (*name++ == '&'
+     && *name != EOS) {
 
-	/* find the function -- truncate and case-convert it first */
 	mklower(vl_strncpy(downcased, name, sizeof(downcased)));
 
-	for (fnum = 0; fnum < NFUNCS; fnum++)
-		if (strcmp(downcased, funcs[fnum].f_name) == 0)
-			return fnum;
+	m = strlen(downcased);
+	for (n = 0; n < NFUNCS; n++) {
+	    if (!strncmp(downcased, vl_ufuncs[n].f_name, m)) {
+		if ((n+1 >= NFUNCS
+		  || strncmp(downcased, vl_ufuncs[n+1].f_name, m)))
+		    fnum = n;
+		break;
+	    }
+	}
+    }
+    TRACE(("-> %d\n", fnum))
+    return fnum;
+}
 
-	return ILLEGAL_NUM;
+/*
+ * Find the n'th token, counting from zero.  This will return an empty
+ * result only if we run past the end of the number of tokens.
+ */
+static void
+extract_token(TBUFF **result, char *count, char *delims, char *string)
+{
+	int num = scan_int(count);
+
+	while (num-- > 0) {
+		string += strspn(string, delims);
+		string += strcspn(string, delims);
+	}
+
+	string += strspn(string, delims);
+	string[strcspn(string, delims)] = EOS;
+	tb_scopy(result, string);
+}
+
+static void
+path_trim(char *path)
+{
+#if SYS_UNIX
+	while (strlen(path) > 1) {
+		char *last = path + strlen(path) - 1;
+		if (is_slashc(*last))
+			*last = EOS;
+		else
+			break;
+	}
+#else
+#if OPT_MSDOS_PATH 
+	while (strlen(path) > 2) {
+		char *last = path + strlen(path) - 1;
+		if (is_slashc(*last)
+		 && last[-1] != ':')
+			*last = EOS;
+		else
+			break;
+	}
+#endif
+#endif
+}
+
+/*
+ * Extract the head of the given path
+ */
+static void
+path_head(TBUFF **result, char *path)
+{
+	path = tb_values(tb_scopy(result, path));
+	*pathleaf(path) = EOS;
+	path_trim(path);
+}
+
+/*
+ * If the given argument contains non-path characters, quote it.  Otherwise
+ * simply copy it.
+ */
+static void
+path_quote(TBUFF **result, char *path)
+{
+#if SYS_VMS
+	tb_scopy(result, path);		/* no point in quoting here */
+#else
+	CHARTYPE have = charclass_of(path);
+	CHARTYPE want = (vl_pathn | vl_nonspace);
+
+	if ((want & have) != want) {
+		tb_sappend(result, "\"");
+#if SYS_UNIX
+#define QUOTE_UNIX "\"\\$"
+		if (strpbrk(path, QUOTE_UNIX)) {
+		    while (*path) {
+			if (strchr(QUOTE_UNIX, *path))
+			    tb_append(result, '\\');
+			tb_append(result, *path++);
+		    }
+		} else
+#endif
+		    tb_sappend(result, path);
+		tb_sappend0(result, "\"");
+	} else {
+		tb_scopy(result, path);
+	}
+#endif
 }
 
 /*
@@ -215,6 +553,7 @@ run_func(int fnum)
 
 	TBUFF *args[3];
 	char  *arg[3];			/* function arguments */
+	char *cp;
 	int nums[3];
 	int bools[3];
 	int i, nargs;
@@ -222,16 +561,16 @@ run_func(int fnum)
 
 	tb_init(&result, EOS);
 
-	nargs = funcs[fnum].n_args & NARGMASK;
-	args_numeric = funcs[fnum].n_args & NUM;
-	args_boolean = funcs[fnum].n_args & BOOL;
+	nargs = vl_ufuncs[fnum].f_code & NARGMASK;
+	args_numeric = vl_ufuncs[fnum].f_code & NUM;
+	args_boolean = vl_ufuncs[fnum].f_code & BOOL;
 
-	ret_numeric = funcs[fnum].n_args & NRET;
-	ret_boolean = funcs[fnum].n_args & BRET;
+	ret_numeric = vl_ufuncs[fnum].f_code & NRET;
+	ret_boolean = vl_ufuncs[fnum].f_code & BRET;
 
-	TRACE(("evaluate %s (%#x)\n",
-			funcs[fnum].f_name,
-			funcs[fnum].n_args))
+	TRACE(("evaluate '%s' (%#x)\n",
+			vl_ufuncs[fnum].f_name,
+			vl_ufuncs[fnum].f_code))
 
 	/* fetch required arguments */
 	for (i = 0; i < nargs; i++) {
@@ -268,6 +607,9 @@ run_func(int fnum)
 		tb_scopy(&result, arg[0]);
 		tb_sappend0(&result, arg[1]);
 		break;
+	case UFCCLASS:
+		show_charclass(&result, arg[0]);
+		break;
 	case UFLEFT:
 		tb_bappend(&result, arg[0], s2size(arg[1])+1);
 		tb_append(&result, EOS);
@@ -301,7 +643,7 @@ run_func(int fnum)
 	case UFSGREAT:
 		i = (strcmp(arg[0], arg[1]) > 0);
 		break;
-	case UFIND:
+	case UFINDIRECT:
 		tb_scopy(&result, tokval(arg[0]));
 		break;
 	case UFAND:
@@ -337,6 +679,7 @@ run_func(int fnum)
 		(void)kcod2escape_seq(kbd_seq_nomap(), tb_values(result));
 		result->tb_used = strlen(tb_values(result));
 		break;
+	case UFRANDOM: /* FALLTHRU */
 	case UFRND:
 		i = rand() % absol(nums[0]);
 		i++;  /* return 1 to N */
@@ -353,13 +696,18 @@ run_func(int fnum)
 	case UFBIND:
 		tb_scopy(&result, prc2engl(arg[0]));
 		break;
-	case UFREADABLE:
+	case UFREADABLE: /* FALLTHRU */
+	case UFRD:
 		i = (doglob(arg[0]) &&
 			cfg_locate(arg[0], FL_CDIR|FL_READABLE) != NULL);
 		break;
 	case UFWRITABLE:
 		i = (doglob(arg[0]) &&
 			cfg_locate(arg[0], FL_CDIR|FL_WRITEABLE) != NULL);
+		break;
+	case UFEXECABLE:
+		i = (doglob(arg[0]) &&
+			cfg_locate(arg[0], FL_CDIR|FL_EXECABLE) != NULL);
 		break;
 	case UFLOCMODE:
 	case UFGLOBMODE:
@@ -371,10 +719,58 @@ run_func(int fnum)
 		}
 		break;
 	case UFQUERY:
-		{ const char *cp;
-		    cp = user_reply(arg[0]);
-		    tb_scopy(&result, cp ? cp : error_val);
+		cp = user_reply(arg[0]);
+		tb_scopy(&result, cp ? cp : error_val);
+		break;
+	case UFLOOKUP:
+		if ((i = combine_choices(fsm_lookup_choices, arg[0])) > 0)
+			tb_scopy(&result, cfg_locate(arg[1], i));
+		break;
+	case UFPATH:
+		switch (choice_to_code(fsm_path_choices, arg[0], strlen(arg[0]))) {
+		case PATH_END:
+			cp = pathleaf(arg[1]);
+			if ((cp = strchr(cp, '.')) != 0)
+				tb_scopy(&result, cp);
+			break;
+		case PATH_FULL:
+			tb_scopy(&result, arg[1]);
+			tb_alloc(&result, NFILEN);
+			lengthen_path(tb_values(result));
+			break;
+		case PATH_HEAD:
+			path_head(&result, arg[1]);
+			break;
+		case PATH_ROOT:
+			tb_scopy(&result, pathleaf(arg[1]));
+			if ((cp = strchr(tb_values(result), '.')) != 0)
+				*cp = EOS;
+			break;
+		case PATH_SHORT:
+			tb_scopy(&result, arg[1]);
+			tb_alloc(&result, NFILEN);
+			shorten_path(tb_values(result), FALSE);
+			break;
+		case PATH_TAIL:
+			tb_scopy(&result, pathleaf(arg[1]));
+			break;
+		default:
+			tb_scopy(&result, error_val);
+			break;
 		}
+		break;
+	case UFPATHCAT:
+		tb_alloc(&result, NFILEN);
+		pathcat(tb_values(result), arg[0], arg[1]);
+		break;
+	case UFPATHQUOTE:
+		path_quote(&result, arg[0]);
+		break;
+	case UFTOKEN:
+		extract_token(&result, arg[0], arg[1], arg[2]);
+		break;
+	case UFWORD:
+		extract_token(&result, arg[0], "\t ", arg[1]);
 		break;
 	default:
 		tb_scopy(&result, error_val);
@@ -492,7 +888,7 @@ VWRAP *vd)		/* structure to hold type and ptr */
 		break;
 
 	case '&':	/* indirect operator? */
-		if (strncmp(var, "&ind", FUNC_NAMELEN) == 0) {
+		if (lookup_func(var) == UFINDIRECT) {
 			TBUFF *tok = 0;
 			/* grab token, and eval it */
 			execstr = get_token(execstr, &tok, EOS);
@@ -1162,7 +1558,7 @@ statevar_arg_eval(char *argp)
 static char *
 function_arg_eval(char *argp)
 {
-	int fnum = lookup_func(argp+1);
+	int fnum = lookup_func(argp);
 	return (fnum != ILLEGAL_NUM) ? run_func(fnum) : error_val;
 }
 
