@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.43 1997/10/07 00:13:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.44 1998/02/21 13:13:45 tom Exp $
  *
  */
 
@@ -476,7 +476,7 @@ fmatch(int rch)
 	if (count == 0) {
 		if (!backcharfailed)
 			forwchar(FALSE, 1);
-		if (update(FALSE) == TRUE)
+		if (update(SORTOFTRUE) == TRUE)
 		/* the idea is to leave the cursor there for about a
 			quarter of a second */
 			catnap(300, FALSE);

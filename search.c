@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.107 1997/03/15 15:51:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.108 1998/02/23 11:27:56 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -739,7 +739,7 @@ int	fromscreen)
 			search pattern, and in delins() for the replacement
 			pattern */
 		hst_glue(c);
-		status = kbd_string(prompt, apat, NPAT, c, KBD_EXPPAT,
+		status = kbd_string(prompt, apat, NPAT, c, KBD_EXPPAT|KBD_0CHAR,
 				    no_completion);
 	}
  	if (status == TRUE) {

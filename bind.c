@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.168 1997/12/16 23:56:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.170 1998/02/21 14:54:26 tom Exp $
  *
  */
 
@@ -341,7 +341,7 @@ key_to_bind(register const CMDFUNC *kcmd)
 	if (c >= 0) {
 		/* change it to something we can print as well */
 		ostring(kcod2prc(c, outseq));
-		hst_append(outseq, FALSE);
+		hst_append_s(outseq, FALSE);
 	} else {
 		mlforce("[Not a proper key-sequence]");
 	}
@@ -622,7 +622,7 @@ deskey(int f GCC_UNUSED, int n GCC_UNUSED)	/* describe the command for a certain
 	}
 
 	(void)kcod2prc(c, outseq);
-	hst_append(outseq, EOS); /* cannot replay this, but can see it */
+	hst_append_s(outseq, FALSE); /* cannot replay this, but can see it */
 
 	/* find the right ->function */
 	if ((nptr = fnc2ntab(kcod2fnc(c))) == NULL) {
@@ -2196,7 +2196,7 @@ unsigned *pos)
 
 	if ((nptr = btree_parray(&namebst, buf, cpos)) != 0) {
 		status = kbd_complete(FALSE, c, buf, pos, (char *)nptr, sizeof(*nptr));
-		free(nptr);
+		free((char *)nptr);
 	} else
 		kbd_alarm();
 	return status;

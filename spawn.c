@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.123 1997/11/30 22:36:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.124 1998/02/21 12:32:46 tom Exp $
  *
  */
 
@@ -392,6 +392,9 @@ spawn1(int rerun, int pressret)
 	 */
 	if (closed)
 		TTopen();
+#endif
+#if DISP_NTCONS
+	ntcons_reopen();
 #endif
 	sgarbf = TRUE;
 	return AfterShell();

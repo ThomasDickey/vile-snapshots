@@ -1,4 +1,4 @@
-MANIFEST for vile, version v7_3e
+MANIFEST for vile, version v7_3f
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -118,6 +118,7 @@ vms2unix.c                      VMS/UNIX compatibility support functions
 vmsbuild.com                    VAX/VMS DCL build script
 vmspipe.c                       pipe-filter support for VMS
 vmsvt.c                         VMS terminal driver
+w32pipe.c                       Win32 native pipe support
 window.c                        window-management functions
 word.c                          commands that operate upon words or paragraphs
 wordmov.c                       cursor-movement commands (e.g., word, spaces)

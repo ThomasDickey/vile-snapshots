@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.242 1998/02/08 21:26:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.243 1998/03/12 02:12:50 tom Exp $
  *
  */
 
@@ -835,7 +835,7 @@ kbd_flush(void)
 	if (vscreen != 0) {
 		int row = term.t_nrow - 1;
 
-		vtmove(row, 0);
+		vtmove(row, -w_val(wminip,WVAL_SIDEWAYS));
 
 		ok = (wminip != 0
 		   && wminip->w_dot.l != 0
@@ -868,6 +868,17 @@ kbd_flush(void)
 	endofDisplay();
 }
 
+static int
+TypeAhead(int force)
+{
+	if (force != TRUE) {
+		if ((force == FALSE && !global_g_val(GMDSMOOTH_SCROLL))
+		 || (force == SORTOFTRUE))
+			return (keystroke_avail());
+	}
+	return FALSE;
+}
+
 /*
  * Make sure that the display is right. This is a three part process. First,
  * scan through all of the windows looking for dirty ones. Check the framing,
@@ -891,8 +902,7 @@ int force)	/* force update past type ahead? */
 
 	if (!curbp || !vscreen) /* not initialized */
 		return FALSE;
-	if (force == FALSE && !global_g_val(GMDSMOOTH_SCROLL) 
-	    && keystroke_avail())
+	if (TypeAhead(force))
 		return SORTOFTRUE;
 #if	OPT_VISIBLE_MACROS == 0
 	if (force == FALSE && kbd_replaying(TRUE) && (get_recorded_char(FALSE) != -1))
@@ -1484,8 +1494,7 @@ int force GCC_UNUSED)	/* forced update flag */
 		/* for each line that needs to be updated*/
 		if ((vscreen[i]->v_flag & (VFCHG|VFCOL)) != 0) {
 #if !DISP_X11
-			if ( force == FALSE && !global_g_val(GMDSMOOTH_SCROLL)
-			  && keystroke_avail())
+			if (TypeAhead(force))
 				return;
 #endif
 			updateline(i, 0, term.t_ncol);

@@ -4,7 +4,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.87 1997/11/28 13:18:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.88 1998/02/21 01:44:44 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -188,7 +188,7 @@ tags_completion(int c, char *buf, unsigned *pos)
 
 	if ((nptr = init_tags_cmpl(buf, cpos)) != 0) {
 		status = kbd_complete(FALSE, c, buf, pos, (char *)nptr, sizeof(*nptr));
-		free(nptr);
+		free((char *)nptr);
 	}
 	return status;
 }

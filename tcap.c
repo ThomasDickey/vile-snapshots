@@ -1,13 +1,11 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.100 1998/02/07 14:21:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.102 1998/03/14 00:04:37 tom Exp $
  *
  */
 
 #define termdef 1			/* don't define "term" external */
-
-#define WINDOW vile_WINDOW
 
 #include	"estruct.h"
 #include	"edef.h"
@@ -19,6 +17,9 @@
 #define NPAUSE	10			/* # times thru update to pause */
 
 #include	"tcap.h"
+
+#undef WINDOW
+#define WINDOW vile_WINDOW
 
 #if USE_TERMCAP
 #  define TCAPSLEN 768 

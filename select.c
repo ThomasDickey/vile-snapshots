@@ -18,7 +18,7 @@
  * transfering the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.57 1997/11/09 22:26:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.58 1998/03/14 14:32:40 tom Exp $
  *
  */
 
@@ -766,6 +766,14 @@ operattrno(int f, int n)
       opcmd = OPOTHER;
       videoattribute = 0;	/* clears no matter who "owns" */
       return vile_op(f,n,attributeregion,"Set normal attribute");
+}
+
+int
+operattrrev(int f, int n)
+{
+      opcmd = OPOTHER;
+      videoattribute = VAREV | VOWN_OPERS;
+      return vile_op(f,n,attributeregion,"Set reverse attribute");
 }
 
 int

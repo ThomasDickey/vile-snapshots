@@ -63,7 +63,7 @@
  *
  *	Allow left/right scrolling of input lines (when they get too long).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.41 1997/11/08 01:59:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.42 1998/03/12 10:57:19 tom Exp $
  *
  */
 
@@ -225,22 +225,30 @@ hst_glue(int c)
 }
 
 void
-hst_append(char * cmd, int glue)
+hst_append(TBUFF * cmd, int glue)
 {
 	static	int	skip = 1;		/* e.g., after "!" */
 
 	if (clexec)				/* non-interactive? */
 		return;
 
-	if (willExtend(cmd, (int)strlen(cmd))
-	 && strlen(cmd) > (SIZE_T)skip) {
+	if (willExtend(tb_values(cmd), tb_length(cmd))
+	 && tb_length(cmd) > (SIZE_T)skip) {
 		kbd_pushback(cmd, skip);
 	}
 
 	if (willGlue())
 		(void)tb_append(&MyText, MyGlue);
-	(void)tb_sappend(&MyText, cmd);
+	(void)tb_bappend(&MyText, tb_values(cmd), tb_length(cmd));
 	MyGlue = glue;
+}
+
+void
+hst_append_s(char *cmd, int glue)
+{
+	TBUFF *p = tb_string(cmd);
+	hst_append(p, glue);
+	tb_free(&p);
 }
 
 void
@@ -406,6 +414,9 @@ HST *	parm,
 char *	src,
 int	srclen)
 {
+	/* kill the whole buffer */
+	*(parm->position) = tb_length(*(parm->buffer));
+	wminip->w_dot.o = llength(wminip->w_dot.l);
 	kbd_kill_response(*(parm->buffer), parm->position, killc);
 
 	if (src != 0) {
@@ -507,9 +518,6 @@ int	eolchar)
 
 	register int	c = *given;
 
-#if	OPT_KSH_HISTORY
-	if (c != ESC)				/* suppress immediate-return */
-#endif
 	if (!isspecial(c)) {
 		if (is_edit_char(c)
 		 || ABORTED(c)
@@ -557,11 +565,6 @@ int	eolchar)
 			else if (p->c_func == forwline)
 				direction = 1;
 		}
-#if	OPT_KSH_HISTORY
-		if (c == ESC) {
-			escaped = !escaped;
-		} else
-#endif
 		if (ABORTED(c)) {
 			*given = c;
 			return FALSE;
@@ -572,9 +575,6 @@ int	eolchar)
 				lp1 = lp2;
 			else	/* cannot scroll */
 				kbd_alarm();
-#if	OPT_KSH_HISTORY
-		/* patch: inline-editing should be done at this point */
-#endif
 		} else if (!escaped) {
 			*given = c;
 			if (any_edit)

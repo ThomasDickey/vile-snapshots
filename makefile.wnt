@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.20 1997/12/05 20:40:03 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.21 1997/12/10 15:07:50 cmorgan Exp $
 #
 #
 !include <ntwin32.mak>
@@ -69,7 +69,7 @@ SRC = 	main.c $(SCREEN).c \
 	path.c random.c regexp.c \
 	region.c search.c select.c spawn.c \
 	tags.c tbuff.c termio.c undo.c \
-	version.c window.c word.c wordmov.c map.c 
+	version.c window.c word.c wordmov.c map.c w32pipe.c
 
 OBJ = 	main.obj $(SCREEN).obj \
 	basic.obj bind.obj btree.obj buffer.obj crypt.obj \
@@ -81,7 +81,7 @@ OBJ = 	main.obj $(SCREEN).obj \
 	path.obj random.obj regexp.obj \
 	region.obj search.obj select.obj spawn.obj \
 	tags.obj tbuff.obj termio.obj undo.obj \
-	version.obj window.obj word.obj wordmov.obj map.obj 
+	version.obj window.obj word.obj wordmov.obj map.obj w32pipe.obj
 
 .c.obj:	
 	$(cc) $(CFLAGS) -c $< -Fo$@ 

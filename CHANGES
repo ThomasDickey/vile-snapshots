@@ -1,5 +1,32 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (tom)	980314 (f)
+ 	+ add "attribute-reverse-til" (suggested by Kuntal M. Daftary
+	  daftary@cisco.com).
+ 	+ correct logic of find_mode() so that :setl cts=4 works as before.
+	+ modify kbd_reply() to support inline-editing of the user's text, both
+	  by arrow keys, as well as vi-style motion commands.  Use ^G to toggle
+	  between the two modes.   
+	+ change interfaces/logic of hst_append(), kbd_show_response(),
+	  kbd_reply() to make them accept nulls.  This is for later extensions,
+	  since regexp.c does not handle nulls.  Use the mask KBD_0CHAR for
+	  this purpose.
+	+ modify check for type-ahead to make 'showmatch' skip the 1/4 sleep,
+	  ignoring the current value of 'smoothscroll' (reported by Matthias K. 
+	  Buelow <token@wicx50.informatik.uni-wuerzburg.de>)
+ 	+ adjust redefinition of WINDOW in tcap.h to work around OSF1 3.2,
+	  which includes curses.h from term.h
+ 	+ split-out function ntcons_reopen() from ntkopen(), to move it past
+	  the pressreturn() call; otherwise the user sees no prompt when
+	  running a shell command (reported by Manoj Bhargaw <Manoj@Proginet.com>).
+	+ minor adjustments to 'w32pipe' by moving some code into w32pipe.c to
+	  allow reuse in the GUI winvile, and using $shell rather than inline
+	  expressions for shell spawned in pipes.  Testing with bash did not
+	  seem to allow /bin/sh as a possible shell, so I dropped that from
+	  Clark's patch.
+ 	+ improve pipes for W95/WinNT using native support, new mode 'w32pipe'
+	  (patch by Clark Morgan).
+
  (pgf)	980218 (e)
 	+ added "crypt-til" operator (bound to ^X-C) which will
 	  encrypt/decrypt an arbitrary region.  the main goal was to make

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.107 1997/12/17 00:01:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.109 1998/03/14 04:43:09 tom Exp $
  *
  */
 
@@ -1160,7 +1160,7 @@ find_mode(const char *mode, int global, VALARGS *args)
 	}
 #if OPT_MAJORMODE
 	/* major submodes (buffers) */
-	if (my_majormodes != 0 && global != FALSE) {
+	if (my_majormodes != 0) {
 		int k = 0;
 		size_t n = strlen(rp);
 
@@ -1173,9 +1173,23 @@ find_mode(const char *mode, int global, VALARGS *args)
 			 && (k = lookup_valnames(rp+len+(rp[len]=='-'), b_valnames)) >= 0
 			 && is_local_val(p->data->mb.bv,k)) {
 				TRACE(("...found submode %s\n", b_valnames[k].name))
-				args->names  = b_valnames + k;
-				args->global = p->data->mb.bv + k;
-				args->local  = args->global;
+				if (global == FALSE) {
+					if (curbp != 0
+					 && (curbp->majr == 0
+					  || strcmp(curbp->majr->name, p->name))) {
+						TRACE(("...not applicable\n"))
+						return FALSE;
+					}
+					args->names  = b_valnames + k;
+					args->global = p->data->mb.bv + k;
+					args->local  = ((curbp != 0)
+							? curbp->b_values.bv + k
+							: (struct VAL *)0);
+				} else {
+					args->names  = b_valnames + k;
+					args->global = p->data->mb.bv + k;
+					args->local  = args->global;
+				}
 				return TRUE;
 			}
 		}
@@ -2065,7 +2079,7 @@ extend_mode_list(int increment)
 
 	if (my_mode_list == all_modes) {
 		my_mode_list = typeallocn(const char *, k);
-		memcpy(my_mode_list, all_modes, (j+1) * sizeof(*my_mode_list));
+		memcpy((char *)my_mode_list, all_modes, (j+1) * sizeof(*my_mode_list));
 	} else {
 		my_mode_list = typereallocn(const char *, my_mode_list, k);
 	}

@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.108 1997/11/01 01:48:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.109 1998/02/21 13:53:21 tom Exp $
  *
  */
 
@@ -695,7 +695,7 @@ ldelnewline(void)
 	register LINEPTR lp1;
 	register LINEPTR lp2;
 	register WINDOW *wp;
-	int	len, add;
+	size_t	len, add;
 
 	lp1 = DOT.l;
 	len = llength(lp1);
@@ -722,19 +722,19 @@ ldelnewline(void)
 	/* no room in line above, make room */
 	if (add > lp1->l_size - len) {
 		char *ntext;
-		SIZE_T nsize;
+		size_t nsize;
 		/* first, create the new image */
 		nsize = roundlenup(len + add);
 		if ((ntext=castalloc(char, nsize)) == NULL)
 			return (FALSE);
 		if (lp1->l_text) { /* possibly NULL if l_size == 0 */
-			(void)memcpy(&ntext[0], &lp1->l_text[0], (SIZE_T)len);
+			(void)memcpy(&ntext[0], &lp1->l_text[0], len);
 			ltextfree(lp1,curbp);
 		}
 		lp1->l_text = ntext;
 		lp1->l_size = nsize;
 	}
-	(void)memcpy(lp1->l_text + len, lp2->l_text, (SIZE_T)add);
+	(void)memcpy(lp1->l_text + len, lp2->l_text, add);
 #if ! WINMARK
 	if (MK.l == lp2) {
 		MK.l  = lp1;
@@ -1498,7 +1498,7 @@ void *dummy GCC_UNUSED)
 	if (any)
 		bprintf("last=%c", lastreg);
 
-	for (i = 0; i < TABLESIZE(kbs); i++) {
+	for (i = 0; (size_t) i < TABLESIZE(kbs); i++) {
 		short	save = ukb;
 
 		ii = index2ukb(i);

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.26 1997/11/11 20:07:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.29 1998/02/21 12:37:56 tom Exp $
  *
  */
 
@@ -120,6 +120,8 @@ TERM    term    = {
 #endif
 };
 
+
+
 #if OPT_ICURSOR
 static void
 nticursor(int cmode)
@@ -170,7 +172,6 @@ ntbcol(int color)		/* set the current background color */
 
 static void
 scflush(void)
-
 {
 	if (bufpos) {
 		COORD coordCursor;
@@ -450,16 +451,6 @@ ntkopen(void)	/* open the keyboard */
 	keyboard_open = TRUE;
 	SetConsoleCtrlHandler(NULL, TRUE);
 	SetConsoleMode(hConsoleInput, ENABLE_MOUSE_INPUT|ENABLE_WINDOW_INPUT);
-
-	/* If we are coming back from a shell command, pick up the current window
-	 * size, since that may have changed due to a 'mode con' command.
-	 */
-	if (keyboard_was_closed) {
-		CONSOLE_SCREEN_BUFFER_INFO temp;
-		keyboard_was_closed = FALSE;
-		GetConsoleScreenBufferInfo(hConsoleOutput, &temp);
-		newscreensize(temp.dwMaximumWindowSize.Y, temp.dwMaximumWindowSize.X);
-	}
 }
 
 static void
@@ -789,4 +780,20 @@ ntscroll(int from, int to, int n)
 		);
 	}
 #endif
+}
+
+void
+ntcons_reopen(void)
+{
+	/* If we are coming back from a shell command, pick up the current window
+	 * size, since that may have changed due to a 'mode con' command.  Run
+	 * this after the 'pressreturn()' call, since otherwise that gets lost
+	 * by side-effects of this code.
+	 */
+	if (keyboard_was_closed) {
+		CONSOLE_SCREEN_BUFFER_INFO temp;
+		keyboard_was_closed = FALSE;
+		GetConsoleScreenBufferInfo(hConsoleOutput, &temp);
+		newscreensize(temp.dwMaximumWindowSize.Y, temp.dwMaximumWindowSize.X);
+	}
 }

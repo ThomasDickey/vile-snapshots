@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.149 1998/02/07 17:38:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.150 1998/03/13 00:40:01 tom Exp $
  *
  */
 
@@ -998,16 +998,22 @@ int eolchar)
 int
 macroize(
 TBUFF	**p,
-const char *	src,
-const char *	ref)
+TBUFF *	src,
+int	skip)
 {
 	register int	c;
+	char	*ref	= tb_values(src); /* FIXME */
 	int	multi	= !isShellOrPipe(ref);	/* shift command? */
 	int	count	= 0;
 
 	if (tb_init(p, abortc) != 0) {
+		ALLOC_T	n, len = tb_length(src);
+		char	*txt = tb_values(src);
+
+		TRACE(("macroizing %s\n", tb_visible(src)))
 		(void)tb_append(p, '"');
-		while ((c = *src++) != EOS) {
+		for (n = skip; n < len; n++) {
+			c = txt[n];
 			if (multi && count++)
 				(void)tb_sappend(p, "\" \"");
 			if (c == '\\' || c == '"')
@@ -1015,6 +1021,7 @@ const char *	ref)
 			(void)tb_append(p, c);
 		}
 		(void)tb_append(p, '"');
+		TRACE(("macroized %s\n", tb_visible(*p)))
 		return (tb_append(p, EOS) != 0);
 	}
 	return FALSE;
@@ -1971,7 +1978,7 @@ int bufnum)	/* number of buffer to execute */
 
 	/* find the pointer to that buffer */
 	if ((bp = find_b_name(bufname)) == NULL) {
-		mlforce("[Macro not defined]");
+		mlforce("[Macro %d not defined]", bufnum);
 		return FALSE;
 	}
 

@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.28 1997/06/04 11:04:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.29 1998/02/23 11:27:56 tom Exp $
  *
  */
 
@@ -214,6 +214,17 @@ tb_scopy(TBUFF **p, const char *s)
 	(void) tb_init(p, EOS);
 	(void) tb_sappend(p, s);
 	return tb_append(p, EOS);
+}
+
+/*
+ * Construct a TBUFF from a null-terminated string, omitting its null.
+ */
+TBUFF *
+tb_string(const char *s)
+{
+	TBUFF *p = 0;
+	(void) tb_init(&p, EOS);
+	return tb_bappend(&p, s, strlen(s));
 }
 
 /*******(retrieval)************************************************************/
