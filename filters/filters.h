@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.90 2005/03/13 22:56:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.91 2005/03/15 21:29:21 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -119,6 +119,7 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 
 #define VILE_SUBKEY "Software\\VI Like Emacs"
 
+#define	TABLESIZE(v)	(sizeof(v)/sizeof(v[0]))
 #define NONNULL(s)	((s) != 0) ? (s) : "<null>"
 #define isBlank(c)	((c) == ' ' || (c) == '\t')
 

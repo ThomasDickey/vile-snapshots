@@ -2742,7 +2742,7 @@ Programmed procedures (aka macros)
 	$find-cmd	last spawned find command		(read only)
 	$font		current font name (X11/winvile versions only)
 	$forward-search	search direction, true=forward
-	$helpfile	help-filename (vile.hlp)
+	$helpfile	$VILE_HELP_FILE env var or "vile.hlp"   (read/write)
 	$iconname	current icon name (X11 version only)
 	$identifier	current punctuated word
 	$kbd-macro	the keyboard macro, see ^X-( ^X-)	(read only)
@@ -3422,6 +3422,7 @@ Invocation
 
 	VILE_HELP_FILE
 		override the name of the help file, normally "vile.hlp".
+		This sets the $helpfile variable.
 	VILE_LIBDIR_PATH
 		override the search path for filter programs, normally the
 		library-directory on UNIX systems.  This sets the
@@ -6182,4 +6183,4 @@ Problems
 
 Copyright 1995-2005 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.598 2005/01/26 19:17:55 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.599 2005/03/15 20:04:13 tom Exp $

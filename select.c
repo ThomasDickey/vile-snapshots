@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.156 2005/02/09 22:57:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.157 2005/03/17 22:21:07 tom Exp $
  *
  */
 
@@ -719,7 +719,7 @@ on_double_click(void)
     sel_release();
     if (!is_at_end_of_line(DOT)
 	&& !isSpace(char_at(DOT))) {
-	while (DOT.o >= 0) {
+	while (DOT.o > 0) {
 	    DOT.o--;
 	    if (isSpace(char_at(DOT))) {
 		DOT.o++;

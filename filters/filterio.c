@@ -1,12 +1,16 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.25 2005/03/14 00:47:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.26 2005/03/15 21:27:13 tom Exp $
  *
  */
 
 #include <filters.h>
 #include <stdarg.h>
+
+#if defined(_WIN32)
+#include "w32vile.h"
+#endif
 
 static FILE *my_out;
 static FILE *my_in;

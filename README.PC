@@ -129,7 +129,7 @@ best results in EMX, you should build with the autoconf version and
 ncurses.  this requires a number of tools:
 
 	+ you will have to regenerate the configure script, using
-	  autoconf 2.12, with the patches from
+	  autoconf 2.13, with the patches from
 
 	  http://invisible-island.net/autoconf/autoconf.html
 
@@ -264,5 +264,5 @@ tom dickey, dickey@invisible-island.net
 paul fox, pgf@foxharp.boston.ma.us (home)
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.31 2003/08/04 22:46:30 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.32 2005/03/15 20:08:15 tom Exp $
 ------------------------
