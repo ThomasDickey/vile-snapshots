@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.137 1996/10/03 01:02:51 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.138 1996/12/09 01:15:30 tom Exp $
 #
 #
 
@@ -1049,6 +1049,10 @@ operprint	OPER|GLOBOK|(RANGE)
 	"print-lines-til"		!FEWNAMES
 	"p"
 	<show lines>
+operpprint	OPER|GLOBOK|(RANGE)
+	"print-prefixed-lines-til"	!FEWNAMES
+	"pp"
+	<show lines with line numbers>
 operselect	OPER|GLOBOK|(RANGE)	OPT_SELECTIONS
 	"select-til"			!FEWNAMES
 	'^A-s'

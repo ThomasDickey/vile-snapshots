@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.221 1996/11/17 20:53:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.222 1996/12/08 21:58:38 tom Exp $
  *
  */
 
@@ -113,29 +113,23 @@ right_num (char *buffer, int len, long value)
  * Do format a string.
  */
 static int
-dfputs(OutFunc outfunc, char *s)
-{
-	register int c;
-	register int l = 0;
-
-	while ((c = *s++) != EOS) {
-	        (*outfunc)(c);
-		l++;
-	}
-	return l;
-}
-
-/* as above, but takes a count for s's length */
-static int
 dfputsn(OutFunc outfunc, char *s, int n)
 {
 	register int c;
 	register int l = 0;
+	TRACE(("...str=%.*s\n", n > 0 ? n : (int)strlen(s), s))
 	while ((n-- != 0) && ((c = *s++) != EOS)) {
 		(*outfunc)(c);
 		l++;
 	}
 	return l;
+}
+
+/* as above, but uses null-terminated string's length */
+static int
+dfputs(OutFunc outfunc, char *s)
+{
+	return dfputsn(outfunc, s, -1);
 }
 
 /*
@@ -148,6 +142,7 @@ dfputi(OutFunc outfunc, int i, int r)
 {
 	register int q;
 
+	TRACE(("...int=%d\n", i))
 	if (i < 0) {
 		if (i < vMAXNEG) {
 			return dfputs(outfunc,"OVFL");
@@ -170,6 +165,7 @@ dfputli(OutFunc outfunc, long l, int r)
 {
 	register int q;
 
+	TRACE(("...long=%ld\n", l))
 	if (l < 0) {
 		(*outfunc)('-');
 		return dfputli(outfunc, -l, r) + 1;
@@ -2407,7 +2403,7 @@ BUFFER *bp,
 char	**msptr)
 {
 	register char *ms = msptr ? *msptr : 0;
-	register int mcnt = 0;
+	register SIZE_T mcnt = 0;
 
 #if SYS_VMS || HAVE_LOSING_SWITCH_WITH_STRUCTURE_OFFSET
 	PutMode(MDCMOD,		"cmode")
@@ -2436,7 +2432,7 @@ char	**msptr)
 		,{MDLOCKED,  "locked by"}  /* keep this last */
 #endif
 	};
-	register int j;
+	register SIZE_T j;
 
 	for (j = mcnt = 0; j < TABLESIZE(table); j++) {
 		PutMode(table[j].mode, table[j].name)
@@ -2764,7 +2760,7 @@ recompute_buffer(BUFFER *bp)
 	register SAVEWIN *tbl;
 
 	struct VAL b_vals[MAX_B_VALUES];
-	int	num = 0;
+	ALLOC_T	num = 0;
 	BUFFER *savebp = curbp;
 	WINDOW *savewp = curwp;
 	int	mygoal = curgoal;
@@ -2819,7 +2815,7 @@ recompute_buffer(BUFFER *bp)
 	copy_mvals(NUM_B_VALUES, bp->b_values.bv, b_vals);
 
 	/* reposition and restore */
-	while (num-- > 0) {
+	while (num-- != 0) {
 		curwp = wp = tbl[num].wp;
 		curbp = curwp->w_bufp;
 		(void)gotoline(TRUE, tbl[num].top);

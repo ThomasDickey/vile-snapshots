@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.56 1996/09/17 20:04:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.57 1996/12/09 01:07:17 tom Exp $
  *
  */
 
@@ -328,6 +328,14 @@ operprint(int f, int n)
 	regionshape = FULLLINE;
 	opcmd = OPOTHER;
 	return operator(f,n,plineregion,"Line print");
+}
+
+int
+operpprint(int f, int n)
+{
+	regionshape = FULLLINE;
+	opcmd = OPOTHER;
+	return operator(f,n,pplineregion,"Line-number print");
 }
 
 int

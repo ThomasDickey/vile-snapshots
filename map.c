@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.67 1996/03/24 13:38:16 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.68 1996/11/22 22:41:02 tom Exp $
  * 
  */
 
@@ -477,7 +477,9 @@ static int normal_typeahead (void);
 static int
 normal_getc(void)
 {
-      return(TTgetc());
+	int c = TTgetc();
+	TRACE(("normal/getc:%c (%#x)\n", c, c))
+	return c;
 }
 
 static int
@@ -530,7 +532,7 @@ sysmapped_c(void)
 	return itb_last(sysmappedchars);
 
     c = TTgetc();
-    TRACE(("getc:%c (%#x)\n", c, c))
+    TRACE(("mapped/getc:%c (%#x)\n", c, c))
 
 #if DOKEYLOG
     if (do_keylog) {

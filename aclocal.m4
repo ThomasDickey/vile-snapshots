@@ -1,7 +1,7 @@
 dnl
 dnl Local definitions for autoconf.
 dnl ------------------------
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.21 1996/10/05 00:17:34 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.22 1996/12/08 21:41:48 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -465,7 +465,7 @@ dnl ---------------------------------------------------------------------------
 dnl	Check for return and param type of 3rd -- OutChar() -- param of tputs().
 AC_DEFUN([VC_TYPE_OUTCHAR],
 [AC_MSG_CHECKING([declaration of tputs 3rd param])
-AC_CACHE_VAL(vc_vc_type_outchar,[
+AC_CACHE_VAL(vc_cv_type_outchar,[
 vc_cv_type_outchar="int OutChar(int)"
 vc_cv_found=no
 for P in int void; do

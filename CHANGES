@@ -1,3 +1,21 @@
+Changes for vile 6.4 (released ??? ??? ??, 1996)
+
+(tom)	961208 (b)
+	+ added "print-prefixed-lines-til" command to print into [p-lines]
+	  while prefixing the lines with filename and line-number.
+	+ work-around Linux bug that causes 'getchar()' to return incorrect
+	  value after an interrupt, so inserts of ^C would be garbled (input.c).
+	+ guard against infinite loop which resulted from reverse search on
+	  "$", resulting from 6.2a fixes (search.c).
+	+ implement colored attributes in termcap driver (tcap.c)
+	+ correct typo in cache-variable for VC_TYPE_OUTCHAR macro
+	+ test with autoconf 2.12 (no change needed).
+
+(tom)	961122 (a)
+	+ modify handling of xterm mouse-click in insert mode to allow it
+	  unless the click would move the cursor out of the current window
+	  (requested by David McCoy).
+
 Changes for vile 6.3 (released Mon Nov 18, 1996)
 
 (tom)	961117 (g)

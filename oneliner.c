@@ -4,13 +4,14 @@
  *	Copyright (c) 1990, 1995 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.82 1996/10/30 13:58:58 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.83 1996/12/09 02:02:05 tom Exp $
  */
 
 #include	"estruct.h"
 #include	"edef.h"
 
 #define PLIST	0x01
+#define PNUMS	0x02
 
 static	int	delins(regexp *exp, char *sourc);
 static	int	substline(regexp *exp, int nth_occur, int printit, int globally, int *confirmp);
@@ -30,6 +31,7 @@ pregion(int flag)
 	register int	status;
 	REGION		region;
 	register LINEPTR linep;
+	BUFFER *oldbp = curbp;
 
 	if ((status = get_fl_region(&region)) != TRUE) {
 		return (status);
@@ -63,6 +65,18 @@ pregion(int flag)
 	do {
 		if (!addline(bp, linep->l_text, llength(linep)))
 			break;	/* out of memory */
+		if (flag & PNUMS && !isInternalName(oldbp->b_fname)) {
+			BUFFER *savebp = curbp;
+			WINDOW *savewp = curwp;
+			curbp = bp;
+			curwp = bp2any_wp(bp);
+			DOT.l = lback(buf_head(bp));
+			DOT.o = 0;
+			bprintf("%s:%d:", oldbp->b_fname, line_no(oldbp, linep));
+			DOT.o = 0;
+			curbp = savebp;
+			curwp = savewp;
+		}
 		linep = lforw(linep);
 	} while (linep != region.r_end.l);
 
@@ -84,6 +98,12 @@ int
 llineregion(void)
 {
 	return pregion(PLIST);
+}
+
+int
+pplineregion(void)
+{
+	return pregion(PNUMS);
 }
 
 int

@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.82 1996/10/06 19:55:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.84 1996/12/08 21:48:07 tom Exp $
  *
  */
 
@@ -846,8 +846,7 @@ tcapattr(int attr)
 	};
 	static	int last;
 
-	attr = VATTRIB(attr);	/* FIXME: color? */
-
+	attr = VATTRIB(attr);
 	attr &= ~(VAML|VAMLFOC);
 
 	if (attr != last) {
@@ -887,6 +886,12 @@ tcapattr(int attr)
 				putpad(SE);
 			}
 		}
+#if OPT_COLOR
+		if (attr & VACOLOR)
+			tcapfcol(VCOLORNUM(attr));
+		else if (given_fcolor != gfcolor)
+			tcapfcol(gfcolor);
+#endif
 		last = attr;
 	}
 }
@@ -1014,9 +1019,6 @@ xterm_button(int c)
 	static	const	char	*fmt = "\033[%d;%d;%d;%d;%dT";
 #endif	/* OPT_XTERM >= 3 */
 
-	if (insertmode)
-		return ABORT;
-
 	if ((status = (global_g_val(GMDXTERM_MOUSE))) != 0) {
 		beginDisplay;
 		switch(c) {
@@ -1032,6 +1034,10 @@ xterm_button(int c)
 				return TRUE; /* button up */
 			}
 			wp = row2window(y-1);
+			if (insertmode && wp != curwp) {
+				kbd_alarm();
+				return ABORT;
+			}
 #if OPT_XTERM >= 3
 			/* Tell the xterm how to highlight the selection.
 			 * It won't do anything else until we do this.
