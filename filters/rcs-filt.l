@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.2 1999/04/30 01:45:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.3 2000/01/31 00:23:02 tom Exp $
  *
  * Filter to add vile "attribution" sequences to RCS archives.
  */
@@ -72,11 +72,11 @@ flush_quoted(void)
 	    if (ident != 0) {
 		char *next = strchr(ident+1, '$');
 		if (ident != base)
-		    write_string(yyout, base, ident - base, String_attr);
+		    write_token(yyout, base, ident - base, String_attr);
 		base = next + 1;
-		write_string(yyout, ident, base - ident, Ident2_attr);
+		write_token(yyout, ident, base - ident, Ident2_attr);
 	    } else {
-		write_string(yyout, base, last - base, String_attr);
+		write_token(yyout, base, last - base, String_attr);
 		break;
 	    }
 	}
@@ -112,7 +112,7 @@ NAME		[a-zA-Z0-9]+
 
 <INITIAL>[\n]		{ ECHO; }
 <INITIAL>{NAME}		{ WriteToken(keyword_attr(yytext)); }
-<INITIAL>{NUMBER}	{ WriteString(Number_attr); }
+<INITIAL>{NUMBER}	{ WriteToken(Number_attr); }
 <INITIAL>"@"		{ add_to_quoted(yytext, yyleng); BEGIN(QUOTED); }
 <QUOTED>[^@\n]*		{ add_to_quoted(yytext, yyleng); }
 <QUOTED>@		{ add_to_quoted(yytext, yyleng); flush_quoted(); BEGIN(INITIAL); }

@@ -85,26 +85,26 @@ Creating, executing, storing macros
     ---------------
 	The numbered macro syntax looks like so:
 
-	        <number> store-macro
+		<number> store-macro
 		    <language element>
 		       ...
 		    <language element>
-	        ~endm
+		~endm
 
 	A numbered macro is executed using this command:
 
-	        execute-macro-<number>
+		execute-macro-<number>
 
 	To bind a keystroke to this macro, use this command:
 
-	        bind-key execute-macro-<number> <keystroke>
+		bind-key execute-macro-<number> <keystroke>
 
 	Here's an actual example:
 
 		30 store-macro
 		    write-message "this is a test macro"
-	        ~endm
-	        bind-key execute-macro-30 #h
+		~endm
+		bind-key execute-macro-30 #h
 
 	Now, whenever "#h" is pressed, a message is written on the editor's
 	message line.
@@ -122,11 +122,11 @@ Creating, executing, storing macros
     ------------
 	A named macro, aka "stored procedure", uses this syntax:
 
-	        store-procedure <unique-name> ["help-string"]
+		store-procedure <unique-name> ["help-string"]
 		    <language element>
 		       ...
 		    <language element>
-	        ~endm
+		~endm
 
 	where:
 
@@ -376,22 +376,22 @@ State Variables
 	$cdpath         editor's copy of the $CDPATH env var (read/write)
 
 	$cfgopts        [READ ONLY] Comma-delimited list of "interesting"
-		        compiled options.  Currently tracked options include:
+			compiled options.  Currently tracked options include:
 
-		        perl        -> editor includes perl interpreter
-		        oleauto     -> editor supports OLE automation.
-		        termcap     -> editor reads TERMCAP db for screen info.
-		        terminfo    -> editor reads TERMINFO db for screen info.
+			perl	    -> editor includes perl interpreter
+			oleauto	    -> editor supports OLE automation.
+			termcap	    -> editor reads TERMCAP db for screen info.
+			terminfo    -> editor reads TERMINFO db for screen info.
 
-		        If none of the above options are in effect, $cfgopts
-		        will be empty ("").
+			If none of the above options are in effect, $cfgopts
+			will be empty ("").
 
 	$cfilname       Full pathname of the current buffer, unless it
 			is a special vile buffer, in which case it will
 			return the empty string.
 
 	$char           Decimal representation of the ASCII character at
-		        the cursor location.
+			the cursor location.
 
 	$cryptkey       [WRITE ONLY] encryption key.
 
@@ -421,10 +421,16 @@ State Variables
 			echoing ??????
 
 	$end-of-cmd     Boolean which is true if user entered the cmd with a
-		        carriage return (Some commands may expect to
-		        receive additional arguments if their name is
-		        terminated with a space character rather than
-		        a carriage return.)
+			carriage return (Some commands may expect to
+			receive additional arguments if their name is
+			terminated with a space character rather than
+			a carriage return.)
+
+	$error-buffer	Buffer name associated with vile's error-buffer
+			feature.  This variable commonly appears in a
+			~local statement in macros that temporarily
+			reassign error-buffer (e.g., the ShowManpage macro
+			in macros/manpage.rc).
 
 	$exec-suffix	[READ ONLY] suffix, if any, for execable programs.
 			Use this in portable macros, with &lookup, to get the
@@ -439,7 +445,7 @@ State Variables
 	$forward-search Boolean value indicating search direction.
 
 	$helpfile       Filename referred to when help is requested (usually
-		        vile.hlp).
+			vile.hlp).
 
 	$iconname       With xvile, contains current icon name.
 
@@ -1199,6 +1205,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.42 2000/01/14 11:21:21 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.43 2000/01/30 20:19:38 cmorgan Exp $
 -----------------------------------
 

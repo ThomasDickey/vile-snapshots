@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.325 2000/01/15 00:56:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.328 2000/01/31 00:55:57 tom Exp $
  *
  */
 
@@ -105,6 +105,10 @@ static	void	vtlistc (int c);
 
 #if OPT_VIDEO_ATTRS
 static	void	updattrs(WINDOW *wp);
+static void mergeattr(WINDOW *wp, int row, int start_col, int end_col, VIDEO_ATTR attr);
+#if OPT_LINE_ATTRS
+static void updlineattrs(WINDOW *wp);
+#endif
 #endif
 
 #if	OPT_UPBUFF
@@ -1751,6 +1755,10 @@ updattrs(WINDOW *wp)
     for (i = wp->w_toprow + wp->w_ntrows - 1; i >= wp->w_toprow; i--)
 	set_vattrs(i, 0, 0, term.cols);
 
+#if OPT_LINE_ATTRS
+    updlineattrs(wp);
+#endif /* OPT_LINE_ATTRS */
+
     /*
      * No need to do any more work on this window if there are no
      * attributes.
@@ -1822,7 +1830,7 @@ updattrs(WINDOW *wp)
 		rect_end_col = n;
 	}
 	for (lnum = start_lnum; lnum <= end_lnum; lnum++, lp = lforw(lp)) {
-	    int row, col;
+	    int row;
 	    if (ap->ar_shape == RECTANGLE) {
 		start_col = rect_start_col;
 	    } else if (lnum == start_rlnum) {
@@ -1849,35 +1857,82 @@ updattrs(WINDOW *wp)
 #endif
 	    }
 	    row = lmap[lnum - start_wlnum];
-#ifdef WMDLINEWRAP
-	    if (w_val(wp,WMDLINEWRAP))
-	    {
-		for (col = start_col; col <= end_col; col++) {
-		    int x = row + col / term.cols;
-		    if  (x < 0)
-			continue;
-		    if (x < mode_row(wp)) {
-			int y = col % term.cols;
-			vscreen[x]->v_attrs[y] =
-			    (vscreen[x]->v_attrs[y] | (attr & ~VAREV))
-			    ^ (attr & VAREV);
-		    }
-		    else
-			break;
-		}
-	    }
-	    else
-#endif
-	    {
-		if (end_col >= term.cols)
-		    end_col = term.cols-1;
-		for (col = start_col; col <= end_col; col++)
-		    vscreen[row]->v_attrs[col] =
-			(vscreen[row]->v_attrs[col] | (attr & ~VAREV))
-			^ (attr & VAREV);
-	    }
+	    mergeattr(wp, row, start_col, end_col, attr);
 	}
 	ap = ap->ar_next;
+    }
+}
+
+#if OPT_LINE_ATTRS
+static void
+updlineattrs(WINDOW *wp)
+{
+    int row;
+    LINEPTR lp;
+
+    row = wp->w_toprow;
+    lp = wp->w_line.l;
+    while (row < wp->w_toprow + wp->w_ntrows && lp != win_head(wp)) {
+	if (lp->l_attrs) {
+	    C_NUM start_col, end_col;
+	    int i, a;
+	    i = 0;
+	    for (;;) {
+		if (lp->l_attrs[i] == 0)
+		    break;		/* get out if at end */
+		while (lp->l_attrs[i] == 1)
+		    i++;		/* skip normals */
+		a = lp->l_attrs[i];
+		if (a == 0)
+		    break;		/* get out if at end */
+		start_col = offs2col(wp, lp, i);
+		i++;
+		while (lp->l_attrs[i] == a)
+		    i++;		/* find run of same attr */
+		if (start_col < w_left_margin(wp))
+		    start_col = w_left_margin(wp);
+		end_col = offs2col(wp, lp, i) - 1;
+		mergeattr(wp, row, start_col, end_col, line_attr_tbl[a].vattr);
+	    }
+	}
+	row += line_height(wp, lp);
+	lp = lforw(lp);
+    }
+}
+
+#endif /* OPT_LINE_ATTRS */
+
+/* Merge (or combine) the specified attribute into the vscreen structure */
+static void
+mergeattr(WINDOW *wp, int row, int start_col, int end_col, VIDEO_ATTR attr)
+{
+    int col;
+#ifdef WMDLINEWRAP
+    if (w_val(wp,WMDLINEWRAP))
+    {
+	for (col = start_col; col <= end_col; col++) {
+	    int x = row + col / term.cols;
+	    if  (x < 0)
+		continue;
+	    if (x < mode_row(wp)) {
+		int y = col % term.cols;
+		vscreen[x]->v_attrs[y] =
+		    (vscreen[x]->v_attrs[y] | (attr & ~VAREV))
+		    ^ (attr & VAREV);
+	    }
+	    else
+		break;
+	}
+    }
+    else
+#endif
+    {
+	if (end_col >= term.cols)
+	    end_col = term.cols-1;
+	for (col = start_col; col <= end_col; col++)
+	    vscreen[row]->v_attrs[col] =
+		(vscreen[row]->v_attrs[col] | (attr & ~VAREV))
+		^ (attr & VAREV);
     }
 }
 #endif /* OPT_VIDEO_ATTRS */

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.9 1999/12/12 02:00:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.10 2000/01/31 00:21:10 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of terminfo
  */
@@ -31,7 +31,7 @@ echo_vals(char *text, int size, char *attr)
 	text++;
 	size--;
     }
-    write_string(yyout, text, size, attr);
+    write_token(yyout, text, size, attr);
 }
 
 static char *

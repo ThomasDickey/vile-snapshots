@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.193 1999/12/20 21:16:56 kev Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.194 2000/01/31 00:42:39 tom Exp $
 #
 #
 
@@ -896,7 +896,7 @@ lineundo	NONE
 	<undo all changes made to most recently altered line>
 loadkreg	NONE
 	"load-register"
-	<load the given string into the given named register>
+	<load the given string into the given named register.  give CNT for full-lines.>
 showkreg	NONE			OPT_SHOW_REGS
 	"show-registers"
 	"showregisters"			!FEWNAMES
@@ -974,7 +974,7 @@ newwidth	NONE
 nextwind	NONE
 	"next-window"			!FEWNAMES
 	'^X-o'
-	<move to the next window>
+	<move to the next window.  repeat with CNT>
 nullproc	NONE
 	"nop"				!FEWNAMES
 	"do-nothing"			!FEWNAMES
@@ -1207,7 +1207,7 @@ prevbuffer	NONE|(BANG|NAMEDFS)	!SMALLER
 prevwind	NONE
 	"previous-window"		!FEWNAMES
 	'^X-O'
-	<move to the previous window>
+	<move to the previous window.  repeat with CNT>
 capturecmd	NONE			OPT_SHELL
 	"capture-command"		!FEWNAMES
 	"pipe-command"			!FEWNAMES
@@ -1463,7 +1463,7 @@ storemac	NONE
 	<store script text into CNT'th macro, up to line starting with ~endm>
 storeproc	NONE			OPT_PROCEDURES
 	"store-procedure"
-	<store script text into given named stored-procedure>
+	<store script text into given named stored-procedure; give CNT for store-macro CNT>
 subst_again	REDO|UNDO|GLOBOK
 	"substitute-again"		!FEWNAMES
 	'&'
@@ -1587,7 +1587,7 @@ writequit	NONE|(VI_NL)
 	<write the current buffer, and quit if no other buffers are modified>
 wrapword	REDO|UNDO		!SMALLER
 	"wrap-word"
-	<split line in two at first preceding word break>
+	<split line in two at first preceding word break.  give CNT to trim blanks.>
 writemsg	NONE			!SMALLER
 	"write-message"
 	<put a message on the message line>

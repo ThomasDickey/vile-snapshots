@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tagsfilt.c,v 1.1 1999/11/24 01:36:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tagsfilt.c,v 1.2 2000/01/31 00:21:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a tags file.  It's done best
  * in C because the file consists only of columns of data that are delimited
@@ -47,13 +47,13 @@ do_filter(FILE *input, FILE *output)
 	s = line;
 	if (*s != '!') {
 	    t = skip_field(s);
-	    write_string(output, s, t-s, Ident_attr);
+	    write_token(output, s, t-s, Ident_attr);
 	    if (*t == '\t') {
 		fputc(*t++, output);
 	    }
 	    s = t;
 	    t = skip_field(s);
-	    write_string(output, s, t-s, Ident2_attr);
+	    write_token(output, s, t-s, Ident2_attr);
 	    if (*t == '\t') {
 		fputc(*t++, output);
 	    }
@@ -61,7 +61,7 @@ do_filter(FILE *input, FILE *output)
 	    if (isdigit(*s)) {
 		while (isdigit(*t))
 		    t++;
-		write_string(output, s, t-s, Number_attr);
+		write_token(output, s, t-s, Number_attr);
 	    } else if (ispunct(*s)) {
 		t++;
 		while (*t != 0 && *t != *s) {
@@ -70,10 +70,10 @@ do_filter(FILE *input, FILE *output)
 		    if (*t != 0)
 			t++;
 		}
-		write_string(output, s, t-s, Literal_attr);
+		write_token(output, s, t-s, Literal_attr);
 	    }
 	    s = t;
 	}
-	write_string(output, s, strlen(s), Comment_attr);
+	write_token(output, s, strlen(s), Comment_attr);
     }
 }

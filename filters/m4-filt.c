@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.12 2000/01/15 13:50:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.13 2000/01/31 00:17:45 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4 
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -40,7 +40,7 @@ typedef struct {
 
 #define isQuote(s,n) (n.used && !strncmp(s, n.text, n.used))
 
-#define write_quote(output,n) write_string(output, n.text, n.used, "")
+#define write_quote(output,n) write_token(output, n.text, n.used, "")
 
 static Quote leftquote, rightquote;
 static Quote leftcmt, rightcmt;
@@ -125,7 +125,7 @@ parse_arglist(FILE * fp, char *s, char ***args)
 	    }
 	    t++;
 	}
-	write_string(fp, s, t - s, "");
+	write_token(fp, s, t - s, "");
 	return t;
     }
     return s;
@@ -309,7 +309,7 @@ static char *
 write_comment(FILE * fp, char *s, int *level)
 {
     int c_length = has_endofcomment(s, level);
-    write_string(fp, s, c_length, Comment_attr);
+    write_token(fp, s, c_length, Comment_attr);
     return s + c_length;
 }
 
@@ -374,11 +374,11 @@ do_filter(FILE * input, FILE * output)
 		s = write_comment(output, s, &comment);
 		comment = 0;
 	    } else if (isQuote(s, leftcmt)) {
-		write_string(output, s, leftcmt.used, Comment_attr);
+		write_token(output, s, leftcmt.used, Comment_attr);
 		s += leftcmt.used;
 		comment = 1;
 	    } else if (isQuote(s, rightcmt)) {
-		write_string(output, s, rightcmt.used, Comment_attr);
+		write_token(output, s, rightcmt.used, Comment_attr);
 		s += rightcmt.used;
 		comment = 0;
 	    } else if (isIdent(*s)) {

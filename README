@@ -372,8 +372,76 @@ Nov, 1999
     dialog, better integration with the Windows Explorer and DevStudio.
 
 Jan, 2000
-    vile 9.1 is released.
+    vile 9.1 is released.  Highlights since 9.0:
+
+    + continued improvement of syntax coloring (much work here)
+
+    + add an Exporter-like mechanism to Perl5 interface. Instead
+      of exposing a module's functions to the caller, it exposes them to
+      vile as registered commands.  By renaming the extensions as `.pm',
+      and making some minor changes to use Vile::Exporter, an extension
+      becomes visible by simply adding:
+          use extension;
+      to vileinit.pl.  There is also provision for only including some
+      commands provided by the extension, and for overriding the keybinding
+      defined by the developer (documented in the attached module).
+      Of course you can still say:
+           require extension;
+      and do the registering yourself if you so choose.
+
+    + vile's perl interface includes a new Vile::Window module, which may
+      be used to manipulate vile windows.  Examples of the use of this
+      module may be found in winops.pm.
+
+    + rename most .pl files to .pm (makefile.in).
+
+    + add/improve several perl scripts, including
+
+      - capture.pl - implements a perl version of capture-command.  This
+        version incrementally updates the window however.
+
+      - shell.pl - revised to use IO:Pty instead of Comm.pl (which
+        seems to be no longer maintained).
+
+      - Manual.pm - display embedded POD documentation.
+
+    + implement watchfd support for the termcap/terminfo versions of vile.
+
+    + added autocolor feature, which updates color syntax highlighting when
+      the keyboard is inactive for a specified period.
+
+    + Vileserv now also works for vile.
+
+    + changed vmsbuild.com to accept a compiler specification on the VMS
+      command line, which is much more convenient than editing the build
+      script by hand.  compiler defaults to VAXC on Vax hosts and DECC on
+      Alpha hosts.
+
+    + Several Win32-specific improvements:
+
+      - add the Win32 common dialog "save as" feature to both console
+        vile and winvile.
+
+      - modify directory.pm and dirlist.pm to make them work on win32, i.e.,
+        by not executing portions that will not work (such as mime types).
+
+      - implement autoscrolling feature for winvile, which makes the buffer
+        scroll in the direction where the mouse leaves the window,
+        automatically extending selection highlighting.
+
+    + modify backspacelimit mode to allow backspacing through a newline
+      when nobackspacelimit is specified.
+
+    + add single-quoted strings, which eliminate the need for escaping
+      backslash (useful in startup/command files)
+
+    + Added binding / support for ^X-_ aka
+      "historical-buffer-to-current-window".
+
+    + modify logic in ins_any_time() to interpret control characters which
+      are bound to GOAL or MOTION commands rather than inserting them
+      without quoting.  This allows ^E and ^Y as commands within an insert.
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.78 2000/01/15 19:34:55 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.79 2000/01/30 20:23:33 cmorgan Exp $
 -------------------------------

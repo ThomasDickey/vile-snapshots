@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.377 2000/01/15 13:46:01 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.378 2000/01/30 21:25:26 cmorgan Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -449,25 +449,6 @@ A message would look something like this:
 
 contrary to the vile.hlp text, binding to the interrupt{} terminal
 character does not fully change intrc and the user's interrupt character.
-
------------------------------------------------------------------
-VMS6.0 on VAXstation 4000/90.  DEC C for OpenVMS VAX compiler
-version V4.0-000.  Shared library (specified in VMSSHARE.OPT)
-is DECC$SHR.EXE instead of the default VAXCRTL.EXE.
-
-symptoms:
-	vile can't read vile.rc, or vile.hlp.
-
-reason:
-	on this setup, the access() library routine seems broken.
-	my test program showed that it returned -1 for existant
-	and non-existant files.
-
-solution:
-	I had to add a
-#define HAVE_ACCESS 0
-	in estruct.h (actually, I just put it in fileio.c).
-[ there's a fix in estruct.h, but untested ]
 
 -----------------------------------------------------------------
 

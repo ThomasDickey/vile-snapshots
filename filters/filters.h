@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.31 1999/12/09 02:13:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.32 2000/01/31 00:24:19 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -187,13 +187,9 @@ extern long hash_function(const char *id);
 extern void for_each_keyword(EachKeyword func);
 extern void insert_keyword(const char *ident, const char *attribute, int classflag);
 extern void parse_keyword(char *name, int classflag);
-extern void write_string(FILE *fp, char *string, int length, char *attribute);
 extern void write_token(FILE *fp, char *string, int length, char *attribute);
 
-#define WriteString(attr) write_string(yyout, yytext, yyleng, attr)
 #define WriteToken(attr) write_token(yyout, yytext, yyleng, attr)
-
-#define WriteString2(attr,len) write_string(yyout, yytext+len, yyleng-len, attr)
 #define WriteToken2(attr,len) write_token(yyout, yytext+len, yyleng-len, attr)
 
 #endif /* FILTERS_H */

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_1
+MANIFEST for vile, version v9_1a
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -270,6 +270,7 @@ perl/Visit.pm                   perl: utility for visiting files
 perl/capture.pm                 Perl script that improves on vile's capture-command
 perl/directory.pm               directory-browser extension
 perl/dirlist.pm                 perl: create a flat directory listing
+perl/gdb.pm                     run gdb in a window, tracking changes
 perl/hgrep.pm                   Perl utility: recursive grep, makes hypertext links
 perl/lock.pm                    Perl: screen-lock script
 perl/mime.pl                    mime-aware file viewer support

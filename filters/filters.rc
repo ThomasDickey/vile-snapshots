@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.109 2000/01/14 11:13:53 tom Exp $
+; $Id: filters.rc,v 1.110 2000/01/19 23:17:17 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -408,7 +408,7 @@ define-mode ti
 
 define-mode txt
 ~with define-submode txt
-	suf '\(\(README\|CHANGES\|Change[Ll]og]\|COPYING\)[^/]*\|\.\(txt\|doc\|hlp\)\)$'
+	suf '\(\(README\|CHANGES\|Change[Ll]og\|COPYING\)[^/]*\|\.\(txt\|doc\|hlp\)\)$'
 	comment-prefix	'^\s*--'
 	comments	'^\s*--\s*$'
 ~endwith

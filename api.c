@@ -165,6 +165,9 @@ lreplace(char *s, int len)
 	    ltextfree(lp, curbp);
 	lp->l_text = ntext;
 	lp->l_size = nlen;
+#if OPT_LINE_ATTRS
+	FreeAndNull(lp->l_attrs);
+#endif
     }
 
     lp->l_used = len;
@@ -192,6 +195,9 @@ lreplace(char *s, int len)
 		    if (mp->l == lp && mp->o > len)
 			mp->o = len;
     );
+#if OPT_LINE_ATTRS
+    FreeAndNull(lp->l_attrs);
+#endif
 
     return TRUE;
 }

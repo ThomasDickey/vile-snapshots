@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.6 1999/03/07 19:21:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.7 2000/01/31 00:23:31 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TCL/TK script.
  */
@@ -69,7 +69,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
 {IDENT}			{ WriteToken(keyword_attr(yytext)); BEGIN(ARGS); }
 
-<VERB>"#".*$		{ WriteString(Comment_attr); }
+<VERB>"#".*$		{ WriteToken(Comment_attr); }
 <ARGS>[;\n]		{ ECHO; BEGIN(VERB); }
 
 {ACTION}		{ WriteToken(Action_attr); }
@@ -83,4 +83,4 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
 \\.		|
 {STRING1}	|
-{STRING2}		{ WriteString(String_attr); }
+{STRING2}		{ WriteToken(String_attr); }

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.27 2000/01/13 00:06:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.28 2000/01/31 00:22:49 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -45,7 +45,7 @@ write_keyword(char *text, int size)
 	space++;
     }
 
-    write_string(yyout, text, size, keyword_attr(text));
+    write_token(yyout, text, size, keyword_attr(text));
 
     if (space)
 	fprintf(yyout, "%.*s", space, text + size);
@@ -57,8 +57,8 @@ write_keyword(char *text, int size)
 static void
 write_delimited(char *text, int size, char *attr)
 {
-    write_string(yyout, text, size-1, attr);
-    write_string(yyout, text+size-2, 1, "");
+    write_token(yyout, text, size-1, attr);
+    write_token(yyout, text+size-2, 1, "");
 }
 
 /*
@@ -81,7 +81,7 @@ static void
 flush_quoted(void)
 {
     if (save_len) {
-	write_string(yyout, save_bfr, save_len, String_attr);
+	write_token(yyout, save_bfr, save_len, String_attr);
 	save_len = 0;
     }
 }
@@ -138,22 +138,22 @@ MACRO		([$]?\$\{{ID}\}|[$]?\${ID}|[$]?\$[A-Za-z@!%^&*?<]|\${SPACE}*\([^\)]+\))
 
 <NORMAL>^{SPACE}*{NAME}{SPACE}*=	{ write_delimited(yytext, yyleng, Ident2_attr); }
 
-<NORMAL>{MACRO}		{ WriteString(Ident2_attr); }
+<NORMAL>{MACRO}		{ WriteToken(Ident2_attr); }
 
 <NORMAL>^{SPACE}\@	{ if (yyleng)
 			    fprintf(yyout, "%.*s", yyleng-1, yytext);
-			  write_string(yyout, "@", 1, String_attr); }
-<NORMAL>\\{SPACE}+\n	{ WriteString(Error_attr); }
-<NORMAL>\\["'\n]	{ WriteString(String_attr); }
+			  write_token(yyout, "@", 1, String_attr); }
+<NORMAL>\\{SPACE}+\n	{ WriteToken(Error_attr); }
+<NORMAL>\\["'\n]	{ WriteToken(String_attr); }
 <NORMAL>\'		{ add_to_quoted(yytext, yyleng); BEGIN(QUOTE1); }
 <NORMAL>\"		{ add_to_quoted(yytext, yyleng); BEGIN(QUOTE2); }
 
 <NORMAL>"#"			{ WriteToken(Comment_attr); BEGIN(COMMENT); }
-<COMMENT>(\\.|\\\n|[^\n])*	{ WriteString(Comment_attr); }
+<COMMENT>(\\.|\\\n|[^\n])*	{ WriteToken(Comment_attr); }
 <COMMENT>\n			{ ECHO; BEGIN(NORMAL); }
 
-<QUOTE1,QUOTE2>{MACRO}		{ flush_quoted(); WriteString(Ident2_attr); }
-<QUOTE1,QUOTE2>\\{SPACE}+\n	{ flush_quoted(); WriteString(Error_attr); }
+<QUOTE1,QUOTE2>{MACRO}		{ flush_quoted(); WriteToken(Ident2_attr); }
+<QUOTE1,QUOTE2>\\{SPACE}+\n	{ flush_quoted(); WriteToken(Error_attr); }
 <QUOTE1,QUOTE2>\\\n		{ add_to_quoted(yytext, yyleng); }
 
 <QUOTE1>(\\.|[^\n\'])	{ add_to_quoted(yytext, yyleng); }

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.2 2000/01/15 13:50:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.3 2000/01/31 00:23:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to SCCS files.
  */
@@ -95,6 +95,6 @@ MARKED		^\001[^\n]*
 			break;
 		    }
 		}
-<INSERT>[^\n]*	{ WriteString(Insert_attr); }
+<INSERT>[^\n]*	{ WriteToken(Insert_attr); }
 
-<DELETE>[^\n]*	{ WriteString(Delete_attr); }
+<DELETE>[^\n]*	{ WriteToken(Delete_attr); }

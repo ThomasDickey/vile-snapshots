@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.133 2000/01/15 12:43:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.134 2000/01/30 23:16:29 kev Exp $
  *
  */
 
@@ -89,6 +89,9 @@ lalloc(register int used, BUFFER *bp)
 	lp->l_used = used;
 	lsetclear(lp);
 	lp->l_nxtundo = null_ptr;
+#if OPT_LINE_ATTRS
+	lp->l_attrs = NULL;
+#endif
 	return lp;
 }
 
@@ -139,6 +142,10 @@ ltextfree(register LINE *lp, register BUFFER *bp)
 			free((char *)ltextp);
 		}
 	} /* else nothing to free */
+
+#if OPT_LINE_ATTRS
+	FreeAndNull(lp->l_attrs);
+#endif
 }
 
 /*
@@ -374,9 +381,16 @@ linsert(int n, int c)
 			(void)memcpy(&ntext[0], &lp1->l_text[0], (SIZE_T)doto);
 		(void)memset(&ntext[doto],   c, (SIZE_T)n);
 		if (lp1->l_text) {
+#if OPT_LINE_ATTRS
+			unsigned char *l_attrs = lp1->l_attrs;
+			lp1->l_attrs = 0;	/* momentarily detach */
+#endif
 			(void)memcpy(&ntext[doto+n], &lp1->l_text[doto],
 					(SIZE_T)(lp1->l_used-doto ));
 			ltextfree(lp1,curbp);
+#if OPT_LINE_ATTRS
+			lp1->l_attrs = l_attrs;	/* reattach */
+#endif
 		}
 		lp1->l_text = ntext;
 		lp1->l_size = nsize;
@@ -425,6 +439,10 @@ linsert(int n, int c)
 					mp->o += n;
 			}
 	);
+#if OPT_LINE_ATTRS
+	if (lp1->l_attrs)
+	    lattr_shift(curbp, lp1, doto, n);
+#endif
 	return (TRUE);
 }
 
@@ -542,6 +560,9 @@ lnewline(void)
 					mp->o -= doto;
 			}
 	);
+#if OPT_LINE_ATTRS
+	FreeAndNull(lp1->l_attrs);
+#endif
 	chg_buff(curbp, WFHARD|WFINS);
 	return (TRUE);
 }
@@ -665,6 +686,9 @@ int kflag)	/* put killed text in kill buffer flag */
 						mp->o = doto;
 				}
 		);
+#if OPT_LINE_ATTRS
+		lattr_shift(curbp, dotp, doto, -chunk);
+#endif
 		nchars -= chunk;
 	}
 	return (s);
@@ -817,6 +841,9 @@ ldelnewline(void)
 				mp->o += len;
 			}
 	);
+#if OPT_LINE_ATTRS
+	FreeAndNull(lp2->l_attrs);
+#endif
 	llength(lp1) += add;
 	set_lforw(lp1, lforw(lp2));
 	set_lback(lforw(lp2), lp1);

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.6 1999/03/07 19:21:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.7 2000/01/31 00:23:31 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of SQL script
  * - T.Dickey
@@ -77,11 +77,11 @@ HOSTVAR		":"{IDENT}
 
 {NUMBER}		{ WriteToken(Number_attr); }
 
-{STRING}		{ WriteString(String_attr); }
+{STRING}		{ WriteToken(String_attr); }
 
 {COMMENT1}		{ WriteToken(Comment_attr); }
 
 "/*"			{ WriteToken(Comment_attr); BEGIN(COMMENT); }
-<COMMENT>[^*]*		{ WriteString(Comment_attr); }
-<COMMENT>"*"+[^*/]*	{ WriteString(Comment_attr); }
+<COMMENT>[^*]*		{ WriteToken(Comment_attr); }
+<COMMENT>"*"+[^*/]*	{ WriteToken(Comment_attr); }
 <COMMENT>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(INITIAL); }

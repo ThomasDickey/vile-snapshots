@@ -155,8 +155,12 @@ editor.  currently, winvile may only be built with makefile.wnt (i.e.,
 only with VC++).
 
 as of vile 8.0, an embedded perl interpreter may be optionally included
-with the console or gui versions of the editor.  again, this feature
-is only accessible via makefile.wnt .
+with the console or gui versions of the editor.  again, this feature is
+only accessible via makefile.wnt .  if perl has been installed on your
+desktop, vile's perl API documentation can be extracted from the source
+distribution with this nmake command:
+
+    nmake -f makefile.wnt vile-perl-api.doc
 
 as of vile 8.1, winvile may be built with optional OLE automation support,
 which is described in the file doc/oleauto.doc .  additionally, a DLL called
@@ -204,18 +208,30 @@ Perl preconditions
 ------------------
 before building vile with an embedded perl interpreter:
 
-1) install the [binary] perl Win32 port located at this URL:
+1) install a complete Win32 perl distribution[*] from this URL:
 
-   http://www.perl.com/CPAN-local/ports/win32/Standard/x86/
+       http://www.perl.com/CPAN-local/ports/win32/Standard/x86/
+
+   Included in this distribution, among many other items, is a required DLL
+   (perl.dll) and the usual perl packages.
 
 2) initialize the environment variable VILE_LIBDIR_PATH to point to a
    writable "root" directory where vile's perl scripts will be installed.
 
-note that one of CPAN's popular perl binary releases did not export an
+[*] Choose either a precompiled version of perl or build it yourself from
+    source.  In this context, a "complete" distribution includes the perl
+    interpreter and all "standard" packages, modules, and libraries.
+
+note 1: one of CPAN's popular perl binary releases did not export an
 important symbol.  this omission has been handled in vile's sources, but
 there is a nontrivial performance impact associated with the workaround.
 search for the symbol HAVE_BROKEN_PERL_RS in makefile.wnt to see if your
 version of perl is affected.
+
+note 2: the ActiveState port of perl is not compatible with vile's
+internal perl API.  See this URL for more details:
+
+    http://www.activestate.com/ActivePerl/docs/Perl-Win32/perlwin32faq10.html
 
 --------------------------------------------------------
 tom dickey, dickey@clark.net
@@ -224,5 +240,5 @@ tom dickey, dickey@clark.net
 paul fox, pgf@foxharp.boston.ma.us (home)
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.22 1999/03/26 10:32:10 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.23 2000/01/30 22:18:45 cmorgan Exp $
 ------------------------

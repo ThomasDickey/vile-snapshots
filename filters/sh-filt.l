@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.27 2000/01/10 00:33:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.28 2000/01/31 00:23:31 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -116,7 +116,7 @@ INTEGER		[-+]?([0-9]+)
 
 <NORMAL>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
 
-<NORMAL>"#"[^\n]*	{ WriteString(Comment_attr); }
+<NORMAL>"#"[^\n]*	{ WriteToken(Comment_attr); }
 
 <NORMAL>^{SPACE}*:	|
 <NORMAL>{ACTION}	{ WriteToken(Action_attr); }
@@ -127,10 +127,10 @@ INTEGER		[-+]?([0-9]+)
 <NORMAL>{IDENT2}	|
 <NORMAL>{IDENTX}	{ WriteToken(Ident_attr); }
 
-<NORMAL>{IDENTEQLS}	{ write_string(yyout, yytext, yyleng-1, Ident_attr); fprintf(yyout, "="); }
+<NORMAL>{IDENTEQLS}	{ write_token(yyout, yytext, yyleng-1, Ident_attr); fprintf(yyout, "="); }
 
 <NORMAL>\\.		|
-<NORMAL>{SSTRING}	{ WriteString(String_attr); }
+<NORMAL>{SSTRING}	{ WriteToken(String_attr); }
 <NORMAL>\"		{ add_to_quoted(yytext, yyleng); BEGIN(QUOTED); }
 
 <NORMAL>\<\<{SPACE}*{QIDENT} {

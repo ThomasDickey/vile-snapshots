@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.8 1999/05/30 00:53:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.9 2000/01/31 00:21:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of NROFF
  */
@@ -28,14 +28,14 @@ write_cmd(char *text, int size)
 	}
     }
     write_token(yyout, text, cmd, Keyword_attr);
-    write_string(yyout, text+cmd, size-cmd, String_attr);
+    write_token(yyout, text+cmd, size-cmd, String_attr);
 }
 
 static void
 write_font(char *text, int size)
 {
     write_token(yyout, text, 3, Ident2_attr);
-    write_string(yyout, text+3, size-6, String_attr);
+    write_token(yyout, text+3, size-6, String_attr);
     write_token(yyout, text + size - 3, 3, Ident2_attr);
 }
 

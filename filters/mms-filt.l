@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.2 1999/05/01 02:53:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.3 2000/01/31 00:22:55 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VMS mms script
  * - T.Dickey
@@ -97,7 +97,7 @@ COMMENT		"#"[^\n]*
 
 {PARAM}				{ WriteToken(Ident2_attr); }
 
-{STRINGS}			{ WriteString(String_attr); }
+{STRINGS}			{ WriteToken(String_attr); }
 
 {INLINECOMMENT}			|
 {COMMENT}			{ WriteToken(Comment_attr); }

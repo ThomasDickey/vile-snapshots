@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.6 2000/01/10 00:00:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.7 2000/01/31 00:21:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile keyword file.  It's
  * done best in C because the delimiters may change as a result of processing
@@ -64,11 +64,11 @@ ExecClass(FILE *fp, char *param)
     free(t);
     t = skip_blanks(skip_ident(skip_blanks(param)));
     if (*t == eqls_ch) {
-	write_string(fp, param, t - param, Ident2_attr);
+	write_token(fp, param, t - param, Ident2_attr);
 	fputc(*t++, fp);
-	write_string(fp, t, strlen(t), color_of(t));
+	write_token(fp, t, strlen(t), color_of(t));
     } else {
-	write_string(fp, param, strlen(param), Ident2_attr);
+	write_token(fp, param, strlen(param), Ident2_attr);
     }
 }
 
@@ -76,22 +76,22 @@ static void
 ExecEquals(FILE *fp, char *param)
 {
     eqls_ch = *param;
-    write_string(fp, param, strlen(param), Literal_attr);
+    write_token(fp, param, strlen(param), Literal_attr);
 }
 
 static void
 ExecMeta(FILE *fp, char *param)
 {
     meta_ch = *param;
-    write_string(fp, param, strlen(param), Literal_attr);
+    write_token(fp, param, strlen(param), Literal_attr);
 }
 
 static void
 ExecTable(FILE *fp, char *param)
 {
     char *t = skip_ident(param);
-    write_string(fp, param, t - param, Literal_attr);
-    write_string(fp, t, strlen(t), Error_attr);
+    write_token(fp, param, t - param, Literal_attr);
+    write_token(fp, t, strlen(t), Error_attr);
 }
 
 static int parse_directive(FILE *fp, char *line)
@@ -120,13 +120,13 @@ static int parse_directive(FILE *fp, char *line)
 	    for (n = 0; n < sizeof(table) / sizeof(table[0]); n++) {
 		if (!strncmp(s, table[n].name, len)) {
 		    s = skip_blanks(s + len);
-		    write_string(fp, line, s-line, Ident_attr);
+		    write_token(fp, line, s-line, Ident_attr);
 		    (*table[n].func) (fp, s);
 		    return 1;
 		}
 	    }
 	}
-	write_string(fp, line, strlen(line), Error_attr);
+	write_token(fp, line, strlen(line), Error_attr);
     }
     return 0;
 }
@@ -160,12 +160,12 @@ do_filter(FILE * input, FILE * output)
 
     while (readline(input, &line, &used) != NULL) {
 	s = skip_blanks(line);
-	write_string(output, line, s - line, "");
+	write_token(output, line, s - line, "");
 	if (*s == eqls_ch) {
-	    write_string(output, s, strlen(s), Comment_attr);
+	    write_token(output, s, strlen(s), Comment_attr);
 	} else if (!parse_directive(output, s)) {
 	    t = skip_ident(s);
-	    write_string(output, s, t - s, Ident_attr);
+	    write_token(output, s, t - s, Ident_attr);
 	    if (*t == eqls_ch) {
 		fputc(*t++, output);
 	    }
@@ -174,12 +174,12 @@ do_filter(FILE * input, FILE * output)
 		int save = *s;
 		*s = 0;
 		if (is_class(t)) {
-		    write_string(output, t, strlen(t), Ident2_attr);
+		    write_token(output, t, strlen(t), Ident2_attr);
 		    t = s;
 		}
 		*s = save;
 	    }
-	    write_string(output, t, strlen(t), color_of(t));
+	    write_token(output, t, strlen(t), color_of(t));
 	}
     }
 }

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.215 1999/12/24 20:43:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.216 2000/01/31 00:43:47 tom Exp $
  *
  */
 
@@ -1304,7 +1304,7 @@ show_which_file(char *fname, UINT mode, int f, int n)
 	char *result;
 	if ((result = cfg_locate(fname, mode)) != 0) {
 		mlwrite("%s", result);
-		if (f && n > 1)
+		if (f)
 			liststuff(WHICH_BufName, n>2, list_which, mode, fname);
 	}
 	return (result != 0);

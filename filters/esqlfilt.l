@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.4 1999/12/27 00:23:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.5 2000/01/31 00:22:24 tom Exp $
  *
  * Filter to add vile "attribution" sequences to embedded SQL with C/C++.
  * - T.Dickey
@@ -165,14 +165,14 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 <CODE,SQL>";"		{ ECHO; reset_symbol_table(); }
 
 <CODE,SQL>"/*"		{ WriteToken(Comment_attr); BEGIN(COMMENT); }
-<COMMENT>[^*]*		{ WriteString(Comment_attr); }
-<COMMENT>"*"+[^*/]*	{ WriteString(Comment_attr); }
-<COMMENT>"*"+"/"	{ WriteString(Comment_attr); BEGIN(my_state); }
+<COMMENT>[^*]*		{ WriteToken(Comment_attr); }
+<COMMENT>"*"+[^*/]*	{ WriteToken(Comment_attr); }
+<COMMENT>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(my_state); }
 
 <CODE,SQL>"//"[^\n]*	{ WriteToken(Comment_attr); }
 
-<CODE,SQL>{STRINGS}	{ WriteString(String_attr); }
+<CODE,SQL>{STRINGS}	{ WriteToken(String_attr); }
 
-<CODE,SQL>{NUMBER}	{ WriteString(Number_attr); }
+<CODE,SQL>{NUMBER}	{ WriteToken(Number_attr); }
 
 <SQL>":"{IDENT}		{ WriteToken(Ident2_attr); }

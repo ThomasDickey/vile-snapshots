@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.112 2000/01/07 01:42:46 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.115 2000/01/31 00:51:37 tom Exp $
  *
  */
 
@@ -45,6 +45,11 @@ static	int	attribute_cntl_a_sequences (void);
 #if OPT_SHELL
 static	int	attribute_from_filter (void);
 #endif
+static	void	free_line_attribs (BUFFER *bp);
+static	int	add_line_attrib (BUFFER *bp, REGION *rp, REGIONSHAPE rs,
+                                 VIDEO_ATTR vattr, TBUFF *hypercmd);
+static void	purge_line_attribs(BUFFER *bp, REGION *rp, REGIONSHAPE rs,
+                                   int owner);
 
 /*
  * startbufp and startregion are used to represent the start of a selection
@@ -94,6 +99,8 @@ free_attribs(BUFFER *bp)
 	p = q;
     }
     bp->b_attribs = NULL;
+
+    free_line_attribs(bp);
 }
 
 void
@@ -1067,134 +1074,145 @@ get_selection_buffer_and_region(AREGION *arp)
 int
 attributeregion(void)
 {
-	register int    status;
-	REGION		region;
-	AREGION *	arp;
+    register int    status;
+    REGION		region;
+    AREGION *	arp;
 
-	if ((status = getregion(&region)) == TRUE) {
-	    if (VATTRIB(videoattribute) != 0
+    if ((status = getregion(&region)) == TRUE) {
+	if (VATTRIB(videoattribute) != 0
 #if OPT_HYPERTEXT
-		|| tb_length(hypercmd) != 0)
+	    || tb_length(hypercmd) != 0)
 #endif
-	    {
-		/* add new attribute-region */
-		if ((arp = typealloc(AREGION)) == NULL) {
-		    (void)no_memory("AREGION");
+	{
+	    if (add_line_attrib(curbp, &region, regionshape, videoattribute,
+#if OPT_HYPERTEXT
+	                        hypercmd
+#else
+				0
+#endif
+					 ))
+		return TRUE;
+
+	    /* add new attribute-region */
+	    if ((arp = typealloc(AREGION)) == NULL) {
+		(void)no_memory("AREGION");
+		return FALSE;
+	    }
+	    arp->ar_region = region;
+	    arp->ar_vattr = videoattribute; /* include ownership */
+	    arp->ar_shape = regionshape;
+#if OPT_HYPERTEXT
+	    arp->ar_hypercmd = 0;
+	    if (tb_length(hypercmd)) {
+		    arp->ar_hypercmd = strmalloc(tb_values(hypercmd));
+		    tb_init(&hypercmd, 0);
+	    }
+#endif
+	    attach_attrib(curbp, arp);
+	} else { /* purge attributes in this region */
+	    L_NUM rls = line_no(curbp, region.r_orig.l);
+	    L_NUM rle = line_no(curbp, region.r_end.l);
+	    C_NUM ros = region.r_orig.o;
+	    C_NUM roe = region.r_end.o;
+	    AREGION *p, *q, *n;
+	    int owner;
+
+	    owner = VOWNER(videoattribute);
+
+	    purge_line_attribs(curbp, &region, regionshape, owner);
+
+	    for (p = curbp->b_attribs, q = 0; p != 0; p = q) {
+		L_NUM pls, ple;
+		C_NUM pos, poe;
+
+		if (interrupted())
 		    return FALSE;
-		}
-		arp->ar_region = region;
-		arp->ar_vattr = videoattribute; /* include ownership */
-		arp->ar_shape = regionshape;
-#if OPT_HYPERTEXT
-		arp->ar_hypercmd = 0;
-		if (tb_length(hypercmd)) {
-			arp->ar_hypercmd = strmalloc(tb_values(hypercmd));
-			tb_init(&hypercmd, 0);
-		}
-#endif
-		attach_attrib(curbp, arp);
-	    } else { /* purge attributes in this region */
-		L_NUM rls = line_no(curbp, region.r_orig.l);
-		L_NUM rle = line_no(curbp, region.r_end.l);
-		C_NUM ros = region.r_orig.o;
-		C_NUM roe = region.r_end.o;
-		AREGION *p, *q, *n;
-		int owner;
 
-		owner = VOWNER(videoattribute);
+		q = p->ar_next;
 
-		for (p = curbp->b_attribs, q = 0; p != 0; p = q) {
-		    L_NUM pls, ple;
-		    C_NUM pos, poe;
+		if (owner != 0 && owner != VOWNER(p->ar_vattr))
+		    continue;
 
-		    if (interrupted())
-			return FALSE;
+		pls = line_no(curbp, p->ar_region.r_orig.l);
+		ple = line_no(curbp, p->ar_region.r_end.l);
+		pos = p->ar_region.r_orig.o;
+		poe = p->ar_region.r_end.o;
 
-		    q = p->ar_next;
-
-		    if (owner != 0 && owner != VOWNER(p->ar_vattr))
-			continue;
-
-		    pls = line_no(curbp, p->ar_region.r_orig.l);
-		    ple = line_no(curbp, p->ar_region.r_end.l);
-		    pos = p->ar_region.r_orig.o;
-		    poe = p->ar_region.r_end.o;
-
-		    /* Earlier the overlapping region check was made based only
-		     * on line numbers and so was right only for FULLINES shape
-		     * changed it to be correct for EXACT and RECTANGLE also
-		     * -kuntal 9/13/98
-		     */
-		    /*
-		     * check for overlap:
-		     * for any shape of region 'p' things are fine as long as
-		     * 'region' is above or below it
-		     */
-		    if (ple < rls || pls > rle)
-			continue;
-		    /*
-		     * for EXACT 'p' region
-		     */
-		    if ( p->ar_shape == EXACT ) {
-			if ( ple == rls && poe-1 < ros )
-				continue;
-			if ( pls == rle && pos > roe )
-				continue;
-		    }
-		    /*
-		     * for RECTANGLE 'p' region
-		     */
-		    if ( p->ar_shape == RECTANGLE )
-			if (poe < ros || pos > roe)
+		/* Earlier the overlapping region check was made based only
+		 * on line numbers and so was right only for FULLINES shape
+		 * changed it to be correct for EXACT and RECTANGLE also
+		 * -kuntal 9/13/98
+		 */
+		/*
+		 * check for overlap:
+		 * for any shape of region 'p' things are fine as long as
+		 * 'region' is above or below it
+		 */
+		if (ple < rls || pls > rle)
+		    continue;
+		/*
+		 * for EXACT 'p' region
+		 */
+		if ( p->ar_shape == EXACT ) {
+		    if ( ple == rls && poe-1 < ros )
 			    continue;
+		    if ( pls == rle && pos > roe )
+			    continue;
+		}
+		/*
+		 * for RECTANGLE 'p' region
+		 */
+		if ( p->ar_shape == RECTANGLE )
+		    if (poe < ros || pos > roe)
+			continue;
 
-		    /*
-		     * FIXME: this removes the whole of an overlapping region;
-		     * we really only want to remove the overlapping portion...
-		     */
+		/*
+		 * FIXME: this removes the whole of an overlapping region;
+		 * we really only want to remove the overlapping portion...
+		 */
 
-		    /*
-		     * we take care of this fix easily as long as neither of
-		     * 'p' or 'region' are RECTANGLE. we will need to create
-		     * at the most one new region in case 'region' is
-		     * completely contained within 'p'
-		     */
-		    if (p->ar_shape != RECTANGLE && regionshape != RECTANGLE) {
-			if ((rls > pls) || (rls == pls && ros > pos)) {
-			    p->ar_shape = EXACT;
-			    if ((rle < ple) || (rle == ple && roe < poe)) {
-				/* open a new region */
-				if ((n = typealloc(AREGION)) == NULL) {
-				    (void)no_memory("AREGION");
-				    return FALSE;
-				}
-				n->ar_region = p->ar_region;
-				n->ar_vattr  = p->ar_vattr;
-				n->ar_shape  = p->ar_shape;
-#if OPT_HYPERTEXT
-				n->ar_hypercmd = p->ar_hypercmd;
-#endif
-				n->ar_region.r_orig.l=(region.r_end.l);
-				n->ar_region.r_orig.o=(region.r_end.o);
-				attach_attrib(curbp, n);
+		/*
+		 * we take care of this fix easily as long as neither of
+		 * 'p' or 'region' are RECTANGLE. we will need to create
+		 * at the most one new region in case 'region' is
+		 * completely contained within 'p'
+		 */
+		if (p->ar_shape != RECTANGLE && regionshape != RECTANGLE) {
+		    if ((rls > pls) || (rls == pls && ros > pos)) {
+			p->ar_shape = EXACT;
+			if ((rle < ple) || (rle == ple && roe < poe)) {
+			    /* open a new region */
+			    if ((n = typealloc(AREGION)) == NULL) {
+				(void)no_memory("AREGION");
+				return FALSE;
 			    }
-			    p->ar_region.r_end.l = (region.r_orig.l);
-			    p->ar_region.r_end.o = (region.r_orig.o);
-			    curwp->w_flag |= WFHARD;
-			    continue;
-			} else if ((rle < ple) || (rle == ple && roe < poe)) {
-			    p->ar_region.r_orig.l = (region.r_end.l);
-			    p->ar_region.r_orig.o = (region.r_end.o);
-			    curwp->w_flag |= WFHARD;
-			    continue;
+			    n->ar_region = p->ar_region;
+			    n->ar_vattr  = p->ar_vattr;
+			    n->ar_shape  = p->ar_shape;
+#if OPT_HYPERTEXT
+			    n->ar_hypercmd = p->ar_hypercmd;
+#endif
+			    n->ar_region.r_orig.l=(region.r_end.l);
+			    n->ar_region.r_orig.o=(region.r_end.o);
+			    attach_attrib(curbp, n);
 			}
+			p->ar_region.r_end.l = (region.r_orig.l);
+			p->ar_region.r_end.o = (region.r_orig.o);
+			curwp->w_flag |= WFHARD;
+			continue;
+		    } else if ((rle < ple) || (rle == ple && roe < poe)) {
+			p->ar_region.r_orig.l = (region.r_end.l);
+			p->ar_region.r_orig.o = (region.r_end.o);
+			curwp->w_flag |= WFHARD;
+			continue;
 		    }
-
-		    free_attrib(curbp, p);
 		}
+
+		free_attrib(curbp, p);
 	    }
 	}
-	return status;
+    }
+    return status;
 }
 
 int
@@ -1684,5 +1702,255 @@ attribute_from_filter(void)
     return result;
 }
 #endif /*  OPT_SHELL */
+
+#if OPT_LINE_ATTRS
+
+#define INIT_LINE_ATTR_TBL() \
+    if (!line_attr_tbl[0].in_use) init_line_attr_tbl()
+
+static void
+init_line_attr_tbl(void)
+{
+    /* Slot 0 indicates no more line attributes */
+    line_attr_tbl[0].in_use = TRUE;
+    line_attr_tbl[0].vattr  = 0;
+    /* Slot 1 indicates a normal attribute */
+    line_attr_tbl[1].in_use = TRUE;
+    line_attr_tbl[1].vattr  = 0;
+}
+
+/* Find a an index in line_attr_tbl[] containing the specified attribute.
+   Add the attribute to the table if not found.  Return -1 if table is
+   full. (Kevin's note: I don't think the table full condition will
+   be a real problem.  But if it is, it should be possible to garbage
+   collect the table.) */
+static int
+find_line_attr_idx(VIDEO_ATTR vattr)
+{
+    int hash = 0;
+    int start;
+    unsigned i;
+    VIDEO_ATTR v;
+
+    INIT_LINE_ATTR_TBL();
+
+    if (vattr == 0)
+	return 1;		/* Normal attributes get mapped to index 1 */
+
+    v = vattr;
+    for (i = 0; i < sizeof (VIDEO_ATTR); i++) {
+	hash ^= v & 0xff;
+	v >>= 8;
+    }
+
+    start = hash;
+    while (line_attr_tbl[hash].in_use) {
+
+	if (line_attr_tbl[hash].vattr == vattr)
+	    return hash;
+
+	hash++;
+	if (hash == start)
+	    return -1;
+
+	if (hash >= N_chars)
+	    hash = 2;		/* No point starting at 0, since we know
+	                           that 0 and 1 must be in use. */
+    }
+
+    line_attr_tbl[hash].vattr  = vattr;
+    line_attr_tbl[hash].in_use = TRUE;
+
+    return hash;
+}
+
+/* Attempt to shift a portion of a line either left or right for
+   inserts or deletes.  The idea is to preserve the line attributes
+   as much as possible until autocolor gets around to recoloring the
+   line */
+void
+lattr_shift(BUFFER *bp GCC_UNUSED, LINEPTR lp, int doto, int shift)
+{
+    unsigned char *lap;
+    if (!lp->l_attrs)
+	return;
+    lap = lp->l_attrs;
+    if (shift > 0) {
+	int f, t, len;
+	len = strlen(lap);
+	t = len - 1;
+	if (t <= 0)
+	    return;
+	for (f = t; f >= doto && f > t-shift; f--)
+	    if (lap[f] != 1) {
+		int newlen;
+		newlen = len + shift - (t - f);
+		lap = castrealloc(unsigned char, lap, newlen+1);
+		lp->l_attrs = lap;
+		lap[newlen] = 0;
+		t = newlen-1;
+		f = t - shift;
+		break;
+	    }
+	while (f > doto) {
+	    lap[t--] = lap[f--];
+	}
+    }
+    else if (shift < 0) {
+	int f, t;
+	int saw_attr = 0;
+	shift = -shift;
+	/* Move t to doto, but don't run off end */
+	for (t = 0; t < doto && lap[t]; t++)
+	    saw_attr |= (lap[t] != 1);
+	if (lap[t] == 0)
+	    return;
+	/* Position f, but don't run off end */
+	for (f = t; f < doto + shift && lap[f]; f++)
+	    ;
+	/* Shift via copying, but observe what it is we shift */
+	while (lap[f]) {
+	    saw_attr |= (lap[f] != 1);
+	    lap[t++] = lap[f++];
+	}
+	/* Try to get rid of the line attributes entirely */
+	if (!saw_attr) {
+	    FreeAndNull(lp->l_attrs);
+	    return;
+	}
+	/* Normal out the stuff at the end. */
+	while (t < f)
+	    lap[t++] = 1;
+    }
+}
+
+#endif /* OPT_LINE_ATTRS */
+
+static void
+free_line_attribs(BUFFER *bp)
+{
+#if OPT_LINE_ATTRS
+    LINE *lp;
+    int do_update = 0;
+    for_each_line(lp, bp) {
+	do_update |= (lp->l_attrs != 0);
+	FreeAndNull(lp->l_attrs);
+    }
+    if (do_update) {
+	WINDOW *wp;
+	for_each_visible_window(wp) {
+	    if (wp->w_bufp == bp)
+		wp->w_flag |= WFHARD;
+	}
+    }
+#endif /* OPT_LINE_ATTRS */
+}
+
+static int
+add_line_attrib(BUFFER *bp, REGION *rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
+                TBUFF *hypercmdp)
+{
+#if OPT_LINE_ATTRS
+    LINEPTR lp;
+    WINDOW *wp;
+    int vidx;
+    int i;
+    if (rp->r_orig.l != rp->r_end.l	/* must be confined to one line */
+	|| rs != EXACT			/* must be an exact region */
+	|| (hypercmdp && tb_length(hypercmdp) != 0)
+					/* can't be a hypertext command */
+	|| vattr == 0			/* can't be normal */
+	|| (vattr & VASEL) != 0)	/* can't be a selection */
+	return FALSE;
+
+    lp = rp->r_orig.l;
+    if (lp->l_attrs) {
+	int len = strlen(lp->l_attrs);
+	/* Make sure the line attribute is long enough */
+	if (len < rp->r_end.o) {
+	    lp->l_attrs = castrealloc(unsigned char,
+	                             lp->l_attrs, rp->r_end.o + 1);
+	    if (lp->l_attrs == NULL)
+		return FALSE;		/* Let someone else deal with the
+		                           problem of running out of memory */
+	    for (i = len; i < rp->r_end.o; i++)
+		lp->l_attrs[i] = 1;
+	    lp->l_attrs[i] = 0;
+	}
+	/* See if attributed region we're about to add overlaps an existing
+	   line based one */
+	for (i = rp->r_orig.o; i < rp->r_end.o; i++)
+	    if (lp->l_attrs[i] != 1)
+		return FALSE;		/* Can't have overlapping line
+		                           attributes */
+    }
+    else {
+	/* Must allocate and initialize memory for the line attributes */
+	lp->l_attrs = castalloc(unsigned char, llength(lp) + 1);
+	lp->l_attrs[llength(lp)] = 0;
+	for (i = llength(lp)-1; i >= 0; i--)
+	    lp->l_attrs[i] = 1;
+    }
+
+    vidx = find_line_attr_idx(vattr);
+    if (vidx < 0)
+	return FALSE;
+
+    for (i = rp->r_orig.o; i < rp->r_end.o; i++)
+	lp->l_attrs[i] = vidx;
+
+    for_each_visible_window(wp) {
+	if (wp->w_bufp == bp)
+	    wp->w_flag |= WFHARD;
+    }
+    return TRUE;
+#else /* !OPT_LINE_ATTRS */
+    return FALSE;
+#endif /* OPT_LINE_ATTRS */
+}
+
+static void
+purge_line_attribs(BUFFER *bp, REGION *rp, REGIONSHAPE rs, int owner)
+{
+#if OPT_LINE_ATTRS
+    LINEPTR ls = rp->r_orig.l;
+    LINEPTR le = rp->r_end.l;
+    int os = rp->r_orig.o;
+    int oe = rp->r_end.o;
+    LINEPTR lp;
+    int i;
+    int do_update = 0;
+
+    for (lp = ls; lp != lforw(le); lp = lforw(lp)) {
+	if (lp->l_attrs == 0)
+	    continue;
+	for (i = 0; i < llength(lp); i++) {
+	    if (lp->l_attrs[i] == 0)
+		break;			/* at end of attrs */
+	    if (lp->l_attrs[i] == 1)
+		continue;		/* normal, so proceed to next one */
+	    if (rs != FULLLINE) {
+		if ((rs == RECTANGLE || lp == ls) && i < os)
+		    continue;
+		if ((rs == RECTANGLE || lp == le) && i >= oe)
+		    break;
+	    }
+	    if (owner != 0
+	     && owner != VOWNER(line_attr_tbl[lp->l_attrs[i]].vattr))
+		continue;
+	    /* If we get here, set it back to normal */
+	    lp->l_attrs[i] = 1;
+	    do_update = 1;
+	}
+    }
+    if (do_update) {
+	WINDOW *wp;
+	for_each_visible_window(wp) {
+	    if (wp->w_bufp == bp)
+		wp->w_flag |= WFHARD;
+	}
+    }
+#endif /* OPT_LINE_ATTRS */
+}
 
 #endif /* OPT_SELECTIONS */

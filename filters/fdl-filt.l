@@ -21,7 +21,7 @@ static int next_state;
 static void
 handle_keyword(char *name)
 {
-    write_string(yyout, name, strlen(name), keyword_attr(name));
+    write_token(yyout, name, strlen(name), keyword_attr(name));
     next_state = INITIAL;
     if (!strcmp(name, "$rem")) {
 	BEGIN(NOTE);
@@ -75,8 +75,8 @@ KEYWORD		$[a-zA-Z_][a-zA-Z_0-9]*
 			  }
 			}
 
-<NOTE>{REMAINDER}	{ WriteString(Comment_attr);
+<NOTE>{REMAINDER}	{ WriteToken(Comment_attr);
 			  BEGIN(INITIAL); }
 
-<TEXT>[_]+		{ WriteString(Ident2_attr); }
-<TEXT>[^$_\n]+		{ WriteString(String_attr); }
+<TEXT>[_]+		{ WriteToken(Ident2_attr); }
+<TEXT>[^$_\n]+		{ WriteToken(String_attr); }

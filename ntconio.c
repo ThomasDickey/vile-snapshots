@@ -1,14 +1,17 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.56 2000/01/14 10:59:05 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.57 2000/01/30 20:44:02 cmorgan Exp $
  *
  */
 
 #include <windows.h>
+#include <process.h>
 
 #include        "estruct.h"
 #include        "edef.h"
+
+#undef RECT			/* FIXME: symbol conflict */
 
 /*
  * Define this if you want to kernel fault win95 when ctrl brk is pressed.
@@ -47,6 +50,17 @@ static const char *initpalettestr = "0 4 2 6 1 5 3 7 8 12 10 14 9 13 11 15";
 
 static char linebuf[NCOL];
 static int bufpos = 0;
+
+/* Add state variables for console vile's autoscroll feature.              */
+static int buttondown = FALSE;	/* is the left mouse button currently down? */
+static RECT client_rect;	/* writable portion of editor's window      */
+static HANDLE hAsMutex;		/* autoscroll mutex handle (prevents worker
+				 * thread and main thread from updating the
+				 * display at the same time).
+				 */
+static WINDOW *mouse_wp;	/* vile window ptr during mouse operations. */
+static int row_height;		/* pixels per row within client_rect        */
+#define AS_TMOUT 2000		/* hAsMutex timeout period (2 sec) */
 
 static void scflush(void);
 
@@ -597,12 +611,10 @@ MouseClickSetPos(COORD * result, int *onmode)
     if ((wp = row2window(result->Y)) != 0) {
 	if (result->Y == mode_row(wp)) {
 	    *onmode = TRUE;
-	    sel_release();
 	    return TRUE;
 	}
 	return setcursor(result->Y, result->X);
     }
-    sel_release();
     return FALSE;
 }
 
@@ -626,20 +638,264 @@ adjust_window(WINDOW *wp, COORD * current, COORD * latest)
     return FALSE;
 }
 
+/*
+ * Return the current mouse position scaled in character cells, with the
+ * understanding that the cursor might not be in the client rect (due to a
+ * captured mouse).  The right way to do this is to call GetCursorPos() and
+ * convert that info to a character cell location by performing some simple
+ * computations based on the current font geometry, as is done in ntwinio.c . 
+ * However, I've not found a way to obtain the font used in a command
+ * prompt's (aka DOS box's) client area (yes, I did try GetTextMetrics()). 
+ * Without font info, other mechanisms are required.
+ *
+ * Note: GetMousePos() only returns accurate Y coordinate info, because
+ * that's all the info AutoScroll needs to make its decision.
+ */
+static void
+GetMousePos(POINT * result)
+{
+    HWND hwnd;
+
+    hwnd = GetForegroundWindow();
+    GetCursorPos(result);
+    ScreenToClient(hwnd, result);
+    if (result->y < client_rect.top) {
+	/*
+	 * mouse is above the editor's client area, return a suitable 
+	 * character cell location that properly triggers autoscroll
+	 */
+
+	result->y = -1;
+    } else if (result->y > client_rect.bottom) {
+	/*
+	 * mouse is below the editor's client area, return a suitable 
+	 * character cell location that properly triggers autoscroll
+	 */
+
+	result->y = term.rows;
+    } else if (result->x < client_rect.left || result->x > client_rect.right) {
+	/*
+	 * dragged mouse out of client rectangle on either the left or
+	 * right side.  don't know where the cursor really is, but it's
+	 * easy to forestall autoscroll by returning a legit mouse 
+	 * coordinate within the current editor window.
+	 */
+
+	result->y = mouse_wp->w_toprow;
+    } else {
+	/* cursor within client area. */
+
+	result->y /= row_height;
+    }
+}
+
+// Get current mouse position.  If the mouse is above/below the current
+// window then scroll the window down/up proportionally to the time the LMB
+// is held down.  This function is called from autoscroll_thread() when the
+// mouse is captured and a wipe selection is active.
+static void
+AutoScroll(WINDOW *wp)
+{
+#define DVSR    10
+#define INCR    6
+#define TRIGGER (DVSR + INCR)
+
+    POINT current;
+    int Scroll = 0;
+    static int ScrollCount = 0, Throttle = INCR;
+
+    GetMousePos(&current);
+
+    if (wp == 0)
+	return;
+
+    // Determine if we are above or below the window,
+    // and if so, how far...
+    if (current.y < wp->w_toprow) {
+	// Above the window
+	// Scroll = wp->w_toprow - current.y;
+	Scroll = 1;
+    }
+    if (current.y > mode_row(wp)) {
+	// Below
+	// Scroll = current.y - mode_row(wp);
+	// Scroll *= -1;
+	Scroll = -1;
+    }
+    if (Scroll) {
+	int row;
+	if (Scroll > 0) {
+	    row = wp->w_toprow;
+	} else {
+	    row = mode_row(wp) - 1;
+	}
+
+	// Scroll the pre-determined amount, ensuring at least one line of
+	// window movement per timer tick.  Note also that ScrollScale is
+	// signed, so it will be negative if we want to scroll down.
+	mvupwind(TRUE, Scroll * max(ScrollCount, TRIGGER) / (Throttle + DVSR));
+
+	// Set the cursor. Column doesn't really matter, it will
+	// get updated as soon as we get back into the window...
+	setcursor(row, 0) && sel_extend(TRUE, TRUE);
+	(void) update(TRUE);
+	ScrollCount++;
+	if (ScrollCount > TRIGGER && Throttle > 0 && ScrollCount % INCR == 0)
+	    Throttle--;
+    } else {
+	// Reset counters
+	Throttle = INCR;
+	ScrollCount = 0;
+    }
+#undef DVSR
+#undef INCR
+#undef TRIGGER
+}
+
+static void
+halt_autoscroll_thread(void)
+{
+    buttondown = FALSE;
+    (void) ReleaseCapture();	/* Release captured mouse */
+
+    /* Wait for autoscroll thread to exit screen processing */
+    (void) WaitForSingleObject(hAsMutex, AS_TMOUT);
+    (void) CloseHandle(hAsMutex);
+}
+
+static void
+autoscroll_thread(void *unused)
+{
+    DWORD status;
+
+    while (1) {
+	status = WaitForSingleObject(hAsMutex, AS_TMOUT);
+	if (!buttondown) {
+	    (void) ReleaseMutex(hAsMutex);
+	    break;		/* button no longer held down, die */
+	}
+	if (status == WAIT_ABANDONED) {
+	    /* main thread closed thread handle or ??? */
+
+	    (void) ReleaseMutex(hAsMutex);
+	    break;
+	}
+	if (status == WAIT_OBJECT_0) {
+	    /* thread got mutex and "owns" the display. */
+
+	    AutoScroll(mouse_wp);
+	}
+	(void) ReleaseMutex(hAsMutex);
+	Sleep(25);		/* Don't hog the processor */
+    }
+}
+
+/*
+ * FUNCTION
+ *   mousemove(int    *sel_pending,
+ *             POINT  *first,
+ *             POINT  *current,
+ *             MARK   *lmbdn_mark,
+ *             int    rect_rgn)
+ *
+ *   sel_pending - Boolean, T -> client has recorded a left mouse button (LMB)
+ *                 click, and so, a selection is pending.
+ *
+ *   first       - editor row/col coordinates where LMB was initially recorded.
+ *
+ *   latest      - during the mouse move, assuming the LMB is still down,
+ *                 "latest" tracks the cursor position wrt window resizing
+ *                 operations (via a modeline drag).
+ *
+ *   current     - current cursor row/col coordiantes.
+ *
+ *   lmbdn_mark  - editor MARK when "LMB down" was initially recorded.
+ *
+ *   rect_rgn    - Boolean, T -> user wants rectangular region selection.
+ *
+ * DESCRIPTION
+ *   Using several state variables, this function handles all the semantics
+ *   of a left mouse button "MOVE" event.  The semantics are as follows:
+ *
+ *   1) This function will not be called unless the LMB is down and the
+ *      cursor is not being used to drage the mode line (enforced by caller).
+ *   2) a LMB move within the current editor window selects a region of text.
+ *      Later, when the user releases the LMB, that text is yanked to the 
+ *      unnamed register (the yank code is not handled in this function).
+ *
+ * RETURNS
+ *   None
+ */
+static void
+mousemove(int *sel_pending,
+    COORD * first,
+    COORD * current,
+    MARK * lmbdn_mark,
+    int rect_rgn)
+{
+    int dummy;
+
+    if (WaitForSingleObject(hAsMutex, AS_TMOUT) == WAIT_OBJECT_0) {
+	if (*sel_pending) {
+	    /*
+	     * Selection pending.  If the mouse has moved at least one char,
+	     * start a selection.
+	     */
+
+	    if (MouseClickSetPos(current, &dummy)) {
+		/* ignore mouse jitter */
+
+		if (current->X != first->X || current->Y != first->Y) {
+		    *sel_pending = FALSE;
+		    DOT = *lmbdn_mark;
+		    (void) sel_begin();
+		    (void) update(TRUE);
+		} else {
+		    (void) ReleaseMutex(hAsMutex);
+		    return;
+		}
+	    }
+	}
+	if (mouse_wp != row2window(current->Y)) {
+	    /* 
+	     * mouse moved into a different editor window or row2window()
+	     * returned a NULL ptr.
+	     */
+
+	    (void) ReleaseMutex(hAsMutex);
+	    return;
+	}
+	if (!setcursor(current->Y, current->X)) {
+	    (void) ReleaseMutex(hAsMutex);
+	    return;
+	}
+	if (rect_rgn)
+	    (void) sel_setshape(RECTANGLE);
+	if (sel_extend(TRUE, TRUE))
+	    (void) update(TRUE);
+	(void) ReleaseMutex(hAsMutex);
+    }
+    /* 
+     * Else either the worker thread abandonded the mutex (not possible as
+     * currently coded) or timed out.  If the latter, something is
+     * hung--don't do anything.
+     */
+}
+
 static void
 handle_mouse_event(MOUSE_EVENT_RECORD mer)
 {
     static DWORD lastclick = 0;
     static int clicks = 0;
 
-    int buttondown = FALSE;
     int onmode = FALSE;
-    COORD current, latest;
-    int state;
-    DWORD thisclick;
-    WINDOW *that_wp;
+    COORD current, first, latest;
+    MARK lmbdn_mark;		/* left mouse button down here */
+    int sel_pending, state;
+    DWORD thisclick, status;
     UINT clicktime = GetDoubleClickTime();
 
+    buttondown = FALSE;
     for_ever {
 	current = mer.dwMousePosition;
 	switch (mer.dwEventFlags) {
@@ -666,20 +922,65 @@ handle_mouse_event(MOUSE_EVENT_RECORD mer)
 		}
 
 		if (buttondown) {
-		    if (MouseClickSetPos(&current, &onmode))
+		    int dummy;
+
+		    halt_autoscroll_thread();
+
+		    /* Finalize cursor position. */
+		    (void) MouseClickSetPos(&current, &dummy);
+		    if (!(onmode || sel_pending))
 			sel_yank(0);
-		    buttondown = FALSE;
-		    onmode = FALSE;
 		}
 		return;
 	    }
 	    if (state & FROM_LEFT_1ST_BUTTON_PRESSED) {
 		if (MouseClickSetPos(&current, &onmode)) {
-		    buttondown = TRUE;
-		    latest = current;
-		    that_wp = row2window(latest.Y);
-		    (void) sel_begin();
-		    (void) update(TRUE);
+		    first = latest = current;
+		    lmbdn_mark = DOT;
+		    sel_pending = FALSE;
+		    mouse_wp = row2window(latest.Y);
+		    if (onmode) {
+			buttondown = TRUE;
+			sel_release();
+			update(TRUE);
+		    } else {
+			HWND hwnd;
+
+			(void) update(TRUE);	/* possible wdw change */
+			buttondown = FALSE;	/* until all inits are successful */
+
+			/* Capture mouse to console vile's window handle. */
+			hwnd = GetForegroundWindow();
+			(void) SetCapture(hwnd);
+
+			/* Compute pixel height of each row on screen. */
+			(void) GetClientRect(hwnd, &client_rect);
+			row_height = client_rect.bottom / term.rows;
+
+			/*
+			 * Create mutex to ensure that main thread and worker
+			 * thread don't update display at the same time.
+			 */
+			if ((hAsMutex = CreateMutex(0, FALSE, 0)) == NULL)
+			    mlforce("[Can't create autoscroll mutex]");
+			else {
+			    /*
+			     * Setup a worker thread to act as a pseudo
+			     * timer that kicks off autoscroll when
+			     * necessary.
+			     */
+
+			    if (_beginthread(autoscroll_thread,
+				    0,
+				    NULL) == -1) {
+				(void) CloseHandle(hAsMutex);
+				mlforce("[Can't create autoscroll thread]");
+			    } else
+				sel_pending = buttondown = TRUE;
+			}
+			if (!buttondown)
+			    (void) ReleaseCapture();
+		    }
 		}
 	    } else if (state & FROM_LEFT_2ND_BUTTON_PRESSED) {
 		if (MouseClickSetPos(&current, &onmode)
@@ -704,23 +1005,26 @@ handle_mouse_event(MOUSE_EVENT_RECORD mer)
 	case MOUSE_MOVED:
 	    if (!buttondown)
 		return;
+	    if (onmode) {
+		/* on mode line, resize window (if possible). */
 
-	    if (onmode
-		&& adjust_window(that_wp, &current, &latest))
-		break;
+		if (!adjust_window(mouse_wp, &current, &latest)) {
+		    /*
+		     * left mouse button still down, but cursor moved off mode
+		     * line.  Update latest to keep track of cursor in case
+		     * it wanders back on the mode line.
+		     */
 
-	    if (that_wp != row2window(current.Y))
-		break;
-	    if (!setcursor(current.Y, current.X))
-		break;
-
-	    if (mer.dwControlKeyState &
-		(LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED)) {
-		(void) sel_setshape(RECTANGLE);
+		    latest = current;
+		}
+	    } else {
+		mousemove(&sel_pending,
+		    &first,
+		    &current,
+		    &lmbdn_mark,
+		    (mer.dwControlKeyState & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED))
+		    );
 	    }
-	    if (!sel_extend(TRUE, TRUE))
-		break;
-	    (void) update(TRUE);
 	    break;
 	}
 
@@ -735,6 +1039,8 @@ handle_mouse_event(MOUSE_EVENT_RECORD mer)
 	    case KEY_EVENT:
 		key = decode_key_event(&ir);
 		if (key == ESC) {
+		    if (buttondown)
+			halt_autoscroll_thread();
 		    sel_release();
 		    (void) update(TRUE);
 		    return;
