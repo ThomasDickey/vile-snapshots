@@ -11,7 +11,7 @@
  *
  *		pgf, 11/91
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.65 1998/04/28 10:18:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.66 1999/11/10 01:32:54 tom Exp $
  *
  */
 
@@ -627,21 +627,25 @@ regatom(int *flagp, int at_bop)
 			while (*regparse != EOS && *regparse != ']') {
 				if (*regparse == '-') {
 					regparse++;
-					if (*regparse == ']' || *regparse == EOS)
+					if (*regparse == ']' || *regparse == EOS) {
 						regc('-');
-					else {
+					} else {
 						classbgn = UCHAR_AT(regparse-2)+1;
 						classend = UCHAR_AT(regparse);
 						if (classbgn > classend+1) {
 							regerror("invalid [] range");
 							return NULL;
 						}
-						for (; classbgn <= classend; classbgn++)
+						for (; classbgn <= classend; classbgn++) {
+							if (classbgn == '\\')
+								regc(classbgn);
 							regc(classbgn);
+						}
 						regparse++;
 					}
-				} else
+				} else {
 					regc(*regparse++);
+				}
 			}
 			regc(EOS);
 			if (*regparse != ']') {

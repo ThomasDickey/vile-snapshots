@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.313 1999/11/05 22:48:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.314 1999/11/09 23:10:24 tom Exp $
  *
  */
 
@@ -2842,8 +2842,9 @@ rough_position(WINDOW *wp)
 static int
 percentage(WINDOW *wp)
 {
-    L_NUM val;
     BUFFER *bp = wp->w_bufp;
+    L_NUM val;
+    L_NUM denom = line_count(bp);
 
 #ifdef WMDRULER
     if (w_val(wp,WMDRULER) && !is_empty_buf(bp))
@@ -2852,7 +2853,7 @@ percentage(WINDOW *wp)
 #endif
 	val = line_no(bp, wp->w_dot.l);
 
-    return (val * 100) / line_count(bp);
+    return (denom == 0) ? 100 : ((val * 100) / denom);
 }
 
 /*

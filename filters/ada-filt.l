@@ -1,6 +1,6 @@
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ada-filt.l,v 1.5 1999/03/07 19:16:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ada-filt.l,v 1.6 1999/11/09 22:21:17 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Ada 
  * input text.
@@ -33,7 +33,6 @@ do_filter(FILE *input, FILE *output)
 
     while (yylex() > 0) {
     }
-    exit(0);
 }
 %}
 

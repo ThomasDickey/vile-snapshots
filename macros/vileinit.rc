@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.7 1999/11/07 19:46:26 tom Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.8 1999/11/09 02:10:38 tom Exp $
 ; This is a sample which may be installed as .vilerc (or vile.rc for non-Unix
 ; systems), or source'd as-is to provide quick initialization of some useful
 ; macros and settings.
@@ -157,6 +157,9 @@ bind-key hyper-next ^X-^M
 	use-register h load-register "!egrep -n : *.* */*"
 	use-register i load-register "!egrep -n : /usr/include/*.h /usr/include/*/*.h /usr/local/include/*.h"
 	use-register j load-register "!egrep -n : *.[ch] */*.[ch]"
+~elseif &or &seq $os "dos" &seq $os "win32"
+	use-register f load-register "!grep -n -w & *.in *.m4 *.[chly] *.def *.cc *.cpp *.xs"
+	use-register g load-register "!egrep -n & *.[chly] *.def *.cc *.cpp *.xs"
 ~endif
 
 source vileperl.rc

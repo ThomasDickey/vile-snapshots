@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.232 1999/11/06 00:26:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.233 1999/11/10 00:09:30 tom Exp $
  *
  */
 
@@ -6410,6 +6410,12 @@ x_get_window_name(void)
 	}
 	return result;
 #endif
+}
+
+char *
+x_get_display_name(void)
+{
+	return XDisplayString(dpy);
 }
 
 static void

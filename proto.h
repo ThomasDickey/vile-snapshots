@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.397 1999/11/05 12:06:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.399 1999/11/10 00:13:40 tom Exp $
  *
  */
 
@@ -717,6 +717,7 @@ extern int substregion (void);
 extern int vile_op (int f, int n, OpsFunc fn, const char *str);
 
 /* path.c */
+extern char * home_dir (void);
 extern char * is_appendname (char *fn);
 extern char * last_slash (char *fn);
 extern char * lengthen_path (char *path);
@@ -1106,14 +1107,15 @@ extern void setchartype (void);
 /* x11.c */
 #if DISP_X11
 extern	char *	x_current_fontname	(void);
-extern	char *	x_get_icon_name (void);
-extern	char *	x_get_window_name (void);
+extern	char *	x_get_display_name	(void);
+extern	char *	x_get_icon_name		(void);
+extern	char *	x_get_window_name	(void);
 extern	int	x_preparse_args		(int *pargc, char ***pargv);
 extern	int	x_setfont		(const char *fname);
 extern	int	x_typahead		(int milli);
 extern	void	x_move_events		(void);
-extern	void	x_set_icon_name (const char *name);
-extern	void	x_set_window_name (const char *name);
+extern	void	x_set_icon_name		(const char *name);
+extern	void	x_set_window_name	(const char *name);
 
 #if XTOOLKIT
 extern	void	own_selection		(void);

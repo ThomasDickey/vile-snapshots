@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.47 1999/07/17 00:21:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.50 1999/11/10 01:23:10 tom Exp $
  *
  */
 
@@ -170,6 +170,29 @@ IsKeyword(char *name)
     return 0;
 }
 
+static char *
+home_dir(void)
+{
+	char *result;
+#if defined(VMS)
+	if ((result = getenv("SYS$LOGIN")) == 0)
+		result = getenv("HOME");
+#else
+	result = getenv("HOME");
+#if defined(_WIN32)
+	if (result != 0) {
+		static char desktop[256];
+		char *drive = getenv("HOMEDRIVE");
+		if (drive != 0) {
+			sprintf(desktop, "%s%s", drive, result);
+			result = desktop;
+		}
+	}
+#endif
+#endif
+	return result;
+}
+
 /*
  * Find the first occurrence of a file in the canonical search list:
  *	the current directory
@@ -207,7 +230,7 @@ OpenKeywords(char *classname)
 	OPEN_IT(filename);
     }
 
-    if ((path = getenv("HOME")) == 0)
+    if ((path = home_dir()) == 0)
 	path = "";
 
     need = strlen(path)
@@ -354,7 +377,7 @@ ProcessArgs(int argc, char *argv[], int flag)
 		    break;
 		default:
 		    fprintf(stderr, "unknown option %c\n", *s);
-		    exit(1);
+		    exit(BADEXIT);
 		}
 	    }
 	} else {
@@ -695,7 +718,9 @@ main(int argc, char **argv)
     } else {
 	do_filter(stdin, stdout);
     }
-    exit(0);
+    fflush(stdout);
+    fclose(stdout);
+    exit(GOODEXIT);
 }
 
 int yywrap(void)

@@ -1,5 +1,5 @@
 
-Getting along with vile						(version 8.4)
+Getting along with vile						(version 9.0)
 -----------------------						-------------
 
 	Use Ctrl-D and Ctrl-U to scroll through this help information.
@@ -2188,7 +2188,7 @@ Programmed procedures and macros
 	$lastkey	last keyboard char struck
 	$lcols		length of current line, in columns	(read only)
 	$libdir-path	appended to $PATH when running filters
-	$line		text of current line
+	$line		text of current line starting with cursor
 	$llength	length of current line			(read only)
 	$majormode	current majormode, if any		(read only)
 	$match		last matched magic pattern		(read only)
@@ -4249,4 +4249,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.449 1999/11/05 22:40:34 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.451 1999/11/09 23:37:21 tom Exp $

@@ -1,9 +1,11 @@
 /*	Crypt:	Encryption routines for MicroEMACS
  *		written by Dana Hoggatt and Paul Fox.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.3 1999/03/27 14:10:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.4 1999/11/09 23:22:16 tom Exp $
  *
  */
+
+#include <filters.h>
 
 # ifndef OPT_ENCRYPT
 #  define OPT_ENCRYPT 1
@@ -12,23 +14,6 @@
 # define ULONG	unsigned long
 
 static	int	mod95 (int val);
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#else
-/* assume ANSI C */
-#define HAVE_STDLIB_H 1
-#endif
-
-#include <sys/types.h>		/* sometimes needed to get size_t */
-
-#if HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
 
 #if STDC_HEADERS || HAVE_STRING_H
 # include <string.h>
@@ -45,14 +30,11 @@ static	int	mod95 (int val);
 # endif
 #endif /* not STDC_HEADERS and not HAVE_STRING_H */
 
-#include <stdio.h>
-#include <ctype.h>
-
 static void
 failed(const char *s)
 {
 	perror(s);
-	exit(1);
+	exit(BADEXIT);
 }
 
 static int mod95(register int val)
@@ -276,7 +258,7 @@ main(int argc, char **argv)
 	if (argc > 2 && strcmp(argv[1], "-k") == 0) {
 	    if (strlen(argv[2]) > sizeof(key) - 1) {
 		fprintf(stderr, "%s: excessive key length\n", prog);
-		exit(1);
+		exit(BADEXIT);
 	    }
 	    (void)strncpy(key, argv[2], sizeof(key));
 	    (void)memset(argv[2], '.', strlen(argv[2]));
@@ -292,7 +274,7 @@ main(int argc, char **argv)
 		"  the first empty line of a file (i.e. headers) intact.\n",
 		prog
 	    );
-	    exit(1);
+	    exit(BADEXIT);
 	}
 	if (!key[0]) {
 #if HAVE_GETPASS
@@ -309,7 +291,7 @@ main(int argc, char **argv)
 	     */
 	    if (userkey[strlen(userkey)-1] == 3) {
 		fprintf(stderr,"Aborted\n");
-		exit(1);
+		exit(BADEXIT);
 	    }
 	    (void)strncpy(key, userkey, sizeof(key));
 	    (void)memset(userkey, '.', strlen(userkey));
@@ -321,7 +303,7 @@ main(int argc, char **argv)
 		"  the first empty line of a file (i.e. headers) intact.\n",
 		prog
 	    );
-	    exit(1);
+	    exit(BADEXIT);
 #endif
 	}
 
@@ -337,5 +319,7 @@ main(int argc, char **argv)
 	} else {
 		filecrypt(stdin, key, mailmode);
 	}
-	exit(0);
+	fflush(stdout);
+	fclose(stdout);
+	exit(GOODEXIT);
 }

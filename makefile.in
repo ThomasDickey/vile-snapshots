@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.150 1999/11/06 20:16:29 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.151 1999/11/08 11:14:44 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -516,6 +516,8 @@ release_warnings:
 	@sed -n -e '/Identification=/s/^.*Vile \([^"]*\)["]*/	\1/p' vmsbuild.com
 	@echo 'did you reset patchlev.h?'
 	@sed -n -e 's/^/	/' -e '/PATCH/p' patchlev.h
+	@echo 'did you update/rename the RPM spec?'
+	@ls -1 vile*.spec | sed -e 's/^/	/'
 	@echo -n "Hit return to continue..."
 	@read a
 

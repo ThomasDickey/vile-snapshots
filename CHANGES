@@ -1,3 +1,30 @@
+Changes for vile 9.0 (released Thu Nov 10, 1999)
+
+ (tom) 991109 (a)
+	+ correct special case of 'n' command on an empty line at the end of
+	  a buffer for a pattern that matches zero characters, e.g., ".*",
+	  "^" or "$" (reported by Kevin Buettner).
+ 	+ modify internal regular expression data for ranges that include the
+	  backslash character so the backslash is escaped, compensating for
+	  a change in 6.2a to handle "\\>" pattern.
+ 	+ use function XDisplayString() to obtain the actual display name,
+	  needed to make xvile's "New" menu entry direct new sessions to the
+	  proper display.
+ 	+ correct a divide-by-zero when computing percentage for ^G command,
+	  from 8.3l changes for $position-format (reported by Clark Morgan).
+	+ ensure that symbols for EXIT_SUCCESS and EXIT_FAILURE are used where
+	  they apply in the filter programs.
+	+ add fflush and fclose at the end of filter programs to ensure that
+	  the filtered file is written, even on systems whose exit() function
+	  does not do this properly (for Dr Luis Mandel <mandel@fast.de>).
+	+ correct documentation of $line variable (reported by George Eccles).
+	+ add grep commands for dos and win32 to vileinit.rc
+	+ add RPM spec to release_warnings in makefile.in
+	+ combine calls for getenv("HOME") into new function home_dir(), to use
+	  in logic for -I option, making that work properly for Cygwin
+	  environment, where $HOME normally is not the same as the "~"
+	  expansion.
+
 Changes for vile 8.4 (released Sun Nov 7, 1999)
 
  (tom) 991107 (z)
@@ -157,7 +184,7 @@ Changes for vile 8.4 (released Sun Nov 7, 1999)
 	  b) by experienced Windows users who will expect Ctrl+Insert (a
 	     Windows Standard key binding) to copy data to the clipboard
 	     without being prompted for a region.
-	+ include rms.h from estruct.h to make nefsms.h compiler properly on
+	+ include rms.h from estruct.h to make nefsms.h compile properly on
 	  VMS (fixes a problem introduced by restructuring of modetbl in 8.3o).
 
  (tom) 990926 (u)
@@ -347,7 +374,7 @@ Changes for vile 8.4 (released Sun Nov 7, 1999)
 	  &lookup and related functions to construct the pathname of the filter
 	  program, bypassing possible reset of $PATH in the subshell.
 	+ add FL_LIBDIR to cases in cfg_locate(), corresponding to $libdir-path
-	+ add $pathlist-separator variables
+	+ add $pathlist-separator variable.
 	+ add functions &word and &token for simple parsing of strings.
 	+ add functions &lookup, &path and &pcat to provide support for
 	  external pathname manipulation.

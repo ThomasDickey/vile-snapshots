@@ -447,7 +447,7 @@ State Variables
 			bin directories.
 
 	$line           Contains the text of the current line of the
-			current buffer.
+			current buffer starting with the cursor position.
 
 	$llength        [READ ONLY] The length (in characters, not columns)
 			of the current line.
@@ -1186,6 +1186,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.35 1999/11/05 22:41:03 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.36 1999/11/09 23:37:53 tom Exp $
 -----------------------------------
 
