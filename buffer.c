@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.202 1999/09/19 19:26:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.204 1999/11/05 22:38:50 tom Exp $
  *
  */
 
@@ -1450,6 +1450,26 @@ togglelistbuffers(int f, int n)
 }
 
 /*
+ * Return the status flags ordered so the most important one for [Buffer List]
+ * is first.  We use the whole string in $bflags though.
+ */
+void
+buffer_flags(char *dst, BUFFER *bp)
+{
+	if (b_is_scratch(bp))
+		*dst++ = ('s');
+	else if (!(bp->b_active))
+		*dst++ = ('u');
+	else if (b_is_implied(bp))
+		*dst++ = ('a');
+	else if (b_is_invisible(bp))
+		*dst++ = ('i');
+	else if (b_is_changed(bp))
+		*dst++ = ('m');
+	*dst = EOS;
+}
+
+/*
  * Track/emit footnotes for 'makebufflist()', showing only the ones we use.
  */
 #if !SMALLER
@@ -1510,6 +1530,7 @@ makebufflist(
 	LINEPTR curlp;		/* entry corresponding to buffer-list */
 	int nbuf = 0;		/* no. of buffers */
 	int this_or_that;
+	char temp[NFILEN];
 
 	curlp = null_ptr;
 
@@ -1531,16 +1552,9 @@ makebufflist(
 #endif
 
 		/* output status flag (e.g., has the file been read in?) */
-		if (b_is_scratch(bp))
-			MakeNote('s');
-		else if (!(bp->b_active))
-			MakeNote('u');
-		else if (b_is_implied(bp))
-			MakeNote('a');
-		else if (b_is_invisible(bp))
-			MakeNote('i');
-		else if (b_is_changed(bp))
-			MakeNote('m');
+		buffer_flags(temp, bp);
+		if (*temp != EOS)
+			MakeNote(*temp);
 		else
 			bputc(' ');
 
@@ -1558,7 +1572,6 @@ makebufflist(
 		(void)bsizes(bp);
 		bprintf("%7ld %*S ", bp->b_bytecount, NBUFN-1, bp->b_bname );
 		{
-			char	temp[NFILEN];
 			char	*p;
 
 			if ((p = bp->b_fname) != 0)
@@ -1577,7 +1590,6 @@ makebufflist(
 
 	/* show the actual size of the buffer-list */
 	if (curlp != null_ptr) {
-		char	temp[20];
 		(void)bsizes(curbp);
 		(void)lsprintf(temp, "%7ld", curbp->b_bytecount);
 		(void)memcpy(curlp->l_text + 6, temp,

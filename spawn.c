@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.146 1999/10/02 01:14:14 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.148 1999/11/06 18:10:03 tom Exp $
  *
  */
 
@@ -60,30 +60,44 @@ static void x_window_SHELL(const char *cmd)
 {
 	TBUFF *tmp = 0;
 
-	/*
-	 * We would use the -display option of xterm, but that would get in the
-	 * way of the user's ability to customize $xshell.
-	 */
+#if HAVE_WAITPID
+	int pid;
+
+	if ((pid = fork()) > 0) {
+		waitpid(pid, 0, 0);
+	} else if (pid == 0) {
+		if ((pid = fork()) == 0) {
+#endif
+			/*
+			 * We would use the -display option of xterm, but that
+			 * would get in the way of the user's ability to
+			 * customize $xshell.
+			 */
 #if HAVE_PUTENV
-	static char *display_env;
-	char *env = get_xdisplay();
-	if (display_env != 0)
-		free(display_env);
-	display_env = typeallocn(char,20+strlen(env));
-	lsprintf(display_env, "DISPLAY=%s", env);
-	putenv(display_env);
+			static char *display_env;
+			char *env = get_xdisplay();
+			if (display_env != 0)
+				free(display_env);
+			display_env = typeallocn(char,20+strlen(env));
+			lsprintf(display_env, "DISPLAY=%s", env);
+			putenv(display_env);
 #endif
 
-	tmp = tb_scopy(&tmp, get_xshell());
-	if (cmd != 0) {
-		tb_unput(tmp);
-		tmp = tb_sappend(&tmp, " -e ");
-		tmp = tb_sappend(&tmp, cmd);
-		tmp = tb_append(&tmp, EOS);
+			tmp = tb_scopy(&tmp, get_xshell());
+			if (cmd != 0) {
+				tb_unput(tmp);
+				tmp = tb_sappend(&tmp, " -e ");
+				tmp = tb_sappend(&tmp, cmd);
+				tmp = tb_append(&tmp, EOS);
+			}
+			TRACE(("executing '%s'\n", tb_values(tmp)));
+			(void)system(tb_values(tmp));
+			tb_free(&tmp);
+#if HAVE_WAITPID
+		}
+		_exit(0);
 	}
-	TRACE(("executing '%s'\n", tb_values(tmp)));
-	(void)system(tb_values(tmp));
-	tb_free(&tmp);
+#endif
 }
 #endif
 
@@ -343,8 +357,11 @@ spawn1(int rerun, int pressret)
 
 #if SYS_UNIX
 #if DISP_X11
-	/*FIXME (void)x_window_SHELL(line); */
+#if HAVE_WAITPID
+	(void)x_window_SHELL(line);
+#else
 	(void)system_SHELL(line);
+#endif
 #else
 	ttclean(TRUE);
 	(void)system_SHELL(line);

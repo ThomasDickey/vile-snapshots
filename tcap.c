@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.128 1999/10/10 18:51:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.129 1999/11/01 01:49:31 tom Exp $
  *
  */
 
@@ -431,16 +431,16 @@ tcapopen(void)
 	/* if start/end sequences are not consistent, ignore them */
 	if ((tc_SO != 0) ^ (tc_SE != 0))
 		tc_SO = tc_SE = 0;
+	if ((tc_MR != 0) ^ (tc_ME != 0))
+		tc_MR = tc_ME = 0;
 #if OPT_VIDEO_ATTRS
 	if ((tc_MD != 0) ^ (tc_ME != 0))
 		tc_MD = tc_ME = 0;
-	if ((tc_MR != 0) ^ (tc_ME != 0))
-		tc_MR = tc_ME = tc_MD = 0;
 	if ((tc_US != 0) ^ (tc_UE != 0))
 		tc_US = tc_UE = 0;
 #endif
 
-	if (tc_SO != 0 || tc_MR != 0)
+	if ((tc_SO != 0 && tc_SE != 0) || (tc_MR != 0 && tc_ME != 0))
 		revexist = TRUE;
 
 	if (tc_CL == NULL || tc_CM == NULL) {

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.23 1999/09/24 02:11:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.24 1999/11/06 02:02:21 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -25,6 +25,7 @@ write_keyword(char *text, int size)
 {
     int colon = size > 1 && text[size-1] == ':';
     int space = 0;
+    char *base = text;
 
     if (colon)
 	text[--size] = 0;
@@ -35,18 +36,18 @@ write_keyword(char *text, int size)
 	space++;
     }
     if (space)
-	fprintf(yyout, "%*s", space, " ");
+	fprintf(yyout, "%.*s", space, base);
 
     space = 0;
     while (isspace(text[size-1])) {
-	text[--size] = 0;
+	size--;
 	space++;
     }
 
     write_token(yyout, text, size, keyword_attr(text));
 
     if (space)
-	fprintf(yyout, "%*s", space, " ");
+	fprintf(yyout, "%.*s", space, text + size);
 
     if (colon)
 	fputc(':', yyout);
@@ -126,7 +127,9 @@ MACRO		([$]?\$\{{ID}\}|[$]?\${ID}|[$]?\$[A-Za-z@!%^&*?<]|\${SPACE}*\([^\)]+\))
 
 <NORMAL>{MACRO}		{ WriteToken(Ident2_attr); }
 
-<NORMAL>^{SPACE}\@	{ WriteString(String_attr); }
+<NORMAL>^{SPACE}\@	{ if (yyleng)
+			    fprintf(yyout, "%.*s", yyleng-1, yytext);
+			  write_string(yyout, "@", 1, String_attr); }
 <NORMAL>\\["'\n]	{ WriteString(String_attr); }
 <NORMAL>\'		{ add_to_quoted(yytext, yyleng); BEGIN(QUOTE1); }
 <NORMAL>\"		{ add_to_quoted(yytext, yyleng); BEGIN(QUOTE2); }

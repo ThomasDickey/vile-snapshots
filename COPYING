@@ -1,34 +1,18 @@
-
-
-Only certain parts of the vile code base are covered by the attached GNU
-General Public License.  In particular, the "configure" script and the
-"configure.in" file from which it is derived are covered.  other parts of
-the vile source may be covered in the future. 
-
-the bulk of vile _cannot_ be covered by the GPL due to murky origins and
-previous copyrights.  however, the code that i have written (and i suspect
-this is true of contributions made by others as well) was written to be
-published, and to be shared with others.  please respect this.  see the top
-of main.c for the restrictions put on the original MicroEMACS code upon
-which vile was based. 
-
-tell you what -- let's consider it BeerWare.  if you really like it, and
-use it a lot, and meet one of the vile developers someday, how about if
-if you offer to buy them a beer.  sound good?
-
-I have been contacted in the past about the legality of _using_ vile for
-commercial purposes.  this is fine -- there are no restrictions on such use
-(e.g. using this editor to create proprietary code).  i have also been
-contacted about the legality of bundling vile with commercial product
-releases.  this issue is a little less clear -- please get in touch with me
-if you wish to do this.  -pgf, 2/95
+previous versions of vile were limited to non-commercial use due to 
+their inclusion of code from versions of MicroEMACS which were 
+restricted in that way.  in the current version of vile, every attempt 
+has been made to ensure that this later code has been removed or 
+rewritten, returning vile's original basis to public domain status.  
+the current version of vile, however, is _not_ in the public domain -- 
+it is released under the provisions of the GNU General Public License, 
+below. 
 
 -------------------------------------------------
 		    GNU GENERAL PUBLIC LICENSE
 		       Version 2, June 1991
 
  Copyright (C) 1989, 1991 Free Software Foundation, Inc.
-                          675 Mass Ave, Cambridge, MA 02139, USA
+     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  Everyone is permitted to copy and distribute verbatim copies
  of this license document, but changing it is not allowed.
 
@@ -305,7 +289,7 @@ POSSIBILITY OF SUCH DAMAGES.
 
 		     END OF TERMS AND CONDITIONS
 
-	Appendix: How to Apply These Terms to Your New Programs
+	    How to Apply These Terms to Your New Programs
 
   If you develop a new program, and you want it to be of the greatest
 possible use to the public, the best way to achieve this is to make it
@@ -331,7 +315,8 @@ the "copyright" line and a pointer to where the full notice is found.
 
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
-    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
 
 Also add information on how to contact you by electronic and paper mail.
 

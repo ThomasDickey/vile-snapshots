@@ -339,6 +339,15 @@ State Variables
 
 	$bchars         [READ ONLY] Number of characters in current buffer.
 
+	$bflags		[READ ONLY] Status flags for current buffer, as shown
+			in [Buffer List].
+
+			a	autobuffer caused this to be created
+			i	invisible, e.g., tags
+			m	modified
+			s	scratch, will be removed when popped down
+			u	unread
+
 	$blines         [READ ONLY] Number of lines in current buffer.
 
 	$buffer-hook    Name of procedure to run when switching to a buffer.
@@ -1177,6 +1186,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.34 1999/10/11 00:57:16 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.35 1999/11/05 22:41:03 tom Exp $
 -----------------------------------
 

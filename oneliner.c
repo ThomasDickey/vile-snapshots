@@ -1,10 +1,10 @@
 /*
  *	A few functions that used to operate on single whole lines, mostly
  *	here to support the globals() function.  They now work on regions.
- *	Copyright (c) 1990, 1995 by Paul Fox, except for delins(), which is
+ *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.91 1999/05/17 21:59:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.92 1999/10/31 23:24:52 tom Exp $
  */
 
 #include	"estruct.h"

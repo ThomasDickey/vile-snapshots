@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.88 1999/10/11 01:28:40 tom Exp $
+; $Id: filters.rc,v 1.89 1999/11/06 02:10:59 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -381,7 +381,7 @@ define-mode txt
 	fence-elif	"^\\s*~elsewith\\>"
 	fence-fi	"^\\s*~endwith\\>"
 ~elsewith define-submode vile group "macro"
-	fence-if	"^\\s*\\(\\d\\s*\\)\\?store-\\(macro\\|procedure\\)"
+	fence-if	"^\\s*\\(\\d\\+\\s*\\)\\?store-\\(macro\\|procedure\\)"
 	fence-fi	"^\\s*~endm\\>"
 ~endwith
 

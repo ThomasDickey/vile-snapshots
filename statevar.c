@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.23 1999/10/10 23:40:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.27 1999/11/06 19:36:47 tom Exp $
  */
 
 #include	"estruct.h"
@@ -188,8 +188,7 @@ cfgopts(void)
 #if DISP_TERMCAP
 # if USE_TERMINFO
 	"terminfo",
-# endif
-# if USE_TERMCAP
+# else
 	"termcap",
 # endif
 #endif
@@ -231,6 +230,19 @@ int var_BCHARS(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_int(rp, curbp->b_bytecount);
+		return TRUE;
+	} else if (vp) {
+		return ABORT;  /* read-only */
+	} else {
+		return FALSE;
+	}
+}
+
+int var_BFLAGS(TBUFF **rp, const char *vp)
+{
+	if (rp) {
+		tb_init(rp, EOS);
+		buffer_flags(tb_values(*rp), curbp);
 		return TRUE;
 	} else if (vp) {
 		return ABORT;  /* read-only */
@@ -838,6 +850,7 @@ int var_PATHSEP(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		tb_append(rp, vl_pathsep);
+		tb_append(rp, EOS);
 		return TRUE;
 	} else if (vp) {
 		if (strlen(vp) == 1) {

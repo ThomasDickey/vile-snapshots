@@ -1,5 +1,5 @@
 
-README for vile, version 8.3
+README for vile, version 8.4
 -----------------------------
 
 vile is a text editor which is extremely compatible with vi in terms
@@ -360,5 +360,5 @@ Apr, 1999
     + many VMS bug fixes and enhancements.  8.3 is a keeper if you use VMS.
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.74 1999/06/06 19:39:59 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.75 1999/11/06 21:14:57 tom Exp $
 -------------------------------

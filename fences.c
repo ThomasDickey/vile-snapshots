@@ -8,7 +8,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.73 1999/09/10 10:53:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.74 1999/11/04 22:42:53 cmorgan Exp $
  *
  */
 
@@ -667,10 +667,24 @@ fmatch(int rch)
 	if (count == 0) {
 		if (!backcharfailed)
 			forwchar(FALSE, 1);
-		if (update(SORTOFTRUE) == TRUE)
-		/* the idea is to leave the cursor there for about a
-			quarter of a second */
+		if (update(SORTOFTRUE) == TRUE) {
+#ifdef DISP_NTWIN
+			/*
+			 * For all flavors of the editor except winvile,
+			 * update() has made the cursor visible.  Winvile,
+			 * otoh, uses its own custom logic to enable and
+			 * disable the cursor.	At the moment, the cursor
+			 * is invisible.  Turn it on.
+			 */
+			winvile_cursor_state(TRUE, FALSE);
+#endif
+			/* 
+			 * The idea is to leave the cursor there for about a
+			 * quarter of a second.
+			 */
+
 			catnap(300, FALSE);
+		}
 	}
 
 	/* restore the current position */

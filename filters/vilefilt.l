@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.10 1999/06/30 22:15:01 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.11 1999/11/06 01:46:32 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -48,7 +48,7 @@ do_filter(FILE *input, FILE *output)
 
 SPACE		[ \t]*
 NUMBER		[0-9]+
-NAME		[a-zA-Z][a-zA-Z0-9]*(-[a-zA-Z0-9]+)*
+NAME		[a-zA-Z_][a-zA-Z_0-9]*(-[a-zA-Z_0-9]+)*
 
 PREPROC		^{SPACE}\~[a-z]+
 
@@ -62,7 +62,7 @@ DSTRING		\"(\\.|[^\\"\n])*\"
 
 FUNCTION	&[a-zA-Z]+
 
-VARIABLE	[$%][a-zA-Z][a-zA-Z0-9]*(-[a-zA-Z0-9]+)*
+VARIABLE	[$%]{NAME}
 
 %%
 

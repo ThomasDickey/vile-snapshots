@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.394 1999/10/10 23:41:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.397 1999/11/05 12:06:19 tom Exp $
  *
  */
 
@@ -161,6 +161,7 @@ extern int swbuffer_lfl (BUFFER *bp, int lockfl, int this_window);
 extern int tabstop_val (BUFFER *bp);
 extern int zotbuf (BUFFER *bp);
 extern int zotwp (BUFFER *bp);
+extern void buffer_flags (char *dst, BUFFER *bp);
 extern void chg_buff (BUFFER *bp, USHORT flag);
 extern void imply_alt (char *fname, int copy, int lockfl);
 extern void make_current (BUFFER *nbp);
@@ -263,13 +264,15 @@ extern int did_hard_error_occur (void);
 #endif
 
 /* statevar.c */
-extern char * get_cdpath (void);
-extern char * get_shell (void);
 extern char * get_xshell (void);
 extern char * vile_getenv(char *s);
 #if OPT_EVAL
+extern char * get_cdpath (void);
+extern char * get_shell (void);
 extern void setcmdstatus(int s);
 #else
+#define get_cdpath() getenv("CDPATH")
+#define get_shell()  getenv("SHELL")
 #define setcmdstatus(s) /*nothing*/
 #endif
 
@@ -1053,6 +1056,7 @@ extern void w32_npclose(FILE *fp);
 extern int  w32_system(const char *cmd);
 extern int  w32_system_winvile(const char *cmd, int *pressret);
 extern char *w32_wdw_title();
+extern void winvile_cursor(int visible, int queue_change);
 extern void *winvile_hwnd(void);
 extern void winvile_start(void);
 #endif

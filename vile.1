@@ -1,5 +1,5 @@
 .\" obligatory man page for vile
-.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.21 1999/02/12 11:27:48 tom Exp $
+.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.22 1999/11/06 20:12:44 tom Exp $
 .TH VILE 1
 .SH NAME
 vile, xvile \- \fBVI L\fRike \fBE\fRmacs
@@ -52,6 +52,17 @@ parsing eats the -t.
 Invokes
 .I vile
 on the helpfile.
+.IP -I
+Tells
+.I vile
+to use
+.I vileinit.rc
+(which is installed)
+as the initialization file. 
+If you do not have a .vilerc,
+.I vile
+will make a short one that sources
+.I vileinit.rc
 .IP -R
 Invokes
 .I vile

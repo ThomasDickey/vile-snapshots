@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_3y
+MANIFEST for vile, version v8_4
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -106,9 +106,10 @@ trace.h                         development: trace to logfile
 ucrypt.c                        interface to Unix crypt(1)
 undo.c                          support for "undo"
 version.c                       version & usage messages
-vile-8.3.spec                   RedHat rpm specification for vile 8.3
+vile-8.4.spec                   RedHat rpm specification for vile 8.4
 vile.1                          man-page for VILE
 vile.hlp                        help-file
+vile.wmconfig                   windowmaker config file for vile
 vms2unix.c                      VMS/UNIX compatibility support functions
 vmsbuild.com                    VAX/VMS DCL build script
 vmspipe.c                       pipe-filter support for VMS
@@ -131,6 +132,7 @@ wordmov.c                       cursor-movement commands (e.g., word, spaces)
 wvwrap.cpp                      wrapper for winvile, e.g., from NT Explorer
 x11.c                           X11 (Xt, Motif or Openlook) terminal driver
 xshell.sh                       wrapper/sample script for xvile
+xvile.wmconfig                  windowmaker config file for xvile
 doc                             subdirectory
 doc/Vileserv.doc                overview of Vileserv and vileget scripts
 doc/config.doc                  configuration-instructions for VILE
@@ -234,11 +236,14 @@ icons/vile.ico                  Windows icon, for vile
 icons/vile.xbm                  sample icon, for X bitmap
 icons/vile.xpm                  sample icon, for xpm library
 macros                          subdirectory
+macros/XVile.ad                 sample X resource file for vile
 macros/digraphs.rc              macros for inserting digraphs
 macros/manpage.rc               macros for man-page filtering/display
 macros/palettes.rc              sample color schemes
 macros/pictmode.rc              macros to support "picture-mode" editing
 macros/vile-pager               use vile as a pager
+macros/vileinit.rc              sample initialization file
+macros/vilemenu.rc              sample menu for xvile
 macros/vileperl.rc              sample initialization for perl scripts
 perl                            subdirectory
 perl/Vile.pm                    utility functions for perl scripts

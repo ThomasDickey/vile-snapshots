@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.157 1999/10/10 23:11:53 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.158 1999/11/05 11:56:19 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -175,6 +175,7 @@ string
 .environment
 "abufname"	ABUFNAME		# alternate buffer name (i.e. '#')
 "bchars"	BCHARS			# chars in current buffer
+"bflags"	BFLAGS			# status flags for current buffer
 "blines"	BLINES			# lines in current buffer
 "bwindows"	BWINDOWS		# windows open on current buffer
 "buffer-hook"	BUFHOOK		OPT_HOOKS	# procedure to run when entering buf

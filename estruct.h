@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.427 1999/10/29 01:14:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.430 1999/11/04 23:04:53 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -376,7 +376,7 @@
 #define OPT_DUMBTERM (DISP_TERMCAP || DISP_VMSVT)
 
 /* Feature turnon/turnoff */
-#define OPT_CACHE_VCOL  1	/* cache mk_to_vcol() starting point          */
+#define OPT_CACHE_VCOL  !SMALLER /* cache mk_to_vcol() starting point          */
 #define	OPT_DOSFILES	1	/* turn on code for DOS mode (lines that
 				   end in crlf).  use DOSFILES, for instance,
 				   if you edit DOS-created files under UNIX   */
@@ -1679,7 +1679,9 @@ typedef struct	{
 #if OPT_CACHE_VCOL
 	MARK	w_left_dot;	/* nominal location of left-side of screen */
 	int	w_left_col;	/* ...corresponding effective column */
+	int	w_left_adj;	/* ...and margin of error */
 	int	w_list_opt;	/* ...and list-mode setting */
+	int	w_num_cols;	/* ...and screen-width */
 #endif
 } W_TRAITS;
 

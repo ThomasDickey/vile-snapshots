@@ -1,4 +1,35 @@
-Changes for vile 8.4 (released ??? ??? ??, ????)
+Changes for vile 8.4 (released Sun Nov 7, 1999)
+
+ (tom) 991107 (z)
+ 	+ change copyright notice to distribute vile using GPL.
+	+ update RPM spec based on package by Tim Powers <timp@redhat.com>,
+	  add xvile.wmconfig, vile.wmconfig and use xpm icons.
+	+ workaround for problem introduced in 8.3r, resetting 'vile_is_busy'
+	  flag after each command in main loop().  Otherwise, perl scripts
+	  that set this flag via working(0) without restoring it would disable
+	  menus.
+	+ add -I option, which directs vile to source vileinit.rc, and if the
+	  user has no startup file, to make a simple startup file which sources
+	  vileinit.rc (request by Peter Williams).
+	+ install a default menu file for xvile (.vilemenu) in the data
+	  directory.
+	+ add vileinit.rc, which adds various useful macros and key bindings
+	  to the other initialization files, as an example.
+	+ minor fixes for vilefilt.l and makefile.l
+	+ correct value computed for $pathlist-separator, supply trailing null.
+	+ add $bflags variable, to simplify checks for scratch buffers.
+	+ add xshell.sh to install rules for xvile.
+	+ reinstate/complete $xshell logic, making it detach the subprocess if
+	  waitpid() is available (reported by J.  Chris Coppick - see 971015).
+	+ implement showmatch for winvile (patch by Clark Morgan).
+	+ more fixes for OPT_CACHE_VCOL, to handle two special cases: showmatch,
+	  which temporarily moves the cursor without necessarily updating
+	  the sideways value, and a control character split across the right
+	  margin.
+	+ minor fixes to make vile build/work with --disable-extensions
+	+ correct redundant unget when parsing ":%&g" command that would leave
+	  'g' repeated in prompt (reported by Mark Crosland
+	  <mjc@c1000907-b.sttls1.wa.home.com>)
 
  (tom) 991030 (y)
  	+ correct logic for OPT_CACHE_VCOL which accounts for the starting
@@ -10,7 +41,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	+ modify ntwinio.c so popup menu's check-marks match those in the
 	  system menu.
 	+ modify the label of the popup menu "Menu" selection, remove trailing
-	  "..." because this cmd does not invoke a dialog box. 
+	  "..." because this cmd does not invoke a dialog box.
  	+ update doc/w32modes.doc to cover Windows 98
 
  (tom) 991019 (x)
@@ -241,6 +272,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	  reported by Duncan Sargeant).
 	+ set txtmode in manpage buffers to simplify further optional
 	  highlighting
+	+ check if vile_is_busy, suppress menu operations if true.
 	+ corrected problem in perl.xs introduced by changes for definition of
 	  VILE_LIBDIR_PATH which dropped the trailing '/', by modifying logic
 	  in perl.xs to use pathcat() function.  This also avoids modifying the
@@ -719,7 +751,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	+ correct expressions for sccsmode; the ^A characters were given as
 	  \001's.
 
-Changes for vile 8.3 (released Fri Apr 23, 1998)
+Changes for vile 8.3 (released Fri Apr 23, 1999)
 
  (tom) 990420 (v)
 	+ modify winvile.rc to use VILE_ICON definition, overlooked in previous
