@@ -1,5 +1,9 @@
 Changes for vile 8.3 (released ??? ??? ??, 1998)
 
+(tom) 990420 (v)
+	+ modify winvile.rc to use VILE_ICON definition, overlooked in previous
+	  patch.
+
 (tom) 990420 (u)
 	+ add 32x32 monochome versions of the .ico files, for completeness
 	  because automatically generated versions do not work well for color
