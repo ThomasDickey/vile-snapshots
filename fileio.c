@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.112 1996/08/05 12:51:57 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.113 1996/12/23 22:06:48 tom Exp $
  *
  */
 
@@ -324,19 +324,19 @@ ffwopen(const char *fn, int forced)
 #else
 #if     SYS_VMS
 	char	temp[NFILEN];
-        register int    fd;
-	register char	*s;
-
-	if ((s = strchr(fn = strcpy(temp, fn), ';')))	/* strip version */
+	register int	fd;
+	char *s = strchr(fn = strcpy(temp, fn), ';');
+	if (s != 0)
 		*s = EOS;
 
 	if (is_appendname(fn)
 	||  is_directory(fn)
-	|| (fd=creat(fn, 0666, "rfm=var", "rat=cr")) < 0
-        || (ffp=fdopen(fd, FOPEN_WRITE)) == NULL) {
-                mlforce("[Cannot open file for writing]");
-                return (FIOERR);
-        }
+	|| (fd=creat(temp, 0666, "rfm=var", "rat=cr")) < 0
+	|| vms_fix_umask(fn) != 0
+	|| (ffp=fdopen(fd, FOPEN_WRITE)) == NULL) {
+		mlforce("[Cannot open file for writing]");
+		return (FIOERR);
+	}
 #else
         if ((ffp=fopen(fn, FOPEN_WRITE)) == NULL) {
                 mlerror("opening for write");
