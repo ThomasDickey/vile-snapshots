@@ -1,23 +1,24 @@
-/* 
+/*
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  * Written by Clark Morgan for vile (may 1998).
  *
- * Caveats  
+ * Caveats
  * =======
  * -- This code has not been tested with NT 3.51 .
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.3 1998/07/03 23:58:15 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.4 1998/07/08 01:01:06 cmorgan Exp $
  */
 
 #include <windows.h>
-#include <conio.h> 
+#include <conio.h>
 #include <assert.h>
+#include <stdio.h>
 #include <errno.h>
 
 #include "estruct.h"
 #include "edef.h"
-#include "nefunc.h" 
+#include "nefunc.h"
 
 #define CSHEXE      "csh.exe"
 #define CSHEXE_LEN  (sizeof(CSHEXE) - 1)
@@ -34,6 +35,23 @@ static char  saved_title[256];
 #endif
 
 /* ------------------------------------------------------------------ */
+
+#ifdef DISP_NTWIN
+int
+stdin_data_available(void)
+{
+    FILE *fp;
+    int  rc = 0;
+
+    if ((fp = fdopen(dup(fileno(stdin)), "r")) != NULL)
+    {
+        fclose(fp);
+        rc = 1;
+    }
+    return (rc);
+}
+#endif
+
 
 static void
 set_host(void)
@@ -72,7 +90,7 @@ is_win95(void)
  * FUNCTION
  *   mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
  *
- *   cmd         - command string to be be passed to a Win32 command 
+ *   cmd         - command string to be be passed to a Win32 command
  *                 interpreter.
  *
  *   alloced_mem - Boolean, T -> returned string was allocated on heap.
@@ -97,8 +115,8 @@ is_win95(void)
  *   when a unix shell (executing under win32) receives a "raw" command line,
  *   the shell splits the raw command into words, performs its normal
  *   expansions (file globbing, variable substitution, etc.) and then
- *   removes all quote characters.  After that, the shell executes the 
- *   command.  This scenario means that if the user tries the following 
+ *   removes all quote characters.  After that, the shell executes the
+ *   command.  This scenario means that if the user tries the following
  *   command in vile:
  *
  *       :!echo 'word1    word2'
@@ -106,7 +124,7 @@ is_win95(void)
  *   It is passed to the shell as:
  *
  *        sh -c echo 'word1    word2'
- * 
+ *
  *   and is displayed by the shell as:
  *
  *        word1 word2
@@ -120,9 +138,9 @@ is_win95(void)
  *        egrep -n word1 word2 <glob'd file list>
  *
  *   Oops.  Word2 of the regular expression is now a filename.
- * 
+ *
  * SOLUTIONS
- *   1) If user's shell is a unix lookalike and the command contains no 
+ *   1) If user's shell is a unix lookalike and the command contains no
  *      single quote delimiters, enclose the entire command in single
  *      quotes.  This forces the shell to treat the command string
  *      as a single argument _before_ word splitting, expansions, and
@@ -140,16 +158,16 @@ is_win95(void)
  *          [#@$*] special word
  *
  *      This could be worked around by preceding a leading \" token with '
- *      and appending ' to its closing delimiter.  But that creates its 
+ *      and appending ' to its closing delimiter.  But that creates its
  *      own set of side effects.
  *
- * CAVEATS 
- *   The workarounds are inappropriate for csh (variants) which don't 
+ * CAVEATS
+ *   The workarounds are inappropriate for csh (variants) which don't
  *   support nested quotes.
  *
- * RETURNS 
+ * RETURNS
  *   Pointer to possibly modified string.  If modified, the command string
- *   was created on the heap and must be free'd by the client.  If 
+ *   was created on the heap and must be free'd by the client.  If
  *   storage can't be allocated, NULL is returned.
  */
 
@@ -157,32 +175,32 @@ char *
 mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
 {
     int         alloc_len;
-    static int  bourne_shell = 0; /* Boolean, T if user's shell has 
-                                   * appearances of a Unix lookalike 
-                                   * bourne shell (e.g., sh, ksh, bash).  
+    static int  bourne_shell = 0; /* Boolean, T if user's shell has
+                                   * appearances of a Unix lookalike
+                                   * bourne shell (e.g., sh, ksh, bash).
                                    */
     char        *out_str, *cp;
     static char *shell = NULL, *shell_c = "/c";
 
-    if (shell == NULL) 
+    if (shell == NULL)
     {
         int len;
 
         shell        = get_shell();
         len          = strlen(shell);
-        bourne_shell = (len >= 2 && 
+        bourne_shell = (len >= 2 &&
                         tolower(shell[len - 2]) == 's' &&
-                        tolower(shell[len - 1]) == 'h') 
+                        tolower(shell[len - 1]) == 'h')
                                ||
                        (len >= SHEXE_LEN &&
                         stricmp(shell + len - SHEXE_LEN, SHEXE) == 0);
         if (bourne_shell)
         {
             shell_c = "-c";
-            
+
             /* Now check for csh lookalike. */
             bourne_shell = ! (
-                               (len >= 3 && 
+                               (len >= 3 &&
                                tolower(shell[len - 3]) == 'c')
                                         ||
                                (len >= CSHEXE_LEN &&
@@ -194,8 +212,8 @@ mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
     {
         /*
          * MS-DOS shell or csh.  Do not bother quoting user's command
-         * string, since the former is oblivious to the notion of a unix 
-         * shell's argument quoting and the latter does not support nested 
+         * string, since the former is oblivious to the notion of a unix
+         * shell's argument quoting and the latter does not support nested
          * double quotes.
          */
 
@@ -249,7 +267,7 @@ mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
             {
                 /* Any quoted char is immune to further quoting. */
 
-                *cp++ = *cmd++;    
+                *cp++ = *cmd++;
             }
         }
         else if (*cmd != '"')
@@ -276,11 +294,11 @@ mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
  *   cmd - command string to be be passed to a Win32 command interpreter.
  *
  * DESCRIPTION
- *   Executes a system() call, taking care to ensure that the user's 
- *   command string is properly quoted if get_shell() points to a bourne 
+ *   Executes a system() call, taking care to ensure that the user's
+ *   command string is properly quoted if get_shell() points to a bourne
  *   shell clone.
  *
- * RETURNS 
+ * RETURNS
  *   If memory allocation fails, -1.
  *   Else, whatever system() returns.
  */
@@ -307,63 +325,63 @@ w32_system(const char *cmd)
         free(cmdstr);
     restore_console_title();
     return (rc);
-} 
- 
- 
- 
-/* 
- * FUNCTION 
- *   w32_keybrd_reopen(int pressret) 
- * 
- *   pressret - Boolean, T -> display prompt and wait for response 
- * 
- * DESCRIPTION 
- *   This is essentially the Win32 equivalent of the pressreturn() function 
- *   in spawn.c, but differs in that it reopens the console keyboard _after_  
- *   prompting the user to press return.  Order is important IF the user has 
- *   configured his/her dos box such that the buffer size exceeds the 
- *   window size.  In that scenario, if the ntconio.c routines gained 
- *   control (via TTkopen) before the prompt, then the output of the  
- *   previous shell command (e.g., :!dir) is immediately thrown away  
- *   due to a screen context switch and the user has no chance to read the 
- *   shell output. 
- * 
- *   This function prevents that scenario from occurring. 
- * 
- * APPLIES TO 
- *   W32 console vile only. 
- * 
- * RETURNS  
- *   None 
- */ 
- 
-void 
-w32_keybrd_reopen(int pressret) 
-{ 
-#ifdef DISP_NTCONS 
-    int c; 
- 
-    if (pressret) 
-    { 
-        fputs("[Press return to continue]", stdout); 
-        fflush(stdout); 
- 
-        /* loop for a CR, a space, or a : to do another named command */ 
-        while ((c = _getch()) != '\r' && 
-                c != '\n' && 
-                c != ' ' && 
-                !ABORTED(c)) 
-        { 
-            if (kcod2fnc(c) == &f_namedcmd)  
-            { 
-                unkeystroke(c); 
-                break; 
-            } 
-        } 
-    } 
-    TTkopen(); 
-    kbd_erase_to_end(0); 
-#endif 
+}
+
+
+
+/*
+ * FUNCTION
+ *   w32_keybrd_reopen(int pressret)
+ *
+ *   pressret - Boolean, T -> display prompt and wait for response
+ *
+ * DESCRIPTION
+ *   This is essentially the Win32 equivalent of the pressreturn() function
+ *   in spawn.c, but differs in that it reopens the console keyboard _after_
+ *   prompting the user to press return.  Order is important IF the user has
+ *   configured his/her dos box such that the buffer size exceeds the
+ *   window size.  In that scenario, if the ntconio.c routines gained
+ *   control (via TTkopen) before the prompt, then the output of the
+ *   previous shell command (e.g., :!dir) is immediately thrown away
+ *   due to a screen context switch and the user has no chance to read the
+ *   shell output.
+ *
+ *   This function prevents that scenario from occurring.
+ *
+ * APPLIES TO
+ *   W32 console vile only.
+ *
+ * RETURNS
+ *   None
+ */
+
+void
+w32_keybrd_reopen(int pressret)
+{
+#ifdef DISP_NTCONS
+    int c;
+
+    if (pressret)
+    {
+        fputs("[Press return to continue]", stdout);
+        fflush(stdout);
+
+        /* loop for a CR, a space, or a : to do another named command */
+        while ((c = _getch()) != '\r' &&
+                c != '\n' &&
+                c != ' ' &&
+                !ABORTED(c))
+        {
+            if (kcod2fnc(c) == &f_namedcmd)
+            {
+                unkeystroke(c);
+                break;
+            }
+        }
+    }
+    TTkopen();
+    kbd_erase_to_end(0);
+#endif
 }
 
 

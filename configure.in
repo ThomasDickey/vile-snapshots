@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.88 $)
+AC_REVISION($Revision: 1.89 $)
 AC_PREREQ(2.12.971222)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.88 1998/07/02 10:09:02 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.89 1998/07/07 23:57:36 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -237,7 +237,7 @@ esac
 : Find the libraries that apply to the selected screen-type:
 case "$screen" in
 changequote(,)dnl
-	[Oo]pen* | Xol )
+	[Oo]pen* | [Xx]ol )
 changequote([,])dnl
 		AC_DEFINE(OL_WIDGETS)
 		if test -n "$OPENWINHOME"; then
@@ -251,7 +251,7 @@ changequote([,])dnl
 			AC_ERROR(
 [Unable to successfully link OpenLook library (-lXol) with test program]))
 	;;
-	motif* | Motif* | Xm )
+	motif* | Motif* | [Xx]m )
 		AC_DEFINE(MOTIF_WIDGETS)
 		AC_CHECK_HEADERS(X11/IntrinsicI.h Xm/XmP.h)
 		AC_CHECK_LIB(gen,regcmp)
@@ -270,12 +270,12 @@ changequote([,])dnl
 	 	EXTRAOBJS="$EXTRAOBJS menu.o"
 	;;
 changequote(,)dnl
-	[Aa]thena* | Xaw* | neXtaw )
+	[Aa]thena* | [Xx]aw* | neXtaw )
 changequote([,])dnl
 		AC_DEFINE(ATHENA_WIDGETS)
 		case $screen in #(vi
 		*aw*)
-			cf_x_athena=$screen
+			cf_x_athena=`echo $screen | sed -e s/x/X/`
 			;;
 		esac
 		CF_X_ATHENA

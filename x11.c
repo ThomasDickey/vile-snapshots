@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.183 1998/05/30 12:26:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.184 1998/07/08 01:19:36 Chris.Sherman Exp $
  *
  */
 
@@ -5190,7 +5190,7 @@ x_configure_window(
     nc = (int)(new_width  / cur_win->char_width);
 
     if (nr < MINROWS || nc < MINCOLS) {
-	x_resize(nc, nr);
+	gui_resize(nc, nr);
 	/* Calling XResizeWindow will cause another ConfigureNotify
 	 * event, so we should return early and let this event occur.
 	 */
@@ -5210,7 +5210,7 @@ x_configure_window(
 }
 
 void
-x_resize(
+gui_resize(
     int cols,
     int rows)
 {

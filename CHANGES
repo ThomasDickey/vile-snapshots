@@ -1,5 +1,17 @@
 Changes for vile 8.1 (released ??? ??? ??, 1998)
 
+ (tom) 980708 (d)
+	+ correct offset for ending null in kbd_string(), which was beyond
+	  buffer limit - bug from 7.3f (patch by Chris Sherman
+	  <sherman@unx.sas.com>).
+ 	+ implement -geometry command-line option for winvile, and corresponding
+	  modifiable $pagelen and $pagewid values.
+	+ modify configure script to accept --with-screen=xaw and
+	  --with-screen=xm, i.e., lowercase screen values (reported by Ryan
+	  Murray <rmurray@glenvan.glenayre.com>).
+	+ modify winvile to read stdin when there's data available, e.g.,
+	  dir|winvile.  Tested on Win95 _and_ NT (patch by Clark Morgan).
+
  (tom) 980703 (c)
  	+ remove spurious 'void' in perl.xs which caused items to be miscounted
 	  (report by Kuntal M. Daftary, patch by Kevin Buettner).

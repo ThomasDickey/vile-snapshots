@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.327 1998/07/02 10:03:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.328 1998/07/08 01:03:20 cmorgan Exp $
  *
  */
 
@@ -295,8 +295,14 @@ MainProgram(int argc, char *argv[])
 	/* if stdin isn't a terminal, assume the user is trying to pipe a
 	 * file into a buffer.
 	 */
-#if SYS_UNIX || SYS_VMS || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || DISP_NTCONS
-	if (!isatty(fileno(stdin))) {
+#if SYS_UNIX || SYS_VMS || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
+#ifdef DISP_NTWIN
+	if (stdin_data_available())
+#else
+	if (!isatty(fileno(stdin)))
+#endif
+	{
+
 #if !DISP_X11
 #if SYS_UNIX
 # if HAS_TTYNAME
@@ -332,12 +338,14 @@ MainProgram(int argc, char *argv[])
 		}
 #else
 # if SYS_WINNT
+#  if DISP_NTCONS
 		/*
-		 * Win32 needs to reopen the console, not fd 0.  If the console
+		 * The editor must reopen the console, not fd 0.  If the console
 		 * is not reopened, the nt console I/O routines die immediately
 		 * when attempting to fetch a STDIN handle.
 		 */
 		freopen("con", "r", stdin);
+#  endif
 # else
 #  if SYS_VMS
   		fd = open("tt:", O_RDONLY, S_IREAD); /* or sys$command */

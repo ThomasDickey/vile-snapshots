@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.181 1998/07/01 23:12:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.182 1998/07/08 00:29:13 tom Exp $
  *
  */
 
@@ -1245,7 +1245,7 @@ char *seq)	/* destination string for sequence */
 {
 	char	temp[NSTRING];
 	(void)kcod2pstr(c,temp);
-	return bytes2prc(seq, temp + 1, *temp);
+	return bytes2prc(seq, temp + 1, (int)*temp);
 }
 #endif
 
@@ -2244,7 +2244,7 @@ unsigned *pos)
 		status = cmd_complete(c, tmp, &len);
 	} else
 #endif
-	 if ((*pos > 0) && isShellOrPipe(buf)) {
+	 if ((*pos != 0) && isShellOrPipe(buf)) {
 #if COMPLETE_FILES
 		status = shell_complete(c, buf, pos);
 #else

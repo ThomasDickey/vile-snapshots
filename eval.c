@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.162 1998/07/02 10:38:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.163 1998/07/08 01:21:08 tom Exp $
  *
  */
 
@@ -814,15 +814,15 @@ const char *value)	/* value to set to */
 			flickcode = stol(value);
 
 		ElseIf( EVCURWIDTH )
-#if DISP_X11
-			x_resize(atoi(value), term.t_nrow);
+#if DISP_X11 || DISP_NTWIN
+			gui_resize(atoi(value), term.t_nrow);
 #else
 			status = newwidth(TRUE, atoi(value));
 #endif
 
 		ElseIf( EVPAGELEN )
-#if DISP_X11
-			x_resize(term.t_ncol, atoi(value));
+#if DISP_X11 || DISP_NTWIN
+			gui_resize(term.t_ncol, atoi(value));
 #else
 			status = newlength(TRUE, atoi(value));
 #endif
@@ -1222,7 +1222,7 @@ const char *tokn)		/* token to evaluate */
 
 				/* if the buffer is displayed, get the window
 				   vars instead of the buffer vars */
-				if (bp->b_nwnd > 0) {
+				if (bp->b_nwnd != 0) {
 					curbp->b_dot = DOT;
 				}
 
