@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.78 2004/08/08 18:15:13 Mark.Robinson Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.79 2004/10/20 18:09:11 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -83,6 +83,7 @@ THE_PERLCFG  = perl_env.inc
 !INCLUDE "$(THE_PERLCFG)"
 !ENDIF
 
+# debug/release configurations
 !IF  "$(DBG)" != ""
 MY_CCOPT = $(cdebug) -DVILE_ERROR_ABORT
 MY_LDOPT = $(ldebug)
@@ -93,6 +94,9 @@ MY_CCOPT = $(MY_CCOPT) -DOPT_TRACE
 !else
 MY_LDOPT = -pdb:none
 !endif
+
+# options common to all configurations
+MY_CCOPT = $(MY_CCOPT) -DOPT_LOCALE
 
 !IF  "$(CFG)" == "vile" || "$(CFG)" == "vile-with-perl"
 DISP_DEF = -DDISP_NTCONS

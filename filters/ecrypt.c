@@ -1,10 +1,11 @@
 /*	Crypt:	Encryption routines for MicroEMACS
  *		written by Dana Hoggatt and Paul Fox.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.7 2003/07/27 17:35:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.8 2004/10/27 19:17:57 tom Exp $
  *
  */
 
+#define CAN_VMS_PATH 0
 #include <filters.h>
 
 # ifndef OPT_ENCRYPT

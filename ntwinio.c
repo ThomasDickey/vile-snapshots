@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.134 2004/04/11 16:42:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.135 2004/10/20 01:02:04 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -20,6 +20,7 @@
 #include "winvile.h"
 #include "nefsms.h"
 #include "nefunc.h"
+#include "chgdfunc.h"
 
 #define MIN_ROWS MINWLNS
 #define MIN_COLS 15
@@ -3902,7 +3903,7 @@ ntwinio_redirect_hwnd(int redirect)
  * Handle changes to "popup-menu" global setting.
  */
 int
-chgd_popupmenu(VALARGS * args, int glob_vals, int testing)
+chgd_popupmenu(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
     if (!testing)
 	enable_popup_menu();
@@ -3938,7 +3939,7 @@ parse_icursor_string(char *str)
  *     2 -> cmd mode displays vertical bar, insert mode displays block cursor
  */
 int
-chgd_icursor(VALARGS * args, int glob_vals, int testing)
+chgd_icursor(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
     int rc = TRUE;
 

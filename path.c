@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.135 2003/05/25 20:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.139 2004/10/30 14:54:04 tom Exp $
  *
  *
  */
@@ -1129,7 +1129,7 @@ canonpath(char *ss)
 	    s = ss;
 #endif
 
-#if SYS_UNIX
+#if SYS_UNIX && !OPT_VMS_PATH
 	(void) home_path(s);
 #endif
 
@@ -1460,8 +1460,8 @@ lengthen_path(char *path)
 #if SYS_VMS
     struct FAB my_fab;
     struct NAM my_nam;
-    char my_esa[NAM$C_MAXRSS];	/* expanded: sys$parse */
-    char my_rsa[NAM$C_MAXRSS];	/* result: sys$search */
+    char my_esa[NAM$C_MAXRSS + 1];	/* expanded: sys$parse */
+    char my_rsa[NAM$C_MAXRSS + 1];	/* result: sys$search */
 #endif
     register int len;
     const char *cwd;
@@ -1491,7 +1491,7 @@ lengthen_path(char *path)
 #endif
 	    return path;
     }
-#if SYS_UNIX
+#if SYS_UNIX && !OPT_VMS_PATH
     (void) home_path(f);
 #endif
 
@@ -1499,7 +1499,7 @@ lengthen_path(char *path)
     /*
      * If the file exists, we can ask VMS to tell the full pathname.
      */
-    if ((*path != EOS) && maybe_pathname(path)) {
+    if ((*path != EOS) && maybe_pathname(path) && is_vms_pathname(path, -TRUE)) {
 	int fd;
 	long status;
 	char temp[NFILEN], leaf[NFILEN];
@@ -1549,9 +1549,18 @@ lengthen_path(char *path)
     }
 #else
 # if OPT_VMS_PATH
-    /* this is only for testing! */
-    if (fakevms_filename(path))
-	return path;
+    if ((*path != EOS) && maybe_pathname(path)) {
+	/*
+	 * getname() returns a full pathname, like realpath().
+	 */
+	if (realpath(path, temp)) {
+	    strcpy(path, temp);
+	}
+	/* this is only for testing! */
+	if (fakevms_filename(path)) {
+	    return path;
+	}
+    }
 # endif
 #endif
 

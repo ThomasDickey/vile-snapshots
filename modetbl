@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.225 2004/06/15 21:55:03 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.227 2004/10/30 18:48:31 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -77,7 +77,7 @@ int							# VAL_ prefix
 	"report"	REPORT		0		# threshold for reporting changes
 	"timeoutlen"	TIMEOUTVAL	0		# how long to catnap for more input
 	"timeoutlen-user" TIMEOUTUSERVAL 0		# how long to catnap for more input
-	"scroll-pause"	SCROLLPAUSE	0		SYS_WINNT	# how long to catnap after scrolling
+	"scroll-pause"	SCROLLPAUSE	0		SYS_WINNT # how long to catnap after scrolling
 regex							# VAL_ prefix
 	"C-SUFfixes"	CSUFFIXES	0		!OPT_MAJORMODE # match against filenames to turn on c-mode
 string							# VAL_ prefix
@@ -124,6 +124,7 @@ bool							# MD prefix
 	"YankMotion"	YANKMOTION	0		# honor vi-style motion after yanking text
 enum
 	"record-format" RECORD_FORMAT	0		SYS_VMS	# specify record-format to use
+	"record-attrs"	RECORD_ATTRS	0		SYS_VMS	# specify record-attributes to use
 	"RecordSeparator" RECORD_SEP	chgd_rs		# record-separator affects dos/unix modes
 	"ShowFormat"	SHOW_FORMAT	chgd_window	# show record-separator
 	"visual-matches"  HILITEMATCH	chgd_hilite	OPT_HILITEMATCH # highlight all search matches
@@ -225,6 +226,7 @@ string
 "directory"	DIRECTORY	OPT_SHELL # controls location of temp-files
 "discmd"	DISCMD			# display commands on command line
 "disinp"	DISINP			# display command line input characters
+"encoding"	ENCODING	OPT_LOCALE	# 8-bit encoding associated with buffer contents
 "end-of-cmd"	EOC			# true if they ended the cmd with <CR>
 "error-buffer"	ERROR_BUFFER	OPT_FINDERR	# buffer to use for find-next-error
 "error-expr"	ERROR_EXPR	OPT_FINDERR	# last matched error pattern
@@ -251,6 +253,7 @@ string
 "libdir-path"	LIBDIR_PATH		# library directory(s)
 "line"		LINE			# text of current line
 "llength"	LLENGTH			# length of current line
+"locale"	LOCALE		OPT_LOCALE	# 8-bit locale associated with buffer contents
 "majormode"	MAJORMODE	OPT_MAJORMODE # current majormode, if any
 "majormode-hook" MAJORMODEHOOK	OPT_HOOKS&&OPT_MAJORMODE	# procedure to run for majormodes
 "match"		MATCH			# last matched magic pattern
@@ -522,6 +525,24 @@ string
 "stm"		FAB$C_STM
 "stmlf"		FAB$C_STMLF
 "stmcr"		FAB$C_STMCR
+
+.table recordattrs		SYS_VMS
+"none"		RECORD_ATTRS(0,0,0,0)
+"ftn"		RECORD_ATTRS(1,0,0,0)
+"cr"		RECORD_ATTRS(0,1,0,0)
+"prn"		RECORD_ATTRS(0,0,1,0)
+"blk"		RECORD_ATTRS(0,0,0,1)
+"ftn,cr"	RECORD_ATTRS(1,1,0,0)
+"ftn,prn"	RECORD_ATTRS(1,0,1,0)
+"ftn,blk"	RECORD_ATTRS(1,0,0,1)
+"cr,prn"	RECORD_ATTRS(0,1,1,0)
+"cr,blk"	RECORD_ATTRS(0,1,0,1)
+"prn,blk"	RECORD_ATTRS(0,0,1,1)
+"ftn,cr,prn"	RECORD_ATTRS(1,1,1,0)
+"ftn,cr,blk"	RECORD_ATTRS(1,1,0,1)
+"cr,prn,blk"	RECORD_ATTRS(0,1,1,1)
+"ftn,prn,blk"	RECORD_ATTRS(1,0,1,1)
+"ftn,cr,prn,blk" RECORD_ATTRS(1,1,1,1)
 
 .table recordsep
 "default"	RS_AUTO

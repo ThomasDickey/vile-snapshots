@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.44 2004/06/16 21:31:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.45 2004/10/26 22:02:00 tom Exp $
  *
  */
 
@@ -194,8 +194,9 @@ visible_buff(const char *buffer, int length, int eos)
 	if (eos && !c) {
 	    break;
 	} else {
-	    vl_vischr(result + k, c);
-	    k += strlen(result + k);
+	    char *dst = result + k;
+	    vl_vischr(dst, c);
+	    k += strlen(dst);
 	}
     }
     result[k] = 0;
@@ -475,6 +476,7 @@ record_alloc(char *newp, char *oldp, unsigned len)
 char *
 doalloc(char *oldp, unsigned amount)
 {
+    int j;
     register char *newp;
 
     check_opt_working();
@@ -482,7 +484,29 @@ doalloc(char *oldp, unsigned amount)
     LOG_LEN("allocate", amount);
     LOG_PTR("  old = ", oldp);
 
+#if 1
     newp = (oldp != 0) ? realloc(oldp, amount) : malloc(amount);
+#else
+    /* this is a little cleaner for valgrind's purpose, but slower */
+    if (oldp != 0 && (j = FindArea(oldp)) >= 0) {
+	newp = calloc(amount, sizeof(char));
+	if (oldp != 0) {
+	    int k;
+	    TRACE(("memcpy %p .. %p to %p .. %p (%ld -> %ld)\n",
+		   oldp, oldp + area[j].size - 1,
+		   newp, newp + area[j].size - 1,
+		   area[j].size, amount));
+	    for (k = 0; k < area[j].size; ++k)
+		newp[k] = oldp[k];
+	    /* valgrind (?) bug doesn't like memcpy(newp, oldp, area[j].size); */
+	    free(oldp);
+	}
+    } else if (oldp != 0) {
+	newp = realloc(oldp, amount);
+    } else {
+	newp = calloc(amount, sizeof(char));
+    }
+#endif
     if (!OK_ALLOC(newp, oldp, amount)) {
 	perror("doalloc");
 	fail_alloc("doalloc", oldp);

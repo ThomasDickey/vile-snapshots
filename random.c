@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.272 2003/05/04 22:49:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.273 2004/10/29 00:35:53 tom Exp $
  *
  */
 
@@ -958,6 +958,11 @@ current_directory(int force)
 
 #if SYS_MSDOS || SYS_OS2
     update_dos_drv_dir(cwd);
+#endif
+
+#if OPT_VMS_PATH && !SYS_VMS
+    strcat(cwd, "/");
+    (void) unix2vms_path(cwd, cwd);
 #endif
 
     TRACE(("current_directory(%s)\n", cwd));

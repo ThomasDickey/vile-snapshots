@@ -1,12 +1,13 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.76 2002/10/07 23:33:57 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.77 2004/10/20 01:02:15 cmorgan Exp $
  *
  */
 
 #include "estruct.h"
 #include "edef.h"
+#include "chgdfunc.h"
 
 #include <process.h>
 
@@ -1381,7 +1382,7 @@ parse_icursor_string(char *str, int *revert_cursor)
  * The valid range of <insmode_height> and <cmdmode_height> is 1-100.
  */
 int
-chgd_icursor(VALARGS * args, int glob_vals, int testing)
+chgd_icursor(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
     if (!testing) {
 	int revert_cursor;

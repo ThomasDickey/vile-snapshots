@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.265 2004/06/19 17:15:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.266 2004/10/26 18:49:57 tom Exp $
  *
  */
 
@@ -1313,6 +1313,7 @@ setup_macro_buffer(TBUFF *name, int flag)
 		    }
 		    if (decode_parameter_info(temp, &(cf->c_args[count]))) {
 			cf->c_args[++count].pi_type = PT_UNKNOWN;
+			cf->c_args[count].pi_text = 0;
 			break;
 		    }
 		    /* FALLTHRU */

@@ -959,7 +959,9 @@ Miscellaneous commands
 		with ":map!".  (synonymous with ":map!<CR>")
 
 	show-printable -- displays a table of the printable characters,
-		with associated types.
+		with associated types.  To allow it to fit within 80 columns,
+		abbreviations are used, which are the same names as used in
+		character classes.
 
 	show-registers -- displays the current contents of the named and
 		numbered registers.
@@ -1642,7 +1644,7 @@ Editor modes
 
 	recordseparator (rs) Specify format of files that vile reads and
 		writes.  Formats are lf (for Unix), crlf (for DOS), cr (for
-		Macintosh) and default (lf or crlf, depending on the platform). 
+		Macintosh) and default (lf or crlf, depending on the platform).
 		When reading from a file, vile determines the file format
 		automatically, and sets a local value for this mode.  When
 		reading from a pipe, it uses the global value of
@@ -1665,7 +1667,8 @@ Editor modes
 		off by default for vi compatibility. (U)
 
 	report	A threshold value that is used to control messages that report
-		the number of lines deleted, changed, etc.  (U)
+		the number of lines deleted, changed, etc.  Set it to 0 (zero)
+		to disable the messages. (U)
 
 	resolve-links Controls whether vile fully resolves file names in
 		cases where some path components are symbolic links.  This
@@ -2079,6 +2082,38 @@ Special Character Expansion
 	Any of these expansions can be suppressed by prefixing with a '\'.
 
 
+
+Character Classes
+-----------------
+	The "show-printable" command shows a table of the characters and their
+	classes, e.g., printable, punctuation, etc.  You may modify this table
+	by setting or unsetting a given class for a range of characters.  The
+	commands which do this are  "set-char-class" and "delete-char-class"
+	or "unset-char-class".  These commands expect the class name and a
+	regular expression which defines a range of characters.  The class
+	names (short to allow "show-printable" to show everything in 80
+	columns) are
+
+		arg	ex-style line range: 1,$ or 13,15 or % etc.
+		ctl	control character
+		del	delete/backspace
+		fn	fence character, e.g., "{" or "}"
+		id	normal identifier, used for word boundaries
+		lwr	lowercase, e.g., "a"
+		nsp	nonspace
+		num	digit, e.g., "0"
+		path	file/path name
+		prn	printable
+		pun	punctuation
+		qid	qualified identifiers, used in tags parsing
+		sh	may appear in shell/pipe
+		sp	space
+		tmp	legal in scratch-buffer names
+		upr	uppercase, e.g., "A"
+		wld	shell wildcard, e.g., "*"
+
+	You can also reset the table to its initial state using
+	"reset-char-classes".
 
 Key Rebinding
 -------------
@@ -2677,6 +2712,7 @@ Programmed procedures (aka macros)
 	$directory	controls location of temp-files (unused)
 	$discmd		display commands on command line (boolean)
 	$disinp		display command line input characters (boolean)
+	$encoding	character set associated with locale	(read only)
 	$end-of-cmd	true if user ended the cmd with <CR>
 	$error-buffer   buffer name assigned to the error-buffer
 	$error-expr     regular expression that matched the error-buffer
@@ -2704,6 +2740,7 @@ Programmed procedures (aka macros)
 	$libdir-path	appended to $PATH when running filters
 	$line		text of current line starting with cursor
 	$llength	length of current line			(read only)
+	$locale		locale, which determines character type	(read only)
 	$majormode	current majormode, if any		(read only)
 	$majormode-hook	procedure to overrride suffix/preamble rules
 	$match		last matched magic pattern		(read only)
@@ -3993,7 +4030,9 @@ Syntax coloring
 	This setting initiates syntax coloring whenever a new file is
 	edited.  However, note that the read-hook won't initiate syntax
 	coloring when a buffer's contents change, which brings us to the
-	next topic.
+	next topic.  HighlightFilterMsg is a wrapper for the macro
+	HighlightFilter, which adds a message saying that it is updating
+	attributes.  If you prefer no messages, use HighlightFilter.
 
 	Autocolor
 	---------
@@ -4018,7 +4057,18 @@ Syntax coloring
 	automatic syntax coloring for a particular buffer.
 
 	For obvious reasons, this feature is less "intrusive" on fast
-	hardware.
+	hardware.  Even on fast hardware, running an external syntax filter
+	can be a little slow.  The built-in filters run much faster, fast
+	enough that this combination is not that intrusive.  The filters.rc
+	script checks if vile has built-in (or loadable) syntax filters and
+	will turn on autocolor and the $read-hook automatically in this
+	case (with a 5 second idle time).  Depending on the speed of your
+	hardward, you may wish to make this shorter.
+
+	If autocolor is too slow, you can temporarily disable it by turning
+	the highlighting mode off:
+
+		:set nohl
 
 	Changing color/attribute mappings
 	---------------------------------
@@ -5370,6 +5420,10 @@ VMS specifics
 			vile will attempt to use the format of an older version
 			of the file, or "stmlf" if none exists.  (B)
 
+	record-attrs    Specify record attributes of files that vile writes.
+			If undefined, vile will attempt to use the format of an
+			older version of the file, or "cr" if none exists.  (B)
+
 	record-length   Maximum record size, used if record-format is "fixed"
 			or "vfc".  (B)
 
@@ -6069,4 +6123,4 @@ Problems
 
 Copyright 1995-2003 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.584 2004/06/15 22:10:08 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.590 2004/10/31 22:13:23 tom Exp $

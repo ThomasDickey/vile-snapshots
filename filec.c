@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.114 2004/06/09 01:03:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.116 2004/10/30 14:56:44 tom Exp $
  *
  */
 
@@ -547,7 +547,7 @@ sortMyBuff(BUFFER *bp)
 #endif /* USE_QSORT */
 
 int
-fill_directory_buffer(BUFFER *bp, char *path, int dots)
+fill_directory_buffer(BUFFER *bp, char *path, int dots GCC_UNUSED)
 {
     int count = 0;
     char *s;
@@ -657,7 +657,9 @@ fill_directory_buffer(BUFFER *bp, char *path, int dots)
 	    if_dots(leaf, dots) count++;
 #if USE_QSORT
 #if OPT_VMS_PATH
-	    vms2hybrid(s = strcpy(temp, path));
+	    if (temp != path)
+		strcpy(temp, path);
+	    vms2hybrid(s = temp);
 #else
 	    s = path;
 #endif

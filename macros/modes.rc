@@ -1,6 +1,8 @@
-; $Id: modes.rc,v 1.2 2004/08/08 18:33:15 tom Exp $
+; $Id: modes.rc,v 1.6 2004/10/31 21:54:52 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
+
+setv %filters-modes=true
 
 define-mode ada
 ~with define-submode ada
@@ -32,6 +34,34 @@ define-mode asm
 	fence-elif '^\s*\<elseif\>'
 	fence-else '^\s*\<else\>'
 	fence-fi   '^\s*\<endif\>'
+~endwith
+
+; AutoIt version 3
+define-mode au3
+~with define-submode au3
+	suffixes	'\.au3$'
+	dos
+	ignorecase
+	comment-prefix	'^\s*;'
+	comments	'^\s*;\s\+\s*$'
+	fence-if	'^\s*\<if\>.*\<then\>\s*\(;.*\)\?$'
+	fence-elif	'^\s*\<elseif\>'
+	fence-else	'^\s*\<else\>'
+	fence-fi	'^\s*\<endif\>'
+~elsewith define-submode au3 group 'case'
+	fence-if	'^\s*\<select\>'
+	fence-elif	'^\s*\<case\>'
+	fence-else	'^\s*\<case\s\+else\>'
+	fence-fi	'^\s*\<endselect\>'
+~elsewith define-submode au3 group 'func'
+	fence-if	'^\s*\<func\>'
+	fence-fi	'^\s*\<endfunc\>'
+~elsewith define-submode au3 group 'while'
+	fence-if	'^\s*\<while\>'
+	fence-fi	'^\s*\<wend\>'
+~elsewith define-submode au3 group 'for'
+	fence-if	'^\s*\<for\>'
+	fence-fi	'^\s*\<next\>'
 ~endwith
 
 define-mode awk
@@ -353,6 +383,20 @@ define-mode newsrc
 ~with define-submode newsrc
 	suffixes	'\.\(.*newsrc.*\)$'
 	before "sh"
+~endwith
+
+define-mode nmake
+~with define-submode nmake
+	suffixes	'\.dsp$'
+	dos
+	comment-prefix	'^\s*[!#]'
+	comments	'^\s*[!#]\s*$'
+~with define-submode make group 'nmake'
+	fence-if   '^\s*!if'
+	fence-elif '^\s*!else\s*if'
+	fence-else '^\s*!else\>'
+	fence-fi   '^\s*!endif\>'
+	ignorecase
 ~endwith
 
 define-mode nr

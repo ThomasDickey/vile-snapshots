@@ -1,8 +1,10 @@
 /*
  * Parsing and I/O support for atr2text, etc.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/unfilter.c,v 1.4 2003/05/24 00:49:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/unfilter.c,v 1.6 2004/10/27 19:17:36 tom Exp $
  */
+#define CAN_TRACE 0
+#define CAN_VMS_PATH 0
 #include <unfilter.h>
 
 typedef enum {

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.543 2004/06/17 00:54:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.552 2004/10/31 00:34:29 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -428,6 +428,10 @@
 #define OPT_FILTER 0	/* normally set by configure-script */
 #endif
 
+#ifndef OPT_ICONV_FUNCS
+#define OPT_ICONV_FUNCS 0 /* normally set by configure-script */
+#endif
+
 #ifndef OPT_LOCALE
 #define OPT_LOCALE 0	/* normally set by configure-script */
 #endif
@@ -555,12 +559,21 @@
 /* the "working..." message -- we must have the alarm() syscall, and
    system calls must be restartable after an interrupt by default or be
    made restartable with sigaction() */
-#define OPT_WORKING (!SMALLER && defined(HAVE_ALARM) && defined(HAVE_RESTARTABLE_PIPEREAD))
+#if !SMALLER && defined(HAVE_ALARM) && defined(HAVE_RESTARTABLE_PIPEREAD)
+#define OPT_WORKING 1
+#else
+#define OPT_WORKING 0
+#endif
 
 #define OPT_SCROLLBARS (XTOOLKIT | DISP_NTWIN)	/* scrollbars */
 
 #ifndef OPT_VMS_PATH
 #define OPT_VMS_PATH    (SYS_VMS)  /* vax/vms path parsing (testing/porting)*/
+#endif
+
+#if OPT_VMS_PATH
+#undef SYSTEM_NAME
+#define SYSTEM_NAME	"vms"	/* fakevms pretends to scripts it's vms */
 #endif
 
 /* systems with MSDOS-like filename syntax */
@@ -685,6 +698,7 @@
 #define OPT_PATH_CHOICES         !SMALLER
 #define OPT_POPUP_CHOICES	 (OPT_ENUM_MODES && OPT_POPUPCHOICE)
 #define OPT_RECORDFORMAT_CHOICES (OPT_ENUM_MODES && SYS_VMS)
+#define OPT_RECORDATTRS_CHOICES  (OPT_ENUM_MODES && SYS_VMS)
 #define OPT_RECORDSEP_CHOICES    !SMALLER
 #define OPT_SHOWFORMAT_CHOICES   !SMALLER
 #define OPT_VIDEOATTRS_CHOICES   (OPT_ENUM_MODES && OPT_COLOR_SCHEMES)
@@ -713,6 +727,14 @@
 
 #ifndef OPT_TRACE
 #define OPT_TRACE		0  /* turn on debug/trace (link with trace.o) */
+#endif
+
+#ifndef CAN_TRACE
+#define CAN_TRACE		1  /* (link with trace.o) */
+#endif
+
+#ifndef CAN_VMS_PATH
+#define CAN_VMS_PATH		1  /* (link with fakevms.o) */
 #endif
 
 /* That's the end of the user selections -- the rest is static definition */
@@ -807,6 +829,11 @@ extern char *rindex (const char *s, int c);
 #if SYS_VMS
 #undef  FOPEN_READ
 #define FOPEN_READ "r", "shr=get,upd"
+#define RECORD_ATTRS(ftn,cr,prn,blk) \
+			(ftn<<FAB$V_FTN) | \
+			(cr <<FAB$V_CR)  | \
+			(prn<<FAB$V_PRN) | \
+			(blk<<FAB$V_BLK)
 #endif
 
 #if OPT_MSDOS_PATH && !SYS_OS2_EMX	/* DOS path / to \ conversions */
@@ -2865,11 +2892,11 @@ extern void ExitProgram(int code);
 #    include <dmalloc.h>
 #    define show_alloc() dmalloc_log_unfreed()
 #  endif
-#  if OPT_TRACE
+#  if CAN_TRACE && OPT_TRACE
 #    include "trace.h"
 #  endif
 #else
-#  if NO_LEAKS || DOALLOC || OPT_TRACE
+#  if CAN_TRACE && (NO_LEAKS || DOALLOC || OPT_TRACE)
 #    include "trace.h"
 #  endif
 #endif	/* USE_DBMALLOC */
@@ -2938,7 +2965,7 @@ extern void ExitProgram(int code);
 #endif
 
 /* for debugging VMS pathnames on UNIX... */
-#if SYS_UNIX && OPT_VMS_PATH
+#if CAN_VMS_PATH && (SYS_UNIX && OPT_VMS_PATH)
 #include "fakevms.h"
 #endif
 

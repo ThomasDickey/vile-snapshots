@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.526 2004/06/19 15:00:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.529 2004/11/01 00:41:57 tom Exp $
  *
  */
 
@@ -33,6 +33,7 @@ extern void init_mode_value(struct VAL *, MODECLASS c, int n);
 extern void not_interrupted (void);
 extern void setup_handler (int sig, void (*disp) (int ACTUAL_SIG_ARGS));
 extern void tidy_exit (int code);
+extern void tcap_setup_locale(char *real_locale, char *fake_locale);
 
 #ifndef interrupted
 extern int interrupted (void);
@@ -529,16 +530,16 @@ extern	void	expand_wild_args (int *argcp, char ***argvp);
 /* history.c */
 #if OPT_HISTORY
 extern	int	edithistory (TBUFF **buffer, UINT *position, int *given, UINT options, int (*func)(EOL_ARGS), int eolchar);
-extern	void	hst_append (TBUFF *cmd, int glue);
-extern	void	hst_append_s (char *cmd, int glue);
+extern	void	hst_append (TBUFF *cmd, int glue, int can_extend);
+extern	void	hst_append_s (char *cmd, int glue, int can_extend);
 extern	void	hst_flush (void);
 extern	void	hst_glue (int c);
 extern	void	hst_init (int c);
 extern	void	hst_remove (const char *cmd);
 extern	void	hst_reset (void);
 #else
-#define	hst_append(p,c)
-#define	hst_append_s(p,c)
+#define	hst_append(p,c,e)
+#define	hst_append_s(p,c,e)
 #define	hst_flush()
 #define	hst_glue(c)
 #define	hst_init(c)
@@ -791,6 +792,7 @@ extern void save_vals (int maximum, struct VAL *gbl, struct VAL *dst, struct VAL
 
 #if SYS_VMS
 extern const char *vms_record_format(int code);
+extern const char *vms_record_attrs(int code);
 #endif
 
 /* npopen.c and other files :-) */

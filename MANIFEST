@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_4i
+MANIFEST for vile, version v9_4j
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -165,6 +165,8 @@ filters/asm.key                 keywords for M$ assembler files
 filters/atr2ansi.c              convert attributed text to ANSI escape sequences
 filters/atr2html.c              translate encoded text to html
 filters/atr2text.c              convert attributed text to nroff-output
+filters/au3-filt.l              syntax highlighter for AutoIt version 3
+filters/au3.key                 keywords for AutoIt version 3
 filters/awk-filt.l              awk syntax highlighter for vile
 filters/awk.key                 keywords for awk syntax highlighting
 filters/bas-filt.l              syntax filter for BASIC

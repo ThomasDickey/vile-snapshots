@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.81 2003/10/29 00:03:56 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.82 2004/10/26 18:24:34 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -390,7 +390,7 @@ extern char *strmalloc(const char *src);
 			flt_bfr_finish();\
 			pop_state()
 
-#if NO_LEAKS
+#if CAN_TRACE && NO_LEAKS
 #include <trace.h>
 #endif
 

@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.80 2004/06/15 22:01:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.82 2004/10/31 16:04:54 tom Exp $
  */
 
 #include	"estruct.h"
@@ -415,6 +415,7 @@ var_AUTOCOLORHOOK(TBUFF **rp, const char *vp)
 int
 var_BCHARS(TBUFF **rp, const char *vp)
 {
+    bsizes(curbp);
     return (valid_buffer(curbp)
 	    ? any_ro_INT(rp, vp, curbp->b_bytecount)
 	    : FALSE);
@@ -437,6 +438,7 @@ var_BFLAGS(TBUFF **rp, const char *vp)
 int
 var_BLINES(TBUFF **rp, const char *vp)
 {
+    bsizes(curbp);
     return (valid_buffer(curbp)
 	    ? any_ro_INT(rp, vp, curbp->b_linecount)
 	    : FALSE);
@@ -706,6 +708,14 @@ var_DISINP(TBUFF **rp, const char *vp)
     return any_rw_BOOL(rp, vp, &vl_echo);
 }
 
+#if OPT_LOCALE
+int
+var_ENCODING(TBUFF **rp, const char *vp)
+{
+    return any_ro_STR(rp, vp, vl_encoding);
+}
+#endif
+
 int
 var_EOC(TBUFF **rp, const char *vp)
 {
@@ -969,6 +979,14 @@ var_LLENGTH(TBUFF **rp, const char *vp)
 {
     return valid_buffer(curbp) ? any_ro_INT(rp, vp, llength(DOT.l)) : FALSE;
 }
+
+#if OPT_LOCALE
+int
+var_LOCALE(TBUFF **rp, const char *vp)
+{
+    return any_ro_STR(rp, vp, vl_locale);
+}
+#endif
 
 #if OPT_MAJORMODE
 int
