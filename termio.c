@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.152 1997/12/01 23:44:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.153 1997/12/17 00:27:15 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -119,7 +119,7 @@ char kbd_char;			/* the char we've already read	*/
 
 #include <termios.h>
 
-#if SYSTEM_LOOKS_LIKE_SCO
+#if NEED_PTEM_H
 /* they neglected to define struct winsize in termios.h -- it's only
    in termio.h	*/
 #include	<sys/stream.h>

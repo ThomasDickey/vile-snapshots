@@ -1,7 +1,7 @@
 /*
  * Configurable headers used by termcap/terminfo driver for vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.h,v 1.1 1997/12/02 11:59:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.h,v 1.3 1997/12/18 00:47:04 tom Exp $
  */
 
 #ifndef VILE_TCAP_H
@@ -11,12 +11,7 @@
 extern "C" {
 #endif
 
-#if USE_TERMINFO
-#  define TGETSTR(name, bufp) tigetstr(name)
-#  define TGETNUM(name)       tigetnum(name) /* may be tigetint() */
-#  define TGETFLAG(name)      tigetflag(name)
-#  define CAPNAME(a,b)        b
-#  define NO_CAP(s)           (s == 0 || s == (char *)-1)
+#if NEED_CURSES_H
 #  undef TRUE
 #  undef FALSE
 #  undef WINDOW
@@ -29,14 +24,26 @@ extern "C" {
 #  undef WINDOW
 #  define WINDOW vile_WINDOW
 #  ifndef TRUE
-#  define TRUE 1
+#    define TRUE 1
 #  endif
 #  ifndef FALSE
-#  define FALSE 0
+#    define FALSE 0
 #  endif
-#  if HAVE_TERM_H
-#    include <term.h>
-#  endif
+#endif
+
+#if HAVE_TERM_H
+#  include <term.h>
+#endif
+#if NEED_TERMCAP_H
+#  include <termcap.h>
+#endif
+
+#if USE_TERMINFO
+#  define TGETSTR(name, bufp) tigetstr(name)
+#  define TGETNUM(name)       tigetnum(name) /* may be tigetint() */
+#  define TGETFLAG(name)      tigetflag(name)
+#  define CAPNAME(a,b)        b
+#  define NO_CAP(s)           (s == 0 || s == (char *)-1)
 #  if !HAVE_TIGETNUM && HAVE_TIGETINT
 #    define tigetnum tigetint
 #  endif
@@ -48,9 +55,6 @@ extern "C" {
 #  define TGETFLAG(name)      tgetflag(name)
 #  define CAPNAME(a,b)        a
 #  define NO_CAP(s)           (s == 0)
-#  if HAVE_TERMCAP_H
-#    include <termcap.h>
-#  endif
 #endif /* USE_TERMINFO */
 
 #if HAVE_EXTERN_TCAP_PC
