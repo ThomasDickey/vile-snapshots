@@ -5,7 +5,7 @@
  * commands. Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.96 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.97 1999/05/23 21:00:11 tom Exp $
  *
  */
 
@@ -109,7 +109,7 @@ killrectmaybesave(int save)
 		}
 	}
 	s = do_lines_in_region(kill_line, (void *)&save, FALSE);
-	DOT = savedot;
+	restore_dot(savedot);
 
 	if (s && do_report(klines+(kchars!=0))) {
 		mlwrite("[%d line%s, %d character%s killed]",

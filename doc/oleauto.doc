@@ -147,7 +147,7 @@ is clicked on a file in Windows Explorer, "winvile" appears as a selection
 at the top of the popup menu.  Choosing winvile from this menu launches the
 editor, which then opens the selected file.  So far, so good.  However,
 when multiple files are selected and winvile is launched via a right mouse
-click, Windows Explorer opens one instance of the editor per selected file. 
+click, Windows Explorer opens one instance of the editor per selected file.
 Most vile-aholics will find this behavior rather repugnant.  However, if
 winvile is configured as a single server instance (the default), a
 workaround exists.  Read on.
@@ -180,8 +180,6 @@ IsMinimized         -- [out] True if editor minimized.
 Minimize()          -- Minimizes the editor.
 
 Name()              -- [out] Returns the name of the application.
-
-Open([in] filename) -- Open filename, which may include wildcards.
 
 Parent()            -- Returns the parent of the application object.
 

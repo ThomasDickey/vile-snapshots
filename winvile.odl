@@ -35,9 +35,6 @@ library Winvile
         [propget, helpstring("True if editor minimized.")]
         HRESULT IsMinimized([out, retval] VARIANT_BOOL* retval);
 
-        [helpstring("Opens a file.")]
-        HRESULT Open([in] BSTR filename);
-
         [propget, helpstring("Returns the parent of the object.")]
         HRESULT Parent([out, retval] IVileAuto** retval);
 

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.202 1999/05/19 01:06:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.203 1999/05/23 22:47:09 tom Exp $
  *
  */
 
@@ -951,7 +951,7 @@ tempvar_arg_eval(const char *argp)
 }
 
 /* state variables are expanded.  if it's
- * not an statevar, perhaps it'a a mode?
+ * not an statevar, perhaps it's a mode?
  */
 static const char *
 statevar_arg_eval(const char *argp)
@@ -1037,14 +1037,17 @@ ArgEvalFunc *eval_func[] = {
 const char *
 tokval(const char *tokn)
 {
+	const char *result;
 #if OPT_EVAL
 	int toknum = toktyp(tokn);
 	if (toknum < 0 || toknum > MAXTOKTYPE)
-		return error_val;
-	return (*eval_func[toknum])(tokn);
+		result = error_val;
+	else
+		result = (*eval_func[toknum])(tokn);
 #else
-	return (toktyp(tokn) == TOK_QUOTSTR) ? tokn+1 : tokn;
+	result = (toktyp(tokn) == TOK_QUOTSTR) ? tokn+1 : tokn;
 #endif
+	return result;
 }
 
 /*

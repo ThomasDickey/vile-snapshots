@@ -10,13 +10,14 @@
  * Note:  A great deal of the code included in this file is copied
  * (almost verbatim) from other vile modules.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.1 1999/05/17 02:31:35 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.2 1999/05/22 11:50:58 cmorgan Exp $
  */
 
 #include <windows.h>
 #include <objbase.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include <initguid.h>
 #include "w32reg.h"
@@ -138,17 +139,21 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
   )
 {
     BSTR      bstr;
+    int       dynbuf_len, dynbuf_idx;
     HRESULT   hr;
-    char      *lclbuf = NULL, tmp[512];
+    char      *lclbuf = NULL, tmp[512], *dynbuf;
     OLECHAR   *olestr;
     LPUNKNOWN punk;
     IVileAuto *pVileAuto;
 
     make_argv(lpCmdLine);
 
-    olebuf_len = 512;
+    olebuf_len = 4096;
+    dynbuf_len = 4096;
+    dynbuf_idx = 0;
     olebuf     = (OLECHAR *) malloc(olebuf_len * sizeof(OLECHAR));
-    if (! olebuf)
+    dynbuf     = (char *) malloc(dynbuf_len);
+    if (! (olebuf && dynbuf))
         return (nomem());
 
     hr = CoInitialize(NULL); // Fire up COM.
@@ -190,6 +195,7 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
         MessageBox(NULL, tmp, "wvwrap", MB_OK|MB_ICONSTOP);
         return (1);
     }
+    pVileAuto->put_Visible(VARIANT_TRUE);  // May not be necessary
     if (argc > 0)
     {
         char *cp;
@@ -203,25 +209,51 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
         cp = strrchr(*argv, '\\');
         if (cp)
         {
+            int add_delim;
+
             *cp = '\0';
-            sprintf(tmp, ":cd %s\n", *argv);
-            *cp = '\\';
-            olestr = TO_OLE_STRING(tmp);
-            bstr   = SysAllocString(olestr);
-            if (! (bstr && olestr))
-                return (nomem());
-            pVileAuto->VileKeys(bstr);
-            SysFreeString(bstr);
+            if (cp == *argv)
+            {
+                /* filename is of the form:  \<leaf> .  handle this. */
+
+                strcpy(dynbuf, ":cd \\\n");
+            }
+            else
+            {
+                add_delim = (isalpha((*argv)[0]) &&
+                                       (*argv)[1] == ':' &&
+                                                  (*argv)[2] == '\0');
+                /*
+                 * With regard to the following code, note that the
+                 * original file might be in the form "<drive>:\leaf", in
+                 * which case *argv now points at "<drive>:" .  Recall that
+                 * cd'ing to <drive>:  on a DOS/WIN32 host has special
+                 * semantics (which we don't want).
+                 */
+                sprintf(dynbuf, ":cd %s%s\n", *argv, (add_delim) ? "\\" : "");
+            }
+            dynbuf_idx = strlen(dynbuf);
+            *cp        = '\\';
         }
         while (argc--)
         {
-            olestr = TO_OLE_STRING(*argv++);
-            bstr   = SysAllocString(olestr);
-            if (! (bstr && olestr))
-                return (nomem());
-            pVileAuto->Open(bstr);
-            SysFreeString(bstr);
+            int len = strlen(*argv);
+
+            if (dynbuf_idx + len + sizeof(":e \n") >= dynbuf_len)
+            {
+                dynbuf_len *= 2 + len + sizeof(":e \n");
+                dynbuf      = (char *) realloc(dynbuf, dynbuf_len);
+                if (! dynbuf)
+                    return (nomem());
+            }
+            dynbuf_idx += sprintf(dynbuf + dynbuf_idx, ":e %s\n", *argv++);
         }
+        olestr = TO_OLE_STRING(dynbuf);
+        bstr   = SysAllocString(olestr);
+        if (! (bstr && olestr))
+            return (nomem());
+        pVileAuto->VileKeys(bstr);
+        SysFreeString(bstr);
     }
     pVileAuto->Release();
     CoUninitialize(); // shut down COM

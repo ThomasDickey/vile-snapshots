@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.275 1999/05/18 22:11:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.277 1999/05/22 14:27:00 tom Exp $
  *
  */
 
@@ -132,10 +132,13 @@ dfputsn(OutFunc outfunc, const char *s, int n)
 {
 	register int c = 0;
 	register int l = 0;
+
 	TRACE(("...str=%s\n", visible_buff(s, n)))
-	while ((n-- != 0) && ((c = *s++) != EOS)) {
-		(*outfunc)(c);
-		l++;
+	if (s != 0) {
+		while ((n-- != 0) && ((c = *s++) != EOS)) {
+			(*outfunc)(c);
+			l++;
+		}
 	}
 	return l;
 }
@@ -3171,30 +3174,25 @@ mlmsg(const char *fmt, va_list *app)
 void
 mlerror(const char *s)
 {
+	char *t = 0;
 #if HAVE_STRERROR
-#ifndef VMS
-	if (errno > 0)
-		mlwarn("[Error %s: %s]", s, strerror(errno));
-	else
-		mlwarn("[Error %s: unknown system error %d]", s, errno);
-#else
+#ifdef VMS
 	if (errno == EVMSERR)
-		mlwarn("[Error %s: %s]", s, strerror(errno, vaxc$errno));
-	else if (errno > 0)
-		mlwarn("[Error %s: %s]", s, strerror(errno));
+		t = strerror(errno, vaxc$errno);
 	else
-		mlwarn("[Error %s: unknown system error %d]", s, errno);
 #endif /* VMS */
+	if (errno > 0)
+		t = strerror(errno);
 #else
 #if HAVE_SYS_ERRLIST
 	if (errno > 0 && errno < sys_nerr)
-		mlwarn("[Error %s: %s]", s, sys_errlist[errno]);
-	else
-		mlwarn("[Error %s: unknown system error %d]", s, errno);
-#else
-	mlwarn("[Error %s, errno=%d]", s, errno);
+		t = sys_errlist[errno];
 #endif /* HAVE_SYS_ERRLIST */
 #endif /* HAVE_STRERROR */
+	if (t != 0)
+		mlwarn("[Error %s: %s]", s, t);
+	else
+		mlwarn("[Error %s: unknown system error %d]", s, errno);
 }
 
 /*

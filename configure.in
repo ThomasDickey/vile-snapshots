@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.109 $)
+AC_REVISION($Revision: 1.111 $)
 AC_PREREQ(2.12.971222)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.109 1999/04/28 00:09:40 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.111 1999/05/22 14:58:14 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -105,7 +105,7 @@ AC_SUBST(EXTRA_INSTALL_FILES)
 
 # X11 checks will sometimes add to CFLAGS.  We want the state of CFLAGS
 # prior to these checks
-saved_CFLAGS="$CFLAGS"
+# saved_CFLAGS="$CFLAGS"
 
 ###	checks for UNIX variants that set C preprocessor variables
 AC_AIX
@@ -397,7 +397,7 @@ AC_ARG_WITH(exec-macros,
 	[cf_exec_macros=$withval],
 	[cf_exec_macros=no])
 AC_MSG_RESULT($cf_exec_macros)
-test "$cf_exec_macros" != no && AC_DEFINE(OPT_EXEC_MACROS,$cf_exec_macros)
+test "$cf_exec_macros" != no && AC_DEFINE_UNQUOTED(OPT_EXEC_MACROS,$cf_exec_macros)
 
 # I don't know of a reliable test for working locale, but we can at least check
 # that it is available before offering it as an option.
@@ -454,7 +454,7 @@ AC_ARG_WITH(trace,
 
 test -n "${with_trace}${with_no_leaks}" && EXTRAOBJS="$EXTRAOBJS trace.o"
 
-CFLAGS="$saved_CFLAGS"
+# CFLAGS="$saved_CFLAGS"
 AC_ARG_WITH(warnings,
 	[  --with-warnings         test: turn on GCC compiler warnings],
 	[with_warnings=$withval])

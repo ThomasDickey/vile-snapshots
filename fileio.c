@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.137 1999/04/04 21:11:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.138 1999/05/22 14:00:29 Daniel.Palermo Exp $
  *
  */
 
@@ -642,7 +642,7 @@ ffputc(int c)
 	char	d = (char)c;
 
 #if	OPT_ENCRYPT
-	if (ffcrypting)
+	if (ffcrypting && !fileispipe)
 		d = vl_encrypt_char(d);
 #endif
 	fputc(d, ffp);
@@ -684,7 +684,7 @@ int *lenp)	/* to return the final length */
 		if (feof(ffp) || ferror(ffp))
 			break;
 #if	OPT_ENCRYPT
-		if (ffcrypting)
+		if (ffcrypting && !fileispipe)
 			c = vl_encrypt_char(c);
 #endif
 		if (c == '\n')
