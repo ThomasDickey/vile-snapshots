@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.229 1998/07/27 23:31:00 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.230 1998/10/03 02:41:55 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -49,7 +49,7 @@ decl_init( char prognam[], "vile");
 # endif
 #endif
 
-decl_init( char version[], "version 8.0");
+decl_init( char version[], "version 8.1");
 
 #ifdef SYSTEM_NAME
 decl_init( char opersys[], SYSTEM_NAME);
