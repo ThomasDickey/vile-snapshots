@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.245 2002/09/02 12:23:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.246 2002/10/09 19:46:05 tom Exp $
  *
  */
 
@@ -787,7 +787,7 @@ legal_glob_mode(const char *base)
  */
 #if OPT_ENUM_MODES
 
-#if NEVER
+#if VILE_NEVER
 FSM_CHOICES fsm_error[] =
 {
     {"beep", 1},
@@ -830,7 +830,7 @@ static struct FSM fsm_tbl[] =
 #if OPT_POPUP_CHOICES
     {"popup-choices", fsm_popup_choices},
 #endif
-#if NEVER
+#if VILE_NEVER
     {"error", fsm_error},
 #endif
 #if OPT_BACKUP_CHOICES

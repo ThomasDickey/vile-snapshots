@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.75 2002/08/26 23:58:46 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.76 2002/10/07 23:33:57 cmorgan Exp $
  *
  */
 
@@ -687,12 +687,20 @@ decode_key_event(INPUT_RECORD * irp)
 		    key |= mod_ALT;
 		if (state & SHIFT_PRESSED)
 		    key |= mod_SHIFT;
-		if ((keyxlate[i].vile == '2') &&
-		    ((key & mod_CTRL) == mod_CTRL) &&
-		    ((key & mod_ALT) == 0)) {
-		    /* either ^2 or ^@, => nul char */
+		if (keyxlate[i].vile == '2') {
+		    if ((key & mod_CTRL) && ((key & mod_ALT) == 0)) {
+			/* either ^2 or ^@, => nul char */
 
-		    key = 0;
+			key = 0;
+		    } else if ((key & mod_SHIFT) &&
+			       ((key & (mod_ALT | mod_CTRL)) == 0)) {
+			/*
+			 * this will be mapped to '@' if we let Windows do
+			 * the translation
+			 */
+
+			key = NOKYMAP;
+		    }
 		}
 	    } else
 		key = keyxlate[i].vile;

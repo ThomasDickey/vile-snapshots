@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_3d
+MANIFEST for vile, version v9_3e
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -180,6 +180,8 @@ filters/ecl.key                 keywords for ecl-filt.l
 filters/ecrypt.c                uemacs-derived encryption
 filters/esql.key                keywords for embedded SQL with C/C++
 filters/esqlfilt.l              syntax filter for embedded SQL with C/C++
+filters/est-filt.l              syntax-highlighter for enscript syntax descriptions
+filters/est.key                 keywords for enscript syntax-descriptions
 filters/fdl-filt.l              syntax filter for forms-definition
 filters/fdl.key                 keywords for forms-definition
 filters/filterio.c              main program and I/O for external filters
@@ -230,6 +232,8 @@ filters/perl.key                keywords for perl syntax filter
 filters/perlfilt.l              Perl syntax filter for vile
 filters/pl-filt.c               syntax highlighter for perl
 filters/pot.key                 keywords for pot (gettext) mode
+filters/ps-filt.l               syntax filter for PostScript files
+filters/ps.key                  keywords for PostScript syntax filter
 filters/py-filt.l               syntax filter for Python
 filters/py.key                  keywords for Python syntax filter
 filters/rc-filt.l               syntax filter for Windows ".rc" files
@@ -238,6 +242,8 @@ filters/rcs-filt.l              syntax filter for RCS archives
 filters/rcs.key                 keywords for RCS syntax filter
 filters/rexx.key                keywords for REXX syntax filter
 filters/rexxfilt.l              syntax filter for REXX
+filters/rpm-filt.l              syntax highlighter for rpm spec-files
+filters/rpm.key                 keywords for rpm spec files
 filters/sccs.key                keywords for SCCS syntax filter
 filters/sccsfilt.l              syntax filter for SCCS files.
 filters/sed-filt.c              highlighting filter for sed-scripts

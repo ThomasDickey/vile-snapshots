@@ -2674,32 +2674,37 @@ Programmed procedures (aka macros)
 	&ascii		1	char to integer conversion
 	&bind		1	lookup what function name is bound to key
 	&cat		2	concatenate string
-	&chr		1	integer to char conversion
 	&cclass		1	character class (see "show-printable")
+	&chr		1	integer to char conversion
 	&date		2	format 2nd param with 1st, like strftime.
 	&default	1	initial/default value for mode or state variable
 	&divide		2	division
 	&dquery		2	prompt user for input, given default value
 	&env		1	retrieve a system environment variable
-	&error		1	true if the parameter was ERROR
 	&equal		2	logical equality
+	&error		1	true if the parameter was ERROR
 	&execable	1	is a file exec'able
 	&filter		1	true if the given majormode's filter is builtin
 	&ftime		1	modification-time of the given file, as a number
+	&geq		2	logical greater than or equal
 	&global		1	retrieves global mode setting
 	&greater	2	logical greater than
+	&gt		2	logical greater than
 	&gtkey		0	get 1 character
 	&gtsequence	0	get keycode sequence, e.g., #1
 	&indirect	1	evaluate indirect value
 	&left		2	left string(string, len)
 	&length		1	string length
-	&less		2	logical less than
+	&leq		2	logical less than or equal
+	&lessthan	2	logical less than
 	&local		1	retrieves local mode setting
 	&lookup		2	look for filename (see below for arguments)
 	&lower		1	lower case string
+	&lt		2	logical less than
 	&middle		3	mid string(string, pos, len)
 	&modulo		2	modulus
 	&negate		1	negate
+	&neq		2	logical inequality
 	&not		1	logical not
 	&or		2	logical or
 	&path		2	extract/translate pathname (see below for args)
@@ -2714,9 +2719,14 @@ Programmed procedures (aka macros)
 	&right		2	right string(string, pos)
 	&rnd		1	get a random number from 1 to n
 	&sequal		2	string logical equality check
+	&sgeq		2	string greater than or equal
 	&sgreater	2	string logical greater than
+	&sgt		2	string greater than
 	&sindex		2	find the index of second string in first
+	&sleq		2	string less than or equal
 	&sless		2	string logical less than
+	&slt		2	string less than
+	&sneq		2	string inequality
 	&stime		1	system-time, as a number
 	&stoken		3	true if token found in string, given delims
 	&subtract	2	subtraction
@@ -4218,7 +4228,7 @@ Working in a project hierarchy
 	Next, use find-cfg mode to enable the traversal feature.  This
 	mode's string argument syntax is as follows:
 
-	    [<recursive_token>][,<nonrecursive_token>[,<option>]]
+	    [<recursive_token>][,<nonrecursive_token>[,<option>...]]
 
 	    where:
 	       <recursive_token> := an ascii character that triggers a
@@ -4232,11 +4242,15 @@ Working in a project hierarchy
 				       semantic restrictions as the
 				       recursive token.
 
-	       <option>          := d
+	       <option>          := {d | f}
 
 
 	Note 1:  The "d" option specifies that find should restrict its
-	search solely to files of type "d" (i.e., directories).
+	search solely to files of type "d" (i.e., directories).  The "f"
+	option adds a "-follow" operand to the commandline, which directs
+	find to follow symbolic links.  Note that -follow is appropriate 
+	for the GNU tool chain, SunOS v5.7, and possibly other hosts.
+	Check your local find (1) man page for compatibility.
 
 	Note 2:  An empty string argument disables find-cfg mode.
 
@@ -5732,4 +5746,4 @@ Problems
 
 Copyright 1995-2002 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.554 2002/09/02 14:54:30 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.556 2002/10/15 20:29:50 tom Exp $

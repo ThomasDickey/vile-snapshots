@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.246 2002/02/04 01:26:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.248 2002/10/17 00:20:57 tom Exp $
  *
  */
 
@@ -604,7 +604,7 @@ parse_linespec(const char *s, LINEPTR * markptr)
 	    if (status)
 		lp = DOT.l;
 	}
-#if PATTERNS
+#if VILE_MAYBE
 	else if (*s == '/' || *s == '?') {	/* slash means do a search */
 	    /* put a null at the end of the search pattern */
 	    t = parseptrn(s);
@@ -1254,7 +1254,7 @@ setup_macro_buffer(TBUFF * name, int flag)
 	if (!cf)
 	    return no_memory("registering procedure name");
 
-#if CC_CANNOT_INIT_UNIONS
+#ifdef CC_CANNOT_INIT_UNIONS
 	cf->c_union = (void *) bp;
 #else
 	cf->cu.c_buff = bp;
@@ -1301,6 +1301,7 @@ setup_macro_buffer(TBUFF * name, int flag)
 
 	if (insert_namebst(tb_values(name), cf, FALSE) != TRUE)
 	    return FALSE;
+	tb_copy(&(bp->b_procname), name);
     }
 #endif /* OPT_NAMEBST */
 
@@ -1739,7 +1740,7 @@ begin_directive(char **const cmdpp,
 
 	    /* grab label to jump to */
 	    *cmdpp = (char *) get_token(*cmdpp, &label, EOS, (int *) 0);
-#if MAYBE
+#if VILE_MAYBE
 	    /* i think a simple re-eval would get us variant
 	     * targets, i.e. ~goto %somelabel.  */
 	    tb_scopy(label, tokval(tb_values(label)));

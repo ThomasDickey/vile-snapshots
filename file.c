@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.334 2002/09/02 12:16:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.337 2002/10/14 23:10:46 tom Exp $
  */
 
 #include "estruct.h"
@@ -20,7 +20,7 @@
 #define	vl_mkdir(path,mode) mkdir(path,mode)
 #endif
 
-#if HAVE_UMASK
+#ifdef HAVE_UMASK
 #define vl_umask(n) umask(n)
 #else
 #define vl_umask(n) n
@@ -1998,6 +1998,7 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced)
     if (!i_am_dead
 	&& whole_file
 	&& eql_bname(bp, UNNAMED_BufName)
+	&& !isShellOrPipe(fn)
 	&& find_b_file(fn) == 0) {
 	ch_fname(bp, fn);
 	set_buffer_name(bp);
@@ -2320,7 +2321,7 @@ static int
 create_save_dir(char *dirnam)
 {
     int result = FALSE;
-#if HAVE_MKDIR && !SYS_MSDOS && !SYS_OS2
+#if defined(HAVE_MKDIR) && !SYS_MSDOS && !SYS_OS2
     static char *tbl[] =
     {
 	0,			/* reserved for $TMPDIR */
@@ -2353,7 +2354,7 @@ create_save_dir(char *dirnam)
 #if defined(HAVE_MKSTEMP) && defined(HAVE_MKDTEMP)
 	    result = (vl_mkdtemp(dirnam) != 0);
 #else
-	    result = (vl_mkdir(dirnam, 0700) == 0);
+	    result = (vl_mkdir(mktemp(dirnam), 0700) == 0);
 #endif
 	    (void) vl_umask(omask);
 	    if (result)
@@ -2474,7 +2475,7 @@ imdying(int ACTUAL_SIG_ARGS)
 			  "echo",
 			  "echo vile died due to signal", signo);
 
-#if HAVE_GETHOSTNAME
+#ifdef HAVE_GETHOSTNAME
 	    {
 		char hostname[128];
 		if (gethostname(hostname, sizeof(hostname)) < 0)
@@ -2489,7 +2490,7 @@ imdying(int ACTUAL_SIG_ARGS)
 			  dirnam);
 
 	    cp = lsprintf(cp, "%s%s%s;",
-#if HAVE_MKDIR
+#ifdef HAVE_MKDIR
 	    /* reverse sort so '.' comes last, in case it
 	     * terminates the mail message early */
 			  "ls -a ", dirnam, " | sort -r"

@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.223 2002/08/31 00:05:12 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.224 2002/10/09 19:43:23 tom Exp $
 #
 #
 
@@ -722,7 +722,7 @@ matchfenceback	ABSM|MOTION		OPT_CFENCE
 	'^X-%'
 	<find partner for previous (,),[,],{,} on line>
 globals		NONE
-	"oglobals"			NEVER
+	"oglobals"			VILE_NEVER
 
 # the gotdotplus() function is mostly for internal use only, for the
 # stuttered operator commands, but it corresponds to the real vi '_'
@@ -1459,7 +1459,7 @@ setfillcol	NONE
 	"set-fill-column"
 	'^X-f'
 	<set the fillcol setting to CNT.  same as \"set fillcol=NN\">
-set_envvar	NONE			OPT_SHELL&&HAVE_PUTENV
+set_envvar	NONE			OPT_SHELL&&defined(HAVE_PUTENV)
 	"setenv"
 	"set-environment-variable"
 	<set and export a process environment variable>
@@ -1663,7 +1663,7 @@ visual		NONE
 	"visual"
 	<switch from non-existent exile mode back to visual mode.  unimplemented>
 vglobals	NONE
-	"ovglobals"			NEVER
+	"ovglobals"			VILE_NEVER
 viewfile	NONE
 	"view-file"
 	<bring given file or existing buffer into window, mark it \"view-only\">

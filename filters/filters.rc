@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.158 2002/08/30 23:21:18 tom Exp $
+; $Id: filters.rc,v 1.160 2002/10/11 17:14:09 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -124,6 +124,14 @@ define-mode diff
 define-mode ecl
 ~with define-submode ecl
 	suf '\.\(ecl\|pro\)$'
+~endwith
+
+; Syntax descriptions for enscript
+; NOTE: Smalltalk files also may have ".st" suffix.
+define-mode est
+~with define-submode est
+	suf '\.st$'
+	cindent
 ~endwith
 
 ; Embedded SQL in C/C++
@@ -352,6 +360,7 @@ define-mode perl
 ;	fence-fi       '^\s*}'
 ~endwith
 
+; gettext message files
 define-mode pot
 ~with define-submode pot
 	suf '\.\(pot\|po\)$'
@@ -360,6 +369,13 @@ define-mode pot
 	comments       '^#\s*$'
 ~endwith
 
+; PostScript
+define-mode ps
+~with define-submode ps
+	suf '\.ps$'
+~endwith
+
+; Python
 define-mode py
 ~with define-submode py
 	pre '^#\s*!\s*\.*\/.*python\>'
@@ -398,6 +414,12 @@ define-mode RCS
 	filtername 'vile-rcs-filt'
 ~endwith
 
+define-mode rpm
+~with define-submode rpm
+	suf '.spec$'
+~endwith
+
+; (see RCS)
 define-mode SCCS
 ~with define-submode SCCS
 	suf '\<s\.'

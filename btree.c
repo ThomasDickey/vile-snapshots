@@ -1,5 +1,5 @@
 /*
- * $Id: btree.c,v 1.13 2001/12/21 12:32:28 tom Exp $
+ * $Id: btree.c,v 1.14 2002/10/09 19:51:14 tom Exp $
  * Copyright 1997-1999 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
@@ -62,6 +62,7 @@
 # endif
 #else
 # undef TRACE
+# define DEBUG_BTREE -1
 #endif
 
 #if DEBUG_BTREE > 1
@@ -84,7 +85,7 @@
 #define TRACE_SUBTREE(s,h,p)	/*nothing*/
 #endif
 
-#ifdef DEBUG_BTREE
+#if DEBUG_BTREE >= 0
 static int btree_verify(BI_TREE *funcs, BI_NODE *p);
 static void dump_nodes(BI_TREE *funcs, BI_NODE * p, int level);
 #endif
@@ -689,7 +690,7 @@ int btree_freeup(BI_TREE *funcs)
 			TRACE(("Try-delete failed\n"));
 			return 0;
 		}
-#ifdef DEBUG_BTREE
+#if DEBUG_BTREE >= 0
 		TRACE_TREE("AFTER-DELETE, ", funcs);
 		if (!btree_verify(funcs, RLINK(&(funcs->head)))) {
 			TRACE(("Try-verify failed\n"));
@@ -702,7 +703,7 @@ int btree_freeup(BI_TREE *funcs)
 
 /******************************************************************************/
 
-#ifdef DEBUG_BTREE
+#if DEBUG_BTREE >= 0
 
 static int
 btree_verify(BI_TREE *funcs, BI_NODE *p)

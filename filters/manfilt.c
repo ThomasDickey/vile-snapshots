@@ -46,17 +46,17 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.28 2001/08/21 22:25:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.30 2002/10/09 23:38:51 tom Exp $
  *
  */
 
 #include <filters.h>
 
-#if !HAVE_STDLIB_H
-# if !defined(HAVE_CONFIG_H) || MISSING_EXTERN_CALLOC
+#if !defined(HAVE_STDLIB_H)
+# if !defined(HAVE_CONFIG_H) || defined(MISSING_EXTERN_CALLOC)
 extern char *calloc(size_t nmemb, size_t size);
 # endif
-# if !defined(HAVE_CONFIG_H) || MISSING_EXTERN_REALLOC
+# if !defined(HAVE_CONFIG_H) || defined(MISSING_EXTERN_REALLOC)
 extern char *realloc(char *ptr, size_t size);
 # endif
 #endif

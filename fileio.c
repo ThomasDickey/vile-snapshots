@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.168 2002/07/04 22:59:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.169 2002/10/09 19:45:53 tom Exp $
  *
  */
 
@@ -18,7 +18,7 @@
 #include <fcntl.h>
 #endif
 
-#if HAVE_SYS_IOCTL_H
+#ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
 #endif
 
@@ -80,7 +80,7 @@ copy_file(const char *src, const char *dst)
  */
 
 #if SYS_UNIX
-# if ! HAVE_LONG_FILE_NAMES
+# ifndef HAVE_LONG_FILE_NAMES
 #  define MAX_FN_LEN 14
 # else
 #  define MAX_FN_LEN 255
@@ -125,7 +125,7 @@ write_backup_file(const char *orig, char *backup)
 	return s;
 
     /* change date and permissions to match original */
-#if HAVE_UTIMES
+#ifdef HAVE_UTIMES
     /* we favor utimes over utime, since not all implementations (i.e.
        older ones) declare the utimbuf argument.  NeXT, for example,
        declares it as an array of two timevals instead.  we think
@@ -145,7 +145,7 @@ write_backup_file(const char *orig, char *backup)
 	}
     }
 #else
-#if HAVE_UTIME
+#ifdef HAVE_UTIME
     {
 	struct utimbuf buf;
 	buf.actime = ostat.st_atime;
@@ -194,7 +194,7 @@ make_backup(char *fname)
 #if SYS_UNIX
 	} else if (strcmp(gvalfileback, "tilde") == 0) {
 	    t = skip_string(s);
-#if ! HAVE_LONG_FILENAMES
+#ifndef HAVE_LONG_FILE_NAMES
 	    if (t - s >= MAX_FN_LEN) {
 		if (t - s == MAX_FN_LEN &&
 		    s[MAX_FN_LEN - 2] == '.')
@@ -203,7 +203,7 @@ make_backup(char *fname)
 	    }
 #endif
 	    (void) strcpy(t, "~");
-#if SOMEDAY
+#if VILE_SOMEDAY
 	} else if (strcmp(gvalfileback, "tilde_N_existing")) {
 	    /* numbered backups if one exists, else simple */
 	} else if (strcmp(gvalfileback, "tilde_N")) {
@@ -436,7 +436,7 @@ int
 ffaccess(char *fn, UINT mode)
 {
     int status;
-#if HAVE_ACCESS
+#ifdef HAVE_ACCESS
     /* these were chosen to match the SYSV numbers, but we'd rather use
      * the symbols for portability.
      */

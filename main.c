@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.481 2002/08/27 22:47:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.482 2002/10/09 20:06:56 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -115,7 +115,7 @@ MainProgram(int argc, char *argv[])
     int didtag = FALSE;		/* look up a tag to start? */
     char *tname = NULL;
 #endif
-#ifdef DISP_NTCONS
+#if DISP_NTCONS
     int new_console = FALSE;
 #endif
 #if OPT_ENCRYPT
@@ -749,7 +749,7 @@ loop(void)
 	f = FALSE;
 	n = 1;
 
-#if LATERMAYBE
+#if VILE_SOMEDAY
 /* insertion is too complicated to pop in
 	and out of so glibly...   -pgf */
 #ifdef insertmode
@@ -763,7 +763,7 @@ loop(void)
 	    continue;
 	}
 #endif /* insertmode */
-#endif /* LATERMAYBE */
+#endif /* SOMEDAY */
 
 	do_repeats(&c, &f, &n);
 
@@ -1640,8 +1640,8 @@ siginit(void)
 #endif
     setup_handler(SIGSEGV, imdying);
     setup_handler(SIGTERM, imdying);
-/* #define DEBUG 1 */
-#if DEBUG
+/* #define VILE_DEBUG 1 */
+#ifdef VILE_DEBUG
     setup_handler(SIGQUIT, imdying);
 #else
     setup_handler(SIGQUIT, SIG_IGN);
@@ -2446,7 +2446,7 @@ track_free(char *p)
 }
 #endif /* OPT_HEAPSIZE */
 
-#if MALLOCDEBUG
+#ifdef MALLOCDEBUG
 mallocdbg(int f, int n)
 {
     int lvl;

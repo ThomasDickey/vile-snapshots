@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.124 2002/09/02 14:22:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.125 2002/10/09 19:46:05 tom Exp $
  *
  *
  */
@@ -73,7 +73,7 @@ curr_dir_on_drive(int d)
 #endif
 
 #ifdef GMDRESOLVE_LINKS
-#if HAVE_SYS_ITIMER_H && defined(HAVE_SETITIMER)
+#if defined(HAVE_SYS_ITIMER_H) && defined(HAVE_SETITIMER)
 #include <sys/itimer.h>
 #endif
 #endif
@@ -458,7 +458,7 @@ find_user(const char *name)
 	    }
 	}
     }
-#if SYS_UNIX && NEEDED
+#if SYS_UNIX && VILE_NEEDED
     else {			/* lookup all users (for globbing) */
 	(void) setpwent();
 	while ((p = getpwent()) != NULL)
@@ -2208,7 +2208,7 @@ path_trunc(char *path, int max_path_len, char *trunc_buf, int trunc_buf_len)
     return (trunc_buf);
 }
 
-#if HAVE_PUTENV
+#ifdef HAVE_PUTENV
 /*
  * Put the libdir in our path so we do not have to install the filters in the
  * regular $PATH.  If we can do this right after forking, it will not affect

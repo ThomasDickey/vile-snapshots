@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.258 2002/09/02 16:28:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.260 2002/10/09 22:53:42 tom Exp $
  *
  */
 
@@ -46,8 +46,8 @@ static void makebindlist(LIST_ARGS);
 #if OPT_NAMEBST
 static int kbd_complete_bst(unsigned flags, int c, char *buf, unsigned *pos);
 #else
-#define kbd_complete_bst(flags, c, buf, pos) \
-	kbd_complete(flags, c, buf, pos, \
+#define kbd_complete_bst(params) \
+	kbd_complete(params, \
 			(const char *)&nametbl[0], sizeof(nametbl[0]))
 #endif /* OPT_NAMEBST */
 
@@ -2109,7 +2109,7 @@ kbd_putc(int c)
 	}
 	if (!is_header_line(DOT, curbp) && !is_at_end_of_line(DOT))
 	    forwchar(TRUE, 1);	/* END OF LINE HACK */
-#ifdef DEBUG
+#ifdef VILE_DEBUG
 	TRACE(("mini:%2d:%s\n", llength(DOT.l), lp_visible(DOT.l)));
 #endif
     }
@@ -2149,7 +2149,7 @@ kbd_erase(void)
 	DOT.o -= 1;
 	ldelete(1, FALSE);
     }
-#ifdef DEBUG
+#ifdef VILE_DEBUG
     TRACE(("MINI:%2d:%s\n", llength(DOT.l), lp_visible(DOT.l)));
 #endif
     curbp = savebp;

@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.41 2002/01/09 00:32:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.42 2002/10/09 19:46:16 tom Exp $
  *
  */
 
@@ -142,7 +142,7 @@ tb_put(TBUFF ** p, size_t n, int c)
     return (*p = q);
 }
 
-#if NEEDED
+#if VILE_NEEDED
 /*
  * stuff the nth character into the temp-buff -- assumes space already there
  *  it's sort of the opposite of tb_peek
@@ -303,7 +303,7 @@ tb_unput(TBUFF * p)
 
 /*******(iterators)************************************************************/
 
-#if NEEDED
+#if VILE_NEEDED
 /*
  * Reset the iteration-count
  */
@@ -337,7 +337,7 @@ tb_next(TBUFF * p)
 }
 #endif
 
-#if NEEDED
+#if VILE_NEEDED
 /*
  * undo a tb_next
  */

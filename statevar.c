@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.62 2002/09/02 14:26:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.63 2002/10/09 19:36:21 tom Exp $
  */
 
 #include	"estruct.h"
@@ -334,13 +334,13 @@ cfgopts(void)
 # endif
 # ifdef ATHENA_WIDGETS
 	"athena",
-#  if HAVE_LIB_XAW
+#  ifdef HAVE_LIB_XAW
 	"xaw",
 #  endif
-#  if HAVE_LIB_XAW3D
+#  ifdef HAVE_LIB_XAW3D
 	"xaw3d",
 #  endif
-#  if HAVE_LIB_NEXTAW
+#  ifdef HAVE_LIB_NEXTAW
 	"nextaw",
 #  endif
 # endif
@@ -791,7 +791,7 @@ var_FINDCMD(TBUFF ** rp, const char *vp)
 int
 var_FONT(TBUFF ** rp, const char *vp)
 {
-#if SYS_WINNT && defined(DISP_NTWIN)
+#if SYS_WINNT && DISP_NTWIN
     if (rp) {
 	tb_scopy(rp, ntwinio_current_font());
 	return TRUE;

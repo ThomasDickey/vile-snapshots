@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.108 2002/07/02 22:27:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.110 2002/10/11 14:08:53 tom Exp $
  *
  */
 
@@ -759,7 +759,7 @@ yankregion(void)
     return (s);
 }
 
-#if NEEDED
+#if VILE_NEEDED
 int
 _blankchar(int c)
 {
@@ -865,7 +865,7 @@ getregion(REGION * rp)
     if (haveregion) {
 	*rp = *haveregion;
 	haveregion = NULL;
-	return TRUE;
+	return found_region(rp);
     }
 #if OPT_SELECTIONS
     rp->r_attr_id = (USHORT) assign_attr_id();

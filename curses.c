@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.16 2002/01/09 00:23:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.17 2002/10/09 19:40:21 tom Exp $
  */
 
 #include	"estruct.h"
@@ -127,7 +127,7 @@ initialize(void)
     if (has_colors()) {
 	can_color = TRUE;
 	start_color();
-#if HAVE_USE_DEFAULT_COLORS
+#ifdef HAVE_USE_DEFAULT_COLORS
 	use_default_colors();
 #endif
 	set_colors(COLORS);
@@ -328,7 +328,7 @@ set_bkgd_colors(int fg, int bg)
 {
     int pair;
 
-#if HAVE_USE_DEFAULT_COLORS
+#ifdef HAVE_USE_DEFAULT_COLORS
     /*
      * ncurses supports the use of default colors, which we can specify
      * in the init_pair() function at the expense of specifying all of the
@@ -403,7 +403,7 @@ curs_attr(UINT attr)
 	if (attr & VACOLOR) {
 	    fg = VCOLORNUM(attr);
 	    bg = gbcolor;
-#if HAVE_USE_DEFAULT_COLORS
+#ifdef HAVE_USE_DEFAULT_COLORS
 	    if (is_default(bg)) {
 		pair = fg * COLORS;
 		init_pair(pair, fg, -1);

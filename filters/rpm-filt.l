@@ -1,17 +1,17 @@
-%x NORMAL HEREDOC QUOTED QUOTED2 SUBST
+%x META TEXT NORMAL HEREDOC QUOTED QUOTED2 SUBST
 
 %o6000
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.49 2002/10/15 23:22:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.1 2002/10/11 18:03:19 tom Exp $
  *
- * Filter to add vile "attribution" sequences to selected bits of Shell script.
+ * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
 
 #include <filters.h>
 
-DefineFilter("sh");
+DefineFilter("rpm");
 
 #define isQuote(ch) (ch != 0 && strchr("\\'\"", ch) != 0)
 
@@ -22,49 +22,49 @@ static char *Ident_attr;
 static char *Number_attr;
 static char *String_attr;
 
+static void
+begin_section(char *name)
+{
+    WriteToken(keyword_attr(name));
+    if (!strcmp(name, "%description")
+     || !strcmp(name, "%changelog")) {
+	BEGIN(TEXT);
+    } else {
+	BEGIN(NORMAL);
+    }
+}
+
+static char *
+meta_variable(char *name)
+{
+    char *attr = keyword_attr(name);
+    return (attr != 0) ? attr : Ident_attr;
+}
+
 /*
  * We do not need much of a stack, since not much is recursive.  Just in case,
  */
-typedef struct {
-    int backtic;
-    int state;
-} STACK;
-static STACK * stk_state;
-static int stk_limit;
+#define STK_LENGTH 20
+static int stk_state[STK_LENGTH];
 static int stk_level;
 
 static void
 pop_stk(void)
 {
     int state = NORMAL;
-    if (--stk_level >= 0)
-	state = stk_state[stk_level].state;
+    if (--stk_level < STK_LENGTH) {
+	if (stk_level >= 0)
+	    state = stk_state[stk_level];
+    }
     BEGIN(state);
 }
 
 static void
 push_stk(int state)
 {
-    if (++stk_level >= stk_limit) {
-	unsigned have = sizeof(STACK) * stk_limit;
-	unsigned want = sizeof(STACK) * (stk_limit += (20 + stk_level));
-	stk_state = (STACK *) do_alloc((void *)stk_state, want, &have);
-    }
-    stk_state[stk_level].state = state;
-    stk_state[stk_level].backtic = 0;
+    if (++stk_level < STK_LENGTH)
+	stk_state[stk_level] = state;
     BEGIN(state);
-}
-
-static void
-handle_backtic(void)
-{
-    if (stk_state[stk_level].backtic) {
-	pop_stk();
-    } else {
-	flt_bfr_finish();
-	push_stk(NORMAL);
-	stk_state[stk_level].backtic = 1;
-    }
 }
 
 static int strip_tabs;
@@ -96,7 +96,7 @@ static int
 embed_or_append(char *text, int length)
 {
     if (here_exp) {
-	flt_bfr_embed(text, length, Ident_attr);
+	flt_bfr_embed(text, length, meta_variable(yytext));
     } else {
 	flt_bfr_append(text, length);
     }
@@ -159,9 +159,9 @@ do_filter(FILE *input)
     String_attr  = class_attr(NAME_LITERAL);
 
     here_exp = 0;
-    stk_level = -1;
-    push_stk(NORMAL);
+    stk_state[stk_level = 0] = NORMAL;
 
+    BEGIN(NORMAL);
     while (yylex() > 0) {
     }
     flt_bfr_error();
@@ -180,21 +180,33 @@ WILDCARD	(\?|\*)
 WILDNAME	({NAME}|{WILDCARD})
 FILENAME	(([./]{WILDNAME}+)|({WILDNAME}+[./]{WILDNAME}*)|({NAME}*{WILDCARD})|\.+\/+)+
 
-BACKTIC		`
-ACTION		[\.{}]
+ACTION		[\.`{}]
 IDENT		[a-zA-Z_]{NAME}*
 QIDENT		({SSTRING}|{DSTRING}|[^ \"'$\t\n])+
 IDENT0		[-]+[0-9]*[a-zA-Z_-]+[0-9a-zA-Z_-]*
-IDENT1		\${NAME}+
-IDENT2		\$\{{IDENT}\}
-IDENT2L		\$\{{IDENT}
+IDENT1		[%$]{NAME}+
+IDENT2		[%$]\{{IDENT}\}
+IDENT2L		[%$]\{{IDENT}
 IDENT2R		\}
 IDENTEQLS	[a-zA-Z_]{NAME}*=
 IDENTX		\$[\*@#\?\$!-]
 
 INTEGER		[-+]?([0-9]+)
 
+SECTION		%{IDENT}
+
 %%
+
+<NORMAL>{SECTION}	{ begin_section(yytext); }
+
+<TEXT>[^\n \t]*		{ if (*yytext == '%') {
+			      begin_section(yytext);
+			  } else {
+			      WriteToken(String_attr);
+			  }
+			}
+<TEXT>{SPACE}		{ ECHO; }
+<TEXT>\n		{ ECHO; }
 
 <NORMAL>{IDENT0}	|
 <NORMAL>{FILENAME}	{ ECHO; /* exclude from other classes */ }
@@ -205,17 +217,16 @@ INTEGER		[-+]?([0-9]+)
 
 <NORMAL>^{SPACE}*:	{ color_delimiter(yytext, yyleng, Action_attr); }
 
-<NORMAL>{BACKTIC}	{ handle_backtic(); WriteToken(Action_attr); }
 <NORMAL>{ACTION}	{ WriteToken(Action_attr); }
 
 <NORMAL>{INTEGER}	{ WriteToken(Number_attr); }
 
 <NORMAL>{IDENT1}	|
-<NORMAL>{IDENT2}	{ WriteToken(Ident_attr); }
-<NORMAL>{IDENT2L}	{ WriteToken(Ident_attr); push_stk(SUBST); }
-<NORMAL>{IDENTX}	{ WriteToken(Ident_attr); }
+<NORMAL>{IDENT2}	{ WriteToken(meta_variable(yytext)); }
+<NORMAL>{IDENT2L}	{ WriteToken(meta_variable(yytext)); push_stk(SUBST); }
+<NORMAL>{IDENTX}	{ WriteToken(meta_variable(yytext)); }
 
-<NORMAL>{IDENTEQLS}	{ flt_puts(yytext, yyleng-1, Ident_attr); flt_putc('='); }
+<NORMAL>{IDENTEQLS}	{ flt_puts(yytext, yyleng-1, meta_variable(yytext)); flt_putc('='); }
 
 <NORMAL>\\.		|
 <NORMAL>{SSTRING}	{ WriteToken(String_attr); }
@@ -239,7 +250,6 @@ INTEGER		[-+]?([0-9]+)
 				: String_attr);
 			    flt_bfr_begin(String_attr);
 			}
-<HEREDOC>{BACKTIC}	{ handle_backtic(); WriteToken(Action_attr); }
 <HEREDOC>\\\$		{ flt_bfr_append(yytext, yyleng); }
 <HEREDOC>{IDENT1}	|
 <HEREDOC>{IDENT2}	{ embed_or_append(yytext, yyleng); }
@@ -263,19 +273,16 @@ INTEGER		[-+]?([0-9]+)
 <HEREDOC>\n		{ flt_bfr_append(yytext, yyleng); }
 <HEREDOC>.		{ flt_bfr_append(yytext, yyleng); }
 
-<QUOTED>{BACKTIC}	{ handle_backtic(); WriteToken(Action_attr); }
 <QUOTED>\\		{ flt_bfr_embed(yytext, yyleng, Action_attr); push_stk(QUOTED2); }
 <QUOTED>{IDENT1}	|
-<QUOTED>{IDENT2}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); }
+<QUOTED>{IDENT2}	{ flt_bfr_embed(yytext, yyleng, meta_variable(yytext)); }
 <QUOTED>{IDENT2L}	{ if (embed_or_append(yytext, yyleng)) push_stk(SUBST); }
 <QUOTED>[^\n\\\"$]+	{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>[\n$]		{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>\"		{ FinishQuote(NORMAL); pop_stk(); }
 
-<QUOTED2>{BACKTIC}	{ handle_backtic(); WriteToken(Action_attr); }
 <QUOTED2>(.|\n)		{ flt_bfr_embed(yytext, yyleng, Action_attr); pop_stk(); }
 
-<SUBST>{BACKTIC}	{ WriteToken(Action_attr); handle_backtic(); }
-<SUBST>{IDENT2R}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); pop_stk(); }
+<SUBST>{IDENT2R}	{ flt_bfr_embed(yytext, yyleng, meta_variable(yytext)); pop_stk(); }
 <SUBST>\"		{ push_stk(QUOTED); BeginQuote(QUOTED, String_attr); }
 <SUBST>[^"}]+		{ flt_bfr_embed(yytext, yyleng, ""); }

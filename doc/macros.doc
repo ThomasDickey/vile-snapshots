@@ -805,12 +805,22 @@ Functions
 	    &or	    "B1" "B2"	    Return logical OR of "B1" and "B2".
 
 	    &equal  "N1" "N2"	    Is "N1" numerically equal to "N2"?
-	    &less   "N1" "N2"	    Is "N1" numerically less than "N2"?
+	    &geq    "N1" "N2"	    Is "N1" numerically not less than "N2"?
 	    &greater "N1" "N2"	    Is "N1" numerically greater than "N2"?
+	    &gt	    "N1" "N2"	    (same as &greater)
+	    &leq    "N1" "N2"	    Is "N1" numerically not greater than "N2"?
+	    &lessthan "N1" "N2"     Is "N1" numerically less than "N2"?
+	    &lt	    "N1" "N2"	    (same as &lessthan)
+	    &neq    "N1" "N2"	    Is "N1" numerically not equal to "N2"?
 
 	    &sequal "S1" "S2"	    Is "S1" the same string as "S2"?
-	    &sless  "S1" "S2"	    Is "S1" lexically less than "S2"?
-	    &sgreater "S1" "S2"     Is "S1" lexically greater or equal to "S2"?
+	    &sgeq   "S1" "S2"	    Is "S1" lexically not less than "S2"?
+	    &sgreater "S1" "S2"     Is "S1" lexically greater than "S2"?
+	    &sgt    "S1" "S2"       (same as &slessthan)
+	    &sleq   "S1" "S2"       Is "S1" lexically not greater than "S2"?
+	    &slessthan "S1" "S2"    Is "S1" lexically less than "S2"?
+	    &slt    "S1" "S2"       (same as &slessthan)
+	    &sneq   "S1" "S2"       Is "S1" lexically not equal to "S2"?
 
 	    &readable "S"
 	    &rd	    "S"		    Is the named file "S" readable?
@@ -1432,6 +1442,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.85 2002/09/02 14:55:15 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.86 2002/10/15 20:25:05 tom Exp $
 -----------------------------------
 

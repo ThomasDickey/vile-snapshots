@@ -7,7 +7,7 @@
  *	To do:	add 'itb_ins()' and 'itb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/itbuff.c,v 1.15 2002/04/30 23:29:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/itbuff.c,v 1.16 2002/10/09 19:45:53 tom Exp $
  *
  */
 
@@ -196,7 +196,7 @@ itb_bappend(ITBUFF ** p, const char *s, size_t len)
     return *p;
 }
 
-#if NEEDED
+#if VILE_NEEDED
 /*
  * append a string to the temp-buff
  */
@@ -274,7 +274,7 @@ itb_get(ITBUFF * p, size_t n)
     return c;
 }
 
-#if NEEDED
+#if VILE_NEEDED
 /*
  * undo the last 'itb_put'
  */
@@ -353,7 +353,7 @@ itb_last(ITBUFF * p)
     return esc_c;
 }
 
-#if NEEDED
+#if VILE_NEEDED
 /*
  * undo a itb_next
  */

@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.102 2002/07/03 00:02:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.103 2002/10/09 00:55:44 tom Exp $
  *
  */
 
@@ -1152,52 +1152,61 @@ winit(int screen)
  * curwp is set to the new fake window.  A pointer to the old curwp is returned
  * for a later call to pop_fake_win() which will restore curwp.
  */
-
 WINDOW *
 push_fake_win(BUFFER *bp)
 {
-    WINDOW *oldwp = curwp;
+    WINDOW *oldwp = 0;
     WINDOW *wp;
-    if ((wp = typecalloc(WINDOW)) == NULL) {
-	(void) no_memory("WINDOW");
-	return NULL;
-    }
-    curwp = wp;
-    curwp->w_bufp = bp;
-    if ((wp = bp2any_wp(bp)) == NULL)
-	copy_traits(&(curwp->w_traits), &(bp->b_wtraits));
-    else
-	copy_traits(&(curwp->w_traits), &(wp->w_traits));
-    curwp->w_flag = 0;
-    curwp->w_force = 0;
-    curwp->w_toprow = wheadp->w_toprow - 2;	/* should be negative */
-    curwp->w_ntrows = 1;
-    curwp->w_wndp = wheadp;
+
+    if (bp != 0) {
+	if ((wp = typecalloc(WINDOW)) == NULL) {
+	    (void) no_memory("WINDOW");
+	} else {
+	    oldwp = curwp;
+	    curwp = wp;
+	    curwp->w_bufp = bp;
+	    if ((wp = bp2any_wp(bp)) == NULL)
+		copy_traits(&(curwp->w_traits), &(bp->b_wtraits));
+	    else
+		copy_traits(&(curwp->w_traits), &(wp->w_traits));
+	    curwp->w_flag = 0;
+	    curwp->w_force = 0;
+	    curwp->w_toprow = wheadp->w_toprow - 2;	/* should be negative */
+	    curwp->w_ntrows = 1;
+	    curwp->w_wndp = wheadp;
 #if OPT_PERL || OPT_TCL
-    curwp->w_id = FAKE_WINDOW_ID;
+	    curwp->w_id = FAKE_WINDOW_ID;
 #endif
-    wheadp = curwp;
-    curbp = curwp->w_bufp;
+	    wheadp = curwp;
+	    curbp = curwp->w_bufp;
+	}
+    }
     return oldwp;
 }
 
 /*
  * kill top fake window allocated by alloc_fake_win;
  *
- * Set curwp to the oldwp parameter.
+ * Set curwp to the oldwp parameter.  We may have saved curbp in oldbp, so try
+ * to restore curbp to that value.  But we may not, so try restoring it to the
+ * buffer associated with the new curwp.  In either case, check that the buffer
+ * still exists in case the bracketed code clobbered the buffer.
  *
  * Return 0 if no fake window popped, else return the buffer pointer
  * of the popped window.
  *
  */
 BUFFER *
-pop_fake_win(WINDOW *oldwp)
+pop_fake_win(WINDOW *oldwp, BUFFER *oldbp)
 {
     WINDOW *wp;
     BUFFER *bp;
 
     curwp = oldwp;
-    curbp = oldwp->w_bufp;
+    if (find_bp(oldbp) != 0)
+	curbp = oldbp;
+    else if (find_bp(oldwp->w_bufp) != 0)
+	curbp = oldwp->w_bufp;
 
     wp = wheadp;
     if (wp->w_toprow >= 0)

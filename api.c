@@ -756,7 +756,7 @@ api_command_cleanup(void)
 
     /* Pop the fake windows */
 
-    while ((bp = pop_fake_win(curwp_visible)) != NULL) {
+    while ((bp = pop_fake_win(curwp_visible, (BUFFER *) 0)) != NULL) {
 	if (bp2vbp(bp) != NULL) {
 	    bp2vbp(bp)->fwp = 0;
 	    bp2vbp(bp)->dot_inited = 0;		/* for next time */
