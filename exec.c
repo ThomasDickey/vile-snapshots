@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.130 1996/10/19 15:47:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.131 1996/11/07 02:00:25 tom Exp $
  *
  */
 
@@ -1405,7 +1405,10 @@ begin_directive(
 		} else {
 			ifstk.level--;
 			if (ifstk.disabled > ifstk.level)
-				ifstk.disabled = ifstk.level;
+			{
+				ifstk.disabled = 0;
+				ifstk.fired = TRUE;
+			}
 		}
 		break;
 

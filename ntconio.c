@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.17 1996/08/13 02:10:07 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.18 1996/11/07 02:00:25 tom Exp $
  *
  */
 
@@ -492,7 +492,7 @@ decode_key_event(INPUT_RECORD *irp)
 	if (!irp->Event.KeyEvent.bKeyDown)
 		return -1;
 
-	key = irp->Event.KeyEvent.uChar.AsciiChar;
+	key = (unsigned char) irp->Event.KeyEvent.uChar.AsciiChar;
 	if (key != 0)
 		return key;
 

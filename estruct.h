@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.292 1996/10/30 13:58:58 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.293 1996/11/07 02:00:25 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -621,6 +621,7 @@ extern char *rindex (const char *s, int c);
 
 #if SYS_VMS
 #define	unlink(a)	delete(a)
+#define tempnam		vile_tempnam
 #endif
 
 #if SYS_OS2 && CC_WATCOM

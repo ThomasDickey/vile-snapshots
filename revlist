@@ -1,6 +1,6 @@
-revlist for vile, version v6_2d
+revlist for vile, version v6_2e
 --------------------------------------------------------------------------------
-CHANGES	1.16
+CHANGES	1.17
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -14,7 +14,7 @@ aclocal.m4	1.21
 ansi.c	1.28
 basic.c	1.92
 bind.c	1.140
-borland.c	1.17
+borland.c	1.18
 buffer.c	1.150
 buglist	1.316
 c-filt.c	1.1
@@ -26,17 +26,17 @@ configure	none
 configure.in	1.45
 crypt.c	1.15
 csrch.c	1.26
-descrip.mms	1.31
+descrip.mms	1.32
 digraphs.rc	1.2
-dirstuff.h	1.22
+dirstuff.h	1.23
 display.c	1.220
 djhandl.c	1.5
 dumbterm.c	1.8
 edef.h	1.201
 epath.h	1.20
-estruct.h	1.292
+estruct.h	1.293
 eval.c	1.135
-exec.c	1.130
+exec.c	1.131
 externs.c	1.5
 fences.c	1.39
 file.c	1.198
@@ -74,19 +74,19 @@ modes.c	1.78
 modetbl	1.73
 msgs.c	1.14
 npopen.c	1.53
-ntconio.c	1.17
+ntconio.c	1.18
 oneliner.c	1.82
 opers.c	1.56
 os2pipe.c	1.1
 os2vio.c	1.8
-patchlev.h	1.12
+patchlev.h	1.13
 path.c	1.75
 pictmode.rc	1.1
 proto.h	1.229
 random.c	1.182
 regexp.c	1.60
 region.c	1.79
-revlist	v6_2d
+revlist	v6_2e
 search.c	1.104
 select.c	1.51
 spawn.c	1.114

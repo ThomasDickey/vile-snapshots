@@ -9,7 +9,7 @@
  * Note: Visual flashes are not yet supported.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.17 1996/04/14 23:37:50 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.18 1996/11/07 02:00:25 tom Exp $
  *
  */
 
@@ -73,7 +73,7 @@ int	ctrans[NCOLORS];
 char *initpalettestr = "0 4 2 14 1 5 3 7";  /* 15 is too bright */
 /* black, red, green, yellow, blue, magenta, cyan, white   */
 
-extern	void	borscroll (int,int,int);
+static	void	borscroll (int,int,int);
 
 static	int	scinit    (int);
 
@@ -162,7 +162,7 @@ TERM    term    = {
 	null_t_title,
 };
 
-#ifdef OPT_ICURSOR
+#if OPT_ICURSOR
 static void
 boricursor(int cmode)
 {
@@ -360,7 +360,7 @@ borkclose(void)	/* close the keyboard */
 	/* ms_deinstall(); */
 }
 
-static static
+static
 int borttgetc(void)
 {
 	return (borlastchar = ttgetc());
