@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.309 1996/06/09 02:52:26 pgf Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.311 1996/07/17 15:01:40 pgf Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -976,4 +976,47 @@ vile may someday conflict if we want to spawn stuff in the background
 in VMS or win32 vile.  clearly the expansion chars should be made
 selectable.  not a big deal yet....
 
+
+--------------
+
+if a buffer contains a line that is exactly 80 chars long, and the 80th char is
+a control character, and so therefore takes 2 display columns, vile correctly
+puts in the '>' because the char can't be displayed, but there's no way to force
+the buffer "over" so you can see what the character really is.
+
+------------------------
+ when i run xvile with resources in /usr/lib/X11/app-defaults/XVile,
+ the resources are used and work just fine, but the scrollbar and
+ resize widget are dead to the mouse.  the cursor changes to the
+ double-arrow, but, um, 'clicks' are ignored.
+
+ if i put the resources in .Xdefaults, everything works fine, including
+ the scrollbar.
+
+ vaxstation 3100, vax ultrix 4.4, R5ish X server.  this was the
+ plain Xt xvile.
+
+ i don't know if this is new to 6.0 -- i'm an optimistic upgrader and
+ already removed my old versions.
+
+ ----------------------
+
+building on solaris 2.4, the MISSING_EXTERN_ENVIRON isn't picked up.  also,
+the Xt link fails in configure.
+
+ ----------------------
+
+    % ls -l ../Makeit.mk Makeit.mk 
+    -rw-rw-r--   1 gregm    nmsse       1006 Jul  8 15:16 ../Makeit.mk
+    -rw-rw-r--   1 gregm    nmsse       1009 Jul  8 15:16 Makeit.mk
+    % vile Makeit.mk  ../Makeit.mk
+      <every thing is fine>
+    % vile ../Makeit.mk Makeit.mk 
+      <vile only sees one file - ../Makeit.mk !>
+
+------------"
+
+Global "cmode" is on.  Edit a new (empty) buffer.  "cmode" is off for that
+buffer.  Do a ":unsetl cmode".  This should have no affect.  What it actually
+does is turn "cmode" on!
 

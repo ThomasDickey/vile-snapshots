@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.191 1996/05/22 22:54:16 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.192 1996/06/28 20:39:04 pgf Exp $
  *
  */
 
@@ -801,7 +801,7 @@ int	mflg)		/* print messages? */
 #if OPT_PROCEDURES
 	if (s <= FIOEOF) {
 	    static int readhooking;
-	    if (!readhooking && *readhook) {
+	    if (!readhooking && *readhook && !b_is_temporary(bp)) {
 		    readhooking = TRUE;
 		    run_procedure(readhook);
 		    readhooking = FALSE;

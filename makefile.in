@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.68 1996/06/18 21:53:55 pgf Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.70 1996/07/11 15:03:56 pgf Exp $
 #
 
 #### Start of system configuration section. ####
@@ -102,7 +102,7 @@ DOCS = vile.hlp vile.1 macros.doc
 
 # miscellaneous text files
 TEXTFILES = README README.CFG README.PC \
-	INSTALL CHANGES CHANGES.R4 CHANGES.R3 \
+	INSTALL CHANGES CHANGES.R5 CHANGES.R4 CHANGES.R3 \
 	buglist revlist patchlev.h COPYING
 
 VILESRC = main.c basic.c bind.c buffer.c crypt.c csrch.c \
@@ -150,9 +150,12 @@ OBJ = $(SCREEN).o \
 
 all:	$(TARGET) vile-manfilt vile-c-filt
 
-$(TARGET): $(BUILTHDRS) $(OBJ)
+$(TARGET): $(BUILTHDRS) $(OBJ) vile.man
 	-mv $(TARGET) o$(TARGET)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $(TARGET) $(OBJ) $(X_LIBS) $(LIBS)
+
+vile.man: vile.1
+	nroff -man vile.1 | col -b >vile.man
 
 vile-manfilt: manfilt.o
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o vile-manfilt manfilt.o

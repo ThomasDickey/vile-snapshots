@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.15 1996/04/14 23:37:50 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.16 1996/07/17 15:01:28 pgf Exp $
  *
  */
 
@@ -48,6 +48,7 @@ static	void	nttitle		(char *);
 #endif
 
 static HANDLE hConsoleOutput;		/* handle to the console display */
+static HANDLE hOldConsoleOutput;	/* handle to the old console display */
 static HANDLE hConsoleInput;
 static CONSOLE_SCREEN_BUFFER_INFO csbi;
 static WORD originalAttribute;
@@ -355,8 +356,19 @@ static void
 ntopen(void)
 {
 	set_palette(initpalettestr);
+	hOldConsoleOutput = 0;
 	hConsoleOutput = GetStdHandle(STD_OUTPUT_HANDLE);
 	GetConsoleScreenBufferInfo(hConsoleOutput, &csbi);
+	if (csbi.dwMaximumWindowSize.Y !=
+	    csbi.srWindow.Bottom - csbi.srWindow.Top + 1
+	    || csbi.dwMaximumWindowSize.X !=
+	    csbi.srWindow.Right - csbi.srWindow.Left + 1) {
+		hOldConsoleOutput = hConsoleOutput;
+		hConsoleOutput = CreateConsoleScreenBuffer(GENERIC_READ|GENERIC_WRITE,
+			0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+		SetConsoleActiveScreenBuffer(hConsoleOutput);
+		GetConsoleScreenBufferInfo(hConsoleOutput, &csbi);
+	}
 	originalAttribute = csbi.wAttributes;
 	crow = csbi.dwCursorPosition.Y;
 	ccol = csbi.dwCursorPosition.X;
@@ -382,6 +394,8 @@ ntclose(void)
 	ntflush();
 	SetConsoleTextAttribute(hConsoleOutput, originalAttribute);
 	SetConsoleCtrlHandler(nthandler, FALSE);
+	if (hOldConsoleOutput)
+		SetConsoleActiveScreenBuffer(hOldConsoleOutput);
 }
 
 static void
@@ -395,6 +409,8 @@ ntkopen(void)	/* open the keyboard */
 		orig_title_set = TRUE;
 		GetConsoleTitle(orig_title, sizeof(orig_title));
 	}
+	if (hConsoleOutput)
+		SetConsoleActiveScreenBuffer(hConsoleOutput);
 	keyboard_open = TRUE;
 }
 
@@ -408,6 +424,8 @@ ntkclose(void)	/* close the keyboard */
 	GetConsoleTitle(old_title, sizeof(old_title));
 	if (orig_title_set)
 		SetConsoleTitle(orig_title);
+	if (hOldConsoleOutput)
+		SetConsoleActiveScreenBuffer(hOldConsoleOutput);
 }
 
 static struct {
