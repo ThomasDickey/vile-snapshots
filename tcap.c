@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.118 1999/06/07 00:33:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.119 1999/08/30 00:25:08 tom Exp $
  *
  */
 
@@ -162,7 +162,6 @@ static const struct {
 #endif
 
 static int  colors_are_really_ANSI (void);
-static void putnpad(char *str, int n);
 static void putpad(char *str);
 static void tcapbeep (void);
 static void tcapclose (void);
@@ -398,8 +397,13 @@ tcapopen(void)
 #endif
 	for (i = 0; i < TABLESIZE(tc_strings); i++) {
 		/* allow aliases */
-		if (NO_CAP(*(tc_strings[i].data)))
+		if (NO_CAP(*(tc_strings[i].data))) {
 		    *(tc_strings[i].data) = TGETSTR(tc_strings[i].name, &p);
+		    TRACE(("TGETSTR(%s) = %s\n", tc_strings[i].name, 
+			    (*(tc_strings[i].data) != 0)
+			    	? *(tc_strings[i].data)
+				: "<null>"))
+		}
 		/* simplify subsequence checks */
 		if (NO_CAP(*(tc_strings[i].data)))
 		    *(tc_strings[i].data) = 0;
@@ -568,7 +572,7 @@ tcapkopen(void)
 	if (!keyboard_open) {
 		keyboard_open = TRUE;
 		if (tc_TI) {
-			putnpad(tc_TI, (int)strlen(tc_TI));
+			putpad(tc_TI);
 			ttrow = ttcol = -1;	/* 'ti' may move the cursor */
 		}
 		if (tc_KS)
@@ -587,7 +591,7 @@ tcapkclose(void)
 	if (keyboard_open) {
 		keyboard_open = FALSE;
 		if (tc_TE)
-			putnpad(tc_TE, (int)strlen(tc_TE));
+			putpad(tc_TE);
 		if (tc_KE)
 			putpad(tc_KE);
 	}
@@ -1059,13 +1063,6 @@ putpad(char *str)
 {
 	tputs(str, 1, ttputc);
 }
-
-static void
-putnpad(char *str, int n)
-{
-	tputs(str, n, ttputc);
-}
-
 
 
 #if OPT_XTERM

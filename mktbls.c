@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.101 1999/08/20 00:54:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.102 1999/08/27 11:16:53 tom Exp $
  *
  */
 
@@ -1030,8 +1030,10 @@ dump_bindings(void)
 	for (p = all_kbind; p; p = p->nst) {
 		WriteIf(nebind, p->Cond);
 		Sprintf(temp, "\t%c %s,", L_CURL, p->Name);
-		Fprintf(nebind, "%s&f_%s, NULL %c,\n",
-			PadTo(32, temp), p->Func, R_CURL);
+		PadTo(32, temp);
+		Sprintf(temp + strlen(temp), "&f_%s", p->Func);
+		PadTo(56, temp);
+		Fprintf(nebind, "%sKBIND_LINK(NULL) %c,\n", temp, R_CURL);
 	}
 	FlushIf(nebind);
 	if (all_w32bind)
@@ -1040,13 +1042,13 @@ dump_bindings(void)
 		for (p = all_w32bind; p; p = p->nst) {
 			WriteIf(nebind, p->Cond);
 			Sprintf(temp, "\t%c %s,", L_CURL, p->Name);
-			Fprintf(nebind, "%s&f_%s, NULL %c,\n",
+			Fprintf(nebind, "%s&f_%s KBIND_LINK(NULL) %c,\n",
 				PadTo(32, temp), p->Func, R_CURL);
 		}
 		FlushIf(nebind);
 	}
 
-	Fprintf(nebind,"\t{ 0, NULL, NULL }\n");
+	Fprintf(nebind,"\t{ 0, NULL KBIND_LINK(NULL) }\n");
 	Fprintf(nebind,"%c;\n", R_CURL);
 
 }

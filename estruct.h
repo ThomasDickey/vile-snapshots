@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.409 1999/08/21 16:11:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.411 1999/08/29 23:29:01 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -253,8 +253,7 @@
 #endif
 #endif
 
-#if HAVE_SYS_TIME_H && ! SYSTEM_LOOKS_LIKE_SCO
-/* on SCO, sys/time.h conflicts with select.h, and we don't need it */
+#if HAVE_SYS_TIME_H && (SELECT_WITH_TIME || !(HAVE_SELECT_H || HAVE_SYS_SELECT_H))
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
 # include <time.h>
@@ -263,10 +262,7 @@
 #include <time.h>
 #endif
 
-#if HAVE_SYS_RESOURCE_H && ! SYSTEM_LOOKS_LIKE_SCO
-/* On SunOS, struct rusage is referred to in <sys/wait.h>.  struct rusage
-   is defined in <sys/resource.h>.   NeXT may be similar.  On SCO,
-   resource.h needs time.h, which we excluded above.  */
+#if RESOURCE_WITH_WAIT
 #include <sys/resource.h>
 #endif
 
@@ -2191,6 +2187,13 @@ typedef struct {
  *	The asciitbl array, and the kbindtbl array are generated automatically
  *	from the cmdtbl file, and can be found in the file nebind.h
  */
+
+#if OPT_REBIND
+#define KBIND_LINK(code) ,code
+#else
+#define KBIND_LINK(code) /*nothing*/
+#endif
+
 typedef struct  k_bind {
 #if !SYS_WINNT
 	short	k_code; 		/* Key code			*/

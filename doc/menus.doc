@@ -1,4 +1,4 @@
--- $Header: /users/source/archives/vile.vcs/doc/RCS/menus.doc,v 1.3 1999/06/15 00:25:33 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/menus.doc,v 1.4 1999/08/30 00:16:48 tom Exp $
 -- adapted from description by Philippe Chassany (20/02/1997)
 -- e-mail: phil@cln46ks.der.edf.fr
 
@@ -63,11 +63,10 @@ S
 B:Search Forward...:cmd search-forward
 B:Search Backward...:cmd search-reverse
 S
-# [Macro 29] is defined by manfilt.rc
-B:Manual for...:29
+B:Manual for...:cmd ShowManpage
 S
 B:Files:capture-command "ls -l"
-B:Processes:capture-command "ps af"
+B:Processes:capture-command "ps"
 B:Users:capture-command "w"
 #
 C:Buffers

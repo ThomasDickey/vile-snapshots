@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.165 1999/08/06 12:05:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.166 1999/08/29 22:19:16 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -112,7 +112,7 @@ int kbd_char_good;	/* is a char in kbd_char?			*/
  * putting the input tty in polling mode lets us check for
  * user typeahead
  */
-void
+static void
 set_kbd_polling(int yes)
 {
 	static int kbd_flags = -1;	/* initial keyboard flags	*/

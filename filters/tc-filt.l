@@ -1,9 +1,9 @@
-%s DESC GAPS CAPS VALS
+%s DESC GAPS CAPS VALS LINK
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.5 1999/03/07 19:21:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.8 1999/08/29 20:04:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
@@ -24,12 +24,38 @@ static int commented;
 static char *
 check_name(char *name)
 {
-    char *attr = keyword_attr(name);
+    char temp[3];
+    char *attr;
+
+    strncpy(temp, name, 2);
+    temp[2] = 0;
+    attr = keyword_attr(temp);
     if (attr == 0)
 	attr = "";
     if (strcmp(attr, Keyword_attr))
     	attr = Action_attr;
     return attr;
+}
+
+static void
+write_capname(char *name, int len)
+{
+    write_token(yyout, name, (len >= 2) ? 2 : len, check_name(name));
+    if (len > 2) {
+	char *attr = Action_attr;
+	if (len == 3 && name[2] == '@')
+	    attr = "";
+	write_token(yyout, name + 2, len - 2, attr);
+    }
+}
+
+static void
+begin_value(char *name)
+{
+    if (!strcmp(name, "tc"))
+	BEGIN(LINK);
+    else
+	BEGIN(VALS);
 }
 
 void
@@ -57,23 +83,27 @@ do_filter(FILE *input, FILE *output)
 %}
 
 BLANK		[ \t]
-CAPCHAR		[^# \t\n:=]
-CAPNAME		{CAPCHAR}{CAPCHAR}
+CAPCHAR		[^\.|# \t\n:=]
+CAPNAME		{CAPCHAR}+
 DOTNAME		(\.)+{CAPNAME}
 
-ALIAS		[a-zA-Z0-9-]+
+ALIAS		[a-zA-Z_\.0-9-]+
 
 NUMBER		"#"[0-9]+
-STRING		(\\[:]|[^:])*
+STRING		(\\[:]|\\\n|[^:\n])*
 
 %%
 
 ^"#"[^\n]*			{ WriteToken(Comment_attr); }
+\n\n				{ ECHO; BEGIN(INITIAL); }
 
-^({ALIAS}"|")*			{ WriteToken(Ident_attr); BEGIN(DESC); }
+^({ALIAS}"|"|(\\\n\t)*)*	{ WriteToken(Ident_attr); BEGIN(DESC); }
+^{ALIAS}:			{ WriteToken(Ident_attr); BEGIN(GAPS); }
+
 <DESC>[^:\n]*			{ WriteToken(Comment_attr); BEGIN(GAPS); }
 <GAPS,VALS>(:|:\\\n\t)*		{ commented=0; ECHO; BEGIN(CAPS); }
-<CAPS>{CAPNAME}			{ WriteToken(check_name(yytext)); BEGIN(VALS); }
-<CAPS>{DOTNAME}			{ WriteToken(Comment_attr); commented = 1; BEGIN(VALS); }
+<CAPS>{CAPNAME}			{ write_capname(yytext, yyleng); begin_value(yytext); }
+<CAPS>{DOTNAME}			{ WriteToken(Comment_attr); commented = 1; begin_value(yytext); }
 <VALS>{NUMBER}			{ WriteToken(commented ? Comment_attr : Number_attr); BEGIN(GAPS); }
 <VALS>{STRING}			{ WriteString(commented ? Comment_attr : String_attr); BEGIN(GAPS); }
+<LINK>{STRING}			{ WriteString(commented ? Comment_attr : Ident_attr); BEGIN(GAPS); }

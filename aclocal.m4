@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.73 1999/08/17 11:26:17 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.74 1999/08/30 01:35:34 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -261,6 +261,34 @@ fi
 
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl Check if the fd_set type and corresponding macros are defined.
+AC_DEFUN([CF_CHECK_FD_SET],
+[
+AC_REQUIRE([CF_TYPE_FD_SET])
+AC_CACHE_CHECK([for fd_set macros],cf_cv_macros_fd_set,[
+AC_TRY_COMPILE([
+#include <sys/types.h>
+#if USE_SYS_SELECT_H
+# include <sys/select.h>
+#else
+# if HAVE_SYS_TIME_H
+#  include <sys/time.h>
+#  ifdef TIME_WITH_SYS_TIME
+#   include <time.h>
+#  endif
+# else
+#  include <time.h>
+# endif
+#endif
+],[
+	fd_set read_bits;
+	FD_ZERO(&read_bits);
+	FD_SET(0, &read_bits);],
+	[cf_cv_macros_fd_set=yes],
+	[cf_cv_macros_fd_set=no])])
+test $cf_cv_macros_fd_set = yes && AC_DEFINE(HAVE_TYPE_FD_SET)
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl Check if we should include <curses.h> to pick up prototypes for termcap
 dnl functions.  On terminfo systems, these are normally declared in <curses.h>,
 dnl but may be in <term.h>.  We check for termcap.h as an alternate, but it
@@ -340,29 +368,6 @@ termcap.h) #(vi
 	;;
 esac
 
-])dnl
-dnl ---------------------------------------------------------------------------
-dnl Check if the fd_set type and corresponding macros are defined.
-AC_DEFUN([CF_TYPE_FD_SET],
-[
-AC_CACHE_CHECK([for type fd_set],cf_cv_type_fd_set,[
-AC_TRY_COMPILE([
-#include <sys/types.h>
-#if HAVE_SYS_TIME_H
-# include <sys/time.h>
-# ifdef TIME_WITH_SYS_TIME
-#  include <time.h>
-# endif
-#else
-# include <time.h>
-#endif
-],[
-	fd_set read_bits;
-	FD_ZERO(&read_bits);
-	FD_SET(0, &read_bits);],
-	[cf_cv_type_fd_set=yes],
-	[cf_cv_type_fd_set=no])])
-test $cf_cv_type_fd_set = yes && AC_DEFINE(HAVE_TYPE_FD_SET)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl SVr4 curses should have term.h as well (where it puts the definitions of
@@ -648,6 +653,59 @@ fi
 test "$prefix" != /usr/local     && $1="[$]$1 /usr/local/include /usr/local/include/$2"
 test "$prefix" != /usr           && $1="[$]$1 /usr/include /usr/include/$2"
 test "$prefix" != /opt           && $1="[$]$1 /opt/include /opt/include/$2"
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl On SunOS, struct rusage is referred to in <sys/wait.h>.  struct rusage is
+dnl defined in <sys/resource.h>.  On SCO v4, resource.h needs time.h, which we
+dnl may have excluded.
+AC_DEFUN(CF_HEADER_RESOURCE,[
+AC_REQUIRE([CF_HEADER_SELECT])
+AC_CACHE_CHECK(if we may include sys/resource.h with sys/wait.h,
+cf_cv_resource_with_wait,[
+AC_TRY_COMPILE([
+#if HAVE_SYS_TIME_H && (SELECT_WITH_TIME || !(HAVE_SELECT_H || HAVE_SYS_SELECT_H))
+#include <sys/time.h>
+#ifdef TIME_WITH_SYS_TIME
+# include <time.h>
+#endif
+#else
+#include <time.h>
+#endif
+#include <sys/types.h>
+#include <sys/resource.h>
+#include <sys/wait.h>
+],[],[cf_cv_resource_with_wait=yes],[cf_cv_resource_with_wait=no])
+])
+test $cf_cv_resource_with_wait = yes && AC_DEFINE(RESOURCE_WITH_WAIT)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl like AC_HEADER_TIME, check for conflicts:
+dnl on SCO v4, sys/time.h conflicts with select.h
+AC_DEFUN(CF_HEADER_SELECT,[
+AC_REQUIRE([AC_HEADER_TIME])
+AC_CACHE_CHECK(if we can include select.h with time.h,
+cf_cv_select_with_time,[
+AC_TRY_COMPILE([
+#include <sys/types.h>
+#if HAVE_SYS_TIME_H
+#include <sys/time.h>
+#ifdef TIME_WITH_SYS_TIME
+# include <time.h>
+#endif
+#else
+#include <time.h>
+#endif
+#if HAVE_SELECT
+# if HAVE_SELECT_H
+# include <select.h>
+# endif
+# if HAVE_SYS_SELECT_H
+# include <sys/select.h>
+# endif
+#endif
+],[],[cf_cv_select_with_time=yes],[cf_cv_select_with_time=no])
+])
+test $cf_cv_select_with_time = yes && AC_DEFINE(SELECT_WITH_TIME)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Use imake to obtain compiler flags.  We could, in principle, write tests to
@@ -1311,6 +1369,9 @@ if test "$1" = ncurses; then
 	cf_cv_termlib=terminfo
 fi
 ])
+if test "$cf_cv_termlib" = none; then
+	AC_CHECK_LIB(curses, tgetstr, [LIBS="$LIBS -lcurses" cf_cv_termlib=terminfo])
+fi
 # HP-UX 9.x terminfo has setupterm, but no tigetstr.
 if test "$cf_cv_termlib" = none; then
 	AC_CHECK_LIB(termlib, tigetstr, [LIBS="$LIBS -ltermlib" cf_cv_termlib=terminfo])
@@ -1334,6 +1395,28 @@ if test "$cf_cv_termlib" = none; then
 	AC_ERROR([Can't find -ltermlib, -lcurses, or -ltermcap])
 fi
 ])])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check for the declaration of fd_set.  Some platforms declare it in
+dnl <sys/types.h>, and some in <sys/select.h>, which requires <sys/types.h>
+AC_DEFUN([CF_TYPE_FD_SET],
+[
+AC_MSG_CHECKING(for declaration of fd_set)
+AC_CACHE_VAL(cf_cv_type_fd_set,[
+AC_TRY_COMPILE([
+#include <sys/types.h>],
+	[fd_set x],
+	[cf_cv_type_fd_set=sys/types.h],
+	[AC_TRY_COMPILE([
+#include <sys/types.h>
+#include <sys/select.h>],
+	[fd_set x],
+	[cf_cv_type_fd_set=sys/select.h],
+	[cf_cv_type_fd_set=unknown])])])
+AC_MSG_RESULT($cf_cv_type_fd_set)
+if test $cf_cv_type_fd_set = sys/select.h ; then
+	AC_DEFINE(USE_SYS_SELECT_H)
+fi
+])
 dnl ---------------------------------------------------------------------------
 dnl Check for return and param type of 3rd -- OutChar() -- param of tputs().
 dnl

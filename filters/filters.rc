@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.76 1999/08/23 00:00:25 tom Exp $
+; $Id: filters.rc,v 1.77 1999/08/26 21:44:39 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -41,7 +41,7 @@ define-mode cweb
 
 define-mode csh
 ~with define-submode csh
-	suf "\\.\\(csh*\\|login\\|logout\\)$"
+	suf "\\.\\(csh.*\\|login\\|logout\\)$"
 	pre "^#!\\s*\\/.*csh\\>\\(\\s*-[a-z]\\+\\)*$"
 	filtername	"vile-sh-filt -k csh"
 	comment-prefix	"^\\s*#"
