@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.193 1999/05/18 00:26:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.195 1999/06/14 22:33:44 tom Exp $
  *
  */
 
@@ -112,6 +112,7 @@ dpy_namebst (BI_NODE *a GCC_UNUSED, int level GCC_UNUSED)
 }
 
 static	BI_TREE namebst = {new_namebst, old_namebst, dpy_namebst};
+static	BI_TREE redefns = {new_namebst, old_namebst, dpy_namebst};
 #endif /* OPT_NAMEBST */
 
 /*----------------------------------------------------------------------------*/
@@ -1571,7 +1572,8 @@ kbd_alarm(void)
 {
 	TRACE(("BEEP\n"))
 
-	if (global_g_val(GMDERRORBELLS)) {
+	if (!no_errs
+	 && global_g_val(GMDERRORBELLS)) {
 		term.beep();
 		term.flush();
 	}
@@ -2339,16 +2341,16 @@ insert_namebst(const char *name, const CMDFUNC *cmd, int ro)
 {
     BI_DATA temp, *p;
 
-    if ((p = btree_search(&namebst, name)) != 0)
-    {
-	if ((p->n_flags & NBST_READONLY) && !ro)
-	{
-	    mlforce("[Cannot redefine %s]", name);
+    if ((p = btree_search(&namebst, name)) != 0) {
+	if ((p->n_flags & NBST_READONLY)) {
+	    if (btree_insert(&redefns, p) == 0
+	     || !btree_delete(&namebst, name)) {
+		return FALSE;
+	    }
+	    mlwrite("[Redefining builtin '%s']", name);
+	} else if (!delete_namebst(name, TRUE)) {
 	    return FALSE;
 	}
-
-	if (!delete_namebst(name, TRUE))
-	    return FALSE;
     }
 
     temp.bi_key     = name;
@@ -2365,16 +2367,11 @@ int
 delete_namebst(const char *name, int release)
 {
     BI_DATA *p = btree_search(&namebst, name);
+    int code;
 
     /* not a named procedure */
     if (!p)
 	return TRUE;
-
-    if (p->n_flags & NBST_READONLY)
-    {
-	mlforce("BUG: btree entry %s is readonly", name);
-	return FALSE;
-    }
 
     /* we may have to free some stuff */
     if (p && release)
@@ -2419,12 +2416,21 @@ delete_namebst(const char *name, int release)
 	    perl_free_sub(CMD_U_PERL(p->n_cmd));
 #endif
 
-	free(TYPECAST(char,p->n_cmd->c_help));
-	free(TYPECAST(char,p->n_cmd));
+	if (!(p->n_flags & NBST_READONLY)) {
+	    free(TYPECAST(char,p->n_cmd->c_help));
+	    free(TYPECAST(char,p->n_cmd));
+	}
 	p->n_cmd = 0;	/* ...so old_namebst won't free this too */
     }
 
-    return btree_delete(&namebst, name);
+    if ((code = btree_delete(&namebst, name)) == TRUE) {
+	if ((p = btree_search(&redefns, name)) != 0) {
+	    mlwrite("[Restoring builtin '%s']", name);
+	    code = (btree_insert(&namebst, p) != 0);
+	    (void) btree_delete(&redefns, p->bi_key);
+	}
+    }
+    return code;
 }
 
 /*
@@ -2562,6 +2568,7 @@ bind_leaks(void)
 	}
 #endif
 #if OPT_NAMEBST
+	btree_freeup(&redefns);
 	btree_freeup(&namebst);
 #endif
 }

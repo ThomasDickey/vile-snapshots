@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.154 1999/06/01 01:05:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.155 1999/06/13 20:15:48 tom Exp $
  *
  */
 
@@ -3315,7 +3315,8 @@ mode_leaks(void)
 {
 #if OPT_COLOR_SCHEMES
 	while (my_schemes != 0 && my_schemes->name != 0)
-		free_scheme(my_schemes->name);
+		if (!free_scheme(my_schemes->name))
+			break;
 #endif
 
 #if OPT_ENUM_MODES && OPT_COLOR

@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.61 1998/12/22 10:54:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.62 1999/06/13 22:26:19 tom Exp $
  *
  */
 
@@ -36,7 +36,6 @@
 #define	isdelim(c)	((c) == '(' || ((c) == '{'))
 
 #if SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
-# define UNIX_GLOBBING OPT_GLOB_ENVIRON
 # if UNIX_GLOBBING
 #  define DirEntryStr(p)		p->d_name
 # else
@@ -54,18 +53,6 @@
 # endif
 # define DirEntryLen(p)			strlen(DirEntryStr(p))
 #endif	/* SYS_MSDOS */
-
-/*
- * Make the default unix globbing code use 'echo' rather than our internal
- * globber if we do not configure the 'glob' string-mode.
- */
-#if SYS_UNIX && defined(GVAL_GLOB) && !OPT_VMS_PATH
-# define UNIX_GLOBBING 1
-#endif
-
-#ifndef UNIX_GLOBBING
-# define UNIX_GLOBBING 0
-#endif
 
 /*
  * Verify that we don't have both boolean- and string-valued 'glob' modes.
@@ -241,8 +228,8 @@ cs_char(int ch)
  * leaf and a pointer to the leaf that contains wildcards that we must
  * match against the leaf.
  */
-static int
-match_leaf(char *leaf, char *pattern)
+int
+glob_match_leaf(char *leaf, char *pattern)
 {
 	while (*leaf != EOS && *pattern != EOS) {
 		if (*pattern == GLOB_SINGLE) {
@@ -252,7 +239,7 @@ match_leaf(char *leaf, char *pattern)
 			int	multi = FALSE;
 			pattern++;
 			while (*leaf != EOS) {
-				if (match_leaf(leaf, pattern)) {
+				if (glob_match_leaf(leaf, pattern)) {
 					multi = TRUE;
 					break;
 				}
@@ -388,7 +375,7 @@ char	*pattern)
 			if (!strcmp(leaf, ".")
 			 || !strcmp(leaf, ".."))
 				continue;
-			if (!match_leaf(leaf, wild))
+			if (!glob_match_leaf(leaf, wild))
 				continue;
 			if (next != 0) {	/* there are more leaves */
 				if (!string_has_wildcards(next)) {
@@ -499,7 +486,7 @@ char	*pattern)
 
 			if (strcmp(leaf, ".") == 0 || strcmp(leaf, "..") == 0)
 			 	continue;
-			if (!match_leaf(leaf, wild))
+			if (!glob_match_leaf(leaf, wild))
 				continue;
 
 			if (next != 0) {	/* there are more leaves */

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.396 1999/06/01 23:05:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.398 1999/06/13 22:26:16 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -436,6 +436,7 @@
 #define OPT_UNC_PATH	(SYS_WINNT)
 
 /* individual features that are (normally) controlled by SMALLER */
+#define OPT_BNAME_CMPL  !SMALLER		/* name-completion for buffers */
 #define OPT_B_LIMITS    !SMALLER		/* left-margin */
 #define OPT_COLOR_SCHEMES !SMALLER && OPT_COLOR
 #define OPT_ENUM_MODES  !SMALLER		/* fixed-string modes */
@@ -2340,6 +2341,22 @@ extern void _exit (int code);
 #  else
 #    define	ANSI_QSORT 0
 #  endif
+#endif
+
+/*
+ * We will make the default unix globbing code use 'echo' rather than our
+ * internal globber if we do not configure the 'glob' string-mode.
+ */
+#if SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
+# define UNIX_GLOBBING OPT_GLOB_ENVIRON
+#endif
+
+#if SYS_UNIX && defined(GVAL_GLOB) && !OPT_VMS_PATH
+# define UNIX_GLOBBING 1
+#endif
+
+#ifndef UNIX_GLOBBING
+# define UNIX_GLOBBING 0
 #endif
 
 /*

@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.195 1999/05/18 00:17:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.196 1999/06/14 22:22:31 tom Exp $
  *
  */
 
@@ -1361,7 +1361,9 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 				if ((*complete)(NAMEC, tbreserve(extbuf), &newpos)) {
 					StrToBuff(*extbuf);
 				} else {
-					status = ABORT;
+					status = (options & KBD_MAYBEC)
+						? SORTOFTRUE
+						: ABORT;
 					tb_put(extbuf, cpos, EOS);
 				}
 			}

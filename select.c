@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.97 1999/05/26 00:47:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.98 1999/06/14 00:33:07 tom Exp $
  *
  */
 
@@ -1592,4 +1592,13 @@ attribute_from_filter(void)
     return TRUE;
 }
 #endif /*  OPT_SHELL */
+
+int
+clear_any_attrs(int f, int n)
+{
+      opcmd = OPOTHER;
+      videoattribute = 0;
+      return vile_op(f,n,attributeregion,"Clear attributes");
+}
+
 #endif /* OPT_SELECTIONS */

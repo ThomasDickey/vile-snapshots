@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-1999 by Paul Fox and Tom Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.74 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.75 1999/06/13 21:29:42 tom Exp $
  *
  */
 
@@ -572,7 +572,7 @@ finderrbuf(int f GCC_UNUSED, int n GCC_UNUSED)
 	BUFFER *bp;
 
 	(void)strcpy(name, febuff);
-	if ((s = mlreply("Buffer to scan for \"errors\": ", name, sizeof(name))) == ABORT)
+	if ((s = ask_for_bname("Buffer to scan for \"errors\": ", name, sizeof(name))) == ABORT)
 		return s;
 	if (s == FALSE) {
 		set_febuff(OUTPUT_BufName);

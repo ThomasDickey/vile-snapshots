@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.183 1999/05/23 21:01:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.185 1999/06/14 22:33:27 tom Exp $
  *
  */
 
@@ -1341,7 +1341,7 @@ execbuf(int f, int n)
 		n = 1;
 
 	/* find out what buffer the user wants to execute */
-	if ((status = mlreply("Execute buffer: ", bufn, sizeof(bufn))) != TRUE)
+	if ((status = ask_for_bname("Execute buffer: ", bufn, sizeof(bufn))) != TRUE)
 		return status;
 
 	/* find the pointer to that buffer */
@@ -1860,11 +1860,11 @@ perform_dobuf(BUFFER *bp, WHLOOP *whlist)
 	LINEPTR lp;
 	size_t linlen;
 	DIRECTIVE dirnum;
-	int suppress_errs;
 	WINDOW *wp;
 	char *linebuf = 0;	/* buffer holding copy of line executing */
 	char *cmdp;		/* text to execute */
 	int save_clhide = clhide;
+	int save_no_errs = no_errs;
 
 	static BUFFER *dobuferrbp;
 
@@ -1999,7 +1999,7 @@ perform_dobuf(BUFFER *bp, WHLOOP *whlist)
 		if (*cmdp == '*')
 			continue;
 
-		suppress_errs = FALSE;
+		no_errs = save_no_errs;
 
 #if ! SMALLER
 		/* deal with directives */
@@ -2020,9 +2020,9 @@ perform_dobuf(BUFFER *bp, WHLOOP *whlist)
 				status = TRUE; /* not exactly an error */
 				break;
 			} else if (code == DDIR_FORCE) {
-				suppress_errs = TRUE;
+				no_errs = TRUE;
 			} else if (code == DDIR_HIDDEN) {
-				suppress_errs = TRUE;
+				no_errs = TRUE;
 				clhide = TRUE;
 			}
 		} else if (*cmdp != DIRECTIVE_CHAR) {
@@ -2046,10 +2046,11 @@ perform_dobuf(BUFFER *bp, WHLOOP *whlist)
 		else
 			status = docmd(cmdp,TRUE,FALSE,1);
 
-		if (suppress_errs)
+		if (no_errs)
 			status = TRUE;
 
 		clhide = save_clhide;
+		no_errs = save_no_errs;
 
 		if (status != TRUE) {
 			/* update window if visible */

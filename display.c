@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.281 1999/06/03 01:21:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.282 1999/06/13 18:15:15 tom Exp $
  *
  */
 
@@ -142,7 +142,7 @@ dfputsn(OutFunc outfunc, const char *s, int n)
 	register int c = 0;
 	register int l = 0;
 
-	TRACE(("...str=%s\n", visible_buff(s, n)))
+	TRACE(("...str=%s\n", visible_buff(s, n, TRUE)))
 	if (s != 0) {
 		while ((n-- != 0) && ((c = *s++) != EOS)) {
 			(*outfunc)(c);

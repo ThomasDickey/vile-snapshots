@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.7 1999/05/08 02:21:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.8 1999/06/13 14:57:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4 
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -289,7 +289,7 @@ static char *
 write_comment(FILE *fp, char *s, int *level)
 {
     int c_length = has_endofcomment(s, level);
-    write_token(fp, s, c_length, Comment_attr);
+    write_string(fp, s, c_length, Comment_attr);
     return s + c_length;
 }
 
@@ -352,6 +352,7 @@ do_filter(FILE *input, FILE *output)
 	     */
 	    } else if (comment) {
 		s = write_comment(output, s, &comment);
+		comment = 0;
 	    } else if (isQuote(s, leftcmt)) {
 		write_string(output, s, leftcmt.used, Comment_attr);
 		s += leftcmt.used;

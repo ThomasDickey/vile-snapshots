@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.63 1999/06/07 09:35:38 tom Exp $
+; $Id: filters.rc,v 1.64 1999/06/11 21:34:36 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -106,7 +106,7 @@ define-mode html
 define-mode imake
 ~with define-submode imake
 	suf "I[Mm]akefile"
-	pre "^\\s*XCOMM\\>"
+	pre "^\\s*\\(XCOMM\\>\\|\\/\\*\\*\\/#\\)"
 	filtername "vile-c-filt -k imake"
 ~endwith
 	

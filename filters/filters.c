@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.45 1999/05/08 12:18:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.46 1999/06/12 19:25:01 tom Exp $
  *
  */
 
@@ -624,7 +624,8 @@ write_string(FILE *fp, char *string, int length, char *marker)
 		    fputc(string[n], fp);
 	    } else {
 		fprintf(fp, "%c%i%s:%.*s", CTL_A, n, marker,
-			    (string[n] == '\n') ? n+1 : n, string);
+			    ((n < length) && (string[n] == '\n'))
+			    ? n+1 : n, string);
 	    }
 	    if (string[n])
 		n++;

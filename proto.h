@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.350 1999/06/01 23:54:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.352 1999/06/13 22:23:30 tom Exp $
  *
  */
 
@@ -131,7 +131,6 @@ extern void build_namebst(const NTAB *nametbl, int lo, int hi);
 #endif
 
 /* buffer.c */
-BUFFER *make_bp (const char *fname, UINT flags);
 extern BUFFER *bfind (const char *bname, UINT bflag);
 extern BUFFER *find_alt (void);
 extern BUFFER *find_any_buffer (const char *name);
@@ -140,25 +139,27 @@ extern BUFFER *find_b_hist(int number);
 extern BUFFER *find_b_name (const char *name);
 extern BUFFER *find_bp (BUFFER *bp1);
 extern BUFFER *getfile2bp (const char *fname, int ok_to_ask, int cmdline);
+extern BUFFER *make_bp (const char *fname, UINT flags);
 extern WINDOW *bp2any_wp (BUFFER *bp);
 extern char *add_brackets(char *dst, const char *src);
 extern char *hist_lookup ( int c );
 extern char *strip_brackets(char *dst, const char *src);
+extern const char *next_buffer_line(const char *bname);
 extern int add_line_at (BUFFER *bp, LINEPTR prevp, const char *text, int len);
 extern int addline (BUFFER *bp, const char *text, int len);
-extern const char *next_buffer_line(const char *bname);
 extern int any_changed_buf (BUFFER **bpp);
 extern int any_unread_buf (BUFFER **bpp);
+extern int ask_for_bname(char *prompt, char *bufn, size_t len);
 extern int bclear (BUFFER *bp);
 extern int bsizes (BUFFER *bp);
 extern int delink_bp (BUFFER *bp);
 extern int popupbuff (BUFFER *bp);
+extern int renamebuffer(BUFFER *rbp, char *bufname);
 extern int shiftwid_val (BUFFER *bp);
 extern int swbuffer (BUFFER *bp);
 extern int swbuffer_lfl (BUFFER *bp, int lockfl);
 extern int tabstop_val (BUFFER *bp);
 extern int zotbuf (BUFFER *bp);
-extern int renamebuffer(BUFFER *rbp, char *bufname);
 extern int zotwp (BUFFER *bp);
 extern void chg_buff (BUFFER *bp, USHORT flag);
 extern void imply_alt (char *fname, int copy, int lockfl);
@@ -418,6 +419,10 @@ extern	int	glob_length (char **list_of_items);
 #if !SYS_UNIX
 extern	int	glob_needed (char **list_of_items);
 extern	void	expand_wild_args (int *argcp, char ***argvp);
+#endif
+
+#if UNIX_GLOBBING
+extern int glob_match_leaf(char *leaf, char *pattern);
 #endif
 
 /* globals.c */
