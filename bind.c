@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.208 1999/10/11 22:18:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.209 1999/11/08 10:57:25 tom Exp $
  *
  */
 
@@ -1180,7 +1180,7 @@ UINT which)		/* flags specifying where to look */
 	}
 
 	if ((which & FL_HOME) /* look in the home directory */
-	 && ((sp = locate_fname(getenv("HOME"), fname, mode)) != 0))
+	 && ((sp = locate_fname(home_dir(), fname, mode)) != 0))
 		return sp;
 
 	if ((which & FL_EXECDIR) /* look in vile's bin directory */
@@ -1264,7 +1264,7 @@ list_which(LIST_ARGS)
 		list_one_fname(fname, mode);
 
 	if (flag & FL_HOME) /* look in the home directory */
-		list_which_fname(getenv("HOME"), fname, mode);
+		list_which_fname(home_dir(), fname, mode);
 
 	if (flag & FL_EXECDIR) /* look in vile's bin directory */
 		list_which_fname(exec_pathname, fname, mode);

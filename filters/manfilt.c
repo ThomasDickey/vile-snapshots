@@ -46,43 +46,19 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.22 1998/04/28 10:17:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.23 1999/11/09 23:23:31 tom Exp $
  *
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#else
-/* assume ANSI C */
-#define HAVE_STDLIB_H 1
-#endif
+#include <filters.h>
 
-#include <sys/types.h>		/* sometimes needed to get size_t */
-
-#if HAVE_STDLIB_H
-#include <stdlib.h>
-#else
+#if !HAVE_STDLIB_H
 # if !defined(HAVE_CONFIG_H) || MISSING_EXTERN_CALLOC
 extern	char *	calloc	( size_t nmemb, size_t size );
 # endif
 # if !defined(HAVE_CONFIG_H) || MISSING_EXTERN_REALLOC
 extern	char *	realloc	( char *ptr, size_t size );
 # endif
-#endif
-
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
-#include <stdio.h>
-
-#if OPT_LOCALE
-#include <locale.h>
-#endif
-#include <ctype.h>
-
-#if MISSING_EXTERN__FILBUF
-extern	int	_filbuf	( FILE *fp );
 #endif
 
 #ifdef lint
@@ -162,7 +138,7 @@ static void
 failed(const char *s)
 {
 	perror(s);
-	exit(1);
+	exit(BADEXIT);
 }
 
 /*
@@ -554,6 +530,8 @@ main(int argc, char **argv)
 	} else {
 		ManFilter(stdin);
 	}
-	exit(0);	/* successful exit */
+	fflush(stdout);
+	fclose(stdout);
+	exit(GOODEXIT);	/* successful exit */
 	/*NOTREACHED*/
 }

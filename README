@@ -1,5 +1,5 @@
 
-README for vile, version 8.4
+README for vile, version 9.0
 -----------------------------
 
 vile is a text editor which is extremely compatible with vi in terms
@@ -359,6 +359,20 @@ Apr, 1999
 
     + many VMS bug fixes and enhancements.  8.3 is a keeper if you use VMS.
 
+Nov, 1999
+    vile 8.4/9.0 is released, distributed with GPL licensing.
+
+    In addition to improvements to syntax highlighting, e.g., user-definable
+    color schemes, vile's macro language has been extended
+    
+    	+ procedures can be parameterized.
+
+	+ several new functions simplify handling of external filenames, and
+	  parsing strings.
+
+    Further improvements have been made to winvile: drag/drop, file open
+    dialog, better integration with the Windows Explorer and DevStudio.
+
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.75 1999/11/06 21:14:57 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.76 1999/11/09 02:07:46 tom Exp $
 -------------------------------

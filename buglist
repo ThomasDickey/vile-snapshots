@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.366 1999/11/06 20:05:51 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.367 1999/11/10 01:58:07 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1409,18 +1409,6 @@ edit a :<number> with an arrow key, since the arrow causes the <number> state
 to be terminated, and start on the name.  There'll always be the seam, but I
 might be able to fix this by tinkering with eol_range so it would accept
 left/right arrows.
-
--- 98-05-27 (Kevin Buettner)
-
-Position yourself at the end of the makefile for vile or xvile.  Search for
-".*".  (No double quotes.) Then hit 'n'.  Try it repeatedly.  Notice that you
-won't wrap to the beginning of the buffer.
-
-BTW, this same behavior occurs for both '^' and '$' as search patterns.  Note
-that both of these are zero width assertions.  Also note that '.*' can match
-the empty string.
-
-[This happens with a blank line on the end of the file - tom]
 
 -- 98-06-16 (Jim Crigler <crigler@seo.com>)
 

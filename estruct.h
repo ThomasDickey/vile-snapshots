@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.430 1999/11/04 23:04:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.431 1999/11/09 22:23:03 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -325,8 +325,13 @@
 #define GOODEXIT	(STS$M_INHIB_MSG | STS$K_SUCCESS)
 #define BADEXIT		(STS$M_INHIB_MSG | STS$K_ERROR)
 #else
+#if defined(EXIT_SUCCESS) && defined(EXIT_FAILURE)
+#define GOODEXIT	EXIT_SUCCESS
+#define BADEXIT		EXIT_FAILURE
+#else
 #define GOODEXIT	0
 #define BADEXIT		1
+#endif
 #endif
 
 /* has the select() or poll() call, only used for short sleeps in fmatch() */

@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.27 1999/11/06 19:36:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.28 1999/11/10 00:09:42 tom Exp $
  */
 
 #include	"estruct.h"
@@ -119,7 +119,7 @@ char *
 get_xdisplay(void)
 {
 	if (x_display == 0)
-		SetEnv(&x_display, DftEnv("DISPLAY", "unix:0"));
+		SetEnv(&x_display, DftEnv("DISPLAY", x_get_display_name()));
 	return x_display;
 }
 #endif

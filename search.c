@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.117 1999/10/10 18:05:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.118 1999/11/10 01:54:12 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -193,6 +193,9 @@ forwhunt(int f, int n)
 		savematch(DOT,gregexp->mlen);
 		if (samepoint(DOT,curpos)) {
 			mlwrite(onlyonemsg);
+		} else if (gregexp->mlen == 0
+		 && is_header_line(DOT,curbp)) {
+			movenext(&(DOT),FORWARD);
 		}
 	} else if (status == FALSE) {
 		movenext(&(DOT),REVERSE);

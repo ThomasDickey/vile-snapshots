@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.17 1999/08/27 10:53:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.18 1999/11/09 23:15:00 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -95,7 +95,6 @@ do_filter(FILE *input, FILE *output)
     BEGIN(INITIAL);
     while (yylex() > 0) {
     }
-    exit(0);
 }
 
 %}

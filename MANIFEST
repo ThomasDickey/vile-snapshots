@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_4
+MANIFEST for vile, version v8_4a
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -106,7 +106,7 @@ trace.h                         development: trace to logfile
 ucrypt.c                        interface to Unix crypt(1)
 undo.c                          support for "undo"
 version.c                       version & usage messages
-vile-8.4.spec                   RedHat rpm specification for vile 8.4
+vile-9.0.spec                   sample RPM script for vile
 vile.1                          man-page for VILE
 vile.hlp                        help-file
 vile.wmconfig                   windowmaker config file for vile

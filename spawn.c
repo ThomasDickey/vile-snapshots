@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.148 1999/11/06 18:10:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.149 1999/11/07 23:35:33 tom Exp $
  *
  */
 
@@ -357,7 +357,7 @@ spawn1(int rerun, int pressret)
 
 #if SYS_UNIX
 #if DISP_X11
-#if HAVE_WAITPID
+#if HAVE_WAITPID && !SMALLER
 	(void)x_window_SHELL(line);
 #else
 	(void)system_SHELL(line);

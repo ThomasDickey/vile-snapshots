@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.98 1999/10/01 23:35:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.99 1999/11/08 11:03:01 tom Exp $
  *
  *
  */
@@ -440,13 +440,8 @@ find_user(const char *name)
 			return save_user(name, p->pw_dir);
 #endif
 		if (*name == EOS) {
-		    char *env = getenv("HOME");
+		    char *env = home_dir();
 		    if (env != 0) {
-#if SYS_WINNT
-			char desktop[NFILEN];
-			char *drive = getenv("HOMEDRIVE");
-			env = pathcat(desktop, drive, env);
-#endif
 			return save_user(name, env);
 		    }
 		}
@@ -462,6 +457,33 @@ find_user(const char *name)
 	return NULL;
 }
 
+/*
+ * Returns the home-directory as specified by environment variables.  This is
+ * not necessarily what the passwd interface would say.
+ */
+char *
+home_dir(void)
+{
+	char *result;
+#if SYS_VMS
+	if ((result = getenv("SYS$LOGIN")) == 0)
+		result = getenv("HOME");
+#else
+	result = getenv("HOME");
+#if SYS_WINNT
+	if (result != 0) {
+		static char desktop[NFILEN];
+		char *drive = getenv("HOMEDRIVE");
+		result = pathcat(desktop, drive, result);
+	}
+#endif
+#endif
+	return result;
+}
+
+/*
+ * Expand a leading "~user" or "~/" on a given pathname.
+ */
 char *
 home_path(char *path)
 {
