@@ -1,5 +1,23 @@
 Changes for vile 8.3 (released ??? ??? ??, 1998)
 
+ (tom) 981108 (c)
+	+ implement a new macro directive, "~local" which saves the current
+	  value of $variables and %variables, restoring them at the end of the
+	  buffer/macro which is being executed.  This does not (yet) apply to
+	  mode values.
+	+ rename some functions to make them easier to grep (token to get_token,
+	  macarg to mac_tokval, macliteralarg to mac_literalarg).
+	+ free old attributes in attribute_from_filter() before adding new ones.
+	+ correct an off-by-one error in attribute_from_filter() which caused
+	  the second and following attributes to be shifted by one position.
+	+ change patmatch to a TBUFF to simplify buffer-overrun checks, fix an
+	  off-by-one error in 'savematch()' which caused a core dump.
+	+ modify so that Perl interpreter processes END blocks and global
+	  destructors when vile exits (patch by Brendan O'Dea).
+	+ updated example for C filter to use attribute-from-filter (patch by
+	  Clark Morgan).
+
+
  (tom) 981106 (b)
 	+ add new command attribute-from-filter.
 	+ modify allocation of hypercmd value in select.c to use TBUFF's, fixing

@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.343 1998/11/02 00:19:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.345 1998/11/11 02:42:22 bod Exp $
  *
  */
 
@@ -756,6 +756,9 @@ get_executable_dir(void)
 void
 tidy_exit(int code)
 {
+#if OPT_PERL
+	perl_exit();
+#endif
 	ttclean (TRUE);
 #if SYS_UNIX
 	setup_handler(SIGHUP,SIG_IGN);
@@ -1520,7 +1523,7 @@ quit(int f, int n GCC_UNUSED)
 
 		FreeAndNull(startup_path);
 		FreeAndNull(gregexp);
-		FreeAndNull(patmatch);
+		tb_free(&patmatch);
 #if	OPT_MLFORMAT
     		FreeAndNull(modeline_format);
 #endif

@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.112 1998/07/01 23:34:46 Larry.Gensch Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.113 1998/11/07 16:46:40 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -764,21 +764,9 @@ int	fromscreen)
 static void
 savematch(MARK curpos, SIZE_T matchlen)
 {
-	static	ALLOC_T	patlen = 0;	/* length of last malloc */
-
-	/* free any existing match string */
-	if (patmatch == NULL || patlen < matchlen) {
-		FreeIfNeeded(patmatch);
-		/* attempt to allocate a new one */
-		patmatch = castalloc(char, patlen = matchlen + 20);
-		if (patmatch == NULL)
-			return;
-	}
-
-	(void)strncpy(patmatch, &(curpos.l->l_text[curpos.o]), matchlen);
-
-	/* null terminate the match string */
-	patmatch[matchlen] = EOS;
+	tb_init(&patmatch, EOS);
+	tb_bappend(&patmatch, &(curpos.l->l_text[curpos.o]), matchlen);
+	tb_append(&patmatch, EOS);
 }
 
 void

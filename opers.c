@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.62 1998/04/28 10:17:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.63 1998/11/10 23:17:20 tom Exp $
  *
  */
 
@@ -44,7 +44,7 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 		/* get the next command from the keyboard */
 		/* or a command line, as approp. */
 		if (clexec) {
-			macarg(tok);	/* get the next token */
+			mac_tokval(tok);	/* get the next token */
 			if (!strcmp(tok,"lines"))
 				cfp = &f_godotplus;
 			else

@@ -804,6 +804,20 @@ Directives
 
 		insert-string "You are on an old machine!\n"
 
+    ~LOCAL Directive
+    ----------------
+    	The ~LOCAL Directive causes the variables which are listed to
+	be saved at that point (once if the directive is within a loop),
+	and automatically restored at the end of the current macro.
+	If the directive specifies a user variable which was not defined
+	before, it will be deleted rather than restored.
+
+	For example:
+
+		~local $curcol $curline
+
+	will restore the cursor position.
+
 
 Editor commands
 ---------------
@@ -1030,14 +1044,8 @@ Example startup file
 	    write-message "[Attaching C/C++ attributes...]"
 	    set-variable %savcol $curcol
 	    set-variable %savline $curline
-	    set-variable %modified $modified
 	    goto-beginning-of-file
-	    filter-til end-of-file "vile-c-filt"
-	    goto-beginning-of-file
-	    attribute-cntl_a-sequences-til end-of-file
-	    ~if &not %modified
-	        unmark-buffer
-	    ~endif
+	    attribute-from-filter end-of-file "vile-c-filt"
 	    %savline goto-line
 	    %savcol goto-column
 	    write-message "[Attaching C/C++ attributes...done ]"
@@ -1050,5 +1058,5 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.6 1998/11/05 00:42:52 cmorgan Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.8 1998/11/11 02:39:07 cmorgan Exp $
 -----------------------------------

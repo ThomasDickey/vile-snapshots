@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.184 1998/10/24 22:28:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.185 1998/11/10 23:18:03 tom Exp $
  *
  */
 
@@ -332,7 +332,7 @@ key_to_bind(register const CMDFUNC *kcmd)
 	/* get the command sequence to bind */
 	if (clexec) {
 		char tok[NSTRING];
-		macarg(tok);	/* get the next token */
+		mac_tokval(tok);	/* get the next token */
 		c = prc2kcod(tok);
 	} else {
 		/* perhaps we only want a single key, not a sequence */
@@ -453,7 +453,7 @@ unbindkey(int f GCC_UNUSED, int n GCC_UNUSED)
 	/* get the command sequence to unbind */
 	if (clexec) {
 		char tok[NSTRING];
-		macarg(tok);	/* get the next token */
+		mac_tokval(tok);	/* get the next token */
 		c = prc2kcod(tok);
 		if (c < 0) {
 			mlforce("[Illegal key-sequence \"%s\"]",tok);
@@ -651,7 +651,7 @@ deskey(int f GCC_UNUSED, int n GCC_UNUSED)	/* describe the command for a certain
 	/* check to see if we are executing a command line */
 	if (clexec) {
 		char tok[NSTRING];
-		macarg(tok);	/* get the next token */
+		mac_tokval(tok);	/* get the next token */
 		c = prc2kcod(tok);
 		if (c < 0) {
 			mlforce("[Illegal key-sequence \"%s\"]",tok);

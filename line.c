@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.114 1998/11/02 01:24:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.115 1998/11/10 23:17:58 tom Exp $
  *
  */
 
@@ -1039,7 +1039,7 @@ usekreg(int f, int n)
 		kregflag |= KAPPEND;
 
 	if (clexec) {
-		macarg(tok);	/* get the next token */
+		mac_tokval(tok);	/* get the next token */
 		status = execute(engl2fnc(tok), f, n);
 	} else if (isnamedcmd) {
 		status = namedcmd(f,n);

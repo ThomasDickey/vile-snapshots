@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.165 1998/10/30 02:41:29 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.166 1998/11/11 02:05:16 tom Exp $
  *
  */
 
@@ -27,6 +27,7 @@ typedef	enum {
 	D_ENDWHILE,
 	D_BREAK,
 	D_FORCE,
+	D_LOCAL,
 #endif
 	D_ENDM
 } DIRECTIVE;
@@ -66,17 +67,33 @@ static	const struct {
 	{ D_ENDWHILE, "endwhile" },
 	{ D_BREAK,    "break" },
 	{ D_FORCE,    "force" },
+	{ D_LOCAL,    "local" },
 	{ D_ENDM,     "endm" }
 	};
 #endif
 
 static int token_ended_line;  /* did the last token end at end of line? */
 
+#if !SMALLER
+typedef struct locals {
+	struct locals *next;
+	char *name;
+	char *value;
+	} LOCALS;
+
 typedef struct {
 	int disabled;		/* nonzero to disable execution */
 	int level;		/* ~if ... ~endif nesting level */
 	int fired;		/* at top-level, ~if/... used */
+	REGIONSHAPE shape;
+	const CMDFUNC *motion;
+	LOCALS *locals;
 	} IFSTK;
+#else
+typedef struct {
+	int disabled;		/* nonzero to disable execution */
+	} IFSTK;		/* just a dummy variable to simplify ifdef's */
+#endif
 
 static IFSTK ifstk;
 
@@ -764,7 +781,7 @@ int f, int n)
 	execstr = cline;	/* and set this one as current */
 
 	do {
-		if ((status = macarg(tkn)) != TRUE) {	/* grab first token */
+		if ((status = mac_tokval(tkn)) != TRUE) { /* grab first token */
 			execstr = oldestr;
 			return status;
 		}
@@ -781,7 +798,7 @@ int f, int n)
 		n = atoi(strcpy(tkn, tokval(tkn)));
 
 		/* and now get the command to execute */
-		if ((status = macarg(tkn)) != TRUE) {
+		if ((status = mac_tokval(tkn)) != TRUE) {
 			execstr = oldestr;
 			return status;
 		}
@@ -930,7 +947,7 @@ int f, int n)
 */
 
 const char *
-token(
+get_token(
 const char *src,	/* source string */
 char *tok,		/* destination token string */
 int eolchar)
@@ -1063,23 +1080,33 @@ int	skip)
 }
 
 int
-macarg(		/* get a macro line argument */
-char *tok)	/* buffer to place argument */
+mac_token(char *tok)
 {
-	int savcle;	/* buffer to store original clexec */
+	int savcle;		/* buffer to store original clexec */
+	const char *oldstr = execstr;
 
 	savcle = clexec;	/* save execution mode */
 	clexec = TRUE;		/* get the argument */
 	/* grab token and advance past */
-	execstr = token(execstr, tok, EOS);
-	/* evaluate it */
-	(void)strcpy(tok, tokval(tok));
+	execstr = get_token(execstr, tok, EOS);
 	clexec = savcle;	/* restore execution mode */
-	return TRUE;
+	return (execstr != oldstr);
 }
 
 int
-macliteralarg(	/* get a macro line argument */
+mac_tokval(	/* get a macro line argument */
+char *tok)	/* buffer to place argument */
+{
+	if (mac_token(tok)) {
+		/* evaluate it */
+		(void)strcpy(tok, tokval(tok));
+		return TRUE;
+	}
+	return FALSE;
+}
+
+int
+mac_literalarg(	/* get a macro line argument */
 TBUFF **tok)	/* buffer to place argument */
 {
 	/* grab everything on this line, literally */
@@ -1363,6 +1390,99 @@ WHBLOCK *wp)	/* head of structure to free */
 #define DDIR_INCOMPLETE  1
 #define DDIR_FORCE       2
 
+/*
+ * When we get a "~local", we save the variable's name and its value.  Save the
+ * value only the first time we encounter the variable.  We will restore the
+ * variables when exiting from the current buffer macro.
+ *
+ * FIXME:  It would be nice (but more complicated) to implement local variables
+ * within while/endwhile blocks.
+ */
+static int
+push_variable(char *name)
+{
+	LOCALS *p;
+
+	TRACE(("push_variable: {%s}%s\n", name, execstr))
+
+	switch (toktyp(name)) {
+	case TKENV:
+	case TKVAR:
+		break;
+	default:
+		return FALSE;
+	}
+
+	/* Check if we've saved this before */
+	for (p = ifstk.locals; p != 0; p = p->next) {
+		if (!strcmp(name, p->name))
+			return TRUE;
+	}
+
+	/* We've not saved it - do it now */
+	p = typealloc(LOCALS);
+	p->next = ifstk.locals;
+	p->name = strmalloc(name);
+	p->value = (char *)tokval(name);
+	if (p->value == errorm) {	/* special case: so we can delete vars */
+		if (toktyp(name) != TKVAR) {
+			free(p->name);
+			free((char *)p);
+			return FALSE;
+		}
+	} else {
+		p->value = strmalloc(p->value);
+	}
+
+	ifstk.locals = p;
+
+	return TRUE;
+}
+
+/*
+ * On exit from the buffer, restore variables declared local, in reverse order.
+ */
+static void
+pop_variable(void)
+{
+	LOCALS *p = ifstk.locals;
+	ifstk.locals = p->next;
+	TRACE(("pop_variable(%s) %s\n", p->name, p->value))
+	if (p->value == errorm) {
+		rmenv(p->name);
+	} else {
+		stenv(p->name, p->value);
+		free(p->value);
+	}
+	free(p->name);
+	free((char *)p);
+}
+
+static void
+push_buffer(IFSTK *save)
+{
+	static const IFSTK new_ifstk = {0,0,0}; /* all 0's */
+
+	*save  = ifstk;
+	save->shape = regionshape;
+	save->motion = havemotion;
+
+	ifstk       = new_ifstk;
+	havemotion  = NULL;
+	regionshape = EXACT;
+}
+
+static void
+pop_buffer(IFSTK *save)
+{
+	while (ifstk.locals)
+		pop_variable();
+
+	ifstk       = *save;
+	havemotion  = ifstk.motion;
+	regionshape = ifstk.shape;
+}
+
 static DIRECTIVE
 dname_to_dirnum(const char *eline, size_t length)
 {
@@ -1414,13 +1534,23 @@ begin_directive(
 	execstr = *eline;
 
 	switch (dirnum) {
+	case D_LOCAL:
+		while (mac_token(tkn) == TRUE) {
+			if (push_variable(tkn) != TRUE) {
+				mlforce("[cannot save '%s']", tkn);
+				status = DDIR_FAILED;
+				break;
+			}
+		}
+		break;
+
 	case D_IF:	/* IF directive */
 		/* grab the value of the logical exp */
 		ifstk.level++;
 		if (!ifstk.disabled) {
 			ifstk.fired = FALSE;
 			ifstk.disabled = ifstk.level;
-			if (macarg(tkn) != TRUE)
+			if (mac_tokval(tkn) != TRUE)
 				status = DDIR_INCOMPLETE;
 			else if (stol(tkn) == TRUE) {
 				ifstk.disabled = 0;
@@ -1432,7 +1562,7 @@ begin_directive(
 	case D_WHILE:	/* WHILE directive */
 		/* grab the value of the logical exp */
 		if (!ifstk.disabled) {
-			if (macarg(tkn) != TRUE) {
+			if (mac_tokval(tkn) != TRUE) {
 				status = DDIR_INCOMPLETE;
 				break;
 			} else if (stol(tkn) == TRUE) {
@@ -1468,7 +1598,7 @@ begin_directive(
 			if (ifstk.fired) {
 				if (!ifstk.disabled)
 					ifstk.disabled = ifstk.level;
-			} else if (macarg(tkn) != TRUE) {
+			} else if (mac_tokval(tkn) != TRUE) {
 				status = DDIR_INCOMPLETE;
 			} else if (!ifstk.fired
 			  && ifstk.disabled == ifstk.level
@@ -1512,7 +1642,7 @@ begin_directive(
 			register LINEPTR glp;	/* line to goto */
 
 			/* grab label to jump to */
-			*eline = (char *)token(*eline, golabel, EOS);
+			*eline = (char *)get_token(*eline, golabel, EOS);
 			glp = label2lp(bp, golabel);
 			if (glp == 0) {
 				mlforce("[No such label \"%s\"]", golabel);
@@ -1596,15 +1726,15 @@ setup_dobuf(BUFFER *bp, WHBLOCK **result)
 		i = lp->l_used;
 
 		/* trim leading whitespace */
-		while (i-- > 0 && isBlank(*eline))
-			++eline;
+		while (i > 0 && isBlank(*eline))
+			++eline, i--;
 
 		/* if there's nothing here, don't bother */
 		if (i <= 0)
 			continue;
 
 		switch (dname_to_dirnum(eline, (size_t)i)) {
-		/* if is a while directive, make a block... */
+		/* if this is a while directive, make a block... */
 		case D_WHILE:
 			if ((scanpt = alloc_WHBLOCK(scanpt, D_WHILE, lp)) == 0) {
 				status = FALSE;
@@ -1663,6 +1793,8 @@ setup_dobuf(BUFFER *bp, WHBLOCK **result)
 		(eline[0] == DIRECTIVE_CHAR && !strcmp(eline+1, "endm") \
 		? D_ENDM \
 		: D_UNKNOWN)
+#define push_buffer(save) /* nothing */
+#define pop_buffer(save) /* nothing */
 #endif
 
 #if OPT_TRACE && !SMALLER
@@ -1937,21 +2069,10 @@ dobuf(BUFFER *bp)	/* buffer to execute */
 		whlist = NULL;
 #endif
 		{
-			static const IFSTK new_ifstk = {0,0,0}; /* all 0's */
-			const CMDFUNC *save_havemotion  = havemotion;
 			IFSTK save_ifstk;
-			REGIONSHAPE save_regionshape = regionshape;
-
-			save_ifstk  = ifstk;
-			ifstk       = new_ifstk;
-			havemotion  = NULL;
-			regionshape = EXACT;
-
+			push_buffer(&save_ifstk);
 			status = perform_dobuf(bp, whlist);
-
-			ifstk       = save_ifstk;
-			havemotion  = save_havemotion;
-			regionshape = save_regionshape;
+			pop_buffer(&save_ifstk);
 		}
 
 		mstore = FALSE;

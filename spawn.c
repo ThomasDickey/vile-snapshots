@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.137 1998/11/06 11:12:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.138 1998/11/11 02:08:52 tom Exp $
  *
  */
 
@@ -577,6 +577,7 @@ write_kreg_to_pipe(void *writefp)
 #endif
 }
 
+#if OPT_SELECTIONS
 /*
  * A corresponding function to write the current region from DOT to MK to a
  * pipe.
@@ -613,6 +614,7 @@ write_region_to_pipe(void *writefp)
 #endif
 }
 #endif
+#endif /* OPT_SELECTIONS */
 
 /*
  * FUNCTION
@@ -742,6 +744,7 @@ filterregion(void)
 #endif
 }
 
+#if OPT_SELECTIONS
 /*
  * Like filterregion, but opens a stream reading from a filter's output when
  * we will not modify the current buffer (e.g., syntax highlighting).
@@ -807,6 +810,7 @@ open_region_filter(void)
     return FALSE;
 #endif
 }
+#endif /* OPT_SELECTIONS */
 
 /*
  * filter a buffer through an external DOS program

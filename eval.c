@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.175 1998/11/05 00:44:42 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.177 1998/11/11 01:55:10 tom Exp $
  *
  */
 
@@ -284,17 +284,17 @@ const char *fname)	/* name of function to evaluate */
 
 	/* if needed, retrieve the first argument */
 	if (funcs[fnum].f_type >= MONAMIC) {
-		if (macarg(arg1) != TRUE)
+		if (mac_tokval(arg1) != TRUE)
 			return(errorm);
 
 		/* if needed, retrieve the second argument */
 		if (funcs[fnum].f_type >= DYNAMIC) {
-			if (macarg(arg2) != TRUE)
+			if (mac_tokval(arg2) != TRUE)
 				return(errorm);
 
 			/* if needed, retrieve the third argument */
 			if (funcs[fnum].f_type >= TRINAMIC)
-				if (macarg(arg3) != TRUE)
+				if (mac_tokval(arg3) != TRUE)
 					return(errorm);
 		}
 	}
@@ -522,8 +522,9 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 		ElseIf( EVFWD_SEARCH )	value = ltos(last_srch_direc == FORWARD);
 		ElseIf( EVSEARCH )	value = pat;
 		ElseIf( EVREPLACE )	value = rpat;
-		ElseIf( EVMATCH )	value = (patmatch == NULL) ?
-							"" : patmatch;
+		ElseIf( EVMATCH )	value = tb_length(patmatch)
+						? tb_values(patmatch)
+						: "";
 		ElseIf( EVMODE )	value = current_modename();
 		ElseIf( EVEOC )		value = l_itoa(ev_end_of_cmd ? 1 : 0);
 #if OPT_MLFORMAT
@@ -699,7 +700,7 @@ fvar:
 		case '&':	/* indirect operator? */
 			if (strncmp(var, "&ind", FUNC_NAMELEN) == 0) {
 				/* grab token, and eval it */
-				execstr = token(execstr, var, EOS);
+				execstr = get_token(execstr, var, EOS);
 				(void)strcpy(var, tokval(var));
 				goto fvar;
 			}
@@ -805,8 +806,15 @@ stenv(const char *name, const char *value)
 	char var[NLINE];
 
 	/* check the legality and find the var */
-	var[0] = '$';
-	strcpy(var+1, name);
+	switch (toktyp(name)) {
+	case TKCMD:
+		var[0] = '$';
+		strcpy(var+1, name);
+		break;
+	default:
+		strcpy(var, name);
+		break;
+	}
 	FindVar(var, &vd);
 	if (vd.v_type == ILLEGAL_NUM) {
 		return(FALSE);
@@ -814,6 +822,34 @@ stenv(const char *name, const char *value)
 	/* and set the appropriate value */
 	status = SetVarValue(&vd, value);
 	return status;
+}
+
+/*
+ * Remove a user variable.  That's the only type of variable that we can remove.
+ */
+int
+rmenv(const char *name)
+{
+	register UVAR *p, *q;
+
+	if (*name == '%')
+		name++;
+
+	for (p = user_vars, q = 0; p != 0; q = p, p = p->next) {
+		if (!strcmp(p->u_name, name)) {
+			TRACE(("rmenv(%s) ok\n", name))
+			if (q != 0)
+				q->next = p->next;
+			else
+				user_vars = p->next;
+			free(p->u_value);
+			free(p->u_name);
+			free((char *)p);
+			return TRUE;
+		}
+	}
+	TRACE(("cannot rmenv(%s)\n", name))
+	return FALSE;
 }
 
 /* entrypoint from modes.c, used to set environment variables */
@@ -1580,12 +1616,9 @@ ev_leaks(void)
 {
 #if OPT_EVAL
 	register UVAR *p;
-	while ((p = user_vars) != 0) {
-		user_vars = p->next;
-		free(p->u_value);
-		free(p->u_name);
-		free((char *)p);
-	}
+	while ((p = user_vars) != 0)
+		rmenv(p->u_name);
+
 	FreeAndNull(shell);
 	FreeAndNull(directory);
 #if DISP_X11
