@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.80 1997/06/07 13:26:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.81 1997/06/19 23:45:41 tom Exp $
  *
  */
 
@@ -100,6 +100,10 @@ extern	void	free	( char *ptr );
 #endif
 
 #define	TABLESIZE(v)	(sizeof(v)/sizeof(v[0]))
+
+#ifndef OPT_EXEC_MACROS
+#define OPT_EXEC_MACROS 40
+#endif
 
 /*--------------------------------------------------------------------------*/
 
@@ -197,7 +201,7 @@ static	char *fsm_name;
 static	char *inputfile;
 static	int l = 0;
 static	FILE *cmdtbl;
-static	FILE *nebind, *neprot, *nefunc, *nename;
+static	FILE *nebind, *neexec, *neprot, *nefunc, *nename;
 static	FILE *nevars, *nemode, *nefkeys, *nefsms;
 static	jmp_buf my_top;
 
@@ -1268,6 +1272,21 @@ finish_fsms_h(void)
 
 /******************************************************************************/
 static void
+dump_execs(FILE *fp, int count)
+{
+	int n;
+	for (n = 1; n <= count; n++) {
+		Fprintf(fp, "#if OPT_EXEC_MACROS>%d\n", n-1);
+		Fprintf(fp, "int\n");
+		Fprintf(fp, "cbuf%d(int f, int n)\n", n);
+		Fprintf(fp, "{\n\treturn cbuf(f, n, %d);\n}\n", n);
+		Fprintf(fp, "#endif\n");
+	}
+	fclose(fp);
+}
+
+/******************************************************************************/
+static void
 save_funcs(
 char	*func,
 char	*flags,
@@ -1771,11 +1790,13 @@ main(int argc, char *argv[])
 
 	if (all_names) {
 		nebind = OpenHeader("nebind.h", argv);
+		neexec = OpenHeader("neexec.h", argv);
 		nefunc = OpenHeader("nefunc.h", argv);
 		neprot = OpenHeader("neproto.h", argv);
 		nename = OpenHeader("nename.h", argv);
 		dump_names();
 		dump_bindings();
+		dump_execs(neexec, OPT_EXEC_MACROS);
 		dump_funcs(neprot, all_funcs);
 
 		Fprintf(nefunc, "\n#ifdef real_CMDFUNCS\n\n");

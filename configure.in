@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.56 $)
+AC_REVISION($Revision: 1.57 $)
 AC_PREREQ(2.12)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.56 1997/05/13 01:16:55 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.57 1997/06/19 23:31:48 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -473,6 +473,11 @@ write \
 fi
 
 VC_ANSI_QSORT
+
+###	Miscellaneous options
+AC_ARG_WITH(exec-macros,
+	[  --with-exec-macros=N    specify count of numbered macros],
+	[AC_DEFINE(OPT_EXEC_MACROS,$withval)])
 
 ###	Debugging/development options
 AC_ARG_WITH(dbmalloc,

@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.137 1997/06/07 21:30:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.139 1997/06/19 23:24:20 tom Exp $
  *
  */
 
@@ -729,10 +729,9 @@ CMDFLAGS	*flagp)
 
 */
 
-static int
+int
 docmd(
 char *cline,	/* command line to execute */
-int newcle,
 int f, int n)
 {
 	int status;		/* return status of function */
@@ -741,22 +740,11 @@ int f, int n)
 	char tkn[NSTRING];	/* next token off of command line */
 	const CMDFUNC *cfp;
 
-	/* if we are scanning and not executing..go back here */
-	if (ifstk.disabled)
-		return TRUE;
-
 	oldestr = execstr;	/* save last ptr to string to execute */
 	execstr = cline;	/* and set this one as current */
 
-	/* first set up the default command values */
-	if (newcle == TRUE) {
-		f = FALSE;
-		n = 1;
-	}
-
 	do {
-		if ((status = macarg(tkn)) != TRUE) {	/* and grab the 
-								first token */
+		if ((status = macarg(tkn)) != TRUE) {	/* grab first token */
 			execstr = oldestr;
 			return status;
 		}
@@ -787,7 +775,7 @@ int f, int n)
 
 	/* save the arguments and go execute the command */
 	oldcle = clexec;		/* save old clexec flag */
-	clexec = newcle;		/* in cline execution */
+	clexec = TRUE;			/* in cline execution */
 	/* flag the first time through for some commands -- e.g. subst
 		must know to not prompt for strings again, and pregion
 		must only restart the p-lines buffer once for each
@@ -1798,7 +1786,11 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 #endif
 
 		/* execute the statement */
-		status = docmd(eline,TRUE,FALSE,1);
+		/* if we are scanning and not executing..go back here */
+		if (ifstk.disabled)
+			status = TRUE;
+		else
+			status = docmd(eline,FALSE,1);
 		if (force)		/* force the status */
 			status = TRUE;
 
@@ -1978,165 +1970,4 @@ int bufnum)	/* number of buffer to execute */
 
 }
 
-int
-cbuf1(int f, int n)
-	{ return cbuf(f, n, 1); }
-
-int
-cbuf2(int f, int n)
-	{ return cbuf(f, n, 2); }
-
-int
-cbuf3(int f, int n)
-	{ return cbuf(f, n, 3); }
-
-int
-cbuf4(int f, int n)
-	{ return cbuf(f, n, 4); }
-
-int
-cbuf5(int f, int n)
-	{ return cbuf(f, n, 5); }
-
-int
-cbuf6(int f, int n)
-	{ return cbuf(f, n, 6); }
-
-int
-cbuf7(int f, int n)
-	{ return cbuf(f, n, 7); }
-
-int
-cbuf8(int f, int n)
-	{ return cbuf(f, n, 8); }
-
-int
-cbuf9(int f, int n)
-	{ return cbuf(f, n, 9); }
-
-int
-cbuf10(int f, int n)
-	{ return cbuf(f, n, 10); }
-
-#if !SMALLER
-int
-cbuf11(int f, int n)
-	{ return cbuf(f, n, 11); }
-
-int
-cbuf12(int f, int n)
-	{ return cbuf(f, n, 12); }
-
-int
-cbuf13(int f, int n)
-	{ return cbuf(f, n, 13); }
-
-int
-cbuf14(int f, int n)
-	{ return cbuf(f, n, 14); }
-
-int
-cbuf15(int f, int n)
-	{ return cbuf(f, n, 15); }
-
-int
-cbuf16(int f, int n)
-	{ return cbuf(f, n, 16); }
-
-int
-cbuf17(int f, int n)
-	{ return cbuf(f, n, 17); }
-
-int
-cbuf18(int f, int n)
-	{ return cbuf(f, n, 18); }
-
-int
-cbuf19(int f, int n)
-	{ return cbuf(f, n, 19); }
-
-int
-cbuf20(int f, int n)
-	{ return cbuf(f, n, 20); }
-
-int
-cbuf21(int f, int n)
-	{ return cbuf(f, n, 21); }
-
-int
-cbuf22(int f, int n)
-	{ return cbuf(f, n, 22); }
-
-int
-cbuf23(int f, int n)
-	{ return cbuf(f, n, 23); }
-
-int
-cbuf24(int f, int n)
-	{ return cbuf(f, n, 24); }
-
-int
-cbuf25(int f, int n)
-	{ return cbuf(f, n, 25); }
-
-int
-cbuf26(int f, int n)
-	{ return cbuf(f, n, 26); }
-
-int
-cbuf27(int f, int n)
-	{ return cbuf(f, n, 27); }
-
-int
-cbuf28(int f, int n)
-	{ return cbuf(f, n, 28); }
-
-int
-cbuf29(int f, int n)
-	{ return cbuf(f, n, 29); }
-
-int
-cbuf30(int f, int n)
-	{ return cbuf(f, n, 30); }
-
-int
-cbuf31(int f, int n)
-	{ return cbuf(f, n, 31); }
-
-int
-cbuf32(int f, int n)
-	{ return cbuf(f, n, 32); }
-
-int
-cbuf33(int f, int n)
-	{ return cbuf(f, n, 33); }
-
-int
-cbuf34(int f, int n)
-	{ return cbuf(f, n, 34); }
-
-int
-cbuf35(int f, int n)
-	{ return cbuf(f, n, 35); }
-
-int
-cbuf36(int f, int n)
-	{ return cbuf(f, n, 36); }
-
-int
-cbuf37(int f, int n)
-	{ return cbuf(f, n, 37); }
-
-int
-cbuf38(int f, int n)
-	{ return cbuf(f, n, 38); }
-
-int
-cbuf39(int f, int n)
-	{ return cbuf(f, n, 39); }
-
-int
-cbuf40(int f, int n)
-	{ return cbuf(f, n, 40); }
-
-#endif /* !SMALLER */
+#include "neexec.h"

@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.79 1997/05/19 00:53:38 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.80 1997/06/19 23:24:51 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -136,7 +136,7 @@ MKTBLS = ./mktbls
 
 # these headers are built by the mktbls program from the information in cmdtbl
 # and in modetbl
-BUILTHDRS = nebind.h neproto.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nefsms.h
+BUILTHDRS = nebind.h neproto.h neexec.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nefsms.h
 
 OBJ = $(SCREEN).o \
 	main.o basic.o bind.o buffer.o crypt.o csrch.o \
@@ -165,6 +165,7 @@ vile-c-filt: c-filt.o
 
 nebind.h \
 nefkeys.h \
+neexec.h \
 nefunc.h \
 neproto.h \
 nename.h :	cmdtbl $(MKTBLS)
@@ -398,7 +399,7 @@ $(OBJ): estruct.h nemode.h edef.h neproto.h proto.h config.h
 
 bind.o:		nefunc.h
 eval.o:		nevars.h
-exec.o:		nefunc.h
+exec.o:		neexec.h nefunc.h
 externs.o:	nebind.h nename.h neproto.h nefunc.h
 filec.o:	dirstuff.h
 glob.o:		dirstuff.h

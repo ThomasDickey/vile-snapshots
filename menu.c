@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.12 1997/06/07 19:25:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.13 1997/06/07 23:40:30 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -47,9 +47,8 @@ struct  _tok_
 {
     char    type;
     int     idx_cascade;
-    char    libelle [100];
-    char    action  [50];
-    int     flag_bind;
+    char    libelle [NSTRING];
+    char    action  [NSTRING];
     int     macro;
 } Token [MAX_TOKEN];
 int Nb_Token;
@@ -80,7 +79,7 @@ int Nb_Actions = sizeof(Actions)/sizeof(TAct);
 static char *
 menu_filename(void)
 {
-	static char default_menu[] = ".vilemenu";
+        static char default_menu[] = ".vilemenu";
         char *menurc = getenv ("XVILE_MENU");
 
         if (menurc == NULL || *menurc == EOS)
@@ -173,7 +172,9 @@ get_action_fonc ( char *action )
 static int
 is_bind ( char *action )
 {
-    if (engl2fnc(action) != NULL)
+    char tok[NSTRING];
+    (void) token(action, tok, EOS);
+    if (engl2fnc(tok) != NULL)
         return 1;
 
     return 0;
@@ -274,13 +275,11 @@ int parse_menu ( const char *rc_filename )
                             if (is_action(ptr_tok))
                             {
                                 strcpy(Token[Nb_Token].action, ptr_tok);
-                                Token[Nb_Token].flag_bind = 0;
                             }
                             else
                             if (is_bind(ptr_tok))
                             {
                                 strcpy(Token[Nb_Token].action, ptr_tok);
-                                Token[Nb_Token].flag_bind = 1;
                             }
                             else
                             {
@@ -475,10 +474,7 @@ static void proc_back ( Widget w GCC_UNUSED, XtPointer arg, XtPointer call  GCC_
 
     if (is_bind (macro_action))
     {   
-        /* Binding */
-        if ((cmd = engl2fnc (macro_action)) == NULL)
-            return;
-        execute (cmd, FALSE, 1);
+        docmd (macro_action, FALSE, 1);
     }
     else
     {

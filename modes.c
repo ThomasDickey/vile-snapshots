@@ -7,7 +7,7 @@
  * Original code probably by Dan Lawrence or Dave Conroy for MicroEMACS.
  * Major extensions for vile by Paul Fox, 1991
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.89 1997/06/07 21:31:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.92 1997/06/20 01:23:55 tom Exp $
  *
  */
 
@@ -141,13 +141,16 @@ string_mode_val(VALARGS *args)
 	return errorm;
 }
 
-/* listvalueset: print each value in the array according to type,
-	along with its name, until a NULL name is encountered.  Only print
-	if the value in the two arrays differs, or the second array is nil */
+/* listvalueset:  print each value in the array according to type, along with
+ * its name, until a NULL name is encountered.  If not local, only print if the value in the
+ * two arrays differs, or the second array is nil.  If local, print only the
+ * values in the first array that are local.
+ */
 static int
 listvalueset(
 char *which,
 int nflag,
+int local,
 const struct VALNAMES *names,
 struct VAL *values,
 struct VAL *globvalues)
@@ -169,8 +172,14 @@ struct VAL *globvalues)
 	 *	2 - show in second pass (too long)
 	 */
 	for (j = 0; names[j].name != 0; j++) {
+		int ok = FALSE;
 		show[j] = 0;
-		if (same_val(names+j, values+j, globvalues ? globvalues+j : 0) != TRUE) {
+		if (local) {
+			ok = is_local_val(values,j);
+		} else {
+			ok = (same_val(names+j, values+j, globvalues ? globvalues+j : 0) != TRUE);
+		}
+		if (ok) {
 			if (!any++) {
 				if (nflag)
 					bputc('\n');
@@ -277,7 +286,7 @@ static	/*ARGSUSED*/ WINDOW *ptr2WINDOW(void *p) { return 0; }
 /* ARGSUSED */
 static
 void	
-makemodelist(int dum1 GCC_UNUSED, void *ptr)
+makemodelist(int local, void *ptr)
 {
 	static	char	gg[] = "Universal",
 			bb[] = "Buffer",
@@ -297,16 +306,22 @@ makemodelist(int dum1 GCC_UNUSED, void *ptr)
 
 	bprintf("--- \"%s\" settings, if different than globals %*P\n",
 			localbp->b_bname, term.t_ncol-1, '-');
-	nflag = listvalueset(bb, FALSE, b_valuenames, local_b_vals, global_b_values.bv);
-	nflg2 = listvalueset(ww, nflag, w_valuenames, local_w_vals, global_w_values.wv);
+	nflag = listvalueset(bb, FALSE, FALSE, b_valuenames, local_b_vals, global_b_values.bv);
+	nflg2 = listvalueset(ww, nflag, FALSE, w_valuenames, local_w_vals, global_w_values.wv);
 	if (!(nflag || nflg2))
 	 	bputc('\n');
 	bputc('\n');
 
-	bprintf("--- Global settings %*P\n", term.t_ncol-1, '-');
-	nflag = listvalueset(gg, nflag, g_valuenames, global_g_values.gv, (struct VAL *)0);
-	nflag = listvalueset(bb, nflag, b_valuenames, global_b_values.bv, (struct VAL *)0);
-	(void)  listvalueset(ww, nflag, w_valuenames, global_w_values.wv, (struct VAL *)0);
+	bprintf("--- %s settings", local ? "Local" : "Global");
+	bprintf(" %*P\n", term.t_ncol - 1 - DOT.o, '-');
+	if (local) {
+		nflag = listvalueset(bb, nflag, local, b_valuenames, local_b_vals, (struct VAL *)0);
+		(void)  listvalueset(ww, nflag, local, w_valuenames, local_w_vals, (struct VAL *)0);
+	} else {
+		nflag = listvalueset(gg, nflag, local, g_valuenames, global_g_values.gv, (struct VAL *)0);
+		nflag = listvalueset(bb, nflag, local, b_valuenames, global_b_values.bv, (struct VAL *)0);
+		(void)  listvalueset(ww, nflag, local, w_valuenames, global_w_values.wv, (struct VAL *)0);
+	}
 }
 
 /*
@@ -363,21 +378,6 @@ setfillcol(int f, int n)
 }
 
 /*
- * Allocate/set a new REGEXVAL struct
- */
-REGEXVAL *
-new_regexval(const char *pattern, int magic)
-{
-	register REGEXVAL *rp;
-
-	if ((rp = typealloc(REGEXVAL)) != 0) {
-		rp->pat = strmalloc(pattern);
-		rp->reg = regcomp(rp->pat, magic);
-	}
-	return rp;
-}
-
-/*
  * Release storage of a REGEXVAL struct
  */
 static void
@@ -388,6 +388,24 @@ free_regexval(register REGEXVAL *rp)
 		FreeAndNull(rp->reg);
 		free((char *)rp);
 	}
+}
+
+/*
+ * Allocate/set a new REGEXVAL struct
+ */
+REGEXVAL *
+new_regexval(const char *pattern, int magic)
+{
+	register REGEXVAL *rp;
+
+	if ((rp = typealloc(REGEXVAL)) != 0) {
+		rp->pat = strmalloc(pattern);
+		if ((rp->reg = regcomp(rp->pat, magic)) == 0) {
+			free_regexval(rp);
+			rp = 0;
+		}
+	}
+	return rp;
 }
 
 /*
@@ -718,6 +736,7 @@ VALARGS *args)			/* symbol-table entry for the mode */
 	const struct VALNAMES *names = args->names;
 	struct VAL     *values = args->local;
 	struct VAL     *globls = args->global;
+	REGEXVAL *r;
 
 	struct VAL oldvalue;
 	char prompt[NLINE];
@@ -830,7 +849,9 @@ VALARGS *args)			/* symbol-table entry for the mode */
 			break;
 
 		case VALTYPE_REGEX:
-			values->vp->r = new_regexval(rp, TRUE);
+			if ((r = new_regexval(rp, TRUE)) == 0)
+				return FALSE;
+			values->vp->r = r;
 			break;
 
 		default:
@@ -856,12 +877,12 @@ VALARGS *args)			/* symbol-table entry for the mode */
 
 /* ARGSUSED */
 int
-listmodes(int f GCC_UNUSED, int n GCC_UNUSED)
+listmodes(int f, int n GCC_UNUSED)
 {
 	register WINDOW *wp = curwp;
 	register int s;
 
-	s = liststuff(SETTINGS_BufName, FALSE, makemodelist,0,(void *)wp);
+	s = liststuff(SETTINGS_BufName, FALSE, makemodelist,f,(void *)wp);
 	/* back to the buffer whose modes we just listed */
 	if (swbuffer(wp->w_bufp))
 		curwp = wp;
@@ -989,6 +1010,9 @@ int global)	/* true = global flag,	false = current buffer flag */
 {
 	int s;
 	int anything = 0;
+
+	if (kind && global && isreturn(end_string()))
+		return listmodes(TRUE,1);
 
 	while (((s = do_a_mode(kind, global)) == TRUE) && (end_string() == ' '))
 		anything++;
