@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.295 1997/05/25 22:55:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.296 1997/06/07 15:07:40 tom Exp $
  *
  */
 
@@ -1602,6 +1602,9 @@ charinit(void)
 	/* legal in "identifiers" */
 	_chartypes_['_'] |= _ident|_qident;
 	_chartypes_[':'] |= _qident;
+#if SYS_VMS
+	_chartypes_['$'] |= _ident|_qident;
+#endif
 
 	/* whitespace */
 	_chartypes_[' '] =

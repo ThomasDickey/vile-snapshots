@@ -3,15 +3,12 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.70 1997/03/15 15:48:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.72 1997/06/07 12:24:53 tom Exp $
  * 
  */
 
 #include "estruct.h"
 #include "edef.h"
-
-#define MAXLHS	NSTRING
-
 
 /*
  * Picture for struct maprec
@@ -81,7 +78,7 @@ static struct maprec *abbr_map = NULL;
 static	int	map_common(struct maprec **mpp, const char *bufname, int remapflag);
 static	int	unmap_common(struct maprec **mpp, const char *bufname);
 static	void	addtomap(struct maprec **mpp, const char * ks, int kslen, int flags, int irv, char * srv);
-static	int	delfrommap(struct maprec **mpp, char * ks);
+static	int	delfrommap(struct maprec **mpp, const char * ks);
 
 static	int	abbr_getc (void);
 static	int	abbr_c_avail (void);
@@ -104,21 +101,25 @@ static	int	maplookup(int c, ITBUFF **outp, struct maprec *mp, GetFunc get, Avail
 static void
 makemaplist(int dummy GCC_UNUSED, void *mapp)
 {
-    char lhsstr[MAXLHS];
-    struct maprec *lhsstack[MAXLHS];
+    TBUFF *lhsstr = 0;
+    struct maprec **lhsstack = 0;
     struct maprec *mp = (struct maprec *) mapp;
-    int depth = 0;
     int footnote = 0;
-    int i;
+    ALLOC_T depth = 0;
+    ALLOC_T maxdepth;
+    ALLOC_T i;
 
+    lhsstr = tb_init(&lhsstr, 0);
+    lhsstack = typeallocn(struct maprec *, maxdepth = NSTRING);
     for_ever {
 	if (mp) {
 	    const char *remapnote;
 	    char *mapstr;
-	    char esc_seq[10];
-	    lhsstr[depth] = mp->ch;
+	    char esc_seq[10];	/* FIXME */
+	    tb_put(&lhsstr, depth, mp->ch);
+	    if (depth+1 >= maxdepth)
+		lhsstack = typereallocn(struct maprec *, lhsstack, maxdepth *= 2);
 	    lhsstack[depth++] = mp->flink;
-	    lhsstr[depth] = 0;
 
 	    mapstr = (char *)0;
 	    if (mp->srv) {
@@ -131,7 +132,7 @@ makemaplist(int dummy GCC_UNUSED, void *mapp)
     		    if (mapp && (struct maprec *)mapp == abbr_map) {
 			    /* the abbr map is stored inverted */
 			    for (i = depth; i > 0; )
-				bputc(lhsstr[--i]);	/* may contain nulls */
+				bputc(tb_values(lhsstr)[--i]);
 		    } else {
 			    if (mp->flags & MAPF_NOREMAP) {
 				remapnote = "(n)";
@@ -141,7 +142,7 @@ makemaplist(int dummy GCC_UNUSED, void *mapp)
 			    }
 			    bprintf("%s ", remapnote);
 			    for (i = 0; i < depth; i++)
-				bputc(lhsstr[i]);	/* may contain nulls */
+				bputc(tb_values(lhsstr)[i]);
 		    }
 		    bprintf("\t%s\n", mapstr);
 	    }
@@ -155,6 +156,8 @@ makemaplist(int dummy GCC_UNUSED, void *mapp)
     if (footnote) {
 	bprintf("[(n) means never remap]\n");
     }
+    tb_free(&lhsstr);
+    free(lhsstack);
 }
 
 static int
@@ -244,8 +247,8 @@ static int
 map_common(struct maprec **mpp, const char *bufname, int remapflag)
 {
     int	 status;
-    char kbuf[NSTRING];
-    char val[NSTRING];
+    static TBUFF *kbuf;
+    static TBUFF *val;
     int len;
 
 #if OPT_SHOW_MAPS
@@ -253,38 +256,38 @@ map_common(struct maprec **mpp, const char *bufname, int remapflag)
 	return show_mapped_chars(bufname);
     }
 #endif
-    kbuf[0] = EOS;
-    status = kbd_string("change this string: ", kbuf, sizeof(kbuf),
+    tb_scopy(&kbuf, "");
+    status = kbd_reply("change this string: ", &kbuf, eol_history,
 			' ', KBD_NOMAP|KBD_NOEVAL, no_completion);
     if (status != TRUE)
 	return status;
 
     hst_glue(' ');
-    val[0] = EOS;
+    tb_scopy(&val, "");
     if (!clexec) {
-	    status = kbd_string("to this new string: ", val, sizeof(val),
+	    status = kbd_reply("to this new string: ", &val, eol_history,
 			'\n', KBD_NOMAP, no_completion);
     } else {
-	    (void)macliteralarg(val); /* consume to end of line */
-	    status = (*val != EOS);
+	    (void)macliteralarg(&val); /* consume to end of line */
+	    status = tb_length(val) > 1;
     }
     if (status != TRUE)
 	return status;
 
-
-    len = strlen(kbuf);
+    len = tb_length(kbuf) - 1;
     if ((*mpp && *mpp == abbr_map) || (strcmp(bufname, ABBR_BufName) == 0)) {
 	/* reverse the lhs */
 	int i;
 	char t;
+	char *s = tb_values(kbuf);
 	for (i = 0; i < len/2; i++) {
-	    t = kbuf[len-i-1];
-	    kbuf[len-i-1] = kbuf[i];
-	    kbuf[i] = t;
+	    t = s[len-i-1];
+	    s[len-i-1] = s[i];
+	    s[i] = t;
 	}
     }
 
-    addtomap(mpp, kbuf, len, MAPF_USERTIMER|remapflag, -1, val);
+    addtomap(mpp, tb_values(kbuf), len, MAPF_USERTIMER|remapflag, -1, tb_values(val));
     relist_mappings(bufname);
     return TRUE;
 }
@@ -324,14 +327,14 @@ static int
 unmap_common(struct maprec **mpp, const char *bufname)
 {
     int	 status;
-    char kbuf[NSTRING];
+    static TBUFF *kbuf;
 
     /* otherwise it'll be mapped, and not found when looked up */
     if (mpp && mpp == &map_syskey)
     	suppress_sysmap = TRUE;
 
-    kbuf[0] = EOS;
-    status = kbd_string("unmap string: ", kbuf, sizeof(kbuf),
+    tb_scopy(&kbuf, "");
+    status = kbd_reply("unmap string: ", &kbuf, eol_history,
 			' ', KBD_NOMAP, no_completion);
     suppress_sysmap = FALSE;
     if (status != TRUE)
@@ -341,15 +344,16 @@ unmap_common(struct maprec **mpp, const char *bufname)
 	/* reverse the lhs */
 	int i;
 	char t;
-    	int len = strlen(kbuf);
+    	int len = tb_length(kbuf) - 1;
+	char *s = tb_values(kbuf);
 	for (i = 0; i < len/2; i++) {
-	    t = kbuf[len-i-1];
-	    kbuf[len-i-1] = kbuf[i];
-	    kbuf[i] = t;
+	    t = s[len-i-1];
+	    s[len-i-1] = s[i];
+	    s[i] = t;
 	}
     }
 
-    if (delfrommap(mpp, kbuf) != TRUE) {
+    if (delfrommap(mpp, tb_values(kbuf)) != TRUE) {
 	mlforce("[Sequence not mapped]");
 	return FALSE;
     }
@@ -417,27 +421,33 @@ addtomap(
 }
 
 static int
-delfrommap(struct maprec **mpp, char * ks)
+delfrommap(struct maprec **mpp, const char * ks)
 {
-    struct maprec **mstk[MAXLHS];
+    struct maprec ***mstk = 0;
     int depth = 0;
+    int pass;
 
     if (ks == 0 || *ks == 0)
 	return FALSE;
 
-    while (*mpp && *ks) {
-	mstk[depth] = mpp;
-	if ((*mpp)->ch == char2int(*ks)) {
-	    mpp = &(*mpp)->dlink;
-	    ks++;
-	    depth++;
+    for (pass = 0; pass < 2; pass++) {
+	while (*mpp && *ks) {
+	    if (pass)
+		mstk[depth] = mpp;
+	    if ((*mpp)->ch == char2int(*ks)) {
+		mpp = &(*mpp)->dlink;
+		ks++;
+		depth++;
+	    }
+	    else
+		mpp = &(*mpp)->flink;
 	}
-	else
-	    mpp = &(*mpp)->flink;
-    }
 
-    if (*ks)
-	return FALSE;		/* not in map */
+	if (*ks)
+	    return FALSE;		/* not in map */
+	if (pass)
+	    mstk = typeallocn(struct maprec **, depth);
+    }
 
     depth--;
     if ((*mstk[depth])->srv) {
@@ -446,6 +456,7 @@ delfrommap(struct maprec **mpp, char * ks)
     } else if ((*mstk[depth])->irv != -1) {
 	(*mstk[depth])->irv = -1;
     } else {
+	free(mstk);
 	return FALSE;
     }
 
@@ -460,6 +471,7 @@ delfrommap(struct maprec **mpp, char * ks)
 	else
 	    break;
     }
+    free(mstk);
     return TRUE;
 }
 
@@ -756,7 +768,7 @@ maplookup(
     AvailFunc avail)
 {
     struct maprec *rmp = NULL;
-    int unmatched[MAXLHS];
+    ITBUFF *unmatched = 0;
     int matchedcnt;
     int use_sys_timing;
     register int count = 0;	/* index into 'unmatched[]' */
@@ -772,13 +784,17 @@ maplookup(
     use_sys_timing = (insertmode && c == poundc &&
     				(isprint(poundc) || isspace(poundc)));
 
-    unmatched[count++] = c;
+    unmatched = itb_init(&unmatched, 0);
+    itb_append(&unmatched, c);
+    count++;
+
     matchedcnt = 0;
     while (mp != 0) {
 	if (c == mp->ch) {
 	    if (mp->irv != -1 || mp->srv != NULL) {
 		rmp = mp;
 		matchedcnt += count;
+		unmatched = itb_init(&unmatched, 0);
 		count = 0;
 
 		/* our code supports matching the longer of two maps one of
@@ -819,7 +835,8 @@ maplookup(
 		    break;
 	    }
 
-	    unmatched[count++] = c = (*get)() & ~REMAPFLAGS;
+	    itb_append(&unmatched, c = (*get)() & ~REMAPFLAGS);
+	    count++;
 
 	}
 	else
@@ -829,7 +846,7 @@ maplookup(
     if (rmp) {
 	/* unget the unmatched suffix */
 	while (count > 0)
-	    (void)itb_append(outp, unmatched[--count]);
+	    (void)itb_append(outp, itb_values(unmatched)[--count]);
 	/* unget the mapping and elide correct number of recorded chars */
 	if (rmp->srv) {
 	    int remapflag;
@@ -847,13 +864,14 @@ maplookup(
 	else {
 	    (void)itb_append(outp, rmp->irv);
 	}
-	return matchedcnt;
     }
     else {	/* didn't find a match */
 	while (count > 0)
-	    (void)itb_append(outp, unmatched[--count]);
-	return 0;
+	    (void)itb_append(outp, itb_values(unmatched)[--count]);
+	matchedcnt = 0;
     }
+    itb_free(&unmatched);
+    return matchedcnt;
 }
 
 #if NO_LEAKS

@@ -7,7 +7,7 @@
  *	To do:	add 'itb_ins()' and 'itb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/itbuff.c,v 1.10 1996/08/13 02:10:07 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/itbuff.c,v 1.11 1997/06/04 10:50:47 tom Exp $
  *
  */
 
@@ -378,6 +378,15 @@ itb_peek(ITBUFF *p)
 }
 
 /*******(bulk-data)************************************************************/
+
+/*
+ * returns a pointer to data, assumes it is one long string
+ */
+int *
+itb_values(ITBUFF *p)
+{
+	return (p != 0) ? p->itb_data : 0;
+}
 
 /*
  * returns the length of the data

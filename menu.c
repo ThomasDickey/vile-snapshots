@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.11 1997/05/13 10:10:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.12 1997/06/07 19:25:29 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -77,16 +77,19 @@ static TAct Actions [] = {
 int Nb_Actions = sizeof(Actions)/sizeof(TAct);
 
 
-static const char *
+static char *
 menu_filename(void)
 {
-        const char *menurc = getenv ("XVILE_MENU");
+	static char default_menu[] = ".vilemenu";
+        char *menurc = getenv ("XVILE_MENU");
+
         if (menurc == NULL || *menurc == EOS)
-                menurc = ".vilemenu";
+                menurc = default_menu;
+
         return flook(menurc, FL_ANYWHERE|FL_READABLE);
 }
 
-static const char *
+static char *
 startup_filename(void)
 {
         return flook(startup_file, FL_ANYWHERE|FL_READABLE);
@@ -530,7 +533,7 @@ static void add_callback(Widget w, XtCallbackProc function, XtPointer closure)
 /* is clicked => Post the PullDown associated                           */
 /* It's dirty ...                                                       */
 /************************************************************************/
-static void post_buffer_list ( Widget w, XtPointer client, XEvent *ev, Boolean *ok )
+static void post_buffer_list ( Widget w GCC_UNUSED, XtPointer client GCC_UNUSED, XEvent *ev GCC_UNUSED, Boolean *ok  GCC_UNUSED)
 {
     int     i, n=nb_item_menu_list;
     BUFFER  *bp;
@@ -610,7 +613,7 @@ void do_menu ( Widget menub )
     Widget  pm = 0;
     Widget  pm_w [50];
     int     rc;
-    const char *menurc = menu_filename();
+    char   *menurc = menu_filename();
 
     if ((rc = parse_menu (menurc)) != TRUE)
     {

@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.154 1997/05/12 09:44:15 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.155 1997/05/29 22:37:27 tom Exp $
  *
  */
 
@@ -5240,6 +5240,7 @@ display_cursor(
     XtIntervalId *idp)
 {
     static Bool am_blinking = FALSE;
+    int the_col = (ttcol >= term.t_ncol) ? term.t_ncol - 1 : ttcol;
 
     /*
      * Return immediately if we are either in the process of making a
@@ -5256,12 +5257,12 @@ display_cursor(
 	return;
     }
 
-    if (IS_DIRTY(ttrow,ttcol) && idp == (XtIntervalId *) 0)
+    if (IS_DIRTY(ttrow,the_col) && idp == (XtIntervalId *) 0)
 	return;
 
     if (cur_win->show_cursor) {
 	if ( cur_win->blink_interval > 0
-	  || ( cur_win->blink_interval < 0 && IS_REVERSED(ttrow, ttcol) )) {
+	  || ( cur_win->blink_interval < 0 && IS_REVERSED(ttrow, the_col) )) {
 	    if (idp != (XtIntervalId *) 0 || !am_blinking) {
 		/* Set timer to get blinking */
 		cur_win->blink_id = XtAppAddTimeOut(
@@ -5285,13 +5286,13 @@ display_cursor(
 	    }
 	}
 
-	MARK_CELL_DIRTY(ttrow,ttcol);
+	MARK_CELL_DIRTY(ttrow,the_col);
 	MARK_LINE_DIRTY(ttrow);
-	flush_line(&CELL_TEXT(ttrow,ttcol), 1,
-	           (unsigned int) (VATTRIB(CELL_ATTR(ttrow,ttcol))
+	flush_line(&CELL_TEXT(ttrow,the_col), 1,
+	           (unsigned int) (VATTRIB(CELL_ATTR(ttrow,the_col))
 		                ^ ((cur_win->blink_status & BLINK_TOGGLE)
 				  ? 0 : VACURS)),
-		   ttrow, ttcol);
+		   ttrow, the_col);
     }
     else {
 	/* This code will get called when the window no longer has the focus. */
@@ -5300,12 +5301,12 @@ display_cursor(
 	    cur_win->blink_id = (XtIntervalId) 0;
 	}
 	am_blinking = FALSE;
-	MARK_CELL_DIRTY(ttrow,ttcol);
+	MARK_CELL_DIRTY(ttrow,the_col);
 	MARK_LINE_DIRTY(ttrow);
-	flush_line(&CELL_TEXT(ttrow,ttcol), 1,
-	    (unsigned int) VATTRIB(CELL_ATTR(ttrow,ttcol)), ttrow, ttcol);
+	flush_line(&CELL_TEXT(ttrow,the_col), 1,
+	    (unsigned int) VATTRIB(CELL_ATTR(ttrow,the_col)), ttrow, the_col);
 	XDrawRectangle(dpy, cur_win->win,
-	               IS_REVERSED(ttrow,ttcol) ? cur_win->cursgc
+	               IS_REVERSED(ttrow,the_col) ? cur_win->cursgc
 		                                : cur_win->revcursgc,
 	               x_pos(cur_win, ttcol), y_pos(cur_win, ttrow),
 		       (unsigned)(cur_win->char_width - 1),

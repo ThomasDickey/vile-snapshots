@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.141 1997/05/26 13:28:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.144 1997/06/07 21:17:17 tom Exp $
  *
  */
 
@@ -49,7 +49,7 @@ static	SIZE_T	s2size ( char *s );
 static	char *	getkill (void);
 static	char *	ltos ( int val );
 static	char *	s2offset ( char *s, char *n );
-static	int	PromptAndSet ( char *var, int f, int n );
+static	int	PromptAndSet ( const char *var, int f, int n );
 static	int	SetVarValue ( VDESC *var, char *value );
 static	int	ernd (void);
 static	int	gtlbl ( const char *tokn );
@@ -649,7 +649,7 @@ static int
 vars_complete(
 int	c,
 char	*buf,
-int	*pos)
+unsigned *pos)
 {
 	int	status;
 	if (buf[0] == '$') {
@@ -670,27 +670,29 @@ setvar(int f, int n)		/* set a variable */
 	/* note: numeric arg can overide prompted value */
 {
 	register int status;	/* status return */
-	static char var[NLINE+3];	/* name of variable to fetch */
+	static TBUFF *var;
 
 	/* first get the variable to set.. */
-	status = kbd_reply("Variable to set: ",
-		var, NLINE,
+	if (var == 0)
+		tb_scopy(&var, "");
+	status = kbd_reply("Variable to set: ", &var,
 		mode_eol, '=', KBD_NOEVAL|KBD_LOWERC, vars_complete);
 	if (status != TRUE)
 		return(status);
-	return PromptAndSet(var, f, n);
+	return PromptAndSet(tb_values(var), f, n);
 }
 
 static int
-PromptAndSet(char *var, int f, int n)
+PromptAndSet(const char *name, int f, int n)
 {
 	register int status;	/* status return */
 	VDESC vd;		/* variable num/type */
+	char var[NLINE];
 	char prompt[NLINE];
 	char value[NLINE];	/* value to set variable to */
 
 	/* check the legality and find the var */
-	FindVar(var, &vd);
+	FindVar(strcpy(var, name), &vd);
 
 	/* if its not legal....bitch */
 	if (vd.v_type == ILLEGAL_NUM) {
@@ -728,12 +730,14 @@ PromptAndSet(char *var, int f, int n)
 /* entrypoint from modes.c, used to set environment variables */
 #if OPT_EVAL
 int
-set_variable(char *name)
+set_variable(const char *name)
 {
 	char	temp[NLINE];
 	if (*name != '$')
-		name = strcat(strcpy(temp, "$"), name);
-	return PromptAndSet(name, FALSE, 0);
+		(void) strcat(strcpy(temp, "$"), name);
+	else
+		(void) strcpy(temp, name);
+	return PromptAndSet(temp, FALSE, 0);
 }
 #endif
 

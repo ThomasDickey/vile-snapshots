@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.105 1997/05/25 23:06:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.106 1997/06/06 19:28:40 tom Exp $
  *
  */
 
@@ -1454,6 +1454,7 @@ loadkreg(int f GCC_UNUSED, int n GCC_UNUSED)
 	char respbuf[NFILEN];
 
 	ksetup();
+	*respbuf = EOS;
 	s = mlreply_no_opts("Load register with: ",
 					respbuf, sizeof(respbuf));
 	if (s != TRUE)

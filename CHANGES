@@ -1,5 +1,21 @@
 Changes for vile 7.2 (released ??? ??? ??, 1997)
 
+(tom)	970607 (e)
+	+ modify VMS terminal driver, vmsvt.c, to work when invoked from a
+	  command-file, i.e., get terminal characteristics from SYS$COMMAND
+	  rather than SYS$INPUT (reported by Adam Denton).
+	+ treat '$' as an identifier character on VMS (requested by
+	  Adam Denton).
+	+ clarify discussion of color in help-file (patch by Clark Morgan).
+	+ modify map.c to use TBUFF's, as well as new kbd_reply interface,
+	  to remove limit on mapped strings.
+	+ change interface/internals of kbd_reply() to use a TBUFF, so we don't
+	  need fixed-size buffers any more (bind.c, exec.c, eval.c, history.c,
+	  input.c, line.c, modes.c).
+	+ correct uninitialized buffer in loadkreg().
+	+ correct indexing in display_cursor() function in xvile; exposed when
+	  displaying a long list for the historical buffer command.
+
 (tom)	970526 (d)
 	+ add $ncolors variable to allow run-time modification of the meaning
 	  of colors (e.g., white).

@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.161 1997/04/12 00:57:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.165 1997/06/07 21:27:58 tom Exp $
  *
  */
 
@@ -102,7 +102,7 @@ TempDot(int init)
  */
 /*ARGSUSED*/
 int
-no_completion(int c GCC_UNUSED, char *buf GCC_UNUSED, int *pos GCC_UNUSED)
+no_completion(int c GCC_UNUSED, char *buf GCC_UNUSED, unsigned *pos GCC_UNUSED)
 {
 	return FALSE;
 }
@@ -119,10 +119,10 @@ int
 shell_complete(
 int	c,
 char	*buf,
-int	*pos)
+unsigned *pos)
 {
 	int status;
-	int len = *pos;
+	unsigned len = *pos;
 	int base;
 	int first = 0;
 
@@ -690,32 +690,47 @@ kbd_delimiter(void)
 	return c;
 }
 
+/*
+ * Make sure that the buffer will have extra space when passing it to functions
+ * that don't know it's a TBUFF.
+ */
+static char *
+tbreserve(TBUFF **buf)
+{
+	return tb_values(tb_alloc(buf, (*buf)->tb_used + NSTRING));
+}
+
+#define BACKSLASH '\\'
+
 /* turn \X into X */
 static void
-remove_backslashes(char *s)
+remove_backslashes(TBUFF *buf)
 {
-	register char *cp;
-	while (*s) {
-		if (*s == '\\') {  /* shift left */
-			for (cp = s; *cp; cp++)
-				*cp = *(cp+1);
-		}
-		s++;
+	register char *cp = tb_values(buf);
+	register ALLOC_T s, d;
+
+	for (s = d = 0; s < tb_length(buf); ) {
+		if (cp[s] == BACKSLASH)
+			s++;
+		cp[d++] = cp[s++];
 	}
+
+	buf->tb_used = d;
 }
 
 /* count backslashes so we can tell at any point whether we have the current
  * position escaped by one.
  */
 static int
-countBackSlashes(char * buffer, int len)
+countBackSlashes(TBUFF * buf, int len)
 {
+	char *buffer = tb_values(buf);
 	register int	count;
 
-	if (len && buffer[len-1] == '\\') {
+	if (len && buffer[len-1] == BACKSLASH) {
 		count = 1;
 		while (count+1 <= len &&
-			buffer[len-1-count] == '\\')
+			buffer[len-1-count] == BACKSLASH)
 			count++;
 	} else {
 		count = 0;
@@ -770,9 +785,8 @@ eraseChar(int c)
 /* expand a single character (only used on interactive input) */
 static int
 expandChar(
-char *	buf,
-int	bufn,
-int *	position,
+TBUFF **buf,
+unsigned * position,
 int	c,
 int	options)
 {
@@ -780,7 +794,8 @@ int	options)
 	register char *	cp;
 	register BUFFER *bp;
 	char str[NFILEN];
-	int  shell = editingShellCmd(buf,options);
+	char *buffer = tb_values(*buf);
+	int  shell = editingShellCmd(buffer,options);
 	int  expand = ((options & KBD_EXPAND) || shell);
 	int  exppat = (options & KBD_EXPPAT);
 
@@ -848,10 +863,10 @@ int	options)
 #ifdef only_expand_first_bang
 		/* without this check, do as vi does -- expand '!'
 		   to previous command anywhere it's typed */
-		if (cpos > (buf[0] == '!'))
+		if (cpos > (buffer[0] == '!'))
 			return FALSE;
 #endif
-		cp = tb_values(save_shell[!isShellOrPipe(buf)]);
+		cp = tb_values(save_shell[!isShellOrPipe(buffer)]);
 		if (cp != NULL && isShellOrPipe(cp))
 			cp++;	/* skip the '!' */
 		break;
@@ -861,11 +876,11 @@ int	options)
 	}
 
 	if (cp != NULL) {
-		while (cpos < bufn-1 && ((c = *cp++) != EOS)) {
-			buf[cpos++] = (char)c;
+		while ((c = *cp++) != EOS) {
+			tb_put(buf, cpos++, c);
 			showChar(c);
 		}
-		buf[cpos] = EOS;
+		tb_put(buf, cpos, EOS);
 		TTflush();
 	}
 	*position = cpos;
@@ -888,8 +903,9 @@ is_edit_char(int c)
  * Erases the response from the screen for 'kbd_string()'
  */
 void
-kbd_kill_response(char * buf, int * position, int c)
+kbd_kill_response(TBUFF * buffer, unsigned * position, int c)
 {
+	char *buf = tb_values(buffer);
 	register int	cpos = *position;
 
 	while (cpos > 0) {
@@ -908,32 +924,32 @@ kbd_kill_response(char * buf, int * position, int c)
 	if (disinp)
 		TTflush();
 
-	buf[*position = cpos] = EOS;
+	tb_put(&buffer, *position = cpos, EOS);
 }
 
 /*
  * Display the default response for 'kbd_string()', escaping backslashes if
  * necessary.
- *
- * patch: make 'dst[]' a TBUFF so we don't have to worry about overflow.
  */
 int
 kbd_show_response(
-char	*dst,		/* string with escapes */
+TBUFF	**dst,		/* string with escapes */
 char	*src,		/* string w/o escapes */
-int	bufn,		/* maximum # of chars we read from 'src[]' */
+unsigned bufn,		/* maximum # of chars we read from 'src[]' */
 int	eolchar,
 int	options)
 {
-	register int c, j, k;
+	register int c;
+	register ALLOC_T k;
 
 	/* add backslash escapes in front of volatile characters */
-	for (j = k = 0; k < bufn; k++) {
+	tb_init(dst, 0);
+	for (k = 0; k < bufn; k++) {
 		if ((c = src[k]) == EOS)
 			break;
-		if ((c == '\\') || (c == eolchar && eolchar != '\n')) {
+		if ((c == BACKSLASH) || (c == eolchar && eolchar != '\n')) {
 			if (options & KBD_QUOTES)
-				dst[j++] = '\\'; /* add extra */
+				tb_append(dst, BACKSLASH); /* add extra */
 		} else if (strchr(global_g_val_ptr(GVAL_EXPAND_CHARS),c) != 0) {
 			if (c == EXPC_RPAT && !(options & KBD_EXPPAT))
 				;
@@ -941,28 +957,25 @@ int	options)
 				;
 			else if ((options & KBD_QUOTES)
 			 && (options & KBD_EXPAND))
-				dst[j++] = '\\'; /* add extra */
+				tb_append(dst, BACKSLASH); /* add extra */
 		}
-		dst[j++] = (char)c;
+		tb_append(dst, c);
 	}
-	dst[j] = EOS;
+	tb_append(dst, EOS);
 
 	/* put out the default response, which is in the buffer */
-	j = 0;
 	kbd_init();
-	while ((c = dst[j]) != EOS && j < NLINE-1) {
-		showChar(c);
-		++j;
-	}
+	for (k = 0; k < tb_length(*dst) - 1; k++)
+		showChar(tb_values(*dst)[k]);
 	if (disinp)
 		TTflush();
-	return j;
+	return tb_length(*dst) - 1;
 }
 
 /* default function for 'edithistory()' */
-static int
+int
 /*ARGSUSED*/
-eol_history(char * buffer GCC_UNUSED, int cpos GCC_UNUSED, int c, int eolchar)
+eol_history(const char * buffer GCC_UNUSED, unsigned cpos GCC_UNUSED, int c, int eolchar)
 {
 	if (isprint(eolchar)) {
 		if (c == eolchar)
@@ -1009,12 +1022,19 @@ int
 kbd_string(
 const char *prompt,	/* put this out first */
 char *extbuf,		/* the caller's (possibly full) buffer */
-int bufn,		/* the length of  " */
+unsigned bufn,		/* the length of  " */
 int eolchar,		/* char we can terminate on, in addition to '\n' */
 int options,		/* KBD_EXPAND/KBD_QUOTES, etc. */
-int (*complete)(int,char *,int *)) /* handles completion */
+int (*complete)(DONE_ARGS)) /* handles completion */
 {
-	return kbd_reply(prompt, extbuf, bufn, eol_history, eolchar, options, complete);
+	int code;
+	static TBUFF *temp;
+	tb_scopy(&temp, extbuf);
+	code = kbd_reply(prompt, &temp, eol_history, eolchar, options, complete);
+	if (bufn > tb_length(temp))
+		bufn = tb_length(temp);
+	strncpy0(extbuf, tb_values(temp), bufn);
+	return code;
 }
 
 /*
@@ -1029,8 +1049,7 @@ int (*complete)(int,char *,int *)) /* handles completion */
 int
 kbd_reply(
 const char *prompt,		/* put this out first */
-char *extbuf,			/* the caller's (possibly full) buffer */
-int bufn,			/* the length of  " */
+TBUFF **extbuf,			/* the caller's (possibly full) buffer */
 int (*endfunc)(EOL_ARGS),	/* parsing with 'eolchar' delimiter */
 int eolchar,			/* char we can terminate on, in addition to '\n' */
 int options,			/* KBD_EXPAND/KBD_QUOTES */
@@ -1038,7 +1057,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 {
 	int	c;
 	int	done;
-	int	cpos;		/* current character position in string */
+	unsigned cpos;		/* current character position in string */
 	int	status;
 	int	shell;
 
@@ -1046,39 +1065,40 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 	register int backslashes; /* are we quoting the next expandable char? */
 	int dontmap = (options & KBD_NOMAP);
 	int firstch = TRUE;
-	int newpos;
-	char buf[NLINE];
+	unsigned newpos;
+	TBUFF *buf = 0;
 
 	last_eolchar = EOS;	/* ...in case we don't set it elsewhere */
 
 	if (clexec) {
-		execstr = token(execstr, extbuf, eolchar);
-		status = (*extbuf != EOS);
+		execstr = token(execstr, tbreserve(extbuf), eolchar);
+		(*extbuf)->tb_used = strlen(tb_values(*extbuf)) + 1; /* FIXME */
+		status = (tb_length(*extbuf) > 1);
 		if (status) { /* i.e. we got some input */
 #if !SMALLER
 			if ((options & KBD_LOWERC))
-				(void)mklower(extbuf);
+				(void)mklower(tb_values(*extbuf));
 			else if ((options & KBD_UPPERC))
-				(void)mkupper(extbuf);
+				(void)mkupper(tb_values(*extbuf));
 #endif
 			if (!(options & KBD_NOEVAL)) {
-				(void)strncpy(extbuf,
-					tokval(strcpy(buf, extbuf)),
-					(SIZE_T)bufn);
+				buf = tb_scopy(&buf, tb_values(*extbuf));
+				(void)tb_scopy(extbuf,
+					tokval(tb_values(buf)));
+				tb_free(&buf);
 			}
 			if (complete != no_completion
-			 && !editingShellCmd(extbuf,options)) {
+			 && !editingShellCmd(tb_values(*extbuf),options)) {
 				cpos =
-				newpos = strlen(extbuf);
-				if (!(*complete)(NAMEC, extbuf, &newpos))
-					extbuf[cpos] = EOS;
+				newpos = tb_length(*extbuf) - 1;
+				if (!(*complete)(NAMEC, tbreserve(extbuf), &newpos))
+					tb_put(extbuf, cpos, EOS);
 			}
 			/*
 			 * Splice for multi-part command
 			 */
 			if ((last_eolchar = *execstr) != EOS)
 				last_eolchar = ' ';
-			extbuf[bufn-1] = EOS;
 		}
 		if (pushed_back && (*execstr == EOS)) {
 			pushed_back = FALSE;
@@ -1086,7 +1106,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 			execstr = pushback_ptr;
 #if	OPT_HISTORY
 			if (!pushback_flg)
-				hst_append(extbuf,EOS);
+				hst_append(tb_values(*extbuf), EOS);
 #endif
 		}
 		return status;
@@ -1099,8 +1119,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 	if (prompt != 0)
 		mlprompt("%s", prompt);
 
-	if (bufn > sizeof(buf)) bufn = sizeof(buf);
-	cpos = kbd_show_response(buf, extbuf, bufn, eolchar, options);
+	cpos = kbd_show_response(&buf, tb_values(*extbuf), tb_length(*extbuf)-1, eolchar, options);
 	backslashes = 0; /* by definition, there is an even 
 					number of backslashes */
 	for_ever {
@@ -1145,7 +1164,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 		if (c == '\n') {
 			done = TRUE;
 		} else if (!EscOrQuo && !is_edit_char(c)) {
-			if ((*endfunc)(buf,cpos,c,eolchar)) {
+			if ((*endfunc)(tb_values(buf),cpos,c,eolchar)) {
 				done = TRUE;
 			}
 		}
@@ -1156,7 +1175,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 				continue;
 			}
 			kbd_unquery();
-			shell = editingShellCmd(buf,options);
+			shell = editingShellCmd(tb_values(buf),options);
 			if (done && (options & KBD_NULLOK) && cpos == 0)
 				/*EMPTY*/;
 			else if ((done && !(options & KBD_MAYBEC))
@@ -1165,15 +1184,15 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 			  && (c == TESTC || c == NAMEC))) {
 				if (shell && isreturn(c)) {
 					;
-				} else if ((*complete)(c, buf, &cpos)) {
+				} else if ((*complete)(c, tbreserve(&buf), &cpos)) {
 					done = TRUE;
 					if (c != NAMEC) /* cancel the unget */
 						(void)keystroke();
 				} else {
 					if (done) {	/* stay til matched! */
-						buf[cpos] = EOS;
+						tb_put(&buf, cpos, EOS);
 						kbd_unquery();
-						(void)((*complete)(TESTC, buf, &cpos));
+						(void)((*complete)(TESTC, tbreserve(&buf), &cpos));
 					}
 					firstch = FALSE;
 					continue;
@@ -1187,9 +1206,9 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 				remove_backslashes(buf); /* take out quoters */
 
 			/* if buffer is empty, return FALSE */
-			hst_append(buf, eolchar);
-			(void)strncpy0(extbuf, buf, (SIZE_T)bufn);
-			status = (*extbuf != EOS);
+			hst_append(tb_values(buf), eolchar);
+			(void)tb_scopy(extbuf, tb_values(buf));
+			status = (tb_length(*extbuf) > 1);
 
 			/* If this is a shell command, push-back the actual
 			 * text to separate the "!" from the command.  Note
@@ -1203,10 +1222,11 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 			if (status == TRUE	/* ...we have some text */
 			 && (options & KBD_EXPCMD)
 #if	OPT_HISTORY
-			 && (strlen(buf) == cpos) /* history didn't split it */
+			 && (strlen(tb_values(buf)) == cpos) /* history didn't split it */
 #endif
-			 && isShellOrPipe(buf)) {
-				kbd_pushback(extbuf, 1);
+			 && isShellOrPipe(tb_values(buf))) {
+				kbd_pushback(tb_values(*extbuf), 1);
+				tb_put(extbuf, 1, EOS); /* FIXME */
 			}
 			break;
 		}
@@ -1214,14 +1234,15 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 
 #if	OPT_HISTORY
 		if (!EscOrQuo
-		 && edithistory(buf, &cpos, &c, options, endfunc, eolchar)) {
+		 && edithistory(&buf, &cpos, &c, options, endfunc, eolchar)) {
+			tb_put(&buf, cpos, EOS);
 			backslashes = countBackSlashes(buf, cpos);
 			firstch = TRUE;
 			continue;
 		} else
 #endif
 		if (ABORTED(c) && quotef == FALSE && !dontmap) {
-			buf[cpos] = EOS;
+			tb_put(&buf, cpos, EOS);
 			status = esc_func(FALSE, 1);
 			break;
 		} else if ((isbackspace(c) ||
@@ -1232,7 +1253,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 				cpos = 0;
 
 			if (cpos == 0) {
-				buf[0] = EOS;
+				tb_put(&buf, 0, EOS);
 				if (prompt)
 					mlerase();
 				if (isbackspace(c)) {	/* splice calls */
@@ -1262,15 +1283,14 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 		} else {
 
 			if (EscOrQuo
-			 || !expandChar(buf, bufn, &cpos, c, options)) {
-				if (c == '\\')
+			 || !expandChar(&buf, &cpos, c, options)) {
+				if (c == BACKSLASH)
 					backslashes++;
 				else
 					backslashes = 0;
 				quotef = FALSE;
 
-				if (isspecial(c)
-				 || (cpos >= bufn-1)) {
+				if (isspecial(c)) {
 					if (!keystroke_avail())
 						kbd_alarm();
 					continue; /* keep firstch==TRUE */
@@ -1283,8 +1303,8 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 					 && islower(c))
 						c = toupper(c);
 #endif
-					buf[cpos++] = (char)c;
-					buf[cpos] = EOS;
+					tb_put(&buf, cpos++, c);
+					tb_put(&buf, cpos, EOS);
 					show1Char(c);
 				}
 			}
@@ -1295,6 +1315,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 	popdown_completions();
 #endif
 	reading_msg_line = FALSE;
+	tb_free(&buf);
 	return status;
 }
 
