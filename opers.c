@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995-2002 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.79 2002/06/26 00:28:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.80 2002/06/30 20:12:34 tom Exp $
  *
  */
 
@@ -219,7 +219,8 @@ operyank(int f, int n)
     savedot = DOT;
     opcmd = OPDEL;
     s = vile_op(f, n, yankregion, "Yank");
-    if (getregion(&region) == TRUE) {
+    if (getregion(&region) == TRUE
+	&& !samepoint(region.r_orig, region.r_end)) {
 	savedot = region.r_orig;
     }
     DOT = savedot;

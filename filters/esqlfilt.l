@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.9 2000/08/09 23:17:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.11 2002/06/30 19:38:44 tom Exp $
  *
  * Filter to add vile "attribution" sequences to embedded SQL with C/C++.
  * - T.Dickey
@@ -131,6 +131,7 @@ do_filter(FILE *input)
     in_execute = 0;
     in_block = 0;
 
+    set_symbol_table(other_symbols);
     default_state(CODE);
     while (yylex() > 0) {
     }
@@ -157,7 +158,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
 %%
 
-<CODE,SQL>^{BLANK}#include{BLANK}{INCLUDE} |
+<CODE,SQL>^{BLANK}#{BLANK}include{BLANK}{INCLUDE} |
 <CODE,SQL>^{BLANK}#{BLANK}{IDENT} { WriteToken(Preproc_attr); }
 
 <CODE>"EXEC"{SPC}+"SQL"	|

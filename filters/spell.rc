@@ -1,9 +1,13 @@
-; $Id: spell.rc,v 1.2 1999/10/03 20:00:29 tom Exp $
+; $Id: spell.rc,v 1.3 2002/06/30 17:44:47 tom Exp $
 
 store-procedure SpellFilter "Highlight misspelled words in the current buffer"
-	~local $curcol $curline
-	~local %filtername
-	~hidden goto-beginning-of-file
+    ~local $filtername
+    ~local $curcol $curline
+    ~hidden goto-beginning-of-file
+    ~if &filter "spell"
+	~hidden attribute-directly end-of-file "spell"
+    ~else
 	~hidden attribute-from-filter end-of-file "vile-spell-filt"
+    ~endif
 ~endm
 bind-key SpellFilter ^X-i

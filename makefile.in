@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.180 2002/06/25 11:15:32 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.181 2002/06/30 17:50:37 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -284,7 +284,7 @@ OBJ = $(SCREEN).o \
 ALL =	$(TARGET)
 
 @MAKE_FILTERS@all \
-@MAKE_FILTERS@install ::
+@MAKE_FILTERS@install :: $(BUILTHDRS)
 @MAKE_FILTERS@	cd filters && $(MAKE) $(MAKE_RECUR) $@
 
 all ::	$(ALL)

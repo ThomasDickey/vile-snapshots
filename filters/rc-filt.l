@@ -2,13 +2,10 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rc-filt.l,v 1.2 2001/12/26 20:49:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rc-filt.l,v 1.3 2002/06/30 15:35:32 tom Exp $
  *
- * Filter to add vile "attribution" sequences to selected bits of Basic
- * input text.
- *
- * Notes:
- *	Some dialects of basic allow '_' in IDENT, some do not.
+ * Filter to add vile "attribution" sequences to selected bits of Windows
+ * resource files.
  */
 
 #include <filters.h>

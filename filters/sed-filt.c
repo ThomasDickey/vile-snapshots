@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.15 2001/12/19 23:14:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.16 2002/06/30 18:09:47 tom Exp $
  *
  * Filter to add vile "attribution" sequences to sed scripts.
  */
@@ -20,6 +20,7 @@ DefineFilter("sed");
 #define R_SQUARE ']'
 
 #define isSlash(c) ((c) == '/' || (c) == ESC)
+#define isComma(c) ((c) == ',' || (c) == ';')
 
 typedef enum {
     LeadingBlanks
@@ -224,7 +225,7 @@ SkipTwoPatterns(char *s, int flags)
 static int
 HaveAddress(char *s)
 {
-    return (isdigit(CharOf(*s)) || *s == '$' || isSlash(*s) || *s == ',');
+    return (isdigit(CharOf(*s)) || *s == '$' || isSlash(*s) || isComma(*s));
 }
 
 static char *
@@ -234,7 +235,7 @@ SkipAddress(char *s, int *count)
     int done;
 
     if (*count) {
-	if (*s == ',') {
+	if (isComma(*s)) {
 	    flt_putc(*s++);
 	} else {
 	    return s;
@@ -314,7 +315,7 @@ do_filter(FILE * input GCC_UNUSED)
 	    case OptionalAddresses:
 		if (HaveAddress(s)) {
 		    s = SkipAddress(s, &addresses);
-		    if (*s == ',') {
+		    if (isComma(*s)) {
 			next = state;
 		    } else {
 			s = SkipBlanks(s);

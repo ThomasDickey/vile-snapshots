@@ -1,3 +1,28 @@
+Changes for vile 9.4 (released ??? ??? ?? ????)
+
+ 20020630 (a)
+	> Clark Morgan:
+	+ document configure-script options for color syntax highlighting.
+	> Tom Dickey:
+	+ correct change made to operyank() to handle y0p command in 9.2za by
+	  not moving the cursor when there is no motion associated with the
+	  yank, e.g., when typing yy or Y (reported by Clark Morgan).
+	+ fix esqlfilt.l to start with C symbol table rather than SQL.
+	+ fix esqlfilt.l to allow a blank between "#" and "include".
+	+ add check in tcap.c for terminfo kmous capability like xterm, in case
+	  we are running in screen, which also supports xterm mouse protocol.
+	+ modify sed-filt.c to allow semicolon as an address separator.
+	+ modify spell.rc, spellflt.l and select.c to allow spell filter to
+	  work as a built-in filter (reported by Clark Morgan).
+	+ corrected misleading description of rc-filt.l (reported by Clark
+	  Morgan).
+	+ rewrote spell.rc to make it work properly if the spell-filter is
+	  built-in (reported by Clark Morgan).
+	+ remove a spurious call to flt_bfr_append() in sh-filt.l which broke
+	  highlighting of quoted symbols such as "${foo+bar}".
+	+ correct ifdef's in estruct.h and fileio.c so that DJGPP version
+	  builds.
+
 Changes for vile 9.3 (released Tue Jun 25 2002)
 
  20020625 (ze)

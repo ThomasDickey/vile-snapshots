@@ -198,11 +198,12 @@ winvile   perl,ole[2] nmake -f makefile.wnt CFG=winvile-with-perl OPT=ole-auto
     install it in a directory located in your PATH and add the following
     command-line option:
 
-        nmake -f makefile.wnt <OPTIONS_FROM_ABOVE> LEX=flex   # or LEX=lex
+        nmake -f makefile.wnt <OPTIONS_FROM_ABOVE> FLT=1 LEX=flex  # or LEX=lex
 
     take note that flex is a component of cygwin's GNU emulation package
     and works quite well for this purpose.  cygwin can be obtained from
-    Redhat at http://sources.redhat.com/cygwin.
+    Redhat at http://sources.redhat.com/cygwin.  the FLT option binds
+    all syntax coloring filters into the resultant [win]vile executable.
 
 [2] this option requires prior installation of perl.  refer to the section
     entitled "Perl preconditions" below.
@@ -263,5 +264,5 @@ tom dickey, dickey@herndon4.his.com
 paul fox, pgf@foxharp.boston.ma.us (home)
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.29 2002/06/26 00:25:57 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.30 2002/06/30 20:27:52 cmorgan Exp $
 ------------------------

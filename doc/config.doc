@@ -1,4 +1,4 @@
-README.CFG
+config.doc
 ----------
 
 This file describes the steps which are needed to configure and make either
@@ -100,6 +100,120 @@ curses.c driver), type
 A much less capable driver uses builtin ANSI escape sequences:
 
 	./configure --with-screen=ansi
+
+
+Syntax coloring options
+-----------------------
+
+Adding syntax coloring to the editor can be simple or not.
+
+Fast, simple syntax coloring
+============================
+Maximally efficient syntax coloring can be selected by specifying
+this configure command line:
+
+	--with-builtin-filters
+
+An ensuing build binds _all_ of the editor's syntax coloring filters into
+the resultant executable.  On the plus side, the build options are simple
+and since no filters are invoked externally (via a pipe), syntax coloring
+is executed with minimal overhead.  On the minus side, this configure
+option generates a much larger executable.
+
+Slower, simple syntax coloring
+==============================
+Omitting any variant of the --with-builtin-filters option or specifying
+"--with-builtin-filters=none" ensures that all of the editor's syntax
+coloring filters are created as separate, external executables.  On the
+plus side, this choice minimizes the editor's footprint.  However, external
+filters are invoked via a pipe, which is substantially slower than the
+direct execution model.
+
+Complex syntax coloring
+=======================
+vile also supports a mix of both internal and external filters, which
+facilitates configuration of the editor with as few or as many internal
+filters as desired.  Why this might be useful is explained shortly.  But
+first, study this list of editor filter names and language mappings:
+
+    Builtin      External
+    Filter Name  Filter Name      Colors These Language(s)/Files
+    ===========  ===========      ==============================
+    ada          vile-ada-filt    ada
+    awk          vile-awk-filt    awk
+    basic        vile-basic-filt  basic and visual basic (vb)
+    bat          vile-bat-filt    Windows .bat files
+    c            vile-c-filt      c, cpp, java, and javascript (js)
+    cfg          vile-cfg-filt    lynx config files
+    cweb         vile-cweb-filt   cweb and cwebx
+    dcl          vile-dcl-filt    VMS DCL scripts
+    def          vile-def-filt    Windows .def files
+    diff         vile-diff-filt   output of diff command
+    ecl          vile-ecl-filt    Prolog/ECLiPSe
+    esql         vile-esql-filt   embedded SQL with C/C++.
+    fdl          vile-fdl-filt    forms definition language
+    html         vile-html-filt   html and xml
+    imake        vile-imake-filt  imake files
+    key          vile-key-filt    vile .keyword files
+    latex        vile-latex-filt  latex
+    lex          vile-lex-filt    flex and lex
+    lisp         vile-lisp-filt   lisp
+    m4           vile-m4-filt     autoconf and m4
+    mail         vile-mail-filt   messages
+    make         vile-make-filt   make and nmake files
+    mms          vile-mms-filt    VMS make files
+    nr           vile-nr-filt     nroff/troff files
+    pas          vile-pas-filt    Pascal
+    pl           vile-pl-filt     perl
+    py           vile-py-filt     python
+    rc           vile-rc-filt     Windows resource (.rc) files
+    rcs          vile-rcs-filt    RCS archives
+    rexx         vile-rexx-filt   REXX
+    sccs         vile-sccs-filt   SCCS files
+    sed          vile-sed-filt    sed scripts
+    sh           vile-sh-filt     csh, sh, pot (gettext message libraries)
+    sml          vile-sml-filt    SML input text
+    spell        vile-spell-filt  highlight misspelled words using ispell
+                                    or spell (see filters/spell.rc)
+    sql          vile-sql-filt    SQL
+    tags         vile-tags-filt   tags files (see ctags(1)).
+    tbl          vile-tbl-filt    vile's modetbl and cmdtbl files
+    tc           vile-tc-filt     termcap and printcap files
+    tcl          vile-tcl-filt    tcl/tk scripts
+    ti           vile-ti-filt     terminfo files
+    txt          vile-txt-filt    various flavors of text files
+    vile         vile-vile-filt   vile and vim macros
+    vlog         vile-vlog-filt   verilog
+    xres         vile-xres-filt   X resource files
+    xs           vile-xs-filt     Perl extension source files
+    yacc         vile-yacc-filt   yacc and bison
+
+So, if the "--with-builtin-filters" option is selected, all of the
+internal filters listed above are bound into the editor.  "Wait a minute",
+you say, "I'll never use some of those filters--not in a hundred years."
+In that case, use this configure syntax:
+
+	--with-builtin-filters="<filter_list>"
+
+For example:
+
+	./configure --with-cflags=-O2 \
+		    --with-builtin-filters="awk c key lex m4 perl sed tags
+		    diff html mail make pl rcs sh sql tbl tcl txt vile yacc"
+	make
+	make install
+
+The above commands compile all filters as external executables, link 21
+filters into the editor, and copy the editor and external executables to an
+install tree [1].  Assuming the editor's startup file initiates syntax
+coloring [2], then at vile run time, the macro file filters.rc
+preferentially selects and executes internal filters when coloring a
+supported language or file format.  If the desired internal filter is not
+available, filters.rc starts a pipe and applies color attributes via the
+corresponsing external filter listed in the table above.
+
+[1] Described below in the topic "Installing x(vile)".
+[2] Refer to the topics "Color basics" and "Syntax coloring" in vile.hlp
 
 
 Building xvile
@@ -207,8 +321,8 @@ By default, (x)vile and the script "vile-pager" are installed in
     various macro files       /usr/local/share/vile
 
     Note 1:  the value of the environment variable VILE_LIBDIR_PATH
-             specifies where configure installs coloring filters.  If
-             unset, configure defaults to /usr/local/lib/vile.
+             specifies where configure installs external coloring filters.
+             If unset, configure defaults to /usr/local/lib/vile.
 
 We realize that not everyone has superuser privileges on the machines on
 which they wish to build (x)vile.  If you lack superuser access or write
@@ -322,5 +436,5 @@ without shell support, but perhaps not (ymmv).
 
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.7 2002/01/06 20:35:41 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.9 2002/06/30 20:47:52 tom Exp $
 ------------------------
