@@ -21,7 +21,7 @@
  *
  *           These routines have not been tested under WinNT 3.51 .
  * 
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.3 1998/03/14 00:12:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.4 1998/03/17 10:25:57 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -182,6 +182,30 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
                 break;
         }
         rc = (exec_shell(cmd) == BAD_PROC_HANDLE) ? FALSE : TRUE;
+        if (fw)
+        {
+            /*
+             * Order matters, here.  Within the parent, restore original
+             * stdin first, or R/W pipes (i.e., a region filter) will go
+             * boom under NT 4.0 .
+             */
+
+            if (! rc)
+            {
+                 /* Shell process failed, put complaint in user's face. */
+
+                fputc('\n', stdout);
+                printf(SHELL_ERR_MSG, shell);
+                fflush(stdout);
+            }
+            if (_dup2(stdin_orig, fileno(stdin)) != 0)
+            {
+                /* Lost stdin -- no way to continue */
+
+                imdying(0);
+            }
+            close(stdin_orig);
+        }
         if (fr)
         {
             if (! rc)
@@ -205,24 +229,6 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
             }
             close(stdout_orig);
             close(stderr_orig);
-        }
-        if (fw)
-        {
-            if (! rc)
-            {
-                 /* Shell process failed, put complaint in user's face. */
-
-                fputc('\n', stdout);
-                printf(SHELL_ERR_MSG, shell);
-                fflush(stdout);
-            }
-            if (_dup2(stdin_orig, fileno(stdin)) != 0)
-            {
-                /* Lost stdin -- no way to continue */
-
-                imdying(0);
-            }
-            close(stdin_orig);
         }
         return (rc);
     }

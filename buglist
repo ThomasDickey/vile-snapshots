@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.337 1998/03/14 04:39:11 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.338 1998/03/18 01:47:55 cmorgan Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1164,16 +1164,16 @@ in glob.c
 
 type this command (use path approp for your version of win95):
 
-	:w !c:\windows\command\find "string"
-
-...  vile should write the results of the find command to the bottom of the
-screen and then print a [Press return to continue] prompt.  But instead, vile
-writes no output to the bottom of the screen and does not prompt for user
-input.  It's as if the entire pipe operation was discarded.
-
-[What's happening is that there's a "Broken pipe" message that should be
-visible, but is not, since the "Read xx lines" message overwrites it, the fix
-would be to propagate the error up better - tom]
+      :w !c:\windows\command\more 
+ 
+...  vile should pipe the buffer to the more command and permit the user 
+to scroll through the text in a "subshell" and then print a 
+[Press return to continue] prompt when more exits.  But instead, vile 
+writes no output to the bottom of the screen and does not prompt for user 
+input.  It's as if the entire pipe operation was discarded. 
+ 
+[97-03-17: Fixed when w32pipes mode is enabled.  Otherwise, write pipes 
+are badly broken for DOS and all variants of Windows.] 
 
 -- 97-04-23 (Ron Olsen <ronolsen@lucent.com>)
 
