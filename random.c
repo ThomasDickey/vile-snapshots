@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.261 2002/02/16 01:15:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.262 2002/05/22 00:01:47 tom Exp $
  *
  */
 
@@ -1381,9 +1381,18 @@ run_a_hook(HOOK * hook)
 {
     if (!hook->latch && hook->proc[0]) {
 	int status;
+	MARK save_pre_op_dot;	/* ugly hack */
+	int save_dotcmdactive;	/* another ugly hack */
+
+	save_dotcmdactive = dotcmdactive;
+	save_pre_op_dot = pre_op_dot;
+
 	DisableHook(hook);
 	status = docmd(hook->proc, TRUE, FALSE, 1);
 	EnableHook(hook);
+
+	pre_op_dot = save_pre_op_dot;
+	dotcmdactive = save_dotcmdactive;
 	return status;
     }
     return FALSE;
@@ -1421,9 +1430,6 @@ autocolor(void)
 #endif
 	    && b_val(bp, VAL_AUTOCOLOR) > 0) {
 	    WINDOW *oldwp;
-	    MARK save_pre_op_dot;	/* ugly hack */
-	    int save_dotcmdactive = dotcmdactive;	/* another ugly hack */
-	    save_pre_op_dot = pre_op_dot;
 	    oldwp = push_fake_win(bp);
 	    in_autocolor = TRUE;
 	    if (run_a_hook(&autocolorhook)) {
@@ -1432,8 +1438,6 @@ autocolor(void)
 	    }
 	    in_autocolor = FALSE;
 	    pop_fake_win(oldwp);
-	    pre_op_dot = save_pre_op_dot;
-	    dotcmdactive = save_dotcmdactive;
 	}
     }
     if (do_update)

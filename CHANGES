@@ -1,5 +1,14 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20020521 (zd)
+	> Tom Dickey:
+	+ move save/restore of dotcmdactive and pre_op_dot variables from
+	  autocolor() to run_a_hook() so they are restored if any hook calls
+	  would modify them.  This fixes a case where the "." command did not
+	  work when [Buffer List] was visible while a $buffer-hook was used to
+	  set xvile's title (report by David Letcher <David.Letcher@ot.com.au>).
+	+ add itb_visible() to trace.c
+
  20020514 (zc)
 	> Tom Dickey:
 	+ modify fallback definitions in path.c to work with CSet compiler,
