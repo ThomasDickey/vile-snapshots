@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.363 1998/10/24 22:28:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.364 1998/11/11 22:10:22 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1930,6 +1930,7 @@ typedef struct	{
 					   command when input is present*/
 	void	(*t_unwatchfd)(int, long);
 					/* Don't watch file descriptor	*/
+	void	(*t_cursor)(int flag);	/* hide/show cursor		*/
 }	TERM;
 
 /*	TEMPORARY macros for terminal I/O  (to be placed in a machine
@@ -1958,6 +1959,7 @@ typedef struct	{
 #define	TTtitle(t)	(*term.t_title)(t)
 #define TTwatchfd(fd,tp,idp) (*term.t_watchfd)(fd,tp,idp)
 #define TTunwatchfd(fd,id) (*term.t_unwatchfd)(fd,id)
+#define TTcursor	(*term.t_cursor)
 
 typedef struct  VIDEO {
         UINT	v_flag;                 /* Flags */

@@ -5,7 +5,7 @@
  * Modifications:  kevin buettner and paul fox  2/95
  * 		string literal ("Literal") support --  ben stoltz
  *
- * $Header: /users/source/archives/vile.vcs/RCS/c-filt.c,v 1.12 1998/09/22 10:50:30 Gary.Ross Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/c-filt.c,v 1.14 1998/11/12 11:29:15 tom Exp $
  *
  * Features:
  * 	- Reads the keyword file ".vile.keywords" from the home directory.
@@ -206,7 +206,12 @@ static char *keyword_file=".vile.keywords";
 # endif
 #endif
 
+#define ESCAPE '\\'
+#define DQUOTE '"'
+#define SQUOTE '\''
+
 #define isBlank(c)  ((c) == ' ' || (c) == '\t')
+#define isQuote(c)  ((c) == DQUOTE || (c) == SQUOTE)
 
 typedef struct _keyword KEYWORD;
 
@@ -402,20 +407,20 @@ has_endofcomment(char *s)
 }
 
 static int
-has_endofliteral(char *s)	/* points to '"' */
+has_endofliteral(char *s, int delim)	/* points to '"' */
 {
     int i=0;
     while (*s) {
-	if (*s == '\"')
+	if (*s == delim)
 	    return (i);
-	if (s[0] == '\\' && (s[1] == '\"' || s[1] == '\\')) {
+	if (s[0] == ESCAPE && (s[1] == delim || s[1] == ESCAPE)) {
 		++i;
 		++s;
 	}
 	++i;
 	++s;
     }
-    return(0);
+    return(-1);
 }
 
 static char *
@@ -437,8 +442,8 @@ firstnonblank(char *tst, char *cmp)
 static char *
 write_literal(char *s, int *literal)
 {
-    int c_length = has_endofliteral(s);
-    if (c_length == 0)
+    int c_length = has_endofliteral(s, *literal);
+    if (c_length < 0)
 	c_length = strlen(s);
     else
 	*literal = 0;
@@ -488,11 +493,12 @@ main(int argc, char **argv)
 		}
 		printf("\001%i%s:%.*s",c_length,comment_attr,c_length,s);
 		s = s + c_length ;
+	        continue;
 	    }
 	    if (!comment && *s == '/' && *(s+1) == '/') { /* C++ comments */
 	        c_length = strlen(s);
 		printf("\001%i%s:%.*s",c_length,comment_attr,c_length,s);
-	      break;
+		break;
 	    }
 	    if (!comment && *s == '#' && firstnonblank(s, line) ) {
 		char *ss = s+1;
@@ -524,19 +530,8 @@ main(int argc, char **argv)
 		    s = s + c_length;
 		}
 	    } else if (*s) {
-	        if (*s == '\\' && *(s+1) == '\"') {/* Skip literal single character */
-		    putchar(*s++);
-		    putchar(*s++);
-		} else if (!literal && *s == '\"' && s[1] == '\"') {
-		    putchar(*s++);
-		    putchar(*s++);
-		} else if (!literal && *s == '\'' && s[1] == '"' && s[2] == '\'') {
-		    putchar(*s++);
-		    putchar(*s++);
-		    putchar(*s++);
-		}
-		if (*s == '\"')  {
-		    literal = literal == 0 ? 1 : 0;
+		if (isQuote(*s))  {
+		    literal = (literal == 0) ? *s : 0;
 		    putchar(*s++);
 		    if (literal) {
 			s = write_literal(s, &literal);

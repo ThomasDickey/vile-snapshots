@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.39 1998/09/07 23:34:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.40 1998/11/11 21:56:38 tom Exp $
  *
  */
 
@@ -126,6 +126,7 @@ TERM    term    = {
 #endif
 	null_t_watchfd,
 	null_t_unwatchfd,
+	null_t_cursor,
 };
 
 

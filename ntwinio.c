@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.36 1998/11/05 01:05:10 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.37 1998/11/11 21:56:32 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -222,6 +222,7 @@ TERM    term    = {
 #endif
 	null_t_watchfd,
 	null_t_unwatchfd,
+	null_t_cursor,
 };
 
 #if OPT_TRACE

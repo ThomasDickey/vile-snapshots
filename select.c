@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.85 1998/11/11 02:26:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.87 1998/11/11 23:37:44 tom Exp $
  *
  */
 
@@ -793,6 +793,7 @@ multimotion(int f, int n)
 	savedot = DOT;
 	switch (doingsweep) {
 	case TRUE:	/* the same command terminates as starts the sweep */
+		TTcursor(TRUE);
 		doingsweep = FALSE;
 		mlforce("[Sweeping: Completed]");
 		regionshape = shape;
@@ -805,6 +806,7 @@ multimotion(int f, int n)
 			sweephack = wassweephack;
 		return TRUE;
 	case SORTOFTRUE:
+		TTcursor(FALSE);
 		doingsweep = TRUE;
 		sweepmsg("Begin cursor sweep...");
 		sel_extend(TRUE,(regionshape != RECTANGLE && sweephack));
@@ -814,6 +816,7 @@ multimotion(int f, int n)
 			line_no(curbp, MK.l), MK.o))
 		break;
 	case FALSE:
+		TTcursor(FALSE);
 		doingsweep = TRUE;
 		sweepmsg("Begin cursor sweep...");
 		(void)sel_begin();
@@ -1542,6 +1545,10 @@ attribute_from_filter(void)
 	    DOT.l = lforw(DOT.l);
 	}
 	(void)ffclose();		/* Ignore errors.	*/
+	if (curbp->b_highlight & HILITE_ON) {
+		curbp->b_highlight |= HILITE_DIRTY;
+		attrib_matches();
+	}
     }
     return TRUE;
 }

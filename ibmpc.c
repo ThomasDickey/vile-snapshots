@@ -8,7 +8,7 @@
  * Modified by Pete Ruczynski (pjr) for auto-sensing and selection of
  * display type.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.88 1998/05/14 23:14:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.89 1998/11/11 21:56:43 tom Exp $
  *
  */
 
@@ -344,6 +344,7 @@ TERM    term    = {
 	null_t_title,
 	null_t_watchfd,
 	null_t_unwatchfd,
+	null_t_cursor,
 };
 
 #if CC_DJGPP

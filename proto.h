@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.315 1998/11/11 02:42:43 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.316 1998/11/11 22:11:35 tom Exp $
  *
  */
 
@@ -856,9 +856,11 @@ void	tb_unput (TBUFF *p);
 
 /* termio.c */
 extern OUTC_DCL ttputc (OUTC_ARGS);
-extern int open_terminal (TERM *termp);
-extern int ttgetc (void);
-extern int tttypahead (void);
+extern int  null_t_watchfd (int fd, WATCHTYPE type, long *idp);
+extern int  open_terminal (TERM *termp);
+extern int  ttgetc (void);
+extern int  tttypahead (void);
+extern void null_t_cursor (int flag);
 extern void null_t_icursor (int c);
 extern void null_t_pflush (void);
 extern void null_t_scroll (int f, int t, int n);
@@ -866,7 +868,6 @@ extern void null_t_setback (int b);
 extern void null_t_setfor (int f);
 extern void null_t_setpal (const char *p);
 extern void null_t_title (char *t);
-extern int  null_t_watchfd (int fd, WATCHTYPE type, long *idp);
 extern void null_t_unwatchfd (int fd, long id);
 extern void ttclean (int f);
 extern void ttclose (void);
