@@ -8,6 +8,9 @@ package Vile::Search;
 # These bindings are proper motions, however, so things like 'dn'
 # or 'd/foo' will work as expected.
 #
+# Usage
+# -----
+# :perl require "search.pl";
 
 *CHUNKSIZE = \100;
 my $direction = '';

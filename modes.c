@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.116 1998/05/12 22:43:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.117 1998/05/28 00:37:34 tom Exp $
  *
  */
 
@@ -1821,6 +1821,7 @@ remove_per_major(size_t count, const char *name)
 
 		for (j = 0; j < count; j++) {
 			if (strcmp(my_mode_list[j], name) == 0) {
+				free(my_mode_list[j]);
 				count--;
 				for (k = j; k <= count; k++)
 					my_mode_list[k] = my_mode_list[k+1];
@@ -2046,7 +2047,7 @@ static int
 free_majormode(const char *name)
 {
 	MAJORMODE *ptr = lookup_mm_data(name);
-	size_t j;
+	size_t j, k;
 	int n;
 	char temp[NSTRING];
 	BUFFER *bp;
@@ -2063,6 +2064,10 @@ free_majormode(const char *name)
 				}
 				free_local_vals(m_valnames, major_g_vals, ptr->mm.mv);
 				free_local_vals(b_valnames, global_b_values.bv, ptr->mb.bv);
+				for (k = 0; k < MAX_M_VALUES; k++) {
+					free(my_majormodes[j].qual[k].name);
+					free(my_majormodes[j].qual[k].shortname);
+				}
 				free(ptr->name);
 				free(ptr);
 				do {

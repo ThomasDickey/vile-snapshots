@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.26 1998/05/24 11:54:11 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.27 1998/05/27 23:02:34 cmorgan Exp $
 #
 #
 !include <ntwin32.mak>
@@ -76,7 +76,7 @@ PERLCFG  = $(THE_PERLCFG)
 # The following perl scripts, stored in the subdirectory .\perl, are
 # known to work under win32:
 #
-PERL_SCRIPTS = glob2re.pl visit.pl hgrep.pl
+PERL_SCRIPTS = glob2re.pl visit.pl hgrep.pl search.pl
 !ENDIF
 
 # these are normal editable headers

@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.106 1998/05/14 23:15:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.107 1998/05/28 10:20:33 tom Exp $
  *
  */
 
@@ -256,6 +256,9 @@ static	int	x_origin = 1,
 #define FREE_TPARM(s) /* nothing */
 #else
 #if HAVE_TPARAM	/* GNU termcap */
+#if DOALLOC
+#undef free
+#endif
 #define CALL_TPARM(cap,code) tparam(cap, (char *)0, 0, code)
 #define FREE_TPARM(s) free(s)
 #else

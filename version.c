@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.36 1997/05/25 22:59:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.37 1998/05/27 23:46:32 tom Exp $
  *
  */
 
@@ -33,6 +33,7 @@ print_usage (void)
 	"-bg color      to change background color",
 	"-fn fontname   to change font",
 	"-fork          to spawn xvile immediately on startup",
+	"+fork          to force xvile to not spawn on startup",
 	"-display       displayname to change the default display",
 	"-rv            for reverse video",
 	"-geometry CxR  to set initial size to R rows and C columns",

@@ -1,5 +1,13 @@
 Changes for vile 7.5/8.0 (released ??? ??? ?, 1998)
 
+ (tom) 980528 (o)
+ 	+ fix minor memory leak in free_majormode()
+	+ add a "+fork" option to xvile to override forkOnStartup resource.
+	+ add search.pl to the list of supported Win32 perl scripts and add a
+	  usage comment to same (patch by Clark Morgan).
+	+ plug hole in x_open by setting maxscrollbars to zero, fixing a
+	  scenario where the Motif version would crash (patch by Larry Gensch).
+
  (tom) 980527 (n)
 	+ make search rule for startup file and :so consistent - and always
 	  using $VILE_STARTUP_PATH if the file is not found in the current or
