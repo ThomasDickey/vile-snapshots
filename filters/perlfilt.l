@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.34 2000/09/13 23:35:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.35 2000/09/24 22:41:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PERL input
  * text.
@@ -116,7 +116,7 @@ do_filter(FILE *input)
     BEGIN(CODE);
     while (yylex() > 0) {
     }
-    flt_bfr_finish();
+    flt_bfr_error();
 }
 
 %}

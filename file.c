@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.271 2000/08/26 16:35:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.272 2000/09/22 11:16:26 cmorgan Exp $
  */
 
 #include	"estruct.h"
@@ -943,8 +943,18 @@ int	mflg)		/* print messages? */
 			mlwrite("[New file]");
 	} else {
 
-		if (mflg)
-			mlforce("[Reading %s ]", fname);
+		if (mflg) {
+#define READING_FILE_FMT "[Reading %s]"
+
+			int  outlen; 
+			char tmp[NFILEN];
+
+			outlen = (term.cols - 1) -
+				 (sizeof(READING_FILE_FMT) -3);
+			mlforce(READING_FILE_FMT,
+				path_trunc(fname, outlen, tmp, sizeof(tmp)));
+#undef READING_FILE_FMT
+		}
 #if SYS_VMS
 		if (!isInternalName(bp->b_fname))
 			fname = resolve_filename(bp);
@@ -1359,21 +1369,42 @@ readlinesmsg(int n, int s, const char *f, int rdo)
 static void
 writelinesmsg(char *fn, int nline, B_COUNT nchar)
 {
+#define WRITE_FILE_FMT "[%s %s line%s %s char%s to \"%s\"]"
+
 	if (!global_b_val(MDTERSE)) {
-		char *aname;
 		const char *action;
+		char	   *aname, tmp[NFILEN], strlines[128], strchars[128];
+		int	   outlen, lines_len, chars_len;
 		if ((aname = is_appendname(fn)) != 0) {
 			fn = aname;
 			action = "Appended";
 		} else {
 			action = "Wrote";
 		}
-		mlforce("[%s %d line%s %ld char%s to \"%s\"]",
-			action, nline, PLURAL(nline),
-			nchar, PLURAL(nchar), fn);
+		sprintf(strlines, "%d", nline);
+		sprintf(strchars, "%ld", nchar);
+		lines_len = strlen(strlines);
+		chars_len = strlen(strchars);
+		outlen = (term.cols - 1) - 
+			(
+			     (sizeof(WRITE_FILE_FMT) - 13) +
+			     strlen(action) +
+			     lines_len +
+			     chars_len +
+			     strlen(PLURAL(nline)) + 
+			     strlen(PLURAL(nchar))
+			);
+		mlforce(WRITE_FILE_FMT,
+			action,
+			strlines,
+			PLURAL(nline),
+			strchars,
+			PLURAL(nchar),
+			path_trunc(fn, outlen, tmp, sizeof(tmp)));
 	} else {
 		mlforce("[%d lines]", nline);
 	}
+#undef WRITE_FILE_FMT
 }
 
 /*

@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.225 2000/09/13 10:13:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.227 2000/09/26 09:16:51 tom Exp $
  *
  */
 
@@ -580,7 +580,12 @@ tgetc(int quoted)
 	}
 
 	/* return the character read from the terminal */
-	TRACE(("tgetc(%s) = %c\n", quoted ? "quoted" : "unquoted", c));
+#if OPT_TRACE
+	{
+	char temp[NSTRING];
+	TRACE(("tgetc(%s) = %s\n", quoted ? "quoted" : "unquoted", kcod2prc(c, temp)));
+	}
+#endif
 	return c;
 }
 
@@ -1147,6 +1152,9 @@ user_reply(const char *prompt, const char *dft_val)
 		return tb_values(replbuf);
 
 }
+
+#define isMiniMotion(f) (((f) & MOTION) && !((f) & (ABSM|FL|NOMINI)))
+
 /*
  * We use the editc character to toggle between insert/command mode in the
  * minibuffer.  This is normally bound to ^G (the position command).
@@ -1159,7 +1167,7 @@ isMiniEdit(int c)
 	if (miniedit) {
 		const CMDFUNC *cfp = CommandKeyBinding(c);
 		if ((cfp != 0)
-		 && (cfp->c_flags & MOTION) != 0)
+		 && isMiniMotion(cfp->c_flags))
 			return TRUE;
 	}
 	return FALSE;
@@ -1205,7 +1213,7 @@ static int
 editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 {
 	int edited = FALSE;
-	const CMDFUNC *cfp = DefaultKeyBinding(c);
+	const CMDFUNC *cfp = CommandKeyBinding(c);
 	int savedexecmode = insertmode;
 	BUFFER *savebp;
 	WINDOW *savewp;
@@ -1218,11 +1226,15 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 	curwp  = wminip;
 	savemk = MK;
 
+	TRACE(("editMiniBuffer(%d:%s) called with c=%#x, miniedit=%d, dot=%d\n",
+		*cpos, tb_visible(*buf),
+		c, miniedit, DOT.o));
+
 	/* Use editc (normally ^G) to toggle insert/command mode */
 	if (c == editc && !quoted) {
 		miniedit = !miniedit;
 	} else if (isSpecial(c)
-	  ||  (miniedit && cfp != 0 && (cfp->c_flags & MOTION) != 0)) {
+	  ||  (miniedit && cfp != 0 && isMiniMotion(cfp->c_flags))) {
 
 		/* If we're allowed to honor SPEC bindings, then see if it's
 		 * bound to something, and execute it.
@@ -1231,9 +1243,6 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 			int first = *cpos + margin;
 			int old_clexec = clexec;
 			int old_named  = isnamedcmd;
-			int old_edited = edited;
-			int save_dot = DOT.o;
-			unsigned oldcpos = *cpos;
 
 			/*
 			 * Reset flags that might cause a recursion into the
@@ -1273,17 +1282,6 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 			if (DOT.o > llength(DOT.l))
 				DOT.o = llength(DOT.l);
 
-			/* Do something reasonable if user tried to page up
-			 * in the minibuffer.  In particular, do not add the
-			 * character to the buffer.
-			 */
-			if ((first == DOT.o)
-			 && (cfp->c_flags & MOTION)) {
-				kbd_alarm();
-				DOT.o = save_dot;
-				*cpos = oldcpos;
-				edited = old_edited;
-			}
 		} else
 			kbd_alarm();
 	/* FIXME: Below are some hacks for making it appear that we're
@@ -1326,6 +1324,13 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 	}
 
 	shiftMiniBuffer(DOT.o);
+
+	if (*cpos > tb_length(*buf))
+		*cpos = tb_length(*buf);
+
+	TRACE(("...editMiniBuffer(%d:%s) returns %d, miniedit=%d, dot=%d\n",
+		*cpos, tb_visible(*buf),
+		edited, miniedit, DOT.o));
 
 	curbp = savebp;
 	curwp = savewp;
@@ -1613,6 +1618,19 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 			 || (!EscOrQuo
 			  && !(shell && isPrint(c))
 			  && (c == TESTC || c == NAMEC))) {
+				/*
+				 * If we're going to force name completion, put
+				 * the cursor at the end of the line so the
+				 * name completion code works properly.  Do
+				 * this by erasing the remainder of the line
+				 * and reentering it.
+				 */
+				if (cpos < tb_length(buf)) {
+					kbd_erase_to_end(wminip->w_dot.o);
+					while (cpos < tb_length(buf)) {
+						show1Char(tb_values(buf)[cpos++]);
+					}
+				}
 				if (shell && isreturn(c)) {
 					/*EMPTY*/;
 				} else if ((*complete)(c, tbreserve(&buf), &cpos)) {

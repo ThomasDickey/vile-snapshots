@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.54 2000/09/14 10:41:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.55 2000/09/25 00:45:37 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -149,7 +149,7 @@ extern int vl_lookup_func(const char *name);
 # define PATHDOT "[]"
 # define DOT_HIDES_FILE 0
 #else
-# if defined(_WIN32) || defined(__GO32__)
+# if defined(_WIN32) || defined(__GO32__) || defined(__EMX__)
 #  define PATHCHR ';'
 #  define PATHSEP '\\'
 #  define DOT_HIDES_FILE 0

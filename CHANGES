@@ -1,5 +1,62 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000926 (x)
+	> Clark Morgan:
+	+ prevent autocolor from overwriting the message-line when '_' or ^X-_
+	  have been pressed, but the subsequent buffer selection key has not
+	  yet been pressed.
+	+ for several select cases, when a long path causes message line text
+	  to exceed the current window width, that path is shortened on the
+	  left until the message text fits (if possible).  Those select cases
+	  include failure to save a file, reading in a new file, and writing
+	  out (or appending to) a file.
+	+ document ":w >>filename" in vile.hlp
+	+ report errors if user attempts to copy from mini-buffer.  The error
+	  message only shows up if "pm" is enabled, since there's currently no
+	  graceful way for a vile command to unwind execution from the
+	  minibuffer context.
+	+ allow pasting of one line of text into mini-buffer.
+	+ improve makefile.l, don't add syntax attributes to the whitespace
+	  embedded within these token sequences:
+	     ([<white>]<name>[<white>]|\\\n)+(:|=)
+	> Tom Dickey:
+	+ correct default attribute in key-filt.c's color_of() function, which
+	  made newlines colored as "Error".
+	+ modify behavior of imply_alt() so that if the buffer already exists
+	  and is not modified, it will be automatically reread.
+	+ correct behavior of imply_alt() when the specified file is being
+	  appended to.  Given ":w >>foo", it was making a buffer named ">>foo".
+	+ add uppercase "TRUE" and "FALSE" to fsm_bool_choices[], so
+	  assignments to boolean modes works properly within a macro (reported
+	  by Clark Morgan).
+	+ add %c and %l format types to finderr.c, which use 0-based offsets
+	  rather than 1-based offsets (prompted by comments by Christian Lindig
+	  <lindig@eecs.harvard.edu> that some tools use 0-based offsets).
+	+ modify logic for name-completion in kbd_reply() to force the cursor
+	  to the end of the input buffer before attempting to complete.
+	  Otherwise, partial completions could be written in the middle of the
+	  buffer.
+	+ modify handling of motion commands in editMiniBuffer() to use NOMINI
+	  flag rather than guess which commands with MOTION flag should not be
+	  applied (fixes a bug report by Jim Crigler, which noted that 'h'
+	  following '^G' was not treated as a cursor motion).
+	+ add/use NOMINI flag to indicate commands that cannot be used in
+	  minibuffer editing motions.
+	+ use DisplayHeight() rather than 1000 for paneMaximum of scrollbars
+	  in Motif version of xvile (report/analysis by Larry Gensch).
+	+ add 'prefix=$(prefix)' to makefile.in where it recurs to filters
+	  directory to accommodate older 'make' programs which do not inherit
+	  options (request by Michael Finken).
+	+ show unterminated quotes in sh, make and perl filters as "Error".
+	+ correct handling of QUOTED (double-quote) state in sh-filt.l, which
+	  did not interpret escaped double-quote or identifiers since one
+	  pattern was too greedy.  Show escaped double-quote as "Action".
+	+ correct SSTRING expression in sh-filt.l, which was assuming backslash
+	  would quote other characters in a single-quoted string.
+	+ change mapping in vileinit.rc for ToggleList and ToggleTabs to omit
+	  the "execute-procedure" since that is no longer needed, and makes
+	  the :history less useful.
+
  20000914 (w)
 	> Clark Morgan
 	+ macros.doc:  expand description regarding comment delimiters in
@@ -24,7 +81,7 @@ Changes for vile 9.2 (released ??? ??? ?? 2000)
 	+ correct a case in editMinibuffer() which did not completely restore
 	  the buffer position when an error was found.  This led to passing
 	  an empty buffer with an associated nonzero position to fill_partial(),
-	  which dumped core. 
+	  which dumped core.
 	+ add &dquery function which prompts for input with a given default
 	  value (request by George Eccles).
 	+ indent'd exec.c
@@ -239,11 +296,11 @@ Changes for vile 9.2 (released ??? ??? ?? 2000)
 	  nested group was parsed, e.g., in the $filename-expr for
 	  hgrep on win32.  The regular expresion code finds the proper
 	  number of \( \) atoms, but the array indices do not match,
-	  causing ^X^X to fail (reported by Clark Morgan). 
+	  causing ^X^X to fail (reported by Clark Morgan).
 	+ correct missing check for backslash within a character range in
 	  regatom(), which caused patterns such as "[^\[\]]" to match any
 	  character other than left bracket which was followed by a right
-	  bracket. 
+	  bracket.
 	+ implement 'highlight' mode, which when disabled prevents the
 	  corresponding buffers from being syntax-highlighted (request by
 	  Moo Kim <kim@mailbox.elsegundoca.ncr.com>).
@@ -362,7 +419,7 @@ Changes for vile 9.2 (released ??? ??? ?? 2000)
 	> Tom Dickey:
 	+ add key binding functions for insert-mode and command-mode, making it
 	  simpler to bind a space or tab to a given function without having it
-	  confused for a function while in insert mode.  New commands: 
+	  confused for a function while in insert mode.  New commands:
 	  bind-cmdmode-key, bind-insmode-key, describe-cmdmode-bindings,
 	  describe-cmdmode-key, describe-insmode-bindings,
 	  describe-insmode-key, rebind-cmdmode-key, rebind-insmode-key,

@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.24 2000/05/17 22:28:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.25 2000/09/22 11:13:01 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -957,4 +957,41 @@ w32_del_selection(int copy_to_cbrd)
         }
     }
     return (status);
+}
+
+
+
+/* slam a string into the editor's input buffer */
+int
+w32_keybrd_write(char *data)
+{
+#ifdef DISP_NTCONS
+    HANDLE        hstdin;
+    INPUT_RECORD  ir;
+    DWORD         unused;
+#else
+    HANDLE        hwvile;
+#endif
+    int           rc;
+
+    rc = TRUE;
+#ifdef DISP_NTCONS
+    hstdin = GetStdHandle(STD_INPUT_HANDLE);
+    memset(&ir, 0, sizeof(ir));
+    ir.EventType               = KEY_EVENT;
+    ir.Event.KeyEvent.bKeyDown = TRUE;
+#else
+    hwvile = winvile_hwnd();
+#endif
+    while (*data && rc)
+    {
+#ifdef DISP_NTCONS
+        ir.Event.KeyEvent.uChar.AsciiChar = *data;
+        rc = WriteConsoleInput(hstdin, &ir, 1, &unused);
+#else
+        rc = PostMessage(hwvile, WM_CHAR, *data, 0);
+#endif
+        data++;
+    }
+    return (rc);
 }

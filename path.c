@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.102 2000/08/26 00:31:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.103 2000/09/22 11:16:26 cmorgan Exp $
  *
  *
  */
@@ -2105,9 +2105,60 @@ append_to_path_list(char **path_list, char *path)
 	TRACE(("append_to_path_list\n\t%s\n\t%s\n", *path_list, find));
 }
 
+
+
 /*
- * Append the given path to a path-list
+ * FUNCTION
+ *   path_trunc(char *path,
+ *              int  max_path_len,
+ *              char *trunc_buf,
+ *              int  trunc_buf_len)
+ *
+ *   path          - an arbitrarily long file path
+ *
+ *   max_path_len  - maximum acceptable output path length.  Must be >= 5.
+ *
+ *   trunc_buf     - format the possibly truncated path in this buffer.
+ *
+ *   trunc_buf_len - sizeof(trunc_buf).  Must be >= 5.
+ *
+ * DESCRIPTION
+ *   Shorten a path from _the left_ to fit within the bounds of 
+ *   both max_output_len and trunc_buf_len.  This function is useful when
+ *   displaying path names in the message line.
+ *
+ * RETURNS
+ *   trunc_buf
  */
+
+char *
+path_trunc(char *path, int max_path_len, char *trunc_buf, int trunc_buf_len)
+{
+    int max_len, path_len;
+
+    if (trunc_buf_len < 5 || max_path_len < 5)
+        return (path);    /* nuh-uh */
+
+    max_len = max_path_len;
+    if (trunc_buf_len - 1 < max_len)  /* "- 1" -> terminating NUL */
+        max_len = trunc_buf_len - 1;
+    path_len = strlen(path);
+    if (path_len <= max_len)
+        strcpy(trunc_buf, path);   /* fits -- no issues */
+    else
+    {
+#if SYS_VMS
+        strcpy(trunc_buf, ">>>");
+        max_len -= sizeof(">>>") - 1;
+#else
+        strcpy(trunc_buf, "...");
+        max_len -= sizeof("...") - 1;
+#endif
+        strcat(trunc_buf, path + path_len - max_len);
+    }
+    return (trunc_buf);
+}
+
 
 
 #if NO_LEAKS

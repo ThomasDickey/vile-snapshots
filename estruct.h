@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.451 2000/08/25 10:47:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.452 2000/09/25 09:40:37 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2323,6 +2323,7 @@ typedef struct {
 #define VIEWOK  cmdBIT(10)	/* command is okay in view mode, even though it
 				 * _may_ be undoable (macros and maps) */
 #define RECT    cmdBIT(11)	/* motion causes rectangular operation */
+#define NOMINI  cmdBIT(12)	/* cannot use in minibuffer edit */
 
 /* These flags are 'ex' argument descriptors, adapted from elvis.  Not all are
  * used or honored or implemented.

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.33 2000/09/14 01:14:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.35 2000/09/24 22:42:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -54,11 +54,65 @@ write_keyword(char *text, int size)
 	flt_putc(':');
 }
 
+/*
+ * string passed to this routine is in the format:
+ *
+ *    [<white>]<token>[<white>]
+ */
+static char *
+write_delimited_unit(char *text, char *attr)
+{
+    char *pwhite, *ptoken, *panchor, *pnxt_unit;
+
+    panchor = pwhite = text;
+    while (isspace(*pwhite))
+        pwhite++;
+    if (pwhite > panchor)
+        flt_puts(panchor, pwhite - panchor, "");
+    panchor = ptoken = pwhite;
+    while (*ptoken && (! isspace(*ptoken)))
+        ptoken++;
+    flt_puts(panchor, ptoken - panchor, attr);
+    if (isspace(*ptoken))
+    {
+        panchor = ptoken;
+        pwhite  = ptoken + 1;  /* advance beyond initial white space byte */
+        while (isspace(*pwhite))
+            pwhite++;
+        flt_puts(panchor, pwhite - panchor, "");
+        pnxt_unit = pwhite;
+    }
+    else
+        pnxt_unit = ptoken;
+    return (pnxt_unit);
+}
+
+/*
+ * string passed to this routine is in the format:
+ *
+ *    ([<white>]<token>[<white>]|\\\n)+<single delimiter>
+ */
 static void
 write_delimited(char *text, int size, char *attr)
 {
-    flt_puts(text, size-1, attr);
-    flt_puts(text+size-2, 1, "");
+    char *cp, delim[2];
+
+    delim[0] = text[size - 1];         /* save the trailing delimiter */
+    delim[1] = text[size - 1] = '\0';  /* chop the trailing delimiter */
+    cp       = text;
+    do
+    {
+        if (*cp == '\\' && cp[1] == '\n')
+        {
+            flt_puts(cp, 2, "");
+            cp += 2;
+        }
+        else
+            cp = write_delimited_unit(cp, attr);
+    }
+    while (*cp);
+
+    flt_puts(delim, 1, "");
 }
 
 static void
@@ -91,7 +145,7 @@ do_filter(FILE *input)
     BEGIN(NORMAL);
     while (yylex() > 0) {
     }
-    flt_bfr_finish();
+    flt_bfr_error();
 }
 
 %}
