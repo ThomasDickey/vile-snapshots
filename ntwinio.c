@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.108 2001/04/07 15:37:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.110 2001/04/29 23:38:10 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -705,10 +705,10 @@ attr_to_colors(VIDEO_ATTR attr, int *fcolor, int *bcolor)
     *fcolor = nfcolor;
     *bcolor = nbcolor;
 
-    attr &= (VASPCOL|VACOLOR|VABOLD|VAITAL|VASEL|VAREV);
+    attr &= (VASPCOL | VACOLOR | VABOLD | VAITAL | VASEL | VAREV);
     if (attr) {
 	ninvert = ((attr & (VASEL | VAREV)) == VASEL
-		|| (attr & (VASEL | VAREV)) == VAREV);
+		   || (attr & (VASEL | VAREV)) == VAREV);
 
 	if (attr & VASPCOL)
 	    *fcolor = (VCOLORNUM(attr) & (NCOLORS - 1));
@@ -734,7 +734,8 @@ attr_to_colors(VIDEO_ATTR attr, int *fcolor, int *bcolor)
 	    *bcolor = *fcolor;
 	    *fcolor = temp;
 	}
-	TRACE2(("attr_to_colors(%04x) fg=%2d, bg=%2d %s\n", attr, *fcolor, *bcolor, ninvert ? "INVERT" : ""));
+	TRACE2(("attr_to_colors(%04x) fg=%2d, bg=%2d %s\n",
+		attr, *fcolor, *bcolor, ninvert ? "INVERT" : ""));
     }
     return ninvert;
 }
@@ -2966,7 +2967,8 @@ repaint_window(HWND hWnd)
 		new_atr = CELL_ATTR(row, col);
 		if (new_atr != old_atr) {
 		    nt_set_colors(ps.hdc, old_atr);
-		    TRACE2(("TextOut [%3d,%3d]%.*s\n", row, old_col, col - old_col, &CELL_TEXT(row, old_col)));
+		    TRACE2(("TextOut [%3d,%3d]%.*s\n", row, old_col, col -
+			    old_col, &CELL_TEXT(row, old_col)));
 		    TextOut(ps.hdc,
 			    ColToPixel(old_col),
 			    RowToPixel(row),
@@ -2978,7 +2980,8 @@ repaint_window(HWND hWnd)
 	    }
 	    if (old_col < x1) {
 		nt_set_colors(ps.hdc, old_atr);
-		TRACE2(("TextOut [%3d,%3d]%.*s\n", row, old_col, x1 - old_col, &CELL_TEXT(row, old_col)));
+		TRACE2(("TextOut [%3d,%3d]%.*s\n", row, old_col, x1 -
+			old_col, &CELL_TEXT(row, old_col)));
 		TextOut(ps.hdc,
 			ColToPixel(old_col),
 			RowToPixel(row),
@@ -3080,8 +3083,11 @@ MainWndProc(
 	break;
 
     case WM_SETFOCUS:
-    case WM_WVILE_CURSOR_ON:
 	fshow_cursor();
+	break;
+    case WM_WVILE_CURSOR_ON:
+	if (GetFocus() == hWnd)
+	    fshow_cursor();
 	break;
 
     case WM_KILLFOCUS:
@@ -3591,9 +3597,11 @@ winvile_cursor_state(
     int rc = caret_visible;
 
     if (!queue_change) {
-	if (visible)
-	    fshow_cursor();
-	else
+	if (visible) {
+	    /* don't set turn on cursor unless editor has focus */
+	    if (GetFocus() == winvile_hwnd())
+		fshow_cursor();
+	} else
 	    fhide_cursor();
     } else {
 	PostMessage(winvile_hwnd(),

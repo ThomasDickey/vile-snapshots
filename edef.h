@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.282 2001/03/22 20:54:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.283 2001/04/29 22:07:02 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -129,7 +129,7 @@ decl_init( TBUFF *replacepat, 0 );	/* replacement pattern		*/
 decl_uninit( int  last_srch_direc );	/* Direction of last search */
 decl_uninit( regexp *gregexp );		/* compiled version of searchpat */
 decl_init( TBUFF *tb_matched_pat, 0);	/* text that scan found */
-
+decl_init( TBUFF *lastfileedited, 0);
 
 #if OPT_HOOKS
 decl_uninit( HOOK cdhook );		/* proc to run when change dir */

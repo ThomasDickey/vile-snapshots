@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.234 2001/03/23 01:22:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.235 2001/04/29 19:52:35 tom Exp $
  *
  */
 
@@ -1493,6 +1493,17 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 
 	if (clexec) {
 		int actual;
+
+		/*
+		 * A "^W!cat" (control/W followed by a shell command) will
+		 * arrive at this point with "!" in extbuf, and the command in
+		 * execstr.  Glue the two back together so they're seen as a
+		 * shell command which should not be name-completed.
+		 */
+		if (tb_length(*extbuf) == 1
+		 && isShellOrPipe(tb_values(*extbuf)))
+			options |= KBD_REGLUE | KBD_SHPIPE;
+
 		tbreserve(extbuf);
 		TRACE(("...getting token from: %s\n", str_visible(execstr)));
 		execstr = ((options & KBD_REGLUE) != 0 && pushed_back)

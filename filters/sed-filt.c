@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.11 2000/11/04 20:18:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.12 2001/04/24 21:41:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to sed scripts.
  */
@@ -22,18 +22,18 @@ DefineFilter("sed");
 #define isSlash(c) ((c) == '/' || (c) == ESC)
 
 typedef enum {
-    LeadingBlanks,
-    OptionalRCurly,
-    OptionalLabel,
-    OptionalComment,
-    OptionalAddresses,
-    BlanksAfterAddresses,
-    CommandChar,
-    ExpectSubsParams,
-    ExpectTransParams,
-    ExpectLabel,
-    ExpectText,
-    AfterCommandChar,
+    LeadingBlanks
+    ,OptionalRCurly
+    ,OptionalLabel
+    ,OptionalComment
+    ,OptionalAddresses
+    ,BlanksAfterAddresses
+    ,CommandChar
+    ,ExpectSubsParams
+    ,ExpectTransParams
+    ,ExpectLabel
+    ,ExpectText
+    ,AfterCommandChar
 } States;
 
 static char *Action_attr;
