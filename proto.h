@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.287 1998/07/04 00:00:08 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.288 1998/07/08 01:23:14 Chris.Sherman Exp $
  *
  */
 
@@ -888,12 +888,13 @@ extern FILE *vms_rpipe (const char *cmd, int fd, const char *input_file);
 extern char *mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc);
 extern int  is_win95(void);
 extern int  is_winnt(void);
+extern int  stdin_data_available(void);
+extern int  w32_inout_popen(FILE **fr, FILE **fw, char *cmd);
+extern int  w32_system(const char *cmd);
 extern void restore_console_title(void);
 extern void set_console_title(const char *title);
-extern int  w32_inout_popen(FILE **fr, FILE **fw, char *cmd);
-extern void w32_npclose(FILE *fp);
 extern void w32_keybrd_reopen(int pressret);
-extern int  w32_system(const char *cmd);
+extern void w32_npclose(FILE *fp);
 #endif
 
 /* watchfd.c */
@@ -951,7 +952,6 @@ extern	int	x_setfont		(const char *fname);
 extern	int	x_typahead		(int milli);
 extern	void	x_move_events		(void);
 extern	void	x_preparse_args		(int *pargc, char ***pargv);
-extern	void	x_resize		(int cols, int rows);
 extern	void	x_set_icon_name (const char *name);
 extern	void	x_set_window_name (const char *name);
 
@@ -979,6 +979,10 @@ extern	void	x_working		(void);
 
 #endif	/* DISP_X11 */
 
+#if DISP_X11 || DISP_NTWIN
+extern	void	gui_resize		(int cols, int rows);
+#endif
+
 #if NO_LEAKS
 extern	void	bind_leaks (void);
 extern	void	bp_leaks (void);
@@ -998,7 +1002,7 @@ extern	void	wp_leaks (void);
 extern	void	x11_leaks		(void);
 #endif
 
-#endif
+#endif /* NO_LEAKS */
 
 #if SYS_UNIX
 #if MISSING_EXTERN__FILBUF

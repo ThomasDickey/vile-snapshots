@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.184 1998/07/01 23:34:38 Larry.Gensch Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.185 1998/07/08 09:56:02 Chris.Sherman Exp $
  *
  */
 
@@ -1071,7 +1071,7 @@ int (*complete)(DONE_ARGS)) /* handles completion */
 		bufn = tb_length(temp);
 	if (bufn != 0)
 		memcpy(extbuf, tb_values(temp), bufn);
-	extbuf[bufn] = EOS;
+	extbuf[bufn-1] = EOS;
 	return code;
 }
 

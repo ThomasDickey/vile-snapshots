@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.10 1998/05/27 10:22:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.11 1998/07/08 01:42:57 Chris.Sherman Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -173,8 +173,8 @@ Background(HDC hdc)
 	return CreateSolidBrush(GetBkColor(hdc));
 }
 
-static void
-AdjustWindowSize(int h, int w)
+void
+gui_resize(int cols, int rows)
 {
 	RECT crect;
 	RECT wrect;
@@ -182,8 +182,8 @@ AdjustWindowSize(int h, int w)
 	GetClientRect(vile_hwnd, &crect);
 	GetWindowRect(vile_hwnd, &wrect);
 
-	wrect.right  += (nCharWidth  * w) - crect.right;
-	wrect.bottom += (nLineHeight * h) - crect.bottom;
+	wrect.right  += (nCharWidth  * cols) - crect.right;
+	wrect.bottom += (nLineHeight * rows) - crect.bottom;
 
 	MoveWindow(vile_hwnd,
 		wrect.left,
@@ -212,7 +212,7 @@ ResizeClient()
 		TRACE(("...ResizeClient %dx%d\n", h, w));
 	}
 
-	AdjustWindowSize(h, w);
+	gui_resize(w, h);
 }
 
 #define NORMAL_COLOR 180
@@ -437,7 +437,7 @@ static void use_font(HFONT my_font, BOOL resizable)
 		term.t_nrow = (crect.bottom - crect.top) / nLineHeight;
 	}
 
-	AdjustWindowSize(term.t_nrow, term.t_ncol);
+	gui_resize(term.t_ncol, term.t_nrow);
 }
 
 static void set_font(void)
@@ -1307,9 +1307,6 @@ BOOL InitInstance(
 
 	SetCursor(hglass_cursor);
 
-	term.t_ncol = 80;
-	term.t_nrow = 24;
-
 	get_font(&vile_logfont);
 	use_font(vile_font, FALSE);
 
@@ -1355,6 +1352,7 @@ WinMain(
 {
 #define MAXARGS 10
 	int argc = 0;
+	int n;
 	char *argv[MAXARGS];
 	char *ptr;
 
@@ -1364,9 +1362,6 @@ WinMain(
 		if (!InitApplication(hInstance))
 			return (FALSE);
 	}
-
-	if (!InitInstance(hInstance, nCmdShow))
-		return (FALSE);
 
 	argv[argc++] = "VILE";
 
@@ -1392,6 +1387,45 @@ WinMain(
 			*ptr++ = '\0';
 	}
 	argv[argc] = 0;
+
+	term.t_ncol = 80;
+	term.t_nrow = 24;
+
+	/*
+	 * Get screen size, if any.
+	 */
+	for (n = 1; n < argc-1; n++) {
+		size_t len = strlen(argv[n]);
+		int m = n, eat = 0;
+		if (len >2
+		 && !strncmp(argv[n], "-geometry", len)) {
+			char *src = argv[n+1];
+			char *dst = 0;
+			int value = strtol(src, &dst, 0);
+			if (dst != src) {
+				if (value > 2)
+					term.t_nrow = value;
+				if (*dst++ == 'x') {
+					src = dst;
+					value = strtol(src, &dst, 0);
+					if (value > 2)
+						term.t_ncol = value;
+				}
+				eat = 2;
+			}
+		}
+		if (eat) {
+			while (m+eat <= argc) {
+				argv[m] = argv[m+eat];
+				m++;
+			}
+			n--;
+			argc -= eat;
+		}
+	}
+
+	if (!InitInstance(hInstance, nCmdShow))
+		return (FALSE);
 
 	return MainProgram(argc, argv);
 }
