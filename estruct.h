@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.434 1999/12/10 23:16:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.435 1999/12/20 21:16:56 kev Exp $
  */
 
 #ifndef _estruct_h
@@ -2016,6 +2016,9 @@ typedef struct	WINDOW {
 #ifdef WMDRULER
 	int	w_ruler_line;
 	int	w_ruler_col;
+#endif
+#if OPT_PERL || OPT_TCL
+	ULONG	w_id;			/* Unique window id */
 #endif
 }	WINDOW;
 

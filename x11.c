@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.237 1999/12/19 23:33:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.238 1999/12/20 21:31:57 kev Exp $
  *
  */
 
@@ -5090,6 +5090,14 @@ paste_from_clipboard(int f GCC_UNUSED, int n GCC_UNUSED)
     return TRUE;
 }
 
+/*ARGSUSED*/
+int
+paste_from_primary(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    x_paste_selection(XA_PRIMARY);
+    return TRUE;
+}
+
 static XMotionEvent *
 compress_motion(
     XMotionEvent *ev)
@@ -6469,7 +6477,7 @@ static XtIntervalId x_autocolor_timeout_id;
 void
 x_start_autocolor_timer()
 {
-#if OPT_COLOR&&!SMALLER 
+#if OPT_COLOR&&!SMALLER
     int millisecs = global_b_val(VAL_AUTOCOLOR);
     x_stop_autocolor_timer();
     if (millisecs > 0)
@@ -6492,8 +6500,21 @@ void
 x_autocolor_timeout(XtPointer data GCC_UNUSED, XtIntervalId *id GCC_UNUSED)
 {
     if (kqempty(cur_win)) {
+	XClientMessageEvent ev;
+
 	autocolor();
 	XSync(dpy, False);
+
+	/* Send a null message to ourselves to prevent stalling in
+	   the event loop. */
+	ev.type = ClientMessage;
+	ev.serial = 0;
+	ev.send_event = True;
+	ev.display = dpy;
+	ev.window  = cur_win->win;
+	ev.message_type = None;
+	ev.format = 8;
+	XSendEvent(dpy, cur_win->win, False, (long)0, (XEvent *)&ev);
     }
 }
 

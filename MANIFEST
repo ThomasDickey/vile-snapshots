@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_0g
+MANIFEST for vile, version v9_0h
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -257,6 +257,7 @@ macros/vileperl.rc              sample initialization for perl scripts
 perl                            subdirectory
 perl/Vile.pm                    utility functions for perl scripts
 perl/Vileserv.pm                provides file-load server capability for xvile
+perl/capture.pl                 Perl script that improves on vile's capture-command
 perl/dir.pl                     directory-browser extension
 perl/glob2re.pl                 utility-script for vile's hypertext
 perl/hgrep.pl                   utility-script for vile's hypertext
@@ -272,6 +273,7 @@ perl/syntax.pl                  syntax-parsing for perl highlighting
 perl/tailf.pl                   do a "tail -f"
 perl/vileget                    pass file-edit request to xvile session running Vileserv
 perl/visit.pl                   utility-script for vile's hypertext
+perl/winops.pl                  window-operations for testing the Perl5 interface
 visvile                         subdirectory
 visvile/commands.cpp            implement commands for visvile.dll
 visvile/commands.h              implement commands for visvile.dll

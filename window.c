@@ -2,12 +2,20 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.92 1999/12/15 00:35:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.93 1999/12/20 21:31:35 kev Exp $
  *
  */
 
 #include	"estruct.h"
 #include	"edef.h"
+
+#if OPT_PERL || OPT_TCL
+/* Window id to assign to w_id field for next visible window allocated */
+static ULONG w_id_next = 1;
+
+/* Fake windows are given a window id of 0 */
+#define FAKE_WINDOW_ID 0
+#endif
 
 /*
  * Unlink the given window-pointer from the list
@@ -624,6 +632,12 @@ splitw(int f, int n)
 	}
 	curwp->w_flag |= WFMODE|WFHARD|WFSBAR;
 	wp->w_flag |= WFMODE|WFHARD;
+
+#if OPT_PERL || OPT_TCL
+	wp->w_id = w_id_next;
+	++w_id_next;
+#endif
+
 	return wp;
 }
 
@@ -1062,6 +1076,11 @@ winit(int screen)
 	wp->w_force = 0;
 	wp->w_bufp  = NULL;
 
+#if OPT_PERL || OPT_TCL
+	wp->w_id = w_id_next;
+	++w_id_next;
+#endif
+
 	if (screen) {
 		(void)bsizes(bminip);	/* FIXME */
 		TRACE(("winit delinking bminip, %d lines, %ld bytes\n",
@@ -1118,7 +1137,7 @@ push_fake_win(BUFFER *bp)
 {
     WINDOW *oldwp = curwp;
     WINDOW *wp;
-    if ((wp = typealloc(WINDOW)) == NULL) {
+    if ((wp = typecalloc(WINDOW)) == NULL) {
 	    (void)no_memory("WINDOW");
 	    return NULL;
     }
@@ -1133,6 +1152,9 @@ push_fake_win(BUFFER *bp)
     curwp->w_toprow = wheadp->w_toprow - 2;	/* should be negative */
     curwp->w_ntrows = 1;
     curwp->w_wndp = wheadp;
+#if OPT_PERL || OPT_TCL
+    curwp->w_id = FAKE_WINDOW_ID;
+#endif
     wheadp = curwp;
     return oldwp;
 }
@@ -1163,6 +1185,59 @@ pop_fake_win(WINDOW *oldwp)
     wheadp = wp->w_wndp;
     free((char *)wp);
     return bp;
+}
+
+#endif
+
+#if OPT_PERL
+/* Find and return the window with the given window id.  Return NULL
+   if not found */
+WINDOW *
+id2win(ULONG id)
+{
+    WINDOW *wp;
+    for_each_visible_window(wp) {
+	if (wp->w_id == id)
+	    return wp;
+    }
+    return NULL;
+}
+
+/* Return the window id associated with the given window */
+ULONG
+win2id(WINDOW *wp)
+{
+    return wp->w_id;
+}
+
+/* Given an index N, return the window associated with that index.  I.e,
+   index 0 returns the first visible window, index 1 returns the second,
+   etc. */
+WINDOW *
+index2win(int idx)
+{
+    WINDOW *wp;
+    for_each_visible_window(wp) {
+	if (idx-- == 0)
+	    return wp;
+    }
+    return NULL;
+}
+
+/* Given a window pointer, return the index corresponding to that
+   window.  I.e, the first visible window corresponds to 0, the second
+   to 1, etc. Return -1 if the window in question is not found. */
+int
+win2index(WINDOW *wp_to_find)
+{
+    WINDOW *wp;
+    int idx = 0;
+    for_each_visible_window(wp) {
+	if (wp == wp_to_find)
+	    return idx;
+	idx++;
+    }
+    return -1;
 }
 
 #endif

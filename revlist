@@ -1,6 +1,6 @@
-revlist for vile, version v9_0g
+revlist for vile, version v9_0h
 --------------------------------------------------------------------------------
-CHANGES	1.515
+CHANGES	1.516
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -15,17 +15,17 @@ README.PC	1.22
 README.VMS	1.5
 aclocal.m4	1.82
 ansi.c	1.40
-api.c	1.21
-api.h	1.11
+api.c	1.22
+api.h	1.12
 basic.c	1.111
 bind.c	1.212
 borland.c	1.30
 btree.c	1.6
 btree.h	1.3
-buffer.c	1.211
+buffer.c	1.212
 buglist	1.370
 chgdfunc.h	1.9
-cmdtbl	1.192
+cmdtbl	1.193
 config.emx	1.1
 config_h.in	1.2
 configure	none
@@ -37,7 +37,7 @@ display.c	1.319
 djhandl.c	1.6
 dumbterm.c	1.17
 edef.h	1.264
-estruct.h	1.434
+estruct.h	1.435
 eval.c	1.260
 exec.c	1.213
 externs.c	1.7
@@ -83,16 +83,16 @@ opers.c	1.68
 os2keys.h	1.1
 os2pipe.c	1.4
 os2vio.c	1.26
-patchlev.h	1.207
+patchlev.h	1.208
 path.c	1.100
-perl.xs	1.56
-proto.h	1.407
+perl.xs	1.57
+proto.h	1.408
 pscreen.h	1.1
-ptypemap	1.5
+ptypemap	1.6
 random.c	1.221
 regexp.c	1.66
 region.c	1.101
-revlist	v9_0g
+revlist	v9_0h
 search.c	1.119
 select.c	1.105
 sinstall.sh	1.1
@@ -126,14 +126,14 @@ w32pipe.c	1.17
 w32reg.c	1.4
 w32reg.h	1.1
 watch.c	1.3
-window.c	1.92
+window.c	1.93
 winvile.h	1.4
 winvile.odl	1.5
 winvile.rc	1.6
 word.c	1.71
 wordmov.c	1.21
 wvwrap.cpp	1.3
-x11.c	1.237
+x11.c	1.238
 xshell.sh	1.4
 xvile.wmconfig	1.1
 doc/Vileserv.doc	1.1
@@ -253,6 +253,7 @@ macros/vilemenu.rc	1.2
 macros/vileperl.rc	1.1
 perl/Vile.pm	1.1
 perl/Vileserv.pm	1.4
+perl/capture.pl	1.1
 perl/dir.pl	1.1
 perl/glob2re.pl	1.1
 perl/hgrep.pl	1.1
@@ -268,6 +269,7 @@ perl/syntax.pl	1.4
 perl/tailf.pl	1.1
 perl/vileget	1.3
 perl/visit.pl	1.1
+perl/winops.pl	1.1
 visvile/commands.cpp	1.3
 visvile/commands.h	1.1
 visvile/dsaddin.cpp	1.1
