@@ -1,11 +1,11 @@
 ------------------------
-vile bug/enhancement/wish list
+vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.319 1996/12/09 00:55:17 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.320 1997/02/26 11:53:27 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
-E	add ":n file" 
+E	add ":n file"
 	    (:n means go to the next file in a series of files.
 	    :n file means go to that specific file - one can specify a
 	    +<cmd> before file to indicate the vi command which should be
@@ -152,7 +152,7 @@ more input when partway done.
 ========(VMS-VILE)=============================================================
 Unfinished items on vax/vms (dickey@clark.net):
 
-	+ if the current directory has changed, offer to restore it on exit. 
+	+ if the current directory has changed, offer to restore it on exit.
 	  (Note that if the _device_ portion has changed, the original
 	  directory should be restored anyway!).
 
@@ -205,7 +205,7 @@ above).
   that boxed C comments work right)in subsequent reformatted lines,
   including leading but not trailing whitespace.  indentlen should be
   counted _after_ the width of such a comment delimiter.  this would make
-  paragraphs that are indented way after the delimiter keep their indent. 
+  paragraphs that are indented way after the delimiter keep their indent.
   commented paragraphs should end when exp->mlen for the comment regexp is
   equal to llength(DOT), i.e.  it's the whole line.  (we'll need to take
   the $ off the end of the comment regexp).  ]
@@ -395,7 +395,7 @@ pasting to a view-only buffer does not generate an error message.
       - If I click on the "maximize" gadget, it gets _really_ big.
         Like, many times bigger than the screen big; I suspect that
         it is maximizing to a number of *characters* equal to the number
-        of *pixels* available or something.  If I click on the same 
+        of *pixels* available or something.  If I click on the same
         gadget (after dragging that part of the window onto the screen),
         which does a normalize, it crashes.
 	I am use vile 4.5 and xvile on HP/UX 9.01.
@@ -458,7 +458,7 @@ effect is wrong.  i'm not sure what the right thing to do is.)
 double quote characters (and probably other special chars) are interpreted
 incorrectly on the lhs of a map command.  for instance:
 	map ^K" WBi"^[Ea"^[
-will result in 
+will result in
 	^K WBi
 as the lhs, leaving
 	^[Ea"^[
@@ -587,7 +587,7 @@ up long lines consisting of a single word.
 	  command execution is severely broken.  if you have a :map
 	  that executes a '@a' command in the middle, the contents
 	  of register a are readied for replay, but input continues
-	  to come from the :map string until it is ended, and only then 
+	  to come from the :map string until it is ended, and only then
 	  so we dip down to the lower level and start getting the result
 	  of '@a'.  a similar thing happens with '.' used in a :map, only
 	  it seems even worse, since recording isn't started/stopped
@@ -723,7 +723,7 @@ there are two conflicting wordwrap mechanisms in vile --
 	  microemacs, will wrap words in input mode when you type a
 	  space character after you've passed the "fillcol" column.
 	- the vi-like "wrapmargin" setting sets the column past which
-	  entering more input will cause a line break. 
+	  entering more input will cause a line break.
 
 i think we should eliminate the historical mechanism in favor of the vi-ish
 one, and i've marked it [deprecated] in vile.hlp.  (as of version 5.6)
@@ -781,12 +781,12 @@ retrospect, "check-modtimes" should really be "warn-out-of-date", or
 something like that, and we should _always_ check modification times.
 
 ---------------------
- 
+
 Not sure if this will be generally useful, but I changed the tags.c
-module to use "_qident" instead of "_ident" in the gototag() function. 
+module to use "_qident" instead of "_ident" in the gototag() function.
 This allows a user to goto C++ functions when the tag is a C++
 class::function reference.
- 
+
 ------------"
     How about changing makefile.djg, adding a line like
       strip vile
@@ -795,17 +795,17 @@ class::function reference.
     djgpp 1.12 patch 4) to 259,072 bytes.  Just a little idea.
 [i'll add a different target instead...]
 
-	
+
 -----------------------------
 
 add a copyright to the binary
 
 ------------------
 The configure script returns the wrong value for HAVE_SYS_FILIO_H on
-OSF/1-Alpha; termio.c doesn't compile with that problem. 
+OSF/1-Alpha; termio.c doesn't compile with that problem.
 
 also, the configure script returns the wrong value for GETPGRP_HAS_ARG on the
-OSF/1-Alpha. 
+OSF/1-Alpha.
 
 The test in configure compiles ok with "cc" but not with gcc.
 ac_compile in configure uses cc as a default. This may be able
@@ -822,24 +822,24 @@ Here's a partial diff which I think shows part of what must be done:
 --- makefile    Thu Feb 15 11:56:41 1996
 ***************
 *** 404,410 ****
-  
+
   # dependency-rules for install/installdirs
-  $(bindir)/$(TARGET):       $(TARGET) 
+  $(bindir)/$(TARGET):       $(TARGET)
 !       $(INSTALL_PROGRAM) $(TARGET) $@
-  $(bindir)/vile-manfilt:    vile-manfilt 
+  $(bindir)/vile-manfilt:    vile-manfilt
         $(INSTALL_PROGRAM) vile-manfilt $@
-  $(bindir)/vile-c-filt:     vile-c-filt 
+  $(bindir)/vile-c-filt:     vile-c-filt
 --- 404,410 ----
-  
+
   # dependency-rules for install/installdirs
-  $(bindir)/$(TARGET):       $(TARGET) 
-!       $(INSTALL_PROGRAM) $@ $(TARGET) 
-  $(bindir)/vile-manfilt:    vile-manfilt 
+  $(bindir)/$(TARGET):       $(TARGET)
+!       $(INSTALL_PROGRAM) $@ $(TARGET)
+  $(bindir)/vile-manfilt:    vile-manfilt
         $(INSTALL_PROGRAM) vile-manfilt $@
-  $(bindir)/vile-c-filt:     vile-c-filt 
+  $(bindir)/vile-c-filt:     vile-c-filt
 
 
-But on the other hand, it also doesn't want the final name of the 
+But on the other hand, it also doesn't want the final name of the
 binary in the path mentioned (bad: /usr/local/bin/vile; good: /usr/local/bin/);
 I don't know enough make magic to get the basename stripped off. Perhaps
 the "$@" should just be $(bindir).
@@ -935,3 +935,350 @@ on time taken to do the search...
  > only paramater set.  I unzipped them with infozip's unzipper instead
  > of pkunzip, and this became a read-only attribute on the vile.hlp
  > file.  If this is set, vile.exe can't find it.
+
+----------------- (tom)
+
+These are old wishes/bugs:
+
+	set-dos, write file, doesn't reflect (in chars-written message) the
+	added ^M's on each line.
+
+	not every system declares the struct-type for utime/utimes.
+
+	make partial-completion in [History] set DOT to the current line
+	we're matching from, if [History] is visible.
+
+	make vile know about different types of tags-files (ctags -s, etags),
+
+	on VMS, elvis writes files with stmlf-cr format.  vile writes files
+	with var-cr format.  the former is a little smaller.  vile ought to
+	remember the input file's format to use in writing new files (if
+	possible).
+
+These date back to 5.4:
+
+	+ correct :.,$<bs> lockup
+
+	+ should next_column() use HIGHBIT test?
+
+	+ ':' expansion doesn't work with ":write-file" because DOT is
+	  commandeered for use in a region.
+
+	+ should allow '$' in identifiers (or make it an option), and modify
+	  'tags' to correspond
+
+These are pre-6.0 (undated)
+
+	use CSet C/C++ to flush out unsigned stuff, especially flags that
+	ought to be.
+
+	add configure-test for 'ospeed'
+
+	am told that vile's opt_working code keeps the process awake;
+	should set up so that the time elapses automatically, use a
+	procedure instead of semaphores.
+
+	implement gpm
+
+	vi sets '#' on attempted write; vile doesn't
+
+	split-out ctype.c, use locale to determine isprint, etc.
+
+	fix the ^VNNN to show digits
+
+--------------------------------------------------------------------------------
+
+-- 96-09-27 (Lance Heller <lance.heller@wcom.com>)
+
+	If I start an aixterm:
+		aixterm -bd Wheat -fg Wheat -bg MidnightBlue -ms grey90
+	the problem does NOT occur.
+
+	However, if I start it as:
+		aixterm -geometry 90x70+110+1
+	it does.
+
+	The appropriate section from my .Xdefaults is:
+		aixterm*background:     lightsalmon
+		aixterm*foreground:     black
+		aixterm*saveLines:      1024
+		aixterm*scrollPosition: left
+		aixterm*pointerColor:   black
+		aixterm*fullCursor:     true
+		!aixterm.geometry:      90x73+448+0
+		aixterm*jumpScroll:     true
+		aixterm*font:   -ibm-serf-medium-r-normal-iso9241-10-100-75-75-*-*:
+		aixterm*scrollBar:      true
+		aixterm*multiScroll:    false
+		aixterm*iconName:       aixterm
+		aixterm*pointerShape:   pirate
+
+-- 96-10-02 (tom)
+
+add state (variables) to allow a macro to pick up the beginning/ending of a
+selected area.
+
+-- 96-10-14 (tom)
+
+add 'mouse-hook' command (maybe generalize with "on" command)
+
+-- 96-10-14 (tom)
+
+support text-formatting of C++ comments
+
+-- 96-10-16 (tom)
+
+implement $title for tcap.c
+
+-- 96-10-19 (tom)
+
+implement Vile, Sh, Csh, Dcl modes with keyword-balancing using the C fences
+(different keywords).  Make cmode a special case of majormode, deprecated.
+
+-- 96-10-19 (tom)
+
+getting an error in $buffer-hook can blow away the buffer that's being hooked
+(e.g., if it's a temporary file).
+
+-- 96-10-19 (tom)
+
+implement [Mac-style], like [Dos-style].
+
+-- 96-10-21 (tom)
+
+implement gtlbl()
+
+-- 96-10-23 (Alex Wetmore <awetmore@microsoft.com>)
+
+	I've made some changes to vile that I wanted to discuss:
+
+	The biggest one is allowing vile-commands to be replaced with vile
+	procedures.  I did this so that I could make split-current-window (:sp)
+	have the same finger feel and nvi (which allows you do a :sp <filename>
+	to edit a filename).  There are two problems with my implementation
+	that I wanted to discuss:
+
+	* one is that it requires that the procedure have exactly the same name
+	as the command.  it would be nice to be able to add new : commands by
+	just making procedures.  the largest problem with this is that the
+	commands are looked up every time that you hit a key via a binary
+	search.  with a linear search they could be changed to go through
+	procedures as well, but this would slow things down.  also it would be
+	necessary to have a method to say which procedures should become : 
+	commands.
+
+	* the other is that there is no way to let the procedure know if they
+	were called via space or enter.  for instance with the
+	split-current-window example i gave above I am using the following
+	macro:
+
+	store-procedure split-current-window
+		split-current-window
+		set-variable %filename @"file: "
+		~if &gre &len %filename 0
+			edit-file %filename
+		~else
+			write-message ""
+		~endif
+	~endm
+
+	This means that if I want to split the current window without editting
+	another file that I need to type <:> <s> <p> <enter> <enter>.  On nvi
+	it would just be <:> <s> <p> <enter>.
+
+	The problem is that there are no standards for passing arguments into
+	stored-procedures in vile (that I've found out about at least) so there
+	isn't really a good way to let the procedure know how it was invoked. 
+	I could add a new variable that it could look up I suppose.
+
+	I think that adding this feature (the ability to rewrite :  commands
+	and add new ones) would do a lot to make vile more modifiable.  For
+	instance it would be great to be able to add little commands like :grep
+	that do a grep into a new window (I know I can bind it to a key, but a
+	:  command seems like a better way to do it to me).
+
+	So, any ideas for how to modify the command searching engine to look
+	for these macros and how to register these macros?  I'm willing to do
+	the work and submit my diffs back into a future version of vile.
+
+-- 96-10-25 (Anand Mandapati <anand@ibmoto.com>)
+
+	The behavior of 'yq' doesn't seem to match the behavior of other quoted
+	motion operations.  Here are some sample scenarios:
+
+	    I) Yank a single line NOT including the eol, ie, like 'y$'
+	       1. I type 'yq$q' to yank the line all the way to the eol but
+		  don't want to include the eol.
+	       2. I then do a 'P' to put this yanked text before the cursor.
+	       3. It behaves as 'y$P' would.
+
+	    II) Yank a single line including the eol, ie, like 'yy'
+	       1. I type 'yqjq' to yank the line all the way to the eol and
+		  want to include the eol in the selection.
+	       2. I then do a 'P' to put this yanked text before the cursor.
+	       3. It behaves as 'y$P' would, not as 'yyp' would.
+
+	At first I thought maybe this is the expected behavior, but if I use
+	'c' to change the same selections instead of yank, the behavior seems
+	different.  Let me clarify:
+
+	    I) Change a single line NOT including the eol, ie, like 'c$'
+	       1. I type 'cq$q' to change the line all the way to the eol but
+		  don't want to include the eol.
+	       2. This deletes all the way to the end of the line and I can
+		  now type like normal.
+
+	    II) Change a single line including the eol (no equiv. in vi?)
+	       1. I type 'cqjq' to change the line all the way to the eol and
+		  want to include the eol in the deletion.
+	       2. This deletes the entire line including the eol, shifts the
+		  next line up to the cursor and I can now type the replacement
+		  text.
+
+	The behavior for 'd' and other quoted-motion operations is similar.
+	The 'yq' behavior doesn't seem logical.  Do I just not understand it
+	correctly?
+
+[I've seen a case of off-by-one on end of selections, possibly related - tom]
+
+-- 96-11-09 (tom)
+
+modify xvile blink_interval to use 2/3 duty-cycle
+
+-- 96-11-21 (tom)
+
+borland.c doesn't restore color on exit.
+
+-- 96-11-21 (Philippe Le Foll <phillf@fridu.com>)
+
+	Would you know why 'vile' break GNU bash on NT.
+
+	Vile Readme tell than vile give back the tty in state in find it it
+	look not being true under NT.  And if you start vile from bash when
+	comming back you loose the echo on command line.
+
+-- 96-11-22 (tom)
+
+it should be possible to recode the tcap.c mouse-motion to use 'select()' to
+check for the user holding down the mouse button, and use _that_ to control a
+fake scrolling in the general direction of the mouse.
+
+-- 96-12-04 (Hans J. Greub" <hgreub@teleport.com>)
+
+	I am trying to get vile on nt or xvile on an rs6000 workstation to
+	colorize perl syntax.  I use the color_readhook macro and the perl
+	filter.  Now both on the PC and xvile I can get vile to use italics,
+	but I can not get it to use color just bold face.  For xvile I defined
+	in the .Xdefaults and .Xresources file the following:
+
+		XVile.color.fcolor1: red
+		XVile.color.fcolor2: green
+		etc
+
+	and then used xrdb to read in the new .Xdefaults or .Xresources file
+	but no luck.  Xvile compiler just like a charm.  Do I have to
+	(re)compile xvile with different switches?
+
+	On nt I can set the forground and background color with the set
+	commands.  In xvile I can control the fore/background cursor etc colors
+	through the .Xdefaults or the command line switches.  So on both
+	systems I am able to get fore/background color, but I cann't get the
+	color attributes to work.  Only the boldface and italics attributes
+	work.  Do the color attributes only work with certain fonts or are the
+	default color attributes mapped to bold face?  If this is the case how
+	can I override the the default color attributes?
+
+-- 96-12-26 (tom)
+
+modify os2vio.c to support colored-attributes.
+
+-- 97-01-10 (tom)
+
+should cut-down the special-case for VMS $PATH, possibly merging with
+$search-path.
+
+-- 97-01-11 (tom)
+
+WinNT version's mouse works until I run ^X!dir (this is the pre-built one on
+the ftp site).
+
+when I recompile ntconio version with Visual C++ 4.0, piping to vile doesn't
+work (this is because the logic that attempts to reopen stdin doesn't talk to
+the WinNT console functions).
+
+-- 97-01-15 (tom)
+
+allow modelines to be colored (i.e., separately from the window contents)
+
+-- 97-01-17 (tom)
+
+add show-marks command, make it per-window dynamic.
+
+-- 97-01-17 (tom)
+
+probably should use WINMARK logic, but it's too late (pre-7.0) to do this now.
+
+-- 97-01-17 (tom)
+
+make tcap.c & x11.c have keydefs up to 64 for the former, F35 for the latter.
+
+-- 97-01-17 (tom)
+
+mouse-clicking should set the position so I can use ` or ' to jump back.
+
+-- 97-01-18 (Paul Fox <pgf@foxharp.boston.ma.us>)
+
+	another one i saw this afternoon:  i got into a state where typing
+	    ":!rm append"
+	in an attempt to remove a file named "append" gave me
+	    "[Improper line range]"
+	i was able to clear the condition with
+	    ":!  ^H^Hrm append"
+	i haven't been able to reproduce this one.
+
+-- 97-01-19 (Abraham V. George" <ageorge@ERC.MsState.Edu>)
+
+	While working with huge src files I find it very convenient to keep
+	bookmarks.  If I use markers, i would loose them if I were to re-open
+	the file.  One way I get through it is to make a book mark file of
+	'tags' file format.  I can then get to that src line the same way I use
+	ctags reference.
+
+-- 97-01-23 (Clayton Weaver <cgweav@eskimo.com>)
+
+reports problem running a curses application within a shell buffer, wants
+documentation clarified.  Shell buffers, since they are the output from
+redirecting stdout and stderr, won't look like the curses application intended.
+(And since they don't accept interactive input, the curses application won't
+work well, even when stdin is reconnected to /dev/tty).
+
+-- 97-01-25 (tom)
+
+when filtering, etc., via a pipe, we're interruptible and may be killed (at
+least when running in gdb).
+
+-- 97-02-09 (tom)
+
+should add gcc's -Wcast-qual, -Wwrite-strings warnings, and make (like ncurses)
+checks for __attribute__((unused)).
+
+-- 97-02-10 (tom)
+
+on VMS, we don't get filename completion with "~", since that's not processed
+in glob.c
+
+-- 97-02-26 (Andy Harper <A.HARPER@kcl.ac.uk>)
+
+	Under VMS, the location of the HELP file should not be hardwired to a
+	specific set of directories; rather it is better to use a logical name,
+	such as VILE_HELP, to point to it.
+
+[or an environment variable, in *NIX terms - tom]
+
+	Under VMS, the location of the package should be in a rooted directory
+	tree, let's say VILE_ROOT:[000000], with subdirectories for VAX
+	executables [BIN_VAX], Alpha executables [BIN_ALPHA], documentation
+	[DOC] and configuration [CONFIG].
+
+[I believe he's suggesting it be installed this way - tom]
+

@@ -1,5 +1,13 @@
 Changes for vile 7.0 (released ??? Feb ??, 1997)
 
+(tom)	970226 (c)
+	+ fix additional nits for ffwopen() (reported by Graeme Miller and
+	  Andy Harper).
+	+ add workaround in configure script for users with Solaris 2.5.1 and
+	  gcc configured for 2.4 or 2.5, due to gcc not shadowing term.h
+	  (reported by Andy Harper <A.HARPER@kcl.ac.uk>, but my ISP has the
+	  same problem)
+
 (tom)	970221 (b)
 	+ modify ffwopen() fix from 6.4a to work with DEC C (reported by Graeme
 	  Miller <G.R.M.Miller@open.ac.uk>).

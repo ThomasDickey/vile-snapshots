@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.85 1997/01/19 15:40:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.86 1997/02/26 12:06:48 tom Exp $
  *
  */
 
@@ -36,7 +36,9 @@
 #  ifndef FALSE
 #  define FALSE 0
 #  endif
-#  include <term.h>
+#  if HAVE_TERM_H
+#    include <term.h>
+#  endif
 #  if !HAVE_TIGETNUM && HAVE_TIGETINT
 #    define tigetnum tigetint
 #  endif
