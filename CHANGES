@@ -1,10 +1,25 @@
+Changes for vile 6.2 (released ??? ??? ??, 1996)
+
+(tom)	960920 (a)
+	+ allow continuation-lines in macros, denoted by a backslash at the
+	  end of the line.
+	+ add new directive "~elseif" (exec.c)
+	+ restructured dobuf() using new function 'begin_directive()', fixing a
+	  place where 'execstr' was modified w/o saving old value (exec.c)
+	+ add new function 'no_such_function()' (bind.c, etc.)
+	+ modified debug-trace in msg_putc() to work around Linux's printf
+	  which calls strlen on all string arguments (msgs.c).
+	+ modified to not use "#elif", since HP/UX K&R compiler doesn't handle
+	  this (termio.c).
+
 Changes for vile 6.1 (released Tue Sep 10, 1996)
-(pgf) 960910
+
+(pgf)	960910
 	+ added text to README and vile.hlp regarding possibility of
 	  tom's taking over the source tree.  not completely firmed
 	  up yet, but likely.  thanks tom!!!!
 
-(tom) 960903 (d)
+(tom)	960903 (d)
 	+ adapted patch by Larry Schwimmer's (schwim@cyclone.stanford.edu)
 	  for configure.in
 
@@ -13,7 +28,7 @@ Changes for vile 6.1 (released Tue Sep 10, 1996)
 
 	+ remove (and correct rules for generating) vms_link.opt, vmsshare.opt
 
-(pgf) 960812 (c)
+(pgf)	960812 (c)
 	+ removed const from dirnam[] buffer in imdying.  removed cast
 	  to (char *) which prevented any compiler in the world from
 	  showing us this error.  grrr.  i hope no one else loses
@@ -27,7 +42,6 @@ Changes for vile 6.1 (released Tue Sep 10, 1996)
 	  builds -- mostly casts, and some changes to the vms build scripts.
 
 (jrs)	960809 (b)
-
 	+ on NT reset the console input mode after a shell escape to fix
 	  the problem reported by paul with ^C.  (ntconio.c)
 

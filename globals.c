@@ -2,7 +2,7 @@
  *	matching lines, then for each such line, an action is performed.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/globals.c,v 1.39 1996/03/24 13:38:16 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/globals.c,v 1.40 1996/09/17 14:44:06 tom Exp $
  *
  */
 
@@ -55,8 +55,7 @@ globber(int f, int n, int g_or_v)
 	        mlforce("[No function]");
 		return FALSE;
 	} else if ((cfp = engl2fnc(fnp)) == 0) {
-	        mlforce("[No such function]");
-		return FALSE;
+	        return no_such_function(fnp);
 	} else if ((cfp->c_flags & GLOBOK) == 0) {
 	        mlforce("[Function not allowed]");
 		return FALSE;

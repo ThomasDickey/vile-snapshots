@@ -405,7 +405,7 @@ Functions
 Directives
 ----------
 	Directives are commands which only operate within an executing
-	macro, i.e.  they do not make sense as a single command.  As such,
+	macro, i.e.,  they do not make sense as a single command.  As such,
 	they cannot be called up singly or bound to keystroke.  Used within
 	macros, they control what lines are executed and in what order.
 
@@ -454,8 +454,8 @@ Directives
 	support color.  (Currently, only the DOS version supports color.)
 
 
-    ~IF, ~ELSE, and ~ENDIF Directives
-    ---------------------------------
+    ~IF, ~ENDIF, ~ELSE, and ~ENDIF Directives
+    -----------------------------------------
 	This directive allows statements to be executed only if a condition
 	specified in the directive is met.  Every line following the ~IF
 	directive, until the first ~ELSE or ~ENDIF directive, is only
@@ -473,6 +473,8 @@ Directives
 			insert-string "Investigate the situation....\n"
 			insert-string "(SAY 'stay here Sara')\n"
 		~endif
+	    ~elseif &sequal %planet "luna"  ;If we have landed on our neighbor...
+		write-message "Keep the door closed"
 	    ~else
 		setv %conditions @"Atmosphere conditions outside? "
 		~if &sequal %conditions "safe"
@@ -583,5 +585,5 @@ Directives
 		insert-string "You are on an old machine!\n"
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/RCS/macros.doc,v 1.11 1995/11/08 14:38:59 pgf Exp $
+  $Header: /users/source/archives/vile.vcs/RCS/macros.doc,v 1.12 1996/09/18 00:56:29 tom Exp $
 -----------------------------------

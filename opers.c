@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.55 1996/02/26 04:24:35 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.56 1996/09/17 20:04:36 tom Exp $
  *
  */
 
@@ -71,8 +71,11 @@ operator(int f, int n, OpsFunc fn, const char *str)
 		}
 		if (cfp)
 			mlerase();
-		else
-			mlforce("[No such function]");
+		else {
+			if (!clexec)
+				lsprintf(tok, "(%d)", c);
+			no_such_function(tok);
+		}
 	}
 	if (!cfp) {
 		doingopcmd = FALSE;

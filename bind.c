@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.137 1996/05/16 10:44:20 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.138 1996/09/17 21:51:58 tom Exp $
  *
  */
 
@@ -242,6 +242,13 @@ char *s)	/* string to output */
 
 /* bindkey:	add a new key to the key binding table		*/
 
+int
+no_such_function(const char * fnp)
+{
+	mlforce("[No such function \"%s\"]", fnp != 0 ? fnp : "");
+	return FALSE;
+}
+
 /* ARGSUSED */
 int
 bindkey(int f, int n)
@@ -255,8 +262,7 @@ bindkey(int f, int n)
 	fnp = kbd_engl("Bind function whose full name is: ", cmd);
 
 	if (fnp == NULL || (kcmd = engl2fnc(fnp)) == NULL) {
-		mlforce("[No such function]");
-		return(FALSE);
+		return no_such_function(fnp);
 	}
 
 	return rebind_key(key_to_bind(kcmd), kcmd);
@@ -527,8 +533,7 @@ desfunc(int f, int n)	/* describe-function */
 	fnp = kbd_engl("Describe function whose full name is: ", 
 							described_cmd+1);
 	if (fnp == NULL || engl2fnc(fnp) == NULL) {
-		mlforce("[No such function]");
-		return(FALSE);
+		return no_such_function(fnp);
 	}
 
 	last_apropos_string = described_cmd;

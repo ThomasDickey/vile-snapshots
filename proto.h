@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.226 1996/08/13 03:06:48 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.227 1996/09/17 14:30:58 tom Exp $
  *
  */
 
@@ -55,6 +55,7 @@ extern int gotoeob (int f, int n);
 #endif
 
 /* bind.c */
+extern int no_such_function (const char *fname);
 extern int startup (const char *sfname);
 extern const char *flook (const char *fname, int hflag);
 extern char *kcod2pstr (int c, char *seq);

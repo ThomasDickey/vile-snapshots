@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.287 1996/08/05 12:51:57 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.290 1996/09/19 00:47:06 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -828,30 +828,6 @@ typedef enum {
 #define	LastMsgCol	(term.t_ncol - 10)
 #else
 #define	LastMsgCol	(term.t_ncol - 1)
-#endif
-
-/*	Directive definitions	*/
-
-#if ! SMALLER
-
-#define	DIF		0
-#define DELSE		1
-#define DENDIF		2
-#define DGOTO		3
-#define DRETURN		4
-#define DENDM		5
-#define DWHILE		6
-#define	DENDWHILE	7
-#define	DBREAK		8
-#define DFORCE		9
-
-#define NUMDIRS		10
-
-#else
-
-#define DENDM		0
-#define NUMDIRS		1
-
 #endif
 
 /*
@@ -2031,22 +2007,6 @@ typedef struct KILLREG {
 } KILLREG;
 
 #define	KbSize(i,p)	((p->d_next != 0) ? KBLOCK : kbs[i].kused)
-
-/*	The !WHILE directive in the execution language needs to
-	stack references to pending whiles. These are stored linked
-	to each currently open procedure via a linked list of
-	the following structure
-*/
-
-typedef struct WHBLOCK {
-	LINEPTR	w_begin;	/* ptr to !while statement */
-	LINEPTR	w_end;		/* ptr to the !endwhile statement*/
-	int w_type;		/* block type */
-	struct WHBLOCK *w_next;	/* next while */
-} WHBLOCK;
-
-#define	BTWHILE		1
-#define	BTBREAK		2
 
 /*
  * Incremental search defines.

@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.199 1996/09/10 12:36:57 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.200 1996/09/17 23:37:31 tom Exp $
  */
 
 /* I know this declaration stuff is really ugly, and I probably won't ever
@@ -130,7 +130,6 @@ decl_uninit( char golabel[NPAT] );	/* current line to go to	*/
 #if OPT_MLFORMAT
 decl_uninit( char *modeline_format );	/* modeline formatting string */
 #endif
-decl_uninit( int execlevel );		/* execution IF level		*/
 decl_init( int	eolexist, TRUE );	/* does clear to EOL exist	*/
 decl_uninit( int revexist );		/* does reverse video exist?	*/
 #if DISP_IBMPC || OPT_EVAL
