@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.18 1998/04/24 01:12:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.19 1998/04/26 01:49:59 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -193,11 +193,11 @@ is_bind ( char *action )
 /************************************************************************/
 /* Test if the action name begins with the keyword "cmd",               */
 /************************************************************************/
-static const char *
+static char *
 is_cmd ( char *action )
 {
     char tok[NSTRING];
-    const char *result = token(action, tok, EOS);
+    char *result = (char *)token(action, tok, EOS);
     if (!strcmp(tok, "cmd"))
         return result;
 

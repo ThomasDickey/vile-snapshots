@@ -5,7 +5,7 @@
  * commands. Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.85 1998/04/15 17:51:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.86 1998/04/26 14:46:16 tom Exp $
  *
  */
 
@@ -740,26 +740,19 @@ charprocreg(int (*func)(int))
 }
 #endif
 
-/* finish filling in the left/right column info for a rectangular
-	region */
+/* finish filling in the left/right column info for a rectangular region */
 static void
 set_rect_columns(register REGION *rp)
 {
-	if (regionshape != RECTANGLE)
-		return;
+	if (regionshape == RECTANGLE) {
+		MARK	lc, rc;
 
-	/* convert to columns */
-	rp->r_leftcol = getcol(rp->r_orig, FALSE); 
-	rp->r_rightcol = getcol(rp->r_end, FALSE) + 1; 
-	/* enforce geometry */
-	if (rp->r_rightcol < rp->r_leftcol) {
-		C_NUM tmp = rp->r_rightcol;
-		/* swap and, correct for the off by one-ness of the region --
-		 * regions include their start, but not their end, so if we
-		 * switch left/right colums, we need to inc/decrement
-		 * appropriately */
-		rp->r_rightcol = rp->r_leftcol + 1;
-		rp->r_leftcol = tmp ? tmp - 1 : 0;
+		lc = (rp->r_orig.o < rp->r_end.o) ? rp->r_orig : rp->r_end;
+		rc = (rp->r_orig.o > rp->r_end.o) ? rp->r_orig : rp->r_end;
+
+		/* convert to columns */
+		rp->r_leftcol = getcol(lc, FALSE); 
+		rp->r_rightcol = getcol(rc, FALSE) + 1; 
 	}
 }
 

@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.175 1998/04/23 11:07:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.176 1998/04/26 13:17:45 tom Exp $
  *
  */
 
@@ -339,6 +339,7 @@ typedef struct _text_win {
     Cursor	normal_pointer;
 #if OPT_WORKING
     Cursor	watch_pointer;
+    Bool	want_to_work;
 #endif
 
     /* selection stuff */
@@ -457,6 +458,8 @@ static	void	x_wm_delwin (Widget w, XtPointer unused, XEvent *ev,
 			Boolean *continue_to_dispatch);
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
 static	Boolean	too_light_or_too_dark (Pixel pixel);
+#endif
+#if OPT_KEV_SCROLLBARS
 static	Boolean	alloc_shadows (Pixel pixel, Pixel *light, Pixel *dark);
 #endif
 static	XFontStruct *query_font (TextWindow tw, const char *fname);
@@ -487,6 +490,9 @@ static	void	repeat_scroll (XtPointer count, XtIntervalId  *id);
 #endif
 #if OPT_WORKING
 static	void	x_set_watch_cursor(int onflag);
+static	int	x_has_events(void);
+#else
+#define x_has_events() (XtAppPending(cur_win->app_context) & XtIMXEvent)
 #endif /* OPT_WORKING */
 static	int	evqempty (void);
 static	void	evqadd(const XEvent *evp);
@@ -1371,7 +1377,7 @@ do_scroll(
 
     if (scrollmode == drag
      && event->type == MotionNotify
-     && (XtAppPending(cur_win->app_context) & XtIMXEvent)
+     && x_has_events()
      && XtAppPeekEvent(cur_win->app_context, &nev)
      && (nev.type == MotionNotify || nev.type == ButtonRelease))
 	return;
@@ -1494,7 +1500,7 @@ resize_bar(
     /* Return immediately if behind in processing motion events */
     if (motion_permitted
      && event->type == MotionNotify
-     && (XtAppPending(cur_win->app_context) & XtIMXEvent)
+     && x_has_events()
      && XtAppPeekEvent(cur_win->app_context, &nev)
      && (nev.type == MotionNotify || nev.type == ButtonRelease))
 	return;
@@ -3281,7 +3287,9 @@ too_light_or_too_dark(
     return (color.red > 0xfff0 && color.green > 0xfff0 && color.blue > 0xfff0)
         || (color.red < 0x0020 && color.green < 0x0020 && color.blue < 0x0020);
 }
+#endif
 
+#if OPT_KEV_SCROLLBARS
 static Boolean
 alloc_shadows(
     Pixel pixel,
@@ -3583,8 +3591,8 @@ x_setfont(
     const char  *fname)
 {
     XFontStruct *pfont;
-    int         oldw,
-                oldh;
+    Dimension   oldw;
+    Dimension   oldh;
 
     if (cur_win) {
 	oldw = x_width(cur_win);
@@ -5415,7 +5423,8 @@ void
 x_move_events(void)
 {
     XEvent ev;
-    while ((XtAppPending(cur_win->app_context) & XtIMXEvent)
+
+    while (x_has_events()
         && !kqfull(cur_win)) {
 
 	/* Get and dispatch next event */
@@ -5485,8 +5494,17 @@ x_move_events(void)
 void
 x_working(void)
 {
-    x_set_watch_cursor(TRUE);
-    x_move_events();
+    cur_win->want_to_work = TRUE;
+}
+
+static int
+x_has_events(void)
+{
+    if (cur_win->want_to_work == TRUE) {
+    	x_set_watch_cursor(TRUE);
+	cur_win->want_to_work = FALSE;
+    }
+    return (XtAppPending(cur_win->app_context) & XtIMXEvent);
 }
 
 static void
@@ -5748,7 +5766,7 @@ x_getc(void)
 	    XEvent ev;
 	    XtAppNextEvent(cur_win->app_context, &ev);
 	    XtDispatchEvent(&ev);
-	} while ((XtAppPending(cur_win->app_context) & XtIMXEvent)
+	} while (x_has_events()
 	    && !kqfull(cur_win));
     }
 
@@ -5801,7 +5819,7 @@ x_typahead(
 	 * Note that we do not block here.
 	 */
 	while (kqempty(cur_win) &&
-		(XtAppPending(cur_win->app_context) & XtIMXEvent)) {
+		x_has_events()) {
 	    XEvent ev;
 	    XtAppNextEvent(cur_win->app_context, &ev);
 	    XtDispatchEvent(&ev);
@@ -6051,9 +6069,9 @@ x_get_window_name(void)
     	return x_window_name;
 }
 
-void
+static void
 watched_input_callback(XtPointer fd,
-                       int *source GCC_UNUSED,
+                       int *src GCC_UNUSED,
 		       XtInputId *id GCC_UNUSED)
 {
     dowatchcallback((int) fd);
@@ -6074,7 +6092,7 @@ x_watchfd(int fd, WATCHTYPE type, long *idp)
 }
 
 void
-x_unwatchfd(int fd, long id)
+x_unwatchfd(int fd GCC_UNUSED, long id)
 {
     XtRemoveInput((XtInputId) id);
 }

@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.345 1998/04/23 09:18:54 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.346 1998/04/26 21:29:56 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -858,6 +858,7 @@ typedef enum {
 #define KBD_NOMAP	iBIT(9) /* don't permit mapping via kbd_key() */
 #define KBD_EXPPAT	iBIT(10) /* expand ~ to last replacement */
 #define KBD_0CHAR	iBIT(11) /* string can have embedded nulls */
+#define KBD_STATED	iBIT(12) /* erasing buffer returns for prev-state */
 
 /* default option for 'mlreply' (used in modes.c also) */
 #if !(SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT)
@@ -869,7 +870,7 @@ typedef enum {
 typedef enum {
     WATCHREAD   = iBIT(0),
     WATCHWRITE  = iBIT(1),
-    WATCHEXCEPT = iBIT(2),
+    WATCHEXCEPT = iBIT(2)
 } WATCHTYPE;
 
 /* reserve space for ram-usage option */
