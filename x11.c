@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.239 1999/12/21 11:12:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.240 1999/12/24 01:08:42 tom Exp $
  *
  */
 
@@ -3549,7 +3549,7 @@ query_font(
 {
     XFontStruct *pf;
 
-    TRACE(("x11:query_font(%s)\n", fname))
+    TRACE(("x11:query_font(%s)\n", fname));
     if ((pf = XLoadQueryFont(dpy, fname)) != 0) {
 	char *fullname = NULL;
 
@@ -3585,7 +3585,7 @@ query_font(
 	tw->left_ink	= (pf->min_bounds.lbearing < 0);
 	tw->right_ink	= (pf->max_bounds.rbearing > tw->char_width);
 
-	TRACE(("...success left:%d, right:%d\n", tw->left_ink, tw->right_ink))
+	TRACE(("...success left:%d, right:%d\n", tw->left_ink, tw->right_ink));
 
 	FreeIfNeeded(cur_win->fontname);
 	if ((fullname = x_get_font_atom_property(pf, atom_FONT)) != NULL
@@ -3596,7 +3596,7 @@ query_font(
 	     */
 	    tw->fontname = strmalloc(fullname);
 	    XFree(fullname);
-	    TRACE(("...resulting FONT property font %s\n", tw->fontname))
+	    TRACE(("...resulting FONT property font %s\n", tw->fontname));
 	}
 	else {
 	    /*
@@ -3683,7 +3683,7 @@ piecemeal_done:
 	     * so that we can later search for bold and italic fonts.
 	     */
 	    tw->fontname = strmalloc(fname);
-	    TRACE(("...resulting piecemeal font %s\n", tw->fontname))
+	    TRACE(("...resulting piecemeal font %s\n", tw->fontname));
 	}
     }
     return pf;
@@ -3742,7 +3742,7 @@ alternate_font(
 
     TRACE(("x11:alternate_font(weight=%s, slant=%s)\n -> %s\n",
 	weight ? weight : "",
-	slant  ? slant  : "", newname))
+	slant  ? slant  : "", newname));
 
     if ((fsp = XLoadQueryFont(dpy, newname)) != NULL) {
 	cur_win->left_ink = cur_win->left_ink || (fsp->min_bounds.lbearing < 0);
@@ -3750,7 +3750,7 @@ alternate_font(
 		    || (fsp->max_bounds.rbearing > cur_win->char_width);
 	TRACE(("...found left:%d, right:%d\n",
 		cur_win->left_ink,
-		cur_win->right_ink))
+		cur_win->right_ink));
     }
 
 done:
@@ -3934,7 +3934,7 @@ wait_for_scroll(
 static void
 x_setpal(const char *thePalette)
 {
-	TRACE(("x_setpal(%s)\n", thePalette))
+	TRACE(("x_setpal(%s)\n", thePalette));
 	set_ctrans(thePalette);
 	x_touch(cur_win, 0, 0, cur_win->cols, cur_win->rows);
 	x_flush();
@@ -5211,7 +5211,7 @@ x_process_event(
 	    break;
 	nc = ev->xbutton.x / cur_win->char_width;
 	nr = ev->xbutton.y / cur_win->char_height;
-	TRACE(("ButtonPress #%d (%d,%d)\n", ev->xbutton.button, nr, nc))
+	TRACE(("ButtonPress #%d (%d,%d)\n", ev->xbutton.button, nr, nc));
 	switch (ev->xbutton.button) {
 	case Button1:		/* move button and set selection point */
 	    start_selection(cur_win, (XButtonPressedEvent *) ev, nr, nc);
@@ -5257,7 +5257,7 @@ x_process_event(
 		ev->xbutton.button,
 		ev->xbutton.y / cur_win->char_height,
 		ev->xbutton.x / cur_win->char_width,
-		cur_win->did_select ? ": did_select" : ""))
+		cur_win->did_select ? ": did_select" : ""));
 	switch (ev->xbutton.button) {
 	case Button1:
 	    if (cur_win->persistent_selections)
@@ -5575,15 +5575,15 @@ x_change_focus(
 {
     static int got_focus_event = FALSE;
 
-    TRACE(("x11:x_change_focus(type=%d)\n", ev->type))
+    TRACE(("x11:x_change_focus(type=%d)\n", ev->type));
     switch (ev->type) {
 	case EnterNotify:
-	    TRACE(("... EnterNotify\n"))
+	    TRACE(("... EnterNotify\n"));
 	    if (!ev->xcrossing.focus || got_focus_event)
 		return;
 	    goto focus_in;
 	case FocusIn:
-	    TRACE(("... FocusIn\n"))
+	    TRACE(("... FocusIn\n"));
 	    got_focus_event = TRUE;
 focus_in:
 	    cur_win->show_cursor = True;
@@ -5595,14 +5595,14 @@ focus_in:
 	    x_flush();
 	    break;
 	case LeaveNotify:
-	    TRACE(("... LeaveNotify\n"))
+	    TRACE(("... LeaveNotify\n"));
 	    if ( !ev->xcrossing.focus
 	      || got_focus_event
 	      || ev->xcrossing.detail == NotifyInferior)
 		return;
 	    goto focus_out;
 	case FocusOut:
-	    TRACE(("... FocusOut\n"))
+	    TRACE(("... FocusOut\n"));
 	    got_focus_event = TRUE;
 focus_out:
 	    cur_win->show_cursor = False;
@@ -6237,7 +6237,7 @@ x_fcol(int color)
     ULONG	gcmask;
     int		n;
 
-    TRACE(("x_fcol(%d)\n", color))
+    TRACE(("x_fcol(%d)\n", color));
     cur_win->fg = (color >= 0 && color < NCOLORS)
 		    ? cur_win->colors_fg[color]
 		    : cur_win->default_fg;
@@ -6267,7 +6267,7 @@ x_bcol(int color)
     ULONG	gcmask;
     int		n;
 
-    TRACE(("x_bcol(%d)\n", color))
+    TRACE(("x_bcol(%d)\n", color));
     cur_win->bg = (color >= 0 && color < NCOLORS)
 		    ? ((cur_win->colors_bg[color] == cur_win->default_bg)
 		    	? cur_win->colors_fg[color]
@@ -6301,7 +6301,7 @@ x_ccol(int color)
     ULONG	gcmask;
     Pixel	fg, bg;
 
-    TRACE(("x_ccol(%d)\n", color))
+    TRACE(("x_ccol(%d)\n", color));
     if (cur_win->is_color_cursor == FALSE) {
 	if (!color_cursor()) {
 	    gccolor = -1;
@@ -6532,7 +6532,7 @@ gui_isprint(int ch)
      && !pf->all_chars_exist) {
 	if (ch < (int) pf->min_char_or_byte2
 	 || ch > (int) pf->max_char_or_byte2) {
-	    TRACE(("MissingChar %c\n", ch))
+	    TRACE(("MissingChar %c\n", ch));
 	    return FALSE;
 	}
 	if (pf->min_byte1 == 0

@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.416 1999/12/17 01:29:19 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.418 1999/12/24 18:19:11 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -665,7 +665,7 @@ begin:
 	if (global_g_val(GMDPOPUP_MSGS) && (startstat != TRUE)) {
 		bp = bfind(MESSAGES_BufName, BFSCRTCH);
 		bsizes(bp);
-		TRACE(("Checking size of popup messages: %d\n", bp->b_linecount))
+		TRACE(("Checking size of popup messages: %d\n", bp->b_linecount));
 		if (bp->b_linecount > 1) {
 			popup_msgs();
 			*mlsave = EOS;
@@ -859,6 +859,9 @@ tidy_exit(int code)
 {
 #if OPT_PERL
 	perl_exit();
+#endif
+#if DISP_X11
+	term.close(); /* need this if $xshell left subprocesses */
 #endif
 	ttclean (TRUE);
 #if SYS_UNIX
@@ -1669,9 +1672,6 @@ quit(int f, int n GCC_UNUSED)
 		show_alloc();
 	}
 #endif
-#if DISP_X11
-	term.close(); /* need this if $xshell left subprocesses */
-#endif
 	tidy_exit(GOODEXIT);
 	/* NOTREACHED */
 	return FALSE;
@@ -1805,7 +1805,7 @@ charinit(void)
 
 	TRACE(("charinit lo=%d, hi=%d\n",
 		global_g_val(GVAL_PRINT_LOW),
-		global_g_val(GVAL_PRINT_HIGH)))
+		global_g_val(GVAL_PRINT_HIGH)));
 
 	/* If we're using the locale functions, set our flags based on its
 	 * tables.  Note that just because you have 'setlocale()' doesn't mean
@@ -2243,7 +2243,7 @@ newprocessgroup(int f GCC_UNUSED, int n GCC_UNUSED)
 #endif
 
 	    if (pid > 0)
-		tidy_exit(GOODEXIT);
+		ExitProgram(GOODEXIT);
 	    else if (pid < 0) {
 		fputs("cannot fork\n", stderr);
 		tidy_exit(BADEXIT);

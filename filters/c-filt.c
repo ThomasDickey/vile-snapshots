@@ -6,7 +6,7 @@
  * 		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.46 1999/12/21 23:02:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.47 1999/12/24 18:11:40 tom Exp $
  *
  * Features:
  * 	- Reads the keyword file ".vile.keywords" from the home directory.
@@ -262,8 +262,9 @@ write_number(FILE * fp, char *s)
     int num_f = 0;
     int num_u = 0;
     int num_l = 0;
+    int dot = (*s == '.');
 
-    if (radix == 16 || (*s == '.'))
+    if (radix == 16)
 	s++;
     while (!done) {
 	s++;
@@ -279,7 +280,8 @@ write_number(FILE * fp, char *s)
 	    break;
 	}
 	if ((radix == 10 || radix == 16) && *s == '.') {
-	    found = done = 1;
+	    done = 1;
+	    dot++;
 	    break;
 	}
 	found += !done;
@@ -307,8 +309,10 @@ write_number(FILE * fp, char *s)
 		}
 		break;
 	    case 1:		/* after decimal point */
-		while (SkipDigit(radix,s))
+		while (SkipDigit(radix,s)) {
 		    s++;
+		    found++;
+		}
 		ch = UPPER(*s);
 		state = -1;
 		if (BeginExponent(radix, ch)) {
@@ -369,7 +373,7 @@ write_number(FILE * fp, char *s)
 	    s++;
 	}
     }
-    if (!found || IsDigitX(*s)) {	/* something is run-on to a number */
+    if (!found || IsDigitX(*s) || dot > 1) { /* something is run-on to a number */
 	while (IsDigitX(*s))
 	    s++;
 	write_string(fp, base, s - base, Error_attr);
@@ -525,7 +529,8 @@ do_filter(FILE * input, FILE * output)
 		}
 	    } else if (isIdent(*s)) {
 		s = extract_identifier(output, s);
-	    } else if (isdigit(*s) || (*s == '.' && isdigit(s[1]))) {
+	    } else if (isdigit(*s)
+	    		|| (*s == '.' && (isdigit(s[1]) || s[1] =='.'))) {
 		s = write_number(output, s);
 	    } else if (*s == '#') {
 		char *t = s;

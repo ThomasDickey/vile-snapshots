@@ -2,7 +2,7 @@
  * Unix crypt(1)-style interface.
  * Written by T.E.Dickey for vile (March 1999).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.12 1999/11/15 23:35:00 Ryan.Murray Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.13 1999/12/24 01:03:15 tom Exp $
  *
  */
 
@@ -94,7 +94,7 @@ vl_make_encrypt_key (char *dst, const char *src)
     memcpy(dst, (char *)crypt(key, salt), LEN_CRYPT);
     dst[LEN_CRYPT] = 0;
 
-    TRACE(("made encryption key(%s)\n", dst))
+    TRACE(("made encryption key(%s)\n", dst));
 }
 
 int
@@ -147,7 +147,7 @@ int n GCC_UNUSED)
     int rc = get_encryption_key(result, sizeof(result));
 
     if (rc == TRUE) {
-	TRACE(("set key for %s\n", curbp->b_bname))
+	TRACE(("set key for %s\n", curbp->b_bname));
 	(void)strcpy(curbp->b_cryptkey, result);
 	make_local_b_val(curbp, MDCRYPT);
 	set_b_val(curbp, MDCRYPT, TRUE);
@@ -156,7 +156,7 @@ int n GCC_UNUSED)
 	if (curbp->b_cryptkey[0] != EOS) {
 	    rc = mlyesno("Discard encryption key");
 	    if (rc == TRUE) {
-		TRACE(("reset key for %s\n", curbp->b_bname))
+		TRACE(("reset key for %s\n", curbp->b_bname));
 		curbp->b_cryptkey[0] = EOS;
 		if (global_b_val(MDCRYPT)) {
 		    make_local_b_val(curbp, MDCRYPT);
@@ -183,7 +183,7 @@ vl_setup_encrypt(char *encrypted_password)
     unsigned mixs;
     long myseed = seed;	/* this isn't a random number, it's a parameter */
 
-    TRACE(("setup_encrypt(%s)\n", encrypted_password))
+    TRACE(("setup_encrypt(%s)\n", encrypted_password));
 
     for (j = 0; j < LEN_CRYPT; j++)
 	myseed = myseed * encrypted_password[j] + j;

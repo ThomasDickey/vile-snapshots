@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.18 1999/12/11 00:40:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.19 1999/12/24 13:02:17 tom Exp $
  */
 
 #include <windows.h>
@@ -515,7 +515,7 @@ w32_system_winvile(const char *cmd, int *pressret)
                                  sizeof(PRESS_ANY_KEY) - 1,
                                  &dummy,
                                  NULL);
-                for (;;)
+                for_ever
                 {
                     /* Wait for a single key of input from user. */
 
@@ -843,7 +843,7 @@ w32_wdw_title(void)
         if (! buf)
             return (error_val);
     }
-    for (;;)
+    for_ever
     {
 #if DISP_NTWIN
         nchars = GetWindowText(winvile_hwnd(), buf, bufsize);

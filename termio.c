@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.183 1999/12/19 23:34:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.185 1999/12/24 13:02:21 tom Exp $
  *
  */
 
@@ -751,12 +751,15 @@ ttgetc(void)
 {
 #if USE_SELECT
     char c;
-    for (;;) {
-	fd_set read_fds = watchfd_read_fds;
-	fd_set write_fds = watchfd_write_fds;
+    for_ever {
+	fd_set read_fds;
+	fd_set write_fds;
 	int fd, status;
 	struct timeval tval;
 	int acmilli = val_autocolor();
+
+	read_fds = watchfd_read_fds;
+	write_fds = watchfd_write_fds;
 
 	tval.tv_sec  = acmilli / 1000;
 	tval.tv_usec = (acmilli % 1000) * 1000;
@@ -793,7 +796,7 @@ ttgetc(void)
      || watch_max != 0) {
 	int n;
 
-	for (;;) {
+	for_ever {
 	    watch_fds[watch_max].fd = 0;
 	    watch_fds[watch_max].events = POLLIN;
 	    if ((n = poll(watch_fds, watch_max + 1, acmilli)) > 0) {
@@ -830,7 +833,7 @@ ttgetc(void)
 #ifdef __BEOS__
     int fd;
     int acmilli = val_autocolor();
-    for (;;) {
+    for_ever {
 	for (fd = 1; fd < watch_max; fd++) {
 	    if (((watch_fds[fd] & WATCHREAD) != 0 && beos_has_input(fd))
 	     || ((watch_fds[fd] & WATCHWRITE) != 0 && beos_can_output(fd))) {

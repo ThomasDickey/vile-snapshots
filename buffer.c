@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.212 1999/12/20 21:23:56 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.214 1999/12/24 16:56:14 kev Exp $
  *
  */
 
@@ -178,7 +178,7 @@ zotwp(BUFFER *bp)
 	WINDOW	dummy;
 	int s = FALSE;
 
-	TRACE(("zotwp(%s)\n", bp->b_bname))
+	TRACE(("zotwp(%s)\n", bp->b_bname));
 
 	/*
 	 * Locate buffer to switch to after deleting windows.  It can't be
@@ -864,7 +864,7 @@ swbuffer_lfl(register BUFFER *bp, int lockfl, int this_window)
 		return FALSE;
 	}
 
-	TRACE(("swbuffer(%s) nwnd=%d\n", bp->b_bname, bp->b_nwnd))
+	TRACE(("swbuffer(%s) nwnd=%d\n", bp->b_bname, bp->b_nwnd));
 	if (curbp == bp
 	 && curwp != 0
 	 && DOT.l != 0
@@ -875,6 +875,11 @@ swbuffer_lfl(register BUFFER *bp, int lockfl, int this_window)
 
 		return s;
 	 }
+
+#if !WINMARK
+	/* Whatever else we do, make sure MK isn't bogus when we leave */
+	MK = nullmark;
+#endif
 
 	if (curbp) {
 		/* if we'll have to take over this window, and it's the last */
@@ -1249,7 +1254,7 @@ zotbuf(register BUFFER *bp)	/* kill the buffer pointed to by bp */
 	if (find_bp(bp) == 0)	/* delwp may have zotted us, pointer obsolete */
 		return TRUE;
 
-	TRACE(("zotbuf(%s)\n", bp->b_bname))
+	TRACE(("zotbuf(%s)\n", bp->b_bname));
 
 #define no_del
 #ifdef no_del

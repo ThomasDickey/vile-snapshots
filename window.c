@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.93 1999/12/20 21:31:35 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.94 1999/12/24 01:08:42 tom Exp $
  *
  */
 
@@ -361,7 +361,7 @@ scroll_sideways(int f, int n)
 
 	if (original != w_val(curwp,WVAL_SIDEWAYS)) {
 		TRACE(("scroll_sideways by %d to %d\n",
-			n, w_val(curwp, WVAL_SIDEWAYS)))
+			n, w_val(curwp, WVAL_SIDEWAYS)));
 		curwp->w_flag  |= WFHARD|WFMOVE|WFMODE;
 	}
 

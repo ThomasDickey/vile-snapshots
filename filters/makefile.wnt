@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.15 1999/12/10 02:27:00 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.17 1999/12/23 01:29:11 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -12,26 +12,72 @@ LD_DEBUG     = #$(ldebug)
 
 LEX_OUTPUT_ROOT = lex.yy
 
+x	= .exe
+o	= .obj
+
 # Other vars
 CON_LDFLAGS  = -nologo -pdb:none
 
+# filters in "C" are easy to port
+C_ALL	= \
+	vile-c-filt$x \
+	vile-crypt$x \
+	vile-key-filt$x \
+	vile-manfilt$x \
+	vile-pas-filt$x
+
+# filters in lex/flex require state support
+LEX_ALL = \
+	vile-ada-filt$x \
+	vile-awk-filt$x \
+	vile-bat-filt$x \
+	vile-cfg-filt$x \
+	vile-cweb-filt$x \
+	vile-dcl-filt$x \
+	vile-diff-filt$x \
+	vile-fdl-filt$x \
+	vile-html-filt$x \
+	vile-latex-filt$x \
+	vile-lex-filt$x \
+	vile-m4-filt$x \
+	vile-mail-filt$x \
+	vile-make-filt$x \
+	vile-mms-filt$x \
+	vile-nr-filt$x \
+	vile-perl-filt$x \
+	vile-py-filt$x \
+	vile-rcs-filt$x \
+	vile-sccs-filt$x \
+	vile-sh-filt$x \
+	vile-sql-filt$x \
+	vile-tags-filt$x \
+	vile-tbl-filt$x \
+	vile-tc-filt$x \
+	vile-tcl-filt$x \
+	vile-ti-filt$x \
+	vile-txt-filt$x \
+	vile-vile-filt$x \
+	vile-xres-filt$x \
+	vile-xs-filt$x \
+	vile-yacc-filt$x
+
 !IF  "$(LEX)" == ""
-UTILS =	vile-c-filt.exe
+UTILS =	vile-c-filt$x
 SCRIPTS = \
 	filters.rc
 KEYS =	vile.key c.key cpp.key
 !ELSE
 UTILS = \
-	vile-bat-filt.exe \
-	vile-c-filt.exe \
-	vile-html-filt.exe \
-	vile-lex-filt.exe \
-	vile-make-filt.exe \
-	vile-perl-filt.exe \
-	vile-tbl-filt.exe \
-	vile-txt-filt.exe \
-	vile-vile-filt.exe \
-	vile-xs-filt.exe
+	vile-bat-filt$x \
+	vile-c-filt$x \
+	vile-html-filt$x \
+	vile-lex-filt$x \
+	vile-make-filt$x \
+	vile-perl-filt$x \
+	vile-tbl-filt$x \
+	vile-txt-filt$x \
+	vile-vile-filt$x \
+	vile-xs-filt$x
 SCRIPTS = \
 	filters.rc
 KEYS	= \
@@ -63,19 +109,21 @@ KEYS	= \
 
 CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 -I.
 
-.SUFFIXES: .c .l .obj
+.SUFFIXES: .c .l $o
 
-.l.obj:
+.l$o:
 	$(LEX) $<
 	$(CC) -c $(CPPFLAGS) $(CFLAGS) $(LEX_OUTPUT_ROOT).c
 	-@ erase $@
-	move $(LEX_OUTPUT_ROOT).obj $@
+	move $(LEX_OUTPUT_ROOT)$o $@
 	- erase $(LEX_OUTPUT_ROOT).c
 
-.c.obj:
+.c$o:
 	$(cc) $(CFLAGS) -c $< -Fo$@
 
 all: $(UTILS)
+
+everything : $(C_ALL) $(LEX_ALL)
 
 dist :: $(UTILS) $(SCRIPTS)
 	- del *.zip
@@ -122,45 +170,129 @@ uninstall :: $(KEYS)
 	!erase "$(VILE_STARTUP_PATH)"\$**words
 !endif
 
-LF_DEPS = filters.obj
-LF_ARGS = filters.obj $(LEXLIB)
+LF_DEPS = filters$o
+LF_ARGS = filters$o $(LEXLIB)
 
-CF_DEPS	= filters.obj
-CF_ARGS	= filters.obj
+CF_DEPS	= filters$o
+CF_ARGS	= filters$o
 
-vile-bat-filt.exe : bat-filt.obj $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) bat-filt.obj $(LF_ARGS)
+vile-crypt$x : ecrypt$o
+	$(link) -out:$@ $(CON_LDFLAGS) ecrypt$o
 
-vile-c-filt.exe: c-filt.c $(CF_DEPS)
-	$(cc) $(CFLAGS) c-filt.c -Fovile-c-filt -link $(CON_LDFLAGS) $(CF_ARGS)
+vile-manfilt$x : manfilt$o
+	$(link) -out:$@ $(CON_LDFLAGS) manfilt$o
 
-vile-html-filt.exe : htmlfilt.obj $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) htmlfilt.obj $(LF_ARGS)
+vile-ada-filt$x : ada-filt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) ada-filt$o $(LF_ARGS)
 
-vile-lex-filt.exe : lex-filt.obj $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) lex-filt.obj $(LF_ARGS)
+vile-awk-filt$x : awk-filt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) awk-filt$o $(LF_ARGS)
 
-vile-make-filt.exe : makefilt.obj $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) makefilt.obj $(LF_ARGS)
+vile-bat-filt$x : bat-filt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) bat-filt$o $(LF_ARGS)
 
-vile-perl-filt.exe : perlfilt.obj $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) perlfilt.obj $(LF_ARGS)
+vile-c-filt$x: c-filt$o $(CF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) c-filt$o $(CF_ARGS)
 
-vile-tbl-filt.exe : tbl-filt.obj $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) tbl-filt.obj $(LF_ARGS)
+vile-cfg-filt$x : cfg-filt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) cfg-filt$o $(LF_ARGS)
 
-vile-txt-filt.exe : txt-filt.obj $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) txt-filt.obj $(LF_ARGS)
+vile-cweb-filt$x : cwebfilt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) cwebfilt$o $(LF_ARGS)
 
-vile-vile-filt.exe : vilefilt.obj $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) vilefilt.obj $(LF_ARGS)
+vile-dcl-filt$x : dcl-filt$o $(CF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) dcl-filt$o $(CF_ARGS)
 
-vile-xs-filt.exe : xs-filt.obj $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) xs-filt.obj $(LF_ARGS)
+vile-diff-filt$x : difffilt$o $(CF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) difffilt$o $(LF_ARGS)
+
+vile-fdl-filt$x : fdl-filt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) fdl-filt$o $(LF_ARGS)
+
+vile-html-filt$x : htmlfilt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) htmlfilt$o $(LF_ARGS)
+
+vile-key-filt$x : key-filt$o $(CF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) key-filt$o $(CF_ARGS)
+
+vile-latex-filt$x : latexflt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) latexflt$o $(LF_ARGS)
+
+vile-lex-filt$x : lex-filt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) lex-filt$o $(LF_ARGS)
+
+vile-m4-filt$x : m4-filt$o $(CF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) m4-filt$o $(CF_ARGS)
+
+vile-mail-filt$x : mailfilt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) mailfilt$o $(LF_ARGS)
+
+vile-make-filt$x : makefilt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) makefilt$o $(LF_ARGS)
+
+vile-mms-filt$x : mms-filt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) mms-filt$o $(LF_ARGS)
+
+vile-nr-filt$x : nr-filt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) nr-filt$o $(LF_ARGS)
+
+vile-pas-filt$x : pas-filt$o $(CF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) pas-filt$o $(CF_ARGS)
+
+vile-perl-filt$x : perlfilt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) perlfilt$o $(LF_ARGS)
+
+vile-py-filt$x : py-filt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) py-filt$o $(LF_ARGS)
+
+vile-rcs-filt$x : rcs-filt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) rcs-filt$o $(LF_ARGS)
+
+vile-sccs-filt$x : sccsfilt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) sccsfilt$o $(LF_ARGS)
+
+vile-sh-filt$x : sh-filt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) sh-filt$o $(LF_ARGS)
+
+# vile-spell-filt$x : spellflt$o $(LF_DEPS)
+# 	$(link) -out:$@ $(CON_LDFLAGS) spellflt$o $(LF_ARGS)
+
+vile-sql-filt$x : sql-filt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) sql-filt$o $(LF_ARGS)
+
+vile-tags-filt$x : tagsfilt$o $(CF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) tagsfilt$o $(CF_ARGS)
+
+vile-tbl-filt$x : tbl-filt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) tbl-filt$o $(LF_ARGS)
+
+vile-tc-filt$x : tc-filt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) tc-filt$o $(LF_ARGS)
+
+vile-ti-filt$x : ti-filt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) ti-filt$o $(LF_ARGS)
+
+vile-tcl-filt$x : tcl-filt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) tcl-filt$o $(LF_ARGS)
+
+vile-txt-filt$x : txt-filt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) txt-filt$o $(LF_ARGS)
+
+vile-vile-filt$x : vilefilt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) vilefilt$o $(LF_ARGS)
+
+vile-xres-filt$x : xresfilt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) xresfilt$o $(LF_ARGS)
+
+vile-xs-filt$x : xs-filt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) xs-filt$o $(LF_ARGS)
+
+vile-yacc-filt$x : yaccfilt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) yaccfilt$o $(LF_ARGS)
 
 clean:
-	del *.exe
-	del *.obj
+	del *$x
+	del *$o
 
 distclean: clean
 	del *.zip

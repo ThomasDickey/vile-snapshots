@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.263 1999/12/12 23:03:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.264 1999/12/24 01:08:24 tom Exp $
  */
 
 #include	"estruct.h"
@@ -307,7 +307,7 @@ same_fname(char *fname, BUFFER *bp, int lengthen)
 	}
 
 	TRACE(("same_fname(\n\tfname=%s,\n\tbname=%s,\n\tlengthen=%d)\n",
-		fname, bp->b_bname, lengthen))
+		fname, bp->b_bname, lengthen));
 
 	if (lengthen)
 		fname = lengthen_path(strcpy(temp, fname));
@@ -323,14 +323,14 @@ same_fname(char *fname, BUFFER *bp, int lengthen)
 		  || !explicit_version(t))
 		 && ((s-bname) == (t-fname))) {
 			status = !strncmp(fname, bname, (SIZE_T)(s-bname));
-			TRACE(("=>%d\n", status))
+			TRACE(("=>%d\n", status));
 			return (status);
 		}
 	}
 #endif
 
 	status = !strcmp(fname, bp->b_fname);
-	TRACE(("=>%d\n", status))
+	TRACE(("=>%d\n", status));
 	return (status);
 }
 
@@ -680,7 +680,7 @@ strip_if_dosmode(BUFFER *bp, int doslines, int unixlines)
 	apply_dosmode(bp, doslines, unixlines);
 	if (b_val(bp, MDDOS)) {  /* if it _is_ a dos file, strip 'em */
 		register LINE   *lp;
-		TRACE(("stripping CR's for dosmode\n"))
+		TRACE(("stripping CR's for dosmode\n"));
 		for_each_line(lp,bp) {
 			if (llength(lp) > 0 &&
 				  lgetc(lp, llength(lp)-1) == '\r') {
@@ -708,7 +708,7 @@ guess_dosmode(BUFFER *bp)
 	}
 	/* then strip 'em */
 	strip_if_dosmode(bp, doslines, unixlines);
-	TRACE(("guess_dosmode %d\n", b_val(bp, MDDOS)))
+	TRACE(("guess_dosmode %d\n", b_val(bp, MDDOS)));
 }
 
 /*

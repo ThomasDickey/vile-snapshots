@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.260 1999/12/09 02:21:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.261 1999/12/24 01:08:24 tom Exp $
  *
  */
 
@@ -440,7 +440,7 @@ lookup_func(char *name)
     int n;
     unsigned m;
 
-    TRACE(("lookup_func(%s) ", name))
+    TRACE(("lookup_func(%s) ", name));
     if (*name++ == '&'
      && *name != EOS) {
 
@@ -456,7 +456,7 @@ lookup_func(char *name)
 	    }
 	}
     }
-    TRACE(("-> %d\n", fnum))
+    TRACE(("-> %d\n", fnum));
     return fnum;
 }
 
@@ -576,7 +576,7 @@ run_func(int fnum)
 	TRACE(("evaluate '%s' (%#x), %d args\n",
 			vl_ufuncs[fnum].f_name,
 			vl_ufuncs[fnum].f_code,
-			nargs))
+			nargs));
 
 	/* fetch required arguments */
 	for (i = 0; i < nargs; i++) {
@@ -584,7 +584,7 @@ run_func(int fnum)
 		if ((arg[i] = mac_tokval(&args[i])) == 0)
 			return error_val;
 		tb_free(&result); /* in case mac_tokval() called us */
-		TRACE(("...arg[%d] = '%s'\n", i, arg[i]))
+		TRACE(("...arg[%d] = '%s'\n", i, arg[i]));
 		if (args_numeric)
 			nums[i] = scan_int(arg[i]);
 		else if (args_boolean)
@@ -796,7 +796,7 @@ run_func(int fnum)
 			break;
 		}
 	default:
-		TRACE(("unknown function #%d\n", fnum))
+		TRACE(("unknown function #%d\n", fnum));
 		tb_scopy(&result, error_val);
 		break;
 	}
@@ -806,7 +806,7 @@ run_func(int fnum)
 	else if (ret_boolean)
 		render_boolean(&result, i);
 
-	TRACE(("-> '%s'\n", tb_values(result)))
+	TRACE(("-> '%s'\n", tb_values(result)));
 	for (i = 0; i < nargs; i++) {
 		tb_free(&args[i]);
 	}
@@ -1028,7 +1028,7 @@ rmv_tempvar(const char *name)
 
 	for (p = temp_vars, q = 0; p != 0; q = p, p = p->next) {
 		if (!strcmp(p->u_name, name)) {
-			TRACE(("rmv_tempvar(%s) ok\n", name))
+			TRACE(("rmv_tempvar(%s) ok\n", name));
 			if (q != 0)
 				q->next = p->next;
 			else
@@ -1039,7 +1039,7 @@ rmv_tempvar(const char *name)
 			return TRUE;
 		}
 	}
-	TRACE(("cannot rmv_tempvar(%s)\n", name))
+	TRACE(("cannot rmv_tempvar(%s)\n", name));
 	return FALSE;
 }
 
@@ -1589,7 +1589,7 @@ save_arguments(BUFFER *bp)
     } else {
 	max_args = 0;
     }
-    TRACE(("save_arguments(%s)\n", bp->b_bname))
+    TRACE(("save_arguments(%s)\n", bp->b_bname));
 
     p->nxt_args = arg_stack;
     arg_stack   = p;
@@ -1604,7 +1604,7 @@ save_arguments(BUFFER *bp)
 		tokval(tb_values(p->all_args[num_args])));
 	else
 	    tb_scopy(&(p->all_args[num_args]), "");
-	TRACE(("...ARG%d:%s\n", num_args, tb_values(p->all_args[num_args])))
+	TRACE(("...ARG%d:%s\n", num_args, tb_values(p->all_args[num_args])));
 	num_args++;
     }
 
@@ -1622,7 +1622,7 @@ restore_arguments(BUFFER *bp GCC_UNUSED)
 {
     PROC_ARGS *p = arg_stack;
 
-    TRACE(("restore_arguments(%s)\n", bp->b_bname))
+    TRACE(("restore_arguments(%s)\n", bp->b_bname));
 
     if (p != 0) {
 	arg_stack = p->nxt_args;
@@ -1884,7 +1884,7 @@ evaluate(int f, int n)
 	if (read_argument(&params, &info) == TRUE) {
 	    old = execstr;
 	    execstr = tb_values(params);
-	    TRACE(("EVAL %s\n", execstr))
+	    TRACE(("EVAL %s\n", execstr));
 	    while ((tmp = mac_tokval(&tok)) != 0) {
 		if (tb_length(cmd))
 		    tb_sappend0(&cmd, " ");
@@ -1892,7 +1892,7 @@ evaluate(int f, int n)
 	    }
 	    if ((tmp = tb_values(cmd)) != 0) {
 		execstr = tmp;
-		TRACE(("...docmd %s{%s}\n", tmp, execstr))
+		TRACE(("...docmd %s{%s}\n", tmp, execstr));
 		code = docmd(tmp, TRUE, f, n);
 	    }
 	    execstr = old;
@@ -1900,7 +1900,7 @@ evaluate(int f, int n)
 	tb_free(&cmd);
 	tb_free(&tok);
 	tb_free(&params);
-	TRACE(("...EVAL ->%d\n", code))
+	TRACE(("...EVAL ->%d\n", code));
 	return code;
 }
 

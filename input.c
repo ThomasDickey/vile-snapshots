@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.209 1999/11/24 22:10:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.210 1999/12/24 01:08:24 tom Exp $
  *
  */
 
@@ -135,7 +135,7 @@ unsigned *pos)
 	int base;
 	int first = 0;
 
-	TRACE(("shell_complete %d:'%s'\n", *pos, buf))
+	TRACE(("shell_complete %d:'%s'\n", *pos, buf));
 	if (isShellOrPipe(buf))
 		first++;
 
@@ -534,7 +534,7 @@ tgetc(int quoted)
 		not_interrupted();
 		if (setjmp(read_jmp_buf)) {
 			c = kcod2key(intrc);
-			TRACE(("setjmp/getc:%c (%#x)\n", c, c))
+			TRACE(("setjmp/getc:%c (%#x)\n", c, c));
 #if defined(BUG_LINUX_2_0_INTR) && defined(DISP_TERMCAP)
 			/*
 			 * Linux bug (observed with kernels 1.2.13 & 2.0.0):
@@ -559,7 +559,7 @@ tgetc(int quoted)
 	}
 
 	/* return the character read from the terminal */
-	TRACE(("tgetc(%s) = %c\n", quoted ? "quoted" : "unquoted", c))
+	TRACE(("tgetc(%s) = %c\n", quoted ? "quoted" : "unquoted", c));
 	return c;
 }
 
@@ -1036,7 +1036,7 @@ kbd_pushback(TBUFF *buf, int skip)
 	static	TBUFF	*PushBack;
 	char *buffer = tb_values(buf);	/* FIXME */
 
-	TRACE(("kbd_pushback(%s,%d)\n", tb_visible(buf), skip))
+	TRACE(("kbd_pushback(%s,%d)\n", tb_visible(buf), skip));
 	if (macroize(&PushBack, buf, skip)) {
 		pushed_back  = TRUE;
 		pushback_flg = clexec;
@@ -1713,7 +1713,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 
 	TRACE(("reply:%d:%d:%s\n", status,
 		(int) tb_length(*extbuf),
-		tb_visible(*extbuf)))
+		tb_visible(*extbuf)));
 	tb_append(extbuf, EOS);	/* FIXME */
 	return status;
 }

@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.36 1999/12/17 22:33:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.37 1999/12/24 00:59:16 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -231,7 +231,7 @@ int parse_menu ( const char *rc_filename )
     int     cascade_token = 0;
     int     nlig = 0;
 
-    TRACE(("parse_menu(%s)\n", rc_filename))
+    TRACE(("parse_menu(%s)\n", rc_filename));
 
     if ((fp = fopen(rc_filename, "r")) == NULL)
         return FALSE;

@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.131 1999/12/18 02:20:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.132 1999/12/24 01:08:24 tom Exp $
  *
  */
 
@@ -698,7 +698,7 @@ const char *np)	/* new text for the current line */
 	int c;
 
 	TRACE(("lrepltext:%s%lx:%s\n", type ? "word" : "line",
-		    (ULONG) type, np))
+		    (ULONG) type, np));
 
 	if (b_val(curbp,MDVIEW))
 		return rdonly();

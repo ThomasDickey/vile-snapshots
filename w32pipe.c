@@ -55,7 +55,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.17 1999/09/11 00:54:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.18 1999/12/24 01:03:15 tom Exp $
  */
 
 #include <windows.h>
@@ -116,7 +116,7 @@ exec_shell(char *cmd, HANDLE *handles, int hide_child)
     STARTUPINFO          si;
 
     proc_handle = BAD_PROC_HANDLE;  /* in case of failure */
-    TRACE(("exec_shell %s\n", cmd))
+    TRACE(("exec_shell %s\n", cmd));
     if ((cmdstr = mk_shell_cmd_str(cmd, &freestr, TRUE)) == NULL)
     {
         /* heap exhausted! */
@@ -147,7 +147,7 @@ exec_shell(char *cmd, HANDLE *handles, int hide_child)
         si.wShowWindow  = SW_HIDE;
     }
 #endif
-    TRACE(("CreateProcess %s\n", cmdstr))
+    TRACE(("CreateProcess %s\n", cmdstr));
     if (CreateProcess(NULL,
                       cmdstr,
                       NULL,
@@ -185,7 +185,7 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
     HANDLE handles[3];
     int    i, rc, rp[2], tmpin_fd, wp[2];
 
-    TRACE(("w32_inout_popen cmd=%s\n", cmd))
+    TRACE(("w32_inout_popen cmd=%s\n", cmd));
     proc_handle  = BAD_PROC_HANDLE;
     rp[0]        = rp[1]      = wp[0]      = wp[1] = BAD_FD;
     handles[0]   = handles[1] = handles[2] = INVALID_HANDLE_VALUE;
