@@ -1,5 +1,47 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20010523 (m)
+	> Mark Robinson <mark.robinson@baltimore.com>:
+	+ when popup-menu is inactive, if text is selected, right-click copies
+	  to w32clipboard; otherwise right-click pastes from w32clipboard.
+	> Tom Dickey:
+	+ implement a simple example of macros to insert or display timestamps
+	  for the current buffer (macros/dates.rc).
+	+ modify prc2kcod() to recognize "M-" (meta) in combination with
+	  other prefixes such as "#-", needed to parse KEY_F21 to KEY_F35 with
+	  the termcap driver.
+	+ change the octal character constants used in KEY_F21 to KEY_F35 to
+	  decimal to avoid sign-extension.
+	+ implement three functions for working with timestamps: &ftime, &stime,
+	  and &date, respectively for file modification time, system time, and
+	  formatted date/time.
+	+ disable 'working' in writeall() while writing the output.
+	+ two fixes for writeall() function: (a) don't use for_each_buffer()
+	  macro to iterate, since the item referred to by the loop index moves,
+	  making it possible to get an infinite loop, and (b) don't try to
+	  write buffers which have not been loaded (the first was reported by
+	  Brendan O'Dea; both bugs date to 1996).
+	+ add commands "ww!" and "wall!", to respectively write all changed
+	  buffers and write all buffers, using the "w!" behavior of ignoring
+	  readonly file permissions.
+	+ correct an out-of-order buffer flush for the strip_tabs logic in
+	  sh-filt.l, which made the end of a here-document incorrectly colored.
+	+ add a simple xml majormode.
+	+ format lynx output in ShowFormatted to the screen width rather than
+	  the default of 80 columns.
+	+ improved perl syntax highlighting (pl-filt.c) by relaxing the
+	  check for "=cut" to match perl's code rather than its documentation,
+	  allowing for "{" "}" grouping around a regular expression, and
+	  showing variables with Ident2 class.
+	+ add a null-pointer check to slconv(), just in case (report by Mark
+	  Robinson).
+	+ implement bold/italic/underlined fonts in winvile (this is a first
+	  cut, which occasionally has pixel trash when a bold or italic
+	  character extends too far out of the normal font's bounding box).
+	+ add a null-pointer check in sl_to_bsl(), since that is used, for
+	  example, with a parameter from cfg_locate() which may return a null.
+	+ indent'd path.c
+
  20010429 (l)
 	> Clark Morgan:
 	+ expanded description of "Favorites" in win32 section of vile.hlp

@@ -2518,6 +2518,7 @@ Programmed procedures and macros
 	&cat		2	concatenate string
 	&chr		1	integer to char conversion
 	&cclass		1	character class (see "show-printable")
+	&date		2	format 2nd param with 1st, like strftime.
 	&divide		2	division
 	&dquery		2	prompt user for input, given default value
 	&env		1	retrieve a system environment variable
@@ -2525,6 +2526,7 @@ Programmed procedures and macros
 	&equal		2	logical equality
 	&execable	1	is a file exec'able
 	&filter		1	true if the given majormode's filter is builtin
+	&ftime		1	modification-time of the given file, as a number
 	&global		1	retrieves global mode setting
 	&greater	2	logical greater than
 	&gtkey		0	get 1 character
@@ -2555,6 +2557,7 @@ Programmed procedures and macros
 	&sgreater	2	string logical greater than
 	&sindex		2	find the index of second string in first
 	&sless		2	string logical less than
+	&stime		1	system-time, as a number
 	&subtract	2	subtraction
 	&times		2	multiplication
 	&token		3	select n'th token of string, given delims
@@ -5540,4 +5543,4 @@ Problems
 
 Copyright 1995-2001 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.520 2001/04/24 22:43:43 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.521 2001/05/20 21:09:06 tom Exp $

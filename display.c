@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.345 2001/04/07 12:17:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.346 2001/05/20 22:13:14 tom Exp $
  *
  */
 
@@ -1234,7 +1234,7 @@ update(int force  /* force update past type ahead? */)
 	upddex();
 
 	/* if screen is garbage, re-plot it */
-	if (sgarbf)
+	if (sgarbf || need_update)
 		updgar();
 
 	/* update the virtual screen to the physical screen */
@@ -1737,6 +1737,7 @@ updgar(void)
 	kbd_erase_to_end(0);
 #endif
 	sgarbf = FALSE;			 /* Erase-page clears */
+	need_update = FALSE;
 	kbd_flush();
 }
 

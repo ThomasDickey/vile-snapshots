@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.110 2001/04/29 23:38:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.113 2001/05/23 21:12:00 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -19,6 +19,7 @@
 #include        "patchlev.h"
 #include        "winvile.h"
 #include	"nefsms.h"
+#include	"nefunc.h"
 
 #undef RECT			/* FIXME: symbol conflict */
 
@@ -53,7 +54,6 @@
 #define MY_APPLE "Vile Application"
 
 #define MY_FONT  SYSTEM_FIXED_FONT	/* or ANSI_FIXED_FONT           */
-#define GetMyFont() vile_font
 
 #define NROW	128		/* Max Screen size.             */
 #define NCOL    256		/* Edit if you want to.         */
@@ -85,9 +85,9 @@ static HANDLE hAccTable;	/* handle to accelerator table */
 static HANDLE vile_hinstance;
 static HCURSOR arrow_cursor;
 static HCURSOR hglass_cursor;
-static HFONT vile_font;
 static HMENU vile_menu, popup_menu;
 static LOGFONT vile_logfont;
+static UINT nIDTimer = 0;
 static int ac_active = FALSE;	/* AutoColor active? */
 static int caret_disabled = TRUE;
 static int caret_exists = 0;
@@ -100,12 +100,11 @@ static int gui_resize_in_progress;
 static int initialized = FALSE;	/* winvile open for business */
 static int mouse_captured = 0;
 static int nCharWidth = 8;
-static UINT nIDTimer = 0;
 static int nLineHeight = 10;
 static int vile_in_getfkey = 0;
 static int vile_resizing = FALSE;	/* rely on repaint_window if true */
-static int icursor,		/* T -> enable insertion cursor   */
-  icursor_style;		/* 1 -> cmdmode = block,
+static int icursor;		/* T -> enable insertion cursor   */
+static int icursor_style;	/* 1 -> cmdmode = block,
 				 *      insmode = vertical bar
 				 * 2 -> cmdmode = vertical bar
 				 *      insmode = block
@@ -134,7 +133,7 @@ typedef struct {
     int shown;
 } SBDATA;
 
-struct gui_info {
+static struct gui_info {
     HWND main_hwnd;		/* the top-level window */
     HWND text_hwnd;		/* the enclosed text area */
     int closed;
@@ -150,6 +149,18 @@ struct gui_info {
     SBDATA size_box;
     SBDATA size_grip;
 } only_window, *cur_win = &only_window;
+/* *INDENT-OFF* */
+static struct my_font {
+    int used;
+    HFONT font;
+    VIDEO_ATTR attr;
+} MyFonts[] = {
+    { FALSE, 0, 0 },
+    { FALSE, 0, VABOLD },
+    { FALSE, 0, VAUL },
+    { FALSE, 0, VAITAL },
+};
+/* *INDENT-ON* */
 
 #if OPT_SCROLLBARS
 static int check_scrollbar_allocs(void);
@@ -715,20 +726,6 @@ attr_to_colors(VIDEO_ATTR attr, int *fcolor, int *bcolor)
 	else if (attr & VACOLOR)
 	    *fcolor = ((VCOLORNUM(attr)) & (NCOLORS - 1));
 
-	/* FIXME: we're faking bold/italic by changing color intensity */
-	if (attr & VABOLD) {
-	    if (*fcolor >= 0)
-		*fcolor |= (NCOLORS >> 1);
-	    else
-		*fcolor = ENUM_FCOLOR;
-	}
-	if (attr & VAITAL) {
-	    if (*bcolor >= 0)
-		*bcolor |= (NCOLORS >> 1);
-	    else
-		*bcolor = ENUM_FCOLOR;
-	}
-
 	if (ninvert) {
 	    int temp = *bcolor;
 	    *bcolor = *fcolor;
@@ -755,6 +752,93 @@ fake_color(int current, int nominal)
     return nominal;
 }
 
+/*
+ * Provide an array of inter-character spacing, needed to force bold and italic fonts
+ * to align with the normal font.
+ */
+static INT *
+intercharacter(int cols)
+{
+    if (cols == 0 || nCharWidth == 0)
+	return 0;
+    else {
+	static INT *result;
+	static unsigned length;
+
+	if (++cols >= (int) length)
+	    result = typereallocn(INT, result, length = cols);
+	while (--cols >= 0)
+	    result[cols] = nCharWidth;
+	return result;
+    }
+}
+
+static HFONT
+GetMyFont(VIDEO_ATTR attr)
+{
+    unsigned n;
+
+    if ((attr & (VAUL | VABOLD | VAITAL)) != 0) {
+	for (n = 1; n < TABLESIZE(MyFonts); ++n) {
+	    if ((attr & MyFonts[n].attr) == MyFonts[n].attr)
+		break;
+	}
+    } else {
+	n = 0;
+    }
+
+    if (n >= TABLESIZE(MyFonts)) {
+	return GetMyFont(VAUL);
+    } else if (!MyFonts[n].used) {
+	LOGFONT logfont = vile_logfont;
+	logfont.lfItalic = (attr & VAITAL) != 0;
+	logfont.lfUnderline = (attr & VAUL) != 0;
+	if (attr & VABOLD)
+	    logfont.lfWeight = FW_SEMIBOLD;
+	if ((MyFonts[n].font = CreateFontIndirect(&logfont)) != 0) {
+	    MyFonts[n].used = TRUE;
+	} else if ((attr & (VABOLD | VAITAL)) == (VABOLD | VAITAL)) {
+	    return GetMyFont(VABOLD);
+	} else if ((attr & VAUL) != 0) {
+	    return GetMyFont(VAUL);
+	} else {
+	    n = 0;
+	}
+    } else if (MyFonts[n].font == 0) {
+	n = 0;			/* live with previous failure */
+    }
+
+    return MyFonts[n].font;
+}
+
+static void
+SetMyFont(HFONT font, LOGFONT * lf)
+{
+    unsigned n;
+
+    for (n = 0; n < TABLESIZE(MyFonts); ++n) {
+	if (MyFonts[n].used) {
+	    DeleteObject(MyFonts[n].font);
+	    MyFonts[n].used = FALSE;
+	}
+    }
+    MyFonts[0].font = font;
+    MyFonts[0].used = TRUE;
+    if (lf != 0 && lf != &vile_logfont)
+	vile_logfont = *lf;
+}
+
+static HDC
+get_DC_with_Font(HFONT font)
+{
+    HDC hDC = GetDC(cur_win->text_hwnd);
+    if (hDC != 0) {
+	if (SelectObject(hDC, font) == 0)
+	    ReleaseDC(cur_win->text_hwnd, hDC);
+    }
+    return hDC;
+}
+
 static void
 nt_set_colors(HDC hdc, VIDEO_ATTR attr)
 {
@@ -762,6 +846,7 @@ nt_set_colors(HDC hdc, VIDEO_ATTR attr)
     int bcolor;
     int ninvert;
 
+    SelectObject(hdc, GetMyFont(attr));
 #ifdef GVAL_VIDEO
     attr ^= global_g_val(GVAL_VIDEO);
 #endif
@@ -924,8 +1009,7 @@ is_fixed_pitch(HFONT font)
     HDC hDC;
     TEXTMETRIC metrics;
 
-    hDC = GetDC(cur_win->text_hwnd);
-    SelectObject(hDC, font);
+    hDC = get_DC_with_Font(font);
     ok = GetTextMetrics(hDC, &metrics);
     ReleaseDC(cur_win->text_hwnd, hDC);
 
@@ -947,8 +1031,7 @@ new_font(LOGFONT * lf)
 
     if (font != 0) {
 	if (is_fixed_pitch(font)) {
-	    DeleteObject(vile_font);
-	    vile_font = font;
+	    SetMyFont(font, lf);
 	    TRACE(("created new font\n"));
 	    return TRUE;
 	} else
@@ -962,7 +1045,7 @@ get_font(LOGFONT * lf)
 {
     HDC hDC;
 
-    vile_font = GetStockObject(MY_FONT);
+    SetMyFont(GetStockObject(MY_FONT), 0);
     hDC = GetDC(cur_win->text_hwnd);
     if (EnumFontFamilies(hDC, NULL, enumerate_fonts, (LPARAM) lf) <= 0) {
 	TRACE(("Creating Pitch/Family: %#x\n", lf->lfPitchAndFamily));
@@ -979,8 +1062,7 @@ use_font(HFONT my_font)
     int oLineHeight = nLineHeight;
     int oCharWidth = nCharWidth;
 
-    hDC = GetDC(cur_win->text_hwnd);
-    SelectObject(hDC, my_font);
+    hDC = get_DC_with_Font(my_font);
     GetTextMetrics(hDC, &textmetric);
     ReleaseDC(cur_win->text_hwnd, hDC);
 
@@ -1024,8 +1106,7 @@ set_font(void)
 	| CF_INITTOLOGFONTSTRUCT;
     choose.lpLogFont = &vile_logfont;
 
-    hDC = GetDC(cur_win->text_hwnd);
-    SelectObject(hDC, GetMyFont());
+    hDC = get_DC_with_Font(GetMyFont(0));
     GetTextFace(hDC, sizeof(vile_logfont.lfFaceName), vile_logfont.lfFaceName);
     ReleaseDC(cur_win->text_hwnd, hDC);
 
@@ -1040,7 +1121,7 @@ set_font(void)
 	    int savecol = ttcol;
 	    mlwrite("[Set font to %s]", vile_logfont.lfFaceName);
 	    movecursor(saverow, savecol);
-	    use_font(vile_font);
+	    use_font(GetMyFont(0));
 	    vile_refresh(FALSE, 0);
 	    update(FALSE);
 	} else {
@@ -1076,7 +1157,7 @@ last_w32_error(int use_msg_box)
  *
  * Prerequistes before calling this function:
  *
- *    winvile's windows and default font (vile_font) created.
+ *    winvile's windows and default font created.
  *
  * Set use_mb (Boolean):
  *	T -> errors reported via MessageBox.
@@ -1108,10 +1189,8 @@ ntwinio_font_frm_str(
     }
     hwnd = cur_win->text_hwnd;
     face_specified = (str_rslts.face[0] != '\0');
-    if (!((hdc = GetDC(hwnd)) != 0 && SelectObject(hdc, vile_font))) {
+    if (!(hdc = get_DC_with_Font(GetMyFont(0)))) {
 	(void) last_w32_error(use_mb);
-	if (hdc)
-	    ReleaseDC(hwnd, hdc);
 	return (FALSE);
     }
     if (!face_specified) {
@@ -1188,11 +1267,9 @@ ntwinio_font_frm_str(
 	    mlforce(msg);
 	return (FALSE);
     }
-    DeleteObject(vile_font);	/* Nuke original font     */
     ReleaseDC(hwnd, hdc);	/* finally done with this */
-    vile_font = hfont;
-    memcpy(&vile_logfont, &logfont, sizeof(vile_logfont));
-    use_font(vile_font);
+    SetMyFont(hfont, &logfont);
+    use_font(GetMyFont(0));
     vile_refresh(FALSE, 0);
     return (TRUE);
 }
@@ -1215,12 +1292,8 @@ ntwinio_current_font(void)
 	    return ("out of memory");
     }
     hwnd = cur_win->text_hwnd;
-    if (!((hdc = GetDC(hwnd)) != 0 && SelectObject(hdc, vile_font))) {
+    if (!(hdc = get_DC_with_Font(GetMyFont(0)))) {
 	char *msg = NULL;
-
-	if (hdc)
-	    ReleaseDC(hwnd, hdc);
-
 	fmt_win32_error(W32_SYS_ERROR, &msg, 0);
 	return (msg);
 	/* "msg" leaks here, but this code path should never be taken. */
@@ -1264,13 +1337,15 @@ scflush(void)
 	       cur_pos, &CELL_TEXT(crow, ccol)));
 
 	hdc = GetDC(cur_win->text_hwnd);
-	SelectObject(hdc, GetMyFont());
 	nt_set_colors(hdc, cur_atr);
 
-	TextOut(hdc,
-		ColToPixel(ccol),
-		RowToPixel(crow),
-		&CELL_TEXT(crow, ccol), cur_pos);
+	ExtTextOut(hdc,
+		   ColToPixel(ccol),
+		   RowToPixel(crow),
+		   0,
+		   (RECT *) 0,
+		   &CELL_TEXT(crow, ccol), cur_pos,
+		   intercharacter(cur_pos));
 
 	ReleaseDC(cur_win->text_hwnd, hdc);
     }
@@ -2584,6 +2659,7 @@ ntgetch(void)
     int buttondown = FALSE;
     int sel_pending = FALSE;	/* Selection pending */
     MARK lmbdn_mark;		/* left mouse button down here */
+    int selecting = FALSE;	/* toggle between cut and paste */
     int result = -1;
     KEY_EVENT_RECORD ker;
     MSG msg;
@@ -2708,6 +2784,7 @@ ntgetch(void)
 	    if (msg.hwnd == cur_win->text_hwnd) {
 		/* Clear current selection, a la notepad. */
 		sel_release();
+		selecting = FALSE;
 		/* Allow click to change window focus. */
 		if (MouseClickSetPos(&first, &onmode)) {
 		    fhide_cursor();
@@ -2764,9 +2841,11 @@ ntgetch(void)
 		switch (clicks) {
 		case 1:
 		    on_double_click();
+		    selecting = TRUE;
 		    break;
 		case 2:
 		    on_triple_click();
+		    selecting = TRUE;
 		    break;
 		}
 
@@ -2837,10 +2916,16 @@ ntgetch(void)
 	    if (msg.hwnd == cur_win->text_hwnd) {
 		if (enable_popup) {
 		    invoke_popup_menu(msg);
-		} else if (MouseClickSetPos(&latest, &onmode)) {
-		    if (!onmode) {
-			sel_yank(0);
-			cbrdcpy_unnamed(FALSE, 1);
+		} else {
+		    if (MouseClickSetPos(&latest, &onmode) && !onmode) {
+			if (selecting) {
+			    sel_yank(0);
+			    cbrdcpy_unnamed(FALSE, 1);
+			    selecting = FALSE;
+			    sel_release();
+			} else {
+			    execute(&f_cbrdpaste, FALSE, 1);
+			}
 		    }
 		    (void) update(TRUE);
 		}
@@ -2866,6 +2951,7 @@ ntgetch(void)
 			  &latest,
 			  &lmbdn_mark,
 			  that_wp);
+		selecting = !sel_pending;
 	    } else {
 		DispatchMessage(&msg);
 	    }
@@ -2928,7 +3014,6 @@ repaint_window(HWND hWnd)
 
     BeginPaint(hWnd, &ps);
     TRACE(("repaint_window (erase:%d)\n", ps.fErase));
-    SelectObject(ps.hdc, GetMyFont());
     nt_set_colors(ps.hdc, cur_atr);
     brush = Background(ps.hdc);
 
@@ -2967,26 +3052,32 @@ repaint_window(HWND hWnd)
 		new_atr = CELL_ATTR(row, col);
 		if (new_atr != old_atr) {
 		    nt_set_colors(ps.hdc, old_atr);
-		    TRACE2(("TextOut [%3d,%3d]%.*s\n", row, old_col, col -
+		    TRACE2(("ExtTextOut [%3d,%3d]%.*s\n", row, old_col, col -
 			    old_col, &CELL_TEXT(row, old_col)));
-		    TextOut(ps.hdc,
-			    ColToPixel(old_col),
-			    RowToPixel(row),
-			    &CELL_TEXT(row, old_col),
-			    col - old_col);
+		    ExtTextOut(ps.hdc,
+			       ColToPixel(old_col),
+			       RowToPixel(row),
+			       0,
+			       (RECT *) 0,
+			       &CELL_TEXT(row, old_col),
+			       col - old_col,
+			       intercharacter(col));
 		    old_atr = new_atr;
 		    old_col = col;
 		}
 	    }
 	    if (old_col < x1) {
 		nt_set_colors(ps.hdc, old_atr);
-		TRACE2(("TextOut [%3d,%3d]%.*s\n", row, old_col, x1 -
+		TRACE2(("ExtTextOut [%3d,%3d]%.*s\n", row, old_col, x1 -
 			old_col, &CELL_TEXT(row, old_col)));
-		TextOut(ps.hdc,
-			ColToPixel(old_col),
-			RowToPixel(row),
-			&CELL_TEXT(row, old_col),
-			x1 - old_col);
+		ExtTextOut(ps.hdc,
+			   ColToPixel(old_col),
+			   RowToPixel(row),
+			   0,
+			   (RECT *) 0,
+			   &CELL_TEXT(row, old_col),
+			   x1 - old_col,
+			   intercharacter(x1));
 	    }
 	}
     }
@@ -3281,7 +3372,7 @@ InitInstance(HINSTANCE hInstance)
 #endif
 
     get_font(&vile_logfont);
-    use_font(vile_font);
+    use_font(GetMyFont(0));
 
     DragAcceptFiles(cur_win->main_hwnd, TRUE);
 

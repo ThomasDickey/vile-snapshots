@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.171 2000/09/25 00:11:53 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.173 2001/05/24 01:25:58 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -179,6 +179,7 @@ PERL_SRC = \
 
 MACRO_SRC = \
 	$(srcdir)/macros/color-ls.rc \
+	$(srcdir)/macros/dates.rc \
 	$(srcdir)/macros/digraphs.rc \
 	$(srcdir)/macros/manpage.rc \
 	$(srcdir)/macros/palettes.rc \
@@ -330,6 +331,7 @@ check: $(TARGET)
 
 INSTALL_MACRO_FILES = \
 	$(DATADIR)/color-ls.rc \
+	$(DATADIR)/dates.rc \
 	$(DATADIR)/digraphs.rc \
 	$(DATADIR)/manpage.rc \
 	$(DATADIR)/palettes.rc \
@@ -640,6 +642,8 @@ $(BINDIR)/@TARGET@-pager:	$(srcdir)/macros/vile-pager
 
 $(DATADIR)/color-ls.rc:		$(srcdir)/macros/color-ls.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/color-ls.rc $@
+$(DATADIR)/dates.rc:		$(srcdir)/macros/dates.rc
+	$(INSTALL_DATA)		$(srcdir)/macros/dates.rc $@
 $(DATADIR)/digraphs.rc:		$(srcdir)/macros/digraphs.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/digraphs.rc $@
 $(DATADIR)/manpage.rc:		$(srcdir)/macros/manpage.rc

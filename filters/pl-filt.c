@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.13 2001/01/05 20:27:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.16 2001/05/19 00:00:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -13,10 +13,14 @@ DefineFilter("perl");
 #define SQUOTE  '\''
 #define DQUOTE  '"'
 
+#define L_CURLY '{'
+#define R_CURLY '}'
 #define L_PAREN '('
 #define R_PAREN ')'
 
 #define PAREN_SLASH "(/"	/* FIXME: (/pattern/) could be composite */
+
+#define isIdent(c) (isalnum(CharOf(c)) || c == '_')
 
 typedef enum {
     eCODE
@@ -29,6 +33,7 @@ typedef enum {
 static char *Comment_attr;
 static char *Error_attr;
 static char *Ident_attr;
+static char *Ident2_attr;
 static char *Keyword_attr;
 static char *String_attr;
 static char *Preproc_attr;
@@ -338,13 +343,13 @@ is_PREPROC(char *s)
  ******************************************************************************/
 
 static int
-end_marker(char *s, char *marker)
+end_marker(char *s, char *marker, int only)
 {
     int len = strlen(marker);
 
     return (the_last - s > len
 	    && !strncmp(s, marker, len)
-	    && s[len] == '\n');
+	    && (!only || (s[len] == '\n')));
 }
 
 static int
@@ -360,7 +365,7 @@ begin_POD(char *s)
 static int
 end_POD(char *s)
 {
-    return end_marker(s, "=cut");
+    return end_marker(s, "=cut", 0);
 }
 
 /*
@@ -401,6 +406,23 @@ begin_HERE(char *s, int *quoted)
     return 0;
 }
 
+static char *
+skip_BLANKS(char *s)
+{
+    char *base = s;
+
+    while (s != the_last) {
+	if (!isspace(*s)) {
+	    break;
+	}
+	++s;
+    }
+    if (s != base) {
+	flt_puts(base, s - base, "");
+    }
+    return s;
+}
+
 /*
  * FIXME: the only place that vileperl.l recognizes a PATTERN is after "!~"
  * or "=~".  Doing that in other places gets complicated - the reason for
@@ -421,6 +443,7 @@ static int
 add_to_PATTERN(char *s)
 {
     char *base = s;
+    char *next;
     int first = CharOf(*s);
     int need = (first == 's' || first == 'y' || first == 't') ? 3 : 2;	/* number of delims we'll see */
     /* FIXME: 't' for 'tr' */
@@ -434,6 +457,11 @@ add_to_PATTERN(char *s)
 		delim = *++s;
 	    }
 	}
+	if (delim == L_CURLY) {
+	    delim = R_CURLY;
+	    need = 1;
+	}
+	next = s;
 	while (s != the_last) {
 	    if (!escaped && (*s == ESC)) {
 		escaped = 1;
@@ -444,6 +472,10 @@ add_to_PATTERN(char *s)
 			    s++;
 			    break;
 			}
+		    } else if (s != next
+			       && delim == R_CURLY
+			       && *s == L_CURLY) {
+			++need;
 		    }
 		}
 		escaped = 0;
@@ -561,6 +593,19 @@ put_newline(char *s)
     return s;
 }
 
+static int
+var_embedded(char *s)
+{
+    if (*s == '$') {
+	if (s[1] == L_PAREN
+	    || s[1] == '$') {
+	    if (isIdent(s[2]))
+		return 0;
+	}
+    }
+    return 1;
+}
+
 static char *
 put_embedded(char *s, int len, char *attr)
 {
@@ -570,11 +615,15 @@ put_embedded(char *s, int len, char *attr)
     for (j = k = 0; j < len; j++) {
 	if ((j == 0 || (s[j - 1] != ESC))
 	    && (id = is_IDENT(s + j)) != 0) {
-	    if (j != k)
-		flt_puts(s + k, j - k, attr);
-	    flt_puts(s + j, id, Ident_attr);
-	    k = j + id;
-	    j = k - 1;
+	    if (var_embedded(s + j)) {
+		if (j != k)
+		    flt_puts(s + k, j - k, attr);
+		flt_puts(s + j, id, Ident2_attr);
+		k = j + id;
+		j = k - 1;
+	    } else {
+		j += id - 1;
+	    }
 	}
     }
     if (k < len)
@@ -629,6 +678,7 @@ do_filter(FILE * input GCC_UNUSED)
     Comment_attr = class_attr(NAME_COMMENT);
     Error_attr = class_attr(NAME_ERROR);
     Ident_attr = class_attr(NAME_IDENT);
+    Ident2_attr = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
     Number_attr = class_attr(NAME_NUMBER);
     Preproc_attr = class_attr(NAME_PREPROC);
@@ -704,7 +754,7 @@ do_filter(FILE * input GCC_UNUSED)
 		    if (!strcmp(s, "__END__"))
 			state = eIGNORED;
 		    if (ispunct(save)
-			&& strchr("[]<>(){}", save) == 0
+			&& strchr("[]<>()", save) == 0
 			&& (!strcmp(s, "s")
 			    || !strcmp(s, "q")
 			    || !strcmp(s, "qq")
@@ -722,15 +772,10 @@ do_filter(FILE * input GCC_UNUSED)
 		    flt_puts(s, ok, Keyword_attr);
 		    s += ok;
 		} else if ((ok = is_IDENT(s)) != 0) {
-		    flt_puts(s, ok, Ident_attr);
+		    flt_puts(s, ok, Ident2_attr);
 		    s += ok;
 		} else if ((ok = is_String(s, &err)) != 0) {
-#if 0				/* FIXME - later */
 		    s = put_embedded(s, ok, err ? Error_attr : String_attr);
-#else
-		    flt_puts(s, ok, err ? Error_attr : String_attr);
-		    s += ok;
-#endif
 		} else if ((ok = is_NUMBER(s, &err)) != 0) {
 		    flt_puts(s, ok, err ? Error_attr : Number_attr);
 		    s += ok;
@@ -739,7 +784,7 @@ do_filter(FILE * input GCC_UNUSED)
 		}
 		break;
 	    case eHERE:
-		if (end_marker(s, marker)) {
+		if (end_marker(s, marker, 1)) {
 		    state = eCODE;
 		    free(marker);
 		    marker = 0;
@@ -750,6 +795,7 @@ do_filter(FILE * input GCC_UNUSED)
 		s = put_remainder(s, Comment_attr, 1);
 		break;
 	    case ePATTERN:
+		s = skip_BLANKS(s);
 		if ((ok = add_to_PATTERN(s)) != 0) {
 		    s = write_PATTERN(s, ok);
 		} else {

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_2l
+MANIFEST for vile, version v9_2m
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -283,6 +283,7 @@ icons/vile.xpm                  sample icon, for xpm library
 macros                          subdirectory
 macros/XVile.ad                 sample X resource file for vile
 macros/color-ls.rc              sample macro: read output of "color ls"
+macros/dates.rc                 demo of &date function
 macros/digraphs.rc              macros for inserting digraphs
 macros/manpage.rc               macros for man-page filtering/display
 macros/palettes.rc              sample color schemes

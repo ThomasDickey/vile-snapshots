@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.239 2001/02/15 22:41:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.240 2001/05/20 20:10:53 tom Exp $
  *
  */
 
@@ -1189,10 +1189,7 @@ makebindlist(int whichmask, void *mstring)
 	with a '^', we discard it and force an exact match.
 	returns 1-based offset of match, or 0.  */
 int
-ourstrstr(
-	     const char *haystack,
-	     const char *needle,
-	     int anchor)
+ourstrstr(const char *haystack, const char *needle, int anchor)
 {
     if (anchor && *needle == '^') {
 	return strcmp(needle + 1, haystack) ? 0 : 1;
@@ -1473,9 +1470,7 @@ kcod2pstr(int c, char *seq)
  * code.
  */
 int
-kcod2escape_seq(
-		   int c,
-		   char *ptr)
+kcod2escape_seq(int c, char *ptr)
 {
     char *base = ptr;
 
@@ -1770,9 +1765,6 @@ prc2kcod(const char *kk)
 	}
 	if (pref != 0)
 	    k += 3;
-    } else if (len > 2 && !strncmp((const char *) k, "M-", (SIZE_T) 2)) {
-	pref = HIGHBIT;
-	k += 2;
     } else if (len > 1) {
 	if (*k == cntl_a)
 	    pref = CTLA;
@@ -1785,6 +1777,11 @@ prc2kcod(const char *kk)
 	    if (len > 2 && *k == '-')
 		k++;
 	}
+    }
+
+    if (strlen(k) > 2 && !strncmp((const char *) k, "M-", (SIZE_T) 2)) {
+	pref |= HIGHBIT;
+	k += 2;
     }
 
     if (*k == '^' && *(k + 1) != EOS) {		/* control character */
@@ -1825,12 +1822,11 @@ prc2engl(const char *kk)
 #endif
 
 /*
- * Get an english command name from the user
+ * Get an english command name from the user.  If 'prompt' is a null pointer,
+ * we will splice calls.
  */
 char *
-kbd_engl(
-	    const char *prompt,	/* null pointer to splice calls */
-	    char *buffer)
+kbd_engl(const char *prompt, char *buffer)
 {
     if (kbd_engl_stat(prompt, buffer, 0) == TRUE)
 	return buffer;
@@ -2088,9 +2084,7 @@ struct compl_rec {
 
 /*ARGSUSED*/
 static void
-makecmpllist(
-		int case_insensitive,
-		void *cinfop)
+makecmpllist(int case_insensitive, void *cinfop)
 {
     char *buf = c2ComplRec(cinfop)->buf;
     SIZE_T len = c2ComplRec(cinfop)->len;
@@ -2486,9 +2480,7 @@ kbd_complete(
  * repeated characters (but they must all be the same).
  */
 static int
-is_shift_cmd(
-		const char *buffer,
-		unsigned cpos)
+is_shift_cmd(const char *buffer, unsigned cpos)
 {
     int c = *buffer;
     if (isRepeatable(c)) {
@@ -2524,11 +2516,7 @@ is_shift_cmd(
 #define ismostpunct(c) (isPunct(c) && (c) != '-')
 
 static int
-eol_command(
-	       const char *buffer,
-	       unsigned cpos,
-	       int c,
-	       int eolchar)
+eol_command(const char *buffer, unsigned cpos, int c, int eolchar)
 {
     /*
      * Handle special case of repeated-character implying repeat-count
@@ -2560,10 +2548,7 @@ eol_command(
  * completion and query displays.
  */
 static int
-cmd_complete(
-		int c,
-		char *buf,
-		unsigned *pos)
+cmd_complete(int c, char *buf, unsigned *pos)
 {
     int status;
 #if OPT_HISTORY

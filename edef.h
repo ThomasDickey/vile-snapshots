@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.283 2001/04/29 22:07:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.284 2001/05/20 22:09:12 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -171,6 +171,7 @@ decl_uninit( B_VALUES global_b_values );
 decl_uninit( W_VALUES global_w_values );
 
 decl_init( int sgarbf, TRUE );		/* TRUE if screen is garbage	*/
+decl_init( int need_update, TRUE );	/* TRUE if screen is not updated*/
 decl_uninit( int clexec	);		/* command line execution flag	*/
 decl_uninit( int clhide );		/* hide results of this command	*/
 decl_uninit( int miniedit );		/* editing minibuffer with vi-cmds */
