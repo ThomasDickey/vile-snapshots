@@ -1,4 +1,4 @@
-Changes for vile 8.3 (released ??? ??? ??, 1998)
+Changes for vile 8.3 (released Fri Apr 23, 1998)
 
 (tom) 990420 (v)
 	+ modify winvile.rc to use VILE_ICON definition, overlooked in previous

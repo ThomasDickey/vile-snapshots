@@ -1,6 +1,6 @@
-revlist for vile, version v8_2v
+revlist for vile, version v8_3
 --------------------------------------------------------------------------------
-CHANGES	1.336
+CHANGES	1.337
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -13,7 +13,7 @@ README	1.72
 README.PC	1.22
 README.VMS	1.2
 aclocal.m4	1.67
-ansi.c	1.36
+ansi.c	1.37
 api.c	1.17
 api.h	1.11
 basic.c	1.102
@@ -35,7 +35,7 @@ dirstuff.h	1.23
 display.c	1.273
 djhandl.c	1.6
 dumbterm.c	1.15
-edef.h	1.241
+edef.h	1.242
 estruct.h	1.391
 eval.c	1.191
 exec.c	1.181
@@ -62,7 +62,7 @@ makefile.blc	1.11
 makefile.djg	1.29
 makefile.emx	1.5
 makefile.icc	1.13
-makefile.in	1.133
+makefile.in	1.134
 makefile.tbc	1.24
 makefile.wat	1.26
 makefile.wnt	1.43
@@ -82,7 +82,7 @@ opers.c	1.65
 os2keys.h	1.1
 os2pipe.c	1.4
 os2vio.c	1.22
-patchlev.h	1.170
+patchlev.h	1.171
 path.c	1.90
 perl.xs	1.38
 proto.h	1.339
@@ -91,7 +91,7 @@ ptypemap	1.5
 random.c	1.194
 regexp.c	1.65
 region.c	1.96
-revlist	v8_2v
+revlist	v8_3
 search.c	1.116
 select.c	1.96
 sinstall.sh	1.1
@@ -107,11 +107,11 @@ trace.h	1.8
 ucrypt.c	1.11
 undo.c	1.71
 version.c	1.44
-vile-8.2.spec	1.1
+vile-8.3.spec	1.1
 vile.1	1.21
-vile.hlp	1.406
+vile.hlp	1.407
 vms2unix.c	1.32
-vmsbuild.com	1.25
+vmsbuild.com	1.26
 vmspipe.c	1.12
 vmsvt.c	1.49
 w32cbrd.c	1.13
