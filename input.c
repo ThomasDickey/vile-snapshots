@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.210 1999/12/24 01:08:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.211 2000/01/03 22:16:21 tom Exp $
  *
  */
 
@@ -165,25 +165,33 @@ unsigned *pos)
 int
 mlyesno(const char *prompt)
 {
+	int result = ABORT;
 	char c;			/* input character */
 
 	/* in case this is right after a shell escape */
-	if (!update(TRUE))
-		return (ABORT);
-
-	for_ever {
+	if (update(TRUE)) {
+	    reading_msg_line = TRUE;
+	    for_ever {
 		mlforce("%s [y/n]? ",prompt);
 		c = (char)keystroke();	/* get the response */
 
-		if (ABORTED(c))		/* Bail out! */
-			return(ABORT);
+		if (ABORTED(c)) {	/* Bail out! */
+			break;
+		}
 
-		if (c=='y' || c=='Y')
-			return(TRUE);
+		if (c=='y' || c=='Y') {
+			result = TRUE;
+			break;
+		}
 
-		if (c=='n' || c=='N')
-			return(FALSE);
+		if (c=='n' || c=='N') {
+			result = FALSE;
+			break;
+		}
+	    }
+	    reading_msg_line = FALSE;
 	}
+	return result;
 }
 
 /*
@@ -194,21 +202,28 @@ mlyesno(const char *prompt)
 int
 mlquickask(const char *prompt, const char *respchars, int *cp)
 {
-	if (!update(TRUE))
-		return (ABORT);
+	int result = ABORT;
 
-	for_ever {
+	if (update(TRUE)) {
+	    reading_msg_line = TRUE;
+	    for_ever {
 		mlforce("%s ",prompt);
 		*cp = keystroke();	/* get the response */
 
-		if (ABORTED(*cp))	/* Bail out! */
-			return(ABORT);
+		if (ABORTED(*cp)) {	/* Bail out! */
+			break;
+		}
 
-		if (strchr(respchars,*cp))
-			return TRUE;
+		if (strchr(respchars,*cp)) {
+			result = TRUE;
+			break;
+		}
 
 		kbd_alarm();
+	    }
+	    reading_msg_line = FALSE;
 	}
+	return result;
 }
 
 /*

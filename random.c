@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.227 1999/12/25 15:25:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.229 2000/01/05 02:33:21 tom Exp $
  *
  */
 
@@ -1349,7 +1349,7 @@ run_readhook(void)
 #endif
 
 void
-autocolor()
+autocolor(void)
 {
 #if OPT_COLOR&&!SMALLER
 
@@ -1358,16 +1358,20 @@ autocolor()
     if (reading_msg_line || vile_is_busy)
 	return;
     for_each_visible_window(wp) {
-	if (b_is_recentlychanged(wp->w_bufp)
-	    && b_val(wp->w_bufp, VAL_AUTOCOLOR) > 0) {
+	BUFFER *bp = wp->w_bufp;
+	if (b_is_recentlychanged(bp)
+#if OPT_MAJORMODE
+	    && (bp->majr != 0 || !b_is_temporary(bp))
+#endif
+	    && b_val(bp, VAL_AUTOCOLOR) > 0) {
 	    WINDOW *oldwp;
 	    MARK save_pre_op_dot;	/* ugly hack */
 	    int save_dotcmdactive = dotcmdactive;	/* another ugly hack */
 	    save_pre_op_dot = pre_op_dot;
-	    oldwp = push_fake_win(wp->w_bufp);
+	    oldwp = push_fake_win(bp);
 	    in_autocolor = TRUE;
 	    if (run_a_hook(&autocolorhook)) {
-		b_clr_recentlychanged(wp->w_bufp);
+		b_clr_recentlychanged(bp);
 		do_update = TRUE;
 	    }
 	    in_autocolor = FALSE;

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.321 1999/12/24 01:08:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.324 2000/01/05 01:31:27 tom Exp $
  *
  */
 
@@ -1107,7 +1107,7 @@ int force)	/* force update past type ahead? */
 	origrow = ttrow;
 	origcol = ttcol;
 
-	if (clhide)
+	if (clhide || !is_visible_window(curwp))
 		return TRUE;
 	if (!curbp || !vscreen || !curwp) /* not initialized */
 		return FALSE;
@@ -1839,13 +1839,9 @@ updattrs(WINDOW *wp)
 	    if (ap->ar_shape == RECTANGLE) {
 		end_col = rect_end_col;
 	    } else if (lnum == end_rlnum) {
-		int n = mark2col(wp, ap->ar_region.r_end) - 1;
-		end_col = offs2col(wp, ap->ar_region.r_end.l,
-				   ap->ar_region.r_end.o - 1);
-		if (end_col < n)
-			end_col = n;
+		end_col = mark2col(wp, ap->ar_region.r_end) - 1;
 	    } else {
-		end_col = offs2col(wp, lp, llength(lp));
+		end_col = offs2col(wp, lp, llength(lp)+1)-1;
 #ifdef WMDLINEWRAP
 		if (w_val(wp,WMDLINEWRAP)
 		 && (end_col % term.cols) == 0)
@@ -1889,6 +1885,10 @@ updattrs(WINDOW *wp)
 /*
  * Translate offset (into a line's text) into the display-column, taking into
  * account the tabstop, sideways, number- and list-modes.
+ *
+ * Note: we intentionally compare against '\n' rather than the record separator,
+ * since it is simpler than handling ^M^J in one case, and we really only want
+ * to know if we're in the record-separator.
  */
 int
 offs2col(
@@ -1896,28 +1896,31 @@ WINDOW	*wp,
 LINEPTR	lp,
 C_NUM	offset)
 {
-	int	length = llength(lp);
 	int	column = 0;
-	int	tabs = tabstop_val(wp->w_bufp);
-	int	list = w_val(wp,WMDLIST);
-	int	left =
-#ifdef WMDLINEWRAP	/* overrides left/right scrolling */
-			w_val(wp,WMDLINEWRAP) ? 0 :
-#endif
-			w_val(wp,WVAL_SIDEWAYS);
-
-	register C_NUM	n, c;
 
 	/* this makes the how-much-to-select calculation easier above */
-	if (offset < 0)
-		return offset;
-
-	if (lp == win_head(wp)) {
+	if (offset < 0) {
+		column = offset;
+	} else if (lp == win_head(wp)) {
 		column = 0;
 	} else {
-		for (n = w_left_margin(wp); (n < offset) && (n <= length); n++) {
-			c = (n >= length) ? '\n' : lp->l_text[n];
-			if (isPrint(c)) {
+		int	length = llength(lp);
+		int	tabs = tabstop_val(wp->w_bufp);
+		int	list = w_val(wp,WMDLIST);
+		int	last = (list ? (N_chars * 2) : '\n');
+		int	left =
+#ifdef WMDLINEWRAP	/* overrides left/right scrolling */
+				w_val(wp,WMDLINEWRAP) ? 0 :
+#endif
+				w_val(wp,WVAL_SIDEWAYS);
+		C_NUM	n, c;
+
+		if (offset > length + 1)
+			offset = length + 1;
+
+		for (n = w_left_margin(wp); n < offset; n++) {
+			c = (n == length) ? '\n' : lp->l_text[n];
+			if (isPrint(c) || (c == last)) {
 				column++;
 			} else if (list || (c != '\t')) {
 				column += (c & HIGHBIT) ? 4 : 2;
@@ -1925,7 +1928,7 @@ C_NUM	offset)
 				column = ((column / tabs) + 1) * tabs;
 			}
 		}
-		column = column - left + nu_width(wp) + w_left_margin(wp);
+		column += (nu_width(wp) + w_left_margin(wp) - left);
 	}
 	return column;
 }
@@ -3461,7 +3464,7 @@ mlmsg(const char *fmt, va_list *app)
 
 #ifdef DISP_NTWIN
 	if (recur == 0) {
-		/* 
+		/*
 		 * Winvile internally manages its own cursor and this
 		 * usually works fine.  However, if the user activates
 		 * functionality that triggers windows message(s) (e.g.,
