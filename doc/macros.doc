@@ -624,21 +624,23 @@ Functions
 
 Directives
 ----------
-	Directives are commands which only operate within an executing
-	macro, i.e.,  they do not make sense as a single command.  As such,
-	they cannot be called up singly or bound to keystroke.  Used within
-	macros, they control what lines are executed and in what order.
+	Directives are commands which only operate within an executing macro,
+	i.e., they do not make sense as a single command.  As such, they cannot
+	be called up singly or bound to keystroke.  Used within macros, they
+	control what lines are executed and in what order.
 
-	Directives always start with the tilde (~) character and must be
-	the first thing placed on a line.  Directives executed
-	interactively (via the execute-command- line command) will be
-	ignored.
+	Directives always start with the tilde (~) character and must be the
+	first thing placed on a line.  Directives executed interactively (via
+	the execute-command-line command) will be ignored.
+
+	Uppercase names (e.g., "~ENDM") are for exposition only; vile uses
+	lowercase names (e.g., "~endm").
 
 
     ~ENDM Directive
     ---------------
 	This directive is used to terminate a macro being stored.  For
-	example, if a file is being executed contains the text:
+	example, if a file which is being executed contains the text:
 
 		;       Read in a file in view mode, and make the window red
 		;	(color is only settable on some platforms, e.g. DOS)
@@ -671,7 +673,29 @@ Directives
 		insert-string "this is a new first line in that file\n"
 
 	will function correctly even if this version of the editor does not
-	support color.  (Currently, only the DOS version supports color.)
+	support color.
+
+
+    ~HIDDEN Directive
+    -----------------
+	You can suppress not only the check for success or failure of a macro
+	as in ~FORCE, but also the screen refresh, making macros run more
+	rapidly.  For example
+
+	    30 store-macro
+		    write-message "[Attaching C/C++ attributes...]"
+		    ~local $curcol $curline
+		    ~hidden goto-beginning-of-file
+		    ~hidden attribute-from-filter end-of-file "vile-c-filt"
+		    write-message "[Attaching C/C++ attributes...done ]"
+	    ~endm
+	    bind-key execute-macro-30 ^X-q
+
+	causes the screen updates from moving the current position to the
+	beginning of the file and then filtering (which moves the position to
+	the end-of-file) to be suppressed.  The screen will be updated after
+	completion of the macro, after the current position has been restored
+	from the values saved with the ~LOCAL directive.
 
 
     ~IF, ~ENDIF, ~ELSE, and ~ENDIF Directives
@@ -1042,12 +1066,9 @@ Example startup file
 
 	30 store-macro
 	    write-message "[Attaching C/C++ attributes...]"
-	    set-variable %savcol $curcol
-	    set-variable %savline $curline
+	    ~local $curcol $curline
 	    goto-beginning-of-file
 	    attribute-from-filter end-of-file "vile-c-filt"
-	    %savline goto-line
-	    %savcol goto-column
 	    write-message "[Attaching C/C++ attributes...done ]"
 	~endm
 	bind-key execute-macro-30 ^X-q
@@ -1058,5 +1079,5 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.8 1998/11/11 02:39:07 cmorgan Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.9 1998/11/14 13:45:24 tom Exp $
 -----------------------------------

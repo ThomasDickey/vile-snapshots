@@ -1368,6 +1368,9 @@ Editor modes
 	sections A regular expression defining where the "next-section" (']')
 		and "previous-section" ('[') commands will go. (B)
 
+	sentences A regular expression defining where the "next-sentence" (')')
+		and "previous-sentence" ('(') commands will go. (B)
+
 	shiftwidth (sw) This is much like a tabstop, except that it is
 		independent of hardware tabs and tab characters.  It is the
 		number of columns a line will shift by if the '<<' or '>>'
@@ -2216,6 +2219,7 @@ Programmed procedures and macros
 	~return		Return (terminating current macro)
 	~goto label	Jump to a label in the current macro
 	~force		Force macro to continue...even if command fails
+	~hidden		Force macro to continue, do not update screen
 	~while cond	Execute a loop if the condition is true
 	~break
 	~endwhile
@@ -2339,18 +2343,16 @@ Programmed procedures and macros
 		* Implement  ^A-^] for qualified-name tag lookup
 		24 store-macro
 			backward-character
-			set-variable %osearch $search
+			~local $search
 			search-forward "^[a-zA-Z_][a-zA-Z0-9_:]*"
-			set-variable $search %osearch
-			set-variable %osearch ""
 			write-message &cat "Tag pattern is now " $match
 			~force find-tag $match
 		~endm
 		bind-key execute-macro-24 ^A-^]
 	(The "backward-character" is needed because "search-forward" will
 	always skip the cursor position when scanning, so as to always find
-	the next occurrence.  The user variable %osearch is used so as not
-	to disturb the search string.)
+	the next occurrence.  The directive ~local is used to avoid
+	disturbing the search string.)
 
 	Note that for simple key-remappings, binding is often preferable
 	to creating a macro.  Some people prefer using lower-case 'g' to
@@ -2843,15 +2845,15 @@ Filtering "man" pages
 		set terse
 		~force select-buffer %manpagebuf
 		~if &not $status
-			edit-file &cat "!man " &cat %manpage " | vile-manfilt"
-			~force rename-buffer %manpagebuf
-			~force error-buffer %manpagebuf
+			~hidden edit-file &cat "!man " &cat %manpage " | vile-manfilt"
+			~hidden rename-buffer %manpagebuf
+			~hidden error-buffer %manpagebuf
 			write-message "[Attaching attributes...]"
-			goto-beginning-of-file
-			setl noview
-			attribute-cntl_a-sequences-til end-of-file
-			unmark-buffer
-			setl view
+			~hidden goto-beginning-of-file
+			~hidden setl noview
+			~hidden attribute-cntl_a-sequences-til end-of-file
+			~hidden unmark-buffer
+			~hidden setl view
 			goto-beginning-of-file
 			write-message "[Done formatting manual page.]"
 		~endif
@@ -2868,20 +2870,15 @@ Filtering C programs
 	is described more fully in comments at the head of the source file.
 	It doesn't provide what one would describe as "tightly integrated
 	syntax coloring".  Its usefulness is limited by reliance on an
-	external filter to do the coloring, and the fact that the filter
-	interferes with the normal undo history of the buffer (since it
-	must modify the buffer to do its work).  Nonetheless, it's an
-	interesting adjunct to the editor.
+	external filter to do the coloring.  Nonetheless, it's an interesting
+	adjunct to the editor.
 
 	Here is a macro one might use to invoke the colorizer:
 	    30 store-macro
 		    write-message "[Attaching C/C++ attributes...]"
-		    set-variable %savcol $curcol
-		    set-variable %savline $curline
-		    goto-beginning-of-file
-		    attribute-from-filter end-of-file "vile-c-filt"
-		    %savline goto-line
-		    %savcol goto-column
+		    ~local $curcol $curline
+		    ~hidden goto-beginning-of-file
+		    ~hidden attribute-from-filter end-of-file "vile-c-filt"
 		    write-message "[Attaching C/C++ attributes...done ]"
 	    ~endm
 	    bind-key execute-macro-30 ^X-q
@@ -3905,4 +3902,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.378 1998/11/11 02:16:21 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.381 1998/11/14 14:24:02 cmorgan Exp $

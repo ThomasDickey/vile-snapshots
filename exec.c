@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.166 1998/11/11 02:05:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.169 1998/11/14 12:59:35 tom Exp $
  *
  */
 
@@ -27,6 +27,7 @@ typedef	enum {
 	D_ENDWHILE,
 	D_BREAK,
 	D_FORCE,
+	D_HIDDEN,
 	D_LOCAL,
 #endif
 	D_ENDM
@@ -67,6 +68,7 @@ static	const struct {
 	{ D_ENDWHILE, "endwhile" },
 	{ D_BREAK,    "break" },
 	{ D_FORCE,    "force" },
+	{ D_HIDDEN,   "hidden" },
 	{ D_LOCAL,    "local" },
 	{ D_ENDM,     "endm" }
 	};
@@ -1389,6 +1391,7 @@ WHBLOCK *wp)	/* head of structure to free */
 #define DDIR_COMPLETE    0
 #define DDIR_INCOMPLETE  1
 #define DDIR_FORCE       2
+#define DDIR_HIDDEN      3
 
 /*
  * When we get a "~local", we save the variable's name and its value.  Save the
@@ -1679,6 +1682,10 @@ begin_directive(
 		status = DDIR_FORCE;
 		break;
 
+	case D_HIDDEN:	/* HIDDEN directive */
+		status = DDIR_HIDDEN;
+		break;
+
 	case D_UNKNOWN:
 	case D_ENDM:
 		break;
@@ -1723,7 +1730,7 @@ setup_dobuf(BUFFER *bp, WHBLOCK **result)
 		bp->b_dot.l = lp;
 		/* scan the current line */
 		eline = lp->l_text;
-		i = lp->l_used;
+		i = llength(lp);
 
 		/* trim leading whitespace */
 		while (i > 0 && isBlank(*eline))
@@ -1833,6 +1840,7 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 	WINDOW *wp;		/* ptr to windows to scan */
 	char *einit = 0;	/* initial value of eline */
 	char *eline;		/* text of line to execute */
+	int save_clhide = clhide;
 
 	static BUFFER *dobuferrbp;
 
@@ -1841,10 +1849,10 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 		bp->b_dot.l = lp;
 		/* allocate eline and copy macro line to it */
 
-		if (lp->l_used <= 0)
+		if (llength(lp) <= 0)
 			linlen = 0;
 		else
-			linlen = lp->l_used;
+			linlen = llength(lp);
 
 		if (glue) {
 			if ((einit = castrealloc(char, einit, glue+linlen+1)) == 0) {
@@ -2008,6 +2016,9 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 				break;
 			} else if (code == DDIR_FORCE) {
 				force = TRUE;
+			} else if (code == DDIR_HIDDEN) {
+				force = TRUE;
+				clhide = TRUE;
 			}
 		}
 #endif
@@ -2020,6 +2031,7 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 			status = docmd(eline,TRUE,FALSE,1);
 		if (force)		/* force the status */
 			status = TRUE;
+		clhide = save_clhide;
 
 		/* check for a command error */
 		if (status != TRUE) {

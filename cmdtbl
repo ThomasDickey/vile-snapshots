@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.163 1998/11/11 23:09:58 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.164 1998/11/14 17:20:13 tom Exp $
 #
 #
 
@@ -996,7 +996,7 @@ operattrcaseq	REDO|UNDO|OPER|GLOBOK|RANGE	OPT_SELECTIONS
 	"attribute-cntl_a-sequences-til"	!FEWNAMES
 	'^A-A'
 	<display text as given by ^A sequences in the region>
-operattrfilter	OPER|GLOBOK|RANGE	OPT_SELECTIONS
+operattrfilter	OPER|GLOBOK|RANGE	OPT_SELECTIONS&&OPT_SHELL
 	"attribute-from-filter"			!FEWNAMES
 	'^A-F'
 	<read/apply ^A sequence attributes by filtering the region>

@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.87 1998/11/11 23:37:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.90 1998/11/15 02:56:23 tom Exp $
  *
  */
 
@@ -42,7 +42,9 @@ extern REGION *haveregion;
 
 static	void	detach_attrib (BUFFER *bp, AREGION *arp);
 static	int	attribute_cntl_a_sequences (void);
+#if OPT_SHELL
 static	int	attribute_from_filter (void);
+#endif
 
 /*
  * startbufp and startregion are used to represent the start of a selection
@@ -725,6 +727,7 @@ on_mouse_click(int button, int y, int x)
 					y = first_y;
 					x = first_x;
 				}
+				TTcursor(TRUE);
 				doingsweep = SORTOFTRUE;
 				(void)sel_begin();
 				(void)sel_setshape(EXACT);
@@ -793,8 +796,10 @@ multimotion(int f, int n)
 	savedot = DOT;
 	switch (doingsweep) {
 	case TRUE:	/* the same command terminates as starts the sweep */
-		TTcursor(TRUE);
-		doingsweep = FALSE;
+		if (doingsweep) {
+			TTcursor(TRUE);
+			doingsweep = FALSE;
+		}
 		mlforce("[Sweeping: Completed]");
 		regionshape = shape;
 		/* since the terminating 'q' is executed as a motion, we have
@@ -806,8 +811,10 @@ multimotion(int f, int n)
 			sweephack = wassweephack;
 		return TRUE;
 	case SORTOFTRUE:
-		TTcursor(FALSE);
-		doingsweep = TRUE;
+		if (doingsweep != TRUE) {
+			TTcursor(FALSE);
+			doingsweep = TRUE;
+		}
 		sweepmsg("Begin cursor sweep...");
 		sel_extend(TRUE,(regionshape != RECTANGLE && sweephack));
 		savedot = MK;
@@ -816,8 +823,10 @@ multimotion(int f, int n)
 			line_no(curbp, MK.l), MK.o))
 		break;
 	case FALSE:
-		TTcursor(FALSE);
-		doingsweep = TRUE;
+		if (doingsweep != TRUE) {
+			TTcursor(FALSE);
+			doingsweep = TRUE;
+		}
 		sweepmsg("Begin cursor sweep...");
 		(void)sel_begin();
 		(void)sel_setshape(shape);
@@ -1302,6 +1311,7 @@ operattrcaseq(int f, int n)
 		      "Attribute ^A sequences");
 }
 
+#if OPT_SHELL
 int
 operattrfilter(int f, int n)
 {
@@ -1310,6 +1320,7 @@ operattrfilter(int f, int n)
       return vile_op(f,n,attribute_from_filter,
 		      "Attribute ^A sequences from filter");
 }
+#endif
 
 int
 attribute_cntl_a_seqs_in_region(REGION *rp, REGIONSHAPE shape)
@@ -1501,6 +1512,7 @@ attribute_cntl_a_sequences(void)
  * Apply attributes from a filtering command on the current buffer.  The
  * buffer is not modified.
  */
+#if OPT_SHELL
 static int
 attribute_from_filter(void)
 {
@@ -1545,11 +1557,14 @@ attribute_from_filter(void)
 	    DOT.l = lforw(DOT.l);
 	}
 	(void)ffclose();		/* Ignore errors.	*/
+#if OPT_HILITEMATCH
 	if (curbp->b_highlight & HILITE_ON) {
 		curbp->b_highlight |= HILITE_DIRTY;
 		attrib_matches();
 	}
+#endif
     }
     return TRUE;
 }
+#endif /*  OPT_SHELL */
 #endif /* OPT_SELECTIONS */

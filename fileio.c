@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.129 1998/10/30 00:20:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.130 1998/11/13 10:23:13 tom Exp $
  *
  */
 
@@ -357,8 +357,24 @@ int
 ffaccess(char *fn, int mode)
 {
 #if HAVE_ACCESS
+	/* these were chosen to match the SYSV numbers, but we'd rather use
+	 * the symbols for portability.
+	 */
+#ifndef X_OK
+#define X_OK 1
+#endif
+#ifndef W_OK
+#define W_OK 2
+#endif
+#ifndef R_OK
+#define R_OK 4
+#endif
+	int n = 0;
+	if (mode & FL_EXECABLE)  n |= X_OK;
+	if (mode & FL_WRITEABLE) n |= W_OK;
+	if (mode & FL_READABLE)  n |= R_OK;
 	return (!isInternalName(fn)
-	   &&   access(SL_TO_BSL(fn), mode) == 0);
+	   &&   access(SL_TO_BSL(fn), n) == 0);
 #else
 	int	fd;
 	switch (mode) {

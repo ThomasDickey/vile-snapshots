@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_2d
+MANIFEST for vile, version v8_2e
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -94,8 +94,10 @@ ptypemap                        perl-interface type map
 random.c                        miscellaneous functions
 regexp.c                        regular expression functions
 region.c                        region-manipulation
+revlist                         revision-list for VILE
 search.c                        functions for search-commands
 select.c                        selection-handling functions
+sinstall.sh                     wrapper for installing perl-scripts
 spawn.c                         functions for spawning subprocesses
 tags.c                          support for vi-style "tags"
 tbuff.c                         temporary-buffer management functions
@@ -130,7 +132,9 @@ wordmov.c                       cursor-movement commands (e.g., word, spaces)
 x11.c                           X11 (Xt, Motif or Openlook) terminal driver
 xshell.sh                       wrapper/sample script for xvile
 doc                             subdirectory
+doc/Vileserv.doc                overview of Vileserv and vileget scripts
 doc/config.doc                  configuration-instructions for VILE
+doc/dir.doc                     description of perl directory-browser
 doc/hilite.doc                  readme for hilite.pl and syntax.pl
 doc/macros.doc                  documentation for VILE macros
 doc/menus.doc                   description of xvile (Xm and Xaw) menus
@@ -148,14 +152,19 @@ macros/manpage.rc               macros for man-page filtering/display
 macros/pictmode.rc              macros to support "picture-mode" editing
 macros/vile-pager               use vile as a pager
 perl                            subdirectory
+perl/Vileserv.pm                provides file-load server capability for xvile
+perl/dir.pl                     directory-browser extension
 perl/glob2re.pl                 utility-script for vile's hypertext
 perl/hgrep.pl                   utility-script for vile's hypertext
 perl/hilite.pl                  keyword-highlighting for perl
 perl/manfilt.pl                 Perl filter for man-pages
+perl/mime.pl                    mime-aware file viewer support
+perl/plugins.pl                 plugins extension to the mime library
 perl/search.pl                  perl lookalike for vile's search commands
 perl/shell.pl                   spawn a shell via a pty
 perl/syntax.pl                  syntax-parsing for perl highlighting
 perl/tailf.pl                   do a "tail -f"
+perl/vileget                    pass file-edit request to xvile session running Vileserv
 perl/visit.pl                   utility-script for vile's hypertext
 visvile                         subdirectory
 visvile/commands.cpp            implement commands for visvile.dll

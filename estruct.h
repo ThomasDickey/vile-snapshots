@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.364 1998/11/11 22:10:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.366 1998/11/14 17:50:12 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -472,7 +472,7 @@
 #define OPT_SHOW_TAGS   !SMALLER && OPT_TAGS	/* ":tags" displays tag-stack */
 
 /* selections and attributed regions */
-#define OPT_VIDEO_ATTRS !SMALLER
+#define OPT_VIDEO_ATTRS (!SMALLER||XTOOLKIT)
 #define OPT_SELECTIONS  OPT_VIDEO_ATTRS
 #define OPT_HYPERTEXT	OPT_VIDEO_ATTRS
 
@@ -480,7 +480,7 @@
  * in display.c. This allows us to avoid storing the screen data on the
  * screen interface side.
  */
-#define OPT_PSCREEN  (XTOOLKIT && OPT_VIDEO_ATTRS)
+#define OPT_PSCREEN  (XTOOLKIT)
 
 #if	DISP_TERMCAP && !SMALLER
 /* the setting "xterm-mouse" is always available, i.e.  the modetbl entry
@@ -500,7 +500,7 @@
 #define OPT_MOUSE       (OPT_SEL_YANK || OPT_XTERM || OPT_MS_MOUSE)
 
 	/* menus */
-#define	OPT_MENUS	(DISP_X11 && (MOTIF_WIDGETS||ATHENA_WIDGETS))
+#define	OPT_MENUS	(!SMALLER && DISP_X11 && (MOTIF_WIDGETS||ATHENA_WIDGETS))
 #define OPT_MENUS_COLORED 0	/* (MOTIF_WIDGETS && OPT_MENUS) */
 
 /*
@@ -839,9 +839,9 @@ typedef enum {
 } REGIONSHAPE;
 
 /* flook options */
-#define FL_EXECABLE  iBIT(0)	/* same as X_OK */
-#define FL_WRITEABLE iBIT(1)	/* same as W_OK */
-#define FL_READABLE  iBIT(2)	/* same as R_OK */
+#define FL_EXECABLE  iBIT(0)	/* maps to X_OK */
+#define FL_WRITEABLE iBIT(1)	/* maps to W_OK */
+#define FL_READABLE  iBIT(2)	/* maps to R_OK */
 #define FL_HERE      iBIT(3)	/* look in current directory */
 #define FL_HOME      iBIT(4)	/* look in home directory */
 #define FL_EXECDIR   iBIT(5)	/* look in execution directory */

@@ -1,5 +1,36 @@
 Changes for vile 8.3 (released ??? ??? ??, 1998)
 
+ (tom) 981114 (e)
+ 	+ corrected TTcursor logic interaction with xterm-mouse so the cursor
+	  does not remain invisible after extending a selection.
+	+ modify so that xvile can be build with --disable-extensions
+	+ correct ifdef for SYS_VMS which was hiding ifdefs for setsid  
+	+ add sinstall.sh script to fix perl-path when installing scripts such
+	  as vileget.
+	+ document 'sentences' mode in vile.hlp (patch by Clark Morgan).
+	+ correct logic in previous-sentence, which checked for end-of-line
+	  state rather than empty-line in one place, causing the function to
+	  return the end of the previous line when starting on leading
+	  whitespace rather than the actual beginning of the sentence (reported
+	  by Clark Morgan).
+	+ add "~hidden" macro directive, to suppress 'update()' logic and
+	  status check for the current macro line.
+	+ add check for zero-sized window to 'update()' function, to guard
+	  against attempts to display an incomplete window as a result of
+	  a read-hook (reported by Sean Ahern).
+	+ add directory browser extension for vile written with the perl interface
+	  (from Kuntal M Daftary).
+	+ add Vileserv.pm, vileget perl scripts, which give you the ability to
+	  send edit requests to a running Vile, like gnuserv does for Emacs
+	  (From J Chris Coppick <jchris@znet.com>)
+	+ correct parameter passed to 'access()' function to use symbols.  The
+	  ffaccess() function relied on coincidence between values for
+	  FL_EXECABLE, FL_WRITEABLE, FL_READABLE and X_OK, W_OK, R_OK, which
+	  did not hold for djgpp.  If all copies of vile.hlp were readonly, it
+	  was not "found" (reported by George.Young.gryoung@nt.com, this
+	  fixes a similar problem reported by Paul Laub <P_Laub@fccc.edu>
+	  stating that readonly-on-readonly did not work on DOS).
+
  (tom) 981112 (d)
  	+ correct/simplify handling of string literals in vile-c-filt, which did
 	  not treat single quotes and double quotes symmetrically.
@@ -35,25 +66,25 @@ Changes for vile 8.3 (released ??? ??? ??, 1998)
 	+ disable keyboard translation in Motif version of xvile (Gary Ross).
 	> patches by Clark Morgan:
 	+ correct key translation in ntwinio.c so that pressing '^' (i.e.,
-	  shift+6) will no longer cause winvile to flash/beep. 
+	  shift+6) will no longer cause winvile to flash/beep.
 	+ README.PC updated to talk about creation and location of startup
-	  file. 
+	  file.
 	+ win32 versions of editor now support the $title env var (users can
 	  now set and display title from a macro).  appropriate documentation
-	  updated. 
+	  updated.
 	+ macros/doc and vile.hlp tweaked to show that $title is set using env
 	  var syntax.  although, surprisingly, the original example syntax
 	  works (i.e.,  set title "string").  i'm surprised because this is yet
 	  another undocumented aspect of the macro language--env vars are
 	  available via the set command.  i'm not sure I want to document this
 	  feature--there's quite a bit to digest in this language as it is,
-	  now. 
+	  now.
 	+ the my_cd_action stored procedure example in vile.hlp has been
 	  changed to my-cd-action to prevent users from being surprised that
-	  '_' is a command terminator. 
+	  '_' is a command terminator.
 	+ makefile.wnt modified so that the ole-automation version of winvile
 	  will suck up the new winvile icon (the linker won't accept multiple
-	  .RES files). 
+	  .RES files).
 	+ document environment variables in vile man-page.
 
  (tom) 981101 (a)
@@ -82,8 +113,8 @@ Changes for vile 8.3 (released ??? ??? ??, 1998)
 	+ update/expand macros.doc
 	+ correct a limit-check when returning a buffer variable (eval.c).
 	+ convert $pid to unsigned hex rather than decimal on Win32.
-	+ make it possible to create vile-perl-api.doc on a win32 host. 
-	+ add detail to README.PC with respect to building embedded perl. 
+	+ make it possible to create vile-perl-api.doc on a win32 host.
+	+ add detail to README.PC with respect to building embedded perl.
 
 Changes for vile 8.2 (released Sun Oct 25, 1998)
 
@@ -194,7 +225,7 @@ Changes for vile 8.1 (released Fri Oct 02, 1998)
 	  motion would cause a succeeding "cw" command to affect the whole line
 	  (reported by Yuri Antonik <ya@islc.minsk.by>).
 	+ add syntax.pl, hilite.pl, which support syntax highlighting for perl,
-	  c and tcl (Kuntal Daftary).
+	  c and tcl (Kuntal M Daftary).
 	+ modify os2vio.c so that when running vile in fullscreen mode, bright
 	  colors are used rather than blinking colors.
  	+ undo incorrect use of VFCOL mask from my 7.2q change, which caused
@@ -490,7 +521,7 @@ Changes for vile 8.1 (released Fri Oct 02, 1998)
 
  (tom) 980703 (c)
  	+ remove spurious 'void' in perl.xs which caused items to be miscounted
-	  (report by Kuntal M. Daftary, patch by Kevin Buettner).
+	  (report by Kuntal M Daftary, patch by Kevin Buettner).
 	+ shorten identifiers to no more than 31 characters (reported by
 	  Graeme Miller).
 	> patches by Clark Morgan:
