@@ -1,6 +1,11 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
- (tom)	97121b (b)
+ (tom)	971219 (c)
+	+ correction to CF_CURSES_TERMCAP configure test so that SVr4 systems
+	  that do not have a prototype for tgoto, but still require curses.h
+	  will build properly (patch by Brendan O'Dea).
+
+ (tom)	971218 (b)
  	+ add configure-test to see if $LIBS already contains termcap functions
 	  before looking for additional libraries.
  	+ amended CF_CURSES_TERMCAP and CF_TYPE_OUTCHAR tests to use vile's

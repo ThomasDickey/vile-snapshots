@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.48 1997/12/18 22:53:00 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.49 1997/12/19 10:32:01 bod Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -266,12 +266,19 @@ do
 
     AC_TRY_LINK([/* $cf_c_opts $cf_t_opts */
 $CHECK_DECL_HDRS],
-	[char *x = (char *)tgoto("")],[],
+	[char *x = (char *)tgoto("")],
+	[test "$cf_cv_need_curses_h" = no && {
+	     cf_cv_need_curses_h=maybe
+	     cf_ok_c_opts=$cf_c_opts
+	     cf_ok_t_opts=$cf_t_opts
+	}],
 	[echo "Recompiling with corrected call (C:$cf_c_opts, T:$cf_t_opts)" >&AC_FD_CC
 	AC_TRY_LINK([
 $CHECK_DECL_HDRS],
 	[char *x = (char *)tgoto("",0,0)],
-	[cf_cv_need_curses_h=yes])])
+	[cf_cv_need_curses_h=yes
+	 cf_ok_c_opts=$cf_c_opts
+	 cf_ok_t_opts=$cf_t_opts])])
 
 	CFLAGS="$cf_save_CFLAGS"
 	test "$cf_cv_need_curses_h" = yes && break
@@ -279,15 +286,15 @@ done
 	test "$cf_cv_need_curses_h" = yes && break
 done
 
-if test "$cf_cv_need_curses_h" = yes ; then
-	echo "Curses/termcap test succeeded (C:$cf_c_opts, T:$cf_t_opts)" >&AC_FD_CC
-	if test -n "$cf_c_opts" ; then
-		if test -n "$cf_t_opts" ; then
+if test "$cf_cv_need_curses_h" != no ; then
+	echo "Curses/termcap test = $cf_cv_need_curses_h (C:$cf_ok_c_opts, T:$cf_ok_t_opts)" >&AC_FD_CC
+	if test -n "$cf_ok_c_opts" ; then
+		if test -n "$cf_ok_t_opts" ; then
 			cf_cv_need_curses_h=both
 		else
 			cf_cv_need_curses_h=curses.h
 		fi
-	elif test -n "$cf_t_opts" ; then
+	elif test -n "$cf_ok_t_opts" ; then
 		cf_cv_need_curses_h=termcap.h
 	elif test "$cf_cv_have_term_h" = yes ; then
 		cf_cv_need_curses_h=term.h
