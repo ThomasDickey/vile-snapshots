@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.56 1999/12/29 17:46:38 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.57 1999/12/31 13:41:28 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -123,7 +123,15 @@ PERLCFG  = $(THE_PERLCFG)
 # The following perl scripts, stored in the subdirectory .\perl, are
 # known to work under win32:
 #
-PERL_SCRIPTS = Vile\\exporter.pm glob2re.pl visit.pl hgrep.pm search.pm
+PERL_SCRIPTS = \
+	perl/Vile/exporter.pm \
+	perl/Vile/Manual.pm \
+	perl/Glob2re.pm \
+	perl/Visit.pm \
+	perl/directory.pm \
+	perl/dirlist.pm \
+	perl/hgrep.pm \
+	perl/search.pm
 !ENDIF
 
 # these are normal editable headers
@@ -177,7 +185,7 @@ winvile.res :	winvile.rc winvile.h
 	$(RC) -DVILE_ICON="$(ICON).ico" -Iicons winvile.rc
 
 # collect some perl environment info
-$(PERLCFG): mkprlenv.wnt
+$(PERLCFG): $(PERL_SCRIPTS) mkprlenv.wnt
 !INCLUDE "mkprlenv.wnt"
 
 $(OBJ): estruct.h nemode.h edef.h neproto.h proto.h nefkeys.h
@@ -218,9 +226,10 @@ winviletlb.h winvile.tlb: winvile.odl
     midl -h winviletlb.h -tlb winvile.tlb winvile.odl
 
 clean ::
-    del *.exe
-    del *.obj
-    del ne*.h
+    -del *.bak
+    -del *.exe
+    -del *.obj
+    -del ne*.h
     -del $(THE_PERLCFG)
     -del perl.c
     -del winviletlb.h

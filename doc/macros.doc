@@ -1167,11 +1167,8 @@ Example startup file
 	~endif
 
 	~if &not &equal 0 &sindex $cfgopts "perl"
-	    store-procedure hgrep
-		perl "require 'hgrep.pl'"
-		perl hgrep
-		error-buffer $cbufname
-	    ~endm
+	    perl "use hgrep"
+	    perl "use dirlist"
 	~endif
 
 	~if &not &equal 0 &sindex $cfgopts "oleauto"
@@ -1193,6 +1190,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.38 1999/12/19 11:50:04 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.39 1999/12/31 12:36:13 kev Exp $
 -----------------------------------
 

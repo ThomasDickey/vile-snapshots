@@ -1,66 +1,19 @@
-#
-#   This script is meant to be used with [x]vile's perl interface to
-#   provide a nifty recursive grep facility complete with hypertext
-#   links.
-#
-#   One of the things which makes it so nifty is that it doesn't
-#   search binary files.  (If you want it to, just search for and
-#   remove the -T in the code below.)  So it's perfectly safe to
-#   just search * in most cases rather than using a restrictive
-#   filter like *.[hc]
-#
-# Installation
-# ------------
-#
-#   Place hgrep.pl, glob2re.pl, and visit.pl in either ~/.vile/perl
-#   or in /usr/local/share/vile/perl.  (The exact location of the
-#   latter may vary depending on how you configured [x]vile.
-#
-# Usage
-# -----
-#
-#   hgrep will be easier to use if the following procedure is defined
-#   in your .vilerc file:
-#
-#   store-procedure hgrep
-#       perl "require 'hgrep.pl'"
-#       perl hgrep
-#	; uncomment next line to use results with error-finder.
-#	; error-buffer $cbufname
-#   ~endm
-#
-#   Once this procedure, is defined, just type
-#
-#	:hgrep
-#
-#   and answer the ensuing questions.
-#
-#   A new buffer will be created with embedded hypertext commands to
-#   vist the places in the files where matched text is found.  These
-#   hypertext commands may be activated by double clicking in xvile
-#   or using the "execute-hypertext-command" command from vile.  (See
-#   the Hypertext section of vile.hlp for some convenient key bindings.)
-#
-# Additional Notes
-# ----------------
-#
-#   As not much has been written about it yet, this module is an
-#   example of how to use the perl interface.
-#
-#				- kev (4/3/1998)
-#
-
-require 'visit.pl';
-
 package hgrep;
 
 use File::Find;
 use English;
 
-require 'glob2re.pl';
+use Visit;
+use Glob2re;
+use Vile::Manual;
+
 require Vile::Exporter;
 @ISA = 'Vile::Exporter';
-%REGISTRY = (hgrep => [ \&hgrep, 'recursive grep' ]);
+%REGISTRY = (hgrep => [ \&hgrep, 'recursive grep' ],
+             'hgrep-help' => [ sub {&manual}, 'manual page for hgrep' ]);
+
+# Make &Visit::visit visible in main
+*main::visit = \&Visit::visit;
 
 my $hgrep_oldspat = '';
 my $hgrep_oldroot = '.';
@@ -148,8 +101,105 @@ sub hgrep {
 	       ->unmark
 	       ->dot(3);
 	# Set up error finder
-	Vile::command("error-buffer " . $resbuf->buffername);
+	my $bufname = $resbuf->buffername;
+	$bufname =~ s/\\/\\\\/g;
+	Vile::command("error-buffer " . $bufname);
     }
 }
 
 1;
+
+__DATA__
+
+=head1 NAME
+
+hgrep - recursive grep with hypertext links
+
+=head1 SYNOPSIS
+
+In .vilerc:
+
+    perl "use hgrep"
+
+In [x]vile:
+
+    :hgrep
+
+and then provide responses to the ensuing prompts.
+
+=head1 DESCRIPTION
+
+The B<hgrep> module is used with [x]vile's perl interface to provide a
+nifty recursive grep facility complete with hypertext links.
+
+One of the things which makes it so nifty is that it doesn't search
+binary files.  (If you want it to, just search for and remove the -T
+in hgrep.pm.) So it's perfectly safe to just search * in most
+cases rather than using a restrictive filter like *.[hc]
+
+Assuming that the hgrep extension has been loaded in your .vilerc
+file (see above), it may be invoked from the editor via
+
+    :hgrep
+
+You will then need to answer questions at three prompts.  The
+first is
+
+    Pattern to search for?
+
+At the prompt, you should enter a regular expression.  Some of
+the more useful patterns are
+
+=over 16
+
+=item string
+
+Search for string.
+
+=item \bword\b
+
+Search for word.  Note that \b indicates a word boundary.
+
+=item (?i)pattern
+
+Search for the specified pattern, but ignore case.
+
+=back
+
+See the perlre man page for more information about Perl regular
+expressions.
+
+The second prompt is
+
+    Directory to search in?
+
+By default, either . (the current working directory) or the last
+directory you entered will be displayed at this prompt.  This
+is the directory hierarchy to be searched.
+
+The third (and final prompt) is
+
+    File name pattern?
+
+This should be a glob expression which indicates the names to search.
+By default it is * which means match all files.  (Only text files as
+indicated by Perl's -T operator are searched however).
+
+Once all three questions have been answered, B<hgrep> will create a
+new buffer in which lines from files where matches occur are listed.
+The highlighted text matching the regular expression is a hypertext
+link which may be used to visit the places in the files corresponding
+to the matched text.  These hypertext commands may be activated by
+double clicking in xvile or using the "execute-hypertext-command"
+command from vile.  (See the Hypertext section of vile.hlp for some
+convenient key bindings.)
+
+The error finder ^X^X (find-next-error) may also be used to quickly
+go to the next match in the list without returning to the B<hgrep>
+buffer.
+
+=head1 AUTHOR
+
+Kevin Buettner
+
+=cut

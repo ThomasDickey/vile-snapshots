@@ -1,26 +1,18 @@
-; $Id: vileperl.rc,v 1.2 1999/12/29 15:44:31 tom Exp $
+; $Id: vileperl.rc,v 1.5 1999/12/31 14:10:12 tom Exp $
 ;
 ; This is a sample script which shows how to initialize the perl scripts
 ; distributed with vile.
 
 ~if &sin $cfgopts "perl"
 
-~if &seq $progname xvile
-	;
-	; Add ':startserv' vile command for starting Vileserv
-	perl "Vile::register 'startserv', 'Vileserv::start', 'Start Edit Server', 'Vileserv.pm'"
-	;
-	; Add ':stopserv' vile command for stopping Vileserv
-	perl "Vile::register 'stopserv', 'Vileserv::stop', 'Stop Edit Server', 'Vileserv.pm'"
-	;
-	; Start Vileserv now...
-	;"startserv" by itself would work, since we registered the name.
-	; But for consistency, use "use":
-	perl "use Vileserv"
-~endif
+~if &not &seq $os "win32"
 
-; Directory browser
-perl "use directory"
+; Add vile edit server
+perl "use Vileserv"	; starts automatically, stops on exit
+
+; Add ':startserv' and ':stopserv' commands to manually control server
+perl "Vile::register 'startserv', \\&Vileserv::start, 'start edit server'"
+perl "Vile::register 'stopserv',  \\&Vileserv::stop,  'stop edit server'"
 
 ; Add spell checker
 perl "use spell"
@@ -28,10 +20,16 @@ perl "use spell"
 ; Add screen lock
 perl "use lock"
 
-store-procedure hgrep
-	perl "use hgrep"
-	perl hgrep
-	error-buffer $cbufname
-~endm
+; Add asynchronous capture
+perl "use capture"
+
+~endif
+
+; Add directory browser
+perl "use directory"
+
+; Add recursive grep
+perl "use hgrep"
+perl "use dirlist"
 
 ~endif

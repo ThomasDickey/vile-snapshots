@@ -27,7 +27,7 @@
 # Consult the macro $(PERL_SCRIPTS) in the file makefile.wnt to ascertain the
 # current list of vile-based perl scripts known to work in a Win32 environment.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/mkprlenv.wnt,v 1.6 1999/12/29 17:17:30 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/mkprlenv.wnt,v 1.7 1999/12/31 16:53:57 tom Exp $
 #
     perl <<
         foreach $$dir (@INC)
@@ -150,13 +150,22 @@
 #
 #               copy win32-compatible perl scripts to user-specified directory
 #
-                @scripts = split ' ', "$(PERL_SCRIPTS)";
+                $$mylist = "$(PERL_SCRIPTS)";
+                $$mylist =~ s@/@\\@g;
+                @scripts = split ' ', "$$mylist";
                 foreach $$file (@scripts)
                 {
-                    $$src  = "perl\\" . $$file;
-                    $$dest = "$$script_dir\\$$file";
+                    $$src  = $$file;
+                    $$dest = "$$root_dir\\$$file";
                     printf "copying $$src -> $$dest...\n";
                     `copy $$src $$dest`;
+                    if ( ! -f $$dest ) {
+                        if ( ! -f $$src ) {
+                                printf "could not find $$src\n";
+                        } else {
+                                printf "could not copy $$dest\n";
+                        }
+                    }
                 }
             }
         }

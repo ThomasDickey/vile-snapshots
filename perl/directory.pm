@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/directory.pm,v 1.1 1999/12/29 14:29:56 bod Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/directory.pm,v 1.2 1999/12/31 17:01:44 tom Exp $
 # (see dir.doc)
 
 package directory;
@@ -7,7 +7,10 @@ require Vile::Exporter;
 @ISA = 'Vile::Exporter';
 %REGISTRY = ('directory' => [ \&dir, 'interactive directory browser' ]);
 
-require 'mime.pl';
+my $os = scalar(Vile->get("\$os"));
+if ($os != "win32") {
+    require 'mime.pl';
+}
 
 sub dir {
     my ($dir) = @_;
@@ -34,16 +37,14 @@ sub dir {
         0,
         0,
         1, # exe
-	9, # non existant symlink
+        9, # non existant symlink
     );
 
     $dir = Vile::mlreply_dir "Directory? ", "." if (! length($dir));
 
     do { print "[Aborted]"; Vile::working($work); return; } if (! defined $dir);
-    chop($cwd = `pwd`);
-    $dir = "$cwd/$dir" if ($dir !~ m!^/!);
+    $dir = scalar(Vile->get("&path full $dir"));
     chdir $dir || do { print "dir: $!\n"; Vile::working($work); return; };
-    chop($dir = `pwd`);
 
     #--------------------------------------------------------------------------
     # Uncomment the following line if you would like the vile current directory
@@ -57,7 +58,11 @@ sub dir {
     foreach $sub (sort readdir(DIR)) {
         my ($mod, $uid, $ind) = (undef, undef, 0);
         do { ($mod, $uid) = (stat($sub))[2,4]; } || do { $ind = 17; };
-        $uid = substr((getpwuid($uid))[0], 0, 8);
+        if ($os == "win32") {
+            ;
+        } else {
+            $uid = substr((getpwuid($uid))[0], 0, 8);
+        }
         if ( ( $mod & 0xF000 ) == 0x4000 ) {
             $ind = (-l $sub ? 10 : $ind);
             push @subdirs, [ $sub, $ind, $mod&0xFFF, $uid];
@@ -119,7 +124,9 @@ sub dir {
             $cb->setregion($i+1+5, $len+2,  $i+1+5, '$$');
             $cb->attribute("bold", "color", $color[$ind]) if ($color[$ind]);
             $cb->setregion($i+1+5, $len+25, $i+1+5, '$$');
-            $cb->attribute("hyper", "perl \"mime::mime(\'$sub\')\"");
+            if ($os != "win32") {
+                $cb->attribute("hyper", "perl \"mime::mime(\'$sub\')\"");
+            }
         } else {
             print $cb "\n";
         }
