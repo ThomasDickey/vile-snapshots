@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.122 1998/02/07 14:22:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.123 1998/04/15 00:04:15 tom Exp $
  *
  */
 
@@ -733,44 +733,18 @@ i don't think this code is safe... */
  * is _much_much_ faster, and I don't have to futz with non-blocking
  * reads...
  */
-#if CC_WATCOM || SYS_OS2
-#define no_isready_c 1 
-#endif
 
-#ifndef no_isready_c
-# ifdef __sgetc
-   /* 386bsd */
-#  define	isready_c(p)	( (p)->_r > 0)
-# else
-#  ifdef _STDIO_UCHAR_
-	/* C E Chew's package */
-#   define 	isready_c(p)	( (p)->__rptr < (p)->__rend)
-#  else
-#   if defined(_G_FOPEN_MAX) || defined(_G_config_h)
-	/* two versions of GNU iostream/stdio library */
-#     if _IO_STDIO
-#      define   isready_c(p)    ( (p)->_IO_read_ptr < (p)->_IO_read_end)
-#     else
-#      define 	isready_c(p)	( (p)->_gptr < (p)->_egptr)
-#     endif
-#   else
-#    if SYS_VMS
-#     define	isready_c(p)	( (*p)->_cnt > 0)
-#    endif
-#    if CC_TURBO
-#     define    isready_c(p)	( (p)->bsize > ((p)->curp - (p)->buffer) )
-#    endif
-#    if SYS_OS2_EMX
-#     define	isready_c(p)	( (p)->_rcount > 0)
-#    endif
-#    ifndef isready_c	/* most other stdio's (?) */
-#     define	isready_c(p)	( (p)->_cnt > 0)
-#    endif
-#   endif
+#ifndef isready_c
+#  if SYS_VMS
+#    define	isready_c(p)	( (*p)->_cnt > 0)
 #  endif
-# endif
+#  if CC_TURBO
+#    define	isready_c(p)	( (p)->bsize > ((p)->curp - (p)->buffer) )
+#  endif
+#  if SYS_OS2_EMX
+#    define	isready_c(p)	( (p)->_rcount > 0)
+#  endif
 #endif
-
 
 int
 ffhasdata(void)

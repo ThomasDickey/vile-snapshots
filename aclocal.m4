@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.52 1998/04/12 18:10:16 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.53 1998/04/15 00:18:06 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -405,6 +405,36 @@ linux*) # Suse Linux does not follow /usr/lib convention
 	$1="[$]$1 /lib"
 	;;
 esac
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Test for the common variations of stdio structures that we can use to
+dnl test if a character is available for reading.
+AC_DEFUN([CF_FP_ISREADY],
+[
+AC_CACHE_CHECK(for file-pointer ready definition,
+cf_cv_fp_isready,[
+cf_cv_fp_isready=none
+while true
+do
+	read definition
+	echo "test-compile $definition" 1>&AC_FD_CC
+	AC_TRY_COMPILE([
+#include <stdio.h>
+#define isready_c(p) $definition
+],[int x = isready_c(stdin)],
+	[cf_cv_fp_isready="$definition"
+	 break])
+done <<'CF_EOF'
+( (p)->_r > 0)
+( (p)->__rptr < (p)->__rend)
+( (p)->_IO_read_ptr < (p)->_IO_read_end)
+( (p)->_gptr < (p)->_egptr)
+( (p)->_rcount > 0)
+( (p)->_cnt > 0)
+( (p)->__cnt > 0)
+CF_EOF
+])
+test "$cf_cv_fp_isready" != none && AC_DEFINE_UNQUOTED(isready_c(p),$cf_cv_fp_isready)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Test for availability of useful gcc __attribute__ directives to quiet

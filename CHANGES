@@ -1,5 +1,26 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (tom) 980414 (s)
+ 	+ correct change to dofile in 7.3o, which caused vile to discard
+	  the startup file after processing it if it were specified on the
+	  command-line (reported by Sean Ahern, some input by Brendan O'Dea).
+	+ modify configure script, adding test for stdio structs that control
+	  the isready_c macro, making this handle the case for SCO UW ver 7
+	  (requested by Clark Morgan).
+	+ modify configure script to add Perl's link-prefix (patch by Brendan
+	  O'Dea).
+	> patch by Clark Morgan:
+	+ turn OPT_W32PIPES on (I modified to condition it on SYS_WINNT).
+	+ add entry to error finder to support perl 5 diagnostics 
+	+ create temporary filenames in w32pipe.c with an API that
+	  preferentially honors the current settings of TMP and TEMP. 
+	+ add back Win32-specific comments to c-filt.c  
+	+ fix a bug in c-filt.c that caused coloring to go south if a string
+	  literal ended with \\.  E.g., the statement: 
+		char *x = "\\"; 
+	  would cause almost all syntax coloring following this var declaration
+	  to fail. 
+
  (tom) 980412 (r)
  	+ modify configure script and makefile.in to allow for DOS-style
 	  suffixes (e.g., ".exe"), needed for OS/2 EMX.

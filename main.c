@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.312 1998/04/12 20:11:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.313 1998/04/14 23:28:22 tom Exp $
  *
  */
 
@@ -468,30 +468,7 @@ MainProgram(int argc, char *argv[])
 				(void)zotbuf(vbp);
 			}
 		} else {  /* find and run .vilerc */
-			char *fname;
-			/* if .vilerc is one of the input files....
-					don't clobber it */
-#if SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
-			/* search PATH for vilerc under dos */
-			fname = flook(startup_file, FL_ANYWHERE|FL_READABLE);
-			if (!fname)
-				fname = startup_file;
-#else
-			fname = startup_file;
-#endif
-			if (firstbp != 0
-			 && eql_bname(firstbp, startup_file)) {
-				char c;
-				c = firstbp->b_bname[0];
-				firstbp->b_bname[0] = SCRTCH_LEFT[0];
-				startstat = startup(fname);
-				firstbp->b_bname[0] = c;
-			} else {
-				if (fname)
-					startstat = startup(fname);
-				else
-					startstat = TRUE;
-			}
+			startstat = startup(startup_file);
 			if (startstat != TRUE)
 				goto begin;
 		}

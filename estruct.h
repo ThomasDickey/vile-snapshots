@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.342 1998/04/12 19:04:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.343 1998/04/15 09:59:19 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -406,7 +406,7 @@
 				   stuttered in real vi, I prefer them not
 				   to be */
 #define OPT_ICURSOR	0	/* use an insertion cursor if possible */
-#define OPT_W32PIPES    0	/* SYS_WINNT: pipes (experimental) */
+#define OPT_W32PIPES    SYS_WINNT /* Win32 pipes */
 
 #ifndef OPT_EXEC_MACROS		/* total numbered macros (see mktbls.c) */
 #if SMALLER

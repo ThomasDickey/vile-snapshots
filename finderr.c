@@ -2,7 +2,7 @@
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  * rewritten to use regular expressions, 1995 by T.Dickey (dickey@clark.net)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.67 1998/03/18 01:53:40 finken Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.68 1998/04/15 10:56:09 tom Exp $
  *
  */
 
@@ -85,9 +85,9 @@ char *const predefined[] = {
 	"[^ ]\\+ [^ ]\\+ \"%[^, \t\"]\", line %L",
 	"[^ ]\\+ [^ ]\\+ %[^, \t], line %L",
 	"[^ ]\\+ \"%[^\"]\", line %L",			/* HP/UX C compiler */
-#if defined(_AIX) 
-	"^\"%[^\" \t]\", line %L\\.[0-9]\\+:%T",	/* AIX C compilers */ 
-#endif 
+#if defined(_AIX)
+	"^\"%[^\" \t]\", line %L\\.[0-9]\\+:%T",	/* AIX C compilers */
+#endif
 #if defined(clipper) || defined(__clipper__)
 	"^\"%[^\" \t]\", line %L (col. [0-9]\\+):%T",	/* CLIX C compiler */
 #endif
@@ -109,7 +109,8 @@ char *const predefined[] = {
 	"^%[^(](%L): %T",
 #endif
 	"^%B:%L:%T",					/* "pp" in scratch buf*/
-	"^[^:]\\+: %V directory `%[^']'"		/* GNU make */
+	"^[^:]\\+: %V directory `%[^']'",		/* GNU make */
+	"%T at %F line %L.*",		/* perl 5 */
 	};
 
 static	ERR_PATTERN *	exp_table = 0;
