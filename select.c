@@ -18,7 +18,7 @@
  * transfering the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.59 1998/03/30 10:15:53 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.60 1998/04/04 12:11:58 kev Exp $
  *
  */
 
@@ -54,6 +54,9 @@ static BUFFER *	startbufp = NULL;
 static AREGION	startregion;
 static BUFFER *	selbufp = NULL;
 static AREGION	selregion;
+#if OPT_HYPERTEXT 
+static char *	hypercmd; 
+#endif 
 
 typedef enum { ORIG_FIXED, END_FIXED, UNFIXED } WHICHEND;
 
@@ -66,6 +69,11 @@ free_attribs(BUFFER *bp)
     p = bp->b_attribs;
     while (p != NULL) {
 	q = p->ar_next;
+#if OPT_HYPERTEXT 
+	if (p->ar_hypercmd) 
+	    free(p->ar_hypercmd); 
+	    p->ar_hypercmd = 0; 
+#endif 
 	if (p == &selregion)
 	    selbufp = NULL;
 	else if (p == &startregion)
@@ -81,6 +89,12 @@ void
 free_attrib(BUFFER *bp, AREGION *ap)
 {
     detach_attrib(bp, ap);
+#if OPT_HYPERTEXT 
+    if (ap->ar_hypercmd) { 
+	free(ap->ar_hypercmd); 
+	ap->ar_hypercmd = 0; 
+    } 
+#endif 
     if (ap == &selregion)
 	selbufp = NULL;
     else if (ap == &startregion)
@@ -195,6 +209,9 @@ sel_begin(void)
     plus_region.o += 1;
     startregion.ar_vattr = 0;
     startregion.ar_shape = EXACT;
+#if OPT_HYPERTEXT 
+    startregion.ar_hypercmd = 0; 
+#endif 
     startbufp = curwp->w_bufp;
     attach_attrib(startbufp, &startregion);
     whichend = UNFIXED;
@@ -537,6 +554,9 @@ selectregion(void)
 	    selregion.ar_region = region;
 	    selregion.ar_vattr = VASEL | VOWN_SELECT;
 	    selregion.ar_shape = regionshape;
+#if OPT_HYPERTEXT 
+	    selregion.ar_hypercmd = 0; 
+#endif 
 	    attach_attrib(selbufp, &selregion);
 	    OWN_SELECTION();
 	}
@@ -692,7 +712,12 @@ attributeregion(void)
 	AREGION *	arp;
 
 	if ((status = getregion(&region)) == TRUE) {
-	    if (VATTRIB(videoattribute) != 0) {	/* add new attribute-region */
+	    if (VATTRIB(videoattribute) != 0 
+#if OPT_HYPERTEXT 
+	        || hypercmd != 0)  
+#endif 
+	    { 
+		/* add new attribute-region */ 
 		if ((arp = typealloc(AREGION)) == NULL) {
 		    (void)no_memory("AREGION");
 		    return FALSE;
@@ -700,6 +725,10 @@ attributeregion(void)
 	    	arp->ar_region = region;
 	    	arp->ar_vattr = videoattribute; /* include ownership */
 	    	arp->ar_shape = regionshape;
+#if OPT_HYPERTEXT 
+		arp->ar_hypercmd = hypercmd;	/* already malloc'd for us */ 
+		hypercmd = 0;			/* reset it for future calls */ 
+#endif 
 	    	attach_attrib(curbp, arp);
 	    } else { /* purge attributes in this region */
 		L_NUM first = line_no(curbp, region.r_orig.l);
@@ -784,6 +813,93 @@ operattrul(int f, int n)
       return vile_op(f,n,attributeregion,"Set underline attribute");
 }
   
+#if OPT_HYPERTEXT 
+int 
+attributehyperregion(void) 
+{ 
+    char line[NLINE]; 
+    int  status; 
+ 
+    line[0] = 0; 
+    status = mlreply_no_opts("Hypertext Command: ", line, NLINE); 
+ 
+    if (status != TRUE) 
+	return status; 
+ 
+    hypercmd = strmalloc(line); 
+    attributeregion(); 
+} 
+ 
+int 
+operattrhc(int f, int n) 
+{ 
+    opcmd = OPOTHER; 
+    videoattribute = 0; 
+    return vile_op(f,n,attributehyperregion,"Set hypertext command"); 
+} 
+ 
+static int 
+hyperspray(int (*f)(char *)) 
+{ 
+    L_NUM    dlno; 
+    int      doff; 
+    AREGION *p; 
+    int count = 0; 
+ 
+    (void) bsizes(curbp);		/* attach line numbers to each line */ 
+ 
+    dlno = DOT.l->l_number; 
+    doff = DOT.o; 
+ 
+    for (p = curbp->b_attribs; p != 0; p = p->ar_next) { 
+	if (p->ar_hypercmd) { 
+	    int slno, elno, soff, eoff; 
+ 
+	    slno = p->ar_region.r_orig.l->l_number; 
+	    elno = p->ar_region.r_end.l->l_number; 
+	    soff = p->ar_region.r_orig.o; 
+	    eoff = p->ar_region.r_end.o; 
+ 
+	    if (   ((slno == dlno && doff >= soff) || dlno > slno) 
+	        && ((elno == dlno && doff <  eoff) || dlno < elno) ) 
+	    { 
+		f(p->ar_hypercmd); 
+		count++; 
+	    } 
+	} 
+    } 
+    return count; 
+} 
+ 
+static int 
+doexechypercmd(char *cmd) 
+{ 
+    return docmd(cmd,FALSE,1); 
+} 
+ 
+int 
+exechypercmd(int f, int n) 
+{ 
+    int count; 
+    count = hyperspray(doexechypercmd); 
+    return count != 0; 
+} 
+ 
+static int 
+doshowhypercmd(char *cmd) 
+{ 
+    mlforce("%s",cmd); 
+    return 1; 
+} 
+ 
+int 
+showhypercmd(int f, int n) 
+{ 
+    int count; 
+    count = hyperspray(doshowhypercmd); 
+    return count != 0; 
+} 
+#endif 
 
 int
 operattrcaseq(int f, int n)
@@ -887,6 +1003,24 @@ start_scan:
 			case 'B' : videoattribute |= VABOLD; break;
 			case 'R' : videoattribute |= VAREV;  break;
 			case 'I' : videoattribute |= VAITAL; break;
+#if OPT_HYPERTEXT 
+			case 'H' : { 
+			    int save_offset = offset; 
+			    offset++; 
+			    while (offset < llength(DOT.l)  
+			        && lgetc(DOT.l,offset) != 0) 
+				offset++; 
+			    if (offset < llength(DOT.l)) { 
+				hypercmd = strdup(&DOT.l->l_text[save_offset+1]); 
+			    } 
+			    else { 
+				/* Bad hypertext string... skip it */ 
+				offset = save_offset; 
+			    } 
+ 
+			    break; 
+			} 
+#endif 
 			case ':' : offset++;
 			    if (offset < llength(DOT.l)
 			     && lgetc(DOT.l, offset) == CONTROL_A) {
@@ -912,7 +1046,7 @@ attribute_found:
 		MK.o += count;
 		if (MK.o > llength(DOT.l))
 		    MK.o = llength(DOT.l);
-		if (VATTRIB(videoattribute))
+		if (VATTRIB(videoattribute) || hypercmd != 0) 
 		    (void) attributeregion();
 	    }
 	    DOT.o++;

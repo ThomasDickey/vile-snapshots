@@ -457,6 +457,33 @@ api_edit(SCR *sp, char *fname, SCR **retspp, int newscreen)
 int
 api_swscreen(SCR *oldsp, SCR *newsp)
 {
+    /*  
+     * FIXME: Calling api_command_cleanup nukes various state, like DOT 
+     * Now if DOT got propogated, all is (likely) well.  But if it didn't, 
+     * then DOT will likely be in the wrong place if the executing perl 
+     * script expects to access a buffer on either side of a switchscreen 
+     * call. 
+     * 
+     * I see two different solutions for this.  1) Maintain a copy of 
+     * dot in the SCR structure. 2) Don't destroy the fake windows by 
+     * popping them off.  Which means that we either teach the rest 
+     * of vile about fake windows (scary) or we temporarily unlink the 
+     * fake windows from the buffer list. 
+     * 
+     * I'm in favor of temporarily unlinking the fake windows from 
+     * the buffer list.  The only problem with this is that the unlinked  
+     * window's version of DOT is not iterated over in do_mark_iterate. 
+     * (Probably won't be a problem that often, but we need to account 
+     * for it.) 
+     * 
+     * So... I guess we could maintain a separate structure which 
+     * has the unlinked window pointers.  And then api_mark_iterate 
+     * could walk these.  (Yuck.) 
+     * 
+     * Anyhow, there's a lot of issues here requiring careful 
+     * consideration.  Which is why I haven't already done it. 
+     *		- kev 4/3/1998 
+     */ 
     api_command_cleanup();		/* pop the fake windows */
 
     swbuffer(sp2bp(oldsp));
@@ -496,7 +523,9 @@ api_command_cleanup(void)
 		int found = 0; 
 		WINDOW *pwp; 
 		for_each_window(pwp) { 
-		    if (wp->w_bufp == pwp->w_bufp) { 
+		    if (wp->w_bufp == pwp->w_bufp 
+		        && !is_fake_win(pwp)) 
+		    { 
 			found = 1; 
 			pwp->w_dot = wp->w_dot; 
 			pwp->w_flag |= WFHARD; 

@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.340 1998/03/31 23:28:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.341 1998/04/04 12:11:58 kev Exp $
  */
 
 #ifndef _estruct_h
@@ -472,6 +472,7 @@
 /* selections and attributed regions */
 #define OPT_VIDEO_ATTRS !SMALLER
 #define OPT_SELECTIONS  OPT_VIDEO_ATTRS
+#define OPT_HYPERTEXT	OPT_VIDEO_ATTRS 
 
 /* OPT_PSCREEN permits a direct interface to the pscreen data structure
  * in display.c. This allows us to avoid storing the screen data on the
@@ -1389,6 +1390,9 @@ typedef struct _aregion {
 	REGION		ar_region;
 	VIDEO_ATTR	ar_vattr;
 	REGIONSHAPE	ar_shape;
+#if OPT_HYPERTEXT 
+	char *		ar_hypercmd; 
+#endif 
 }	AREGION;
 
 typedef	struct {
