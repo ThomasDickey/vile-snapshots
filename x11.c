@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.152 1997/05/07 11:05:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.153 1997/05/09 01:21:09 tom Exp $
  *
  */
 
@@ -4694,7 +4694,12 @@ x_configure_window(
 		XtNheight,	&cur_win->top_height,
 		XtNwidth,	&cur_win->top_width,
 		NULL);
-
+#if ATHENA_WIDGETS
+	XtVaGetValues(cur_win->menu_widget,
+		XtNheight,	&cur_win->menu_height,
+		XtNwidth,	&new_width,
+		NULL);
+#endif
 	XtVaGetValues(cur_win->screen,
 		XtNheight,	&new_height,
 		XtNwidth,	&new_width,
