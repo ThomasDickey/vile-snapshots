@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.10 1999/04/14 11:01:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.11 1999/04/20 01:17:05 cmorgan Exp $
  */
 
 #include	"estruct.h"
@@ -973,6 +973,7 @@ int var_TITLE(char *rp, const char *vp)
 {
 	if (rp) {
 		strcpy(rp, w32_wdw_title());
+		return TRUE;
 	} else if (vp) {
 		term.title((char *) vp);
 		return TRUE;

@@ -1,5 +1,14 @@
 Changes for vile 8.3 (released ??? ??? ??, 1998)
 
+(tom) 990420 (u)
+	+ add 32x32 monochome versions of the .ico files, for completeness
+	  because automatically generated versions do not work well for color
+	  icons.
+	+ improved vile.ico by adding 16x16 section (Rick Sladkey).
+	+ correct reversed logic for no_msgs variable in perl.xs, from
+	  8.2s changes (reported by Ed Henderson).
+	+ correct missing return in var_TITLE() on win32 (Clark Morgan).
+
 (tom) 990418 (t)
 	+ add configure option --with-xpm, to support color icons in xvile.
 	  Not all window managers support xpm icons.
