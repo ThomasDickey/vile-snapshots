@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.229 1996/10/17 10:44:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.230 1996/12/09 01:18:26 tom Exp $
  *
  */
 
@@ -451,6 +451,7 @@ extern void npflush (void);
 /* oneliner.c */
 extern int llineregion (void);
 extern int plineregion (void);
+extern int pplineregion (void);
 extern int substregion (void);
 extern int subst_again_region (void);
 

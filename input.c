@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.154 1996/11/17 15:59:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.155 1996/12/09 00:50:54 tom Exp $
  *
  */
 
@@ -505,6 +505,16 @@ tgetc(int quoted)
 		not_interrupted();
 		if (setjmp(read_jmp_buf)) {
 			c = kcod2key(intrc);
+    			TRACE(("setjmp/getc:%c (%#x)\n", c, c))
+#ifdef linux
+			/*
+			 * Linux bug (observed with kernels 1.2.13 & 2.0.0): 
+			 * when interrupted, the _next_ character that
+			 * getchar() returns will be the same as the last
+			 * character before the interrupt.  Eat it.
+			 */
+			(void)ttgetc();
+#endif
 		} else {
 			doing_kbd_read = TRUE;
 			do { /* if it's sysV style signals,

@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.318 1996/11/17 23:33:09 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.319 1996/12/09 00:55:17 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -439,13 +439,6 @@ xvile:
 
 ----------------------------
 
-on the first attempt to insert a quoted ^C (i.e. ^V^C) it works, but also
-quotes the next character (e.g. the ESC).  after the first time, ^C doesn't
-work anymore.  (this seems to be linux-specific, even on a 1.2.13 kernel)
-it's not getting the later SIGINT's at all.
-
-------------------------
-
 under DOS, ^P character turns on the printer.   argh.
 actually, this only happens if compiled with borland.  it uses getch()
 instead of intdos() to get the char.  (see ttgetc())  that's probably
@@ -738,11 +731,6 @@ vim has a "textwidth" mode, which functions exactly like wrapmargin, except
 that it is measured from the left.  this prevents line length from changing
 when the screen is resized, a drawback of wrapmargin.  i propose eliminating
 fillcol, and introducing textwidth.
-------------
-
-  If there is a file called XVile in /usr/X11/lib/X11/app-defaults
-  then the scroll bar in the xvile(build the --with-screen=x11) does
-  not work.  If this file is removed, then the scrollbar works find.
 
 --------------------------------------
 
@@ -947,5 +935,3 @@ on time taken to do the search...
  > only paramater set.  I unzipped them with infozip's unzipper instead
  > of pkunzip, and this became a read-only attribute on the vile.hlp
  > file.  If this is set, vile.exe can't find it.
-      
-

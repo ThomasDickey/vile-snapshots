@@ -11,13 +11,9 @@
  *
  *		pgf, 11/91
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.60 1996/10/19 11:53:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.61 1996/12/09 00:00:54 tom Exp $
  *
  */
-
-#if OPT_TRACE
-/* #define REGDEBUG  1 */
-#endif
 
 /*
  * regcomp and regexec -- regsub and regerror are elsewhere
@@ -46,6 +42,10 @@
 
 #include "estruct.h"
 #include "edef.h"
+
+#if OPT_TRACE
+/* #define REGDEBUG  1 */
+#endif
 
 #undef PLUS  /* vile conflict */
 
@@ -1519,9 +1519,9 @@ regdump(regexp *r)
 		TRACE(("%2d%s", s-r->program, regprop(s))); /* Where, what. */
 		next = regnext(s);
 		if (next == NULL)		/* Next ptr. */
-			TRACE(("(0)"));
+			TRACE(("(0)"))
 		else
-			TRACE(("(%d)", (s-r->program)+(next-s)));
+			TRACE(("(%d)", (s-r->program)+(next-s)))
 		s += 3;
 		if (op == ANYOF || op == ANYBUT || op == EXACTLY) {
 			/* Literal string, where present. */
