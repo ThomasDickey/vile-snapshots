@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.13 2001/01/19 01:46:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.15 2001/12/30 20:30:54 tom Exp $
  */
 
 #include	"estruct.h"
@@ -164,7 +164,7 @@ initialize(void)
 	if (!NO_CAP(seq)) {
 	    int len;
 	    TRACE(("TGETSTR(%s) = %s\n", keyseqs[i].capname,
-		    visible_buff(seq, strlen(seq), FALSE)));
+		   visible_buff(seq, strlen(seq), FALSE)));
 #define DONT_MAP_DEL 1
 #if DONT_MAP_DEL
 	    /* NetBSD, FreeBSD, etc. have the kD (delete) function key
@@ -424,12 +424,12 @@ curs_attr(UINT attr)
 
 static void
 curs_rev(			/* change reverse video status */
-    UINT state)
+	    UINT state)
 {				/* FALSE = normal video, TRUE = reverse video */
     if (state) {
 	standout();
     } else {
-	nostandend();
+	standend();
     }
 }
 

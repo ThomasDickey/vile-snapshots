@@ -2,9 +2,9 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.4 2001/03/27 21:51:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.5 2001/12/26 20:49:13 tom Exp $
  *
- * Filter to add vile "attribution" sequences to selected bits of Basic 
+ * Filter to add vile "attribution" sequences to selected bits of Basic
  * input text.
  *
  * Notes:

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.485 2001/12/23 18:42:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.487 2001/12/30 21:27:38 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -588,8 +588,9 @@
 #define OPT_PARAMTYPES_CHOICES   OPT_MACRO_ARGS
 #define OPT_PATH_CHOICES         !SMALLER
 #define OPT_POPUP_CHOICES	 (OPT_ENUM_MODES && OPT_POPUPCHOICE)
-#define OPT_RECORDSEP_CHOICES    !SMALLER
 #define OPT_RECORDFORMAT_CHOICES (OPT_ENUM_MODES && SYS_VMS)
+#define OPT_RECORDSEP_CHOICES    !SMALLER
+#define OPT_SHOWFORMAT_CHOICES   !SMALLER
 #define OPT_VIDEOATTRS_CHOICES   (OPT_ENUM_MODES && OPT_COLOR_SCHEMES)
 #define OPT_VTFLASHSEQ_CHOICES   (OPT_ENUM_MODES && VTFLASH_HOST && OPT_FLASH)
 
@@ -1036,6 +1037,13 @@ typedef enum {
 #else
 #define RS_DEFAULT RS_LF
 #endif
+
+typedef enum {
+	SF_NEVER = 0
+	, SF_ALWAYS
+	, SF_DIFFERS
+	, SF_LOCAL
+} SHOW_FORMAT;
 
 /* cfg_locate options */
 #define FL_EXECABLE  iBIT(0)	/* maps to X_OK */

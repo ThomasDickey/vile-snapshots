@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.238 2001/12/21 12:36:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.239 2001/12/26 23:19:35 tom Exp $
  *
  */
 
@@ -172,7 +172,11 @@ execute_named_command(int f, int n)
     last_DOT = DOT;
 
     /* prompt the user to type a named command */
+#ifdef SMALLER
+    mlprompt(": ");
+#else
     mlprompt(tb_values(prompt_string));
+#endif
 
     /* and now get the function name to execute */
     for_ever {

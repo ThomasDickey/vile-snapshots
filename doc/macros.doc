@@ -807,6 +807,10 @@ Functions
 					For example, a &query that is aborted
 					will return an ERROR result.
 
+	    &stoken "T" "D" "S"     Is token "T" in string "S", given
+				    delimiters "D"?
+
+
 	Miscellaneous functions --
 
 	  These all return string values:
@@ -885,6 +889,9 @@ Functions
 
 	    &token  "N" "D" "S"     Select N'th token of string "S", given
 				    delimiters "D".
+
+	    &translate  "F" "T" "S" Translate from "F" to "T" each character
+				    of string "S".
 
 	    &word   "N" "S"	    Select N'th word of string "S", blank
 				    separated.
@@ -1404,6 +1411,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.78 2001/12/21 12:24:54 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.79 2001/12/30 16:34:14 tom Exp $
 -----------------------------------
 

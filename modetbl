@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.201 2001/12/24 01:20:46 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.204 2001/12/30 21:29:55 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -121,6 +121,7 @@ bool							# MD prefix
 enum
 	"record-format" RECORD_FORMAT	0		SYS_VMS	# specify record-format to use
 	"RecordSeparator" RECORD_SEP	chgd_rs		# record-separator affects dos/unix modes
+	"ShowFormat"	SHOW_FORMAT	chgd_window	# show record-separator
 	"visual-matches"  HILITEMATCH	chgd_hilite	OPT_HILITEMATCH # highlight all search matches
 int							# VAL_ prefix
 	"AutoColor"	AUTOCOLOR	0		OPT_COLOR&&!SMALLER # auto color
@@ -297,9 +298,9 @@ string
 "divide"	DIV		2|NUM|NRET	# division
 "dquery"	DQUERY		2|STR|SRET	# query the user, given default value
 "env"		ENV		1|STR|SRET	# retrieve a system environment var
+"equal"		EQUAL		2|NUM|BRET	# logical equality check
 "error"		ERROR		1|STR|BRET	# check if parameter was the ERROR token
 "execable"	EXECABLE	1|BRET		# is a file executable?
-"equal"		EQUAL		2|NUM|BRET	# logical equality check
 "filter"	FILTER		1|STR|BRET	# check if internal filter exists
 "ftime"		FTIME		1|STR|NRET	# file-timestamp (last-modified)
 "global"	GLOBMODE	1|STR|SRET	# retrieve global setting
@@ -334,9 +335,11 @@ string
 "sindex"	SINDEX		2|NRET		# find the index of one string in another
 "sless"		SLESS		2|BRET		# string logical less than
 "stime"		STIME		0|NRET		# system-timestamp
+"stoken"	STOKEN		3|BRET		# find a token in a string, given delims
 "subtract"	SUB		2|NUM|NRET	# subtraction
 "times"		TIMES		2|NUM|NRET	# multiplication
 "token"		TOKEN		3|STR|SRET	# select n'th token of string, given delims
+"translate"	TRANS		3|STR|SRET	# translate string, changing chars from 2nd to 3rd param
 "trim"		TRIM		1|STR|SRET	# trims leading/trailing/repeated whitespace
 "upper"		UPPER		1|STR|SRET	# uppercase string
 "word"		WORD		2|STR|SRET	# select n'th word of string
@@ -499,6 +502,12 @@ string
 "cr"		RS_CR
 "crlf"		RS_CRLF
 "lf"		RS_LF
+
+.table showformat
+"always"	SF_ALWAYS
+"differs"	SF_DIFFERS
+"local"		SF_LOCAL
+"never"		SF_NEVER
 
 .table videoattrs		OPT_COLOR
 "bold"		VABOLD

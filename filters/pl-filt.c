@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.21 2001/12/13 00:00:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.23 2001/12/30 15:53:51 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -159,6 +159,7 @@ is_QIDENT(char *s)
 	ch = CharOf(*s);
 	if (isalpha(ch)
 	    || (s != base && isdigit(CharOf(ch)))
+	    || ch == ESC
 	    || ch == '_'
 	    || ch == SQUOTE
 	    || ch == DQUOTE)
@@ -417,7 +418,7 @@ begin_HERE(char *s, int *quoted)
 	    s += ok;
 	    *quoted = 0;
 	    while (base != s) {
-		if (*base != SQUOTE && *base != DQUOTE)
+		if (*base != SQUOTE && *base != DQUOTE && *base != ESC)
 		    *d++ = *base;
 		else
 		    *quoted = 1;

@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.103 2001/12/16 23:01:11 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.105 2001/12/30 19:12:21 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -13,25 +13,39 @@ AC_PREREQ_CANON(AC_PREREQ_SPLIT(AC_ACVERSION)),
 AC_PREREQ_CANON(AC_PREREQ_SPLIT([$1])), [$1], [$2], [$3])])dnl
 dnl ---------------------------------------------------------------------------
 dnl Copy non-preprocessor flags to $CFLAGS, preprocessor flags to $CPPFLAGS
+dnl The second parameter if given makes this macro verbose.
 AC_DEFUN([CF_ADD_CFLAGS],
 [
+cf_new_cflags=
+cf_new_cppflags=
 for cf_add_cflags in $1
 do
 	case $cf_add_cflags in #(vi
 	-undef|-nostdinc*|-I*|-D*|-U*|-E|-P|-C) #(vi
 		case "$CPPFLAGS" in
-		*$cf_add_cflags)
+		*$cf_add_cflags) #(vi
 			;;
-		*)
-			CPPFLAGS="$CPPFLAGS $cf_add_cflags"
+		*) #(vi
+			cf_new_cppflags="$cf_new_cppflags $cf_add_cflags"
 			;;
 		esac
 		;;
 	*)
-		CFLAGS="$CFLAGS $cf_add_cflags"
+		cf_new_cflags="$cf_new_cflags $cf_add_cflags"
 		;;
 	esac
 done
+
+if test -n "$cf_new_cflags" ; then
+	ifelse($2,,,[CF_VERBOSE(add to \$CFLAGS $cf_new_cflags)])
+	CFLAGS="$CFLAGS $cf_new_cflags"
+fi
+
+if test -n "$cf_new_cppflags" ; then
+	ifelse($2,,,[CF_VERBOSE(add to \$CPPFLAGS $cf_new_cppflags)])
+	CPPFLAGS="$CPPFLAGS $cf_new_cppflags"
+fi
+
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Add an include-directory to $CPPFLAGS.  Don't add /usr/include, since it's
@@ -61,8 +75,7 @@ dnl This is adapted from the macros 'fp_PROG_CC_STDC' and 'fp_C_PROTOTYPES'
 dnl in the sharutils 4.2 distribution.
 AC_DEFUN([CF_ANSI_CC_CHECK],
 [
-AC_MSG_CHECKING(for ${CC-cc} option to accept ANSI C)
-AC_CACHE_VAL(cf_cv_ansi_cc,[
+AC_CACHE_CHECK(for ${CC-cc} option to accept ANSI C, cf_cv_ansi_cc,[
 cf_cv_ansi_cc=no
 cf_save_CFLAGS="$CFLAGS"
 cf_save_CPPFLAGS="$CPPFLAGS"
@@ -98,7 +111,6 @@ done
 CFLAGS="$cf_save_CFLAGS"
 CPPFLAGS="$cf_save_CPPFLAGS"
 ])
-AC_MSG_RESULT($cf_cv_ansi_cc)
 
 if test "$cf_cv_ansi_cc" != "no"; then
 if test ".$cf_cv_ansi_cc" != ".-DCC_HAS_PROTOS"; then
@@ -128,8 +140,7 @@ dnl ---------------------------------------------------------------------------
 dnl Test if we should use ANSI-style prototype for qsort's compare-function
 AC_DEFUN([CF_ANSI_QSORT],
 [
-AC_MSG_CHECKING([for standard qsort])
-AC_CACHE_VAL(cf_cv_ansi_qsort,[
+AC_CACHE_CHECK(for standard qsort, cf_cv_ansi_qsort,[
 	AC_TRY_COMPILE([
 #if HAVE_STDLIB_H
 #include <stdlib.h>
@@ -141,7 +152,7 @@ AC_CACHE_VAL(cf_cv_ansi_qsort,[
 	[cf_cv_ansi_qsort=yes],
 	[cf_cv_ansi_qsort=no])
 ])
-AC_MSG_RESULT($cf_cv_ansi_qsort)
+
 if test $cf_cv_ansi_qsort = yes; then
 	AC_DEFINE(ANSI_QSORT,1)
 else
@@ -225,7 +236,7 @@ test -n "$system_name" && AC_DEFINE_UNQUOTED(SYSTEM_NAME,"$system_name")
 AC_CACHE_VAL(cf_cv_system_name,[cf_cv_system_name="$system_name"])
 
 test -z "$system_name" && system_name="$cf_cv_system_name"
-test -n "$cf_cv_system_name" && AC_MSG_RESULT("Configuring for $cf_cv_system_name")
+test -n "$cf_cv_system_name" && AC_MSG_RESULT(Configuring for $cf_cv_system_name)
 
 if test ".$system_name" != ".$cf_cv_system_name" ; then
 	AC_MSG_RESULT(Cached system name ($system_name) does not agree with actual ($cf_cv_system_name))
@@ -233,18 +244,34 @@ if test ".$system_name" != ".$cf_cv_system_name" ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl Conditionally add to $CFLAGS and $CPPFLAGS values which are derived from
+dnl a build-configuration such as imake.  These have the pitfall that they
+dnl often contain compiler-specific options which we cannot use, mixed with
+dnl preprocessor options that we usually can.
+AC_DEFUN([CF_CHECK_CFLAGS],
+[
+CF_VERBOSE(checking additions to CFLAGS)
+cf_check_cflags="$CFLAGS"
+cf_check_cppflags="$CPPFLAGS"
+CF_ADD_CFLAGS($1,yes)
+if test "$cf_check_cflags" != "$CFLAGS" ; then
+AC_TRY_LINK([#include <stdio.h>],[printf("Hello world");],,
+	[CF_VERBOSE(test-compile failed.  Undoing change to \$CFLAGS)
+	 if test "$cf_check_cppflags" != "$CPPFLAGS" ; then
+		 CF_VERBOSE(but keeping change to \$CPPFLAGS)
+	 fi
+	 CFLAGS="$cf_check_flags"])
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl Check for data that is usually declared in <stdio.h> or <errno.h>, e.g.,
 dnl the 'errno' variable.  Define a DECL_xxx symbol if we must declare it
 dnl ourselves.
 dnl
-dnl (I would use AC_CACHE_CHECK here, but it will not work when called in a
-dnl loop from CF_SYS_ERRLIST).
-dnl
 dnl $1 = the name to check
 AC_DEFUN([CF_CHECK_ERRNO],
 [
-AC_MSG_CHECKING(if external $1 is declared)
-AC_CACHE_VAL(cf_cv_dcl_$1,[
+AC_CACHE_CHECK(if external $1 is declared, cf_cv_dcl_$1,[
     AC_TRY_COMPILE([
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
@@ -253,16 +280,12 @@ AC_CACHE_VAL(cf_cv_dcl_$1,[
 #include <sys/types.h>
 #include <errno.h> ],
     [long x = (long) $1],
-    [eval 'cf_cv_dcl_'$1'=yes'],
-    [eval 'cf_cv_dcl_'$1'=no'])
+    [cf_cv_dcl_$1=yes],
+    [cf_cv_dcl_$1=no])
 ])
 
-eval 'cf_result=$cf_cv_dcl_'$1
-AC_MSG_RESULT($cf_result)
-
-if test "$cf_result" = no ; then
-    eval 'cf_result=DECL_'$1
-    CF_UPPER(cf_result,$cf_result)
+if test "$cf_cv_dcl_$1" = no ; then
+    CF_UPPER(cf_result,decl_$1)
     AC_DEFINE_UNQUOTED($cf_result)
 fi
 
@@ -276,22 +299,18 @@ dnl $1 = the name to check
 dnl $2 = its type
 AC_DEFUN([CF_CHECK_EXTERN_DATA],
 [
-AC_MSG_CHECKING(if external $1 exists)
-AC_CACHE_VAL(cf_cv_have_$1,[
+AC_CACHE_CHECK(if external $1 exists, cf_cv_have_$1,[
     AC_TRY_LINK([
 #undef $1
 extern $2 $1;
 ],
     [$1 = 2],
-    [eval 'cf_cv_have_'$1'=yes'],
-    [eval 'cf_cv_have_'$1'=no'])])
+    [cf_cv_have_$1=yes],
+    [cf_cv_have_$1=no])
+])
 
-eval 'cf_result=$cf_cv_have_'$1
-AC_MSG_RESULT($cf_result)
-
-if test "$cf_result" = yes ; then
-    eval 'cf_result=HAVE_'$1
-    CF_UPPER(cf_result,$cf_result)
+if test "$cf_cv_have_$1" = yes ; then
+    CF_UPPER(cf_result,have_$1)
     AC_DEFINE_UNQUOTED($cf_result)
 fi
 
@@ -385,7 +404,7 @@ esac
 test "$cf_cv_curses_incdir" != no && CPPFLAGS="$CPPFLAGS $cf_cv_curses_incdir"
 
 AC_CACHE_CHECK(if we have identified curses headers,cf_cv_ncurses_header,[
-cf_cv_ncurses_header=curses.h
+cf_cv_ncurses_header=none
 for cf_header in \
 	curses.h \
 	ncurses.h \
@@ -397,6 +416,10 @@ AC_TRY_COMPILE([#include <${cf_header}>],
 	[cf_cv_ncurses_header=$cf_header; break],[])
 done
 ])
+
+if test "$cf_cv_ncurses_header" = none ; then
+	AC_MSG_ERROR(No curses header-files found)
+fi
 
 # cheat, to get the right #define's for HAVE_NCURSES_H, etc.
 AC_CHECK_HEADERS($cf_cv_ncurses_header)
@@ -511,8 +534,7 @@ dnl See CF_TYPE_OUTCHAR for more details.
 AC_DEFUN([CF_CURSES_TERMCAP],
 [
 AC_REQUIRE([CF_CURSES_TERM_H])
-AC_MSG_CHECKING(if we should include curses.h or termcap.h)
-AC_CACHE_VAL(cf_cv_need_curses_h,[
+AC_CACHE_CHECK(if we should include curses.h or termcap.h, cf_cv_need_curses_h,[
 cf_save_CPPFLAGS="$CPPFLAGS"
 cf_cv_need_curses_h=no
 
@@ -564,7 +586,6 @@ if test "$cf_cv_need_curses_h" != no ; then
 	fi
 fi
 ])
-AC_MSG_RESULT($cf_cv_need_curses_h)
 
 case $cf_cv_need_curses_h in
 both) #(vi
@@ -590,16 +611,15 @@ dnl as well as in misconfigured systems (e.g., gcc configured for Solaris 2.4
 dnl running with Solaris 2.5.1).
 AC_DEFUN([CF_CURSES_TERM_H],
 [
-AC_MSG_CHECKING([for term.h])
-AC_CACHE_VAL(cf_cv_have_term_h,[
+AC_CACHE_CHECK(for term.h, cf_cv_have_term_h,[
 	AC_TRY_COMPILE([
 #include <curses.h>
 #include <term.h>],
 	[WINDOW *x],
 	[cf_cv_have_term_h=yes],
 	[cf_cv_have_term_h=no])
-	])
-AC_MSG_RESULT($cf_cv_have_term_h)
+])
+
 test $cf_cv_have_term_h = yes && AC_DEFINE(HAVE_TERM_H)
 ])dnl
 dnl ---------------------------------------------------------------------------
@@ -1044,8 +1064,7 @@ dnl Note: must follow AC_FUNC_SETPGRP, but cannot use AC_REQUIRE, since that
 dnl messes up the messages...
 AC_DEFUN([CF_KILLPG],
 [
-AC_MSG_CHECKING([if killpg is needed])
-AC_CACHE_VAL(cf_cv_need_killpg,[
+AC_CACHE_CHECK(if killpg is needed, cf_cv_need_killpg,[
 AC_TRY_RUN([
 #include <sys/types.h>
 #include <signal.h>
@@ -1069,9 +1088,9 @@ main()
 }],
 	[cf_cv_need_killpg=no],
 	[cf_cv_need_killpg=yes],
-	[cf_cv_need_killpg=unknown]
-)])
-AC_MSG_RESULT($cf_cv_need_killpg)
+	[cf_cv_need_killpg=unknown])
+])
+
 test $cf_cv_need_killpg = yes && AC_DEFINE(HAVE_KILLPG)
 ])dnl
 dnl ---------------------------------------------------------------------------
@@ -1155,8 +1174,7 @@ dnl (GNU 'make' does both, something POSIX 'make', which happens to make the
 dnl $(MAKEFLAGS) variable incompatible because it adds the assignments :-)
 AC_DEFUN([CF_MAKEFLAGS],
 [
-AC_MSG_CHECKING([for makeflags variable])
-AC_CACHE_VAL(cf_cv_makeflags,[
+AC_CACHE_CHECK(for makeflags variable, cf_cv_makeflags,[
 	cf_cv_makeflags=''
 	for cf_option in '-$(MAKEFLAGS)' '$(MFLAGS)'
 	do
@@ -1181,8 +1199,9 @@ CF_EOF
 			;;
 		esac
 	done
-	rm -f cf_makeflags.tmp])
-AC_MSG_RESULT($cf_cv_makeflags)
+	rm -f cf_makeflags.tmp
+])
+
 AC_SUBST(cf_cv_makeflags)
 ])dnl
 dnl ---------------------------------------------------------------------------
@@ -1621,8 +1640,7 @@ dnl data has been transferred are interruptable _regardless_ of the SA_RESTART
 dnl bit.  yuck.
 AC_DEFUN([CF_RESTARTABLE_PIPEREAD],
 [
-AC_MSG_CHECKING(for restartable reads on pipes)
-AC_CACHE_VAL(cf_cv_can_restart_read,[
+AC_CACHE_CHECK(for restartable reads on pipes, cf_cv_can_restart_read,[
 AC_TRY_RUN(
 [/* Exit 0 (true) if wait returns something other than -1,
    i.e. the pid of the child, which means that wait was restarted
@@ -1669,8 +1687,9 @@ main () {
 ],
 [cf_cv_can_restart_read=yes],
 [cf_cv_can_restart_read=no],
-[cf_cv_can_restart_read=unknown])])
-AC_MSG_RESULT($cf_cv_can_restart_read)
+[cf_cv_can_restart_read=unknown])
+])
+
 test $cf_cv_can_restart_read = yes && AC_DEFINE(HAVE_RESTARTABLE_PIPEREAD)
 ])dnl
 dnl ---------------------------------------------------------------------------
@@ -1797,10 +1816,8 @@ dnl errno.h.  Declaration of sys_errlist on BSD4.4 interferes with our
 dnl declaration.  Reported by Keith Bostic.
 AC_DEFUN([CF_SYS_ERRLIST],
 [
-for cf_name in sys_nerr sys_errlist
-do
-    CF_CHECK_ERRNO($cf_name)
-done
+    CF_CHECK_ERRNO(sys_nerr)
+    CF_CHECK_ERRNO(sys_errlist)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Look for termcap libraries, or the equivalent in terminfo.
@@ -1913,8 +1930,7 @@ AC_DEFUN([CF_TYPE_OUTCHAR],
 [
 AC_REQUIRE([CF_CURSES_TERMCAP])
 
-AC_MSG_CHECKING([declaration of tputs 3rd param])
-AC_CACHE_VAL(cf_cv_type_outchar,[
+AC_CACHE_CHECK(declaration of tputs 3rd param, cf_cv_type_outchar,[
 
 cf_cv_type_outchar="int OutChar(int)"
 cf_cv_found=no
@@ -1940,8 +1956,8 @@ done
 done
 	test $cf_cv_found = yes && break
 done
-	])
-AC_MSG_RESULT($cf_cv_type_outchar)
+])
+
 case $cf_cv_type_outchar in
 int*)
 	AC_DEFINE(OUTC_RETURN)
@@ -2169,7 +2185,7 @@ esac
 if test $cf_have_X_LIBS = no ; then
 	AC_PATH_XTRA
 	LDFLAGS="$LDFLAGS $X_LIBS"
-	CF_ADD_CFLAGS($X_CFLAGS)
+	CF_CHECK_CFLAGS($X_CFLAGS)
 	AC_CHECK_LIB(X11,XOpenDisplay,
 		[LIBS="-lX11 $LIBS"],,
 		[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
@@ -2180,7 +2196,7 @@ if test $cf_have_X_LIBS = no ; then
 		[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
 else
 	LDFLAGS="$LDFLAGS $X_LIBS"
-	CF_ADD_CFLAGS($X_CFLAGS)
+	CF_CHECK_CFLAGS($X_CFLAGS)
 fi
 
 if test $cf_have_X_LIBS = no ; then
