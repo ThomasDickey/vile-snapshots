@@ -18,7 +18,7 @@
  * transfering the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.75 1998/08/27 10:23:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.76 1998/09/19 22:52:06 kev Exp $
  *
  */
 
@@ -1147,6 +1147,19 @@ hyperspray(int (*f)(char *))
 	    {
 		f(p->ar_hypercmd);
 		count++;
+		/* As originally written, there was no break below.
+		        This means that we'd loop over all of the
+			attributes in case there were multiple
+			overlapping attributes with attached hypertext
+			commands.  As cool as this may sound, it is
+			actually of very dubious utility, and an
+			action which removes some or all of the
+			attributes very quickly gets this loop into
+			trouble.  So, if this functionality is really
+			desired, we'll have to either make a copy of
+			the attributes or somehow otherwise determine
+			that they were modified or deleted.  */
+		break;
 	    }
 	}
     }

@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.84 1998/08/27 01:53:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.85 1998/09/19 22:52:06 kev Exp $
  *
  */
 
@@ -452,6 +452,7 @@ int
 delwp(WINDOW *thewp)
 {
 	register WINDOW *wp;	/* window to receive deleted space */
+	int visible = is_visible_window(thewp);
 
 	/* if there is only one window, don't delete it */
 	if (wheadp->w_wndp == NULL) {
@@ -461,14 +462,19 @@ delwp(WINDOW *thewp)
 
 	/* find receiving window and give up our space */
 	if (thewp == wheadp
-	 || ((thewp->w_split_hist & 1) == 0 && thewp->w_wndp)) {
+	 || ((thewp->w_split_hist & 1) == 0 && thewp->w_wndp)
+	 || !visible) {
 		/* merge with next window down */
 		wp = thewp->w_wndp;
-                wp->w_line.l = adjust_back(wp, wp->w_line.l,
-						thewp->w_ntrows+1);
-		wp->w_line.o = 0;
-		wp->w_ntrows += thewp->w_ntrows+1;
-		wp->w_toprow = thewp->w_toprow;
+		if (visible) {
+			wp->w_line.l = adjust_back(wp, wp->w_line.l,
+							thewp->w_ntrows+1);
+			wp->w_line.o = 0;
+			wp->w_ntrows += thewp->w_ntrows+1;
+			wp->w_toprow = thewp->w_toprow;
+			if (wp->w_split_hist & 1)
+				wp->w_split_hist >>= 1;
+		}
 		if (thewp == wheadp)
 			wheadp = wp;
 		else {
@@ -477,8 +483,6 @@ delwp(WINDOW *thewp)
 				pwp = pwp->w_wndp;
 			pwp->w_wndp = wp;
 		}
-		if (wp->w_split_hist & 1)
-			wp->w_split_hist >>= 1;
 	} else {
 		/* find window before thewp in linked list */
 		wp = wheadp;
@@ -493,15 +497,17 @@ delwp(WINDOW *thewp)
 	}
 
 	/* get rid of the current window */
-	if (--thewp->w_bufp->b_nwnd == 0)
+	if (visible && --thewp->w_bufp->b_nwnd == 0)
 		undispbuff(thewp->w_bufp,thewp);
 	if (thewp == curwp) {
 		curwp = wp;
 		make_current(curwp->w_bufp);
 	}
 	free((char *)thewp);
-	upmode();
-	wp->w_flag |= WFSBAR | WFHARD;
+	if (visible) {
+	    upmode();
+	    wp->w_flag |= WFSBAR | WFHARD;
+	}
 	return(TRUE);
 }
 
@@ -1059,6 +1065,7 @@ void	wp_leaks(void)
 }
 #endif
 
+#if OPT_SEL_YANK || OPT_PERL
 /*
  * Allocate a fake window so that we can yank a selection even if the buffer
  * containing the selection is not attached to any window.
@@ -1067,7 +1074,6 @@ void	wp_leaks(void)
  * for a later call to pop_fake_win() which will restore curwp.
  */
 
-#if OPT_SEL_YANK || OPT_PERL
 WINDOW *
 push_fake_win(BUFFER *bp)
 {
@@ -1079,9 +1085,6 @@ push_fake_win(BUFFER *bp)
     }
     curwp = wp;
     curwp->w_bufp = bp;
-#if 0
-    curwp->w_bufp->b_nwnd++;
-#endif
     if ((wp = bp2any_wp(bp)) == NULL)
 	copy_traits(&(curwp->w_traits), &(bp->b_wtraits));
     else
@@ -1117,16 +1120,6 @@ pop_fake_win(WINDOW *oldwp)
 	return NULL;				/* not a fake window */
 
     bp = wp->w_bufp;
-#if 0
-    /*
-     * Decrement the window count, but don't update the traits.  We want
-     * to give as little indication as possible that a fake window was
-     * created.  In particular, should the user go back to a buffer
-     * which is not currently displayed, DOT should be where he last
-     * left it.
-     */
-    --bp->b_nwnd;
-#endif
     /* unlink and free the fake window */
     wheadp = wp->w_wndp;
     free((char *)wp);

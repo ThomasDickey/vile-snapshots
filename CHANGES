@@ -1,4 +1,18 @@
 Changes for vile 8.1 (released ??? ??? ??, 1998)
+ (kev) 980919 (r)
+ 	+ buffer.c (zotbuf): Kill any fake windows associated with
+	  the buffer we're about to kill.
+	+ select.c (hyperspray): Only execute the first found hypertext
+	  command.
+	+ window.c (delwp): Added support for deleting fake windows.
+	  (push_fake_win, pop_fake_win): Removed #if 0'd out code.
+	+ x11.c (is_color_cursor):  Added this field back to
+	  TextWindowRec; Also added back code to initialize it in
+	  x_preparse_args() and test it in flush_line().  Without this
+	  code in place, non-color cursors will not blink properly
+	  when they are within selections.  [This was removed in
+	  vile-7.3w.  We should address the reasons for removing this
+	  code in some other way.]
 
  (tom) 98090? (q)
 	+ correct parenthesis for test of F4 change in 8.0l (winvile.c)
