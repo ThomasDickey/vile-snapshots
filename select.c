@@ -8,17 +8,17 @@
  * mechanism for vile/xvile.  While my initial goal is to improve selection
  * handling for xvile, there is no reason that this code can not be used on
  * other platforms with some kind of pointing device.  In addition, the
- * mechanism is general enough to be used for other kinds of persisent
+ * mechanism is general enough to be used for other kinds of persistent
  * attributed text.
  *
  * For the purposes of this code, a selection is considered to be a region of
  * text which most applications highlight in some manner.  The user may
  * transfer selected text from one application to another (or even to the
  * same application) in some platform dependent way.  The mechanics of
- * transfering the selection are not dealt with in this file.  Procedures
+ * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.78 1998/09/29 22:54:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.79 1998/10/01 09:26:42 tom Exp $
  *
  */
 
@@ -595,7 +595,6 @@ release_selection(int status)
 			mlerase();
 	}
 	sel_release();
-	regionshape = EXACT;
 	return status;
 }
 
@@ -759,7 +758,6 @@ multimotion(int f, int n)
 	const CMDFUNC	*cfp;
 	int s, c, waserr;
 	int pasting;
-	REGIONSHAPE oldshape = regionshape;
 	REGIONSHAPE shape;
 	MARK savedot;
 	MARK savemark;
@@ -935,7 +933,6 @@ multimotion(int f, int n)
 	s = yankregion();
 	DOT = savedot;
 	MK = savemark;
-	regionshape = oldshape;
 
 	sweephack = wassweephack = FALSE;
 

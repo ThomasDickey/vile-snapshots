@@ -1,4 +1,4 @@
-# mkprlenv.wnt 
+# mkprlenv.wnt
 #
 # Purpose
 # =======
@@ -27,14 +27,14 @@
 # Consult the macro $(PERL_SCRIPTS) in the file makefile.wnt to ascertain the
 # current list of vile-based perl scripts known to work in a Win32 environment.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/mkprlenv.wnt,v 1.2 1998/05/23 21:21:00 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/mkprlenv.wnt,v 1.3 1998/10/01 10:31:20 cmorgan Exp $
 #
     perl <<
         foreach $$dir (@INC)
         {
             $$lib="$$dir\\CORE\\perl.lib";
             last if (-f $$lib);
-            
+
         }
         if (! $$lib)
         {
@@ -48,7 +48,7 @@
         {
             $$inc="$$dir\\CORE";
             last if (-f "$$inc\\perl.h");
-            
+
         }
         if (! $$inc)
         {
@@ -62,11 +62,11 @@
         }
         if (! $$utils)
         {
-            print 
+            print
                "error: cannot determine location of perl external utilities\n";
             exit(1);
         }
-        print 
+        print
  "Checking existence of directory specified by VILE_LIBRARY_PATH env var...\n";
         $$root_dir=$$ENV{"VILE_LIBRARY_PATH"};
         if (! $$root_dir)
@@ -89,7 +89,7 @@
             }
             else
             {
-#               User specified a directory that exists.  First, strip 
+#               User specified a directory that exists.  First, strip
 #               trailing dos/unix path delimiters from dir.
 #
                 $$root_dir =~ s!\\$$!!;
@@ -105,7 +105,7 @@
                 $$script_dir = $$root_dir . "\\perl";
                 if (-f $$script_dir)
                 {
-                    print 
+                    print
                 "error: script destination directory $$script_dir is a file!\n";
                     exit(1);
                 }
@@ -123,7 +123,7 @@
                 $$test_file = "$$script_dir\\vile_perl_tst.txt";
                 if (open(TEST_FD, "> $$test_file") == 0)
                 {
-                    print 
+                    print
                          "error: directory \"$$script_dir\" is not writable!\n";
                     exit(1);
                 }
@@ -162,4 +162,4 @@
     -del $(TARGET)
     -del perl.c
 # Look ma, a recursive make
-    $(MAKE) -f makefile.wnt CFG=$(CFG)
+    $(MAKE) -f makefile.wnt CFG=$(CFG) OPT=$(OPT)

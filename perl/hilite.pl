@@ -1,3 +1,7 @@
+# $Header: /users/source/archives/vile.vcs/perl/RCS/hilite.pl,v 1.2 1998/10/01 10:10:23 tom Exp $
+#
+# See syntax.pl (and hilite.doc).
+#
 @hilite = ('todo', 'variable',  'special',  'identifier',
            'type', 'preproc', 'error', 'statement', 'constant', 'comment');
 
@@ -110,12 +114,12 @@ sub syntaxtcl {
 
 sub syntaxc {
 
-    $syntax'kdata{type} = 
+    $syntax'kdata{type} =
       "void register short enum extern int struct static long char unsigned "
     . "double float volatile union auto class friend protected private public "
     . "const mutable virtual inline inherited enum";
 
-    $syntax'kdata{statement} = 
+    $syntax'kdata{statement} =
       "for if else while catch throw operator asm this continue break switch "
     . "case delete default goto return exit";
 
