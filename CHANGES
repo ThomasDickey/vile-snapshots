@@ -1,5 +1,14 @@
 Changes for vile 7.5/8.0 (released ??? ??? ?, 1998)
 
+ (tom) 980503 (b)
+ 	> patch by Clark Morgan
+	+ correct bug that made winvile font-dialog die on Win95, using example
+	  from Petzold for processing messages associated with the system menu.
+	+ added a menu separator to the system menu
+	+ gave "Font" a  keyboard accelerator
+	+ added a cast to keep the compiler from barking about a call to
+	  EnumFontFamilies(). 
+
  (kev) 980503 (a)
  	+ api.c (api_setup_fake_win, api_dotinsert): Set MDNEWLINE to
 	  false when deleting a newline before the end of a file.

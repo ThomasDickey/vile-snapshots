@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.7 1998/04/29 21:10:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.8 1998/05/03 20:29:21 cmorgan Exp $
  *
  */
 
@@ -96,7 +96,6 @@ static	int	vile_in_getfkey = 0;
 static	int	vile_resizing = FALSE;	/* rely on repaint_window if true */
 static	DWORD	default_fcolor;
 static	DWORD	default_bcolor;
-static	UINT	menu_selection = 0;
 
 static int	nfcolor = -1;		/* normal foreground color */
 static int	nbcolor = -1;		/* normal background color */
@@ -331,8 +330,8 @@ static int fshow_cursor(void)
  */
 static int CALLBACK
 enumerate_fonts(
-	ENUMLOGFONT FAR *lpelf,
-	NEWTEXTMETRIC FAR *lpntm,
+	ENUMLOGFONT *lpelf,
+	NEWTEXTMETRIC *lpntm,
 	int FontType,
 	LPARAM lParam)
 {
@@ -398,7 +397,7 @@ static void get_font(LOGFONT *lf)
 
 	vile_font = GetStockObject(MY_FONT);
 	hDC = GetDC(vile_hwnd);
-	if (EnumFontFamilies(hDC, (char *)0, enumerate_fonts, lf) <= 0)
+	if (EnumFontFamilies(hDC, NULL, enumerate_fonts, (LPARAM) lf) <= 0)
 	{
 		TRACE(("Creating Pitch/Family: %#x\n", lf->lfPitchAndFamily))
 		new_font(lf);
@@ -1237,28 +1236,13 @@ LONG FAR PASCAL MainWndProc(
 		ResizeClient();
 		return (DefWindowProc(hWnd, message, wParam, lParam));
 
-	case WM_EXITMENULOOP:
-		switch (menu_selection) {
-		case MM_FILE:
-			kbd_alarm();
-			break;
+	case WM_SYSCOMMAND:
+		switch(LOWORD(wParam))
+		{
 		case MM_FONT:
 			set_font();
 			break;
 		}
-		menu_selection = 0;
-		return (DefWindowProc(hWnd, message, wParam, lParam));
-
-	case WM_MENUSELECT:
-		if (lParam == (LONG) vile_menu) {
-			menu_selection = LOWORD(wParam);
-			TRACE(("MAIN:MENUSELECT %#x, %#x (menu %#x)\n",
-				LOWORD(wParam),
-				HIWORD(wParam),
-				lParam))
-		}
-
-	case WM_ENTERIDLE:	/* ignored */
 		return (DefWindowProc(hWnd, message, wParam, lParam));
 
 	case WM_KEYDOWN:
@@ -1311,10 +1295,11 @@ BOOL InitInstance(
 	 * Insert "File" and "Font" before "Close" in the system menu.
 	 */
 	vile_menu = GetSystemMenu(vile_hwnd, FALSE);
+	AppendMenu(vile_menu, MF_SEPARATOR, 0, NULL);
 #if 0	/* FIXME: later */
 	AppendMenu(vile_menu, MF_STRING, MM_FILE, "File");
 #endif
-	AppendMenu(vile_menu, MF_STRING, MM_FONT, "Font");
+	AppendMenu(vile_menu, MF_STRING, MM_FONT, "&Font");
 
 	if (!vile_hwnd)
 		return (FALSE);
