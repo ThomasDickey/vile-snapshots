@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.113 1998/08/30 21:33:19 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.114 1998/09/07 19:54:43 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -67,8 +67,8 @@ mandir		= @mandir@/man$(manext)
 SHELL		= /bin/sh
 RM              = rm -f
 
+QUOTDEFS	= -DVILE_STARTUP_PATH=\"@VILE_STARTUP_PATH@\"
 CPPFLAGS	= -I. -I$(srcdir) $(X_CFLAGS) \
-		-DVILE_STARTUP_PATH=\"@VILE_STARTUP_PATH@\" \
 		-DHAVE_CONFIG_H @CPPFLAGS@
 
 LDFLAGS		= @IMAKE_LOADFLAGS@
@@ -79,10 +79,10 @@ INSTALL_DIRS    = $(bindir) $(datadir) $(mandir) @EXTRA_INSTALL_DIRS@
 
 .c.i:
 @RULE_CC@
-	@ECHO_CC@$(CPP) -C $(CPPFLAGS) $< >$@
+	@ECHO_CC@$(CPP) -C $(CPPFLAGS) $(QUOTDEFS) $< >$@
 .c.o:
 @RULE_CC@
-	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(CFLAGS) -DHELP_LOC=\"$(datadir)/\" $<
+	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(QUOTDEFS) $(CFLAGS) -DHELP_LOC=\"$(datadir)/\" $<
 
 # All of the makefiles which should be preserved and distributed
 UNIXMAKIN = makefile.in				# for use with configure

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.299 1998/09/03 10:15:12 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.301 1998/09/07 21:18:08 tom Exp $
  *
  */
 
@@ -130,8 +130,8 @@ extern void build_namebst(const NTAB *nametbl, int lo, int hi);
 #endif
 
 /* buffer.c */
-BUFFER *make_bp (const char *fname, int flags);
-extern BUFFER *bfind (const char *bname, int bflag);
+BUFFER *make_bp (const char *fname, UINT flags);
+extern BUFFER *bfind (const char *bname, UINT bflag);
 extern BUFFER *find_alt (void);
 extern BUFFER *find_any_buffer (const char *name);
 extern BUFFER *find_b_file (const char *fname);
@@ -184,8 +184,8 @@ void update_scratch (const char *name, int (*func)(BUFFER *));
 
 /* crypt.c */
 #if	OPT_ENCRYPT
-extern	int	ue_makekey (char *key, ALLOC_T len);
-extern	void	ue_crypt (char *bptr, ALLOC_T len);
+extern	int	ue_makekey (char *key, UINT len);
+extern	void	ue_crypt (char *bptr, UINT len);
 #endif	/* OPT_ENCRYPT */
 
 /* csrch.c */
@@ -449,9 +449,9 @@ extern int keystroke_avail (void);
 extern int keystroke_raw8 (void);
 extern int mapped_keystroke (void);
 extern int mlquickask (const char *prompt, const char *respchars, int *cp);
-extern int mlreply (const char *prompt, char *buf, int bufn);
-extern int mlreply_no_bs (const char *prompt, char *buf, int bufn);
-extern int mlreply_no_opts (const char *prompt, char *buf, int bufn);
+extern int mlreply (const char *prompt, char *buf, UINT bufn);
+extern int mlreply_no_bs (const char *prompt, char *buf, UINT bufn);
+extern int mlreply_no_opts (const char *prompt, char *buf, UINT bufn);
 extern int mlreply_reg (const char *prompt, char *cbuf, int *retp, int at_dft);
 extern int mlreply_reg_count (int state, int *retp, int *next);
 extern int mlyesno (const char *prompt);

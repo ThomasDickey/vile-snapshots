@@ -19,12 +19,14 @@
  *
  * - This code tested only on Win95 (to date).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.2 1998/08/27 10:57:07 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.3 1998/09/07 21:42:44 cmorgan Exp $
  */
 
 #include <windows.h>
 #include <ole2.h>
 #include <assert.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 extern "C"
 {
@@ -521,15 +523,13 @@ vile_oa::Quit()
 STDMETHODIMP
 vile_oa::VileKeys(BSTR keys)
 {
-    HRESULT hr = NOERROR;
+    HRESULT hr   = NOERROR;
+    char    *msg = FROM_OLE_STRING(keys);
 
-    char *msg = FROM_OLE_STRING(keys);
     while (*msg)
     {
         if (! PostMessage(m_hwnd, WM_CHAR, *msg, 0))
         {
-            char *dummy = NULL;
-
             disp_win32_error(W32_SYS_ERROR, m_hwnd);
             hr = E_UNEXPECTED;
             break;
@@ -626,3 +626,51 @@ vile_oa::Restore()
     }
     return NOERROR;
 }
+
+/* ----------- C Linkage To OLE-specific Editor Functions ---------------- */
+
+extern "C"
+{
+
+/*
+ * Wait for a file to spring into existence with > 0 bytes of data.  This
+ * editor function is used to work around a bug in DevStudio 5, which
+ * creates its build log _after_ notifying visvile that a build is complete.
+ */
+int
+waitfile(int f, int n)
+{
+#define SLEEP_INCR 100
+
+    char         fname[NFILEN];  /* wait for this file */
+    DWORD        how_long, curr_sleep;
+    int          s;              /* status return */
+    struct _stat statdata;
+
+    fname[0] = '\0';
+    how_long = (f) ? n : 2000;  /* If wait period not specified as argument,
+                                 * wait up to 2 seconds.
+                                 */
+    if ((s = mlreply_no_opts("Wait for file: ", fname, sizeof(fname))) == TRUE)
+    {
+        curr_sleep = 0;
+        for (;;)
+        {
+            if (_stat(fname, &statdata) == 0)
+            {
+                if (statdata.st_size > 0)
+                    break;
+            }
+            Sleep(SLEEP_INCR);
+            curr_sleep += SLEEP_INCR;
+            if (curr_sleep > how_long)
+            {
+                mlwrite("timed out waiting for \"%s\"", fname);
+                break;
+            }
+        }
+    }
+    return (s);
+}
+
+} /* Extern "C" */

@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.165 1998/09/03 10:15:12 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.166 1998/09/07 21:18:36 tom Exp $
  *
  */
 
@@ -877,7 +877,7 @@ const char *value)	/* value to set to */
 				free(cryptkey);
 			cryptkey = strmalloc(value);
 			ue_crypt((char *)NULL, 0);
-			ue_crypt(cryptkey, (int)strlen(cryptkey));
+			ue_crypt(cryptkey, strlen(cryptkey));
 #endif
 		ElseIf( EVDISCMD )
 			discmd = stol(value);

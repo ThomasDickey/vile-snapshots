@@ -8,11 +8,19 @@
 #include <initguid.h>
 #include "oleauto.h"
 
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <direct.h>
+#include <io.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+static char workspace_cwd[FILENAME_MAX + 1];
 
 typedef struct openfile_opts_struct
 {
@@ -69,7 +77,7 @@ BOOL CCommands::SetApplicationObject(IApplication* pApplication)
     // Create Debugger event handler
     // FIXME -- stupid code, assumes no errors
     CComPtr<IDispatch> pDebugger;
-    if (SUCCEEDED(m_pApplication->get_Debugger(&pDebugger)) 
+    if (SUCCEEDED(m_pApplication->get_Debugger(&pDebugger))
         && pDebugger != NULL)
     {
         XDebuggerEventsObj::CreateInstance(&m_pDebuggerEventsObj);
@@ -110,6 +118,53 @@ void CCommands::UnadviseFromEvents()
 /////////////////////////////////////////////////////////////////////////////
 // Event handlers
 
+static void
+save_workspace_cwd(void)
+{
+    if (_getcwd(workspace_cwd, sizeof(workspace_cwd)) == NULL)
+        workspace_cwd[0] = '\0';  // I suppose this might happen
+}
+
+static HRESULT
+fetch_workspace_logname(CCommands *cmdp, char *file)
+{
+    BSTR                bstr_prjname;
+    HRESULT             hr;
+    CComPtr <IDispatch> pDispProj;
+
+    hr = cmdp->GetApplicationObject()->get_ActiveProject(&pDispProj);
+    if (FAILED(hr))
+        return (ReportLastError(hr));
+    CComQIPtr < IGenericProject, &IID_IGenericProject > pProj(pDispProj);
+    if (! pProj)
+    {
+        ::MessageBox(NULL,
+         "Unexpected OLE error:  Unable to access current project object",
+                     PROGNAM,
+                     MB_OK|MB_ICONSTOP);
+        return (E_UNEXPECTED);
+    }
+    hr  = pProj->get_Name(&bstr_prjname);
+    if (FAILED(hr))
+        return (ReportLastError(hr));
+    sprintf(file, "%S.plg", bstr_prjname);
+    SysFreeString(bstr_prjname);
+    if (workspace_cwd[0] == '\0')
+        save_workspace_cwd();  // as a side effect, update workspace cwd
+                               // when necessary (should not be necessary).
+    return (hr);
+}
+
+static HRESULT
+unexpected_docu_error(void)
+{
+    ::MessageBox(NULL,
+     "Unexpected OLE error:  VisVile->DevStudio document connection failed.",
+                 PROGNAM,
+                 MB_OK|MB_ICONSTOP);
+    return (E_UNEXPECTED);
+}
+
 static HRESULT
 openfile(IDispatch *theDocument, OPENFILE_OPTS *opts)
 {
@@ -120,24 +175,28 @@ openfile(IDispatch *theDocument, OPENFILE_OPTS *opts)
     if (opts->honor_addin_state && ! visvile_opts.enabled)
         return (S_OK);
 
-    // First get the filename
-
-    // Get the document object
-    CComQIPtr < ITextDocument, &IID_ITextDocument > pDoc (theDocument);
-    if (! pDoc)
+    // Process file _if_ a Text Document
+    CComQIPtr < IGenericDocument, &IID_IGenericDocument > pGenDoc(theDocument);
+    if (! pGenDoc)
+        return ((opts->ck_document_error) ? unexpected_docu_error() : S_OK);
+    else
     {
-        if (opts->ck_document_error)
-        {
-            ::MessageBox(NULL, 
-     "Unexpected OLE error:  VisVile->DevStudio document connection failed.",
-                         PROGNAM, 
-                         MB_OK|MB_ICONSTOP);
-            return (E_UNEXPECTED);
-        }
-        else
-            return (S_OK);    /* Assume not a text document */
-        
+        BSTR doc_type;
+        int  not_text;
+
+        hr = pGenDoc->get_Type(&doc_type);
+        if (FAILED(hr))
+            return (ReportLastError(hr));
+        not_text = (wcscmp(doc_type, L"Text") != 0);
+        SysFreeString(doc_type);
+        if (not_text)
+            return (S_OK);
     }
+
+    // Okay, get the text document object
+    CComQIPtr < ITextDocument, &IID_ITextDocument > pDoc(theDocument);
+    if (! pDoc)
+        return ((opts->ck_document_error) ? unexpected_docu_error() : S_OK);
 
     // Get the document name
     hr = pDoc->get_FullName(&filename);
@@ -165,6 +224,7 @@ openfile(IDispatch *theDocument, OPENFILE_OPTS *opts)
     if (! opts->never_close && visvile_opts.close_ds_doc)
     {
         // Close the document in developer studio
+
         CComVariant vSaveChanges = dsSaveChangesPrompt;
         DsSaveStatus Saved;
 
@@ -183,14 +243,94 @@ openfile(IDispatch *theDocument, OPENFILE_OPTS *opts)
 
 HRESULT CCommands::XApplicationEvents::BeforeBuildStart()
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	return S_OK;
+    HRESULT hr = S_OK;
+
+    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+    if (visvile_opts.enabled)
+    {
+        if (visvile_opts.write_buffers)
+        {
+            /*
+             * The following cryptic vile command flushes all modified
+             * buffers to disk and does not prompt for user response.
+             *
+             * Note:  because DevStudio decides what files need to be
+             * rebuilt _before_ this event is fired, the "write_buffers"
+             * option isn't quite as useful as it might seem.  As a
+             * workaround, press the "build" button/key (F7) twice :-) .
+             * See ../doc/visvile.doc for further details.
+             */
+
+            hr = pVile->VileCmd("1:ww\n", FALSE, FALSE);
+            if (FAILED(hr))
+                ReportLastError(hr);
+        }
+        if (visvile_opts.sync_errbuf)
+        {
+            char logpath[FILENAME_MAX + 1], file[FILENAME_MAX + 1];
+
+            /*
+             * The build log (activated from the Tools -> Options -> Build
+             * dialog box) may be accessed using this path:
+             *
+             * <workspace_cwd>\\<workspace_logname>
+             */
+
+            hr = fetch_workspace_logname(m_pCommands, file);
+            if (SUCCEEDED(hr))
+            {
+                sprintf(logpath, "%s\\%s", workspace_cwd, file);
+
+                /*
+                 * Nuke old logfile to ensure that the "wait-file" winvile
+                 * command invoked by BuildFinish() below picks up a fresh
+                 * logfile.
+                 */
+                (void) remove(logpath);
+            }
+        }
+    }
+    return (hr);
 }
 
-HRESULT CCommands::XApplicationEvents::BuildFinish(long nNumErrors, long nNumWarnings)
+HRESULT
+CCommands::XApplicationEvents::BuildFinish(long nNumErrors, long nNumWarnings)
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	return S_OK;
+    HRESULT hr = S_OK;
+
+    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+    if (visvile_opts.enabled &&
+                        visvile_opts.sync_errbuf &&
+                                    (nNumErrors || nNumWarnings))
+    {
+        char cmd[FILENAME_MAX * 5 + 1],
+             path[FILENAME_MAX + 1],
+             file[FILENAME_MAX + 1];
+
+        /*
+         * Suck the current active project's build log into winvile's error
+         * buffer.  If the build log doesn't exist, the user will be annoyed
+         * by an editor that pops up an empty buffer :-) .
+         *
+         * The build log (activated from the Tools -> Options -> Build dialog
+         * box) may be accessed using this path:
+         *
+         *    <workspace_cwd>\\<workspace_logname>
+         */
+        hr = fetch_workspace_logname(m_pCommands, file);
+        if (SUCCEEDED(hr))
+        {
+            sprintf(path, "%s\\%s", workspace_cwd, file);
+            sprintf(cmd,
+         ":e [History]\n:kill %s\n:wait-file %s\n:view %s\n:error-buffer %s\n",
+                    file,
+                    path,
+                    path,
+                    file);
+            pVile->VileCmd(cmd, TRUE, TRUE);
+        }
+    }
+    return (hr);
 }
 
 HRESULT CCommands::XApplicationEvents::BeforeApplicationShutDown()
@@ -250,20 +390,23 @@ HRESULT CCommands::XApplicationEvents::WindowDeactivate(IDispatch* theWindow)
 
 HRESULT CCommands::XApplicationEvents::WorkspaceOpen()
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	return S_OK;
+    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+    save_workspace_cwd();
+    return (S_OK);
 }
 
 HRESULT CCommands::XApplicationEvents::WorkspaceClose()
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	return S_OK;
+    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+    workspace_cwd[0] = '\0';     // Erase saved cwd.
+    return (S_OK);
 }
 
 HRESULT CCommands::XApplicationEvents::NewWorkspace()
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	return S_OK;
+    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+    save_workspace_cwd();
+    return (S_OK);
 }
 
 // Debugger event
@@ -277,7 +420,7 @@ HRESULT CCommands::XDebuggerEvents::BreakpointHit(IDispatch* pBreakpoint)
 /////////////////////////////////////////////////////////////////////////////
 // CCommands methods
 
-STDMETHODIMP CCommands::VisVileConfig() 
+STDMETHODIMP CCommands::VisVileConfig()
 {
     CConfigDlg Dlg;
 
@@ -286,16 +429,17 @@ STDMETHODIMP CCommands::VisVileConfig()
     if (Dlg.DoModal() == IDOK)
     {
         visvile_regdata_dirty();   // Be sloppy & assume user changed cfg.
-        visvile_opts.cd_doc_dir   = Dlg.m_cd_doc_dir;
-        visvile_opts.close_ds_doc = Dlg.m_close_ds_doc;
-        visvile_opts.enabled      = Dlg.m_enabled;
-        visvile_opts.sync_errbuf  = Dlg.m_sync_errbuf;
+        visvile_opts.cd_doc_dir    = Dlg.m_cd_doc_dir;
+        visvile_opts.close_ds_doc  = Dlg.m_close_ds_doc;
+        visvile_opts.enabled       = Dlg.m_enabled;
+        visvile_opts.sync_errbuf   = Dlg.m_sync_errbuf;
+        visvile_opts.write_buffers = Dlg.m_write_buffers;
     }
     m_pApplication->EnableModeless(VARIANT_TRUE);
     return S_OK;
 }
 
-STDMETHODIMP CCommands::VisVileEnable() 
+STDMETHODIMP CCommands::VisVileEnable()
 {
     AFX_MANAGE_STATE(AfxGetStaticModuleState());
     if (! visvile_opts.enabled)
@@ -306,7 +450,7 @@ STDMETHODIMP CCommands::VisVileEnable()
     return S_OK;
 }
 
-STDMETHODIMP CCommands::VisVileDisable() 
+STDMETHODIMP CCommands::VisVileDisable()
 {
     AFX_MANAGE_STATE(AfxGetStaticModuleState());
     if (visvile_opts.enabled)
@@ -317,7 +461,7 @@ STDMETHODIMP CCommands::VisVileDisable()
     return S_OK;
 }
 
-STDMETHODIMP CCommands::VisVileOpenDoc() 
+STDMETHODIMP CCommands::VisVileOpenDoc()
 {
     HRESULT       hr;
     OPENFILE_OPTS opts;

@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.160 1998/07/23 09:19:56 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.161 1998/09/07 21:42:13 cmorgan Exp $
 #
 #
 
@@ -1498,6 +1498,9 @@ vglobals	NONE
 viewfile	NONE
 	"view-file"
 	<bring given file or existing buffer into window, mark it \"view-only\">
+waitfile	NONE 			SYS_WINNT&&defined(VILE_OLE)
+	"wait-file"
+	<wait for file to grow larger than 0 bytes, timeout specified as arg>
 writeallchanged	NONE|(VI_NL)
 	"ww"
 	"write-changed-buffers"		!FEWNAMES

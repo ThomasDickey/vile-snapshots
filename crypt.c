@@ -1,7 +1,7 @@
 /*	Crypt:	Encryption routines for MicroEMACS
  *		written by Dana Hoggatt and Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/crypt.c,v 1.22 1998/05/13 10:43:06 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/crypt.c,v 1.23 1998/09/07 21:17:52 tom Exp $
  *
  */
 
@@ -9,7 +9,7 @@
 # ifndef OPT_ENCRYPT
 #  define OPT_ENCRYPT 1
 # endif
-# define ALLOC_T size_t
+# define UINT	unsigned int
 # define ULONG	unsigned long
 #else
 # include	"estruct.h"
@@ -56,8 +56,8 @@ static	int	mod95 (int val);
 #include <stdio.h>
 #include <ctype.h>
 
-extern	int	ue_makekey (char *key, ALLOC_T len);
-extern	void	ue_crypt (char *bptr, ALLOC_T len);
+extern	int	ue_makekey (char *key, UINT len);
+extern	void	ue_crypt (char *bptr, UINT len);
 
 static void
 failed(const char *s)
@@ -190,7 +190,7 @@ main(int argc, char **argv)
 int
 ue_makekey(			/* make encryption key */
 char	*key,			/* where to write key */
-ALLOC_T	len)
+UINT	len)
 {
 	register int status;	/* return status */
 	int odisinp = disinp;	/* original value of disinp */
@@ -201,7 +201,7 @@ ALLOC_T	len)
 
 	/* get the string to use as an encryption string */
 	temp[0] = EOS;
-	status = mlreply("Encryption String: ", temp, (int)len-1);
+	status = mlreply("Encryption String: ", temp, len-1);
 	disinp = odisinp;
 
         if (status == TRUE) {
@@ -335,7 +335,7 @@ int n GCC_UNUSED)	/* numeric argument */
 void
 ue_crypt(
 register char *bptr,	/* buffer of characters to be encrypted */
-register ALLOC_T len)	/* number of characters in the buffer */
+register UINT len)	/* number of characters in the buffer */
 {
 	register int cc;	/* current character being considered */
 

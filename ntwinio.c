@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.24 1998/09/03 10:25:20 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.26 1998/09/08 01:49:58 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -9,6 +9,8 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <commdlg.h>
+#include <stdlib.h>
+#include <math.h>
 
 #define	termdef	1			/* don't define "term" external */
 
@@ -411,6 +413,7 @@ ResizeClient()
 	gui_resize(w, h);
 }
 
+#define LTGRAY_COLOR 140
 #define NORMAL_COLOR 180
 #define BRIGHT_COLOR 255
 
@@ -430,9 +433,9 @@ color_of (int code)
 		if (green) green = BRIGHT_COLOR;
 		if (blue)  blue  = BRIGHT_COLOR;
 		if (code == 8) {
-			red   = NORMAL_COLOR;
-			green = NORMAL_COLOR;
-			blue  = NORMAL_COLOR;
+			red   = LTGRAY_COLOR;
+			green = LTGRAY_COLOR;
+			blue  = LTGRAY_COLOR;
 		}
 	}
 	return PALETTERGB(red, green, blue);
@@ -454,9 +457,11 @@ attr_to_colors(VIDEO_ATTR attr, int *fcolor, int *bcolor)
 			*bcolor |= BACKGROUND_INTENSITY;
 		else if (attr & VACOLOR)
 			*fcolor = ((VCOLORNUM(attr)) & (NCOLORS - 1));
-		else {  /* all other states == reverse video */
-			*bcolor = nfcolor;
-			*fcolor = nbcolor;
+
+		if (attr & (VASEL|VAREV)) {  /* reverse video? */
+			int temp = *bcolor;
+			*bcolor = *fcolor;
+			*fcolor = temp;
 			ninvert = TRUE;
 		}
 	}
@@ -839,8 +844,52 @@ ntwinio_font_frm_str(
 char *
 ntwinio_current_font(void)
 {
-	/* FIXME */
-    return ("this feature not yet implemented");
+    static char   *buf;
+    HDC           hdc;
+    HWND          hwnd;
+    LONG          size;
+    char          *style;
+
+    if (! buf)
+    {
+        buf = castalloc(char,
+                        sizeof("bold-italic") +
+                        LF_FACESIZE +
+                        16); /* space for delimiters and point size */
+        if (! buf)
+            return ("out of memory");
+    }
+    hwnd = cur_win->text_hwnd;
+    if (! ((hdc = GetDC(hwnd)) && SelectObject(hdc, vile_font)))
+    {
+        char *msg = NULL;
+
+        if (hdc)
+            ReleaseDC(hwnd, hdc);
+
+        fmt_win32_error(W32_SYS_ERROR, &msg, 0);
+        return (msg);
+        /* "msg" leaks here, but this code path should never be taken. */
+    }
+    if (vile_logfont.lfWeight == FW_BOLD && vile_logfont.lfItalic)
+        style = "bold-italic";
+    else if (vile_logfont.lfWeight == FW_BOLD)
+        style = "bold";
+    else if (vile_logfont.lfItalic)
+        style = "italic";
+    else
+        style = NULL;
+    size = MulDiv(labs(vile_logfont.lfHeight),
+                  72,
+                  GetDeviceCaps(hdc, LOGPIXELSY));
+    sprintf(buf,
+            "%s,%ld%s%s",
+            vile_logfont.lfFaceName,
+            size,
+            (style) ? "," : "",
+            (style) ? style : "");
+    ReleaseDC(hwnd, hdc);
+    return (buf);
 }
 
 #if OPT_TITLE
@@ -2294,7 +2343,7 @@ WinMain(
 					 * cmdline parser has an opportunity
 					 * to flag misspelled OLE options.
 					 *
-					 * Ex:  winvile -Or -multiple
+					 * Ex:  winvile -Or -mutiple
 					 */
 
 					oa_reg = TRUE;

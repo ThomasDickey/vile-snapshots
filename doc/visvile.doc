@@ -77,28 +77,63 @@ There aren't many, yet.
 
 Option Name       Explanation
 -----------       -----------
-Add-in enabled    if checked, VisVile causes winvile to open any new or
-                  existing _text_ document accessed by DevStudio,
-                  provided that the default editor doesn't already have
-                  that document open (see next option).
+Add-in enabled    VisVile causes winvile to open any new or existing _text_
+                  document accessed by DevStudio, provided that the default
+                  editor doesn't already have that document open (see next
+                  option).
 
 Close DevStudio copy of text document
-                  if checked, VisVile closes DevStudio's copy of an open
-                  text document after winvile has opened its copy.  This
-                  feature keeps DevStudio from issuing a warning message
-                  each time a project file is modified by an external
-                  editor.  If unchecked, winvile and the DevStudio text
-                  editor co-exist side by side.  But see the Caveats
-                  section below.
+                  VisVile closes DevStudio's copy of an open text document
+                  after winvile has opened its copy.  This feature keeps
+                  DevStudio from issuing a warning message each time a
+                  project file is modified by an external editor.  If
+                  unchecked, winvile and the DevStudio text editor co-exist
+                  side by side.  But see the Caveats section below.
+
+CWD set from opened document's path
+                  Winvile's current working directory is set to match the
+                  path of any document opened by VisVile.
+
+Write all modified buffers to disk prior to build
+                  VisVile forces winvile to flush all modified buffers to
+                  disk before a DevStudio build begins.  Note that
+                  DevStudio (v5, at least) decides which files must be
+                  compiled _prior_ to notifying VisVile of an imminent
+                  build.  This is arguably a DevStudio (v5) bug and it does
+                  diminish the usefulness of this option.
+
+                  One workaround is to press the build accelerator key (F7)
+                  twice for each build.  The first key press builds
+                  whatever files are out-of-date before modified winvile
+                  buffers are written to disk.  The second key press forces
+                  DevStudio to re-examine its dependencies and build
+                  everything affected by the last winvile buffer flush.
+
+                  Another workaround is to become accustomed to typing :ww
+                  within winvile prior to starting a DevStudio build.
+
+Build log -> errbuf if build reports errs/warnings
+                  Assuming DevStudio has been configured to create an error
+                  log (refer to the Tools->Customize->Build dialog box),
+                  then when the current DevStudio build reports errors or
+                  warnings, VisVile causes winvile to use the build log as
+                  its error buffer.  In this configuration, the source code
+                  associated with each error/warning message may be
+                  directly accessed by simply typing ^X-^X.  For a complete
+                  description of ^X-^X, browse vile's help and search for
+                  the string "error finder".
 
 
 DevStudio Operations Affected By VisVile
 ========================================
 When VisVile is enabled, any operation that causes DevStudio to open a text
-file will instead/also cause winvile to open that file.  Don't forget that
+file will instead/also cause winvile to open that file.  Note too that
 repeatedly pressing the F4 key within DevStudio following a failed build
 causes winvile to be positioned at the source code line(s) triggering error
-and/or warning messages.
+and/or warning messages.  However, _each_ error or warning message accessed
+via the F4 key requires a manual switch between winvile and DevStudio.  For
+that reason, the "Build log -> errbuf..." option is much more convenient
+(no switching required).
 
 
 Toolbar Icons
@@ -166,3 +201,16 @@ VisVile is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
+
+
+Known Differences Between VisVile and VisVim
+============================================
+Unique to VisVile:
+- Context-sensitive configuration dialog box.
+- "Write all modified buffers to disk prior to build" option.
+- "Build log -> errbuf if build reports errs/warnings" option.
+- When winvile is in insert mode, visvile forces the editor to command mode
+  before sending command strings.
+
+Unique to VisVim:
+- "CWD set to opened document's parent directory" option

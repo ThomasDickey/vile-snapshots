@@ -1,4 +1,4 @@
-/* 
+/*
  * oleauto.cpp - this module:
  *
  * 1) supplies several miscellaneous helper functions,
@@ -13,6 +13,8 @@
                        // directory, one level "up".
 #include "oleauto.h"
 
+#include <string.h>
+
 #define RESTORE_WDW     TRUE
 #define NO_RESTORE_WDW  FALSE
 
@@ -22,6 +24,7 @@
 #define ENABLE_KEYVAL      "Enable"
 #define ROOT_CFG_KEY       "Software\\Winvile\\VisVile"
 #define SYNC_ERRBUF_KEYVAL "SyncErrbuf"
+#define WRITE_BUFFERS      "WriteModifiedBuffers"
 
 static size_t   ansibuf_len,   /* scaled in bytes   */
                 olebuf_len;    /* scaled in wchar_t */
@@ -81,7 +84,7 @@ fmt_win32_error(HRESULT errcode, char **buf, ULONG buflen)
 
 
 
-HRESULT 
+HRESULT
 ReportLastError(HRESULT err)
 {
     char *buf = NULL, tmp[512];
@@ -89,19 +92,19 @@ ReportLastError(HRESULT err)
     if (err != REGDB_E_CLASSNOTREG)
     {
         fmt_win32_error(err, &buf, 0);
-        sprintf(tmp, 
+        sprintf(tmp,
            "Unexpected error encountered.\r\rError code:  %lx\rDescription: %s",
                 err,
                 buf);
     }
     else
     {
-        strcpy(tmp, 
+        strcpy(tmp,
                "Winvile OLE Automation registration lookup failed.\r\r"
                "The command 'winvile -Or' registers an OLE-aware "
                "version of the editor.");
     }
-                
+
     ::MessageBox(NULL, tmp, PROGNAM, MB_OK|MB_ICONSTOP);
     if (buf)
         LocalFree(buf);
@@ -135,7 +138,7 @@ ConvertToAnsi(OLECHAR *szW)
     }
     wcstombs(ansibuf, szW, len);
     return (ansibuf);
-} 
+}
 
 
 
@@ -144,7 +147,7 @@ ConvertToUnicode(char *szA)
 {
     size_t len;
 
-    len = strlen(szA) + 1; 
+    len = strlen(szA) + 1;
     if (len > olebuf_len)
     {
         if (olebuf)
@@ -191,31 +194,34 @@ get_addin_config(void)
     HKEY hk;
 
     // Supply fallback, default VisVile configuration values.
-    visvile_opts.enabled = 
-        visvile_opts.close_ds_doc = 
-            visvile_opts.sync_errbuf = TRUE;
+    visvile_opts.enabled =
+        visvile_opts.close_ds_doc =
+            visvile_opts.write_buffers = TRUE;
 
     // All other options default to FALSE....
 
     // Now, read "old" config values from registry (if they exist).
     if (RegOpenKeyEx(HKEY_CURRENT_USER,
                      ROOT_CFG_KEY,
-                     0, 
+                     0,
                      KEY_READ,
                      &hk) == ERROR_SUCCESS)
     {
-        visvile_opts.cd_doc_dir   = get_reg_cfg_val(hk,
-                                                    CD_KEYVAL,
-                                                    visvile_opts.cd_doc_dir);
-        visvile_opts.close_ds_doc = get_reg_cfg_val(hk,
-                                                    CLOSE_DOC_KEYVAL,
-                                                    visvile_opts.close_ds_doc);
-        visvile_opts.enabled      = get_reg_cfg_val(hk,
-                                                    ENABLE_KEYVAL,
-                                                    visvile_opts.enabled);
-        visvile_opts.sync_errbuf  = get_reg_cfg_val(hk,
-                                                    SYNC_ERRBUF_KEYVAL,
-                                                    visvile_opts.sync_errbuf);
+        visvile_opts.cd_doc_dir    = get_reg_cfg_val(hk,
+                                                     CD_KEYVAL,
+                                                     visvile_opts.cd_doc_dir);
+        visvile_opts.close_ds_doc  = get_reg_cfg_val(hk,
+                                                     CLOSE_DOC_KEYVAL,
+                                                     visvile_opts.close_ds_doc);
+        visvile_opts.enabled       = get_reg_cfg_val(hk,
+                                                     ENABLE_KEYVAL,
+                                                     visvile_opts.enabled);
+        visvile_opts.sync_errbuf   = get_reg_cfg_val(hk,
+                                                     SYNC_ERRBUF_KEYVAL,
+                                                     visvile_opts.sync_errbuf);
+        visvile_opts.write_buffers = get_reg_cfg_val(hk,
+                                                     WRITE_BUFFERS,
+                                                    visvile_opts.write_buffers);
         RegCloseKey(hk);
     }
     else
@@ -258,7 +264,7 @@ set_addin_config(void)
 
     if ((rc = RegCreateKeyEx(HKEY_CURRENT_USER,
                              ROOT_CFG_KEY,
-                             0, 
+                             0,
                              NULL,
                              0,
                              KEY_ALL_ACCESS,
@@ -273,6 +279,7 @@ set_addin_config(void)
     set_reg_cfg_val(hk, CLOSE_DOC_KEYVAL,   visvile_opts.close_ds_doc);
     set_reg_cfg_val(hk, ENABLE_KEYVAL,      visvile_opts.enabled);
     set_reg_cfg_val(hk, SYNC_ERRBUF_KEYVAL, visvile_opts.sync_errbuf);
+    set_reg_cfg_val(hk, WRITE_BUFFERS,      visvile_opts.write_buffers);
     RegCloseKey(hk);
 }
 
@@ -319,6 +326,26 @@ CVile::Disconnect()
 
 
 
+bool
+CVile::Connected()
+{
+    bool         connected = FALSE;
+    VARIANT_BOOL visible;
+
+    if (pVileAuto)
+    {
+        /*
+         * We have a connection to a winvile instance (maybe).  Obtain
+         * winvile application visibility state to verify connection.
+         */
+
+        connected = SUCCEEDED(pVileAuto->get_Visible(&visible));
+    }
+    return (connected);
+}
+
+
+
 HRESULT
 CVile::Connect(int restore_wdw, VARIANT_BOOL *in_insert_mode)
 {
@@ -327,42 +354,47 @@ CVile::Connect(int restore_wdw, VARIANT_BOOL *in_insert_mode)
     *in_insert_mode = VARIANT_TRUE;   // Set a known, safe value.
     if (pVileAuto)
     {
-        /*
-         * We have a connection to a winvile instance (maybe).  Force
-         * winvile application to become visible, which is important.  This
-         * action also allows us to determine if the connection is still
-         * intact.
-         */
+        VARIANT_BOOL visible;
 
-        hr = pVileAuto->put_Visible(TRUE);
+        /*
+         * We have a connection to a winvile instance (maybe).  First obtain
+         * winvile application visibility state, which provides a true test
+         * of whether or not the connection exists.
+         */
+        hr = pVileAuto->get_Visible(&visible);
         if (FAILED(hr))
         {
-            /* We'll assume the user has closed our previous editor instance. */
+            // Assume the user has closed our previous editor instance.
 
             Disconnect();  // kills editor connection and nulls pVileAuto.
+        }
+        else if (restore_wdw && ! visible)
+        {
+            hr = pVileAuto->put_Visible(TRUE);
+            if (FAILED(hr))
+                Disconnect(); // Certainly didn't expect that.
         }
     }
     if (! pVileAuto)
     {
         LPUNKNOWN punk;
 
-        hr = CoCreateInstance(CLSID_VileAuto, 
-                              NULL, 
+        hr = CoCreateInstance(CLSID_VileAuto,
+                              NULL,
                               CLSCTX_LOCAL_SERVER,
-                              IID_IUnknown, 
+                              IID_IUnknown,
                               (void **) &punk);
         if (FAILED(hr))
             return (hr);
-        hr = punk->QueryInterface(IID_IVileAuto, (void **) &pVileAuto);   
-        punk->Release(); 
-        if (FAILED(hr))  
+        hr = punk->QueryInterface(IID_IVileAuto, (void **) &pVileAuto);
+        punk->Release();
+        if (FAILED(hr))
             return (hr);
-        hr = pVileAuto->put_Visible(TRUE);   /* Make the editor visible. */
-        if (FAILED(hr))  
+        if (restore_wdw)
         {
-            /* Certainly didn't expect that. */
-
-            Disconnect();
+            hr = pVileAuto->put_Visible(TRUE);   // Make the editor visible.
+            if (FAILED(hr))
+                Disconnect(); // Certainly didn't expect that.
         }
     }
     if (SUCCEEDED(hr))
@@ -393,7 +425,7 @@ HRESULT
 CVile::FileOpen(BSTR filename, long lineno)
 {
     BSTR         bcmd;
-    char         cmd[512], line[128];
+    char         cmd[1024], line[64], cd[512];
     HRESULT      hr;
     VARIANT_BOOL in_insert_mode;        // editor in insert mode?
     OLECHAR      *ole;
@@ -401,10 +433,24 @@ CVile::FileOpen(BSTR filename, long lineno)
     hr = Connect(RESTORE_WDW, &in_insert_mode);
     if (SUCCEEDED(hr))
     {
-        sprintf(cmd, 
-                "%s:e %S\n", 
+        sprintf(cmd,
+                "%s:e %S\n",
                 (in_insert_mode) ? "\033" : "",   // prepend ESC if necessary
                 filename);
+        if (visvile_opts.cd_doc_dir)
+        {
+            char *tmp, *cp;
+
+            if ((tmp = FROM_OLE_STRING(filename)) == NULL)
+                return (E_OUTOFMEMORY);
+            if ((cp = strrchr(tmp, '\\')) != NULL)
+            {
+                *cp = '\0';
+                sprintf(cd, ":cd %s\n", tmp);
+                *cp = '\\';
+                strcat(cmd, cd);
+            }
+        }
         if (lineno > 1)
         {
             sprintf(line, ":%ld\n", lineno);
@@ -426,7 +472,15 @@ CVile::FileOpen(BSTR filename, long lineno)
 
 
 HRESULT
-CVile::VileCmd(const char *cmd)
+CVile::VileCmd(
+    const char *cmd,
+    bool       restore_wdw,     // T -> make editor visible and pop its window
+                                //      on top.
+    bool       force_connection // T -> force connection to editor if
+                                //      necessary.
+                                // F -> don't execute command if editor
+                                //      disconnected.
+              )
 {
     BSTR         bcmd;
     HRESULT      hr;
@@ -434,12 +488,19 @@ CVile::VileCmd(const char *cmd)
     OLECHAR      *ole;
     char         *scratch = NULL;
 
-    hr = Connect(RESTORE_WDW, &in_insert_mode);
+    if (! force_connection && ! Connected())
+    {
+        // The command should not be executed.
+
+        return (S_OK);
+    }
+
+    hr = Connect(restore_wdw ? RESTORE_WDW : NO_RESTORE_WDW, &in_insert_mode);
     if (SUCCEEDED(hr))
     {
         if (in_insert_mode)
         {
-            // Prepend ESC to command. 
+            // Prepend ESC to command.
 
             if ((scratch = (char *) malloc(strlen(cmd) + 2)) == NULL)
                 return (E_OUTOFMEMORY);
@@ -450,13 +511,30 @@ CVile::VileCmd(const char *cmd)
         bcmd = SysAllocString(ole);
         if (! (bcmd && ole))
             return (E_OUTOFMEMORY);
-        hr = pVileAuto->VileKeys(bcmd);
+        if (restore_wdw)
+        {
+            /*
+             * Pop editor to the front.  Note that there's a subtle
+             * sequencing problem here.  Some command strings will require
+             * restoration of the editor's window _before_ the string is
+             * executed.  Why?  The string may be attempting to open a file
+             * that's created as a side effect of a DevStudio operation
+             * that _follows_ execution of "cmd".  In that situation,
+             * visvile can't be waiting for the editor to finish execting
+             * "cmd" before directing the editor to pop to the front.  Why?
+             * 'Cause until visvile returns control to DevStudio, DevStudio
+             * won't create the target file.  Nasty, eh?  Sure wasted an
+             * evening of my life.
+             */
+
+            hr = pVileAuto->ForegroundWindow();  // Pop editor to front.
+        }
+        if (SUCCEEDED(hr))
+            hr = pVileAuto->VileKeys(bcmd);
         SysFreeString(bcmd);  // don't need to free "ole", it points at a
                               // global, dynamic tmp buffer.
         if (scratch)
             free(scratch);
-        if (SUCCEEDED(hr))
-            hr = pVileAuto->ForegroundWindow();  // Pop editor to front.
     }
     return (hr);
 }
@@ -474,6 +552,7 @@ CConfigDlg::CConfigDlg(CWnd* pParent /*=NULL*/)
 	m_sync_errbuf = FALSE;
 	m_close_ds_doc = FALSE;
 	m_cd_doc_dir = FALSE;
+	m_write_buffers = FALSE;
 	//}}AFX_DATA_INIT
 }
 
@@ -486,13 +565,14 @@ void CConfigDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_ERRBUF, m_sync_errbuf);
 	DDX_Check(pDX, IDC_CLOSE_DOC, m_close_ds_doc);
 	DDX_Check(pDX, IDC_CHDIR, m_cd_doc_dir);
+	DDX_Check(pDX, IDC_WRITE_BUFFERS, m_write_buffers);
 	//}}AFX_DATA_MAP
 }
 
 
 BEGIN_MESSAGE_MAP(CConfigDlg, CDialog)
 	//{{AFX_MSG_MAP(CConfigDlg)
-		// NOTE: the ClassWizard will add message map macros here
+	ON_BN_CLICKED(IDC_ENABLED, OnEnabled)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -501,9 +581,48 @@ END_MESSAGE_MAP()
 
 BOOL CConfigDlg::OnInitDialog()
 {
-    m_cd_doc_dir   = visvile_opts.cd_doc_dir;
-    m_close_ds_doc = visvile_opts.close_ds_doc;
-    m_enabled      = visvile_opts.enabled;
-    m_sync_errbuf  = visvile_opts.sync_errbuf;
-    return (CDialog::OnInitDialog());
+    m_cd_doc_dir    = visvile_opts.cd_doc_dir;
+    m_close_ds_doc  = visvile_opts.close_ds_doc;
+    m_enabled       = visvile_opts.enabled;
+    m_sync_errbuf   = visvile_opts.sync_errbuf;
+    m_write_buffers = visvile_opts.write_buffers;
+
+    /*
+     * Now, depending on value of m_enabled, manually enable/disable all
+     * other controls.  I'm doing this because I'm learning MFC/Windows
+     * programming, not because I particularly care if the dialog box
+     * responds to user input or not.
+     */
+    update_dlg_control_states(FALSE);
+    return (CDialog::OnInitDialog()); }
+
+void
+CConfigDlg::OnEnabled()
+{
+    // Called when user clicks the Enabled check box.
+    update_dlg_control_states(TRUE);
+}
+
+void
+CConfigDlg::update_dlg_control_states(bool dialog_up)
+{
+    if (dialog_up)
+        UpdateData(TRUE);     // copy current dlg data into member vars.
+    update_dlg_control(IDC_CLOSE_DOC, dialog_up);
+    update_dlg_control(IDC_CHDIR, dialog_up);
+    update_dlg_control(IDC_WRITE_BUFFERS, dialog_up);
+    update_dlg_control(IDC_ERRBUF, dialog_up);
+}
+
+void
+CConfigDlg::update_dlg_control(int ctrl_id, bool dialog_up)
+{
+    CWnd *hctrl;
+
+    if ((hctrl = GetDlgItem(ctrl_id)) != NULL)
+    {
+        hctrl->EnableWindow(m_enabled);
+        if (dialog_up)
+            hctrl->UpdateWindow();
+    }
 }

@@ -18,6 +18,8 @@ typedef struct visvile_opts_struct
                          //               or warnings, attempt to open the
                          //               build log file (if it exists) in
                          //               winvile's error buffer.
+    DWORD write_buffers; // Boolean, T -> write modified buffers to disk
+                         //               prior to build.
 } VISVILE_OPTS;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -32,10 +34,14 @@ class CVile
         CVile()  { pVileAuto = NULL; }
         ~CVile() { Disconnect(); }
         HRESULT  Connect(int restore_wdw, VARIANT_BOOL *in_insert_mode);
+        bool     Connected();
+                        // Is visvile connected to winvile?
         void     Disconnect();
         HRESULT  FileOpen(BSTR filename, long lineno);
                         // A negative lineno is the same as BOF.
-        HRESULT  VileCmd(const char *cmd);
+        HRESULT  VileCmd(const char *cmd,
+                         bool       restore_wdw,
+                         bool       force_connection = TRUE);
                         // Run an arbitrary command.
 };
 
@@ -57,6 +63,7 @@ public:
 	BOOL	m_sync_errbuf;
 	BOOL	m_close_ds_doc;
 	BOOL	m_cd_doc_dir;
+	BOOL	m_write_buffers;
 	//}}AFX_DATA
 
 
@@ -69,10 +76,12 @@ public:
 
 // Implementation
 protected:
+    void update_dlg_control_states(bool dialog_up);
+    void update_dlg_control(int ctrl_id, bool dialog_up);
 
 	// Generated message map functions
 	//{{AFX_MSG(CConfigDlg)
-		// NOTE: the ClassWizard will add member functions here
+	afx_msg void OnEnabled();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

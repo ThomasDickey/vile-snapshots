@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.62 1998/04/30 23:49:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.63 1998/09/03 22:46:33 cmorgan Exp $
  *
  */
 
@@ -350,15 +350,6 @@ comment_prefix (void)
 	return result;
 }
 
-#define cplus_comment_start(c) \
-		((c == '/') \
-		&& DOT.o+1 < llength(DOT.l) \
-		&& lgetc(DOT.l,DOT.o+1) == '/')
-
-#define c_comment_start(c) \
-		((c == '/') \
-		&& DOT.o+1 < llength(DOT.l) \
-		&& lgetc(DOT.l,DOT.o+1) == '*')
 
 #define fmt_insert(count,chr) \
 		if ((s = linsert(count,chr)) != TRUE) \
@@ -428,7 +419,6 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 		DOT.l = lback(DOT.l);
 		(void)firstnonwhite(FALSE,1);
 
-		plength = comment_prefix ();
 		clength = indentlen(DOT.l);
 		tb_init(wp, EOS);
 		tb_init(cp, EOS);
@@ -436,17 +426,11 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 
 		c = char_at(DOT);
 		is_comment = FALSE;
-		if (plength >= 0) {
+		if ((plength = comment_prefix()) >= 0) {
 			is_comment = TRUE;
 			tb_bappend(cp,
 				DOT.l->l_text + DOT.o,
 				(ALLOC_T)(plength - DOT.o));
-		} else if (cplus_comment_start(c)) {
-			is_comment = TRUE;
-			tb_bappend(cp, "//", 2);
-		} else if (c_comment_start(c)) {
-			is_comment = TRUE;
-			tb_bappend(cp, "*", 1);
 		}
 
 		/* scan through lines, filling words */

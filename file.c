@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.232 1998/09/01 09:31:12 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.233 1998/09/07 21:18:58 tom Exp $
  *
  */
 
@@ -949,7 +949,7 @@ quickreadf(register BUFFER *bp, int *nlinep)
 		(void)strcpy(temp, bp->b_key);
 		ue_crypt((char *)0, 0);
 		ue_crypt(temp, strlen(temp));
-		ue_crypt((char *)&bp->b_ltext[1], (ALLOC_T)len);
+		ue_crypt((char *)&bp->b_ltext[1], (UINT)len);
 	}
 #endif
 

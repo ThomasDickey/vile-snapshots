@@ -1,5 +1,28 @@
 Changes for vile 8.1 (released ??? ??? ??, 1998)
 
+ (tom) 98090? (p)
+	+ modify attribute rendition in win32 drivers (ntconio.c, ntwinio.c)
+	  to make highlighting work with colored text by reversing fg/bg.
+	+ modify colors in winvile to make lightgray distinct from gray
+	  (reported by Clark Morgan).
+	+ further modify shell_complete() to continue splitting command lines
+	  on blanks, e.g., ^X!command did not do filename completion just like
+	  :!command.
+	+ minor lint fixes, e.g,. signed/unsigned values (buffer.c, input.c).
+	> patches by Clark Morgan (mostly for visvile):
+	+ implement logic to return $font value on winvile.
+	+ simplified some expressions in vile's comment-formatter to make it
+	  format C++ comments.
+	+ if visvile disabled, no other dialog options are editable 
+	+ added more document type checking to avoid occasionally opening such
+	  things as dialog box resource scripts. 
+	+ implemented "CWD set from opened document's path" option 
+	+ implemented "Write all modified buffers to disk prior to build"
+	  option.  This feature doesn't work as well as it could due to a
+	  DevStudio (v5) bug.  Refer to ../doc/visvile.doc for further details. 
+	+ implemented "Build log -> errbuf if build reports errs/warnings"  
+	  option. 
+
  (tom) 980903 (o)
 	+ correct 8.0n change for highlighting, fixing an off-by-one error in
 	  visual-matches (reported by Alex Wetmore).
