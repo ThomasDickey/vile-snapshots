@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.116 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.117 1999/10/10 18:05:46 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -672,22 +672,6 @@ regerror(const char *s)
 	mlforce("[Bad pattern: %s ]",s);
 }
 
-
-/*
- * eq -- Compare two characters.  The "bc" comes from the buffer, "pc"
- *	from the pattern.  If we are in IGNCASE mode, fold out the case.
- */
-#if OPT_EVAL || UNUSED
-int
-eq(register int bc, register int pc)
-{
-	if (bc == pc)
-		return TRUE;
-	if (!window_b_val(curwp, MDIGNCASE))
-		return FALSE;
-	return nocase_eq(bc,pc);
-}
-#endif
 
 /* ARGSUSED */
 int

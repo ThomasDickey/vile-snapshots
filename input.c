@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.205 1999/10/03 17:35:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.207 1999/10/11 00:02:01 tom Exp $
  *
  */
 
@@ -63,11 +63,6 @@ typedef	struct	_kstack	{
 	int	m_rept;		/* the number of times to execute the macro */
 	ITBUFF  *m_kbdm;	/* the macro-text to execute		*/
 	ITBUFF  *m_dots;	/* workspace for "." command		*/
-#ifdef GMDDOTMACRO
-	ITBUFF  *m_DOTS;	/* save-area for "." command		*/
-	int	m_RPT0;		/* saves 'dotcmdcnt'			*/
-	int	m_RPT1;		/* saves 'dotcmdrep'			*/
-#endif
 	} KSTACK;
 
 /*--------------------------------------------------------------------------*/
@@ -84,6 +79,7 @@ typedef	struct	_kstack	{
 static	void	finish_kbm (void);
 
 static  int	kbdmacactive;	/* current mode	*/
+static	ALLOC_T	kbdmaclength;	/* effective recording length */
 static	KSTACK	*KbdStack;	/* keyboard/@-macros that are replaying */
 static	ITBUFF  *KbdMacro;	/* keyboard macro, recorded	*/
 static	int	last_eolchar;	/* records last eolchar-match in 'kbd_string' */
@@ -1724,33 +1720,6 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 }
 
 /*
- * Make the "." replay the keyboard macro
- */
-#ifdef GMDDOTMACRO
-static void
-dot_replays_macro(int macnum)
-{
-	extern	const	CMDFUNC	f_kbd_mac_exec;
-	char	temp[NSTRING];
-	ITBUFF	*tmp;
-	int	c;
-
-	if (macnum == DEFAULT_REG) {
-		if ((c = fnc2kcod(&f_kbd_mac_exec)) == -1)
-			return;
-		(void)kcod2str(c, temp);
-	} else {
-		(void)lsprintf(temp, "@%c", index2reg(macnum));
-	}
-	dotcmdbegin();
-	tmp = TempDot(FALSE);
-	(void)itb_sappend(&tmp, temp);
-	dotcmdfinish();
-	dotcmdbegin();
-}
-#endif
-
-/*
  * Begin recording the dot command macro.
  * Set up variables and return.
  * we use a temporary accumulator, in case this gets stopped prematurely
@@ -1862,6 +1831,35 @@ kbd_mac_recording(void)
 	return (kbdmacactive == RECORD);
 }
 
+/*
+ * If we're recording a keyboard macro, remember the length before the
+ * start/stop function is called, so we can ignore the last few characters that
+ * actually turn the recording off when replaying it.
+ */
+void
+kbd_mac_check(void)
+{
+	if (kbdmacactive == RECORD) {
+		kbdmaclength = itb_length(KbdMacro);
+	}
+}
+
+/* translate the keyboard-macro into readable form */
+void
+get_kbd_macro(TBUFF **rp)
+{
+	char temp[80];
+	unsigned n, last, len;
+
+	*rp = tb_init(rp, EOS);
+	if ((last = itb_length(KbdMacro)) != 0) {
+		for (n = 0; n < last; n++) {
+			len = kcod2escape_seq(itb_get(KbdMacro,n), temp);
+			*rp = tb_bappend(rp, temp, len);
+		}
+	}
+}
+
 /* ARGSUSED */
 int
 kbd_mac_startstop(int f GCC_UNUSED, int n GCC_UNUSED)
@@ -1870,9 +1868,9 @@ kbd_mac_startstop(int f GCC_UNUSED, int n GCC_UNUSED)
 		if (kbdmacactive == RECORD) {
 			mlwrite("[Macro recording stopped]");
 			kbdmacactive = 0;
-#ifdef GMDDOTMACRO
-			dot_replays_macro(DEFAULT_REG);
-#endif
+			if (KbdMacro != 0
+			 && itb_length(KbdMacro) > kbdmaclength)
+				KbdMacro->itb_used = kbdmaclength;
 			upmode();
 			return TRUE;
 		}
@@ -1913,11 +1911,17 @@ kbd_mac_exec(int f GCC_UNUSED, int n)
 int
 kbd_mac_save(int f GCC_UNUSED, int n GCC_UNUSED)
 {
+	TBUFF *p = 0;
+	unsigned j, len;
+
 	ksetup();
-	itb_first(KbdMacro);
-	while (itb_more(KbdMacro))
-		if (!kinsert(itb_next(KbdMacro)))
-			break;
+	get_kbd_macro(&p);
+	if ((len = tb_length(p)) != 0) {
+		for (j = 0; j < len; j++)
+			if (!kinsert(tb_get(p, j)))
+				break;
+	}
+	tb_free(&p);
 	kdone();
 	mlwrite("[Keyboard macro saved in register %c.]", index2reg(ukb));
 	return TRUE;
@@ -1983,19 +1987,9 @@ ITBUFF *ptr)			/* data to interpret */
 		/* save data for "." on the same stack */
 		sp->m_dots = 0;
 		if (dotcmdactive == PLAY) {
-#ifdef GMDDOTMACRO
-			sp->m_DOTS = dotcmd;
-			sp->m_RPT0 = dotcmdcnt;
-			sp->m_RPT1 = dotcmdrep;
-#endif
 			dotcmd     = 0;
 			dotcmdactive = RECORD;
 		}
-#ifdef GMDDOTMACRO
-		  else {
-			sp->m_DOTS = 0;
-		  }
-#endif
 		return (itb_init(&dotcmd, esc_c) != 0
 		  &&    itb_init(&(sp->m_dots), esc_c) != 0);
 	}
@@ -2018,16 +2012,6 @@ finish_kbm(void)
 
 			itb_free(&(sp->m_kbdm));
 			itb_free(&(sp->m_dots));
-#ifdef GMDDOTMACRO
-			itb_free(&dotcmd);
-			if (sp->m_DOTS != 0) {
-				dotcmd     = sp->m_DOTS;
-				dotcmdcnt  = sp->m_RPT0;
-				dotcmdrep  = sp->m_RPT1;
-				dotcmdactive = PLAY;
-			}
-			dot_replays_macro(sp->m_indx);
-#endif
 			free((char *)sp);
 		}
 	}

@@ -17,10 +17,10 @@
  */
 
 #include "estruct.h"
-#include "edef.h"
 
 #if OPT_PERL
 
+#include "edef.h"
 #include "api.h"
 
 extern REGION *haveregion;

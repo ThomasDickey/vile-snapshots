@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.391 1999/10/03 22:13:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.394 1999/10/10 23:41:12 tom Exp $
  *
  */
 
@@ -263,6 +263,9 @@ extern int did_hard_error_occur (void);
 #endif
 
 /* statevar.c */
+extern char * get_cdpath (void);
+extern char * get_shell (void);
+extern char * get_xshell (void);
 extern char * vile_getenv(char *s);
 #if OPT_EVAL
 extern void setcmdstatus(int s);
@@ -272,10 +275,8 @@ extern void setcmdstatus(int s);
 
 /* eval.c */
 extern char * get_directory(void);
-extern char * get_shell (void);
 extern char * get_token (char *src, TBUFF **tok, int eolchar);
 extern char * get_xdisplay (void);
-extern char * get_xshell (void);
 extern char * mac_tokval (TBUFF **tok);
 extern char * mklower (char *str);
 extern char * mktrimmed (char *str);
@@ -497,8 +498,10 @@ extern int start_kbm (int n, int macnum, ITBUFF *ptr);
 extern int tgetc (int quoted);
 extern int tgetc_avail (void);
 extern void dotcmdstop (void);
+extern void get_kbd_macro(TBUFF **rp);
 extern void incr_dot_kregnum (void);
 extern void kbd_kill_response (TBUFF *buf, unsigned *position, int c);
+extern void kbd_mac_check(void);
 extern void kbd_pushback (TBUFF *buf, int skip);
 extern void set_end_string (int c);
 extern void tungetc(int c);
@@ -843,10 +846,6 @@ extern int scanner (regexp *exp, int direct, int wrapok, int *wrappedp);
 extern void attrib_matches (void);
 extern void regerror (const char *s);
 extern void scanboundry (int wrapok, MARK dot, int dir);
-
-#if OPT_EVAL || UNUSED
-extern int eq (int bc, int pc);
-#endif
 
 #if OPT_HILITEMATCH
 void clobber_save_curbp(BUFFER *bp);

@@ -1,4 +1,4 @@
--- $Header: /users/source/archives/vile.vcs/doc/RCS/menus.doc,v 1.4 1999/08/30 00:16:48 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/menus.doc,v 1.5 1999/10/10 18:13:17 tom Exp $
 -- adapted from description by Philippe Chassany (20/02/1997)
 -- e-mail: phil@cln46ks.der.edf.fr
 
@@ -62,6 +62,11 @@ B:Clear Highlighting (below):clear-attributes-til end-of-file
 S
 B:Search Forward...:cmd search-forward
 B:Search Backward...:cmd search-reverse
+S
+B:Reload File:cmd e!
+B:Rename Buffer:cmd rename-buffer
+B:Edit:cmd edit-file
+B:Rename File:cmd filename
 S
 B:Manual for...:cmd ShowManpage
 S

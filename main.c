@@ -23,7 +23,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.403 1999/10/03 20:49:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.404 1999/10/10 23:04:46 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -720,6 +720,7 @@ loop(void)
 		s = update(FALSE);
 
 		/* get a user command */
+		kbd_mac_check();
 		c = kbd_seq();
 
 		/* reset the contents of the command/status line */

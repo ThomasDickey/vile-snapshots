@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.257 1999/09/30 20:18:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.258 1999/10/10 21:43:47 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -21,13 +21,9 @@ extern "C" {
  *	globals. -pgf
  */
 #ifdef realdef
-# ifdef __cplusplus
-#  define decl_init_const(thing,value) extern const thing = value
-# else
-#  define decl_init_const(thing,value) const thing = value
-# endif
-#  define decl_init(thing,value) thing = value
-#  define decl_uninit(thing) thing
+# define decl_init_const(thing,value) EXTERN_CONST thing = value
+# define decl_init(thing,value) thing = value
+# define decl_uninit(thing) thing
 #else
 # define decl_init_const(thing,value) extern const thing
 # define decl_init(thing,value) extern thing

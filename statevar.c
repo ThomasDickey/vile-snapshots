@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.21 1999/09/19 19:17:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.23 1999/10/10 23:40:18 tom Exp $
  */
 
 #include	"estruct.h"
@@ -18,6 +18,9 @@ static char *directory;	/* $TMP environment is "$directory" state variable */
 static char *x_display;	/* $DISPLAY environment is "$xdisplay" state variable */
 static char *x_shell;	/* $XSHELL environment is "$xshell" state variable */
 #endif
+#endif
+#if OPT_PATHLOOKUP
+static char *cdpath;	/* $CDPATH environment is "$cdpath" state variable. */
 #endif
 
 #if OPT_HOOKS
@@ -135,17 +138,39 @@ get_directory(void)
 static char *
 getkill(TBUFF **rp)
 {
-	if (!kbs[0].kbufh) {
-		tb_init(rp, EOS);
-	} else {
+	tb_init(rp, EOS);
+	if (kbs[0].kbufh != 0) {
 		int n = index2ukb(0);
 		tb_bappend(rp, (char *)(kbs[n].kbufh->d_chunk),
 				kbs[n].kused);
-		tb_append(rp, EOS);
 	}
+	tb_append(rp, EOS);
 
 	return tb_values(*rp);
 }
+
+#if OPT_PATHLOOKUP
+char *
+get_cdpath(void)
+{
+	if (cdpath == 0)
+		SetEnv(&cdpath, DftEnv("CDPATH", ""));
+	return cdpath;
+}
+
+int var_CDPATH(TBUFF **rp, const char *vp)
+{
+	if (rp) {
+		tb_scopy(rp, get_cdpath());
+		return TRUE;
+	} else if (vp) {
+		SetEnv(&cdpath, vp);
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+#endif
 
 #if OPT_EVAL
 /* Return comma-delimited list of "interesting" options. */
@@ -159,6 +184,14 @@ cfgopts(void)
 #endif
 #if OPT_PERL
 	"perl",
+#endif
+#if DISP_TERMCAP
+# if USE_TERMINFO
+	"terminfo",
+# endif
+# if USE_TERMCAP
+	"termcap",
+# endif
 #endif
 	NULL		 /* End of list marker */
     };
@@ -569,6 +602,18 @@ int var_IDENTIF(TBUFF **rp, const char *vp)
 	}
 }
 
+int var_KBDMACRO(TBUFF **rp, const char *vp)
+{
+	if (rp) {
+		get_kbd_macro(rp);
+		return TRUE;
+	} else if (vp) {
+		return ABORT;  /* read-only */
+	} else {
+		return FALSE;
+	}
+}
+
 int var_KILL(TBUFF **rp, const char *vp)
 {
 	if (rp) {
@@ -689,7 +734,7 @@ int var_MLFORMAT(TBUFF **rp, const char *vp)
 		if (modeline_format == 0)
 			mlforce("BUG: modeline_format uninitialized");
 		else
-		    	tb_scopy(rp, modeline_format);
+			tb_scopy(rp, modeline_format);
 		return TRUE;
 	} else if (vp) {
 		SetEnv(&modeline_format, vp);
@@ -810,7 +855,7 @@ int var_POSFORMAT(TBUFF **rp, const char *vp)
 		if (position_format == 0)
 			mlforce("BUG: position_format uninitialized");
 		else
-		    	tb_scopy(rp, position_format);
+			tb_scopy(rp, position_format);
 		return TRUE;
 	} else if (vp) {
 		SetEnv(&position_format, vp);
@@ -943,7 +988,7 @@ int var_RDHOOK(TBUFF **rp, const char *vp)
 int var_REPLACE(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-	    	tb_scopy(rp, tb_values(replacepat));
+		tb_scopy(rp, tb_values(replacepat));
 		return TRUE;
 	} else if (vp) {
 		tb_scopy(&replacepat, vp);
@@ -956,7 +1001,7 @@ int var_REPLACE(TBUFF **rp, const char *vp)
 int var_SEARCH(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-	    	tb_scopy(rp, searchpat);
+		tb_scopy(rp, searchpat);
 		return TRUE;
 	} else if (vp) {
 		(void)strcpy(searchpat, vp);

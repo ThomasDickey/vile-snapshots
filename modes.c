@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.184 1999/10/02 01:23:36 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.185 1999/10/10 17:59:44 tom Exp $
  *
  */
 
@@ -2549,7 +2549,7 @@ extend_mode_list(int increment)
 		my_mode_list = typeallocn(const char *, k);
 		memcpy(TYPECAST(char *,my_mode_list), all_modes, (j+1) * sizeof(*my_mode_list));
 	} else {
-		my_mode_list = typereallocn(const char *, TYPECAST(char *,my_mode_list), k);
+		my_mode_list = typereallocn(const char *, TYPECAST(char **,my_mode_list), k);
 	}
 	return j;
 }

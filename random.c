@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.210 1999/10/03 21:15:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.211 1999/10/10 17:38:18 cmorgan Exp $
  *
  */
 
@@ -1078,10 +1078,8 @@ int
 set_directory(const char *dir)
 {
     char       exdir[NFILEN];
-#if SYS_UNIX
     const char *cdpath = 0;
     char       cdpathdir[NFILEN];
-#endif
     char *exdp;
 #if SYS_MSDOS || SYS_OS2
     int curd = curdrive();
@@ -1141,22 +1139,96 @@ set_directory(const char *dir)
 	if (cd_and_pwd(exdp))
 		return TRUE;
 
-#if SYS_UNIX && OPT_PATHLOOKUP
+#if OPT_PATHLOOKUP
+# if SYS_VMS
+	/*
+	 * chdir() failed.  Attempt to match dir using $CDPATH on a VMS
+	 * host.  Note that we can't test using is_pathname() because the
+	 * indirectly referenced is_absolute_pathname() code sez that any
+	 * filespec with an embeded '[' or ':' is absolute--not what we
+	 * want here.
+	 */
+
+	if (is_directory(exdp)) {
+		/* For each comma-delimited component in CDPATH */
+		cdpath = get_cdpath();
+		while ((cdpath = parse_pathlist(cdpath, cdpathdir)) != 0) {
+			int	 len;
+			char *tmp, newdir[NFILEN];
+
+			newdir[0] = '\0';
+			len	  = strlen(cdpathdir);
+			if (len > 0) {
+				char **globvec = glob_string(cdpathdir);
+
+				if (glob_length(globvec) == 1) {
+					strcpy(cdpathdir, globvec[0]);
+					glob_free(globvec);
+					tmp = &cdpathdir[len - 1];
+					if (*tmp == RBRACK &&
+						*exdp == LBRACK &&
+							exdp[1] == '.') {
+						/*
+						 * Concatenating dir that ends
+						 * in bracket with subdir.
+						 *
+						 * Ex:  dvc:[dir] + [.subdir]
+						 */
+
+						*tmp = '\0';
+						sprintf(newdir,
+							"%s%s",
+							cdpathdir,
+							&exdp[1]);
+					} else if (*tmp == ':' &&
+							*exdp == LBRACK) {
+						/*
+						 * Concatenating rooted logical
+						 * with dir.
+						 *
+						 * Ex:  dvc: + [dir]
+						 */
+
+						sprintf(newdir,
+							"%s%s",
+							cdpathdir,
+							exdp);
+					}
+					if (newdir[0] && cd_and_pwd(newdir))
+						return TRUE;
+				} else {
+					glob_free(globvec);
+				}
+			}
+		}
+	}
+# else
 	/*
 	** chdir failed.  If the directory name doesn't begin with any of
 	** "/", "./", or "../", get the CDPATH environment variable and check
 	** if the specified directory name is a subdirectory of a
 	** directory in CDPATH.
 	*/
-	if (!is_pathname(exdp)
-	 && (cdpath = getenv("CDPATH")) != 0) {
-		/* For each colon-separated component in CDPATH */
+	if (!is_pathname(exdp)) {
+		/* For each appropriately delimited component in CDPATH */
+		cdpath = get_cdpath();
 		while ((cdpath = parse_pathlist(cdpath, cdpathdir)) != 0) {
-			if (cd_and_pwd(pathcat(cdpathdir, cdpathdir, exdp))) {
-				return TRUE;
+			char **globvec = glob_string(cdpathdir);
+
+			if (glob_length(globvec) == 1) {
+				strcpy(cdpathdir, globvec[0]);
+				glob_free(globvec);
+				if (cd_and_pwd(pathcat(cdpathdir,
+						       cdpathdir,
+						       exdp))) {
+					return TRUE;
+				}
+			} else {
+				glob_free(globvec);
 			}
 		}
 	}
+# endif
 #endif
     }
 #if SYS_MSDOS || SYS_OS2

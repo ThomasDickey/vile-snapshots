@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_3v
+MANIFEST for vile, version v8_3w
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -196,6 +196,8 @@ filters/pas.key                 keywords for pascal highlighting filter
 filters/perl.key                keywords for perl syntax filter
 filters/perlfilt.l              Perl syntax filter for vile
 filters/pot.key                 keywords for pot (gettext) mode
+filters/py-filt.l               syntax filter for Python
+filters/py.key                  keywords for Python syntax filter
 filters/rcs-filt.l              syntax filter for RCS archives
 filters/rcs.key                 keywords for RCS syntax filter
 filters/sccs.key                keywords for SCCS syntax filter

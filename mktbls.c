@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.104 1999/09/14 10:57:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.105 1999/10/10 21:44:56 tom Exp $
  *
  */
 
@@ -1482,7 +1482,7 @@ init_fsms(void)
 	Fprintf(nefsms, "#ifndef realdef\n");
 	Fprintf(nefsms, "extern const FSM_CHOICES fsm_%s_choices[];\n", name);
 	Fprintf(nefsms, "#else\n");
-	Fprintf(nefsms, "const FSM_CHOICES fsm_%s_choices[] = %c\n", name, L_CURL);
+	Fprintf(nefsms, "EXTERN_CONST FSM_CHOICES fsm_%s_choices[] = %c\n", name, L_CURL);
 }
 
 static void

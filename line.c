@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.128 1999/09/14 10:19:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.129 1999/10/10 18:44:03 tom Exp $
  *
  */
 
@@ -1544,6 +1544,12 @@ execkreg(int f, int n)
 
 	if ((status = mlreply_reg("Execute register: ", cbuf, &c, lastreg)) != TRUE)
 		return status;
+
+		/* disallow execution of the characters we're recording */
+	if (c == KEYST_KCHR) {
+		mlwarn("[Error: cannot execute %c-register]", c);
+		return FALSE;
+	}
 
 	j = reg2index(c);
 	if (kbm_started(j,TRUE))

@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.66 1999/05/18 00:22:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.67 1999/10/10 18:06:18 tom Exp $
  *
  */
 
@@ -78,7 +78,7 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 			char tok[NSTRING];
 			if (!clexec)
 				lsprintf(tok, "(%d)", c);
-			no_such_function(tok);
+			(void)no_such_function(tok);
 		}
 	}
 	if (!cfp) {
