@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.229 2000/11/13 01:03:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.230 2000/12/04 11:36:43 tom Exp $
  *
  */
 
@@ -1056,7 +1056,7 @@ get_token2(char *src, TBUFF ** tok, int eolchar, int *actual)
 	    chr = *src++;	/* record the character */
 	}
 	if (first && shell && chr == DQUOTE) {
-	    ;	/* eat the leading quote if we're re-gluing a shell command */
+	    ;			/* eat the leading quote if we're re-gluing a shell command */
 	} else {
 	    tb_append(tok, chr);
 	}
@@ -1236,6 +1236,10 @@ setup_macro_buffer(TBUFF * name, int flag)
     /* set up the buffer for the new macro */
     if ((bp = bfind(bname, BFINVS)) == NULL) {
 	mlforce("[Cannot create procedure]");
+	return FALSE;
+    }
+    if (bp->b_inuse) {
+	mlforce("[Currently executing this procedure]");
 	return FALSE;
     }
 
@@ -1953,6 +1957,8 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 
     static BUFFER *dobuferrbp;
 
+    bp->b_inuse++;
+
     /* starting at the beginning of the buffer */
     for_each_line(lp, bp) {
 	bp->b_dot.l = lp;
@@ -2020,9 +2026,9 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	 */
 	if (*cmdp == ';'
 	    || *cmdp == '"'
-	    || *cmdp == EOS)
+	    || *cmdp == EOS) {
 	    continue;
-
+	}
 #if	OPT_DEBUGMACROS
 	/* echo lines and get user confirmation when debugging */
 	if (tracemacros) {
@@ -2087,8 +2093,9 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	}
 
 	/* goto labels are no-ops */
-	if (*cmdp == '*')
+	if (*cmdp == '*') {
 	    continue;
+	}
 
 	no_errs = save_no_errs;
 
@@ -2173,6 +2180,8 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
     if (linebuf != 0)
 	free(linebuf);
 
+    if (--(bp->b_inuse) < 0)
+	bp->b_inuse = 0;
     return status;
 }
 

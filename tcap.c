@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.139 2000/11/15 11:27:42 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.140 2000/12/03 21:04:51 tom Exp $
  *
  */
 
@@ -253,7 +253,7 @@ static	int	x_origin = 1,
 		y_origin = 1;
 
 #if HAVE_TPARM	/* usually terminfo */
-#define CALL_TPARM(cap,code) tparm(cap, code)
+#define CALL_TPARM(cap,code) tparm(cap, code,0,0,0,0,0,0,0,0)
 #else
 #define CALL_TPARM(cap,code) tgoto(cap, 0, code)
 #endif

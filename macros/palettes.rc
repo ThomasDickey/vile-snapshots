@@ -1,6 +1,7 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/palettes.rc,v 1.5 1999/09/14 10:17:30 tom Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/palettes.rc,v 1.6 2000/11/15 23:10:30 tom Exp $
 ; Sample color schemes.
 
+~if &not &error $ncolors
 ; Note that while the palette strings reference up to 16 colors, you will have
 ; only 8 available if vile is linked with termcap.  To get 16 colors, you need
 ; terminfo (e.g., ncurses), and a terminal emulator that supports 16 colors.
@@ -44,3 +45,5 @@ define-color-scheme reverse video-attr=rev
 define-color-scheme white use=dark fcolor=white bcolor=black
 
 define-color-scheme black use=light bcolor=white fcolor=black
+
+~endif

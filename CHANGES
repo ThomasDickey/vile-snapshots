@@ -1,8 +1,27 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20001206 (d)
+	> Kevin Buettner:
+	+ change default for $XSHELLFLAGS from "-c" to "-e", which matches the
+	  documentation for $xshell-flags.
+	+ make updlineattrs() even more efficient and also fixes a problem
+	  with attributes not always being displayed correctly across adjacent
+	  rows.
+	> Tom Dickey:
+	+ revert part of the PutChar() change from 9.2c, since it incorrectly
+	  puts the cursor at the first character of a line after a "put"
+	  (reported by Paul Fox).
+	+ add/use BUFFER.b_inuse value to ensure that we do not recreate a
+	  stored procedure that is currently being executed (reported by
+	  George Eccles, Clark Morgan).
+	+ add dummy parameters to invocation of tparm() to make this build on
+	  HPUX and AIX which use the X/Open non-varargs prototype for that
+	  function (reported by Jordan Henderson
+	  <jhenderson@daynt1.daas.dla.mil>).
+
  20001115 (c)
 	> Clark Morgan:
-	+ minor updates to vile.hlp 
+	+ minor updates to vile.hlp, macros.doc
 	+ added select-all and selection-clear commands.  The former command
 	  selects, highlights, and yanks all text in the current buffer to the
 	  unnamed register.  The latter command removes a selection's
