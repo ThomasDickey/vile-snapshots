@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.86 2004/12/14 01:07:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.92 2005/01/23 01:01:28 tom Exp $
  */
 
 #include	"estruct.h"
@@ -41,7 +41,7 @@ DftEnv(const char *name, const char *dft)
 {
 #if OPT_EVAL && OPT_SHELL
     name = vile_getenv(name);
-    return (*name == EOS) ? dft : name;
+    return isEmpty(name) ? dft : name;
 #else
     return dft;
 #endif
@@ -50,11 +50,15 @@ DftEnv(const char *name, const char *dft)
 static void
 SetEnv(char **namep, const char *value)
 {
+    char *newvalue;
+
     beginDisplay();
+    if ((newvalue = strmalloc(value)) != 0) {
 #if OPT_EVAL && OPT_SHELL
-    FreeIfNeeded(*namep);
+	FreeIfNeeded(*namep);
 #endif
-    *namep = strmalloc(value);
+	*namep = newvalue;
+    }
     endofDisplay();
 }
 
@@ -111,6 +115,7 @@ any_rw_INT(TBUFF **rp, const char *vp, int *value)
 	return FALSE;
     }
 }
+
 static int
 any_ro_STR(TBUFF **rp, const char *vp, const char *value)
 {
@@ -209,7 +214,7 @@ vile_getenv(const char *s)
 {
 #if OPT_EVAL && OPT_SHELL
     register char *v = getenv(s);
-    return v ? v : "";
+    return NONNULL(v);
 #else
     return "";
 #endif
@@ -291,7 +296,7 @@ get_directory(void)
 #endif
 
 /* access the default kill buffer */
-static char *
+static void
 getkill(TBUFF **rp)
 {
     tb_init(rp, EOS);
@@ -300,8 +305,6 @@ getkill(TBUFF **rp)
 	tb_bappend(rp, (char *) (kbs[n].kbufh->d_chunk), kbs[n].kused);
     }
     tb_append(rp, EOS);
-
-    return tb_values(*rp);
 }
 
 #if OPT_PATHLOOKUP
@@ -591,8 +594,10 @@ var_CRYPTKEY(TBUFF **rp, const char *vp)
     } else if (vp) {
 	beginDisplay();
 	FreeIfNeeded(cryptkey);
-	cryptkey = (char *) malloc(NKEYLEN);
+	cryptkey = typeallocn(char, NKEYLEN);
 	endofDisplay();
+	if (cryptkey == 0)
+	    return no_memory("var_CRYPTKEY");
 	vl_make_encrypt_key(cryptkey, vp);
 	return TRUE;
     } else {
@@ -850,7 +855,7 @@ var_FINDCMD(TBUFF **rp, const char *vp)
 {
     char *cmd = last_findcmd();
 
-    return (any_ro_STR(rp, vp, (cmd) ? cmd : ""));
+    return (any_ro_STR(rp, vp, NONNULL(cmd)));
 }
 #endif
 

@@ -84,6 +84,10 @@ where:
     Example:       -font 'Letter Gothic,8'
     Example:       -fn r_ansi,8,bold
 
+Note that it's generally not necessary to specify the font or geometry when
+registering winvile because those parameters may be set in the vile startup
+file (vile.rc).  See the vile help topic "Win32 specifics" for further
+information.
 
 Example Automation Client Access
 ================================
@@ -158,6 +162,11 @@ your PATH and create the following registry entry:
 
     HKEY_CLASSES_ROOT\*\shell\wvwrap\command\wvwrap "%1"
 
+If using Windows XP, it's necessary to specify the full path to wvwrap,
+as shown here:
+
+    HKEY_CLASSES_ROOT\*\shell\wvwrap\command\<full_path_to>wvwrap.exe "%1"
+
 Now, as a test, select multiple files within Window Explorers, right click
 the mouse, and launch wvwrap.  Notice that all files are read into a
 single instance of winvile, one buffer per file.
@@ -167,7 +176,7 @@ Server Properties And Methods
 =============================
 Application         -- [out] Returns the application object.
 
-ForegroundWindow()  -- Makes the editor the foreground window.  Note that 
+ForegroundWindow()  -- Makes the editor the foreground window.  Note that
                        Windows 2000 and XP essentially emasculated this
                        method.  See MainHwnd() for an alternative approach.
 
@@ -178,8 +187,8 @@ InsertMode          -- [out] True if editor window with keyboard focus is
 
 IsMinimized         -- [out] True if editor minimized.
 
-MainHwnd            -- [out] Returns the editor's main window handle. 
-                       Useful if the client wishes to, say, call 
+MainHwnd            -- [out] Returns the editor's main window handle.
+                       Useful if the client wishes to, say, call
                        SetForegroundWindow() on behalf of the editor.
 
 Minimize()          -- Minimizes the editor.
@@ -220,3 +229,5 @@ Unregistering The Server
 To unregister winvile as an OLE automation server, execute this command:
 
     winvile -Ou
+
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/oleauto.doc,v 1.8 2005/01/15 16:18:20 cmorgan Exp $

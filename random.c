@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.277 2004/12/05 20:59:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.282 2005/01/24 00:23:42 tom Exp $
  *
  */
 
@@ -109,8 +109,8 @@ liststuff(const char *name,
 	  int iarg,
 	  void *vargp)
 {
-    register BUFFER *bp;
-    register int s;
+    BUFFER *bp;
+    int s;
     WINDOW *wp;
     int alreadypopped;
     BUFFER *ocurbp = curbp;
@@ -305,7 +305,7 @@ vl_line_count(BUFFER *the_buffer)
     L_NUM numlines = 0;		/* # of lines in file */
     if (the_buffer != 0) {
 #if SMALLER
-	register LINE *lp;	/* current line */
+	LINE *lp;		/* current line */
 
 	for_each_line(lp, the_buffer)
 	    ++ numlines;
@@ -319,11 +319,11 @@ vl_line_count(BUFFER *the_buffer)
 
 /* return the number of the given line */
 L_NUM
-line_no(BUFFER *the_buffer, LINEPTR the_line)
+line_no(BUFFER *the_buffer, LINE *the_line)
 {
     L_NUM line_num = 0;
 
-    if (the_line != null_ptr) {
+    if (the_line != 0) {
 #if SMALLER
 	LINE *lp;
 
@@ -349,7 +349,7 @@ line_no(BUFFER *the_buffer, LINEPTR the_line)
 B_COUNT
 char_no(BUFFER *the_buffer, MARK the_mark)
 {
-    register LINE *lp;
+    LINE *lp;
     B_COUNT curchar = 0;
     int rslen = len_record_sep(curbp);
 
@@ -421,8 +421,8 @@ gotochr(int f, int n)
 int
 getcol(MARK mark, int actual)
 {
-    register C_NUM c, i;
-    register C_NUM col = 0;
+    C_NUM c, i;
+    C_NUM col = 0;
 
     if (mark.l != 0
 	&& llength(mark.l) > 0) {
@@ -496,7 +496,7 @@ getoff(C_NUM goal, C_NUM * rcolp)
 int
 gocol(int n)
 {
-    register int offs;		/* column number the cursor is on */
+    int offs;			/* column number the cursor is on */
 
     if (DOT.l != 0) {
 	offs = getoff(n, (C_NUM *) 0);
@@ -554,8 +554,8 @@ twiddle(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 forceblank(int f, int n)
 {
-    register LINE *lp1;
-    register LINE *lp2;
+    LINE *lp1;
+    LINE *lp2;
     B_COUNT nld;
     B_COUNT n_arg;
     C_NUM nchar;
@@ -916,7 +916,7 @@ current_directory(int force)
 #ifdef HAVE_GETCWD
 #ifdef HAVE_REALPATH
     /*
-     * For slow (read:  simulated) filesystems, a getcwd() can be very slow. 
+     * For slow (read:  simulated) filesystems, a getcwd() can be very slow.
      * We always make a call to this function during startup, but wish to avoid
      * the overhead of getcwd() in that case.  However, it is not unusual to
      * invoke vile from other applications, which do not set $PWD.  In that
@@ -1102,7 +1102,7 @@ update_dos_drv_dir(char *cwd)
 int
 vl_chdir(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    register int status;
+    int status;
     static TBUFF *last;
     char cdirname[NFILEN];
 
@@ -1163,6 +1163,29 @@ cd_and_pwd(char *path)
 
 	/* if dirstack on screen, update it */
 	(void) display_dirstack(DIRS_OPT);
+
+#if SYS_WINNT && DISP_NTWIN
+	/* if $recent-folders > 0, save directory path in registry */
+	{
+	    char cwd[FILENAME_MAX + 1];
+
+	    /*
+	     * must ask OS for cwd because "path" may be something like, say:
+	     *
+	     *   ../some_dir
+	     *
+	     * which is not usable later when "." changes.
+	     */
+	    getcwd(cwd, sizeof(cwd));
+
+	    /*
+	     * Store path in Unix format, since that's the external
+	     * presentation format used by the editor.
+	     */
+	    bsl_to_sl_inplace(cwd);
+	    store_recent_file_or_folder(cwd, FALSE);
+	}
+#endif
 	return TRUE;
     }
     return FALSE;
@@ -1391,8 +1414,7 @@ ch_fname(BUFFER *bp, const char *fname)
 	    }
 
 	    if (!bp->b_fname) {
-		bp->b_fname = strmalloc(np);
-		if (!bp->b_fname) {
+		if ((bp->b_fname = strmalloc(np)) == 0) {
 		    bp->b_fname = out_of_mem;
 		    bp->b_fnlen = strlen(bp->b_fname);
 		    no_memory("ch_fname");
@@ -1965,19 +1987,20 @@ vl_dirs_add(int f GCC_UNUSED, int n GCC_UNUSED)
 long
 vl_atol(char *str, int base, int *failed)
 {
+    long result = 0;
+
     *failed = FALSE;
 
+    if (str != 0) {
 #if defined(EDOM) && defined(ERANGE)
-    {
 	char *prem;
-	long rslt = 0;
 
 	str = skip_blanks(str);
 	if (!*str)
 	    *failed = TRUE;
 	else {
 	    set_errno(0);
-	    rslt = strtol(str, &prem, base);
+	    result = strtol(str, &prem, base);
 	    if (errno == EDOM || errno == ERANGE)
 		*failed = TRUE;
 	    else {
@@ -1985,15 +2008,15 @@ vl_atol(char *str, int base, int *failed)
 		    *failed = TRUE;	/* trailing garbage */
 	    }
 	}
-	return (rslt);
-    }
 #else
-    /*
-     * too bad, so sad.  if this routine must be implemented using K&R,
-     * it should be doable with sscanf().
-     */
-    return atoi(str);
+	/*
+	 * too bad, so sad.  if this routine must be implemented using K&R,
+	 * it should be doable with sscanf().
+	 */
+	result = atoi(str);
 #endif
+    }
+    return result;
 }
 
 /*

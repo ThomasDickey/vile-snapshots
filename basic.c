@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.120 2004/05/29 14:28:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.121 2005/01/19 01:43:07 tom Exp $
  *
  */
 
@@ -317,7 +317,7 @@ gotobos(int f, int n)
 int
 gotomos(int f GCC_UNUSED, int n)
 {
-    LINEPTR lp, head;
+    LINE *lp, *head;
     int half = (curwp->w_ntrows + 1) / 2;
 
     head = buf_head(curbp);
@@ -778,7 +778,7 @@ gotoeosent(int f, int n)
 	} else if (empty || !is_at_end_of_line(DOT)) {
 	    s = forwchar(TRUE, RegexpLen(exp));
 	    while (s && (is_at_end_of_line(DOT) || isSpace(char_at(DOT)))) {
-		LINEPTR lp = DOT.l;
+		LINE *lp = DOT.l;
 		s = forwchar(TRUE, 1);
 		if (lp != DOT.l)
 		    break;
@@ -853,7 +853,7 @@ next_column(int c, int col)
 int
 forwpage(int f, int n)
 {
-    LINEPTR lp;
+    LINE *lp;
     int status;
 
     if ((n = full_pages(f, n)) < 0)
@@ -884,7 +884,7 @@ forwpage(int f, int n)
 int
 backpage(int f, int n)
 {
-    LINEPTR lp;
+    LINE *lp;
     int status;
 
     if ((n = full_pages(f, n)) < 0)
@@ -921,7 +921,7 @@ backpage(int f, int n)
 int
 forwhpage(int f, int n)
 {
-    LINEPTR llp, dlp;
+    LINE *llp, *dlp;
     int status;
 
     if ((n = half_pages(f, n)) < 0)
@@ -957,7 +957,7 @@ forwhpage(int f, int n)
 int
 backhpage(int f, int n)
 {
-    LINEPTR llp, dlp;
+    LINE *llp, *dlp;
     int status;
 
     if ((n = half_pages(f, n)) < 0)
@@ -1428,7 +1428,7 @@ int
 setwmark(int row, int col)
 {
     MARK save;
-    LINEPTR dlp;
+    LINE *dlp;
 
     save = DOT;
     if (row == mode_row(curwp)) {

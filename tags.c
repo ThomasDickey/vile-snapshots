@@ -5,7 +5,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995-2003 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.120 2003/05/26 18:12:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.127 2005/01/23 17:11:02 tom Exp $
  *
  */
 #include "estruct.h"
@@ -113,6 +113,7 @@ gettagsfile(int n, int *endofpathflagp, int *did_read)
 	}
 
 	if (readin(tagsfile, FALSE, tagbp, FALSE) != TRUE) {
+	    zotbuf(tagbp);
 	    return NULL;
 	}
 	*did_read = TRUE;
@@ -129,6 +130,7 @@ gettagsfile(int n, int *endofpathflagp, int *did_read)
 	&& tagbp->b_modtime != current) {
 	if (!*did_read
 	    && readin(tagbp->b_fname, FALSE, tagbp, FALSE) != TRUE) {
+	    zotbuf(tagbp);
 	    return NULL;
 	}
 	set_modtime(tagbp, tagbp->b_fname);
@@ -141,27 +143,31 @@ gettagsfile(int n, int *endofpathflagp, int *did_read)
 
 #if OPT_TAGS_CMPL
 
+static void
+old_tags(BI_NODE * a)
+{
+    beginDisplay();
+    FreeIfNeeded(BI_KEY(a));
+    FreeIfNeeded(TYPECAST(char, a));
+    endofDisplay();
+}
+
 static BI_NODE *
 new_tags(BI_DATA * a)
 {
     BI_NODE *p;
 
     beginDisplay();
-    p = typecalloc(BI_NODE);
-    p->value = *a;
-    BI_KEY(p) = strmalloc(a->bi_key);
+    if ((p = typecalloc(BI_NODE)) != 0) {
+	p->value = *a;
+	if ((BI_KEY(p) = strmalloc(a->bi_key)) == 0) {
+	    old_tags(p);
+	    p = 0;
+	}
+    }
     endofDisplay();
 
     return p;
-}
-
-static void
-old_tags(BI_NODE * a)
-{
-    beginDisplay();
-    free(BI_KEY(a));
-    free(TYPECAST(char, a));
-    endofDisplay();
 }
 
 /*ARGSUSED*/
@@ -191,6 +197,9 @@ store_tag(LINE *lp)
     if (llength(lp) > 0) {
 	len = llength(lp);
 	for (got = 0; got < len; got++) {
+	    if (got >= sizeof(tagname) - 2) {
+		return;		/* ignore super-long identifiers */
+	    }
 	    c = lgetc(lp, got);
 	    if (!isqident(c))
 		break;
@@ -311,11 +320,12 @@ mark_tag_hit(LINE *tag, LINE *hit)
     }
 
     beginDisplay();
-    p = typecalloc(TAGHITS);
-    p->link = tag_hits;
-    p->tag = tag;
-    p->hit = hit;
-    tag_hits = p;
+    if ((p = typecalloc(TAGHITS)) != 0) {
+	p->link = tag_hits;
+	p->tag = tag;
+	p->hit = hit;
+	tag_hits = p;
+    }
     endofDisplay();
 
     TRACE(("... mark_tag_hit FALSE\n"));
@@ -333,7 +343,7 @@ free_tag_hits(void)
     beginDisplay();
     while ((p = tag_hits) != 0) {
 	tag_hits = p->link;
-	free(TYPECAST(char, p));
+	free(p);
     }
     endofDisplay();
 }
@@ -346,7 +356,7 @@ free_untag(UNTAG * utp)
 #if OPT_SHOW_TAGS
     FreeIfNeeded(utp->u_templ);
 #endif
-    free((char *) utp);
+    free(utp);
     endofDisplay();
 }
 
@@ -533,7 +543,7 @@ my_strncasecmp(const char *a, const char *b, size_t len)
  *	significant in the lookup.
  */
 static LINE *
-cheap_tag_scan(LINEPTR oldlp, char *name, size_t taglen)
+cheap_tag_scan(LINE *oldlp, char *name, size_t taglen)
 {
     LINE *lp, *retlp;
     size_t namelen = strlen(name);
@@ -579,33 +589,36 @@ cheap_buffer_scan(BUFFER *bp, char *patrn, int dir)
 {
     LINE *lp;
     LINE *result = 0;
-    regexp *exp = regcomp(patrn, strlen(patrn), FALSE);
+    regexp *exp;
+
+    if ((exp = regcomp(patrn, strlen(patrn), FALSE)) != 0) {
 #ifdef MDTAGIGNORECASE
-    int savecase = ignorecase;
-    if (b_val(bp, MDTAGIGNORECASE))
-	ignorecase = TRUE;
+	int savecase = ignorecase;
+	if (b_val(bp, MDTAGIGNORECASE))
+	    ignorecase = TRUE;
 #endif
 
-    TRACE(("cheap_buffer_scan '%s' %s\n",
-	   patrn,
-	   dir == FORWARD ? "fwd" : "bak"));
+	TRACE(("cheap_buffer_scan '%s' %s\n",
+	       patrn,
+	       dir == FORWARD ? "fwd" : "bak"));
 
-    for (lp = dir == FORWARD ? lforw(buf_head(bp)) : lback(buf_head(bp));
-	 lp != buf_head(bp);
-	 lp = dir == FORWARD ? lforw(lp) : lback(lp)) {
-	if (lregexec(exp, lp, 0, llength(lp))) {
-	    result = lp;
-	    break;
+	for (lp = dir == FORWARD ? lforw(buf_head(bp)) : lback(buf_head(bp));
+	     lp != buf_head(bp);
+	     lp = dir == FORWARD ? lforw(lp) : lback(lp)) {
+	    if (lregexec(exp, lp, 0, llength(lp))) {
+		result = lp;
+		break;
+	    }
 	}
-    }
 
-    beginDisplay();
-    free(TYPECAST(char, exp));
-    endofDisplay();
+	beginDisplay();
+	free(TYPECAST(char, exp));
+	endofDisplay();
 
 #ifdef MDTAGIGNORECASE
-    ignorecase = savecase;
+	ignorecase = savecase;
 #endif
+    }
     return (result);
 }
 

@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2003 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.123 2004/12/08 00:48:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.128 2005/01/21 22:37:35 tom Exp $
  *
  */
 
@@ -232,7 +232,10 @@ marks_in(const char *expr)
 		 else dst = lsprintf(dst, "%s", S)
 #define APP_C    if (pass != 1) *dst++ = *src
 
-static void
+/*
+ * Convert the pattern; returns false if malloc's fail.
+ */
+static int
 convert_pattern(ERR_PATTERN * errp, LINE *lp)
 {
     static const char before[] = "\\(";
@@ -247,6 +250,7 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
     int word;
     int mark;
     int range;
+    int status = TRUE;
     size_t want = llength(lp);
     char *first = lp->l_text;
     char *last = first + want;
@@ -273,11 +277,13 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 		    mark = W_VERB;
 		    break;
 		case 'F':
-		    APP_S(before);
-		    APP_T(tb_values(filename_expr));
-		    APP_S(after);
-		    errp->words[W_FILE] = ++word;
-		    word += marks_in(tb_values(filename_expr));
+		    if (tb_values(filename_expr) != 0) {
+			APP_S(before);
+			APP_T(tb_values(filename_expr));
+			APP_S(after);
+			errp->words[W_FILE] = ++word;
+			word += marks_in(tb_values(filename_expr));
+		    }
 		    break;
 		case 'B':
 		    APP_S("\\(\\[[^:]\\+]\\)");
@@ -351,8 +357,10 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 	    beginDisplay();
 	    dst = temp = typeallocn(char, want + 1);
 	    endofDisplay();
-	    if (dst == 0)
+	    if (dst == 0) {
+		status = no_memory("convert_pattern");
 		break;
+	    }
 	} else {
 	    *dst = EOS;
 	}
@@ -362,13 +370,18 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
 	TRACE(("COMPILE %s\n", temp));
 	for (word = 0; word < W_LAST; word++)
 	    TRACE(("word[%d] = %d (%s)\n", word, errp->words[word],
-		   get_token_name(word)));
+		   get_token_name((ErrTokens) word)));
 #endif
 	TPRINTF(("-> %s\n", temp));
 	exp = regcomp(temp, strlen(temp), TRUE);
+	/* FIXME:  this might be null if the pattern was incorrect, or if we
+	 * ran out of memory.  We only want the latter condition.
+	 */
     }
     errp->exp_text = temp;
     errp->exp_comp = exp;
+
+    return status;
 }
 
 /*
@@ -411,6 +424,7 @@ load_patterns(void)
     BUFFER *bp;
     LINE *lp;
     size_t n;
+    int status = TRUE;
 
     /* find the error-expressions buffer */
     if ((bp = find_b_name(ERRORS_BufName)) == 0) {
@@ -438,15 +452,23 @@ load_patterns(void)
 	beginDisplay();
 	exp_count = bp->b_linecount;
 	exp_table = typeallocn(ERR_PATTERN, exp_count);
-	for (n = 0; n < W_LAST; n++)
-	    exp_table->words[n] = -1;
 	endofDisplay();
 
-	n = 0;
-	for_each_line(lp, bp)
-	    convert_pattern(&exp_table[n++], lp);
+	if (exp_table != 0) {
+	    for (n = 0; n < W_LAST; n++)
+		exp_table->words[n] = -1;
+	    n = 0;
+	    for_each_line(lp, bp) {
+		if (!convert_pattern(&exp_table[n++], lp)) {
+		    status = FALSE;
+		    break;
+		}
+	    }
+	} else {
+	    status = no_memory("load_patterns");
+	}
     }
-    return TRUE;
+    return status;
 }
 
 /*
@@ -582,6 +604,42 @@ goto_column(void)
 	set_tabstop_val(curbp, saved_tabstop);
 }
 
+#define DIRLEVELS 20
+static int dir_level = 0;
+static char *dir_stack[DIRLEVELS];
+
+static void
+freeDirs(void)
+{
+    beginDisplay();
+    while (dir_level) {
+	free(dir_stack[dir_level]);
+	--dir_level;
+    }
+    endofDisplay();
+}
+
+static void
+updateDirs(const char *errverb, const char *errfile)
+{
+    if (!strcmp("Entering", errverb)) {
+	if (dir_level < DIRLEVELS) {
+	    beginDisplay();
+	    ++dir_level;
+	    dir_stack[dir_level] = strmalloc(errfile);
+	    endofDisplay();
+	}
+    } else if (!strcmp("Leaving", errverb)) {
+	if (dir_level > 0) {
+	    beginDisplay();
+	    if (dir_stack[dir_level] != 0)
+		free(dir_stack[dir_level]);
+	    --dir_level;
+	    endofDisplay();
+	}
+    }
+}
+
 /* Edits the file and goes to the line pointed at by the next compiler error in
  * the "[output]" window.  It unfortunately doesn't mark the lines for you, so
  * adding lines to the file throws off the later numbering.  Solutions to this
@@ -611,10 +669,6 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 
     static LINE *odotp = 0;
 
-#define DIRLEVELS 20
-    static int l = 0;
-    static char *dirs[DIRLEVELS];
-
     if (!comp_err_exps(FALSE, 1))
 	return (FALSE);
 
@@ -628,8 +682,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 	oerrline = -1;
 	oerrfile = tb_init(&oerrfile, EOS);
 	oerrtext = tb_init(&oerrtext, EOS);
-	while (l)
-	    free(dirs[l--]);
+	freeDirs();
 	odotp = 0;
 	endofDisplay();
     }
@@ -639,10 +692,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 
 	LINE *tdotp;
 
-	beginDisplay();
-	while (l)
-	    free(dirs[l--]);
-	endofDisplay();
+	freeDirs();
 
 	tdotp = lforw(buf_head(sbp));
 
@@ -671,16 +721,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 		    errfile = tb_values(fe_file);
 
 		    if (errverb != 0 && errfile != 0) {
-			beginDisplay();
-			if (!strcmp("Entering", errverb)) {
-			    if (l < DIRLEVELS) {
-				dirs[++l] = strmalloc(errfile);
-			    }
-			} else if (!strcmp("Leaving", errverb)) {
-			    if (l > 0)
-				free(dirs[l--]);
-			}
-			endofDisplay();
+			updateDirs(errverb, errfile);
 		    }
 		} else if (interrupted()) {
 		    kbd_alarm();
@@ -721,18 +762,8 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 			&& errtext != 0
 			&& strcmp(tb_values(oerrtext), errtext))
 			break;
-		} else if (errverb != 0
-			   && errfile != 0) {
-		    beginDisplay();
-		    if (!strcmp("Entering", errverb)) {
-			if (l < DIRLEVELS) {
-			    dirs[++l] = strmalloc(errfile);
-			}
-		    } else if (!strcmp("Leaving", errverb)) {
-			if (l > 0)
-			    free(dirs[l--]);
-		    }
-		    endofDisplay();
+		} else if (errverb != 0 && errfile != 0) {
+		    updateDirs(errverb, errfile);
 		}
 	    }
 	}
@@ -742,11 +773,8 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 	} else if (lforw(dotp) == buf_head(sbp)) {
 	    mlwarn("[No more errors in %s buffer]", febuff);
 	    /* start over at the top of file */
-	    beginDisplay();
 	    putdotback(sbp, lforw(buf_head(sbp)));
-	    while (l)
-		free(dirs[l--]);
-	    endofDisplay();
+	    freeDirs();
 	    return FALSE;
 	}
 	dotp = lforw(dotp);
@@ -759,7 +787,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 
     odotp = dotp;
 
-    (void) lengthen_path(pathcat(ferrfile, dirs[l], errfile));
+    (void) lengthen_path(pathcat(ferrfile, dir_stack[dir_level], errfile));
 
     if (strcmp(ferrfile, curbp->b_fname)) {
 	/* if we must change windows */
@@ -888,8 +916,10 @@ make_err_regex_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 
     bprintf("--- Error Meta-Expressions and Resulting Regular Expressions %*P",
 	    term.cols - 1, '-');
+
     if (exp_table == 0)
 	load_patterns();
+
     if (exp_table != 0
 	&& (bp = find_b_name(ERRORS_BufName)) != 0) {
 	size_t j = 0;

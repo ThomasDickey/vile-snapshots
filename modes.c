@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.284 2004/12/12 17:18:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.303 2005/01/23 13:09:16 tom Exp $
  *
  */
 
@@ -102,7 +102,7 @@ choice_to_code(const FSM_CHOICES * choices, const char *name, size_t len)
     int code = ENUM_ILLEGAL;
     int i;
 
-    if (choices != 0 && len != 0) {
+    if (choices != 0 && name != 0 && len != 0) {
 	if (len > NSTRING - 1)
 	    len = NSTRING - 1;
 
@@ -248,7 +248,7 @@ string_val(const struct VALNAMES *names, struct VAL *values)
 	break;
     }
 
-    return (s != 0 && *s == EOS) ? 0 : s;
+    return isEmpty(s) ? 0 : s;
 }
 
 /*
@@ -539,9 +539,10 @@ settab(int f, int n)
     if (f && n >= 1) {
 	make_local_b_val(curbp, val);
 	set_b_val(curbp, val, n);
-	for_each_visible_window(wp)
+	for_each_visible_window(wp) {
 	    if (wp->w_bufp == curbp)
-	    wp->w_flag |= WFHARD;
+		wp->w_flag |= WFHARD;
+	}
     } else if (f) {
 	mlwarn("[Illegal tabstop value]");
 	return FALSE;
@@ -607,15 +608,17 @@ free_regexval(REGEXVAL * rp)
 REGEXVAL *
 new_regexval(const char *pattern, int magic)
 {
-    REGEXVAL *rp;
+    REGEXVAL *rp = 0;
 
-    beginDisplay();
-    if ((rp = typealloc(REGEXVAL)) != 0) {
-	rp->pat = strmalloc(pattern);
-	if ((rp->reg = regcomp(rp->pat, strlen(rp->pat), magic)) == 0)
-	    rp = free_regexval(rp);
+    if (pattern != 0) {
+	beginDisplay();
+	if ((rp = typecalloc(REGEXVAL)) != 0) {
+	    if ((rp->pat = strmalloc(pattern)) == 0
+		|| (rp->reg = regcomp(rp->pat, strlen(rp->pat), magic)) == 0)
+		rp = free_regexval(rp);
+	}
+	endofDisplay();
     }
-    endofDisplay();
 
     return rp;
 }
@@ -959,14 +962,20 @@ legal_fsm(const char *val)
 int
 fsm_complete(DONE_ARGS)
 {
-    if (isDigit(*buf)) {	/* allow numbers for colors */
-	if (c != NAMEC)		/* put it back (cf: kbd_complete) */
-	    unkeystroke(c);
-	return isSpace(c);
+    int result = FALSE;
+
+    if (buf != 0) {
+	if (isDigit(*buf)) {	/* allow numbers for colors */
+	    if (c != NAMEC)	/* put it back (cf: kbd_complete) */
+		unkeystroke(c);
+	    result = isSpace(c);
+	} else {
+	    result = kbd_complete(PASS_DONE_ARGS,
+				  (const char *) (fsm_tbl[fsm_idx].choices),
+				  sizeof(FSM_CHOICES));
+	}
     }
-    return kbd_complete(PASS_DONE_ARGS,
-			(const char *) (fsm_tbl[fsm_idx].choices),
-			sizeof(FSM_CHOICES));
+    return result;
 }
 #endif /* OPT_ENUM_MODES */
 
@@ -986,10 +995,14 @@ adjvalueset(const char *cp,	/* name of the mode we are changing */
 
     char prompt[NLINE];
     char respbuf[NFILEN];
-    int no = noPrefix(cp);
+    int no;
     const char *rp = NULL;
     int status;
 
+    if (isEmpty(cp))
+	return FALSE;
+
+    no = noPrefix(cp);
     if (no && !is_bool_type(names->type))
 	return FALSE;		/* this shouldn't happen */
 
@@ -1253,10 +1266,12 @@ lookup_valnames(const char *rp, const struct VALNAMES *table)
 {
     int j;
 
-    for (j = 0; table[j].name != 0; j++) {
-	if (!strcmp(rp, table[j].name)
-	    || !strcmp(rp, table[j].shortname)) {
-	    return j;
+    if (rp != 0) {
+	for (j = 0; table[j].name != 0; j++) {
+	    if (!strcmp(rp, table[j].name)
+		|| !strcmp(rp, table[j].shortname)) {
+		return j;
+	    }
 	}
     }
     return -1;
@@ -1325,7 +1340,11 @@ find_submode(BUFFER *bp, const char *mode, int global, VALARGS * args)
  * in unless there is no such mode class.
  */
 int
-find_mode_class(BUFFER *bp, const char *mode, int global, VALARGS * args, MODECLASS mode_class)
+find_mode_class(BUFFER *bp,
+		const char *mode,
+		int global,
+		VALARGS * args,
+		MODECLASS mode_class)
 {
     const char *rp = strip_no(mode);
     int j;
@@ -1429,13 +1448,13 @@ find_mode_class(BUFFER *bp, const char *mode, int global, VALARGS * args, MODECL
 int
 find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 {
-    MODECLASS mode_class;
+    int mode_class;
 
     TRACE2(("find_mode(%s) %s\n", mode, global ? "global" : "local"));
 
     for (mode_class = 0; mode_class < END_MODE; mode_class++) {
-	if (find_mode_class(bp, mode, global, args, mode_class))
-	    return TRUE;
+	if (find_mode_class(bp, mode, global, args, (MODECLASS) mode_class))
+	      return TRUE;
     }
 #if OPT_MAJORMODE
     if (find_submode(bp, mode, global, args)) {
@@ -1462,7 +1481,8 @@ do_a_mode(int kind, int global)
 		       &cbuf,
 		       mode_eol, '=', KBD_NORMAL, mode_complete)) != TRUE)
 	  return ((s == FALSE) ? SORTOFTRUE : s);
-
+    if (tb_length(cbuf) == 0)
+	return FALSE;
     if (!strcmp(tb_values(cbuf), "all")) {
 	hst_glue(' ');
 	return listmodes(FALSE, 1);
@@ -1713,6 +1733,7 @@ set_colors(int n)
     if (n > initialized)
 	returnCode(FALSE);
     ncolors = n;
+
     if (reset_color(GVAL_FCOLOR)
 	|| reset_color(GVAL_BCOLOR)) {
 	set_winflags(TRUE, WFHARD | WFCOLR);
@@ -1729,6 +1750,12 @@ set_colors(int n)
 	my_colors = typecallocn(FSM_CHOICES, fsm_size(fsm_color_choices));
 	my_hilite = typecallocn(FSM_CHOICES, fsm_size(fsm_hilite_choices));
 	endofDisplay();
+
+	if (my_colors == 0
+	    || my_hilite == 0) {
+	    FreeIfNeeded(my_colors);
+	    return FALSE;
+	}
 
 	the_colors = my_colors;
 	the_hilite = my_hilite;
@@ -2104,6 +2131,32 @@ chgd_hilite(BUFFER *bp, VALARGS * args GCC_UNUSED, int glob_vals GCC_UNUSED, int
     return TRUE;
 }
 
+#if SYS_WINNT
+int
+chgd_rcntfiles(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
+{
+    if (!testing) {
+	int nfiles = args->global->v.i;
+
+	if (nfiles < 0 || nfiles > MAX_RECENT_FILES)
+	    return (FALSE);
+    }
+    return (TRUE);
+}
+
+int
+chgd_rcntfldrs(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
+{
+    if (!testing) {
+	int nfolders = args->global->v.i;
+
+	if (nfolders < 0 || nfolders > MAX_RECENT_FLDRS)
+	    return (FALSE);
+    }
+    return (TRUE);
+}
+#endif /* SYS_WINNT */
+
 /*--------------------------------------------------------------------------*/
 
 #if OPT_EVAL || OPT_MAJORMODE
@@ -2127,8 +2180,12 @@ count_modes(void)
 
     init_my_mode_list();
 
-    for (n = 0; my_mode_list[n] != 0; n++)
-	continue;
+    if (my_mode_list != 0) {
+	for (n = 0; my_mode_list[n] != 0; n++)
+	    continue;
+    } else {
+	n = 0;
+    }
     return n;
 }
 
@@ -2163,9 +2220,11 @@ list_of_modes(void)
 	my_varmodes = typeallocn(const char *, n + 1);
 	endofDisplay();
 
-	for (s = my_mode_list, d = my_varmodes; (*d = *s) != 0; s++) {
-	    if (is_varmode(*d)) {
-		d++;
+	if (my_varmodes != 0 && my_mode_list != 0) {
+	    for (s = my_mode_list, d = my_varmodes; (*d = *s) != 0; s++) {
+		if (is_varmode(*d)) {
+		    d++;
+		}
 	    }
 	}
     }
@@ -2179,18 +2238,21 @@ list_of_modes(void)
 static int
 is_identifier(const char *name)
 {
-    int first = TRUE;
+    if (name != 0) {
+	int first = TRUE;
 
-    while (*name != EOS) {
-	if (first) {
-	    if (!isAlpha(*name))
+	while (*name != EOS) {
+	    if (first) {
+		if (!isAlpha(*name))
+		    return FALSE;
+		first = FALSE;
+	    } else if (!isident(*name))
 		return FALSE;
-	    first = FALSE;
-	} else if (!isident(*name))
-	    return FALSE;
-	name++;
+	    name++;
+	}
+	return TRUE;
     }
-    return TRUE;
+    return FALSE;
 }
 
 static int
@@ -2246,8 +2308,10 @@ ModeName(const char *name)
 	dst = typeallocn(char, strlen(TheMajor) + strlen(name) + 3);
 	endofDisplay();
 
-	(void) lsprintf(dst, "%s-%s", TheMajor, name);
-	return dst;
+	if (dst != 0) {
+	    (void) lsprintf(dst, "%s-%s", TheMajor, name);
+	    return dst;
+	}
     }
     return name;
 }
@@ -2331,10 +2395,12 @@ find_majormode_order(int mm)
     int found = -1;
     int n;
 
-    for (n = 0; majormodes_order[n] >= 0; n++) {
-	if (majormodes_order[n] == mm) {
-	    found = n;
-	    break;
+    if (majormodes_order != 0) {
+	for (n = 0; majormodes_order[n] >= 0; n++) {
+	    if (majormodes_order[n] == mm) {
+		found = n;
+		break;
+	    }
 	}
     }
     return found;
@@ -2347,13 +2413,15 @@ show_majormode_order(char *tag)
     static TBUFF *order;
 
     int n;
-    tb_scopy(&order, "order ");
-    tb_sappend0(&order, tag);
-    for (n = 0; majormodes_order[n] >= 0; n++) {
-	tb_sappend0(&order, " ");
-	tb_sappend0(&order, my_majormodes[majormodes_order[n]].shortname);
+    if (majormodes_order != 0) {
+	tb_scopy(&order, "order ");
+	tb_sappend0(&order, tag);
+	for (n = 0; majormodes_order[n] >= 0; n++) {
+	    tb_sappend0(&order, " ");
+	    tb_sappend0(&order, my_majormodes[majormodes_order[n]].shortname);
+	}
+	TRACE(("%s\n", tb_values(order)));
     }
-    TRACE(("%s\n", tb_values(order)));
 }
 #else
 #define show_majormode_order(tag)	/* nothing */
@@ -2368,36 +2436,38 @@ put_majormode_before(unsigned j, char *s)
     int kk;
     int found = -1;
 
-    TRACE(("put_majormode_before(%d:%s, %s)\n",
-	   j,
-	   my_majormodes[majormodes_order[j]].shortname,
-	   s));
+    if (majormodes_order != 0) {
+	TRACE(("put_majormode_before(%d:%s, %s)\n",
+	       j,
+	       my_majormodes[majormodes_order[j]].shortname,
+	       s));
 
-    for (k = 0; (kk = majormodes_order[k]) >= 0; k++) {
-	t = my_majormodes[kk].shortname;
-	if (strcmp(t, s) <= 0
-	    && (found < 0 || strcmp(told, t) < 0)) {
-	    found = k;
-	    told = t;
+	for (k = 0; (kk = majormodes_order[k]) >= 0; k++) {
+	    t = my_majormodes[kk].shortname;
+	    if (strcmp(t, s) <= 0
+		&& (found < 0 || strcmp(told, t) < 0)) {
+		found = k;
+		told = t;
+	    }
 	}
-    }
-    if (found >= 0 && found < (int) j) {
-	show_majormode_order("before");
-	kk = majormodes_order[j];
-	while (found < (int) j) {
-	    majormodes_order[j] =
-		majormodes_order[j - 1];
-	    j--;
+	if (found >= 0 && found < (int) j) {
+	    show_majormode_order("before");
+	    kk = majormodes_order[j];
+	    while (found < (int) j) {
+		majormodes_order[j] =
+		    majormodes_order[j - 1];
+		j--;
+	    }
+	    majormodes_order[j] = kk;
+	    show_majormode_order("after:");
+	} else if (found < 0) {
+	    TPRINTF(("cannot put %s before %s (not found)\n",
+		     my_majormodes[majormodes_order[j]].shortname,
+		     s));
+	    TRACE(("...did not find %s\n", s));
 	}
-	majormodes_order[j] = kk;
-	show_majormode_order("after:");
-    } else if (found < 0) {
-	TPRINTF(("cannot put %s before %s (not found)\n",
-		 my_majormodes[majormodes_order[j]].shortname,
-		 s));
-	TRACE(("...did not find %s\n", s));
+	TRACE(("->%d\n", j));
     }
-    TRACE(("->%d\n", j));
     return j;
 }
 
@@ -2410,38 +2480,40 @@ put_majormode_after(unsigned j, char *s)
     int kk;
     int found = -1;
 
-    TRACE(("put_majormode_after(%d:%s, %s)\n",
-	   j,
-	   my_majormodes[majormodes_order[j]].shortname,
-	   s));
+    if (majormodes_order != 0) {
+	TRACE(("put_majormode_after(%d:%s, %s)\n",
+	       j,
+	       my_majormodes[majormodes_order[j]].shortname,
+	       s));
 
-    for (k = count_majormodes() - 1;
-	 k >= 0 && (kk = majormodes_order[k]) >= 0;
-	 k--) {
-	t = my_majormodes[kk].shortname;
-	if (strcmp(t, s) >= 0
-	    && (found < 0 || strcmp(told, t) > 0)) {
-	    found = k;
-	    told = t;
+	for (k = count_majormodes() - 1;
+	     k >= 0 && (kk = majormodes_order[k]) >= 0;
+	     k--) {
+	    t = my_majormodes[kk].shortname;
+	    if (strcmp(t, s) >= 0
+		&& (found < 0 || strcmp(told, t) > 0)) {
+		found = k;
+		told = t;
+	    }
 	}
-    }
-    if (found >= 0 && found > (int) j) {
-	show_majormode_order("before");
-	kk = majormodes_order[j];
-	while (found > (int) j) {
-	    majormodes_order[j] =
-		majormodes_order[j + 1];
-	    j++;
+	if (found >= 0 && found > (int) j) {
+	    show_majormode_order("before");
+	    kk = majormodes_order[j];
+	    while (found > (int) j) {
+		majormodes_order[j] =
+		    majormodes_order[j + 1];
+		j++;
+	    }
+	    majormodes_order[found] = kk;
+	    show_majormode_order("after:");
+	} else if (found < 0) {
+	    TPRINTF(("cannot put %s after %s (not found)\n",
+		     my_majormodes[majormodes_order[j]].shortname,
+		     s));
+	    TRACE(("...did not find %s\n", s));
 	}
-	majormodes_order[found] = kk;
-	show_majormode_order("after:");
-    } else if (found < 0) {
-	TPRINTF(("cannot put %s after %s (not found)\n",
-		 my_majormodes[majormodes_order[j]].shortname,
-		 s));
-	TRACE(("...did not find %s\n", s));
+	TRACE(("->%d\n", j));
     }
-    TRACE(("->%d\n", j));
     return j;
 }
 
@@ -2475,34 +2547,36 @@ compute_majormodes_order(void)
 	}
 	endofDisplay();
 
-	/* set the default order */
-	for (j = 0; j < need; j++) {
-	    majormodes_order[j] = j;
-	}
-	majormodes_order[need] = -1;
+	if (majormodes_order != 0) {
+	    /* set the default order */
+	    for (j = 0; j < need; j++) {
+		majormodes_order[j] = j;
+	    }
+	    majormodes_order[need] = -1;
 
-	/* handle special cases */
-	for (j = 0; j < need; j++) {
-	    jj = majormodes_order[j];
-	    if ((s = get_mm_string(jj, MVAL_BEFORE)) != 0
-		&& *s != EOS) {
-		jj = put_majormode_before(j, s);
-		TRACE(("JUMP %d to %d\n", j, jj));
-		if (jj < (int) j)
-		    j = jj;
+	    /* handle special cases */
+	    for (j = 0; j < need; j++) {
+		jj = majormodes_order[j];
+		if ((s = get_mm_string(jj, MVAL_BEFORE)) != 0
+		    && *s != EOS) {
+		    jj = put_majormode_before(j, s);
+		    TRACE(("JUMP %d to %d\n", j, jj));
+		    if (jj < (int) j)
+			j = jj;
+		}
 	    }
-	}
-	for (j = 0; j < need; j++) {
-	    jj = majormodes_order[j];
-	    if ((s = get_mm_string(jj, MVAL_AFTER)) != 0
-		&& *s != EOS) {
-		jj = put_majormode_after(j, s);
-		TRACE(("JUMP %d to %d\n", j, jj));
-		if (jj < (int) j)
-		    j = jj;
+	    for (j = 0; j < need; j++) {
+		jj = majormodes_order[j];
+		if ((s = get_mm_string(jj, MVAL_AFTER)) != 0
+		    && *s != EOS) {
+		    jj = put_majormode_after(j, s);
+		    TRACE(("JUMP %d to %d\n", j, jj));
+		    if (jj < (int) j)
+			j = jj;
+		}
 	    }
+	    show_majormode_order("final:");
 	}
-	show_majormode_order("final:");
     }
     returnVoid();
 }
@@ -2524,32 +2598,36 @@ search_mode_list(const char *name, int count, int will_insert)
     int cmp;
     const char *test;
 
-    while (lo < hi) {
-	next = (lo + hi + 0) / 2;
-	if (next == prev) {	/* didn't find it - stop iterating */
-	    if (will_insert) {
-		next = strcmp(name, my_mode_list[lo]) > 0
-		    ? hi : lo;
-	    } else {
-		next = -1;
+    if (my_mode_list != 0) {
+	while (lo < hi) {
+	    next = (lo + hi + 0) / 2;
+	    if (next == prev) {	/* didn't find it - stop iterating */
+		if (will_insert) {
+		    next = (strcmp(name, my_mode_list[lo]) > 0
+			    ? hi : lo);
+		} else {
+		    next = -1;
+		}
+		break;
 	    }
-	    break;
+	    prev = next;
+	    test = ((next < count)
+		    ? my_mode_list[next]
+		    : (strcmp("\177", "\377") < 0
+		       ? "\377"
+		       : "\177"));
+	    if ((cmp = strcmp(name, test)) == 0) {
+		if (will_insert)
+		    next = -1;
+		break;
+	    } else if (cmp > 0) {
+		lo = next;
+	    } else {
+		hi = next;
+	    }
 	}
-	prev = next;
-	test = (next < count)
-	    ? my_mode_list[next]
-	    : strcmp("\177", "\377") < 0
-	    ? "\377"
-	    : "\177";
-	if ((cmp = strcmp(name, test)) == 0) {
-	    if (will_insert)
-		next = -1;
-	    break;
-	} else if (cmp > 0) {
-	    lo = next;
-	} else {
-	    hi = next;
-	}
+    } else {
+	next = -1;
     }
     return next;
 }
@@ -2571,16 +2649,22 @@ found_per_submode(const char *majr, int code)
 static size_t
 insert_per_major(size_t count, const char *name)
 {
-    if (name != 0 && *name != EOS) {
+    if (name != 0 && *name != EOS && my_mode_list != 0) {
 	size_t j, k;
 	int found;
 
 	TRACE(("insert_per_major %ld %s\n", (long) count, name));
 	if ((found = search_mode_list(name, count, TRUE)) >= 0) {
-	    j = found;
-	    for (k = ++count; k != j; k--)
-		my_mode_list[k] = my_mode_list[k - 1];
-	    my_mode_list[j] = strmalloc(name);
+	    char *newname = strmalloc(name);
+
+	    if (newname != 0) {
+		j = found;
+		for (k = ++count; k != j; k--)
+		    my_mode_list[k] = my_mode_list[k - 1];
+		my_mode_list[j] = newname;
+	    } else {
+		no_memory("insert_per_major");
+	    }
 	}
     }
     return count;
@@ -2592,7 +2676,7 @@ insert_per_major(size_t count, const char *name)
 static size_t
 remove_per_major(size_t count, const char *name)
 {
-    if (name != 0) {
+    if (name != 0 && my_mode_list != 0) {
 	int found;
 	size_t j, k;
 
@@ -2784,6 +2868,7 @@ free_sm_vals(MAJORMODE * ptr)
 static struct VAL *
 get_sm_vals(MAJORMODE * ptr)
 {
+    struct VAL *result = 0;
     MINORMODE *p, *q;
     char *name = ptr->mq.qv[QVAL_GROUP].vp->p;
 
@@ -2796,18 +2881,27 @@ get_sm_vals(MAJORMODE * ptr)
     if (p == 0) {
 
 	beginDisplay();
-	p = typecalloc(MINORMODE);
-	p->sm_name = strmalloc(name);
+	if ((p = typecalloc(MINORMODE)) != 0) {
+	    if ((p->sm_name = strmalloc(name)) == 0) {
+		free(p);
+		p = 0;
+	    }
+	}
 	endofDisplay();
 
-	init_sm_vals(&(p->sm_vals.bv[0]));
-	if (q != 0)
-	    q->sm_next = p;
-	else
-	    ptr->sm = p;
+	if (p != 0) {
+	    init_sm_vals(&(p->sm_vals.bv[0]));
+	    if (q != 0)
+		q->sm_next = p;
+	    else
+		ptr->sm = p;
+	}
     }
-    TRACE2(("...get_sm_vals(%s:%s)\n", ptr->shortname, p->sm_name));
-    return &(p->sm_vals.bv[0]);
+    if (p != 0) {
+	TRACE2(("...get_sm_vals(%s:%s)\n", ptr->shortname, p->sm_name));
+	result = &(p->sm_vals.bv[0]);
+    }
+    return result;
 }
 
 /*
@@ -3064,7 +3158,7 @@ free_majormode(const char *name)
 		free_sm_vals(ptr);
 		free(ptr->shortname);
 		free(ptr->longname);
-		free(TYPECAST(char, ptr));
+		free(ptr);
 		endofDisplay();
 
 		do {
@@ -3092,8 +3186,7 @@ free_majormode(const char *name)
 		    free(TYPECAST(char, major_valnames[n].shortname));
 		    endofDisplay();
 		    while (major_valnames[n].name != 0) {
-			major_valnames[n] =
-			    major_valnames[n + 1];
+			major_valnames[n] = major_valnames[n + 1];
 			n++;
 		    }
 		    break;
@@ -3152,21 +3245,28 @@ extend_VAL_array(struct VAL *ptr, size_t item, size_t len)
 	beginDisplay();
 	ptr = typereallocn(struct VAL, ptr, len + 1);
 	endofDisplay();
-	for (j = k = 0; j < len; j++) {
-	    k = (j >= item) ? j + 1 : j;
-	    ptr[k] = ptr[j];
-	    make_local_val(ptr, k);
+
+	if (ptr != 0) {
+	    for (j = k = 0; j < len; j++) {
+		k = (j >= item) ? j + 1 : j;
+		ptr[k] = ptr[j];
+		make_local_val(ptr, k);
+	    }
 	}
     }
-    make_local_val(ptr, item);
-    make_local_val(ptr, len);
-    ptr[item].v.i = FALSE;
+    if (ptr != 0) {
+	make_local_val(ptr, item);
+	make_local_val(ptr, len);
+	ptr[item].v.i = FALSE;
+    }
     return ptr;
 }
 
 static void
-set_qualifier(const struct VALNAMES *names, struct VAL *values, const char
-	      *s, int n)
+set_qualifier(const struct VALNAMES *names,
+	      struct VAL *values,
+	      const char *s,
+	      int n)
 {
     free_val(names, values);
     switch (names->type) {
@@ -3266,20 +3366,22 @@ makemajorlist(int local, void *ptr GCC_UNUSED)
 		char *name;
 
 		beginDisplay();
-		name = (char *) malloc(80 + strlen(group));
+		name = typeallocn(char, 80 + strlen(group));
 		endofDisplay();
 
-		if (*group)
-		    lsprintf(name, "Buffer (\"%s\" group)", group);
-		else
-		    strcpy(name, "Buffer");
-		nflag = listvalueset(name, nflag, TRUE,
-				     b_valnames,
-				     vals->sm_vals.bv,
-				     global_b_values.bv);
-		beginDisplay();
-		free(name);
-		endofDisplay();
+		if (name != 0) {
+		    if (*group)
+			lsprintf(name, "Buffer (\"%s\" group)", group);
+		    else
+			strcpy(name, "Buffer");
+		    nflag = listvalueset(name, nflag, TRUE,
+					 b_valnames,
+					 vals->sm_vals.bv,
+					 global_b_values.bv);
+		    beginDisplay();
+		    free(name);
+		    endofDisplay();
+		}
 	    }
 	    if (my_majormodes[j + 1].data)
 		bputc('\n');
@@ -3308,10 +3410,12 @@ list_majormodes(int f, int n GCC_UNUSED)
 int
 alloc_mode(const char *shortname, int predef)
 {
-    size_t j, k;
+    size_t j = 0, k;
     int n;
+    int status = TRUE;
     char longname[NSTRING];
     char temp[NSTRING];
+    static struct VAL *new_vals;
 
     if (major_valnames == 0) {
 	beginDisplay();
@@ -3324,13 +3428,18 @@ alloc_mode(const char *shortname, int predef)
 	beginDisplay();
 	major_valnames = typereallocn(struct VALNAMES, major_valnames, k + 2);
 	endofDisplay();
-	for (j = k++; j != 0; j--) {
-	    major_valnames[j] = major_valnames[j - 1];
-	    if (strcmp(major_valnames[j - 1].shortname, shortname) < 0) {
-		break;
+	if (major_valnames != 0) {
+	    for (j = k++; j != 0; j--) {
+		major_valnames[j] = major_valnames[j - 1];
+		if (strcmp(major_valnames[j - 1].shortname, shortname) < 0) {
+		    break;
+		}
 	    }
 	}
     }
+
+    if (major_valnames == 0)
+	return FALSE;
 
     (void) majorname(longname, shortname, TRUE);
     major_valnames[j].name = strmalloc(longname);
@@ -3338,11 +3447,25 @@ alloc_mode(const char *shortname, int predef)
     major_valnames[j].type = VALTYPE_MAJOR;
     major_valnames[j].side_effect = chgd_major_w;
 
+    if (major_valnames[j].name == 0
+	|| major_valnames[j].shortname == 0) {
+	do {
+	    major_valnames[j] = major_valnames[j + 1];
+	    ++j;
+	} while (major_valnames[j].name != 0);
+	return FALSE;
+    }
+
     memset(major_valnames + k, 0, sizeof(*major_valnames));
 
     /* build arrays needed for 'find_mode()' bookkeeping */
-    major_g_vals = extend_VAL_array(major_g_vals, j, k);
-    major_l_vals = extend_VAL_array(major_l_vals, j, k);
+    if ((new_vals = extend_VAL_array(major_g_vals, j, k)) == 0)
+	return FALSE;
+    major_g_vals = new_vals;
+
+    if ((new_vals = extend_VAL_array(major_l_vals, j, k)) == 0)
+	return FALSE;
+    major_l_vals = new_vals;
 
     if (my_majormodes == 0) {
 	beginDisplay();
@@ -3363,6 +3486,10 @@ alloc_mode(const char *shortname, int predef)
 	}
     }
 
+    if (my_majormodes == 0)
+	return FALSE;
+
+    /* allocate the names for the major mode */
     beginDisplay();
 
     my_majormodes[j].shortname = strmalloc(shortname);
@@ -3371,22 +3498,44 @@ alloc_mode(const char *shortname, int predef)
     my_majormodes[j].init = predef;
     my_majormodes[j].flag = TRUE;
 
-    my_majormodes[j].data = typecalloc(MAJORMODE);
-    my_majormodes[j].data->shortname = my_majormodes[j].shortname;
-    my_majormodes[j].data->longname = my_majormodes[j].longname;
+    if ((my_majormodes[j].data = typecalloc(MAJORMODE)) != 0) {
+	my_majormodes[j].data->shortname = my_majormodes[j].shortname;
+	my_majormodes[j].data->longname = my_majormodes[j].longname;
 
-    memset(my_majormodes + k, 0, sizeof(*my_majormodes));
+	memset(my_majormodes + k, 0, sizeof(*my_majormodes));
+    }
 
     endofDisplay();
+
+    if (my_majormodes[j].shortname == 0
+	|| my_majormodes[j].longname == 0
+	|| my_majormodes[j].data == 0) {
+	beginDisplay();
+	FreeIfNeeded(my_majormodes[j].data);
+	FreeIfNeeded(my_majormodes[j].longname);
+	endofDisplay();
+	do {
+	    my_majormodes[j] = my_majormodes[j + 1];
+	    ++j;
+	} while (my_majormodes[j].shortname != 0);
+	return FALSE;
+    }
 
     /* copy array to get types, then overwrite the name-pointers */
     memcpy(my_majormodes[j].subq, q_valnames, sizeof(q_valnames));
     for (k = 0; k < MAX_Q_VALUES; k++) {
 	reset_qualifier(q_valnames + k, my_majormodes[j].data->mq.qv + k);
+
 	my_majormodes[j].subq[k].name =
 	    strmalloc(q_valnames[k].name);
 	my_majormodes[j].subq[k].shortname =
 	    strmalloc(q_valnames[k].shortname);
+
+	if (my_majormodes[j].subq[k].name == 0
+	    || my_majormodes[j].subq[k].shortname == 0) {
+	    free_majormode(shortname);
+	    return FALSE;
+	}
     }
 
     init_sm_vals(get_sm_vals(my_majormodes[j].data));
@@ -3395,10 +3544,17 @@ alloc_mode(const char *shortname, int predef)
     memcpy(my_majormodes[j].qual, m_valnames, sizeof(m_valnames));
     for (k = 0; k < MAX_M_VALUES; k++) {
 	reset_qualifier(m_valnames + k, my_majormodes[j].data->mm.mv + k);
+
 	my_majormodes[j].qual[k].name =
 	    strmalloc(per_major(temp, shortname, k, TRUE));
 	my_majormodes[j].qual[k].shortname =
 	    strmalloc(per_major(temp, shortname, k, FALSE));
+
+	if (my_majormodes[j].qual[k].name == 0
+	    || my_majormodes[j].qual[k].shortname == 0) {
+	    free_majormode(shortname);
+	    return FALSE;
+	}
     }
 
     /*
@@ -3416,7 +3572,7 @@ alloc_mode(const char *shortname, int predef)
     }
 
     compute_majormodes_order();
-    return TRUE;
+    return status;
 }
 
 /* ARGSUSED */
@@ -3631,10 +3787,11 @@ test_by_suffix(int n, BUFFER *bp)
 	if (((exp = get_sm_rexp(n, VAL_STRIPSUFFIX)) != 0
 	     || (exp = b_val_rexp(bp, VAL_STRIPSUFFIX)->reg) != 0)
 	    && regexec(exp, pathname, (char *) 0, 0, -1)) {
-	    tb_scopy(&savename, pathname);
-	    strcpy(tb_values(savename) + (exp->startp[0] - pathname),
-		   exp->endp[0]);
-	    pathname = tb_values(savename);
+	    if (tb_scopy(&savename, pathname) != 0) {
+		strcpy(tb_values(savename) + (exp->startp[0] - pathname),
+		       exp->endp[0]);
+		pathname = tb_values(savename);
+	    }
 	}
 	filename = pathleaf(pathname);
 	suffix = strchr(filename, '.');
@@ -3658,7 +3815,8 @@ test_by_suffix(int n, BUFFER *bp)
 		   filename,
 		   my_majormodes[n].shortname));
 	    result = n;
-	} else if (suffix != 0
+	} else if (!isShellOrPipe(pathname)
+		   && suffix != 0
 		   && (exp = get_mm_rexp(n, MVAL_MODE_SUFFIXES)) != 0
 		   && regexec(exp, suffix, (char *) 0, 0, -1)) {
 	    TRACE(("test_by_suffixes(%s) %s %s\n",
@@ -3744,7 +3902,7 @@ infer_majormode(BUFFER *bp)
 	       && majormodes_order != 0
 	       && !b_is_directory(bp)
 	       && bp->b_fname != 0
-	       && !isInternalName(bp->b_fname)) {
+	       && !is_internalname(bp->b_fname)) {
 	int n, m;
 	int result = -1;
 	LINE *lp = get_preamble(bp);
@@ -3977,18 +4135,24 @@ static void
 update_scheme_choices(void)
 {
     int n;
-    beginDisplay();
-    if (my_scheme_choices != 0) {
-	my_scheme_choices = typereallocn(FSM_CHOICES, my_scheme_choices, num_schemes);
-    } else {
-	my_scheme_choices = typeallocn(FSM_CHOICES, num_schemes);
+
+    if (my_schemes != 0) {
+	beginDisplay();
+	if (my_scheme_choices != 0) {
+	    my_scheme_choices = typereallocn(FSM_CHOICES, my_scheme_choices, num_schemes);
+	} else {
+	    my_scheme_choices = typeallocn(FSM_CHOICES, num_schemes);
+	}
+	endofDisplay();
+
+	if (my_scheme_choices != 0) {
+	    for (n = 0; n < (int) num_schemes; n++) {
+		my_scheme_choices[n].choice_name = my_schemes[n].name;
+		my_scheme_choices[n].choice_code = my_schemes[n].code;
+	    }
+	    set_fsm_choice(s_color_scheme, my_scheme_choices);
+	}
     }
-    endofDisplay();
-    for (n = 0; n < (int) num_schemes; n++) {
-	my_scheme_choices[n].choice_name = my_schemes[n].name;
-	my_scheme_choices[n].choice_code = my_schemes[n].code;
-    }
-    set_fsm_choice(s_color_scheme, my_scheme_choices);
 }
 
 static int
@@ -4096,6 +4260,11 @@ alloc_scheme(const char *name)
 	}
 	endofDisplay();
 
+	if (my_schemes == 0) {
+	    no_memory("alloc_scheme");
+	    return 0;
+	}
+
 	len--;			/* point to list-terminator */
 	memset(&my_schemes[len], 0, sizeof(PALETTES));
 	while (--len > 0) {
@@ -4104,15 +4273,16 @@ alloc_scheme(const char *name)
 		&& strcmp(my_schemes[len - 1].name, name) < 0)
 		break;
 	}
-	my_schemes[len].name = strmalloc(name);
-	my_schemes[len].code = code++;	/* unique identifier */
-	my_schemes[len].fcol = -1;
-	my_schemes[len].bcol = -1;
-	my_schemes[len].ccol = -1;
-	my_schemes[len].attr = 0;
-	my_schemes[len].list = 0;
-	result = &my_schemes[len];
-	update_scheme_choices();
+	if ((my_schemes[len].name = strmalloc(name)) != 0) {
+	    my_schemes[len].code = code++;	/* unique identifier */
+	    my_schemes[len].fcol = -1;
+	    my_schemes[len].bcol = -1;
+	    my_schemes[len].ccol = -1;
+	    my_schemes[len].attr = 0;
+	    my_schemes[len].list = 0;
+	    result = &my_schemes[len];
+	    update_scheme_choices();
+	}
     }
     return result;
 }
@@ -4228,14 +4398,18 @@ prompt_scheme_value(PALETTES * p)
 		return status;
 	    } else if (*name == 'u'
 		       && (q = find_scheme(respbuf)) != 0) {
-		p->fcol = q->fcol;
-		p->bcol = q->bcol;
-		p->ccol = q->ccol;
-		p->attr = q->attr;
-		if (p->list)
-		    FreeAndNull(p->list);
-		if (q->list != 0)
-		    p->list = strmalloc(q->list);
+		char *newlist = 0;
+		if (q->list == 0 || (newlist = strmalloc(q->list)) != 0) {
+		    p->fcol = q->fcol;
+		    p->bcol = q->bcol;
+		    p->ccol = q->ccol;
+		    p->attr = q->attr;
+		    if (p->list)
+			FreeAndNull(p->list);
+		    p->list = newlist;
+		} else {
+		    return no_memory("prompt_scheme_value");
+		}
 	    }
 	}
 	if (status == TRUE)
@@ -4318,18 +4492,20 @@ makeschemelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
     PALETTES *p;
     int num = (num_schemes > 1) ? (num_schemes - 1) : 0;
 
-    bprintf("There %s %d color scheme%s defined",
-	    (num != 1) ? "are" : "is", num, PLURAL(num));
+    if (my_schemes != 0) {
+	bprintf("There %s %d color scheme%s defined",
+		(num != 1) ? "are" : "is", num, PLURAL(num));
 
-    for (p = my_schemes; p != 0 && p->name != 0; p++) {
-	bprintf("\n\n%s", p->name);
-	bprintf(fmt, s_fcolor, get_color_name(p->fcol));
-	bprintf(fmt, s_bcolor, get_color_name(p->bcol));
-	bprintf(fmt, s_ccolor, get_color_name(p->ccol));
-	bprintf(fmt, s_video_attrs,
-		choice_to_name(fsm_videoattrs_choices, p->attr));
-	if (p->list != 0)
-	    bprintf(fmt, s_palette, p->list);
+	for (p = my_schemes; p != 0 && p->name != 0; p++) {
+	    bprintf("\n\n%s", p->name);
+	    bprintf(fmt, s_fcolor, get_color_name(p->fcol));
+	    bprintf(fmt, s_bcolor, get_color_name(p->bcol));
+	    bprintf(fmt, s_ccolor, get_color_name(p->ccol));
+	    bprintf(fmt, s_video_attrs,
+		    choice_to_name(fsm_videoattrs_choices, p->attr));
+	    if (p->list != 0)
+		bprintf(fmt, s_palette, p->list);
+	}
     }
 }
 

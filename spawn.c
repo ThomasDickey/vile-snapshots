@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.179 2004/06/09 01:05:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.184 2005/01/23 17:44:52 tom Exp $
  *
  */
 
@@ -94,9 +94,10 @@ x_window_SHELL(const char *cmd)
 	    char *env = get_xdisplay();
 	    if (display_env != 0)
 		free(display_env);
-	    display_env = typeallocn(char, 20 + strlen(env));
-	    lsprintf(display_env, "DISPLAY=%s", env);
-	    putenv(display_env);
+	    if ((display_env = typeallocn(char, 20 + strlen(env))) != 0) {
+		lsprintf(display_env, "DISPLAY=%s", env);
+		putenv(display_env);
+	    }
 #endif
 
 	    tmp = tb_scopy(&tmp, get_xshell());
@@ -108,9 +109,12 @@ x_window_SHELL(const char *cmd)
 		tmp = tb_sappend(&tmp, cmd);
 		tmp = tb_append(&tmp, EOS);
 	    }
-	    TRACE(("executing '%s'\n", tb_values(tmp)));
-	    (void) system(tb_values(tmp));
-	    tb_free(&tmp);
+	    if (tmp != 0) {
+		char *result = tb_values(tmp);
+		TRACE(("executing '%s'\n", result));
+		(void) system(result);
+		tb_free(&tmp);
+	    }
 #ifdef HAVE_WAITPID
 	}
 	_exit(0);
@@ -310,8 +314,8 @@ ShellPrompt(TBUFF **holds,
 	    char *result,
 	    int rerun)		/* TRUE/FALSE: spawn, -TRUE: capturecmd */
 {
-    register int s;
-    register size_t len;
+    int s;
+    size_t len;
     static const char bang[] = SHPIPE_LEFT;
     BUFFER *bp;
     int cb = any_changed_buf(&bp), fix = (rerun != -TRUE);
@@ -368,7 +372,7 @@ spawn1(int rerun, int pressret)
     int closed;
 #endif
 #if COMMON_SH_PROMPT
-    register int s;
+    int s;
     char line[NLINE];		/* command line send to shell */
 
     if ((s = ShellPrompt(&tb_save_shell[0], line, rerun)) != TRUE)
@@ -624,8 +628,8 @@ static void
 write_region_to_pipe(void *writefp)
 {
     FILE *fw = (FILE *) writefp;
-    LINEPTR last = setup_region();
-    LINEPTR lp = DOT.l;
+    LINE *last = setup_region();
+    LINE *lp = DOT.l;
 
     while (lp != last) {
 	fwrite((char *) lp->l_text, sizeof(char), (size_t) llength(lp), fw);
@@ -849,8 +853,8 @@ int
 vile_filter(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 #if !(SYS_UNIX||SYS_MSDOS || (SYS_OS2 && CC_CSETPP))	/* filterregion up above is better */
-    register int s;		/* return status from CLI */
-    register BUFFER *bp;	/* pointer to buffer to zot */
+    int s;			/* return status from CLI */
+    BUFFER *bp;			/* pointer to buffer to zot */
     static char oline[NLINE];	/* command line send to shell */
     char line[NLINE];		/* command line send to shell */
     char tnam[NFILEN];		/* place to store real file name */
@@ -911,7 +915,7 @@ vile_filter(int f GCC_UNUSED, int n GCC_UNUSED)
 #endif
 
     /* on failure, escape gracefully */
-    if (s != TRUE || (readin(filnam2, FALSE, curbp, TRUE) == FALSE)) {
+    if (s != TRUE || ((s = readin(filnam2, FALSE, curbp, TRUE)) != TRUE)) {
 	mlforce("[Execution failed]");
 	ch_fname(bp, tnam);
 	unlink(filnam1);
@@ -942,7 +946,7 @@ vile_filter(int f GCC_UNUSED, int n GCC_UNUSED)
  * and the way out, because DCL does not want the channel to be in raw mode.
  */
 int
-vms_system(register char *cmd)
+vms_system(char *cmd)
 {
     struct dsc$descriptor cdsc;
     struct dsc$descriptor *cdscp;
@@ -980,22 +984,25 @@ int
 set_envvar(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     static TBUFF *var, *val;
+
     char *both;
     int rc;
 
-    if ((rc = mlreply2("Environment variable: ", &var)) == ABORT)
-	return (rc);
+    if ((rc = mlreply2("Environment variable: ", &var)) == ABORT) {
+	/* EMPTY */ ;
+    } else if ((rc = mlreply2("Value: ", &val)) == ABORT) {
+	/* EMPTY */ ;
+    } else if (tb_length(var) == 0
+	       || tb_length(val) == 0
+	       || (both = typeallocn(char,
+				     tb_length(var) + tb_length(val))) == 0) {
+	rc = no_memory("set_envvar");
+    } else {
+	lsprintf(both, "%s=%s", tb_values(var), tb_values(val));
+	putenv(both);	/* this will leak.  i think it has to. */
+    }
 
-    if ((rc = mlreply2("Value: ", &val)) == ABORT)
-	return (rc);
-
-    both = typeallocn(char, tb_length(var) + tb_length(val));
-
-    lsprintf(both, "%s=%s", tb_values(var), tb_values(val));
-
-    putenv(both);		/* this will leak.  i think it has to. */
-
-    return TRUE;
+    return rc;
 }
 #endif
 

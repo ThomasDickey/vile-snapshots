@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.394 2004/12/10 23:44:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.398 2005/01/23 19:45:11 tom Exp $
  *
  */
 
@@ -18,6 +18,7 @@
 #define vMAXNEG (-vMAXINT)	/* 0x80000001 */
 
 #define	NU_WIDTH 8
+#define NU_GUTTER 1
 
 #define reset_term_attrs() term.rev(0)
 
@@ -634,8 +635,10 @@ static void
 vtputsn(const char *s, int n)
 {
     int c;
-    while (n-- > 0 && (c = *s++) != EOS)
-	vtputc(c);
+    if (s != 0) {
+	while (n-- > 0 && (c = *s++) != EOS)
+	    vtputc(c);
+    }
 }
 
 /*
@@ -643,7 +646,7 @@ vtputsn(const char *s, int n)
  * line-wrap or right-shifting.
  */
 static void
-vtset(LINEPTR lp, WINDOW *wp)
+vtset(LINE *lp, WINDOW *wp)
 {
     char *from;
     int n = llength(lp);
@@ -673,8 +676,9 @@ vtset(LINEPTR lp, WINDOW *wp)
 	char temp[NU_WIDTH + 2];
 
 	vtcol = 0;		/* make sure we always see line numbers */
-	vtputsn(right_num(temp, NU_WIDTH - 2, (long) line), NU_WIDTH - 2);
-	vtputsn("  ", 2);
+	vtputsn(right_num(temp, NU_WIDTH - NU_GUTTER, (int) line),
+		NU_WIDTH - NU_GUTTER);
+	vtputsn("  ", NU_GUTTER);
 	horscroll = skip - vtcol;
 
 	/* account for leading fill; this repeats logic in vtputc so
@@ -825,11 +829,11 @@ mk_to_vcol(MARK mark, int expanded, BUFFER *bp, int col, int adjust)
     int c;
     int lim;
     int t = tabstop_val(bp);
-    LINEPTR lp;
+    LINE *lp;
     int extra = ((!global_g_val(GMDALTTABPOS) && !insertmode) ? 1 : 0);
 
     TRACE2((T_CALLED "mk_to_vcol(mark.o=%d, col=%d, adjust=%d) extra %d\n",
-	   mark.o, col, adjust, extra));
+	    mark.o, col, adjust, extra));
 
     if (i < 0) {
 	i = 0;
@@ -1412,7 +1416,7 @@ kbd_flush(void)
  */
 static int
 offs2col0(WINDOW *wp,
-	  LINEPTR lp,
+	  LINE *lp,
 	  C_NUM offset,
 	  C_NUM * cache_offset,
 	  int *cache_column)
@@ -1470,7 +1474,7 @@ offs2col0(WINDOW *wp,
 }
 
 int
-offs2col(WINDOW *wp, LINEPTR lp, C_NUM offset)
+offs2col(WINDOW *wp, LINE *lp, C_NUM offset)
 {
     return offs2col0(wp, lp, offset, 0, 0);
 }
@@ -1482,7 +1486,7 @@ offs2col(WINDOW *wp, LINEPTR lp, C_NUM offset)
  */
 #if OPT_MOUSE || defined(WMDLINEWRAP)
 int
-col2offs(WINDOW *wp, LINEPTR lp, C_NUM col)
+col2offs(WINDOW *wp, LINE *lp, C_NUM col)
 {
     int tabs = tabstop_val(wp->w_bufp);
     int list = w_val(wp, WMDLIST);
@@ -1525,7 +1529,7 @@ col2offs(WINDOW *wp, LINEPTR lp, C_NUM col)
  */
 #ifdef WMDLINEWRAP
 int
-line_height(WINDOW *wp, LINEPTR lp)
+line_height(WINDOW *wp, LINE *lp)
 {
     int hi = 1;
     if (w_val(wp, WMDLINEWRAP)) {
@@ -1680,7 +1684,7 @@ TypeAhead(int force)
  * Update virtual screen line, given a LINE pointer.
  */
 static void
-update_screen_line(WINDOW *wp, LINEPTR lp, int sline)
+update_screen_line(WINDOW *wp, LINE *lp, int sline)
 {
     C_NUM left;
 
@@ -1740,7 +1744,7 @@ update_screen_line(WINDOW *wp, LINEPTR lp, int sline)
 static void
 update_oneline(WINDOW *wp)
 {
-    LINEPTR lp;			/* line to update */
+    LINE *lp;			/* line to update */
     int sline;			/* physical screen line to update */
 
     /* search down the line we want */
@@ -1763,7 +1767,7 @@ update_oneline(WINDOW *wp)
 static void
 update_all(WINDOW *wp)
 {
-    LINEPTR lp;			/* line to update */
+    LINE *lp;			/* line to update */
     int sline;			/* physical screen line to update */
 
     /* search down the lines, updating them */
@@ -1815,7 +1819,7 @@ static void
 update_line_attrs(WINDOW *wp)
 {
     int row;
-    LINEPTR lp;
+    LINE *lp;
     int linewrap;
 
 #ifdef WMDLINEWRAP
@@ -1894,7 +1898,7 @@ update_window_attrs(WINDOW *wp)
     int i;
 
     L_NUM start_wlnum, end_wlnum;
-    LINEPTR lp;
+    LINE *lp;
     int rows;
 
     /*
@@ -2106,7 +2110,7 @@ update_extended_line(int col, int excess, int use_excess)
 static int
 update_cursor_position(int *screenrowp, int *screencolp)
 {
-    LINEPTR lp;
+    LINE *lp;
 #ifdef WMDLINEWRAP
     int i;
 #endif
@@ -2644,7 +2648,7 @@ modeline_show(WINDOW *wp, int lchar)
 static const char *
 rough_position(WINDOW *wp)
 {
-    LINEPTR lp = wp->w_line.l;
+    LINE *lp = wp->w_line.l;
     int rows = wp->w_ntrows;
     const char *msg = 0;
 
@@ -2711,6 +2715,9 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
     int need_eighty_column_indicator;
     int right_len;
     int n;
+
+    if (fs == 0)
+	return;
 
     tb_init(result, EOS);
 
@@ -2921,7 +2928,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 
     tb_bappend(result, left_ms, strlen(left_ms));
 
-    if (((int) tb_length(*result) < term.cols)
+    if (tb_values(*result) != 0 && ((int) tb_length(*result) < term.cols)
 	&& (right_len = strlen(right_ms)) != 0) {
 	for (n = term.cols - (int) tb_length(*result) - right_len;
 	     n > 0;
@@ -2939,8 +2946,10 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 	    tb_bappend(result, right_ms + n, term.cols - col);
     }
 
-    if (need_eighty_column_indicator) {		/* mark column 80 */
+    /* mark column 80 */
+    if (tb_values(*result) != 0 && need_eighty_column_indicator) {
 	int left = -nu_width(wp);
+	char *ss;
 #ifdef WMDLINEWRAP
 	if (!w_val(wp, WMDLINEWRAP))
 #endif
@@ -2951,8 +2960,10 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 	if ((n > 80) && (col >= 0)) {
 	    for (n = tb_length(*result); n < col; n++)
 		tb_append(result, lchar);
-	    if (tb_values(*result)[col] == lchar)
-		tb_values(*result)[col] = '|';
+	    if ((ss = tb_values(*result)) != 0
+		&& ss[col] == lchar) {
+		ss[col] = '|';
+	    }
 	}
     }
     tb_append(result, EOS);
@@ -3088,8 +3099,9 @@ upmode(void)
 {
     WINDOW *wp;
 
-    for_each_window(wp)
+    for_each_window(wp) {
 	wp->w_flag |= WFMODE;
+    }
 }
 
 /*
@@ -3099,8 +3111,8 @@ upmode(void)
 static void
 reframe_cursor_position(WINDOW *wp)
 {
-    LINEPTR dlp;
-    LINEPTR lp;
+    LINE *dlp;
+    LINE *lp;
     int i = 0;
     int rows;
     int founddot = FALSE;	/* set to true iff we find dot */
@@ -3291,7 +3303,7 @@ static void
 de_extend_lines(void)
 {
     WINDOW *wp;
-    LINEPTR lp;
+    LINE *lp;
     int i;
 
     for_each_visible_window(wp) {
@@ -3738,15 +3750,17 @@ mlmsg(const char *fmt, va_list *app)
 void
 mlwrite(const char *fmt,...)
 {
-    va_list ap;
-    if (global_b_val(MDTERSE) || kbd_replaying(FALSE) || !vl_msgs) {
-	if (!clhide)
-	    bottomleft();
-	return;
+    if (fmt != 0) {
+	va_list ap;
+	if (global_b_val(MDTERSE) || kbd_replaying(FALSE) || !vl_msgs) {
+	    if (!clhide)
+		bottomleft();
+	    return;
+	}
+	va_start(ap, fmt);
+	mlmsg(fmt, &ap);
+	va_end(ap);
     }
-    va_start(ap, fmt);
-    mlmsg(fmt, &ap);
-    va_end(ap);
 }
 
 /*
@@ -3756,72 +3770,85 @@ mlwrite(const char *fmt,...)
 void
 mlforce(const char *fmt,...)
 {
-    va_list ap;
-    va_start(ap, fmt);
-    mlmsg(fmt, &ap);
-    va_end(ap);
+    if (fmt != 0) {
+	va_list ap;
+	va_start(ap, fmt);
+	mlmsg(fmt, &ap);
+	va_end(ap);
+    }
 }
 
 /* VARARGS1 */
 void
 mlprompt(const char *fmt,...)
 {
-    va_list ap;
-    int osgarbf = sgarbf;
-    if (!vl_msgs) {
-	bottomleft();
-	return;
+    if (fmt != 0) {
+	va_list ap;
+	int osgarbf = sgarbf;
+	if (!vl_msgs) {
+	    bottomleft();
+	    return;
+	}
+	sgarbf = FALSE;
+	va_start(ap, fmt);
+	mlmsg(fmt, &ap);
+	va_end(ap);
+	sgarbf = osgarbf;
     }
-    sgarbf = FALSE;
-    va_start(ap, fmt);
-    mlmsg(fmt, &ap);
-    va_end(ap);
-    sgarbf = osgarbf;
 }
 
 /* VARARGS */
 void
 dbgwrite(const char *fmt,...)
 {
-    char temp[80];
+    if (fmt != 0) {
+	char temp[80];
 
-    va_list ap;			/* ptr to current data field */
-    va_start(ap, fmt);
-    lsprintf(temp, "[press ^G to continue] %s", fmt);
-    mlmsg(temp, &ap);
-    va_end(ap);
-    beginDisplay();
-    while (term.getch() != '\007') {
-	;
+	va_list ap;		/* ptr to current data field */
+	va_start(ap, fmt);
+	lsprintf(temp, "[press ^G to continue] %s", fmt);
+	mlmsg(temp, &ap);
+	va_end(ap);
+	beginDisplay();
+	while (term.getch() != '\007') {
+	    ;
+	}
+	endofDisplay();
     }
-    endofDisplay();
 }
 
 /*
  * Do the equivalent of 'perror()' on the message line
  */
 void
-mlerror(const char *s)
+mlerror(const char *str)
 {
+    int save_err = errno;
     const char *t = 0;
 #ifdef HAVE_STRERROR
 #if SYS_VMS
-    if (errno == EVMSERR)
-	t = strerror(errno, vaxc$errno);
+    if (save_err == EVMSERR)
+	t = strerror(save_err, vaxc$errno);
     else
 #endif /* SYS_VMS */
-    if (errno > 0)
-	t = strerror(errno);
+    if (save_err > 0)
+	t = strerror(save_err);
 #else
 #ifdef HAVE_SYS_ERRLIST
-    if (errno > 0 && errno < sys_nerr)
-	t = sys_errlist[errno];
+    if (save_err > 0 && save_err < sys_nerr)
+	t = sys_errlist[save_err];
 #endif /* HAVE_SYS_ERRLIST */
 #endif /* HAVE_STRERROR */
-    if (t != 0)
-	mlwarn("[Error %s: %s]", s, t);
-    else
-	mlwarn("[Error %s: unknown system error %d]", s, errno);
+    if (t != 0) {
+	/* Borland's strerror() returns newlines on the end of the strings */
+	static TBUFF *tt;
+	if (tb_scopy(&tt, t) != 0) {
+	    t = mktrimmed(tb_values(tt));
+	}
+	mlwarn("[Error %s: %s]", str, t);
+    } else {
+	mlwarn("[Error %s: unknown system error %d]", str, save_err);
+    }
 }
 
 /*
@@ -3858,16 +3885,17 @@ lspputc(int c)
 char *
 lsprintf(char *buf, const char *fmt,...)
 {
-    va_list ap;
-    va_start(ap, fmt);
+    if ((lsp = buf) != 0) {
+	va_list ap;
+	va_start(ap, fmt);
 
-    lsp = buf;
-    dfoutfn = lspputc;
+	dfoutfn = lspputc;
 
-    dofmt(fmt, &ap);
-    va_end(ap);
+	dofmt(fmt, &ap);
+	va_end(ap);
 
-    *lsp = EOS;
+	*lsp = EOS;
+    }
     return lsp;
 }
 
@@ -3940,7 +3968,7 @@ b2vprintf(BUFFER *bp, const char *fmt, va_list ap)
 LINE *
 b2printf(BUFFER *bp, const char *fmt,...)
 {
-    LINE *result = 0;
+    LINE *result;
     va_list ap;
 
     va_start(ap, fmt);

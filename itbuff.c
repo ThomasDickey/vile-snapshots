@@ -7,7 +7,7 @@
  *	To do:	add 'itb_ins()' and 'itb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/itbuff.c,v 1.18 2003/07/27 16:16:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/itbuff.c,v 1.25 2005/01/23 14:40:49 tom Exp $
  *
  */
 
@@ -25,8 +25,8 @@ typedef struct _itb_list {
 
 static ITB_LIST *all_tbuffs;
 
-#define	AllocatedBuffer(q)	itb_remember(q);
-#define	FreedBuffer(q)		itb_forget(q);
+#define	AllocatedBuffer(q)	itb_remember(q)
+#define	FreedBuffer(q)		itb_forget(q)
 
 static void
 itb_remember(ITBUFF * p)
@@ -34,10 +34,11 @@ itb_remember(ITBUFF * p)
     ITB_LIST *q;
 
     beginDisplay();
-    q = typealloc(ITB_LIST);
-    q->buff = p;
-    q->link = all_tbuffs;
-    all_tbuffs = q;
+    if ((q = typealloc(ITB_LIST)) != 0) {
+	q->buff = p;
+	q->link = all_tbuffs;
+	all_tbuffs = q;
+    }
     endofDisplay();
 }
 
@@ -53,7 +54,7 @@ itb_forget(ITBUFF * p)
 		r->link = q->link;
 	    else
 		all_tbuffs = q->link;
-	    free((char *) q);
+	    free(q);
 	    break;
 	}
     }
@@ -87,15 +88,21 @@ itb_alloc(ITBUFF ** p, size_t n)
 
     beginDisplay();
     if (q == 0) {
-	q = *p = typealloc(ITBUFF);
-	q->itb_data = typeallocn(int, q->itb_size = n);
-	q->itb_used = 0;
-	q->itb_last = 0;
-	q->itb_endc = esc_c;
-	AllocatedBuffer(q)
+	if ((q = *p = typealloc(ITBUFF)) != 0) {
+	    if ((q->itb_data = typeallocn(int, q->itb_size = n)) != 0) {
+		q->itb_used = 0;
+		q->itb_last = 0;
+		q->itb_endc = esc_c;
+		AllocatedBuffer(q);
+	    } else {
+		itb_free(&q);
+	    }
+	}
     } else if (n >= q->itb_size) {
 	q->itb_data = typereallocn(int, q->itb_data,
 				   q->itb_size = (n * 2));
+	if (q->itb_data == 0)
+	    itb_free(&q);
     }
     endofDisplay();
     return q;
@@ -110,9 +117,11 @@ itb_init(ITBUFF ** p, int c)
     ITBUFF *q = *p;
     if (q == 0)
 	q = itb_alloc(p, NCHUNK);
-    q->itb_used = 0;
-    q->itb_last = 0;
-    q->itb_endc = c;		/* code to return if no-more-data */
+    if (q != 0) {
+	q->itb_used = 0;
+	q->itb_last = 0;
+	q->itb_endc = c;	/* code to return if no-more-data */
+    }
     return (*p = q);
 }
 
@@ -126,9 +135,9 @@ itb_free(ITBUFF ** p)
 
     beginDisplay();
     if (q != 0) {
-	FreedBuffer(q)
-	    free((char *) (q->itb_data));
-	free((char *) q);
+	FreedBuffer(q);
+	FreeIfNeeded(q->itb_data);
+	free(q);
     }
     *p = 0;
     endofDisplay();
@@ -158,11 +167,14 @@ itb_put(ITBUFF ** p, size_t n, int c)
 void
 itb_stuff(ITBUFF * p, int c)
 {
-    if (p->itb_last < p->itb_used)
-	p->itb_data[p->itb_last] = c;
-    else
-	p->itb_endc = c;
+    if (p != 0) {
+	if (p->itb_last < p->itb_used)
+	    p->itb_data[p->itb_last] = c;
+	else
+	    p->itb_endc = c;
+    }
 }
+
 /*
  * append a character to the temp-buff
  */
@@ -228,22 +240,23 @@ itb_delete(ITBUFF * p, size_t cnt)
 {
     int *from, *to, *used;
 
-    to = &p->itb_data[p->itb_last];
-    from = to + cnt;
+    if (p != 0) {
+	to = &p->itb_data[p->itb_last];
+	from = to + cnt;
 
-    used = &p->itb_data[p->itb_used];
+	used = &p->itb_data[p->itb_used];
 
-    if (from >= used) {
-	p->itb_used = p->itb_last;
-	return;
+	if (from >= used) {
+	    p->itb_used = p->itb_last;
+	    return;
+	}
+
+	while (from < used) {
+	    *to++ = *from++;
+	}
+
+	p->itb_used -= cnt;
     }
-
-    while (from < used) {
-	*to++ = *from++;
-    }
-
-    p->itb_used -= cnt;
-
 }
 
 ITBUFF *
@@ -253,7 +266,7 @@ itb_insert(ITBUFF ** p, int c)
     int *last, *to;
 
     /* force enough room for another character */
-    itb_put(p, q->itb_used, 0 /* any value */ );
+    q = itb_put(p, q->itb_used, 0 /* any value */ );
 
     /* copy up */
     to = &q->itb_data[q->itb_used - 1];
@@ -357,6 +370,7 @@ int
 itb_last(ITBUFF * p)
 {
     int c;
+
     if (p != 0 && p->itb_used > 0) {
 	c = itb_get(p, p->itb_used - 1);
 	p->itb_used--;
@@ -407,5 +421,5 @@ itb_values(ITBUFF * p)
 size_t
 itb_length(ITBUFF * p)
 {
-    return (p != 0) ? p->itb_used : 0;
+    return (p != 0 && p->itb_data != 0) ? p->itb_used : 0;
 }

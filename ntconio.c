@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.78 2004/12/15 18:15:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.82 2005/01/20 11:58:44 tom Exp $
  *
  */
 
@@ -133,7 +133,8 @@ nticursor(int cmode)
 static void
 nttitle(const char *title)
 {				/* set the current window title */
-    SetConsoleTitle(title);
+    if (title != 0)
+	SetConsoleTitle(title);
 }
 #endif
 
@@ -298,25 +299,30 @@ ntscroll(int from, int to, int n)
 #endif
 }
 
-#if	OPT_FLASH
+#if OPT_FLASH
 static void
 flash_display(void)
 {
     DWORD length = term.cols * term.rows;
     DWORD got;
-    WORD *buf1 = malloc(sizeof(*buf1) * length);
-    WORD *buf2 = malloc(sizeof(*buf2) * length);
+    WORD *buf1;
+    WORD *buf2;
+
     static COORD origin;
-    ReadConsoleOutputAttribute(hConsoleOutput, buf1, length, origin, &got);
-    ReadConsoleOutputAttribute(hConsoleOutput, buf2, length, origin, &got);
-    for (got = 0; got < length; got++) {
-	buf2[got] ^= (FOREGROUND_INTENSITY | BACKGROUND_INTENSITY);
+
+    if ((buf1 = typeallocn(WORD, length)) != 0
+	&& (buf2 = typeallocn(WORD, length)) != 0) {
+	ReadConsoleOutputAttribute(hConsoleOutput, buf1, length, origin, &got);
+	ReadConsoleOutputAttribute(hConsoleOutput, buf2, length, origin, &got);
+	for (got = 0; got < length; got++) {
+	    buf2[got] ^= (FOREGROUND_INTENSITY | BACKGROUND_INTENSITY);
+	}
+	WriteConsoleOutputAttribute(hConsoleOutput, buf2, length, origin, &got);
+	Sleep(200);
+	WriteConsoleOutputAttribute(hConsoleOutput, buf1, length, origin, &got);
+	free(buf1);
+	free(buf2);
     }
-    WriteConsoleOutputAttribute(hConsoleOutput, buf2, length, origin, &got);
-    Sleep(200);
-    WriteConsoleOutputAttribute(hConsoleOutput, buf1, length, origin, &got);
-    free(buf1);
-    free(buf2);
 }
 #endif
 
@@ -1163,6 +1169,18 @@ handle_mouse_event(MOUSE_EVENT_RECORD mer)
 		    );
 	    }
 	    break;
+
+#ifdef MOUSE_WHEELED
+	case MOUSE_WHEELED:
+	    /*
+	     * Trial and error experimentation shows that dwButtonState
+	     * has its high bit set when the wheel moves back and not
+	     * set otherwise.
+	     */
+	    mvupwind(TRUE, ((long) mer.dwButtonState < 0) ? -3 : 3);
+	    update(TRUE);
+	    return;
+#endif /* MOUSE_WHEELED */
 	}
 
 	for_ever {

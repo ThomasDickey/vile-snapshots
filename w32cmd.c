@@ -2,12 +2,13 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.28 2002/12/23 01:25:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.34 2005/01/21 16:52:43 tom Exp $
  */
 
 #include "estruct.h"
 #include "edef.h"
 #include "nefunc.h"
+#include "winvile.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,6 +18,10 @@
 
 #define FOOTER_OFFS      0.333  /* inches from bottom of page */
 #define _FF_             '\f'
+
+#define REGKEY_RECENT_FILES "Software\\winvile\\MRUFiles"
+#define REGKEY_RECENT_FLDRS "Software\\winvile\\MRUFolders"
+#define RECENT_REGVALUE_FMT "%02X"
 
 /* --------------------------------------------------------------------- */
 /* ----------------------- misc common routines ------------------------ */
@@ -135,7 +140,7 @@ commdlg_open_files(int chdir_allowed, const char *dir)
     }
     oldcwd[0]  = newcwd[0] = '\0';
     chdir_mask = (chdir_allowed) ? 0 : OFN_NOCHANGEDIR;
-    filebuf    = malloc(RET_BUF_SIZE_);
+    filebuf    = typeallocn(char, RET_BUF_SIZE_);
     if (! filebuf)
         returnCode(no_memory("commdlg_open_files()"));
     filebuf[0] = '\0';
@@ -573,7 +578,7 @@ typedef struct print_param_struct
 
 typedef struct split_line_struct
 {
-    LINEPTR       splitlp;     /* points at a buffer line that has been split
+    LINE *        splitlp;     /* points at a buffer line that has been split
                                 * across a page break while printing multiple,
                                 * uncollated copies.
                                 */
@@ -657,7 +662,7 @@ handle_page_dflts(HWND hwnd)
 
     if (pgsetup == NULL)
     {
-        if ((pgsetup = calloc(1, sizeof(*pgsetup))) == NULL)
+        if ((pgsetup = typecalloc(PAGESETUPDLG)) == NULL)
             return (no_memory("get_page_dflts"));
         pgsetup->Flags       = PSD_RETURNDEFAULT|PSD_DEFAULTMINMARGINS;
         pgsetup->lStructSize = sizeof(*pgsetup);
@@ -1336,7 +1341,7 @@ winprint_curbuffer_collated(PRINT_PARAM *pparam)
                   rc,
                   saw_ff,
                   isempty_line;
-    LINEPTR       lp;
+    LINE *        lp;
     ULONG         vile_llen, outlen;
 
     rc  = TRUE;
@@ -1431,8 +1436,8 @@ winprint_curbuffer_collated(PRINT_PARAM *pparam)
 /*
  * FUNCTION
  *   winprint_curbuffer_uncollated(PRINT_PARAM *pparam
- *                                 LINEPTR     curpg,
- *                                 LINEPTR     &nxtpg,
+ *                                 LINE *      curpg,
+ *                                 LINE *      &nxtpg,
  *                                 int         *eob,
  *                                 SPLIT_LINE  *pcursplit,
  *                                 SPLIT_LINE  *pnxtsplit)
@@ -1462,8 +1467,8 @@ winprint_curbuffer_collated(PRINT_PARAM *pparam)
 
 static int
 winprint_curbuffer_uncollated(PRINT_PARAM *pparam,
-                              LINEPTR     curpg,
-                              LINEPTR     *nxtpg,
+                              LINE *      curpg,
+                              LINE *      *nxtpg,
                               int         *eob,
                               SPLIT_LINE  *pcursplit,
                               SPLIT_LINE  *pnxtsplit)
@@ -1472,7 +1477,7 @@ winprint_curbuffer_uncollated(PRINT_PARAM *pparam,
                    rc,
                    saw_ff,
                    isempty_line;
-    LINEPTR        lp;
+    LINE *         lp;
     ULONG          vile_llen, outlen;
 
     rc           = TRUE;
@@ -1592,7 +1597,8 @@ winprint_curbuffer_uncollated(PRINT_PARAM *pparam,
 static int
 winprint_curbuffer(PRINT_PARAM *pparam)
 {
-    LINEPTR curpglp, nextpglp;
+    LINE *  curpglp;
+    LINE *  nextpglp;
     int     i, eob, rc = TRUE;
 
     if (is_empty_buf(curbp))
@@ -1787,7 +1793,7 @@ winprint(int f, int n)
 #endif
     if (! pd)
     {
-        if ((pd = calloc(1, sizeof(*pd))) == NULL)
+        if ((pd = typecalloc(PRINTDLG)) == NULL)
             return (no_memory("winprint"));
         pd->lStructSize = sizeof(*pd);
         pd->nCopies     = 1;
@@ -2019,7 +2025,7 @@ winprint(int f, int n)
      * code below, "+32" conservatively accounts for line numbering
      * prefix space.
      */
-    if ((pparam.buf = malloc(mcpl + 32)) != NULL)
+    if ((pparam.buf = typeallocn(char, mcpl + 32)) != NULL)
     {
         pparam.xchar = xchar;
         pparam.ychar = ychar;
@@ -2050,8 +2056,7 @@ winprint(int f, int n)
     }
     else
     {
-        rc = FALSE;
-        (void) no_memory("winprint");
+        rc = no_memory("winprint");
     }
     if (! spooler_failure)
     {
@@ -2147,4 +2152,530 @@ winpg_setup(int f, int n)
     pgsetup_chgd = TRUE;
     return (rc);
 }
+#endif /* DISP_NTWIN */
+
+/* --------------------------------------------------------------------- */
+/* -------- routines that remember/purge recent folders/files -----------*/
+/* ----------------------------------------------------------------------*/
+
+/*
+ * Note 1:  These routines use the following registry key/value formats:
+ *
+ * Recent Files
+ * ------------
+ * Key:        HKCU\Software\winvile\MRUFiles
+ * Value Name: Hex(0 to (MAX_RECENT_FILES - 1))
+ * Value Data: nul-terminated file path
+ *
+ * Recent Folders
+ * --------------
+ * Key:        HKCU\Software\winvile\MRUFolders
+ * Value Name: Hex(0 to (MAX_RECENT_FLDRS - 1))
+ * Value Data: nul-terminated directory path
+ *
+ * Note 2:  For the most part, these routines are winvile-specific.
+ */
+
+/* --------------------------------------------------------------------- */
+
+/*
+ * Note that delete_recent_files_folder_registry_data() is coded for
+ * maximum portability among the various flavors of Windows.  It's _not_
+ * coded for maximum speed.
+ */
+static int
+delete_recent_files_folder_registry_data(int is_file)
+{
+    HKEY hkey;
+    int  i, maxpaths;
+    char *subkey, value_name[32];
+
+    subkey = (is_file) ? REGKEY_RECENT_FILES : REGKEY_RECENT_FLDRS;
+    if (RegOpenKeyEx(HKEY_CURRENT_USER,
+                     subkey,
+                     0,
+                     KEY_WRITE,
+                     &hkey) != ERROR_SUCCESS)
+    {
+        /* assume there's no there, there */
+
+        return (TRUE);
+    }
+    maxpaths = (is_file) ? MAX_RECENT_FILES : MAX_RECENT_FLDRS;
+    for (i = 0; i < maxpaths; i++)
+    {
+        sprintf(value_name, RECENT_REGVALUE_FMT, i);
+        (void) RegDeleteValue(hkey, value_name);
+    }
+    (void) RegCloseKey(hkey);
+    return (TRUE);
+}
+
+/* callable from both console vile and winvile */
+int
+purge_recent_files(int f, int n)
+{
+    return (delete_recent_files_folder_registry_data(TRUE));
+}
+
+/* callable from both console vile and winvile */
+int
+purge_recent_folders(int f, int n)
+{
+    return (delete_recent_files_folder_registry_data(FALSE));
+}
+
+/* ---------------- begin winvile-specific functionality ----------------- */
+
+#if DISP_NTWIN
+
+static void
+free_mru_list(char **list)
+{
+    char *p, **orig_listp;
+
+    if (! list)
+        return;
+    orig_listp = list;
+    while (*list)
+    {
+        p = *list++;
+        (void) free(p);
+    }
+    (void) free(orig_listp);
+}
+
+/*
+ * Read a Files/Folders MRU list from the registry, returns NULL if
+ * error or no data in registry.  If non-NULL list returned, caller
+ * must free same.
+ */
+static char **
+fetch_mru_list(int is_file, int maxpaths)
+{
+    DWORD dwSzPath;
+    HKEY  hkey;
+    int   i;
+    char  **list, value_name[32], *subkey, path[FILENAME_MAX + 1];
+
+    subkey = (is_file) ? REGKEY_RECENT_FILES : REGKEY_RECENT_FLDRS;
+    if (RegOpenKeyEx(HKEY_CURRENT_USER,
+                     subkey,
+                     0,
+                     KEY_READ,
+                     &hkey) != ERROR_SUCCESS)
+    {
+        /* assume there's no there, there */
+
+        return (NULL);
+    }
+    if ((list = typecallocn(char *, maxpaths + 1)) == NULL)
+    {
+        (void) RegCloseKey(hkey);
+        (void) no_memory("fetch_mru_list()");
+        return (NULL);
+    }
+    for (i = 0; i < maxpaths; i++)
+    {
+        sprintf(value_name, RECENT_REGVALUE_FMT, i);
+        dwSzPath = sizeof(path);
+        if (RegQueryValueEx(hkey,
+                            value_name,
+                            NULL,
+                            NULL,
+                            (LPBYTE) path,
+                            &dwSzPath) != ERROR_SUCCESS)
+        {
+            /* user can muck with registry...don't assume no more data */
+
+            continue;
+        }
+
+        if ((list[i] = typeallocn(char, (dwSzPath) ? dwSzPath : 1)) == NULL)
+        {
+            (void) RegCloseKey(hkey);
+            free_mru_list(list);
+            (void) no_memory("fetch_mru_list()");
+            return (NULL);
+        }
+
+        /* user can muck with registry...be paranoid */
+        strncpy(list[i], path, dwSzPath - 1);
+        (list[i])[dwSzPath - 1] = '\0';
+    }
+    (void) RegCloseKey(hkey);
+
+    /* handle degenerate case */
+    if (list[0] == NULL)
+    {
+        free_mru_list(list);
+        list = NULL;
+    }
+    return (list);
+}
+
+static int
+delete_popup_menu(HMENU vile_menu, int mnu_posn)
+{
+    MENUITEMINFO mii;
+
+    memset(&mii, 0, sizeof(mii));
+    mii.cbSize = sizeof(mii);
+    mii.fMask  = MIIM_SUBMENU;
+    if (! GetMenuItemInfo(vile_menu, mnu_posn, TRUE, &mii))
+        return (FALSE);
+
+    /* only delete popup menu if it exists */
+    if (mii.hSubMenu)
+    {
+        if (! DestroyMenu(mii.hSubMenu))
+            return (FALSE);
+        mii.hSubMenu = NULL;
+        if (! SetMenuItemInfo(vile_menu, mnu_posn, TRUE, &mii))
+            return (FALSE);
+    }
+    return (TRUE);
+}
+
+static int
+create_popup_menu(HMENU vile_menu,
+                  int   mnu_posn,
+                  char  **list,
+                  int   base_mnu_item_id,
+                  int   maxitems)
+{
+    HMENU        hPopupMenu = CreateMenu();
+    int          i;
+    MENUITEMINFO mii;
+
+    if (! hPopupMenu)
+        return (FALSE);
+    for (i = 0; i < maxitems && *list; i++, list++)
+        AppendMenu(hPopupMenu, MF_STRING, base_mnu_item_id++, *list);
+    memset(&mii, 0, sizeof(mii));
+    mii.cbSize   = sizeof(mii);
+    mii.fMask    = MIIM_SUBMENU;
+    mii.hSubMenu = hPopupMenu;
+    if (! SetMenuItemInfo(vile_menu, mnu_posn, TRUE, &mii))
+        return (FALSE);
+    return (TRUE);
+}
+
+/* Find positions of two system menu items of interest...do this only once. */
+static int
+find_files_folder_menu_posns(int *files_mnu_posn, int *fldrs_mnu_posn)
+{
+    static int cached_files_posn = -1, cached_fldrs_posn = -1;
+
+    int      i, nitems;
+    HMENU    vile_menu;
+
+    if (cached_files_posn >= 0)
+    {
+        *files_mnu_posn = cached_files_posn;
+        *fldrs_mnu_posn = cached_fldrs_posn;
+        return (TRUE);
+    }
+    vile_menu = GetSystemMenu(winvile_hwnd(), FALSE);
+    nitems    = GetMenuItemCount(vile_menu);
+    if (nitems < 0)
+    {
+        mlforce("[system menu inaccessible]");
+        return (FALSE);
+    }
+    for (i = nitems - 1 ; i >= 0; i--)
+    {
+        if (GetMenuItemID(vile_menu, i) == IDM_SEP_AFTER_RCNT_FLDRS)
+        {
+            cached_fldrs_posn = i - 1;
+            cached_files_posn = i - 2;
+            break;
+        }
+    }
+    if (cached_files_posn < 0)
+    {
+        /* search failed, something is quite wrong.... */
+
+        mlforce("[system menu RECENT FILE/FLDR items missing]");
+        return (FALSE);
+    }
+    else
+    {
+        *files_mnu_posn = cached_files_posn;
+        *fldrs_mnu_posn = cached_fldrs_posn;
+        return (TRUE);
+    }
+}
+
+void
+build_recent_file_and_folder_menus(void)
+{
+
+    char     **list;   /* dynamic array of files or folders */
+    int      maxfiles, maxfldrs, files_mnu_posn, fldrs_mnu_posn;
+    unsigned mnu_state;
+    HMENU    vile_menu;
+
+    if (! find_files_folder_menu_posns(&files_mnu_posn, &fldrs_mnu_posn))
+        return;  /* system menu scrogged */
+
+    vile_menu = GetSystemMenu(winvile_hwnd(), FALSE);
+
+    /* --------- create or disable "recent files" popup menu --------- */
+
+    maxfiles  = global_g_val(GVAL_RECENT_FILES);
+    mnu_state = MF_GRAYED;
+    if (maxfiles != 0)
+    {
+        if ((list = fetch_mru_list(TRUE, maxfiles)) != NULL)
+        {
+            /* first things first -- whack the old popup menu */
+
+            if (delete_popup_menu(vile_menu, files_mnu_posn))
+            {
+                if (create_popup_menu(vile_menu,
+                                      files_mnu_posn,
+                                      list,
+                                      IDM_RECENT_FILES,
+                                      maxfiles))
+                {
+                    mnu_state = MF_ENABLED;
+                }
+            }
+            free_mru_list(list);
+        }
+    }
+    EnableMenuItem(vile_menu, files_mnu_posn, MF_BYPOSITION | mnu_state);
+
+    /* --------- create or disable "recent folders" popup menu --------- */
+
+    maxfldrs  = global_g_val(GVAL_RECENT_FLDRS);
+    mnu_state = MF_GRAYED;
+    if (maxfldrs != 0)
+    {
+        if ((list = fetch_mru_list(FALSE, maxfldrs)) != NULL)
+        {
+            /* first things first -- whack the old popup menu */
+
+            if (delete_popup_menu(vile_menu, fldrs_mnu_posn))
+            {
+                if (create_popup_menu(vile_menu,
+                                      fldrs_mnu_posn,
+                                      list,
+                                      IDM_RECENT_FLDRS,
+                                      maxfldrs))
+                {
+                    mnu_state = MF_ENABLED;
+                }
+            }
+            free_mru_list(list);
+        }
+    }
+    EnableMenuItem(vile_menu, fldrs_mnu_posn, MF_BYPOSITION | mnu_state);
+}
+
+/* chdir() to  a path selected from the winvile "recent folders" menu */
+void
+cd_recent_folder(int mnu_index)
+{
+    char     dir[FILENAME_MAX + 1];
+    int      files_mnu_posn, fldrs_mnu_posn;
+    HMENU    vile_menu, fldrs_menu;
+
+    if (! find_files_folder_menu_posns(&files_mnu_posn, &fldrs_mnu_posn))
+        return;  /* system menu scrogged */
+
+    vile_menu = GetSystemMenu(winvile_hwnd(), FALSE);
+    if ((fldrs_menu = GetSubMenu(vile_menu, fldrs_mnu_posn)) == NULL)
+    {
+        mlforce("BUG: folders popup menu damaged");
+        return;
+    }
+    if (! GetMenuString(fldrs_menu,
+                        mnu_index,
+                        dir,
+                        sizeof(dir),
+                        MF_BYCOMMAND))
+    {
+        mlforce("BUG: folders popup menu(%d) bogus", mnu_index);
+        return;
+    }
+    (void) set_directory(dir);
+
+    /*
+     * note that set_directory() eventually calls
+     * store_recent_file_or_folder() to update the Recent Folders MRU.
+     */
+}
+
+/* open a file selected from the winvile "recent files" menu */
+void
+edit_recent_file(int mnu_index)
+{
+    BUFFER   *bp;
+    char     file[FILENAME_MAX + 1];
+    int      files_mnu_posn, fldrs_mnu_posn;
+    HMENU    vile_menu, files_menu;
+
+    if (! find_files_folder_menu_posns(&files_mnu_posn, &fldrs_mnu_posn))
+        return;  /* system menu scrogged */
+
+    vile_menu = GetSystemMenu(winvile_hwnd(), FALSE);
+    if ((files_menu = GetSubMenu(vile_menu, files_mnu_posn)) == NULL)
+    {
+        mlforce("BUG: files popup menu damaged");
+        return;
+    }
+    if (! GetMenuString(files_menu,
+                        mnu_index,
+                        file,
+                        sizeof(file),
+                        MF_BYCOMMAND))
+    {
+        mlforce("BUG: files popup menu(%d) bogus", mnu_index);
+        return;
+    }
+
+    /*
+     * Perhaps the editor has the target file in a buffer already?
+     *
+     * Calling getfile() first is actually important, since if the requested
+     * file was previously sucked into a buffer and swbuffer() is called first,
+     * winvile occasionally drops incorrect highlights on existing buffers.
+     * Yes, it's all magic to me.
+     */
+    if (! getfile(file, TRUE))
+    {
+        /* guess not */
+
+        if ((bp = getfile2bp(file, FALSE, FALSE)) != NULL)
+        {
+            bp->b_flag |= BFARGS;         /* treat this as an argument */
+            (void) swbuffer(bp);          /* editor switches buffer    */
+
+            /*
+             * note that swbuffer() eventually calls
+             * store_recent_file_or_folder() to update the Recent Files MRU.
+             */
+        }
+    }
+    else
+    {
+        /*
+         * Subtle points here:
+         *
+         * 1) The user just used winvile's Recent Files feature to switch
+         *    the editor's current buffer to an existing file.
+         * 2) This file, which is in the Recent Files MRU list, might not
+         *    be at the front of the MRU.
+         * 3) The user will expect this file to go to the front of the MRU.
+         *    But it won't because the file's BUFFER pointer has BFREGD set.
+         *
+         * Fix that.
+         */
+
+         store_recent_file_or_folder(file, TRUE);
+    }
+}
+
+/*
+ * Save a file or folder in a registry MRU list. Saved object goes to the
+ * front of the list.
+ */
+void
+store_recent_file_or_folder(const char *path, int is_file)
+{
+    char *newlist[MAX_RECENT_FILES+MAX_RECENT_FLDRS + 1]; /* overdim'd */
+    char **oldlist, *subkey, **listp, value_name[32];
+    HKEY hkey;
+    int  i, j, maxpaths;
+
+    maxpaths = global_g_val((is_file) ? GVAL_RECENT_FILES : GVAL_RECENT_FLDRS);
+    if (maxpaths == 0)
+        return;   /* feature disabled */
+    subkey = (is_file) ? REGKEY_RECENT_FILES : REGKEY_RECENT_FLDRS;
+
+    /* read all existing MRU data into dynamic array of strings */
+    if ((oldlist = fetch_mru_list(is_file, maxpaths)) == NULL)
+    {
+        /* assume no MRU data -- degenerate case */
+
+        if (RegCreateKeyEx(HKEY_CURRENT_USER,
+                           subkey,
+                           0,
+                           "",
+                           REG_OPTION_NON_VOLATILE,
+                           KEY_WRITE,
+                           NULL,
+                           &hkey,
+                           NULL) != ERROR_SUCCESS)
+        {
+            disp_win32_error(W32_SYS_ERROR, winvile_hwnd());
+            return;
+        }
+        sprintf(value_name, RECENT_REGVALUE_FMT, 0);
+        if (RegSetValueEx(hkey,
+                          value_name,
+                          0,
+                          REG_SZ,
+                          (const BYTE *) path,
+                          strlen(path) + 1) != ERROR_SUCCESS)
+        {
+            disp_win32_error(W32_SYS_ERROR, winvile_hwnd());
+        }
+        (void) RegCloseKey(hkey);
+        return;
+    }
+    if (oldlist[0] && stricmp(path, oldlist[0]) == 0)
+    {
+        /* degenerate case -- path already at head of MRU list */
+
+        free_mru_list(oldlist);
+        return;
+    }
+
+    /* ----------- do some actual work -> construct new list -------- */
+
+    newlist[0] = (char *) path;
+    for (i = 0, j = 1, listp = oldlist; *listp && i < maxpaths; i++, listp++)
+    {
+        if (stricmp(*listp, path) != 0)
+        {
+            /* don't dup "path" from oldMRU */
+
+            newlist[j++] = *listp;
+        }
+    }
+    newlist[j] = NULL;
+    if (RegOpenKeyEx(HKEY_CURRENT_USER,
+                     subkey,
+                     0,
+                     KEY_WRITE,
+                     &hkey) != ERROR_SUCCESS)
+    {
+        /* what? */
+
+        disp_win32_error(W32_SYS_ERROR, winvile_hwnd());
+    }
+    else
+    {
+        for (i = 0, listp = newlist; *listp && i < maxpaths; i++, listp++)
+        {
+            sprintf(value_name, RECENT_REGVALUE_FMT, i);
+            if (RegSetValueEx(hkey,
+                              value_name,
+                              0,
+                              REG_SZ,
+                              (const BYTE *) *listp,
+                              strlen(*listp) + 1) != ERROR_SUCCESS)
+            {
+                disp_win32_error(W32_SYS_ERROR, winvile_hwnd());
+                break;
+            }
+        }
+        (void) RegCloseKey(hkey);
+    }
+    free_mru_list(oldlist);
+}
+
 #endif /* DISP_NTWIN */

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.86 2004/12/09 22:03:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.89 2005/01/20 19:51:19 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -117,8 +117,11 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 
 #define BACKSLASH '\\'
 
-#define isBlank(c)   ((c) == ' ' || (c) == '\t')
+#define NONNULL(s)	((s) != 0) ? (s) : "<null>"
+#define isBlank(c)	((c) == ' ' || (c) == '\t')
 
+#define	typealloc(cast)			(cast *)malloc(sizeof(cast))
+#define	typeallocn(cast,ntypes)		(cast *)malloc((ntypes)*sizeof(cast))
 #define	typecallocn(cast,ntypes)	(cast *)calloc(sizeof(cast),ntypes)
 #define	typereallocn(cast,ptr,ntypes)	(cast *)realloc((char *)(ptr),\
 							(ntypes)*sizeof(cast))

@@ -186,27 +186,29 @@ lreplace(char *s, int len)
 void
 api_setup_fake_win(VileBuf * vbp, int do_delete)
 {
-    if (curwp_visible == 0)
-	curwp_visible = curwp;
+    if (vbp != 0) {
+	if (curwp_visible == 0)
+	    curwp_visible = curwp;
 
-    if (vbp->fwp) {
-	curwp = vbp->fwp;
-	curbp = curwp->w_bufp;
-    } else {
-	(void) push_fake_win(vbp->bp);
-	vbp->fwp = curwp;
-	vbp->changed = 0;
-    }
+	if (vbp->fwp) {
+	    curwp = vbp->fwp;
+	    curbp = curwp->w_bufp;
+	} else {
+	    (void) push_fake_win(vbp->bp);
+	    vbp->fwp = curwp;
+	    vbp->changed = 0;
+	}
 
-    if (vbp->ndel > 0 && do_delete) {
-	int status;
-	/* Do lazy delete; FALSE means don't put text in kill buffer */
-	status = ldelete(vbp->ndel, FALSE);
-	vbp->ndel = 0;
-	if (status == FALSE
-	    || (lforw(DOT.l) == buf_head(curbp) && DOT.o >= llength(DOT.l))) {
-	    make_local_b_val(curbp, MDNEWLINE);
-	    set_b_val(curbp, MDNEWLINE, FALSE);
+	if (vbp->ndel > 0 && do_delete) {
+	    int status;
+	    /* Do lazy delete; FALSE means don't put text in kill buffer */
+	    status = ldelete(vbp->ndel, FALSE);
+	    vbp->ndel = 0;
+	    if (status == FALSE
+		|| (lforw(DOT.l) == buf_head(curbp) && DOT.o >= llength(DOT.l))) {
+		make_local_b_val(curbp, MDNEWLINE);
+		set_b_val(curbp, MDNEWLINE, FALSE);
+	    }
 	}
     }
 }

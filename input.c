@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.273 2004/12/13 01:09:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.277 2005/01/23 16:27:25 tom Exp $
  *
  */
 
@@ -64,16 +64,6 @@ typedef struct _kstack {
     ITBUFF *m_kbdm;		/* the macro-text to execute            */
     ITBUFF *m_dots;		/* workspace for "." command            */
 } KSTACK;
-
-/*--------------------------------------------------------------------------*/
-
-/*
- * FIXME:
- * Special hacks to convert null-terminated string to/from TBUFF, for interface
- * with functions that still expect these.
- */
-#define StrToBuff(buf) (buf)->tb_used = strlen(tb_values(buf))
-#define BuffToStr(buf) tb_values(buf)[tb_length(buf)] = EOS
 
 /*--------------------------------------------------------------------------*/
 static void finish_kbm(void);
@@ -131,31 +121,33 @@ static int doing_shell;
 int
 shell_complete(DONE_ARGS)
 {
-    int status;
+    int status = FALSE;
     unsigned len = *pos;
     int base;
     int first = 0;
 
     TRACE(("shell_complete %d:'%s'\n", *pos, buf));
-    if (isShellOrPipe(buf))
-	first++;
+    if (buf != 0) {
+	if (isShellOrPipe(buf))
+	    first++;
 
-    for (base = len; base > first;) {
-	base--;
-	if (isSpace(buf[base]) && (first || doing_shell)) {
-	    base++;
-	    break;
-	} else if (buf[base] == '$') {
-	    break;
+	for (base = len; base > first;) {
+	    base--;
+	    if (isSpace(buf[base]) && (first || doing_shell)) {
+		base++;
+		break;
+	    } else if (buf[base] == '$') {
+		break;
+	    }
 	}
-    }
-    len -= base;
-    status = path_completion(flags, c, buf + base, &len);
-    *pos = len + base;
+	len -= base;
+	status = path_completion(flags, c, buf + base, &len);
+	*pos = len + base;
 
+    }
     return status;
 }
-#endif
+#endif /* COMPLETE_FILES */
 
 /*
  * Ask a yes or no question in the message line. Return either TRUE, FALSE, or
@@ -234,8 +226,8 @@ mlreply_reg(const char *prompt,
 	    int *retp,		/* => the register-name */
 	    int at_dft)		/* default-value (e.g., for "@@" command) */
 {
-    register int status;
-    register int c;
+    int status;
+    int c;
 
     if (clexec || isnamedcmd) {
 	if ((status = mlreply(prompt, cbuf, 2)) != TRUE)
@@ -267,7 +259,7 @@ mlreply_reg_count(int state,	/* negative=register, positive=count, zero=either *
 		  int *retp,	/* returns the register-index or line-count */
 		  int *next)	/* returns 0/1=register, 2=count */
 {
-    register int status;
+    int status;
     char prompt[80];
     char expect[80];
     char buffer[10];
@@ -354,7 +346,7 @@ void
 incr_dot_kregnum(void)
 {
     if (dotcmdactive == PLAY) {
-	register int c = itb_peek(dotcmd);
+	int c = itb_peek(dotcmd);
 	if (isDigit(c) && c < '9')
 	    itb_stuff(dotcmd, ++c);
     }
@@ -394,8 +386,8 @@ record_char(int c)
 int
 get_recorded_char(int eatit)	/* consume the character? */
 {
-    register int c = -1;
-    register ITBUFF *buffer;
+    int c = -1;
+    ITBUFF *buffer;
 
     if (dotcmdactive == PLAY) {
 
@@ -538,7 +530,7 @@ tgetc_avail(void)
 int
 tgetc(int quoted)
 {
-    register int c;		/* character read from terminal */
+    int c;			/* character read from terminal */
 
     if (tgetc_ungotcnt > 0) {
 	tgetc_ungotcnt--;
@@ -774,10 +766,10 @@ set_end_string(int c)
 int
 kbd_delimiter(void)
 {
-    register int c = '\n';
+    int c = '\n';
 
     if (isnamedcmd) {
-	register int d = end_string();
+	int d = end_string();
 	if (isPunct(d))
 	    c = d;
     }
@@ -794,17 +786,43 @@ add_backslashes(char *text)
     static TBUFF *temp = 0;
     int n;
 
-    if (strchr(text, BACKSLASH) != 0) {
-	temp = tb_init(&temp, EOS);
-	for (n = 0; text[n] != EOS; ++n) {
-	    if (text[n] == BACKSLASH)
-		temp = tb_append(&temp, BACKSLASH);
-	    temp = tb_append(&temp, text[n]);
+    if (text != 0) {
+	if (strchr(text, BACKSLASH) != 0) {
+	    temp = tb_init(&temp, EOS);
+	    for (n = 0; text[n] != EOS; ++n) {
+		if (text[n] == BACKSLASH)
+		    temp = tb_append(&temp, BACKSLASH);
+		temp = tb_append(&temp, text[n]);
+	    }
+	    temp = tb_append(&temp, EOS);
+	    if (tb_values(temp) != 0)
+		text = tb_values(temp);
 	}
-	temp = tb_append(&temp, EOS);
-	text = tb_values(temp);
     }
     return text;
+}
+
+/*
+ * FIXME:
+ * Special hacks to convert null-terminated string to/from TBUFF, for interface
+ * with functions that still expect these.
+ */
+static void
+StrToBuff(TBUFF *buf)
+{
+    char *str = tb_values(buf);
+    if (str != 0) {
+	(buf)->tb_used = strlen(str);
+    }
+}
+
+static void
+BuffToStr(TBUFF *buf)
+{
+    char *str = tb_values(buf);
+    if (str != 0) {
+	str[tb_length(buf)] = EOS;
+    }
 }
 
 /*
@@ -823,16 +841,18 @@ tbreserve(TBUFF **buf)
 static void
 remove_backslashes(TBUFF *buf)
 {
-    register char *cp = tb_values(buf);
-    register size_t s, d;
+    char *cp = tb_values(buf);
+    size_t s, d;
 
-    for (s = d = 0; s < tb_length(buf);) {
-	if (cp[s] == BACKSLASH)
-	    s++;
-	cp[d++] = cp[s++];
+    if (cp != 0) {
+	for (s = d = 0; s < tb_length(buf);) {
+	    if (cp[s] == BACKSLASH)
+		s++;
+	    cp[d++] = cp[s++];
+	}
+
+	buf->tb_used = d;
     }
-
-    buf->tb_used = d;
 }
 
 /* count backslashes so we can tell at any point whether we have the current
@@ -842,9 +862,9 @@ static UINT
 countBackSlashes(TBUFF *buf, UINT len)
 {
     char *buffer = tb_values(buf);
-    register UINT count;
+    UINT count;
 
-    if (len && buffer[len - 1] == BACKSLASH) {
+    if (len && buffer != 0 && buffer[len - 1] == BACKSLASH) {
 	count = 1;
 	while (count + 1 <= len &&
 	       buffer[len - 1 - count] == BACKSLASH)
@@ -886,7 +906,7 @@ show1Char(int c)
  * commands.
  */
 #define editingShellCmd(buf,options) \
-	 (((options & KBD_EXPCMD) && isShellOrPipe(buf)) \
+	 (((options & KBD_EXPCMD) && (buf != 0) && isShellOrPipe(buf)) \
 	|| (options & KBD_SHPIPE))
 
 /* expand a single character (only used on interactive input) */
@@ -896,14 +916,17 @@ expandChar(TBUFF **buf,
 	   int c,
 	   KBD_OPTIONS options)
 {
-    register int cpos = *position;
-    register char *cp;
-    register BUFFER *bp;
+    int cpos = *position;
+    char *cp;
+    BUFFER *bp;
     char str[NFILEN];
     char *buffer = tb_values(*buf);
     int shell = editingShellCmd(buffer, options);
     int expand = ((options & KBD_EXPAND) || shell);
     int exppat = (options & KBD_EXPPAT);
+
+    if (buffer == 0)
+	return FALSE;
 
     /* Are we allowed to expand anything? */
     if (!(expand || exppat || shell))
@@ -1014,29 +1037,31 @@ kbd_kill_response(TBUFF *buffer, unsigned *position, int c)
     int cpos = *position;
     UINT mark = cpos;
 
-    tmp = tb_copy(&tmp, buffer);
-    while (cpos > 0) {
-	cpos--;
-	kbd_erase();
-	if (c == wkillc) {
-	    if (!isSpace(buf[cpos])) {
-		if (cpos > 0 && isSpace(buf[cpos - 1]))
-		    break;
+    if (buf != 0) {
+	tmp = tb_copy(&tmp, buffer);
+	while (cpos > 0) {
+	    cpos--;
+	    kbd_erase();
+	    if (c == wkillc) {
+		if (!isSpace(buf[cpos])) {
+		    if (cpos > 0 && isSpace(buf[cpos - 1]))
+			break;
+		}
 	    }
+
+	    if (c != killc && c != wkillc)
+		break;
 	}
+	if (vl_echo)
+	    kbd_flush();
 
-	if (c != killc && c != wkillc)
-	    break;
+	*position = cpos;
+	buffer->tb_used = cpos;
+	if (mark < tb_length(tmp)) {
+	    tb_bappend(&buffer, tb_values(tmp) + mark, tb_length(tmp) - mark);
+	}
+	tb_free(&tmp);
     }
-    if (vl_echo)
-	kbd_flush();
-
-    *position = cpos;
-    buffer->tb_used = cpos;
-    if (mark < tb_length(tmp)) {
-	tb_bappend(&buffer, tb_values(tmp) + mark, tb_length(tmp) - mark);
-    }
-    tb_free(&tmp);
 }
 
 /*
@@ -1050,13 +1075,13 @@ kbd_show_response(TBUFF **dst,	/* string with escapes */
 		  int eolchar,
 		  KBD_OPTIONS options)
 {
-    register unsigned k;
+    unsigned k;
 
     /* add backslash escapes in front of volatile characters */
     tb_init(dst, 0);
 
     for (k = 0; k < bufn; k++) {
-	register int c = src[k];
+	int c = src[k];
 
 	if ((c == BACKSLASH) || (c == eolchar && eolchar != '\n')) {
 	    if (options & KBD_QUOTES)
@@ -1108,7 +1133,7 @@ void
 kbd_pushback(TBUFF *buf, int skip)
 {
     static TBUFF *PushBack;
-    char *buffer = tb_values(buf);	/* FIXME */
+    char *buffer = tb_values(buf);	/* FIXME: could have embedded nulls */
 
     TRACE(("kbd_pushback(%s,%d)\n", tb_visible(buf), skip));
     if (macroize(&PushBack, buf, skip)) {
@@ -1600,7 +1625,7 @@ kbd_reply(const char *prompt,	/* put this out first */
      */
     if ((extbuf != 0 && *extbuf != 0)
 	&& (tb_values(*extbuf) == error_val
-	    || (*extbuf)->tb_errs)) {
+	    || isTB_ERRS(*extbuf))) {
 	tb_init(extbuf, EOS);
     }
     tb_unput(*extbuf);		/* FIXME: trim null */
@@ -1618,7 +1643,10 @@ kbd_reply(const char *prompt,	/* put this out first */
 	    && isShellOrPipe(tb_values(*extbuf)))
 	    options |= KBD_REGLUE | KBD_SHPIPE;
 
-	tbreserve(extbuf);
+	if (tbreserve(extbuf) == 0) {
+	    returnCode(FALSE);
+	}
+
 	TRACE(("...getting token from: %s\n", str_visible0(execstr)));
 	execstr = ((options & KBD_REGLUE) != 0 && pushed_back)
 	    ? get_token2(execstr, extbuf, eolchar, &actual)
@@ -2191,7 +2219,7 @@ int
 kbm_started(int macnum, int force)
 {
     if (force || (kbdmacactive == PLAY)) {
-	register KSTACK *sp;
+	KSTACK *sp;
 	for (sp = KbdStack; sp != 0; sp = sp->m_link) {
 	    if (sp->m_indx == macnum) {
 		while (kbdmacactive == PLAY)
@@ -2259,7 +2287,7 @@ static void
 finish_kbm(void)
 {
     if (kbdmacactive == PLAY) {
-	register KSTACK *sp = KbdStack;
+	KSTACK *sp = KbdStack;
 
 	kbdmacactive = 0;
 	if (sp != 0) {

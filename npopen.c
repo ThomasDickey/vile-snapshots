@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.90 2004/06/09 01:04:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.92 2005/01/23 00:59:40 tom Exp $
  *
  */
 
@@ -185,7 +185,8 @@ exec_sh_c(char *cmd)
     for (i = 3; i < NOFILE; i++)
 	(void) close(i);
 
-    if ((sh = user_SHELL()) == NULL || *sh == EOS) {
+    sh = user_SHELL();
+    if (isEmpty(sh)) {
 	sh = bin_sh;
 	shname = pathleaf(sh);
     } else {
@@ -242,7 +243,7 @@ system_SHELL(char *cmd)
 {
     int cpid;
 
-    TRACE(("system_SHELL(%s)\n", cmd != 0 ? cmd : ""));
+    TRACE(("system_SHELL(%s)\n", NONNULL(cmd)));
 
     cpid = softfork();
     if (cpid < 0) {

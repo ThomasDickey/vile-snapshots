@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.136 2004/12/15 15:58:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.141 2005/01/19 23:26:38 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -58,6 +58,9 @@
 #define	NPAUSE	200		/* # times thru update to pause */
 #define NOKYMAP (-1)
 #define KYREDIR (-2)		/* sent keystroke elsewhere.    */
+
+#define RSZ_WDW_HGHT  18	/* pixels */
+#define RSZ_WDW_WDTH 190
 
 #define SetCols(value) term.cols = cur_win->cols = value
 #define SetRows(value) term.rows = cur_win->rows = value
@@ -501,7 +504,7 @@ static HWND
 sizing_window(void)
 {
     RECT crect;
-    int szw = 140, szh = 22, szx, szy;
+    int szw = RSZ_WDW_WDTH, szh = RSZ_WDW_HGHT, szx, szy;
 
     GetClientRect(cur_win->main_hwnd, &crect);
     szx = crect.right / 2 - szw / 2;
@@ -1353,7 +1356,8 @@ ntwinio_current_font(void)
 static void
 nttitle(const char *title)
 {				/* set the current window title */
-    SetWindowText(winvile_hwnd(), title);
+    if (title != 0)
+	SetWindowText(winvile_hwnd(), title);
 }
 #endif
 
@@ -1795,8 +1799,8 @@ decode_key_event(KEY_EVENT_RECORD * irp)
 	     *
 	     * ALT+F4 - This should _never_ be remapped by any user (nor
 	     * messed with by vile).
-	     * 
-	     * SHIFT+6 - This is actually '^^' -- leave it alone. 
+	     *
+	     * SHIFT+6 - This is actually '^^' -- leave it alone.
 	     */
 	    if ((keyp->windows == VK_F4
 		 && (state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)))
@@ -1995,7 +1999,7 @@ AboutBoxProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	/* talk about copyright */
 	hwnd = GetDlgItem(hDlg, IDM_ABOUT_COPYRIGHT);
 	sprintf(buf,
-		"\nCopyright \xA9 Thomas Dickey 1997-2004\n\n"
+		"\nCopyright \xA9 Thomas Dickey 1997-2005\n\n"
 		"%s is free software, distributed under the terms of the GNU "
 		"Public License (see COPYING).",
 		prognam);
@@ -2017,10 +2021,10 @@ AboutBoxProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
 static int
 handle_builtin_menu(WPARAM code)
 {
-    int result = TRUE;
+    int result = TRUE, cmd = LOWORD(code);
 
     TRACE(("handle_builtin_menu code=%#x\n", code));
-    switch (LOWORD(code)) {
+    switch (cmd) {
     case IDM_ABOUT:
 	DialogBox(vile_hinstance, "AboutBox", cur_win->main_hwnd, AboutBoxProc);
 	break;
@@ -2099,7 +2103,16 @@ handle_builtin_menu(WPARAM code)
 	fshow_cursor();
 	break;
     default:
-	result = FALSE;
+	if (cmd >= IDM_RECENT_FILES && cmd < IDM_RECENT_FLDRS) {
+	    edit_recent_file(cmd);
+	    update(FALSE);
+	} else if (cmd >= IDM_RECENT_FLDRS &&
+		   cmd < (IDM_RECENT_FLDRS + MAX_RECENT_FLDRS)) {
+	    cd_recent_folder(cmd);
+	    update(FALSE);
+	} else
+	    result = FALSE;
+	break;
     }
     TRACE(("...handle_builtin_menu code ->%d\n", result));
     return result;
@@ -2994,7 +3007,7 @@ ntgetch(void)
 	     *    MS Intellimouse driver     -> emits WM_VMSCROLL
 	     *    Logitech mousewheel driver -> emits WM_VMSCROLL
 	     *    MS PS/2 compatible driver  -> emits WM_MOUSEWHEEL
-	     *   
+	     *
 	     * The latter driver is often installed when PNP can't
 	     * distinguish the native HW.
 	     */
@@ -3362,7 +3375,7 @@ MainWndProc(
 			frame_w = (wrect.right - wrect.left) - crect.right;
 			frame_h = (wrect.bottom - wrect.top) - crect.bottom;
 		    } else {
-			RECT newrect;
+			RECT newrect, arect;
 			int h, w;
 
 			/*
@@ -3376,6 +3389,22 @@ MainWndProc(
 			h = RectToRows(newrect);
 			w = RectToCols(newrect);
 			sprintf(buf, "%d cols X %d rows", w, h);
+
+			/*
+			 * This code is more complicated than it should be,
+			 * but it works (which is another way of saying:  I
+			 * have no idea what's happening).  Just too many hoops
+			 * to jump through to center one window over another.
+			 */
+			GetClientRect(GetForegroundWindow(), &arect);
+			MoveWindow(resize_hwnd,
+				   ((arect.right - arect.left) / 2 -
+				    RSZ_WDW_WDTH / 2),
+				   ((arect.bottom - arect.top) / 2 -
+				    RSZ_WDW_HGHT / 2),
+				   RSZ_WDW_WDTH,
+				   RSZ_WDW_HGHT,
+				   TRUE);
 		    }
 		    SetWindowText(resize_hwnd, buf);
 		}
@@ -3408,7 +3437,13 @@ MainWndProc(
 	       syscommand2s(LOWORD(wParam)),
 	       HIWORD(lParam),
 	       LOWORD(lParam)));
-	handle_builtin_menu(wParam);
+	{
+	    WPARAM cmd = wParam & 0xFFF0;
+	    if (cmd == SC_KEYMENU || cmd == SC_MOUSEMENU)
+		build_recent_file_and_folder_menus();
+	    else
+		handle_builtin_menu(wParam);
+	}
 	return (DefWindowProc(hWnd, message, wParam, lParam));
 
 #if OPT_SCROLLBARS
@@ -3548,6 +3583,20 @@ InitInstance(HINSTANCE hInstance)
     AppendMenu(vile_menu, MF_STRING, IDM_PAGE_SETUP, "Page Set&up...");
     AppendMenu(vile_menu, MF_STRING, IDM_PRINT, "&Print...");
     AppendMenu(vile_menu, MF_SEPARATOR, 0, NULL);
+
+    /*
+     * NB -- don't change the order of the next 3 menu items!
+     *
+     * The popup menus associated with the next two menu items are created
+     * as necessary.
+     */
+    AppendMenu(vile_menu, MF_POPUP, 0, "Recent Fi&les");
+    AppendMenu(vile_menu, MF_POPUP, 0, "Recent Fol&ders");
+    AppendMenu(vile_menu, MF_SEPARATOR, IDM_SEP_AFTER_RCNT_FLDRS, NULL);
+    /*
+     * NB -- don't change the order of the previous 3 menu items!
+     */
+
     AppendMenu(vile_menu, MF_STRING | MF_CHECKED, IDM_MENU, "&Menu");
 
 #if OPT_SCROLLBARS
@@ -4033,21 +4082,23 @@ gui_usage(char *program, const char *const *options, size_t length)
 	else
 	    need += strlen(fmt3) + strlen(options[n]);
     }
-    buf = malloc(need);
 
-    s = lsprintf(buf, fmt1, prognam);
-    for (n = 0; n < length; n++) {
-	char temp[80];
-	if ((need = option_size(options[n])) != 0) {
-	    strncpy(temp, options[n], need);
-	    temp[need] = EOS;
-	    s = lsprintf(s, fmt2, temp, skip_cblanks(options[n] + need));
-	} else {
-	    s = lsprintf(s, fmt3, options[n]);
+    if ((buf = typeallocn(char, need)) != 0) {
+
+	s = lsprintf(buf, fmt1, prognam);
+	for (n = 0; n < length; n++) {
+	    char temp[80];
+	    if ((need = option_size(options[n])) != 0) {
+		strncpy(temp, options[n], need);
+		temp[need] = EOS;
+		s = lsprintf(s, fmt2, temp, skip_cblanks(options[n] + need));
+	    } else {
+		s = lsprintf(s, fmt3, options[n]);
+	    }
 	}
-    }
 
-    MessageBox(cur_win->main_hwnd, buf, prognam, MB_OK | MB_ICONSTOP);
+	MessageBox(cur_win->main_hwnd, buf, prognam, MB_OK | MB_ICONSTOP);
+    }
 }
 
 /*

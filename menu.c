@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.44 2004/12/02 01:47:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.45 2005/01/17 01:02:06 tom Exp $
  */
 
 /* Vile includes */
@@ -385,13 +385,14 @@ do_menu(void *menub)
 	    /* BUTTON WIDGET */
 	case 'B':
 	    if (Token[i].macro > 0) {
-		macro = castalloc(char, 50);
-		sprintf(macro, "execute-macro-%d", Token[i].macro);
-		accel = give_accelerator(macro);
-		pm_w = gui_add_menu_item(pm, Token[i].label, accel,
-					 Token[i].type);
+		if ((macro = castalloc(char, 50)) != 0) {
+		    sprintf(macro, "execute-macro-%d", Token[i].macro);
+		    accel = give_accelerator(macro);
+		    pm_w = gui_add_menu_item(pm, Token[i].label, accel,
+					     Token[i].type);
 
-		gui_add_func_callback(pm_w, macro);
+		    gui_add_func_callback(pm_w, macro);
+		}
 	    } else {
 		accel = give_accelerator(Token[i].action);
 		pm_w = gui_add_menu_item(pm, Token[i].label, accel,

@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.43 2004/12/11 15:21:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.46 2005/01/21 19:45:21 tom Exp $
  *
  */
 
@@ -93,9 +93,10 @@ param_value(const char **ptr)
     s = skip_cblanks(*ptr + 1);
     t = skip_ctext(s);
     if (t != s) {
-	value = strmalloc(s);
-	value[t - s] = EOS;
-	*ptr = t;
+	if ((value = strmalloc(s)) != 0) {
+	    value[t - s] = EOS;
+	    *ptr = t;
+	}
     }
     return value;
 }
@@ -268,7 +269,7 @@ flt_gets(char **ptr, unsigned *len)
 	TRACE(("flt_gets %6d:%.*s\n",
 	       line_no(curbp, mark_in.l),
 	       *ptr ? need : 1,
-	       *ptr ? *ptr : ""));
+	       NONNULL(*ptr)));
 
 	mark_in.l = lforw(mark_in.l);
     } else {
@@ -322,7 +323,7 @@ flt_error(const char *fmt,...)
 {
 #ifdef MDFILTERMSGS
     if (b_val(curbp, MDFILTERMSGS)) {
-	char *filename = (curbp != 0) ? curbp->b_fname : "<stdin>";
+	const char *filename = (curbp != 0) ? curbp->b_fname : "<stdin>";
 	BUFFER *bp;
 	va_list ap;
 

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/fltstack.h,v 1.8 2003/09/17 21:00:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/fltstack.h,v 1.9 2005/01/19 22:08:11 tom Exp $
  * A simple stack for lex states
  */
 typedef struct {
@@ -22,7 +22,7 @@ static int stk_level = -1;
 static void
 new_state(int code)
 {
-    if (stk_level >= 0)
+    if (stk_level >= 0 && stk_state != 0)
 	FLT_STATE = code;
     BEGIN(code);
 }

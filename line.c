@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.162 2004/06/09 01:04:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.168 2005/01/24 00:23:42 tom Exp $
  *
  */
 
@@ -49,16 +49,18 @@ do_report(L_NUM value)
 	    && global_g_val(GVAL_REPORT) <= value);
 }
 
-static LINEPTR
+static LINE *
 alloc_LINE(BUFFER *bp)
 {
-    LINEPTR lp;
+    LINE *lp = bp->b_freeLINEs;
 
-    if ((lp = bp->b_freeLINEs) != NULL) {
+    if (lp != NULL) {
 	bp->b_freeLINEs = lp->l_nxtundo;
-	} else if ((lp = typealloc(LINE)) == NULL) {
+    } else {
+	if ((lp = typealloc(LINE)) == NULL) {
 	    (void) no_memory("LINE");
 	}
+    }
     return lp;
 }
 
@@ -69,11 +71,11 @@ alloc_LINE(BUFFER *bp)
  * message in the message line if no space.
  */
 /*ARGSUSED*/
-LINEPTR
-lalloc(register int used, BUFFER *bp)
+LINE *
+lalloc(int used, BUFFER *bp)
 {
-    register LINE *lp;
-    register size_t size;
+    LINE *lp;
+    size_t size;
 
     beginDisplay();
     /* lalloc(-1) is used by undo for placeholders */
@@ -82,23 +84,24 @@ lalloc(register int used, BUFFER *bp)
     } else {
 	size = roundlenup(used);
     }
-    lp = alloc_LINE(bp);
-    lp->l_text = NULL;
-    if (size && (lp->l_text = castalloc(char, size)) == NULL) {
-	(void) no_memory("LINE text");
-	poison(lp, sizeof(*lp));
-	FreeAndNull(lp);
-    } else {
-	lp->l_size = size;
+    if ((lp = alloc_LINE(bp)) != 0) {
+	lp->l_text = NULL;
+	if (size && (lp->l_text = castalloc(char, size)) == NULL) {
+	    (void) no_memory("LINE text");
+	    poison(lp, sizeof(*lp));
+	    FreeAndNull(lp);
+	} else {
+	    lp->l_size = size;
 #if !SMALLER
-	lp->l_number = 0;
+	    lp->l_number = 0;
 #endif
-	lp->l_used = used;
-	lsetclear(lp);
-	lp->l_nxtundo = null_ptr;
+	    lp->l_used = used;
+	    lsetclear(lp);
+	    lp->l_nxtundo = 0;
 #if OPT_LINE_ATTRS
-	lp->l_attrs = NULL;
+	    lp->l_attrs = NULL;
 #endif
+	}
     }
     endofDisplay();
     return lp;
@@ -106,7 +109,7 @@ lalloc(register int used, BUFFER *bp)
 
 /*ARGSUSED*/
 void
-lfree(register LINEPTR lp, register BUFFER *bp)
+lfree(LINE *lp, BUFFER *bp)
 {
     beginDisplay();
     if (lisreal(lp))
@@ -134,9 +137,9 @@ lfree(register LINEPTR lp, register BUFFER *bp)
 
 /*ARGSUSED*/
 void
-ltextfree(register LINE *lp, register BUFFER *bp)
+ltextfree(LINE *lp, BUFFER *bp)
 {
-    register UCHAR *ltextp;
+    UCHAR *ltextp;
 
     beginDisplay();
     ltextp = (UCHAR *) lp->l_text;
@@ -171,10 +174,10 @@ ltextfree(register LINE *lp, register BUFFER *bp)
  * be saved in undo stacks.
  */
 void
-lremove(register BUFFER *bp, register LINEPTR lp)
+lremove(BUFFER *bp, LINE *lp)
 {
     WINDOW *wp;
-    LINEPTR line_after;
+    LINE *line_after;
     MARK mark_after;
 
     if (lp == buf_head(bp))
@@ -303,7 +306,7 @@ lstrinsert(const char *s, int len)
  * use to replace a newline.
  */
 int
-lreplc(LINEPTR lp, C_NUM off, int c)
+lreplc(LINE *lp, C_NUM off, int c)
 {
 
     if (off == llength(lp))
@@ -356,9 +359,9 @@ linsert(int n, int c)
     char *cp1;
     char *cp2;
     LINE *tmp;
-    LINEPTR lp1;
-    LINEPTR lp2;
-    LINEPTR lp3;
+    LINE *lp1;
+    LINE *lp2;
+    LINE *lp3;
     int doto;
     int i;
     WINDOW *wp;
@@ -375,7 +378,7 @@ linsert(int n, int c)
 	if (DOT.o != 0) {
 	    mlforce("BUG: linsert");
 	    rc = (FALSE);
-	} else if ((lp2 = lalloc(n, curbp)) == null_ptr) {
+	} else if ((lp2 = lalloc(n, curbp)) == 0) {
 	    rc = (FALSE);
 	} else {
 	    lp3 = lback(lp1);	/* Previous line        */
@@ -404,7 +407,7 @@ linsert(int n, int c)
 	    if ((ntext = castalloc(char, nsize)) == NULL) {
 		rc = FALSE;
 	    } else {
-		if (lp1->l_text)	/* possibly NULL if l_size == 0 */
+		if (lp1->l_text && doto)	/* possibly NULL if l_size == 0 */
 		    (void) memcpy(&ntext[0], &lp1->l_text[0], (size_t) doto);
 		(void) memset(&ntext[doto], c, (size_t) n);
 		if (lp1->l_text) {
@@ -412,8 +415,10 @@ linsert(int n, int c)
 		    UCHAR *l_attrs = lp1->l_attrs;
 		    lp1->l_attrs = 0;	/* momentarily detach */
 #endif
-		    (void) memcpy(&ntext[doto + n], &lp1->l_text[doto],
-				  (size_t) (lp1->l_used - doto));
+		    if (lp1->l_used != doto)
+			(void) memcpy(&ntext[doto + n],
+				      &lp1->l_text[doto],
+				      (size_t) (lp1->l_used - doto));
 		    ltextfree(lp1, curbp);
 #if OPT_LINE_ATTRS
 		    lp1->l_attrs = l_attrs;	/* reattach */
@@ -457,8 +462,11 @@ linsert(int n, int c)
 		}
 	    });
 #if OPT_LINE_ATTRS
-	    if (lp1->l_attrs)
-		lattr_shift(curbp, lp1, doto, n);
+	    if (lp1->l_attrs) {
+		if (!lattr_shift(curbp, lp1, doto, n)) {
+		    rc = FALSE;
+		}
+	    }
 #endif
 	}
     }
@@ -477,12 +485,12 @@ linsert(int n, int c)
 int
 lnewline(void)
 {
-    register char *cp1;
-    register char *cp2;
-    register LINEPTR lp1;
-    register LINEPTR lp2;
-    register int doto;
-    register WINDOW *wp;
+    char *cp1;
+    char *cp2;
+    LINE *lp1;
+    LINE *lp2;
+    int doto;
+    WINDOW *wp;
 
     lp1 = DOT.l;		/* Get the address and  */
     doto = DOT.o;		/* offset of "."        */
@@ -491,7 +499,7 @@ lnewline(void)
 	&& lforw(lp1) == lp1) {
 	/* empty buffer -- just  create empty line */
 	lp2 = lalloc(doto, curbp);
-	if (lp2 == null_ptr)
+	if (lp2 == 0)
 	    return (FALSE);
 	/* put lp2 in below lp1 */
 	set_lforw(lp2, lforw(lp1));
@@ -514,11 +522,11 @@ lnewline(void)
     }
 
     lp2 = lalloc(doto, curbp);	/* New first half line */
-    if (lp2 == null_ptr)
+    if (lp2 == 0)
 	return (FALSE);
 
     if (doto > 0) {
-	register LINE *tmp;
+	LINE *tmp;
 
 	copy_for_undo(lp1);
 	tmp = lp1;
@@ -599,15 +607,15 @@ lnewline(void)
 int
 ldelete(B_COUNT nchars, int kflag)
 {
-    register char *cp1;
-    register char *cp2;
-    register LINEPTR dotp;
-    register LINEPTR nlp;
-    register int doto;
-    register int chunk;
-    register WINDOW *wp;
-    register int i;
-    register int s = TRUE;
+    char *cp1;
+    char *cp2;
+    LINE *dotp;
+    LINE *nlp;
+    int doto;
+    int chunk;
+    WINDOW *wp;
+    int i;
+    int status = TRUE;
     int len_rs = len_record_sep(curbp);
 
     lines_deleted = 0;
@@ -615,7 +623,7 @@ ldelete(B_COUNT nchars, int kflag)
 	dotp = DOT.l;
 	doto = DOT.o;
 	if (dotp == buf_head(curbp)) {	/* Hit end of buffer. */
-	    s = FALSE;
+	    status = FALSE;
 	    break;
 	}
 	chunk = dotp->l_used - doto;	/* Size of chunk.    */
@@ -627,12 +635,12 @@ ldelete(B_COUNT nchars, int kflag)
 	    while (nlp != buf_head(curbp)
 		   && line_length(nlp) < nchars) {
 		if (kflag) {
-		    s = kinsert('\n');
+		    status = kinsert('\n');
 		    for (i = 0; i < llength(nlp) &&
-			 s == TRUE; i++)
-			s = kinsert(lgetc(nlp, i));
+			 status == TRUE; i++)
+			status = kinsert(lgetc(nlp, i));
 		}
-		if (s != TRUE)
+		if (status != TRUE)
 		    break;
 		lremove(curbp, nlp);
 		lines_deleted++;
@@ -640,13 +648,13 @@ ldelete(B_COUNT nchars, int kflag)
 		nchars -= line_length(nlp);
 		nlp = lforw(dotp);
 	    }
-	    if (s != TRUE)
+	    if (status != TRUE)
 		break;
-	    s = ldelnewline();
+	    status = ldelnewline();
 	    chg_buff(curbp, WFHARD | WFKILLS);
-	    if (s != TRUE)
+	    if (status != TRUE)
 		break;
-	    if (kflag && (s = kinsert('\n')) != TRUE)
+	    if (kflag && (status = kinsert('\n')) != TRUE)
 		break;
 	    nchars -= len_rs;
 	    lines_deleted++;
@@ -659,11 +667,11 @@ ldelete(B_COUNT nchars, int kflag)
 	cp2 = cp1 + chunk;
 	if (kflag) {		/* Kill?                */
 	    while (cp1 != cp2) {
-		if ((s = kinsert(*cp1)) != TRUE)
+		if ((status = kinsert(*cp1)) != TRUE)
 		    break;
 		++cp1;
 	    }
-	    if (s != TRUE)
+	    if (status != TRUE)
 		break;
 	    cp1 = dotp->l_text + doto;
 	}
@@ -708,11 +716,14 @@ ldelete(B_COUNT nchars, int kflag)
 	    }
 	});
 #if OPT_LINE_ATTRS
-	lattr_shift(curbp, dotp, doto, -chunk);
+	if (!lattr_shift(curbp, dotp, doto, -chunk)) {
+	    status = FALSE;
+	    break;
+	}
 #endif
 	nchars -= chunk;
     }
-    return (s);
+    return (status);
 }
 
 /* returns pointer to static copy of text from current pos, consisting
@@ -788,9 +799,9 @@ lrepltext(CHARTYPE type, const char *np, int length)
 static int
 ldelnewline(void)
 {
-    register LINEPTR lp1;
-    register LINEPTR lp2;
-    register WINDOW *wp;
+    LINE *lp1;
+    LINE *lp2;
+    WINDOW *wp;
     size_t len, add;
 
     lp1 = DOT.l;
@@ -1015,7 +1026,7 @@ kinsert(int c)
 int
 index2reg(int c)
 {
-    register int n;
+    int n;
 
     if (c >= 0 && c < 10)
 	n = (c + '0');
@@ -1041,7 +1052,7 @@ index2reg(int c)
 int
 reg2index(int c)
 {
-    register int n;
+    int n;
 
     if (c < 0)
 	n = -1;
@@ -1386,14 +1397,14 @@ next_line_at_col(C_NUM col, C_NUM * reachedp)
 static int
 PutChar(int n, REGIONSHAPE shape)
 {
-    register int c;
-    register int i;
+    int c;
+    int i;
     int status, wasnl, suppressnl;
     L_NUM before;
     C_NUM col = 0, width = 0;
     C_NUM reached = 0;
     int checkpad = FALSE;
-    register char *sp;		/* pointer into string to insert */
+    char *sp;			/* pointer into string to insert */
     KILL *kp;			/* pointer into kill register */
 
     if (n < 0)
@@ -1547,8 +1558,8 @@ PutChar(int n, REGIONSHAPE shape)
 			}
 			wasnl = TRUE;
 		    } else {
-			register char *dp;
-			register char *ep = sp + 1;
+			char *dp;
+			char *ep = sp + 1;
 			/* Find end of line or end of kill buffer */
 			while (i > 0 && *ep != '\n') {
 			    i--;
@@ -1702,9 +1713,9 @@ makereglist(
 	       int iflag,	/* list nonprinting chars flag */
 	       void *dummy GCC_UNUSED)
 {
-    register KILL *kp;
-    register int i, ii, j, c;
-    register UCHAR *p;
+    KILL *kp;
+    int i, ii, j, c;
+    UCHAR *p;
     int any;
 
 #if OPT_UPBUFF

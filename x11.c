@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.275 2004/12/15 20:16:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.279 2005/01/22 00:52:08 tom Exp $
  *
  */
 
@@ -164,8 +164,6 @@
 #include <X11/xpm.h>
 #endif
 #endif
-
-#define	XCalloc(type)	typecalloc(type)
 
 #define	absol(x)	((x) > 0 ? (x) : -(x))
 #define	CEIL(a,b)	((a + b - 1) / (b))
@@ -3792,6 +3790,18 @@ alloc_shadows(Pixel pixel, Pixel * light, Pixel * dark)
 }
 #endif
 
+static void
+x_set_fontname(TextWindow tw, const char *fname)
+{
+    char *newfont;
+
+    if (fname != 0
+	&& (newfont = strmalloc(fname)) != 0) {
+	FreeIfNeeded(tw->fontname);
+	tw->fontname = newfont;
+    }
+}
+
 char *
 x_current_fontname(void)
 {
@@ -3856,14 +3866,13 @@ query_font(TextWindow tw, const char *fname)
 
 	TRACE(("...success left:%d, right:%d\n", tw->left_ink, tw->right_ink));
 
-	FreeIfNeeded(cur_win->fontname);
 	if ((fullname = x_get_font_atom_property(pf, atom_FONT)) != NULL
 	    && fullname[0] == '-') {
 	    /*
 	     * Good. Not much work to do; the name was available via the FONT
 	     * property.
 	     */
-	    tw->fontname = strmalloc(fullname);
+	    x_set_fontname(tw, fullname);
 	    XFree(fullname);
 	    TRACE(("...resulting FONT property font %s\n", tw->fontname));
 	} else {
@@ -3950,7 +3959,7 @@ query_font(TextWindow tw, const char *fname)
 	     * the fontname field.  We prefer the fully qualified name
 	     * so that we can later search for bold and italic fonts.
 	     */
-	    tw->fontname = strmalloc(fname);
+	    x_set_fontname(tw, fname);
 	    TRACE(("...resulting piecemeal font %s\n", tw->fontname));
 	}
     }
@@ -3966,7 +3975,7 @@ alternate_font(char *weight, char *slant)
 
     if (cur_win->fontname == NULL
 	|| cur_win->fontname[0] != '-'
-	|| (newname = castalloc(char, (size_t) strlen(cur_win->fontname) + 32))
+	|| (newname = castalloc(char, strlen(cur_win->fontname) + 32))
 	== NULL)
 	  return NULL;
 
@@ -4010,8 +4019,8 @@ alternate_font(char *weight, char *slant)
     }
 
     TRACE(("x11:alternate_font(weight=%s, slant=%s)\n -> %s\n",
-	   weight ? weight : "",
-	   slant ? slant : "", newname));
+	   NONNULL(weight),
+	   NONNULL(slant), newname));
 
     if ((fsp = XLoadQueryFont(dpy, newname)) != NULL) {
 	cur_win->left_ink = cur_win->left_ink || (fsp->min_bounds.lbearing < 0);
@@ -6594,7 +6603,7 @@ x_get_icon_name(void)
 void
 x_set_window_name(const char *name)
 {
-    if (strcmp(name, x_get_window_name())) {
+    if (name != 0 && strcmp(name, x_get_window_name())) {
 #ifdef USE_SET_WM_NAME
 	XTextProperty Prop;
 

@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.117 2004/11/19 19:53:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.121 2005/01/20 01:58:58 tom Exp $
  *
  */
 
@@ -228,7 +228,7 @@ bs_init(const char *name)
  * lpp	 - in/out line pointer, for iteration 
  */
 static int
-bs_find(char *fname, size_t len, BUFFER *bp, LINEPTR * lpp)
+bs_find(char *fname, size_t len, BUFFER *bp, LINE **lpp)
 {
     LINE *lp;
     int doit = FALSE;
@@ -313,7 +313,7 @@ already_scanned(BUFFER *bp, char *path)
     LINE *lp;
     size_t len;
     char fname[NFILEN];
-    LINEPTR slp;
+    LINE *slp;
 
     len = force_slash(strcpy(fname, path));
 
@@ -603,7 +603,7 @@ fill_directory_buffer(BUFFER *bp, char *path, int dots GCC_UNUSED)
 #endif
 	    TRACE(("> '%s'\n", path));
 	    if_dots(s, dots) count++;
-	    (void) bs_find(path, strlen(path), bp, (LINEPTR *) 0);
+	    (void) bs_find(path, strlen(path), bp, (LINE **) 0);
 
 	} while (entries = 1,
 		 DosFindNext(hdir, &fb, sizeof(fb), &entries) == NO_ERROR
@@ -669,7 +669,7 @@ fill_directory_buffer(BUFFER *bp, char *path, int dots GCC_UNUSED)
 #endif
 	    (void) makeString(bp, buf_head(bp), s, strlen(s));
 #else /* !USE_QSORT */
-	    (void) bs_find(path, strlen(path), bp, (LINEPTR *) 0);
+	    (void) bs_find(path, strlen(path), bp, (LINE **) 0);
 #endif /* USE_QSORT/!USE_QSORT */
 	}
 	(void) closedir(dp);
@@ -702,7 +702,7 @@ fillMyBuff(BUFFER *bp, char *name)
 
 	/**********************************************************************/
     if (is_environ(name)) {
-	LINEPTR lp;
+	LINE *lp;
 	int n;
 	size_t len = strlen(name) - 1;
 
@@ -747,7 +747,7 @@ fillMyBuff(BUFFER *bp, char *name)
 #if USE_QSORT
 	    (void) makeString(bp, buf_head(bp), path, strlen(path));
 #else /* !USE_QSORT */
-	    (void) bs_find(path, strlen(path), bp, (LINEPTR *) 0);
+	    (void) bs_find(path, strlen(path), bp, (LINE **) 0);
 #endif /* USE_QSORT/!USE_QSORT */
 	    TRACE(("> '%s'\n", path));
 	}
@@ -847,16 +847,20 @@ makeMyList(BUFFER *bp, char *name)
 	    bp->b_index_list = typereallocn(char *, bp->b_index_list, bp->b_index_size);
     }
 
-    n = 0;
-    for_each_line(lp, bp) {
-	/* exclude listings of subdirectories below
-	   current directory */
-	if (llength(lp) >= len
-	    && ((slashocc = strchr(lp->l_text + len, SLASHC)) == NULL
-		|| slashocc[1] == EOS))
-	    bp->b_index_list[n++] = lp->l_text;
+    if (bp->b_index_list != 0) {
+	n = 0;
+	for_each_line(lp, bp) {
+	    /* exclude listings of subdirectories below
+	       current directory */
+	    if (llength(lp) >= len
+		&& ((slashocc = strchr(lp->l_text + len, SLASHC)) == NULL
+		    || slashocc[1] == EOS))
+		bp->b_index_list[n++] = lp->l_text;
+	}
+	bp->b_index_list[n] = 0;
+    } else {
+	bp->b_index_size = 0;
     }
-    bp->b_index_list[n] = 0;
     endofDisplay();
 }
 
@@ -912,7 +916,7 @@ path_completion(DONE_ARGS)
 {
     int code = FALSE;
     int action = (c == NAMEC || c == TESTC);
-    int ignore = (*buf != EOS && isInternalName(buf));
+    int ignore;
 #if USE_DOTNAMES
     size_t dots = 0;
     int count;
@@ -921,6 +925,11 @@ path_completion(DONE_ARGS)
     TRACE(("path_completion(%#x '%c' %d:\"%s\")\n",
 	   flags, c, *pos, visible_buff(buf, (int) *pos, TRUE)));
     (void) flags;
+
+    if (buf == 0)
+	return FALSE;
+
+    ignore = (*buf != EOS && isInternalName(buf));
 #if OPT_VMS_PATH
     if (ignore && action) {	/* resolve scratch-name conflict */
 	if (is_vms_pathname(buf, -TRUE))

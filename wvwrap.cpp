@@ -10,7 +10,7 @@
  * Note:  A great deal of the code included in this file is copied
  * (almost verbatim) from other vile modules.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.7 2002/12/04 02:00:38 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.9 2005/01/17 01:45:21 tom Exp $
  */
 
 #include "w32vile.h"
@@ -23,6 +23,10 @@
 #include <initguid.h>
 #include "w32reg.h"
 #include "w32ole.h"
+
+#define	typeallocn(cast,ntypes)		(cast *)malloc((ntypes)*sizeof(cast))
+#define	typereallocn(cast,ptr,ntypes)	(cast *)realloc((char *)(ptr),\
+							(ntypes)*sizeof(cast))
 
 static size_t   olebuf_len;    /* scaled in wchar_t */
 static OLECHAR  *olebuf;
@@ -71,7 +75,7 @@ make_argv(char *cmdline)
     int maxargs = (strlen(cmdline) + 1) / 2;
     char *ptr;
 
-    argv = (char **) malloc(maxargs * sizeof(*argv));
+    argv = typeallocn(char *, maxargs);
     if (! argv)
         exit(nomem());
 
@@ -122,7 +126,7 @@ ConvertToUnicode(char *szA)
         if (olebuf)
             free(olebuf);
         olebuf_len = olebuf_len * 2 + len;
-        if ((olebuf = (OLECHAR *) malloc(olebuf_len * sizeof(OLECHAR))) == NULL)
+        if ((olebuf = typeallocn(OLECHAR, olebuf_len)) == NULL)
             return (olebuf);  /* We're gonna' die */
     }
     mbstowcs(olebuf, szA, len);
@@ -154,8 +158,8 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
     olebuf_len = 4096;
     dynbuf_len = 4096;
     dynbuf_idx = 0;
-    olebuf     = (OLECHAR *) malloc(olebuf_len * sizeof(OLECHAR));
-    dynbuf     = (char *) malloc(dynbuf_len);
+    olebuf     = typeallocn(OLECHAR, olebuf_len);
+    dynbuf     = typeallocn(char, dynbuf_len);
     if (! (olebuf && dynbuf))
         return (nomem());
 
@@ -255,7 +259,7 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
             if (dynbuf_idx + len + sizeof(":e \n") >= dynbuf_len)
             {
                 dynbuf_len *= 2 + len + sizeof(":e \n");
-                dynbuf      = (char *) realloc(dynbuf, dynbuf_len);
+                dynbuf      = typereallocn(char, dynbuf, dynbuf_len);
                 if (! dynbuf)
                     return (nomem());
             }

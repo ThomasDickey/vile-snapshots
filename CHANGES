@@ -1,5 +1,64 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20050124 (n)
+	> Clark Morgan:
+	+ remove deprecated SHGetMalloc() from w32oo.cpp, tested on WinXP, 2K,
+	  98.
+	+ fix a case where spawned winvile console would sometimes be missing
+	  error message.  For example, if winvile is invoked from a cygwin
+	  shell command line and a command is spawned like so:
+		:!command_that_generates_error
+	  Then _no_ error text appeared in the spawned console window.
+		:!mkdir name_of_existing_dir
+	  Tested on win2K, xp, win98.
+	+ several changes to allow winvile to remember recent files and folders
+	  + winvile remembers up to 20 of the files it has recently
+	    opened/created (feature disabled by default).
+	  + winvile remembers up to 20 of the folders it has recently visited
+	    via an implicit or explicit cd (feature disabled by default).
+	  + Remembered files/folders are accessible and "replayable" from
+	    winvile's system menu.
+	  + Two new modes:  recent-folders and recent-files specify maximum
+	    number of folders/files that may appear in winvile's system menu.
+	    Range is 0-20; a value of 0 disables feature.  (U)
+	  + Two new commands:  purge-recent-folders and purge-recent-files
+	    clear the list of folders/files that appear in winvile's system
+	    menu.
+	  + modes and commands work in console mode (minimizes conflicts when
+	    sharing a single vile.rc), but the files/folders that console vile
+	    accesses are _not_ remembered.
+	  + tested on win98, win2k, XP.  Changes test-compiled on linux.
+	  + tested with multiple users on XP, as well as in the context of an
+	    unprivileged user.
+	+ improve the winvile resize/status window:
+	  + make resize window wide enough to show geometries that exceed 99
+	    columns
+	  + make resize window continually center itself over the editor's
+	    frame (NT and XP only).
+	  + Tested on a variety of screen geometries on NT and XP using both
+	    large and small fonts. Cross-checked on win98.
+	+ amend oleauto.doc to tell how to make wvwrap work with XP service
+	  pack 2.
+	+ update vile.hlp to describe new modes.rc file.
+ 	> Tom Dickey:
+	+ review/correct places where result of malloc is not checked for null.
+	  Test using small memory limit (addresses report by Emil Rojas for
+	  processing very large tags files, and earlier report by George
+	  Eccles).
+	+ change gutter width for line-numbers from 2 to 1.
+	+ work around for Borland C++ 5.5 to ignore EPIPE on an end-of-file.
+	+ work around in mlwarn() to report system errors with Borland C++ 5.5,
+	  whose strerror() values have trailing newlines.
+	+ indent'd btree.c
+	+ change return-value of readin() to false if the given filename is
+	  empty (report by Clark Morgan).
+	+ ensure that all mode-filename values are anchored to avoid confusing
+	  them with piped commands.
+	+ modify diffmode to use pipe output as a mode-filename value, and
+	  modify mode inference to allow this special case.  Pipe output is
+	  not checked for suffixes, since its filename value may contain
+	  many filenames.
+
  20041215 (m)
  	> Tom Dickey:
 	+ modify x11.c, ntconio.c and ntwinio.c to make modifiers work with tab
@@ -83,7 +142,7 @@ Changes for vile 9.5 (released ??? ??? ?? ????)
 	  	setv $title=ERROR\^@
 	+ modify statevars.c to make read/write of $title consistent, i.e.,
 	  will warn that it cannot be set in the termcap configuration.
-	+ correct logic for changing the xterm-mouse via the termcap driver. 
+	+ correct logic for changing the xterm-mouse via the termcap driver.
 	  It was not opening or closing the keyboard, not both, which would
 	  leave xterm switched from the alternate screen.
 	+ modify [Messages] buffer so that it is only invisible, not a scratch

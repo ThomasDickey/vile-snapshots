@@ -17,7 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.20 2002/10/20 12:56:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.21 2005/01/17 00:38:52 tom Exp $
  */
 
 #include "w32vile.h"
@@ -66,8 +66,8 @@ oleauto_init(OLEAUTO_OPTIONS *opts)
     LPCLASSFACTORY pcf = NULL;
 
     olebuf_len = ansibuf_len = 512;
-    ansibuf    = (char *) malloc(ansibuf_len);
-    olebuf     = (OLECHAR *) malloc(olebuf_len * sizeof(OLECHAR));
+    ansibuf    = typeallocn(char, ansibuf_len);
+    olebuf     = typeallocn(OLECHAR, olebuf_len);
     if (! (olebuf && ansibuf))
         return (FALSE);
 
@@ -192,7 +192,7 @@ ConvertToAnsi(OLECHAR *szW)
         if (ansibuf)
             free(ansibuf);
         ansibuf_len = ansibuf_len * 2 + len;
-        if ((ansibuf = (char *) malloc(ansibuf_len)) == NULL)
+        if ((ansibuf = typeallocn(char, ansibuf_len)) == NULL)
             return (ansibuf);  /* We're gonna' die */
     }
     wcstombs(ansibuf, szW, len);
@@ -210,7 +210,7 @@ ConvertToUnicode(char *szA)
         if (olebuf)
             free(olebuf);
         olebuf_len = olebuf_len * 2 + len;
-        if ((olebuf = (OLECHAR *) malloc(olebuf_len * sizeof(OLECHAR))) == NULL)
+        if ((olebuf = typeallocn(OLECHAR, olebuf_len)) == NULL)
             return (olebuf);  /* We're gonna' die */
     }
     mbstowcs(olebuf, szA, len);
@@ -788,8 +788,8 @@ syncfile(int f, int n)
          */
 
         olebuf_len = ansibuf_len = 512;
-        ansibuf    = (char *) malloc(ansibuf_len);
-        olebuf     = (OLECHAR *) malloc(olebuf_len * sizeof(OLECHAR));
+        ansibuf    = typeallocn(char, ansibuf_len);
+        olebuf     = typeallocn(OLECHAR, olebuf_len);
         if (! (olebuf && ansibuf))
         {
             no_memory("syncfile()");

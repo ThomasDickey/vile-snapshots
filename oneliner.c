@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.105 2004/12/07 00:39:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.107 2005/01/19 02:01:01 tom Exp $
  */
 
 #include	"estruct.h"
@@ -27,11 +27,11 @@ static int lines_changed, total_changes;
 static int
 pregion(UINT flag)
 {
-    register WINDOW *wp;
-    register BUFFER *bp;
-    register int status;
+    WINDOW *wp;
+    BUFFER *bp;
+    int status;
     REGION region;
-    register LINEPTR linep;
+    LINE *linep;
     BUFFER *oldbp = curbp;
 
     if ((status = get_fl_region(&region)) != TRUE) {
@@ -174,7 +174,7 @@ substreg1(int needpats, int use_opts, int is_globalsub)
     int c, status;
     static int printit, globally, nth_occur, confirm;
     REGION region;
-    LINEPTR oline;
+    LINE *oline;
     int getopts = FALSE;
     TBUFF *newpattern;
 
@@ -193,7 +193,10 @@ substreg1(int needpats, int use_opts, int is_globalsub)
 
 	if (gregexp) {
 	    FreeIfNeeded(substexp);
-	    substexp = castalloc(regexp, (size_t) (gregexp->size));
+	    if ((substexp = castalloc(regexp, (size_t) (gregexp->size))) == 0) {
+		no_memory("substreg1");
+		return FALSE;
+	    }
 	    (void) memcpy((char *) substexp, (char *) gregexp,
 			  (size_t) gregexp->size);
 	}
@@ -291,7 +294,7 @@ substreg1(int needpats, int use_opts, int is_globalsub)
 static void
 showpat(regexp * rp, int on)
 {
-    register LINEPTR lp;
+    LINE *lp;
     int row;
 
     for (lp = curwp->w_line.l, row = curwp->w_toprow;
@@ -310,8 +313,8 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
 {
     int foundit;
     int again = 0;
-    register int s;
-    register int which_occur = 0;
+    int s;
+    int which_occur = 0;
     int matched_at_eol = FALSE;
     int yes, c, skipped;
 
@@ -412,7 +415,7 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
 	}
     } while (globally && sameline(scanboundpos, DOT));
     if (foundit && printit) {
-	register WINDOW *wp = curwp;
+	WINDOW *wp = curwp;
 	(void) setmark();
 	s = plineregion();
 	if (s != TRUE)

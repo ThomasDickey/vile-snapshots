@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.6 2003/05/24 00:49:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.8 2005/01/18 01:08:06 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -119,11 +119,12 @@ gui_make_menu(void *menubar, char *nom, int the_class GCC_UNUSED)
 #endif /* ATHENA_WIDGETS */
 
     /* remember the widgets we created, so we can destroy them */
-    remember = typecalloc(MY_MENUS);
-    remember->parent = pm;
-    remember->child = cascade;
-    remember->next = my_menus;
-    my_menus = remember;
+    if ((remember = typecalloc(MY_MENUS)) != 0) {
+	remember->parent = pm;
+	remember->child = cascade;
+	remember->next = my_menus;
+	my_menus = remember;
+    }
 
     return (void *) pm;
 }
@@ -299,11 +300,19 @@ post_buffer_list(Widget w GCC_UNUSED,
 
 	if (nb_item_menu_list + 2 >= in_item_menu_list) {
 	    int m = in_item_menu_list;
+
 	    in_item_menu_list = (in_item_menu_list + 3) * 2;
+
 	    if (pm_buffer != 0)
 		pm_buffer = typereallocn(Widget, pm_buffer, in_item_menu_list);
 	    else
 		pm_buffer = typeallocn(Widget, in_item_menu_list);
+
+	    if (pm_buffer == 0) {
+		no_memory("post_buffer_list");
+		return;
+	    }
+
 	    while (m < in_item_menu_list)
 		pm_buffer[m++] = 0;
 	}

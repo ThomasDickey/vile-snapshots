@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.269 2004/11/01 00:41:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.280 2005/01/23 17:04:05 tom Exp $
  *
  */
 
@@ -108,21 +108,6 @@ static void kbd_puts(const char *s);
 /*----------------------------------------------------------------------------*/
 
 #if OPT_NAMEBST
-static BI_NODE *
-new_namebst(BI_DATA * a)
-{
-    BI_NODE *p;
-
-    beginDisplay();
-    p = typecalloc(BI_NODE);
-    p->value = *a;
-    if (!(a->n_flags & NBST_READONLY))
-	BI_KEY(p) = strmalloc(a->bi_key);
-    endofDisplay();
-
-    return p;
-}
-
 static void
 old_namebst(BI_NODE * a)
 {
@@ -147,8 +132,28 @@ old_namebst(BI_NODE * a)
 	}
 	free(TYPECAST(char, BI_KEY(a)));
     }
-    free(TYPECAST(char, a));
+    free(a);
     endofDisplay();
+}
+
+static BI_NODE *
+new_namebst(BI_DATA * a)
+{
+    BI_NODE *p;
+
+    beginDisplay();
+    if ((p = typecalloc(BI_NODE)) != 0) {
+	p->value = *a;
+	if (!(a->n_flags & NBST_READONLY)) {
+	    if ((BI_KEY(p) = strmalloc(a->bi_key)) == 0) {
+		old_namebst(p);
+		p = 0;
+	    }
+	}
+    }
+    endofDisplay();
+
+    return p;
 }
 
 static void
@@ -173,7 +178,7 @@ static BI_TREE redefns =
 int
 no_such_function(const char *fnp)
 {
-    mlforce("[No such function \"%s\"]", fnp != 0 ? fnp : "");
+    mlforce("[No such function \"%s\"]", NONNULL(fnp));
     return FALSE;
 }
 
@@ -202,7 +207,7 @@ vl_help(int f GCC_UNUSED, int n GCC_UNUSED)
 	}
 	alreadypopped = (bp->b_nwnd != 0);
 	/* and read the stuff in */
-	if (readin(hname, 0, bp, TRUE) == FALSE ||
+	if (readin(hname, 0, bp, TRUE) != TRUE ||
 	    popupbuff(bp) == FALSE) {
 	    (void) zotbuf(bp);
 	    returnCode(FALSE);
@@ -312,9 +317,11 @@ static int
 chr_lookup(const char *name)
 {
     int j;
-    for (j = 0; TermChrs[j].name != 0; j++)
-	if (!strcmp(name, TermChrs[j].name))
-	    return j;
+    if (name != 0) {
+	for (j = 0; TermChrs[j].name != 0; j++)
+	    if (!strcmp(name, TermChrs[j].name))
+		return j;
+    }
     return -1;
 }
 
@@ -446,7 +453,7 @@ free_KBIND(KBIND ** oldp, KBIND * newp)
     *oldp = newp->k_link;
 
     beginDisplay();
-    free(TYPECAST(char, newp));
+    free(newp);
     endofDisplay();
 
     return TRUE;
@@ -1341,8 +1348,7 @@ locate_fname(char *dir_name, char *fname, UINT mode)
 {
     static char fullpath[NFILEN];	/* expanded path */
 
-    if (dir_name
-	&& dir_name[0] != EOS
+    if (!isEmpty(dir_name)
 	&& ffaccess(pathcat(fullpath, dir_name, fname), mode))
 	return (fullpath);
 
@@ -1356,10 +1362,11 @@ locate_file_in_list(char *list, char *fname, UINT mode)
     char *sp;
     char dir_name[NFILEN];
 
-    cp = list;
-    while ((cp = parse_pathlist(cp, dir_name)) != 0) {
-	if ((sp = locate_fname(dir_name, fname, mode)) != 0)
-	    return sp;
+    if ((cp = list) != 0) {
+	while ((cp = parse_pathlist(cp, dir_name)) != 0) {
+	    if ((sp = locate_fname(dir_name, fname, mode)) != 0)
+		return sp;
+	}
     }
     return 0;
 }
@@ -1379,7 +1386,7 @@ PATH_value(void)
     if (!tb_length(myfiles)) {
 	char mypath[NFILEN];
 
-	(void) strcpy(mypath, prog_arg);
+	(void) strcpy(mypath, NONNULL(prog_arg));
 	if ((tmp = vms_pathleaf(mypath)) == mypath)
 	    (void) strcpy(mypath,
 			  current_directory(FALSE));
@@ -1478,8 +1485,7 @@ list_which_fname(char *dir_name, char *fname, UINT mode)
 {
     char fullpath[NFILEN];	/* expanded path */
 
-    if (dir_name
-	&& dir_name[0] != EOS) {
+    if (!isEmpty(dir_name)) {
 	list_one_fname(SL_TO_BSL(pathcat(fullpath, dir_name, fname)), mode);
     }
 }
@@ -1490,9 +1496,10 @@ list_which_file_in_list(char *list, char *fname, UINT mode)
     const char *cp;
     char dir_name[NFILEN];
 
-    cp = list;
-    while ((cp = parse_pathlist(cp, dir_name)) != 0) {
-	list_which_fname(dir_name, fname, mode);
+    if ((cp = list) != 0) {
+	while ((cp = parse_pathlist(cp, dir_name)) != 0) {
+	    list_which_fname(dir_name, fname, mode);
+	}
     }
 }
 
@@ -1618,40 +1625,42 @@ kcod2escape_seq(int c, char *ptr)
 {
     char *base = ptr;
 
-    if (c & CTLA)
-	*ptr++ = (char) cntl_a;
-    else if (c & CTLX)
-	*ptr++ = (char) cntl_x;
+    if (base != 0) {
+	if (c & CTLA)
+	    *ptr++ = (char) cntl_a;
+	else if (c & CTLX)
+	    *ptr++ = (char) cntl_x;
 
 #if OPT_KEY_MODIFY
-    if (c & mod_KEY) {
-	unsigned n;
-	for (n = 0; n < TABLESIZE(key_modifiers); ++n) {
-	    if (c & key_modifiers[n].code) {
-		strcpy(ptr, key_modifiers[n].name);
-		ptr += strlen(ptr);
+	if (c & mod_KEY) {
+	    unsigned n;
+	    for (n = 0; n < TABLESIZE(key_modifiers); ++n) {
+		if (c & key_modifiers[n].code) {
+		    strcpy(ptr, key_modifiers[n].name);
+		    ptr += strlen(ptr);
+		}
 	    }
-	}
 #if SYS_WINNT
 #define W32INSERT "Insert"
 #define W32DELETE "Delete"
-	c &= mod_NOMOD;
-	if (c == KEY_Insert) {
-	    strcpy(ptr, W32INSERT);
-	    ptr += sizeof(W32INSERT) - 1;
-	    c = EOS;
-	} else if (c == KEY_Delete) {
-	    strcpy(ptr, W32DELETE);
-	    ptr += sizeof(W32DELETE) - 1;
-	    c = EOS;
+	    c &= mod_NOMOD;
+	    if (c == KEY_Insert) {
+		strcpy(ptr, W32INSERT);
+		ptr += sizeof(W32INSERT) - 1;
+		c = EOS;
+	    } else if (c == KEY_Delete) {
+		strcpy(ptr, W32DELETE);
+		ptr += sizeof(W32DELETE) - 1;
+		c = EOS;
+	    }
+#endif
 	}
 #endif
+	if (c & SPEC)
+	    *ptr++ = (char) poundc;
+	*ptr++ = (char) c;
+	*ptr = EOS;
     }
-#endif
-    if (c & SPEC)
-	*ptr++ = (char) poundc;
-    *ptr++ = (char) c;
-    *ptr = EOS;
     return (int) (ptr - base);
 }
 
@@ -2256,16 +2265,7 @@ cs_strncmp(
 #define	NEXT_DATA(p)	((p)+size_entry)
 #define	PREV_DATA(p)	((p)-size_entry)
 
-#ifdef	lint
-static				/*ARGSUSED */
-const char *
-THIS_NAME(const char *p)
-{
-    return 0;
-}
-#else
 #define	THIS_NAME(p)	(*TYPECAST(const char *const,p))
-#endif
 #define	NEXT_NAME(p)	THIS_NAME(NEXT_DATA(p))
 
 /*
@@ -2473,7 +2473,7 @@ scroll_completions(
     if ((bp = find_b_name(COMPLETIONS_BufName)) == NULL)
 	show_completions(case_insensitive, buf, len, table, size_entry);
     else {
-	LINEPTR lp;
+	LINE *lp;
 	swbuffer(bp);
 	(void) gotoeos(FALSE, 1);
 	lp = DOT.l;
@@ -2648,6 +2648,9 @@ kbd_complete(DONE_ARGS, const char *table, size_t size_entry)
     buf[cpos] = EOS;		/* terminate it for us */
     nbp = table;		/* scan for matches */
 
+    if (nbp == 0)
+	return FALSE;
+
     while (THIS_NAME(nbp) != NULL) {
 	if (StrNcmp(buf, THIS_NAME(nbp), strlen(buf)) == 0) {
 	    testcol = kbd_length();
@@ -2752,12 +2755,14 @@ kbd_complete(DONE_ARGS, const char *table, size_t size_entry)
 static int
 is_shift_cmd(const char *buffer, unsigned cpos)
 {
-    int c = *buffer;
-    if (isRepeatable(c)) {
-	while (--cpos != 0)
-	    if (*(++buffer) != c)
-		return FALSE;
-	return TRUE;
+    if (buffer != 0) {
+	int c = *buffer;
+	if (isRepeatable(c)) {
+	    while (--cpos != 0)
+		if (*(++buffer) != c)
+		    return FALSE;
+	    return TRUE;
+	}
     }
     return FALSE;
 }
@@ -2821,30 +2826,34 @@ static int
 cmd_complete(DONE_ARGS)
 {
     int status;
+    if (buf != 0 && pos != 0) {
 #if OPT_HISTORY
-    /*
-     * If the user scrolled back in 'edithistory()', the text may be a
-     * repeated-shift command, which won't match the command-table (e.g.,
-     * ">>>").
-     */
-    if ((*pos > 1) && is_shift_cmd(buf, *pos)) {
-	unsigned len = 1;
-	char tmp[NLINE];
-	tmp[0] = *buf;
-	tmp[1] = EOS;
-	status = cmd_complete(0, c, tmp, &len);
-    } else
+	/*
+	 * If the user scrolled back in 'edithistory()', the text may be a
+	 * repeated-shift command, which won't match the command-table (e.g.,
+	 * ">>>").
+	 */
+	if ((*pos > 1) && is_shift_cmd(buf, *pos)) {
+	    unsigned len = 1;
+	    char tmp[NLINE];
+	    tmp[0] = *buf;
+	    tmp[1] = EOS;
+	    status = cmd_complete(0, c, tmp, &len);
+	} else
 #endif
-    if ((*pos != 0) && isShellOrPipe(buf)) {
+	if ((*pos != 0) && isShellOrPipe(buf)) {
 #if COMPLETE_FILES
-	status = shell_complete(PASS_DONE_ARGS);
+	    status = shell_complete(PASS_DONE_ARGS);
 #else
-	status = isreturn(c);
-	if (c != NAMEC)
-	    unkeystroke(c);
+	    status = isreturn(c);
+	    if (c != NAMEC)
+		unkeystroke(c);
 #endif
+	} else {
+	    status = kbd_complete_bst(PASS_DONE_ARGS);
+	}
     } else {
-	status = kbd_complete_bst(PASS_DONE_ARGS);
+	status = ABORT;
     }
     return status;
 }
@@ -2879,25 +2888,32 @@ kbd_engl_stat(const char *prompt, char *buffer, int stated)
 int
 insert_namebst(const char *name, const CMDFUNC * cmd, int ro)
 {
-    BI_DATA temp, *p;
+    int result;
 
-    if ((p = btree_search(&namebst, name)) != 0) {
-	if ((p->n_flags & NBST_READONLY)) {
-	    if (btree_insert(&redefns, p) == 0
-		|| !btree_delete(&namebst, name)) {
+    if (name != 0) {
+	BI_DATA temp, *p;
+
+	if ((p = btree_search(&namebst, name)) != 0) {
+	    if ((p->n_flags & NBST_READONLY)) {
+		if (btree_insert(&redefns, p) == 0
+		    || !btree_delete(&namebst, name)) {
+		    return FALSE;
+		}
+		mlwrite("[Redefining builtin '%s']", name);
+	    } else if (!delete_namebst(name, TRUE)) {
 		return FALSE;
 	    }
-	    mlwrite("[Redefining builtin '%s']", name);
-	} else if (!delete_namebst(name, TRUE)) {
-	    return FALSE;
 	}
+
+	temp.bi_key = name;
+	temp.n_cmd = cmd;
+	temp.n_flags = (UCHAR) (ro ? NBST_READONLY : 0);
+
+	result = (btree_insert(&namebst, &temp) != 0);
+    } else {
+	result = FALSE;
     }
-
-    temp.bi_key = name;
-    temp.n_cmd = cmd;
-    temp.n_flags = (UCHAR) (ro ? NBST_READONLY : 0);
-
-    return (btree_insert(&namebst, &temp) != 0);
+    return result;
 }
 
 static void

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.535 2004/12/12 17:18:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.540 2005/01/23 22:56:37 tom Exp $
  *
  */
 
@@ -50,11 +50,11 @@ extern void track_free (char *mp);
 #endif
 
 #ifndef valid_line_bp
-extern int valid_line_bp(LINEPTR lp, BUFFER *bp);
+extern int valid_line_bp(LINE *lp, BUFFER *bp);
 #endif
 
 #ifndef valid_line_wp
-extern int valid_line_wp(LINEPTR lp, WINDOW *wp);
+extern int valid_line_wp(LINE *lp, WINDOW *wp);
 #endif
 
 #ifndef valid_buffer
@@ -92,14 +92,14 @@ extern void api_free_private(void *);
 
 /* basic.c */
 extern int can_set_nmmark(int c);
-extern int firstchar (LINEPTR lp);
-extern int getgoal (LINEPTR dlp);
+extern int firstchar (LINE *lp);
+extern int getgoal (LINE *dlp);
 extern int gonmmark (int c);
-extern int lastchar (LINEPTR lp);
+extern int lastchar (LINE *lp);
 extern int next_column (int c, int col);
 extern int next_sw (int col);
 extern int next_tabcol (int col);
-extern int nextchar (LINEPTR lp, int off);
+extern int nextchar (LINE *lp, int off);
 extern int setmark (void);
 extern int show_mark_is_set (int c);
 extern void swapmark (void);
@@ -179,7 +179,7 @@ extern char *add_brackets(char *dst, const char *src);
 extern char *hist_lookup (int c);
 extern char *next_buffer_line(const char *bname);
 extern char *strip_brackets(char *dst, const char *src);
-extern int add_line_at (BUFFER *bp, LINEPTR prevp, const char *text, int len);
+extern int add_line_at (BUFFER *bp, LINE *prevp, const char *text, int len);
 extern int addline (BUFFER *bp, const char *text, int len);
 extern int any_changed_buf (BUFFER **bpp);
 extern int any_unread_buf (BUFFER **bpp);
@@ -231,7 +231,7 @@ extern int col_limit (WINDOW *wp);
 extern int im_waiting (int flag);
 extern int mk_to_vcol (MARK mark, int expanded, BUFFER *bp, int col, int adjust);
 extern int nu_width (WINDOW *wp);
-extern int offs2col (WINDOW *wp, LINEPTR lp, C_NUM offset);
+extern int offs2col (WINDOW *wp, LINE *lp, C_NUM offset);
 extern int update (int force);
 extern int video_alloc (VIDEO **vpp);
 extern int vtinit (void);
@@ -263,14 +263,14 @@ extern SIGT sizesignal (int ACTUAL_SIG_ARGS);
 #endif
 
 #ifdef WMDLINEWRAP
-extern int line_height (WINDOW *wp, LINEPTR lp);
+extern int line_height (WINDOW *wp, LINE *lp);
 #else
 #define line_height(wp,lp) 1
 #endif
 
 #if defined(WMDLINEWRAP) || OPT_MOUSE
 extern WINDOW *row2window (int row);
-extern int col2offs (WINDOW *wp, LINEPTR lp, C_NUM col);
+extern int col2offs (WINDOW *wp, LINE *lp, C_NUM col);
 #endif
 
 #if OPT_MLFORMAT || OPT_POSFORMAT || OPT_TITLE
@@ -361,7 +361,7 @@ extern char *skip_text (char *str);
 #endif
 
 #if OPT_EVAL
-extern LINEPTR label2lp (BUFFER *bp, const char *label);
+extern LINE *label2lp (BUFFER *bp, const char *label);
 extern int rmv_tempvar (const char *name);
 extern int set_state_variable (const char *name, const char *value);
 extern int vl_lookup_func (const char *name);
@@ -612,7 +612,7 @@ extern int shell_complete (DONE_ARGS);
 #endif
 
 /* insert.c */
-extern int indentlen (LINEPTR lp);
+extern int indentlen (LINE *lp);
 extern int ins (void);
 extern int ins_mode (WINDOW *wp);
 extern int inschar (int c, int *backsp_limit_p);
@@ -666,7 +666,7 @@ extern void release_lock (const char *fname);
 #endif
 
 /* line.c */
-extern LINEPTR lalloc (int used, BUFFER *bp);
+extern LINE *lalloc (int used, BUFFER *bp);
 extern int begin_kill (void);
 extern int do_report (L_NUM value);
 extern int index2reg (int c);
@@ -674,7 +674,7 @@ extern int index2ukb (int inx);
 extern int kinsert (int c);
 extern int kinsertlater (int c);
 extern int ldelete (long n, int kflag);
-extern int lreplc(LINEPTR lp, C_NUM off, int c);
+extern int lreplc(LINE *lp, C_NUM off, int c);
 extern int linsert (int n, int c);
 extern int lnewline (void);
 extern int lstrinsert (const char *s, int len);
@@ -683,9 +683,9 @@ extern void end_kill (void);
 extern void kdone (void);
 extern void kregcirculate (int killing);
 extern void ksetup (void);
-extern void lfree (LINEPTR lp, BUFFER *bp);
-extern void lremove (BUFFER *bp, LINEPTR lp);
-extern void ltextfree (LINEPTR lp, BUFFER *bp);
+extern void lfree (LINE *lp, BUFFER *bp);
+extern void lremove (BUFFER *bp, LINE *lp);
+extern void ltextfree (LINE *lp, BUFFER *bp);
 
 #if OPT_EVAL
 extern int lrepltext (CHARTYPE type, const char *iline, int ilen);
@@ -884,7 +884,7 @@ extern char * home_path (char *path);
 #endif
 
 /* random.c */
-extern L_NUM line_no (BUFFER *the_buffer, LINEPTR the_line);
+extern L_NUM line_no (BUFFER *the_buffer, LINE *the_line);
 extern L_NUM vl_line_count (BUFFER *the_buffer);
 extern TBUFF * tb_visbuf (const char *buffer, size_t len);
 extern char * current_directory (int force);
@@ -963,7 +963,7 @@ extern void update_dos_drv_dir (char * cwd);
 #define lregexec vl_lregexec
 extern regexp * regcomp (const char *origexp, size_t exp_len, int magic);
 extern int regexec (regexp *prog, char *string, char *stringend, int startoff, int endoff);
-extern int lregexec (regexp *prog, LINEPTR lp, int startoff, int endoff);
+extern int lregexec (regexp *prog, LINE *lp, int startoff, int endoff);
 
 /* region.c */
 typedef int (*DORGNLINES)(int (*)(REGN_ARGS), void *, int);
@@ -993,7 +993,7 @@ extern int        upperregion (void);
 extern int        yankregion (void);
 
 #if OPT_SELECTIONS
-extern TBUFF * encode_attributes(LINEPTR lp, BUFFER *bp, REGION * top_region);
+extern TBUFF * encode_attributes(LINE *lp, BUFFER *bp, REGION * top_region);
 #endif
 
 /* search.c */
@@ -1012,7 +1012,7 @@ void clobber_save_curbp(BUFFER *bp);
 /* select.c */
 #if OPT_SELECTIONS
 extern	BUFFER *sel_buffer	(void);
-extern	LINEPTR setup_region    (void);
+extern	LINE *setup_region    (void);
 extern	int	apply_attribute	(void);
 extern	int	assign_attr_id	(void);
 extern	int	attribute_cntl_a_seqs_in_region(REGION *rp, REGIONSHAPE shape);
@@ -1049,7 +1049,7 @@ extern	int	sel_attached	(void);
 #endif
 
 #if OPT_LINE_ATTRS
-extern	void	lattr_shift	(BUFFER *bp, LINEPTR lp, int doto, int shift);
+extern	int	lattr_shift	(BUFFER *bp, LINE *lp, int doto, int shift);
 #endif
 
 #else
@@ -1162,14 +1162,14 @@ extern	void	vl_setup_encrypt (char *pw);
 #endif	/* OPT_ENCRYPT */
 
 /* undo.c */
-extern void copy_for_undo (LINEPTR lp);
-extern void dumpuline (LINEPTR lp);
+extern int  copy_for_undo (LINE *lp);
+extern void dumpuline (LINE *lp);
 extern void freeundostacks (BUFFER *bp, int both);
 extern void mayneedundo (void);
 extern void nounmodifiable (BUFFER *bp);
 extern int  redo_ok(void);
-extern void tag_for_undo (LINEPTR lp);
-extern void toss_to_undo (LINEPTR lp);
+extern int  tag_for_undo (LINE *lp);
+extern void toss_to_undo (LINE *lp);
 extern int  undo_ok(void);
 
 /* version.c */
@@ -1232,7 +1232,10 @@ typedef struct oleauto_options_struct
                          */
 } OLEAUTO_OPTIONS;
 
+extern void build_recent_file_and_folder_menus(void);
+extern void cd_recent_folder(int mnu_index);
 extern void disp_win32_error(ULONG errcode, void *hwnd);
+extern void edit_recent_file(int mnu_index);
 extern char *fmt_win32_error(ULONG errcode, char **buf, ULONG buflen);
 extern const char *get_favorites(void);
 extern int  is_win95(void);
@@ -1251,6 +1254,7 @@ extern int  parse_font_str(const char *fontstr, FONTSTR_OPTIONS *results);
 extern void restore_console_title(void);
 extern void set_console_title(const char *title);
 extern int  stdin_data_available(void);
+extern void store_recent_file_or_folder(const char *path, int is_file);
 extern int  w32_CreateProcess(char *cmd, int no_wait);
 extern int  w32_del_selection(int copy_to_clipboard);
 extern void w32_keybrd_reopen(int pressret);

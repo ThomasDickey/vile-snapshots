@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.23 2004/12/10 00:13:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.24 2005/01/17 00:42:39 tom Exp $
  *
  */
 
@@ -207,7 +207,7 @@ skip_blanks(char *src)
 char *
 strmalloc(const char *src)
 {
-    register char *ns = (char *) malloc(strlen(src) + 1);
+    char *ns = typeallocn(char, strlen(src) + 1);
     if (ns != 0)
 	(void) strcpy(ns, src);
     return ns;

@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.76 2004/12/07 00:58:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.77 2005/01/19 01:53:42 tom Exp $
  *
  */
 
@@ -21,8 +21,8 @@
 int
 wrapword(int f, int n)
 {
-    register int cnt = 0;	/* size of word wrapped to next line */
-    register int c;		/* character temporary */
+    int cnt = 0;		/* size of word wrapped to next line */
+    int c;			/* character temporary */
     B_COUNT to_delete;
     C_NUM to_append = 0;
 
@@ -39,7 +39,7 @@ wrapword(int f, int n)
      * (n!=0), try to split the line at the last embedded whitespace.
      */
     if (f) {
-	register LINE *lp = DOT.l;
+	LINE *lp = DOT.l;
 	to_delete = 0L;
 	if (DOT.o >= 0 && !n && !isSpace(lgetc(lp, DOT.o))) {
 	    for (c = DOT.o; c >= 0; c--) {
@@ -279,8 +279,8 @@ backword(int f, int n)
 static int
 join_region(int exact)
 {
-    register int status;
-    register int doto, c;
+    int status;
+    int doto, c;
     LINE *end;
     REGION region;
     int done = FALSE;
@@ -406,17 +406,17 @@ comment_prefix(void)
 static int
 do_formatting(TBUFF **wp, TBUFF **cp)
 {
-    register int c;		/* current char during scan     */
-    register int clength;	/* position on line during fill */
-    register int plength;	/* prefix to ignore during fill */
-    register size_t i;		/* index during word copy       */
-    register int newlen;	/* tentative new line length    */
-    register int finished;	/* Are we at the End-Of-Paragraph? */
-    register int firstflag;	/* first word? (needs no space) */
-    register int is_comment;	/* doing a comment block?       */
-    register int at_nl = TRUE;	/* just saw a newline?          */
-    register LINEPTR pastline;	/* pointer to line just past EOP */
-    register int sentence;	/* was the last char a period?  */
+    int c;			/* current char during scan     */
+    int clength;		/* position on line during fill */
+    int plength;		/* prefix to ignore during fill */
+    size_t i;			/* index during word copy       */
+    int newlen;			/* tentative new line length    */
+    int finished;		/* Are we at the End-Of-Paragraph? */
+    int firstflag;		/* first word? (needs no space) */
+    int is_comment;		/* doing a comment block?       */
+    int at_nl = TRUE;		/* just saw a newline?          */
+    LINE *pastline;		/* pointer to line just past EOP */
+    int sentence;		/* was the last char a period?  */
     int secondindent;
     int s;
     int fillcolumn = getfillcol(curbp);
@@ -651,12 +651,12 @@ formatregion(void)
 int
 wordcount(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    register LINE *lp;		/* current line to scan */
-    register int offset;	/* current char to scan */
+    LINE *lp;			/* current line to scan */
+    int offset;			/* current char to scan */
     long size;			/* size of region left to count */
-    register int ch;		/* current character to scan */
-    register int wordflag;	/* are we in a word now? */
-    register int lastflag;	/* were we just in a word? */
+    int ch;			/* current character to scan */
+    int wordflag;		/* are we in a word now? */
+    int lastflag;		/* were we just in a word? */
     long nwhite;		/* total # of blanks */
     long nwords;		/* total # of words */
     long nchars;		/* total number of chars */
@@ -719,4 +719,4 @@ wordcount(int f GCC_UNUSED, int n GCC_UNUSED)
 
     return (TRUE);
 }
-#endif
+#endif /* OPT_WORDCOUNT */

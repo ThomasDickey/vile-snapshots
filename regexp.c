@@ -24,7 +24,7 @@
  *
  *		ted, 05/03
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.108 2003/11/11 22:33:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.110 2005/01/17 00:54:28 tom Exp $
  *
  */
 
@@ -2606,7 +2606,8 @@ get_string(FILE *fp, unsigned *length, int linenum)
     int literal = -1;
 
     if (result == 0) {
-	result = malloc(have = BUFSIZ);
+	have = BUFSIZ;
+	result = typeallocn(char, have);
     }
     *length = 0;
     for (;;) {
@@ -2665,7 +2666,8 @@ get_string(FILE *fp, unsigned *length, int linenum)
 	}
 	if (!escaped) {
 	    if (*length + 2 >= have) {
-		result = realloc(result, have *= 2);
+		have *= 2;
+		result = typereallocn(char, result, have);
 	    }
 	    result[*length] = value;
 	    *length += 1;

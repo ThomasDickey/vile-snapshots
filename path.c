@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.139 2004/10/30 14:54:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.147 2005/01/24 01:40:54 tom Exp $
  *
  *
  */
@@ -176,7 +176,7 @@ is_vms_pathname(const char *path, int option)
     const char *base = path;
     int this = 0, next = -1;
 
-    if (*path == EOS)		/* this can happen with null buffer-name */
+    if (isEmpty(path))		/* this can happen with null buffer-name */
 	return FALSE;
 
     while (ispath(*path)) {
@@ -261,7 +261,7 @@ is_vms_pathname(const char *path, int option)
 char *
 vms_pathleaf(char *path)
 {
-    register char *s;
+    char *s;
     for (s = skip_string(path);
 	 s > path && !strchr(":]", s[-1]);
 	 s--) ;
@@ -280,7 +280,7 @@ vms_pathleaf(char *path)
 char *
 unix_pathleaf(char *path)
 {
-    register char *s = last_slash(path);
+    char *s = last_slash(path);
     if (s == 0) {
 #if OPT_MSDOS_PATH
 	if ((s = is_msdos_drive(path)) == 0)
@@ -313,10 +313,15 @@ pathcat(char *dst, const char *path, char *leaf)
     char *s;
     size_t have;
 
+    if (dst == 0)
+	return 0;
+
+    if (leaf == 0)
+	leaf = "";
+
     leaf = vl_strncpy(save_leaf, leaf, NFILEN);		/* leaf may be in dst */
 
-    if (path == 0
-	|| *path == EOS) {
+    if (isEmpty(path)) {
 	(void) strcpy(dst, leaf);
     } else {
 
@@ -368,7 +373,7 @@ pathcat(char *dst, const char *path, char *leaf)
 char *
 last_slash(char *fn)
 {
-    register char *s;
+    char *s;
 
     if (*fn != EOS)
 	for (s = skip_string(fn); s > fn; s--)
@@ -398,7 +403,7 @@ static UPATH *user_paths;
 static char *
 save_user(const char *name, const char *path)
 {
-    register UPATH *q;
+    UPATH *q;
 
     if (name != NULL
 	&& path != NULL
@@ -412,7 +417,7 @@ save_user(const char *name, const char *path)
 	} else {
 	    FreeIfNeeded(q->name);
 	    FreeIfNeeded(q->path);
-	    free((char *) q);
+	    free(q);
 	}
     }
     return NULL;
@@ -422,9 +427,9 @@ static char *
 find_user(const char *name)
 {
 #if SYS_UNIX
-    register struct passwd *p;
+    struct passwd *p;
 #endif
-    register UPATH *q;
+    UPATH *q;
 
     if (name != NULL) {
 	for (q = user_paths; q != NULL; q = q->next) {
@@ -798,8 +803,8 @@ resolve_directory(char *path_name, char **file_namep)
 
     while ((thisdev != rootdev)
 	   || (thisino != rootino)) {
-	register DIR *dp;
-	register DIRENT *de;
+	DIR *dp;
+	DIRENT *de;
 	dev_t dotdev;
 	ino_t dotino;
 	char mount_point;
@@ -1312,7 +1317,7 @@ shorten_path(char *path, int keep_cwd)
 # endif
 #endif
 
-    if (!path || *path == EOS)
+    if (isEmpty(path))
 	return path;
 
     if (isInternalName(path))
@@ -1438,7 +1443,7 @@ shorten_path(char *path, int keep_cwd)
 static int
 mixed_case(const char *path)
 {
-    register int c;
+    int c;
     int had_upper = FALSE;
     int had_lower = FALSE;
     while ((c = *path++) != EOS) {
@@ -1463,7 +1468,7 @@ lengthen_path(char *path)
     char my_esa[NAM$C_MAXRSS + 1];	/* expanded: sys$parse */
     char my_rsa[NAM$C_MAXRSS + 1];	/* result: sys$search */
 #endif
-    register int len;
+    int len;
     const char *cwd;
     char *f;
     char temp[NFILEN];
@@ -1503,7 +1508,7 @@ lengthen_path(char *path)
 	int fd;
 	long status;
 	char temp[NFILEN], leaf[NFILEN];
-	register char *s;
+	char *s;
 
 	if (!strchr(path, '*') && !strchr(path, '?')) {
 	    if ((fd = open(SL_TO_BSL(path), O_RDONLY, 0)) >= 0) {
@@ -1778,11 +1783,11 @@ int
 is_directory(char *path)
 {
 #if OPT_VMS_PATH
-    register char *s;
+    char *s;
 #endif
     struct stat sb;
 
-    if (path == NULL || *path == EOS)
+    if (isEmpty(path))
 	return FALSE;
 
 #if OPT_VMS_PATH
@@ -1865,7 +1870,7 @@ const char *
 parse_pathlist(const char *list, char *result)
 {
     if (list != NULL && *list != EOS) {
-	register int len = 0;
+	int len = 0;
 
 	while (*list && (*list != vl_pathchr)) {
 	    if (len < NFILEN - 1)
@@ -2011,8 +2016,13 @@ sl_to_bsl(const char *p)
     if (p != 0) {
 	static TBUFF *cnv;
 	size_t len = strlen(p);
-	char *t = tb_values(tb_alloc(&cnv, (len | 127) + 1));
-	char *s = slconv(p, t, '/', '\\');
+	char *s, *t;
+
+	if (tb_alloc(&cnv, (len | 127) + 1) == 0)
+	    return (char *) p;	/* not quite giving up, but close */
+
+	t = tb_values(cnv);
+	s = slconv(p, t, '/', '\\');
 	if ((s = is_msdos_drive(s)) == 0)
 	    s = t;
 	/* Trim trailing slash if it's not the first */
@@ -2046,18 +2056,20 @@ bsl_to_sl_inplace(char *p)
 char *
 version_of(char *fname)
 {
-    char *s = strchr(fname, ';');
-    if (s == 0) {
-	fname = pathleaf(fname);
-	if ((s = strchr(fname, '.')) == 0
-	    || (*++s == EOS)
-	    || (s = strchr(fname, '.')) == 0)
-	    s = skip_string(fname);
-	if (strcmp(s, "*")) {	/* either "*" or a number */
-	    char *d;
-	    (void) strtol(s, &d, 10);
-	    if (*d != EOS)
-		s = skip_string(s);
+    if (fname != 0) {
+	char *s = strchr(fname, ';');
+	if (s == 0) {
+	    fname = pathleaf(fname);
+	    if ((s = strchr(fname, '.')) == 0
+		|| (*++s == EOS)
+		|| (s = strchr(fname, '.')) == 0)
+		s = skip_string(fname);
+	    if (strcmp(s, "*")) {	/* either "*" or a number */
+		char *d;
+		(void) strtol(s, &d, 10);
+		if (*d != EOS)
+		    s = skip_string(s);
+	    }
 	}
     }
     return s;
@@ -2244,17 +2256,18 @@ append_libdir_to_path(void)
     char buf[NFILEN];
 
     if (libdir_path != 0
-	&& (tmp = getenv("PATH")) != 0) {
-	env = strmalloc(tmp);
+	&& (tmp = getenv("PATH")) != 0
+	&& (env = strmalloc(tmp)) != 0) {
 	cp = libdir_path;
 	while ((cp = parse_pathlist(cp, buf)) != 0) {
 	    append_to_path_list(&env, buf);
 	}
 	if (strcmp(tmp, env)) {
-	    tmp = (char *) malloc(6 + strlen(env));
-	    lsprintf(tmp, "PATH=%s", env);
-	    putenv(tmp);
-	    TRACE(("putenv %s\n", tmp));
+	    if ((tmp = typeallocn(char, 6 + strlen(env))) != 0) {
+		lsprintf(tmp, "PATH=%s", env);
+		putenv(tmp);
+		TRACE(("putenv %s\n", tmp));
+	    }
 	} else {
 	    free(env);
 	}
@@ -2273,11 +2286,11 @@ path_leaks(void)
 {
 #if SYS_UNIX
     while (user_paths != NULL) {
-	register UPATH *paths = user_paths;
+	UPATH *paths = user_paths;
 	user_paths = paths->next;
 	free(paths->name);
 	free(paths->path);
-	free((char *) paths);
+	free(paths);
     }
 #endif
 }

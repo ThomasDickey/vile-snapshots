@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.527 2004/12/09 01:29:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.534 2005/01/23 01:07:19 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -167,12 +167,13 @@ MainProgram(int argc, char *argv[])
 	    ((env = getenv("LC_CTYPE")) != 0 && *env != 0) ||
 	    ((env = getenv("LANG")) != 0 && *env != 0)) {
 	    char *utf;
+	    char *tmp;
 
-	    if ((utf = strstr(env, ".UTF-8")) != 0
-		|| (utf = strstr(env, ".utf-8")) != 0
-		|| (utf = strstr(env, ".UTF8")) != 0
-		|| (utf = strstr(env, ".utf8")) != 0) {
-		char *tmp = strmalloc(env);
+	    if (((utf = strstr(env, ".UTF-8")) != 0
+		 || (utf = strstr(env, ".utf-8")) != 0
+		 || (utf = strstr(env, ".UTF8")) != 0
+		 || (utf = strstr(env, ".utf8")) != 0)
+		&& (tmp = strmalloc(env)) != 0) {
 		tmp[utf - env] = EOS;
 		utf8_locale = TRUE;
 #if DISP_TERMCAP && OPT_ICONV_FUNCS
@@ -232,7 +233,7 @@ MainProgram(int argc, char *argv[])
     prog_arg = argv[0];		/* this contains our only clue to exec-path */
 #if SYS_MSDOS || SYS_OS2 || SYS_OS2_EMX || SYS_WINNT
     if (strchr(pathleaf(prog_arg), '.') == 0) {
-	char *t = malloc(strlen(prog_arg) + 5);
+	char *t = typeallocn(char, strlen(prog_arg) + 5);
 	lsprintf(t, "%s.exe", prog_arg);
 	prog_arg = t;
     }
@@ -574,7 +575,7 @@ MainProgram(int argc, char *argv[])
 
     /* this comes out to 70 on an 80 (or greater) column display */
     {
-	register int fill;
+	int fill;
 	fill = (7 * term.cols) / 8;	/* must be done after vtinit() */
 	if (fill > 70)
 	    fill = 70;
@@ -984,15 +985,17 @@ tidy_exit(int code)
 
 #ifndef strmalloc
 char *
-strmalloc(const char *s)
+strmalloc(const char *src)
 {
-    char *ns;
-    beginDisplay();
-    ns = castalloc(char, strlen(s) + 1);
-    if (ns != 0)
-	(void) strcpy(ns, s);
-    endofDisplay();
-    return ns;
+    char *dst = 0;
+    if (src != 0) {
+	beginDisplay();
+	dst = castalloc(char, strlen(src) + 1);
+	if (dst != 0)
+	    (void) strcpy(dst, src);
+	endofDisplay();
+    }
+    return dst;
 }
 #endif
 
@@ -1190,6 +1193,12 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #ifdef GVAL_REDIRECT_KEYS
 	    setTXT(GVAL_REDIRECT_KEYS,
 		   "F5::S,F10::S,F11::S,F7::F,F5:C:,F9::Y");
+#endif
+#ifdef GVAL_RECENT_FILES
+	    setINT(GVAL_RECENT_FILES, 0);
+#endif
+#ifdef GVAL_RECENT_FOLDERS
+	    setINT(GVAL_RECENT_FOLDERS, 0);
 #endif
 #ifdef GVAL_SCROLLPAUSE
 	    setINT(GVAL_SCROLLPAUSE, 0);
@@ -1398,11 +1407,11 @@ default_menu_file(void)
     char temp[NSTRING];
     char *menurc = getenv("VILE_MENU");
 
-    if (menurc == NULL || *menurc == EOS) {
+    if (isEmpty(menurc)) {
 	sprintf(temp, "%.*s_MENU", (int) (sizeof(temp) - 6), prognam);
 	mkupper(temp);
 	menurc = getenv(temp);
-	if (menurc == NULL || *menurc == EOS) {
+	if (isEmpty(menurc)) {
 	    menurc = default_menu;
 	}
     }
@@ -1825,9 +1834,9 @@ siguninit(void)
 static void
 do_num_proc(int *cp, int *fp, int *np)
 {
-    register int c, f, n;
-    register int mflag;
-    register int oldn;
+    int c, f, n;
+    int mflag;
+    int oldn;
 
     c = *cp;
 
@@ -1873,9 +1882,9 @@ do_num_proc(int *cp, int *fp, int *np)
 static void
 do_rept_arg_proc(int *cp, int *fp, int *np)
 {
-    register int c, f, n;
-    register int mflag;
-    register int oldn;
+    int c, f, n;
+    int mflag;
+    int oldn;
     c = *cp;
 
     if (c != reptc)
@@ -1994,7 +2003,7 @@ zzquit(int f, int n)
 int
 quickexit(int f, int n)
 {
-    register int status;
+    int status;
     if ((status = writeall(f, n, FALSE, TRUE, FALSE, FALSE)) == TRUE)
 	status = quithard(f, n);	/* conditionally quit */
     return status;
@@ -2104,7 +2113,8 @@ quit(int f, int n GCC_UNUSED)
 	FreeAndNull(helpfile);
 	FreeAndNull(startup_file);
 #if SYS_UNIX
-	if (strcmp(exec_pathname, "."))
+	if (exec_pathname != 0
+	    && strcmp(exec_pathname, "."))
 	    FreeAndNull(exec_pathname);
 #endif
 #if OPT_FILTER
@@ -2266,7 +2276,7 @@ reptc_func(int f GCC_UNUSED, int n GCC_UNUSED)
 void
 charinit(void)
 {
-    register int c;
+    int c;
 
     TRACE((T_CALLED "charinit() lo=%d, hi=%d\n",
 	   global_g_val(GVAL_PRINT_LOW),
@@ -2277,7 +2287,7 @@ charinit(void)
      * that the tables are present or correct.  But this is a start.
      *
      * NOTE:  Solaris8 and some versions of M$ incorrectly classify tab as a
-     * printable character (ANSI C says control characters are not printable). 
+     * printable character (ANSI C says control characters are not printable).
      * Ignore that (the former fixes it in Solaris9).
      */
 #if OPT_LOCALE
@@ -2578,13 +2588,12 @@ track_realloc(char *p, unsigned size)
 
 /* track mallocs */
 char *
-track_malloc(
-		unsigned size)
+track_malloc(unsigned size)
 {
     char *p;
 
     size += sizeof(HEAPSIZE);
-    if ((p = malloc(size)) != 0) {
+    if ((p = typeallocn(char, size)) != 0) {
 	(void) memset(p, 0, size);	/* so we can use for calloc */
 	p = new_ramsize(p, size);
 	display_heap_usage();
@@ -2682,9 +2691,10 @@ showmemory(int f, int n)
 char *
 strncpy0(char *t, const char *f, size_t l)
 {
-    (void) strncpy(t, f, l);
-    if (l)
+    if (t != 0 && f != 0 && l != 0) {
+	(void) strncpy(t, f, l);
 	t[l - 1] = EOS;
+    }
     return t;
 }
 
@@ -2696,7 +2706,7 @@ strncpy0(char *t, const char *f, size_t l)
 char *
 vl_strncpy(char *dest, const char *src, size_t destlen)
 {
-    size_t srclen = strlen(src) + 1;
+    size_t srclen = (src != 0) ? (strlen(src) + 1) : 0;
     if (srclen > destlen)
 	srclen = destlen;
     return strncpy0(dest, src, srclen);
@@ -2800,7 +2810,8 @@ make_startup_file(char *name)
     FILE *fp;
     char temp[NFILEN];
 
-    if (strcmp(pathcat(temp, home_dir(), startup_file), startup_file)
+    if (startup_file != 0
+	&& strcmp(pathcat(temp, home_dir(), startup_file), startup_file)
 	&& ((fp = fopen(temp, "w")) != 0)) {
 	fprintf(fp, "; generated by %s -I\n", prog_arg);
 	fprintf(fp, "source %s\n", name);
@@ -2862,12 +2873,12 @@ valid_window(WINDOW *test)
 
 #ifndef valid_line_bp
 int
-valid_line_bp(LINEPTR test, BUFFER *bp)
+valid_line_bp(LINE *test, BUFFER *bp)
 {
     beginDisplay();
     if (test != NULL) {
 	int valid = FALSE;
-	LINEPTR lp;
+	LINE *lp;
 
 	if (test == buf_head(bp)) {
 	    valid = TRUE;
@@ -2890,7 +2901,7 @@ valid_line_bp(LINEPTR test, BUFFER *bp)
 
 #ifndef valid_line_wp
 int
-valid_line_wp(LINEPTR test, WINDOW *wp)
+valid_line_wp(LINE *test, WINDOW *wp)
 {
     return (test != NULL)
 	&& valid_window(wp)
