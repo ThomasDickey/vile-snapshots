@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.145 1997/10/25 12:33:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.146 1997/11/08 00:53:04 tom Exp $
  *
  */
 
@@ -1100,7 +1100,9 @@ storeproc(int f, int n)
 	register int status;		/* return status */
 	char bname[NBUFN];		/* name of buffer to use */
 	char given[NBUFN];
+#if OPT_NAMEBST
 	char *procname;
+#endif
 
 	/* a numeric argument means its a numbered macro */
 	if (f == TRUE)
@@ -1586,7 +1588,7 @@ setup_dobuf(BUFFER *bp, WHBLOCK **result)
 	return status;	/* true iff we made it to the end w/o errors */
 }
 #else
-#define dname_to_dirnum(eline) \
+#define dname_to_dirnum(eline,length) \
 		(eline[0] == DIRECTIVE_CHAR && !strcmp(eline+1, "endm") \
 		? D_ENDM \
 		: D_UNKNOWN)

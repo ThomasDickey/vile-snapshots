@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.163 1997/10/29 01:16:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.164 1997/11/07 01:57:28 tom Exp $
  *
  */
 
@@ -47,7 +47,6 @@ static	void	makebindlist (LIST_ARGS);
 #endif	/* OPT_REBIND */
 
 #if OPT_NAMEBST
-static  NBST *lookup_namebst(const int fullmatch, NBST *head, const char *name);
 static int kbd_complete_bst( int case_insensitive, int c, char *buf, unsigned *pos);
 #else
 #define kbd_complete_bst(case_insensitive, c, buf, pos) \
@@ -1156,7 +1155,7 @@ fnc2engl(const CMDFUNC *cfp)
 const CMDFUNC *
 engl2fnc(const char *fname)	/* name to attempt to match */
 {
-	NBST *n = lookup_namebst((*fname != EOS), namebst, fname);
+	NBST *n = lookup_namebst(-TRUE, namebst, fname);
 
 	if (n == NULL) return NULL;
 	else return n->n_cmd;
@@ -1321,37 +1320,34 @@ kbd_alarm(void)
 	warnings++;
 }
 
-/* put a character to the keyboard-prompt, updating 'ttcol' */
+/* put a character to the keyboard-prompt */
 void
 kbd_putc(int c)
 {
+	BUFFER *savebp;
+	WINDOW *savewp;
+
 	beginDisplay();
+	savebp = curbp;
+	savewp = curwp;
+	curbp = bminip;
+	curwp = wminip;
 	if ((kbd_expand <= 0) && isreturn(c)) {
-		TTputc(c);
-		ttcol = 0;
-	} else if (isPrint(c)) {
-		if (ttcol < term.t_ncol-1) /* -1 to avoid auto-wrap problems */
-			TTputc(c);
-		ttcol++;
-	} else if ((kbd_expand < 0) && (c == '\t')) {
-		kbd_putc(' ');
+		kbd_erase_to_end(0);
 	} else {
-		if (c & HIGHBIT) {
-			kbd_putc('\\');
-			if (global_w_val(WMDNONPRINTOCTAL)) {
-				kbd_putc(((c>>6)&3)+'0');
-				kbd_putc(((c>>3)&7)+'0');
-				kbd_putc(((c   )&7)+'0');
-			} else {
-				kbd_putc('x');
-				kbd_putc(hexdigits[(c>>4) & 0xf]);
-				kbd_putc(hexdigits[(c   ) & 0xf]);
-			}
+		if ((kbd_expand < 0) && (c == '\t')) {
+			(void)linsert(1,' ');
 		} else {
-			kbd_putc('^');
-			kbd_putc(toalpha(c));
+			(void)linsert(1,c);
 		}
+		if (! is_header_line(DOT,curbp) && !is_at_end_of_line(DOT))
+			forwchar(TRUE,1); /* END OF LINE HACK */
+#ifdef DEBUG
+		TRACE(("mini:%2d:%.*s\n", llength(DOT.l), llength(DOT.l), DOT.l->l_text));
+#endif
 	}
+	curbp = savebp;
+	curwp = savewp;
 	endofDisplay();
 }
 
@@ -1367,17 +1363,47 @@ kbd_puts(const char *s)
 void
 kbd_erase(void)
 {
+	BUFFER *savebp;
+	WINDOW *savewp;
+
 	beginDisplay();
-	if (ttcol > 0) {
-		if (--ttcol < term.t_ncol-1) {
-			TTputc('\b');
-			TTputc(' ');
-			TTputc('\b');
-		}
-	} else
-		ttcol = 0;
+	savebp = curbp;
+	savewp = curwp;
+	curbp = bminip;
+	curwp = wminip;
+	if (DOT.o > 0) {
+		DOT.o -= 1;
+		ldelete(1, FALSE);
+	}
+#ifdef DEBUG
+	TRACE(("MINI:%2d:%.*s\n", llength(DOT.l), llength(DOT.l), DOT.l->l_text));
+#endif
+	curbp = savebp;
+	curwp = savewp;
 	endofDisplay();
 }
+
+void
+kbd_erase_to_end(int column)
+{
+	BUFFER *savebp;
+	WINDOW *savewp;
+
+	beginDisplay();
+	savebp = curbp;
+	savewp = curwp;
+	curbp = bminip;
+	curwp = wminip;
+	if (llength(DOT.l) > 0) {
+		DOT.o = column;
+		ldelete(llength(DOT.l) - DOT.o, FALSE);
+		TRACE(("NULL:%2d:%.*s\n", llength(DOT.l), llength(DOT.l), DOT.l->l_text));
+	}
+	curbp = savebp;
+	curwp = savewp;
+	endofDisplay();
+}
+
 
 #if OPT_CASELESS
 static int
@@ -1482,7 +1508,7 @@ SIZE_T	size_entry)
 		}
 		kbd_putc(']');
 	}
-	TTflush();
+	kbd_flush();
 }
 
 #if OPT_POPUPCHOICE
@@ -1691,7 +1717,7 @@ SIZE_T	size_entry)
 #endif
 				)
 					kbd_alarm();
-				TTflush(); /* force out alarm or partial completion */
+				kbd_flush(); /* force out alarm or partial completion */
 				return n;
 			}
 		}
@@ -1728,6 +1754,19 @@ kbd_init(void)
 }
 
 /*
+ * Returns the current length of the minibuffer
+ */
+int
+kbd_length(void)
+{
+	if (wminip != 0
+	 && wminip->w_dot.l != 0
+	 && llength(wminip->w_dot.l) > 0)
+		return llength(wminip->w_dot.l);
+	return 0;
+}
+
+/*
  * Erases the display that was shown in response to TESTC
  */
 void
@@ -1735,13 +1774,13 @@ kbd_unquery(void)
 {
 	beginDisplay();
 #if OPT_POPUPCHOICE
-	if (cmplcol != ttcol && -cmplcol != ttcol)
+	if (cmplcol != kbd_length() && -cmplcol != kbd_length())
 		cmplcol = 0;
 #endif
 	if (testcol >= 0) {
-		while (ttcol > testcol)
+		while (kbd_length() > testcol)
 			kbd_erase();
-		TTflush();
+		kbd_flush();
 		testcol = -1;
 	}
 	endofDisplay();
@@ -1777,10 +1816,10 @@ SIZE_T	size_entry)
 
 	while (THIS_NAME(nbp) != NULL) {
 		if (StrNcmp(buf,  THIS_NAME(nbp), strlen(buf)) == 0) {
-			testcol = ttcol;
+			testcol = kbd_length();
 			/* a possible match! exact? no more than one? */
 #if OPT_POPUPCHOICE
-			if (!clexec && c == NAMEC && cmplcol == -ttcol) {
+			if (!clexec && c == NAMEC && cmplcol == -kbd_length()) {
 				scroll_completions(case_insensitive, buf, cpos, nbp, size_entry);
 				return FALSE;
 			}
@@ -1807,8 +1846,8 @@ SIZE_T	size_entry)
 					else
 #endif
 						kbd_puts(THIS_NAME(nbp) + cpos);
-					TTflush();
-					testcol = ttcol;
+					kbd_flush();
+					testcol = kbd_length();
 				}
 				if (c != NAMEC)  /* put it back */
 					unkeystroke(c);
@@ -1829,7 +1868,7 @@ SIZE_T	size_entry)
 				*pos = fill_partial(case_insensitive, buf, cpos, nbp,
 					skip_partial(case_insensitive, buf, cpos, nbp, size_entry),
 					size_entry);
-				testcol = ttcol;
+				testcol = kbd_length();
 			}
 #if OPT_POPUPCHOICE
 # if OPT_ENUM_MODES
@@ -1838,12 +1877,12 @@ SIZE_T	size_entry)
 			 && c == NAMEC
 			 && *pos == cpos) {
 				if (gvalpopup_choices == POPUP_CHOICES_IMMED
-				 || cmplcol == ttcol) {
+				 || cmplcol == kbd_length()) {
 					show_completions(case_insensitive, buf, cpos, nbp, size_entry);
-					cmplcol = -ttcol;
+					cmplcol = -kbd_length();
 				}
 				else
-					cmplcol = ttcol;
+					cmplcol = kbd_length();
 			}
 			else
 				cmplcol = 0;
@@ -1851,7 +1890,7 @@ SIZE_T	size_entry)
 			if (!clexec && gvalpopup_choices
 			 && c == NAMEC && *pos == cpos) {
 				show_completions(case_insensitive, buf, cpos, nbp, size_entry);
-				cmplcol = -ttcol;
+				cmplcol = -kbd_length();
 			}
 			else
 				cmplcol = 0;
@@ -2201,13 +2240,16 @@ trace_namebst(NBST *head, int level, char *tag)
 #endif
 
 /*
- * Find the the matching entry given a name in the namebst.  If fullmatch is
- * true then the name must completely match.  If it's false then only the first
- * n characters must match and this will return the parent of the subtree that
+ * Find the the matching entry given a name in the namebst.  If mode is TRUE
+ * then the name must completely match.  If it's FALSE then only the first n
+ * characters must match and this will return the parent of the subtree that
  * contains these entries (so that an inorder walk can find the other matches).
+ *
+ * Use -TRUE to force this to return the first of the ordered list of partial
+ * matches; we need this behavior for interactive name completion.
  */
 NBST *
-lookup_namebst(const int fullmatch, NBST *head, const char *name)
+lookup_namebst(const int mode, NBST *head, const char *name)
 {
 	NBST *n;
 	int l = strlen(name);
@@ -2216,13 +2258,18 @@ lookup_namebst(const int fullmatch, NBST *head, const char *name)
 	while (n != NULL) {
 		int cmp;
 
-		if (fullmatch) {
+		if (mode == TRUE) {
 			cmp = strcmp(name, n->n_name);
 		} else {
 			cmp = strncmp(name, (const char *) n->n_name, l);
 		}
 
 		if (cmp == 0) {
+			if (mode == -TRUE) {
+				NBST *m = lookup_namebst(mode, n->n_left, name);
+				if (m != 0)
+					n = m;
+			}
 			return n;
 		} else if (cmp < 0) {
 			n = n->n_left;

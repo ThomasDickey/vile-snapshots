@@ -9,7 +9,7 @@
  * Note: Visual flashes are not yet supported.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.20 1997/10/27 01:49:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.21 1997/11/06 01:53:14 tom Exp $
  *
  */
 
@@ -194,6 +194,23 @@ borspal(const char *thePalette)	/* reset the palette registers */
 	borflush();
 	set_ctrans(thePalette);
 }
+
+static void
+setup_colors(void)
+{
+	borfcol(gfcolor);
+	borbcol(gbcolor);
+}
+
+static void
+reset_colors(void)
+{
+	borfcol(7 /* not necessarily C_WHITE */);
+	borbcol(C_BLACK);
+}
+#else
+#define setup_colors() /* nothing */
+#define reset_colors() /* nothing */
 #endif
 
 static void
@@ -317,10 +334,8 @@ boropen(void)
 	int i;
 
 	set_palette(initpalettestr);
-#if OPT_COLOR
-	borfcol(gfcolor);
-	borbcol(gbcolor);
-#endif
+	setup_colors();
+
 	if (!borcres(current_res_name))
 		(void)scinit(-1);
 	ttopen();
@@ -340,17 +355,18 @@ borclose(void)
 #endif
 	ibmtype = current_type;	/* ...so subsequent TTopen restores us */
 
-#if OPT_COLOR
-	borfcol(C_WHITE);
-	borbcol(C_BLACK);
-#endif
-	bottomleft();
-	TTeeol();
+	reset_colors();
+	kbd_erase_to_end(0);
+	kbd_flush();
 }
 
 static void
 borkopen(void)	/* open the keyboard */
 {
+	setup_colors();
+	TTmove(term.t_nrow-1, 0);	/* cf: dumbterm.c */
+	TTeeol();
+
 	/* ms_install(); */
 }
 
@@ -358,6 +374,10 @@ static void
 borkclose(void)	/* close the keyboard */
 {
 	/* ms_deinstall(); */
+
+	reset_colors();
+	TTmove(term.t_nrow-1, 0);	/* cf: dumbterm.c */
+	TTeeol();
 }
 
 static

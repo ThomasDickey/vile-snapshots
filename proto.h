@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.257 1997/10/27 11:36:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.259 1997/11/08 01:59:41 tom Exp $
  *
  */
 
@@ -72,6 +72,7 @@ extern char *kcod2pstr (int c, char *seq);
 extern int kcod2escape_seq (int c, char *ptr);
 extern int fnc2kcod (const CMDFUNC *);
 #if OPT_NAMEBST
+extern NBST *lookup_namebst(const int fullmatch, NBST *head, const char *name);
 extern int delete_namebst(NBST **child, NBST **parent, const char *name);
 extern int insert_namebst(NBST **head, const char *name, const CMDFUNC *cmd, int ro);
 extern int rename_namebst(NBST **head, const char *oldname, const char *newname);
@@ -91,7 +92,9 @@ extern void kbd_alarm (void);
 extern void kbd_putc (int c);
 extern void kbd_puts (const char *s);
 extern void kbd_erase (void);
+extern void kbd_erase_to_end (int column);
 extern void kbd_init (void);
+extern int kbd_length (void);
 extern void kbd_unquery (void);
 extern int kbd_complete (int case_insensitive, int c, char *buf, unsigned *pos, const char *table, SIZE_T size_entry);
 extern int kbd_engl_stat (const char *prompt, char *buffer);
@@ -162,6 +165,9 @@ extern int nu_width (WINDOW *wp);
 extern int col_limit (WINDOW *wp);
 extern int vtinit (void);
 extern int video_alloc (VIDEO **vpp);
+extern void kbd_openup (void);
+extern void kbd_overlay(const char *s);
+extern void kbd_flush (void);
 extern int update (int force);
 extern void upmode (void);
 extern int offs2col (WINDOW *wp, LINEPTR lp, C_NUM offset);
@@ -348,7 +354,7 @@ extern void hst_glue (int c);
 extern void hst_append (char *cmd, int glue);
 extern void hst_remove (const char *cmd);
 extern void hst_flush (void);
-extern int edithistory (TBUFF **buffer, unsigned *position, int *given, int options, int (*func)(EOL_ARGS), int eolchar);
+extern int edithistory (TBUFF **buffer, unsigned *position, int *given, UINT options, int (*func)(EOL_ARGS), int eolchar);
 #else
 #define hst_init(c)
 #define hst_glue(c)
@@ -388,12 +394,12 @@ extern void set_end_string (int c);
 extern int kbd_delimiter (void);
 extern int is_edit_char (int c);
 extern void kbd_kill_response (TBUFF *buf, unsigned *position, int c);
-extern int kbd_show_response (TBUFF **dst, char *src, unsigned bufn, int eolchar, int options);
+extern int kbd_show_response (TBUFF **dst, char *src, unsigned bufn, int eolchar, UINT options);
 extern int eol_history(EOL_ARGS);
 extern int kbd_is_pushed_back (void);
 extern void kbd_pushback (char *buffer, int skip);
-extern int kbd_string (const char *prompt, char *extbuf, unsigned bufn, int eolchar, int options, int (*func)(DONE_ARGS));
-extern int kbd_reply (const char *prompt, TBUFF **extbuf, int (*efunc)(EOL_ARGS), int eolchar, int options, int (*cfunc)(DONE_ARGS));
+extern int kbd_string (const char *prompt, char *extbuf, unsigned bufn, int eolchar, UINT options, int (*func)(DONE_ARGS));
+extern int kbd_reply (const char *prompt, TBUFF **extbuf, int (*efunc)(EOL_ARGS), int eolchar, UINT options, int (*cfunc)(DONE_ARGS));
 extern int dotcmdbegin (void);
 extern int dotcmdfinish (void);
 extern void dotcmdstop (void);
@@ -1083,7 +1089,7 @@ extern	int	sel_begin	(void);
 extern	int	sel_extend	(int wiping, int include_dot);
 extern	void	sel_release	(void);
 extern	void	sel_reassert_ownership (BUFFER *bp);
-#if (DISP_X11 && XTOOLKIT) || DISP_NTCONS
+#if (DISP_X11 && XTOOLKIT) || SYS_WINNT
 extern	int	sel_yank	(int reg);
 extern	int	sel_attached	(void);
 extern	BUFFER *sel_buffer	(void);

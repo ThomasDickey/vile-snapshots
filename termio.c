@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.149 1997/10/28 11:30:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.150 1997/10/30 22:46:33 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -258,11 +258,9 @@ void
 ttclean(int f)
 {
 #if !DISP_X11
-	if (f) {
-		bottomleft();
-		TTputc('\n');
-		TTputc('\r');
-	}
+	if (f)
+		kbd_openup();
+
 	(void)fflush(stdout);
 	tcdrain(1);
 	tcsetattr(0, TCSADRAIN, &otermios);
@@ -385,11 +383,9 @@ void
 ttclean(int f)
 {
 #if ! DISP_X11
-	if (f) {
-		bottomleft();
-		TTputc('\n');
-		TTputc('\r');
-	}
+	if (f)
+		kbd_openup();
+
 	(void)fflush(stdout);
 	TTflush();
 	TTclose();
@@ -521,11 +517,9 @@ void
 ttclean(int f)
 {
 #if ! DISP_X11
-	if (f) {
-		bottomleft();
-		TTputc('\n');
-		TTputc('\r');
-	}
+	if (f)
+		kbd_openup();
+
 	TTflush();
 	TTclose();
 	TTkclose();	/* xterm */
@@ -822,11 +816,9 @@ ttclose(void)
 void
 ttclean(int f)
 {
-	if (f) {
-		bottomleft();
-		TTputc('\n');
-		TTputc('\r');
-	}
+	if (f)
+		kbd_openup();
+
 	TTflush();
 	TTclose();
 	TTkclose();

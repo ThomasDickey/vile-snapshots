@@ -7,7 +7,7 @@
  *
  * original author: D. R. Banks 9-May-86
  *
- * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.48 1997/10/06 23:30:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.49 1997/11/01 00:18:26 tom Exp $
  *
  */
 
@@ -21,7 +21,7 @@ static	int	get_char (void);
 static	int	isearch(int f, int n);
 static	int	promptpattern(const char *prompt);
 static	int	scanmore(char *patrn, int dir);
-static	int	echochar(int c, int col);
+static	void	echochar(int c);
 
 /* A couple "own" variables for the command string */
 
@@ -126,7 +126,6 @@ static int
 isearch(int f GCC_UNUSED, int n)
 {
 	int             status;	/* Search status */
-	int             col;	/* prompt column */
 	register int    cpos;	/* character number in search string */
 	register int    c;	/* current input character */
 	char            pat_save[NPAT];	/* Saved copy of the old pattern str */
@@ -151,7 +150,7 @@ isearch(int f GCC_UNUSED, int n)
 start_over:
 
 	/* ask the user for the text of a pattern */
-	col = promptpattern("ISearch: ");	/* Prompt, remember the col */
+	promptpattern("ISearch: ");
 
 	cpos = 0;		/* Start afresh */
 	status = TRUE;		/* Assume everything's cool */
@@ -166,8 +165,7 @@ start_over:
 	if ((c == IS_FORWARD) ||
 	    (c == IS_REVERSE)) {/* Reuse old search string? */
 		for (cpos = 0; pat[cpos] != 0; cpos++)	/* Yup, find the length */
-			col = echochar(pat[cpos], col);	/* and re-echo the
-							 * string */
+			echochar(pat[cpos]); /* and re-echo the string */
 		curp = DOT;
 		if (c == IS_REVERSE) {	/* forward search? */
 			n = -1;	/* No, search in reverse */
@@ -257,7 +255,7 @@ start_over:
 			return (TRUE);	/* Return an error */
 		}
 		pat[cpos] = 0;	/* null terminate the buffer */
-		col = echochar(c, col);	/* Echo the character */
+		echochar(c);	/* Echo the character */
 		if (!status) {	/* If we lost last time */
 			kbd_alarm();	/* Feep again */
 		} else /* Otherwise, we must have won */
@@ -361,22 +359,11 @@ expandp(
 
 /* routine to echo i-search characters */
 
-/* FIXME: should use kbd_putc() */
-static int
-echochar(
-	int             c,	/* character to be echoed */
-	int             col)	/* column to be echoed in */
+static void
+echochar(int c) /* character to be echoed */
 {
-	movecursor(term.t_nrow-1, col);	/* Position the cursor */
-	if (!isPrint(c)) {	/* control char */
-		TTputc('^');	/* Yes, output prefix */
-		TTputc(toalpha(c));	/* Make it "^X" */
-		col++;		/* Count this char */
-	} else {
-		TTputc(c);	/* Otherwise, output raw char */
-	}
-	TTflush();		/* Flush the output */
-	return (++col);		/* return the new column no */
+	kbd_putc(c);
+	kbd_flush();
 }
 
 /*

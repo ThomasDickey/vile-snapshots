@@ -1,13 +1,19 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.120 1997/10/10 00:17:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.122 1997/11/07 23:59:27 tom Exp $
  *
  */
 
 #include	"estruct.h"
 #include	"edef.h"
 #include	"nefunc.h"
+
+#if SYS_UNIX && defined(SIGTSTP) && !DISP_X11
+#define USE_UNIX_JOB_CTL 1
+#else
+#define USE_UNIX_JOB_CTL 0
+#endif
 
 #if SYS_VMS
 #include <starlet.h>
@@ -91,15 +97,14 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 
 #if	SYS_UNIX
 #define	OK_SPAWN
-	bottomleft();
 	ttclean(TRUE);
-	TTputc('\n');
+	kbd_openup();
 #if	DISP_X11
 	(void)x_window_SHELL((char *)0);
 #else
 	(void)system_SHELL((char *)0);
 #endif
-	TTflush();
+	kbd_openup();
 	ttunclean();
 	sgarbf = TRUE;
 	return AfterShell();
@@ -108,9 +113,8 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 
 #if	SYS_VMS
 #define	OK_SPAWN
-	bottomleft();
 	mlforce("[Starting DCL]\r\n");
-	TTflush();				/* Ignore "ttcol".	*/
+	kbd_flush();				/* Ignore "ttcol".	*/
 	sgarbf = TRUE;
 	return vms_system(NULL);		/* NULL => DCL.		*/
 #endif
@@ -119,9 +123,9 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 #if	SYS_MSDOS || SYS_OS2 || SYS_WINNT
 #define	OK_SPAWN
 	bottomleft();
-	TTflush();
+	kbd_flush();
 	TTkclose();
-	{ 
+	{
 		char *shell;
 		if ((shell = getenv("COMSPEC")) == NULL) {
 #if SYS_OS2
@@ -159,22 +163,33 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 bktoshell(int f, int n)		/* suspend and wait to wake up */
 {
-#if SYS_UNIX && defined(SIGTSTP) && !DISP_X11
+#if USE_UNIX_JOB_CTL
 	int forced = (f && n == SPECIAL_BANG_ARG); /* then it was :stop! */
 
 	/* take care of autowrite */
 	if (!forced && writeall(f,n,FALSE,TRUE,TRUE) != TRUE)
 		return FALSE;
 
+	beginDisplay();
 	ttclean(TRUE);
 
 /* #define simulate_job_control_for_debug */
 # ifdef simulate_job_control_for_debug
 	rtfrmshell(SIGCONT);
+	return TRUE;
 # else
 	(void)signal_pg(SIGTSTP);
+
+ 	/*
+ 	 * Next four lines duplicate spawncli() actions following return
+ 	 * from shell.  Adding lines 1-3 ensure that vile properly redraws
+ 	 * its screen when TERM type is vt220 or vt320 and host is linux.
+ 	 */
+	kbd_openup();
+ 	ttunclean();
+ 	sgarbf = TRUE;
+ 	return AfterShell();
 # endif
-	return TRUE;
 #else
 	mlforce("[Job control unavailable]");
 	return FALSE;
@@ -185,8 +200,8 @@ bktoshell(int f, int n)		/* suspend and wait to wake up */
 SIGT
 rtfrmshell(int ACTUAL_SIG_ARGS GCC_UNUSED)
 {
-#if SYS_UNIX && defined(SIGTSTP)
-# if ! DISP_X11
+#if USE_UNIX_JOB_CTL
+	endofDisplay();
 	ttunclean();
 	sgarbf = TRUE;
 #  if SYS_APOLLO
@@ -196,7 +211,6 @@ rtfrmshell(int ACTUAL_SIG_ARGS GCC_UNUSED)
 	TTkopen();
 	setup_handler(SIGCONT,rtfrmshell); /* suspend & restart */
 	(void)update(TRUE);
-# endif
 #endif
 #ifdef	MDCHK_MODTIME
 	(void)check_visible_modtimes();
@@ -214,19 +228,17 @@ pressreturn(void)
 	discmd = TRUE;
 	mlprompt("[Press return to continue]");
 	discmd = odiscmd;
-	TTflush();
 	/* loop for a CR, a space, or a : to do another named command */
 	while ((c = keystroke()) != '\r' &&
-			c != '\n' && 
-			c != ' ' && 
+			c != '\n' &&
+			c != ' ' &&
 			!ABORTED(c)) {
 		if (kcod2fnc(c) == &f_namedcmd) {
 			unkeystroke(c);
 			break;
 		}
 	}
-	TTputc('\r');
-	TTputc('\n');
+	kbd_erase_to_end(0);
 }
 
 /* ARGSUSED */
@@ -281,16 +293,16 @@ int	rerun)		/* TRUE/FALSE: spawn, -TRUE: pipecmd */
 	if (rerun != TRUE) {
 		if (cb != 0) {
 		    if (cb > 1) {
-			(void)lsprintf(temp, 
+			(void)lsprintf(temp,
 				"Warning: %d modified buffers: %s",
 				cb, bang);
 		    } else {
-			(void)lsprintf(temp, 
+			(void)lsprintf(temp,
 				"Warning: buffer \"%s\" is modified: %s",
 				bp->b_bname, bang);
 		    }
 		} else {
-			(void)lsprintf(temp, "%s%s", 
+			(void)lsprintf(temp, "%s%s",
 				rerun == -TRUE ? "" : ": ", bang);
 		}
 
@@ -350,12 +362,14 @@ spawn1(int rerun, int pressret)
 #endif /* SYS_UNIX */
 
 #if	SYS_VMS
-	TTputc('\n');			/* Already have '\r'	*/
-	TTflush();
+	kbd_flush();
 	s = vms_system(line);		/* Run the command.	*/
-	mlforce("\r\n\n[End]");		/* Pause.		*/
-	TTflush();
-	(void)keystroke();
+	if (pressret) {
+		TTputc('\r');
+		TTputc('\n');
+		TTflush();
+		pressreturn();
+	}
 	sgarbf = TRUE;
 	return (s);
 #endif
@@ -364,9 +378,8 @@ spawn1(int rerun, int pressret)
 	return FALSE;
 #endif
 #if	SYS_MSDOS || SYS_OS2 || SYS_WINNT
-	bottomleft();
-	TTputc('\n');
-	TTflush();
+	kbd_erase_to_end(0);
+	kbd_flush();
 	TTkclose();
 #if	DISP_IBMPC
 	/* If we don't reset to 80x25, parts of the shell-output will go

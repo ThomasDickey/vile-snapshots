@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.89 1997/10/16 00:12:32 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.90 1997/11/07 23:03:49 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -98,13 +98,30 @@ ALLTOOLS = $(MAKFILES) mktbls.c cmdtbl modetbl \
 	configure.in aclocal.m4
 
 # these are normal editable headers
-HDRS = estruct.h edef.h proto.h dirstuff.h chgdfunc.h
+HDRS = \
+	api.h \
+	chgdfunc.h \
+	dirstuff.h \
+	edef.h \
+	estruct.h \
+	proto.h \
+	pscreen.h \
+	trace.h
 
-SCREENS = tcap.c x11.c ibmpc.c borland.c ansi.c ntconio.c os2vio.c vmsvt.c
+SCREENS = \
+	ansi.c \
+	borland.c \
+	ibmpc.c \
+	ntconio.c \
+	ntwinio.c \
+	os2vio.c \
+	tcap.c \
+	vmsvt.c \
+	x11.c
 
 # other source code, some used in other makefiles, some useful tools,
 #  some possibly obsolete
-OTHERSRC = z100bios.asm vms2unix.c vmspipe.c os2pipe.c djhandl.c \
+OTHERSRC = vms2unix.c vmspipe.c os2pipe.c djhandl.c \
 	manpage.rc manfilt.pl manfilt.c c-filt.c c-filt.flx pictmode.rc \
 	gppconio.c digraphs.rc
 

@@ -1,13 +1,56 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.17 1997/05/27 09:59:12 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.18 1997/11/06 17:49:54 tom Exp $
 #
 #
 !include <ntwin32.mak>
 
-CFLAGS = $(cvars) $(cdebug) -nologo -DWIN32_LEAN_AND_MEAN -G4 -Dscrn_chosen 
+!IF "$(CFG)" == ""
+CFG=vile
+!MESSAGE No configuration (CFG) specified.  Defaulting to vile (console)
+!ENDIF 
+
+!IF "$(CFG)" != "vile" && "$(CFG)" != "ntvile"
+!MESSAGE Invalid configuration "$(CFG)" specified.
+!MESSAGE You can specify a configuration when running NMAKE on this makefile
+!MESSAGE by defining the macro CFG on the command line.  For example:
+!MESSAGE 
+!MESSAGE NMAKE /f "makefile.wnt" CFG="ntvile"
+!MESSAGE 
+!MESSAGE Possible choices for configuration are:
+!MESSAGE 
+!MESSAGE "vile   - console"
+!MESSAGE "ntvile - gui"
+!MESSAGE 
+!ERROR An invalid configuration is specified.
+!ENDIF 
+
+# remove the "#" to get debugging info (and a larger executable)
+CC_DEBUG = # $(cdebug)
+LD_DEBUG = # $(ldebug)
+CON_LDFLAGS = -nologo -pdb:none
+
+!IF  "$(CFG)" == "vile"
+TARGET  = vile.exe
+UTILS   = vile-c-filt.exe
+CFLAGS  = $(cvars) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 -Dscrn_chosen -DDISP_NTCONS	
 LDFLAGS = -nologo -pdb:none
+SCREEN  = ntconio
+LIBS    = $(LD_DEBUG) $(conlflags) $(conlibs) user32.lib
+!endif
+
+!IF  "$(CFG)" == "ntvile"
+TARGET  = ntvile.exe
+UTILS   =
+CFLAGS  = $(cvars) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 -Dscrn_chosen -DDISP_NTWIN	
+LDFLAGS = -nologo /nologo /subsystem:windows /incremental:no -pdb:none
+SCREEN  = ntwinio
+LIBS    = $(LD_DEBUG) $(conlflags) $(conlibs) user32.lib
+LIBS    = kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib\
+ advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib\
+ odbccp32.lib
+!endif
 
 # these are normal editable headers
 HDRS = estruct.h edef.h proto.h dirstuff.h
@@ -16,7 +59,7 @@ HDRS = estruct.h edef.h proto.h dirstuff.h
 # and in modetbl
 BUILTHDRS = nebind.h neproto.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nefsms.h
 
-SRC = 	main.c ntconio.c basic.c bind.c buffer.c crypt.c \
+SRC = 	main.c $(SCREEN).c basic.c bind.c buffer.c crypt.c \
 	csrch.c display.c eval.c exec.c externs.c \
 	fences.c file.c filec.c \
 	fileio.c finderr.c glob.c globals.c history.c \
@@ -27,7 +70,7 @@ SRC = 	main.c ntconio.c basic.c bind.c buffer.c crypt.c \
 	tags.c tbuff.c termio.c undo.c \
 	version.c window.c word.c wordmov.c map.c 
 
-OBJ = 	main.obj ntconio.obj basic.obj bind.obj buffer.obj crypt.obj \
+OBJ = 	main.obj $(SCREEN).obj basic.obj bind.obj buffer.obj crypt.obj \
       	csrch.obj display.obj eval.obj exec.obj externs.obj \
 	fences.obj file.obj filec.obj \
 	fileio.obj finderr.obj glob.obj globals.obj history.obj \
@@ -41,15 +84,17 @@ OBJ = 	main.obj ntconio.obj basic.obj bind.obj buffer.obj crypt.obj \
 .c.obj:	
 	$(cc) $(CFLAGS) -c $< -Fo$@ 
 
-all:  vile.exe vile-c-filt.exe
+all:  $(TARGET) $(UTILS)
 
-vile.exe: 	$(BUILTHDRS) $(OBJ)
-	$(link) $(LDFLAGS) $(OBJ) $(ldebug) $(conlflags) $(conlibs) -out:vile.exe user32.lib
+$(TARGET): 	$(BUILTHDRS) $(OBJ)
+	$(link) $(LDFLAGS) $(OBJ) $(LIBS) -out:$(TARGET)
 
 $(OBJ):	estruct.h
 
+neproto.h \
 nebind.h \
 nefunc.h \
+nefkeys.h \
 nename.h :	cmdtbl mktbls.exe
 	mktbls.exe cmdtbl
 
@@ -59,16 +104,14 @@ nemode.h:	modetbl mktbls.exe
 	mktbls.exe modetbl
 
 mktbls.exe:  mktbls.c
-	$(cc) $(CFLAGS) mktbls.c -Fomktbls -link $(LDFLAGS)
+	$(cc) $(CFLAGS) mktbls.c -Fomktbls -link $(CON_LDFLAGS)
 
 vile-c-filt.exe: c-filt.c
 	$(cc) $(CFLAGS) c-filt.c \
-    -Fovile-c-filt -link $(LDFLAGS)
+    -Fovile-c-filt -link $(CON_LDFLAGS)
 
 clean:
-	del mktbls.exe
-	del vile.exe
-	del vile-c-filt.exe
+	del *.exe
 	del *.obj
 	del ne*.h
 

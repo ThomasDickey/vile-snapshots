@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.215 1997/10/16 10:34:30 Alex.Wetmore Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.217 1997/11/08 02:07:37 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -166,7 +166,6 @@ decl_uninit( B_VALUES global_b_values );
 decl_uninit( W_VALUES global_w_values );
 
 decl_init( int sgarbf, TRUE );          /* TRUE if screen is garbage	*/
-decl_uninit( int mpresf );              /* zero if message-line empty	*/
 decl_uninit( int clexec	);		/* command line execution flag	*/
 decl_uninit( int mstore	);		/* storing text to macro flag	*/
 decl_init( int discmd, TRUE );		/* display command flag		*/
@@ -208,7 +207,7 @@ decl_init( int slashc, '\\');		/* default path delimiter	*/
 
 decl_uninit( KILLREG kbs[NKREGS] );	/* all chars, 1 thru 9, and default */
 decl_uninit( short ukb );		/* index of current kbuffs */
-decl_uninit( short kregflag );		/* info for pending kill into reg */
+decl_uninit( USHORT kregflag );		/* info for pending kill into reg */
 decl_uninit( C_NUM kregwidth );		/* max width of current kill */
 decl_uninit( int kchars );		/* how much did we kill? */
 decl_uninit( int klines );

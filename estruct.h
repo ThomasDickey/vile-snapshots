@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.324 1997/10/23 23:14:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.326 1997/11/08 02:07:14 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -335,6 +335,7 @@
 #define	DISP_IBMPC	(SYS_MSDOS && !DISP_BORLAND && !DISP_ANSI) /* IBM-PC CGA/MONO/EGA driver */
 #define	DISP_X11	0		/* X Window System */
 #define DISP_NTCONS	0		/* Windows/NT console		*/
+#define DISP_NTWIN	0		/* Windows/NT screen/windows	*/
 #define DISP_VIO	SYS_OS2		/* OS/2 VIO (text mode)		*/
 #define	DISP_HP150	0		/* (not supported)		*/
 #endif
@@ -641,6 +642,12 @@ extern char *rindex (const char *s, int c);
 #else
 #define COMPLETE_FILES  0
 #define COMPLETE_DIRS   0
+#endif
+
+#if DISP_NTWIN
+extern int MainProgram(int argc, char *argv[]);
+#else
+#define MainProgram main
 #endif
 
 	/* semaphore may be needed to prevent interrupt of display-code */
@@ -1256,23 +1263,23 @@ typedef USHORT VIDEO_ATTR;		/* assume short is at least 16 bits */
 typedef UCHAR VIDEO_ATTR;
 #endif
 
-#define VACURS	0x01			/* cursor -- this is intentionally
+#define VACURS	iBIT(0)			/* cursor -- this is intentionally
 					 * the same as VADIRTY. It should
 					 * not be used anywhere other than
 					 * in specific places in the low
 					 * level drivers (e.g, x11.c).
 					 */
-#define VAMLFOC	0x02			/* modeline w/ focus		*/
-#define VAML	0x04			/* standard mode line (no focus)*/
-#define VASEL	0x08			/* selection			*/
-#define	VAREV	0x10			/* reverse video		*/
-#define	VAUL	0x20			/* underline			*/
-#define	VAITAL	0x40			/* italics			*/
-#define	VABOLD	0x80			/* bold				*/
-#define VAOWNER 0x0700			/* owner mask		*/
-#define VASPCOL 0x0800			/* specific color   */
-#define VACOLOR 0xf000			/* color mask		*/
-#define VACOL_0 (VASPCOL)		/* color palette index 0 */
+#define VAMLFOC	iBIT(1)			/* modeline w/ focus		*/
+#define VAML	iBIT(2)			/* standard mode line (no focus)*/
+#define VASEL	iBIT(3)			/* selection			*/
+#define	VAREV	iBIT(4)			/* reverse video		*/
+#define	VAUL	iBIT(5)			/* underline			*/
+#define	VAITAL	iBIT(6)			/* italics			*/
+#define	VABOLD	iBIT(7)			/* bold				*/
+#define VAOWNER ((VIDEO_ATTR)0x0700)	/* owner mask			*/
+#define VASPCOL ((VIDEO_ATTR)0x0800)	/* specific color   		*/
+#define VACOLOR ((VIDEO_ATTR)0xf000)	/* color mask			*/
+#define VACOL_0 (VASPCOL)		/* color palette index 0 	*/
 #define VACOL_1 (VASPCOL+1)		/* etc.				*/
 #define VACOL_2 (VASPCOL+2)
 #define VACOL_3 (VASPCOL+3)
@@ -1304,10 +1311,10 @@ typedef UCHAR VIDEO_ATTR;
  */
 
 #if OPT_PSCREEN
-#define VADIRTY	0x01			/* cell needs to be written out */
+#define VADIRTY	iBIT(0)			/* cell needs to be written out */
 #define VATTRIB(attr) ((attr) & (VIDEO_ATTR) ~(VAOWNER|VADIRTY))
 #else
-#define VADIRTY 0x0			/* nop for all others */
+#define VADIRTY ((VIDEO_ATTR)0)		/* nop for all others */
 #define VATTRIB(attr) ((attr) & (VIDEO_ATTR) ~(VAOWNER))
 #endif
 
@@ -1400,16 +1407,16 @@ struct VALNAMES {
 #define make_global_val(lv,gv,which)    (lv[which].vp = &(gv[which].v))
 
 /* these are masks for the WINDOW.w_flag hint */
-#define WFFORCE 0x01			/* Window needs forced reframe	*/
-#define WFMOVE	0x02			/* Movement from line to line	*/
-#define WFEDIT	0x04			/* Editing within a line	*/
-#define WFHARD	0x08			/* Better do a full display	*/
-#define WFMODE	0x10			/* Update mode line.		*/
-#define WFCOLR	0x20			/* Needs a color change		*/
-#define WFKILLS	0x40			/* something was deleted	*/
-#define WFINS	0x80			/* something was inserted	*/
-#define WFSTAT	0x100			/* Update mode line (info only).*/
-#define WFSBAR	0x200			/* Update scroll bar(s) */
+#define WFFORCE iBIT(0)			/* Window needs forced reframe	*/
+#define WFMOVE	iBIT(1)			/* Movement from line to line	*/
+#define WFEDIT	iBIT(2)			/* Editing within a line	*/
+#define WFHARD	iBIT(3)			/* Better do a full display	*/
+#define WFMODE	iBIT(4)			/* Update mode line.		*/
+#define WFCOLR	iBIT(5)			/* Needs a color change		*/
+#define WFKILLS	iBIT(6)			/* something was deleted	*/
+#define WFINS	iBIT(7)			/* something was inserted	*/
+#define WFSTAT	iBIT(8)			/* Update mode line (info only).*/
+#define WFSBAR	iBIT(9)			/* Update scroll bar(s) */
 
 /* define indices for GLOBAL, BUFFER, WINDOW modes */
 #ifdef realdef
@@ -1860,7 +1867,7 @@ typedef struct	{
 #define	TTtitle(t)	(*term.t_title)(t)
 
 typedef struct  VIDEO {
-        int	v_flag;                 /* Flags */
+        UINT	v_flag;                 /* Flags */
 #if	OPT_COLOR
 	int	v_fcolor;		/* current forground color */
 	int	v_bcolor;		/* current background color */
@@ -1890,11 +1897,11 @@ typedef struct  VIDEO {
 #define ReqBcolor(vp) gbcolor
 #endif
 
-#define VFCHG   0x0001                  /* Changed flag			*/
-#define	VFEXT	0x0002			/* extended (beyond column 80)	*/
-#define	VFREV	0x0004			/* reverse video status		*/
-#define	VFREQ	0x0008			/* reverse video request	*/
-#define	VFCOL	0x0010			/* color change requested	*/
+#define VFCHG	iBIT(0) 		/* Changed flag			*/
+#define	VFEXT	iBIT(1)			/* extended (beyond column 80)	*/
+#define	VFREV	iBIT(2)			/* reverse video status		*/
+#define	VFREQ	iBIT(3)			/* reverse video request	*/
+#define	VFCOL	iBIT(4)			/* color change requested	*/
 
 #if DISP_IBMPC
 /*
@@ -2085,7 +2092,7 @@ typedef struct KILLREG {
 	struct KILL *kbufh;	/* kill register header pointer	*/
 	unsigned kused;		/* # of bytes used in kill last chunk	*/
 	C_NUM kbwidth;		/* width of chunk, if rectangle */
-	short kbflag;		/* flags describing kill register	*/
+	USHORT kbflag;		/* flags describing kill register	*/
 } KILLREG;
 
 #define	KbSize(i,p)	((p->d_next != 0) ? KBLOCK : kbs[i].kused)

@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.333 1997/09/04 23:56:27 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.334 1997/11/07 00:09:53 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -350,12 +350,6 @@ long-running operations.
 could the attribute selection logic be used to emulate vi's behavior
 of replacing the last char of a change operation to '$'?  (but only for
 text which does not span a line)
-
----------------------------
-
- Another problem with '1 shell-command '
- With the option '1' vile don't prompt for [Return] but the
- screen always 'hops'.  (scrolls 1 line forward and backward)
 
 -------------------------
 
@@ -1016,59 +1010,6 @@ implement [Mac-style], like [Dos-style].
 
 implement gtlbl()
 
--- 96-10-23 (Alex Wetmore <awetmore@microsoft.com>)
-
-	I've made some changes to vile that I wanted to discuss:
-
-	The biggest one is allowing vile-commands to be replaced with vile
-	procedures.  I did this so that I could make split-current-window (:sp)
-	have the same finger feel and nvi (which allows you do a :sp <filename>
-	to edit a filename).  There are two problems with my implementation
-	that I wanted to discuss:
-
-	* one is that it requires that the procedure have exactly the same name
-	as the command.  it would be nice to be able to add new : commands by
-	just making procedures.  the largest problem with this is that the
-	commands are looked up every time that you hit a key via a binary
-	search.  with a linear search they could be changed to go through
-	procedures as well, but this would slow things down.  also it would be
-	necessary to have a method to say which procedures should become : 
-	commands.
-
-	* the other is that there is no way to let the procedure know if they
-	were called via space or enter.  for instance with the
-	split-current-window example i gave above I am using the following
-	macro:
-
-	store-procedure split-current-window
-		split-current-window
-		set-variable %filename @"file: "
-		~if &gre &len %filename 0
-			edit-file %filename
-		~else
-			write-message ""
-		~endif
-	~endm
-
-	This means that if I want to split the current window without editting
-	another file that I need to type <:> <s> <p> <enter> <enter>.  On nvi
-	it would just be <:> <s> <p> <enter>.
-
-	The problem is that there are no standards for passing arguments into
-	stored-procedures in vile (that I've found out about at least) so there
-	isn't really a good way to let the procedure know how it was invoked. 
-	I could add a new variable that it could look up I suppose.
-
-	I think that adding this feature (the ability to rewrite :  commands
-	and add new ones) would do a lot to make vile more modifiable.  For
-	instance it would be great to be able to add little commands like :grep
-	that do a grep into a new window (I know I can bind it to a key, but a
-	:  command seems like a better way to do it to me).
-
-	So, any ideas for how to modify the command searching engine to look
-	for these macros and how to register these macros?  I'm willing to do
-	the work and submit my diffs back into a future version of vile.
-
 -- 96-10-25 (Anand Mandapati <anand@ibmoto.com>)
 
 	The behavior of 'yq' doesn't seem to match the behavior of other quoted
@@ -1112,10 +1053,6 @@ implement gtlbl()
 -- 96-11-09 (tom)
 
 modify xvile blink_interval to use 2/3 duty-cycle
-
--- 96-11-21 (tom)
-
-borland.c doesn't restore color on exit.
 
 -- 96-11-21 (Philippe Le Foll <phillf@fridu.com>)
 

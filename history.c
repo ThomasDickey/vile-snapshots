@@ -63,7 +63,7 @@
  *
  *	Allow left/right scrolling of input lines (when they get too long).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.40 1997/10/06 23:47:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.41 1997/11/08 01:59:28 tom Exp $
  *
  */
 
@@ -80,7 +80,7 @@ typedef	struct	{
 	unsigned * position;
 	int	(*endfunc) (EOL_ARGS);
 	int	eolchar;
-	int	options;
+	UINT	options;
 	} HST;
 
 /*--------------------------------------------------------------------------*/
@@ -496,7 +496,7 @@ edithistory (
 TBUFF **buffer,
 unsigned * position,
 int *	given,
-int	options,
+UINT	options,
 int	(*endfunc) (EOL_ARGS),
 int	eolchar)
 {
