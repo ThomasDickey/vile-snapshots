@@ -1,4 +1,4 @@
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/which.rc,v 1.2 2002/10/22 11:35:40 tom Exp $
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/which.rc,v 1.4 2003/10/08 20:34:29 tom Exp $
 ;;
 ;; Show where vile looks for keyword file, and where it finds it.  If we
 ;; always implemented built-in filters, the natural place for this would be
@@ -11,6 +11,7 @@ store-procedure which-filename f='Filename'
 	newline
 	~if &rd $1
 		insert-string '* '
+		setv %found="yes"
 	~else
 		insert-string '  '
 	~endif
@@ -18,8 +19,9 @@ store-procedure which-filename f='Filename'
 ~endm
 
 store-procedure which-keywords major="MajorMode" "Prompt for, and display location of keyword files"
-	~local %terse %path %leaf %suffix %pathdot %dothides %index %mybuffer
+	~local %terse %path %leaf %suffix %pathdot %dothides %index %mybuffer %found
 	setv %terse=$terse
+	setv %found="no"
 	set terse
 	;
 	setv %mybuffer='[Which Keywords]'
@@ -80,3 +82,79 @@ store-procedure which-keywords major="MajorMode" "Prompt for, and display locati
 	goto-beginning-of-file
 	setv $terse=%terse
 ~endm
+
+~if &seq $progname "xvile"
+store-procedure which-menu "Display location of menu file"
+	~local %terse %path %leaf %suffix %pathdot %dothides %index %mybuffer %found %dotname
+	setv %terse=$terse
+	setv %found="no"
+	set terse
+	;
+	setv %mybuffer='[Which Menufile]'
+	~force select-buffer %mybuffer
+	~if $status
+		setl noreadonly noview
+		~if &greater $bchars 0
+			goto-beginning-of-file
+			delete-lines-til end-of-file
+		~endif
+	~else
+		edit-buffer %mybuffer
+	~endif
+	setl noai
+	;
+	insert-string 'Show which menu-files are tested for:'
+	newline
+	insert-string &cat &chr 9 $menu-file
+	newline
+	insert-string '(* marks found-files)'
+	2 newline
+	;
+	~if &seq $os "win32"
+		setv %dothides=''
+		setv %pathdot='.'
+	~elseif &seq $os "vms"
+		setv %dothides=''
+		setv %pathdot='[]'
+	~else
+		setv %dothides='.'
+		setv %pathdot='.'
+	~endif
+	;
+	; Look for $menu-file in the current and home-directories
+	setv %leaf=$menu-file
+	insert-string '$cwd'
+	which-filename &cat %pathdot &cat $pathname-separator %leaf
+	;
+	newline
+	insert-string '$HOME'
+	which-filename &cat '~' &cat $pathname-separator %leaf
+	;
+	; If dot hides a name, and $menu-file begins with a dot, we are done
+	; with it.  Use "vilemenu.rc" in the other places.  If it does not
+	; begin with a dot, continue using it.
+	setv %dotname &left %leaf 1
+	~if &and \
+		&seq %dothides '.' \
+		&seq %dotname '.'
+		setv %leaf='vilemenu.rc'
+	~endif
+	;
+	newline
+	insert-string '$startup-path'
+	setv %index=0
+	~while true
+		setv %path=&token %index $pathlist-separator $startup-path
+		~if &seq %path ''
+			~break
+		~endif
+		which-filename &cat %path &cat $pathname-separator %leaf
+		setv %index=&add %index 1
+	~endwhile
+	;
+	unmark-buffer
+	setl readonly view
+	goto-beginning-of-file
+	setv $terse=%terse
+~endm
+~endif
