@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.194 2000/01/13 11:45:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.195 2000/02/09 11:35:09 pgf Exp $
  *
  */
 
@@ -1848,6 +1848,28 @@ chgd_window(VALARGS *args GCC_UNUSED, int glob_vals, int testing)
 	return TRUE;
 }
 
+	/* if unique-buffers is turned on, make sure all buffers that
+	    can have a valid fuid */
+/*ARGSUSED*/
+int
+chgd_uniqbuf(VALARGS *args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing)
+{
+	if (!testing) {
+		BUFFER *bp;
+		if (global_g_val(GMDUNIQ_BUFS)) {
+			FUID fuid;
+			for_each_buffer(bp) {
+	 			if (bp->b_fname != 0
+				    && !isInternalName(bp->b_fname)
+				    && fileuid_get(bp->b_fname, &fuid)) {
+					fileuid_set(bp, &fuid);
+				}
+			}
+		}
+	}
+	return TRUE;
+}
+
 	/* Change the working mode */
 #if OPT_WORKING
 /*ARGSUSED*/
@@ -2142,10 +2164,10 @@ static void compute_majormodes_order(void)
 			/* EMPTY */ ;
 		} else if (have) {
 			have = want;
-			majormodes_order = typereallocn(int,majormodes_order,have); 
+			majormodes_order = typereallocn(int,majormodes_order,have);
 		} else {
 			have = want;
-			majormodes_order = typecallocn(int,have); 
+			majormodes_order = typecallocn(int,have);
 		}
 
 		/* set the default order */

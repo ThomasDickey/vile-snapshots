@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.8 2000/01/31 00:22:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.9 2000/02/10 11:30:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of awk
  * input text.
@@ -10,7 +10,7 @@
 
 #include <filters.h>
 
-char *filter_name = "awk";
+DefineFilter("awk");
 
 static char *Comment_attr;
 static char *Ident_attr;
@@ -21,12 +21,12 @@ static char *String_attr;
 
 static int nesting;
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;

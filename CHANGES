@@ -1,7 +1,49 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000210 (b)
+	> Kevin Buettner:
+	+ x11.c (x_preparse_args): Set window manager resize hints.
+	  (x_configure_window): Removed code for setting window manager
+	  resize hints.  Also added code to avoid BadMatch errors
+	  when window is too small.
+	> Paul Fox:
+	+ implement a new mode, "unique-buffers", which does dev/inode checking
+	  to be sure files aren't edited more than once.  this differs from
+	  "resolve-links" in that a) the "true" filename may never be
+	  discovered -- vile will use the first name its given for a given
+	  file, b) it detects hard links, and c) it's a lot faster.
+	+ shorten the confirmation questions/messages that result from modtime
+	  checking.  with very long buffernames the current messages extend
+	  past the 80 column boundary, making the tail end of the question
+	  invisible in some cases.
+	> Clark Morgan:
+	+ add a pin-tagstack mode, which prevents the editor from switching
+	  windows during a tag/push operation (i.e., all tag ops are pinned to
+	  the current window).  By default, this mode is not enabled, which
+	  ensures backward compatibility with previous editor behavior.
+	+ modify ntwinio.c to continuously show the geometry during a resize.
+	+ ifdef'd use of auto_set_title to compile x11.c on VMS.
+	+ update README.PC's description of vile search-paths.
+	> Tom Dickey:
+	+ annotate the verbose form of which-source and which-exec, showing
+	  the corresponding variable for each path which is tested, e.g.,
+	  "$PATH" when checking items in $PATH.
+	+ add $exec-path variable
+	+ modify filter modules so they export only one variable (filter_def)
+	  to simplify building a library for built-in filters.
+	+ change ntscroll() to use RedrawWindow() to repaint the update-region
+	  after ScrollWindowEx() - works no worse on my home machine, will
+	  re-test at work: the problem to fix is incorrectly-shifted text when
+	  scrolling via repeat-keying j/k.
+	+ change position (^G) command to show "File is empty" if the current
+	  buffer is empty, rather than "Line 1 of 0 ..." (reported by Clark
+	  Morgan).
+	+ correct char_no() function to use record-separator length, so
+	  $curchar is evaluated properly for dos files (reported by Clark
+	  Morgan, for ^G command).
+
  20000130 (a)
- 	> Kevin Buettner:
+	> Kevin Buettner:
 	+ gdb.pm:  New file.  Runs gdb in a vile window and tracks changes in
 	  editor.  (Must be used with shell.pm.)
 	+ shell.pm (terminal_emulation): Fixed bug which was preventing
@@ -37,7 +79,7 @@ Changes for vile 9.2 (released ??? ??? ?? 2000)
 	  hypertext commands from working.
 	+ display.c (updlineattrs): Stop processing attributes if end of
 	  buffer is reached.
- 	> Clark Morgan:
+	> Clark Morgan:
 	+ fix the winvile repaint bug that I reported last week.  Problem was
 	  caused by code in ntscroll() that was clearing 95% of the ClientRect
 	  after the scroll operation.  I would never have figured this out
@@ -97,11 +139,11 @@ Changes for vile 9.1 (released Sat Jan 15 2000)
  20000115 (t)
 	+ Clark Morgan:
 	+ fix a file-descriptor leak in win32 pipes.
- 	> Tom Dickey:
+	> Tom Dickey:
 	+ small compiler warnings (using 'antic' and SGI's lint)
 
  20000114 (s)
- 	> Kevin Buettner:
+	> Kevin Buettner:
 	+ perl.xs (do_perl_cmd):  Partially revert changes from 9.0p regarding
 	  the clexec/isnamedcmd/no_msgs flags.  We (once again) set isnamedcmd
 	  to TRUE in order to cause mlreply_dir and mlreply_file to prompt the
@@ -143,7 +185,7 @@ Changes for vile 9.1 (released Sat Jan 15 2000)
 	  may be ABORT (reported by Paul Fox).
 
  20000112 (r)
- 	> Kevin Buettner:
+	> Kevin Buettner:
 	+ correct two variables in perl.xs which were incorrectly typed as
 	  'int', and passed by reference which is a problem on Tru64 Unix 5.0
 	  (Alpha) where the prototype specified 'unsigned long' (reported by
@@ -289,7 +331,7 @@ Changes for vile 9.1 (released Sat Jan 15 2000)
 	+ set/clear 'reading_msg_line' in mlyesno() and mlquickask() to make
 	  them behave more like mlreply().  This prevents autocolor from wiping
 	  out the highlighting set by substitutions such as
-	  	:%s/pat/replacement/gc
+		:%s/pat/replacement/gc
 	  (reported by Kevin Buettner).
 
  20000102 (n)
@@ -348,14 +390,14 @@ Changes for vile 9.1 (released Sat Jan 15 2000)
 	  work on win32.
 
  (tom) 991229 (l)
- 	+ save/restore selection highlighting in attribute-from-filter, so that
+	+ save/restore selection highlighting in attribute-from-filter, so that
 	  autocolor does not clear the current selection.
 	+ add OS/2 EMX to list of platforms that must open text files in binary
 	  mode, to see trailing carriage-returns on a line in vileinit.rc
 	+ modify makefile.wnt to copy the .rc files to $VILE_STARTUP_PATH
 	  during build, as the Perl files already were.
- 	+ update makefile.wnt to install renamed/new Perl scripts
- 	+ modify tc-filt.l to flag as an error an unescaped newline within
+	+ update makefile.wnt to install renamed/new Perl scripts
+	+ modify tc-filt.l to flag as an error an unescaped newline within
 	  a description.
 	+ modify c-filt.c to flag as an error a multi-line literal which is
 	  missing a backslashed newline.  This is allowed by gcc, but the
@@ -363,8 +405,8 @@ Changes for vile 9.1 (released Sat Jan 15 2000)
 	+ modify c-filt.c to not treat a line beginning with a '#' if the
 	  previous line ended with a backslash.  This is needed to not flag as
 	  an error tokens in a macro which are quoted with '#'.
- 	+ update vileperl.rc to work with Brendan's renaming/simplification.
- 	> Paul Fox:
+	+ update vileperl.rc to work with Brendan's renaming/simplification.
+	> Paul Fox:
 	+ add cc and reply-to to the list of recognized mail headers, and makes
 	  them all caseless.
 	+ also added '+' as a valid character in email names, since more and

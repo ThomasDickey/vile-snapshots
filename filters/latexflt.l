@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.15 1999/03/07 19:19:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.16 2000/02/10 11:30:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LaTeX input
  * text.
@@ -13,7 +13,7 @@
 
 #include <filters.h>
 
-char *filter_name = "latex";
+DefineFilter("latex");
 
 #define NAME_MATH       "Math"
 #define NAME_MATH_C     "Math_c"
@@ -58,12 +58,12 @@ pop_state(void)
 	new_state(state_stack[--state_level]);
 }
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;

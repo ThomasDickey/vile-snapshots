@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.19 2000/01/31 00:22:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.20 2000/02/10 11:35:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -12,7 +12,7 @@
 
 #include <filters.h>
 
-char *filter_name = "html";
+DefineFilter("html");
 
 static char *Comment_attr;
 static char *Ident_attr;
@@ -31,14 +31,14 @@ html_command(char *text)
 	      || !strcmp(temp, "script");
 
     if (change) {
-	set_symbol_table(filter_name);
+	set_symbol_table(filter_def.filter_name);
     }
     write_token(yyout, text, strlen(text), keyword_attr(temp));
 
     if (change) {
      	if (ending) {
 	    next_state = INITIAL;
-	    set_symbol_table(filter_name);
+	    set_symbol_table(filter_def.filter_name);
 	} else {
 	    next_state = JAVACODE;
 	    set_symbol_table("js");
@@ -75,12 +75,12 @@ may_resume_html(char *text)
     BEGIN(next_state);
 }
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;

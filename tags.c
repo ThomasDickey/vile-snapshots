@@ -5,7 +5,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995-2000 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.107 2000/01/15 13:54:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.108 2000/02/09 11:31:30 cmorgan Exp $
  *
  */
 #include	"estruct.h"
@@ -26,7 +26,7 @@ typedef struct {
 
 #endif
 
-#define	UNTAG	struct	untag
+#define UNTAG	struct	untag
 	UNTAG {
 	char *u_fname;
 	L_NUM u_lineno;
@@ -37,9 +37,9 @@ typedef struct {
 #endif
 };
 
-#define TAGHITS	struct	taghits
-	TAGHITS	{
-	TAGHITS	*link;
+#define TAGHITS struct	taghits
+	TAGHITS {
+	TAGHITS *link;
 	LINE	*tag;	/* points to tag-buffer line */
 	LINE	*hit;	/* points to corresponding line in source-file */
 };
@@ -54,7 +54,7 @@ static	void	pushuntag(char *fname, L_NUM lineno, C_NUM colnum, char *tag);
 static	void	tossuntag (void);
 
 static	TAGHITS*tag_hits;
-static	UNTAG *	untaghead;
+static	UNTAG * untaghead;
 static	char	tagname[NFILEN+2];  /* +2 since we may add a tab later */
 
 #if OPT_SHOW_TAGS
@@ -225,9 +225,9 @@ mark_tag_hit(LINE *tag, LINE *hit)
 	}
 
 	p = typecalloc(TAGHITS);
-	p->link  = tag_hits;
-	p->tag   = tag;
-	p->hit   = hit;
+	p->link	 = tag_hits;
+	p->tag	 = tag;
+	p->hit	 = hit;
 	tag_hits = p;
 
 	TRACE(("... mark_tag_hit FALSE\n"));
@@ -313,15 +313,84 @@ cmdlinetag(const char *t)
 }
 
 /*
- * Jump back to the given file & line.
+ * Returns TRUE if:
+ *
+ * a) pin-tagstack mode is enabled, and
+ * b) 2 or more visible windows on screen, and
+ * c) the current tag pop/push operation can be effected (pinned) in curwin.
  */
+static int
+pinned_tagstack(char *fname /* target of tag/push op */)
+{
+    int pinned = FALSE;
+
+    if (global_g_val(GMDPIN_TAGSTACK))
+    {
+	BUFFER *bp;
+	int    nobufchg, /* TRUE if a call to swbuffer_lfl() will not
+			  * change/re-read current buffer.
+			  */
+	       s,
+	       wdwcnt;
+	WINDOW *wp;
+
+	/* Don't pin tagstack if less than two visible windows on screen. */
+	wdwcnt = 0;
+	for_each_visible_window(wp)
+	    wdwcnt++;
+	if (wdwcnt > 1)
+	{
+	    /*
+	     * Try to display the results of this tag pop in the current
+	     * window....
+	     *
+	     * Got an existing buffer for this filename?
+	     */
+
+	    if ((bp = find_b_file(fname)) != NULL)
+	    {
+		/* yes, set the current window to this buffer. */
+
+		nobufchg = (curbp == bp		&&
+			    DOT.l		&&
+			    curwp		&&
+			    curwp->w_bufp == bp &&
+			    bp->b_active);
+
+		if ((s = swbuffer_lfl(bp, FALSE, TRUE)) != FALSE)
+		{
+		    if (nobufchg)
+		    {
+			/*
+			 * in this case, DOT is changing to a new location in
+			 * the same buffer.  if DOT isn't currently within the
+			 * bounds of its window, updpos() will barf when
+			 * update() is eventually invoked.  forestall this
+			 * issue by forcing a window reframe.
+			 */
+
+			curwp->w_flag |= WFFORCE;
+		    }
+		    pinned = TRUE;
+		}
+	    }
+	}
+    }
+    return (pinned);
+}
+
+/* Jump back to the given file, line#, and column#. */
 static int
 finish_pop(char *fname, L_NUM lineno, C_NUM colno)
 {
 	MARK odot;
 	int s;
 
-	s = getfile(fname,FALSE);
+	if (! (s = pinned_tagstack(fname)))  {
+		/* get a window open on the file */
+
+		s = getfile(fname, FALSE);
+	}
 	if (s == TRUE) {
 		/* it's an absolute move -- remember where we are */
 		odot = DOT;
@@ -424,7 +493,7 @@ tag_search(char *tag, int taglen, int initial)
 		if (*tfp++ == '\t')
 			break;
 	if (*tfp == '\t') { /* then it's a new-fangled NeXT tags file */
-		tfp++;  /* skip the tab */
+		tfp++;	/* skip the tab */
 	}
 
 	i = 0;
@@ -457,23 +526,23 @@ tag_search(char *tag, int taglen, int initial)
 			pushuntag(curbp->b_bname, lineno, colno, tag);
 	}
 
-	if (curbp == NULL
-	 || !same_fname(tfname, curbp, TRUE)) {
+	changedfile = (curbp == NULL || ! same_fname(tfname, curbp, TRUE));
+	if (changedfile)
 		(void) doglob(tfname);
-		status = getfile(tfname,TRUE);
-		if (status != TRUE) {
-			tossuntag();
-			return status;
+	if (! pinned_tagstack(tfname)) {
+		if (changedfile) {
+			status = getfile(tfname,TRUE);
+			if (status != TRUE) {
+				tossuntag();
+				return status;
+			}
 		}
-		changedfile = TRUE;
-	} else {
-		changedfile = FALSE;
 	}
 
 	/* it's an absolute move -- remember where we are */
 	odot = DOT;
 
-	tfp++;  /* skip the tab */
+	tfp++;	/* skip the tab */
 	if (tfp >= lplim) {
 		mlforce("[Bad line in tags file.]");
 		return FALSE;
@@ -545,7 +614,7 @@ tag_search(char *tag, int taglen, int initial)
 
 		/*
 		 * If we've succeeded on a next-tags, adjust the stack so that
-		 * it's all on the same level.  A tag-pop will return to the
+		 * it's all on the same level.	A tag-pop will return to the
 		 * original position.
 		 */
 		if (!initial

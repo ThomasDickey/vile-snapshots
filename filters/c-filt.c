@@ -6,14 +6,14 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.53 2000/01/31 00:21:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.54 2000/02/10 11:33:37 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  */
 
 #include <filters.h>
 
-char *filter_name = "c";
+DefineFilter("c");
 
 #define ESCAPE '\\'
 #define DQUOTE '"'
@@ -356,12 +356,12 @@ parse_prepro(FILE * fp, char *s)
     return tt;
 }
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE * input, FILE * output)
 {
     static unsigned used;
@@ -409,7 +409,7 @@ do_filter(FILE * input, FILE * output)
 	    } else if (!escaped && !comment && *s == '#' && firstnonblank(s, line)
 		&& set_symbol_table("cpre")) {
 		s = parse_prepro(output, s);
-		set_symbol_table(filter_name);
+		set_symbol_table(filter_def.filter_name);
 	    } else if (comment && *s) {
 		if ((c_length = has_endofcomment(s)) > 0) {
 		    write_comment(output, s, c_length, 0);

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.32 2000/01/31 00:24:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.33 2000/02/10 11:33:50 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -157,10 +157,28 @@ extern int yylex(void);
 /*
  * Declared in the language-specific lex file
  */
-extern char *filter_name;
+typedef struct {
+	char *filter_name;
+	void (*InitFilter)(int before);
+	void (*DoFilter)(FILE *in, FILE *out);
+} FILTER_DEF;
 
-extern void init_filter(int before);
-extern void do_filter(FILE *Input, FILE *Output);
+extern FILTER_DEF filter_def;
+
+/*
+ * This is redefinable so we can make a list of all built-in filter definitions
+ */
+#ifndef ActualFilter
+#define ActualFilter(name) filter_def
+#endif
+
+/*
+ * We'll put a DefineFilter() in each filter program
+ */
+#define DefineFilter(name) \
+static void init_filter(int before); \
+static void do_filter(FILE *Input, FILE *Output); \
+FILTER_DEF ActualFilter(name) = { name, init_filter, do_filter }
 
 /*
  * Declared in the filters.c file.

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.5 2000/01/31 00:22:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.6 2000/02/10 11:35:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to embedded SQL with C/C++.
  * - T.Dickey
@@ -10,7 +10,7 @@
 
 #include <filters.h>
 
-char *filter_name = "esql";
+DefineFilter("esql");
 
 static char *other_symbols = "cpp";	/* FIXME: assumes ".merge cpp" */
 
@@ -96,7 +96,7 @@ process_keyword(char *text, int len)
 	if ((attr = ci_keyword_attr(text)) == 0) {
 	    set_symbol_table(other_symbols);
 	    attr = keyword_attr(text);
-	    set_symbol_table(filter_name);
+	    set_symbol_table(filter_def.filter_name);
 	}
 	if (in_execute
 	 && (exec_sql == 0)
@@ -110,12 +110,12 @@ process_keyword(char *text, int len)
     write_token(yyout, text, len, attr);
 }
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;

@@ -1,6 +1,6 @@
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ada-filt.l,v 1.6 1999/11/09 22:21:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ada-filt.l,v 1.7 2000/02/10 11:27:31 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Ada 
  * input text.
@@ -8,19 +8,19 @@
 
 #include <filters.h>
 
-char *filter_name = "ada";
+DefineFilter("ada");
 
 static char *Comment_attr;
 static char *Ident2_attr;
 static char *Number_attr;
 static char *String_attr;
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.25 2000/01/31 00:22:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.26 2000/02/10 11:30:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PERL input
  * text.
@@ -13,7 +13,7 @@
 
 #include <filters.h>
 
-char *filter_name = "perl";
+DefineFilter("perl");
 
 #define isIdent(ch) (isalnum(ch) || ch == '_')
 
@@ -118,12 +118,12 @@ add_to_pattern(char *text)
     return 1;
 }
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;

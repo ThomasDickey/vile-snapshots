@@ -2,14 +2,14 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.11 2000/01/31 00:23:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.12 2000/02/10 11:30:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
 
 #include <filters.h>
 
-char *filter_name = "yacc";
+DefineFilter("yacc");
 
 static char *Comment_attr;
 static char *Ident_attr;
@@ -63,12 +63,12 @@ set_state(void)
     }
 }
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;

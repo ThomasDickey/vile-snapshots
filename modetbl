@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.165 1999/12/22 11:04:05 kev Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.168 2000/02/10 02:40:40 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -34,6 +34,7 @@ bool							# GMD prefix
 	"ImplyBuffer"	IMPLYBUFF	0		# imply-buffer (vi-like)
 	"multibeep"	MULTIBEEP	0		# multiple successive identical failed motions all beep
 	"maplonger"	MAPLONGER	0		# favor longer maps
+	"pin-tagstack"	PIN_TAGSTACK	0		# tagstack push/pop ops are pinned to curwin
 	"Popup-Choices"	POPUP_CHOICES	0		OPT_POPUPCHOICE&&!OPT_ENUM_MODES # popup buffer showing file-completion choices
 	"Popup-Msgs"	POPUP_MSGS	0		OPT_POPUP_MSGS	# popup buffer when multiple messages emitted
 	"ReadOnly-on-ReadOnly" RONLYRONLY	0	# set readonly mode for readonly files
@@ -44,6 +45,7 @@ bool							# GMD prefix
 	"SameBangs"	SAMEBANGS	0		# use same "!!" data for ^X-!
 	"working"	WORKING		chgd_working	OPT_WORKING # "working" message
 	"usefilelock"	USEFILELOCK	0		OPT_LCKFILES # okay use filelocks
+	"unique-buffers" UNIQ_BUFS	chgd_uniqbuf	# only one buffer per file
 	"VIEW-on-ReadOnly" RONLYVIEW	0		# set view mode for readonly files
 	"w32pipes"	W32PIPES	0		OPT_W32PIPES
 	"warn-blanks"   WARNBLANKS	0		!SMALLER # warn if filename has blanks, etc.
@@ -204,6 +206,7 @@ string
 "disinp"	DISINP			# display command line input characters
 "end-of-cmd"	EOC			# true if they ended the cmd with <CR>
 "error-buffer"	ERROR_BUFFER	OPT_FINDERR	# buffer to use for find-next-error
+"exec-path"	EXEC_PATH		# directory where vile's executable is found
 "exec-suffix"	EXEC_SUFFIX		# suffix to append when looking for execable programs
 "exit-hook"	EXITHOOK	OPT_HOOKS	# procedure to run when quitting
 "font"		FONT		DISP_X11||DISP_NTWIN	# current font

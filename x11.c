@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.244 2000/01/15 01:09:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.246 2000/02/09 11:45:28 cmorgan Exp $
  *
  */
 
@@ -2627,6 +2627,7 @@ x_preparse_args(
     (void) OlToolkitInitialize( NULL );
 #endif /* OL_WIDGETS */
 
+#if OPT_TITLE
     /*
      * If user sets the title explicitly, he probably will not like allowing
      * xvile to set it automatically when visiting a new buffer.
@@ -2639,6 +2640,8 @@ x_preparse_args(
 	    break;
 	}
     }
+#endif
+
     XtSetErrorHandler(my_error_handler);
     cur_win->top_widget = XtVaAppInitialize(
 	    &cur_win->app_context,
@@ -3347,8 +3350,93 @@ x_preparse_args(
 	    x_change_focus,
 	    (XtPointer)0);
 
-    cur_win->base_width = -1;	/* force base width to be set when configured */
+    /* Realize the widget, but don't do the mapping (yet...) */
+    XtSetMappedWhenManaged(cur_win->top_widget, False);
     XtRealizeWidget(cur_win->top_widget);
+
+    /* Now that the widget hierarchy is realized, we can fetch
+       some crucial dimensions and set the window manager hints
+       dealing with resize appropriately. */
+    {
+	Dimension new_width, new_height;
+	XtVaGetValues(cur_win->top_widget,
+		XtNheight,	&cur_win->top_height,
+		XtNwidth,	&cur_win->top_width,
+		NULL);
+#if ATHENA_WIDGETS && OPT_MENUS
+	XtVaGetValues(cur_win->menu_widget,
+		XtNheight,	&cur_win->menu_height,
+		XtNwidth,	&new_width,
+		NULL);
+#endif
+	XtVaGetValues(cur_win->screen,
+		XtNheight,	&new_height,
+		XtNwidth,	&new_width,
+		NULL);
+
+	cur_win->base_width = cur_win->top_width - new_width;
+	cur_win->base_height = cur_win->top_height - new_height;
+
+	/* Ugly hack:  If the window manager chooses not to respect
+	   the min_height hint, it may instead choose to use base_height
+	   as min_height instead.  I believe that the reason for this
+	   is because O'Reilly's Xlib Programming Manual, Vol 1
+	   has lead some window manager implementors astray.  It says:
+
+		In R4, the base_width and base_height fields have been
+		added to the XSizeHints structure.  They are used with
+		the width_inc and height_inc fields to indicate to the
+		window manager that it should resize the window in
+		steps -- in units of a certain number of pixels
+		instead of single pixels.  The window manager resizes
+		the window to any multiple of width_inc in width and
+		height_inc in height, but no smaller than min_width
+		and min_height and no bigger than max_width and
+		max_height.  If you think about it, min_width and
+		min_height and base_width and base_height have
+		basically the same purpose.  Therefore, base_width and
+		base_height take priority over min_width and
+		min_height, so only one of these pairs should be set.
+
+	   We are indeed lucky that most window managers have chosen to
+	   ignore the last two sentences in the above paragraph.  These
+	   two pairs of values *do not* serve the same purpose.  I can
+	   see where they're coming from...  if you have a minimum
+	   height that you want the application to be, you could simply
+	   set base_height to be the this minimum height which would be
+	   the real_base_height + N*unit_height where N is a
+	   non-negative integer.  But what they're forgetting in all
+	   this is that the window manager reports the size in units
+	   to the user and the size it reports will likely be off by N.
+
+	   Unfortunately, enlightenment 0.16.3 (and probably other
+	   versions too) do seem to only use base_height and
+	   base_width to determine the smallest window size and this
+	   is causing some problems for xvile with no menu bars.
+	   Specifically, I've seen BadValue errors from the guts of Xt
+	   when cur_win->screen gets resized down to zero.  So we make
+	   sure that base_height is non-zero and hope the user doesn't
+	   notice that extra pixel of height.  */
+	if (cur_win->base_height == 0)
+	    cur_win->base_height = 1;
+
+	XtVaSetValues(cur_win->top_widget,
+#if XtSpecificationRelease >= 4
+		XtNbaseHeight,	cur_win->base_height,
+		XtNbaseWidth,	cur_win->base_width,
+#endif
+		XtNminHeight,	cur_win->base_height
+				    + MINROWS*cur_win->char_height,
+		XtNminWidth,	cur_win->base_width
+				    + MINCOLS*cur_win->char_width,
+		XtNheightInc,	cur_win->char_height,
+		XtNwidthInc,	cur_win->char_width,
+		NULL);
+    }
+    /* According to the docs, this should map the widget too... */
+    XtSetMappedWhenManaged(cur_win->top_widget, True);
+    /* ... but an explicit map calls seems to be necessary anyway */
+    XtMapWidget(cur_win->top_widget);
 
     cur_win->win = XtWindow(cur_win->screen);
 
@@ -5315,39 +5403,6 @@ x_configure_window(
     if (ev->type != ConfigureNotify)
 	return;
 
-    if (cur_win->base_width < 0) {
-	/* First time through...figure out the base width and height */
-	XtVaGetValues(cur_win->top_widget,
-		XtNheight,	&cur_win->top_height,
-		XtNwidth,	&cur_win->top_width,
-		NULL);
-#if ATHENA_WIDGETS && OPT_MENUS
-	XtVaGetValues(cur_win->menu_widget,
-		XtNheight,	&cur_win->menu_height,
-		XtNwidth,	&new_width,
-		NULL);
-#endif
-	XtVaGetValues(cur_win->screen,
-		XtNheight,	&new_height,
-		XtNwidth,	&new_width,
-		NULL);
-	cur_win->base_width = cur_win->top_width - new_width;
-	cur_win->base_height = cur_win->menu_height;
-
-	XtVaSetValues(cur_win->top_widget,
-#if XtSpecificationRelease >= 4
-		XtNbaseHeight,	cur_win->base_height,
-		XtNbaseWidth,	cur_win->base_width,
-#endif
-		XtNminHeight,	cur_win->base_height
-				    + MINROWS*cur_win->char_height,
-		XtNminWidth,	cur_win->base_width
-				    + MINCOLS*cur_win->char_width,
-		XtNheightInc,	cur_win->char_height,
-		XtNwidthInc,	cur_win->char_width,
-		NULL);
-    }
-
     if (ev->xconfigure.height == cur_win->top_height
      && ev->xconfigure.width == cur_win->top_width)
 	return;
@@ -5360,6 +5415,20 @@ x_configure_window(
 			     * cur_win->char_height;
     new_width = ((new_width - cur_win->base_width) /
 		    cur_win->char_width) * cur_win->char_width;
+
+    /* Check to make sure the dimensions are sane both here and below
+       to avoid BadMatch errors */
+    nr = (int)(new_height / cur_win->char_height);
+    nc = (int)(new_width  / cur_win->char_width);
+
+    if (nr < MINROWS || nc < MINCOLS) {
+	gui_resize(nc, nr);
+	/* Calling XResizeWindow will cause another ConfigureNotify
+	 * event, so we should return early and let this event occur.
+	 */
+	return;
+    }
+
 #if MOTIF_WIDGETS
     XtVaSetValues(cur_win->form_widget,
 	    XmNresizePolicy,	XmRESIZE_NONE,

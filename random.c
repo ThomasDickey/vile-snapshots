@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.230 2000/01/15 12:28:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.232 2000/02/11 03:47:23 tom Exp $
  *
  */
 
@@ -161,8 +161,12 @@ showcpos(int f GCC_UNUSED, int n GCC_UNUSED)
     }
 #endif
 #if OPT_POSFORMAT
-    special_formatter(&result, position_format, curwp);
-    mlforce("%s", tb_values(result));
+    if (is_empty_buf(curbp)) {
+	mlforce("File is empty");
+    } else {
+	special_formatter(&result, position_format, curwp);
+	mlforce("%s", tb_values(result));
+    }
 #else
     /* count chars and lines */
     for_each_line(lp, curbp) {
@@ -201,10 +205,13 @@ showcpos(int f GCC_UNUSED, int n GCC_UNUSED)
 	ratio = (100L * predchars) / numchars;
 
     /* summarize and report the info */
-    mlforce(
-	"Line %d of %d, Col %d of %d, Char %ld of %ld (%ld%%) char is 0x%x or 0%o",
-	predlines + 1, numlines, col + 1, ecol,
-	predchars + 1, numchars, ratio, curchar, curchar);
+    if (numlines == 0 && numchars == 0)
+	mlforce("File is empty");
+    else
+	mlforce(
+	    "Line %d of %d, Col %d of %d, Char %ld of %ld (%ld%%) char is 0x%x or 0%o",
+	    predlines + 1, numlines, col + 1, ecol,
+	    predchars + 1, numchars, ratio, curchar, curchar);
 #endif
     return TRUE;
 }
@@ -308,13 +315,14 @@ char_no(BUFFER *the_buffer, MARK the_mark)
 {
     register LINE *lp;
     B_COUNT curchar = 0;
+    int rslen = len_record_sep(curbp);
 
     for_each_line(lp, the_buffer) {
 	if (lp == the_mark.l) {
 	    curchar += the_mark.o;
 	    break;
 	}
-	curchar += llength(lp) + 1;
+	curchar += llength(lp) + rslen;
     }
 
     return curchar;

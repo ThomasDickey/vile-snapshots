@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.6 2000/01/31 00:23:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.7 2000/02/10 11:30:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Perl/C
  * extension source
@@ -11,7 +11,7 @@
 
 #include <filters.h>
 
-char *filter_name = "xs";
+DefineFilter("xs");
 
 static char *Comment_attr;
 static char *Preproc_attr;
@@ -53,12 +53,12 @@ comment_or_preproc(char *text)
     write_token(yyout, text, strlen(text), Comment_attr);
 }
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;

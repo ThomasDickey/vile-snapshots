@@ -36,15 +36,19 @@ startup file, called "vile.rc", and adding various settings and macros as
 described in vile.hlp .  vile searches for the startup file in these
 locations (and in the order listed):
 
-    current working directory
-    the directory specify by $HOME
-    the vile executable directory
-    if $VILE_STARTUP_PATH exists then
-        search each semi-colon delimited directory specified in this env var
-    else search
-		\sys\public;\usr\bin;\bin;\
-    end if
-    any directory in $PATH
+	1 - current working directory
+	2 - directory specified by $HOME
+	3 - vile executable directory
+	4 - each directory specified in $VILE_STARTUP_PATH.  If
+	    this environment variable is not set, the following
+	    defaults are internally assumed:
+
+		/sys/public;/usr/bin;/bin;/
+
+	5 - each directory specified in:
+
+		$PATH
+		$VILE_LIBDIR_PATH
 
 the remainder of this file describes build requirements for various PC
 environments.
@@ -240,5 +244,5 @@ tom dickey, dickey@clark.net
 paul fox, pgf@foxharp.boston.ma.us (home)
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.23 2000/01/30 22:18:45 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.24 2000/02/10 03:25:22 cmorgan Exp $
 ------------------------

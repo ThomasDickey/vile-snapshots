@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.414 2000/01/30 23:16:29 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.415 2000/02/09 11:37:46 pgf Exp $
  *
  */
 
@@ -366,6 +366,8 @@ extern int more_named_cmd (void);
 /* file.c */
 extern SIGT imdying (int ACTUAL_SIG_ARGS);
 extern int bp2readin (BUFFER *bp, int lockfl);
+extern int fileuid_get (const char *fname, FUID *fuid);
+extern int fileuid_same (BUFFER *bp, FUID *fuid);
 extern int getfile (char *fname, int lockfl);
 extern int ifile (char *fname, int belowthisline, FILE *haveffp);
 extern int kwrite (char *fn, int msgf);
@@ -377,9 +379,11 @@ extern int slowreadf (BUFFER *bp, int *nlinep);
 extern int writeout (const char *fn, BUFFER *bp, int forced, int msgf);
 extern int writeregion (void);
 extern time_t file_modified (char *path);
+extern void fileuid_invalidate (BUFFER *bp);
+extern void fileuid_set (BUFFER *bp, FUID *fuid);
 extern void makename (char *bname, const char *fname);
 extern void markWFMODE (BUFFER *bp);
-extern void set_last_file_edited(const char *);
+extern void set_last_file_edited (const char *);
 extern void unqname (char *name);
 
 #ifdef MDCHK_MODTIME

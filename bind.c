@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.216 2000/01/31 00:43:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.217 2000/02/10 03:20:35 tom Exp $
  *
  */
 
@@ -1274,28 +1274,43 @@ list_which(LIST_ARGS)
 	else if (isShellOrPipe(fname))
 		return;
 
+	bprintf("Show which %s-paths are tested for:\n\t%s\n(\"*\" marks found-files)\n",
+		(mode & FL_EXECABLE) ? "executable" : "source",
+		fname);
+
 	/* look in the current directory */
-	if (flag & FL_CDIR)
+	if (flag & FL_CDIR) {
+		bprintf("\n$cwd");
 		list_one_fname(fname, mode);
+	}
 
-	if (flag & FL_HOME) /* look in the home directory */
+	if (flag & FL_HOME) { /* look in the home directory */
+		bprintf("\n$HOME");
 		list_which_fname(home_dir(), fname, mode);
+	}
 
-	if (flag & FL_EXECDIR) /* look in vile's bin directory */
+	if (flag & FL_EXECDIR) { /* look in vile's bin directory */
+		bprintf("\n$exec-path");
 		list_which_fname(exec_pathname, fname, mode);
+	}
 
-	if (flag & FL_STARTPATH) /* look along "VILE_STARTUP_PATH" */
+	if (flag & FL_STARTPATH) { /* look along "VILE_STARTUP_PATH" */
+		bprintf("\n$startup-path");
 		list_which_file_in_list(startup_path, fname, mode);
+	}
 
 	if (flag & FL_PATH) { /* look along "PATH" */
 #if OPT_PATHLOOKUP
+		bprintf("\n$PATH");
 		list_which_file_in_list(PATH_value(), fname, mode);
 #endif	/* OPT_PATHLOOKUP */
 
 	}
 
-	if (flag & FL_LIBDIR) /* look along "VILE_LIBDIR_PATH" */
+	if (flag & FL_LIBDIR) { /* look along "VILE_LIBDIR_PATH" */
+		bprintf("\n$libdir-path");
 		list_which_file_in_list(libdir_path, fname, mode);
+	}
 }
 
 static int

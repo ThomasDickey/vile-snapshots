@@ -432,6 +432,8 @@ State Variables
 			reassign error-buffer (e.g., the ShowManpage macro
 			in macros/manpage.rc).
 
+	$exec-path      [READ ONLY] Where to find vile.
+
 	$exec-suffix	[READ ONLY] suffix, if any, for execable programs.
 			Use this in portable macros, with &lookup, to get the
 			actual program path.
@@ -1205,6 +1207,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.43 2000/01/30 20:19:38 cmorgan Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.44 2000/02/10 03:31:35 tom Exp $
 -----------------------------------
 

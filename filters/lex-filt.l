@@ -2,14 +2,14 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.15 2000/01/31 00:22:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.16 2000/02/10 11:30:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
 
 #include <filters.h>
 
-char *filter_name = "lex";
+DefineFilter("lex");
 
 static char *Comment_attr;
 static char *Ident_attr;
@@ -56,12 +56,12 @@ write_states(char *text, int len)
     write_token(yyout, text, len, String_attr);
 }
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;

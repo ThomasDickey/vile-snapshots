@@ -1,12 +1,12 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.c,v 1.9 1999/03/07 19:20:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.c,v 1.10 2000/02/10 11:30:12 tom Exp $
  *
  * Markup a Pascal file, for highlighting with vile.
  */
 
 #include <filters.h>
 
-char *filter_name = "pas";
+DefineFilter("pas");
 
 #define isNameBegin(c)   (isalpha(c) || (c) == '_')
 #define isNameExtra(c)   (isalnum(c) || (c) == '_')
@@ -99,12 +99,12 @@ write_literal(FILE *fp, char *s)
     return s;
 }
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     static unsigned used;

@@ -3,14 +3,14 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/difffilt.l,v 1.2 1999/08/05 10:52:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/difffilt.l,v 1.3 2000/02/10 11:30:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of diff output
  */
 
 #include <filters.h>
 
-char *filter_name = "diff";
+DefineFilter("diff");
 
 static char *Marker_attr;
 static char *Header_attr;
@@ -18,12 +18,12 @@ static char *Insert_attr;
 static char *Delete_attr;
 static char *Modify_attr;
 
-void
+static void
 init_filter(int before GCC_UNUSED)
 {
 }
 
-void
+static void
 do_filter(FILE *input, FILE *output)
 {
     yyin = input;
