@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.272 1998/04/17 00:03:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.273 1998/04/20 09:54:03 kev Exp $
  *
  */
 
@@ -55,6 +55,7 @@ extern int xterm_mouse_T (int f, int n);
 /* perl.xs (perl.c) */
 extern	void	perl_default_region(void);
 extern	void	perl_free_handle(void *);
+extern	void	perl_free_callback(char *);
 
 /* api.c */
 extern void api_free_private(void *);
@@ -150,6 +151,7 @@ extern int swbuffer (BUFFER *bp);
 extern int swbuffer_lfl (BUFFER *bp, int lockfl);
 extern int tabstop_val (BUFFER *bp);
 extern int zotbuf (BUFFER *bp);
+extern int renamebuffer(BUFFER *rbp, char *bufname);
 extern int zotwp (BUFFER *bp);
 extern void chg_buff (BUFFER *bp, USHORT flag);
 extern void imply_alt (char *fname, int copy, int lockfl);
@@ -764,8 +766,10 @@ void clobber_save_curbp(BUFFER *bp);
 /* select.c */
 #if OPT_SELECTIONS
 extern	int	assign_attr_id	(void);
-extern	int	attribute_cntl_a_sequences_over_region(REGION *rp);
+extern	int	attribute_cntl_a_sequences_over_region(REGION *rp, REGIONSHAPE shape);
 extern	int	attributeregion (void);
+extern	int	attributeregion_over_region(REGION *rp, REGIONSHAPE shape,
+			                    VIDEO_ATTR vattr, char *hc);
 extern	int	sel_begin	(void);
 extern	int	sel_extend	(int wiping, int include_dot);
 extern	int	sel_setshape	(REGIONSHAPE shape);
@@ -830,6 +834,8 @@ extern void null_t_setback (int b);
 extern void null_t_setfor (int f);
 extern void null_t_setpal (const char *p);
 extern void null_t_title (char *t);
+extern int  null_t_watchfd (int fd, WATCHTYPE type, long *idp);
+extern void null_t_unwatchfd (int fd, long id);
 extern void ttclean (int f);
 extern void ttclose (void);
 extern void ttflush (void);
@@ -873,6 +879,11 @@ extern int w32_inout_popen(FILE **fr, FILE **fw, char *cmd);
 extern void w32_npclose(FILE *fp);
 #endif
 
+/* watchfd.c */
+extern int watchfd(int fd, WATCHTYPE type, char *callback);
+extern void unwatchfd(int fd);
+extern void dowatchcallback(int fd);
+
 /* window.c */
 extern WINDOW * wpopup (void);
 extern int delwp (WINDOW *thewp);
@@ -894,6 +905,8 @@ extern int resize (int f, int n);
 extern WINDOW * push_fake_win(BUFFER *bp);
 extern BUFFER * pop_fake_win(WINDOW *oldwp);
 extern int	is_fake_win(WINDOW *wp);
+extern WINDOW *	detach_fake_windows(void);
+extern void	reattach_fake_windows(WINDOW *fwp);
 #endif
 
 /* word.c */

@@ -1,3 +1,18 @@
+/*
+ * perl.xs		-- perl interface for vile.
+ *
+ * Author: Kevin Buettner
+ *
+ * (with acknowledgments to the authors of the nvi perl interface as
+ * well as Brendan O'Dea and Sean Ahern who both contributed snippets
+ * of code here and there and many valuable suggestions.)
+ * Created: Fall, 1997
+ *
+ * Description: The following code provides an interface to Perl from
+ * vile.  The file api.c (sometimes) provides a middle layer between
+ * this interface and the rest of vile.
+ */
+
 /* contortions to avoid typedef conflicts */
 #define main perl_main
 #define regexp perl_regexp
@@ -10,6 +25,18 @@
 #undef main
 #undef regexp
 #undef HUGE
+
+/* Some earlier versions of perl don't have GIMME_V or G_VOID. We must
+   be careful of the order in which we check things if these defines
+   are activated. */
+#ifndef GIMME_V
+#define GIMME_V GIMME
+#endif
+
+#ifndef G_VOID
+#define G_VOID G_SCALAR
+#endif
+
 
 /* for vile */
 #include "estruct.h"
@@ -48,6 +75,11 @@ void perl_default_region(void)
     DOT = save_DOT;
 }
 
+/*
+ * Create a VB buffer handle object.  These objects are both
+ * blessed into the Vile::Buffer class as well as made magical
+ * so that they may also be used as filehandles.
+ */
 static SV *
 newVBrv(SV *rv, VileBuf *sp)
 {
@@ -85,6 +117,8 @@ perl_free_handle(void *handle)
     SvREFCNT_dec(handle);
 }
 
+static int recursecount = 0;
+
 int
 perl(int f GCC_UNUSED, int n GCC_UNUSED)
 {
@@ -106,22 +140,26 @@ perl(int f GCC_UNUSED, int n GCC_UNUSED)
 	REGION region;
 	char *err;
 	STRLEN length;
-	VileBuf *curvbp = api_bp2vbp(curbp); 
+	VileBuf *curvbp;
+	
+	if (recursecount == 0) {
+	    curvbp = api_bp2vbp(curbp);
 
-	if (haveregion == NULL || getregion(&region) != TRUE) { 
-	    /* shouldn't ever get here. But just in case... */ 
-	    perl_default_region(); 
-	    if (getregion(&region) != TRUE) { 
-		mlforce("BUG: getregion won't return TRUE in perl.xs."); 
-	    } 
+	    if (haveregion == NULL || getregion(&region) != TRUE) { 
+		/* shouldn't ever get here. But just in case... */ 
+		perl_default_region(); 
+		if (getregion(&region) != TRUE) { 
+		    mlforce("BUG: getregion won't return TRUE in perl.xs."); 
+		} 
+	    }
+
+	    /* Initialize some of the fields in curvbp */ 
+	    curvbp->region = region; 
+	    curvbp->regionshape = regionshape; 
+	    curvbp->inplace_edit = 0; 
+     
+	    sv_setsv(svcurbuf, newVBrv(sv_2mortal(newSV(0)), curvbp));
 	}
-
-	/* Initialize some of the fields in curvbp */ 
-	curvbp->region = region; 
-	curvbp->regionshape = regionshape; 
-	curvbp->inplace_edit = 0; 
- 
-	sv_setsv(svcurbuf, newVBrv(sv_2mortal(newSV(0)), curvbp));
 
 	/* We set the following stuff up in the event that we call 
 	   one of the mlreply methods.  If they are not set up this 
@@ -131,16 +169,28 @@ perl(int f GCC_UNUSED, int n GCC_UNUSED)
         discmd = TRUE; 
 	old_isnamedcmd = isnamedcmd;	/* for mlreply_dir */ 
 	isnamedcmd = TRUE; 
+	recursecount++;
  
-        /* sv_dump(svcurbuf); */
+#define PDEBUG 0
+#if PDEBUG
+	printf("\nbefore eval\n");
+        sv_dump(svcurbuf);
+#endif
 	perl_eval(buf);
+#if PDEBUG
+	printf("after eval\n");
+        sv_dump(svcurbuf);
+#endif
 
+	recursecount--;
         discmd = old_discmd; 
 	isnamedcmd = old_isnamedcmd; 
  
-	SvREFCNT_dec(SvRV(svcurbuf));
+	if (recursecount == 0) {
+	    SvREFCNT_dec(SvRV(svcurbuf));
 
-	api_command_cleanup();
+	    api_command_cleanup();
+	}
 
 	err = SvPV(GvSV(errgv), length);
 	if (length == 0)
@@ -210,7 +260,7 @@ perldo(int f GCC_UNUSED, int n GCC_UNUSED)
 	SPAGAIN; 
     } 
  
-    if (status = get_fl_region(&region) != TRUE) { 
+    if ((status = get_fl_region(&region)) != TRUE) { 
 	return status; 
     } 
  
@@ -294,6 +344,7 @@ svcurbuf_set(SV *sv, MAGIC *mg)
 	/* Reset to curbp */
 	sv_setsv(svcurbuf, newVBrv(sv_2mortal(newSV(0)), api_bp2vbp(curbp)));
     }
+    return 1;
 }
  
 static int
@@ -345,6 +396,12 @@ perl_init(void)
     mg_find(svcurbuf, '~')->mg_virtual = &svcurbuf_accessors;
     SvMAGICAL_on(svcurbuf);
 
+    /* Some things are better (or easier) to do in perl... */
+    perl_eval("sub Vile::Buffer::PRINTF { \
+                   my $fh=shift; my $fmt=shift;\
+		   print $fh sprintf($fmt,@_);\
+	       }");
+
     /* Load user or system wide initialization script */
     perl_eval("require 'vileinit.pl'");
 
@@ -374,7 +431,80 @@ xs_init()
     newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, file); 
     newXS("Vile::bootstrap", boot_Vile, file); 
 } 
- 
+
+/*
+ * Stringify a code ref so it may be called from vile.
+ */
+
+static char *CRfmtstr = "perl \"&{$Vile::CRs[%d]}\"";
+static AV *CRarray   = 0;
+static int freeCRidx = 0;
+
+static char *
+stringify_coderef(SV *coderef) {
+    char buf[40];
+    int idx;
+    int badstore = 0;
+
+    if (CRarray == 0) {
+	/* Short name to keep the size of strings short on the vile side */
+	CRarray = perl_get_av("Vile::CRs", TRUE);
+	freeCRidx = -1;
+    }
+
+    if (freeCRidx >= 0) {
+	SV **svp;
+	idx = freeCRidx;
+	svp = av_fetch(CRarray, (I32) idx, 0);
+	if (svp == 0) {
+	    /* Something's screwy... */
+	    freeCRidx = -1;
+	}
+	else {
+	    freeCRidx = SvIV(*svp);
+	    SvREFCNT_dec(*svp);
+	}
+	if (av_store(CRarray, (I32) idx, SvREFCNT_inc(coderef)) == 0) {
+	    badstore = 1;
+	    SvREFCNT_dec(coderef);
+	}
+    }
+
+    if (freeCRidx < 0 || badstore) {
+	av_push(CRarray, SvREFCNT_inc(coderef));
+	idx = av_len(CRarray);
+    }
+
+    sprintf(buf, CRfmtstr, idx);
+    return strdup(buf);
+}
+
+void
+perl_free_callback(char *callback)
+{
+    int idx;
+    if (sscanf(callback, CRfmtstr, &idx) == 1) {
+	SV **svp;
+	SV *svfreeCRidx;
+	svp = av_fetch(CRarray, (I32) idx, 0);
+	if (svp == 0)
+	    return;	/* Something screwy, bail... */
+
+	if (!SvROK(*svp) || SvTYPE(SvRV(*svp)) != SVt_PVCV)
+	    return;	/* Most likely freed already (?) */
+
+	SvREFCNT_dec(*svp);	/* This should deallocate it */
+
+	svfreeCRidx = SvREFCNT_inc(newSViv(freeCRidx));
+	if (av_store(CRarray, (I32) idx, svfreeCRidx) == 0) {
+	    /* Not successful (!) */
+	    SvREFCNT_dec(svfreeCRidx);
+	}
+	else {
+	    freeCRidx = idx;
+	}
+    }
+}
  
 /* 
  * Returns a line number given an SV.  '$' represents the last line 
@@ -438,9 +568,367 @@ sv2offset(SV *sv)
     return offset; 
 }
 
-/* FIXME: Make these macrs do the right wrt the perl message handler */
-#define INITMESSAGE
-#define ENDMESSAGE
+/* 
+ * Fetch a line or portion thereof from the current buffer.  Like
+ * api_dotgline(), except it's faster because it creates an SV of
+ * the right size from the outset.  It's also faster because it
+ * relies on the caller to set up the fake window properly.  (Not
+ * a big deal if only getting a scalar, but it can be if fetching
+ * an entire array.)
+ *
+ * Does not handle rectangular regions.
+ */
+
+static int
+svgetline(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
+{
+    int len;
+    int nllen;
+    char *text;
+    SV *sv;
+    if (   is_header_line(DOT, curbp)  
+        || (   DOT.l == vbp->region.r_end.l  
+	    && (   vbp->regionshape == FULLLINE 
+	        || (   vbp->regionshape == EXACT 
+		    && DOT.o >= vbp->region.r_end.o)))) 
+    { 
+	*svp = newSVsv(&sv_undef);
+	return FALSE; 
+    } 
+
+    len = llength(DOT.l) - DOT.o;
+    text = DOT.l->l_text + DOT.o;
+
+    if (vbp->regionshape == EXACT && DOT.l == vbp->region.r_end.l) { 
+	len -= llength(DOT.l) - vbp->region.r_end.o;
+	nllen = 0;
+	if (vbp->inplace_edit)
+	    vbp->ndel += len;
+	DOT.o += len;
+    }
+    else {
+	/* FIXME: Doesn't DOS use \r\n?  Maybe we should set nllen to 2
+	   in this case. */
+	if (lforw(DOT.l) != buf_head(curbp) || b_val(curbp, MDNEWLINE))
+	    nllen = 1;
+	else
+	    nllen = 0;
+	if (vbp->inplace_edit)
+	    vbp->ndel += len + (nllen != 0);
+	DOT.o = 0;
+	DOT.l = lforw(DOT.l);
+    }
+
+    if (len < 0)
+	len = 0;
+
+    *svp = sv = newSV(len + nllen + 1);	/* +1 for \0 */
+
+    if (len > 0) {
+	sv_setpvn(sv, text, len);
+	if (nllen > 0)
+	    sv_catpvn(sv, "\n", 1);
+    }
+    else if (nllen > 0) {
+	sv_setpvn(sv, "\n", 1);
+    }
+    else {
+	sv_setpvn(sv, "", 0);
+    }
+
+    return TRUE;
+}
+
+/*
+ * Fetch an entire region (or remainder thereof).
+ */
+
+static int
+svgetregion(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
+{
+    int len;
+    SV *sv;
+    LINEPTR lp, llp;
+    int off;
+
+    if (   is_header_line(DOT, curbp)  
+        || (   DOT.l == vbp->region.r_end.l  
+	    && (   vbp->regionshape == FULLLINE 
+	        || (   vbp->regionshape == EXACT 
+		    && DOT.o >= vbp->region.r_end.o)))) 
+    { 
+	*svp = newSVsv(&sv_undef);
+	return FALSE; 
+    } 
+
+    /* Compute length of region */
+    lp = DOT.l;
+    llp = vbp->region.r_end.l;
+    off = DOT.o;
+    len = 0;
+    for (;;) {
+	if (lp == llp) {
+	    if (vbp->regionshape == EXACT) {
+		int elen = vbp->region.r_end.o - off;
+		if (elen < 0)
+		    elen = 0;
+		len += elen;
+	    }
+	    break;
+	}
+	else {
+	    len += llength(lp) + 1 - off;	/* + 1 for the newline */
+	}
+	lp = lforw(lp);
+	off = 0;
+    }
+
+    if (len < 0)
+	len = 0;				/* shouldn't happen... */
+
+    *svp = sv = newSV(len + 1);	/* + 1 for \0 */
+    sv_setpvn(sv, "", 0);
+
+    if (vbp->inplace_edit)
+	vbp->ndel += len;
+
+    lp = DOT.l;
+    off = DOT.o;
+    while (len > 0) {
+	int clen = llength(lp) - off;
+
+	if (clen > len)
+	    clen = len;
+
+	if (clen > 0) {
+	    sv_catpvn(sv, lp->l_text + off, clen);
+	    len -= clen;
+	    off += clen;
+	}
+
+	if (len > 0) {
+	    if (lforw(lp) != buf_head(curbp) || b_val(curbp, MDNEWLINE))
+		sv_catpvn(sv, "\n", 1);
+	    len--;
+	    off++;
+	}
+
+	if (off > llength(lp)) {
+	    lp = lforw(lp);
+	    off = 0;
+	}
+    }
+    DOT.l = lp;
+    DOT.o = off;
+
+    return TRUE;
+}
+
+/*
+ * Gets the next portion of a region up to the next record separator
+ * or the end of region, whichever comes first.
+ */
+
+static int
+svgettors(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
+{
+    int len;
+    SV *sv;
+    int rs1;
+    int orig_rslen = rslen;
+    LINEPTR lp, llp;
+    int off;
+
+
+    /* See if we're already at the end of the region and have nothing
+       to do. */
+    if (   is_header_line(DOT, curbp)  
+        || (   DOT.l == vbp->region.r_end.l  
+	    && (   vbp->regionshape == FULLLINE 
+	        || (   vbp->regionshape == EXACT 
+		    && DOT.o >= vbp->region.r_end.o)))) 
+    { 
+	*svp = newSVsv(&sv_undef);
+	return FALSE; 
+    } 
+
+    /* Adjust rsstr if need be */
+    if (rslen == 0) {
+	rsstr = "\n\n";
+	rslen = 2;
+    }
+
+    /* Get first separator character */
+    rs1 = *rsstr;
+
+    /* Compute length of region up to record separator or til
+       end of region, whichever comes first */
+    lp  = DOT.l;
+    llp = vbp->region.r_end.l;
+    off = DOT.o;
+    len = 0;
+    for (;;) {
+	int loff;
+	int cont_off;
+	LINEPTR cont_lp;
+	int fidx;
+	int rsidx;
+
+	if (off > llength(lp)) {
+	    off = 0;
+	    lp = lforw(lp);
+	}
+
+	if (   lp == buf_head(curbp)  
+	    || (   lp == llp
+		&& (   vbp->regionshape == FULLLINE 
+		    || (   vbp->regionshape == EXACT 
+			&& off >= vbp->region.r_end.o))))
+	{
+	    goto have_length;
+	}
+
+	/* loff is the last offset that we'll do our initial search
+	   to on this line */
+	loff = llength(lp);
+
+	/* Adjust loff as appropriate if on last line in region */
+	if (lp == llp) {
+	    if (vbp->regionshape == EXACT) {
+		if (vbp->region.r_end.o < loff)
+		    loff = vbp->region.r_end.o;
+	    }
+	    else 
+		goto have_length;
+	}
+
+	/* Try to find the first record separator character */
+	if (rs1 == '\n') {
+	    /* newline; no searching needed, must be at end of line */
+	    if (loff < llength(lp)) {
+		len += loff;
+		goto have_length;
+	    }
+	    else
+		fidx = loff;
+	}
+	else {
+	    /* Gotta search */
+	    for (fidx = off; fidx < loff && lp->l_text[fidx] != rs1; fidx++)
+		;
+	    if (fidx >= loff) {
+		if (loff < llength(lp)) {
+		    len += loff;
+		    goto have_length;
+		}
+		len += loff - off + 1;
+		off = loff + 1;
+		continue;
+	    }
+	}
+
+	/* If we get to this point, fidx points at first character in 
+	   the record separator. */
+	len += fidx - off + 1;
+	cont_lp = lp;
+	cont_off = fidx + 1;
+
+	/* Attempt to match the rest of the record separator */
+	for (rsidx = 1; rsidx < rslen; rsidx++) {
+	    fidx++;
+	    if (fidx >= llength(lp)) {
+		lp = lforw(lp);
+		fidx = 0;
+	    }
+	    if (   lp == buf_head(curbp)  
+		|| (   lp == llp
+		    && (   vbp->regionshape == FULLLINE 
+			|| (   vbp->regionshape == EXACT 
+			    && fidx >= vbp->region.r_end.o))))
+	    {
+		off = fidx;
+		goto have_length;
+	    }
+	    if (rsstr[rsidx] == '\n') {
+		if (fidx < llength(lp))
+		    break;
+	    }
+	    else if (rsstr[rsidx] != lp->l_text[fidx])
+		break;
+	}
+
+	if (rsidx >= rslen) {
+	    len += rslen - 1;
+	    off = fidx;
+	    goto have_length;
+	}
+	lp = cont_lp;
+	off = cont_off;
+    }
+have_length:
+
+    /* See if we have the special paragraph separator and if so, consume
+       as many additional newlines as we can */
+    if (orig_rslen == 0) {
+	lp = lforw(lp);
+	off = 0;
+	while (  ! (   lp == buf_head(curbp)  
+		    || (   lp == llp
+			&& (   vbp->regionshape == FULLLINE 
+			    || (   vbp->regionshape == EXACT 
+				&& off >= vbp->region.r_end.o))))
+	       && llength(lp) == 0)
+	{
+	    len++;
+	    lp = lforw(lp);
+	    off = 0;
+	}
+    }
+
+    /* Make sure there's still something left to return */
+    if (len <= 0) {
+	*svp = newSVsv(&sv_undef);
+	return FALSE; 
+    }
+
+    /* Now copy the region over to the SV... */
+    *svp = sv = newSV(len + 1);	/* + 1 for \0 */
+    sv_setpvn(sv, "", 0);
+
+    if (vbp->inplace_edit)
+	vbp->ndel += len;
+
+    lp = DOT.l;
+    off = DOT.o;
+    while (len > 0) {
+	int clen = llength(lp) - off;
+
+	if (clen > len)
+	    clen = len;
+
+	if (clen > 0) {
+	    sv_catpvn(sv, lp->l_text + off, clen);
+	    len -= clen;
+	    off += clen;
+	}
+
+	if (len > 0) {
+	    if (lforw(lp) != buf_head(curbp) || b_val(curbp, MDNEWLINE))
+		sv_catpvn(sv, "\n", 1);
+	    len--;
+	    off++;
+	}
+
+	if (off > llength(lp)) {
+	    lp = lforw(lp);
+	    off = 0;
+	}
+    }
+    DOT.l = lp;
+    DOT.o = off;
+
+    return TRUE;
+}
 
 /* Note: The commentary below prefixed with # characters may be
    retrieved via
@@ -519,41 +1007,41 @@ MODULE = Vile	PACKAGE = Vile::Buffer
 VileBuf *
 current_buffer(...)
 
-	ALIAS:
-	    Vile::current_buffer = 1
+    ALIAS:
+	Vile::current_buffer = 1
 
-	PREINIT:
-	    VileBuf *callbuf;
-	    VileBuf *newbuf;
+    PREINIT:
+	VileBuf *callbuf;
+	VileBuf *newbuf;
 
-	PPCODE:
-	    if (items > 2)
-		croak("Too many arguments to current_buffer");
-	    else if (items == 2) {
-		if (sv_isa(ST(0), "Vile::Buffer")) {
-		    callbuf = (VileBuf *)SvIV((SV*)GvSV((GV*)SvRV(ST(0)))); 
-		    if (callbuf == 0) {
-			croak("buffer no longer exists");
-		    }
+    PPCODE:
+	if (items > 2)
+	    croak("Too many arguments to current_buffer");
+	else if (items == 2) {
+	    if (sv_isa(ST(0), "Vile::Buffer")) {
+		callbuf = (VileBuf *)SvIV((SV*)GvSV((GV*)SvRV(ST(0))));
+		if (callbuf == 0) {
+		    croak("buffer no longer exists");
 		}
-		else
-		    callbuf = 0;
+	    }
+	    else
+		callbuf = 0;
 
-		if (sv_isa(ST(1), "Vile::Buffer")) {
-		    newbuf = (VileBuf *)SvIV((SV*)GvSV((GV*)SvRV(ST(1)))); 
-		    if (newbuf == 0) {
-			croak("switched to buffer no longer exists");
-		    }
+	    if (sv_isa(ST(1), "Vile::Buffer")) {
+		newbuf = (VileBuf *)SvIV((SV*)GvSV((GV*)SvRV(ST(1))));
+		if (newbuf == 0) {
+		    croak("switched to buffer no longer exists");
 		}
-		else {
-		    croak("switched to buffer of wrong type");
-		}
-
-		if (api_swscreen(callbuf, newbuf))
-		    sv_setsv(svcurbuf, ST(1));
+	    }
+	    else {
+		croak("switched to buffer of wrong type");
 	    }
 
-	    XPUSHs(svcurbuf);
+	    if (api_swscreen(callbuf, newbuf))
+		sv_setsv(svcurbuf, ST(1));
+	}
+
+	XPUSHs(svcurbuf);
 
 # 
 # print BUFOBJ STR1,..,STRN
@@ -581,53 +1069,53 @@ current_buffer(...)
 #					# Add 'joeuser' to the this buffer
 #	Vile->current_buffer($passbuf);	# Make it visible to the user.
 #
- 
-void 
-PRINT(vbp, ...) 
-	VileBuf *vbp 
 
-	ALIAS:
-	    insert = 1
-  
-	PREINIT: 
-	int i; 
-	char *text = 0; 
-	STRLEN sz = 0; 
- 
-	CODE: 
-	if (vbp2bp(vbp) == bminip) { 
-	    int i; 
-	    char *text = 0; 
-	    STRLEN sz = 0; 
-	    for (i = 1; i < items; i++) { 
-		STRLEN len; 
-		char *arg = SvPV(ST(i), len); 
- 
-		if ((text = realloc(text, sz + len + 1))) 
-		{ 
-		    memcpy(text + sz, arg, len); 
-		    text[sz += len] = 0; 
-		} 
-		else 
-		    break; 
-	    } 
- 
- 
-	    if (text && sz >= 1) { 
+void
+PRINT(vbp, ...)
+    VileBuf *vbp
+
+    ALIAS:
+	insert = 1
+
+    CODE:
+	if (vbp2bp(vbp) == bminip) {
+	    int i;
+	    char *text = 0;
+	    STRLEN sz = 0;
+	    for (i = 1; i < items; i++) {
+		STRLEN len;
+		char *arg = SvPV(ST(i), len);
+
+		if ((text = realloc(text, sz + len + 1)))
+		{
+		    memcpy(text + sz, arg, len);
+		    text[sz += len] = 0;
+		}
+		else
+		    break;
+	    }
+
+	    if (text && sz >= 1) {
 		if (text[sz-1] == '\n')
 		    text[sz-1] = 0;
-		mlforce("%s", text); 
-		use_ml_as_prompt = 1; 
-		free(text); 
-	    } 
-	} 
-	else { 
-	    for (i = 1; i < items; i++) { 
-		STRLEN len; 
-		char *arg = SvPV(ST(i), len); 
-		api_dotinsert(vbp, arg, len); 
-	    } 
-	} 
+		mlforce("%s", text);
+		use_ml_as_prompt = 1;
+		free(text);
+	    }
+	}
+	else {
+	    int i;
+	    for (i = 1; i < items; ) {
+		STRLEN len;
+		char *arg = SvPV(ST(i), len);
+		api_dotinsert(vbp, arg, len);
+		i++;
+		if (i < items && ofslen > 0)
+		    api_dotinsert(vbp, ofs, ofslen);
+	    }
+	    if (orslen > 0)
+		api_dotinsert(vbp, ors, orslen);
+	}
  
 #
 # <BUFOBJ>
@@ -686,70 +1174,114 @@ PRINT(vbp, ...)
 #       }
 #
 
-void 
-READLINE(vbp) 
-	VileBuf * vbp 
+void
+READLINE(vbp)
+    VileBuf * vbp
  
-	PPCODE: 
-	if (vbp2bp(vbp) == bminip) { 
-	    int status; 
-	    char buf[NLINE]; 
-	    char prompt[NLINE]; 
-	    buf[0] = EOS; 
-	    strcpy(prompt, "(perl input) "); 
-	    if (use_ml_as_prompt && !is_empty_buf(bminip)) { 
-		LINE *lp = lback(buf_head(bminip)); 
-		int len = llength(lp); 
-		if (len > NLINE-1) 
-		    len = NLINE-1; 
-		strncpy(prompt, lp->l_text, len); 
-		prompt[len] = 0; 
-	    } 
-	    status = mlreply_no_opts(prompt, buf, sizeof(buf)); 
-	    EXTEND(sp,1); 
-	    if (!status) { 
-		PUSHs(&sv_undef); 
-	    } 
-	    else { 
-		use_ml_as_prompt = 0; 
-		PUSHs(sv_2mortal(newSVpv(buf,0))); 
-	    } 
-	} 
-	else { 
-	    I32 gimme = GIMME_V; 
-	    if (gimme == G_VOID || gimme == G_SCALAR) { 
-		size_t len; 
-		int rval; 
-		char *p; 
-		int neednewline;
-		rval = api_dotgline(vbp, &p, &len, &neednewline); 
-		if (gimme == G_SCALAR) { 
-		    EXTEND(sp,1); 
-		    if (!rval) { 
-			PUSHs(&sv_undef); 
-		    } 
-		    else { 
-			SV *sv = newSVpv(p, len); 
-			if (neednewline)
-			    sv_catpv(sv, "\n"); 
-			PUSHs(sv_2mortal(sv)); 
-		    } 
-		} 
-	    } 
-	    else { /* wants an array */ 
-		size_t len; 
-		int status; 
-		char *p; 
-		int neednewline;
+    PPCODE:
+	if (vbp2bp(vbp) == bminip) {
+	    int status;
+	    char buf[NLINE];
+	    char prompt[NLINE];
+	    buf[0] = EOS;
+	    strcpy(prompt, "(perl input) ");
+	    if (use_ml_as_prompt && !is_empty_buf(bminip)) {
+		LINE *lp = lback(buf_head(bminip));
+		int len = llength(lp);
+		if (len > NLINE-1)
+		    len = NLINE-1;
+		strncpy(prompt, lp->l_text, len);
+		prompt[len] = 0;
+	    }
+	    status = mlreply_no_opts(prompt, buf, sizeof(buf));
+	    EXTEND(sp,1);
+	    if (status != TRUE && status != FALSE) {
+		PUSHs(&sv_undef);
+	    }
+	    else {
+		use_ml_as_prompt = 0;
+		PUSHs(sv_2mortal(newSVpv(buf,0)));
+	    }
+	}
+	else {
+	    I32 gimme = GIMME_V;
+	    struct MARK old_DOT;
+	    int (*f)(SV**,VileBuf*,char*,int);
+	    char *rsstr;
+	    int rslen;
+
+	    if (RsSNARF(rs)) {
+		f = svgetregion;
+		rsstr = 0;
+		rslen = 0;
+	    }
+	    else {
+		rsstr = SvPV(rs, rslen);
+		if (rslen == 1 && *rsstr == '\n')
+		    f = svgetline;
+		else
+		    f = svgettors;
+	    }
+
+	    /* Set up the fake window */
+	    api_setup_fake_win(vbp, TRUE);
+	    if (!vbp->dot_inited) {
+		DOT = vbp->region.r_orig;	/* set DOT to beginning of region */
+		vbp->dot_inited = 1;
+	    }
+
+	    old_DOT = DOT;
+
+	    if (gimme == G_VOID || gimme == G_SCALAR) {
+		SV *sv;
+		(void) f(&sv, vbp, rsstr, rslen);
+		if (gimme == G_SCALAR) {
+		    XPUSHs(sv_2mortal(sv));
+		}
+	    }
+	    else { /* wants an array */
+		SV *sv;
  
-		while (api_dotgline(vbp, &p, &len, &neednewline)) { 
-		    SV *sv = newSVpv(p, len); 
-		    if (neednewline)
-			sv_catpv(sv, "\n"); 
-		    XPUSHs(sv_2mortal(sv)); 
-		} 
-	    } 
-	} 
+		while (f(&sv, vbp, rsstr, rslen)) {
+		    XPUSHs(sv_2mortal(sv));
+		}
+	    }
+	    if (vbp->inplace_edit) {
+		DOT = old_DOT;
+	    }
+	}
+
+#
+# fetch BUFOBJ
+#
+#	Returns the current region or remainder thereof.
+#
+
+void
+fetch(vbp)
+    VileBuf * vbp
+ 
+    PREINIT:
+	SV *sv;
+	struct MARK old_DOT;
+
+    PPCODE:
+	/* Set up the fake window */
+	api_setup_fake_win(vbp, TRUE);
+	if (!vbp->dot_inited) {
+	    DOT = vbp->region.r_orig;	/* set DOT to beginning of region */
+	    vbp->dot_inited = 1;
+	}
+
+	old_DOT = DOT;
+
+	svgetregion(&sv, vbp, 0, 0);
+
+	XPUSHs(sv_2mortal(sv));
+
+	if (vbp->inplace_edit)
+	    DOT = old_DOT;
+
  
 
 #
@@ -858,14 +1390,14 @@ new(...)
  
 int 
 inplace_edit(vbp, ...) 
-	VileBuf *vbp 
+    VileBuf *vbp
  
-	CODE: 
+    CODE:
 	RETVAL = vbp->inplace_edit; 
 	if (items > 1) 
 	    vbp->inplace_edit = SvIV(ST(1)); 
 	 
-	OUTPUT: 
+    OUTPUT:
 	RETVAL 
  
 #
@@ -923,11 +1455,11 @@ void
 setregion(vbp, ...) 
     VileBuf *vbp
  
-    PREINIT: 
+    PREINIT:
 	I32 gimme; 
 	char *shapestr; 
  
-    PPCODE: 
+    PPCODE:
 	api_setup_fake_win(vbp, TRUE);
 	switch (items) { 
 	    case 1: 
@@ -1088,18 +1620,17 @@ setregion(vbp, ...)
  
 void 
 dot(vbp, ...) 
-	VileBuf *vbp
+    VileBuf *vbp
  
-	PREINIT: 
+    PREINIT:
 	I32 gimme;  
  
-	PPCODE: 
+    PPCODE:
 	api_setup_fake_win(vbp, TRUE);
 	if ( items > 3) { 
 	    croak("Invalid number of arguments");  
 	} 
 	else if (items > 1) { 
-	    I32 linenum; 
 	    /* Expect a line number or '$' */ 
  
 	    api_gotoline(vbp, sv2linenum(ST(1)));  
@@ -1157,7 +1688,7 @@ delete(vbp)
 #	it was called with.
 #
 #	In either an array or scalar context, if the motion string was
-#	bad, and undef is returned.  (Motions that don't work are okay,
+#	bad, and undef is returned.  Motions that don't work are okay,
 #	such as 'h' when you're already at the left edge of a line.  But
 #	attempted "motions" like 'inewstring' will result in an error.
 #
@@ -1238,15 +1769,120 @@ motion(vbp,mstr)
  
 VileBuf *
 attribute_cntl_a_sequences(vbp) 
-	VileBuf *vbp
+    VileBuf *vbp
  
-	CODE: 
+    CODE:
 	api_setup_fake_win(vbp, TRUE);
-	attribute_cntl_a_sequences_over_region(&vbp->region); 
+	attribute_cntl_a_sequences_over_region(&vbp->region, vbp->regionshape); 
 	RETVAL = vbp; 
  
-	OUTPUT: 
-	RETVAL 
+    OUTPUT:
+	RETVAL
+
+#
+# attribute BUFOBJ LIST
+#
+#	Attach an attributed region to the region associated with BUFOBJ
+#	with the attributes found in LIST.
+#
+#	These attributes may be any of the following:
+#
+#		'color' => NUM		(where NUM is the color number
+#					 from 0 to 15)
+#		'underline'
+#		'bold'
+#		'reverse'
+#		'italic'
+#		'hyper' => HYPERCMD	(where HYPERCMD is a string
+#					representing a vile command to
+#					execute.  It may also be a
+#					(perl) subroutine reference.
+#		'normal'
+#
+#	Normal is a special case.  It will override any other arguments
+#	passed in and remove all attributes associated with the region.
+#		
+
+void
+attribute(vbp, ...)
+    VileBuf *vbp
+
+    PPCODE:
+	if (items <= 1) {
+	    /* Hmm.  What does this mean?  Should we attempt to fetch
+	       the attributes for this region?  Should we turn off all
+	       the attributes?
+
+	       Personally, I think it'd be cool to return a list of
+	       all the regions and their attributes.  But I'll save
+	       that exercise for another night...
+	    */
+	}
+	else {
+	    int i;
+	    char *atname;
+	    VIDEO_ATTR vattr = 0;
+	    int normal = 0;
+	    char *hypercmd = 0;
+	    int status;
+
+	    for (i = 1; i < items; i++) {
+		atname = SvPV(ST(i), na);
+		if (       strcmp(atname, "underline") == 0) {
+		    vattr |= VAUL;
+		} else if (strcmp(atname, "bold"     ) == 0) {
+		    vattr |= VABOLD;
+		} else if (strcmp(atname, "reverse"  ) == 0) {
+		    vattr |= VAREV;
+		} else if (strcmp(atname, "italic"   ) == 0) {
+		    vattr |= VAITAL;
+		} else if (strcmp(atname, "normal"   ) == 0) {
+		    normal = 1;
+		} else if (strcmp(atname, "color"    ) == 0) {
+		    i++;
+		    if (i < items) {
+			vattr |= VCOLORATTR(SvIV(ST(i)) & 0xf);
+		    }
+		    else {
+			croak("Color attribute not supplied");
+		    }
+		} else if (strcmp(atname, "hyper"    ) == 0
+		        || strcmp(atname, "hypertext") == 0) {
+		    i++;
+		    if (i < items) {
+			if (SvROK(ST(i)) 
+			    && SvTYPE(SvRV(ST(i))) == SVt_PVCV)
+			{
+			    /* We have a code ref */
+			    hypercmd = stringify_coderef(ST(i));
+			}
+			else {
+			    /* It's just a string */
+			    hypercmd = strdup(SvPV(ST(i),na));
+			}
+		    }
+		    else {
+			croak("Hypertext command not supplied");
+		    }
+		} else {
+		    croak("Invalid attribute");
+		}
+	    }
+
+	    if (normal) {
+		vattr = 0;
+		hypercmd = 0;
+	    }
+
+	    status = attributeregion_over_region(
+	    		&vbp->region, vbp->regionshape, vattr, hypercmd);
+
+	    if (status == TRUE)		/* not the same as "if (status)" */
+		XPUSHs(ST(0));		/* return buffer object */
+	    else
+		XPUSHs(&sv_undef);	/* else return undef */
+	}
+
  
 #
 # unmark 
@@ -1258,14 +1894,14 @@ attribute_cntl_a_sequences(vbp)
  
 VileBuf *
 unmark(vbp) 
-	VileBuf *vbp
+    VileBuf *vbp
  
-	CODE: 
+    CODE:
 	api_setup_fake_win(vbp, TRUE);
 	unmark(0,0); 
 	RETVAL = vbp; 
  
-	OUTPUT: 
+    OUTPUT:
 	RETVAL 
 
 #
@@ -1279,31 +1915,91 @@ unmark(vbp)
  
 void
 command(vbp,cline)  
-	VileBuf *vbp
-	char *cline;  
+    VileBuf *vbp
+    char *cline
  
     PREINIT:
 	int status;
-    PPCODE:  
+    PPCODE:
 	api_setup_fake_win(vbp, TRUE);
-	status = docmd(cline,FALSE,1);  
+	status = docmd(cline, TRUE, FALSE, 1);  
 	if (status) {
 	    XPUSHs(ST(0));		/* return buffer object */
 	}
 	else {
 	    XPUSHs(&sv_undef);		/* return undef */
 	}
+
+#
+# buffername BUFOBJ
+#
+#	Returns the buffer name associated with BUFOBJ.
+#
+# buffername BUFOBJ BUFNAME
+#
+#	Sets the buffer name associated with BUFOBJ to the string
+#	given by BUFNAME.  This string must be unique.  If the name
+#	given is already being used by another buffer, or if it's
+#	malformed in some way, undef will be returned.  Otherwise
+#	the name of the buffer will be returned.
+#
+#	Note: The name of the buffer returned may be different than
+#	that passed in due some adjustments that may be done on the
+#	buffer name.  (It will be trimmed of spaces and a length limit
+#	is imposed.)
+#
+# filename BUFOBJ
+#
+#	Returns the file name associated with BUFOBJ.
+#
+# filename BUFOBJ FILENAME
+#
+#	Sets the name of the file associated with BUFOBJ to the string
+#	given by FILENAME.
+#
+
+void
+buffername(vbp,...)
+    VileBuf *vbp
+
+    ALIAS:
+	filename = 1
+
+    PREINIT:
+	int status;
+
+    PPCODE:
+
+	status = TRUE;
+	api_setup_fake_win(vbp, TRUE);
+
+	if (items > 2)
+	    croak("Too many arguments to %s", 
+	          ix == 0 ? "buffername" : "filename");
+	else if (items == 2) {
+	    if (ix == 0)
+		status = renamebuffer(curbp, SvPV(ST(1),na));
+	    else
+		ch_fname(curbp, SvPV(ST(1),na));
+	}
+
+	if (status == TRUE) {
+	    XPUSHs(sv_2mortal(newSVpv(ix == 0 ? 
+	                              curbp->b_bname : curbp->b_fname, 0)));
+	}
+	else {
+	    XPUSHs(&sv_undef);		/* return undef */
+	}
+
   
 
 MODULE = Vile	PACKAGE = Vile
 
 void
 Warn(warning)
-	char *warning;
+    char *warning
 
-	PREINIT:
-	int i;
-	CODE:
+    CODE:
 	mlforce("%s",SvPV(GvSV(errgv), na));
 	/* don't know if this actually works... */
 	sv_catpv(GvSV(errgv),warning);
@@ -1327,13 +2023,13 @@ Warn(warning)
  
 SV * 
 mlreply(prompt, ...) 
-	char *prompt 
+    char *prompt 
  
-	PREINIT: 
+    PREINIT:
 	char buf[NLINE]; 
 	int status; 
  
-	CODE: 
+    CODE:
 	if (items == 2) { 
 	    strncpy(buf, SvPV(ST(1),na), NLINE-1); 
 	    buf[NLINE-1] = EOS; 
@@ -1345,10 +2041,11 @@ mlreply(prompt, ...)
  
 	status = mlreply(prompt, buf, sizeof(buf)); 
  
-	RETVAL = status ? newSVpv(buf, 0) : newSVsv(&sv_undef); 
+	RETVAL = (status == TRUE || status == FALSE) 
+	         ? newSVpv(buf, 0) : newSVsv(&sv_undef); 
  
-	OUTPUT: 
-	RETVAL 
+    OUTPUT:
+	RETVAL
  
 #
 # mlreply_no_opts PROMPT 
@@ -1365,13 +2062,13 @@ mlreply(prompt, ...)
  
 SV * 
 mlreply_no_opts(prompt, ...) 
-	char *prompt 
+    char *prompt
  
-	PREINIT: 
+    PREINIT:
 	char buf[NLINE]; 
 	int status; 
  
-	CODE: 
+    CODE:
 	if (items == 2) { 
 	    strncpy(buf, SvPV(ST(1),na), NLINE-1); 
 	    buf[NLINE-1] = EOS; 
@@ -1383,10 +2080,11 @@ mlreply_no_opts(prompt, ...)
  
 	status = mlreply_no_opts(prompt, buf, sizeof(buf)); 
  
-	RETVAL = status ? newSVpv(buf, 0) : newSVsv(&sv_undef); 
+	RETVAL = (status == TRUE || status == FALSE) 
+	         ? newSVpv(buf, 0) : newSVsv(&sv_undef); 
  
-	OUTPUT: 
-	RETVAL 
+    OUTPUT:
+	RETVAL
  
 #
 # mlreply_file PROMPT 
@@ -1404,14 +2102,14 @@ mlreply_no_opts(prompt, ...)
  
 SV * 
 mlreply_file(prompt, ...) 
-	char *prompt 
+    char *prompt
  
-	PREINIT: 
+    PREINIT:
 	char buf[NFILEN]; 
 	static TBUFF *last; 
 	int status; 
  
-	CODE: 
+    CODE:
 	if (items == 2) { 
 	    tb_scopy(&last, SvPV(ST(1),na)); 
 	} 
@@ -1419,11 +2117,13 @@ mlreply_file(prompt, ...)
 	    croak("Too many arguments to mlreply_file"); 
 	} 
 	 
+	buf[0] = EOS;
 	status = mlreply_file(prompt, &last, FILEC_UNKNOWN, buf); 
  
-	RETVAL = status ? newSVpv(buf, 0) : newSVsv(&sv_undef); 
+	RETVAL = (status == TRUE || status == FALSE)
+	         ? newSVpv(buf, 0) : newSVsv(&sv_undef); 
  
-	OUTPUT: 
+    OUTPUT:
 	RETVAL 
  
 #
@@ -1442,14 +2142,14 @@ mlreply_file(prompt, ...)
  
 SV * 
 mlreply_dir(prompt, ...) 
-	char *prompt 
+    char *prompt
  
-	PREINIT: 
+    PREINIT:
 	char buf[NFILEN]; 
 	static TBUFF *last; 
 	int status; 
  
-	CODE: 
+    CODE:
 	if (items == 2) { 
 	    tb_scopy(&last, SvPV(ST(1),na)); 
 	} 
@@ -1457,12 +2157,14 @@ mlreply_dir(prompt, ...)
 	    croak("Too many arguments to mlreply_dir"); 
 	} 
 	 
-	status = mlreply_dir(prompt, &last, buf); 
+	buf[0] = EOS;
+	status = mlreply_dir(prompt, &last, buf);
  
-	RETVAL = status ? newSVpv(buf, 0) : newSVsv(&sv_undef); 
+	RETVAL = (status == TRUE || status == FALSE)
+	         ? newSVpv(buf, 0) : newSVsv(&sv_undef);
  
-	OUTPUT: 
-	RETVAL 
+    OUTPUT:
+	RETVAL
 
 
 #
@@ -1475,12 +2177,141 @@ mlreply_dir(prompt, ...)
 #	cause seg faults.)
 #
  
-int  
-command(cline)  
-	char *cline;  
+int
+command(cline)
+    char *cline
  
-	CODE:  
-	RETVAL = docmd(cline,FALSE,1);  
-  
-	OUTPUT:  
-	RETVAL  
+    CODE:
+	RETVAL = docmd(cline, TRUE, FALSE, 1);
+
+    OUTPUT:
+	RETVAL
+
+#
+# keystroke
+# keystroke WAITVAL
+#
+#	Returns a single, fairly raw keystroke from the keyboard.
+#
+#	The optional WAITVAL indicates if the editor should wait
+#	for the next keystroke.  When WAITVAL is false, undef will
+#	be returned if no input is ready.
+#
+
+void
+keystroke(...)
+
+    PPCODE:
+	if (items > 1)
+	    croak("Too many arguments to keystroke");
+	else if (items == 1 && !SvTRUE(ST(0))) {
+	    if (!sysmapped_c_avail()) {
+		XPUSHs(&sv_undef);
+	    }
+	}
+	XPUSHs(sv_2mortal(newSViv(sysmapped_c())));
+
+
+#
+# working
+#
+# working VAL
+#
+#	Returns value 1 if working message will be printed during
+#	substantial pauses, 0 if disabled.
+#
+#	When passed an argument, modifies value of the working message.
+#
+
+int
+working(...)
+
+    CODE:
+	if (items > 1)
+	    croak("Too many arguments to working");
+	else if (items == 1) {
+	    no_working = !SvIV(ST(0));
+	}
+
+	RETVAL = !no_working;
+    OUTPUT:
+	RETVAL
+
+#
+# update
+#
+#	Update the editor's display.  It is usually not necessary to
+#	call this if you're returning to the editor in fairly short
+#	order.  It will be necessary to call this, for example, if
+#	you write an input loop in perl which writes things to some
+#	on-screen buffers, but does not return to the editor immediately.
+#
+
+void
+update()
+    PPCODE:
+	api_update();
+
+#
+# watchfd FD, WATCHTYPE, CALLBACK 
+#
+#	Adds a callback so that when the file descriptor FD is available
+#	for a particular type of I/O activity (specified by WATCHTYPE),
+#	the callback associated with CALLBACK is called.
+#
+#	WATCHTYPE must be one of 'read', 'write', or 'except' and have
+#	the obvious meanings.
+#
+#	The callback should either be a string representing a vile
+#	command to execute (good luck) or (more usefully) a Perl subroutine
+#	reference.
+#
+
+void
+watchfd(fd, watchtypestr, ...)
+    int fd
+    char *watchtypestr
+
+    PREINIT:
+	char *cmd;
+	int   watchtype;
+
+    
+    PPCODE:
+	if (items != 3)
+	    croak("Wrong number of arguments to watchfd");
+
+	if (strcmp(watchtypestr, "read") == 0)
+	    watchtype = WATCHREAD;
+	else if (strcmp(watchtypestr, "write") == 0)
+	    watchtype = WATCHWRITE;
+	else if (strcmp(watchtypestr, "except") == 0)
+	    watchtype = WATCHEXCEPT;
+	else
+	    croak("Second argument to watchfd must be one of \"read\", \"write\", or \"except\".");
+
+	if (SvROK(ST(2)) 
+	    && SvTYPE(SvRV(ST(2))) == SVt_PVCV)
+	{
+	    /* We have a code ref (cool) */
+	    cmd = stringify_coderef(ST(2));
+	}
+	else {
+	    /* It's just a string (how boring) */
+	    cmd = strdup(SvPV(ST(2),na));
+	}
+	watchfd(fd, watchtype, cmd);
+
+#
+# unwatchfd FD
+#
+#	Removes the callback associated with FD and frees up the
+#	associated data structures.
+#
+
+void
+unwatchfd(fd)
+    int fd
+
+    PPCODE:
+	unwatchfd(fd);

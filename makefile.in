@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.99 1998/04/12 19:52:58 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.100 1998/04/20 09:54:03 kev Exp $
 #
 
 #### Start of system configuration section. ####
@@ -159,7 +159,7 @@ VILESRC = main.c api.c basic.c bind.c btree.c buffer.c crypt.c csrch.c \
 	modes.c msgs.c npopen.c oneliner.c opers.c path.c random.c \
 	regexp.c region.c search.c select.c spawn.c tags.c \
 	tbuff.c termio.c undo.c version.c \
-	window.c word.c wordmov.c
+	watch.c window.c word.c wordmov.c
 
 ALLSRC = $(VILESRC) $(SCREENS) $(OTHERSRC) $(HDRS)
 
@@ -201,7 +201,7 @@ OBJ = $(SCREEN).o \
 	modes.o msgs.o oneliner.o opers.o path.o random.o \
 	regexp.o region.o search.o select.o tags.o \
 	tbuff.o termio.o undo.o version.o \
-	window.o word.o wordmov.o @EXTRAOBJS@
+	watch.o window.o word.o wordmov.o @EXTRAOBJS@
 
 all:	$(TARGET) vile-manfilt$x vile-c-filt$x vile-crypt$x
 

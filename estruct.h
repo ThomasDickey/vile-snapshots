@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.343 1998/04/15 09:59:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.344 1998/04/20 09:54:03 kev Exp $
  */
 
 #ifndef _estruct_h
@@ -865,6 +865,12 @@ typedef enum {
 #else
 #define	KBD_NORMAL	KBD_EXPAND
 #endif
+
+typedef enum {
+    WATCHREAD   = iBIT(0),
+    WATCHWRITE  = iBIT(1),
+    WATCHEXCEPT = iBIT(2),
+} WATCHTYPE;
 
 /* reserve space for ram-usage option */
 #if OPT_RAMSIZE
@@ -1904,6 +1910,12 @@ typedef struct	{
 	void	(*t_pflush) (void);	/* really flush 		*/
 	void	(*t_icursor) (int c);	/* set cursor shape for insertion */
 	void	(*t_title) (char *t);	/* set window title		*/
+	int	(*t_watchfd)(int, WATCHTYPE, long *);
+					/* Watch a file descriptor for
+					   input; execute associated
+					   command when input is present*/
+	void	(*t_unwatchfd)(int, long);
+					/* Don't watch file descriptor	*/
 }	TERM;
 
 /*	TEMPORARY macros for terminal I/O  (to be placed in a machine
@@ -1930,6 +1942,8 @@ typedef struct	{
 #define	TTpflush()	(*term.t_pflush)()
 #define	TTicursor(c)	(*term.t_icursor)(c)
 #define	TTtitle(t)	(*term.t_title)(t)
+#define TTwatchfd(fd,tp,idp) (*term.t_watchfd)(fd,tp,idp)
+#define TTunwatchfd(fd,id) (*term.t_unwatchfd)(fd,id)
 
 typedef struct  VIDEO {
         UINT	v_flag;                 /* Flags */

@@ -1,9 +1,10 @@
 /* 
  * api.c -- (roughly) nvi's api to perl and tcl
  *
- * Status of this file:  Many of the functions in this file are unused.
+ * Status of this file:  Some of the functions in this file are unused.
  * Early on, I was trying for compatibility with nvi's perl interface.
- * Now that I'm not, I've gotten lazy and have been skipping this layer.
+ * Now that I'm not, I've gotten lazy and have occassionally been skipping
+ * this layer.
  *
  * Some of the code in this file is still used and is, in fact, very
  * important.  There's other code which may simply be removed.
@@ -26,6 +27,8 @@ extern REGION *haveregion;
 
 static WINDOW *curwp_after;
 
+static void propagate_dot(void);
+
 /* Maybe this should go in line.c ? */
 static int
 linsert_chars(char *s, int len)
@@ -46,41 +49,82 @@ linsert_chars(char *s, int len)
     /* I wrote the code this way both for efficiency reasons and 
        so that the MARK denoting the end of the range wouldn't 
        be moved to one of the newly inserted lines. 
- 
-       I have no doubt it could be made much more efficient still 
-       by moving it into line.c and rewriting it to insert chunks 
-       of characters en masse. 
     */ 
     int nlcount = 0; 
     int nlatend = 0; 
+    int nlsuppress = 0;
+    int mdnewline = b_val(curbp, MDNEWLINE);
  
     if (len <= 0) 
 	return 0; 
  
+    if (DOT.l == buf_head(curbp)) {
+	if (!mdnewline) {
+	    DOT.l = lback(DOT.l);
+	    DOT.o = llength(DOT.l);
+	}
+	if (s[len-1] == '\n') {
+	    nlsuppress = TRUE;
+	    if (!mdnewline) {
+		make_local_b_val(curbp, MDNEWLINE);
+		set_b_val(curbp, MDNEWLINE, TRUE);
+	    }
+	}
+	else {
+	    if (mdnewline) {
+		make_local_b_val(curbp, MDNEWLINE);
+		set_b_val(curbp, MDNEWLINE, FALSE);
+	    }
+	}
+    }
+
     if (s[len-1] == '\n') { 
-	if (!is_empty_buf(curbp)) { 
+	if (!mdnewline 
+	    && lforw(DOT.l) == buf_head(curbp) 
+	    && DOT.o == llength(DOT.l))
+	{
+	    nlsuppress = TRUE;
+	    make_local_b_val(curbp, MDNEWLINE);
+	    set_b_val(curbp, MDNEWLINE, TRUE);
+	}
+	if (!nlsuppress) { 
  
-	    /* We implicitly get a newline by inserting anything into 
-	       an empty buffer.  If we insert a newline into an empty 
-	       buffer, we'll end up getting two of them. */ 
+	    /* We implicitly get a newline by inserting anything at
+	       the head of a buffer (which includes the empty buffer
+	       case).  So if we actually insert a newline, we'll end
+	       up getting two of them.  (Which is something we don't
+	       want unless MDNEWLINE is TRUE.) */
  
 	    lnewline(); 
 	    nlcount++; 
 	    DOT.l = lback(DOT.l);		/* back up DOT to the newly */ 
-	    DOT.o = 0;			/* inserted line */ 
+	    DOT.o = llength(DOT.l);		/* inserted line */ 
 	} 
 	nlatend = 1; 
 	len--; 
     } 
  
-    while (len-- > 0) { 
+    while (len > 0) { 
 	if (*s == '\n') { 
 	    lnewline(); 
 	    nlcount++; 
+	    s++; 
+	    len--;
 	} 
-	else 
-	    linsert(1, *s); 
-	s++; 
+	else {
+	    int i;
+	    /* Find next newline so we can do block insert; We
+	       start at 1, because we know the first character
+	       can't be a newline. */
+	    for (i = 1; i < len && s[i] != '\n'; i++)
+		;
+	    linsert(i, *s);
+	    if (i > 1) {
+		memcpy(DOT.l->l_text + DOT.o - i + 1, s + 1, i - 1); 
+	    }
+	    len -= i;
+	    s += i;
+	}
     } 
  
     if (nlatend) { 
@@ -271,7 +315,7 @@ api_gotoline(VileBuf *vbp, int lno)
 	return TRUE;
     }
     else {
-	DOT.l = lback(buf_head(bp));
+	DOT.l = buf_head(bp);
 	return FALSE;
     }
 
@@ -500,7 +544,7 @@ api_motion(VileBuf *vbp, char *mstr)
     char *mp;
     int   c, f, n, s;
 
-    if (mp == NULL)
+    if (mstr == NULL)
 	return FALSE;
 
     api_setup_fake_win(vbp, TRUE); 
@@ -576,8 +620,10 @@ api_edit(VileBuf *vbp, char *fname, VileBuf **retvbpp)
 int
 api_swscreen(VileBuf *oldsp, VileBuf *newsp)
 {
+    WINDOW *fwp;
+    WINDOW *cwp;
     /*  
-     * FIXME: Calling api_command_cleanup nukes various state, like DOT 
+     * Calling api_command_cleanup nukes various state, like DOT 
      * Now if DOT got propogated, all is (likely) well.  But if it didn't, 
      * then DOT will likely be in the wrong place if the executing perl 
      * script expects to access a buffer on either side of a switchscreen 
@@ -602,13 +648,47 @@ api_swscreen(VileBuf *oldsp, VileBuf *newsp)
      * Anyhow, there's a lot of issues here requiring careful 
      * consideration.  Which is why I haven't already done it. 
      *		- kev 4/3/1998 
+     *
+     * Okay, I put in the stuff for detaching and reattaching fake
+     * windows, but the above noted caveats still apply.
+     *		- kev 4/18/1998
      */ 
-    api_command_cleanup();		/* pop the fake windows */
+
+    cwp  = is_fake_win(curwp) ? curwp : NULL;
+    fwp = detach_fake_windows();
+
+    if (cwp) {
+	curwp = (curwp_after) ? curwp_after : wheadp;
+	curbp = curwp->w_bufp;
+    }
 
     if (oldsp)
 	swbuffer(vbp2bp(oldsp));
     swbuffer(vbp2bp(newsp));
+
     curwp_after = curwp;
+    reattach_fake_windows(fwp);
+
+    if (cwp)
+	curwp = cwp;
+
+    return TRUE;
+}
+
+/* Causes the screen(s) to be updated */
+void
+api_update(void)
+{
+    WINDOW *fwp;
+    WINDOW *cwp = is_fake_win(curwp) ? curwp : NULL;
+    propagate_dot();
+    fwp = detach_fake_windows();
+    if (cwp)
+	curwp = (curwp_after) ? curwp_after : wheadp;
+    update(TRUE);
+    reattach_fake_windows(fwp);
+    if (cwp)
+	curwp = cwp;
 }
 
 /*
@@ -616,19 +696,16 @@ api_swscreen(VileBuf *oldsp, VileBuf *newsp)
  * do an efficient implementation for vile.
  */
 
-void
-api_command_cleanup(void)
+
+
+/* Propagate DOT for the fake windows that need it;
+   Also do any outstanding (deferred) deletes. */ 
+static void
+propagate_dot(void)
 {
-    BUFFER *bp;
     WINDOW *wp; 
 
-    if (curwp_after == 0)
-	curwp_after = curwp;
-
-    /* Propagate DOT for the fake windows that need it;
-       Also do any outstanding (deferred) deletes. */ 
- 
-    for_each_window(wp) { 
+    for_each_window(wp) {
 	if (!is_fake_win(wp)) { 
 	    /* We happen to know that the fake windows will always 
 	       be first in the buffer list.  So we exit the loop 
@@ -640,7 +717,7 @@ api_command_cleanup(void)
 	api_setup_fake_win(bp2vbp(wp->w_bufp), TRUE);
 
 	if (bp2vbp(wp->w_bufp)->dot_changed) { 
-	    if (curwp_after->w_bufp == wp->w_bufp) { 
+	    if (curwp_after && curwp_after->w_bufp == wp->w_bufp) { 
 		curwp_after->w_dot = wp->w_dot; 
 		curwp_after->w_flag |= WFHARD; 
 	    } 
@@ -665,6 +742,18 @@ api_command_cleanup(void)
 	    } 
 	} 
     } 
+}
+
+void
+api_command_cleanup(void)
+{
+    BUFFER *bp;
+
+    if (curwp_after == 0)
+	curwp_after = curwp;
+
+    /* Propgate dot to the visible windows and do any deferred deletes */
+    propagate_dot();
  
     /* Pop the fake windows */
 
@@ -683,6 +772,8 @@ api_command_cleanup(void)
 
     if (curbp != curwp->w_bufp)
 	make_current(curwp->w_bufp);
+
+    MK = DOT;			/* make sure MK is in same buffer as DOT */
 }
 
 void

@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.78 1998/03/24 10:14:15 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.79 1998/04/20 09:54:03 kev Exp $
  *
  */
 
@@ -1137,5 +1137,55 @@ is_fake_win(WINDOW *wp)
 { 
     return wp->w_toprow < 0; 
 } 
+
+/*
+ * detach_fake_windows and reattach_fake_windows exist because I'm
+ * too lazy to teach the rest of vile about fake windows.  It seemed
+ * easier to just remove them from the window list in situations where
+ * they may cause problems.
+ *
+ * If this ends up looking like too much of a hack, we should get rid
+ * of these functions and do it right.
+ */
+WINDOW *
+detach_fake_windows(void)
+{
+    WINDOW *fwp = NULL;
+    WINDOW *wp, *pwp;
+
+    pwp = NULL;
+    for_each_window(wp) {
+	if (!is_fake_win(wp))
+	    break;
+	wp->w_bufp->b_nwnd--;		/* decrement window count for buffer */
+	pwp = wp;
+    }
+
+    if (wp != wheadp) {
+	fwp = wheadp;
+	wheadp = wp;
+	pwp->w_wndp = NULL;	/* If pwp is NULL, then there's a bug with
+				   our logic here...  (which is why I don't
+				   check it) */
+    }
+    return fwp;
+}
+
+void
+reattach_fake_windows(WINDOW *fwp)
+{
+    WINDOW *wp;
+
+    for (wp = fwp; wp; wp = wp->w_wndp) {
+	wp->w_bufp->b_nwnd++;	/* increment window count */
+	if (wp->w_wndp == NULL)
+	    break;
+    }
+
+    if (wp) {
+	wp->w_wndp = wheadp;
+	wheadp = fwp;
+    }
+}
  
 #endif

@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.167 1997/11/30 21:27:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.168 1998/04/20 09:54:03 kev Exp $
  *
  */
 
@@ -1123,6 +1123,75 @@ zotbuf(register BUFFER *bp)	/* kill the buffer pointed to by bp */
 	return (s);
 }
 
+
+/* Rename a buffer given a buffer pointer and new buffer name. */
+int
+renamebuffer(BUFFER *rbp, char *bufname)
+{
+	register BUFFER *bp;	/* pointer to scan through all buffers */
+	char bufn[NBUFN];	/* buffer to hold buffer name */
+	WINDOW *wp;
+
+	strncpy(bufn, bufname, NBUFN-1);
+	bufn[NBUFN-1] = 0;
+
+	if (*mktrimmed(bufn) == EOS)
+		return(ABORT);
+
+	bp = find_b_name(bufn);
+
+	if (bp == curbp)
+		return(ABORT);		/* no change */
+
+	if (bp != 0)
+		return FALSE;		/* name already in use */
+
+#if OPT_NAMEBST
+	if (is_scratchname(rbp->b_bname)) {
+		char procname[NBUFN];
+		(void) strip_brackets(procname, rbp->b_bname);
+		if (search_namebst(procname)
+		 && rename_namebst(procname, bufn) != TRUE)
+			return ABORT;
+	}
+#endif
+	set_bname(rbp, bufn);	/* copy buffer name to structure */
+
+	for_each_window(wp)
+		if (wp->w_bufp == rbp)
+			wp->w_flag |= WFMODE;
+
+	return(TRUE);
+}
+
+#define NEW_NAMEBUFFER 1
+#if NEW_NAMEBUFFER
+/* ARGSUSED */
+int
+namebuffer(int f GCC_UNUSED, int n GCC_UNUSED)	/*	Rename the current buffer	*/
+{
+	static char bufn[NBUFN];	/* buffer to hold buffer name */
+	const char *prompt = "New name for buffer: ";
+	int status;
+
+	/* prompt for and get the new buffer name */
+	do {
+		if (mlreply(prompt, bufn, sizeof(bufn)) != TRUE)
+			return(FALSE);
+		if (*mktrimmed(bufn) == EOS)
+			return(FALSE);
+		prompt = "That name's been used.  New name: ";
+		status = renamebuffer(curbp, bufn);
+		if (status == ABORT)
+			return(FALSE);
+	} while (status == FALSE);
+
+	b_clr_scratch(curbp);	/* if renamed, we must want it */
+	mlerase();
+	updatelistbuffers();
+	return(TRUE);
+}
+#else
 /* ARGSUSED */
 int
 namebuffer(int f GCC_UNUSED, int n GCC_UNUSED)	/*	Rename the current buffer	*/
@@ -1159,6 +1228,7 @@ namebuffer(int f GCC_UNUSED, int n GCC_UNUSED)	/*	Rename the current buffer	*/
 	updatelistbuffers();
 	return(TRUE);
 }
+#endif /* NEW_NAMEBUFFER */
 
 /* create or find a window, and stick this buffer in it.  when
 	done, we own the window and the buffer, but they are _not_
