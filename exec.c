@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.140 1997/08/15 23:50:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.141 1997/08/30 01:12:56 tom Exp $
  *
  */
 
@@ -800,7 +800,7 @@ const CMDFUNC *execfunc,	/* ptr to function to execute */
 int f, int n)
 {
 	register int status;
-	register long flags;
+	register CMDFLAGS flags;
 
 	if (execfunc == NULL) {
 #if OPT_REBIND

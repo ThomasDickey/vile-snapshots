@@ -2,9 +2,13 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.186 1997/08/11 22:04:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.187 1997/08/22 09:32:58 cmorgan Exp $
  *
  */
+
+#ifdef _WIN32
+# include <windows.h>
+#endif
 
 #include	"estruct.h"
 #include	"edef.h"

@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.329 1997/06/06 10:36:53 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.330 1997/08/25 10:14:22 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1007,7 +1007,7 @@ implement $title for tcap.c
 -- 96-10-19 (tom)
 
 implement Vile, Sh, Csh, Dcl modes with keyword-balancing using the C fences
-(different keywords).  Make cmode a special case of majormode, deprecated.
+(different keywords).
 
 -- 96-10-19 (tom)
 
@@ -1250,14 +1250,6 @@ input.  It's as if the entire pipe operation was discarded.
 [What's happening is that there's a "Broken pipe" message that should be
 visible, but is not, since the "Read xx lines" message overwrites it, the fix
 would be to propagate the error up better - tom]
-
--- 97-04-02 (Philippe Chassany <phil@cln46ks.der.edf.fr>)
-
-Pressing tab directly after a :e command, the message
-
-	[Bad pattern: NULL parameter] appears !!!
-
-[I'm not able to duplicate this - tom]
 
 -- 97-04-21 (Joseph F. Garvey <garvey@garveys.raleigh.ibm.com>)
 

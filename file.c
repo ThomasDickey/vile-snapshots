@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.211 1997/08/11 23:38:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.212 1997/08/30 00:36:18 tom Exp $
  *
  */
 
@@ -1009,7 +1009,7 @@ slowreadf(register BUFFER *bp, int *nlinep)
 		unixlines = 0;
 #endif
 #if SYS_UNIX || SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT	/* i.e., we can read from a pipe */
-	int	flag = 0;
+	USHORT	flag = 0;
 	int	done_update = FALSE;
 #endif
 #if SYS_UNIX

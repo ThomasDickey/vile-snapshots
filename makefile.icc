@@ -1,6 +1,6 @@
 #
 # 'vile' and 'mktbls' makefile for IBM C Set ++ 2.x (OS/2)
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.6 1997/05/26 14:59:10 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.7 1997/08/30 01:16:33 tom Exp $
 #
 
 # 
@@ -9,7 +9,8 @@
 CC = icc
 
 # Debug options:
-DEBUG_FLAGS = /Ti+
+#DEBUG_FLAGS = /Ti+ /Wpor /Wext /Wuse /Wini /Wuni /Wgot
+#DEBUG_FLAGS = /Ti+ /Wpor /Wext /Wuse /Wini /Wgot
 
 # Production options:
 PROD_FLAGS  = /O+

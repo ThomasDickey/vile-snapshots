@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.233 1997/08/15 23:57:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.234 1997/08/24 22:58:26 tom Exp $
  *
  */
 
@@ -3028,6 +3028,7 @@ mlmsg(const char *fmt, va_list *app)
 		mlsavep = mlsave;
 #if	OPT_POPUP_MSGS
 		if (global_g_val(GMDPOPUP_MSGS) || (curwp == 0)) {
+			TRACE(("mlmsg popup_msgs #1 for '%s'\n", fmt))
 			popup_msgs();
 			msg_putc('\n');
 			dfoutfn = msg_putc;
@@ -3049,6 +3050,7 @@ mlmsg(const char *fmt, va_list *app)
 		kbd_expand = -1;
 #if	OPT_POPUP_MSGS
 		if (global_g_val(GMDPOPUP_MSGS)) {
+			TRACE(("mlmsg popup_msgs #2 for '%s'\n", fmt))
 			popup_msgs();
 			if (mlsave[0] == EOS) {
 				msg_putc('\n');

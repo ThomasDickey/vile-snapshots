@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.95 1997/08/16 12:15:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.97 1997/08/30 00:44:56 tom Exp $
  *
  */
 
@@ -74,6 +74,7 @@ static MAJORMODE_LIST * lookup_mm_list(const char *name);
 static int attach_mmode(BUFFER *bp, const char *name);
 static int detach_mmode(BUFFER *bp, const char *name);
 static int enable_mmode(const char *name, int flag);
+static void init_my_mode_list(void);
 
 #if OPT_UPBUFF
 static void relist_majormodes(void);
@@ -84,13 +85,15 @@ static void relist_majormodes(void);
 #define MODE_CLASSES 3
 #define is_bool_type(type) ((type) == VALTYPE_BOOL)
 #define relist_majormodes() /* nothing */
+#define init_my_mode_list() /* nothing */
+#define my_mode_list all_modes
 
 #endif /* OPT_MAJORMODE */
 
 /*--------------------------------------------------------------------------*/
 
 static void
-set_winflags(int glob_vals, int flags)
+set_winflags(int glob_vals, USHORT flags)
 {
 	if (glob_vals) {
 		register WINDOW *wp;
@@ -1017,12 +1020,7 @@ listmodes(int f, int n GCC_UNUSED)
 static int
 mode_complete(DONE_ARGS)
 {
-#if OPT_MAJORMODE
-	if (my_mode_list == 0)
-		my_mode_list = (const char **)all_modes;
-#else
-#define my_mode_list all_modes
-#endif
+	init_my_mode_list();
 
 	return kbd_complete(FALSE, c, buf, pos,
 		(const void *)&my_mode_list[0], sizeof(my_mode_list[0]));
@@ -1141,7 +1139,7 @@ find_mode(const char *mode, int global, VALARGS *args)
 
 			if (n >= len
 			 && !strncmp(rp, p->name, len)
-			 && (k = lookup_valnames(rp+len, b_valnames)) >= 0
+			 && (k = lookup_valnames(rp+len+(rp[len]=='-'), b_valnames)) >= 0
 			 && is_local_val(p->data->mb.bv,k)) {
 				TRACE(("...found submode %s\n", b_valnames[k].name))
 				args->names  = b_valnames + k;
@@ -1570,10 +1568,7 @@ count_modes (void)
 {
 	size_t n;
 
-#if OPT_MAJORMODE
-	if (my_mode_list == 0)
-		my_mode_list = (const char **)all_modes;
-#endif
+	init_my_mode_list();
 
 	for (n = 0; my_mode_list[n] != 0; n++)
 		;
@@ -1605,6 +1600,13 @@ list_of_modes (void)
 /*--------------------------------------------------------------------------*/
 
 #if OPT_MAJORMODE
+static int
+ok_submode(const char *name)
+{
+	/* like is_varmode, but allow "no" prefix */
+	return strcmp(name, "all") != 0 ? TRUE : FALSE;
+}
+
 /* format the name of a majormode's qualifier */
 static char *
 per_major(char *dst, const char *majr, int code, int brief)
@@ -1622,6 +1624,8 @@ static char *
 per_submode(char *dst, const char *majr, int code, int brief)
 {
 	if (brief) {
+		if (!strcmp(b_valnames[code].shortname, "X"))
+			return 0;
 		(void) lsprintf(dst, "%s%s", majr, b_valnames[code].shortname);
 	} else {
 		(void) lsprintf(dst, "%s-%s", majr, b_valnames[code].name);
@@ -1652,23 +1656,41 @@ count_majormodes (void)
 	return n;
 }
 
+static int
+found_per_submode(const char *majr, int code)
+{
+	size_t n;
+	char temp[NSTRING];
+
+	init_my_mode_list();
+
+	(void) per_submode(temp, majr, code, TRUE);
+	for (n = 0; my_mode_list[n] != 0; n++) {
+		if (!strcmp(my_mode_list[n], temp))
+			return TRUE;
+	}
+	return FALSE;
+}
+
 /*
  * Insert 'name' into 'my_mode_list[]', which has 'count' entries.
  */
 static size_t
 insert_per_major(size_t count, const char *name)
 {
-	size_t j, k;
+	if (name != 0) {
+		size_t j, k;
 
-	TRACE(("insert_per_major %d %s\n", count, name))
+		TRACE(("insert_per_major %d %s\n", count, name))
 
-	for (j = 0; j < count; j++) {
-		if (strcmp(my_mode_list[j], name) > 0)
-			break;
+		for (j = 0; j < count; j++) {
+			if (strcmp(my_mode_list[j], name) > 0)
+				break;
+		}
+		for (k = ++count; k != j; k--)
+			my_mode_list[k] = my_mode_list[k-1];
+		my_mode_list[j] = strmalloc(name);
 	}
-	for (k = ++count; k != j; k--)
-		my_mode_list[k] = my_mode_list[k-1];
-	my_mode_list[j] = name;
 	return count;
 }
 
@@ -1678,14 +1700,16 @@ insert_per_major(size_t count, const char *name)
 static size_t
 remove_per_major(size_t count, const char *name)
 {
-	size_t j, k;
+	if (name != 0) {
+		size_t j, k;
 
-	for (j = 0; j < count; j++) {
-		if (strcmp(my_mode_list[j], name) == 0) {
-			count--;
-			for (k = j; k <= count; k++)
-				my_mode_list[k] = my_mode_list[k+1];
-			break;
+		for (j = 0; j < count; j++) {
+			if (strcmp(my_mode_list[j], name) == 0) {
+				count--;
+				for (k = j; k <= count; k++)
+					my_mode_list[k] = my_mode_list[k+1];
+				break;
+			}
 		}
 	}
 	return count;
@@ -1765,16 +1789,18 @@ prompt_majormode(char **result, int defining)
 		&cbuf,
 		eol_history, ' ',
 		KBD_NORMAL,	/* FIXME: KBD_MAYBEC if !defining */
-		defining ? no_completion : major_complete)) == TRUE) {
+		(defining || clexec)
+			? no_completion
+			: major_complete)) == TRUE) {
 		/* FIXME: check for legal name (alphanumeric) */
 		if ((status = is_varmode(tb_values(cbuf))) == TRUE) {
 			*result = tb_values(cbuf);
 			if (defining && lookup_mm_data(*result) != 0) {
-				mlwarn("[Mode already exists]");
-				return FALSE;
+				TRACE(("Mode already exists\n"))
+				return SORTOFTRUE;
 			} else if (!defining && lookup_mm_data(*result) == 0) {
-				mlwarn("[Mode does not exist]");
-				return FALSE;
+				TRACE(("Mode does not exist\n"))
+				return SORTOFTRUE;
 			}
 			return TRUE;
 		}
@@ -1795,23 +1821,25 @@ static int
 prompt_submode(char **result, int defining)
 {
 	static TBUFF *cbuf; 	/* buffer to receive mode name into */
+	register const char *rp;
 	int status;
 
 	/* prompt the user and get an answer */
 	tb_scopy(&cbuf, "");
 	if ((status = kbd_reply("submode: ",
 		&cbuf,
-		eol_history, ' ',
+		eol_history, '=',
 		KBD_NORMAL,
 		submode_complete)) == TRUE) {
-		if ((status = is_varmode(tb_values(cbuf))) == TRUE) {
+		if ((status = ok_submode(tb_values(cbuf))) == TRUE) {
 			*result = tb_values(cbuf);
-			if (defining && lookup_mm_data(*result) != 0) {
-				mlwarn("[Mode already exists]");
-				return FALSE;
-			} else if (!defining && lookup_mm_data(*result) == 0) {
-				mlwarn("[Mode does not exist]");
-				return FALSE;
+			rp = !strncmp(*result, "no", 2) ? *result+2 : *result;
+			if (defining && lookup_mm_data(rp) != 0) {
+				TRACE(("Mode already exists\n"))
+				return SORTOFTRUE;
+			} else if (!defining && lookup_mm_data(rp) == 0) {
+				TRACE(("Mode does not exist\n"))
+				return SORTOFTRUE;
 			}
 			return TRUE;
 		}
@@ -1951,6 +1979,13 @@ free_majormode(const char *name)
 		return TRUE;
 	}
 	return FALSE;
+}
+
+static void
+init_my_mode_list(void)
+{
+	if (my_mode_list == 0)
+		my_mode_list = (const char **)all_modes;
 }
 
 static int
@@ -2154,13 +2189,11 @@ alloc_mode(const char *name, int predef)
 	 */
 	if (!predef) {
 		j = extend_mode_list((MAX_M_VALUES + 2) * 2);
-		j = insert_per_major(j, strmalloc(majorname(temp, name, FALSE)));
-		j = insert_per_major(j, strmalloc(majorname(temp, name, TRUE)));
+		j = insert_per_major(j, majorname(temp, name, FALSE));
+		j = insert_per_major(j, majorname(temp, name, TRUE));
 		for (n = 0; n < MAX_M_VALUES; n++) {
-			j = insert_per_major(j,
-				strmalloc(per_major(temp, name, n, TRUE)));
-			j = insert_per_major(j,
-				strmalloc(per_major(temp, name, n, FALSE)));
+			j = insert_per_major(j, per_major(temp, name, n, TRUE));
+			j = insert_per_major(j, per_major(temp, name, n, FALSE));
 		}
 	}
 
@@ -2177,10 +2210,11 @@ define_mode(int f GCC_UNUSED, int n GCC_UNUSED)
 	if ((status = prompt_majormode(&name, TRUE)) == TRUE) {
 		TRACE(("define majormode:%s\n", name))
 		status = alloc_mode(name, FALSE);
+		relist_settings();
+		relist_majormodes();
+	} else if (status == SORTOFTRUE) {
+		status = TRUE;	/* don't complain if it's already true */
 	}
-
-	relist_settings();
-	relist_majormodes();
 	return status;
 }
 
@@ -2195,6 +2229,7 @@ do_a_submode(int defining)
 	int j, k;
 	int qualifier = FALSE;
 	char temp[NSTRING];
+	char *rp;
 
 	if ((status = prompt_majormode(&name, FALSE)) != TRUE)
 		return status;
@@ -2203,17 +2238,18 @@ do_a_submode(int defining)
 		return status;
 
 	ptr = lookup_mm_data(name);
-	if ((j = lookup_valnames(subname, m_valnames)) >= 0) {
+	rp = !strncmp(subname, "no", 2) ? subname+2 : subname;
+	if ((j = lookup_valnames(rp, m_valnames)) >= 0) {
 		qualifier   = TRUE;
 		args.names  = m_valnames;
 		args.global = ptr->mm.mv;
 		args.local  = ptr->mm.mv;
-	} else if ((j = lookup_valnames(subname, b_valnames)) >= 0) {
+	} else if ((j = lookup_valnames(rp, b_valnames)) >= 0) {
 		args.names  = b_valnames;
 		args.global = defining ? ptr->mb.bv :global_b_values.bv;
 		args.local  = ptr->mb.bv;
 	} else {
-		mlwarn("[BUG: no such submode %s]", subname);
+		mlwarn("[BUG: no such submode %s]", rp);
 		return FALSE;
 	}
 
@@ -2238,15 +2274,18 @@ do_a_submode(int defining)
 
 	if (status == TRUE
 	 && !qualifier) {
-		k = extend_mode_list(2);
-		if (defining) {
+		if (defining && found_per_submode(name, j)) {
+			TRACE(("submode names for %d present\n", j))
+		} else if (defining) {
 			TRACE(("construct submode names for %d\n", j))
+			k = extend_mode_list(2);
 			k = insert_per_major(k,
-				strmalloc(per_submode(temp, name, j, TRUE)));
+				per_submode(temp, name, j, TRUE));
 			k = insert_per_major(k,
-				strmalloc(per_submode(temp, name, j, FALSE)));
+				per_submode(temp, name, j, FALSE));
 		} else {
 			TRACE(("destroy submode names for %d\n", j))
+			k = count_modes();
 			k = remove_per_major(k,
 				per_submode(temp, name, j, TRUE));
 			k = remove_per_major(k,
@@ -2292,6 +2331,8 @@ remove_mode(int f GCC_UNUSED, int n GCC_UNUSED)
 		} else {
 			mlwarn("[This is a predefined mode: %s]", name);
 		}
+	} else if (status == SORTOFTRUE) {
+		status = TRUE;
 	}
 	return status;
 }

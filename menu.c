@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.13 1997/06/07 23:40:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.14 1997/08/20 20:07:36 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -502,6 +502,9 @@ static void list_proc_back ( Widget w, XtPointer bname, XtPointer call GCC_UNUSE
     char *accel;
     XmString xms;
     XtVaGetValues (w, XmNacceleratorText, &xms, NULL);
+#ifndef XmFONTLIST_DEFAULT_TAG
+#define XmFONTLIST_DEFAULT_TAG "XmFONTLIST_DEFAULT_TAG_STRING"
+#endif
     XmStringGetLtoR (xms,  XmFONTLIST_DEFAULT_TAG, &accel);
     num_buff = atoi(&accel[1]);
 #endif

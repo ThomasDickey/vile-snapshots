@@ -2,10 +2,14 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.78 1997/05/25 23:33:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.79 1997/08/22 09:32:58 cmorgan Exp $
  *
  *
  */
+
+#ifdef _WIN32
+# include <windows.h>
+#endif
 
 #include	"estruct.h"
 #include        "edef.h"
