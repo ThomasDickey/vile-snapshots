@@ -1,5 +1,13 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (tom)	97121b (b)
+ 	+ add configure-test to see if $LIBS already contains termcap functions
+	  before looking for additional libraries.
+ 	+ amended CF_CURSES_TERMCAP and CF_TYPE_OUTCHAR tests to use vile's
+	  headers (correcting symbol conflict with NL in estruct.h vs curses.h),
+	  and to double-check that failure to link test with tgoto was
+	  due to conflict with prototype (latter reported by Brendan O'Dea).
+
  (tom)	971217 (a)
  	+ add CF_CURSES_TERMCAP macro to test for prototypes in curses.h vs
 	  termcap.h
