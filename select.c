@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.96 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.97 1999/05/26 00:47:06 tom Exp $
  *
  */
 
@@ -405,6 +405,8 @@ sel_yank(int reg)
 {
     REGIONSHAPE save_shape;
     WINDOW *save_wp;
+    BUFFER *save_bp;
+    int save_tabs;
 
     if (selbufp == NULL)
 	return FALSE;			/* No selection to yank */
@@ -412,15 +414,32 @@ sel_yank(int reg)
     if ((save_wp = push_fake_win(selbufp)) == NULL)
 	return FALSE;
 
+    /*
+     * We're not guaranteed that curbp and selbufp are the same.  So save
+     * curbp, so we can set it to selbufp, and the associated curtabval, which
+     * is used in tab and offset computations when we're doing a rectangular
+     * selection, e.g., in getoff().
+     */
+    save_bp    = curbp;
     save_shape = regionshape;
+    save_tabs  = curtabval;
+
+    curbp      = selbufp;
+    curtabval  = tabstop_val(curbp);
+
     ukb = reg;
     kregflag = 0;
     haveregion = &selregion.ar_region;
     regionshape = selregion.ar_shape;
     yankregion();
     haveregion = NULL;
-    regionshape = save_shape;
+
     pop_fake_win(save_wp);
+
+    curbp       = save_bp;
+    regionshape = save_shape;
+    curtabval   = save_tabs;
+
     show_selection_position(TRUE);
 
     /* put cursor back on screen...is there a cheaper way to do this?  */

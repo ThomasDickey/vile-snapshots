@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.57 1999/04/30 00:18:05 tom Exp $
+; $Id: filters.rc,v 1.59 1999/05/31 18:03:06 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -249,7 +249,7 @@ define-mode SCCS
 define-mode sh
 ~with define-submode sh
 	suf "\\.sh$"
-	pre "^#!\\s*\\/.*sh\\>\\s*\\(-[a-z]\\+\\s*\\)*$"
+	pre "^\\(#!\\s*\\/.*sh\\>\\s*\\(-[a-z]\\+\\s*\\)*\\|:\\)$"
 	comment-prefix	"^\\s*[:#]"
 	comments	"^\\s*[:#]\\s*$"
 	fence-if   "^\\s*\\<if\\>"
@@ -285,7 +285,7 @@ define-mode tc
 define-mode tcl
 ~with define-submode tcl
 	suf "\\(\\.tcl\\)$"
-	pre "^#!\\s*\\/.*wish\\>\\(\\s*-[a-z]\\+\\)*$"
+	pre "^#!\\s*\\/.*wish[0-9.]*\\>\\(\\s*-[a-z]\\+\\)*$"
 	comment-prefix	"^\\s*[:#]"
 	comments	"^\\s*[:#]\\s*$"
 ~endwith

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.203 1999/05/23 22:47:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.206 1999/06/01 23:08:32 tom Exp $
  *
  */
 
@@ -713,7 +713,7 @@ skip_text(char *src)
 }
 #endif
 
-#if OPT_COLOR_PALETTE
+#if OPT_COLOR
 void
 set_ctrans(const char *thePalette)
 {
@@ -789,21 +789,23 @@ update_colorlist(BUFFER *bp GCC_UNUSED)
 }
 #endif	/* OPT_UPBUFF */
 
-#endif
+#endif	/* OPT_SHOW_COLORS */
 
 /*
  * This function is used in several terminal drivers.
  */
-#if OPT_EVAL || OPT_COLOR_PALETTE
+#if OPT_EVAL || OPT_COLOR
 int
 set_palette(const char *value)
 {
 	tb_curpalette = tb_scopy(&tb_curpalette, value);
-#if OPT_COLOR_PALETTE
+#if OPT_COLOR
 	if (term.setpal == nullterm_setpal)
 		return FALSE;
 
+#if OPT_SHOW_COLORS
 	update_scratch(PALETTE_COLORS_BufName, update_colorlist);
+#endif
 	term.setpal(tb_values(tb_curpalette));
 	vile_refresh(FALSE,0);
 #endif

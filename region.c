@@ -5,7 +5,7 @@
  * commands. Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.97 1999/05/23 21:00:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.98 1999/05/26 00:40:13 tom Exp $
  *
  */
 
@@ -670,7 +670,7 @@ upperregion(void)
 }
 
 #if NEEDED
-/* this walks a region, char by char, and invokes a funcion for
+/* this walks a region, char by char, and invokes a function for
 	each.  it does _not_ know about rectangles, which is why it is
 	probably obsolete -- we can do_lines_in_region/do_chars_in_line
 	to get the same effect*/
@@ -934,7 +934,7 @@ int convert_cols)	/* if rectangle, convert columns to offsets */
 				r = region.r_rightcol;
 			    }
 			} else {
-				l =  w_left_margin(curwp);
+				l = w_left_margin(curwp);
 				r = llength(DOT.l);
 				if (sameline(region.r_orig, DOT))
 					l = region.r_orig.o;
@@ -943,7 +943,7 @@ int convert_cols)	/* if rectangle, convert columns to offsets */
 					/* if we're on the end-of-
 					 * region, in col 0, we're
 					 * done. we don't want to
-					 * call teh line function
+					 * call the line function
 					 * for the empty case
 					 */
 					if (r == 0)

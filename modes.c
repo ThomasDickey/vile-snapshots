@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.148 1999/05/19 01:35:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.154 1999/06/01 01:05:51 tom Exp $
  *
  */
 
@@ -32,6 +32,7 @@
 #define OPT_BACKUP_CHOICES	OPT_FILEBACK
 #define OPT_HILITE_CHOICES	OPT_HILITEMATCH
 #define OPT_RECORDFORMAT_CHOICES SYS_VMS
+#define OPT_VIDEOATTRS_CHOICES  OPT_COLOR_SCHEMES
 #define OPT_VTFLASHSEQ_CHOICES (VTFLASH_HOST && (OPT_FLASH))
 
 #include "nefsms.h"
@@ -267,6 +268,7 @@ struct VAL *globvalues)
 		}
 		if (ok) {
 			switch (names[j].type) {
+			case VALTYPE_ENUM:
 			case VALTYPE_STRING:
 			case VALTYPE_REGEX:
 				if (string_val(names+j, values+j) == 0) {
@@ -726,12 +728,32 @@ FSM_CHOICES fsm_error[] = {
 };
 #endif
 
+#if OPT_COLOR_CHOICES
+static const char s_fcolor[]       = "fcolor";
+static const char s_bcolor[]       = "bcolor";
+#endif
+
+#if OPT_COLOR_SCHEMES
+static const char s_default[]      = "default";
+static const char s_color_scheme[] = "color-scheme";
+static const char s_palette[]      = "palette";
+static const char s_video_attrs[]  = "video-attrs";
+static const
+FSM_CHOICES fsm_no_choices[] = {
+	{ s_default,   0},
+	END_CHOICES	/* ends table for name-completion */
+};
+#endif /* OPT_COLOR_SCHEMES */
+
 static
 struct FSM fsm_tbl[] = {
 	{ "*bool",           fsm_bool_choices  },
+#if OPT_COLOR_SCHEMES
+	{ s_color_scheme,    fsm_no_choices },
+#endif
 #if OPT_COLOR_CHOICES
-	{ "fcolor",          fsm_color_choices },
-	{ "bcolor",          fsm_color_choices },
+	{ s_fcolor,          fsm_color_choices },
+	{ s_bcolor,          fsm_color_choices },
 #endif
 #if OPT_POPUP_CHOICES
 	{ "popup-choices",   fsm_popup_choices },
@@ -746,6 +768,9 @@ struct FSM fsm_tbl[] = {
 	{ "mcolor",          fsm_hilite_choices },
 	{ "visual-matches",  fsm_hilite_choices },
 	{ "mini-hilite",     fsm_hilite_choices },
+#endif
+#if OPT_COLOR
+	{ s_video_attrs,     fsm_videoattrs_choices },
 #endif
 #if OPT_VTFLASHSEQ_CHOICES
 	{ "vtflash",         fsm_vtflashseq_choices },
@@ -1444,7 +1469,7 @@ chgd_color(VALARGS *args, int glob_vals, int testing)
 	return TRUE;
 }
 
-#if OPT_EVAL
+#if OPT_EVAL || OPT_COLOR_SCHEMES
 static void
 set_fsm_choice(const char *name, const FSM_CHOICES *choices)
 {
@@ -1535,8 +1560,8 @@ int set_colors(int n)
 		}
 		my_hilite[d].choice_name = 0;
 	}
-	set_fsm_choice("fcolor", the_colors);
-	set_fsm_choice("bcolor", the_colors);
+	set_fsm_choice(s_fcolor, the_colors);
+	set_fsm_choice(s_bcolor, the_colors);
 	set_fsm_choice("visual-matches", the_hilite);
 	set_fsm_choice("mini-hilite", the_hilite);
 #endif /* OPT_ENUM_MODES */
@@ -1552,7 +1577,7 @@ const char *get_color_name(int n)
 	int j;
 	struct VALNAMES names;
 	const FSM_CHOICES *the_colors;
-	names.name = "fcolor";
+	names.name = s_fcolor;
 	the_colors = name_to_choices(&names);
 	for (j = 0; the_colors[j].choice_name != 0; j++) {
 		if (n == the_colors[j].choice_code)
@@ -2862,6 +2887,418 @@ set_majormode_rexp(const char *name, int n, const char *r)
 #endif /* OPT_MAJORMODE */
 
 /*--------------------------------------------------------------------------*/
+
+#if OPT_COLOR_SCHEMES
+typedef struct {
+	char *	name;
+	UINT	code;
+	int	fcol;
+	int	bcol;
+	int	attr;	/* bold, reverse, underline, etc. */
+	char *	list;
+} PALETTES;
+
+static UINT current_scheme;
+static UINT num_schemes;
+static PALETTES *my_schemes;
+static FSM_CHOICES *my_scheme_choices;
+
+static int
+set_scheme_color(const FSM_CHOICES *fp, int *d, char *s)
+{
+#if OPT_ENUM_MODES
+	int nval;
+
+	if (isDigit(*s)) {
+		if (!string_to_number(s, &nval))
+			return FALSE;
+		if (choice_to_name(fp, nval) == 0)
+			nval = ENUM_ILLEGAL;
+	} else {
+		nval = choice_to_code(fp, s);
+	}
+	*d = nval;
+	return TRUE;
+#else
+	return string_to_number(s, d);
+#endif
+}
+
+static void
+set_scheme_string(char **d, char *s)
+{
+	if (*d)
+		free(*d);
+	*d = s ? strmalloc(s) : 0;
+}
+
+/*
+ * Find a scheme
+ */
+static PALETTES *
+find_scheme(const char *name)
+{
+	PALETTES *result = 0, *p;
+
+	if ((p = my_schemes) != 0) {
+		while (p->name != 0) {
+			if (!strcmp(p->name, name)) {
+				result = p;
+				break;
+			}
+			p++;
+		}
+	}
+	return result;
+}
+
+static PALETTES *
+find_scheme_by_code(UINT code)
+{
+	PALETTES *result = 0, *p;
+
+	if ((p = my_schemes) != 0) {
+		while (p->name != 0) {
+			if (p->code == code) {
+				result = p;
+				break;
+			}
+			p++;
+		}
+	}
+	return result;
+}
+
+/*
+ * Update the list of choices for color scheme
+ */
+static void
+update_scheme_choices(void)
+{
+	int n;
+	if (my_scheme_choices != 0) {
+		my_scheme_choices = typereallocn(FSM_CHOICES, my_scheme_choices, num_schemes);
+	} else {
+		my_scheme_choices = typeallocn(FSM_CHOICES, num_schemes);
+	}
+	for (n = 0; n < (int) num_schemes; n++) {
+		my_scheme_choices[n].choice_name = my_schemes[n].name;
+		my_scheme_choices[n].choice_code = my_schemes[n].code;
+	}
+	set_fsm_choice(s_color_scheme, my_scheme_choices);
+}
+
+static int
+same_string(char *p, char *q)
+{
+	if (p == 0) p = "";
+	if (q == 0) q = "";
+	return !strcmp(p, q);
+}
+
+/*
+ * Set the current color scheme, given a pointer to its attributes
+ */
+static int
+set_current_scheme(PALETTES *p)
+{
+	PALETTES *q = find_scheme_by_code(current_scheme);
+
+	current_scheme = p->code;
+
+	if (p->fcol != q->fcol
+	 || p->bcol != q->bcol
+	 || p->attr != q->attr
+	 || !same_string(p->list, q->list)) {
+
+		if (p->list != 0)
+			set_palette(p->list);
+
+		set_global_g_val(GVAL_FCOLOR,p->fcol);
+		term.setfore(gfcolor);
+
+		set_global_g_val(GVAL_BCOLOR,p->bcol);
+		term.setback(gbcolor);
+
+		set_global_g_val(GVAL_VIDEO,p->attr);
+
+		return TRUE;
+	}
+	return FALSE;
+}
+
+/*
+ * Remove a color scheme, except for the 'default' scheme.
+ */
+static int
+free_scheme(char *name)
+{
+	PALETTES *p;
+
+	if (strcmp(name, s_default)
+	 && (p = find_scheme(name)) != 0) {
+		UINT code = p->code;
+
+		free (p->name);
+		if (p->list != 0) free (p->list);
+		while (p->name != 0) {
+			p[0] = p[1];
+			p++;
+		}
+		num_schemes--;
+		update_scheme_choices();
+
+		if (code == current_scheme)
+			(void) set_current_scheme(find_scheme(s_default));
+
+		return TRUE;
+	}
+	return FALSE;
+}
+
+/*
+ * Allocate a new scheme
+ */
+static PALETTES *
+alloc_scheme(const char *name)
+{
+	static UINT code;
+	PALETTES *result;
+
+	if ((result = find_scheme(name)) == 0) {
+		int len = ++num_schemes;
+		if (len == 1) {
+			len = ++num_schemes;
+			my_schemes = typecallocn(PALETTES, len);
+		} else {
+			my_schemes = typereallocn(PALETTES, my_schemes, len);
+		}
+		len--;	/* point to list-terminator */
+		my_schemes[len].name = 0;
+		while (--len > 0) {
+			my_schemes[len] = my_schemes[len-1];
+			if (my_schemes[len-1].name != 0
+			 && strcmp(my_schemes[len-1].name, name) < 0)
+				break;
+		}
+		my_schemes[len].name = strmalloc(name);
+		my_schemes[len].code = code++;	/* unique identifier */
+		my_schemes[len].fcol = -1;
+		my_schemes[len].bcol = -1;
+		my_schemes[len].attr = 0;
+		my_schemes[len].list = 0;
+		result = &my_schemes[len];
+		update_scheme_choices();
+	}
+	return result;
+}
+
+static int
+scheme_complete(int c, char *buf, unsigned *pos)
+{
+	return kbd_complete(FALSE, c, buf, pos, (const char *)&my_schemes[0],
+		sizeof(my_schemes[0]));
+}
+
+static int
+prompt_scheme_name(char **result, int defining)
+{
+	static TBUFF *cbuf;	/* buffer to receive mode name into */
+	int status;
+
+	/* prompt the user and get an answer */
+	tb_scopy(&cbuf, "");
+	if ((status = kbd_reply("name: ",
+		&cbuf,
+		eol_history, ' ',
+		KBD_NORMAL,	/* FIXME: KBD_MAYBEC if !defining */
+		(defining || clexec)
+			? no_completion
+			: scheme_complete)) == TRUE) {
+		/* check for legal name (alphanumeric) */
+		if ((status = is_identifier(tb_values(cbuf))) != TRUE) {
+			mlwarn("[Not an identifier: %s]", tb_values(cbuf));
+			return status;
+		}
+		*result = tb_values(cbuf);
+		return status;
+	}
+	return status;
+}
+
+/* this table must be sorted, since we do name-completion on it */
+static const struct VALNAMES scheme_values[] = {
+	{ s_bcolor,      s_bcolor,        VALTYPE_ENUM },
+	{ s_fcolor,      s_fcolor,        VALTYPE_ENUM },
+	{ s_palette,     s_palette,       VALTYPE_STRING },
+	{ s_video_attrs, s_video_attrs,   VALTYPE_ENUM },
+	{ 0,             0,               0 }
+	};
+
+static int
+scheme_value_complete(int c, char *buf, unsigned *pos)
+{
+	return kbd_complete(FALSE, c, buf, pos,
+		(const char *)&scheme_values[0],
+		sizeof(scheme_values[0]));
+}
+
+static int
+prompt_scheme_value(PALETTES *p)
+{
+	static TBUFF *cbuf;	/* buffer to receive mode name into */
+	int status;
+
+	/* prompt the user and get an answer */
+	tb_scopy(&cbuf, "");
+	if ((status = kbd_reply("scheme value: ",
+		&cbuf,
+		eol_history, '=',
+		KBD_NORMAL,	/* FIXME: KBD_MAYBEC if !defining */
+		scheme_value_complete)) == TRUE) {
+		char	respbuf[NFILEN];
+		char *	name = tb_values(cbuf);
+		int	code = *name;
+		int	eolchar = (code == *s_palette) ? '\n' : ' ';
+		int	(*complete) (DONE_ARGS) = no_completion;
+#if OPT_ENUM_MODES
+		const FSM_CHOICES *fp = 0;
+		const struct VALNAMES *names;
+		for (code = 0; scheme_values[code].name; code++) {
+			if (!strcmp(name, scheme_values[code].name)) {
+				names = &scheme_values[code];
+				if (is_fsm(names))
+					complete = fsm_complete;
+				fp = name_to_choices(names);
+				break;
+			}
+		}
+#else
+		void *fp = 0;
+#endif
+		tb_sappend0(&cbuf, " value: ");
+		*respbuf = EOS;
+		status = kbd_string(name, respbuf, sizeof(respbuf), eolchar,
+				KBD_NORMAL, complete);
+		if (*name == *s_video_attrs) {
+			status = set_scheme_color(fp, &(p->attr), respbuf);
+		} else if (*name == *s_bcolor) {
+			status = set_scheme_color(fp, &(p->bcol), respbuf);
+		} else if (*name == *s_fcolor) {
+			status = set_scheme_color(fp, &(p->fcol), respbuf);
+		} else if (*name == *s_palette) {
+			set_scheme_string(&(p->list), respbuf);
+			return status;
+		}
+		if (status == TRUE)
+			return (end_string() == ' ') ? -1 : TRUE;
+	}
+	return status;
+}
+
+#if OPT_UPBUFF
+static int
+update_schemelist(BUFFER *bp GCC_UNUSED)
+{
+	return desschemes(FALSE, 1);
+}
+#endif	/* OPT_UPBUFF */
+
+/*
+ * Define the default color scheme, based on the current settings of color
+ * and $palette.
+ */
+void
+init_scheme(void)
+{
+	PALETTES *p = alloc_scheme(s_default);
+	char *list = tb_values(tb_curpalette);
+
+	p->fcol = gfcolor;
+	p->bcol = gbcolor;
+	if (list != 0)
+		p->list = strmalloc(list);
+}
+
+/*
+ * Define a color scheme, e.g.,
+ *	define-color-scheme {name} [fcolor={value}|bcolor={value}|{value}]
+ * where the {value}'s are all color names or constants 0..NCOLORS-1.
+ */
+int
+define_scheme(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+	char *name;
+	int status;
+
+	if ((status = prompt_scheme_name(&name, TRUE)) != FALSE) {
+		PALETTES *p = alloc_scheme(name);
+		while ((status = prompt_scheme_value(p)) < 0)
+			;
+	}
+	update_scratch(COLOR_SCHEMES_BufName, update_schemelist);
+	return status;
+}
+
+/*
+ * Remove a color scheme
+ */
+int
+remove_scheme(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+	char *name;
+	int status;
+
+	if (my_schemes == 0 || my_schemes->name == 0) {
+		status = FALSE;
+	} else if ((status = prompt_scheme_name(&name, FALSE)) != FALSE) {
+		status = free_scheme(name);
+	}
+	update_scratch(COLOR_SCHEMES_BufName, update_schemelist);
+	return status;
+}
+
+static void
+makeschemelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
+{
+	static const char fmt[] = "\n   %s=%s";
+	PALETTES *p;
+	int num = (num_schemes > 1) ? (num_schemes-1) : 0;
+
+	bprintf("There %s %d color scheme%s defined",
+		(num != 1) ? "are" : "is", num, PLURAL(num));
+
+	for (p = my_schemes; p != 0 && p->name != 0; p++) {
+		bprintf("\n\n%s", p->name);
+		bprintf(fmt, s_fcolor, get_color_name(p->fcol));
+		bprintf(fmt, s_bcolor, get_color_name(p->bcol));
+		bprintf(fmt, s_video_attrs,
+			choice_to_name(fsm_videoattrs_choices, p->attr));
+		if (p->list != 0)
+			bprintf(fmt, s_palette, p->list);
+	}
+}
+
+int
+desschemes(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+	return liststuff(COLOR_SCHEMES_BufName, FALSE, makeschemelist, 0, (void *)0);
+}
+
+int
+chgd_scheme(VALARGS *args, int glob_vals, int testing)
+{
+	if (!testing) {
+		if (set_current_scheme(&my_schemes[args->local->vp->i])) {
+			set_winflags(glob_vals, WFHARD|WFCOLR);
+			vile_refresh(FALSE,0);
+		}
+	}
+	return TRUE;
+}
+#endif /* OPT_COLOR_SCHEMES */
+
+/*--------------------------------------------------------------------------*/
 #if SYS_VMS
 const char *
 vms_record_format(int code)
@@ -2876,6 +3313,11 @@ vms_record_format(int code)
 void
 mode_leaks(void)
 {
+#if OPT_COLOR_SCHEMES
+	while (my_schemes != 0 && my_schemes->name != 0)
+		free_scheme(my_schemes->name);
+#endif
+
 #if OPT_ENUM_MODES && OPT_COLOR
 	FreeAndNull(my_colors);
 	FreeAndNull(my_hilite);
@@ -2884,6 +3326,7 @@ mode_leaks(void)
 #if OPT_EVAL || OPT_MAJORMODE
 	FreeAndNull(my_varmodes);
 #endif
+
 #if OPT_MAJORMODE
 	while (my_majormodes != 0 && my_majormodes->name != 0) {
 		char temp[NSTRING];

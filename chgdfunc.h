@@ -2,7 +2,7 @@
  * Prototypes for functions in the mode-tables (must be declared before the
  * point at which proto.h is included).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/chgdfunc.h,v 1.6 1998/10/31 01:58:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/chgdfunc.h,v 1.7 1999/05/31 18:44:20 tom Exp $
  */
 extern int chgd_autobuf  (CHGD_ARGS);
 extern int chgd_buffer   (CHGD_ARGS);
@@ -14,6 +14,9 @@ extern int chgd_disabled (CHGD_ARGS);
 extern int chgd_fences   (CHGD_ARGS);
 extern int chgd_major    (CHGD_ARGS);
 extern int chgd_major_w  (CHGD_ARGS);
+#if OPT_COLOR_SCHEMES
+extern int chgd_scheme   (CHGD_ARGS);
+#endif
 extern int chgd_status   (CHGD_ARGS);
 extern int chgd_undoable (CHGD_ARGS);
 extern int chgd_window   (CHGD_ARGS);

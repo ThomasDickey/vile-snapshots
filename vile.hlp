@@ -1016,14 +1016,15 @@ Editor modes
 			[Binding List]
 			[Buffer List]
 			[Color Palette]
+			[Color Schemes]
 			[Error Expressions]
 			[Major Modes]
 			[Map Sequences]
 			[Map! Sequences]
 			[Registers]
 			[Settings]
-			[Terminal Characters]
 			[Tag Stack]
+			[Terminal Characters]
 		Turning off "animated" is rarely necessary: the capability
 		is present mostly as a debugging aid.  (B)
 
@@ -1071,10 +1072,10 @@ Editor modes
 		using the ":w!" form of the write command.  (U)
 
 	bcolor	On systems supporting this, will set the background color.
-		Currently only terminfo/termcap, OS/2 and PC's (Win32, DOS) can
-		do color, although the X11 version (xvile) can be given colors
-		at startup or via .Xdefaults.  See notes about the color
-		palette down below, under DOS specifics.
+		On most systems, the choice of colors is fixed, although the
+		X11 version (xvile) can be given customized colors at startup
+		or via .Xdefaults.  See notes about the color palette down
+		below, under DOS specifics.  (U)
 
 	check-modtime  Check modification-time.  If a file has changed since
 		it was last read or written, vile will issue a "file newer
@@ -1089,7 +1090,7 @@ Editor modes
 		will cause all visible buffers (those currently in windows)
 		to have their times checked immediately.  (B)
 
-	cindent C-style indention.  Helps maintain current indentation level
+	cindent C-style indentation.  Helps maintain current indentation level
 		automatically during insert, like autoindent, above.  If a
 		line ends with a '{', '(', or ':', then the next line
 		indents further.  If a line begins with a '}' or ')', it is
@@ -1169,10 +1170,10 @@ Editor modes
 		the path stripped off).  (U)
 
 	fcolor	On systems supporting this, will set the foreground color.
-		Currently only terminfo/termcap, OS/2 and PC's (Win32, DOS) can
-		do color, although the X11 version (xvile) can be given colors
-		at startup or via .Xdefaults.  See notes about the color
-		palette down below, under DOS specifics.  (U)
+		On most systems, the choice of colors is fixed, although the
+		X11 version (xvile) can be given customized colors at startup
+		or via .Xdefaults.  See notes about the color palette down
+		below, under DOS specifics.  (U)
 
 	fence-begin
 	fence-end Respectively, the regular expressions for balancing simple
@@ -1516,6 +1517,9 @@ Editor modes
 		octal display.  Non-printing characters whose 8th bit is
 		not set are always displayed in control character (e.g. '^C')
 		notation.  (B)
+
+	video-attrs  Overlay all text with the given attribute: bold, italic,
+		underline or none.  (U)
 
 	view	View the file only.  No changes are permitted.  (B)
 
@@ -4101,4 +4105,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.415 1999/05/23 23:22:39 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.418 1999/06/01 23:12:23 tom Exp $

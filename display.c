@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.277 1999/05/22 14:27:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.281 1999/06/03 01:21:54 tom Exp $
  *
  */
 
@@ -17,6 +17,15 @@
 #define vMAXNEG (-vMAXINT)			/* 0x80000001 */
 
 #define	NU_WIDTH 8
+
+#define reset_term_attrs() term.rev(0)
+
+#ifdef GVAL_VIDEO
+#define VIDEOATTRS (VABOLD|VAUL|VAITAL)
+#define set_term_attrs(a)  term.rev(a ^ (global_g_val(GVAL_VIDEO) & VIDEOATTRS))
+#else
+#define set_term_attrs(a)  term.rev(a)
+#endif
 
 #define	MRK_EMPTY        '~'
 #define	MRK_EXTEND_LEFT  '<'
@@ -2228,7 +2237,7 @@ updateline(
     int	colto)		/* col to go to */
 {
     register char *vc, *pc, *evc;
-    register VIDEO_ATTR *va, *pa;
+    register VIDEO_ATTR *va, *pa, xx;
     int nchanges = 0;
 
     if ((vscreen[row]->v_flag & VFCHG) == 0)
@@ -2241,9 +2250,13 @@ updateline(
     pa  = &CELL_ATTR(row,colfrom);
 
     while (vc < evc) {
-	if (*vc != *pc || VATTRIB(*va) != VATTRIB(*pa)) {
+	xx = *va;
+#ifdef GVAL_VIDEO
+	xx ^= global_g_val(GVAL_VIDEO);
+#endif
+	if (*vc != *pc || VATTRIB(xx) != VATTRIB(*pa)) {
 	    *pc = *vc;
-	    *pa = *va | VADIRTY;
+	    *pa = xx | VADIRTY;
 	    nchanges++;
 	}
 	vc++;
@@ -2260,8 +2273,6 @@ updateline(
 #else  /* !OPT_PSCREEN */
 
 /*	UPDATELINE code for all other versions		*/
-
-#define TTattr(a) term.rev(a) /* FIXME */
 
 static void
 updateline(
@@ -2310,7 +2321,7 @@ int	colto)		/* first column on screen */
 		movecursor(row, colfrom);	/* Go to start of line. */
 		/* set rev video if needed */
 		if (req)
-			term.rev(req);
+			set_term_attrs(req);
 
 		/* scan through the line and dump it to the screen and
 		   the virtual screen array				*/
@@ -2321,7 +2332,7 @@ int	colto)		/* first column on screen */
 		}
 		/* turn rev video off */
 		if (req)
-			term.rev(FALSE);
+			reset_term_attrs();
 
 		/* update the needed flags */
 		vp1->v_flag &= ~(VFCHG|VFCOL);
@@ -2414,7 +2425,7 @@ int	colto)		/* first column on screen */
 		VIDEO_ATTR attr = VATTRIB(ap1[j]);
 		while ((j < xx) && (attr == VATTRIB(ap1[j])))
 			j++;
-		TTattr(attr);
+		set_term_attrs(attr);
 		for (; xl < j; xl++) {
 			term.putch(cp1[xl]);
 			++ttcol;
@@ -2422,7 +2433,7 @@ int	colto)		/* first column on screen */
 			ap2[xl] = ap1[xl];
 		}
 	}
-	TTattr(0);
+	reset_term_attrs();
 
 	if (xx != xr) {				/* Erase. */
 		term.eeol();
@@ -2435,7 +2446,7 @@ int	colto)		/* first column on screen */
 	}
 #else /* OPT_VIDEO_ATTRS */
 #if	OPT_REVSTA
-	term.rev(rev);
+	set_term_attrs(rev);
 #endif
 
 	for (; xl < xr; xl++) {		/* Ordinary. */
@@ -2451,7 +2462,7 @@ int	colto)		/* first column on screen */
 		}
 	}
 #if	OPT_REVSTA
-	term.rev(FALSE);
+	reset_term_attrs();
 #endif
 #endif /* OPT_VIDEO_ATTRS */
 	vp1->v_flag &= ~(VFCHG|VFCOL);

@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.7 1999/03/07 19:20:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.8 1999/05/30 00:53:55 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of NROFF
  */
@@ -67,14 +67,14 @@ COMMENT		^\.\\\"
 
 ENIT		\\[e *\n\\-]
 
-FONT		\\f[A-Z1-3]
+FONT		\\f[A-Z1-4]
 
 %%
 
 {COMMAND}			{ write_cmd(yytext, yyleng); }
 
-{FONT}([^\\\n]|{ENIT})+(\\f[^PR]|\n)	{ WriteToken(Action_attr); /* err? */ }
-{FONT}([^\\\n]|{ENIT})+\\f[PR]	{ write_font(yytext, yyleng); }
+{FONT}([^\\\n]|{ENIT})+(\\f[^PR1]|\n)	{ WriteToken(Action_attr); /* err? */ }
+{FONT}([^\\\n]|{ENIT})+\\f[PR1]	{ write_font(yytext, yyleng); }
 {ENIT}				{ WriteToken(Ident2_attr); }
 \\[s][+-]?[0-9]+		{ WriteToken(Ident2_attr); }
 

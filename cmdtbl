@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.170 1999/05/17 03:10:10 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.171 1999/05/31 18:47:21 tom Exp $
 #
 #
 
@@ -418,6 +418,9 @@ define_mode	NONE			OPT_MAJORMODE
 define_submode	NONE			OPT_MAJORMODE
 	"define-submode"
 	<define a submode within a major mode>
+define_scheme	NONE			OPT_COLOR_SCHEMES
+	"define-color-scheme"
+	<define a color scheme>
 delwind		NONE
 	"delete-window"			!FEWNAMES
 	'^K'
@@ -464,6 +467,9 @@ desopers	NONE			OPT_REBIND
 	"describe-operators"
 	"show-operators"
 	<show a list of all operator commands>
+desschemes	NONE			OPT_COLOR_SCHEMES
+	"show-color-schemes"
+	<show the color scheme parameters>
 desprint	NONE			OPT_SHOW_CTYPE
 	"show-printable"
 	<show the printable characters, with types>
@@ -1231,6 +1237,9 @@ remove_mode	NONE			OPT_MAJORMODE
 remove_submode	NONE			OPT_MAJORMODE
 	"remove-submode"
 	<delete the special definition of a submode from a major mode>
+remove_scheme	NONE			OPT_COLOR_SCHEMES
+	"remove-scheme"
+	<delete the given color scheme>
 reposition	NONE			!SMALLER
 	"redraw-display"
 	<redraw, cursor at center, or CNT'th line, or CNT'th from end if neg>

@@ -23,7 +23,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.379 1999/05/23 18:21:24 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.380 1999/05/31 19:05:52 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -448,6 +448,15 @@ MainProgram(int argc, char *argv[])
 	(void)open_terminal((TERM *)0);
 	term.kopen();		/* open the keyboard */
 	term.rev(FALSE);
+
+	/*
+	 * The terminal driver sets default colors and $palette during the
+	 * open_terminal function.  Save that information as the 'default'
+	 * color scheme.  We have to do this before reading .vilerc
+	 */
+#if OPT_COLOR_SCHEMES
+	init_scheme();
+#endif
 
 	if (vtinit() != TRUE)	/* allocate display memory */
 		tidy_exit(BADEXIT);
