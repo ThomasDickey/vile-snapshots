@@ -1,5 +1,34 @@
 Changes for vile 8.1 (released ??? ??? ??, 1998)
 
+ (tom) 980930 (u)
+	+ modify :ww command to ignore readonly buffers (reported by Chris
+	  Sherman).
+	+ add sample Redhat RPM spec file "vile.spec" (from Radek Liboska
+	  <liboska@uochb.cas.cz>).
+	+ add code to allow user to color Motif pulldown menus, ifdef'd with
+	  OPT_MENUS_COLORED, normally off since I prefer the toolkit's color
+	  scheme (patch by Mark D Robinson <Mark.D.Robinson@farn-wts.uk.Sun.COM>)
+	+ modify multimotion to reset regionshape to the original value on
+	  return after a selection is made, or to EXACT if the selection is
+	  aborted.  This corrects a case where performing quoted fullline
+	  motion would cause a succeeding "cw" command to affect the whole line
+	  (reported by Yuri Antonik <ya@islc.minsk.by>).
+	+ add syntax.pl, hilite.pl, which support syntax highlighting for perl,
+	  c and tcl (Kuntal Daftary).
+	+ modify os2vio.c so that when running vile in fullscreen mode, bright
+	  colors are used rather than blinking colors.
+ 	+ undo incorrect use of VFCOL mask from my 7.2q change, which caused
+	  the pscreen array to record VAREV attributes on shifted-in rows.
+	+ minor optimization in vtset function to perform better on very long
+	  lines.
+	+ modify x11.c to give xvile CDE-like quad-click support.  CDE's
+	  dtterms select the entire window (including scrollback) on a quad
+	  click.  Increased the timeout slightly to be able to repeatedly
+	  select this (patch by Ryan Murray).
+	+ documentation updates for visvile (patch by Clark Morgan).
+	+ fix a bug that prevented -font option from working on winvile
+	  (patch by Clark Morgan).
+
  (tom) 980925 (t)
  	+ correct two errors in AdjustedWidth and AdjustedHeight, making
 	  winvile resize properly when maximized, as well as not jumping when

@@ -17,9 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * - This code tested only on Win95 (to date).
- *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.3 1998/09/07 21:42:44 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.4 1998/09/28 01:07:48 cmorgan Exp $
  */
 
 #include <windows.h>

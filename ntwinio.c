@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.33 1998/09/25 09:40:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.34 1998/09/28 01:05:51 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -998,7 +998,7 @@ ntwinio_font_frm_str(
                                72);
     if (str_rslts.italic)
         logfont.lfItalic = TRUE;
-    logfont.lfCharSet        = ANSI_CHARSET;
+    logfont.lfCharSet        = DEFAULT_CHARSET; 
     logfont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
     strncpy(logfont.lfFaceName, str_rslts.face, LF_FACESIZE - 1);
     logfont.lfFaceName[LF_FACESIZE - 1] = '\0';
@@ -1027,7 +1027,7 @@ ntwinio_font_frm_str(
         {
             ReleaseDC(hwnd, hdc);
             DeleteObject(hfont);
-            msg = "Font face unknown";
+            msg = "Font face unknown or size/style unsupported"; 
             if (use_mb)
                 MessageBox(winvile_hwnd(), msg, prognam, MB_ICONSTOP|MB_OK);
             else

@@ -18,7 +18,7 @@
  * transfering the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.77 1998/09/22 10:57:45 Kuntal.Daftary Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.78 1998/09/29 22:54:51 tom Exp $
  *
  */
 
@@ -595,6 +595,7 @@ release_selection(int status)
 			mlerase();
 	}
 	sel_release();
+	regionshape = EXACT;
 	return status;
 }
 
@@ -758,6 +759,7 @@ multimotion(int f, int n)
 	const CMDFUNC	*cfp;
 	int s, c, waserr;
 	int pasting;
+	REGIONSHAPE oldshape = regionshape;
 	REGIONSHAPE shape;
 	MARK savedot;
 	MARK savemark;
@@ -933,6 +935,7 @@ multimotion(int f, int n)
 	s = yankregion();
 	DOT = savedot;
 	MK = savemark;
+	regionshape = oldshape;
 
 	sweephack = wassweephack = FALSE;
 
@@ -1019,7 +1022,7 @@ attributeregion(void)
 
 		    /* Earlier the overlapping region check was made based only
 		     * on line numbers and so was right only for FULLINES shape
-		     * changed it to be correct for EXACT and RECTANLGE also
+		     * changed it to be correct for EXACT and RECTANGLE also
 		     * -kuntal 9/13/98
 		     */
 		    /*

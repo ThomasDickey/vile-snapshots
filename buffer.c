@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.176 1998/09/19 22:52:06 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.177 1998/09/30 01:30:11 tom Exp $
  *
  */
 
@@ -2070,6 +2070,8 @@ writeall(int f, int n, int promptuser, int leaving, int autowriting)
 
 	for_each_buffer(bp) {
 		if (autowriting && !b_val(bp,MDAUTOWRITE))
+			continue;
+		if (b_val(bp,MDREADONLY))	/* ignore read-only buffer */
 			continue;
 		if (b_is_changed(bp) && !b_is_invisible(bp)) {
 			make_current(bp);

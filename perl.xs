@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.29 1998/07/26 22:08:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.30 1998/09/28 00:50:30 Kuntal.Daftary Exp $
  */
 
 /*#
@@ -2954,7 +2954,7 @@ delete(vbp)
   #
   # Examples:
   #
-  #     my $cb = $VILE::current_buffer; # Provide a convenient handle
+  #     my $cb = $Vile::current_buffer; # Provide a convenient handle
   #                                     # for the current buffer.
   #
   #     $linenum = $cb->dot;            # Fetch the line number at which dot

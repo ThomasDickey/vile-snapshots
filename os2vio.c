@@ -3,7 +3,7 @@
  * Modified from a really old version of "borland.c" (before the VIO
  * stuff went in there.)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.19 1998/05/14 23:18:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.20 1998/09/29 02:22:03 tom Exp $
  */
 
 #include "estruct.h"
@@ -477,6 +477,13 @@ vio_open(void)
 	}
 
 #if OPT_COLOR
+	{
+		VIOINTENSITY intense;
+		intense.cb   = sizeof(intense);
+		intense.type = 2;
+		intense.fs   = 1;	/* ask for bright colors, not blink */
+		VioSetState(&intense, 0);
+	}
 	set_palette(initpalettestr);
 	vio_fcol(gfcolor);
 	vio_bcol(gbcolor);

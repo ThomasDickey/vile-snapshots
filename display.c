@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.256 1998/09/03 10:04:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.258 1998/09/29 01:12:35 tom Exp $
  *
  */
 
@@ -691,16 +691,38 @@ vtset(LINEPTR lp, WINDOW *wp)
 	allow_wrap = w_val(wp,WMDLINEWRAP) ? mode_row(wp)-1 : 0;
 #endif
 
-	while ((vtcol <= term.t_ncol)
+	/*
+	 * The loops below are split up for a reason - there's a hidden side effect
+	 * which makes the final increment of vtcol inconsistent, so it won't
+	 * terminate until the end of the line.  For very long lines, that's a
+	 * performance hit.
+	 */
+#define VTSET_PUT(ch,count) if(list) vtlistc(ch); else vtputc(ch); count
 #ifdef WMDLINEWRAP
-	  &&   ((vtrow == term.t_nrow-1) || (vtrow < mode_row(wp)))
+	if (w_val(wp,WMDLINEWRAP))
+	{
+		while ((vtcol < term.t_ncol)
+		  &&   ((vtrow == term.t_nrow-1) || (vtrow < mode_row(wp)))
+		  &&   (n > 0)) {
+			VTSET_PUT(*from++,n--);
+		}
+		if ((vtcol <= term.t_ncol)
+		  &&   ((vtrow == term.t_nrow-1) || (vtrow < mode_row(wp)))
+		  &&   (n > 0)) {
+			VTSET_PUT(*from++,n--);
+		}
+	}
+	else
 #endif
-	  &&   (n > 0)) {
-		if (list)
-			vtlistc(*from++);
-		else
-			vtputc(*from++);
-		n--;
+	{
+		while ((vtcol < term.t_ncol)
+		  &&   (n > 0)) {
+			VTSET_PUT(*from++,n--);
+		}
+		if ((vtcol <= term.t_ncol)
+		  &&   (n > 0)) {
+			VTSET_PUT(*from++,n--);
+		}
 	}
 
 	/* Display a "^J" if 'list' mode is active, unless we've suppressed
@@ -1466,7 +1488,7 @@ updgar(void)
 		for (j = 0; j < term.t_ncol; ++j) {
 			CELL_TEXT(i,j) = ' ';
 #if OPT_VIDEO_ATTRS
-			CELL_ATTR(i,j) = VFCOL;
+			CELL_ATTR(i,j) = 0;
 #endif /* OPT_VIDEO_ATTRS */
 		}
 #endif
@@ -1625,6 +1647,8 @@ updattrs(WINDOW *wp)
 				   ap->ar_region.r_end.o - 1);
 		if (end_col < n)
 			end_col = n;
+		if (end_col < 0)
+			end_col = 0;
 	    } else {
 		end_col = offs2col(wp, lp, llength(lp));
 #ifdef WMDLINEWRAP
@@ -1986,7 +2010,7 @@ scrolls(int inserts)	/* returns true if it does something */
 			    MARK_LINE_DIRTY(a);				\
 			    for (j = 0; j < term.t_ncol; j++) {		\
 				CELL_TEXT(a,j) = ' ';			\
-				CELL_ATTR(a,j) = VFCOL;			\
+				CELL_ATTR(a,j) = 0;			\
 			    }						\
 			  } one_time
 		if (from < to) {

@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.233 1998/09/07 21:18:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.234 1998/09/29 02:22:01 tom Exp $
  *
  */
 
@@ -1886,9 +1886,6 @@ imdying(int ACTUAL_SIG_ARGS)
 		"."
 	};
 #endif
-#if !HAVE_MKDIR
-	char temp[NFILEN];
-#endif
 	char filnam[NFILEN];
 	BUFFER *bp;
 #if SYS_UNIX
@@ -1898,6 +1895,8 @@ imdying(int ACTUAL_SIG_ARGS)
 	static int wrote = 0;
 #if HAVE_MKDIR && !SYS_MSDOS && !SYS_OS2
 	static int created = FALSE;
+#else
+	char temp[NFILEN];
 #endif
 	static	int	i_am_dead;
 

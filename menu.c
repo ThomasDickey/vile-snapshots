@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.23 1998/08/27 10:39:03 Larry.Gensch Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.24 1998/09/29 23:53:17 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -384,6 +384,16 @@ static Widget do_cascade ( Widget menub, char *nom, int the_class )
 
     sprintf(str, "%sMenu", nom);
     pm = (Widget) XmCreatePulldownMenu (menub, str, NULL, 0);
+#if OPT_MENUS_COLORED
+    XtVaSetValues (pm,
+                XtNforeground,          x_menu_foreground(),
+                XtNbackground,          x_menu_background(),
+                NULL);
+    XtVaSetValues (menub,
+                XtNforeground,          x_menu_foreground(),
+                XtNbackground,          x_menu_background(),
+                NULL);
+#endif /* OPT_MENUS_COLORED */
 
     xms = XmStringCreateSimple (nom);
 
@@ -391,6 +401,10 @@ static Widget do_cascade ( Widget menub, char *nom, int the_class )
                 xmCascadeButtonWidgetClass,     menub,
                 XmNlabelString,         xms,
                 XmNsubMenuId,           pm,
+#if OPT_MENUS_COLORED
+                XtNforeground,          x_menu_foreground(),
+                XtNbackground,          x_menu_background(),
+#endif /* OPT_MENUS_COLORED */
                 NULL);
     XmStringFree (xms);
 
@@ -589,14 +603,14 @@ static void post_buffer_list ( Widget w GCC_UNUSED, XtPointer client GCC_UNUSED,
 
         if (nb_item_menu_list + 2 >= in_item_menu_list)
         {
-	    int m = in_item_menu_list;
+            int m = in_item_menu_list;
             in_item_menu_list = (in_item_menu_list + 3) * 2;
             if (pm_buffer != 0)
                 pm_buffer = typereallocn(Widget,pm_buffer,in_item_menu_list);
             else
                 pm_buffer = typeallocn(Widget,in_item_menu_list);
-	    while (m < in_item_menu_list)
-	        pm_buffer[m++] = 0;
+            while (m < in_item_menu_list)
+                pm_buffer[m++] = 0;
         }
 
         if (pm_buffer [nb_item_menu_list] == 0)
