@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.536 2003/07/01 00:32:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.537 2003/10/09 00:02:33 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -85,6 +85,10 @@
 # define SYS_SUNOS 1		/* FIXME: need to tweak lint ifdefs */
 #endif
 
+#if defined(__CYGWIN__) || defined(__CYGWIN32__)
+# define SYS_CYGWIN 1
+#endif
+
 #ifdef __EMX__
 # define SYS_OS2_EMX 1		/* makefile.emx, or configure-script */
 #endif
@@ -120,6 +124,10 @@
 
 #ifndef CC_WATCOM
 #define CC_WATCOM		0	/* WATCOM C/386 version 9.0 or above */
+#endif
+
+#ifndef SYS_CYGWIN
+#define SYS_CYGWIN	     	0       /* Unix'ed Win32                */
 #endif
 
 #ifndef SYS_MSDOS
@@ -553,7 +561,7 @@
 
 /* systems with MSDOS-like filename syntax */
 #define OPT_MSDOS_PATH  (SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_OS2_EMX)
-#define OPT_CASELESS	(SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_OS2_EMX || SYS_VMS)
+#define OPT_CASELESS	(SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_OS2_EMX || SYS_CYGWIN || SYS_VMS)
 #define OPT_UNC_PATH	(SYS_WINNT)
 
 /* individual features that are (normally) controlled by SMALLER */
@@ -780,7 +788,7 @@ extern char *rindex (const char *s, int c);
 
 /* on MS-DOS we have to open files in binary mode to see the ^Z characters. */
 
-#if SYS_MSDOS || SYS_OS2 || SYS_WINNT || defined(__CYGWIN32__) || defined(__CYGWIN__) || defined(__EMX__)
+#if SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_CYGWIN || SYS_OS2_EMX
 #define FOPEN_READ	"rb"
 #define FOPEN_WRITE	"wb"
 #define FOPEN_APPEND	"ab"

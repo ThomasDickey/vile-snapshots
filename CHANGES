@@ -1,3 +1,41 @@
+Changes for vile 9.5 (released ??? ??? ?? ????)
+
+ 20031008 (a)
+	> Daniel L Ashbrook:
+	+ add lispmode, to use vile-lisp-filt.
+	> Mark Robinson:
+	+ add cygwin to OPT_CASELESS
+	+ modify xvile's wheelScrollAmount resource to scroll by pages if the
+	  resource value is negative.
+ 	> Tom Dickey:
+	+ correct suffix pattern for xresmode, which did not match ".Xdefaults"
+	  (see 9.2p).
+	+ add macro "which-menu" to which.rc, which shows the locations that
+	  xvile checks for a menu-file.
+	+ revise lookup for xvile's menu file to look for dotnames in the
+	  current and home-directories, while non-dotnames may be found there
+	  and in $HOME/.vile and on $startup-path.  Combine this with changing
+	  the default for $menu-file back to ".vilemenu" as documented rather
+	  than "vilemenu.rc".  The latter name is used in the non-dotname
+	  locations if $menu-file is a dot-name (report by Alf Pearce noted
+	  that the default for $menu-file no longer matched the documented
+	  ".vilemenu").
+	+ change order of charinit() and global_val_init() so that mkupper()
+	  works, e.g., for use in computing the value of $XVILE_MENU (report by
+	  Alf Pearce <alfp@unimelb.edu.au> noted that the environment variable
+	  did not work).
+	+ improve lisp syntax highlighting (reports by Daniel L Ashbrook,
+	  used the HyperSpec for reference):
+	  + recognize "#|"..."|#" comments.
+	  + revise patterns for numbers.
+	  + allow decimal digits embedded in identifiers
+	+ change makefile.djg to use zip rather than pkzip, and go32-v2.exe
+	  rather than go32.exe
+	+ improve configure check for <term.h>, which may be <ncursesw/term.h>.
+	+ correct highlighting of sh construct
+		${#variable}
+	  (report by Michael Finken).
+
 Changes for vile 9.4 (released Mon Aug 04 2003)
 
  20030727 (v)

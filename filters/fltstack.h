@@ -1,16 +1,20 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/fltstack.h,v 1.7 2003/05/20 19:19:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/fltstack.h,v 1.8 2003/09/17 21:00:55 tom Exp $
  * A simple stack for lex states
  */
 typedef struct {
     int state;
+#ifdef FLTSTACK_EXTRA
+    FLTSTACK_EXTRA
+#endif
 } STACK;
 static STACK *stk_state = 0;
 
 static int stk_limit = 0;
 static int stk_level = -1;
 
-#define FLT_STATE stk_state[stk_level].state
+#define FLTSTACK_THIS stk_state[stk_level]
+#define FLT_STATE     FLTSTACK_THIS.state
 
 /*
  * Record the given state at the current stack level, and tell lex about it.

@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.271 2003/07/27 17:14:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.272 2003/10/08 20:57:58 Mark.Robinson Exp $
  *
  */
 
@@ -5441,11 +5441,17 @@ x_process_event(Widget w GCC_UNUSED,
 	    extend_selection(cur_win, nr, nc, False);
 	    break;
 	case Button4:
-	    mvupwind(TRUE, cur_win->wheel_scroll_amount);
+	    if (cur_win->wheel_scroll_amount < 0)
+		backpage(FALSE, 1);
+	    else
+		mvupwind(TRUE, cur_win->wheel_scroll_amount);
 	    (void) update(TRUE);
 	    break;
 	case Button5:
-	    mvdnwind(TRUE, cur_win->wheel_scroll_amount);
+	    if (cur_win->wheel_scroll_amount < 0)
+		forwpage(FALSE, 1);
+	    else
+		mvdnwind(TRUE, cur_win->wheel_scroll_amount);
 	    (void) update(TRUE);
 	    break;
 	}

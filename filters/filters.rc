@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.174 2003/07/27 15:35:18 tom Exp $
+; $Id: filters.rc,v 1.176 2003/10/08 20:45:25 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -265,6 +265,15 @@ define-mode lex
 	suf '\.\(l\|lex\|flex\|flx\)$'
 	cindent
 	cindent-chars &cat ':#' $fences
+~endwith
+
+define-mode lisp
+~with define-submode lisp
+	suf '\.\(lisp\|lsp\)$'
+	fence-pairs='()'
+	fence-begin='#|'
+	fence-end='|#'
+	comment-prefix ';'
 ~endwith
 
 define-mode log
@@ -654,9 +663,9 @@ define-mode xml
 define-mode xres
 ~with define-submode xres
 	~if $filename-ic
-		suf '\(\.Xdefaults\|\.ad\)$'
+		suf '\(\.Xdefaults\(-[^/]\+$\)\?\|\.ad\)$'
 	~else
-		suf '\(app-defaults/[A-Z]\?[A-Z][a-z0-9-]\+\|\.Xdefaults\(-[^/]\+$\)\|\.ad\)$'
+		suf '\(app-defaults/[A-Z]\?[A-Z][a-z0-9-]\+\|\.Xdefaults\(-[^/]\+$\)\?\|\.ad\)$'
 	~endif
 	comment-prefix	'^\s*!'
 	comments	'^\s*!\s*$'

@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.510 2003/07/27 15:18:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.511 2003/10/08 01:06:24 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -179,8 +179,8 @@ MainProgram(int argc, char *argv[])
 #if OPT_NAMEBST
     build_namebst(nametbl, 0, nametblsize - 1);
 #endif
-    global_val_init();		/* global buffer values */
     charinit();			/* character types -- we need these early  */
+    global_val_init();		/* global buffer values */
     winit(FALSE);		/* command-line */
 #if !SYS_UNIX
     expand_wild_args(&argc, &argv);
@@ -1297,7 +1297,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 
 #define DFT_HELP_FILE "vile.hlp"
 
-#define DFT_MENU_FILE "vilemenu.rc"
+#define DFT_MENU_FILE ".vilemenu"
 
 #ifdef VILE_LIBDIR_PATH
 #define DFT_LIBDIR_PATH VILE_LIBDIR_PATH

@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.125 2003/05/24 15:05:47 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.126 2003/09/17 00:46:07 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -429,7 +429,7 @@ int main() {
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CURSES_CPPFLAGS version: 6 updated: 2002/10/27 18:21:42
+dnl CF_CURSES_CPPFLAGS version: 7 updated: 2003/06/06 00:48:41
 dnl ------------------
 dnl Look for the curses headers.
 AC_DEFUN([CF_CURSES_CPPFLAGS],[
@@ -448,7 +448,7 @@ sunos3*|sunos4*)
 	;;
 esac
 ])
-test "$cf_cv_curses_incdir" != no && CPPFLAGS="$CPPFLAGS $cf_cv_curses_incdir"
+test "$cf_cv_curses_incdir" != no && CPPFLAGS="$cf_cv_curses_incdir $CPPFLAGS"
 
 AC_CACHE_CHECK(if we have identified curses headers,cf_cv_ncurses_header,[
 cf_cv_ncurses_header=none
@@ -656,7 +656,7 @@ esac
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CURSES_TERM_H version: 4 updated: 2002/01/12 17:08:23
+dnl CF_CURSES_TERM_H version: 5 updated: 2003/08/20 15:23:08
 dnl ----------------
 dnl SVr4 curses should have term.h as well (where it puts the definitions of
 dnl the low-level interface).  This may not be true in old/broken implementations,
@@ -665,15 +665,19 @@ dnl running with Solaris 2.5.1).
 AC_DEFUN([CF_CURSES_TERM_H],
 [
 AC_CACHE_CHECK(for term.h, cf_cv_term_header,[
+
+# If we found <ncurses/curses.h>, look for <ncurses/term.h>, but always look
+# for <term.h> if we do not find the variant.
 for cf_header in \
-	ncurses/term.h \
+	`echo ${cf_cv_ncurses_header-curses.h} | sed -e 's%/.*%/%'`term.h \
 	term.h
 do
 	AC_TRY_COMPILE([
 #include <${cf_cv_ncurses_header-curses.h}>
 #include <${cf_header}>],
 	[WINDOW *x],
-	[cf_cv_term_header=$cf_header],
+	[cf_cv_term_header=$cf_header
+	 break],
 	[cf_cv_term_header=no])
 done
 ])
@@ -684,6 +688,9 @@ term.h) #(vi
 	;;
 ncurses/term.h)
 	AC_DEFINE(HAVE_NCURSES_TERM_H)
+	;;
+ncursesw/term.h)
+	AC_DEFINE(HAVE_NCURSESW_TERM_H)
 	;;
 esac
 ])dnl
@@ -904,7 +911,7 @@ rm -rf conftest*
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_VERSION version: 2 updated: 2003/05/24 15:01:41
+dnl CF_GCC_VERSION version: 3 updated: 2003/09/06 19:16:57
 dnl --------------
 dnl Find version of gcc
 AC_DEFUN([CF_GCC_VERSION],[
@@ -912,13 +919,13 @@ AC_REQUIRE([AC_PROG_CC])
 GCC_VERSION=none
 if test "$GCC" = yes ; then
 	AC_MSG_CHECKING(version of $CC)
-	GCC_VERSION="`${CC} --version|head -1 | sed -e 's/^[[^0-9.]]*//' -e 's/[[^0-9.]].*//'`"
+	GCC_VERSION="`${CC} --version|sed -e '2,$d' -e 's/^[[^0-9.]]*//' -e 's/[[^0-9.]].*//'`"
 	test -z "$GCC_VERSION" && GCC_VERSION=unknown
 	AC_MSG_RESULT($GCC_VERSION)
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_WARNINGS version: 14 updated: 2003/05/24 15:03:15
+dnl CF_GCC_WARNINGS version: 15 updated: 2003/07/05 18:42:30
 dnl ---------------
 dnl Check if the compiler supports useful warning options.  There's a few that
 dnl we don't use, simply because they're too noisy:
@@ -933,7 +940,7 @@ dnl
 AC_DEFUN([CF_GCC_WARNINGS],
 [
 AC_REQUIRE([CF_GCC_VERSION])
-if ( test "$GCC" = yes || test "$GXX" = yes )
+if test "$GCC" = yes
 then
 	cat > conftest.$ac_ext <<EOF
 #line __oline__ "configure"

@@ -5,7 +5,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.57 2003/07/09 00:58:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.58 2003/08/11 19:11:26 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -68,8 +68,8 @@ IDENT		[a-zA-Z_]{NAME}*
 QIDENT		({SSTRING}|{DSTRING}|[^ \"'$\t\n])+
 IDENT0		[-]+[0-9]*[a-zA-Z_-]+[0-9a-zA-Z_-]*
 IDENT1		\${NAME}+
-IDENT2		\$\{{IDENT}\}
-IDENT2L		\$\{({IDENT}|{INTEGER})
+IDENT2		\$\{[#]?{IDENT}\}
+IDENT2L		\$\{([#]?{IDENT}|{INTEGER})
 IDENT2R		\}
 IDENTEQLS	[a-zA-Z_]{NAME}*=
 IDENTX		\$[\*@#\?\$!-]
