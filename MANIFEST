@@ -1,4 +1,4 @@
-MANIFEST for vile, version v6_0c
+MANIFEST for vile, version v6_0d
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -98,10 +98,8 @@ version.c                       version & usage messages
 vile.1                          man-page for VILE
 vile.hlp                        help-file
 vms2unix.c                      VMS/UNIX compatibility support functions
-vms_link.opt                    VAX/VMS linker script
 vmsbuild.com                    VAX/VMS DCL build script
 vmspipe.c                       pipe-filter support for VMS
-vmsshare.opt                    VAX/VMS linker script to use shared-libraries
 vmsvt.c                         VMS terminal driver
 window.c                        window-management functions
 word.c                          commands that operate upon words or paragraphs

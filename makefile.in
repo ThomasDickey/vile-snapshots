@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.72 1996/08/13 02:33:06 pgf Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.73 1996/09/05 01:59:48 pgf Exp $
 #
 
 #### Start of system configuration section. ####
@@ -70,7 +70,7 @@ INSTALL_DIRS    = $(bindir) $(libdir) $(mandir)
 
 # All of the makefiles which should be preserved and distributed
 UNIXMAKIN = makefile.in				# for use with configure
-VMSMAK =   descrip.mms vms_link.opt vmsbuild.com vmsshare.opt # on VMS
+VMSMAK =   descrip.mms vmsbuild.com		# on VMS
 TURBOMAK = makefile.tbc				# on DOS or OS/2, TURBO C or Borland C
 WATMAK =   makefile.wat				# on DOS, using Watcom C/386
 MSCMAK =	# still waiting for this one	# on DOS, using Microsoft C

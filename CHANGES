@@ -1,5 +1,13 @@
-
 Changes for vile 6.1 (released ???)
+
+(tom) 960903 (d)
+	+ adapted patch by Larry Schwimmer's (schwim@cyclone.stanford.edu)
+	  for configure.in
+
+	+ modify configure script to ensure that cached information is used
+	  only on the system/version that was used to extract the data.
+
+	+ remove (and correct rules for generating) vms_link.opt, vmsshare.opt
 
 (pgf) 960812 (c)
 	+ removed const from dirnam[] buffer in imdying.  removed cast
@@ -13,7 +21,6 @@ Changes for vile 6.1 (released ???)
 
 	+ applied changes from martin zinser (m.zinser@gsi.de) for VMS
 	  builds -- mostly casts, and some changes to the vms build scripts.
-
 
 (jrs)	960809 (b)
 

@@ -1,7 +1,10 @@
-$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.10 1996/08/05 12:51:57 pgf Exp $
+$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.11 1996/09/05 01:59:48 pgf Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
 $! Tested with:
+$!	VMS system version 5.4-2
+$!	VAX-C version 3.2
+$! and
 $!	VMS system version 6.1, 6.2
 $!	DEC C version 5.0, 5.2
 $!
@@ -100,7 +103,7 @@ $ endif
 $
 $ MKTBLS :== $SYS$DISK:'F$DIRECTORY()MKTBLS.EXE	! make a foreign command
 $
-$ if "''p1'" .nes. "XVILE"
+$ if "''p1'" .nes. "XVILE" .and. "''p1'" .nes. "XVILE.EXE"
 $  then
 $! for regular vile, use these:
 $   SCREEN := vmsvt
@@ -231,6 +234,12 @@ $ install :
 $	WRITE SYS$ERROR "** no rule for install"
 $	goto build_last
 $	
+$ clobber :
+$	if f$search("vile.com") .nes. "" then delete vile.com;*
+$	if f$search("xvile.com") .nes. "" then delete xvile.com;*
+$	if f$search("*.exe") .nes. "" then delete *.exe;*
+$! fallthru
+$
 $ clean :
 $	if f$search("*.obj") .nes. "" then delete *.obj;*
 $	if f$search("*.bak") .nes. "" then delete *.bak;*
@@ -240,13 +249,7 @@ $	if f$search("*.map") .nes. "" then delete *.map;*
 $	if f$search("*.opt") .nes. "" then delete *.opt;*
 $	if f$search("ne*.h") .nes. "" then delete ne*.h;
 $	if f$search("$(MKTBLS)") .nes. "" then delete $(MKTBLS);
-$	goto build_last
-$
-$ clobber :
-$	if f$search("vile.com") .nes. "" then delete vile.com;*
-$	if f$search("xvile.com") .nes. "" then delete xvile.com;*
-$	if f$search("*.exe") .nes. "" then delete *.exe;*
-$	goto build_last
+$! fallthru
 $
 $ build_last :
 $	if f$search("*.dia") .nes. "" then delete *.dia;*
@@ -256,6 +259,9 @@ $	if f$search("*.map") .nes. "" then purge *.map
 $	if f$search("*.opt") .nes. "" then purge *.opt
 $	if f$search("*.exe") .nes. "" then purge *.exe
 $	if f$search("*.log") .nes. "" then purge *.log
+$! fallthru
+$
+$ vms_link_opt :
 $	exit
 $
 $! Runs VILE from the current directory (used for testing)
