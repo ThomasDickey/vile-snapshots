@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.447 2001/01/06 12:43:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.448 2001/01/19 01:25:21 tom Exp $
  *
  */
 
@@ -1020,6 +1020,11 @@ extern void ttflush (void);
 extern void ttopen (void);
 extern void ttunclean (void);
 extern void ttunwatchfd (int fd, long id);
+
+#if DISP_CURSES || DISP_TERMCAP
+extern void vl_save_tty (void);
+extern void vl_restore_tty (void);
+#endif
 
 /* ucrypt.c */
 #if	OPT_ENCRYPT

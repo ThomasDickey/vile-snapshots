@@ -1,7 +1,7 @@
 /*
  * Configurable headers used by termcap/terminfo driver for vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.h,v 1.4 1998/02/23 11:27:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.h,v 1.6 2001/01/20 01:23:40 tom Exp $
  */
 
 #ifndef VILE_TCAP_H
@@ -14,6 +14,9 @@ extern "C" {
 #undef TRUE
 #undef FALSE
 #undef WINDOW		/* avoid conflict with <curses.h> or <term.h> */
+
+#undef MK
+#define MK other_MK	/* workaround for bug in NetBSD 1.5 curses */
 
 #if NEED_CURSES_H
 #  if HAVE_NCURSES_H
@@ -28,6 +31,13 @@ extern "C" {
 #endif
 #if NEED_TERMCAP_H
 #  include <termcap.h>
+#endif
+
+#undef MK
+#if WINMARK
+#define MK curwp->w_mark
+#else
+#define MK Mark
 #endif
 
 #ifndef TRUE

@@ -2890,11 +2890,25 @@ Regular Expressions
 	other significance (matching that character)."
 
  \< \>	In addition, vile atoms may be: \< and \>, which match the
- \s \S	beginning and end of a "word", \s and \S, which match characters of
- \w \W	whitespace and "darkspace", \w and \W, which match alphanumerics
- \d \D	(including '_') and non-alphanumerics, \d and \D, which match
- \p \P	digits and non-digits, and \p and \P, which match printable and
-	non-printable characters (whitespace is printable).
+ \s \S	beginning and end of a "word".
+
+	Vile recognizes the X/Open regular expression character
+	classes, as well as shorthand expressions for them.  You can use
+	the shorthand expressions in a range or as an atom.  Each shorthand
+	expression has a complement, e.g., \w and \W.
+
+ \w \W	[:alnum:], alphanumeric (plus '_')
+ \a \A	[:alpha:]
+ \b \B	[:blank:]
+ \c \C	[:cntrl:]
+ \d \D	[:digit:]
+ \g \G	[:graph:]
+ \l \L	[:lower:]
+ \p \P	[:print:], printable (note that space is printable)
+ \q \Q	[:punct:]
+ \s \S	[:space:]
+ \u \U	[:upper:]
+ \x \X	[:xdigit:]
 
  [ ]	"A range is a sequence of characters enclosed in `[]'.  It normally
 	matches any single character from the sequence.  If the sequence
@@ -5196,4 +5210,4 @@ Problems
 
 Copyright 1995-2000 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.510 2001/01/04 00:43:49 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.511 2001/01/21 23:07:22 tom Exp $

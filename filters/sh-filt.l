@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.39 2001/01/03 23:28:48 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.40 2001/01/19 23:39:45 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -20,6 +20,7 @@ static char *Ident_attr;
 static char *Number_attr;
 static char *String_attr;
 
+static int strip_tabs;
 static char *here_tag;
 static unsigned here_len;
 static int here_exp;
@@ -156,6 +157,15 @@ INTEGER		[-+]?([0-9]+)
 <NORMAL>\"		{ BeginQuote(QUOTED, String_attr); }
 
 <NORMAL>\<\<[-]?{SPACE}*{QIDENT} {
+			    int n;
+			    strip_tabs = 0;
+			    for (n = 0; n < yyleng; n++) {
+				if (yytext[n] != '<'
+				 && !isspace(yytext[n])) {
+				    strip_tabs = (yytext[n] == '-');
+				    break;
+				}
+			    }
 			    save_here(yytext, yyleng);
 			    BeginQuote(HEREDOC, String_attr);
 			}
@@ -168,10 +178,17 @@ INTEGER		[-+]?([0-9]+)
 				flt_bfr_append(yytext, yyleng);
 			    }
 			}
-<HEREDOC>^{QIDENT}$	{
+<HEREDOC>^[\t]*{QIDENT}$ {
+			    if (strip_tabs) {
+				char *next = skip_blanks(yytext);
+				flt_puts(yytext, next - yytext, "");
+				yyleng -= (next - yytext);
+				yytext = next;
+			    }
 			    if (got_here(yytext, yyleng)) {
 				flt_bfr_finish();
 				BEGIN(NORMAL);
+				strip_tabs = 0;
 			    } else {
 				flt_bfr_append(yytext, yyleng);
 			    }

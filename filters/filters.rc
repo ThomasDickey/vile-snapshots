@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.130 2000/10/05 22:28:57 tom Exp $
+; $Id: filters.rc,v 1.132 2001/01/20 00:13:29 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -100,6 +100,12 @@ define-mode diff
 ~with define-submode diff
 	suf '\.\(patch\|dif\|diff\|diffs\|rej\)$'
 	pre '^\<diff\>'
+~endwith
+
+; ECLiPSe (a dialect of Prolog)
+define-mode ecl
+~with define-submode ecl
+	suf '\.\(ecl\|pro\)$'
 ~endwith
 
 ; Embedded SQL in C/C++
@@ -446,6 +452,12 @@ define-mode txt
 	suf '\(\(README\|CHANGES\|Change[Ll]og\|COPYING\)[^/]*\|\.\(txt\|doc\|hlp\)\)$'
 	comment-prefix	'^\s*--'
 	comments	'^\s*--\s*$'
+~endwith
+
+define-mode vlog
+~with define-submode vlog
+	suf '\.v$'
+	cindent
 ~endwith
 
 ; "define-mode vile" is builtin

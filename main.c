@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.439 2001/01/06 12:33:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.440 2001/01/21 23:07:22 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -1897,6 +1897,9 @@ charinit(void)
 		if (ispunct(c))  vl_chartypes_[c] |= vl_punct;
 		if (isspace(c))  vl_chartypes_[c] |= vl_space;
 		if (isupper(c))  vl_chartypes_[c] |= vl_upper;
+#ifdef vl_xdigit
+		if (isxdigit(c)) vl_chartypes_[c] |= vl_xdigit;
+#endif
 	}
 #else /* ! OPT_LOCALE */
 	(void)memset((char *)vl_chartypes_, 0, sizeof(vl_chartypes_));
@@ -1928,6 +1931,15 @@ charinit(void)
 	/* digits */
 	for (c = '0'; c <= '9'; c++)
 		vl_chartypes_[c] |= vl_digit;
+#ifdef vl_xdigit
+	/* hex digits */
+	for (c = '0'; c <= '9'; c++)
+		vl_chartypes_[c] |= vl_xdigit;
+	for (c = 'a'; c <= 'f'; c++)
+		vl_chartypes_[c] |= vl_xdigit;
+	for (c = 'A'; c <= 'F'; c++)
+		vl_chartypes_[c] |= vl_xdigit;
+#endif
 
 	/* punctuation */
 	for (c = '!'; c <= '/'; c++)

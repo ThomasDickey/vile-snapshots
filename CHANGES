@@ -1,5 +1,29 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20010122 (f)
+	> Tom Dickey:
+	+ several related changes to regexp.c:
+	  + add first cut of logic for bounds (but see buglist).
+	  + implement POSIX character classes and analogous escapes like \d
+	    to make them more vile-like.
+	  + remove fallback for strcspn().
+	  + indent'd
+	+ work around NetBSD 1.5's use of MK symbol in curses.h (reported by
+	  Matthias Buelow).   
+	+ add syntax filter for ECLiPSe, a dialect of Prolog (from Joachim
+	  Schimpf <j.schimpf@icparc.ic.ac.uk>).
+	+ modify sh-filt.l to recognize "<<-" marker beginning a here-document.
+	  That tells ksh and similar shells to ignore leading tabs, including
+	  when matching the final word of the here-document.
+	+ fix some of the staircasing problems with curses.c driver by saving
+	  and restoring the tty modes explicitly, so we can separate that
+	  effect from the screen initialization that curses does (fixes a
+	  staircasing in the usage message reported by Mikel Finch
+	  <Mikel.Finch@med.ge.com>).
+	+ add Verlog filter and corresponding majormode vlogmode (request by
+	  Balekudru Krishna <bkrishna@asicdesigners.com>).
+	+ correct an 'awk' in configure.in that should have been $AWK.
+
  20010106 (e)
 	> Clark Morgan:
 	+ workaround for a bug in wvwrap observed on win96/winme.  wvwrap uses
