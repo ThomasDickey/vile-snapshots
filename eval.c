@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.322 2003/05/25 23:34:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.324 2004/04/11 17:18:48 tom Exp $
  *
  */
 
@@ -741,6 +741,7 @@ run_func(int fnum)
 {
     static TBUFF *result;	/* function result */
 
+    REGEXVAL *exp;
     BUFFER *bp;
     TBUFF *args[MAXARGS];
     char *arg[MAXARGS];		/* function arguments */
@@ -922,6 +923,18 @@ run_func(int fnum)
     case UFGTSEQ:
 	(void) kcod2escape_seq(kbd_seq_nomap(), tb_values(result));
 	result->tb_used = strlen(tb_values(result));
+	break;
+    case UFCMATCH:
+	if ((exp = new_regexval(arg[0], TRUE)) != 0) {
+	    int save_flag = ignorecase;
+	    ignorecase = TRUE;
+	    value = regexec(exp->reg, arg[1], (char *) 0, 0, -1);
+	    ignorecase = save_flag;
+	}
+	break;
+    case UFMATCH:
+	if ((exp = new_regexval(arg[0], TRUE)) != 0)
+	    value = regexec(exp->reg, arg[1], (char *) 0, 0, -1);
 	break;
     case UFRANDOM:		/* FALLTHRU */
     case UFRND:

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.269 2004/03/21 23:59:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.274 2004/04/11 23:53:32 tom Exp $
  *
  */
 
@@ -1875,12 +1875,15 @@ get_record_sep(BUFFER *bp)
 }
 
 void
-set_record_sep(BUFFER *bp, RECORD_SEP value)
+set_record_sep(BUFFER *bp, RECORD_SEP code)
 {
+    if (code == RS_AUTO)
+	code = RS_DEFAULT;
+
     make_local_b_val(bp, MDDOS);
     make_local_b_val(bp, VAL_RECORD_SEP);
-    set_b_val(bp, MDDOS, (value == RS_CRLF));
-    set_b_val(bp, VAL_RECORD_SEP, value);
+    set_b_val(bp, MDDOS, (code == RS_CRLF));
+    set_b_val(bp, VAL_RECORD_SEP, code);
     b_clr_counted(bp);
     (void) bsizes(bp);
     relist_settings();
@@ -1892,14 +1895,11 @@ set_record_sep(BUFFER *bp, RECORD_SEP value)
 int
 chgd_rs(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
-    /* we can set 'auto' only as a global */
-    if (!glob_vals) {
-	if (args->local->vp->i == RS_AUTO)
-	    return FALSE;
-    }
     if (!testing) {
 	if (bp == 0)
 	    return FALSE;
+	if (args->local->vp->i == RS_AUTO)
+	    args->local->vp->i = RS_DEFAULT;
 	set_record_sep(bp, (RECORD_SEP) args->local->vp->i);
     }
 
@@ -2262,7 +2262,8 @@ get_mm_rexp(int n, int m)
 {
     struct VAL *mv = my_majormodes[n].data->mm.mv;
 
-    if (mv[m].vp->r != 0
+    if (mv[m].vp != 0
+	&& mv[m].vp->r != 0
 	&& mv[m].vp->r->pat != 0
 	&& mv[m].vp->r->pat[0] != 0
 	&& mv[m].vp->r->reg != 0) {
@@ -3528,12 +3529,34 @@ remove_mode(int f GCC_UNUSED, int n GCC_UNUSED)
  * corresponding buffer mode value.
  */
 static int
-get_mm_b_val(int n, int m)
+get_sm_b_val(int n, int m)
 {
     struct VAL *bv = get_sm_vals(my_majormodes[n].data);
     return (bv[m].vp->i);
 }
 #endif
+
+/*
+ * For the given majormode (by index into my_majormodes[]), return the
+ * corresponding buffer mode value.
+ */
+static regexp *
+get_sm_rexp(int n, int m)
+{
+    struct VAL *mv = get_sm_vals(my_majormodes[n].data);
+
+    if (mv[m].vp != 0
+	&& mv[m].vp->r != 0
+	&& mv[m].vp->r->pat != 0
+	&& mv[m].vp->r->pat[0] != 0
+	&& mv[m].vp->r->reg != 0) {
+	TRACE(("get_sm_rexp(%s) %s\n",
+	       my_majormodes[n].shortname,
+	       mv[m].vp->r->pat));
+	return mv[m].vp->r->reg;
+    }
+    return 0;
+}
 
 /*
  * Use a regular expression (normally a suffix, such as ".c") to match the
@@ -3547,26 +3570,46 @@ test_by_suffix(int n, BUFFER *bp)
     if (my_majormodes[n].flag) {
 	regexp *exp;
 	int savecase = ignorecase;
-	char *fullname = bp->b_fname;
+	char *pathname = bp->b_fname;
+	char *filename;
+	char *suffix;
 	TBUFF *savename = 0;
 
 #if OPT_CASELESS || SYS_VMS
 	ignorecase = TRUE;
 #else
-	ignorecase = get_mm_b_val(n, MDIGNCASE);
+	ignorecase = get_sm_b_val(n, MDIGNCASE);
 #endif
-	if ((exp = b_val_rexp(bp, VAL_STRIPSUFFIX)->reg) != 0
-	    && regexec(exp, fullname, (char *) 0, 0, -1)) {
-	    tb_scopy(&savename, fullname);
-	    strcpy(tb_values(savename) + (exp->startp[0] - fullname),
+	if (((exp = get_sm_rexp(n, VAL_STRIPSUFFIX)) != 0
+	     || (exp = b_val_rexp(bp, VAL_STRIPSUFFIX)->reg) != 0)
+	    && regexec(exp, pathname, (char *) 0, 0, -1)) {
+	    tb_scopy(&savename, pathname);
+	    strcpy(tb_values(savename) + (exp->startp[0] - pathname),
 		   exp->endp[0]);
-	    fullname = tb_values(savename);
+	    pathname = tb_values(savename);
 	}
+	filename = pathleaf(pathname);
+	suffix = strchr(filename, '.');
 
-	if ((exp = get_mm_rexp(n, MVAL_SUFFIXES)) != 0
-	    && regexec(exp, fullname, (char *) 0, 0, -1)) {
-	    TRACE(("test_by_suffix(%s) %s\n",
-		   fullname,
+	if ((exp = get_mm_rexp(n, MVAL_MODE_PATHNAME)) != 0
+	    && regexec(exp, pathname, (char *) 0, 0, -1)) {
+	    TRACE(("test_by_pathname(%s) %s\n",
+		   pathname,
+		   my_majormodes[n].shortname));
+	    result = n;
+	} else if ((exp = get_mm_rexp(n, MVAL_MODE_FILENAME)) != 0
+		   && regexec(exp, filename, (char *) 0, 0, -1)) {
+	    TRACE(("test_by_filename(%s) %s %s\n",
+		   pathname,
+		   filename,
+		   my_majormodes[n].shortname));
+	    result = n;
+	} else if (suffix != 0
+		   && (exp = get_mm_rexp(n, MVAL_MODE_SUFFIXES)) != 0
+		   && regexec(exp, suffix, (char *) 0, 0, -1)) {
+	    TRACE(("test_by_suffixex(%s) %s %s\n",
+		   pathname,
+		   suffix,
 		   my_majormodes[n].shortname));
 	    result = n;
 	}
@@ -3602,7 +3645,7 @@ test_by_preamble(int n, BUFFER *bp GCC_UNUSED, LINE *lp)
 #if OPT_CASELESS || SYS_VMS
 	ignorecase = TRUE;
 #else
-	ignorecase = get_mm_b_val(n, MDIGNCASE);
+	ignorecase = get_sm_b_val(n, MDIGNCASE);
 #endif
 	if (exp != 0
 	    && lregexec(exp, lp, 0, llength(lp))) {
@@ -3620,7 +3663,9 @@ static int
 need_suffix_and_preamble(int n)
 {
     if (get_mm_number(n, MVAL_QUALIFIERS) == MMQ_ALL
-	&& get_mm_rexp(n, MVAL_SUFFIXES) != 0
+	&& (get_mm_rexp(n, MVAL_MODE_PATHNAME) != 0
+	    || get_mm_rexp(n, MVAL_MODE_FILENAME) != 0
+	    || get_mm_rexp(n, MVAL_MODE_SUFFIXES) != 0)
 	&& get_mm_rexp(n, MVAL_PREAMBLE) != 0) {
 	TRACE(("need both suffix/preamble for %s\n",
 	       my_majormodes[n].shortname));

@@ -41,7 +41,7 @@ nocmode".  In the new scheme,
 
 	  The search is in normally alphabetic order, by majormode name.
 	  The first match each, of suffixes and preamble terminate the
-	  search, but a match of preamble overrides a match of suffixes.
+	  search, but a match of suffixes overrides a match of preamble.
 	  Use "after" and "before" qualifiers to handle special cases.
 
 	  In rare circumstances, both suffixes and preamble are needed to
@@ -216,6 +216,14 @@ The term "submode" is used in the command rather than the more natural
 The following are keywords that aren't minor modes, but are recognized
 solely by the define-submode command:
 
+	mode-pathname
+		The full pathname which is tested to trigger association with a
+		majormode, e.g., "RCS/*,v".
+
+	mode-filename
+		The filename which is tested to trigger association with a
+		majormode, e.g., "Makefile".
+
 	suffixes
 		The filename suffix which is tested to trigger
 		association with a majormode (e.g., c-suffixes)
@@ -360,5 +368,5 @@ Note that the following are equivalent once you have defined the majormode "c":
 	define-submode c tabstop=8
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.13 2004/03/18 20:47:56 tom Exp $
+$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.16 2004/04/11 23:30:15 tom Exp $
 -------------------------------

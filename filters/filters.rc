@@ -1,10 +1,10 @@
-; $Id: filters.rc,v 1.180 2004/03/19 00:37:48 tom Exp $
+; $Id: filters.rc,v 1.186 2004/04/11 19:29:50 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
 define-mode ada
 ~with define-submode ada
-	suf '\.\(\<ada\>\|\<ads\>\|\<adb\>\)$'
+	suffixes	'\.\(ada\|ads\|adb\)$'
 	comment-prefix	'^\s*--'
 	comments	'^\s*--\s*$'
 	fence-if   '^\s*\<if\>'
@@ -21,13 +21,13 @@ define-mode ada
 ; GNU assembler (a Byzantine elaboration of AT&T)
 define-mode as
 ~with define-submode as
-	suf '\.[sS]$'
+	suffixes	'\.[sS]$'
 ~endwith
 
 ; M$ assembler (a Byzantine elaboration of Intel)
 define-mode asm
 ~with define-submode asm
-	suf '\.asm$'
+	suffixes	'\.asm$'
 	fence-if   '^\s*\<\(if\|ifdef\|ifndef\)\>'
 	fence-elif '^\s*\<elseif\>'
 	fence-else '^\s*\<else\>'
@@ -36,7 +36,7 @@ define-mode asm
 
 define-mode awk
 ~with define-submode awk
-	suf '\.awk$'
+	suffixes	'\.awk$'
 	pre '^#!\s*\/.*awk\>\(\s*-[\a]\+\)*\s*$'
 	cindent
 	cindent-chars $fences
@@ -46,7 +46,7 @@ define-mode awk
 
 define-mode basic
 ~with define-submode basic
-	suf '\.bas$'
+	suffixes	'\.bas$'
 	comment-prefix '^\s*\''
 	comments   '^\s*\'\s\+\s*$'
 	ignorecase
@@ -55,7 +55,7 @@ define-mode basic
 
 define-mode bat
 ~with define-submode bat
-	suf '\.\(bat\|cmd\)$'
+	suffixes	'\.\(bat\|cmd\)$'
 	pre '\s*\(@\)\?echo\s*\(on\|off\)\?$'
 	dos
 	ignorecase
@@ -63,9 +63,15 @@ define-mode bat
 	comments   '^\s*rem\>\s\+\s*$'
 ~endwith
 
+; we normally use the builtin values, but this is useful for looking at
+; autoconf templates:
+~with define-submode c
+	ignoresuffix	'\.\(in\|orig\|~\)$'
+~endwith
+
 define-mode cfg
 ~with define-submode cfg
-	suf '\.cfg$'
+	suffixes	'\.cfg$'
 	comment-prefix	'^\s*#'
 	comments	'^\s*#\s*$'
 ~endwith
@@ -73,7 +79,7 @@ define-mode cfg
 define-mode cpp
 ~with define-submode cpp
 	before "c"
-	suf '\(\.\(C\|CC\|cc\|cpp\|cxx\|hxx\|hh\)$\)'
+	suffixes	'\.\(C\|CC\|cc\|cpp\|cxx\|hxx\|hh\)$'
 	cindent
 	cindent-chars   &cat ':#' $fences
 	filtername	'vile-c-filt -k cpp'
@@ -81,7 +87,7 @@ define-mode cpp
 
 define-mode csh
 ~with define-submode csh
-	suf '\.\(csh[^/]*\|login\|logout\)$'
+	suffixes	'\.\(csh.*\|login\|logout\)$'
 	pre '^#!\s*\/.*csh\>\(\s*-[\a]\+\)*\s*$'
 	filtername	'vile-sh-filt -k csh'
 	comment-prefix	'^\s*#'
@@ -102,7 +108,7 @@ define-mode csh
 
 define-mode cweb
 ~with define-submode cweb
-	suf '\(\.w\|\.web\)$'
+	suffixes	'\.\(w\|web\)$'
 ~endwith
 
 ; Fences in DCL do not work well because we really want a fence-if which
@@ -111,7 +117,7 @@ define-mode cweb
 ; excludes the if-block.
 define-mode dcl
 ~with define-submode dcl
-	suf '\.\(com\|tpu\)$'
+	suffixes	'\.\(com\|tpu\)$'
 	comment-prefix	'^\s*\$!'
 	comments	'^\s*\$!\s*$'
 	ignorecase
@@ -125,35 +131,35 @@ define-mode dcl
 
 define-mode def
 ~with define-submode def
-	suf '\.\(def\)$'
+	suffixes	'\.\(def\)$'
 	ignorecase
 	dos
 ~endwith
 
 define-mode diff
 ~with define-submode diff
-	suf '\.\(patch\|dif\|diff\|diffs\|rej\)$'
+	suffixes	'\.\(patch\|dif\|diff\|diffs\|rej\)$'
 	pre '^\<diff\>'
 ~endwith
 
 ; ECLiPSe (a dialect of Prolog)
 define-mode ecl
 ~with define-submode ecl
-	suf '\.\(ecl\|pro\)$'
+	suffixes	'\.\(ecl\|pro\)$'
 ~endwith
 
 ; Syntax descriptions for enscript
 ; NOTE: Smalltalk files also may have ".st" suffix.
 define-mode est
 ~with define-submode est
-	suf '\.st$'
+	suffixes	'\.st$'
 	cindent
 ~endwith
 
 ; Embedded SQL in C/C++
 define-mode esql
 ~with define-submode esql
-	suf '\.\(ec\|pc\|ppc\)$'
+	suffixes	'\.\(ec\|pc\|ppc\)$'
 	cindent
 	cindent-chars &cat ':#' $fences
 ~endwith
@@ -162,7 +168,7 @@ define-mode esql
 ; FIXME: The groups should not nest (extend the syntax)
 define-mode fdl
 ~with define-submode fdl
-	suf '\.\<fdl\>$'
+	suffixes	'\.\<fdl\>$'
 	comment-prefix '^\s*$rem\>'
 	comments   '^\(\|$rem\)$'
 	fence-if   '^\$\s*if\>'
@@ -198,7 +204,7 @@ define-mode fdl
 ; Inherit the C-style fences for JavaScript, but add new ones for HTML
 define-mode html
 ~with define-submode html
-	suf '\.\(html\|htm\)$'
+	suffixes	'\.\(html\|htm\)$'
 	pre '\(<html>\|<script>\|<!doctype\|<!--\)'
 	fence-pairs	'<>()[]{}'
 	ignorecase
@@ -218,19 +224,20 @@ define-mode html
 define-mode info
 ~with define-submode info
 	after ti
-	suf '\(\.\|\([a-z]*\)\)\(info\(-\d\+\)\?\)$'
+	mode-filename	'\([a-z]*\)\(info\(-\d\+\)\?\)$'
+	suffixes	'\.\(info\(-\d\+\)\?\)$'
 ~endwith
 
 define-mode imake
 ~with define-submode imake
 	before "def"
-	suf 'I[Mm]akefile[^/]*$'
+	mode-filename	'I[Mm]akefile.*$'
 	pre '^\s*\(XCOMM\>\|\/\*\*\/#\)'
 ~endwith
 
 define-mode java
 ~with define-submode java
-	suf '\.java$'
+	suffixes	'\.java$'
 	filtername 'vile-c-filt -j -p -k java'
 	cindent
 	cindent-chars &cat ':' $fences
@@ -238,7 +245,7 @@ define-mode java
 
 define-mode js
 ~with define-submode js
-	suf '\.\(js\|jsp\)$'
+	suffixes	'\.\(js\|jsp\)$'
 	filtername 'vile-c-filt -p -k js'
 	cindent
 	cindent-chars &cat ':' $fences
@@ -246,7 +253,7 @@ define-mode js
 
 define-mode key
 ~with define-submode key
-	suf '\.\(key\|keywords\)$'
+	suffixes	'\.\(key\|keywords\)$'
 	comment-prefix	'^\s*:'
 	comments	'^\s*:\s+*$'
 ~endwith
@@ -254,7 +261,7 @@ define-mode key
 define-mode latex
 ~with define-submode latex
 	filtername 'vile-latex-filt -a'
-	suf '\.\(latex\|ltex\|ltx\|sty\)$'
+	suffixes	'\.\(latex\|ltex\|ltx\|sty\)$'
 	fence-pairs='<>{}()[]'
 	comment-prefix	'^\s*%'
 	comments	'^\s*%.*$'
@@ -262,14 +269,14 @@ define-mode latex
 
 define-mode lex
 ~with define-submode lex
-	suf '\.\(l\|lex\|flex\|flx\)$'
+	suffixes	'\.\(l\|lex\|flex\|flx\)$'
 	cindent
 	cindent-chars &cat ':#' $fences
 ~endwith
 
 define-mode lisp
 ~with define-submode lisp
-	suf '\.\(lisp\|lsp\)$'
+	suffixes	'\.\(lisp\|lsp\)$'
 	fence-pairs='()'
 	fence-begin='#|'
 	fence-end='|#'
@@ -278,7 +285,8 @@ define-mode lisp
 
 define-mode log
 ~with define-submode log
-	suf '\(\(run\|make\)\.out\|\.log[^/]*\)$'
+	mode-filename	'^\(run\|make\).*\.out$'
+	suffixes	'\.\(log.*\)$'
 	before make
 ~endwith
 
@@ -286,7 +294,7 @@ define-mode log
 define-mode m4
 ~with define-submode m4
 	pre '^\s*dnl\>'
-	suf '\.\(ac\|m4\)$'
+	suffixes	'\.\(ac\|m4\)$'
 	comment-prefix '^\s*\(dnl\|#\)'
 	comments   '^\s*\(dnl\>\|#\)\s*$'
 	fence-if   '^\s*\<if\>'
@@ -303,13 +311,13 @@ define-mode m4
 
 define-mode mail
 ~with define-submode mail
-	suf '\([Mm]ail\>[^/]*\|\<mbox\|mutt-[^/]*\)$'
+	mode-filename	'\([Mm]ail\>.*\|\<mbox\|mutt-.*\)$'
 	pre '^\(From \|To: \)'
 ~endwith
 
 define-mode make
 ~with define-submode make
-	suf '\([Mm]akefile[^/]*\|make\..*\|\.mak\|\.mk\)$'
+	mode-filename	'\([Mm]akefile.*\|make\..*\|\.mak\|\.mk\)$'
 	comment-prefix	'^\s*[!#]'
 	comments	'^\s*[!#]\s*$'
 ~elsewith define-submode make group 'gnumake'
@@ -328,7 +336,7 @@ define-mode make
 
 define-mode mms
 ~with define-submode mms
-	suf '\.mms$'
+	suffixes	'\.mms$'
 	comment-prefix	'^\s*[!#]'
 	comments	'^\s*[!#]\s*$'
 	ignorecase
@@ -342,14 +350,14 @@ define-mode mms
 ; highlighting, since it may contain very long lines.
 define-mode newsrc
 ~with define-submode newsrc
-	suf '\.\([^/]*newsrc[^/]*\)$'
+	suffixes	'\.\(.*newsrc.*\)$'
 	before "sh"
 ~endwith
 
 define-mode nr
 ~with define-submode nr
 	after "sh"
-	suf '\.\(\([1-9ln][a-z]\?\)\|me\|ms\|man\)$'
+	suffixes	'\.\(\([1-9ln][a-z]\?\)\|me\|ms\|man\)$'
 	pre '^\.\\"'
 	comment-prefix	'^\.\\"'
 	comments	'^\.\\"\s*$'
@@ -357,12 +365,12 @@ define-mode nr
 
 define-mode pas
 ~with define-submode pas
-	suf '\.\(p\|pas\)$'
+	suffixes	'\.\(p\|pas\)$'
 ~endwith
 
 define-mode pc
 ~with define-submode pc
-	suf '\(\<printcap[^/]*\)$'
+	mode-filename	'\(\<printcap.*\)$'
 	filtername	'vile-tc-filt -k pc'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
@@ -373,7 +381,7 @@ define-mode pc
 define-mode perl
 ~with define-submode perl
 	pre '^#\s*!\s*\.*\/.*perl[0-9]*\>'
-	suf '\.\(pl\|pm\|PL\)$'
+	suffixes	'\.\(pl\|pm\|PL\)$'
 	before "mail"
 	cindent
 	cindent-chars  &cat ':' $fences
@@ -396,7 +404,7 @@ define-mode perl
 ; gettext message files
 define-mode pot
 ~with define-submode pot
-	suf '\.\(pot\|po\)$'
+	suffixes	'\.\(pot\|po\)$'
 	comment-prefix '^#'
 	comments       '^#\s*$'
 ~endwith
@@ -404,14 +412,14 @@ define-mode pot
 ; PostScript
 define-mode ps
 ~with define-submode ps
-	suf '\.ps$'
+	suffixes	'\.ps$'
 ~endwith
 
 ; Python
 define-mode py
 ~with define-submode py
 	pre '^\(\(#!\s*\/.*python[\d_.-]*\>\(\s*[-]\+[\a]*\s*\)\?\)\|:\)\s*$'
-	suf '\.py$'
+	suffixes	'\.py$'
 	comment-prefix '^\s*#'
 	comments   '^\s*#\s\+\s*$'
 ~endwith
@@ -421,13 +429,13 @@ define-mode rb
 ~with define-submode rb
 	filtername 'vile-ruby-filt -k rb'
 	pre '^#\s*!\s*\.*\/.*ruby*\>'
-	suf '\.rb$'
+	suffixes	'\.rb$'
 ~endwith
 
 define-mode rc
 ~with define-submode rc
 	after "vile"
-	suf '\.rc\d*$'
+	suffixes	'\.rc\d*$'
 	preamble '^\s*[^;"]'
 	qualifiers=all
 	comment-prefix	'^\s*//'
@@ -437,7 +445,7 @@ define-mode rc
 define-mode rexx
 ~with define-submode rexx
 	pre '^#\s*!\s*\.*\/.*\(rexx\|regina\|rxcurses\)\>'
-	suf '\.\(cmd\|rexx\)$'
+	suffixes	'\.\(cmd\|rexx\)$'
 	~if &not &seq $os "win32"
 		before "bat"
 	~endif
@@ -450,19 +458,19 @@ define-mode rexx
 ; such as 'makemode').
 define-mode RCS
 ~with define-submode RCS
-	suf ',v$'
+	mode-filename	',v$'
 	filtername 'vile-rcs-filt'
 ~endwith
 
 define-mode rpm
 ~with define-submode rpm
-	suf '.spec$'
+	suffixes	'\.spec$'
 ~endwith
 
 ; (see RCS)
 define-mode SCCS
 ~with define-submode SCCS
-	suf '\<s\.'
+	mode-filename	'^s\.'
 	pre '^\h'
 	filtername 'vile-sccs-filt'
 ~elsewith define-submode SCCS group 'delete'
@@ -475,7 +483,7 @@ define-mode SCCS
 
 define-mode sed
 ~with define-submode sed
-	suf '\(sed\)$'
+	suffixes	'\.\(sed\)$'
 	pre '^#!\s*\/sed\>\(\s*-[\a]*\s*\)\*\s*$'
 	comment-prefix	'^\s*#'
 	comments	'^\s*#\s*$'
@@ -484,7 +492,8 @@ define-mode sed
 ; This is matched after 'csh', and will pick up /bin/sh, /bin/bash, /bin/ksh
 define-mode sh
 ~with define-submode sh
-	suf '\(\.\(sh\|ksh\|[^/]*rc\)$\|profile$\|\.bash_[a-z]\+$\)'
+	mode-filename	'profile$'
+	suffixes	'\(\.\(sh\|ksh\|shar\|.*rc\)$\|\.bash_[a-z]\+$\)'
 	pre '^\(\(#!\s*\/.*sh\>\(\s*[-]\+[\a]*\s*\)\?\)\|:\)\s*$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
@@ -504,7 +513,7 @@ define-mode sh
 
 define-mode sml
 ~with define-submode sml
-	suf '\.sml$'
+	suffixes	'\.sml$'
 	comment-prefix	'^\s*[*]'
 	fence-begin="(\\*"
 	fence-end="\\*)"
@@ -513,7 +522,7 @@ define-mode sml
 define-mode sql
 ~with define-submode sql
 	before "bat"
-	suf '\.sql$'
+	suffixes	'\.sql$'
 	pre '^\s*\(rem\>.*$\|remark\>.*$\|set\s\+echo\s\+\(on\|off\)\?$\)'
 	comment-prefix	'^\s*rem\(ark\)\?'
 	comments	'^\s*rem\(ark\)\?\s*$'
@@ -534,7 +543,7 @@ define-mode sql
 
 define-mode tags
 ~with define-submode tags
-	suf '\<tags$'
+	mode-filename	'^tags$'
 	comment-prefix	'^!_'
 	comments	'^!_$'
 ~endwith
@@ -542,14 +551,15 @@ define-mode tags
 ; VILE's mktbls
 define-mode tbl
 ~with define-submode tbl
-	suf '\(modetbl\|cmdtbl\)$'
+	mode-filename	'^\(modetbl\|cmdtbl\)$'
 	comment-prefix	'^\s*#'
 	comments	'^\s*#\s*$'
 ~endwith
 
 define-mode tc
 ~with define-submode tc
-	suf '\(\.tc\|\.tcap\|\<termcap[^/]*\)$'
+	mode-filename	'^termcap.*$'
+	suffixes	'\.\(tc\|tcap\)$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
 ~endwith
@@ -557,7 +567,7 @@ define-mode tc
 define-mode tcl
 ~with define-submode tcl
 	before "sh"
-	suf '\.\(tcl\|exp\)$'
+	suffixes	'\.\(tcl\|exp\)$'
 	pre '^#!\s*\/.*\(wish\|wishx\|tclsh\|tcl\|expectk\)[0-9.]*\>\(\s*-[\a]\+\)*\s*$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
@@ -565,7 +575,7 @@ define-mode tcl
 
 define-mode tex
 ~with define-submode tex
-	suf '\.\(tex\)$'
+	suffixes	'\.\(tex\)$'
 	filtername 'vile-latex-filt -k tex'
 	fence-pairs='<>{}()[]'
 	comment-prefix	'^\s*%'
@@ -574,20 +584,22 @@ define-mode tex
 
 define-mode texi
 ~with define-submode texi
-	suf '\.\(texi\|txi\|texinfo\)$'
+	suffixes	'\.\(texi\|txi\|texinfo\)$'
 ~endwith
 
 define-mode ti
 ~with define-submode ti
 	before "sh"
-	suf '\(\.ti\|\.tinfo\|\<terminfo\(\.src\)\?\)$'
+	mode-filename	'^\<terminfo\(\.src\)\?$'
+	suffixes	'\.\(ti\|tinfo\)$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
 ~endwith
 
 define-mode txt
 ~with define-submode txt
-	suf '\(\(README\|CHANGES\|Change[Ll]og\|COPYING\)[^/]*\|\.\(txt\|doc\|hlp\)\)$'
+	mode-filename	'^\(\(TODO\|\(\(.*-\)\?README\)\|CHANGES\|Change[Ll]og\|COPYING\).*\)$'
+	suffixes	'\.\(txt\|doc\|hlp\)$'
 	comment-prefix	'^\s*--'
 	comments	'^\s*--\s*$'
 ~endwith
@@ -595,7 +607,7 @@ define-mode txt
 define-mode vb
 ~with define-submode vb
 	before "basic"
-	suf '\.\(bas\|frm\)$'
+	suffixes	'\.\(bas\|frm\)$'
 	pre '\(^VERSION\|VB_Name\)'
 	qualifiers=all
 	comment-prefix	'^\s*\''
@@ -608,7 +620,7 @@ define-mode vb
 
 define-mode vlog
 ~with define-submode vlog
-	suf '\.v$'
+	suffixes	'\.v$'
 	cindent
 	cindent-chars $fences
 ~endwith
@@ -616,13 +628,16 @@ define-mode vlog
 ; "define-mode vile" is builtin
 ~with define-submode vile
 	before "sh"
-	suf '\(vile[^/]*rc\|vile.*/[^/]*rc\|\.exrc\|\.vile\)$'
+	mode-pathname	'\(vile.*/.*rc\)$'
+	mode-filename	'\(vile.*rc\)$'
+	suffixes	'\.\(exrc\|vile\)$'
 	comment-prefix	'^\s*;'
 	comments	'^\s*;\s*$'
 	fence-if	'^\s*~if\>'
 	fence-elif	'^\s*~elseif\>'
 	fence-else	'^\s*~else\>'
 	fence-fi	'^\s*~endif\>'
+	sections	'^\s*\(define-mode\|\(\d\+\s*\)\?\(store-\(macro\|procedure\)\)\)'
 ~elsewith define-submode vile group 'while'
 	fence-if	'^\s*~while\>'
 	fence-fi	'^\s*~endwhile\>'
@@ -637,7 +652,7 @@ define-mode vlog
 
 define-mode vim
 ~with define-submode vim
-	suf '\(\.vim\)$'
+	suffixes	'\.\(vim\)$'
 	comment-prefix	'^\s*"'
 	before "make"
 	filtername	'vile-vile-filt -k vim'
@@ -656,7 +671,7 @@ define-mode vim
 
 define-mode xml
 ~with define-submode xml
-	suf '\.xml$'
+	suffixes	'\.xml$'
 	pre '^\s*<?xml\s'
 	fence-pairs	'<>()[]{}'
 	comment-prefix	'^\s*--'
@@ -665,10 +680,10 @@ define-mode xml
 
 define-mode xres
 ~with define-submode xres
-	~if $filename-ic
-		suf '\(\.Xdefaults\(-[^/]\+$\)\?\|\.ad\)$'
-	~else
-		suf '\(app-defaults/[A-Z]\?[A-Z][a-z0-9-]\+\|\.Xdefaults\(-[^/]\+$\)\?\|\.ad\)$'
+	mode-filename	'^\(\.Xdefaults\(-.\+$\)\?\)$'
+	suffixes	'\.\(ad\)$'
+	~if &not $filename-ic
+		mode-pathname	'\(app-defaults/[A-Z]\?[A-Z][a-z0-9-]\+\)$'
 	~endif
 	comment-prefix	'^\s*!'
 	comments	'^\s*!\s*$'
@@ -676,14 +691,14 @@ define-mode xres
 
 define-mode xs
 ~with define-submode xs
-	suf '\.xs$'
+	suffixes	'\.xs$'
 	cindent
 	cindent-chars &cat ':' $fences
 ~endwith
 
 define-mode yacc
 ~with define-submode yacc
-	suf '\.\(y\|yacc\)$'
+	suffixes	'\.\(y\|yacc\)$'
 	cindent
 	cindent-chars &cat ':#' $fences
 ~endwith

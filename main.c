@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.515 2004/03/21 22:43:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.516 2004/04/11 15:22:00 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1549,7 +1549,7 @@ global_val_init(void)
     set_submode_val("c", MDCINDENT, TRUE);	/* C-style indent */
     set_submode_txt("c", VAL_CINDENT_CHARS, DFT_CINDENT_CHARS);		/* C-style indent flags */
 
-    set_majormode_rexp("c", MVAL_SUFFIXES, DFT_CSUFFIX);
+    set_majormode_rexp("c", MVAL_MODE_SUFFIXES, DFT_CSUFFIX);
 #endif
 
 #if OPT_EVAL
