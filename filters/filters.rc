@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.103 1999/12/26 23:05:56 tom Exp $
+; $Id: filters.rc,v 1.104 2000/01/07 01:47:22 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -285,7 +285,7 @@ define-mode perl
 	fence-else     '^\s*}\s*else\s*{'
 	fence-fi       '^\s*}\s*$'
 ~elsewith define-submode perl group 'while'
-	fence-if       '^\s*\(sub\|foreach\|while\|unless\do\)\>.*{'
+	fence-if       '^\s*\(sub\|foreach\|while\|unless\|do\)\>.*{'
 	fence-fi       '^\s*}'
 ~endwith
 
@@ -359,7 +359,7 @@ define-mode sh
 define-mode sql
 ~with define-submode sql
 	suf '\.sql$'
-	pre '^\s*\remark\>$'
+	pre '^\s*\<remark\>$'
 	comment-prefix	'^\s*rem\(ark\)\?'
 	comments	'^\s*rem\(ark\)\?\s*$'
 	ignorecase

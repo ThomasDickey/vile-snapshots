@@ -1,5 +1,36 @@
 Changes for vile 9.1 (released ??? ??? ??, 1999)
 
+ 20000104 (p)
+	> Kevin Buettner:
+	+ window.c (push_fake_win, pop_fake_win): Set curbp.
+	+ api.c, select.c:  Change callers of push_fake_win and pop_fake_win to
+	  not set curbp.  Actually, it wouldn't hurt, but you'd have to be
+	  careful to make sure the setting and restoring is done in the proper
+	  order.  [Fixes bug reported by Clark Morgan in which only one dirty
+	  window would get colored at a time.]
+	+ perl.xs: Minor doc fixes.
+	> Clark Morgan:
+	+ implement autocolor for win32 console and GUI.
+	+ fix some stale doc in doc/macros.doc
+	+ fix compiler warnings in ntwinio.c
+	> Brendan O'Dea:
+	+ remove the clexec/isnamedcmd/no_msgs tweaking in perl.xs for perl
+	  commands.  These flags were changed to allow mlreply* to work
+	  interactively when perl subs such as hgrep were called from a wrapper
+	  macro, although this makes using a registered perl extension
+	  non-interactively impossible.
+	> Tom Dickey:
+	+ minor correction to perl filter, special cases of backslashing to
+	  handle perl5's MM_Win32.pm, which incidentally contains a syntax
+	  error right after "UNINSTALL =".
+	+ modify DrawMenuBar() to use HWND parameter rather than HMENU, as
+	  documented (reported by Rick Sladkey).
+	+ correct a couple of missing characters after backslashes in perl and
+	  sql modes (reported by Kevin Buettner).
+	+ add pattern to finderr.c for SGI 7.3 SGI MIPSpro 7.3 compilers (from
+	  Anton Koning <anton@sara.nl>).
+	+ minor keyword additions for C and Java.
+
  20000104 (o)
 	> Kevin Buettner:
 	+ modify updattrs() and offs2col() to fix an extra highlighted

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.70 1999/12/27 01:46:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.72 2000/01/07 02:05:49 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -725,19 +725,25 @@ get_borders(void)
     TRACE(("CYCAPTION: %d\n", cur_win->y_titles));
 }
 
-/* Notes: lpntm is a pointer to a TEXTMETRIC struct if FontType does not
+/*
+ * Note 1: lpntm is a pointer to a TEXTMETRIC struct if FontType does not
  * have TRUETYPE_FONTTYPE set, but we only need the tmPitchAndFamily member,
  * which has the same alignment as in NEWTEXTMETRIC.
+ *
+ * Note 2: enumerate_fonts() is an instance of FONTENUMPROC.  The parameter
+ * types specified for this function do not match the windows docu I
+ * have in my possession (MSDN JAN 1998), but they do match the
+ * declarations in wingdi.h .  When in doubt, use the source :-) .
  */
 static int CALLBACK
 enumerate_fonts(
-    ENUMLOGFONT * lpelf,
-    NEWTEXTMETRIC * lpntm,
+    const LOGFONT * lpelf,
+    const TEXTMETRIC * lpntm,
     DWORD FontType,
     LPARAM lParam)
 {
     int code = 2;
-    LOGFONT *src = &(lpelf->elfLogFont);
+    const LOGFONT *src = lpelf;
     LOGFONT *dst = ((LOGFONT *) lParam);
 
     if ((src->lfPitchAndFamily & 3) != FIXED_PITCH) {
@@ -1547,7 +1553,7 @@ enable_popup_menu(void)
     CheckMenuItem(vile_menu,
 	IDM_MENU,
 	MF_BYCOMMAND | (enable_popup ? MF_CHECKED : MF_UNCHECKED));
-    DrawMenuBar(vile_menu);
+    DrawMenuBar(cur_win->main_hwnd);
 }
 
 static void
@@ -2148,12 +2154,17 @@ ntgetch(void)
     POINTS points;
     UINT clicktime = GetDoubleClickTime();
     WINDOW *that_wp = 0;
+#ifdef VAL_AUTOCOLOR
+    int milli_ac, orig_milli_ac;
+#endif
 
     if (saveCount > 0) {
 	saveCount--;
 	return savedChar;
     }
-
+#ifdef VAL_AUTOCOLOR
+    orig_milli_ac = global_b_val(VAL_AUTOCOLOR);
+#endif
     vile_in_getfkey = 1;
     while (!result) {
 	if (GetFocus() == cur_win->main_hwnd) {
@@ -2167,6 +2178,33 @@ ntgetch(void)
 		fhide_cursor();
 	    }
 	}
+#ifdef VAL_AUTOCOLOR
+	milli_ac = orig_milli_ac;
+	while (milli_ac > 0) {
+	    if (PeekMessage(&msg, (HWND) 0, 0, 0, PM_NOREMOVE)) {
+		if (msg.message != 0x118)
+		    break;	/* A meaningful event--process it. */
+		else {
+		    /*
+		     * This is the undocumented (as near as I can tell)
+		     * 0x118 event that seems to occur whenever the caret
+		     * blinks.  This is a background "noise" event that can
+		     * be ignored once dispatched.
+		     */
+
+		    if (GetMessage(&msg, (HWND) 0, 0, 0) != TRUE) {
+			PostQuitMessage(1);
+			quit(TRUE, 1);
+		    } else
+			DispatchMessage(&msg);
+		}
+	    }
+	    Sleep(20);		/* sleep a bit, but be responsive to all events */
+	    milli_ac -= 20;
+	}
+	if (orig_milli_ac && milli_ac <= 0)
+	    autocolor();
+#endif
 	if (GetMessage(&msg, (HWND) 0, 0, 0) != TRUE) {
 	    PostQuitMessage(1);
 	    TRACE(("GETC:no message\n"));

@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-1999 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.84 1999/12/04 18:51:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.85 2000/01/07 01:34:42 tom Exp $
  *
  */
 
@@ -97,6 +97,7 @@ char *const predefined[] =
     "[^ ]\\+ [^ ]\\+ \"%[^, \t\"]\", line %L",
     "[^ ]\\+ [^ ]\\+ %[^, \t], line %L",
     "[^ ]\\+ \"%[^\"]\", line %L",	/* HP/UX C compiler */
+    "File = %F, Line = %L",	/* SGI MIPSpro 7.3 compilers    */
 #if defined(_AIX)
     "^\"%[^\" \t]\", line %L\\.[0-9]\\+:%T",	/* AIX C compilers */
 #endif

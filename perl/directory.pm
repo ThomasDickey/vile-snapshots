@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/directory.pm,v 1.5 2000/01/05 02:44:57 tom Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/directory.pm,v 1.6 2000/01/07 01:24:45 bod Exp $
 # (see dir.doc)
 
 package directory;
@@ -53,7 +53,7 @@ sub dir {
     foreach $sub (sort readdir(DIR)) {
         my ($mod, $uid, $ind) = (undef, undef, 0);
         do { ($mod, $uid) = (stat($sub))[2,4]; } || do { $ind = 17; };
-	$uid = substr((getpwuid($uid))[0], 0, 8) unless $^O eq 'MSWin32';
+        $uid = substr((getpwuid($uid))[0], 0, 8) unless $^O eq 'MSWin32';
         if ( ( $mod & 0xF000 ) == 0x4000 ) {
             $ind = (-l $sub ? 10 : $ind);
             push @subdirs, [ $sub, $ind, $mod&0xFFF, $uid];
@@ -101,7 +101,7 @@ sub dir {
             $cb->setregion($i+1+5, 0, $i+1+5, length($str));
             $cb->attribute("bold", "color", $color[$ind]) if ($color[$ind]);
             $cb->setregion($i+1+5, 15, $i+1+5, 15+length($substr));
-            $cb->attribute("hyper", "perl \"directory::dir(\'$sub\')\"");
+            $cb->attribute("hyper", "directory '$sub'");
         } else {
             print $cb " "x$len, "| ";
         }
@@ -115,8 +115,8 @@ sub dir {
             $cb->setregion($i+1+5, $len+2,  $i+1+5, '$$');
             $cb->attribute("bold", "color", $color[$ind]) if ($color[$ind]);
             $cb->setregion($i+1+5, $len+25, $i+1+5, '$$');
-	    $cb->attribute("hyper", "perl \"mime::mime(\'$sub\')\"")
-		unless $^O eq 'MSWin32';
+            $cb->attribute("hyper", "perl \"mime::mime('$sub')\"")
+                unless $^O eq 'MSWin32';
         } else {
             print $cb "\n";
         }

@@ -341,6 +341,9 @@ State Variables
 			recently visited.  This is what you would get if you
 			typed '#' at a prompt.  (E.g. ":e #")
 
+	$autocolor-hook	name of the hook to run when attempting to do
+			automatic syntax coloring
+
 	$bchars         [READ ONLY] Number of characters in current buffer.
 
 	$bflags		[READ ONLY] Status flags for current buffer, as shown
@@ -424,6 +427,8 @@ State Variables
 			actual program path.
 
 	$exit-hook      Name of procedure to run when quitting.
+
+	$fence-limit	iteration limit for complex fences, in seconds.
 
 	$font           Name of the current font (in xvile/winvile only).
 
@@ -548,7 +553,7 @@ State Variables
 
 	$version        [READ ONLY] Contains vile's version string.
 
-	$wline          Height of current window.
+	$wlines         Height of current window.
 
 	$word           [READ ONLY] The "word" at the cursor location.
 
@@ -1190,6 +1195,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.39 1999/12/31 12:36:13 kev Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.41 2000/01/07 02:02:38 tom Exp $
 -----------------------------------
 
