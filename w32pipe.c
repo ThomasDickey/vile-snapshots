@@ -1,31 +1,72 @@
 /* 
- * w32pipe:  win32 clone of npopen.  
+ * w32pipe:  win32 clone of npopen.c, utilizes native pipes (not temp files).
  *
- * Acknowledgments:  The techniques used in npclose() and inout_popen()
- *                   are based directly on information supplied in the
- *                   MSDN Knowledge Base.
+ * Background
+ * ==========  
+ * The techniques used in w32_npclose() and w32_inout_popen() are derived 
+ * from much trial and error and support "pipe" I/O in both a console and 
+ * GUI environment.  You may _think_ you have a better way of effecting the
+ * functionality provided in this module and that may well be the case.  
+ * But be sure you test your new code with at least these versions of Win32:
  *
- * Caveats:  These routines work well under WinNT 4.0 in all cases and may
- *           work under Win95 if a shell other than COMMAND.COM is selected
- *           as the console shell (via either $COMSPEC or $SHELL).  An 
- *           example of such a shell is the Thompson Toolkit shell.
+ *      win95 (original version), OSR2, NT 4.0
  *
- *           In all other Win95 cases, especially when COMMAND.COM is the
- *           console shell, the routines will either hang (OS R2) or
- *           cause command.com to attempt to access the PC's floppy drive. 
- *           Seriously.  Since most Win95 users won't be using the Thompson
- *           Toolkit shell and definitely won't be pleased with the
- *           aforementioned behavior, these routines are called only when 
- *           the global boolean "w32pipes" is set in vile.rc .  By default,
- *           "w32pipes" is set on an NT host and reset on a Win95 host.
+ * For each HOST, be sure to test read pipes, write pipes, and filters (and
+ * test repeatedly within the same vile session).
  *
- *           These routines have not been tested under WinNT 3.51 .
+ *
+ * Acknowledgments  
+ * ===============
+ * Until I read Steve Kirkendall's code for the Win32 version of elvis, I 
+ * did not realize that attempting to redirect stdin to a device is a 
+ * _not_ a good strategy.
+ *             
+ *
+ * Caveats  
+ * =======
+ *
+ * -- This code has not been tested with NT 3.51 .
+ *
+ * -- The MSDN Knowledge Base has example code that uses anonymous pipes 
+ *    to redirect a spawned process's stdin, stdout, and stderr.  Don't go 
+ *    there.
+ *
+ * -- The original Win95 console shell (command.com) accesses the floppy 
+ *    drive each and every time a process communicates with it via a pipe 
+ *    and the OS R2 shell abruptly hangs under similar conditions.  By 
+ *    default, then, on a WinNT host, vile's pipes are implemented using
+ *    native pipes (i.e., with the code in this module), while Win95 hosts 
+ *    fall back to temp file communication.  If the user's replacement
+ *	  Win95 shell does not exhibit communication problems similar to 
+ *    those described above (e.g., Thompson Toolkit Shell), vile may be 
+ *    forced to use native Win32 pipes by setting the global mode 
+ *    "w32pipes" (e.g., "se w32pipes").
+ *
+ * -- This module's native pipes implementation exhibits various problems
+ *    when a 16-bit console app is exec'd.  On a win95 host, the editor
+ *    and shell generally hang.  WinNT does better, but winvile creates
+ *    "background" shell windows that require manual closure.
+ *
+ * -- This module configures read pipes so that the exec'd app reads
+ *    it's input from an empty file.  That's a necessity, not a bug.  
+ *    Consequently, if an attempt is made to read data from an app
+ *    that itself reads input (why would you do that?), the app will
+ *    appear to hang if it reopens stdin on the console (because vile's
+ *    stdin is not available to the app--another necessity).  In this
+ *    situation, kill the app by typing ^C (and then please apply for a 
+ *    QA position with a certain Redmond company).
+ *
+ * -- If vile crashes/hangs while processing a read pipe, temp file(s)
+ *    will be left in the current drive's root directory.  This reeks.
+ *    Using an API other than tmpnam() to allocate temp files would go
+ *    a long way toward fixing the problem.
  * 
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.4 1998/03/17 10:25:57 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.5 1998/04/06 03:01:00 cmorgan Exp $
  */
 
 #include <windows.h>
 #include <io.h>
+#include <share.h>
 #include <process.h>
 #include <assert.h>
 
@@ -35,17 +76,22 @@
 #include "edef.h"
 
 #define BAD_FD          (-1)
-#define BAD_PROC_HANDLE (-1)
+#define BAD_PROC_HANDLE (INVALID_HANDLE_VALUE)
+#define PIPESIZ         (4096)
 #define SHELL_ERR_MSG   \
-          "error: shell process \"%s\" failed, check COMSPEC/SHELL env vars\n" 
+          "error: shell process \"%s\" failed, check COMSPEC env var\n" 
 
-static DWORD console_mode;
-static int   proc_handle;
-static char  *shell = NULL;
-static char  *shell_c = "/c";
-static char  orig_title[256];
+static HANDLE proc_handle;
+static char   *shell = NULL,
+              *shell_c = "/c",
+              tmpin_nam[L_tmpnam + 1];
 
 /* ------------------------------------------------------------------ */
+
+#ifndef DISP_NTWIN
+
+static DWORD console_mode;
+static char  orig_title[256];
 
 /*
  * Need to install an event handler before spawning a child so that
@@ -67,7 +113,7 @@ event_handler(DWORD ctrl_type)
     return (TRUE);
 }
 
-#ifndef DISP_NTWIN
+
 
 /* Temporarily setup child's console input for typical line-oriented I/O. */
 void 
@@ -100,11 +146,24 @@ pop_console_mode(void)
 #endif
 
 
-static int
-exec_shell(char *cmd)
+
+static void
+global_cleanup(void)
 {
-    char *argv[4];
-    char *sep = "/c";
+    if (tmpin_nam[0] != '\0')
+        remove(tmpin_nam);
+    pop_console_mode();
+}
+
+
+
+static HANDLE
+exec_shell(char *cmd, HANDLE *handles, int child_behind)
+{
+    char                 cmdbuf[2048];
+    HWND                 fgnd;
+    PROCESS_INFORMATION  pi;
+    STARTUPINFO          si;
 
     if (shell == 0) 
         shell = get_shell();
@@ -112,15 +171,44 @@ exec_shell(char *cmd)
     if (!strcmp(shell, "/bin/sh"))
         shell_c = "-c";
 
-    argv[0] = shell;
-    argv[1] = shell_c;
-    argv[2] = cmd;
-    argv[3] = NULL;
+    _snprintf(cmdbuf, sizeof(cmdbuf), "%s %s %s", shell, shell_c, cmd);
 
     TRACE(("exec_shell %s\n", shell));
     TRACE(("shell cmd: %s\n", cmd));
 
-    return (proc_handle = spawnvpe(_P_NOWAIT, argv[0], argv, NULL));
+    memset(&si, 0, sizeof(si));
+    proc_handle    = BAD_PROC_HANDLE;  /* in case of failure */
+    si.cb          = sizeof(si);
+    si.dwFlags     = STARTF_USESTDHANDLES;
+    si.hStdInput   = handles[0];
+    si.hStdOutput  = handles[1];
+    si.hStdError   = handles[2];
+#ifdef DISP_NTWIN
+    if (child_behind)
+        fgnd = GetForegroundWindow();
+    AllocConsole();
+#endif
+    if (CreateProcess(NULL, 
+                      cmdbuf,
+                      NULL,
+                      NULL,
+                      TRUE,       /* Inherit handles */
+                      0,
+                      NULL,
+                      NULL,
+                      &si,
+                      &pi))
+    {
+        /* Success */
+
+#ifdef DISP_NTWIN
+    if (child_behind)
+        SetForegroundWindow(fgnd);
+#endif
+        CloseHandle(pi.hThread);
+        proc_handle = pi.hProcess;
+    }
+    return (proc_handle);
 }
 
 
@@ -128,11 +216,14 @@ exec_shell(char *cmd)
 int
 w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
 {
-    int  rc, rp[2], wp[2], stdout_orig, stdin_orig, stderr_orig;
+    HANDLE handles[3];
+    int    i, rc, rp[2], tmpin_fd, wp[2];
 
-    proc_handle = BAD_PROC_HANDLE;
-    stdout_orig = stdin_orig = stderr_orig = BAD_FD;
-    rp[0]       = rp[1]      = wp[0]       = wp[1] = BAD_FD;
+    proc_handle  = BAD_PROC_HANDLE;
+    rp[0]        = rp[1]      = wp[0]      = wp[1] = BAD_FD;
+    handles[0]   = handles[1] = handles[2] = INVALID_HANDLE_VALUE;
+    tmpin_fd     = BAD_FD;
+    tmpin_nam[0] = '\0';
     push_console_mode(cmd);
     do
     {
@@ -146,18 +237,42 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
              * and keep the dreaded ^M chars from temporarily appearing
              * in a vile buffer (ugly).
              */
-            if (_pipe(rp, BUFSIZ, O_TEXT|O_NOINHERIT) == -1)
+            if (_pipe(rp, PIPESIZ, O_TEXT|O_NOINHERIT) == -1)
                 break;
-            stdout_orig = _dup(fileno(stdout));
-            stderr_orig = _dup(fileno(stderr));
-            if (stdout_orig == BAD_FD || stderr_orig == BAD_FD)
+            if (! DuplicateHandle(GetCurrentProcess(),
+                                  (HANDLE) _get_osfhandle(rp[1]),
+                                  GetCurrentProcess(),
+                                  handles + 1,
+                                  0,
+                                  TRUE,
+                                  DUPLICATE_SAME_ACCESS|DUPLICATE_CLOSE_SOURCE))
+            {
                 break;
-            if (_dup2(rp[1], fileno(stdout)) != 0)
-                break;
-            if (_dup2(rp[1], fileno(stderr)) != 0)
-                break;
-            close(rp[1]);
-            rp[1] = BAD_FD;   /* Mark as unused */
+            }
+            handles[2] = handles[1];
+            rp[1]      = BAD_FD;   /* closed by DuplicateHandle() */
+            if (! fw)
+            {
+                /*
+                 * This is a read pipe (only).  Connect child's stdin to
+                 * an empty file.  Under no circumstances should the
+                 * child's stdin be connected to a device (else lots of
+                 * screwy things will occur).  In particular, connecting
+                 * the child's stdin to the parent's stdin will cause
+                 * aborts and hangs on the various Win32 hosts.  You've
+                 * been warned.
+                 */
+
+                if (tmpnam(tmpin_nam) == NULL)
+                    break;
+                if ((tmpin_fd = open(tmpin_nam,
+                                     O_RDONLY|O_CREAT|O_TRUNC,
+                                     _S_IWRITE|_S_IREAD)) == BAD_FD)
+                {
+                    break;
+                }
+                handles[0] = (HANDLE) _get_osfhandle(tmpin_fd);
+            }
             if (! (*fr = fdopen(rp[0], "r")))
                 break;
         }
@@ -170,26 +285,30 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
              * prevent translation of the parent's CR/LF record delimiters 
              * to NL.  Apparently, many apps want those delimiters :-) .
              */
-            if (_pipe(wp, BUFSIZ, O_BINARY|O_NOINHERIT) == -1)
+            if (_pipe(wp, PIPESIZ, O_BINARY|O_NOINHERIT) == -1)
                 break;
-            if ((stdin_orig = _dup(fileno(stdin))) == -1)
+            if (! DuplicateHandle(GetCurrentProcess(),
+                                  (HANDLE) _get_osfhandle(wp[0]),
+                                  GetCurrentProcess(),
+                                  handles + 0,
+                                  0,
+                                  TRUE,
+                                  DUPLICATE_SAME_ACCESS|DUPLICATE_CLOSE_SOURCE))
+            {
                 break;
-            if (_dup2(wp[0], fileno(stdin)) != 0)
-                break;
-            close(wp[0]);
-            wp[0] = BAD_FD;   /* Mark as unused */
-            if (! (*fw  = fdopen(wp[1], "w")))
+            }
+            wp[0] = BAD_FD;     /* closed by DuplicateHandle() */
+            if (! fr)
+                handles[1] = handles[2] = GetStdHandle(STD_OUTPUT_HANDLE);
+            if (! (*fw = fdopen(wp[1], "w")))
                 break;
         }
-        rc = (exec_shell(cmd) == BAD_PROC_HANDLE) ? FALSE : TRUE;
+        rc = (exec_shell(cmd, 
+                         handles, 
+                         fr != NULL  /* Child wdw behind unless write pipe. */
+                         ) == BAD_PROC_HANDLE) ? FALSE : TRUE;
         if (fw)
         {
-            /*
-             * Order matters, here.  Within the parent, restore original
-             * stdin first, or R/W pipes (i.e., a region filter) will go
-             * boom under NT 4.0 .
-             */
-
             if (! rc)
             {
                  /* Shell process failed, put complaint in user's face. */
@@ -198,37 +317,24 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
                 printf(SHELL_ERR_MSG, shell);
                 fflush(stdout);
             }
-            if (_dup2(stdin_orig, fileno(stdin)) != 0)
-            {
-                /* Lost stdin -- no way to continue */
-
-                imdying(0);
-            }
-            close(stdin_orig);
+            CloseHandle(handles[0]);
         }
         if (fr)
         {
             if (! rc)
             {
+                char  buf[200];
+                DWORD dummy, len;
+
                 /* Shell process failed, put complaint in user's buffer. */
 
-                printf(SHELL_ERR_MSG, shell);
-                fflush(stdout);
+                len = _snprintf(buf, sizeof(buf), SHELL_ERR_MSG, shell);
+                (void) WriteFile(handles[1], buf, len, &dummy, NULL);
+                FlushFileBuffers(handles[1]);
             }
-            if (_dup2(stdout_orig, fileno(stdout)) != 0)
-            {
-                /* Can't reopen stdout -- time to tidy up and die. */
-
-                imdying(0);
-            }
-            if (_dup2(stderr_orig, fileno(stderr)) != 0)
-            {
-                /* Lost stderr -- bummer */
-
-                imdying(0);
-            }
-            close(stdout_orig);
-            close(stderr_orig);
+            CloseHandle(handles[1]);
+            if (tmpin_fd != BAD_FD)
+                close(tmpin_fd);
         }
         return (rc);
     }
@@ -236,51 +342,22 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
 
     /* If we get here -- some operation has failed.  Clean up. */
 
-    if (fw)
+    if (wp[0] != BAD_FD)
+        close(wp[0]);
+    if (wp[1] != BAD_FD)
+        close(wp[1]);
+    if (rp[0] != BAD_FD)
+        close(rp[0]);
+    if (rp[1] != BAD_FD)
+        close(rp[1]);
+    if (tmpin_fd != BAD_FD)
+        close(tmpin_fd);
+    for (i = 0; i < 3; i++)
     {
-        if (wp[1] != BAD_FD)
-            close(wp[1]);
-        if (wp[0] != BAD_FD)
-            close(wp[0]);
-        if (stdin_orig != BAD_FD)
-        {
-            if (_dup2(stdin_orig, fileno(stdin)) != 0)
-            {
-                /* Lost stdin -- no way to continue */
-
-                imdying(0);
-            }
-            close(stdin_orig);
-        }
+        if (handles[i] != INVALID_HANDLE_VALUE)
+            CloseHandle(handles[i]);
     }
-    if (fr)
-    {
-        if (rp[1] != BAD_FD)
-            close(rp[1]);
-        if (rp[0] != BAD_FD)
-            close(rp[0]);
-        if (stderr_orig != BAD_FD)
-        {
-            if (_dup2(stderr_orig, fileno(stderr)) != 0)
-            {
-                /* Lost stderr -- no way to continue */
-
-                imdying(0);
-            }
-            close(stderr_orig);
-        }
-        if (stdout_orig != BAD_FD)
-        {
-            if (_dup2(stdout_orig, fileno(stdout)) != 0)
-            {
-                /* Lost stdout -- no way to continue */
-
-                imdying(0);
-            }
-            close(stdout_orig);
-        }
-    }
-    pop_console_mode();
+    global_cleanup();
     return (FALSE);
 }
 
@@ -295,11 +372,17 @@ w32_npclose(FILE *fp)
     (void) fclose(fp);
     if (proc_handle != BAD_PROC_HANDLE)
     {
-        (void) _cwait(&term_status, proc_handle, 0);
+        (void) _cwait(&term_status, (int) proc_handle, 0);
+        (void) CloseHandle(proc_handle);
         proc_handle = BAD_PROC_HANDLE;
     }
-    pop_console_mode();
+    global_cleanup();
+#ifdef DISP_NTWIN
+    FreeConsole();
+#endif
 }
+
+
 
 #define     HOST_95    0
 #define     HOST_NT    1

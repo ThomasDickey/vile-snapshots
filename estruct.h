@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.341 1998/04/04 12:11:58 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.342 1998/04/12 19:04:04 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -429,7 +429,7 @@
 #define OPT_VMS_PATH    (SYS_VMS)  /* vax/vms path parsing (testing/porting)*/
 
 /* systems with MSDOS-like filename syntax */
-#define OPT_MSDOS_PATH  (SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT)
+#define OPT_MSDOS_PATH  (SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT || SYS_OS2_EMX)
 #define OPT_CASELESS	(SYS_WINNT || SYS_OS2 || SYS_OS2_EMX)
 #define OPT_UNC_PATH	(SYS_WINNT)
 
@@ -643,7 +643,7 @@ extern char *rindex (const char *s, int c);
 #define FOPEN_UPDATE	"w+"
 #endif
 
-#if OPT_MSDOS_PATH	/* DOS path / to \ conversions */
+#if OPT_MSDOS_PATH && !SYS_OS2_EMX	/* DOS path / to \ conversions */
 # define is_slashc(c) (c == '\\' || c == '/')
 # define SL_TO_BSL(s)	sl_to_bsl(s)
 #else

@@ -5,7 +5,7 @@
  * Modifications:  kevin buettner and paul fox  2/95
  * 		string literal ("Literal") support --  ben stoltz
  * 
- * $Header: /users/source/archives/vile.vcs/RCS/c-filt.c,v 1.6 1998/02/07 20:53:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/c-filt.c,v 1.8 1998/04/12 11:57:38 tom Exp $
  *
  * Features:
  * 	- Reads the keyword file ".vile.keywords" from the home directory.
@@ -147,10 +147,14 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 #define HASH_LENGTH 256
 #define MAX_LINELENGTH 256
 #define MAX_ATTR_LENGTH 3
-#ifndef _WIN32
-static char *keyword_file=".vile.keywords";
-#else
+#ifdef _WIN32
 static char *keyword_file="vile.keywords";
+#else
+# if __GO32__
+static char *keyword_file="vile.key";
+# else
+static char *keyword_file=".vile.keywords";
+# endif
 #endif
 
 typedef struct _keyword KEYWORD;
@@ -320,7 +324,11 @@ read_keywords(void)
     int  items;
     FILE *kwfile;
     home = getenv("HOME");
+#if defined(_WIN32) || defined(__GO32__)
+    sprintf(filename,"%s\\%s",(home == NULL ? "" : home),keyword_file);
+#else
     sprintf(filename,"%s/%s",(home == NULL ? "" : home),keyword_file);
+#endif
     if ((kwfile = fopen(filename,"r")) != NULL) {
 	fgets(line,MAX_LINELENGTH,kwfile);
 	items = sscanf(line,"%[#a-zA-Z0-9_]:%[IUBR]",ident,attribute);

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.270 1998/04/09 21:16:45 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.271 1998/04/12 19:09:08 tom Exp $
  *
  */
 
@@ -650,6 +650,9 @@ extern int maybe_pathname (char *fn);
 #if OPT_MSDOS_PATH
 extern char * is_msdos_drive (char *path);
 extern char * sl_to_bsl (const char *p);
+#endif
+
+#ifndef bsl_to_sl_inplace
 extern void bsl_to_sl_inplace (char *p);
 #endif
 
@@ -1128,7 +1131,7 @@ extern	void	setbuf	(FILE *fp, char *buffer);
 #if MISSING_EXTERN_SETBUFFER
 extern	void	setbuffer (FILE *fp, char *buffer, int size);
 #endif
-#if MISSING_EXTERN_SETITIMER
+#if MISSING_EXTERN_SETITIMER && HAVE_SETITIMER
 extern	int	setitimer (int which, const struct itimerval *value, struct itimerval *ovalue);
 #endif
 #if MISSING_EXTERN_SETJMP && !defined(setjmp)

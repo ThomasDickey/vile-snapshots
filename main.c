@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.310 1998/03/31 23:29:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.312 1998/04/12 20:11:32 tom Exp $
  *
  */
 
@@ -62,7 +62,7 @@ extern const int nametblsize;
 #define	GetArgVal(param)	if (!*(++param))\
 					param = argv[++carg];\
 				if (param == 0)\
-					goto usage
+					print_usage()
 
 int
 MainProgram(int argc, char *argv[])
@@ -160,7 +160,7 @@ MainProgram(int argc, char *argv[])
 				if ((param = argv[++carg]) != 0)
 					x_set_dpy(param);
 				else
-					goto usage;
+					print_usage();
 				break;
 			case 'r':
 				x_set_rv();
@@ -175,7 +175,7 @@ MainProgram(int argc, char *argv[])
 					else
 						x_setfont(argv[carg]);
 				} else
-					goto usage;
+					print_usage();
 				break;
 			case 'b':
 				if (argv[++carg] != 0) {
@@ -183,21 +183,21 @@ MainProgram(int argc, char *argv[])
 					 || strcmp(param, "bg") == 0)
 						x_setbackground(argv[carg]);
 				} else
-					goto usage;
+					print_usage();
 				break;
 			case 'n':
 				if (strcmp(param, "name") == 0
 				 && argv[++carg] != 0)
 					x_setname(argv[carg]);
 				else
-					goto usage;
+					print_usage();
 				break;
 			case 'w':
 				if (strcmp(param, "wm") == 0
 				 && argv[++carg] != 0)
 					x_set_wm_title(argv[carg]);
 				else
-					goto usage;
+					print_usage();
 				break;
 #endif /* DISP_X11 */
 			case 'e':	/* -e for Edit file */
@@ -253,7 +253,6 @@ MainProgram(int argc, char *argv[])
 
 			case '?':
 			default:	/* unknown switch */
-			usage:
 				print_usage();
 			}
 
@@ -1630,7 +1629,7 @@ static void
 makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 {
 	static const struct {
-		UINT	mask;
+		ULONG	mask;
 		const char *name;
 	} table[] = {
 		{ _upper,	"Upr" },

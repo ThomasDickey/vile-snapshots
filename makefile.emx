@@ -1,6 +1,6 @@
 #
 # 'vile' and 'mktbls' makefile for EMX using GNU make (OS/2)
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.emx,v 1.1 1997/12/01 00:52:09 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.emx,v 1.2 1998/04/12 17:47:14 tom Exp $
 #
 
 # 
@@ -112,6 +112,11 @@ version:
 
 $(TARGET): version $(VILE_DEPS)
 	$(CC) $(CFLAGS) $(VILE_DEPS) -o $@ -ltermcap
+
+FILT_DEPS = c-filt$O
+
+vile-c-filt$E : $(FILT_DEPS)
+	$(CC) $(CFLAGS) -o $@ $(FILT_DEPS)
 
 #		*Individual File Dependencies*
 config.h:	config.emx

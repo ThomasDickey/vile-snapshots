@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.156 1998/04/04 12:11:58 kev Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.157 1998/04/08 06:55:00 cmorgan Exp $
 #
 #
 
@@ -197,6 +197,14 @@ bktoshell	NONE|(BANG)		OPT_SHELL
 	"stop!"
 	'^Z'
 	<suspend the editor>
+cbrdcpy_unnamed NONE 			SYS_WINNT
+	"copy-unnamed-reg-to-clipboard"
+	'FN-\255'			KEY_F33
+	<copies the unnamed register selection to the windows clipboard> 
+cbrdpaste REDO|UNDO			SYS_WINNT
+	"paste-from-clipboard"
+	'FN-\257'			KEY_F35
+	<paste the windows clipboard contents> 
 cd		NONE			OPT_SHELL
 	"cd"
 	"change-directory"
@@ -237,6 +245,10 @@ consearch	ABSM|MOTION
 wordcount	RANGE			OPT_WORDCOUNT
 	"count-words"
 	<count words, lines, and chars in the region>
+opercbrdcpy	NONE 			SYS_WINNT
+	"copy-to-clipboard"
+	'FN-\256'			KEY_F34
+	<copies the specified region to the windows clipboard> 
 opercopy	OPER|(RANGE|EXTRA)
 	"copy-til"
 	"c"
@@ -393,15 +405,15 @@ cbuf32		REDO			OPT_EXEC_MACROS>31
 	'FN-\254'			KEY_F32
 	"execute-macro-32"		!FEWNAMES
 	<execute [Macro 32]>
-cbuf33		REDO			OPT_EXEC_MACROS>32
+cbuf33		REDO			(OPT_EXEC_MACROS>32&&(!SYS_WINNT))
 	'FN-\255'			KEY_F33
 	"execute-macro-33"		!FEWNAMES
 	<execute [Macro 33]>
-cbuf34		REDO			OPT_EXEC_MACROS>33
+cbuf34		REDO			(OPT_EXEC_MACROS>33&&(!SYS_WINNT))
 	'FN-\256'			KEY_F34
 	"execute-macro-34"		!FEWNAMES
 	<execute [Macro 34]>
-cbuf35		REDO			OPT_EXEC_MACROS>34
+cbuf35		REDO			(OPT_EXEC_MACROS>34&&(!SYS_WINNT))
 	'FN-\257'			KEY_F35
 	"execute-macro-35"		!FEWNAMES
 	<execute [Macro 35]>

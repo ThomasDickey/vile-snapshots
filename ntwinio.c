@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.4 1997/11/09 22:52:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.5 1998/04/08 06:55:00 cmorgan Exp $
  *
  */
 
@@ -39,6 +39,7 @@
 #define	MARGIN	8			/* size of minimum margin and	*/
 #define	SCRSIZ	64			/* scroll size for extended lines */
 #define	NPAUSE	200			/* # times thru update to pause */
+#define NOKYMAP (-1)
 
 #define	AttrColor(b,f)	((WORD)(((ctrans[b] & 15) << 4) | (ctrans[f] & 15)))
 #define Row(n) ((n) * nLineHeight)
@@ -589,6 +590,9 @@ static const struct {
 	{ VK_RIGHT,	KEY_Right,	0 },
 	{ VK_UP,	KEY_Up,		0 },
 	{ VK_DOWN,	KEY_Down,	0 },
+	{ VK_INSERT,	KEY_F33,   	LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED },
+	{ VK_INSERT,	KEY_F34,   	LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED },
+	{ VK_INSERT,	KEY_F35,   	SHIFT_PRESSED },
 	{ VK_INSERT,	KEY_Insert,	0 },
 	{ VK_DELETE,	KEY_Delete,	0 },
 	{ VK_HELP,	KEY_Help,	0 },
@@ -629,53 +633,45 @@ static int saveCount = 0;
 static int
 decode_key_event(KEY_EVENT_RECORD *irp)
 {
-	int key;
-	int i;
+    int key;
+    int i;
 
-	key = (unsigned char) irp->uChar.AsciiChar;
-	if (key != 0) {
-		return key;
-	}
+    key = (unsigned char) irp->uChar.AsciiChar;
+    if (key != 0) {
+        return key;
+    }
 
-	for (i = 0; i < TABLESIZE(keyxlate); i++) {
-		if (keyxlate[i].windows
-		    == irp->wVirtualKeyCode) {
-			if (keyxlate[i].shift != 0
-			    && !(keyxlate[i].shift
-				 & irp->dwControlKeyState))
-				continue;
-			key = keyxlate[i].vile;
-			TRACE(("... %#x -> %#x\n", irp->wVirtualKeyCode, key))
-			break;
-		}
-	}
-	if (key == 0)
-		key = -1;
+    for (i = 0; i < TABLESIZE(keyxlate); i++) 
+    {
+        if (keyxlate[i].windows == irp->wVirtualKeyCode) 
+        {
+            if (keyxlate[i].shift != 0 && 
+                    !(keyxlate[i].shift & irp->dwControlKeyState))
+            {
+                continue;
+            }
+            key = keyxlate[i].vile;
+            TRACE(("... %#x -> %#x\n", irp->wVirtualKeyCode, key))
+            break;
+        }
+    }
+    if (key == 0)
+        return (NOKYMAP);
 
-	return key;
+    return key;
 }
 
 static int
 get_keyboard_state(void)
 {
-	static const struct {
-		int mask;
-		int code;
-	} table[] = {
-		{ VK_LSHIFT,   SHIFT_PRESSED },
-		{ VK_RSHIFT,   SHIFT_PRESSED },
-		{ VK_LCONTROL, LEFT_CTRL_PRESSED },
-		{ VK_RCONTROL, RIGHT_CTRL_PRESSED },
-		{ VK_LMENU,    LEFT_ALT_PRESSED},
-		{ VK_RMENU,    RIGHT_ALT_PRESSED}
-	};
-	size_t i;
 	int result = 0;
 
-	for (i = 0; i < TABLESIZE(table); i++) {
-		if (GetKeyState(table[i].mask) & 0x8000)
-			result |= table[i].code;
-	}
+    if (GetKeyState(VK_CONTROL) < 0)
+        result |= (LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED);
+    if (GetKeyState(VK_MENU) < 0)
+        result |= (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED);
+    if (GetKeyState(VK_SHIFT) < 0)
+        result |= SHIFT_PRESSED;
 	return result;
 }
 
@@ -748,7 +744,7 @@ ntgetch(void)
 			ker.dwControlKeyState = get_keyboard_state();
 			result = decode_key_event(&ker);
 			TRACE(("GETC:KEYDOWN:%#x ->%#x\n", msg.wParam, result))
-			if (result < 0) {
+			if (result == NOKYMAP) {
 				DispatchMessage(&msg);
 				result = 0;
 			} else if (result == (int) msg.wParam) {

@@ -3,7 +3,7 @@
  * Modified from a really old version of "borland.c" (before the VIO
  * stuff went in there.)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.15 1997/11/30 23:51:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.16 1998/04/12 20:14:15 tom Exp $
  */
 
 #include "estruct.h"
@@ -415,7 +415,6 @@ static void
 flash_display(void)
 {
 	VIOMODEINFO data;
-	USHORT cells;
 	UINT cellsize;
 	BYTE *buf1;
 	BYTE *buf2;
@@ -423,7 +422,6 @@ flash_display(void)
 
 	data.cb = sizeof(data);
 	VioGetMode(&data, 0);
-	cells = data.col * data.row;
 	cellsize = 1 + data.attrib;
 
 	buf1 = malloc(data.full_length);

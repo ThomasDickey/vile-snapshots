@@ -1,4 +1,4 @@
-MANIFEST for vile, version v7_3q
+MANIFEST for vile, version v7_3r
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -102,7 +102,6 @@ ptypemap                        perl-interface type map
 random.c                        miscellaneous functions
 regexp.c                        regular expression functions
 region.c                        region-manipulation
-revlist                         revision-list for VILE
 search.c                        functions for search-commands
 select.c                        selection-handling functions
 spawn.c                         functions for spawning subprocesses
@@ -122,6 +121,7 @@ vms2unix.c                      VMS/UNIX compatibility support functions
 vmsbuild.com                    VAX/VMS DCL build script
 vmspipe.c                       pipe-filter support for VMS
 vmsvt.c                         VMS terminal driver
+w32cbrd.c                       Win32 clipboard support
 w32pipe.c                       Win32 native pipe support
 window.c                        window-management functions
 word.c                          commands that operate upon words or paragraphs

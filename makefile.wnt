@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.21 1997/12/10 15:07:50 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.23 1998/04/08 06:55:00 cmorgan Exp $
 #
 #
 !include <ntwin32.mak>
@@ -27,29 +27,28 @@ CFG=vile
 !ENDIF 
 
 # remove the "#" to get debugging info (and a larger executable)
-CC_DEBUG = # $(cdebug)
-LD_DEBUG = # $(ldebug)
+CC_DEBUG = #$(cdebug)
+LD_DEBUG = #$(ldebug)
 CON_LDFLAGS = -nologo -pdb:none
 
 !IF  "$(CFG)" == "vile"
 TARGET  = vile.exe
 UTILS   = vile-c-filt.exe
-CFLAGS  = $(cvars) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 -Dscrn_chosen -DDISP_NTCONS	
+CFLAGS  = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
+          -Dscrn_chosen -DDISP_NTCONS	
 LDFLAGS = -nologo -pdb:none
 SCREEN  = ntconio
-LIBS    = $(LD_DEBUG) $(conlflags) $(conlibs) user32.lib
+LIBS    = $(LD_DEBUG) $(conlflags) $(conlibsmt) user32.lib
 !endif
 
 !IF  "$(CFG)" == "winvile"
 TARGET  = winvile.exe
 UTILS   =
-CFLAGS  = $(cvars) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 -Dscrn_chosen -DDISP_NTWIN	
+CFLAGS  = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
+          -Dscrn_chosen -DDISP_NTWIN	
 LDFLAGS = -nologo /nologo /subsystem:windows /incremental:no -pdb:none
 SCREEN  = ntwinio
-LIBS    = $(LD_DEBUG) $(conlflags) $(conlibs) user32.lib
-LIBS    = kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib\
- advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib\
- odbccp32.lib
+LIBS    = $(LD_DEBUG) $(guilflags) $(guilibsmt)
 !endif
 
 # these are normal editable headers
@@ -69,11 +68,12 @@ SRC = 	main.c $(SCREEN).c \
 	path.c random.c regexp.c \
 	region.c search.c select.c spawn.c \
 	tags.c tbuff.c termio.c undo.c \
-	version.c window.c word.c wordmov.c map.c w32pipe.c
+	version.c window.c word.c wordmov.c map.c \
+	w32cbrd.c w32pipe.c 
 
 OBJ = 	main.obj $(SCREEN).obj \
 	basic.obj bind.obj btree.obj buffer.obj crypt.obj \
-      	csrch.obj display.obj eval.obj exec.obj externs.obj \
+	csrch.obj display.obj eval.obj exec.obj externs.obj \
 	fences.obj file.obj filec.obj \
 	fileio.obj finderr.obj glob.obj globals.obj history.obj \
 	input.obj insert.obj itbuff.obj isearch.obj \
@@ -81,7 +81,8 @@ OBJ = 	main.obj $(SCREEN).obj \
 	path.obj random.obj regexp.obj \
 	region.obj search.obj select.obj spawn.obj \
 	tags.obj tbuff.obj termio.obj undo.obj \
-	version.obj window.obj word.obj wordmov.obj map.obj w32pipe.obj
+	version.obj window.obj word.obj wordmov.obj map.obj \
+	w32cbrd.obj w32pipe.obj 
 
 .c.obj:	
 	$(cc) $(CFLAGS) -c $< -Fo$@ 

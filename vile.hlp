@@ -859,6 +859,8 @@ New Registers
 	The register name '"' is a synonym for the default unnamed register,
 	which is also sometimes referred to as register 0.
 
+	In xvile, the register name ';' is a synonym for the clipboard.
+
 Completion
 ----------
 	Many responses to vile prompts need not be typed in their entirety.
@@ -3427,24 +3429,66 @@ DOS specifics
 	with 7 before being used as background colors, to prevent blinking 
 	characters.
 
-    
-    
-    
+
+
+
 Win32 specifics
 ---------------
 
+	Flavors
+	-------
+	The editor may be invoked/built as a console or GUI application.
+	The former is known as vile.exe and the latter as winvile.exe .
+	For the remainder of this section of the help file, a generic
+	reference to "vile" refers to both the console and GUI editor,
+	unless otherwise stated.
+
+	Heritage
+	--------
+	The Win32 version of vile supports almost all of the features
+	and changes listed directly above in the section entitled
+	"DOS specifics", with the exception that the editor's screen 
+	resolution cannot be changed using command-line switches or
+	the sres command.
+
+	Pipes
+	-----
 	Internally, vile uses two radically different mechanisms for piping
-	data to and from the shell.  One mechanism uses temporary files and the
-	other simply calls native Win32 services (no temp files).  This
+	data to and from the shell.  One mechanism uses temporary files and
+	the other simply calls native Win32 services (no temp files).  This
 	dichotomy exists because the original Win95 console shell (command.com)
 	accesses the floppy drive each and every time a process communicates
 	with it via a pipe and the OS R2 shell abruptly hangs under similar
 	conditions.  By default, then, on a WinNT host, vile's pipes are
-	implemented with Win32 services and via temp files on a Win95 host.  If
-	the user's replacement Win95 shell does not exhibit communication
-	problems similar to those described above (e.g., Thompson Toolkit
-	Shell), vile may be forced to use native Win32 pipes by setting the
-	global mode "w32pipes" (e.g., "se w32pipes").
+	implemented with Win32 services and via temp files on a Win95 host. 
+	If the user's replacement Win95 shell does not exhibit problems
+	similar to those described above (e.g., Thompson Toolkit Shell),
+	vile may be forced to use native Win32 pipes by setting the global
+	mode "w32pipes" (e.g., "se w32pipes").
+
+	Mouse
+	-----
+	Selecting and dragging with the left mouse button yanks text to the
+	unnamed register.  Extend the selection beyond the bottom of the
+	current window by continuing to hold the left mouse button down while
+	moving the cursor back and forth across the window's mode line.
+
+	Change vile's window focus via left mouse button clicks (when
+	multiple windows are displayed).
+
+	Clipboard
+	---------
+	Copy data from the unnamed register to the windows clipboard via
+	the copy-unnamed-reg-to-clipboard command (bound to ALT+Insert)
+
+	Utilities
+	---------
+	vile-c-filt has been ported and may be used to statically color
+	source files (refer to the section of this file entitled "Filtering
+	C programs" for further info).  There exist detailed, win32-related
+	comments within the source file c-filt.c that describe minor
+	porting changes, as well as providing example usage that leverages
+	the editor's 16-color palette.
 
 
 
@@ -3648,27 +3692,26 @@ Credits
 	Tom Dickey has contributed many code improvements and features, and
 	has stabilized vile on both VMS and DOS.  Kevin Buettner has
 	contributed lots of changes for X11 Toolkit support, as well as the
-	bulk of the selection and video attribute mechanisms, and the bulk
-	of the :map command.  Rick Sladkey has done great stuff making vile
-	work correctly in Win32 environments, something I might not have
-	done for a long time.  Some of the "ex" code is by Steve Kirkendall,
-	author of the vi work-alike "elvis".  The regular expression code
-	and documentation is by Henry Spencer.  The sample .vilerc was
-	created by Dave Lemke; he also contributed code for new features,
-	including the original native X support.  Eric Krohn has done some
-	excellent testing and enhancement.  The implementation of
-	rectangles and their operations was inspired by code from the
-	'notgnu' editor, by Julie Melbin.  Patches to support OS/2 and
-	Windows/NT came from Charles Moschel and Joe Greer, respectively.
-	Clark Morgan and Greg McFarlane seem to run full regression tests
-	on each new release, and always seem to find something to report.
-	Sean Ahern is also always dependable for finding a bug or two per
-	release.  The reference.doc file supplied with Bram Moolenaar's
-	excellent Vim editor was useful in unraveling some of the less
-	obvious parts of :map functionality.  In addition, his
-	implementation of digraph insertion was used directly in the
-	creation of digraphs.rc.  Thanks to Jukka Keto for contributing the
-	c-filt.c code.
+	bulk of the selection and video attribute mechanisms, and the bulk of
+	the :map command.  Rick Sladkey has done great stuff making vile
+	work correctly in Win32 environments, something I might not have done
+	for a long time.  Some of the "ex" code is by Steve Kirkendall,
+	author of the vi work-alike "elvis".  The regular expression code and
+	documentation is by Henry Spencer.  The sample .vilerc was created by
+	Dave Lemke; he also contributed code for new features, including the
+	original native X support.  Eric Krohn has done some excellent testing
+	and enhancement.  The implementation of rectangles and their operations
+	was inspired by code from the 'notgnu' editor, by Julie Melbin. 
+	Patches to support OS/2 came from Charles Moschel and for Windows/NT
+	from Joe Greer and Clark Morgan.  Clark Morgan and Greg McFarlane seem
+	to run full regression tests on each new release, and always seem to
+	find something to report.  Sean Ahern is also always dependable for
+	finding a bug or two per release.  The reference.doc file supplied with
+	Bram Moolenaar's excellent Vim editor was useful in unraveling some of
+	the less obvious parts of :map functionality.  In addition, his
+	implementation of digraph insertion was used directly in the creation
+	of digraphs.rc.  Thanks to Jukka Keto for contributing the c-filt.c
+	code.
 
 	The initial changes to create vile from micro-Emacs were all done
 	by Paul Fox (pgf@foxharp.boston.ma.us).  (By the way, he is not the
@@ -3685,4 +3728,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.343 1998/04/04 12:11:58 kev Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.346 1998/04/12 14:55:50 tom Exp $
