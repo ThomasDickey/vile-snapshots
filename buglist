@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.326 1997/05/01 00:01:56 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.327 1997/05/02 00:20:59 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1162,10 +1162,6 @@ fake scrolling in the general direction of the mouse.
 	default color attributes mapped to bold face?  If this is the case how
 	can I override the the default color attributes?
 
--- 96-12-26 (tom)
-
-modify os2vio.c to support colored-attributes.
-
 -- 97-01-10 (tom)
 
 should cut-down the special-case for VMS $PATH, possibly merging with
@@ -1286,3 +1282,7 @@ case sensitivity on/off when matching tags in column one of a tags file.
 
 Piping to vile in WinNT console works, but the mouse doesn't work after
 reopening the console.
+
+-- 97-05-01 (tom)
+
+The $startup-file variable should be set by the command-line '@' option.

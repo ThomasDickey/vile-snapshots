@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.151 1997/04/30 01:12:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.152 1997/05/07 11:05:01 tom Exp $
  *
  */
 
@@ -95,7 +95,15 @@
 # endif
 #endif
 
-#define MENUBAR_HEIGHT 40
+#ifndef XtNmenuHeight
+#define XtNmenuHeight "menuHeight"
+#endif
+
+#ifndef XtCMenuHeight
+#define XtCMenuHeight "MenuHeight"
+#endif
+
+#define MENU_HEIGHT_DEFAULT 20
 
 #define MINCOLS	30
 #define MINROWS MINWLNS
@@ -1654,6 +1662,17 @@ static XtResource resources[] = {
 	XtRImmediate,
 	(XtPointer) PANE_WIDTH_DEFAULT
     },
+#if OPT_MENUS
+    {
+	XtNmenuHeight,
+	XtCMenuHeight,
+	XtRInt,
+	sizeof(int),
+	XtOffset(TextWindow, menu_height),
+	XtRImmediate,
+	(XtPointer) MENU_HEIGHT_DEFAULT
+    },
+#endif
     {
 	XtNpersistentSelections,
 	XtCPersistentSelections,
@@ -3264,6 +3283,14 @@ done:
 
 }
 
+#if OPT_MENUS
+int
+x_menu_height(void)
+{
+	return cur_win->menu_height;
+}
+#endif
+
 int
 x_setfont(
     const char  *fname)
@@ -4668,12 +4695,6 @@ x_configure_window(
 		XtNwidth,	&cur_win->top_width,
 		NULL);
 
-#if ATHENA_WIDGETS
-	XtVaGetValues(cur_win->menu_widget,
-		XtNheight,	&cur_win->menu_height,
-		XtNwidth,	&new_width,
-		NULL);
-#endif
 	XtVaGetValues(cur_win->screen,
 		XtNheight,	&new_height,
 		XtNwidth,	&new_width,

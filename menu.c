@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.8 1997/04/30 19:42:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.9 1997/05/07 10:44:22 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -394,7 +394,7 @@ static Widget do_cascade ( Widget menub, char *nom, int the_class )
         menuButtonWidgetClass,
         menub,
         XtNwidth,                       4,
-        XtNheight,                      40,
+        XtNheight,                      x_menu_height(),
         XtNlabel,                       nom,
         XtNfromHoriz,                   last,
         XtNmenuName,                    str,

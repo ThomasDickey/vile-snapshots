@@ -3,7 +3,7 @@
  *
  *	Miscellaneous routines for UNIX/VMS compatibility.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.25 1997/03/13 11:49:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.26 1997/05/01 16:29:02 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -646,18 +646,24 @@ vms2unix_path(char *dst, const char *src)
 #define	QIO(func) sys$qiow (0, chnl, func, &iosb, 0, 0, &fibDSC, 0,0,0, atr,0)
 
 /*
+ * DEC C defines member-offsets in fibdef.h that aren't in VAX C.
+ *
  * Note that checking if fib$w_fid is defined won't work on a real ANSI
  * compiler because of the '$'.
  */
-#ifndef fib$w_fid
-#define fib$w_fid fib$r_fid_overlay.fib$w_fid
+#ifdef fib$w_fid
+#define FIB_W_FID fib$w_fid
+#else
+#define FIB_W_FID fib$r_fid_overlay.fib$w_fid
 #endif
 
-#ifndef fib$l_acctl
-#define fib$l_acctl fib$r_acctl_overlay.fib$l_acctl
-#endif
+#define COPY_FID(Fib, Nam) memcpy (Fib.FIB_W_FID, Nam.nam$w_fid, 6)
 
-#define COPY_FID(Fib, Nam) memcpy (Fib.fib$w_fid, Nam.nam$w_fid, 6)
+#ifdef fib$l_acctl
+#define FIB_L_ACCTL fib$l_acctl
+#else
+#define FIB_L_ACCTL fib$r_acctl_overlay.fib$l_acctl
+#endif
 
 /*
  * The following is used to "fix" a compiler warning with DEC C 5.3, which
@@ -799,7 +805,7 @@ int	vms_fix_umask (const char *filespec)
 			fibDSC.dsc$w_length = sizeof(fib);
 			fibDSC.dsc$a_pointer = (char *)&fib;
 			memset (&fib, 0, sizeof(fib));
-			fib.fib$l_acctl = FIB$M_WRITECK;
+			fib.FIB_L_ACCTL = FIB$M_WRITECK;
 			COPY_FID (fib, nam);
 
 			atr[0].atr$w_type = ATR$C_FPRO;
