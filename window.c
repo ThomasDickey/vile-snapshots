@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.79 1998/04/20 09:54:03 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.80 1998/04/23 09:18:54 kev Exp $
  *
  */
 
@@ -145,7 +145,7 @@ nextwind(int f, int n)
 
 		/* first count the # of windows */
 		nwindows = 0;
-		for_each_window(wp)
+		for_each_visible_window(wp)
 			nwindows++;
 
 		/* if the argument is negative, it is the nth window
@@ -852,7 +852,7 @@ restwnd(int f GCC_UNUSED, int n GCC_UNUSED)	/* restore the saved screen */
 	register WINDOW *wp;
 
 	/* find the window */
-	for_each_window(wp) {
+	for_each_visible_window(wp) {
 		if (wp == swindow)
 			return set_curwp(wp);
 	}
@@ -961,7 +961,7 @@ newwidth(int f, int n)	/* resize the screen, re-writing the screen */
 	term.t_scrsiz = n - (term.t_margin * 2);
 
 	/* force all windows to redraw */
-	for_each_window(wp)
+	for_each_visible_window(wp)
 		wp->w_flag |= WFHARD | WFMOVE | WFMODE;
 
 	sgarbf = TRUE;
@@ -1079,7 +1079,9 @@ push_fake_win(BUFFER *bp)
     }
     curwp = wp;
     curwp->w_bufp = bp;
+#if 0
     curwp->w_bufp->b_nwnd++;
+#endif
     if ((wp = bp2any_wp(bp)) == NULL)
 	copy_traits(&(curwp->w_traits), &(bp->b_wtraits));
     else
@@ -1115,6 +1117,7 @@ pop_fake_win(WINDOW *oldwp)
 	return NULL;				/* not a fake window */
 
     bp = wp->w_bufp;
+#if 0
     /* 
      * Decrement the window count, but don't update the traits.  We want
      * to give as little indication as possible that a fake window was
@@ -1123,69 +1126,11 @@ pop_fake_win(WINDOW *oldwp)
      * left it.
      */
     --bp->b_nwnd;
+#endif
     /* unlink and free the fake window */
     wheadp = wp->w_wndp;
     free((char *)wp);
     return bp;
-}
- 
-/* 
- * Return TRUE if wp is a fake window 
- */ 
-int 
-is_fake_win(WINDOW *wp) 
-{ 
-    return wp->w_toprow < 0; 
-} 
-
-/*
- * detach_fake_windows and reattach_fake_windows exist because I'm
- * too lazy to teach the rest of vile about fake windows.  It seemed
- * easier to just remove them from the window list in situations where
- * they may cause problems.
- *
- * If this ends up looking like too much of a hack, we should get rid
- * of these functions and do it right.
- */
-WINDOW *
-detach_fake_windows(void)
-{
-    WINDOW *fwp = NULL;
-    WINDOW *wp, *pwp;
-
-    pwp = NULL;
-    for_each_window(wp) {
-	if (!is_fake_win(wp))
-	    break;
-	wp->w_bufp->b_nwnd--;		/* decrement window count for buffer */
-	pwp = wp;
-    }
-
-    if (wp != wheadp) {
-	fwp = wheadp;
-	wheadp = wp;
-	pwp->w_wndp = NULL;	/* If pwp is NULL, then there's a bug with
-				   our logic here...  (which is why I don't
-				   check it) */
-    }
-    return fwp;
-}
-
-void
-reattach_fake_windows(WINDOW *fwp)
-{
-    WINDOW *wp;
-
-    for (wp = fwp; wp; wp = wp->w_wndp) {
-	wp->w_bufp->b_nwnd++;	/* increment window count */
-	if (wp->w_wndp == NULL)
-	    break;
-    }
-
-    if (wp) {
-	wp->w_wndp = wheadp;
-	wheadp = fwp;
-    }
 }
  
 #endif

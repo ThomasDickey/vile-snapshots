@@ -1,5 +1,47 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (kev) 980422 (v)
+	+ api.c (curwp_visible): Renamed from curwp_after.  No longer static.
+	  (linsert_chars): Don't suppress the newline when that's the
+	  only character being inserted.  Thanks to Brendan O'Dea for
+	  providing me with a test case which demonstrated this bug.
+	  (api_motion): Set clexec and discmd to avoid printing on the
+	  message line.
+	  (api_swscreen, api_update): Don't detach the fake windows anymore.
+	+ api.h (curwp_visible): Declared.
+	+ estruct.h (is_fake_window): New macro.  Changed all callers
+	  of is_fake_win() (which was a function) to call is_fake_window
+	  instead.
+	  (is_visible_window, for_each_visible_window): New macros.
+	+ buffer.c, display.c, exec.c, file.c, finderr.c, history.c,
+	  ibmpc.c, modes.c, oneliner.c, select.c, window.c, x11.c
+	  (for_each_visible_window): Changed some occurrences of
+	  for_each_window to for_each_visible_window.  Any code which
+	  really needs to look at all the windows, whether fake or
+	  visible still uses for_each_window.
+	+ perl.xs (keystroke): Make sure that curwp doesn't point
+	  at a fake window before attempting to get a keystroke.
+	  Also fixed the nonwaiting version so that it works.
+	  (beep): New method.
+	+ proto.h, window.c (is_fake_win, detach_fake_windows,
+	  reattach_fake_windows): Removed these functions.
+	+ shell.pl: Extended it's functionality.  It now includes enough
+	  terminal emulation to do some simple line editing.  (Enough for
+	  bash to work in vi mode.)
+	+ window.c (push_fake_win, pop_fake_win): Don't increment/decrement
+	  the b_nwnd field of a buffer when pushing/popping.  This field
+	  indicates the number of visible WINDOW structures that a buffer
+	  has.  (#if 0'd out for now.  Need to remove altogether at some
+	  future date.)
+	+ x11.c (grip_moved): Fixed both OpenLook and Motif versions so
+	  that they don't delete the window when it is shrunk to a size
+	  less than 1 line.  Although this make a certain amount of sense,
+	  it can be quite annoying to a user to lose a window from a slip
+	  of the hand.  Note that there are still some problems with this
+	  code.  Windows that are made really small don't always end up
+	  really small (reported by Paul Askounis).
+	  (x_watchfd): Cast third argument of XtAppAddInput to an XtPointer.
+
  (kev) 980419 (u)
  	+ ansi.c, borland.c, dumbterm.c, ibmpc.c, ntconio.c, ntwinio.c,
 	  os2vio.c, tcap.c, termio.c, vmsvt.c (null_t_watchfd,

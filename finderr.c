@@ -2,7 +2,7 @@
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  * rewritten to use regular expressions, 1995 by T.Dickey (dickey@clark.net)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.68 1998/04/15 10:56:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.69 1998/04/23 09:18:54 kev Exp $
  *
  */
 
@@ -473,7 +473,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 		strcmp(ferrfile,curbp->b_fname)) {
 		/* if we must change windows */
 		WINDOW *wp;
-		for_each_window(wp) {
+		for_each_visible_window(wp) {
 			if (eql_bname(wp->w_bufp, ferrfile)
 			 || !strcmp(wp->w_bufp->b_fname,ferrfile))
 				break;
@@ -520,7 +520,7 @@ getdot(BUFFER *bp)
 	if (bp->b_nwnd) {
 		/* scan for windows holding that buffer,
 					pull dot from the first */
-		for_each_window(wp) {
+		for_each_visible_window(wp) {
 			if (wp->w_bufp == bp) {
 				return wp->w_dot.l;
 			}
@@ -535,7 +535,7 @@ putdotback(BUFFER *bp, LINE *dotp)
 	register WINDOW *wp;
 
 	if (bp->b_nwnd) {
-		for_each_window(wp) {
+		for_each_visible_window(wp) {
 			if (wp->w_bufp == bp) {
 				wp->w_dot.l = dotp;
 				wp->w_dot.o = 0;

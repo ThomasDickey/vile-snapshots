@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.223 1998/04/12 15:26:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.224 1998/04/23 09:18:54 kev Exp $
  *
  */
 
@@ -171,7 +171,7 @@ check_visible_modtimes (void)
 {
 	register WINDOW *wp;
 
-	for_each_window(wp)
+	for_each_visible_window(wp)
 		(void)check_modtime(wp->w_bufp, wp->w_bufp->b_fname);
 	return TRUE;
 }
@@ -2007,7 +2007,7 @@ void
 markWFMODE(BUFFER *bp)
 {
 	register WINDOW *wp;	/* scan for windows that need updating */
-        for_each_window(wp) {
+        for_each_visible_window(wp) {
                 if (wp->w_bufp == bp)
                         wp->w_flag |= WFMODE;
         }

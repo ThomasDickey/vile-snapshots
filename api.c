@@ -25,7 +25,7 @@
 
 extern REGION *haveregion;
 
-static WINDOW *curwp_after;
+WINDOW *curwp_visible;
 
 static void propagate_dot(void);
 
@@ -64,7 +64,8 @@ linsert_chars(char *s, int len)
 	    DOT.o = llength(DOT.l);
 	}
 	if (s[len-1] == '\n') {
-	    nlsuppress = TRUE;
+	    if (len > 1)
+		nlsuppress = TRUE;
 	    if (!mdnewline) {
 		make_local_b_val(curbp, MDNEWLINE);
 		set_b_val(curbp, MDNEWLINE, TRUE);
@@ -198,8 +199,8 @@ lreplace(char *s, int len)
 void 
 api_setup_fake_win(VileBuf *vbp, int do_delete) 
 {
-    if (curwp_after == 0)
-	curwp_after = curwp;
+    if (curwp_visible == 0)
+	curwp_visible = curwp;
 
     if (vbp->fwp) {
 	curwp = vbp->fwp;
@@ -543,9 +544,20 @@ api_motion(VileBuf *vbp, char *mstr)
     const CMDFUNC *cfp;
     char *mp;
     int   c, f, n, s;
+    int status;
+    int savecle, savedis;
 
     if (mstr == NULL)
 	return FALSE;
+
+    status  = TRUE;
+
+    savecle = clexec;
+    savedis = discmd;
+    clexec = TRUE;			/* Disable display of messages and
+    					   argument counts */
+    discmd = FALSE;
+
 
     api_setup_fake_win(vbp, TRUE); 
 
@@ -568,7 +580,8 @@ api_motion(VileBuf *vbp, char *mstr)
 		/* Not our abortc */
 		while (mapped_ungotc_avail())
 		    (void) kbd_seq();
-		return FALSE;
+		status = FALSE;
+		break;
 	    }
 	    else
 		break;			/* okay, it's ours */
@@ -586,11 +599,14 @@ api_motion(VileBuf *vbp, char *mstr)
 	else {
 	    while (mapped_ungotc_avail())
 		(void) kbd_seq();
-	    return FALSE;
+	    status = FALSE;
+	    break;
 	}
     }
 
-    return TRUE;
+    clexec = savecle;
+    discmd = savedis;
+    return status;
 }
 
 int
@@ -620,8 +636,6 @@ api_edit(VileBuf *vbp, char *fname, VileBuf **retvbpp)
 int
 api_swscreen(VileBuf *oldsp, VileBuf *newsp)
 {
-    WINDOW *fwp;
-    WINDOW *cwp;
     /*  
      * Calling api_command_cleanup nukes various state, like DOT 
      * Now if DOT got propogated, all is (likely) well.  But if it didn't, 
@@ -652,25 +666,22 @@ api_swscreen(VileBuf *oldsp, VileBuf *newsp)
      * Okay, I put in the stuff for detaching and reattaching fake
      * windows, but the above noted caveats still apply.
      *		- kev 4/18/1998
+     *
+     * I decided that the fake window stuff was too much of a hack
+     * So I blew it away.  The rest of vile has limited knowledge
+     * of fake windows now where it needs it.  This knowledge is
+     * buried in the macro "for_each_visible_window".
+     *		- kev 4/20/1998
      */ 
 
-    cwp  = is_fake_win(curwp) ? curwp : NULL;
-    fwp = detach_fake_windows();
-
-    if (cwp) {
-	curwp = (curwp_after) ? curwp_after : wheadp;
-	curbp = curwp->w_bufp;
-    }
+    curwp = curwp_visible ? curwp_visible : curwp;
+    curbp = curwp->w_bufp;
 
     if (oldsp)
 	swbuffer(vbp2bp(oldsp));
     swbuffer(vbp2bp(newsp));
 
-    curwp_after = curwp;
-    reattach_fake_windows(fwp);
-
-    if (cwp)
-	curwp = cwp;
+    curwp_visible = curwp;
 
     return TRUE;
 }
@@ -679,16 +690,14 @@ api_swscreen(VileBuf *oldsp, VileBuf *newsp)
 void
 api_update(void)
 {
-    WINDOW *fwp;
-    WINDOW *cwp = is_fake_win(curwp) ? curwp : NULL;
     propagate_dot();
-    fwp = detach_fake_windows();
-    if (cwp)
-	curwp = (curwp_after) ? curwp_after : wheadp;
+
+    curwp = curwp_visible ? curwp_visible : curwp;
+    curbp = curwp->w_bufp;
+
     update(TRUE);
-    reattach_fake_windows(fwp);
-    if (cwp)
-	curwp = cwp;
+
+    curwp_visible = curwp;
 }
 
 /*
@@ -706,7 +715,7 @@ propagate_dot(void)
     WINDOW *wp; 
 
     for_each_window(wp) {
-	if (!is_fake_win(wp)) { 
+	if (!is_fake_window(wp)) { 
 	    /* We happen to know that the fake windows will always 
 	       be first in the buffer list.  So we exit the loop 
 	       when we hit one that isn't fake. */ 
@@ -717,16 +726,16 @@ propagate_dot(void)
 	api_setup_fake_win(bp2vbp(wp->w_bufp), TRUE);
 
 	if (bp2vbp(wp->w_bufp)->dot_changed) { 
-	    if (curwp_after && curwp_after->w_bufp == wp->w_bufp) { 
-		curwp_after->w_dot = wp->w_dot; 
-		curwp_after->w_flag |= WFHARD; 
+	    if (curwp_visible && curwp_visible->w_bufp == wp->w_bufp) { 
+		curwp_visible->w_dot = wp->w_dot; 
+		curwp_visible->w_flag |= WFHARD; 
 	    } 
 	    else { 
 		int found = 0; 
 		WINDOW *pwp; 
 		for_each_window(pwp) { 
 		    if (wp->w_bufp == pwp->w_bufp 
-		        && !is_fake_win(pwp)) 
+		        && !is_fake_window(pwp)) 
 		    { 
 			found = 1; 
 			pwp->w_dot = wp->w_dot; 
@@ -749,15 +758,15 @@ api_command_cleanup(void)
 {
     BUFFER *bp;
 
-    if (curwp_after == 0)
-	curwp_after = curwp;
+    if (curwp_visible == 0)
+	curwp_visible = curwp;
 
     /* Propgate dot to the visible windows and do any deferred deletes */
     propagate_dot();
  
     /* Pop the fake windows */
 
-    while ((bp = pop_fake_win(curwp_after)) != NULL) {
+    while ((bp = pop_fake_win(curwp_visible)) != NULL) {
 	if (bp2vbp(bp) != NULL)
 	    bp2vbp(bp)->fwp = 0;
 	    bp2vbp(bp)->dot_inited = 0;		/* for next time */ 
@@ -768,7 +777,7 @@ api_command_cleanup(void)
 	    }
     }
 
-    curwp_after = 0;
+    curwp_visible = 0;
 
     if (curbp != curwp->w_bufp)
 	make_current(curwp->w_bufp);

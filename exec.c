@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.153 1998/04/17 00:16:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.154 1998/04/23 09:18:54 kev Exp $
  *
  */
 
@@ -1822,7 +1822,7 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 		/* check for a command error */
 		if (status != TRUE) {
 			/* look if buffer is showing */
-			for_each_window(wp) {
+			for_each_visible_window(wp) {
 				if (wp->w_bufp == bp) {
 					/* and point it */
 					wp->w_dot.l = lp;
@@ -1949,7 +1949,7 @@ set_b_lineno(BUFFER *bp, L_NUM n)
 		if (--n <= 0) {
 			bp->b_dot.l = lp;
 			bp->b_dot.o = 0;
-			for_each_window(wp) {
+			for_each_visible_window(wp) {
 				if (wp->w_bufp == bp) {
 					wp->w_dot = bp->b_dot;
 					wp->w_flag |= WFMOVE;

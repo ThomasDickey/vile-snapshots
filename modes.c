@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.111 1998/04/12 15:22:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.112 1998/04/23 09:18:54 kev Exp $
  *
  */
 
@@ -99,7 +99,7 @@ set_winflags(int glob_vals, USHORT flags)
 {
 	if (glob_vals) {
 		register WINDOW *wp;
-		for_each_window(wp) {
+		for_each_visible_window(wp) {
 			if ((wp->w_bufp == NULL)
 			 || !b_is_scratch(wp->w_bufp)
 			 || !(flags & WFMODE))
@@ -449,7 +449,7 @@ settab(int f, int n)
 		make_local_b_val(curbp,val);
 		set_b_val(curbp,val,n);
 		curtabval = n;
-		for_each_window(wp)
+		for_each_visible_window(wp)
 			if (wp->w_bufp == curbp) wp->w_flag |= WFHARD;
 	} else if (f) {
 		mlwarn("[Illegal tabstop value]");

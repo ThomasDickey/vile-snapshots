@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.243 1998/03/12 02:12:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.244 1998/04/23 09:18:54 kev Exp $
  *
  */
 
@@ -913,12 +913,12 @@ int force)	/* force update past type ahead? */
 
 	/* first, propagate mode line changes to all instances of
 		a buffer displayed in more than one window */
-	for_each_window(wp) {
+	for_each_visible_window(wp) {
 		if (wp->w_flag & WFMODE) {
 			if (wp->w_bufp->b_nwnd > 1) {
 				/* make sure all previous windows have this */
 				register WINDOW *owp;
-				for_each_window(owp)
+				for_each_visible_window(owp)
 					if (owp->w_bufp == wp->w_bufp)
 						owp->w_flag |= WFMODE;
 			}
@@ -927,14 +927,14 @@ int force)	/* force update past type ahead? */
 
 	/* look for scratch-buffers that should be recomputed.  */
 #if	OPT_UPBUFF
-	for_each_window(wp)
+	for_each_visible_window(wp)
 		if (b_is_obsolete(wp->w_bufp))
 			recompute_buffer(wp->w_bufp);
 #endif
 
 	/* look for windows that need the ruler updated */
 #ifdef WMDRULER
-	for_each_window(wp) {
+	for_each_visible_window(wp) {
 		if (w_val(wp,WMDRULER)) {
 			int	line  = line_no(wp->w_bufp, wp->w_dot.l);
 			int	col   = mk_to_vcol(wp->w_dot, w_val(wp,WMDLIST), 0) + 1;
@@ -954,7 +954,7 @@ int force)	/* force update past type ahead? */
 
 	do {
 		/* update any windows that need refreshing */
-		for_each_window(wp) {
+		for_each_visible_window(wp) {
 			if (wp->w_flag) {
 				curtabval = tabstop_val(wp->w_bufp);
 				/* if the window has changed, service it */
@@ -1403,7 +1403,7 @@ upddex(void)
 	register LINEPTR lp;
 	register int i;
 
-	for_each_window(wp) {
+	for_each_visible_window(wp) {
 		lp = wp->w_line.l;
 		i = TopRow(wp);
 
@@ -1777,7 +1777,7 @@ row2window (int row)
 {
 	register WINDOW *wp;
 
-	for_each_window(wp)
+	for_each_visible_window(wp)
 		if (row >= wp->w_toprow && row <= mode_row(wp))
 			return wp;
 	return 0;
@@ -2906,7 +2906,7 @@ recompute_buffer(BUFFER *bp)
 		curbp = bp;
 		curwp = bp2any_wp(bp);
 	}
-	for_each_window(wp) {
+	for_each_visible_window(wp) {
 		if (wp->w_bufp == bp) {
 			if (wp == savewp)
 				relisting_w_vals = tbl[num].w_vals;
