@@ -2843,6 +2843,7 @@ Programmed procedures (aka macros)
 	$buffer-hook		run when switching to a buffer
 	$cd-hook		run when changing directories
 	$exit-hook		run when quitting
+	$majormode-hook         procedure to overrride suffix/preamble rules
 	$read-hook		run after a file is read
 	$write-hook		run before a file is written
 
@@ -5768,4 +5769,4 @@ Problems
 
 Copyright 1995-2002 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.563 2003/05/04 22:39:36 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.564 2003/05/05 21:54:15 tom Exp $

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_3o
+MANIFEST for vile, version v9_3p
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -160,6 +160,9 @@ filters/as.key                  keywords for assembler-filter
 filters/as386.key               assembler keywords for i386
 filters/asm-filt.l              syntax filter for M$ assembler files
 filters/asm.key                 keywords for M$ assembler files
+filters/atr2ansi.c              convert attributed text to ANSI escape sequences
+filters/atr2html.c              translate encoded text to html
+filters/atr2text.c              convert attributed text to nroff-output
 filters/awk-filt.l              awk syntax highlighter for vile
 filters/awk.key                 keywords for awk syntax highlighting
 filters/bas-filt.l              syntax filter for BASIC
@@ -281,6 +284,8 @@ filters/texifilt.l              syntax filter for texinfo
 filters/ti-filt.l               terminfo syntax highlighting filter for vile
 filters/ti.key                  terminfo keywords
 filters/txt-filt.l              syntax filter for ordinary text
+filters/unfilter.c              main program, parsing for un-filters
+filters/unfilter.h              common definitions for un-filters
 filters/vb.key                  keywords for Visual Basic .Net
 filters/vile.key                fallback template for highlighting colors
 filters/vilefilt.l              syntax filter for vile macros

@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.142 2003/01/07 01:51:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.144 2003/05/06 22:54:21 tom Exp $
  *
  */
 
@@ -1583,6 +1583,8 @@ decode_attribute(char *text, int length, int offset, int *countp)
 	    }
 	    offset++;
 	}
+	if (videoattribute != VOWN_CTLA && count != 0)
+	    break;
     }
     *countp = count;
     return offset;
@@ -1675,8 +1677,9 @@ attribute_cntl_a_sequences(void)
 		set_mark_after(count, len_record_sep(curbp));
 		if (apply_attribute())
 		    (void) attributeregion();
+	    } else {
+		DOT.o++;
 	    }
-	    DOT.o++;
 	}
 	DOT.l = lforw(DOT.l);
 	DOT.o = 0;
@@ -1980,6 +1983,7 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
     int vidx;
     int i;
     int overlap = FALSE;
+    int last;
 
     if (rp->r_orig.l != rp->r_end.l	/* must be confined to one line */
 	|| rs != EXACT		/* must be an exact region */
@@ -1990,13 +1994,16 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
 	return FALSE;
 
     beginDisplay();
+
     lp = rp->r_orig.l;
+    last = rp->r_end.o;
+
     if (lp->l_attrs != NULL) {
 	int len = strlen((char *) (lp->l_attrs));
 	/* Make sure the line attribute is long enough */
 	if (len < rp->r_end.o) {
-	    lp->l_attrs = castrealloc(UCHAR,
-				      lp->l_attrs, rp->r_end.o + 1);
+	    last = rp->r_end.o;
+	    lp->l_attrs = castrealloc(UCHAR, lp->l_attrs, last + 1);
 	    if (lp->l_attrs != NULL) {
 		for (i = len; i < rp->r_end.o; i++)
 		    lp->l_attrs[i] = 1;
@@ -2006,7 +2013,7 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
 	/* See if attributed region we're about to add overlaps an existing
 	   line based one */
 	if (lp->l_attrs != NULL) {
-	    for (i = rp->r_orig.o; i < rp->r_end.o; i++) {
+	    for (i = rp->r_orig.o; i < last; i++) {
 		if (lp->l_attrs[i] != 1) {
 		    overlap = TRUE;
 		    break;
@@ -2019,12 +2026,14 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
 	lp->l_attrs[llength(lp)] = 0;
 	for (i = llength(lp) - 1; i >= 0; i--)
 	    lp->l_attrs[i] = 1;
+	if (last > llength(lp))
+	    last = llength(lp);
     }
     endofDisplay();
 
     if (lp->l_attrs != NULL && !overlap) {
 	if ((vidx = find_line_attr_idx(vattr)) >= 0) {
-	    for (i = rp->r_orig.o; i < rp->r_end.o; i++)
+	    for (i = rp->r_orig.o; i < last; i++)
 		lp->l_attrs[i] = (UCHAR) vidx;
 
 	    for_each_visible_window(wp) {
