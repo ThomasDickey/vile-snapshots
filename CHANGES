@@ -1,5 +1,12 @@
 Changes for vile 7.1 (released ??? ??? ??, 1997)
 
+(tom)	970429 (j)
+	+ use im_waiting() function to reset "working..." state after executing
+	  a menu-command (menu.c).
+	+ modify lookup of .vilemenu use startup-file search rules.
+	+ corrections for porting Xaw version to SunOS, etc., with X11R4 and
+	  X11R5 (x11.c, configure.in)
+
 (tom)	970428 (i)
 	+ implement Xaw (Athena widget) version of menus.  Simplified buffer
 	  lookup function for menus, align/document resource names (menu.c,

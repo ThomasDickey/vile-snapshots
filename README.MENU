@@ -1,28 +1,48 @@
--- $Header: /users/source/archives/vile.vcs/RCS/README.MENU,v 1.3 1997/04/14 13:05:38 phil Exp $
+-- $Header: /users/source/archives/vile.vcs/RCS/README.MENU,v 1.4 1997/04/30 01:40:03 tom Exp $
+-- adapted from description by Philippe Chassany (20/02/1997)
+-- e-mail: phil@cln46ks.der.edf.fr
 
-Philippe Chassany (20/02/1997)
 
-MXvile Menu Presentation
-------------------------
+The Motif and Athena widget versions of xvile automatically support user
+configurable menus.
 
-The Patch is based on the Vile 6.3 Release. I hope it's not a big work
-to adapt it to the 6.5.
+If the environment variable XVILE_MENU is set, it contains the name of
+the rc file.  Otherwise, the name ".vilemenu" is used.
 
-Sources		Status		Definition
+The file contains a series of lines whose first character denotes the
+type of entry, subsequent fields delimited by colon:
 
-menu.c		New		The rc file parser and menu generator
-x11.c		Patched		Patch to create the Motif MenuBar
-bind.c		Patched		Little patch to give accelerator of a command
-makefile	Patched		menu.c compilation and -DMENU CFLAGS
-menurc		New		A rc file example
+	C - cascade (actually pulldown).  One field only is recognized,
+	    the menu heading.
 
-I use -DMENU CFLAGS to compile x11.c and bind.c files.
+	B - button (menu entry).  The first field is the menu label. 
+	    The second is the command which will be executed.  If the
+	    command is a number, it is expanded into the vile command
+	    execute-macro-<number>.
 
-The environment variable XVILE_MENU contains the name of the rc file.
-If it is not defined then the menubar is empty. For the moment, it's a bug
-but it's easy to bypass the menubar creation in this case.
+	    Besides the normal vile commands, the menu implements the
+	    following
 
-Part of the menurc file:
+		new_xvile - spawn a new copy of xvile.
+		edit_rc - switch to a buffer with ".vilerc".
+		parse_rc - source ".vilerc"
+		edit_mrc - switch to a buffer with the menu rc file
+			".vilemenu"
+
+	S - separator
+
+	L - list buffers.  Each time you select this menu entry, vile
+	    constructs a current list of the buffers, allowing you to
+	    switch to any buffer by selecting it from the menu.  It has
+	    to be at the end of a menu, and only one is allowed.
+
+	    For the Motif version, the accelerators are constructed to
+	    correspond with the vile commands for switching buffers,
+	    e.g., _0, _1 ...
+
+Lines beginning with '#' are ignored, as is text after a tab character.
+
+A sample .vilemenu file:
 
 C:Xvile
 B:New:new_xvile
@@ -62,25 +82,3 @@ S
 B:Apropos...:apropos
 B:On Function...:describe-function
 B:On Key...:describe-key
-
-If in a menu, there is one 'L:list_buff' (as item) the menu will contain at
-this point the entire buffer list with there accelerators (_0, _1 ...).
-
-The item must be at the end of a menu and only one 'L:list_buff' must be
-present in all the menu file declaration (and it's not tested yet).
-
-Note : The Macro calls from the menurc file can't work for you because the 
-       Macro numbers are locals. All the other actions can work.
-
-I know, the patch is a little dirty but I think it's a good start to
-give xvile a powerful gui (especially for new users).
-I have not lot of time to do more things in this patch but the main ideas
-are here. The next idea will be a xvile (X11/Xt) version of the menubar.
-
-If you have question/suggestions ...?
-
-Regards.
-		Phil.
-
-e-mail: phil@cln46ks.der.edf.fr
-

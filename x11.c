@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.148 1997/04/29 01:14:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.151 1997/04/30 01:12:17 tom Exp $
  *
  */
 
@@ -17,12 +17,11 @@
  *    OL_WIDGETS	-- Use Xlib, Xt, and Openlook widget set
  */
 
+#define NEED_X_INCLUDES 1
 #include	"estruct.h"
 #include	"edef.h"
 #include	"nefunc.h"
 
-#include	<X11/Intrinsic.h>
-#include	<X11/StringDefs.h>
 #include	<X11/cursorfont.h>
 
 #if defined(lint) && HAVE_X11_INTRINSICI_H
@@ -199,7 +198,7 @@ typedef struct _text_win {
     int		base_width;	/* width with screen widgets' width zero */
     int		base_height;
     UINT	pane_width;	/* full width of scrollbar pane */
-    UINT	menu_height;	/* height of menu-bar */
+    Dimension	menu_height;	/* height of menu-bar */
     Dimension	top_width;	/* width of top widget as of last resize */
     Dimension	top_height;	/* height of top widget as of last resize */
 
@@ -2445,9 +2444,9 @@ x_preparse_args(
 	    cur_win->pane_widget,
 	    XtNheight,			1,
 	    XtNwidth,			1,
-	    XtNtop,			XawChainTop,
-	    XtNleft,			XawChainLeft,
-	    XtNright,			XawChainRight,
+	    XtNtop,			XtChainTop,
+	    XtNleft,			XtChainLeft,
+	    XtNright,			XtChainRight,
 	    XtNvertDistance,		0,
 	    XtNshowGrip,		False,
 	    NULL);
@@ -2459,9 +2458,9 @@ x_preparse_args(
 	    					+ cur_win->pane_width + 2,
 	    XtNheight,			x_height(cur_win),
 	    XtNbackground,		cur_win->bg,
-	    XtNbottom,			XawChainBottom,
-	    XtNleft,			XawChainLeft,
-	    XtNright,			XawChainRight,
+	    XtNbottom,			XtChainBottom,
+	    XtNleft,			XtChainLeft,
+	    XtNright,			XtChainRight,
 	    XtNfromVert,		cur_win->menu_widget,
 	    XtNvertDistance,		0,
 	    NULL);
