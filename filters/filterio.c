@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.10 2000/08/28 10:28:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.12 2000/08/28 23:53:17 tom Exp $
  *
  */
 
@@ -147,20 +147,26 @@ strmalloc(const char *src)
  ******************************************************************************/
 /*
  * The builtin-filter version of vilemode can check for unknown keywords.
+ * These stubs correspond to the pre-9.1t behavior, which assumes that
+ * we'll highlight anything that looks like a directive or a function, but
+ * leave other keywords alone.
  */
-DIRECTIVE dname_to_dirnum(const char *s, size_t len)
+/* ARGSUSED */
+DIRECTIVE dname_to_dirnum(const char *s GCC_UNUSED, size_t len GCC_UNUSED)
 {
     return 0;
 }
 
-const CMDFUNC * engl2fnc(const char *fname);
+/* ARGSUSED */
+const CMDFUNC * engl2fnc(const char *fname GCC_UNUSED)
 {
-    static CMDFUNC dummy;
-    return &dummy;
+    return 0;
 }
 
-int vl_lookup_func(const char *name);
+/* ARGSUSED */
+int vl_lookup_func(const char *name GCC_UNUSED)
 {
+	return 0;
 }
 
 /******************************************************************************

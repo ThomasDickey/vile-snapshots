@@ -1,6 +1,6 @@
-revlist for vile, version v9_1t
+revlist for vile, version v9_1u
 --------------------------------------------------------------------------------
-CHANGES	1.613
+CHANGES	1.614
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -85,7 +85,7 @@ opers.c	1.71
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.27
-patchlev.h	1.241
+patchlev.h	1.242
 path.c	1.102
 perl.xs	1.74
 proto.h	1.433
@@ -94,7 +94,7 @@ ptypemap	1.7
 random.c	1.235
 regexp.c	1.70
 region.c	1.103
-revlist	v9_1t
+revlist	v9_1u
 search.c	1.119
 select.c	1.128
 sinstall.sh	1.1
@@ -173,10 +173,10 @@ filters/esql.key	1.3
 filters/esqlfilt.l	1.9
 filters/fdl-filt.l	1.7
 filters/fdl.key	1.3
-filters/filterio.c	1.10
+filters/filterio.c	1.12
 filters/filters.c	1.74
 filters/filters.h	1.49
-filters/filters.rc	1.127
+filters/filters.rc	1.128
 filters/genmake.c	1.3
 filters/genmake.mak	1.7
 filters/html.key	1.6
@@ -226,7 +226,7 @@ filters/rexx.key	1.1
 filters/rexxfilt.l	1.5
 filters/sccs.key	1.1
 filters/sccsfilt.l	1.8
-filters/sed-filt.c	1.6
+filters/sed-filt.c	1.10
 filters/sh-filt.l	1.31
 filters/sh.key	1.4
 filters/sml-filt.l	1.2
