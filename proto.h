@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.280 1998/05/12 23:30:52 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.281 1998/05/19 23:58:31 tom Exp $
  *
  */
 
@@ -878,11 +878,15 @@ extern	void	vms_dir2path	(char *path);
 extern FILE *vms_rpipe (const char *cmd, int fd, const char *input_file);
 #endif
 
-/* w32pipe.c */
+/* w32misc.c */
 #if SYS_WINNT
-extern int is_win95(void);
-extern int is_winnt(void);
-extern int w32_inout_popen(FILE **fr, FILE **fw, char *cmd);
+extern char *mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc);
+extern int  is_win95(void);
+extern int  is_winnt(void);
+extern int  w32_inout_popen(FILE **fr, FILE **fw, char *cmd);
+extern int  w32_system(const char *cmd);
+extern void restore_console_title(void);
+extern void set_console_title(const char *title);
 extern void w32_npclose(FILE *fp);
 #endif
 
@@ -942,8 +946,8 @@ extern	int	x_typahead		(int milli);
 extern	void	x_move_events		(void);
 extern	void	x_preparse_args		(int *pargc, char ***pargv);
 extern	void	x_resize		(int cols, int rows);
-extern	void	x_set_icon_name (char *name);
-extern	void	x_set_window_name (char *name);
+extern	void	x_set_icon_name (const char *name);
+extern	void	x_set_window_name (const char *name);
 
 #if XTOOLKIT
 extern	void	own_selection		(void);
@@ -1109,7 +1113,7 @@ extern	void *	memset	(void *dst, int ch, size_t n);
 extern	int	mkdir	(const char *path, int mode);
 #endif
 #if MISSING_EXTERN_MKTEMP
-extern	char *	mktemp (const char *template);
+extern	char *	mktemp (char *template);
 #endif
 #if MISSING_EXTERN_OPEN
 extern	int	open	(char *path, int flags);

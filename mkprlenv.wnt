@@ -1,0 +1,142 @@
+# mkprlenv.wnt 
+#
+# Purpose
+# =======
+# A makefile included by makefile.wnt when embedding perl in [win]vile.exe .
+# This particular makefile determines where perl has been installed in the
+# user's Win32 environment.
+#
+# Preconditions:
+# ==============
+# 1) Installation of the [binary] perl Win32 port located at this URL:
+#
+#         http://www.perl.com/CPAN-local/ports/win32/Standard/x86/
+#
+# 2) The environment variable VILE_LIBRARY_PATH points to a writable
+#    directory where vile's perl scripts will be installed.
+#
+# Supported Vile-Based Perl Scripts
+# =================================
+# Consult the macro $(PERL_SCRIPTS) in the file "makefile.wnt" to ascertain
+# the current list of vile-based perl scripts known to work in a Win32
+# environment.
+#
+# $Header: /users/source/archives/vile.vcs/RCS/mkprlenv.wnt,v 1.1 1998/05/12 05:18:00 cmorgan Exp $
+#
+    perl <<
+        foreach $$dir (@INC)
+        {
+            $$lib="$$dir\\CORE\\perl.lib";
+            last if (-f $$lib);
+            
+        }
+        if (! $$lib)
+        {
+            print "error: cannot determine location of perl.lib\n";
+#
+#           Force nmake to abort.
+#
+            exit(1);
+        }
+        foreach $$dir (@INC)
+        {
+            $$inc="$$dir\\CORE";
+            last if (-f "$$inc\\perl.h");
+            
+        }
+        if (! $$inc)
+        {
+            print "error: cannot determine location of perl.h\n";
+            exit(1);
+        }
+        foreach $$dir (@INC)
+        {
+            $$utils="$$dir\\ExtUtils";
+            last if (-d $$utils);
+        }
+        if (! $$utils)
+        {
+            print 
+               "error: cannot determine location of perl external utilities\n";
+            exit(1);
+        }
+        print 
+ "Checking existence of directory specified by VILE_LIBRARY_PATH env var...\n";
+        $$script_dir=$$ENV{"VILE_LIBRARY_PATH"};
+        if (! $$script_dir)
+        {
+            print "error: Environment var VILE_LIBRARY_PATH does not exist\n";
+            print "error: Refer to the file 'mkprlenv.wnt' for further info\n";
+            exit(1);
+        }
+        else
+        {
+            if (-f $$script_dir)
+            {
+                print "error: $$script_dir is a file!\n";
+                exit(1);
+            }
+            elsif (! -d $$script_dir)
+            {
+                print "error: \"$$script_dir\" is not a directory\n";
+                exit(1);
+            }
+            else
+            {
+#               User specified a directory that exists.  First, strip 
+#               trailing dos/unix path delimiters from dir.
+#
+                $$script_dir =~ s!\\$$!!;
+                $$script_dir =~ s!/$$!!;
+#
+#               Warp unix path delimiters to backslash (to be compatible
+#               with the DOS COPY command).
+#
+                $$script_dir =~ s@/@\\@g;
+
+#               But is this a writable directory?  The Win32 file
+#               semantics are so odd that we'll ignore stat() and simply
+#               attempt to create a junk file in this directory as a test
+#               of its accessibility.
+#
+                $$test_file = "$$script_dir\\vile_perl_tst.txt";
+                if (open(TEST_FD, "> $$test_file") == 0)
+                {
+                    print "error: directory $$script_dir is not writable!\n";
+                    exit(1);
+                }
+                close TEST_FD;
+                unlink "$$test_file";
+#
+#               Write out results.
+#
+                if (open(SOME_FD, "> $(PERLCFG)") == 0)
+                {
+                    print "error: creating $(PERLCFG):$$!\n";
+                    exit(1);
+                }
+                print SOME_FD "VILE_PERL_LIB=$$lib\n";
+                print SOME_FD "VILE_PERL_INC=$$inc\n";
+                print SOME_FD "VILE_PERL_UTILS=$$utils\n";
+                close SOME_FD;
+#
+#               copy win32-compatible perl scripts to user-specified directory
+#
+                @scripts = split ' ', "$(PERL_SCRIPTS)";
+                foreach $$file (@scripts)
+                {
+                    $$dest = "$$script_dir\\$$file";
+                    printf "copying $$file -> $$dest...\n";
+                    `copy $$file $$dest`;
+                }
+            }
+        }
+<<
+# Change previous line to "<<KEEP" to inspect inline file contents.
+#
+# Delete things that are affected by the perl configuration before
+# going any further.
+    -del $(TARGET)
+    -del perl.c
+# Look ma, a recursive make
+    $(MAKE) -f makefile.wnt CFG=$(CFG)

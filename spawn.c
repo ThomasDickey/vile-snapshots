@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.126 1998/04/28 10:18:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.127 1998/05/19 11:04:47 cmorgan Exp $
  *
  */
 
@@ -138,7 +138,11 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
  */
 		spawnl( P_WAIT, shell, shell, NULL);
 #else
+#if SYS_WINNT
+		w32_system(shell);
+#else
 		system(shell);
+#endif
 #endif
 	}
 	TTkopen();
@@ -384,7 +388,11 @@ spawn1(int rerun, int pressret)
 	if (closed)
 		TTclose();
 #endif
+#if SYS_WINNT
+	w32_system(line);
+#else
 	system(line);
+#endif
 	TTkopen();
 	/* if we are interactive, pause here */
 	if (pressret) {

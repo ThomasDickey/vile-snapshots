@@ -5,7 +5,7 @@
  * Modifications:  kevin buettner and paul fox  2/95
  * 		string literal ("Literal") support --  ben stoltz
  *
- * $Header: /users/source/archives/vile.vcs/RCS/pas-filt.c,v 1.1 1998/04/30 00:47:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/pas-filt.c,v 1.2 1998/05/19 19:24:11 tom Exp $
  *
  * Features:
  * 	- Reads the keyword file ".vile.keywords" from the home directory.
@@ -159,8 +159,8 @@ static char *keyword_file=".vile.keywords";
 # endif
 #endif
 
-#define isNameBegin(c)   (isalpha(c))
-#define isNameExtra(c)   (isalnum(c))
+#define isNameBegin(c)   (isalpha(c) || (c) == '_')
+#define isNameExtra(c)   (isalnum(c) || (c) == '_')
 #define isBlank(c)  ((c) == ' ' || (c) == '\t')
 
 #define L_CURL '{'

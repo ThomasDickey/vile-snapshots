@@ -56,7 +56,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.7 1998/04/28 10:15:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.8 1998/05/19 06:00:00 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -77,70 +77,9 @@
           "error: shell process \"%s\" failed, check COMSPEC env var\n"
 
 static HANDLE proc_handle;
-static char   *shell = NULL,
-              *shell_c = "/c",
-              *tmpin_name;
+static char   *tmpin_name;
 
 /* ------------------------------------------------------------------ */
-
-#ifndef DISP_NTWIN
-
-static DWORD console_mode;
-static char  orig_title[256];
-
-/*
- * Need to install an event handler before spawning a child so that
- * typing ^C in the child process does not cause the waiting vile
- * process to exit.  Don't understand why this is necessary, but it
- * is required for win95 (at least).
- */
-static BOOL WINAPI
-event_handler(DWORD ctrl_type)
-{
-    switch (ctrl_type)
-    {
-        case CTRL_CLOSE_EVENT:
-        case CTRL_LOGOFF_EVENT:
-        case CTRL_SHUTDOWN_EVENT:
-            imdying(1);
-        break;
-    }
-    return (TRUE);
-}
-
-
-
-/* Temporarily setup child's console input for typical line-oriented I/O. */
-void
-push_console_mode(char *shell_cmd)
-{
-    HANDLE hConIn = GetStdHandle(STD_INPUT_HANDLE);
-
-    GetConsoleTitle(orig_title, sizeof(orig_title));
-    SetConsoleTitle(shell_cmd);
-    (void) GetConsoleMode(hConIn, &console_mode);
-    (void) SetConsoleMode(hConIn,
-                  ENABLE_LINE_INPUT|ENABLE_ECHO_INPUT|ENABLE_PROCESSED_INPUT);
-    SetConsoleCtrlHandler(event_handler, TRUE);
-}
-
-
-
-/* Put everything back the way it was. */
-void
-pop_console_mode(void)
-{
-    SetConsoleTitle(orig_title);
-    SetConsoleCtrlHandler(event_handler, FALSE);
-    (void) SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), console_mode);
-}
-
-#else /* DISP_NTWIN */
-#define push_console_mode(shell_cmd) /* nothing */
-#define pop_console_mode() /* nothing */
-#endif
-
-
 
 static void
 global_cleanup(void)
@@ -151,48 +90,68 @@ global_cleanup(void)
         (void) free(tmpin_name);
         tmpin_name = NULL;
     }
-    pop_console_mode();
+    restore_console_title();
+#ifdef DISP_NTWIN
+    if (global_g_val(GMDFORCE_CONSOLE))
+        FreeConsole();
+#endif
 }
 
 
 
 static HANDLE
-exec_shell(char *cmd, HANDLE *handles, int child_behind)
+exec_shell(char *cmd, HANDLE *handles, int hide_child)
 {
-    char                 cmdbuf[2048];
+    char                 *cmdstr;
+#ifdef DISP_NTWIN
     HWND                 fgnd;
+    int                  force_console = global_g_val(GMDFORCE_CONSOLE);
+#endif
+    int                  freestr;
     PROCESS_INFORMATION  pi;
     STARTUPINFO          si;
 
-    if (shell == 0)
-        shell = get_shell();
+    proc_handle = BAD_PROC_HANDLE;  /* in case of failure */
+    if ((cmdstr = mk_shell_cmd_str(cmd, &freestr, TRUE)) == NULL)
+    {
+        /* heap exhausted! */
 
-    if (!strcmp(shell, "/bin/sh"))
-        shell_c = "-c";
+        mlforce("insufficient memory to invoke shell");
 
-    _snprintf(cmdbuf, sizeof(cmdbuf), "%s %s %s", shell, shell_c, cmd);
-
-    TRACE(("exec_shell %s\n", shell));
-    TRACE(("shell cmd: %s\n", cmd));
+        /* Give user a chance to read message--more will surely follow. */
+        Sleep(3000);
+        return (proc_handle);
+    }
 
     memset(&si, 0, sizeof(si));
-    proc_handle    = BAD_PROC_HANDLE;  /* in case of failure */
     si.cb          = sizeof(si);
     si.dwFlags     = STARTF_USESTDHANDLES;
     si.hStdInput   = handles[0];
     si.hStdOutput  = handles[1];
     si.hStdError   = handles[2];
 #ifdef DISP_NTWIN
-    if (child_behind)
-        fgnd = GetForegroundWindow();
-    AllocConsole();
+    if (force_console)
+    {
+        if (hide_child)
+            fgnd = GetForegroundWindow();
+        AllocConsole();
+    }
+    else if (hide_child)
+    {
+        si.dwFlags     |= STARTF_USESHOWWINDOW;
+        si.wShowWindow  = SW_HIDE;
+    }
 #endif
     if (CreateProcess(NULL,
-                      cmdbuf,
+                      cmdstr,
                       NULL,
                       NULL,
                       TRUE,       /* Inherit handles */
+#ifdef DISP_NTWIN
+                      force_console ? 0 : CREATE_NEW_CONSOLE,
+#else
                       0,
+#endif
                       NULL,
                       NULL,
                       &si,
@@ -201,12 +160,14 @@ exec_shell(char *cmd, HANDLE *handles, int child_behind)
         /* Success */
 
 #ifdef DISP_NTWIN
-    if (child_behind)
-        SetForegroundWindow(fgnd);
+        if (force_console && hide_child)
+            SetForegroundWindow(fgnd);
 #endif
         CloseHandle(pi.hThread);
         proc_handle = pi.hProcess;
     }
+    if (freestr)
+        free(cmdstr);
     return (proc_handle);
 }
 
@@ -223,7 +184,7 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
     handles[0]   = handles[1] = handles[2] = INVALID_HANDLE_VALUE;
     tmpin_fd     = BAD_FD;
     tmpin_name   = NULL;
-    push_console_mode(cmd);
+    set_console_title(cmd);
     do
     {
         if (fr)
@@ -304,7 +265,7 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
         }
         rc = (exec_shell(cmd,
                          handles,
-                         fr != NULL  /* Child wdw behind unless write pipe. */
+                         fr != NULL  /* Child wdw hidden unless write pipe. */
                          ) == BAD_PROC_HANDLE) ? FALSE : TRUE;
         if (fw)
         {
@@ -313,7 +274,7 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
                  /* Shell process failed, put complaint in user's face. */
 
                 fputc('\n', stdout);
-                printf(SHELL_ERR_MSG, shell);
+                printf(SHELL_ERR_MSG, get_shell());
                 fflush(stdout);
             }
             CloseHandle(handles[0]);
@@ -327,7 +288,7 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
 
                 /* Shell process failed, put complaint in user's buffer. */
 
-                len = _snprintf(buf, sizeof(buf), SHELL_ERR_MSG, shell);
+                len = _snprintf(buf, sizeof(buf), SHELL_ERR_MSG, get_shell());
                 (void) WriteFile(handles[1], buf, len, &dummy, NULL);
                 FlushFileBuffers(handles[1]);
             }
@@ -376,42 +337,4 @@ w32_npclose(FILE *fp)
         proc_handle = BAD_PROC_HANDLE;
     }
     global_cleanup();
-#ifdef DISP_NTWIN
-    FreeConsole();
-#endif
-}
-
-
-
-#define     HOST_95    0
-#define     HOST_NT    1
-#define     HOST_UNDEF (-1)
-static int  host_type = HOST_UNDEF; /* nt or 95? */
-
-static void
-set_host(void)
-{
-    OSVERSIONINFO info;
-
-    info.dwOSVersionInfoSize = sizeof(info);
-    GetVersionEx(&info);
-    host_type = (info.dwPlatformId == VER_PLATFORM_WIN32_NT) ?
-                HOST_NT : HOST_95;
-}
-
-
-int
-is_winnt(void)
-{
-    if (host_type == HOST_UNDEF)
-        set_host();
-    return (host_type == HOST_NT);
-}
-
-int
-is_win95(void)
-{
-    if (host_type == HOST_UNDEF)
-        set_host();
-    return (host_type == HOST_95);
 }

@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.225 1998/04/28 22:42:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.226 1998/05/19 11:04:47 cmorgan Exp $
  *
  */
 
@@ -199,16 +199,9 @@ CleanToPipe(void)
 {
     if (fileispipe)
     {
-        if (global_g_val(GMDW32PIPES))
-        {
-            bottomleft();
-            TTputc('\n');
-            TTputc(' ');  /* Forces ntconio routines to flush \r \n */
-            TTputc('\r'); /* Erase ' ' :-)      */
-            TTflush();    /* Actually necessary */
-        }
-        else
-            TTkclose();
+        kbd_erase_to_end(0);
+        kbd_flush();
+        TTkclose();
     }
 }
 
@@ -217,13 +210,12 @@ CleanAfterPipe(int Wrote)
 {
     if (fileispipe)
     {
+        TTkopen();
         if (global_g_val(GMDW32PIPES))
         {
             if (Wrote) pressreturn();
             sgarbf = TRUE;
         }
-        else
-            TTkopen();
     }
 }
 

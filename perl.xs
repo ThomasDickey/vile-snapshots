@@ -764,11 +764,25 @@ perl_init(void)
     perl_eval("$SIG{__WARN__}='Vile::Warn'");
 
     /* Add our own paths to the front of @INC */
+#ifdef HELP_LOC
     av_unshift(av = GvAVn(incgv), 2);
     av_store(av, 0, newSVpv(lengthen_path(strcpy(temp,"~/.vile/perl")),0));
     sv = newSVpv(HELP_LOC,0);
     sv_catpv(sv, "perl");
     av_store(av, 1, sv);
+#endif
+#ifdef _WIN32
+    {
+        char *vile_path = getenv("VILE_LIBRARY_PATH");
+
+        if (vile_path)
+        {
+            av_unshift(av = GvAVn(incgv), 1);
+            sv = newSVpv(vile_path, 0);
+            av_store(av, 0, sv);
+        }
+    }
+#endif
 
 
     /* Obtain handles to specific perl variables, creating them
@@ -840,7 +854,7 @@ static int freeCRidx = 0;
 static char *
 stringify_coderef(SV *coderef) {
     char buf[40];
-    int idx;
+    int idx = 0;
     int badstore = 0;
 
     if (CRarray == 0) {
@@ -1400,7 +1414,7 @@ MODULE = Vile	PACKAGE = Vile
 
 void
 Warn(warning)
-    char *warning
+    char *warning;
 
     CODE:
 	mlforce("%s",SvPV(GvSV(errgv), na));
@@ -1986,7 +2000,7 @@ set(...)
   #
 
 void
-update()
+update(void)
     PPCODE:
 	api_update();
 

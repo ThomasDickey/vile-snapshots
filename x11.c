@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.179 1998/05/14 23:16:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.181 1998/05/20 00:40:15 tom Exp $
  *
  */
 
@@ -6028,16 +6028,16 @@ char x_window_name[NFILEN];
 char x_icon_name[NFILEN];
 
 void
-x_set_icon_name(char *name)
+x_set_icon_name(const char *name)
 {
 	XTextProperty Prop;
 
 	(void)strncpy0(x_icon_name, name, NFILEN);
 
-	Prop.value = (unsigned char *)name;
+	Prop.value = (unsigned char *)x_icon_name;
 	Prop.encoding = XA_STRING;
 	Prop.format = 8;
-	Prop.nitems = strlen(name);
+	Prop.nitems = strlen(x_icon_name);
 
 	XSetWMIconName(dpy,XtWindow(cur_win->top_widget),&Prop);
 }
@@ -6049,16 +6049,16 @@ x_get_icon_name(void)
 }
 
 void
-x_set_window_name(char *name)
+x_set_window_name(const char *name)
 {
 	XTextProperty Prop;
 
 	(void)strncpy0(x_window_name, name, NFILEN);
 
-	Prop.value = (unsigned char *)name;
+	Prop.value = (unsigned char *)x_window_name;
 	Prop.encoding = XA_STRING;
 	Prop.format = 8;
-	Prop.nitems = strlen(name);
+	Prop.nitems = strlen(x_window_name);
 
 	XSetWMName(dpy,XtWindow(cur_win->top_widget),&Prop);
 }

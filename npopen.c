@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.63 1998/04/11 17:16:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.64 1998/05/19 11:04:47 cmorgan Exp $
  *
  */
 
@@ -342,7 +342,11 @@ readPipe(const char *cmd, int in, int out)
 	dup2(out, 1);
 	dup2(out, 2);
 
+#if SYS_WINNT
+	myRval = w32_system(cmd);
+#else
 	myRval = system(cmd);
+#endif
 
 	/* restore old std... */
 	if (in >= 0)

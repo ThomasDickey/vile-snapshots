@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.33 1998/05/14 23:15:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.34 1998/05/19 11:04:47 cmorgan Exp $
  *
  */
 
@@ -414,11 +414,6 @@ ntopen(void)
 	SetConsoleCtrlHandler(nthandler, TRUE);
 }
 
-static int old_title_set = 0;
-static char old_title[256];
-static int orig_title_set = 0;
-static char orig_title[256];
-
 static void
 ntclose(void)
 {
@@ -443,16 +438,12 @@ ntkopen(void)	/* open the keyboard */
 	TRACE(("ntkopen (open:%d, was-closed:%d)\n", keyboard_open, keyboard_was_closed))
 	if (keyboard_open)
 		return;
-	if (old_title_set)
-		SetConsoleTitle(old_title);
-	if (!orig_title_set) {
-		orig_title_set = TRUE;
-		GetConsoleTitle(orig_title, sizeof(orig_title));
-	}
 	if (hConsoleOutput)
 		SetConsoleActiveScreenBuffer(hConsoleOutput);
 	keyboard_open = TRUE;
+#ifdef YOU_WANT_TO_KERNEL_FAULT_WIN95_WHEN_CTRL_BRK_IS_PRESSED
 	SetConsoleCtrlHandler(NULL, TRUE);
+#endif
 	SetConsoleMode(hConsoleInput, ENABLE_MOUSE_INPUT|ENABLE_WINDOW_INPUT);
 }
 
@@ -464,13 +455,11 @@ ntkclose(void)	/* close the keyboard */
 		return;
 	keyboard_open = FALSE;
 	keyboard_was_closed = TRUE;
-	old_title_set = TRUE;
-	GetConsoleTitle(old_title, sizeof(old_title));
-	if (orig_title_set)
-		SetConsoleTitle(orig_title);
 	if (hOldConsoleOutput)
 		SetConsoleActiveScreenBuffer(hOldConsoleOutput);
+#ifdef YOU_WANT_TO_KERNEL_FAULT_WIN95_WHEN_CTRL_BRK_IS_PRESSED
 	SetConsoleCtrlHandler(NULL, FALSE);
+#endif
 }
 
 static struct {
