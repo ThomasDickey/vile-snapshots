@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.361 2002/02/04 00:39:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.363 2002/02/18 00:41:05 tom Exp $
  *
  */
 
@@ -114,7 +114,7 @@ dfputsn(OutFunc outfunc, const char *s, int n)
     int c;
     int l = 0;
 
-    TRACE2(("...str=%s\n", visible_buff(s, n, TRUE)));
+    TRACE2(("...str=%s\n", visible_buff(s, (n < 0) ? strlen(s) : n, TRUE)));
     if (s != 0) {
 	while ((n-- != 0) && ((c = *s++) != EOS)) {
 	    (*outfunc) (c);
@@ -2506,6 +2506,9 @@ modeline_modes(BUFFER *bp, char **msptr)
 	case SF_DIFFERS:
 	    show = b_val(bp, VAL_RECORD_SEP) != global_b_val(VAL_RECORD_SEP);
 	    break;
+	case SF_FOREIGN:
+	    show = b_val(bp, VAL_RECORD_SEP) != RS_DEFAULT;
+	    break;
 	case SF_LOCAL:
 	    show = is_local_b_val(bp, VAL_RECORD_SEP);
 	    break;
@@ -3776,29 +3779,39 @@ bprintf(const char *fmt,...)
 void
 tprintf(const char *fmt,...)
 {
-    WINDOW *save_wp;
-    BUFFER *bp = make_ro_bp(TRACE_BufName, BFINVS);
-    W_TRAITS save_w_traits;
+    static int nested;
 
-    if (bp != 0
+    WINDOW *save_wp;
+    BUFFER *bp;
+    W_TRAITS save_w_traits;
+    OutFunc save_outfn;
+
+    if (!nested
+	&& (bp = make_ro_bp(TRACE_BufName, BFINVS)) != 0
 	&& (save_wp = push_fake_win(bp)) != 0) {
 	va_list ap;
 
+	nested = TRUE;
+
+	save_outfn = dfoutfn;
 	dfoutfn = bputc;
 
 	save_w_traits = curwp->w_traits;
 	DOT.l = lback(buf_head(curbp));
+	DOT.o = 0;
 
 	va_start(ap, fmt);
 	dofmt(fmt, &ap);
 	va_end(ap);
 
-	TRACE(("tprintf %.*s\n", llength(lback(DOT.l)), lback(DOT.l)->l_text));
+	TRACE(("tprintf {%.*s}\n", llength(lback(DOT.l)), lback(DOT.l)->l_text));
 
 	b_clr_changed(bp);
 	curwp->w_traits = save_w_traits;
 
 	pop_fake_win(save_wp);
+	dfoutfn = save_outfn;
+	nested = FALSE;
     }
 }
 #endif

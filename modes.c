@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.240 2002/01/12 00:25:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.242 2002/02/17 23:36:17 tom Exp $
  *
  */
 
@@ -3480,6 +3480,7 @@ infer_majormode(BUFFER *bp)
 	;
     } else if (my_majormodes != 0
 	       && majormodes_order != 0
+	       && !b_is_directory(bp)
 	       && bp->b_fname != 0
 	       && !isInternalName(bp->b_fname)) {
 	int n, m;
@@ -3496,19 +3497,24 @@ infer_majormode(BUFFER *bp)
 		if (need_suffix_and_preamble(n)) {
 		    if (test_by_suffix(n, bp) >= 0
 			&& test_by_preamble(n, bp, lp) >= 0) {
+			TPRINTF(("matched preamble and suffix of %s\n", bp->b_bname));
 			result = n;
 			break;
 		    }
 		} else if (test_by_suffix(n, bp) >= 0) {
+		    TPRINTF(("matched suffix of %s\n", bp->b_bname));
 		    result = n;
 		    break;
 		} else if (test_by_preamble(n, bp, lp) >= 0) {
 		    result = n;
+		    TPRINTF(("matched preamble of %s\n", bp->b_bname));
 		    break;
 		}
 	    }
-	    if (result >= 0)
+	    if (result >= 0) {
+		TPRINTF(("...inferred majormode %s\n", my_majormodes[result].name));
 		attach_mmode(bp, my_majormodes[result].name);
+	    }
 	}
     }
     --level;

@@ -1,6 +1,56 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20020217 (y)
+	> Tom Dickey:
+	+ indent'd tags.c
+	+ make xvile -rv work by adding reverseVideo resource to its
+	  application resources, and interpreting that.
+	+ add new selection for showformat, "foreign".  Change default of
+	  showformat to this, to reduce clutter (discussion with Paul Fox).
+	+ do not infer majormodes for directory buffers, e.g., vile-9.2 would
+	  be inferred as nrmode (reported by Paul Fox).
+	+ remove an empty section of the suffixes pattern for cppmode which
+	  made it match files ending with ".".
+	+ add a call to show_mark_is_set() in updatelistbuffers() so the
+	  [Marks] buffer will be recomputed anytime it is visible and the
+	  [Buffer List] is updated.  Usually that is when one of the buffers
+	  changes size, which means that marks may have moved.
+	+ repair logic for cleanup after pipes:  mods for directory buffer lost
+	  the cleanup after writing a pipe because ffstatus is reset now in
+	  ffclose() before it was tested in CleanAfterPipe().  Moved related
+	  state & logic into CleanToPipe(), CleanAfterPipe() to make them
+	  simpler to understand (reported by Clark Morgan).
+	+ use catnap() rather than sleep() in softfork(), since the former is
+	  less likely to get spurious SIGALRM's.
+	+ correct tprintf() to fix a core-dump when using ^X-, in [Trace],
+	  i.e., set DOT.o to zero.  Also prevent tprintf() from being called
+	  recursively.
+	+ add TPRINTF calls to show in [Trace] why a particular majormode was
+	  chosen, i.e., whether the suffix or preamble matched, or both.
+	+ add command-line -D option which turns on macro tracing (~trace on).
+	+ simplify argument processing a little, removing the non-XTOOLKIT code.
+	+ modify lremove() to fixup the bp->b_wline value.  This fixes a hole
+	  exposed by the directory-buffer changes, e.g.,
+		vile
+		isomething<esc>
+		:e /
+		__
+		:r /
+		__
+		(crash)
+	  (reported by Paul Fox).
+	+ avoid calling both mktemp() and mkdir() in create_save_dir().  Only
+	  one flavor should be used (reported by Paul Fox).
+	+ modify ffwopen(), ffclose() and ffputc() to avoid using buffered I/O
+	  when called from imdying().  Recent versions of glibc make the
+	  process lockup when using ElectricFence in this situation.  It is
+	  not POSIX, anyway, to use buffered I/O or malloc in a signal handler.
+	+ modify checks for non-file to allow character devices, e.g., a
+	  named pipe for people who use that feature to randomly generate an
+	  email signature (reported by Paul Fox).
+
  20020213 (x)
+	> Tom Dickey:
 	+ improve describe-key so it displays bindings for named procedures
 	  and perl commands.
 	+ add fence-patterns to sqlmode, for PL/SQL.
@@ -19,6 +69,7 @@ Changes for vile 9.3 (released ??? ??? ?? 2000)
 	  not allow for "REMARK".
 
  20020203 (w)
+	> Tom Dickey:
 	+ indent'd line.c, oneliner.c, opers.c
 	+ implemented '< and '> marks, which denote the limits of the
 	  selection.
@@ -34,7 +85,7 @@ Changes for vile 9.3 (released ??? ??? ?? 2000)
 		:r /
 	  This still has a minor problem: the window scrolls up by one line
 	  each time the ":r" is performed.
-	+ modify SortMyBuff() to avoid corrupting DOT when reconstructing
+	+ modify sortMyBuff() to avoid corrupting DOT when reconstructing
 	  linked list, e.g., if reading a directory buffer into itself.
 	+ modify file.c to print the number of lines read from a directory.
 	+ modify makename() to check if the result buffer name is empty,

@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.257 2002/01/20 23:45:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.258 2002/02/18 01:07:09 tom Exp $
  *
  */
 
@@ -291,6 +291,7 @@ typedef struct _text_win {
     Pixmap thumb_bm;		/* bitmap for scrollbar thumb */
 #endif
     ULONG scroll_repeat_interval;
+    Bool reverse_video;
     XtIntervalId blink_id;
     int blink_status;
     int blink_interval;
@@ -1809,6 +1810,15 @@ static XtResource resources[] =
 	(XtPointer) 60		/* 60 milliseconds */
     },
     {
+	XtNreverseVideo,
+	XtCReverseVideo,
+	XtRBool,
+	sizeof(Bool),
+	XtOffset(TextWindow, reverse_video),
+	XtRImmediate,
+	(XtPointer) False
+    },
+    {
 	XtNgeometry,
 	XtCGeometry,
 	XtRString,
@@ -2813,6 +2823,11 @@ x_preparse_args(int *pargc, char ***pargv)
     if (SamePixel(cur_win->bg, cur_win->fg))
 	cur_win->bg = WhitePixel(dpy, DefaultScreen(dpy));
 
+    if (cur_win->reverse_video) {
+	Pixel temp = cur_win->fg;
+	cur_win->fg = cur_win->bg;
+	cur_win->bg = temp;
+    }
     cur_win->default_fg = cur_win->fg;
     cur_win->default_bg = cur_win->bg;
 

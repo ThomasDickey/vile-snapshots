@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.260 2002/01/29 01:37:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.261 2002/02/16 01:15:48 tom Exp $
  *
  */
 
@@ -304,10 +304,9 @@ vl_line_count(BUFFER *the_buffer)
     return numlines;
 }
 
+/* return the number of the given line */
 L_NUM
-line_no(			/* return the number of the given line */
-	   BUFFER *the_buffer,
-	   LINEPTR the_line)
+line_no(BUFFER *the_buffer, LINEPTR the_line)
 {
     L_NUM line_num = 0;
 
@@ -358,9 +357,10 @@ vl_getcchar(void)
     return char_no(curbp, DOT);
 }
 
+/* return the line number the cursor is on */
 L_NUM
 getcline(void)
-{				/* return the line number the cursor is on */
+{
     return line_no(curbp, DOT.l);
 }
 #endif /* OPT_EVAL */
@@ -406,9 +406,7 @@ gotochr(int f, int n)
  * otherwise compute the actual column (depends on 'list' mode)
  */
 int
-getcol(
-	  MARK mark,
-	  int actual)
+getcol(MARK mark, int actual)
 {
     register C_NUM c, i;
     register C_NUM col = 0;
@@ -454,9 +452,7 @@ gotocol(int f, int n)
 /*  if there aren't that many columns, return how too few we were */
 /*	also, if non-null, return the column we _did_ reach in *rcolp */
 int
-getoff(
-	  C_NUM goal,
-	  C_NUM * rcolp)
+getoff(C_NUM goal, C_NUM * rcolp)
 {
     int curchar;
     C_NUM offs;

@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.24 2002/01/31 23:41:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.25 2002/02/16 01:50:11 tom Exp $
  *
  */
 
@@ -440,6 +440,37 @@ show_alloc(void)
 }
 #endif /* show_alloc */
 
+static int oops;
+
+static int
+check_line(LINE *lp, BUFFER *bp)
+{
+    LINE *p;
+    for_each_line(p, bp) {
+	if (lp == p)
+	    return TRUE;
+    }
+    return FALSE;
+}
+
+static int
+check_forw(LINE *lp)
+{
+    LINE *p, *q;
+    p = lforw(lp);
+    q = lback(p);
+    return (lp == q);
+}
+
+static int
+check_back(LINE *lp)
+{
+    LINE *p, *q;
+    p = lback(lp);
+    q = lforw(p);
+    return (lp == q);
+}
+
 void
 trace_line(LINE *lp, BUFFER *bp)
 {
@@ -448,11 +479,15 @@ trace_line(LINE *lp, BUFFER *bp)
     } else if (bp == 0) {
 	Trace("? null BUFFER pointer\n");
     } else {
-	Trace("%4d:{%p, f %p%s, b %p%s}:%s\n",
-	      line_no(bp, lp), lp,
-	      lforw(lp), (lp == lback(lforw(lp))) ? "" : "?",
-	      lback(lp), (lp == lforw(lback(lp))) ? "" : "?",
+	char *a = check_forw(lp) ? "" : "?";
+	char *b = check_back(lp) ? "" : "?";
+	Trace("%4d%s:{%p, f %p%s, b %p%s}:%s\n",
+	      line_no(bp, lp), check_line(lp, bp) ? "" : "?", lp,
+	      lforw(lp), a,
+	      lback(lp), b,
 	      lp_visible(lp));
+	if (*a || *b)
+	    oops++;
     }
 }
 
@@ -473,16 +508,18 @@ trace_window(WINDOW *wp)
 {
     LINEPTR lp;
     int got_dot = FALSE;
+    int had_line = FALSE;
 
     if (wp->w_bufp == 0
 	|| wp->w_bufp->b_bname == 0)
 	return;
 
-    Trace("trace_window(%s) top=%d, rows=%d, head=%p, dot=%p%s\n",
+    Trace("trace_window(%s) top=%d, rows=%d, head=%p, line=%p dot=%p%s\n",
 	  wp->w_bufp->b_bname,
 	  wp->w_toprow,
 	  wp->w_ntrows,
 	  win_head(wp),
+	  wp->w_line.l,
 	  wp->w_dot.l,
 	  wp == curwp ? " (curwp)" : "");
 
@@ -492,7 +529,10 @@ trace_window(WINDOW *wp)
 	    break;
 	if (lp == wp->w_dot.l)
 	    got_dot = TRUE;
+	had_line = TRUE;
     }
-    if (!got_dot)
+    if (!got_dot && had_line) {
 	Trace("DOT not found!\n");
+	imdying(10);
+    }
 }
