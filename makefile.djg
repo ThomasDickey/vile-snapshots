@@ -3,7 +3,7 @@
 #
 # T.DANG (dang@cogit.ign.fr)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.25 1998/05/22 00:18:52 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.26 1998/07/28 00:10:52 tom Exp $
 #
 #
 
@@ -94,12 +94,12 @@ nemode.h:	modetbl mktbls.exe
 mktbls.exe:  mktbls.c
 	$(CC) mktbls.c -o mktbls
 	coff2exe mktbls
-	rm mktbls
+	rm -f mktbls
 
 clean:
-	rm mktbls.exe
-	rm *.o
-	rm ne*.h
+	rm -f mktbls.exe
+	rm -f *.o
+	rm -f ne*.h
 
 bind.o:		nefunc.h
 eval.o:		nevars.h

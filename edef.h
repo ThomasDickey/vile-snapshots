@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.228 1998/07/01 23:34:25 Larry.Gensch Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.229 1998/07/27 23:31:00 cmorgan Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -72,6 +72,12 @@ decl_init( char opersys[], "os/2");
 #if SYS_WINNT
 decl_init( char opersys[], "win32");
 #endif
+#endif
+
+#if SYS_WINNT
+decl_uninit(int nowait_pipe_cmd);	/* if set, don't slowreadf() this pipe
+					 * command.
+					 */
 #endif
 
 decl_uninit( int am_interrupted );	/* have we been interrupted/ */

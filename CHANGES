@@ -1,5 +1,14 @@
 Changes for vile 8.1 (released ??? ??? ??, 1998)
 
+ (tom) 980727 (i)
+	+ modify makefile.djg to use -f option of rm, to work with djgpp 2.x
+	+ updated dependencies in makefile.wnt (patch by Clark Morgan).
+	+ restore old functionality for win32 ^X-!  (see 8.0c), but make a
+	  special check for its use in getting directory listings to avoid
+	  lockup with Thompson Toolkit Shell (patch by Clark Morgan).
+	+ change "%u" in lsprintf call in w32cbrd.c to "%d", fixes _snprintf
+	  change in 8.0h (reported by Clark Morgan).
+
  (tom) 980726 (h)
 	+ updated config.guess, config.sub based on automake 1.3.
 	+ combine some logic in file.c with new function strip_if_dosmode().

@@ -13,7 +13,7 @@
  *    Subsequent copies do not show this cursor.  On an NT 4.0 host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.10 1998/07/26 12:18:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.11 1998/07/27 10:18:14 tom Exp $
  */
 
 #include <windows.h>
@@ -49,7 +49,7 @@ report_cbrdstats(unsigned nbyte, unsigned nline, char *direction)
     if (! global_b_val(MDTERSE))
     {
         lsprintf(buf,
-                  "[Copied %u line%s, %u bytes %s clipboard]",
+                  "[Copied %d line%s, %d bytes %s clipboard]",
                   nline,
                   PLURAL(nline),
                   nbyte,

@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.229 1998/07/26 22:49:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.230 1998/07/27 23:31:04 cmorgan Exp $
  *
  */
 
@@ -250,7 +250,11 @@ slowtime (time_t *refp)
 	return status;
 }
 #else
-#define	slowtime(refp)	(fileispipe && !ffhasdata())
+# if SYS_WINNT
+#  define	slowtime(refp)	(fileispipe && !nowait_pipe_cmd && !ffhasdata())
+# else
+#  define	slowtime(refp)	(fileispipe && !ffhasdata())
+# endif
 #endif
 
 int
