@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.82 1998/08/22 02:17:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.83 1998/10/24 15:56:04 tom Exp $
  *
  */
 
@@ -628,7 +628,7 @@ mapgetc(void)
 		mapgetc_ungotcnt = 0;
 		mlforce("[Infinite loop detected in %s sequence]",
 			    (insertmode) ? "map!" : "map");
-		catnap(1000,FALSE);  /* FIXX: be sure message gets out */
+		catnap(1000,FALSE);  /* FIXME: be sure message gets out */
 		return abortc|NOREMAP;
 	    }
 	    mapgetc_ungotcnt--;

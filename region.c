@@ -5,7 +5,7 @@
  * commands. Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.90 1998/07/17 09:54:39 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.91 1998/10/24 15:56:01 tom Exp $
  *
  */
 
@@ -557,7 +557,7 @@ static int
 _yankchar(int c)
 {
 	kinsert(c);
-	/* FIXX check return value, longjmp back to yank_line */
+	/* FIXME check return value, longjmp back to yank_line */
 	return -1;
 }
 

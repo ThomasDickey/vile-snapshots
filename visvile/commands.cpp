@@ -423,6 +423,7 @@ HRESULT CCommands::XDebuggerEvents::BreakpointHit(IDispatch* pBreakpoint)
 STDMETHODIMP CCommands::VisVileConfig()
 {
     CConfigDlg Dlg;
+    HRESULT    hr = S_OK;
 
     AFX_MANAGE_STATE(AfxGetStaticModuleState());
     m_pApplication->EnableModeless(VARIANT_FALSE);
@@ -434,9 +435,19 @@ STDMETHODIMP CCommands::VisVileConfig()
         visvile_opts.enabled       = Dlg.m_enabled;
         visvile_opts.sync_errbuf   = Dlg.m_sync_errbuf;
         visvile_opts.write_buffers = Dlg.m_write_buffers;
+        if (visvile_opts.key_redir != (DWORD) Dlg.m_key_redir)
+        {
+            // Immediately update key redirection state with winvile,
+            // assuming editor is connected as OLE automation server.
+
+            hr = pVile->key_redir_change(Dlg.m_key_redir);
+            if (FAILED(hr))
+                (void) ReportLastError(hr);
+        }
+        visvile_opts.key_redir     = Dlg.m_key_redir;
     }
     m_pApplication->EnableModeless(VARIANT_TRUE);
-    return S_OK;
+    return (hr);
 }
 
 STDMETHODIMP CCommands::VisVileEnable()

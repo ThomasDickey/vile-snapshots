@@ -6,7 +6,7 @@ Programmed Macros in vile
 	[ The following documentation is copied almost verbatim from
 	chapter 13 of "MicroEMACS Full Screen Text Editor Reference Manual,
 	Version 3.10 March 19, 1989" The copyright for that document is
-	"(C)opyright 1988, 1989 by Brian Straight and Daniel M. Lawrence". 
+	"(C)opyright 1988, 1989 by Brian Straight and Daniel M. Lawrence".
 	I have done a global substitute of "vile" for "MicroEMACS", and
 	adjusted the document in various other small ways to make it match
 	vile's current functionality.  (Paul Fox, 4/94) ]
@@ -37,8 +37,8 @@ Programmed Macros in vile
 	which control what lines get executed within a macro.  Also there
 	are various types of variables.  Environmental variables both
 	control and report on different aspects of the editor.  User
-	variables hold string values which may be changed and inspected. 
-	Buffer variables allow text to be placed into variables. 
+	variables hold string values which may be changed and inspected.
+	Buffer variables allow text to be placed into variables.
 	Interactive variable allow the program to prompt the user for
 	information.  Functions can be used to manipulate all these
 	variables.
@@ -59,7 +59,7 @@ Constants
 	variables types be legal in different contexts.  This has the
 	disadvantage of forcing the user to be more careful about the
 	context of the statements variables are placed in, but in turn
-	gives them more flexibility in where they can place variables. 
+	gives them more flexibility in where they can place variables.
 	Needless to say, this also allows the expression evaluator to be
 	both concise and quick.
 
@@ -129,6 +129,15 @@ Environmental Variables
 
 	$cd-hook	Name of procedure to run when changing directories.
 
+	$cfgopts	[READ ONLY] Comma-delimited list of "interesting"
+			compiled options.  Currently tracked options include:
+
+			perl        -> editor includes perl interpreter
+			oleauto     -> editor supports OLE automation.
+
+			If none of the above options are available, $cfgopts
+			will be empty ("").
+
 	$cfilname	File name of the current buffer.
 
 	$char		Ascii value of the character currently at the
@@ -138,7 +147,7 @@ Environmental Variables
 
 	$curline	Current line of point in current buffer.
 
-	$cwd		[READ ONLY] Current directory.
+	$cwd		Current working directory.
 
 	$cwline 	Current display line in current window.
 
@@ -179,6 +188,8 @@ Environmental Variables
 	$match		[READ ONLY] Last string matched in a search.
 
 	$mode		[READ ONLY] "insert" or "command" mode.
+
+	$ntildes	Percent of window filled by ~ chars, at end of buffer.
 
 	$ocwd		[READ ONLY] Previous directory.
 
@@ -261,7 +272,7 @@ Interactive variables
 		set-variable %quest "What file? "
 		find-file @%quest
 
-	will ask the user for a file name, and then attempt to find it. 
+	will ask the user for a file name, and then attempt to find it.
 	Note also that complex expressions can be built up with these
 	operators, such as:
 
@@ -272,7 +283,7 @@ Interactive variables
 
 Functions
 ---------
-	Functions can be used to manipulate variables in various ways. 
+	Functions can be used to manipulate variables in various ways.
 	Functions can have one, two, or three arguments.  These arguments
 	will always be placed after the function on the current command
 	line.  For example, if we wanted to increase the current fill
@@ -440,13 +451,13 @@ Directives
     ----------------
 	When a macro is executed, if any command fails, the macro is
 	terminated at that point.  If a line is preceded by a ~FORCE
-	directive, execution continues whether the command succeeds or not. 
+	directive, execution continues whether the command succeeds or not.
 	For example:
 
 		set-variable %quest "What file? "
 		find-file @%quest
 		~force set-mode bcolor "red"
-		goto-beginning-of-file	
+		goto-beginning-of-file
 		insert-string "this is a new first line in that file\n"
 
 	will function correctly even if this version of the editor does not
@@ -488,7 +499,7 @@ Directives
 
     ~GOTO Directive
     ---------------
-	Flow can be controlled within a macro using the ~GOTO directive. 
+	Flow can be controlled within a macro using the ~GOTO directive.
 	It takes as an argument a label.  A label consists of a line
 	starting with an asterisk (*) and then an alphanumeric label.  Only
 	labels in the currently executing macro can be jumped to, and
@@ -584,5 +595,5 @@ Directives
 		insert-string "You are on an old machine!\n"
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.2 1998/07/01 23:18:08 cmorgan Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.3 1998/10/24 15:12:03 cmorgan Exp $
 -----------------------------------

@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.84 1998/05/14 00:18:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.85 1998/10/24 20:12:13 tom Exp $
  *
  *
  */
@@ -347,11 +347,15 @@ last_slash(char *fn)
 }
 
 /*
- * If a pathname begins with "~", lookup the name in the password-file.  Cache
- * the names that we lookup, because searching the password-file can be slow,
+ * If a pathname begins with "~", lookup the name .
+ * On Unix we lookup in the password file, under other systems use the $HOME
+ * environment variable only, if it exists.
+ * Cache the names that we lookup.
+ * Searching the password-file on unix can be slow,
  * and users really don't move that often.
  */
-#if SYS_UNIX
+
+#if SYS_UNIX || !SMALLER
 typedef	struct	_upath {
 	struct	_upath *next;
 	char	*name;
@@ -385,7 +389,9 @@ save_user(const char *name, const char *path)
 static char *
 find_user(const char *name)
 {
+#if SYS_UNIX
 	register struct	passwd *p;
+#endif
 	register UPATH	*q;
 
 	if (name != NULL) {
@@ -394,29 +400,41 @@ find_user(const char *name)
 				return q->path;
 			}
 		}
-
-		/* not-found, do a lookup */
-		if (*name != EOS)
+#if SYS_UNIX
+		/* not-found, do a lookup.
+		 * First try getpwnam with the specified name,
+		 * which will use ~ or whatever was passed
+		 */
+		if (*name != EOS) {
 			p = getpwnam(name);
-		else {
+		} else {
+			/* *name == EOS
+			 * so lookup the current uid, and then lookup
+			 * the name based on that.
+			 */
 			p = getpwuid((int)getuid());
-			if (p == 0) {
-				char *env = getenv("HOME");
-				if (env != 0)
-					return save_user(name, env);
-			}
 		}
 
-		if (p != NULL)
+		/* if either of the above lookups worked
+		 * then save the result
+		 */
+		if (p != 0)
 			return save_user(name, p->pw_dir);
-#if NEEDED
-	} else {	/* lookup all users (for globbing) */
+#endif
+		if (*name == EOS) {
+		    char *env = getenv("HOME");
+		    if (env != 0)
+			    return save_user(name, env);
+		}
+	}
+#if SYS_UNIX && NEEDED
+	else {	/* lookup all users (for globbing) */
 		(void)setpwent();
 		while ((p = getpwent()) != NULL)
 			(void)save_user(p->pw_name, p->pw_dir);
 		(void)endpwent();
-#endif
 	}
+#endif
 	return NULL;
 }
 

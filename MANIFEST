@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_1a
+MANIFEST for vile, version v8_1b
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -94,6 +94,7 @@ ptypemap                        perl-interface type map
 random.c                        miscellaneous functions
 regexp.c                        regular expression functions
 region.c                        region-manipulation
+revlist                         revision-list for VILE
 search.c                        functions for search-commands
 select.c                        selection-handling functions
 spawn.c                         functions for spawning subprocesses
@@ -106,9 +107,9 @@ trace.c                         development: trace to logfile
 trace.h                         development: trace to logfile
 undo.c                          support for "undo"
 version.c                       version & usage messages
+vile-8.1.spec                   rpm spec file (sample)
 vile.1                          man-page for VILE
 vile.hlp                        help-file
-vile.spec                       rpm spec file (sample)
 vms2unix.c                      VMS/UNIX compatibility support functions
 vmsbuild.com                    VAX/VMS DCL build script
 vmspipe.c                       pipe-filter support for VMS
@@ -168,6 +169,7 @@ visvile/tbarlrge.bmp            large toolbar icons for visvile
 visvile/tbarmedm.bmp            medium toolbar icons for visvile
 visvile/visvile.cpp             initialization routines for visvile.dll
 visvile/visvile.def             declares module parameters for visvile.dll
+visvile/visvile.dsm             DevStudio macros for visvile
 visvile/visvile.dsp             developer-studio-project file
 visvile/visvile.dsw             developer-studio-workspace file
 visvile/visvile.h               interface/common defs for visvile

@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.339 1998/10/05 23:47:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.340 1998/10/24 15:11:13 cmorgan Exp $
  *
  */
 
@@ -828,7 +828,12 @@ global_val_init(void)
 #endif
 #if SYS_WINNT && defined(DISP_NTWIN)
 	/* Allocate console before spawning piped process? */
-    set_global_g_val(GMDFORCE_CONSOLE, is_win95());
+	set_global_g_val(GMDFORCE_CONSOLE, is_win95());
+#endif
+#if SYS_WINNT && defined(VILE_OLE)
+	/* Allocate console before spawning piped process? */
+	set_global_g_val_ptr(GVAL_REDIRECT_KEYS,
+	                     strmalloc("F5::S,F10::S,F11::S,F7::F,F5:C:"));
 #endif
 #ifdef GMDHISTORY
 	set_global_g_val(GMDHISTORY,	TRUE);

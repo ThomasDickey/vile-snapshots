@@ -1,7 +1,7 @@
 Summary: VILE VI Like Emacs editor
 Name: vile
 Version: 8.1
-Release: Radek
+Release: 1
 Copyright: Freely Distributable, copyright statements must be maintained
 Group: Applications/Editors
 Source: ftp.clark.net:/pub/dickey/vile/vile-8.1.tgz
@@ -10,7 +10,8 @@ Packager: Radek Liboska <liboska@uochb.cas.cz>
 
 %description
 Vile is a text editor which is extremely compatible with vi in terms
-of "finger feel".  In addition, it has extended capabilities in many areas,
+of "finger feel".  In addition, it has extended capabilities in many
+areas,
 notably multi-file editing and viewing, key rebinding, and real X window
 system support.
 
@@ -21,7 +22,7 @@ system support.
 %install
 ./configure --prefix=/usr
 make install
-./configure --prefix=/usr --with-screen=ncurses --with-screen=x11 --with-locale
+./configure --prefix=/usr --with-screen=ncurses --with-screen=Xaw --with-locale
 make clean
 make install
 mv /usr/bin/xvile /usr/X11R6/bin/xvile
@@ -34,7 +35,7 @@ strip /usr/bin/vile-pas-filt
 strip /usr/bin/vile-crypt
 
 %files
-%doc CHANGES CHANGES.R3 CHANGES.R4 CHANGES.R5 CHANGES.R6
+%doc CHANGES CHANGES.R3 CHANGES.R4 CHANGES.R5 CHANGES.R6 CHANGES.R7
 %doc COPYING INSTALL MANIFEST
 %doc README README.PC
 %doc doc/*

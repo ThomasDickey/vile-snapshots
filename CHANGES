@@ -1,10 +1,69 @@
 Changes for vile 8.2 (released ??? ??? ??, 1998)
 
+ (tom) 981024 (b)
+ 	+ modify glob-expansion to always recognize "~" as a synonym for
+	  $HOME if Unix-style passwd interface does not return anything
+	  useful (adapted from a patch by Ed Henderson).
+	+ rename vile.spec to vile-8.1.spec, change configure option to use
+	  Athena widgets so xvile is built with menu support (Radek Liboska).
+	  ** This is not an 8.3 filename, but is used only on Linux.
+	+ modify to use X11R6 input method and dead key support (patch by
+	  Stanislav Meduna <stano@trillian.eunet.sk>).
+ 	+ correct click-timeout value for xvile, overlooked in 8.1u (reported
+	  by Ryan Murray).
+	+ minor fixes to menu.c so that xvile builds on OpenVMS 7.2 with DEC C.
+	> patches by Clark Morgan (mostly for visvile):
+	+ modified the w32 versions of vile so that during clipboard copy
+	  operations any character, c, in the following range:
+	      c > '~' && c >= val(printing-low) && c <= val(printing-high)
+	  is not translated to a hex representation (\xdd).
+	  I didn't use any other criteria (e.g., setlocale()) because I
+	  received no feedback from the person reporting the bug.
+	  Consequently, I don't know what particular locale value I should test
+	  (e.g., locale not "C" and not "" ??).  I also explored whether or not
+	  the w32 paste operations should similarly not translate data when
+	  copying from the clipboard.  For console vile, translation appears to
+	  be useful and necessary regardless of the printing-low or
+	  printing-high settings.  For winvile, translation is not strictly
+	  necessary because when printing-low is >= 128 and printing-high is <=
+	  255, winvile properly renders "highbit" ansi characters, such as
+	  these:
+	      opening quote
+	      closing quote
+	      ellipsis
+	      trademark
+	      copyright
+	      etc.
+	  However, the rendering of each highbit character is so small that the
+	  resultant text is extremely difficult to read.  Consequently, I
+	  elected to continue my small set of translations (refer to the "map"
+	  array in w32cbrd.c for a complete list).
+	  (from report by Jukka Keto <Jukka.Keto@kati.fi>)
+	+ extended/updated README.PC
+	+ add explanation of filterregion() portability (spawn.c)
+	+ modify in conjunction with visvile, to have the ability to redirect
+	  user-specified keystrokes to DevStudio.  For example, from winvile
+	  you can start the debugger, step the debugger, start a build, etc.  I
+	  think visvile is pretty useful now.  There's one more wrinkle I can
+	  envision adding at a later date (see visvile/readme.txt for details),
+	  but this feature is not a high priority (to _me_ :-) ).  The
+	  documentation of the redirected key feature is included in
+	  doc/visvile.doc .
+	+ add a new file called visvile/visvile.dsm (a collection of DevStudio
+	  macros).
+	+ added an environment variable called $cfgopts to the editor.  From
+	  the help file:
+		$cfgopts  comma-delimited list of "interesting" compiled options
+			  (read only).  Currently tracked options include:
+		perl    -> editor includes perl interpreter
+		oleauto -> editor supports OLE automation.
+
  (tom) 981008 (a)
 	+ add logic to ins_anytime() to prevent recursion or use in minibuffer,
 	  e.g., when pressing the insert-key.
- 	+ correct an ifdef for SYS_VMS in main.c from 8.0s which left other
-	  platforms using vfork (reported by Ryan Murray).
+	+ correct an ifdef for SYS_VMS in main.c from 8.0s which left other
+	  platforms using vfork (reported by Ryan Murray and Billy Little
+	  <billy_little@hso.link.com> ).
 
 Changes for vile 8.1 (released Fri Oct 02, 1998)
 
@@ -74,17 +133,17 @@ Changes for vile 8.1 (released Fri Oct 02, 1998)
 	  the number of characters and lines in the current buffer,
 	  respectively (request by Paul Askounis <askounis@sgi.com>).
 	+ modify select.c to allow de-attributing attributed regions.  It takes
-	  care of the following scenarios now: 
+	  care of the following scenarios now:
 	  - Non-overlapping regions were decided earlier on the basis on just
 	    line offsets and as a result worked correctly only for FULLLINE
 	    regions.  Now they are decided based on line and column offsets and
-	    so work correctly for all three region types. 
+	    so work correctly for all three region types.
 	  - when de-attributing a region, partially or completely overlapping
 	    with a previously attributed region, the whole of previous region
 	    was de-attributed instead of only the overlapping portion.  Now
 	    only the overlapping portion is de-attributed as long as we don't
 	    have any RECTANGLE regions.  The fix still does not include
-	    RECTANGLE regions. 
+	    RECTANGLE regions.
 	  (patch by Kuntal M Daftary)
 	+ modify c-filt.c to allow color and text attributes simultaneously
 	  (patch by Gary Ross <ross@Ultimatech.COM>)
@@ -131,15 +190,15 @@ Changes for vile 8.1 (released Fri Oct 02, 1998)
 	+ implement logic to return $font value on winvile.
 	+ simplified some expressions in vile's comment-formatter to make it
 	  format C++ comments.
-	+ if visvile disabled, no other dialog options are editable 
+	+ if visvile disabled, no other dialog options are editable
 	+ added more document type checking to avoid occasionally opening such
-	  things as dialog box resource scripts. 
-	+ implemented "CWD set from opened document's path" option 
+	  things as dialog box resource scripts.
+	+ implemented "CWD set from opened document's path" option
 	+ implemented "Write all modified buffers to disk prior to build"
 	  option.  This feature doesn't work as well as it could due to a
-	  DevStudio (v5) bug.  Refer to ../doc/visvile.doc for further details. 
-	+ implemented "Build log -> errbuf if build reports errs/warnings"  
-	  option. 
+	  DevStudio (v5) bug.  Refer to ../doc/visvile.doc for further details.
+	+ implemented "Build log -> errbuf if build reports errs/warnings"
+	  option.
 
  (tom) 980903 (o)
 	+ correct 8.0n change for highlighting, fixing an off-by-one error in
@@ -152,10 +211,10 @@ Changes for vile 8.1 (released Fri Oct 02, 1998)
 	  the environment variable "$font" (a la xvile).
 	+ modify OLE automation registration to accept a font specification,
 	  making it possible to configure both the font and screen geometry of
-	  future instances of winvile OLE automation servers. 
+	  future instances of winvile OLE automation servers.
 	+ remove some compiler warnings in ntwinio.c and correct the OLE
-	  registration logic for the "-geometry" switch (file w32reg.c). 
- 
+	  registration logic for the "-geometry" switch (file w32reg.c).
+
  (tom) 980902 (n)
 	+ modify updattrs function so that video attributes applied to tabs and
 	  other nonprinting characters will paint all of the cells used to

@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.192 1998/09/29 23:51:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.194 1998/10/24 18:44:40 Stanislav.Meduna Exp $
  *
  */
 
@@ -499,6 +499,9 @@ static	void	x_expose_scrollbar (Widget w, XtPointer unused, XEvent *ev,
 #if OPT_KEV_DRAGGING
 static	void	repeat_scroll (XtPointer count, XtIntervalId  *id);
 #endif
+#if OPT_LOCALE
+static	void	init_xlocale(void);
+#endif
 #if OPT_WORKING
 static	void	x_set_watch_cursor(int onflag);
 static	int	x_has_events(void);
@@ -559,6 +562,12 @@ TERM        term = {
 #define max(a,b)		((a) > (b) ? (a) : (b))
 
 
+
+#if OPT_LOCALE
+static char    *rs_inputMethod = "";	/* XtNinputMethod */
+static char    *rs_preeditType = NULL;	/* XtNpreeditType */
+static XIC      Input_Context;		/* input context */
+#endif
 
 #if KEV_WIDGETS
 /* We define our own little bulletin board widget here...if this gets
@@ -1864,7 +1873,7 @@ static XtResource resources[] = {
 	sizeof(Time),
 	XtOffset(TextWindow, click_timeout),
 	XtRImmediate,
-	(XtPointer) 500
+	(XtPointer) 600
     },
     {
 	XtNcharClass,
@@ -3251,6 +3260,10 @@ x_preparse_args(
     XtRealizeWidget(cur_win->top_widget);
 
     cur_win->win = XtWindow(cur_win->screen);
+
+#if OPT_LOCALE
+    init_xlocale();
+#endif
 
     /* We wish to participate in the "delete window" protocol */
     atom_WM_PROTOCOLS = XInternAtom(dpy, "WM_PROTOCOLS", False);
@@ -5981,8 +5994,26 @@ x_key_press(
     if (ev->type != KeyPress)
 	return;
 
+#if OPT_LOCALE
+    if (!XFilterEvent(ev, *(&ev->xkey.window))) {
+	if (Input_Context != NULL) {
+	    Status          status_return;
+
+	    num = XmbLookupString(Input_Context, (XKeyPressedEvent *) ev, buffer,
+				  sizeof(buffer), &keysym,
+				  &status_return);
+	} else {
+	    num = XLookupString((XKeyPressedEvent *) ev, buffer,
+				sizeof(buffer), &keysym,
+				(XComposeStatus *) 0);
+	}
+    } else
+	num = 0;
+#else
     num = XLookupString((XKeyPressedEvent *) ev, buffer, sizeof(buffer),
-		&keysym, (XComposeStatus *) 0);
+			&keysym, (XComposeStatus *) 0);
+#endif
+
 
     if (num <= 0) {
 	for (n = 0; n < TABLESIZE(escapes); n++) {
@@ -6169,5 +6200,121 @@ gui_isprint(int ch)
     }
     return TRUE;
 }
+
+#if OPT_LOCALE
+/*
+ * This is more or less stolen straight from XFree86 xterm.
+ * This should support all European type languages.
+ */
+static void
+init_xlocale(void)
+{
+    char           *p, *s, buf[32], tmp[1024];
+    XIM             xim = NULL;
+    XIMStyle        input_style = 0;
+    XIMStyles      *xim_styles = NULL;
+    int             found;
+
+    Input_Context = NULL;
+
+    if (rs_inputMethod == NULL || !*rs_inputMethod) {
+	if ((p = XSetLocaleModifiers("@im=none")) != NULL && *p)
+	    xim = XOpenIM(dpy, NULL, NULL, NULL);
+    } else {
+	strcpy(tmp, rs_inputMethod);
+	for (s = tmp; *s; s++) {
+	    char           *end, *next_s;
+
+	    for (; *s && isSpace(*s); s++)
+		/* */ ;
+	    if (!*s)
+		break;
+	    for (end = s; (*end && (*end != ',')); end++)
+		/* */ ;
+	    for (next_s = end--; ((end >= s) && isSpace(*end)); end--)
+		/* */ ;
+	    *++end = '\0';
+	    if (*s) {
+		strcpy(buf, "@im=");
+		strcat(buf, s);
+		if ((p = XSetLocaleModifiers(buf)) != NULL && *p &&
+		    (xim = XOpenIM(dpy, NULL, NULL, NULL)) != NULL)
+		    break;
+	    }
+	    if (!*(s = next_s))
+		break;
+	}
+    }
+
+    if (xim == NULL && (p = XSetLocaleModifiers("")) != NULL && *p)
+	xim = XOpenIM(dpy, NULL, NULL, NULL);
+
+    if (xim == NULL) {
+	fprintf(stderr, "Failed to open input method\n");
+	return;
+    }
+    if (XGetIMValues(xim, XNQueryInputStyle, &xim_styles, NULL) || !xim_styles) {
+	fprintf(stderr, "input method doesn't support any style\n");
+	XCloseIM(xim);
+	return;
+    }
+    strcpy(tmp, (rs_preeditType ? rs_preeditType : "Root"));
+    for (found = 0, s = tmp; *s && !found; ) {
+	unsigned short  i;
+	char           *end, *next_s;
+
+	for (; *s && isSpace(*s); s++)
+	    /* */ ;
+	if (!*s)
+	    break;
+	for (end = s; (*end && (*end != ',')); end++)
+	    /* */ ;
+	for (next_s = end--; ((end >= s) && isSpace(*end));)
+	    *end-- = 0;
+
+	if (!strcmp(s, "OverTheSpot"))
+	    input_style = (XIMPreeditPosition | XIMStatusArea);
+	else if (!strcmp(s, "OffTheSpot"))
+	    input_style = (XIMPreeditArea | XIMStatusArea);
+	else if (!strcmp(s, "Root"))
+	    input_style = (XIMPreeditNothing | XIMStatusNothing);
+
+	for (i = 0; i < xim_styles->count_styles; i++)
+	    if (input_style == xim_styles->supported_styles[i]) {
+		found = 1;
+		break;
+	    }
+	s = next_s;
+    }
+    XFree(xim_styles);
+
+    if (found == 0) {
+	fprintf(stderr, "input method doesn't support my preedit type\n");
+	XCloseIM(xim);
+	return;
+    }
+    /*
+     * This program only understands the Root preedit_style yet
+     * Then misc.preedit_type should default to:
+     *          "OverTheSpot,OffTheSpot,Root"
+     *  /MaF
+     */
+    if (input_style != (XIMPreeditNothing | XIMStatusNothing)) {
+	fprintf(stderr, "This program only supports the \"Root\" preedit type\n");
+	XCloseIM(xim);
+	return;
+    }
+    Input_Context = XCreateIC(xim, XNInputStyle, input_style,
+			      XNClientWindow, cur_win->win,
+			      XNFocusWindow, cur_win->win,
+			      NULL);
+
+    if (Input_Context == NULL) {
+	fprintf(stderr, "Failed to create input context\n");
+	XCloseIM(xim);
+    }
+}
+
+#endif /* OPT_LOCALE */
 
 #endif	/* DISP_X11 && XTOOLKIT */

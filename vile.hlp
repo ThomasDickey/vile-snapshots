@@ -2070,6 +2070,12 @@ Programmed procedures and macros
 	$cbufname	current buffer name
 	$cd-hook	name of procedure to run when changing directories
 	$cfilname	current file name
+	$cfgopts	comma-delimited list of "interesting" compiled options
+	                (read only).  Currently tracked options include:
+
+			perl        -> editor includes perl interpreter
+			oleauto     -> editor supports OLE automation.
+
 	$char		character under the cursor
 	$cryptkey	encryption key				(write only)
 	$curcol		current column position of cursor
@@ -3895,4 +3901,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.371 1998/10/03 02:42:01 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.372 1998/10/24 15:05:11 cmorgan Exp $

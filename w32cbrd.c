@@ -13,7 +13,7 @@
  *    Subsequent copies do not show this cursor.  On an NT 4.0 host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.11 1998/07/27 10:18:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.12 1998/10/24 16:03:02 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -27,6 +27,7 @@
 #define  CLIPBOARD_COPYING   "[Copying...]"
 #define  CLIPBOARD_COPY_FAIL "Clipboad copy failed"
 #define  CLIPBOARD_COPY_MEM  "Insufficient memory for copy operation"
+#define  PASS_HIGH(c)        ((c) <= print_high && (c) >= print_low)
 #define  _SPC_               ' '
 #define  _TAB_               '\t'
 #define  _TILDE_             '~'
@@ -38,6 +39,7 @@ typedef struct rgn_cpyarg_struct
 } RGN_CPYARG;
 
 static char ctrl_lookup[] = "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_";
+static int  print_low, print_high;
 
 /* ------------------------------------------------------------------ */
 
@@ -118,12 +120,12 @@ cbrd_count_meta_data(int           len,
         if ((c = *src++) == '\n')
         {
             (*nline)++;
-            (*nbyte)++;              /* API requires CR/LF terminator */
+            (*nbyte)++;                    /* API requires CR/LF terminator */
         }
-        else if (c < _SPC_ && c != _TAB_) /* assumes ASCII char set   */
-            (*nbyte)++;              /* account for '^' meta char     */
-        else if (c > _TILDE_)        /* assumes ASCII char set        */
-            (*nbyte) += 3;           /* account for '\xdd' meta chars */
+        else if (c < _SPC_ && c != _TAB_)  /* assumes ASCII char set        */
+            (*nbyte)++;                    /* account for '^' meta char     */
+        else if (c > _TILDE_ && (! PASS_HIGH(c))) /* assumes ASCII char set */
+            (*nbyte) += 3;                 /* account for '\xdd' meta chars */
     }
 }
 
@@ -187,10 +189,15 @@ cbrd_copy_and_xlate(int len, unsigned char **cbrd_ptr, unsigned char *src)
         {
             /* c > _TILDE_ */
 
-            *dst++ = '\\';
-            *dst++ = 'x';
-            *dst++ = hexdigits[(c & 0xf0) >> 4];
-            *dst++ = hexdigits[c & 0xf];
+            if (! PASS_HIGH(c))
+            {
+                *dst++ = '\\';
+                *dst++ = 'x';
+                *dst++ = hexdigits[(c & 0xf0) >> 4];
+                *dst++ = hexdigits[c & 0xf];
+            }
+            else
+                *dst++ = c;
         }
     }
     *cbrd_ptr = dst;
@@ -252,6 +259,9 @@ cbrd_reg_copy(void)
         mlforce("Nothing to copy");
         return (FALSE);     /* not an error, just nothing */
     }
+
+    print_high = global_g_val(GVAL_PRINT_HIGH);
+    print_low  = global_g_val(GVAL_PRINT_LOW);
 
     /* tell us we're writing */
     mlwrite(CLIPBOARD_COPYING);
@@ -321,7 +331,9 @@ cbrdcpy_region(void)
     MARK                    odot;
     int                     rc;
 
-    mlwrite("[Copying...]");
+    mlwrite(CLIPBOARD_COPYING);
+    print_high   = global_g_val(GVAL_PRINT_HIGH);
+    print_low    = global_g_val(GVAL_PRINT_LOW);
     odot         = DOT;          /* do_lines_in_region() moves DOT. */
     cpyarg.nbyte = cpyarg.nline = 0;
     dorgn        = get_do_lines_rgn();
@@ -350,7 +362,7 @@ cbrdcpy_region(void)
     cpyarg.dst = GlobalLock(hClipMem);
 
     /*
-     * Pass #2 -> The actual copy (don't need to restore DOT, that
+     * Pass #2 -> The actual copy.  Don't need to restore DOT, that
      * is handled by opercbrdcpy().
      */
     rc = dorgn(copy_rgn_data, &cpyarg, TRUE);
@@ -495,12 +507,7 @@ cbrdpaste(int f, int n)
     GlobalUnlock(hClipMem);
     CloseClipboard();
     if (! rc)
-    {
-        mlforce("Memory allocation failed");
-
-        /* Give user a chance to read message--more will surely follow. */
-        Sleep(3000);
-    }
+        (void) no_memory("cbrdpaste()");
     else
     {
         /*

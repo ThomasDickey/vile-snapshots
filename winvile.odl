@@ -51,6 +51,9 @@ library Winvile
         HRESULT Visible([in] VARIANT_BOOL VisibleFlag);
         [propget, helpstring("Sets or returns whether the editor is visible.")]
         HRESULT Visible([out, retval] VARIANT_BOOL* retval);
+
+        [helpstring("Redirect selected keystrokes to specified window if non-NULL hwnd.")]
+        HRESULT WindowRedirect([in] DWORD hwnd);
     }
 
 

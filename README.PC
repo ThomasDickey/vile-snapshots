@@ -1,11 +1,39 @@
+                          --------------------
+                          Running vile on a PC
+                          --------------------
 
-Running vile on a PC...
--------------------------------
+vile can be built for DOS, OS/2, Windows/NT or Win95/98.  additionally,
+precompiled binaries are available at vile's ftp sites (refer to the
+README file for URL's).
 
-vile can be built for DOS, OS/2, Windows/NT or Windows/95
+the precompiled binaries have an obvious advantage:  you don't build vile,
+which avoids the hassle of acquiring an "exotic" and/or expensive compiler.
+on the flip side, some PC environments include multiple build options that
+configure major editor features.  consequently, if you don't build vile,
+you have no control of the resultant feature set.
+
+General installation instructions
+---------------------------------
+installation of vile's PC components is the responsibility of the end user.
+put another way, _none_ of the PC makefiles include install targets and
+_none_ of the precompiled binaries include self-extracting setup programs.
+
+Installing the precompiled binaries
+-----------------------------------
+1) unpack the appropriate compressed archive obtained from an ftp site.
+2) copy all executables and the file vile.hlp to a directory in your PATH.
+
+Installing after a build
+------------------------
+1) build the editor using the hints/information supplied below.
+2) copy all resultant executables and the file vile.hlp to a directory
+   in your PATH.
+
+the remainder of this file describes build requirements for various PC
+environments.
 
 DOS information
-----------------
+---------------
 under DOS, you're best off using a DOS extender of some kind.  either
 the Watcom or DJGPP compiler suites may be used -- DJGPP gives you a
 faster executable, but the Watcom compiler is about 10 times faster.
@@ -40,13 +68,13 @@ that should work, with varying degrees of success:
 
 	ibmpc.c (need #define IBMPC in estruct.h or makefile): goes
 		straight to the video controller and the screen, should
-		support most popular video modes on CGA/EGA/VGA cards. 
+		support most popular video modes on CGA/EGA/VGA cards.
 		this is fine under regular DOS, but starts causing problems
 		in a Windows DOS-box, due to its direct video accesses.
 
 	ansi.c (need #define ANSI in estruct.h or makefile):  uses ANSI.SYS.
 		this may be more portable than ibmpc.c, since it relies on
-		the ansi driver for its cursor/scrolling/color services. 
+		the ansi driver for its cursor/scrolling/color services.
 		if you can change the resolution of your screen (to 43 or
 		50 line mode) with your ansi driver, just use the
 		"screen-rows" and/or "screen-columns" vile commands to make
@@ -57,22 +85,85 @@ that should work, with varying degrees of success:
 		it.)
 
 
-OS/2 information:
------------------
-
+OS/2 information
+----------------
 i believe vile can be built with the Borland compiler, or IBM CSET. be
 aware that vile is NOT a PM program.  the two builds use the borland.c
 or os2vio.c screen drivers, respectively.  with vile 7.3, an EMX port
 is supported (for comparison, since OS/2 VIO performs much better).
 
-WIN32 information (Windows NT and 95):
---------------------------------------
-either Visual C++ or the Borland compiler can be used. see the makefiles
-for details.  the screen driver is ntconio.c -- this is a console-mode
-only port.  as of vile 7.3, a simple gui (ntwinio.c) is provided.  we plan
-to do more work to fill out the functionality to make it like the other
-implementations of vile (e.g., scrollbars and menus).
+WIN32 information (Windows NT and 95/98)
+----------------------------------------
+either Visual C++ (4.x or later) or the Borland compiler can be used.  use
+makefile.wnt with VC++ and makefile.blc with Borland's compiler.  with
+respect to the console-mode port (vile.exe), the screen driver is
+ntconio.c .  Both makefiles build vile.exe by default.
 
+additionally, vile-c-filt.exe (a static, external syntax colorizer) is
+included in makefile.wnt's default target list.  refer to vile's help
+file for a description of the colorizer and refer to the module comments
+within c-filt.c for win32-specific features.
+
+as of vile 7.3, a gui called "winvile" is provided (screen driver is
+ntwinio.c), which continues to improve with successive releases of the
+editor.  currently, winvile may only be built with makefile.wnt (i.e.,
+only with VC++).
+
+as of vile 8.0, an embedded perl interpreter may be optionally included
+with the console or gui versions of the editor.  again, this feature
+is only accessible via makefile.wnt .
+
+as of vile 8.1, winvile may be built with optional OLE automation support,
+which is described in the file doc/oleauto.doc .  additionally, a DLL called
+visvile.dll can be built and installed as a Developer Studio add-in.  this
+add-in substitutes winvile as the default Developer Studio editor for
+many common editing tasks.  refer to the file doc/visvile.doc for further
+information, including build instructions.
+
+the following table summarizes all possible makefile.wnt build options:
+
+component option(s)  required nmake command-line [1]
+========= =========  ===============================
+vile      <none>     nmake -f makefile.wnt
+vile      perl       nmake -f makefile.wnt CFG=vile-with-perl
+winvile   <none>     nmake -f makefile.wnt CFG=winvile
+winvile   perl       nmake -f makefile.wnt CFG=winvile-with-perl
+winvile   ole        nmake -f makefile.wnt CFG=winvile OPT=ole-auto
+winvile   perl, ole  nmake -f makefile.wnt CFG=winvile-with-perl OPT=ole-auto
+
+[1] by default, all builds compile and link vile-c-filt.exe (when necessary).
+
+More about makefile.wnt
+-----------------------
+this makefile builds the editor from the command-line, _not_ from Developer
+Studio.  on an NT host, this is usually a trivial task.  simply:
+
+a) open a dos box
+b) cd to the vile source directory
+c) use one of the nmake command-lines shown above
+
+should the build fail due to "missing" include/library files or other
+tools, the problem is most likely caused by invalid/omitted environment
+variable settings.  in general, these variables are automatically
+initialized when Dev Studio is installed on an NT host.  for a workaround,
+read on.
+
+on a win95/win98 host, selected environment variables _must_ be set before
+any VC++ tool can be used (this includes nmake, cl, link, etc.).
+fortunately, microsoft supplies the file vcvars32.bat, in the Dev Studio
+bin directory, to set these variables.  you'll probably want to examine and
+edit this .bat file before using it for the first time because it usually
+modifies the PATH to include the PC's CD-ROM drive (not nice at all!).
+given all of this information, here's how to build the editor in the
+win95/win98 environment:
+
+a) open a dos box
+b) cd to the vile source directory
+c) run this command to initialize Dev Studio env vars:
+
+   <devstudio_root>\bin\vcvars32
+
+d) use one of the nmake command-lines shown above
 
 --------------------------------------------------------
 tom dickey, dickey@clark.net
@@ -81,5 +172,5 @@ tom dickey, dickey@clark.net
 paul fox, pgf@foxharp.boston.ma.us (home)
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.14 1998/04/30 23:46:59 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.15 1998/10/24 15:58:35 cmorgan Exp $
 ------------------------

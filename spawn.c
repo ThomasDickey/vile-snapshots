@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.132 1998/09/23 00:14:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.133 1998/10/24 15:55:54 cmorgan Exp $
  *
  */
 
@@ -579,11 +579,68 @@ write_data_to_pipe(void *writefp)
 }
 #endif
 
-/* run a region through an external filter, replace it with its output */
+/*
+ * FUNCTION
+ *   filterregion(void)
+ *
+ * DESCRIPTION
+ *   Run a region through an external filter, replace region with the
+ *   filter's output.
+ *
+ *   Architecturally, filterregion() is designed like so:
+ *
+ *       ------------  write pipe    ------------
+ *       | vile     |--------------->| a filter |
+ *       |          |                |          |
+ *       |          |<---------------| ex:  fmt |
+ *       ------------  read pipe     ------------
+ *
+ *   The idea here is to exec a filter (say, fmt) and then SIMULTANEOUSLY
+ *   pump a potentially big wad of data down the write pipe while, AT THE
+ *   SAME TIME, reading the filter's output.
+ *
+ *   The words in caps are the key, as they illustrate a need for separate
+ *   vile processes:  a writer and a reader.  This is accomplished on a
+ *   Unix host via the function softfork(), which calls fork().
+ *
+ *   For all other OSes, softfork() is a stub, which means that the
+ *   entire filter operation runs single threaded.  This is a problem.
+ *   Consider the following scenario on a host that doesn't support fork():
+ *
+ *   1) vile's !<region> command is used to exec vile-c-filt
+ *   2) vile begins pushing a large <region> (say, 100 KB) down the
+ *      write pipe
+ *   3) the filter responds by pushing back an even larger response
+ *   4) since vile hasn't finished the write pipe operation, the editor
+ *      does not read any data from the read pipe.
+ *   5) eventually, vile's read pipe buffer limit is reached and the
+ *      filter blocks.
+ *   6) when the filter blocks, it can't read data from vile and so the
+ *      editor's write pipe buffer limit will trip as well, blocking vile.
+ *
+ *   That's process deadlock.
+ *
+ *   One workaround on a non-Unix host is the use of temp files, which
+ *   uses this algorithm:
+ *
+ *      vile writes region to temp file,
+ *      vile execs filter with stdin connected to temp file,
+ *      vile reads filter's response.
+ *
+ *   This mechanism can be effected without error by a single process.
+ *
+ *   An alternative workaround simply creates two threads that simulate the
+ *   effects of fork().  The first thread fills the write pipe, while the
+ *   second thread consumes the read pipe.
+ *
+ * RETURNS
+ *   Boolean, T -> all is well, F -> failure
+ */
+
 int
 filterregion(void)
 {
-/* FIXX work on this for OS2, need inout_popen support, or named pipe? */
+/* FIXME work on this for OS2, need inout_popen support, or named pipe? */
 #if SYS_UNIX || SYS_MSDOS || (SYS_OS2 && CC_CSETPP) || SYS_WINNT
     static char oline[NLINE];   /* command line send to shell */
     char    line[NLINE];    /* command line send to shell */

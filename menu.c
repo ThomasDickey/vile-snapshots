@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.24 1998/09/29 23:53:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.25 1998/10/24 03:20:06 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -18,6 +18,12 @@
 #include "edef.h"
 
 #if DISP_X11
+
+#if SYS_VMS
+#include <processes.h>
+#define fork vfork
+#define Token MenuTokens
+#endif
 
 #if MOTIF_WIDGETS
 #include <Xm/MainW.h>

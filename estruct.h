@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.362 1998/09/29 23:43:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.363 1998/10/24 22:28:49 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2084,7 +2084,7 @@ typedef struct {
 typedef struct {
 	const char *bi_key;		/* the name of the command	*/
 	const CMDFUNC *n_cmd;		/* command details		*/
-	char n_flags;			/* flags (below)		*/
+	UCHAR n_flags;			/* flags (below)		*/
 #define	NBST_READONLY	1		/* for builtin functions	*/
 #define	NBST_DONE	2		/* temporary flag used by
 					   bind.c:makebindlist()	*/

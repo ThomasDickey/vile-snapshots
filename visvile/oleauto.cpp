@@ -22,6 +22,7 @@
 #define CD_KEYVAL          "ChdirDocPath"
 #define CLOSE_DOC_KEYVAL   "CloseDoc"
 #define ENABLE_KEYVAL      "Enable"
+#define KEY_REDIRECT       "RedirectWinvileKeys"
 #define ROOT_CFG_KEY       "Software\\Winvile\\VisVile"
 #define SYNC_ERRBUF_KEYVAL "SyncErrbuf"
 #define WRITE_BUFFERS      "WriteModifiedBuffers"
@@ -222,6 +223,9 @@ get_addin_config(void)
         visvile_opts.write_buffers = get_reg_cfg_val(hk,
                                                      WRITE_BUFFERS,
                                                     visvile_opts.write_buffers);
+
+        visvile_opts.key_redir     = pVile->DsHwnd() ?
+              get_reg_cfg_val(hk, KEY_REDIRECT, visvile_opts.key_redir) : FALSE;
         RegCloseKey(hk);
     }
     else
@@ -280,6 +284,7 @@ set_addin_config(void)
     set_reg_cfg_val(hk, ENABLE_KEYVAL,      visvile_opts.enabled);
     set_reg_cfg_val(hk, SYNC_ERRBUF_KEYVAL, visvile_opts.sync_errbuf);
     set_reg_cfg_val(hk, WRITE_BUFFERS,      visvile_opts.write_buffers);
+    set_reg_cfg_val(hk, KEY_REDIRECT,       visvile_opts.key_redir);
     RegCloseKey(hk);
 }
 
@@ -288,11 +293,18 @@ set_addin_config(void)
 HRESULT
 oleauto_init(void)
 {
-    get_addin_config();
     olebuf_len = ansibuf_len = 512;
     ansibuf    = (char *) malloc(ansibuf_len);
     olebuf     = (OLECHAR *) malloc(olebuf_len * sizeof(OLECHAR));
-    pVile      = new CVile();
+
+    /*
+     * CVile's constructor argument extracts a handle to the DevStudio 5
+     * frame using a sequence of win32 calls that was determined by trial
+     * and error.  'Twill be interesting to see if this works with later
+     * DevStudio versions.
+     */
+    pVile = new CVile(::GetParent(::GetActiveWindow()));
+    get_addin_config();  // Execute this code _after_ creating pVile.
     if (! (olebuf && ansibuf && pVile))
         return (ReportLastError(E_OUTOFMEMORY));
     else
@@ -305,7 +317,10 @@ oleauto_exit(void)
     if (regupdate_required)
         set_addin_config();
     if (pVile)
+    {
+        (void) pVile->key_redir_change(FALSE);  // key redirection killed
         delete pVile;
+    }
     if (olebuf)
         free(olebuf);
     if (ansibuf)
@@ -342,6 +357,23 @@ CVile::Connected()
         connected = SUCCEEDED(pVileAuto->get_Visible(&visible));
     }
     return (connected);
+}
+
+
+
+// Enable or disable key redirection from winvile to DevStudio.
+HRESULT
+CVile::key_redir_change(int enable)
+{
+    HRESULT hr = S_OK;
+
+    if (Connected())
+    {
+        hr = pVileAuto->WindowRedirect((enable) ? (DWORD) ds_hwnd : NULL);
+        if (FAILED(hr))
+            Disconnect(); // Certainly didn't expect that.
+    }
+    return (hr);
 }
 
 
@@ -393,6 +425,14 @@ CVile::Connect(int restore_wdw, VARIANT_BOOL *in_insert_mode)
         if (restore_wdw)
         {
             hr = pVileAuto->put_Visible(TRUE);   // Make the editor visible.
+            if (FAILED(hr))
+                Disconnect(); // Certainly didn't expect that.
+        }
+        if (pVileAuto && visvile_opts.key_redir)
+        {
+            // Send Winvile the HWND that receives redirected keystrokes.
+
+            hr  = pVileAuto->WindowRedirect((DWORD) ds_hwnd);
             if (FAILED(hr))
                 Disconnect(); // Certainly didn't expect that.
         }
@@ -553,6 +593,7 @@ CConfigDlg::CConfigDlg(CWnd* pParent /*=NULL*/)
 	m_close_ds_doc = FALSE;
 	m_cd_doc_dir = FALSE;
 	m_write_buffers = FALSE;
+	m_key_redir = FALSE;
 	//}}AFX_DATA_INIT
 }
 
@@ -566,6 +607,7 @@ void CConfigDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CLOSE_DOC, m_close_ds_doc);
 	DDX_Check(pDX, IDC_CHDIR, m_cd_doc_dir);
 	DDX_Check(pDX, IDC_WRITE_BUFFERS, m_write_buffers);
+	DDX_Check(pDX, IDC_KEY_REDIR, m_key_redir);
 	//}}AFX_DATA_MAP
 }
 
@@ -586,6 +628,7 @@ BOOL CConfigDlg::OnInitDialog()
     m_enabled       = visvile_opts.enabled;
     m_sync_errbuf   = visvile_opts.sync_errbuf;
     m_write_buffers = visvile_opts.write_buffers;
+    m_key_redir     = visvile_opts.key_redir;
 
     /*
      * Now, depending on value of m_enabled, manually enable/disable all
@@ -612,6 +655,7 @@ CConfigDlg::update_dlg_control_states(bool dialog_up)
     update_dlg_control(IDC_CHDIR, dialog_up);
     update_dlg_control(IDC_WRITE_BUFFERS, dialog_up);
     update_dlg_control(IDC_ERRBUF, dialog_up);
+    update_dlg_control(IDC_KEY_REDIR, dialog_up);
 }
 
 void
@@ -621,7 +665,20 @@ CConfigDlg::update_dlg_control(int ctrl_id, bool dialog_up)
 
     if ((hctrl = GetDlgItem(ctrl_id)) != NULL)
     {
-        hctrl->EnableWindow(m_enabled);
+        if (ctrl_id != IDC_KEY_REDIR)
+            hctrl->EnableWindow(m_enabled);
+        else
+        {
+            /*
+             * The enable key redirect feature is _always_ enabled so long
+             * as the DevStudio window handle is not NULL.  Keeping the
+             * redirect feature enabled at all times permits the winvile
+             * user to redirect keys to DevStudio even if the add-in is
+             * disabled (this is a good thing).
+             */
+
+            hctrl->EnableWindow(pVile->DsHwnd() != NULL);
+        }
         if (dialog_up)
             hctrl->UpdateWindow();
     }

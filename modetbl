@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.100 1998/09/22 22:42:44 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.101 1998/10/24 15:12:52 cmorgan Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -69,6 +69,7 @@ string							# VAL_ prefix
 	"backup-style"  BACKUPSTYLE	0		OPT_FILEBACK # file backup style
 	"expand-chars"	EXPAND_CHARS	0		# list of chars we can expand (%,#,:)
 	"glob"		GLOB		0		OPT_GLOB_PIPE # select filename globbing style
+	"redirect-keys"	REDIRECT_KEYS	chgd_redir_keys	SYS_WINNT&&defined(VILE_OLE) # send keys to another process
 
 .buffers
 bool							# MD prefix
@@ -157,6 +158,7 @@ regex							# MVAL_ prefix
 "cbufname"	CBUFNAME		# current buffer name
 "buffer-hook"	BUFHOOK		OPT_PROCEDURES	# procedure to run when entering buf
 "cd-hook"	CDHOOK		OPT_PROCEDURES	# procedure to run when cd'ing
+"cfgopts" 	CFGOPTS			# "interesting" compiled options (comma-delimited)
 "cfilname"	CFNAME			# current file name
 "char"		CURCHAR			# current character under the cursor
 "cryptkey"	CRYPTKEY	OPT_ENCRYPT # write-only encryption-key
