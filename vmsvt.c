@@ -7,7 +7,7 @@
  *  Author:  Curtis Smith
  *  Last Updated: 07/14/87
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.39 1999/01/15 01:35:45 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.40 1999/01/31 23:48:32 tom Exp $
  *
  */
 
@@ -118,14 +118,67 @@ struct vmskeyseqs
 
 struct vmskeyseqs vt100seqs[] =
 {
-	{ "\33[A",  KEY_Up },
-	{ "\33[B",  KEY_Down },
-	{ "\33[C",  KEY_Right },
-	{ "\33[D",  KEY_Left },
-	{ "\33OP",  KEY_KP_F1 },
-	{ "\33OQ",  KEY_KP_F2 },
-	{ "\33OR",  KEY_KP_F3 },
-	{ "\33OS",  KEY_KP_F4 },
+	{ "\033[A",   KEY_Up },
+	{ "\033[B",   KEY_Down },
+	{ "\033[C",   KEY_Right },
+	{ "\033[D",   KEY_Left },
+	{ "\033OP",   KEY_KP_F1 },
+	{ "\033OQ",   KEY_KP_F2 },
+	{ "\033OR",   KEY_KP_F3 },
+	{ "\033OS",   KEY_KP_F4 },
+	/* vt220 keys (F1-F5 do not transmit control sequences) include vt100 */
+	{ "\033[17~", KEY_F6 },
+	{ "\033[18~", KEY_F7 },
+	{ "\033[19~", KEY_F8 },
+	{ "\033[20~", KEY_F9 },
+	{ "\033[21~", KEY_F10 },
+	{ "\033[23~", KEY_F11 },
+	{ "\033[24~", KEY_F12 },
+	{ "\033[25~", KEY_F13 },
+	{ "\033[26~", KEY_F14 },
+	{ "\033[28~", KEY_F15 },
+	{ "\033[29~", KEY_F16 },
+	{ "\033[31~", KEY_F17 },
+	{ "\033[32~", KEY_F18 },
+	{ "\033[33~", KEY_F19 },
+	{ "\033[34~", KEY_F20 },
+	{ "\033[3~",  KEY_Delete },	/* aka "Remove" */
+	{ "\033[6~",  KEY_Next },
+	{ "\033[5~",  KEY_Prior },	/* aka "Prev" */
+	{ "\033[1~",  KEY_Find },
+	{ "\033[2~",  KEY_Insert },
+	{ "\033[4~",  KEY_Select },
+	/* 8-bit codes are the same, substituting the first two characters */
+	{ "\233A",    KEY_Up },
+	{ "\233B",    KEY_Down },
+	{ "\233C",    KEY_Right },
+	{ "\233D",    KEY_Left },
+	{ "\217OP",   KEY_KP_F1 },
+	{ "\217OQ",   KEY_KP_F2 },
+	{ "\217OR",   KEY_KP_F3 },
+	{ "\217OS",   KEY_KP_F4 },
+	/* vt220 keys (F1-F5 do not transmit control sequences) include vt100 */
+	{ "\23317~",  KEY_F6 },
+	{ "\23318~",  KEY_F7 },
+	{ "\23319~",  KEY_F8 },
+	{ "\23320~",  KEY_F9 },
+	{ "\23321~",  KEY_F10 },
+	{ "\23323~",  KEY_F11 },
+	{ "\23324~",  KEY_F12 },
+	{ "\23325~",  KEY_F13 },
+	{ "\23326~",  KEY_F14 },
+	{ "\23328~",  KEY_F15 },
+	{ "\23329~",  KEY_F16 },
+	{ "\23331~",  KEY_F17 },
+	{ "\23332~",  KEY_F18 },
+	{ "\23333~",  KEY_F19 },
+	{ "\23334~",  KEY_F20 },
+	{ "\2333~",   KEY_Delete },	/* aka "Remove" */
+	{ "\2336~",   KEY_Next },
+	{ "\2335~",   KEY_Prior },	/* aka "Prev" */
+	{ "\2331~",   KEY_Find },
+	{ "\2332~",   KEY_Insert },
+	{ "\2334~",   KEY_Select },
 };
 struct vmskeyseqs vt52seqs[] =
 {

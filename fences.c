@@ -8,7 +8,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.62 1999/01/26 21:53:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.63 1999/02/01 01:51:37 tom Exp $
  *
  */
 
@@ -27,7 +27,7 @@
 #define BLK_BEGIN    4
 #define BLK_END      5
 
-#ifdef TRACE
+#if OPT_TRACE
 #define TRACEARG(p) p,
 #else
 #define TRACEARG(p) /*nothing*/

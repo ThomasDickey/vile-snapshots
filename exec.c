@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.173 1999/01/26 22:38:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.174 1999/01/30 03:45:41 tom Exp $
  *
  */
 
@@ -2114,6 +2114,7 @@ dobuf(BUFFER *bp)	/* buffer to execute */
 
 	static int dobufnesting; /* flag to prevent runaway recursion */
 
+	beginDisplay();
 	if (++dobufnesting < 9) {
 
 #if ! SMALLER
@@ -2134,6 +2135,7 @@ dobuf(BUFFER *bp)	/* buffer to execute */
 		freewhile(whlist);
 	}
 	dobufnesting--;
+	endofDisplay();
 
 	return status;
 }

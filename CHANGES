@@ -1,5 +1,26 @@
 Changes for vile 8.3 (released ??? ??? ??, 1998)
 
+ (tom) 990202 (m)
+	+ suppress TTtypahead() call in sysmapped_c_avail() when we have made
+	  characters available in mapungetc().  This fixes a problem where
+	  type-ahead would get into the data copied from mapgetc_ungottenchars,
+	  breaking arrow key interpretation on slow connections.  (This was
+	  reported a few times since 971205, when the problem was introduced,
+	  but is difficult to reproduce.  Reported/tested by Clark Morgan).
+	+ implement mode mcolor, which lets user set the color of the
+	  modelines.  The choices are the same as for visual-matches (request
+	  by Han Leushuis <jgamleus@cs.uu.nl>).
+ 	+ update 'doingsweep' in one place only, do_sweep(), to ensure that the
+	  TTcursor() calls nest properly when a selection is aborted.
+ 	+ add vt220 7- and 8-bit function key definitions to vmsvt.c (request
+	  by Clark Morgan).
+	+ removed a FIXME in termio.c for read_vms_tty's assignment to nibuf,
+	  having confirmed that the document for the sys$qiow()'s read function
+	  says the device-dependent data stores a count of terminator
+	  characters (needed for VMS's equivalent to cbreak or cooked modes)
+	  rather than data that vile should process (patch by Clark Morgan).
+	+ prevent dobuf() from being interrupted by 'working' mode.
+
  (tom) 990126 (l)
  	+ add "~elsewith" directive to simplify use of fences in vile macros.
 	+ minor change to kbd_reply to allow abortc to be <control><space>,

@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.350 1998/11/30 22:45:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.352 1999/02/01 01:50:20 tom Exp $
  *
  */
 
@@ -954,6 +954,7 @@ global_val_init(void)
 	set_global_b_val(MDTAGSRELTIV,	FALSE);	/* path relative tag lookups */
 	set_global_b_val(MDTERSE,	FALSE);	/* terse messaging */
 #if	OPT_HILITEMATCH
+	set_global_g_val(GVAL_MCOLOR,   VAREV);	/* show in reverse */
 	set_global_b_val(VAL_HILITEMATCH, 0);	/* no hilite */
 #endif
 	set_global_g_val(GVAL_MINI_HILITE, VAREV); /* reverse hilite */
@@ -1575,7 +1576,7 @@ esc_func(int f GCC_UNUSED, int n GCC_UNUSED)
 	dotcmdmode = STOP;
 	regionshape = EXACT;
 	doingopcmd = FALSE;
-	doingsweep = FALSE;
+	do_sweep(FALSE);
 	sweephack = FALSE;
 	opcmd = 0;
 	mlwarn("[Aborted]");
