@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.74 1997/01/10 11:07:43 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.75 1997/01/25 14:41:10 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -146,7 +146,7 @@ OBJ = $(SCREEN).o \
 	modes.o msgs.o npopen.o oneliner.o opers.o path.o random.o \
 	regexp.o region.o search.o select.o spawn.o tags.o \
 	tbuff.o termio.o undo.o version.o \
-	window.o word.o wordmov.o
+	window.o word.o wordmov.o @EXTRAOBJS@
 
 all:	$(TARGET) vile-manfilt vile-c-filt
 

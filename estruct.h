@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.296 1997/01/19 19:01:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.297 1997/01/25 14:44:58 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -481,7 +481,10 @@
 #define	OPT_RAMSIZE		0  /* dynamic RAM memory usage tracking */
 #define OPT_DEBUGMACROS		0  /* $debug triggers macro debugging	*/
 #define	OPT_VISIBLE_MACROS	0  /* update display during keyboard macros*/
+
+#ifndef OPT_TRACE
 #define OPT_TRACE		0  /* turn on debug/trace (link with trace.o) */
+#endif
 
 /* That's the end of the user selections -- the rest is static definition */
 /* (i.e. you shouldn't need to touch anything below here */
@@ -2153,7 +2156,7 @@ extern void _exit (int code);
 #undef malloc
 #undef realloc
 #undef free
-#include "dbmalloc.h"		/* renamed from dbmalloc's convention */
+#include <dbmalloc.h>		/* renamed from dbmalloc's convention */
 #define show_alloc() malloc_dump(fileno(stderr))
 #define strmalloc strdup
 #else

@@ -1,5 +1,11 @@
 Changes for vile 7.0 (released ??? ??? ??, 1997)
 
+(tom)	970125 (h)
+	+ add limit-check to getcol(), in case mark.o is out-of-bounds.
+	+ correct an indexing out-of-bounds in 'attribute_cntl_a_sequences()'
+	  that Purify reported.
+	+ add configure options for development (trace, dbmalloc, no-leaks).
+
 (tom)	970119 (g)
 	+ modify logic that forms buffer names so that shell commands will
 	  be bracketed, thus avoiding an ambiguity.  This was reported by

@@ -1,6 +1,6 @@
-revlist for vile, version v6_4g
+revlist for vile, version v6_4h
 --------------------------------------------------------------------------------
-CHANGES	1.32
+CHANGES	1.34
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -23,7 +23,7 @@ chgdfunc.h	1.4
 cmdtbl	1.139
 config_h.in	1.2
 configure	none
-configure.in	1.47
+configure.in	1.48
 crypt.c	1.16
 csrch.c	1.26
 descrip.mms	1.33
@@ -34,7 +34,7 @@ djhandl.c	1.5
 dumbterm.c	1.8
 edef.h	1.205
 epath.h	1.21
-estruct.h	1.296
+estruct.h	1.297
 eval.c	1.137
 exec.c	1.131
 externs.c	1.5
@@ -60,7 +60,7 @@ main.c	1.285
 makefile.blc	1.5
 makefile.djg	1.20
 makefile.icc	1.5
-makefile.in	1.74
+makefile.in	1.75
 makefile.tbc	1.20
 makefile.wat	1.22
 makefile.wnt	1.13
@@ -74,31 +74,33 @@ modes.c	1.79
 modetbl	1.75
 msgs.c	1.14
 npopen.c	1.53
-ntconio.c	1.18
+ntconio.c	1.19
 oneliner.c	1.84
 opers.c	1.57
 os2pipe.c	1.1
 os2vio.c	1.8
-patchlev.h	1.27
+patchlev.h	1.28
 path.c	1.76
 pictmode.rc	1.1
 proto.h	1.233
-random.c	1.182
+random.c	1.183
 regexp.c	1.61
 region.c	1.79
-revlist	v6_4g
+revlist	v6_4h
 search.c	1.106
-select.c	1.52
+select.c	1.53
 spawn.c	1.114
 tags.c	1.78
 tbuff.c	1.27
 tcap.c	1.85
 termio.c	1.146
 tipc.c	1.1
+trace.c	1.1
+trace.h	1.1
 undo.c	1.65
 version.c	1.34
 vile.1	1.15
-vile.hlp	1.311
+vile.hlp	1.312
 vms2unix.c	1.19
 vmsbuild.com	1.11
 vmspipe.c	1.12

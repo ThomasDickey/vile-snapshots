@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.18 1996/11/07 02:00:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.19 1997/01/25 17:23:39 tom Exp $
  *
  */
 
@@ -642,7 +642,7 @@ ntgetch(void)
  */
 
 static int
-nttypahead()
+nttypahead(void)
 {
 	INPUT_RECORD ir;
 	DWORD nr;
