@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.21 1998/09/01 00:57:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.22 1998/09/02 01:36:50 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -442,14 +442,14 @@ attr_to_colors(VIDEO_ATTR attr, int *fcolor, int *bcolor)
 	ninvert = FALSE;
 
 	if (attr) {
-		if (attr == VABOLD)
+		if (attr & VASPCOL)
+			*fcolor = (attr & (NCOLORS - 1));
+		else if (attr == VABOLD)
 			*fcolor |= FOREGROUND_INTENSITY;
 		else if (attr == VAITAL)
 			*bcolor |= BACKGROUND_INTENSITY;
 		else if (attr & VACOLOR)
 			*fcolor = ((VCOLORNUM(attr)) & (NCOLORS - 1));
-		else if (attr & VASPCOL)
-			*fcolor = (attr & (NCOLORS - 1));
 		else {  /* all other states == reverse video */
 			*bcolor = nfcolor;
 			*fcolor = nbcolor;

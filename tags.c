@@ -4,7 +4,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.92 1998/09/01 09:54:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.94 1998/09/01 22:01:10 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -536,17 +536,16 @@ tag_search(char *tag, int taglen, int initial)
 		}
 
 		/*
-		 * If we've succeeded on a next-tags, adjust the stack so that it's
-		 * al on the same level.
+		 * If we've succeeded on a next-tags, adjust the stack so that
+		 * it's all on the same level.  A tag-pop will return to the
+		 * original position.
 		 */
 		if (!initial
 		 && untaghead != 0
 		 && untaghead->u_stklink != 0) {
-			register UNTAG *p, *q;
+			register UNTAG *p;
 			p = untaghead;
-			q = untaghead = p->u_stklink;
-			(void)strcpy(q->u_fname, p->u_fname);
-			q->u_lineno = p->u_lineno;
+			untaghead = p->u_stklink;
 			free_untag(p);
 		}
 

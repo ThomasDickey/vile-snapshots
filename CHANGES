@@ -1,10 +1,22 @@
 Changes for vile 8.1 (released ??? ??? ??, 1998)
 
+ (tom) 980902 (n)
+	+ modify updattrs function so that video attributes applied to tabs and
+	  other nonprinting characters will paint all of the cells used to
+	  display those characters (request by Richar A Ward).
+	+ modify win32 drivers (ntconio.c and ntwinio.c) to make visual-matches
+	  override syntax highlighting (reported by Clark Morgan).
+	+ correct unstacking behavior for next-tags as per original request.
+	+ modify shell_complete() function, which is used in both normal
+	  filename completion, and in completing shell commands so that for at
+	  least the former case it will handle filenames with embedded blanks
+	  (analysis by Rick Sladkey <jrs@foliage.com>).
+
  (tom) 980901 (m)
 	+ add a check to keep initial TTkopen from trashing the command-line
 	  help or version (termio.c).
- 	+ implement token-type for macro label linenumber, e.g., tokens beginning with
-	  an '*'.
+	+ implement token-type for macro label linenumber, e.g., tokens
+	  beginning with an '*'.
 	+ modify behavior of next-tags so that continued matches do not push
 	  the tags stack, but remain at the same level as the initial match
 	  (requed by Ed Henderson).
