@@ -1,0 +1,357 @@
+Changes for vile 7.0 (released Fri Feb 28, 1997)
+
+(tom)	970228
+	+ corrected OS/2 pipe problem, by closing dup'd file descriptors
+	  (os2pipe.c).
+	+ correct special IRIX 5.x -lsocket test, from 6.5c
+	+ correct logic for VILE_STARTUP_FILE (main.c).
+	+ correct a couple of uses of const (main.c, file.c).
+
+(pgf)	970227 (e)
+	+ fixed the mail sending in imdying.  i think it's been trying
+	  to run the command "on host" for a long time now.  in addition
+	  to simply fixing the command, and the printf arguments (which were
+	  also broken), it now runs sendmail if it can find it, since
+	  /bin/mail is not a reliable delivery agent anymore.  (file.c)
+
+(tom)	970227 (d)
+	+ ifdef'd function-key change to x11.c from 6.4d (reported by Graeme
+	  Miller).
+	+ add environment-variables VILE_HELP_FILE, VILE_STARTUP_FILE and
+	  VILE_STARTUP_PATH to allow user to override default configuration.
+	  (suggested by Andy Harper <A.HARPER@kcl.ac.uk>).
+	+ correct unused build-definition HELP_LOC from changes in 6.4c by
+	  prepending it to $startup-path on initialization.
+
+(tom)	970226 (c)
+	+ fix additional nits for ffwopen() (reported by Graeme Miller and
+	  Andy Harper).
+	+ add workaround in configure script for users with Solaris 2.5.1 and
+	  gcc configured for 2.4 or 2.5, due to gcc not shadowing term.h
+	  (reported by Andy Harper <A.HARPER@kcl.ac.uk>, but my ISP has the
+	  same problem)
+
+(tom)	970221 (b)
+	+ modify ffwopen() fix from 6.4a to work with DEC C (reported by Graeme
+	  Miller <G.R.M.Miller@open.ac.uk>).
+
+(kev)	970220 (a)
+	+ x11.c (x_getc): Don't advance DOT after paste when in insert mode.
+	  If we do, it goes too far.  Thanks to Philippe Chassany for finding
+	  this one.
+
+Changes for vile 6.5 (released Mon Feb 17, 1997)
+
+(tom)	970210 (j)
+	+ correct bracketing of shell-command buffer names from 6.4g (reported
+	  by Paul Fox).
+	+ modify filename completion to allow completion of "." and ".." as
+	  non-directory leaves.
+	+ fix some places (not all!) for gcc -Wcast-qual -Wwrite-strings
+	+ some compiler nits for Visual C/C++ 4.0 on WinNT.
+
+(kev)	970129 (i)
+	+ x11.c (start_selection): Make sure that prevDOT is set to the DOT
+	  in the window where the click occurs.
+	  (x_process_event): In the Button3 "ButtonPress" code, set prevDOT
+	  to DOT in order to sensibly handle the situation where the user
+	  first marks the beginning of a selection by pressing Button1 and
+	  then releasing it (without wiping) and then uses Button3 to mark
+	  the end of the selection.  In this case, DOT will be left at the
+	  location of the initial Button1 press.
+
+(tom)	970125 (h)
+	+ add limit-check to getcol(), in case mark.o is out-of-bounds.
+	+ correct an indexing out-of-bounds in 'attribute_cntl_a_sequences()'
+	  that Purify reported.
+	+ add configure options for development (trace, dbmalloc, no-leaks).
+
+(tom)	970119 (g)
+	+ modify logic that forms buffer names so that shell commands will
+	  be bracketed, thus avoiding an ambiguity.  This was reported by
+	  pgf; he used ^X-e to open a file in the buffer list that was
+	  a shell command.  Putting the cursor on the first '!' picks up
+	  the remainder of the line as the shell command, which is wrong.
+	+ apply fix from pgf for better description of ^A-d in vile.hlp. 
+
+(kev)	970120 (f)
+	+ x11.c (x_getc): Advance DOT by one after a paste so that default
+	  position for newly pasted text is *after* the text just pasted.
+
+(kev)	970120 (e)
+	+ x11.c: Added resource controlling whether DOT is reset after making
+	  a selection.  Also added/extended code for implementing this.
+	+ vile.hlp (selectionSetsDOT): Documented this X resource.
+
+(tom)	970119 (d)
+	+ Restrict xvile's modifier + mouse-2 behavior to check only the shift
+	  modifier (my system sets one of the modmap flags on all mouse
+	  clicks).
+	+ modify select/paste behavior in xvile so that the default pastes text
+	  at the last cursor (or mouse-click) position before selecting
+	  (requested by Jukka Keto <jketo@sasu1.carelian.fi>)
+	+ reset MK in set_curwp(), to avoid letting xvile cause DOT and MK
+	  point to different buffers, which breaks getregion().  This happened
+	  when the focusFollowsMouse resource was set (reported by Ralphe Neill
+	  <ran@dgs.monash.edu.au>)
+	+ add check for infinite loop in multimotion() (i.e., the 'q' command)
+	  that might arise from xvile's switching the value of DOT in response
+	  to mouse motion.  The loop happened because MK is a global rather
+	  than per-window.
+	+ check return values from getregion() in sel_extend().
+	+ change default binding of KEY_F11 to execute-macro-11, for
+	  consistency (does anyone have a keyboard w/o <esc>?).
+	+ add bindings for KEY_F21 through KEY_F35 and corresponding logic to
+	  x11.c and tcap.c (from a request by Abraham V.  George
+	  <ageorge@ERC.MsState.Edu>), so that xvile & vile can recognize these
+	  codes.  If they're not in a default binding, the KEY_Fxx aren't
+	  defined.  Note that vile's are bound to 8-bit codes, so they're of
+	  limited usefulness.
+	+ modify mktbls to allow 8-bit codes in nefkeys.h
+	+ corrected some places where WINMARK wasn't ifdef'd consistently,
+	  as part of testing that configuration.
+
+(tom)	970109 (c)
+	+ eliminate epath.h by variables $startup-file and $startup-path.
+	+ disable SIGHUP during normal quit/exit to workaround spurious "vile
+	  died" message when I've spawned vile in an xterm from another process
+	  (e.g., ded) on SunOS 4.x (this happens when doing :q! from vile with
+	  a modified buffer).
+	+ modify "print-prefixed-lines-til" command to print the buffer name
+	  rather than filename, thus allowing any buffer except [p-lines] to be
+	  indexed.
+	+ modify configure.in so that nsl and socket libraries aren't tested
+	  on IRIX 5.x, since those don't work with X11R5.
+
+(kev)	970108 (b)
+	+ configure.in: Added back in the tests for the nsl and socket
+	  libraries which seem to be necessary in order for configure
+	  to work cleanly on Solaris 2.5 with X11R6.
+
+(tom)	970103 (a)
+	+ correct an off-by-one in kbd_erase() that resulted in display
+	  glitch in filename completion when the prompt-text was a very long
+	  filename (bind.c).
+	+ modify ffwopen() on VMS to propagate existing file permissions when
+	  creating a new version of an existing file (requested by Robert J
+	  Wright R.Wright@curtin.edu.au)
+
+Changes for vile 6.4 (released Sun Dec 22, 1996)
+
+(tom)	961216 (c)
+	+ correction to infinite-loop fix in 6.3b
+	+ add $helpfile symbol, initialized to "vile.hlp".
+
+(tom)	961208 (b)
+	+ added "print-prefixed-lines-til" command to print into [p-lines]
+	  while prefixing the lines with filename and line-number.
+	+ work-around Linux bug that causes 'getchar()' to return incorrect
+	  value after an interrupt, so inserts of ^C would be garbled (input.c).
+	+ guard against infinite loop which resulted from reverse search on
+	  "$", resulting from 6.2a fixes (search.c).
+	+ implement colored attributes in termcap driver (tcap.c)
+	+ correct typo in cache-variable for VC_TYPE_OUTCHAR macro
+	+ test with autoconf 2.12 (no change needed).
+
+(tom)	961122 (a)
+	+ modify handling of xterm mouse-click in insert mode to allow it
+	  unless the click would move the cursor out of the current window
+	  (requested by David McCoy).
+
+Changes for vile 6.3 (released Mon Nov 18, 1996)
+
+(tom)	961117 (g)
+	+ moved xvile's translation strings out of fallback resources, since
+	  these are ignored when a resource file is installed (e.g., in
+	  $HOME/XVile or /usr/lib/X11/app-defaults/XVile), causing the
+	  scrollbars to become unworkable.
+	+ use 'newprocessgroup()' rather than 'fork()' for xvile -fork.
+	+ correct threshold in updpos() so that when list mode is set, a ^J
+	  in the last screen column (e.g., 80) will be visible.
+	+ correct limits for whitespace-removal in 'inspound()' that caused
+	  lines to join when inserting a '#' after typing ^D in an open-line
+	  command (reported by Emil Rojas).
+	+ modify so that '~' is not escaped when echoing previous value for a
+	  string unless it was used in the special case of string replacement. 
+
+(tom)	961113 (f)
+	+ clarified special-character expansion in vile.hlp (Paul Fox).
+	+ add alias to xvile for "-t" option to prevent it from superceding the
+	  normal vile "-t" option (x11.c).
+	+ added resources for xvile pointer shapes (x11.c) requested by Tim Su
+	  <tsu@garage.lucent.com>.
+	+ added -fork command-line option to xvile, to fork process after
+	  initialization (main.c, version.c, x11.c) requested by Richard
+	  Mitchell <mitchell@osb1.wff.nasa.gov>.
+	+ added error handler so that xvile prints usage message if command
+	  line parsing or Xt initialization fails (x11.c).
+	+ add ifdef to file.c to accommodate missing extern for 'environ' in
+	  djgpp 2.x (patch by Jerry Alexandratos).
+
+(tom)	961107 (e)
+	+ correct symbol conflict with shared library on OpenVMS 7.0 by
+	  renaming opendir, etc., and tempnam.  Also, remove redundant rule for
+	  vms_link.opt from descrip.mms (from logs by Sheldon E. Smith
+	  <ssmith@galina.ENET.dec.com>).
+	+ correct sign-extension in ntconio.c that prevented display of 8-bit
+	  characters (fix by Even Holen <evenh@pvv.ntnu.no>).
+	+ fix compiler warnings in borland.c (from logs by Jerry Alexandratos
+	  <alexandr@hawk.pearson.udel.edu>).
+	+ correction to logic for "~endif", macros weren't re-enabled after
+	  exiting an ~if/~endif (fix by Ian Jamison <ianj@quadrics.com>).
+
+(tom)	961105 (d)
+	+ apply Brendan O'Dea's <bod@tyndall.com.au> followup patch to ensure
+	  that "#", "%" and ":" substitions aren't made in search/replacement
+	  inputs.
+
+(pgf)	961030 (c)
+	+ apply brendan o'dea's patch to implement use of ~ in a replacement
+	  pattern, to expand to the previous replacement.  this patch also
+	  turns off the longstanding behavior of supplying the previous
+	  replacement pattern as the default response to the "replacement
+	  string: "  prompt.  i added a paragraph in the help file.  (estruct.h
+	  input.c main.c oneliner.c search.c)
+
+(tom)	961022 (b)
+	+ modify 'showpat()' to show at least one highlighted space even if the
+	  pattern is null, e.g., a '$' matching the end of line (oneliner.c).
+	+ implement $forward-search variable (modetbl, eval.c).
+	+ corrected "^$" pattern-matching broken in 6.2a (search.c).
+
+(tom)	961019 (a)
+	+ corrected logic of ~else/~elseif broken in 6.1a (exec.c), reported by
+	  Timothy Phan <tphan@asl.dl.nec.com>.
+	+ use new type IFSTK to combine if-stacking variables to clarify their
+	  relationship (exec.c).
+	+ modified macro trace to make if simpler to understand (exec.c).
+	+ corrected boundary condition that prevented match of "\>" on the end
+	  of line in search commands (search.c).
+	+ corrected handling of command line arguments with similar buffer
+	  names by prohibiting match against buffer names (main.c, file.c).
+	+ corrected translation of '\\' in special case where it preceded a
+	  potential metachar, causing search for "\\>" to fail (regexp.c),
+	  reported by Emil Rojas.
+	+ corrected wrap-around case in tags lookup where there was only one
+	  match; using next-tag would report that there was no such tag
+	  (tags.c).
+	+ implement regular-expressions in cheap_buffer_scan(), making it work
+	  with trailing "\>" emitted by ctags -N option (tags.c) reported by
+	  Emil Rojas <erojas@divi.com>.
+	+ add double-checks in swbuffer() and related logic to recover in case
+	  $buffer-hook frees the current buffer (buffer.c), reported by
+	  Sean Ahern <ahern@sphere.llnl.gov>.
+
+Changes for vile 6.2 (released Tue Oct 15, 1996)
+
+(tom)	961006 (d)
+	+ correct filling of blanks for non-bce terminals, so the filling is
+	  used only for color terminals (tcap.c).
+
+(kev)	961004 (c)
+	+ x11.c (update_scrollbar_sizes):  Make sure that grips are
+	  managed properly when multiple windows are created at
+	  startup.  Fixes David Snyder's "xvile -h" bug where it was
+	  not possible to resize the two windows by grabbing the
+	  resize grips.
+
+(tom)	961004 (b)
+	+ rename 'refresh()' to 'vile_refresh()', 'filter()' to 'vile_filter()',
+	  to avoid naming-conflict when including <curses.h> to support terminfo
+	  driver.
+	+ correct missing assignment for scanpt from 6.1a (exec.c).
+	+ correct sign-extension problem in setup_dobuf() from 6.1a (exec.c)
+	+ added (write-only!) $cryptkey variable (eval.c).
+	+ don't attempt to set encryption on temporary buffers unless global
+	  'crypt' mode is set (buffer.c).
+	+ correct logic that reset local 'crypt' mode w/o restoring it, preventing
+	  user from reading encrypted files (file.c)
+	+ modify so that OPT_CRYPT and OPT_WORDCOUNT are normally configured.
+	+ modify termcap driver to conditionally compile for terminfo libraries
+	  so that if vile is built on a system such as Solaris that provides
+	  termcap compatibility via terminfo, the color support will work.
+	+ modify configure script to check for terminfo libraries.
+	+ modify termcap driver so that if "op" (original pair) is defined,
+	  fcolor and bcolor default to "default", for better compatibilty
+	  with color_xterm and dtterm (tcap.c).
+	+ modify termcap driver to use "ut" capability to denote whether
+	  background-color-erase (bce) is supported (tcap.c).
+
+(tom)	960920 (a)
+	+ allow continuation-lines in macros, denoted by a backslash at the
+	  end of the line.
+	+ add new directive "~elseif" (exec.c)
+	+ restructured dobuf() using new function 'begin_directive()', fixing a
+	  place where 'execstr' was modified w/o saving old value (exec.c)
+	+ add new function 'no_such_function()' (bind.c, etc.)
+	+ modified debug-trace in msg_putc() to work around Linux's printf
+	  which calls strlen on all string arguments (msgs.c).
+	+ modified to not use "#elif", since HP/UX K&R compiler doesn't handle
+	  this (termio.c).
+
+Changes for vile 6.1 (released Tue Sep 10, 1996)
+
+(pgf)	960910
+	+ added text to README and vile.hlp regarding possibility of
+	  tom's taking over the source tree.  not completely firmed
+	  up yet, but likely.  thanks tom!!!!
+
+(tom)	960903 (d)
+	+ adapted patch by Larry Schwimmer's (schwim@cyclone.stanford.edu)
+	  for configure.in
+
+	+ modify configure script to ensure that cached information is used
+	  only on the system/version that was used to extract the data.
+
+	+ remove (and correct rules for generating) vms_link.opt, vmsshare.opt
+
+(pgf)	960812 (c)
+	+ removed const from dirnam[] buffer in imdying.  removed cast
+	  to (char *) which prevented any compiler in the world from
+	  showing us this error.  grrr.  i hope no one else loses
+	  work because of this one.  (file.c)
+
+	+ fix minor warning from extern'd prototype in buffer.c.
+
+	+ removed vile.man production rule from makefile.in.
+
+	+ applied changes from martin zinser (m.zinser@gsi.de) for VMS
+	  builds -- mostly casts, and some changes to the vms build scripts.
+
+(jrs)	960809 (b)
+	+ on NT reset the console input mode after a shell escape to fix
+	  the problem reported by paul with ^C.  (ntconio.c)
+
+	+ fixed a file corrupting bug caused by reading in a <CR><LF> file
+	  which contained lines longer than 255 characters by accounting
+	  for the possible fall-through of fastreadf into slowreadf in that
+	  case.  (file.c)
+
+	+ don't reset the keyboard when simply writing a file since it
+	  causes an annoying screen flash with the new NT screen buffer
+	  handling.  (file.c)
+
+	+ some minor changes to prevent us accessing (not even dereferencing)
+	  dangling pointers.  (buffer.c, file.c, itbuff.c, tbuff.c, path.c,
+	  search.c)
+
+	+ fix leak of the minibuffer window structure.  (window.c) 
+
+	+ make sure ttgetc returns something on all platforms, even if
+	  it isn't used.  (termio.c)
+
+	+ make nthandler return a value (in case it ever gets called :-).
+	  (ntconio.c)
+
+(pgf)	960717 (a)
+	+ applied rick's changes for proper operation in an NT command
+	  window with scrollbars.  (ntconio.c)
+
+	+ add target for formatting the man page, so a readable version
+	  can go in the pc zip distributions.  (makefile.in)
+
+	+ don't run the readhook for is_temporary() buffers.  (file.c)
+
+	+ fix usage message. (version.c)
+
+This change log started on Friday Jun 28, 1996.

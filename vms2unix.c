@@ -3,7 +3,7 @@
  *
  *	Miscellaneous routines for UNIX/VMS compatibility.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.24 1997/02/26 11:59:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.25 1997/03/13 11:49:48 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -659,6 +659,16 @@ vms2unix_path(char *dst, const char *src)
 
 #define COPY_FID(Fib, Nam) memcpy (Fib.fib$w_fid, Nam.nam$w_fid, 6)
 
+/*
+ * The following is used to "fix" a compiler warning with DEC C 5.3, which
+ * (apparently in an attempt to preserve alignment with VAX/VMS), mistypes
+ * a pointer as unsigned int, e.g.,
+ *
+ * %CC-W-CVTDIFTYPES, In this statement, "&short_fpro" of type "pointer to short",
+ * is being converted to "unsigned int".
+ */
+#define UGLY_CAST (unsigned int)
+
 int	vms_fix_umask (const char *filespec)
 {
 	struct	FAB	fab;
@@ -746,7 +756,7 @@ int	vms_fix_umask (const char *filespec)
 
 			atr[0].atr$w_type = ATR$C_FPRO;
 			atr[0].atr$w_size = ATR$S_FPRO;
-			atr[0].atr$l_addr = &short_fpro;
+			atr[0].atr$l_addr = UGLY_CAST &short_fpro;
 			atr[1].atr$w_size = atr[1].atr$w_type = 0;
 
 			status = QIO(IO$_ACCESS);
@@ -794,7 +804,7 @@ int	vms_fix_umask (const char *filespec)
 
 			atr[0].atr$w_type = ATR$C_FPRO;
 			atr[0].atr$w_size = ATR$S_FPRO;
-			atr[0].atr$l_addr = &short_fpro;
+			atr[0].atr$l_addr = UGLY_CAST &short_fpro;
 			atr[1].atr$w_size = atr[1].atr$w_type = 0;
 
 			if ($VMS_STATUS_SUCCESS(sys$assign(&DSC_name, &chnl, 0, 0))) {

@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.76 1997/02/27 11:56:03 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.77 1997/03/13 11:49:48 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -47,7 +47,7 @@ SCREEN		= @SCREEN@
 TARGET		= @TARGET@
 
 prefix		= @prefix@
-exec_prefix	= $(prefix)
+exec_prefix	= @exec_prefix@
 
 manext		= 1
 bindir		= $(exec_prefix)/bin

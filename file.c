@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.204 1997/02/28 02:03:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.205 1997/03/14 10:33:32 tom Exp $
  *
  */
 
@@ -1772,6 +1772,7 @@ out:
 	return (s != FIOERR);
 }
 
+#if SYS_UNIX
 static const char *mailcmds[] = {
 	"/usr/lib/sendmail",
 	"/sbin/sendmail",
@@ -1779,6 +1780,7 @@ static const char *mailcmds[] = {
 	"/bin/mail",
 	0
 };
+#endif
 
 /* called on hangups, interrupts, and quits */
 /* This code is definitely not production quality, or probably very

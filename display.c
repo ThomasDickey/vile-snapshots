@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.223 1997/02/09 17:54:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.224 1997/03/13 11:49:48 tom Exp $
  *
  */
 
@@ -1244,7 +1244,7 @@ int *screencolp)
 	collimit = col_limit(curwp);
 	excess = curcol - collimit + liadj;
 	if ((excess > 0) || (excess == 0 &&
-			(DOT.o >= llength(DOT.l) - 1 ))) {
+			(DOT.o < llength(DOT.l) - 1 ))) {
 		if (w_val(curwp,WMDHORSCROLL)) {
 			(void)mvrightwind(TRUE, excess + collimit/2 );
 			moved = TRUE;

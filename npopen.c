@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.53 1996/03/28 12:53:33 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.54 1997/03/13 11:49:48 tom Exp $
  *
  */
 
@@ -323,19 +323,24 @@ readPipe(const char *cmd, int in, int out)
 	TTkclose();	/* close the keyboard in case of error */
 
 	/* save and redirect stdin, stdout, and stderr */
-	old0 = dup(0);
 	old1 = dup(1);
 	old2 = dup(2);
 
 	if (in >= 0)
+	{
+		old0 = dup(0);
 		dup2(in, 0);
+	}
 	dup2(out, 1);
 	dup2(out, 2);
 
 	myRval = system(cmd);
 
 	/* restore old std... */
-	dup2(old0, 0); close(old0);
+	if (in >= 0)
+	{
+		dup2(old0, 0); close(old0);
+	}
 	dup2(old1, 1); close(old1);
 	dup2(old2, 2); close(old2);
 
