@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.377 2003/05/26 00:42:06 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.379 2003/06/30 00:19:06 tom Exp $
  *
  */
 
@@ -469,26 +469,30 @@ vtfree(void)
 int
 vtinit(void)
 {
-    register int i;
-    register VIDEO *vp;
+    int rc = TRUE;
+    int i;
+    VIDEO *vp;
 
+    beginDisplay();
     /* allocate new display memory */
-    if (vtalloc() == FALSE)	/* if we fail, only serious if not a realloc */
-	return (vscreen != NULL);
-
-    for (i = 0; i < term.maxrows; ++i) {
-	vp = vscreen[i];
-	vp->v_flag = 0;
+    if (vtalloc() == FALSE) {	/* if we fail, only serious if not a realloc */
+	rc = (vscreen != NULL);
+    } else {
+	for (i = 0; i < term.maxrows; ++i) {
+	    vp = vscreen[i];
+	    vp->v_flag = 0;
 #if OPT_COLOR
-	ReqFcolor(vp) = gfcolor;
-	ReqBcolor(vp) = gbcolor;
+	    ReqFcolor(vp) = gfcolor;
+	    ReqBcolor(vp) = gbcolor;
+#endif
+	}
+#if OPT_WORKING
+	if (!i_displayed && !im_displaying)
+	    imworking(0);
 #endif
     }
-#if OPT_WORKING
-    if (!i_displayed && !im_displaying)
-	imworking(0);
-#endif
-    return TRUE;
+    endofDisplay();
+    return rc;
 }
 
 /*
@@ -3418,7 +3422,7 @@ update(int force /* force update past type ahead? */ )
     endofDisplay();
     i_displayed = TRUE;
 
-    while (chg_width || chg_height)
+    while (allow_working_msg() && (chg_width && chg_height))
 	newscreensize(chg_height, chg_width);
     return (TRUE);
 }
@@ -3877,6 +3881,7 @@ newscreensize(int h, int w)
 	chg_width = w;
 	chg_height = h;
     } else {
+	beginDisplay();
 	chg_width = chg_height = 0;
 	if ((h > term.maxrows) || (w > term.maxcols)) {
 	    int old_r, old_c;
@@ -3887,9 +3892,12 @@ newscreensize(int h, int w)
 	    if (!vtinit()) {	/* allocation failure */
 		term.maxrows = old_r;
 		term.maxcols = old_c;
+		endofDisplay();
 		return;
 	    }
 	}
+	endofDisplay();
+
 	if (newlength(TRUE, h) && newwidth(TRUE, w))
 	    (void) update(TRUE);
     }

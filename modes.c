@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.259 2003/06/18 21:40:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.261 2003/06/30 00:59:22 tom Exp $
  *
  */
 
@@ -3699,6 +3699,19 @@ reset_majormode(int f GCC_UNUSED, int n GCC_UNUSED)
     infer_majormode(curbp);
     set_winflags(TRUE, WFMODE);
     return TRUE;
+}
+
+void
+set_vilemode(BUFFER *bp)
+{
+    static const char *my_mode = "vilemode";
+    VALARGS args;
+
+    if (find_mode(bp, my_mode, FALSE, &args) == TRUE
+     && bp == curbp) {
+	(void) set_mode_value(bp, my_mode, FALSE, TRUE, FALSE, &args,
+			      (char *) 0);
+    }
 }
 #endif /* OPT_MAJORMODE */
 

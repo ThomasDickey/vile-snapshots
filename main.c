@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.508 2003/06/17 17:36:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.509 2003/06/20 23:17:43 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -2749,6 +2749,10 @@ make_startup_file(char *name)
     }
 }
 
+#ifndef SIGTERM
+#define SIGTERM 9
+#endif
+
 #ifndef valid_buffer
 int
 valid_buffer(BUFFER *test)
@@ -2765,7 +2769,7 @@ valid_buffer(BUFFER *test)
 	    }
 	}
 	if (!valid)
-	    imdying(SIGKILL);
+	    imdying(SIGTERM);
     }
     endofDisplay();
 
@@ -2789,7 +2793,7 @@ valid_window(WINDOW *test)
 	    }
 	}
 	if (!valid)
-	    imdying(SIGKILL);
+	    imdying(SIGTERM);
     }
     endofDisplay();
 

@@ -6,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.25 2003/05/24 00:49:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.26 2003/06/21 15:03:38 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -96,6 +96,8 @@ SPACE		;
 {DSTRING}	{ WriteToken(String_attr); }
 
 {QUOTECMT2}	{ WriteToken(Comment_attr); }
+
+"!"[^\n]*	{ WriteToken(Action_attr); }
 
 %%
 

@@ -1,5 +1,23 @@
 Changes for vile 9.4 (released ??? ??? ?? ????)
 
+ 20030630 (t)
+	> Tom Dickey:
+	+ add VMS to the OPT_CASELESS ifdef's, allowing majormodes to be
+	  recognized.
+	+ reorganized vmsbuild.com to allow the first parameter to be used as
+	  a goto-target (which it was originally).  VMS DCL does not allow a
+	  goto target to match when within an if-then-else block.
+	+ restore selection-highlighting at the end of attribute-directly.
+	+ add a check in update() to avoid calling newscreensize() when it
+	  would not really be able to adjust the screensize.  Otherwise,
+	  update's while-loop would not terminate.
+	+ guard vtinit() against interrupt to ensure that a SIGWINCH does not
+	  cause newscreensize() to recur into it.
+	+ set "vilemode" for [History] buffer.
+	+ modify vilefilt.l to highlight shell commands.
+	+ fix an ifdef in main.c so valid_buffer() and valid_window() compile
+	  with Visual C++.
+
  20030618 (s)
 	> Tom Dickey:
 	+ modify detach_attrib() to ensure that its parameter is still a valid

@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.146 2003/06/18 22:21:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.147 2003/06/30 00:31:33 tom Exp $
  *
  */
 
@@ -1815,6 +1815,8 @@ attribute_directly(void)
 	    }
 	    tb_free(&token);
 	}
+	attach_attrib(selbufp, &selregion);
+	attach_attrib(startbufp, &startregion);
     }
 #endif
     return code;

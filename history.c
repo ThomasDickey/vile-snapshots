@@ -55,7 +55,7 @@
  *	not (yet) correspond to :-commands.  Before implementing, probably will
  *	have to make TESTC a settable mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.74 2003/05/26 17:28:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.75 2003/06/21 15:01:37 tom Exp $
  *
  */
 
@@ -105,6 +105,8 @@ makeMyBuff(void)
 	bp = 0;
     } else if ((bp = make_ro_bp(HISTORY_BufName, BFINVS)) == 0) {
 	stopMyBuff();
+    } else {
+	set_vilemode(bp);
     }
     return bp;
 }

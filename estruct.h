@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.535 2003/06/17 16:33:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.536 2003/07/01 00:32:51 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -553,7 +553,7 @@
 
 /* systems with MSDOS-like filename syntax */
 #define OPT_MSDOS_PATH  (SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_OS2_EMX)
-#define OPT_CASELESS	(SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_OS2_EMX)
+#define OPT_CASELESS	(SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_OS2_EMX || SYS_VMS)
 #define OPT_UNC_PATH	(SYS_WINNT)
 
 /* individual features that are (normally) controlled by SMALLER */
@@ -2665,6 +2665,8 @@ typedef struct KILLREG {
 #include <unixlib.h>
 #include <file.h>	/* aka <sys/file.h> */
 #include <rms.h>	/* required to compile nefsms.h */
+#define stricmp(a,b)	strcasecmp(a,b)
+#define strnicmp(a,b,n)	strncasecmp(a,b,n)
 #endif
 
 #ifdef HAVE_STDDEF_H

@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.397 2003/03/18 12:53:48 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.398 2003/06/30 00:21:40 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1602,3 +1602,10 @@ the related variables $search and $replacepat assume strings are terminated by
 nulls.  It would be nice to reimplement those - doing this is a little
 complicated since it may impact the use of error_val for propagating error
 conditions in expression evaluation.
+
+-- 03-06-29 (tom)
+
+The screen cannot be resized while doing a multimotion command initiated by the
+mouse (because of the beginDisplay/endofDisplay in tcap.c interacting with the
+check in newscreensize).  When the command ends, vile will update the
+screensize.
