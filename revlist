@@ -1,6 +1,6 @@
-revlist for vile-8.0u, version v8_0u
+revlist for vile, version v8_0v
 --------------------------------------------------------------------------------
-CHANGES	1.232
+CHANGES	1.234
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -59,20 +59,20 @@ isearch.c	1.49
 itbuff.c	1.12
 lckfiles.c	1.8
 line.c	1.112
-main.c	1.337
+main.c	1.338
 makefile.blc	1.9
 makefile.djg	1.26
 makefile.emx	1.2
 makefile.icc	1.10
-makefile.in	1.114
+makefile.in	1.117
 makefile.tbc	1.22
 makefile.wat	1.24
-makefile.wnt	1.31
+makefile.wnt	1.32
 manfilt.c	1.22
 map.c	1.82
 menu.c	1.24
 mkdirs.sh	1.2
-mkprlenv.wnt	1.2
+mkprlenv.wnt	1.3
 mktbls.c	1.90
 modes.c	1.119
 modetbl	1.100
@@ -86,7 +86,7 @@ os2keys.h	1.1
 os2pipe.c	1.4
 os2vio.c	1.20
 pas-filt.c	1.2
-patchlev.h	1.143
+patchlev.h	1.144
 path.c	1.84
 perl.xs	1.30
 proto.h	1.304
@@ -95,21 +95,21 @@ ptypemap	1.5
 random.c	1.191
 regexp.c	1.65
 region.c	1.90
-revlist	v8_0u
+revlist	v8_0v
 search.c	1.112
-select.c	1.78
+select.c	1.79
 spawn.c	1.132
 tags.c	1.94
 tbuff.c	1.31
 tcap.c	1.111
 tcap.h	1.4
-termio.c	1.157
+termio.c	1.158
 trace.c	1.8
 trace.h	1.6
 undo.c	1.69
 version.c	1.41
 vile.1	1.17
-vile.hlp	1.369
+vile.hlp	1.370
 vile.spec	1.1
 vms2unix.c	1.31
 vmsbuild.com	1.21
@@ -117,7 +117,7 @@ vmspipe.c	1.12
 vmsvt.c	1.34
 w32cbrd.c	1.11
 w32misc.c	1.10
-w32ole.cpp	1.4
+w32ole.cpp	1.5
 w32ole.h	1.2
 w32ole.rc	1.1
 w32pipe.c	1.15
@@ -145,11 +145,11 @@ macros/pictmode.rc	1.1
 macros/vile-pager	1.1
 perl/glob2re.pl	1.1
 perl/hgrep.pl	1.1
-perl/hilite.pl	1.1
+perl/hilite.pl	1.2
 perl/manfilt.pl	1.1
 perl/search.pl	1.2
 perl/shell.pl	1.1
-perl/syntax.pl	1.1
+perl/syntax.pl	1.3
 perl/tailf.pl	1.1
 perl/visit.pl	1.1
 visvile/commands.cpp	1.2

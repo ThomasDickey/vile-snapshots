@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.337 1998/09/23 00:13:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.338 1998/10/01 09:17:03 tom Exp $
  *
  */
 
@@ -708,6 +708,7 @@ loop(void)
 		}
 
 		attrib_matches();
+		regionshape = EXACT;
 
 	}
 }

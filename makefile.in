@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.114 1998/09/07 19:54:43 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.117 1998/10/02 01:04:17 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -144,9 +144,11 @@ SCREENS = \
 PERL_SRC = \
 	$(srcdir)/perl/glob2re.pl \
 	$(srcdir)/perl/hgrep.pl \
+	$(srcdir)/perl/hilite.pl \
 	$(srcdir)/perl/manfilt.pl \
 	$(srcdir)/perl/search.pl \
 	$(srcdir)/perl/shell.pl \
+	$(srcdir)/perl/syntax.pl \
 	$(srcdir)/perl/tailf.pl \
 	$(srcdir)/perl/visit.pl
 
@@ -169,16 +171,21 @@ OTHERSRC = \
 # documentation, such as it is
 DOCS =	\
 	doc/config.doc \
+	doc/hilite.doc \
 	doc/macros.doc \
-	doc/modes.doc \
 	doc/menus.doc \
-	doc/perl-api.doc \
+	doc/modes.doc \
+	doc/oleauto.doc \
+	doc/perl.doc \
+	doc/visvile.doc \
+	doc/w32modes.doc \
 	vile.1 \
 	vile.hlp
 
 # miscellaneous text files
 TEXTFILES = README README.PC \
-	INSTALL CHANGES CHANGES.R5 CHANGES.R4 CHANGES.R3 \
+	INSTALL CHANGES \
+	CHANGES.R7 CHANGES.R6 CHANGES.R5 CHANGES.R4 CHANGES.R3 \
 	buglist revlist patchlev.h COPYING
 
 VILESRC = main.c api.c basic.c bind.c btree.c buffer.c crypt.c csrch.c \
@@ -289,9 +296,11 @@ INSTALL_PERL_DIRS = $(perldir)
 INSTALL_PERL_FILES = \
 	$(perldir)/glob2re.pl \
 	$(perldir)/hgrep.pl \
+	$(perldir)/hilite.pl \
 	$(perldir)/manfilt.pl \
 	$(perldir)/search.pl \
 	$(perldir)/shell.pl \
+	$(perldir)/syntax.pl \
 	$(perldir)/tailf.pl \
 	$(perldir)/visit.pl
 
@@ -572,12 +581,16 @@ $(perldir)/glob2re.pl:     $(srcdir)/perl/glob2re.pl
 	$(INSTALL_DATA)    $(srcdir)/perl/glob2re.pl $@
 $(perldir)/hgrep.pl:       $(srcdir)/perl/hgrep.pl
 	$(INSTALL_DATA)    $(srcdir)/perl/hgrep.pl $@
+$(perldir)/hilite.pl:      $(srcdir)/perl/hilite.pl
+	$(INSTALL_DATA)    $(srcdir)/perl/hilite.pl $@
 $(perldir)/manfilt.pl:     $(srcdir)/perl/manfilt.pl
 	$(INSTALL_DATA)    $(srcdir)/perl/manfilt.pl $@
 $(perldir)/search.pl:      $(srcdir)/perl/search.pl
 	$(INSTALL_DATA)    $(srcdir)/perl/search.pl $@
 $(perldir)/shell.pl:       $(srcdir)/perl/shell.pl
 	$(INSTALL_DATA)    $(srcdir)/perl/shell.pl $@
+$(perldir)/syntax.pl:      $(srcdir)/perl/syntax.pl
+	$(INSTALL_DATA)    $(srcdir)/perl/syntax.pl $@
 $(perldir)/tailf.pl:       $(srcdir)/perl/tailf.pl
 	$(INSTALL_DATA)    $(srcdir)/perl/tailf.pl $@
 $(perldir)/visit.pl:       $(srcdir)/perl/visit.pl

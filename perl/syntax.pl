@@ -1,3 +1,20 @@
+# $Header: /users/source/archives/vile.vcs/perl/RCS/syntax.pl,v 1.3 1998/10/01 10:29:26 tom Exp $
+#
+# See 'hilite.doc' for an overview.  This (with hilite.pl) provide a simple
+# syntax highlighting mode.
+#
+# Caveat: this is experimental code; the chief drawback is that it is slow.
+#
+# The following two lines need to be added to .vilerc
+#
+# ----------------------------------------
+# perl "Vile::register 'synon', 'synon', 'Syntax Hilighting, do', 'syntax.pl'"
+# perl "Vile::register 'synoff', 'synoff', 'Syntax Hilighting, undo', 'syntax.pl'"
+# ----------------------------------------
+#
+# this way :synon turns on hiliting and :synoff turns off hiliting.
+# (You must have a majormode defined, as well).
+#
 require 'hilite.pl';
 sub synon {
     my $cb = $Vile::current_buffer;

@@ -1,6 +1,6 @@
 /*
- * w32ole.h:  Winvile's OLE definitions (the editor currently
- *            supports only OLE Automation).
+ * w32ole.cpp:  Winvile's OLE implementation (the editor currently
+ *              supports only OLE Automation).
  *
  * Note:  A great deal of the code included in this file was copied from
  * the Microsoft platform sdk samples directory, specifically from:
@@ -17,7 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.4 1998/09/28 01:07:48 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.5 1998/10/01 10:31:26 cmorgan Exp $
  */
 
 #include <windows.h>

@@ -1,5 +1,19 @@
 Changes for vile 8.1 (released ??? ??? ??, 1998)
 
+ (tom) 980101 (v)
+ 	+ updated install-rules for perl scripts.
+	+ set was_clean flag in all instances of ttclean(), fixing a problem
+	  where TTkopen() was not invoked on return from :sh command (reported
+	  by Ryan Murray).
+ 	+ strip trailing ^M's from hilite.pl and syntax.pl, add those to the
+	  list of Perl scripts in vile.hlp and makefiles (report/patch by
+	  Clark Morgan).
+	+ pass-through $(OPT) value in recursive-make in makefile.wnt (patch
+	  by Clark Morgan).
+	+ move logic to reset regionshape out of multimotion, to main.c's loop(),
+	  since commands such as "y2q<some motion>q" would otherwise be yanked
+	  in EXACT mode (reported by Ed Henderson).
+
  (tom) 980930 (u)
 	+ modify :ww command to ignore readonly buffers (reported by Chris
 	  Sherman).
