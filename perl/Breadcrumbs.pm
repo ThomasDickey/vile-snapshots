@@ -1,4 +1,4 @@
-#   Breadcrumbs.pm (version 0.2) - Provides named placeholders for Vile.
+#   Breadcrumbs.pm (version 0.3) - Provides named placeholders for Vile.
 #
 #   Copyright (C) 2001  J. Chris Coppick
 #
@@ -40,7 +40,7 @@ require Vile::Exporter;
 
 sub drop {
 
-   my $crumbfile = crumbDB();
+   my ($crumbfile) = crumbDB();
    my %crumbs;
 
    my $cb = $Vile::current_buffer;
@@ -53,14 +53,14 @@ sub drop {
       return 0;
    }
 
-   my $label = Vile::mlreply_no_opts("Crumb? ");
+   my ($label) = Vile::mlreply_no_opts("Crumb? ");
    return 0 if (!defined($label) || $label eq '' || $label =~ /^\s*$/);
 
    chomp($label);
 
-   my $crumb = pack("i a${size} i i", $size, $filename, $ln, $off);
+   my ($crumb) = pack("i a${size} i i", $size, $filename, $ln, $off);
 
-   my $hash = new DB_File::HASHINFO;
+   my ($hash) = new DB_File::HASHINFO;
    $hash->{'bsize'} = 512;
    $hash->{'cachesize'} = 512;
    tie(%crumbs, 'DB_File', $crumbfile, O_CREAT|O_RDWR, 0600, $hash) || do {
@@ -69,7 +69,7 @@ sub drop {
    };
 
    if (defined($crumbs{$label})) {
-      my $ans = '';
+      my ($ans) = '';
       while ($ans !~ /^[yYnN]/) {
 	 $ans =
 	   Vile::mlreply_no_opts("\"$label\" already used.  Reuse $label? (Y/N): ");
@@ -88,16 +88,16 @@ sub drop {
 
 sub find {
 
-   my $crumbfile = crumbDB();
+   my ($crumbfile) = crumbDB();
    my %crumbs;
 
-   my $hash = new DB_File::HASHINFO;
+   my ($hash) = new DB_File::HASHINFO;
    tie(%crumbs, 'DB_File', $crumbfile, O_RDONLY, 0600, $hash) || do {
       print "Couldn't open breadcrumb database $crumbfile: $!";
       return 1;
    };
 
-   my $label = Vile::mlreply_no_opts("Crumb? ");
+   my ($label) = Vile::mlreply_no_opts("Crumb? ");
    return 0 if (!defined($label) || $label eq '' || $label =~ /^\s*$/);
 
    chomp($label);
@@ -108,7 +108,7 @@ sub find {
       return 0;
    }
 
-   my $size = unpack("i", $crumbs{$label});
+   my ($size) = unpack("i", $crumbs{$label});
    my ($size, $filename, $ln, $off) =
       unpack("i a${size} i i", $crumbs{$label});
 
@@ -130,16 +130,16 @@ sub find {
 
 sub delete {
 
-   my $crumbfile = crumbDB();
+   my ($crumbfile) = crumbDB();
    my %crumbs;
 
-   my $hash = new DB_File::HASHINFO;
+   my ($hash) = new DB_File::HASHINFO;
    tie(%crumbs, 'DB_File', $crumbfile, O_RDWR, 0600, $hash) || do {
       print "Couldn't open breadcrumb database $crumbfile: $!";
       return 1;
    };
 
-   my $label = Vile::mlreply_no_opts("Crumb? ");
+   my ($label) = Vile::mlreply_no_opts("Crumb? ");
    return 0 if (!defined($label) || $label eq '' || $label =~ /^\s*$/);
 
    chomp($label);
@@ -164,16 +164,16 @@ sub delete {
 
 sub show {
 
-   my $stealth = @_;
+   my ($stealth) = @_;
 
-   my $crumb, $label, $filename, $ln, $off;
+   my ($crumb, $label, $filename, $ln, $off);
    my $buf;
    my $visible = 0;
-   my $crumbs = getcrumbs();
+   my ($crumbs) = getcrumbs();
 
    if (defined($_been_here)) {
       if ($stealth) {
-	 my $i, $win;
+	 my ($i, $win);
 	 for ($i = 0; $i < Vile::window_count; $i++) {
 	    $win = Vile::window_at $i;
 	    $buf = $win->buffer();
@@ -226,7 +226,7 @@ sub show {
    $buf->buffername('[Breadcrumbs]');
    $_been_here = $buf;
 
-   my $osav = select($buf);
+   my ($osav) = select($buf);
 
    printf "%-20s%-40s%-10s%-10s\n", "Breadcrumb", "Filename", "Line", "Offset";
    printf "%-20s%-40s%-10s%-10s\n", "----------", "--------", "----", "------";
@@ -272,14 +272,14 @@ sub show {
 
 sub getcrumbs {
 
-   my $label, $crumb;
-   my $size, $filename, $ln, $off;
-   my %crumblist, $hr;
+   my ($label, $crumb);
+   my ($size, $filename, $ln, $off);
+   my (%crumblist, $hr);
    my %crumbs;
 
-   my $crumbfile = crumbDB();
+   my ($crumbfile) = crumbDB();
 
-   my $hash = new DB_File::HASHINFO;
+   my ($hash) = new DB_File::HASHINFO;
    tie(%crumbs, 'DB_File', $crumbfile, O_RDONLY, 0600, $hash) || do {
       print "Couldn't open breadcrumb database $crumbfile: $!";
       return undef;
@@ -311,11 +311,11 @@ sub getcrumbs {
 }
 
 sub merge {
-   my $crumbfile = crumbDB();
-   my %crumbs, %newcrumbs;
-   my $label, $crumb;
+   my ($crumbfile) = crumbDB();
+   my (%crumbs, %newcrumbs);
+   my ($label, $crumb);
 
-   my $hash = new DB_File::HASHINFO;
+   my ($hash) = new DB_File::HASHINFO;
    $hash->{'bsize'} = 512;
    $hash->{'cachesize'} = 512;
    tie(%crumbs, 'DB_File', $crumbfile, O_CREAT|O_RDWR, 0600, $hash) || do {
@@ -323,11 +323,11 @@ sub merge {
       return 1;
    };
 
-   my $loadfile = Vile::mlreply_no_opts("Crumb File? ");
+   my ($loadfile) = Vile::mlreply_no_opts("Crumb File? ");
    return 0 if (!defined($loadfile) || $loadfile eq '' || $loadfile =~ /^\s*$/);
 
    chomp($loadfile);
-   my $hash2 = new DB_File::HASHINFO;
+   my ($hash2) = new DB_File::HASHINFO;
    tie(%newcrumbs, 'DB_File', $loadfile, O_RDONLY, 0600, $hash2) || do {
       print "Couldn't open breadcrumb database $loadfile: $!";
       return 1;
@@ -362,23 +362,23 @@ sub merge {
 }
 
 sub unmerge {
-   my $crumbfile = crumbDB();
-   my %crumbs, %badcrumbs;
-   my $label, $crumb;
-   my $size, $filename1, $ln1, $off1;
-   my $filename2, $ln2, $off2;
+   my ($crumbfile) = crumbDB();
+   my (%crumbs, %badcrumbs);
+   my ($label, $crumb);
+   my ($size, $filename1, $ln1, $off1);
+   my ($filename2, $ln2, $off2);
 
-   my $hash = new DB_File::HASHINFO;
+   my ($hash) = new DB_File::HASHINFO;
    tie(%crumbs, 'DB_File', $crumbfile, O_RDWR, 0600, $hash) || do {
       print "Couldn't open breadcrumb database $crumbfile: $!";
       return 1;
    };
 
-   my $loadfile = Vile::mlreply_no_opts("Crumb File? ");
+   my ($loadfile) = Vile::mlreply_no_opts("Crumb File? ");
    return 0 if (!defined($loadfile) || $loadfile eq '' || $loadfile =~ /^\s*$/);
 
    chomp($loadfile);
-   my $hash2 = new DB_File::HASHINFO;
+   my ($hash2) = new DB_File::HASHINFO;
    tie(%badcrumbs, 'DB_File', $loadfile, O_RDONLY, 0600, $hash2) || do {
       print "Couldn't open breadcrumb database $loadfile: $!";
       return 1;

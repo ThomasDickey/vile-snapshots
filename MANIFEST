@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_2p
+MANIFEST for vile, version v9_2q
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -93,7 +93,6 @@ ptypemap                        perl-interface type map
 random.c                        miscellaneous functions
 regexp.c                        regular expression functions
 region.c                        region-manipulation
-revlist                         revision-list for VILE
 search.c                        functions for search-commands
 select.c                        selection-handling functions
 sinstall.sh                     wrapper for installing perl-scripts
@@ -298,7 +297,9 @@ macros/vilemenu.rc              sample menu for xvile
 macros/vileperl.rc              sample initialization for perl scripts
 perl                            subdirectory
 perl/Breadcrumbs.pm             manages bookmarks for a set of files
+perl/CaptHook.pm                manage various types of hooks from perl
 perl/Glob2re.pm                 perl: convert wildcard (glob) to regular expression
+perl/Help.pm                    a help-script.
 perl/Vile.pm                    utility functions for perl scripts
 perl/Vile                       subdirectory
 perl/Vile/Exporter.pm           provides an import method for vile's Perl5 extensions

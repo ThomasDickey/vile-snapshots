@@ -1952,9 +1952,9 @@ Key Rebinding
 	characters with the eighth bit (0x80) bit set.  The "printable"
 	form for these keys is 'M-c'.
 
-	Commands bound to '#-c' key sequences are usually also available
-	by using the function keys on the terminal.  Thus the up-arrow
-	function key can be bound to as '#-A'.
+	Commands bound to '#-c' or 'FN-c' key sequences are usually also
+	available by using the function keys on the terminal.  Thus the
+	up-arrow function key can be bound to as '#-A' or 'FN-A'.
 
 	Even the ^A and ^X prefix characters can be rebound, using the
 	dummy functions "cntl_a-prefix" and "cntl_x-prefix", and the '#'
@@ -1996,7 +1996,7 @@ Key Rebinding
 
 	Function and meta-key bindings are available in insert mode, as
 	well as in command mode.  (But only via either the "meta bit" or
-	ESC sequence form -- the '#' prefix will not work in insert mode.)
+	'FN' sequence form -- the '#' prefix will not work in insert mode.)
 	There are four key binding tables:
 
 		default - for commands in screen mode as well as those that do
@@ -2046,7 +2046,7 @@ Key Rebinding
 	they may conflict with the bindings used for exiting or modifying
 	text within insert mode.
 
-		15 store-macro
+		store-procedure begin-errtext
 			insert-string "fprintf(stderr, \""
 			set-named-mark z
 			insert-string "\\n\");\n"
@@ -2056,12 +2056,12 @@ Key Rebinding
 				insert-chars
 			~endif
 		~endm
-		; bind to function key f
-		bind-key execute-macro-15 #-f
-		bind-insmode-key execute-macro-15 #-f
+		; bind to function key 5
+		bind-key begin-errtext FN-5
+		bind-insmode-key begin-errtext FN-5
 		; also bind to meta-A
-		bind-key execute-macro-15 M-A
-		bind-insmode-key execute-macro-15 M-A
+		bind-key begin-errtext M-A
+		bind-insmode-key begin-errtext M-A
 
 	Actually the "meta-insert-bindings" setting controls whether meta-
 	keys will have their bound effect when in insert mode.  If this
@@ -2356,8 +2356,8 @@ Recorded macros
 
 
 
-Programmed procedures and macros
---------------------------------
+Programmed procedures (aka macros)
+----------------------------------
 	[
 	  Note 1:  the information presented in this section of the help file
 	  is a subset of "doc/macros.doc", which is supplied with the vile
@@ -2370,22 +2370,103 @@ Programmed procedures and macros
 	  registers, etc.
 	]
 
-	vile can also be extended by defining macros and then binding
+	vile can also be extended by defining macros and optionally binding
 	the execution of those macros to key sequences.  For instance, if
 	the following lines appear in a .vilerc file:
 		1 store-macro
-		 5 delete-til next-word
+		    5 delete-til next-word
 		~endm
 		bind-key execute-macro-1 ^A-1
 	then when ^A-1 is executed, 5 words will be deleted.  The "-til"
 	suffix on an englishname denotes that it is a vi operator style
 	command, and expects to be followed by a motion command.  Also,
 		1 store-macro
-		 5 delete-til lines
+		    5 delete-til lines
 		~endm
 	would be the equivalent of "5dd" since the word "lines" represents
 	the stuttered 'dd' style of operation.  More examples are given
-	down below.
+	throughout this help file.
+
+	Macros come in two flavors:  named and numbered.  The syntax and
+	advantages of each format are discussed next.
+
+	Numbered macros
+	---------------
+	The numbered macro syntax looks like so:
+
+		<number> store-macro
+		    <language element>
+		       ...
+		    <language element>
+		~endm
+
+	A numbered macro is executed using this command:
+
+		execute-macro-<number>
+
+	To bind a keystroke to this macro, use this command:
+
+		bind-key execute-macro-<number> <keystroke>
+
+	The only advantage of numbered macros over named macros is that the
+	former do not share the same namespace as vile's commands.  This
+	attribute can be advantageous when creating macros recalled solely
+	via key bindings.
+
+	Note that numbered macros are allocated from a fixed pool (default
+	is 40 macros).  This fixed limit can be changed during the editor's
+	configuration.  Given their fixed allocation and the fact that
+	their strictly numeric "names" don't facilitate easy recall,
+	numbered macros are not used that much anymore.
+
+	Named macros
+	------------
+	A named macro, aka "stored procedure", uses this syntax:
+
+		store-procedure <unique-name>
+		    <language element>
+		       ...
+		    <language element>
+		~endm
+
+	where:
+
+	unique-name   is an alpha-numeric identifier that does not conflict
+		      with the name of any existing editor command (the
+		      show-commands command generates a list of all existing
+		      commands).
+
+	A stored procedure is executed by simply referencing its name.  To
+	bind a keystroke to this macro, use this command:
+
+	       bind-key <unique-name> <keystroke>
+
+	Here's a trivial example:
+
+	       store-procedure write-msg-tst
+		   write-message "this is a test macro"
+	       ~endm
+	       bind-key write-msg-tst #h
+
+	Two mechanisms now exist for executing this macro:
+
+	+ press "#h" within the editor, or
+
+	+ simply use the name "write-msg-tst" as if it were any other
+	  built-in editor command.  This means that "write-msg-tst" can be
+	  invoked from another macro, from a startup/configuration file, or
+	  from vile's command line, like so:
+
+	       :write-msg-tst
+
+	Note that named macros may also include parameters and a help
+	string, each of which are described in doc/macros.doc.
+
+	Macro Language Elements
+	-----------------------
+	Macros may incorporate any of the editor's built-in commands,
+	directives (e.g., ~if, ~else), any previously defined named
+	or numbered macro, functions (e.g., &error, &sequal), and variables.
 
 	Variables
 	---------
@@ -2646,16 +2727,15 @@ Programmed procedures and macros
 
 	Lines ending with '\' are joined before interpreting them.
 
-	Procedures vs. Macros
-	---------------------
-	Macros are really just a special use of stored "procedures", which
-	are, in turn, really just a special "type" of buffer.  To execute
-	the contents of a buffer, it needs to have a name of the form
-	"[buffername]".  Then, it can be executed as a procedure with the
-	"run" command, as in "run buffername".  The best way to get
-	procedures into buffers named that way (and also to make them
-	invisible, so they don't clutter the buffer list) is to use
-	the "store-procedure" command:
+	Hooks
+	-----
+	There are a few places within vile where a user-specifiable
+	procedure will be executed if desired.  These points are referred
+	to as "hooks".  Hooks are specified by special variables which
+	hold the name of a procedure to run at that point in the code.
+	For instance, there is a "cd-hook", which is run when you changej
+	directories.  Assume the following are included within a vile
+	startup file:
 
 	    store-procedure my-cd-action
 		write-message &cat &cat &cat "moved from " $ocwd " to " $cwd
@@ -2663,32 +2743,11 @@ Programmed procedures and macros
 		    set-variable $title $cwd
 		~endif
 	    ~endm
+	    set cd-hook my-cd-action
 
-	Macros are a special usage of procedures, which are bindable to
-	keystrokes (i.e. if procedures could be bound directly to keys,
-	then macros would be redundant).  When the "9 store-macro" command
-	is used, it creates a procedure whose name is [Macro 9], where 9
-	is the argument to "store-macro".  This can then be executed
-	with either
-		run "Macro 9"
-	or
-		execute-macro-9
-	Most of the examples given below use the macro form of definition,
-	since one most often wants to bind macros to keys.
-
-	Hooks
-	-----
-	There are a few places within vile where a user-specifiable
-	procedure will be executed if desired.  These points are referred
-	to as "hooks".  Hooks are specified by special variables which
-	hold the name of a procedure to run at that point in the code.
-	For instance, there is a "cd-hook", which is run when you change
-	directories.  So, using the "my-cd-action" example given above,
-	if the line
-		set cd-hook my-cd-action
-	is added, then that procedure will print a message and, under
-	xvile, change the window title when the current directory is
-	changed.
+	Whenever the current directory is changed within the editor (via
+	the "cd" command), my-cd-action will print a message and, under
+	xvile, change the window title.
 
 	The following hooks are currently implemented:
 	$autocolor-hook		applies syntax coloring to modified buffers
@@ -2747,7 +2806,6 @@ Programmed procedures and macros
 		~endm
 	This works by surrounding the string with the \< and \> regular
 	expression metacharacters.
-
 
 	Here's another example, which finds C++ qualified identifiers, and
 	uses them for a tag lookup:
@@ -3334,7 +3392,7 @@ Color basics
 	-------------------
 	When a color X server and color display are available, xvile's
 	default colors are modified by changing the editor's color
-	resources (refer to the topic "X Resources" in this help file). 
+	resources (refer to the topic "X Resources" in this help file).
 	So, for example, the following line in an .Xdefaults or .Xresources
 	file maps "gray" above to red:
 
@@ -3872,10 +3930,10 @@ Syntax coloring
 Filtering "man" pages
 ---------------------
 	When used in conjunction with the vile-manfilt program (supplied as
-	source file "manfilt.c"), either vile or xvile may be used to filter
-	and view manual pages.  xvile will even display (with your font set
-	properly) certain portions of the manual page text in bold or
-	italics as appropriate.
+	source file filters/manfilt.c), either vile or xvile may be used
+	to filter and view manual pages.  xvile will even display (with
+	your font set properly) certain portions of the manual page text in
+	bold or italics as appropriate.
 
 	The file macros/manpage.rc (found in the vile source directory,
 	with portions copied below) contains a macro which is bound to
@@ -4977,7 +5035,7 @@ Win32 specifics
 	data to and from the shell.  One mechanism uses temporary files and
 	the other simply calls native Win32 services.  This dichotomy
 	exists because the NT shell (cmd.exe) handles native pipes cleanly,
-	but command.com, Microsoft's 16-bit Win9X/WinME shell, does not. 
+	but command.com, Microsoft's 16-bit Win9X/WinME shell, does not.
 	The mode variable w32pipes determines which mechanism is used.
 
 	On WinNT/Win2K hosts, w32pipes is set by default and vile's pipe
@@ -4987,7 +5045,7 @@ Win32 specifics
 	MKS's shell) properly handle native pipe operations on Win9X/WinME
 	hosts.  In that context, it's appropriate and highly desirable to
 	manually enable "w32pipes" (e.g., "se w32pipes").
-	
+
 			      ******* Warning ********
 	    If w32pipes is enabled and command.com initiates a pipe I/O
 	    transaction on behalf of the editor, vile will almost certainly
@@ -5036,7 +5094,7 @@ Win32 specifics
 
 	Cygwin's Bash Versus Console vile
 	---------------------------------
-	Using Cygwin's bash as vile's shell works well, with one exception. 
+	Using Cygwin's bash as vile's shell works well, with one exception.
 	When console vile is invoked from a bash command line, typing ^C or
 	Control+Break within the editor causes an immediate exit (no data
 	saved).  As it turns out, bash's signal handling is crafted to work
@@ -5605,4 +5663,4 @@ Problems
 
 Copyright 1995-2001 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.527 2001/09/24 23:21:10 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.528 2001/12/06 00:40:36 cmorgan Exp $

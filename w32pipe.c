@@ -60,7 +60,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.27 2001/09/18 09:49:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.29 2001/12/06 00:52:21 cmorgan Exp $
  */
 
 #define HAVE_FCNTL_H 1
@@ -152,12 +152,12 @@ lastditch_msg(char *msg)
 #if OPT_POPUP_MSGS
     int save = global_g_val(GMDPOPUP_MSGS);
 
-	set_global_g_val(GMDPOPUP_MSGS, TRUE);
+    set_global_g_val(GMDPOPUP_MSGS, TRUE);
 #endif
     mlforce(msg);
 #if OPT_POPUP_MSGS
     update(FALSE);
-	popup_msgs();
+    popup_msgs();
     update(FALSE);
     set_global_g_val(GMDPOPUP_MSGS, save);
 #endif
@@ -213,7 +213,7 @@ exec_shell(char *cmd, HANDLE *handles, int hide_child)
         si.wShowWindow  = SW_HIDE;
     }
 #endif
-    TRACE(("CreateProcess %s\n", cmdstr));
+    TRACE(("CreateProcess %s (pipe)\n", cmdstr));
     if (CreateProcess(NULL,
                       cmdstr,
                       NULL,
@@ -362,13 +362,17 @@ native_inout_popen(FILE **fr, FILE **fw, char *cmd)
         {
             if (! rc)
             {
-                DWORD dummy, len;
+                size_t len;
 
-                /* Shell process failed, put complaint in user's buffer. */
-
+                /*
+                 * Shell process failed, put complaint in user's buffer.
+                 * Can't write to handles[1] on a win2k host because the
+                 * previously failed CreateProcess() call damaged the
+                 * handle.
+                 */
                 len = lsprintf(buf, SHELL_ERR_MSG, get_shell()) - buf;
-                (void) WriteFile(handles[1], buf, len, &dummy, NULL);
-                FlushFileBuffers(handles[1]);
+                (void) write(rp[2], buf, len);
+                (void) close(rp[2]);   /* in weird state; why not? */
             }
             CloseHandle(handles[1]);
             if (tmpin_fd != BAD_FD)
@@ -415,6 +419,7 @@ native_npclose(FILE *fp)
     if (proc_handle != BAD_PROC_HANDLE)
     {
         (void) cwait(&term_status, (int) proc_handle, 0);
+	TRACE(("...CreateProcess finished waiting in native_npclose\n"));
         (void) CloseHandle(proc_handle);
         proc_handle = BAD_PROC_HANDLE;
     }
@@ -518,7 +523,7 @@ tmp_inout_popen(FILE **fr, FILE **fw, char *cmd)
                 /*
                  * Set up descriptor for filter operation.   Note the
                  * sublteties here:  exec'd shell is passed a descriptor
-                 * to the temp file that's opened "w".  The editor 
+                 * to the temp file that's opened "w".  The editor
                  * receives a descriptor to the file that's opened "r".
                  */
 
@@ -573,6 +578,7 @@ tmp_inout_popen(FILE **fr, FILE **fw, char *cmd)
             /* wait for exec'd process to exit */
 
             (void) cwait(&term_status, (int) proc_handle, 0);
+	    TRACE(("...CreateProcess finished waiting in tmp_inout_popen\n"));
             (void) CloseHandle(proc_handle);
             proc_handle = BAD_PROC_HANDLE;
         }
@@ -655,6 +661,7 @@ npflush(void)
             /* now wait for app to exit */
 
             (void) cwait(&term_status, (int) proc_handle, 0);
+	    TRACE(("...CreateProcess finished waiting in npflush\n"));
             (void) CloseHandle(proc_handle);
             proc_handle = BAD_PROC_HANDLE;
         }
@@ -726,6 +733,7 @@ tmp_npclose(FILE *fp)
                 /* now wait for app to exit */
 
                 (void) cwait(&term_status, (int) proc_handle, 0);
+		TRACE(("...CreateProcess finished waiting in tmp_npclose\n"));
                 (void) CloseHandle(proc_handle);
                 proc_handle = BAD_PROC_HANDLE;
             }

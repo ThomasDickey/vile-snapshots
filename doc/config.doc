@@ -269,7 +269,7 @@ Aside from the screen type, most functionality in vile is controlled by the
 those that require manipulating the makefile) are also provided as configure
 options:
 
-  --with-exec-macros=N    specify count of numbered macros
+  --with-exec-macros=N    specify count of numbered macros  (anachronism)
   --with-perl             enable use of Perl as an extension language
 
 
@@ -318,5 +318,5 @@ without shell support, but perhaps not (ymmv).
 
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.5 2001/09/18 09:00:51 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.6 2001/12/06 00:40:24 cmorgan Exp $
 ------------------------

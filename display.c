@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.346 2001/05/20 22:13:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.347 2001/12/06 00:59:49 cmorgan Exp $
  *
  */
 
@@ -3085,9 +3085,17 @@ special_formatter(TBUFF **result, char *fs, WINDOW *wp)
 		case 'f' :
 		case 'F' : {
 		    char *p;
+		    int  skip = TRUE;  /* assumption */
 
-		    if (bp->b_fname != 0
-		     && (p = shorten_path(strcpy(temp,bp->b_fname), FALSE)) != 0
+		    if (bp->b_fname != 0) {
+			/*
+			 * when b_fname is a pipe cmd, it can be 
+			 * arbitrarily long
+			 */
+
+			strncpy(temp, bp->b_fname, sizeof(temp) - 1);
+			temp[sizeof(temp) - 1] = '\0';
+			if ((p = shorten_path(temp, FALSE)) != 0
 		     && *p
 		     && !eql_bname(bp,p)
 		     && (fc == 'f' ? !is_internalname(p)
@@ -3096,8 +3104,10 @@ special_formatter(TBUFF **result, char *fs, WINDOW *wp)
 			for (; *p == ' '; p++);
 			ms = lsprintf(ms, "%s", p);
 			mlfs_suffix(&fs, &ms, lchar);
+				skip = FALSE;
 		    }
-		    else
+		    }
+		    if (skip)
 			mlfs_skipfix(&fs);
 		    break;
 		}

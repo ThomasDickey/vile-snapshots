@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.19 2000/11/11 11:40:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.20 2001/12/06 01:34:12 tom Exp $
  *
  */
 
@@ -158,7 +158,7 @@ flt_gets(char **ptr, unsigned *len)
 	*ptr = tb_values(gets_data);
 	*len = need + len_record_sep(curbp);
 
-	TRACE(("flt_gets %6d:%.*s",
+	TRACE(("flt_gets %6d:%.*s\n",
 		line_no(curbp, mark_in.l),
 		*ptr ? need : 1,
 		*ptr ? *ptr : ""));

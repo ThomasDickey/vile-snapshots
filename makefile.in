@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.174 2001/09/26 00:34:37 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.176 2001/12/06 00:24:46 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -157,7 +157,9 @@ SCREENS = \
 #  some possibly obsolete
 PERL_SRC = \
 	$(srcdir)/perl/Breadcrumbs.pm \
+	$(srcdir)/perl/CaptHook.pm \
 	$(srcdir)/perl/Glob2re.pm \
+	$(srcdir)/perl/Help.pm \
 	$(srcdir)/perl/Vile.pm \
 	$(srcdir)/perl/Vile/Exporter.pm \
 	$(srcdir)/perl/Vile/Manual.pm \
@@ -347,7 +349,9 @@ INSTALL_PERL_DIRS = $(PERLDIR) $(PERLDIR)/Vile
 INSTALL_PERL_FILES = \
 	$(BINDIR)/vileget \
 	$(PERLDIR)/Breadcrumbs.pm \
+	$(PERLDIR)/CaptHook.pm \
 	$(PERLDIR)/Glob2re.pm \
+	$(PERLDIR)/Help.pm \
 	$(PERLDIR)/Vile.pm \
 	$(PERLDIR)/Vile/Exporter.pm \
 	$(PERLDIR)/Vile/Manual.pm \
@@ -678,8 +682,12 @@ $(MANDIR)/xvile.$(manext):	$(srcdir)/vile.1
 
 $(PERLDIR)/Breadcrumbs.pm:	$(srcdir)/perl/Breadcrumbs.pm
 	$(INSTALL_DATA)		$(srcdir)/perl/Breadcrumbs.pm $@
+$(PERLDIR)/CaptHook.pm:		$(srcdir)/perl/CaptHook.pm
+	$(INSTALL_DATA)		$(srcdir)/perl/CaptHook.pm $@
 $(PERLDIR)/Glob2re.pm:		$(srcdir)/perl/Glob2re.pm
 	$(INSTALL_DATA)		$(srcdir)/perl/Glob2re.pm $@
+$(PERLDIR)/Help.pm:		$(srcdir)/perl/Help.pm
+	$(INSTALL_DATA)		$(srcdir)/perl/Help.pm $@
 $(PERLDIR)/Vile.pm:		$(srcdir)/perl/Vile.pm
 	$(INSTALL_DATA)		$(srcdir)/perl/Vile.pm $@
 $(PERLDIR)/Vile/Exporter.pm:	$(srcdir)/perl/Vile/Exporter.pm

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.474 2001/09/26 00:02:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.475 2001/11/27 21:44:58 tom Exp $
  *
  */
 
@@ -237,8 +237,11 @@ extern SIGT sizesignal (int ACTUAL_SIG_ARGS);
 #endif
 #endif
 
-#if defined(SIGWINCH) || OPT_WORKING
+#ifndef beginDisplay
 extern void beginDisplay (void);
+#endif
+
+#ifndef endofDisplay
 extern void endofDisplay (void);
 #endif
 

@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.109 2001/09/18 09:49:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.110 2001/11/27 19:06:44 tom Exp $
  *
  *
  */
@@ -1902,9 +1902,25 @@ closedir(DIR * dirp)
 #endif /* SYS_WINNT */
 
 #if OPT_MSDOS_PATH && !SYS_OS2_EMX
-static char *slconv(const char *f, char *t, char oc, char nc);
-static char slconvpath[NFILEN * 2];
+static char *
+slconv(const char *f, char *t, char oc, char nc)
+{
+    char *retp = t;
 
+    if (t != 0) {
+	while (*f) {
+	    if (*f == oc)
+		*t = nc;
+	    else
+		*t = *f;
+	    f++;
+	    t++;
+	}
+	*t = EOS;
+    }
+
+    return retp;
+}
 /*
  * Use this function to filter our internal '/' format pathnames to '\'
  * when invoking system calls (e.g., opendir, chdir).
@@ -1913,15 +1929,17 @@ char *
 sl_to_bsl(const char *p)
 {
     if (p != 0) {
-	size_t len;
-	char *s = slconv(p, slconvpath, '/', '\\');
+	static TBUFF *cnv;
+	size_t len = strlen(p);
+	char *t = tb_values(tb_alloc(&cnv, (len | 127) + 1));
+	char *s = slconv(p, t, '/', '\\');
 	if ((s = is_msdos_drive(s)) == 0)
-	    s = slconvpath;
+	    s = t;
 	/* Trim trailing slash if it's not the first */
 	if ((len = strlen(s)) > 1
 	    && is_slashc(s[len - 1]))
 	    s[--len] = EOS;
-	return slconvpath;
+	return t;
     }
     return 0;
 }
@@ -1937,25 +1955,7 @@ bsl_to_sl_inplace(char *p)
 }
 #endif
 
-static char *
-slconv(const char *f, char *t, char oc, char nc)
-{
-    char *retp = t;
-    if (t != 0) {
-	while (*f) {
-	    if (*f == oc)
-		*t = nc;
-	    else
-		*t = *f;
-	    f++;
-	    t++;
-	}
-	*t = EOS;
-    }
-
-    return retp;
-}
-#endif
+#endif /* OPT_MSDOS_PATH && !SYS_OS2_EMX */
 
 #if OPT_VMS_PATH
 /*
@@ -2146,31 +2146,35 @@ path_trunc(char *path, int max_path_len, char *trunc_buf, int trunc_buf_len)
  * regular $PATH.  If we can do this right after forking, it will not affect
  * the path for subshells invoked via ":sh".
  */
-void append_libdir_to_path(void)
+void
+append_libdir_to_path(void)
 {
-	char *env, *tmp;
-	const char *cp;
-	char buf[NFILEN];
+    char *env, *tmp;
+    const char *cp;
+    char buf[NFILEN];
 
-	if (libdir_path != 0
-	 && (tmp = getenv("PATH")) != 0) {
-		env = strmalloc(tmp);
-		cp = libdir_path;
-		while ((cp = parse_pathlist(cp, buf)) != 0) {
-			append_to_path_list(&env, buf);
-		}
-		if (strcmp(tmp, env)) {
-			tmp = (char *) malloc(6 + strlen(env));
-			lsprintf(tmp, "PATH=%s", env);
-			putenv(tmp);
-			TRACE(("putenv %s\n", tmp));
-		} else {
-			free(env);
-		}
+    if (libdir_path != 0
+	&& (tmp = getenv("PATH")) != 0) {
+	env = strmalloc(tmp);
+	cp = libdir_path;
+	while ((cp = parse_pathlist(cp, buf)) != 0) {
+	    append_to_path_list(&env, buf);
 	}
+	if (strcmp(tmp, env)) {
+	    tmp = (char *) malloc(6 + strlen(env));
+	    lsprintf(tmp, "PATH=%s", env);
+	    putenv(tmp);
+	    TRACE(("putenv %s\n", tmp));
+	} else {
+	    free(env);
+	}
+    }
 }
 #else
-void append_libdir_to_path(void) {}
+void
+append_libdir_to_path(void)
+{
+}
 #endif
 
 #if NO_LEAKS

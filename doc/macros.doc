@@ -79,8 +79,8 @@ Creating, executing, storing macros
 	And in fact, the remainder of this document will simply assume that
 	the word "macro" refers to one of aforementioned program types.
 
-    Numbered macros
-    ---------------
+    Numbered macros (anachronism)
+    -----------------------------
 	The numbered macro syntax looks like so:
 
 		<number> store-macro
@@ -111,10 +111,17 @@ Creating, executing, storing macros
 	programs don't lend themselves to easy recall (quick, what does
 	macro 22 do?).  But this format was an integral part of vile for
 	many years, simply because named macros could not be bound to
-	keystrokes.  Thankfully, this restriction has been removed and so,
-	in general, numbered macros are obsolete.  However, vile's help
-	file and other related documents still heavily use this format.
-	Consequently, familiarity with this outdated syntax is a must.
+	keystrokes.  This restriction has been removed, rendering this
+	feature essentially obsolete.  The only advantage of numbered
+	macros over named macros is that the former do not share the same
+	namespace as vile's commands.  This attribute can be advantageous
+	when creating macros recalled solely via key bindings.
+
+	For completeness sake, it should be mentioned that numbered macros
+	are allocated from a fixed pool (default is 40 macros).  This fixed
+	pool can be increased via the following configuration option:
+
+	    --with-exec-macros=N    specify count of numbered macros
 
     Named macros
     ------------
@@ -488,12 +495,12 @@ State Variables
 	$filter-list	[READ ONLY] list of builtin-filters.
 
 	$findpath	editor's copy of the $VILE_FINDPATH environment var
-			(read/write).  Available on win32 and unix hosts. 
+			(read/write).  Available on win32 and unix hosts.
 			For more details, refer to that section of the help
 			file entitled "Working in a project hierarchy".
 
 	$find-cmd	[READ ONLY] last shell command spawned via the
-			capture command's builtin "find" interface. 
+			capture command's builtin "find" interface.
 			Available on win32 and unix hosts.
 
 	$font           Name of the current font (in xvile/winvile only).
@@ -1110,7 +1117,7 @@ Editor commands
 	successive releases of the editor.  Fortunately, most editor
 	commands include short help strings that describe their purpose.
 	To winnow the list to a particular area of interest, use the
-	"apropos" command (e.g., "apropos append").  To determine the 
+	"apropos" command (e.g., "apropos append").  To determine the
 	command bound to a specific key, use "describe-key".  The format of
 	the apropos, describe-key, and show-commands listing is as follows:
 
@@ -1395,6 +1402,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.76 2001/09/18 09:10:38 cmorgan Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.77 2001/12/06 00:43:11 cmorgan Exp $
 -----------------------------------
 

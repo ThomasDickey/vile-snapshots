@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.118 2001/09/26 00:09:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.119 2001/12/05 10:06:50 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -25,7 +25,6 @@
 #define MIN_COLS 15
 
 #define FIXME_POSCHANGING 1	/* this doesn't seem to help */
-#define FIXME_RECUR_SB 0	/* I'm not sure this is needed */
 
 #define MAX_CURSOR_STYLE 2
 
@@ -203,9 +202,9 @@ message2s(unsigned code)
 	{ WM_CANCELMODE,	"WM_CANCELMODE" },
 	{ WM_CAPTURECHANGED,	"WM_CAPTURECHANGED" },
 	{ WM_CLOSE,		"WM_CLOSE" },
+	{ WM_CONTEXTMENU,	"WM_CONTEXTMENU" },
 	{ WM_CREATE,		"WM_CREATE" },
 	{ WM_CTLCOLORSCROLLBAR,	"WM_CTLCOLORSCROLLBAR" },
-	{ WM_CONTEXTMENU,	"WM_CONTEXTMENU" },
 	{ WM_DROPFILES,		"WM_DROPFILES" },
 	{ WM_ENABLE,		"WM_ENABLE" },
 	{ WM_ENTERIDLE,		"WM_ENTERIDLE" },
@@ -216,13 +215,16 @@ message2s(unsigned code)
 	{ WM_EXITSIZEMOVE,	"WM_EXITSIZEMOVE" },
 	{ WM_GETMINMAXINFO,	"WM_GETMINMAXINFO" },
 	{ WM_GETTEXT,		"WM_GETTEXT" },
-	{ WM_KILLFOCUS,		"WM_KILLFOCUS" },
+	{ WM_IME_NOTIFY,	"WM_IME_NOTIFY" },
+	{ WM_IME_SETCONTEXT,	"WM_IME_SETCONTEXT" },
 	{ WM_INITMENU,		"WM_INITMENU" },
 	{ WM_INITMENUPOPUP,	"WM_INITMENUPOPUP" },
 	{ WM_KEYDOWN,		"WM_KEYDOWN" },
 	{ WM_KEYUP,		"WM_KEYUP" },
+	{ WM_KILLFOCUS,		"WM_KILLFOCUS" },
 	{ WM_MENUSELECT,	"WM_MENUSELECT" },
 	{ WM_MOUSEACTIVATE,	"WM_MOUSEACTIVATE" },
+	{ WM_MOUSEMOVE,		"WM_MOUSEMOVE" },
 	{ WM_MOVE,		"WM_MOVE" },
 	{ WM_MOVING,		"WM_MOVING" },
 	{ WM_NCACTIVATE,	"WM_NCACTIVATE" },
@@ -242,9 +244,14 @@ message2s(unsigned code)
 	{ WM_SHOWWINDOW,	"WM_SHOWWINDOW" },
 	{ WM_SIZE,		"WM_SIZE" },
 	{ WM_SIZING,		"WM_SIZING" },
+	{ WM_STYLECHANGED,	"WM_STYLECHANGED" },
+	{ WM_STYLECHANGING,	"WM_STYLECHANGING" },
 	{ WM_SYSCOMMAND,	"WM_SYSCOMMAND" },
 	{ WM_WINDOWPOSCHANGED,	"WM_WINDOWPOSCHANGED" },
 	{ WM_WINDOWPOSCHANGING,	"WM_WINDOWPOSCHANGING" },
+	/* custom ntwinio WINDOWS messages */
+	{ WM_WVILE_CURSOR_ON,	"WM_WVILE_CURSOR_ON" },
+	{ WM_WVILE_CURSOR_OFF,	"WM_WVILE_CURSOR_OFF" },
 	/* *INDENT-ON* */
 
     };
@@ -2324,6 +2331,9 @@ static int
 show_scrollbar(int n, int flag)
 {
     if (cur_win->scrollbars[n].shown != flag) {
+	TRACE(("%s_scrollbar %s\n",
+	       flag ? "show" : "hide",
+	       which_window(cur_win->scrollbars[n].w)));
 	ShowScrollBar(cur_win->scrollbars[n].w, SB_CTL, flag);
 	cur_win->scrollbars[n].shown = flag;
 	return TRUE;
@@ -2454,12 +2464,6 @@ update_scrollbar_sizes(void)
 	(void) show_scrollbar(i, FALSE);
 	i++;
     }
-#if FIXME_RECUR_SB
-    for_each_visible_window(wp) {
-	wp->w_flag &= ~WFSBAR;
-	gui_update_scrollbar(wp);
-    }
-#endif
 
     if (cur_win->size_box.w == 0) {
 	cur_win->size_box.w = CreateWindow(
@@ -2664,7 +2668,7 @@ ntgetch(void)
     MSG msg;
     POINT first;
     POINT latest;
-    UINT clicktime = GetDoubleClickTime();
+    UINT clicktime;
     WINDOW *that_wp = 0;
 #ifdef VAL_AUTOCOLOR
     int milli_ac, orig_milli_ac;
@@ -2674,6 +2678,7 @@ ntgetch(void)
 	saveCount--;
 	return savedChar;
     }
+    clicktime = GetDoubleClickTime();
 #ifdef VAL_AUTOCOLOR
     orig_milli_ac = global_b_val(VAL_AUTOCOLOR);
 #endif
@@ -3021,7 +3026,7 @@ repaint_window(HWND hWnd)
     int row, col;
 
     BeginPaint(hWnd, &ps);
-    TRACE(("repaint_window (erase:%d)\n", ps.fErase));
+    TRACE(("repaint_window (erase:%d) %s\n", ps.fErase, which_window(hWnd)));
     nt_set_colors(ps.hdc, cur_atr);
     brush = Background(ps.hdc);
 
@@ -3142,10 +3147,13 @@ TextWndProc(
 
     switch (message) {
     case WM_PAINT:
-	if (GetUpdateRect(hWnd, (LPRECT) 0, FALSE)) {
+	if ((hWnd == cur_win->main_hwnd
+	     || hWnd == cur_win->text_hwnd)
+	    && GetUpdateRect(hWnd, (LPRECT) 0, FALSE)) {
 	    repaint_window(hWnd);
 	} else {
-	    TRACE(("FIXME:WM_PAINT\n"));
+	    /* scrollbars, etc. */
+	    TRACE(("...repaint %s\n", which_window(hWnd)));
 	    return (DefWindowProc(hWnd, message, wParam, lParam));
 	}
 	break;

@@ -1,4 +1,5 @@
-#   Vileserv.pm (version 1.2) - Provides file-load server capability for XVile.
+#   Vileserv.pm (version 1.4) - Provides network command-server capability
+#                               for Vile.
 #
 #   Copyright (C) 1998  J. Chris Coppick
 #
@@ -28,6 +29,7 @@ require Vile::Exporter;
 %REGISTRY = (
     'startserv'  => [\&start, 'start edit server' ],
     'stopserv' => [\&stop, 'stop edit server' ],
+    'vileserv-writehook' => [\&writehook, 'support for "vileget -w ..."'],
     'vileserv-help' => [sub {&manual}, 'manual page for Vileserv.pm' ]
 );
 
@@ -72,7 +74,6 @@ sub import {
 
 *unimport = *stop;
 
-
 # Initiates the child "server" process (vileserv) and sets up the appropriate
 # filehandle callbacks.
 #
@@ -82,8 +83,26 @@ sub start {
    return if defined $__pid;
 
    if (-e $__vilesock) {
-      die "Socket $__vilesock already exists. Vileserv already running?\n";
-      return;
+
+      if (Vile::get('%vileserv-doh!') ne 'ERROR') {
+	 die "Socket $__vilesock already exists. Vileserv already running?\n";
+	 return;
+      }
+
+      socket(TESTSOCK, PF_UNIX, SOCK_STREAM, 0) || die "$0: socket: $!";
+
+      if (connect(TESTSOCK, sockaddr_un($__vilesock))) {
+
+	 close TESTSOCK;
+
+	 # Assume there's a vileserv alive and well already...
+	 print "Vileserv seems to be running already...";
+	 return;
+      }
+
+      # Assume a Vileserv died, delete the sock and get on with it...
+      close TESTSOCK;
+      unlink($__vilesock);
    }
 
    die "pipe: $!" unless pipe DAEMON, EDITOR;
@@ -106,10 +125,10 @@ sub start {
    Vile::watchfd (fileno(DAEMON), 'except', \&stop);
    Vile::watchfd (fileno(DAEMON), 'read', \&readfiles);
 
-   # Can't seem to actually do this yet...
-   #&hookwrites;
+   hookwrites();
 
    print "Started vileserv...\n";
+
 }
 
 # Stops the server process.
@@ -175,17 +194,41 @@ sub readfiles {
 # Setup vile write-hook so we can tell the vileserv process whenever
 # vile writes a buffer.
 #
-#sub hookwrites {
-#
-# It would be nice to be able to do this...
-#
-#}
+sub hookwrites {
+
+   my $do_this = Vile::get('%vileserv-no-writehook');
+   return 0 if ($do_this ne 'ERROR');
+
+   if (defined($INC{'CaptHook.pm'})) {
+
+      # No worries, the Captain has the helm...
+
+      Vile::command 'write-hook vileserv-writehook vileserv-writehook 1000';
+
+   } else {
+
+      my $oldhook = Vile::get('$write-hook');
+
+      if ($oldhook ne 'ERROR' && $oldhook ne '' &&
+          $oldhook ne 'vileserv-writehook') {
+
+	 # Somebody got to the hook first...
+
+	 print "Vileserv: \$write-hook already used. (You should install CaptHook.)";
+	 return 0;
+      }
+
+      Vile::command 'setv $write-hook vileserv-writehook';
+   }
+
+   return 0;
+}
 
 # Tell the vileserv process which file got written.
 #
 sub writehook {
 
-   my ($file) = @_;
+   my $file = $Vile::current_buffer->filename();
 
    socket(HSOCK, PF_UNIX, SOCK_STREAM, 0) || die "$0: socket: $!";
    connect(HSOCK, sockaddr_un($__vilesock)) || die "$0: connect: $!";
@@ -295,11 +338,11 @@ __END__
 
 =head1 NAME
 
-Vileserv - Provides file-load server capability for XVile.
+Vileserv - Provides file-load server capability for Vile.
 
 =head1 SYNOPSIS
 
-In XVile:
+In Vile:
 
    :perl use Vileserv
    :startserv
@@ -308,11 +351,11 @@ In XVile:
 =head1 DESCRIPTION
 
 Vileserv runs a server that listens for requests to load files into an
-already running instance of XVile.  The vileget utility can
+already running instance of Vile.  The vileget utility can
 be used to make such requests from a shell command line.  Vileserv requires
-that XVile be compiled with the built-in PERL interpreter.
+that Vile be compiled with the built-in PERL interpreter.
 
-Vileserv only works with I<XVile> under Unix.
+Vileserv will likely only work with I<Vile> under Unix.
 
 Vileserv does not provide nearly the level of feeping creaturism as
 Emacs' gnuserv, but it's a start.
@@ -324,6 +367,19 @@ part of your Vile or XVile installation.]
 
 Install Vileserv.pm somewhere in the @INC path.  Depending on your
 Vile installation, I</usr/local/share/vile/perl> might be a good place.
+
+To start Vileserv when you start Vile, simply add the following to your
+I<.vilerc> file:
+
+   ; Import and start Vileserv (adds :startserv and :stopserv commands)
+   perl "use Vileserv"
+
+=head CUSTOMIZATION
+
+Several variables settings can be used to modify Vileserv's default
+behaviors.  For best results, any of these variables that you choose
+to use should be set in your I<.vilerc> file B<before> Vileserv is
+imported and started.
 
 Vileserv looks for a perl binary in I</usr/bin/perl> and
 I</usr/local/bin/perl> respectively.  You can override this
@@ -340,39 +396,30 @@ a new Vile with a new socket path on demand.
 
 The Vileserv protocol (if you can call it a protocol) allows arbitrary
 Vile commands to be executed.  This functionality is disabled by default,
-but can enabled by using
+but can enabled by adding the following to your I<.vilerc> file:
 
    setv %vileserv-accept-commands true
 
-in your I<.vilerc> file.
+In order to support <B>vileget>'s I<-w> option, Vileserv will use
+Vile's $write-hook variable.  (Use B<perldoc vileget> for details
+about the I<-w> option.)  Vileserv refrains from using the
+$write-hook variable if it is already being used, or Vileserv takes advantage
+of the CaptHook package if it is loaded.  You can disabled this
+behavior entirely by adding the following to your I<.vilerc> file
+before you load Vileserv:
 
-The following commands are useful in the I<.vilerc> file for setting
-things up:
+   setv %vileserv-no-writehook
 
-        ; Import and start Vileserv (adds :startserv and :stopserv commands)
-        perl "use Vileserv"
+If the Vileserv socket file already exists, Vileserv will attempt to
+determine if another Vileserv is active or not.  If not, the old socket
+file is removed and the Vileserv startup proceeds normally.
+If another Vileserv seems to be active, the new Vileserv will slink away
+fairly quietly.  If you prefer the old behavior in which Vileserv dies a
+horrible death and brings your entire Vile startup to a grinding halt,
+you can add the following to your I<.vilerc> file:
 
-In order to use the B<-w> option of I<vileget>, you need to create a
-writehook procedure something like this:
+   setv %vileserv-doh! true
 
-	store-procedure wh
-	   perl &cat &cat "Vileserv::writehook '" $cfilname "'"
-	~endm
-	set write-hook wh
-
-If you have Vile-8.2 (patched) or greater, then the vileserv process
-should be stopped when XVile exits.  If not, then you may need to add
-an exit procedure that stops the vileserv process.  Something like the
-following in your I<.vilerc> file should work:
-
-	; Setup exit procedure to stop Vileserv when Vile exits
-	;
-	store-procedure exitproc
-   	   stopserv
-	~endm
-	set-variable $exit-hook exitproc
-
-Even better, upgrade your Vile!
 
 =head1 BUGS
 
@@ -382,7 +429,7 @@ a warning.  The server startup probably succeeded.
 
 =head1 SEE ALSO
 
-vileget(1), xvile(1)
+vileget(1), vile(1)
 
 =head1 CREDITS
 
@@ -391,6 +438,6 @@ who made it happen.  :-)
 
 =head1 AUTHOR
 
-S<J. Chris Coppick, 1998 (last updated: July 26, 2000>
+S<J. Chris Coppick, 1998 (last updated: Sept 29, 2001>
 
 =cut
