@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_0
+MANIFEST for vile, version v9_0a
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -7,6 +7,7 @@ CHANGES.R4                      Vile 4.0 change-log
 CHANGES.R5                      Vile 5.0 change log
 CHANGES.R6                      Vile 6.0 change-log
 CHANGES.R7                      Vile 7.0 change-log
+CHANGES.R8                      Vile 8.0 change-log
 COPYING                         GPL copyright (for 'configure')
 INSTALL                         installation instructions for VILE
 README                          overview of VILE (read first)
@@ -210,6 +211,8 @@ filters/spell.rc                defines a filter for spell-checking
 filters/spellflt.l              ispell filter to highlight misspelled words
 filters/sql-filt.l              sql syntax highlighting filter for vile
 filters/sql.key                 sql keywords
+filters/tags.key                keywords for tags files
+filters/tagsfilt.c              syntax highlighter for tags files
 filters/tbl-filt.l              syntax filter for vile's mktbls program
 filters/tbl.key                 keywords for tbl-filt.l
 filters/tc-filt.l               termcap syntax highlighting filter for vile
@@ -221,6 +224,8 @@ filters/ti.key                  terminfo keywords
 filters/txt-filt.l              syntax filter for ordinary text
 filters/vile.key                fallback template for highlighting colors
 filters/vilefilt.l              syntax filter for vile macros
+filters/xres.key                keywords for X resource filter
+filters/xresfilt.l              syntax filter for X resource files
 filters/xs-filt.l               syntax filter for Perl extensions
 filters/xs.key                  keywords for Perl-extension syntax filter
 filters/yacc.key                yacc keywords

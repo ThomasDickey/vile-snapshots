@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.3 1999/10/11 01:37:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.4 1999/11/20 14:39:44 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a Python script
  */
@@ -74,7 +74,7 @@ SIGN		[-+]
 DECIMAL		[0-9_]+
 OCTAL		0[0-7_]+
 HEXADECIMAL	0x[0-9a-fA-F_]+
-REAL		[-+]?([0-9_]*\.[0-9][0-9_]+)([eE][+-]?[0-9_]+)?
+REAL		[-+]?([0-9_]*\.[0-9][0-9_]*)([eE][+-]?[0-9_]+)?
 NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL})[L]?|{REAL}
 
 %%

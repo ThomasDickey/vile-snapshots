@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tbl-filt.l,v 1.1 1999/08/21 14:51:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tbl-filt.l,v 1.2 1999/11/20 14:41:16 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile mktbls datafile.
  */
@@ -89,7 +89,7 @@ SIGN		[-+]
 DECIMAL		[0-9_]+
 OCTAL		0[0-7_]+
 HEXADECIMAL	0x[0-9a-fA-F_]+
-REAL		[-+]?([0-9_]*\.[0-9][0-9_]+)([eE][+-]?[0-9_]+)?
+REAL		[-+]?([0-9_]*\.[0-9][0-9_]*)([eE][+-]?[0-9_]+)?
 NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
 %%

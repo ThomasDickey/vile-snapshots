@@ -5,7 +5,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.103 1999/10/31 23:24:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.104 1999/11/24 22:12:25 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -504,7 +504,7 @@ tag_search(char *tag, int taglen, int initial)
 		while (p < lplim) {
 			if (quoted) {
 				quoted = FALSE;
-			} else if (*p == '\\') {
+			} else if (*p == BACKSLASH) {
 				quoted = TRUE;
 			} else if (*p == delim) {
 				break;

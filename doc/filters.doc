@@ -121,16 +121,21 @@ The following are implemented:
 	vile-nr-filt	(nroff)
 	vile-pas-filt	(Pascal)
 	vile-perl-filt	(Perl)
+	vile-py-filt	(Python)
 	vile-rcs-filt	(RCS archives)
 	vile-sccs-filt	(SCCS archives)
 	vile-sh-filt	(sh/ksh/csh)
 	vile-spell-filt	(ispell highlights misspelled words)
 	vile-sql-filt	(SQL scripts)
+	vile-tags-filt	(ctags tags files)
+	vile-tbl-filt	(Vile's mktbl format)
 	vile-tc-filt	(termcap)
 	vile-tcl-filt	(TCL/TK)
 	vile-ti-filt	(terminfo)
 	vile-txt-filt	(plain text files, such as vile.hlp)
 	vile-vile-filt	(Vile's macros)
+	vile-xres-filt	(X Window resources)
+	vile-xs-filt	(Perl extension)
 	vile-yacc-filt	(yacc)
 
 
@@ -142,4 +147,4 @@ Not all filters use a keywords file (yet).
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.9 1999/05/08 01:16:15 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.11 1999/11/24 01:57:26 tom Exp $

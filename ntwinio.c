@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.61 1999/11/04 22:42:53 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.62 1999/11/24 19:44:57 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -1952,13 +1952,6 @@ ntgetch(void)
 		case WM_MBUTTONDOWN:
 			TRACE(("GETC:MBUTTONDOWN %s\n", which_window(msg.hwnd)))
 			if (msg.hwnd == cur_win->text_hwnd) {
-				/*
-				 * Don't leave stray cursor glyphs in text
-				 * window when paste_selection() updates
-				 * screen.
-				 */
-
-				fhide_cursor();
 				if (MouseClickSetPos(&latest, &onmode)
 				 && !onmode) {
 					sel_yank(0);
@@ -1966,7 +1959,6 @@ ntgetch(void)
 					paste_selection();
 				}
 				(void)update(TRUE);
-				fshow_cursor();
 			} else {
 				DispatchMessage(&msg);
 			}
@@ -1979,17 +1971,8 @@ ntgetch(void)
 					invoke_popup_menu(msg);
 				} else if (MouseClickSetPos(&latest, &onmode)) {
 					if (!onmode) {
-						/*
-						 * Don't drop cursor glyphs
-						 * in msg buffer when
-						 * clipboard routines
-						 * report status.
-						 */
-
-						fhide_cursor();
 						sel_yank(0);
 						cbrdcpy_unnamed(FALSE,1);
-						fshow_cursor();
 					}
 					(void)update(TRUE);
 				}
@@ -3190,8 +3173,10 @@ winvile_start(void)
  * API.  Instead, winvile manages its cursor state internally (and does a
  * pretty good job, at that).  However, there are times when the editor
  * makes display changes that require an external "override".
+ *
+ * Returns:  Boolean (previous cursor visibility state).
  */
-void
+int
 winvile_cursor_state(
     int visible,      /* Boolean, T -> cursor on */
     int queue_change  /* Boolean, change cursor state using a windows
@@ -3200,6 +3185,8 @@ winvile_cursor_state(
                        */
     )
 {
+    int rc = caret_visible;
+
     if (! queue_change)
     {
         if (visible)
@@ -3214,6 +3201,7 @@ winvile_cursor_state(
                     0,
                     0);
     }
+    return (rc);
 }
 
 #ifdef VILE_OLE

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.256 1999/11/15 23:34:59 Ryan.Murray Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.258 1999/11/25 01:00:45 tom Exp $
  *
  */
 
@@ -535,7 +535,7 @@ path_quote(TBUFF **result, char *path)
 		if (strpbrk(path, QUOTE_UNIX)) {
 		    while (*path) {
 			if (strchr(QUOTE_UNIX, *path))
-			    tb_append(result, '\\');
+			    tb_append(result, BACKSLASH);
 			tb_append(result, *path++);
 		    }
 		} else
@@ -1357,9 +1357,9 @@ int
 toktyp(
 const char *tokn)
 {
-
 	if (tokn[0] == EOS)     return TOK_NULL;
-	if (tokn[0] == '"')     return TOK_QUOTSTR;
+	if (tokn[0] == DQUOTE)  return TOK_QUOTSTR;
+	if (tokn[0] == SQUOTE)  return TOK_QUOTSTR;
 #if ! SMALLER
 	if (tokn[1] == EOS)     return TOK_LITSTR; /* only one character */
 	switch (tokn[0]) {
@@ -1666,13 +1666,13 @@ get_argument(const char *name)
 		if (num > 1)
 		    tb_append(&value, ' ');
 		str = tb_values(arg_stack->all_args[num]);
-		tb_append(&value, '"');
+		tb_append(&value, DQUOTE);
 		while (*str != EOS) {
-		    if (*str == '\\' || *str == '"')
-			tb_append(&value, '\\');
+		    if (*str == BACKSLASH || *str == DQUOTE)
+			tb_append(&value, BACKSLASH);
 		    tb_append(&value, *str++);
 		}
-		tb_append(&value, '"');
+		tb_append(&value, DQUOTE);
 	    }
 	    tb_append(&value, EOS);
 	    result = tb_values(value);

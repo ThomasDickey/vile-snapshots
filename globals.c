@@ -2,7 +2,7 @@
  *	matching lines, then for each such line, an action is performed.
  *	written for vile: Copyright (c) 1990-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/globals.c,v 1.44 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/globals.c,v 1.45 1999/11/24 17:14:07 tom Exp $
  *
  */
 
@@ -34,15 +34,16 @@ globber(int f GCC_UNUSED, int n GCC_UNUSED, int g_or_v)
 	char	cmd[NLINE];
 	const CMDFUNC *cfp;
 	int foundone;
+	int	status;
 	WINDOW *wp, *sw_wp;
 	L_NUM	before;
 	int	save_report;
 
 	c = kbd_delimiter();
-	if (readpattern("global pattern: ", searchpat,
-				&gregexp, c, FALSE) != TRUE) {
+	if ((status = readpattern("global pattern: ", searchpat,
+				&gregexp, c, FALSE)) != TRUE) {
 		mlforce("[No pattern.]");
-		return FALSE;
+		return status;
 	}
 
 	/* in some sense, it would be nice to search first, before

@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.139 1999/08/22 20:16:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.140 1999/11/24 19:50:39 cmorgan Exp $
  *
  */
 
@@ -486,15 +486,19 @@ ffexists(char *p)
 {
 	int status = FALSE;
 
-#if SYS_UNIX || SYS_VMS || SYS_OS2 || SYS_WINNT
+#if SYS_VMS
+	if (!isInternalName(p))
+		status = vms_ffexists(p);
+#endif
+
+#if SYS_UNIX || SYS_OS2 || SYS_WINNT
 
 	struct stat statbuf;
 	if (!isInternalName(p)
 	 && stat(SL_TO_BSL(p), &statbuf) == 0) {
 		status = TRUE;
 	}
-
-#else
+#endif
 
 #if SYS_MSDOS || SYS_WIN31
 
@@ -503,8 +507,6 @@ ffexists(char *p)
 		ffclose();
 		status = TRUE;
 	}
-
-#endif
 #endif
 
 	TRACE(("ffexists(fn=%s) = %d\n", p, status))

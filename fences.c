@@ -8,7 +8,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.74 1999/11/04 22:42:53 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.75 1999/11/24 19:44:57 cmorgan Exp $
  *
  */
 
@@ -676,7 +676,7 @@ fmatch(int rch)
 			 * disable the cursor.	At the moment, the cursor
 			 * is invisible.  Turn it on.
 			 */
-			winvile_cursor_state(TRUE, FALSE);
+			(void) winvile_cursor_state(TRUE, FALSE);
 #endif
 			/* 
 			 * The idea is to leave the cursor there for about a

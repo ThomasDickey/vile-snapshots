@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.92 1999/10/31 23:24:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.94 1999/11/24 22:12:33 tom Exp $
  */
 
 #include	"estruct.h"
@@ -168,7 +168,7 @@ substreg1(int needpats, int use_opts)
 					&gregexp, c, FALSE)) != TRUE) {
 			if (status != ABORT)
 				mlforce("[No pattern.]");
-			return FALSE;
+			return status;
 		}
 
 		if (gregexp) {
@@ -185,7 +185,7 @@ substreg1(int needpats, int use_opts)
 		(void)tb_scopy(&replacepat, tpat);
 		if (status == ABORT)
 			/* if false, the pattern is null, which is okay... */
-			return FALSE;
+			return status;
 
 		nth_occur = -1;
 		confirm = printit = globally = FALSE;
@@ -468,7 +468,7 @@ delins(regexp *exp, char *sourc)
 	    no = 0;
 	    s = TRUE;
 	    switch(c) {
-	    case '\\':
+	    case BACKSLASH:
 		    c = *src++;
 		    if (c == EOS)
 			return TRUE;

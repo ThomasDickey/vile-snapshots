@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.210 1999/11/15 23:34:59 Ryan.Murray Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.211 1999/11/25 01:06:49 tom Exp $
  *
  */
 
@@ -757,14 +757,18 @@ convert_kcode(int c, char *buffer)
 static int show_onlinehelp(const CMDFUNC *cmd)
 {
     char outseq[NLINE];	/* output buffer for text */
+    const char *text = cmd->c_help;
 
-    if (cmd->c_help && cmd->c_help[0])
-	    (void)lsprintf(outseq,"  (%s %s )",
-	    (cmd->c_flags & MOTION) ? " motion: " :
-		    (cmd->c_flags & OPER) ? " operator: " : "",
-	    cmd->c_help);
-    else
+    if (text && *text) {
+	if (*text == SQUOTE)
+	text++;
+	(void)lsprintf(outseq,"  (%s %s )",
+			(cmd->c_flags & MOTION) ? " motion: " :
+			(cmd->c_flags & OPER) ? " operator: " : "",
+			text);
+    } else {
 	    (void)lsprintf(outseq,"  ( no help for this command )");
+    }
     if (!addline(curbp,outseq,-1))
 	    return FALSE;
     if (cmd->c_flags & GLOBOK) {

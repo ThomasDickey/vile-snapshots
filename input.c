@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.208 1999/11/15 23:52:58 Ryan.Murray Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.209 1999/11/24 22:10:02 tom Exp $
  *
  */
 
@@ -742,8 +742,6 @@ tbreserve(TBUFF **buf)
 	BuffToStr(*buf);
 	return result;
 }
-
-#define BACKSLASH '\\'
 
 /* turn \X into X */
 static void
