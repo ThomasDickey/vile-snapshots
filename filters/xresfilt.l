@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.8 2000/02/28 11:58:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.10 2000/08/09 23:40:21 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an X resource file.
  */
@@ -81,6 +81,7 @@ do_filter(FILE *input)
     BEGIN(NORMAL);
     while (yylex() > 0) {
     }
+    flush_quoted();
 }
 
 %}

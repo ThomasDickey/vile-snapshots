@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.26 2000/07/26 23:31:06 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.27 2000/08/08 23:58:20 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -28,6 +28,7 @@ SCRIPTS = \
 CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 -I.
 
 TMPINCS	= \
+	genmake.exe \
 	mk-1st.tmp \
 	mk-2nd.tmp
 
@@ -42,17 +43,17 @@ uninstall :: $(TMPINCS)
 
 !if "$(FLT)" == ""
 mk-1st.tmp : makefile.wnt mk-1st.bat genmake.mak
-	mk-1st genmake.mak extern >$@
+	mk-1st.bat genmake.mak extern >$@
 mk-2nd.tmp : makefile.wnt mk-2nd.bat genmake.mak
-	mk-2nd genmake.mak extern >$@
+	mk-2nd.bat genmake.mak extern >$@
 !else
 mk-1st.tmp : makefile.wnt mk-1st.bat genmake.mak
-	mk-1st genmake.mak intern >$@
+	mk-1st.bat genmake.mak intern >$@
 mk-2nd.tmp : makefile.wnt mk-2nd.bat genmake.mak
-	mk-2nd genmake.mak intern >$@
+	mk-2nd.bat genmake.mak intern >$@
 !endif
 
-RECUR_OPTS = RECUR_FILTERS=yes FLT="$(FLT)" -f makefile.wnt $@ -$(MAKEFLAGS)
+RECUR_OPTS = RECUR_FILTERS=yes FLT=$(FLT) -f makefile.wnt $@ -$(MAKEFLAGS)
 
 all ::
 	$(MAKE) $(RECUR_OPTS)
@@ -76,6 +77,11 @@ FLTOBJ = $(OBJ_C) filters$o
 !if "$(LEX)" != ""
 FLTOBJ = $(FLTOBJ) $(OBJ_LEX)
 !endif
+
+all ::	genmake.exe
+
+genmake.exe:  genmake.c
+	$(cc) $(CFLAGS) genmake.c -Fogenmake -link $(CON_LDFLAGS)
 
 all :: $(FLTOBJ) $(FLTLIB)
 

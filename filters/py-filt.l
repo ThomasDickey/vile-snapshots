@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.7 2000/02/28 11:58:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.8 2000/08/09 23:44:47 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a Python script
  */
@@ -61,6 +61,7 @@ do_filter(FILE *input)
     BEGIN(NORMAL);
     while (yylex() > 0) {
     }
+    flush_quoted();
 }
 
 %}

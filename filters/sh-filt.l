@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.30 2000/02/28 11:58:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.31 2000/08/09 23:42:51 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -80,9 +80,12 @@ do_filter(FILE *input)
     Number_attr  = class_attr(NAME_NUMBER);
     String_attr  = class_attr(NAME_LITERAL);
 
+    here_exp = 0;
+
     BEGIN(NORMAL);
     while (yylex() > 0) {
     }
+    flush_quoted();
 }
 
 %}

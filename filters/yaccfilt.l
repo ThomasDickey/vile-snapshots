@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.13 2000/02/28 11:58:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.15 2000/08/10 01:31:45 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
@@ -80,6 +80,10 @@ do_filter(FILE *input)
     Preproc_attr = class_attr(NAME_PREPROC);
     String_attr  = class_attr(NAME_LITERAL);
 
+    section = 0;
+    state_level = 0;
+    brace_level = 0;
+
     new_state(RULES);
     while (yylex() > 0) {
     }
@@ -100,7 +104,7 @@ SSTRING		\'(\\.|[^'\\])*\'
 DSTRING		\"(\\.|[^"\\])*\"
 STRINGS		({SSTRING}|{DSTRING})
 
-PATTERN		(\\\.|[^ \t\n])+
+PATTERN		(\\.|\[(\\.|.)*\]|[^ \t\n])+
 
 %%
 

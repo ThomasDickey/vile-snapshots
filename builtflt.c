@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.12 2000/07/27 01:12:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.14 2000/08/09 23:10:00 tom Exp $
  *
  */
 
@@ -60,7 +60,7 @@ parse_filtername(const char *major_name, const char **params)
 		}
 		next++;
 	    }
-	    for (n = 0; n < (int) TABLESIZE(builtflt); n++) {
+	    for (n = 0; builtflt[n] != 0; n++) {
 		if ((int) strlen(builtflt[n]->filter_name) == (next - base)
 		    && !strncmp(base, builtflt[n]->filter_name, next - base)) {
 		    *params = skip_cblanks(next + 5);
@@ -213,20 +213,26 @@ flt_putc(int ch)
 void
 flt_puts(char *string, int length, char *marker)
 {
+    char bfr1[NSTRING];
+    char bfr2[NSTRING];
+    char *last;
+    int count;
+
     if (length > 0) {
 	DOT = mark_out;
 	if (marker != 0 && *marker != 0 && *marker != 'N') {
-	    char temp[NSTRING];
-	    int count;
-
-	    lsprintf(temp, "%c%d%*s:", CTL_A, length, sizeof(temp) - 10, marker);
-	    parse_attribute(temp, strlen(temp), 0, &count);
+	    vl_strncpy(bfr2, marker, sizeof(bfr1) - 10);
+	    last = lsprintf(bfr1, "%c%d%s:", CTL_A, length, bfr2);
+	    parse_attribute(bfr1, last - bfr1, 0, &count);
 	}
 	flt_echo(string, length);
 	MK = mark_out;
 	if (apply_attribute()) {
+	    int save_shape = regionshape;
+	    regionshape = EXACT;
 	    (void) attributeregion();
 	    videoattribute = 0;
+	    regionshape = save_shape;
 	}
     }
 }
@@ -243,7 +249,7 @@ flt_lookup(char *name)
     int n;
 
     TRACE(("flt_lookup(%s)\n", name));
-    for (n = 0; n < (int) TABLESIZE(builtflt); n++) {
+    for (n = 0; builtflt[n] != 0; n++) {
 	if (!strcmp(name, builtflt[n]->filter_name)) {
 	    current_filter = builtflt[n];
 	    current_params = "";

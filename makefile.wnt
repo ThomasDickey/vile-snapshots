@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.61 2000/07/27 02:49:18 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.62 2000/08/09 00:18:54 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -166,6 +166,9 @@ EXTRA	= $(EXTRA) builtflt.obj
 # MYHDRS	= $(MYHDRS) builtflt.h
 MYLIBS	= $(MYLIBS) $(FLTLIB)
 CFLAGS	= $(CFLAGS) -DOPT_FILTER -Ifilters -I.
+!IF  "$(LEX)" != ""
+CFLAGS	= $(CFLAGS) -DOPT_LEX_FILTER
+!endif
 !endif
 
 # these are normal editable headers
@@ -207,8 +210,8 @@ OBJ = 	main.obj $(SCREEN).obj \
 
 all :: $(PERLCFG) $(TARGET) $(WRAPUTIL)
 
-$(TARGET): 	$(MYHDRS) $(OBJ) $(FLTLIB)
-	$(link) $(LDFLAGS) $(OBJ) $(FLTLIB) $(LIBS) -out:$(TARGET)
+$(TARGET): 	$(MYHDRS) $(OBJ) $(MYLIBS)
+	$(link) $(LDFLAGS) $(OBJ) $(MYLIBS) $(LIBS) -out:$(TARGET)
 
 winvile.res :	winvile.rc winvile.h
 	$(RC) -DVILE_ICON="$(ICON).ico" -Iicons winvile.rc
@@ -220,12 +223,16 @@ $(PERLCFG): $(PERL_SCRIPTS) mkprlenv.wnt
 $(OBJ): estruct.h edef.h proto.h $(MYHDRS) 
 builtflt.obj : builtflt.h
 
-builtflt.h : \
-	filters\mk-0th.bat filters\genmake.mak
-	filters\mk-0th.bat filters\genmake.mak intern > $@
+builtflt.h :
+	cd filters
+	$(MAKE) -f makefile.wnt genmake.exe -$(MAKEFLAGS)
+	mk-0th.bat genmake.mak > ..\$@
+	cd ..
 
 $(FLTLIB) :
-	cd filters && $(MAKE) -f makefile.wnt all FLT=all -$(MAKEFLAGS) 
+	cd filters
+	$(MAKE) -f makefile.wnt all FLT=$(FLT) -$(MAKEFLAGS)
+	cd ..
 
 nebind.h \
 nefkeys.h \
@@ -281,8 +288,11 @@ dist : $(TARGET)
 	zip $(CFG).zip readme.pc readme $(TARGET) vile.hlp
 	zip -z $(CFG).zip <zipnote.txt
 	- del zipnote.txt
-	cd macros && zip ..\$(CFG).zip *.rc
-	cd filters && $(MAKE) -f makefile.wnt $@
+	cd macros
+	zip ..\$(CFG).zip *.rc
+	cd ..\filters
+	$(MAKE) -f makefile.wnt $@
+	cd ..
 
 all \
 clean ::

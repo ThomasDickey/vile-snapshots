@@ -1,9 +1,53 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000809 (q)
+	> J. Chris Coppick, with some advice from Brendan O'Dea:
+	+ cleanup of Vileserv.pm and vileget (version 1.2)
+	+ Vileserv now uses the registry, so 'perl "use Vileserv"' in
+	  your .vilerc automagically adds the commands startserv, stopserv,
+	  and vileserv-help.
+	+ Vileserv tries to be smarter about finding your perl binary.  The
+	  Vile variable %vileserv-perl-path can be used for customization.
+	+ Vileserv tries to be smarter about the socket path that it uses.  The
+	  env.  variable VILESOCK, as well as the Vile variable
+	  %vileserv-socket-path can be used.  Also, vileget supports an option
+	  for overriding the socket path.  The default location is still
+	  ~/.vilesock.  With a little scheming, you can now run and control
+	  multiple XVile sessions on one host, or use Vileserv on multiple
+	  hosts with a shared home dir.
+	+ Vileget now uses the -d option to change XVile's working directory.
+	  This is an interface change from version 1.1, where the -c option
+	  was used for this.
+	+ Vileget now uses the -c and -C options for passing arbitrary Vile
+	  commands to a running XVile.  See the vileget manual page ('perldoc
+	  vileget') for more info on this.  Please note the necessary Vile
+	  variable %vileserv-accept-commands.
+	> Tom Dickey:
+	+ improve PATTERN definition in awk, lex and yacc to color unescaped
+	  blanks within a bracketed range.
+	+ fix logic in flt_puts(), which did not ensure that regionshape was
+	  set, and also remove spurious trailing blanks from attribute string.
+	+ initialize static variables in several filters to make them work
+	  properly in the builtin-filters configuration.
+	+ change indent.pro to line up parentheses.
+	+ add example macro AddError to vile.hlp which illustrates how to add a
+	  string to [Error Expressions] (request by Christian Lindig
+	  <lindig@ips.cs.tu-bs.de>)
+	+ modify win32 scripts which generate portions of makefile.wnt to not
+	  rely on WinNT's "enhanced" shell for-loop feature, using new utility
+	  program genmake.  Adjust generated builtflt.h on win32 to allow for
+	  building C filters only, if no $(LEX) is specified.  Also, modify
+	  makefile.wnt to avoid using && in recursion to work around
+	  limitations of w95 shell (reports by Clark Morgan).
+	> Ian Jamison:
+	+ add workaround for broken DuplicateHandle() function on WIN2K,
+	  ifdef'd with DUP_HANDLE_BROKEN_ON_WIN2K.  That caused
+	  w32_inout_popen() to fail.
+
  20000728 (p)
 	> Tom Dickey:
-	+ adds a mode for the Standard ML language.  There is also a minor
-	  tweak to cpp.key (patch by Felix Advantage <felixadv@access.net.au>).
+	+ add a mode for the Standard ML language.  There is also a minor tweak
+	  to cpp.key (patch by Felix Advantage <felixadv@access.net.au>).
 	+ modify builtflt.c to treat record separators as newlines, consistent
 	  with filter logic.
 	+ rewrote filters/makefile.wnt to generate lists and rules using

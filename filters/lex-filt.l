@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.17 2000/02/28 11:58:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.19 2000/08/10 01:30:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -65,6 +65,8 @@ static void
 do_filter(FILE *input)
 {
     yyin = input;
+    section = 0;
+    nesting = 0;
     Comment_attr = class_attr(NAME_COMMENT);
     Ident_attr   = class_attr(NAME_IDENT);
     Keyword_attr = class_attr(NAME_KEYWORD);
@@ -91,7 +93,7 @@ SSTRING		\'(\\.|[^'\\])*\'
 DSTRING		\"(\\.|[^"\\])*\"
 STRINGS		({SSTRING}|{DSTRING})
 
-PATTERN		(\\\.|[^ \t\n])+
+PATTERN		(\\.|\[(\\.|.)*\]|[^ \t\n])+
 STATES		(<({IDENT}|\,)+>)
 MATCH		{STATES}?{PATTERN}
 

@@ -12,8 +12,8 @@
 -nbad
 /* format braces inline */
 -br
-/* do not line up parentheses */
--nlp
+/* line up parentheses */
+-lp
 /* put the type of a procedure on the line before its name */
 -psl
 /* do not insert a space between procedure name and '(' */

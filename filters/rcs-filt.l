@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.5 2000/02/28 11:58:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.6 2000/08/09 23:44:07 tom Exp $
  *
  * Filter to add vile "attribution" sequences to RCS archives.
  */
@@ -98,8 +98,10 @@ do_filter(FILE *input)
     Number_attr = class_attr(NAME_NUMBER);
     String_attr = class_attr(NAME_LITERAL);
 
+    BEGIN(INITIAL);
     while (yylex() > 0) {
     }
+    flush_quoted();
 }
 
 %}

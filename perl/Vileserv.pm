@@ -1,4 +1,4 @@
-#   Vileserv.pm (version 1.1) - Provides file-load server capability for xvile.
+#   Vileserv.pm (version 1.2) - Provides file-load server capability for XVile.
 #
 #   Copyright (C) 1998  J. Chris Coppick
 #
@@ -20,32 +20,69 @@ package Vileserv;
 
 use Socket;
 use POSIX 'EINTR';
+use Vile;
+use Vile::Manual;
+require Vile::Exporter;
+
+@ISA = 'Vile::Exporter';
+%REGISTRY = (
+    'startserv'  => [\&start, 'start edit server' ],
+    'stopserv' => [\&stop, 'stop edit server' ],
+    'vileserv-help' => [sub {&manual}, 'manual page for Vileserv.pm' ]
+);
 
 # path to PERL binary (needed to run server daemon)
-$__perl = '/usr/bin/perl';
+$__perl = Vile::get('%vileserv-perl-path');
+if ($__perl eq 'ERROR' || $__perl eq '') {
+   if (-e '/usr/bin/perl') {
+      $__perl = '/usr/bin/perl';
+   } elsif (-e '/usr/local/bin/perl') {
+      $__perl = '/usr/local/bin/perl';
+   } else {
+      die("can't find perl binary - try setting the %vileserv-perl-path \
+	  variable in your .vilerc file");
+   }
+} elsif (! -e $__perl) {
+   die("perl binary $__perl does not exist");
+}
 
 # path to local socket
-$__vilesock = "$ENV{'HOME'}/.vilesock";
+$__vilesock = Vile::get('%vileserv-socket-path');
+if ($__vilesock eq 'ERROR' || $__vilesock eq '') {
+   if (defined($ENV{'VILESOCK'})) {
+      $__vilesock = $ENV{'VILESOCK'};
+   } else {
+      $__vilesock = "$ENV{'HOME'}/.vilesock";
+   }
+}
 
 # out-of-band delimiter :-)
 $__esc = '+++';
+
+# Setup auto start/stop of vileserv...
 
 END {
    &stop;
 }
 
-*import = *start;
+sub import {
+   Vile::Exporter::import(@_);
+   start();
+}
+
 *unimport = *stop;
 
-# Initiates the child "server" process and sets up the appropriate
+
+# Initiates the child "server" process (vileserv) and sets up the appropriate
 # filehandle callbacks.
 #
 sub start {
+
    # make calling start twice a silent no-op
    return if defined $__pid;
 
    if (-e $__vilesock) {
-      print "Socket $__vilesock already exists. Vileserv already running?\n";
+      die "Socket $__vilesock already exists. Vileserv already running?\n";
       return;
    }
 
@@ -78,7 +115,7 @@ sub start {
 #
 sub stop {
    return unless defined $__pid;
-   print "shutting down vileserv...\n";
+   print "Shutting down vileserv...\n";
 
    Vile::unwatchfd fileno(DAEMON);
    close DAEMON;
@@ -90,7 +127,8 @@ sub stop {
 }
 
 # Reads data from the server process as necessary and performs the
-# required editor commands.
+# required editor commands.  (Shouldn't be called readfiles() anymore...
+# it reads other stuff too.)
 #
 sub readfiles {
 
@@ -112,6 +150,16 @@ sub readfiles {
          my $path = $1;
          if ($path =~ /\S/) {
 	    Vile::command "cd $path";
+	 }
+
+      } elsif ($fileName =~ /^\Q$__esc\Edo (.*)/) {
+
+         my $cmd = $1;
+         my $security = Vile::get('%vileserv-accept-commands');
+	 if ($security ne 'ERROR' && $security ne 'false') {
+	    Vile::command $cmd;
+	 } else {
+	    print "Rejected remote command \"$cmd\"\n";
 	 }
 
       } else {
@@ -246,55 +294,62 @@ __END__
 
 =head1 NAME
 
-Vileserv - Provides file-load server capability for xvile.
+Vileserv - Provides file-load server capability for XVile.
 
 =head1 SYNOPSIS
 
-In xvile:
+In XVile:
 
-   :perl require Vileserv
-   :perl Vileserv::start
-   :perl Vileserv::stop
+   :perl use Vileserv
+   :startserv
+   :stopserv
 
 =head1 DESCRIPTION
 
 Vileserv runs a server that listens for requests to load files into an
-already running instance of xvile.  The vileget utility can
+already running instance of XVile.  The vileget utility can
 be used to make such requests from a shell command line.  Vileserv requires
-that xvile be compiled with the built-in PERL interpreter.
+that XVile be compiled with the built-in PERL interpreter.
 
-Vileserv only works with I<xvile> under Unix.
+Vileserv only works with I<XVile> under Unix.
 
 Vileserv does not provide nearly the level of feeping creaturism as
 Emacs' gnuserv, but it's a start.
 
 =head1 INSTALLATION
 
+[Note: Vileserv may already be automagically installed for you as
+part of your Vile or XVile installation.]
+
 Install Vileserv.pm somewhere in the @INC path.  Depending on your
-vile installation, I</usr/local/share/vile/perl> might be a good place.
+Vile installation, I</usr/local/share/vile/perl> might be a good place.
 
-The B<$__perl> variable near the top of the Vileserv.pm file might need
-to be tweaked if your PERL is not I</usr/bin/perl>.
+Vileserv looks for a perl binary in I</usr/bin/perl> and
+I</usr/local/bin/perl> respectively.  You can override this
+in your I<.vilerc> file using the B<%vileserv-perl-path> variable:
 
-The default socket file used is I<$HOME/.vilesock>.  If you need to change
-that, you'll have to edit both Vileserv.pm and vileget.
+   setv %vileserv-perl-path /opt/local/bin/perl
+
+The default socket file used is I<$HOME/.vilesock>.  This can be overridden
+by setting the environment variable B<VILESOCK>.  You can also set it
+explicitly in your I<.vilerc> file by using the variable
+B<%vileserv-socket-path>.  However, using the environment variable is
+recommended, since overriding it will stop the vileget program from starting
+a new Vile with a new socket path on demand.
+
+The Vileserv protocol (if you can call it a protocol) allows arbitrary
+Vile commands to be executed.  This functionality is disabled by default,
+but can enabled by using
+
+   setv %vileserv-accept-commands true
+
+in your I<.vilerc> file.
 
 The following commands are useful in the I<.vilerc> file for setting
 things up:
 
-	; Add ':startserv' vile command for starting Vileserv
-	;
-	perl "Vile::register 'startserv', 'Vileserv::start', \
-	   'Start Edit Server', 'Vileserv.pm'"
-
-	; Add ':stopserv' vile command for stopping Vileserv
-	;
-	perl "Vile::register 'stopserv', 'Vileserv::stop', \
-	   'Stop Edit Server', 'Vileserv.pm'"
-
-	; Start Vileserv now...
-	;
-	startserv
+        ; Import and start Vileserv (adds :startserv and :stopserv commands)
+        perl "use Vileserv"
 
 In order to use the B<-w> option of I<vileget>, you need to create a
 writehook procedure something like this:
@@ -304,28 +359,25 @@ writehook procedure something like this:
 	~endm
 	set write-hook wh
 
-If you have vile-8.2 (patched) or greater, then the vileserv process
-should be stopped when xvile exits.  If not, then you may need to add
+If you have Vile-8.2 (patched) or greater, then the vileserv process
+should be stopped when XVile exits.  If not, then you may need to add
 an exit procedure that stops the vileserv process.  Something like the
 following in your I<.vilerc> file should work:
 
-	; Setup exit procedure to stop Vileserv when vile exits
+	; Setup exit procedure to stop Vileserv when Vile exits
 	;
 	store-procedure exitproc
    	   stopserv
 	~endm
 	set-variable $exit-hook exitproc
 
-Even better, upgrade your vile!
+Even better, upgrade your Vile!
 
 =head1 BUGS
 
-If the server is started, then stopped, then started again, you'll see
+If the server is started, then stopped, then started again, you may see
 the B<warning> "Attempt to free unreferenced scalar..."  This is just
-a warning.  The server startup probably succeeded.  The warning stems
-from the Vile::watchfd commands and it is believed that the problem
-lies within the vile PERL package and not within Vileserv.  (Since I
-don't understand the problem, it must be someone else's fault...)
+a warning.  The server startup probably succeeded.
 
 =head1 SEE ALSO
 
@@ -333,11 +385,11 @@ vileget(1), xvile(1)
 
 =head1 CREDITS
 
-Having a PERL interpreter in vile is very slick.  Kudos to everyone
+Having a PERL interpreter in Vile is very slick.  Kudos to everyone
 who made it happen.  :-)
 
 =head1 AUTHOR
 
-S<J. Chris Coppick, 1998>
+S<J. Chris Coppick, 1998 (last updated: July 26, 2000>
 
 =cut
