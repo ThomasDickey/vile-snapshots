@@ -1,0 +1,979 @@
+------------------------
+vile bug/enhancement/wish list
+------------------------
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.309 1996/06/09 02:52:26 pgf Exp $
+----------------------
+	(E means enhancement, L,M,H are low, medium, high priority)
+
+E	add ":n file" 
+	    (:n means go to the next file in a series of files.
+	    :n file means go to that specific file - one can specify a
+	    +<cmd> before file to indicate the vi command which should be
+	    executed when entering the command.)
+
+E	now that paragraphs, sections, and sentences are all selectable
+	with regexps, they (and the tabstop value) are prime candidates for
+	moving into a "mode-values" set of values.  A buffer would inherit
+	either the global normal-mode values, or the global c-mode values.
+
+E	:k, to set a mark, won't work as ":ka" or ":kb".  Must use ":k a"
+
+E	patterns as addresses do not work, e.g. ":/str1/,/str2/d".  They're
+	hard to parse the way things are set up right now.  We could accumulate
+	the whole commandline, and then parse it, the way real vi does, but we'd
+	lose the "prompt and display last response" behavior.
+
+E	should add an option to support file locking, rather than the current
+	ifdef stuff.  (this is only useful if we match the GNU locking
+	protocol.) And it's not clear that in an NFS'ed environment that
+	it's all that easy to get that style of locking right anyway.
+
+E	the scrsearch functions could become region based -- as in "search for
+	the next occurrence of the region", which would usually be a word.  And
+	the ^A/ version could become "a/ (search for the contents of buffer a),
+	if you know what I mean.
+
+E	g should become a region command.  Then it could take ranges, as
+	it should, and could also become an operator command.
+
+E	collapse command execution code to as few places as possible.
+	Its currently spread through execute(), operator(),
+	docmd(), and usekreg().
+
+E	mlreply line should ideally be a one line buffer, so inline editing
+	can be done on it.
+
+E	I haven't even come close to testing vile for
+	memory-full conditions.  Some malloc() packages give 95%
+	warnings -- perhaps something like that should be done for
+	safety.
+
+E	marks should perhaps be linked onto lines.  this would make a lot
+        of things a lot easier, since a mark would travel with the
+        line, instead of having to be moved when the line is
+        reallocated etc.  the U line could be treated as a special
+        mark.  The "copied" flag needed by undo could be a special
+        sort of mark as well.  Implementation of the "tag stack"
+	would be aided by this as well.
+
+L	vile really ought to use unix-crypt if it is available.
+
+E	can't search for a NUL in a buffer.
+
+E	":e" and ":e!" should share the same prompt data, which should be
+	editable / history.  They both should default (like vi!) to the
+	current buffer.
+
+E	for consistency, 'execute-macro-nn' should be 'execute-macro nn';
+	doing this would allow modification to eliminate a fixed number of
+	macro-buffers.
+
+E	should ifdef the 'autobuffer' code for users who do not need vi-style
+	buffering.
+
+--------------
+
+    The ed 'transfer' and 'move' commands don't work.
+    (to copy and move text around.  e.g., :'a,'bt$.)
+
+--------------------------------
+
+Though I use it, I'm still not quite satisfied with the qident stuff.  It
+needs to be more flexible.  That is, I'd like to make it user defined.
+For example
+	find-tag $qidentifier
+should be expressable as a character class like
+	find-tag &anyof "a-zA-Z_0-9:"
+in a macro.  Or even more generally, as a regular expression:
+	find-tag &scan "[a-zA-Z_][a-zA-Z_0-9:]\\*"
+A leading ^ would root the search at the current cursor position.
+Absence of a leading ^ would start at the current cursor position but would
+scan ahead until it found a match.  That way I can redefine ^] to pick
+up the next word even if the cursor is before the start of the word (thus
+better mimicking vi's behavior).
+
+[ This can almost be done with the $match variable, e.g.
+	7 store-macro
+		search-forward "[a-zA-Z_][a-zA-Z_0-9:]*"
+		find-tag $match
+	~endm
+
+	bind-key execute-macro-7 ^A-g
+ - pgf ]
+----------------------------------------------------------------------
+Also, I encountered the following problem: I am editing foo.tex and
+call latex using ^X!latex foo.tex. There is an error, so latex waits for
+input -> vile sits waiting and nothing helps. I think this should
+be interruptable. I will agree with you that the ^X! command was not
+intended for this, but still...
+
+But ok, the real problem is that after I kill latex and
+vile comes back to life I can no longer filter parts of text using
+!fmt. The text just gets deleted.
+
+----------------------------------------------------------------------
+
+I just grabbed a copy of xvi.  I noted some interesting tidbits while
+reading the "differences between vi and xvi" document.  Some of these would
+be nice in vile.
+
+
+     As well as the normal named (conjugate) buffers, and the  default
+     one  named @, several extra buffers named :, /, ?  and ! contain
+     the last command lines entered for each of the command types.  So
+     for  instance,  @: will re-execute the last colon command, or you
+     can insert it into your buffer, edit it and  then re-execute  it
+     (e.g. with dd@@).
+
+
+     +    In insert and replace modes, ^A has the same meaning  as  ^@
+          in  vi,  except  that it works at any time, not just for the
+          first character.  Also, typing ^Bx, where x is the name of a
+          conjugate  buffer,  inserts the contents of that buffer into
+          the input stream at that point.  The buffer named  <  always
+          contains the last thing inserted, so that ^B< is the same as
+          ^A.
+
+
+------------------------
+I wish ^X-!  could execute shell commands async'ly, i.e.  I should not have
+to wait/do nothing while waiting for the ouput of compiling.  I should be
+able to edit stuff in other buffers or even ^X-^X to edit src codes
+while compilation is still going on.
+
+------------
+similar to above -- sub-commands run from ^X-! or ":[erw] !cmd" should be
+"interactive" to the extent that user's input should be sent to the cmd
+at least on a line-by-line basis (i.e. we can't send raw keystrokes -- we
+have to do canonical processing.  of course, we should really use pty's, and
+reconnect input and capture output.)  some commands like latex prompt for
+more input when partway done.
+
+========(VMS-VILE)=============================================================
+Unfinished items on vax/vms (dickey@clark.net):
+
+	+ if the current directory has changed, offer to restore it on exit. 
+	  (Note that if the _device_ portion has changed, the original
+	  directory should be restored anyway!).
+
+	+ add key bindings and other support to make the vt100 keypad work for
+	  me (e.g., like EDT).
+
+	+ see if I can decode ".dia" files, if so connect it to finderr.c
+
+	+ catch exception/signals, and restore terminal settings.
+
+	+ make write-pipes work (actually, flesh out to use 'npopen' coding
+	  scheme, like the MSDOS stuff).
+
+	+ I had a case in which I wanted to read the contents of one file into
+	  another; they had the same buffer name; the target buffer got the
+	  filename for the source, e.g.,
+
+	  	:e []foo		- read and determined version # ok
+		:r [-.temp]foo		- current filename reset to [-.temp]foo
+------------------------------------------------------------
+
+
+it would be nice if vile would fold text...
+
+	This feature appeared in uEmacs version 3.10.23 and you can
+use archie/xarchie to file fue.tar.Z (fue - folding-micro-emacs).
+
+[ someone said they were going to fold this in, so to speak.  i'm not
+real comfortable with the idea, since the uemacs code causes the LINE
+struct to grow _enormously_ ]
+
+
+-----------
+
+	When I execute a keyboard macro using ^X-& I cannot repeat this
+	using the dot command. Instead, the last command in the macro
+	is repeated.
+    [ this is because '.' doesn't do @ macros either...]
+
+------------------------------
+
+
+Can you add the '>' character to the list of comment chars for paragraph
+reformatting?  I would live to be able to reformat mail quotes (like shown
+above).
+
+[ pgf notes: I did this, as chris suggested, but formatregion should use
+  the comments regexp to match a comment delimiter at the beginning of
+  line, and should insert the comment delimiter of the _second_ line (so
+  that boxed C comments work right)in subsequent reformatted lines,
+  including leading but not trailing whitespace.  indentlen should be
+  counted _after_ the width of such a comment delimiter.  this would make
+  paragraphs that are indented way after the delimiter keep their indent. 
+  commented paragraphs should end when exp->mlen for the comment regexp is
+  equal to llength(DOT), i.e.  it's the whole line.  (we'll need to take
+  the $ off the end of the comment regexp).  ]
+
+------------------------------
+Another enhacement.
+How about a history file.  say I have been using vile and
+quit and come back in later I can use the history file.
+
+--------------------------
+
+In a xterm window the down arrow (which sends ESC-O-B) works for individual
+presses.  If you hold down the key then letter Bs get peppered through out
+the file.  It appears that the ESC is occasionally being missed so that the
+following OB puts a B in the file.
+
+In my case I'm on a workstation running 4.1.3 and xterm using rlogin to
+connect to a 690 server (lightly loaded) running 4.1.3 and running vile
+on the 690.
+
+I just ran vile locally and didn't see the problem.
+-------------------------------
+
+
+I found a bug (new with 3.59) on our Pyramid SVR4 (but not Pyramid SVR3,
+SunOS 4.1.1, AIX 3.2) where
+	xvile tmp &
+pops up the xvile window briefly, the window dies, the xterm I started
+xvile from says
+	[1]  + suspended (tty input)  xvile3.59 tmp
+and then after a couple seconds the xterm itself vanishes!  However,
+	xvile tmp
+works fine, except that the process is in the foreground.
+ > The bug on the Pyramid SVR4 machine with xvile & suspending itself,
+ > committing suicide, and then blowing away the xterm still exists.
+ > For the time being I just remember to run xvile on a different
+ > machine.
+
+-----------------------------
+apply Alistair's min/max regexp patch
+
+-------------------------------------------------------------------------
+
+Is there any way to use termcap to define 
+all of the window parameters, but still use ANSI escapes for colors?  Elvis
+allows me to do this under Linux on the terminal screen and a couple of
+systems allow Elvis to change the foreground and background colors under an
+xterm.  If I tell Vile to compile using ANSI instead of termcap it works
+but it doesn't seem to recognize any of my termcap variables (which means
+it doesn't get the right screen size or exits with incorrect colors).
+
+-----------------------------
+
+With vim 1.27 you can configure its behaviour regarding backspace using
+the 'backspace' variable. From the help file:
+
+backspace (bs)	    number    0     0 standard Vi, 1 delete NL, 2 delete all
+i.e. if bs is non-zero, you can backup to the previous line, and if it's
+a 2, you can backup past the insertion point.
+
+i don't think this is optimal -- i think you should be able to choose
+independently whether you backup past the newline or past the insertion point.
+
+in any case, vile won't let you back up past the newline during an insert.
+when _not_ in insert, you can rebind ^H to backward-character.
+
+---------------------------
+
+When you do a :b you should have line completion for the name.
+
+---------------------------
+
+How can I read the status of a shell command when I execute a
+shell-command? Although the shell command has a $STATUS=1 the
+status of the status variable is TRUE.
+
+---------------------------
+
+you can't use ! as a regular expression delimiter, as in:
+	:s!pat!replace!g
+because the parser treats ":s!" as if it's ":q!" or ":w!".
+
+-------------------------
+
+width of a region is kept in units of offset, not of columns.
+i think this will break rectangular inserts of non-rectangular regions,
+where the longest line may not extend to the furthest column, due to
+tabs in other lines.
+
+
+-------------------------
+
+2) When I use the MKS "fmt" program to format a paragraph in vile, a
+   tmp file (aaxxx.tmp) is always dropped out in my current working
+   directory.  This was not a problem in the previous version of PCVILE
+   (the one I compiled with Turbo C++).
+
+    I.E., when I exit vile43 after using the fmt command, I've got a temp
+    file called "aaac1.tmp" (for example) in my current working directory.
+    It's annoying.
+
+-----------------------------
+
+I'm using the DOS version and I prefer to use 80x28 or even higher res like
+80x50 by setting set sres=80x50 in vile.rc.  The problem is that when a
+command is executed with :!<shell-command> the mode switches back to 80x25.
+It switches back to 80x25 permanently. I think it's acceptable that it
+switches to 80x25 when it's in shell command execution.  However, technically
+it should switch back to the preferred mode when it's done.
+
+[ can anyone confirm or deny this is still true? ]
+[ I don't see it happening with ibmpc.c - dickey ]
+
+---------------------------
+
+the borland console driver won't display the cursor on blank lines until
+after you've refreshed the screen at least once, e.g. with ^L.  must
+be something to do with color initialization, or something like that...
+
+---------------------------
+
+running a SunOS4.1.3 binary of vile on Solaris2.3 causes the "interrupted
+system call" problem, no doubt due to the differing BSD/SysV signal()
+semantics.  [ probable workaround:  ":set noworking" ]
+
+----------------------
+
+Another thing that would be really helpful would be a description of the
+$debug variable, and what it does, how it works.
+
+-------------------------------
+
+the docs for the &right function disagree, in vile.hlp and macros.doc.  the
+code seems to do what vile.hlp says.  the macros.doc behavior seems more
+rational, since the current behavior can i think be duplicated more easily
+with &mid than the macros.doc-style behavior.  (vile.hlp says that we take
+the substring starting at the given position.  macros.doc says we take the
+substring starting the given number of chars from the end.)
+
+---------------------------------
+
+there should be better support in vile for reading bits of shell output
+into a buffer -- ":r !foo" is a little primitive when trying to insert a
+single word into a line.
+
+---------------------------------
+
+autoindent skips blank lines when looking for the
+indent value.  apparently real vi doesn't?
+
+----------------------
+
+currently can't pop/untag from within macro
+[really?  why is this?]
+
+------------------
+
+are there still reentrancy problems in xvile when mousing around during
+long-running operations.
+
+----------------------
+
+could the attribute selection logic be used to emulate vi's behavior
+of replacing the last char of a change operation to '$'?  (but only for
+text which does not span a line)
+
+---------------------------
+
+ Another problem with '1 shell-command '
+ With the option '1' vile don't prompt for [Return] but the
+ screen always 'hops'.  (scrolls 1 line forward and backward)
+
+-------------------------
+
+there should be a way to reference buffer attributes of the currently-
+executing macro (or stack of macros).
+
+-------------------------
+
+[ how do i test this? ]
+In xvile, when the load is high and the machine stalls for a while
+and I key in several keystrokes ahead, it takes the first of those keystrokes
+and replaces the later keys by it i.e. when several events simultaneously
+arrive, it doesn't do the right thing (process them in order).
+
+-----------------
+
+when motion keys or pasting is used during an insertion, we should
+break the insertion into multiple undoable chunks.
+-----------------
+
+pasting to a view-only buffer does not generate an error message.
+----------------------------
+
+   XVILE BUG:
+
+      - If I click on the "maximize" gadget, it gets _really_ big.
+        Like, many times bigger than the screen big; I suspect that
+        it is maximizing to a number of *characters* equal to the number
+        of *pixels* available or something.  If I click on the same 
+        gadget (after dragging that part of the window onto the screen),
+        which does a normalize, it crashes.
+	I am use vile 4.5 and xvile on HP/UX 9.01.
+	I use vuewm as my window manager (a motif variant).
+
+      [I would guess that the suspicion of the person reporting the bug
+       is correct concerning the behavior of the window manager during
+       maximization.  I don't have this problem with fvwm. pgf's changes
+       to eliminate the hardcoded maximum width and height will probably
+       fix the core dumps.  I'll look into seeing if there is some protocol
+       which we're not observing with regard to maximization.  -kev]
+
+------------------
+      - I would like an option whereby if I have more than one file on
+        the command line, the display opens with one window per buffer,
+        so I can visibly see all the files available.
+----------------------
+
+
+if you have lines like
+	123
+	1234
+	12
+it's impossible to select them as a rectangle, since the middle line is
+longest.
+
+
+----------------
+
+
+It would be useful to have a search that is constrained to a certain
+movment.  For example, I might want to look for the string "foo" over the
+next paragraph, not the whole document.  This would really be useful to
+programmers who want to look for the instance of a variable or a function
+call only within the current scope (or #if).
+
+----------------
+xvile:
+ Is it possible to have an optional horizontal scrollbars ?
+   (just for maniac users)
+
+----------------------------
+
+on the first attempt to insert a quoted ^C (i.e. ^V^C) it works, but also
+quotes the next character (e.g. the ESC).  after the first time, ^C doesn't
+work anymore.  (this seems to be linux-specific, even on a 1.2.13 kernel)
+it's not getting the later SIGINT's at all.
+
+------------------------
+
+under DOS, ^P character turns on the printer.   argh.
+actually, this only happens if compiled with borland.  it uses getch()
+instead of intdos() to get the char.  (see ttgetc())  that's probably
+at least part of the answer.
+
+---------------
+how about a mode that supports autosaving to the backup-file,
+instead of to the original file -- useful for system crashes.
+
+-----------------
+
+rectangular operations don't work right if there are control characters
+to the left of the rectangle.  (physically they work, but the visual
+effect is wrong.  i'm not sure what the right thing to do is.)
+
+-------------------------
+double quote characters (and probably other special chars) are interpreted
+incorrectly on the lhs of a map command.  for instance:
+	map ^K" WBi"^[Ea"^[
+will result in 
+	^K WBi
+as the lhs, leaving
+	^[Ea"^[
+as the rhs.  the workaround is to escape the " in the lhs:
+	map ^K\" WBi"^[Ea"^[
+
+(this map surrounds the current word in double quotes)
+
+-----------------------------
+
+Would you please add another hook: modify-hook.  I thought this is useful,
+for example, if I attempt to insert, delete (in general, modify) text
+in a read-only file, I like it to prompt if the user wants to PVCS-lock it.
+A message would look something like this:
+	File is read-only, check out?
+
+-----------------------------
+
+contrary to the vile.hlp text, binding to the interrupt{} terminal
+character does not fully change intrc and the user's interrupt character.
+
+-----------------------------------------------------------------
+VMS6.0 on VAXstation 4000/90.  DEC C for OpenVMS VAX compiler
+version V4.0-000.  Shared library (specified in VMSSHARE.OPT)
+is DECC$SHR.EXE instead of the default VAXCRTL.EXE.
+
+symptoms:
+	vile can't read vile.rc, or vile.hlp.
+
+reason:
+	on this setup, the access() library routine seems broken.
+	my test program showed that it returned -1 for existant
+	and non-existant files.
+
+solution:
+	I had to add a
+#define HAVE_ACCESS 0
+	in estruct.h (actually, I just put it in fileio.c).
+[ there's a fix in estruct.h, but untested ]
+
+-----------------------------------------------------------------
+
+DOS:  wildcarding in the top directory:
+   c:
+   cd \
+   vile a*.bat             (will not open autoexec.bat)
+does not work, because Watcom's opendir() routine only succeeds on the root
+directory if it is specified as '\'.  no other name for it seems to work.
+stat won't work on it either.  (we try to open it as ".", not an unreasonable
+thing to do.)
+
+sigh.  i hate DOS.
+
+-----------------------------------------------------------------
+
+ Mips RISCos5.0 machines:
+    Error: random.c, line 625: 'SIG_BLOCK' undefined, ...
+    Error: random.c, line 637: 'SIG_SETMASK' undefined, ...
+ [ i thought i could provide fallback definitions of those, but
+   the values are different on sunos and linux, and are probably
+   different again on Mips RISCos5.0, bless it's broken little heart. ]
+
+-----------------------------------------------------------------
+we should consider adding user-customizable menu or button support to
+xvile:
+    "Right now, you have most of the major functions as strings that can be
+    called from the macro language.  Suppose you made icons or something
+    for those strings, and then let the user string the icons (or maybe
+    have icons trigger macros and have a set of macros for most of the
+    basic stuff as a default package) together to form new icons they could
+    put in some sort of icon bar.  The windows (boo!  Hiss!) users would go
+    nuts!  Also, put some of this into the pull down menus, and people
+    would stand to cheer and applaud. "
+-----------------------------------------------------------------
+
+I think I found a couple of very minor bugs in vile.
+
+Possible bug #1)
+I'm using xvile right now because ^S doesn't seem to work correctly in
+regular vile yet (must be an HP 9.05 thing, I'm not sure yet).  I had
+thought you turned flow control off in vile, but I want to do more testing
+before I call this a bug.
+
+Anyway, do this:
+
+On a page with several lines of text, do this operation on the first one:
+
+:s/^/> /
+
+Now, using the mouse (or 'q'), sweep the next couple of lines.  To make
+things interesting, sweep to the end of the second to last line, but
+not the last line itself, so the highlighted text looks like this:
+
+xxxxxxxx
+xxxxxxxx
+xxxxxxxx
+
+instead of
+
+xxxxxxxx
+xxxxxxxx
+xxxxxxxx
+x
+
+Now, do a
+
+^A-&-^S
+
+On my machine, the last line of the highlighted text isn't touched.  I'm
+thinking it should be...
+
+-----------------------------------------------------------------
+
+the command ":r !ls" should not require the space.
+
+-----------------------------------------------------------
+
+when using wrapmargin, it is impossible to break
+up long lines consisting of a single word.
+
+[vi doesn't do this]
+
+-----------------------------------------------------------
+	- the layering of the map code with respect to the record/replay
+	  code that implements '.', the keyboard macros, and the '@'
+	  command execution is severely broken.  if you have a :map
+	  that executes a '@a' command in the middle, the contents
+	  of register a are readied for replay, but input continues
+	  to come from the :map string until it is ended, and only then 
+	  so we dip down to the lower level and start getting the result
+	  of '@a'.  a similar thing happens with '.' used in a :map, only
+	  it seems even worse, since recording isn't started/stopped
+	  correctly.
+	[this has been fixed for the @a case, but in a sloppy fashion.
+	  it should be cleaned up.  -pgf  ]
+
+-----------------------------
+
+Using xvile, if I [oO]pen a
+new line or do insert at the beginning of a line, and then paste in
+some text using the mouse, xvile inserts an extra blank line. that is,
+if I have
+
+foo
+bar
+
+and I try to paste in 'hi' under the foo, I get
+
+foo
+
+hi
+bar
+
+this only seems to happen in autoindent mode at the very beginning of
+the line. it does *not* happen if the preceeding line is indented, or
+if I type a space before pasting.
+----------------
+
+only "reverse" works as a visual-match hilite under DOS.
+
+---------------
+
+a newly entered search string (even an identical one) should turn highlighting
+back on
+
+---------------
+
+It would be nice to make the cursor invisible while doing highlighted selection,
+since xterm cannot blink the cursor, and the selection has an apparent hole.
+visual-match highlighting back on.  this is surprisingly hard, due to the
+layering of readpattern() and kbd_reply.
+
+---------------
+
+While we're on the subject of bugs, let me tell you about another one that
+I've long noticed when I try to insert such text.  I would like to do
+:unsetl ai before pasting in the text (since I normally have auotindent
+on).  But that has no effect.  Even :setall shows that autoindent is still
+on.  Instead I have to do :setl noai.  Annoying.
+
+[ i agree -- shouldn't "setl nonumber" and "unsetl number" be synonymous? -pgf]
+[ I've gotten used to it as a quirk: "unsetl" deletes a flag that shadows the
+  global setting.  I wish (however) that there were a nice way to highlight the
+  flags that are shadowed -dickey]
+
+---------------
+
+running a shell command from xvile should arguably spawn a new xterm.  it
+should certainly do it in a new window.
+
+---------------
+
+vile trims all trailing whitespace when user inserts a space that triggers
+wrapmargin, vi trims only the whitespace inserted during the current command.
+[ i'm not sure i consider this a bug.  vile plays loose with whitespace
+in many such situations.  if you're using wrapmargin, you're probably
+not worried about trailing whitespace anyway.  -- pgf ]
+
+---------------
+
+I just rediscovered a small problem with the :<number> command
+to go to a certain line number. Try:
+
+        <esc>:a<backspace>1<return>
+
+This is not accepted by vile. You have to type <esc>:1 to recover. I am
+running under SunOS 4.1.2.
+
+[ this is very difficult to fix.  -pgf ]
+
+--------------------------
+
+This is a report against vile v5.4 built using djgpp.  Vile is running
+in raw DOS (not in a Windows DOS box).
+
+This command:
+    vile -4
+gives me 50 lines (not 43).  The only two screen resolutions that seem
+to work are vile -2 and vile -5 .
+
+[ This is a result of the borland screen library.  43 lines are available
+under OS/2... ]
+
+---------------------------------
+.. you can't use the mouse to select text from the command input line, I often
+use this after Ctrl+G to get the filename for a UNIX command elsewhere.
+
+---------------------------------
+.. button 1 selection doesn't work it quite the same way as other apps. e.g.
+in xterm, double click on a word (don't release button after second click)
+and drag along a sentence - first word is selected and so are subsequent
+words in the sentence as you drag.  Just the first word is selected in xvile.
+
+---------------------------------
+
+link problems:  vile or xvile has link problems on:
+	- Openlook on sunos4.1.3
+ 	- SCO OpenServer 5.0 (needed -lsocket, and needed different
+		lib ordering for -lXt and -lXm for the motif version.
+	- BSD/OS 2.0.1 (X11R6) -- needed this order: -lXt -lXM -lICE -lX11
+	- IRIX 5.2 -- drop the '-lnsl' library
+
+---------------------------------
+
+vile 5.5 almost passed my macro test with only small cosmetic problem:
+
+;    !@  --mapto-->  replace "Unixcommand!@" with "Unixcommand" output
+map! !@ ^V^M^[bi:r !^[F:"adt@mm@ais^["bd$dd`m@b
+;    #@  --mapto-->  replace "@Unixcommand args#@" with "Unixcommand" output
+map! #@ ^V^M^[F@s:r !^[F:"adt@mm@ais^["bd$dd`m@b
+
+Both now produce correct results.  But the final status message doesn't
+make sense:  Delete operation pending...  when it actually in insert
+mode.  Fortunately, there is a workaround, set terse.  it would be nice
+if vile can temporary set terse before executing macros and reset back
+to original mode afterwards. Sounds easy?
+
+------------------------
+
+there are two conflicting wordwrap mechanisms in vile --
+	- the historical wrapwords setting, inherited from
+	  microemacs, will wrap words in input mode when you type a
+	  space character after you've passed the "fillcol" column.
+	- the vi-like "wrapmargin" setting sets the column past which
+	  entering more input will cause a line break. 
+
+i think we should eliminate the historical mechanism in favor of the vi-ish
+one, and i've marked it [deprecated] in vile.hlp.  (as of version 5.6)
+vim has a "textwidth" mode, which functions exactly like wrapmargin, except
+that it is measured from the left.  this prevents line length from changing
+when the screen is resized, a drawback of wrapmargin.  i propose eliminating
+fillcol, and introducing textwidth.
+------------
+
+While writing a macro, it's possible to save off the current search string,
+it's in the variable $search.  However, it's not possible to save off the
+current search direction so you can restore it later.
+
+-------------
+
+  If there is a file called XVile in /usr/X11/lib/X11/app-defaults
+  then the scroll bar in the xvile(build the --with-screen=x11) does
+  not work.  If this file is removed, then the scrollbar works find.
+
+--------------------------------------
+
+It would be nice to have a 'smart' shiftwidth, that would jump back
+to the indent level of the first previous line with a different
+indent level. What I mean is:
+
+aaa aa aa aaa aaa a
+    - bb bbb bb bb bb b
+      ccc cc cc cc c
+      <control-d>
+
+where <control-d> would jump back to the indent level of the minus sign.
+I encountered this behaviour with the 'EDIT' program on MS-DOS with
+the backspace key. It's really quite convenient, although I am not so
+sure it is smart to put both the 'shift-back' and 'backspace' behaviour
+under the same key.
+
+------------------------
+
+on OS/2, pipes stop working after invoking a process that's linked with EMX
+(e.g., fgrep).  Ordinary OS/2 32-bit applications don't break the pipes (e.g.,
+the shell builtins such as 'dir').
+
+------------------------
+
+The 'qsort' function in Watcom 10.0a for MS-DOS is broken (file-completion
+hangs, probably due to stack overflow).
+
+OS/2 version built with Watcom 10.0a does not open pipes successfully.  Also it
+does not do function keys.  (CSet C/C++ version works properly except for
+interaction with EMX).
+
+------------------------
+    I tried to change the pointer shape of Xvile to something that is more
+    noticeable.  With Xterm, hpterm actually, I am able to do it with:
+
+    hpterm*pointerShape:    iron_cross
+    hpterm*pointerColor:    red	
+
+    This scheme somehow doesn't work on the Xvile windows. I was wondering if
+    this was because Xvile does not manage the pointer resources? 
+
+------------------------
+given a :map! of:
+    map! #9 foobar
+then when Fn-9 is pressed in insert mode, you get "foobar" in the buffer.
+if you manually insert "#9", no translation is done.  BUT, if you repeat
+that insert by typing '.', then you'll get "foobar".  (i.e. "i#9<ESC>." )
+
+------------------------
+
+
+when a buffer is out of date wrt its file (i.e. you have been warned but
+you answered 'n') it should say something like [out-of-date] on the modeline.
+this should be true whether or not "check-modtimes" is on.  in fact, in
+retrospect, "check-modtimes" should really be "warn-out-of-date", or
+something like that, and we should _always_ check modification times.
+
+---------------------
+ 
+Not sure if this will be generally useful, but I changed the tags.c
+module to use "_qident" instead of "_ident" in the gototag() function. 
+This allows a user to goto C++ functions when the tag is a C++
+class::function reference.
+ 
+------------"
+    How about changing makefile.djg, adding a line like
+      strip vile
+    just before the call to coff2exe.  This will reduce the
+    size of the djgpp executable from 1,328,037 bytes (with
+    djgpp 1.12 patch 4) to 259,072 bytes.  Just a little idea.
+[i'll add a different target instead...]
+
+	
+-----------------------------
+
+add a copyright to the binary
+
+------------------
+The configure script returns the wrong value for HAVE_SYS_FILIO_H on
+OSF/1-Alpha; termio.c doesn't compile with that problem. 
+
+also, the configure script returns the wrong value for GETPGRP_HAS_ARG on the
+OSF/1-Alpha. 
+
+The test in configure compiles ok with "cc" but not with gcc.
+ac_compile in configure uses cc as a default. This may be able
+to be worked around by setting $CC to gcc before running
+configure.
+
+
+The install program is also much touchier about argument order; the
+directory must follow -c argument.
+
+Here's a partial diff which I think shows part of what must be done:
+
+*** makefile.orig       Thu Feb 15 11:56:40 1996
+--- makefile    Thu Feb 15 11:56:41 1996
+***************
+*** 404,410 ****
+  
+  # dependency-rules for install/installdirs
+  $(bindir)/$(TARGET):       $(TARGET) 
+!       $(INSTALL_PROGRAM) $(TARGET) $@
+  $(bindir)/vile-manfilt:    vile-manfilt 
+        $(INSTALL_PROGRAM) vile-manfilt $@
+  $(bindir)/vile-c-filt:     vile-c-filt 
+--- 404,410 ----
+  
+  # dependency-rules for install/installdirs
+  $(bindir)/$(TARGET):       $(TARGET) 
+!       $(INSTALL_PROGRAM) $@ $(TARGET) 
+  $(bindir)/vile-manfilt:    vile-manfilt 
+        $(INSTALL_PROGRAM) vile-manfilt $@
+  $(bindir)/vile-c-filt:     vile-c-filt 
+
+
+But on the other hand, it also doesn't want the final name of the 
+binary in the path mentioned (bad: /usr/local/bin/vile; good: /usr/local/bin/);
+I don't know enough make magic to get the basename stripped off. Perhaps
+the "$@" should just be $(bindir).
+
+
+------------"
+Another point of irritation is the autoindent behaviour when inserting
+blank lines; where vi will continue with a reduced indent after typing a
+CTRL-D, vile insists on keeping the indent on par with the last non-empty
+line.  (^^D is inteneded to be temporary, 0^D should be permanent, even if
+what you've entered is a blank line.  don't know about simple ^D.)
+
+-------------------------
+
+There's another thought for you, if I have a file, say 1000
+lines and at some point in the middle (say line 500), I enter
+the command ":1,w file1", it doesn't work.  In 'vi' it works
+fine but vile can't do it.  There's two errors in the line
+according to vile, the first is without saying ":1,.w", vile
+doesn't default to the current line (vi says this is valid)
+and then, the space after the "w" causes vile to say "invalid
+line specification".  HOWEVER!  Doing ":,$w file2" works fine,
+so vile DOES recognize that the unstated line number before
+the comma is the current line.
+
+------------------------------
+
+vile should accept a single line number as implying that line only.  Every
+version of vi I've ever used takes
+  :.w /tmp/dans
+or
+  :206w /tmp/dans
+to mean "write just exactly one line to /tmp/dans".
+----------------------
+
+
+file completion doesn't work in the presence of directories which match
+a substring of other files or directories.  that is:
+	:!mkdir foo
+	:!mkdir food
+	:!mkdir fool
+	:e foo<TAB>
+yields:
+	:e foo/
+instead of also providing "food" and "fool" as choices.  with the same
+setup, the following:
+	:e food<TAB>
+yields:
+	:e food/
+instead of also providing "fool".
+
+------------------------
+xvile (not vile) eats the -t option if you leave any space between
+the option and its argument.  Thus,
+  xvile -t donut
+_won't_ look in "tags" for "donut" then go edit the file referenced; while,
+  xvile -tdonut
+will, or for that matter
+  vile -t donut
+
+------------------------
+
+the tags search should do a real search, rather than the cheap scan
+it does now.
+
+------------------------
+
+I think there is a bug for th motif version of VILE. If I have two
+windows opened, I drag the resize button with my mouse to resize the top
+window. When the bottom window become too small, the two windows just
+simply disappear and become one window. The other versions (X11 and
+Plain) don't collapse windows. They will leave one line for the bottom
+window and display a message saying "Impossible change".
+
+------------
+
+When the various DOS/Windoze) .zip files are created, it would be nice if
+they included a formatted version of the man page ('cuz DOS/Windoze doesn't
+have nroff :-) ).
+-----------
+
+	I'm using vile 5.6 on Unix and I'm wondering if you could add to
+the next release of vile a method of bringing up a permanent list of
+buffers automatically on startup i.e.  execute the show-buffers command on
+startup.  [I realise that you haven't fully implemented the + command line
+option in vile ]
+
+------------"
+	'Could we have a XVile resource to set the color of the mouse cursor ?
+	Maybe XVile.mouse.color. This would make it easier to highlight blocks
+	of text.'
+
+------------"
+using '&' in pc-vile as the word-expansion replacement for ':' in regular
+vile may someday conflict if we want to spawn stuff in the background
+in VMS or win32 vile.  clearly the expansion chars should be made
+selectable.  not a big deal yet....
+
+

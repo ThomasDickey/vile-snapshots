@@ -1,0 +1,82 @@
+#
+# makefile for vile on WIN32 using Microsoft Visual C++
+#
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.11 1996/03/24 13:38:16 pgf Exp $
+#
+#
+!include <ntwin32.mak>
+
+CFLAGS = $(cvars) $(cdebug) -nologo -DWIN32_LEAN_AND_MEAN -G4 -Dscrn_chosen 
+LDFLAGS = -nologo -pdb:none
+
+# these are normal editable headers
+HDRS = estruct.h epath.h edef.h proto.h dirstuff.h
+
+# these headers are built by the mktbls program from the information in cmdtbl
+# and in modetbl
+BUILTHDRS = nebind.h nefunc.h nemode.h nename.h nevars.h
+
+SRC = 	main.c ntconio.c basic.c bind.c buffer.c crypt.c \
+	csrch.c display.c eval.c exec.c externs.c \
+	fences.c file.c filec.c \
+	fileio.c finderr.c glob.c globals.c history.c \
+	input.c insert.c itbuff.c isearch.c \
+	line.c modes.c msgs.c npopen.c oneliner.c opers.c \
+	path.c random.c regexp.c \
+	region.c search.c select.c spawn.c \
+	tags.c tbuff.c termio.c undo.c \
+	version.c window.c word.c wordmov.c map.c 
+
+OBJ = 	main.obj ntconio.obj basic.obj bind.obj buffer.obj crypt.obj \
+      	csrch.obj display.obj eval.obj exec.obj externs.obj \
+	fences.obj file.obj filec.obj \
+	fileio.obj finderr.obj glob.obj globals.obj history.obj \
+	input.obj insert.obj itbuff.obj isearch.obj \
+	line.obj modes.obj msgs.obj npopen.obj oneliner.obj opers.obj \
+	path.obj random.obj regexp.obj \
+	region.obj search.obj select.obj spawn.obj \
+	tags.obj tbuff.obj termio.obj undo.obj \
+	version.obj window.obj word.obj wordmov.obj map.obj 
+
+.c.obj:	
+	cl $(CFLAGS) -c $< -Fo$@ 
+
+vile.exe: 	$(BUILTHDRS) $(OBJ)
+	link $(LDFLAGS) $(OBJ) $(ldebug) $(conlflags) $(conlibs) -out:vile.exe user32.lib
+
+$(OBJ):	estruct.h
+
+nebind.h \
+nefunc.h \
+nename.h \
+nevars.h :	cmdtbl mktbls.exe
+	mktbls.exe cmdtbl
+
+nemode.h:	modetbl mktbls.exe
+	mktbls.exe modetbl
+
+mktbls.exe:  mktbls.c
+	cl $(CFLAGS) mktbls.c -Fomktbls -link $(LDFLAGS)
+
+clean:
+	del mktbls.exe
+	del *.obj
+	del ne*.h
+
+bind.obj:	epath.h nefunc.h
+eval.obj:	nevars.h
+exec.obj:	nefunc.h
+externs.obj:	nebind.h nename.h neproto.h nefunc.h
+filec.obj:	dirstuff.h
+glob.obj:	dirstuff.h
+globals.obj:	nefunc.h
+main.obj:	chgdfunc.h nevars.h
+modes.obj:	chgdfunc.h
+opers.obj:	nefunc.h
+path.obj:	dirstuff.h
+random.obj:	nefunc.h
+select.obj:	nefunc.h
+spawn.obj:	nefunc.h
+termio.obj:	nefunc.h
+version.obj:	patchlev.h
+word.obj:	nefunc.h

@@ -1,0 +1,183 @@
+.\" obligatory man page for vile
+.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.14 1996/05/01 20:52:08 pgf Exp $
+.TH VILE 1
+.SH NAME
+vile, xvile \- \fBVI L\fRike\fR \fBE\fRmacs
+.SH SYNOPSIS
+.B "vile [-hVv] [-s\fIpattern\fB] [+\fI/pattern\fB] [-t\fItag\fB] [-g\fINNN\fB] [+\fINNN\fB] [@\fIcmdfile\fB] [\fIfilename\fB]..."
+.SH DESCRIPTION
+.I vile
+is a text editor.  This man page is fairly terse.  More information can
+be obtained from the internal help, available with the \fB-h\fR option
+or by using the ":help" command from within
+.IR vile .
+.PP
+.I xvile
+is the same text editor, built as an X-windows application, with fully
+integrated mouse support, scrollbars, etc.
+.SH "SPIRIT"
+.I vile
+retains the "finger-feel", if you will, of
+.IR vi ,
+while adding the
+multiple buffer and multiple window features of emacs and other editors.
+It is definitely not a vi clone, in that some substantial stuff is
+missing, and the screen doesn't look quite the same.  
+The things that you tend to type over and
+over probably work.  Things done less frequently, like configuring
+a startup file, are somewhat (or very, depending on how ambitious
+you are) different.
+But what
+matters most is that one's "muscle memory" does the right thing
+to the text in front of you, and that is what
+.I vile
+tries to do for vi users.
+.SH OPTIONS
+.IP "+\fINNN\fR and -g\fINNN\fR"
+.I vile
+will begin the session on the first file at the specified line number.
+.IP "+/\fIpattern\fR or -s \fIpattern\fR"
+In the first file,
+.I vile
+will execute an initial search for the given pattern.
+.IP "-t \fItag\fR"
+.br
+.I vile
+will edit the correct file and move the cursor to the location of the tag.
+This requires a tagsfile created with the 
+.IR ctags (1)
+command.
+.IP -h
+Invokes
+.I vile
+on the helpfile.
+.IP -R
+Invokes
+.I vile
+in "readonly" mode \- no writes are permitted while
+in this mode.
+(This will also be true if
+.I vile
+is invoked as
+.IR view ,
+or if "readonly" mode is set in the startup file.)
+.IP -v
+Invokes
+.I vile
+in "view" mode \- no changes are permitted to any buffer while
+in this mode.
+.IP -V
+.I vile
+will report its version number.
+.IP @\fIcmdfile\fR
+.I vile
+will run the specified file as its startup
+file, and will bypass any normal startup file (i.e.
+.IR .vilerc )
+or environment variable (i.e. 
+.IR $VILEINIT ).
+.IP "-25 -43 -50"
+On PC systems you may be able to set the initial screen resolution from the
+command line.  See
+.I vile.hlp
+for details.
+.PP
+.IR xvile -specific
+command-line options are detailed in the help file (see "Standard X command
+line arguments").  The standard ones (e.g. -display, -fn, -geometry, -name,
+etc.) are all supported.
+.SH "INVOCATION"
+vile will edit the files specified on the command line.  If no files
+are specified, and standard input is not connected to a terminal, then
+vile will bring up a buffer containing the output of the pipe it is
+connected to, and will re-open /dev/tty for commands.  Files (except for
+the first) are not actually read into buffers until "visited".  All buffers
+are kept in memory: machines with not much memory or swap space may
+have trouble with this.
+.SH "STARTUP"
+If the
+.IR @ cmdfile
+option is given, then the file given as "cmdfile"
+will be run before any files are loaded.  If no
+.I @
+option appears, startup commands will be taken from the user's
+.I VILEINIT
+variable, if it is set, from the file
+.I .vilerc
+in the current directory, if it exists, or from
+.IR $HOME/.vilerc ,
+as a last resort.
+See the help file for examples of what sorts of things might go into
+these command files.
+.SH "COMMANDS"
+Please refer to the help available within 
+.I vile
+for
+.IR vile -specific
+commands.
+(That document, however, assumes familiarity with vi.)
+Short descriptions
+of each 
+.I vile
+command may be obtained with the ": describe-function" and 
+": describe-key" commands.  All commands may be listed with ": show-commands".
+.PP
+Additional documentation on writing macros using the internal scripting
+language can be found in the file "macros.doc", distributed with the vile
+source.
+.SH "RELATED PROGRAMS"
+.I vile
+may also be built and installed as
+.IR xvile ,
+in which case it
+behaves as a native X Windows application, with scrollbars, better mouse
+support, etc.  The help file has more information on this.
+.PP
+There is a program distributed with the vile source which
+is usually installed as
+.IR vile-manfilt .
+(Two versions of the source for 
+.I vile-manfilt
+are available, in C (manfilt.c) and in Perl (manfilt.pl).)
+It may be used in conjunction with
+.I vile
+or
+.I xvile
+(with the help of the macro in the file manpage.rc)
+to filter and view system manual pages.
+.I xvile
+will even 
+(with your font set properly) 
+display certain portions of the manual
+page text in bold or italics as appropriate.  
+See the help file for details.
+.PP
+Likewise, there is a
+.I vile-c-filt
+program which can embolden, underline, or perform coloring on C program
+source code.   (And again, two versions of the source, in C and in "flex",
+are available.)
+Again, see the help file for more information.
+.SH "SEE ALSO"
+Your favorite vi document, the file
+.IR macros.doc ,
+and the
+.I vile
+help page, available with the
+.I -h
+option or as the text file
+.IR vile.hlp .
+.SH "DEBTS and CREDITS"
+.I vile 
+was originally built from a copy of microEmacs, so a large debt of gratitude
+is due to the developers of that program.  A lot of people have helped with
+code and bug reports on
+.IR vile .
+Names are named at the bottom of the help file.
+.SH "AUTHORS"
+.I vile
+was created by Paul Fox, Tom Dickey, and Kevin Buettner.
+.SH "BUGS"
+The "\fBVI L\fRike\fR \fBE\fRmacs" joke isn't really funny.  It only
+sounds that way.  :-)   Other suspicious behavior should be reported
+to pgf@foxharp.boston.ma.us.

@@ -1,0 +1,220 @@
+#
+# 'vile' and 'mktbls' makefile for IBM C Set ++ 2.x (OS/2)
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.4 1996/03/24 13:38:16 pgf Exp $
+#
+
+# 
+# Compiler flags:
+#
+CC = icc
+
+# Debug options:
+DEBUG_FLAGS = /Ti+
+
+# Production options:
+PROD_FLAGS  = /O+
+
+#
+CFLAGS = /Q /Wpro $(DEBUG_FLAGS) /Dscrn_chosen /DDISP_VIO=1
+
+# File extension for object files:
+O = .obj
+
+# File extension for executable files:
+E = .exe
+
+# What source file should be built for display support?  (.c suffix assumed)
+SCREEN = os2vio
+
+MKTBLS = .\mktbls$E
+TARGET = vile$E
+
+BUILTHDRS = nebind.h nefunc.h nemode.h nename.h nevars.h
+
+all:	$(TARGET)
+
+clean:
+	-del *$O
+	-del *.cfg
+	-del *.bak
+	-del ne*.h
+	-del $(MKTBLS)
+
+clobber:	clean
+	-del $(TARGET)
+
+#		*List Macros*
+
+
+MKTBLS_DEPS =\
+mktbls$O
+
+#		*Explicit Rules*
+$(MKTBLS): $(MKTBLS_DEPS)
+	$(CC) $(CFLAGS) $(MKTBLS_DEPS) /Fe$@
+
+#		*Individual File Dependencies*
+mktbls$O: mktbls.c 
+
+VILE_DEPS =  \
+ basic$O \
+ bind$O \
+ buffer$O \
+ crypt$O \
+ csrch$O \
+ display$O \
+ eval$O \
+ exec$O \
+ externs$O \
+ fences$O \
+ file$O \
+ filec$O \
+ fileio$O \
+ finderr$O \
+ glob$O \
+ globals$O \
+ history$O \
+ input$O \
+ insert$O \
+ itbuff$O \
+ isearch$O \
+ line$O \
+ map$O \
+ modes$O \
+ msgs$O \
+ npopen$O \
+ oneliner$O \
+ opers$O \
+ os2pipe$O \
+ path$O \
+ random$O \
+ regexp$O \
+ region$O \
+ search$O \
+ select$O \
+ spawn$O \
+ tags$O \
+ tbuff$O \
+ termio$O \
+ undo$O \
+ version$O \
+ window$O \
+ word$O \
+ wordmov$O \
+ main$O \
+ $(SCREEN)$O
+
+#		*Explicit Rules*
+
+version:
+	@-del version$O
+
+$(TARGET): version $(VILE_DEPS)
+  $(CC) $(CFLAGS) $(VILE_DEPS) /Fe$@
+
+#		*Individual File Dependencies*
+VILE_CFG=	estruct.h nefkeys.h nemode.h edef.h proto.h
+
+basic$O:	$(VILE_CFG) basic.c 
+
+bind$O:	$(VILE_CFG) bind.c	epath.h	nefunc.h
+
+buffer$O:	$(VILE_CFG) buffer.c 
+
+crypt$O:	$(VILE_CFG) crypt.c 
+
+csrch$O:	$(VILE_CFG) csrch.c 
+
+display$O:	$(VILE_CFG) display.c 
+
+eval$O:	$(VILE_CFG) eval.c	nevars.h
+
+exec$O:	$(VILE_CFG) exec.c 	nefunc.h
+
+externs$O:	$(VILE_CFG) externs.c	nebind.h nename.h nefunc.h
+
+fences$O:	$(VILE_CFG) fences.c 
+
+file$O:	$(VILE_CFG) file.c 
+
+filec$O:	$(VILE_CFG) filec.c	dirstuff.h
+
+fileio$O:	$(VILE_CFG) fileio.c 
+
+finderr$O:	$(VILE_CFG) finderr.c 
+
+glob$O:	$(VILE_CFG) glob.c	dirstuff.h
+
+globals$O:	$(VILE_CFG) globals.c 	nefunc.h
+
+history$O:	$(VILE_CFG) history.c 
+
+input$O:	$(VILE_CFG) input.c 
+
+insert$O:	$(VILE_CFG) insert.c 
+
+isearch$O:	$(VILE_CFG) isearch.c 
+
+itbuff$O:	$(VILE_CFG) itbuff.c 
+
+line$O:	$(VILE_CFG) line.c 
+
+map$O:	$(VILE_CFG) map.c 
+
+modes$O:	$(VILE_CFG) modes.c 
+
+msgs$O:	$(VILE_CFG) msgs.c 
+
+npopen$O:	$(VILE_CFG) npopen.c 
+
+oneliner$O:	$(VILE_CFG) oneliner.c 
+
+opers$O:	$(VILE_CFG) opers.c 	nefunc.h
+
+os2pipe$O:	$(VILE_CFG) os2pipe.c 
+
+path$O:	$(VILE_CFG) path.c	dirstuff.h
+
+random$O:	$(VILE_CFG) random.c	nefunc.h
+
+regexp$O:	$(VILE_CFG) regexp.c 
+
+region$O:	$(VILE_CFG) region.c 
+
+search$O:	$(VILE_CFG) search.c 
+
+select$O:	$(VILE_CFG) select.c 	nefunc.h
+
+spawn$O:	$(VILE_CFG) spawn.c 	nefunc.h
+
+tags$O:	$(VILE_CFG) tags.c 
+
+tbuff$O:	$(VILE_CFG) tbuff.c 
+
+termio$O:	$(VILE_CFG) termio.c 	nefunc.h
+
+undo$O:	$(VILE_CFG) undo.c 
+
+version$O:	$(VILE_CFG) version.c 	patchlev.h
+
+window$O:	$(VILE_CFG) window.c 
+
+word$O:	$(VILE_CFG) word.c 	nefunc.h
+
+wordmov$O:	$(VILE_CFG) wordmov.c 
+
+main$O:	$(VILE_CFG) main.c	nevars.h
+
+$(SCREEN)$O:	$(VILE_CFG) $(SCREEN).c 
+
+nebind.h \
+nefunc.h \
+nefkeys.h \
+nename.h :	cmdtbl $(MKTBLS)
+	@echo making $@
+	$(MKTBLS) cmdtbl
+
+nevars.h \
+nemode.h:	modetbl $(MKTBLS)
+	@echo making $@
+	$(MKTBLS) modetbl

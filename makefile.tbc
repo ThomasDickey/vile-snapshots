@@ -1,0 +1,354 @@
+# This is a makefile for mktbls and vile under Turbo-C
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.tbc,v 1.19 1996/03/24 13:38:16 pgf Exp $
+
+.AUTODEPEND
+
+#		*Translator Definitions*
+#for Turbo C
+CC = tcc +vile.cfg
+#for Borland C+:
+#CC = bcc +vile.cfg
+
+#to use the faster direct video driver:
+SCREEN=ibmpc
+#to use the "console i/o" driver:
+# (also need to change to "#define DISP_BORLAND 1" in estruct.h)
+#SCREEN=borland
+
+# where are the libs?
+LIBPATH = C:\tc\LIB
+INCLUDEPATH = C:\tc\INCLUDE
+#LIBPATH = C:\bc4\LIB
+#INCLUDEPATH = C:\bc4\INCLUDE
+
+TASM = TASM
+TLIB = tlib
+TLINK = tlink
+
+LINKOPTS = /x/c/L$(LIBPATH) # use /v option to get debug-info
+
+THIS = makefile.tbc
+MKTBLS = .\mktbls.exe
+TARGET = vile.exe
+
+BUILTHDRS = nebind.h nefunc.h nefkeys.h nemode.h nename.h nevars.h
+
+all:	$(TARGET)
+
+clean:
+	-del *.obj
+	-del vile.cfg
+	-del *.bak
+	-del ne*.h
+	-del $(MKTBLS)
+
+clobber:	clean
+	-del $(TARGET)
+
+#		*Implicit Rules*
+.c.obj:
+  $(CC) -c {$< }
+
+.cpp.obj:
+  $(CC) -c {$< }
+
+#		*List Macros*
+
+
+MKTBLS_DEPS =  \
+ mktbls.obj
+
+#		*Explicit Rules*
+$(MKTBLS): vile.cfg $(MKTBLS_DEPS)
+  $(TLINK) $(LINKOPTS) @&&|
+c0l.obj+
+mktbls.obj
+mktbls
+		# no map file
+emu.lib+
+mathl.lib+
+cl.lib
+|
+
+# for Borland on OS/2
+#$(MKTBLS): vile.cfg $(MKTBLS_DEPS)
+#  $(TLINK) $(LINKOPTS) @&&|
+#c02.obj+
+#mktbls.obj
+#mktbls
+#		# no map file
+#c2.lib+
+#os2.lib+
+#|
+
+
+#		*Individual File Dependencies*
+mktbls.obj: vile.cfg mktbls.c 
+
+
+VILE_DEPS =  \
+ basic.obj \
+ bind.obj \
+ buffer.obj \
+ crypt.obj \
+ csrch.obj \
+ display.obj \
+ eval.obj \
+ exec.obj \
+ externs.obj \
+ fences.obj \
+ file.obj \
+ filec.obj \
+ fileio.obj \
+ finderr.obj \
+ glob.obj \
+ globals.obj \
+ history.obj \
+ input.obj \
+ insert.obj \
+ itbuff.obj \
+ isearch.obj \
+ line.obj \
+ map.obj \
+ modes.obj \
+ msgs.obj \
+ npopen.obj \
+ oneliner.obj \
+ opers.obj \
+ path.obj \
+ random.obj \
+ regexp.obj \
+ region.obj \
+ search.obj \
+ select.obj \
+ spawn.obj \
+ tags.obj \
+ tbuff.obj \
+ termio.obj \
+ undo.obj \
+ version.obj \
+ window.obj \
+ word.obj \
+ wordmov.obj \
+ main.obj \
+ $(SCREEN).obj
+
+#		*Explicit Rules*
+# Use /v option of tlink to get debugging info
+# Change c0l.obj to c02.obj for Borland on OS/2
+
+$(TARGET): vile.cfg $(VILE_DEPS)
+  $(CC) -c version.c
+  $(TLINK) $(LINKOPTS) @&&|
+c0l.obj+
+basic.obj+
+bind.obj+
+buffer.obj+
+crypt.obj+
+csrch.obj+
+display.obj+
+eval.obj+
+exec.obj+
+externs.obj+
+fences.obj+
+file.obj+
+filec.obj+
+fileio.obj+
+finderr.obj+
+glob.obj+
+globals.obj+
+history.obj+
+input.obj+
+insert.obj+
+isearch.obj+
+itbuff.obj+
+line.obj+
+map.obj+
+modes.obj+
+msgs.obj+
+npopen.obj+
+oneliner.obj+
+opers.obj+
+path.obj+
+random.obj+
+regexp.obj+
+region.obj+
+search.obj+
+select.obj+
+spawn.obj+
+tags.obj+
+tbuff.obj+
+termio.obj+
+undo.obj+
+version.obj+
+window.obj+
+word.obj+
+wordmov.obj+
+main.obj+
+$(SCREEN).obj
+vile
+		# no map file
+emu.lib+
+mathl.lib+
+cl.lib
+|
+
+# change above three libs to the following for Borland on OS/2
+# c2.lib+
+# os2.lib+
+
+
+#		*Individual File Dependencies*
+VILE_CFG=	vile.cfg estruct.h nefkeys.h nemode.h edef.h proto.h
+
+basic.obj:	$(VILE_CFG) basic.c 
+
+bind.obj:	$(VILE_CFG) bind.c	epath.h	nefunc.h
+
+buffer.obj:	$(VILE_CFG) buffer.c 
+
+crypt.obj:	$(VILE_CFG) crypt.c 
+
+csrch.obj:	$(VILE_CFG) csrch.c 
+
+display.obj:	$(VILE_CFG) display.c 
+
+eval.obj:	$(VILE_CFG) eval.c	nevars.h
+
+exec.obj:	$(VILE_CFG) exec.c 	nefunc.h
+
+externs.obj:	$(VILE_CFG) externs.c	nebind.h nename.h nefunc.h
+
+fences.obj:	$(VILE_CFG) fences.c 
+
+file.obj:	$(VILE_CFG) file.c 
+
+filec.obj:	$(VILE_CFG) filec.c	dirstuff.h
+
+fileio.obj:	$(VILE_CFG) fileio.c 
+
+finderr.obj:	$(VILE_CFG) finderr.c 
+
+glob.obj:	$(VILE_CFG) glob.c	dirstuff.h
+
+globals.obj:	$(VILE_CFG) globals.c 	nefunc.h
+
+history.obj:	$(VILE_CFG) history.c 
+
+input.obj:	$(VILE_CFG) input.c 
+
+insert.obj:	$(VILE_CFG) insert.c 
+
+isearch.obj:	$(VILE_CFG) isearch.c 
+
+itbuff.obj:	$(VILE_CFG) itbuff.c 
+
+line.obj:	$(VILE_CFG) line.c 
+
+map.obj:	$(VILE_CFG) map.c 
+
+modes.obj:	$(VILE_CFG) modes.c 
+
+msgs.obj:	$(VILE_CFG) msgs.c 
+
+npopen.obj:	$(VILE_CFG) npopen.c 
+
+oneliner.obj:	$(VILE_CFG) oneliner.c 
+
+opers.obj:	$(VILE_CFG) opers.c 	nefunc.h
+
+path.obj:	$(VILE_CFG) path.c	dirstuff.h
+
+random.obj:	$(VILE_CFG) random.c	nefunc.h
+
+regexp.obj:	$(VILE_CFG) regexp.c 
+
+region.obj:	$(VILE_CFG) region.c 
+
+search.obj:	$(VILE_CFG) search.c 
+
+select.obj:	$(VILE_CFG) select.c 	nefunc.h
+
+spawn.obj:	$(VILE_CFG) spawn.c 	nefunc.h
+
+tags.obj:	$(VILE_CFG) tags.c 
+
+tbuff.obj:	$(VILE_CFG) tbuff.c 
+
+termio.obj:	$(VILE_CFG) termio.c 	nefunc.h
+
+undo.obj:	$(VILE_CFG) undo.c 
+
+version.obj:	$(VILE_CFG) version.c   patchlev.h
+
+window.obj:	$(VILE_CFG) window.c 
+
+word.obj:	$(VILE_CFG) word.c 	nefunc.h
+
+wordmov.obj:	$(VILE_CFG) wordmov.c 
+
+main.obj:	$(VILE_CFG) main.c	nevars.h
+
+$(SCREEN).obj:	$(VILE_CFG) $(SCREEN).c 
+
+nebind.h \
+nefunc.h \
+nefkeys.h \
+nename.h :	cmdtbl $(MKTBLS)
+	@echo making $@
+	$(MKTBLS) cmdtbl
+
+nevars.h \
+nemode.h:	modetbl $(MKTBLS)
+	@echo making $@
+	$(MKTBLS) modetbl
+
+#		*Compiler Configuration File*
+# Except for unused-parameters, this turns on all applicable warning messages.
+vile.cfg: $(THIS)
+  copy &&|
+-ml
+-d
+-v
+-vi-
+-wamb
+-wamp
+-wasm
+-waus
+-wbbf
+-wbig
+-wccc
+-wcln
+-wcpt
+-wdef
+-wdpu
+-wdup
+-weas
+-weff
+-wext
+-will
+-wnod
+-w-par
+-wpia
+-wpin
+-wpro
+-wrch
+-wret
+-wrvl
+-wsig
+-wstu
+-wstv
+-wsus
+-wucp
+-wuse
+-wvoi
+-wzdi
+-w-nci
+-w-inl
+-w-ibc
+-w-pre
+-w-nst
+-I$(INCLUDEPATH)
+-L$(LIBPATH)
+| vile.cfg
+

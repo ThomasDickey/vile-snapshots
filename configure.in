@@ -1,0 +1,416 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_REVISION($Revision: 1.43 $)
+AC_PREREQ(2.4)
+
+### Use "configure -with-screen" to override the default configuration, which is
+### termcap-based on unix systems.
+
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.43 1996/06/12 18:14:19 pgf Exp $
+
+dnl
+AC_INIT(mktbls.c)
+
+###	checks for alternative programs
+AC_PROG_CC
+AC_PROG_CPP
+AC_GCC_TRADITIONAL
+AC_PROG_INSTALL
+
+###	use option --disable-echo to suppress full display compiling commands
+AC_ARG_ENABLE(echo,
+	[  --enable-echo           display \"compiling\" commands (default)],
+	[with_echo=$enableval],
+	[with_echo=yes])
+if test $with_echo = yes; then
+	ECHO_LD=''
+	ECHO_CC=''
+else
+	ECHO_LD='@echo linking $@;'
+	ECHO_CC='@echo compiling $@;'
+fi
+AC_SUBST(ECHO_LD)
+AC_SUBST(ECHO_CC)
+
+###	use option --with-cflags to set default CFLAGS
+AC_ARG_WITH(CFLAGS,
+	[  --with-CFLAGS=value     set default for \$CFLAGS],
+	[cflags=$withval])
+if test -z "$cflags"; then
+	AC_ARG_WITH(cflags,
+		[  --with-cflags=value     (same as --with-CFLAGS)],
+		[cflags=$withval])
+fi
+
+# if the user specified nothing else, set -O.  user can override
+# with --with-cflags=" "
+if test -n "$cflags"; then
+	CFLAGS="$cflags"
+else
+	CFLAGS="-O"
+fi
+
+###	use option --with-warnings to turn on all gcc warnings
+AC_ARG_WITH(warnings,
+	[  --with-warnings         turn on GCC compiler warnings],
+	[with_warnings=$withval])
+if test -n "$GCC"
+then
+	if test -n "$with_warnings"
+	then
+		CFLAGS="$CFLAGS -Wall -Wshadow -Wconversion -Wstrict-prototypes -Wmissing-prototypes"
+	fi
+fi
+
+# X11 checks will sometimes add to CFLAGS.  We want the state of CFLAGS
+# prior to these checks
+saved_CFLAGS=$CFLAGS
+
+###	checks for UNIX variants that set C preprocessor variables
+AC_AIX
+AC_ISC_POSIX
+AC_MINIX
+dnl: why this? AC_DYNIX_SEQ
+AC_CHECK_LIB(sun,getpwnam)
+
+# check for SCO.  this is a hack, and should be split into individual
+# features -- the sys/time.h and select.h conflict, and the need for
+# ptem.h due to winsize struct.
+AC_CHECKING([for SCO by checking on /usr/bin/scosh])
+AC_PROGRAM_CHECK(COULD_BE_SCO, [scosh], maybe, maybenot)
+if test "$COULD_BE_SCO" = "maybe"
+then
+	AC_DEFINE(SYSTEM_LOOKS_LIKE_SCO)
+fi
+
+# check for a lint program.
+AC_CHECK_PROGS(LINT, lint alint lclint, [])
+if test -n "$LINT"
+then
+	AC_DEFINE(SYSTEM_HAS_LINT_PROG)
+fi
+
+###	checks for header files
+AC_STDC_HEADERS
+AC_HEADER_DIRENT
+AC_CHECK_HEADERS(unistd.h stdlib.h stdarg.h stddef.h string.h memory.h fcntl.h \
+                poll.h termios.h termio.h sgtty.h \
+		ioctl.h select.h setjmp.h signal.h utime.h varargs.h)
+
+###	checks for <sys/xxx> header files (separate, to avoid bug in autoconf)
+AC_CHECK_HEADERS(sys/stat.h sys/filio.h sys/ioctl.h sys/itimer.h \
+		sys/param.h \
+		sys/resource.h sys/wait.h sys/time.h sys/select.h)
+
+###	checks for typedefs
+AC_TYPE_SIGNAL
+AC_DEFINE(SIGT,RETSIGTYPE)
+if test $ac_cv_type_signal = void; then
+	AC_DEFINE(SIGRET,[/*do nothing*/])
+else
+	AC_DEFINE(SIGRET,[return 0])
+fi
+
+AC_TYPE_SIZE_T
+AC_TYPE_OFF_T
+AC_TYPE_UID_T
+AC_TYPE_PID_T
+AC_CHECK_TYPE(time_t, long)
+
+###	checks for library functions
+AC_FUNC_SETVBUF_REVERSED
+
+###	checks for structures
+AC_STAT_MACROS_BROKEN
+AC_ST_BLKSIZE
+AC_ST_BLOCKS
+AC_ST_RDEV
+AC_TIME_WITH_SYS_TIME
+AC_STRUCT_TM
+
+###	checks for compiler characteristics
+AC_CONST
+VC_ANSI_CC
+
+# I haven't found a "losing" compiler to check the following on.  I gather
+# that some losing compiler's can be found on pyramid's, aix, and Apple's AUX2.
+AC_MSG_CHECKING([if switch cases work with structure offsets])
+AC_CACHE_VAL(vc_cv_case_offsetof,[
+	AC_TRY_COMPILE([],
+	[struct foo {int a,b;};
+	 extern getpid();
+	 switch(getpid()){case ((int) &(((struct foo *)0)->b)) : printf("foo"); } ],
+	[vc_cv_case_offsetof=yes],
+	[vc_cv_case_offsetof=no])
+	])
+AC_MSG_RESULT($vc_cv_case_offsetof)
+test $vc_cv_case_offsetof = no && AC_DEFINE(HAVE_LOSING_SWITCH_WITH_STRUCTURE_OFFSET)
+
+###	checks for system services and user specified options
+AC_LONG_FILE_NAMES
+VC_RESTARTABLE_PIPEREAD		# is a read() of a pipe restartable?
+
+AC_SUBST(CFLAGS)
+AC_SUBST(LIBS)
+AC_SUBST(X_CFLAGS)
+AC_SUBST(X_LIBS)
+AC_SUBST(X_EXTRA_LIBS)
+AC_SUBST(SCREEN)
+AC_SUBST(TARGET)
+dnl
+dnl The killpg test and the tests for the presence of certain functions on
+dnl a particular operating system are done prior to the checks for existence
+dnl of screen libraries due to a problem with -lXt on certain SunOS systems.
+dnl The nature of this problem is described in the FAQ on X.  Look for the
+dnl following subject: ``What are these problems with "_XtInherit not found"
+dnl on the Sun? ...''  The long and the short of it is that AC_HAVE_FUNCS will
+dnl not work properly (without being rewritten) if placed after adding -lXt to
+dnl LIBS on SunOS (and perhaps some others as well).
+dnl
+AC_FUNC_SETPGRP
+AC_FUNC_GETPGRP
+VC_KILLPG
+VC_ERRNO
+VC_SYS_ERRLIST
+AC_DEFINE(SYS_UNIX)
+AC_DEFINE(scrn_chosen)
+# Try to eventually eliminate the following
+AC_DEFINE(os_chosen)
+AC_ARG_WITH(screen,
+	[  --with-screen=value     specify terminal driver (e.g., tcap, X11)],
+	[screen=$withval])
+if test -z "$screen"; then
+	AC_ARG_WITH(scr,
+		[  --with-scr=value        (same as --with-screen)],
+		[screen=$withval])
+fi
+
+if test -z "$screen"; then
+	screen=termcap;
+fi
+
+case "$screen" in
+changequote(,)dnl
+	openlook | OpenLook | motif | Motif | [xX] | [xX][tT]* | [xX]11 )
+changequote([,])dnl
+		VC_AC_PREREQ(2.10.960526,[
+		# We need to check for -lsocket and -lnsl here in order
+		# to work around an autoconf bug.  autoconf-2.7 is not checking
+		# for these prior to checking for the X11R6 -lSM and -lICE
+		# libraries.  The resultant failures cascade...
+		AC_CHECK_LIB(socket,socket)
+		AC_CHECK_LIB(nsl,gethostname)])
+		AC_PATH_XTRA
+		# GNU autoconf-1.9 does not give me everything I need for
+		# X_CFLAGS.  The following test will (hopefully) find the
+		# additional flags needed to make it through X11/Xos.h.
+		AC_CHECKING([for additional compiler flags needed with X11])
+		if mkdir conftestdir; then
+			cd conftestdir
+			cat > Imakefile <<'EOF'
+findstddefs:
+	@echo 'im_std_defines="${STD_DEFINES}"'
+EOF
+			if (xmkmf) >/dev/null 2>/dev/null && test -f Makefile; then
+				# GNU make sometimes prints "make[1]: Entering...", which
+				# would confuse us.
+				eval `make findstddefs 2>/dev/null | grep -v make`
+				X_CFLAGS="$X_CFLAGS $im_std_defines"
+			fi
+			cd ..
+			rm -rf conftestdir
+		fi
+
+		LDFLAGS="$LDFLAGS $X_LIBS"
+		CFLAGS="$CFLAGS $X_CFLAGS"
+		SCREEN=x11
+		TARGET=xvile
+		AC_DEFINE(DISP_X11)
+		AC_DEFINE(XTOOLKIT)
+		AC_CHECK_HEADERS(X11/IntrinsicI.h)
+		AC_CHECK_LIB(X11,XOpenDisplay,,,
+			[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
+		AC_CHECK_LIB(Xt, XtAppInitialize,
+			[AC_DEFINE(HAVE_LIBXT) LIBS="-lXt $LIBS"],
+			AC_WARN(
+[Unable to successfully link X Toolkit library (-lXt) with test program.
+You will have to check and add the proper libraries by hand to makefile.]),
+			[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
+	;;
+esac
+
+case "$screen" in
+	open* | Open* )
+		AC_DEFINE(OL_WIDGETS)
+		if test -n "$OPENWINHOME"; then
+			X_LIBS="$X_LIBS -L${OPENWINHOME}/lib"
+			X_CFLAGS="$X_CFLAGS -I${OPENWINHOME}/include"
+		fi
+		LDFLAGS="$LDFLAGS $X_LIBS"
+		AC_CHECK_LIB(Xmu,XmuClientWindow)
+		AC_CHECK_LIB(Xol, OlToolkitInitialize,
+			[LIBS="-lXol -lm $LIBS"],
+			AC_ERROR(
+[Unable to successfully link OpenLook library (-lXol) with test program]))
+	;;
+	motif* | Motif* )
+		AC_DEFINE(MOTIF_WIDGETS)
+		AC_CHECK_LIB(gen, regcmp,,,
+			[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
+		AC_CHECK_LIB(Xmu,XmuClientWindow)
+		AC_CHECK_LIB(Xext,XextCreateExtension)
+		AC_HAVE_LIBRARY(XIM)
+		AC_CHECK_HEADERS(X11/IntrinsicI.h Xm/XmP.h)
+		AC_CHECK_LIB(Xm, XmProcessTraversal, [LIBS="-lXm $LIBS"],
+			AC_ERROR(
+[Unable to successfully link Motif library (-lXm) with test program]),
+			[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
+	;;
+changequote(,)dnl
+	x | X | [Xx][Tt]* | [Xx]11 )
+changequote([,])dnl
+		AC_DEFINE(NO_WIDGETS)
+	;;
+	ansi)
+		SCREEN=ansi
+		TARGET=vile
+		AC_DEFINE(DISP_ANSI)
+	;;
+	* )
+		SCREEN=tcap
+		TARGET=vile
+		AC_DEFINE(DISP_TERMCAP)
+		if test "$screen" = ncurses; then
+			AC_CHECK_LIB(ncurses, tparm, [LIBS="$LIBS -lncurses" termlib=found])
+		fi
+		if test "$termlib" != found; then
+			AC_CHECK_LIB(termlib, tgoto, [LIBS="$LIBS -ltermlib" termlib=found])
+		fi
+		if test "$termlib" != found; then
+			# allow curses library for broken AIX system.
+			AC_CHECK_LIB(curses, initscr, [LIBS="$LIBS -lcurses" termlib=found])
+			AC_CHECK_LIB(termcap, tgoto, [LIBS="$LIBS -ltermcap" termlib=found])
+		fi
+		if test "$termlib" != found; then
+			AC_CHECK_LIB(termcap, tgoto, [LIBS="$LIBS -ltermcap" termlib=found])
+		fi
+		if test "$termlib" != found; then
+			AC_WARN([Can't find -ltermlib, -lcurses, or -ltermcap])
+		fi
+		# BSD 'tputs()' may need 'PC' to be set.
+		AC_TRY_LINK([],[extern char PC; PC = 0],
+			[AC_DEFINE(HAVE_EXTERN_TCAP_PC)])
+	;;
+esac
+
+###	do this after X libraries, in case they want the same thing
+AC_TRY_LINK([],[gethostname();],,[
+	AC_CHECK_LIB(socket,socket)
+	AC_CHECK_LIB(nsl,gethostname)
+	])
+
+LIBS="$X_PRE_LIBS $LIBS $X_EXTRA_LIBS"
+
+AC_HAVE_FUNCS(sigprocmask setsid select poll strchr strrchr gethostname \
+	getcwd getwd killpg setvbuf access mkdir tcgetattr ttyname link \
+	setitimer sigaction symlink utime utimes alarm tparm tparam)
+
+###	mandatory checks for missing headers
+VC_MISSING_EXTERN( \
+environ \
+getenv \
+getwd \
+malloc \
+realloc \
+rindex \
+strtol \
+)
+
+###	optional checks for missing headers (enabled with --with-warnings)
+if test -n "$with_warnings"
+then
+VC_MISSING_EXTERN( \
+_filbuf \
+_flsbuf \
+access \
+alarm \
+atoi \
+bzero \
+chdir \
+close \
+dup \
+execlp \
+fclose \
+fflush \
+fgetc \
+fileno \
+fork \
+fprintf \
+fputc \
+fputs \
+fread \
+free \
+fseek \
+fwrite \
+gethostname \
+getpgrp \
+getpid \
+getuid \
+ioctl \
+isatty \
+kill \
+killpg \
+link \
+longjmp \
+lstat \
+memset \
+mkdir \
+mktemp \
+open \
+perror \
+pipe \
+printf \
+puts \
+qsort \
+read \
+readlink \
+select \
+setbuf \
+setbuffer \
+setitimer \
+setjmp \
+setpgrp \
+setsid \
+setvbuf \
+sleep \
+sscanf \
+system \
+time \
+unlink \
+utime \
+utimes \
+wait \
+write \
+)
+fi
+
+VC_ANSI_QSORT
+
+###	output makefile and config.h
+CFLAGS=$saved_CFLAGS
+changequote({,})dnl
+AC_OUTPUT(makefile config_h,
+{
+echo creating config.h
+rm -f config.h
+echo '/* generated by configure-script */' >config.h
+sed	-e '/^ -D/!d' \
+	-e 's/ -D/\
+#define /g' \
+	-e 's/\(#define [A-Za-z_][A-Za-z0-9_]*\)=/\1	/g' \
+	-e 's@\\@@g' \
+	config_h | sort >>config.h
+echo removing config_h
+rm config_h
+}
+)
+changequote([,])dnl
