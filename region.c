@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.106 2002/01/09 00:52:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.107 2002/02/03 20:40:56 tom Exp $
  *
  */
 
@@ -467,6 +467,16 @@ detab_region(void)
 }
 
 /*
+ * change leading tabs in the region to the right number of spaces
+ */
+int
+l_detab_region(void)
+{
+    regionshape = FULLLINE;
+    return do_lines_in_region(detabline, (void *) TRUE, FALSE);
+}
+
+/*
  * convert all appropriate spaces in the line to tab characters.
  * leadingonly says only do leading whitespace
  */
@@ -538,6 +548,16 @@ entab_region(void)
 {
     regionshape = FULLLINE;
     return do_lines_in_region(entabline, (void *) FALSE, FALSE);
+}
+
+/*
+ * convert leading spaces in the region to tab characters
+ */
+int
+l_entab_region(void)
+{
+    regionshape = FULLLINE;
+    return do_lines_in_region(entabline, (void *) TRUE, FALSE);
 }
 
 /*

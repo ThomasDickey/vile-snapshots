@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.94 2002/01/21 21:24:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.95 2002/02/04 00:39:24 tom Exp $
  *
  */
 
@@ -873,7 +873,7 @@ maplookup(
 		/* give it a little extra time... */
 		int timer = 0;
 #ifdef DISP_NTWIN
-		int cursor_state;
+		int cursor_state = 0;
 #endif
 
 		/* we want to use the longer of the two timers */

@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.147 2001/12/30 21:35:58 tom Exp $
+; $Id: filters.rc,v 1.148 2002/02/03 21:16:37 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -233,7 +233,7 @@ define-mode lex
 define-mode m4
 ~with define-submode m4
 	pre '^\s*dnl\>'
-	suf '\.m4$'
+	suf '\.\(ac\|m4\)$'
 	comment-prefix '^\s*\(dnl\|#\)'
 	comments   '^\s*\(dnl\>\|#\)\s*$'
 	fence-if   '^\s*\<if\>'

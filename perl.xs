@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.83 2002/01/09 00:40:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.84 2002/01/29 01:11:52 tom Exp $
  */
 
 /*#
@@ -1981,10 +1981,8 @@ mlreply(prompt, ...)
 	int status;
 
     PPCODE:
-	if (items == 2) {
-	    strncpy(buf, SvPV(ST(1),PL_na), NLINE-1);
-	    buf[NLINE-1] = EOS;
-	}
+	if (items == 2)
+	    vl_strncpy(buf, SvPV(ST(1),PL_na), sizeof(buf));
 	else if (items > 2)
 	    croak("Too many arguments to mlreply");
 	else
@@ -2753,10 +2751,10 @@ READLINE(vbp)
 	    if (use_ml_as_prompt && !is_empty_buf(bminip)) {
 		LINE *lp = lback(buf_head(bminip));
 		int len = llength(lp);
-		if (len > NLINE-1)
-		    len = NLINE-1;
-		strncpy(prompt, lp->l_text, len);
-		prompt[len] = 0;
+		if (len > sizeof(prompt)-1)
+		    len = sizeof(prompt)-1;
+		(void) memcpy(prompt, lp->l_text, len);
+		prompt[len] = EOS;
 	    }
 	    status = mlreply_no_opts(prompt, buf, sizeof(buf));
 #if OPT_HISTORY

@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.136 2002/01/09 00:40:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.137 2002/02/03 23:23:24 tom Exp $
  *
  */
 
@@ -211,6 +211,8 @@ show_selection_position(int yanked)
 
     }
 #endif /* WMDTERSELECT */
+    show_mark_is_set('<');
+    show_mark_is_set('>');
 }
 
 /* Start a selection at dot */
@@ -459,21 +461,49 @@ sel_all(int f GCC_UNUSED, int n GCC_UNUSED)
 	sel_yank(0);
     return (rc);
 }
-
-#if NEEDED
-int
-sel_attached(void)
-{
-    return startbufp == NULL;
-}
-#endif /* NEEDED */
+#endif /* OPT_SEL_YANK */
 
 BUFFER *
 sel_buffer(void)
 {
     return (startbufp != NULL) ? startbufp : selbufp;
 }
-#endif /* OPT_SEL_YANK */
+
+static int
+get_selregion(REGION * result)
+{
+    if (startbufp != NULL) {
+	*result = startregion.ar_region;
+	return TRUE;
+    } else if (selbufp != NULL) {
+	*result = selregion.ar_region;
+	return TRUE;
+    } else {
+	return FALSE;
+    }
+}
+
+int
+sel_get_leftmark(MARK * result)
+{
+    REGION my_region;
+    if (get_selregion(&my_region)) {
+	*result = my_region.r_orig;
+	return TRUE;
+    }
+    return FALSE;
+}
+
+int
+sel_get_rightmark(MARK * result)
+{
+    REGION my_region;
+    if (get_selregion(&my_region)) {
+	*result = my_region.r_end;
+	return TRUE;
+    }
+    return FALSE;
+}
 
 int
 sel_setshape(REGIONSHAPE shape)

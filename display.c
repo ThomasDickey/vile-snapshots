@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.359 2002/01/09 00:29:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.361 2002/02/04 00:39:08 tom Exp $
  *
  */
 
@@ -1290,7 +1290,7 @@ kbd_overlay(const char *s)
 {
     my_overlay[0] = EOS;
     if ((mpresf = (s != 0 && *s != EOS)) != 0) {
-	strncpy(my_overlay, s, sizeof(my_overlay) - 1);
+	vl_strncpy(my_overlay, s, sizeof(my_overlay));
     }
 }
 
@@ -2708,7 +2708,7 @@ special_formatter(TBUFF ** result, char *fs, WINDOW *wp)
 			 * arbitrarily long
 			 */
 
-			strncpy(temp, bp->b_fname, sizeof(temp) - 1);
+			vl_strncpy(temp, bp->b_fname, sizeof(temp));
 			temp[sizeof(temp) - 1] = '\0';
 			if ((p = shorten_path(temp, FALSE)) != 0
 			    && *p
@@ -2788,7 +2788,7 @@ special_formatter(TBUFF ** result, char *fs, WINDOW *wp)
 
 		    strncpy0(temp, save_fs, fs + 1 - save_fs);
 		    execstr = get_token(execstr, &tok, EOS, (int *) 0);
-		    strcpy(temp, tokval(temp));
+		    vl_strncpy(temp, tokval(temp), sizeof(temp));
 
 		    tb_free(&tok);
 		    execstr = save_execstr;
@@ -2945,7 +2945,7 @@ update_modeline(WINDOW *wp)
     if (modeline_modes(bp, &ms))
 	*ms++ = ' ';
     if (bp->b_fname != 0
-	&& (shorten_path(strcpy(temp, bp->b_fname), FALSE))
+	&& (shorten_path(vl_strncpy(temp, bp->b_fname, sizeof(temp)), FALSE))
 	&& !eql_bname(bp, temp)) {
 	if (is_internalname(temp)) {
 	    for (n = term.cols - (13 + strlen(temp));
@@ -3520,7 +3520,7 @@ mlmsg(const char *fmt, va_list * app)
     static int recur;
     int end_at;
 #ifdef DISP_NTWIN
-    int cursor_state;
+    int cursor_state = 0;
 #endif
     int do_crlf = (strchr(fmt, '\n') != 0
 		   || strchr(fmt, '\r') != 0);

@@ -1,5 +1,34 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20020203 (w)
+	+ indent'd line.c, oneliner.c, opers.c
+	+ implemented '< and '> marks, which denote the limits of the
+	  selection.
+	+ add ".ac" as a suffix for m4-files.
+	+ disallow attempts to re-read [p-lines] by making fileread() use the
+	  is_internalname() function rather than simply checking the length
+	  of the filename.
+	+ add commands leading-detab-til and leading-entab-til, binding those
+	  to ^X-' ' and ^X-^I.  Most of the logic was available internally.
+	+ modify ifile() to avoid infinite loop when reading a directory buffer
+	  into itself, e.g.,
+		:e /
+		:r /
+	  This still has a minor problem: the window scrolls up by one line
+	  each time the ":r" is performed.
+	+ modify SortMyBuff() to avoid corrupting DOT when reconstructing
+	  linked list, e.g., if reading a directory buffer into itself.
+	+ modify file.c to print the number of lines read from a directory.
+	+ modify makename() to check if the result buffer name is empty,
+	  setting it to NoName if that happens, e.g., when editing the root
+	  directory "/".
+	+ modify current_directory() and pathcat() to ensure their result
+	  cannot be longer than NFILEN.
+	+ replace several strncpy() and strcpy() calls by vl_strncpy().
+	+ modify fileuid_get() to discard file_stat's cache.
+	+ modify append_to_path_list() to use file_stat(), to check if a given
+	  file or directory exists before adding it to the list.
+
  20020121 (v)
 	> Tom Dickey:
 	+ indent'd menu.c, x11.c
@@ -177,7 +206,7 @@ Changes for vile 9.3 (released ??? ??? ?? 2000)
 	+ modify configure.in to avoid using changequote(), which is broken
 	  in autoconf 2.5x
 	+ updated install.sh from tin.
-	+ updated some configure script macros from changes for tin/lynx: 
+	+ updated some configure script macros from changes for tin/lynx:
 	  CF_HEADER_PATH, CF_LIBRARY_PATH, CF_MKSTEMP, CF_NCURSES_CPPFLAGS,
 	  CF_NCURSES_LIBS, CF_PATH_SYNTAX.
 
@@ -245,12 +274,12 @@ Changes for vile 9.3 (released ??? ??? ?? 2000)
 	  - npflush() no longer called if using native win32 pipes (the
 	    original call was always a nop for native pipes).
 	  - win32 hosts call npflush() _after_ closing write pipe file
-	    descriptor (important for the temp files implementation).   
+	    descriptor (important for the temp files implementation).
 	+ filters.rc no longer worries about the setting of w32pipes.
 	+ gnugpg.rc no longer mentions w32pipes.
 	+ macros.doc: remove force-console from example config file
 	+ delete doc/w32modes.doc
-	+ vile.hlp:  
+	+ vile.hlp:
 	  - w32pipes and force-console updates.
 	  - mention macros/gnugpg.rc wrt encryption (updated in vile.1 as well)
 	  - documented interaction between cygwin's bash, console vile, and
@@ -333,7 +362,7 @@ Changes for vile 9.3 (released ??? ??? ?? 2000)
 	+ doc/w32modes.doc now mentions WinME and W2K.
 	+ add macros/gnugpg.rc, examples of using GNU gpg to encrypt/decrypt
 	  a buffer.
-	+ added &qpasswd, which solicits a password string from the keyboard. 
+	+ added &qpasswd, which solicits a password string from the keyboard.
 	  Each typed character is echoed as '*'.  The password is not
 	  recallable via vile's usual history mechanism.  This feature enhances
 	  the security of the gpg macro wrappers (which have been successfully
@@ -422,7 +451,7 @@ Changes for vile 9.3 (released ??? ??? ?? 2000)
 	  and none of the screen-related functions return an error.  A message
 	  is needed to guide a user to gracefully exit vile w/o rebooting the
 	  system.  There is a small flicker when starting normally.
-	+ add 'mouse' mode for OS/2 (CSet), to disable mouse when not wanted. 
+	+ add 'mouse' mode for OS/2 (CSet), to disable mouse when not wanted.
 	  Modify logic in os2vio.c to sleep briefly in the loop polling the
 	  keyboard and mouse, thereby reducing CPU time for that (report by
 	  Paul Marwick <paulm@waitrose.com>).
@@ -484,7 +513,7 @@ Changes for vile 9.3 (released ??? ??? ?? 2000)
 	+ modify ntwinio.c so that custom cursor manipulation code does not
 	  show the cursor if the editor does not have focus.  This change is
 	  required to support the aforementioned bug fix.  I've also seen
-	  infrequent occasions where winvile still emits stray cursor glyphs. 
+	  infrequent occasions where winvile still emits stray cursor glyphs.
 	  This often occurs when I'm changing focus from some other app to the
 	  editor via a mouse click.  I hope this latter change eliminates a
 	  race condition within the editor.
@@ -1042,7 +1071,7 @@ Changes for vile 9.2 (released Tue Oct 17 2000)
 	  stdin/stdout handles, as well as ensure that the dynamically
 	  allocated console doesn't use black text on black background.
 	+ documentation updates: buglist item for winvile with :!ls
- 	> Brendan O'Dea:
+	> Brendan O'Dea:
 	+ fix a couple more places with untying handles for Perl.
 	> Tom Dickey:
 	+ document known problems with curses.c driver
@@ -1050,7 +1079,7 @@ Changes for vile 9.2 (released Tue Oct 17 2000)
  20001010 (z)
 	> Clark Morgan:
 	+ fix a display glitch in w32_keybrd_reopen().
- 	> Brendan O'Dea:
+	> Brendan O'Dea:
 	+ problem:  in Perl 5.6.0, some changes to the tied filehandle
 	  mechanism break anything which attempts to re-open STDOUT/STDERR,
 	  such as shell.pm as that now attempts to invoke the non-existent

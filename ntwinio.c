@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.122 2002/01/19 16:38:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.123 2002/01/29 01:54:43 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -1218,7 +1218,7 @@ ntwinio_font_frm_str(
 	logfont.lfItalic = TRUE;
     logfont.lfCharSet = DEFAULT_CHARSET;
     logfont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
-    strncpy(logfont.lfFaceName, str_rslts.face, LF_FACESIZE - 1);
+    vl_strncpy(logfont.lfFaceName, str_rslts.face, LF_FACESIZE);
     logfont.lfFaceName[LF_FACESIZE - 1] = '\0';
     if (!((hfont = CreateFontIndirect(&logfont)) != 0 && SelectObject(hdc, hfont))) {
 	(void) last_w32_error(use_mb);
@@ -1869,7 +1869,7 @@ invoke_popup_menu(MSG msg)
 	    } else {
 		/* rewrite menu text to clear out possible unmapped bindings */
 
-		strcpy(buf, ptbl->menu_name);
+		vl_strncpy(buf, ptbl->menu_name, sizeof(buf));
 	    }
 	    ModifyMenu(popup_menu,
 		       ptbl->menu_id,

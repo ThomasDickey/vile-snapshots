@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.244 2002/01/12 16:40:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.246 2002/02/04 01:26:50 tom Exp $
  *
  */
 
@@ -93,8 +93,8 @@ eol_range(const char *buffer, unsigned cpos, int c, int eolchar GCC_UNUSED)
 	|| (c == ':' && (cpos == 0 || buffer[cpos - 1] == c))
 	||			/* special test for 'a style mark references */
 	(cpos != 0
-	 && buffer[cpos - 1] == '\''
-	 && (isLower(c) || (c == '\''))))
+	 && buffer[cpos - 1] == SQUOTE
+	 && can_set_nmmark(c)))
 	return FALSE;
     return TRUE;
 }
@@ -454,9 +454,9 @@ execute_named_command(int f, int n)
 	}
     }
 
-    if (flags & NOMOVE)
-	save_DOT = DOT;
-    else if ((toline != null_ptr) || (fromline != null_ptr)) {
+    save_DOT = DOT;
+    if (!(flags & NOMOVE)
+	&& ((toline != null_ptr) || (fromline != null_ptr))) {
 	/* assume it's an absolute motion */
 	/* we could probably do better */
 	curwp->w_lastdot = DOT;
@@ -574,7 +574,7 @@ parse_linespec(const char *s, LINEPTR * markptr)
 	    status = gotoline(TRUE, num);
 	    if (status)
 		lp = DOT.l;
-	} else if (*s == '\'') {
+	} else if (*s == SQUOTE) {
 	    /* apostrophe means go to a set mark */
 	    s++;
 	    status = gonmmark(*s);
