@@ -3,7 +3,7 @@
  *
  * written for vile: Copyright (c) 1990, 1995-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.75 2000/01/30 23:16:29 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.76 2000/07/10 02:54:15 cmorgan Exp $
  *
  */
 
@@ -78,6 +78,7 @@
  *	one of the toss/copy/tag routines above.
  *  dumpuline() is called if the whole-line undo (the 'U' command) line
  *	may need to be flushed due to the current change.
+ *  redo_ok() and undo_ok() return T if something is on the appropriate stack.
  *
  * The command functions are:
  *  backundo() -- undo changes going back in history  (^X-u)
@@ -916,3 +917,22 @@ linesmatch(register LINE *lp1, register LINE *lp2)
 	return !memcmp(lp1->l_text, lp2->l_text, (SIZE_T)llength(lp1));
 }
 
+
+
+int
+undo_ok(void)
+{
+    LINE **lp = STACK(BACK);
+
+    return (*lp != NULL);
+}
+
+
+
+int
+redo_ok(void)
+{
+    LINE **lp = STACK(FORW);
+
+    return (*lp != NULL);
+}

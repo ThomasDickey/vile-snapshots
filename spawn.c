@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.159 2000/05/29 22:14:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.160 2000/07/10 02:41:33 cmorgan Exp $
  *
  */
 
@@ -156,7 +156,25 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 		spawnl( P_WAIT, shell, shell, NULL);
 #else
 #if SYS_WINNT
+# ifdef DISP_NTCONS
 		w32_CreateProcess(shell, FALSE);
+# else
+		/*
+		 * This is winvile, in which case the editor _might_ have
+		 * been launched from the command line (which implies
+		 * direct access to an existing Win32 console environment)
+		 * or else was launched as a true Win32 app (has no console
+		 * env).  The latter case requires that CreateProcess() is
+		 * called in such a way that a console is guaranteed to be
+		 * allocated in the editor's behalf.  
+		 *
+		 * The net result of the following call to w32_CreateProcess()
+		 * is that the spawned shell runs in its own process, while
+		 * winvile regains control immediately (i.e., there is no 
+		 * wait for the spawned shell to exit).
+		 */
+		w32_CreateProcess(shell, TRUE);
+# endif
 #else
 		system(shell);
 #endif

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.88 2000/04/26 08:59:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.89 2000/07/10 02:54:15 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -1696,7 +1696,11 @@ invoke_popup_menu(MSG msg)
 	strcat(buf, accel);
 	ModifyMenu(hmenu, IDM_UNDO, MF_BYCOMMAND | MF_STRING, IDM_UNDO, buf);
     }
-    /* FIXME -- should gray out undo/redo if not applicable. */
+    /* Can't undo/redo if not applicable. */
+    flag = (undo_ok()) ? MF_ENABLED : MF_GRAYED;
+    EnableMenuItem(hmenu, IDM_UNDO, MF_BYCOMMAND | flag);
+    flag = (redo_ok()) ? MF_ENABLED : MF_GRAYED;
+    EnableMenuItem(hmenu, IDM_REDO, MF_BYCOMMAND | flag);
 
     /* Can't paste data from clipboard if not TEXT. */
     flag = (IsClipboardFormatAvailable(CF_TEXT)) ? MF_ENABLED : MF_GRAYED;
@@ -1843,7 +1847,6 @@ handle_builtin_menu(WPARAM code)
 	 */
 
 	sel_yank(0);
-	sel_release();
 	cbrdcpy_unnamed(FALSE, FALSE);
 	update(FALSE);
 	break;

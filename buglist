@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.381 2000/06/17 02:44:36 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.382 2000/07/10 02:50:34 cmorgan Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1045,11 +1045,6 @@ there are circumstances in which keyboard input is being ignored.
 I also have minor pixelization problem with the MOTIF version:  a thin red
 border gets drawn around my window the second time I hit TAB during filename
 completion.
-
--- 97-04-30 (tom)
-
-Piping to vile from the command line in WinNT console works, but the mouse
-doesn't work after reopening the console.
 
 -- 97-05-16 (Richard A Ward <wardra@nb.rockwell.com>)
 

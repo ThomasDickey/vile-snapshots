@@ -1,5 +1,32 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000710 (n)
+	> Clark Morgan:
+	+ enable tilde-expansion for win32 in glob.c
+	+ modify spawncli() for win32 to ensure that a console window is
+	  created for the ":sh" command when winvile is invoked from a GUI
+	  rather than the command-line.
+	+ add -console command-line option to win32 console vile to provide
+	  workaround for make the mouse work when reading from stdin.
+	+ update some win32-specific features in help file.
+	+ copying to clipboard (via right mouse button) does not clear
+	  selection (mimics expected win32 application behavior).
+	+ undo/redo selections (via right mouse button) are context sensitive.
+	> Tom Dickey:
+	+ move special case for literal ^A in syntax-highlighted text into
+	  flt_putc() so other filters that happen to find a control/A will echo
+	  it as two characters, to work with the logic in parse_attribute().
+	+ add reset-majormode command, which tells vile to recompute the
+	  appropriate $majormode for the current buffer (suggested by a report
+	  by Shawn Halpenny who was constructing a temporary buffer which had
+	  no majormode associated -- setting the filename temporarily would
+	  allow this command to set the majormode).
+	+ revert binding change in editMinibuffer() so that vi-like commands
+	  such as B, e, $ will work again in ^G mode (reported by Jim Crigler
+	  <criglerj@acm.org>).
+	+ small fix to allow sccsfilt.l to build with flex 2.4, which did not
+	  define YYSTATE (on FreeBSD 2.1.5).
+
  20000627 (m)
  	+ small fix for doc/macros.doc (Clark Morgan).
  	+ initialize $xshell-flags to empty string since xshell.sh does not
