@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.229 1999/09/19 20:42:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.231 1999/09/26 18:29:54 tom Exp $
  *
  */
 
@@ -2488,6 +2488,46 @@ static void my_error_handler(String message)
     print_usage();
 }
 
+static void
+monochrome_cursor(void)
+{
+    cur_win->is_color_cursor = FALSE;
+    cur_win->cursor_fg = cur_win->bg;		/* undo our trickery */
+    cur_win->cursor_bg = cur_win->fg;
+    cur_win->cursgc = cur_win->reversegc;
+    cur_win->revcursgc = cur_win->textgc;
+}
+
+static int
+color_cursor(void)
+{
+    ULONG	gcmask;
+    XGCValues   gcvals;
+
+    gcmask = GCForeground | GCBackground | GCFont | GCGraphicsExposures;
+    gcvals.foreground = cur_win->fg;
+    gcvals.background = cur_win->bg;
+    gcvals.font = cur_win->pfont->fid;
+    gcvals.graphics_exposures = False;
+
+    cur_win->cursgc = XCreateGC(dpy,
+		DefaultRootWindow(dpy),
+		gcmask, &gcvals);
+    cur_win->revcursgc = XCreateGC(dpy,
+		DefaultRootWindow(dpy),
+		gcmask, &gcvals);
+
+    if (cur_win->cursgc == 0
+     || cur_win->revcursgc == 0) {
+	if (cur_win->cursgc    != 0) XFreeGC(dpy, cur_win->cursgc);
+	if (cur_win->revcursgc != 0) XFreeGC(dpy, cur_win->revcursgc);
+	monochrome_cursor();
+    }
+
+    cur_win->is_color_cursor = TRUE;
+    return TRUE;
+}
+
 /* ARGSUSED */
 int
 x_preparse_args(
@@ -3020,20 +3060,8 @@ x_preparse_args(
        && cur_win->bg == cur_win->cursor_bg)
      ||  (cur_win->fg == cur_win->cursor_bg
        && cur_win->bg == cur_win->cursor_fg)) {
-	cur_win->is_color_cursor = FALSE;
-	cur_win->cursor_fg = cur_win->bg;		/* undo our trickery */
-	cur_win->cursor_bg = cur_win->fg;
-	cur_win->cursgc = cur_win->reversegc;
-	cur_win->revcursgc = cur_win->textgc;
-    }
-    else {
-	cur_win->is_color_cursor = TRUE;
-	cur_win->cursgc = XCreateGC(dpy,
-		DefaultRootWindow(dpy),
-		gcmask, &gcvals);
-	cur_win->revcursgc = XCreateGC(dpy,
-		DefaultRootWindow(dpy),
-		gcmask, &gcvals);
+	monochrome_cursor();
+    } else if (color_cursor()) {
 	x_ccol(-1);
     }
 
@@ -6251,6 +6279,12 @@ x_ccol(int color)
     Pixel	fg, bg;
 
     TRACE(("x_ccol(%d)\n", color))
+    if (cur_win->is_color_cursor == FALSE) {
+	if (!color_cursor()) {
+	    gccolor = -1;
+	    return;
+	}
+    }
 
     fg = (color >= 0 && color < NCOLORS)
 		    ? ((cur_win->colors_bg[color] == cur_win->default_bg)

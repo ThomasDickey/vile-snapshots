@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.100 1999/09/21 00:34:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.102 1999/09/26 21:46:02 tom Exp $
  *
  */
 
@@ -637,8 +637,10 @@ paste_selection(void)
 {
 	if (!doingsweep) {
 		TRACE(("MOUSE paste selection\n"))
-		if (b_val(curbp,MDVIEW))
+		if (b_val(curbp,MDVIEW)) {
+			kbd_alarm();
 			return FALSE;
+		}
 		mayneedundo();
 		return putafter(FALSE, 1);
 	}
@@ -1354,6 +1356,7 @@ doexechypercmd(char *cmd)
     return docmd(cmd,TRUE,FALSE,1);
 }
 
+/*ARGSUSED*/
 int
 exechypercmd(int f GCC_UNUSED, int n GCC_UNUSED)
 {
@@ -1369,6 +1372,7 @@ doshowhypercmd(char *cmd)
     return 1;
 }
 
+/*ARGSUSED*/
 int
 showhypercmd(int f GCC_UNUSED, int n GCC_UNUSED)
 {

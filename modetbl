@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.153 1999/09/19 20:05:48 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.154 1999/09/22 21:34:16 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -311,7 +311,7 @@ string
 
 # These names are a little cryptic because I'm squeezing them into an 80-column
 # display for show-printable -TD
-.table charclass		OPT_SHOW_CTYPE	
+.table charclass		OPT_SHOW_CTYPE
 "upr"		vl_UPPER
 "lwr"		vl_LOWER
 "num"		vl_DIGIT

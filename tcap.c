@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.123 1999/09/19 19:42:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.125 1999/09/26 17:16:20 tom Exp $
  *
  */
 
@@ -330,6 +330,14 @@ tcapopen(void)
 	/* FIXME: do xmc/ug */
 	};
 
+	static char * fallback_arrows[] = {
+	    "\033",	/* VT52 */
+	    "\033O",	/* SS3 */
+	    "\033[",	/* CSI */
+	    "\217",	/* SS3 */
+	    "\233",	/* CSI */
+	};
+
 	if (already_open)
 		return;
 
@@ -402,7 +410,7 @@ tcapopen(void)
 		/* allow aliases */
 		if (NO_CAP(*(tc_strings[i].data))) {
 		    t = TGETSTR(tc_strings[i].name, &p);
-		    TRACE(("TGETSTR(%s) = %s\n", tc_strings[i].name, 
+		    TRACE(("TGETSTR(%s) = %s\n", tc_strings[i].name,
 			    (t != 0)
 			    	? visible_buff(t, strlen(t), FALSE)
 				: "<null>"))
@@ -493,6 +501,17 @@ tcapopen(void)
 	}
 #endif
 
+	/*
+	 * Provide fallback definitions for all ANSI/ISO/DEC cursor keys.
+	 */
+	for (i = 0; i < TABLESIZE(fallback_arrows); i++) {
+	    for (j = 'A'; j <= 'D'; j++) {
+		char temp[80];
+		lsprintf(temp, "%s%c", fallback_arrows[i], j);
+		addtosysmap(temp, strlen(temp), SPEC|j);
+	    }
+	}
+
 #if SYS_OS2_EMX
 	for (i = TABLESIZE(VIO_KeyMap); i--; ) {
 		addtosysmap(VIO_KeyMap[i].seq, 2, VIO_KeyMap[i].code);
@@ -502,6 +521,8 @@ tcapopen(void)
 	    char *seq = TGETSTR(keyseqs[i].capname, &p);
 	    if (!NO_CAP(seq)) {
 		int len;
+		TRACE(("TGETSTR(%s) = %s\n", keyseqs[i].capname,
+			    	visible_buff(seq, strlen(seq), FALSE)))
 #define DONT_MAP_DEL 1
 #if DONT_MAP_DEL
 		/* NetBSD, FreeBSD, etc. have the kD (delete) function key

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.53 1999/09/21 01:57:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.57 1999/09/27 00:45:22 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -28,8 +28,6 @@
 #define FIXME_POSCHANGING 1		/* this doesn't seem to help */
 #define FIXME_RECUR_SB 0		/* I'm not sure this is needed */
 
-#define OPT_POPUP_WINOPEN 0		/* if right button pops up winopen */
-
 #if OPT_TRACE
 #define IGN_PROC(tag,name) \
 	case name: \
@@ -54,9 +52,6 @@
 
 #define MY_FONT  SYSTEM_FIXED_FONT	/* or ANSI_FIXED_FONT		*/
 #define GetMyFont() vile_font
-
-#define MM_OPEN 1
-#define MM_FONT 2
 
 #define NROW	128			/* Max Screen size.		*/
 #define NCOL    256			/* Edit if you want to.         */
@@ -129,6 +124,7 @@ static	int	dont_update_sb = FALSE;
 static	int	desired_wdw_state, gui_resize_in_progress;
 static	DWORD	default_fcolor;
 static	DWORD	default_bcolor;
+static	int	enable_popup = TRUE;
 
 #ifdef VILE_OLE
 static	OLEAUTO_OPTIONS oa_opts;
@@ -266,6 +262,7 @@ message2s(unsigned code)
 		{ WM_CLOSE,		"WM_CLOSE" },
 		{ WM_CREATE,		"WM_CREATE" },
 		{ WM_CTLCOLORSCROLLBAR,	"WM_CTLCOLORSCROLLBAR" },
+		{ WM_CONTEXTMENU,	"WM_CONTEXTMENU" },
 		{ WM_DROPFILES,		"WM_DROPFILES" },
 		{ WM_ENABLE,		"WM_ENABLE" },
 		{ WM_ENTERIDLE,		"WM_ENTERIDLE" },
@@ -295,6 +292,7 @@ message2s(unsigned code)
 		{ WM_PAINT,		"WM_PAINT" },
 		{ WM_PARENTNOTIFY,	"WM_PARENTNOTIFY" },
 		{ WM_QUERYNEWPALETTE,	"WM_QUERYNEWPALETTE" },
+		{ WM_RBUTTONUP,		"WM_RBUTTONUP" },
 		{ WM_SETCURSOR,		"WM_SETCURSOR" },
 		{ WM_SETFOCUS,		"WM_SETFOCUS" },
 		{ WM_SETTEXT,		"WM_SETTEXT" },
@@ -1556,8 +1554,68 @@ get_keyboard_state(void)
 	return result;
 }
 
+static void
+enable_popup_menu(void)
+{
+	enable_popup = !enable_popup;
+	CheckMenuItem(vile_menu,
+		IDM_MENU,
+		MF_BYCOMMAND|(enable_popup ? MF_CHECKED : MF_UNCHECKED));
+	DrawMenuBar(vile_menu);
+}
+
+static void
+invoke_popup_menu(MSG msg)
+{
+	static HMENU hmenu;
+	POINT	     point;
+
+	TRACE(("invoke_popup_menu\n"))
+	if (hmenu == NULL) {
+		hmenu = LoadMenu(vile_hinstance,
+				 "WinvilePopMenu");
+		hmenu = GetSubMenu(hmenu, 0);
+	}
+	point.x = LOWORD(msg.lParam);
+	point.y = HIWORD(msg.lParam);
+	ClientToScreen(msg.hwnd, &point);
+	TrackPopupMenu(hmenu,
+		       0,
+		       point.x,
+		       point.y,
+		       0,
+		       msg.hwnd,
+		       NULL) ;
+	TRACE(("...invoke_popup_menu\n"))
+}
+
 static int
-MouseClickSetPos(POINT *result)
+handle_builtin_menu(WPARAM code)
+{
+	int result = TRUE;
+
+	TRACE(("handle_builtin_menu code=%#x\n", code))
+	switch (LOWORD(code)) {
+	case IDM_OPEN:
+		winopen(0, 0);
+		update(FALSE);
+		break;
+	case IDM_FONT:
+		set_font();
+		break;
+	case IDM_MENU:
+		enable_popup_menu();
+		update(FALSE);
+		break;
+	default:
+		result = FALSE;
+	}
+	TRACE(("...handle_builtin_menu code ->%d\n", result))
+	return result;
+}
+
+static void
+GetMousePos(POINT *result)
 {
 	DWORD dword;
 	POINTS points;
@@ -1568,9 +1626,53 @@ MouseClickSetPos(POINT *result)
 	ScreenToClient(cur_win->main_hwnd, result);
 	result->x /= nCharWidth;
 	result->y /= nLineHeight;
+}
+
+static int
+MouseClickSetPos(POINT *result, int *onmode)
+{
+	WINDOW *wp;
+
+	GetMousePos(result);
 
 	TRACE(("GETC:setcursor(%d, %d)\n", result->y, result->x))
-	return setcursor(result->y, result->x);
+
+	/*
+	 * If we're getting a button-down in a window, allow it to begin a
+	 * selection.  A button-down on its modeline will allow resizing the
+	 * window.
+	 */
+	*onmode = FALSE;
+	if ((wp = row2window(result->y)) != 0) {
+		if (result->y == mode_row(wp)) {
+			*onmode = TRUE;
+			sel_release();
+			return TRUE;
+		}
+		return setcursor(result->y, result->x);
+	}
+	sel_release();
+	return FALSE;
+}
+
+/*
+ * Shrink a window by dragging the modeline
+ */
+static int
+adjust_window(WINDOW *wp, POINT *current, POINT *latest)
+{
+	if (latest->y == mode_row(wp)) {
+		if (current->y != latest->y) {
+			WINDOW *save_wp = curwp;
+			set_curwp(wp);
+			shrinkwind(FALSE, latest->y - current->y);
+			set_curwp(save_wp);
+			update(TRUE);
+		}
+		*latest = *current;
+		return TRUE;
+	}
+	return FALSE;
 }
 
 static int
@@ -1582,6 +1684,7 @@ ntgetch(void)
 	DWORD dword;
 	DWORD thisclick;
 	int buttondown = FALSE;
+	int onmode = FALSE;
 	int have_focus = 0;
 	int result = 0;
 	KEY_EVENT_RECORD ker;
@@ -1590,6 +1693,7 @@ ntgetch(void)
 	POINT latest;
 	POINTS points;
 	UINT clicktime = GetDoubleClickTime();
+	WINDOW *that_wp = 0;
 
 	if (saveCount > 0) {
 		saveCount--;
@@ -1662,11 +1766,13 @@ ntgetch(void)
 		case WM_LBUTTONDOWN:
 			TRACE(("GETC:LBUTTONDOWN %s\n", which_window(msg.hwnd)))
 			if (msg.hwnd == cur_win->text_hwnd) {
-				if (MouseClickSetPos(&first)) {
+				if (MouseClickSetPos(&first, &onmode)) {
 					fhide_cursor();
+					that_wp = row2window(first.y);
 					(void)sel_begin();
 					(void)update(TRUE);
 					buttondown = TRUE;
+					latest = first;
 				}
 			} else {
 				DispatchMessage(&msg);
@@ -1698,9 +1804,10 @@ ntgetch(void)
 				}
 
 				if (buttondown) {
+					if (MouseClickSetPos(&latest, &onmode))
+						sel_yank(0);
 					buttondown = FALSE;
-					(void)MouseClickSetPos(&latest);
-					sel_yank(0);
+					onmode = FALSE;
 				}
 				(void)update(TRUE);
 				fshow_cursor();
@@ -1728,10 +1835,12 @@ ntgetch(void)
 		case WM_MBUTTONDOWN:
 			TRACE(("GETC:MBUTTONDOWN %s\n", which_window(msg.hwnd)))
 			if (msg.hwnd == cur_win->text_hwnd) {
-				(void)MouseClickSetPos(&latest);
-				sel_yank(0);
-				sel_release();
-				paste_selection();
+				if (MouseClickSetPos(&latest, &onmode)
+				 && !onmode) {
+					sel_yank(0);
+					sel_release();
+					paste_selection();
+				}
 				(void)update(TRUE);
 			} else {
 				DispatchMessage(&msg);
@@ -1741,70 +1850,57 @@ ntgetch(void)
 		case WM_RBUTTONDOWN:
 			TRACE(("GETC:RBUTTONDOWN %s\n", which_window(msg.hwnd)))
 			if (msg.hwnd == cur_win->text_hwnd) {
-#if OPT_POPUP_WINOPEN
-				static HMENU hmenu;
-				POINT	     point;
-
-				if (hmenu == NULL) {
-					hmenu = LoadMenu(vile_hinstance,
-							 "WinvilePopMenu");
-					hmenu = GetSubMenu(hmenu, 0);
-				}
-				point.x = LOWORD(msg.lParam);
-				point.y = HIWORD(msg.lParam);
-				ClientToScreen(msg.hwnd, &point);
-				TrackPopupMenu(hmenu,
-					       0,
-					       point.x,
-					       point.y,
-					       0,
-					       msg.hwnd,
-					       NULL) ;
-#else
-				if (MouseClickSetPos(&latest)) {
-					sel_extend(FALSE,TRUE);
+				if (enable_popup) {
+					invoke_popup_menu(msg);
+				} else if (MouseClickSetPos(&latest, &onmode)) {
+					if (!onmode) {
+						sel_yank(0);
+						cbrdcpy_unnamed(FALSE,1);
+					}
 					(void)update(TRUE);
 				}
-#endif
 			} else {
 				DispatchMessage(&msg);
 			}
 			break;
 
-#if OPT_POPUP_WINOPEN
 		case WM_COMMAND:
-			if (LOWORD(msg.wParam) == IDM_OPEN) {
-				winopen(0, 0);
-
-				/*
-				 * workaround repaint bug--sometimes cursor hangs in
-				 * mini-buffer and screen is not updated.
-				 */
-				update(FALSE);
-			}
-			else
+			TRACE(("GETC:WM_COMMAND, popup:%d, wParam:%#x\n", enable_popup, msg.wParam))
+			if (enable_popup) {
+				handle_builtin_menu(msg.wParam);
+			} else {
 				DispatchMessage(&msg);
+			}
 			break;
-#endif
 
 		case WM_MOUSEMOVE:
 			if (buttondown) {
-				int x = PixelToCol(LOWORD(msg.lParam));
-				int y = PixelToRow(HIWORD(msg.lParam));
-
-				TRACE(("GETC:MOUSEMOVE (%d,%d)%s\n",
-					x, y, buttondown ? " selecting" : ""));
+				POINT current;
 
 				fhide_cursor();
-				if (!setcursor(y, x))
+
+				GetMousePos(&current);
+				TRACE(("GETC:MOUSEMOVE (%d,%d)%s\n",
+					current.x, current.y,
+					buttondown ? " selecting" : ""));
+
+				if (onmode
+				 && adjust_window(that_wp, &current, &latest))
 					break;
+
+				if (that_wp != row2window(current.y))
+					break;
+				if (!setcursor(current.y, current.x))
+					break;
+
 				if (get_keyboard_state()
 				 & (LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED))
 					(void)sel_setshape(RECTANGLE);
 				if (!sel_extend(TRUE, TRUE))
 					break;
 				(void)update(TRUE);
-			}
+			} else
+				DispatchMessage(&msg);
 			break;
 
 		default:
@@ -2332,18 +2428,26 @@ receive_dropped_files(HDROP hDrop)
 {
 	char name[NFILEN];
 	UINT inx = 0xFFFFFFFF;
-	UINT limit = DragQueryFile(hDrop, inx, name, sizeof(name)); 
+	UINT limit = DragQueryFile(hDrop, inx, name, sizeof(name));
 	BUFFER *bp = 0;
+	char *leaf;
 
 	TRACE(("receiving %d dropped files\n", limit))
 	while (++inx < limit) {
-		DragQueryFile(hDrop, inx, name, sizeof(name)); 
+		DragQueryFile(hDrop, inx, name, sizeof(name));
 		TRACE(("...'%s'\n", name))
 		if ((bp = getfile2bp(name, FALSE, FALSE)) != 0)
 			bp->b_flag |= BFARGS; /* treat this as an argument */
 	}
 	if (bp != 0) {
-            swbuffer(bp);  /* editor switches to 1st buffer */
+            if (swbuffer(bp)) {  /* editor switches to 1st buffer */
+	    	leaf = pathleaf(strcpy(name, bp->b_fname));
+		if (leaf != 0
+		 && leaf != name) {
+		    *leaf = EOS;
+		    set_directory(name);
+		}
+	    }
 	    update(TRUE);
 	}
 	DragFinish(hDrop);
@@ -2494,16 +2598,7 @@ LONG FAR PASCAL MainWndProc(
 			syscommand2s(LOWORD(wParam)),
 			HIWORD(lParam),
 			LOWORD(lParam)))
-		switch(LOWORD(wParam))
-		{
-		case MM_OPEN:
-			winopen(0, 0);
-			update(FALSE);
-			break;
-		case MM_FONT:
-			set_font();
-			break;
-		}
+		handle_builtin_menu(wParam);
 		return (DefWindowProc(hWnd, message, wParam, lParam));
 
 #if OPT_SCROLLBARS
@@ -2638,8 +2733,10 @@ InitInstance(HINSTANCE hInstance)
 	 */
 	vile_menu = GetSystemMenu(cur_win->main_hwnd, FALSE);
 	AppendMenu(vile_menu, MF_SEPARATOR, 0, NULL);
-	AppendMenu(vile_menu, MF_STRING, MM_OPEN, "&Open");
-	AppendMenu(vile_menu, MF_STRING, MM_FONT, "&Font");
+	AppendMenu(vile_menu, MF_STRING, IDM_OPEN, "&Open");
+	AppendMenu(vile_menu, MF_STRING, IDM_FONT, "&Font");
+	AppendMenu(vile_menu, MF_SEPARATOR, 0, NULL);
+	AppendMenu(vile_menu, MF_STRING|MF_CHECKED, IDM_MENU, "&Menu");
 
 #if OPT_SCROLLBARS
 	if (check_scrollbar_allocs() != TRUE)

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.303 1999/09/14 10:37:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.304 1999/09/22 21:31:29 tom Exp $
  *
  */
 
@@ -2654,7 +2654,7 @@ char	**msptr)
 	PutMode(MDCRYPT,	"crypt")
 #endif
 	PutMode(MDDOS,		"dos-style")
-#if OPT_RECORDSEP_CHOICES    
+#if OPT_RECORDSEP_CHOICES
 	if (b_val(bp, MDDOS) ^ ((b_val(bp, VAL_RECORD_SEP) == RS_CRLF)))
 		PutModename("%c%s",
 			choice_to_name(fsm_recordsep_choices,

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.253 1999/09/21 01:06:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.255 1999/09/22 21:42:05 tom Exp $
  *
  */
 
@@ -90,6 +90,7 @@ makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 	}
 }
 
+/* ARGSUSED */
 static int
 show_CharClasses(BUFFER *bp GCC_UNUSED)
 {
@@ -106,6 +107,7 @@ update_char_classes(void)
 #define update_char_classes() /*nothing*/
 #endif
 
+/* ARGSUSED */
 int
 desprint(int f GCC_UNUSED, int n GCC_UNUSED)
 {
@@ -185,6 +187,7 @@ update_charclasses(char *tag, int count)
 	return TRUE;
 }
 
+/* ARGSUSED */
 int
 set_charclass(int f GCC_UNUSED, int n GCC_UNUSED)
 {
@@ -210,6 +213,7 @@ set_charclass(int f GCC_UNUSED, int n GCC_UNUSED)
 	return FALSE;
 }
 
+/* ARGSUSED */
 int
 unset_charclass(int f GCC_UNUSED, int n GCC_UNUSED)
 {
@@ -235,6 +239,7 @@ unset_charclass(int f GCC_UNUSED, int n GCC_UNUSED)
 	return FALSE;
 }
 
+/* ARGSUSED */
 int
 reset_charclasses(int f GCC_UNUSED, int n GCC_UNUSED)
 {
@@ -350,12 +355,12 @@ get_listvalue(const char *name, int showall)
 }
 #endif /* OPT_SHOW_EVAL */
 
-/* ARGSUSED */
 #if OPT_SHOW_EVAL
 
 static int show_vars_f;
 static int show_vars_n;
 
+/* ARGSUSED */
 static int
 show_VariableList(BUFFER *bp GCC_UNUSED)
 {
@@ -478,7 +483,7 @@ static void
 path_trim(char *path)
 {
 #if SYS_UNIX
-	while (strlen(path) > 1) {
+	while ((int)strlen(path) > 1) {
 		char *last = path + strlen(path) - 1;
 		if (is_slashc(*last))
 			*last = EOS;
@@ -486,7 +491,7 @@ path_trim(char *path)
 			break;
 	}
 #else
-#if OPT_MSDOS_PATH 
+#if OPT_MSDOS_PATH
 	while (strlen(path) > 2) {
 		char *last = path + strlen(path) - 1;
 		if (is_slashc(*last)
@@ -1201,6 +1206,7 @@ static void show_attr(int color, const char *attr, const char *name)
 /*
  * This will show the foreground colors, which we can display with attributes.
  */
+/* ARGSUSED */
 static void
 makecolorlist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 {
@@ -1232,6 +1238,7 @@ makecolorlist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 		attribute_cntl_a_seqs_in_region(&region, FULLLINE);
 }
 
+/* ARGSUSED */
 int
 descolors(int f GCC_UNUSED, int n GCC_UNUSED)
 {
@@ -1239,6 +1246,7 @@ descolors(int f GCC_UNUSED, int n GCC_UNUSED)
 }
 
 #if OPT_UPBUFF
+/* ARGSUSED */
 static int
 update_colorlist(BUFFER *bp GCC_UNUSED)
 {
@@ -1372,6 +1380,7 @@ const char *tokn)
 
 #if OPT_MACRO_ARGS
 
+/* ARGSUSED */
 static int
 complete_integer(DONE_ARGS GCC_UNUSED)
 {
@@ -1602,6 +1611,7 @@ save_arguments(BUFFER *bp)
 /*
  * Pop the list of arguments off our stack
  */
+/* ARGSUSED */
 void
 restore_arguments(BUFFER *bp GCC_UNUSED)
 {

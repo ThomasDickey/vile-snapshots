@@ -3795,10 +3795,11 @@ Win32 specifics
 	-----------------------
 	Selecting and dragging with the left mouse button yanks text to the
 	unnamed register.  Press a control key during the selection to
-	sweep out a rectangular region.  Extend the selection beyond the
-	bottom of the current window by continuing to hold the left mouse
-	button down while moving the cursor back and forth across the
-	window's mode line.
+	sweep out a rectangular region.  Paste the selected text using the
+	second (middle) mouse button. Clear a selection by clicking on a
+	modeline.
+
+	Resize a window by dragging its modeline up/down.
 
 	Change vile's window focus via left mouse button clicks (when
 	multiple windows are displayed).
@@ -3806,8 +3807,16 @@ Win32 specifics
 	Winvile Mouse
 	-------------
 	Pressing the right mouse button pops up a menu of editor commands.
-	Currently, the only menu selection is "Open...", which executes the
-	"winopen" command (described below).
+	These are predefined:
+
+		"Open", which executes the "winopen" command (described below).
+		"Font", described below.
+		"Menu", to disable the popup menu, allowing use of the right
+			mouse button for copying the selection to the clipboard.
+
+	The popup menu contains the same entries as those added to the
+	system menu (in the upper left corner of the window).  Use the
+	"Menu" entry in that menu to re-enable the popup menu.
 
 	Clipboard
 	---------
@@ -4190,4 +4199,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.442 1999/09/19 19:58:57 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.443 1999/09/27 00:43:34 tom Exp $
