@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.260 1998/10/30 02:13:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.262 1998/11/11 22:43:08 tom Exp $
  *
  */
 
@@ -935,6 +935,7 @@ int force)	/* force update past type ahead? */
 	register WINDOW *wp;
 	int origrow, origcol;
 	int screenrow, screencol;
+	int updated = FALSE;
 
 	/* Get row and column prior to doing the update in case we are
 	 * reading the message line.
@@ -998,6 +999,8 @@ int force)	/* force update past type ahead? */
 		/* update any windows that need refreshing */
 		for_each_visible_window(wp) {
 			if (wp->w_flag) {
+				if ((wp->w_flag & ~(WFMOVE)) && !updated++)
+					TTcursor(FALSE);
 				curtabval = tabstop_val(wp->w_bufp);
 				/* if the window has changed, service it */
 				reframe(wp);	/* check the framing */
@@ -1047,6 +1050,8 @@ int force)	/* force update past type ahead? */
 	else
 	    movecursor(screenrow, screencol);
 
+	if (updated)
+		TTcursor(TRUE);
 	TTflush();
 	endofDisplay();
 	i_displayed = TRUE;
@@ -2701,6 +2706,7 @@ modeline(WINDOW *wp)
     int need_eighty_column_indicator = FALSE;
     register BUFFER *bp;
 
+    TTcursor(FALSE);
     left_ms[0] = right_ms[0] = EOS;
     ms = left_ms;
 
@@ -2892,6 +2898,7 @@ modeline(WINDOW *wp)
 	    vtputc('|');
 	}
     }
+    TTcursor(TRUE);
 }
 
 void

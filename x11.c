@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.197 1998/11/06 10:45:25 Gary.Ross Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.198 1998/11/11 21:56:18 tom Exp $
  *
  */
 
@@ -550,6 +550,7 @@ TERM        term = {
     null_t_title,
     x_watchfd,
     x_unwatchfd,
+    null_t_cursor,
 };
 
 

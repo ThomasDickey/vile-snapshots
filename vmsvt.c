@@ -7,7 +7,7 @@
  *  Author:  Curtis Smith
  *  Last Updated: 07/14/87
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.34 1998/05/14 23:17:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.35 1998/11/11 21:56:20 tom Exp $
  *
  */
 
@@ -87,6 +87,7 @@ TERM	term	= {
 	null_t_title,
 	null_t_watchfd,
 	null_t_unwatchfd,
+	null_t_cursor,
 };
 
 static	const	struct	{

@@ -1,6 +1,6 @@
 /*	Dumb terminal driver, for I/O before we get into screen mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/dumbterm.c,v 1.13 1998/05/14 23:19:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/dumbterm.c,v 1.14 1998/11/11 21:57:26 tom Exp $
  *
  */
 
@@ -57,6 +57,7 @@ TERM dumb_term = {
 	null_t_title,
 	null_t_watchfd,
 	null_t_unwatchfd,
+	null_t_cursor,
 };
 
 static	int	this_col;

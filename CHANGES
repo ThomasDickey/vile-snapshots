@@ -1,6 +1,16 @@
 Changes for vile 8.3 (released ??? ??? ??, 1998)
 
- (tom) 981108 (c)
+ (tom) 981112 (d)
+ 	+ correct/simplify handling of string literals in vile-c-filt, which did
+	  not treat single quotes and double quotes symmetrically.
+	+ correct an error in vile-c-filt which caused the ending quote of
+	  a string to be ignored if it appeared in the first column.
+	+ add new terminal function TTcursor, to disable cursor display during
+	  screen updates and during multimotion.  This makes vile display
+	  better on FTP Software's TNVTPlus wyse50 emulation.
+	+ restore visual-matches after attribute-from-filter.
+
+ (tom) 981110 (c)
 	+ implement a new macro directive, "~local" which saves the current
 	  value of $variables and %variables, restoring them at the end of the
 	  buffer/macro which is being executed.  This does not (yet) apply to

@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.111 1998/08/27 01:30:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.112 1998/11/11 22:25:48 tom Exp $
  *
  */
 
@@ -29,6 +29,7 @@
 static char *tc_CM, *tc_CE, *tc_CL, *tc_SO, *tc_SE;
 static char *tc_TI, *tc_TE, *tc_KS, *tc_KE;
 static char *tc_CS, *tc_dl, *tc_al, *tc_DL, *tc_AL, *tc_SF, *tc_SR;
+static char *tc_VI, *tc_VE;
 
 #if OPT_VIDEO_ATTRS
 static char *tc_US;	/* underline-start */
@@ -189,6 +190,8 @@ static void tcapattr ( UINT attr );
 static void tcaprev  ( UINT state );
 #endif
 
+static void tcapcursor ( int flag );
+
 TERM term = {
 	0,	/* these four values are set dynamically at open time */
 	0,
@@ -230,6 +233,7 @@ TERM term = {
 	null_t_title,
 	null_t_watchfd,
 	null_t_unwatchfd,
+	tcapcursor,
 };
 
 #define	XtermPos()	((unsigned)(keystroke() - 040))
@@ -323,6 +327,9 @@ tcapopen(void)
 	,{ CAPNAME("us","smul"),  &tc_US }	/* underline-start */
 	,{ CAPNAME("ue","rmul"),  &tc_UE }	/* underline-end */
 #endif
+	,{ CAPNAME("ve","cnorm"), &tc_VE }	/* make cursor appear normal */
+	,{ CAPNAME("vi","civis"), &tc_VI }	/* make cursor invisible */
+	/* FIXME: do xmc/ug */
 	};
 
 	if (already_open)
@@ -950,6 +957,30 @@ UINT state)		/* FALSE = normal video, TRUE = reverse video */
 }
 
 #endif	/* OPT_VIDEO_ATTRS */
+
+/*
+ * Hide/show cursor.  We do this in levels, so we can do the "right" thing with
+ * multimotion.
+ */
+static void
+tcapcursor(int flag)
+{
+	static int level;
+	if (tc_VI != 0
+	 && tc_VE != 0) {
+		if (flag) {
+			if (!++level) {
+				TRACE(("CURSOR ON\n"))
+				putpad(tc_VE);
+			}
+		} else {
+			if (!level--) {
+				TRACE(("CURSOR OFF\n"))
+				putpad(tc_VI);
+			}
+		}
+	}
+}
 
 static void
 tcapbeep(void)

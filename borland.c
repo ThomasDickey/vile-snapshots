@@ -9,7 +9,7 @@
  * Note: Visual flashes are not yet supported.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.25 1998/05/14 23:14:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.26 1998/11/11 21:55:17 tom Exp $
  *
  */
 
@@ -161,6 +161,7 @@ TERM    term    = {
 	null_t_title,
 	null_t_watchfd,
 	null_t_unwatchfd,
+	null_t_cursor,
 };
 
 #if OPT_ICURSOR
