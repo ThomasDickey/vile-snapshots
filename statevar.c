@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.75 2003/07/27 17:11:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.76 2003/11/03 20:34:05 tom Exp $
  */
 
 #include	"estruct.h"
@@ -345,13 +345,13 @@ cfgopts(void)
 # endif
 #endif
 #if DISP_X11
-# ifdef OL_WIDGETS
+# if OL_WIDGETS
 	"openlook",
 # endif
-# ifdef MOTIF_WIDGETS
+# if MOTIF_WIDGETS
 	"motif",
 # endif
-# ifdef ATHENA_WIDGETS
+# if ATHENA_WIDGETS
 	"athena",
 #  ifdef HAVE_LIB_XAW
 	"xaw",

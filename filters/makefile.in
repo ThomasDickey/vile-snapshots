@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.75 2003/11/02 22:56:23 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.77 2003/11/06 00:37:36 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -17,6 +17,7 @@ INSTALL_DATA	= @INSTALL_DATA@
 
 EXTRA_CFLAGS	= @EXTRA_CFLAGS@
 CFLAGS		= @CFLAGS@ $(EXTRA_CFLAGS)
+LDFLAGS		= @IMAKE_LOADFLAGS@ @LDFLAGS@
 LIBS		= @LIBS@
 LINT		= @LINT@
 
@@ -27,8 +28,11 @@ LEX		= @LEX@
 LEXLIB		= @LEXLIB@
 LEX_OUTPUT_ROOT	= @LEX_OUTPUT_ROOT@
 
-x		= @PROG_EXT@
-o		= .o
+SH_CFLAGS	= @SH_CFLAGS@
+SH_LDFLAGS	= @SH_LDFLAGS@
+
+x		= @EXEEXT@
+o		= .@OBJEXT@
 so		= .so
 
 SCREEN		= @SCREEN@
@@ -37,7 +41,7 @@ TARGET		= @TARGET@$x
 prefix		= @prefix@
 exec_prefix	= @exec_prefix@
 
-libdir		= @libdir@/vile
+libdir		= @libdir@
 bindir		= @filters_bindir@
 datadir		= @datadir@/vile
 
@@ -48,8 +52,6 @@ RM              = rm -f
 
 QUOTDEFS	= -DVILE_STARTUP_PATH=\"@VILE_STARTUP_PATH@\"
 CPPFLAGS	= -I. -I.. -I$(srcdir) -I$(top_srcdir) -DHAVE_CONFIG_H @CPPFLAGS@
-
-LDFLAGS		= @IMAKE_LOADFLAGS@ @LDFLAGS@
 
 DESTDIR		=
 BINDIR		= $(DESTDIR)$(bindir)
