@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/difffilt.l,v 1.1 1999/04/16 23:57:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/difffilt.l,v 1.2 1999/08/05 10:52:10 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of diff output
  */
@@ -43,7 +43,7 @@ do_filter(FILE *input, FILE *output)
 
 BLANK		[ \t]
 
-HEADER		^("***"|"+++"|"---"|@@|#|diff|Index:|Binary)
+HEADER		^("***"|"+++"|"---"|@@|#|diff\>|Index:|Binary\>)
 INSERT		^[>+]
 DELETE		^[<-]
 MODIFY		^[|!]

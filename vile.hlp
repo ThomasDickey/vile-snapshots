@@ -1188,7 +1188,8 @@ Editor modes
 		line-oriented, nested fences, e.g., as C-preprocessor lines
 		(the default).  (B)
 
-	fence-limit  Iteration limit for complex fences.  (B)
+	fence-limit  Iteration timeout for complex fences, to limit pathological
+		cases, e.g., with Perl's ambiguous block syntax.  (B)
 
 	fence-pairs  Each pair of characters in this string is taken to be
 		a set of "fences", which should be matched with the '%'
@@ -4143,4 +4144,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.425 1999/07/17 18:35:00 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.426 1999/08/05 23:58:48 tom Exp $

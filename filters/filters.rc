@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.66 1999/07/16 10:53:33 tom Exp $
+; $Id: filters.rc,v 1.67 1999/08/04 11:14:53 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -109,7 +109,7 @@ define-mode imake
 	pre "^\\s*\\(XCOMM\\>\\|\\/\\*\\*\\/#\\)"
 	filtername "vile-c-filt -k imake"
 ~endwith
-	
+
 define-mode java
 ~with define-submode java
 	suf "\\.java$"
@@ -203,6 +203,8 @@ define-mode pas
 	suf "\\.\\(p|pas\\)$"
 ~endwith
 
+; "do" should really be a separate group, but since ambiguous fence-fi is
+; very expensive to resolve, we combine it with the similar "while" group.
 define-mode perl
 ~with define-submode perl
 	pre "^#\\s*!\\s*\\.*\\/.*perl\\>"
@@ -216,10 +218,7 @@ define-mode perl
 	fence-else     "^\\s*}\\s*else\\s*{"
 	fence-fi       "^\\s*}\\s*$"
 ~elsewith define-submode perl group "while"
-	fence-if       "^\\s*\\(while\\|unless\\)\\>.*{"
-	fence-fi       "^\\s*}\\s*$"
-~elsewith define-submode perl group "do"
-	fence-if       "^\\s*do\\>.*{"
+	fence-if       "^\\s*\\(sub\\|foreach\\|while\\|unless\\do\\)\\>.*{"
 	fence-fi       "^\\s*}"
 ~endwith
 
@@ -309,20 +308,20 @@ define-mode txt
 	suf "\\(\\.vilerc\\|\\.rc$\\)"
 	comment-prefix	"^\\s*;"
 	comments	"^\\s*;\\s*$"
-	fence-if	"\\s*~if\\>"
-	fence-elif	"\\s*~elseif\\>"
-	fence-else	"\\s*~else\\>"
-	fence-fi	"\\s*~endif\\>"
+	fence-if	"^\\s*~if\\>"
+	fence-elif	"^\\s*~elseif\\>"
+	fence-else	"^\\s*~else\\>"
+	fence-fi	"^\\s*~endif\\>"
 ~elsewith define-submode vile group "while"
-	fence-if	"\\s*~while\\>"
-	fence-fi	"\\s*~endwhile\\>"
+	fence-if	"^\\s*~while\\>"
+	fence-fi	"^\\s*~endwhile\\>"
 ~elsewith define-submode vile group "with"
-	fence-if	"\\s*~with\\>"
-	fence-elif	"\\s*~elsewith\\>"
-	fence-fi	"\\s*~endwith\\>"
+	fence-if	"^\\s*~with\\>"
+	fence-elif	"^\\s*~elsewith\\>"
+	fence-fi	"^\\s*~endwith\\>"
 ~elsewith define-submode vile group "macro"
-	fence-if	"\\s*\\(\\d\\s*\\)\\?store-\\(macro\\|procedure\\)"
-	fence-fi	"\\s*~endm\\>"
+	fence-if	"^\\s*\\(\\d\\s*\\)\\?store-\\(macro\\|procedure\\)"
+	fence-fi	"^\\s*~endm\\>"
 ~endwith
 
 define-mode xs

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.164 1999/07/17 17:58:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.165 1999/08/04 10:55:30 tom Exp $
  *
  */
 
@@ -3169,11 +3169,11 @@ prompt_scheme_name(char **result, int defining)
 
 /* this table must be sorted, since we do name-completion on it */
 static const struct VALNAMES scheme_values[] = {
-	{ s_bcolor,      s_bcolor,        VALTYPE_ENUM },
-	{ s_fcolor,      s_fcolor,        VALTYPE_ENUM },
-	{ s_palette,     s_palette,       VALTYPE_STRING },
-	{ s_video_attrs, s_video_attrs,   VALTYPE_ENUM },
-	{ 0,             0,               0 }
+	{ s_bcolor,      s_bcolor,        VALTYPE_ENUM,     0 },
+	{ s_fcolor,      s_fcolor,        VALTYPE_ENUM,     0 },
+	{ s_palette,     s_palette,       VALTYPE_STRING,   0 },
+	{ s_video_attrs, s_video_attrs,   VALTYPE_ENUM,     0 },
+	{ 0,             0,               0,                0 }
 	};
 
 static int

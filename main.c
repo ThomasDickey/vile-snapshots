@@ -23,7 +23,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.387 1999/07/17 17:56:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.388 1999/08/05 23:52:12 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -1054,7 +1054,7 @@ global_val_init(void)
 	set_global_b_val_ptr(VAL_TAGS, strmalloc("tags")); /* tags filename */
 	set_global_b_val_ptr(VAL_FENCES, strmalloc("{}()[]")); /* fences */
 #if OPT_MAJORMODE
-	set_global_b_val(VAL_FENCE_LIMIT, 100);	/* fences iteration limit */
+	set_global_b_val(VAL_FENCE_LIMIT, 10);	/* fences iteration timeout */
 #endif
 
 #if SYS_VMS

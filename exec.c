@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.191 1999/07/15 22:24:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.192 1999/08/04 10:16:47 tom Exp $
  *
  */
 
@@ -1456,7 +1456,7 @@ pop_variable(void)
 static void
 push_buffer(IFSTK *save)
 {
-	static const IFSTK new_ifstk = {0,0,0}; /* all 0's */
+	static const IFSTK new_ifstk = {0,0,0,0,0,0,0}; /* all 0's */
 
 	*save  = ifstk;
 	save->shape = regionshape;
