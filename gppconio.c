@@ -11,13 +11,13 @@
 #if __DJGPP__ < 2
 
 /**********************************************************************
- *  
+ *
  *  NAME:           gppconio.c
- *  
+ *
  *  DESCRIPTION:    simulate Borland text video funcs for GNU C++
- *  
+ *
  *  copyright (c) 1991 J. Alan Eldridge
- * 
+ *
  *  M O D I F I C A T I O N   H I S T O R Y
  *
  *  when        who                 what
@@ -35,9 +35,9 @@
  *                                    - cgets
  *                                    - getch and ungetch
  *                                    - _setcursortype
- *                                    - kbhit 
+ *                                    - kbhit
  *                                  (hpefully) proper initialization of
- *                                    txinfo.normattrib and txinfo.attribute  
+ *                                    txinfo.normattrib and txinfo.attribute
  *                                  gotoxy(1,1) in clrscr (bug introduced
  *                                    by my previous patches)
  *                                  gotoxy(1,1) in window
@@ -45,7 +45,7 @@
  *                                    in putch and cputs
  *                                  take care of blinking bit in textcolor
  *                                    and textbackground
- *                                  declare (and ignore) directvideo 
+ *                                  declare (and ignore) directvideo
  *  10/09/93    DJ Delorie          Switch to dosmem*() for DPMI
  *  05/01/94    DJ Delorie          Add _wscroll
  *********************************************************************/
@@ -104,7 +104,7 @@ int gettext(int c, int r, int c2, int r2, void *buf)
   }
   return 1;
 }
-        
+
 void gotoxy(int col, int row)
 {
   ScreenSetCursor(row + txinfo.wintop - 2, col + txinfo.winleft - 2);
@@ -115,18 +115,18 @@ void gotoxy(int col, int row)
 int wherex(void)
 {
   int row, col;
-  
+
   ScreenGetCursor(&row, &col);
-  
+
   return col - txinfo.winleft + 2;
 }
-    
+
 int wherey(void)
 {
   int row, col;
-  
+
   ScreenGetCursor(&row, &col);
-  
+
   return row - txinfo.wintop + 2;
 }
 
@@ -137,12 +137,12 @@ void textmode(int mode)
     if (mode == LASTMODE)
         mode = mode_to_set = txinfo.currmode;
     if (mode == C4350)
-        /* 
-         * just set mode 3 and load 8x8 font, idea taken 
+        /*
+         * just set mode 3 and load 8x8 font, idea taken
          * (and code translated from Assembler to C)
          * form Csaba Biegels stdvga.asm
          */
-        mode_to_set = 0x03;  
+        mode_to_set = 0x03;
     regs.h.ah = 0x00; /* set mode */
     regs.h.al = mode_to_set;
     int86(0x10, &regs, &regs);
@@ -150,7 +150,7 @@ void textmode(int mode)
     {
         if (isEGA())
         {
-            /* 
+            /*
              * enable cursor size emulation, see Ralf Browns
              * interrupt list
              */
@@ -165,7 +165,7 @@ void textmode(int mode)
         if (!isEGA())
             return;
         /* load 8x8 font */
-        regs.x.ax = 0x1112;         
+        regs.x.ax = 0x1112;
         regs.x.bx = 0;
         int86(0x10, &regs, &regs);
     }
@@ -179,8 +179,8 @@ void textmode(int mode)
      */
     clrscr();
 #endif
-}    
-    
+}
+
 void textattr(int attr)
 {
   txinfo.attribute = ScreenAttrib = (unsigned char)attr;
@@ -196,8 +196,8 @@ void textcolor(int color)
 void textbackground(int color)
 {
   /* strip background color, keep blinking bit */
-  ScreenAttrib &= 0x8f; 
-  /* high intensity background colors (>7) are not allowed 
+  ScreenAttrib &= 0x8f;
+  /* high intensity background colors (>7) are not allowed
      so we strip 0x08 bit (and higher bits) of color */
   txinfo.attribute=(ScreenAttrib |= ((color & 0x07) << 4));
 }
@@ -234,7 +234,7 @@ void _setcursortype(int type)
             break;
     }
     setcursor(cursor_shape);
-}        
+}
 
 static void setcursor(unsigned int cursor_shape)
 /* Sets the shape of the cursor */
@@ -256,13 +256,13 @@ void clreol(void)
   short   image[ 256 ];
   short   val = ' ' | (ScreenAttrib << 8);
   int     c, row, col, ncols;
-  
+
   getwincursor(&row, &col);
   ncols = txinfo.winright - col;
-  
+
   for (c = 0; c < ncols; c++)
     image[ c ] = val;
-  
+
   puttext(col + 1, row + 1, txinfo.winright, row + 1, image);
 }
 
@@ -270,7 +270,7 @@ static void fillrow(int row, int left, int right, int fill)
 {
   int col;
   short filler[right-left+1];
-  
+
   for (col = left; col <= right; col++)
     filler[col-left] = fill;
   dosmemput(filler, (right-left+1)*2, VIDADDR(row, left));
@@ -291,9 +291,9 @@ void clrscr(void)
 int putch(int c)
 {
   int     row, col;
-  
+
   ScreenGetCursor(&row, &col);
-  
+
   /*  first, handle the character */
   if (c == '\n')
     {
@@ -306,16 +306,16 @@ int putch(int c)
   else if (c == '\b')
   {
       if (col > txinfo.winleft - 1)
-          col--;  
+          col--;
       else if (row > txinfo.wintop -1)
       {
-          /* 
+          /*
            * Turbo-C ignores this case; we are smarter.
            */
           row--;
           col = txinfo.winright-1;
-      }  
-  }      
+      }
+  }
   else if (c == 0x07)
     bell();
   else {
@@ -324,14 +324,14 @@ int putch(int c)
     ScreenPutChar(c, ScreenAttrib, col, row);
     col++;
   }
-  
+
   /* now, readjust the window     */
-  
+
   if (col >= txinfo.winright) {
     col = txinfo.winleft - 1;
     row++;
   }
-  
+
   if (row >= txinfo.winbottom) {
     /* scrollwin(0, txinfo.winbottom - txinfo.wintop, 1); */
     if (_wscroll)
@@ -341,7 +341,7 @@ int putch(int c)
     }
     row--;
   }
-  
+
   ScreenSetCursor(row, col);
   txinfo.cury = row - txinfo.wintop + 2;
   txinfo.curx = col - txinfo.winleft + 2;
@@ -359,7 +359,7 @@ int getche(void)
      * ungetch could have been called with a character that
      * hasn't been got by a conio function.
      * We don't echo again.
-     */ 
+     */
     return(getch());
   return (putch(getch()));
 }
@@ -391,7 +391,7 @@ int ungetch(int c)
     return(c);
 }
 
-/* 
+/*
  * kbhit from libc in libsrc/c/dos/kbhit.s doesn't check
  * for ungotten chars, so we have to provide a new one
  * Don't call it kbhit, rather use a new name (_conio_kbhit)
@@ -424,7 +424,7 @@ int _conio_kbhit(void)
         return(1);
     else
         return(kbhit());
-}    
+}
 
 /*
  * The next two functions are needed by cscanf
@@ -488,7 +488,7 @@ void window(int left, int top, int right, int bottom)
   if (top < 1 || left < 1 || right > txinfo.screenwidth ||
       bottom > txinfo.screenheight)
     return;
-  
+
   txinfo.wintop = top;
   txinfo.winleft = left;
   txinfo.winright = right;
@@ -505,11 +505,11 @@ int cputs(const char *s)
   short sa = ScreenAttrib << 8;
   ScreenGetCursor(&row, &col);
   viaddr = (short *)VIDADDR(row,col);
-  /* 
+  /*
    * Instead of just calling putch; we do everything by hand here,
    * This is much faster. We don't move the cursor after each character,
    * only after the whole string is written, because ScreenSetCursor
-   * needs to long because of switching to real mode needed with djgpp. 
+   * needs to long because of switching to real mode needed with djgpp.
    * You won't recognize the difference.
    */
   while ((c = *ss++))
@@ -527,14 +527,14 @@ int cputs(const char *s)
 	}
       else if (c == '\b')
         {
-          if (col > txinfo.winleft-1) 
+          if (col > txinfo.winleft-1)
           {
               col--;
               viaddr--;
           }
           else if (row > txinfo.wintop -1)
           {
-              /* 
+              /*
                * Turbo-C ignores this case. We want to be able to
                * edit strings with backspace in gets after
                * a linefeed, so we are smarter
@@ -552,15 +552,15 @@ int cputs(const char *s)
 	viaddr++;
 	col++;
       }
-      
+
       /* now, readjust the window     */
-      
+
       if (col >= txinfo.winright) {
 	col = txinfo.winleft - 1;
 	row++;
 	viaddr = (short *)VIDADDR(row,col);
       }
-      
+
       if (row >= txinfo.winbottom) {
 	ScreenSetCursor(txinfo.wintop-1,0); /* goto first line in window */
 	delline();                          /* and delete it */
@@ -568,7 +568,7 @@ int cputs(const char *s)
 	viaddr -= txinfo.screenwidth;
       }
     }
-  
+
   ScreenSetCursor(row, col);
   txinfo.cury = row - txinfo.wintop + 2;
   txinfo.curx = col - txinfo.winleft + 2;
@@ -581,11 +581,11 @@ int cprintf(const char *fmt, ...)
   int     cnt;
   char    buf[ 2048 ]; /* this is buggy, because buffer might be too small. */
   va_list ap;
-  
+
   va_start(ap, fmt);
   cnt = vsprintf(buf, fmt, ap);
   va_end(ap);
-  
+
   cputs(buf);
   return cnt;
 }
@@ -604,7 +604,7 @@ char *cgets(char *string)
         return(NULL);
     maxlen_wanted = (unsigned int)((unsigned char)string[0]);
     sp = &(string[2]);
-    /* 
+    /*
      * Should the string be shorter maxlen_wanted including or excluding
      * the trailing '\0' ? We don't take any risk.
      */
@@ -646,22 +646,22 @@ char *cgets(char *string)
      }
      sp[maxlen_wanted-1] = '\0';
      string[1] = (char)((unsigned char)len);
-     return(sp);   
-}    
+     return(sp);
+}
 
 int cscanf(const char *fmt, ...)
 {
-    return(_doscan_low(NULL, _scan_getche, _scan_ungetch, 
+    return(_doscan_low(NULL, _scan_getche, _scan_ungetch,
                        fmt, (void **)((&fmt)+1)));
 }
 
 int movetext(int left, int top, int right, int bottom, int dleft, int dtop)
 {
   char    *buf = malloc((right - left + 1) * (bottom - top + 1) * 2);
-  
+
   if (!buf)
     return 0;
-  
+
   gettext(left, top, right, bottom, buf);
   puttext(dleft, dtop, dleft + right - left, dtop + bottom - top, buf);
   free(buf);
@@ -671,7 +671,7 @@ int movetext(int left, int top, int right, int bottom, int dleft, int dtop)
 static void _gettextinfo(struct text_info *t)
 {
   int row, col;
-  
+
   t->winleft = t->wintop = 1;
   t->winright = t->screenwidth = ScreenCols();
   t->winbottom = t->screenheight = ScreenRows();
@@ -691,7 +691,7 @@ static void _gettextinfo(struct text_info *t)
 
 void gettextinfo(struct text_info *t)
 {
-  *t = txinfo; 
+  *t = txinfo;
 #if DBGGTINFO
   printf("left=%2d,right=%2d,top=%2d,bottom=%2d\n",t->winleft,
 	 t->winright,t->wintop,t->winbottom);
@@ -705,7 +705,7 @@ static int
 getvideomode(void)
 {
     int mode = ScreenMode();
-    /* 
+    /*
      * in mode C80 we might have loaded a different font
      */
     if (mode == C80)
@@ -713,7 +713,7 @@ getvideomode(void)
            mode = C4350;
     return(mode);
 }
-    
+
 
 static void bell(void)
 {
@@ -731,7 +731,7 @@ static void bell(void)
 #endif
 }
 
-static int 
+static int
 get_screenattrib(void)
 {
     union REGS regs;
@@ -760,7 +760,7 @@ void gppconio_init(void)
 {
     static int oldattrib =  -1;
     if (oldattrib == -1)
-        oldattrib = get_screenattrib();   
+        oldattrib = get_screenattrib();
     _gettextinfo(&txinfo);
     if (txinfo.currmode == 7)    /* MONO */
         ScreenAddress = 0xb0000UL;

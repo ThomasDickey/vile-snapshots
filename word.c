@@ -1,9 +1,9 @@
 /*
  * The routines in this file implement commands that work word or a
  * paragraph at a time.  There are all sorts of word mode commands.  If I
- * do any sentence mode commands, they are likely to be put in this file. 
+ * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.60 1998/04/15 17:50:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.61 1998/04/28 10:19:36 tom Exp $
  *
  */
 
@@ -103,7 +103,7 @@ wrapword(int f, int n)
  * Move the cursor forward by the specified number of words. All of the motion
  * is done by "forwchar". Error if you try and move beyond the buffer's end.
  *
- * Returns of SORTOFTRUE result if we're doing a non-delete operation.  
+ * Returns of SORTOFTRUE result if we're doing a non-delete operation.
  * Whitespace after a word is always included on deletes (and non-operations,
  * of course), but only on intermediate words for other operations, for
  * example.  The last word of non-delete ops does _not_ include its whitespace.
@@ -120,7 +120,7 @@ forwviword(int f, int n)
 		return (FALSE);
 	while (n--) {
 		int any = 0;
-		while (((s = isnewviwordf()) == FALSE) || 
+		while (((s = isnewviwordf()) == FALSE) ||
 				(s == SORTOFTRUE && n != 0)) {
 			if (forwchar(TRUE, 1) == FALSE)
 				return (any != 0);
@@ -148,7 +148,7 @@ forwword(int f, int n)
 		return (FALSE);
 	while (n--) {
 		int any = 0;
-		while (((s = isnewwordf()) == FALSE) || 
+		while (((s = isnewwordf()) == FALSE) ||
 				(s == SORTOFTRUE && n != 0)) {
 			if (forwchar(TRUE, 1) == FALSE)
 				return (any != 0);
@@ -391,7 +391,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 	register int sentence;		/* was the last char a period?	*/
 	int secondindent;
 	int s;
-	
+
 	if (!sameline(MK, DOT)) {
 		REGION region;
 
@@ -415,7 +415,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 		}
 
 		secondindent = indentlen(DOT.l);
-		
+
 		/* go forward to get the indent for the second
 			and following lines */
 		DOT.l = lforw(DOT.l);
@@ -423,7 +423,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 		if (DOT.l != pastline) {
 			secondindent = indentlen(DOT.l);
 		}
-			
+
 		/* and back where we should be */
 		DOT.l = lback(DOT.l);
 		(void)firstnonwhite(FALSE,1);
@@ -531,7 +531,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 					/* add word to current line */
 					if (!firstflag) {
 						fmt_insert(1, ' ');
-					} 
+					}
 				} else {
 					/* fix the leading indent now, if
 						some spaces should be tabs */

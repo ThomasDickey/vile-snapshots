@@ -1,7 +1,7 @@
 /* These functions perform vi's on-this-line character scanning functions.
  * written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/csrch.c,v 1.27 1997/08/30 01:11:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/csrch.c,v 1.28 1998/04/28 10:16:08 tom Exp $
  *
 */
 
@@ -53,7 +53,7 @@ fscan(int f, int n, int c)
 	DOT.o = doto;
 	curwp->w_flag |= WFMOVE;
 	return(TRUE);
-			
+
 }
 
 static int

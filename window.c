@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.80 1998/04/23 09:18:54 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.81 1998/04/28 10:15:38 tom Exp $
  *
  */
 
@@ -89,7 +89,7 @@ adjust_back(WINDOW *wp, LINEPTR lp, int n)
 /*
  * Reposition dot's line to line "n" of the window. If the argument is
  * positive, it is that line. If it is negative it is that line from the
- * bottom. If it is 0 the window is centered around dot (this is what 
+ * bottom. If it is 0 the window is centered around dot (this is what
  * the standard redisplay code does). Defaults to 0.
  */
 int
@@ -252,7 +252,7 @@ mvdnwind(int f, int n)
  * Move the current window up by "arg" lines. Recompute the new top line of
  * the window. Look to see if "." is still on the screen. If it is, you win.
  * If it isn't, then move "." to center it in the new framing of the window
- * (this command does not really move "." (except as above); it moves the 
+ * (this command does not really move "." (except as above); it moves the
  * frame).
  */
 int
@@ -417,23 +417,23 @@ delwind(int f GCC_UNUSED, int n GCC_UNUSED)
 	return delwp(curwp);
 }
 
-/* 
+/*
  * We attach to each window structure another field (an unsigned long)
  * which I called w_split_history.  When we split a window, we shift this
  * field left by one bit.  The least significant bit for the upper window
  * is 0, the bottom window's lsb is set to 1.
- * 
+ *
  * We examine the lsb when deleting windows to decide whether to give up
- * the space for the deleted window to the upper window or lower window. 
+ * the space for the deleted window to the upper window or lower window.
  * If the lsb is 0, we give it to the lower window.  If it is 1 we give it
  * to the upper window.  If the lsb of the receiving window is different
  * from that of the window being deleted, this means that the two match and
- * so the history is shifted right by one bit for the receiving window. 
+ * so the history is shifted right by one bit for the receiving window.
  * Otherwise we leave the history alone.
  *							kev, 2/94
- * 
+ *
  * Example:
- * 
+ *
  * |    |       | 00    | 00    | 00    | 00
  * |    | 0     -       -       -       -
  * |    |       | 01    | 01    | 01    | 01
@@ -441,7 +441,7 @@ delwind(int f GCC_UNUSED, int n GCC_UNUSED)
  * |    |       |       | 10    |       |
  * |    | 1     | 1     -       | 1     |
  * |    |       |       | 11    |       |
- * 
+ *
  * Full Split   Split   and     Kill    Kill
  * Screen               Again   Again   either  1
  *                              10 or
@@ -460,7 +460,7 @@ delwp(WINDOW *thewp)
 	}
 
 	/* find receiving window and give up our space */
-	if (thewp == wheadp 
+	if (thewp == wheadp
 	 || ((thewp->w_split_hist & 1) == 0 && thewp->w_wndp)) {
 		/* merge with next window down */
 		wp = thewp->w_wndp;
@@ -486,7 +486,7 @@ delwp(WINDOW *thewp)
 			wp = wp->w_wndp;
 		/* add thewp's rows to the next window up */
 		wp->w_ntrows += thewp->w_ntrows+1;
-		
+
 		wp->w_wndp = thewp->w_wndp; /* make their next window ours */
 		if ((wp->w_split_hist & 1) == 0)
 			wp->w_split_hist >>= 1;
@@ -713,7 +713,7 @@ int
 resize(int f, int n)
 {
 	int clines;	/* current # of lines in window */
-	
+
 	/* must have a non-default argument, else ignore call */
 	if (f == FALSE)
 		return(TRUE);
@@ -799,8 +799,8 @@ shrinkwrap(void)
 	register WINDOW *wp;
 	WINDOW *savewp = curwp;
 	int nrows, snrows;
-	for (wp = wheadp; 
-	     wp->w_wndp != curwp && wp->w_wndp != NULL; 
+	for (wp = wheadp;
+	     wp->w_wndp != curwp && wp->w_wndp != NULL;
 	     wp = wp->w_wndp)
 	    ;
 	curwp = wp;
@@ -901,14 +901,14 @@ newlength(int f, int n)	/* resize the screen, re-writing the screen */
 		while (nextwp != NULL) {
 			wp = nextwp;
 			nextwp = wp->w_wndp;
-	
+
 			/* get rid of it if it is too low */
 			if (wp->w_toprow >= n - 2) {
 
 				if (--wp->w_bufp->b_nwnd == 0) {
 					undispbuff(wp->w_bufp,wp);
 				}
-	
+
 				/* update curwp and lastwp if needed */
 				if (wp == curwp) {
 					curwp = wheadp;
@@ -928,7 +928,7 @@ newlength(int f, int n)	/* resize the screen, re-writing the screen */
 					wp->w_flag |= WFHARD|WFMODE;
 				}
 			}
-	
+
 			lastwp = wp;
 		}
 	}
@@ -1118,11 +1118,11 @@ pop_fake_win(WINDOW *oldwp)
 
     bp = wp->w_bufp;
 #if 0
-    /* 
+    /*
      * Decrement the window count, but don't update the traits.  We want
      * to give as little indication as possible that a fake window was
      * created.  In particular, should the user go back to a buffer
-     * which is not currently displayed, DOT should be where he last 
+     * which is not currently displayed, DOT should be where he last
      * left it.
      */
     --bp->b_nwnd;
@@ -1132,5 +1132,5 @@ pop_fake_win(WINDOW *oldwp)
     free((char *)wp);
     return bp;
 }
- 
+
 #endif

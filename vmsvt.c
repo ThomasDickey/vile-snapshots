@@ -7,7 +7,7 @@
  *  Author:  Curtis Smith
  *  Last Updated: 07/14/87
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.32 1998/04/20 09:54:03 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.33 1998/04/28 10:19:19 tom Exp $
  *
  */
 
@@ -129,7 +129,7 @@ putpad_tgoto(request_code, parm1, parm2)
 	static int max_buffer_length = sizeof(buffer);
 	static int arg_list[3] = { 2 };
 	register char * cp;
-	
+
 	register int i;
 
 	if (!initialized) {
@@ -185,7 +185,7 @@ vmsrev(UINT status)
 {
 	if (status)
 		ttputs(begin_reverse);
-	else 
+	else
 		ttputs(end_reverse);
 }
 
@@ -243,7 +243,7 @@ vmsbeep(void)
  *
  *  Returns:	Escape sequence
  *		NULL	No escape sequence available
- ***/ 
+ ***/
 static char *
 vmsgetstr(int request_code)
 {
@@ -254,7 +254,7 @@ vmsgetstr(int request_code)
 	int max_buffer_length, ret_length;
 
 	/*  Precompute buffer length */
-	
+
 	max_buffer_length = (seq_storage + sizeof(seq_storage)) - buffer;
 
 	/* Get terminal commands sequence from master table */
@@ -268,8 +268,8 @@ vmsgetstr(int request_code)
 		arg_list)	/* Argument list array		*/
 
 	/* If this doesn't work, try again with no arguments */
-	
-		& 1) == 0 && 
+
+		& 1) == 0 &&
 
 		(smg$get_term_data(	/* Get terminal data		*/
 			&termtype,	/* Terminal table address	*/
@@ -279,20 +279,20 @@ vmsgetstr(int request_code)
 			buffer)		/* Capability data buffer	*/
 
 	/* Return NULL pointer if capability is not available */
-	
+
 			& 1) == 0)
 				return NULL;
 
 	/* Check for empty result */
 	if (ret_length == 0)
 		return NULL;
-	
+
 	/* Save current position so we can return it to caller */
 
 	result = buffer;
 
 	/* NIL terminate the sequence for return */
-	
+
 	buffer[ret_length] = 0;
 
 	/* Advance buffer */
@@ -384,7 +384,7 @@ vmsopen(void)
 	if ((smg$init_term_table_by_type(&tc.t_type, &termtype) & 1) == 0) {
 		return;
 	}
-		
+
 	/* Set sizes */
 	term.t_nrow = ((UINT) tc.t_mandl >> 24);
 	term.t_ncol = tc.t_width;
@@ -485,8 +485,8 @@ vmsscroll_reg(int from, int to, int n)
 	vmsscrollregion(0, term.t_nrow-1);
 }
 
-/* 
-OPT_PRETTIER_SCROLL is prettier but slower -- it scrolls 
+/*
+OPT_PRETTIER_SCROLL is prettier but slower -- it scrolls
 		a line at a time instead of all at once.
 */
 
@@ -503,7 +503,7 @@ vmsscroll_delins(int from, int to, int n)
 		if (from < to)
 			from = to-1;
 		else
-			from = to+1;    
+			from = to+1;
 	}
 #endif
 	if (to < from) {

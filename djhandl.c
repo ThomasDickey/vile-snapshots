@@ -1,11 +1,11 @@
-/* 
+/*
  *	control-c and critical error handlers for DJGPP environment
  *
  *	control-c code based exactly on the equivalent handler
  *		for control-break in the go32 libraries
  *	critical error handling from Bob Babcock.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/djhandl.c,v 1.5 1995/12/31 16:25:32 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/djhandl.c,v 1.6 1998/04/28 10:19:54 tom Exp $
  *
  *
  */

@@ -5,7 +5,7 @@
  * commands. Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.86 1998/04/26 14:46:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.87 1998/04/28 10:15:08 tom Exp $
  *
  */
 
@@ -96,7 +96,7 @@ killrectmaybesave(int save)
 {
 	register int    s;
 	MARK savedot;
-	
+
 	savedot = DOT;
 
 	if (save) {
@@ -110,7 +110,7 @@ killrectmaybesave(int save)
 	}
 	s = do_lines_in_region(kill_line, (void *)&save, FALSE);
 	DOT = savedot;
-		
+
 	if (s && do_report(klines+(kchars!=0))) {
 		mlwrite("[%d line%s, %d character%s killed]",
 			klines, PLURAL(klines),
@@ -125,7 +125,7 @@ killrectmaybesave(int save)
 
 /*
  * open up a region -- shift the "selected" area of each line by its
- * own length.  most useful for rectangular regions. 
+ * own length.  most useful for rectangular regions.
  * fill character is space, unless a string is passed in, in which case
  * it is used instead.
  */
@@ -213,8 +213,8 @@ shift_right_line(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 {
 	int s, t;
 
-	if (is_empty_line(DOT) || (is_c_mode(curbp) && 
-					llength(DOT.l) > 0 && 
+	if (is_empty_line(DOT) || (is_c_mode(curbp) &&
+					llength(DOT.l) > 0 &&
 					char_at(DOT) == '#')) {
 		return TRUE;
 	}
@@ -751,8 +751,8 @@ set_rect_columns(register REGION *rp)
 		rc = (rp->r_orig.o > rp->r_end.o) ? rp->r_orig : rp->r_end;
 
 		/* convert to columns */
-		rp->r_leftcol = getcol(lc, FALSE); 
-		rp->r_rightcol = getcol(rc, FALSE) + 1; 
+		rp->r_leftcol = getcol(lc, FALSE);
+		rp->r_rightcol = getcol(rc, FALSE) + 1;
 	}
 }
 
@@ -831,8 +831,8 @@ getregion(register REGION *rp)
 			rp->r_orig = MK;
 			rp->r_end  = DOT;
 		}
-		fsize = (B_COUNT)(line_length(flp) - 
-				    ((regionshape == FULLLINE) ? 
+		fsize = (B_COUNT)(line_length(flp) -
+				    ((regionshape == FULLLINE) ?
 					w_left_margin(curwp) : rp->r_orig.o));
 		flp_start = flp;
 		while (flp != blp) {
@@ -843,14 +843,14 @@ getregion(register REGION *rp)
 			    mlwrite ("BUG: hit buf end in getregion");
 			    return FALSE;
 			}
-				
+
 			if (flp == blp) {
 				if (regionshape == FULLLINE) {
 					rp->r_orig.o =
 					rp->r_end.o  = w_left_margin(curwp);
 					rp->r_end.l  = lforw(rp->r_end.l);
 				} else {
-					fsize -= 
+					fsize -=
 					    (line_length(flp) - rp->r_end.o);
 					set_rect_columns(rp);
 				}
@@ -864,7 +864,7 @@ getregion(register REGION *rp)
 		blp = DOT.l;
 		flp = DOT.l;
 		if (regionshape == FULLLINE) {
-			bsize = fsize = 
+			bsize = fsize =
 			(B_COUNT)(line_length(blp) - w_left_margin(curwp));
 		} else {
 			bsize = (B_COUNT)(DOT.o - w_left_margin(curwp));
@@ -890,7 +890,7 @@ getregion(register REGION *rp)
 				rp->r_size = fsize;
 				return TRUE;
 			}
-		    } 
+		    }
 		    if (lback(blp) != buf_head(curbp)) {
 			blp = lback(blp);
 			bsize += line_length(blp) - w_left_margin(curwp);
@@ -1023,7 +1023,7 @@ int convert_cols)	/* if rectangle, convert columns to offsets */
 /* walk through the characters in a line, applying a function.  the
 	line is marked changed if the function returns other than -1.
 	if it returns other than -1, then the char is replaced with
-	that value. 
+	that value.
     the ll and rr args are OFFSETS, so if you use this routine with
     	do_lines_in_region, tell it to CONVERT columns to offsets. */
 /*ARGSUSED*/

@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.96 1998/02/07 17:39:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.97 1998/04/28 10:14:55 tom Exp $
  *
  */
 
@@ -147,7 +147,7 @@ forwchar(int f, int n)
 	while (n--) {
 		/* if an explicit arg was given, allow us to land
 			on the newline, else skip it */
-		if (is_at_end_of_line(DOT) || 
+		if (is_at_end_of_line(DOT) ||
 				(f == FALSE && !insertmode &&
 				llength(DOT.l) && DOT.o == llength(DOT.l) - 1)
 								) {
@@ -1203,7 +1203,7 @@ setwmark(int row, int col)
 		DOT.o = w_left_margin(curwp);
 	} else {	/* move to the right row */
 		row -= curwp->w_toprow + curwp->w_line.o;
-		    /* 
+		    /*
 		     * In the statement above, wp->w_line.o will
 		     * normally be zero.  But when the top line of the
 		     * window is wrapped and the beginning of the line
@@ -1231,7 +1231,7 @@ setwmark(int row, int col)
 		/* don't allow the cursor to be set past end of line unless we
 		 * are in insert mode
 		 */
-		if (DOT.o >= llength(dlp) && DOT.o > w_left_margin(curwp) && 
+		if (DOT.o >= llength(dlp) && DOT.o > w_left_margin(curwp) &&
 					!insertmode)
 			DOT.o--;
 #endif

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.114 1998/04/28 09:36:25 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.115 1998/04/28 22:53:17 tom Exp $
  *
  */
 
@@ -346,8 +346,11 @@ struct VAL *globvalues)
 			} else if (line+offsets[col] >= offsets[col+1])
 				break;
 		}
-		if ((col != 0) || (pass != passes))
+		if ((col != 0) || (pass != passes)) {
+			if (pass != passes)
+				bputc('\n');
 			bputc('\n');
+		}
 	}
 	return TRUE;
 }

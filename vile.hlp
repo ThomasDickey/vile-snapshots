@@ -861,11 +861,12 @@ New Registers
 	to be able to see what key sequence led to a problem...]
 
 	The register name '.' contains the current selected text in xvile.
+	Also in xvile, the register name ';' is a synonym for the clipboard. 
+	Other versions of vile permit use of '.' and ';' as supplemental  
+	register storage. 
 
 	The register name '"' is a synonym for the default unnamed register,
 	which is also sometimes referred to as register 0.
-
-	In xvile, the register name ';' is a synonym for the clipboard.
 
 Completion
 ----------
@@ -3516,7 +3517,7 @@ Win32 specifics
 	Clipboard
 	---------
 	Copy data from the unnamed register to the windows clipboard via
-	the copy-unnamed-reg-to-clipboard command (bound to ALT+Insert)
+	the copy-unnamed-reg-to-clipboard command (bound to Alt+Insert). 
 
 	Utilities
 	---------
@@ -3526,6 +3527,19 @@ Win32 specifics
 	comments within the source file c-filt.c that describe minor
 	porting changes, as well as providing example usage that leverages
 	the editor's 16-color palette.
+ 
+	Modes 
+	----- 
+	scroll-pause	An integer indicating the time in milliseconds to  
+			wait after scrolling the display.  A value of zero, 
+			the default, disables this mode.  This mode is 
+			necessary when rapid scrolling operations cause 
+			improper screen refresh by the console editor 
+			(should only be a problem with inexpensive video 
+			HW).  Typical values, if required, are 20-80 
+			(msec).  (U) 
+ 
+	w32pipes	See discussion of pipes above.  (U) 
 
 
 
@@ -3765,4 +3779,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.348 1998/04/24 10:41:55 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.349 1998/04/28 10:05:28 cmorgan Exp $

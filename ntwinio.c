@@ -1,11 +1,12 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.6 1998/04/20 09:54:03 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.7 1998/04/29 21:10:16 tom Exp $
  *
  */
 
 #include <windows.h>
+#include <commdlg.h>
 
 #define	termdef	1			/* don't define "term" external */
 
@@ -33,6 +34,11 @@
 #define MY_FONT  SYSTEM_FIXED_FONT	/* or ANSI_FIXED_FONT		*/
 #define MY_CLASS "VileWClass"
 #define MY_APPLE "Vile Application"
+
+#define GetMyFont() vile_font
+
+#define MM_FILE 1
+#define MM_FONT 2
 
 #define NROW	128			/* Max Screen size.		*/
 #define NCOL    256			/* Edit if you want to.         */
@@ -76,6 +82,9 @@ static	void	nttitle		(char *);
 
 static	HANDLE	vile_hinstance;
 static	HWND	vile_hwnd;
+static	HMENU	vile_menu;
+static	HFONT	vile_font;
+static	LOGFONT	vile_logfont;
 static	HANDLE	hAccTable;   /* handle to accelerator table */
 static	HCURSOR	hglass_cursor;
 static	HCURSOR	arrow_cursor;
@@ -87,6 +96,7 @@ static	int	vile_in_getfkey = 0;
 static	int	vile_resizing = FALSE;	/* rely on repaint_window if true */
 static	DWORD	default_fcolor;
 static	DWORD	default_bcolor;
+static	UINT	menu_selection = 0;
 
 static int	nfcolor = -1;		/* normal foreground color */
 static int	nbcolor = -1;		/* normal background color */
@@ -101,6 +111,7 @@ static	const char *initpalettestr = "0 4 2 6 1 5 3 7 8 12 10 14 9 13 11 15";
 static	int	cur_pos = 0;
 static	VIDEO_ATTR cur_atr = 0;
 
+static	void	repaint_window(HWND hWnd);
 static  void	scflush  (void);
 
 /*
@@ -277,8 +288,7 @@ set_colors (HDC hdc, VIDEO_ATTR attr)
 }
 
 #if OPT_ICURSOR
-static void
-nticursor(int cmode)
+static void nticursor(int cmode)
 {
 }
 #endif
@@ -315,6 +325,159 @@ static int fshow_cursor(void)
 	return 0;
 }
 
+/* Notes: lpntm is a pointer to a TEXTMETRIC struct if FontType does not
+ * have TRUETYPE_FONTTYPE set, but we only need the tmPitchAndFamily member,
+ * which has the same alignment as in NEWTEXTMETRIC.
+ */
+static int CALLBACK
+enumerate_fonts(
+	ENUMLOGFONT FAR *lpelf,
+	NEWTEXTMETRIC FAR *lpntm,
+	int FontType,
+	LPARAM lParam)
+{
+	int code = 2;
+	LOGFONT *src = &(lpelf->elfLogFont);
+	LOGFONT *dst = ((LOGFONT *)lParam);
+
+	if ((src->lfPitchAndFamily & 3) != FIXED_PITCH) {
+		code = 1;
+	} else {
+		*dst = *src;
+		if (src->lfCharSet == ANSI_CHARSET) {
+			code = 0;
+			TRACE(("Found good font:%s\n", lpelf->elfFullName))
+		}
+		TRACE(("Found ok font:%s\n", lpelf->elfFullName))
+		TRACE(("Pitch/Family:   %#x\n", dst->lfPitchAndFamily))
+	}
+
+	return code;
+}
+
+static int is_fixed_pitch(HFONT font)
+{
+	BOOL		ok;
+	HDC             hDC;
+	TEXTMETRIC      metrics;
+
+	hDC = GetDC(vile_hwnd);
+	SelectObject(hDC, font);
+	ok = GetTextMetrics(hDC, &metrics);
+	ReleaseDC(vile_hwnd, hDC);
+
+	if (ok)
+		ok = ((metrics.tmPitchAndFamily & TMPF_FIXED_PITCH) == 0);
+
+	TRACE(("is_fixed_pitch: %d\n",  ok))
+	TRACE(("Ave Text width: %d\n",  metrics.tmAveCharWidth))
+	TRACE(("Max Text width: %d\n",  metrics.tmMaxCharWidth))
+	TRACE(("Pitch/Family:   %#x\n", metrics.tmPitchAndFamily))
+
+	return (ok);
+}
+
+static int new_font(LOGFONT *lf)
+{
+	HFONT *font = CreateFontIndirect(lf);
+
+	if (font != 0) {
+		if (is_fixed_pitch(font)) {
+			DeleteObject(vile_font);
+			vile_font = font;
+			TRACE(("created new font\n"))
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+static void get_font(LOGFONT *lf)
+{
+	HDC             hDC;
+
+	vile_font = GetStockObject(MY_FONT);
+	hDC = GetDC(vile_hwnd);
+	if (EnumFontFamilies(hDC, (char *)0, enumerate_fonts, lf) <= 0)
+	{
+		TRACE(("Creating Pitch/Family: %#x\n", lf->lfPitchAndFamily))
+		new_font(lf);
+	}
+	ReleaseDC(vile_hwnd, hDC);
+}
+
+static void use_font(HFONT my_font, BOOL resizable)
+{
+	HDC             hDC;
+	TEXTMETRIC      textmetric;
+	RECT		wrect, crect;
+
+	hDC = GetDC(vile_hwnd);
+	SelectObject(hDC, my_font);
+	GetTextMetrics(hDC, &textmetric);
+	ReleaseDC(vile_hwnd, hDC);
+
+	TRACE(("Text height:    %d\n",  textmetric.tmHeight))
+	TRACE(("Ave Text width: %d\n",  textmetric.tmAveCharWidth))
+	TRACE(("Max Text width: %d\n",  textmetric.tmMaxCharWidth))
+	TRACE(("Pitch/Family:   %#x\n", textmetric.tmPitchAndFamily))
+
+	/*
+	 * We'll use the average text-width, since some fonts (e.g., Courier
+	 * New) have a bogus max text-width.
+	 */
+	nLineHeight = textmetric.tmExternalLeading + textmetric.tmHeight;
+	nCharWidth  = textmetric.tmAveCharWidth;
+
+	if (resizable) {
+		GetClientRect(vile_hwnd, &crect);
+		GetWindowRect(vile_hwnd, &wrect);
+
+		term.t_ncol = (crect.right - crect.left) / nCharWidth;
+		term.t_nrow = (crect.bottom - crect.top) / nLineHeight;
+	}
+
+	AdjustWindowSize(term.t_nrow, term.t_ncol);
+}
+
+static void set_font(void)
+{
+	HDC		hDC;
+	CHOOSEFONT	choose;
+
+	memset(&choose, 0, sizeof(choose));
+	choose.lStructSize = sizeof(choose);
+	choose.hwndOwner   = vile_hwnd;
+	choose.Flags       = CF_SCREENFONTS
+			   | CF_FIXEDPITCHONLY
+			   | CF_FORCEFONTEXIST
+			   | CF_NOSCRIPTSEL
+			   | CF_INITTOLOGFONTSTRUCT;
+	choose.lpLogFont   = &vile_logfont;
+
+	SelectObject(hDC, GetMyFont());
+	GetTextFace(hDC, sizeof(vile_logfont.lfFaceName), vile_logfont.lfFaceName);
+	ReleaseDC(vile_hwnd, hDC);
+
+	vile_logfont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
+	vile_logfont.lfCharSet = ANSI_CHARSET;
+	TRACE(("LOGFONT Facename:%s\n", vile_logfont.lfFaceName))
+
+	if (ChooseFont(&choose)) {
+		TRACE(("ChooseFont '%s'\n", vile_logfont.lfFaceName))
+		if (new_font(&vile_logfont)) {
+			mlwrite("[Set font to %s]", vile_logfont.lfFaceName);
+			use_font(vile_font, FALSE);
+			vile_refresh(FALSE,0);
+		} else {
+			mlforce("[Cannot create font]");
+		}
+	} else {
+		mlforce("[No font selected]");
+	}
+
+	TRACE(("LOGFONT Facename:%s\n", vile_logfont.lfFaceName))
+}
 
 #if OPT_TITLE
 static void
@@ -349,7 +512,7 @@ scflush(void)
 		TRACE(("PUTC:flush %2d (%2d,%2d) (%.*s)\n", cur_pos, crow,ccol, cur_pos, &CELL_TEXT(crow,ccol)))
 
 		hdc = GetDC(vile_hwnd);
-		SelectObject(hdc, GetStockObject(MY_FONT));
+		SelectObject(hdc, GetMyFont());
 		set_colors(hdc, cur_atr);
 
 		TextOut(hdc,
@@ -507,7 +670,7 @@ static void
 ntrev(UINT reverse)		/* change reverse video state */
 {
 	scflush();
-	cur_atr = reverse;
+	cur_atr = (VIDEO_ATTR) reverse;
 }
 
 static int
@@ -643,11 +806,11 @@ decode_key_event(KEY_EVENT_RECORD *irp)
         return key;
     }
 
-    for (i = 0; i < TABLESIZE(keyxlate); i++) 
+    for (i = 0; i < TABLESIZE(keyxlate); i++)
     {
-        if (keyxlate[i].windows == irp->wVirtualKeyCode) 
+        if (keyxlate[i].windows == irp->wVirtualKeyCode)
         {
-            if (keyxlate[i].shift != 0 && 
+            if (keyxlate[i].shift != 0 &&
                     !(keyxlate[i].shift & irp->dwControlKeyState))
             {
                 continue;
@@ -787,6 +950,9 @@ ntgetch(void)
 				fhide_cursor();
 				if (!setcursor(y, x))
 					break;
+				if (get_keyboard_state()
+				 & (LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED))
+					(void)sel_setshape(RECTANGLE);
 				if (!sel_extend(TRUE, TRUE))
 					break;
 				(void)update(TRUE);
@@ -917,7 +1083,7 @@ static void repaint_window(HWND hWnd)
 
 	BeginPaint(hWnd, &ps);
 	TRACE(("repaint_window (erase:%d)\n", ps.fErase))
-	SelectObject(ps.hdc, GetStockObject(MY_FONT));
+	SelectObject(ps.hdc, GetMyFont());
 	set_colors(ps.hdc, cur_atr);
 	brush = Background(ps.hdc);
 
@@ -1055,10 +1221,9 @@ LONG FAR PASCAL MainWndProc(
 		TRACE(("MAIN:PAINT %d/%d\n",
 			GetUpdateRect(hWnd, (LPRECT)0, FALSE),
 			(hWnd == vile_hwnd)));
-		if (GetUpdateRect(hWnd, (LPRECT)0, FALSE))
-		//if (hWnd == vile_hwnd)
+		if (GetUpdateRect(hWnd, (LPRECT)0, FALSE)) {
 			repaint_window(hWnd);
-		else {
+		} else {
 			TRACE(("FIXME:WM_PAINT\n"));
 			return (DefWindowProc(hWnd, message, wParam, lParam));
 		}
@@ -1070,6 +1235,30 @@ LONG FAR PASCAL MainWndProc(
 
 	case WM_EXITSIZEMOVE:
 		ResizeClient();
+		return (DefWindowProc(hWnd, message, wParam, lParam));
+
+	case WM_EXITMENULOOP:
+		switch (menu_selection) {
+		case MM_FILE:
+			kbd_alarm();
+			break;
+		case MM_FONT:
+			set_font();
+			break;
+		}
+		menu_selection = 0;
+		return (DefWindowProc(hWnd, message, wParam, lParam));
+
+	case WM_MENUSELECT:
+		if (lParam == (LONG) vile_menu) {
+			menu_selection = LOWORD(wParam);
+			TRACE(("MAIN:MENUSELECT %#x, %#x (menu %#x)\n",
+				LOWORD(wParam),
+				HIWORD(wParam),
+				lParam))
+		}
+
+	case WM_ENTERIDLE:	/* ignored */
 		return (DefWindowProc(hWnd, message, wParam, lParam));
 
 	case WM_KEYDOWN:
@@ -1100,10 +1289,6 @@ BOOL InitInstance(
 	HANDLE          hInstance,
 	int             nCmdShow)
 {
-	HDC             hDC;
-	TEXTMETRIC      textmetric;
-	RECT		wrect, crect;
-
 	vile_hinstance = hInstance;
 
 	hAccTable = LoadAccelerators(vile_hinstance, "VileAcc");
@@ -1122,26 +1307,26 @@ BOOL InitInstance(
 		(LPVOID)0
 	);
 
+	/*
+	 * Insert "File" and "Font" before "Close" in the system menu.
+	 */
+	vile_menu = GetSystemMenu(vile_hwnd, FALSE);
+#if 0	/* FIXME: later */
+	AppendMenu(vile_menu, MF_STRING, MM_FILE, "File");
+#endif
+	AppendMenu(vile_menu, MF_STRING, MM_FONT, "Font");
+
 	if (!vile_hwnd)
 		return (FALSE);
 
 	SetCursor(hglass_cursor);
 
-	hDC = GetDC(vile_hwnd);
-	SelectObject(hDC, GetStockObject(MY_FONT));
-	GetTextMetrics(hDC, &textmetric);
-	ReleaseDC(vile_hwnd, hDC);
+	term.t_ncol = 80;
+	term.t_nrow = 24;
 
-	nLineHeight = textmetric.tmExternalLeading + textmetric.tmHeight;
-	nCharWidth  = textmetric.tmMaxCharWidth;
+	get_font(&vile_logfont);
+	use_font(vile_font, FALSE);
 
-	GetClientRect(vile_hwnd, &crect);
-	GetWindowRect(vile_hwnd, &wrect);
-
-	term.t_ncol = (crect.right - crect.left) / nCharWidth;
-	term.t_nrow = (crect.bottom - crect.top) / nLineHeight;
-
-	AdjustWindowSize(term.t_nrow, term.t_ncol);
 	ShowWindow(vile_hwnd, nCmdShow);
 	UpdateWindow(vile_hwnd);
 	return (TRUE);
@@ -1154,7 +1339,7 @@ BOOL InitApplication (HANDLE hInstance)
 	ZeroMemory(&wc, sizeof(&wc));
 	hglass_cursor    = LoadCursor((HINSTANCE)0, IDC_WAIT);
 	arrow_cursor     = LoadCursor((HINSTANCE)0, IDC_ARROW);
-	wc.style         = CS_VREDRAW | CS_HREDRAW; //(UINT)0;
+	wc.style         = CS_VREDRAW | CS_HREDRAW;
 	wc.lpfnWndProc   = (WNDPROC) MainWndProc;
 	wc.cbClsExtra    = 0;
 	wc.cbWndExtra    = 0;

@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.110 1998/03/22 12:06:15 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.111 1998/04/28 10:05:42 cmorgan Exp $
  *
  */
 
@@ -904,8 +904,8 @@ index2reg(int c)
 #if OPT_SELECTIONS
 	else if (c == SEL_KREG)
 		n = '.';
-	else if (c == CLIP_KREG) 
-		n = ';'; 
+	else if (c == CLIP_KREG)
+		n = ';';
 #endif
 	else if (c >= 10 && c < (int)TABLESIZE(kbs))
 		n = (c - 10 + 'a');
@@ -934,6 +934,8 @@ reg2index(int c)
 #if OPT_SELECTIONS
 	else if (c == '.')
 		n = SEL_KREG;
+	else if (c == ';')
+		n = CLIP_KREG;
 #endif
 	else if (c == '<')
 		n = KEYST_KREG;
@@ -1225,7 +1227,7 @@ PutChar(int n, REGIONSHAPE shape)
 							    break;
 						    checkpad = FALSE;
 					    }
-					    if (width && linsert(width, ' ') 
+					    if (width && linsert(width, ' ')
 								!= TRUE) {
 						    status = FALSE;
 						    break;
@@ -1295,7 +1297,7 @@ PutChar(int n, REGIONSHAPE shape)
 							    break;
 						    checkpad = FALSE;
 					    }
-					    if (width && linsert(width, ' ') 
+					    if (width && linsert(width, ' ')
 								!= TRUE) {
 						    status = FALSE;
 						    break;
@@ -1352,7 +1354,7 @@ PutChar(int n, REGIONSHAPE shape)
 				    status = linsert((int)(ep - sp), ' ');
 				    if (status != TRUE)
 					break;
-				    dp = DOT.l->l_text 
+				    dp = DOT.l->l_text
 					    + DOT.o - (int)(ep - sp);
 				    /* Copy killbuf portion to the line */
 				    while (sp < ep) {
@@ -1450,7 +1452,7 @@ execkreg(int f, int n)
 
 /* ARGSUSED */
 int
-loadkreg(int f GCC_UNUSED, int n GCC_UNUSED)
+loadkreg(int f, int n GCC_UNUSED)
 {
 	int s;
 	char respbuf[NFILEN];

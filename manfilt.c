@@ -4,7 +4,7 @@
  *
  * Author: Kevin A. Buettner
  * Creation: 4/17/94
- * 
+ *
  * This program filters backspace sequences often found in manual pages
  * for vile/xvile.  Backspace sequences representing italicized or bold
  * text are fixed up by removing the backspaces, underlines, and duplicate
@@ -20,7 +20,7 @@
  * <Attr> is a sequence of characters which indicates how to attribute the
  * characters following the ':'.  The following characters are presently
  * recognized by vile:
- *    	
+ *
  *	'I'	-- italic
  *	'B'	-- bold
  *	'U'	-- underline
@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/manfilt.c,v 1.21 1998/02/07 20:54:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/manfilt.c,v 1.22 1998/04/28 10:17:23 tom Exp $
  *
  */
 
@@ -344,7 +344,7 @@ next_line(void)
 }
 
 /*
- * If we've got a blank line to write onto, fake half-lines that way. 
+ * If we've got a blank line to write onto, fake half-lines that way.
  * Otherwise, eat them.  We assume that half-line controls occur in pairs.
  */
 static int

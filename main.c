@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.317 1998/04/26 23:18:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.318 1998/04/29 00:32:27 cmorgan Exp $
  *
  */
 
@@ -262,7 +262,7 @@ MainProgram(int argc, char *argv[])
 				if (len > 0 && param[len-1] == '/')
 					param[--len] = EOS;
 				if (len == 0)
-					print_usage();  
+					print_usage();
 				goto dosearch;
 			}
 			gotoflag = TRUE;
@@ -447,7 +447,7 @@ MainProgram(int argc, char *argv[])
 				swbuffer(vbp);
 				b_set_scratch(vbp);
 				bprintf("%s", vileinit);
-				/* if we leave it scratch, swbuffer(obp) 
+				/* if we leave it scratch, swbuffer(obp)
 					may zot it, and we may zot it again */
 				b_clr_scratch(vbp);
 				set_rdonly(vbp, vbp->b_fname, MDVIEW);
@@ -556,8 +556,8 @@ static void
 loop(void)
 {
 	const CMDFUNC
-		*cfp = NULL, 
-		*last_cfp = NULL, 
+		*cfp = NULL,
+		*last_cfp = NULL,
 		*last_failed_motion_cfp = NULL;
 	int s,c,f,n;
 
@@ -627,10 +627,10 @@ loop(void)
 		/* and execute the command */
 		cfp = kcod2fnc(c);
 
-		if (cfp == &f_dotcmdplay && 
-			(last_cfp == &f_undo || 
-			 last_cfp == &f_forwredo || 
-			 last_cfp == &f_backundo || 
+		if (cfp == &f_dotcmdplay &&
+			(last_cfp == &f_undo ||
+			 last_cfp == &f_forwredo ||
+			 last_cfp == &f_backundo ||
 			 last_cfp == &f_inf_undo))
 			cfp = &f_inf_undo;
 
@@ -648,7 +648,7 @@ loop(void)
 		if ( (cfp != NULL)
 		 && ((cfp->c_flags & MOTION) != 0)
 		 && (s == FALSE) ) {
-			if (cfp != last_failed_motion_cfp || 
+			if (cfp != last_failed_motion_cfp ||
 					global_g_val(GMDMULTIBEEP)) {
 				last_failed_motion_cfp = cfp;
 				kbd_alarm();
@@ -666,7 +666,7 @@ loop(void)
 * leave its directory name in exec_pathname and shorten prog_arg
 * to the simple filename (no path).
 */
-static void 
+static void
 get_executable_dir(void)
 {
 #if SYS_UNIX || SYS_VMS
@@ -679,7 +679,7 @@ get_executable_dir(void)
 		if ((s = flook(prog_arg, FL_PATH|FL_EXECABLE)) != 0)
 			s = strmalloc(s);
 	} else {
-		/* if there _are_ slashes, then argv[0] was either 
+		/* if there _are_ slashes, then argv[0] was either
 		 * absolute or relative. lengthen_path figures it out.
 		 */
 		s = strmalloc(lengthen_path(strcpy(temp, prog_arg)));
@@ -828,6 +828,10 @@ global_val_init(void)
 	set_global_g_val(GVAL_TIMEOUTUSERVAL, 30000);
 #else
 	set_global_g_val(GVAL_TIMEOUTUSERVAL, 60000);
+#endif
+
+#if SYS_WINNT
+	set_global_g_val(GVAL_SCROLLPAUSE, 0);
 #endif
 
 	/* allow remapping by default */
@@ -1254,7 +1258,7 @@ do_rept_arg_proc(int *cp, int *fp, int *np)
 	f = TRUE;	/* there is a # arg */
 	mflag = 0;			/* that can be discarded. */
 	mlwrite("arg: %d",n);
-	while ( (isDigit( c=kbd_seq() ) && !isspecial(c)) 
+	while ( (isDigit( c=kbd_seq() ) && !isspecial(c))
 			|| c==reptc || c=='-'){
 		if (c == reptc) {
 			/* wow.  what does this do?  -pgf */
@@ -2121,7 +2125,7 @@ newprocessgroup(int f GCC_UNUSED, int n GCC_UNUSED)
 # ifndef VMS
 #  ifdef HAVE_SETSID
      (void)setsid();
-#  else 
+#  else
 #   ifdef HAVE_BSD_SETPGRP
      (void) setpgrp(0, 0);
 #   else

@@ -30,7 +30,7 @@ watchfd(int fd, WATCHTYPE type, char *callback)
 	/* Already allocated/watched, so deallocate/unwatch */
 	unwatchfd(fd);
     }
-    
+
     watchfds[fd] = typealloc(watchrec);
 
     if (watchfds[fd] == NULL) {

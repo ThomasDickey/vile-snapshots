@@ -2,7 +2,7 @@
  *	matching lines, then for each such line, an action is performed.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/globals.c,v 1.41 1997/03/15 15:48:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/globals.c,v 1.42 1998/04/28 10:16:48 tom Exp $
  *
  */
 
@@ -60,15 +60,15 @@ globber(int f GCC_UNUSED, int n GCC_UNUSED, int g_or_v)
 	        mlforce("[Function not allowed]");
 		return FALSE;
 	}
-	
-	
+
+
 	/* call the searcher, telling it to do line marking */
 	s = fsearch(FALSE,0,TRUE,FALSE);
 	if (s != TRUE)
 		return s;
-	
+
 	calledbefore = FALSE;
-	
+
 	if (g_or_v == 'v') {  /* invert the sense of all the matches */
 		for_each_line(lp, curbp)
 			lflipmark(lp);
@@ -83,7 +83,7 @@ globber(int f GCC_UNUSED, int n GCC_UNUSED, int g_or_v)
 	save_report = global_g_val(GVAL_REPORT);
 	for_ever {
 		if (lp == win_head(wp)) {
-			/* at the end -- only quit if we found no 
+			/* at the end -- only quit if we found no
 				marks on the last pass through. otherwise,
 				go through again */
 			if (foundone)

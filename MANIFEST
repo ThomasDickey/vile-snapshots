@@ -1,4 +1,4 @@
-MANIFEST for vile, version v7_3y
+MANIFEST for vile, version v7_3z
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -91,6 +91,7 @@ opers.c                         operator-commands (that use motions)
 os2keys.h                       function-key definitions for OS/2
 os2pipe.c                       OS/2 pipe support
 os2vio.c                        OS/2 video terminal driver
+pas-filt.c                      Pascal syntax-highlighting filter
 patchlev.h                      patch-level
 path.c                          functions that manipulate pathnames
 perl-api.doc                    notes about perl interface to vile
@@ -102,6 +103,7 @@ ptypemap                        perl-interface type map
 random.c                        miscellaneous functions
 regexp.c                        regular expression functions
 region.c                        region-manipulation
+revlist                         revision-list for VILE
 search.c                        functions for search-commands
 select.c                        selection-handling functions
 shell.pl                        spawn a shell via a pty

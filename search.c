@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.109 1998/04/26 20:12:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.110 1998/04/28 10:18:39 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -434,9 +434,9 @@ int	*wrappedp)
 						srchlim = scanboundpos.o;
 					} else {
 						startoff = curpos.o;
-						srchlim = 
+						srchlim =
 						 (scanboundpos.o > startoff) ?
-							scanboundpos.o : 
+							scanboundpos.o :
 							llength(curpos.l);
 					}
 				} else {
@@ -558,7 +558,7 @@ need_to_rehilite(void)
 {
 	/* save static copies of state that affects the search */
 
-	if ((curbp->b_highlight & (HILITE_ON|HILITE_DIRTY)) == 
+	if ((curbp->b_highlight & (HILITE_ON|HILITE_DIRTY)) ==
 				  (HILITE_ON|HILITE_DIRTY) ||
 			strcmp(pat, savepat) != 0 ||
 			save_igncase != ignorecase ||
@@ -567,7 +567,7 @@ need_to_rehilite(void)
 			(!hilite_suppressed && save_curbp != curbp)) {
 		(void)strcpy(savepat, pat);
 		save_igncase = ignorecase;
-		save_vattr = b_val(curbp,VAL_HILITEMATCH); 
+		save_vattr = b_val(curbp,VAL_HILITEMATCH);
 		save_magic = b_val(curbp, MDMAGIC);
 		save_curbp = curbp;
 		return TRUE;
@@ -629,7 +629,7 @@ attrib_matches(void)
 	mlwrite("rehighlighting");
 #endif
 
-	vattr = b_val(curbp,VAL_HILITEMATCH); 
+	vattr = b_val(curbp,VAL_HILITEMATCH);
 	if (vattr == 0)
 		return;
 
@@ -643,7 +643,7 @@ attrib_matches(void)
 	do {
 		nextch(&(DOT),FORWARD);
 		status = scanner(gregexp, FORWARD, FALSE, (int *)0);
-		if (status != TRUE) 
+		if (status != TRUE)
 			break;
 		if (vattr != VACOLOR)
 			videoattribute = vattr;

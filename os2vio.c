@@ -3,7 +3,7 @@
  * Modified from a really old version of "borland.c" (before the VIO
  * stuff went in there.)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.17 1998/04/20 09:54:03 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.18 1998/04/28 10:17:54 tom Exp $
  */
 
 #include "estruct.h"
@@ -173,7 +173,7 @@ set_cursor(int cmode)
 		/* 'Normal' cursor. */
 		cinfo.yStart = -75;
 		break;
-	} 
+	}
 
 	(void) VioSetCurType(&cinfo, 0);
 }
@@ -334,7 +334,7 @@ vio_flush(void)
 
 	if (length > 0)
 	{
-		(void) VioWrtCharStrAtt(TextBuf, length, TextRow, TextColumn, 
+		(void) VioWrtCharStrAtt(TextBuf, length, TextRow, TextColumn,
 			&TextAttr, 0);
 		TextColumn += length;
 	}
@@ -515,7 +515,7 @@ vio_kclose()	/* close the keyboard */
 	return;
 }
 
-static int 
+static int
 scinit(int rows)	/* initialize the screen head pointers */
 {
 	VIOMODEINFO vinfo;
@@ -552,13 +552,13 @@ vio_scroll(int from, int to, int n)
 		if (from < to)
 			from = to-1;
 		else
-			from = to+1;    
+			from = to+1;
 	}
 #endif
 
 	if (to < from)
 	{
-		(void) VioScrollUp(to, 0, from + n - 1, MaxColumns - 1, 
+		(void) VioScrollUp(to, 0, from + n - 1, MaxColumns - 1,
 			from - to, blank_cell(), 0);
 /*
 		vio_move(to + n, 0);

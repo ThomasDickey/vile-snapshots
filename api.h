@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.9 1998/04/23 09:18:54 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.10 1998/04/28 10:14:06 tom Exp $
  */
 
 /*
@@ -19,22 +19,22 @@
  */
 
 typedef struct {
-	BUFFER    * bp; 
-	WINDOW    * fwp;		/* fake window pointer */ 
-	REGION      region;		/* Region to traverse */ 
-	REGIONSHAPE regionshape; 
-	int         inplace_edit;	/* Delete after get? */ 
-	int         dot_inited;		/* Has dot been initialized 
-	                                   for api_dotgline? */ 
-	int         changed;		/* Were any changes done? */ 
-	int         dot_changed;	/* DOT explicitly changed -- 
-					   implies that DOT should 
-					   be propogated */ 
+	BUFFER    * bp;
+	WINDOW    * fwp;		/* fake window pointer */
+	REGION      region;		/* Region to traverse */
+	REGIONSHAPE regionshape;
+	int         inplace_edit;	/* Delete after get? */
+	int         dot_inited;		/* Has dot been initialized
+	                                   for api_dotgline? */
+	int         changed;		/* Were any changes done? */
+	int         dot_changed;	/* DOT explicitly changed --
+					   implies that DOT should
+					   be propogated */
 	int	    ndel;		/* number of characters to delete upon
 					   setup; related to the inplace_edit
 					   stuff */
 #if OPT_PERL
-	void      * perl_handle;	/* perl visible handle to this 
+	void      * perl_handle;	/* perl visible handle to this
 					   data structure */
 #endif
 } VileBuf;
@@ -50,10 +50,10 @@ extern	int	api_swscreen(VileBuf *, VileBuf *);
 extern	VileBuf *api_fscreen(int, char *);
 extern	VileBuf *api_bp2vbp(BUFFER *bp);
 extern	void	api_command_cleanup(void);
-extern	int	api_dotinsert(VileBuf *sp, char *text, int len); 
-extern	int	api_dotgline(VileBuf *, char **, int *, int *); 
-extern	int	api_gotoline(VileBuf *sp, int lno); 
-extern	void	api_setup_fake_win(VileBuf *sp, int do_delete); 
+extern	int	api_dotinsert(VileBuf *sp, char *text, int len);
+extern	int	api_dotgline(VileBuf *, char **, int *, int *);
+extern	int	api_gotoline(VileBuf *sp, int lno);
+extern	void	api_setup_fake_win(VileBuf *sp, int do_delete);
 extern	int	api_delregion(VileBuf *vbp);
 extern	int	api_motion(VileBuf *vbp, char *mstr);
 extern	void	api_update(void);

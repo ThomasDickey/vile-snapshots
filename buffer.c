@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.169 1998/04/23 09:18:54 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.170 1998/04/28 10:15:56 tom Exp $
  *
  */
 
@@ -1477,7 +1477,7 @@ show_BufferList(BUFFER *bp GCC_UNUSED)
 	if ((status = (!updating_list++ != 0)) != FALSE) {
 		this_bp = curbp;
 		that_bp = find_alt();
-		status = liststuff(BUFFERLIST_BufName, FALSE, 
+		status = liststuff(BUFFERLIST_BufName, FALSE,
 				makebufflist, 0, (void *)0);
 	}
 	updating_list--;
@@ -1521,7 +1521,7 @@ listbuffers(int f GCC_UNUSED, int n GCC_UNUSED)
 	}
 	this_bp = 0;
 	that_bp = curbp;
-	status  = liststuff(BUFFERLIST_BufName, FALSE, 
+	status  = liststuff(BUFFERLIST_BufName, FALSE,
 				makebufflist, 0, (void *)0);
 	b_clr_obsolete(curbp);
 	return status;
@@ -1529,7 +1529,7 @@ listbuffers(int f GCC_UNUSED, int n GCC_UNUSED)
 	show_all = f;
 	this_bp = 0;
 	that_bp = curbp;
-	return liststuff(BUFFERLIST_BufName, FALSE, 
+	return liststuff(BUFFERLIST_BufName, FALSE,
 				makebufflist, 0, (void *)0);
 #endif
 }
@@ -2047,7 +2047,7 @@ writeall(int f, int n, int promptuser, int leaving, int autowriting)
 	/* shortcut out */
 	if (autowriting && !failure && !count)
 		return TRUE;
-	
+
 	/* do we want a press-return message?  */
 	if (failure || ((promptuser && !leaving) && count)) {
 		if (dirtymsgline)
@@ -2078,7 +2078,7 @@ writeall(int f, int n, int promptuser, int leaving, int autowriting)
 	else
 		mlforce("[No buffers written]");
 
-	if (dirtymsgline) 
+	if (dirtymsgline)
 		sgarbf = TRUE;
 
 	return status;

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.173 1998/04/26 21:53:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.174 1998/04/28 23:18:58 tom Exp $
  *
  */
 
@@ -578,15 +578,30 @@ desfunc(int f GCC_UNUSED, int n GCC_UNUSED)	/* describe-function */
 
 	fnp = kbd_engl("Describe function whose full name is: ",
 							described_cmd+1);
-	if (fnp == NULL || engl2fnc(fnp) == NULL) {
-		return no_such_function(fnp);
+	if (fnp == NULL) {
+		s = no_such_function(fnp);
+	} else if (engl2fnc(fnp) == NULL) {
+		char bufn[NBUFN];
+		add_brackets(bufn, fnp);
+		if (find_b_name(bufn) == NULL) {
+			s = no_such_function(fnp);
+		} else {
+			/* FIXME:  it would be nice to add this message to the
+			 * binding list, but then that opens up the
+			 * corresponding 'need' for support with apropos, as
+			 * well as putting all user-macros automatically into
+			 * the binding-list.
+			 */
+			mlforce("User-defined procedure");
+			s = TRUE;
+		}
+	} else {
+		last_apropos_string = described_cmd;
+		last_whichcmds = 0;
+		append_to_binding_list = TRUE;
+		s = update_binding_list((BUFFER *)0);
+		append_to_binding_list = FALSE;
 	}
-
-	last_apropos_string = described_cmd;
-	last_whichcmds = 0;
-	append_to_binding_list = TRUE;
-	s = update_binding_list((BUFFER *)0);
-	append_to_binding_list = FALSE;
 	return s;
 }
 

@@ -1,8 +1,8 @@
-/*	PATH.C	
+/*	PATH.C
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.82 1998/04/12 19:49:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.83 1998/04/28 10:18:24 tom Exp $
  *
  *
  */
@@ -454,9 +454,9 @@ home_path(char *path)
  * as.
  *
  * The purpose of this code is to generalize getcwd.  The idea is to pass it as
- * input some path name.  This pathname can be relative, absolute, whatever. 
+ * input some path name.  This pathname can be relative, absolute, whatever.
  * It may have elements which reference symbolic links.  The output from this
- * function will be the absolute pathname representing the same file. 
+ * function will be the absolute pathname representing the same file.
  * Actually, it only returns the directory.  If the thing you pass it is a
  * directory, you'll get that directory back (canonicalized).  If you pass it a
  * path to an ordinary file, you'll get back the canonicalized directory which
@@ -664,7 +664,7 @@ resolve_directory(
 	 * Now, 'temp_name[]' contains a null-terminated directory-path, and
 	 * 'tnp' points to the null.  If we've set file_namep, we've allocated
 	 * a pointer since it may be pointing within the temp_name string --
-	 * which may be overwritten. 
+	 * which may be overwritten.
 	 */
 	*file_namep = tb_values(last_leaf);
 
@@ -792,7 +792,7 @@ resolve_directory(
 /*
  * The function case_correct_path is intended to determine the true
  * case of all pathname components of a syntactically canonicalized
- * pathname for operating systems on which OPT_CASELESS applies. 
+ * pathname for operating systems on which OPT_CASELESS applies.
  */
 
 #if SYS_WINNT
@@ -1830,7 +1830,7 @@ static char slconvpath[NFILEN * 2];
  * Use this function to filter our internal '/' format pathnames to '\'
  * when invoking system calls (e.g., opendir, chdir).
  */
-char * 
+char *
 sl_to_bsl(const char *p)
 {
 	size_t len;

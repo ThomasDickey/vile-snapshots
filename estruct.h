@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.346 1998/04/26 21:29:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.347 1998/04/29 00:02:40 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -472,7 +472,7 @@
 /* selections and attributed regions */
 #define OPT_VIDEO_ATTRS !SMALLER
 #define OPT_SELECTIONS  OPT_VIDEO_ATTRS
-#define OPT_HYPERTEXT	OPT_VIDEO_ATTRS 
+#define OPT_HYPERTEXT	OPT_VIDEO_ATTRS
 
 /* OPT_PSCREEN permits a direct interface to the pscreen data structure
  * in display.c. This allows us to avoid storing the screen data on the
@@ -764,14 +764,14 @@ extern int MainProgram(int argc, char *argv[]);
 #define	NKREGS	37			/* number of kill buffers	*/
 #define KEYST_KREG (NKREGS-1)
 #else
-#define NKREGS	39			/* When selections are enabled, we 
+#define NKREGS	39			/* When selections are enabled, we
 					 * allocate an extra kill buffer for
-					 * the current selection and another 
-					 * for the clipboard. 
+					 * the current selection and another
+					 * for the clipboard.
 					 */
-#define CLIP_KREG (NKREGS-1) 
-#define SEL_KREG (NKREGS-2) 
-#define KEYST_KREG (NKREGS-3) 
+#define CLIP_KREG (NKREGS-1)
+#define SEL_KREG (NKREGS-2)
+#define KEYST_KREG (NKREGS-3)
 #endif
 #define	NBLOCK	16			/* line block chunk size	*/
 #define MINWLNS	3			/* min # lines, window/screen	*/
@@ -1397,9 +1397,9 @@ typedef struct _aregion {
 	REGION		ar_region;
 	VIDEO_ATTR	ar_vattr;
 	REGIONSHAPE	ar_shape;
-#if OPT_HYPERTEXT 
-	char *		ar_hypercmd; 
-#endif 
+#if OPT_HYPERTEXT
+	char *		ar_hypercmd;
+#endif
 }	AREGION;
 
 typedef	struct {
@@ -2115,7 +2115,7 @@ typedef struct  k_bind {
 #define DFLNONE argBIT(9)	/* no default file range */
 #define NODFL   argBIT(10)	/* do not default to the current file name */
 #define EXRCOK  argBIT(11)	/* can be in a .exrc file */
-#define NL      argBIT(12)	/* if !exmode, then write a newline first */
+#define VI_NL   argBIT(12)	/* if !exmode, then write a newline first */
 #define PLUS    argBIT(13)	/* allow a line number, as in ":e +32 foo" */
 #define ZERO    argBIT(14)	/* allow 0 to be given as a line number */
 #define OPTREG  argBIT(15)	/* allow optional register-name */

@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.124 1998/04/16 23:02:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.125 1998/04/28 10:16:40 tom Exp $
  *
  */
 
@@ -97,7 +97,7 @@ write_backup_file(const char *orig, char *backup)
 		return FALSE;
 
 	if (stat(SL_TO_BSL(backup), &bstat) == 0) {  /* the backup file exists */
-		
+
 #if SYS_UNIX
 		/* same file, somehow? */
 		if (bstat.st_dev == ostat.st_dev &&

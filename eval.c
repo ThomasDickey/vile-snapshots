@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.156 1998/04/24 01:19:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.157 1998/04/28 10:16:14 tom Exp $
  *
  */
 
@@ -481,7 +481,7 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 		ElseIf( EVFWD_SEARCH )	value = ltos(last_srch_direc == FORWARD);
 		ElseIf( EVSEARCH )	value = pat;
 		ElseIf( EVREPLACE )	value = rpat;
-		ElseIf( EVMATCH )	value = (patmatch == NULL) ? 
+		ElseIf( EVMATCH )	value = (patmatch == NULL) ?
 							"" : patmatch;
 		ElseIf( EVMODE )	value = current_modename();
 		ElseIf( EVEOC )		value = l_itoa(ev_end_of_cmd ? 1 : 0);
@@ -1177,7 +1177,7 @@ const char *tokn)		/* token to evaluate */
 		case TKARG:	/* interactive argument */
 				{
 				static char tkargbuf[NSTRING];
-			
+
 				oclexec = clexec;
 
 				distmp = discmd;	/* echo it always! */

@@ -7,7 +7,7 @@
  *	To do:	add 'itb_ins()' and 'itb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/itbuff.c,v 1.11 1997/06/04 10:50:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/itbuff.c,v 1.12 1998/04/28 10:17:09 tom Exp $
  *
  */
 
@@ -85,7 +85,7 @@ itb_alloc(ITBUFF **p, ALLOC_T n)
 		q->itb_endc = abortc;
 		AllocatedBuffer(q)
 	} else if (n >= q->itb_size) {
-		q->itb_data = typereallocn(int, q->itb_data, 
+		q->itb_data = typereallocn(int, q->itb_data,
 						q->itb_size = (n*2));
 	}
 	return q;
@@ -159,7 +159,7 @@ itb_append(ITBUFF **p, int c)
 {
 	register ITBUFF *q = *p;
 	register ALLOC_T n = (q != 0) ? q->itb_used : 0;
-	
+
 	return itb_put(p, n, c);
 }
 

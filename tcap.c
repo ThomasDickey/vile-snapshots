@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.104 1998/04/20 09:54:03 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.105 1998/04/29 00:09:54 tom Exp $
  *
  */
 
@@ -22,19 +22,19 @@
 #define WINDOW vile_WINDOW
 
 #if USE_TERMCAP
-#  define TCAPSLEN 768 
+#  define TCAPSLEN 768
 	static	char tcapbuf[TCAPSLEN];
 #endif
 
-static char *CM, *CE, *CL, *SO, *SE;
-static char *TI, *TE, *KS, *KE;
-static char *CS, *dl, *al, *DL, *AL, *SF, *SR;
+static char *tc_CM, *tc_CE, *tc_CL, *tc_SO, *tc_SE;
+static char *tc_TI, *tc_TE, *tc_KS, *tc_KE;
+static char *tc_CS, *tc_dl, *tc_al, *tc_DL, *tc_AL, *tc_SF, *tc_SR;
 
 #if OPT_VIDEO_ATTRS
-static char *US;	/* underline-start */
-static char *UE;	/* underline-end */
-static char *ME;
-static char *MD;
+static char *tc_US;	/* underline-start */
+static char *tc_UE;	/* underline-end */
+static char *tc_ME;
+static char *tc_MD;
 #endif
 
 #if OPT_FLASH
@@ -52,7 +52,7 @@ static char *vb;	/* visible-bell */
  * max_colors       "colors"  num    "Co"    maximum numbers of colors on screen
  * max_pairs        "pairs"   num    "pa"    maximum number of color-pairs on the screen
  * no_color_video   "ncv"     num    "NC"    video attributes that can't be used with colors
- * orig_pair        "op"      str    "op"    
+ * orig_pair        "op"      str    "op"
  * orig_colors      "oc"      str    "oc"    set original colors
  * initialize_color "initc"   str    "Ic"
  * initialize_pair  "initp"   str    "Ip"
@@ -287,22 +287,22 @@ tcapopen(void)
 		char *name;
 		char **data;
 	} tc_strings[] = {
-	 { CAPNAME("AL","il"),    &AL }		/* add p1 lines above cursor */
-	,{ CAPNAME("DL","dl"),    &DL }		/* delete p1 lines, begin at cursor */
-	,{ CAPNAME("al","il1"),   &al }		/* add line below cursor */
-	,{ CAPNAME("ce","el"),    &CE }		/* clear to end of line */
-	,{ CAPNAME("cl","clear"), &CL }		/* clear screen, cursor to home */
-	,{ CAPNAME("cm","cup"),   &CM }		/* move cursor to row p1, col p2 */
-	,{ CAPNAME("cs","csr"),   &CS }		/* set scrolling to rows p1 .. p2 */
-	,{ CAPNAME("dl","dl1"),   &dl }		/* delete line */
-	,{ CAPNAME("ke","rmkx"),  &KE }		/* end keypad-mode */
-	,{ CAPNAME("ks","smkx"),  &KS }		/* start keypad-mode */
-	,{ CAPNAME("se","rmso"),  &SE }		/* end standout-mode */
-	,{ CAPNAME("sf","ind"),   &SF }		/* scroll forward 1 line */
-	,{ CAPNAME("so","smso"),  &SO }		/* start standout-mode */
-	,{ CAPNAME("sr","ri"),    &SR }		/* scroll reverse 1 line */
-	,{ CAPNAME("te","rmcup"), &TE }		/* end cursor-motion program */
-	,{ CAPNAME("ti","smcup"), &TI }		/* initialize cursor-motion program */
+	 { CAPNAME("AL","il"),    &tc_AL }	/* add p1 lines above cursor */
+	,{ CAPNAME("DL","dl"),    &tc_DL }	/* delete p1 lines, begin at cursor */
+	,{ CAPNAME("al","il1"),   &tc_al }	/* add line below cursor */
+	,{ CAPNAME("ce","el"),    &tc_CE }	/* clear to end of line */
+	,{ CAPNAME("cl","clear"), &tc_CL }	/* clear screen, cursor to home */
+	,{ CAPNAME("cm","cup"),   &tc_CM }	/* move cursor to row p1, col p2 */
+	,{ CAPNAME("cs","csr"),   &tc_CS }	/* set scrolling to rows p1 .. p2 */
+	,{ CAPNAME("dl","dl1"),   &tc_dl }	/* delete line */
+	,{ CAPNAME("ke","rmkx"),  &tc_KE }	/* end keypad-mode */
+	,{ CAPNAME("ks","smkx"),  &tc_KS }	/* start keypad-mode */
+	,{ CAPNAME("se","rmso"),  &tc_SE }	/* end standout-mode */
+	,{ CAPNAME("sf","ind"),   &tc_SF }	/* scroll forward 1 line */
+	,{ CAPNAME("so","smso"),  &tc_SO }	/* start standout-mode */
+	,{ CAPNAME("sr","ri"),    &tc_SR }	/* scroll reverse 1 line */
+	,{ CAPNAME("te","rmcup"), &tc_TE }	/* end cursor-motion program */
+	,{ CAPNAME("ti","smcup"), &tc_TI }	/* initialize cursor-motion program */
 #if	OPT_COLOR
 	,{ CAPNAME("AF","setaf"), &AF }		/* set ANSI foreground-color */
 	,{ CAPNAME("AB","setab"), &AB }		/* set ANSI background-color */
@@ -315,14 +315,14 @@ tcapopen(void)
 	,{ CAPNAME("vb","flash"), &vb }		/* visible bell */
 #endif
 #if	OPT_VIDEO_ATTRS
-	,{ CAPNAME("me","sgr0"),  &ME }		/* turn off all attributes */
-	,{ CAPNAME("md","bold"),  &MD }		/* turn on bold attribute */
-	,{ CAPNAME("us","smul"),  &US }		/* underline-start */
-	,{ CAPNAME("ue","rmul"),  &UE }		/* underline-end */
+	,{ CAPNAME("me","sgr0"),  &tc_ME }	/* turn off all attributes */
+	,{ CAPNAME("md","bold"),  &tc_MD }	/* turn on bold attribute */
+	,{ CAPNAME("us","smul"),  &tc_US }	/* underline-start */
+	,{ CAPNAME("ue","rmul"),  &tc_UE }	/* underline-end */
 #endif
 	};
 
-	if (already_open) 
+	if (already_open)
 		return;
 
 	if ((tv_stype = getenv("TERM")) == NULL)
@@ -344,7 +344,7 @@ tcapopen(void)
 
 	/* Get screen size from system, or else from termcap.  */
 	getscreensize(&term.t_ncol, &term.t_nrow);
- 
+
 	if ((term.t_nrow <= 1)
 	 && (term.t_nrow = TGETNUM(CAPNAME("li","lines"))) < 0) {
 		term.t_nrow = 24;
@@ -370,7 +370,7 @@ tcapopen(void)
 	else {
 		p = tcbuf;
 		while (*p && *p != ':') {
-			if (*p == 'x' 
+			if (*p == 'x'
 			    && strncmp(p, "xterm", sizeof("xterm") - 1) == 0) {
 				i_am_xterm = TRUE;
 				break;
@@ -407,30 +407,30 @@ tcapopen(void)
 #  endif
 #endif
 
-	if (SO != NULL)
+	if (tc_SO != NULL)
 		revexist = TRUE;
 
-	if(CL == NULL || CM == NULL)
+	if(tc_CL == NULL || tc_CM == NULL)
 	{
 		puts("Incomplete termcap entry\n");
 		ExitProgram(BADEXIT);
 	}
 
-	if (CE == NULL) 	/* will we be able to use clear to EOL? */
+	if (tc_CE == NULL) 	/* will we be able to use clear to EOL? */
 		eolexist = FALSE;
 
-	if (!CS || !SR) { /* some xterm's termcap entry is missing entries */
+	if (!tc_CS || !tc_SR) { /* some xterm's termcap entry is missing entries */
 		if (i_am_xterm) {
-			if (!CS) CS = "\033[%i%d;%dr";
-			if (!SR) SR = "\033M";
+			if (!tc_CS) tc_CS = "\033[%i%d;%dr";
+			if (!tc_SR) tc_SR = "\033M";
 		}
 	}
 
-	if (CS && SR) {
-		if (SF == NULL) /* assume '\n' scrolls forward */
-			SF = "\n";
+	if (tc_CS && tc_SR) {
+		if (tc_SF == NULL) /* assume '\n' scrolls forward */
+			tc_SF = "\n";
 		term.t_scroll = tcapscroll_reg;
-	} else if ((DL && AL) || (dl && al)) {
+	} else if ((tc_DL && tc_AL) || (tc_dl && tc_al)) {
 		term.t_scroll = tcapscroll_delins;
 	} else {
 		term.t_scroll = null_t_scroll;
@@ -450,7 +450,7 @@ tcapopen(void)
 
 #if	OPT_VIDEO_ATTRS
 	if (OrigColors == 0)
-		OrigColors = ME;
+		OrigColors = tc_ME;
 #endif
 	if (ncolors == 8 && AF != 0 && AB != 0) {
 		Sf = AF;
@@ -462,9 +462,9 @@ tcapopen(void)
 		set_palette(UNKN_palette);
 #endif
 #if OPT_VIDEO_ATTRS
-	if (US == 0 && UE == 0) {	/* if we don't have underline, do bold */
-		US = MD;
-		UE = ME;
+	if (tc_US == 0 && tc_UE == 0) {	/* if we don't have underline, do bold */
+		tc_US = tc_MD;
+		tc_UE = tc_ME;
 	}
 #endif
 
@@ -484,7 +484,7 @@ tcapopen(void)
 		    until we (and we may never) have separate system "map"
 		    and "map!" maps, we can't allow this -- DEL has different
 		    semantics in insert and command mode, whereas KEY_Delete
-		    has the same semantics (whatever they may be) in both. 
+		    has the same semantics (whatever they may be) in both.
 		    KEY_Delete is the only non-motion system map, by the
 		    way -- so the rest are benign in insert or command
 		    mode.  */
@@ -516,7 +516,7 @@ tcapopen(void)
 	addtosysmap("\033[T", 3, KEY_textInvalid);
 #endif
 #endif
-	        
+
 #if USE_TERMCAP
 	if (p >= &tcapbuf[TCAPSLEN])
 	{
@@ -532,8 +532,8 @@ static void
 tcapclose(void)
 {
 #if OPT_VIDEO_ATTRS
-	if (ME)	/* end special attributes (including color) */
-		putpad(ME);
+	if (tc_ME)	/* end special attributes (including color) */
+		putpad(tc_ME);
 #endif
 	TTmove(term.t_nrow-1, 0);	/* cf: dumbterm.c */
 	TTeeol();
@@ -559,12 +559,12 @@ tcapkopen(void)
 #endif
 	if (!keyboard_open) {
 		keyboard_open = TRUE;
-		if (TI) {
-			putnpad(TI, (int)strlen(TI));
+		if (tc_TI) {
+			putnpad(tc_TI, (int)strlen(tc_TI));
 			ttrow = ttcol = -1;	/* 'ti' may move the cursor */
 		}
-		if (KS)
-			putpad(KS);
+		if (tc_KS)
+			putpad(tc_KS);
 	}
 	(void)strcpy(sres, "NORMAL");
 }
@@ -578,10 +578,10 @@ tcapkclose(void)
 #endif
 	if (keyboard_open) {
 		keyboard_open = FALSE;
-		if (TE)
-			putnpad(TE, (int)strlen(TE));
-		if (KE)
-			putpad(KE);
+		if (tc_TE)
+			putnpad(tc_TE, (int)strlen(tc_TE));
+		if (tc_KE)
+			putpad(tc_KE);
 	}
 	TTflush();
 }
@@ -589,7 +589,7 @@ tcapkclose(void)
 static void
 tcapmove(register int row, register int col)
 {
-	putpad(tgoto(CM, col, row));
+	putpad(tgoto(tc_CM, col, row));
 }
 
 #if	OPT_COLOR
@@ -631,7 +631,7 @@ tcapeeol(void)
 		erase_non_bce(ttrow, ttcol);
 	} else
 #endif
-	putpad(CE);
+	putpad(tc_CE);
 }
 
 static void
@@ -654,7 +654,7 @@ tcapeeop(void)
 		erase_non_bce(ttrow, ttcol);
 	} else
 #endif
-	putpad(CL);
+	putpad(tc_CL);
 }
 
 /*ARGSUSED*/
@@ -673,24 +673,24 @@ tcapscroll_reg(int from, int to, int n)
 	if (to == from) return;
 	if (to < from) {
 		tcapscrollregion(to, from + n - 1);
-		tcapmove(from + n - 1,0);
+		tcapmove(from + n - 1, 0);
 		for (i = from - to; i > 0; i--) {
-			putpad(SF);
+			putpad(tc_SF);
 			FILL_BCOLOR(from + n - 1, 0);
 		}
 	} else { /* from < to */
 		tcapscrollregion(from, to + n - 1);
-		tcapmove(from,0);
+		tcapmove(from, 0);
 		for (i = to - from; i > 0; i--) {
-			putpad(SR);
+			putpad(tc_SR);
 			FILL_BCOLOR(from, 0);
 		}
 	}
 	tcapscrollregion(0, term.t_nrow-1);
 }
 
-/* 
-OPT_PRETTIER_SCROLL is prettier but slower -- it scrolls 
+/*
+OPT_PRETTIER_SCROLL is prettier but slower -- it scrolls
 		a line at a time instead of all at once.
 */
 
@@ -700,18 +700,18 @@ tcapscroll_delins(int from, int to, int n)
 {
 	int i;
 	if (to == from) return;
-	if (DL && AL) {
+	if (tc_DL && tc_AL) {
 		if (to < from) {
-			tcapmove(to,0);
-			putpad(tgoto(DL,0,from-to));
-			tcapmove(to+n,0);
-			putpad(tgoto(AL,0,from-to));
+			tcapmove(to, 0);
+			putpad(tgoto(tc_DL, 0, from-to));
+			tcapmove(to+n, 0);
+			putpad(tgoto(tc_AL, 0, from-to));
 			FILL_BCOLOR(to+n, 0);
 		} else {
-			tcapmove(from+n,0);
-			putpad(tgoto(DL,0,to-from));
-			tcapmove(from,0);
-			putpad(tgoto(AL,0,to-from));
+			tcapmove(from+n, 0);
+			putpad(tgoto(tc_DL, 0, to-from));
+			tcapmove(from, 0);
+			putpad(tgoto(tc_AL, 0, to-from));
 			FILL_BCOLOR(from+n, 0);
 		}
 	} else { /* must be dl and al */
@@ -721,25 +721,25 @@ tcapscroll_delins(int from, int to, int n)
 			if (from < to)
 				from = to-1;
 			else
-				from = to+1;    
+				from = to+1;
 		}
 #endif
 		if (to < from) {
-			tcapmove(to,0);
+			tcapmove(to, 0);
 			for (i = from - to; i > 0; i--)
-				putpad(dl);
-			tcapmove(to+n,0);
+				putpad(tc_dl);
+			tcapmove(to+n, 0);
 			for (i = from - to; i > 0; i--) {
-				putpad(al);
+				putpad(tc_al);
 				FILL_BCOLOR(to + n, 0);
 			}
 		} else {
-			tcapmove(from+n,0);
+			tcapmove(from+n, 0);
 			for (i = to - from; i > 0; i--)
-				putpad(dl);
-			tcapmove(from,0);
+				putpad(tc_dl);
+			tcapmove(from, 0);
 			for (i = to - from; i > 0; i--) {
-				putpad(al);
+				putpad(tc_al);
 				FILL_BCOLOR(from, 0);
 			}
 		}
@@ -748,9 +748,9 @@ tcapscroll_delins(int from, int to, int n)
 
 /* cs is set up just like cm, so we use tgoto... */
 static void
-tcapscrollregion(int top,int bot)
+tcapscrollregion(int top, int bot)
 {
-	putpad(tgoto(CS, bot, top));
+	putpad(tgoto(tc_CS, bot, top));
 }
 
 #if	OPT_COLOR
@@ -854,7 +854,7 @@ tcapspal(const char *thePalette)	/* reset the palette registers */
  * boldface.  To compensate, we reset the colors when we put out any "ending"
  * sequence, such as 'me'.
  *
- * In rxvt (2.12), setting _any_ attribute seems to clobber the color settings. 
+ * In rxvt (2.12), setting _any_ attribute seems to clobber the color settings.
  */
 static void
 tcapattr(UINT attr)
@@ -864,10 +864,10 @@ tcapattr(UINT attr)
 		char	**end;
 		UINT	mask;
 	} tbl[] = {
-		{ &SO, &SE, VASEL|VAREV },
-		{ &US, &UE, VAUL },
-		{ &US, &UE, VAITAL },
-		{ &MD, &ME, VABOLD },
+		{ &tc_SO, &tc_SE, VASEL|VAREV },
+		{ &tc_US, &tc_UE, VAUL },
+		{ &tc_US, &tc_UE, VAITAL },
+		{ &tc_MD, &tc_ME, VABOLD },
 	};
 	static	UINT last;
 
@@ -908,11 +908,11 @@ tcapattr(UINT attr)
 			}
 		}
 
-		if (SO != 0 && SE != 0) {
+		if (tc_SO != 0 && tc_SE != 0) {
 			if (ends && (attr & (VAREV|VASEL))) {
-				putpad(SO);
+				putpad(tc_SO);
 			} else if (diff) {	/* we didn't find it */
-				putpad(SE);
+				putpad(tc_SE);
 			}
 		}
 #if OPT_COLOR
@@ -936,11 +936,11 @@ UINT state)		/* FALSE = normal video, TRUE = reverse video */
 		return;
 	revstate = state;
 	if (state) {
-		if (SO != NULL)
-			putpad(SO);
+		if (tc_SO != NULL)
+			putpad(tc_SO);
 	} else {
-		if (SE != NULL)
-			putpad(SE);
+		if (tc_SE != NULL)
+			putpad(tc_SE);
 	}
 }
 

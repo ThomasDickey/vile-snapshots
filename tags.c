@@ -4,7 +4,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.88 1998/02/21 01:44:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.89 1998/04/28 10:18:57 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -310,7 +310,7 @@ finish_pop(char *fname, L_NUM lineno)
 {
 	MARK odot;
 	int s;
-	
+
 	s = getfile(fname,FALSE);
 	if (s == TRUE) {
 		/* it's an absolute move -- remember where we are */

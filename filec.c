@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.80 1997/10/07 00:14:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.81 1998/04/28 10:16:26 tom Exp $
  *
  */
 
@@ -174,7 +174,7 @@ makeString(BUFFER *bp, LINE * lp, char * text, SIZE_T len)
 		(void)strcpy(np->l_text, text);
 		np->l_text[len+extra-1] = 0; 	/* clear scan indicator */
 		llength(np) -= extra;	/* hide the null and scan indicator */
-		
+
 
 		set_lforw(lback(lp), np);
 		set_lback(np, lback(lp));
@@ -572,7 +572,7 @@ fillMyBuff(char * name)
 		int n;
 
 		/*
-		 * The presence of any environment variable in the list is 
+		 * The presence of any environment variable in the list is
 		 * sufficient indication that we've copied the environment.
 		 */
 		for_each_line(lp,MyBuff)
@@ -597,7 +597,7 @@ fillMyBuff(char * name)
 			mklower(path);	/* glob.c will uppercase for getenv */
 #endif
 #if USE_QSORT
-			(void)makeString(MyBuff, 
+			(void)makeString(MyBuff,
 			                 buf_head(MyBuff),
 					 path,
 					 (SIZE_T) strlen(path));
@@ -710,8 +710,8 @@ fillMyBuff(char * name)
 			if_dots(s,dots) count++;
 			(void)bs_find(path, strlen(path), MyBuff, (LINEPTR*)0);
 
-		} while (entries = 1, 
-		         DosFindNext(hdir, &fb, sizeof(fb), &entries) == NO_ERROR 
+		} while (entries = 1,
+		         DosFindNext(hdir, &fb, sizeof(fb), &entries) == NO_ERROR
 				 && entries == 1);
 
 		DosFindClose(hdir);
@@ -770,7 +770,7 @@ fillMyBuff(char * name)
 #else
 			s = path;
 #endif
-			(void)makeString(MyBuff, 
+			(void)makeString(MyBuff,
 			                 buf_head(MyBuff),
 					 s,
 					 (SIZE_T) strlen(s));
@@ -818,7 +818,7 @@ makeMyList(char *name)
 	for_each_line(lp,MyBuff)
 		/* exclude listings of subdirectories below
 		   current directory */
-		if (llength(lp) >= len 
+		if (llength(lp) >= len
 		 && ((slashocc = strchr(lp->l_text+len, SLASHC)) == NULL
 		   || slashocc[1] == EOS))
 			MyList[n++] = lp->l_text;

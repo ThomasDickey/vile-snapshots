@@ -1,5 +1,5 @@
 /*
- * $Id: btree.c,v 1.3 1998/04/26 11:49:21 tom Exp $
+ * $Id: btree.c,v 1.4 1998/04/28 10:15:52 tom Exp $
  * Copyright 1997 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
@@ -267,7 +267,7 @@ register
 		q = p;
 		p = t;
 		a = (q == RLINK(p)) ? 1 : -1;
- 
+
 		TRACE(("@%d, p='%s'\n", __LINE__, p?KEY(p):""))
 		TRACE(("@%d, q='%s'\n", __LINE__, q?KEY(q):""))
 		TRACE(("@%d, a=%d\n",   __LINE__, a))
