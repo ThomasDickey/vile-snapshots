@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.260 2004/03/21 17:25:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.261 2004/04/11 23:10:22 tom Exp $
  *
  */
 
@@ -1163,7 +1163,20 @@ mac_tokval(TBUFF ** tok)
 	const char *newvalue = tokval(previous);
 	/* evaluate the token */
 	if ((const char *) previous != newvalue) {
-	    (void) tb_scopy(tok, newvalue);
+	    /*
+	     * Check for the special case where we're just shifting the result
+	     * down by one since we're stripping a leading quote.  I don't want
+	     * to use memmove() in tb_buff.c just for this instance since it's
+	     * less portable -TD
+	     */
+	    if (((const char *) previous) + 1 == newvalue) {
+		TBUFF *fix = 0;
+		tb_scopy(&fix, newvalue);
+		tb_free(tok);
+		*tok = fix;
+	    } else {
+		(void) tb_scopy(tok, newvalue);
+	    }
 	}
 	return (tb_values(*tok));
     }

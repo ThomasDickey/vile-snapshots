@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makelist.sh,v 1.4 2004/03/18 00:23:12 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makelist.sh,v 1.5 2004/04/11 23:27:58 tom Exp $
 #
 # Make a list of the names for the specified syntax filters, for the configure
 # script, etc.
@@ -58,7 +58,7 @@ else
 					fi
 				done
 				if test "$found" = no ; then
-					echo "no such filter: $j" >&2
+					continue
 				elif test -n "$key" ; then
 					key="$key
 $j"

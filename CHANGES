@@ -1,5 +1,54 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20040411 (f)
+	> Clark Morgan:
+	+ modify vilemode, adding "sections" expression.
+	+ vile.hlp changes:
+	  + modify syntax coloring topic to remove prerequisites that refer to
+	    features from long, long ago ("nocmode" and old copies of c syntax
+	    coloring files) that most users won't remember or encounter.
+	  + revamped "Editor modes" section, in particular, moving discussion
+	    of majormodes to a point in the help file that directly follows
+	    syntax coloring.
+	  + added mode flavor tags (B, U, W, M) to modes that lacked same.
+	  + documented that "suffixes" is tested against a filename's complete
+	    path.
+	  + stripped c-tabstop from vile startup example.
+	  + explicitly emphasized ignoresuffix's behavior.
+	  + for cindent, tabstop and shiftwidth modes, documented cmode's
+	    default local mode values.
+	  + added a "Majormodes" section. Added a subsection entitled
+	    "cmode: the original vile builtin majormode"
+ 	> Tom Dickey:
+	+ indent'd csrch.c, globals.c, map.c, wordmov.c
+	+ modify logic for RS_AUTO to treat it consistently as the "default"
+	  keyword for record separator (report by Clark Morgan).
+	+ remove an unnecessary message from makelist.sh (report by Clark
+	  Morgan).
+	+ modify mac_tokval() to avoid calling tb_scopy() if the result from
+	  tokval() is the original pointer plus one (for stripping a leading
+	  quote), fixes an overlapping memcpy warning from valgrind.
+	+ correct logic in test_by_suffix(), which was not obtaining the
+	  submode value for "ignoresuffix" as intended (discussion with Clark
+	  Morgan).
+	+ modify comparison for maplength to use at least 25.  Very small
+	  values make vile unusable (report by Clark Morgan).
+	+ revert part of the initialization in substreg1() so the replacement
+	  pattern is reset rather than copied (report by Brendan O'Dea, 9.3n).
+	+ make "TODO" a txtmode file.
+	+ add ".shar" to shmode suffixes.
+	+ add "&match" and "&cmatch" functions for checking if a given regular
+	  expression matches a string (request by Clark Morgan).
+	+ split up the majormode "suffixes" into suffixes, mode-filename and
+	  mode-pathname to make it clearer how to associated regular
+	  expressions with the filename for majormodes (discussion with Clark
+	  Morgan).
+	+ remove explicit assignment to DESTDIR in makefile.in's, since newer
+	  GNU make program does not allow command-line to override it (it
+	  apparently did work with some version of GNU make in 1999 for 8.3i).
+	+ correct logic in perl.xs from 9.4d which parses $VILE_LIBDIR_PATH;
+	  it used the wrong variable for storing an intermediate result.
+
  20040321 (e)
 	> Clark Morgan:
 	+ document set-highlighting macro in vile.hlp

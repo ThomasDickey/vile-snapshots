@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.78 2003/11/11 20:40:35 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.79 2004/04/11 14:07:20 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -53,7 +53,6 @@ RM              = rm -f
 QUOTDEFS	= -DVILE_STARTUP_PATH=\"@VILE_STARTUP_PATH@\"
 CPPFLAGS	= -I. -I.. -I$(top_srcdir)/filters -I$(top_srcdir) -DHAVE_CONFIG_H @CPPFLAGS@
 
-DESTDIR		=
 BINDIR		= $(DESTDIR)$(bindir)
 LIBDIR		= $(DESTDIR)$(libdir)
 DATADIR		= $(DESTDIR)$(datadir)

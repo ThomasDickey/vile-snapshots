@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.219 2004/03/21 23:30:38 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.224 2004/04/11 23:43:17 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -184,7 +184,9 @@ enum
 	"qualifiers"	QUALIFIERS	0		# denotes how preamble/suffixes are combined
 regex							# MVAL_ prefix
 	"PREamble"	PREAMBLE	0		# match against file header to turn on mode
-	"SUFfixes"	SUFFIXES	0		# match against filenames to turn on mode
+	"mode-pathname"	MODE_PATHNAME	0		# match against pathnames to turn on mode
+	"mode-filename"	MODE_FILENAME	0		# match against filenames to turn on mode
+	"SUFfixes"	MODE_SUFFIXES	0		# match against filename's suffix to turn on mode
 string
 	"before"	BEFORE		chgd_mm_order	# check mode before given
 	"after"		AFTER		chgd_mm_order	# check mode after given
@@ -303,6 +305,7 @@ string
 "cat"		CAT		2|STR|SRET	# concatenate string
 "cclass"	CCLASS		1|STR|SRET	# character-class
 "chr"		CHR		1|NUM		# integer to char conversion
+"cmatch"	CMATCH		2|STR|BRET	# caseless regular expression check
 "date"		DATE		2|NUM|SRET	# formatted date/timestamp
 "default"	DEFAULT		1|STR|SRET	# return initial/default value for mode or state-variable
 "divide"	DIV		2|NUM|NRET	# division
@@ -328,6 +331,7 @@ string
 "lookup"	LOOKUP		2|STR|SRET	# lookup an external file
 "lower"		LOWER		1|STR|SRET	# lower case string
 "lt"		LT		2|NUM|BRET	# logical less than (lessthan)
+"match"		MATCH		2|STR|BRET	# regular expression check
 "middle"	MID		3|STR|SRET	# mid string(string, pos, len)
 "modulo"	MOD		2|NUM|NRET	# modulo
 "negate"	NEG		1|NUM|NRET	# negate
@@ -519,7 +523,7 @@ string
 "stmcr"		FAB$C_STMCR
 
 .table recordsep
-# "auto"	RS_AUTO
+"default"	RS_AUTO
 "cr"		RS_CR
 "crlf"		RS_CRLF
 "lf"		RS_LF

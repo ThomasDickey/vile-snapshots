@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.189 2003/11/03 23:55:50 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.190 2004/04/11 14:06:32 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -70,7 +70,7 @@ mandir		= @mandir@/man$(manext)
 #### End of system configuration section. ####
 
 RM		= rm -f
-MAKE_RECUR	= @cf_cv_makeflags@ prefix=$(prefix)
+MAKE_RECUR	= @cf_cv_makeflags@ prefix=$(prefix) DESTDIR=$(DESTDIR)
 
 ICON		= vile
 ICON_SUFFIX	= @ICON_SUFFIX@
@@ -83,7 +83,6 @@ CPPFLAGS	= -I. -I$(srcdir) \
 
 LDFLAGS		= @IMAKE_LOADFLAGS@ @LDFLAGS@
 
-DESTDIR		=
 BINDIR		= $(DESTDIR)$(bindir)
 DATADIR		= $(DESTDIR)$(datadir)
 PERLDIR		= $(DESTDIR)$(perldir)

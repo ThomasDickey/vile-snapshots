@@ -75,7 +75,7 @@ General Remarks
 	you can undo it in the other.
 
 	vile supports many, many "modes" (aka options), which are
-	eventually explained in the section entitled "Editor modes".  But
+	thoroughly explained in the section entitled "Editor modes".  But
 	do note that this help file makes references to modes before the
 	concept is fully described.  It's a chicken and egg problem....
 
@@ -1092,50 +1092,109 @@ Rectangular regions
 
 Editor modes
 ------------
-	Modes come in three "flavors".  They are universal, and affect the
-	editor generally, or are associated with either buffers or with
-	windows, and are usually inherited from a set of "global" buffer
-	and window modes.  The value of a buffer or window mode will track
-	changes to the respective global mode, until the "local" value is
-	set independently of the global one.
+	Modes come in various flavors and types and constitute the editor's
+	primary configuration mechanism.  vile supports these mode types:
 
-	You can also define new modes, called "majormodes", which are
-	collections of buffer mode values, together with qualifiers that
-	automatically assign a majormode to new buffers.  Vile has one
-	built-in majormode, "c" (displayed as "cmode").  The associated
-	majormode values are named according to the corresponding buffer
-	modes, e.g., the "c" majormode's tabstop is predefined as
-	"c-tabstop", or "cts" for short.
+	    boolean enum int string
 
-	To set or change a global mode, use ":set".  To remove the mode,
-	use ":unset", ":setno", or ":set" with the modename prefixed with
-	"no".
+	The value of a mode is specified via "set" or "setl" (the latter
+	command _only_ affects buffer modes, as described below).  Mode
+	values may be cleared with "unset" (or "unsetl" for buffer modes),
+	as well as other idioms described later.  Clearing a mode, by the
+	way, is a fancy way of saying that its value is set to 0 or "", the
+	latter for string types.  When an enum mode is cleared, vile
+	selects whichever enum constant is assigned the internal (read
+	compiled) value of 0.  Some concrete examples:
 
-	To set and reset local modes, use ":setl", ":unsetl", ":setlno".
+	    mode type   mode name        example usage
+	    ---------   ---------        ---------------
+	    boolean     autoindent       set autoindent
+	    enum        visual-matches   set visual-matches=reverse
+	    int         fillcol          set fillcol=75
+	    string      tags             set tags="../tags tags"
 
-	To display modes, use ":setall", ":modes", or ":set all".  Local
+	Flavor: universal modes
+	-----------------------
+	These modes are not directly associated with buffers, windows, or
+	languages.  Consequently, a universal mode affects the editor under
+	all relevant operating conditions.
+
+	To set/modify a universal mode, use the "set" command.  Startup file
+	examples:
+
+	    set vtflash=normal
+	    unset flash           ; or    set noflash
+	    set errorbells
+
+	Since the set command (within a startup file) accepts multiple modes,
+	this oneliner is equivalent:
+
+	    set vtflash=normal noflash errorbells
+
+	To clear a universal mode use one of these idioms:
+
+	    set    no<modename>
+	    unset  <modename>
+	    setno  <modename>
+
+	For completeness sake, note that the "local" version of the
+	set/unset commands ("setl"/"unsetl") do not make sense (and elicit
+	no effect) when used with universal modes.
+
+	Flavor: buffer modes
+	--------------------
+	These modes are inherited from a set of "global" buffer modes, but
+	bound to a specific buffer once a "local" value is independently
+	established.  To set and reset local modes, use "setl", "unsetl",
+	or "setlno".  An actual example is useful for illustration purposes.
+
+	When vile is started, the global value of "view" mode is unset by
+	default (i.e., false) and all newly visited buffers are editable.
+	But suppose I edited the file "precious.cpp", which I did not want
+	to modify.  There are two approaches that could be taken:
+
+	$ vile
+	:set view          ; enable view mode globally
+	:e precious.cpp    ; edited in "view" mode
+	:e other.cpp       ; ditto
+
+			or
+
+	$ vile
+	:e precious.cpp    ; initially edited in "noview" mode
+	:setl view         ; "view" mode now bound to precious.cpp
+	:e other.cpp       ; edited in "noview" mode
+
+	In the first approach, view mode is enabled globally and consequently
+	affects all existing buffers and all subsequently created buffers.
+	This solution works for the stated goal, but makes it impossible to
+	modify any other buffers.  The second approach affects only the
+	targeted file.
+
+	Flavor: window modes
+	--------------------
+	Similar to buffer modes, window modes are bound to a specific
+	window once a local value is independently established.  These
+	modes are set/cleared with the same commands as buffer modes.
+
+	Flavor: majormodes (later)
+	--------------------------
+	Until the subject of syntax coloring is described, it's not very
+	useful to discuss majormodes.  So, in the listing of modes below,
+	skip over anything tagged with (M).  But don't fret, these modes
+	are described separately in the topic entitled "Majormodes".
+
+	Current mode settings
+	---------------------
+	To display modes, use "setall", "modes", or "set all".  Local
 	mode values are only shown if they differ from the global values,
-	whether they have been independently set or not.  The "local"
-	version of the set/unset commands ("setl"/"unsetl") do not make
-	sense when used with universal modes, since there is only one
-	copy of these.
+	whether they have been independently set or not.
 
-	To define majormodes, use ":define-majormode".  To remove the
-	majormode, use ":remove-majormode".  Some keywords (e.g., suffixes)
-	are automatically associated with each majormode.  To associate a
-	buffer mode with a majormode, use ":define-submode".  To remove the
-	association, use ":remove-submode".  Once associated, submodes can
-	be set and unset just like regular buffer modes.  Use
-	":show-majormodes" to display the list of majormodes with their
-	associated submodes.  The ":setall" command displays the names of
-	the majormodes only, showing which are currently enabled (i.e.,
-	vile compares each new buffer against the preamble and suffixes to
-	determine if the majormode should be set for that buffer.  Only one
-	majormode can be set for a buffer.
-
-	The possible modes, with synonyms in parentheses, and a trailing U,
-	M, B or W indicating whether the mode is universal, or belongs to
-	majormodes, buffers or windows, are:
+	Modes in detail
+	---------------
+	Shown next is a listing of vile's various modes.  Synonyms, if they
+	exist, are shown in parentheses and a trailing U, B, W, or M
+	indicates whether the mode is universal, buffer, window or major.
 
 	alt-tabpos (atp) If set, vile will position the cursor over tab and
 		control characters the way emacs would, that is, at the
@@ -1183,7 +1242,7 @@ Editor modes
 		the number of milliseconds to wait before invoking the
 		"autocolor-hook" hook.  The editor will wait the
 		specified amount of time for a "quiet interval" during
-		which the user hasn't pressed any keys.
+		which the user hasn't pressed any keys. (B)
 
 	autowrite (aw)  vile will write out any changed buffers for which
 		this mode is set before performing a ^Z, "stop", "suspend",
@@ -1251,7 +1310,9 @@ Editor modes
 
 	cindent (ci) C-style indentation.  Helps maintain current indentation
 		level automatically during insert, like autoindent, above.
-		See cindent-chars for additional information.  (B)
+		See cindent-chars for additional information.  Note that
+		when the majormode cmode is in effect, cindent assumes a
+		local buffer mode value of true.  (B)
 
 	cindent-chars (cic)  The list of characters interpreted by the cindent
 		mode.  These include
@@ -1267,9 +1328,10 @@ Editor modes
 		pair causes the next line to be indented more, and the
 		right-character causes the next line to be indented less.  (B)
 
-	cmode   C-code mode.  A built-in majormode, also useful for other
-		languages.  Predefines cindent mode and separate suffix, tab and
-		shiftwidth submodes.  (M)
+	cmode	C-code mode.  A built-in majormode that predefines cindent
+		mode and separate suffix, tab and shiftwidth submodes.  The
+		topic "cmode:  the original vile builtin majormode"
+		discusses this majormode in more detail. (M)
 
 	crypt	Causes buffer(s) to be decrypted when read, and encrypted
 		when written.  This is compatible with the UNIX crypt(1)
@@ -1279,7 +1341,7 @@ Editor modes
 
 	color-scheme (cs) An aggregate of fcolor, bcolor, video-attrs and
 		$palette.  Color schemes are defined with the
-		define-color-scheme command.
+		define-color-scheme command. (U)
 
 	comment-prefix A regular expression denoting the portion of a line
 		that is replicated and untouched, except for leading
@@ -1424,8 +1486,9 @@ Editor modes
 	ignorecase (ic) Text searches normally match the pattern exactly.
 		With this set, searches are case-insensitive. (B)
 
-	ignoresuffix (is) Ignore (remove) the given pattern from a filename
-		before matching it for majormode suffixes.  (B)
+	ignoresuffix (is) Strip the given pattern from a filename before
+		matching it for majormode suffixes.  Note well the
+		difference between the mode's name and its behavior. (B)
 
 	implybuffer (ib) Causes vile to create a buffer when you write to a new
 		file, or read from one (e.g., with ":r").  (U)
@@ -1447,7 +1510,7 @@ Editor modes
 		used by the capture.pl script to show when asynchronous data is
 		loading. (B)
 
-	magic Honor unescaped regular expression metacharacters in search
+	magic	Honor unescaped regular expression metacharacters in search
 		strings.  See the section "Regular Expressions" for more
 		detail.  (B)
 
@@ -1465,7 +1528,15 @@ Editor modes
 
 	mini-hilite (mh) When user toggles editing mode in the minibuffer
 		(^G, mini-edit), display the minibuffer with the given
-		attribute.  These are the same as for visual-matches.
+		attribute.  These are the same as for visual-matches. (U)
+
+	mode-filename (mf) A regular expression describing filenames for
+		which the corresponding majormode will be set.  The expression
+		is applied only to the portion of the complete pathname
+		after removing the directory name.  (M)
+
+	mode-pathname (mp) A regular expression describing pathnames for
+		which the corresponding majormode will be set.  (M)
 
 	mouse	for OS/2, enable/disable the mouse in the console-window
 		version.
@@ -1569,9 +1640,10 @@ Editor modes
 
 	recordseparator (rs) Specify format of files that vile reads and
 		writes.  Formats are lf (for Unix), crlf (for DOS), cr (for
-		Macintosh).  When reading from a file, vile determines the file
-		format automatically, and sets a local value for this mode.
-		When reading from a pipe, it uses the global value of
+		Macintosh) and default (lf or crlf, depending on the platform). 
+		When reading from a file, vile determines the file format
+		automatically, and sets a local value for this mode.  When
+		reading from a pipe, it uses the global value of
 		recordseparator to decide how to split lines.  Files created
 		within vile do not automatically have a local recordseparator
 		mode; they inherit the global mode setting.  The commands
@@ -1588,7 +1660,7 @@ Editor modes
 
 	remapfirst Controls whether the first character of a map expanded
 		due to :map or :map! is eligible for remapping.  This is
-		off by default for vi compatibility.
+		off by default for vi compatibility. (U)
 
 	report	A threshold value that is used to control messages that report
 		the number of lines deleted, changed, etc.  (U)
@@ -1625,7 +1697,9 @@ Editor modes
 		independent of hardware tabs and tab characters.  It is the
 		number of columns a line will shift by if the '<<' or '>>'
 		commands are used, and it chooses the next column stop for
-		the cursor if a '^T' or '^D' is typed during insert mode. (B)
+		the cursor if a '^T' or '^D' is typed during insert mode.
+		Note that when the majormode cmode is enabled, shiftwidth
+		assumes the local buffer mode value of 8.  (B)
 
 	showchar (sc) Controls whether the modeline can show the %C formatted
 		character at the current editing position (W).
@@ -1670,10 +1744,12 @@ Editor modes
 		turned on.  When disabled, the format routiine will insert
 		only one space after each sentence.  (U)
 
-	suffixes (suf) A regular expression describing filenames for which
-		the corresponding majormode will be set.  This is arguably
-		misnamed, since the regular expression need not describe
-		only suffixes.  (M)
+	suffixes (suf) A regular expression describing filename suffixes for
+		which the corresponding majormode will be set.  The expression
+		is applied only to the portion of the filename beginning with
+		the first ".".  If more than one of mode-pathname,
+		mode-filename and suffixes are given, they are tested in this
+		order.  (M)
 
 	swap-title For xvile/winvile, if set, the editor displays its title as:
 		    <current buffer name> - <editor name>
@@ -1690,7 +1766,9 @@ Editor modes
 		'^A-<SP>' operator command to eliminate pre-existing tabs
 		from a region of text.  (B)
 
-	tabstop (ts) Set the value for spacing of normal tabstops. (B)
+	tabstop (ts) Set the value for spacing of normal tabstops.
+		Note that when the majormode cmode is enabled, tabstop
+		assumes the local buffer mode value of 8.  (B)
 
 	tagignorecase (tc) Causes tag searches to be done ignoring upper
 		and lower case. (B)
@@ -2704,6 +2782,7 @@ Programmed procedures (aka macros)
 	&cat		2	concatenate string
 	&cclass		1	character class (see "show-printable")
 	&chr		1	integer to char conversion
+	&cmatch		2	caseless match regular-expression value
 	&date		2	format 2nd param with 1st, like strftime.
 	&default	1	initial/default value for mode or state variable
 	&divide		2	division
@@ -2729,6 +2808,7 @@ Programmed procedures (aka macros)
 	&lookup		2	look for filename (see below for arguments)
 	&lower		1	lower case string
 	&lt		2	logical less than
+	&match		2	match regular-expression value
 	&middle		3	mid string(string, pos, len)
 	&modulo		2	modulus
 	&negate		1	negate
@@ -3736,9 +3816,9 @@ Syntax coloring
 	    builtin filters.
 
 	[2] Majormodes are an interesting subject in their own right, but
-	    won't be discussed much here.  For more info, refer to the help
-	    topic "Editor modes" in this help file, as well as the file
-	    doc/modes.doc .
+	    won't be discussed much within the context of syntax coloring.
+	    For more info, refer to the help topic "Majormodes" in this help
+	    file, as well as the file doc/modes.doc .
 
 	[3] Previous releases of vile utilized a syntax filtering system
 	    that actually applied color attributes to a target buffer,
@@ -3762,28 +3842,6 @@ Syntax coloring
 	   ftp://invisible-island.net/vile/ .  Note that almost all filters
 	   require preprocessing with flex (not a standard Windows tool) prior
 	   to compilation.
-	d) if you currently use the syntax coloring system that existed
-	   prior to vile version 8.3, then find and delete all instances of
-	   these files:
-
-		Non-Unix Host     Unix Host
-		-------------     ---------
-		vile.keywords     .vile.keywords
-		vile-c-filt.exe   vile-c-filt
-
-	e) if cmode is disabled, re-enable it (i.e., remove "set nocmode"
-	   from vile's startup file).  If cmode was disabled in the past
-	   because its default settings were not acceptable, be aware that
-	   this feature is configurable.  This example shows how four of
-	   cmode's parameters might be changed within vile's startup file:
-
-		define-mode c
-		~with define-submode c
-		    suffixes='\.\(\([Cchis]\)\|CC\|cc\|cpp)$'
-		    ts=4
-		    sw=4
-		    nocindent
-		~endwith
 
 	Configuration
 	-------------
@@ -3907,13 +3965,13 @@ Syntax coloring
 	    HighlightClear       ^X-Q    Clears the current buffer's color
 					 attributes.
 	    set-highlighting     <none>  Attach a major mode to a buffer
-	    			         and re-color same.  More about
+					 and re-color same.  More about
 					 this below.
 
 	For a simple go/no-go test, do:
 
 	- edit a C source file
-	- examine the editor's modeline and ensure that "cmode" is in effect
+	- examine the editor's modeline and ensure that "[cmode]" is in effect
 	- type ^X-q
 
 	If all is well, various elements of the C program will be
@@ -4098,6 +4156,160 @@ Syntax coloring
 	---------------
 	More information on syntax coloring can be found in the file
 	doc/filters.doc, in the vile source directory.
+
+
+
+Majormodes
+----------
+	Prior to studying majormodes, it helps to be familiar with the
+	"Editor modes" and "Syntax coloring" topics.
+
+	Majormodes are collections of buffer mode values that vile
+	automatically assigns to new buffers.  When the vile distribution
+	file "filters.rc" is sourced, a significant number of majormodes are
+	defined for various programming languages and file formats.  The
+	majormode assigned to a particular buffer is dependent upon two
+	criteria, in the following priority order:
+
+	1) the suffix of the file being edited, and
+	2) the file's preamble (i.e., file's first line).
+
+	Both suffix and preamble are expressed as regular expressions and
+	examples of each are readily available in filters.rc .  Speaking
+	of filters.rc, it becomes obvious from browsing this file that most
+	majormode buffer settings involve specifying appropriate regex
+	patterns for fences and comments.
+
+	The syntax for defining a new majormode or overriding an existing
+	majormode is quite rich and fully described in the file
+	doc/modes.doc .  Rather than regurgitating the contents of that
+	file here, we'll hit the high points with a couple of examples.
+
+	To define a new majormode, do this in your vile startup file:
+
+	    define-mode <new_majormode_name>
+	    ~with define-submode <new_majormode_name>
+		suffixes   "<regexp_pattern>"
+		preamble   "<if necessary>"
+		before     "<if necessary>"
+		filtername "<syntax-coloring-filter>"
+		buffer mode setting#1
+		buffer mode setting#2
+		; etc.
+	    ~endwith
+
+	For example, suppose someone wanted to edit this help file and
+	subsequently submit patches to the vile's developers.  In the spirit
+	of cooperation, the developers would appreciate changes that were
+	made with the same tabstops and tab insertion policies as used in the
+	existing help file (vile.hlp).  Taking a peek at vile.hlp, it can
+	readily be seen that physical tabs are indeed used, with stops
+	apparently set at intervals of 8.  Also, it appears that the right
+	margin is set fairly close to 80. To mirror this policy, create this
+	new majormode:
+
+	    define-mode hlp
+	    ~with define-submode hlp
+		suf '\.hlp$'
+		ts=8
+		fillcol=77
+		tabinsert
+		filtername 'vile-txt-filt'
+	    ~endwith
+
+	Now, whenever a file with suffix ".hlp" is edited, it will be colored
+	with vile-txt-filt and physical tabs inserted at multiples of 8.
+
+	To override or augment the buffer mode settings of an existing
+	majormode, do this in your startup file:
+
+	    source "filters.rc"
+	    ; ...
+	    define-mode <existing_majormode_name>
+	    ~with define-submode <existing_majormode_name>
+		changed buffer mode setting#1
+		changed buffer mode setting#2
+		; etc.
+	    ~endwith
+
+	For example, suppose it was desirable to edit all text files with
+	ignorecase disabled.  This startup file snippet will suffice:
+
+	    source "filters.rc"
+	    ; ...
+	    define-mode txt
+	    ~with define-submode txt
+		ignorecase
+	    ~endwith
+
+	Once associated, majormode submodes can be setl/unsetl just like
+	regular local buffer modes.  But note well that set/unset have no
+	effect on submodes.  So, when hlpmode is in effect, this command
+	works:
+
+	    setl notabinsert
+
+	but this command has no effect:
+
+	    set notabinsert
+
+	As added syntactic sugar, majormode submodes may be prefixed with
+	the majormode name and changed like so:
+
+	    set/setl     txt-ignorecase
+	    set/setl     hlp-fillcol=60
+	    unset/unsetl txt-ignorecase
+	    unset/unsetl hlp-tabinsert
+
+	Notes
+	-----
+	1) Use the command "show-majormodes" to display the list of majormodes
+	   and their associated submodes.
+
+	2) Only one majormode can be set for a buffer.
+
+	3) To override the majormode that vile assigns to a buffer, use
+	   either the set-highlighting macro (defined in filters.rc) or the
+	   "setl <majormode_name>" command.  Example:
+
+	    setl cppmode     ; <-- force cppmode for current buffer
+
+	cmode:  the original vile builtin majormode
+	-------------------------------------------
+	Long before Tom Dickey added majormodes to vile, there existed
+	"cmode", a feature that included its own builtin tab settings and
+	indentation style (still available today as "cindent").	 This older
+	version of cmode served as the precursor for vile's current
+	majormode system.
+
+	Today, even if filters.rc is not sourced at runtime, vile includes a
+	builtin majormode called cmode that is defined internally like so:
+
+	    define-mode c
+	    ~with define-submode c
+		ts=8
+		sw=8
+		cindent
+		cindent-chars ":#"
+		suffix "<complex_regexp_for_c_c++_file_suffixes>"
+		filtername 'vile-c-filt'
+	    ~endwith
+
+	This buitin majormode can produce some surprising results when
+	editing C source files.	 In particular:
+
+	    set ts=<val>   ; <-- has no effect, use "setl" instead
+
+	What's more these settings may be anathema for the coding style
+	in effect for a given software project.	 Override these settings
+	in the vile startup file to suit your needs/taste, like so:
+
+	    define-mode c
+	    ~with define-submode c
+		ts=4
+		sw=4
+		nocindent
+	    ~endwith
 
 
 
@@ -5217,7 +5429,7 @@ Win32 specifics
 
 		:!start calc           # start the windows calculator
 
- 	Finally, it may be necessary to pass one or more flags to the shell
+	Finally, it may be necessary to pass one or more flags to the shell
 	invoked via the :sh command (e.g., force execution of a special
 	login script).  Passing such flag(s) via $shell is not a workable
 	solution.  Instead, use a macro similar to the following that
@@ -5307,7 +5519,7 @@ Win32 specifics
 			unnamed register and the clipboard.
 	"Paste"		pastes clipboard contents (if text) into current
 			buffer.
-	"Delete"   	deletes current text selection into unnamed register.
+	"Delete"	deletes current text selection into unnamed register.
 	"Select All"    selects all text in the current buffer.
 
 	The first five popup menu entries are added to the system menu (in
@@ -5587,7 +5799,6 @@ Sample .vilerc
 	source vileinit.rc
 	set autoindent
 	set fillcol 75
-	set c-tabstop 4
 
 	; sitting on a brace, run the C code block through indent
 	1 store-macro
@@ -5728,7 +5939,7 @@ Credits (last updated Jan, 2000)
 	Throughout the years, Tom Dickey has contributed many code
 	improvements and features, and has stabilized vile on both VMS and
 	DOS.  After taking over official maintenance duties, Tom coded
-	winvile, added major modes, added 16-color support, and implemented
+	winvile, added majormodes, added 16-color support, and implemented
 	the majority of the current syntax coloring infrastructure.  On an
 	ongoing basis, Tom continues to fix bugs and provide the drive and
 	energy that pushes out one release of the editor after another--no
@@ -5805,4 +6016,4 @@ Problems
 
 Copyright 1995-2003 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.573 2004/03/21 23:33:42 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.580 2004/04/11 23:43:55 tom Exp $

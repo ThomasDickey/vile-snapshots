@@ -830,14 +830,20 @@ Functions
 	    &writable "S"	    Is the named file "S" writable?
 	    &execable "S"	    Is the named file "S" exec'able?
 
-	    &filter "M"             Does the given majormode have a built-in
+	    &cmatch "R" "V"	    Does the given regular expression "R"
+				    match the value "V" (ignoring case)?
+
+	    &error "S"		    Was the string set with the ERROR token?
+				    For example, a &query that is aborted
+				    will return an ERROR result.
+
+	    &match "R" "V"	    Does the given regular expression "R"
+				    match the value "V"?
+
+	    &filter "M"		    Does the given majormode have a built-in
 				    highlighting filter?
 
-	    &error "S"              Was the string set with the ERROR token?
-					For example, a &query that is aborted
-					will return an ERROR result.
-
-	    &stoken "T" "D" "S"     Is token "T" in string "S", given
+	    &stoken "T" "D" "S"	    Is token "T" in string "S", given
 				    delimiters "D"?
 
 
@@ -1450,6 +1456,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.89 2003/05/05 21:56:12 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.91 2004/04/11 17:20:38 tom Exp $
 -----------------------------------
 

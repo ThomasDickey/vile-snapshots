@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.103 2004/03/21 21:09:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.104 2004/04/11 18:12:18 tom Exp $
  */
 
 #include	"estruct.h"
@@ -185,8 +185,7 @@ substreg1(int needpats, int use_opts, int is_globalsub)
 	}
 
 	newpattern = 0;
-	if (tb_length(replacepat) != 0)
-	    tb_copy(&newpattern, replacepat);
+	tb_init(&newpattern, EOS);
 	status = readpattern("replacement string: ",
 			     &newpattern, (regexp **) 0, c, FALSE);
 	if (status == ABORT) {

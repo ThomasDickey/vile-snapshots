@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.l,v 1.1 2003/12/12 21:48:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.l,v 1.2 2004/03/22 22:55:06 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Pascal
  * input text.  A few TurboC and Delphi extensions are recognized:
@@ -74,4 +74,5 @@ do_filter(FILE *inputs)
     while (yylex() > 0) {
     }
     flt_bfr_error();
+    end_state();
 }
