@@ -1,13 +1,16 @@
 /*
- * w32pipe:  win32 clone of npopen.c, utilizes native pipes (not temp files).
+ * w32pipe:  win32 clone of npopen.c--utilizes native pipes for hosts
+ *           and shells that can handle same, else falls back on temp files
+ *           (but uses a much different algorithm than that of npopen.c).
  *
  * Background
  * ==========
- * The techniques used in w32_npclose() and w32_inout_popen() are derived
- * from much trial and error and support "pipe" I/O in both a console and
- * GUI environment.  You may _think_ you have a better way of effecting the
- * functionality provided in this module and that may well be the case.
- * But be sure you test your new code with at least these versions of Win32:
+ * The techniques used in native_npclose() and native_inout_popen() are
+ * derived from much trial and error and support "pipe" I/O in both a
+ * console and GUI environment.  You may _think_ you have a better way of
+ * effecting the functionality provided in this module and that may well be
+ * the case.  But be sure you test your new code with at least these
+ * versions of Win32:
  *
  *      win95, win98, OSR2, NT 4.0, win2K
  *
@@ -37,7 +40,7 @@
  *    native pipes (i.e., with the code in this module), while Win95 hosts
  *    fall back to temp file communication.  If the user's replacement
  *    Win95 shell does not exhibit communication problems similar to
- *    those described above (e.g., Thompson Toolkit Shell), vile may be
+ *    those described above (e.g., any 32-bit shell), vile may be
  *    forced to use native Win32 pipes by setting the global mode
  *    "w32pipes" (e.g., "se w32pipes").  For further details, including
  *    a description of "force-console" mode, refer to the file
@@ -57,10 +60,14 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.25 2001/02/18 00:33:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.27 2001/09/18 09:49:29 tom Exp $
  */
 
-#include <windows.h>
+#define HAVE_FCNTL_H 1
+
+#include "estruct.h"
+#include "edef.h"
+
 #include <io.h>
 #ifdef __BORLANDC__
 #define __MSC
@@ -71,24 +78,95 @@
 #include <assert.h>
 #include <ctype.h>
 
-#define HAVE_FCNTL_H 1
-
-#include "estruct.h"
-#include "edef.h"
-
 #define BAD_FD          (-1)
 #define BAD_PROC_HANDLE (INVALID_HANDLE_VALUE)
 #define PIPESIZ         (4096)
 #define SHELL_ERR_MSG   \
-          "error: shell process \"%s\" failed, check COMSPEC env var\n"
+          "[shell process \"%s\" failed, check $shell state var]"
+
+static int  native_inout_popen(FILE **fr, FILE **fw, char *cmd);
+static void native_npclose(FILE *fp);
+static int  tmp_inout_popen(FILE **fr, FILE **fw, char *cmd);
+static void tmp_npclose(FILE *fp);
 
 static HANDLE proc_handle;
 static char   *tmpin_name;
 
-/* ------------------------------------------------------------------ */
+/* ---------------- Cloned from npopen.c ---------------------------- */
+
+FILE *
+npopen(char *cmd, const char *type)
+{
+    FILE *ff = 0;
+
+    if (*type == 'r')
+        (void)inout_popen(&ff, (FILE **)0, cmd);
+    else if (*type == 'w')
+        (void)inout_popen((FILE **)0, &ff, cmd);
+    return ff;
+}
+
+int
+softfork(void)  /* dummy function to make filter-region work */
+{
+    return 0;
+}
+
+int
+inout_popen(FILE **fr, FILE **fw, char *cmd)
+{
+    TRACE(("inout_popen(fr=%p, fw=%p, cmd='%s')\n", fr, fw, cmd));
+
+    fileispipe = TRUE;
+    fileeof = FALSE;
+    append_libdir_to_path();
+#ifdef GMDW32PIPES
+    if (global_g_val(GMDW32PIPES))
+        return (native_inout_popen(fr, fw, cmd));
+#endif
+    return (tmp_inout_popen(fr, fw, cmd));
+}
+
+void
+npclose(FILE *fp)
+{
+#ifdef GMDW32PIPES
+    if (global_g_val(GMDW32PIPES))
+    {
+        native_npclose(fp);
+        return;
+    }
+#endif
+    tmp_npclose(fp);
+}
+
+/* ------------------- native pipe routines first ------------------- */
+
+/*
+ * when desparate to communicate an error, enable popup messages and
+ * use mlforce().
+ */
+static void
+lastditch_msg(char *msg)
+{
+#if OPT_POPUP_MSGS
+    int save = global_g_val(GMDPOPUP_MSGS);
+
+	set_global_g_val(GMDPOPUP_MSGS, TRUE);
+#endif
+    mlforce(msg);
+#if OPT_POPUP_MSGS
+    update(FALSE);
+	popup_msgs();
+    update(FALSE);
+    set_global_g_val(GMDPOPUP_MSGS, save);
+#endif
+}
+
+
 
 static void
-global_cleanup(void)
+common_cleanup(void)
 {
     if (tmpin_name)
     {
@@ -97,10 +175,6 @@ global_cleanup(void)
         tmpin_name = NULL;
     }
     restore_console_title();
-#if DISP_NTWIN
-    if (global_g_val(GMDFORCE_CONSOLE))
-        FreeConsole();
-#endif
 }
 
 
@@ -109,10 +183,6 @@ static HANDLE
 exec_shell(char *cmd, HANDLE *handles, int hide_child)
 {
     char                 *cmdstr;
-#if DISP_NTWIN
-    HWND                 fgnd;
-    int                  force_console = global_g_val(GMDFORCE_CONSOLE);
-#endif
     int                  freestr;
     PROCESS_INFORMATION  pi;
     STARTUPINFO          si;
@@ -123,7 +193,7 @@ exec_shell(char *cmd, HANDLE *handles, int hide_child)
     {
         /* heap exhausted! */
 
-        mlforce("[insufficient memory to invoke shell]");
+        no_memory("exec_shell");
 
         /* Give user a chance to read message--more will surely follow. */
         Sleep(3000);
@@ -137,13 +207,7 @@ exec_shell(char *cmd, HANDLE *handles, int hide_child)
     si.hStdOutput  = handles[1];
     si.hStdError   = handles[2];
 #if DISP_NTWIN
-    if (force_console)
-    {
-        if (hide_child)
-            fgnd = GetForegroundWindow();
-        AllocConsole();
-    }
-    else if (hide_child)
+    if (hide_child)
     {
         si.dwFlags     |= STARTF_USESHOWWINDOW;
         si.wShowWindow  = SW_HIDE;
@@ -155,11 +219,7 @@ exec_shell(char *cmd, HANDLE *handles, int hide_child)
                       NULL,
                       NULL,
                       TRUE,       /* Inherit handles */
-#if DISP_NTWIN
-                      force_console ? 0 : CREATE_NEW_CONSOLE,
-#else
                       0,
-#endif
                       NULL,
                       NULL,
                       &si,
@@ -167,10 +227,6 @@ exec_shell(char *cmd, HANDLE *handles, int hide_child)
     {
         /* Success */
 
-#if DISP_NTWIN
-        if (force_console && hide_child)
-            SetForegroundWindow(fgnd);
-#endif
         CloseHandle(pi.hThread);
         proc_handle = pi.hProcess;
     }
@@ -181,18 +237,19 @@ exec_shell(char *cmd, HANDLE *handles, int hide_child)
 
 
 
-int
-w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
+static int
+native_inout_popen(FILE **fr, FILE **fw, char *cmd)
 {
+    char   buf[NFILEN + 128];
     HANDLE handles[3];
     int    i, rc, rp[3], tmpin_fd, wp[3];
 
-    TRACE(("w32_inout_popen cmd=%s\n", cmd));
-    proc_handle  = BAD_PROC_HANDLE;
+    TRACE(("native_inout_popen cmd=%s\n", cmd));
+    proc_handle   = BAD_PROC_HANDLE;
     rp[0] = rp[1] = rp[2] = wp[0] = wp[1] = wp[2] = BAD_FD;
-    handles[0]   = handles[1] = handles[2] = INVALID_HANDLE_VALUE;
-    tmpin_fd     = BAD_FD;
-    tmpin_name   = NULL;
+    handles[0]    = handles[1] = handles[2] = INVALID_HANDLE_VALUE;
+    tmpin_fd      = BAD_FD;
+    tmpin_name    = NULL;
     set_console_title(cmd);
     if (is_win95())
     {
@@ -289,16 +346,15 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
         rc = (exec_shell(cmd,
                          handles,
                          fr != NULL  /* Child wdw hidden unless write pipe. */
-                         ) == BAD_PROC_HANDLE) ? FALSE : TRUE;
+                        ) == BAD_PROC_HANDLE) ? FALSE : TRUE;
         if (fw)
         {
             if (! rc)
             {
-                 /* Shell process failed, put complaint in user's face. */
+                /* Shell process failed, put complaint in user's face. */
 
-                putc('\n', stdout);
-                printf(SHELL_ERR_MSG, get_shell());
-                fflush(stdout);
+                sprintf(buf, SHELL_ERR_MSG, get_shell());
+                lastditch_msg(buf);
             }
             CloseHandle(handles[0]);
         }
@@ -306,7 +362,6 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
         {
             if (! rc)
             {
-                char  buf[200];
                 DWORD dummy, len;
 
                 /* Shell process failed, put complaint in user's buffer. */
@@ -344,14 +399,14 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
         if (handles[i] != INVALID_HANDLE_VALUE)
             CloseHandle(handles[i]);
     }
-    global_cleanup();
+    common_cleanup();
     return (FALSE);
 }
 
 
 
-void
-w32_npclose(FILE *fp)
+static void
+native_npclose(FILE *fp)
 {
     int term_status;
 
@@ -363,5 +418,329 @@ w32_npclose(FILE *fp)
         (void) CloseHandle(proc_handle);
         proc_handle = BAD_PROC_HANDLE;
     }
-    global_cleanup();
+    common_cleanup();
+}
+
+/* ------------------- tmp file pipe routines last ------------------
+ * --                                                              --
+ * -- The key to making these routines work is recognizing that    --
+ * -- under windows it's necessary to wait for the writer process  --
+ * -- to finish and close tmp file A before the reader process     --
+ * -- reads from A.                                                --
+ * ------------------------------------------------------------------
+ */
+
+static HANDLE handles[3];
+static int    stdin_fd, stdout_fd;
+static char   *stdin_name, *stdout_name, *shcmd;
+
+static void
+tmp_cleanup(void)
+{
+    if (stdin_fd != BAD_FD)
+    {
+        close(stdin_fd);
+        stdin_fd = BAD_FD;
+    }
+    if (stdout_fd != BAD_FD)
+    {
+        close(stdout_fd);
+        stdout_fd = BAD_FD;
+    }
+    if (stdin_name)
+    {
+        (void) remove(stdin_name);
+        (void) free(stdin_name);
+        stdin_name = NULL;
+    }
+    if (stdout_name)
+    {
+        (void) remove(stdout_name);
+        (void) free(stdout_name);
+        stdout_name = NULL;
+    }
+    common_cleanup();
+}
+
+
+
+static int
+tmp_inout_popen(FILE **fr, FILE **fw, char *cmd)
+{
+    char  buf[NFILEN + 128];
+    DWORD dummy, len;
+    int   rc, term_status, tmpin_fd;
+
+    TRACE(("tmp_inout_popen cmd=%s\n", cmd));
+    proc_handle = BAD_PROC_HANDLE;
+    handles[0]  = handles[1] = handles[2]  = INVALID_HANDLE_VALUE;
+    tmpin_fd    = stdin_fd   = stdout_fd   = BAD_FD;
+    tmpin_name  = stdin_name = stdout_name = NULL;
+    set_console_title(cmd);
+    do
+    {
+        if (fr)
+        {
+            *fr = NULL;
+            if ((stdin_name = _tempnam(getenv("TEMP"), "vile")) == NULL)
+                break;
+            if ((stdin_fd = open(stdin_name,
+                                 O_RDWR|O_CREAT|O_TRUNC|O_TEXT,
+                                 _S_IWRITE|_S_IREAD)) == BAD_FD)
+            {
+                break;
+            }
+            handles[2] = handles[1] = (HANDLE) _get_osfhandle(stdin_fd);
+            if (! fw)
+            {
+                /*
+                 * This is a read pipe (only).  Connect child's stdin to
+                 * an empty file.  Under no circumstances should the
+                 * child's stdin be connected to a device (else lots of
+                 * screwy things will occur).  In particular, connecting
+                 * the child's stdin to the parent's stdin will cause
+                 * aborts and hangs on the various Win32 hosts.  You've
+                 * been warned.
+                 */
+
+                if ((tmpin_name = _tempnam(getenv("TEMP"), "vile")) == NULL)
+                    break;
+                if ((tmpin_fd = open(tmpin_name,
+                                     O_RDONLY|O_CREAT|O_TRUNC,
+                                     _S_IWRITE|_S_IREAD)) == BAD_FD)
+                {
+                    break;
+                }
+                handles[0] = (HANDLE) _get_osfhandle(tmpin_fd);
+            }
+            else
+            {
+                /*
+                 * Set up descriptor for filter operation.   Note the
+                 * sublteties here:  exec'd shell is passed a descriptor
+                 * to the temp file that's opened "w".  The editor 
+                 * receives a descriptor to the file that's opened "r".
+                 */
+
+                if ((*fr = fopen(stdin_name, "r")) == NULL)
+                    break;
+            }
+        }
+        if (fw)
+        {
+            *fw = NULL;
+
+            /* create a temp file to receive data from the editor */
+            if ((stdout_name = _tempnam(getenv("TEMP"), "vile")) == NULL)
+                break;
+            if ((stdout_fd = open(stdout_name,
+                                 O_RDWR|O_CREAT|O_TRUNC|O_BINARY,
+                                 _S_IWRITE|_S_IREAD)) == BAD_FD)
+            {
+                break;
+            }
+            if ((*fw = fdopen(stdout_fd, "w")) == 0)
+                break;
+
+            /*
+             * we're all set up, but can't exec "cmd" until the editor
+             * writes data to the temp file connected to stdout.
+             */
+            shcmd = cmd;   /* remember this */
+            return (TRUE);
+        }
+
+        /* This must be a read (only) pipe.  Appropriate to exec "cmd". */
+        rc = (exec_shell(cmd,
+                         handles,
+                         TRUE       /* hide child wdw */
+                        ) == BAD_PROC_HANDLE) ? FALSE : TRUE;
+
+        if (! rc)
+        {
+            /*
+             * Shell process failed, put complaint in user's buffer, which
+             * is currently proxied by a temp file that the editor will
+             * suck in shortly.
+             */
+
+            len = lsprintf(buf, SHELL_ERR_MSG, get_shell()) - buf;
+            (void) WriteFile(handles[1], buf, len, &dummy, NULL);
+            FlushFileBuffers(handles[1]);
+        }
+        else
+        {
+            /* wait for exec'd process to exit */
+
+            (void) cwait(&term_status, (int) proc_handle, 0);
+            (void) CloseHandle(proc_handle);
+            proc_handle = BAD_PROC_HANDLE;
+        }
+
+        /*
+         * When closing descriptors shared between parent and child, order
+         * is quite important when $shell == command.com .  In this
+         * situation, the descriptors can't be closed until the exec'd
+         * process exits (I kid you not).
+         */
+        (void) close(stdin_fd);
+        stdin_fd = BAD_FD;
+        (void) close(tmpin_fd);
+
+        /* let the editor consume the output of the read pipe */
+        if ((*fr = fopen(stdin_name, "r")) == NULL)
+        {
+            /*
+             * impossible to put error in user's buffer since that file
+             * descriptor is closed.
+             */
+
+            sprintf(buf,
+                    "[error opening temp file \"%s\": %s]",
+                    stdin_name,
+                    strerror(errno));
+            lastditch_msg(buf);
+            break;
+        }
+        return (rc);
+    }
+    while (FALSE);
+
+    /* If we get here -- some operation has failed.  Clean up. */
+    tmp_cleanup();
+    return (FALSE);
+}
+
+
+
+/* npflush is called for filter ops effected with temp files */
+void
+npflush(void)
+{
+    char buf[NFILEN + 128];
+    int  rc, term_status;
+
+    /*
+     * caller has filled and closed the write pipe data stream.  time to
+     * exec a process.
+     */
+
+    if ((stdout_fd = open(stdout_name, O_RDONLY|O_BINARY)) == BAD_FD)
+    {
+        /* oh my, put complaint in user's face. */
+
+        sprintf(buf, "[unable to open temp file \"%s\": %s]",
+               stdout_name,
+               strerror(errno));
+        lastditch_msg(buf);
+    }
+    else
+    {
+        /* handles[1-2] were initialized by tmp_npopen_open() */
+
+        handles[0] = (HANDLE) _get_osfhandle(stdout_fd);
+        rc = (exec_shell(shcmd,
+                         handles,
+                         TRUE    /* do hide child window */
+                        ) == BAD_PROC_HANDLE) ? FALSE : TRUE;
+        if (! rc)
+        {
+             /* Shell process failed, put complaint in user's face. */
+
+            sprintf(buf, SHELL_ERR_MSG, get_shell());
+            lastditch_msg(buf);
+        }
+        else
+        {
+            /* now wait for app to exit */
+
+            (void) cwait(&term_status, (int) proc_handle, 0);
+            (void) CloseHandle(proc_handle);
+            proc_handle = BAD_PROC_HANDLE;
+        }
+
+        /*
+         * When closing descriptors shared between parent and child, order
+         * is quite important when $shell == command.com .  In this
+         * situation, the descriptors can't be closed until the exec'd
+         * process exits.
+         */
+        (void) close(stdout_fd);
+        stdout_fd = BAD_FD;
+    }
+}
+
+
+
+static void
+tmp_npclose(FILE *fp)
+{
+    char buf[NFILEN + 128];
+    int  rc, term_status;
+
+    (void) fflush(fp);
+    (void) fclose(fp);
+
+    if (stdout_fd != BAD_FD)
+    {
+        /*
+         * write pipe, but not a filter.  Editor has written data to temp
+         * file, time now to exec "cmd" and hook its stdin to the file.
+         *
+         * It should be noted that exec'ing a process in the npclose()
+         * phase of a write pipe is not exactly keeping in spirit with
+         * the control flow in file.c :-) .  However, the strategy used
+         * here ensures that the launched process reads a temp file that
+         * is completey flushed to disk.  The only direct drawback with
+         * this approach is that when the exec'd process exits, the user
+         * does not receive a "[press return to continue]" prompt from
+         * file.c .  But, cough, we can work around that problem :-) .
+         */
+
+        if ((stdout_fd = open(stdout_name, O_RDONLY|O_BINARY)) == BAD_FD)
+        {
+            /* oh my, put complaint in user's face. */
+
+            sprintf(buf, "[unable to open temp file \"%s\": %s]",
+                   stdout_name,
+                   strerror(errno));
+            lastditch_msg(buf);
+        }
+        else
+        {
+            handles[0] = (HANDLE) _get_osfhandle(stdout_fd);
+            handles[1] = handles[2] = GetStdHandle(STD_OUTPUT_HANDLE);
+            rc = (exec_shell(shcmd,
+                             handles,
+                             FALSE    /* don't hide child window */
+                            ) == BAD_PROC_HANDLE) ? FALSE : TRUE;
+            if (! rc)
+            {
+                 /* Shell process failed, put complaint in user's face. */
+
+                sprintf(buf, SHELL_ERR_MSG, get_shell());
+                lastditch_msg(buf);
+            }
+            else
+            {
+                /* now wait for app to exit */
+
+                (void) cwait(&term_status, (int) proc_handle, 0);
+                (void) CloseHandle(proc_handle);
+                proc_handle = BAD_PROC_HANDLE;
+            }
+
+            /*
+             * When closing descriptors shared between parent and child,
+             * order is quite important when $shell == command.com .  In
+             * this situation, the descriptors can't be closed until the
+             * exec'd process exits.
+             */
+            (void) close(stdout_fd);
+            stdout_fd = BAD_FD;
+        }
+        pressreturn();  /* cough */
+        sgarbf = TRUE;
+    }
+    tmp_cleanup();
 }

@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.98 2001/08/22 23:23:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.100 2001/09/26 00:01:42 tom Exp $
  *
  */
 
@@ -163,7 +163,7 @@ nextwind(int f, int n)
 		/* if an argument, give them that window from the top */
 		if (n > 0 && n <= nwindows) {
 			wp = wheadp;
-			while (--n)
+			while (--n != 0)
 				wp = wp->w_wndp;
 		} else {
 			mlforce("[Window number out of range]");
@@ -1224,6 +1224,10 @@ index2win(int idx)
     }
     return NULL;
 }
+
+#endif
+
+#if OPT_PERL || DISP_NTWIN
 
 /* Given a window pointer, return the index corresponding to that
    window.  I.e, the first visible window corresponds to 0, the second

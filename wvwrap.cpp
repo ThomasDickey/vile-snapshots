@@ -10,10 +10,11 @@
  * Note:  A great deal of the code included in this file is copied
  * (almost verbatim) from other vile modules.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.4 2001/02/24 17:20:10 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.5 2001/09/18 09:49:29 tom Exp $
  */
 
-#include <windows.h>
+#include "w32vile.h"
+
 #include <objbase.h>
 #include <stdio.h>
 #include <string.h>

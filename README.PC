@@ -148,10 +148,11 @@ makefile.wnt with VC++ and makefile.blc with Borland's compiler.  with
 respect to the console-mode port (vile.exe), the screen driver is
 ntconio.c .  Both makefiles build vile.exe by default.
 
-additionally, vile-c-filt.exe (a static, external syntax colorizer) is
-included in makefile.wnt's default target list.  refer to vile's help
-file for a description of the colorizer and refer to the module comments
-within filters/c-filt.c for win32-specific features.
+additionally, makefile.wnt builds a handful of C-based syntax coloring
+filters.  many additional filters can be compiled and linked if lex or flex
+are available, as described below.  refer to the help file topic "Syntax
+coloring" for a description of these filters and their integration with the
+editor.
 
 as of vile 7.3, a gui called "winvile" is provided (screen driver is
 ntwinio.c), which continues to improve with successive releases of the
@@ -173,7 +174,8 @@ add-in substitutes winvile as the default Developer Studio editor for
 many common editing tasks.  refer to the file doc/visvile.doc for further
 information, including build instructions.
 
-the following table summarizes all possible makefile.wnt build options:
+the following table summarizes the most significant makefile.wnt build
+options:
 
 component option(s)   required nmake command-line [1]
 ========= =========   ===============================
@@ -184,9 +186,21 @@ winvile   perl        nmake -f makefile.wnt CFG=winvile-with-perl
 winvile   ole         nmake -f makefile.wnt CFG=winvile OPT=ole-auto
 winvile   perl,ole[2] nmake -f makefile.wnt CFG=winvile-with-perl OPT=ole-auto
 
-[1] by default, all builds compile and link vile-c-filt.exe (when necessary).
+[1] by default, all builds cd into the filters subdirectory and compile and
+    link a handful of C-based syntax coloring filters.  to build _all_ of
+    the editor's supported filters, acquire a copy of flex (or lex),
+    install it in a directory located in your PATH and add the following
+    command-line option:
+
+        nmake -f makefile.wnt <OPTIONS_FROM_ABOVE> LEX=flex   # or LEX=lex
+
+    take note that flex is a component of cygwin's GNU emulation package
+    and works quite well for this purpose.  cygwin can be obtained from
+    Redhat at http://sources.redhat.com/cygwin.
+
 [2] this option requires prior installation of perl.  refer to the section
     entitled "Perl preconditions" below.
+
 
 More about makefile.wnt
 -----------------------
@@ -243,5 +257,5 @@ tom dickey, dickey@herndon4.his.com
 paul fox, pgf@foxharp.boston.ma.us (home)
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.26 2001/04/08 00:59:11 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.27 2001/09/18 09:03:22 cmorgan Exp $
 ------------------------

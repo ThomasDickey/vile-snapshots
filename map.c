@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.91 2001/04/24 22:40:55 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.92 2001/09/18 09:49:28 tom Exp $
  *
  */
 
@@ -754,7 +754,7 @@ abbr_c_start(void)
 	   if whitespace precedes either ident or non-ident, the
 	   match is good.
 	 */
-	char first, prev;
+	int first, prev;
 	first = lgetc(DOT.l,abbr_curr_off);
 	prev = lgetc(DOT.l,abbr_curr_off-1);
 	if ((isident(first) && isident(prev)) ||

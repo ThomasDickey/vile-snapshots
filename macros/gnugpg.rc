@@ -1,9 +1,7 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/gnugpg.rc,v 1.1 2001/08/17 22:11:53 cmorgan Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/gnugpg.rc,v 1.2 2001/09/18 09:10:38 cmorgan Exp $
 
 ; included below is a collection of macros that use GNU's gpg
-; encryption package in a win32 or Unix environment.  On a
-; win32 host, these macros work best when using a 32-bit shell
-; (e.g., _not_ command.com) with vile's w32pipes mode enabled.
+; encryption package in a win32 or Unix environment.
 
 ;                            CAVEAT
 

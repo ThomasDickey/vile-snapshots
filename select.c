@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.132 2001/02/15 23:17:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.133 2001/09/18 09:49:29 tom Exp $
  *
  */
 
@@ -1963,7 +1963,7 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
 	return FALSE;
 
     for (i = rp->r_orig.o; i < rp->r_end.o; i++)
-	lp->l_attrs[i] = vidx;
+	lp->l_attrs[i] = (UCHAR) vidx;
 
     for_each_visible_window(wp) {
 	if (wp->w_bufp == bp)

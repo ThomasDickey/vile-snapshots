@@ -8,7 +8,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.77 2001/02/15 22:51:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.78 2001/09/18 09:49:27 tom Exp $
  *
  */
 
@@ -630,7 +630,7 @@ fmatch(int rch)
 	MARK	oldpos; 	/* original position */
 	register LINE *toplp;	/* top line in current window */
 	register int count;	/* current fence level count */
-	register char c;	/* current character in scan */
+	register int c;		/* current character in scan */
 	int dir, lch;
 	int backcharfailed = FALSE;
 

@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.114 2001/08/22 21:42:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.115 2001/09/18 09:49:28 tom Exp $
  *
  */
 
@@ -1482,7 +1482,7 @@ init_fsms(void)
 
 	(void)strcpy(name, fsm_name);
 	for (n = 0; fsm_name[n] != '\0'; n++)
-		fsm_name[n] = toUpper(fsm_name[n]);
+		fsm_name[n] = (char) toUpper(fsm_name[n]);
 	Fprintf(nefsms, "\n");
 	Fprintf(nefsms, "#if OPT_%s_CHOICES\n", fsm_name);
 	Fprintf(nefsms, "#ifndef realdef\n");

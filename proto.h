@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.470 2001/08/26 15:21:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.474 2001/09/26 00:02:14 tom Exp $
  *
  */
 
@@ -192,7 +192,7 @@ extern int has_C_suffix (BUFFER *bp);
 
 #if OPT_UPBUFF
 void updatelistbuffers (void);
-void update_scratch (const char *name, int (*func)(BUFFER *));
+void update_scratch (const char *name, UpBuffFunc func);
 #else
 #define updatelistbuffers()
 #define update_scratch(name, func)
@@ -302,7 +302,8 @@ extern char * get_xshellflags (void);
 #endif
 
 /* eval.c */
-extern char * get_directory(void);
+extern UINT mac_tokens (void);
+extern char * get_directory (void);
 extern char * get_token (char *src, TBUFF **tok, int eolchar, int *actual);
 extern char * get_token2 (char *src, TBUFF **tok, int eolchar, int *actual);
 extern char * mac_tokval (TBUFF **tok);
@@ -321,9 +322,10 @@ extern int is_truem (const char *val);
 extern int mac_literalarg (TBUFF **tok);
 extern int mac_token (TBUFF **tok);
 extern int macroize (TBUFF **p, TBUFF *src, int skip);
+extern int must_quote_token (char * values, unsigned last);
 extern int scan_bool (const char *s );
 extern int toktyp (const char *tokn);
-extern UINT mac_tokens (void);
+extern void append_quoted_token (TBUFF ** dst, char * values, unsigned last);
 
 #ifdef const
 #define skip_blanks(s) skip_cblanks(s)
@@ -753,12 +755,13 @@ extern void save_vals (int maximum, struct VAL *gbl, struct VAL *dst, struct VAL
 extern const char *vms_record_format(int code);
 #endif
 
-/* npopen.c */
+/* npopen.c and other files :-) */
 #if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
-extern FILE * npopen (char *cmd, const char *type);
-extern void npclose (FILE *fp);
-extern int inout_popen (FILE **fr, FILE **fw, char *cmd);
-extern int softfork (void);
+extern int  inout_popen(FILE **fr, FILE **fw, char *cmd);
+extern FILE *npopen(char *cmd, const char *type);
+extern void npclose(FILE *fp);
+extern void npflush(void);
+extern int  softfork(void);
 #endif
 
 #if SYS_UNIX || SYS_OS2 || SYS_WINNT
@@ -785,6 +788,7 @@ extern int substregion (void);
 extern int vile_op (int f, int n, OpsFunc fn, const char *str);
 
 /* path.c */
+extern void append_libdir_to_path(void);
 extern char * home_dir (void);
 extern char * is_appendname (char *fn);
 extern char * last_slash (char *fn);
@@ -1184,10 +1188,8 @@ extern void set_console_title(const char *title);
 extern int  stdin_data_available(void);
 extern int  w32_CreateProcess(char *cmd, int no_wait);
 extern int  w32_del_selection(int copy_to_clipboard);
-extern int  w32_inout_popen(FILE **fr, FILE **fw, char *cmd);
 extern void w32_keybrd_reopen(int pressret);
 extern int  w32_keybrd_write(char *data);
-extern void w32_npclose(FILE *fp);
 extern int  w32_system(const char *cmd);
 extern int  w32_system_winvile(const char *cmd, int *pressret);
 extern char *w32_wdw_title(void);
@@ -1236,6 +1238,9 @@ extern BUFFER * pop_fake_win(WINDOW *oldwp);
 extern ULONG win2id (WINDOW *wp);
 extern WINDOW * id2win (ULONG id);
 extern WINDOW * index2win (int idx);
+#endif
+
+#if OPT_PERL || DISP_NTWIN
 extern int win2index (WINDOW *wp_to_find);
 #endif
 

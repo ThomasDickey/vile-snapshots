@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.12 2000/11/04 20:23:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.13 2001/09/18 20:27:18 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an X resource file.
  */
@@ -13,11 +13,44 @@
 DefineFilter("xres");
 
 static char *Comment_attr;
+static char *Error_attr;
 static char *Ident2_attr;
 static char *Keyword_attr;
 static char *Number_attr;
 static char *Preproc_attr;
 static char *String_attr;
+
+static char *
+skip_name(char *text)
+{
+    while (isalnum(CharOf(*text)) || *text == '_')
+	text++;
+    return text;
+}
+
+static int
+preprocessor(char *text, int size)
+{
+    char *s = skip_blanks(text);
+    char *t;
+    char *attr = 0;
+    int save;
+
+    if (set_symbol_table("cpre")) {
+	s = skip_blanks(s + 1);	/* points to name */
+	t = skip_name(s);
+	save = *t;
+	*t = 0;
+	attr = keyword_attr(s);
+	*t = save;
+	set_symbol_table(filter_def.filter_name);
+    }
+    if (attr != 0) {
+	flt_puts(text, size, Preproc_attr);
+	return 1;
+    }
+    return 0;
+}
 
 static int
 isClass(char *name)
@@ -49,6 +82,7 @@ do_filter(FILE *input)
     yyin = input;
 
     Comment_attr = class_attr(NAME_COMMENT);
+    Error_attr   = class_attr(NAME_ERROR);
     Ident2_attr  = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
     Number_attr  = class_attr(NAME_NUMBER);
@@ -62,6 +96,8 @@ do_filter(FILE *input)
 }
 
 %}
+
+SPACE		[ \t]
 
 COMMENT		![^\n]*\n
 
@@ -94,3 +130,7 @@ KEYWORD		({NAME}|<{NAME}>)
 <RESVALUE>\n		{ flt_bfr_finish(); ECHO; BEGIN(NORMAL); }
 
 <NORMAL>{COMMENT}	{ WriteToken(Comment_attr); }
+
+<NORMAL>^{SPACE}*#{SPACE}*{NAME} { if (!preprocessor(yytext, yyleng)) {
+				    WriteToken(Error_attr);
+				} }

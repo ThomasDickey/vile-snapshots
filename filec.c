@@ -5,13 +5,9 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.98 2001/03/04 01:40:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.99 2001/09/18 09:49:27 tom Exp $
  *
  */
-
-#ifdef _WIN32
-# include <windows.h>
-#endif
 
 #include "estruct.h"
 #include "edef.h"

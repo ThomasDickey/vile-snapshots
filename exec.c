@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.236 2001/08/25 18:53:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.237 2001/09/19 00:08:14 tom Exp $
  *
  */
 
@@ -1465,6 +1465,7 @@ static int
 push_variable(char *name)
 {
     LOCALS *p;
+    VALARGS args;
 
     TPRINTF(("...push_variable: {%s}%s\n", name, execstr));
 
@@ -1495,7 +1496,17 @@ push_variable(char *name)
 	    return FALSE;
 	}
     } else {
-	p->value = strmalloc(p->value);
+	/* FIXME: this won't handle embedded nulls */
+	if (find_mode(curbp, (*name == '$') ? (name + 1) : name, -TRUE, &args)
+	    && must_quote_token(p->value, strlen(p->value))) {
+	    TBUFF *tmp = 0;
+	    append_quoted_token(&tmp, p->value, strlen(p->value));
+	    tb_append(&tmp, EOS);
+	    p->value = tb_values(tmp);
+	    free(tmp);
+	} else {
+	    p->value = strmalloc(p->value);
+	}
     }
 
     ifstk.locals = p;

@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.156 $)
+AC_REVISION($Revision: 1.158 $)
 AC_PREREQ(2.12.971222)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.156 2001/08/23 20:48:24 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.158 2001/09/23 18:01:29 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -125,21 +125,18 @@ changequote([,])dnl
 AC_SUBST(VILE_BUILTIN_FILTERS)
 
 AC_MSG_CHECKING(for library path)
-AC_ARG_WITH(libdir-path,
-[  --with-libdir-path=PATH specify locations to search for filters, etc.],
-[VILE_LIBDIR_PATH="$withval"],
-[test -z "$VILE_LIBDIR_PATH" &&\
-	VILE_LIBDIR_PATH='$(libdir)/vile'])
+CF_WITH_PATHLIST(libdir-path,
+[  --with-libdir-path=LIST specify locations to search for filters, etc.],
+VILE_LIBDIR_PATH,
+'\[$](libdir)/vile',[],[define])
 AC_MSG_RESULT($VILE_LIBDIR_PATH)
-AC_SUBST(VILE_LIBDIR_PATH)
 
 AC_MSG_CHECKING(for startup path)
-AC_ARG_WITH(startup-path,
-[  --with-startup-path=PATH specify locations to search for vile.hlp, etc.],
-[VILE_STARTUP_PATH="$withval"],
-[test -z "$VILE_STARTUP_PATH" && VILE_STARTUP_PATH='$(datadir)'])
+CF_WITH_PATHLIST(startup-path,
+[  --with-startup-path=LIST specify locations to search for vile.hlp, etc.],
+VILE_STARTUP_PATH,
+'\[$](datadir)',[],[define])
 AC_MSG_RESULT($VILE_STARTUP_PATH)
-AC_SUBST(VILE_STARTUP_PATH)
 
 CF_LEX_STATES
 
@@ -171,7 +168,6 @@ AC_SUBST(EXTRA_INSTALL_FILES)
 
 # X11 checks will sometimes add to CFLAGS.  We want the state of CFLAGS
 # prior to these checks
-# saved_CFLAGS="$CFLAGS"
 
 ###	checks for UNIX variants that set C preprocessor variables
 AC_AIX
@@ -453,6 +449,7 @@ utimes \
 waitpid $cf_tc_funcs \
 )
 CF_ANSI_QSORT
+CF_MKSTEMP
 
 ###	Miscellaneous options
 
@@ -576,7 +573,6 @@ AC_ARG_WITH(trace,
 
 test -n "${with_trace}${with_no_leaks}" && EXTRAOBJS="$EXTRAOBJS trace.o"
 
-# CFLAGS="$saved_CFLAGS"
 AC_ARG_WITH(warnings,
 	[  --with-warnings         test: turn on GCC compiler warnings],
 	[with_warnings="$withval"])

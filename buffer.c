@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.237 2001/08/23 00:34:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.238 2001/09/23 17:14:51 tom Exp $
  *
  */
 
@@ -1711,7 +1711,7 @@ updatelistbuffers(void)
 
 /* mark a scratch/temporary buffer for update */
 void
-update_scratch(const char *name, int (*func) (BUFFER *))
+update_scratch(const char *name, UpBuffFunc func)
 {
     BUFFER *bp = find_b_name(name);
 

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.227 2001/08/21 09:55:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.228 2001/09/19 00:06:25 tom Exp $
  *
  */
 
@@ -1028,8 +1028,21 @@ adjvalueset(
 			    opts, complete);
 	if (status != TRUE)
 	    return status;
-	if (!strlen(rp = respbuf))
-	    return FALSE;
+
+	/*
+	 * Allow an empty response to a string-value if we're running in a
+	 * macro rather than interactively.
+	 */
+	if (!strlen(rp = respbuf)
+	    && !clexec) {
+	    switch (names->type) {
+	    case VALTYPE_REGEX:	/* FALLTHRU */
+	    case VALTYPE_STRING:
+		break;
+	    default:
+		return FALSE;
+	    }
+	}
     } else if (!setting) {
 	rp = is_str_type(names->type) ? "" : "0";
     }

@@ -2,13 +2,9 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.256 2001/08/17 18:23:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.257 2001/09/18 09:49:29 tom Exp $
  *
  */
-
-#ifdef _WIN32
-# include <windows.h>
-#endif
 
 #ifdef __BEOS__
 #include <OS.h>
@@ -519,8 +515,8 @@ int
 twiddle(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     MARK dot;
-    register char cl;
-    register char cr;
+    int cl;
+    int cr;
 
     dot = DOT;
     if (llength(dot.l) <= 1)

@@ -1,13 +1,9 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.20 2001/03/04 01:26:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.21 2001/09/18 09:49:29 tom Exp $
  *
  */
-
-#ifdef _WIN32
-#include <windows.h>
-#endif
 
 #include "estruct.h"
 #include "edef.h"
@@ -90,7 +86,7 @@ visible_buff(const char *buffer, int length, int eos)
 		if (eos && !c) {
 			break;
 		} else if (isprint(c)) {
-			result[k++] = c;
+			result[k++] = (char) c;
 		} else {
 			if (c >= 128)
 				sprintf(result+k, "\\%03o", c);

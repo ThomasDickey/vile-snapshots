@@ -22,14 +22,10 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.458 2001/08/26 15:16:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.461 2001/09/23 19:29:41 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
-
-#ifdef _WIN32
-# include	<windows.h>
-#endif
 
 #include	"estruct.h"	/* global structures and defines */
 #include	"edef.h"	/* global declarations */
@@ -1031,8 +1027,10 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #ifdef GMDFLASH
 	    setINT(GMDFLASH, FALSE);	/* beeps beep by default */
 #endif
-#ifdef GMDFORCE_CONSOLE		/* Allocate console before spawning piped process? */
+#ifdef FORCE_CONSOLE_RESURRECTED
+# ifdef GMDFORCE_CONSOLE	/* deprecated (unused) */
 	    setINT(GMDFORCE_CONSOLE, is_win95());
+# endif
 #endif
 #ifdef GMDGLOB
 	    setINT(GMDGLOB, TRUE);
@@ -1383,6 +1381,45 @@ init_state_value(int which)
 }
 #endif /* OPT_EVAL */
 
+#if OPT_REBIND
+/*
+ * Cache the length of kbindtbl[].
+ */
+static ALLOC_T
+len_kbindtbl(void)
+{
+    static ALLOC_T result = 0;
+    if (result == 0)
+	while (kbindtbl[result].k_cmd != 0)
+	    result++;
+    return result + 1;
+}
+
+/*
+ * At startup, construct copies of kbindtbl[] for the alternate bindings, so
+ * we can have separate bindings of special keys from the default bindings.
+ */
+static void
+copy_kbindtbl(BINDINGS * dst)
+{
+    KBIND *result;
+    ALLOC_T len = len_kbindtbl();
+
+    if (dst->kb_special == kbindtbl) {
+	if ((result = typecallocn(KBIND, len)) == 0) {
+	    (void) no_memory("copy_kbindtbl");
+	    return;
+	}
+	dst->kb_special = dst->kb_extra = result;
+    } else {
+	result = dst->kb_special;
+    }
+    while (len-- != 0) {
+	result[len] = kbindtbl[len];
+    }
+}
+#endif
+
 static void
 global_val_init(void)
 {
@@ -1458,6 +1495,11 @@ global_val_init(void)
      * Initialize the "normal" bindings for insert and command mode to
      * the motion-commands that are safe if insert-exec mode is enabled.
      */
+#if OPT_REBIND
+    copy_kbindtbl(&sel_bindings);
+    copy_kbindtbl(&ins_bindings);
+    copy_kbindtbl(&cmd_bindings);
+#endif
     for (i = 0; i < N_chars; i++) {
 	const CMDFUNC *cfp;
 

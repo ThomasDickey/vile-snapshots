@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.296 2001/08/26 18:34:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.297 2001/09/18 22:18:38 tom Exp $
  *
  */
 
@@ -2356,3 +2356,68 @@ absol(int x)
 {				/* return absolute value of given integer */
     return (x < 0) ? -x : x;
 }
+
+#if !SMALLER
+/*
+ * Returns true if the buffer contains blanks or quotes which would confuse us
+ * when parsing.
+ */
+int
+must_quote_token(char *values, unsigned last)
+{
+    unsigned n;
+
+    if (last != 0) {
+	for (n = 0; n < last; n++) {
+	    int ch = CharOf(values[n]);
+	    if (ch == SQUOTE
+		|| ch == DQUOTE
+		|| ch == BACKSLASH
+		|| !isGraph(ch))
+		return TRUE;
+	}
+    }
+    return FALSE;
+}
+
+/*
+ * Appends the buffer, with quotes
+ */
+void
+append_quoted_token(TBUFF ** dst, char *values, unsigned last)
+{
+    unsigned n;
+
+    TRACE(("append_quoted_token\n"));
+    tb_append(dst, DQUOTE);
+    for (n = 0; n < last; n++) {
+	int ch = CharOf(values[n]);
+	switch (ch) {
+	case DQUOTE:
+	case BACKSLASH:
+	    tb_append(dst, BACKSLASH);
+	    tb_append(dst, ch);
+	    break;
+	case '\b':
+	    tb_sappend(dst, "\\b");
+	    break;
+	case '\t':
+	    tb_sappend(dst, "\\t");
+	    break;
+	case '\r':
+	    tb_sappend(dst, "\\r");
+	    break;
+	case '\n':
+	    tb_sappend(dst, "\\n");
+	    break;
+	default:
+	    /* as for other characters, including nonprinting ones, they are
+	     * not a problem
+	     */
+	    tb_append(dst, ch);
+	    break;
+	}
+    }
+    tb_append(dst, DQUOTE);
+}
+#endif /* !SMALLER */

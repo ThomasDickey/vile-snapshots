@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.173 2001/05/24 01:25:58 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.174 2001/09/26 00:34:37 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -156,6 +156,7 @@ SCREENS = \
 # other source code, some used in other makefiles, some useful tools,
 #  some possibly obsolete
 PERL_SRC = \
+	$(srcdir)/perl/Breadcrumbs.pm \
 	$(srcdir)/perl/Glob2re.pm \
 	$(srcdir)/perl/Vile.pm \
 	$(srcdir)/perl/Vile/Exporter.pm \
@@ -163,11 +164,13 @@ PERL_SRC = \
 	$(srcdir)/perl/Vileserv.pm \
 	$(srcdir)/perl/Visit.pm \
 	$(srcdir)/perl/capture.pm \
+	$(srcdir)/perl/dict.pm \
 	$(srcdir)/perl/directory.pm \
 	$(srcdir)/perl/dirlist.pm \
 	$(srcdir)/perl/gdb.pm \
 	$(srcdir)/perl/hgrep.pm \
 	$(srcdir)/perl/lock.pm \
+	$(srcdir)/perl/man.pm \
 	$(srcdir)/perl/mime.pl \
 	$(srcdir)/perl/plugins.pl \
 	$(srcdir)/perl/search.pm \
@@ -343,6 +346,7 @@ INSTALL_MACRO_FILES = \
 INSTALL_PERL_DIRS = $(PERLDIR) $(PERLDIR)/Vile
 INSTALL_PERL_FILES = \
 	$(BINDIR)/vileget \
+	$(PERLDIR)/Breadcrumbs.pm \
 	$(PERLDIR)/Glob2re.pm \
 	$(PERLDIR)/Vile.pm \
 	$(PERLDIR)/Vile/Exporter.pm \
@@ -350,11 +354,13 @@ INSTALL_PERL_FILES = \
 	$(PERLDIR)/Vileserv.pm \
 	$(PERLDIR)/Visit.pm \
 	$(PERLDIR)/capture.pm \
+	$(PERLDIR)/dict.pm \
 	$(PERLDIR)/directory.pm \
 	$(PERLDIR)/dirlist.pm \
 	$(PERLDIR)/gdb.pm \
 	$(PERLDIR)/hgrep.pm \
 	$(PERLDIR)/lock.pm \
+	$(PERLDIR)/man.pm \
 	$(PERLDIR)/mime.pl \
 	$(PERLDIR)/plugins.pl \
 	$(PERLDIR)/search.pm \
@@ -670,6 +676,8 @@ $(MANDIR)/vile.$(manext):	$(srcdir)/vile.1
 $(MANDIR)/xvile.$(manext):	$(srcdir)/vile.1
 	$(INSTALL_DATA)		$(srcdir)/vile.1 $@
 
+$(PERLDIR)/Breadcrumbs.pm:	$(srcdir)/perl/Breadcrumbs.pm
+	$(INSTALL_DATA)		$(srcdir)/perl/Breadcrumbs.pm $@
 $(PERLDIR)/Glob2re.pm:		$(srcdir)/perl/Glob2re.pm
 	$(INSTALL_DATA)		$(srcdir)/perl/Glob2re.pm $@
 $(PERLDIR)/Vile.pm:		$(srcdir)/perl/Vile.pm
@@ -684,6 +692,8 @@ $(PERLDIR)/Visit.pm:		$(srcdir)/perl/Visit.pm
 	$(INSTALL_DATA)		$(srcdir)/perl/Visit.pm $@
 $(PERLDIR)/capture.pm:		$(srcdir)/perl/capture.pm
 	$(INSTALL_DATA)		$(srcdir)/perl/capture.pm $@
+$(PERLDIR)/dict.pm:		$(srcdir)/perl/dict.pm
+	$(INSTALL_DATA)		$(srcdir)/perl/dict.pm $@
 $(PERLDIR)/directory.pm:	$(srcdir)/perl/directory.pm
 	$(INSTALL_DATA)		$(srcdir)/perl/directory.pm $@
 $(PERLDIR)/dirlist.pm:		$(srcdir)/perl/dirlist.pm
@@ -694,6 +704,8 @@ $(PERLDIR)/hgrep.pm:		$(srcdir)/perl/hgrep.pm
 	$(INSTALL_DATA)		$(srcdir)/perl/hgrep.pm $@
 $(PERLDIR)/lock.pm:		$(srcdir)/perl/lock.pm
 	$(INSTALL_DATA)		$(srcdir)/perl/lock.pm $@
+$(PERLDIR)/man.pm:		$(srcdir)/perl/man.pm
+	$(INSTALL_DATA)		$(srcdir)/perl/man.pm $@
 $(PERLDIR)/mime.pl:		$(srcdir)/perl/mime.pl
 	$(INSTALL_DATA)		$(srcdir)/perl/mime.pl $@
 $(PERLDIR)/plugins.pl:		$(srcdir)/perl/plugins.pl

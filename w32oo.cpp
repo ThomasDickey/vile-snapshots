@@ -8,10 +8,11 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32oo.cpp,v 1.2 2001/02/24 17:20:10 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32oo.cpp,v 1.3 2001/09/18 09:49:29 tom Exp $
  */
 
-#include <windows.h>
+#include "w32vile.h"
+
 #include <ole2.h>
 #include <shlobj.h>
 #include <stdio.h>
@@ -19,7 +20,6 @@
 extern "C" {
 
 #include "estruct.h"
-#undef FAILED          /* Don't want this defn of FAILED */
 #include "edef.h"
 
 /* ------------------------------------------------------------------------ */

@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.78 2001/08/25 18:50:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.80 2001/09/18 17:10:30 tom Exp $
  */
 
 /*#
@@ -92,6 +92,11 @@
   #
  */
 
+#ifdef WIN32
+#include "w32vile.h"
+#undef WIN32_LEAN_AND_MEAN
+#endif
+
 /* contortions to avoid typedef conflicts */
 #define main perl_main
 #define regexp perl_regexp
@@ -107,7 +112,6 @@
 
 #undef main
 #undef regexp
-#undef HUGE
 #undef dofile
 
 /* Some earlier versions of perl don't have GIMME_V or G_VOID. We must

@@ -1,27 +1,25 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.115 2001/08/22 21:41:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.118 2001/09/26 00:09:48 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
 
-#include <windows.h>
+#include "estruct.h"		/* includes <windows.h> */
+
 #include <windowsx.h>
 #include <commdlg.h>
 #include <shellapi.h>
 #include <stdlib.h>
 #include <math.h>
 
-#include "estruct.h"
 #include "edef.h"
 #include "pscreen.h"
 #include "patchlev.h"
 #include "winvile.h"
 #include "nefsms.h"
 #include "nefunc.h"
-
-#undef RECT			/* FIXME: symbol conflict */
 
 #define MIN_ROWS MINWLNS
 #define MIN_COLS 15
@@ -2658,6 +2656,8 @@ ntgetch(void)
     int buttondown = FALSE;
     int sel_pending = FALSE;	/* Selection pending */
     MARK lmbdn_mark;		/* left mouse button down here */
+    MARK last_dot = nullmark;	/* remember where dot was before selection */
+    WINDOW *last_win = 0;	/* remember which window dot was in */
     int selecting = FALSE;	/* toggle between cut and paste */
     int result = -1;
     KEY_EVENT_RECORD ker;
@@ -2784,6 +2784,8 @@ ntgetch(void)
 		/* Clear current selection, a la notepad. */
 		sel_release();
 		selecting = FALSE;
+		last_dot = DOT;
+		last_win = curwp;
 		/* Allow click to change window focus. */
 		if (MouseClickSetPos(&first, &onmode)) {
 		    fhide_cursor();
@@ -2870,6 +2872,14 @@ ntgetch(void)
 
 			sel_yank(0);
 		    }
+		    if (selecting) {
+			if (win2index(last_win) >= 0) {
+			    set_curwp(last_win);
+			    restore_dot(last_dot);
+			}
+			last_win = 0;
+			last_dot = nullmark;
+		    }
 		}
 		onmode = buttondown = FALSE;
 		(void) update(TRUE);
@@ -2916,15 +2926,14 @@ ntgetch(void)
 		if (enable_popup) {
 		    invoke_popup_menu(msg);
 		} else {
-		    if (MouseClickSetPos(&latest, &onmode) && !onmode) {
-			if (selecting) {
-			    sel_yank(0);
-			    cbrdcpy_unnamed(FALSE, 1);
-			    selecting = FALSE;
-			    sel_release();
-			} else {
-			    execute(&f_cbrdpaste, FALSE, 1);
-			}
+		    if (selecting) {
+			sel_yank(0);
+			cbrdcpy_unnamed(FALSE, 1);
+			selecting = FALSE;
+			sel_release();
+		    } else {
+			mayneedundo();
+			cbrdpaste(FALSE, 1);
 		    }
 		    (void) update(TRUE);
 		}

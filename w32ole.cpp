@@ -17,10 +17,11 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.16 2001/03/23 00:41:27 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.17 2001/09/18 09:49:29 tom Exp $
  */
 
-#include <windows.h>
+#include "w32vile.h"
+
 #include <ole2.h>
 #include <comutil.h>
 #include <assert.h>

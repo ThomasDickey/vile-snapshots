@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.289 2001/08/23 20:57:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.290 2001/09/18 09:49:27 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1229,7 +1229,7 @@ quickreadf(register BUFFER *bp, int *nlinep)
 		nbytes = len;
 		break;
 	    }
-	    *countp = textp - countp - 1;
+	    *countp = (char) (textp - countp - 1);
 	    countp = textp;
 	    nlines++;
 	}

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.479 2001/08/22 21:36:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.482 2001/09/23 17:15:32 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -243,6 +243,10 @@
 
 #define IBM_VIDEO 	(SYS_MSDOS || SYS_OS2 || SYS_WINNT)
 #define CRLF_LINES 	(SYS_MSDOS || SYS_OS2 || SYS_WINNT)
+
+#if defined(WIN32) || CC_TURBO
+#include "w32vile.h"
+#endif
 
 #include <stdio.h>
 #if SYS_VMS && (! defined(__DECC_VER))
@@ -807,10 +811,12 @@ extern int MainProgram(int argc, char *argv[]);
  */
 # include <os2def.h>
 #else
-# define UCHAR	unsigned char
-# define UINT	unsigned int
-# define USHORT	unsigned short
-# define ULONG	unsigned long
+# if !defined(WIN32)
+#  define UCHAR unsigned char
+#  define UINT unsigned int
+#  define USHORT unsigned short
+#  define ULONG unsigned long
+# endif
 #endif
 
 /*	internal constants	*/
@@ -838,7 +844,7 @@ extern int MainProgram(int argc, char *argv[]);
 #define	NSTRING	144			/* # of bytes, string buffers	*/
 #define NPAT	144			/* # of bytes, pattern		*/
 #define NKEYLEN	20			/* # of bytes, crypt key	*/
-#define HUGE	(1<<(BITS_PER_INT-2))	/* Huge number			*/
+#define VL_HUGE	(1<<(BITS_PER_INT-2))	/* Huge number			*/
 #define	NLOCKS	100			/* max # of file locks active	*/
 #if OPT_16_COLOR
 #define	NCOLORS	16			/* number of supported colors	*/
@@ -1279,6 +1285,8 @@ typedef USHORT CHARTYPE;
 
 /* macro for whitespace (non-return) */
 #define	isBlank(c)      ((c == '\t') || (c == ' '))
+
+#define	isGraph(c)	(!isSpecial(c) && !isSpace(c) && isPrint(c))
 
 /* DIFCASE represents the difference between upper
    and lower case letters, DIFCNTRL the difference between upper case and
@@ -1854,6 +1862,10 @@ typedef int FUID;
  * read in at "use buffer" time.
  */
 
+struct	BUFFER;
+
+typedef	int	(*UpBuffFunc) ( struct BUFFER * );
+
 typedef struct	BUFFER {
 	MARK	b_line; 	/* Link to the header LINE (offset unused) */
 	struct	BUFFER *b_bufp; 	/* Link to next BUFFER		*/
@@ -1904,8 +1916,8 @@ typedef struct	BUFFER {
 	time_t	b_modtime_at_warn;	/* file's modtime when user warned */
 #endif
 #if	OPT_UPBUFF
-	int	(*b_upbuff) (struct BUFFER *bp); /* call to recompute  */
-	int	(*b_rmbuff) (struct BUFFER *bp); /* call on removal	*/
+	UpBuffFunc b_upbuff;		/* call to recompute		*/
+	UpBuffFunc b_rmbuff;		/* call on removal		*/
 #endif
 #if	OPT_B_LIMITS
 	int	b_lim_left;		/* extra left-margin (cf:show-reg) */
@@ -2367,6 +2379,7 @@ typedef struct  k_bind {
 }	KBIND;
 
 typedef struct {
+	const char *bufname;
 	const CMDFUNC **kb_normal;
 	KBIND *kb_special;
 #if OPT_REBIND
@@ -2398,7 +2411,7 @@ typedef struct {
 #define NOMOVE  cmdBIT(9)	/* dot doesn't move (although address may be used) */
 #define VIEWOK  cmdBIT(10)	/* command is okay in view mode, even though it
 				 * _may_ be undoable (macros and maps) */
-#define RECT    cmdBIT(11)	/* motion causes rectangular operation */
+#define VL_RECT cmdBIT(11)	/* motion causes rectangular operation */
 #define NOMINI  cmdBIT(12)	/* cannot use in minibuffer edit */
 
 /* These flags are 'ex' argument descriptors, adapted from elvis.  Not all are

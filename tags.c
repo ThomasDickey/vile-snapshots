@@ -5,7 +5,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995-2000 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.111 2001/02/13 22:50:00 jcgil Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.112 2001/09/18 09:49:29 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -385,7 +385,7 @@ finish_pop(char *fname, L_NUM lineno, C_NUM colno)
 	MARK odot;
 	int s;
 
-	if (! (s = pinned_tagstack(fname)))  {
+	if ((s = pinned_tagstack(fname)) == FALSE)  {
 		/* get a window open on the file */
 
 		s = getfile(fname, FALSE);

@@ -55,7 +55,7 @@
  *	not (yet) correspond to :-commands.  Before implementing, probably will
  *	have to make TESTC a settable mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.68 2001/08/26 23:30:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.70 2001/09/25 23:47:28 tom Exp $
  *
  */
 
@@ -68,9 +68,6 @@
 
 #define	tb_args(p)	tb_values(p), (int)tb_length(p)
 #define	lp_args(p)	p->l_text, llength(p)
-
-#undef isGraph
-#define	isGraph(c)	(!isSpecial(c) && !isSpace(c) && isPrint(c))
 
 typedef struct {
     TBUFF **buffer;
@@ -232,74 +229,18 @@ static int
 needQuotes(TBUFF * src)
 {
 #if HST_QUOTES
-    char *values = tb_values(src);
-    ALLOC_T last = tb_length(src);
-    ALLOC_T n;
-
-    if (last != 0) {
-	for (n = 0; n < last; n++) {
-	    int ch = CharOf(values[n]);
-	    if (ch == SQUOTE
-		|| ch == DQUOTE
-		|| ch == BACKSLASH
-		|| !isGraph(ch))
-		return TRUE;
-	}
-    } else if (tb_length(MyText)) {
+    if (tb_length(MyText)
+	|| must_quote_token(tb_values(src), tb_length(src)))
 	return TRUE;
-    }
 #endif
     return FALSE;
 }
 
-/*
- * Appends the buffer, with quotes
- */
-static void
-appendQuoted(TBUFF ** dst, TBUFF * src)
-{
-    char *values = tb_values(src);
-    ALLOC_T last = tb_length(src);
-    ALLOC_T n;
-
-    TRACE(("appendQuoted\n"));
-    tb_append(dst, DQUOTE);
-    for (n = 0; n < last; n++) {
-	int ch = CharOf(values[n]);
-	switch (ch) {
-	case DQUOTE:
-	case BACKSLASH:
-	    tb_append(dst, BACKSLASH);
-	    tb_append(dst, ch);
-	    break;
-	case '\b':
-	    tb_sappend(dst, "\\b");
-	    break;
-	case '\t':
-	    tb_sappend(dst, "\\t");
-	    break;
-	case '\r':
-	    tb_sappend(dst, "\\r");
-	    break;
-	case '\n':
-	    tb_sappend(dst, "\\n");
-	    break;
-	default:
-	    /* as for other characters, including nonprinting ones, they are
-	     * not a problem
-	     */
-	    tb_append(dst, ch);
-	    break;
-	}
-    }
-    tb_append(dst, DQUOTE);
-}
-
 #if HST_QUOTES
 /*
- * Reverses appendQuoted() by stripping the quotes and returning an allocated
- * buffer with the text.  The associated length is returned via the 'actual'
- * parameter.
+ * Reverses append_quoted_token() by stripping the quotes and returning an
+ * allocated buffer with the text.  The associated length is returned via the
+ * 'actual' parameter.
  */
 static char *
 stripQuotes(char *src, int len, int eolchar, int *actual)
@@ -363,9 +304,8 @@ glueBufferToResult(TBUFF ** dst, TBUFF * src, int glue)
 	(void) tb_append(dst, MyGlue);
 
     if (!shell_cmd
-	&& isSpace(glue)
 	&& needQuotes(src)) {
-	appendQuoted(dst, src);
+	append_quoted_token(dst, tb_values(src), tb_length(src));
     } else {
 	(void) tb_bappend(dst, tb_args(src));
     }

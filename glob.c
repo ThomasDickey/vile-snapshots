@@ -13,16 +13,13 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.72 2001/03/23 00:54:58 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.73 2001/09/18 09:49:27 tom Exp $
  *
  */
 
-#ifdef _WIN32
-# include <windows.h>
-#endif
-
 #include "estruct.h"	/* global structures and defines */
 #include "edef.h"	/* defines 'slash' */
+
 #if SYS_OS2
 # define INCL_DOSFILEMGR
 # define INCL_ERRORS

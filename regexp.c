@@ -16,7 +16,7 @@
  *
  *		ted, 01/01
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.78 2001/02/15 23:01:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.79 2001/09/18 09:49:29 tom Exp $
  *
  */
 
@@ -709,8 +709,8 @@ regpiece(int *flagp, int at_bop)
 	    regtail(ret, next);	/* Either */
 	    loop = regnode(RCOMPLX);
 	    if (loop != &regdummy) {
-		RR_MIN(loop) = lo;
-		RR_MAX(loop) = hi;
+		RR_MIN(loop) = (char) lo;
+		RR_MAX(loop) = (char) hi;
 	    }
 	    regtail(loop, ret);	/* loop back */
 	    regtail(next, regnode(BRANCH));	/* or */
@@ -1067,7 +1067,7 @@ regnode(int op)
     }
 
     ptr = ret;
-    ptr[0] = op;
+    ptr[0] = (char) op;
     ptr[1] = EOS;		/* Null "next" pointer. */
     ptr[2] = EOS;
     regcode = ptr + length;
@@ -1096,9 +1096,9 @@ regrange(int op, char *opnd, int lo, int hi)
     regninsert(RR_LEN, opnd);	/* like regopinsert */
     if (regcode == &regdummy)
 	return;
-    *opnd = op;
-    RR_MIN(opnd) = lo;
-    RR_MAX(opnd) = hi;
+    *opnd = (char) op;
+    RR_MIN(opnd) = (char) lo;
+    RR_MAX(opnd) = (char) hi;
 }
 
 /*
@@ -1140,7 +1140,7 @@ regopinsert(int op, char *opnd)
     regninsert(3, opnd);
     if (regcode == &regdummy)
 	return;
-    *opnd = op;
+    *opnd = (char) op;
 }
 
 /*

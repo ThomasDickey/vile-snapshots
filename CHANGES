@@ -1,5 +1,101 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20010925 (p)
+	> Clark Morgan:
+	+ Removed an ugly wart from win32 vile (dated September 11).  Tested on
+	  WinME (bash and command.com), Win98 (Thompson Toolkit and
+	  command.com), Win2K (cmd.exe).
+	+ makefile.wnt and makefile.blc no longer use npopen.c -- all
+	  equivalent functionality has been moved into w32pipe.c
+	+ w32pipe.c
+	  - added completely new approach for temp-files-based pipes (required
+	    when using command.com as shell).
+	  - force-console code removed (see next bullet)
+	  - during testing noticed cases where winvile writes last ditch error
+	    messages to stdout.  Uses popup-msgs now.
+	+ force-console mode is now a no-op for winvile (retained solely to
+	  prevent breaking existing config files).
+	+ spawn.c:
+	  - npflush() no longer called if using native win32 pipes (the
+	    original call was always a nop for native pipes).
+	  - win32 hosts call npflush() _after_ closing write pipe file
+	    descriptor (important for the temp files implementation).   
+	+ filters.rc no longer worries about the setting of w32pipes.
+	+ gnugpg.rc no longer mentions w32pipes.
+	+ macros.doc: remove force-console from example config file
+	+ delete doc/w32modes.doc
+	+ vile.hlp:  
+	  - w32pipes and force-console updates.
+	  - mention macros/gnugpg.rc wrt encryption (updated in vile.1 as well)
+	  - documented interaction between cygwin's bash, console vile, and
+	    interrupts.
+	  - updated $os description to mirror Tom's changes in doc/macros.doc
+	  - within the "Color basics" topic, discuss custom winvile colors
+	+ explain how to build filters via makefile.wnt (README.PC).
+	+ update vile.hlp's install dir and be more specific regarding vile's
+	  installation components (doc/config.doc).
+	> J Chris Coppick:
+	+ implement perl/Breadcrumbs.pm (request by Clemens Fischer).
+	> Kuntal Daftary:
+	+ two new perl extensions for vile:
+	  1. man.pm is a Unix manual pages viewer in vile.
+	  2. dict.pm is a dictionary/thesaurus interface (uses the DICT protocol)
+	  Drop both the files in the appropriate path ($HOME/.vile/perl for
+	  Unix) and add the following lines in your .vilerc
+	     perl "use dict"
+	     perl "use man"
+	> Mark Robinson:
+	+ modify selection in winvile so that DOT is not moved.
+	+ improve paste-by-right-mouse-click operation in winvile by NOT
+	  setting the insertion point at the position where the mouse happens
+	  to be when executing the right-click, but rather pasting at the
+	  current DOT (i.e.  right-mouse-click never sets DOT).
+	+ change paste in winvile to insert at DOT rather than after.  Also,
+	  when pasting in insert mode, set DOT to the end of the inserted
+	  text.
+	> Tom Dickey:
+	+ modify the check in glueBufferToResult() so that parameters of
+	  search-commands can have quote-characters escaped, for consistency
+	  with the logic that strips them.
+	+ extend insert-exec to allow ^A and ^X prefixes to be interpreted
+	  in insert mode (based on a patch by Mark Robinson).
+	+ corrected binding in dates.rc that demonstrates insert-mode bindings.
+	+ add a show-key-names command to show the #-style coding for function-
+	  and cursor-keys.
+	+ correct number of arguments for &ftime (incorrect number of arguments
+	  caused the increased error-checking in 9.2o to break this function).
+	+ extend support for alternate bindings by duplicating the default
+	  special-key bindings at initialization so they can be customized
+	  independently.  For example, this lets one define in vileinit.rc a
+	  different home/end key binding for command-mode than for the default
+	  (prompted by a patch by Mark Robinson).
+	+ modify support for alternate bindings to use different buffer names
+	  for describe-xxx-bindings commands, i.e., [Command-Bindings],
+	  [Insert-Bindings] and [Select-Bindings], to make it simpler to
+	  distinguish them.
+	+ add a configure check for working mkstemp() function, use this for
+	  spell filter to quiet linker warnings (corresponding warnings for
+	  file.c are bogus).
+	+ modify configure script for VILE_LIBDIR_PATH and VILE_STARTUP_PATH
+	  to double backslashes, just in case the user has defined the
+	  corresponding environment variables in DOS-pathname syntax (request
+	  by Mark Robinson).
+	+ modify adjvalset() to allow an empty response for the mode value if
+	  running in a macro.
+	+ modify push_variable(), which implements "~local", to check if a
+	  given symbol requires quoting to avoid interpreting meta characters
+	  when restoring its value (reported by Clark Morgan, e.g., for
+	  $paragraph).
+	+ add C preprocessor parsing to xresmode, for files that use xrdb.
+	+ extend xresmode suffix pattern to add .Xdefaults-hostname
+	+ correct parsing of single-line "remark" comments in sql filter, which
+	  did not work unless some character followed the "rem" or "remark"
+	  keyword (report by Chris Green).
+	+ split-out include of <windows.h> into w32vile.h, adding some pragmas
+	  which stifle warnings emitted by Visual C++ for M$ header files when
+	  compiling with -W4 warning level.  Changed default warning level in
+	  makefile.wnt to -W4.
+
  20010826 (o)
 	> Clark Morgan:
 	+ correct return code from set_files_to_edit() when no buffer can be

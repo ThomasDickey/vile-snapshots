@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.122 2001/08/26 18:42:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.123 2001/09/18 09:49:29 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -628,7 +628,7 @@ attrib_matches(void)
     mlwrite("rehighlighting");
 #endif
 
-    vattr = b_val(curbp, VAL_HILITEMATCH);
+    vattr = (VIDEO_ATTR) b_val(curbp, VAL_HILITEMATCH);
     if (vattr == 0)
 	return;
 
