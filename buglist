@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.341 1998/05/15 00:23:47 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.342 1998/05/27 23:37:08 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1278,6 +1278,12 @@ it might be a conflict with glibc2 vs libc5 (no), that the OPT_WORKING code
 might be a problem (no), and that forking xvile might be a problem with Motif
 (no).  Compiler optimization level may be related (both reports were for -O2
 and up).
+
+[98-05-27]
+Revisiting this, another possibility is that the x_preparse_args(), which
+initializes the display causes a ConfigureWindow event, which is initializing
+the scrollbar arrays before x_open is actually called - but only for some
+systems (e.g., Motif 2.x).
 
 -- 98-04-12 (tom)
 

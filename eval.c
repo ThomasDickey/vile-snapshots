@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.159 1998/05/14 23:12:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.160 1998/05/28 00:34:34 tom Exp $
  *
  */
 
@@ -1484,6 +1484,7 @@ ev_leaks(void)
 	register UVAR *p;
 	while ((p = user_vars) != 0) {
 		user_vars = p->next;
+		free(p->u_value);
 		free(p->u_name);
 		free((char *)p);
 	}

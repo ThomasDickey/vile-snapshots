@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.181 1998/05/20 00:40:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.182 1998/05/28 00:05:02 tom Exp $
  *
  */
 
@@ -2441,6 +2441,7 @@ x_preparse_args(
     static XrmOptionDescRec options[] = {
 	{"-t",   	(char *)0,          XrmoptionSkipArg,	(caddr_t)0 },
 	{"-fork",   	"*forkOnStartup",   XrmoptionNoArg,	"true" },
+	{"+fork",   	"*forkOnStartup",   XrmoptionNoArg,	"false" },
 	{"-leftbar",	"*scrollbarOnLeft", XrmoptionNoArg,	"true" },
 	{"-rightbar",	"*scrollbarOnLeft", XrmoptionNoArg,	"false" },
     };
@@ -3664,6 +3665,7 @@ x_open(void)
 {
     kqinit(cur_win);
     cur_win->scrollbars = NULL;
+    cur_win->maxscrollbars = 0;
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
     cur_win->scrollinfo = NULL;
     cur_win->grips = NULL;
