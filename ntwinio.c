@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.132 2002/10/19 21:07:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.133 2002/11/05 20:28:02 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -3547,7 +3547,7 @@ WinMain(
     int argc;
     int n;
     int maxargs = (strlen(lpCmdLine) + 1) / 2;
-    char **argv = typeallocn(char *, maxargs);
+    char **argv = typeallocn(char *, maxargs + 10);
     char *ptr, *fontstr;
 #ifdef VILE_OLE
     int oa_invoke, oa_reg;

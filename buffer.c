@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.254 2002/10/20 11:27:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.256 2002/11/02 16:12:11 tom Exp $
  *
  */
 
@@ -302,6 +302,8 @@ MarkUnused(BUFFER *bp)
 static void
 FreeBuffer(BUFFER *bp)
 {
+    beginDisplay();
+
     if (bp->b_fname != out_of_mem)
 	FreeIfNeeded(bp->b_fname);
 
@@ -324,6 +326,7 @@ FreeBuffer(BUFFER *bp)
 #endif
 	free((char *) bp);	/* Release buffer block */
     }
+    endofDisplay();
 }
 
 /*
@@ -678,15 +681,21 @@ static char **
 init_bname_cmpl(void)
 {
     size_t used = 0;
-    size_t count = countBuffers();
-    char **list = typeallocn(char *, count + 1);
+    size_t count;
+    char **list = 0;
     BUFFER *bp;
 
-    for_each_buffer(bp) {
-	list[used++] = bp->b_bname;
+    if ((count = countBuffers()) != 0) {
+	beginDisplay();
+	if ((list = typeallocn(char *, count + 1)) != 0) {
+	    for_each_buffer(bp) {
+		list[used++] = bp->b_bname;
+	    }
+	    list[used] = 0;
+	    qsort(list, used, sizeof(char *), qs_bname_cmp);
+	}
+	endofDisplay();
     }
-    list[used] = 0;
-    qsort(list, used, sizeof(char *), qs_bname_cmp);
     return list;
 }
 
@@ -702,7 +711,9 @@ bname_complete(DONE_ARGS)
 
     if ((nptr = init_bname_cmpl()) != 0) {
 	status = kbd_complete(PASS_DONE_ARGS, (const char *) nptr, sizeof(*nptr));
+	beginDisplay();
 	free((char *) nptr);
+	endofDisplay();
     }
     return status;
 }
@@ -1856,14 +1867,12 @@ addline(BUFFER *bp, const char *text, int len)
 {
     int status = FALSE;
 
-    beginDisplay();
     if (add_line_at(bp, lback(buf_head(bp)), text, len) == TRUE) {
 	/* If "." is at the end, move it to new line  */
 	if (sameline(bp->b_dot, bp->b_line))
 	    bp->b_dot.l = lback(buf_head(bp));
 	status = TRUE;
     }
-    endofDisplay();
 
     return status;
 }
@@ -2074,75 +2083,76 @@ bfind(const char *bname, UINT bflag)
 	lastb = bp;
     }
 
+    beginDisplay();
+
     /* set everything to 0's unless we want nonzero */
     if ((bp = typecalloc(BUFFER)) == NULL) {
 	(void) no_memory("BUFFER");
-	return (NULL);
-    }
+    } else {
+	/* set this first, to make it simple to trace */
+	set_bname(bp, bname);
 
-    /* set this first, to make it simple to trace */
-    set_bname(bp, bname);
+	lp = lalloc(0, bp);
+	if (lp == null_ptr) {
+	    FreeAndNull(bp);
+	    (void) no_memory("BUFFER head");
+	} else {
 
-    lp = lalloc(0, bp);
-    if (lp == null_ptr) {
-	free((char *) bp);
-	(void) no_memory("BUFFER head");
-	return (NULL);
-    }
-
-    /* and set up the other buffer fields */
-    bp->b_values = global_b_values;
-    bp->b_wtraits.w_vals = global_w_values;
-    bp->b_active = FALSE;
-    bp->b_dot.l = lp;
-    bp->b_dot.o = 0;
-    bp->b_wline = bp->b_dot;
-    bp->b_line = bp->b_dot;
+	    /* and set up the other buffer fields */
+	    bp->b_values = global_b_values;
+	    bp->b_wtraits.w_vals = global_w_values;
+	    bp->b_active = FALSE;
+	    bp->b_dot.l = lp;
+	    bp->b_dot.o = 0;
+	    bp->b_wline = bp->b_dot;
+	    bp->b_line = bp->b_dot;
 #if WINMARK
-    bp->b_mark = nullmark;
+	    bp->b_mark = nullmark;
 #endif
-    bp->b_lastdot = nullmark;
+	    bp->b_lastdot = nullmark;
 #if OPT_VIDEO_ATTRS
 #endif
-    bp->b_flag = bflag;
-    bp->b_acount = (short) b_val(bp, VAL_ASAVECNT);
-    bp->b_fname = NULL;
-    ch_fname(bp, "");
-    fileuid_invalidate(bp);
+	    bp->b_flag = bflag;
+	    bp->b_acount = (short) b_val(bp, VAL_ASAVECNT);
+	    bp->b_fname = NULL;
+	    ch_fname(bp, "");
+	    fileuid_invalidate(bp);
 #if OPT_ENCRYPT
-    if (!b_is_temporary(bp)
-	&& cryptkey != 0 && *cryptkey != EOS) {
-	(void) strcpy(bp->b_cryptkey, cryptkey);
-	make_local_b_val(bp, MDCRYPT);
-	set_b_val(bp, MDCRYPT, TRUE);
-    } else
-	bp->b_cryptkey[0] = EOS;
+	    if (!b_is_temporary(bp)
+		&& cryptkey != 0 && *cryptkey != EOS) {
+		(void) strcpy(bp->b_cryptkey, cryptkey);
+		make_local_b_val(bp, MDCRYPT);
+		set_b_val(bp, MDCRYPT, TRUE);
+	    } else
+		bp->b_cryptkey[0] = EOS;
 #endif
-    bp->b_udstks[0] = bp->b_udstks[1] = null_ptr;
-    bp->b_ulinep = null_ptr;
-    bp->b_udtail = null_ptr;
-    bp->b_udlastsep = null_ptr;
+	    bp->b_udstks[0] = bp->b_udstks[1] = null_ptr;
+	    bp->b_ulinep = null_ptr;
+	    bp->b_udtail = null_ptr;
+	    bp->b_udlastsep = null_ptr;
 
-    b_set_counted(bp);		/* buffer is empty */
-    set_lforw(lp, lp);
-    set_lback(lp, lp);
+	    b_set_counted(bp);	/* buffer is empty */
+	    set_lforw(lp, lp);
+	    set_lback(lp, lp);
 
-    /* append at the end */
-    if (lastb)
-	lastb->b_bufp = bp;
-    else
-	bheadp = bp;
-    bp->b_bufp = NULL;
-    bp->b_created = countBuffers();
+	    /* append at the end */
+	    if (lastb)
+		lastb->b_bufp = bp;
+	    else
+		bheadp = bp;
+	    bp->b_bufp = NULL;
+	    bp->b_created = countBuffers();
 
-    for_each_buffer(bp2)
-	bp2->b_last_used += 1;
-    bp->b_last_used = 1;
+	    for_each_buffer(bp2)
+		bp2->b_last_used += 1;
+	    bp->b_last_used = 1;
 
 #if OPT_PERL || OPT_TCL
-    bp->b_api_private = 0;
+	    bp->b_api_private = 0;
 #endif
-
+	}
+    }
+    endofDisplay();
     return (bp);
 }
 

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.503 2002/10/20 13:30:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.504 2002/11/01 23:50:28 tom Exp $
  *
  */
 
@@ -258,6 +258,8 @@ extern void special_formatter(TBUFF **result, char *fs, WINDOW *wp);
 #if OPT_WORKING
 extern SIGT imworking (int ACTUAL_SIG_ARGS);
 #endif
+
+extern	int	allow_working_msg (void);
 
 #if OPT_PSCREEN
 extern	OUTC_DCL psc_putchar	(OUTC_ARGS);

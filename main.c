@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.485 2002/10/27 15:47:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.487 2002/11/04 23:30:13 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -32,6 +32,8 @@
 #include	"nevars.h"
 #include	"nefunc.h"
 #include	"nefsms.h"
+
+#include	<assert.h>
 
 #if OPT_LOCALE
 #include	<locale.h>
@@ -61,7 +63,7 @@ unsigned _stklen = 24000U;
 static int cmd_mouse_motion(const CMDFUNC * cfp);
 static void get_executable_dir(void);
 static void global_val_init(void);
-static void loop(void);
+static void main_loop(void);
 static void make_startup_file(char *name);
 static void siginit(void);
 static void start_debug_log(int ac, char **av);
@@ -695,7 +697,7 @@ MainProgram(int argc, char *argv[])
 	mlforce("%*S", tb_length(mlsave), tb_values(mlsave));
 
     /* process commands */
-    loop();
+    main_loop();
 
     /* NOTREACHED */
     return BADEXIT;
@@ -703,7 +705,7 @@ MainProgram(int argc, char *argv[])
 
 /* this is nothing but the main command loop */
 static void
-loop(void)
+main_loop(void)
 {
     const CMDFUNC *cfp = NULL;
     const CMDFUNC *last_cfp = NULL;
@@ -712,6 +714,9 @@ loop(void)
 
     for_ever {
 
+#if OPT_WORKING && DOALLOC
+	assert(allow_working_msg());
+#endif
 	hst_reset();
 
 	/* vi doesn't let the cursor rest on the newline itself.  This

@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.63 2002/10/09 19:36:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.64 2002/11/02 00:07:01 tom Exp $
  */
 
 #include	"estruct.h"
@@ -50,10 +50,12 @@ DftEnv(char *name, char *dft)
 static void
 SetEnv(char **namep, const char *value)
 {
+    beginDisplay();
 #if OPT_EVAL && OPT_SHELL
     FreeIfNeeded(*namep);
 #endif
     *namep = strmalloc(value);
+    endofDisplay();
 }
 
 static int
@@ -136,7 +138,9 @@ any_rw_EXPR(TBUFF ** rp, const char *vp, TBUFF ** value)
     } else if (vp) {
 	regexp *exp = regcomp(vp, TRUE);
 	if (exp != 0) {
+	    beginDisplay();
 	    free(exp);
+	    endofDisplay();
 	    tb_scopy(value, vp);
 	    return TRUE;
 	}
@@ -545,9 +549,10 @@ var_CRYPTKEY(TBUFF ** rp, const char *vp)
 	tb_scopy(rp, WRITE_ONLY);
 	return TRUE;
     } else if (vp) {
-	if (cryptkey != 0)
-	    free(cryptkey);
+	beginDisplay();
+	FreeIfNeeded(cryptkey);
 	cryptkey = (char *) malloc(NKEYLEN);
+	endofDisplay();
 	vl_make_encrypt_key(cryptkey, vp);
 	return TRUE;
     } else {
@@ -1267,7 +1272,9 @@ var_SEARCH(TBUFF ** rp, const char *vp)
 	return TRUE;
     } else if (vp && curbp) {
 	(void) strcpy(searchpat, vp);
+	beginDisplay();
 	FreeIfNeeded(gregexp);
+	endofDisplay();
 	gregexp = regcomp(searchpat, b_val(curbp, MDMAGIC));
 	return TRUE;
     } else {

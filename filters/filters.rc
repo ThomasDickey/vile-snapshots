@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.161 2002/10/27 15:53:06 tom Exp $
+; $Id: filters.rc,v 1.164 2002/11/04 00:22:26 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -16,6 +16,22 @@ define-mode ada
 	fence-if   '^\s*\<begin\>'
 	fence-else '^\s*\<exception\>'
 	fence-fi   '^\s*\<end\>'
+~endwith
+
+; GNU assembler (a Byzantine elaboration of AT&T)
+define-mode as
+~with define-submode as
+	suf '\.s$'
+~endwith
+
+; M$ assembler (a Byzantine elaboration of Intel)
+define-mode asm
+~with define-submode asm
+	suf '\.asm$'
+	fence-if   '^\s*\<\(if\|ifdef\|ifndef\)\>'
+	fence-elif '^\s*\<elseif\>'
+	fence-else '^\s*\<else\>'
+	fence-fi   '^\s*\<endif\>'
 ~endwith
 
 define-mode awk
@@ -199,6 +215,11 @@ define-mode html
 	fence-end	'-->'
 ~endwith
 
+define-mode info
+~with define-submode info
+	suf '\(\.\|\([a-z]*\)\)\(info\(-\d\+\)\?\)$'
+~endwith
+
 define-mode imake
 ~with define-submode imake
 	before "def"
@@ -364,7 +385,6 @@ define-mode perl
 define-mode pot
 ~with define-submode pot
 	suf '\.\(pot\|po\)$'
-	filtername 'vile-sh-filt -k pot'
 	comment-prefix '^#'
 	comments       '^#\s*$'
 ~endwith
@@ -521,6 +541,11 @@ define-mode tcl
 	pre '^#!\s*\/.*\(wish\|wishx\|tclsh\|tcl\|expectk\)[0-9.]*\>\(\s*-[a-z]\+\)*\s*$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
+~endwith
+
+define-mode texi
+~with define-submode texi
+	suf '\.\(texi\|txi\|texinfo\)$'
 ~endwith
 
 define-mode ti

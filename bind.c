@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.262 2002/10/20 14:07:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.263 2002/11/02 17:26:57 tom Exp $
  *
  */
 
@@ -111,16 +111,22 @@ static void kbd_puts(const char *s);
 static BI_NODE *
 new_namebst(BI_DATA * a)
 {
-    BI_NODE *p = typecalloc(BI_NODE);
+    BI_NODE *p;
+
+    beginDisplay();
+    p = typecalloc(BI_NODE);
     p->value = *a;
     if (!(a->n_flags & NBST_READONLY))
 	BI_KEY(p) = strmalloc(a->bi_key);
+    endofDisplay();
+
     return p;
 }
 
 static void
 old_namebst(BI_NODE * a)
 {
+    beginDisplay();
     if (!(a->value.n_flags & NBST_READONLY)) {
 	CMDFUNC *cmd = TYPECAST(CMDFUNC, a->value.n_cmd);
 	if (cmd != 0) {
@@ -137,6 +143,7 @@ old_namebst(BI_NODE * a)
 	free(TYPECAST(char, BI_KEY(a)));
     }
     free(TYPECAST(char, a));
+    endofDisplay();
 }
 
 static void
@@ -429,6 +436,18 @@ key_to_bind(const CMDFUNC * kcmd)
 }
 
 static int
+free_KBIND(KBIND ** oldp, KBIND * newp)
+{
+    *oldp = newp->k_link;
+
+    beginDisplay();
+    free(TYPECAST(char, newp));
+    endofDisplay();
+
+    return TRUE;
+}
+
+static int
 unbindchar(BINDINGS * bs, int c)
 {
     KBIND *kbp;			/* pointer into the command table */
@@ -446,18 +465,14 @@ unbindchar(BINDINGS * bs, int c)
     /* check first entry in kb_extra table */
     kbp = skbp = bs->kb_extra;
     if (kbp->k_code == c) {
-	bs->kb_extra = kbp->k_link;
-	free(TYPECAST(char, kbp));
-	return TRUE;
+	return free_KBIND(&(bs->kb_extra), kbp);
     }
 
     /* check kb_extra codes */
     while (kbp != bs->kb_special) {
 	if (kbp->k_code == c) {
 	    /* relink previous */
-	    skbp->k_link = kbp->k_link;
-	    free(TYPECAST(char, kbp));
-	    return TRUE;
+	    return free_KBIND(&(skbp->k_link), kbp);
 	}
 
 	skbp = kbp;
@@ -602,7 +617,12 @@ install_bind(int c, const CMDFUNC * kcmd, BINDINGS * bs)
     } else if ((kbp = kcode2kbind(bs, c)) != 0) {	/* change it in place */
 	kbp->k_cmd = kcmd;
     } else {
-	if ((kbp = typealloc(KBIND)) == 0) {
+
+	beginDisplay();
+	kbp = typealloc(KBIND);
+	endofDisplay();
+
+	if (kbp == 0) {
 	    return no_memory("Key-Binding");
 	}
 	kbp->k_link = bs->kb_extra;
@@ -959,16 +979,6 @@ converted_len(char *buffer)
     return len;
 }
 
-/* force the buffer to a tab-stop if needed */
-static char *
-to_tabstop(char *buffer)
-{
-    unsigned cpos = converted_len(buffer);
-    if (cpos & 7)
-	(void) strcat(buffer, "\t");
-    return skip_string(buffer);
-}
-
 static void
 quote_and_pad(char *dst, const char *src)
 {
@@ -978,6 +988,17 @@ quote_and_pad(char *dst, const char *src)
     else
 	while (converted_len(dst) < 32)
 	    strcat(dst, "\t");
+}
+
+#if OPT_MENUS || OPT_NAMEBST
+/* force the buffer to a tab-stop if needed */
+static char *
+to_tabstop(char *buffer)
+{
+    unsigned cpos = converted_len(buffer);
+    if (cpos & 7)
+	(void) strcat(buffer, "\t");
+    return skip_string(buffer);
 }
 
 /* convert a key binding, padding to the next multiple of 8 columns */
@@ -1009,6 +1030,7 @@ convert_cmdfunc(BINDINGS * bs, const CMDFUNC * cmd, char *outseq)
 	if (kbp->k_cmd == cmd)
 	    convert_kcode(kbp->k_code, outseq);
 }
+#endif /* OPT_MENUS || OPT_NAMEBST */
 
 #if OPT_ONLINEHELP
 static int
@@ -1189,7 +1211,6 @@ makefuncdesc(int j, char *listed)
 
     /* add in the command name */
     quote_and_pad(outseq, nametbl[j].n_name);
-    convert_cmdfunc(bs, cmd, outseq);
 
     /* dump the line */
     if (!addline(curbp, outseq, -1))
@@ -1231,7 +1252,11 @@ makebindlist(int whichmask, void *mstring)
     int pass;
     int j;
     int ok = TRUE;		/* reset if out-of-memory, etc. */
-    char *listed = typecallocn(char, (size_t) nametblsize);
+    char *listed;
+
+    beginDisplay();
+    listed = typecallocn(char, (size_t) nametblsize);
+    endofDisplay();
 
     if (listed == 0) {
 	(void) no_memory(bindings_to_describe->bufname);
@@ -1273,7 +1298,10 @@ makebindlist(int whichmask, void *mstring)
 
     if (ok)
 	mlerase();		/* clear the message line */
+
+    beginDisplay();
     free(listed);
+    endofDisplay();
 }
 #endif /* OPT_NAMEBST */
 
@@ -2923,8 +2951,10 @@ delete_namebst(const char *name, int release)
 #endif
 
 	if (!(p->n_flags & NBST_READONLY)) {
+	    beginDisplay();
 	    free(TYPECAST(char, p->n_cmd->c_help));
 	    free(TYPECAST(char, p->n_cmd));
+	    endofDisplay();
 	}
 	p->n_cmd = 0;		/* ...so old_namebst won't free this too */
     }
@@ -3007,9 +3037,12 @@ kbd_complete_bst(
     if ((nptr = btree_parray(&namebst, buf, cpos)) != 0) {
 	status = kbd_complete(0, c, buf, pos, (const char *) nptr,
 			      sizeof(*nptr));
+	beginDisplay();
 	free(TYPECAST(char, nptr));
+	endofDisplay();
     } else
 	kbd_alarm();
+
     return status;
 }
 #endif /* OPT_NAMEBST */

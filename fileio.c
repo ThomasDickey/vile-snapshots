@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.169 2002/10/09 19:45:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.171 2002/11/03 11:38:58 tom Exp $
  *
  */
 
@@ -35,8 +35,10 @@
 static void
 free_fline(void)
 {
+    beginDisplay();
     FreeAndNull(fflinebuf);
     fflinelen = 0;
+    endofDisplay();
 }
 
 #if OPT_FILEBACK
@@ -768,17 +770,30 @@ ffputc(int c)
 
 /* "Small" exponential growth - EJK */
 static int
-realloc_linebuf(void)
+alloc_linebuf(unsigned needed)
 {
-    size_t growth = (fflinelen >> 3) + NSTRING;
-    fflinelen += growth;
-    fflinebuf = castrealloc(char, fflinebuf, fflinelen);
-    if (!fflinebuf) {
-	fflinelen = 0;
-	return (FALSE);
+    beginDisplay();
+    needed += 2;
+    if (needed < NSTRING)
+	needed = NSTRING;
+
+    if (fflinebuf == 0) {
+	fflinelen = needed;
+	fflinebuf = castalloc(char, fflinelen);
+    } else if (needed >= fflinelen) {
+	fflinelen = needed + (needed >> 3);
+	fflinebuf = castrealloc(char, fflinebuf, fflinelen);
     }
-    return (TRUE);
+
+    if (fflinebuf == 0)
+	fflinelen = 0;
+    endofDisplay();
+    return (fflinebuf != 0);
 }
+
+#define ALLOC_LINEBUF(i) \
+	    if (i >= fflinelen && !alloc_linebuf(i)) \
+		return (FIOMEM)
 
 /*
  * Read a line from a file, and store the bytes in an allocated buffer.
@@ -786,7 +801,6 @@ realloc_linebuf(void)
  * Check for I/O errors. Return status.  The final length is returned via
  * the 'lenp' parameter.
  */
-
 int
 ffgetline(int *lenp)
 {
@@ -797,11 +811,7 @@ ffgetline(int *lenp)
     if (fileeof)
 	return (FIOEOF);
 
-    /* be sure there's a buffer */
-    if (!fflinebuf)
-	fflinebuf = castalloc(char, fflinelen = NSTRING);
-    if (!fflinebuf)
-	return (FIOMEM);
+    ALLOC_LINEBUF(NSTRING);
 
     i = 0;
 #if COMPLETE_FILES || COMPLETE_DIRS
@@ -812,13 +822,14 @@ ffgetline(int *lenp)
 	    return (FIOEOF);
 	}
 	if (llength(ffcursor) > 0) {
-	    i = fflinelen = llength(ffcursor);
-	    if (!realloc_linebuf())
-		return (FIOMEM);
+	    i = llength(ffcursor);
+	    ALLOC_LINEBUF(i);
 	    memcpy(fflinebuf, ffcursor->l_text, i);
 	}
-	fflinebuf[i] = EOS;
 	ffcursor = lforw(ffcursor);
+
+	ALLOC_LINEBUF(i);
+	fflinebuf[i] = EOS;
 	*lenp = i;		/* return the length, not including final null */
     } else
 #endif
@@ -839,16 +850,14 @@ ffgetline(int *lenp)
 		*lenp = 0;
 		return FIOABRT;
 	    }
+	    ALLOC_LINEBUF(i);
 	    fflinebuf[i++] = (char) c;
-	    /* grow our buffer -- be sure it grows fast enough */
-	    if (i >= fflinelen
-		&& !realloc_linebuf())
-		return (FIOMEM);
 #if OPT_WORKING
 	    cur_working++;
 #endif
 	}
 
+	ALLOC_LINEBUF(i);
 	*lenp = i;		/* return the length, not including final null */
 	fflinebuf[i] = EOS;
 

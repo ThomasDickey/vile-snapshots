@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.315 2002/10/26 12:01:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.316 2002/11/02 12:59:49 tom Exp $
  *
  */
 
@@ -390,6 +390,7 @@ show_VariableList(BUFFER *bp GCC_UNUSED)
     {"$%s = %*S\n"};
     const char *const *Names;
     int showall;
+    int rc = FALSE;
 
     TRACE((T_CALLED "show_VariableList()\n"));
 
@@ -400,27 +401,29 @@ show_VariableList(BUFFER *bp GCC_UNUSED)
 	if ((vv = get_listvalue(Names[s], showall)) != 0)
 	    t += strlen(Names[s]) + strlen(fmt) + strlen(vv);
     }
-    if ((values = typeallocn(char, t)) == 0)
-	  returnCode(FALSE);
 
-    for (s = 0, v = values; Names[s] != 0; s++) {
-	if ((vv = get_listvalue(Names[s], showall)) != 0) {
-	    t = strlen(vv);
-	    if (t == 0) {
-		t = 1;
-		vv = "";
-	    } else if (vv[t - 1] == '\n')
-		t--;		/* suppress trailing newline */
-	    v = lsprintf(v, fmt, Names[s], t, vv);
+    beginDisplay();
+    if ((values = typeallocn(char, t)) != 0) {
+	for (s = 0, v = values; Names[s] != 0; s++) {
+	    if ((vv = get_listvalue(Names[s], showall)) != 0) {
+		t = strlen(vv);
+		if (t == 0) {
+		    t = 1;
+		    vv = "";
+		} else if (vv[t - 1] == '\n')
+		    t--;	/* suppress trailing newline */
+		v = lsprintf(v, fmt, Names[s], t, vv);
+	    }
 	}
-    }
-    s = liststuff(VARIABLES_BufName, FALSE,
-		  makevarslist, 0, (void *) values);
-    free(values);
+	rc = liststuff(VARIABLES_BufName, FALSE,
+		       makevarslist, 0, (void *) values);
+	free(values);
 
-    /* back to the buffer whose modes we just listed */
-    swbuffer(wp->w_bufp);
-    returnCode(s);
+	/* back to the buffer whose modes we just listed */
+	swbuffer(wp->w_bufp);
+    }
+    endofDisplay();
+    returnCode(rc);
 }
 
 #if OPT_UPBUFF
@@ -1198,6 +1201,7 @@ FindVar(char *var, VWRAP * vd)
 	if (vd->v_ptr) {	/* existing */
 	    vd->v_type = VW_TEMPVAR;
 	} else {		/* new */
+	    beginDisplay();
 	    p = typealloc(UVAR);
 	    if (p &&
 		(p->u_name = strmalloc(var + 1)) != 0) {
@@ -1207,6 +1211,7 @@ FindVar(char *var, VWRAP * vd)
 		vd->v_type = VW_TEMPVAR;
 		free_vars_cmpl();
 	    }
+	    endofDisplay();
 	}
 	break;
 
@@ -1323,7 +1328,9 @@ free_UVAR_value(UVAR * p)
 {
     if (p->u_value != error_val
 	&& p->u_value != 0) {
+	beginDisplay();
 	free(p->u_value);
+	endofDisplay();
     }
     p->u_value = 0;
 }
@@ -1347,10 +1354,12 @@ rmv_tempvar(const char *name)
 		q->next = p->next;
 	    else
 		temp_vars = p->next;
+	    beginDisplay();
 	    free_UVAR_value(p);
 	    free(p->u_name);
 	    free((char *) p);
 	    free_vars_cmpl();
+	    endofDisplay();
 	    return TRUE;
 	}
     }
@@ -1462,6 +1471,7 @@ SetVarValue(VWRAP * var, const char *name, const char *value)
 	break;
 
     case VW_TEMPVAR:
+	beginDisplay();
 	free_UVAR_value(var->v_ptr);
 	if (value == error_val) {
 	    var->v_ptr->u_value = error_val;
@@ -1469,6 +1479,7 @@ SetVarValue(VWRAP * var, const char *name, const char *value)
 	    status = FALSE;
 	    var->v_ptr->u_value = error_val;
 	}
+	endofDisplay();
 	break;
 
     case VW_STATEVAR:
@@ -1883,7 +1894,9 @@ static char **vars_cmpl_list;
 static void
 free_vars_cmpl(void)
 {
+    beginDisplay();
     FreeAndNull(vars_cmpl_list);
+    endofDisplay();
 }
 
 static char **
@@ -1901,8 +1914,11 @@ init_vars_cmpl(void)
 		    vars_cmpl_list[count] = p->u_name;
 		count++;
 	    }
-	    if (pass == 0)
+	    if (pass == 0) {
+		beginDisplay();
 		vars_cmpl_list = typeallocn(char *, count + 1);
+		endofDisplay();
+	    }
 	}
 
 	if (vars_cmpl_list != 0) {
@@ -2054,13 +2070,13 @@ read_argument(TBUFF ** paramp, const PARAM_INFO * info)
 int
 save_arguments(BUFFER *bp)
 {
-    PROC_ARGS *p = typealloc(PROC_ARGS);
+    PROC_ARGS *p = 0;
     int num_args = 0;
     int max_args;
     char temp[NBUFN];
     const CMDFUNC *cmd = engl2fnc(strip_brackets(temp, bp->b_bname));
     int ok = TRUE;
-    int status = TRUE;
+    int status = FALSE;
     char *cp;
 
     if (cmd != 0 && cmd->c_args != 0) {
@@ -2070,36 +2086,42 @@ save_arguments(BUFFER *bp)
     } else {
 	max_args = 0;
     }
+
     TRACE((T_CALLED "save_arguments(%s) max_args=%d\n", bp->b_bname, max_args));
 
-    p->nxt_args = arg_stack;
-    arg_stack = p;
-    p->all_args = typecallocn(TBUFF *, max_args + 1);
-    tb_scopy(&(p->all_args[num_args++]), bp->b_bname);
+    beginDisplay();
+    if ((p = typealloc(PROC_ARGS)) != 0) {
+	status = TRUE;
+	p->nxt_args = arg_stack;
+	arg_stack = p;
+	p->all_args = typecallocn(TBUFF *, max_args + 1);
+	tb_scopy(&(p->all_args[num_args++]), bp->b_bname);
 
-    while (num_args < max_args + 1) {
-	if (ok) {
-	    status = read_argument(&(p->all_args[num_args]),
-				   &(cmd->c_args[num_args - 1]));
-	    if (status == ABORT)
-		break;
-	    ok = (status == TRUE);
-	}
-	if (ok) {
-	    if ((cp = tokval(tb_values(p->all_args[num_args]))) != error_val) {
-		tb_scopy(&(p->all_args[num_args]), cp);
-	    } else {
-		status = ABORT;
-		break;
+	while (num_args < max_args + 1) {
+	    if (ok) {
+		status = read_argument(&(p->all_args[num_args]),
+				       &(cmd->c_args[num_args - 1]));
+		if (status == ABORT)
+		    break;
+		ok = (status == TRUE);
 	    }
-	} else {
-	    tb_scopy(&(p->all_args[num_args]), "");
+	    if (ok) {
+		if ((cp = tokval(tb_values(p->all_args[num_args]))) != error_val) {
+		    tb_scopy(&(p->all_args[num_args]), cp);
+		} else {
+		    status = ABORT;
+		    break;
+		}
+	    } else {
+		tb_scopy(&(p->all_args[num_args]), "");
+	    }
+	    TPRINTF(("...ARG%d:%s\n", num_args, tb_values(p->all_args[num_args])));
+	    num_args++;
 	}
-	TPRINTF(("...ARG%d:%s\n", num_args, tb_values(p->all_args[num_args])));
-	num_args++;
-    }
 
-    p->num_args = num_args - 1;
+	p->num_args = num_args - 1;
+    }
+    endofDisplay();
 
     updatelistvariables();
     returnCode(status);
@@ -2122,8 +2144,10 @@ restore_arguments(BUFFER *bp GCC_UNUSED)
 	    tb_free(&(p->all_args[p->num_args]));
 	    p->num_args -= 1;
 	}
+	beginDisplay();
 	free(p->all_args);
 	free(p);
+	endofDisplay();
     }
 
     updatelistvariables();

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.36 2000/11/04 20:22:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.37 2002/11/01 01:14:13 Danny.Zerkel Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PERL input
  * text.
@@ -138,9 +138,11 @@ IDENT		{NORMALVARS}|{OTHERVARS}
 SIGN		[-+]
 DECIMAL		[0-9_]+
 OCTAL		0[0-7_]+
+BINARY		0b[01_]+
 HEXADECIMAL	0x[0-9a-fA-F_]+
+VERSION		v[0-9_]+(\.[0-9_]+)*
 REAL		[-+]?([0-9_]*\.[0-9][0-9_]*)([eE][+-]?[0-9_]+)?
-NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
+NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL}|{BINARY}|{VERSION})
 
 %%
 
@@ -174,12 +176,13 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
 <CODE>^{BLANK}*#!.*$	{ WriteToken(Preproc_attr); }
 
+<CODE>{NUMBER}		{ WriteToken(Number_attr); }
+
 <CODE>-[a-zA-Z]		{ WriteToken(Keyword_attr); }
+
 <CODE>{KEYWORD}		{ WriteToken(keyword_attr(yytext)); if (!strcmp(yytext, "__END__")) { BEGIN(IGNORED); } }
 
 <CODE>{BLANK}*"#".*$	{ WriteToken(Comment_attr); }
-
-<CODE>{NUMBER}		{ WriteToken(Number_attr); }
 
 <CODE>{IDENT}		{ WriteToken(Ident_attr); }
 

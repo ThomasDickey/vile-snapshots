@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.96 2002/10/09 19:53:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.97 2002/11/01 23:58:39 tom Exp $
  *
  */
 
@@ -502,41 +502,42 @@ static int mapgetc_ungotcnt = 0;
 static void
 save_keystroke(int c)
 {
-	KILL *kp;
-	KILLREG *kr = &kbs[KEYST_KREG];
+    KILL *kp;
+    KILLREG *kr = &kbs[KEYST_KREG];
 
+    beginDisplay();
 #ifdef DOKEYLOG
-	if (do_keylog) {
-		static int keyfd = -1;
-		static char *tfilenam;
-		if (!tfilenam)
-			tfilenam = tempnam("/tmp/vilekeylogs", "vilek");
-		if (tfilenam) {
-			if (keyfd < 0)
-				keyfd = open(tfilenam, O_CREAT|O_WRONLY, 0600);
-			if (keyfd >= 0)
-				write(keyfd, &c, 1);
-		}
+    if (do_keylog) {
+	static int keyfd = -1;
+	static char *tfilenam;
+	if (!tfilenam)
+	    tfilenam = tempnam("/tmp/vilekeylogs", "vilek");
+	if (tfilenam) {
+	    if (keyfd < 0)
+		keyfd = open(tfilenam, O_CREAT | O_WRONLY, 0600);
+	    if (keyfd >= 0)
+		write(keyfd, &c, 1);
 	}
+    }
 #endif
-	if (kr->kbufh == NULL) {
-		kr->kbufh = typealloc(KILL);
-		kr->kused = 0;
-	}
-	if (kr->kbufh == NULL)
-		return;
+    if (kr->kbufh == NULL) {
+	kr->kbufh = typealloc(KILL);
+	kr->kused = 0;
+    }
+    if (kr->kbufh != NULL) {
 
 	kp = kr->kbufp = kr->kbufh;
 	kp->d_next = NULL;
 
-	kp->d_chunk[kr->kused++] = (UCHAR)c;
-	if (kr->kused >= NUMKEYSTR * 2) { /* time to dump the oldest half */
-		(void)memcpy(
-			(char *)(kp->d_chunk),
-			(char *)(&kp->d_chunk[NUMKEYSTR / 2]),
-			NUMKEYSTR / 2);
-		kr->kused = NUMKEYSTR / 2;
+	kp->d_chunk[kr->kused++] = (UCHAR) c;
+	if (kr->kused >= NUMKEYSTR * 2) {	/* time to dump the oldest half */
+	    (void) memcpy((kp->d_chunk),
+			  (&kp->d_chunk[NUMKEYSTR / 2]),
+			  NUMKEYSTR / 2);
+	    kr->kused = NUMKEYSTR / 2;
 	}
+    }
+    endofDisplay();
 }
 
 /* these two wrappers are provided because at least one pcc-based

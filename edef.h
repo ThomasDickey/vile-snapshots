@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.304 2002/10/11 13:44:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.305 2002/11/01 20:43:59 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -266,14 +266,13 @@ decl_init( int tracemacros, FALSE );	/* macro tracing flag		*/
 #endif
 
 decl_init ( int im_displaying, 0 );	/* flag set during screen updates */
+decl_uninit( int vile_is_busy );	/* disabling flag, e.g., working */
 
 #if OPT_WORKING
 decl_uninit( B_COUNT max_working );	/* 100% value for slowreadf	*/
 decl_uninit( B_COUNT cur_working );	/* current-value for slowreadf	*/
 decl_uninit( B_COUNT old_working );	/* previous-value for slowreadf	*/
 #endif
-decl_uninit( int vile_is_busy );	/* disabling flag, e.g., working */
-decl_uninit( int signal_was );		/* what was the last signal */
 
 #if OPT_SHELL
 decl_init ( int cd_on_open, FALSE );

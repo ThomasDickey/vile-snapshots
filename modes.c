@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.248 2002/10/20 13:25:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.251 2002/11/06 01:37:14 tom Exp $
  *
  */
 
@@ -2270,7 +2270,7 @@ static int
 put_majormode_before(unsigned j, char *s)
 {
     char *t;
-    char *told = "";
+    char *told = "~";		/* FIXME: majormode names are 7-bit ASCII */
     int k;
     int kk;
     int found = -1;
@@ -2298,6 +2298,11 @@ put_majormode_before(unsigned j, char *s)
 	}
 	majormodes_order[j] = kk;
 	show_majormode_order("after:");
+    } else if (found < 0) {
+	TPRINTF(("cannot put %s before %s (not found)\n",
+		 my_majormodes[majormodes_order[j]].name,
+		 s));
+	TRACE(("...did not find %s\n", s));
     }
     TRACE(("->%d\n", j));
     return j;
@@ -2337,6 +2342,11 @@ put_majormode_after(unsigned j, char *s)
 	}
 	majormodes_order[found] = kk;
 	show_majormode_order("after:");
+    } else if (found < 0) {
+	TPRINTF(("cannot put %s after %s (not found)\n",
+		 my_majormodes[majormodes_order[j]].name,
+		 s));
+	TRACE(("...did not find %s\n", s));
     }
     TRACE(("->%d\n", j));
     return j;
@@ -2380,14 +2390,20 @@ compute_majormodes_order(void)
 	    jj = majormodes_order[j];
 	    if ((s = get_mm_string(jj, MVAL_BEFORE)) != 0
 		&& *s != EOS) {
-		j = put_majormode_before(j, s);
+		jj = put_majormode_before(j, s);
+		TRACE(("JUMP %d to %d\n", j, jj));
+		if (jj < (int) j)
+		    j = jj;
 	    }
 	}
 	for (j = 0; j < need; j++) {
 	    jj = majormodes_order[j];
 	    if ((s = get_mm_string(jj, MVAL_AFTER)) != 0
 		&& *s != EOS) {
-		j = put_majormode_after(j, s);
+		jj = put_majormode_after(j, s);
+		TRACE(("JUMP %d to %d\n", j, jj));
+		if (jj < (int) j)
+		    j = jj;
 	    }
 	}
 	show_majormode_order("final:");
@@ -3811,7 +3827,7 @@ alloc_scheme(const char *name)
 	    my_schemes = typereallocn(PALETTES, my_schemes, len);
 	}
 	len--;			/* point to list-terminator */
-	my_schemes[len].name = 0;
+	memset(&my_schemes[len], 0, sizeof(PALETTES));
 	while (--len > 0) {
 	    my_schemes[len] = my_schemes[len - 1];
 	    if (my_schemes[len - 1].name != 0

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.513 2002/10/19 17:57:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.514 2002/11/02 15:47:28 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -865,8 +865,13 @@ extern int MainProgram(int argc, char *argv[]);
 
 	/* semaphore may be needed to prevent interrupt of display-code */
 #if defined(SIGWINCH) || OPT_WORKING
+# if OPT_TRACE > 1
+extern void beginDisplay(void);
+extern void endofDisplay(void);
+# else
 # define beginDisplay() ++im_displaying
 # define endofDisplay() if (im_displaying) --im_displaying
+# endif
 #else
 # define beginDisplay() /* nothing */
 # define endofDisplay() /* nothing */
