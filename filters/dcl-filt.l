@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.10 2000/04/21 10:55:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.11 2000/05/29 18:42:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DCL files.
  *
@@ -29,8 +29,6 @@ static char *Ident_attr;
 static char *Ident2_attr;
 static char *Number_attr;
 static char *String_attr;
-
-static int abbrev_len;
 
 static void
 init_filter(int before GCC_UNUSED)

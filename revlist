@@ -1,6 +1,6 @@
-revlist for vile, version v9_1i
+revlist for vile, version v9_1j
 --------------------------------------------------------------------------------
-CHANGES	1.592
+CHANGES	1.593
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -18,7 +18,7 @@ ansi.c	1.40
 api.c	1.27
 api.h	1.12
 basic.c	1.112
-bind.c	1.229
+bind.c	1.230
 borland.c	1.30
 btree.c	1.11
 btree.h	1.3
@@ -32,7 +32,7 @@ config_h.in	1.2
 configure	none
 configure.in	1.143
 csrch.c	1.30
-curses.c	1.10
+curses.c	1.12
 descrip.mms	1.42
 dirstuff.h	1.23
 display.c	1.331
@@ -77,7 +77,7 @@ mktbls.c	1.107
 modes.c	1.197
 modetbl	1.175
 msgs.c	1.20
-npopen.c	1.81
+npopen.c	1.82
 ntconio.c	1.57
 ntwinio.c	1.88
 oneliner.c	1.94
@@ -85,7 +85,7 @@ opers.c	1.71
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.27
-patchlev.h	1.230
+patchlev.h	1.231
 path.c	1.101
 perl.xs	1.73
 proto.h	1.424
@@ -94,17 +94,17 @@ ptypemap	1.7
 random.c	1.232
 regexp.c	1.69
 region.c	1.103
-revlist	v9_1i
+revlist	v9_1j
 search.c	1.119
 select.c	1.120
 sinstall.sh	1.1
-spawn.c	1.158
+spawn.c	1.159
 statevar.c	1.37
 tags.c	1.108
 tbuff.c	1.37
 tcap.c	1.136
 tcap.h	1.4
-termio.c	1.186
+termio.c	1.187
 trace.c	1.17
 trace.h	1.10
 ucrypt.c	1.14
@@ -164,7 +164,7 @@ filters/cpp.key	1.3
 filters/csh.key	1.1
 filters/cweb.key	1.2
 filters/cwebfilt.l	1.11
-filters/dcl-filt.l	1.10
+filters/dcl-filt.l	1.11
 filters/dcl.key	1.3
 filters/diff.key	1.1
 filters/difffilt.l	1.4
@@ -176,7 +176,7 @@ filters/fdl.key	1.3
 filters/filterio.c	1.5
 filters/filters.c	1.72
 filters/filters.h	1.40
-filters/filters.rc	1.118
+filters/filters.rc	1.119
 filters/genmake.mak	1.4
 filters/html.key	1.6
 filters/htmlfilt.l	1.21
@@ -211,7 +211,7 @@ filters/nr.key	1.1
 filters/pas-filt.c	1.11
 filters/pas.key	1.1
 filters/perl.key	1.5
-filters/perlfilt.l	1.27
+filters/perlfilt.l	1.28
 filters/pot.key	1.1
 filters/py-filt.l	1.7
 filters/py.key	1.1
