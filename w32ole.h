@@ -10,7 +10,7 @@
  *
  *                samples\com\oleaut\hello\hello .
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.h,v 1.2 1998/08/27 11:07:24 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.h,v 1.3 1998/10/24 15:05:11 cmorgan Exp $
  */
 
 #ifndef W32OLE_H
@@ -74,6 +74,7 @@ public:
     STDMETHOD(Quit)();
     STDMETHOD(Restore)();
     STDMETHOD(VileKeys)(BSTR keys);
+    STDMETHOD(WindowRedirect)(DWORD hwnd);
 
 
     // vile_oa methods

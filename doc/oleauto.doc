@@ -52,7 +52,7 @@ The complete registration syntax is:
 
     winvile -Or [-geometry <cols>x<rows>] [-multiple] [-invisible]
                 [{-font|-fn} <font_spec>]
-                
+
 
 where:
 
@@ -65,12 +65,12 @@ where:
     -font <font_spec>         specifies the editor's font
 
 where:
-              
-    <font_spec>  :== [<face>,]<size>[,<style>]  
-    <face>       :== font-name  
+
+    <font_spec>  :== [<face>,]<size>[,<style>]
+    <face>       :== font-name
     <size>       :== point size (as an integer)
     <style>      :== { bold | italic | bold-italic }
-  
+
     Note 1:  if <style> is unspecified, "normal" is assumed.
     Note 2:  if <face> contains a comma escape it with '\'.
     Note 3:  if <face> is omitted, the current font is modified.
@@ -82,8 +82,8 @@ where:
              (accelerator key is ALT+<space bar>+F).
 
     Example:       -font 'Letter Gothic,8'
-    Example:       -fn r_ansi,8,bold 
-  
+    Example:       -fn r_ansi,8,bold
+
 
 Example Automation Client Access
 ================================
@@ -147,6 +147,17 @@ VileKeys([in] keys) -- Sends keystrokes to the editor.  Note that this method
                        method and should not be used to create large files.
 
 Visible             -- [in, out] Sets or returns the editor's visibility.
+
+WindowRedirect([in] hwnd) -- Specifies a window handle to which
+                       user-specified keystrokes are redirected.
+                       Redirected keystrokes are specified via winvile's
+                       "redirect-keys" mode.  Refer to the file visvile.doc
+                       for a detailed discussion of this method and its
+                       associated mode.
+
+                       To disable redirection once enabled, pass this method a
+                       NULL window handle.
+
 
 Note:  ForegroundWindow(), Minimize(), and Restore() implicitly force an
        Invisible server to the Visible state.

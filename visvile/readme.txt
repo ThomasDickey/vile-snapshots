@@ -26,6 +26,21 @@ GNU General Public License for more details.
 
 Change Log
 ==========
+v1.02, released 10/5/98
+- implemented "Redirect selected keys to DevStudio" option.
+- added a macro file, visvile.dsm, that augments the new option.
+
+  At this point, I think visvile is fairly useful.  I can envision one
+  more wrinkle that might be worthwhile:
+
+  + add a mechanism to force devstudio to open the same text file as is
+    loaded in winvile's current buffer and then position the devstudio
+    editor's cursor at the same line number as is shown in winvile's
+    buffer.  This "file synchronization" feature could be quite handy
+    when searching for break point locations while the debugger is active.
+
+  Regardless, it's time to release v1.02 .
+
 v1.01, released 9/07/98
 
 - if visvile disabled, no other dialog options are editable

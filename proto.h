@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.304 1998/09/29 23:43:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.307 1998/10/24 22:28:37 tom Exp $
  *
  */
 
@@ -360,7 +360,7 @@ extern int filesave (int f, int n);
 /* filec.c */
 extern char *filec_expand (void);
 extern int mlreply_dir (const char *prompt, TBUFF **buf, char *result);
-extern int mlreply_file (const char *prompt, TBUFF **buf, int flag, char *result);
+extern int mlreply_file (const char *prompt, TBUFF **buf, UINT flag, char *result);
 
 #if COMPLETE_FILES || COMPLETE_DIRS
 extern int path_completion (DONE_ARGS);
@@ -683,7 +683,7 @@ extern char * vms_pathleaf (char *path);
 extern int is_vms_pathname (const char *path, int option);
 #endif
 
-#if SYS_UNIX
+#if SYS_UNIX || !SMALLER
 extern char * home_path (char *path);
 #endif
 
@@ -923,8 +923,10 @@ extern char *mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc);
 extern char *ntwinio_current_font(void);
 extern int  ntwinio_font_frm_str(const char *fontstr, int use_mb);
 extern void ntwinio_oleauto_reg(void);
+extern void ntwinio_redirect_hwnd(int redirect);
 extern void oleauto_exit(int code);
 extern int  oleauto_init(OLEAUTO_OPTIONS *opts);
+extern int  oleauto_redirected_key(ULONG keycode, ULONG keystate);
 extern int  oleauto_register(OLEAUTO_OPTIONS *opts);
 extern int  oleauto_unregister(void);
 extern int  parse_font_str(const char *fontstr, FONTSTR_OPTIONS *results);
@@ -1014,7 +1016,7 @@ extern	int	x_key_events_ready	(void);
 extern	int	x_menu_height		(void);
 #endif
 
-#if OPT_MENUS_COLORED  
+#if OPT_MENUS_COLORED
 extern	int	x_menu_background	(void);
 extern	int	x_menu_foreground	(void);
 #endif /* OPT_MENUS_COLORED */

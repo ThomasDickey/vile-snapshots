@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.168 1998/09/22 23:02:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.170 1998/10/24 15:36:46 tom Exp $
  *
  */
 
@@ -123,6 +123,38 @@ get_shell(void)
 	if (shell == 0)
 		SetEnv(&shell, DftEnv(SHELL_NAME, SHELL_PATH));
 	return shell;
+}
+#endif
+
+#if OPT_EVAL
+/* Return comma-delimited list of "interesting" options. */
+static char *
+cfgopts(void)
+{
+    static const char *opts[] =
+    {
+#if SYS_WINNT && defined(VILE_OLE)
+        "oleauto",
+#endif
+#if OPT_PERL
+        "perl",
+#endif
+        NULL             /* End of list marker */
+    };
+    static TBUFF *optstring;
+
+    if (optstring == 0) {
+	const char **lclopt;
+
+	optstring = tb_init(&optstring, EOS);
+	for (lclopt = opts; *lclopt; lclopt++) {
+	    if (tb_length(optstring))
+		optstring = tb_append(&optstring, ',');
+	    optstring = tb_sappend(&optstring, *lclopt);
+        }
+	optstring = tb_append(&optstring, EOS);
+    }
+    return (tb_values(optstring));
 }
 #endif
 
@@ -564,6 +596,7 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 #endif
 
 		ElseIf( EVNTILDES )	value = l_itoa(ntildes);
+		ElseIf( EVCFGOPTS )	value = cfgopts();
 
 		EndIf
 	}
@@ -976,6 +1009,7 @@ const char *value)	/* value to set to */
 		Otherwise
 			/* EVABUFNAME */
 			/* EVBLENGTH */
+			/* EVCFGOPTS */
 			/* EVPROGNAME */
 			/* EVPATCHLEVEL */
 			/* EVVERSION */

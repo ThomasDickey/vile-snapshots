@@ -4,8 +4,9 @@ README for vile, version 8.1
 
 vile is a text editor which is extremely compatible with vi in terms
 of "finger feel".  in addition, it has extended capabilities in many areas,
-notably multi-file editing and viewing, key rebinding, and real X window
-system support.
+notably multi-file editing and viewing, key rebinding, real X window
+system support, an optional embedded perl interpreter, and robust
+support for non-Unix hosts.
 
 the authors of vile are Paul Fox, Tom Dickey, and Kevin Buettner.
 
@@ -16,14 +17,22 @@ of the newest stuff is at the end, not up here where you are.
 
 visit
 	ftp://ftp.clark.net/pub/dickey/vile
+	ftp://ftp.phred.org/pub/vile
 	ftp://id.wing.net/pub/pgf/vile
 to be sure it's still the latest.
 
 impatient?  just type "./configure; make", and get a cup of coffee, decaf
-if necessary.  
+if necessary.
 
-want X11 support?  you'd better look at doc/config.doc, although 
+want X11 support?  you'd better look at doc/config.doc, although
 "./configure --with-screen=x11"; make" may well do what you want.
+
+want PC support?  look for precompiled binaries at the various ftp sites.
+
+want to build vile on a PC host?  refer to the file README.PC .
+
+want VMS support?  you'll need to build vile yourself.  use either
+decrip.mms or vmsbuild.com .
 
 if you like vile, and wish to be informed of new releases, let me
 know -- i maintain a mailing list for that purpose.  don't worry -- the
@@ -74,7 +83,7 @@ VILE -- VI Like Emacs: a vi workalike put together from Micro-Emacs by Paul Fox
 	The collective developers of Micro-Emacs should be
 	complimented that the changes were as easy as they were.  The
 	code was pretty clean and well designed before I started on
-	it.  I'm not sure that the same can be said anymore... 
+	it.  I'm not sure that the same can be said anymore...
 
 	The major benefits over standard vi include:
 		- multiple files open at once
@@ -87,14 +96,14 @@ VILE -- VI Like Emacs: a vi workalike put together from Micro-Emacs by Paul Fox
 	[but not much -- it's _very_ stable these days. -pgf 1/95]
 
 	Take a look at vile.hlp for more information about features
-	and differences. 
+	and differences.
 
 	In general, I suspect that the quality of the code is roughly
 	on a par with MicroEmacs.  I've been using vile regularly under
 	both SunOS and 386 UNIX for almost two years [more like 5 years
 	now, on a lot more platforms than that -pgf 12/94], with no major
 	problems (that haven't been fixed).  Version three was built and
-	used by many others on the net, and their feedback was invaluable. 
+	used by many others on the net, and their feedback was invaluable.
 	I think all of the reported bugs have been fixed, and hopefully not
 	too many new ones introduced.
 
@@ -105,7 +114,7 @@ VILE -- VI Like Emacs: a vi workalike put together from Micro-Emacs by Paul Fox
 	less well exercised than the UNIX version, it probably harbors
 	more bugs.
 
-	Hope you enjoy -- 
+	Hope you enjoy --
 
 	Paul G. Fox	June, 1991, and February, 1992
 
@@ -178,7 +187,7 @@ July, 1993
 More new features:  infinite undo, modification time checking, and, at
 long last, primitive support for the :map command.  [:map is now fully
 functional -pgf, 12/94] I've also received patches that let vile compile
-for DOS with the DJ GCC compiler.  Have I mentioned filename completion? 
+for DOS with the DJ GCC compiler.  Have I mentioned filename completion?
 Tom Dickey provided that and variable/modename/command completion too.
 
 If you would like to be informed, via email, of new vile releases (bearing
@@ -203,7 +212,7 @@ Kevin Buettner -- scrollbars, Motif widget support make it feel like a real
 application...  We now have rectangular regions.  DOS support is getting
 better all the time.  The major version number got bumped to 4 somewhere
 along the line, because Tom and I were getting tired of 3.  There are quite
-a few new "modes", some to support vi functionality, some altogether new. 
+a few new "modes", some to support vi functionality, some altogether new.
 We should have keyboard selections and highlighted regions soon...
 
 pgf, pgf@foxharp.boston.ma.us
@@ -216,7 +225,7 @@ hmmmm -- lets see.  new stuff.  see the CHANGES and help files for details.
 
 	- vile is now completely autoconf'ed -- you should be able to type
 	either "./configure; make" or "./configure --with-screen=x11" to build
-	it on any (unix-like) platform. 
+	it on any (unix-like) platform.
 
 	- :map and :map! are now much more complete, but still by no means
 	done.  expect to have to edit your favorite macros to make
@@ -316,5 +325,23 @@ September, 1996
 	on vile -- i _really_ appreciate it...  -pgf
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.67 1998/10/03 02:42:25 tom Exp $
+
+May, 1998
+    vile 8.0 is released.  Major new features include:  an embedded
+    perl interpreter (available on Unix and Win32 hosts), an editable
+    mini-buffer, majormodes, enhancement of user-defined procedures to
+    the point that they may now be bound to user-defined keystrokes,
+    tag completion, and addition of a win32 gui (called winvile).
+
+-------------------------------
+
+Oct, 1998
+    vile 8.1 is released.  This is primarily a bugfix release--refer to
+    the CHANGES files for details.  Tom Dickey continues to improve
+    winvile, which now supports scroll bars and two new command-line
+    options that control the editor's geometry and font.
+
+
+-------------------------------
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.68 1998/10/24 16:33:27 cmorgan Exp $
 -------------------------------

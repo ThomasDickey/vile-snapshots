@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.81 1998/04/28 10:16:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.82 1998/10/24 22:28:38 tom Exp $
  *
  */
 
@@ -1098,7 +1098,7 @@ int
 mlreply_file(
 const char * prompt,
 TBUFF **buffer,
-int	flag,		/* +1 to read, -1 to write, 0 don't care */
+UINT	flag,		/* +1 to read, -1 to write, 0 don't care */
 char *	result)
 {
 	register int	s = FALSE;

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.183 1998/07/23 09:19:56 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.184 1998/10/24 22:28:39 tom Exp $
  *
  */
 
@@ -729,7 +729,7 @@ convert_kcode(int c, char *buffer)
 
 #if OPT_NAMEBST
 struct bindlist_data {
-    int mask;		/* oper/motion mask */
+    UINT mask;		/* oper/motion mask */
     int min;		/* minimum key length */
     char *apropos;	/* key check */
 };
@@ -756,7 +756,7 @@ btree_walk(BI_NODE *node, int (*func)(BI_NODE *, const void *),
 static int
 clearflag_func(BI_NODE *n, const void *d GCC_UNUSED)
 {
-    n->value.n_flags &= ~NBST_DONE;
+    n->value.n_flags &= (UCHAR)(~NBST_DONE);
     return 0;
 }
 
@@ -2307,7 +2307,7 @@ unsigned *pos)
 int
 kbd_engl_stat(const char *prompt, char	*buffer, int stated)
 {
-	int	kbd_flags = KBD_EXPCMD|KBD_NULLOK|((NAMEC != ' ') ? 0 : KBD_MAYBEC);
+	UINT	kbd_flags = KBD_EXPCMD|KBD_NULLOK|((NAMEC != ' ') ? 0 : KBD_MAYBEC);
 	int	code;
 	static	TBUFF *temp;
 	ALLOC_T	len = NLINE;

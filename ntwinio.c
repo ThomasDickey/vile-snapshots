@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.34 1998/09/28 01:05:51 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.35 1998/10/24 15:11:21 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -60,6 +60,7 @@
 #define	SCRSIZ	64			/* scroll size for extended lines */
 #define	NPAUSE	200			/* # times thru update to pause */
 #define NOKYMAP (-1)
+#define KYREDIR (-2)			/* sent keystroke elsewhere.	*/
 
 #define SetCols(value) term.t_ncol = cur_win->cols = value
 #define SetRows(value) term.t_nrow = cur_win->rows = value
@@ -127,6 +128,7 @@ static	DWORD	default_bcolor;
 
 #ifdef VILE_OLE
 static	OLEAUTO_OPTIONS oa_opts;
+static	int             redirect_keys;
 #endif
 
 static int	nfcolor = -1;		/* normal foreground color */
@@ -998,7 +1000,7 @@ ntwinio_font_frm_str(
                                72);
     if (str_rslts.italic)
         logfont.lfItalic = TRUE;
-    logfont.lfCharSet        = DEFAULT_CHARSET; 
+    logfont.lfCharSet        = DEFAULT_CHARSET;
     logfont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
     strncpy(logfont.lfFaceName, str_rslts.face, LF_FACESIZE - 1);
     logfont.lfFaceName[LF_FACESIZE - 1] = '\0';
@@ -1027,7 +1029,7 @@ ntwinio_font_frm_str(
         {
             ReleaseDC(hwnd, hdc);
             DeleteObject(hfont);
-            msg = "Font face unknown or size/style unsupported"; 
+            msg = "Font face unknown or size/style unsupported";
             if (use_mb)
                 MessageBox(winvile_hwnd(), msg, prognam, MB_ICONSTOP|MB_OK);
             else
@@ -1435,6 +1437,14 @@ decode_key_event(KEY_EVENT_RECORD *irp)
     if ((key = (unsigned char) irp->uChar.AsciiChar) != 0)
         return key;
 
+#if VILE_OLE
+    if (redirect_keys &&
+           oleauto_redirected_key(irp->wVirtualKeyCode, irp->dwControlKeyState))
+    {
+        return (KYREDIR);  /* Key sent to another window. */
+    }
+#endif
+
     for (i = 0; i < TABLESIZE(keyxlate); i++)
     {
         if (keyxlate[i].windows == irp->wVirtualKeyCode)
@@ -1567,6 +1577,10 @@ ntgetch(void)
 			if (result == NOKYMAP) {
 				DispatchMessage(&msg);
 				result = 0;
+#ifdef VILE_OLE
+			} else if (result == KYREDIR) {
+				result = 0; /* keystroke sent elsewhere */
+#endif
 			} else if (result == (int) msg.wParam) {
 				result = 0; /* we'll get a WM_CHAR next */
 			}
@@ -2678,6 +2692,12 @@ ntwinio_oleauto_reg(void)
 	/* Pound a bunch of OLE registration data into the registry & exit. */
 
 	ExitProgram(oleauto_register(&oa_opts));
+}
+
+void
+ntwinio_redirect_hwnd(int redirect)
+{
+	redirect_keys = redirect;
 }
 #endif
 

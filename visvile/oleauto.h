@@ -20,6 +20,8 @@ typedef struct visvile_opts_struct
                          //               winvile's error buffer.
     DWORD write_buffers; // Boolean, T -> write modified buffers to disk
                          //               prior to build.
+    DWORD key_redir;     // Boolean, T -> redirect selected Winvile keystrokes
+                         //               to DevStudio.
 } VISVILE_OPTS;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -29,20 +31,25 @@ class CVile
 {
     private:
         IVileAuto *pVileAuto;
+        HWND      ds_hwnd;     // Handle to DevStudio window, NULL if
+                               // handle can't be determined.
 
     public:
-        CVile()  { pVileAuto = NULL; }
+        CVile(HWND ds_handle)  { pVileAuto = NULL; ds_hwnd = ds_handle; }
         ~CVile() { Disconnect(); }
         HRESULT  Connect(int restore_wdw, VARIANT_BOOL *in_insert_mode);
         bool     Connected();
                         // Is visvile connected to winvile?
         void     Disconnect();
+        HWND     DsHwnd() { return ds_hwnd; }
         HRESULT  FileOpen(BSTR filename, long lineno);
                         // A negative lineno is the same as BOF.
         HRESULT  VileCmd(const char *cmd,
                          bool       restore_wdw,
                          bool       force_connection = TRUE);
                         // Run an arbitrary command.
+        HRESULT  key_redir_change(int enable);
+                        // Enable/disable key redirection.
 };
 
 
@@ -64,6 +71,7 @@ public:
 	BOOL	m_close_ds_doc;
 	BOOL	m_cd_doc_dir;
 	BOOL	m_write_buffers;
+	BOOL	m_key_redir;
 	//}}AFX_DATA
 
 
