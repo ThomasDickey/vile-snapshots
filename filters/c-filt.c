@@ -6,7 +6,7 @@
  * 		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.40 1999/12/14 02:53:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.42 1999/12/19 11:11:14 tom Exp $
  *
  * Features:
  * 	- Reads the keyword file ".vile.keywords" from the home directory.
@@ -208,6 +208,22 @@ firstnonblank(char *tst, char *cmp)
     return (tst == cmp);
 }
 
+static void
+write_comment(FILE * fp, char *s, int len, int begin)
+{
+    char *t = s;
+    char *nested;
+    if (begin)
+	t += 2;
+    while ((nested = strstr(t, "/*")) != 0) {
+	write_token(fp, s, nested - s, Comment_attr);
+	write_token(fp, nested, 2, Error_attr);
+	len -= (nested + 2 - s);
+	s = t = nested + 2;
+    }
+    write_token(fp, s, len, Comment_attr);
+}
+
 static char *
 write_escape(FILE * fp, char *s, char *attr)
 {
@@ -378,7 +394,13 @@ parse_prepro(FILE * fp, char *s)
     *tt = 0;
     isinclude = !strcmp(ss, "include");
     if ((attr = keyword_attr(ss)) == 0) {
-	write_string(fp, s, tt - s, Error_attr);
+	char *dst = 0;
+	if (strtol(ss, &dst, 10) != 0 && dst != 0 && *dst == 0) {
+	    write_string(fp, s, ss - s, Preproc_attr);
+	    write_string(fp, ss, tt - ss, Number_attr);
+	} else {
+	    write_string(fp, s, tt - s, Error_attr);
+	}
 	s = tt;
     }
     *tt = save;
@@ -446,13 +468,13 @@ do_filter(FILE * input, FILE * output)
 		} else {
 		    c_length += 2;
 		}
-		write_token(output, s, c_length, Comment_attr);
+		write_comment(output, s, c_length, 1);
 		s = s + c_length;
 		continue;
 	    } else if (!comment && *s == '/' && *(s + 1) == '/') {
 		/* C++ comments */
 		c_length = strlen(s);
-		write_token(output, s, c_length, Comment_attr);
+		write_comment(output, s, c_length, 1);
 		break;
 	    } else if (!comment && *s == '#' && firstnonblank(s, line)
 		&& set_symbol_table("cpre")) {
@@ -460,14 +482,14 @@ do_filter(FILE * input, FILE * output)
 		set_symbol_table(filter_name);
 	    } else if (comment && *s) {
 		if ((c_length = has_endofcomment(s)) > 0) {
-		    write_token(output, s, c_length, Comment_attr);
+		    write_comment(output, s, c_length, 0);
 		    s = s + c_length;
 		    comment -= 1;
 		    if (comment < 0)
 			comment = 0;
 		} else {	/* Whole line belongs to comment */
 		    c_length = strlen(s);
-		    write_token(output, s, c_length, Comment_attr);
+		    write_comment(output, s, c_length, 0);
 		    s = s + c_length;
 		}
 	    } else if (*s == ESCAPE) {

@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.207 1999/12/14 11:44:53 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.211 1999/12/17 12:13:25 tom Exp $
  *
  */
 
@@ -385,10 +385,10 @@ bp2any_wp(BUFFER *bp)
 }
 
 /*
- * Lets the user select a given buffer by its number.
+ * Worker function for histbuff() and histbuff_to_current_window().
  */
-int
-histbuff(int f, int n)
+static int
+histbuff0(int f, int n, int this_window)
 {
 	register int thiskey, c;
 	register BUFFER *bp = 0;
@@ -427,7 +427,26 @@ histbuff(int f, int n)
 		return FALSE;
 	}
 
-	return swbuffer(bp);
+	return swbuffer_lfl(bp, TRUE, this_window);
+}
+
+/*
+ * Lets the user select a given buffer by its number.
+ */
+int
+histbuff(int f, int n)
+{
+    	return histbuff0(f, n, FALSE);
+}
+
+/*
+ * Like histbuff, but puts buffer in current window.  (Even if the
+ * buffer is already onscreen in a different window.)
+ */
+int
+histbuff_to_current_window(int f, int n)
+{
+    	return histbuff0(f, n, TRUE);
 }
 
 /*
@@ -859,9 +878,14 @@ swbuffer_lfl(register BUFFER *bp, int lockfl, int this_window)
 
 	if (curbp) {
 		/* if we'll have to take over this window, and it's the last */
-		if (bp->b_nwnd == 0 && curbp->b_nwnd != 0 &&
-					--(curbp->b_nwnd) == 0) {
+		if ((this_window || bp->b_nwnd == 0)
+		    && curbp->b_nwnd != 0 && --(curbp->b_nwnd) == 0 ) {
 			undispbuff(curbp,curwp);
+		} else if (DOT.l != 0 && (this_window || bp->b_nwnd == 0)) {
+		    /* Window is still getting taken over so make a
+		       copy of the traits for a possible future
+		       set-window */
+		    copy_traits(&(curbp->b_wtraits), &(curwp->w_traits));
 		}
 	}
 
@@ -875,30 +899,56 @@ swbuffer_lfl(register BUFFER *bp, int lockfl, int this_window)
 				be in a different buffer than we thought
 				we were going to */
 
-	/* get it already on the screen if possible */
 #if !SMALLER
 	if (this_window) {
+		/* Put buffer in this window even if it's already on
+		   screen */
+		LINE *lp;
+		int trait_matches;
 		if (curwp == 0)
 			return FALSE;
 		if (curwp->w_bufp == bp)
 			return TRUE;
 		undispbuff(curwp->w_bufp, curwp);
-		/*
-		 * FIXME:  It would be nice to maintain a list of the windows
-		 * that have been associated with a buffer (or buffers that have
-		 * been associated with the current window), and use that info
-		 * to restore the window at this point.  In lieu of that, we'll
-		 * simply initialize the newest window to be a clone of any
-		 * other window on the buffer, or initialize it as we do in
-		 * popupbuff().
+
+		/* Initialize the window using the saved buffer traits
+		 * if possible.  If they don't pass a sanity check,
+		 * simply initialize the newest window to be a clone
+		 * of any other window on the buffer, or initialize it
+		 * as we do in popupbuff().
 		 */
-		if ((wp = bp2any_wp(bp)) == 0) {
-			init_window(curwp, bp);
-		} else {
-			clone_window(curwp, wp);
+
+		trait_matches = 0;
+#ifdef WINMARK
+#define TRAIT_MATCHES_NEEDED 5
+#else
+#define TRAIT_MATCHES_NEEDED 4
+#endif
+		for_each_line(lp,bp) {
+			if (lp == bp->b_dot.l && llength(lp)> bp->b_dot.o)
+				trait_matches++;
+#ifdef WINMARK
+			if (lp == bp->b_mark.l && llength(lp)> bp->b_mark.o)
+				trait_matches++;
+#endif
+			if (lp == bp->b_lastdot.l && llength(lp)> bp->b_lastdot.o)
+				trait_matches++;
+			if (lp == bp->b_tentative_lastdot.l && llength(lp)> bp->b_tentative_lastdot.o)
+				trait_matches++;
+			if (lp == bp->b_wline.l && llength(lp)> bp->b_wline.o)
+				trait_matches++;
+			if (trait_matches == TRAIT_MATCHES_NEEDED)
+				break;
 		}
+		if (trait_matches == TRAIT_MATCHES_NEEDED)
+			copy_traits(&(curwp->w_traits), &(bp->b_wtraits));
+		else if ((wp = bp2any_wp(bp)) == 0)
+			init_window(curwp, bp);
+		else
+			clone_window(curwp, wp);
 	} else
 #endif
+	/* get it already on the screen if possible */
 	if (bp->b_nwnd != 0)  { /* then it's on the screen somewhere */
 		if ((wp = bp2any_wp(bp)) == 0)
 			mlforce("BUG: swbuffer: wp still NULL");

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.162 1999/12/14 12:15:42 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.164 1999/12/19 10:47:55 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -178,10 +178,11 @@ string
 # organized into groups of universal/buffer/window.
 .environment
 "abufname"	ABUFNAME		# alternate buffer name (i.e. '#')
-"autocolor-hook" AUTOCOLORHOOK	OPT_HOOKS	# procedure to run for auto-coloring
+"autocolor-hook" AUTOCOLORHOOK	OPT_HOOKS&&OPT_COLOR	# procedure to run for auto-coloring
 "bchars"	BCHARS			# chars in current buffer
 "bflags"	BFLAGS			# status flags for current buffer
 "blines"	BLINES			# lines in current buffer
+"brightness"	BRIGHTNESS	DISP_NTWIN	# intensity of normal, bold
 "bwindows"	BWINDOWS		# windows open on current buffer
 "buffer-hook"	BUFHOOK		OPT_HOOKS	# procedure to run when entering buf
 "cbufname"	CBUFNAME		# current buffer name

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.211 1999/11/25 01:06:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.212 1999/12/19 10:46:38 tom Exp $
  *
  */
 
@@ -1734,6 +1734,7 @@ kbd_alarm(void)
 	TRACE(("BEEP\n"))
 
 	if (!no_errs
+	 && !clhide
 	 && global_g_val(GMDERRORBELLS)) {
 		term.beep();
 		term.flush();
@@ -1800,7 +1801,7 @@ kbd_erase(void)
 	WINDOW *savewp;
 	MARK savemk;
 
-	if (no_echo)
+	if (no_echo || clhide)
 	    return;
 
 	beginDisplay();
@@ -1830,7 +1831,7 @@ kbd_erase_to_end(int column)
 	WINDOW *savewp;
 	MARK savemk;
 
-	if (no_echo)
+	if (no_echo || clhide)
 	    return;
 
 	beginDisplay();

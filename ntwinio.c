@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.63 1999/12/09 02:43:10 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.66 1999/12/19 20:54:00 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -121,7 +121,9 @@ static	int	caret_exists = 0;
 static	int	vile_in_getfkey = 0;
 static	int	vile_resizing = FALSE;	/* rely on repaint_window if true */
 static	int	dont_update_sb = FALSE;
-static	int	desired_wdw_state, gui_resize_in_progress;
+static	int	desired_wdw_state;
+static	int	gui_resize_in_progress;
+static	int	font_resize_in_progress;
 static	DWORD	default_fcolor;
 static	DWORD	default_bcolor;
 static	int	enable_popup = TRUE;
@@ -435,11 +437,12 @@ gui_resize(int cols, int rows)
 	 *
 	 * Note:  even though "gui_resize_in_progress" breaks the
 	 * aforementioned feedback loop, bear in mind that it's still not
-	 * possible to define a screen geometry that's greater the dimensions
-	 * of the current desktop.  This restriction is enforced by Windows
-	 * when the first ShowWindow() call is made from winvile_start().
+	 * possible to define a screen geometry that's greater than the
+	 * dimensions of the current desktop.  This restriction is enforced by
+	 * Windows when the first ShowWindow() call is made from
+	 * winvile_start().
 	 */
-	if (gui_resize_in_progress)
+	if (gui_resize_in_progress && font_resize_in_progress)
 		return;
 	gui_resize_in_progress = TRUE;
 
@@ -601,7 +604,7 @@ ResizeClient()
 	 * See comments in gui_resize() for an explanation of
 	 * gui_resize_in_progress.
 	 */
-	if (gui_resize_in_progress)
+	if (gui_resize_in_progress && font_resize_in_progress)
 		return;
 	TRACE(("ResizeClient begin, currently %dx%d\n", term.rows, term.cols))
 	TraceWindowRect(cur_win->main_hwnd);
@@ -643,10 +646,6 @@ ResizeClient()
 	TRACE(("...ResizeClient finish\n"))
 }
 
-#define LTGRAY_COLOR 140
-#define NORMAL_COLOR 180
-#define BRIGHT_COLOR 255
-
 static COLORREF
 color_of (int code)
 {
@@ -654,19 +653,19 @@ color_of (int code)
 	COLORREF result = 0;
 	code = ctrans[code & (NCOLORS-1)];
 	if (code & 1)
-		red = NORMAL_COLOR;
+		red = rgb_normal;
 	if (code & 2)
-		green = NORMAL_COLOR;
+		green = rgb_normal;
 	if (code & 4)
-		blue = NORMAL_COLOR;
+		blue = rgb_normal;
 	if (code & 8) {
-		if (red)   red   = BRIGHT_COLOR;
-		if (green) green = BRIGHT_COLOR;
-		if (blue)  blue  = BRIGHT_COLOR;
+		if (red)   red   = rgb_bright;
+		if (green) green = rgb_bright;
+		if (blue)  blue  = rgb_bright;
 		if (code == 8) {
-			red   = LTGRAY_COLOR;
-			green = LTGRAY_COLOR;
-			blue  = LTGRAY_COLOR;
+			red   = rgb_gray;
+			green = rgb_gray;
+			blue  = rgb_gray;
 		}
 	}
 	return PALETTERGB(red, green, blue);
@@ -881,11 +880,12 @@ static void get_font(LOGFONT *lf)
 	ReleaseDC(cur_win->text_hwnd, hDC);
 }
 
-static void use_font(HFONT my_font, BOOL resizable)
+static void use_font(HFONT my_font)
 {
 	HDC             hDC;
 	TEXTMETRIC      textmetric;
-	RECT		crect;
+	int		oLineHeight = nLineHeight;
+	int		oCharWidth  = nCharWidth;
 
 	hDC = GetDC(cur_win->text_hwnd);
 	SelectObject(hDC, my_font);
@@ -905,14 +905,12 @@ static void use_font(HFONT my_font, BOOL resizable)
 	nCharWidth  = textmetric.tmAveCharWidth;
 	get_borders();
 
-	if (resizable) {
-		GetClientRect(cur_win->main_hwnd, &crect);
-
-		SetCols(RectToCols(crect));
-		SetRows(RectToRows(crect));
-	}
+	font_resize_in_progress = (oLineHeight != nLineHeight)
+		|| (oCharWidth != nCharWidth);
 
 	gui_resize(term.cols, term.rows);
+
+	font_resize_in_progress = FALSE;
 }
 
 static void set_font(void)
@@ -949,7 +947,7 @@ static void set_font(void)
 			int savecol = ttcol;
 			mlwrite("[Set font to %s]", vile_logfont.lfFaceName);
 			movecursor(saverow, savecol);
-			use_font(vile_font, FALSE);
+			use_font(vile_font);
 			vile_refresh(FALSE,0);
 			update(FALSE);
 		} else {
@@ -1105,7 +1103,7 @@ ntwinio_font_frm_str(
     ReleaseDC(hwnd, hdc);         /* finally done with this */
     vile_font = hfont;
     memcpy(&vile_logfont, &logfont, sizeof(vile_logfont));
-    use_font(vile_font, FALSE);
+    use_font(vile_font);
     vile_refresh(FALSE, 0);
     return (TRUE);
 }
@@ -2520,12 +2518,30 @@ static void repaint_window(HWND hWnd)
 		if (pscreen != 0
 		 && pscreen[row]->v_text != 0
 		 && pscreen[row]->v_attrs != 0) {
-			for (col = x0; col < x1; col++) {
-				nt_set_colors(ps.hdc, CELL_ATTR(row,col));
+			int old_col = x0;
+			VIDEO_ATTR old_atr = CELL_ATTR(row,old_col);
+			VIDEO_ATTR new_atr;
+
+			for (col = x0 + 1; col < x1; col++) {
+				new_atr = CELL_ATTR(row,col);
+				if (new_atr != old_atr) {
+					nt_set_colors(ps.hdc, old_atr);
+					TextOut(ps.hdc,
+						ColToPixel(old_col),
+						RowToPixel(row),
+						&CELL_TEXT(row,old_col),
+						col - old_col);
+					old_atr = new_atr;
+					old_col = col;
+				}
+			}
+			if (old_col + 1 < x1) {
+				nt_set_colors(ps.hdc, old_atr);
 				TextOut(ps.hdc,
-					ColToPixel(col),
+					ColToPixel(old_col),
 					RowToPixel(row),
-					&CELL_TEXT(row,col), 1);
+					&CELL_TEXT(row,old_col),
+					x1 - old_col - 1);
 			}
 		}
 	}
@@ -2858,7 +2874,7 @@ InitInstance(HINSTANCE hInstance)
 #endif
 
 	get_font(&vile_logfont);
-	use_font(vile_font, FALSE);
+	use_font(vile_font);
 
 	DragAcceptFiles(cur_win->main_hwnd, TRUE);
 
@@ -3025,7 +3041,7 @@ WinMain(
 			   "-Oa and -Or are mutually exclusive",
 			   prognam,
 			   MB_OK|MB_ICONSTOP);
-		ExitProgram(1);
+		ExitProgram(BADEXIT);
 	}
 	if (oa_reg)
 	{
@@ -3063,7 +3079,7 @@ WinMain(
                  * OLE registration.
                  */
 
-                ExitProgram(1);
+                ExitProgram(BADEXIT);
             }
             else
                 oa_opts.fontstr = fontstr;
@@ -3078,7 +3094,7 @@ WinMain(
 		/* Intialize OLE Automation */
 
 		if (! oleauto_init(&oa_opts))
-			ExitProgram(1);
+			ExitProgram(BADEXIT);
 	}
 #endif
 

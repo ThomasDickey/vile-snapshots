@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.406 1999/12/15 00:35:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.407 1999/12/18 13:45:41 tom Exp $
  *
  */
 
@@ -794,6 +794,12 @@ extern int run_readhook (void);
 #define run_readhook()    /*nothing*/
 #define DisableHook(hook) /*nothing*/
 #define EnableHook(hook)  /*nothing*/
+#endif
+
+#if defined(__BEOS__)
+extern int beos_can_output (int fd);
+extern int beos_has_input (int fd);
+extern void beos_napms (int millisec);
 #endif
 
 #if SYS_MSDOS || SYS_OS2 || SYS_WINNT

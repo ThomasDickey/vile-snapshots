@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.35 1999/11/10 00:12:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.36 1999/12/17 22:33:46 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -252,6 +252,7 @@ int parse_menu ( const char *rc_filename )
         switch (*ptr_tok)
         {
         case ';': /* FALLTHRU */
+        case '"':
         case '#':
                 continue;
 

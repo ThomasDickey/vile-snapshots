@@ -3,9 +3,10 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.178 1999/12/14 11:44:53 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.183 1999/12/19 23:34:37 tom Exp $
  *
  */
+
 #include	"estruct.h"
 #include	"edef.h"
 #include	"nefunc.h"
@@ -110,7 +111,15 @@ error "No termios or sgtty"
 #  define USE_SELECT 1
 #  undef USE_FCNTL
 #  undef USE_FIONREAD
+# else
+#  if HAVE_POLL && HAVE_POLL_H
+#   define USE_POLL 1
+#  endif
 # endif
+#endif
+
+#if USE_POLL
+#include <poll.h>
 #endif
 
 #ifndef O_NDELAY
@@ -632,7 +641,17 @@ ttflush(void)
 static fd_set watchfd_read_fds;
 static fd_set watchfd_write_fds;
 static int    watchfd_maxfd;
-#endif
+#else
+#if USE_POLL
+static struct pollfd watch_fds[256];
+static int watch_max;
+#else
+#ifdef __BEOS__
+static unsigned char watch_fds[256];
+static int watch_max;
+#endif /* __BEOS__ */
+#endif /* USE_POLL */
+#endif /* USE_SELECT */
 
 int
 ttwatchfd(int fd, WATCHTYPE type, long *idp)
@@ -645,7 +664,38 @@ ttwatchfd(int fd, WATCHTYPE type, long *idp)
 	FD_SET(fd, &watchfd_read_fds);
     if (type & WATCHWRITE)
 	FD_SET(fd, &watchfd_write_fds);
-#endif
+#else /* USE_SELECT */
+#if USE_POLL
+    int n;
+    for (n = 0; n < watch_max; n++) {
+	if (watch_fds[n].fd == fd)
+	    break;
+    }
+    if (n < (int) TABLESIZE(watch_fds) - 1) {
+	*idp = (long) fd;
+	if (n >= watch_max)
+	    watch_max = n + 1;
+
+	watch_fds[n].fd = fd;
+	if (type & WATCHREAD)
+	    watch_fds[n].events |= POLLIN;
+	if (type & WATCHWRITE)
+	    watch_fds[n].events |= POLLOUT;
+
+    } else {
+	return FALSE;
+    }
+#else
+#ifdef __BEOS__
+    if (fd < (int) sizeof(watch_fds)) {
+	*idp = (long) fd;
+	if (fd > watch_max)
+	    watch_max = fd;
+	watch_fds[fd] |= type;
+    }
+#endif /* __BEOS__ */
+#endif /* USE_POLL */
+#endif /* USE_SELECT */
     return TRUE;
 }
 
@@ -655,13 +705,42 @@ ttunwatchfd(int fd, long id GCC_UNUSED)
 #if USE_SELECT
     FD_CLR(fd, &watchfd_read_fds);
     FD_CLR(fd, &watchfd_write_fds);
-    do {
-	watchfd_maxfd--;
-    } while (watchfd_maxfd > 0
-	  && !FD_ISSET(watchfd_maxfd, &watchfd_read_fds)
-          && !FD_ISSET(watchfd_maxfd, &watchfd_write_fds));
-#endif
+    while (watchfd_maxfd != 0
+	  && !FD_ISSET(watchfd_maxfd-1, &watchfd_read_fds)
+          && !FD_ISSET(watchfd_maxfd-1, &watchfd_write_fds))
+	    watchfd_maxfd--;
+#else /* USE_SELECT */
+#if USE_POLL
+    int n;
+    for (n = 0; n < watch_max; n++) {
+	if (watch_fds[n].fd == fd) {
+	    watch_max--;
+	    while (n < watch_max) {
+		watch_fds[n] = watch_fds[n+1];
+		n++;
+	    }
+	    break;
+	}
+    }
+#else
+#ifdef __BEOS__
+    if (fd < (int) sizeof(watch_fds)) {
+	watch_fds[fd] = 0;
+	while (watch_max != 0
+	 && watch_fds[watch_max-1] == 0) {
+	    watch_max--;
+	}
+    }
+#endif /* __BEOS__ */
+#endif /* USE_POLL */
+#endif /* USE_SELECT */
 }
+
+#ifdef VAL_AUTOCOLOR
+#define val_autocolor() global_b_val(VAL_AUTOCOLOR)
+#else
+#define val_autocolor() 0
+#endif
 
 /*
  * Read a character from the terminal, performing no editing and doing no echo
@@ -671,41 +750,68 @@ int
 ttgetc(void)
 {
 #if USE_SELECT
-    {
-	char c;
+    char c;
+    for (;;) {
+	fd_set read_fds = watchfd_read_fds;
+	fd_set write_fds = watchfd_write_fds;
+	int fd, status;
+	struct timeval tval;
+	int acmilli = val_autocolor();
+
+	tval.tv_sec  = acmilli / 1000;
+	tval.tv_usec = (acmilli % 1000) * 1000;
+	FD_SET(0, &read_fds);	/* add stdin to the set */
+
+	status = select(watchfd_maxfd+1,
+			&read_fds, &write_fds, (fd_set *)0,
+			acmilli > 0 ? &tval : NULL);
+	if (status < 0) {	/* Error */
+	    if (errno == EINTR)
+		continue;
+	    else
+		return -1;
+	} else if (status > 0) { /* process descriptors */
+	    for (fd = watchfd_maxfd; fd > 0; fd--) {
+		if (FD_ISSET(fd, &read_fds) 
+		    || FD_ISSET(fd, &write_fds))
+		    dowatchcallback(fd);
+	    }
+	    if (FD_ISSET(0, &read_fds))
+		break;
+	} else {		/* Timeout */
+	    autocolor();
+	}
+    }
+    if (read(0, &c, 1) != 1)
+	return -1;
+    return char2int(c);
+#else	/* !USE_SELECT */
+#if USE_POLL
+    int acmilli = val_autocolor();
+
+    if (acmilli != 0
+     || watch_max != 0) {
+	int n;
+
 	for (;;) {
-	    fd_set read_fds = watchfd_read_fds;
-	    fd_set write_fds = watchfd_write_fds;
-	    int fd, status;
-	    struct timeval tval;
-	    tval.tv_sec  = global_b_val(VAL_AUTOCOLOR);
-	    tval.tv_usec = 0;
-	    FD_SET(0, &read_fds);		/* add stdin to the set */
-	    status = select(watchfd_maxfd+1,
-	                    &read_fds, &write_fds, (fd_set *)0,
-	                    global_b_val(VAL_AUTOCOLOR) > 0 ? &tval : NULL);
-	    if (status < 0) {			/* Error */
-		if (errno == EINTR)
-		    continue;
-		else
-		    return -1;
-	    } else if (status > 0) {		/* process descriptors */
-		for (fd = watchfd_maxfd; fd > 0; fd--) {
-		    if (FD_ISSET(fd, &read_fds) 
-		        || FD_ISSET(fd, &write_fds))
-			dowatchcallback(fd);
+	    watch_fds[watch_max].fd = 0;
+	    watch_fds[watch_max].events = POLLIN;
+	    if ((n = poll(watch_fds, watch_max + 1, acmilli)) > 0) {
+		for (n = 0; n < watch_max; n++) {
+		    if (watch_fds[n].revents & (POLLIN|POLLOUT)) {
+			dowatchcallback(watch_fds[n].fd);
+		    }
 		}
-		if (FD_ISSET(0, &read_fds))
+		if (watch_fds[watch_max].revents & POLLIN)
 		    break;
-	    } else {				/* Timeout */
+	    } else if (n == 0 && acmilli != 0) {
 		autocolor();
+		if (watch_max == 0)
+		    break;	/* revert to blocking input */
 	    }
 	}
-	if (read(0, &c, 1) != 1)
-	    return -1;
-	else
-	    return (int) c & 0xff;
     }
+    return getchar();
 #else
 #if USE_FCNTL
 	if( ! kbd_char_good ) {
@@ -721,6 +827,27 @@ ttgetc(void)
 	kbd_char_good = FALSE;
 	return ( kbd_char );
 #else /* USE_FCNTL */
+#ifdef __BEOS__
+    int fd;
+    int acmilli = val_autocolor();
+    for (;;) {
+	for (fd = 1; fd < watch_max; fd++) {
+	    if (((watch_fds[fd] & WATCHREAD) != 0 && beos_has_input(fd))
+	     || ((watch_fds[fd] & WATCHWRITE) != 0 && beos_can_output(fd))) {
+		dowatchcallback(fd);
+	    }
+	}
+	if (beos_has_input(0))
+	    break;
+	if (acmilli > 0) {
+	    beos_napms(5);
+	    if ((acmilli -= 5) <= 0) {
+		autocolor();
+	    }
+	}
+    }
+    return getchar();
+#else	/* __BEOS__ */
 #if SYS_APOLLO
 	/*
 	 * If we try to read a ^C in cooked mode it will echo anyway.  Also,
@@ -755,8 +882,10 @@ ttgetc(void)
 #endif
 	}
 	return c;
-#endif
-#endif
+#endif	/* __BEOS__ */
+#endif	/* USE_FCNTL */
+#endif	/* USE_POLL */
+#endif	/* USE_SELECT */
 }
 #endif /* !DISP_X11 */
 
@@ -771,7 +900,7 @@ tttypahead(void)
 	return x_typahead(0);
 #else
 
-# if USE_SELECT || (HAVE_POLL && HAVE_POLL_H) || defined(__BEOS__)
+# if USE_SELECT || USE_POLL || defined(__BEOS__)
 	/* use the watchinput part of catnap if it's useful */
 	return catnap(0, TRUE);
 # else

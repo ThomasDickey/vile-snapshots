@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.189 1999/12/09 02:43:10 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.192 1999/12/18 02:29:57 tom Exp $
 #
 #
 
@@ -516,7 +516,7 @@ showhypercmd	NONE			OPT_HYPERTEXT
 execkreg	REDO|UNDO|VIEWOK
 	"execute-register"
 	'@'
-	<execute the keystroke macro stored in the given named register>
+	<execute the keystroke macro stored in the given named register CNT times>
 execproc	REDO			OPT_PROCEDURES
 	"execute-procedure"		!FEWNAMES
 	"run"
@@ -772,7 +772,7 @@ gototag		NONE			OPT_TAGS
 	"find-tag"			!FEWNAMES
 	'^]'
 	<look up the given (or under-cursor) name as a \"tag\">
-gotochr		ABSM|MOTION|FL|(RANGE)	!SMALLER
+gotochr		ABSM|MOTION|(RANGE)	!SMALLER
 	"goto-char"
 	'^X-G'
 	<go to the CNT'th character.  unspecified CNT means end of buffer>
@@ -815,6 +815,10 @@ histbuff	NONE
 	"_"
 	'_'
 	<visit the CNT'th previous buffer>
+histbuff_to_current_window	NONE
+	"historical-buffer-to-current-window"	!FEWNAMES
+	'^X-_'
+	<visit the CNT'th previous buffer and put it in the current window>
 insert		REDO|UNDO
 	"insert-chars"			!FEWNAMES
 	'FN-i'				KEY_Insert

@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.15 1999/10/02 12:49:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.16 1999/12/16 23:01:59 tom Exp $
  *
  */
 
@@ -43,10 +43,12 @@ static const char *bad_form;
 void
 Trace(const char *fmt, ...)
 {
+	int save_err;
 	static	FILE	*fp;
 	va_list ap;
 
 	beginDisplay();
+	save_err = errno;
 	if (!fp)
 		fp = fopen("Trace.out", "w");
 	if (!fp)
@@ -62,6 +64,7 @@ Trace(const char *fmt, ...)
 		(void)fflush(stdout);
 		(void)fflush(stderr);
 	}
+	errno = save_err;
 	endofDisplay();
 }
 

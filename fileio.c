@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.141 1999/12/10 23:17:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.142 1999/12/16 23:46:57 kev Exp $
  *
  */
 
@@ -587,7 +587,7 @@ ffclose(void)
 #if OPT_SHELL
 	if (fileispipe) {
 		npclose(ffp);
-		mlforce("[Read %d lines%s]",
+		mlwrite("[Read %d lines%s]",
 			count_fline,
 			interrupted() ? "- Interrupted" : "");
 #ifdef	MDCHK_MODTIME

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.317 1999/11/24 22:13:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.319 1999/12/19 10:45:07 tom Exp $
  *
  */
 
@@ -3355,10 +3355,12 @@ bottomleft(void)
 void
 mlerase(void)
 {
-	beginDisplay();
-	kbd_erase_to_end(0);
-	kbd_flush();
-	endofDisplay();
+	if (!clhide) {
+		beginDisplay();
+		kbd_erase_to_end(0);
+		kbd_flush();
+		endofDisplay();
+	}
 }
 
 static char *mlsavep;
@@ -3384,7 +3386,8 @@ mlwrite(const char *fmt, ...)
 {
 	va_list ap;
 	if (global_b_val(MDTERSE) || kbd_replaying(FALSE) || no_msgs) {
-		bottomleft();
+		if (!clhide)
+			bottomleft();
 		return;
 	}
 	va_start(ap,fmt);
