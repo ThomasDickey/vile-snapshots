@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.248 1998/05/14 23:02:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.249 1998/05/22 01:22:21 tom Exp $
  *
  */
 
@@ -3143,25 +3143,21 @@ mlmsg(const char *fmt, va_list *app)
 void
 mlerror(const char *s)
 {
-#if SYS_UNIX || HAVE_SYS_ERRLIST || (CC_NEWDOSCC && !CC_CSETPP)
-
-	if (errno > 0 && errno < sys_nerr)
-		mlwarn("[Error %s: %s]", s, sys_errlist[errno]);
-	else
-		mlwarn("[Error %s: unknown system error %d]", s, errno);
-
-#else
-#if CC_CSETPP
-
+#if HAVE_STRERROR
 	if (errno > 0)
 		mlwarn("[Error %s: %s]", s, strerror(errno));
 	else
 		mlwarn("[Error %s: unknown system error %d]", s, errno);
-
+#else
+#if HAVE_SYS_ERRLIST
+	if (errno > 0 && errno < sys_nerr)
+		mlwarn("[Error %s: %s]", s, sys_errlist[errno]);
+	else
+		mlwarn("[Error %s: unknown system error %d]", s, errno);
 #else
 	mlwarn("[Error %s, errno=%d]", s, errno);
-#endif
-#endif
+#endif /* HAVE_SYS_ERRLIST */
+#endif /* HAVE_STRERROR */
 }
 
 /*

@@ -2,7 +2,7 @@
  *	matching lines, then for each such line, an action is performed.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/globals.c,v 1.42 1998/04/28 10:16:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/globals.c,v 1.43 1998/05/21 00:37:16 bod Exp $
  *
  */
 
@@ -107,7 +107,7 @@ globber(int f GCC_UNUSED, int n GCC_UNUSED, int g_or_v)
 				havemotion = &f_godotplus;
 				wp->w_dot.l = lp;
 				wp->w_dot.o = 0;
-				s = (cfp->c_func)(FALSE, 1);
+				s = call_cmdfunc(cfp, FALSE, 1);
 				if (curwp != wp) {
 				    /* function may have switched on us */
 				    sw_wp = curwp;

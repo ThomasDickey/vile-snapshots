@@ -229,5 +229,5 @@ Note that the following are equivalent once you have defined the majormode "c":
 	define-submode c tabstop=8
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/modes.doc,v 1.3 1998/05/13 10:20:30 tom Exp $
+$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.1 1998/05/13 10:20:30 tom Exp $
 -------------------------------

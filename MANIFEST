@@ -1,4 +1,4 @@
-MANIFEST for vile, version v7_4i
+MANIFEST for vile, version v7_4j
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -9,8 +9,6 @@ CHANGES.R6                      Vile 6.0 change-log
 COPYING                         GPL copyright (for 'configure')
 INSTALL                         installation instructions for VILE
 README                          overview of VILE (read first)
-README.CFG                      configuration-instructions for VILE
-README.MENU                     readme for xmvile menus
 README.PC                       instructions for PC's (MS-DOS, etc.)
 aclocal.m4                      VILE-specific autoconf macros
 ansi.c                          ANSI terminal driver
@@ -33,7 +31,6 @@ configure.in                    used by 'autoconf' to generate 'configure'
 crypt.c                         encryption (from uEmacs)
 csrch.c                         current-line character-scanning commands
 descrip.mms                     VAX/VMS MMS build-script
-digraphs.rc                     macros for inserting digraphs
 dirstuff.h                      interfaces for UNIX-like directory functions
 display.c                       message & screen formatting & display
 djhandl.c                       CTL/C & interrupt handling for DJGCC
@@ -49,10 +46,8 @@ filec.c                         filename-completion functions
 fileio.c                        low-level file I/O functions
 finderr.c                       error-finder
 glob.c                          globbing (wildcard & environment-variable substitution)
-glob2re.pl                      utility-script for vile's hypertext
 globals.c                       ed/vi/ex style global commands
 gppconio.c                      patched console I/O support for DJGCC
-hgrep.pl                        utility-script for vile's hypertext
 history.c                       command-history
 ibmpc.c                         IBM PC terminal driver (direct I/O)
 input.c                         various input-routines
@@ -62,7 +57,6 @@ isearch.c                       incremental-search commands
 itbuff.c                        support functions for wide-character strings
 lckfiles.c                      locked-files support
 line.c                          line-management functions
-macros.doc                      documentation for VILE macros
 main.c                          main program of VILE
 makefile.blc                    makefile for Win32 with Borland C++
 makefile.djg                    makefile for DJGCC
@@ -73,15 +67,12 @@ makefile.tbc                    makefile for TurboC (MS-DOS)
 makefile.wat                    makefile for Watcom (MS-DOS) with wmake
 makefile.wnt                    makefile for Win32 with Microsoft Visual C++
 manfilt.c                       VILE attribute-filter for man-page (nroff-output)
-manfilt.pl                      Perl filter for man-pages
-manpage.rc                      macros for man-page filtering/display
 map.c                           map and map! commands
 menu.c                          menu-support for xvile
 mkdirs.sh                       script to make directory-hierarchy
 mkprlenv.wnt                    vile-7.4h
 mktbls.c                        utility for constructing VILE's command & mode tables
 modes.c                         mode-command support
-modes.doc                       overview of modes/majormodes
 modetbl                         used by 'mktbls' to generate mode tables
 msgs.c                          pop-up message support
 npopen.c                        pipe-command support
@@ -95,22 +86,17 @@ os2vio.c                        OS/2 video terminal driver
 pas-filt.c                      Pascal syntax-highlighting filter
 patchlev.h                      patch-level
 path.c                          functions that manipulate pathnames
-perl-api.doc                    notes about perl interface to vile
 perl.xs                         Perl/C interface wrapper
-pictmode.rc                     macros to support "picture-mode" editing
 proto.h                         function prototypes
 pscreen.h                       interface for PSCREEN struct
 ptypemap                        perl-interface type map
 random.c                        miscellaneous functions
 regexp.c                        regular expression functions
 region.c                        region-manipulation
-revlist                         revision-list for VILE
 search.c                        functions for search-commands
 select.c                        selection-handling functions
-shell.pl                        spawn a shell via a pty
 spawn.c                         functions for spawning subprocesses
 tags.c                          support for vi-style "tags"
-tailf.pl                        do a "tail -f"
 tbuff.c                         temporary-buffer management functions
 tcap.c                          TERMCAP terminal driver
 tcap.h                          interface of tcap.c
@@ -121,7 +107,6 @@ undo.c                          support for "undo"
 version.c                       version & usage messages
 vile.1                          man-page for VILE
 vile.hlp                        help-file
-visit.pl                        utility-script for vile's hypertext
 vms2unix.c                      VMS/UNIX compatibility support functions
 vmsbuild.com                    VAX/VMS DCL build script
 vmspipe.c                       pipe-filter support for VMS
@@ -135,3 +120,20 @@ word.c                          commands that operate upon words or paragraphs
 wordmov.c                       cursor-movement commands (e.g., word, spaces)
 x11.c                           X11 (Xt, Motif or Openlook) terminal driver
 xshell.sh                       wrapper/sample script for xvile
+doc                             subdirectory
+doc/config.doc                  configuration-instructions for VILE
+doc/macros.doc                  documentation for VILE macros
+doc/menus.doc                   description of xvile (Xm and Xaw) menus
+doc/modes.doc                   overview of modes/majormodes
+doc/perl-api.doc                notes about perl interface to vile
+macros                          subdirectory
+macros/digraphs.rc              macros for inserting digraphs
+macros/manpage.rc               macros for man-page filtering/display
+macros/pictmode.rc              macros to support "picture-mode" editing
+perl                            subdirectory
+perl/glob2re.pl                 utility-script for vile's hypertext
+perl/hgrep.pl                   utility-script for vile's hypertext
+perl/manfilt.pl                 Perl filter for man-pages
+perl/shell.pl                   spawn a shell via a pty
+perl/tailf.pl                   do a "tail -f"
+perl/visit.pl                   utility-script for vile's hypertext

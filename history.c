@@ -63,7 +63,7 @@
  *
  *	Allow left/right scrolling of input lines (when they get too long).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.45 1998/05/11 09:54:27 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.47 1998/05/22 00:03:23 tom Exp $
  *
  */
 
@@ -560,9 +560,9 @@ int	eolchar)
 		 */
 		direction = 0;	/* ...unless we find scrolling-command */
 		if ((p = kcod2fnc(c)) != 0) {
-			if (p->c_func == backline)
+			if (p->cu.c_func == backline)
 				direction = -1;
-			else if (p->c_func == forwline)
+			else if (p->cu.c_func == forwline)
 				direction = 1;
 		}
 		if (ABORTED(c)) {

@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.320 1998/05/19 11:08:39 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.322 1998/05/22 00:03:23 tom Exp $
  *
  */
 
@@ -785,7 +785,7 @@ global_val_init(void)
         char *shell = get_shell();
         int  sh_len = strlen(shell);
 
-        if (sh_len >= WHACKED_LEN && 
+        if (sh_len >= WHACKED_LEN &&
                     stricmp(shell + sh_len - WHACKED_LEN, WHACKED_SHELL) == 0)
         {
             set_global_g_val(GMDFORCE_CONSOLE, 1);
@@ -2151,7 +2151,7 @@ static int
 cmd_mouse_motion(const CMDFUNC *cfp)
 {
 #if (OPT_XTERM || DISP_X11)
-	return cfp && cfp->c_func == mouse_motion;
+	return cfp && cfp->cu.c_func == mouse_motion;
 #else
 	return FALSE;
 #endif

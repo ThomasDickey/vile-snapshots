@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.86 1998/04/30 23:49:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.87 1998/05/20 23:55:51 tom Exp $
  *
  */
 
@@ -1519,9 +1519,9 @@ char	*help)
 
 	s = append(strcpy(temp, "\tEXTERN_CONST CMDFUNC f_"), func);
 	(void)PadTo(32, temp);
-	s = append(s, "= { ");
+	s = append(s, "= { {");
 	s = append(s, func);
-	s = append(s, ",");
+	s = append(s, "},");
 	(void)PadTo(56, temp);
 	s = append(s, flags);
 	s = append(s, "\n#if OPT_ONLINEHELP\n\t\t,\"");

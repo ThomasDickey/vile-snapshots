@@ -1,5 +1,49 @@
 Changes for vile 7.5/8.0 (released ??? ??? ?, 1998)
 
+ (tom) 980521 (j)
+ 	+ modify first item in VILE_STARTUP_PATH to be $(datadir).
+ 	+ add *.pl to makefile.in's install rules if configured --with-perl
+ 	+ move *.pl to perl subdirectory
+	+ move *.rc to macros subdirectory
+	+ move *.doc to doc subdirectory, as well as README.MENU, renamed to
+	  menus.doc, and README.CFG, renamed to config.doc
+	+ minor fix for HPUX compiler options in CF_ANSI_CC_CHECK configure
+	  macro.
+	+ newer CF_IMAKE_CFLAGS macro adds IMAKE_LOADFLAGS to makefile.in
+	+ add configure-test for strerror, use it if available (reported by
+	  Ian A Watson).
+	+ change 'strdup' call in select.c to 'strmalloc', to build on VMS 6.2,
+	  with DEC C 4.1-001 (reported by Sackett Andrew
+	  <sackett@exchange1.cmh.on.ca>).
+	+ change c_action in Brendan's patch to a union, eliminating casts.
+	> patch by Brendan O'Dea:
+	+ Procedures now behave more like builtin functions--they may be bound
+	  to keystrokes and listed in the [Binding List] pop-up (for which an
+	  optional help string may be supplied):  
+		store-procedure foo "some descriptive text" 
+		... 
+		~endm  
+		bind-key foo ^A-f  
+	  this appears under `:describe-function foo' as:  
+		"foo"                           M-f 
+		  ( some descriptive text )  
+	  Notes/Bugs:  
+	    * describe-key doesn't work yet. 
+	    * setting the MOTION/OPER flag is not implemented for procedures 
+	      --not sure whether it ever could/should be.  
+	    * the method used to update the [Binding List] requires *lots* of 
+	      passes through the tree.  
+	  Perl stuff (strings to eval or coderefs) can also be put into the 
+	  command table under a name--described in the perl.xs comments.  
+		Vile::register grep => 'hgrep', 'recursive grep', 'hgrep.pl';  
+	  the Vile::register_motion and register_oper variants additionally set 
+	  the MOTION or OPER flag:  
+		*cb = \$Vile::current_buffer; 
+		Vile::register_motion 'my-forward-line-at-bol' => sub { 
+			$cb->dot((scalar $cb->dot) + 1, 0); 
+		};  
+		Vile::register_oper 'my-delete-til' => sub { $cb->delete }; 
+ 
  (tom) 980520 (i)
 	+ correct force-console entry in modetbl (patch by Clark Morgan)
 

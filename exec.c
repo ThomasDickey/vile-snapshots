@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.155 1998/04/26 23:13:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.157 1998/05/22 00:03:23 tom Exp $
  *
  */
 
@@ -298,12 +298,10 @@ execute_named_command(int f, int n)
 			fnp = "";
 		}
 	} else if ((cfp = engl2fnc(fnp)) == NULL) { /* bad function */
-		ev_end_of_cmd = end_of_cmd();
-		if (run_procedure(fnp)) {
-			return TRUE;
-		}
 		return no_such_function(fnp);
 	}
+
+	ev_end_of_cmd = end_of_cmd();
 	flags = cfp->c_flags;
 
 	/* bad arguments? */
@@ -811,6 +809,32 @@ int f, int n)
 }
 
 /*
+ *  Call the appropriate action for a given CMDFUNC
+ */
+int
+call_cmdfunc(const CMDFUNC *p, int f, int n)
+{
+    switch (p->c_flags & CMD_TYPE)
+    {
+    case CMD_FUNC: /* normal CmdFunc */
+	return (p->cu.c_func)(f, n);
+
+#if OPT_PROCEDURES
+    case CMD_PROC: /* named procedure */
+	return dobuf(p->cu.c_buff);
+#endif
+
+#if OPT_PERL
+    case CMD_PERL: /* perl subroutine */
+	return perl_call_sub(p->cu.c_perl, p->c_flags & OPER, f, n);
+#endif
+    }
+
+    mlforce("BUG: invalid CMDFUNC type");
+    return FALSE;
+}
+
+/*
  * This is the general command execution routine. It takes care of checking
  * flags, globals, etc, to be sure we're not doing something dumb.
  * Return the status of command.
@@ -881,7 +905,7 @@ int f, int n)
 	if (curwp->w_tentative_lastdot.l == null_ptr)
 		curwp->w_tentative_lastdot = DOT;
 
-	status = (execfunc->c_func)(f, n);
+	status = call_cmdfunc(execfunc, f, n);
 	if ((flags & GOAL) == 0) { /* goal should not be retained */
 		curgoal = -1;
 	}
@@ -1115,28 +1139,39 @@ storemac(int f, int n)
 int
 storeproc(int f, int n)
 {
+	static TBUFF *name;		/* procedure name */
+#if OPT_ONLINEHELP
+	static TBUFF *helpstring;	/* optional help string */
+#endif
 	register struct BUFFER *bp;	/* pointer to macro buffer */
 	register int status;		/* return status */
 	char bname[NBUFN];		/* name of buffer to use */
-	char given[NBUFN];
 
 	/* a numeric argument means its a numbered macro */
 	if (f == TRUE)
 		return storemac(f, n);
 
 	/* get the name of the procedure */
-	given[0] = EOS;
-	if ((status = mlreply("Procedure name: ", given, (int)sizeof(given))) != TRUE)
+	tb_scopy(&name, "");
+	if ((status = kbd_reply("Procedure name: ", &name,
+	    eol_history, ' ', KBD_NORMAL, no_completion)) != TRUE)
 		return status;
 
-	/* save this into the list of : names */
-#if OPT_NAMEBST
-	if (insert_namebst(given, NULL, FALSE) != TRUE)
-		return FALSE;
-#endif /* OPT_NAMEBST */
+#if OPT_ONLINEHELP
+	/* get optional help string */
+	if (more_named_cmd())
+	{
+	    tb_scopy(&helpstring, "");
+	    if ((status = kbd_reply("help info: ", &helpstring,
+		eol_history, '\n', KBD_NORMAL, no_completion)) != TRUE)
+		    return status;
+	}
+	else
+	    tb_scopy(&helpstring, "User-defined procedure");
+#endif
 
 	/* construct the macro buffer name */
-	add_brackets(bname, given);
+	add_brackets(bname, tb_values(name));
 
 	/* set up the new macro buffer */
 	if ((bp = bfind(bname, BFINVS)) == NULL) {
@@ -1149,6 +1184,25 @@ storeproc(int f, int n)
 		return FALSE;
 
 	set_rdonly(bp, bp->b_fname, MDVIEW);
+
+	/* save this into the list of : names */
+#if OPT_NAMEBST
+	{
+	    CMDFUNC *cf = typealloc(CMDFUNC);
+
+	    if (!cf)
+		return no_memory("registering procedure name");
+
+	    cf->cu.c_buff = bp;
+	    cf->c_flags = UNDO|REDO|CMD_PROC;
+#if OPT_ONLINEHELP
+	    cf->c_help = strmalloc(tb_values(helpstring));
+#endif
+
+	    if (insert_namebst(tb_values(name), cf, FALSE) != TRUE)
+		return FALSE;
+	}
+#endif /* OPT_NAMEBST */
 
 	/* and set the macro store pointers to it */
 	mstore = TRUE;

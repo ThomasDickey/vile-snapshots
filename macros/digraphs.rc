@@ -1,6 +1,6 @@
 
 ;; digraphs.rc for use with vile
-;; $Header: /users/source/archives/vile.vcs/RCS/digraphs.rc,v 1.2 1996/05/03 02:51:05 pgf Exp $
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/digraphs.rc,v 1.1 1996/05/03 02:51:05 tom Exp $
 
 ;; if you wish to insert digraph characters, you can use this file (or
 ;; something similar) as a set of ":map" commands.  simply put the line

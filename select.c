@@ -18,7 +18,7 @@
  * transfering the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.68 1998/05/11 09:54:27 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.69 1998/05/21 22:55:38 tom Exp $
  *
  */
 
@@ -1045,7 +1045,7 @@ start_scan:
 				&& lgetc(DOT.l,offset) != 0)
 				offset++;
 			    if (offset < llength(DOT.l)) {
-				hypercmd = strdup(&DOT.l->l_text[save_offset+1]);
+				hypercmd = strmalloc(&DOT.l->l_text[save_offset+1]);
 			    }
 			    else {
 				/* Bad hypertext string... skip it */
