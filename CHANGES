@@ -1,5 +1,27 @@
 Changes for vile 7.3 (released ??? ??? ??, 1997)
 
+ (kev)	971013 (j)
+ 	+ perl.xs, ptypemap: Lots of new code which extends the perl
+ 	  interface a bit more.
+ 	+ api.c, api.h: New files which sort of implement nvi's API for
+ 	  extension languages.
+ 	+ makefile.in (OBJ, VILESRC): Added api.o and api.c to these
+ 	  lists.
+ 	+ estruct.h (BUFFER): Added new field, b_api_private, used by
+ 	  the extension language API.
+ 	+ buffer.c (FreeBuffer): Free up the extension language API
+ 	  related data structure referenced by b_api_private.
+ 	  (bfind): Initialize the b_api_private field.
+ 	+ cmdtbl (perl): Put in a reasonable set of flags for this
+ 	  command.  (It used to be NONE.)
+ 	+ exec.c (execute_named_command): Added region support for the
+ 	  perl command.
+ 	+ proto.h (push_fake_win, pop_fake_win, perl_default_region,
+ 	  perl_free_private, api_free_private): New prototypes.
+ 	+ select.c, window.c (push_fake_win, pop_fake_win): These
+ 	  functions removed from select.c and put into window.c.  Also
+ 	  they are no longer static.
+ 
 (kev)	971009 (i)
 	+ perl.xs, ptypemap:  New files.  Beginnings of perl interface
 	  for vile.

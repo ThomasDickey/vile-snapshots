@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.87 1997/10/09 09:28:46 kev Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.88 1997/10/13 13:06:48 kev Exp $
 #
 
 #### Start of system configuration section. ####
@@ -116,7 +116,7 @@ TEXTFILES = README README.CFG README.PC \
 	INSTALL CHANGES CHANGES.R5 CHANGES.R4 CHANGES.R3 \
 	buglist revlist patchlev.h COPYING
 
-VILESRC = main.c basic.c bind.c buffer.c crypt.c csrch.c \
+VILESRC = main.c api.c basic.c bind.c buffer.c crypt.c csrch.c \
 	display.c dumbterm.c eval.c exec.c externs.c fences.c file.c \
 	filec.c fileio.c finderr.c glob.c globals.c \
 	history.c input.c insert.c isearch.c itbuff.c lckfiles.c line.c map.c \
@@ -150,7 +150,7 @@ MKTBLS = ./mktbls
 BUILTHDRS = nebind.h neproto.h neexec.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nefsms.h
 
 OBJ = $(SCREEN).o \
-	main.o basic.o bind.o buffer.o crypt.o csrch.o \
+	main.o api.o basic.o bind.o buffer.o crypt.o csrch.o \
 	display.o dumbterm.o eval.o exec.o externs.o fences.o file.o \
 	filec.o fileio.o finderr.o glob.o globals.o \
 	history.o input.o insert.o isearch.o itbuff.o lckfiles.o line.o map.o \

@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.74 1997/10/07 09:48:47 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.75 1997/10/13 13:06:48 kev Exp $
  *
  */
 
@@ -1039,5 +1039,76 @@ void	wp_leaks(void)
 		wheadp = wp;
 	}
 	free((char *)wminip);
+}
+#endif
+
+/*
+ * Allocate a fake window so that we can yank a selection even if the buffer
+ * containing the selection is not attached to any window.
+ *
+ * curwp is set to the new fake window.  A pointer to the old curwp is returned
+ * for a later call to pop_fake_win() which will restore curwp.
+ */
+
+#if DISP_X11 || SYS_WINNT || OPT_PERL
+WINDOW *
+push_fake_win(BUFFER *bp)
+{
+    WINDOW *oldwp = curwp;
+    WINDOW *wp;
+    if ((wp = typealloc(WINDOW)) == NULL) {
+	    (void)no_memory("WINDOW");
+	    return NULL;
+    }
+    curwp = wp;
+    curwp->w_bufp = bp;
+    curwp->w_bufp->b_nwnd++;
+    if ((wp = bp2any_wp(bp)) == NULL)
+	copy_traits(&(curwp->w_traits), &(bp->b_wtraits));
+    else
+	copy_traits(&(curwp->w_traits), &(wp->w_traits));
+    curwp->w_flag  = 0;
+    curwp->w_force = 0;
+    curwp->w_toprow = wheadp->w_toprow - 2;	/* should be negative */
+    curwp->w_ntrows = 1;
+    curwp->w_wndp = wheadp;
+    wheadp = curwp;
+    return oldwp;
+}
+
+/*
+ * kill top fake window allocated by alloc_fake_win;
+ *
+ * Set curwp to the oldwp parameter.
+ *
+ * Return 0 if no fake window popped, else return the buffer pointer
+ * of the popped window.
+ *
+ */
+BUFFER *
+pop_fake_win(WINDOW *oldwp)
+{
+    WINDOW *wp;
+    BUFFER *bp;
+
+    curwp = oldwp;
+
+    wp = wheadp;
+    if (wp->w_toprow >= 0)
+	return NULL;				/* not a fake window */
+
+    bp = wp->w_bufp;
+    /* 
+     * Decrement the window count, but don't update the traits.  We want
+     * to give as little indication as possible that a fake window was
+     * created.  In particular, should the user go back to a buffer
+     * which is not currently displayed, DOT should be where he last 
+     * left it.
+     */
+    --bp->b_nwnd;
+    /* unlink and free the fake window */
+    wheadp = wp->w_wndp;
+    free((char *)wp);
+    return bp;
 }
 #endif

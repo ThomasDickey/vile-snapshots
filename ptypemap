@@ -1,1 +1,18 @@
-# nothing here yet
+TYPEMAP
+VI	T_VI
+
+INPUT
+T_VI	
+	if (sv_isa($arg, \"VI\")) {
+	    IV tmp = SvIV((SV*)SvRV($arg));
+	    $var = ($type) tmp;
+	    if (!tmp)
+		croak(\"screen no longer exists\");
+	}
+	else
+	    croak(\"$var is not of type ${ntype}\")
+
+
+OUTPUT
+T_VI
+	newVIrv($arg, $var);

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v7_2i
+MANIFEST for vile, version v7_2j
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -14,6 +14,8 @@ README.MENU                     readme for xmvile menus
 README.PC                       instructions for PC's (MS-DOS, etc.)
 aclocal.m4                      VILE-specific autoconf macros
 ansi.c                          ANSI terminal driver
+api.c                           nvi-like api to perl and tcl
+api.h                           interface of api.c
 basic.c                         basic cursor-movement
 bind.c                          key-bindings & low-level command-completion
 borland.c                       BORLAND terminal driver

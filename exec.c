@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.143 1997/10/07 13:36:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.144 1997/10/13 13:06:48 kev Exp $
  *
  */
 
@@ -382,6 +382,11 @@ seems like we need one more check here -- is it from a .exrc file?
 			if (cfp == &f_operfilter) {
 				cfp = &f_spawn;
 				(void)setmark();  /* not that it matters */
+#if OPT_PERL
+			} else if (cfp == &f_perl) {
+				perl_default_region();
+
+#endif
 			} else {
 				mlforce("[Configuration error: DFLNONE]");
 				return FALSE;

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.254 1997/10/07 00:31:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.255 1997/10/13 13:06:48 kev Exp $
  *
  */
 
@@ -686,6 +686,10 @@ extern void winit (int screen);
 extern int reposition (int f, int n);
 extern int resize (int f, int n);
 #endif
+#if DISP_X11 || SYS_WINNT || OPT_PERL
+extern WINDOW * push_fake_win(BUFFER *bp);
+extern BUFFER * pop_fake_win(WINDOW *oldwp);
+#endif
 
 /* word.c */
 extern int joinregion (void);
@@ -1086,6 +1090,17 @@ extern	char *	unix2vms_path   (char *dst, const char *src);
 extern	char *	vms2unix_path   (char *dst, const char *src);
 extern	char *	vms_path2dir    (const char *src);
 extern	void	vms_dir2path	(char *path);
+#endif
+
+#if OPT_PERL
+/* perl.xs (perl.c) */
+extern	void	perl_default_region(void);
+extern	void	perl_free_private(void *);
+
+/* api.c */
+extern void api_free_private(void *);
+/* There are others as well, but the rest are found in api.h */
+
 #endif
 
 #ifdef __cplusplus
