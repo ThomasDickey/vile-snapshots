@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.421 2000/04/25 01:50:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.422 2000/04/26 09:09:24 tom Exp $
  *
  */
 
@@ -268,8 +268,8 @@ extern int did_hard_error_occur (void);
 #endif
 
 /* statevar.c */
-extern char * get_xshell (void);
 extern char * vile_getenv(char *s);
+
 #if OPT_EVAL
 extern char * get_cdpath (void);
 extern char * get_shell (void);
@@ -280,10 +280,15 @@ extern void setcmdstatus(int s);
 #define setcmdstatus(s) /*nothing*/
 #endif
 
+#if OPT_SHELL && DISP_X11
+extern char * get_xdisplay (void);
+extern char * get_xshell (void);
+extern char * get_xshellflags (void);
+#endif
+
 /* eval.c */
 extern char * get_directory(void);
 extern char * get_token (char *src, TBUFF **tok, int eolchar);
-extern char * get_xdisplay (void);
 extern char * mac_tokval (TBUFF **tok);
 extern char * mklower (char *str);
 extern char * mktrimmed (char *str);

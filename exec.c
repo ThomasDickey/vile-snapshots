@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.217 2000/03/14 00:35:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.218 2000/04/28 22:52:38 tom Exp $
  *
  */
 
@@ -1461,7 +1461,7 @@ push_variable(char *name)
 {
 	LOCALS *p;
 
-	TPRINTF(("...push_variable: {%s}%s", name, execstr));
+	TPRINTF(("...push_variable: {%s}%s\n", name, execstr));
 
 	switch (toktyp(name)) {
 	case TOK_STATEVAR:
@@ -1507,7 +1507,7 @@ pop_variable(void)
 	LOCALS *p = ifstk.locals;
 
 	ifstk.locals = p->next;
-	TPRINTF(("...pop_variable(%s) %s", p->name, p->value));
+	TPRINTF(("...pop_variable(%s) %s\n", p->name, p->value));
 	if (!strcmp(p->value, error_val)) {
 		rmv_tempvar(p->name);
 	} else {
@@ -1967,7 +1967,7 @@ perform_dobuf(BUFFER *bp, WHLOOP *whlist)
 			(void)strncpy(cmdp, lp->l_text, linlen);
 		cmdp[linlen] = EOS;	/* make sure it ends */
 
-		TPRINTF(("%s:%d (%d/%d):%s", bp->b_bname,
+		TPRINTF(("%s:%d (%d/%d):%s\n", bp->b_bname,
 			line_no(bp, lp),
 			ifstk.level, ifstk.disabled,
 			cmdp));

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.173 2000/04/21 09:46:49 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.174 2000/04/26 08:59:58 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -261,6 +261,7 @@ string
 "write-hook"	WRHOOK		OPT_HOOKS	# procedure to run when writing
 "xdisplay"	XDISPLAY	DISP_X11&&OPT_SHELL	# X Windows display, etc.
 "xshell"	XSHELL		DISP_X11&&OPT_SHELL	# xterm emulator, etc.
+"xshell-flags"	XSHELLFLAGS	DISP_X11&&OPT_SHELL	# $xshell flags, e.g., "-c"
 
 # function name, id, numargs
 .functions

@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.134 2000/01/30 23:16:29 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.135 2000/05/01 00:50:19 tom Exp $
  *
  */
 
@@ -741,6 +741,7 @@ const char *np)	/* new text for the current line */
 		DOT.o = w_left_margin(curwp);
 		if ((status = deltoeol(TRUE, 1)) != TRUE)
 			return(status);
+		DOT.o = w_left_margin(curwp);
 	}
 
 	/* insert passed in chars */

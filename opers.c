@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.68 1999/10/31 23:24:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.69 2000/04/28 11:01:09 tom Exp $
  *
  */
 
@@ -37,21 +37,19 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 		cfp = havemotion;
 		havemotion = NULL;
 	} else {
+		TBUFF *tok = 0;
+
 		mlwrite("%s operation pending...",str);
 		(void)update(FALSE);
 
 		/* get the next command from the keyboard */
 		/* or a command line, as approp. */
 		if (clexec) {
-			TBUFF *tok = 0;
 			char *value = mac_tokval(&tok);	/* get the next token */
-			if (value == 0)
-				cfp = 0;
-			else if (strcmp(value, "lines"))
+			if (value != 0 && strcmp(value, "lines"))
 				cfp = engl2fnc(value);
 			else
 				cfp = &f_godotplus;
-			tb_free(&tok);
 		} else {
 			thiskey = lastkey;
 			c = kbd_seq();
@@ -72,14 +70,17 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 				cfp = kcod2fnc(c);
 
 		}
-		if (cfp)
+		if (cfp != 0) {
 			mlerase();
-		else {
-			char tok[NSTRING];
-			if (!clexec)
-				lsprintf(tok, "(%d)", c);
-			(void)no_such_function(tok);
+		} else {
+			if (!clexec) {
+				char temp[NSTRING];
+				lsprintf(temp, "(%d)", c);
+				tb_scopy(&tok, temp);
+			}
+			(void)no_such_function(tb_values(tok));
 		}
+		tb_free(&tok);
 	}
 	if (!cfp) {
 		doingopcmd = FALSE;
@@ -406,4 +407,3 @@ operopenrect(int f, int n)
 	regionshape = RECTANGLE;
 	return vile_op(f,n,openregion,"Opening");
 }
-

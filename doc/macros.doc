@@ -582,6 +582,8 @@ State Variables
 	$xshell         Name of the terminal program for spawned xvile
 			commands.
 
+	$xshell-flags   Command-line flags after $xshell, normally "-c"
+
 
 
 Mode variables
@@ -941,17 +943,21 @@ Directives
 
     ~local
     ------
-        The ~local directive causes the variables which are listed to
-        be saved at that point (once if the directive is within a loop),
-        and automatically restored at the end of the current macro.
-        If the directive specifies a temporary variable which was not
-        defined before, it will be deleted rather than restored.
+	The ~local directive causes the variables which are listed to
+	be saved at that point (once if the directive is within a loop),
+	and automatically restored at the end of the current macro.
+	If the directive specifies a temporary variable which was not
+	defined before, it will be deleted rather than restored.
 
-        For example:
+	For example:
 
 		~local $curcol $curline
 
-        will restore the cursor position.
+	will restore the cursor position.  The order is important in this
+	example, because vile restores the variables in the reverse order
+	of the ~local declaration.  If $curline is set, $curcol will be
+	reset to the first column as a side effect.  So we specify that
+	$curcol is restored last.
 
 	~local can save/restore the state of mode variables, user variables
 	and the system variables shown with show-variables.  Note that
@@ -963,13 +969,13 @@ Directives
 
     ~with, ~elsewith and ~endwith
     -----------------------------
-        Tokens following the ~with directive will be prepended to succeeding
-        lines of macro until the next ~endwith directive, or the end of the
-        current macro.  This is useful for simplifying majormode directives,
-        which are repetitive.  Use ~elsewith as a convenience for fences;
-        otherwise it functions just as ~with does.
+	Tokens following the ~with directive will be prepended to succeeding
+	lines of macro until the next ~endwith directive, or the end of the
+	current macro.	This is useful for simplifying majormode directives,
+	which are repetitive.  Use ~elsewith as a convenience for fences;
+	otherwise it functions just as ~with does.
 
-        For example, use
+	For example, use
 
 		define-mode txt
 		~with define-submode txt
@@ -978,7 +984,7 @@ Directives
 			comments "^\\s*/\\?--\\s+/\\?\\s*$"
 		~endwith
 
-        rather than
+	rather than
 
 		define-mode txt
 		define-submode txt suf "\\.txt$"
@@ -1011,54 +1017,54 @@ Directives
 
 Editor commands
 ---------------
-        The "show-commands" command lists _all_ available editor commands.
-        This is, admittedly, a large list and generally grows with
-        successive releases of the editor.  Fortunately, most editor
-        commands include short help strings that describe their purpose.
-        To winnow the list to a particular area of interest, use the
-        "apropos" command (e.g., "apropos append").  The format of the
-        "apropos" and "show-commands" listing is as follows:
+	The "show-commands" command lists _all_ available editor commands.
+	This is, admittedly, a large list and generally grows with
+	successive releases of the editor.  Fortunately, most editor
+	commands include short help strings that describe their purpose.
+	To winnow the list to a particular area of interest, use the
+	"apropos" command (e.g., "apropos append").  The format of the
+	"apropos" and "show-commands" listing is as follows:
 
 		command-name             optional-key-binding(s)
 		optional-command-name-aliases
 		(help-string)
 
-        Commands fall into three broad categories:  simple, motion, operator.
+	Commands fall into three broad categories:  simple, motion, operator.
 
     Simple commands
     ---------------
-        A simple command neither acts on a region nor does it explicitly
-        move the cursor through a region (the "region" concept is explained
-        in the "Motion commands" section below).  An example of a simple
-        command is "find-tag", and here's the listing returned by
-        show-commands:
+	A simple command neither acts on a region nor does it explicitly
+	move the cursor through a region (the "region" concept is explained
+	in the "Motion commands" section below).  An example of a simple
+	command is "find-tag", and here's the listing returned by
+	show-commands:
 
 		"find-tag"               ^]
 		  or            "ta"
 		  or            "tag"
 		  ( look up the given (or under-cursor) name as a "tag" )
 
-        From the perspective of writing a macro, it can be seen that
-        find-tag has two aliases, either of which may be substituted for
-        the "find-tag" name within a macro definition.  Notice that the
-        help string mentions a "name" argument and sure enough, if you type
-        ":find-tag" within the editor, you'll be prompted for a "Tag name".
-        This gives us enough information to write a contrived macro that
-        finds a fixed tag name:
+	From the perspective of writing a macro, it can be seen that
+	find-tag has two aliases, either of which may be substituted for
+	the "find-tag" name within a macro definition.	Notice that the
+	help string mentions a "name" argument and sure enough, if you type
+	":find-tag" within the editor, you'll be prompted for a "Tag name".
+	This gives us enough information to write a contrived macro that
+	finds a fixed tag name:
 
 		 store-procedure tryit
 			 tag "filterregion"
 		 ~endm
 
-        Note also that some help strings include a "CNT" keyword, which
-        indicates that the command name may be preceded by an integer count
-        that repeats the command action that many times (default CNT value
-        is 1).  For example, here's the "join-lines" listing:
+	Note also that some help strings include a "CNT" keyword, which
+	indicates that the command name may be preceded by an integer count
+	that repeats the command action that many times (default CNT value
+	is 1).	For example, here's the "join-lines" listing:
 
 		"join-lines"     J
 		  ( join CNT lines together with the current one )
 
-        And here's a macro that joins 4 lines:
+	And here's a macro that joins 4 lines:
 
 		store-procedure join4
 			4 join-lines
@@ -1066,18 +1072,18 @@ Editor commands
 
     Motion commands
     ---------------
-        Motions move the cursor and, consequently, may be used to define a
-        region.  This latter property is an important aspect of an
-        "operator command".  The "show-motions" command lists the editor's
-        motion commands.
+	Motions move the cursor and, consequently, may be used to define a
+	region.	 This latter property is an important aspect of an
+	"operator command".  The "show-motions" command lists the editor's
+	motion commands.
 
-        Within a macro, the following general syntax invokes a motion:
+	Within a macro, the following general syntax invokes a motion:
 
 		[count] region-spec
 
-        The optional "count" specifies the number of affected region-specs
-        (default value is 1).  An example motion is "back-line", and here
-        is its show-commands listing:
+	The optional "count" specifies the number of affected region-specs
+	(default value is 1).  An example motion is "back-line", and here
+	is its show-commands listing:
 
 		"back-line"              k         #-A
 		  or    "previous-line"
@@ -1085,10 +1091,10 @@ Editor commands
 		  or    "up-line"
 		  (motion: move up CNT lines )
 
-        Note that the help string is prefixed with the word "motion", which
-        unambiguously identifies the nature of this command.  Given the
-        above information, we can write a contrived macro to move the
-        cursor up three lines:
+	Note that the help string is prefixed with the word "motion", which
+	unambiguously identifies the nature of this command.  Given the
+	above information, we can write a contrived macro to move the
+	cursor up three lines:
 
 		store-procedure upthree
 			3 back-line
@@ -1301,6 +1307,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.49 2000/04/21 09:51:23 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.51 2000/04/28 01:55:34 tom Exp $
 -----------------------------------
 
