@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.99 1996/11/17 16:28:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.100 1997/02/09 19:39:55 tom Exp $
  *
  */
 
@@ -1201,7 +1201,7 @@ int
 quote(int f, int n)
 {
 	int  s, c, digs, base, i, num, delta;
-	char *str;
+	const char *str;
 
 	i = digs = 0;
 	num = 0;

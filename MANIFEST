@@ -1,4 +1,4 @@
-MANIFEST for vile, version v6_4h
+MANIFEST for vile, version v6_4j
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -32,7 +32,6 @@ display.c                       message & screen formatting & display
 djhandl.c                       CTL/C & interrupt handling for DJGCC
 dumbterm.c                      DUMB terminal driver
 edef.h                          global variable definitions
-epath.h                         external-pathname definitions
 estruct.h                       master include/struct definitions
 eval.c                          expression-evaluation
 exec.c                          command (':', macros) execution

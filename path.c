@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.76 1997/01/23 00:48:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.77 1997/02/08 12:42:05 tom Exp $
  *
  *
  */
@@ -1398,7 +1398,14 @@ lengthen_path(char *path)
 		my_nam.nam$l_rsa = my_rsa;
 
 		if ((status = sys$parse(&my_fab)) == RMS$_NORMAL) {
-			my_esa[my_nam.nam$b_esl] = EOS;
+			char *s = my_esa;
+			int len = my_nam.nam$b_esl;
+			s[len] = EOS;
+			if (len > 2) {
+				s = pathleaf(s);
+				if (!strcmp(s, ".;"))
+					*s = EOS;
+			}
 			return strcpy(path, my_esa);
 		} else {
 			/* FIXME: try to expand partial directory specs, etc. */

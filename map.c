@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.68 1996/11/22 22:41:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.69 1997/02/09 20:07:16 tom Exp $
  * 
  */
 
@@ -113,7 +113,7 @@ makemaplist(int dummy, void *mapp)
 
     for_ever {
 	if (mp) {
-	    char *remapnote;
+	    const char *remapnote;
 	    char *mapstr;
 	    char esc_seq[10];
 	    lhsstr[depth] = mp->ch;

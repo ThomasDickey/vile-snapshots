@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.233 1997/01/23 00:48:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.235 1997/02/09 19:48:55 tom Exp $
  *
  */
 
@@ -69,14 +69,14 @@ extern const CMDFUNC *kcod2fnc (int c);
 #if OPT_EVAL
 extern const char *prc2engl (const char *skey);
 #endif
-extern char *kbd_engl (char *prompt, char *buffer);
+extern char *kbd_engl (const char *prompt, char *buffer);
 extern void kbd_alarm (void);
 extern void kbd_putc (int c);
 extern void kbd_puts (const char *s);
 extern void kbd_erase (void);
 extern void kbd_init (void);
 extern void kbd_unquery (void);
-extern int kbd_complete (int case_insensitive, int c, char *buf, int *pos, char *table, SIZE_T size_entry);
+extern int kbd_complete (int case_insensitive, int c, char *buf, int *pos, const char *table, SIZE_T size_entry);
 extern int kbd_engl_stat (const char *prompt, char *buffer);
 extern void popdown_completions (void);
 
@@ -318,7 +318,7 @@ extern int shell_complete (DONE_ARGS);
 #define shell_complete no_completion
 #endif
 extern int mlyesno (const char *prompt);
-extern int mlquickask (const char *prompt, char *respchars, int *cp);
+extern int mlquickask (const char *prompt, const char *respchars, int *cp);
 extern int mlreply (const char *prompt, char *buf, int bufn);
 extern int mlreply_reg (const char *prompt, char *cbuf, int *retp, int at_dft);
 extern int mlreply_reg_count (int state, int *retp, int *next);
@@ -997,7 +997,7 @@ extern	int	sel_begin	(void);
 extern	int	sel_extend	(int wiping, int include_dot);
 extern	void	sel_release	(void);
 extern	void	sel_reassert_ownership (BUFFER *bp);
-#if DISP_X11 && XTOOLKIT
+#if (DISP_X11 && XTOOLKIT) || DISP_NTCONS
 extern	int	sel_yank	(int reg);
 extern	int	sel_attached	(void);
 extern	BUFFER *sel_buffer	(void);

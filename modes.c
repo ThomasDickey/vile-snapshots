@@ -7,7 +7,7 @@
  * Original code probably by Dan Lawrence or Dave Conroy for MicroEMACS.
  * Major extensions for vile by Paul Fox, 1991
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.79 1997/01/19 15:40:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.81 1997/02/09 19:33:57 tom Exp $
  *
  */
 
@@ -279,7 +279,7 @@ struct VAL *globvalues)
 }
 
 #ifdef lint
-static	/*ARGSUSED*/ WINDOW *ptr2WINDOW(p) void *p; { return 0; }
+static	/*ARGSUSED*/ WINDOW *ptr2WINDOW(void *p) { return 0; }
 #else
 #define	ptr2WINDOW(p)	(WINDOW *)p
 #endif
@@ -328,7 +328,7 @@ settab(int f, int n)
 {
 	register WINDOW *wp;
 	int val;
-	char *whichtabs;
+	const char *whichtabs;
 	if (b_val(curbp, MDCMOD)) {
 		val = VAL_C_TAB;
 		whichtabs = "C-t";

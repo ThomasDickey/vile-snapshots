@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.157 1997/01/23 01:58:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.158 1997/02/09 19:47:13 tom Exp $
  *
  */
 
@@ -183,7 +183,7 @@ mlyesno(const char *prompt)
  */
 
 int
-mlquickask(const char *prompt, char *respchars, int *cp)
+mlquickask(const char *prompt, const char *respchars, int *cp)
 {
 	if (!update(TRUE))
 		return (ABORT);

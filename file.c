@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.201 1997/01/23 01:06:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.202 1997/02/09 17:56:05 tom Exp $
  *
  */
 
@@ -69,7 +69,7 @@ static int
 PromptModtime (
 BUFFER	*bp,
 const char *fname,
-char	*question,
+const char *question,
 int	iswrite)
 {
 	int status = SORTOFTRUE;
@@ -82,7 +82,7 @@ int	iswrite)
 	 && same_fname(fname, bp, FALSE)
 	 && get_modtime(bp, &current)) {
 		time_t check_against;
-		char *remind, *again;
+		const char *remind, *again;
 		if (iswrite) {
 			check_against = bp->b_modtime;
 			remind = "Reminder: ";
@@ -1196,14 +1196,13 @@ makename(char *bname, const char *fname)
 			++fcp;
 		} while (isspace(*fcp));
 		(void)strncpy0(bcp, fcp, (SIZE_T)(NBUFN - (bcp - bname)));
-		for (j = 1; j < NBUFN; j++) {
+		for (j = 4; j < NBUFN; j++) {
 			if (isspace(*bcp)) {
-				*++bcp = EOS;
 				break;
 			}
 			bcp++;
 		}
-		bcp[-1] = SCRTCH_RIGHT[0];
+		(void) strcpy(bcp, SCRTCH_RIGHT);
 		return;
 	}
 
@@ -1384,7 +1383,7 @@ int	forced)
 	register int i;
 	char	fname[NFILEN], *fn;
 	B_COUNT	nchar;
-	char *	ending =
+	const char * ending =
 #if OPT_DOSFILES
 			b_val(bp, MDDOS) ? "\r\n" : "\n"
 #else
@@ -1494,9 +1493,10 @@ int	forced)
                 s = ffclose();
                 if (s == FIOSUC && msgf) {      /* No close error.      */
 			if (!global_b_val(MDTERSE)) {
-				char *action;
-				if ((action = is_appendname(fn)) != 0) {
-					fn = action;
+				char *aname;
+				const char *action;
+				if ((aname = is_appendname(fn)) != 0) {
+					fn = aname;
 					action = "Appended";
 				} else {
 					action = "Wrote";

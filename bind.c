@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.143 1997/01/10 11:07:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.146 1997/02/11 02:00:52 tom Exp $
  *
  */
 
@@ -125,7 +125,7 @@ help(int f, int n)
 	 * name-completion on it.
 	 */
 static	const struct {
-		char	*name;
+		const char *name;
 		int	*value;
 		char	how_to;
 	} TermChrs[] = {
@@ -180,7 +180,7 @@ chr_lookup(char *name)
 static int
 chr_complete(int c, char *buf, int *pos)
 {
-	return kbd_complete(FALSE, c, buf, pos, (char *)&TermChrs[0],
+	return kbd_complete(FALSE, c, buf, pos, (const char *)&TermChrs[0],
 		sizeof(TermChrs[0]));
 }
 
@@ -971,13 +971,13 @@ bytes2prc(char *dst, char *src, int n)
 {
 	char	*base = dst;
 	register int	c;
-	register char	*tmp;
+	register const char *tmp;
 
 	for ( ; n != 0; dst++, src++, n--) {
 
 		c = *src;
 
-		tmp = NULL;
+		tmp = 0;
 
 		if (c & HIGHBIT) {
 			*dst++ = 'M';
@@ -993,7 +993,7 @@ bytes2prc(char *dst, char *src, int n)
 			*dst = (char)c;
 		}
 
-		if (tmp != NULL) {
+		if (tmp != 0) {
 			while ((*dst++ = *tmp++) != EOS)
 				;
 			dst -= 2;	/* point back to last nonnull */
@@ -1201,7 +1201,7 @@ const char *kk)		/* name of key to translate to Command key form */
 	register UINT c;	/* key sequence to return */
 	register UINT pref = 0;	/* key prefixes */
 	register int len = strlen(kk);
-	register UCHAR *k = (UCHAR *)kk;
+	register const UCHAR *k = (const UCHAR *)kk;
 
 	if (len > 3 && *(k+2) == '-') {
 		if (*k == '^') {
@@ -1211,12 +1211,12 @@ const char *kk)		/* name of key to translate to Command key form */
 				pref = CTLX;
 			if (iscntrl(poundc) && *(k+1) == toalpha(poundc))
 				pref = SPEC;
-		} else if (!strncmp((char *)k, "FN", (SIZE_T)2)) {
+		} else if (!strncmp((const char *)k, "FN", (SIZE_T)2)) {
 			pref = SPEC;
 		}
 		if (pref != 0)
 			k += 3;
-	} else if (len > 2 && !strncmp((char *)k, "M-", (SIZE_T)2)) {
+	} else if (len > 2 && !strncmp((const char *)k, "M-", (SIZE_T)2)) {
 		pref = HIGHBIT;
 		k += 2;
 	} else if (len > 1) {
@@ -1277,7 +1277,7 @@ const char *skey)	/* name of key to get binding for */
  */
 char *
 kbd_engl(
-char *prompt,		/* null pointer to splice calls */
+const char *prompt,	/* null pointer to splice calls */
 char *buffer)
 {
 	if (kbd_engl_stat(prompt, buffer) == TRUE)
@@ -1385,9 +1385,9 @@ SIZE_T n)
 
 #ifdef	lint
 static	/*ARGSUSED*/
-char *	THIS_NAME(p)	char *p; { return 0; }
+const char *	THIS_NAME(const char *p) { return 0; }
 #else
-#define	THIS_NAME(p)	(*(char **)(p))
+#define	THIS_NAME(p)	(*(const char *const *)(p))
 #endif
 #define	NEXT_NAME(p)	THIS_NAME(NEXT_DATA(p))
 
@@ -1396,16 +1396,16 @@ char *	THIS_NAME(p)	char *p; { return 0; }
  * the symbol table.
  */
 /*ARGSUSED*/
-static char *
+static const char *
 skip_partial(
 int	case_insensitive,
 char	*buf,
 SIZE_T	len,
-char	*table,
+const char *table,
 SIZE_T	size_entry)
 {
-	register char *	next = NEXT_DATA(table);
-	register char *	sp;
+	register const char * next = NEXT_DATA(table);
+	register const char *	sp;
 
 	while ((sp = THIS_NAME(next)) != 0) {
 		if (StrNcmp(buf, sp, len) != 0)
@@ -1426,11 +1426,11 @@ show_partial(
 int	case_insensitive,
 char	*buf,
 SIZE_T	len,
-char	*table,
+const char *table,
 SIZE_T	size_entry)
 {
-	register char	*next = skip_partial(case_insensitive, buf, len, table, size_entry);
-	register char	*last = PREV_DATA(next);
+	register const char *next = skip_partial(case_insensitive, buf, len, table, size_entry);
+	register const char *last = PREV_DATA(next);
 	register int	c;
 
 	if (THIS_NAME(table)[len] == THIS_NAME(last)[len]) {
@@ -1448,7 +1448,7 @@ SIZE_T	size_entry)
 		c = TESTC;	/* shouldn't be in the table! */
 		kbd_putc('[');
 		while (table != next) {
-			register char *sp = THIS_NAME(table);
+			register const char *sp = THIS_NAME(table);
 			if (c != sp[len]) {
 				c = sp[len];
 				kbd_putc(c ? c : '$');
@@ -1467,7 +1467,7 @@ SIZE_T	size_entry)
 struct compl_rec {
     char *buf;
     SIZE_T len;
-    char *table;
+    const char *table;
     SIZE_T size_entry;
 };
 
@@ -1485,10 +1485,10 @@ makecmpllist(
 {
     char * buf		= c2ComplRec(cinfop)->buf;
     SIZE_T len		= c2ComplRec(cinfop)->len;
-    char * first	= c2ComplRec(cinfop)->table;
+    const char * first	= c2ComplRec(cinfop)->table;
     SIZE_T size_entry	= c2ComplRec(cinfop)->size_entry;
-    register char *last = skip_partial(case_insensitive, buf, len, first, size_entry);
-    register char *p;
+    register const char *last = skip_partial(case_insensitive, buf, len, first, size_entry);
+    register const char *p;
     SIZE_T maxlen;
     int slashcol;
     int cmpllen;
@@ -1530,7 +1530,7 @@ makecmpllist(
 	for (j = 0; j < cmplcols; j++) {
 	    int idx = cmplrows * j + i;
 	    if (idx < nentries) {
-		char *s = THIS_NAME(first+(idx*size_entry))+slashcol;
+		const char *s = THIS_NAME(first+(idx*size_entry))+slashcol;
 		if (j == cmplcols-1)
 		    bprintf("%s\n", s);
 		else
@@ -1552,7 +1552,7 @@ show_completions(
 int	case_insensitive,
 char	*buf,
 SIZE_T	len,
-char	*table,
+const char *table,
 SIZE_T	size_entry)
 {
     struct compl_rec cinfo;
@@ -1590,7 +1590,7 @@ scroll_completions(
     int		case_insensitive,
     char	*buf,
     SIZE_T	len,
-    char	*table,
+    const char	*table,
     SIZE_T	size_entry)
 {
     BUFFER *bp = find_b_name(COMPLETIONS_BufName);
@@ -1625,13 +1625,13 @@ fill_partial(
 int	case_insensitive,
 char	*buf,
 SIZE_T	pos,
-char	*first,
-char	*last,
+const char *first,
+const char *last,
 SIZE_T	size_entry)
 {
-	register char	*p;
+	register const char *p;
 	register int	n = pos;
-	char	*this_name = THIS_NAME(first);
+	const char *this_name = THIS_NAME(first);
 
 #if 0 /* case insensitive reply correction doesn't work reliably yet */
 	if (!clexec && case_insensitive) {
@@ -1732,11 +1732,11 @@ int	case_insensitive,
 int	c,		/* TESTC, NAMEC or isreturn() */
 char	*buf,
 int	*pos,
-char	*table,
+const char *table,
 SIZE_T	size_entry)
 {
 	register SIZE_T cpos = *pos;
-	register char *nbp;	/* first ptr to entry in name binding table */
+	register const char *nbp; /* first ptr to entry in name binding table */
 	int status = FALSE;
 #if OPT_POPUPCHOICE
 # if OPT_ENUM_MODES
@@ -1955,7 +1955,7 @@ int	*pos)
 #endif
 	} else {
 		status = kbd_complete(FALSE, c, buf, pos,
-			(char *)&nametbl[0], sizeof(nametbl[0]));
+			(const char *)&nametbl[0], sizeof(nametbl[0]));
 	}
 	return status;
 }

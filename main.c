@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.285 1997/01/10 11:10:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.286 1997/02/09 20:11:15 tom Exp $
  *
  */
 
@@ -1310,7 +1310,7 @@ quit(int f, int n)
 {
 	int cnt;
 	BUFFER *bp;
-	char *sadj, *sverb;
+	const char *sadj, *sverb;
 
 #if OPT_PROCEDURES
 	{

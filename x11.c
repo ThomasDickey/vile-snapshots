@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.141 1997/01/21 03:08:05 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.142 1997/01/30 03:14:16 kev Exp $
  *
  */
 
@@ -4347,9 +4347,12 @@ start_selection(
 
 	tw->lasttime = ev->time;
 	tw->numclicks = 1;
-	tw->prevDOT = DOT;
-
 	tw->was_on_msgline = onMsgRow(tw);
+
+	if ((wp = row2window(nr)) != 0) {
+	    set_curwp(wp);
+	}
+	tw->prevDOT = DOT;
 
 	/*
 	 * If we're on the message line, do nothing.
@@ -4364,8 +4367,7 @@ start_selection(
 	if (reading_msg_line) {
 	    /*EMPTY*/;	/* ignore */
 	}
-	else if ((wp = row2window(nr)) != 0 && nr == mode_row(wp)) {
-	    set_curwp(wp);
+	else if (wp != 0 && nr == mode_row(wp)) {
 	    (void)update(TRUE);
 	}
 	else if (setcursor(nr, nc)) {
@@ -4527,6 +4529,7 @@ x_process_event(
 	    if (ev->xbutton.state & ControlMask)
 		(void)sel_setshape(RECTANGLE);
 	    cur_win->wipe_permitted = True;
+	    cur_win->prevDOT = DOT;
 	    extend_selection(cur_win, nr, nc, False);
 	    break;
 	}

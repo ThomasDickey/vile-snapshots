@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.66 1996/11/11 22:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.72 1997/02/09 20:59:35 tom Exp $
  *
  */
 
@@ -24,6 +24,19 @@
 #ifndef USE_QSORT
 #define USE_QSORT 1
 #endif
+
+/* Systems that can have leafnames beginning with '.' (this doesn't include
+ * VMS, which does allow this as unlikely as that may seem, because the logic
+ * that masks dots simply won't work in conjunction with the other translations
+ * to/from hybrid form).
+ */
+#if (SYS_UNIX || SYS_WINNT) && ! OPT_VMS_PATH
+#define USE_DOTNAMES 1
+#else
+#define USE_DOTNAMES 0
+#endif
+
+#define isDotname(leaf) (!strcmp(leaf, ".") || !strcmp(leaf, ".."))
 
 #if (MISSING_EXTERN_ENVIRON || __DJGPP__ >= 2)
 extern char **environ;
@@ -293,7 +306,7 @@ already_scanned(char * path)
 
 	len = force_slash(strcpy(fname, path));
 
-	for_each_line(lp,MyBuff)
+	for_each_line(lp,MyBuff) {
 #if OPT_CASELESS
 		if (stricmp(fname, lp->l_text) == 0)
 #else
@@ -305,6 +318,7 @@ already_scanned(char * path)
 		    else
 			break; 	/* name should not occur more than once */
 		}
+	}
 
 	/* force the name in with a trailing slash */
 	slp = buf_head(MyBuff);
@@ -318,6 +332,49 @@ already_scanned(char * path)
 	lp->l_text[llength(lp)+1] = 1;
 	return FALSE;
 }
+
+#if USE_DOTNAMES
+/*
+ * Before canonicalizing a pathname, check for a leaf consisting of trailing
+ * dots.  Convert this to another form so that it won't be combined with
+ * other leaves.  We do this because we don't want to prevent the user from
+ * doing filename completion with leaves that begin with dots.
+ */
+static void mask_dots(char *path, SIZE_T *dots)
+{
+	char *leaf = pathleaf(path);
+	if (isDotname(leaf)) {
+		*dots = strlen(leaf);
+		memset(leaf, '?', *dots);
+	} else
+		*dots = 0;
+}
+
+/*
+ * Restore the leaf to its original form.
+ */
+static void add_dots(char *path, SIZE_T dots)
+{
+	if (dots != 0) {
+		memset(pathleaf(path), '.', dots);
+	}
+}
+
+static void strip_dots(char *path, SIZE_T *dots)
+{
+	char *leaf = pathleaf(path);
+	if (isDotname(leaf)) {
+		*dots = strlen(leaf);
+		*leaf = EOS;
+	}
+}
+#define if_dots(path, dots) if (!strncmp(path, "..", dots))
+#else
+#define mask_dots(path, dots) /* nothing */
+#define add_dots(path, dots) /* nothing */
+#define strip_dots(path, dots) /* nothing */
+#define if_dots(path, dots) /* nothing */
+#endif /* USE_DOTNAMES */
 
 #if OPT_VMS_PATH
 /*
@@ -355,9 +412,15 @@ hybrid2vms(char *path)
 	TRACE(("hybrid2vms '%s'\n", path))
 	(void)strcpy(leaf, s = pathleaf(head));
 	*s = EOS;
-	if (s == path)	/* a non-canonical name got here somehow */
+	if (s == head)	/* a non-canonical name got here somehow */
 		(void) vms2unix_path(head, current_directory(FALSE));
-	pathcat(path, unix2vms_path(head, head), leaf);
+	(void) pathcat(path, head, leaf);
+	if (isDotname(leaf)) {
+		force_slash(path);	/* ...so we'll interpret as directory */
+		lengthen_path(path);	/* ...makes VMS-style absolute-path */
+	} else {
+		unix2vms_path(path, path);
+	}
 	TRACE((" -> '%s' hybrid2vms\n", path))
 }
 
@@ -469,9 +532,11 @@ sortMyBuff(void)
  * intermediate directory-name, we must 'stat()' each name, so that we can
  * provide the trailing slash in the completion.  This is slow.
  */
-static void
+static int
 fillMyBuff(char * name)
 {
+	int count = 0;
+	SIZE_T dots = 0;
 	register char	*s;
 #if SYS_OS2
 	FILEFINDBUF3 fb;
@@ -506,7 +571,7 @@ fillMyBuff(char * name)
 		 */
 		for_each_line(lp,MyBuff)
 			if (is_environ(lp->l_text))
-				return;
+				return 0;
 
 		/*
 		 * Copy all of the environment-variable names, prefixed with
@@ -518,7 +583,7 @@ fillMyBuff(char * name)
 			s = environ[n];
 			*d++ = name[0];
 			while (((*d = *s++) != '=') && (*d != EOS)) {
-				if ((d++ - path) > sizeof(path)-2)
+				if ((size_t)(d++ - path) > sizeof(path)-2)
 					break;
 			}
 			*d = EOS;
@@ -539,7 +604,7 @@ fillMyBuff(char * name)
 #if USE_QSORT
 		sortMyBuff();
 #endif
-		return;
+		return 0;
 	}
 
 	(void)strcpy(path, name);
@@ -549,11 +614,13 @@ fillMyBuff(char * name)
 #if OPT_VMS_PATH
 	(void)strcpy(temp, name);
 	hybrid2vms(path);		/* convert to canonical VMS name */
+#else
+	strip_dots(path, &dots);	/* ignore trailing /. or /.. */
 #endif
 	if (!is_environ(path) && !is_directory(path)) {
 		*pathleaf(path) = EOS;
 		if (!is_directory(path))
-			return;
+			return 1;
 #if OPT_VMS_PATH
 		*pathleaf(temp) = EOS;
 #endif
@@ -561,10 +628,43 @@ fillMyBuff(char * name)
 
 #if OPT_VMS_PATH
 	if (already_scanned(temp))	/* we match the hybrid name */
-		return;
+		return 1;
 #else
-	if (already_scanned(path))
-		return;
+	if (already_scanned(path)) {
+#if USE_DOTNAMES
+		/*
+		 * Handle the special cases where we're continuing a completion
+		 * with ".." on the end of the path.  We have to distinguish
+		 * the return value so that we can drive a second scan for the
+		 * case where there's no dot-names found.
+		 */
+		if (dots) {
+			char	temp[NFILEN];
+			LINE	*lp;
+			SIZE_T	need, want;
+			int	found = 0;
+
+			while (dots--)
+				strcat(path, ".");
+			(void)lengthen_path(strcpy(temp, path));
+			need = strlen(temp);
+			want = strlen(path);
+			for_each_line(lp,MyBuff) {
+				SIZE_T have = llength(lp);
+				if (have == need
+				 && !memcmp(lp->l_text, temp, need))
+				 	found = -1;
+				else if (have >= want
+				 && !memcmp(lp->l_text, path, want)) {
+					found = 1;
+					break;
+				}
+			}
+			return found;
+		}
+#endif
+		return 0;
+	}
 #endif
 
 	/**********************************************************************/
@@ -586,7 +686,7 @@ fillMyBuff(char * name)
 			if (!case_preserving)
 				(void) mklower(s);
 
-			if (strcmp(s, ".") == 0 || strcmp(s, "..") == 0)
+			if (isDotname(s))
 			 	continue;
 
 			if (only_dir) {
@@ -601,6 +701,7 @@ fillMyBuff(char * name)
 			}
 #endif
 			TRACE(("> '%s'\n", path))
+			if_dots(s,dots) count++;
 			(void)bs_find(path, strlen(path), MyBuff, (LINEPTR*)0);
 
 		} while (entries = 1, 
@@ -640,8 +741,7 @@ fillMyBuff(char * name)
 			vms_dir2path(path);
 #else
 # if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
-			if (!strcmp(leaf, ".")
-			 || !strcmp(leaf, ".."))
+			if (isDotname(leaf))
 			 	continue;
 # endif
 #endif
@@ -657,6 +757,7 @@ fillMyBuff(char * name)
 			}
 #endif
 			TRACE(("> '%s'\n", path))
+			if_dots(leaf,dots) count++;
 #if USE_QSORT
 #if OPT_VMS_PATH
 			vms2hybrid(s = strcpy(temp, path));
@@ -678,6 +779,8 @@ fillMyBuff(char * name)
 #endif
 	}
 #endif	/* SYS_OS2/!SYS_OS2 */
+	TRACE(("...fillMyBuff returns %d\n", count))
+	return count;
 }
 
 /*
@@ -686,7 +789,8 @@ fillMyBuff(char * name)
 static void
 makeMyList(char *name)
 {
-	register int	need, n;
+	register ALLOC_T need;
+	register int	n;
 	register LINE *	lp;
 	char *slashocc;
 	int len = strlen(name);
@@ -763,6 +867,10 @@ path_completion(int c, char *buf, int *pos)
 	int	code	= FALSE,
 		action	= (c == NAMEC || c == TESTC),
 		ignore	= (*buf != EOS && isInternalName(buf));
+#if USE_DOTNAMES
+	SIZE_T	dots = 0;
+	int	count;
+#endif
 
 	TRACE(("path_completion('%c' %d:\"%.*s\"\n", c, *pos, *pos,buf))
 #if OPT_VMS_PATH
@@ -803,7 +911,8 @@ path_completion(int c, char *buf, int *pos)
 				*s = EOS;
 			} else {
 				s = pathleaf(path);
-				if (is_vms_pathname(s, -TRUE)) {
+				if (strcmp(s, ".")
+				 && is_vms_pathname(s, -TRUE)) {
 					(void)strcpy(frac, s);
 					*s = EOS;
 				} else {	/* e.g., path=".." */
@@ -812,18 +921,28 @@ path_completion(int c, char *buf, int *pos)
 			}
 			if (*path == EOS)
 				(void)strcpy(path, current_directory(FALSE));
-			else
+			else {
+				if (!is_vms_pathname(path, -TRUE)) {
+					unix2vms_path(path, path);
+					if (*path == EOS)
+						(void)strcpy(path, current_directory(FALSE));
+				}
 				(void)lengthen_path(path);
+			}
 			(void)strcat(path, frac);
 		}
 		if (is_vms_pathname(path, -TRUE)) {
+			int pad = is_vms_pathname(path, TRUE);
+
 			vms2hybrid(path);
 			/*
 			 * FIXME: This compensates for the hack in canonpath
 			 */
 			if (!strcmp(buf, "/")) {
-				while (*pos < strlen(path))
+				while ((size_t)*pos < strlen(path))
 					force_output(path[*pos], buf, pos);
+			} else if (pad && *buf != EOS && !trailing_slash(buf)) {
+				force_output(SLASHC, buf, pos);
 			}
 		}
 #else
@@ -832,11 +951,6 @@ path_completion(int c, char *buf, int *pos)
 		} else {
 # if SYS_UNIX || OPT_MSDOS_PATH
 			char	**expand;
-
-			/* trim trailing "." if it is a "/." */
-			if ((s = last_slash(buf)) != 0
-			 && !strcmp(s+1, "."))
-				kbd_kill_response(buf, pos, '\b');
 
 			/*
 			 * Expand _unique_ wildcards and environment variables.
@@ -855,7 +969,9 @@ path_completion(int c, char *buf, int *pos)
 				(void)glob_free(expand);
 				break;
 			}
+			mask_dots(path, &dots);
 			(void)lengthen_path(path);
+			add_dots(path, dots);
 #  if OPT_MSDOS_PATH
 			/*
 			 * Pick up slash (special case) when we've just expanded a
@@ -874,8 +990,11 @@ path_completion(int c, char *buf, int *pos)
 
 		if ((s = is_appendname(buf)) == 0)
 			s = buf;
-		if ((*s == EOS) || trailing_slash(s))
+		if ((*s == EOS) || trailing_slash(s)) {
+			if (*path == EOS)
+				strcpy(path, ".");
 			(void)force_slash(path);
+		}
 
 		if ((s = is_appendname(path)) != NULL) {
 			register char *d;
@@ -894,7 +1013,41 @@ path_completion(int c, char *buf, int *pos)
 		newlen =
 		oldlen = strlen(path);
 
-		fillMyBuff(path);
+#if USE_DOTNAMES
+		/*
+		 * If we're on a filesystem that allows names beginning with
+		 * ".", try to handle the ambiguity between .name and ./ by
+		 * preferring matches on the former.  If we get a zero return
+		 * from the first scan, it means that we've only the latter
+		 * case to consider.
+		 */
+		count = fillMyBuff(path);
+		if (dots == 2) {
+			if (count == 0) {
+				force_slash(path);
+				lengthen_path(path);
+				newlen =
+				oldlen = strlen(path);
+#if 0
+				if ((MyBuff = bs_init(MyName)) == 0)
+					return FALSE;
+#endif
+				(void) fillMyBuff(path);
+			} else if (count < 0) {
+				lengthen_path(path);
+				newlen =
+				oldlen = strlen(path);
+			}
+		} else if (dots == 1) {
+			if (count == 0) {
+				lengthen_path(path);
+				newlen =
+				oldlen = strlen(path);
+			}
+		}
+#else
+		(void) fillMyBuff(path);
+#endif
 		makeMyList(path);
 
 		/* patch: should also force-dot to the matched line, as in history.c */

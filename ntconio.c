@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.19 1997/01/25 17:23:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.20 1997/02/08 12:42:05 tom Exp $
  *
  */
 
@@ -567,7 +567,6 @@ handle_mouse_event(MOUSE_EVENT_RECORD mer)
 			INPUT_RECORD ir;
 			DWORD nr;
 			int key;
-			BOOL rc;
 
 			if (!ReadConsoleInput(hConsoleInput, &ir, 1, &nr))
 				imdying(0);
@@ -642,7 +641,7 @@ ntgetch(void)
  */
 
 static int
-nttypahead(void)
+nttypahead()
 {
 	INPUT_RECORD ir;
 	DWORD nr;
@@ -691,7 +690,6 @@ nttypahead(void)
 static void
 ntscroll(int from, int to, int n)
 {
-	int i;
 	SMALL_RECT sRect;
 	COORD dest;
 	CHAR_INFO fill;
