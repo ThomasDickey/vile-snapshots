@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.171 1998/04/04 12:11:58 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.172 1998/04/09 21:16:45 kev Exp $
  *
  */
 
@@ -3192,7 +3192,7 @@ x_preparse_args(
 	    cur_win->screen,
 	    (EventMask) (ButtonPressMask | ButtonReleaseMask
 	    	       | (cur_win->focus_follows_mouse ? PointerMotionMask
-		                                       : ButtonMotionMask)
+		                                       : (Button1MotionMask | Button3MotionMask))
 	    	       | ExposureMask | VisibilityChangeMask),
 	    TRUE,
 	    x_process_event,

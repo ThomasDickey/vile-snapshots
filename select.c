@@ -18,7 +18,7 @@
  * transfering the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.60 1998/04/04 12:11:58 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.61 1998/04/09 21:16:45 kev Exp $
  *
  */
 
@@ -257,6 +257,8 @@ sel_extend(int wiping, int include_dot)
 		MK = selregion.ar_region.r_end;
 	else
 		MK = selregion.ar_region.r_orig;
+
+	/* FIXME: Make sure DOT and MK are in the same buffer */
 
 	/* 
 	 * If we're extending in the positive direction, we want to include DOT

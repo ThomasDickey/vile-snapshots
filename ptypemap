@@ -1,21 +1,21 @@
 TYPEMAP
-VI	T_VI
+VileBuf	* T_VileBuf
 
 INPUT
-T_VI	
-	if (sv_isa($arg, \"VI\")) {
+T_VileBuf
+	if (sv_isa($arg, \"Vile::Buffer\")) {
 	    IV tmp = SvIV((SV*)GvSV((GV*)SvRV($arg))); 
 	    $var = ($type) tmp;
 	    if (!tmp)
-		croak(\"screen no longer exists\");
+		croak(\"buffer no longer exists\");
 	}
 	else
 	    croak(\"$var is not of type ${ntype}\")
 
 
 OUTPUT
-T_VI
+T_VileBuf
 	if ($var != 0)
-	    newVIrv($arg, $var);
+	    newVBrv($arg, $var);
 	else
 	    sv_setsv($arg, &sv_undef);

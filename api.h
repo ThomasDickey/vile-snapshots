@@ -1,6 +1,23 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.6 1998/03/24 10:14:15 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.7 1998/04/09 21:16:45 kev Exp $
  */
+
+/*
+ * The VileBuf structure is used by an extension language (such
+ * as Perl) interface to provide an interface to BUFFER.  In this
+ * structure, we have a pointer to a BUFFER as well as other fields.
+ *
+ * In particular, the fwp (fake window pointer) is needed because
+ * most of vile's editing operations will not work right unless there
+ * is also an associated window.  We don't necessarily want to change
+ * the user visible windows, so we create a fake window (and then
+ * later destroy it) for the express purpose of fooling the rest of
+ * vile into thinking that it's working on a real window.  Care
+ * must be taken not to enter any display code, however, since these
+ * fake windows use negative numbers to denote the top line of the
+ * screen.
+ */
+
 typedef struct {
 	BUFFER    * bp; 
 	WINDOW    * fwp;		/* fake window pointer */ 
@@ -13,27 +30,32 @@ typedef struct {
 	int         dot_changed;	/* DOT explicitly changed -- 
 					   implies that DOT should 
 					   be propogated */ 
+	int	    ndel;		/* number of characters to delete upon
+					   setup; related to the inplace_edit
+					   stuff */
 #if OPT_PERL
 	void      * perl_handle;	/* perl visible handle to this 
 					   data structure */
 #endif
-} SCR;
+} VileBuf;
 
-extern	int	api_aline(SCR *, int, char *, int);
-extern	int	api_edit(SCR *sp, char *fname, SCR **retspp, int newscreen);
-extern	int	api_dline(SCR *, int);
-extern	int	api_gline(SCR *, int, char **, int *);
-extern	int	api_sline(SCR *, int, char *, int);
-extern	int	api_iline(SCR *, int, char *, int);
-extern	int	api_lline(SCR *, int *);
-extern	int	api_swscreen(SCR *, SCR *);
-extern	SCR *	api_fscreen(int, char *);
-extern	SCR *	api_bp2sp(BUFFER *bp);
+extern	int	api_aline(VileBuf *, int, char *, int);
+extern	int	api_edit(VileBuf *sp, char *fname, VileBuf **retspp);
+extern	int	api_dline(VileBuf *, int);
+extern	int	api_gline(VileBuf *, int, char **, int *);
+extern	int	api_sline(VileBuf *, int, char *, int);
+extern	int	api_iline(VileBuf *, int, char *, int);
+extern	int	api_lline(VileBuf *, int *);
+extern	int	api_swscreen(VileBuf *, VileBuf *);
+extern	VileBuf *api_fscreen(int, char *);
+extern	VileBuf *api_bp2vbp(BUFFER *bp);
 extern	void	api_command_cleanup(void);
-extern	int	api_dotinsert(SCR *sp, char *text, int len); 
-extern	int	api_dotgline(SCR *, char **, int *); 
-extern	int	api_gotoline(SCR *sp, int lno); 
-extern	void	api_setup_fake_win(SCR *sp); 
+extern	int	api_dotinsert(VileBuf *sp, char *text, int len); 
+extern	int	api_dotgline(VileBuf *, char **, int *, int *); 
+extern	int	api_gotoline(VileBuf *sp, int lno); 
+extern	void	api_setup_fake_win(VileBuf *sp, int do_delete); 
+extern	int	api_delregion(VileBuf *vbp);
+extern	int	api_motion(VileBuf *vbp, char *mstr);
 
-#define sp2bp(sp) (((SCR *)(sp))->bp)
-#define bp2sp(bp) ((SCR *) (bp)->b_api_private)
+#define vbp2bp(sp) (((VileBuf *)(sp))->bp)
+#define bp2vbp(bp) ((VileBuf *) (bp)->b_api_private)
