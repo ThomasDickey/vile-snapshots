@@ -1,4 +1,8 @@
-Changes for vile 8.2 (released ??? ??? ??, 1998)
+Changes for vile 8.2 (released Sun Oct 25, 1998)
+
+ (tom) 981025 (c)
+	+ check for null top_widget in x_close; other xvile crashes on VMS
+	  if I simply run xvile -"V".
 
  (tom) 981024 (b)
  	+ modify glob-expansion to always recognize "~" as a synonym for
