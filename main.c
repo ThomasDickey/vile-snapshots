@@ -23,7 +23,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.380 1999/05/31 19:05:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.381 1999/06/06 19:48:29 cmorgan Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -891,9 +891,8 @@ global_val_init(void)
 	set_global_g_val(GMDFORCE_CONSOLE, is_win95());
 #endif
 #if SYS_WINNT && defined(VILE_OLE)
-	/* Allocate console before spawning piped process? */
 	set_global_g_val_ptr(GVAL_REDIRECT_KEYS,
-			     strmalloc("F5::S,F10::S,F11::S,F7::F,F5:C:"));
+			     strmalloc("F5::S,F10::S,F11::S,F7::F,F5:C:,F9::Y"));
 #endif
 #ifdef GMDHISTORY
 	set_global_g_val(GMDHISTORY,	TRUE);

@@ -209,15 +209,19 @@ where
                       table near the end of this document for a list of
                       keycodes that may be redirected.
     <modifier>    :== S|C|A         <-- mnemonics for shift, control, alt
-    <action>      :== <flush>|<switch>
-    <flush>       :== F             <-- flush all modified buffers to disk
+    <action>      :== <flush>|<switch>|<sync>
+    <Flush>       :== F             <-- flush all modified buffers to disk
                                         prior to redirecting key
-    <switch>      :== S             <-- switch focus to redirected window
+    <Switch>      :== S             <-- switch focus to redirected window
                                         prior to redirecting key
+    <sYnc>        :== Y             <-- synchronize current buffer (at
+                                        its current line) within the
+                                        DevStudio editor.  Very useful
+                                        when setting breakpoints.
 
 The default list looks like so:
 
-    F5::S,F10::S,F11::S,F7::F,F5:C:
+    F5::S,F10::S,F11::S,F7::F,F5:C:,F9::Y
 
 which can be translated using this table:
 
@@ -228,27 +232,32 @@ which can be translated using this table:
     F11         Switch Focus   Step into
     F7          Flush buffers  Build application
     Ctrl+F5     <none>         Execute application
+    F9          Sync buffer    Set/Remove breakpoint at DevStudio's current
+                                  file location.
 
 
 Augmenting Winvile Control With DevStudio Macros
 ================================================
 We're almost set.  For example, we can now start the debugger from winvile
-by simply pressing F5.  Neat.  But wouldn't it be great if we could disable
-VisVile before starting the debugger so that breakpoints don't cause
-DevStudio to switch focus back to winvile?  This is possible, but requires
-an assist from a small macro (written in Visual Basic).  Included with the
-VisVile source distribution is a macro file called VisVile.dsm that
-includes assists for the redirected F5, F7, F10, and F11 keys.  The F5,
-F10, and F11 macros simply disable VisVile prior to executing DevStudio's
-DebugGo, DebugStepOver, and DebugStepInto commands, respectively.  The F7
-macro is a bit more complicated, but each of its actions are documented.
-Notice that VisVile.dsm doesn't include an assist macro for Ctrl+F5, which
-makes sense, because target application execution is a standalone action
-unaffected by the editor or the IDE.
+by simply pressing F5.  Or, we might use winvile to position a source file
+at a desired breakpoint location and then press F9 to actually set the
+breakpoint in DevStudio's debugger.  Neat.  But wouldn't it be great if we
+could disable VisVile before starting the debugger so that breakpoints
+don't cause DevStudio to switch focus back to winvile?  This is possible,
+but requires an assist from a small macro (written in Visual Basic).
+Included with the VisVile source distribution is a macro file called
+VisVile.dsm that includes assists for the redirected F5, F7, F9, F10, and
+F11 keys.  The F5, F9, F10, and F11 macros simply disable VisVile prior to
+executing DevStudio's DebugGo, DebugToggleBreakpoint, DebugStepOver, and
+DebugStepInto commands, respectively.  The F7 macro is a bit more
+complicated, but each of its actions are documented.  Notice that
+VisVile.dsm doesn't include assist macros for Ctrl+F5, which makes sense,
+because target application execution does not require disabling VisVile.
 
 Our final configuration task, then, is to modify DevStudio so that it
-executes Visvile.dsm's macros when the F5, F7, F10, and F11 keys are pressed.
-We want control flow established like so (using the F10 key as an example):
+executes Visvile.dsm's macros when the F5, F7, F9, F10, and F11 keys are
+pressed.  We want control flow established like so (using the F10 key as an
+example):
 
         Winvile User Presses F10
                ||
@@ -293,7 +302,7 @@ To achieve the desired objective, follow this recipe:
    again enter F10 as a new shortcut key (and don't forget to click the
    Assign button).
 
-Repeat step 4 for the F5, F7, and F11 macros.
+Repeat step 4 for the F5, F7, F9, and F11 macros.
 
 At this point it's probably a good idea to close DevStudio and re-invoke.
 After checking to ensure that VisVile.dll and VisVile.dsm are still
@@ -356,7 +365,7 @@ Redirectable Virtual Keycode Names (sans VK_ prefix)
 
 Copyright And Acknowledgments
 =============================
-Copyright (C) 1998 Clark Morgan
+Copyright (C) 1998-1999 Clark Morgan
 
 VisVile is based upon VisVim, written by Heiko Erhardt (Copyright (C) 1997
 Heiko Erhardt).  VisVim is based upon VisEmacs, written by Christopher
@@ -382,6 +391,7 @@ Unique to VisVile:
 - "Redirect selected Winvile keys to DevStudio" option.
 - When winvile is in insert mode, visvile forces the editor to command mode
   before sending command strings.
+- Synchronization of winvile's current buffer with DevStudio's editor.
 
 Unique to VisVim:
 - "CWD set to opened document's parent directory" option

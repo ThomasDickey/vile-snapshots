@@ -42,6 +42,23 @@ kevin buettner, kev@primenet.com
 tom dickey, dickey@clark.net (current maintainer)
 
 ------------------------------------------------------
+Up-to-date copies of vile, including executables for DOS, Win32 and
+OS/2 are found at
+	ftp://ftp.clark.net/pub/dickey/vile/
+
+which is mirrored at
+	ftp://ftp.phred.org/pub/vile/
+	ftp://ftp.ci.uminho.pt/pub/mirrors/vile/
+	http://ciumix.ci.uminho.pt/mirrors/vile/
+
+Development patches are found at
+	ftp://ftp.clark.net/pub/dickey/vile/patches/
+
+In addition, we have distributed copies at other sites, including
+metalabs.unc.edu (Linux), hobbes.nmsu.edu (OS/2) and the VMS Freeware
+CDROM's.
+
+------------------------------------------------------
 Send bug reports to
 	vile-bugs@foxharp.boston.ma.us
 
@@ -343,5 +360,5 @@ Apr, 1999
     + many VMS bug fixes and enhancements.  8.3 is a keeper if you use VMS.
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.73 1999/04/28 00:47:05 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.74 1999/06/06 19:39:59 tom Exp $
 -------------------------------

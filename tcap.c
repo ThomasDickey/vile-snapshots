@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.117 1999/05/10 23:41:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.118 1999/06/07 00:33:04 tom Exp $
  *
  */
 
@@ -600,6 +600,19 @@ tcapmove(register int row, register int col)
 	putpad(tgoto(tc_CM, col, row));
 }
 
+#ifdef GVAL_VIDEO
+#define REVERSED (global_g_val(GVAL_VIDEO) & VAREV)
+static void
+set_reverse(void)
+{
+	if (REVERSED)
+		putpad(tc_SO);
+}
+#else
+#define REVERSED 0
+#define set_reverse() /* nothing */
+#endif
+
 #if	OPT_COLOR
 /*
  * Accommodate brain-damaged non-bce terminals by writing a blank to each
@@ -625,7 +638,7 @@ erase_non_bce(int row, int col)
 		term.curmove(row, col);
 }
 
-#define NEED_BCE_FIX (!have_bce && shown_bcolor != NO_COLOR)
+#define NEED_BCE_FIX ((!have_bce && shown_bcolor != NO_COLOR) || REVERSED)
 #define FILL_BCOLOR(row,col) if(NEED_BCE_FIX) erase_non_bce(row, col)
 #else
 #define FILL_BCOLOR(row,col) /*nothing*/
@@ -634,6 +647,7 @@ erase_non_bce(int row, int col)
 static void
 tcapeeol(void)
 {
+	set_reverse();
 #if	OPT_COLOR
 	if (NEED_BCE_FIX) {
 		erase_non_bce(ttrow, ttcol);
@@ -645,6 +659,7 @@ tcapeeol(void)
 static void
 tcapeeop(void)
 {
+	set_reverse();
 #if	OPT_COLOR
 	tcapfcol(gfcolor);
 	tcapbcol(gbcolor);
@@ -876,6 +891,14 @@ tcapattr(UINT attr)
 	register unsigned n;
 
 	attr = VATTRIB(attr);
+#ifdef GVAL_VIDEO
+	if (REVERSED) {
+		if (attr & VASEL)
+			attr ^= VASEL;
+		else
+			attr ^= VAREV;
+	}
+#endif
 	if (attr & VASPCOL) {
 		attr = VCOLORATTR((attr & (NCOLORS - 1)));
 	} else {

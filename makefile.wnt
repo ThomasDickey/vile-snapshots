@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.47 1999/05/19 01:14:24 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.48 1999/06/06 19:48:29 cmorgan Exp $
 #
 #
 !include <ntwin32.mak>
@@ -86,7 +86,7 @@ DISP_DEF = -DDISP_NTWIN
 TARGET   = winvile.exe
 CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
            -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(DBGOPTS)
-LDFLAGS  = -nologo /nologo /subsystem:windows /incremental:no -pdb:none
+LDFLAGS  = -nologo /subsystem:windows /incremental:no -pdb:none
 SCREEN   = ntwinio
 LIBS     = $(LD_DEBUG) $(guilflags) $(guilibsmt) $(VILE_PERL_LIB) $(OLELIBS)
 EXTRA    = winvile.res
@@ -98,7 +98,7 @@ OLEOBJS  = w32ole.obj w32reg.obj w32ole.res
 OLESRCS  = w32ole.cpp w32reg.c
 WRAPUTIL = wvwrap.exe
 EXTRA    =
-OLELIBS  = ole32.lib uuid.lib oleaut32.lib
+OLELIBS  = ole32.lib uuid.lib oleaut32.lib comsupp.lib
 !endif
 
 !IF "$(CFG)" == "winvile-with-perl" || "$(CFG)" == "vile-with-perl"

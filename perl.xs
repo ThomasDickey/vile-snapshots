@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.38 1999/04/20 01:36:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.43 1999/06/08 00:39:00 tom Exp $
  */
 
 /*#
@@ -149,7 +149,7 @@ static int  perldo_prompt(void);
 
 /* write each line to message line */
 static int
-write_message(SV *sv)
+write_message(char *prefix, SV *sv)
 {
     int count = 0;
     char *text = SvPV(sv, na);
@@ -167,7 +167,7 @@ write_message(SV *sv)
 		nl = 0;
 	}
 
-	mlforce("%s", text);
+	mlforce("%s%s", prefix, text);
 	text = nl;
 	count++;
     }
@@ -205,7 +205,7 @@ require(char *file, int optional)
 	    return SORTOFTRUE;
     }
 
-    write_message(GvSV(errgv));
+    write_message("perl require:", GvSV(errgv));
     return FALSE;
 }
 
@@ -370,7 +370,7 @@ do_perl_cmd(SV *cmd, int inplace)
 	if (!SvTRUE(GvSV(errgv)))
 	    return TRUE;
 
-	write_message(GvSV(errgv));
+	write_message("perl cmd:", GvSV(errgv));
     }
 
     return FALSE;
@@ -1464,6 +1464,33 @@ have_length:
     return TRUE;
 }
 
+static char *
+FindMode(char *mode, int isglobal, VALARGS *args)
+{
+    int status = FALSE;
+    int literal = (toktyp(mode) == TOK_LITSTR);
+    char *value;
+
+    if (literal)
+	status = find_mode(curbp, mode, isglobal, args);
+
+    if (status == TRUE) {
+	value = string_mode_val(args);
+    } else {
+	if (literal) {
+	    char new_mode[NLINE];
+	    new_mode[0] = '$';
+	    vl_strncpy(new_mode+1, mode, sizeof(new_mode)-1);
+	    value = (char *)tokval(new_mode);
+	} else {
+	    value = (char *)tokval(mode);
+	}
+    }
+
+    TRACE(("value of %s(%s) = %s\n", status ? "mode" : "", mode, value))
+    return value;
+}
+
 
 MODULE = Vile	PACKAGE = Vile
 
@@ -1578,7 +1605,7 @@ Warn(warning)
     char *warning
 
     CODE:
-	write_message(GvSV(errgv));
+	write_message("perl warn:", GvSV(errgv));
 	sv_catpv(GvSV(errgv),warning);
 
   #
@@ -2008,6 +2035,7 @@ set(...)
 	int isglobal;
 	int issetter;
 	char *mode;
+	char *value;
 	int status;
 	VALARGS args;
 	I32 gimme;
@@ -2060,9 +2088,12 @@ set(...)
 	    mode = SvPV(ST(argno), na);
 	    argno++;
 
-	    /* Look for a mode first */
-	    status = find_mode(curbp, mode, isglobal, &args);
+	    TRACE(("Vile::%s(%d:%s)\n", issetter ? "set" : "get", argno, mode))
 
+	    /* Look for a mode first */
+	    status = FALSE;
+	    if (toktyp(mode) == TOK_LITSTR)
+		status = find_mode(curbp, mode, isglobal, &args);
 
 	    if (status == TRUE) {
 		if (modenames)
@@ -2092,12 +2123,6 @@ set(...)
 		}
 	    } else {
 		const char *val;
-		val = tokval(mode);
-		if (val == error_val) {
-		    if (modenames)
-			free(modenames);
-		    croak("set: Invalid mode or variable %s", mode);
-		}
 
 		if (modenames)
 		    modenames[nmodenames++] = mode;
@@ -2131,11 +2156,8 @@ set(...)
 	    }
 	    else {
 		if (mode != NULL) {
-		    status = find_mode(curbp, mode, isglobal, &args);
-		    if (status == TRUE)
-			XPUSHs(sv_2mortal(newSVpv(string_mode_val(&args), 0)));
-		    else
-			XPUSHs(sv_2mortal(newSVpv((char *)tokval(mode), 0)));
+		    value = FindMode(mode, isglobal, &args);
+		    XPUSHs(sv_2mortal(newSVpv(value, 0)));
 		}
 	    }
 	}
@@ -2143,15 +2165,9 @@ set(...)
 	    int i;
 	    for (i = 0; i < nmodenames; i++) {
 		mode = modenames[i];
-		status = find_mode(curbp, mode, isglobal, &args);
-		if (status == TRUE) {
-		    XPUSHs(sv_2mortal(newSVpv(mode, 0)));
-		    XPUSHs(sv_2mortal(newSVpv(string_mode_val(&args), 0)));
-		}
-		else {
-		    XPUSHs(sv_2mortal(newSVpv(mode, 0)));
-		    XPUSHs(sv_2mortal(newSVpv((char *)tokval(mode), 0)));
-		}
+		value = FindMode(mode, isglobal, &args);
+		XPUSHs(sv_2mortal(newSVpv(mode, 0)));
+		XPUSHs(sv_2mortal(newSVpv(value, 0)));
 	    }
 	    free(modenames);
 	}
@@ -3330,7 +3346,7 @@ PRINT(vbp, ...)
 		    sv_catsv(tmp, ST(i));
 		}
 
-		if (write_message(tmp))
+		if (write_message("", tmp))
 		    use_ml_as_prompt = 1;
 
 		SvREFCNT_dec(tmp);
