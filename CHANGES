@@ -1,5 +1,30 @@
 Changes for vile 8.1 (released ??? ??? ??, 1998)
 
+ (tom) 980726 (h)
+	+ updated config.guess, config.sub based on automake 1.3.
+	+ combine some logic in file.c with new function strip_if_dosmode().
+	+ correct typo in perl.xs from 8.0g
+ 	+ change win32 _snprintf calls to lsprintf, to build with Borland C++.
+	+ modify makefile.wnt to build with Perl 5.004, which is missing a
+	  global for 'rs' on win32 (patch by Clark Morgan, analysis by Kevin).
+	+ modified Clark's change so that the Win32-specific keycodes are returned
+	  only when combined with key-modifiers (shift/alt/ctrl) that are specific
+	  to Win32.
+	+ mods to cause apropos and show-bindings to display proper binding
+	  strings for the Win32 clipboard-related features.  Also, modified
+	  ntconio to support noticed that winvile allows the user to sweep out
+	  a rectangular region when a control key is pressed during mouse-based
+	  text selection as in winvile, and documented in vile.hlp (patch by
+	  Clark Morgan).
+	+ correct message in win32 clipboard paste reporting the number of
+	  bytes transferred to the clipboard (patch by Clark Morgan).
+	+ updated makefile.blc, modified ifdefs to build with with Borland C++
+	  5.02 (patch by Ryan Murray <rmurray@cyberhqz.com>).
+	+ rename update_scrollbar to gui_update_scrollbar as part of ongoing
+	  work on scrollbars for winvile.
+	+ move autoconf tests for OpenLook and Motif libraries into aclocal.m4,
+	  for reuse in other applications (e.g., xterm).
+
  (kev) 980725 (g)
  	+ perl.xs (incgv, rs, ofslen, ofs, ors, orslen): Added PL_ prefix
 	  to these for perl5.005.  Defined these in terms of the old

@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.228 1998/07/10 00:20:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.229 1998/07/26 22:49:15 tom Exp $
  *
  */
 
@@ -648,6 +648,22 @@ apply_dosmode(BUFFER *bp, int doslines, int unixlines)
 }
 
 static void
+strip_if_dosmode(BUFFER *bp, int doslines, int unixlines)
+{
+	apply_dosmode(bp, doslines, unixlines);
+	if (b_val(bp, MDDOS)) {  /* if it _is_ a dos file, strip 'em */
+		register LINE   *lp;
+		for_each_line(lp,bp) {
+			if (llength(lp) > 0 &&
+				  lgetc(lp, llength(lp)-1) == '\r') {
+				llength(lp)--;
+				bp->b_bytecount--;
+			}
+		}
+	}
+}
+
+static void
 guess_dosmode(BUFFER *bp)
 {
 	int	doslines = 0,
@@ -664,17 +680,7 @@ guess_dosmode(BUFFER *bp)
 			unixlines++;
 		}
 	}
-	apply_dosmode(bp, doslines, unixlines);
-	if (b_val(bp, MDDOS)) {
-		/* then eliminate 'em if necessary */
-		for_each_line(lp,bp) {
-			if (llength(lp) > 0 &&
-					lgetc(lp, llength(lp)-1) == '\r') {
-				llength(lp)--;
-			}
-		}
-	}
-	bp->b_bytecount -= doslines;
+	strip_if_dosmode(bp, doslines, unixlines);
 	TRACE(("guess_dosmode %d\n", b_val(bp, MDDOS)))
 }
 
@@ -686,8 +692,6 @@ guess_dosmode(BUFFER *bp)
 int
 set_dosmode(int f, int n GCC_UNUSED)
 {
-	make_local_b_val(curbp, MDDOS);
-
 	guess_dosmode(curbp);
 
 	/* force dos mode on the buffer, based on the user argument */
@@ -1169,17 +1173,7 @@ slowreadf(register BUFFER *bp, int *nlinep)
         }
 #if OPT_DOSFILES
 	if (global_b_val(MDDOS)) {
-		apply_dosmode(bp, doslines, unixlines);
-		if (b_val(bp, MDDOS)) {  /* if it _is_ a dos file, strip 'em */
-        		register LINE   *lp;
-			for_each_line(lp,bp) {
-				if (llength(lp) > 0 &&
-					  lgetc(lp, llength(lp)-1) == '\r') {
-					llength(lp)--;
-				}
-			}
-			bp->b_bytecount -= doslines;
-		}
+		strip_if_dosmode(bp, doslines, unixlines);
 	}
 #endif
 	return s;

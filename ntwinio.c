@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.12 1998/07/09 09:34:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.14 1998/07/26 21:56:28 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -742,54 +742,48 @@ ntkclose(void)	/* close the keyboard */
 {
 }
 
-static const struct {
+static struct {
 	int	windows;
 	int	vile;
-	int	shift;
 } keyxlate[] = {
-	{ VK_NEXT,	KEY_Next,	0 },
-	{ VK_PRIOR,	KEY_Prior,	0 },
-	{ VK_END,	KEY_End,	0 },
-	{ VK_HOME,	KEY_Home,	0 },
-	{ VK_LEFT,	KEY_Left,	0 },
-	{ VK_RIGHT,	KEY_Right,	0 },
-	{ VK_UP,	KEY_Up,		0 },
-	{ VK_DOWN,	KEY_Down,	0 },
-	{ VK_INSERT,	KEY_F33,   	LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED },
-	{ VK_INSERT,	KEY_F34,   	LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED },
-	{ VK_INSERT,	KEY_F35,   	SHIFT_PRESSED },
-	{ VK_INSERT,	KEY_Insert,	0 },
-	{ VK_DELETE,	KEY_Delete,	0 },
-	{ VK_HELP,	KEY_Help,	0 },
-	{ VK_SELECT,	KEY_Select,	0 },
-	{ VK_TAB,	'\t',		0 },
-#if FIXME
-	{ VK_TAB,	'\t',		SHIFT_PRESSED },
+	{ VK_NEXT,	KEY_Next },
+	{ VK_PRIOR,	KEY_Prior },
+	{ VK_END,	KEY_End },
+	{ VK_HOME,	KEY_Home },
+	{ VK_LEFT,	KEY_Left },
+	{ VK_RIGHT,	KEY_Right },
+	{ VK_UP,	KEY_Up },
+	{ VK_DOWN,	KEY_Down },
+	{ VK_INSERT,	KEY_Insert },
+	{ VK_DELETE,	KEY_Delete },
+	{ VK_HELP,	KEY_Help },
+	{ VK_SELECT,	KEY_Select },
+#if 0
 	/* Merely pressing the Alt key generates a VK_MENU key event. */
-	{ VK_MENU,	KEY_Menu,	0 },
+	{ VK_MENU,	KEY_Menu },
 #endif
-	{ VK_F1,	KEY_F1,		0 },
-	{ VK_F2,	KEY_F2,		0 },
-	{ VK_F3,	KEY_F3,		0 },
-	{ VK_F4,	KEY_F4,		0 },
-	{ VK_F5,	KEY_F5,		0 },
-	{ VK_F6,	KEY_F6,		0 },
-	{ VK_F7,	KEY_F7,		0 },
-	{ VK_F8,	KEY_F8,		0 },
-	{ VK_F9,	KEY_F9,		0 },
-	{ VK_F10,	KEY_F10,	0 },
-	{ VK_F11,	KEY_F11,	0 },
-	{ VK_F12,	KEY_F12,	0 },
-	{ VK_F13,	KEY_F13,	0 },
-	{ VK_F14,	KEY_F14,	0 },
-	{ VK_F15,	KEY_F15,	0 },
-	{ VK_F16,	KEY_F16,	0 },
-	{ VK_F17,	KEY_F17,	0 },
-	{ VK_F18,	KEY_F18,	0 },
-	{ VK_F19,	KEY_F19,	0 },
-	{ VK_F20,	KEY_F20,	0 },
-	/* Manually translate Ctrl-6 into Ctrl-^. */
-	{ '6',		'^'-'@',	LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED },
+	{ VK_F1,	KEY_F1 },
+	{ VK_F2,	KEY_F2 },
+	{ VK_F3,	KEY_F3 },
+	{ VK_F4,	KEY_F4 },
+	{ VK_F5,	KEY_F5 },
+	{ VK_F6,	KEY_F6 },
+	{ VK_F7,	KEY_F7 },
+	{ VK_F8,	KEY_F8 },
+	{ VK_F9,	KEY_F9 },
+	{ VK_F10,	KEY_F10 },
+	{ VK_F11,	KEY_F11 },
+	{ VK_F12,	KEY_F12 },
+	{ VK_F13,	KEY_F13 },
+	{ VK_F14,	KEY_F14 },
+	{ VK_F15,	KEY_F15 },
+	{ VK_F16,	KEY_F16 },
+	{ VK_F17,	KEY_F17 },
+	{ VK_F18,	KEY_F18 },
+	{ VK_F19,	KEY_F19 },
+	{ VK_F20,	KEY_F20 },
+	/* Allow ^-6 to invoke the alternate-buffer command, a la Unix.  */
+	{ '6',		'6' },
 };
 
 static int savedChar;
@@ -801,21 +795,38 @@ decode_key_event(KEY_EVENT_RECORD *irp)
     int key;
     int i;
 
-    key = (unsigned char) irp->uChar.AsciiChar;
-    if (key != 0) {
+    if ((key = (unsigned char) irp->uChar.AsciiChar) != 0)
         return key;
-    }
 
     for (i = 0; i < TABLESIZE(keyxlate); i++)
     {
         if (keyxlate[i].windows == irp->wVirtualKeyCode)
         {
-            if (keyxlate[i].shift != 0 &&
-                    !(keyxlate[i].shift & irp->dwControlKeyState))
+	    DWORD state = irp->dwControlKeyState;
+
+	    /*
+	     * If this key is modified in some way, we'll prefer to use the
+	     * Win32 definition.  But only for the modifiers that we
+	     * recognize.  Specifically, we don't care about ENHANCED_KEY,
+	     * since we already have portable pageup/pagedown and arrow key
+	     * bindings that would be lost if we used the Win32-only
+	     * definition.
+	     */
+	    if (state &
+		(LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED
+		| LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED
+		| SHIFT_PRESSED))
             {
-                continue;
+                key = W32_KEY | keyxlate[i].windows;
+                if (state & (LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED))
+                    key |= W32_CTRL;
+                if (state & (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED))
+                    key |= W32_ALT;
+                if (state & SHIFT_PRESSED)
+                    key |= W32_SHIFT;
             }
-            key = keyxlate[i].vile;
+            else
+                key = keyxlate[i].vile;
             TRACE(("... %#x -> %#x\n", irp->wVirtualKeyCode, key))
             break;
         }

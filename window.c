@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.81 1998/04/28 10:15:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.82 1998/07/22 00:54:20 tom Exp $
  *
  */
 
@@ -631,7 +631,6 @@ splitwind(int f, int n)
  * all the hard work. You don't just set "force reframe" because dot would
  * move.
  */
-/* ARGSUSED */
 int
 enlargewind(int f, int n)
 {

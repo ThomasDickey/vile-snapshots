@@ -13,7 +13,7 @@
  *    Subsequent copies do not show this cursor.  On an NT 4.0 host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.7 1998/07/15 00:56:26 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.10 1998/07/26 12:18:20 tom Exp $
  */
 
 #include <windows.h>
@@ -48,12 +48,11 @@ report_cbrdstats(unsigned nbyte, unsigned nline, char *direction)
 
     if (! global_b_val(MDTERSE))
     {
-        _snprintf(buf,
-                  sizeof(buf),
+        lsprintf(buf,
                   "[Copied %u line%s, %u bytes %s clipboard]",
                   nline,
                   PLURAL(nline),
-                  nbyte - 1,   /* subtract terminating nul */
+                  nbyte,
                   direction);
         mlwrite(buf);
     }
@@ -93,7 +92,13 @@ setclipboard(HGLOBAL hClipMem, unsigned nbyte, unsigned nline)
         GlobalFree(hClipMem);
     }
     else
-        report_cbrdstats(nbyte, nline, "to");  /* success */
+    {
+        /* success */
+
+        report_cbrdstats(nbyte - 1,  /* subtract terminating NUL */
+                         nline,
+                         "to");
+    }
     return (rc);
 }
 
@@ -530,7 +535,7 @@ map_and_insert(unsigned c,       /* ANSI char to insert   */
                unsigned *nbyte   /* total #chars inserted */
                )
 {
-    int  rc, tmp;
+    int  rc;
     MAP  key, *rslt_p;
     char *str;
 

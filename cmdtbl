@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.159 1998/07/17 09:54:39 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.160 1998/07/23 09:19:56 cmorgan Exp $
 #
 #
 
@@ -106,6 +106,7 @@ abbrev		NONE|(EXRCOK|EXTRA)
 altbuff		NONE
 	"alternate-buffer"		!FEWNAMES
 	'^^'
+	'CTRL+6'			W32KY	SYS_WINNT
 	<switch to previous buffer>
 append		REDO|UNDO
 	"append-chars"			!FEWNAMES
@@ -167,7 +168,6 @@ backword	MOTION
 	"previous-word"			!FEWNAMES
 	"back-word"			!FEWNAMES
 	'B'
-#	'FN-\163'			IBM_KBD
 	<move left by CNT \"big\" words>
 backviword	MOTION
 	"previous-punctuated-word"	!FEWNAMES
@@ -197,14 +197,6 @@ bktoshell	NONE|(BANG)		OPT_SHELL
 	"stop!"
 	'^Z'
 	<suspend the editor>
-cbrdcpy_unnamed NONE 			SYS_WINNT
-	"copy-unnamed-reg-to-clipboard"
-	'FN-\255'			KEY_F33
-	<copies the unnamed register selection to the windows clipboard>
-cbrdpaste REDO|UNDO			SYS_WINNT
-	"paste-from-clipboard"
-	'FN-\257'			KEY_F35
-	<paste the windows clipboard contents>
 cd		NONE			OPT_SHELL
 	"cd"
 	"change-directory"
@@ -245,10 +237,6 @@ consearch	ABSM|MOTION
 wordcount	RANGE			OPT_WORDCOUNT
 	"count-words"
 	<count words, lines, and chars in the region>
-opercbrdcpy	OPER|(RANGE|NOMOVE)	SYS_WINNT
-	"copy-to-clipboard"
-	'FN-\256'			KEY_F34
-	<copies the specified region to the windows clipboard>
 opercopy	OPER|(RANGE|EXTRA)
 	"copy-til"
 	"c"
@@ -405,15 +393,15 @@ cbuf32		REDO			OPT_EXEC_MACROS>31
 	'FN-\254'			KEY_F32
 	"execute-macro-32"		!FEWNAMES
 	<execute [Macro 32]>
-cbuf33		REDO			(OPT_EXEC_MACROS>32&&(!SYS_WINNT))
+cbuf33		REDO			OPT_EXEC_MACROS>32
 	'FN-\255'			KEY_F33
 	"execute-macro-33"		!FEWNAMES
 	<execute [Macro 33]>
-cbuf34		REDO			(OPT_EXEC_MACROS>33&&(!SYS_WINNT))
+cbuf34		REDO			OPT_EXEC_MACROS>33
 	'FN-\256'			KEY_F34
 	"execute-macro-34"		!FEWNAMES
 	<execute [Macro 34]>
-cbuf35		REDO			(OPT_EXEC_MACROS>34&&(!SYS_WINNT))
+cbuf35		REDO			OPT_EXEC_MACROS>34
 	'FN-\257'			KEY_F35
 	"execute-macro-35"		!FEWNAMES
 	<execute [Macro 35]>
@@ -649,7 +637,6 @@ forwword	MOTION
 	"forward-word"			!FEWNAMES
 	"next-word"			!FEWNAMES
 	'W'
-#	'FN-\164'			IBM_KBD
 	<move right by CNT \"big\" words>
 forwviword	MOTION
 	"forward-punctuated-word"	!FEWNAMES
@@ -706,7 +693,6 @@ gotoeop		ABSM|MOTION
 	"next-paragraph"		!FEWNAMES
 	"down-paragraph"		!FEWNAMES
 	'}'
-#	'FN-\166'			IBM_KBD
 	<move to the end of a paragraph>
 gotobob		ABSM|MOTION		!SMALLER
 	"beginning-of-file"		!FEWNAMES
@@ -1551,3 +1537,62 @@ zzquit		NONE|(BANG|VI_NL)
 	'Z'
 	"stuttered-write-all-and-quit"	!FEWNAMES
 	<if repeated, leave the editor, writing modified buffers as needed>
+#
+# --------------------------- Win32 Key Bindings -----------------------
+#
+# Key bindings from here to the end of file use the following special
+# Win32 keyboard modifiers:  SHIFT, CTRL (control key), and ALT.  To
+# date, only the following keys may be bound to these modifiers:
+#
+#     Insert   '6'
+#
+# Why, you ask?  Good question.  I actually wanted to extend vile to
+# permit the user to bind any QWERTY key with the aforementioned modifiers
+# and truly open up the "map space" for Win32 users.  However, after reading
+# Chapter 5 of _Programming Windows 95_ (by Charles Petzold), it became
+# clear to me that adding the necessary infrastructre (in ntconio.c and
+# ntwinio.c) would most likely have a very negative impact on non-English
+# users (i.e., most of the dead key support for diacritic marks would be
+# lost if ntconio.c and ntwinio.c began translating the full spectrum of
+# Windows KEYDOWN and CHAR messages).  Consequently, it's much safer to
+# add special modifier bindings (e.g., Alt+Insert), on a case-by-case basis
+# to keys that probably won't be used:
+#
+# a) in future winvile menus, and
+# b) as diacritic generating keys.
+#
+# If you want to add additional bindings, say Alt+Delete, you'll need to
+# modify (at least):
+#
+#   bind.c   (to properly decode the Delete key)
+#   mktbls.c (to accept Delete when parsing W32KY specifications in this file)
+#
+# Other bindings may require modifications to the keyxlate table in
+# ntconio.c and ntwinio.c .  In general, I wouldn't add anymore special
+# Win32 bindings than necessary and I'd definitely read the aforementioned
+# chapter in Petzold's book before making a lot of changes to vile.
+#
+#                               Notes
+#                               -----
+# 1) The key "conditional" (which optionally follows the key binding), must
+#    be hardwired as W32KY (no exceptions).
+#
+# 2) I haven't made any attempt to permit vile users to map/bind the
+#    special modifiers (for all of the reasons listed above).  Basically,
+#    this is a one-way feature (i.e., the bindings are applied only at
+#    compile time and only via this file).
+#
+# - Clark Morgan  July, 1998
+#
+cbrdcpy_unnamed NONE 			SYS_WINNT
+	"copy-unnamed-reg-to-clipboard"
+	'ALT+INSERT'			W32KY
+	<copies the unnamed register selection to the windows clipboard>
+cbrdpaste REDO|UNDO			SYS_WINNT
+	"paste-from-clipboard"
+	'SHIFT+INSERT'			W32KY
+	<paste the windows clipboard contents>
+opercbrdcpy	OPER|(RANGE|NOMOVE)	SYS_WINNT
+	"copy-to-clipboard"
+	'CTRL+INSERT'			W32KY
+	<copies the specified region to the windows clipboard>

@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.28 1998/07/03 23:59:03 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.29 1998/07/23 09:19:56 cmorgan Exp $
 #
 #
 !include <ntwin32.mak>
@@ -68,7 +68,17 @@ LIBS     = $(LD_DEBUG) $(guilflags) $(guilibsmt) $(VILE_PERL_LIB)
 !endif
 
 !IF "$(CFG)" == "winvile-with-perl" || "$(CFG)" == "vile-with-perl"
-PERLOPTS = -DOPT_PERL=1 -I$(VILE_PERL_INC)
+#
+# CPAN's most recent X86 binary perl distribution, dated 12-Nov-97, does
+# not export perl's record separator symbol ($/).  Consequently, the
+# preprocessor macro HAVE_BROKEN_PERL_RS must be defined to permit
+# successful linking of perl-embedded versions of the editor.  When this
+# macro is defined, READLINE performance in perl.xs may be adversely
+# affected.  Comment out the makefile macro "PERLFIX" if your version of
+# perl properly exports $/ .
+#
+PERLFIX  = -DHAVE_BROKEN_PERL_RS
+PERLOPTS = -DOPT_PERL=1 -I$(VILE_PERL_INC) $(PERLFIX)
 PERLOBJS = api.obj perl.obj watch.obj
 PERLSRCS = api.c perl.c watch.c
 PERLCFG  = $(THE_PERLCFG)
@@ -173,5 +183,5 @@ select.obj:	nefunc.h
 spawn.obj:	nefunc.h
 termio.obj:	nefunc.h
 version.obj:	patchlev.h
-w32misc.obj:	nefunc.h 
+w32misc.obj:	nefunc.h
 word.obj:	nefunc.h

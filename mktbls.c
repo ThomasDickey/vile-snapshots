@@ -7,7 +7,7 @@
  *	Copyright (c) 1990 by Paul Fox
  *	Copyright (c) 1990, 1995 by Paul Fox and Tom Dickey
  *
- *	See the file "cmdtbls" for input data formats, and "estruct.h" for
+ *	See the file "cmdtbl" for input data formats, and "estruct.h" for
  *	the output structures.
  *
  * Heavily modified/enhanced to also generate the table of mode and variable
@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.88 1998/07/01 23:10:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.90 1998/07/26 23:16:21 tom Exp $
  *
  */
 
@@ -160,6 +160,7 @@ static	char	*Blank = "";
 
 static	LIST	*all_names,
 		*all_kbind,	/* data for kbindtbl[] */
+		*all_w32bind,	/* w32 data for kbindtbl[] */
 		*all_funcs,	/* data for extern-lines in neproto.h */
 		*all__FUNCs,	/* data for {}-lines in nefunc.h */
 		*all__CMDFs,	/* data for extern-lines in nefunc.h */
@@ -231,7 +232,7 @@ Alloc(unsigned len)
 	char	*pointer = (char *)malloc(len);
 	if (pointer == 0)
 		badfmt("bug: not enough memory");
-        return pointer;
+	return pointer;
 }
 
 static char *
@@ -691,7 +692,7 @@ char	*type)
 
 	temp = Name2Symbol(name);
 	if (strlen(temp) + 1 + (isboolean(*type) ? 4 : 0) > len)
-        	badfmt("bug: buffer overflow in Name2Address");
+		badfmt("bug: buffer overflow in Name2Address");
 
 	(void)strcpy(base, temp);
 	if (isboolean(*type))
@@ -1031,9 +1032,21 @@ dump_bindings(void)
 			PadTo(32, temp), p->Func, R_CURL);
 	}
 	FlushIf(nebind);
+	if (all_w32bind)
+	{
+		BeginIf();
+		for (p = all_w32bind; p; p = p->nst) {
+			WriteIf(nebind, p->Cond);
+			Sprintf(temp, "\t%c %s,", L_CURL, p->Name);
+			Fprintf(nebind, "%s&f_%s %c,\n",
+			PadTo(32, temp), p->Func, R_CURL);
+		}
+		FlushIf(nebind);
+	}
 
 	Fprintf(nebind,"\t{ 0, NULL }\n");
 	Fprintf(nebind,"%c;\n", R_CURL);
+
 }
 
 /******************************************************************************/
@@ -1049,7 +1062,7 @@ dump_majors(void)
 		type[LEN_BUFFER];
 	char	normal[LEN_BUFFER],
 		abbrev[LEN_BUFFER];
-	char 	*my_cond = "OPT_MAJORMODE";
+	char	*my_cond = "OPT_MAJORMODE";
 
 	for (q = all_majors; q; q = q->nst) {
 		Sprintf(normal, "%smode", q->Name);	/* FIXME */
@@ -1738,6 +1751,89 @@ dump_wmodes(void)
 	write_lines(nemode, bottom);
 }
 
+
+/* The accepted format for a Win32 special key binding is:
+ *
+ *    {<modifier>+}...<key>
+ *
+ * where:
+ *
+ *    <modifier> := SHIFT | CTRL | ALT
+ *
+ *    <key>      := Insert | 6
+ *
+ * See the comments at the end of the file "cmdtbl" for a complete
+ * explanation of why more <key>'s are not supported.
+ *
+ *			       Caution
+ *			       -------
+ * The error checking supplied in mkw32binding() and InsertSorted() can
+ * be fooled.
+ */
+#ifdef _WIN32
+static void
+mkw32binding(char *key, char *defn, char *conditional, char *func, char *fcond)
+{
+#define KEYTOKEN "W32_KEY"
+
+    char *cp = key, *match, *tmp, *defp, cum_defn[512];
+    int  nomore_keys, saw_modifier;
+
+    strcpy(cum_defn, KEYTOKEN);
+    defp        = cum_defn + sizeof(KEYTOKEN) - 1;
+    nomore_keys = saw_modifier = 0;
+    while (*cp)
+    {
+	nomore_keys = 1;  /* An assumption. */
+	if ((tmp = strchr(cp, '+')) != NULL)
+	    *tmp  = '\0';
+	match = NULL;
+	if (stricmp(cp, "shift") == 0)
+	{
+	    match	 = "W32_SHIFT";
+	    nomore_keys  = 0;		    /* Okay to stack modifiers */
+	    saw_modifier = 1;
+	}
+	else if (stricmp(cp, "alt") == 0)
+	{
+	    match	 = "W32_ALT";
+	    nomore_keys  = 0;		    /* Okay to stack modifiers */
+	    saw_modifier = 1;
+	}
+	else if (stricmp(cp, "ctrl") == 0)
+	{
+	    match	 = "W32_CTRL";
+	    nomore_keys  = 0;		    /* Okay to stack modifiers */
+	    saw_modifier = 1;
+	}
+	else if (stricmp(cp, "insert") == 0)
+	    match	= "VK_INSERT";
+	if (match)
+	{
+	    defp += sprintf(defp, "|%s", match);
+	    if (! tmp)
+		break;
+	    cp = tmp + 1;
+	}
+	else if (*cp == '6')
+	    defp += sprintf(defp, "|'%c'", *cp++);
+	if (*cp && nomore_keys)
+	    badfmt("invalid/unsupported Win32 key sequence");
+    }
+    if (! saw_modifier)
+	badfmt("missing Win32 key modifier");
+    InsertSorted(&all_w32bind,
+		 cum_defn,
+		 func,
+		 "",
+		 formcond(fcond, conditional),
+		 "");
+#undef KEYTOKEN
+}
+#else	/* Not a Win32 host -> dummy function -- doesn't do a thing */
+#define mkw32binding(key, defn, conditional, func, fcond) /*EMPTY*/
+#endif  /* _WIN32 */
+
 /******************************************************************************/
 static void
 free_LIST (LIST **p)
@@ -1775,6 +1871,7 @@ free_mktbls (void)
 	free_LIST(&all_modes);
 	free_LIST(&all_submodes);
 	free_LIST(&all_kbind);
+	free_LIST(&all_w32bind);
 	free_LIST(&all_gmodes);
 	free_LIST(&all_mmodes);
 	free_LIST(&all_bmodes);
@@ -1887,16 +1984,24 @@ main(int argc, char *argv[])
 					if (r < 1 || r > 3)
 						badfmt("looking for key binding");
 
-					if (strncmp("KEY_",vec[2],4) == 0) {
-						if (strncmp("FN-",vec[1],3) != 0)
-							badfmt("KEY_xxx definition must for FN- binding");
-						if (!nefkeys)
-								nefkeys = OpenHeader("nefkeys.h", argv);
-						Fprintf(nefkeys, "#define %16s (SPEC|'%s')\n",
-								vec[2],vec[1]+3);
-						vec[2] = vec[3];
+					if (strcmp("W32KY", vec[2]) == 0)
+					{
+						mkw32binding(vec[1], vec[2], vec[3], func, fcond);
 					}
-					save_bindings(vec[1], func, formcond(fcond,vec[2]));
+					else
+					{
+						if (strncmp("KEY_",vec[2],4) == 0)
+						{
+							if (strncmp("FN-",vec[1],3) != 0)
+								badfmt("KEY_xxx definition must for FN- binding");
+							if (!nefkeys)
+									nefkeys = OpenHeader("nefkeys.h", argv);
+							Fprintf(nefkeys, "#define %16s (SPEC|'%s')\n",
+									vec[2],vec[1]+3);
+							vec[2] = vec[3];
+						}
+						save_bindings(vec[1], func, formcond(fcond,vec[2]));
+					}
 					break;
 
 				case '<':	/* then it's a help string */

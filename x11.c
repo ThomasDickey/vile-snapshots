@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.184 1998/07/08 01:19:36 Chris.Sherman Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.186 1998/07/26 12:09:07 tom Exp $
  *
  */
 
@@ -806,7 +806,7 @@ update_scrollbar_sizes(void)
 		NULL);
 	}
 	wp->w_flag &= ~WFSBAR;
-	update_scrollbar(wp);
+	gui_update_scrollbar(wp);
 	i++;
     }
 
@@ -919,7 +919,7 @@ update_scrollbar_sizes(void)
 	    XmNshowArrows,		wp->w_ntrows > 3 ? TRUE : FALSE,
 	    NULL);
 	wp->w_flag &= ~WFSBAR;
-	update_scrollbar(wp);
+	gui_update_scrollbar(wp);
 	i++;
     }
     XtVaSetValues(cur_win->scrollbars[i],
@@ -1059,7 +1059,7 @@ update_scrollbar_sizes(void)
 		((float) (thumb - 1)) / max(total, 1),
 		((float) wp->w_ntrows) / max(total, wp->w_ntrows));
 	wp->w_flag &= ~WFSBAR;
-	update_scrollbar(wp);
+	gui_update_scrollbar(wp);
 	if (wp->w_wndp) {
 	    XtVaSetValues(cur_win->grips[i],
 		XtNx,		1,
@@ -1192,7 +1192,7 @@ update_scrollbar_sizes(void)
     i = 0;
     for_each_visible_window(wp) {
 	wp->w_flag &= ~WFSBAR;
-	update_scrollbar(wp);
+	gui_update_scrollbar(wp);
 	i++;
     }
 
@@ -1577,7 +1577,7 @@ resize_bar(
 #endif /* OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS */
 
 void
-update_scrollbar(
+gui_update_scrollbar(
     WINDOW *uwp)
 {
     WINDOW *wp;
@@ -1597,7 +1597,7 @@ update_scrollbar(
     }
     if (i >= cur_win->nscrollbars || (wp->w_flag & WFSBAR)) {
 	/*
-	 * update_scrollbar_sizes will recursively invoke update_scrollbar,
+	 * update_scrollbar_sizes will recursively invoke gui_update_scrollbar,
 	 * but with WFSBAR disabled.
 	 */
 	update_scrollbar_sizes();

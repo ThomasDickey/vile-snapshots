@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.28 1998/07/25 18:43:16 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.29 1998/07/26 22:08:22 tom Exp $
  */
 
 /*#
@@ -121,7 +121,7 @@
 #define PL_rs rs
 #define PL_ofslen ofslen
 #define PL_ofs ofs
-#define PL_orslen ors
+#define PL_ors ors
 #define PL_orslen orslen
 #endif
 

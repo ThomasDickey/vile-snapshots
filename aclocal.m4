@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.56 1998/07/01 22:16:27 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.57 1998/07/22 22:19:23 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -1275,6 +1275,39 @@ AC_CHECK_LIB(${cf_x_athena}_s, XawSimpleMenuAddGlobalActions,
 	[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])])
 CF_UPPER(CF_X_ATHENA_LIBS,HAVE_LIB_$cf_x_athena)
 AC_DEFINE_UNQUOTED($CF_X_ATHENA_LIBS)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check for Motif or Lesstif libraries (they should be indistinguishable)
+AC_DEFUN([CF_X_MOTIF],
+[AC_REQUIRE([CF_X_TOOLKIT])dnl
+AC_CHECK_HEADERS(X11/IntrinsicI.h Xm/XmP.h)
+AC_CHECK_LIB(gen,regcmp)
+AC_CHECK_LIB(Xmu,XmuClientWindow)
+AC_CHECK_LIB(Xp,XpStartDoc,,,[$LIBS $X_EXTRA_LIBS])
+AC_CHECK_LIB(Xext,XextCreateExtension,
+	[LIBS="-lXext $LIBS"])
+AC_CHECK_LIB(Xpm, XpmCreatePixmapFromXpmImage,
+	[LIBS="-lXpm $LIBS"],,
+	[$LIBS $X_EXTRA_LIBS])
+AC_CHECK_LIB(XIM,XmbTextListToTextProperty)dnl needed for Unixware's Xm
+AC_CHECK_LIB(Xm, XmProcessTraversal, [LIBS="-lXm $LIBS"],
+	AC_ERROR(
+[Unable to successfully link Motif library (-lXm) with test program]),
+	[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS]) dnl
+])dnl
+dnl ---------------------------------------------------------------------------
+AC_DEFUN([CF_X_OPENLOOK],
+[AC_REQUIRE([CF_X_TOOLKIT])dnl
+if test -n "$OPENWINHOME"; then
+	X_LIBS="$X_LIBS -L${OPENWINHOME}/lib"
+	X_CFLAGS="$X_CFLAGS -I${OPENWINHOME}/include"
+fi
+LDFLAGS="$LDFLAGS $X_LIBS"
+AC_CHECK_LIB(Xmu,XmuClientWindow)
+AC_CHECK_LIB(Xol, OlToolkitInitialize,
+	[LIBS="-lXol -lm $LIBS"],
+	AC_ERROR(
+[Unable to successfully link OpenLook library (-lXol) with test program])) dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check for X Toolkit libraries
