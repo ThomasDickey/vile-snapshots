@@ -1,6 +1,6 @@
-revlist for vile, version v7_2
+revlist for vile, version v7_2a
 --------------------------------------------------------------------------------
-CHANGES	1.85
+CHANGES	1.86
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -22,7 +22,7 @@ buglist	1.333
 c-filt.c	1.4
 c-filt.flx	1.1
 chgdfunc.h	1.4
-cmdtbl	1.143
+cmdtbl	1.144
 config_h.in	1.2
 configure	none
 configure.in	1.58
@@ -35,14 +35,14 @@ display.c	1.234
 djhandl.c	1.5
 dumbterm.c	1.9
 edef.h	1.212
-estruct.h	1.317
-eval.c	1.146
+estruct.h	1.318
+eval.c	1.147
 exec.c	1.142
 externs.c	1.5
 fences.c	1.42
 file.c	1.214
 filec.c	1.79
-fileio.c	1.117
+fileio.c	1.118
 finderr.c	1.65
 glob.c	1.56
 globals.c	1.41
@@ -74,7 +74,7 @@ mkdirs.sh	1.2
 mktbls.c	1.82
 modes.c	1.100
 modes.doc	1.2
-modetbl	1.82
+modetbl	1.83
 msgs.c	1.16
 npopen.c	1.58
 ntconio.c	1.23
@@ -85,11 +85,11 @@ os2vio.c	1.13
 patchlev.h	1.60
 path.c	1.79
 pictmode.rc	1.1
-proto.h	1.252
+proto.h	1.253
 random.c	1.187
 regexp.c	1.63
 region.c	1.81
-revlist	v7_2
+revlist	v7_2a
 search.c	1.107
 select.c	1.54
 spawn.c	1.115
@@ -102,8 +102,8 @@ trace.h	1.4
 undo.c	1.66
 version.c	1.36
 vile.1	1.15
-vile.hlp	1.329
-vms2unix.c	1.29
+vile.hlp	1.330
+vms2unix.c	1.30
 vmsbuild.com	1.14
 vmspipe.c	1.12
 vmsvt.c	1.30

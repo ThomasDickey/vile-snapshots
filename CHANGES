@@ -1,3 +1,14 @@
+Changes for vile 7.3 (released ??? ??? ??, 1997)
+
+(tom)	970904 (a)
+	+ add variable $majormode so that it can be tested in a script
+	  (requested by Philippe Chassany).
+	+ fix potential ifdef problem for cbuf1 (reported by Brendan O'Dea).
+	+ simplified VMS permissions code, using the protection parameter in
+	  'open()' to achieve the objective of propagating a file's current
+	  protection, as well as making it compile with DEC C (reported by
+	  Simon Hefti <hefti@phim.unibe.ch>).
+
 Changes for vile 7.2 (released Thu Sep 4, 1997)
 
 (tom)	970903 (k)

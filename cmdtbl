@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.143 1997/09/04 22:58:58 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.144 1997/09/06 00:36:11 tom Exp $
 #
 #
 
@@ -257,7 +257,7 @@ kbd_mac_save	NONE
 	"save-keyboard-macro"
 	'^X-^'
 	<save a previously recorded macro of keystrokes to a named register>
-cbuf1		REDO			OPT_EXEC_MACROS
+cbuf1		REDO			OPT_EXEC_MACROS>0
 	"execute-macro-1"		!FEWNAMES
 	'FN-1'				KEY_F1
 	'FN-P'				KEY_KP_F1
