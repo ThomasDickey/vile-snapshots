@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.304 1997/04/23 10:38:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.305 1997/04/30 01:12:56 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -2213,6 +2213,11 @@ extern void _exit (int code);
 /* Normally defined in "trace.h" */
 #ifndef TRACE
 #define TRACE(p) /* nothing */
+#endif
+
+#if DISP_X11 && NEED_X_INCLUDES
+#include	<X11/Intrinsic.h>
+#include	<X11/StringDefs.h>
 #endif
 
 /*

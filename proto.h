@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.239 1997/04/29 00:35:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.242 1997/04/30 01:11:54 tom Exp $
  *
  */
 
@@ -79,6 +79,9 @@ extern void kbd_unquery (void);
 extern int kbd_complete (int case_insensitive, int c, char *buf, int *pos, const char *table, SIZE_T size_entry);
 extern int kbd_engl_stat (const char *prompt, char *buffer);
 extern void popdown_completions (void);
+#if OPT_MENUS
+extern char *give_accelerator ( char * );
+#endif
 
 /* buffer.c */
 extern WINDOW *bp2any_wp (BUFFER *bp);
@@ -423,8 +426,10 @@ extern void abbr_check (int *backsp_limit_p);
 
 /* menu.c */
 #if OPT_MENUS
-extern int parse_menu (char *rc_filename);
-extern void do_menu ( /* Widget menub */ );
+extern int parse_menu (const char *rc_filename);
+#if NEED_X_INCLUDES
+extern void do_menu ( Widget menub );
+#endif
 #endif
 
 /* msgs.c */

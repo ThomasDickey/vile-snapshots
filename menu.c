@@ -8,8 +8,10 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.4 1997/04/29 01:05:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.7 1997/04/30 01:22:27 tom Exp $
  */
+
+#define NEED_X_INCLUDES 1
 
 /* Vile includes */
 #include "estruct.h"
@@ -24,21 +26,12 @@
 #endif
 
 #if ATHENA_WIDGETS
-#include <X11/Intrinsic.h>
-#include <X11/StringDefs.h>
 #include <X11/Xaw/Form.h>
 #include <X11/Xaw/SimpleMenu.h>
 #include <X11/Xaw/MenuButton.h>
 #include <X11/Xaw/SmeLine.h>
 #include <X11/Xaw/SmeBSB.h>
 #endif
-
-/* Xvile copy */
-static  int show_all;
-#define update_on_chg(bp) (!b_is_temporary(bp) || show_all)
-
-/* Patch (PC) of bind.c file */
-extern char *give_accelerator ( char * );
 
 /* Locals */
 #define MAX_ITEM_MENU_LIST  50
@@ -82,13 +75,13 @@ static TAct Actions [] = {
 int Nb_Actions = sizeof(Actions)/sizeof(TAct);
 
 
-static char *
+static const char *
 menu_filename(void)
 {
-        char *menurc = getenv ("XVILE_MENU");
-        if (menurc == NULL)
+        const char *menurc = getenv ("XVILE_MENU");
+        if (menurc == NULL || *menurc == EOS)
                 menurc = ".vilemenu";
-        return menurc;
+        return flook(menurc, FL_ANYWHERE|FL_READABLE);
 }
 
 /************************************************************************/
@@ -180,7 +173,7 @@ is_bind ( char *action )
 /************************************************************************/
 /* Main function to parse the rc file                                   */
 /************************************************************************/
-int parse_menu ( char *rc_filename )
+int parse_menu ( const char *rc_filename )
 {
     FILE    *fp;
     char    line [1000];
@@ -190,7 +183,7 @@ int parse_menu ( char *rc_filename )
     int     nlig = 0;
 
     if ((fp = fopen(rc_filename, "r")) == NULL)
-        return 0;
+        return FALSE;
 
     Nb_Token = 0;
     while (fgets (line, sizeof(line), fp) != NULL)
@@ -225,7 +218,7 @@ int parse_menu ( char *rc_filename )
                 else
                 {
                     fclose (fp);
-                    return 0;
+                    return FAILED;
                 }
                 break;
 
@@ -292,7 +285,7 @@ int parse_menu ( char *rc_filename )
                 if (n != 2)
                 {
                     fclose (fp);
-                    return 0;
+                    return FAILED;
                 }
                 Nb_Token++;
                 break;
@@ -300,7 +293,7 @@ int parse_menu ( char *rc_filename )
     }
     fclose (fp);
 
-    return 1;
+    return TRUE;
 }
 
 /************************************************************************/
@@ -464,6 +457,7 @@ static void proc_back ( Widget w GCC_UNUSED, XtPointer arg, XtPointer call  GCC_
     char    *macro_action = (char *)arg;
     const CMDFUNC   *cmd;
     ActionFunc fact;
+    int     oldflag = im_waiting(-1);
 
     TRACE(("Macro/Action=%s\n", macro_action));
 
@@ -483,6 +477,7 @@ static void proc_back ( Widget w GCC_UNUSED, XtPointer arg, XtPointer call  GCC_
         fact(macro_action);
     }
 
+    (void)im_waiting(oldflag);
     (void)update(TRUE);
 }
 
@@ -490,9 +485,10 @@ static void proc_back ( Widget w GCC_UNUSED, XtPointer arg, XtPointer call  GCC_
 /* Function called when a buffer button is clicked into the menu        */
 /* A buffer button takes part from the list tokens (L)                  */
 /************************************************************************/
-static void list_proc_back ( Widget w, XtPointer bname, XtPointer call )
+static void list_proc_back ( Widget w, XtPointer bname, XtPointer call GCC_UNUSED )
 {
     int     num_buff;
+    int     oldflag = im_waiting(-1);
 
 #if MOTIF_WIDGETS
     char *accel;
@@ -506,6 +502,7 @@ static void list_proc_back ( Widget w, XtPointer bname, XtPointer call )
 #endif
 
     (void)histbuff(TRUE, num_buff);
+    (void)im_waiting(oldflag);
     (void)update(TRUE);
 }
 
@@ -530,7 +527,6 @@ static void post_buffer_list ( Widget w, XtPointer client, XEvent *ev, Boolean *
     BUFFER  *bp;
     char    string[NBUFN+2+NFILEN], temp[1+NFILEN], *p;
     Widget  pm = (Widget) client;
-    XButtonPressedEvent *bev = (XButtonPressedEvent *)ev;
 
     TRACE(("post_buffer_list\n"));
     nb_item_menu_list = 0;
@@ -579,7 +575,7 @@ static void post_buffer_list ( Widget w, XtPointer client, XEvent *ev, Boolean *
         XtAddCallback (pm_buffer[nb_item_menu_list], 
                         XtNcallback, 
                         list_proc_back,
-                        nb_item_menu_list);
+                        (XtPointer)nb_item_menu_list);
 #endif
         nb_item_menu_list++;
     }
@@ -596,7 +592,7 @@ static void post_buffer_list ( Widget w, XtPointer client, XEvent *ev, Boolean *
 
 /************************************************************************/
 /* Main function : Take the MotifBar as argument and create all the     */
-/* Cascades, PullDowns Menus and Buttons readed from the rc file        */
+/* Cascades, PullDowns Menus and Buttons read from the rc file          */
 /************************************************************************/
 void do_menu ( Widget menub )
 {
@@ -604,12 +600,13 @@ void do_menu ( Widget menub )
     char    *arg, *accel, *macro;
     Widget  pm = 0;
     Widget  pm_w [50];
-    char    *menurc;
+    int     rc;
+    const char *menurc = menu_filename();
 
-    menurc = menu_filename();
-    if (!parse_menu (menurc))
+    if ((rc = parse_menu (menurc)) != TRUE)
     {
-        puts ("Error parsing menu-file");
+        if (rc == FAILED)
+            puts ("Error parsing menu-file");
         return;
     }
 #if OPT_TRACE
