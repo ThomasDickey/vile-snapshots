@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.160 1998/05/28 00:34:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.162 1998/07/02 10:38:51 tom Exp $
  *
  */
 
@@ -43,7 +43,7 @@
 
 	/* macros for environment-variable switch */
 	/*  (if your compiler balks with "non-constant case expression" */
-#if SYS_VMS || HAVE_LOSING_SWITCH_WITH_STRUCTURE_OFFSET
+#if CC_CANNOT_OFFSET_CASES
 #define	If(N)		if (vnum == N) {
 #define	ElseIf(N)	} else If(N)
 #define	Otherwise	} else {
@@ -503,10 +503,10 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 						: "";
 #endif
 		ElseIf( EVLINE )	value = getctext((CHARTYPE)0);
-		ElseIf( EVWORD )	value = getctext(_nonspace);
-		ElseIf( EVIDENTIF )	value = getctext(_ident);
-		ElseIf( EVQIDENTIF )	value = getctext(_qident);
-		ElseIf( EVPATHNAME )	value = getctext(_pathn);
+		ElseIf( EVWORD )	value = getctext(vl_nonspace);
+		ElseIf( EVIDENTIF )	value = getctext(vl_ident);
+		ElseIf( EVQIDENTIF )	value = getctext(vl_qident);
+		ElseIf( EVPATHNAME )	value = getctext(vl_pathn);
 #if SYS_UNIX
 		ElseIf( EVPROCESSID )	value = l_itoa(getpid());
 #endif

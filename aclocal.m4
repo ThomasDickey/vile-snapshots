@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.55 1998/05/22 01:28:55 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.56 1998/07/01 22:16:27 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -156,6 +156,34 @@ ifelse($3,,[    :]dnl
   $4
 ])dnl
   ])])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check if the C compiler supports initialization of unions.
+AC_DEFUN([CF_CC_INIT_UNIONS],[
+AC_CACHE_CHECK(if we can initialize unions,
+cf_cv_init_unions,[
+	AC_TRY_COMPILE([],
+	[static struct foo {int x; union {double a; int b; } bar; } c = {0,{1.0}}],
+	[cf_cv_init_unions=yes],
+	[cf_cv_init_unions=no])
+	])
+test $cf_cv_init_unions = no && AC_DEFINE(CC_CANNOT_INIT_UNIONS)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check if the C compiler supports offsetof expressions in switch cases. 
+dnl Some losing compiler's can be found on pyramid's, aix, and Apple's AUX2. 
+dnl (Lint on several platforms will complain, even when the compiler won't).
+AC_DEFUN([CF_CC_OFFSETOF_CASES],[
+AC_CACHE_CHECK(if switch cases work with structure offsets,
+cf_cv_case_offsetof,[
+	AC_TRY_COMPILE([],
+	[struct foo {int a,b;};
+	 extern getpid();
+	 switch(getpid()){case ((int) &(((struct foo *)0)->b)) : printf("foo"); } ],
+	[cf_cv_case_offsetof=yes],
+	[cf_cv_case_offsetof=no])
+	])
+test $cf_cv_case_offsetof = no && AC_DEFINE(CC_CANNOT_OFFSET_CASES)
+])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check if we're accidentally using a cache from a different machine.
 dnl Derive the system name, as a check for reusing the autoconf cache.
@@ -618,7 +646,7 @@ if mkdir conftestdir; then
 	cat >> ./Imakefile <<'CF_EOF'
 findstddefs:
 	@echo 'IMAKE_CFLAGS="${ALLDEFINES} ifelse($1,,,$1)"'
-	@echo 'IMAKE_LOADFLAGS="${EXTRA_LOADFLAGS} ifelse($2,,,$2)"'
+	@echo 'IMAKE_LOADFLAGS="${EXTRA_LOAD_FLAGS} ifelse($2,,,$2)"'
 CF_EOF
 	if ( $IMAKE $cf_imake_opts 1>/dev/null 2>&AC_FD_CC && test -f Makefile)
 	then

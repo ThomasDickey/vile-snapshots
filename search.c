@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.111 1998/05/27 00:34:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.112 1998/07/01 23:34:46 Larry.Gensch Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -731,7 +731,7 @@ int	fromscreen)
 	 * Then, if it's the search string, compile it.
 	 */
 	if (fromscreen) {
-		status = screen_string(apat, NPAT, _ident);
+		status = screen_string(apat, NPAT, vl_ident);
 		if (status != TRUE)
 			return status;
 	} else {

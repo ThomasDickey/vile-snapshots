@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.111 1998/05/27 00:54:37 kev Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.112 1998/07/01 23:29:00 bod Exp $
 #
 
 #### Start of system configuration section. ####
@@ -73,7 +73,7 @@ CPPFLAGS	= -I. -I$(srcdir) $(X_CFLAGS) \
 
 LDFLAGS		= @IMAKE_LOADFLAGS@
 
-INSTALL_DIRS    = $(bindir) $(datadir) $(perldir) $(mandir)
+INSTALL_DIRS    = $(bindir) $(datadir) $(mandir) @EXTRA_INSTALL_DIRS@
 
 .SUFFIXES: .c .i .o
 
@@ -285,7 +285,8 @@ $(MKTBLS):  $(srcdir)/mktbls.c
 check: $(TARGET)
 	@echo Sorry, no batch tests available.
 
-INSTALL_PERL = \
+INSTALL_PERL_DIRS = $(perldir)
+INSTALL_PERL_FILES = \
 	$(perldir)/glob2re.pl \
 	$(perldir)/hgrep.pl \
 	$(perldir)/manfilt.pl \
@@ -301,13 +302,13 @@ INSTALL_FILES = \
 	$(bindir)/vile-pas-filt$x \
 	$(bindir)/vile-crypt$x \
 	$(mandir)/$(TARGET).$(manext) \
-	$(datadir)/vile.hlp @EXTRA_INSTALL@
+	$(datadir)/vile.hlp @EXTRA_INSTALL_FILES@
 
 install: $(INSTALL_DIRS) \
 	$(INSTALL_FILES)
 	@echo 'Completed installation.'
 
-install-perl : $(INSTALL_PERL)
+install-perl : $(INSTALL_PERL_DIRS) $(INSTALL_PERL_FILES)
 
 installdirs: $(INSTALL_DIRS)
 

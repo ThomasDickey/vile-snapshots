@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.161 1998/05/29 00:53:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.162 1998/07/01 23:43:52 tom Exp $
  *
  */
 
@@ -817,17 +817,17 @@ call_cmdfunc(const CMDFUNC *p, int f, int n)
     switch (p->c_flags & CMD_TYPE)
     {
     case CMD_FUNC: /* normal CmdFunc */
-	return (p->cu.c_func)(f, n);
+	return (CMD_U_FUNC(p))(f, n);
 
 #if OPT_NAMEBST
 #if OPT_PROCEDURES
     case CMD_PROC: /* named procedure */
-	return dobuf(p->cu.c_buff);
+	return dobuf(CMD_U_BUFF(p));
 #endif
 
 #if OPT_PERL
     case CMD_PERL: /* perl subroutine */
-	return perl_call_sub(p->cu.c_perl, p->c_flags & OPER, f, n);
+	return perl_call_sub(CMD_U_PERL(p), p->c_flags & OPER, f, n);
 #endif
 #endif /* OPT_NAMEBST */
     }
@@ -1195,8 +1195,12 @@ storeproc(int f, int n)
 	    if (!cf)
 		return no_memory("registering procedure name");
 
+#if CC_CANNOT_INIT_UNIONS
+	    cf->c_union = (void *)bp;
+#else
 	    cf->cu.c_buff = bp;
-	    cf->c_flags = UNDO|REDO|CMD_PROC;
+#endif
+	    cf->c_flags = UNDO|REDO|CMD_PROC|VIEWOK;
 #if OPT_ONLINEHELP
 	    cf->c_help = strmalloc(tb_values(helpstring));
 #endif

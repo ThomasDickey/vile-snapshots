@@ -1,7 +1,30 @@
 Changes for vile 8.1 (released ??? ??? ??, 1998)
 
+ (tom) 980702 (b)
+	+ change highlighting rule in vile-c-filt to highlight only the
+	  "#" and keyword on preprocessor lines (patch by Paul Fox).
+	+ dynamically allocate pm_buffer array in menu.c, eliminating limit on
+	  number of menu items (reported by William Yuan
+	  <yuan@bucket.its.unimelb.edu.au>).
+ 	+ new configure macro CF_CC_INIT_UNIONS checks for compilers that
+	  cannot initialize a union, e.g, a K&R compiler using unproto.
+	  Ifdef'd union in CMDFUNC to work in that case.
+	+ correct spelling of EXTRA_LOAD_FLAGS in CF_IMAKE_CFLAGS configure
+	  macro.
+	+ set VIEWOK flag on stored-procedure buffers, otherwise they cannot
+	  be used in buffers set "view" (reported by Larry Gensch).
+	+ rename character-type names to use "vl" prefix, to avoid conflict
+	  with ctype.h names on Digital Unix 5.0 (patch by Larry Gensch).
+	+ note that $progname may be "winvile" (patch by Clark Morgan).
+	+ modify configure.in and makefile.in so that $(datadir)/perl is not
+	  created unless vile is configured --with-perl (patch by Brendan
+	  O'Dea).
+	+ require perl 5.004 since the XS interface is dependent upon tied file
+	  handles, which are not completely implemented in 5.003 (request by
+	  Brendan O'Dea).
+
  (kev) 980606 (a)
- 	+ perl.xs (svrs): No longer a global static variable.  
+ 	+ perl.xs (svrs): No longer a global static variable.
 	  (perl_init): Don't initialize svrs here anymore.  Also, stifle
 	  compiler warning.
 	  (READLINE): Declare and initialize svrs here, but only for

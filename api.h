@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.10 1998/04/28 10:14:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.11 1998/07/01 23:52:51 tom Exp $
  */
 
 /*
@@ -40,14 +40,14 @@ typedef struct {
 } VileBuf;
 
 extern	int	api_aline(VileBuf *, int, char *, int);
-extern	int	api_edit(VileBuf *sp, char *fname, VileBuf **retspp);
+extern	int	api_edit(char *fname, VileBuf **retspp);
 extern	int	api_dline(VileBuf *, int);
 extern	int	api_gline(VileBuf *, int, char **, int *);
 extern	int	api_sline(VileBuf *, int, char *, int);
 extern	int	api_iline(VileBuf *, int, char *, int);
 extern	int	api_lline(VileBuf *, int *);
 extern	int	api_swscreen(VileBuf *, VileBuf *);
-extern	VileBuf *api_fscreen(int, char *);
+extern	VileBuf *api_fscreen(char *);
 extern	VileBuf *api_bp2vbp(BUFFER *bp);
 extern	void	api_command_cleanup(void);
 extern	int	api_dotinsert(VileBuf *sp, char *text, int len);

@@ -5,7 +5,7 @@
  * Modifications:  kevin buettner and paul fox  2/95
  * 		string literal ("Literal") support --  ben stoltz
  *
- * $Header: /users/source/archives/vile.vcs/RCS/c-filt.c,v 1.10 1998/04/29 23:24:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/c-filt.c,v 1.11 1998/07/02 01:32:42 pgf Exp $
  *
  * Features:
  * 	- Reads the keyword file ".vile.keywords" from the home directory.
@@ -499,9 +499,22 @@ main(int argc, char **argv)
 	      break;
 	    }
 	    if (!comment && *s == '#' && firstnonblank(s, line) ) {
-		c_length = strlen(s);
+		char *ss = s+1;
+		int isinclude;
+		while (isspace(*ss))
+		    ss++;
+		isinclude = !strncmp(ss, "include", 7);
+		while (isalpha(*ss))
+		    ss++;
+		if (isinclude) {  /* eat filename as well */
+		    while (isspace(*ss))
+			ss++;
+		    while (!isspace(*ss))
+			ss++;
+		}
+		c_length = ss - s;
 		printf("\001%i%s:%.*s",c_length,cpp_attr,c_length,s);
-		break;
+		s = s + c_length;
 	    }
 	    if (comment && *s) {
 		if ((c_length = has_endofcomment(s)) > 0) {

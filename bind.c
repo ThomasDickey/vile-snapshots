@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.180 1998/05/30 12:02:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.181 1998/07/01 23:12:35 tom Exp $
  *
  */
 
@@ -358,7 +358,8 @@ rebind_key (
 register int	c,
 register const CMDFUNC *kcmd)
 {
-	static const CMDFUNC ignored = { { unimpl } }, *old = &ignored;
+	static const CMDFUNC ignored = { INIT_UNION( unimpl ) },
+		*old = &ignored;
 	return install_bind (c, kcmd, &old);
 }
 
@@ -2366,7 +2367,7 @@ delete_namebst(const char *name, int release)
 	/* free stuff */
 #if OPT_PERL
 	if (p->n_cmd->c_flags & CMD_PERL)
-	    perl_free_sub(p->n_cmd->cu.c_perl);
+	    perl_free_sub(CMD_U_PERL(p->n_cmd));
 #endif
 
 	free(TYPECAST(char,p->n_cmd->c_help));

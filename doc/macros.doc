@@ -198,8 +198,8 @@ Environmental Variables
 	$pending	[READ ONLY] Flag to determine if there are user
 			keystrokes waiting to be processed.
 
-	$progname	[READ ONLY] Contains the string "vile" or "xvile",
-			as appropriate.
+	$progname	[READ ONLY] Contains the string "vile" "xvile", or,
+			"winvile" as appropriate.
 
 	$qidentifier	the name of the current "qualified-identifier-like"
 			word under the cursor, useful for C++ programmers.
@@ -584,5 +584,5 @@ Directives
 		insert-string "You are on an old machine!\n"
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.1 1998/04/26 20:34:03 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.2 1998/07/01 23:18:08 cmorgan Exp $
 -----------------------------------

@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.183 1998/05/12 23:33:03 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.184 1998/07/01 23:34:38 Larry.Gensch Exp $
  *
  */
 
@@ -614,7 +614,7 @@ screen_string (char *buf, int bufn, CHARTYPE inclchartype)
 
 	/* if from gototag(), grab from the beginning of the string */
 	if (b_val(curbp, MDTAGWORD)
-	 && inclchartype == _ident
+	 && inclchartype == vl_ident
 	 && DOT.o > 0
 	 && istype(inclchartype, char_at(DOT))) {
 		while ( DOT.o > 0 ) {
@@ -629,25 +629,25 @@ screen_string (char *buf, int bufn, CHARTYPE inclchartype)
 		buf[i] = char_at(DOT);
 #if OPT_WIDE_CTYPES
 		if (i == 0) {
-			if (inclchartype & _scrtch) {
+			if (inclchartype & vl_scrtch) {
 				if (buf[0] != SCRTCH_LEFT[0])
-					inclchartype &= ~_scrtch;
+					inclchartype &= ~vl_scrtch;
 			}
-			if (inclchartype & _shpipe) {
+			if (inclchartype & vl_shpipe) {
 				if (buf[0] != SHPIPE_LEFT[0])
-					inclchartype &= ~_shpipe;
+					inclchartype &= ~vl_shpipe;
 			}
 		}
 
 		/* allow "[!command]" */
-		if ((inclchartype & _scrtch)
+		if ((inclchartype & vl_scrtch)
 		 && (i == 1)
 		 && (buf[1] == SHPIPE_LEFT[0])) {
 			/*EMPTY*/;
 		/* guard against things like "[Buffer List]" on VMS */
-		} else if ((inclchartype & _pathn)
+		} else if ((inclchartype & vl_pathn)
 		 && !ispath(buf[i])
-		 && (inclchartype == _pathn)) {
+		 && (inclchartype == vl_pathn)) {
 			break;
 		} else
 #endif
@@ -656,9 +656,9 @@ screen_string (char *buf, int bufn, CHARTYPE inclchartype)
 		DOT.o++;
 		i++;
 #if OPT_WIDE_CTYPES
-		if (inclchartype & _scrtch) {
+		if (inclchartype & vl_scrtch) {
 			if ((i < bufn)
-			 && (inclchartype & _pathn)
+			 && (inclchartype & vl_pathn)
 			 && ispath(char_at(DOT)))
 				continue;
 			if (buf[i-1] == SCRTCH_RIGHT[0])
@@ -669,11 +669,11 @@ screen_string (char *buf, int bufn, CHARTYPE inclchartype)
 
 #if OPT_WIDE_CTYPES
 #if OPT_VMS_PATH
-	if (inclchartype & _pathn) {
+	if (inclchartype & vl_pathn) {
 		;	/* override conflict with "[]" */
 	} else
 #endif
-	if (inclchartype & _scrtch) {
+	if (inclchartype & vl_scrtch) {
 		if (buf[i-1] != SCRTCH_RIGHT[0])
 			i = 0;
 	}
@@ -863,7 +863,7 @@ UINT	options)
 		if (!expand)
 			return FALSE;
 
-		if (screen_string(str, sizeof(str), _pathn))
+		if (screen_string(str, sizeof(str), vl_pathn))
 			cp = str;
 		else
 			cp = NULL;
