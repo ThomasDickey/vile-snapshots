@@ -2618,7 +2618,7 @@ Command files
 	On startup (in the absence of '@' arguments -- see Invocation
 	below), vile will attempt to read the file ".vilerc" in the current
 	directory, then in $HOME, and then in several host-specific
-	locations (this file is called "vile.rc" on non-Unix hosts).  If
+	locations (this file is called "vile.rc" on non-UNIX hosts).  If
 	found, vile executes the commands found therein.  It is possible to
 	nest such executions.  For example, you might keep your general
 	default settings in your home directory, and put the following
@@ -2653,7 +2653,7 @@ Invocation
 		the directory specify by $HOME
 		the vile executable directory
 		if $VILE_STARTUP_PATH exists
-			if host is Unix
+			if host is UNIX
 				search each colon-delimited directory
 				          specified by this env var
 			else if host is PC
@@ -2664,7 +2664,7 @@ Invocation
 				          specified by this symbol
 			end if
 		else
-			if host is Unix
+			if host is UNIX
 				search /usr/local/lib:/usr/local:/usr/lib
 			else if host is PC
 				search \sys\public;\usr\bin;\bin;\
@@ -2699,21 +2699,32 @@ Invocation
 	VILE_HELP_FILE
 		override the name of the help file, normally "vile.hlp".
 	VILE_LIBDIR_PATH
-		override the search path for filter programs, normally
-		the library-directory on UNIX systems.
+		override the search path for filter programs, normally the
+		library-directory on UNIX systems.  This sets the
+		$libdir-path variable, which is appended to your $PATH
+		variable when running filter commands on UNIX and Win32.
 	VILE_STARTUP_FILE
 		override the name of the startup file, normally ".vilerc"
 		(or "vile.rc" for non-UNIX systems).
 	VILE_STARTUP_PATH
 		override the search path for the startup and help files.
+		This sets the $startup-path variable.
 
+	Note:  For simplification, the filters.rc script assumes that the
+	filter programs are in $PATH.  The $libdir-path feature may not
+	work for you out-of-the-box, since your shell's initialization file
+	(e.g., ".cshrc") may set $PATH.  One solution (other than adding
+	/usr/local/lib/vile to $PATH) is to set the vile variable $shell to
+	/bin/sh, assuming you have no Bourne shell ".profile" to set $PATH. 
+	Then vile's modification of $PATH affects the filter process and
+	also runs faster.
 
 	Command line options
 	--------------------
 	The command line options are fairly straightforward.  vile does not
-	support running just _any_ command after a '+', as does vi, but does
-	support the commonly used '+400' to go to line 400 and '+/foo' to
-	search for foo.  Command files can be explicitly executed on
+	support running just _any_ command after a '+', as does vi, but
+	does support the commonly used '+400' to go to line 400 and '+/foo'
+	to search for foo.  Command files can be explicitly executed on
 	startup by prefixing them with the '@' character, as in "vile
 	@mycmds file.c".  This will suppress the operation of VILEINIT and
 	the .vilerc files.
@@ -2744,7 +2755,7 @@ Invocation
 
 Encryption
 ----------
-	vile implements an interface to the Unix crypt function, like
+	vile implements an interface to the UNIX crypt function, like
 	standard vi, and can apply this to your buffers either
 	automatically (via a mode setting) or manually (via an explicit
 	command).  The algorithm is reversible, so encrypting a previously
@@ -2952,7 +2963,7 @@ Syntax coloring
 	removes the overstriking normally produced by the "man"
 	command.  ] The filters that assist in the coloring process
 	are installed in vile's "lib" directory.  (This directory is
-	added to the PATH environment variable when vile searches for
+	added to the $PATH environment variable when vile searches for
 	external programs to run.)  The filters are typically named
 	"vile-xxx-filt", where "xxx" denotes the type of text being
 	filtered, and is also usually the name for the vile "majormode"
@@ -3584,7 +3595,7 @@ DOS specifics
 	edit window with only the top 25 displayed.
 
 	The vile.rc file can be located in the same directory as your
-	binary executable, since vile searches the PATH for this file.
+	binary executable, since vile searches the $PATH for this file.
 
 	All file globbing, including from the command line, is done using
 	UNIX shell-style wild-carding conventions.
@@ -3623,9 +3634,9 @@ DOS specifics
 VMS specifics
 -------------
 
-	vile recognizes either VMS- or Unix-style pathnames and '~' is
+	vile recognizes either VMS- or UNIX-style pathnames and '~' is
 	supported as a shortcut for SYS$LOGIN (e.g., :e ~/login.com).
-	However, filename completion only works for Unix-style pathnames,
+	However, filename completion only works for UNIX-style pathnames,
 	since those allow us to implement directory and filenames in the
 	same syntax.
 
@@ -4094,6 +4105,24 @@ Credits
 	by Paul Fox (pgf@foxharp.boston.ma.us).  (By the way, he is not the
 	Paul D. Fox that wrote the Crisp editor.)
 
+Where to Get It
+---------------
+	Up-to-date copies of vile, including executables for DOS, Win32 and
+	OS/2 are found at
+		ftp://ftp.clark.net/pub/dickey/vile/
+
+	which is mirrored at
+		ftp://ftp.phred.org/pub/vile/
+		ftp://ftp.ci.uminho.pt/pub/mirrors/vile/
+		http://ciumix.ci.uminho.pt/mirrors/vile/
+
+	Development patches are found at
+		ftp://ftp.clark.net/pub/dickey/vile/patches/
+
+	In addition, we have distributed copies at other sites, including
+	metalabs.unc.edu (Linux), hobbes.nmsu.edu (OS/2) and the VMS Freeware
+	CDROM's.
+
 Problems
 --------
 
@@ -4105,4 +4134,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.418 1999/06/01 23:12:23 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.420 1999/06/06 19:32:25 tom Exp $

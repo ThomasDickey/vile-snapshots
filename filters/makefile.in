@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.49 1999/05/06 09:30:35 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.51 1999/06/06 22:52:35 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -101,9 +101,10 @@ LEX_ALL = \
 	vile-sql-filt$x \
 	vile-tc-filt$x \
 	vile-tcl-filt$x \
-	vile-txt-filt$x \
 	vile-ti-filt$x \
+	vile-txt-filt$x \
 	vile-vile-filt$x \
+	vile-xs-filt$x \
 	vile-yacc-filt$x
 
 ALL = 	$(C_ALL) @MAKE_LEX@ $(LEX_ALL)
@@ -197,6 +198,9 @@ vile-ti-filt$x : ti-filt.o $(LF_DEPS)
 vile-vile-filt$x : vilefilt.o $(LF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ vilefilt.o $(LF_ARGS)
 
+vile-xs-filt$x : xs-filt.o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ xs-filt.o $(LF_ARGS)
+
 vile-yacc-filt$x : yaccfilt.o $(LF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ yaccfilt.o $(LF_ARGS)
 
@@ -238,6 +242,7 @@ INSTALL_LEX_BIN = \
 	$(bindir)/vile-ti-filt$x \
 	$(bindir)/vile-txt-filt$x \
 	$(bindir)/vile-vile-filt$x \
+	$(bindir)/vile-xs-filt$x \
 	$(bindir)/vile-yacc-filt$x
 
 INSTALL_LEX_TXT = \
@@ -266,6 +271,7 @@ INSTALL_LEX_TXT = \
 	$(datadir)/tc.keywords \
 	$(datadir)/tcl.keywords \
 	$(datadir)/ti.keywords \
+	$(datadir)/xs.keywords \
 	$(datadir)/yacc.keywords
 
 INSTALL_LEX = $(INSTALL_LEX_BIN) $(INSTALL_LEX_TXT)
@@ -345,6 +351,7 @@ $(bindir)/vile-tcl-filt$x :	vile-tcl-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-txt-filt$x :	vile-txt-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-ti-filt$x :	vile-ti-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-vile-filt$x :	vile-vile-filt$x	; $(INSTALL_PROGRAM) $? $@
+$(bindir)/vile-xs-filt$x :	vile-xs-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-yacc-filt$x :	vile-yacc-filt$x	; $(INSTALL_PROGRAM) $? $@
 
 $(datadir)/filters.rc :		$(srcdir)/filters.rc	; $(INSTALL_DATA) $? $@
@@ -378,6 +385,7 @@ $(datadir)/tc.keywords :	$(srcdir)/tc.key	; $(INSTALL_DATA) $? $@
 $(datadir)/tcl.keywords :	$(srcdir)/tcl.key	; $(INSTALL_DATA) $? $@
 $(datadir)/ti.keywords :	$(srcdir)/ti.key	; $(INSTALL_DATA) $? $@
 $(datadir)/vile.keywords :	$(srcdir)/vile.key	; $(INSTALL_DATA) $? $@
+$(datadir)/xs.keywords :	$(srcdir)/xs.key	; $(INSTALL_DATA) $? $@
 $(datadir)/yacc.keywords :	$(srcdir)/yacc.key	; $(INSTALL_DATA) $? $@
 
 $(INSTALL_DIRS):

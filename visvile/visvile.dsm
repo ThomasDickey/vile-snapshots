@@ -22,6 +22,11 @@ Sub F7()
     Application.ExecuteCommand("Build")
 End Sub
 
+Sub F9()
+    Application.ExecuteCommand("VisVileDisableCmd")
+    Application.ExecuteCommand("DebugToggleBreakpoint")
+End Sub
+
 Sub F10()
     Application.ExecuteCommand("VisVileDisableCmd")
     Application.ExecuteCommand("DebugStepOver")

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_3f
+MANIFEST for vile, version v8_3g
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -211,6 +211,8 @@ filters/ti.key                  terminfo keywords
 filters/txt-filt.l              syntax filter for ordinary text
 filters/vile.key                fallback template for highlighting colors
 filters/vilefilt.l              syntax filter for vile macros
+filters/xs-filt.l               syntax filter for Perl extensions
+filters/xs.key                  keywords for Perl-extension syntax filter
 filters/yacc.key                yacc keywords
 filters/yaccfilt.l              yacc syntax highlighting filter for vile
 icons                           subdirectory

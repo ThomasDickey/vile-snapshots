@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.47 1999/06/03 01:33:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.49 1999/06/07 01:05:26 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -100,6 +100,9 @@ static	void	ntflush		(void);
 static	void	ntscroll	(int, int, int);
 #if OPT_ICURSOR
 static	void	nticursor	(int);
+#endif
+#if OPT_SCROLLBARS
+static	void	handle_scrollbar (HWND hWnd, int msg, int nPos);
 #endif
 #if OPT_TITLE
 static	void	nttitle		(char *);
@@ -683,7 +686,9 @@ attr_to_colors(VIDEO_ATTR attr, int *fcolor, int *bcolor)
 		else if (attr & VACOLOR)
 			*fcolor = ((VCOLORNUM(attr)) & (NCOLORS - 1));
 
-		if (attr & (VASEL|VAREV)) {  /* reverse video? */
+		if ((attr & (VASEL|VAREV)) == VASEL
+		 || (attr & (VASEL|VAREV)) == VAREV)
+		{
 			int temp = *bcolor;
 			*bcolor = *fcolor;
 			*fcolor = temp;
@@ -1646,6 +1651,22 @@ ntgetch(void)
 			}
 			break;
 
+		/* define _WIN32_WINNT=0x400 to get WM_MOUSEWHEEL defined */
+#ifdef WM_MOUSEWHEEL
+#if OPT_SCROLLBARS
+		case WM_MOUSEWHEEL:
+			if ((short)HIWORD(msg.wParam) > 0) {
+				int i, c = (HIWORD(msg.wParam) / WHEEL_DELTA);
+				for (i = 0; i < c * 3; i++)
+					handle_scrollbar(msg.hwnd, SB_LINEUP, 0);
+			} else {
+				int i, c = (-((short) HIWORD(msg.wParam)) / WHEEL_DELTA);
+				for (i = 0; i < c * 3; i++)
+					handle_scrollbar(msg.hwnd, SB_LINEDOWN, 0);
+			}
+			break;
+#endif
+#endif
 		case WM_RBUTTONDOWN:
 			TRACE(("GETC:RBUTTONDOWN %s\n", which_window(msg.hwnd)))
 			if (msg.hwnd == cur_win->text_hwnd) {
@@ -2117,7 +2138,8 @@ static int find_scrollbar (HWND hWnd)
 	int i = 0;
 
 	for_each_visible_window(wp) {
-		if (cur_win->scrollbars[i].w == hWnd) {
+		if (cur_win->scrollbars[i].w == hWnd
+		 || cur_win->main_hwnd == hWnd) {
 			set_curwp (wp);
 			if (wp->w_bufp != curbp) {
 				swbuffer(wp->w_bufp);

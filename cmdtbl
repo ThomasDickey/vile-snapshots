@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.171 1999/05/31 18:47:21 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.172 1999/06/06 19:48:29 cmorgan Exp $
 #
 #
 
@@ -1427,6 +1427,9 @@ subst_again	REDO|UNDO|GLOBOK
 	"substitute-again"		!FEWNAMES
 	'&'
 	<redo the previous text substitution>
+syncfile	NONE			SYS_WINNT&&defined(VILE_OLE)
+	"sync-file"
+	<synchronize the current buffer's file in DevStudio's editor>
 togglelistbuffers	NONE
 	"*"
 	"toggle-buffer-list"		!FEWNAMES

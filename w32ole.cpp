@@ -17,11 +17,12 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.9 1999/05/22 11:49:54 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.12 1999/06/07 21:56:24 cmorgan Exp $
  */
 
 #include <windows.h>
 #include <ole2.h>
+#include <comutil.h>
 #include <assert.h>
 #include <ctype.h>
 #include <sys/types.h>
@@ -35,6 +36,12 @@ extern "C"
 }
 #include "w32ole.h"
 #include "w32reg.h"
+
+#include <initguid.h>
+#include <objmodel/appguid.h>
+#include <objmodel/textguid.h>
+#include <objmodel/appauto.h>
+#include <objmodel/textauto.h>
 
 static size_t   ansibuf_len,   /* scaled in bytes   */
                 olebuf_len;    /* scaled in wchar_t */
@@ -169,7 +176,7 @@ oleauto_exit(int code)
  *
  */
 #if (! defined(_UNICODE) || defined(UNICODE))
-char *
+static char *
 ConvertToAnsi(OLECHAR *szW)
 {
     size_t len;
@@ -187,7 +194,7 @@ ConvertToAnsi(OLECHAR *szW)
     return (ansibuf);
 }
 
-OLECHAR *
+static OLECHAR *
 ConvertToUnicode(char *szA)
 {
     size_t len;
@@ -227,6 +234,52 @@ LoadTypeInfo(ITypeInfo **pptinfo, REFCLSID clsid)
 
     *pptinfo = ptinfo;
     return NOERROR;
+}
+
+static int
+ole_err_to_msgline(HRESULT hr, char *msg)
+{
+#define  PASS_HIGH(c)        ((c) <= print_high && (c) >= print_low)
+#define  _SPC_               ' '
+#define  _TAB_               '\t'
+#define  _TILDE_             '~'
+
+    char          *lclbuf = NULL, tmp[256], outstr[256];
+    unsigned char *src, *dst;
+    int           print_high, print_low;
+
+    print_high = global_g_val(GVAL_PRINT_HIGH);
+    print_low  = global_g_val(GVAL_PRINT_LOW);
+    fmt_win32_error(hr, &lclbuf, 0);
+    sprintf(tmp, "[%s, system msg: %s]", msg, lclbuf);
+
+    /*
+     * Strip out unprintable data from Win32 err desc (assume ASCII char set).
+     * Why is garbage included in the returned error string?
+     */
+    src = (unsigned char *)tmp;
+    dst = (unsigned char *)outstr;
+    while (*src)
+    {
+        if (*src == _TAB_)
+            *dst++ = _SPC_;
+        else if ((*src >= _SPC_ && *src <= _TILDE_) ||
+                                          (*src > _TILDE_ && PASS_HIGH(*src)))
+        {
+            *dst++ = *src;
+        }
+        *src++;
+    }
+    *dst = '\0';
+
+    mlforce(outstr);
+    LocalFree(lclbuf);
+    return (FALSE);
+
+#undef PASS_HIGH
+#undef _SPC_
+#undef _TAB_
+#undef _TILDE_
 }
 
 /* ------------------------ Class Factory -------------------------- */
@@ -683,10 +736,190 @@ waitfile(int f, int n)
     return (s);
 }
 
+
+
+/* Synchronize the current buffer (at its current line) in DevStudio. */
+int
+syncfile(int f, int n)
+{
+    static CLSID     ds_clsid;   /* dev studio class id */
+    HRESULT          hr;
+    static int       initialized;
+    IApplication     *pApp;
+    IUnknown         *punk;
+    IDispatch        *pDisp;
+    IDocuments       *pDocuments;
+    IGenericDocument *pGenDoc;
+    ITextDocument    *pTextDoc;
+    ITextSelection   *pTextSel;
+    int              rc = TRUE;
+    BSTR             path, doc_type;
+    VARIANT_BOOL     vb;
+    variant_t        vtype,   // initialized to VT_EMPTY by default
+                     vfalse;
+
+    if (b_is_temporary(curbp) || isInternalName(curbp->b_bname))
+    {
+        mlforce("[Can't synchronize scratch/invisible buffer]");
+        return (FALSE);
+    }
+    if (! initialized)
+    {
+        hr = CLSIDFromProgID(L"MSDEV.APPLICATION", &ds_clsid);
+        if (! SUCCEEDED(hr))
+        {
+            mlforce("[Unable to read DevStudio's CLSID from the registry.]");
+            return (FALSE);
+        }
+        initialized = TRUE;
+    }
+    if (! oleauto_server)
+    {
+        /*
+         * This instance of winvile was not invoked in automation mode.
+         * deal with this.
+         */
+
+        olebuf_len = ansibuf_len = 512;
+        ansibuf    = (char *) malloc(ansibuf_len);
+        olebuf     = (OLECHAR *) malloc(olebuf_len * sizeof(OLECHAR));
+        if (! (olebuf && ansibuf))
+        {
+            no_memory("syncfile()");
+            return (FALSE);
+        }
+        hr = CoInitialize(NULL); // Fire up COM.
+        if (! SUCCEEDED(hr))
+        {
+            // we're dead.
+
+            (void) ole_err_to_msgline(hr, "CoInitialize() failed");
+            return (FALSE);
+        }
+        oleauto_server = TRUE;
+    }
+
+    /*
+     * Connect to an instance of DevStudio.   Note that no attempt is
+     * made to start an instance of DevStudio if one is not already running.
+     * Reason:  visvile key redirection won't work in that case.
+     */
+    hr = GetActiveObject(ds_clsid, 0, &punk);
+    if (! SUCCEEDED(hr))
+    {
+        (void) ole_err_to_msgline(hr, "DevStudio not active");
+        return (FALSE);
+    }
+    hr = punk->QueryInterface(IID_IApplication, (void **) &pApp);
+    punk->Release();
+    if (! SUCCEEDED(hr))
+    {
+        (void) ole_err_to_msgline(hr, "DevStudio App ptr load failed");
+        return (FALSE);
+    }
+    hr = pApp->get_Visible(&vb);
+    if (! SUCCEEDED(hr))
+    {
+        rc = ole_err_to_msgline(hr, "get_Visible() failed");
+        goto syncfile_exit;
+    }
+    if (vb != VARIANT_TRUE)
+    {
+        hr = pApp->put_Visible(VARIANT_TRUE);
+        if (! SUCCEEDED(hr))
+        {
+            rc = ole_err_to_msgline(hr, "put_Visible() failed");
+            goto syncfile_exit;
+        }
+    }
+    hr = pApp->get_Documents(&pDisp);
+    if (! SUCCEEDED(hr))
+    {
+        rc = ole_err_to_msgline(hr, "get_Documents() failed");
+        goto syncfile_exit;
+    }
+    hr = pDisp->QueryInterface(IID_IDocuments, (void **) &pDocuments);
+    pDisp->Release();
+    if (! SUCCEEDED(hr))
+    {
+        rc = ole_err_to_msgline(hr, "DevStudio Docs ptr load failed");
+        goto syncfile_exit;
+    }
+    path = SysAllocString(TO_OLE_STRING(sl_to_bsl(curbp->b_fname)));
+    if (! path)
+    {
+        no_memory("syncfile()");
+        pDocuments->Release();
+        rc = FALSE;
+        goto syncfile_exit;
+    }
+    vfalse = VARIANT_FALSE;
+    hr     = pDocuments->Open(path, vtype, vfalse, &pDisp);
+    pDocuments->Release();
+    SysFreeString(path);
+    if (! SUCCEEDED(hr))
+    {
+        rc = ole_err_to_msgline(hr, "DevStudio document open failed");
+        goto syncfile_exit;
+    }
+    hr = pDisp->QueryInterface(IID_IGenericDocument, (void **) &pGenDoc);
+    pDisp->Release();
+    if (! SUCCEEDED(hr))
+    {
+        rc = ole_err_to_msgline(hr, "DevStudio gen doc ptr load failed");
+        goto syncfile_exit;
+    }
+    pGenDoc->get_Type(&doc_type);
+    if (doc_type && wcscmp(L"Text", (OLECHAR *) doc_type) == 0)
+    {
+        /*
+         * This is a text document -- it's possible to sync the editor's
+         * current buffer position with DevStudio's text editor line posn.
+         */
+
+        hr = pGenDoc->QueryInterface(IID_ITextDocument, (void **) &pTextDoc);
+        pGenDoc->Release();
+        if (! SUCCEEDED(hr))
+        {
+            rc = ole_err_to_msgline(hr, "Text Document ptr load failed");
+            goto syncfile_exit;
+        }
+        hr = pTextDoc->get_Selection(&pDisp);
+        pTextDoc->Release();
+        if (! SUCCEEDED(hr))
+        {
+            rc = ole_err_to_msgline(hr, "get_Selection() failed");
+            goto syncfile_exit;
+        }
+        hr = pDisp->QueryInterface(IID_ITextSelection, (void **) &pTextSel);
+        pDisp->Release();
+        if (! SUCCEEDED(hr))
+        {
+            rc = ole_err_to_msgline(hr, "Text Slctn ptr load failed");
+            goto syncfile_exit;
+        }
+        vtype = (long) dsMove;
+        pTextSel->GoToLine(getcline(), vtype);
+        pTextSel->Release();
+    }
+    else
+    {
+        /* Else can't manipulate a "Generic" DevStudio document. */
+
+        pGenDoc->Release();
+        mlforce("[Cannot position document w/in DevStudio]");
+    }
+
+syncfile_exit:
+    pApp->Release();
+    return (rc);
+}
+
 /* ------------------- Key Redirection Implementation -------------------- */
 
 #define FLUSH_BUFFERS 0x1
 #define SWITCH_FOCUS  0x2
+#define SYNC_BUFFER   0x4
 
 static int rebuild_cache_tbl = TRUE;
                               /* Boolean, T -> the GVAL_REDIRECT_KEYS list
@@ -708,7 +941,7 @@ typedef struct redir_key_struct
     unsigned action;          /* action taken before key is pressed.  Possible
                                * values are:
                                *
-                               *   FLUSH_BUFFERS, SWITCH_FOCUS.
+                               *   FLUSH_BUFFERS, SWITCH_FOCUS, SYNC_BUFFER
                                */
 } REDIR_KEY;
 
@@ -943,6 +1176,8 @@ execute_action(int action)
     }
     if (rc && (action & SWITCH_FOCUS))
         (void) SetForegroundWindow(redirect_hwnd);
+    if (rc && (action & SYNC_BUFFER))
+        rc = syncfile(0, 0);
     return (rc);
 }
 
@@ -966,11 +1201,15 @@ execute_action(int action)
  *                        include file winuser.h for a list of virtual keycode
  *                        names, or refer to the keymap array above.
  *      <modifier>    :== S|C|A         <-- mnemonics for shift, control, alt
- *      <action>      :== <flush>|<switch>
- *      <flush>       :== F             <-- flush all modified buffers to
+ *      <action>      :== <flush>|<switch>|<sync>
+ *      <Flush>       :== F             <-- flush all modified buffers to
  *                                          disk prior to redirecting key
- *      <switch>      :== S             <-- switch focus to redirected window
+ *      <Switch>      :== S             <-- switch focus to redirected window
  *                                          prior to redirecting key
+ *      <sYnc>        :== Y             <-- syncrhronize current buffer (at
+ *                                          its current line) within the
+ *                                          DevStudio editor.  Very useful
+ *                                          when setting breakpoints.
  * RETURNS
  *   Boolean, T -> list successfully parsed and built.
  */
@@ -1078,7 +1317,11 @@ build_keylist(void)
                     break;
                 case 'S':
                 case 's':
-                    lcl_tbl->action |= SWITCH_FOCUS;;
+                    lcl_tbl->action |= SWITCH_FOCUS;
+                    break;
+                case 'Y':
+                case 'y':
+                    lcl_tbl->action |= SYNC_BUFFER;
                     break;
                 default:
                     if (! isspace(*redirlist))

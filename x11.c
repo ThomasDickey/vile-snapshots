@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.214 1999/06/01 23:01:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.216 1999/06/07 22:36:29 tom Exp $
  *
  */
 
@@ -1910,7 +1910,6 @@ static XtResource resources[] = {
 	XtRImmediate,
 	(XtPointer) PANE_WIDTH_DEFAULT
     },
-#if OPT_MENUS
     {
 	XtNwheelScrollAmount,
 	XtCWheelScrollAmount,
@@ -1920,6 +1919,7 @@ static XtResource resources[] = {
 	XtRImmediate,
 	(XtPointer) 3
     },
+#if OPT_MENUS
     {
 	XtNmenuHeight,
 	XtCMenuHeight,
@@ -3528,6 +3528,7 @@ query_font(
 {
     XFontStruct *pf;
 
+    TRACE(("x11:query_font(%s)\n", fname))
     if ((pf = XLoadQueryFont(dpy, fname)) != 0) {
 	char *fullname = NULL;
 
@@ -3563,6 +3564,8 @@ query_font(
 	tw->left_ink	= (pf->min_bounds.lbearing < 0);
 	tw->right_ink	= (pf->max_bounds.rbearing > tw->char_width);
 
+	TRACE(("...success left:%d, right:%d\n", tw->left_ink, tw->right_ink))
+
 	FreeIfNeeded(cur_win->fontname);
 	if ((fullname = x_get_font_atom_property(pf, atom_FONT)) != NULL
 	 && fullname[0] == '-') {
@@ -3572,6 +3575,7 @@ query_font(
 	     */
 	    tw->fontname = strmalloc(fullname);
 	    XFree(fullname);
+	    TRACE(("...resulting FONT property font %s\n", tw->fontname))
 	}
 	else {
 	    /*
@@ -3600,6 +3604,7 @@ query_font(
 	    *s++ = '-';						\
 	}							\
     } one_time
+
 #define GET_ATOM_OR_GIVEUP(atom)				\
     do {							\
 	char *as;						\
@@ -3613,6 +3618,7 @@ query_font(
 	else							\
 	    goto piecemeal_done;				\
     } one_time
+
 #define GET_LONG_OR_GIVEUP(atom)				\
     do {							\
 	unsigned long val;					\
@@ -3656,6 +3662,7 @@ piecemeal_done:
 	     * so that we can later search for bold and italic fonts.
 	     */
 	    tw->fontname = strmalloc(fname);
+	    TRACE(("...resulting piecemeal font %s\n", tw->fontname))
 	}
     }
     return pf;
@@ -3711,10 +3718,18 @@ alternate_font(
     /* copy rest of name */
     while ((*np++ = *op++))
 	;
+
+    TRACE(("x11:alternate_font(weight=%s, slant=%s)\n -> %s\n",
+	weight ? weight : "",
+	slant  ? slant  : "", newname))
+
     if ((fsp = XLoadQueryFont(dpy, newname)) != NULL) {
 	cur_win->left_ink = cur_win->left_ink || (fsp->min_bounds.lbearing < 0);
 	cur_win->right_ink = cur_win->right_ink
 		    || (fsp->max_bounds.rbearing > cur_win->char_width);
+        TRACE(("...found left:%d, right:%d\n", 
+		cur_win->left_ink,
+		cur_win->right_ink))
     }
 
 done:
@@ -5519,12 +5534,15 @@ x_change_focus(
 {
     static int got_focus_event = FALSE;
 
+    TRACE(("x11:x_change_focus(type=%d)\n", ev->type))
     switch (ev->type) {
 	case EnterNotify:
+	    TRACE(("... EnterNotify\n"))
 	    if (!ev->xcrossing.focus || got_focus_event)
 		return;
 	    goto focus_in;
 	case FocusIn:
+	    TRACE(("... FocusIn\n"))
 	    got_focus_event = TRUE;
 focus_in:
 	    cur_win->show_cursor = True;
@@ -5536,12 +5554,14 @@ focus_in:
 	    x_flush();
 	    break;
 	case LeaveNotify:
+	    TRACE(("... LeaveNotify\n"))
 	    if ( !ev->xcrossing.focus
 	      || got_focus_event
 	      || ev->xcrossing.detail == NotifyInferior)
 		return;
 	    goto focus_out;
 	case FocusOut:
+	    TRACE(("... FocusOut\n"))
 	    got_focus_event = TRUE;
 focus_out:
 	    cur_win->show_cursor = False;

@@ -10,7 +10,7 @@
  * Note:  A great deal of the code included in this file is copied
  * (almost verbatim) from other vile modules.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.2 1999/05/22 11:50:58 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.3 1999/06/06 20:31:41 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -255,6 +255,7 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
         pVileAuto->VileKeys(bstr);
         SysFreeString(bstr);
     }
+    pVileAuto->ForegroundWindow();
     pVileAuto->Release();
     CoUninitialize(); // shut down COM
     return (0);

@@ -1,5 +1,43 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+(tom) 990607 (g)
+	+ add distinct prefixes to warnings written in perl.xs with write_message
+	  to aid in debugging.
+	+ restore ability of Vile::get to return values of internal variables
+	  without requiring the '$', e.g., Vile::get('$seed').
+	+ remove a check in Vile::set which tested if we can get a variable's
+	  value before attempting to set it.  A few variables (e.g., $cryptkey)
+	  may be writeonly, and temporary variables (e.g., %foo) have no
+	  predetermined value.
+	+ add numbers, email addresses and urls to txt-filt.l
+	+ tweak diffmode suffixes, adding .dif and .diffs
+	+ implement ":set video=reverse" for tcap.c, correct rendition of
+	  selection in ntwinio.c as well.
+	+ add Perl extensions syntax filter xs-filt.l and associated xsmode.
+	+ tweak perlmode preamble to allow relative paths.
+	+ add a note in vile.hlp explaining how to use $shell=/bin/sh to
+	  circumvent reset of $PATH in ".cshrc", so value in $VILE_LIBDIR_PATH
+	  is inherited automatically.  I didn't mention there, but I have been
+	  using this for several years, having found that SunOS's make program
+	  would dump core when running in vile if I left $shell=/bin/csh.
+	  It's faster anyway...
+	+ add ftp site info to vile.hlp
+	+ add ifdef in ntwinio.c to support wheel-mouse, must add
+	  -D_WIN32_WINNT=0x400 to makefile.wnt (patch by Alex Wetmore).
+	+ correct ifdef in x11.c to so wheel-mouse support compiles properly
+	  when menus are not used (patch by Kevin Buettner).
+	> patches by Clark Morgan:
+	+ minor patch to forces wvwrap to pop winvile to the foreground 
+	  (convenient when winvile does not currently have focus). 
+	+ a new "sync-file" command enables synchronization of winvile's
+	  current buffer with the DevStudio text editor.  When this command is
+	  used in conjunction with visvile's key redirection feature, it's now
+	  possible to set a breakpoint in DevStudio from winvile like so: 
+	  + use winvile's search capabilities (including tags) to find the
+	    program location where a breakpoint is desired, and
+	  + press F9 (standard DevStudio shortcut that sets/clears a
+	    breakpoint). 
+
 (tom) 990602 (f)
 	+ implement fcolor and bcolor options for xvile.
 	+ add missing case for VALTYPE_ENUM in listvalueset(), which caused

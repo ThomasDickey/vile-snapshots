@@ -2,7 +2,7 @@
 Visual Studio - Vile Integration
 ================================
 
-Copyright (C) 1998 Clark Morgan
+Copyright (C) 1998-1999 Clark Morgan
 
 VisVile is a Visual Studio add-in that permits Winvile to replace the
 default text editor in certain situations.  Complete documentation of this
@@ -26,20 +26,14 @@ GNU General Public License for more details.
 
 Change Log
 ==========
+6/99 (visvile does not change)
+- winvile modified to permit editor to synchronize its current buffer (at
+  its current line) with the DevStudio text editor.  Very useful feature
+  when setting breakpoints (via visvile's redirected key facility).
+
 v1.02, released 10/5/98
 - implemented "Redirect selected keys to DevStudio" option.
 - added a macro file, visvile.dsm, that augments the new option.
-
-  At this point, I think visvile is fairly useful.  I can envision one
-  more wrinkle that might be worthwhile:
-
-  + add a mechanism to force devstudio to open the same text file as is
-    loaded in winvile's current buffer and then position the devstudio
-    editor's cursor at the same line number as is shown in winvile's
-    buffer.  This "file synchronization" feature could be quite handy
-    when searching for break point locations while the debugger is active.
-
-  Regardless, it's time to release v1.02 .
 
 v1.01, released 9/07/98
 
