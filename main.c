@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.445 2001/02/24 19:38:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.448 2001/03/04 20:42:24 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -708,7 +708,7 @@ begin:
 		TRACE(("Checking size of popup messages: %d\n", bp->b_linecount));
 		if (bp->b_linecount > 1) {
 			popup_msgs();
-			*mlsave = EOS;
+			tb_init(&mlsave, EOS);
 		}
 	}
 	if (global_g_val(GMDPOPUP_MSGS) == -TRUE)
@@ -726,8 +726,8 @@ begin:
 	/* We won't always be able to show messages before the screen is
 	 * initialized.  Give it one last chance.
 	 */
-	if ((startstat != TRUE) && *mlsave)
-		mlforce("%s", mlsave);
+	if ((startstat != TRUE) && tb_length(mlsave))
+		mlforce("%*S", tb_length(mlsave), tb_values(mlsave));
 
 	/* process commands */
 	loop();
@@ -940,6 +940,7 @@ global_val_init(void)
 	char *s;
 
 #if OPT_FILTER && defined(WIN32)
+	extern void flt_array(void);
 	flt_array();
 #endif
 	/* set up so the global value pointers point at the global
@@ -986,7 +987,7 @@ global_val_init(void)
 #ifdef GMDW32PIPES
 	set_global_g_val(GMDW32PIPES,	is_winnt()); /* use native pipes? */
 #endif
-#if SYS_WINNT && OPT_TITLE
+#if OPT_TITLE
 	set_global_g_val(GMDSWAPTITLE, FALSE);
 #endif
 #if OPT_ICURSOR

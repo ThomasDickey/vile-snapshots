@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.212 2001/02/18 00:22:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.214 2001/03/03 17:51:43 tom Exp $
  *
  */
 
@@ -1844,10 +1844,10 @@ chgd_status(VALARGS *args GCC_UNUSED, int glob_vals, int testing)
 	return TRUE;
 }
 
-#if OPT_TITLE && SYS_WINNT
+#if OPT_TITLE
 	/* Changed swap-title */
 int
-chgd_swaptitle(VALARGS *args GCC_UNUSED, int glob_vals, int testing)
+chgd_swaptitle(VALARGS *args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing)
 {
 	if (!testing)
 		set_editor_title();

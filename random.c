@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.251 2001/02/24 17:18:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.253 2001/03/05 01:14:10 tom Exp $
  *
  */
 
@@ -699,15 +699,14 @@ clrmes(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 writemsg(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    register int status;
-    char buf[NPAT];
+    int status;
+    TBUFF *buf = 0;
 
-    buf[0] = EOS;
-    if ((status = mlreply("Message to write: ", buf, sizeof(buf))) != TRUE)
-	return (status);
-
-    mlforce("%s", buf);
-    return (TRUE);
+    if ((status = kbd_reply("Message to write: ", &buf, eol_history, '\n',
+			    KBD_NORMAL, no_completion)) == TRUE)
+	mlforce("%s", tb_values(buf));
+    tb_free(&buf);
+    return (status);
 }
 
 /* ARGSUSED */
@@ -1368,6 +1367,7 @@ ch_fname(BUFFER *bp, const char *fname)
     (void) get_modtime(bp, &(bp->b_modtime));
     bp->b_modtime_at_warn = 0;
 #endif
+    fileuid_set_if_valid(bp, fname);
 }
 
 #if OPT_HOOKS
@@ -1948,8 +1948,10 @@ vl_stricmp(const char *a, const char *b)
     for (;;) {
 	ch1 = CharOf(*a++);
 	ch2 = CharOf(*b++);
-	if (isLower(ch1)) ch1 = toUpper(ch1);
-	if (isLower(ch2)) ch2 = toUpper(ch2);
+	if (isLower(ch1))
+	    ch1 = toUpper(ch1);
+	if (isLower(ch2))
+	    ch2 = toUpper(ch2);
 	cmp = ch1 - ch2;
 	if (cmp != 0 || ch1 == EOS || ch2 == EOS)
 	    return cmp;

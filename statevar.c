@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.48 2001/02/18 00:51:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.50 2001/03/03 17:36:24 tom Exp $
  */
 
 #include	"estruct.h"
@@ -80,6 +80,40 @@ any_ro_STR(TBUFF **rp, const char *vp, const char *value)
 		}
 	} else if (vp) {
 		return ABORT;  /* read-only */
+	}
+	return FALSE;
+}
+
+static int
+any_rw_STR(TBUFF **rp, const char *vp, TBUFF **value)
+{
+	if (rp) {
+		if (value != 0 && *value != 0) {
+			tb_copy(rp, *value);
+			return TRUE;
+		}
+	} else if (vp) {
+		tb_scopy(value, vp);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+static int
+any_rw_EXPR(TBUFF **rp, const char *vp, TBUFF **value)
+{
+	if (rp) {
+		if (value != 0) {
+			tb_copy(rp, *value);
+			return TRUE;
+		}
+	} else if (vp) {
+		regexp *exp = regcomp(vp, TRUE);
+		if (exp != 0) {
+			free(exp);
+			tb_scopy(value, vp);
+			return TRUE;
+		}
 	}
 	return FALSE;
 }
@@ -576,34 +610,12 @@ int var_FILENAME_IC(TBUFF **rp, const char *vp)
 #if OPT_FINDERR
 int var_FILENAME_EXPR(TBUFF **rp, const char *vp)
 {
-	if (rp) {
-		tb_scopy(rp, tb_values(filename_expr));
-		return TRUE;
-	} else if (vp) {
-		regexp *exp = regcomp(vp, TRUE);
-		if (exp != 0) {
-			free(exp);
-			tb_scopy(&filename_expr, vp);
-			return TRUE;
-		}
-	}
-	return FALSE;
+	return any_rw_EXPR(rp, vp, &filename_expr);
 }
 
 int var_ERROR_EXPR(TBUFF **rp, const char *vp)
 {
-	if (rp) {
-		tb_scopy(rp, tb_values(error_expr));
-		return TRUE;
-	} else if (vp) {
-		regexp *exp = regcomp(vp, TRUE);
-		if (exp != 0) {
-			free(exp);
-			tb_scopy(&error_expr, vp);
-			return TRUE;
-		}
-	}
-	return FALSE;
+	return any_rw_EXPR(rp, vp, &error_expr);
 }
 
 int var_ERROR_MATCH(TBUFF **rp, const char *vp)
@@ -1167,35 +1179,30 @@ int var_STATUS(TBUFF **rp, const char *vp)
 	return any_rw_BOOL(rp, vp, &lastcmdstatus);
 }
 
-#if SYS_WINNT
+#if OPT_TITLE
 int var_TITLE(TBUFF **rp, const char *vp)
 {
 	if (rp) {
+#if SYS_WINNT
 		tb_scopy(rp, w32_wdw_title());
 		return TRUE;
-	} else if (vp) {
-		term.set_title(vp);
-		return TRUE;
-	} else {
-		return FALSE;
-	}
-}
 #endif
-
 #if DISP_X11
-int var_TITLE(TBUFF **rp, const char *vp)
-{
-	if (rp) {
 		tb_scopy(rp, x_get_window_name());
 		return TRUE;
+#endif
 	} else if (vp) {
 		term.set_title(vp);
 		return TRUE;
-	} else {
-		return FALSE;
 	}
+	return FALSE;
 }
-#endif
+
+int var_TITLEFORMAT(TBUFF **rp, const char *vp)
+{
+	return any_rw_STR(rp, vp, &title_format);
+}
+#endif /* OPT_TITLE */
 
 int var_TPAUSE(TBUFF **rp, const char *vp)
 {
@@ -1213,6 +1220,11 @@ int var_TPAUSE(TBUFF **rp, const char *vp)
 int var_VERSION(TBUFF **rp, const char *vp)
 {
 	return any_ro_STR(rp, vp, version);
+}
+
+int var_WITHPREFIX(TBUFF **rp, const char *vp)
+{
+	return any_ro_STR(rp, vp, tb_values(with_prefix));
 }
 
 int var_WLINES(TBUFF **rp, const char *vp)

@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.97 2001/02/15 23:16:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.98 2001/03/04 01:40:25 tom Exp $
  *
  */
 
@@ -1271,6 +1271,7 @@ TBUFF **buffer,
 char *	result)
 {
 	register int	status;
+	static	TBUFF	*last;
 	char	Reply[NFILEN];
 	int	(*complete) (DONE_ARGS) = no_completion;
 
@@ -1280,6 +1281,13 @@ char *	result)
 		init_filec(DIRCOMPLETION_BufName);
 	}
 #endif
+	/* use the current directory if none given */
+	if (buffer == 0) {
+		(void)tb_scopy(
+			buffer = &last,
+			strcpy(Reply, current_directory(TRUE)));
+	}
+
 	if (clexec || isnamedcmd) {
 		if (tb_values(*buffer) != 0)
 			(void)strcpy(Reply, tb_values(*buffer));

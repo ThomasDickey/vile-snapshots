@@ -1237,30 +1237,36 @@ Editor modes
 		confirmation when 1) popping up a window on an existing
 		buffer, 2) reading or writing the buffer, or 3) after
 		performing some shell command.  The prompt will occur only
-		once, unless the modification time of the file changes
-		again, in which case the warning will be repeated.  The
-		warning will be repeated in any case if the file is being
-		written.  Invoking a shell, or suspending/restarting vile,
-		will cause all visible buffers (those currently in windows)
-		to have their times checked immediately.  (B)
+		once, unless the file changes again, in which case the
+		warning will be repeated.  The warning will be repeated in
+		any case if the file is being written.  Invoking a shell, or
+		suspending/restarting vile, will cause all visible buffers
+		(those currently in windows) to have their times checked
+		immediately.  A file is considered "changed" if its
+		modification time changes, or, under UNIX, if it is replaced
+		entirely, resulting in a different inode number.  (The
+		"unique-buffers" mode must be active to enable the latter
+		behavior.) (B)
 
-	cindent C-style indentation.  Helps maintain current indentation level
-		automatically during insert, like autoindent, above.  If a
-		line ends with a '{', '(', or ':', then the next line
+	cindent C-style indentation.  Helps maintain current indentation
+		level automatically during insert, like autoindent, above. 
+		If a line ends with a '{', '(', or ':', then the next line
 		indents further.  If a line begins with a '}' or ')', it is
-		lined up with the line containing the matching '{' or '('.  (B)
+		lined up with the line containing the matching '{' or '('. 
+		(B)
 
 	cmode   C-code mode.  A built-in majormode, also useful for other
-		languages.  Augments cindent mode by special treatment of lines
-		beginning with '#'.  If a line starting with '#' is inserted it
-		is moved to column 1.  Additionally, if a line begins with a
-		'#' character, it will not shift right with the '>>' command. (M)
+		languages.  Augments cindent mode by special treatment of
+		lines beginning with '#'.  If a line starting with '#' is
+		inserted it is moved to column 1.  Additionally, if a line
+		begins with a '#' character, it will not shift right with the
+		'>>' command.  (M)
 
 	crypt	Causes buffer(s) to be decrypted when read, and encrypted
 		when written.  This is compatible with the UNIX crypt(1)
 		routines used by vi, and is only available on platforms which
-		have this feature enabled.  See the section on "Encryption" for
-		more information.  (B)
+		have this feature enabled.  See the section on "Encryption"
+		for more information.  (B)
 
 	color-scheme (cs) An aggregate of fcolor, bcolor, video-attrs and
 		$palette.  Color schemes are defined with the
@@ -1612,6 +1618,11 @@ Editor modes
 		misnamed, since the regular expression need not describe
 		only suffixes.  (M)
 
+	swap-title For xvile/winvile, if set, the editor displays its title as:
+		    <current buffer name> - <editor name>
+		The swapped order is especially useful under limited screen
+		real estate conditions.  (U)
+
 	tabinsert (ti) Allow the physical insertion of tab characters into
 		the buffer.  If turned off ("notabinsert"), and an attempt
 		is made to insert a tab character by explicitly typing it
@@ -1696,13 +1707,16 @@ Editor modes
 
 	unique-buffers When vile is asked to read a file into a buffer, it
 		will first check to be sure that it doesn't already have a
-		copy of that file, by the same or a different name.  This
-		can prevent multiple unintentional edits of a file which
-		appears twice in the filesystem due to hard or soft links.
-		On UNIX systems vile uses the combination of filesystem
-		device and inode to check for uniqueness.  vile will
-		represent the file by the first name used to refer to it.
-		May be a no-op on non-UNIX systems.  (U)
+		copy of that file, by the same or a different name.  This can
+		prevent multiple unintentional edits of a file which appears
+		twice in the filesystem due to hard or soft links.  On UNIX
+		systems vile uses the combination of filesystem device and
+		inode to check for uniqueness.  vile will represent the file
+		by the first name used to refer to it.  Note that unless
+		"check-modtime" is also set, a file with more than one name
+		which is edited and then replaced on disk without the
+		knowledge of the editor may still be edited twice.  Setting
+		this mode may be a no-op on non-UNIX systems.  (U)
 
 	unprintable-as-octal (uo) If an 8-bit character is non-printing, it
 		will normally be displayed in hex.  This setting will force
@@ -2471,8 +2485,10 @@ Programmed procedures and macros
 	$startup-path	where to find the startup file
 	$status		returns the status of the last command
 	$title		current window title (X11, win32 versions only)
+	$title-format	format of window title.  see "Mode line customization".
 	$tpause		length to pause for paren matching (PC versions)
 	$version	current version number			(read only)
+	$with-prefix	string set by "~with" directives	(read only)
 	$wlines		number of lines in current window
 	$word		current "word"
 	$write-hook	name of procedure to run before a file is written
@@ -4958,11 +4974,6 @@ Win32 specifics
 			HW).  Typical values, if required, are 20-80
 			(msec).  (U)
 
-	swap-title	If set, the editor displays its title as:
-			    <current buffer name> - <editor name>
-			The swapped order is especially useful under limited
-			screen real estate conditions. (U)
-
 	w32pipes	See discussion of pipes above.  (U)
 
 	Configuring both editors
@@ -5271,4 +5282,4 @@ Problems
 
 Copyright 1995-2001 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.513 2001/02/16 21:23:46 pgf Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.515 2001/03/03 17:19:53 pgf Exp $

@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.132 2001/01/20 00:13:29 tom Exp $
+; $Id: filters.rc,v 1.133 2001/03/01 20:35:28 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -463,7 +463,7 @@ define-mode vlog
 ; "define-mode vile" is builtin
 ~with define-submode vile
 	before "sh"
-	suf '\(vile[^/]*rc\|vile.*/[^/]*rc\|\.exrc\)$'
+	suf '\(vile[^/]*rc\|vile.*/[^/]*rc\|\.exrc\|\.vile\)$'
 	comment-prefix	'^\s*;'
 	comments	'^\s*;\s*$'
 	fence-if	'^\s*~if\>'

@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.163 2001/02/18 00:20:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.164 2001/03/03 17:19:53 pgf Exp $
  *
  */
 
@@ -50,7 +50,7 @@ extern  short	iochan;				/* In "termio.c"	*/
  * Check all modification-times after executing a shell command
  */
 #ifdef	MDCHK_MODTIME
-#define	AfterShell()	check_visible_modtimes()
+#define	AfterShell()	check_visible_files_changed()
 #else
 #define	AfterShell()	TRUE
 #endif
@@ -241,8 +241,8 @@ rtfrmshell(int ACTUAL_SIG_ARGS GCC_UNUSED)
 	setup_handler(SIGCONT,rtfrmshell); /* suspend & restart */
 	(void)update(TRUE);
 #endif
-#ifdef	MDCHK_MODTIME
-	(void)check_visible_modtimes();
+#if defined(MDCHK_MODTIME)
+	(void)check_visible_files_changed();
 #endif
 	SIGRET;
 }

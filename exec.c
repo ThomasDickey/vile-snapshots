@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.232 2001/02/15 22:54:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.233 2001/03/01 23:42:02 tom Exp $
  *
  */
 
@@ -61,8 +61,6 @@ typedef struct {
     LOCALS *locals;
     TBUFF *prefix;
 } IFSTK;
-
-static TBUFF *line_prefix;
 
 #else /* SMALLER */
 
@@ -1536,12 +1534,12 @@ push_buffer(IFSTK * save)
     *save = ifstk;
     save->shape = regionshape;
     save->motion = havemotion;
-    save->prefix = line_prefix;
+    save->prefix = with_prefix;
 
     ifstk = new_ifstk;
     havemotion = NULL;
     regionshape = EXACT;
-    line_prefix = 0;
+    with_prefix = 0;
 }
 
 static void
@@ -1550,12 +1548,12 @@ pop_buffer(IFSTK * save)
     while (ifstk.locals)
 	pop_variable();
 
-    tb_free(&line_prefix);
+    tb_free(&with_prefix);
 
     ifstk = *save;
     havemotion = ifstk.motion;
     regionshape = ifstk.shape;
-    line_prefix = ifstk.prefix;
+    with_prefix = ifstk.prefix;
 }
 
 DIRECTIVE
@@ -1756,7 +1754,7 @@ begin_directive(
 	break;
 
     case D_ELSEWITH:
-	if (!tb_length(line_prefix)) {
+	if (!tb_length(with_prefix)) {
 	    status = unbalanced_directive(dirnum);
 	    break;
 	}
@@ -1764,12 +1762,12 @@ begin_directive(
     case D_WITH:
 	while (isBlank(*execstr))
 	    execstr++;
-	tb_scopy(&line_prefix, execstr);
+	tb_scopy(&with_prefix, execstr);
 	status = DDIR_COMPLETE;
 	break;
 
     case D_ENDWITH:
-	tb_free(&line_prefix);
+	tb_free(&with_prefix);
 	status = DDIR_COMPLETE;
 	break;
 
@@ -2125,13 +2123,13 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	    }
 	} else if (*cmdp != DIRECTIVE_CHAR) {
 	    /* prefix lines with "WITH" value, if any */
-	    if (tb_length(line_prefix)) {
+	    if (tb_length(with_prefix)) {
 		long adj = cmdp - linebuf;
 		char *temp = (char *) malloc(
-						tb_length(line_prefix) +
+						tb_length(with_prefix) +
 						strlen(cmdp) + 2);
 		(void) lsprintf(temp, "%s %s",
-				tb_values(line_prefix), cmdp);
+				tb_values(with_prefix), cmdp);
 		free(linebuf);
 		linebuf = temp;
 		cmdp = linebuf + adj;

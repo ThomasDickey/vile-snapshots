@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.276 2001/02/24 12:35:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.282 2001/03/05 00:14:41 tom Exp $
  */
 
 #include	"estruct.h"
@@ -19,9 +19,14 @@
 #define	vl_mkdir(path,mode) mkdir(path,mode)
 #endif
 
+#if CC_CSETPP
+#define isFileMode(mode) (mode & S_IFREG) == S_IFREG
+#else
+#define isFileMode(mode) (mode & S_IFMT) == S_IFREG
+#endif
+
 static	int	bp2swbuffer(BUFFER *bp, int ask_rerun, int lockfl);
 static	int	kifile(char *fname);
-static	int	writereg(REGION *rp, const char *fn, int msgf, BUFFER *bp, int forced);
 static	void	readlinesmsg(int n, int s, const char *f, int rdo);
 
 #if OPT_DOSFILES
@@ -50,12 +55,7 @@ file_modified(char *path)
 	time_t		the_time = 0;
 
 	if (stat(SL_TO_BSL(path), &statbuf) >= 0
-#if CC_CSETPP
-	 && (statbuf.st_mode & S_IFREG) == S_IFREG
-#else
-	 && (statbuf.st_mode & S_IFMT) == S_IFREG
-#endif
-	 )
+	 && isFileMode(statbuf.st_mode))
 	{
 #if SYS_VMS
 		the_time = statbuf.st_ctime; /* e.g., creation-time */
@@ -67,50 +67,84 @@ file_modified(char *path)
 }
 #endif
 
-#ifdef	MDCHK_MODTIME
+#ifdef MDCHK_MODTIME
 static int
-PromptModtime (
-BUFFER	*bp,
-char *fname,
-const char *question,
-int	iswrite)
+PromptFileChanged (BUFFER *bp, char *fname, const char *question, int iswrite)
 {
 	int status = SORTOFTRUE;
-	time_t current;
 	char prompt[NLINE];
+	const char *remind, *again;
+	time_t curtime;
+	int modtimes_mismatch = FALSE;
+	int fuids_mismatch = FALSE;
+#ifdef CAN_CHECK_INO
+	FUID curfuid;
+#endif
 
-	if (!isInternalName(bp->b_fname)
-	 && b_val(bp, MDCHK_MODTIME)
-	 && bp->b_active	/* only buffers that are loaded */
-	 && same_fname(fname, bp, FALSE)
-	 && get_modtime(bp, &current)) {
-		time_t check_against;
-		const char *remind, *again;
-		if (iswrite) {
-			check_against = bp->b_modtime;
-			remind = "Reminder: ";
-			again = "";
-		} else {
-			remind = "";
-			if (bp->b_modtime_at_warn) {
-				check_against = bp->b_modtime_at_warn;
-				again = "again ";
-			} else {
+	remind = again = "";
+
+	if (isInternalName(bp->b_fname) || !bp->b_active)
+		return SORTOFTRUE;
+
+	if( b_val(bp, MDCHK_MODTIME) ) {
+
+		if (same_fname(fname, bp, FALSE)
+		    && get_modtime(bp, &curtime)) {
+			time_t check_against;
+			if (iswrite) {
 				check_against = bp->b_modtime;
-				again = "";
+				remind = "Reminder: ";
+			} else {
+				if (bp->b_modtime_at_warn) {
+					check_against = bp->b_modtime_at_warn;
+					again = "again ";
+				} else {
+					check_against = bp->b_modtime;
+				}
+			}
+			modtimes_mismatch = (check_against != curtime);
+		}
+
+#ifdef CAN_CHECK_INO
+		if (bp->b_fileuid.valid) {
+			int have_fuid;
+			FUID *check_against;
+			have_fuid = fileuid_get(bp->b_fname, &curfuid);
+			if (have_fuid) {
+				if (iswrite) {
+					check_against = &bp->b_fileuid;
+					remind = "Reminder: ";
+				} else {
+					if (bp->b_fileuid_at_warn.valid) {
+						check_against = 
+						    &bp->b_fileuid_at_warn;
+						again = "again ";
+					} else {
+						check_against = &bp->b_fileuid;
+					}
+				}
+				fuids_mismatch = !fileuid_compare(
+						check_against, &curfuid);
 			}
 		}
-
-		if (check_against != current) {
-			(void)lsprintf(prompt,
-			"%sFile for \"%s\" has changed %son disk.  %s",
-				remind, bp->b_bname, again, question);
-			if ((status = mlyesno( prompt )) != TRUE)
-				mlerase();
-			/* avoid reprompts */
-			bp->b_modtime_at_warn = current;
-		}
+#endif /* CAN_CHECK_INO */
 	}
+
+	if (modtimes_mismatch || fuids_mismatch) {
+		(void)lsprintf(prompt,
+		"%sFile for \"%s\" has changed %son disk.  %s",
+			remind, bp->b_bname, again, question);
+		if ((status = mlyesno( prompt )) != TRUE)
+			mlerase();
+		/* avoid reprompts */
+		if (modtimes_mismatch)
+		    bp->b_modtime_at_warn = curtime;
+#ifdef CAN_CHECK_INO
+		if (fuids_mismatch)
+		    bp->b_fileuid_at_warn = curfuid;
+#endif
+	}
+
 	return status;
 }
 
@@ -118,10 +152,52 @@ int
 ask_shouldchange(BUFFER *bp)
 {
 	int status;
-	status = PromptModtime(bp, bp->b_fname, "Continue", FALSE);
+	status = PromptFileChanged(bp, bp->b_fname, "Continue", FALSE);
 	return (status == TRUE || status == SORTOFTRUE);
 }
 
+int
+check_file_changed(BUFFER *bp, char *fn)
+{
+	int status = TRUE;
+
+	if (PromptFileChanged(bp, fn, "Reread", FALSE) == TRUE) {
+#if OPT_LCKFILES
+		/* release own lock before read the file again */
+		if ( global_g_val(GMDUSEFILELOCK) ) {
+			if (!b_val(curbp,MDLOCKED) && !b_val(curbp,MDVIEW))
+				release_lock(fn);
+		}
+#endif
+		status = readin(fn, TRUE, bp, TRUE);
+	}
+	return status;
+}
+
+static int
+inquire_file_changed(BUFFER *bp, char *fn)
+{
+	register int status;
+	if ((status = PromptFileChanged(bp, fn, "Write", TRUE)) != TRUE
+	 && (status != SORTOFTRUE)) {
+		mlforce("[Write aborted]");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+int
+check_visible_files_changed (void)
+{
+	register WINDOW *wp;
+
+	for_each_visible_window(wp)
+		(void)check_file_changed(wp->w_bufp, wp->w_bufp->b_fname);
+	return TRUE;
+}
+#endif /*  MDCHK_MODTIME */
+
+#ifdef MDCHK_MODTIME
 int
 get_modtime (BUFFER *bp, time_t *the_time)
 {
@@ -143,47 +219,8 @@ set_modtime(BUFFER *bp, char *fn)
 		bp->b_modtime_at_warn = 0;
 	}
 }
-
-int
-check_modtime(BUFFER *bp, char *fn)
-{
-	int status = TRUE;
-
-	if (PromptModtime(bp, fn, "Reread", FALSE) == TRUE) {
-#if OPT_LCKFILES
-		/* release own lock before read the file again */
-		if ( global_g_val(GMDUSEFILELOCK) ) {
-			if (!b_val(curbp,MDLOCKED) && !b_val(curbp,MDVIEW))
-				release_lock(fn);
-		}
-#endif
-		status = readin(fn, TRUE, bp, TRUE);
-	}
-	return status;
-}
-
-static int
-inquire_modtime(BUFFER *bp, char *fn)
-{
-	register int status;
-	if ((status = PromptModtime(bp, fn, "Write", TRUE)) != TRUE
-	 && (status != SORTOFTRUE)) {
-		mlforce("[Write aborted]");
-		return FALSE;
-	}
-	return TRUE;
-}
-
-int
-check_visible_modtimes (void)
-{
-	register WINDOW *wp;
-
-	for_each_visible_window(wp)
-		(void)check_modtime(wp->w_bufp, wp->w_bufp->b_fname);
-	return TRUE;
-}
 #endif	/* MDCHK_MODTIME */
+
 
 #if SYS_UNIX || SYS_MSDOS
 #define	CleanToPipe()	if (fileispipe) ttclean(TRUE)
@@ -299,7 +336,7 @@ resolve_filename(BUFFER *bp)
  * a loop.
  */
 int
-same_fname(char *fname, BUFFER *bp, int lengthen)
+same_fname(const char *fname, BUFFER *bp, int lengthen)
 {
 	int	status = FALSE;
 	char	temp[NFILEN];
@@ -345,7 +382,7 @@ same_fname(char *fname, BUFFER *bp, int lengthen)
 int
 fileuid_get(const char *fname, FUID *fuid)
 {
-#if	SYS_UNIX
+#ifdef CAN_CHECK_INO
 	struct stat sb;
 	if (stat(fname, &sb) == 0) {
 		fuid->ino = sb.st_ino;
@@ -360,7 +397,7 @@ fileuid_get(const char *fname, FUID *fuid)
 void
 fileuid_set(BUFFER *bp, FUID *fuid)
 {
-#if	SYS_UNIX
+#ifdef CAN_CHECK_INO
 	bp->b_fileuid = *fuid;  /* struct copy */
 #endif
 }
@@ -368,20 +405,45 @@ fileuid_set(BUFFER *bp, FUID *fuid)
 void
 fileuid_invalidate(BUFFER *bp)
 {
-#if	SYS_UNIX
+#ifdef CAN_CHECK_INO
 	bp->b_fileuid.ino = 0;
 	bp->b_fileuid.dev = 0;
 	bp->b_fileuid.valid = FALSE;
+	bp->b_fileuid_at_warn = bp->b_fileuid;
+#endif
+}
+
+void
+fileuid_set_if_valid(BUFFER *bp, const char *fname)
+{
+    FUID fuid;
+
+    if (!same_fname(fname, bp, FALSE))
+	    return;
+
+    if (fileuid_get(fname, &fuid))
+	    fileuid_set(bp, &fuid);
+    else
+	    fileuid_invalidate(bp);
+}
+
+int
+fileuid_compare(FUID *fuid1, FUID *fuid2)
+{
+#ifdef CAN_CHECK_INO
+	return (fuid1->valid && fuid2->valid &&
+		fuid1->ino == fuid2->ino &&
+		fuid1->dev == fuid2->dev);
+#else
+	return (FALSE);  /* Doesn't really matter */
 #endif
 }
 
 int
 fileuid_same(BUFFER *bp, FUID *fuid)
 {
-#if	SYS_UNIX
-	return (bp->b_fileuid.valid && fuid->valid &&
-		bp->b_fileuid.ino == fuid->ino &&
-		bp->b_fileuid.dev == fuid->dev);
+#ifdef CAN_CHECK_INO
+	return fileuid_compare(&bp->b_fileuid, fuid);
 #else
 	return (FALSE);  /* Doesn't really matter */
 #endif
@@ -569,8 +631,10 @@ int cmdline)
 	int	s;
 	char bname[NBUFN];	/* buffer name to put file */
 	char nfname[NFILEN];	/* canonical form of 'fname' */
-	FUID fuid;
+#ifdef CAN_CHECK_INO
 	int have_fuid = FALSE;
+	FUID fuid;
+#endif
 
 	/* user may have renamed buffer to look like filename */
 	if (bp == NULL
@@ -584,15 +648,18 @@ int cmdline)
 			mlforce("[Buffer not found]");
 			return 0;
 		}
+#ifdef CAN_CHECK_INO
 		if (global_g_val(GMDUNIQ_BUFS)) {
-		    have_fuid = fileuid_get(nfname, &fuid);
-		    for_each_buffer(bp) {
-			    /* is the same unique file */
-			    if (have_fuid && fileuid_same(bp, &fuid)) {
-				    return bp;
-			    }
-		    }
+			have_fuid = fileuid_get(nfname, &fuid);
+			if (have_fuid) {
+				for_each_buffer(bp) {
+					/* is the same unique file */
+					if (fileuid_same(bp, &fuid))
+						return bp;
+				}
+			}
 		}
+#endif
 		for_each_buffer(bp) {
 			/* is it here by that filename? */
 			if (same_fname(nfname, bp, FALSE)) {
@@ -610,10 +677,6 @@ int cmdline)
 				    then it's okay to re-use this buffer */
 				bp->b_active = FALSE;
 				ch_fname(bp, nfname);
-				if (have_fuid)
-					fileuid_set(bp, &fuid);
-				else
-					fileuid_invalidate(bp);
 				return bp;
 			}
 			/* make a new name if it conflicts */
@@ -634,8 +697,6 @@ int cmdline)
 		}
 		/* switch and read it in. */
 		ch_fname(bp, nfname);
-		if (have_fuid)
-			fileuid_set(bp, &fuid);
 	}
 	return bp;
 }
@@ -1565,7 +1626,8 @@ filewrite(int f, int n)
 
 	if (more_named_cmd()) {
 		if ((s= mlreply_file("Write to file: ", (TBUFF **)0,
-				FILEC_WRITE, fname)) != TRUE)
+				forced ? FILEC_WRITE2
+					: FILEC_WRITE, fname)) != TRUE)
 			return s;
 	} else
 		(void) strcpy(fname, curbp->b_fname);
@@ -1607,60 +1669,13 @@ setup_file_region(BUFFER *bp, REGION *rp)
 	rp->r_end    = bp->b_line;
 }
 
-/*
- * Write a whole file
- */
-int
-writeout(const char *fn, BUFFER *bp, int forced, int msgf)
-{
-	REGION region;
-
-	setup_file_region(bp, &region);
-
-	return writereg(&region, fn, msgf, bp, forced);
-}
-
-/*
- * Write the currently-selected region (i.e., the range of lines from DOT to
- * MK, inclusive).
- */
-int
-writeregion(void)
-{
-	REGION region;
-	int status;
-	char fname[NFILEN];
-
-	if (end_named_cmd()) {
-		if (mlyesno("Okay to write [possible] partial range") != TRUE) {
-			mlwrite("Range not written");
-			return FALSE;
-		}
-		(void)strcpy(fname, curbp->b_fname);
-	} else {
-		if ((status = mlreply_file("Write region to file: ",
-			(TBUFF **)0, FILEC_WRITE|FILEC_PROMPT, fname)) != TRUE)
-			return status;
-	}
-	if ((status=getregion(&region)) == TRUE)
-		status = writereg(&region, fname, TRUE, curbp, FALSE);
-	return status;
-}
-
-
 static int
-writereg(
-REGION	*rp,
-const char  *given_fn,
-int	msgf,
-BUFFER	*bp,
-int	forced)
+actually_write(REGION *rp, char *fn, int msgf, BUFFER *bp, int forced)
 {
 	register int	s;
 	register LINE	*lp;
 	register int	nline;
 	register int i;
-	char	fname[NFILEN], *fn;
 	B_COUNT	nchar;
 	const char * ending = get_record_sep(bp);
 	int	len_rs = strlen(ending);
@@ -1669,23 +1684,6 @@ int	forced)
 	/* this is adequate as long as we cannot write parts of lines */
 	int	whole_file = (rp->r_orig.l == lforw(buf_head(bp)))
 			  && (rp->r_end.l == buf_head(bp));
-
-	if (no_file_name(given_fn)) {
-		return FALSE;
-	}
-
-	if (!forced && b_val(bp,MDREADONLY)) {
-		mlwarn("[Buffer mode is \"readonly\"]");
-		return FALSE;
-	}
-
-	if (isShellOrPipe(given_fn)
-	 && bp->b_fname != 0
-	 && !strcmp(given_fn, bp->b_fname)
-	 && mlyesno("Are you sure (this was a pipe-read)") != TRUE) {
-		mlwrite("File not written");
-		return FALSE;
-	}
 
 #if OPT_HOOKS
 	if (run_a_hook(&writehook)) {
@@ -1707,21 +1705,11 @@ int	forced)
 	}
 #endif
 
-	fn = lengthen_path(strcpy(fname, given_fn));
-	if (same_fname(fn, bp, FALSE) && b_val(bp,MDVIEW)) {
-		mlwarn("[Can't write-back from view mode]");
-		return FALSE;
-	}
-
 #if	OPT_ENCRYPT
 	if ((s = vl_resetkey(curbp, fn)) != TRUE)
 		return s;
 #endif
 
-#ifdef MDCHK_MODTIME
-	if ( ! inquire_modtime( bp, fn ) )
-		return FALSE;
-#endif
 	/* open writes error message, if needed */
 	if ((s=ffwopen(fn,forced)) != FIOSUC)
 		return FALSE;
@@ -1730,7 +1718,7 @@ int	forced)
 	if (msgf == TRUE)
 		mlwrite("[Writing...]");
 
-	if (isShellOrPipe(given_fn)) {
+	if (isShellOrPipe(fn)) {
 		beginDisplay();
 		CleanToPipe();
 	}
@@ -1787,7 +1775,7 @@ int	forced)
 			bp->b_lines_on_disk = nline;
 	}
 
-	if (isShellOrPipe(given_fn)) {
+	if (isShellOrPipe(fn)) {
 		CleanAfterPipe(TRUE);
 		endofDisplay();
 	}
@@ -1798,20 +1786,124 @@ int	forced)
 #ifdef MDCHK_MODTIME
 	set_modtime(bp, fn);
 #endif
+	fileuid_set_if_valid(bp, fn);
 	/*
 	 * If we've written the unnamed-buffer, rename it according to the file.
 	 * FIXME: maybe we should do this to all internal-names?
 	 */
 	if (whole_file
 	 && eql_bname(bp, UNNAMED_BufName)
-	 && find_b_file(fname) == 0) {
-		ch_fname(bp, fname);
+	 && find_b_file(fn) == 0) {
+		ch_fname(bp, fn);
 		set_buffer_name(bp);
 	}
 
 	imply_alt(fn, whole_file, FALSE);
 	return TRUE;
 }
+
+static int
+file_protection(char *fn)
+{
+	int result = -1;
+	struct stat sb;
+
+	if (!isShellOrPipe(fn)) {
+		if (stat(fn, &sb) == 0) {
+			if (isFileMode(sb.st_mode))
+				result = sb.st_mode & 0777;
+		}
+	}
+	return result;
+}
+
+static int
+writereg(REGION *rp, const char *given_fn, int msgf, BUFFER *bp, int forced)
+{
+	int status;
+	char fname[NFILEN], *fn;
+	int protection = -1;
+
+	if (no_file_name(given_fn)) {
+		status = FALSE;
+	} else if (!forced && b_val(bp, MDREADONLY)) {
+		mlwarn("[Buffer mode is \"readonly\"]");
+		status = FALSE;
+	} else {
+		if (isShellOrPipe(given_fn)
+		 && bp->b_fname != 0
+		 && !strcmp(given_fn, bp->b_fname)
+		 && mlyesno("Are you sure (this was a pipe-read)") != TRUE) {
+			mlwrite("File not written");
+			status = FALSE;
+		} else {
+			fn = lengthen_path(strcpy(fname, given_fn));
+			if (same_fname(fn, bp, FALSE) && b_val(bp,MDVIEW)) {
+				mlwarn("[Can't write-back from view mode]");
+				status = FALSE;
+			} else {
+#if defined(MDCHK_MODTIME)
+				if ( ! inquire_file_changed( bp, fn ) )
+					status = FALSE;
+				else
+#endif
+				{
+					if (forced
+					 && !ffaccess(fn, FL_WRITEABLE)
+					 && (protection = file_protection(fn)) >= 0) {
+						chmod (SL_TO_BSL(fn), protection | 0600);
+					}
+					status = actually_write(rp, fn, msgf, bp, forced);
+					if (protection > 0)
+						chmod(SL_TO_BSL(fn), protection);
+				}
+			}
+		}
+	}
+
+	return status;
+}
+
+/*
+ * Write a whole file
+ */
+int
+writeout(const char *fn, BUFFER *bp, int forced, int msgf)
+{
+	REGION region;
+
+	setup_file_region(bp, &region);
+
+	return writereg(&region, fn, msgf, bp, forced);
+}
+
+/*
+ * Write the currently-selected region (i.e., the range of lines from DOT to
+ * MK, inclusive).
+ */
+int
+writeregion(void)
+{
+	REGION region;
+	int status;
+	char fname[NFILEN];
+
+	if (end_named_cmd()) {
+		if (mlyesno("Okay to write [possible] partial range") != TRUE) {
+			mlwrite("Range not written");
+			return FALSE;
+		}
+		(void)strcpy(fname, curbp->b_fname);
+	} else {
+		if ((status = mlreply_file("Write region to file: ",
+			(TBUFF **)0, FILEC_WRITE|FILEC_PROMPT, fname)) != TRUE)
+			return status;
+	}
+	if ((status = getregion(&region)) == TRUE)
+		status = writereg(&region, fname, TRUE, curbp, FALSE);
+	return status;
+}
+
 
 /*
  * This function writes the kill register to a file

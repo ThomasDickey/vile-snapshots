@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.465 2001/02/14 01:10:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.469 2001/03/04 20:09:50 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -117,7 +117,9 @@
 #endif
 
 #if SYS_WINNT
-# define HAVE_PUTENV	1
+# define HAVE_PUTENV		1
+# define HAVE_UTIME		1
+# define HAVE_SYS_UTIME_H	1
 #endif
 
 #if CC_CSETPP
@@ -417,7 +419,7 @@
 #endif
 #endif
 
-#define OPT_TITLE	(SYS_WINNT | SYS_UNIX)	/* use a window title */
+#define OPT_TITLE	(SYS_WINNT | DISP_X11)	/* use a window title */
 
 /* the "working..." message -- we must have the alarm() syscall, and
    system calls must be restartable after an interrupt by default or be
@@ -944,6 +946,7 @@ typedef enum {
 typedef enum {
 	PT_UNKNOWN = ENUM_UNKNOWN
 	, PT_BOOL
+	, PT_DIR
 	, PT_ENUM
 	, PT_FILE
 	, PT_INT
@@ -1775,7 +1778,8 @@ typedef struct {
 #define for_each_modegroup(bp,n,m,vals) vals = bp->b_values.bv;
 #endif
 
-#if SYS_UNIX
+#if SYS_UNIX && !SYS_OS2_EMX
+#define CAN_CHECK_INO 1
 typedef struct {
 	dev_t dev;
 	ino_t ino;
@@ -1836,11 +1840,12 @@ typedef struct	BUFFER {
 	char	*b_fname;		/* File name			*/
 	int	b_fnlen;		/* length of filename		*/
 	char	b_bname[NBUFN]; 	/* Buffer name			*/
-#if SYS_UNIX
-	FUID	b_fileuid;		/* file unique id (dev/ino on unix) */
-#endif
 #if	OPT_ENCRYPT
 	char	b_cryptkey[NKEYLEN];	/* encryption key		*/
+#endif
+#if SYS_UNIX
+	FUID	b_fileuid;		/* file unique id (dev/ino on unix) */
+	FUID	b_fileuid_at_warn;	/* file unique id when user warned */
 #endif
 #ifdef	MDCHK_MODTIME
 	time_t	b_modtime;		/* file's last-modification time */
@@ -2382,10 +2387,11 @@ typedef struct {
 					were invoked by their "xxx!" name */
 
 /* definitions for 'mlreply_file()' and other filename-completion */
-#define	FILEC_REREAD   4
-#define	FILEC_READ     3
-#define	FILEC_UNKNOWN  2
 #define	FILEC_WRITE    1
+#define	FILEC_WRITE2   2
+#define	FILEC_UNKNOWN  3
+#define	FILEC_READ     4
+#define	FILEC_REREAD   5
 
 #define	FILEC_PROMPT   8	/* always prompt (never from screen) */
 #define	FILEC_EXPAND   16	/* allow glob-expansion to multiple files */

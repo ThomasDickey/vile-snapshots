@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.453 2001/02/18 00:20:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.457 2001/03/05 00:24:32 tom Exp $
  *
  */
 
@@ -247,7 +247,7 @@ extern WINDOW *row2window (int row);
 extern int col2offs (WINDOW *wp, LINEPTR lp, C_NUM col);
 #endif
 
-#if OPT_MLFORMAT || OPT_POSFORMAT
+#if OPT_MLFORMAT || OPT_POSFORMAT || OPT_TITLE
 extern void special_formatter(TBUFF **result, char *fs, WINDOW *wp);
 #endif
 
@@ -313,7 +313,6 @@ extern int mac_literalarg (TBUFF **tok);
 extern int mac_token (TBUFF **tok);
 extern int macroize (TBUFF **p, TBUFF *src, int skip);
 extern int scan_bool (const char *s );
-extern int scan_int (const char *s );
 extern int toktyp (const char *tokn);
 extern UINT mac_tokens (void);
 
@@ -329,12 +328,13 @@ extern char *skip_text (char *str);
 
 #if OPT_EVAL
 extern LINEPTR label2lp (BUFFER *bp, const char *label);
-extern char *get_statevar_val (int vnum);
 extern int rmv_tempvar(const char *name);
+extern int scan_int (const char *s );
 extern int set_state_variable(const char *name, const char *value);
 extern int vl_lookup_func(const char *name);
 #else
 #define gtenv(name) getenv(name)
+#define scan_int(s) atoi(s)
 #endif
 
 #if OPT_EVAL || DISP_X11
@@ -391,6 +391,7 @@ extern int more_named_cmd (void);
 extern SIGT imdying (int ACTUAL_SIG_ARGS);
 extern int bp2readin (BUFFER *bp, int lockfl);
 extern int fileuid_get (const char *fname, FUID *fuid);
+extern int fileuid_compare (FUID *fuid1, FUID *fuid2);
 extern int fileuid_same (BUFFER *bp, FUID *fuid);
 extern int getfile (char *fname, int lockfl);
 extern int ifile (char *fname, int belowthisline, FILE *haveffp);
@@ -399,13 +400,14 @@ extern int no_file_found (void);
 extern int no_file_name (const char *fname);
 extern int no_such_file (const char *fname);
 extern int readin (char *fname, int lockfl, BUFFER *bp, int mflg);
-extern int same_fname (char *fname, BUFFER *bp, int lengthen);
+extern int same_fname (const char *fname, BUFFER *bp, int lengthen);
 extern int slowreadf (BUFFER *bp, int *nlinep);
 extern int writeout (const char *fn, BUFFER *bp, int forced, int msgf);
 extern int writeregion (void);
 extern time_t file_modified (char *path);
 extern void fileuid_invalidate (BUFFER *bp);
 extern void fileuid_set (BUFFER *bp, FUID *fuid);
+extern void fileuid_set_if_valid(BUFFER *bp, const char *fname);
 extern void makename (char *bname, const char *fname);
 extern void markWFMODE (BUFFER *bp);
 extern void set_last_file_edited (const char *);
@@ -413,8 +415,11 @@ extern void unqname (char *name);
 
 #ifdef MDCHK_MODTIME
 extern int ask_shouldchange (BUFFER *bp);
-extern int check_modtime (BUFFER *bp, char *fn);
-extern int check_visible_modtimes (void);
+extern int check_file_changed (BUFFER *bp, char *fn);
+extern int check_visible_files_changed (void);
+#endif
+
+#ifdef MDCHK_MODTIME
 extern int get_modtime (BUFFER *bp, time_t *the_time);
 extern void set_modtime (BUFFER *bp, char *fn);
 #endif

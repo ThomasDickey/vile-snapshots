@@ -33,19 +33,6 @@ static void propagate_dot(void);
 static int
 linsert_chars(char *s, int len)
 {
-#if 0
-    int nlcount = 0;
-    while (len-- > 0) {
-	if (*s == '\n') {
-	    lnewline();
-	    nlcount++;
-	}
-	else
-	    linsert(1, *s);
-	s++;
-    }
-    return nlcount;
-#else
     /* I wrote the code this way both for efficiency reasons and
        so that the MARK denoting the end of the range wouldn't
        be moved to one of the newly inserted lines.
@@ -135,7 +122,6 @@ linsert_chars(char *s, int len)
     }
 
     return nlcount;
-#endif
 }
 
 /* Another candidate for line.c */
@@ -793,7 +779,7 @@ api_command_cleanup(void)
     /* Pop the fake windows */
 
     while ((bp = pop_fake_win(curwp_visible)) != NULL) {
-	if (bp2vbp(bp) != NULL)
+	if (bp2vbp(bp) != NULL) {
 	    bp2vbp(bp)->fwp = 0;
 	    bp2vbp(bp)->dot_inited = 0;		/* for next time */
 	    bp2vbp(bp)->dot_changed = 0;		/* ditto */
@@ -807,6 +793,7 @@ api_command_cleanup(void)
 		else
 		    b_clr_changed(bp);
 	    }
+	}
     }
 
     curwp_visible = 0;
