@@ -1,8 +1,11 @@
-/* Find the next error in mentioned in the shell output window.
- * written for vile: Copyright (c) 1990, 1995 by Paul Fox
- * rewritten to use regular expressions, 1995 by T.Dickey (dickey@clark.net)
+/*
+ * find the next error in mentioned in the shell output window.
+ * written for vile by paul fox.
+ * rewritten to use regular expressions by T.Dickey (dickey@clark.net)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.73 1998/12/22 10:11:15 cmorgan Exp $
+ * Copyright (c) 1990-1999 by Paul Fox and Tom Dickey
+ *
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.74 1999/04/13 23:29:34 pgf Exp $
  *
  */
 

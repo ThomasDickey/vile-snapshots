@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.388 1999/04/04 23:34:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.390 1999/04/14 23:33:28 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -121,6 +121,10 @@
 # define HAVE_GETCWD 1
 #else
 # define CC_NEWDOSCC 0
+#endif
+
+#if SYS_WINNT
+# define HAVE_PUTENV	1
 #endif
 
 #if CC_CSETPP
@@ -385,7 +389,7 @@
 #define	OPT_CFENCE	1	/* do fence matching in CMODE		      */
 #define OPT_LCKFILES	0	/* create lock files (file.lck style)	      */
 #define OPT_TAGS	1	/* tags support 			      */
-#define	OPT_PROCEDURES	1	/* named procedures			      */
+#define	OPT_PROCEDURES	1	/* macro language procedures		      */
 #define	OPT_PATHLOOKUP	1	/* search $PATH for startup and help files    */
 #define	OPT_SCROLLCODE	1	/* code in display.c for scrolling the screen.
 				   Only useful if your display can scroll
@@ -541,8 +545,7 @@
 
 /*	Debugging options	*/
 #define	OPT_HEAPSIZE		0  /* track heap usage */
-#define OPT_DEBUGMACROS		0  /* $debug triggers macro debugging	*/
-#define	OPT_VISIBLE_MACROS	0  /* update display during keyboard macros*/
+#define OPT_DEBUGMACROS		0  /* let $debug control macro tracing */
 
 #ifndef OPT_TRACE
 #define OPT_TRACE		0  /* turn on debug/trace (link with trace.o) */
@@ -686,7 +689,6 @@ extern char *rindex (const char *s, int c);
 #define VTFLASH_NORMSEQ "\033[?5l"
 #endif
 
-/*	define some ability flags */
 
 	/* intermediate config-controls for filec.c (needed in nemode.h) */
 #if !SMALLER
@@ -731,11 +733,8 @@ extern int MainProgram(int argc, char *argv[]);
 # define signal_pg(sig)   kill(-GETPGRPCALL, sig)
 #endif
 
-#if	DISP_IBMPC
-#define	FRAMEBUF	1
-#else
-#define	FRAMEBUF	0
-#endif
+/* only the raw pc screen driver has a memory-mapped "frame buffer" */
+#define	FRAMEBUF	DISP_IBMPC
 
 #if SYS_OS2
 /*
@@ -909,9 +908,9 @@ typedef UINT WATCHTYPE;
 
 /* reserve space for ram-usage option */
 #if OPT_HEAPSIZE
-#define	LastMsgCol	(term.t_ncol - 10)
+#define	LastMsgCol	(term.cols - 10)
 #else
-#define	LastMsgCol	(term.t_ncol - 1)
+#define	LastMsgCol	(term.cols - 1)
 #endif
 
 /*
@@ -989,20 +988,20 @@ typedef UINT WATCHTYPE;
 
 /* token types								*/
 /* these must be kept in sync with the function table in eval.c		*/
-#define	TKNUL	0			/* null string			*/
-#define	TKARG	1			/* interactive argument		*/
-#define	TKBUF	2			/* buffer argument		*/
-#define	TKVAR	3			/* user variables		*/
-#define	TKENV	4			/* environment variables	*/
-#define	TKFUN	5			/* function....			*/
-#define	TKDIR	6			/* directive			*/
-#define	TKLBL	7			/* line label			*/
-#define	TKSTR	8			/* quoted string literal	*/
-#define	TKLIT	9			/* unquoted string literal	*/
-#define	MAXTOKTYPE	9
+#define TOK_NULL        0   /* null string          */
+#define TOK_QUERY       1   /* query response       */
+#define TOK_BUFLINE     2   /* line from buffer     */
+#define TOK_TEMPVAR     3   /* temp variables       */
+#define TOK_STATEVAR    4   /* state variables      */
+#define TOK_FUNCTION    5   /* functions            */
+#define TOK_DIRECTIVE   6   /* macro lang directive */
+#define TOK_LABEL       7   /* goto target          */
+#define TOK_QUOTSTR     8   /* quoted string        */
+#define TOK_LITSTR      9   /* unquoted string      */
+#define	MAXTOKTYPE	 9
 
 
-#define	nexttabcol(a)	(((a / curtabval) + 1) * curtabval)
+#define	nexttabcol(a,t)	((((a) / (t)) + 1) * (t))
 
 #define NEXT_COLUMN(col, c, list, tabs) \
 		((c == '\t' && !list) \
@@ -1939,70 +1938,41 @@ typedef struct	WINDOW {
  * one terminal type.
  */
 typedef struct	{
-	int	t_mrow;			/* max number of rows allowable */
-	int	t_nrow; 		/* current number of rows used	*/
-	int	t_mcol; 		/* max Number of columns.	*/
-	int	t_ncol; 		/* current Number of columns.	*/
-	int	t_margin;		/* min margin for extended lines*/
-	int	t_scrsiz;		/* size of scroll region "	*/
-	int	t_pause;		/* # times thru update to pause */
-	void	(*t_open) (void);	/* Open terminal at the start.	*/
-	void	(*t_close) (void);	/* Close terminal at end.	*/
-	void	(*t_kopen) (void);	/* Open keyboard		*/
-	void	(*t_kclose) (void);	/* close keyboard		*/
-	int	(*t_getchar) (void);	/* Get character from keyboard. */
-	OUTC_DCL(*t_putchar) (OUTC_ARGS); /* Put character to display.	*/
-	int	(*t_typahead) (void);	/* character ready?		*/
-	void	(*t_flush) (void);	/* Flush output buffers.	*/
-	void	(*t_move) (int row, int col); /* Move the cursor, origin 0. */
-	void	(*t_eeol) (void);	/* Erase to end of line.	*/
-	void	(*t_eeop) (void);	/* Erase to end of page.	*/
-	void	(*t_beep) (void);	/* Beep.			*/
-	void	(*t_rev) (UINT f);	/* set reverse video state	*/
-	int	(*t_rez) (const char *f); /* change screen resolution	*/
-	void	(*t_setfor) (int f);	/* set foreground color		*/
-	void	(*t_setback) (int b);	/* set background color		*/
-	void	(*t_setpal) (const char *p); /* set color palette	*/
-	void	(*t_scroll) (int from, int to, int n); /* scroll region	*/
-	void	(*t_pflush) (void);	/* really flush 		*/
-	void	(*t_icursor) (int c);	/* set cursor shape for insertion */
-	void	(*t_title) (char *t);	/* set window title		*/
-	int	(*t_watchfd)(int, WATCHTYPE, long *);
+	int	maxrows;			/* max rows count 		*/
+	int	rows; 		/* current row count		*/
+	int	maxcols; 		/* max column count		*/
+	int	cols; 		/* current column count		*/
+	int	pausecount;		/* # times thru update to pause */
+	void	(*open) (void);	/* Open terminal at the start.	*/
+	void	(*close) (void);	/* Close terminal at end.	*/
+	void	(*kopen) (void);	/* keyboard open		*/
+	void	(*kclose) (void);	/* keyboard close		*/
+	int	(*getch) (void);	/* Get character from keyboard. */
+	OUTC_DCL(*putch) (OUTC_ARGS); /* Put character to display.	*/
+	int	(*typahead) (void);	/* character ready?		*/
+	void	(*flush) (void);	/* Flush output buffers.	*/
+	void	(*curmove) (int row, int col); /* Move the cursor, origin 0. */
+	void	(*eeol) (void);	/* Erase to end of line.	*/
+	void	(*eeop) (void);	/* Erase to end of page.	*/
+	void	(*beep) (void);	/* Beep.			*/
+	void	(*rev) (UINT f);	/* set reverse video state	*/
+	int	(*setdescrip) (const char *f); /* reset display description */
+	void	(*setfore) (int f);	/* set foreground color		*/
+	void	(*setback) (int b);	/* set background color		*/
+	void	(*setpal) (const char *p); /* set color palette	*/
+	void	(*scroll) (int from, int to, int n); /* scroll region	*/
+	void	(*pflush) (void);	/* really flush 		*/
+	void	(*icursor) (int c);	/* set cursor shape for insertion */
+	void	(*title) (char *t);	/* set window title		*/
+	int	(*watchfd)(int, WATCHTYPE, long *);
 					/* Watch a file descriptor for
 					   input; execute associated
 					   command when input is present*/
-	void	(*t_unwatchfd)(int, long);
+	void	(*unwatchfd)(int, long);
 					/* Don't watch file descriptor	*/
-	void	(*t_cursor)(int flag);	/* hide/show cursor		*/
+	void	(*cursorvis)(int flag);	/* hide/show cursor		*/
 }	TERM;
 
-/*	TEMPORARY macros for terminal I/O  (to be placed in a machine
-					    dependent place later)	*/
-
-#define	TTopen		(*term.t_open)
-#define	TTclose		(*term.t_close)
-#define	TTkopen		(*term.t_kopen)
-#define	TTkclose	(*term.t_kclose)
-#define	TTgetc		(*term.t_getchar)
-#define	TTputc		(*term.t_putchar)
-#define	TTtypahead	(*term.t_typahead)
-#define	TTflush		(*term.t_flush)
-#define	TTmove		(*term.t_move)
-#define	TTeeol		(*term.t_eeol)
-#define	TTeeop		(*term.t_eeop)
-#define	TTbeep		(*term.t_beep)
-#define	TTrev		(*term.t_rev)
-#define	TTrez		(*term.t_rez)
-#define	TTforg(f)	(*term.t_setfor)(f)
-#define	TTbacg(b)	(*term.t_setback)(b)
-#define	TTspal(p)	(*term.t_setpal)(p)
-#define	TTscroll(f,t,n)	(*term.t_scroll)(f,t,n)
-#define	TTpflush()	(*term.t_pflush)()
-#define	TTicursor(c)	(*term.t_icursor)(c)
-#define	TTtitle(t)	(*term.t_title)(t)
-#define TTwatchfd(fd,tp,idp) (*term.t_watchfd)(fd,tp,idp)
-#define TTunwatchfd(fd,id) (*term.t_unwatchfd)(fd,id)
-#define TTcursor	(*term.t_cursor)
 
 typedef struct  VIDEO {
 	UINT	v_flag;			/* Flags */
@@ -2040,24 +2010,6 @@ typedef struct  VIDEO {
 #define	VFREV	iBIT(2)			/* reverse video status		*/
 #define	VFREQ	iBIT(3)			/* reverse video request	*/
 #define	VFCOL	iBIT(4)			/* color change requested	*/
-
-#if DISP_IBMPC
-/*
- * these need to go into edef.h eventually!
- */
-#define	CDCGA	0			/* color graphics card		*/
-#define	CDMONO	1			/* monochrome text card		*/
-#define	CDEGA	2			/* EGA color adapter		*/
-#define	CDVGA	3			/* VGA color adapter		*/
-#define	CDSENSE	-1			/* detect the card type		*/
-
-#if OPT_COLOR
-#define	CD_25LINE	CDCGA
-#else
-#define	CD_25LINE	CDMONO
-#endif
-
-#endif
 
 
 /* Commands are represented as CMDFUNC structures, which contain a

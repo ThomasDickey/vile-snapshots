@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.39 1999/03/20 18:57:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.41 1999/04/14 11:04:14 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -56,14 +56,12 @@
 
 #define NROW	128			/* Max Screen size.		*/
 #define NCOL    256			/* Edit if you want to.         */
-#define	MARGIN	8			/* size of minimum margin and	*/
-#define	SCRSIZ	64			/* scroll size for extended lines */
 #define	NPAUSE	200			/* # times thru update to pause */
 #define NOKYMAP (-1)
 #define KYREDIR (-2)			/* sent keystroke elsewhere.	*/
 
-#define SetCols(value) term.t_ncol = cur_win->cols = value
-#define SetRows(value) term.t_nrow = cur_win->rows = value
+#define SetCols(value) term.cols = cur_win->cols = value
+#define SetRows(value) term.rows = cur_win->rows = value
 
 #define	AttrColor(b,f)	((WORD)(((ctrans[b] & 15) << 4) | (ctrans[f] & 15)))
 
@@ -182,8 +180,6 @@ TERM    term    = {
 	NROW,
 	NCOL,
 	NCOL,
-	MARGIN,
-	SCRSIZ,
 	NPAUSE,
 	ntopen,
 	ntclose,
@@ -204,25 +200,25 @@ TERM    term    = {
 	ntbcol,
 	set_ctrans,
 #else
-	null_t_setfor,
-	null_t_setback,
-	null_t_setpal,
+	nullterm_setfore,
+	nullterm_setback,
+	nullterm_setpal,
 #endif
 	ntscroll,
-	null_t_pflush,
+	nullterm_pflush,
 #if OPT_ICURSOR
 	nticursor,
 #else
-	null_t_icursor,
+	nullterm_icursor,
 #endif
 #if OPT_TITLE
 	nttitle,
 #else
-	null_t_title,
+	nullterm_settitile,
 #endif
-	null_t_watchfd,
-	null_t_unwatchfd,
-	null_t_cursor,
+	nullterm_watchfd,
+	nullterm_unwatchfd,
+	nullterm_cursorvis,
 };
 
 #if OPT_TRACE
@@ -569,7 +565,7 @@ ResizeClient()
 	}
 
 	level++;
-	TRACE(("ResizeClient begin %d, currently %dx%d\n", level, term.t_nrow, term.t_ncol))
+	TRACE(("ResizeClient begin %d, currently %dx%d\n", level, term.rows, term.cols))
 	TraceWindowRect(cur_win->main_hwnd);
 	TraceClientRect(cur_win->main_hwnd);
 	GetClientRect(cur_win->main_hwnd, &crect);
@@ -588,7 +584,7 @@ ResizeClient()
 	if (w < MIN_COLS)
 		w = MIN_COLS;
 
-	if ((h > 1 && h != term.t_nrow) || (w > 1 && w != term.t_ncol)) {
+	if ((h > 1 && h != term.rows) || (w > 1 && w != term.cols)) {
 		TRACE(("...ResizeClient %dx%d\n", h, w))
 		vile_resizing = TRUE;
 		newscreensize(h, w);
@@ -602,7 +598,7 @@ ResizeClient()
 		TRACE(("...ResizeClient %dx%d\n", h, w))
 	} else {
 		TRACE(("ResizeClient ignored (h=%d, w=%d, vs %d x %d)\n",
-			h, w, term.t_nrow, term.t_ncol));
+			h, w, term.rows, term.cols));
 	}
 
 	gui_resize(w, h);
@@ -665,7 +661,7 @@ attr_to_colors(VIDEO_ATTR attr, int *fcolor, int *bcolor)
 }
 
 static void
-set_colors (HDC hdc, VIDEO_ATTR attr)
+nt_set_colors (HDC hdc, VIDEO_ATTR attr)
 {
 	int fcolor;
 	int bcolor;
@@ -716,8 +712,8 @@ static void fshow_cursor(void)
 	POINT z;
 
 	if (caret_disabled		/* reject display during font-dialog */
-	 || ttrow > term.t_nrow		/* reject bogus position in init */
-	 || ttcol > term.t_ncol)
+	 || ttrow > term.rows		/* reject bogus position in init */
+	 || ttcol > term.cols)
 		return;
 
 	TRACE(("fshow_cursor pos %#lx,%#lx (visible:%d, exists:%d)\n", ttrow, ttcol, caret_visible, caret_exists))
@@ -871,7 +867,7 @@ static void use_font(HFONT my_font, BOOL resizable)
 		SetRows(RectToRows(crect));
 	}
 
-	gui_resize(term.t_ncol, term.t_nrow);
+	gui_resize(term.cols, term.rows);
 }
 
 static void set_font(void)
@@ -1137,7 +1133,7 @@ scflush(void)
 
 		hdc = GetDC(cur_win->text_hwnd);
 		SelectObject(hdc, GetMyFont());
-		set_colors(hdc, cur_atr);
+		nt_set_colors(hdc, cur_atr);
 
 		TextOut(hdc,
 			ColToPixel(ccol),
@@ -1193,7 +1189,7 @@ nteeol(void)
 	scflush();
 
 	TRACE(("NTEEOL %d,%d, atr %#x\n", crow, ccol, cur_atr))
-	for (x = ccol; x < term.t_ncol; x++) {
+	for (x = ccol; x < term.cols; x++) {
 		CELL_TEXT(crow,x) = ' ';
 		CELL_ATTR(crow,x) = cur_atr;
 	}
@@ -1201,11 +1197,11 @@ nteeol(void)
 	GetClientRect(cur_win->text_hwnd, &rect);
 	rect.left   = ColToPixel(ccol);
 	rect.top    = RowToPixel(crow);
-	rect.right  = ColToPixel(term.t_ncol);
+	rect.right  = ColToPixel(term.cols);
 	rect.bottom = RowToPixel(crow+1);
 
 	hDC = GetDC(cur_win->text_hwnd);
-	set_colors(hDC, cur_atr);
+	nt_set_colors(hDC, cur_atr);
 	brush = Background(hDC);
 	FillRect(hDC, &rect, brush);
 	DeleteObject(brush);
@@ -1256,10 +1252,10 @@ ntputc(int ch)
 
 		case '\n':
 			scflush();
-			if (crow < term.t_nrow - 1)
+			if (crow < term.rows - 1)
 				crow++;
 			else
-				ntscroll(1, 0, term.t_nrow - 1);
+				ntscroll(1, 0, term.rows - 1);
 			break;
 
 		default:
@@ -1283,8 +1279,8 @@ nteeop(void)
 
 	x0 = ccol;
 	TRACE(("NTEEOP %d,%d, atr %#x\n", crow, ccol, cur_atr))
-	for (y = crow; y < term.t_nrow; y++) {
-		for (x = 0; x < term.t_ncol; x++) {
+	for (y = crow; y < term.rows; y++) {
+		for (x = 0; x < term.cols; x++) {
 			CELL_TEXT(y,x) = ' ';
 			CELL_ATTR(y,x) = cur_atr;
 		}
@@ -1293,12 +1289,12 @@ nteeop(void)
 
 	rect.left   = ColToPixel(ccol);
 	rect.top    = RowToPixel(crow);
-	rect.right  = ColToPixel(term.t_ncol);
-	rect.bottom = RowToPixel(term.t_nrow);
+	rect.right  = ColToPixel(term.cols);
+	rect.bottom = RowToPixel(term.rows);
 
 	if (!vile_resizing) {
 		hDC = GetDC(cur_win->text_hwnd);
-		set_colors(hDC, cur_atr);
+		nt_set_colors(hDC, cur_atr);
 		brush = Background(hDC);
 		FillRect(hDC, &rect, brush);
 		DeleteObject(brush);
@@ -1367,7 +1363,7 @@ ntclose(void)
 	TRACE(("ntclose\n"))
 
 	scflush();
-	ntmove(term.t_nrow - 1, 0);
+	ntmove(term.rows - 1, 0);
 	nteeol();
 	ntflush();
 }
@@ -1728,7 +1724,7 @@ ntscroll(int from, int to, int n)
 #endif
 
 	region.left   = 0;
-	region.right  = (SHORT) ColToPixel(term.t_ncol);
+	region.right  = (SHORT) ColToPixel(term.cols);
 
 	if (from > to) {
 		region.top    = (SHORT) RowToPixel(to);
@@ -1758,7 +1754,7 @@ ntscroll(int from, int to, int n)
 		tofill.right, tofill.bottom));
 
 	hDC = GetDC(cur_win->text_hwnd);
-	set_colors(hDC, cur_atr);
+	nt_set_colors(hDC, cur_atr);
 	brush = Background(hDC);
 	FillRect(hDC, &tofill, brush);
 	DeleteObject(brush);
@@ -2135,7 +2131,7 @@ static void repaint_window(HWND hWnd)
 	BeginPaint(hWnd, &ps);
 	TRACE(("repaint_window (erase:%d)\n", ps.fErase))
 	SelectObject(ps.hdc, GetMyFont());
-	set_colors(ps.hdc, cur_atr);
+	nt_set_colors(ps.hdc, cur_atr);
 	brush = Background(ps.hdc);
 
 	TRACE(("...painting (%d,%d) (%d,%d)\n",
@@ -2166,7 +2162,7 @@ static void repaint_window(HWND hWnd)
 		 && pscreen[row]->v_text != 0
 		 && pscreen[row]->v_attrs != 0) {
 			for (col = x0; col < x1; col++) {
-				set_colors(ps.hdc, CELL_ATTR(row,col));
+				nt_set_colors(ps.hdc, CELL_ATTR(row,col));
 				TextOut(ps.hdc,
 					ColToPixel(col),
 					RowToPixel(row),
@@ -2548,8 +2544,8 @@ WinMain(
 						if (value > 2) {
 							SetRows(value);
 #ifdef VILE_OLE
-							oa_opts.cols = term.t_ncol;
-							oa_opts.rows = term.t_nrow;
+							oa_opts.cols = term.cols;
+							oa_opts.rows = term.rows;
 #endif
 						}
 					}

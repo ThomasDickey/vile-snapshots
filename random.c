@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.193 1999/04/04 21:39:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.194 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -591,7 +591,7 @@ writemsg(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 userbeep(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	TTbeep();
+	term.beep();
 	return TRUE;
 }
 #endif /* !SMALLER */
@@ -654,7 +654,7 @@ catnap(int milli, int watchinput)
 	if (watchinput)  {
 		while(seconds > 0) {
 			sleep(1);
-			if (TTtypahead())
+			if (term.typahead())
 				return;
 			seconds -= 1;
 		}
@@ -673,7 +673,7 @@ catnap(int milli, int watchinput)
 		float tenth = .1;
 		while(seconds > 0.1) {
 			lib$wait(&tenth);
-			if (TTtypahead())
+			if (term.typahead())
 				return;
 			seconds -= tenth;
 		}
@@ -689,7 +689,7 @@ catnap(int milli, int watchinput)
 	if (watchinput)  {
 		while(milli > 100) {
 			delay(100);
-			if (TTtypahead())
+			if (term.typahead())
 				return;
 			milli -= 100;
 		}
@@ -700,7 +700,7 @@ catnap(int milli, int watchinput)
 
 #ifndef have_slept
 	long i;
-	for (i = 0; i < term.t_pause; i++)
+	for (i = 0; i < term.pausecount; i++)
 		;
 #endif
     }

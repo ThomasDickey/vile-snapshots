@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.142 1999/04/04 23:01:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.143 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -220,7 +220,7 @@ string_mode_val(VALARGS *args)
 			break;
 		return NonNull(values->vp->r->pat);
 	}
-	return errorm;
+	return error_val;
 }
 
 /* listvalueset:  print each value in the array according to type, along with
@@ -240,7 +240,7 @@ struct VAL *globvalues)
 	int	show[MAX_G_VALUES+MAX_B_VALUES+MAX_W_VALUES];
 	int	any	= 0,
 		passes	= 1,
-		ncols	= term.t_ncol / ONE_COL,
+		ncols	= term.cols / ONE_COL,
 		padded,
 		perline,
 		percol,
@@ -406,12 +406,12 @@ makemodelist(int local, void *ptr)
 		bprintf("--- \"%s\" settings, if different than \"%s\" majormode %*P\n",
 			localbp->b_bname,
 			localbp->majr->name,
-			term.t_ncol-1, '-');
+			term.cols-1, '-');
 		globl_b_vals = get_sm_vals(localbp->majr);
 	} else
 #endif
 	bprintf("--- \"%s\" settings, if different than globals %*P\n",
-		localbp->b_bname, term.t_ncol-1, '-');
+		localbp->b_bname, term.cols-1, '-');
 
 	nflag = listvalueset(bb, FALSE, FALSE, b_valnames, local_b_vals, globl_b_vals);
 	nflg2 = listvalueset(ww, nflag, FALSE, w_valnames, local_w_vals, global_w_values.wv);
@@ -420,7 +420,7 @@ makemodelist(int local, void *ptr)
 	bputc('\n');
 
 	bprintf("--- %s settings %*P\n",
-		local ? "Local" : "Global", term.t_ncol-1, '-');
+		local ? "Local" : "Global", term.cols-1, '-');
 
 #if OPT_MAJORMODE
 	if (!local) {
@@ -505,9 +505,9 @@ getfillcol(BUFFER *bp)
 {
 	int result = b_val(bp,VAL_FILL);
 	if (result == 0) {
-		result = term.t_ncol - b_val(bp,VAL_WRAPMARGIN);
+		result = term.cols - b_val(bp,VAL_WRAPMARGIN);
 	} else if (result < 0) {
-		result = term.t_ncol + result;
+		result = term.cols + result;
 	}
 	return (result);
 }
@@ -1435,9 +1435,9 @@ chgd_color(VALARGS *args, int glob_vals, int testing)
 {
 	if (!testing) {
 		if (&args->local->vp->i == &gfcolor)
-			TTforg(gfcolor);
+			term.setfore(gfcolor);
 		else if (&args->local->vp->i == &gbcolor)
-			TTbacg(gbcolor);
+			term.setback(gbcolor);
 		set_winflags(glob_vals, WFHARD|WFCOLR);
 		vile_refresh(FALSE,0);
 	}
@@ -1478,7 +1478,7 @@ static FSM_CHOICES *my_hilite;
  * use for this is to switch between 16-colors and 8-colors, though it should
  * work for setting any power of 2 up to the NCOLORS value.
  */
-int set_ncolors(int n)
+int set_colors(int n)
 {
 	static int initialized;
 #if OPT_ENUM_MODES
@@ -1652,21 +1652,28 @@ chgd_working(VALARGS *args GCC_UNUSED, int glob_vals, int testing GCC_UNUSED)
 #endif
 
 	/* Change the xterm-mouse mode */
+#if	OPT_XTERM
 /*ARGSUSED*/
 int
-chgd_xterm(VALARGS *args GCC_UNUSED, int glob_vals, int testing GCC_UNUSED)
+chgd_xterm( VALARGS *args GCC_UNUSED, int glob_vals, int testing GCC_UNUSED)
 {
-#if	OPT_XTERM
 	if (glob_vals) {
 		int	new_state = global_g_val(GMDXTERM_MOUSE);
 		set_global_g_val(GMDXTERM_MOUSE,TRUE);
-		if (!new_state)	TTkclose();
-		else		TTkopen();
+		if (!new_state)	term.kclose();
+		else		term.kopen();
 		set_global_g_val(GMDXTERM_MOUSE,new_state);
 	}
-#endif
 	return TRUE;
 }
+#else
+/*ARGSUSED*/
+int
+chgd_xterm( VALARGS *args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing GCC_UNUSED)
+{
+	return TRUE;
+}
+#endif
 
 	/* Change a mode that affects the search-string highlighting */
 /*ARGSUSED*/
@@ -2425,7 +2432,7 @@ makemajorlist(int local, void *ptr GCC_UNUSED)
 			data = my_majormodes[j].data;
 			bprintf("--- \"%s\" majormode settings %*P\n",
 				my_majormodes[j].name,
-				term.t_ncol-1, '-');
+				term.cols-1, '-');
 			nflag = listvalueset("Qualifier", FALSE, TRUE,
 				m_valnames,
 				data->mm.mv,

@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.114 1999/04/04 22:40:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.115 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -53,7 +53,7 @@ past_wrapmargin(int c)
 	register int	n;
 
 	if ((n = b_val(curbp, VAL_WRAPMARGIN)) > 0
-	 && (n = (term.t_ncol - (nu_width(curwp) + n))) >= 0) {
+	 && (n = (term.cols - (nu_width(curwp) + n))) >= 0) {
 		int list = w_val(curwp,WMDLIST);
 		int used = getccol(list);
 
@@ -1046,7 +1046,7 @@ indentlen(LINE *lp)
 		if (!isSpace(c))
 			break;
 		if (c == '\t')
-			ind = nexttabcol(ind);
+			ind = nexttabcol(ind,curtabval);
 		else
 			++ind;
 	}
@@ -1118,7 +1118,8 @@ tab(int f, int n)
 		return linsert(n, '\t');
 
 	ccol = getccol(FALSE);
-	return linsert((nexttabcol(ccol) - ccol) + (n-1)*curtabval,' ');
+	return linsert((nexttabcol(ccol,curtabval) - ccol) +
+		   				(n-1)*curtabval,' ');
 }
 
 /*ARGSUSED*/

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.190 1999/04/04 23:06:39 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.191 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -13,8 +13,6 @@
 #define	FUNC_NAMELEN	4
 
 #define	ILLEGAL_NUM	-1
-#define	MODE_NUM	-2
-#define	USER_NUM	-3
 
 
 #if OPT_EVAL
@@ -22,16 +20,21 @@
 /* "generic" variable wrapper, to insulate some users of variables
  * from needing to distinguish the different types */
 typedef struct	{
-	int	v_type;	/* type of variable */
+	int	v_type;	/* type: values below */
 	int	v_num;	/* index, for state vars */
 	UVAR *	v_ptr;	/* pointer, for temp vars */
-	} VDESC;
+	} VWRAP;
+/* values for v_type */
+#define VW_NOVAR	0
+#define VW_STATEVAR	1
+#define VW_TEMPVAR	2
+#define VW_MODE		3
 
 static	SIZE_T	s2size ( char *s );
 static	UVAR *	lookup_tempvar( const char *vname);
 static	char *	s2offset ( char *s, char *n );
 static	int	PromptAndSet ( const char *var, int f, int n );
-static	int	SetVarValue ( VDESC *var, const char *value );
+static	int	SetVarValue ( VWRAP *var, const char *value );
 static	int	lookup_func(const char *name);
 static	int	lookup_statevar(const char *vname);
 static const char *get_tempvar_val(UVAR *p);
@@ -50,11 +53,11 @@ makevarslist(int dum1 GCC_UNUSED, void *ptr)
 	register UVAR *p;
 	register int j;
 
-	bprintf("--- State variables %*P\n", term.t_ncol-1, '-');
+	bprintf("--- State variables %*P\n", term.cols-1, '-');
 	bprintf("%s", (char *)ptr);
 	for (p = temp_vars, j = 0; p != 0; p = p->next) {
 		if (!j++)
-			bprintf("--- Temporary variables %*P", term.t_ncol-1, '-');
+			bprintf("--- Temporary variables %*P", term.cols-1, '-');
 		bprintf("\n%%%s = %s", p->u_name, p->u_value);
 	}
 }
@@ -189,7 +192,7 @@ run_func(int fnum)
 	/* fetch required arguments */
 	for (i = 0; i < nargs; i++) {
 		if (mac_tokval(arg[i]) != TRUE)
-			return(errorm);
+			return error_val;
 		if (args_numeric)
 			nums[i] = scan_int(arg[i]);
 		else if (args_boolean)
@@ -321,11 +324,11 @@ run_func(int fnum)
 	case UFQUERY:
 		{ const char *cp;
 		    cp = user_reply(arg[0]);
-		    strcpy(result, cp ? cp : errorm);
+		    strcpy(result, cp ? cp : error_val);
 		}
 		break;
 	default:
-		strcpy(result, errorm);
+		strcpy(result, error_val);
 		break;
 	}
 
@@ -385,29 +388,30 @@ get_statevar_val(int vnum)
 	int s;
 
 	if (vnum == ILLEGAL_NUM)
-		return errorm;
+		return error_val;
 
 	s = (*statevar_func[vnum])(result, (const char *)NULL);
 
 	if (s == TRUE)
 		return result;
 	else
-		return errorm;
+		return error_val;
 
 }
 
 static void
 FindVar(		/* find a variables type and name */
 char *var,		/* name of var to get */
-VDESC *vd)		/* structure to hold type and ptr */
+VWRAP *vd)		/* structure to hold type and ptr */
 {
 	UVAR *p;
 
-	vd->v_type = vd->v_num = ILLEGAL_NUM;
+	vd->v_type = VW_NOVAR;
+	vd->v_num = ILLEGAL_NUM;
 	vd->v_ptr = 0;
 
 	if (!var[1]) {
-		vd->v_type = ILLEGAL_NUM;
+		vd->v_type = VW_NOVAR;
 		return;
 	}
 
@@ -415,33 +419,30 @@ VDESC *vd)		/* structure to hold type and ptr */
 	case '$': /* check for legal state var */
 		vd->v_num = lookup_statevar(var+1);
 		if (vd->v_num != ILLEGAL_NUM)
-			vd->v_type = TKENV;
+			vd->v_type = VW_STATEVAR;
 #if !SMALLER
 		 else {
 			VALARGS	args;
 			if (is_mode_name(&var[1],
 				    TRUE, &args) == TRUE) {
-				vd->v_num  = MODE_NUM;
-				vd->v_type = TKENV;
+				vd->v_type = VW_MODE;
 			}
 		}
 #endif
 		break;
 
-	case '%': /* check for existing legal temp variable */
+	case '%': /* check for legal temp variable */
 		vd->v_ptr = lookup_tempvar(var+1);
-		if (vd->v_ptr) {
-			vd->v_type = TKVAR;
-			vd->v_num  = USER_NUM;
-		} else {
+		if (vd->v_ptr) {  /* existing */
+			vd->v_type = VW_TEMPVAR;
+		} else {  /* new */
 			p = typealloc(UVAR);
 			if (p &&
 			    (p->u_name = strmalloc(var+1)) != 0) {
 				p->next    = temp_vars;
 				p->u_value = 0;
 				temp_vars  = vd->v_ptr = p;
-				vd->v_type = TKVAR;
-				vd->v_num  = USER_NUM;
+				vd->v_type = VW_TEMPVAR;
 			}
 		}
 		break;
@@ -499,7 +500,7 @@ setvar(int f, int n)
 	status = kbd_reply("Variable name: ", &var,
 		mode_eol, '=', KBD_NOEVAL|KBD_LOWERC, vars_complete);
 	if (status != TRUE)
-		return(status);
+		return status;
 	return PromptAndSet(tb_values(var), f, n);
 }
 
@@ -507,7 +508,7 @@ static int
 PromptAndSet(const char *name, int f, int n)
 {
 	int status;
-	VDESC vd;
+	VWRAP vd;
 	char var[NLINE];
 	char prompt[NLINE];
 	char value[NLINE];
@@ -515,10 +516,10 @@ PromptAndSet(const char *name, int f, int n)
 	/* look it up -- vd will describe the variable */
 	FindVar(strcpy(var, name), &vd);
 
-	if (vd.v_type == ILLEGAL_NUM) {
+	if (vd.v_type == VW_NOVAR) {
 		mlforce("[Can't find variable '%s']", var);
-		return(FALSE);
-	} else if (vd.v_type == TKENV && vd.v_num == MODE_NUM) {
+		return FALSE;
+	} else if (vd.v_type == VW_MODE) {
 		VALARGS	args;
 		(void)find_mode(curbp, var+1, -TRUE, &args);
 		set_end_string('=');
@@ -532,7 +533,7 @@ PromptAndSet(const char *name, int f, int n)
 		(void)lsprintf(prompt, "Value of %s: ", var);
 		status = mlreply(prompt, value, sizeof(value));
 		if (status != TRUE)
-			return(status);
+			return status;
 	}
 
 	status = SetVarValue(&vd, value);
@@ -542,7 +543,7 @@ PromptAndSet(const char *name, int f, int n)
 	else if (status != TRUE)
 		mlforce("[Cannot set %s to %s]", var, value);
 
-	return(status);
+	return status;
 }
 
 /*
@@ -584,7 +585,7 @@ set_state_variable(const char *name, const char *value)
 	/* it may not be "marked" yet -- unadorned names are assumed to
 	 *  be "state variables
 	 */
-	if (toktyp(name) == TKLIT) {
+	if (toktyp(name) == TOK_LITSTR) {
 		var[0] = '$';
 		strcpy(var+1, name);
 	} else {
@@ -592,10 +593,8 @@ set_state_variable(const char *name, const char *value)
 	}
 
 	if (value != NULL) { /* value supplied */
-		VDESC vd;
+		VWRAP vd;
 		FindVar(var, &vd);
-		if (vd.v_type == ILLEGAL_NUM)
-			return FALSE;
 		status = SetVarValue(&vd, value);
 	} else { /* no value supplied:  interactive */
 		status = PromptAndSet(var, FALSE, 0);
@@ -616,30 +615,34 @@ set_statevar_val(int vnum, const char *value)
 /* figure out what type of variable we're setting, and do so */
 static int
 SetVarValue(
-VDESC *var,		/* name */
+VWRAP *var,		/* name */
 const char *value)	/* value */
 {
 	int status;
 
 	status = TRUE;
 	switch (var->v_type) {
-	case TKVAR:
+	case VW_NOVAR:
+	case VW_MODE:
+		return FALSE;
+
+	case VW_TEMPVAR:
 		FreeIfNeeded(var->v_ptr->u_value);
 		if ((var->v_ptr->u_value = strmalloc(value)) == 0)
 			status = FALSE;
 		break;
 
-	case TKENV:
+	case VW_STATEVAR:
 		status = set_statevar_val(var->v_num, value);
 		break;
 	}
 
 #if	OPT_DEBUGMACROS
-	if (macbug) {  /* we tracing macros? */
-		if (var->v_type == TKENV)
+	if (tracemacros) {  /* we tracing macros? */
+		if (var->v_type == TOK_STATEVAR)
 			mlforce("(((%s:&%s:%s)))", render_boolean(rp, status),
 					statevars[var->v_num], value);
-		else if (var->v_type == TKENV)
+		else if (var->v_type == TOK_TEMPVAR)
 			mlforce("(((%s:%%%s:%s)))", render_boolean(rp, status),
 					var->v_ptr->u_name, value);
 
@@ -652,7 +655,7 @@ const char *value)	/* value */
 		}
 	}
 #endif
-	return(status);
+	return status;
 }
 #endif
 
@@ -734,8 +737,8 @@ set_palette(const char *value)
 {
 	tb_curpalette = tb_scopy(&tb_curpalette, value);
 #if OPT_COLOR
-	if (term.t_setpal != null_t_setpal) {
-		TTspal(tb_values(tb_curpalette));
+	if (term.setpal != nullterm_setpal) {
+		term.setpal(tb_values(tb_curpalette));
 		vile_refresh(FALSE,0);
 		return TRUE;
 	}
@@ -802,12 +805,12 @@ scan_bool(const char *val)
 {
 	/* check for logical values */
 	if (is_falsem(val))
-		return(FALSE);
+		return FALSE;
 	if (is_truem(val))
-		return(TRUE);
+		return TRUE;
 
 	/* check for numeric truth (!= 0) */
-	return((strtol(val,0,0) != 0));
+	return (strtol(val,0,0) != 0);
 }
 
 /* discriminate types of tokens */
@@ -816,23 +819,23 @@ toktyp(
 const char *tokn)
 {
 
-	if (tokn[0] == EOS)     return TKNUL;
-	if (tokn[0] == '"')     return TKSTR;
+	if (tokn[0] == EOS)     return TOK_NULL;
+	if (tokn[0] == '"')     return TOK_QUOTSTR;
 #if ! SMALLER
-	if (tokn[1] == EOS)     return TKLIT; /* only one character */
+	if (tokn[1] == EOS)     return TOK_LITSTR; /* only one character */
 	switch (tokn[0]) {
-		case '~':       return TKDIR;
-		case '@':       return TKARG;
-		case '<':       return TKBUF;
-		case '$':       return TKENV;
-		case '%':       return TKVAR;
-		case '&':       return TKFUN;
-		case '*':       return TKLBL;
+		case '~':       return TOK_DIRECTIVE;
+		case '@':       return TOK_QUERY;
+		case '<':       return TOK_BUFLINE;
+		case '$':       return TOK_STATEVAR;
+		case '%':       return TOK_TEMPVAR;
+		case '&':       return TOK_FUNCTION;
+		case '*':       return TOK_LABEL;
 
-		default:        return TKLIT;
+		default:        return TOK_LITSTR;
 	}
 #else
-	return TKLIT;
+	return TOK_LITSTR;
 #endif
 }
 
@@ -847,10 +850,10 @@ simple_arg_eval(const char *argp)
 
 /* the returned value is the user's response to the specified prompt */
 static const char *
-interactive_arg_eval(const char *argp)
+query_arg_eval(const char *argp)
 {
 	argp = user_reply(tokval(argp+1));
-	return argp ? argp : errorm;
+	return argp ? argp : error_val;
 }
 
 /* the returned value is the next line from the named buffer */
@@ -858,7 +861,7 @@ static const char *
 buffer_arg_eval(const char *argp)
 {
 	argp = next_buffer_line(tokval(argp+1));
-	return argp ? argp : errorm;
+	return argp ? argp : error_val;
 }
 
 /* expand it as a temp variable */
@@ -867,7 +870,7 @@ tempvar_arg_eval(const char *argp)
 {
 	UVAR *p;
 	p = lookup_tempvar(argp+1);
-	return p ? get_tempvar_val(p) : errorm;
+	return p ? get_tempvar_val(p) : error_val;
 }
 
 /* state variables are expanded.  if it's
@@ -887,7 +890,7 @@ statevar_arg_eval(const char *argp)
 		    return string_mode_val(&args);
 	}
 #endif
-	return errorm;
+	return error_val;
 }
 
 /* run a function to evalute it */
@@ -895,7 +898,7 @@ static const char *
 function_arg_eval(const char *argp)
 {
 	int fnum = lookup_func(argp+1);
-	return (fnum != ILLEGAL_NUM) ? run_func(fnum) : errorm;
+	return (fnum != ILLEGAL_NUM) ? run_func(fnum) : error_val;
 }
 
 /* goto targets evaluate to their line number in the buffer */
@@ -929,9 +932,9 @@ directive_arg_eval(const char *argp)
 	 * a home directory.  handily, these two uses don't
 	 * conflict.  too much. */
 	tb_alloc(&tkbuf, NFILEN);
-	return(lengthen_path(strcpy(tb_values(tkbuf), argp)));
+	return lengthen_path(strcpy(tb_values(tkbuf), argp));
 #else
-	return errorm;
+	return error_val;
 #endif
 }
 
@@ -939,16 +942,16 @@ directive_arg_eval(const char *argp)
 typedef const char * (ArgEvalFunc)(const char *argp);
 
 ArgEvalFunc *eval_func[] = {
-    simple_arg_eval,		/* TKNUL */
-    interactive_arg_eval,	/* TKARG */
-    buffer_arg_eval,		/* TKBUF */
-    tempvar_arg_eval,		/* TKVAR */
-    statevar_arg_eval,		/* TKENV */
-    function_arg_eval,		/* TKFUN */
-    directive_arg_eval,		/* TKDIR */
-    label_arg_eval,		/* TKLBL */
-    qstring_arg_eval,		/* TKSTR */
-    simple_arg_eval		/* TKLIT */
+    simple_arg_eval,		/* TOK_NULL */
+    query_arg_eval,		/* TOK_QUERY */
+    buffer_arg_eval,		/* TOK_BUFLINE */
+    tempvar_arg_eval,		/* TOK_TEMPVAR */
+    statevar_arg_eval,		/* TOK_STATEVAR */
+    function_arg_eval,		/* TOK_FUNCTION */
+    directive_arg_eval,		/* TOK_DIRECTIVE */
+    label_arg_eval,		/* TOK_LABEL */
+    qstring_arg_eval,		/* TOK_QUOTSTR */
+    simple_arg_eval		/* TOK_LITSTR */
 };
 
 #endif /* OPT_EVAL */
@@ -960,10 +963,10 @@ tokval(const char *tokn)
 #if OPT_EVAL
 	int toknum = toktyp(tokn);
 	if (toknum < 0 || toknum > MAXTOKTYPE)
-		return errorm;
+		return error_val;
 	return (*eval_func[toknum])(tokn);
 #else
-	return (toktyp(tokn) == TKSTR) ? tokn+1 : tokn;
+	return (toktyp(tokn) == TOK_QUOTSTR) ? tokn+1 : tokn;
 #endif
 }
 
@@ -1043,7 +1046,7 @@ label2lp (BUFFER *bp, const char *label)
 			}
 		}
 	}
-	return(result);
+	return result;
 }
 
 #endif
@@ -1058,7 +1061,7 @@ mkupper(char *s)
 		if (isLower(*sp))
 			*sp = toUpper(*sp);
 
-	return(s);
+	return s;
 }
 #endif
 
@@ -1071,7 +1074,7 @@ mklower(char *s)
 		if (isUpper(*sp))
 			*sp = toLower(*sp);
 
-	return(s);
+	return s;
 }
 
 char *
@@ -1097,5 +1100,5 @@ mktrimmed(char *rp, char *str)	/* trim whitespace */
 int
 absol(int x)		/* take the absolute value of an integer */
 {
-	return(x < 0 ? -x : x);
+	return (x < 0) ? -x : x;
 }

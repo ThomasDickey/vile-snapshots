@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.65 1999/02/11 11:40:50 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.66 1999/04/13 23:29:34 pgf Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -768,6 +768,7 @@ AC_MSG_CHECKING(if $LEX supports states)
 cat >conftest.l <<CF_EOF
 %s X Y Z
 %x A B C
+%%
 %%
 nothing	ECHO;
 CF_EOF

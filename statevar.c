@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.7 1999/04/04 23:05:22 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.10 1999/04/14 11:01:20 tom Exp $
  */
 
 #include	"estruct.h"
@@ -143,7 +143,7 @@ getkill(char *rp)
 		rp[NSTRING-1] = EOS;
 	}
 
-	return(rp);
+	return rp;
 }
 
 #if OPT_EVAL
@@ -174,7 +174,7 @@ cfgopts(void)
 	}
 	optstring = tb_append(&optstring, EOS);
     }
-    return (tb_values(optstring));
+    return tb_values(optstring);
 }
 #endif
 
@@ -284,7 +284,7 @@ int var_CURCHAR(char *rp, const char *vp)
 			else
 				render_int(rp, char_at(DOT));
 		} else {
-			strcpy(rp, errorm);
+			strcpy(rp, error_val);
 		}
 		return TRUE;
 	} else if (vp) {
@@ -377,10 +377,10 @@ int var_CWLINE(char *rp, const char *vp)
 int var_DEBUG(char *rp, const char *vp)
 {
 	if (rp) {
-		render_boolean(rp, macbug);
+		render_boolean(rp, tracemacros);
 		return TRUE;
 	} else if (vp) {
-		macbug = scan_bool(vp);
+		tracemacros = scan_bool(vp);
 		return TRUE;
 	} else {
 		return FALSE;
@@ -405,10 +405,10 @@ int var_DIRECTORY(char *rp, const char *vp)
 int var_DISCMD(char *rp, const char *vp)
 {
 	if (rp) {
-		render_boolean(rp, discmd);
+		render_boolean(rp, !no_msgs);
 		return TRUE;
 	} else if (vp) {
-		discmd = scan_bool(vp);
+		no_msgs = !scan_bool(vp);
 		return TRUE;
 	} else {
 		return FALSE;
@@ -418,10 +418,10 @@ int var_DISCMD(char *rp, const char *vp)
 int var_DISINP(char *rp, const char *vp)
 {
 	if (rp) {
-		render_boolean(rp, disinp);
+		render_boolean(rp, !no_echo);
 		return TRUE;
 	} else if (vp) {
-		disinp = scan_bool(vp);
+		no_echo = !scan_bool(vp);
 		return TRUE;
 	} else {
 		return FALSE;
@@ -446,19 +446,6 @@ int var_EXITHOOK(char *rp, const char *vp)
 	return any_HOOK(rp, vp, &exithook);
 }
 #endif
-
-int var_FLICKER(char *rp, const char *vp)
-{
-	if (rp) {
-		render_boolean(rp, flickcode);
-		return TRUE;
-	} else if (vp) {
-		flickcode = scan_bool(vp);
-		return TRUE;
-	} else {
-		return FALSE;
-	}
-}
 
 #if DISP_X11||DISP_NTWIN
 int var_FONT(char *rp, const char *vp)
@@ -671,18 +658,23 @@ int var_MODIFIED(char *rp, const char *vp)
 	}
 }
 
+#if OPT_COLOR
 int var_NCOLORS(char *rp, const char *vp)
 {
-#if OPT_COLOR
 	if (rp) {
 		render_int(rp, ncolors);
 		return TRUE;
 	} else if (vp) {
-		return set_ncolors(strtol(vp,0,0));
+		return set_colors(strtol(vp,0,0));
 	}
-#endif
 	return FALSE;
 }
+#else
+int var_NCOLORS(char *rp GCC_UNUSED, const char *vp GCC_UNUSED)
+{
+	return FALSE;
+}
+#endif
 
 int var_NTILDES(char *rp, const char *vp)
 {
@@ -728,11 +720,11 @@ int var_OS(char *rp, const char *vp)
 int var_PAGELEN(char *rp, const char *vp)
 {
 	if (rp) {
-		render_int(rp, term.t_nrow);
+		render_int(rp, term.rows);
 		return TRUE;
 	} else if (vp) {
 #if DISP_X11 || DISP_NTWIN
-		gui_resize(term.t_ncol, strtol(vp,0,0));
+		gui_resize(term.cols, strtol(vp,0,0));
 		return TRUE;
 #else
 		return newlength(TRUE, strtol(vp,0,0));
@@ -745,11 +737,11 @@ int var_PAGELEN(char *rp, const char *vp)
 int var_CURWIDTH(char *rp, const char *vp)
 {
 	if (rp) {
-		render_int(rp, term.t_ncol);
+		render_int(rp, term.cols);
 		return TRUE;
 	} else if (vp) {
 #if DISP_X11 || DISP_NTWIN
-		gui_resize(strtol(vp,0,0), term.t_nrow);
+		gui_resize(strtol(vp,0,0), term.rows);
 		return TRUE;
 #else
 		return newwidth(TRUE, strtol(vp,0,0));
@@ -762,7 +754,8 @@ int var_CURWIDTH(char *rp, const char *vp)
 int var_PALETTE(char *rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, tb_values(tb_curpalette));
+		strcpy(rp, tb_length(tb_curpalette)
+					? tb_values(tb_curpalette) : "");
 		return TRUE;
 	} else if (vp) {
 		return set_palette(vp);
@@ -863,10 +856,10 @@ int var_RDHOOK(char *rp, const char *vp)
 int var_REPLACE(char *rp, const char *vp)
 {
 	if (rp) {
-	    	strcpy(rp, rpat);
+	    	strcpy(rp, replacepat);
 		return TRUE;
 	} else if (vp) {
-		(void)strcpy(rpat, vp);
+		(void)strcpy(replacepat, vp);
 		return TRUE;
 	} else {
 		return FALSE;
@@ -876,12 +869,12 @@ int var_REPLACE(char *rp, const char *vp)
 int var_SEARCH(char *rp, const char *vp)
 {
 	if (rp) {
-	    	strcpy(rp, pat);
+	    	strcpy(rp, searchpat);
 		return TRUE;
 	} else if (vp) {
-		(void)strcpy(pat, vp);
+		(void)strcpy(searchpat, vp);
 		FreeIfNeeded(gregexp);
-		gregexp = regcomp(pat, b_val(curbp, MDMAGIC));
+		gregexp = regcomp(searchpat, b_val(curbp, MDMAGIC));
 		return TRUE;
 	} else {
 		return FALSE;
@@ -920,10 +913,10 @@ int var_SHELL(char *rp, const char *vp)
 int var_SRES(char *rp, const char *vp)
 {
 	if (rp) {
-		strcpy(rp, sres);
+		strcpy(rp, screen_desc);
 		return TRUE;
 	} else if (vp) {
-		return TTrez(vp);
+		return term.setdescrip(vp);
 	} else {
 		return FALSE;
 	}
@@ -955,13 +948,20 @@ int var_STARTUP_PATH(char *rp, const char *vp)
 	}
 }
 
+static int lastcmdstatus = TRUE;
+
+void setcmdstatus(int s)
+{
+	lastcmdstatus = s;
+}
+
 int var_STATUS(char *rp, const char *vp)
 {
 	if (rp) {
-		render_boolean(rp, cmdstatus);
+		render_boolean(rp, lastcmdstatus);
 		return TRUE;
 	} else if (vp) {
-		cmdstatus = scan_bool(vp);
+		lastcmdstatus = scan_bool(vp);
 		return TRUE;
 	} else {
 		return FALSE;
@@ -974,7 +974,7 @@ int var_TITLE(char *rp, const char *vp)
 	if (rp) {
 		strcpy(rp, w32_wdw_title());
 	} else if (vp) {
-		TTtitle((char *) vp);
+		term.title((char *) vp);
 		return TRUE;
 	} else {
 		return FALSE;
@@ -1000,10 +1000,10 @@ int var_TITLE(char *rp, const char *vp)
 int var_TPAUSE(char *rp, const char *vp)
 {
 	if (rp) {
-		render_int(rp, term.t_pause);
+		render_int(rp, term.pausecount);
 		return TRUE;
 	} else if (vp) {
-		term.t_pause = strtol(vp,0,0);
+		term.pausecount = strtol(vp,0,0);
 		return TRUE;
 	} else {
 		return FALSE;

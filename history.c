@@ -63,7 +63,7 @@
  *
  *	Allow left/right scrolling of input lines (when they get too long).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.50 1999/03/19 10:50:50 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.51 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -229,7 +229,7 @@ hst_append(TBUFF * cmd, int glue)
 {
 	static	int	skip = 1;		/* e.g., after "!" */
 
-	if (clexec || !disinp)			/* non-interactive? */
+	if (clexec || no_echo)			/* non-interactive? */
 		return;
 
 	if (willExtend(tb_values(cmd), tb_length(cmd))

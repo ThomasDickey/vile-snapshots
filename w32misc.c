@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.13 1998/11/24 11:01:42 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.14 1999/04/13 23:29:34 pgf Exp $
  */
 
 #include <windows.h>
@@ -448,7 +448,7 @@ w32_system_winvile(const char *cmd, int pressret)
  *   prompting the user to press return.  Order is important IF the user has
  *   configured his/her dos box such that the buffer size exceeds the
  *   window size.  In that scenario, if the ntconio.c routines gained
- *   control (via TTkopen) before the prompt, then the output of the
+ *   control (via term.kopen) before the prompt, then the output of the
  *   previous shell command (e.g., :!dir) is immediately thrown away
  *   due to a screen context switch and the user has no chance to read the
  *   shell output.
@@ -486,7 +486,7 @@ w32_keybrd_reopen(int pressret)
             }
         }
     }
-    TTkopen();
+    term.kopen();
     kbd_erase_to_end(0);
 #endif
 }
@@ -732,7 +732,7 @@ w32_wdw_title(void)
         bufsize = 128;
         buf     = castalloc(char, bufsize);
         if (! buf)
-            return (errorm);
+            return (error_val);
     }
     for (;;)
     {
@@ -748,10 +748,10 @@ w32_wdw_title(void)
             bufsize *= 2;
             buf      = castalloc(char, bufsize);
             if (! buf)
-                return (errorm);
+                return (error_val);
         }
         else
             break;
     }
-    return ((nchars) ? buf : errorm);
+    return ((nchars) ? buf : error_val);
 }

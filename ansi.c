@@ -4,7 +4,7 @@
  * "termio.c". It compiles into nothing if not an ANSI device.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.35 1999/03/20 22:16:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.36 1999/04/13 23:29:34 pgf Exp $
  */
 
 
@@ -42,8 +42,6 @@
 #endif
 
 #define NPAUSE	100			/* # times thru update to pause */
-#define MARGIN	8			/* size of minimim margin and	*/
-#define SCRSIZ	64			/* scroll size for extended lines */
 
 static	void	ansimove   (int row, int col);
 static	void	ansieeol   (void);
@@ -72,12 +70,10 @@ TERM	term	= {
 	NROW,		/* current */
 	MAXNCOL,	/* max */
 	NCOL,		/* current */
-	MARGIN,
-	SCRSIZ,
 	NPAUSE,
 	ansiopen,
-	null_kopen,
-	null_kclose,
+	nullterm_kopen,
+	nullterm_kclose,
 	ansiclose,
 	ttgetc,
 	ttputc,
@@ -88,21 +84,21 @@ TERM	term	= {
 	ansieeop,
 	ansibeep,
 	ansirev,
-	null_cres,
+	nullterm_setdescrip,
 #if	OPT_COLOR
 	ansifcol,
 	ansibcol,
 #else
-	null_t_setfor,
-	null_t_setback,
+	nullterm_setfore,
+	nullterm_setback,
 #endif
-	null_t_setpal,			/* no palette */
+	nullterm_setpal,			/* no palette */
 	ansiscroll,
-	null_t_pflush,
-	null_t_icursor,
-	null_t_title,
-	null_t_watchfd,
-	null_t_unwatchfd,
+	nullterm_pflush,
+	nullterm_icursor,
+	nullterm_settitile,
+	nullterm_watchfd,
+	nullterm_unwatchfd,
 };
 
 static	void	ansiparm (int n);
@@ -281,7 +277,7 @@ ansiscroll(int from, int to, int n)
 			ttputc('M');
 		}
 	}
-	ansiscrollregion(0, term.t_mrow-1);
+	ansiscrollregion(0, term.maxrows-1);
 
 #else /* use insert and delete line */
 #if OPT_PRETTIER_SCROLL
@@ -322,7 +318,7 @@ ansiscrollregion(int top, int bot)
 	csi();
 	ansiparm(top + 1);
 	ttputc(';');
-	if (bot != term.t_nrow-1) ansiparm(bot + 1);
+	if (bot != term.rows-1) ansiparm(bot + 1);
 	ttputc('r');
 }
 #endif
@@ -354,7 +350,7 @@ ansiopen(void)
 	static int already_open = FALSE;
 	if (!already_open) {
 		already_open = TRUE;
-		strcpy(sres, "NORMAL");
+		strcpy(screen_desc, "NORMAL");
 		revexist = TRUE;
 		ttopen();
 	}
@@ -363,7 +359,7 @@ ansiopen(void)
 static void
 ansiclose(void)
 {
-	TTmove(term.t_nrow-1, 0);	/* cf: dumbterm.c */
+	term.curmove(term.rows-1, 0);	/* cf: dumbterm.c */
 	ansieeol();
 #if	OPT_COLOR
 	ansifcol(C_WHITE);

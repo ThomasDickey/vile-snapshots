@@ -50,7 +50,7 @@ Requests to be put on the announcement list should go to
 
 ------------------------------------------------------
 
-original README, from February, 1992:
+extracts from the original README, from February, 1992:
 
 VILE -- VI Like Emacs: a vi workalike put together from Micro-Emacs by Paul Fox
 -------------------------------------------------------------------------------
@@ -61,59 +61,25 @@ VILE -- VI Like Emacs: a vi workalike put together from Micro-Emacs by Paul Fox
 	anything similar done with the Second True Editor.  (The
 	First, of course, being /bin/ed)
 
-	So I took a copy of MicroEmacs 3.9 (which I've since
-	discovered was out of date, unfortunately) and turned it
-	into a vi "feel-alike".  It retains the multiple
-	buffer/multiple window features of uemacs, but the
-	"finger-feel", if you will, is very much that of vi.  It is
-	definitely not a clone, in that some substantial stuff is
-	missing, and the screen doesn't look quite the same.  But what
-	matters most is that one's "muscle memory" does the right thing
-	to the text in front of you, and that is what vile tries to do
-	for vi users.   THIS IS NOT A "CLONE"!  But it feels good.
-	(Put another way, the things that you tend to type over and
-	over probably work -- things done less frequently, like configuring
-	a .exrc file, are quite different.)
+	...
 
-	This is the second really public release of vile.  Users of
-	previous versions will hopefully find many new features -- see the
-	CHANGES file for details.
+	vile retains the multiple buffer/multiple window features of
+	MicroEMACS, but the "finger-feel", if you will, is very much
+	that of vi.  It is definitely not a clone, in that some
+	substantial stuff is missing, and the screen doesn't look
+	quite the same.  But what matters most is that one's "muscle
+	memory" does the right thing to the text in front of you, and
+	that is what vile tries to do for vi users.  THIS IS NOT A
+	"CLONE"!  But it feels good.  (Put another way, the things
+	that you tend to type over and over probably work -- things
+	done less frequently, like configuring a .exrc file, are quite
+	different.)
+
+	...
 
 	The collective developers of Micro-Emacs should be
-	complimented that the changes were as easy as they were.  The
-	code was pretty clean and well designed before I started on
-	it.  I'm not sure that the same can be said anymore...
-
-	The major benefits over standard vi include:
-		- multiple files open at once
-		- multiple windows on the screen
-		- a larger set of operator commands
-		- the possibility of porting to your favorite micro.
-		- "next error" cursor positioning after compilation
-	      [	- infinite undo  -pgf 7/93 ]
-	Of course, it _may_ lack some of vi's reliability. :-)
-	[but not much -- it's _very_ stable these days. -pgf 1/95]
-
-	Take a look at vile.hlp for more information about features
-	and differences.
-
-	In general, I suspect that the quality of the code is roughly
-	on a par with MicroEmacs.  I've been using vile regularly under
-	both SunOS and 386 UNIX for almost two years [more like 5 years
-	now, on a lot more platforms than that -pgf 12/94], with no major
-	problems (that haven't been fixed).  Version three was built and
-	used by many others on the net, and their feedback was invaluable.
-	I think all of the reported bugs have been fixed, and hopefully not
-	too many new ones introduced.
-
-	I have not run this much on a small system, and not much at all on
-	DOS.  Pete Rusczinski has done an excellent job of porting
-	version three to DOS -- his changes are now incorporated here (as
-	of version 3.20), but since in general the DOS version has been
-	less well exercised than the UNIX version, it probably harbors
-	more bugs.
-
-	Hope you enjoy --
+	complimented that the changes were as easy as they were.
+	...
 
 	Paul G. Fox	June, 1991, and February, 1992
 
@@ -342,5 +308,5 @@ Oct, 1998
 
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.71 1999/03/19 10:49:32 pgf Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.72 1999/04/13 23:29:34 pgf Exp $
 -------------------------------

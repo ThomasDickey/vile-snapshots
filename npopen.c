@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.68 1999/03/24 11:43:39 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.71 1999/04/14 23:44:54 tom Exp $
  *
  */
 
@@ -63,28 +63,33 @@ npopen (char *cmd, const char *type)
 }
 #endif /* SYS_UNIX || SYS_OS2 */
 
-#if SYS_UNIX
-
 #if HAVE_PUTENV
 /*
  * Put the libdir in our path so we do not have to install the filters in the
- * regular $PATH.
+ * regular $PATH.  If we can do this right after forking, it will not affect
+ * the path for subshells invoked via ":sh".
  */
 static void append_libdir_to_path(void)
 {
 	char *env, *tmp;
 
 	if (libdir_path != 0
-	 && (env = getenv("PATH")) != 0
-	 && (tmp = malloc(strlen(env) + strlen(libdir_path) + 8)) != 0) {
-		lsprintf(tmp, "PATH=%s%c%s", env, PATHCHR, libdir_path);
-		putenv(tmp);
+	 && (env = getenv("PATH")) != 0) {
+		unsigned len = strlen(libdir_path);
+		if (strlen(env) < len + 5
+		 || strcmp(env+strlen(env)-len, libdir_path)) {
+			if ((tmp = malloc(strlen(env) + len + 8)) != 0) {
+				lsprintf(tmp, "PATH=%s%c%s", env, PATHCHR, libdir_path);
+				putenv(tmp);
+			}
+		}
 	}
 }
 #else
 #define append_libdir_to_path() /*nothing*/
 #endif
 
+#if SYS_UNIX
 int
 inout_popen(FILE **fr, FILE **fw, char *cmd)
 {
@@ -352,7 +357,7 @@ readPipe(const char *cmd, int in, int out)
 
 	TRACE(("readPipe(cmd='%s', in=%d, out=%d)\n", cmd, in, out))
 
-	TTkclose();	/* close the keyboard in case of error */
+	term.kclose();	/* close the keyboard in case of error */
 
 	/* save and redirect stdin, stdout, and stderr */
 	old1 = dup(1);
@@ -380,7 +385,7 @@ readPipe(const char *cmd, int in, int out)
 	dup2(old1, 1); close(old1);
 	dup2(old2, 2); close(old2);
 
-	TTkopen();	/* reopen the keyboard */
+	term.kopen();	/* reopen the keyboard */
 
 	/* rewind command output */
 	lseek(out, 0L, 0);
@@ -395,7 +400,7 @@ writePipe(const char *cmd)
 
 	TRACE(("writePipe(cmd='%s')\n", cmd))
 
-	TTkclose();	/* close the keyboard in case of error */
+	term.kclose();	/* close the keyboard in case of error */
 
 	(void)fclose(*myWrtr);
 	*myWrtr = fopen(myName[0], "r");
@@ -408,7 +413,7 @@ writePipe(const char *cmd)
 	/* restore old std... */
 	dup2(old0, 0); close(old0);
 
-	TTkopen();	/* reopen the keyboard */
+	term.kopen();	/* reopen the keyboard */
 }
 #endif
 
@@ -439,6 +444,7 @@ inout_popen(FILE **fr, FILE **fw, char *cmd)
 	TRACE(("inout_popen(fr=%p, fw=%p, cmd='%s')\n", fr, fw, cmd))
 	fileispipe = TRUE;
 	fileeof = FALSE;
+	append_libdir_to_path();
 #ifdef GMDW32PIPES
 	if (global_g_val(GMDW32PIPES))
 	    return (w32_inout_popen(fr, fw, cmd));

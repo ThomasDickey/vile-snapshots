@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.115 1999/03/19 11:34:03 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.116 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -12,8 +12,6 @@
 
 #if DISP_TERMCAP
 
-#define MARGIN	8
-#define SCRSIZ	64
 #define NPAUSE	10			/* # times thru update to pause */
 
 #include	"tcap.h"
@@ -197,8 +195,6 @@ TERM term = {
 	0,
 	0,
 	0,
-	MARGIN,
-	SCRSIZ,
 	NPAUSE,
 	tcapopen,
 	tcapclose,
@@ -217,22 +213,22 @@ TERM term = {
 #else
 	tcaprev,
 #endif
-	null_cres,
+	nullterm_setdescrip,
 #if	OPT_COLOR
 	tcapfcol,
 	tcapbcol,
 	tcapspal,
 #else
-	null_t_setfor,
-	null_t_setback,
-	null_t_setpal,
+	nullterm_setfore,
+	nullterm_setback,
+	nullterm_setpal,
 #endif
-	null_t_scroll,		/* set dynamically at open time */
-	null_t_pflush,
-	null_t_icursor,
-	null_t_title,
-	null_t_watchfd,
-	null_t_unwatchfd,
+	nullterm_scroll,		/* set dynamically at open time */
+	nullterm_pflush,
+	nullterm_icursor,
+	nullterm_settitile,
+	nullterm_watchfd,
+	nullterm_unwatchfd,
 	tcapcursor,
 };
 
@@ -353,21 +349,21 @@ tcapopen(void)
 #endif
 
 	/* Get screen size from system, or else from termcap.  */
-	getscreensize(&term.t_ncol, &term.t_nrow);
+	getscreensize(&term.cols, &term.rows);
 
-	if ((term.t_nrow <= 1)
-	 && (term.t_nrow = TGETNUM(CAPNAME("li","lines"))) < 0) {
-		term.t_nrow = 24;
+	if ((term.rows <= 1)
+	 && (term.rows = TGETNUM(CAPNAME("li","lines"))) < 0) {
+		term.rows = 24;
 	}
 
-	if ((term.t_ncol <= 1)
-	 && (term.t_ncol = TGETNUM(CAPNAME("co","cols"))) < 0){
-		term.t_ncol = 80;
+	if ((term.cols <= 1)
+	 && (term.cols = TGETNUM(CAPNAME("co","cols"))) < 0){
+		term.cols = 80;
 	}
 
 #if OPT_COLOR
 	if ((j = TGETNUM(CAPNAME("Co","colors"))) > 0)
-		set_ncolors(j);
+		set_colors(j);
 #endif
 
 	/* are we probably an xterm?  */
@@ -394,8 +390,8 @@ tcapopen(void)
 		y_origin = 0;
 	}
 
-	term.t_mrow =  term.t_nrow;
-	term.t_mcol =  term.t_ncol;
+	term.maxrows =  term.rows;
+	term.maxcols =  term.cols;
 
 #if USE_TERMCAP
 	p = tcapbuf;
@@ -439,11 +435,11 @@ tcapopen(void)
 	if (tc_CS && tc_SR) {
 		if (tc_SF == NULL) /* assume '\n' scrolls forward */
 			tc_SF = "\n";
-		term.t_scroll = tcapscroll_reg;
+		term.scroll = tcapscroll_reg;
 	} else if ((tc_DL && tc_AL) || (tc_dl && tc_al)) {
-		term.t_scroll = tcapscroll_delins;
+		term.scroll = tcapscroll_delins;
 	} else {
-		term.t_scroll = null_t_scroll;
+		term.scroll = nullterm_scroll;
 	}
 #if	OPT_COLOR
 	/*
@@ -547,8 +543,8 @@ tcapclose(void)
 	if (tc_ME)	/* end special attributes (including color) */
 		putpad(tc_ME);
 #endif
-	TTmove(term.t_nrow-1, 0);	/* cf: dumbterm.c */
-	TTeeol();
+	term.curmove(term.rows-1, 0);	/* cf: dumbterm.c */
+	term.eeol();
 #if OPT_COLOR
 	shown_fcolor = shown_bcolor =
 	given_fcolor = given_bcolor = NO_COLOR;
@@ -578,7 +574,7 @@ tcapkopen(void)
 		if (tc_KS)
 			putpad(tc_KS);
 	}
-	(void)strcpy(sres, "NORMAL");
+	(void)strcpy(screen_desc, "NORMAL");
 }
 
 static void
@@ -595,7 +591,7 @@ tcapkclose(void)
 		if (tc_KE)
 			putpad(tc_KE);
 	}
-	TTflush();
+	term.flush();
 }
 
 static void
@@ -613,7 +609,7 @@ static int
 clear_non_bce(int row, int col)
 {
 	int n;
-	int last = (row >= term.t_nrow-1) ? (term.t_ncol - 1) : term.t_ncol;
+	int last = (row >= term.rows-1) ? (term.cols - 1) : term.cols;
 	if (col < last) {
 		for (n = col; n < last; n++)
 			ttputc(' ');
@@ -626,7 +622,7 @@ static void
 erase_non_bce(int row, int col)
 {
 	if (clear_non_bce(row, col))
-		TTmove(row, col);
+		term.curmove(row, col);
 }
 
 #define NEED_BCE_FIX (!have_bce && shown_bcolor != NO_COLOR)
@@ -655,13 +651,13 @@ tcapeeop(void)
 
 	if (NEED_BCE_FIX) {
 		int row = ttrow;
-		if (row < term.t_nrow-1) {
-			while (++row < term.t_nrow) {
+		if (row < term.rows-1) {
+			while (++row < term.rows) {
 				if (ttrow != row || ttcol != 0)
-					TTmove(row, 0);
+					term.curmove(row, 0);
 				(void) clear_non_bce(row, 0);
 			}
-			TTmove(ttrow, ttcol);
+			term.curmove(ttrow, ttcol);
 		}
 		erase_non_bce(ttrow, ttcol);
 	} else
@@ -691,7 +687,7 @@ tcapscroll_reg(int from, int to, int n)
 			FILL_BCOLOR(from, 0);
 		}
 	}
-	tcapscrollregion(0, term.t_nrow-1);
+	tcapscrollregion(0, term.rows-1);
 }
 
 /*
@@ -1024,7 +1020,7 @@ tcapbeep(void)
 		{
 			str2 = seq[val][1];
 			putpad(str1);
-			TTflush();
+			term.flush();
 			catnap(150, FALSE);
 			putpad(str2);
 			hit = 1;
@@ -1172,14 +1168,14 @@ xterm_button(int c)
 				firstrow = wp->w_toprow + 1;
 				lastrow  = mode_row(wp) + 1;
 			} else {		/* from message-line */
-				firstrow = term.t_nrow ;
-				lastrow  = term.t_nrow + 1;
+				firstrow = term.rows ;
+				lastrow  = term.rows + 1;
 			}
 			if (y >= lastrow)	/* don't select modeline */
 				y = lastrow - 1;
 			(void)lsprintf(temp, fmt, 1, x, y, firstrow, lastrow);
 			putpad(temp);
-			TTflush();
+			term.flush();
 			/* Set the dot-location if button 1 was pressed in a
 			 * window.
 			 */
@@ -1193,7 +1189,7 @@ xterm_button(int c)
 				/* abort the selection */
 				(void)lsprintf(temp, fmt, 0, x, y, firstrow, lastrow);
 				putpad(temp);
-				TTflush();
+				term.flush();
 				status = ABORT;
 			} else {
 				status = FALSE;

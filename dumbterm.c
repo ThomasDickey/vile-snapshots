@@ -1,14 +1,12 @@
 /*	Dumb terminal driver, for I/O before we get into screen mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/dumbterm.c,v 1.14 1998/11/11 21:57:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/dumbterm.c,v 1.15 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
 #include	"estruct.h"
 #include	"edef.h"
 
-#define MARGIN	8
-#define SCRSIZ	64
 #define NPAUSE	10			/* # times thru update to pause */
 
 static OUTC_DCL dumb_putc (OUTC_ARGS);
@@ -31,8 +29,6 @@ TERM dumb_term = {
 	1,
 	80,
 	80,
-	MARGIN,
-	SCRSIZ,
 	NPAUSE,
 	0,		/* use this to put us into raw mode */
 	0,		/* ...and this, just in case we exit */
@@ -48,16 +44,16 @@ TERM dumb_term = {
 	dumb_beep,
 	dumb_rev,
 	dumb_cres,
-	null_t_setfor,
-	null_t_setback,
-	null_t_setpal,
-	null_t_scroll,
-	null_t_pflush,
-	null_t_icursor,
-	null_t_title,
-	null_t_watchfd,
-	null_t_unwatchfd,
-	null_t_cursor,
+	nullterm_setfore,
+	nullterm_setback,
+	nullterm_setpal,
+	nullterm_scroll,
+	nullterm_pflush,
+	nullterm_icursor,
+	nullterm_settitile,
+	nullterm_watchfd,
+	nullterm_unwatchfd,
+	nullterm_cursorvis,
 };
 
 static	int	this_col;
@@ -71,7 +67,7 @@ flush_blanks(void)
 			(void)putchar(' ');
 		last_col = 0;
 	}
-	TTflush();
+	term.flush();
 }
 
 static void

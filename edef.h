@@ -1,14 +1,12 @@
-/*	EDEF:		Global variable definitions for vile
-
-
-			written for MicroEMACS 3.9 by Dave G. Conroy
-			modified by Steve Wilhite, George Jones
-			greatly modified by Daniel Lawrence
-			modified even more than that by Paul Fox.  honest.
+/*
+ * edef.h - some global variable definitions for vile
+ *
+ *  based on microemacs code worked originally by Dave G. Conroy,
+ *  modified by Steve Wilhite, George Jones, Daniel Lawrence.
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.240 1999/04/04 21:18:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.241 1999/04/13 23:29:34 pgf Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -123,12 +121,15 @@ decl_uninit( BUFFER *bminip );		/* buffer for command-line      */
 
 decl_uninit( TBUFF *tb_save_shell[2] );	/* last ":!" or ^X-!  command	*/
 
-decl_uninit( char sres[NBUFN] );	/* current screen resolution	*/
+decl_uninit( char screen_desc[NBUFN] );	/* rough description of screen  */
 
 decl_uninit( char mlsave[NSTRING] );	/* last message, if postponed	*/
-decl_uninit( char pat[NPAT] );		/* Search pattern		*/
-decl_uninit( char rpat[NPAT] );		/* replacement pattern		*/
+decl_uninit( char searchpat[NPAT] );	/* Search pattern		*/
+decl_uninit( char replacepat[NPAT] );	/* replacement pattern		*/
 decl_uninit( int  last_srch_direc );	/* Direction of last search */
+decl_uninit( regexp *gregexp );		/* compiled version of searchpat */
+decl_uninit( TBUFF *tb_matched_pat);	/* text that scan found */
+
 
 #if OPT_PROCEDURES
 decl_uninit( HOOK cdhook );		/* proc to run when change dir */
@@ -138,25 +139,15 @@ decl_uninit( HOOK bufhook );		/* proc to run when change buf */
 decl_uninit( HOOK exithook );		/* proc to run when exiting */
 #endif
 
-decl_uninit( regexp *gregexp );		/* compiled version of pat */
-
-decl_uninit( TBUFF *tb_matched_pat);	/* text that scan found */
-
 decl_uninit( int ignorecase );
 
 decl_init( int curgoal, -1 );		/* column goal			*/
-decl_uninit( const char *execstr );	/* string being execute		*/
-#if OPT_EVAL
-decl_uninit( char golabel[NPAT] );	/* current line to go to	*/
-#endif
+decl_uninit( const char *execstr );	/* string being executed	*/
 #if OPT_MLFORMAT
 decl_uninit( char *modeline_format );	/* modeline formatting string */
 #endif
 decl_init( int	eolexist, TRUE );	/* does clear to EOL exist	*/
 decl_uninit( int revexist );		/* does reverse video exist?	*/
-#if DISP_IBMPC || OPT_EVAL
-decl_uninit( int flickcode );		/* do flicker suppression?	*/
-#endif
 decl_uninit( int curtabval );		/* current tab width		*/
 
 #ifdef realdef
@@ -178,10 +169,9 @@ decl_init( int sgarbf, TRUE );		/* TRUE if screen is garbage	*/
 decl_uninit( int clexec	);		/* command line execution flag	*/
 decl_uninit( int clhide );		/* hide results of this command	*/
 decl_uninit( int miniedit );		/* editing minibuffer with vi-cmds */
-decl_uninit( int mstore	);		/* storing text to macro flag	*/
-decl_init( int discmd, TRUE );		/* display command flag		*/
-decl_init( int disinp, TRUE );		/* display input characters	*/
-decl_uninit( struct BUFFER *bstore );	/* buffer to store macro text to*/
+decl_uninit( int no_msgs);		/* suppress command output?	*/
+decl_uninit( int no_echo);		/* echo user input 		*/
+
 decl_uninit( int vtrow );		/* Row location of SW cursor	*/
 decl_uninit( int vtcol );		/* Column location of SW cursor */
 decl_init( int ttrow, HUGE );		/* Row location of HW cursor	*/
@@ -246,7 +236,7 @@ decl_init( int seed, 123 );		/* random number seed		*/
 #endif
 
 #if OPT_EVAL || OPT_DEBUGMACROS
-decl_uninit( int macbug );		/* macro debugging flag		*/
+decl_uninit( int tracemacros );		/* macro tracing flag		*/
 #endif
 
 #if OPT_WORKING
@@ -266,9 +256,8 @@ decl_uninit( struct VAL *relisting_w_vals );
 #endif
 
 decl_init( char out_of_mem[], "Out of Memory" );
-decl_init( char errorm[], "ERROR" );	/* error literal		*/
+decl_init( char error_val[], "ERROR" );
 
-decl_init( int	cmdstatus, TRUE );	/* last command status		*/
 #if OPT_EVAL || OPT_COLOR
 decl_uninit( TBUFF *tb_curpalette );	/* current colormap palete	*/
 #endif
@@ -370,8 +359,7 @@ extern KBIND kbindtbl[];
 /* vars useful for writing procedures that are : commands */
 decl_uninit(int ev_end_of_cmd);
 
-/* terminal table defined only in TERM.C */
-
+/* terminal structure is defined in the configured screen driver */
 #ifndef	termdef
 extern	TERM	term;			/* Terminal information.	*/
 #endif

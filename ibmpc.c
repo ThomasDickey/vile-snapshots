@@ -1,14 +1,12 @@
 /*
  * The routines in this file provide support for the IBM-PC family
- * of machines. It goes directly to the graphics RAM to do screen output.
- *
- * Supported monitor cards include
- *	CGA, MONO, EGA, VGA.
+ * of machines, and their typical display cards:  mono, cga, ega, vga.
+ * It goes directly to the graphics RAM to do screen output.
  *
  * Modified by Pete Ruczynski (pjr) for auto-sensing and selection of
  * display type.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.90 1999/03/19 11:17:29 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.91 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -37,35 +35,43 @@
 
 #define NROW	50			/* Max Screen size.		*/
 #define NCOL	80			/* Edit if you want to. 	*/
-#define	MARGIN	8			/* size of minimum margin and	*/
-#define	SCRSIZ	64			/* scroll size for extended lines */
 #define	NPAUSE	200			/* # times thru update to pause */
 #define	SPACE	32			/* space character		*/
 
 #if CC_WATCOM
-#define	SCADC	(0xb800 << 4)		/* CGA address of screen RAM	*/
-#define	SCADM	(0xb000 << 4)		/* MONO address of screen RAM	*/
-#define SCADE	(0xb800 << 4)		/* EGA address of screen RAM	*/
+#define	MONOADDR	(0xb000 << 4)	/* MONO screen memory */
+#define	OTHERADDR	(0xb800 << 4)	/* CGA,EGA,VGA screen memory */
 #endif
 
 #if CC_DJGPP
 #define FAR_POINTER(s,o) (0xe0000000 + s*16 + o)
 #define FP_SEG(a)	((unsigned long)(a) >> 4L)
 #define FP_OFF(a)	((unsigned long)(a) & 0x0fL)
-#define	SCADC	0xb800			/* CGA address of screen RAM	*/
-#define	SCADM	0xb000			/* MONO address of screen RAM	*/
-#define SCADE	0xb800			/* EGA address of screen RAM	*/
+#define	MONOADDR	0xb000		/* MONO screen memory */
+#define	OTHERADDR	0xb800		/* CGA,EGA,VGA screen memory */
 #endif
 
-#ifndef SCADC
-#define	SCADC	0xb8000000L		/* CGA address of screen RAM	*/
-#define	SCADM	0xb0000000L		/* MONO address of screen RAM	*/
-#define SCADE	0xb8000000L		/* EGA address of screen RAM	*/
+#ifndef OTHERADDR
+#define	MONOADDR	0xb0000000L	/* MONO screen memory */
+#define	OTHERADDR	0xb8000000L	/* CGA,EGA,VGA screen memory */
 #endif
 
 #ifndef FAR_POINTER
 #define FAR_POINTER(s,o) (s)
 #endif
+
+#define	MONOSCR	0
+#define	CGASCR	1
+#define	EGASCR	2
+#define	VGASCR	3
+
+static	const	long	ScreenAddress[] = {
+		MONOADDR,	/* MONOSCR: Monochrome adapter */
+		OTHERADDR,	/* CGASCR: Color graphics adapter */
+		OTHERADDR,	/* EGASCR: Enhanced graphics adapter */
+		OTHERADDR	/* VGASCR: VGA adapter */
+	};
+
 
 #if CC_WATCOM
 #ifdef __386__
@@ -90,7 +96,7 @@
 #define	_DI_		di
 #endif
 
-#define	ColorDisplay()	(dtype != CDMONO && !monochrome)
+#define	ColorDisplay()	(dtype != MONOSCR && !monochrome)
 #define	AttrColor(b,f)	(((ctrans[b] & 7) << 4) | (ctrans[f] & 15))
 #define	Black(n)	((n) ? 0 : 7)
 #define	White(n)	((n) ? 7 : 0)
@@ -191,45 +197,37 @@ typedef	struct	{
  */
 static	DRIVERS drivers[] = {
 		{"default",ORIGTYPE,    3,      C8x8,   25,  80, RES_200},
-		{"2",      CDVGA,	3,	C8x16,	25,  80, RES_400},
-		{"25",     CDVGA,	3,	C8x16,	25,  80, RES_400},
-		{"2",      CDCGA,	3,	C8x8,	25,  80, RES_200},
-		{"25",     CDCGA,	3,	C8x8,	25,  80, RES_200},
-		{"CGA",    CDCGA,	3,	C8x8,	25,  80, RES_200},
-		{"MONO",   CDMONO,	3,	C8x8,	25,  80, RES_200},
-		{"80x25",  CDVGA,	3,	C8x16,	25,  80, RES_400},
-		{"80x28",  CDVGA,	3,	C8x14,  28,  80, RES_400},
-		{"EGA",    CDEGA,	3,	C8x8,	43,  80, RES_350},
-		{"4",      CDEGA,	3,	C8x8,	43,  80, RES_350},
-		{"43",     CDEGA,	3,	C8x8,	43,  80, RES_350},
-		{"80x43",  CDVGA,	3,	C8x8,   43,  80, RES_350},
-		{"5",      CDVGA,	3,	C8x8,	50,  80, RES_400},
-		{"50",     CDVGA,	3,	C8x8,	50,  80, RES_400},
-		{"VGA",    CDVGA,	3,	C8x8,	50,  80, RES_400},
-		{"80x50",  CDVGA,	3,	C8x8,	50,  80, RES_400},
-		{"80x14",  CDVGA,	3,	C8x14,  14,  80, RES_200},
-		{"40x12",  CDVGA,	1,	C8x16,	12,  40, RES_200},
-		{"40x21",  CDVGA,	1,	C8x16,	21,  40, RES_350},
-		{"40x25",  CDVGA,	1,	C8x16,	25,  40, RES_400},
-		{"40x28",  CDVGA,	1,	C8x14,  28,  40, RES_400},
-		{"40x50",  CDVGA,	1,	C8x8,   50,  40, RES_400},
+		{"2",      VGASCR,	3,	C8x16,	25,  80, RES_400},
+		{"25",     VGASCR,	3,	C8x16,	25,  80, RES_400},
+		{"2",      CGASCR,	3,	C8x8,	25,  80, RES_200},
+		{"25",     CGASCR,	3,	C8x8,	25,  80, RES_200},
+		{"CGA",    CGASCR,	3,	C8x8,	25,  80, RES_200},
+		{"MONO",   MONOSCR,	3,	C8x8,	25,  80, RES_200},
+		{"80x25",  VGASCR,	3,	C8x16,	25,  80, RES_400},
+		{"80x28",  VGASCR,	3,	C8x14,  28,  80, RES_400},
+		{"EGA",    EGASCR,	3,	C8x8,	43,  80, RES_350},
+		{"4",      EGASCR,	3,	C8x8,	43,  80, RES_350},
+		{"43",     EGASCR,	3,	C8x8,	43,  80, RES_350},
+		{"80x43",  VGASCR,	3,	C8x8,   43,  80, RES_350},
+		{"5",      VGASCR,	3,	C8x8,	50,  80, RES_400},
+		{"50",     VGASCR,	3,	C8x8,	50,  80, RES_400},
+		{"VGA",    VGASCR,	3,	C8x8,	50,  80, RES_400},
+		{"80x50",  VGASCR,	3,	C8x8,	50,  80, RES_400},
+		{"80x14",  VGASCR,	3,	C8x14,  14,  80, RES_200},
+		{"40x12",  VGASCR,	1,	C8x16,	12,  40, RES_200},
+		{"40x21",  VGASCR,	1,	C8x16,	21,  40, RES_350},
+		{"40x25",  VGASCR,	1,	C8x16,	25,  40, RES_400},
+		{"40x28",  VGASCR,	1,	C8x14,  28,  40, RES_400},
+		{"40x50",  VGASCR,	1,	C8x8,   50,  40, RES_400},
 
-	};
-
-static	const	long	ScreenAddress[] = {
-		SCADC,	/* CDCGA: Color graphics adapter */
-		SCADM,	/* CDMONO: Monochrome adapter */
-		SCADE,	/* CDEGA: Enhanced graphics adapter */
-		SCADE	/* CDVGA: VGA adapter */
 	};
 
 /*  the following should be sized dynamically, but it may not be worth it,
 	if we come up in the biggest size anyway, since we never shrink
 	but only grow */
-USHORT *scptr[NROW];			/* pointer to screen lines	*/
-USHORT *s2ptr[NROW];			/* pointer to page-1 lines	*/
-USHORT sline[NCOL];			/* screen line image		*/
-extern union REGS rg;			/* cpu register for use of DOS calls */
+static USHORT *screen_lines[NROW];	/* pointer to screen lines	*/
+static USHORT *screen2_lines[NROW];	/* pointer to page-1 lines	*/
+
 
 static	int	ibm_opened,
 		original_page,	/* display-page (we use 0)	*/
@@ -237,9 +235,6 @@ static	int	ibm_opened,
 		original_curs,	/* start/stop scan lines	*/
 		monochrome	= FALSE;
 
-static	int	egaexist = FALSE;	/* is an EGA card available?	*/
-
-					/* Forward references.		*/
 extern  void	ibmmove   (int,int);
 extern  void	ibmeeol   (void);
 extern  void	ibmeeop   (void);
@@ -263,13 +258,9 @@ static	const char *initpalettestr = "0 4 2 6 1 5 3 7 8 12 10 14 9 13 11 15";
 #endif
 extern	void	ibmscroll (int,int,int);
 
-static	int	scinit    (int);
-static	int	getboard  (void);
-static	int	scblank   (void);
-
-#ifdef MUCK_WITH_KBD_RATE
-static	void	maxkbdrate   (void);
-#endif
+static	int	screen_init(int);
+static	int	identify_adapter(void);
+static	int	blank_attr(void);
 
 static	const struct {
 	char  *seq;
@@ -312,8 +303,6 @@ TERM    term    = {
 	NROW,
 	NCOL,
 	NCOL,
-	MARGIN,
-	SCRSIZ,
 	NPAUSE,
 	ibmopen,
 	ibmclose,
@@ -334,17 +323,17 @@ TERM    term    = {
 	ibmbcol,
 	set_ctrans,
 #else
-	null_t_setfor,
-	null_t_setback,
-	null_t_setpal,
+	nullterm_setfore,
+	nullterm_setback,
+	nullterm_setpal,
 #endif
 	ibmscroll,
-	null_t_pflush,
-	null_t_icursor,
-	null_t_title,
-	null_t_watchfd,
-	null_t_unwatchfd,
-	null_t_cursor,
+	nullterm_pflush,
+	nullterm_icursor,
+	nullterm_settitile,
+	nullterm_watchfd,
+	nullterm_unwatchfd,
+	nullterm_cursorvis,
 };
 
 #if CC_DJGPP
@@ -376,90 +365,102 @@ get_vga_bios_info(dynamic_VGA_info *buffer)
 	return (regs.h.al == 0x1b);
 #else
 	struct SREGS segs;
+	union REGS regs;
 
 #if CC_WATCOM
 	segread(&segs);
 #else
 	segs.es   = FP_SEG(buffer);
 #endif
-	rg.x._DI_ = FP_OFF(buffer);
-	rg.x._AX_ = 0x1b00;
-	rg.x._BX_ = 0;
-	INTX86X(0x10, &rg, &rg, &segs); /* Get VGA-BIOS status */
+	regs.x._DI_ = FP_OFF(buffer);
+	regs.x._AX_ = 0x1b00;
+	regs.x._BX_ = 0;
+	INTX86X(0x10, &regs, &regs, &segs); /* Get VGA-BIOS status */
 
-	return (rg.h.al == 0x1b);
+	return (regs.h.al == 0x1b);
 #endif
 }
 
 static void
 set_display (int mode)
 {
-	rg.h.ah = 0;
-	rg.h.al = mode;
-	INTX86(0x10, &rg, &rg);
+	union REGS regs;
+	regs.h.ah = 0;
+	regs.h.al = mode;
+	INTX86(0x10, &regs, &regs);
 }
 
 static void
 set_page (int page)
 {
-	rg.h.ah = 5;
-	rg.h.al = page;
-	INTX86(0x10, &rg, &rg);
+	union REGS regs;
+	regs.h.ah = 5;
+	regs.h.al = page;
+	INTX86(0x10, &regs, &regs);
 }
 
 #ifdef MUCK_WITH_KBD_RATE
+/* this code turned off because there's currently no facility
+ * to reset to the original rate when we quit.  i _hate_ programs
+ * that don't put the world back they way they found it.
+ */
 /*  set the keyboard rate to max */
 static void
 maxkbdrate (void)
 {
-	rg.h.ah = 0x3;
-	rg.h.al = 0x5;
-	rg.h.bh = 0x0;
-	rg.h.bl = 0x0;
-	INTX86(0x16, &rg, &rg);
+	union REGS regs;
+	regs.h.ah = 0x3;
+	regs.h.al = 0x5;
+	regs.h.bh = 0x0;
+	regs.h.bl = 0x0;
+	INTX86(0x16, &regs, &regs);
 }
 #endif
 
 static void
 set_char_size(int code)
 {
+	union REGS regs;
 	switch (code) {
 	case C8x8:	chr_wide = 8;	chr_high = 8;	break;
 	case C8x14:	chr_wide = 8;	chr_high = 14;	break;
 	case C8x16:	chr_wide = 8;	chr_high = 16;	break;
 	default:	return;		/* cannot set this one! */
 	}
-	rg.h.ah = 0x11;		/* set char. generator function code	*/
-	rg.h.al = code;		/*  to specified ROM			*/
-	rg.h.bl = 0;		/* Character table 0			*/
-	INTX86(0x10, &rg, &rg);	/* VIDEO - TEXT-MODE CHARACTER GENERATOR FUNCTIONS */
+	regs.h.ah = 0x11;		/* set char. generator function code	*/
+	regs.h.al = code;		/*  to specified ROM			*/
+	regs.h.bl = 0;		/* Character table 0			*/
+	INTX86(0x10, &regs, &regs);	/* VIDEO - TEXT-MODE CHARACTER GENERATOR FUNCTIONS */
 }
 
 static void
 set_cursor(int start_stop)
 {
-	rg.h.ah = 1;		/* set cursor size function code */
-	rg.x._CX_ = (drivers[ORIGTYPE].mode <= 3) ?
+	union REGS regs;
+	regs.h.ah = 1;		/* set cursor size function code */
+	regs.x._CX_ = (drivers[ORIGTYPE].mode <= 3) ?
 		start_stop & 0x707 : start_stop;
-	INTX86(0x10, &rg, &rg);	/* VIDEO - SET TEXT-MODE CURSOR SHAPE */
+	INTX86(0x10, &regs, &regs);	/* VIDEO - SET TEXT-MODE CURSOR SHAPE */
 }
 
 static int
 get_cursor(void)
 {
-	rg.h.ah = 3;
-	rg.h.bh = 0;
-	INTX86(0x10, &rg, &rg);	/* VIDEO - GET CURSOR POSITION */
-	return rg.x._CX_;
+	union REGS regs;
+	regs.h.ah = 3;
+	regs.h.bh = 0;
+	INTX86(0x10, &regs, &regs);	/* VIDEO - GET CURSOR POSITION */
+	return regs.x._CX_;
 }
 
 static void
 set_vertical_resolution(int code)
 {
-	rg.h.ah = 0x12;
-	rg.h.al = code;
-	rg.h.bl = 0x30;
-	INTX86(0x10, &rg, &rg);	/* VIDEO - SELECT VERTICAL RESOLUTION */
+	union REGS regs;
+	regs.h.ah = 0x12;
+	regs.h.al = code;
+	regs.h.bl = 0x30;
+	INTX86(0x10, &regs, &regs);	/* VIDEO - SELECT VERTICAL RESOLUTION */
 	if (code == RES_200)
 		delay(50);	/* patch: timing problem? */
 }
@@ -489,11 +490,12 @@ int color)		/* color to set */
 void
 ibmmove(int row, int col)
 {
-	rg.h.ah = 2;		/* set cursor position function code */
-	rg.h.dl = col;
-	rg.h.dh = row;
-	rg.h.bh = 0;		/* set screen page number */
-	INTX86(0x10, &rg, &rg);
+	union REGS regs;
+	regs.h.ah = 2;		/* set cursor position function code */
+	regs.h.dl = col;
+	regs.h.dh = row;
+	regs.h.bh = 0;		/* set screen page number */
+	INTX86(0x10, &regs, &regs);
 }
 
 /* erase to the end of the line */
@@ -501,16 +503,17 @@ void
 ibmeeol(void)
 {
 	int ccol,crow;	/* current column,row for cursor */
+	union REGS regs;
 
 	/* find the current cursor position */
-	rg.h.ah = 3;		/* read cursor position function code */
-	rg.h.bh = 0;		/* current video page */
-	INTX86(0x10, &rg, &rg);
+	regs.h.ah = 3;		/* read cursor position function code */
+	regs.h.bh = 0;		/* current video page */
+	INTX86(0x10, &regs, &regs);
 
-	ccol = rg.h.dl;		/* record current column */
-	crow = rg.h.dh;		/* and row */
+	ccol = regs.h.dl;		/* record current column */
+	crow = regs.h.dh;		/* and row */
 
-	scwrite(crow, ccol, term.t_ncol-ccol, NULL, NULL, gfcolor, gbcolor);
+	scwrite(crow, ccol, term.cols-ccol, NULL, NULL, gfcolor, gbcolor);
 
 }
 
@@ -518,28 +521,29 @@ ibmeeol(void)
 void
 ibmputc(int ch)
 {
-	rg.h.ah = 14;		/* write char to screen with current attrs */
-	rg.h.al = ch;
+	union REGS regs;
+	regs.h.ah = 14;		/* write char to screen with current attrs */
+	regs.h.al = ch;
 #if	OPT_COLOR
-	if (ColorDisplay())
-		rg.h.bl = cfcolor;
-	else
+	regs.h.bl = ColorDisplay() ? cfcolor : White(TRUE);
+#else
+	regs.h.bl = White(TRUE);
 #endif
-	rg.h.bl = White(TRUE);
-	rg.h.bh = 0;		/* current video page */
-	INTX86(0x10, &rg, &rg);
+	regs.h.bh = 0;		/* current video page */
+	INTX86(0x10, &regs, &regs);
 }
 
 void
 ibmeeop(void)
 {
-	rg.h.ah = 6;		/* scroll page up function code */
-	rg.h.al = 0;		/* # lines to scroll (clear it) */
-	rg.x._CX_ = 0;		/* upper left corner of scroll */
-	rg.h.dh = term.t_nrow - 1; /* lower right corner of scroll */
-	rg.h.dl = term.t_ncol - 1;
-	rg.h.bh = scblank();
-	INTX86(0x10, &rg, &rg);
+	union REGS regs;
+	regs.h.ah = 6;		/* scroll page up function code */
+	regs.h.al = 0;		/* # lines to scroll (clear it) */
+	regs.x._CX_ = 0;		/* upper left corner of scroll */
+	regs.h.dh = term.rows - 1; /* lower right corner of scroll */
+	regs.h.dl = term.cols - 1;
+	regs.h.bh = blank_attr();
+	INTX86(0x10, &regs, &regs);
 }
 
 void
@@ -549,21 +553,21 @@ UINT state)	/* TRUE = reverse, FALSE = normal */
 	/* This never gets used under the IBM-PC driver */
 }
 
+/* change screen properties */
 int
-ibmcres(	/* change screen resolution */
-const char *res)	/* resolution to change to */
+ibmcres(
+const char *res)	/* name for new "resolution" */
 {
-	register int i;		/* index */
-	int	status = FALSE;
+	int i;
+	int status = FALSE;
 
 	if (!res || !strcmp(res, "?"))	/* find the default configuration */
 		res = "default";
 
-	/* try for a name match on all drivers, until we find it
-		and succeed or fall off the bottom */
+	/* look up the driver by name, initialize screen */
 	for (i = 0; i < TABLESIZE(drivers); i++) {
 		if (strcmp(res, drivers[i].name) == 0) {
-			if ((status = scinit(i)) == TRUE) {
+			if ((status = screen_init(i)) == TRUE) {
 				strcpy(current_res_name, res);
 				break;
 			}
@@ -597,11 +601,12 @@ vp2attr(VIDEO *vp, int inverted)
 static void
 move2nd(int row, int col)
 {
-	rg.h.ah = 0x02;
-	rg.h.bh = 1;
-	rg.h.dh = row;
-	rg.h.dl = col;
-	INTX86(0x10, &rg, &rg);
+	union REGS regs;
+	regs.h.ah = 0x02;
+	regs.h.bh = 1;
+	regs.h.dh = row;
+	regs.h.dl = col;
+	INTX86(0x10, &regs, &regs);
 }
 
 static void
@@ -616,19 +621,19 @@ copy2nd(int inverted)
 	for_each_visible_window(wp) {
 		for (row = wp->w_toprow; row <= mode_row(wp); row++) {
 			vp = vscreen[row];
-			lp = s2ptr[row];
+			lp = screen2_lines[row];
 			tt = vp->v_text;
 			attr = vp2attr(vp, inverted ^ (row == mode_row(wp)));
-			for (col = 0; col < term.t_ncol; col++) {
+			for (col = 0; col < term.cols; col++) {
 				lp[col] = (attr | tt[col]);
 			}
 		}
 	}
 
 	/* fill in the message line */
-	lp = s2ptr[term.t_nrow-1];
-	attr = scblank() << 8;
-	for (col = 0; col < term.t_ncol; col++)
+	lp = screen2_lines[term.rows-1];
+	attr = blank_attr() << 8;
+	for (col = 0; col < term.cols; col++)
 		lp[col] = attr | SPACE;
 	move2nd(ttrow, ttcol);
 }
@@ -671,6 +676,7 @@ ibmopen(void)
 {
 	register DRIVERS *driver = &drivers[ORIGTYPE];
 	int i;
+	union REGS regs;
 
 	if (sizeof(dynamic_VGA_info) != 64) {
 		printf("DOS vile build error -- dynamic_VGA_info struct"
@@ -678,19 +684,19 @@ ibmopen(void)
 		exit(BADEXIT);
 	}
 
-	rg.h.ah = 0xf;
-	INTX86(0x10,&rg, &rg);	/* VIDEO - GET DISPLAY MODE */
+	regs.h.ah = 0xf;
+	INTX86(0x10,&regs, &regs);	/* VIDEO - GET DISPLAY MODE */
 
 	driver->vchr  = C8x8;
 	driver->vres  = RES_200;
 	driver->rows  = 25;
-	driver->cols  = rg.h.ah;
-	driver->mode  = rg.h.al;
-	original_page = rg.h.bh;
-	driver->type  = getboard();
+	driver->cols  = regs.h.ah;
+	driver->mode  = regs.h.al;
+	original_page = regs.h.bh;
+	driver->type  = identify_adapter();
 	allowed_vres  = (1<<RES_200);	/* assume only 200 scan-lines */
 
-	if (driver->type == CDVGA) {	/* we can determine original rows */
+	if (driver->type == VGASCR) {	/* we can determine original rows */
 		dynamic_VGA_info buffer;
 
 		if (get_vga_bios_info(&buffer)) {
@@ -734,7 +740,7 @@ ibmopen(void)
 #endif
 			driver->vres = buffer.num_pixel_rows;
 		}
-	} else if (driver->type == CDEGA) {
+	} else if (driver->type == EGASCR) {
 		allowed_vres |= (1<<RES_350);
 	}
 
@@ -742,9 +748,9 @@ ibmopen(void)
 
 #ifdef PVGA
 	set_display(10);	/* set graphic 640x350 mode */
-	rg.x._AX_ = 0x007F;
-	rg.h.bh = 0x01;		/* set non-VGA mode */
-	INTX86(0x10,&rg, &rg);
+	regs.x._AX_ = 0x007F;
+	regs.h.bh = 0x01;		/* set non-VGA mode */
+	INTX86(0x10,&regs, &regs);
 	set_display(7);		/* set Hercule mode */
 	current_res_name = "25";
 #endif
@@ -753,7 +759,7 @@ ibmopen(void)
 	set_palette(initpalettestr);
 #endif
 	if (!ibmcres(current_res_name))
-		(void)scinit(ORIGTYPE);
+		(void)screen_init(ORIGTYPE);
 	revexist = TRUE;
 	ttopen();
 
@@ -777,20 +783,21 @@ ibmclose(void)
 	int	ctype = current_ibmtype;
 
 	if (current_ibmtype != ORIGTYPE)
-		scinit(ORIGTYPE);
+		(void)screen_init(ORIGTYPE);
 	if (original_page != 0)
 		set_page(original_page);
 	set_cursor(original_curs);
 
-	current_ibmtype = ctype; /* ...so subsequent TTopen restores us */
+	current_ibmtype = ctype; /* ...so subsequent term.open restores us */
 
-	dtype = CDMONO;		/* ...force monochrome */
+	dtype = MONOSCR;		/* ...force monochrome */
 	kbd_erase_to_end(0);	/* ...force colors _off_ */
 	kbd_flush();
 }
 
+/* "keyboard" open and close */
 void
-ibmkopen(void)		/* open the keyboard */
+ibmkopen(void)
 {
 	ms_install();
 #if CC_DJGPP
@@ -799,7 +806,7 @@ ibmkopen(void)		/* open the keyboard */
 }
 
 void
-ibmkclose(void)		/* close the keyboard */
+ibmkclose(void)
 {
 #if CC_DJGPP
 	setmode(0,O_TEXT);
@@ -808,10 +815,11 @@ ibmkclose(void)		/* close the keyboard */
 }
 
 static int
-scinit(			/* initialize the screen head pointers */
+screen_init(			/* initialize the screen head pointers */
 int newtype)		/* type of adapter to init for */
 {
 	dynamic_VGA_info buffer;
+	union REGS regs;
 	union {
 		long laddr;		/* long form of address */
 		USHORT *paddr;		/* pointer form of address */
@@ -847,40 +855,40 @@ int newtype)		/* type of adapter to init for */
 	 * prints 25 lines.
 	 */
 	if (rows > 25) {
-		rg.h.ah = 0x12;		/* alternate select function code    */
-		rg.h.bl = 0x20; 	/* alt. print screen routine	     */
-		INTX86(0x10, &rg, &rg);	/* VIDEO - SELECT ALTERNATE PRTSCRN  */
+		regs.h.ah = 0x12;		/* alternate select function code    */
+		regs.h.bl = 0x20; 	/* alt. print screen routine	     */
+		INTX86(0x10, &regs, &regs);	/* VIDEO - SELECT ALTERNATE PRTSCRN  */
 	}
 
-	if (driver->type == CDEGA) {
+	if (driver->type == EGASCR) {
 		outp(0x3d4, 10);	/* video bios bug patch */
 		outp(0x3d5, 6);
 	}
 
 	/* reset the $sres environment variable */
-	(void)strcpy(sres, driver->name);
+	(void)strcpy(screen_desc, driver->name);
 
-	if ((type == CDMONO) != (dtype == CDMONO))
+	if ((type == MONOSCR) != (dtype == MONOSCR))
 		sgarbf = TRUE;
 	dtype = type;
 	current_ibmtype = newtype;
 
 	/* initialize the screen pointer array */
 	if (monochrome)
-		addr.laddr = FAR_POINTER(ScreenAddress[CDMONO],0x0000);
-	else if (type == CDMONO)
-		addr.laddr = FAR_POINTER(ScreenAddress[CDCGA],0x0000);
+		addr.laddr = FAR_POINTER(ScreenAddress[MONOSCR],0x0000);
+	else if (type == MONOSCR)
+		addr.laddr = FAR_POINTER(ScreenAddress[CGASCR],0x0000);
 	else
 		addr.laddr = FAR_POINTER(ScreenAddress[type],0x0000);
 
 	for (i = 0; i < rows; i++)
-		scptr[i] = addr.paddr + (cols * i);
+		screen_lines[i] = addr.paddr + (cols * i);
 
 #if OPT_FLASH || OPT_MS_MOUSE
 	/* Build row-indices for display page #1, to use it in screen flashing
 	 * or for mouse highlighting.
 	 */
-	if ((type == CDVGA) && get_vga_bios_info(&buffer)) {
+	if ((type == VGASCR) && get_vga_bios_info(&buffer)) {
 		/*
 		 * Setting page-1 seems to make Window 3.1 "aware" that we're
 		 * going to write to that page.  Otherwise, the "flash" mode
@@ -904,7 +912,7 @@ int newtype)		/* type of adapter to init for */
 	}
 	addr.laddr += pagesize;
 	for (i = 0; i < rows; i++)
-		s2ptr[i] = addr.paddr + (cols * i);
+		screen2_lines[i] = addr.paddr + (cols * i);
 #endif
 	/* changing the screen-size forces an update, so we do this last */
 	newscreensize(rows, cols);
@@ -914,52 +922,43 @@ int newtype)		/* type of adapter to init for */
 		ms_install();
 	}
 #endif
-	return(TRUE);
+	return TRUE;
 }
 
-/* getboard:	Determine which type of display board is attached.
- *		Current known types include:
- *
- *		CDMONO	Monochrome graphics adapter
- *		CDCGA	Color Graphics Adapter
- *		CDEGA	Extended graphics Adapter
- *		CDVGA	VGA graphics Adapter
- */
 
-int getboard(void)
+int identify_adapter(void)
 {
+	union REGS regs;
 	monochrome = FALSE;
-	egaexist = FALSE;
 
 	/* check for VGA or MCGA */
-	rg.x._AX_ = 0x1a00;
-	rg.h.bl = 0x00;
-	INTX86(0x10,&rg, &rg);	/* VIDEO - GET DISPLAY COMBINATION CODE (PS,VGA,MCGA) */
+	regs.x._AX_ = 0x1a00;
+	regs.h.bl = 0x00;
+	INTX86(0x10,&regs, &regs); /* GET DISPLAY COMB. CODE (PS,VGA,MCGA) */
 
-	if (rg.h.al == 0x1a) {	/* function succeeded */
-		switch (rg.h.bl) {
+	if (regs.h.al == 0x1a) {	/* function succeeded */
+		switch (regs.h.bl) {
 		case 0x01:	monochrome = TRUE;
-				return (CDMONO);
+				return MONOSCR;
 
-		case 0x02:	return (CDCGA);
+		case 0x02:	return CGASCR;
 
 		case 0x05:	monochrome = TRUE;
-		case 0x04:	egaexist = TRUE;
-				return (CDEGA);
+		case 0x04:	return EGASCR;
 
 		case 0x07:	monochrome = TRUE;
-		case 0x08:	return (CDVGA);
+		case 0x08:	return VGASCR;
 
 		case 0x0b:	monochrome = TRUE;
 		case 0x0a:
-		case 0x0c:	return (CDCGA);	/* MCGA */
+		case 0x0c:	return CGASCR;	/* MCGA */
 		}
 	}
 
 	/*
 	 * Check for MONO board
 	 */
-	INTX86(0x11, &rg, &rg);	/* BIOS - GET EQUIPMENT LIST */
+	INTX86(0x11, &regs, &regs);	/* BIOS - GET EQUIPMENT LIST */
 
 	/* Bits 4-5 in ax are:
 	 *	00 EGA, VGA or PGA
@@ -967,46 +966,40 @@ int getboard(void)
 	 *	10 80x25 color
 	 *	11 80x25 monochrome
 	 */
-	if (((rg.x._AX_ & 0x30) == 0x30)) {
+	if ((regs.x._AX_ & 0x30) == 0x30) {
 		monochrome = TRUE;
-		return(CDMONO);
+		return MONOSCR;
 	}
 
 	/*
-	 * Test if EGA present
+	 * Check for EGA board
 	 */
-	rg.h.ah = 0x12;
-	rg.h.bl = 0x10;
-	INTX86(0x10,&rg, &rg);	/* VIDEO - GET EGA INFO */
+	regs.h.ah = 0x12;
+	regs.h.bl = 0x10;
+	INTX86(0x10, &regs, &regs);	/* VIDEO - GET EGA INFO */
 
-	if (rg.h.bl != 0x10) {	/* function succeeded */
-		egaexist = TRUE;
-		return(CDEGA);
-	}
+	if (regs.h.bl != 0x10)
+		return EGASCR;
 
-	return (CDCGA);
+	return CGASCR;
 }
 
+/* write a line out*/
 void
-scwrite(		/* write a line out*/
-	int row,	/* row of screen to place outstr on */
-	int col,	/* col of screen to place outstr on */
-	int nchar,	/* length of outstr */
-	const char *outstr,  /* string to write out (must be term.t_ncol long) */
-	VIDEO_ATTR *attrstr, /* attributes to write out (must be term.t_ncol long) */
-	int forg,	/* foreground color of string to write */
-	int bacg)	/* background color */
+scwrite(int row, int col,	/* where */
+	int nchar,		/* length of outstr and attrstr */
+	const char *outstr,  	/* string to write */
+	VIDEO_ATTR *attrstr, 	/* attributes to write out */
+	int forg,		/* foreground color to write */
+	int bacg)		/* background color to write */
 {
-	register USHORT *lnptr;	/* pointer to the destination line */
+	register USHORT *lnptr;
 	register int i;
 
-	if (row > term.t_nrow-1)
+	if (row > term.rows-1)
 		return;
 
-	if (flickcode && (dtype == CDCGA))
-		lnptr = sline;
-	else
-		lnptr = scptr[row]+col;
+	lnptr = screen_lines[row]+col;
 
 	if (attrstr) {
 		register USHORT attrnorm;
@@ -1018,8 +1011,8 @@ scwrite(		/* write a line out*/
 		} else
 #endif
 		{
-		attrnorm = AttrMono(bacg<forg) << 8;
-		attrrev = AttrMono(forg<bacg) << 8;
+		attrnorm = AttrMono(bacg < forg) << 8;
+		attrrev = AttrMono(forg < bacg) << 8;
 		}
 		for (i = 0; i < nchar; i++) {
 			*lnptr++ = ((outstr != 0)
@@ -1032,11 +1025,11 @@ scwrite(		/* write a line out*/
 		register USHORT attr; /* attribute byte mask to place in RAM */
 		/* build the attribute byte and setup the screen pointer */
 #if	OPT_COLOR
-		if (ColorDisplay())
-			attr = AttrColor(bacg,forg);
-		else
+		attr = ColorDisplay() ? AttrColor(bacg,forg) :
+		    			AttrMono(bacg < forg);
+#else
+		attr = AttrMono(bacg < forg);
 #endif
-		attr = AttrMono(bacg<forg);
 		attr <<= 8;
 		for (i = 0; i < nchar; i++) {
 			*lnptr++ = ((outstr != 0)
@@ -1045,16 +1038,6 @@ scwrite(		/* write a line out*/
 		}
 	}
 
-	if (flickcode && (dtype == CDCGA)) {
-		/* wait for vertical retrace to be off */
-		while ((inp(0x3da) & 8))
-			;
-		/* and to be back on */
-		while ((inp(0x3da) & 8) == 0)
-			;
-		/* and send the string out */
-		memcpy(scptr[row]+col, sline, nchar*sizeof(short));
-	}
 }
 
 /* reads back a line into a VIDEO struct, used in line-update computation */
@@ -1062,8 +1045,9 @@ VIDEO *
 scread(VIDEO *vp, int row)
 {
 	register int	i;
+	USHORT *slp;		/* screen line image		*/
 
-	if (row > term.t_nrow-1)
+	if (row > term.rows-1)
 		return 0;
 
 	if (vp == 0) {
@@ -1073,23 +1057,24 @@ scread(VIDEO *vp, int row)
 		else
 			tidy_exit(BADEXIT);
 	}
-	memcpy(&sline[0], scptr[row], term.t_ncol*sizeof(short));
-	for (i = 0; i < term.t_ncol; i++)
-		vp->v_text[i] = sline[i];
+
+	slp = &screen_lines[row];
+	for (i = 0; i < term.cols; i++)
+		vp->v_text[i] = slp[i];
+
 	return vp;
 }
 
 /* returns attribute for blank/empty space */
 static int
-scblank(void)
+blank_attr(void)
 {
 	register int attr;
 #if	OPT_COLOR
-	if (ColorDisplay())
-		attr = AttrColor(gbcolor,gfcolor);
-	else
+	attr = ColorDisplay() ? AttrColor(gbcolor,gfcolor) : AttrMono(TRUE);
+#else
+	attr = AttrMono(TRUE);
 #endif
-	 attr = AttrMono(TRUE);
 	return attr;
 }
 
@@ -1102,6 +1087,7 @@ scblank(void)
 void
 ibmscroll(int from, int to, int n)
 {
+	union REGS regs;
 #if OPT_PRETTIER_SCROLL
 	if (absol(from-to) > 1) {
 		ibmscroll(from, (from < to) ? to-1 : to+1, n);
@@ -1112,20 +1098,20 @@ ibmscroll(int from, int to, int n)
 	}
 #endif
 	if (from > to) {
-		rg.h.ah = 0x06;		/* scroll window up */
-		rg.h.al = from - to;	/* number of lines to scroll */
-		rg.h.ch = to;		/* upper window row */
-		rg.h.dh = from + n - 1;	/* lower window row */
+		regs.h.ah = 0x06;		/* scroll window up */
+		regs.h.al = from - to;	/* number of lines to scroll */
+		regs.h.ch = to;		/* upper window row */
+		regs.h.dh = from + n - 1;	/* lower window row */
 	} else {
-		rg.h.ah = 0x07;		/* scroll window down */
-		rg.h.al = to - from;	/* number of lines to scroll */
-		rg.h.ch = from;		/* upper window row */
-		rg.h.dh = to + n - 1;	/* lower window row */
+		regs.h.ah = 0x07;		/* scroll window down */
+		regs.h.al = to - from;	/* number of lines to scroll */
+		regs.h.ch = from;		/* upper window row */
+		regs.h.dh = to + n - 1;	/* lower window row */
 	}
-	rg.h.bh = scblank();	/* attribute to use for line-fill */
-	rg.h.cl = 0;		/* left window column */
-	rg.h.dl = term.t_ncol - 1; /* lower window column */
-	INTX86(0x10, &rg, &rg);
+	regs.h.bh = blank_attr();	/* attribute to use for line-fill */
+	regs.h.cl = 0;		/* left window column */
+	regs.h.dl = term.cols - 1; /* lower window column */
+	INTX86(0x10, &regs, &regs);
 }
 
 
@@ -1136,7 +1122,7 @@ ibmscroll(int from, int to, int n)
 /* Define translations between mouse (pixels) and chars (row/col).
  * patch: why does 8 by 8 work, not chr_high by chr_wide?
  */
-#define MS_CHAR_WIDE	((term.t_ncol == 80) ? 8 : 16)
+#define MS_CHAR_WIDE	((term.cols == 80) ? 8 : 16)
 #define MS_CHAR_HIGH    8
 
 #define	pixels2col(x)   ((x)/MS_CHAR_WIDE)
@@ -1146,7 +1132,7 @@ ibmscroll(int from, int to, int n)
 #define row2pixels(y)   ((y)*MS_CHAR_HIGH)
 
 /* Define a macro for calling mouse services */
-#define MouseCall INTX86(0x33, &rg, &rg)
+#define MouseCall INTX86(0x33, &regs, &regs)
 
 #define MS_MOVEMENT	iBIT(0)	/* mouse cursor movement */
 #define	MS_BTN1_PRESS   iBIT(1)	/* left button */
@@ -1183,26 +1169,27 @@ int		rodent_cursor_display;
 static int
 MsButtonPending(void)
 {
-	rg.x._AX_ = 3;	/* query the mouse */
+	union REGS regs;
+	regs.x._AX_ = 3;	/* query the mouse */
 	MouseCall;
 
-	if (rg.x._BX_ & 7) {
-		if (rg.x._BX_ & 1)
+	if (regs.x._BX_ & 7) {
+		if (regs.x._BX_ & 1)
 			button_number = 1;
-		else if (rg.x._BX_ & 2)
+		else if (regs.x._BX_ & 2)
 			button_number = 2;
-		else if (rg.x._BX_ & 4)
+		else if (regs.x._BX_ & 4)
 			button_number = 3;
 
-		button_press_x = button_relsd_x = rg.x._CX_;
-		button_press_y = button_relsd_y = rg.x._DX_;
+		button_press_x = button_relsd_x = regs.x._CX_;
+		button_press_y = button_relsd_y = regs.x._DX_;
 		button_pending = 1;
 
 	} else {
 		if (button_pending)
 			button_pending = 2;
-		button_relsd_x = rg.x._CX_;
-		button_relsd_y = rg.x._DX_;
+		button_relsd_x = regs.x._CX_;
+		button_relsd_y = regs.x._DX_;
 	}
 	return button_pending;
 }
@@ -1224,7 +1211,7 @@ ms_processing (void)
 		last,  last_x  = ttcol,  last_y = ttrow,
 		that,  that_x,  that_y,
 		attr, delta;
-	USHORT *s2page = s2ptr[0];
+	USHORT *s2page = screen2_lines[0];
 
 	ms_showcrsr();
 	while (MsButtonPending()) {
@@ -1251,7 +1238,7 @@ ms_processing (void)
 				 * in a window.
 				 */
 				if (wp != 0
-				 && ttrow != term.t_nrow - 1
+				 && ttrow != term.rows - 1
 				 && setcursor(y, x)) {
 					(void)update(TRUE);
 					ms_setvrange(wp->w_toprow,
@@ -1310,7 +1297,7 @@ ms_processing (void)
 	 */
 	if (copied) {
 		set_page(0);
-		ms_setvrange(0, term.t_nrow-1);
+		ms_setvrange(0, term.rows-1);
 		mlerase();
 		setwmark(pixels2row(last_y), pixels2col(last_x));
 		if (DOT.l != MK.l
@@ -1327,14 +1314,15 @@ ms_processing (void)
 static int
 ms_crsr2inx(int x, int y)
 {
-	return pixels2col(x) + (pixels2row(y) * term.t_ncol);
+	return pixels2col(x) + (pixels2row(y) * term.cols);
 }
 
 static void
 ms_deinstall(void)
 {
+	union REGS regs;
 	ms_hidecrsr();
-	rg.x._AX_ = 0;	/* reset the mouse */
+	regs.x._AX_ = 0;	/* reset the mouse */
 	MouseCall;
 	rodent_exists = FALSE;
 }
@@ -1368,10 +1356,11 @@ ms_event_handler (void)
 static void
 ms_hidecrsr(void)
 {
+	union REGS regs;
 	/* Hides the mouse cursor if it is displayed */
 	if (rodent_cursor_display) {
 		rodent_cursor_display = FALSE;
-		rg.x._AX_ = 0x02;
+		regs.x._AX_ = 0x02;
 		MouseCall;
 	}
 } /* End of ms_hidecrsr() */
@@ -1379,6 +1368,7 @@ ms_hidecrsr(void)
 static void
 ms_install(void)
 {
+	union REGS regs;
 	if (rodent_exists)
 		return;
 
@@ -1386,27 +1376,27 @@ ms_install(void)
 	 * sets rodent_exists to 1. If no mouse is installed,
 	 * sets rodent_exists to 0.
 	 */
-	rg.x._AX_ = 0;
+	regs.x._AX_ = 0;
 	MouseCall;
-	rodent_exists = rg.x._AX_;
+	rodent_exists = regs.x._AX_;
 	rodent_cursor_display = FALSE; /* safest assumption */
 	if (ms_exists()) {
 		struct SREGS segs;
 
-		memset(&rg, 0, sizeof(rg));
+		memset(&regs, 0, sizeof(regs));
 		memset(&segs, 0, sizeof(segs));
 
-		rg.x._AX_ = 0x4;	/* set mouse position */
-		rg.x._CX_ = 0;
-		rg.x._DX_ = 0;
+		regs.x._AX_ = 0x4;	/* set mouse position */
+		regs.x._CX_ = 0;
+		regs.x._DX_ = 0;
 		MouseCall;
 
 #if CC_TURBO
-		rg.x._AX_ = 0xc;	/* define event handler */
-		rg.x._CX_ = MS_MOVEMENT | MS_BTN1_PRESS | MS_BTN1_RELEASE;
-		rg.x._DX_ = FP_OFF(ms_event_handler);
+		regs.x._AX_ = 0xc;	/* define event handler */
+		regs.x._CX_ = MS_MOVEMENT | MS_BTN1_PRESS | MS_BTN1_RELEASE;
+		regs.x._DX_ = FP_OFF(ms_event_handler);
 		segs.es = FP_SEG(ms_event_handler);
-		INTX86X(0x33, &rg, &rg, &segs);
+		INTX86X(0x33, &regs, &regs, &segs);
 #endif
 	}
 }
@@ -1414,13 +1404,14 @@ ms_install(void)
 static void
 ms_setvrange(int upperrow, int lowerrow)
 {
+	union REGS regs;
 	/* Restricts vertical cursor movement to the screen region
 	 * between upperrow and lowerrow.  If the cursor is outside the range,
 	 * it is moved inside.
 	 */
-	rg.x._AX_ = 0x08;
-	rg.x._CX_ = row2pixels(upperrow);
-	rg.x._DX_ = row2pixels(lowerrow);
+	regs.x._AX_ = 0x08;
+	regs.x._CX_ = row2pixels(upperrow);
+	regs.x._DX_ = row2pixels(lowerrow);
 	MouseCall;
 } /* End of ms_setvrange() */
 
@@ -1428,18 +1419,19 @@ ms_setvrange(int upperrow, int lowerrow)
 static void
 ms_showcrsr(void)
 {
+	union REGS regs;
 	/* Displays the mouse cursor */
 	int counter;
 
 	/* Call Int 33H Function 2AH to get the value of the display counter */
-	rg.x._AX_ = 0x2A;
+	regs.x._AX_ = 0x2A;
 	MouseCall;
-	counter = rg.x._AX_;
+	counter = regs.x._AX_;
 
 	/* Call Int 33H Function 01H as many times as needed to display */
 	/* the mouse cursor */
 	while (counter-- > 0) {
-		rg.x._AX_ = 0x01;
+		regs.x._AX_ = 0x01;
 		MouseCall;
 	}
 	rodent_cursor_display = TRUE;

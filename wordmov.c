@@ -1,10 +1,11 @@
-/* These routines report on transitions between word boundaries, both
+/*
+ * These routines report on transitions between word boundaries, both
  *	in the punctuated vi sense, and in the whitespace/darkspace
  *	sense.  The transition is reported _after_ it has occurred.  You
  *	need to back up to get to the char. before the transition.
  *	Written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/wordmov.c,v 1.19 1998/04/28 10:19:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/wordmov.c,v 1.20 1999/04/13 23:29:34 pgf Exp $
  *
  */
 

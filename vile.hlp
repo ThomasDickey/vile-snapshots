@@ -2132,7 +2132,6 @@ Programmed procedures and macros
 	$end-of-cmd	true if user ended the cmd with <CR>
 	$exit-hook	name of procedure to run when quitting
 	$fence-limit	iteration limit for complex fences
-	$flicker	set true to suppress CGA flicker on a PC.  ugh.
 	$font		current font name (X11/winvile versions only)
 	$forward-search	search direction, true=forward
 	$helpfile	help-filename (vile.hlp)
@@ -4037,7 +4036,9 @@ Credits
 	Names appearing within comments in the micro-Emacs source code are:
 	Dave Conroy, Daniel Lawrence, John Gamble, Roger Ove, Dana Hoggatt,
 	Jon Reid, Steve Wilhite, George Jones, Adam Fritz, D.R.Banks, Bob
-	McNamara, and Brian Straight.
+	McNamara, and Brian Straight.  Dan Lawrence, in particular, did
+	a huge amount of work on the code on which vile is based.  vile
+	re-implements and extends many features inspired by his work.
 
 	Tom Dickey has contributed many code improvements and features, and
 	has stabilized vile on both VMS and DOS.  Kevin Buettner has
@@ -4078,4 +4079,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.405 1999/04/04 22:45:32 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.406 1999/04/13 23:29:34 pgf Exp $

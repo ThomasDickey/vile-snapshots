@@ -2,7 +2,7 @@
  * Unix crypt(1)-style interface.
  * Written by T.E.Dickey for vile (March 1999).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.9 1999/03/25 11:26:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.10 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -32,15 +32,15 @@ char	*key,			/* where to write key */
 UINT	len)
 {
     int status;			/* return status */
-    int odisinp = disinp;	/* original value of disinp */
+    int save_no_echo = no_echo;
     char temp[NKEYLEN];
 
     /* turn command input echo off */
-    disinp = FALSE;
+    no_echo = TRUE;
 
     temp[0] = EOS;
     status = mlreply("-Encryption String: ", temp, len-1);
-    disinp = odisinp;
+    no_echo = save_no_echo;
 
     if (status == TRUE)
 	vl_make_encrypt_key(key, temp);
@@ -136,11 +136,12 @@ const char *fname)
     return TRUE;
 }
 
+/* change current buffer's encryption key */
 /* ARGSUSED */
 int
-vl_setkey(		/* set/reset encryption key of current buffer */
-int f GCC_UNUSED,	/* default flag */
-int n GCC_UNUSED)	/* numeric argument */
+vl_setkey(
+int f GCC_UNUSED,
+int n GCC_UNUSED)
 {
     char result[NKEYLEN];
     int rc = get_encryption_key(result, sizeof(result));
@@ -180,7 +181,7 @@ vl_setup_encrypt(char *encrypted_password)
 {
     int j, c1, c2, temp;
     unsigned mixs;
-    long myseed = seed;
+    long myseed = rand();
 
     TRACE(("setup_encrypt(%s)\n", encrypted_password))
 

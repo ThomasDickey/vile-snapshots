@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.36 1999/03/26 10:31:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.37 1999/04/14 00:37:38 tom Exp $
  */
 
 /*#
@@ -297,7 +297,7 @@ static int recursecount = 0;
 static int
 do_perl_cmd(SV *cmd, int inplace)
 {
-    int old_discmd;
+    int save_no_msgs;
     int old_isnamedcmd;
 
     use_ml_as_prompt = 0;
@@ -332,8 +332,8 @@ do_perl_cmd(SV *cmd, int inplace)
 	   one of the mlreply methods.  If they are not set up this
 	   way, we won't always be prompted... */
         clexec = FALSE;
-        old_discmd = discmd;
-        discmd = TRUE;
+        save_no_msgs = no_msgs;
+        no_msgs = TRUE;
 	old_isnamedcmd = isnamedcmd;	/* for mlreply_dir */
 	isnamedcmd = TRUE;
 	recursecount++;
@@ -359,7 +359,7 @@ do_perl_cmd(SV *cmd, int inplace)
 #endif
 
 	recursecount--;
-        discmd = old_discmd;
+        no_msgs = save_no_msgs;
 	isnamedcmd = old_isnamedcmd;
 
 	if (recursecount == 0) {
@@ -1634,13 +1634,13 @@ command(cline)
     char *cline
 
     PREINIT:
-    	int old_discmd;
+    	int save_no_msgs;
 
     CODE:
-	old_discmd = discmd;
-	discmd = FALSE;
+	save_no_msgs = no_msgs;
+	no_msgs = FALSE;
 	RETVAL = docmd(cline, TRUE, FALSE, 1);
-	discmd = old_discmd;
+	no_msgs = save_no_msgs;
 
     OUTPUT:
 	RETVAL
@@ -2093,7 +2093,7 @@ set(...)
 	    } else {
 		const char *val;
 		val = tokval(mode);
-		if (val == errorm) {
+		if (val == error_val) {
 		    if (modenames)
 			free(modenames);
 		    croak("set: Invalid mode or variable %s", mode);
@@ -2795,13 +2795,13 @@ command(vbp,cline)
 
     PREINIT:
 	int status;
-	int old_discmd;
+	int save_no_msgs;
     PPCODE:
-	old_discmd = discmd;
-	discmd = FALSE;
+	save_no_msgs = no_msgs;
+	no_msgs = FALSE;
 	api_setup_fake_win(vbp, TRUE);
 	status = docmd(cline, TRUE, FALSE, 1);
-	discmd = old_discmd;
+	no_msgs = save_no_msgs;
 	if (status) {
 	    XPUSHs(ST(0));		/* return buffer object */
 	}

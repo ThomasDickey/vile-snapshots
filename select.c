@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.95 1999/03/20 16:35:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.96 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -584,7 +584,7 @@ do_sweep(int flag)
 	if (doingsweep != flag) {
 		if ((flag && !doingsweep)
 		 || (!flag && doingsweep))
-			TTcursor(!flag);
+			term.cursorvis(!flag);
 		doingsweep = flag;
 	}
 }
