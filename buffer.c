@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.194 1999/07/17 18:02:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.195 1999/08/04 10:15:42 tom Exp $
  *
  */
 
@@ -570,7 +570,7 @@ altbuff(int f GCC_UNUSED, int n GCC_UNUSED)
 static int
 qs_bname_cmp(const void *a, const void *b)
 {
-	return strcmp(*(char *const*)a, (* (char *const*) b));
+	return strcmp(*(const char *const*)a, (* (const char *const*) b));
 }
 
 static char **

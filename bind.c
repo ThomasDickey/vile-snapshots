@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.195 1999/06/14 22:33:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.197 1999/08/04 10:56:24 tom Exp $
  *
  */
 
@@ -111,8 +111,10 @@ dpy_namebst (BI_NODE *a GCC_UNUSED, int level GCC_UNUSED)
 #endif
 }
 
-static	BI_TREE namebst = {new_namebst, old_namebst, dpy_namebst};
-static	BI_TREE redefns = {new_namebst, old_namebst, dpy_namebst};
+#define BI_DATA0 {{0}, 0, {0,0,0}}
+#define BI_TREE0 0, 0, BI_DATA0
+static	BI_TREE namebst = {new_namebst, old_namebst, dpy_namebst, BI_TREE0};
+static	BI_TREE redefns = {new_namebst, old_namebst, dpy_namebst, BI_TREE0};
 #endif /* OPT_NAMEBST */
 
 /*----------------------------------------------------------------------------*/
@@ -199,7 +201,7 @@ static	const struct {
 		{"suspend",		&suspc,		's'},
 		{"test-completions",	&test_cmpl,	0},
 		{"word-kill",		&wkillc,	's'},
-		{0}
+		{0,                     0,              0}
 	};
 
 /*----------------------------------------------------------------------------*/
@@ -382,7 +384,7 @@ rebind_key (
 register int	c,
 register const CMDFUNC *kcmd)
 {
-	static const CMDFUNC ignored = { INIT_UNION( unimpl ) },
+	static const CMDFUNC ignored = { INIT_UNION( unimpl ), 0, 0 },
 		*old = &ignored;
 	return install_bind (c, kcmd, &old);
 }

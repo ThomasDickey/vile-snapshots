@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.3 1999/07/02 00:40:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.4 1999/08/05 22:04:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an ordinary text file
  */
@@ -110,5 +110,6 @@ URL		"http://"[^ ,\n"]+
 <NORMAL>\"		{ BEGIN(QUOTED); add_to_quoted(yytext, yyleng); }
 <QUOTED>\"		{ add_to_quoted(yytext, yyleng); flush_quoted(); BEGIN(NORMAL); }
 <QUOTED>.		{ add_to_quoted(yytext, yyleng); }
+<QUOTED>^[\n]		{ flush_quoted(); ECHO; BEGIN(NORMAL); }
 <QUOTED>[\n]		{ flush_quoted(); ECHO; }
 <NORMAL>.		{ ECHO; }

@@ -1,5 +1,29 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+(tom) 990805 (m)
+	+ add vile-perl-filt to makefile.wnt
+	+ minor improvement to txt-filt.l, to reset quoted mode when a blank
+	  line is found.
+	+ minor correction to bat-filt.l, workaround for apparent bug in flex
+	  which is treating a '?' as '+'.
+	+ minor correction to difffilt.l, forcing word boundary after "diff"
+	  and "Binary".
+	+ modify complex fence matching so that if too many iterations are
+	  needed for the match, that it can still try the simple fence matching.
+	  A warning message will be displayed if the fence-limit timeout
+	  expires.
+	+ modify perlmode complex fences by merging "do" and "while" groups,
+	  making that a little faster.
+	+ change fences-limit from a scale factor to timeout in seconds to make
+	  it simpler to understand/configure.  (This and the perlmode change
+	  address a problem reported by Chris Sherman <sherman@unx.sas.com>).
+	+ correct vilemode complex fence patterns (the patterns were not
+	  anchored to "^").
+	+ modifications for egcs 2.91 (compiler warnings about missing
+	  initializers for structs where 0's are fine).  egcs 2.91 also has a
+	  bug causing it to emit a lot of warnings when it saw a missing const
+	  in the qsort comparison functions.
+
 (tom) 990717 (l)
 	+ turn off OPT_CACHE_VCOL, still too experimental.
 	+ correct flag that would force window repainting in set-dos-mode

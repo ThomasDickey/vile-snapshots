@@ -5,7 +5,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.96 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.97 1999/08/04 11:06:17 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -90,7 +90,9 @@ dpy_tags (BI_NODE *a GCC_UNUSED, int level GCC_UNUSED)
 #endif
 }
 
-static BI_TREE tags_tree = { new_tags, old_tags, dpy_tags };
+#define BI_DATA0 {{0}, 0, {0}}
+#define BI_TREE0 0, 0, BI_DATA0
+static BI_TREE tags_tree = { new_tags, old_tags, dpy_tags, BI_TREE0 };
 
 /* Parse the identifier out of the given line and store it in the binary tree */
 static void

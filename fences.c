@@ -8,7 +8,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.70 1999/04/18 18:41:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.72 1999/08/06 00:08:33 tom Exp $
  *
  */
 
@@ -55,7 +55,6 @@
 
 #undef  min
 #define min(a,b)	((a) < (b) ? (a) : (b))
-#define HARD_LIMIT(bp) (bp->b_linecount * min(bp->b_linecount,b_val(bp,VAL_FENCE_LIMIT)))
 
 #if !OPT_MAJORMODE
 #define limit_iterations() /* nothing */
@@ -90,7 +89,8 @@ static void limit_iterations(void);
 #endif
 
 #if OPT_MAJORMODE
-static long hard_limit;
+static time_t final_time;
+static long   iterations;
 #endif
 
 static int
@@ -206,12 +206,16 @@ complex_fence(int sdir, int key, int group, int level, int *newkey)
 		direction_of(sdir),
 		typeof_complex(key)))
 #if OPT_MAJORMODE
-	if (--hard_limit <= 0) {
-	    if (hard_limit == 0) {
-		mlforce("[Too many iterations]");
-		kbd_alarm();
+	if (iterations < 0) {
+		return ABORT;
+	} else if ((++iterations % 200) == 0) { /* roughly once/sec, slow PC */
+	    if (time((time_t *)0) > final_time) {
+		if (iterations >= 0) {
+		    mlforce("[Too many iterations: %D]", iterations);
+		    iterations = -1;
+		}
+		return ABORT;
 	    }
-	    return ABORT;
 	}
 #endif
 
@@ -355,13 +359,16 @@ find_complex(int sdir, int *newkey)
 		rc = complex_fence(sdir, key, group, 0, newkey);
 		test_fence_op(rc, oldpos, oldpre);
 #if OPT_MAJORMODE
-		if (rc)
+		if (rc) {
+		    if (iterations < 0)
+			rc = FALSE;
 		    break;
+		}
 #endif
 	    }
 	}
 #if OPT_MAJORMODE
-	TRACE(("...find_complex %d (iterations left %ld of %d)\n", rc, hard_limit, HARD_LIMIT(curbp)))
+	TRACE(("...find_complex %d (iterations %ld)\n", rc, iterations))
 #endif
 	return rc;
 }
@@ -405,7 +412,8 @@ static void
 limit_iterations(void)
 {
 	bsizes(curbp);
-	hard_limit = HARD_LIMIT(curbp);
+	final_time = time((time_t *)0) + b_val(curbp,VAL_FENCE_LIMIT);
+	iterations = 0;
 }
 #endif
 

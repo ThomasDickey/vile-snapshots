@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.62 1999/06/13 22:26:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.63 1999/08/04 10:22:50 tom Exp $
  *
  */
 
@@ -540,7 +540,7 @@ static int compar (const void *a, const void *b)
 #if OPT_CASELESS
 	return stricmp(*(char **)a, *(char **)b);
 #else
-	return strcmp(*(char *const *)a, *(char *const *)b);
+	return strcmp(*(const char *const *)a, *(const char *const *)b);
 #endif
 }
 #endif
