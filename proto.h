@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.237 1997/03/30 22:19:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.239 1997/04/29 00:35:25 tom Exp $
  *
  */
 
@@ -84,8 +84,10 @@ extern void popdown_completions (void);
 extern WINDOW *bp2any_wp (BUFFER *bp);
 extern void imply_alt (const char *fname, int copy, int lockfl);
 extern BUFFER *find_b_file (const char *fname);
+extern BUFFER *find_b_hist(int number);
 extern BUFFER *find_alt (void);
 extern BUFFER *find_bp (BUFFER *bp1);
+extern char *hist_lookup ( int c );
 extern void make_current (BUFFER *nbp);
 extern int swbuffer (BUFFER *bp);
 extern int swbuffer_lfl (BUFFER *bp, int lockfl);
@@ -418,6 +420,12 @@ extern void mapungetc (int c);
 extern int mapped_c (int remap, int raw);
 extern int mapped_c_avail (void);
 extern void abbr_check (int *backsp_limit_p);
+
+/* menu.c */
+#if OPT_MENUS
+extern int parse_menu (char *rc_filename);
+extern void do_menu ( /* Widget menub */ );
+#endif
 
 /* msgs.c */
 #if OPT_POPUP_MSGS

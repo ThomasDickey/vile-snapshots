@@ -3060,6 +3060,9 @@ X Window System specifics
 			to the natural foreground or background color of
 			normal text.
 
+	menuHeader
+	menuEntry	The names given to the menu header and entries,
+			respectively.
 
 	Sample .Xdefault entries
 	------------------------
@@ -3454,4 +3457,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.317 1997/04/12 01:00:32 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.318 1997/04/28 23:39:21 tom Exp $
