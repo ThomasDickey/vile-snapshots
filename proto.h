@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.290 1998/07/17 09:54:39 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.291 1998/07/22 00:58:28 tom Exp $
  *
  */
 
@@ -960,7 +960,6 @@ extern	void	x_set_window_name (const char *name);
 
 #if XTOOLKIT
 extern	void	own_selection		(void);
-extern	void	update_scrollbar	(WINDOW *uwp);
 #else	/* !XTOOLKIT */
 extern	void	x_set_rv		(void);
 extern	void	x_setname		(char *name);
@@ -984,6 +983,10 @@ extern	void	x_working		(void);
 
 #if DISP_X11 || DISP_NTWIN
 extern	void	gui_resize		(int cols, int rows);
+#endif
+
+#if OPT_SCROLLBARS
+extern	void	gui_update_scrollbar	(WINDOW *uwp);
 #endif
 
 #if NO_LEAKS

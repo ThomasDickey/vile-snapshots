@@ -57,11 +57,15 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.9 1998/05/27 10:16:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.12 1998/07/26 12:18:54 tom Exp $
  */
 
 #include <windows.h>
 #include <io.h>
+#ifdef __BORLANDC__
+#define __MSC
+#include <sys/stat.h>
+#endif
 #include <share.h>
 #include <process.h>
 #include <assert.h>
@@ -289,7 +293,7 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
 
                 /* Shell process failed, put complaint in user's buffer. */
 
-                len = _snprintf(buf, sizeof(buf), SHELL_ERR_MSG, get_shell());
+                len = lsprintf(buf, SHELL_ERR_MSG, get_shell()) - buf;
                 (void) WriteFile(handles[1], buf, len, &dummy, NULL);
                 FlushFileBuffers(handles[1]);
             }

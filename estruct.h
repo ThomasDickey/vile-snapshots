@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.358 1998/07/02 10:12:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.359 1998/07/23 09:19:56 cmorgan Exp $
  */
 
 #ifndef _estruct_h
@@ -784,14 +784,19 @@ extern int MainProgram(int argc, char *argv[]);
 #define C_BLACK 0
 #define C_WHITE (ncolors-1)
 
-#define N_chars 256		/* must be a power-of-2		*/
-#define HIGHBIT	0x0080		/* the meta bit			*/
-#define CTLA	0x0100		/* ^A flag, or'ed in		*/
-#define CTLX	0x0200		/* ^X flag, or'ed in		*/
-#define SPEC	0x0400		/* special key (function keys)	*/
-#define NOREMAP	0x0800		/* unremappable */
-#define YESREMAP 0x1000		/* override noremap */
+#define N_chars    256			/* must be a power-of-2		*/
+#define HIGHBIT    0x00080		/* the meta bit			*/
+#define CTLA       0x00100		/* ^A flag, or'ed in		*/
+#define CTLX       0x00200		/* ^X flag, or'ed in		*/
+#define SPEC       0x00400		/* special key (function keys)	*/
+#define NOREMAP    0x00800		/* unremappable */
+#define YESREMAP   0x01000		/* override noremap */
 #define REMAPFLAGS (NOREMAP|YESREMAP)
+#define W32_KEY    0x02000		/* special Win32 keys 		*/
+#define W32_SHIFT  0x04000		/* shift was held down		*/
+#define W32_CTRL   0x08000		/* control was held down	*/
+#define W32_ALT    0x10000		/* alt was held down  		*/
+#define W32_NOMOD  (~(W32_KEY|W32_SHIFT|W32_CTRL|W32_ALT))
 
 #define kcod2key(c)	((c) & (UINT)(N_chars-1)) /* strip off the above prefixes */
 #define	isspecial(c)	(((UINT)(c) & (UINT)~(N_chars-1)) != 0)
@@ -2097,7 +2102,11 @@ typedef struct {
  *	from the cmdtbl file, and can be found in the file nebind.h
  */
 typedef struct  k_bind {
+#if !SYS_WINNT
 	short	k_code; 		/* Key code			*/
+#else
+	int  	k_code; 		/* Key code			*/
+#endif
 	const CMDFUNC *k_cmd;
 #if OPT_REBIND
 	struct  k_bind *k_link;

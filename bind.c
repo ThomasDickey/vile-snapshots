@@ -3,9 +3,13 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.182 1998/07/08 00:29:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.183 1998/07/23 09:19:56 cmorgan Exp $
  *
  */
+
+#ifdef _WIN32
+# include <windows.h>
+#endif
 
 #include	"estruct.h"
 #include	"edef.h"
@@ -1187,7 +1191,40 @@ char *	ptr)
 	if (c & CTLA)		*ptr++ = (char)cntl_a;
 	else if (c & CTLX)	*ptr++ = (char)cntl_x;
 	else if (c & SPEC)	*ptr++ = (char)poundc;
-
+#if SYS_WINNT
+#define ALTPLUS   "Alt+"
+#define CTRLPLUS  "Ctrl+"
+#define SHIFTPLUS "Shift+"
+#define W32INSERT "Insert"
+	else if (c & W32_KEY)
+	{
+		if (c & W32_SHIFT)
+		{
+			strcpy(ptr, SHIFTPLUS);
+			ptr += sizeof(SHIFTPLUS) - 1;
+		}
+		if (c & W32_CTRL)
+		{
+			strcpy(ptr, CTRLPLUS);
+			ptr += sizeof(CTRLPLUS) - 1;
+		}
+		if (c & W32_ALT)
+		{
+			strcpy(ptr, ALTPLUS);
+			ptr += sizeof(ALTPLUS) - 1;
+		}
+		c &= W32_NOMOD;
+		if (c == VK_INSERT)
+		{
+			strcpy(ptr, W32INSERT);
+			ptr += sizeof(W32INSERT) - 1;
+		}
+		else
+			*ptr++ = c;    /* Pickup <modifier>+...<single_char> */
+		*ptr = EOS;
+		return (int)(ptr - base);
+	}
+#endif
 	*ptr++ = (char)c;
 	*ptr = EOS;
 	return (int)(ptr - base);
@@ -1245,6 +1282,15 @@ char *seq)	/* destination string for sequence */
 {
 	char	temp[NSTRING];
 	(void)kcod2pstr(c,temp);
+#if SYS_WINNT
+	if (c & W32_KEY)
+	{
+		/* Translation is complete, by defn. */
+
+		strcpy(seq, temp + 1);
+		return (seq);
+	}
+#endif
 	return bytes2prc(seq, temp + 1, (int)*temp);
 }
 #endif

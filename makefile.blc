@@ -1,12 +1,12 @@
 #
 # makefile for vile on WIN32 using Borland C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.7 1997/11/26 16:16:03 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.9 1998/07/26 11:43:07 Ryan.Murray Exp $
 #
 #
 
 CC = bcc32
-CFLAGS = -v -WC -w-par -DWIN32_LEAN_AND_MEAN -Dscrn_chosen 
+CFLAGS = -v -WC -w-par -DWIN32_LEAN_AND_MEAN -Dscrn_chosen
 LDFLAGS = -v -WC
 
 # these are normal editable headers
@@ -25,7 +25,8 @@ SRC = 	main.c ntconio.c basic.c bind.c btree.c buffer.c crypt.c \
 	path.c random.c regexp.c \
 	region.c search.c select.c spawn.c \
 	tags.c tbuff.c termio.c undo.c \
-	version.c window.c word.c wordmov.c map.c 
+	version.c w32cbrd.c w32misc.c w32pipe.c \
+	window.c word.c wordmov.c map.c
 
 OBJ = 	main.obj ntconio.obj basic.obj bind.obj btree.obj buffer.obj crypt.obj \
       	csrch.obj display.obj eval.obj exec.obj externs.obj \
@@ -36,9 +37,10 @@ OBJ = 	main.obj ntconio.obj basic.obj bind.obj btree.obj buffer.obj crypt.obj \
 	path.obj random.obj regexp.obj \
 	region.obj search.obj select.obj spawn.obj \
 	tags.obj tbuff.obj termio.obj undo.obj \
-	version.obj window.obj word.obj wordmov.obj map.obj 
+	version.obj w32cbrd.obj w32misc.obj w32pipe.obj \
+	window.obj word.obj wordmov.obj map.obj
 
-.c.obj:	
+.c.obj:
 	$(CC) $(CFLAGS) -c $<
 
 vile.exe: 	$(BUILTHDRS) $(OBJ)

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.251 1998/07/01 10:37:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.252 1998/07/22 00:59:50 tom Exp $
  *
  */
 
@@ -851,9 +851,9 @@ kbd_flush(void)
 
 		vteeol();
 		set_vattrs(row, 0,
-			miniedit
-				? global_g_val(GVAL_MINI_HILITE)
-				: 0,
+			(VIDEO_ATTR) (miniedit
+					? global_g_val(GVAL_MINI_HILITE)
+					: 0),
 			term.t_ncol);
 		if (my_overlay[0] != EOS) {
 			int n = term.t_ncol - strlen(my_overlay) - 1;
@@ -974,7 +974,7 @@ int force)	/* force update past type ahead? */
 					updall(wp);	/* update all lines */
 #if OPT_SCROLLBARS
 				if (wp->w_flag & (WFHARD | WFSBAR))
-					update_scrollbar(wp);
+					gui_update_scrollbar(wp);
 #endif /* OPT_SCROLLBARS */
 
 #if OPT_VIDEO_ATTRS
