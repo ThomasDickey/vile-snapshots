@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_2q
+MANIFEST for vile, version v8_2r
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -178,6 +178,7 @@ filters/makefile.in             makefile for vile filters
 filters/makefile.wnt            makefile for filters with Visual C++
 filters/makefilt.l              makefile syntax filter for vile
 filters/manfilt.c               manpage-filter
+filters/mms-filt.l              mms syntax filter for vile
 filters/nr-filt.l               nroff syntax highlighting filter for vile
 filters/nr.key                  keywords for nroff filter
 filters/pas-filt.c              Pascal syntax filter for vile
@@ -201,6 +202,8 @@ filters/yaccfilt.l              yacc syntax highlighting filter for vile
 icons                           subdirectory
 icons/pumpkin.ico               V-eyes pumpkin icon
 icons/sink.ico                  kitchen-sink icon (J.R.Sladkey)
+icons/vile.xbm                  sample icon, for X bitmap
+icons/vile.xpm                  sample icon, for xpm library
 macros                          subdirectory
 macros/digraphs.rc              macros for inserting digraphs
 macros/manpage.rc               macros for man-page filtering/display

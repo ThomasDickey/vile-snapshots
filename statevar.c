@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.5 1999/03/26 10:28:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.7 1999/04/04 23:05:22 cmorgan Exp $
  */
 
 #include	"estruct.h"
@@ -20,9 +20,24 @@ static char *x_shell;	/* $XSHELL environment is "$xshell" state variable */
 #endif
 #endif
 
+#if OPT_PROCEDURES
+static int
+any_HOOK(char *rp, const char *vp, HOOK *hook)
+{
+	if (rp) {
+		strcpy(rp, hook->proc);
+		return TRUE;
+	} else if (vp) {
+		(void)strcpy(hook->proc, vp);
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+#endif
 
 char *
-GetEnv(char *s)
+vile_getenv(char *s)
 {
 #if	OPT_EVAL && OPT_SHELL
 	register char *v = getenv(s);
@@ -38,7 +53,7 @@ register char	*name,
 register char	*dft)
 {
 #if	OPT_EVAL && OPT_SHELL
-	name = GetEnv(name);
+	name = vile_getenv(name);
 	return (*name == EOS) ? dft : name;
 #else
 	return dft;
@@ -205,15 +220,7 @@ int var_BLINES(char *rp, const char *vp)
 #if OPT_PROCEDURES
 int var_BUFHOOK(char *rp, const char *vp)
 {
-	if (rp) {
-		strcpy(rp, bufhook);
-		return TRUE;
-	} else if (vp) {
-		strcpy(bufhook, vp);
-		return TRUE;
-	} else {
-		return FALSE;
-	}
+	return any_HOOK(rp, vp, &bufhook);
 }
 #endif
 
@@ -236,15 +243,7 @@ int var_CBUFNAME(char *rp, const char *vp)
 #if OPT_PROCEDURES
 int var_CDHOOK(char *rp, const char *vp)
 {
-	if (rp) {
-		strcpy(rp, cdhook);
-		return TRUE;
-	} else if (vp) {
-		(void)strcpy(cdhook, vp);
-		return TRUE;
-	} else {
-		return FALSE;
-	}
+	return any_HOOK(rp, vp, &cdhook);
 }
 #endif
 
@@ -444,15 +443,7 @@ int var_EOC(char *rp, const char *vp)
 #if OPT_PROCEDURES
 int var_EXITHOOK(char *rp, const char *vp)
 {
-	if (rp) {
-		strcpy(rp, exithook);
-		return TRUE;
-	} else if (vp) {
-		(void)strcpy(exithook, vp);
-		return TRUE;
-	} else {
-		return FALSE;
-	}
+	return any_HOOK(rp, vp, &exithook);
 }
 #endif
 
@@ -865,15 +856,7 @@ int var_QIDENTIF(char *rp, const char *vp)
 #if OPT_PROCEDURES
 int var_RDHOOK(char *rp, const char *vp)
 {
-	if (rp) {
-		strcpy(rp, readhook);
-		return TRUE;
-	} else if (vp) {
-		(void)strcpy(readhook, vp);
-		return TRUE;
-	} else {
-		return FALSE;
-	}
+	return any_HOOK(rp, vp, &readhook);
 }
 #endif
 
@@ -1066,15 +1049,7 @@ int var_WORD(char *rp, const char *vp)
 #if OPT_PROCEDURES
 int var_WRHOOK(char *rp, const char *vp)
 {
-	if (rp) {
-		strcpy(rp, writehook);
-		return TRUE;
-	} else if (vp) {
-		strcpy(writehook, vp);
-		return TRUE;
-	} else {
-		return FALSE;
-	}
+	return any_HOOK(rp, vp, &writehook);
 }
 #endif
 

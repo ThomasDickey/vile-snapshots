@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.192 1999/03/19 10:58:20 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.193 1999/04/04 21:39:41 tom Exp $
  *
  */
 
@@ -910,9 +910,6 @@ static char prevdir[NFILEN];
 static int
 cd_and_pwd(char *path)
 {
-#if OPT_PROCEDURES
-	static int cdhooking;
-#endif
 #if CC_CSETPP
 	if (_chdir(SL_TO_BSL(path)) == 0)
 #else
@@ -932,13 +929,7 @@ cd_and_pwd(char *path)
 #else
 		(void)pwd(TRUE,1);
 #endif
-#if OPT_PROCEDURES
-		if (!cdhooking && *cdhook) {
-			cdhooking = TRUE;
-			run_procedure(cdhook);
-			cdhooking = FALSE;
-		}
-#endif
+		run_a_hook(&cdhook);
 		updatelistbuffers();
 		return TRUE;
 	}
@@ -1099,3 +1090,17 @@ ch_fname(BUFFER *bp, const char *fname)
 	bp->b_modtime_at_warn = 0;
 #endif
 }
+
+#if OPT_PROCEDURES
+int
+run_a_hook(HOOK *hook)
+{
+	if (!hook->latch && hook->proc[0]) {
+		DisableHook(hook);
+		run_procedure(hook->proc);
+		EnableHook(hook);
+		return TRUE;
+	}
+	return FALSE;
+}
+#endif

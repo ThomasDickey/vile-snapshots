@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.181 1999/03/26 00:21:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.182 1999/04/04 21:35:10 tom Exp $
  *
  */
 
@@ -352,32 +352,22 @@ lookup_hist(BUFFER *bp1)
 }
 
 /*
- * Run the $buffer-hook procedure, if it's defined.  Note that we mustn't do
+ * Run the $buffer-hook procedure, if it is defined.  Note that we must not do
  * this if curwp->w_bufp != curbp, since that would break the use of DOT and MK
  * throughout the program when performing editing operations.
  */
 #if OPT_PROCEDURES
-static int bufhooking;
-#define DisableBufferHook bufhooking++;
-#define EnableBufferHook  bufhooking--;
-
 static void
 run_buffer_hook(void)
 {
-	if (!bufhooking
-	 && !reading_msg_line
-	 && *bufhook
+	if (!reading_msg_line
 	 && curwp != 0
 	 && curwp->w_bufp == curbp) {
-		DisableBufferHook;
-		run_procedure(bufhook);
-		EnableBufferHook;
+		run_a_hook(&bufhook);
 	}
 }
 #else
 #define run_buffer_hook() /*EMPTY*/
-#define DisableBufferHook /*EMPTY*/
-#define EnableBufferHook  /*EMPTY*/
 #endif
 
 static int
@@ -587,10 +577,10 @@ int	lockfl)
 				}
 			}
 		}
-		DisableBufferHook;
+		DisableHook(&bufhook);
 		make_current(bp);
 		make_current(savebp);
-		EnableBufferHook;
+		EnableHook(&bufhook);
 	}
 }
 
@@ -822,9 +812,9 @@ swbuffer_lfl(register BUFFER *bp, int lockfl)	/* make buffer BP current */
 
 	/* don't let make_current() call the hook -- there's
 		more to be done down below */
-	DisableBufferHook;
+	DisableHook(&bufhook);
 	make_current(bp);	/* sets curbp */
-	EnableBufferHook;
+	EnableHook(&bufhook);
 
 	bp = curbp;  /* if running the bufhook caused an error, we may
 				be in a different buffer than we thought

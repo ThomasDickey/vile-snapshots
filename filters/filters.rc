@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.48 1999/03/27 15:16:04 tom Exp $
+; $Id: filters.rc,v 1.50 1999/04/04 23:55:07 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -101,12 +101,14 @@ define-mode java
 ~with define-submode java
 	suf "\\.java$"
 	filtername "vile-c-filt -k java"
+	cindent
 ~endwith
 
 define-mode js
 ~with define-submode js
 	suf "\\.js$"
 	filtername "vile-c-filt -k js"
+	cindent
 ~endwith
 
 define-mode key
@@ -191,6 +193,7 @@ define-mode perl
 ~with define-submode perl
 	pre "^#\\s*!\\s*\\/.*perl\\>"
 	suf "\\.\\(pl\\|pm\\)$"
+	cindent
 	comment-prefix "^\\s*#"
 	comments       "^\\s*#\\s*$"
 	fence-pairs    "{}()[]<>"

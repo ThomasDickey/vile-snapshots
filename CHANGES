@@ -1,5 +1,21 @@
 Changes for vile 8.3 (released ??? ??? ??, 1998)
 
+(tom) 990404 (r)
+	+ add filters/mms-filt.l
+	+ change filters/makefile.in to work when configuring with --srcdir
+	  (patch by Brendan O'Dea).
+	+ include XBM and XPM versions of [J.] Richard's ``vile screen'' sample
+	  icon, ifdef'd with OPT_X11_ICON (patch by Brendan O'Dea).
+	+ rename GetEnv to vile_getenv, since VMS linker does not distinguish
+	  that from getenv (patch by Clark Morgan).
+	+ ignore case in VMS majormode suffix and preamble.
+	+ make C-style indent logic available as a mode 'cindent', so it can be
+	  assigned as part of a majormode.  It is part of the builtin cmode.
+	+ collect logic for read/etc., hooks into common functions to make it
+	  simpler to see them.  Save/restore the count of lines read so that
+	  the read-hook does not cause vile to report confusing total number
+	  of lines read, i.e., the actual file plus the highlighting.
+
 (tom) 990327 (q)
 	+ add filtername mode, to handle special filter cases for java, js, csh
 	  majormodes.

@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.202 1999/03/19 11:25:12 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.204 1999/04/04 23:28:18 bod Exp $
  *
  */
 
@@ -3280,6 +3280,37 @@ x_preparse_args(
     init_xlocale();
 #endif
 
+#if OPT_X11_ICON
+    {
+#if HAVE_LIB_XPM
+# include "icons/vile.xpm"
+#else
+# include "icons/vile.xbm"
+#endif
+	XWMHints *hints = XAllocWMHints();
+
+	if (hints)
+	{
+	    hints->flags = IconPixmapHint;
+#if HAVE_LIB_XPM
+	    XpmCreatePixmapFromData(
+		dpy, DefaultRootWindow(dpy),
+		vile, &hints->icon_pixmap, 0, 0
+	    );
+#else
+	    hints->icon_pixmap =
+		XCreateBitmapFromData(
+		    dpy, DefaultRootWindow(dpy),
+		    vile_bits, vile_width, vile_height
+		);
+#endif
+
+	    XSetWMHints(dpy, XtWindow(cur_win->top_widget), hints);
+	    XFree(hints);
+	}
+    }
+#endif /* OPT_X11_ICON */
+
     /* We wish to participate in the "delete window" protocol */
     atom_WM_PROTOCOLS = XInternAtom(dpy, "WM_PROTOCOLS", False);
     atom_WM_DELETE_WINDOW = XInternAtom(dpy, "WM_DELETE_WINDOW", False);
@@ -4376,7 +4407,7 @@ SIZE_T	length)
 
 	status = TRUE;
 
-	if (bp != 0 && (is_c_mode(bp) || b_val(bp,MDAIND))) {
+	if (bp != 0 && (b_val(bp,MDCINDENT) || b_val(bp,MDAIND))) {
 
 #if OLD_PASTE
 		/*

@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.243 1999/03/20 14:41:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.245 1999/04/04 23:48:15 tom Exp $
  */
 
 #include	"estruct.h"
@@ -592,7 +592,7 @@ bp2swbuffer(BUFFER *bp, int ask_rerun, int lockfl)
 		 */
 /* added swbuffer_lfl() to take lockfl arg to get around this problem.  the
  * readin() was happening before a lot of the buffer info was set up, so a
- * user readhook couldn't use that info successfully.
+ * user readhook could not use that info successfully.
  * if this change appears successful, the bp2readin routine (4 lines) can
  * be folded into swbuffer_lfl(), which is the only caller.  --pgf */
 		if (!(bp->b_active))
@@ -918,11 +918,11 @@ int	mflg)		/* print messages? */
 #endif
 #if OPT_PROCEDURES
 	if (s <= FIOEOF) {
-	    static int readhooking;
-	    if (!readhooking && *readhook && !b_is_temporary(bp)) {
-		    readhooking = TRUE;
-		    run_procedure(readhook);
-		    readhooking = FALSE;
+	    if (!b_is_temporary(bp)) {
+		int save = count_fline;	/* read-hook may run a filter - ignore */
+		count_fline = 0;
+		run_a_hook(&readhook);
+		count_fline = save;
 	    }
 	}
 #endif
@@ -1521,30 +1521,22 @@ int	forced)
 	}
 
 #if OPT_PROCEDURES
-	{
-	    static int writehooking;
-
-	    if (!writehooking && *writehook) {
-		    writehooking = TRUE;
-		    run_procedure(writehook);
-		    writehooking = FALSE;
-
-		    /*
-		     * The write-hook may have modified the buffer.  Assume
-		     * the worst, and reconstruct the region.
-		     */
-		    (void)bsizes(bp);
-		    if (whole_file
-		     || line_no(bp, rp->r_orig.l) > bp->b_linecount
-		     || line_no(bp, rp->r_end.l)  > bp->b_linecount) {
+	if (run_a_hook(&writehook)) {
+		/*
+		 * The write-hook may have modified the buffer.  Assume
+		 * the worst, and reconstruct the region.
+		 */
+		(void)bsizes(bp);
+		if (whole_file
+		 || line_no(bp, rp->r_orig.l) > bp->b_linecount
+		 || line_no(bp, rp->r_end.l)  > bp->b_linecount) {
 			setup_file_region(bp, rp);
-		    } else {
+		} else {
 			DOT = rp->r_orig;
 			MK  = rp->r_end;
 			(void)getregion(rp);
-		    }
-		    offset = rp->r_orig.o;
-	    }
+		}
+		offset = rp->r_orig.o;
 	}
 #endif
 

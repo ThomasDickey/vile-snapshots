@@ -1085,17 +1085,19 @@ Editor modes
 		warning will be repeated in any case if the file is being
 		written.  Invoking a shell, or suspending/restarting vile,
 		will cause all visible buffers (those currently in windows)
-		to have their times checked immediately.
+		to have their times checked immediately.  (B)
 
-	cmode   C-code mode.  A built-in majormode.  Also useful for other
-		languages.  Maintains current indentation level
+	cindent C-style indention.  Helps maintain current indentation level
 		automatically during insert, like autoindent, above.  If a
 		line ends with a '{', '(', or ':', then the next line
 		indents further.  If a line begins with a '}' or ')', it is
-		lined up with the line containing the matching '{' or '('.
-		If a line starting with '#' is inserted it is moved to
-		column 1.  Additionally, if a line begins with a '#'
-		character, it will not shift right with the '>>' command. (M)
+		lined up with the line containing the matching '{' or '('.  (B)
+
+	cmode   C-code mode.  A built-in majormode, also useful for other
+		languages.  Augments cindent mode by special treatment of lines
+		beginning with '#'.  If a line starting with '#' is inserted it
+		is moved to column 1.  Additionally, if a line begins with a
+		'#' character, it will not shift right with the '>>' command. (M)
 
 	crypt	Causes buffer(s) to be decrypted when read, and encrypted
 		when written.  This is compatible with the UNIX crypt(1)
@@ -4076,4 +4078,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.404 1999/03/27 15:43:54 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.405 1999/04/04 22:45:32 tom Exp $

@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.87 1999/03/19 12:01:59 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.88 1999/04/04 22:52:43 tom Exp $
  *
  */
 
@@ -895,7 +895,7 @@ newlength(int f, int n)
 
 		/* find end of list */
 		for (wp = wheadp; wp->w_wndp; wp = wp->w_wndp)
-			/*EMPTY*/;
+			;
 
 		wp->w_ntrows += n - term.t_nrow;
 		wp->w_flag |= WFHARD|WFMODE;

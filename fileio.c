@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.136 1999/03/19 11:48:06 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.137 1999/04/04 21:11:02 tom Exp $
  *
  */
 
@@ -28,9 +28,6 @@
 
 /*--------------------------------------------------------------------------*/
 
-static	int	count_fline;	/* # of lines read with 'ffgetline()' */
-
-/*--------------------------------------------------------------------------*/
 static void
 free_fline(void)
 {
