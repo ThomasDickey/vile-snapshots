@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.269 1998/03/31 11:49:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.270 1998/04/09 21:16:45 kev Exp $
  *
  */
 
@@ -547,6 +547,7 @@ extern int insspace (int f, int n);
 /* map.c */
 extern int mapped_c (int remap, int raw);
 extern int mapped_c_avail (void);
+extern int mapped_ungotc_avail(void);
 extern int sysmapped_c (void);
 extern int sysmapped_c_avail (void);
 extern void abbr_check (int *backsp_limit_p);

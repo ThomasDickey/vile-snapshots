@@ -20,20 +20,13 @@
 extern REGION *haveregion;
 
 static PerlInterpreter *perl_interp;
-static SV *svStartLine;			/* starting line of region,
-					   $VI::StartLine in perl*/
-static SV *svStopLine;			/* ending line of region,
-                                           $VI::StopLine in perl */
-static SV *svScreenId;			/* Screen Id (buffer name in VILE),
-                                           $VI::ScreenId in perl */
-static SV *svcurscr;			/* Same as variable referenced by
-					   svScreenId, but just named
-					   $curscr.  The nvi code indicates
-					   that this is for backwards
-					   compatibility.  All I know is
-					   that some of the sample scripts
-					   wouldn't run without it.*/
 static int use_ml_as_prompt; 
+static SV *svcurbuf;		/* $Vile::current_buffer in perl */
+static int svcurbuf_set(SV *, MAGIC *);
+static MGVTBL svcurbuf_accessors = {
+	/* Virtual table for svcurbuf magic. */
+	NULL, svcurbuf_set, NULL, NULL, NULL
+};
 
 static int perl_init(void);
 static void xs_init(void);
@@ -56,10 +49,10 @@ void perl_default_region(void)
 }
 
 static SV *
-newVIrv(SV *rv, SCR *sp)
+newVBrv(SV *rv, VileBuf *sp)
 {
     if (sp->perl_handle == 0) {
-	sp->perl_handle = newGVgen("VI"); 
+	sp->perl_handle = newGVgen("Vile::Buffer"); 
 	GvSV((GV*)sp->perl_handle) = newSV(0); 
 	sv_setiv(GvSV((GV*)sp->perl_handle), (IV) sp); 
 	SvREFCNT_inc(sp->perl_handle);
@@ -72,14 +65,14 @@ newVIrv(SV *rv, SCR *sp)
     SvRV(rv) = sp->perl_handle;
  
     SvROK_on(rv);
-    return sv_bless(rv, gv_stashpv("VI", TRUE));
+    return sv_bless(rv, gv_stashpv("Vile::Buffer", TRUE));
 }
 
 void
 perl_free_handle(void *handle)
 {
     /*
-     * Zero out perl's handle to the SCR structure
+     * Zero out perl's handle to the VileBuf structure
      */
     sv_setiv(GvSV((GV*)handle), 0); 
 
@@ -113,9 +106,9 @@ perl(int f GCC_UNUSED, int n GCC_UNUSED)
 	REGION region;
 	char *err;
 	STRLEN length;
-	SCR *curscr = api_bp2sp(curbp); 
+	VileBuf *curvbp = api_bp2vbp(curbp); 
 
-	if (getregion(&region) != TRUE) { 
+	if (haveregion == NULL || getregion(&region) != TRUE) { 
 	    /* shouldn't ever get here. But just in case... */ 
 	    perl_default_region(); 
 	    if (getregion(&region) != TRUE) { 
@@ -123,16 +116,12 @@ perl(int f GCC_UNUSED, int n GCC_UNUSED)
 	    } 
 	}
 
-	sv_setiv(svStartLine, line_no(curbp, region.r_orig.l)); 
-	sv_setiv(svStopLine, line_no(curbp, region.r_end.l)-1); 
+	/* Initialize some of the fields in curvbp */ 
+	curvbp->region = region; 
+	curvbp->regionshape = regionshape; 
+	curvbp->inplace_edit = 0; 
  
-	/* Initialize some of the fields in curscr */ 
-	curscr->region = region; 
-	curscr->regionshape = regionshape; 
-	curscr->inplace_edit = 0; 
- 
-	newVIrv(svScreenId, curscr); 
-	newVIrv(svcurscr,   curscr); 
+	sv_setsv(svcurbuf, newVBrv(sv_2mortal(newSV(0)), curvbp));
 
 	/* We set the following stuff up in the event that we call 
 	   one of the mlreply methods.  If they are not set up this 
@@ -143,15 +132,14 @@ perl(int f GCC_UNUSED, int n GCC_UNUSED)
 	old_isnamedcmd = isnamedcmd;	/* for mlreply_dir */ 
 	isnamedcmd = TRUE; 
  
+        /* sv_dump(svcurbuf); */
 	perl_eval(buf);
 
         discmd = old_discmd; 
 	isnamedcmd = old_isnamedcmd; 
  
-	SvREFCNT_dec(SvRV(svScreenId));
-	SvROK_off(svScreenId);
-	SvREFCNT_dec(SvRV(svcurscr));
-	SvROK_off(svcurscr);
+	SvREFCNT_dec(SvRV(svcurbuf));
+
 	api_command_cleanup();
 
 	err = SvPV(GvSV(errgv), length);
@@ -205,7 +193,7 @@ perldo(int f GCC_UNUSED, int n GCC_UNUSED)
     REGION region; 
     char *err; 
     STRLEN length; 
-    static char perldo_dcl[] = "sub VI::perldo {"; 
+    static char perldo_dcl[] = "sub Vile::perldo {"; 
     SV *sv; 
     dSP; 
  
@@ -246,7 +234,7 @@ perldo(int f GCC_UNUSED, int n GCC_UNUSED)
     ENTER; 
     SAVETMPS; 
  
-    newVIrv(svcurscr,   api_bp2sp(curbp)); 
+    sv_setsv(svcurbuf, newVBrv(sv_2mortal(newSV(0)), api_bp2vbp(curbp)));
  
     DOT.l = region.r_orig.l;	    /* Current line.	    */ 
     DOT.o = 0; 
@@ -255,7 +243,7 @@ perldo(int f GCC_UNUSED, int n GCC_UNUSED)
  
 	sv_setpvn(GvSV(defgv), DOT.l->l_text, llength(DOT.l)); 
 	PUSHMARK(sp); 
-	perl_call_pv("VI::perldo", G_SCALAR | G_EVAL); 
+	perl_call_pv("Vile::perldo", G_SCALAR | G_EVAL); 
 	err = SvPV(GvSV(errgv), length); 
 	if (length != 0) 
 	    break; 
@@ -272,8 +260,7 @@ perldo(int f GCC_UNUSED, int n GCC_UNUSED)
 	DOT.o = 0; 
     } while (!sameline(DOT, region.r_end)); 
  
-    SvREFCNT_dec(SvRV(svcurscr)); 
-    SvROK_off(svcurscr); 
+    SvREFCNT_dec(SvRV(svcurbuf)); 
  
     FREETMPS; 
     LEAVE; 
@@ -292,15 +279,33 @@ error:
     mlforce("%s", err); 
     return FALSE; 
 } 
+
+static int
+svcurbuf_set(SV *sv, MAGIC *mg)
+{
+    VileBuf *vbp;
+    if (sv_isa(sv, "Vile::Buffer")
+        && (vbp = (VileBuf *) SvIV((SV*)GvSV((GV*)SvRV(sv)))) != NULL) 
+    {
+	api_swscreen(NULL, vbp);
+    }
+    else {
+	/* FIXME: Print out warning about reseting things */
+	/* Reset to curbp */
+	sv_setsv(svcurbuf, newVBrv(sv_2mortal(newSV(0)), api_bp2vbp(curbp)));
+    }
+}
  
-static int perl_init(void)
+static int
+perl_init(void)
 {
     char *embedding[] = { "", "-e", "0" };
-    char *bootargs[]  = { "VI", NULL };
-    SV   *svminiscr; 
+    char *bootargs[]  = { "Vile", NULL };
+    SV   *svminibuf; 
     AV   *av; 
     SV   *sv; 
     char  temp[NFILEN]; 
+    static char svcurbuf_name[] = "Vile::current_buffer";
 
     perl_interp = perl_alloc();
     perl_construct(perl_interp);
@@ -311,10 +316,10 @@ static int perl_init(void)
 	perl_interp = NULL;
 	return FALSE;
     }
-    perl_call_argv("VI::bootstrap", G_DISCARD, bootargs);
-    perl_eval("$SIG{__WARN__}='VI::Warn'");
+    perl_call_argv("Vile::bootstrap", G_DISCARD, bootargs);
+    perl_eval("$SIG{__WARN__}='Vile::Warn'");
 
-    /* Add our own paths to the front @INC */ 
+    /* Add our own paths to the front of @INC */ 
     av_unshift(av = GvAVn(incgv), 2); 
     av_store(av, 0, newSVpv(lengthen_path(strcpy(temp,"~/.vile/perl")),0));  
     sv = newSVpv(HELP_LOC,0); 
@@ -324,26 +329,24 @@ static int perl_init(void)
     
     /* Obtain handles to specific perl variables, creating them
        if they do not exist. */
-    svStartLine = perl_get_sv("VI::StartLine", TRUE);
-    svStopLine  = perl_get_sv("VI::StopLine",  TRUE);
-    svScreenId  = perl_get_sv("VI::ScreenId",  TRUE);
-    svcurscr    = perl_get_sv("curscr",        TRUE);
+    svcurbuf  = perl_get_sv(svcurbuf_name,  TRUE);
 
-    svminiscr   = newVIrv(newSV(0), api_bp2sp(bminip)); 
+    svminibuf   = newVBrv(newSV(0), api_bp2vbp(bminip)); 
 
     /* Tie STDOUT and STDERR to miniscr->PRINT() function */ 
-    sv_magic((SV *) gv_fetchpv("STDOUT", TRUE, SVt_PVIO), svminiscr, 'q', 
+    sv_magic((SV *) gv_fetchpv("STDOUT", TRUE, SVt_PVIO), svminibuf, 'q', 
 	     Nullch, 0); 
-    sv_magic((SV *) gv_fetchpv("STDERR", TRUE, SVt_PVIO), svminiscr, 'q', 
+    sv_magic((SV *) gv_fetchpv("STDERR", TRUE, SVt_PVIO), svminibuf, 'q', 
 	     Nullch, 0); 
-    sv_magic((SV *) gv_fetchpv("STDIN", TRUE, SVt_PVIO), svminiscr, 'q', 
+    sv_magic((SV *) gv_fetchpv("STDIN", TRUE, SVt_PVIO), svminibuf, 'q', 
 	     Nullch, 0);
 
-    /* Make the above readonly (from perl) */
-    SvREADONLY_on(svStartLine);
-    SvREADONLY_on(svStopLine);
-    SvREADONLY_on(svScreenId);
-    SvREADONLY_on(svcurscr);
+    sv_magic(svcurbuf, NULL, '~', svcurbuf_name, strlen(svcurbuf_name));
+    mg_find(svcurbuf, '~')->mg_virtual = &svcurbuf_accessors;
+    SvMAGICAL_on(svcurbuf);
+
+    /* Load user or system wide initialization script */
+    perl_eval("require 'vileinit.pl'");
 
     return TRUE;
 }
@@ -353,14 +356,15 @@ perl_eval(char *string)
 {
     SV* sv = newSVpv(string, 0);
 
-    perl_eval_sv(sv, G_DISCARD | G_NOARGS);
+    sv_setpv(GvSV(errgv),"");
+    perl_eval_sv(sv, G_DISCARD | G_NOARGS | G_KEEPERR);
     SvREFCNT_dec(sv);
 }
 
 /* Register any extra external extensions */
 
 extern void boot_DynaLoader _((CV* cv));
-extern void boot_VI _((CV* cv));
+extern void boot_Vile _((CV* cv));
 
 static void 
 xs_init() 
@@ -368,7 +372,7 @@ xs_init()
     char *file = __FILE__; 
     dXSUB_SYS; 
     newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, file); 
-    newXS("VI::bootstrap", boot_VI, file); 
+    newXS("Vile::bootstrap", boot_Vile, file); 
 } 
  
  
@@ -434,59 +438,156 @@ sv2offset(SV *sv)
     return offset; 
 }
 
-typedef void *	VI;
-
 /* FIXME: Make these macrs do the right wrt the perl message handler */
 #define INITMESSAGE
 #define ENDMESSAGE
 
-MODULE = VI	PACKAGE = VI
+/* Note: The commentary below prefixed with # characters may be
+   retrieved via
+
+   	perl -ne 'print $1 if /^#((\s|$).*)$/s' perl.xs
+*/
+
+MODULE = Vile	PACKAGE = Vile
 
 PROTOTYPES: DISABLE
 
-# msg --
-#	Set the message line to text.
+MODULE = Vile	PACKAGE = Vile::Buffer
+
 #
-# Perl Command: VI::Msg
-# Usage: VI::Msg screenId text
+# current_buffer
+# current_buffer BUFOBJ
+# current_buffer PKGNAME
+# current_buffer BUFOBJ   NEWBUFOBJ
+# current_buffer PKGNAME  NEWBUFOBJ
+#
+#	Returns the current buffer.  When first entering perl from a
+#	vile session, the current buffer is the one that the user is
+#	actively editing.  Several buffers may be on the screen at once,
+#	but only one of them is current.  The current one will be the
+#	one in which the cursor appears.
+#
+# 	This method may also be used to set the current buffer.  When used
+# 	in the form
+#
+#		$oldbuf->current_buffer($newbuf)
+#
+# 	then $newbuf will replace $oldbuf in one of the visible windows.
+#	(This only makes sense when $oldbuf was visible in some window
+#	on the screen.  If it wasn't visible, it'll just replace whatever
+#	buffer was last both current and visible.)
+#
+#	When used as a setter, the current buffer is still returned.  In
+#	this case it will be the new buffer object which becomes the
+#	current buffer.
+#
+#	Note also that the current_buffer method is in both the Vile
+#	module and the Vile::Buffer module.  I couldn't decide which
+#	module it should be in so I put it into both.  It seemed like
+#	a real hassle to have to say
+#
+#		my $curbuf = Vile::Buffer->current_buffer
+#
+# 	So instead, you can just say
+#
+#		my $curbuf = Vile->current_buffer;
+#
+# 	current_buffer is also a variable, so you can also do it this
+#	way:
+#
+#		my $curbuf = $Vile::current_buffer;
+#
+#	If you want $main::curbuf (or some other variable) to be an
+#	alias to the current buffer, you can do it like this:
+#
+#		*main::curbuf = \$Vile::current_buffer;
+#
+#	Put this in some bit of initialization code and then you'll
+#	never have to call the current_buffer method at all.
+#
+#	One more point, since $Vile::current_buffer is magical, the
+#	alias above will be magical too, so you'll be able to do
+#
+#		$curbuf = $newbuf;
+#
+# 	in order to set the buffer.  (Yeah, this looks obvious, but
+#	realize that doing the assignment actually causes some vile
+#	specific code to run which will cause $newbuf to become the
+#	new current buffer upon return.)
+#
 
-void
-Msg(screen, ...)
-	VI	screen
- 
+VileBuf *
+current_buffer(...)
+
+	ALIAS:
+	    Vile::current_buffer = 1
+
 	PREINIT:
-	int i;
-	char *text = 0;
-	STRLEN sz = 0;
+	    VileBuf *callbuf;
+	    VileBuf *newbuf;
 
-	CODE:
-	for (i = 1; i < items; i++)
-	{
-	    STRLEN len;
-	    char *arg = SvPV(ST(i), len);
+	PPCODE:
+	    if (items > 2)
+		croak("Too many arguments to current_buffer");
+	    else if (items == 2) {
+		if (sv_isa(ST(0), "Vile::Buffer")) {
+		    callbuf = (VileBuf *)SvIV((SV*)GvSV((GV*)SvRV(ST(0)))); 
+		    if (callbuf == 0) {
+			croak("buffer no longer exists");
+		    }
+		}
+		else
+		    callbuf = 0;
 
-	    if ((text = realloc(text, sz + len + 1)))
-	    {
-		memcpy(text + sz, arg, len);
-		text[sz += len] = 0;
+		if (sv_isa(ST(1), "Vile::Buffer")) {
+		    newbuf = (VileBuf *)SvIV((SV*)GvSV((GV*)SvRV(ST(1)))); 
+		    if (newbuf == 0) {
+			croak("switched to buffer no longer exists");
+		    }
+		}
+		else {
+		    croak("switched to buffer of wrong type");
+		}
+
+		if (api_swscreen(callbuf, newbuf))
+		    sv_setsv(svcurbuf, ST(1));
 	    }
-	    else
-		break;
-	}
 
-	if (text)
-	{
-	    mlforce("%s", text);
-	    use_ml_as_prompt = 1; 
-	    free(text);
-	}
+	    XPUSHs(svcurbuf);
 
 # 
-# PRINT 
+# print BUFOBJ STR1,..,STRN
+# insert BUFOBJ STR1,...,STRN
+#
+# 	Inserts one or more strings the buffer object at the current
+# 	position of DOT.  DOT will be left at the end of the strings
+# 	just inserted.
+#
+# 	When STDERR or STDOUT are printed to, the output will be
+#	directed to the message line.
+#
+#	Examples:
+#
+#	print "Hello, world!";		# Print a well known greeting on
+#					# the message line.
+#	print $Vile::current_buffer "new text";
+#					# put some new text in the current
+#					# buffer.
+#
+#	my $passbuf = new Vile::Buffer '/etc/passwd';
+#					# Fetch the password file
+#	$passbuf->dot('$$');		# Set the position at the end
+#	print $passbuf "joeuser::1000:100:Joe User:/home/joeuser:/bin/bash
+#					# Add 'joeuser' to the this buffer
+#	Vile->current_buffer($passbuf);	# Make it visible to the user.
+#
  
 void 
-PRINT(screen, ...) 
-	VI	screen 
+PRINT(vbp, ...) 
+	VileBuf *vbp 
+
+	ALIAS:
+	    insert = 1
   
 	PREINIT: 
 	int i; 
@@ -494,7 +595,7 @@ PRINT(screen, ...)
 	STRLEN sz = 0; 
  
 	CODE: 
-	if (sp2bp(screen) == bminip) { 
+	if (vbp2bp(vbp) == bminip) { 
 	    int i; 
 	    char *text = 0; 
 	    STRLEN sz = 0; 
@@ -512,7 +613,9 @@ PRINT(screen, ...)
 	    } 
  
  
-	    if (text) { 
+	    if (text && sz >= 1) { 
+		if (text[sz-1] == '\n')
+		    text[sz-1] = 0;
 		mlforce("%s", text); 
 		use_ml_as_prompt = 1; 
 		free(text); 
@@ -522,16 +625,73 @@ PRINT(screen, ...)
 	    for (i = 1; i < items; i++) { 
 		STRLEN len; 
 		char *arg = SvPV(ST(i), len); 
-		api_dotinsert(screen, arg, len); 
+		api_dotinsert(vbp, arg, len); 
 	    } 
 	} 
  
+#
+# <BUFOBJ>
+#
+# 	When used in a scalar context, returns the next line or portion
+#	of thereof in the current region.
+#
+# 	When used in an array context, returns the rest of the lines (or
+# 	portions thereof) in the current region.
+#
+# 	The current region is either set with setregion or set by default
+# 	for you when perl is invoked from vile.  This region will either
+# 	be the region that the user specified or the whole buffer if not
+# 	user specified.  Unless you know for sure that the region is set
+#	properly, it is probably best to set it explicitly.
+#
+# 	After a line is read, DOT is left at the next location in the
+#	buffer at which to start reading.  Note, however, that the value
+#	of DOT (which a convenient name for the current position in the
+#	buffer) is not propogated back to any of the users windows unless
+#	it has been explicitly set by calling dot (the method).
+#
+#	When the inplace_edit flag has been set via the inplace_edit
+#	method, text that is retrieved from the buffer is deleted
+#	immediately after retrieval.
+#
+#	Examples:
+#
+#	# Example 1: Put all lines in the current buffer into
+#	#            an array
+#
+#	$Vile::current_buffer->setregion(1,'$$');
+#					# Set the region to be the
+#					# entire buffer.
+#	my @lines = <$Vile::current_buffer>;
+#					# Fetch all lines and put them
+#					# in the @lines array.
+#	print $lines[$#lines/2] if @lines;
+#					# Print the middle line to
+#					# the status line
+#
+#	
+#	# Example 2: Selectively delete lines from a buffer
+#
+#	my $curbuf = $Vile::current_buffer;
+#					# get an easier to type handle
+#					# for the current buffer
+#	$curbuf->inplace_edit(1);	# set the inplace_edit flag
+#					# so that lines will be deleted
+#					# as they are read
+#
+#	while (<$curbuf>) {		# fetch line into $_
+#	    unless (/MUST\s+DELETE/) {	# see if we should keep the line
+#		print $curbuf $_;	# put it back if we should keep it
+#	    }
+#       }
+#
+
 void 
-READLINE(screen) 
-	VI screen 
+READLINE(vbp) 
+	VileBuf * vbp 
  
 	PPCODE: 
-	if (sp2bp(screen) == bminip) { 
+	if (vbp2bp(vbp) == bminip) { 
 	    int status; 
 	    char buf[NLINE]; 
 	    char prompt[NLINE]; 
@@ -561,7 +721,8 @@ READLINE(screen)
 		size_t len; 
 		int rval; 
 		char *p; 
-		rval = api_dotgline(screen, &p, &len); 
+		int neednewline;
+		rval = api_dotgline(vbp, &p, &len, &neednewline); 
 		if (gimme == G_SCALAR) { 
 		    EXTEND(sp,1); 
 		    if (!rval) { 
@@ -569,7 +730,8 @@ READLINE(screen)
 		    } 
 		    else { 
 			SV *sv = newSVpv(p, len); 
-			sv_catpv(sv, "\n"); 
+			if (neednewline)
+			    sv_catpv(sv, "\n"); 
 			PUSHs(sv_2mortal(sv)); 
 		    } 
 		} 
@@ -578,292 +740,92 @@ READLINE(screen)
 		size_t len; 
 		int status; 
 		char *p; 
+		int neednewline;
  
-		while (api_dotgline(screen, &p, &len)) { 
+		while (api_dotgline(vbp, &p, &len, &neednewline)) { 
 		    SV *sv = newSVpv(p, len); 
-		    sv_catpv(sv, "\n"); 
+		    if (neednewline)
+			sv_catpv(sv, "\n"); 
 		    XPUSHs(sv_2mortal(sv)); 
 		} 
 	    } 
 	} 
  
-# XS_VI_aline --
-#	-- Append the string text after the line in lineNumber.
+
 #
-# Perl Command: VI::AppendLine
-# Usage: VI::AppendLine screenId lineNumber text
-
-void
-AppendLine(screen, linenumber, text)
-	VI screen
-	int linenumber
-	char *text
-
-	PREINIT:
-	int rval;
-	STRLEN length;
-
-	CODE:
-	SvPV(ST(2), length);
-	INITMESSAGE;
-	rval = api_aline(screen, linenumber, text, length);
-	ENDMESSAGE;
-
-
-# XS_VI_dline --
-#	Delete lineNum.
+# new BUFOBJ
+# new PKGNAME
+# new BUFOBJ  FILENAME
+# new PKGNAME FILENAME
 #
-# Perl Command: VI::DelLine
-# Usage: VI::DelLine screenId lineNum
-
-void 
-DelLine(screen, linenumber)
-	VI screen
-	int linenumber
-
-	ALIAS:
-	DeleteLine = 1
-
-	PREINIT:
-	int rval;
-
-	CODE:
-	INITMESSAGE;
-	rval = api_dline(screen, linenumber);
-	ENDMESSAGE;
-
-char *
-GetLine(screen, linenumber)
-	VI screen
-	int linenumber
-
-	PREINIT:
-	size_t len;
-	int rval;
-	char *p;
-
-	PPCODE:
-	INITMESSAGE;
-	rval = api_gline(screen, linenumber, &p, &len);
-	ENDMESSAGE;
-
-	EXTEND(sp,1);
-        PUSHs(sv_2mortal(newSVpv(p, len)));
-
-AV *
-GetLines(screen, linenumber, count)
-	VI screen
-	int linenumber
-	int count
-
-	PREINIT:
-	int rval;
-	size_t len;
-	char *p;
-	LINE *lp;
-	int i, maxcount;
-
-	CODE:
-
-	/* Use one call of api_gline to set DOT for us.  This is kinda slimy
-	   because we're mixing levels here. Maybe we should try to find a
-	   clean way to separate them.  Actually, it'd probably be cleaner
-	   just to export something from api.c which sets the DOT for us. */
-
-	api_gline(screen, linenumber, &p, &len);
-
-	maxcount = line_count(sp2bp(screen)) - linenumber + 1;
-	if (count > maxcount)
-	    count = maxcount;
-
-	RETVAL = newAV();
-
-	if (count > 0)
-	    av_unshift(RETVAL, count);
-
-	for (i = 0, lp = DOT.l; count-- > 0; lp = lforw(lp), i++) {
-	    p = lp->l_text;
-	    len = llength(lp);
-	    if (len == 0)
-		p = "";
-	    av_store(RETVAL, i, newSVpv(p,len));
-	}
-	/* We need to decrement the reference count of the return AV,
-	   but we need to do it in a delayed fashion.  This is because
-	   creating a reference below will increment it.  sv_2mortal
-	   is used to do this and the documentation assures me that
-	   it can be used on AV's as well as SV's.
-	 */
-	sv_2mortal((SV *) RETVAL);
-
-	OUTPUT:
-	RETVAL
-
-
-# XS_VI_sline --
-#	Set lineNumber to the text supplied.
-#
-# Perl Command: VI::SetLine
-# Usage: VI::SetLine screenId lineNumber text
-
-void
-SetLine(screen, linenumber, text)
-	VI screen
-	int linenumber
-	char *text
-
-	PREINIT:
-	int rval;
-	STRLEN length;
-
-	CODE:
-	SvPV(ST(2), length);
-	INITMESSAGE;
-	rval = api_sline(screen, linenumber, text, length);
-	ENDMESSAGE;
-
-# XS_VI_iline --
-#	Insert the string text before the line in lineNumber.
-#
-# Perl Command: VI::InsertLine
-# Usage: VI::InsertLine screenId lineNumber text
-
-void
-InsertLine(screen, linenumber, text)
-	VI screen
-	int linenumber
-	char *text
-
-	PREINIT:
-	int rval;
-	STRLEN length;
-
-	CODE:
-	SvPV(ST(2), length);
-	INITMESSAGE;
-	rval = api_iline(screen, linenumber, text, length);
-	ENDMESSAGE;
-
-# XS_VI_lline --
-#	Return the last line in the screen.
-#
-# Perl Command: VI::LastLine
-# Usage: VI::LastLine screenId
-
-int 
-LastLine(screen)
-	VI screen
-
-	PREINIT:
-	int last;
-	int rval;
-
-	CODE:
-	INITMESSAGE;
-	rval = api_lline(screen, &last);
-	ENDMESSAGE;
-	RETVAL=last;
-
-	OUTPUT:
-	RETVAL
-
-# XS_VI_iscreen --
-#	Create a new screen.  If a filename is specified then the screen
-#	is opened with that file.
-#
-# Perl Command: VI::NewScreen
-# Usage: VI::NewScreen screenId [file]
-
-VI
-Edit(screen, ...)
-	VI screen
-
-	ALIAS:
-	NewScreen = 1
-
-	PROTOTYPE: $;$
-	PREINIT:
-	int rval;
-	char *file;
-	SCR *nsp;
-
-	CODE:
-	file = (items == 1) ? NULL : (char *)SvPV(ST(1),na);
-	INITMESSAGE;
-	rval = api_edit(screen, file, &nsp, ix);
-	ENDMESSAGE;
-	
-	RETVAL = nsp;
-
-	OUTPUT:
-	RETVAL
-
-
-# XS_VI_fscreen --
-#	Return the screen id associated with file name.
-#
-# Perl Command: VI::FindScreen
-# Usage: VI::FindScreen file
-
-VI
-FindScreen(file)
-	char *file
-
-	CODE:
-	RETVAL = api_fscreen(0, file);
-
-	OUTPUT:
-	RETVAL
-
-# XS_VI_swscreen --
-#	Change the current focus to screen.
-#
-# Perl Command: VI::SwitchScreen
-# Usage: VI::SwitchScreen screenId screenId
-
-void
-SwitchScreen(screenFrom, screenTo)
-	VI screenFrom
-	VI screenTo
-
-	PREINIT:
-	int rval;
-
-	CODE:
-	INITMESSAGE;
-	rval = api_swscreen(screenFrom, screenTo);
-	ENDMESSAGE;
-
-
-void
-Warn(warning)
-	char *warning;
-
-	PREINIT:
-	int i;
-	CODE:
-	sv_catpv(GvSV(errgv),warning);
- 
-# command CMDLINE 
+# edit BUFOBJ
+# edit PKGNAME
+# edit BUFOBJ  FILENAME
+# edit PKGNAME FILENAME
 # 
-# executes the given vile command line (as if it were typed on the 
-# : line). 
-# 
-# This is not exactly safe in all contexts.  (It is easy to cause 
-# seg faults.)  It'll likely be removed once the API has been fleshed 
-# out some more. 
- 
-int  
-command(cline)  
-	char *cline;  
- 
-	CODE:  
-	RETVAL = docmd(cline,FALSE,1);  
+# 	These methods create a new buffer and return it.
+#
+# 	When no filename is supplied, an anonymous buffer is created.
+#	These buffer's will be named [unnamed-1], [unnamed-2], etc. and
+#	will not have a file name associated with them.
+#
+# 	When a name is supplied as an argument to new or edit, a check
+#	is made to see if the name is the same as an already existing
+#	buffer.  If so, that buffer is returned.  Otherwise, the name is
+#	taken to be a file name.  If the file exists, it is opened and
+#	read into the newly created buffer.  If the file does not exist,
+#	a new buffer will be created with the associated file name.  The
+#	name of the buffer will be based on the file name.  The file will
+#	be created when the buffer is first written out to disk.
+#
+# 	new and edit are synonyms.  In each case, PKGNAME is Vile::Buffer.
+# 	There is no difference between Vile::Buffer->new($fname) and
+# 	$buf->new($fname).  These two different forms are merely provided
+#	for convenience.
+#
+# 	Example:
+#
+#	$Vile::current_buffer = new Vile::Buffer 'makefile';
+#					# open makefile and make it visible
+#					# on the screen.
+#
+#	$abuf = new Vile::Buffer;	# Create an anonymous buffer
+#	print $abuf "Hello";		# put something in it
+#	Vile->current_buffer($abuf);	# make the anonymous buffer current
+#					#   (viewable).
+#
+#	Vile->current_buffer($abuf->edit('makefile'));
+#					# Now makefile is the current
+#					#   buffer
+#	$abuf->current_buffer(Vile::Buffer->new('makefile'));
+#					# Same thing
+#
+
+VileBuf *
+new(...)
+
+    ALIAS:
+	edit = 1
+
+    PREINIT:
+	char *name;
+	VileBuf *newvbp;
+
+    CODE:
+	if (items > 2)
+	    croak("Too many arguments to current_buffer");
+
+	name = (items == 1) ? NULL : (char *)SvPV(ST(1),na);
+
+	(void) api_edit(NULL, name, &newvbp);
+    
+	RETVAL = newvbp;
+
+    OUTPUT:
+	RETVAL
+
   
-	OUTPUT:  
-	RETVAL  
-  
-  
+#
 # inplace_edit BUFOBJ 
 # inplace_edit BUFOBJ VALUE 
 # 	 
@@ -874,13 +836,14 @@ command(cline)
 # 	This flag determines whether a line is deleted after being 
 # 	read.  E.g, 
 #  
-# 	$curscr->inplace_edit(1); 
-# 	while (<$curscr>) { 
+#	my $curbuf = $Vile::current_buffer;
+# 	$curbuf->inplace_edit(1); 
+# 	while (<$curbuf>) { 
 # 		s/foo/bar/g; 
 # 		print; 
 # 	} 
 #  
-# 	The <$curscr> operation will cause one line to be read and 
+# 	The <$curbuf> operation will cause one line to be read and 
 # 	deleted.  DOT will be left at the beginning of the next line. 
 # 	The print statment will cause $_ to get inserted prior the 
 # 	the next line. 
@@ -891,30 +854,32 @@ command(cline)
 #  
 # 	Setting it to false (which is its default value) will cause 
 # 	the lines that are read to be left alone. 
+#
  
 int 
-inplace_edit(screen, ...) 
-	VI screen 
+inplace_edit(vbp, ...) 
+	VileBuf *vbp 
  
 	CODE: 
-	RETVAL = ((SCR *) screen)->inplace_edit; 
+	RETVAL = vbp->inplace_edit; 
 	if (items > 1) 
-	    ((SCR *) screen)->inplace_edit = SvIV(ST(1)); 
+	    vbp->inplace_edit = SvIV(ST(1)); 
 	 
 	OUTPUT: 
 	RETVAL 
  
- 
- 
+#
 # setregion BUFOBJ 
+# setregion BUFOBJ MOTIONSTR
 # setregion BUFOBJ STARTLINE, ENDLINE 
 # setregion BUFOBJ STARTLINE, STARTOFFSET, ENDLINE, ENDOFFSET 
 # setregion BUFOBJ STARTLINE, STARTOFFSET, ENDLINE, ENDOFFSET, 'rectangle' 
 # setregion BUFOBJ STARTLINE, STARTOFFSET, ENDLINE, ENDOFFSET, 'exact' 
 #  
-#	Sets the region and sets DOT to the beginning of the region.  
+#	Sets the region upon which certain other methods will operate
+#	and sets DOT to the beginning of the region.  
 # 
-#       Either the line number or offset (or both) may be the special 
+#	Either the line number or offset (or both) may be the special 
 #	string '$' which represents the last line in the buffer and the 
 #	last character on a line. 
 # 
@@ -935,37 +900,76 @@ inplace_edit(screen, ...)
 #	When used in a scalar context, returns the buffer object 
 #	so that cascading method calls may be performed, i.e, 
 # 
-#		$curscr->setregion(3,4)->attribute_cntl_a_sequences; 
+#		$Vile::current_buffer->setregion(3,4)
+#                                    ->attribute_cntl_a_sequences; 
+#	
+#	There is a special form of setregion which may be used
+#	as follows:
+#
+#		$Vile::current_buffer->setregion('j2w');
+#
+#	The above statement will set the region beginning at the current
+#	location of DOT and ending at the location arrived at by moving
+#	down one line and over two words.  This may be viewed as a shorthand
+#	way of expressing the following (somewhat cumbersome) statement:
+#
+#		$Vile::current_buffer->setregion(
+#			$Vile::current_buffer->motion('j2w'));
 # 
 # Note: rectangular regions are not implemented yet. 
+#
  
 void 
-setregion(screen, ...) 
-	VI screen 
+setregion(vbp, ...) 
+    VileBuf *vbp
  
-	PREINIT: 
-	SCR *scrp; 
+    PREINIT: 
 	I32 gimme; 
 	char *shapestr; 
  
-	PPCODE: 
-	scrp = (SCR *)screen; 
-	api_setup_fake_win(scrp); 
+    PPCODE: 
+	api_setup_fake_win(vbp, TRUE);
 	switch (items) { 
 	    case 1: 
 		/* set DOT */ 
-		DOT = scrp->region.r_orig; 
+		DOT = vbp->region.r_orig; 
 		break; 
+	    case 2: {
+		/* Set up a "motion" region */
+		vbp->regionshape   = EXACT;
+		vbp->region.r_orig = DOT;
+		if (api_motion(vbp, SvPV(ST(1), na))) {
+		    if ((line_no(curbp, vbp->region.r_orig.l)
+		                 > line_no(curbp, DOT.l))
+		        || (vbp->region.r_orig.l == DOT.l
+			    && vbp->region.r_orig.o > DOT.o))
+		    {
+			/* DOT's at beginning of region */
+			vbp->region.r_end = vbp->region.r_orig;
+			vbp->region.r_orig = DOT;
+		    }
+		    else {
+			/* DOT's (presently) at end of region */
+			vbp->region.r_end = DOT;
+			DOT = vbp->region.r_orig;
+		    }
+		}
+		else {
+		    /* Return an empty (?) region */
+		    vbp->region.r_end = DOT;
+		}
+		break;
+	    }
 	    case 3: 
 		/* Set up a full line region */ 
-		api_gotoline(scrp, sv2linenum(ST(2))+1);  
-		scrp->region.r_end = DOT; 
-		api_gotoline(scrp, sv2linenum(ST(1)));  
-		scrp->region.r_orig = DOT; 
+		api_gotoline(vbp, sv2linenum(ST(2))+1);  
+		vbp->region.r_end = DOT; 
+		api_gotoline(vbp, sv2linenum(ST(1)));  
+		vbp->region.r_orig = DOT; 
 		break; 
 	    case 5: 
 		/* Set up an exact region */ 
-		scrp->regionshape = EXACT; 
+		vbp->regionshape = EXACT; 
 		goto setregion_common; 
 		break; 
 	    case 6: 
@@ -973,55 +977,56 @@ setregion(screen, ...)
 		   or rectangle) */ 
 		shapestr = SvPV(ST(5), na); 
 		if (strcmp(shapestr, "exact")) 
-		    scrp->regionshape = EXACT; 
+		    vbp->regionshape = EXACT; 
 		else if (strcmp(shapestr, "rectangle")) 
-		    scrp->regionshape = RECTANGLE; 
+		    vbp->regionshape = RECTANGLE; 
 		else if (strcmp(shapestr, "fullline")) 
-		    scrp->regionshape = FULLLINE; 
+		    vbp->regionshape = FULLLINE; 
 		else { 
 		    croak("Region shape argument not one of \"exact\", \"fullline\", or \"rectangle\""); 
 		} 
 	    setregion_common: 
-		if (scrp->regionshape == FULLLINE) { 
-		    api_gotoline(scrp, sv2linenum(ST(3))+1);  
+		if (vbp->regionshape == FULLLINE) { 
+		    api_gotoline(vbp, sv2linenum(ST(3))+1);  
 		    DOT.o = 0; 
 		} 
 		else { 
-		    api_gotoline(scrp, sv2linenum(ST(3)));  
+		    api_gotoline(vbp, sv2linenum(ST(3)));  
 		    DOT.o = sv2offset(ST(4));  
 		} 
-		scrp->region.r_end = DOT; 
+		vbp->region.r_end = DOT; 
  
-		api_gotoline(scrp, SvIV(ST(1))); 
-		if (scrp->regionshape == FULLLINE) 
+		api_gotoline(vbp, SvIV(ST(1))); 
+		if (vbp->regionshape == FULLLINE) 
 		    DOT.o = 0; 
 		else 
 		    DOT.o = sv2offset(ST(2));  
-		scrp->region.r_orig = DOT; 
+		vbp->region.r_orig = DOT; 
 		break; 
 	    default: 
-		croak("Invalid number of arguments"); 
+		croak("Invalid number of arguments to setregion"); 
 		break; 
 	} 
-	scrp->dot_inited = 1; 
+	vbp->dot_inited = 1; 
 	gimme = GIMME_V; 
 	if (gimme == G_SCALAR) { 
 	    XPUSHs(ST(0)); 
 	} 
 	else if (gimme == G_ARRAY) { 
 	    /* Return range information */ 
-	    XPUSHs(sv_2mortal(newSViv(line_no(curbp, scrp->region.r_orig.l)))); 
-	    XPUSHs(sv_2mortal(newSViv(scrp->region.r_orig.o))); 
-	    XPUSHs(sv_2mortal(newSViv(line_no(curbp, scrp->region.r_end.l) 
-	                                             - (scrp->regionshape == FULLLINE)))); 
-	    XPUSHs(sv_2mortal(newSViv(scrp->region.r_end.o))); 
+	    XPUSHs(sv_2mortal(newSViv(line_no(curbp, vbp->region.r_orig.l)))); 
+	    XPUSHs(sv_2mortal(newSViv(vbp->region.r_orig.o))); 
+	    XPUSHs(sv_2mortal(newSViv(line_no(curbp, vbp->region.r_end.l) 
+	                                             - (vbp->regionshape == FULLLINE)))); 
+	    XPUSHs(sv_2mortal(newSViv(vbp->region.r_end.o))); 
 	    XPUSHs(sv_2mortal(newSVpv( 
-		scrp->regionshape == FULLLINE ? "fullline" : 
-		scrp->regionshape == EXACT    ? "exact" 
+		vbp->regionshape == FULLLINE ? "fullline" : 
+		vbp->regionshape == EXACT    ? "exact" 
 		                            : "rectangle",    0 ))); 
 	} 
  
  
+#
 # dot BUFOBJ 
 # dot BUFOBJ LINENUM 
 # dot BUFOBJ LINENUM, OFFSET 
@@ -1036,7 +1041,7 @@ setregion(screen, ...)
 # 	the beginning of that line.  When supplied with two arguments, 
 # 	both the line number and offset components are set. 
 #  
-#       Either the line number or offset (or both) may be the special 
+#	Either the line number or offset (or both) may be the special 
 #	string '$' which represents the last line in the buffer and the 
 #	last character on a line. 
 # 
@@ -1051,43 +1056,45 @@ setregion(screen, ...)
 #	 
 #  
 # 	Examples: 
+#
+#	my $cb = $VILE::current_buffer;	# Provide a convenient handle
+#					# for the current buffer.
 #  
-# 	$linenum = $curscr->dot;	# Fetch the line number at which dot 
+# 	$linenum = $cb->dot;		# Fetch the line number at which dot 
 # 					# is located. 
 #  
-# 	$curscr->dot($curscr->dot+1);	# Advance dot by one line 
-# 	$curscr->dot($curscr->dot('$') - 1); 
+# 	$cb->dot($cb->dot+1);		# Advance dot by one line 
+# 	$cb->dot($cb->dot('$') - 1); 
 # 					# Set dot to the penultimate line of 
 # 					# the buffer. 
 #  
-# 	$curscr->dot(25, 6);		# Set dot to line 25, character 6 
+# 	$cb->dot(25, 6);		# Set dot to line 25, character 6 
 #  
-# 	($ln,$off) = $curscr->dot;	# Fetch the current position 
-# 	$curscr->dot($ln+1,$off-1);	# and advance one line, but 
+# 	($ln,$off) = $cb->dot;		# Fetch the current position 
+# 	$cb->dot($ln+1,$off-1);		# and advance one line, but 
 # 					# back one character. 
 #  
-# 	$curscr->inplace_edit(1); 
-# 	$curscr->setregion(scalar($curscr->dot), $curscr->dot+5); 
-# 	@lines = <$curscr>; 
-# 	$curscr->dot($curscr->dot - 1); 
-# 	print $curscr @lines; 
+# 	$cb->inplace_edit(1); 
+# 	$cb->setregion(scalar($cb->dot), $cb->dot+5); 
+# 	@lines = <$cb>; 
+# 	$cb->dot($cb->dot - 1); 
+# 	print $cb @lines; 
 # 					# The above block takes (at 
 # 					# most) six lines starting at 
 # 					# the line DOT is on and moves 
 # 					# them before the previous 
 # 					# line. 
+#
  
 void 
-dot(screen, ...) 
-	VI screen 
+dot(vbp, ...) 
+	VileBuf *vbp
  
 	PREINIT: 
-	SCR *scrp;  
 	I32 gimme;  
  
 	PPCODE: 
-	scrp = (SCR *)screen;  
-	api_setup_fake_win(scrp);  
+	api_setup_fake_win(vbp, TRUE);
 	if ( items > 3) { 
 	    croak("Invalid number of arguments");  
 	} 
@@ -1095,17 +1102,17 @@ dot(screen, ...)
 	    I32 linenum; 
 	    /* Expect a line number or '$' */ 
  
-	    api_gotoline(scrp, sv2linenum(ST(1)));  
+	    api_gotoline(vbp, sv2linenum(ST(1)));  
  
 	    if (items == 3) 
 		DOT.o = sv2offset(ST(2));  
  
 	    /* Don't allow api_dotgline to change dot if dot is explicitly 
 	       set.  OTOH, simply querying dot doesn't count. */ 
-	    scrp->dot_inited = TRUE;  
+	    vbp->dot_inited = TRUE;  
 	    /* Indicate that DOT has been explicitly changed which means 
 	       that changes to DOT will be propogated upon return to vile */ 
-	    scrp->dot_changed = TRUE; 
+	    vbp->dot_changed = TRUE; 
 	} 
 	gimme = GIMME_V; 
 	if (gimme == G_SCALAR) { 
@@ -1116,9 +1123,194 @@ dot(screen, ...)
 	    XPUSHs(sv_2mortal(newSViv(DOT.o))); 
 	} 
  
+#
+# delete BUFOBJ
+#
+#	Deletes the currently set region.
+#
+#	Returns the buffer object if all went well, undef otherwise.
+#
+
+VileBuf *
+delete(vbp)
+    VileBuf *vbp
+
+    CODE:
+	if (api_delregion(vbp))
+	    RETVAL = vbp;
+	else
+	    RETVAL = 0;		/* which gets turned into undef */
+    OUTPUT:
+	RETVAL
+
+#
+# motion BUFOBJ MOTIONSTR
+#
+#	Moves dot (the current position) by the given MOTIONSTR in
+#	BUFOBJ.
+#
+#	When used in an array context, returns a 4-tuple containing
+#	the beginning and ending positions.  This 4-tuple is suitable
+#	for passing into setregion.
+#
+#	When used in a scalar context, returns the buffer object that
+#	it was called with.
+#
+#	In either an array or scalar context, if the motion string was
+#	bad, and undef is returned.  (Motions that don't work are okay,
+#	such as 'h' when you're already at the left edge of a line.  But
+#	attempted "motions" like 'inewstring' will result in an error.
+#
+#	Example:
+#
+#	# The following code deletes the previous 2 words and then
+#	# positions the cursor at the next occurrence of the word
+#	# "foo".
+#
+#	my $cb = $Vile::current_buffer;
+#	$cb->setregion($cb->motion("2b"))->delete;
+#				# delete the previous two words
+#
+#	$cb->setregion("2b")->delete;
+#				# another way to delete the previous
+#				# two words
+#
+#	$cb->motion("/foo/");	# position DOT at the beginning of
+#				# "foo".
+#
+#	$cb->dot($cb->dot);	# Make sure DOT gets propogated back.
+#				# (It won't get propogated unless
+#				# explicitly set.)
+#
+ 
+void
+motion(vbp,mstr)
+    VileBuf *vbp
+    char *mstr
+
+    PREINIT:
+	I32 gimme;
+	struct MARK old_DOT;
+	int status;
+
+    PPCODE:
+	old_DOT = DOT;
+    	status = api_motion(vbp, mstr);
+
+	gimme = GIMME_V; 
+	if (!status) {
+	    XPUSHs(&sv_undef);		/* return undef */
+	}
+	else if (gimme == G_SCALAR) {
+	    XPUSHs(ST(0));		/* return the buffer object */
+	}
+	else if (gimme == G_ARRAY) {
+	    I32 sl, el, so, eo;
+	    sl = line_no(curbp, old_DOT.l);
+	    so = old_DOT.o;
+	    el = line_no(curbp, DOT.l);
+	    eo = DOT.o;
+	    if (sl > el) {
+		I32 tl = sl;
+		sl = el;
+		el = tl;
+	    }
+	    if (sl == el && so > eo) {
+		I32 to = so;
+		so = eo;
+		eo = to;
+	    }
+	    XPUSHs(sv_2mortal(newSViv(sl)));
+	    XPUSHs(sv_2mortal(newSViv(so)));
+	    XPUSHs(sv_2mortal(newSViv(el)));
+	    XPUSHs(sv_2mortal(newSViv(eo)));
+	}
+ 
+#
+# attribute_cntl_a_sequences BUFOBJ 
+# 
+#	Causes the editor to attach attributes to the <Ctrl>A 
+#	sequences found in the buffer for the current region (which 
+#	may be set via setregion). 
+# 
+#	Returns the buffer object. 
+#
+ 
+VileBuf *
+attribute_cntl_a_sequences(vbp) 
+	VileBuf *vbp
+ 
+	CODE: 
+	api_setup_fake_win(vbp, TRUE);
+	attribute_cntl_a_sequences_over_region(&vbp->region); 
+	RETVAL = vbp; 
+ 
+	OUTPUT: 
+	RETVAL 
+ 
+#
+# unmark 
+# 
+#	Clear the "modified" status of the buffer. 
+# 
+#	Returns the buffer object. 
+#
+ 
+VileBuf *
+unmark(vbp) 
+	VileBuf *vbp
+ 
+	CODE: 
+	api_setup_fake_win(vbp, TRUE);
+	unmark(0,0); 
+	RETVAL = vbp; 
+ 
+	OUTPUT: 
+	RETVAL 
+
+#
+# command BUFOBJ CMDLINE 
+# 
+#	executes the given vile command line (as if it were typed
+#	on the : line) with BUFOBJ as the current buffer. 
+#
+#	Returns BUFOBJ if successful, otherwise returns undef.
+# 
+ 
+void
+command(vbp,cline)  
+	VileBuf *vbp
+	char *cline;  
+ 
+    PREINIT:
+	int status;
+    PPCODE:  
+	api_setup_fake_win(vbp, TRUE);
+	status = docmd(cline,FALSE,1);  
+	if (status) {
+	    XPUSHs(ST(0));		/* return buffer object */
+	}
+	else {
+	    XPUSHs(&sv_undef);		/* return undef */
+	}
+  
+
+MODULE = Vile	PACKAGE = Vile
+
+void
+Warn(warning)
+	char *warning;
+
+	PREINIT:
+	int i;
+	CODE:
+	mlforce("%s",SvPV(GvSV(errgv), na));
+	/* don't know if this actually works... */
+	sv_catpv(GvSV(errgv),warning);
+
  
  
- 
+#
 # mlreply PROMPT 
 # mlreply PROMPT, INITIALVALUE 
 # 
@@ -1131,6 +1323,7 @@ dot(screen, ...)
 #	Returns the user's response string.  If the user aborts 
 #	(via the use of the escape key) the query, an undef is 
 #	returned. 
+#
  
 SV * 
 mlreply(prompt, ...) 
@@ -1157,6 +1350,7 @@ mlreply(prompt, ...)
 	OUTPUT: 
 	RETVAL 
  
+#
 # mlreply_no_opts PROMPT 
 # mlreply_no_opts PROMPT, INITIALVALUE 
 # 
@@ -1167,6 +1361,7 @@ mlreply(prompt, ...)
 #	Returns the user's response string.  If the user aborts 
 #	(via the use of the escape key) the query, an undef is 
 #	returned. 
+#
  
 SV * 
 mlreply_no_opts(prompt, ...) 
@@ -1193,6 +1388,7 @@ mlreply_no_opts(prompt, ...)
 	OUTPUT: 
 	RETVAL 
  
+#
 # mlreply_file PROMPT 
 # mlreply_file PROMPT, INITIALVALUE 
 # 
@@ -1204,6 +1400,7 @@ mlreply_no_opts(prompt, ...)
 #	Returns the user's response string.  If the user aborts 
 #	(via the use of the escape key) the query, an undef is 
 #	returned. 
+#
  
 SV * 
 mlreply_file(prompt, ...) 
@@ -1229,6 +1426,7 @@ mlreply_file(prompt, ...)
 	OUTPUT: 
 	RETVAL 
  
+#
 # mlreply_dir PROMPT 
 # mlreply_dir PROMPT, INITIALVALUE 
 # 
@@ -1240,6 +1438,7 @@ mlreply_file(prompt, ...)
 #	Returns the user's response string.  If the user aborts 
 #	(via the use of the escape key) the query, an undef is 
 #	returned. 
+#
  
 SV * 
 mlreply_dir(prompt, ...) 
@@ -1265,48 +1464,23 @@ mlreply_dir(prompt, ...)
 	OUTPUT: 
 	RETVAL 
 
-# attribute_cntl_a_sequences BUFOBJ 
+
+#
+# command CMDLINE 
 # 
-#	Causes the editor to attach attributes to the <Ctrl>A 
-#	sequences found in the buffer for the current region (which 
-#	may be set via setregion). 
+# 	executes the given vile command line (as if it were typed
+#	on the : line). 
 # 
-#	Returns the buffer object. 
+# 	This is not exactly safe in all contexts.  (It is easy to
+#	cause seg faults.)
+#
  
-VI 
-attribute_cntl_a_sequences(screen) 
-	VI screen 
+int  
+command(cline)  
+	char *cline;  
  
-	PREINIT: 
-	SCR *scrp;   
- 
-	CODE: 
-	scrp = (SCR *)screen;   
-	api_setup_fake_win(scrp);   
-	attribute_cntl_a_sequences_over_region(&scrp->region); 
-	RETVAL = screen; 
- 
-	OUTPUT: 
-	RETVAL 
- 
-# unmark 
-# 
-#	Clear the "modified" status of the buffer. 
-# 
-#	Returns the buffer object. 
- 
-VI 
-unmark(screen) 
-	VI screen 
- 
-	PREINIT: 
-	SCR *scrp;   
- 
-	CODE: 
-	scrp = (SCR *)screen;   
-	api_setup_fake_win(scrp);   
-	unmark(0,0); 
-	RETVAL = screen; 
- 
-	OUTPUT: 
-	RETVAL 
+	CODE:  
+	RETVAL = docmd(cline,FALSE,1);  
+  
+	OUTPUT:  
+	RETVAL  

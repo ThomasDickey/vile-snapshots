@@ -1,5 +1,18 @@
 /* 
  * api.c -- (roughly) nvi's api to perl and tcl
+ *
+ * Status of this file:  Many of the functions in this file are unused.
+ * Early on, I was trying for compatibility with nvi's perl interface.
+ * Now that I'm not, I've gotten lazy and have been skipping this layer.
+ *
+ * Some of the code in this file is still used and is, in fact, very
+ * important.  There's other code which may simply be removed.
+ *
+ * OTOH, if someone ever does a TCL interface (it probably won't
+ * be me -- I really like Perl and would probably lack motivation to
+ * do a proper job of it), some of the as now unused stuff might come
+ * in handy.
+ *				- kev 4/7/1998
  */
 
 #include "estruct.h"
@@ -8,6 +21,8 @@
 #if OPT_PERL
 
 #include "api.h"
+
+extern REGION *haveregion;
 
 static WINDOW *curwp_after;
 
@@ -137,22 +152,28 @@ lreplace(char *s, int len)
 }
 
 void 
-api_setup_fake_win(SCR *sp) 
+api_setup_fake_win(VileBuf *vbp, int do_delete) 
 {
     if (curwp_after == 0)
 	curwp_after = curwp;
 
-    if (sp->fwp) {
-	curwp = sp->fwp;
+    if (vbp->fwp) {
+	curwp = vbp->fwp;
     }
     else {
-	(void) push_fake_win(sp->bp);
-	sp->fwp = curwp;
-	sp->changed = 0;
+	(void) push_fake_win(vbp->bp);
+	vbp->fwp = curwp;
+	vbp->changed = 0;
     }
 
-    /* Should be call make_current() for this? */
+    /* Should we call make_current() for this? */
     curbp = curwp->w_bufp;
+
+    if (vbp->ndel > 0 && do_delete) {
+	/* Do lazy delete; FALSE means don't put text in kill buffer */
+	ldelete(vbp->ndel, FALSE);
+	vbp->ndel = 0;
+    }
 }
 
 /* I considered three possible solutions for preventing stale 
@@ -175,10 +196,10 @@ api_setup_fake_win(SCR *sp)
        beef up the code which deals with attributes to allow 
        external pointers to the attributes.  It wouldn't 
        do for one of the attribute lists to be freed up with 
-       one of our SCR structures still pointer to one of the 
+       one of our VileBuf structures still pointer to one of the 
        structures. 
  
-    3) Make line.c and undo.c aware of the SCR regions. 
+    3) Make line.c and undo.c aware of the VileBuf regions. 
        This solution has no serious downside aside from 
        further bulking up the files in question. 
  
@@ -192,15 +213,15 @@ MARK *
 api_mark_iterator(BUFFER *bp, int *iterp) 
 { 
     MARK *mp = NULL; 
-    SCR  *sp = bp2sp(bp); 
+    VileBuf  *vbp = bp2vbp(bp); 
  
-    if (sp != NULL) { 
+    if (vbp != NULL) { 
 	switch (*iterp) { 
 	    case 0: 
-		mp = &sp->region.r_orig; 
+		mp = &vbp->region.r_orig; 
 		break; 
 	    case 1: 
-		mp = &sp->region.r_end; 
+		mp = &vbp->region.r_end; 
 		break; 
 	    default: 
 		break; 
@@ -219,12 +240,12 @@ api_mark_iterator(BUFFER *bp, int *iterp)
  *
  */
 int 
-api_gotoline(SCR *sp, int lno) 
+api_gotoline(VileBuf *vbp, int lno) 
 {
 #if !SMALLER
     int count;
     LINE *lp;
-    BUFFER *bp = sp->bp;
+    BUFFER *bp = vbp->bp;
 
     if (!b_is_counted(bp))
 	bsizes(bp);
@@ -260,12 +281,12 @@ api_gotoline(SCR *sp, int lno)
 }
 
 int
-api_aline(SCR *sp, int lno, char *line, int len)
+api_aline(VileBuf *vbp, int lno, char *line, int len)
 {
-    api_setup_fake_win(sp); 
+    api_setup_fake_win(vbp, TRUE); 
 
-    if (lno >= 0 && lno < line_count(sp->bp)) {
-	api_gotoline(sp, lno+1); 
+    if (lno >= 0 && lno < line_count(vbp->bp)) {
+	api_gotoline(vbp, lno+1); 
 	linsert_chars(line, len);
 	lnewline();
     }
@@ -280,21 +301,33 @@ api_aline(SCR *sp, int lno, char *line, int len)
 }
 
 int
-api_dotinsert(SCR *sp, char *text, int len) { 
-    api_setup_fake_win(sp); 
+api_dotinsert(VileBuf *vbp, char *text, int len) { 
+
+    /* Set up the fake window; but we'll do any pending deletes
+       ourselves. */
+    api_setup_fake_win(vbp, FALSE); 
+
+    /* FIXME: Check to see if the buffer needs to be modified at all.
+       We'll save our undo space better this way.  We'll also be able
+       to better preserve the user's marks. */
+
     linsert_chars(text, len); 
+    if (vbp->ndel) {
+	ldelete(vbp->ndel, FALSE);
+	vbp->ndel = 0;
+    }
     return TRUE; 
 } 
  
 int 
-api_dline(SCR *sp, int lno)
+api_dline(VileBuf *vbp, int lno)
 {
     int status = TRUE;
 
-    api_setup_fake_win(sp); 
+    api_setup_fake_win(vbp, TRUE); 
 
-    if (lno > 0 && lno <= line_count(sp->bp)) {
-	api_gotoline(sp, lno); 
+    if (lno > 0 && lno <= line_count(vbp->bp)) {
+	api_gotoline(vbp, lno); 
 	gotobol(TRUE,TRUE);
 	ldelete(llength(DOT.l) + 1, FALSE); 
     }
@@ -305,14 +338,14 @@ api_dline(SCR *sp, int lno)
 }
 
 int
-api_gline(SCR *sp, int lno, char **linep, int *lenp)
+api_gline(VileBuf *vbp, int lno, char **linep, int *lenp)
 {
     int status = TRUE;
 
-    api_setup_fake_win(sp); 
+    api_setup_fake_win(vbp, TRUE); 
 
-    if (lno > 0 && lno <= line_count(sp->bp)) {
-	api_gotoline(sp, lno); 
+    if (lno > 0 && lno <= line_count(vbp->bp)) {
+	api_gotoline(vbp, lno); 
 	*linep = DOT.l->l_text;
 	*lenp = llength(DOT.l);
 	if (*lenp == 0) {
@@ -331,22 +364,22 @@ api_gline(SCR *sp, int lno, char **linep, int *lenp)
 }
 
 int
-api_dotgline(SCR *sp, char **linep, int *lenp) 
+api_dotgline(VileBuf *vbp, char **linep, int *lenp, int *neednewline) 
 { 
  
-    api_setup_fake_win(sp); 
-    if (!sp->dot_inited) {  
-	DOT = sp->region.r_orig;	/* set DOT to beginning of region */ 
-	sp->dot_inited = 1; 
+    api_setup_fake_win(vbp, TRUE); 
+    if (!vbp->dot_inited) {  
+	DOT = vbp->region.r_orig;	/* set DOT to beginning of region */ 
+	vbp->dot_inited = 1; 
     } 
  
     /* FIXME: Handle rectangular regions. */ 
  
     if (   is_header_line(DOT, curbp)  
-        || (   DOT.l == sp->region.r_end.l  
-	    && (   sp->regionshape == FULLLINE 
-	        || (   sp->regionshape == EXACT 
-		    && DOT.o >= sp->region.r_end.o)))) 
+        || (   DOT.l == vbp->region.r_end.l  
+	    && (   vbp->regionshape == FULLLINE 
+	        || (   vbp->regionshape == EXACT 
+		    && DOT.o >= vbp->region.r_end.o)))) 
     { 
 	return FALSE; 
     } 
@@ -354,8 +387,8 @@ api_dotgline(SCR *sp, char **linep, int *lenp)
     *linep = DOT.l->l_text + DOT.o; 
     *lenp = llength(DOT.l) - DOT.o; 
  
-    if (sp->regionshape == EXACT && DOT.l == sp->region.r_end.l) { 
-	*lenp -= llength(DOT.l) - sp->region.r_end.o; 
+    if (vbp->regionshape == EXACT && DOT.l == vbp->region.r_end.l) { 
+	*lenp -= llength(DOT.l) - vbp->region.r_end.o; 
     } 
  
     if (*lenp < 0) 
@@ -370,37 +403,44 @@ api_dotgline(SCR *sp, char **linep, int *lenp)
 			     */ 
     } 
  
-    if (sp->inplace_edit) { 
-	if (sp->regionshape == EXACT && DOT.l == sp->region.r_end.l) 
-	    ldelete(*lenp, TRUE); 
-	else 
-	    ldelete(*lenp + 1, TRUE); 
+    if (vbp->inplace_edit) { 
+	if (vbp->regionshape == EXACT && DOT.l == vbp->region.r_end.l) {
+	    vbp->ndel = *lenp;
+	    *neednewline = 0;
+	}
+	else {
+	    vbp->ndel = *lenp + 1;
+	    *neednewline = 1;
+	}
     } 
     else { 
-	if (sp->regionshape == EXACT && DOT.l == sp->region.r_end.l) 
+	if (vbp->regionshape == EXACT && DOT.l == vbp->region.r_end.l) {
 	    DOT.o += *lenp; 
+	    *neednewline = 0;
+	}
 	else { 
 	    DOT.l = lforw(DOT.l); 
 	    DOT.o = 0; 
+	    *neednewline = 1;
 	} 
     } 
     return TRUE; 
 } 
  
 int 
-api_sline(SCR *sp, int lno, char *line, int len)
+api_sline(VileBuf *vbp, int lno, char *line, int len)
 {
     int status = TRUE;
 
-    api_setup_fake_win(sp); 
+    api_setup_fake_win(vbp, TRUE); 
 
-    if (lno > 0 && lno <= line_count(sp->bp)) {
-	api_gotoline(sp, lno); 
+    if (lno > 0 && lno <= line_count(vbp->bp)) {
+	api_gotoline(vbp, lno); 
 	if (   DOT.l->l_text != line 
 	    && (   llength(DOT.l) != len
 	        || memcmp(line, DOT.l->l_text, len) != 0)) {
 	    lreplace(line, len);
-	    sp->changed = 1;
+	    vbp->changed = 1;
 	}
     }
     else
@@ -410,19 +450,19 @@ api_sline(SCR *sp, int lno, char *line, int len)
 }
 
 int
-api_iline(SCR *sp, int lno, char *line, int len)
+api_iline(VileBuf *vbp, int lno, char *line, int len)
 {
-    return api_aline(sp, lno-1, line, len);
+    return api_aline(vbp, lno-1, line, len);
 }
 
 int
-api_lline(SCR *sp, int *lnop)
+api_lline(VileBuf *vbp, int *lnop)
 {
-    *lnop = line_count(sp->bp);
+    *lnop = line_count(vbp->bp);
     return TRUE;
 }
 
-SCR *
+VileBuf *
 api_fscreen(int id, char *name)
 {
     BUFFER *bp;
@@ -430,32 +470,111 @@ api_fscreen(int id, char *name)
     bp = find_b_file(name);
 
     if (bp)
-	return api_bp2sp(bp);
+	return api_bp2vbp(bp);
     else
 	return 0;
 }
 
-/* FIXME: return SCR * for retbpp */
 int
-api_edit(SCR *sp, char *fname, SCR **retspp, int newscreen)
+api_delregion(VileBuf *vbp)
+{
+
+    api_setup_fake_win(vbp, TRUE); 
+
+    haveregion = NULL;
+    DOT = vbp->region.r_orig;
+    MK  = vbp->region.r_end;
+    regionshape = vbp->regionshape;
+
+    if (vbp->regionshape == FULLLINE) {
+	MK.l = lback(MK.l);
+    }
+
+    return killregion();
+}
+
+int
+api_motion(VileBuf *vbp, char *mstr)
+{
+    const CMDFUNC *cfp;
+    char *mp;
+    int   c, f, n, s;
+
+    if (mp == NULL)
+	return FALSE;
+
+    api_setup_fake_win(vbp, TRUE); 
+
+    mp = mstr + strlen(mstr);
+
+    mapungetc(abortc | NOREMAP);
+    /* Should we allow remapping?  Seems to me like it introduces too
+       many variables. */
+    while (mp-- > mstr) {
+	mapungetc(*mp | NOREMAP);
+    }
+
+    while (mapped_ungotc_avail()) {
+
+	/* Get the character */
+	c = kbd_seq();
+
+	if (ABORTED(c)) {
+	    if (mapped_ungotc_avail()) {
+		/* Not our abortc */
+		while (mapped_ungotc_avail())
+		    (void) kbd_seq();
+		return FALSE;
+	    }
+	    else
+		break;			/* okay, it's ours */
+	}
+
+	f = FALSE;
+	n = 1;
+
+	do_repeats(&c,&f,&n);
+
+	/* and execute the command */
+	cfp = kcod2fnc(c);
+	if ( (cfp != NULL) && ((cfp->c_flags & MOTION) != 0))
+	    s = execute(cfp, f, n);
+	else {
+	    while (mapped_ungotc_avail())
+		(void) kbd_seq();
+	    return FALSE;
+	}
+    }
+
+    return TRUE;
+}
+
+int
+api_edit(VileBuf *vbp, char *fname, VileBuf **retvbpp)
 {
     BUFFER *bp;
     if (fname == NULL) {
-	/* FIXME: This should probably give you a truly anonymous buffer */
-	fname = (char *) UNNAMED_BufName;
+	char bufname[NBUFN];
+	static int unnamed_cnt = 0;
+	sprintf(bufname, "[unnamed-%d]", ++unnamed_cnt);
+	bp = bfind(bufname, 0);
+	bp->b_active = TRUE;
     }
-    bp = getfile2bp(fname, FALSE, FALSE);
-    if (bp == 0) {
-	*retspp = 0;
-	return 1;
+    else {
+	bp = getfile2bp(fname, FALSE, FALSE);
+	if (bp == 0) {
+	    *retvbpp = 0;
+	    return 1;
+	}
     }
-    *retspp = api_bp2sp(bp);
-    api_setup_fake_win(*retspp); 
+
+    *retvbpp = api_bp2vbp(bp);
+    api_setup_fake_win(*retvbpp, TRUE); 
     return !swbuffer_lfl(bp, FALSE);
 }
 
 int
-api_swscreen(SCR *oldsp, SCR *newsp)
+api_swscreen(VileBuf *oldsp, VileBuf *newsp)
 {
     /*  
      * FIXME: Calling api_command_cleanup nukes various state, like DOT 
@@ -465,7 +584,7 @@ api_swscreen(SCR *oldsp, SCR *newsp)
      * call. 
      * 
      * I see two different solutions for this.  1) Maintain a copy of 
-     * dot in the SCR structure. 2) Don't destroy the fake windows by 
+     * dot in the VileBuf structure. 2) Don't destroy the fake windows by 
      * popping them off.  Which means that we either teach the rest 
      * of vile about fake windows (scary) or we temporarily unlink the 
      * fake windows from the buffer list. 
@@ -486,8 +605,9 @@ api_swscreen(SCR *oldsp, SCR *newsp)
      */ 
     api_command_cleanup();		/* pop the fake windows */
 
-    swbuffer(sp2bp(oldsp));
-    swbuffer(sp2bp(newsp));
+    if (oldsp)
+	swbuffer(vbp2bp(oldsp));
+    swbuffer(vbp2bp(newsp));
     curwp_after = curwp;
 }
 
@@ -505,7 +625,8 @@ api_command_cleanup(void)
     if (curwp_after == 0)
 	curwp_after = curwp;
 
-    /* Propagate DOT for the fake windows that need it */ 
+    /* Propagate DOT for the fake windows that need it;
+       Also do any outstanding (deferred) deletes. */ 
  
     for_each_window(wp) { 
 	if (!is_fake_win(wp)) { 
@@ -514,7 +635,11 @@ api_command_cleanup(void)
 	       when we hit one that isn't fake. */ 
 	    break; 
 	} 
-	if (bp2sp(wp->w_bufp)->dot_changed) { 
+
+	/* Do outstanding delete (if any) */
+	api_setup_fake_win(bp2vbp(wp->w_bufp), TRUE);
+
+	if (bp2vbp(wp->w_bufp)->dot_changed) { 
 	    if (curwp_after->w_bufp == wp->w_bufp) { 
 		curwp_after->w_dot = wp->w_dot; 
 		curwp_after->w_flag |= WFHARD; 
@@ -544,13 +669,13 @@ api_command_cleanup(void)
     /* Pop the fake windows */
 
     while ((bp = pop_fake_win(curwp_after)) != NULL) {
-	if (bp2sp(bp) != NULL)
-	    bp2sp(bp)->fwp = 0;
-	    bp2sp(bp)->dot_inited = 0;		/* for next time */ 
-	    bp2sp(bp)->dot_changed = 0;		/* ditto */ 
-	    if (bp2sp(bp)->changed) {
+	if (bp2vbp(bp) != NULL)
+	    bp2vbp(bp)->fwp = 0;
+	    bp2vbp(bp)->dot_inited = 0;		/* for next time */ 
+	    bp2vbp(bp)->dot_changed = 0;		/* ditto */ 
+	    if (bp2vbp(bp)->changed) {
 		chg_buff(bp, WFHARD);
-		bp2sp(bp)->changed = 0;
+		bp2vbp(bp)->changed = 0;
 	    }
     }
 
@@ -563,41 +688,42 @@ api_command_cleanup(void)
 void
 api_free_private(void *vsp)
 {
-    SCR *sp = (SCR *) vsp;
+    VileBuf *vbp = (VileBuf *) vsp;
 
-    if (sp) {
-	sp->bp->b_api_private = 0;
+    if (vbp) {
+	vbp->bp->b_api_private = 0;
 #if OPT_PERL
-	perl_free_handle(sp->perl_handle);
+	perl_free_handle(vbp->perl_handle);
 #endif
-	free(sp);
+	free(vbp);
     }
 }
 
-/* Given a buffer pointer, returns a pointer to a SCR structure,
+/* Given a buffer pointer, returns a pointer to a VileBuf structure,
  * creating it if necessary.
  */
-SCR *
-api_bp2sp(BUFFER *bp)
+VileBuf *
+api_bp2vbp(BUFFER *bp)
 {
-    SCR *sp;
+    VileBuf *vbp;
 
-    sp = bp2sp(bp);
-    if (sp == 0) {
-	sp = typecalloc(SCR);
-	if (sp != 0) {
-	    bp->b_api_private = sp;
-	    sp->bp = bp;
-	    sp->regionshape = FULLLINE; 
-	    sp->region.r_orig.l = 
-	    sp->region.r_end.l  = buf_head(bp); 
-	    sp->region.r_orig.o = 
-	    sp->region.r_end.o  = 0; 
-	    sp->dot_inited = 0; 
-	    sp->dot_changed = 0;  
+    vbp = bp2vbp(bp);
+    if (vbp == 0) {
+	vbp = typecalloc(VileBuf);
+	if (vbp != 0) {
+	    bp->b_api_private = vbp;
+	    vbp->bp = bp;
+	    vbp->regionshape = FULLLINE; 
+	    vbp->region.r_orig.l = 
+	    vbp->region.r_end.l  = buf_head(bp); 
+	    vbp->region.r_orig.o = 
+	    vbp->region.r_end.o  = 0; 
+	    vbp->dot_inited = 0; 
+	    vbp->dot_changed = 0;  
+	    vbp->ndel = 0;
 	}
     }
-    return sp;
+    return vbp;
 }
 
 #endif

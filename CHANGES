@@ -1,5 +1,72 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (kev) 980409 (q)
+ 	+ api.c (api_setup_fake_win): Added another parameter to this
+	  function which controls whether the deferred deletes get
+	  done or not.  Fixed all callers.
+	  (api_dotinsert, api_dotgline, api_setup_fake_win, api_bp2vbp,
+	  api_command_cleanup): Added code for doing deferred deletes.
+	  (api_delregion, api_motion): New functions.
+	  (api_edit): Rewritten to better deal with anonymous buffers.
+	  (api_swscreen): Permit oldsp to be NULL.
+	+ api.c, api.h, perl.xs (SCR, VileBuf): Renamed SCR to VileBuf.
+	  Other renamings done as well so that names of local variables
+	  make more sense.
+	  (api_dotgline, READ): Added new (output) parameter to
+	  api_dotgline which indicates if a newline is needed or not.
+	+ map.c, proto.h (mapped_ungotc_avail): New function.
+	+ perl.xs (svStartLine, svStopLine, svScreenId, svcurscr):
+	  Eliminated these static globals.  More importantly, this
+	  means that $VI::StartLine, $VI::StopLine, $VI::ScreenId,
+	  and $curscr are no longer available from perl.
+	  (svcurbuf): New static global which plays a similar role to
+	  the now defunct svcurscr.
+	  (svcurbuf_accessors): new static global variable.
+	  (newVBrv): Renamed from newVIrv.  Also, no blesses the object
+	  it creates into Vile::Buffer instead of VI.
+	  (perl): Don't call getregion unless haveregion is non-NULL.
+	  Fixes a nasty infinite loop bug in getregion().  Also
+	  removed initialization of svStartLine, svStopLine, etc.
+	  (VI, Vile, Vile::Buffer): The VI package is no more.  Everything
+	  has been renamed to go into either the Vile package or the
+	  Vile::Buffer package.
+	  (svcurbuf_set): Magically called when $Vile::current_buffer gets
+	  set.
+	  (perl_init): Nuked references to svStartLine, svStopLine, etc.
+	  Also added magic to svcurbuf so that svcurbuf_set is called
+	  whenever $vile::current_buffer is assigned to from Perl.
+	  (perl_eval): Or'd in the G_KEEPERR flag in the call to
+	  perl_eval_sv.  The lack of this flag was preventing error messages
+	  from getting printed.
+	  (current_buffer): New method in both Vile and Vile::Buffer.
+	  (Msg, AppendLine, DelLine, GetLine, GetLines, SetLine, InsertLine,
+	  LastLine, SwitchScreen): Nuked.
+	  (PRINT, READLINE): Documented.
+	  (insert): Alias for PRINT.
+	  (new, edit): edit is an alias for new and new was renamed from Edit.
+	  (setregion): Documentation updates; motions as regions.
+	  (delete, motion): New methods.
+	  (command): Now a method in both Vile and Vile::Buffer.
+	+ ptypemap (T_VileBuf): Renamed from T_VI.  Slight change in message
+	  when buffer no longer exists.
+	+ region.c (getregion): Prevent infinite loop when MK and DOT are in
+	  different buffers.  Print a BUG: message when this happens.
+	+ select.c (sel_extend): Added FIXME comment at approximate place in
+	  the code where we should check to make sure DOT and MK are in the
+	  same buffer.  (BTW, to reproduce this bug (where they aren't the
+	  same), get into xvile, split the screen and put a different buffer
+	  in each. Now click with the mouse twice, very rapidly, each click
+	  falling on alternate sides of the middle mode line.  After doing
+	  this, DOT will be in one buffer and MK in the other.  There's
+	  probably other places that need to fixed too.
+	+ x11.c (x_preparse_args): When adding the event handler, for
+	  x_process_event, or in (Button1MotionMask | Button3MotionMask)
+	  instead of ButtonMotionMask.  It seems that my X server on linux
+	  generates motion events regardless of whether any mouse buttons
+	  are pressed when ButtonMotionMask is used.  I think this is
+	  actually a bug in the X server, but the above is a more precise
+	  way of saying what we really want to do anyway.
+
  (kev) 980403 (p) 
 	+ hgrep.pl, glob2re.pl, visit.pl: New files which implement 
 	  a recursive grep with hypertext links in perl. 
