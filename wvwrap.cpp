@@ -10,7 +10,7 @@
  * Note:  A great deal of the code included in this file is copied
  * (almost verbatim) from other vile modules.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.5 2001/09/18 09:49:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.6 2002/02/26 23:33:49 cmorgan Exp $
  */
 
 #include "w32vile.h"
@@ -57,7 +57,7 @@ nomem(void)
     char buf[512], *tmp;
 
     tmp = buf;
-    fmt_win32_error(E_OUTOFMEMORY, &tmp, 0);
+    fmt_win32_error((ULONG) E_OUTOFMEMORY, &tmp, 0);
     MessageBox(NULL, buf, "wvwrap", MB_OK|MB_ICONSTOP);
     return (1);
 }
@@ -139,13 +139,15 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
          int       nCmdShow        // show state of window
   )
 {
-    BSTR      bstr;
-    size_t    dynbuf_len, dynbuf_idx;
-    HRESULT   hr;
-    char      *lclbuf = NULL, tmp[512], *dynbuf;
-    OLECHAR   *olestr;
-    LPUNKNOWN punk;
-    IVileAuto *pVileAuto;
+    BSTR         bstr;
+    size_t       dynbuf_len, dynbuf_idx;
+    HRESULT      hr;
+    HWND         hwnd;
+    char         *lclbuf = NULL, tmp[512], *dynbuf;
+    VARIANT_BOOL minimized;
+    OLECHAR      *olestr;
+    LPUNKNOWN    punk;
+    IVileAuto    *pVileAuto;
 
     make_argv(lpCmdLine);
 
@@ -256,7 +258,15 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
         pVileAuto->VileKeys(bstr);
         SysFreeString(bstr);
     }
-    pVileAuto->ForegroundWindow();
+
+    // Set foreground window using a method that's compatible with win2k
+    pVileAuto->get_MainHwnd((LONG *) &hwnd);
+    (void) SetForegroundWindow(hwnd);
+
+    // If editor minimized, restore window
+    hr = pVileAuto->get_IsMinimized(&minimized);
+    if (SUCCEEDED(hr) && minimized)
+        hr = pVileAuto->Restore();
     pVileAuto->Release();
     CoUninitialize(); // shut down COM
     return (0);

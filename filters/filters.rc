@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.150 2002/02/17 23:13:43 tom Exp $
+; $Id: filters.rc,v 1.151 2002/02/27 11:09:05 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -23,6 +23,7 @@ define-mode awk
 	suf '\.awk$'
 	pre '^#!\s*\/.*awk\>\(\s*-[a-z]\+\)*\s*$'
 	cindent
+	cindent-chars $fences
 	comment-prefix '^\s*#'
 	comments   '^\s*#\s\+\s*$'
 ~endwith
@@ -58,6 +59,7 @@ define-mode cpp
 	before "c"
 	suf '\(\.\(CC\|cpp\|cxx\|hxx\|hh\)$\)'
 	cindent
+	cindent-chars   &cat ':#' $fences
 	filtername	'vile-c-filt -k cpp'
 ~endwith
 
@@ -129,6 +131,7 @@ define-mode esql
 ~with define-submode esql
 	suf '\.\(ec\|pc\|ppc\)$'
 	cindent
+	cindent-chars &cat ':#' $fences
 ~endwith
 
 ; forms definition.
@@ -200,6 +203,7 @@ define-mode java
 	suf '\.java$'
 	filtername 'vile-c-filt -p -k java'
 	cindent
+	cindent-chars &cat ':' $fences
 ~endwith
 
 define-mode js
@@ -207,6 +211,7 @@ define-mode js
 	suf '\.js$'
 	filtername 'vile-c-filt -p -k js'
 	cindent
+	cindent-chars &cat ':' $fences
 ~endwith
 
 define-mode key
@@ -227,6 +232,7 @@ define-mode lex
 ~with define-submode lex
 	suf '\.\(l\|lex\|flex\|flx\)$'
 	cindent
+	cindent-chars &cat ':#' $fences
 ~endwith
 
 ; actually, m4 used for autoconf scripts, which is Bourne-shell
@@ -318,6 +324,7 @@ define-mode perl
 	suf '\.\(pl\|pm\)$'
 	before "mail"
 	cindent
+	cindent-chars  &cat ':' $fences
 	comment-prefix '^\s*#'
 	comments       '^\s*#\s*$'
 	fence-pairs    '{}()[]<>'
@@ -515,6 +522,7 @@ define-mode vlog
 ~with define-submode vlog
 	suf '\.v$'
 	cindent
+	cindent-chars $fences
 ~endwith
 
 ; "define-mode vile" is builtin
@@ -580,12 +588,14 @@ define-mode xs
 ~with define-submode xs
 	suf '\.xs$'
 	cindent
+	cindent-chars &cat ':' $fences
 ~endwith
 
 define-mode yacc
 ~with define-submode yacc
 	suf '\.\(y\|yacc\)$'
 	cindent
+	cindent-chars &cat ':#' $fences
 ~endwith
 
 store-procedure HighlightFilter 'Invoke syntax-highlighting filter on the current buffer'

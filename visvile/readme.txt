@@ -2,7 +2,7 @@
 Visual Studio - Vile Integration
 ================================
 
-Copyright (C) 1998-2000 Clark Morgan
+Copyright (C) 1998-2002 Clark Morgan
 
 VisVile is a Visual Studio add-in that permits Winvile to replace the
 default text editor in certain situations.  Complete documentation of this
@@ -26,6 +26,15 @@ GNU General Public License for more details.
 
 Change Log
 ==========
+2/02
+- makefiles converted to DevStudio V6.0
+- visvile modified to pop winvile to foreground on Win2K/XP
+- fix clipped text in configuration dialog (at various geometries)
+- if the build log from an unsuccessful build is placed in winvile's
+  error buffer (visvile config option), the editor's CWD is changed
+  to match the build log's parent directory.  Without this change,
+  visvile's CWD defaults to <WinDir>\system32 on a Win2K host.
+
 6/99 (visvile does not change)
 - winvile modified to permit editor to synchronize its current buffer (at
   its current line) with the DevStudio text editor.  Very useful feature

@@ -10,7 +10,7 @@
  *
  *                samples\com\oleaut\hello\hello .
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.h,v 1.5 1999/05/22 11:49:54 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.h,v 1.6 2002/02/26 23:33:49 cmorgan Exp $
  */
 
 #ifndef W32OLE_H
@@ -21,9 +21,9 @@
     #define TO_OLE_STRING(str) str
 #else
     #define FROM_OLE_STRING(str) ConvertToAnsi(str)
-    char* ConvertToAnsi(OLECHAR *szW);
+    static char* ConvertToAnsi(OLECHAR *szW);
     #define TO_OLE_STRING(str) ConvertToUnicode(str)
-    OLECHAR* ConvertToUnicode(char *szA);
+    static OLECHAR* ConvertToUnicode(char *szA);
 #endif
 
 #include "winviletlb.h"
@@ -65,10 +65,13 @@ public:
     STDMETHOD(get_FullName)(BSTR *pbstr);
     STDMETHOD(get_InsertMode)(VARIANT_BOOL *pbool);
     STDMETHOD(get_IsMinimized)(VARIANT_BOOL *pbool);
+    STDMETHOD(get_MainHwnd)(LONG *phwnd);
     STDMETHOD(get_Name)(BSTR *pbstr);
     STDMETHOD(get_Parent)(IVileAuto **ppvile);
     STDMETHOD(put_Visible)(VARIANT_BOOL bVisible);
     STDMETHOD(get_Visible)(VARIANT_BOOL *pbool);
+
+    // Note that ForegroundWindow() is not very useful on Win2K or XP...
     STDMETHOD(ForegroundWindow)();
     STDMETHOD(Minimize)();
     STDMETHOD(Quit)();

@@ -5,7 +5,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995-2000 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.115 2002/02/18 00:12:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.116 2002/03/01 01:53:28 tom Exp $
  *
  */
 #include "estruct.h"
@@ -53,70 +53,6 @@ static char tagname[NFILEN + 2];	/* +2 since we may add a tab later */
 static int update_tagstack(BUFFER *bp);
 #  endif
 #endif /* OPT_SHOW_TAGS */
-
-#if OPT_TAGS_CMPL
-
-static BI_NODE *
-new_tags(BI_DATA * a)
-{
-    BI_NODE *p = typecalloc(BI_NODE);
-
-    p->value = *a;
-    BI_KEY(p) = strmalloc(a->bi_key);
-    return p;
-}
-
-static void
-old_tags(BI_NODE * a)
-{
-    free(BI_KEY(a));
-    free(TYPECAST(char, a));
-}
-
-/*ARGSUSED*/
-static void
-dpy_tags(BI_NODE * a GCC_UNUSED, int level GCC_UNUSED)
-{
-#if OPT_TRACE
-    while (level-- > 0)
-	TRACE((". "));
-    TRACE(("%s (%d)\n", BI_KEY(a), a->balance));
-#endif
-}
-
-#define BI_DATA0 {{0}, 0, {0}}
-#define BI_TREE0 0, 0, BI_DATA0
-static BI_TREE tags_tree =
-{new_tags, old_tags, dpy_tags, BI_TREE0};
-
-/* Parse the identifier out of the given line and store it in the binary tree */
-static void
-store_tag(LINE *lp)
-{
-    char my_name[sizeof(tagname)];
-    size_t len, got;
-    int c;
-
-    if (llength(lp) > 0) {
-	len = llength(lp);
-	for (got = 0; got < len; got++) {
-	    c = lgetc(lp, got);
-	    if (!isqident(c))
-		break;
-	    my_name[got] = (char) c;
-	}
-	my_name[got] = EOS;
-	if (got) {
-	    BI_DATA temp;
-#ifdef MDTAGIGNORECASE
-	    if (b_val(curbp, MDTAGIGNORECASE))
-		mklower(my_name);
-#endif
-	    temp.bi_key = my_name;
-	    btree_insert(&tags_tree, &temp);
-	}
-    }
-}
 
 /*
  * return (in buf) the Nth whitespace
@@ -201,6 +137,70 @@ gettagsfile(int n, int *endofpathflagp, int *did_read)
 #endif
     b_set_invisible(tagbp);
     return tagbp;
+}
+
+#if OPT_TAGS_CMPL
+
+static BI_NODE *
+new_tags(BI_DATA * a)
+{
+    BI_NODE *p = typecalloc(BI_NODE);
+
+    p->value = *a;
+    BI_KEY(p) = strmalloc(a->bi_key);
+    return p;
+}
+
+static void
+old_tags(BI_NODE * a)
+{
+    free(BI_KEY(a));
+    free(TYPECAST(char, a));
+}
+
+/*ARGSUSED*/
+static void
+dpy_tags(BI_NODE * a GCC_UNUSED, int level GCC_UNUSED)
+{
+#if OPT_TRACE
+    while (level-- > 0)
+	TRACE((". "));
+    TRACE(("%s (%d)\n", BI_KEY(a), a->balance));
+#endif
+}
+
+#define BI_DATA0 {{0}, 0, {0}}
+#define BI_TREE0 0, 0, BI_DATA0
+static BI_TREE tags_tree =
+{new_tags, old_tags, dpy_tags, BI_TREE0};
+
+/* Parse the identifier out of the given line and store it in the binary tree */
+static void
+store_tag(LINE *lp)
+{
+    char my_name[sizeof(tagname)];
+    size_t len, got;
+    int c;
+
+    if (llength(lp) > 0) {
+	len = llength(lp);
+	for (got = 0; got < len; got++) {
+	    c = lgetc(lp, got);
+	    if (!isqident(c))
+		break;
+	    my_name[got] = (char) c;
+	}
+	my_name[got] = EOS;
+	if (got) {
+	    BI_DATA temp;
+#ifdef MDTAGIGNORECASE
+	    if (b_val(curbp, MDTAGIGNORECASE))
+		mklower(my_name);
+#endif
+	    temp.bi_key = my_name;
+	    btree_insert(&tags_tree, &temp);
+	}
+    }
 }
 
 /* check if the binary-tree is up-to-date.  If not, rebuild it. */

@@ -504,9 +504,21 @@ CVile::FileOpen(BSTR filename, long lineno)
         SysFreeString(bcmd);  // don't need to free "ole", it points at a
                               // global, dynamic tmp buffer.
         if (SUCCEEDED(hr))
-            hr = pVileAuto->ForegroundWindow();  // Pop editor to front.
+            FgWindow();
     }
     return (hr);
+}
+
+
+
+void
+CVile::FgWindow()
+{
+    HWND hwnd;
+
+    // Set foreground window using a method that's compatible with win2k
+    pVileAuto->get_MainHwnd((LONG *) &hwnd);
+    (void) ::SetForegroundWindow(hwnd);
 }
 
 
@@ -567,10 +579,9 @@ CVile::VileCmd(
              * evening of my life.
              */
 
-            hr = pVileAuto->ForegroundWindow();  // Pop editor to front.
+            FgWindow(); // Pop editor to front.
         }
-        if (SUCCEEDED(hr))
-            hr = pVileAuto->VileKeys(bcmd);
+        hr = pVileAuto->VileKeys(bcmd);
         SysFreeString(bcmd);  // don't need to free "ole", it points at a
                               // global, dynamic tmp buffer.
         if (scratch)

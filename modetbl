@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.207 2002/02/18 00:36:36 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.208 2002/02/27 10:39:03 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -138,7 +138,8 @@ int							# VAL_ prefix
 	"UndoLimit"	UNDOLIM		0		# how much undo stack is saved
 	"WrapMargin"	WRAPMARGIN	0		# width of right margin for autowrap
 string							# VAL_ prefix
-	"fence-pairs"	FENCES		chgd_fences	# pairs of fences {,}; (,); etc.
+	"CIndent-Chars"	CINDENT_CHARS	0		# c-style indent flags
+	"FENCE-pairS"	FENCES		chgd_fences	# pairs of fences {,}; (,); etc.
 	"FilterName"	FILTERNAME	0		OPT_MAJORMODE # Name of syntax-filter
 	"locker"	LOCKER		chgd_disabled	OPT_LCKFILES  # Name of locker
 	"tags"		TAGS		0		# list of tags files

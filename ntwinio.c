@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.123 2002/01/29 01:54:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.125 2002/02/26 23:37:11 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -495,6 +495,30 @@ AdjustPosChanging(HWND hwnd, WINDOWPOS * pos)
     return 0;
 }
 #endif
+
+static HWND
+sizing_window(void)
+{
+    RECT crect;
+    int  szw = 140, szh = 22, szx, szy;
+
+    GetClientRect(cur_win->main_hwnd, &crect);
+    szx = crect.right / 2 - szw / 2;
+    szy = crect.bottom / 2 - szh / 2;
+    if (szx < 0 || szy < 0)
+        szx = szy = CW_USEDEFAULT;
+    return (CreateWindow("STATIC",
+                         "",
+                         WS_CHILD|WS_VISIBLE|SS_CENTER,
+                         szx,
+                         szy,
+                         szw,
+                         szh,
+                         cur_win->main_hwnd,
+                         (HMENU) 0,
+                         vile_hinstance,
+                         (LPVOID) 0));
+}
 
 /*
  * Handle WM_SIZING, forcing the screen size to stay in multiples of a
@@ -1944,7 +1968,7 @@ AboutBoxProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	/* talk about copyright */
 	hwnd = GetDlgItem(hDlg, IDM_ABOUT_COPYRIGHT);
 	sprintf(buf,
-		"\nCopyright \xA9 Tom Dickey 1997-2001\n\n"
+		"\nCopyright \xA9 Tom Dickey 1997-2002\n\n"
 		"%s is free software, distributed under the terms of the GNU "
 		"Public License (see COPYING).",
 		prognam);
@@ -2587,9 +2611,32 @@ find_scrollbar(HWND hWnd)
     return -1;
 }
 
+/*
+ * M$ is only capable of delivering an unsigned 16-bit number for nPos.  Infer
+ * the "right" value by minimizing the distance we travel in a given jump.
+ */
+static int
+fix_scrollbar_tracking(int nPos)
+{
+    int this_line = line_no(curwp->w_bufp, curwp->w_line.l);
+    int last_line = line_no(curwp->w_bufp, lback(buf_head(curwp->w_bufp)));
+    int diff_line = 0x10000;
+    int test_line;
+
+    for (test_line = nPos; test_line < last_line; test_line += 0x10000) {
+	int check = absol(this_line - test_line);
+	if (check < diff_line) {
+	    diff_line = check;
+	    nPos = test_line;
+	}
+    }
+    return nPos;
+}
+
 static void
 handle_scrollbar(HWND hWnd, int msg, int nPos)
 {
+    int this_line;
     int snum = find_scrollbar(hWnd);
     int upd = TRUE;		/* do an update() if T */
 
@@ -2624,11 +2671,17 @@ handle_scrollbar(HWND hWnd, int msg, int nPos)
 	break;
     case SB_THUMBPOSITION:
 	TRACE(("-> SB_THUMBPOSITION: %d\n", nPos));
-	gotoline(TRUE, nPos + 1);
+	gotoline(TRUE, fix_scrollbar_tracking(nPos) + 1);
 	break;
     case SB_THUMBTRACK:
 	TRACE(("-> SB_THUMBTRACK: %d\n", nPos));
-	mvupwind(TRUE, line_no(curwp->w_bufp, curwp->w_line.l) - nPos);
+	/*
+	 * M$ is only capable of delivering an unsigned 16-bit number for nPos.
+	 * Infer the "right" value by minimizing the distance we travel in a
+	 * given jump.
+	 */
+	this_line = line_no(curwp->w_bufp, curwp->w_line.l);
+	mvupwind(TRUE, this_line - fix_scrollbar_tracking(nPos));
 	break;
     case SB_TOP:
 	TRACE(("-> SB_TOP\n"));
@@ -2894,22 +2947,43 @@ ntgetch(void)
 	    }
 	    break;
 
-	    /* define _WIN32_WINNT=0x400 to get WM_MOUSEWHEEL defined */
+	/*
+	 * define _WIN32_WINNT=0x400 (or higher) to include WM_MOUSEWHEEL
+	 * code below.	Note that WM_MOUSEWHEEL is really only required
+	 * to support a mouse driver that doesn't emit WM_VMSCROLL
+	 * messages when the wheel mouse rotates.  Examples:
+	 *
+	 *    MS Intellimouse driver	 -> emits WM_VMSCROLL
+	 *    Logitech mousewheel driver -> emits WM_VMSCROLL
+	 *    MS PS/2 compatible driver	 -> emits WM_MOUSEWHEEL
+	 *   
+	 * The latter driver is often installed when PNP can't
+	 * distinguish the native HW.
+	 */  
 #ifdef WM_MOUSEWHEEL
 #if OPT_SCROLLBARS
 	case WM_MOUSEWHEEL:
-	    if ((short) HIWORD(msg.wParam) > 0) {
-		int i, c = (HIWORD(msg.wParam) / WHEEL_DELTA);
-		for (i = 0; i < c * 3; i++)
-		    handle_scrollbar(msg.hwnd, SB_LINEUP, 0);
-	    } else {
-		int i, c = (-((short) HIWORD(msg.wParam)) / WHEEL_DELTA);
-		for (i = 0; i < c * 3; i++)
-		    handle_scrollbar(msg.hwnd, SB_LINEDOWN, 0);
+	    {
+		int c;
+	     
+		fhide_cursor();
+		if ((short) HIWORD(msg.wParam) > 0)
+		{
+		    c = (HIWORD(msg.wParam) / WHEEL_DELTA);
+		    mvupwind(TRUE, c * 3);
+		}
+		else
+		{
+		    c = (-((short) HIWORD(msg.wParam)) / WHEEL_DELTA);	 
+		    mvdnwind(TRUE, c * 3);
+		}
+		update(TRUE);
+		fshow_cursor(); 
 	    }
 	    break;
+#endif   
 #endif
-#endif
+
 	case WM_MBUTTONDOWN:
 	    TRACE(("GETC:MBUTTONDOWN %s\n", which_window(msg.hwnd)));
 	    if (msg.hwnd == cur_win->text_hwnd) {
@@ -3172,7 +3246,9 @@ MainWndProc(
 	       WPARAM wParam,
 	       LONG lParam)
 {
-    static int resize_pending;	/* a resize, not a move */
+    static int  resize_pending;	/* a resize, not a move */
+    static HWND resize_hwnd;
+    static int  resize_wdw_up;
 
     TRACE(("MAIN:%s, %s\n", message2s(message), which_window(hWnd)));
 
@@ -3218,9 +3294,66 @@ MainWndProc(
 	return (DefWindowProc(hWnd, message, wParam, lParam));
 
     case WM_SIZING:
+	if (initialized)
+	{
+	    char       buf[32];
+	    static int frame_w, frame_h;
+
+	    if (is_winnt())
+	    {
+		/*
+		 * Win9x/ME GDI doesn't support supplementary GDI activity
+		 * while a window resize is in progress.
+		 */
+
+		if (! resize_hwnd)
+		    resize_hwnd = sizing_window();
+		if (resize_hwnd)
+		{
+		    if (! resize_wdw_up)
+		    {
+			RECT crect, wrect;		       
+
+			resize_wdw_up = TRUE;
+			ShowWindow(resize_hwnd, SW_SHOWNORMAL);
+			sprintf(buf, "%d cols X %d rows", term.cols, term.rows);
+
+			/* compute real estate consumed by main window frame */
+			GetClientRect(cur_win->main_hwnd, &crect);
+			GetWindowRect(cur_win->main_hwnd, &wrect);
+			frame_w = (wrect.right - wrect.left) - crect.right;
+			frame_h = (wrect.bottom - wrect.top) - crect.bottom;
+		    }
+		    else
+		    {
+			RECT newrect;
+			int  h, w;
+
+			/*
+			 * The rectangle passed in with this message includes
+			 * the outer frame, which is worthless for editing
+			 * text.
+			 */
+			newrect         = *((RECT *) lParam);
+			newrect.right  -= frame_w;
+			newrect.bottom -= frame_h;
+			h = RectToRows(newrect);
+			w = RectToCols(newrect);
+			sprintf(buf, "%d cols X %d rows", w, h);
+		    }
+		    SetWindowText(resize_hwnd, buf);
+		}
+	    }
+	}
 	return AdjustResizing(hWnd, wParam, (LPRECT) lParam);
 
     case WM_EXITSIZEMOVE:
+	if (resize_hwnd && resize_wdw_up)
+	{
+	    resize_wdw_up = FALSE;
+	    SendMessage(resize_hwnd, WM_CLOSE, 0, 0);
+	    resize_hwnd = NULL;
+	}
 	ResizeClient();
 	if (resize_pending) {
 	    if (initialized) {
@@ -3589,6 +3722,8 @@ WinMain(
 	    } else
 		oa_opts.fontstr = fontstr;
 	}
+#else
+	(void) success;
 #endif
 	/* Regardless of success or failure, continue with new/default font. */
     }

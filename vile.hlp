@@ -1244,19 +1244,27 @@ Editor modes
 		"unique-buffers" mode must be active to enable the latter
 		behavior.) (B)
 
-	cindent C-style indentation.  Helps maintain current indentation
+	cindent (ci) C-style indentation.  Helps maintain current indentation
 		level automatically during insert, like autoindent, above.
-		If a line ends with a '{', '(', or ':', then the next line
-		indents further.  If a line begins with a '}' or ')', it is
-		lined up with the line containing the matching '{' or '('.
-		(B)
+		See cindent-chars for additional information.  (B)
+
+	cindent-chars (cic)  The list of characters interpreted by the cindent
+		mode.  These include
+			'#'	when a line starting with '#' is inserted, it
+				is indented to column 1.  This is a temporary
+				indent; succeeding lines are indented normally.
+				Also, lines beginning with a '#' will not
+				shift right with the '>>' command.
+			':'	indent the next line further, e.g., after a
+				label.
+		as well as any character that may be listed in fence-pairs.  If
+		it is listed in cindent-chars as well, the left-character of a
+		pair causes the next line to be indented more, and the
+		right-character causes the next line to be indented less.  (B)
 
 	cmode   C-code mode.  A built-in majormode, also useful for other
-		languages.  Augments cindent mode by special treatment of
-		lines beginning with '#'.  If a line starting with '#' is
-		inserted it is moved to column 1.  Additionally, if a line
-		begins with a '#' character, it will not shift right with the
-		'>>' command.  (M)
+		languages.  Predefines cindent mode and separate suffix, tab and
+		shiftwidth submodes.  (M)
 
 	crypt	Causes buffer(s) to be decrypted when read, and encrypted
 		when written.  This is compatible with the UNIX crypt(1)
@@ -1349,13 +1357,13 @@ Editor modes
 	fence-limit  Iteration timeout for complex fences, to limit pathological
 		cases, e.g., with Perl's ambiguous block syntax.  (B)
 
-	fence-pairs  Each pair of characters in this string is taken to be
-		a set of "fences", which should be matched with the '%'
-		command.  The default value is "{}()[]", which produces
-		normal vi behavior.  This can, for instance, be augmented
-		with the '<' and '>' characters ("{}()[]<>") to cause angle
-		brackets to be matched as well.  See "showmatch" mode for
-		another use of the "fence-pairs" mode.  (B)
+	fence-pairs (fences) Each pair of characters in this string is taken to
+		be a set of "fences", which should be matched with the '%'
+		command.  The default value is "{}()[]", which produces normal
+		vi behavior.  This can, for instance, be augmented with the '<'
+		and '>' characters ("{}()[]<>") to cause angle brackets to be
+		matched as well.  See "showmatch" mode for another use of the
+		"fence-pairs" mode.  (B)
 
 	fillcol (fc)  Sets the value for the fill column, which is the
 		column at which autowrapping and region formatting will
@@ -3697,7 +3705,7 @@ Syntax coloring
 	Unix install recipe -- no privileges
 	------------------------------------
 	The simplest install copies the editor, all filters, data and
-	macros file to a directory tree in your PATH (we'll assume
+	macros file to a writable directory tree (we'll assume
 	$HOME/local).  This syntax does the job:
 
 	    unset VILE_STARTUP_PATH VILE_LIBDIR_PATH
@@ -3706,7 +3714,7 @@ Syntax coloring
 
 	These additional steps are required:
 
-	1) add the following to the $HOME/.vilerc startup files:
+	1) add the following to the $HOME/.vilerc startup file:
 
 	    source "filters.rc"
 
@@ -3714,6 +3722,8 @@ Syntax coloring
 
 	    mkdir $HOME/.vile
 	    cp $HOME/local/share/vile/vile.keywords $HOME/.vile
+
+	3) add $HOME/local/bin to $PATH (if not already specified)
 
 	That's it.  Now skim through the "Manual recipe" topic below and
 	then pay attention again when you hit the topic entitled "Testing
@@ -5324,7 +5334,7 @@ Win32 specifics
 			single color number.
 
 	set-rgb-palette  Set red/green/blue values for the specified color.
-			Values range from 0-255.  Example:
+			 Values range from 0-255.  Example:
 				set-rgb-palette red 200 0 0
 
 	swap-clipboard-keys  See discussion of clipboard above.
@@ -5709,4 +5719,4 @@ Problems
 
 Copyright 1995-2001 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.543 2002/02/18 00:38:49 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.545 2002/02/27 11:02:54 tom Exp $

@@ -322,8 +322,9 @@ CCommands::XApplicationEvents::BuildFinish(long nNumErrors, long nNumWarnings)
         {
             sprintf(path, "%s\\%s", workspace_cwd, file);
             sprintf(cmd,
-         ":e [History]\n:kill %s\n:wait-file %s\n:view %s\n:error-buffer %s\n",
+ ":e [History]\n:kill %s\n:cd %s\n:wait-file %s\n:view %s\n:error-buffer %s\n",
                     file,
+                    workspace_cwd,
                     path,
                     path,
                     file);
@@ -493,3 +494,4 @@ STDMETHODIMP CCommands::VisVileOpenDoc()
     opts.never_close       = TRUE;
     return (openfile(pDispDoc, &opts));
 }
+

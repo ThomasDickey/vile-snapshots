@@ -27,18 +27,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE
+1 TEXTINCLUDE DISCARDABLE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE
+2 TEXTINCLUDE DISCARDABLE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE
+3 TEXTINCLUDE DISCARDABLE 
 BEGIN
     "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
     "#define _AFX_NO_OLE_RESOURCES\r\n"
@@ -75,8 +75,8 @@ IDR_TOOLBAR_LARGE       BITMAP  MOVEABLE PURE   "TBarLrge.bmp"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,2
- PRODUCTVERSION 1,0,0,2
+ FILEVERSION 1,0,0,3
+ PRODUCTVERSION 1,0,0,3
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -94,12 +94,12 @@ BEGIN
             VALUE "Comments", "VisVile is free SW, released under the GNU public license\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "VISVILE DLL\0"
-            VALUE "FileVersion", "1.02\0"
+            VALUE "FileVersion", "1.03\0"
             VALUE "InternalName", "VISVILE\0"
-            VALUE "LegalCopyright", "Copyright (C) 1998 Clark Morgan\0"
+            VALUE "LegalCopyright", "Copyright (C) 2002 Clark Morgan\0"
             VALUE "OriginalFilename", "VISVILE.DLL\0"
             VALUE "ProductName", "VISVILE Dynamic Link Library\0"
-            VALUE "ProductVersion", "1.02\0"
+            VALUE "ProductVersion", "1.03\0"
         END
     END
     BLOCK "VarFileInfo"
@@ -138,28 +138,28 @@ END
 // Dialog
 //
 
-IDD_DIALOG1 DIALOG DISCARDABLE  0, 0, 191, 109
+IDD_DIALOG1 DIALOG DISCARDABLE  0, 0, 203, 109
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "VisVile Configuration"
 FONT 8, "MS Sans Serif"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,56,88,31,14
-    PUSHBUTTON      "Cancel",IDCANCEL,103,88,31,14
+    DEFPUSHBUTTON   "OK",IDOK,62,88,31,14
+    PUSHBUTTON      "Cancel",IDCANCEL,109,88,31,14
     CONTROL         "Close DevStudio copy of text document",IDC_CLOSE_DOC,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,22,133,10
-    CONTROL         "Add-in enabled",IDC_ENABLED,"Button",BS_AUTOCHECKBOX |
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,22,174,10
+    CONTROL         "Add-in enabled",IDC_ENABLED,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,17,9,62,10
     CONTROL         "CWD set from opened document's path",IDC_CHDIR,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,17,35,133,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,17,35,172,10
     CONTROL         "Build log -> errbuf if build reports errors/warnings",
                     IDC_ERRBUF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,61,
-                    159,10
+                    172,10
     CONTROL         "Write all modified buffers to disk prior to build",
                     IDC_WRITE_BUFFERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    17,48,148,10
+                    17,48,174,10
     CONTROL         "Redirect selected Winvile keys to DevStudio",
                     IDC_KEY_REDIR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,
-                    74,152,8
+                    74,172,8
 END
 
 
@@ -169,12 +169,12 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE
+GUIDELINES DESIGNINFO DISCARDABLE 
 BEGIN
     IDD_DIALOG1, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 186
+        RIGHTMARGIN, 198
         TOPMARGIN, 3
         BOTTOMMARGIN, 103
     END
@@ -187,7 +187,7 @@ END
 // String Table
 //
 
-STRINGTABLE DISCARDABLE
+STRINGTABLE DISCARDABLE 
 BEGIN
     IDS_VISVILE_LONGNAME    "Winvile Developer Studio Add-in"
     IDS_VISVILE_DESCRIPTION "Provides file editing facilities in various situations."

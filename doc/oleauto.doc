@@ -167,8 +167,9 @@ Server Properties And Methods
 =============================
 Application         -- [out] Returns the application object.
 
-ForegroundWindow()  -- Makes the editor the foreground window.  Note that NT5
-                       has redefined the behavior of SetForegroundWindow().
+ForegroundWindow()  -- Makes the editor the foreground window.  Note that 
+                       Windows 2000 and XP essentially emasculated this
+                       method.  See MainHwnd() for an alternative approach.
 
 FullName            -- [out] Returns the path of the application.
 
@@ -176,6 +177,10 @@ InsertMode          -- [out] True if editor window with keyboard focus is
                        in insert mode.
 
 IsMinimized         -- [out] True if editor minimized.
+
+MainHwnd            -- [out] Returns the editor's main window handle. 
+                       Useful if the client wishes to, say, call 
+                       SetForegroundWindow() on behalf of the editor.
 
 Minimize()          -- Minimizes the editor.
 
