@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.7 1999/03/07 19:18:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.9 1999/12/26 22:04:24 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Cwebx input
  * text.  Also useful for Cweb
@@ -32,6 +32,8 @@ static char *TeX_comment;
 static char *Cweb_nom_module;
 static char *Cweb_code_titre;
 static char *Cweb_code_autre;
+
+static int in_code;	/* FIXME: should implement a stack */
 
 void
 init_filter(int before)
@@ -70,6 +72,9 @@ do_filter(FILE *input, FILE *output)
 
 %}
 
+SPC		[ ]
+BLANK		[ \t]
+
 INTEGER		[-+]?([0-9]+)
 REAL		[-+]?([0-9]*\.[0-9]+)([eE][+-]?[0-9]+)?
 IDENT		[a-zA-Z_][a-zA-Z_0-9]*
@@ -78,72 +83,27 @@ RC		\n
 
 %%
 
-#[ \t]*if[ \t]+"0"	{
+#{BLANK}*if{BLANK}+"0"	{
 			WriteToken(Preproc_attr);
 			BEGIN(PREP_COM);
 			}
 <PREP_COM>^[^#{RC}].*$	{ WriteToken(Comment_attr); }
 <PREP_COM>^{RC}		{ WriteToken(Comment_attr); }
-<PREP_COM>#[ \t]*endif  { WriteToken(Preproc_attr);
+<PREP_COM>#{BLANK}*endif  { WriteToken(Preproc_attr);
 			  BEGIN(0);
 			}
 
-#[ \t]*if	|
-#[ \t]*if(n)?def	|
-#[ \t]*else	|
-#[ \t]*endif	|
-#[ \t]*define	|
-#[ \t]*error	|
-#[ \t]*include[ \t]*<(\\\.|[^>])*>    |
-#[ \t]*include[ \t]*\"(\\\.|[^\"])*\" |
-#[ \t]*undef		{ WriteToken(Preproc_attr); }
+#{BLANK}*if	|
+#{BLANK}*if(n)?def	|
+#{BLANK}*else	|
+#{BLANK}*endif	|
+#{BLANK}*define	|
+#{BLANK}*error	|
+#{BLANK}*include{BLANK}*<(\\\.|[^>])*>    |
+#{BLANK}*include{BLANK}*\"(\\\.|[^\"])*\" |
+#{BLANK}*undef		{ WriteToken(Preproc_attr); }
 
-auto		|
-break		|
-case		|
-continue	|
-default		|
-do		|
-else		|
-extern		|
-for		|
-goto		|
-if		|
-return		|
-sizeof		|
-static		|
-switch		|
-volatile	|
-while		|
-
-catch		|
-class		|
-delete		|
-friend		|
-inline		|
-new		|
-operator	|
-overload	|
-private		|
-protected	|
-public		|
-template	|
-this		|
-virtual			{ WriteToken(Keyword_attr); }
-
-
-char		|
-const		|
-double		|
-enum		|
-float		|
-int		|
-long		|
-struct		|
-typedef		|
-union		|
-unsigned	|
-void			{ WriteToken(Type_attr); }
+{IDENT}			{ WriteToken(in_code ? keyword_attr(yytext) : ""); }
 
 
 "/*"			{ WriteToken(Comment_attr);
@@ -164,8 +124,6 @@ void			{ WriteToken(Type_attr); }
 {REAL} 	|
 {INTEGER}		{ WriteToken(Number_attr);}
 
-
-{IDENT}			{ printf("%s", yytext); }
 {STRING}		{ WriteToken(String_attr); }
 
 \\[a-zA-Z][a-zA-Z]*	{ WriteToken(TeX_mot_cle); }
@@ -175,11 +133,14 @@ void			{ WriteToken(Type_attr); }
 "@*"[1-9]*[ ]*[^\.]*"." { WriteToken(Cweb_code_titre); }
 
 "@<"[^@]*"@>"		{ WriteToken(Cweb_nom_module); }
+"@<"[^@]*"@>"[=;]	{ WriteToken(Cweb_nom_module); in_code = 1; }
 
+"@"c			{ WriteToken(Preproc_attr); in_code = 1; }
+"@"[hd]			{ WriteToken(Preproc_attr); }
+
+"@"{SPC}		{ WriteToken(Cweb_code_autre); in_code = 0; }
 "@".			{ WriteToken(Cweb_code_autre); }
 
-%%
+^"%".*$			{ WriteToken(TeX_comment); }
 
-/*
-"%".*$			{ WriteToken(TeX_comment); }
-*/
+%%

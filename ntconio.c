@@ -1,13 +1,11 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.52 1999/12/24 13:44:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.53 1999/12/27 01:43:12 tom Exp $
  *
  */
 
 #include <windows.h>
-
-#define	termdef	1		/* don't define "term" external */
 
 #include        "estruct.h"
 #include        "edef.h"
@@ -248,6 +246,40 @@ ntscroll(int from, int to, int n)
 #endif
 }
 
+#if	OPT_FLASH
+static void
+flash_display(void)
+{
+    DWORD length = term.cols * term.rows;
+    DWORD got;
+    WORD *buf1 = malloc(sizeof(*buf1) * length);
+    WORD *buf2 = malloc(sizeof(*buf2) * length);
+    static COORD origin;
+    ReadConsoleOutputAttribute(hConsoleOutput, buf1, length, origin, &got);
+    ReadConsoleOutputAttribute(hConsoleOutput, buf2, length, origin, &got);
+    for (got = 0; got < length; got++) {
+	buf2[got] ^= (FOREGROUND_INTENSITY | BACKGROUND_INTENSITY);
+    }
+    WriteConsoleOutputAttribute(hConsoleOutput, buf2, length, origin, &got);
+    Sleep(200);
+    WriteConsoleOutputAttribute(hConsoleOutput, buf1, length, origin, &got);
+    free(buf1);
+    free(buf2);
+}
+#endif
+
+static void
+ntbeep(void)
+{
+#if	OPT_FLASH
+    if (global_g_val(GMDFLASH)) {
+	flash_display();
+	return;
+    }
+#endif
+    MessageBeep(0xffffffff);
+}
+
 /*
  * vile very rarely generates any of the ASCII printing control characters
  * except for a few hand coded routines but we have to support them anyway.
@@ -352,40 +384,6 @@ ntcres(const char *res)
 {				/* change screen resolution */
     scflush();
     return 0;
-}
-
-#if	OPT_FLASH
-static void
-flash_display()
-{
-    DWORD length = term.cols * term.rows;
-    DWORD got;
-    WORD *buf1 = malloc(sizeof(*buf1) * length);
-    WORD *buf2 = malloc(sizeof(*buf2) * length);
-    static COORD origin;
-    ReadConsoleOutputAttribute(hConsoleOutput, buf1, length, origin, &got);
-    ReadConsoleOutputAttribute(hConsoleOutput, buf2, length, origin, &got);
-    for (got = 0; got < length; got++) {
-	buf2[got] ^= (FOREGROUND_INTENSITY | BACKGROUND_INTENSITY);
-    }
-    WriteConsoleOutputAttribute(hConsoleOutput, buf2, length, origin, &got);
-    Sleep(200);
-    WriteConsoleOutputAttribute(hConsoleOutput, buf1, length, origin, &got);
-    free(buf1);
-    free(buf2);
-}
-#endif
-
-static void
-ntbeep(void)
-{
-#if	OPT_FLASH
-    if (global_g_val(GMDFLASH)) {
-	flash_display();
-	return;
-    }
-#endif
-    MessageBeep(0xffffffff);
 }
 
 static BOOL WINAPI
@@ -794,7 +792,7 @@ ntgetch(void)
  */
 
 static int
-nttypahead()
+nttypahead(void)
 {
     INPUT_RECORD ir;
     DWORD nr;

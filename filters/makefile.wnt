@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.17 1999/12/23 01:29:11 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.20 1999/12/26 22:18:26 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -23,8 +23,10 @@ C_ALL	= \
 	vile-c-filt$x \
 	vile-crypt$x \
 	vile-key-filt$x \
+	vile-m4-filt$x \
 	vile-manfilt$x \
-	vile-pas-filt$x
+	vile-pas-filt$x \
+	vile-tags-filt$x
 
 # filters in lex/flex require state support
 LEX_ALL = \
@@ -35,11 +37,11 @@ LEX_ALL = \
 	vile-cweb-filt$x \
 	vile-dcl-filt$x \
 	vile-diff-filt$x \
+	vile-esql-filt$x \
 	vile-fdl-filt$x \
 	vile-html-filt$x \
 	vile-latex-filt$x \
 	vile-lex-filt$x \
-	vile-m4-filt$x \
 	vile-mail-filt$x \
 	vile-make-filt$x \
 	vile-mms-filt$x \
@@ -47,10 +49,10 @@ LEX_ALL = \
 	vile-perl-filt$x \
 	vile-py-filt$x \
 	vile-rcs-filt$x \
+	vile-rexx-filt$x \
 	vile-sccs-filt$x \
 	vile-sh-filt$x \
 	vile-sql-filt$x \
-	vile-tags-filt$x \
 	vile-tbl-filt$x \
 	vile-tc-filt$x \
 	vile-tcl-filt$x \
@@ -86,24 +88,39 @@ KEYS	= \
 	bat.key \
 	c.key \
 	cpp.key \
+	csh.key \
+	cweb.key \
 	dcl.key \
+	diff.key \
+	esql.key \
+	fdl.key \
 	html.key \
+	imake.key \
 	java.key \
 	js.key \
 	latex.key \
 	lex.key \
+	m4.key \
 	mail.key \
 	make.key \
 	nr.key \
 	pas.key \
 	perl.key \
+	pot.key \
+	py.key \
+	rcs.key \
+	rexx.key \
+	sccs.key \
 	sh.key \
 	sql.key \
+	tags.key \
 	tbl.key \
 	tc.key \
 	tcl.key \
 	ti.key \
 	vile.key \
+	xres.key \
+	xs.key \
 	yacc.key
 !endif
 
@@ -206,6 +223,9 @@ vile-dcl-filt$x : dcl-filt$o $(CF_DEPS)
 vile-diff-filt$x : difffilt$o $(CF_DEPS)
 	$(link) -out:$@ $(CON_LDFLAGS) difffilt$o $(LF_ARGS)
 
+vile-esql-filt$x : esqlfilt$o $(CF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) esqlfilt$o $(LF_ARGS)
+
 vile-fdl-filt$x : fdl-filt$o $(LF_DEPS)
 	$(link) -out:$@ $(CON_LDFLAGS) fdl-filt$o $(LF_ARGS)
 
@@ -247,6 +267,9 @@ vile-py-filt$x : py-filt$o $(LF_DEPS)
 
 vile-rcs-filt$x : rcs-filt$o $(LF_DEPS)
 	$(link) -out:$@ $(CON_LDFLAGS) rcs-filt$o $(LF_ARGS)
+
+vile-rexxfilt$x : rexxfilt$o $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) rexxfilt$o $(LF_ARGS)
 
 vile-sccs-filt$x : sccsfilt$o $(LF_DEPS)
 	$(link) -out:$@ $(CON_LDFLAGS) sccsfilt$o $(LF_ARGS)

@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.100 1999/12/19 10:55:38 tom Exp $
+; $Id: filters.rc,v 1.103 1999/12/26 23:05:56 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -98,6 +98,13 @@ define-mode diff
 ~with define-submode diff
 	suf '\.\(patch\|dif\|diff\|diffs\|rej\)$'
 	pre '^\<diff\>'
+~endwith
+
+; Embedded SQL in C/C++
+define-mode esql
+~with define-submode esql
+	suf '\.\(ec\|pc\|ppc\)$'
+	cindent
 ~endwith
 
 ; forms definition.
@@ -294,6 +301,14 @@ define-mode py
 ~with define-submode py
 	pre '^#\s*!\s*\.*\/.*python\>'
 	suf '\.py$'
+	comment-prefix '^\s*#'
+	comments   '^\s*#\s\+\s*$'
+~endwith
+
+define-mode rexx
+~with define-submode rexx
+	pre '^#\s*!\s*\.*\/.*\(rexx\|regina\|rxcurses\)\>'
+	suf '\.\(cmd\|rexx\)$'
 	comment-prefix '^\s*#'
 	comments   '^\s*#\s\+\s*$'
 ~endwith
