@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.174 1998/11/02 01:50:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.175 1998/11/05 00:44:42 cmorgan Exp $
  *
  */
 
@@ -584,6 +584,9 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 				SetEnv(&x_shell, DftEnv("XSHELL", "xterm"));
 			value = x_shell;
 #endif
+#if SYS_WINNT
+		ElseIf( EVTITLE )	value = w32_wdw_title();
+#endif
 		ElseIf( EVSHELL )
 			value = get_shell();
 
@@ -978,6 +981,9 @@ const char *value)	/* value to set to */
 		ElseIf( EVXDISPLAY ) SetEnv(&x_display, value);
 		ElseIf( EVXSHELL ) SetEnv(&x_shell, value);
 #endif
+#if SYS_WINNT
+		ElseIf( EVTITLE ) TTtitle((char *) value);
+#endif
 		ElseIf( EVCWD )
 			status = set_directory(value);
 
@@ -1303,7 +1309,7 @@ const char *tokn)		/* token to evaluate */
 					blen = 0;
 
 				tb_init(&tkbuf, EOS);
-				tb_bappend(&tkbuf, 
+				tb_bappend(&tkbuf,
 					bp->b_dot.l->l_text + bp->b_dot.o,
 					(SIZE_T)blen);
 				tb_append(&tkbuf, EOS);

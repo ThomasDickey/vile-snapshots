@@ -1,5 +1,5 @@
 .\" obligatory man page for vile
-.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.17 1998/03/15 21:28:52 pgf Exp $ 
+.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.18 1998/11/05 00:44:11 cmorgan Exp $
 .TH VILE 1
 .SH NAME
 vile, xvile \- \fBVI L\fRike\fR \fBE\fRmacs
@@ -22,7 +22,7 @@ retains the "finger-feel", if you will, of
 while adding the
 multiple buffer and multiple window features of emacs and other editors.
 It is definitely not a vi clone, in that some substantial stuff is
-missing, and the screen doesn't look quite the same.  
+missing, and the screen doesn't look quite the same.
 The things that you tend to type over and
 over probably work.  Things done less frequently, like configuring
 a startup file, are somewhat (or very, depending on how ambitious
@@ -44,7 +44,7 @@ will execute an initial search for the given pattern.
 .br
 .I vile
 will edit the correct file and move the cursor to the location of the tag.
-This requires a tagsfile created with the 
+This requires a tagsfile created with the
 .IR ctags (1)
 command.  The option -T is equivalent, and can be used when X11 option
 parsing eats the -t.
@@ -75,7 +75,7 @@ will report its version number.
 will run the specified file as its startup
 file, and will bypass any normal startup file (i.e.
 .IR .vilerc )
-or environment variable (i.e. 
+or environment variable (i.e.
 .IR $VILEINIT ).
 .IP "-25 -43 -50"
 On PC systems you may be able to set the initial screen resolution from the
@@ -111,16 +111,16 @@ as a last resort.
 See the help file for examples of what sorts of things might go into
 these command files.
 .SH "COMMANDS"
-Please refer to the help available within 
+Please refer to the help available within
 .I vile
 for
 .IR vile -specific
 commands.
 (That document, however, assumes familiarity with vi.)
 Short descriptions
-of each 
+of each
 .I vile
-command may be obtained with the ": describe-function" and 
+command may be obtained with the ": describe-function" and
 ": describe-key" commands.  All commands may be listed with ": show-commands".
 .PP
 Additional documentation on writing macros using the internal scripting
@@ -137,7 +137,7 @@ support, etc.  The help file has more information on this.
 There is a program distributed with the vile source which
 is usually installed as
 .IR vile-manfilt .
-(Two versions of the source for 
+(Two versions of the source for
 .I vile-manfilt
 are available, in C (manfilt.c) and in Perl (manfilt.pl).)
 It may be used in conjunction with
@@ -147,36 +147,50 @@ or
 (with the help of the macro in the file manpage.rc)
 to filter and view system manual pages.
 .I xvile
-will even 
-(with your font set properly) 
+will even
+(with your font set properly)
 display certain portions of the manual
-page text in bold or italics as appropriate.  
+page text in bold or italics as appropriate.
 See the help file for details.
 .PP
 Likewise, there is a
 .I vile-c-filt
 program which can embolden, underline, or perform coloring on C program
 source code.   (And again, two versions of the source, in C and in "flex",
-are available.) Again, see the help file for more information. 
-.PP 
-The program 
-.I vile-crypt 
-can be used to encrypt/decrypt files using the same algorithm as  
-.IR vile 's 
-internal crypt algorithm.  The encryption key can be specified on the 
-command line with "-k key", and "-m" can be used to treat the file as a 
-mail message; in that case, only text after the first blank line will be 
-crypted, leaving the headers intact and only affecting the body of the 
-message.  Text to be encrypted can be specified as filenames on the command 
-line, or provided as the standard input.  On systems with a getpass() 
-library routine, the user will be prompted for the encryption key if it is 
-not given on the command line.  To accomodate systems (such as linux) where 
-the getpass() library routine is not interruptible from the keyboard, 
-entering a crypt-key password which ends in ^C will cause the program to 
-quit.  See the help file for more information on 
-.IR vile 's 
-encryption support. 
- 
+are available.) Again, see the help file for more information.
+.PP
+The program
+.I vile-crypt
+can be used to encrypt/decrypt files using the same algorithm as
+.IR vile 's
+internal crypt algorithm.  The encryption key can be specified on the
+command line with "-k key", and "-m" can be used to treat the file as a
+mail message; in that case, only text after the first blank line will be
+crypted, leaving the headers intact and only affecting the body of the
+message.  Text to be encrypted can be specified as filenames on the command
+line, or provided as the standard input.  On systems with a getpass()
+library routine, the user will be prompted for the encryption key if it is
+not given on the command line.  To accomodate systems (such as linux) where
+the getpass() library routine is not interruptible from the keyboard,
+entering a crypt-key password which ends in ^C will cause the program to
+quit.  See the help file for more information on
+.IR vile 's
+encryption support.
+.SH "ENVIRONMENT VARIABLES"
+.TP
+.B
+VILEINIT
+Editor initialization commands in lieu of a startup file.
+.TP
+.B VILE_HELP_FILE
+Override the name of the help file, normally ``vile.hlp''.
+.TP
+.B VILE_STARTUP_FILE
+Override the name of the startup file, normally ``.vilerc''
+(or ``vile.rc'' for non-UNIX systems).
+.TP
+.B VILE_STARTUP_PATH
+Override the search path for the startup and help files.
 .SH "SEE ALSO"
 Your favorite vi document, the file
 .IR macros.doc ,
@@ -187,7 +201,7 @@ help page, available with the
 option or as the text file
 .IR vile.hlp .
 .SH "DEBTS and CREDITS"
-.I vile 
+.I vile
 was originally built from a copy of microEmacs, so a large debt of gratitude
 is due to the developers of that program.  A lot of people have helped with
 code and bug reports on

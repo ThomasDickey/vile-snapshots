@@ -705,13 +705,13 @@ Miscellaneous commands
 
 			^\([^: 	]\+\):\s*\([0-9]\+\):\(.\+\)
 
-	^X-t Set or report on the tab-stop width.  To set, the spacing must
+	^X-t	Set or report on the tab-stop width.  To set, the spacing must
 		precede the command, as in "4^X-t".  The "set tabstop"
 		command described below does the same thing.  The status
 		output indicates whether the buffer is currently using the
 		local or global copy of the tabstop value.
 
-	^X-f Set the local fill-column to be used with ^A-f and auto-wrap
+	^X-f	Set the local fill-column to be used with ^A-f and auto-wrap
 		mode on insert.  The default value is 7/8's of the screen
 		size, with a maximum of 70.  Since arguments come before
 		commands, you type: 65^X-f.  The "set fillcol" command does
@@ -2130,7 +2130,7 @@ Programmed procedures and macros
 	$startup-file	the name of the startup file (e.g. .vilerc)
 	$startup-path	where to find the startup file
 	$status		returns the status of the last command
-	$title		current window title (X11 version only)
+	$title		current window title (X11, win32 versions only)
 	$tpause		length to pause for paren matching (PC versions)
 	$version	current version number			(read only)
 	$wlines		number of lines in current window
@@ -2243,10 +2243,10 @@ Programmed procedures and macros
 	invisible, so they don't clutter the buffer list) is to use
 	the "store-procedure" command:
 
-	    store-procedure my_cd_action
+	    store-procedure my-cd-action
 		write-message &cat &cat &cat "moved from " $ocwd " to " $cwd
 		~if &seq $progname "xvile"
-		    set title $cwd
+		    set-variable $title $cwd
 		~endif
 	    ~endm
 
@@ -2269,9 +2269,9 @@ Programmed procedures and macros
 	to as "hooks".  Hooks are specified by special variables which
 	hold the name of a procedure to run at that point in the code.
 	For instance, there is a "cd-hook", which is run when you change
-	directories.  So, using the "my_cd_action" example given above,
+	directories.  So, using the "my-cd-action" example given above,
 	if the line
-		set cd-hook my_cd_action
+		set cd-hook my-cd-action
 	is added, then that procedure will print a message and, under
 	xvile, change the window title when the current directory is
 	changed.
@@ -2876,14 +2876,8 @@ Filtering C programs
 		    write-message "[Attaching C/C++ attributes...]"
 		    set-variable %savcol $curcol
 		    set-variable %savline $curline
-		    set-variable %modified $modified
 		    goto-beginning-of-file
-		    filter-til end-of-file "vile-c-filt"
-		    goto-beginning-of-file
-		    attribute-cntl_a-sequences-til end-of-file
-		    ~if &not %modified
-			    unmark-buffer
-		    ~endif
+		    attribute-from-filter end-of-file "vile-c-filt"
 		    %savline goto-line
 		    %savcol goto-column
 		    write-message "[Attaching C/C++ attributes...done ]"
@@ -3909,4 +3903,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.375 1998/11/01 23:58:35 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.377 1998/11/06 11:26:43 tom Exp $

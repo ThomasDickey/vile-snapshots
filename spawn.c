@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.135 1998/11/02 01:59:23 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.137 1998/11/06 11:12:43 tom Exp $
  *
  */
 
@@ -540,11 +540,11 @@ pipecmd(int f, int n)
 
 #if SYS_UNIX || SYS_MSDOS || (SYS_OS2 && CC_CSETPP) || SYS_WINNT
 /*
- * write_data_to_pipe() exists to facilitate execution of a Win32 thread.
+ * write_kreg_to_pipe() exists to facilitate execution of a Win32 thread.
  * All other host operating systems are simply victims.
  */
 static void
-write_data_to_pipe(void *writefp)
+write_kreg_to_pipe(void *writefp)
 {
     FILE *fw;
     KILL *kp;       /* pointer into kill register */
@@ -556,6 +556,42 @@ write_data_to_pipe(void *writefp)
     {
         fwrite((char *)kp->d_chunk, 1, (SIZE_T)KbSize(ukb,kp), fw);
         kp = kp->d_next;
+    }
+#if SYS_UNIX && ! TEST_DOS_PIPES
+    (void)fflush(fw);
+    (void)fclose(fw);
+    ExitProgram (GOODEXIT);
+    /* NOTREACHED */
+#else
+    npflush();  /* fake multi-processing */
+#endif
+#if SYS_WINNT
+    /*
+     * If this function is invoked by a thread, then that thread (not
+     * the parent process) must close write pipe.  We generalize this
+     * function so that all Win32 execution environments (threaded or
+     * not) use the same code.
+     */
+    (void)fflush(fw);
+    (void)fclose(fw);
+#endif
+}
+
+/*
+ * A corresponding function to write the current region from DOT to MK to a
+ * pipe.
+ */
+static void
+write_region_to_pipe(void *writefp)
+{
+    FILE *fw = (FILE *)writefp;
+    LINEPTR last = setup_region();
+    LINEPTR lp = DOT.l;
+
+    while (lp != last) {
+        fwrite((char *)lp->l_text, sizeof(char), (SIZE_T)llength(lp), fw);
+	fputc('\n', fw);
+	lp = lforw(lp);
     }
 #if SYS_UNIX && ! TEST_DOS_PIPES
     (void)fflush(fw);
@@ -661,7 +697,7 @@ filterregion(void)
     if (!softfork())
     {
 #if !(SYS_WINNT && defined(GMDW32PIPES))
-        write_data_to_pipe(fw);
+        write_kreg_to_pipe(fw);
 #else
         /* This is a Win32 environment with compiled Win32 pipe support. */
         if (global_g_val(GMDW32PIPES))
@@ -671,7 +707,7 @@ filterregion(void)
              * region to write pipe.
              */
 
-            if (_beginthread(write_data_to_pipe, 0, fw) == -1)
+            if (_beginthread(write_kreg_to_pipe, 0, fw) == -1)
             {
                 mlforce("[Can't create Win32 write pipe]");
                 (void) fclose(fw);
@@ -686,7 +722,7 @@ filterregion(void)
              * write pipe (temp file).
              */
 
-            write_data_to_pipe(fw);
+            write_kreg_to_pipe(fw);
         }
 #endif
     }
@@ -699,6 +735,72 @@ filterregion(void)
     (void)firstnonwhite(FALSE,1);
     (void)setmark();
     end_kill();
+    return s;
+#else
+    mlforce("[Region filtering not available -- try buffer filtering]");
+    return FALSE;
+#endif
+}
+
+/*
+ * Like filterregion, but opens a stream reading from a filter's output when
+ * we will not modify the current buffer (e.g., syntax highlighting).
+ */
+int
+open_region_filter(void)
+{
+/* FIXME work on this for OS2, need inout_popen support, or named pipe? */
+#if SYS_UNIX || SYS_MSDOS || (SYS_OS2 && CC_CSETPP) || SYS_WINNT
+    static char oline[NLINE];   /* command line send to shell */
+    char    line[NLINE];    /* command line send to shell */
+    FILE *fr, *fw;
+    int s;
+
+    /* get the filter name and its args */
+    if ((s=mlreply_no_bs("!", oline, NLINE)) != TRUE)
+        return(s);
+    (void)strcpy(line,oline);
+    if ((s = inout_popen(&fr, &fw, line)) != TRUE) {
+        mlforce("[Couldn't open pipe or command]");
+        return s;
+    }
+
+    if (!softfork())
+    {
+#if !(SYS_WINNT && defined(GMDW32PIPES))
+        write_region_to_pipe(fw);
+#else
+        /* This is a Win32 environment with compiled Win32 pipe support. */
+        if (global_g_val(GMDW32PIPES))
+        {
+            /*
+             * w32pipes mode enabled -- create child thread to blast
+             * region to write pipe.
+             */
+
+            if (_beginthread(write_region_to_pipe, 0, fw) == -1)
+            {
+                mlforce("[Can't create Win32 write pipe]");
+                (void) fclose(fw);
+                (void) npclose(fr);
+                return (FALSE);
+            }
+        }
+        else
+        {
+            /*
+             * Single-threaded parent process writes region to pseudo
+             * write pipe (temp file).
+             */
+
+            write_region_to_pipe(fw);
+        }
+#endif
+    }
+#if ! ((SYS_OS2 && CC_CSETPP) || SYS_WINNT)
+    (void)fclose(fw);
+#endif
+    ffp = fr;
     return s;
 #else
     mlforce("[Region filtering not available -- try buffer filtering]");

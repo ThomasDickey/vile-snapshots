@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.310 1998/11/02 01:59:14 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.313 1998/11/06 11:14:16 tom Exp $
  *
  */
 
@@ -780,6 +780,7 @@ void clobber_save_curbp(BUFFER *bp);
 
 /* select.c */
 #if OPT_SELECTIONS
+extern	LINEPTR setup_region    (void);
 extern	int	assign_attr_id	(void);
 extern	int	attribute_cntl_a_seqs_in_region(REGION *rp, REGIONSHAPE shape);
 extern	int	attributeregion (void);
@@ -811,6 +812,7 @@ extern	BUFFER *sel_buffer	(void);
 extern SIGT rtfrmshell (int ACTUAL_SIG_ARGS);
 extern void pressreturn (void);
 extern int filterregion (void);
+extern int open_region_filter (void);
 #else
 #define pressreturn() (void)keystroke()
 #endif
@@ -940,6 +942,7 @@ extern void w32_keybrd_reopen(int pressret);
 extern void w32_npclose(FILE *fp);
 extern int  w32_system(const char *cmd);
 extern int  w32_system_winvile(const char *cmd, int pressret);
+extern char *w32_wdw_title();
 extern void *winvile_hwnd(void);
 #endif
 

@@ -1,5 +1,33 @@
 Changes for vile 8.3 (released ??? ??? ??, 1998)
 
+ (tom) 981106 (b)
+	+ add new command attribute-from-filter.
+	+ modify allocation of hypercmd value in select.c to use TBUFF's, fixing
+	  a use of uninitialized memory.
+	+ disable keyboard translation in Motif version of xvile (Gary Ross).
+	> patches by Clark Morgan:
+	+ correct key translation in ntwinio.c so that pressing '^' (i.e.,
+	  shift+6) will no longer cause winvile to flash/beep. 
+	+ README.PC updated to talk about creation and location of startup
+	  file. 
+	+ win32 versions of editor now support the $title env var (users can
+	  now set and display title from a macro).  appropriate documentation
+	  updated. 
+	+ macros/doc and vile.hlp tweaked to show that $title is set using env
+	  var syntax.  although, surprisingly, the original example syntax
+	  works (i.e.,  set title "string").  i'm surprised because this is yet
+	  another undocumented aspect of the macro language--env vars are
+	  available via the set command.  i'm not sure I want to document this
+	  feature--there's quite a bit to digest in this language as it is,
+	  now. 
+	+ the my_cd_action stored procedure example in vile.hlp has been
+	  changed to my-cd-action to prevent users from being surprised that
+	  '_' is a command terminator. 
+	+ makefile.wnt modified so that the ole-automation version of winvile
+	  will suck up the new winvile icon (the linker won't accept multiple
+	  .RES files). 
+	+ document environment variables in vile man-page.
+
  (tom) 981101 (a)
  	+ add icon for winvile (V-eyes 'pumpkin').
 	+ corrections to hilite.pl and syntax.pl, so it works for C comments
@@ -10,7 +38,8 @@ Changes for vile 8.3 (released ??? ??? ??, 1998)
 	  Note that this purges the undo stack, because it suppresses update
 	  of the undo stack while changes may occur to the buffer.  Also,
 	  during filtering it prevents vile from retaining the buffer's contents
-	  in the kill buffer.
+	  in the kill buffer (prompted by a report by Holger Kummert
+ 	  <kummert@nentec.de>).
 	+ minor fixes for memory-leaks & test code for that (main.c, fileio.c,
 	  modes.c)
 	+ modify dfputli and dfputi to output unsigned values to use in $pid

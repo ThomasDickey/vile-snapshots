@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.195 1998/10/30 11:22:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.197 1998/11/06 10:45:25 Gary.Ross Exp $
  *
  */
 
@@ -3103,6 +3103,7 @@ x_preparse_args(
 	    cur_win->form_widget,
 	    XtNwidth,			cur_win->pane_width,
 	    XmNbottomAttachment,	XmATTACH_FORM,
+	    XmNtraversalOn,		False, /* Added by gdr */ 
 #if OPT_MENUS
 	    XmNtopAttachment,		XmATTACH_WIDGET,
 	    XmNtopWidget,		menub,

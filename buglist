@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.348 1998/10/03 17:07:38 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.349 1998/11/05 01:05:15 cmorgan Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1655,25 +1655,25 @@ region is?
 
 -- 98-09-01 (Clark Morgan)
 
-1) Invoke winvile (8.0l for this test case). 
-2) Using the system menu, change font to r_ansi, pitch 9, normal. 
-   Notice in the message line that winvile emits a status message 
-   stating that the font has been changed to r_ansi -- so far, so good. 
-3) Change font to Courier New, pitch 9, normal. 
-   Notice that the message line still says that the font has been changed 
-   to r_ansi, even though winvile changed the font to Courier New. 
- 
-If I enable pop-up messages before step 1 and press the ':' key after  
-step 3, I see that winvile has indeed recorded a separate (and correct) 
-status message for each font change.  The bug here is that the second 
-font status message is not flushed to the status line. 
+1) Invoke winvile (8.0l for this test case).
+2) Using the system menu, change font to r_ansi, pitch 9, normal.
+   Notice in the message line that winvile emits a status message
+   stating that the font has been changed to r_ansi -- so far, so good.
+3) Change font to Courier New, pitch 9, normal.
+   Notice that the message line still says that the font has been changed
+   to r_ansi, even though winvile changed the font to Courier New.
+
+If I enable pop-up messages before step 1 and press the ':' key after
+step 3, I see that winvile has indeed recorded a separate (and correct)
+status message for each font change.  The bug here is that the second
+font status message is not flushed to the status line.
 
 -- 98-09-02 (paul)
 
-my officemate just pointed out that showmatch in winvile doesn't. 
- 
-you can see that it pauses, but the temporary cursor position doesn't get 
-flushed to the screen (or something like that). 
+my officemate just pointed out that showmatch in winvile doesn't.
+
+you can see that it pauses, but the temporary cursor position doesn't get
+flushed to the screen (or something like that).
 
 [I spent a couple of hours studying this without a solution.  If I call
 Sleep(), the events are simply postponed until the timeout ends.  Possibly
@@ -1681,33 +1681,19 @@ waiting for an event of some sort would work - tom]
 
 -- 98-09-03 (Clark Morgan)
 
--- one
-I've got a case where visual-matches highlighting doesn't work. 
- 
-   :se visual-matches brightred 
-   <colorize source file> 
-   /pattern_x 
-   n 
-   N 
-   <no problems so far, works great> 
-   =             ; erase current visual-matches highlighting 
-   n             ; whoops, no visual match highlight  <<< 
-   /pattern_x    ; still no visual match highlight    <<< 
-   /pattern_y    ; visual match highlight works again 
-   /pattern_x    ; still working 
+I've got a case where visual-matches highlighting doesn't work.
 
--- another
-Invoke winvile. 
-Set flash. 
- 
-Every time I search for: 
- 
-   /^pattern 
- 
-winvile flashes the screen.  Simply pressing '/' followed by '^' causes 
-an immediate flash. 
- 
-Not a problem with console vile. 
+   :se visual-matches brightred
+   <colorize source file>
+   /pattern_x
+   n
+   N
+   <no problems so far, works great>
+   =             ; erase current visual-matches highlighting
+   n             ; whoops, no visual match highlight  <<<
+   /pattern_x    ; still no visual match highlight    <<<
+   /pattern_y    ; visual match highlight works again
+   /pattern_x    ; still working
 
 -- 98-09-03 (tom)
 
@@ -1717,23 +1703,23 @@ and to describe-bindings view.  Add $#, $*, $0 ... $$n to variables.
 
 -- 98-09-07 (Clark Morgan)
 
-When I invoke winvile from a dos box like so: 
- 
-    winvile -geometry 80x37 
- 
+When I invoke winvile from a dos box like so:
+
+    winvile -geometry 80x37
+
 I notice that 90% of the time the mode and commmand lines are positioned
 beneath the win95 task bar.  This requires that I use the mouse to move the
 editor's window up a half-inch or so.  'Twould be nice if the editor's entire
-working area was visible. 
- 
-Here's the relevant font info from my vile.rc: 
- 
-~if &sequal $progname "winvile" 
-    set-variable $font "courier new,9" 
-    ... 
-~endif 
- 
-I'm using a 17-inch monitor, 1024x768, 256 colors. 
+working area was visible.
+
+Here's the relevant font info from my vile.rc:
+
+~if &sequal $progname "winvile"
+    set-variable $font "courier new,9"
+    ...
+~endif
+
+I'm using a 17-inch monitor, 1024x768, 256 colors.
 
 -- 98-09-09 (tom)
 
@@ -1742,7 +1728,7 @@ doesn't grok.
 
 -- 98-09-24 (Clark Morgan)
 
-If I attempt to set the geometry to 80x39 when using the font string 
+If I attempt to set the geometry to 80x39 when using the font string
 "r_ansi,8", the number of rows gets coerced to 37 in ResizeClient.
 
 [there's something in the initialization which is using the original fontsize

@@ -6,7 +6,7 @@
  * =======
  * -- This code has not been tested with NT 3.51 .
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.11 1998/11/02 01:58:54 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.12 1998/11/05 00:42:52 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -722,3 +722,40 @@ parse_font_str(const char *fontstr, FONTSTR_OPTIONS *results)
     return (TRUE);
 }
 #endif  /* DISP_NTWIN */
+
+/* return current window title in dynamic buffer */
+char *
+w32_wdw_title(void)
+{
+    static char   *buf;
+    static size_t bufsize;
+    int           nchars;
+
+    if (! buf)
+    {
+        bufsize = 128;
+        buf     = castalloc(char, bufsize);
+        if (! buf)
+            return (errorm);
+    }
+    for (;;)
+    {
+#if DISP_NTWIN
+        nchars = GetWindowText(winvile_hwnd(), buf, bufsize);
+#else
+        nchars = GetConsoleTitle(buf, bufsize);
+#endif
+        if (nchars >= bufsize - 1)
+        {
+            /* Enlarge buffer and try again. */
+
+            bufsize *= 2;
+            buf      = castalloc(char, bufsize);
+            if (! buf)
+                return (errorm);
+        }
+        else
+            break;
+    }
+    return ((nchars) ? buf : errorm);
+}
