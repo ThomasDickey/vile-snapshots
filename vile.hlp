@@ -1045,6 +1045,14 @@ Editor modes
 		vile will behave more like vi, in that buffers remain in a
 		fixed order, that in which they were edited. (U)
 
+	autocolor (ac) Automatic syntax coloring.  If set to zero, 
+		automatic syntax coloring is disabled.  Otherwise, it
+		should be set to a small positive integer which represents
+		the number of seconds to wait before invoking the
+		"autocolor-hook" hook.  The editor will wait the
+		specified number of seconds for a "quiet interval" during
+		which the user hasn't pressed any keys.
+
 	autowrite (aw)  vile will write out any changed buffers for which
 		this mode is set before performing a ^Z, "stop", "suspend",
 		":!<cmd>", or '^X-!<cmd>'.  The ":sh" command is not
@@ -2152,6 +2160,8 @@ Programmed procedures and macros
 	"state" variables, and mode values).  The state variables are:
 
 	$abufname	alternate buffer name (i.e. last visited) (read only)
+	$autocolor-hook	name of the hook to run when attempting to do
+			automatic syntax coloring
 	$bchars		number of characters in current buffer	(read only)
 	$bflags		status flags for current buffer (read only)
 			a	autobuffer caused this to be created
@@ -3073,6 +3083,27 @@ Syntax coloring
 	(already present in filters/filters.rc) provides a convenient
 	way of reapplying the coloring after a succession of edits to
 	the buffer.
+
+	It is also possible to have vile color your text for you when
+	you're not busy.  To do so, you'll need to tie the
+	HighlightFilter procedure (or some other suitable procedure)
+	to the "autocolor-hook" variable.  You'll also need to change
+	"autocolor" to be non-zero.  It represents the number of seconds
+	to wait after your most recent modification (and all
+	subsequent keypresses) to attempt to re-color the buffer.  For
+	example, adding the following two lines would cause your text
+	to be automatically recolored after waiting two seconds from
+	your most recent modification and all subsequent activity
+	(keypresses) occuring less than two seconds apart.
+
+	    set autocolor=2
+	    set autocolor-hook HighlightFilter
+
+	Note that "autocolor" is a buffer mode and as such, you
+	can enable it globally, but disable it for certain particular
+	buffers that you don't wish to be automatically colored.  I.e,
+	do "setl autocolor=0" to disable the automatic syntax coloring
+	for a particular buffer.
 
 	The filter programs do their work based on the contents of the file
 	.vile.keywords (or vile.keywords depending on your configuration),
@@ -4263,4 +4294,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.454 1999/12/09 02:43:10 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.455 1999/12/14 11:44:53 kev Exp $

@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.29 1999/12/04 18:51:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.30 1999/12/14 11:44:53 kev Exp $
  */
 
 #include	"estruct.h"
@@ -225,6 +225,13 @@ int var_ABUFNAME(TBUFF **rp, const char *vp)
 		return FALSE;
 	}
 }
+
+#if OPT_HOOKS
+int var_AUTOCOLORHOOK(TBUFF **rp, const char *vp)
+{
+	return any_HOOK(rp, vp, &autocolorhook);
+}
+#endif
 
 int var_BCHARS(TBUFF **rp, const char *vp)
 {

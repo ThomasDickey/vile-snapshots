@@ -6,7 +6,7 @@
  * 		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.39 1999/12/13 01:56:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.40 1999/12/14 02:53:05 tom Exp $
  *
  * Features:
  * 	- Reads the keyword file ".vile.keywords" from the home directory.
@@ -225,7 +225,9 @@ static char *
 write_number(FILE * fp, char *s)
 {
     char *base = s;
-    int radix = (*s == '0') ? ((s[1] == 'x' || s[1] == 'X') ? 16 : 8) : 10;
+    int radix = (*s == '0')
+		? ((s[1] == 'x' || s[1] == 'X') ? 16
+		: (!isdigit(s[1])) ? 10 : 8) : 10;
     int state = 0;
     int done = 0;
     int found = isdigit(*s) && (radix != 16);

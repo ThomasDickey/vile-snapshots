@@ -1,9 +1,9 @@
-%x NORMAL QUOTE1 QUOTE2
+%x NORMAL COMMENT QUOTE1 QUOTE2
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.25 1999/11/28 20:04:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.26 1999/12/15 00:43:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -137,7 +137,9 @@ MACRO		([$]?\$\{{ID}\}|[$]?\${ID}|[$]?\$[A-Za-z@!%^&*?<]|\${SPACE}*\([^\)]+\))
 <NORMAL>\'		{ add_to_quoted(yytext, yyleng); BEGIN(QUOTE1); }
 <NORMAL>\"		{ add_to_quoted(yytext, yyleng); BEGIN(QUOTE2); }
 
-<NORMAL>"#".*$		{ WriteToken(Comment_attr); }
+<NORMAL>"#"			{ WriteToken(Comment_attr); BEGIN(COMMENT); }
+<COMMENT>(\\.|\\\n|[^\n])*	{ WriteString(Comment_attr); }
+<COMMENT>\n			{ ECHO; BEGIN(NORMAL); }
 
 <QUOTE1,QUOTE2>{MACRO}		{ flush_quoted(); WriteString(Ident2_attr); }
 <QUOTE1,QUOTE2>\\{SPACE}+\n	{ flush_quoted(); WriteString(Error_attr); }
