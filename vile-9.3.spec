@@ -1,7 +1,7 @@
 Summary: VILE VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/RCS/vile-9.3.spec,v 1.13 2003/05/03 11:23:12 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/vile-9.3.spec,v 1.14 2003/05/06 21:32:50 tom Exp $
 Name: vile
-Version: 9.3o
+Version: 9.3p
 # each patch should update the version
 Release: 1
 Copyright: GPL
@@ -23,6 +23,7 @@ Patch12: vile-9.3l.patch.gz
 Patch13: vile-9.3m.patch.gz
 Patch14: vile-9.3n.patch.gz
 Patch15: vile-9.3o.patch.gz
+Patch16: vile-9.3p.patch.gz
 # each patch should add itself to this list
 Packager: Thomas Dickey <dickey@herndon4.his.com>
 BuildRoot: %{_tmppath}/%{name}-root
@@ -50,6 +51,7 @@ rebinding, and real X window system support.
 %patch13 -p1
 %patch14 -p1
 %patch15 -p1
+%patch16 -p1
 # each patch should add itself to this list
 
 %build
@@ -96,6 +98,9 @@ install xvile.wmconfig $RPM_BUILD_ROOT/%{_sysconfdir}/X11/wmconfig/xvile
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Tue May 06 2003 Thomas Dickey
+- added patch for 9.3p
 
 * Sat May 03 2003 Thomas Dickey
 - added patch for 9.3o

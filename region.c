@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.119 2003/03/11 20:01:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.123 2003/05/10 20:18:04 tom Exp $
  *
  */
 
@@ -1043,7 +1043,7 @@ encode_one_attribute(TBUFF ** result, int count, char *hyper, VIDEO_ATTR attr)
 	tb_append(result, 'U');
     if (attr & VABOLD)
 	tb_append(result, 'B');
-    if (attr & VAREV)
+    if (attr & (VAREV | VASEL))
 	tb_append(result, 'R');
     if (attr & VAITAL)
 	tb_append(result, 'I');
@@ -1113,10 +1113,10 @@ encode_attributes(LINE *lp, BUFFER *bp, REGION * top_region)
 		ar_temp = *ap;
 		found = 1;
 		if (lp != ap->ar_region.r_end.l) {
+		    found = -1;
 		    tst_rel = line_no(bp, ap->ar_region.r_end.l);
 		    if (tst_rel > top_rel) {
 			ar_temp.ar_region.r_end = top_region->r_end;
-			found = -1;
 		    }
 		}
 	    } else if (this_line == top_rsl) {
@@ -1124,7 +1124,7 @@ encode_attributes(LINE *lp, BUFFER *bp, REGION * top_region)
 		tst_rel = line_no(bp, ap->ar_region.r_end.l);
 		if (tst_rsl <= this_line && tst_rel >= this_line) {
 		    ar_temp = *ap;
-		    found = -1;
+		    found = -2;
 		    if (tst_rsl < top_rsl)
 			ar_temp.ar_region.r_orig = top_region->r_orig;
 		    if (tst_rel > top_rel)
@@ -1239,7 +1239,10 @@ encode_region(void)
 		 */
 		videoattribute = 0;
 		attributeregion();
+#if OPT_MAJORMODE
+		make_local_b_val(curbp, MDHILITE);
 		set_b_val(curbp, MDHILITE, FALSE);
+#endif
 
 		DOT = work.enc_region.r_orig;
 		for (n = 0; n < total; ++n) {

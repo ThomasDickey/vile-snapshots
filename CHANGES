@@ -1,5 +1,60 @@
 Changes for vile 9.4 (released ??? ??? ?? ????)
 
+ 20030510 (p)
+	> Danny Zerkel:
+	+ revert 9.3o change for pl-filt.c, since "!" should be allowed as
+	  a pattern delimiter.
+	+ add a limit check in pl-filt.c
+	> Tom Dickey:
+	+ modify manpage.rc to check if the current buffer is perl, and if so,
+	  to render contents using pod2man or pod2text.
+	+ several fixes for pl-filt.c (vile-perl-filt):
+	  + check for a leading POD area, i.e., the first line is "=head",
+	    with no preceding blank lines.
+	  + allow floating-point numbers without a decimal point.
+	  + add "@", ";", "=" to QUOTE_DELIMS
+	  + add preprocessor keywords such as __END__ to perl.key
+	  + check for __DATA__ keyword, which ends the script like __END__.
+	  + add "grep", "unless", "until", "while" to the keywords which may
+	    have a pattern following not in parenthesis.
+	  + improve logic in is_QIDENT, testing for a quoted string in addition
+	    to an identifier for here-document marker.
+	  + check for identifier after "$#".
+	  + check for typeglob, i.e, a "*" preceding an identifier, e.g,. "*x".
+	  + add check in add_to_PATTERN() for nested parenthesis, e.g., when
+	    parenthesis are the pattern delimiters.
+	  + modify add_to_PATTERN() to accommodate multiple delimiters in a
+	    substitute command, e.g., "s{a}(b)".
+	  + check for pattern immediately after a left curly-brace.
+	  + modify check for operators to allow "||", etc., not within
+	    parentheses.
+	  + make buffer-checks more readable with macros MORE() and ATLEAST().
+	  + check for "..." in pattern, which makes a range of expressions.
+	  + parse backtic expressions.
+	  + parse file glob expressions.
+	  + parse format-statements.
+	  + suppress highlighting of variables inside single-quotes.
+	  + show variables highlighted inside double-quoted here-documents.
+	  + correct count returned from is_ESCAPED(), which did not count the
+	    character after the backslash if it was a quote character.
+	+ correct logic in encode_attributes(), which did not recompute region
+	  size for a buffer attribute that started on the current line, but did
+	  not end there.
+	+ add un-filters (atr2ansi, atr2html, atr2text) which convert encoded
+	  control/A text to different forms.
+	+ modify "decode-attributes-til" to allow multiple regions to start
+	  at the same point.
+	+ modify "encode-attributes-til" to set local nohighlight mode on the
+	  modified buffer (was global).
+	+ modify a limit-check in add_line_attrib(), in case an external
+	  filter provides a region that extends beyond the line.  In that
+	  case, it continued to set attributes beyond the allocated space.
+	+ modify "encode-attributes-til" to render selected text with "R"
+	  attribute.  It would be more consistent to use "S", but there would
+	  be no proper way to read the attribute back into vile.
+	+ rename a 'lvalue' variable in display.c to avoid conflict with macro
+	  preventing compile with unproto on SunOS 4.1.
+
  20030504 (o)
 	> Danny Zerkel:
 	+ modify perl filters to disallow a blank between "<<" and the
@@ -108,7 +163,7 @@ Changes for vile 9.4 (released ??? ??? ?? ????)
 	  and FROM (part of RANGE) which caused some commands to be incorrectly
 	  treated as minibuffer editing commands when logic was changed to
 	  allow MINIBUF to be treated this way.
-	+ implement a few new editing commands in the minibuffer:  r, ~, x, X. 
+	+ implement a few new editing commands in the minibuffer:  r, ~, x, X.
 	  Other editing commands such as R would require special handling;
 	  these are implemented by setting the appropriate flag in cmdtbl.
 	+ change cmdtbl to use MINIBUF rather than NOMINI, to implement

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.373 2003/05/04 16:54:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.374 2003/05/05 20:11:27 tom Exp $
  *
  */
 
@@ -202,8 +202,8 @@ dofmt(const char *fmt, va_list * app)
     register int n;
     register int nchars = 0;
     int islong;
-    int ivalue;
-    long lvalue;
+    int int_value;
+    long long_value;
     UINT radix;
     OutFunc outfunc = dfoutfn;	/* local copy, for recursion */
 
@@ -241,26 +241,26 @@ dofmt(const char *fmt, va_list * app)
 
 	case 'd':
 	    if (!islong) {
-		ivalue = va_arg(*app, int);
-		if (ivalue < 0) {
-		    if (ivalue < vMAXNEG) {
+		int_value = va_arg(*app, int);
+		if (int_value < 0) {
+		    if (int_value < vMAXNEG) {
 			n = dfputs(outfunc, "OVFL");
 			break;
 		    }
-		    ivalue = -ivalue;
+		    int_value = -int_value;
 		    (*outfunc) ('-');
 		    nchars++;
 		}
-		n = dfputi(outfunc, (UINT) ivalue, 10);
+		n = dfputi(outfunc, (UINT) int_value, 10);
 		break;
 	    }
-	    lvalue = va_arg(*app, long);
-	    if (lvalue < 0) {
-		lvalue = -lvalue;
+	    long_value = va_arg(*app, long);
+	    if (long_value < 0) {
+		long_value = -long_value;
 		(*outfunc) ('-');
 		nchars++;
 	    }
-	    n = dfputli(outfunc, (ULONG) lvalue, 10);
+	    n = dfputli(outfunc, (ULONG) long_value, 10);
 	    break;
 
 	case 'o':

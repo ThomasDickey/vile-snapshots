@@ -553,7 +553,9 @@ State Variables
 	$majormode      [READ ONLY] Current majormode, if any.
 
 	$majormode-hook	name of the hook to run when attempting to determine
-			the majormode for the current buffer.
+			the majormode for the current buffer.  If this is not
+			defined, vile uses the prefixes and suffixes values
+			to decide.
 
 	$match          [READ ONLY] After a successful search, contains
 			the text that matched the search pattern.
@@ -1448,6 +1450,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.88 2002/12/23 00:30:16 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.89 2003/05/05 21:56:12 tom Exp $
 -----------------------------------
 
