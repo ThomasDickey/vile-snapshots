@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2000 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.106 2001/12/06 00:48:34 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.107 2002/01/09 00:30:55 tom Exp $
  *
  */
 
@@ -145,7 +145,7 @@ char *const predefined[] =
 };
 
 static ERR_PATTERN *exp_table = 0;
-static ALLOC_T exp_count = 0;
+static size_t exp_count = 0;
 
 void
 set_febuff(const char *name)
@@ -391,7 +391,7 @@ load_patterns(void)
 {
     BUFFER *bp;
     LINE *lp;
-    SIZE_T n;
+    size_t n;
 
     /* find the error-expressions buffer */
     if ((bp = find_b_name(ERRORS_BufName)) == 0) {
@@ -434,7 +434,7 @@ load_patterns(void)
  * if count is out of range.
  */
 static ERR_PATTERN *
-next_pattern(ALLOC_T count)
+next_pattern(size_t count)
 {
     ERR_PATTERN *result = 0;
 
@@ -493,7 +493,7 @@ decode_exp(ERR_PATTERN * exp)
 	temp = 0;
 	if (tb_bappend(&temp,
 		       p->startp[n],
-		       (ALLOC_T) (p->endp[n] - p->startp[n])) == 0
+		       (size_t) (p->endp[n] - p->startp[n])) == 0
 	    || tb_append(&temp, EOS) == 0) {
 	    (void) no_memory("finderr");
 	    failed = TRUE;
@@ -556,13 +556,13 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
     LINE *dotp;
     int moveddot = FALSE;
     ERR_PATTERN *exp;
-    ALLOC_T count;
+    size_t count;
 
     char *errverb;
     char *errfile;
     char *errtext;
     char ferrfile[NFILEN];
-    ALLOC_T len;
+    size_t len;
 
     static int oerrline = -1;
     static TBUFF *oerrfile;
@@ -835,7 +835,7 @@ make_err_regex_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 	load_patterns();
     if (exp_table != 0
 	&& (bp = find_b_name(ERRORS_BufName)) != 0) {
-	ALLOC_T j = 0;
+	size_t j = 0;
 	b_set_left_margin(curbp, ERR_PREFIX);
 	for_each_line(lp, bp) {
 	    int k, first = TRUE;

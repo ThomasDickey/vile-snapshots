@@ -2498,6 +2498,7 @@ Programmed procedures (aka macros)
 	$bchars		number of characters in current buffer	(read only)
 	$bflags		status flags for current buffer (read only)
 			a	autobuffer caused this to be created
+			d	directory listing
 			i	invisible, e.g., tags
 			m	modified
 			s	scratch, will be removed when popped down
@@ -2513,11 +2514,18 @@ Programmed procedures (aka macros)
 	$cfgopts	comma-delimited list of "interesting" compiled options
 	                (read only).  Currently tracked options include:
 
-			perl        -> editor includes perl interpreter
-			oleauto     -> editor supports OLE automation.
+			athena      -> xvile built with Athena widgets
 			curses      -> editor uses curses terminal driver
+			motif       -> xvile built with Motif libraries
+			nextaw      -> xvile built with Athena widgets (NeXtaw)
+			noshell     -> shell commands are disabled
+			oleauto     -> editor supports OLE automation.
+			openlook    -> xvile built with OpenLook libraries
+			perl        -> editor includes perl interpreter
 			termcap     -> editor reads TERMCAP db for screen info.
 			terminfo    -> editor reads TERMINFO db for screen info.
+			xaw         -> xvile built with Athena widgets (Xaw)
+			xaw3d       -> xvile built with Athena widgets (Xaw3D)
 
 	$cfilname	current file name
 	$char		character under the cursor
@@ -5684,4 +5692,4 @@ Problems
 
 Copyright 1995-2001 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.536 2001/12/30 21:29:34 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.538 2002/01/09 00:13:55 tom Exp $

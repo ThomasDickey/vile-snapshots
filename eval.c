@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.305 2001/12/30 20:33:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.306 2002/01/09 00:30:55 tom Exp $
  *
  */
 
@@ -43,7 +43,7 @@ typedef struct PROC_ARGS {
 
 static PROC_ARGS *arg_stack;
 
-static SIZE_T s2size(const char *s);
+static size_t s2size(const char *s);
 static char **init_vars_cmpl(void);
 static char *get_statevar_val(int vnum);
 static const char *s2offset(const char *s, const char *n);
@@ -381,7 +381,7 @@ show_VariableList(BUFFER *bp GCC_UNUSED)
     char *values;
     register WINDOW *wp = curwp;
     register int s;
-    register ALLOC_T t;
+    register size_t t;
     register char *v;
     register const char *vv;
     static const char fmt[] =
@@ -2314,7 +2314,7 @@ evaluate(int f, int n)
 /* use this as a wrapper when evaluating an array index, etc., that cannot
  * be negative.
  */
-static SIZE_T
+static size_t
 s2size(const char *s)
 {
     int n = strtol(s, 0, 0);
@@ -2327,7 +2327,7 @@ s2size(const char *s)
 static const char *
 s2offset(const char *s, const char *n)
 {
-    SIZE_T len = strlen(s) + 1;
+    size_t len = strlen(s) + 1;
     UINT off = s2size(n);
     if (off > len)
 	off = len;

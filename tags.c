@@ -5,7 +5,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995-2000 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.112 2001/09/18 09:49:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.113 2002/01/09 00:32:02 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -46,7 +46,7 @@ typedef struct {
 
 static	BUFFER *gettagsfile(int n, int *endofpathflagp, int *did_read);
 static	LINE *	cheap_buffer_scan(BUFFER *bp, char *patrn, int dir);
-static	LINE *	cheap_tag_scan(LINEPTR oldlp, char *name, SIZE_T taglen);
+static	LINE *	cheap_tag_scan(LINEPTR oldlp, char *name, size_t taglen);
 static	int	popuntag(char *fname, L_NUM *linenop, C_NUM *colnop);
 static	int	tag_search(char *tag, int taglen, int initial);
 static	void	free_untag(UNTAG *utp);
@@ -419,7 +419,7 @@ tag_search(char *tag, int taglen, int initial)
 	static TBUFF *srchpat;
 
 	register LINE *lp;
-	register SIZE_T i;
+	register size_t i;
 	register int status;
 	char *tfp, *lplim;
 	char tfname[NFILEN];
@@ -468,7 +468,7 @@ tag_search(char *tag, int taglen, int initial)
 				initial || retried
 				  ? buf_head(tagbp)
 				  : tagbp->b_dot.l,
-				tag, (SIZE_T)taglen);
+				tag, (size_t)taglen);
 			gotafile = TRUE;
 		}
 
@@ -585,7 +585,7 @@ tag_search(char *tag, int taglen, int initial)
 		}
 
 		if ((srchpat = tb_init(&srchpat, EOS)) == 0
-		 || (srchpat = tb_bappend(&srchpat, tfp, (ALLOC_T)(p - tfp))) == 0
+		 || (srchpat = tb_bappend(&srchpat, tfp, (size_t)(p - tfp))) == 0
 		 || (srchpat = tb_append(&srchpat, EOS)) == 0)
 			return no_memory("tags");
 
@@ -750,10 +750,10 @@ static int my_strncasecmp(const char *a, const char *b, size_t len)
  *	significant in the lookup.
  */
 static LINE *
-cheap_tag_scan(LINEPTR oldlp, char *name, SIZE_T taglen)
+cheap_tag_scan(LINEPTR oldlp, char *name, size_t taglen)
 {
 	register LINE *lp,*retlp;
-	SIZE_T namelen = strlen(name);
+	size_t namelen = strlen(name);
 	int exact = (taglen == 0);
 	int added_tab;
 #ifdef MDTAGIGNORECASE

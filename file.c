@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.305 2001/12/30 22:04:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.315 2002/01/12 13:36:58 tom Exp $
  */
 
 #include "estruct.h"
@@ -56,7 +56,8 @@ file_modified(char *path)
     struct stat statbuf;
     time_t the_time = 0;
 
-    if (stat(SL_TO_BSL(path), &statbuf) >= 0
+    (void) file_stat(path, 0);
+    if (file_stat(path, &statbuf) >= 0
 	&& isFileMode(statbuf.st_mode)) {
 #if SYS_VMS
 	the_time = statbuf.st_ctime;	/* e.g., creation-time */
@@ -221,12 +222,12 @@ set_modtime(BUFFER *bp, char *fn)
 #endif /* MDCHK_MODTIME */
 
 #if SYS_UNIX || SYS_MSDOS
-#define CleanToPipe() if (fileispipe) ttclean(TRUE)
+#define CleanToPipe() if (ffstatus == file_is_pipe) ttclean(TRUE)
 
 static void
 CleanAfterPipe(int Wrote)
 {
-    if (fileispipe == TRUE) {
+    if (ffstatus == file_is_pipe) {
 	ttunclean();		/* may clear the screen as a side-effect */
 	term.flush();
 	if (Wrote)
@@ -241,7 +242,7 @@ CleanAfterPipe(int Wrote)
 static void
 CleanToPipe(void)
 {
-    if (fileispipe) {
+    if (ffstatus == file_is_pipe) {
 	kbd_erase_to_end(0);
 	kbd_flush();
 	term.kclose();
@@ -251,7 +252,7 @@ CleanToPipe(void)
 static void
 CleanAfterPipe(int Wrote)
 {
-    if (fileispipe) {
+    if (ffstatus == file_is_pipe) {
 	term.kopen();
 	if (global_g_val(GMDW32PIPES)) {
 	    if (Wrote)
@@ -278,7 +279,7 @@ slowtime(time_t * refp)
 {
     int status = FALSE;
 
-    if (fileispipe) {
+    if (ffstatus == file_is_pipe) {
 	time_t temp = time((time_t *) 0);
 
 	status = (!ffhasdata() || (temp != *refp));
@@ -289,9 +290,9 @@ slowtime(time_t * refp)
 }
 #else
 # if SYS_WINNT
-#  define slowtime(refp) (fileispipe && !nowait_pipe_cmd && !ffhasdata())
+#  define slowtime(refp) ((ffstatus == file_is_pipe) && !nowait_pipe_cmd && !ffhasdata())
 # else
-#  define slowtime(refp) (fileispipe && !ffhasdata())
+#  define slowtime(refp) ((ffstatus == file_is_pipe) && !ffhasdata())
 # endif
 #endif
 
@@ -354,12 +355,14 @@ same_fname(const char *fname, BUFFER *bp, int lengthen)
 #if OPT_VMS_PATH
     /* ignore version numbers in this comparison unless both are given */
     if (is_vms_pathname(fname, FALSE)) {
-	char *bname = bp->b_fname, *s = version_of(bname), *t = version_of(fname);
+	char *bname = bp->b_fname;
+	char *s = version_of(bname);
+	char *t = version_of((char *)fname);
 
 	if ((!explicit_version(s)
 	     || !explicit_version(t))
 	    && ((s - bname) == (t - fname))) {
-	    status = !strncmp(fname, bname, (SIZE_T) (s - bname));
+	    status = !strncmp(fname, bname, (size_t) (s - bname));
 	    TRACE(("=>%d\n", status));
 	    return (status);
 	}
@@ -378,7 +381,7 @@ fileuid_get(const char *fname, FUID * fuid)
 {
 #ifdef CAN_CHECK_INO
     struct stat sb;
-    if (stat(fname, &sb) == 0) {
+    if (file_stat(fname, &sb) == 0) {
 	fuid->ino = sb.st_ino;
 	fuid->dev = sb.st_dev;
 	fuid->valid = TRUE;
@@ -714,6 +717,50 @@ writelinesmsg(char *fn, int nline, B_COUNT nchar)
 #undef WRITE_FILE_FMT
 }
 
+static void
+set_rdonly_modes(BUFFER *bp, int always)
+{
+    /* set view mode for read-only files */
+    if ((global_g_val(GMDRONLYVIEW))) {
+	make_local_b_val(bp, MDVIEW);
+	set_b_val(bp, MDVIEW, TRUE);
+    }
+    /* set read-only mode for read-only files */
+    if (always || global_g_val(GMDRONLYRONLY)) {
+	make_local_b_val(bp, MDREADONLY);
+	set_b_val(bp, MDREADONLY, TRUE);
+    }
+}
+
+#if COMPLETE_FILES || COMPLETE_DIRS
+/*
+ * If we are inserting text from a directory list, make a buffer if necessary,
+ * and redirect ffgetline() to read from that buffer.
+ */
+static int
+ff_load_directory(char *fname)
+{
+    if (ffstatus == file_is_internal) {
+	char temp[NFILEN];
+	BUFFER *bp = find_b_file(lengthen_path(strcpy(temp, fname)));
+
+	if (bp == 0)
+	    bp = getfile2bp(temp, FALSE, FALSE);
+
+	if (bp == 0)
+	    return FIOERR;
+
+	ffbuffer = bp;
+	fill_directory_buffer(bp, temp, 0);
+	b_set_flags(bp, BFDIRS);
+	set_rdonly_modes(bp, TRUE);
+	ffcursor = lforw(buf_head(bp));
+	bp->b_active = TRUE;
+    }
+    return FIOSUC;
+}
+#endif
+
 /*
  * Insert file "fname" into the kill register
  * Called by insert file command. Return the final
@@ -728,10 +775,14 @@ kifile(char *fname)
     int nbytes;
 
     ksetup();
-    if ((s = ffropen(fname)) == FIOERR)		/* Hard file open.  */
+    if ((s = ffropen(fname)) == FIOERR)		/* Hard file open */
 	goto out;
-    if (s == FIOFNF)		/* File not found.  */
+    else if (s == FIOFNF)	/* File not found */
 	return no_such_file(fname);
+#if COMPLETE_FILES || COMPLETE_DIRS
+    else if ((s = ff_load_directory(fname)) == FIOERR)
+	goto out;
+#endif
 
     nline = 0;
 #if OPT_ENCRYPT
@@ -802,7 +853,7 @@ getfile2bp(
 
     /* user may have renamed buffer to look like filename */
     if (bp == NULL
-	|| (strlen(fname) > (SIZE_T) NBUFN - 1)) {
+	|| (strlen(fname) > (size_t) NBUFN - 1)) {
 
 	/* It's not already here by that buffer name.
 	 * Try to find it assuming we're given the file name.
@@ -896,7 +947,7 @@ getfile(
        is likely asking for an existing buffer -- try for that
        first */
     if ((bp = find_b_file(fname)) == 0
-	&& ((strlen(fname) > (SIZE_T) NBUFN - 1)	/* too big to be a bname */
+	&& ((strlen(fname) > (size_t) NBUFN - 1)	/* too big to be a bname */
 	    ||maybe_pathname(fname)	/* looks a lot like a filename */
 	    ||(bp = find_b_name(fname)) == NULL)) {
 	/* oh well.  canonicalize the name, and try again */
@@ -1141,6 +1192,9 @@ guess_recordseparator(BUFFER *bp, UCHAR * buffer, B_COUNT length, L_NUM * lines)
 	if (buffer[length - 1] != '\r')
 	    ++count_cr;
 	*lines = count_cr;
+    } else {
+	*lines = 1;		/* we still need a line, to allocate data */
+	result = RS_DEFAULT;
     }
 
     TRACE(("...line count = %ld, format=%s\n", (long) *lines,
@@ -1209,11 +1263,11 @@ quickreadf(BUFFER *bp, int *nlinep)
 
     /* avoid malloc(0) problems down below; let slowreadf() do the work */
     if (length == 0
-	|| (buffer = castalloc(UCHAR, (ALLOC_T) length)) == NULL)
+	|| (buffer = castalloc(UCHAR, (size_t) length)) == NULL)
 	return FIOMEM;
 
 #if OPT_ENCRYPT
-    if ((rc = vl_resetkey(curbp, buffer)) != TRUE) {
+    if ((rc = vl_resetkey(curbp, (const char *) buffer)) != TRUE) {
 	free(buffer);
 	return rc;
     }
@@ -1303,18 +1357,18 @@ quickreadf(BUFFER *bp, int *nlinep)
 #endif /* ! SYS_MSDOS */
 
 /*
- *	Read file "fname" into a buffer, blowing away any text
- *	found there.  Returns the final status of the read.
+ * Read file "fname" into a buffer, blowing away any text found there.  Returns
+ * the final status of the read.
+ *
+ * fname  - name of file to read
+ * lockfl - check for file locks?
+ * bp     - read into this buffer
+ * mflg   - print messages? 
  */
-
 /* ARGSUSED */
 int
-readin(
-	  char *fname,		/* name of file to read */
-	  int lockfl,		/* check for file locks? */
-	  BUFFER *bp,		/* read into this buffer */
-	  int mflg)
-{				/* print messages? */
+readin(char *fname, int lockfl, BUFFER *bp, int mflg)
+{
     WINDOW *wp;
     int s;
     int nline;
@@ -1357,13 +1411,19 @@ readin(
     make_local_b_val(bp, MDNEWLINE);
     set_b_val(bp, MDNEWLINE, TRUE);	/* assume we've got it */
 
-    if ((s = ffropen(fname)) == FIOERR) {	/* Hard file error.      */
+    if ((s = ffropen(fname)) == FIOERR) {	/* Hard file error */
 	/* do nothing -- error has been reported,
 	   and it will appear as empty buffer */
 	/*EMPTY */ ;
-    } else if (s == FIOFNF) {	/* File not found.      */
+    } else if (s == FIOFNF) {	/* File not found */
 	if (mflg)
 	    mlwrite("[New file]");
+#if COMPLETE_FILES || COMPLETE_DIRS
+    } else if (ffstatus == file_is_internal) {
+	fill_directory_buffer(bp, fname, 0);
+	b_set_flags(bp, BFDIRS);
+	set_rdonly_modes(bp, TRUE);
+#endif
     } else {
 
 	if (mflg) {
@@ -1388,7 +1448,7 @@ readin(
 	max_working = cur_working = old_working = 0;
 #endif
 #if ! SYS_MSDOS
-	if (fileispipe || (s = quickreadf(bp, &nline)) == FIOMEM)
+	if ((ffstatus == file_is_pipe) || (s = quickreadf(bp, &nline)) == FIOMEM)
 #endif
 	    s = slowreadf(bp, &nline);
 #if OPT_WORKING
@@ -1402,24 +1462,15 @@ readin(
 		set_b_val(bp, MDNEWLINE, FALSE);
 	    b_clr_changed(bp);
 #if OPT_FINDERR
-	    if (fileispipe == TRUE)
+	    if (ffstatus == file_is_pipe)
 		set_febuff(bp->b_bname);
 #endif
 	    (void) ffclose();	/* Ignore errors.       */
 	    if (mflg)
 		readlinesmsg(nline, s, fname, ffronly(fname));
 
-	    /* set view mode for read-only files */
-	    if ((global_g_val(GMDRONLYVIEW) && ffronly(fname))) {
-		make_local_b_val(bp, MDVIEW);
-		set_b_val(bp, MDVIEW, TRUE);
-	    }
-	    /* set read-only mode for read-only files */
-	    if (isShellOrPipe(fname) ||
-		(global_g_val(GMDRONLYRONLY) &&
-		 ffronly(fname))) {
-		make_local_b_val(bp, MDREADONLY);
-		set_b_val(bp, MDREADONLY, TRUE);
+	    if (ffronly(fname)) {
+		set_rdonly_modes(bp, isShellOrPipe(fname));
 	    }
 
 	    bp->b_active = TRUE;
@@ -1628,7 +1679,7 @@ makename(char *bname, const char *fname)
 	do {
 	    ++fcp;
 	} while (isSpace(*fcp));
-	(void) strncpy0(bcp, fcp, (SIZE_T) (NBUFN - (bcp - bname)));
+	(void) strncpy0(bcp, fcp, (size_t) (NBUFN - (bcp - bname)));
 	for (j = 4; (j < NBUFN) && isPrint(*bcp); j++) {
 	    bcp++;
 	}
@@ -1636,7 +1687,7 @@ makename(char *bname, const char *fname)
 	return;
     }
 
-    (void) strncpy0(bcp, pathleaf(fcp), (SIZE_T) (NBUFN - (bcp - bname)));
+    (void) strncpy0(bcp, pathleaf(fcp), (size_t) (NBUFN - (bcp - bname)));
 
 #if SYS_UNIX
     /* UNIX filenames can have any characters (other than EOS!).  Refuse
@@ -1670,13 +1721,13 @@ makename(char *bname, const char *fname)
 void
 unqname(char *name)
 {
-    SIZE_T j;
+    size_t j;
     char newname[NBUFN * 2];
     char suffixbuf[NBUFN];
     int suffixlen;
     int adjust;
     int i = 0;
-    SIZE_T k;
+    size_t k;
 
     j = strlen(name);
     if (j == 0)
@@ -1902,7 +1953,7 @@ file_protection(char *fn)
     struct stat sb;
 
     if (!isShellOrPipe(fn)) {
-	if (stat(fn, &sb) == 0) {
+	if (file_stat(fn, &sb) == 0) {
 	    if (isFileMode(sb.st_mode))
 		result = sb.st_mode & 0777;
 	}
@@ -2103,9 +2154,8 @@ vl_filename(int f GCC_UNUSED, int n GCC_UNUSED)
 }
 
 /*
- * Insert file "fname" into the current
- * buffer, Called by insert file command. Return the final
- * status of the read.
+ * Insert file "fname" into the current buffer, called by insert file command. 
+ * Return the final status of the read.
  */
 int
 ifile(char *fname, int belowthisline, FILE * haveffp)
@@ -2117,12 +2167,16 @@ ifile(char *fname, int belowthisline, FILE * haveffp)
     int nbytes;
     int nline;
 
-    b_clr_flags(curbp, BFINVS);	/* we are not temporary */
-    if (!haveffp) {
-	if ((s = ffropen(fname)) == FIOERR)	/* Hard file open.          */
+    b_clr_invisible(curbp);	/* we are not temporary */
+    if (haveffp == 0) {
+	if ((s = ffropen(fname)) == FIOERR)	/* Hard file open */
 	    goto out;
-	if (s == FIOFNF)	/* File not found.  */
+	else if (s == FIOFNF)	/* File not found */
 	    return no_such_file(fname);
+#if COMPLETE_FILES || COMPLETE_DIRS
+	else if ((s = ff_load_directory(fname)) == FIOERR)
+	    goto out;
+#endif
 #if OPT_ENCRYPT
 	if ((s = vl_resetkey(curbp, fname)) != TRUE)
 	    return s;
@@ -2317,7 +2371,7 @@ imdying(int ACTUAL_SIG_ARGS)
 	   a simple mailer, but no more.  and sendmail has
 	   been moving around too. */
 	for (mailcmdp = mailcmds; *mailcmdp != 0; mailcmdp++) {
-	    if (stat(*mailcmdp, &sb) == 0)
+	    if (file_stat(*mailcmdp, &sb) == 0)
 		break;
 	}
 	if (*mailcmdp &&

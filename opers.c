@@ -3,15 +3,13 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.72 2001/09/18 09:49:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.73 2002/01/09 00:40:20 tom Exp $
  *
  */
 
 #include	"estruct.h"
 #include	"edef.h"
 #include	"nefunc.h"
-
-extern REGION *haveregion;
 
 /* For the "operator" commands -- the following command is a motion, or
  *  the operator itself is repeated.  All operate on regions.

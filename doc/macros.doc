@@ -223,13 +223,16 @@ Creating, executing, storing macros
 		*bool
 		backup-style
 		bcolor
+		ccolor
 		color-scheme
 		fcolor
 		mcolor
 		mini-hilite
 		popup-choices
+		qualifiers
 		record-format
 		recordseparator
+		showformat
 		video-attrs
 		visual-matches
 		vtflash
@@ -380,6 +383,7 @@ State Variables
 			in [Buffer List].
 
 			a	autobuffer caused this to be created
+			d	directory listing
 			i	invisible, e.g., tags
 			m	modified
 			s	scratch, will be removed when popped down
@@ -404,10 +408,18 @@ State Variables
 	$cfgopts        [READ ONLY] Comma-delimited list of "interesting"
 			compiled options.  Currently tracked options include:
 
-			perl	    -> editor includes perl interpreter
-			oleauto	    -> editor supports OLE automation.
-			termcap	    -> editor reads TERMCAP db for screen info.
+			athena      -> xvile built with Athena widgets
+			curses      -> editor uses curses terminal driver
+			motif       -> xvile built with Motif libraries
+			nextaw      -> xvile built with Athena widgets (NeXtaw)
+			noshell     -> shell commands are disabled
+			oleauto     -> editor supports OLE automation.
+			openlook    -> xvile built with OpenLook libraries
+			perl        -> editor includes perl interpreter
+			termcap     -> editor reads TERMCAP db for screen info.
 			terminfo    -> editor reads TERMINFO db for screen info.
+			xaw         -> xvile built with Athena widgets (Xaw)
+			xaw3d       -> xvile built with Athena widgets (Xaw3D)
 
 			If none of the above options are in effect, $cfgopts
 			will be empty ("").
@@ -1411,6 +1423,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.79 2001/12/30 16:34:14 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.82 2002/01/10 00:44:51 tom Exp $
 -----------------------------------
 

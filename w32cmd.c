@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.19 2001/12/24 15:00:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.22 2002/01/09 20:32:46 tom Exp $
  */
 
 #include "estruct.h"
@@ -17,10 +17,6 @@
 
 #define FOOTER_OFFS      0.333  /* inches from bottom of page */
 #define _FF_             '\f'
-
-extern REGION *haveregion;      /* FIXME -- put this in edef.h and get rid of
-                                 * all the "extern" refs in all vile modules.
-                                 */
 
 /* --------------------------------------------------------------------- */
 /* ----------------------- misc common routines ------------------------ */
@@ -547,7 +543,7 @@ windeltxtsel(int f, int n)  /* bound to Alt+Delete */
 
 typedef struct print_param_struct
 {
-    UCHAR *buf;                /* scratch formatting buffer, large enough to
+    char *        buf;         /* scratch formatting buffer, large enough to
                                 * hold mcpl chars + line numbers, if any.
                                 */
     int           collate,     /* T -> print all copies of page 1 first,
@@ -594,7 +590,6 @@ static int  printing_aborted,  /* T -> user aborted print job.     */
             yfootpos;          /* device Y coordinate of the footer */
 
 /* selection printing requires a few saved state vars */
-static int         ocurtabval;
 static REGIONSHAPE oshape;
 
 static PAGESETUPDLG *pgsetup;
@@ -821,8 +816,6 @@ push_curbp(BUFFER *selbp)
 
     if ((wp = push_fake_win(selbp)) == NULL)
         return (NULL);
-    ocurtabval = curtabval;
-    curtabval  = tabstop_val(selbp);
     return (wp);
 }
 
@@ -832,7 +825,6 @@ static void
 pop_curbp(WINDOW *owp)
 {
     pop_fake_win(owp);
-    curtabval = ocurtabval;
 }
 
 
@@ -1003,8 +995,8 @@ winprint_endpage(PRINT_PARAM *pparam)
 
 /*
  * FUNCTION
- *   winprint_fmttxt(UCHAR *dst,
- *                   UCHAR *src,
+ *   winprint_fmttxt(char *dst,
+ *                   char *src,
  *                   ULONG srclen,
  *                   ULONG mcpl,
  *                   ULONG line_num,
@@ -1029,8 +1021,8 @@ winprint_endpage(PRINT_PARAM *pparam)
  */
 
 static ULONG
-winprint_fmttxt(UCHAR *dst,
-                UCHAR *src,
+winprint_fmttxt(char *dst,
+                char *src,
                 ULONG srclen,
                 ULONG mcpl,
                 ULONG line_num,
@@ -1062,7 +1054,7 @@ winprint_fmttxt(UCHAR *dst,
      * whitespace (modulo a formfeed), or empty, handle that case now.
      */
     i = 0;
-    while (i < srclen && isspace(src[i]) && src[i] != _FF_)
+    while (i < srclen && isspace((UCHAR)src[i]) && src[i] != _FF_)
         i++;
     if (i == srclen)
     {
@@ -1075,7 +1067,7 @@ winprint_fmttxt(UCHAR *dst,
 
     while (srclen--)
     {
-        c = *src;
+        c = (UCHAR) *src;
         if (c == _TAB_)
         {
             ULONG nspaces;
@@ -1112,7 +1104,7 @@ winprint_fmttxt(UCHAR *dst,
             if (nout + 1 > mcpl)
                 break;
             nout++;
-            *dst++ = (UCHAR) c;
+            *dst++ = (char) c;
         }
         src++;
         nconsumed++;
@@ -1132,7 +1124,7 @@ winprint_fmttxt(UCHAR *dst,
          */
 
         i = 0;
-        while (i < srclen && isspace(src[i]))
+        while (i < srclen && isspace((UCHAR)src[i]))
         {
             if (src[i] == _FF_ && (! *saw_ff))
                 break;
@@ -1184,7 +1176,7 @@ print_rgn_data(void *argp, int l, int r)
 {
     LINE          *lp;
     PRINT_PARAM   *pparam;
-    UCHAR         *src;
+    char          *src;
     int           saw_ff, isempty_line;
     ULONG         vile_llen, outlen;
 
@@ -1203,7 +1195,7 @@ print_rgn_data(void *argp, int l, int r)
     else
         return (TRUE);  /* prevent a disaster */
     pparam = argp;
-    src    = (UCHAR *)(lp->l_text + l);
+    src    = (lp->l_text + l);
     saw_ff = FALSE;
 
     /*
@@ -1391,14 +1383,12 @@ winprint_curbuffer_collated(PRINT_PARAM *pparam)
             }
             else
             {
-                outlen += winprint_fmttxt(
-                                       pparam->buf,
-                                       (UCHAR *) (lp->l_text + outlen),
-                                       vile_llen - outlen,
-                                       pparam->mcpl,
-                                       (outlen == 0) ? lp->l_number : 0,
-                                       &saw_ff
-                                         );
+                outlen += winprint_fmttxt(pparam->buf,
+                                          lp->l_text + outlen,
+                                          vile_llen - outlen,
+                                          pparam->mcpl,
+                                          (outlen == 0) ? lp->l_number : 0,
+                                          &saw_ff);
             }
             TextOut(pd->hDC,
                     printrect.left,
@@ -1540,14 +1530,12 @@ winprint_curbuffer_uncollated(PRINT_PARAM *pparam,
             }
             else
             {
-                outlen += winprint_fmttxt(
-                                       pparam->buf,
-                                       (UCHAR *) (lp->l_text + outlen),
-                                       vile_llen - outlen,
-                                       pparam->mcpl,
-                                       (outlen == 0) ? lp->l_number : 0,
-                                       &saw_ff
-                                         );
+                outlen += winprint_fmttxt(pparam->buf,
+                                          lp->l_text + outlen,
+                                          vile_llen - outlen,
+                                          pparam->mcpl,
+                                          (outlen == 0) ? lp->l_number : 0,
+                                          &saw_ff);
             }
             TextOut(pd->hDC,
                     printrect.left,

@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.134 2001/12/21 12:43:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.136 2002/01/09 00:40:20 tom Exp $
  *
  */
 
@@ -41,8 +41,6 @@
 #define SEL_FINISH  14		/* finish a selection */
 
 #if OPT_SELECTIONS
-
-extern REGION *haveregion;
 
 static void detach_attrib(BUFFER *bp, AREGION * arp);
 static int attribute_cntl_a_sequences(void);
@@ -410,7 +408,6 @@ sel_yank(int reg)
 {
     REGIONSHAPE save_shape;
     WINDOW *save_wp;
-    int save_tabs;
 
     if (selbufp == NULL)
 	return FALSE;		/* No selection to yank */
@@ -419,16 +416,11 @@ sel_yank(int reg)
 	return FALSE;
 
     /*
-     * We're not guaranteed that curbp and selbufp are the same.  So save
-     * curbp, so we can set it to selbufp, and the associated curtabval, which
-     * is used in tab and offset computations when we're doing a rectangular
-     * selection, e.g., in getoff().
+     * We're not guaranteed that curbp and selbufp are the same.
      */
     save_shape = regionshape;
-    save_tabs = curtabval;
 
     curbp = selbufp;
-    curtabval = tabstop_val(curbp);
 
     ukb = (short) reg;
     kregflag = 0;
@@ -440,7 +432,6 @@ sel_yank(int reg)
     pop_fake_win(save_wp);
 
     regionshape = save_shape;
-    curtabval = save_tabs;
 
     show_selection_position(TRUE);
 
@@ -453,7 +444,7 @@ sel_yank(int reg)
 int
 sel_all(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    int  rc;
+    int rc;
     MARK savedot;
 
     savedot = DOT;
@@ -462,10 +453,10 @@ sel_all(int f GCC_UNUSED, int n GCC_UNUSED)
     gotoeob(0, 0);
     gotoeol(0, 0);
     (void) sel_setshape(EXACT);
-    rc  = sel_extend(TRUE, TRUE);
+    rc = sel_extend(TRUE, TRUE);
     DOT = savedot;
     if (rc)
-        sel_yank(0);
+	sel_yank(0);
     return (rc);
 }
 
@@ -2028,6 +2019,5 @@ sel_clear(int f GCC_UNUSED, int n GCC_UNUSED)
     sel_release();
     return (TRUE);
 }
-
 
 #endif /* OPT_SELECTIONS */

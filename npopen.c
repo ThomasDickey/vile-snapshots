@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.84 2001/09/18 09:10:38 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.85 2002/01/10 22:37:35 tom Exp $
  *
  */
 
@@ -83,7 +83,7 @@ inout_popen(FILE **fr, FILE **fw, char *cmd)
 	if (pipe_pid < 0)
 		return FALSE;
 
-	fileispipe = TRUE;
+	ffstatus = file_is_pipe;
 	fileeof = FALSE;
 	if (pipe_pid) { /* parent */
 
@@ -446,7 +446,7 @@ inout_popen(FILE **fr, FILE **fw, char *cmd)
 
 	TRACE(("inout_popen(fr=%p, fw=%p, cmd='%s')\n", fr, fw, cmd));
 
-	fileispipe = TRUE;
+	ffstatus = file_is_pipe;
 	fileeof = FALSE;
 	append_libdir_to_path();
 

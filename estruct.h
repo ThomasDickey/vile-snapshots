@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.487 2001/12/30 21:27:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.498 2002/01/12 17:10:36 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -644,10 +644,6 @@ extern	char *	sys_errlist[];
 #define	lBIT(n)	((ULONG)(1L<<(n)))
 #define	iBIT(n) ((UINT)(1 <<(n)))
 
-/* FIXME: leftover definitions from K&R version */
-#define SIZE_T  size_t
-#define ALLOC_T size_t
-
 #ifndef HAVE_GETHOSTNAME
 #define HAVE_GETHOSTNAME 0
 #endif
@@ -774,7 +770,10 @@ extern int MainProgram(int argc, char *argv[]);
 #endif
 
 	/* semaphore may be needed to prevent interrupt of display-code */
-#if !defined(SIGWINCH) && ! OPT_WORKING
+#if defined(SIGWINCH) || OPT_WORKING
+# define beginDisplay() ++im_displaying
+# define endofDisplay() if (im_displaying) --im_displaying
+#else
 # define beginDisplay() /* nothing */
 # define endofDisplay() /* nothing */
 #endif
@@ -1200,14 +1199,12 @@ typedef UINT WATCHTYPE;
 #define	MAXTOKTYPE	 9
 
 
-#define	nexttabcol(a,t)	((((a) / (t)) + 1) * (t))
-
 #define NEXT_COLUMN(col, c, list, tabs) \
-		((c == '\t' && !list) \
-		 ? (col + tabs - (col % tabs)) \
+		(((c) == '\t' && !(list)) \
+		 ? ((col) + (tabs) - ((col) % tabs)) \
 		 : (	(isPrint(c)) \
-			? (col + 1) \
-			: (col + ((c & HIGHBIT) ? 4 : 2))))
+			? ((col) + 1) \
+			: ((col) + (((c) & HIGHBIT) ? 4 : 2))))
 
 /* these are the bits that go into the vl_chartypes_ array */
 /* the macros below test for them */
@@ -1341,12 +1338,12 @@ typedef USHORT CHARTYPE;
 typedef struct regexp {
 	char *startp[NSUBEXP];
 	char *endp[NSUBEXP];
-	SIZE_T mlen;		/* convenience:  endp[0] - startp[0] */
+	size_t mlen;		/* convenience:  endp[0] - startp[0] */
 	char regstart;		/* Internal use only. */
 	char reganch;		/* Internal use only. */
 	int regmust;		/* Internal use only. */
 	unsigned regmlen;	/* Internal use only. */
-	SIZE_T size;		/* vile addition -- how big is this */
+	size_t size;		/* vile addition -- how big is this */
 	char program[1];	/* Unwarranted chumminess with compiler. */
 } regexp;
 
@@ -1377,9 +1374,9 @@ typedef struct {
  */
 typedef	struct	vl_tbuff	{
 	char *	tb_data;	/* the buffer-data */
-	ALLOC_T	tb_size;	/* allocated size */
-	ALLOC_T	tb_used;	/* total used in */
-	ALLOC_T	tb_last;	/* last put/get index */
+	size_t	tb_size;	/* allocated size */
+	size_t	tb_used;	/* total used in */
+	size_t	tb_last;	/* last put/get index */
 	int	tb_endc;
 	int	tb_errs;	/* true if we copied error_val here */
 	} TBUFF;
@@ -1389,9 +1386,9 @@ typedef	struct	vl_tbuff	{
  */
 typedef	struct	vl_itbuff	{
 	int *	itb_data;	/* the buffer-data */
-	ALLOC_T	itb_size;	/* allocated size */
-	ALLOC_T	itb_used;	/* total used in */
-	ALLOC_T	itb_last;	/* last put/get index */
+	size_t	itb_size;	/* allocated size */
+	size_t	itb_used;	/* total used in */
+	size_t	itb_last;	/* last put/get index */
 	int	itb_endc;
 	} ITBUFF;
 
@@ -1452,7 +1449,7 @@ typedef struct	LINE {
 	LINEPTR l_fp;			/* Link to the next line	*/
 	LINEPTR l_bp;			/* Link to the previous line	*/
 	union {
-		SIZE_T	l_sze;		/* Allocated size		*/
+		size_t	l_sze;		/* Allocated size		*/
 		C_NUM	l_fo;		/* forward undo dot offs (undo only) */
 	} l_s_fo;
 	union {
@@ -1502,9 +1499,8 @@ typedef struct	LINE {
 	 */
 #define LINENOTREAL	((int)(-1)) /* for undo, marks an inserted line */
 #define LINEUNDOPATCH	((int)(-2)) /* provides stack patching value for undo */
-/* #define MARKPATCH	((int)(-3)) *//*	unused */
 #define STACKSEP	((int)(-4)) /* delimit set of changes on undo stack */
-#define PURESTACKSEP	((int)(-5)) /* as above, but buffer unmodified before */
+#define PURESTACKSEP	((int)(-3)) /* as above, but buffer unmodified before */
 					/* this change */
 
 #define	null_ptr	(LINE *)0
@@ -1538,8 +1534,7 @@ typedef struct	LINE {
 #define lisreal(lp)		((lp)->l_used >= 0)
 #define lisnotreal(lp)		((lp)->l_used == LINENOTREAL)
 #define lislinepatch(lp)	((lp)->l_used == LINEUNDOPATCH)
-/* #define lismarkpatch(lp)	((lp)->l_used == MARKPATCH) */
-#define lispatch(lp)		(lislinepatch(lp) /* || lismarkpatch(lp) */ )
+#define lispatch(lp)		(lislinepatch(lp))
 #define lisstacksep(lp)		((lp)->l_used == STACKSEP || \
 					(lp)->l_used == PURESTACKSEP)
 #define lispurestacksep(lp)	((lp)->l_used == PURESTACKSEP)
@@ -1947,6 +1942,11 @@ typedef struct	BUFFER {
 	void *	b_api_private;		/* pointer to private perl, tcl, etc.
 					   data */
 #endif
+#if COMPLETE_FILES || COMPLETE_DIRS
+	char ** b_index_list;		/* array to index into this buffer */
+	size_t	b_index_size;
+	int	b_index_counter;	/* iterator for the array */
+#endif
 }	BUFFER;
 
 /*
@@ -2016,39 +2016,42 @@ typedef struct	BUFFER {
 /* values for b_flag */
 #define BFINVS     iBIT(0)	/* Internal invisible buffer	*/
 #define BFCHG      iBIT(1)	/* Changed since last write	*/
-#define BFSCRTCH   iBIT(2)	/* scratch -- gone on last close */
-#define BFARGS     iBIT(3)	/* set for ":args" buffers */
-#define BFEXEC     iBIT(4)	/* set for ":source" buffers */
-#define BFIMPLY    iBIT(5)	/* set for implied-# buffers */
-#define BFSIZES    iBIT(6)	/* set if byte/line counts current */
-#define BFUPBUFF   iBIT(7)	/* set if buffer should be updated */
-#define BFRCHG     iBIT(8)	/* Changed since last reset of this flag*/
+#define BFDIRS     iBIT(2)	/* set for directory-buffers */
+#define BFSCRTCH   iBIT(3)	/* scratch -- gone on last close */
+#define BFARGS     iBIT(4)	/* set for ":args" buffers */
+#define BFEXEC     iBIT(5)	/* set for ":source" buffers */
+#define BFIMPLY    iBIT(6)	/* set for implied-# buffers */
+#define BFSIZES    iBIT(7)	/* set if byte/line counts current */
+#define BFUPBUFF   iBIT(8)	/* set if buffer should be updated */
+#define BFRCHG     iBIT(9)	/* Changed since last reset of this flag*/
 
 /* macros for manipulating b_flag */
-#define b_is_implied(bp)        ((bp)->b_flag & (BFIMPLY))
-#define b_is_argument(bp)       ((bp)->b_flag & (BFARGS))
-#define b_is_changed(bp)        ((bp)->b_flag & (BFCHG))
-#define b_is_recentlychanged(bp) ((bp)->b_flag & (BFRCHG))
-#define b_is_invisible(bp)      ((bp)->b_flag & (BFINVS))
-#define b_is_scratch(bp)        ((bp)->b_flag & (BFSCRTCH))
-#define b_is_temporary(bp)      ((bp)->b_flag & (BFINVS|BFSCRTCH))
-#define b_is_counted(bp)        ((bp)->b_flag & (BFSIZES))
-#define b_is_obsolete(bp)       ((bp)->b_flag & (BFUPBUFF))
+#define b_is_argument(bp)         ((bp)->b_flag & (BFARGS))
+#define b_is_changed(bp)          ((bp)->b_flag & (BFCHG))
+#define b_is_counted(bp)          ((bp)->b_flag & (BFSIZES))
+#define b_is_directory(bp)        ((bp)->b_flag & (BFDIRS))
+#define b_is_implied(bp)          ((bp)->b_flag & (BFIMPLY))
+#define b_is_invisible(bp)        ((bp)->b_flag & (BFINVS))
+#define b_is_obsolete(bp)         ((bp)->b_flag & (BFUPBUFF))
+#define b_is_recentlychanged(bp)  ((bp)->b_flag & (BFRCHG))
+#define b_is_scratch(bp)          ((bp)->b_flag & (BFSCRTCH))
+#define b_is_temporary(bp)        ((bp)->b_flag & (BFINVS|BFSCRTCH))
 
-#define b_set_flags(bp,flags)   (bp)->b_flag |= (flags)
-#define b_set_changed(bp)       b_set_flags(bp, BFCHG)
+#define b_set_flags(bp,flags)     (bp)->b_flag |= (flags)
+#define b_set_changed(bp)         b_set_flags(bp, BFCHG)
+#define b_set_counted(bp)         b_set_flags(bp, BFSIZES)
+#define b_set_invisible(bp)       b_set_flags(bp, BFINVS)
+#define b_set_obsolete(bp)        b_set_flags(bp, BFUPBUFF)
 #define b_set_recentlychanged(bp) b_set_flags(bp, BFRCHG)
-#define b_set_counted(bp)       b_set_flags(bp, BFSIZES)
-#define b_set_invisible(bp)     b_set_flags(bp, BFINVS)
-#define b_set_obsolete(bp)      b_set_flags(bp, BFUPBUFF)
-#define b_set_scratch(bp)       b_set_flags(bp, BFSCRTCH)
+#define b_set_scratch(bp)         b_set_flags(bp, BFSCRTCH)
 
-#define b_clr_flags(bp,flags)   (bp)->b_flag &= ~(flags)
-#define b_clr_changed(bp)       b_clr_flags(bp, BFCHG)
+#define b_clr_flags(bp,flags)     (bp)->b_flag &= ~(flags)
+#define b_clr_changed(bp)         b_clr_flags(bp, BFCHG)
+#define b_clr_counted(bp)         b_clr_flags(bp, BFSIZES)
+#define b_clr_invisible(bp)       b_clr_flags(bp, BFINVS)
+#define b_clr_obsolete(bp)        b_clr_flags(bp, BFUPBUFF)
 #define b_clr_recentlychanged(bp) b_clr_flags(bp, BFRCHG)
-#define b_clr_counted(bp)       b_clr_flags(bp, BFSIZES)
-#define b_clr_obsolete(bp)      b_clr_flags(bp, BFUPBUFF)
-#define b_clr_scratch(bp)       b_clr_flags(bp, BFSCRTCH)
+#define b_clr_scratch(bp)         b_clr_flags(bp, BFSCRTCH)
 
 #if OPT_HILITEMATCH
 #define b_match_attrs_dirty(bp)	(bp)->b_highlight |= HILITE_DIRTY
@@ -2465,6 +2468,14 @@ typedef struct {
 
 #define SPECIAL_BANG_ARG -42	/* arg passed as 'n' to functions which
 					were invoked by their "xxx!" name */
+
+/* definitions for fileio.c's ffXXX() functions */
+typedef enum {
+	file_is_closed
+	,file_is_external
+	,file_is_pipe
+	,file_is_internal 	
+} FFType;
 
 /* definitions for 'mlreply_file()' and other filename-completion */
 #define	FILEC_WRITE    1

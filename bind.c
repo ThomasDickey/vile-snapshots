@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.247 2001/12/25 00:55:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.251 2002/01/11 15:36:50 tom Exp $
  *
  */
 
@@ -1229,7 +1229,7 @@ makebindlist(int whichmask, void *mstring)
     int pass;
     int j;
     int ok = TRUE;		/* reset if out-of-memory, etc. */
-    char *listed = typecallocn(char, (ALLOC_T) nametblsize);
+    char *listed = typecallocn(char, (size_t) nametblsize);
 
     if (listed == 0) {
 	(void) no_memory(bindings_to_describe->bufname);
@@ -1785,7 +1785,7 @@ const CMDFUNC *
 engl2fnc(const char *fname)
 {
     NTAB *nptr;			/* pointer to entry in name binding table */
-    SIZE_T len = strlen(fname);
+    size_t len = strlen(fname);
 
     if (len != 0) {		/* scan through the table, returning any match */
 	nptr = nametbl;
@@ -1804,7 +1804,7 @@ engl2fnc(const char *fname)
 {
     int lo, hi, cur;
     int r;
-    SIZE_T len = strlen(fname);
+    size_t len = strlen(fname);
 
     if (len == 0)
 	return NULL;
@@ -1852,7 +1852,7 @@ prc2kcod(const char *kk)
 		pref = CTLX;
 	    if (isCntrl(poundc) && ch == toalpha(poundc))
 		pref = SPEC;
-	} else if (!strncmp(kk, "FN", (SIZE_T) 2)) {
+	} else if (!strncmp(kk, "FN", 2)) {
 	    pref = SPEC;
 	}
 	if (pref != 0)
@@ -2065,7 +2065,7 @@ cs_strncmp(
 	      int case_insensitive,
 	      const char *s1,
 	      const char *s2,
-	      SIZE_T n)
+	      size_t n)
 {
     if (case_insensitive)
 	return strnicmp(s1, s2, n);
@@ -2098,9 +2098,9 @@ static const char *
 skip_partial(
 		int case_insensitive GCC_UNUSED,
 		char *buf,
-		SIZE_T len,
+		size_t len,
 		const char *table,
-		SIZE_T size_entry)
+		size_t size_entry)
 {
     const char *next = NEXT_DATA(table);
     const char *sp;
@@ -2123,9 +2123,9 @@ static void
 show_partial(
 		int case_insensitive,
 		char *buf,
-		SIZE_T len,
+		size_t len,
 		const char *table,
-		SIZE_T size_entry)
+		size_t size_entry)
 {
     const char *next = skip_partial(case_insensitive, buf, len, table, size_entry);
     const char *last = PREV_DATA(next);
@@ -2164,9 +2164,9 @@ show_partial(
  */
 struct compl_rec {
     char *buf;
-    SIZE_T len;
+    size_t len;
     const char *table;
-    SIZE_T size_entry;
+    size_t size_entry;
 };
 
 #ifdef lint
@@ -2180,12 +2180,12 @@ static void
 makecmpllist(int case_insensitive, void *cinfop)
 {
     char *buf = c2ComplRec(cinfop)->buf;
-    SIZE_T len = c2ComplRec(cinfop)->len;
+    size_t len = c2ComplRec(cinfop)->len;
     const char *first = c2ComplRec(cinfop)->table;
-    SIZE_T size_entry = c2ComplRec(cinfop)->size_entry;
+    size_t size_entry = c2ComplRec(cinfop)->size_entry;
     const char *last = skip_partial(case_insensitive, buf, len, first, size_entry);
     const char *p;
-    SIZE_T maxlen;
+    size_t maxlen;
     int slashcol;
     int cmpllen;
     int cmplcols;
@@ -2196,7 +2196,7 @@ makecmpllist(int case_insensitive, void *cinfop)
     for (p = NEXT_DATA(first), maxlen = strlen(THIS_NAME(first));
 	 p != last;
 	 p = NEXT_DATA(p)) {
-	SIZE_T l = strlen(THIS_NAME(p));
+	size_t l = strlen(THIS_NAME(p));
 	if (l > maxlen)
 	    maxlen = l;
     }
@@ -2204,7 +2204,7 @@ makecmpllist(int case_insensitive, void *cinfop)
     slashcol = (int) (pathleaf(buf) - buf);
     if (slashcol != 0) {
 	char b[NLINE];
-	(void) strncpy(b, buf, (SIZE_T) slashcol);
+	(void) strncpy(b, buf, (size_t) slashcol);
 	(void) strncpy(&b[slashcol], &(THIS_NAME(first))[slashcol],
 		       (len - slashcol));
 	b[slashcol + (len - slashcol)] = EOS;
@@ -2246,9 +2246,9 @@ static void
 show_completions(
 		    int case_insensitive,
 		    char *buf,
-		    SIZE_T len,
+		    size_t len,
 		    const char *table,
-		    SIZE_T size_entry)
+		    size_t size_entry)
 {
     struct compl_rec cinfo;
     BUFFER *bp;
@@ -2285,9 +2285,9 @@ static void
 scroll_completions(
 		      int case_insensitive,
 		      char *buf,
-		      SIZE_T len,
+		      size_t len,
 		      const char *table,
-		      SIZE_T size_entry)
+		      size_t size_entry)
 {
     BUFFER *bp = find_b_name(COMPLETIONS_BufName);
     if (bp == NULL)
@@ -2316,21 +2316,24 @@ popdown_completions(void)
 /*
  * Attempt to partial-complete the string, char at a time
  */
-static SIZE_T
+static size_t
 fill_partial(
 		int case_insensitive GCC_UNUSED,
 		char *buf,
-		SIZE_T pos,
+		size_t pos,
 		const char *first,
 		const char *last,
-		SIZE_T size_entry)
+		size_t size_entry)
 {
     const char *p;
-    SIZE_T n = pos;
+    size_t n = pos;
     const char *this_name = THIS_NAME(first);
 
     TRACE(("fill_partial(%d:%.*s) first=%s, last=%s\n",
-	   pos, (int) pos, buf, THIS_NAME(first), THIS_NAME(last)));
+	   pos, (int) pos,
+	   TRACE_NULL(buf),
+	   TRACE_NULL(THIS_NAME(first)),
+	   TRACE_NULL(THIS_NAME(last))));
 
 #if 0				/* case insensitive reply correction doesn't work reliably yet */
     if (!clexec && case_insensitive) {
@@ -2453,10 +2456,10 @@ kbd_complete(
 		char *buf,
 		unsigned *pos,
 		const char *table,
-		SIZE_T size_entry)
+		size_t size_entry)
 {
     int case_insensitive = (flags & KBD_CASELESS) != 0;
-    SIZE_T cpos = *pos;
+    size_t cpos = *pos;
     const char *nbp;		/* first ptr to entry in name binding table */
     int status = FALSE;
 #if OPT_POPUPCHOICE
@@ -2507,7 +2510,7 @@ kbd_complete(
 		    unkeystroke(c);
 		/* return complete name */
 		(void) strncpy0(buf, THIS_NAME(nbp),
-				(SIZE_T) (NLINE - 1));
+				(size_t) (NLINE - 1));
 		*pos = strlen(buf);
 #if OPT_POPUPCHOICE
 		if (gvalpopup_choices != POPUP_CHOICES_OFF
@@ -2678,7 +2681,7 @@ kbd_engl_stat(const char *prompt, char *buffer, int stated)
     UINT kbd_flags = KBD_EXPCMD | KBD_NULLOK | ((NAMEC != ' ') ? 0 : KBD_MAYBEC);
     int code;
     static TBUFF *temp;
-    ALLOC_T len = NLINE;
+    size_t len = NLINE;
 
     tb_scopy(&temp, "");
 #if COMPLETE_FILES

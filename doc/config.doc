@@ -45,6 +45,10 @@ Or, this can be done when running the configure script instead -- try:
 or:
 	(setenv CFLAGS -O2 ; ./configure)	(csh)
 
+Then again, a configure script argument is shell-agnostic:
+
+	./configure --with-cflags=-O2
+
 If you need to suppress your optimizer (which is invoked as -O by default),
 because it's known to be buggy, use CFLAGS=" ".  [ One combination
 thought to be buggy is AIX 3.2.5 with gcc 2.6.0.  ]
@@ -318,5 +322,5 @@ without shell support, but perhaps not (ymmv).
 
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.6 2001/12/06 00:40:24 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.7 2002/01/06 20:35:41 cmorgan Exp $
 ------------------------

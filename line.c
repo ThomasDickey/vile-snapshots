@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.142 2001/09/18 09:49:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.146 2002/01/12 19:21:01 tom Exp $
  *
  */
 
@@ -60,7 +60,7 @@ LINEPTR
 lalloc(register int used, BUFFER *bp)
 {
 	register LINE	*lp;
-	register SIZE_T	size;
+	register size_t	size;
 
 	/* lalloc(-1) is used by undo for placeholders */
 	if (used < 0)  {
@@ -162,6 +162,9 @@ lremove(register BUFFER *bp, register LINEPTR lp)
 {
 	register WINDOW *wp;
 	register LINEPTR point;
+
+	if (lp == buf_head(bp))
+		return;
 
 	point = lforw(lp);
 
@@ -340,7 +343,7 @@ linsert(int n, int c)
 	register int	i;
 	register WINDOW *wp;
 	register char	*ntext;
-	SIZE_T	nsize;
+	size_t	nsize;
 
 	lp1 = DOT.l;				/* Current line		*/
 	if (lp1 == buf_head(curbp)) {		/* At the end: special	*/
@@ -357,7 +360,7 @@ linsert(int n, int c)
 		set_lforw(lp2, lp1);
 		set_lback(lp1, lp2);
 		set_lback(lp2, lp3);
-		(void)memset(lp2->l_text, c, (SIZE_T)n);
+		(void)memset(lp2->l_text, c, (size_t)n);
 
 		tag_for_undo(lp2);
 
@@ -378,15 +381,15 @@ linsert(int n, int c)
 		if ((ntext=castalloc(char,nsize)) == NULL)
 			return (FALSE);
 		if (lp1->l_text) /* possibly NULL if l_size == 0 */
-			(void)memcpy(&ntext[0], &lp1->l_text[0], (SIZE_T)doto);
-		(void)memset(&ntext[doto],   c, (SIZE_T)n);
+			(void)memcpy(&ntext[0], &lp1->l_text[0], (size_t)doto);
+		(void)memset(&ntext[doto],   c, (size_t)n);
 		if (lp1->l_text) {
 #if OPT_LINE_ATTRS
 			UCHAR *l_attrs = lp1->l_attrs;
 			lp1->l_attrs = 0;	/* momentarily detach */
 #endif
 			(void)memcpy(&ntext[doto+n], &lp1->l_text[doto],
-					(SIZE_T)(lp1->l_used-doto ));
+					(size_t)(lp1->l_used-doto ));
 			ltextfree(lp1,curbp);
 #if OPT_LINE_ATTRS
 			lp1->l_attrs = l_attrs;	/* reattach */
@@ -712,11 +715,11 @@ lgrabtext(TBUFF **rp, CHARTYPE type)
 
 /*
  * replace the current line with the passed in text
+ *
+ * np -	new text for the current line
  */
 int
-lrepltext(
-CHARTYPE type,
-const char *np)	/* new text for the current line */
+lrepltext(CHARTYPE type, const char *np)
 {
 	int status = TRUE;
 	int c;
@@ -1319,7 +1322,7 @@ force_text_at_col(C_NUM goalcol, C_NUM reached)
 		/* there must be a tab there. */
 		/* pad to hit column we want */
 		DOT.o--;
-		status = linsert(goalcol%curtabval, ' ');
+		status = linsert(goalcol % tabstop_val(curbp), ' ');
 	}
 	return status;
 }

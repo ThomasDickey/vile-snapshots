@@ -1,9 +1,64 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20020112 (u)
+	> Clark Morgan:
+	+ add example of --with-cflags to doc/config.doc
+	> Paul Fox:
+	+ modify c-filt.c to make it simpler to find unterminated quotes from
+	  preprocessor lines.
+	> Tom Dickey:
+	+ indent'd basic.c, filec.c, insert.c, region.c
+	+ cache stat() results for files to improve performance on systems that
+	  do not do this automatically.
+	+ modified treatment of attempt to read directory by reusing logic in
+	  filec.c which builds a sorted list of the directory's contents, to
+	  make a corresponding non-hidden buffer.
+	+ add error checking to ensure vile does not open non-files such as
+	  /dev/tty.
+	+ modified directory.pm to limit the filename by the page width rather
+	  than to a hardcoded 14.  The directory names are limited to 14 to
+	  make the layout work.
+	+ check in lremove() to avoid removing the buf_head() line.  Otherwise,
+	  infinite loops would result in iterating over lines in the buffer.
+	  This could happen if the cursor was placed on the next to last
+	  line of a buffer, and the command y<return>ddp were given (report
+	  by Clemens Fischer).
+	+ correct an off-by-one that allowed a very long mode value to touch
+	  the next column in [Settings] if the next column contained a boolean
+	  set to "no".
+	+ correct calculation in next_column(), which did not take into account
+	  the HIGHBIT effect on cell width.
+	+ correct $bflags value, which was only one character rather than a
+	  combination.
+	+ correct macro next-alt-identifier, which declared $identifier as a
+	  local, which had the side-effect of marking the file as modified.
+	+ moved array used for file- or directory-completion into BUFFER
+	  struct, to make code in filec.c more reusable.
+	+ eliminated symbols SIZE_T and ALLOC_T, replacing them by size_t.
+	+ eliminated global curtabval.  Like curswval, it is not really
+	  possible to update it properly everywhere.
+	+ change beginDisplay() and endofDisplay() to macros, no need for
+	  functions.
+	+ indent macros as they are stored, making complex ones easier to
+	  read and debug.
+	+ add "noshell" to $cfgopts if shell is disabled in the current config.
+	+ add --disable-filters option to configure script, to allow building
+	  just the editor.
+	+ eliminate a duplicated $(LIBS) in $(FILTER_LIBS) variable in makefile
+	+ improved CF_TERM_H configure macro, to look for ncurses/term.h for
+	  platforms where ncurses is an add-on.
+	+ modify configure script to print message showing result of the
+	  --disable-extensions and --disable-shell options.
+	+ correct guess_recordseparator() to set the number of lines to at
+	  least one if the file is not empty.  A binary file containing no CR's
+	  or LF's would cause a core dump from 9.2s changes.
+	+ modify logic of charinit() so that if one sets printing-high but not
+	  printing-low, the latter defaults to 160.
+
  20011230 (t)
 	> Tom Dickey:
 	+ force screen to repaint if stripping ^M's as part of set-dos
-	  command.
+	  command, overlooked in 9.2s.
 	+ modify set-highlighting macro, using "~force" to prevent vile from
 	  switching to show the macro buffer if the "setl" fails, e.g., if
 	  one attempts to set the majormode of [Output].

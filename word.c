@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.72 2000/04/22 00:53:35 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.73 2002/01/09 00:32:02 tom Exp $
  *
  */
 
@@ -390,7 +390,7 @@ do_formatting(TBUFF ** wp, TBUFF ** cp)
     register int c;		/* current char during scan     */
     register int clength;	/* position on line during fill */
     register int plength;	/* prefix to ignore during fill */
-    register ALLOC_T i;		/* index during word copy       */
+    register size_t i;		/* index during word copy       */
     register int newlen;	/* tentative new line length    */
     register int finished;	/* Are we at the End-Of-Paragraph? */
     register int firstflag;	/* first word? (needs no space) */
@@ -449,7 +449,7 @@ do_formatting(TBUFF ** wp, TBUFF ** cp)
 	    is_comment = TRUE;
 	    tb_bappend(cp,
 		DOT.l->l_text + DOT.o,
-		(ALLOC_T) (plength - DOT.o));
+		(size_t) (plength - DOT.o));
 	} else if (cplus_comment_start(c)) {
 	    is_comment = TRUE;
 	    tb_bappend(cp, "//", 2);
@@ -497,7 +497,7 @@ do_formatting(TBUFF ** wp, TBUFF ** cp)
 			if (plength > 0) {
 			    tb_bappend(cp,
 				DOT.l->l_text + DOT.o,
-				(ALLOC_T) (plength));
+				(size_t) (plength));
 			}
 			if (DOT.l != pastline
 			    && !dot_at_section_break()) {

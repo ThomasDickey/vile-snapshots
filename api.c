@@ -23,8 +23,6 @@
 #include "edef.h"
 #include "api.h"
 
-extern REGION *haveregion;
-
 WINDOW *curwp_visible;
 
 static void propagate_dot(void);

@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.238 2001/09/18 09:49:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.240 2002/01/11 14:51:22 tom Exp $
  *
  */
 
@@ -79,7 +79,7 @@ typedef	struct	_kstack	{
 static	void	finish_kbm (void);
 
 static  int	kbdmacactive;	/* current mode	*/
-static	ALLOC_T	kbdmaclength;	/* effective recording length */
+static	size_t	kbdmaclength;	/* effective recording length */
 static	KSTACK	*KbdStack;	/* keyboard/@-macros that are replaying */
 static	ITBUFF  *KbdMacro;	/* keyboard macro, recorded	*/
 static	int	last_eolchar;	/* records last eolchar-match in 'kbd_string' */
@@ -774,7 +774,7 @@ static void
 remove_backslashes(TBUFF *buf)
 {
 	register char *cp = tb_values(buf);
-	register ALLOC_T s, d;
+	register size_t s, d;
 
 	for (s = d = 0; s < tb_length(buf); ) {
 		if (cp[s] == BACKSLASH)
@@ -1492,7 +1492,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 	int	status;
 	int	shell;
 	int	margin;
-	ALLOC_T	save_len;
+	size_t	save_len;
 
 	int quotef;		/* are we quoting the next char? */
 	UINT backslashes;	/* are we quoting the next expandable char? */
@@ -1504,7 +1504,9 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 	char *result;
 
 	TRACE(("kbd_reply(prompt=%s, extbuf=%s, options=%#x)\n\tclexec=%d,\n\tpushed_back=%d\n",
-		prompt, tb_visible(*extbuf), options, clexec, pushed_back));
+		TRACE_NULL(prompt),
+		tb_visible(*extbuf),
+		options, clexec, pushed_back));
 
 	miniedit = FALSE;
 	set_end_string(EOS);	/* ...in case we don't set it elsewhere */

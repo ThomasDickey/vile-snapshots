@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.105 2001/12/30 19:12:21 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.106 2002/01/12 17:08:23 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -579,7 +579,7 @@ if test "$cf_cv_need_curses_h" != no ; then
 		fi
 	elif test -n "$cf_ok_t_opts" ; then
 		cf_cv_need_curses_h=termcap.h
-	elif test "$cf_cv_have_term_h" = yes ; then
+	elif test "$cf_cv_have_term_h" != no ; then
 		cf_cv_need_curses_h=term.h
 	else
 		cf_cv_need_curses_h=no
@@ -611,16 +611,28 @@ dnl as well as in misconfigured systems (e.g., gcc configured for Solaris 2.4
 dnl running with Solaris 2.5.1).
 AC_DEFUN([CF_CURSES_TERM_H],
 [
-AC_CACHE_CHECK(for term.h, cf_cv_have_term_h,[
+AC_CACHE_CHECK(for term.h, cf_cv_term_header,[
+for cf_header in \
+	ncurses/term.h \
+	term.h
+do
 	AC_TRY_COMPILE([
-#include <curses.h>
-#include <term.h>],
+#include <${cf_cv_ncurses_header-curses.h}>
+#include <${cf_header}>],
 	[WINDOW *x],
-	[cf_cv_have_term_h=yes],
-	[cf_cv_have_term_h=no])
+	[cf_cv_term_header=$cf_header],
+	[cf_cv_term_header=no])
+done
 ])
 
-test $cf_cv_have_term_h = yes && AC_DEFINE(HAVE_TERM_H)
+case $cf_cv_term_header in #(vi
+term.h) #(vi
+	AC_DEFINE(HAVE_TERM_H)
+	;;
+ncurses/term.h)
+	AC_DEFINE(HAVE_NCURSES_TERM_H)
+	;;
+esac
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl "dirname" is not portable, so we fake it with a shell script.
@@ -1913,15 +1925,25 @@ dnl For this check, and for CF_CURSES_TERMCAP, the $CHECK_DECL_HDRS variable
 dnl must point to a header file containing this (or equivalent):
 dnl
 dnl	#ifdef NEED_CURSES_H
-dnl	# if HAVE_NCURSES_H
-dnl	#  include <ncurses.h>
+dnl	# if HAVE_NCURSES_NCURSES_H
+dnl	#  include <ncurses/ncurses.h>
 dnl	# else
-dnl	#  include <curses.h>
+dnl	#  if HAVE_NCURSES_H
+dnl	#   include <ncurses.h>
+dnl	#  else
+dnl	#   include <curses.h>
+dnl	#  endif
 dnl	# endif
 dnl	#endif
-dnl	#if HAVE_TERM_H
-dnl	# include <term.h>
+dnl
+dnl	#if HAVE_NCURSES_TERM_H
+dnl	#  include <ncurses/term.h>
+dnl	#else
+dnl	# if HAVE_TERM_H
+dnl	#  include <term.h>
+dnl	# endif
 dnl	#endif
+dnl
 dnl	#if NEED_TERMCAP_H
 dnl	# include <termcap.h>
 dnl	#endif

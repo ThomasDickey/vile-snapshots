@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.191 2001/02/13 23:57:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.192 2002/01/12 16:42:41 tom Exp $
  *
  */
 
@@ -1349,7 +1349,7 @@ TERM null_term = {
 	1,
 	80,
 	80,
-	0/*NPAUSE*/,
+	0 /* NPAUSE */,
 	nullterm_open,
 	nullterm_close,
 	nullterm_kopen,

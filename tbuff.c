@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.40 2001/12/25 17:02:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.41 2002/01/09 00:32:02 tom Exp $
  *
  */
 
@@ -75,7 +75,7 @@ tb_leaks(void)
  * ensure that the given temp-buff has as much space as specified
  */
 TBUFF *
-tb_alloc(TBUFF ** p, ALLOC_T n)
+tb_alloc(TBUFF ** p, size_t n)
 {
     TBUFF *q = *p;
     if (q == 0) {
@@ -131,7 +131,7 @@ tb_free(TBUFF ** p)
  * put a character c at the nth position of the temp-buff
  */
 TBUFF *
-tb_put(TBUFF ** p, ALLOC_T n, int c)
+tb_put(TBUFF ** p, size_t n, int c)
 {
     TBUFF *q;
 
@@ -164,7 +164,7 @@ TBUFF *
 tb_append(TBUFF ** p, int c)
 {
     TBUFF *q = *p;
-    ALLOC_T n = (q != 0) ? q->tb_used : 0;
+    size_t n = (q != 0) ? q->tb_used : 0;
 
     return tb_put(p, n, c);
 }
@@ -173,9 +173,9 @@ tb_append(TBUFF ** p, int c)
  * insert a character into the temp-buff
  */
 TBUFF *
-tb_insert(TBUFF ** p, ALLOC_T n, int c)
+tb_insert(TBUFF ** p, size_t n, int c)
 {
-    ALLOC_T m = tb_length(*p);
+    size_t m = tb_length(*p);
     TBUFF *q = tb_append(p, c);
 
     if (q != 0 && n < m) {
@@ -208,10 +208,10 @@ tb_copy(TBUFF ** d, TBUFF * s)
  * append a binary data to the temp-buff
  */
 TBUFF *
-tb_bappend(TBUFF ** p, const char *s, ALLOC_T len)
+tb_bappend(TBUFF ** p, const char *s, size_t len)
 {
     TBUFF *q = *p;
-    ALLOC_T n = (q != 0) ? q->tb_used : 0;
+    size_t n = (q != 0) ? q->tb_used : 0;
 
     if ((q = tb_alloc(p, n + len)) != 0) {
 	memcpy(q->tb_data + n, s, len);
@@ -280,7 +280,7 @@ tb_string(const char *s)
  * get the nth character from the temp-buff
  */
 int
-tb_get(TBUFF * p, ALLOC_T n)
+tb_get(TBUFF * p, size_t n)
 {
     int c = esc_c;
 
@@ -385,10 +385,10 @@ tb_values(TBUFF * p)
 /*
  * returns the length of the data
  */
-ALLOC_T
+size_t
 tb_length(TBUFF * p)
 {
-    ALLOC_T result = 0;
+    size_t result = 0;
 
     if (p != 0) {
 	if (p->tb_errs) {
