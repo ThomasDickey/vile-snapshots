@@ -55,7 +55,7 @@
  *	not (yet) correspond to :-commands.  Before implementing, probably will
  *	have to make TESTC a settable mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.75 2003/06/21 15:01:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.76 2003/07/27 16:55:39 tom Exp $
  *
  */
 
@@ -382,7 +382,7 @@ hst_append_s(char *cmd, int glue)
 void
 hst_remove(const char *cmd)
 {
-    if (MyLevel == 1) {
+    if (MyLevel == 1 && *cmd != EOS) {
 	TBUFF *temp = 0;
 	unsigned len = tb_length(tb_scopy(&temp, cmd)) - 1;
 

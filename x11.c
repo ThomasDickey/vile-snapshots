@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.269 2003/06/18 21:59:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.271 2003/07/27 17:14:46 tom Exp $
  *
  */
 
@@ -2518,7 +2518,7 @@ static void
 my_error_handler(String message)
 {
     fprintf(stderr, "%s: %s\n", prog_arg, message);
-    print_usage();
+    print_usage(BADEXIT);
 }
 
 #define MIN_UDIFF  0x1000
@@ -4813,7 +4813,7 @@ x_get_selection(Widget w GCC_UNUSED,
 	    && ((s = fnc2pstr(&f_insert_no_aindent)) != NULL);
 
 	if (tb_init(&PasteBuf, esc_c)) {
-	    if ((do_ins && !tb_bappend(&PasteBuf, s + 1, (size_t) *s))
+	    if ((do_ins && !tb_bappend(&PasteBuf, s + 1, (size_t) CharOf(*s)))
 		|| !copy_paste(&PasteBuf, (char *) value, (size_t) *length)
 		|| (do_ins && !tb_append(&PasteBuf, esc_c)))
 		tb_free(&PasteBuf);

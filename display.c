@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.379 2003/06/30 00:19:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.380 2003/07/27 16:53:03 tom Exp $
  *
  */
 
@@ -2852,7 +2852,7 @@ special_formatter(TBUFF ** result, const char *fs, WINDOW *wp)
 
     if (((int) tb_length(*result) < term.cols)
 	&& (right_len = strlen(right_ms)) != 0) {
-	for (n = term.cols - tb_length(*result) - right_len; n > 0; n--)
+	for (n = term.cols - (int) tb_length(*result) - right_len; n > 0; n--)
 	    tb_append(result, lchar);
 	if ((n = term.cols - right_len) < 0) {
 	    col = right_len + n;

@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.74 2003/05/24 00:49:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.75 2003/07/27 17:11:36 tom Exp $
  */
 
 #include	"estruct.h"
@@ -284,8 +284,7 @@ getkill(TBUFF ** rp)
     tb_init(rp, EOS);
     if (kbs[0].kbufh != 0) {
 	int n = index2ukb(0);
-	tb_bappend(rp, (char *) (kbs[n].kbufh->d_chunk),
-		   kbs[n].kused);
+	tb_bappend(rp, (char *) (kbs[n].kbufh->d_chunk), kbs[n].kused);
     }
     tb_append(rp, EOS);
 

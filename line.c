@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.159 2003/03/11 00:19:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.160 2003/07/27 16:10:52 tom Exp $
  *
  */
 
@@ -369,7 +369,9 @@ linsert(int n, int c)
     beginDisplay();
 
     lp1 = DOT.l;		/* Current line         */
-    if (lp1 == buf_head(curbp)) {	/* At the end: special  */
+    if (n == 0) {
+	;
+    } else if (lp1 == buf_head(curbp)) {	/* At the end: special  */
 	if (DOT.o != 0) {
 	    mlforce("BUG: linsert");
 	    rc = (FALSE);

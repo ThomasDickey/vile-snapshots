@@ -1,5 +1,19 @@
 Changes for vile 9.4 (released ??? ??? ?? ????)
 
+ 20030727 (v)
+ 	> Kevin Buettner, Paul Fox:
+	+ fix include-path in filters/makefile.in to allow compiling with
+	  separate src/build trees.
+	> Tom Dickey:
+	+ set regionshape to EXACT in editMiniBuffer() before executing
+	  editing commands.
+	+ review/fix several places where a negative value could be converted
+	  to unsigned, or a zero value might be used as a malloc-size (report
+	  by Paul Fox dealt with a negative length passed to tb_bappend).
+	+ add "profile$" and "\.bash_[a-z]\+$" to shmode suffixes.
+	+ modify print_usage() to exit with non-error status if only the usage
+	  message was requested.
+
  20030708 (u)
 	> Tom Dickey:
 	+ modify parsing of here-document tags in sh-filt.l to allow '-', '<'
