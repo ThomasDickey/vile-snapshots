@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.293 1997/04/24 17:22:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.294 1997/05/15 01:16:23 tom Exp $
  *
  */
 
@@ -341,30 +341,6 @@ main(int argc, char *argv[])
 #endif /* DISP_X11 */
 
   		(void)slowreadf(bp, &nline);
-#if (OPT_DOSFILES) && (SYS_WINNT)
-		/* 
-		 * FIXME  
-		 *
-		 * In a Win32 environment, there's a bug that I,
-		 * Clark Morgan, don't know how to fix (properly).
-		 *
-		 * bug:  User's $HOME/vile.rc is terminated with CR/LF.
-		 *       User pipes input into vile (e.g., set | vile).
-		 *         When the data from the pipe is read by slowreadf() 
-		 *         above, that function will turn off the global dos mode.
-		 *       Next, the editor will read vile.rc and be unable to
-		 *         parse the contents of that file because it won't
-		 *         strip CRs when global dos mode is reset.
-		 *
-		 * hack fix: when the editor reads from a pipe in a Win32
-		 *           env, force global dos mode to be set (again).
-		 *
-		 * There must be a more elegant fix...
-		 *
-		 * FIXME 
-		 */
-		set_global_b_val(MDDOS, CRLF_LINES);
-#endif
 		set_rdonly(bp, bp->b_fname, MDREADONLY);
 		(void)ffclose();
 

@@ -1,5 +1,17 @@
 Changes for vile 7.2 (released ??? ??? ??, 1997)
 
+(tom)	970513 (c)
+	+ set local buffer mode for 'dos' in slowreadf(), which fixes the
+	  problem of that function modifying the global mode when piping a file
+	  to vile, hence causing syntax errors in vile.rc when it contains
+	  trailing carriage-returns (file.c).
+	+ correct missing VASEL flag that caused 'q' command on OS/2 to not
+	  display highlighting, missed in 7.0b (os2vio.c).
+	+ implement 'flash' for WinNT (ntconio.c)
+
+(tom)	970513 (b)
+	+ ifdef'd menu.c to work with 7.1a
+
 (tom)	970512 (a)
 	+ modify has_C_suffix() to ignore case on platforms where filename
 	  case should be ignored (reported by Emil Rojas <emil@lapel.com>).

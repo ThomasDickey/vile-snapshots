@@ -3,7 +3,7 @@
  * Modified from a really old version of "borland.c" (before the VIO
  * stuff went in there.)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.9 1997/03/15 13:31:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.10 1997/05/15 01:02:07 tom Exp $
  */
 
 #include "estruct.h"
@@ -374,7 +374,7 @@ vio_attr(int attr)
 	else
 		vio_fcol(gfcolor);
 #endif
-	if (attr & VAREV)
+	if (attr & (VAREV|VASEL))
 		TextAttr = AttrColor(cfcolor, cbcolor);
 	else
 		TextAttr = AttrColor(cbcolor, cfcolor);
