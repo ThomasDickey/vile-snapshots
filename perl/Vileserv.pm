@@ -1,3 +1,5 @@
+
+#   Vileserv.pm (version 1.1) - Provides file-load server capability for xvile.
 #
 #   Copyright (C) 1998  J. Chris Coppick
 #

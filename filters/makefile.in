@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.28 1998/12/29 01:51:24 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.30 1999/01/01 13:08:01 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -170,6 +170,7 @@ INSTALL_FILES = \
 	$(bindir)/vile-c-filt$x \
 	$(bindir)/vile-dcl-filt$x \
 	$(bindir)/vile-html-filt$x \
+	$(bindir)/vile-latex-filt$x \
 	$(bindir)/vile-lex-filt$x \
 	$(bindir)/vile-mail-filt$x \
 	$(bindir)/vile-make-filt$x \
@@ -193,6 +194,7 @@ INSTALL_FILES = \
 	$(datadir)/html.keywords \
 	$(datadir)/java.keywords \
 	$(datadir)/js.keywords \
+	$(datadir)/latex.keywords \
 	$(datadir)/lex.keywords \
 	$(datadir)/mail.keywords \
 	$(datadir)/make.keywords \
@@ -257,6 +259,7 @@ $(bindir)/vile-bat-filt$x :	vile-bat-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-c-filt$x :	vile-c-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-dcl-filt$x :	vile-dcl-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-html-filt$x :	vile-html-filt$x	; $(INSTALL_PROGRAM) $? $@
+$(bindir)/vile-latex-filt$x :	vile-latex-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-lex-filt$x :	vile-lex-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-mail-filt$x :	vile-mail-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-make-filt$x :	vile-make-filt$x	; $(INSTALL_PROGRAM) $? $@
@@ -283,6 +286,7 @@ $(datadir)/dcl.keywords :	$(srcdir)/dcl.key	; $(INSTALL_DATA) $? $@
 $(datadir)/html.keywords :	$(srcdir)/html.key	; $(INSTALL_DATA) $? $@
 $(datadir)/java.keywords :	$(srcdir)/java.key	; $(INSTALL_DATA) $? $@
 $(datadir)/js.keywords :	$(srcdir)/js.key	; $(INSTALL_DATA) $? $@
+$(datadir)/latex.keywords :	$(srcdir)/latex.key	; $(INSTALL_DATA) $? $@
 $(datadir)/lex.keywords :	$(srcdir)/lex.key	; $(INSTALL_DATA) $? $@
 $(datadir)/mail.keywords :	$(srcdir)/mail.key	; $(INSTALL_DATA) $? $@
 $(datadir)/make.keywords :	$(srcdir)/make.key	; $(INSTALL_DATA) $? $@

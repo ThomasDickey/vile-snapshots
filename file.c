@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.238 1998/12/25 00:33:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.239 1999/01/15 02:00:16 tom Exp $
  *
  */
 
@@ -265,19 +265,11 @@ no_such_file(const char * fname)
 }
 
 #if OPT_VMS_PATH
-static char *
-version_of(char *fname)
-{
-	register char	*s = strchr(fname, ';');
-	if (s == 0)
-		s = skip_string(fname);
-	return s;
-}
-
 static int
 explicit_version(char *ver)
 {
-	if (*ver++ == ';') {
+	if (*ver != EOS) {
+		ver++;
 		if (isDigit(*ver))
 			return TRUE;
 	}

@@ -1,12 +1,12 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.21 1998/12/29 00:31:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.22 1998/12/30 12:42:05 tom Exp $
  */
 
 #ifndef FILTERS_H
 #define FILTERS_H 1
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include <config.h>
 #else
 /* assume ANSI C */
 # define HAVE_STDLIB_H 1
@@ -66,6 +66,10 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 #endif
 
 #include <ctype.h>
+
+#ifndef GCC_UNUSED
+#define GCC_UNUSED /*nothing*/
+#endif
 
 /*
  * Default attributes across all filters

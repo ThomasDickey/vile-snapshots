@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.1 1998/12/26 00:43:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.2 1999/01/22 23:16:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mail
  */
@@ -58,7 +58,7 @@ BEGIN_HEADER	^"From "{EMAIL}
 
 LABEL		^[A-Z]([A-Za-z-]+):
 
-NAME		[a-zA-Z0-9_.-]+
+NAME		[a-zA-Z0-9_.#-]+
 ADDRESS		({NAME}|\.)+
 EMAIL		{NAME}@{ADDRESS}
 

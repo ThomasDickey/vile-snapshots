@@ -3516,6 +3516,13 @@ VMS specifics
 			or "vfc".  (B)
 
 
+	Variables
+	---------
+	$sres		Switch between 80- and 132-column screen resolutions
+			by setting this variable to either NORMAL or WIDE
+			(e.g., :setv $sres=wide).
+
+
 Win32 specifics
 ---------------
 
@@ -3928,4 +3935,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.385 1998/12/25 02:02:55 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.386 1999/01/15 01:37:15 cmorgan Exp $

@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.370 1998/12/22 10:17:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.373 1999/01/08 02:56:09 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1485,6 +1485,7 @@ struct VALNAMES {
 #if	CHECK_PROTOTYPES
 	typedef long W_VALUES;
 	typedef long M_VALUES;
+	typedef long Q_VALUES;
 	typedef long B_VALUES;
 #else
 #	include "nemode.h"
@@ -1551,18 +1552,28 @@ typedef struct	{
  * within the VAL arrays (M_VALUES and B_VALUES) when we add or remove new
  * majormodes.
  */
+typedef struct MINORMODE {
+	struct MINORMODE *sm_next;
+	char             *sm_name;	/* the name of this group */
+	B_VALUES          sm_vals;	/* mode-values for the group */
+} MINORMODE;
+
 typedef struct {
 	char *name;
 	M_VALUES mm;
-	B_VALUES mb;
+	Q_VALUES mq;
+	MINORMODE *sm;
 } MAJORMODE;
 
 #define is_c_mode(bp) (bp->majr != 0 && !strcmp(bp->majr->name, "c"))
 #define fix_cmode(bp,value)	/* nothing */
+#define for_each_modegroup(bp,n,m,vals) \
+	for (vals = get_submode_vals(bp, n = m); vals != 0; vals = get_submode_valx(bp, m, &n))
 #else
 #define is_c_mode(bp) (b_val(bp,MDCMOD))
 #define fix_cmode(bp,value)	make_local_b_val(bp, MDCMOD), \
 				set_b_val(bp, MDCMOD, value)
+#define for_each_modegroup(bp,n,m,vals) vals = bp->b_values.bv;
 #endif
 
 /*

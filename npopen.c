@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.64 1998/05/19 11:04:47 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.65 1999/01/25 01:10:53 tom Exp $
  *
  */
 
@@ -79,6 +79,8 @@ inout_popen(FILE **fr, FILE **fw, char *cmd)
 	if (pipe_pid < 0)
 		return FALSE;
 
+	fileispipe = TRUE;
+	eofflag = FALSE;
 	if (pipe_pid) { /* parent */
 
 		if (fr) {
@@ -413,6 +415,8 @@ inout_popen(FILE **fr, FILE **fw, char *cmd)
 	int		fd;
 
 	TRACE(("inout_popen(fr=%p, fw=%p, cmd='%s')\n", fr, fw, cmd))
+	fileispipe = TRUE;
+	eofflag = FALSE;
 #ifdef GMDW32PIPES
 	if (global_g_val(GMDW32PIPES))
 	    return (w32_inout_popen(fr, fw, cmd));

@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.164 1998/11/14 17:20:13 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.165 1999/01/15 01:20:14 tom Exp $
 #
 #
 
@@ -997,7 +997,7 @@ operattrcaseq	REDO|UNDO|OPER|GLOBOK|RANGE	OPT_SELECTIONS
 	'^A-A'
 	<display text as given by ^A sequences in the region>
 operattrfilter	OPER|GLOBOK|RANGE	OPT_SELECTIONS&&OPT_SHELL
-	"attribute-from-filter"			!FEWNAMES
+	"attribute-from-filter-til"		!FEWNAMES
 	'^A-F'
 	<read/apply ^A sequence attributes by filtering the region>
 operattrhc	OPER|GLOBOK|RANGE	OPT_HYPERTEXT
@@ -1173,7 +1173,7 @@ perl		OPER|REDO|UNDO|GLOBOK|RANGE|DFLNONE|VIEWOK	OPT_PERL
 	"perl"
 	<run a perl command>
 perldo		OPER|REDO|UNDO|GLOBOK|RANGE|EXTRA		OPT_PERL
-	"perldo"
+	"perldo-til"
 	<run a perl command on each line in a range>
 poswind		NONE
 	"position-window"		!FEWNAMES
@@ -1600,6 +1600,6 @@ cbrdpaste REDO|UNDO			SYS_WINNT
 	'SHIFT+INSERT'			W32KY
 	<paste the windows clipboard contents>
 opercbrdcpy	OPER|(RANGE|NOMOVE)	SYS_WINNT
-	"copy-to-clipboard"
+	"copy-to-clipboard-til"
 	'CTRL+INSERT'			W32KY
 	<copies the specified region to the windows clipboard>

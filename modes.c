@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.123 1998/12/29 16:57:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.131 1999/01/23 13:43:43 tom Exp $
  *
  */
 
@@ -60,8 +60,9 @@ typedef struct {
 	MAJORMODE *data;	/* pointer to actual data */
 	int init;		/* predefined during initialization */
 	int flag;		/* true when majormode is active/usable */
-	struct VALNAMES qual[MAX_M_VALUES+1]; /* qualifier names */
+	struct VALNAMES qual[MAX_M_VALUES+1]; /* majormode qualifier names */
 	struct VALNAMES used[MAX_B_VALUES+1]; /* submode names */
+	struct VALNAMES subq[MAX_Q_VALUES+1]; /* submode qualifier names */
 } MAJORMODE_LIST;
 
 static MAJORMODE_LIST *my_majormodes;
@@ -80,7 +81,10 @@ static const char *ModeName(const char *name);
 static int attach_mmode(BUFFER *bp, const char *name);
 static int detach_mmode(BUFFER *bp, const char *name);
 static int enable_mmode(const char *name, int flag);
+static struct VAL *get_sm_vals(MAJORMODE *ptr);
 static void init_my_mode_list(void);
+static void reset_qualifier(const struct VALNAMES *names, struct VAL *values);
+static void reset_sm_qualifiers(MAJORMODE *ptr);
 
 #if OPT_UPBUFF
 static void relist_majormodes(void);
@@ -317,6 +321,7 @@ struct VAL *globvalues)
 
 		line = 0;
 		col  = 0;
+		any  = 0;
 		for_ever {
 			k = line + offsets[col];
 			for (j = 0; j < total; j++) {
@@ -346,6 +351,7 @@ struct VAL *globvalues)
 					string_mode_val(&args),
 					padded, ' ');
 			}
+			any++;
 			if (++col >= perline) {
 				col = 0;
 				bputc('\n');
@@ -354,11 +360,10 @@ struct VAL *globvalues)
 			} else if (line+offsets[col] >= offsets[col+1])
 				break;
 		}
-		if ((col != 0) || (pass != passes)) {
-			if (pass != passes)
-				bputc('\n');
+		if (any && (pass != passes))
 			bputc('\n');
-		}
+		if (col != 0)
+			bputc('\n');
 	}
 	return TRUE;
 }
@@ -400,7 +405,7 @@ makemodelist(int local, void *ptr)
 			localbp->b_bname,
 			localbp->majr->name,
 			term.t_ncol-1, '-');
-		globl_b_vals = localbp->majr->mb.bv;
+		globl_b_vals = get_sm_vals(localbp->majr);
 	} else
 #endif
 	bprintf("--- \"%s\" settings, if different than globals %*P\n",
@@ -1219,12 +1224,13 @@ find_mode(const char *mode, int global, VALARGS *args)
 
 		for (j = 0; my_majormodes[j].name; j++) {
 			MAJORMODE_LIST *p = my_majormodes+j;
+			struct VAL *my_vals = get_sm_vals(p->data);
 			size_t len = strlen(p->name);
 
 			if (n >= len
 			 && !strncmp(rp, p->name, len)
 			 && (k = lookup_valnames(rp+len+(rp[len]=='-'), b_valnames)) >= 0
-			 && is_local_val(p->data->mb.bv,k)) {
+			 && is_local_val(my_vals,k)) {
 				TRACE(("...found submode %s\n", b_valnames[k].name))
 				if (global == FALSE) {
 					if (curbp != 0
@@ -1234,13 +1240,13 @@ find_mode(const char *mode, int global, VALARGS *args)
 						return FALSE;
 					}
 					args->names  = b_valnames + k;
-					args->global = p->data->mb.bv + k;
+					args->global = my_vals + k;
 					args->local  = ((curbp != 0)
 							? curbp->b_values.bv + k
 							: (struct VAL *)0);
 				} else {
 					args->names  = b_valnames + k;
-					args->global = p->data->mb.bv + k;
+					args->global = my_vals + k;
 					args->local  = args->global;
 				}
 				return TRUE;
@@ -1668,23 +1674,6 @@ is_varmode (const char *name)
 	   &&   strcmp(name, "all"));
 }
 
-static int
-is_identifier (const char *name)
-{
-	int first = TRUE;;
-
-	while (*name != EOS) {
-		if (first) {
-			if (!isAlpha(*name))
-				return FALSE;
-			first = FALSE;
-		} else if (!isident(*name))
-			return FALSE;
-		name++;
-	}
-	return TRUE;
-}
-
 /*
  * Returns the current number of items in the list of modes
  */
@@ -1725,6 +1714,23 @@ list_of_modes (void)
 /*--------------------------------------------------------------------------*/
 
 #if OPT_MAJORMODE
+static int
+is_identifier (const char *name)
+{
+	int first = TRUE;;
+
+	while (*name != EOS) {
+		if (first) {
+			if (!isAlpha(*name))
+				return FALSE;
+			first = FALSE;
+		} else if (!isident(*name))
+			return FALSE;
+		name++;
+	}
+	return TRUE;
+}
+
 static int
 ok_submode(const char *name)
 {
@@ -1915,6 +1921,20 @@ static int predef_majormode(const char *name)
 }
 
 static int
+check_majormode_name(const char *name, int defining)
+{
+	int status = TRUE;
+	if (defining && lookup_mm_data(name) != 0) {
+		TRACE(("Mode '%s' already exists\n", name))
+		status = SORTOFTRUE;
+	} else if (!defining && lookup_mm_data(name) == 0) {
+		TRACE(("Mode '%s' does not exist\n", name))
+		status = SORTOFTRUE;
+	}
+	return status;
+}
+
+static int
 major_complete(int c, char *buf, unsigned *pos)
 {
 	return kbd_complete(FALSE, c, buf, pos, (const char *)&my_majormodes[0],
@@ -1943,18 +1963,14 @@ prompt_majormode(char **result, int defining)
 		}
 		if ((status = is_varmode(tb_values(cbuf))) == TRUE) {
 			*result = tb_values(cbuf);
-			if (defining && lookup_mm_data(*result) != 0) {
-				TRACE(("Mode already exists\n"))
-				return SORTOFTRUE;
-			} else if (!defining && lookup_mm_data(*result) == 0) {
-				TRACE(("Mode does not exist\n"))
-				return SORTOFTRUE;
-			}
-			return TRUE;
+			status = check_majormode_name(*result, defining);
+			if (status != TRUE && status != SORTOFTRUE)
+				mlwarn("[No such majormode: %s]", *result);
+			return status;
 		}
 	}
 	if (status != FALSE)
-		mlwarn("[Illegal name %s]", tb_values(cbuf));
+		mlwarn("[Illegal name: %s]", tb_values(cbuf));
 	return status;
 }
 
@@ -1965,8 +1981,146 @@ submode_complete(int c, char *buf, unsigned *pos)
 		sizeof(all_submodes[0]));
 }
 
+/*
+ * Set the submode values to a known state
+ */
+static void
+init_sm_vals (struct VAL *dst)
+{
+	int k;
+	for (k = 0; k < MAX_B_VALUES; k++) {
+		make_global_val(dst, global_b_values.bv, k);
+	}
+}
+
+/*
+ * Using the currently specified 'group' qualifier, lookup the corresponding
+ * MINORMODE structure and return a pointer to the B_VALUES VALS data.  If
+ * no structure is found, create one.
+ *
+ * We maintain the list of MINORMODE structures in the order they are defined. 
+ * This has the desirable side-effect of returning immediately for the default
+ * "" group.
+ */
+static struct VAL *
+get_sm_vals(MAJORMODE *ptr)
+{
+	MINORMODE *p, *q;
+	char *name = ptr->mq.qv[QVAL_GROUP].vp->p;
+
+	for (p = ptr->sm, q = 0; p != 0; q = p, p = p->sm_next) {
+		if (!strcmp(name, p->sm_name)) {
+			break;
+		}
+	}
+	if (p == 0) {
+		p = typecalloc(MINORMODE);
+		p->sm_name = strmalloc(name);
+		init_sm_vals(&(p->sm_vals.bv[0]));
+		if (q != 0)
+			q->sm_next = p;
+		else
+			ptr->sm = p;
+	}
+	TRACE(("...get_sm_vals(%s:%s)\n", ptr->name, p->sm_name))
+	return &(p->sm_vals.bv[0]);
+}
+
+/*
+ * Returns the name of the n'th submode group
+ */
+char *
+get_submode_name(BUFFER *bp, int n)
+{
+	char *result = "";
+	MAJORMODE *data;
+
+	if (n == 0) {
+		result = "";
+	} else if ((data = bp->majr) != 0) {
+		MINORMODE *sm = data->sm;
+		while (n-- > 0) {
+			if ((sm = sm->sm_next) == 0) {
+				break;
+			} else if (n == 0) {
+				result = sm->sm_name;
+				break;
+			}
+		}
+	}
+	return (result);
+}
+
+/*
+ * Fetch a pointer to the n'th group of submode values.  The 0th group consists
+ * of the normal buffer values.  Other values are defined in the majormode.
+ *
+ * FIXME: shouldn't I have a local submode value for the data which is defined
+ * in a group?
+ */
+struct VAL *
+get_submode_vals(BUFFER *bp, int n)
+{
+	struct VAL *result = 0;
+	MAJORMODE *data;
+
+	if (n == 0) {
+		result = bp->b_values.bv;
+	} else if ((data = bp->majr) != 0) {
+		MINORMODE *sm = data->sm;
+		while (n-- > 0) {
+			if ((sm = sm->sm_next) == 0) {
+				break;
+			} else if (n == 0) {
+				result = sm->sm_vals.bv;
+				break;
+			}
+		}
+	}
+	return (result);
+}
+
+struct VAL *
+get_submode_valx(BUFFER *bp, int n, int *m)
+{
+	struct VAL *result = 0;
+	int next = *m + 1;
+
+	if (next != n) {
+		if ((result = get_submode_vals(bp, next)) == 0) {
+			next = 0;
+			if (next != n) {
+				result = get_submode_vals(bp, next);
+			}
+		}
+
+	}
+	*m = next;
+	return (result);
+}
+
+static int ok_subqual(MAJORMODE *ptr, char *name)
+{
+	VALARGS args;
+	int j;
+
+	if ((j = lookup_valnames(name, q_valnames)) >= 0) {
+		args.names  = q_valnames;
+		args.local  = ptr->mq.qv;
+		args.global = args.local;
+	} else {
+		return FALSE;
+	}
+
+	args.names  += j;
+	args.global += j;
+	args.local  += j;
+
+	return adjvalueset(name, TRUE, FALSE, &args);
+}
+
 static int
-prompt_submode(char **result, int defining)
+prompt_submode(MAJORMODE *ptr, char **result, int defining)
 {
 	static TBUFF *cbuf; 	/* buffer to receive mode name into */
 	register const char *rp;
@@ -1974,25 +2128,23 @@ prompt_submode(char **result, int defining)
 
 	/* prompt the user and get an answer */
 	tb_scopy(&cbuf, "");
-	if ((status = kbd_reply("submode: ",
+	while ((status = kbd_reply("submode: ",
 		&cbuf,
 		eol_history, '=',
 		KBD_NORMAL,
 		submode_complete)) == TRUE) {
-		if ((status = ok_submode(tb_values(cbuf))) == TRUE) {
+		if ((status = ok_subqual(ptr, tb_values(cbuf))) == TRUE) {
+			continue;
+		} else if ((status = ok_submode(tb_values(cbuf))) == TRUE) {
 			*result = tb_values(cbuf);
 			rp = !strncmp(*result, "no", 2) ? *result+2 : *result;
-			if (defining && lookup_mm_data(rp) != 0) {
-				TRACE(("Mode already exists\n"))
-				return SORTOFTRUE;
-			} else if (!defining && lookup_mm_data(rp) == 0) {
-				TRACE(("Mode does not exist\n"))
-				return SORTOFTRUE;
-			}
-			return TRUE;
+			status = check_majormode_name(rp, defining);
 		}
+		break;
 	}
-	mlwarn("[Illegal name %s]", tb_values(cbuf));
+	if (status != TRUE
+	 && status != SORTOFTRUE)
+		mlwarn("[Illegal submode name: %s]", tb_values(cbuf));
 	return status;
 }
 
@@ -2012,7 +2164,7 @@ attach_mmode(BUFFER *bp, const char *name)
 
 		TRACE(("attach_mmode '%s' to '%s'\n", name, bp->b_bname))
 		if ((bp->majr = lookup_mm_data(name)) != 0) {
-			struct VAL *mm = bp->majr->mb.bv;
+			struct VAL *mm = get_sm_vals(bp->majr);
 
 			/* adjust buffer modes */
 			for (n = 0; n < MAX_B_VALUES; n++) {
@@ -2046,7 +2198,7 @@ detach_mmode(BUFFER *bp, const char *name)
 		/* readjust the buffer's modes */
 		for (n = 0; n < MAX_B_VALUES; n++) {
 			if (!is_local_b_val(bp,n)
-			 && is_local_val(mp->mb.bv,n)) {
+			 && is_local_val(get_sm_vals(mp),n)) {
 				make_global_b_val(bp,n);
 			}
 		}
@@ -2090,7 +2242,7 @@ free_majormode(const char *name)
 					}
 				}
 				free_local_vals(m_valnames, major_g_vals, ptr->mm.mv);
-				free_local_vals(b_valnames, global_b_values.bv, ptr->mb.bv);
+				free_local_vals(b_valnames, global_b_values.bv, get_sm_vals(ptr));
 				for (k = 0; k < MAX_M_VALUES; k++) {
 					free(TYPECAST(char,my_majormodes[j].qual[k].name));
 					free(TYPECAST(char,my_majormodes[j].qual[k].shortname));
@@ -2204,6 +2356,18 @@ reset_qualifier(const struct VALNAMES *names, struct VAL *values)
 }
 
 /*
+ * Reset/initialize all of the qualifiers.  We will use any that become set as
+ * parameters for the current submode operation.
+ */
+static void
+reset_sm_qualifiers(MAJORMODE *ptr)
+{
+	int k;
+	for (k = 0; k < MAX_Q_VALUES; k++)
+		reset_qualifier(q_valnames+k, ptr->mq.qv+k);
+}
+
+/*
  * Buffer-animation for [Major Modes]
  */
 #if OPT_UPBUFF
@@ -2229,6 +2393,7 @@ makemajorlist(int local, void *ptr GCC_UNUSED)
 	int j;
 	int nflag;
 	MAJORMODE *data;
+	MINORMODE *vals;
 
 	if (my_majormodes != 0) {
 		for (j = 0; my_majormodes[j].name != 0; j++) {
@@ -2243,10 +2408,19 @@ makemajorlist(int local, void *ptr GCC_UNUSED)
 				m_valnames,
 				data->mm.mv,
 				data->mm.mv);
-			nflag = listvalueset("Buffer",    nflag, TRUE,
-				b_valnames,
-				data->mb.bv,
-				global_b_values.bv);
+			for (vals = data->sm; vals != 0; vals = vals->sm_next) {
+				char *group = vals->sm_name;
+				char *name = malloc(80 + strlen(group));
+				if (*group)
+					lsprintf(name, "Buffer (\"%s\" group)", group);
+				else
+					strcpy(name, "Buffer");
+				nflag = listvalueset(name, nflag, TRUE,
+					b_valnames,
+					vals->sm_vals.bv,
+					global_b_values.bv);
+				free(name);
+			}
 			if (my_majormodes[j+1].data)
 				bputc('\n');
 		}
@@ -2324,9 +2498,17 @@ alloc_mode(const char *name, int predef)
 	my_majormodes[j].flag = TRUE;
 	memset(my_majormodes+k, 0, sizeof(*my_majormodes));
 
-	for (k = 0; k < MAX_B_VALUES; k++) {
-		make_global_val(my_majormodes[j].data->mb.bv, global_b_values.bv, k);
+	/* copy array to get types, then overwrite the name-pointers */
+	memcpy(my_majormodes[j].subq, q_valnames, sizeof(q_valnames));
+	for (k = 0; k < MAX_Q_VALUES; k++) {
+		reset_qualifier(q_valnames+k, my_majormodes[j].data->mq.qv+k);
+		my_majormodes[j].subq[k].name =
+				strmalloc(q_valnames[k].name);
+		my_majormodes[j].subq[k].shortname =
+				strmalloc(q_valnames[k].shortname);
 	}
+
+	init_sm_vals(get_sm_vals(my_majormodes[j].data));
 
 	/* copy array to get types, then overwrite the name-pointers */
 	memcpy(my_majormodes[j].qual, m_valnames, sizeof(m_valnames));
@@ -2389,22 +2571,27 @@ do_a_submode(int defining)
 	if ((status = prompt_majormode(&name, FALSE)) != TRUE)
 		return status;
 
-	if ((status = prompt_submode(&subname, TRUE)) != TRUE)
-		return status;
-
 	ptr = lookup_mm_data(name);
+	reset_sm_qualifiers(ptr);
+
+	if ((status = prompt_submode(ptr, &subname, TRUE)) != TRUE) {
+		reset_sm_qualifiers(ptr);
+		return status;
+	}
+
 	rp = !strncmp(subname, "no", 2) ? subname+2 : subname;
 	if ((j = lookup_valnames(rp, m_valnames)) >= 0) {
 		qualifier   = TRUE;
 		args.names  = m_valnames;
-		args.global = ptr->mm.mv;
 		args.local  = ptr->mm.mv;
+		args.global = args.local;
 	} else if ((j = lookup_valnames(rp, b_valnames)) >= 0) {
 		args.names  = b_valnames;
-		args.global = defining ? ptr->mb.bv :global_b_values.bv;
-		args.local  = ptr->mb.bv;
+		args.local  = get_sm_vals(ptr);
+		args.global = defining ? args.local : global_b_values.bv;
 	} else {
-		mlwarn("[BUG: no such submode %s]", rp);
+		mlwarn("[BUG: no such submode: %s]", rp);
+		reset_sm_qualifiers(ptr);
 		return FALSE;
 	}
 
@@ -2453,6 +2640,7 @@ do_a_submode(int defining)
 	 */
 	relist_settings();
 	relist_majormodes();
+	reset_sm_qualifiers(ptr);
 	return status;
 }
 
@@ -2499,7 +2687,7 @@ remove_mode(int f GCC_UNUSED, int n GCC_UNUSED)
 static int
 get_mm_b_val(int n, int m)
 {
-	struct VAL *bv = my_majormodes[n].data->mb.bv;
+	struct VAL *bv = get_sm_vals(my_majormodes[n].data);
 	return (bv[m].vp->i);
 }
 
@@ -2604,8 +2792,9 @@ set_submode_val(const char *name, int n, int value)
 	MAJORMODE *p;
 	TRACE(("set_majormode_val(%s, %d, %d)\n", name, n, value))
 	if ((p = lookup_mm_data(name)) != 0) {
-		p->mb.bv[n].v.i = value;
-		make_local_val(p->mb.bv, n);
+		struct VAL *q = get_sm_vals(p);
+		q[n].v.i = value;
+		make_local_val(q, n);
 	}
 }
 

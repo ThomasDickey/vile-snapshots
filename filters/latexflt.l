@@ -1,8 +1,8 @@
-%x MATH MATHC
+%s TEXT VARS CODE MATH MATHC
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.6 1998/12/26 01:20:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.14 1999/01/01 15:33:04 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LaTeX input
  * text.
@@ -22,6 +22,7 @@ char *filter_name = "latex";
 
 static char *Comment_attr;
 static char *Ident_attr;
+static char *Ident2_attr;
 static char *Keyword_attr;
 static char *Math_attr;		/* math formula [$...$]*/
 static char *Math_c_attr;	/* math formula (2) [$$...$$]*/
@@ -30,15 +31,36 @@ static char *Section_attr;	/* subsection */
 static char *String_attr;
 static char *Subsection_attr;	/* section */
 
+#define MAX_LEVEL 10
+
+static int oldstate = TEXT;
+static int state_level = 0;
+static int state_stack[MAX_LEVEL];
+
+static void
+new_state(int code)
+{
+    oldstate = code;
+    BEGIN(code);
+}
+
+static void
+push_state(int code)
+{
+    state_stack[state_level++] = oldstate;
+    new_state(code);
+}
+
+static void
+pop_state(void)
+{
+    if (state_level > 0)
+	new_state(state_stack[--state_level]);
+}
+
 void
 init_filter(int before GCC_UNUSED)
 {
-    if (before) {
-	insert_keyword(NAME_MATH,    ATTR_LITERAL);
-	insert_keyword(NAME_MATH_C,  ATTR_LITERAL);
-	insert_keyword(NAME_SECTION, ATTR_IDENT);
-	insert_keyword(NAME_SUBSECTION,ATTR_IDENT);
-    }
 }
 
 void
@@ -46,9 +68,11 @@ do_filter(FILE *input, FILE *output)
 {
     yyin = input;
     yyout = output;
+
     Comment_attr = keyword_attr(NAME_COMMENT);
     Keyword_attr = keyword_attr(NAME_KEYWORD);
     Ident_attr   = keyword_attr(NAME_IDENT);
+    Ident2_attr  = keyword_attr(NAME_IDENT2);
     Number_attr  = keyword_attr(NAME_NUMBER);
     String_attr  = keyword_attr(NAME_LITERAL);
 
@@ -57,47 +81,48 @@ do_filter(FILE *input, FILE *output)
     Section_attr = keyword_attr(NAME_SECTION);
     Subsection_attr = keyword_attr(NAME_SUBSECTION);
 
+    BEGIN(TEXT);
     while (yylex() > 0) {
     }
 }
 
 %}
 
+SPACE		[ \t]
+NONSPACE	[^ \t]
+
+NAME		[a-zA-Z]+
+NONNAME		[^a-zA-Z]
+
 INTEGER		[-+]?([0-9]+)
 REAL		[-+]?([0-9]*\.[0-9]+)([eE][+-]?[0-9]+)?
+NUMBER		({INTEGER}|{REAL})
 
 %%
 
-\\"section"	{ WriteToken(Section_attr); }
-\\"subsection"	{ WriteToken(Subsection_attr); }
+\\verb:[^:]+:		{ WriteToken(String_attr); }
+\\"begin{verbatim}"	{ WriteToken(String_attr); push_state(CODE); }
+<CODE>[^\n]*		{ WriteToken(String_attr); if (strstr(yytext, "\\end{verbatim}")) pop_state(); }
 
-\\[a-zA-Z][a-zA-Z]* { WriteToken(Keyword_attr); }
-\\[^\\a-zA-z][ a-zA-Z] { WriteToken(Keyword_attr); }
+\\{NAME}		{ char *attr = keyword_attr(yytext); if (!attr || !*attr) attr = Keyword_attr; WriteToken(attr); }
 
+\\{NONNAME} 		{ write_token(yyout, yytext, yyleng-1, Ident_attr); fprintf(yyout, "%c", yytext[yyleng-1]); }
 
-\\.[^ ] 	{ write_token(yyout, yytext, yyleng-1, Ident_attr); fprintf(yyout, "%c", yytext[yyleng-1]); }
+<TEXT>\$[^\$] 		{ WriteToken(Math_attr); push_state(MATH);}
+<MATH>[^\$|/\n]+	{ WriteToken(Math_attr); }
+<MATH>\$ 		{ WriteToken(Math_attr); pop_state(); }
 
-\$[^\$] 	{ WriteToken(Math_attr);
-		  BEGIN(MATH);}
-<MATH>[^\$/\n]+ { WriteToken(Math_attr); }
-<MATH>\$ 	{ WriteToken(Math_attr);
-                  BEGIN(0);
-		  }
+<TEXT>\$\$	 	{ WriteToken(Math_c_attr); push_state(MATHC);}
+<MATHC>[^\$/\n]+	{ WriteToken(Math_c_attr); }
+<MATHC>\$\$		{ WriteToken(Math_c_attr); pop_state(); }
 
-\$\$	 	{ WriteToken(Math_c_attr);
-		  BEGIN(MATHC);}
-<MATHC>[^\$/\n]+ { WriteToken(Math_c_attr); }
-<MATHC>\$\$	{ WriteToken(Math_c_attr);
-                  BEGIN(0);
-		  }
+\|			{ WriteToken(Ident2_attr); push_state(VARS); }
+<VARS>[^\n\|]*[\n\|]	{ WriteToken(Ident2_attr); pop_state(); }
 
-" "*\{	 	{ WriteToken(String_attr); }
+{SPACE}*\{		{ WriteToken(String_attr); }
 
-" "*\} 		{ WriteToken(String_attr); }
+{SPACE}*\} 		{ WriteToken(String_attr); }
 
-"%".*$		{ WriteToken(Comment_attr); }
+<TEXT>"%".*$		{ WriteToken(Comment_attr); }
 
-{INTEGER}	|
-{REAL}		{ WriteToken(Number_attr); }
-
-[a-zA-Z]+	{ fprintf(yyout, "%s", yytext); }
+{NUMBER}		{ WriteToken(Number_attr); }

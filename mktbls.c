@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.90 1998/07/26 23:16:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.91 1998/12/30 02:28:19 tom Exp $
  *
  */
 
@@ -172,6 +172,7 @@ static	LIST	*all_names,
 		*all_submodes,	/* data for name-completion of submodes */
 		*all_gmodes,	/* data for GLOBAL modes */
 		*all_mmodes,	/* data for MAJOR modes */
+		*all_qmodes,	/* data for QUALIFIER modes */
 		*all_bmodes,	/* data for BUFFER modes */
 		*all_wmodes;	/* data for WINDOW modes */
 
@@ -189,9 +190,10 @@ static	void	free_LIST (LIST **p);
 #define	SECT_VARS 2
 #define	SECT_GBLS 3
 #define	SECT_MAJR 4
-#define	SECT_BUFF 5
-#define	SECT_WIND 6
-#define	SECT_FSMS 7
+#define	SECT_QUAL 5
+#define	SECT_BUFF 6
+#define	SECT_WIND 7
+#define	SECT_FSMS 8
 
 	/* definitions for indices to 'asciitbl[]' vs 'kbindtbl[]' */
 #define ASCIIBIND 0
@@ -1081,28 +1083,6 @@ dump_majors(void)
 
 /******************************************************************************/
 static void
-save_all_submodes (
-	const char *type,
-	char *normal,
-	const char *abbrev,
-	char *cond)
-{
-	if (isboolean(*type)) {
-		char	t_normal[LEN_BUFFER],
-			t_abbrev[LEN_BUFFER];
-		save_all_submodes("Bool",
-			strcat(strcpy(t_normal, "no"), normal),
-			*abbrev
-				? strcat(strcpy(t_abbrev, "no"), abbrev)
-				: "",
-			cond);
-	}
-	InsertSorted(&all_submodes, normal, type, "", cond, "");
-	if (*abbrev)
-		InsertSorted(&all_submodes, abbrev, type, "", cond, "");
-}
-
-static void
 save_mmodes(
 char	*type,
 char	**vec)
@@ -1149,6 +1129,29 @@ dump_mmodes(void)
 	write_lines(nemode, middle);
 	WriteModeSymbols(all_mmodes);
 	write_lines(nemode, bottom);
+}
+
+/******************************************************************************/
+static void
+save_all_submodes (
+	const char *type,
+	char *normal,
+	const char *abbrev,
+	char *cond)
+{
+	if (isboolean(*type)) {
+		char	t_normal[LEN_BUFFER],
+			t_abbrev[LEN_BUFFER];
+		save_all_submodes("Bool",
+			strcat(strcpy(t_normal, "no"), normal),
+			*abbrev
+				? strcat(strcpy(t_abbrev, "no"), abbrev)
+				: "",
+			cond);
+	}
+	InsertSorted(&all_submodes, normal, type, "", cond, "");
+	if (*abbrev)
+		InsertSorted(&all_submodes, abbrev, type, "", cond, "");
 }
 
 static void
@@ -1226,6 +1229,54 @@ predefine_submodes(char **vec, int len)
 			}
 		}
 	}
+}
+
+/******************************************************************************/
+static void
+save_qmodes(
+char	*type,
+char	**vec)
+{
+	char *key = Mode2Key(type, vec[1], vec[4], TRUE);
+	InsertSorted(&all_qmodes, key, vec[2], vec[3], vec[4], vec[0]);
+#if NO_LEAKS
+	free(key);
+#endif
+}
+
+static void
+dump_qmodes(void)
+{
+	static const char *const top[] = {
+		"",
+		"/* submode qualifier flags\t*/",
+		"/* the indices of Q_VALUES.v[] */",
+		};
+	static const char *const middle[] = {
+		"",
+		"typedef struct Q_VALUES {",
+		"\t/* each entry is a val, and a ptr to a val */",
+		"\tstruct VAL qv[MAX_Q_VALUES+1];",
+		"} Q_VALUES;",
+		"",
+		"#ifdef realdef",
+		"EXTERN_CONST struct VALNAMES q_valnames[MAX_Q_VALUES+1] = {",
+		};
+	static const char *const bottom[] = {
+		"",
+		"\t{ NULL,\tNULL,\tVALTYPE_INT, 0 }",
+		"};",
+		"#else",
+		"extern const struct VALNAMES q_valnames[MAX_Q_VALUES+1];",
+		"#endif",
+		};
+
+	write_lines(nemode, top);
+	WriteIndexStruct(nemode, all_qmodes, "Qualifiers");
+	WriteModeDefines(all_qmodes, "Qualifiers");
+	write_lines(nemode, middle);
+	WriteModeSymbols(all_qmodes);
+	write_lines(nemode, bottom);
 }
 
 /******************************************************************************/
@@ -1874,6 +1925,7 @@ free_mktbls (void)
 	free_LIST(&all_w32bind);
 	free_LIST(&all_gmodes);
 	free_LIST(&all_mmodes);
+	free_LIST(&all_qmodes);
 	free_LIST(&all_bmodes);
 	free_LIST(&all_wmodes);
 
@@ -1954,6 +2006,9 @@ main(int argc, char *argv[])
 				section = SECT_MAJR;
 				predefine_submodes(vec, r);
 				break;
+			case 'q':
+				section = SECT_QUAL;
+				break;
 			case 'b':
 				section = SECT_BUFF;
 				break;
@@ -2026,6 +2081,12 @@ main(int argc, char *argv[])
 				save_mmodes(modetype, vec);
 				break;
 
+			case SECT_QUAL:
+				if (r < 2 || r > 4)
+					badfmt("looking for QUALIFIER modes");
+				save_qmodes(modetype, vec);
+				break;
+
 			case SECT_BUFF:
 				if (r < 2 || r > 4)
 					badfmt("looking for BUFFER modes");
@@ -2080,6 +2141,7 @@ main(int argc, char *argv[])
 
 			case SECT_GBLS:
 			case SECT_MAJR:
+			case SECT_QUAL:
 			case SECT_BUFF:
 			case SECT_WIND:
 				if (r != 1
@@ -2143,6 +2205,7 @@ main(int argc, char *argv[])
 		dump_all_submodes();
 		dump_gmodes();
 		dump_mmodes();
+		dump_qmodes();
 		dump_bmodes();
 		dump_wmodes();
 	}

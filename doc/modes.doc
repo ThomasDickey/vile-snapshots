@@ -66,8 +66,8 @@ These are the commands which I think are necessary:
 The {majormode} is a new symbol.
 
 The {minormode} can be any one of the existing buffer modes, except for
-a {majormode}.
-	
+a {majormode}.  To make name-completion simple, we use the term 'submode'.
+
 
 Example
 -------
@@ -166,14 +166,31 @@ solely by the define-submode command:
 		file (the first line) used to trigger association with
 		a majormode (e.g., "^!#.*\/perl[^a-z]").
 
+	group
+		followed by a name, defines an alternative set of submode
+		values.
+		
+		Currently used only for complex fences, this could be applied
+		to simple fences, and (with new flags not yet defined) extend
+		both styles of fences for indention and formatting.
+
 	fences
-		"fence-" followed by any of the following keywords with a
-		regular expression:  if, elif, else, fi,
+		These are "complex" fences, which are matched one expression
+		per line.  The names are "fence-" followed by any of the
+		following keywords with a regular expression:
+		
+			if, elif, else, fi
+
+		Vile searches through all groups of complex fences for a
+		match before trying simple fences.
 
 	comments
-		To support C-style comments, with the '%' going between
-		"/* and "*/", use "fence-" followed any of the following
-		keywords with a regular expression:  begin, end.
+		These are "simple" fences, which can be matched any number
+		of times per line.  The pairs need not appear on the same
+		line.  Like complex fences, they have an implied order.
+		The default values support C-style comments, with the '%' going
+		between "/* and "*/".  The names use "fence-" followed any of
+		the following keywords with a regular expression:  begin, end.
 
 	indent
 		The keyword "cstyle", or any of the following keywords
@@ -213,15 +230,16 @@ Example
 The builtin C/C++ majormode description is equivalent to
 
 define-mode c
-set csuf "\\.\\(\\([Cchisyl]\\)\\|CC\\|cc|cpp\\|cxx\\|hxx\\|scm\\)$"
-set c-comment-prefix="^\\s*\\(\\s*[#*>]\\)\\+"
-set c-comments="^\\s*/\\?\\(\\s*[#*>]\\)\\+/\\?\\s*$"
-set c-fence-begin="/\\*"
-set c-fence-end="\\*/"
-set c-fence-if="^\\s*#\\s*if"
-set c-fence-elif="^\\s*#\\s*elif\\>"
-set c-fence-else="^\\s*#\\s*else\\>"
-set c-fence-fi="^\\s*#\\s*endif\\>"
+~with define-submode c
+	suffix "\\.\\(\\([Cchisyl]\\)\\|CC\\|cc|cpp\\|cxx\\|hxx\\|scm\\)$"
+	comment-prefix="^\\s*\\(\\s*[#*>]\\)\\+"
+	comments="^\\s*/\\?\\(\\s*[#*>]\\)\\+/\\?\\s*$"
+	fence-begin="/\\*"
+	fence-end="\\*/"
+	fence-if="^\\s*#\\s*if"
+	fence-elif="^\\s*#\\s*elif\\>"
+	fence-else="^\\s*#\\s*else\\>"
+	fence-fi="^\\s*#\\s*endif\\>"
 
 Note that the following are equivalent once you have defined the majormode "c":
 	set cts=8
@@ -229,5 +247,5 @@ Note that the following are equivalent once you have defined the majormode "c":
 	define-submode c tabstop=8
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.1 1998/05/13 10:20:30 tom Exp $
+$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.3 1999/01/07 02:35:54 tom Exp $
 -------------------------------

@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.10 1998/12/25 21:33:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.15 1999/01/01 19:35:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -14,8 +14,41 @@
 char *filter_name = "make";
 
 static char *Comment_attr;
+static char *Ident2_attr;
 static char *Keyword_attr;
-static char *Ident_attr;
+static char *String_attr;
+
+static void
+write_keyword(char *text, int size)
+{
+    int colon = size > 1 && text[size-1] == ':';
+    int space = 0;
+
+    if (colon)
+	text[--size] = 0;
+
+    while (isspace(*text)) {
+	text++;
+	size--;
+	space++;
+    }
+    if (space)
+	fprintf(yyout, "%*s", space, " ");
+
+    space = 0;
+    while (isspace(text[size-1])) {
+	text[--size] = 0;
+	space++;
+    }
+
+    write_token(yyout, text, size, keyword_attr(text));
+
+    if (space)
+	fprintf(yyout, "%*s", space, " ");
+
+    if (colon)
+	fputc(':', yyout);
+}
 
 void
 init_filter(int before GCC_UNUSED)
@@ -27,22 +60,39 @@ do_filter(FILE *input, FILE *output)
 {
     yyin = input;
     yyout = output;
+
     Comment_attr = keyword_attr(NAME_COMMENT);
+    Ident2_attr  = keyword_attr(NAME_IDENT2);
     Keyword_attr = keyword_attr(NAME_KEYWORD);
-    Ident_attr   = keyword_attr(NAME_IDENT2);
+    String_attr  = keyword_attr(NAME_LITERAL);
+
     while (yylex() > 0) {
     }
 }
 
 %}
 
+SPACE		[ \t]
+
+SSTRING		\'((\\.)|[^\'])*\'
+DSTRING		\"((\\\.)|[^\"])*\"
+STRINGS		({SSTRING}|{DSTRING})
+
+NAME		[a-zA-Z_][a-zA-Z_0-9.-]+
+
 %%
 
-^[ \t]*[a-zA-Z_][a-zA-Z_0-9.]*[ \t]*: { WriteToken(Keyword_attr); }
+^{SPACE}*(.)?include{SPACE}*	{ write_keyword(yytext, yyleng); }	
 
-^[ \t]*[a-zA-Z_][a-zA-Z_0-9]*[ \t]*= { WriteToken(Ident_attr); }
+^{SPACE}*\.{NAME}{SPACE}*:	{ write_keyword(yytext, yyleng); }
 
-\$[A-Za-z@!%^&*?]	|
-\$[ \t]*\([^\)]+\) { WriteToken(Ident_attr); }
+^{SPACE}*{NAME}{SPACE}*:	{ WriteToken(Keyword_attr); }
 
-"#".*$		{ WriteToken(Comment_attr); }
+^{SPACE}*{NAME}{SPACE}*=	{ WriteToken(Ident2_attr); }
+
+\$[A-Za-z@!%^&*?<]		|
+\${SPACE}*\([^\)]+\)		{ WriteToken(Ident2_attr); }
+
+{STRINGS}			{ WriteString(String_attr); }
+
+"#".*$				{ WriteToken(Comment_attr); }

@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.10 1998/12/17 02:33:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.11 1999/01/07 10:54:31 tom Exp $
  *
  */
 #include "estruct.h"
@@ -66,16 +66,15 @@ visible_buff(const char *buffer, int length)
 	static char *result;
 	int j;
 	unsigned k = 0;
+	unsigned need = ((length > 0) ? (length * 4) : 0) + 1;
 
 	beginDisplay();
-	if (length <= 0)
-		length = 1;
 	if (buffer == 0)
 		buffer = "";
 
 	if (result != 0)
 		free(result);
-	result = malloc(length*4 + 1);
+	result = malloc(need);
 
 	for (j = 0; j < length; j++) {
 		int c = buffer[j] & 0xff;
