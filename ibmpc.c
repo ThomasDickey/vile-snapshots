@@ -6,7 +6,7 @@
  * Modified by Pete Ruczynski (pjr) for auto-sensing and selection of
  * display type.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.93 1999/09/19 19:41:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.94 1999/11/15 23:43:37 Ryan.Murray Exp $
  *
  */
 
@@ -816,14 +816,14 @@ ibmkclose(void)
 }
 
 static int
-screen_init(			/* initialize the screen head pointers */
-int newtype)		/* type of adapter to init for */
+screen_init(			/* initialize the pointers to video memory */
+int newtype)			/* type of graphics adapter to initialize */
 {
 	dynamic_VGA_info buffer;
 	union REGS regs;
 	union {
-		long laddr;		/* long form of address */
-		USHORT *paddr;		/* pointer form of address */
+		long laddr;	/* long form of address */
+		USHORT *paddr;	/* pointer form of address */
 	} addr;
 	long pagesize;
 	register DRIVERS *driver;
@@ -832,7 +832,7 @@ int newtype)		/* type of adapter to init for */
 
 	driver = &drivers[newtype];
 
-	/* check to see if we're allow this many scan-lines */
+	/* check to see if we're allowed this many scan-lines */
 	if ((allowed_vres & (1 << (driver->vres))) == 0)
 		return FALSE;
 
@@ -856,17 +856,17 @@ int newtype)		/* type of adapter to init for */
 	 * prints 25 lines.
 	 */
 	if (rows > 25) {
-		regs.h.ah = 0x12;		/* alternate select function code    */
+		regs.h.ah = 0x12;	/* alternate select function code    */
 		regs.h.bl = 0x20; 	/* alt. print screen routine	     */
 		INTX86(0x10, &regs, &regs);	/* VIDEO - SELECT ALTERNATE PRTSCRN  */
 	}
 
 	if (driver->type == EGASCR) {
-		outp(0x3d4, 10);	/* video bios bug patch */
+		outp(0x3d4, 10);	/* video bios bug workaround */
 		outp(0x3d5, 6);
 	}
 
-	/* reset the $sres environment variable */
+	/* set the $sres environment var. to the name of the driver in use */
 	(void)strcpy(screen_desc, driver->name);
 
 	if ((type == MONOSCR) != (dtype == MONOSCR))
@@ -1023,7 +1023,7 @@ scwrite(int row, int col,	/* where */
 					: attrnorm);
 		}
 	} else {
-		register USHORT attr; /* attribute byte mask to place in RAM */
+		register USHORT attr; /* temporary place to store attribute byte */
 		/* build the attribute byte and setup the screen pointer */
 #if	OPT_COLOR
 		attr = ColorDisplay() ? AttrColor(bacg,forg) :
@@ -1099,19 +1099,19 @@ ibmscroll(int from, int to, int n)
 	}
 #endif
 	if (from > to) {
-		regs.h.ah = 0x06;		/* scroll window up */
+		regs.h.ah = 0x06;	/* scroll window up */
 		regs.h.al = from - to;	/* number of lines to scroll */
 		regs.h.ch = to;		/* upper window row */
 		regs.h.dh = from + n - 1;	/* lower window row */
 	} else {
-		regs.h.ah = 0x07;		/* scroll window down */
+		regs.h.ah = 0x07;	/* scroll window down */
 		regs.h.al = to - from;	/* number of lines to scroll */
-		regs.h.ch = from;		/* upper window row */
+		regs.h.ch = from;	/* upper window row */
 		regs.h.dh = to + n - 1;	/* lower window row */
 	}
 	regs.h.bh = blank_attr();	/* attribute to use for line-fill */
-	regs.h.cl = 0;		/* left window column */
-	regs.h.dl = term.cols - 1; /* lower window column */
+	regs.h.cl = 0;			/* left window column */
+	regs.h.dl = term.cols - 1;	/* lower window column */
 	INTX86(0x10, &regs, &regs);
 }
 

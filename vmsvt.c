@@ -14,7 +14,7 @@
  *   -- support wide and narrow screen resolutions,
  *   -- support visual bells.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.51 1999/09/19 19:42:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.52 1999/11/15 23:35:00 Ryan.Murray Exp $
  *
  */
 
@@ -33,14 +33,12 @@
 #include	<smg$routines.h>
 #include	<ssdef.h>
 
-/** Forward references **/
+/* function prototypes needed for the dispatch table */
 static	void	vmsscrollregion (int top, int bot);
 static	void	vmsscroll_reg (int from, int to, int n);
 static	void	vmsscroll_delins (int from, int to, int n);
 static	void	vmsopen (void);
 static	void	vmsclose (void);
-static	void	vmskopen (void);
-static	void	vmskclose (void);
 static	void	vmsmove (int row, int col);
 static	void	vmseeol (void);
 static	void	vmseeop (void);
@@ -52,7 +50,7 @@ static	void	vmsrev	( UINT state );
 #endif
 static	int	vmscres (const char *);
 
-/** SMG stuff (just like termcap) */
+/* SMG stuff (just like termcap) */
 static	int	initialized;
 static	int	termtype;
 static	char *	tc_SO;	/* begin standout (reverse) */

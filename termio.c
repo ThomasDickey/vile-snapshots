@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.175 1999/10/17 23:42:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.176 1999/11/15 23:58:15 Ryan.Murray Exp $
  *
  */
 #include	"estruct.h"
@@ -56,7 +56,7 @@ static void ttmiscinit (void);
 #   define USE_SGTTY 1
 #   define USE_FIONREAD 1
 #  else
- huh?
+error "No termios or sgtty"
 #  endif
 # endif
 #endif
@@ -216,11 +216,11 @@ ttopen(void)
 
 	/* this could probably be done more POSIX'ish? */
 #if OPT_SHELL && defined(SIGTSTP) && defined(SIGCONT)
-	setup_handler(SIGTSTP,SIG_DFL); 	/* set signals so that we can */
+	setup_handler(SIGTSTP,SIG_DFL);		/* set signals so that we can */
 	setup_handler(SIGCONT,rtfrmshell);	/* suspend & restart */
 #endif
 #ifdef SIGTTOU
-	setup_handler(SIGTTOU,SIG_IGN); 	/* ignore output prevention */
+	setup_handler(SIGTTOU,SIG_IGN);		/* ignore output prevention */
 #endif
 
 #if ! DISP_X11
@@ -367,10 +367,10 @@ ttopen(void)
 #endif
 
 #if OPT_SHELL
-	setup_handler(SIGTSTP,SIG_DFL); 	/* set signals so that we can */
+	setup_handler(SIGTSTP,SIG_DFL);		/* set signals so that we can */
 	setup_handler(SIGCONT,rtfrmshell);	/* suspend & restart */
 #endif
-	setup_handler(SIGTTOU,SIG_IGN); 	/* ignore output prevention */
+	setup_handler(SIGTTOU,SIG_IGN);		/* ignore output prevention */
 
 #else /* no SIGTSTP */
 	suspc =   tocntrl('Z');
@@ -454,8 +454,8 @@ char tobuf[TBUFSIZ];		/* terminal output buffer */
 
 #undef	CTRL
 #include	<sgtty.h>	 /* for stty/gtty functions */
-struct	sgttyb	ostate; 	 /* saved tty state */
-struct	sgttyb	nstate; 	 /* values for editor mode */
+struct	sgttyb	ostate;		 /* saved tty state */
+struct	sgttyb	nstate;		 /* values for editor mode */
 struct	sgttyb	rnstate;	  /* values for raw editor mode */
 int olstate;		/* Saved local mode values */
 int nlstate;		/* new local mode values */
@@ -517,10 +517,10 @@ ttopen(void)
 #if ! DISP_X11
 
 #if OPT_SHELL
-	setup_handler(SIGTSTP,SIG_DFL); 	/* set signals so that we can */
+	setup_handler(SIGTSTP,SIG_DFL);		/* set signals so that we can */
 	setup_handler(SIGCONT,rtfrmshell);	/* suspend & restart */
 #endif
-	setup_handler(SIGTTOU,SIG_IGN); 	/* ignore output prevention */
+	setup_handler(SIGTTOU,SIG_IGN);		/* ignore output prevention */
 
 #endif
 
@@ -643,7 +643,7 @@ ttgetc(void)
 #if SYS_APOLLO
 	/*
 	 * If we try to read a ^C in cooked mode it will echo anyway.  Also,
-	 * the 'getchar()' won't be interruptable.  Setting raw-mode
+	 * the 'getchar()' won't be interruptible.  Setting raw-mode
 	 * temporarily here still allows the program to be interrupted when we
 	 * are not actually looking for a character.
 	 */
@@ -754,7 +754,7 @@ ttmiscinit(void)
 typedef struct	{
 	unsigned short int status;	/* I/O completion status */
 	unsigned short int count;	/* byte transfer count	 */
-	int dev_dep_data;		/* device dependant data */
+	int dev_dep_data;		/* device-dependent data */
 	} QIO_SB;			/* This is a QIO I/O Status Block */
 
 #define NIBUF	1024			/* Input buffer size		*/
@@ -763,12 +763,12 @@ typedef struct	{
 
 char	obuf[NOBUF];			/* Output buffer		*/
 int	nobuf;				/* # of bytes in above		*/
-char	ibuf[NIBUF];			/* Input buffer 		*/
+char	ibuf[NIBUF];			/* Input buffer			*/
 int	nibuf;				/* # of bytes in above		*/
 int	ibufi;				/* Read index			*/
 int	oldmode[3];			/* Old TTY mode bits		*/
 int	newmode[3];			/* New TTY mode bits		*/
-short	iochan; 			/* TTY I/O channel		*/
+short	iochan;				/* TTY I/O channel		*/
 #endif
 
 
@@ -989,7 +989,7 @@ ttgetc(void)
 }
 
 
-/* tttypahead:	Check to see if any characters are already in the
+/* tttypahead:	See if the user has more characters waiting in the
 		keyboard buffer
 */
 #if	! SYS_WINNT

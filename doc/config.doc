@@ -282,18 +282,12 @@ analyzing memory leaks.
 
 The --with-trace option turns on debug traces that go to the Trace.out
 file.  Since vile is a fullscreen program, it is not useful to write
-messages to the screen.  (The OPT_RAMSIZE option is an exception; you may
+messages to the screen.  (The OPT_HEAPSIZE option is an exception; you may
 be amused by it).
 
 The --with-warnings option applies mostly to compiles with GCC, since it is
 available across several platforms.  We build with all available compilers, but
 their warnings options are not consistent.
-
-	[ However, --with-warnings also turns on checks for missing prototypes,
-	assuming that an ANSI or Posix prototype is better than none (e.g., for
-	SunOS 4.x).  However, this may result in a config.h too long for your
-	sed program to handle.  GNU sed works properly.  An alternative is the
-	td_config utility bundled with Tom's directory editor. ]
 
 Because the echoed commands in the makefile are long, the
 --disable-echo option is provided to shorten the commands, making it easy to
@@ -306,5 +300,5 @@ without shell support, but perhaps not (ymmv).
 
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.1 1997/12/17 11:16:54 tom Exp $
+$Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.3 1999/11/16 00:39:59 tom Exp $
 ------------------------

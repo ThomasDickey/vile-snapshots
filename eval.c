@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.255 1999/09/22 21:42:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.256 1999/11/15 23:34:59 Ryan.Murray Exp $
  *
  */
 
@@ -957,7 +957,7 @@ setvar(int f, int n)
 	int status;
 	static TBUFF *var;
 
-	/* first get the variable to set.. */
+	/* get the variable we want to set */
 	if (var == 0)
 		tb_scopy(&var, "");
 	status = kbd_reply("Variable name: ", &var,
@@ -1340,13 +1340,15 @@ scan_int(const char *s)
 int
 scan_bool(const char *val)
 {
-	/* check for logical values */
+	/* check for logical true and false */
 	if (is_falsem(val))
 		return FALSE;
 	if (is_truem(val))
 		return TRUE;
 
-	/* check for numeric truth (!= 0) */
+	/* check for "numeric truth", like C.  0 is false, everything else
+	 * is true
+	 */
 	return (strtol(val,0,0) != 0);
 }
 
@@ -1995,7 +1997,7 @@ mktrimmed(char *str)	/* trim whitespace */
 }
 
 int
-absol(int x)		/* take the absolute value of an integer */
+absol(int x)		/* return absolute value of given integer */
 {
 	return (x < 0) ? -x : x;
 }

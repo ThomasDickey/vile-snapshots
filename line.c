@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.129 1999/10/10 18:44:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.130 1999/11/15 23:35:00 Ryan.Murray Exp $
  *
  */
 
@@ -692,7 +692,7 @@ lgrabtext(TBUFF **rp, CHARTYPE type)
 int
 lrepltext(
 CHARTYPE type,
-const char *np)	/* contents of new line */
+const char *np)	/* new text for the current line */
 {
 	int status = TRUE;
 	int c;

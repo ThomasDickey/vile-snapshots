@@ -5,7 +5,7 @@
  * commands. Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.100 1999/09/14 01:11:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.101 1999/11/15 23:35:00 Ryan.Murray Exp $
  *
  */
 
@@ -324,12 +324,12 @@ detabline(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 
 	DOT.o = 0;
 
-	/* detab the entire current line */
+	/* remove tabs from the entire line */
 	while (DOT.o < llength(lp)) {
 		c = char_at(DOT);
 		if (leadingonly && !isSpace(c))
 			break;
-		/* if we have a tab */
+		/* if we have found a tab to remove */
 		if (c == '\t') {
 			if ((s = ldelete(1L, FALSE)) != TRUE)
 				return s;

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.314 1999/11/09 23:10:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.315 1999/11/15 23:34:59 Ryan.Murray Exp $
  *
  */
 
@@ -528,12 +528,13 @@ vtmove(int row, int col)
     vtcol = col;
 }
 
-/* Write a character to the virtual screen. The virtual row and
-   column are updated. Only print characters if they would be
-   "visible".  If the line is too long put a ">" in the last column.
-   This routine only puts printing characters into the virtual
-   terminal buffers. Only column overflow is checked.
-*/
+/*
+ * vtputc:  Write a character to the virtual screen. The virtual row and
+ * column are updated. Only print characters if they would be
+ * "visible".  If the line is too long put a ">" in the last column.
+ * This routine only puts printing characters into the virtual
+ * terminal buffers. Only column overflow is checked.
+ */
 
 static void
 vtputc(int c)
@@ -2093,12 +2094,12 @@ int	on)		/* start highlighting */
  * MicroEMACS.  used by permission.
  */
 static int
-scrolls(int inserts)	/* returns true if it does something */
+scrolls(int inserts)	/* returns true if it does an optimization */
 {
 	struct	VIDEO *vpv;	/* virtual screen image */
 	struct	VIDEO *vpp;	/* physical screen image */
-	int	i, j, k ;
-	int	rows, cols ;
+	int	i, j, k;
+	int	rows, cols;
 	int	first, match, count, ptarget = 0, vtarget = 0;
 	SIZE_T	end;
 	int	longmatch, longcount;
@@ -2113,7 +2114,7 @@ scrolls(int inserts)	/* returns true if it does something */
 	cols = term.cols ;
 
 	/* find first line that doesn't match */
-	first = -1 ;
+	first = -1;
 	for (i = 0; i < rows; i++) {
 		if (!texttest(i,i)) {
 			first = i;
@@ -2123,21 +2124,21 @@ scrolls(int inserts)	/* returns true if it does something */
 	if (first < 0)
 		return FALSE;		/* there isn't one */
 
-	vpv = vscreen[first] ;
-	vpp = PScreen(first) ;
+	vpv = vscreen[first];
+	vpp = PScreen(first);
 
 	if (inserts) {
 		/* determine types of potential scrolls */
 		end = endofline(vpv->v_text,cols) ;
 		if ( end == 0 )
-			ptarget = first ;		/* newlines */
+			ptarget = first;		/* newlines */
 		else if ( memcmp(vpp->v_text, vpv->v_text, end) == 0 )
 			ptarget = first + 1 ;	/* broken line newlines */
 		else
-			ptarget = first ;
+			ptarget = first;
 		from = ptarget;
 	} else {
-		from = vtarget = first + 1 ;
+		from = vtarget = first + 1;
 	}
 
 	/* can we find that text elsewhere ? */
@@ -2171,9 +2172,9 @@ scrolls(int inserts)	/* returns true if it does something */
 	if (!inserts) {
 		/* full kill case? */
 		if (match > 0 && texttest(first, match-1)) {
-			vtarget-- ;
-			match-- ;
-			count++ ;
+			vtarget--;
+			match--;
+			count++;
 		}
 	}
 
@@ -2295,7 +2296,7 @@ int	prow)		/* physical row */
 	return (!memcmp(vpv->v_text, vpp->v_text, (SIZE_T)term.cols)) ;
 }
 
-/* return the index of the first blank of trailing whitespace */
+/* return the index of the first trailing whitespace character */
 static int
 endofline(char *s, int n)
 {
@@ -2359,7 +2360,7 @@ updext(int col, int excess, int use_excess)
 static void
 updateline(
 
-int	row,		/* row of screen to update */
+int	row,		/* row to update */
 int	colfrom,	/* first column on screen */
 int	colto)		/* last column on screen */
 
@@ -3145,7 +3146,7 @@ modeline(WINDOW *wp)
     vtputsn(tb_values(result), tb_length(result));
 #else	/* hard-coded format */
     bp = wp->w_bufp;
-    if (wp == curwp) {				/* mark the current buffer */
+    if (wp == curwp) {				/* current buffer shows as = */
 	lchar = '=';
     } else {
 #if	OPT_REVSTA

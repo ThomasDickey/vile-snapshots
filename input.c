@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.207 1999/10/11 00:02:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.208 1999/11/15 23:52:58 Ryan.Murray Exp $
  *
  */
 
@@ -58,7 +58,7 @@
 
 typedef	struct	_kstack	{
 	struct	_kstack	*m_link;
-	int	m_save;	/* old value of 'kbdmacactive'		*/
+	int	m_save;		/* old value of 'kbdmacactive'		*/
 	int	m_indx;		/* index identifying this macro		*/
 	int	m_rept;		/* the number of times to execute the macro */
 	ITBUFF  *m_kbdm;	/* the macro-text to execute		*/
@@ -187,8 +187,8 @@ mlyesno(const char *prompt)
 }
 
 /*
- * Ask a simple question in the message line. Return the single char response,
- *  if it was one of the valid responses.
+ * Ask a simple question in the message line.  Return the single char response
+ * if it was one of the valid responses.
  */
 
 int
@@ -524,13 +524,13 @@ tgetc_avail(void)
 int
 tgetc(int quoted)
 {
-	register int c;	/* fetched character */
+	register int c;	/* character read from terminal */
 
 	if (tgetc_ungotcnt > 0) {
 		tgetc_ungotcnt--;
 		c = itb_last(tgetc_ungottenchars);
 	} else if ((c = get_recorded_char(TRUE)) == -1) {
-		/* fetch a character from the terminal driver */
+		/* read a character from the terminal */
 		not_interrupted();
 		if (setjmp(read_jmp_buf)) {
 			c = kcod2key(intrc);
@@ -558,7 +558,7 @@ tgetc(int quoted)
 			record_char(c);
 	}
 
-	/* and finally give the char back */
+	/* return the character read from the terminal */
 	TRACE(("tgetc(%s) = %c\n", quoted ? "quoted" : "unquoted", c))
 	return c;
 }
@@ -1056,11 +1056,12 @@ kbd_is_pushed_back(void)
 	return clexec && pushed_back;
 }
 
-/*	A more generalized prompt/reply function allowing the caller
-	to specify a terminator other than '\n'.  Both are accepted.
-	Assumes the buffer already contains a valid (possibly
-	null) string to use as the default response.
-*/
+/* A generalized prompt/reply function which allows the caller to
+ * specify an additional terminator as well as '\n'.  Both are
+ * accepted.  Assumes the buffer already contains a valid (possibly
+ * null) string to use as the default response.
+ */
+
 int
 kbd_string(
 const char *prompt,	/* put this out first */
@@ -1404,7 +1405,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 {
 	int	c;
 	int	done;
-	unsigned cpos;		/* current character position in string */
+	unsigned cpos;		/* current position */
 	int	status;
 	int	shell;
 	int	margin;
@@ -1427,7 +1428,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 		execstr = get_token(execstr, extbuf, eolchar);
 		StrToBuff(*extbuf); /* FIXME: token should use TBUFF */
 		status = (tb_length(*extbuf) != 0);
-		if (status) { 	/* i.e., we got some input */
+		if (status) {	/* i.e., we got some input */
 #if !SMALLER
 			/* FIXME: may have nulls */
 			if ((options & KBD_LOWERC))
@@ -1481,7 +1482,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 	quotef = FALSE;
 	reading_msg_line = TRUE;
 
-	/* prompt the user for the input string */
+	/* ask for the input string with the prompt */
 	if (prompt != 0)
 		mlprompt("%s", prompt);
 
@@ -1537,8 +1538,8 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 			c = '\n';
 
 		/*
-		 * If they hit the line terminate (i.e., newline or unescaped
-		 * eolchar), wrap it up.
+		 * If they hit the line terminator (i.e., newline or unescaped
+		 * eolchar), finish up.
 		 *
 		 * Don't allow newlines in the string -- they cause real
 		 * problems, especially when searching for patterns
@@ -1658,7 +1659,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 			 * If we backspaced to erase the buffer, it's ok to
 			 * return to the caller, who would be the :-line
 			 * parser, so we can do something reasonable with the
-			 * address specication.
+			 * address specification.
 			 */
 			if (cpos == 0
 			 && isbackspace(c)

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.209 1999/11/08 10:57:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.210 1999/11/15 23:34:59 Ryan.Murray Exp $
  *
  */
 
@@ -473,7 +473,9 @@ const CMDFUNC **oldfunc)
 	return(TRUE);
 }
 
-/* unbindkey:	delete a key from the key binding table	*/
+/*
+ * unbindkey:	removes a key from the table of bindings
+ */
 
 /* ARGSUSED */
 int
@@ -692,7 +694,7 @@ deskey(int f GCC_UNUSED, int n GCC_UNUSED)	/* describe the command for a certain
 	(void)kcod2prc(c, outseq);
 	hst_append_s(outseq, FALSE); /* cannot replay this, but can see it */
 
-	/* find the right ->function */
+	/* find the function bound to the key */
 	if ((nptr = fnc2ntab(kcod2fnc(c))) == NULL) {
 		mlwrite("Key sequence '%s' is not bound to anything.",
 					outseq);

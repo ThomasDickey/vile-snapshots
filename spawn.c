@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.149 1999/11/07 23:35:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.150 1999/11/16 00:05:26 Ryan.Murray Exp $
  *
  */
 
@@ -222,7 +222,7 @@ rtfrmshell(int ACTUAL_SIG_ARGS GCC_UNUSED)
 	ttunclean();
 	sgarbf = TRUE;
 #  if SYS_APOLLO
-	(void)term.getch();		/* have to skip a character */
+	(void)term.getch();	/* have to skip a character */
 	ttunclean();		/* ...so that I can finally suppress echo */
 #  endif
 	term.kopen();
@@ -417,7 +417,7 @@ spawn1(int rerun, int pressret)
 #else
 	system(line);
 	term.kopen();
-	/* if we are interactive, pause here */
+	/* wait for return here if we are interactive */
 	if (pressret) {
 		pressreturn();
 	}
@@ -704,7 +704,7 @@ filterregion(void)
     }
 
     if ((s = begin_kill()) != TRUE)
-    	return s;
+	return s;
 
     if (!softfork())
     {
@@ -921,7 +921,7 @@ vile_filter(int f GCC_UNUSED, int n GCC_UNUSED)
 /*
  * Run a command. The "cmd" is a pointer to a command string, or NULL if you
  * want to run a copy of DCL in the subjob (this is how the standard routine
- * lib$spawn works. You have to do wierd stuff with the terminal on the way in
+ * lib$spawn works. You have to do weird stuff with the terminal on the way in
  * and the way out, because DCL does not want the channel to be in raw mode.
  */
 int

@@ -1,4 +1,7 @@
-Changes for vile 9.0 (released Thu Nov 11, 1999)
+Changes for vile 9.0 (released Thu Nov 15, 1999)
+
+ (tom) 991115 (c)
+	+ various changes to comments (patch by Ryan Murray).
 
  (tom) 991111 (b)
 	+ revert 8.3s change that modified inout_popen() to convert pathname
@@ -8,17 +11,17 @@ Changes for vile 9.0 (released Thu Nov 11, 1999)
 	  to work around broken linker on FreeBSD, but still detect properly
 	  HPUX curses library that has termcap functions.
 	+ remove pointers to defunct mirrors (reported by Clark Morgan).
- 	+ remove duplicate description in vile.hlp of vile-crypt; the manpage
+	+ remove duplicate description in vile.hlp of vile-crypt; the manpage
 	  covers this topic.
 	+ use new configure macro CF_ADD_CFLAGS to make configure check for
 	  headers (which uses only $CPPFLAGS) work with X_CFLAGS computed by
 	  autoconf's AC_PATH_XTRA.
- 	+ correct ifdef's for sys/select.h to use USE_SYS_SELECT_H, which takes
+	+ correct ifdef's for sys/select.h to use USE_SYS_SELECT_H, which takes
 	  into account the configure check for fd_set from 8.3n (reported by
 	  Jens Schleusener).
- 	+ use newer CF_TYPE_FD_SET configure test, from xterm which checks for
+	+ use newer CF_TYPE_FD_SET configure test, from xterm which checks for
 	  Xpoll.h which may conflict with sys/select.h
- 	+ use newer CF_X_ATHENA configure test, from xterm which checks for
+	+ use newer CF_X_ATHENA configure test, from xterm which checks for
 	  nonstandard locations of that library on HPUX.
 	+ add configure test to see if -lcrypt is needed in $LIBS to link
 	  crypt() function (reported by Paul Fox).
@@ -27,13 +30,13 @@ Changes for vile 9.0 (released Thu Nov 11, 1999)
 	+ correct special case of 'n' command on an empty line at the end of
 	  a buffer for a pattern that matches zero characters, e.g., ".*",
 	  "^" or "$" (reported by Kevin Buettner).
- 	+ modify internal regular expression data for ranges that include the
+	+ modify internal regular expression data for ranges that include the
 	  backslash character so the backslash is escaped, compensating for
 	  a change in 6.2a to handle "\\>" pattern.
- 	+ use function XDisplayString() to obtain the actual display name,
+	+ use function XDisplayString() to obtain the actual display name,
 	  needed to make xvile's "New" menu entry direct new sessions to the
 	  proper display.
- 	+ correct a divide-by-zero when computing percentage for ^G command,
+	+ correct a divide-by-zero when computing percentage for ^G command,
 	  from 8.3l changes for $position-format (reported by Clark Morgan).
 	+ ensure that symbols for EXIT_SUCCESS and EXIT_FAILURE are used where
 	  they apply in the filter programs.
@@ -51,7 +54,7 @@ Changes for vile 9.0 (released Thu Nov 11, 1999)
 Changes for vile 8.4 (released Sun Nov 7, 1999)
 
  (tom) 991107 (z)
- 	+ change copyright notice to distribute vile using GPL.
+	+ change copyright notice to distribute vile using GPL.
 	+ update RPM spec based on package by Tim Powers <timp@redhat.com>,
 	  add xvile.wmconfig, vile.wmconfig and use xpm icons.
 	+ workaround for problem introduced in 8.3r, resetting 'vile_is_busy'
@@ -82,7 +85,7 @@ Changes for vile 8.4 (released Sun Nov 7, 1999)
 	  <mjc@c1000907-b.sttls1.wa.home.com>)
 
  (tom) 991030 (y)
- 	+ correct logic for OPT_CACHE_VCOL which accounts for the starting
+	+ correct logic for OPT_CACHE_VCOL which accounts for the starting
 	  point when it may be a nonprinting character, i.e., rendered as
 	  multiple columns.
 	+ fix an error in BeOS version of catnap, exposed by change for SCO;
@@ -92,12 +95,12 @@ Changes for vile 8.4 (released Sun Nov 7, 1999)
 	  system menu.
 	+ modify the label of the popup menu "Menu" selection, remove trailing
 	  "..." because this cmd does not invoke a dialog box.
- 	+ update doc/w32modes.doc to cover Windows 98
+	+ update doc/w32modes.doc to cover Windows 98
 
  (tom) 991019 (x)
- 	+ minor fixes for OPT_CACHE_VCOL, to take into account list and number
+	+ minor fixes for OPT_CACHE_VCOL, to take into account list and number
 	  modes.
- 	+ fix a typo in manpage.rc that let empty responses pass by.
+	+ fix a typo in manpage.rc that let empty responses pass by.
 	+ save/restore token's column when processing tags (patch by Ed
 	  Henderson).
 	+ change tttypahead() to use catnap() in preference to ioctl(FIONREAD),

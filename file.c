@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.259 1999/10/03 20:49:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.260 1999/11/15 23:48:37 Ryan.Murray Exp $
  */
 
 #include	"estruct.h"
@@ -1369,8 +1369,8 @@ makename(char *bname, const char *fname)
 
 
 void
-unqname(	/* make sure a buffer name is unique */
-char *name)	/* name to check on */
+unqname(	/* generate a unique name for a buffer */
+char *name)	/* buffer name to make unique */
 {
 	register SIZE_T	j;
 	char newname[NBUFN * 2];
@@ -1384,7 +1384,7 @@ char *name)	/* name to check on */
 	if (j == 0)
 		j = strlen(strcpy(name, "NoName"));
 
-	/* check to see if it is in the buffer list */
+	/* check to see if this name is in use */
 	strcpy(newname, name);
 	adjust = is_scratchname(newname);
 	while (find_b_name(newname) != NULL) {
@@ -1444,7 +1444,7 @@ filesave(int f, int n)
 	register int	s;
 	int forced = (f && n == SPECIAL_BANG_ARG); /* then it was :w! */
 
-	if (curbp->b_fname[0] == EOS) { 	/* Must have a name.	*/
+	if (curbp->b_fname[0] == EOS) {		/* Must have a name.	*/
 		mlwarn("[No file name]");
 		return FALSE;
 	}
@@ -1581,7 +1581,8 @@ int	forced)
 	if ( ! inquire_modtime( bp, fn ) )
 		return FALSE;
 #endif
-	if ((s=ffwopen(fn,forced)) != FIOSUC)	    /* Open writes message. */
+	/* open writes error message, if needed */
+	if ((s=ffwopen(fn,forced)) != FIOSUC)
 		return FALSE;
 
 	/* tell us we're writing */
