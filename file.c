@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.332 2002/07/03 00:35:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.334 2002/09/02 12:16:43 tom Exp $
  */
 
 #include "estruct.h"
@@ -1428,8 +1428,8 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
 	return FALSE;
 
     if (*fname == EOS) {
-	mlforce("BUG: readin called with NULL fname");
-	return FALSE;
+	TRACE(("readin called with NULL fname\n"));
+	return TRUE;
     }
 
     if ((s = bclear(bp)) != TRUE)	/* Might be old.    */
@@ -2351,7 +2351,7 @@ create_save_dir(char *dirnam)
 
 	    /* on failure, keep going */
 #if defined(HAVE_MKSTEMP) && defined(HAVE_MKDTEMP)
-	    result = (vl_mkdtemp(dirnam) == 0);
+	    result = (vl_mkdtemp(dirnam) != 0);
 #else
 	    result = (vl_mkdir(dirnam, 0700) == 0);
 #endif

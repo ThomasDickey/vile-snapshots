@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.123 2002/05/15 01:13:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.124 2002/09/02 14:22:58 tom Exp $
  *
  *
  */
@@ -1841,7 +1841,7 @@ parse_pathlist(const char *list, char *result)
     if (list != NULL && *list != EOS) {
 	register int len = 0;
 
-	while (*list && (*list != vl_pathsep)) {
+	while (*list && (*list != vl_pathchr)) {
 	    if (len < NFILEN - 1)
 		result[len++] = *list;
 	    list++;
@@ -1850,7 +1850,7 @@ parse_pathlist(const char *list, char *result)
 	    result[len++] = '.';
 	result[len] = EOS;
 
-	if (*list == vl_pathsep)
+	if (*list == vl_pathchr)
 	    ++list;
     } else
 	list = NULL;
@@ -2109,7 +2109,7 @@ prepend_to_path_list(char **path_list, char *path)
 	    t = "";
 	}
 	if ((s = typeallocn(char, need)) != 0) {
-	    lsprintf(s, "%s%c%s", find, vl_pathsep, t);
+	    lsprintf(s, "%s%c%s", find, vl_pathchr, t);
 	    if (*path_list != 0)
 		free(*path_list);
 	    *path_list = s;
@@ -2146,7 +2146,7 @@ append_to_path_list(char **path_list, char *path)
 	}
 	if ((s = typeallocn(char, need)) != 0) {
 	    if (*t != EOS)
-		lsprintf(s, "%s%c%s", t, vl_pathsep, find);
+		lsprintf(s, "%s%c%s", t, vl_pathchr, find);
 	    else
 		strcpy(s, find);
 	    if (*path_list != 0)

@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.167 2002/06/26 23:45:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.168 2002/07/04 22:59:07 tom Exp $
  *
  */
 
@@ -145,7 +145,7 @@ write_backup_file(const char *orig, char *backup)
 	}
     }
 #else
-# if HAVE_UTIME
+#if HAVE_UTIME
     {
 	struct utimbuf buf;
 	buf.actime = ostat.st_atime;
@@ -248,25 +248,32 @@ file_stat(const char *fn, struct stat *sb)
     unsigned n;
     int found = FALSE;
 
-    for (n = 0; n < TABLESIZE(cache); ++n) {
-	if (!strcmp(fn, cache[n].fn)) {
-	    found = TRUE;
-	    break;
-	}
-    }
-    if (sb != 0) {
-	if (!found) {
-	    for (n = TABLESIZE(cache) - 1; n != 0; --n) {
-		if (strlen(cache[n].fn) == 0)
-		    break;
+    if (fn != 0) {
+	for (n = 0; n < TABLESIZE(cache); ++n) {
+	    if (!strcmp(fn, cache[n].fn)) {
+		found = TRUE;
+		break;
 	    }
-	    cache[n].rc = stat(SL_TO_BSL(strcpy(cache[n].fn, fn)),
-			       &(cache[n].sb));
 	}
-	rc = cache[n].rc;
-	*sb = cache[n].sb;
-    } else if (found) {
-	vl_strncpy(cache[n].fn, "", NFILEN);
+	if (sb != 0) {
+	    if (!found) {
+		for (n = TABLESIZE(cache) - 1; n != 0; --n) {
+		    if (strlen(cache[n].fn) == 0)
+			break;
+		}
+		cache[n].rc = stat(SL_TO_BSL(strcpy(cache[n].fn, fn)),
+				   &(cache[n].sb));
+	    }
+	    rc = cache[n].rc;
+	    *sb = cache[n].sb;
+	} else if (found) {
+	    vl_strncpy(cache[n].fn, "", NFILEN);
+	}
+    } else {
+	fn = "";
+	for (n = 0; n < TABLESIZE(cache); ++n) {
+	    vl_strncpy(cache[n].fn, fn, NFILEN);
+	}
     }
     TRACE(("file_stat(%s) = %d%s\n", fn, rc,
 	   (found
@@ -575,6 +582,7 @@ ffexists(char *p)
 
     struct stat statbuf;
     if (!isInternalName(p)
+	&& file_stat(p, 0) == 0
 	&& file_stat(p, &statbuf) == 0) {
 	status = TRUE;
     }

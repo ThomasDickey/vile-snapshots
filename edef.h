@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.302 2002/07/02 00:06:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.303 2002/09/02 14:23:13 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -314,7 +314,8 @@ decl_uninit( size_t fflinelen );	/* fflinebuf length */
 
 decl_init ( L_NUM help_at, -1 );	/* position in help-file */
 decl_uninit( char *helpfile );
-decl_init( char vl_pathsep, PATHCHR );	/* $pathlist-separator */
+decl_init( char vl_pathchr, PATHCHR );	/* $pathlist-separator */
+decl_init( char vl_pathsep, PATHSEP );	/* $pathname-separator */
 
 decl_uninit( char *startup_file );
 decl_uninit( char *startup_path );

@@ -1,5 +1,82 @@
 Changes for vile 9.4 (released ??? ??? ?? ????)
 
+ 20020902 (d)
+	> Brendan O'Dea:
+	+ updates to allow vile to build with perl 5.8.0 (ifdef's checked for
+	  5.6.1, 5.5.3 and 5.4.5).
+	> Clark Morgan:
+	+ modify ntconio.c and ntwinio.c to recognize control/@ as a null,
+	  to allow inserting null characters.
+	+ config.doc:
+	  - correct erroneous statement; namely, vile build only creates as many
+	    external filters as necessary, not all filters.
+	  - restructure doc/config.doc's builtin-filter prose for improved clarity.
+	+ vile.hlp:
+	  - fix ispell macro so that users avoid a "warn-reread" prompt.
+	  - remove ShowManpage macro from vile.hlp; it's long and complex. 
+	    Interested readers can read the macro directly by browsing
+	    manpage.rc .
+	  - documented builtin filters.  One of the more notable changes here
+	    is that I dumped the description of how to optimally build vile on
+	    a Unix host when disk space is limited.  I don't think that's much
+	    of an issue these days and it substantially simplifies the prose.
+	> Tom Dickey:
+	+ add which-keywords, as a macro.
+	+ add $pathname-separator variable.
+	+ implement edit-buffer command, to simplify which-keywords macro.
+	  In turn, this required modifying readin() to allow us to treat
+	  an empty filename as a non-error condition, and adding the KBD_OPTIONS
+	  flags to the DONE_ARGS to propagate this down to kbd_complete(),
+	  to make the code which does name-completion of buffer-names allow
+	  a partial match.
+	+ put nrmode after shmode to allow scripts such as "with-perl-5.8.0".
+	+ reorganize decode_prefix() to allow parsing of bindings such as
+	  ^X-#-a (report by Christian Neumann <jarva@t-online.de>)
+	+ reset, if possible, real uid/gid values to match effective uid/gid
+	  values, to appease Perl's check for setuid scripts.  This fixes a
+	  problem where vileperl.rc would stop during initialization because
+	  fcron's fcrontab program would run the editor process with the group
+	  id's not matching (reported by Clemens Fischer).
+	+ change test in fscan(), aka forward-char-scan to an inequality to
+	  allow for the case where the line is empty (report by Adam Denton).
+	+ correct logic of label2bp(), which did not skip leading blanks on the
+	  line before checking for a label.  This happened to work until 9.2u
+	  indented macros as they are stored (reportd by Adam Denton).
+	+ modify built-in spell filter to work with encrypted files.
+	+ improve check for flex's version (patch by Danny Zerkel <dzerkel@cas.org>).
+	+ correct check for mkdtemp() in create_save_dir() (reported by
+	  D J Hawkey Jr <hawkeyd@visi.com>).
+	+ add vile's patches to RPM spec (patch by Mark Milhollan
+	  <mlm@mlm.ath.cx>).
+	+ correct parsing of '+' in prc2kcod(), so one can bind that key
+	  to a command, e.g.,
+		bind-key next-buffer +	
+	  (patch by Brian T. Schellenberger <bts@babbleon.org>).
+	+ add x11menu to descrip.mms and vmsbuild.com (patch by Jouk Jansen
+	  <joukj@hrem.stm.tudelft.nl>).
+	+ use XtArgVal casts on data passed by XtVaSetValues() calls.  This is
+	  needed to make xvile run reliably on an LP64 platform, since Xt
+	  uses a long for this value.
+	+ add an #error in perl.xs to flag instances where patchlevel.h is
+	  included from places other than Perl's directory (report by Clemens
+	  Fischer).
+
+ 20020704 (c)
+	> Tom Dickey:
+	+ add calls to file_stat() to make vile's cache obsolete when spawning
+	  and external shell process or when handing ^Z (suspend).  This fixes
+	  a problem where the subprocess may have removed a file.  Vile would
+	  thereafter be unwilling to write the corresponding buffer to disk
+	  (reported by Clark Morgan).
+	+ omit double-quote in finderr expression for weblint, to avoid a
+	  conflict with some of ncurses' messages.
+	+ make vile syntax filter recognize hexadecimal constants.
+	+ add a -t option to filters, to pass tabstop value.  Use this in
+	  makefilt.l to provide better highlighting of problems with leading
+	  whitespace.
+	+ supply install-rule in makefile.in for gnugpg.rc, search.rc and
+	  shifts.rc
+
  20020703 (b)
 	> Tom Dickey:
 	+ correct missing limit-check in repaint_window(), which caused winvile

@@ -5,7 +5,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995-2000 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.116 2002/03/01 01:53:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.117 2002/09/02 12:27:52 tom Exp $
  *
  */
 #include "estruct.h"
@@ -265,7 +265,7 @@ init_tags_cmpl(char *buf, unsigned cpos)
 }
 
 static int
-tags_completion(int c, char *buf, unsigned *pos)
+tags_completion(DONE_ARGS)
 {
     unsigned cpos = *pos;
     int status = FALSE;
@@ -275,7 +275,7 @@ tags_completion(int c, char *buf, unsigned *pos)
     buf[cpos] = EOS;		/* terminate it for us */
 
     if ((nptr = init_tags_cmpl(buf, cpos)) != 0) {
-	status = kbd_complete(0, c, buf, pos, (const char *) nptr, sizeof(*nptr));
+	status = kbd_complete(PASS_DONE_ARGS, (const char *) nptr, sizeof(*nptr));
 	free(TYPECAST(char *, nptr));
     }
     return status;
@@ -826,7 +826,7 @@ gototag(int f GCC_UNUSED, int n GCC_UNUSED)
     int taglen;
 
     if (clexec || isnamedcmd) {
-	UINT mode = KBD_NORMAL
+	KBD_OPTIONS mode = KBD_NORMAL
 #if OPT_TAGS_CMPL
 	| KBD_MAYBEC
 #endif

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.43 2002/07/03 10:27:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.46 2002/07/04 22:21:10 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -18,34 +18,74 @@ DefineFilter("make");
 static char *Comment_attr;
 static char *Error_attr;
 static char *Ident2_attr;
-static char *Preproc_attr;
 static char *Keyword_attr;
+static char *Preproc_attr;
 static char *String_attr;
+
+static int continued;
+
+/*
+ * If we're looking for tabs, only tabs (optionally followed by spaces) will
+ * do.
+ */
+static int
+want_tabs(char *text, int size)
+{
+    int result = 0;
+    int spcs = 0;
+    int tabs = 0;
+    int n;
+
+    if (size > 0) {
+	for (n = 0; n < size; ++n) {
+	    if (text[n] == ' ') {
+		if (!tabs)
+			result = !continued;
+		++spcs;
+	    } else if (text[n] == '\t') {
+		if (spcs)
+			result = !continued;
+		++tabs;
+	    }
+	}
+	/* a little paranoia does not hurt */
+	if ((spcs == flt_options['t']) && !tabs)
+	    result = 1;
+    } else {
+	result = 1;	/* should not happen */
+    }
+    return result;
+}
 
 static void
 write_keyword(char *text, int size, int prepro, int caseless)
 {
-    int colon = size > 1 && text[size-1] == ':';
-    int space = 0;
+    int colon = 0;
+    int before = 0;
+    int after = 0;
     int save;
+    int nospcs = 0;
+    int notabs = 0;
+    int tabs = 0;
     char *base = text;
     char *attr = "";
 
-    if (colon)
+    while (size > 1 && text[size - 1] == ':') {
 	text[--size] = 0;
+	++colon;
+    }
 
     while (isspace(CharOf(*text))) {
+	if (*text == '\t')
+	    tabs = 1;
 	text++;
 	size--;
-	space++;
+	before++;
     }
-    if (space)
-	flt_puts(base, space, "");
 
-    space = 0;
     while (isspace(CharOf(text[size-1]))) {
 	size--;
-	space++;
+	after++;
     }
 
     save = text[size];
@@ -53,22 +93,33 @@ write_keyword(char *text, int size, int prepro, int caseless)
     attr = caseless
 	 ? ci_keyword_attr(text)
     	 : keyword_attr(text);
-    if ((attr == 0) && prepro) {
+    /*
+     * Some symbols cannot be preceded by tabs - we put those in the "premake"
+     * table.
+     */
+    if ((attr == 0) && !continued && prepro) {
 	set_symbol_table("premake");
 	attr = caseless
 	     ? ci_keyword_attr(text)
 	     : keyword_attr(text);
-	flt_puts(text, size, attr);
 	set_symbol_table(flt_name());
+	notabs = (attr != 0);
+	if (attr == 0)
+	    nospcs = want_tabs(base, before);
     } else {
-	flt_puts(text, size, attr);
+	nospcs = want_tabs(base, before);
     }
     text[size] = save;
 
-    if (space)
-	flt_puts(text + size, space, "");
+    if (before)
+	flt_puts(base, before, ((tabs && notabs) || nospcs) ? Error_attr : "");
 
-    if (colon)
+    flt_puts(text, size, attr);
+
+    if (after)
+	flt_puts(text + size, after, "");
+
+    while (colon--)
 	flt_putc(':');
 }
 
@@ -163,6 +214,8 @@ do_filter(FILE *input)
     Preproc_attr = class_attr(NAME_PREPROC);
     String_attr  = class_attr(NAME_LITERAL);
 
+    continued = 0;
+
     BEGIN(NORMAL);
     while (yylex() > 0) {
     }
@@ -182,13 +235,13 @@ OPER		[+:?]?=
 
 %%
 
-<NORMAL>^[ ]*[!]{NAME}{SPACE}*	{ write_keyword(yytext, yyleng, 1, 1); }
+<NORMAL>^{SPACE}*[!]{NAME}{SPACE}*	{ write_keyword(yytext, yyleng, 1, 1); }
 
-<NORMAL>^[ ]*{NAME}{SPACE}*	{ write_keyword(yytext, yyleng, 1, 1); }
+<NORMAL>^{SPACE}*{NAME}{SPACE}*	{ write_keyword(yytext, yyleng, 1, 0); }
 
 <NORMAL>^{SPACE}*([-.])?include{SPACE}* { write_keyword(yytext, yyleng, 1, 0); }
 
-<NORMAL>^{SPACE}*[\.]{NAME}{SPACE}*:	{ write_keyword(yytext, yyleng, 0, 0); }
+<NORMAL>^{SPACE}*[\.]{NAME}{SPACE}*:[:]? { write_keyword(yytext, yyleng, 0, 0); }
 
 <NORMAL>^({SPACE}*{NAME}{SPACE}*|\\\n)+: { write_delimited(yytext, yyleng, Keyword_attr); }
 
@@ -199,8 +252,10 @@ OPER		[+:?]?=
 <NORMAL>^{SPACE}\@		{ if (yyleng)
 				    flt_puts(yytext, yyleng-1, "");
 				  flt_puts("@", 1, String_attr); }
-<NORMAL>\\{SPACE}+\n		{ WriteToken(Error_attr); }
-<NORMAL>\\["'\n]		{ WriteToken(String_attr); }
+<NORMAL>\\{SPACE}+\n		{ WriteToken(Error_attr); continued = 1; }
+<NORMAL>\\[\n]			{ WriteToken(String_attr); continued = 1; }
+<NORMAL>[\n]			{ ECHO; continued = 0; }
+<NORMAL>\\["']			{ WriteToken(String_attr); }
 <NORMAL>\'			{ BeginQuote(QUOTE1, String_attr); }
 <NORMAL>\"			{ BeginQuote(QUOTE2, String_attr); }
 

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.209 2002/07/03 00:18:17 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.210 2002/09/02 14:24:02 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -258,7 +258,8 @@ string
 "pagewid"	CURWIDTH		# current screen width
 "palette"	PALETTE			# current palette string
 "patchlevel"	PATCHLEVEL		# current patch-level of vile (empty for release)
-"pathlist-separator" PATHSEP		# separator for lists of pathnames
+"pathlist-separator" PATHCHR		# separator for lists of pathnames
+"pathname-separator" PATHSEP		# separator for levels of pathnames
 "pathname"	PATHNAME		# current path-like word
 "pending"	PENDING			# type ahead pending flag
 "pid"		PROCESSID		# vile's process-id

@@ -1,12 +1,20 @@
 Summary: VILE VI Like Emacs editor
+# $Header: /users/source/archives/vile.vcs/RCS/vile-9.3.spec,v 1.3 2002/08/25 22:16:34 tom Exp $
 Name: vile
-Version: 9.3
+Version: 9.3d
+# each patch should update the version
 Release: 1
 Copyright: GPL
 Group: Applications/Editors
 URL: ftp://invisible-island.net/vile
 Source0: vile-9.3.tgz
+Patch1: vile-9.3a.patch.gz
+Patch2: vile-9.3b.patch.gz
+Patch3: vile-9.3c.patch.gz
+Patch4: vile-9.3d.patch.gz
+# each patch should add itself to this list
 Packager: Thomas Dickey <dickey@herndon4.his.com>
+BuildRoot: %{_tmppath}/%{name}-root
 
 %description
 Vile is a text editor which is extremely compatible with vi in terms of
@@ -16,49 +24,62 @@ rebinding, and real X window system support.
 
 %prep
 %setup -q -n vile-9.3
-#%patch1 -p1
+%patch1 -p1
+%patch2 -p1
+%patch3 -p1
+%patch4 -p1
+# each patch should add itself to this list
 
 %build
-EXTRA_CFLAGS="$RPM_OPT_FLAGS" INSTALL_PROGRAM='${INSTALL} -s' ./configure --with-screen=x11 --with-xpm --prefix=/usr --with-locale
+EXTRA_CFLAGS="$RPM_OPT_FLAGS" INSTALL_PROGRAM='${INSTALL} -s' ./configure --target %{_target_platform} --prefix=%{_prefix} --with-locale --with-builtin-filters --with-screen=x11 --with-xpm
 make xvile
-EXTRA_CFLAGS="$RPM_OPT_FLAGS" INSTALL_PROGRAM='${INSTALL} -s' ./configure --prefix=/usr --with-screen=ncurses --with-locale
+EXTRA_CFLAGS="$RPM_OPT_FLAGS" INSTALL_PROGRAM='${INSTALL} -s' ./configure --target %{_target_platform} --prefix=%{_prefix} --with-locale --with-builtin-filters --with-screen=ncurses
 touch x11.o menu.o
 make
 touch xvile
 
 %install
-rm -rf $RPM_BUILD_ROOT
-make install prefix=$RPM_BUILD_ROOT/usr
-make TARGET=xvile install-xvile prefix=$RPM_BUILD_ROOT/usr/X11R6
+[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
+make install prefix=$RPM_BUILD_ROOT/%{_prefix}
+make TARGET=xvile install-xvile prefix=$RPM_BUILD_ROOT/%{_prefix}/X11R6
 
-strip $RPM_BUILD_ROOT/usr/X11R6/bin/xvile
-strip $RPM_BUILD_ROOT/usr/bin/vile
-strip $RPM_BUILD_ROOT/usr/lib/vile/vile-*filt
+strip $RPM_BUILD_ROOT/%{_prefix}/X11R6/bin/xvile
+strip $RPM_BUILD_ROOT/%{_bindir}/vile
+strip $RPM_BUILD_ROOT/%{_libdir}/vile/vile-*filt
 
-./mkdirs.sh $RPM_BUILD_ROOT/usr/X11R6/man/man1  
-install -m 644 vile.1 $RPM_BUILD_ROOT/usr/X11R6/man/man1/xvile.1  
+./mkdirs.sh $RPM_BUILD_ROOT/%{_prefix}/X11R6/man/man1  
+install -m 644 vile.1 $RPM_BUILD_ROOT/%{_prefix}/X11R6/man/man1/xvile.1  
 
-./mkdirs.sh $RPM_BUILD_ROOT/etc/X11/wmconfig  
-install vile.wmconfig $RPM_BUILD_ROOT/etc/X11/wmconfig/vile  
-install xvile.wmconfig $RPM_BUILD_ROOT/etc/X11/wmconfig/xvile  
+./mkdirs.sh $RPM_BUILD_ROOT/%{_sysconfdir}/X11/wmconfig  
+install vile.wmconfig $RPM_BUILD_ROOT/%{_sysconfdir}/X11/wmconfig/vile  
+install xvile.wmconfig $RPM_BUILD_ROOT/%{_sysconfdir}/X11/wmconfig/xvile  
   
 %clean
-rm -rf $RPM_BUILD_ROOT
+[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
 
 %files
+%defattr(-,root,root)
 %doc CHANGES*
 %doc COPYING INSTALL MANIFEST README*
 %doc doc/*
 %doc macros
-%config(missingok) /etc/X11/wmconfig/vile
-%config(missingok) /etc/X11/wmconfig/xvile
-/usr/X11R6/bin/xvile
-/usr/X11R6/man/man1/xvile.1
-/usr/bin/vile
-/usr/man/man1/vile.1
-/usr/share/vile
-/usr/lib/vile/
+%config(missingok) %{_sysconfdir}/X11/wmconfig/vile
+%config(missingok) %{_sysconfdir}/X11/wmconfig/xvile
+%{_prefix}/X11R6/bin/xvile
+%{_prefix}/X11R6/man/man1/xvile.*
+%{_bindir}/vile
+%{_mandir}/man1/vile.*
+%{_datadir}/vile
+%{_libdir}/vile/
 
 %changelog
+# each patch should add it's ChangeLog entries here
+
+* Sun Aug 25 2002 Thomas Dickey
+- added patch for 9.3d
+
+* Sun Aug 11 2002 Mark Milhollan <mlm@mlm.ath.cx>
+- Updated spec file to follow the usual conventions (macros and defattr)
+
 * Mon Nov 1 1999 Thomas Dickey
 - modified based on spec by Tim Powers <timp@redhat.com>  

@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.181 2002/06/30 17:50:37 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.183 2002/09/02 16:31:54 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -194,7 +194,8 @@ MACRO_SRC = \
 	$(srcdir)/macros/search.rc \
 	$(srcdir)/macros/shifts.rc \
 	$(srcdir)/macros/vileinit.rc \
-	$(srcdir)/macros/vileperl.rc
+	$(srcdir)/macros/vileperl.rc \
+	$(srcdir)/macros/which.rc
 
 OTHERSRC = \
 	djhandl.c \
@@ -342,12 +343,16 @@ INSTALL_MACRO_FILES = \
 	$(DATADIR)/color-ls.rc \
 	$(DATADIR)/dates.rc \
 	$(DATADIR)/digraphs.rc \
+	$(DATADIR)/gnugpg.rc \
+	$(DATADIR)/loaderrs.rc \
 	$(DATADIR)/manpage.rc \
 	$(DATADIR)/palettes.rc \
 	$(DATADIR)/pictmode.rc \
+	$(DATADIR)/search.rc \
 	$(DATADIR)/shifts.rc \
 	$(DATADIR)/vileinit.rc \
-	$(DATADIR)/vileperl.rc
+	$(DATADIR)/vileperl.rc \
+	$(DATADIR)/which.rc
 
 INSTALL_PERL_DIRS = $(PERLDIR) $(PERLDIR)/Vile
 INSTALL_PERL_FILES = \
@@ -637,18 +642,26 @@ $(DATADIR)/dates.rc:		$(srcdir)/macros/dates.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/dates.rc $@
 $(DATADIR)/digraphs.rc:		$(srcdir)/macros/digraphs.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/digraphs.rc $@
+$(DATADIR)/gnugpg.rc:		$(srcdir)/macros/gnugpg.rc
+	$(INSTALL_DATA)		$(srcdir)/macros/gnugpg.rc $@
+$(DATADIR)/loaderrs.rc:		$(srcdir)/macros/loaderrs.rc
+	$(INSTALL_DATA)		$(srcdir)/macros/loaderrs.rc $@
 $(DATADIR)/manpage.rc:		$(srcdir)/macros/manpage.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/manpage.rc $@
 $(DATADIR)/palettes.rc:		$(srcdir)/macros/palettes.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/palettes.rc $@
 $(DATADIR)/pictmode.rc:		$(srcdir)/macros/pictmode.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/pictmode.rc $@
+$(DATADIR)/search.rc:		$(srcdir)/macros/search.rc
+	$(INSTALL_DATA)		$(srcdir)/macros/search.rc $@
 $(DATADIR)/shifts.rc:		$(srcdir)/macros/shifts.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/shifts.rc $@
 $(DATADIR)/vileinit.rc:		$(srcdir)/macros/vileinit.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/vileinit.rc $@
 $(DATADIR)/vileperl.rc:		$(srcdir)/macros/vileperl.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/vileperl.rc $@
+$(DATADIR)/which.rc:		$(srcdir)/macros/which.rc
+	$(INSTALL_DATA)		$(srcdir)/macros/which.rc $@
 
 $(DATADIR)/vilemenu.rc:		$(srcdir)/macros/vilemenu.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/vilemenu.rc $@

@@ -593,6 +593,9 @@ State Variables
 	$pathname       [READ ONLY] current "path-like" word, under the
 			cursor.
 
+	$pathname-separator separates levels of directory names in a path.
+			Usually this is '/', for Unix.
+
 	$pending        [READ ONLY]  Boolean which is true when the user
 			has "typed ahead", i.e. there are waiting keystrokes.
 
@@ -1429,6 +1432,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.84 2002/05/11 00:58:23 cmorgan Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.85 2002/09/02 14:55:15 tom Exp $
 -----------------------------------
 

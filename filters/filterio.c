@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.15 2002/02/12 22:34:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.16 2002/07/04 14:57:42 tom Exp $
  *
  */
 
@@ -14,6 +14,25 @@ static FILE *my_in;
 /******************************************************************************
  * Private functions                                                          *
  ******************************************************************************/
+
+static char *
+ParamValue(char **option, int *inx, int argc, char *argv[])
+{
+    char *s = *option;
+    char *result = ++s;
+
+    if (*result == 0) {
+	*inx += 1;
+	if (*inx < argc) {
+	    result = argv[*inx];
+	} else {
+	    result = "";
+	}
+    } else {
+	*option += strlen(*option) - 1;
+    }
+    return result;
+}
 
 static int
 ProcessArgs(int argc, char *argv[], int flag)
@@ -28,10 +47,15 @@ ProcessArgs(int argc, char *argv[], int flag)
 		flt_options[CharOf(*s)] += 1;
 		switch (*s) {
 		case 'k':
-		    value = s[1] ? s + 1 : ((n < argc) ? argv[++n] : "");
+		    value = ParamValue(&s, &n, argc, argv);
 		    if (flag) {
 			flt_read_keywords(value);
 		    }
+		    break;
+		case 't':
+		    value = ParamValue(&s, &n, argc, argv);
+		    if ((flt_options['t'] = atoi(value)) <= 0)
+			flt_options['t'] = 8;
 		    break;
 		default:
 		    if (((filter_def.options != 0

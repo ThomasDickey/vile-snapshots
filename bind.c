@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.254 2002/02/13 01:34:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.258 2002/09/02 16:28:41 tom Exp $
  *
  */
 
@@ -310,9 +310,9 @@ chr_lookup(const char *name)
  * 'kbd_reply()' to setup the mode-name completion and query displays.
  */
 static int
-chr_complete(int c, char *buf, unsigned *pos)
+chr_complete(DONE_ARGS)
 {
-    return kbd_complete(0, c, buf, pos, (const char *) &TermChrs[0],
+    return kbd_complete(PASS_DONE_ARGS, (const char *) &TermChrs[0],
 			sizeof(TermChrs[0]));
 }
 
@@ -1896,40 +1896,61 @@ engl2fnc(const char *fname)
     return NULL;
 }
 
+/*
+ * This parser allows too many combinations; we will check for illegal
+ * combinations after getting all of the information.  Still, it will not check
+ * for odd things such as
+ *	#-^X-a
+ * since it is treated the same as
+ *	^X-#-a
+ */
 static const char *
 decode_prefix(const char *kk, UINT * prefix)
 {
     UCHAR ch;
-    size_t len = strlen(kk);
+    int found;
 
-    if (len > 3 && *(kk + 2) == '-') {
-	if (*kk == '^') {
-	    ch = (UCHAR) (kk[1]);
-	    if (isCntrl(cntl_a) && ch == toalpha(cntl_a))
-		*prefix |= CTLA;
-	    if (isCntrl(cntl_x) && ch == toalpha(cntl_x))
-		*prefix |= CTLX;
-	    if (isCntrl(poundc) && ch == toalpha(poundc))
-		*prefix |= SPEC;
-	} else if (!strncmp(kk, "FN", 2)) {
-	    *prefix |= SPEC;
-	}
-	if (*prefix != 0)
-	    kk += 3;
-    } else if (len > 1) {
-	ch = (UCHAR) (kk[0]);
-	if (ch == cntl_a)
-	    *prefix |= CTLA;
-	else if (ch == cntl_x)
-	    *prefix |= CTLX;
-	else if (ch == poundc)
-	    *prefix |= SPEC;
-	if (*prefix != 0) {
-	    kk++;
-	    if (len > 2 && *kk == '-')
+    do {
+	UINT bits = 0;
+	size_t len = strlen(kk);
+
+	if (len > 1) {
+	    ch = (UCHAR) (kk[0]);
+	    if (ch == cntl_a)
+		bits = CTLA;
+	    else if (ch == cntl_x)
+		bits = CTLX;
+	    else if (ch == poundc)
+		bits = SPEC;
+	    if (bits != 0) {
 		kk++;
+		if (len > 2 && *kk == '-')
+		    kk++;
+	    }
 	}
-    }
+
+	if (bits == 0 && len > 3 && *(kk + 2) == '-') {
+	    if (*kk == '^') {
+		ch = (UCHAR) (kk[1]);
+		if (isCntrl(cntl_a) && ch == toalpha(cntl_a))
+		    bits = CTLA;
+		if (isCntrl(cntl_x) && ch == toalpha(cntl_x))
+		    bits = CTLX;
+		if (isCntrl(poundc) && ch == toalpha(poundc))
+		    bits = SPEC;
+	    } else if (!strncmp(kk, "FN", 2)) {
+		bits = SPEC;
+	    }
+	    if (bits != 0)
+		kk += 3;
+	}
+
+	found = FALSE;
+	if (bits != 0) {
+	    found = TRUE;
+	    *prefix |= bits;
+	}
+    } while (found);
     return kk;
 }
 
@@ -1942,6 +1963,8 @@ prc2kcod(const char *kk)
     UINT pref = 0;		/* key prefixes */
 
     kk = decode_prefix(kk, &pref);
+    if ((pref & CTLA) && (pref & CTLX))
+	return -1;
 
 #if OPT_KEY_MODIFY
     {
@@ -1952,6 +1975,8 @@ prc2kcod(const char *kk)
 
 	while ((s = strchr(kk, '+')) != 0) {
 	    if ((len = (s - kk) + 1) >= (int) sizeof(temp))
+		break;
+	    if (s == kk || s[1] == '\n' || s[1] == '\0')
 		break;
 	    mklower(vl_strncpy(temp, kk, len + 1));
 	    if (isLower(temp[0]))
@@ -2563,13 +2588,7 @@ kbd_unquery(void)
  * contents.
  */
 int
-kbd_complete(
-		unsigned flags,	/* KBD_xxx */
-		int c,		/* TESTC, NAMEC or isreturn() */
-		char *buf,
-		unsigned *pos,
-		const char *table,
-		size_t size_entry)
+kbd_complete(DONE_ARGS, const char *table, size_t size_entry)
 {
     int case_insensitive = (flags & KBD_CASELESS) != 0;
     size_t cpos = *pos;
@@ -2757,7 +2776,7 @@ eol_command(const char *buffer, unsigned cpos, int c, int eolchar)
  * completion and query displays.
  */
 static int
-cmd_complete(int c, char *buf, unsigned *pos)
+cmd_complete(DONE_ARGS)
 {
     int status;
 #if OPT_HISTORY
@@ -2771,19 +2790,19 @@ cmd_complete(int c, char *buf, unsigned *pos)
 	char tmp[NLINE];
 	tmp[0] = *buf;
 	tmp[1] = EOS;
-	status = cmd_complete(c, tmp, &len);
+	status = cmd_complete(0, c, tmp, &len);
     } else
 #endif
     if ((*pos != 0) && isShellOrPipe(buf)) {
 #if COMPLETE_FILES
-	status = shell_complete(c, buf, pos);
+	status = shell_complete(PASS_DONE_ARGS);
 #else
 	status = isreturn(c);
 	if (c != NAMEC)
 	    unkeystroke(c);
 #endif
     } else {
-	status = kbd_complete_bst(0, c, buf, pos);
+	status = kbd_complete_bst(PASS_DONE_ARGS);
     }
     return status;
 }
@@ -2791,7 +2810,7 @@ cmd_complete(int c, char *buf, unsigned *pos)
 int
 kbd_engl_stat(const char *prompt, char *buffer, int stated)
 {
-    UINT kbd_flags = KBD_EXPCMD | KBD_NULLOK | ((NAMEC != ' ') ? 0 : KBD_MAYBEC);
+    KBD_OPTIONS kbd_flags = KBD_EXPCMD | KBD_NULLOK | ((NAMEC != ' ') ? 0 : KBD_MAYBEC);
     int code;
     static TBUFF *temp;
     size_t len = NLINE;

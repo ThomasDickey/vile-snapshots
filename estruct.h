@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.506 2002/06/26 23:55:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.507 2002/09/02 14:18:51 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1182,14 +1182,17 @@ typedef UINT WATCHTYPE;
 /* separator used when scanning PATH environment variable */
 #if SYS_VMS
 #define	PATHCHR	','
+#define PATHSEP '/'
 #endif
 
 #if OPT_MSDOS_PATH
 #define	PATHCHR	';'
+#define PATHSEP '\\'
 #endif
 
 #ifndef PATHCHR				/* e.g., UNIX */
 #define	PATHCHR	':'
+#define PATHSEP '/'
 #endif
 
 
@@ -2354,9 +2357,11 @@ typedef	struct {
  * Other useful argument templates
  */
 #define EOL_ARGS  const char * buffer, unsigned cpos, int c, int eolchar
-#define DONE_ARGS int c, char *buf, unsigned *pos
+#define DONE_ARGS KBD_OPTIONS flags, int c, char *buf, unsigned *pos
 #define LIST_ARGS int flag, void *ptr
 #define REGN_ARGS void *flagp, int l, int r
+
+#define PASS_DONE_ARGS flags, c, buf, pos
 
 typedef	int	(*OpsFunc) (void);
 

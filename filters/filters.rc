@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.156 2002/07/03 10:55:00 tom Exp $
+; $Id: filters.rc,v 1.158 2002/08/30 23:21:18 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -307,6 +307,7 @@ define-mode newsrc
 
 define-mode nr
 ~with define-submode nr
+	after "sh"
 	suf '\.\(\([1-9ln][a-z]\?\)\|me\|ms\|man\)$'
 	pre '^\.\\\''
 	comment-prefix	'^\.\\\''
@@ -562,6 +563,7 @@ define-mode vim
 ~with define-submode vim
 	suf '\(\.vim\)$'
 	comment-prefix	'^\s*"'
+	before "make"
 	filtername	'vile-vile-filt -k vim'
 	comments	'^\s*"\s*$'
 	fence-if	'^\s*if\>'
@@ -634,7 +636,7 @@ store-procedure HighlightFilter 'Invoke syntax-highlighting filter on the curren
 		set-variable %filterpath &lookup e+l &cat %filterpath $exec-suffix
 	~endif
 	~if &not &seq %filterpath ''
-		~hidden attribute-from-filter end-of-file &cat &pquote %filterpath %filteropts
+		~hidden attribute-from-filter end-of-file &cat &pquote %filterpath &cat %filteropts &cat ' -t' $tabstop
 	~endif
     ~endif
 ~endm

@@ -1,4 +1,4 @@
-$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.36 2002/06/26 00:23:58 tom Exp $
+$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.37 2002/08/25 21:49:11 Jouk.Jansen Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
 $! Screen Configurations
@@ -195,6 +195,7 @@ $   endif
 $   if f$extract(4,3,decw$version).eqs."1.1"
 $   then
 $     write optf "menu.obj"
+$     write optf "x11menu.obj"
 $     write optf "sys$share:decw$xmlibshr.exe/share"
 $     write optf "sys$share:decw$xtshr.exe/share"
 $     SCRDEF := "MOTIF_WIDGETS,XTOOLKIT,DISP_X11,scrn_chosen"
@@ -203,6 +204,7 @@ $   endif
 $   if f$extract(4,3,decw$version).eqs."1.2"
 $   then
 $     write optf "menu.obj"
+$     write optf "x11menu.obj"
 $     write optf "sys$share:decw$xmlibshr12.exe/share"
 $     write optf "sys$share:decw$xtlibshrr5.exe/share"
 $     SCRDEF := "MOTIF_WIDGETS,XTOOLKIT,DISP_X11,scrn_chosen"
@@ -271,6 +273,7 @@ $	call make isearch
 $	call make line
 $	call make map
 $	if "''mmstar'" .eqs. "__xmvile__=1" then call make menu
+$	if "''mmstar'" .eqs. "__xmvile__=1" then call make x11menu
 $	call make modes
 $	call make msgs
 $	call make npopen

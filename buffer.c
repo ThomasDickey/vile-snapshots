@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.250 2002/05/11 00:32:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.251 2002/09/02 14:40:51 tom Exp $
  *
  */
 
@@ -185,19 +185,33 @@ find_b_number(const char *number)
 }
 
 /*
- * Find buffer, given (possibly) filename, buffer name or buffer number
+ * Find buffer, given (possibly) filename, buffer name or buffer number.
  */
-BUFFER *
-find_any_buffer(const char *name)
+static BUFFER *
+find_buffer(const char *name)
 {
     BUFFER *bp;
 
     if ((bp = find_b_name(name)) == 0	/* Try buffer */
 	&& (bp = find_b_file(name)) == 0	/* ...then filename */
 	&& (bp = find_b_number(name)) == 0) {	/* ...then number */
-	mlforce("[No such buffer] %s", name);
 	return 0;
     }
+
+    return bp;
+}
+
+/*
+ * Find buffer, given (possibly) filename, buffer name or buffer number,
+ * warning if we do not find it.
+ */
+BUFFER *
+find_any_buffer(const char *name)
+{
+    BUFFER *bp;
+
+    if ((bp = find_buffer(name)) == 0)
+	mlforce("[No such buffer] %s", name);
 
     return bp;
 }
@@ -675,7 +689,7 @@ init_bname_cmpl(void)
 }
 
 static int
-bname_complete(int c, char *buf, unsigned *pos)
+bname_complete(DONE_ARGS)
 {
     unsigned cpos = *pos;
     int status = FALSE;
@@ -685,7 +699,7 @@ bname_complete(int c, char *buf, unsigned *pos)
     buf[cpos] = EOS;		/* terminate it for us */
 
     if ((nptr = init_bname_cmpl()) != 0) {
-	status = kbd_complete(0, c, buf, pos, (const char *) nptr, sizeof(*nptr));
+	status = kbd_complete(PASS_DONE_ARGS, (const char *) nptr, sizeof(*nptr));
 	free((char *) nptr);
     }
     return status;
@@ -735,6 +749,26 @@ usebuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 	return s;
     if ((bp = find_any_buffer(bufn)) == 0)	/* Try buffer */
 	return FALSE;
+    return swbuffer(bp);
+}
+
+/*
+ * Just like "select-buffer", but we will create the buffer if it does not exist.
+ */
+int
+edit_buffer(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    BUFFER *bp;
+    int s;
+    char bufn[NBUFN];
+
+    bufn[0] = EOS;
+    if ((s = ask_for_bname("Use buffer: ", bufn, sizeof(bufn))) != TRUE
+	&& (s != SORTOFTRUE))
+	return s;
+    if ((bp = find_buffer(bufn)) == 0) {
+	bp = bfind(bufn, 0);
+    }
     return swbuffer(bp);
 }
 

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.494 2002/07/02 23:05:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.497 2002/09/02 14:34:55 tom Exp $
  *
  */
 
@@ -104,7 +104,7 @@ extern char *kcod2pstr (int c, char *seq);
 extern const CMDFUNC *engl2fnc (const char *fname);
 extern const CMDFUNC *kcod2fnc (BINDINGS *bs, int c);
 extern int fnc2kcod (const CMDFUNC *);
-extern int kbd_complete (UINT flags, int c, char *buf, UINT *pos, const char *table, size_t size_entry);
+extern int kbd_complete (DONE_ARGS, const char *table, size_t size_entry);
 extern int kbd_engl_stat (const char *prompt, char *buffer, int stated);
 extern int kbd_length (void);
 extern int kcod2escape_seq (int c, char *ptr);
@@ -727,7 +727,7 @@ extern void init_scheme(void);
 #endif
 
 #if OPT_ENUM_MODES
-extern int fsm_complete(int c, char *buf, UINT *pos);
+extern int fsm_complete(DONE_ARGS);
 #endif
 
 #if OPT_EVAL || OPT_COLOR
@@ -1353,17 +1353,9 @@ extern	void	flt_leaks (void);
 
 #if defined(HAVE_MKSTEMP) && defined(HAVE_MKDTEMP)
 #define vl_mkdtemp(path) mkdtemp(path)
-#else
-#define vl_mkdtemp(path) mktemp(path)
 #endif
 
 #if SYS_UNIX
-#if MISSING_EXTERN__FILBUF
-extern	int	_filbuf	(FILE *fp);
-#endif
-#if MISSING_EXTERN__FLSBUF
-extern	int	_flsbuf	(int n, FILE *fp);
-#endif
 #if MISSING_EXTERN_ACCESS
 extern	int	access	(const char *path, int mode);
 #endif
@@ -1372,9 +1364,6 @@ extern	UINT	alarm	(UINT secs);
 #endif
 #if MISSING_EXTERN_ATOI
 extern int	atoi	(const char *s);
-#endif
-#if MISSING_EXTERN_BZERO
-extern	void	bzero	(char *b, int n);
 #endif
 #if MISSING_EXTERN_CHDIR
 extern	int	chdir	(const char *path);
@@ -1470,9 +1459,6 @@ extern	void *	memset	(void *dst, int ch, size_t n);
 #endif
 #if MISSING_EXTERN_MKDIR && HAVE_MKDIR
 extern	int	mkdir	(const char *path, int mode);
-#endif
-#if MISSING_EXTERN_MKTEMP
-extern	char *	mktemp (char *template);
 #endif
 #if MISSING_EXTERN_OPEN
 extern	int	open	(char *path, int flags);
