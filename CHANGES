@@ -1,5 +1,44 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000905 (v)
+	> Tom Dickey
+	+ add check in CF_CURSES_LIBS in case $LIBS is already set to something
+	  like "-lcurses -ltermcap".
+ 	+ update config.guess, config.sub to 20000819 patch.
+	+ modify tcl-filt.l based on examples by Juan Carlos Gil Montoro
+	  <jcgil@gmv.es>:
+	  + add namespace syntax to IDENT rule, and apply this to the IDENT1
+	    rule as well.
+	  + allow comments to have continuation lines.
+	  + flag errors for badly-formatted numbers.
+	  + treat {"} and \" specially (not as string literals).
+	  + handle unterminated string, i.e., a newline ends a string even if
+	    no quote is found.
+	  + highlight trailing backslash as "Action".
+	  + make a new class, "Braces" to control how curly braces are
+	    highlighted, so this is not part of tcl-filt.l, but specified in
+	    tcl.key
+	+ modify logic in kbd_reply() to set last_eolchar from the given
+	  eolchar, e.g., '=', rather than the current contents of execstr,
+	  since that may contain an arbitrary character such as the first
+	  one of an identifier.  That made commands such as
+		setl autowrite=false
+	  in a macro not work, since 'f' (false) was used (reported by
+	  Clark Morgan).
+ 	+ modify kbd_complete() to show a message when it fails to find a
+	  match.
+	+ relaxed suffix rule for vilemode to ensure that vile.rc is always
+	  interpreted in that mode, even if it does not reside in a directory
+	  named "vile" (reported by Clark Morgan).
+	+ implement new Perl syntax filter, pl-filt.c (the older one is still
+	  available for comparison, but is internally renamed to "pl" rather
+	  than "perl").
+	+ use tgoto() to simplify alternative to tparm() when formatting
+	  escape sequence for colors in tcap.c
+	+ suppress logic in tcap.c that resets colors when the terminal does
+	  not support color.  Otherwise, reverse video and other non-color
+	  attributes do not work (reported by Clark Morgan).
+
  20000828 (u)
 	> Tom Dickey
 	+ add error checks in sed-filt.c for unbalanced curly or square

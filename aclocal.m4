@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.89 2000/08/16 01:18:25 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.90 2000/09/05 11:07:32 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -348,12 +348,20 @@ dnl ---------------------------------------------------------------------------
 dnl Look for the curses libraries.  Older curses implementations may require
 dnl termcap/termlib to be linked as well.
 AC_DEFUN([CF_CURSES_LIBS],[
-AC_CHECK_FUNC(initscr,,[
+
+AC_MSG_CHECKING(if we have identified curses libraries)
+AC_TRY_LINK([#include <${cf_cv_ncurses_header-curses.h}>],
+	[initscr(); tgoto("?", 0,0)],
+	cf_result=yes,
+	cf_result=no)
+AC_MSG_RESULT($cf_result)
+
+if test "$cf_result" = no ; then
 case $host_os in #(vi
 freebsd*) #(vi
 	AC_CHECK_LIB(mytinfo,tgoto,[LIBS="-lmytinfo $LIBS"])
 	;;
-hpux10.*|hpux11.*)
+hpux10.*|hpux11.*) #(vi
 	AC_CHECK_LIB(cur_colr,initscr,[
 		LIBS="-lcur_colr $LIBS"
 		CFLAGS="-I/usr/include/curses_colr $CFLAGS"
@@ -434,8 +442,9 @@ if test ".$ac_cv_func_initscr" != .yes ; then
 		AC_MSG_RESULT($cf_result)
 	fi
 fi
+fi
 
-])])
+])
 dnl ---------------------------------------------------------------------------
 dnl Check if we should include <curses.h> to pick up prototypes for termcap
 dnl functions.  On terminfo systems, these are normally declared in <curses.h>,
@@ -1549,22 +1558,6 @@ if test "$cf_cv_sizechange" != no ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl	Shorthand macro for substituting things that the user may override
-dnl	with an environment variable.
-dnl
-dnl	$1 = long/descriptive name
-dnl	$2 = environment variable
-dnl	$3 = default value
-AC_DEFUN([CF_SUBST],
-[AC_CACHE_VAL(cf_cv_subst_$2,[
-AC_MSG_CHECKING(for $1 (symbol $2))
-test -z "[$]$2" && $2=$3
-AC_MSG_RESULT([$]$2)
-AC_SUBST($2)
-cf_cv_subst_$2=[$]$2])
-$2=${cf_cv_subst_$2}
-])dnl
-dnl ---------------------------------------------------------------------------
 dnl Some machines require _POSIX_SOURCE to completely define struct termios.
 dnl If so, define SVR4_TERMIO
 AC_DEFUN([CF_STRUCT_TERMIOS],[
@@ -1597,6 +1590,22 @@ if test "$ac_cv_header_termios_h" = yes ; then
 	AC_MSG_RESULT($termios_bad)
 	fi
 fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl	Shorthand macro for substituting things that the user may override
+dnl	with an environment variable.
+dnl
+dnl	$1 = long/descriptive name
+dnl	$2 = environment variable
+dnl	$3 = default value
+AC_DEFUN([CF_SUBST],
+[AC_CACHE_VAL(cf_cv_subst_$2,[
+AC_MSG_CHECKING(for $1 (symbol $2))
+test -z "[$]$2" && $2=$3
+AC_MSG_RESULT([$]$2)
+AC_SUBST($2)
+cf_cv_subst_$2=[$]$2])
+$2=${cf_cv_subst_$2}
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check for declaration of sys_nerr and sys_errlist in one of stdio.h and

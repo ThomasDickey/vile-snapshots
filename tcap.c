@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.136 2000/01/12 02:13:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.137 2000/08/30 01:47:51 tom Exp $
  *
  */
 
@@ -254,24 +254,8 @@ static	int	x_origin = 1,
 
 #if HAVE_TPARM	/* usually terminfo */
 #define CALL_TPARM(cap,code) tparm(cap, code)
-#define FREE_TPARM(s) /* nothing */
 #else
-#if HAVE_TPARAM	/* GNU termcap */
-#if DOALLOC
-#undef free
-#endif
-#define CALL_TPARM(cap,code) tparam(cap, (char *)0, 0, code)
-#define FREE_TPARM(s) free(s)
-#else
-static char *my_tparm(char *cap GCC_UNUSED, int code GCC_UNUSED)
-{
-	static char result[10];
-	sprintf(result, cap, code);
-	return strcmp(result, cap) ? result : 0;
-}
-#define CALL_TPARM(cap,code) my_tparm(cap, code)
-#define FREE_TPARM(s) /* nothing */
-#endif
+#define CALL_TPARM(cap,code) tgoto(cap, 0, code)
 #endif
 
 static void
@@ -856,11 +840,9 @@ colors_are_really_ANSI (void)
 			(void)lsprintf(cmp, "\033[4%dm", n);
 			if ((t = CALL_TPARM(Sb, n)) == 0 || strcmp(t, cmp))
 				break;
-			FREE_TPARM(t);
 			(void)lsprintf(cmp, "\033[3%dm", n);
 			if ((t = CALL_TPARM(Sf, n)) == 0 || strcmp(t, cmp))
 				break;
-			FREE_TPARM(t);
 		}
 		if (n >= ncolors)	/* everything matched */
 			ok = TRUE;
@@ -873,21 +855,21 @@ show_ansi_colors (void)
 {
 	char	*t;
 
-	if (shown_fcolor == NO_COLOR
-	 || shown_bcolor == NO_COLOR) {
-		if (OrigColors)
-			putpad(OrigColors);
-	}
+	if (Sf != 0 || Sb != 0) {
+		if (shown_fcolor == NO_COLOR
+		 || shown_bcolor == NO_COLOR) {
+			if (OrigColors)
+				putpad(OrigColors);
+		}
 
-	if ((shown_fcolor != NO_COLOR)
-	 && (t = CALL_TPARM(Sf, shown_fcolor)) != 0) {
-		putpad(t);
-		FREE_TPARM(t);
-	}
-	if ((shown_bcolor != NO_COLOR)
-	 && (t = CALL_TPARM(Sb, shown_bcolor)) != 0) {
-		putpad(t);
-		FREE_TPARM(t);
+		if ((shown_fcolor != NO_COLOR)
+		 && (t = CALL_TPARM(Sf, shown_fcolor)) != 0) {
+			putpad(t);
+		}
+		if ((shown_bcolor != NO_COLOR)
+		 && (t = CALL_TPARM(Sb, shown_bcolor)) != 0) {
+			putpad(t);
+		}
 	}
 }
 
@@ -959,7 +941,8 @@ tcapattr(UINT attr)
 		{ &tc_MD, &tc_ME, 32, VABOLD },
 	};
 	static	UINT last;
-	register unsigned n;
+	unsigned n;
+	int colored = (ncolors > 2);
 
 	attr = VATTRIB(attr);
 #ifdef GVAL_VIDEO
@@ -970,6 +953,10 @@ tcapattr(UINT attr)
 			attr ^= VAREV;
 	}
 #endif
+	if (!colored
+	 && (attr & (VASPCOL|VACOLOR)) != 0) {
+		attr &= ~(VASPCOL|VACOLOR);
+	}
 	if (attr & VASPCOL) {
 		attr = VCOLORATTR((attr & (NCOLORS - 1)));
 	} else {
@@ -1000,7 +987,7 @@ tcapattr(UINT attr)
 	if (attr != last) {
 		register char *s;
 		UINT	diff = attr ^ last;
-		int	ends = FALSE;
+		int	ends = !colored;
 
 		/* turn OFF old attributes */
 		for (n = 0; n < TABLESIZE(tbl); n++) {
@@ -1033,10 +1020,13 @@ tcapattr(UINT attr)
 			end_reverse();
 		}
 #if OPT_COLOR
-		if (attr & VACOLOR)
-			tcapfcol(VCOLORNUM(attr));
-		else if (given_fcolor != gfcolor)
-			tcapfcol(gfcolor);
+		if (colored) {
+			if (attr & VACOLOR) {
+				tcapfcol(VCOLORNUM(attr));
+			} else if (given_fcolor != gfcolor) {
+				tcapfcol(gfcolor);
+			}
+		}
 #endif
 		last = attr;
 	}

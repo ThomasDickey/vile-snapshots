@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_1u
+MANIFEST for vile, version v9_1v
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -218,6 +218,7 @@ filters/pas.key                 keywords for pascal highlighting filter
 filters/pc.key                  keywords for printcap syntax highlighting
 filters/perl.key                keywords for perl syntax filter
 filters/perlfilt.l              Perl syntax filter for vile
+filters/pl-filt.c               syntax highlighter for perl
 filters/pot.key                 keywords for pot (gettext) mode
 filters/py-filt.l               syntax filter for Python
 filters/py.key                  keywords for Python syntax filter
