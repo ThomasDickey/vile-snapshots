@@ -3,7 +3,7 @@
  * Modified from a really old version of "borland.c" (before the VIO
  * stuff went in there.)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.16 1998/04/12 20:14:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.17 1998/04/20 09:54:03 kev Exp $
  */
 
 #include "estruct.h"
@@ -125,6 +125,8 @@ TERM term = {
 #else
 	null_t_title,
 #endif
+	null_t_watchfd,
+	null_t_unwatchfd,
 };
 
 #include "os2keys.h"

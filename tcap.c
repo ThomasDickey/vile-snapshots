@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.103 1998/03/21 15:14:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.104 1998/04/20 09:54:03 kev Exp $
  *
  */
 
@@ -228,6 +228,8 @@ TERM term = {
 	null_t_pflush,
 	null_t_icursor,
 	null_t_title,
+	null_t_watchfd,
+	null_t_unwatchfd,
 };
 
 #define	XtermPos()	((unsigned)(keystroke() - 040))

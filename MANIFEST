@@ -1,4 +1,4 @@
-MANIFEST for vile, version v7_3t
+MANIFEST for vile, version v7_3u
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -102,11 +102,12 @@ ptypemap                        perl-interface type map
 random.c                        miscellaneous functions
 regexp.c                        regular expression functions
 region.c                        region-manipulation
-revlist                         revision-list for VILE
 search.c                        functions for search-commands
 select.c                        selection-handling functions
+shell.pl                        spawn a shell via a pty
 spawn.c                         functions for spawning subprocesses
 tags.c                          support for vi-style "tags"
+tailf.pl                        do a "tail -f"
 tbuff.c                         temporary-buffer management functions
 tcap.c                          TERMCAP terminal driver
 tcap.h                          interface of tcap.c
@@ -124,6 +125,7 @@ vmspipe.c                       pipe-filter support for VMS
 vmsvt.c                         VMS terminal driver
 w32cbrd.c                       Win32 clipboard support
 w32pipe.c                       Win32 native pipe support
+watch.c                         watch file-descriptors & timers
 window.c                        window-management functions
 word.c                          commands that operate upon words or paragraphs
 wordmov.c                       cursor-movement commands (e.g., word, spaces)

@@ -4,7 +4,7 @@
  * "termio.c". It compiles into nothing if not an ANSI device.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.31 1997/11/10 01:14:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.32 1998/04/20 09:54:03 kev Exp $
  */
 
 
@@ -104,6 +104,8 @@ TERM	term	= {
 	null_t_pflush,
 	null_t_icursor,
 	null_t_title,
+	null_t_watchfd,
+	null_t_unwatchfd,
 };
 
 static	void	ansiparm (int n);

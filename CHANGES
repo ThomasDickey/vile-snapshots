@@ -1,5 +1,73 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (kev) 980419 (u)
+ 	+ ansi.c, borland.c, dumbterm.c, ibmpc.c, ntconio.c, ntwinio.c,
+	  os2vio.c, tcap.c, termio.c, vmsvt.c (null_t_watchfd,
+	  null_t_unwatchfd): Added to term structure initializations.
+	+ estruct.h (WATCHTYPE): New enumerated type.
+	  (t_watchfd, t_unwatchfd): New fields in the TERM structure.
+	  (TTwatchfd, TTunwatchfd): New macros for calling the watch/unwatch
+	  functions.
+	+ makefile.in (watch.c, watch.o): Added to the appropriate targets.
+	+ api.c (linsert_chars): Made more efficient.  Handle newlines
+	  at end of buffer properly.
+	  (api_gotoline): Allow DOT to be position at end of buffer.
+	  (api_motion): Fixed bug which was calling early return.  (Thanks
+	  to Sean Ahern for finding this one.)
+	  (api_swscreen): Detach/reattach fake windows.
+	  (api_update): New function.
+	  (propagate_dot): New function.
+	  (api_command_cleanup): Call propagate_dot; don't do this work
+	  directly anymore.
+	+ api.h (api_update): Declared.
+	+ buffer.c (renamebuffer): New function.
+	  (namebuffer): Moved some of the functionality to renamebuffer.
+	  Call renamebuffer to do the work.
+	+ perl.xs (GIMME_V, G_VOID): Define in terms of GIMME and G_SCALAR
+	  if not already defined.  (Thanks to Brendan O'Dea for pointing
+	  this out.)
+	  (perl): Don't do initializations/cleanups of Vile::current_buffer
+	  if called recursively.
+	  (perl_init): Cause Vile::Buffer::PRINTF to be defined.
+	  (svcurbuf_set): Put return statement in.
+	  (stringify_coderef, perl_free_callback, svgetline, svgetregion,
+	  svgettors): New functions.
+	  (INITMESSAGE, ENDMESSAGE): Removed these nvi remnants.
+	  (PRINT): Handle input record separator and input field separator.
+	  (READLINE): Rewritten to handle the record separator correctly;
+	  call svgetline, svgetregion, or svgettors as appropriate.
+	  (attribute_cntl_a_sequences): Pass the region shape when calling
+	  attribute_cntl_a_sequences_over_region().
+	  (fetch, attribute, buffername, filename): New methods.
+	  (Warn): Minor cleanup.
+	  (mlreply, mlreply_no_opts, mlreply_file, mlreply_dir):  Allow
+	  either a TRUE or FALSE status to set the return value to a
+	  string.  The other status codes cause undef to be returned.
+	  Thanks to Brendan O'Dea for diagnosis and patch.
+	  (command): Adjust the way docmd is called to match new extra
+	  parameter introduced in patch t (or thereabouts).
+	  (keystroke, working, update, watchfd, unwatchfd) New methods.
+	  Also throughout this file (perl.xs), there was a lot of minor
+	  reformatting.  A few new comments were even added.
+	+ proto.h (renamebuffer, attributeregion_over_region, null_t_watchfd,
+	  null_t_unwatchfd, watchfd, unwatchfd, dowatchcallback,
+	  detach_fake_windows, reattach_fake_windows): Declared.
+	  (attribute_cntl_a_sequences_over_region): New parameter.
+	+ select.c (attributeregion_over_region): New function.
+	  (attribute_cntl_a_sequences_over_region): New parameter for passing
+	  the shape of the region.  Use shape parameter for setting region
+	  up properly.
+	+ shell.pl, tailf.pl: New example perl scripts.  Not really complete
+	  yet, but they demo some of the new facilities.  (Maybe we should
+	  create a demo directory?)
+	+ watch.c: New file containing fd watching framework.  Will probably
+	  add timer management here as well.
+	+ window.c (detach_fake_windows, reattach_fake_windows): New functions.
+	  Actually, I'm not convinced anymore that this is the right way to
+	  do it and these will probably go away.
+	+ x11.c (x_watchfd, x_unwatchfd, watched_input_callback): New
+	  functions.
+
  (tom) 980417 (t)
 	+ modify interface of 'docmd()' to allow caller to set clexec, allowing
 	  menu.c to invoke this and cause commands to prompt interactively.

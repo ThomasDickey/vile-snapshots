@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.5 1998/04/08 06:55:00 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.6 1998/04/20 09:54:03 kev Exp $
  *
  */
 
@@ -151,6 +151,8 @@ TERM    term    = {
 #else
 	null_t_title,
 #endif
+	null_t_watchfd,
+	null_t_unwatchfd,
 };
 
 static HBRUSH

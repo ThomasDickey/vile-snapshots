@@ -18,7 +18,7 @@
  * transfering the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.64 1998/04/17 00:03:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.65 1998/04/20 09:54:03 kev Exp $
  *
  */
 
@@ -764,6 +764,25 @@ attributeregion(void)
 	return status;
 }
 
+int 
+attributeregion_over_region(REGION *rp,
+                            REGIONSHAPE shape,
+			    VIDEO_ATTR vattr,
+			    char *hc)
+{ 
+    haveregion = rp;
+    DOT =  rp->r_orig;
+    MK = rp->r_end;
+    if (shape == FULLLINE)
+	MK.l = lback(MK.l);
+    regionshape = shape;	/* Not that the following actually cares */
+    videoattribute = vattr;
+#if OPT_HYPERTEXT 
+    hypercmd = hc;
+#endif /* OPT_HYPERTEXT */
+    return attributeregion();
+}
+
 int
 operselect(int f, int n)
 {
@@ -912,15 +931,17 @@ operattrcaseq(int f, int n)
 		      "Attribute ^A sequences");
 }
 
-int
-attribute_cntl_a_sequences_over_region(REGION *rp)
-{
-    DOT = rp->r_orig;
-    MK  = rp->r_end;
-    haveregion = 0;
-    return attribute_cntl_a_sequences();
-}
-
+int 
+attribute_cntl_a_sequences_over_region(REGION *rp, REGIONSHAPE shape) 
+{ 
+    haveregion = rp; 
+    DOT =  rp->r_orig;
+    MK = rp->r_end;
+    if (shape == FULLLINE)
+	MK.l = lback(MK.l);
+    regionshape = shape;	/* Not that the following actually cares */
+    return attribute_cntl_a_sequences(); 
+} 
 
 /*
  * attribute_cntl_a_sequences can take quite a while when processing a region

@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.172 1998/04/09 21:16:45 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.173 1998/04/20 09:54:03 kev Exp $
  *
  */
 
@@ -432,6 +432,8 @@ static	void	x_fcol   ( int color ),
 static	void	x_scroll(int from, int to, int count);
 
 static	SIGT	x_quit (int ACTUAL_SIG_ARGS);
+static	int	x_watchfd(int fd, WATCHTYPE type, long *idp);
+static	void	x_unwatchfd(int fd, long id);
 
 static	int	set_character_class(char *s);
 static	void	x_touch (TextWindow tw, int sc, int sr, UINT ec, UINT er);
@@ -527,6 +529,8 @@ TERM        term = {
     x_flush,
     null_t_icursor,
     null_t_title,
+    x_watchfd,
+    x_unwatchfd,
 };
 
 
@@ -6058,6 +6062,34 @@ char *
 x_get_window_name(void)
 {
     	return x_window_name;
+}
+
+void
+watched_input_callback(XtPointer fd,
+                       int *source GCC_UNUSED,
+		       XtInputId *id GCC_UNUSED)
+{
+    dowatchcallback((int) fd);
+}
+
+int
+x_watchfd(int fd, WATCHTYPE type, long *idp)
+{
+    *idp = (long) XtAppAddInput(
+		    cur_win->app_context,
+		    fd,
+		    (type & WATCHREAD)  ? XtInputReadMask :
+		    (type & WATCHWRITE) ? XtInputWriteMask
+					: XtInputExceptMask,
+		    watched_input_callback,
+		    (XtPointer) fd);
+    return TRUE;
+}
+
+void
+x_unwatchfd(int fd, long id)
+{
+    XtRemoveInput((XtInputId) id);
 }
 
 #endif	/* DISP_X11 && XTOOLKIT */

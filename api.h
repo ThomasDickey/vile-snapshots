@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.7 1998/04/09 21:16:45 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.8 1998/04/20 09:54:03 kev Exp $
  */
 
 /*
@@ -56,6 +56,7 @@ extern	int	api_gotoline(VileBuf *sp, int lno);
 extern	void	api_setup_fake_win(VileBuf *sp, int do_delete); 
 extern	int	api_delregion(VileBuf *vbp);
 extern	int	api_motion(VileBuf *vbp, char *mstr);
+extern	void	api_update(void);
 
 #define vbp2bp(sp) (((VileBuf *)(sp))->bp)
 #define bp2vbp(bp) ((VileBuf *) (bp)->b_api_private)
