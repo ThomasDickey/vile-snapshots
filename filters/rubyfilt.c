@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.12 2004/12/10 00:38:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.29 2005/02/14 00:25:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -26,7 +26,10 @@ DefineFilter("ruby");
 #endif
 
 typedef enum {
-    eCODE
+    eALIAS
+    ,eCLASS
+    ,eCODE
+    ,eDEF
     ,eHERE
     ,ePOD
 } States;
@@ -39,6 +42,8 @@ static char *Keyword_attr;
 static char *String_attr;
 static char *Number_attr;
 
+static int var_embedded(char *);
+
 /*
  * The in-memory copy of the input file.
  */
@@ -50,10 +55,20 @@ static size_t the_size;
 static char *
 stateName(States state)
 {
-    char *result;
+    char *result = "?";
+
     switch (state) {
+    case eALIAS:
+	result = "ALIAS";
+	break;
+    case eCLASS:
+	result = "CLASS";
+	break;
     case eCODE:
 	result = "CODE";
+	break;
+    case eDEF:
+	result = "DEF";
 	break;
     case eHERE:
 	result = "HERE";
@@ -61,8 +76,6 @@ stateName(States state)
     case ePOD:
 	result = "POD";
 	break;
-    default:
-	result = "?";
     }
     return result;
 }
@@ -87,18 +100,19 @@ is_ESCAPED(char *s)
 {
     int found = 0;
     if (*s == BACKSLASH) {
-	found = 1;
+	found = 2;
     }
     return found;
 }
 
 static int
-is_STRINGS(char *s, int *err, int left_delim, int right_delim)
+is_STRINGS(char *s, int *err, int left_delim, int right_delim, int single)
 {
     char *base = s;
     int found = 0;
     int escape = 0;
     int level = 0;
+    int len;
 
     *err = 0;
     if (*s == left_delim) {	/* should always be true */
@@ -115,6 +129,8 @@ is_STRINGS(char *s, int *err, int left_delim, int right_delim)
 		escape = 1;
 	    } else if (escape) {
 		escape = 0;
+	    } else if (!single && (len = var_embedded(s)) != 0) {
+		s += len - 1;
 	    } else {
 		if (left_delim != right_delim) {
 		    if (*s == left_delim) {
@@ -191,6 +207,10 @@ is_GLOBAL(char *s)
     if (*s == '$' && (++s < the_last)) {
 	if (*s != '\0' && strchr("-_./,\"\\#%=~|$?&`'+*[];!@<>():", *s)) {
 	    found = 1;
+	} else if (isdigit(CharOf(*s))) {
+	    while ((s + found + 1) != the_last
+		   && isdigit(CharOf(s[found])))
+		++found;
 	} else {
 	    found = is_KEYWORD(s);
 	}
@@ -270,6 +290,10 @@ is_CHAR(char *s, int *err)
  *	HEXADECIMAL	0x[0-9a-fA-F_]+
  *	REAL		[-+]?([0-9_]*\.[0-9][0-9_]*)([eE][+-]?[0-9_]+)?
  *	NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL})[L]?|{REAL}
+ *
+ * But note that ruby allows a function immediately after a number separated
+ * by a ".", e.g.,
+ *	1.upto(n)
  */
 static int
 is_NUMBER(char *s, int *err)
@@ -298,7 +322,7 @@ is_NUMBER(char *s, int *err)
 	    }
 	} else if (ch == '.') {
 	    if (the_last - s > 1
-		&& s[1] == '.') {
+		&& (s[1] == '.' || isalpha(CharOf(s[1])))) {
 		break;
 	    }
 	    if (radix == 8)
@@ -489,6 +513,7 @@ is_REGEXP(char *s, int left_delim, int right_delim)
     int found = 0;
     int len;
     int level = 0;
+    int range = 0;
 
     while (s < the_last) {
 	if (left_delim != right_delim) {
@@ -502,17 +527,25 @@ is_REGEXP(char *s, int left_delim, int right_delim)
 		/* otherwise, fallthru to the other right_delim check */
 	    }
 	}
-	if (s != base && *s == right_delim) {
+	if ((len = is_ESCAPED(s)) != 0) {
+	    s += len;
+	} else if (*s == R_BLOCK && range) {
+	    range = 0;
+	    ++s;
+	} else if (*s == L_BLOCK && !range) {
+	    range = 1;
+	    ++s;
+	} else if ((len = var_embedded(s)) != 0) {
+	    s += len;
+	} else if (range) {
+	    ++s;
+	} else if (s != base && *s == right_delim) {
 	    ++s;
 	    while (s < the_last && isalpha(CharOf(*s))) {
 		++s;
 	    }
 	    found = s - base;
 	    break;
-	} else if ((len = is_VARIABLE(s)) != 0) {
-	    s += len;
-	} else if ((len = is_ESCAPED(s)) != 0) {
-	    s += len;
 	} else {
 	    ++s;
 	}
@@ -571,23 +604,37 @@ is_Regexp(char *s, int *delim)
  * Parse the various types of quoted strings.
  */
 static int
-is_String(char *s, int *err)
+is_String(char *s, int *delim, int *err)
 {
     int found = 0;
 
+    *delim = 0;
     if (s + 2 < the_last) {
 	switch (*s) {
 	case '%':
 	    if (s + 4 < the_last) {
 		switch (s[1]) {
 		case 'q':
+		case 'w':
+		    found = is_STRINGS(s + 2,
+				       err,
+				       s[2],
+				       balanced_delimiter(s + 2),
+				       1);
+		    if (found != 0) {
+			found += 2;
+			*delim = SQUOTE;
+		    }
+		    break;
 		case 'Q':
 		    found = is_STRINGS(s + 2,
 				       err,
 				       s[2],
-				       balanced_delimiter(s + 2));
+				       balanced_delimiter(s + 2),
+				       0);
 		    if (found != 0) {
 			found += 2;
+			*delim = DQUOTE;
 		    }
 		    break;
 		}
@@ -595,11 +642,16 @@ is_String(char *s, int *err)
 	    break;
 	case BQUOTE:
 	case SQUOTE:
+	    if ((found = is_STRINGS(s, err, *s, *s, 1)) != 0)
+		*delim = SQUOTE;
+	    break;
 	case DQUOTE:
-	    found = is_STRINGS(s, err, *s, *s);
+	    if ((found = is_STRINGS(s, err, *s, *s, 0)) != 0)
+		*delim = DQUOTE;
 	    break;
 	case BACKSLASH:
 	    found = is_ESCAPED(s);
+	    *delim = SQUOTE;
 	    break;
 	}
     }
@@ -635,14 +687,15 @@ static int
 var_embedded(char *s)
 {
     int found = 0;
+    int delim;
 
     if (*s == '#' && (++s < the_last)) {
 	if (*s == L_CURLY) {
 	    for (found = 1; s + found < the_last; ++found) {
 		/* FIXME: this check for %q{xxx} is too naive... */
-		if (s[found] == '%' && (strchr("qQ", s[found + 1]) != 0)) {
+		if (s[found] == '%' && (strchr("wqQ", s[found + 1]) != 0)) {
 		    int ignore;
-		    found += is_String(s + found, &ignore);
+		    found += is_String(s + found, &delim, &ignore);
 		} else if (s[found] == R_CURLY) {
 		    ++found;
 		    break;
@@ -735,29 +788,40 @@ static char *
 put_REGEXP(char *s, int length, int delim)
 {
     char *base = s;
+    char *first = s;
     char *last;
     int len;
+    int range = 0;
 
     if (*s == '%') {
 	flt_puts(s, 2, Keyword_attr);
 	s += 2;
+	first = s;
     }
     flt_bfr_begin(String_attr);
     while (s < base + length) {
-	if (s != base && *s == delim) {
+	if ((len = is_ESCAPED(s)) != 0) {
+	    flt_bfr_append(s, len);
+	    s += len;
+	} else if (*s == R_BLOCK && range) {
+	    range = 0;
+	    flt_bfr_append(s++, 1);
+	} else if (*s == L_BLOCK && !range) {
+	    range = 1;
+	    flt_bfr_append(s++, 1);
+	} else if ((len = var_embedded(s)) != 0) {
+	    flt_bfr_embed(s, len, Ident2_attr);
+	    s += len;
+	} else if (range) {
+	    flt_bfr_append(s++, 1);
+	} else if (s != first && *s == delim) {
 	    flt_bfr_append(s, 1);
 	    last = ++s;
 	    while (s < the_last && isalpha(CharOf(*s))) {
 		++s;
 	    }
-	    flt_bfr_embed(s, s - last, Keyword_attr);
+	    flt_bfr_embed(last, s - last, Keyword_attr);
 	    break;
-	} else if ((len = var_embedded(s)) != 0) {
-	    flt_bfr_embed(s, len, Ident2_attr);
-	    s += len;
-	} else if ((len = is_ESCAPED(s)) != 0) {
-	    flt_bfr_append(s, len);
-	    s += len;
 	} else {
 	    flt_bfr_append(s, 1);
 	    ++s;
@@ -792,7 +856,7 @@ do_filter(FILE *input GCC_UNUSED)
     int delim;
     int strip_here = 0;		/* strip leading blanks in here-document */
     int quote_here = 0;		/* tokens in here-document are quoted */
-    int had_op = 0;
+    int had_op = 1;		/* true to allow regex */
 
     Comment_attr = class_attr(NAME_COMMENT);
     Error_attr = class_attr(NAME_ERROR);
@@ -835,6 +899,58 @@ do_filter(FILE *input GCC_UNUSED)
 	    DPRINTF(("(%s(%.*s) line:%d op:%d)\n",
 		     stateName(state), is_KEYWORD(s) + 1, s, in_line, had_op));
 	    switch (state) {
+		/*
+		 * alias method-name method-name
+		 * alias global-variable-name global-variable-name
+		 */
+	    case eALIAS:
+	    case eDEF:
+		if ((ok = is_COMMENT(s)) != 0) {
+		    DPRINTF(("...COMMENT: %d\n", ok));
+		    s = put_COMMENT(s, ok);
+		} else if ((ok = is_BLANK(s)) != 0) {
+		    DPRINTF(("...BLANK: %d\n", ok));
+		    flt_puts(s, ok, "");
+		    s += ok;
+		} else if ((ok = is_KEYWORD(s)) != 0) {
+		    DPRINTF(("...KEYWORD: %d\n", ok));
+		    s = put_KEYWORD(s, ok, &had_op);
+		    state = eCODE;
+		} else {
+		    /* FIXME: use is_OPERATOR here? */
+		    flt_putc(*s++);
+		    state = eCODE;
+		}
+		had_op = 1;	/* kludge - in case a "def" precedes regex */
+		break;
+		/*
+		 * Class definitions use '<' specially, like a reverse arrow:
+		 *      class ClassName < SuperClass
+		 *      class << Object
+		 *
+		 * The first case is not a syntax problem, but the
+		 * singleton-class definition conflicts with here-documents.
+		 */
+	    case eCLASS:
+		if ((ok = is_COMMENT(s)) != 0) {
+		    DPRINTF(("...COMMENT: %d\n", ok));
+		    s = put_COMMENT(s, ok);
+		} else if ((ok = is_BLANK(s)) != 0) {
+		    DPRINTF(("...BLANK: %d\n", ok));
+		    flt_puts(s, ok, "");
+		    s += ok;
+		} else if ((ok = is_KEYWORD(s)) != 0) {
+		    DPRINTF(("...KEYWORD: %d\n", ok));
+		    s = put_KEYWORD(s, ok, &had_op);
+		    state = eCODE;
+		} else {
+		    do {
+			flt_putc(*s++);
+		    } while (*s == '<');
+		    state = eCODE;
+		}
+		had_op = 1;	/* kludge - in case a "class" precedes regex */
+		break;
 	    case eCODE:
 		if ((marker = begin_HERE(s, &quote_here, &strip_here)) != 0) {
 		    state = eHERE;
@@ -877,13 +993,29 @@ do_filter(FILE *input GCC_UNUSED)
 		    s += ok;
 		} else if ((ok = is_KEYWORD(s)) != 0) {
 		    DPRINTF(("...KEYWORD: %d\n", ok));
+		    if (ok == 5 && !strncmp(s, "alias", ok))
+			state = eALIAS;
+		    else if (ok == 5 && !strncmp(s, "class", ok))
+			state = eCLASS;
+		    else if (ok == 3 && !strncmp(s, "def", ok))
+			state = eDEF;
 		    s = put_KEYWORD(s, ok, &had_op);
 		} else if ((ok = is_VARIABLE(s)) != 0) {
 		    DPRINTF(("...VARIABLE: %d\n", ok));
 		    s = put_VARIABLE(s, ok);
-		} else if ((ok = is_String(s, &err)) != 0) {
 		    had_op = 0;
-		    if (*s == DQUOTE) {
+		} else if (s + 2 <= the_last && !strncmp(s, "?\"", 2)) {
+		    DPRINTF(("...VARIABLE: %d\n", 2));
+		    s = put_VARIABLE(s, 2);	/* csv.rb uses it, undocumented */
+		    had_op = 0;
+		} else if ((ok = is_String(s, &delim, &err)) != 0) {
+		    had_op = 0;
+		    if (*s == '%') {
+			flt_puts(s, 2, Keyword_attr);
+			s += 2;
+			ok -= 2;
+		    }
+		    if (delim == DQUOTE) {
 			if (err) {
 			    flt_error("unexpected quote");
 			    s = put_embedded(s, ok, Error_attr);
@@ -900,7 +1032,8 @@ do_filter(FILE *input GCC_UNUSED)
 			s += ok;
 		    }
 		} else {
-		    if (strchr("()|&=~!,;", *s) != 0)
+		    /* FIXME: use is_OPERATOR here? */
+		    if (strchr("(|&=~!,;", *s) != 0)
 			had_op = 1;
 		    else if (!isspace(CharOf(*s)))
 			had_op = 0;

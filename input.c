@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.277 2005/01/23 16:27:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.278 2005/02/09 21:42:18 tom Exp $
  *
  */
 
@@ -2139,7 +2139,7 @@ get_kbd_macro(TBUFF **rp)
     *rp = tb_init(rp, EOS);
     if ((last = itb_length(KbdMacro)) != 0) {
 	for (n = 0; n < last; n++) {
-	    len = kcod2escape_seq(itb_get(KbdMacro, n), temp);
+	    len = kcod2escape_seq(itb_get(KbdMacro, n), temp, sizeof(temp));
 	    *rp = tb_bappend(rp, temp, len);
 	}
     }

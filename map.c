@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.103 2005/01/20 21:26:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.104 2005/02/09 22:42:57 tom Exp $
  *
  */
 
@@ -126,7 +126,7 @@ makemaplist(int dummy GCC_UNUSED, void *mapp)
 	if (mp) {
 	    const char *remapnote;
 	    char *mapstr;
-	    char esc_seq[100];	/* FIXME */
+	    char esc_seq[NSTRING];
 
 	    tb_put(&lhsstr, depth, mp->ch);
 	    if (depth + 1 >= maxdepth) {
@@ -143,7 +143,7 @@ makemaplist(int dummy GCC_UNUSED, void *mapp)
 	    if (mp->srv) {
 		mapstr = mp->srv;
 	    } else if (mp->irv != -1) {
-		(void) kcod2escape_seq(mp->irv, esc_seq);
+		(void) kcod2escape_seq(mp->irv, esc_seq, sizeof(esc_seq));
 		mapstr = esc_seq;
 	    }
 	    if (mapstr && (the_lhs_string = tb_values(lhsstr)) != 0) {

@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.155 2005/01/26 23:06:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.156 2005/02/09 22:57:39 tom Exp $
  *
  */
 
@@ -674,7 +674,7 @@ static void
 sweepmsg(const char *msg)
 {
     char temp[NLINE];
-    (void) kcod2pstr(fnc2kcod(&f_multimotion), temp);
+    (void) kcod2pstr(fnc2kcod(&f_multimotion), temp, sizeof(temp));
     mlforce("[%s (end with %.*s)]", msg, CharOf(*temp), temp + 1);
 }
 

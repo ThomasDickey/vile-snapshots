@@ -1,6 +1,6 @@
-revlist for vile, version v9_4p
+revlist for vile, version v9_4q
 --------------------------------------------------------------------------------
-CHANGES	1.798
+CHANGES	1.803
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -18,13 +18,13 @@ ansi.c	1.45
 api.c	1.36
 api.h	1.12
 basic.c	1.121
-bind.c	1.280
+bind.c	1.282
 borland.c	1.32
 btree.c	1.21
 btree.h	1.4
 buffer.c	1.282
 buglist	1.399
-builtflt.c	1.46
+builtflt.c	1.47
 chgdfunc.h	1.17
 cmdtbl	1.235
 config.emx	1.2
@@ -40,7 +40,7 @@ djhandl.c	1.6
 dumbterm.c	1.18
 edef.h	1.319
 estruct.h	1.571
-eval.c	1.343
+eval.c	1.344
 exec.c	1.275
 externs.c	1.10
 fences.c	1.82
@@ -53,7 +53,7 @@ globals.c	1.48
 gppconio.c	1.2
 history.c	1.82
 ibmpc.c	1.97
-input.c	1.277
+input.c	1.278
 insert.c	1.142
 install.sh	1.6
 isearch.c	1.60
@@ -69,7 +69,7 @@ makefile.in	1.194
 makefile.tbc	1.24
 makefile.wat	1.26
 makefile.wnt	1.83
-map.c	1.103
+map.c	1.104
 menu.c	1.45
 mkdirs.sh	1.5
 mkprlenv.wnt	1.8
@@ -85,20 +85,20 @@ opers.c	1.90
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.31
-patchlev.h	1.320
+patchlev.h	1.321
 path.c	1.147
 perl.xs	1.99
 plugin.c	1.1
 plugin.h	1.1
-proto.h	1.542
+proto.h	1.543
 pscreen.h	1.1
 ptypemap	1.7
 random.c	1.282
 regexp.c	1.110
 region.c	1.131
-revlist	v9_4p
+revlist	v9_4q
 search.c	1.137
-select.c	1.155
+select.c	1.156
 sinstall.sh	1.1
 spawn.c	1.184
 statevar.c	1.92
@@ -107,12 +107,12 @@ tbuff.c	1.62
 tcap.c	1.156
 tcap.h	1.9
 termio.c	1.199
-trace.c	1.51
+trace.c	1.52
 trace.h	1.22
 ucrypt.c	1.15
 undo.c	1.88
 version.c	1.56
-vile-9.4.spec	1.18
+vile-9.4.spec	1.19
 vile.1	1.30
 vile.hlp	1.598
 vile.wmconfig	1.1
@@ -198,7 +198,7 @@ filters/fdl.key	1.4
 filters/filterio.c	1.24
 filters/filters.c	1.97
 filters/filters.h	1.89
-filters/filters.rc	1.199
+filters/filters.rc	1.200
 filters/fltstack.h	1.9
 filters/genmake.c	1.4
 filters/genmake.mak	1.24
@@ -252,8 +252,8 @@ filters/ps-filt.l	1.5
 filters/ps.key	1.2
 filters/py-filt.l	1.11
 filters/py.key	1.1
-filters/rb-filt.l	1.10
-filters/rb.key	1.3
+filters/rb-filt.l	1.11
+filters/rb.key	1.4
 filters/rc-filt.l	1.4
 filters/rc.key	1.2
 filters/rcs-filt.l	1.8
@@ -262,7 +262,7 @@ filters/rexx.key	1.1
 filters/rexxfilt.l	1.7
 filters/rpm-filt.l	1.8
 filters/rpm.key	1.3
-filters/rubyfilt.c	1.12
+filters/rubyfilt.c	1.29
 filters/sccs.key	1.1
 filters/sccsfilt.l	1.11
 filters/sed-filt.c	1.20
@@ -270,9 +270,9 @@ filters/sh-filt.l	1.61
 filters/sh.key	1.4
 filters/sml-filt.l	1.4
 filters/sml.key	1.1
-filters/spell.rc	1.4
-filters/spellflt.l	1.12
-filters/sql-filt.l	1.21
+filters/spell.rc	1.6
+filters/spellflt.l	1.15
+filters/sql-filt.l	1.22
 filters/sql.key	1.9
 filters/syntax.key	1.1
 filters/tags.key	1.1
@@ -321,7 +321,7 @@ macros/digraphs.rc	1.2
 macros/gnugpg.rc	1.3
 macros/loaderrs.rc	1.1
 macros/manpage.rc	1.19
-macros/modes.rc	1.16
+macros/modes.rc	1.18
 macros/palettes.rc	1.7
 macros/pictmode.rc	1.3
 macros/search.rc	1.3

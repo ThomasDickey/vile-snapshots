@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.343 2005/01/23 15:15:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.344 2005/02/09 22:53:09 tom Exp $
  *
  */
 
@@ -1039,7 +1039,7 @@ run_func(int fnum)
 	tb_append(&result, EOS);
 	break;
     case UFGTSEQ:
-	(void) kcod2escape_seq(kbd_seq_nomap(), tb_values(result));
+	(void) kcod2escape_seq(kbd_seq_nomap(), tb_values(result), result->tb_size);
 	tb_setlen(&result, -1);
 	break;
     case UFCMATCH:

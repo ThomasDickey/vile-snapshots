@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.542 2005/01/31 19:47:03 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.543 2005/02/09 22:57:21 tom Exp $
  *
  */
 
@@ -119,7 +119,7 @@ extern int ourstrstr (const char *haystack, const char *needle, int anchor);
 extern char *cfg_locate (char *fname, UINT hflag);
 extern char *kbd_engl (const char *prompt, char *buffer);
 extern char *kcod2prc (int c, char *seq);
-extern char *kcod2pstr (int c, char *seq);
+extern char *kcod2pstr (int c, char *seq, int limit);
 extern const CMDFUNC *engl2fnc (const char *fname);
 extern const CMDFUNC *kcod2fnc (BINDINGS *bs, int c);
 extern int fnc2kcod (const CMDFUNC *);
@@ -127,7 +127,7 @@ extern int fnc2kins (const CMDFUNC *);
 extern int kbd_complete (DONE_ARGS, const char *table, size_t size_entry);
 extern int kbd_engl_stat (const char *prompt, char *buffer, int stated);
 extern int kbd_length (void);
-extern int kcod2escape_seq (int c, char *ptr);
+extern int kcod2escape_seq (int c, char *ptr, int limit);
 extern int no_such_function (const char *fname);
 extern void kbd_erase (void);
 extern void kbd_erase_to_end (int column);
