@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.10 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.8 2000/08/09 23:24:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to SCCS files.
  */
@@ -16,23 +16,72 @@ static char *Marker_attr;
 static char *Insert_attr;
 static char *Delete_attr;
 static char *Comment_attr;
-static char *Error_attr;
-static char *String_attr;
 
-#include <fltstack.h>
+typedef struct _States {
+    struct _States *link;
+    int old_state;
+} States;
+
+static States *state_stk;
+
+/* FreeBSD 2.1.5, with Flex 2.4 */
+#if !defined(YYSTATE) && defined(YY_START)
+#define YYSTATE YY_START
+#endif
+
+static int
+pushstate(int state)
+{
+    States *ptr = (States *)malloc(sizeof(States));
+    ptr->link = state_stk;
+    ptr->old_state = YYSTATE;
+    state_stk = ptr;
+    return state;
+}
+
+static int
+popstate(void)
+{
+    States *ptr;
+    int value = INITIAL;
+
+    if ((ptr = state_stk) != 0) {
+	value = ptr->old_state;
+	state_stk = ptr->link;
+	free(ptr);
+    }
+
+    return value;
+}
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *input)
+{
+    yyin = input;
+
+    Marker_attr  = class_attr("Marker");
+    Insert_attr  = class_attr("Insert");
+    Delete_attr  = class_attr("Delete");
+    Comment_attr = class_attr(NAME_COMMENT);
+
+    while (state_stk != 0)
+	popstate();
+
+    BEGIN(INITIAL);
+    while (yylex() > 0) {
+    }
+}
 
 %}
 
 MARKED		^\001[^\n]*
 
-EXPANDED	"@(#)"[^\n]*
-
-UNEXPANDED	"%"[A-Z]"%"
-
 %%
-
-<INSERT,DELETE>{UNEXPANDED}	{ WriteToken(String_attr); }
-<INSERT,DELETE>{EXPANDED}	{ WriteToken(Error_attr); }
 
 {MARKED}	{ flt_putc('\001');
 		    WriteToken2((yytext[1] == 'c')
@@ -41,46 +90,19 @@ UNEXPANDED	"%"[A-Z]"%"
 		    switch (yytext[1])
 		    {
 		    case 'I':
-			push_state(INSERT);
+			BEGIN(pushstate(INSERT));
 			break;
 		    case 'D':
-			push_state(DELETE);
+			BEGIN(pushstate(DELETE));
 			break;
 		    case 'E':
-			pop_state();
+			BEGIN(popstate());
 			break;
 		    default:
-			new_state(INITIAL);
+			BEGIN(INITIAL);
 			break;
 		    }
 		}
-<INSERT>.		|
-<INSERT>[^%@\n]*	{ WriteToken(Insert_attr); }
+<INSERT>[^\n]*	{ WriteToken(Insert_attr); }
 
-<DELETE>.		|
-<DELETE>[^%@\n]*	{ WriteToken(Delete_attr); }
-
-%%
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *inputs)
-{
-    yyin = inputs;
-
-    Marker_attr  = class_attr("Marker");
-    Insert_attr  = class_attr("Insert");
-    Delete_attr  = class_attr("Delete");
-    Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    begin_state(INITIAL);
-    while (yylex() > 0) {
-    }
-    end_state();
-}
+<DELETE>[^\n]*	{ WriteToken(Delete_attr); }

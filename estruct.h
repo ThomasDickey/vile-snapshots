@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.537 2003/10/09 00:02:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.506 2002/06/26 23:55:26 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -22,14 +22,9 @@
 #include <config.h>
 #endif
 
-/*
- * This is used in the configure script:
- */
 #ifndef CHECK_PROTOTYPES
 #define CHECK_PROTOTYPES 0
 #endif
-
-/* ====================================================================== */
 
 #ifndef os_chosen
 
@@ -40,122 +35,73 @@
 # define DISP_VMSVT  1
 #endif
 
+/* non-unix flavors */
+#undef SYS_MSDOS
+
+#define SYS_MSDOS       0       /* MS-DOS                       */
+#define SYS_OS2         0       /* son of DOS                   */
+#define SYS_OS2_EMX     0       /* Unix'ed OS2                  */
+#define SYS_WINNT       0       /* Windows/NT                   */
+
+/*	Compiler definitions			*/
+#define CC_MSC		0	/* Microsoft C versions 3 & 4 & 5 & 6 */
+#define CC_TURBO	0	/* Turbo C or Borland C++ */
+#define CC_WATCOM	0	/* WATCOM C/386 version 9.0 or above */
+#define CC_DJGPP	0	/* DJ's GCC version 1.09 */
+#define CC_CSETPP	0	/* IBM C Set ++ 2.x */
+#define CC_MSVC		0	/* Microsoft Visual C++ 7 & 8 & 9 */
+
 #ifdef __TURBOC__	/* predefined in Turbo C, both DOS and Windows */
 # ifdef __FLAT__	/* predefined in Borland C for WIN32 */
+#  undef SYS_WINNT
 #  define SYS_WINNT  1
 # else
+#  undef SYS_MSDOS
 #  define SYS_MSDOS  1
 # endif
+# undef CC_TURBO
 # define CC_TURBO  1
 #endif
 
 #ifdef _WIN32		/* predefined in Visual C/C++ 4.0 */
+# undef SYS_WINNT
 # define SYS_WINNT 1
 #endif
 
 #ifdef __WATCOMC__
+#undef SYS_MSDOS
 #define SYS_MSDOS  1
+#undef CC_WATCOM
 #define CC_WATCOM 1
 #endif
 
 #ifdef __IBMC__
 # if __IBMC__ >= 200	/* IBM C Set ++ version 2.x */
+#  undef  CC_CSETPP
 #  define CC_CSETPP 1
 # endif
 #endif
 
 #ifdef __OS2__
 /* assume compiler already chosen */
+#undef SYS_OS2
+#undef SYS_MSDOS
 #define SYS_OS2    1
+#define SYS_MSDOS  0
 #endif
 
 #ifdef __GO32__ 	/* DJ's GCC version 1.09 */
+#undef SYS_MSDOS
 #define SYS_MSDOS  1
+#undef CC_DJGPP
 #define CC_DJGPP   1
 #endif
 
 #ifdef _MSC_VER
+#undef SYS_WINNT
 #define SYS_WINNT	1
+#undef CC_MSVC
 #define CC_MSVC		1
-#endif
-
-#endif /* os_chosen */
-
-#ifdef sun
-# define SYS_SUNOS 1		/* FIXME: need to tweak lint ifdefs */
-#endif
-
-#if defined(__CYGWIN__) || defined(__CYGWIN32__)
-# define SYS_CYGWIN 1
-#endif
-
-#ifdef __EMX__
-# define SYS_OS2_EMX 1		/* makefile.emx, or configure-script */
-#endif
-
-#if defined(VMS) || defined(__VMS) /* predefined by DEC's VMS compilers */
-# define SYS_VMS    1
-#endif
-
-/* ====================================================================== */
-
-/* Some code uses these as values in expressions, so we always want them
- * defined, just in case we run into a substandard preprocessor.
- */
-#ifndef CC_CSETPP
-#define CC_CSETPP		0	/* IBM C Set ++ 2.x */
-#endif
-
-#ifndef CC_DJGPP
-#define CC_DJGPP		0	/* DJ's GCC version 1.09 */
-#endif
-
-#ifndef CC_MSC
-#define CC_MSC			0	/* Microsoft C versions 3 & 4 & 5 & 6 */
-#endif
-
-#ifndef CC_MSVC
-#define CC_MSVC			0	/* Microsoft Visual C++ 7 & 8 & 9 */
-#endif
-
-#ifndef CC_TURBO
-#define CC_TURBO		0	/* Turbo C or Borland C++ */
-#endif
-
-#ifndef CC_WATCOM
-#define CC_WATCOM		0	/* WATCOM C/386 version 9.0 or above */
-#endif
-
-#ifndef SYS_CYGWIN
-#define SYS_CYGWIN	     	0       /* Unix'ed Win32                */
-#endif
-
-#ifndef SYS_MSDOS
-#define SYS_MSDOS       	0       /* MS-DOS                       */
-#endif
-
-#ifndef SYS_OS2
-#define SYS_OS2         	0       /* son of DOS                   */
-#endif
-
-#ifndef SYS_OS2_EMX
-#define SYS_OS2_EMX     	0       /* Unix'ed OS2                  */
-#endif
-
-#ifndef SYS_SUNOS
-#define SYS_SUNOS		0	/* SunOS 4.x			*/
-#endif
-
-#ifndef SYS_UNIX
-#define SYS_UNIX       		0       /* Unix & friends               */
-#endif
-
-#ifndef SYS_VMS
-#define SYS_VMS       		0       /* OpenVMS                      */
-#endif
-
-#ifndef SYS_WINNT
-#define SYS_WINNT       	0       /* Windows/NT                   */
 #endif
 
 /* As of version 3.51 of vile, CC_NEWDOSCC should be correct for Turbo,
@@ -165,18 +111,15 @@
  */
 #if CC_TURBO || CC_WATCOM || CC_MSC || CC_DJGPP || SYS_WINNT || CC_CSETPP || CC_MSVC
 # define CC_NEWDOSCC 1
-#endif
-
-#ifndef CC_NEWDOSCC
-#define CC_NEWDOSCC		0
-#endif
-
-/* ====================================================================== */
-
-#ifndef HAVE_CONFIG_H		/* we did not run the configure script */
-
-#if CC_NEWDOSCC
 # define HAVE_GETCWD 1
+#else
+# define CC_NEWDOSCC 0
+#endif
+
+#if SYS_WINNT
+# define HAVE_PUTENV		1
+# define HAVE_UTIME		1
+# define HAVE_SYS_UTIME_H	1
 #endif
 
 #if CC_CSETPP
@@ -186,15 +129,25 @@
 # define CPP_SUBS_BEFORE_QUOTE	1
 #endif
 
+#if CC_TURBO
+# undef HAVE_SYS_UTIME_H
+# undef HAVE_UTIME
+#endif
+
 #if CC_DJGPP
 # define HAVE_UNISTD_H		1
 #endif
 
-#if SYS_WINNT && !CC_TURBO
-# define HAVE_PUTENV		1
-# define HAVE_SYS_UTIME_H	1
-# define HAVE_UTIME		1
+#endif /* os_chosen */
+
+/*
+ * This may apply to makefile.emx, or to builds with the configure-script
+ */
+#ifdef __EMX__
+#define SYS_OS2_EMX 1
 #endif
+
+#ifndef HAVE_CONFIG_H		/* we did not run the configure script */
 
 /*
  * Porting constraints: supply the normally assumed values that we get from
@@ -209,16 +162,16 @@
 # define HAVE_MKDIR	1	/* if your system has the mkdir() system call */
 #endif
 
+#ifndef HAVE_QSORT
+# define HAVE_QSORT	1	/* if your system has the qsort() function */
+#endif
+
 #ifndef HAVE_SETJMP_H
 # define HAVE_SETJMP_H  1	/* if your system has <setjmp.h> */
 #endif
 
 #ifndef HAVE_SIGNAL_H
 # define HAVE_SIGNAL_H  1	/* if your system has <signal.h> */
-#endif
-
-#ifndef HAVE_STDLIB_H
-# define HAVE_STDLIB_H  1	/* if your system has <stdlib.h> */
 #endif
 
 #if !(defined(HAVE_STRCHR) || defined(HAVE_STRRCHR))
@@ -234,23 +187,62 @@
 # define HAVE_STRTOUL	1	/* if your system has the strtoul() function */
 #endif
 
+#ifndef HAVE_STDLIB_H
+# define HAVE_STDLIB_H  1	/* if your system has <stdlib.h> */
+#endif
+
 #ifndef HAVE_STRING_H
 # define HAVE_STRING_H  1	/* if your system has <string.h> */
 #endif
 
-#if SYS_VMS
+#ifndef HAVE_UTIME
+# define HAVE_UTIME	0	/* if your system has the utime() system call */
+#endif
+
+#endif /* HAVE_CONFIG_H */
+
+/* Some code uses these as values in expressions, so we always want them
+ * defined, just in case we run into a substandard preprocessor.
+ */
+#ifndef DISP_X11
+# define DISP_X11 0
+#endif
+#ifndef SYS_MSDOS
+# define SYS_MSDOS 0
+#endif
+#ifndef SYS_OS2
+# define SYS_OS2 0
+#endif
+#ifndef SYS_WINNT
+# define SYS_WINNT	0
+#endif
+#if defined(VMS) || defined(__VMS) /* predefined by DEC's VMS compilers */
+# define SYS_VMS    1
 # define HAVE_GETCWD 1
 # if defined(__DECC) && !defined(__alpha)
-#  undef HAVE_ACCESS		/* 'access()' is reported to not work */
+#  undef HAVE_ACCESS
+#  define HAVE_ACCESS 0	/* 'access()' is reported to not work properly */
 # endif
 # if !defined(__DECC)
+#  undef  HAVE_STRFTIME	/* not present */
+#  undef  HAVE_QSORT
+#  define HAVE_QSORT 0	/* VAX-C's 'qsort()' is definitely broken */
 #  define CC_CANNOT_INIT_UNIONS 1
 # endif
 # define SIGT void
 # define SIGRET
+#else
+# define SYS_VMS    0
+#endif
+#ifdef apollo
+# define SYS_APOLLO 1	/* FIXME: still more ifdefs to autoconf */
+#endif
+#ifdef sun
+# define SYS_SUNOS 1	/* FIXME: need to tweak lint ifdefs */
 #endif
 
-#endif /* HAVE_CONFIG_H */
+#define IBM_VIDEO 	(SYS_MSDOS || SYS_OS2 || SYS_WINNT)
+#define CRLF_LINES 	(SYS_MSDOS || SYS_OS2 || SYS_WINNT)
 
 #if defined(WIN32) || CC_TURBO
 #include "w32vile.h"
@@ -265,16 +257,16 @@
 # include <sys/stat.h>
 #endif
 
-#ifdef HAVE_LIBC_H
+#if HAVE_LIBC_H
 #include <libc.h>
 #endif
-#ifdef HAVE_FCNTL_H
+#if HAVE_FCNTL_H
 #ifndef O_RDONLY	/* prevent multiple inclusion on lame systems */
 #include <fcntl.h>	/* 'open()' */
 #endif
 #endif
 
-#if defined(HAVE_SYS_TIME_H) && (defined(SELECT_WITH_TIME) || !(defined(HAVE_SELECT_H) || defined(HAVE_SYS_SELECT_H)))
+#if HAVE_SYS_TIME_H && (SELECT_WITH_TIME || !(HAVE_SELECT_H || HAVE_SYS_SELECT_H))
 #include <sys/time.h>
 #ifdef TIME_WITH_SYS_TIME
 # include <time.h>
@@ -283,12 +275,30 @@
 #include <time.h>
 #endif
 
-#ifdef RESOURCE_WITH_WAIT
+#if RESOURCE_WITH_WAIT
 #include <sys/resource.h>
 #endif
 
-#ifdef HAVE_SYS_WAIT_H
+#if HAVE_SYS_WAIT_H
 #include <sys/wait.h>	/* 'wait()' */
+#endif
+
+/* definitions for testing apollo version with gcc warnings */
+#if SYS_APOLLO
+# ifdef __GNUC__		/* only tested for SR10.3 with gcc 1.36 */
+#  ifndef _APOLLO_SOURCE	/* ...defined in gcc 2.4.5 */
+#  define _APOLLO_SOURCE	/* appease gcc by forcing extern-defs */
+#  endif
+#  define __attribute(s)
+#  define APOLLO_STDLIB 1
+# endif
+# if defined(L_tmpnam)		/* SR10.3, CC 6.8 defines in <stdio.h> */
+#  define APOLLO_STDLIB 1
+# endif
+#endif
+
+#ifndef APOLLO_STDLIB
+# define APOLLO_STDLIB 0
 #endif
 
 #ifndef SIGT
@@ -303,7 +313,7 @@
 # endif
 #endif /* SIGT */
 
-#ifdef HAVE_SIGNAL_H
+#if HAVE_SIGNAL_H
 #include <signal.h>
 #endif
 
@@ -318,7 +328,7 @@
 # define SIG_IGN	(SIGT (*)(int ACTUAL_SIG_ARGS))1
 #endif
 
-#ifdef HAVE_SETJMP_H
+#if HAVE_SETJMP_H
 #include	<setjmp.h>
 #endif
 
@@ -338,7 +348,7 @@
 #endif
 
 /* has the select() or poll() call, only used for short sleeps in fmatch() */
-#ifdef HAVE_SELECT
+#if HAVE_SELECT
 #undef HAVE_POLL
 #endif
 
@@ -357,57 +367,6 @@
 #define DISP_VIO	SYS_OS2		/* OS/2 VIO (text mode)		*/
 #endif
 
-/* Some code uses these as values in expressions, so we always want them
- * defined, just in case we run into a substandard preprocessor.
- */
-#ifndef DISP_ANSI
-#define DISP_ANSI	0
-#endif
-
-#ifndef DISP_BORLAND
-#define DISP_BORLAND	0
-#endif
-
-#ifndef DISP_CURSES
-#define DISP_CURSES	0
-#endif
-
-#ifndef DISP_IBMPC
-#define DISP_IBMPC	0
-#endif
-
-#ifndef DISP_NTCONS
-#define DISP_NTCONS	0
-#endif
-
-#ifndef DISP_NTWIN
-#define DISP_NTWIN	0
-#endif
-
-#ifndef DISP_TERMCAP
-#define DISP_TERMCAP	0
-#endif
-
-#ifndef DISP_VIO
-#define DISP_VIO	0
-#endif
-
-#ifndef DISP_VMSVT
-#define DISP_VMSVT	0
-#endif
-
-#ifndef DISP_X11
-#define DISP_X11	0
-#endif
-
-#ifndef USE_TERMINFO
-#define USE_TERMINFO	0
-#endif
-
-#ifndef XTOOLKIT
-#define XTOOLKIT	0
-#endif
-
 /* ====================================================================== */
 /*	Configuration options... pick and choose as you wish */
 
@@ -420,60 +379,13 @@
 #define	SMALLER	0	/* strip some fluff -- not a lot smaller, but some */
 #endif
 
-#ifndef OPT_DEBUG
-#define OPT_DEBUG 0	/* normally set by configure-script */
-#endif
-
-#ifndef OPT_FILTER
-#define OPT_FILTER 0	/* normally set by configure-script */
-#endif
-
-#ifndef OPT_LOCALE
-#define OPT_LOCALE 0	/* normally set by configure-script */
-#endif
-
-#ifndef OPT_PERL
-#define OPT_PERL 0	/* normally set by configure-script */
-#endif
-
 #ifndef OPT_SHELL
 #define OPT_SHELL 1	/* we'll disable this only as an exercise */
 #endif
 
-#ifndef OPT_TCL
-#define OPT_TCL 0	/* normally set by configure-script */
+#ifndef OPT_LOCALE
+#define OPT_LOCALE 0
 #endif
-
-/*
- * Widgets for xvile
- */
-#ifndef ATHENA_WIDGETS
-#define ATHENA_WIDGETS 0
-#endif
-
-#ifndef MOTIF_WIDGETS
-#define MOTIF_WIDGETS 0
-#endif
-
-#ifndef NO_WIDGETS
-#define NO_WIDGETS 0
-#endif
-
-#ifndef OL_WIDGETS
-#define OL_WIDGETS 0
-#endif
-
-/*
- * Constants for ifdef'ing out chunks of code
- */
-#define VILE_MAYBE 0
-#define VILE_NEVER 0
-#define VILE_NEEDED 0
-#define VILE_SOMEDAY 0
-
-/* various terminal stuff */
-#define IBM_VIDEO 	(SYS_MSDOS || SYS_OS2 || SYS_WINNT)
-#define CRLF_LINES 	(SYS_MSDOS || SYS_OS2 || SYS_WINNT)
 
 /* various color stuff */
 #define	OPT_COLOR (DISP_ANSI || IBM_VIDEO || DISP_TERMCAP || DISP_CURSES || DISP_X11)
@@ -508,7 +420,6 @@
 				   stuttered in real vi, I prefer them not
 				   to be */
 #define OPT_W32PIPES    SYS_WINNT /* Win32 pipes */
-#define WINMARK		0	/* experimental */
 
 /*
  * use an insertion cursor if possible
@@ -548,6 +459,8 @@
 
 #define OPT_KEY_MODIFY	(SYS_WINNT | DISP_X11)	/* allow shift/ctrl/alt mods */
 
+#define OPT_TITLE	(SYS_WINNT | DISP_X11)	/* use a window title */
+
 /* the "working..." message -- we must have the alarm() syscall, and
    system calls must be restartable after an interrupt by default or be
    made restartable with sigaction() */
@@ -561,7 +474,7 @@
 
 /* systems with MSDOS-like filename syntax */
 #define OPT_MSDOS_PATH  (SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_OS2_EMX)
-#define OPT_CASELESS	(SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_OS2_EMX || SYS_CYGWIN || SYS_VMS)
+#define OPT_CASELESS	(SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_OS2_EMX)
 #define OPT_UNC_PATH	(SYS_WINNT)
 
 /* individual features that are (normally) controlled by SMALLER */
@@ -628,9 +541,6 @@
 #define	OPT_XTERM	0	/* vile doesn't recognize xterm mouse */
 #endif
 
- 	/* implement window title */
-#define OPT_TITLE	(SYS_WINNT | DISP_X11 | OPT_XTERM)
-
 	/* combine select/yank (for mouse support) */
 #define OPT_SEL_YANK    ((DISP_X11 && XTOOLKIT) || SYS_WINNT || SYS_OS2)
 
@@ -658,7 +568,7 @@
 /*
  * Unix vi-style file encryption is available only on some platforms
  */
-#ifdef HAVE_CRYPT
+#if HAVE_CRYPT
 #define OPT_ENCRYPT     !SMALLER
 #else
 #define OPT_ENCRYPT     0
@@ -716,14 +626,12 @@
 /* ====================================================================== */
 
 #include <errno.h>
-
 #if SYS_VMS
-#include <perror.h>		/* defines 'sys_errlist[]' */
+#include <perror.h>	/* defines 'sys_errlist[]' */
 #endif
-
 #if SYS_UNIX
 # ifdef DECL_ERRNO
-extern	int	errno;		/* some systems don't define this in <errno.h> */
+extern	int	errno;	/* some systems don't define this in <errno.h> */
 # endif
 # ifdef DECL_SYS_NERR
 extern	int	sys_nerr;
@@ -738,27 +646,31 @@ extern	char *	sys_errlist[];
 #define	lBIT(n)	((ULONG)(1L<<(n)))
 #define	iBIT(n) ((UINT)(1 <<(n)))
 
-#if !(defined(HAVE_STRCHR) && defined(HAVE_STRRCHR))
+#ifndef HAVE_GETHOSTNAME
+#define HAVE_GETHOSTNAME 0
+#endif
+
+#if !(HAVE_STRCHR && HAVE_STRRCHR)
 #define USE_INDEX 1
 #endif
 
 #ifdef USE_INDEX
 #define strchr index
 #define strrchr rindex
-#ifdef MISSING_EXTERN_RINDEX
+#if MISSING_EXTERN_RINDEX
 extern char *index (const char *s, int c);
 extern char *rindex (const char *s, int c);
 #endif
 #endif /* USE_INDEX */
 
-#if defined(STDC_HEADERS) || defined(HAVE_STRING_H)
+#if STDC_HEADERS || HAVE_STRING_H
 # include <string.h>
   /* An ANSI string.h and pre-ANSI memory.h might conflict.  */
-# if !defined(STDC_HEADERS) && defined(HAVE_MEMORY_H)
+# if !STDC_HEADERS && HAVE_MEMORY_H
 #  include <memory.h>
 # endif /* not STDC_HEADERS and HAVE_MEMORY_H */
 #else /* not STDC_HEADERS and not HAVE_STRING_H */
-# ifdef HAVE_STRINGS_H
+# if HAVE_STRINGS_H
 #  include <strings.h>
   /* memory.h and strings.h conflict on some systems */
   /* FIXME: should probably define memcpy and company in terms of bcopy,
@@ -766,7 +678,7 @@ extern char *rindex (const char *s, int c);
 # endif
 #endif /* not STDC_HEADERS and not HAVE_STRING_H */
 
-#ifdef HAVE_SYS_PARAM_H
+#if HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #endif
 
@@ -788,7 +700,7 @@ extern char *rindex (const char *s, int c);
 
 /* on MS-DOS we have to open files in binary mode to see the ^Z characters. */
 
-#if SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_CYGWIN || SYS_OS2_EMX
+#if SYS_MSDOS || SYS_OS2 || SYS_WINNT || defined(__CYGWIN32__) || defined(__CYGWIN__) || defined(__EMX__)
 #define FOPEN_READ	"rb"
 #define FOPEN_WRITE	"wb"
 #define FOPEN_APPEND	"ab"
@@ -861,13 +773,8 @@ extern int MainProgram(int argc, char *argv[]);
 
 	/* semaphore may be needed to prevent interrupt of display-code */
 #if defined(SIGWINCH) || OPT_WORKING
-# if OPT_TRACE > 1
-extern void beginDisplay(void);
-extern void endofDisplay(void);
-# else
 # define beginDisplay() ++im_displaying
 # define endofDisplay() if (im_displaying) --im_displaying
-# endif
 #else
 # define beginDisplay() /* nothing */
 # define endofDisplay() /* nothing */
@@ -883,13 +790,13 @@ extern void endofDisplay(void);
  * since it's safer --- the machines where we can't are probably POSIX
  * machines with ANSI C.
  */
-#if !defined(GETPGRP_VOID) || defined(MISSING_EXTERN_GETPGRP)
+#if !GETPGRP_VOID || MISSING_EXTERN_GETPGRP
 # define GETPGRPCALL getpgrp(0)
 #else
 # define GETPGRPCALL getpgrp()
 #endif
 
-#ifdef HAVE_KILLPG
+#if HAVE_KILLPG
 # define signal_pg(sig) killpg( GETPGRPCALL, sig)
 #else
 # define signal_pg(sig)   kill(-GETPGRPCALL, sig)
@@ -1022,8 +929,8 @@ extern void endofDisplay(void);
 #define	PLAY	'P'
 #define	RECORD	'R'
 
-#define MAP_QUOTED	TRUE
-#define MAP_UNQUOTED	FALSE
+#define QUOTED	TRUE
+#define NOQUOTED	FALSE
 
 #define DOMAP	TRUE
 #define NODOMAP	FALSE
@@ -1067,7 +974,6 @@ typedef	enum {
 	, D_BREAK
 	, D_FORCE
 	, D_HIDDEN
-	, D_QUIET
 	, D_LOCAL
 	, D_WITH
 	, D_ELSEWITH
@@ -1232,9 +1138,9 @@ typedef UINT WATCHTYPE;
 
 /* three flavors of insert mode	*/
 /* it's FALSE, or one of:	*/
-#define INSMODE_INS 1
-#define INSMODE_OVR 2
-#define INSMODE_RPL 3
+#define INSERT 1
+#define OVERWRITE 2
+#define REPLACECHAR 3
 
 /* kill register control -- values for kbflag */
 #define KNEEDCLEAN   iBIT(0)		/* Kill register needs cleaning */
@@ -1255,12 +1161,12 @@ typedef UINT WATCHTYPE;
 
 /* define these so C-fence matching doesn't get confused when we're editing
 	the cfence code itself */
-#define L_CURLY '{'
-#define R_CURLY '}'
-#define L_PAREN '('
-#define R_PAREN ')'
-#define L_BLOCK '['
-#define R_BLOCK ']'
+#define LBRACE '{'
+#define RBRACE '}'
+#define LPAREN '('
+#define RPAREN ')'
+#define LBRACK '['
+#define RBRACK ']'
 
 /* these are the characters that are used in the expand-chars mode */
 #define EXPC_THIS  '%'
@@ -1276,17 +1182,14 @@ typedef UINT WATCHTYPE;
 /* separator used when scanning PATH environment variable */
 #if SYS_VMS
 #define	PATHCHR	','
-#define PATHSEP '/'
 #endif
 
 #if OPT_MSDOS_PATH
 #define	PATHCHR	';'
-#define PATHSEP '\\'
 #endif
 
 #ifndef PATHCHR				/* e.g., UNIX */
 #define	PATHCHR	':'
-#define PATHSEP '/'
 #endif
 
 
@@ -1378,8 +1281,7 @@ typedef USHORT CHARTYPE;
 /* these parallel the ctypes.h definitions, except that
 	they force the char to valid range first */
 #define CharOf(c)   ((unsigned char)(c))
-#define vlCTYPE(c)  vl_chartypes_[CharOf(c)]
-#define istype(m,c) ((vlCTYPE(c) & (m)) != 0)
+#define istype(m,c) ((vl_chartypes_[CharOf(c)] & (m)) != 0)
 
 #define isAlnum(c)	istype(vl_lower|vl_upper|vl_digit, c)
 #define isAlpha(c)	istype(vl_lower|vl_upper, c)
@@ -1412,12 +1314,13 @@ typedef USHORT CHARTYPE;
    control characters.	They are xor-able values.  */
 #define	DIFCASE		0x20
 #define	DIFCNTRL	0x40
-#define toUpper(c)	vl_uppercase[CharOf(c)]
-#define toLower(c)	vl_lowercase[CharOf(c)]
+#define toUpper(c)	((c)^DIFCASE)
+#define toLower(c)	((c)^DIFCASE)
 #define tocntrl(c)	((c)^DIFCNTRL)
 #define toalpha(c)	((c)^DIFCNTRL)
 
-#define nocase_eq(bc,pc) (CharOf(bc) == CharOf(pc) || (toUpper(bc) == toUpper(pc)))
+#define nocase_eq(bc,pc)	((bc) == (pc) || \
+			(isAlpha(bc) && (((bc) ^ DIFCASE) == (pc))))
 
 #define ESC		tocntrl('[')
 #define BEL		tocntrl('G')	/* ascii bell character		*/
@@ -1445,7 +1348,7 @@ typedef struct regexp {
 	char *startp[NSUBEXP];
 	char *endp[NSUBEXP];
 	size_t mlen;		/* convenience:  endp[0] - startp[0] */
-	int regstart;		/* Internal use only. */
+	char regstart;		/* Internal use only. */
 	char reganch;		/* Internal use only. */
 	int regmust;		/* Internal use only. */
 	unsigned regmlen;	/* Internal use only. */
@@ -1573,7 +1476,7 @@ typedef struct	LINE {
 	    L_FLAG	l_flg;		/* flags for undo ops		*/
 	} l;
 #if OPT_LINE_ATTRS
-	UCHAR  *l_attrs;		/* indexes into the line_attr_tbl
+	UCHAR  *l_attrs;	/* indexes into the line_attrs
 	                                   hash table */
 #endif
 }	LINE;
@@ -1618,9 +1521,8 @@ typedef struct	LINE {
 	/*
 	 * Macros for referencing fields in the LINE struct.
 	 */
-#define lgetc(lp, n)		char2int(lvalue(lp)[(n)])
-#define lputc(lp, n, c) 	(lvalue(lp)[(n)]=(char)(c))
-#define lvalue(lp)		((lp)->l_text)
+#define lgetc(lp, n)		char2int((lp)->l_text[(n)])
+#define lputc(lp, n, c) 	((lp)->l_text[(n)]=(char)(c))
 #define llength(lp)		((lp)->l_used)
 #define line_length(lp)		(llength(lp)+len_rs) /* counting recordsep */
 
@@ -2032,9 +1934,6 @@ typedef struct	BUFFER {
 	time_t	b_modtime;		/* file's last-modification time */
 	time_t	b_modtime_at_warn;	/* file's modtime when user warned */
 #endif
-#if	OPT_NAMEBST
-	TBUFF	*b_procname;		/* full procedure name		*/
-#endif
 #if	OPT_UPBUFF
 	UpBuffFunc b_upbuff;		/* call to recompute		*/
 	UpBuffFunc b_rmbuff;		/* call on removal		*/
@@ -2422,7 +2321,7 @@ typedef void (*ActionFunc) (char *);
 typedef	int	(*CmdFunc) (int f, int n);
 
 typedef	struct {
-#ifdef CC_CANNOT_INIT_UNIONS
+#if CC_CANNOT_INIT_UNIONS
 	void	*c_union;
 #define CMD_U_FUNC(p) (CmdFunc)((p)->c_union)
 #define CMD_U_BUFF(p) (BUFFER*)((p)->c_union)
@@ -2446,9 +2345,6 @@ typedef	struct {
 #if OPT_MACRO_ARGS
 	PARAM_INFO *c_args;	/* if nonnull, lists types of parameters */
 #endif
-#if OPT_TRACE
-	const char *c_name;
-#endif
 #if OPT_ONLINEHELP
 	const char *c_help;	/* short help message for the command */
 #endif
@@ -2458,11 +2354,9 @@ typedef	struct {
  * Other useful argument templates
  */
 #define EOL_ARGS  const char * buffer, unsigned cpos, int c, int eolchar
-#define DONE_ARGS KBD_OPTIONS flags, int c, char *buf, unsigned *pos
+#define DONE_ARGS int c, char *buf, unsigned *pos
 #define LIST_ARGS int flag, void *ptr
 #define REGN_ARGS void *flagp, int l, int r
-
-#define PASS_DONE_ARGS flags, c, buf, pos
 
 typedef	int	(*OpsFunc) (void);
 
@@ -2539,7 +2433,7 @@ typedef struct {
  */
 #define NONE    0L
 #define cmdBIT(n) lBIT(n)	/* ...to simplify typing */
-/* bits 0-12 */
+/* bits 0-11 */
 #define UNDO    cmdBIT(0)	/* command is undo-able, so clean up undo lists */
 #define REDO    cmdBIT(1)	/* command is redo-able, record it for dotcmd */
 #define MOTION  cmdBIT(2)	/* command causes motion, okay after operator cmds */
@@ -2554,13 +2448,13 @@ typedef struct {
 #define VIEWOK  cmdBIT(10)	/* command is okay in view mode, even though it
 				 * _may_ be undoable (macros and maps) */
 #define VL_RECT cmdBIT(11)	/* motion causes rectangular operation */
-#define MINIBUF cmdBIT(12)	/* may use in minibuffer edit */
+#define NOMINI  cmdBIT(12)	/* cannot use in minibuffer edit */
 
 /* These flags are 'ex' argument descriptors, adapted from elvis.  Not all are
  * used or honored or implemented.
  */
-#define argBIT(n) cmdBIT(n+13)	/* ...to simplify adding bits */
-/* bits 13-26 */
+#define argBIT(n) cmdBIT(n+12)	/* ...to simplify adding bits */
+/* bits 12-25 */
 #define FROM    argBIT(0)	/* allow a linespec */
 #define TO      argBIT(1)	/* allow a second linespec */
 #define BANG    argBIT(2)	/* allow a ! after the command name */
@@ -2583,8 +2477,8 @@ typedef struct {
 #define RANGE   (FROM  | TO)	/* range of linespecs allowed */
 
 /* these flags determine the type of cu.* */
-#define typBIT(n) cmdBIT(n+27)	/* ...to simplify adding bits */
-/* bits 27-28 */
+#define typBIT(n) cmdBIT(n+26)	/* ...to simplify adding bits */
+/* bits 26-27 */
 #define CMD_FUNC 0L		/* this is the default (CmdFunc) */
 #define CMD_PROC typBIT(0)	/* named procedure (BUFFER *) */
 #define CMD_PERL typBIT(1)	/* perl subroutine (AV *) */
@@ -2599,7 +2493,7 @@ typedef enum {
 	,file_is_unbuffered
 	,file_is_external
 	,file_is_pipe
-	,file_is_internal
+	,file_is_internal 	
 } FFType;
 
 /* definitions for 'mlreply_file()' and other filename-completion */
@@ -2664,7 +2558,11 @@ typedef struct KILLREG {
 
 #include <stdarg.h>
 
-#ifdef HAVE_UNISTD_H
+#if DISP_X11 && SYS_APOLLO
+#define SYSV_STRINGS	/* <strings.h> conflicts with <string.h> */
+#endif
+
+#if HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 
@@ -2673,15 +2571,13 @@ typedef struct KILLREG {
 #include <unixlib.h>
 #include <file.h>	/* aka <sys/file.h> */
 #include <rms.h>	/* required to compile nefsms.h */
-#define stricmp(a,b)	strcasecmp(a,b)
-#define strnicmp(a,b,n)	strncasecmp(a,b,n)
 #endif
 
-#ifdef HAVE_STDDEF_H
+#if HAVE_STDDEF_H
 #include <stddef.h>
 #endif
 
-#ifdef HAVE_STDLIB_H
+#if (HAVE_STDLIB_H || SYS_VMS || CC_NEWDOSCC)
 #include <stdlib.h>
 #else
 extern void exit (int code);
@@ -2698,7 +2594,7 @@ extern void _exit (int code);
 #define TYPECAST(type,ptr) (type*)((long)(ptr))
 
 /* structure-allocate, for linting */
-#if	0 /* this was useful for K&R lint, but we don't use it anymore */
+#ifdef	lint
 #define	castalloc(cast,nbytes)		((cast *)0)
 #define	castrealloc(cast,ptr,nbytes)	((ptr)+(nbytes))
 #define	typecalloc(cast)		((cast *)0)
@@ -2716,20 +2612,18 @@ extern void _exit (int code);
 #define	typeallocn(cast,ntypes)		(cast *)malloc((ntypes)*sizeof(cast))
 #define	typereallocn(cast,ptr,ntypes)	(cast *)realloc((char *)(ptr),\
 							(ntypes)*sizeof(cast))
-#define	typeallocplus(cast,extra)	(cast *)calloc((extra)+sizeof(cast),1)
+#define	typeallocplus(cast,extra)	(cast *)malloc((extra)+sizeof(cast))
 #endif
 
 #define	FreeAndNull(p)	if ((p) != 0) { free((char *)p); p = 0; }
 #define	FreeIfNeeded(p)	if ((p) != 0) free((char *)(p))
 
-#if defined(VILE_ERROR_ABORT)
-extern void ExitProgram(int code);
-#endif
-
-#if SYS_WINNT && defined(VILE_OLE) && DISP_NTWIN
+#if SYS_WINNT && defined(VILE_OLE) && defined(DISP_NTWIN)
 #define ExitProgram(code)   oleauto_exit(code)
 #else
-#if !defined(VILE_ERROR_ABORT)
+#if defined(VILE_ERROR_ABORT)
+extern void ExitProgram(int code);
+#else
 #define	ExitProgram(code)	exit(code)
 #endif
 #endif
@@ -2744,7 +2638,7 @@ extern void ExitProgram(int code);
 #undef GCC_UNUSED
 #endif
 
-#ifdef GCC_PRINTF
+#if GCC_PRINTF
 #define GCC_PRINTFLIKE(fmt,var) __attribute__((format(printf,fmt,var)))
 #else
 #define GCC_PRINTFLIKE(fmt,var) /*nothing*/
@@ -2764,20 +2658,20 @@ extern void ExitProgram(int code);
 #define VILE_PRINTF(fmt,var) /*nothing*/
 #endif
 
-#ifdef HAVE_SELECT
-# ifdef HAVE_SELECT_H
+#if HAVE_SELECT
+# if HAVE_SELECT_H
 # include <select.h>
 # endif
-# ifdef USE_SYS_SELECT_H
+# if USE_SYS_SELECT_H
 # include <sys/select.h>
 # endif
 #endif
 
-#ifdef HAVE_UTIME_H
+#if HAVE_UTIME_H
 # include <utime.h>
 #endif
 
-#ifdef HAVE_SYS_UTIME_H
+#if HAVE_SYS_UTIME_H
 # include <sys/utime.h>
 #endif
 
@@ -2869,22 +2763,9 @@ extern void ExitProgram(int code);
 #  endif
 #endif	/* USE_DBMALLOC */
 
-#ifndef init_alloc
-#define init_alloc(s,n) /* nothing */
-#endif
-
-/* extra checking if we're tracing */
-#if !OPT_TRACE
-#define valid_buffer(bp) ((bp) != NULL)
-#define valid_window(wp) ((wp) != NULL)
-#endif
-
 /* Normally defined in "trace.h" */
 #ifndef TRACE
 #define TRACE(p) /* nothing */
-#define returnCode(c)   return(c)
-#define returnString(c) return(c)
-#define returnVoid()    return
 #endif
 
 #if OPT_TRACE > 1
@@ -2899,20 +2780,10 @@ extern void ExitProgram(int code);
 #define TPRINTF(p) /* nothing */
 #endif
 
-#if DISP_X11 && defined(NEED_X_INCLUDES)
+#if DISP_X11 && NEED_X_INCLUDES
 #include	<X11/Intrinsic.h>
 #include	<X11/StringDefs.h>
 #endif
-
-/*
- * workarounds for defective versions of gcc, e.g., defining a random set of
- * names as "built-in".
- */
-#if defined(__GNUC__) && defined(__GNUC_MINOR__)
-#if (__GNUC__ == 3 && __GNUC_MINOR__ == 3)
-#define exp vl_exp	/* gcc 3.3 */
-#endif
-#endif /* gcc workarounds */
 
 /*
  * Local prototypes (must follow NO_LEAKS definition)

@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.126 2003/06/17 23:39:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.108 2002/07/02 22:27:20 tom Exp $
  *
  */
 
@@ -759,7 +759,7 @@ yankregion(void)
     return (s);
 }
 
-#if VILE_NEEDED
+#if NEEDED
 int
 _blankchar(int c)
 {
@@ -773,7 +773,7 @@ static int
 _to_lower(int c)
 {
     if (isUpper(c))
-	return toLower(c);
+	return c ^ DIFCASE;
     return -1;
 }
 
@@ -781,19 +781,15 @@ static int
 _to_upper(int c)
 {
     if (isLower(c))
-	return toUpper(c);
+	return c ^ DIFCASE;
     return -1;
 }
 
 static int
 _to_caseflip(int c)
 {
-    if (isAlpha(c)) {
-	if (isUpper(c))
-	    return toLower(c);
-	else
-	    return toUpper(c);
-    }
+    if (isAlpha(c))
+	return c ^ DIFCASE;
     return -1;
 }
 
@@ -869,20 +865,11 @@ getregion(REGION * rp)
     if (haveregion) {
 	*rp = *haveregion;
 	haveregion = NULL;
-	return found_region(rp);
+	return TRUE;
     }
 #if OPT_SELECTIONS
     rp->r_attr_id = (USHORT) assign_attr_id();
 #endif
-
-    /*
-     * If the buffer is completely empty, the region has to match.
-     */
-    if (valid_buffer(curbp) && is_empty_buf(curbp)) {
-	memset(rp, 0, sizeof(*rp));
-	rp->r_orig.l = rp->r_end.l = buf_head(curbp);
-	return TRUE;
-    }
 
     if (MK.l == NULL) {
 	mlforce("BUG: getregion: no mark set in this window");
@@ -1022,278 +1009,3 @@ get_fl_region(REGION * rp)
 
     return status;
 }
-
-#if OPT_SELECTIONS
-
-typedef struct {
-    TBUFF **enc_list;
-    REGION enc_region;
-} ENCODEREG;
-
-static void
-encode_one_attribute(TBUFF ** result, int count, char *hypercmd, VIDEO_ATTR attr)
-{
-    char temp[80];
-
-    tb_append(result, CONTROL_A);
-    lsprintf(temp, "%d", count);
-    tb_sappend(result, temp);
-
-    if (attr & VAUL)
-	tb_append(result, 'U');
-    if (attr & VABOLD)
-	tb_append(result, 'B');
-    if (attr & (VAREV | VASEL))
-	tb_append(result, 'R');
-    if (attr & VAITAL)
-	tb_append(result, 'I');
-
-    if (attr & VACOLOR) {
-	lsprintf(temp, "C%X", VCOLORNUM(attr));
-	tb_sappend(result, temp);
-    }
-#if OPT_HYPERTEXT
-    if (hypercmd != 0) {
-	tb_append(result, 'H');
-	tb_sappend(result, hypercmd);
-	tb_append(result, EOS);
-    }
-#endif
-    tb_sappend(result, ":");
-}
-
-static void
-recompute_regionsize(REGION * region)
-{
-    MARK save_DOT;
-    MARK save_MK;
-    save_DOT = DOT;
-    save_MK = MK;
-    DOT = region->r_orig;
-    MK = region->r_end;
-    getregion(region);
-    DOT = save_DOT;
-    MK = save_MK;
-}
-
-/*
- * Compute the corresponding text of the given line with attributes expanded
- * back to ^A-sequences.
- */
-TBUFF *
-encode_attributes(LINE *lp, BUFFER *bp, REGION * top_region)
-{
-    TBUFF *result = 0;
-    int j, k, len;
-
-    if ((len = llength(lp)) > 0) {
-	AREGION *ap;
-	AREGION *my_list = 0;
-	AREGION ar_temp;
-	int my_used = 0;
-	int my_size = 0;
-	L_NUM top_rsl = line_no(bp, top_region->r_orig.l);
-	L_NUM top_rel = line_no(bp, top_region->r_end.l);
-	L_NUM tst_rsl, tst_rel;
-	L_NUM this_line = line_no(bp, lp);
-
-	tb_init(&result, EOS);
-	memset(&ar_temp, 0, sizeof(ar_temp));
-
-	/*
-	 * Make a list of the attribute-regions which include this line.
-	 * If they do not start/end with this line, we will compare against
-	 * the top_region within which we are encoding, and compute an adjusted
-	 * attribute region which does not extend out of that region.
-	 */
-	for (ap = bp->b_attribs; ap != NULL; ap = ap->ar_next) {
-	    int found = 0;
-
-	    if (lp == ap->ar_region.r_orig.l) {
-		ar_temp = *ap;
-		found = 1;
-		if (lp != ap->ar_region.r_end.l) {
-		    found = -1;
-		    tst_rel = line_no(bp, ap->ar_region.r_end.l);
-		    if (tst_rel > top_rel) {
-			ar_temp.ar_region.r_end = top_region->r_end;
-		    }
-		}
-	    } else if (this_line == top_rsl) {
-		tst_rsl = line_no(bp, ap->ar_region.r_orig.l);
-		tst_rel = line_no(bp, ap->ar_region.r_end.l);
-		if (tst_rsl <= this_line && tst_rel >= this_line) {
-		    ar_temp = *ap;
-		    found = -2;
-		    if (tst_rsl < top_rsl)
-			ar_temp.ar_region.r_orig = top_region->r_orig;
-		    if (tst_rel > top_rel)
-			ar_temp.ar_region.r_end = top_region->r_end;
-		}
-	    }
-	    if (found) {
-		if (found < 0) {	/* recompute limits */
-		    recompute_regionsize(&ar_temp.ar_region);
-		}
-		if (my_list == 0)
-		    my_list = typeallocn(AREGION, my_size = 10);
-		else if (my_used + 1 > my_size)
-		    my_list = typereallocn(AREGION, my_list, my_size *= 2);
-		my_list[my_used++] = ar_temp;
-	    }
-	}
-
-	/*
-	 * Now, walk through the line, emitting attributes as needed before
-	 * each character.
-	 */
-	for (j = 0; j < len; ++j) {
-	    /* get the buffer attributes for this line, by column */
-	    for (k = 0; k < my_used; ++k) {
-		if (j == my_list[k].ar_region.r_orig.o) {
-		    encode_one_attribute(&result,
-					 my_list[k].ar_region.r_size,
-#if OPT_HYPERTEXT
-					 my_list[k].ar_hypercmd,
-#else
-					 (char *) 0,
-#endif
-					 my_list[k].ar_vattr);
-		}
-	    }
-#if OPT_LINE_ATTRS
-	    if (lp->l_attrs != 0) {
-		if (lp->l_attrs[j] > 1
-		    && (j == 0 || lp->l_attrs[j - 1] != lp->l_attrs[j])) {
-		    for (k = j + 1; k < len; ++k) {
-			if (lp->l_attrs[j] != lp->l_attrs[k])
-			    break;
-		    }
-		    encode_one_attribute(&result, k - j, (char *) 0,
-					 line_attr_tbl[lp->l_attrs[j]].vattr);
-		}
-	    }
-#endif
-	    if (tb_append(&result, lgetc(lp, j)) == 0) {
-		break;
-	    }
-	}
-	FreeIfNeeded(my_list);
-	if (result == 0)
-	    (void) no_memory("encode_attributes");
-    }
-    return result;
-}
-
-static int
-encode_line(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
-{
-    LINE *lp = DOT.l;
-    TBUFF *text;
-    ENCODEREG *work = (ENCODEREG *) flagp;
-    L_NUM this_line = line_no(curbp, lp);
-    L_NUM base_line = line_no(curbp, work->enc_region.r_orig.l);
-
-    if (llength(lp) != 0) {
-	if ((text = encode_attributes(lp, curbp, &(work->enc_region))) == 0) {
-	    return FALSE;
-	}
-	work->enc_list[this_line - base_line] = text;
-    } else {
-	work->enc_list[this_line - base_line] = 0;
-    }
-    return TRUE;
-}
-
-/*
- * This builds an array of TBUFF's which represents the result of the encoding.
- * When the encoding is complete, we can use it to replace the region.  That
- * avoids entanglement with the attribute pointers moving around.
- */
-static int
-encode_region(void)
-{
-    ENCODEREG work;
-    int status;
-    L_NUM base_line;
-    L_NUM last_line;
-    L_NUM total, n;
-
-    TRACE((T_CALLED "encode_region()\n"));
-
-    regionshape = FULLLINE;
-    if ((status = getregion(&work.enc_region)) == TRUE
-	&& (base_line = line_no(curbp, work.enc_region.r_orig.l)) > 0
-	&& (last_line = line_no(curbp, work.enc_region.r_end.l)) > base_line) {
-	total = (last_line - base_line);
-	if ((work.enc_list = typeallocn(TBUFF *, total)) == 0) {
-	    status = no_memory("encode_region");
-	} else {
-	    status = do_lines_in_region(encode_line, (void *) &work, FALSE);
-
-	    if (status == TRUE) {
-		/*
-		 * Clear attributes for the range we're operating upon, and
-		 * disable highlighting to prevent autocolor from trying to
-		 * fix it.
-		 */
-		videoattribute = 0;
-		attributeregion();
-#if OPT_MAJORMODE
-		make_local_b_val(curbp, MDHILITE);
-		set_b_val(curbp, MDHILITE, FALSE);
-#endif
-
-		DOT = work.enc_region.r_orig;
-		for (n = 0; n < total; ++n) {
-		    TBUFF *text = work.enc_list[n];
-
-		    DOT.o = b_left_margin(curbp);
-		    regionshape = EXACT;
-		    deltoeol(TRUE, 1);
-		    DOT.o = b_left_margin(curbp);
-		    lstrinsert(tb_values(text), tb_length(text));
-
-		    forwbline(FALSE, 1);
-		    gotobol(FALSE, 1);
-		    tb_free(&(text));
-		}
-	    }
-	    free(work.enc_list);
-	}
-    }
-
-    returnCode(status);
-}
-
-/*
- * Decode the current attributes back to ^A-sequences.
- */
-int
-operattrencode(int f, int n)
-{
-    opcmd = OPOTHER;
-    return vile_op(f, n, encode_region, "Encoding");
-}
-
-/*
- * Write attributed text to a file
- */
-int
-oper_wrenc(int f, int n)
-{
-    register int s;
-    char fname[NFILEN];
-
-    if (ukb != 0) {
-	if ((s = mlreply_file("Write to file: ", (TBUFF **) 0,
-			      FILEC_WRITE | FILEC_PROMPT, fname)) != TRUE)
-	    return s;
-	return kwrite(fname, TRUE);
-    } else {
-	opcmd = OPOTHER;
-	return vile_op(f, n, write_enc_region, "File write (encoded)");
-    }
-}
-
-#endif /* OPT_SELECTIONS */

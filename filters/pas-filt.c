@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.c,v 1.15 2002/12/15 20:02:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.c,v 1.14 2002/05/01 19:46:18 tom Exp $
  *
  * Markup a Pascal file, for highlighting with vile.
  */
@@ -10,6 +10,11 @@ DefineFilter("pas");
 
 #define isNameBegin(c)   (isalpha(CharOf(c)) || (c) == '_')
 #define isNameExtra(c)   (isalnum(CharOf(c)) || (c) == '_')
+#define isBlank(c)       ((c) == ' ' || (c) == '\t')
+
+#define L_CURL '{'
+#define R_CURL '}'
+#define QUOTE  '\''
 
 static char *comment_attr;
 static char *literal_attr;
@@ -46,7 +51,7 @@ has_endofcomment(char *s)
 {
     int i = 0;
     while (*s) {
-	if (*s == R_CURLY) {
+	if (*s == R_CURL) {
 	    return (i + 1);
 	}
 	i += 1;
@@ -56,16 +61,16 @@ has_endofcomment(char *s)
 }
 
 static int
-has_endofliteral(char *s)	/* points past beginning SQUOTE */
+has_endofliteral(char *s)	/* points past beginning QUOTE */
 {
     int i = 0;
 
     while (s[i]) {
-	if (s[i] == SQUOTE) {
-	    if (s[i + 1] == SQUOTE) {
+	if (s[i] == QUOTE) {
+	    if (s[i + 1] == QUOTE) {
 		i += 2;
 	    } else {
-		return (i);	/* points before ending SQUOTE */
+		return (i);	/* points before ending QUOTE */
 	    }
 	}
 	++i;
@@ -89,7 +94,7 @@ write_literal(char *s)
 	c_length = strlen(s);
     flt_puts(s, c_length, literal_attr);
     s += c_length;
-    if (*s == SQUOTE)
+    if (*s == QUOTE)
 	flt_putc(*s++);
     return s;
 }
@@ -115,7 +120,7 @@ do_filter(FILE * input GCC_UNUSED)
 	s = line;
 	s = skip_white(s);
 	while (*s) {
-	    if (!comment && *s == L_CURLY) {
+	    if (!comment && *s == L_CURL) {
 		c_length = has_endofcomment(s);
 		if (c_length == 0) {	/* Comment continues to the next line */
 		    c_length = strlen(s);
@@ -134,7 +139,7 @@ do_filter(FILE * input GCC_UNUSED)
 		    flt_puts(s, c_length, comment_attr);
 		    s = s + c_length;
 		}
-	    } else if (*s == SQUOTE) {
+	    } else if (*s == QUOTE) {
 		flt_putc(*s++);
 		s = write_literal(s);
 	    } else if (*s) {

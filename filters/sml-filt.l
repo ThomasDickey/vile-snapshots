@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sml-filt.l,v 1.4 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sml-filt.l,v 1.3 2002/05/01 00:41:11 tom Exp $
 
     Filter to add vile "attribution" sequences to selected bits of SML
     input text.
@@ -32,11 +32,58 @@ static char *String_attr;
 static char	strbuf[STRBUF];
 static int	strpos;
 
+static void
+flush_string(void)
+{
+    if (strpos > 0) {
+	flt_puts(strbuf, strpos, String_attr);
+	strpos = 0;
+    }
+}
+
+static void
+start_string(void)
+{
+    strpos = 0;
+}
+
 #define ADD_STRING add_string(yytext, yyleng)
 
-static void add_string(char* str, int len);
-static void flush_string(void);
-static void start_string(void);
+static void
+add_string(char* str, int len)
+{
+    while (len-- > 0) {
+	if (strpos >= STRBUF) {
+	    flush_string();
+	}
+	strbuf[strpos++] = *(str++);
+    }
+}
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *input)
+{
+    yyin = input;
+
+    strpos = 0;
+
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    Number_attr  = class_attr(NAME_NUMBER);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    BEGIN(INITIAL);
+    while (yylex() > 0) {
+    }
+
+    flush_string();
+}
 
 %}
 
@@ -87,56 +134,3 @@ NUMBER		{DECIMAL}|{HEX}|{WORD}|{WORDHEX}|{REAL}
 "["	|
 "]"	|
 "->"			{ WriteToken(Keyword_attr); }
-
-%%
-
-static void
-flush_string(void)
-{
-    if (strpos > 0) {
-	flt_puts(strbuf, strpos, String_attr);
-	strpos = 0;
-    }
-}
-
-static void
-start_string(void)
-{
-    strpos = 0;
-}
-
-static void
-add_string(char* str, int len)
-{
-    while (len-- > 0) {
-	if (strpos >= STRBUF) {
-	    flush_string();
-	}
-	strbuf[strpos++] = *(str++);
-    }
-}
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *inputs)
-{
-    yyin = inputs;
-
-    strpos = 0;
-
-    Keyword_attr = class_attr(NAME_KEYWORD);
-    Comment_attr = class_attr(NAME_COMMENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    BEGIN(INITIAL);
-    while (yylex() > 0) {
-    }
-
-    flush_string();
-}

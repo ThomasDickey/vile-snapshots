@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.398 2003/06/30 00:21:40 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.396 2002/05/15 01:15:42 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1594,18 +1594,3 @@ characters that normally aren't part of filenames.
 The perl filter does not handle nested quote-like operators (see Perl's CPAN.pm
 for example).  Doing this would require making the xxx_PATTERN code recursive,
 on regions.  vim does not (I think cannot) handle this.
-
--- 03-03-18 (tom)
-
-Recent improvements allow search/replace for strings with null characters, but
-the related variables $search and $replacepat assume strings are terminated by
-nulls.  It would be nice to reimplement those - doing this is a little
-complicated since it may impact the use of error_val for propagating error
-conditions in expression evaluation.
-
--- 03-06-29 (tom)
-
-The screen cannot be resized while doing a multimotion command initiated by the
-mouse (because of the beginDisplay/endofDisplay in tcap.c interacting with the
-check in newscreensize).  When the command ends, vile will update the
-screensize.

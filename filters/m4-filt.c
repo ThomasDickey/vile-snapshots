@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.22 2003/05/24 00:49:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.20 2001/12/26 20:49:13 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -61,7 +61,7 @@ SkipBlanks(char *src)
 }
 
 static void
-new_quote(Quote * q, const char *s)
+new_quote(Quote * q, char *s)
 {
     q->used = strlen(s);
     q->text = do_alloc(q->text, q->used, &(q->have));
@@ -117,8 +117,8 @@ parse_arglist(char *name, char *s, char ***args, int *parens)
 	used = 0;
 	if (*t == L_PAREN) {
 	    processing = 1;
-	    *args = type_alloc(char *, (char *) 0, sizeof(*args) *
-			         (count + 4), &used);
+	    *args = (char **) do_alloc((char *) 0, sizeof(*args) *
+				       (count + 4), &used);
 	    (*args)[count++] = strmalloc(name);
 	    (*args)[count] = 0;
 	    t++;
@@ -142,8 +142,8 @@ parse_arglist(char *name, char *s, char ***args, int *parens)
 		if (t != r)
 		    strncpy(v, r, t - r);
 		v[t - r] = 0;
-		*args = type_alloc(char *, (char *) (*args), sizeof(*args) *
-				     (count + 2), &used);
+		*args = (char **) do_alloc((char *) (*args), sizeof(*args) *
+					   (count + 2), &used);
 		(*args)[count++] = v;
 	    }
 	    (*args)[count] = 0;
@@ -388,7 +388,7 @@ init_filter(int before)
 }
 
 static void
-do_filter(FILE *input GCC_UNUSED)
+do_filter(FILE * input GCC_UNUSED)
 {
     static unsigned used;
     static char *line;

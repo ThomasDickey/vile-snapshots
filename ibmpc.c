@@ -6,9 +6,11 @@
  * Modified by Pete Ruczynski (pjr) for auto-sensing and selection of
  * display type.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.97 2002/12/06 23:32:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.96 2001/02/13 23:48:06 tom Exp $
  *
  */
+
+#define	termdef	1			/* don't define "term" external */
 
 #include	"estruct.h"
 #include	"edef.h"

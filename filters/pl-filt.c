@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.70 2003/05/24 15:19:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.32 2002/05/14 00:06:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -7,38 +7,40 @@
 
 #include <filters.h>
 
-#ifdef DEBUG
-DefineOptFilter("perl", "d");
-#else
 DefineFilter("perl");
-#endif
 
-#define QUOTE_DELIMS "#:/?|!:%',{}[]()@;="
+#define ESC     '\\'
+#define SQUOTE  '\''
+#define DQUOTE  '"'
+
+#define L_CURLY '{'
+#define R_CURLY '}'
+#define L_PAREN '('
+#define R_PAREN ')'
+#define L_BLOCK '['
+#define R_BLOCK ']'
+
+#define QUOTE_DELIMS "#:/?|!:%`',{}"
 /* from Perl's S_scan_str() */
 #define LOOKUP_TERM "([{< )]}> )]}>"
 
-#define isIdent(c)   (isalnum(CharOf(c)) || c == '_')
-#define isPattern(c) ((c) == '/' || (c) == '?')
+#define isIdent(c) (isalnum(CharOf(c)) || c == '_')
+#define isBlank(c)  ((c) == ' ' || (c) == '\t')
 
-#define MORE(s)	     ((s) != the_last)
-#define ATLEAST(s,n) (the_last - (s) > (n))
-
-#ifdef DEBUG
-#define DPRINTF(params) if(FltOptions('d'))printf params
+#if 0
+#define DPRINTF(params) if(0)printf params
 #else
 #define DPRINTF(params)		/*nothing */
 #endif
 
 typedef enum {
-    eBACKTIC
-    ,eCODE
+    eCODE
     ,eHERE
     ,ePATTERN
     ,ePOD
     ,eIGNORED
 } States;
 
-static char *Action_attr;
 static char *Comment_attr;
 static char *Error_attr;
 static char *Ident_attr;
@@ -55,37 +57,6 @@ static char *the_file;
 static char *the_last;
 static size_t the_size;
 
-#ifdef DEBUG
-static char *
-stateName(States state)
-{
-    char *result;
-    switch (state) {
-    case eBACKTIC:
-	result = "BACKTIC";
-	break;
-    case eCODE:
-	result = "CODE";
-	break;
-    case eHERE:
-	result = "HERE";
-	break;
-    case ePATTERN:
-	result = "PATTERN";
-	break;
-    case ePOD:
-	result = "POD";
-	break;
-    case eIGNORED:
-	result = "IGNORED";
-	break;
-    default:
-	result = "?";
-    }
-    return result;
-}
-#endif
-
 /******************************************************************************
  * Lexical functions that match a particular token type                       *
  ******************************************************************************/
@@ -93,7 +64,7 @@ static int
 is_BLANK(char *s)
 {
     int found = 0;
-    while (MORE(s) && isBlank(*s)) {
+    while ((s != the_last) && isBlank(*s)) {
 	found++;
 	s++;
     }
@@ -104,27 +75,19 @@ static int
 is_INTEGER(char *s)
 {
     int found = 0;
-    while (MORE(s) && isdigit(CharOf(*s))) {
+    while ((s != the_last) && isdigit(CharOf(*s))) {
 	found++;
 	s++;
     }
     return found;
 }
 
-/*
- * Actually all we are looking for is escaped quotes.  perl uses backslashes as
- * part of the syntax for referencing variables.  Take that back:  syntax does
- * not really apply to perl...
- */
 static int
 is_ESCAPED(char *s)
 {
     int found = 0;
-    if (*s == BACKSLASH) {
-	if (ATLEAST(s, 2) && strchr("'\"`\\", s[1]))
-	    found = 2;
-	else
-	    found = 1;
+    if (*s == ESC) {
+	found = 1;
     }
     return found;
 }
@@ -140,11 +103,11 @@ is_STRINGS(char *s, int *err, int delim)
     if (*s == delim) {
 	s++;
 	for (;;) {
-	    if (!MORE(s)) {
+	    if (s == the_last) {
 		*err = 1;	/* unterminated string */
 		break;
 	    }
-	    if (!escape && (*s == BACKSLASH)) {
+	    if (!escape && (*s == ESC)) {
 		escape = 1;
 	    } else {
 		if (!escape && (*s == delim)) {
@@ -167,7 +130,7 @@ is_KEYWORD(char *s)
     int ch;
     int quote = 0;
 
-    while (MORE(s)) {
+    while (s != the_last) {
 	ch = CharOf(*s);
 	if (ch == SQUOTE) {	/* leading or embedded - obs */
 	    /* This works for "&'name" and "name'two" */
@@ -176,7 +139,7 @@ is_KEYWORD(char *s)
 		    return 0;
 		}
 	    } else {
-		if (!ATLEAST(s, 1)
+		if (s + 1 == the_last
 		    || !isalpha(CharOf(s[1]))) {
 		    return 0;
 		}
@@ -195,35 +158,23 @@ is_KEYWORD(char *s)
     return s - base;
 }
 
-/*
- * Test for an identifier or quoted string, which can be used as a
- * here-document marker.
- */
 static int
 is_QIDENT(char *s)
 {
     char *base = s;
     int ch;
-    int ok;
-    int err;
 
-    if ((ok = is_STRINGS(s, &err, SQUOTE)) != 0) {
-	s += ok;
-    } else if ((ok = is_STRINGS(s, &err, DQUOTE)) != 0) {
-	s += ok;
-    } else {
-	while (MORE(s)) {
-	    ch = CharOf(*s);
-	    if (isalpha(ch)
-		|| (s != base && isdigit(CharOf(ch)))
-		|| ch == BACKSLASH
-		|| ch == '_'
-		|| ch == SQUOTE
-		|| ch == DQUOTE)
-		s++;
-	    else
-		break;
-	}
+    while (s != the_last) {
+	ch = CharOf(*s);
+	if (isalpha(ch)
+	    || (s != base && isdigit(CharOf(ch)))
+	    || ch == ESC
+	    || ch == '_'
+	    || ch == SQUOTE
+	    || ch == DQUOTE)
+	    s++;
+	else
+	    break;
     }
     return s - base;
 }
@@ -237,7 +188,7 @@ is_NORMALVARS(char *s)
     int part1 = 0;
     int part2 = 0;
 
-    while (MORE(s)) {
+    while (s != the_last) {
 	ch = CharOf(*s);
 	if (s == base) {
 	    if (strchr("$%@", ch) == 0) {
@@ -270,7 +221,7 @@ is_OTHERVARS(char *s)
     int part1 = 0;
     int part2 = 0;
 
-    while (MORE(s)) {
+    while (s != the_last) {
 	ch = CharOf(*s);
 	if (s == base) {
 	    if (ch != '$') {
@@ -280,18 +231,15 @@ is_OTHERVARS(char *s)
 	    if (ch == '^') {
 		/*EMPTY */ ;
 	    } else if (strchr("-_./,\"\\#%=~|$?&`'+*[];!@<>():", ch) != 0) {
-		part1 = ch;
+		part1 = 1;
 	    } else {
 		break;
 	    }
 	} else if (s == base + 2) {
 	    if (part1) {
-		if (part1 == '#') {	/* "$#" is followed by an identifier */
-		    s += is_KEYWORD(s);
-		}
 		break;
 	    } else if (ch >= '@' && ch < '\177') {
-		part2 = ch;
+		part2 = 1;
 	    }
 	} else {
 	    break;
@@ -311,23 +259,13 @@ is_NUMBER(char *s, int *err)
     int dot = 0;
 
     *err = 0;
-    while (MORE(s)) {
+    while (s != the_last) {
 	int ch = CharOf(*s);
 
 	if ((s == base) && (ch == '+' || ch == '-')) {
 	    /* EMPTY */ ;
-	} else if ((s == base) && (ch == 'v')) {
-	    radix = 11;
-	} else if (radix == 11) {
-	    if (ch != '_') {
-		if (isdigit(ch)) {
-		    value = 1;
-		} else if (ch != '.' || !isdigit(CharOf(s[-1]))) {
-		    break;
-		}
-	    }
 	} else if (ch == '.') {
-	    if (ATLEAST(s, 1)
+	    if (the_last - s > 1
 		&& s[1] == '.') {
 		break;
 	    }
@@ -343,13 +281,10 @@ is_NUMBER(char *s, int *err)
 	    /* EMPTY */ ;
 	} else if (radix == 0) {
 	    if (ch == '0') {
-		if (!ATLEAST(s, 1)) {
+		if ((s + 1) == the_last) {
 		    radix = 10;
 		} else if (s[1] == 'x') {
 		    radix = 16;
-		    s++;
-		} else if (s[1] == 'b') {
-		    radix = 2;
 		    s++;
 		} else {
 		    radix = 8;
@@ -361,30 +296,17 @@ is_NUMBER(char *s, int *err)
 	    } else {
 		break;
 	    }
-	} else if (value && (ch == 'e' || ch == 'E')) {
-	    if (state >= 2 || !value)
+	} else if (dot && (ch == 'e' || ch == 'E')) {
+	    if (state != 1 || !value)
 		*err = 1;
 	    state = 2;
 	} else {
 	    if (((state || (radix == 10)) && isdigit(ch))
 		|| ((radix == 16) && isxdigit(ch))
-		|| ((radix == 8) && (ch >= '0' && ch < '8'))
-		|| ((radix == 2) && (ch >= '0' && ch < '2'))) {
+		|| ((radix == 8) && (ch >= '0' && ch < '8')))
 		value = 1;
-	    } else {
-		if (value) {
-		    while (MORE(s)) {
-			ch = CharOf(*s);
-			if (isalnum(ch)) {
-			    *err = 1;
-			    ++s;
-			} else {
-			    break;
-			}
-		    }
-		}
+	    else
 		break;
-	    }
 	}
 	s++;
     }
@@ -402,17 +324,6 @@ is_IDENT(char *s)
     return found;
 }
 
-static int
-is_NAME(char *s)
-{
-    int found = 0;
-
-    while (isIdent(s[found])) {
-	++found;
-    }
-    return found;
-}
-
 /* for compatibility with perlfilt.l, process single-line comments only */
 static int
 is_COMMENT(char *s)
@@ -421,9 +332,9 @@ is_COMMENT(char *s)
     char *t = is_BLANK(s) + s;
 
     if (*t++ == '#') {
-	while (MORE(t)) {
+	while (t != the_last) {
 	    if (*t == '\n') {
-		if (!ATLEAST(t, 1)
+		if ((t + 1) == the_last
 		    || t[1] != '#')
 		    break;
 	    }
@@ -455,8 +366,7 @@ is_PREPROC(char *s)
 	return 0;
     if ((skip = is_INTEGER(s += skip)) == 0)
 	return 0;
-    s += skip;
-    s += is_BLANK(s);
+    s += is_BLANK(s += skip);
     if (*s == DQUOTE) {
 	s += is_STRINGS(s, &err, DQUOTE);
 	if (err)
@@ -474,40 +384,25 @@ end_marker(char *s, char *marker, int only)
 {
     int len = strlen(marker);
 
-    return (ATLEAST(s, len)
+    return (the_last - s > len
 	    && !strncmp(s, marker, len)
 	    && (!only || (s[len] == '\n')));
 }
 
-/*
- * Check for one or more blank lines followed by a line beginning with an "="
- * and an alpha-character.  If found, return the length skipped through the
- * "=" (the "=" is painted in a different color).  Otherwise return 0.
- */
 static int
 begin_POD(char *s)
 {
-    int result = 0;
-    char *base = s;
     int skip = 0;
-
-    while (MORE(s)) {
+    while (skip < 2 && s != the_last) {
 	if (*s == '\n')
 	    ++skip;
-	else
-	    break;
+	else if (*s != '\r')
+	    return 0;
 	++s;
     }
-    if (((base == the_file) || (skip >= 2))
-	&& ATLEAST(s, 2)
-	&& s[0] == '='
-	&& isalpha(CharOf(s[1]))) {
-	result = s + 1 - base;
-	while (base != s) {
-	    flt_putc(*base++);	/* skip the newlines */
-	}
-    }
-    return result;
+    return (the_last - s > 2
+	    && s[0] == '='
+	    && isalpha(CharOf(s[1])));
 }
 
 static int
@@ -527,10 +422,12 @@ begin_HERE(char *s, int *quoted)
     char *base;
     int ok;
 
-    if (ATLEAST(s, 2)
+    if (the_last - s > 2
 	&& s[0] == '<'
 	&& s[1] == '<') {
 	s += 2;
+	if ((ok = is_BLANK(s)) != 0)
+	    s += ok;
 	base = s;
 	if ((ok = is_QIDENT(s)) != 0) {
 	    unsigned temp = 0;
@@ -539,9 +436,9 @@ begin_HERE(char *s, int *quoted)
 	    s += ok;
 	    *quoted = 0;
 	    while (base != s) {
-		if (*base != SQUOTE && *base != DQUOTE && *base != BACKSLASH)
+		if (*base != SQUOTE && *base != DQUOTE && *base != ESC)
 		    *d++ = *base;
-		else if (*base != DQUOTE)
+		else
 		    *quoted = 1;
 		base++;
 	    }
@@ -557,7 +454,7 @@ skip_BLANKS(char *s)
 {
     char *base = s;
 
-    while (MORE(s)) {
+    while (s != the_last) {
 	if (!isspace(CharOf(*s))) {
 	    break;
 	}
@@ -577,7 +474,7 @@ after_blanks(char *s)
 {
     int result = '\0';
 
-    while (MORE(s)) {
+    while (s != the_last) {
 	if (!isspace(CharOf(*s))) {
 	    result = CharOf(*s);
 	    break;
@@ -587,27 +484,15 @@ after_blanks(char *s)
     return result;
 }
 
-static int
-line_size(char *s)
-{
-    char *base = s;
-
-    while (MORE(s)) {
-	if (*s == '\n')
-	    break;
-	s++;
-    }
-    return s - base;
-}
-
 /*
- * The only place that perlfilt.l recognizes a PATTERN is after "!~" or "=~". 
- * Doing that in other places gets complicated - the reason for moving to C.
+ * FIXME: the only place that perlfilt.l recognizes a PATTERN is after "!~"
+ * or "=~".  Doing that in other places gets complicated - the reason for
+ * moving to C.
  */
 static int
 begin_PATTERN(char *s)
 {
-    if (ATLEAST(s, 2)
+    if (the_last - s > 2
 	&& (s[0] == '!' || s[0] == '=')
 	&& s[1] == '~') {
 	return 2 + is_BLANK(s + 2);
@@ -626,13 +511,13 @@ is_QUOTE(char *s, int *delims)
     size_t len;
 
     *delims = 0;
-    while (MORE(s) && isIdent(*s)) {
+    while ((s != the_last) && isIdent(*s)) {
 	++s;
     }
     if ((len = (s - base)) != 0) {
 	switch (len) {
 	case 1:
-	    if (*base == 'm' || *base == 'q') {
+	    if (*base == 'm') {
 		*delims = 2;
 	    } else if (*base == 's' || *base == 'y') {
 		*delims = 3;
@@ -645,6 +530,11 @@ is_QUOTE(char *s, int *delims)
 		       !strncmp(base, "qx", 2) ||
 		       !strncmp(base, "qw", 2) ||
 		       !strncmp(base, "qr", 2)) {
+		*delims = 2;
+	    }
+	    break;
+	case 4:
+	    if (!strncmp(base, "grep", 2)) {
 		*delims = 2;
 	    }
 	    break;
@@ -678,109 +568,63 @@ add_to_PATTERN(char *s)
     if (skip == 0)
 	need = 2;
 
-    DPRINTF(("\n*add_to_PATTERN(skip=%d, text=%.*s)\n", skip,
-	     line_size(s), s));
-    if (ATLEAST(s, need + skip)) {
+    DPRINTF(("before(%d:%s)", skip, s));
+    if (the_last - s > need + skip) {
 	int delim = 0;
-	int delim2 = 0;
-	int ignored = 0;
 	int escaped = 0;
 	int comment = 0;
-	int in_curlys = 0;
-	int in_parens = 0;
+	int bracketed = 0;
 
 	s += skip;
-	--need;
-	do {
-	    while (MORE(s) && isspace(CharOf(*s))) {
-		s++;
-	    }
-	    if (MORE(s)) {
-		delim = *s++;
-	    }
-	    if ((delim2 = delim) == 0)
-		return 0;
-	    /* from Perl's S_scan_str() */
-	    if (delim != 0 && (next = strchr(LOOKUP_TERM, delim)) != 0)
-		delim2 = next[5];
-
-	    if (delim == L_CURLY)
-		in_curlys = 1;
-
-	    if (delim == L_PAREN)
-		in_parens = 1;
-
-	    DPRINTF(("*start%d  %c%c\n->%.*s\n",
-		     need, delim, delim2,
-		     line_size(s), s));
-
-	    next = s;
-	    while (MORE(s)) {
-		if (comment) {
-		    if (*s == '\n')
-			comment = 0;
-		} else if (!escaped && (*s == BACKSLASH)) {
-		    escaped = 1;
-		} else {
-		    if (!escaped) {
-
-			switch (*s) {
-			case L_CURLY:
-			    ++in_curlys;
-			    break;
-			case R_CURLY:
-			    if (--in_curlys < 0)
-				in_curlys = 0;	/* oops */
-			    break;
-			case L_PAREN:
-			    ++in_parens;
-			    break;
-			case R_PAREN:
-			    if (--in_parens < 0)
-				in_parens = 0;	/* oops */
-			    break;
-			}
-
-			if (*s == '#' && delim == R_CURLY && !in_curlys)
-			    comment = 1;
-
-			ignored = 0;
-			if (delim == L_CURLY && in_curlys)
-			    ignored = 1;
-			if (delim == L_PAREN && in_parens)
-			    ignored = 1;
-
-			if (!ignored && (*s == delim2)) {
-			    DPRINTF(("*finish%d %c%c\n->%.*s\n",
-				     need, delim, delim2,
-				     line_size(s), s));
-			    /*
-			     * check for /pattern/.../pattern/
-			     */
-			    if (ATLEAST(s, 4)
-				&& need == 1
-				&& !strncmp(s + 1, "...", 3))
-				need += 2;
-			    /*
-			     * check for /pattern/ {pattern}
-			     */
-			    if (delim != delim2 || need == 1)
-				++s;
+	while ((s != the_last) && isspace(CharOf(*s))) {
+	    s++;
+	}
+	if (s != the_last) {
+	    delim = *s++;
+	}
+	if (delim == 0)
+	    return 0;
+	/* from Perl's S_scan_str() */
+	if (delim != 0 && (next = strchr(LOOKUP_TERM, delim)) != 0)
+	    delim = next[5];
+	DPRINTF(("need(%c:%d)", delim, need));
+	need--;
+	next = s;
+	while (s != the_last) {
+	    if (comment) {
+		if (*s == '\n')
+		    comment = 0;
+	    } else if (!escaped && (*s == ESC)) {
+		escaped = 1;
+	    } else {
+		if (!escaped) {
+		    if (*s == L_CURLY)
+			++bracketed;
+		    if (*s == R_CURLY)
+			if (--bracketed < 0)
+			    bracketed = 0;	/* oops */
+		    if (*s == '#' && delim == R_CURLY && !bracketed)
+			comment = 1;
+		    if (*s == delim) {
+			DPRINTF(("DELIM%d%c(%.*s)", need, delim,
+				 the_last - s, s));
+			if (--need <= 0) {
+			    ++s;
 			    break;
 			}
 		    }
-		    escaped = 0;
 		}
-		s++;
+		escaped = 0;
 	    }
-	} while (--need > 0);
-	while (MORE(s)) {
+	    s++;
+	}
+	while (s != the_last) {
 	    if (!isalpha(CharOf(*s))
 		|| *s == ';')
 		break;
 	    s++;
 	}
-	DPRINTF(("*finally\n->%.*s\n", line_size(s), s));
+	DPRINTF(("after(%s)", s));
 	return (s - base);
     }
     return 0;
@@ -802,7 +646,7 @@ write_PATTERN(char *s, int len)
     int escaped = 0;
     int range = 0;
 
-    DPRINTF(("\n*write_PATTERN(%.*s)\n", len, s));
+    DPRINTF(("write(%.*s)", len, s));
     if (skip) {
 	flt_puts(s, skip, Keyword_attr);
 	s += skip;
@@ -819,7 +663,7 @@ write_PATTERN(char *s, int len)
     for (n = first = 0; n < len; n++) {
 	if (escaped) {
 	    escaped = 0;
-	} else if (s[n] == BACKSLASH) {
+	} else if (s[n] == ESC) {
 	    escaped = 1;
 	} else if (isBlank(s[n]) && !escaped && !comment &&
 		   (leading || after_blanks(s + n) == '#')) {
@@ -863,9 +707,8 @@ is_Option(char *s)
     int found = 0;
 
     if (*s == '-'
-	&& ATLEAST(s, 1)
-	&& isalpha(CharOf(s[1]))
-	&& !isIdent(CharOf(s[2])))
+	&& ((s + 1) != the_last)
+	&& isalpha(CharOf(s[1])))
 	found = 2;
     return found;
 }
@@ -881,10 +724,23 @@ is_String(char *s, int *err)
     return found;
 }
 
+static int
+line_length(char *s)
+{
+    char *base = s;
+
+    while (s != the_last) {
+	if (*s == '\n')
+	    break;
+	s++;
+    }
+    return s - base;
+}
+
 static char *
 put_newline(char *s)
 {
-    if (MORE(s))
+    if (s != the_last)
 	flt_putc(*s++);
     return s;
 }
@@ -909,7 +765,7 @@ put_embedded(char *s, int len, char *attr)
     int j, k;
 
     for (j = k = 0; j < len; j++) {
-	if ((j == 0 || (s[j - 1] != BACKSLASH))
+	if ((j == 0 || (s[j - 1] != ESC))
 	    && (id = is_IDENT(s + j)) != 0) {
 	    if (var_embedded(s + j)) {
 		if (j != k)
@@ -934,7 +790,7 @@ put_embedded(char *s, int len, char *attr)
 static char *
 put_remainder(char *s, char *attr, int quoted)
 {
-    int ok = line_size(s);
+    int ok = line_length(s);
 
     if (quoted) {
 	flt_puts(s, ok, attr);
@@ -945,106 +801,13 @@ put_remainder(char *s, char *attr, int quoted)
     return put_newline(s);
 }
 
-/*
- * Check for special cases of keywords after which we may expect a pattern
- * that does not have to be inside parentheses.
- */
-static int
-check_keyword(char *s, int ok)
-{
-    switch (ok) {
-    case 2:
-	return !strncmp(s, "if", ok);
-    case 4:
-	return !strncmp(s, "grep", ok);
-    case 5:
-	return !strncmp(s, "split", ok)
-	    || !strncmp(s, "until", ok)
-	    || !strncmp(s, "while", ok);
-    case 6:
-	return !strncmp(s, "unless", ok);
-    }
-    return 0;
-}
-
 static char *
 put_IDENT(char *s, int ok, int *had_op, int *if_wrd)
 {
-    char *attr = 0;
-    char save = s[ok];
-
     *had_op = 0;
-    s[ok] = '\0';
-    attr = keyword_attr(s);
-    s[ok] = save;
-    flt_puts(s, ok, (attr != 0 && *attr != '\0') ? attr : Ident2_attr);
-    *if_wrd = check_keyword(s, ok);
+    flt_puts(s, ok, Ident2_attr);
+    *if_wrd = (ok == 2 && !strncmp(s, "if", ok));
     return s + ok;
-}
-
-/*
- * Check for a matching backtic, return the number of characters we'll skip.
- */
-static int
-end_BACKTIC(char *s)
-{
-    char *base = s;
-    int found = 0;
-
-    while (MORE(s)) {
-	if (*s == BQUOTE) {
-	    found = 1;
-	    break;
-	}
-	++s;
-    }
-    return found ? (s - base) : 0;
-}
-
-/*
- * Check for a file glob expression delimited by angle-brackets, e.g.,
- * 	<*>
- *	<*.c>
- */
-static int
-is_GLOB(char *s)
-{
-    char *base = s;
-    int wild = 0;
-    int both = 0;
-
-    if (*s++ == L_ANGLE) {
-	while (MORE(s)) {
-	    int ch = *s++;
-	    if (ch == '\n' || ch == '=' || ch == L_ANGLE) {
-		break;
-	    } else if (ch == '*') {
-		++wild;
-	    } else if (ch == R_ANGLE) {
-		both = 1;
-		break;
-	    }
-	}
-    }
-    return (wild && both) ? (s - base) : 0;
-}
-
-/*
- * Check for a "format =" or "format KEYWORD =" line, which begins a special
- * type of here-document.
- */
-static int
-is_FORMAT(char *s, int len)
-{
-    if (len == 6 && !strncmp(s, "format", len)) {
-	s += len;
-	s += is_BLANK(s);
-	s += is_NAME(s);
-	s += is_BLANK(s);
-	if (*s == '=')
-	    return 1;
-    }
-    return 0;
 }
 
 /******************************************************************************
@@ -1056,7 +819,7 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input GCC_UNUSED)
+do_filter(FILE * input GCC_UNUSED)
 {
     static unsigned used;
     static char *line;
@@ -1066,9 +829,7 @@ do_filter(FILE *input GCC_UNUSED)
     States state = eCODE;
     char *s;
     char *marker = 0;
-    unsigned mark_len = 0;
     int in_line = -1;
-    int in_stmt = 0;
     int ok;
     int err;
     int save;
@@ -1079,7 +840,6 @@ do_filter(FILE *input GCC_UNUSED)
     int if_old = 0;
     int ignore;
 
-    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
     Error_attr = class_attr(NAME_ERROR);
     Ident_attr = class_attr(NAME_IDENT);
@@ -1114,48 +874,19 @@ do_filter(FILE *input GCC_UNUSED)
 
 	s = the_file;
 	if_old = if_wrd = 0;
-	while (MORE(s)) {
-	    if (*s == '\n' || s == the_file) {
+	while (s != the_last) {
+	    if (*s == '\n') {
 		in_line = -1;
 	    } else {
 		in_line++;
 	    }
 	    if_old = if_wrd;
 	    if_wrd = 0;
-	    DPRINTF(("(%s(%c) line:%d.%d(%d) if:%d op:%d)\n",
-		     stateName(state), *s, in_line, in_stmt, parens, if_wrd, had_op));
+	    DPRINTF(("state:%d, in_line:%d, had_op:%d, chr(%c)\n",
+		     state, in_line, had_op, *s));
 	    switch (state) {
-	    case eBACKTIC:
-		if ((ok = end_BACKTIC(s)) != 0) {
-		    s = put_embedded(s, ok, "");
-		} else {
-		    s = put_remainder(s, Error_attr, 0);
-		}
-		if (*s == BQUOTE) {
-		    flt_puts(s, 1, Action_attr);
-		    state = eCODE;
-		    ++s;
-		}
-		break;
-
 	    case eCODE:
-		if (*s == '\004' || *s == '\032') {	/* ^D or ^Z */
-		    state = eIGNORED;
-		    flt_puts(s, 1, Preproc_attr);
-		    break;
-		} else if (!isspace(CharOf(*s)))
-		    ++in_stmt;
-
-		if (*s == BACKSLASH && ATLEAST(s, 2) && s[1] == BQUOTE) {
-		    flt_puts(s, 2, String_attr);
-		    s += 2;
-		} else if (*s == BQUOTE) {
-		    flt_puts(s, 1, Action_attr);
-		    ++s;
-		    state = eBACKTIC;
-		} else if ((ok = is_GLOB(s)) != 0) {
-		    s = put_embedded(s, ok, String_attr);
-		} else if ((marker = begin_HERE(s, &quoted)) != 0) {
+		if ((marker = begin_HERE(s, &quoted)) != 0) {
 		    state = eHERE;
 		    s = put_remainder(s, String_attr, quoted);
 		} else if ((ok = begin_PATTERN(s)) != 0) {
@@ -1163,9 +894,10 @@ do_filter(FILE *input GCC_UNUSED)
 		    s += ok;
 		    state = ePATTERN;
 		} else if (in_line < 0
-			   && (ok = begin_POD(s))) {
+			   && begin_POD(s)) {
 		    state = ePOD;
-		    s = put_remainder(s + ok - 1, Comment_attr, 1);
+		    flt_putc(*s++);
+		    flt_putc(*s++);
 		} else if (in_line == 0
 			   && (ok = is_PREPROC(s)) != 0) {
 		    flt_puts(s, ok, Preproc_attr);
@@ -1181,16 +913,13 @@ do_filter(FILE *input GCC_UNUSED)
 		    flt_puts(s, ok, "");
 		    s += ok;
 		    if_wrd = if_old;
-		} else if ((if_old || had_op || (in_stmt == 1)) && isPattern(*s)) {
+		} else if ((if_old || had_op) && (*s == '/' || *s == '?')) {
 		    state = ePATTERN;
-		} else if (*s == L_CURLY) {
-		    had_op = 1;
-		    flt_putc(*s++);
 		} else if (*s == L_PAREN) {
 		    parens++;
 		    had_op = 1;
 		    flt_putc(*s++);
-		    if (isPattern(*s)) {
+		    if (*s == '/' || *s == '?') {
 			state = ePATTERN;
 		    }
 		} else if (*s == R_PAREN) {
@@ -1198,50 +927,34 @@ do_filter(FILE *input GCC_UNUSED)
 			parens = 0;
 		    flt_putc(*s++);
 		    had_op = 0;
-		} else if ((ok = is_NUMBER(s, &err)) != 0) {
-		    had_op = 0;
-		    flt_puts(s, ok, err ? Error_attr : Number_attr);
-		    s += ok;
 		} else if ((ok = is_KEYWORD(s)) != 0) {
-		    if ((s != the_file) && (s[-1] == '*')) {
-			/* typeglob */
-			s = put_IDENT(s, ok, &had_op, &if_wrd);
-			break;
-		    }
 		    if (is_QUOTE(s, &ignore)) {
 			state = ePATTERN;
 			break;
 		    }
-		    if (is_FORMAT(s, ok)) {
-			quoted = 0;
-			state = eHERE;
-			mark_len = 0;
-			marker = strcpy(do_alloc(0, 2, &mark_len), ".");
-		    }
 		    save = s[ok];
 		    s[ok] = 0;
-		    if (!strcmp(s, "__END__") || !strcmp(s, "__DATA__"))
+		    if (!strcmp(s, "__END__"))
 			state = eIGNORED;
 		    had_op = 0;
 		    flt_puts(s, ok, keyword_attr(s));
-		    if_wrd = check_keyword(s, ok);
+		    if_wrd = (ok == 2 && !strncmp(s, "if", ok));
 		    s[ok] = save;
 		    s += ok;
 		} else if ((ok = is_Option(s)) != 0) {
 		    had_op = 0;
 		    flt_puts(s, ok, Keyword_attr);
-		    if_wrd = check_keyword(s, ok);
+		    if_wrd = (ok == 2 && !strncmp(s, "if", ok));
 		    s += ok;
 		} else if ((ok = is_IDENT(s)) != 0) {
 		    s = put_IDENT(s, ok, &had_op, &if_wrd);
 		} else if ((ok = is_String(s, &err)) != 0) {
 		    had_op = 0;
-		    if (*s == DQUOTE) {
-			s = put_embedded(s, ok, err ? Error_attr : String_attr);
-		    } else {
-			flt_puts(s, ok, err ? Error_attr : String_attr);
-			s += ok;
-		    }
+		    s = put_embedded(s, ok, err ? Error_attr : String_attr);
+		} else if ((ok = is_NUMBER(s, &err)) != 0) {
+		    had_op = 0;
+		    flt_puts(s, ok, err ? Error_attr : Number_attr);
+		    s += ok;
 		} else {
 		    if (parens) {
 			if (strchr("|&=~!", *s) != 0)
@@ -1249,15 +962,12 @@ do_filter(FILE *input GCC_UNUSED)
 			else if (!isspace(CharOf(*s)))
 			    had_op = 0;
 		    } else {
-			if (*s == ';')
-			    in_stmt = 0;
-			if (strchr("|&=~!", *s) != 0)
+			if (strchr("=~", *s) != 0)
 			    had_op = 1;
 		    }
 		    flt_putc(*s++);
 		}
 		break;
-
 	    case eHERE:
 		if (end_marker(s, marker, 1)) {
 		    state = eCODE;
@@ -1266,28 +976,21 @@ do_filter(FILE *input GCC_UNUSED)
 		}
 		s = put_remainder(s, String_attr, quoted);
 		break;
-
 	    case eIGNORED:
 		s = put_remainder(s, Comment_attr, 1);
 		break;
-
 	    case ePATTERN:
 		s = skip_BLANKS(s);
-		if (MORE(s)) {
-		    if ((ok = is_NAME(s)) != 0 && !is_QUOTE(s, &ignore)) {
-			s = put_IDENT(s, ok, &had_op, &if_wrd);
-		    } else if ((ok = is_IDENT(s)) != 0 && !is_QUOTE(s, &ignore)) {
-			s = put_IDENT(s, ok, &had_op, &if_wrd);
-		    } else if ((ok = add_to_PATTERN(s)) != 0) {
-			s = write_PATTERN(s, ok);
-		    } else {
-			flt_putc(*s++);
-		    }
-		    had_op = 0;
-		    state = eCODE;
+		if ((ok = is_IDENT(s)) != 0 && !is_QUOTE(s, &ignore)) {
+		    s = put_IDENT(s, ok, &had_op, &if_wrd);
+		} else if ((ok = add_to_PATTERN(s)) != 0) {
+		    s = write_PATTERN(s, ok);
+		} else {
+		    flt_putc(*s++);
 		}
+		had_op = 0;
+		state = eCODE;
 		break;
-
 	    case ePOD:
 		if (end_POD(s))
 		    state = eCODE;

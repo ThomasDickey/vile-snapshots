@@ -9,9 +9,12 @@
  * Note: Visual flashes are not yet supported.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.32 2002/12/22 18:23:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.30 1999/09/19 20:09:31 tom Exp $
  *
  */
+
+
+#define	termdef	1			/* don't define "term" external */
 
 #include        "estruct.h"
 #include        "edef.h"
@@ -351,7 +354,7 @@ borclose(void)
 	int	current_type = ibmtype;
 
 	borflush();
-#if OPT_ICURSOR
+#ifdef OPT_ICURSOR
 	_setcursortype(_NORMALCURSOR);
 #endif
 	ibmtype = current_type;	/* ...so subsequent term.open restores us */

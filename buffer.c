@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.263 2003/06/18 22:14:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.250 2002/05/11 00:32:04 tom Exp $
  *
  */
 
@@ -67,12 +67,10 @@ find_BufferList(void)
 BUFFER *
 find_bp(BUFFER *bp1)
 {
-    if (bp1 != NULL) {
-	BUFFER *bp;
-	for_each_buffer(bp) {
-	    if (bp == bp1)
-		return bp;
-	}
+    BUFFER *bp;
+    for_each_buffer(bp) {
+	if (bp == bp1)
+	    return bp;
     }
     return 0;
 }
@@ -187,33 +185,19 @@ find_b_number(const char *number)
 }
 
 /*
- * Find buffer, given (possibly) filename, buffer name or buffer number.
- */
-static BUFFER *
-find_buffer(const char *name)
-{
-    BUFFER *bp;
-
-    if ((bp = find_b_name(name)) == 0	/* Try buffer */
-	&& (bp = find_b_file(name)) == 0	/* ...then filename */
-	&& (bp = find_b_number(name)) == 0) {	/* ...then number */
-	return 0;
-    }
-
-    return bp;
-}
-
-/*
- * Find buffer, given (possibly) filename, buffer name or buffer number,
- * warning if we do not find it.
+ * Find buffer, given (possibly) filename, buffer name or buffer number
  */
 BUFFER *
 find_any_buffer(const char *name)
 {
     BUFFER *bp;
 
-    if ((bp = find_buffer(name)) == 0)
+    if ((bp = find_b_name(name)) == 0	/* Try buffer */
+	&& (bp = find_b_file(name)) == 0	/* ...then filename */
+	&& (bp = find_b_number(name)) == 0) {	/* ...then number */
 	mlforce("[No such buffer] %s", name);
+	return 0;
+    }
 
     return bp;
 }
@@ -230,7 +214,7 @@ zotwp(BUFFER *bp)
     WINDOW dummy;
     int s = FALSE;
 
-    TRACE((T_CALLED "zotwp(%s)\n", bp->b_bname));
+    TRACE(("zotwp(%s)\n", bp->b_bname));
 
     /*
      * Locate buffer to switch to after deleting windows.  It can't be
@@ -250,16 +234,16 @@ zotwp(BUFFER *bp)
 
     /* Delete window instances... */
     for_each_window(wp) {
-	if (wp->w_bufp == bp && valid_window(wheadp->w_wndp)) {
+	if (wp->w_bufp == bp && wheadp->w_wndp != NULL) {
 	    dummy.w_wndp = wp->w_wndp;
 	    s = delwp(wp);
 	    wp = &dummy;
 	}
     }
-    if (valid_buffer(obp))
+    if (obp != NULL)
 	s = swbuffer(obp);
 
-    returnCode(s);
+    return s;
 }
 
 /*
@@ -304,8 +288,6 @@ MarkUnused(BUFFER *bp)
 static void
 FreeBuffer(BUFFER *bp)
 {
-    beginDisplay();
-
     if (bp->b_fname != out_of_mem)
 	FreeIfNeeded(bp->b_fname);
 
@@ -328,7 +310,6 @@ FreeBuffer(BUFFER *bp)
 #endif
 	free((char *) bp);	/* Release buffer block */
     }
-    endofDisplay();
 }
 
 /*
@@ -341,7 +322,7 @@ TrackAlternate(BUFFER *newbp)
 
     if (!updating_list) {
 	MarkUnused(newbp);
-	if (valid_buffer(bp = find_latest())) {
+	if ((bp = find_latest()) != 0) {
 	    newbp->b_last_used = (bp->b_last_used + 1);
 	} else {		/* shouldn't happen... */
 	    newbp->b_last_used = 1;
@@ -355,7 +336,7 @@ hist_lookup(int c)
 {
     BUFFER *bp = find_b_hist(c);
 
-    return valid_buffer(bp) ? bp->b_bname : 0;
+    return (bp != 0) ? bp->b_bname : 0;
 }
 
 /* returns the buffer corresponding to the given number in the history */
@@ -385,8 +366,8 @@ static void
 run_buffer_hook(void)
 {
     if (!reading_msg_line
-	&& valid_buffer(curbp)
-	&& valid_window(curwp)
+	&& curbp != 0
+	&& curwp != 0
 	&& curwp->w_bufp == curbp) {
 	run_a_hook(&bufhook);
     }
@@ -590,7 +571,7 @@ imply_alt(char *fname, int copy, int lockfl)
     nfname[sizeof(nfname) - 1] = '\0';
     (void) lengthen_path(nfname);
     if (global_g_val(GMDIMPLYBUFF)
-	&& valid_buffer(curbp)
+	&& curbp != 0
 	&& curbp->b_fname != 0
 	&& !same_fname(nfname, curbp, FALSE)
 	&& !isInternalName(fname)) {
@@ -609,7 +590,7 @@ imply_alt(char *fname, int copy, int lockfl)
 	    bp->b_active = TRUE;
 	    ch_fname(bp, nfname);
 	    make_local_b_val(bp, MDNEWLINE);
-	    if (valid_window(curwp) && curwp->w_bufp == curbp) {
+	    if (curwp != 0 && curwp->w_bufp == curbp) {
 		top = line_no(curbp, curwp->w_line.l);
 		now = line_no(curbp, DOT.l);
 	    } else
@@ -661,14 +642,12 @@ imply_alt(char *fname, int copy, int lockfl)
 int
 altbuff(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    BUFFER *bp;
-
-    TRACE((T_CALLED "altbuff()\n"));
-    if ((bp = find_alt()) == 0) {
+    BUFFER *bp = find_alt();
+    if (bp == 0) {
 	mlwarn("[No alternate filename to substitute for #]");
-	returnCode(FALSE);
+	return FALSE;
     } else {
-	returnCode(swbuffer(bp));
+	return swbuffer(bp);
     }
 }
 
@@ -683,36 +662,20 @@ static char **
 init_bname_cmpl(void)
 {
     size_t used = 0;
-    size_t count;
-    char **list = 0;
+    size_t count = countBuffers();
+    char **list = typeallocn(char *, count + 1);
     BUFFER *bp;
 
-    if ((count = countBuffers()) != 0) {
-	beginDisplay();
-	if ((list = typeallocn(char *, count + 1)) != 0) {
-	    for_each_buffer(bp) {
-		list[used++] = strmalloc(add_backslashes(bp->b_bname));
-	    }
-	    list[used] = 0;
-	    qsort(list, used, sizeof(char *), qs_bname_cmp);
-	}
-	endofDisplay();
+    for_each_buffer(bp) {
+	list[used++] = bp->b_bname;
     }
+    list[used] = 0;
+    qsort(list, used, sizeof(char *), qs_bname_cmp);
     return list;
 }
 
-static void
-free_bname_cmpl(char **list)
-{
-    int n;
-    for (n = 0; list[n] != 0; ++n) {
-	free(list[n]);
-    }
-    free((char *) list);
-}
-
 static int
-bname_complete(DONE_ARGS)
+bname_complete(int c, char *buf, unsigned *pos)
 {
     unsigned cpos = *pos;
     int status = FALSE;
@@ -722,10 +685,8 @@ bname_complete(DONE_ARGS)
     buf[cpos] = EOS;		/* terminate it for us */
 
     if ((nptr = init_bname_cmpl()) != 0) {
-	status = kbd_complete(PASS_DONE_ARGS, (const char *) nptr, sizeof(*nptr));
-	beginDisplay();
-	free_bname_cmpl(nptr);
-	endofDisplay();
+	status = kbd_complete(0, c, buf, pos, (const char *) nptr, sizeof(*nptr));
+	free((char *) nptr);
     }
     return status;
 }
@@ -768,35 +729,13 @@ usebuffer(int f GCC_UNUSED, int n GCC_UNUSED)
     int s;
     char bufn[NBUFN];
 
-    TRACE((T_CALLED "usebuffer()\n"));
     bufn[0] = EOS;
     if ((s = ask_for_bname("Use buffer: ", bufn, sizeof(bufn))) != TRUE
 	&& (s != SORTOFTRUE))
-	returnCode(s);
+	return s;
     if ((bp = find_any_buffer(bufn)) == 0)	/* Try buffer */
-	returnCode(FALSE);
-    returnCode(swbuffer(bp));
-}
-
-/*
- * Just like "select-buffer", but we will create the buffer if it does not exist.
- */
-int
-edit_buffer(int f GCC_UNUSED, int n GCC_UNUSED)
-{
-    BUFFER *bp;
-    int s;
-    char bufn[NBUFN];
-
-    TRACE((T_CALLED "edit_buffer()\n"));
-    bufn[0] = EOS;
-    if ((s = ask_for_bname("Use buffer: ", bufn, sizeof(bufn))) != TRUE
-	&& (s != SORTOFTRUE))
-	returnCode(s);
-    if ((bp = find_buffer(bufn)) == 0) {
-	bp = bfind(bufn, 0);
-    }
-    returnCode(swbuffer(bp));
+	return FALSE;
+    return swbuffer(bp);
 }
 
 #if !SMALLER
@@ -837,8 +776,6 @@ nextbuffer(int f GCC_UNUSED, int n GCC_UNUSED)
     BUFFER *bp;
     BUFFER *stopatbp;
 
-    TRACE((T_CALLED "nextbuffer()\n"));
-
     if (global_g_val(GMDABUFF)) {	/* go backward thru buffer-list */
 	stopatbp = NULL;
 	while (stopatbp != bheadp) {
@@ -850,24 +787,24 @@ nextbuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 	    if (b_is_invisible(bp))
 		stopatbp = bp;
 	    else
-		returnCode(swbuffer(bp));
+		return swbuffer(bp);
 	}
     } else {			/* go forward thru args-list */
-	if (curbp == 0)
+	if ((stopatbp = curbp) == 0)
 	    (void) find_nth_created(1);
 	if (last_bp == 0)
 	    last_bp = find_b_hist(0);
 	if (last_bp != 0) {
 	    for (bp = last_bp->b_bufp; bp; bp = bp->b_bufp) {
 		if (b_is_argument(bp))
-		    returnCode(swbuffer(last_bp = bp));
+		    return swbuffer(last_bp = bp);
 	    }
 	}
 	mlforce("[No more files to edit]");
-	returnCode(FALSE);
+	return FALSE;
     }
     /* we're back to the top -- they were all invisible */
-    returnCode(swbuffer(stopatbp));
+    return swbuffer(stopatbp);
 }
 
 #if !SMALLER
@@ -879,27 +816,25 @@ prevbuffer(int f GCC_UNUSED, int n GCC_UNUSED)
     BUFFER *bp;			/* eligible buffer to switch to */
     BUFFER *stopatbp;		/* eligible buffer to switch to */
 
-    TRACE((T_CALLED "prevbuffer()\n"));
-
     if (global_g_val(GMDABUFF)) {	/* go forward thru buffer-list */
 	if ((bp = curbp) == 0)
 	    bp = bheadp;
 	stopatbp = bp;
-	while (valid_buffer(bp) && (bp = bp->b_bufp) != 0) {
+	while ((bp != 0) && (bp = bp->b_bufp) != 0) {
 	    /* get the next buffer in the list */
 	    /* if that one's invisible, skip it and try again */
 	    if (!b_is_invisible(bp))
-		returnCode(swbuffer(bp));
+		return swbuffer(bp);
 	}
     } else {			/* go backward thru args-list */
-	if (curbp == 0)
+	if ((stopatbp = curbp) == 0)
 	    (void) find_nth_created(1);
-	else if (find_nth_created(curbp->b_created - 1) == 0)
+	else if ((bp = find_nth_created(curbp->b_created - 1)) == 0)
 	    mlforce("[No more files to edit]");
-	returnCode(FALSE);
+	return FALSE;
     }
     /* we're back to the top -- they were all invisible */
-    returnCode(swbuffer(stopatbp));
+    return swbuffer(stopatbp);
 }
 #endif /* !SMALLER */
 
@@ -919,9 +854,9 @@ make_current(BUFFER *nbp)
     if (!updating_list && global_g_val(GMDABUFF)) {
 	if (nbp != bheadp) {	/* remove nbp from the list */
 	    bp = bheadp;
-	    while (valid_buffer(bp) && bp->b_bufp != nbp)
+	    while (bp != 0 && bp->b_bufp != nbp)
 		bp = bp->b_bufp;
-	    if (valid_buffer(bp))
+	    if (bp != 0)
 		bp->b_bufp = nbp->b_bufp;
 
 	    /* put it at the head */
@@ -948,8 +883,7 @@ make_current(BUFFER *nbp)
 int
 swbuffer(BUFFER *bp)
 {
-    TRACE((T_CALLED "swbuffer(bp=%p)\n", bp));
-    returnCode(swbuffer_lfl(bp, TRUE, FALSE));
+    return swbuffer_lfl(bp, TRUE, FALSE);
 }
 
 static int
@@ -957,7 +891,7 @@ suckitin(BUFFER *bp, int copy, int lockfl)
 {
     int s = TRUE;
 
-    TRACE((T_CALLED "suckitin(%s, %s)\n", bp->b_bname, copy ? "copy" : "new"));
+    TRACE(("suckitin(%s, %s)\n", bp->b_bname, copy ? "copy" : "new"));
     if (copy) {
 	WINDOW *wp;
 
@@ -978,7 +912,7 @@ suckitin(BUFFER *bp, int copy, int lockfl)
 #endif
     updatelistbuffers();
     run_buffer_hook();
-    returnCode(s);
+    return s;
 }
 
 /*
@@ -990,17 +924,14 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
     int s = TRUE;
     WINDOW *wp;
 
-    TRACE((T_CALLED "swbuffer_lfl(bp=%p, lockfl=%d, this_window=%d)\n",
-	   bp, lockfl, this_window));
-
     if (!bp) {
 	mlforce("BUG:  swbuffer passed null bp");
-	returnCode(FALSE);
+	return FALSE;
     }
 
     TRACE(("swbuffer(%s) nwnd=%d\n", bp->b_bname, bp->b_nwnd));
     if (curbp == bp
-	&& valid_window(curwp)
+	&& curwp != 0
 	&& DOT.l != 0
 	&& curwp->w_bufp == bp) {	/* no switching to be done */
 
@@ -1008,7 +939,7 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 	    !bp->b_active)	/* on second thought, yes there is */
 	    s = suckitin(bp, TRUE, lockfl);
 
-	returnCode(s);
+	return s;
     }
 #if !WINMARK
     /* Whatever else we do, make sure MK isn't bogus when we leave */
@@ -1045,9 +976,9 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 	LINE *lp;
 	int trait_matches;
 	if (curwp == 0)
-	    returnCode(FALSE);
+	    return FALSE;
 	if (curwp->w_bufp == bp)
-	    returnCode(TRUE);
+	    return TRUE;
 	if (curwp->w_bufp->b_nwnd == 0)
 	    undispbuff(curwp->w_bufp, curwp);
 	else
@@ -1062,7 +993,7 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 	 */
 
 	trait_matches = 0;
-#if WINMARK
+#ifdef WINMARK
 #define TRAIT_MATCHES_NEEDED 5
 #else
 #define TRAIT_MATCHES_NEEDED 4
@@ -1070,7 +1001,7 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 	for_each_line(lp, bp) {
 	    if (lp == bp->b_dot.l && llength(lp) > bp->b_dot.o)
 		trait_matches++;
-#if WINMARK
+#ifdef WINMARK
 	    if (lp == bp->b_mark.l && llength(lp) > bp->b_mark.o)
 		trait_matches++;
 #endif
@@ -1105,18 +1036,18 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 	    updatelistbuffers();
 #endif
 	run_buffer_hook();
-	returnCode(find_bp(bp) != 0);
+	return (find_bp(bp) != 0);
     } else if (curwp == 0) {
-	returnCode(FALSE);	/* we haven't started displaying yet */
+	return FALSE;		/* we haven't started displaying yet */
     }
 
     /* oh well, suck it into this window */
 
     curwp->w_bufp = bp;
-    returnCode(suckitin(bp, (bp->b_nwnd++ == 0), lockfl));
+    return suckitin(bp, (bp->b_nwnd++ == 0), lockfl);
 }
 
-#if VILE_NEEDED
+#if NEEDED
 /* check to ensure any buffer that thinks it's displayed _is_ displayed */
 void
 buf_win_sanity(void)
@@ -1257,9 +1188,9 @@ killbuffer(int f, int n)
     MARK save_DOT;
     MARK save_TOP;
     int animated = (f
-		    && valid_window(curwp)
+		    && (curwp != 0)
 		    && (n > 1)
-		    && valid_buffer(curbp)
+		    && (curbp != 0)
 		    && (curbp == find_BufferList()));
     int special = animated && (DOT.o == 2);
 
@@ -1393,19 +1324,17 @@ zotbuf(BUFFER *bp)
     int status;
     int didswitch = FALSE;
 
-    TRACE((T_CALLED "zotbuf(bp=%p)\n", bp));
-
     if (find_bp(bp) == 0)	/* delwp may have zotted us, pointer obsolete */
-	returnCode(TRUE);
+	return TRUE;
 
     TRACE(("zotbuf(%s)\n", bp->b_bname));
 
     if (buffer_in_use(bp))
-	returnCode(FALSE);
+	return FALSE;
 #define no_del
 #ifdef no_del
     if (buffer_is_visible(bp))	/* Error if on screen.      */
-	returnCode(FALSE);
+	return FALSE;
     if (is_fake_window(wheadp)) {
 	WINDOW *wp;
 	WINDOW dummy;
@@ -1413,7 +1342,7 @@ zotbuf(BUFFER *bp)
 	   delete all such fake windows */
 	for_each_window(wp) {
 	    if (is_fake_window(wp)
-		&& wp->w_bufp == bp && valid_window(wheadp->w_wndp)) {
+		&& wp->w_bufp == bp && wheadp->w_wndp != NULL) {
 		dummy.w_wndp = wp->w_wndp;
 		(void) delwp(wp);
 		wp = &dummy;
@@ -1424,7 +1353,7 @@ zotbuf(BUFFER *bp)
     if (curbp == bp) {
 	didswitch = TRUE;
 	if (buffer_is_solo(bp)) {
-	    returnCode(FALSE);
+	    return FALSE;
 	}
     }
     if (bp->b_nwnd != 0 || is_fake_window(wheadp)) {
@@ -1432,7 +1361,7 @@ zotbuf(BUFFER *bp)
 	   or there are fake windows to worry about */
 	(void) zotwp(bp);
 	if (find_bp(bp) == 0)	/* delwp must have zotted us */
-	    returnCode(TRUE);
+	    return TRUE;
     }
 #endif
 #if OPT_LCKFILES
@@ -1450,15 +1379,16 @@ zotbuf(BUFFER *bp)
 	    (void) swbuffer(bp);
     } else {
 #if OPT_NAMEBST
-	if (tb_values(bp->b_procname) != 0) {
-	    delete_namebst(tb_values(bp->b_procname), TRUE);
-	    tb_free(&(bp->b_procname));
+	if (is_scratchname(bp->b_bname)) {
+	    char procname[NBUFN];
+	    delete_namebst(strip_brackets(procname, bp->b_bname),
+			   TRUE);
 	}
 #endif
 	FreeBuffer(bp);
 	updatelistbuffers();
     }
-    returnCode(status);
+    return (status);
 }
 
 /* Rename a buffer given a buffer pointer and new buffer name. */
@@ -1477,7 +1407,7 @@ renamebuffer(BUFFER *rbp, char *bufname)
     if (bp == curbp)
 	return (ABORT);		/* no change */
 
-    if (valid_buffer(bp))
+    if (bp != 0)
 	return FALSE;		/* name already in use */
 
 #if OPT_NAMEBST
@@ -1532,7 +1462,7 @@ popupbuff(BUFFER *bp)
 {
     WINDOW *wp;
 
-    TRACE((T_CALLED "popupbuff(%s) nwnd=%d\n", bp->b_bname, bp->b_nwnd));
+    TRACE(("popupbuff(%s) nwnd=%d\n", bp->b_bname, bp->b_nwnd));
     if (!curbp) {
 	curbp = bp;		/* possibly at startup time */
 	curwp->w_bufp = curbp;
@@ -1551,7 +1481,7 @@ popupbuff(BUFFER *bp)
 	    init_window(wp, bp);
 	}
     }
-    returnCode(swbuffer(bp));
+    return swbuffer(bp);
 }
 
 /*
@@ -1566,13 +1496,13 @@ sortlistbuffers(void)
 
     if (global_g_val(GMDABUFF)) {
 	c = 1;
-	while (valid_buffer(bp = find_nth_used(c++))) {
+	while ((bp = find_nth_used(c++)) != 0) {
 	    bp->b_relink = newhead;
 	    newhead = bp;
 	}
     } else {
 	c = countBuffers();
-	while (valid_buffer(bp = find_nth_created(c--))) {
+	while ((bp = find_nth_created(c--)) != 0) {
 	    bp->b_relink = newhead;
 	    newhead = bp;
 	}
@@ -1804,7 +1734,7 @@ update_scratch(const char *name, UpBuffFunc func)
 {
     BUFFER *bp = find_b_name(name);
 
-    if (valid_buffer(bp)) {
+    if (bp != 0) {
 	bp->b_upbuff = func;
 	b_set_obsolete(bp);
     }
@@ -1879,12 +1809,14 @@ addline(BUFFER *bp, const char *text, int len)
 {
     int status = FALSE;
 
+    beginDisplay();
     if (add_line_at(bp, lback(buf_head(bp)), text, len) == TRUE) {
 	/* If "." is at the end, move it to new line  */
 	if (sameline(bp->b_dot, bp->b_line))
 	    bp->b_dot.l = lback(buf_head(bp));
 	status = TRUE;
     }
+    endofDisplay();
 
     return status;
 }
@@ -1901,7 +1833,7 @@ add_line_at(BUFFER *bp, LINEPTR prevp, const char *text, int len)
     int ntext;
 
     nextp = lforw(prevp);
-    ntext = (len < 0) ? (int) strlen(text) : len;
+    ntext = (len < 0) ? strlen(text) : len;
     newlp = lalloc(ntext, bp);
     if (newlp == null_ptr)
 	return (FALSE);
@@ -2095,76 +2027,75 @@ bfind(const char *bname, UINT bflag)
 	lastb = bp;
     }
 
-    beginDisplay();
-
     /* set everything to 0's unless we want nonzero */
     if ((bp = typecalloc(BUFFER)) == NULL) {
 	(void) no_memory("BUFFER");
-    } else {
-	/* set this first, to make it simple to trace */
-	set_bname(bp, bname);
+	return (NULL);
+    }
 
-	lp = lalloc(0, bp);
-	if (lp == null_ptr) {
-	    FreeAndNull(bp);
-	    (void) no_memory("BUFFER head");
-	} else {
+    /* set this first, to make it simple to trace */
+    set_bname(bp, bname);
 
-	    /* and set up the other buffer fields */
-	    bp->b_values = global_b_values;
-	    bp->b_wtraits.w_vals = global_w_values;
-	    bp->b_active = FALSE;
-	    bp->b_dot.l = lp;
-	    bp->b_dot.o = 0;
-	    bp->b_wline = bp->b_dot;
-	    bp->b_line = bp->b_dot;
+    lp = lalloc(0, bp);
+    if (lp == null_ptr) {
+	free((char *) bp);
+	(void) no_memory("BUFFER head");
+	return (NULL);
+    }
+
+    /* and set up the other buffer fields */
+    bp->b_values = global_b_values;
+    bp->b_wtraits.w_vals = global_w_values;
+    bp->b_active = FALSE;
+    bp->b_dot.l = lp;
+    bp->b_dot.o = 0;
+    bp->b_wline = bp->b_dot;
+    bp->b_line = bp->b_dot;
 #if WINMARK
-	    bp->b_mark = nullmark;
+    bp->b_mark = nullmark;
 #endif
-	    bp->b_lastdot = nullmark;
+    bp->b_lastdot = nullmark;
 #if OPT_VIDEO_ATTRS
 #endif
-	    bp->b_flag = bflag;
-	    bp->b_acount = (short) b_val(bp, VAL_ASAVECNT);
-	    bp->b_fname = NULL;
-	    ch_fname(bp, "");
-	    fileuid_invalidate(bp);
+    bp->b_flag = bflag;
+    bp->b_acount = (short) b_val(bp, VAL_ASAVECNT);
+    bp->b_fname = NULL;
+    ch_fname(bp, "");
+    fileuid_invalidate(bp);
 #if OPT_ENCRYPT
-	    if (!b_is_temporary(bp)
-		&& cryptkey != 0 && *cryptkey != EOS) {
-		(void) strcpy(bp->b_cryptkey, cryptkey);
-		make_local_b_val(bp, MDCRYPT);
-		set_b_val(bp, MDCRYPT, TRUE);
-	    } else
-		bp->b_cryptkey[0] = EOS;
+    if (!b_is_temporary(bp)
+	&& cryptkey != 0 && *cryptkey != EOS) {
+	(void) strcpy(bp->b_cryptkey, cryptkey);
+	make_local_b_val(bp, MDCRYPT);
+	set_b_val(bp, MDCRYPT, TRUE);
+    } else
+	bp->b_cryptkey[0] = EOS;
 #endif
-	    bp->b_udstks[0] = bp->b_udstks[1] = null_ptr;
-	    bp->b_ulinep = null_ptr;
-	    bp->b_udtail = null_ptr;
-	    bp->b_udlastsep = null_ptr;
+    bp->b_udstks[0] = bp->b_udstks[1] = null_ptr;
+    bp->b_ulinep = null_ptr;
+    bp->b_udtail = null_ptr;
+    bp->b_udlastsep = null_ptr;
 
-	    b_set_counted(bp);	/* buffer is empty */
-	    set_lforw(lp, lp);
-	    set_lback(lp, lp);
+    b_set_counted(bp);		/* buffer is empty */
+    set_lforw(lp, lp);
+    set_lback(lp, lp);
 
-	    /* append at the end */
-	    if (lastb)
-		lastb->b_bufp = bp;
-	    else
-		bheadp = bp;
-	    bp->b_bufp = NULL;
-	    bp->b_created = countBuffers();
+    /* append at the end */
+    if (lastb)
+	lastb->b_bufp = bp;
+    else
+	bheadp = bp;
+    bp->b_bufp = NULL;
+    bp->b_created = countBuffers();
 
-	    for_each_buffer(bp2)
-		bp2->b_last_used += 1;
-	    bp->b_last_used = 1;
+    for_each_buffer(bp2)
+	bp2->b_last_used += 1;
+    bp->b_last_used = 1;
 
 #if OPT_PERL || OPT_TCL
-	    bp->b_api_private = 0;
+    bp->b_api_private = 0;
 #endif
-	}
-    }
-    endofDisplay();
+
     return (bp);
 }
 
@@ -2180,7 +2111,7 @@ make_bp(const char *fname, UINT flags)
     makename(bname, fname);
     unqname(bname);
 
-    if (valid_buffer(bp = bfind(bname, flags)))
+    if ((bp = bfind(bname, flags)) != 0)
 	ch_fname(bp, fname);
     return bp;
 }
@@ -2194,7 +2125,7 @@ make_ro_bp(const char *bname, UINT flags)
 {
     BUFFER *bp;
 
-    if (valid_buffer(bp = bfind(bname, flags))) {
+    if ((bp = bfind(bname, flags)) != 0) {
 	b_set_invisible(bp);
 	b_clr_scratch(bp);	/* make it nonvolatile */
 	bp->b_active = TRUE;
@@ -2424,10 +2355,6 @@ writeall(int f, int n, int promptuser, int leaving, int autowriting, int all)
     int failure = FALSE;
     int dirtymsgline = FALSE;
 
-    TRACE((T_CALLED
-	   "writeall(f=%d, n=%d, promptuser=%d, leaving=%d, autowriting=%d, all=%d)\n",
-	   f, n, promptuser, leaving, autowriting, all));
-
     beginDisplay();
     oldbp = curbp;		/* save in case we fail */
 
@@ -2484,7 +2411,7 @@ writeall(int f, int n, int promptuser, int leaving, int autowriting, int all)
 
     /* shortcut out */
     if (autowriting && !failure && !count)
-	returnCode(TRUE);
+	return TRUE;
 
     /* do we want a press-return message?  */
     if (failure || ((promptuser && !leaving) && count)) {
@@ -2519,7 +2446,7 @@ writeall(int f, int n, int promptuser, int leaving, int autowriting, int all)
     if (dirtymsgline)
 	sgarbf = TRUE;
 
-    returnCode(status);
+    return status;
 }
 
 #if OPT_TITLE
@@ -2527,7 +2454,7 @@ void
 set_editor_title(void)
 {
     static TBUFF *title;
-    const char *format;
+    char *format;
 
     if (auto_set_title) {
 
@@ -2542,7 +2469,7 @@ set_editor_title(void)
 		? "%{$cbufname} - %{$progname}"
 		: "%{$progname} - %{$cbufname}";
 	special_formatter(&title, format, curwp);
-	tb_copy(&request_title, title);
+	term.set_title(tb_values(title));
     }
 }
 #endif

@@ -1,14 +1,13 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.41 2003/02/26 13:49:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.27 2002/07/02 22:26:44 tom Exp $
  *
  */
 
 #include "estruct.h"
 #include "edef.h"
 #include <ctype.h>
-#include <assert.h>
 
 #if SYS_WINNT
 #include <io.h>
@@ -41,33 +40,11 @@ extern int fflush(FILE * fp);
 #undef	free
 #endif /* DOALLOC */
 
-/*
- * If we implement OPT_WORKING, this means we have a timer periodically
- * interrupting the program to write a "working..." message.  Some systems do
- * not work properly, especially if malloc/free are interrupted.  We use
- * beginDisplay/endofDisplay markers to delimit critical regions where we
- * should not be interrupted.
- */
-#if OPT_WORKING
-#define check_opt_working()	assert(!allow_working_msg())
-#else
-#define check_opt_working()	/* nothing */
-#endif
-
-static const char *bad_form;	/* magic address for fail_alloc() */
-
-static char *visible_result;
-static char *visible_indent;
-static unsigned used_visible;
-static unsigned used_indent;
-
-static int trace_depth;
+static const char *bad_form;
 
 void
 Trace(const char *fmt,...)
 {
-    static int nested;
-
     int save_err;
     va_list ap;
     static FILE *fp;
@@ -75,127 +52,63 @@ Trace(const char *fmt,...)
     HANDLE myMutex = CreateMutex(NULL, FALSE, NULL);
     WaitForSingleObject(myMutex, INFINITE);
 #endif
+    beginDisplay();
+    save_err = errno;
+    va_start(ap, fmt);
 
-    if (!nested++) {
-	beginDisplay();
-	save_err = errno;
-	va_start(ap, fmt);
+    if (fp == NULL)
+	fp = fopen("Trace.out", "w");
+    if (fp == NULL)
+	abort();
 
-	if (fp == NULL)
-	    fp = fopen("Trace.out", "w");
-	if (fp == NULL)
-	    abort();
-
-	if (fmt != bad_form) {
-	    fprintf(fp, "%s", trace_indent(trace_depth, '|'));
-	    if (!strncmp(fmt, T_CALLED, T_LENGTH)) {
-		++trace_depth;
-	    } else if (!strncmp(fmt, T_RETURN, T_LENGTH)) {
-		if (trace_depth == 0) {
-		    fprintf(fp, "BUG: called/return mismatch\n");
-		} else {
-		    --trace_depth;
-		}
-	    }
-	    vfprintf(fp, fmt, ap);
-	    (void) fflush(fp);
-	} else {
-	    (void) fclose(fp);
-	    (void) fflush(stdout);
-	    (void) fflush(stderr);
-	}
-
-	va_end(ap);
-	errno = save_err;
-	endofDisplay();
+    if (fmt != bad_form) {
+	vfprintf(fp, fmt, ap);
+	(void) fflush(fp);
+    } else {
+	(void) fclose(fp);
+	(void) fflush(stdout);
+	(void) fflush(stderr);
     }
-    --nested;
 
+    va_end(ap);
+    errno = save_err;
+    endofDisplay();
 #if SYS_WINNT
     ReleaseMutex(myMutex);
     CloseHandle(myMutex);
 #endif
 }
 
-int
-retrace_code(int code)
-{
-    Trace(T_RETURN "%d\n", code);
-    return code;
-}
-
-char *
-retrace_string(char *code)
-{
-    Trace(T_RETURN "%s%s\n", TRACE_NULL(code),
-	  (code == error_val) ? " (ERROR)" : "");
-    return code;
-}
-
-void
-retrace_void(void)
-{
-    Trace(T_RETURN "\n");
-}
-
-static char *
-alloc_visible(unsigned need)
-{
-    if (need > used_visible) {
-	used_visible = need;
-	if (visible_result == 0)
-	    visible_result = malloc(need);
-	else
-	    visible_result = realloc(visible_result, need);
-	memset(visible_result, 0, need);
-    }
-    return visible_result;
-}
-
-char *
-trace_indent(int level, int marker)
-{
-    unsigned need = 1 + (level * 3);
-    int n;
-
-    if (need > used_indent) {
-	used_indent = need;
-	if (visible_indent == 0)
-	    visible_indent = malloc(need);
-	else
-	    visible_indent = realloc(visible_indent, need);
-	memset(visible_indent, 0, need);
-    }
-
-    *visible_indent = EOS;
-    for (n = 0; n < level; ++n)
-	sprintf(visible_indent + (2 * n), "%c ", marker);
-    return visible_indent;
-}
-
 char *
 visible_buff(const char *buffer, int length, int eos)
 {
+    static char *result;
     int j;
     unsigned k = 0;
     unsigned need = ((length > 0) ? (length * 4) : 0) + 1;
-    char *result;
 
     beginDisplay();
-    if (buffer == 0) {
+    if (buffer == 0)
 	buffer = "";
-	length = 1;
-    }
 
-    result = alloc_visible(need);
+    if (result != 0)
+	free(result);
+    result = malloc(need);
 
     for (j = 0; j < length; j++) {
 	int c = buffer[j] & 0xff;
 	if (eos && !c) {
 	    break;
+	} else if (isprint(c)) {
+	    result[k++] = (char) c;
 	} else {
-	    vl_vischr(result + k, c);
-	    k += strlen(result + k);
+	    if (c >= 128)
+		sprintf(result + k, "\\%03o", c);
+	    else if (c == 127)
+		strcpy(result + k, "^?");
+	    else
+		sprintf(result + k, "^%c", c | '@');
+	    k = strlen(result);
 	}
     }
     result[k] = 0;
@@ -203,25 +116,11 @@ visible_buff(const char *buffer, int length, int eos)
     return result;
 }
 
-/*
- * Convert a string to visible form.
- */
 char *
 str_visible(char *s)
 {
     if (s == 0)
-	return "<null>";
-    return visible_buff(s, strlen(s), FALSE);
-}
-
-/*
- * Convert a string to visible form, but include the trailing null.
- */
-char *
-str_visible0(char *s)
-{
-    if (s == 0)
-	return "<null>";
+	return "(null)";
     return visible_buff(s, strlen(s), TRUE);
 }
 
@@ -238,9 +137,12 @@ itb_visible(ITBUFF * p)
     int len, n, pass;
     unsigned used;
     char temp[80];
-    char *result = 0;
+
+    static char *result;
 
     beginDisplay();
+    if (result != 0)
+	free(result);
     vec = itb_values(p);
     len = itb_length(p);
     if (vec != 0 && len != 0) {
@@ -258,10 +160,10 @@ itb_visible(ITBUFF * p)
 		used += strlen(temp);
 	    }
 	    if (!pass)
-		*(result = alloc_visible(1 + used)) = EOS;
+		*(result = malloc(1 + used)) = EOS;
 	}
     } else {
-	*(result = alloc_visible(1)) = EOS;
+	result = strmalloc("");
     }
     endofDisplay();
     return result;
@@ -368,10 +270,10 @@ typedef struct {
 
 static AREA *area;
 
-static long maxAllocated;	/* maximum # of bytes allocated */
-static long nowAllocated;	/* current # of bytes allocated */
-static int nowPending;		/* current end of 'area[]' table */
-static int maxPending;		/* maximum # of segments allocated */
+static long maxAllocated,	/* maximum # of bytes allocated */
+  nowAllocated;			/* current # of bytes allocated */
+static int nowPending,		/* current end of 'area[]' table */
+  maxPending;			/* maximum # of segments allocated */
 
 static void
 InitArea(void)
@@ -477,7 +379,6 @@ doalloc(char *oldp, unsigned amount)
 {
     register char *newp;
 
-    check_opt_working();
     count_alloc += (oldp == 0);
     LOG_LEN("allocate", amount);
     LOG_PTR("  old = ", oldp);
@@ -508,7 +409,6 @@ do_calloc(unsigned nmemb, unsigned size)
 void
 dofree(void *oldp)
 {
-    check_opt_working();
     count_freed++;
     LOG_PTR("dealloc ", oldp);
 
@@ -543,14 +443,14 @@ dopoison(void *oldp, long len)
 void
 show_alloc(void)
 {
-#if DOALLOC
+#if	DOALLOC
     static char *fmt = ".. %-24.24s %10ld\n";
 
     printf("show_alloc\n");	/* patch */
     Trace("** allocator metrics:\n");
     Trace(fmt, "allocs:", count_alloc);
     Trace(fmt, "frees:", count_freed);
-    if (area != 0) {
+    {
 	register int j, count = 0;
 	register long total = 0;
 
@@ -631,24 +531,11 @@ trace_line(LINE *lp, BUFFER *bp)
 }
 
 void
-trace_mark(char *name, MARK *mk, BUFFER *bp)
-{
-    Trace("%s %d.%d\n", name, line_no(bp, mk->l), mk->o);
-}
-
-void
 trace_region(REGION * rp, BUFFER *bp)
 {
-    Trace("region %d.%d .. %d.%d (%s)\n",
+    Trace("region %d.%d .. %d.%d\n",
 	  line_no(bp, rp->r_orig.l), rp->r_orig.o,
-	  line_no(bp, rp->r_end.l), rp->r_end.o,
-	  (regionshape == EXACT
-	   ? "exact"
-	   : (regionshape == FULLLINE
-	      ? "full-line"
-	      : (regionshape == RECTANGLE
-		 ? "rectangle"
-		 : "?"))));
+	  line_no(bp, rp->r_end.l), rp->r_end.o);
 }
 
 void
@@ -659,9 +546,8 @@ trace_buffer(BUFFER *bp)
 	  bp->b_bname,
 	  bp->b_dot.l,
 	  bp == curbp ? " (curbp)" : "");
-    for_each_line(lp, bp) {
+    for_each_line(lp, bp)
 	trace_line(lp, bp);
-    }
 }
 
 void
@@ -697,36 +583,3 @@ trace_window(WINDOW *wp)
 	imdying(10);
     }
 }
-
-#if OPT_WORKING && (OPT_TRACE > 1)
-#undef beginDisplay
-void
-beginDisplay(void)
-{
-    Trace(T_CALLED "beginDisplay(%d)\n", ++im_displaying);
-}
-
-#undef endofDisplay
-void
-endofDisplay(void)
-{
-    if (im_displaying) {
-	--im_displaying;
-    }
-    returnVoid();		/* matches beginDisplay */
-}
-#endif
-
-#if NO_LEAKS
-void
-trace_leaks(void)
-{
-#if DOALLOC
-    FreeAndNull(area);
-#endif
-    FreeAndNull(visible_result);
-    FreeAndNull(visible_indent);
-    used_visible = 0;
-    used_indent = 0;
-}
-#endif

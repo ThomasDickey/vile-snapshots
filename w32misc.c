@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.41 2003/03/11 19:53:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.37 2002/02/04 00:42:58 tom Exp $
  */
 
 #include "estruct.h"
@@ -25,7 +25,7 @@
 #define SHELL_C_LEN      (sizeof(" -c ") - 1)
 
 static int   host_type = HOST_UNDEF; /* nt or 95? */
-#if !DISP_NTWIN
+#ifndef DISP_NTWIN
 static char  saved_title[256];
 #endif
 
@@ -209,8 +209,8 @@ mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
     shell        = get_shell();
     len          = strlen(shell);
     bourne_shell = (len >= 2 &&
-                    toLower(shell[len - 2]) == 's' &&
-                    toLower(shell[len - 1]) == 'h')
+                    tolower(shell[len - 2]) == 's' &&
+                    tolower(shell[len - 1]) == 'h')
                            ||
                    (len >= SHEXE_LEN &&
                     stricmp(shell + len - SHEXE_LEN, SHEXE) == 0);
@@ -221,7 +221,7 @@ mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
         /* Now check for csh lookalike. */
         bourne_shell = ! (
                            (len >= 3 &&
-                           toLower(shell[len - 3]) == 'c')
+                           tolower(shell[len - 3]) == 'c')
                                     ||
                            (len >= CSHEXE_LEN &&
                             stricmp(shell + len - CSHEXE_LEN, CSHEXE) == 0)
@@ -760,7 +760,7 @@ w32_system_winvile(const char *cmd, int *pressret)
 void
 w32_keybrd_reopen(int pressret)
 {
-#if DISP_NTCONS
+#ifdef DISP_NTCONS
     int c;
 
     if (pressret)
@@ -797,7 +797,7 @@ w32_keybrd_reopen(int pressret)
 void
 set_console_title(const char *title)
 {
-#if !DISP_NTWIN
+#ifndef DISP_NTWIN
     GetConsoleTitle(saved_title, sizeof(saved_title));
     SetConsoleTitle(title);
 #endif
@@ -808,7 +808,7 @@ set_console_title(const char *title)
 void
 restore_console_title(void)
 {
-#if !DISP_NTWIN
+#ifndef DISP_NTWIN
     SetConsoleTitle(saved_title);
 #endif
 }
@@ -924,16 +924,20 @@ parse_font_str(const char *fontstr, FONTSTR_OPTIONS *results)
 
     memset(results, 0, sizeof(*results));
     size  = 0;
-    cp    = skip_cblanks(fontstr);
+    cp    = fontstr;
+    while (*cp && isspace(*cp))
+        cp++;
 
     /* Up first is either a font face or font size. */
-    if (isDigit(*cp))
+    if (isdigit(*cp))
     {
         errno = 0;
         size  = strtoul(cp, &endnum, 10);
         if (errno != 0)
             return (FALSE);
-        tmp = skip_cblanks(endnum);
+        tmp = endnum;
+        while (*tmp && isspace(*tmp))
+            tmp++;
         if (*tmp != '\0')
         {
             if (*tmp != ',')
@@ -984,14 +988,16 @@ parse_font_str(const char *fontstr, FONTSTR_OPTIONS *results)
     }
 
     /* Now look for optional font style. */
-    cp = skip_cblanks(cp);
+    while (*cp && isspace(*cp))
+        cp++;
 
     /* At this point, there are two allowable states:  delimiter or EOS. */
     if (*cp)
     {
         if (*cp++ == ',')
         {
-            cp = skip_cblanks(cp);
+            while (*cp && isspace(*cp))
+                cp++;
             if (strncmp(cp, "bold-italic", sizeof("bold-italic") - 1) == 0)
                 results->bold = results->italic = TRUE;
             else if (strncmp(cp, "italic", sizeof("italic") - 1) == 0)
@@ -1149,7 +1155,7 @@ w32_del_selection(int copy_to_cbrd)
 int
 w32_keybrd_write(char *data)
 {
-#if DISP_NTCONS
+#ifdef DISP_NTCONS
     HANDLE        hstdin;
     INPUT_RECORD  ir;
     DWORD         unused;
@@ -1159,7 +1165,7 @@ w32_keybrd_write(char *data)
     int           rc;
 
     rc = TRUE;
-#if DISP_NTCONS
+#ifdef DISP_NTCONS
     hstdin = GetStdHandle(STD_INPUT_HANDLE);
     memset(&ir, 0, sizeof(ir));
     ir.EventType               = KEY_EVENT;
@@ -1169,7 +1175,7 @@ w32_keybrd_write(char *data)
 #endif
     while (*data && rc)
     {
-#if DISP_NTCONS
+#ifdef DISP_NTCONS
         ir.Event.KeyEvent.uChar.AsciiChar = *data;
         rc = WriteConsoleInput(hstdin, &ir, 1, &unused);
 #else
@@ -1182,7 +1188,7 @@ w32_keybrd_write(char *data)
 
 
 
-#if DISP_NTWIN
+#ifdef DISP_NTWIN
 
 /* Center a child window (usually a dialog box) over a parent. */
 void

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_4a
+MANIFEST for vile, version v9_3c
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -109,7 +109,7 @@ trace.h                         development: trace to logfile
 ucrypt.c                        interface to Unix crypt(1)
 undo.c                          support for "undo"
 version.c                       version & usage messages
-vile-9.4.spec                   sample rpm spec file for vile 9.4
+vile-9.3.spec                   sample rpm spec file for vile 9.3
 vile.1                          man-page for VILE
 vile.hlp                        help-file
 vile.wmconfig                   windowmaker config file for vile
@@ -225,6 +225,7 @@ filters/makefile.icc            makefile for OS/2 IBM CSet (vile utilities)
 filters/makefile.in             makefile for vile filters
 filters/makefile.wnt            makefile for filters with Visual C++
 filters/makefilt.l              makefile syntax filter for vile
+filters/makelist.sh             script to construct a list of filter names
 filters/manfilt.c               manpage-filter
 filters/mk-0th.awk              construct builtflt.h
 filters/mk-0th.bat              generate builtflt.h from genmake.mak

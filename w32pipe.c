@@ -60,7 +60,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.31 2002/12/23 01:24:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.30 2002/01/10 22:37:50 tom Exp $
  */
 
 #define HAVE_FCNTL_H 1
@@ -273,7 +273,8 @@ native_inout_popen(FILE **fr, FILE **fw, char *cmd)
          * block when the input consumer is busy.
          */
 
-        cmdp = skip_blanks(cmd);
+        for (cmdp = cmd; *cmdp && isspace(*cmdp); cmdp++)
+            ;
         nowait_pipe_cmd = (strnicmp(cmdp, "dir", 3) == 0)  ||
                           (strnicmp(cmdp, "type", 4) == 0);
     }

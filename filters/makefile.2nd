@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.7 2003/05/06 23:18:51 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.6 2000/04/26 09:41:12 tom Exp $
 #
 
 .SUFFIXES: .l .c .i $o
@@ -22,9 +22,6 @@ CF_DEPS = filterio$o filters$o
 CF_ARGS = $(CF_DEPS)
 
 PROGS	= \
-	atr2ansi$x \
-	atr2html$x \
-	atr2text$x \
 	vile-crypt$x \
 	vile-manfilt$x
 
@@ -37,9 +34,6 @@ check: $(TARGET)
 	@echo Sorry, no batch tests available.
 
 INSTALL_FILES = \
-	$(BINDIR)/atr2ansi$x \
-	$(BINDIR)/atr2html$x \
-	$(BINDIR)/atr2text$x \
 	$(BINDIR)/vile-crypt$x \
 	$(BINDIR)/vile-manfilt$x \
 	$(DATADIR)/filters.rc \
@@ -91,15 +85,9 @@ dotags:
 	$(AR) $(AR_OPTS) $@ $(LOBJS)
 	$(RANLIB) $@
 
-atr2ansi$x : atr2ansi$o	unfilter$o ; $(CC) -o $@ atr2ansi$o unfilter$o $(LDFLAGS)
-atr2html$x : atr2html$o	unfilter$o ; $(CC) -o $@ atr2html$o unfilter$o $(LDFLAGS)
-atr2text$x : atr2text$o	unfilter$o ; $(CC) -o $@ atr2text$o unfilter$o $(LDFLAGS)
 vile-crypt$x :	ecrypt$o	; $(CC) -o $@ ecrypt$o $(LDFLAGS)
 vile-manfilt$x : manfilt$o	; $(CC) -o $@ manfilt$o $(LDFLAGS)
 
-$(BINDIR)/atr2ansi$x :		atr2ansi$x		; $(INSTALL) $? $@
-$(BINDIR)/atr2html$x :		atr2html$x		; $(INSTALL) $? $@
-$(BINDIR)/atr2text$x :		atr2text$x		; $(INSTALL) $? $@
 $(BINDIR)/vile-crypt$x :	vile-crypt$x		; $(INSTALL) $? $@
 $(BINDIR)/vile-manfilt$x :	vile-manfilt$x		; $(INSTALL) $? $@
 

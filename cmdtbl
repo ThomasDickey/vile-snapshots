@@ -69,8 +69,8 @@
 #		i.e. not relative to the current position or screen.  It causes
 #		the "lastdotmark", ldmark to be set to dot before the move
 #		takes place.
-#	MINIBUF is a special case, commands which can be used in the
-#		minibuffer.  This includes MOTION and editing commands.
+#	NOMINI is a special case, MOTION commands which cannot be used in the
+#		minibuffer.  It implicitly includes FL and ABSM.
 #	GOAL signifies a motion that will attempt to retain the
 #		current column position after the motion.
 #	GLOBOK says the function can follow a global command
@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.228 2003/02/17 11:44:28 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.222 2002/02/03 20:36:25 tom Exp $
 #
 #
 
@@ -121,10 +121,10 @@ appendeol	REDO|UNDO
 	"append-chars-at-eol"		!FEWNAMES
 	'A'
 	<insert (CNT copies of) text after the end of line>
-backchar	MOTION|MINIBUF
+backchar	MOTION
 	"backward-character"		!FEWNAMES
 	<move CNT characters left, wrapping to previous line>
-backchar_to_bol	MOTION|MINIBUF
+backchar_to_bol	MOTION
 	"backward-character-to-bol"	!FEWNAMES
 	"left-arrow"
 	'h'
@@ -132,14 +132,14 @@ backchar_to_bol	MOTION|MINIBUF
 	'^?'
 	'FN-D'				KEY_Left
 	<move CNT characters left, stopping at beginning of line>
-backdelchar	REDO|UNDO|MINIBUF
+backdelchar	REDO|UNDO
 	"delete-previous-character"	!FEWNAMES
 	'X'
 	<delete CNT characters to the left>
 backhunt	ABSM|MOTION		!SMALLER
 	"hunt-backward"
 	<search backward for previously entered pattern>
-backhpage	MOTION
+backhpage	MOTION|NOMINI
 	"previous-half-page"		!FEWNAMES
 	"back-half-page"		!FEWNAMES
 	"up-half-page"			!FEWNAMES
@@ -160,36 +160,36 @@ backbline	MOTION|FL
 	"up-line-at-bol"		!FEWNAMES
 	'-'
 	<move up CNT lines, to first non-white character>
-backpage	MOTION
+backpage	MOTION|NOMINI
 	"previous-page"			!FEWNAMES
 	"back-page"			!FEWNAMES
 	'^B'
 	'FN-p'				KEY_Prior
 	<move up CNT full screens>
-back_row	GOAL|MOTION
+back_row	GOAL|MOTION|NOMINI
 	'^X-^U'
 	"backward-row"			!FEWNAMES
 	"previous-row"			!FEWNAMES
 	<move up CNT rows on the screen>
-backword	MOTION|MINIBUF
+backword	MOTION
 	"previous-word"			!FEWNAMES
 	"back-word"			!FEWNAMES
 	'B'
 	<move left by CNT \"big\" words>
-backviword	MOTION|MINIBUF
+backviword	MOTION
 	"previous-punctuated-word"	!FEWNAMES
 	"back-punctuated-word"		!FEWNAMES
 	'b'
 	<move left by CNT \"small\" words>
-backsearch	ABSM|MOTION
+backsearch	ABSM|MOTION|NOMINI
 	"search-reverse"		!FEWNAMES
 	'?'
 	<search backwards for fresh pattern>
-bcsrch		MOTION|MINIBUF
+bcsrch		MOTION
 	"backward-char-scan"		!FEWNAMES
 	'F'
 	<scan left on the line for the given character>
-bcsrch_to	MOTION|MINIBUF
+bcsrch_to	MOTION
 	"backward-char-scan-to"		!FEWNAMES
 	'T'
 	<scan left on the line up to but not including the given character>
@@ -252,7 +252,7 @@ comp_err_exps	NONE			OPT_FINDERR
 show_err_regex	NONE			OPT_FINDERR
 	"show-error-expressions"
 	<display error meta-expressions and resulting regular expressions>
-consearch	ABSM|MOTION
+consearch	ABSM|MOTION|NOMINI
 	"continue-search"		!FEWNAMES
 	'n'
 	<search for previous pattern in same direction as before>
@@ -465,7 +465,7 @@ dellocmode	NONE|(EXRCOK|EXTRA)
 	"setlno"
 	"unsetl"
 	<turn off the current buffer's local value of a mode setting>
-deltoeol	REDO|UNDO|MINIBUF
+deltoeol	REDO|UNDO
 	"delete-to-eol"			!FEWNAMES
 	'D'
 	<delete text from cursor to the end of line>
@@ -573,11 +573,11 @@ esc_func	NONE
 flow_control_enable	NONE		SYS_UNIX
 	"flow-control-enable"
 	<enable software flow-control (disable with arg)>
-fcsrch		MOTION|MINIBUF
+fcsrch		MOTION
 	"forward-char-scan"		!FEWNAMES
 	'f'
 	<scan right on the line for the given character>
-fcsrch_to	MOTION|MINIBUF
+fcsrch_to	MOTION
 	"forward-char-scan-up-to"	!FEWNAMES
 	't'
 	<scan right on the line up to but not including the given character>
@@ -621,7 +621,7 @@ finderrbuf	NONE			OPT_FINDERR
 firstbuffer	NONE
 	"rewind"
 	<go to first buffer in buffer list.  (does nothing if \"autobuffer\" set>
-firstnonwhite	MOTION|MINIBUF
+firstnonwhite	MOTION
 	"first-nonwhite"		!FEWNAMES
 	'^'
 	<move to the first non-whitespace character on line>
@@ -629,26 +629,26 @@ fisearch	NONE			OPT_ISRCH
 	"incremental-search"		!FEWNAMES
 	'^X-S'
 	<search forwards for a pattern entered character by character>
-flipchar	REDO|UNDO|MINIBUF
+flipchar	REDO|UNDO
 	"flip-character"		!FEWNAMES
 	'~'
 	<exchange upper and lowercase for the current character>
-forwdelchar	REDO|UNDO|MINIBUF
+forwdelchar	REDO|UNDO
 	"delete-next-character"		!FEWNAMES
 	'x'
 	'FN-d'				KEY_Delete
 	<delete CNT characters to the right>
-forwhpage	MOTION
+forwhpage	MOTION|NOMINI
 	"forward-half-page"		!FEWNAMES
 	"next-half-page"		!FEWNAMES
 	"down-half-page"		!FEWNAMES
 	'^D'
 	<move down CNT half screens>
-forwchar	MOTION|MINIBUF
+forwchar	MOTION
 	"forward-character"		!FEWNAMES
 	"next-character"		!FEWNAMES
 	<move CNT characters right, wrapping to next line>
-forwchar_to_eol	MOTION|MINIBUF
+forwchar_to_eol	MOTION
 	"forward-character-to-eol"	!FEWNAMES
 	"next-character-to-eol"		!FEWNAMES
 	"right-arrow"
@@ -656,14 +656,14 @@ forwchar_to_eol	MOTION|MINIBUF
 	'l'
 	'FN-C'				KEY_Right
 	<move CNT characters right, stopping at end of line>
-forwpage	MOTION
+forwpage	MOTION|NOMINI
 	"forward-page"			!FEWNAMES
 	"next-page"			!FEWNAMES
 	"down-page"			!FEWNAMES
 	'^F'
 	'FN-n'				KEY_Next
 	<move down CNT full screens>
-forw_row	GOAL|MOTION
+forw_row	GOAL|MOTION|NOMINI
 	'^X-^D'
 	"forward-row"			!FEWNAMES
 	"next-row"			!FEWNAMES
@@ -685,22 +685,22 @@ forwbline	MOTION|FL
 	'+'
 	'^M'
 	<move down CNT lines, to first non-white character>
-forwword	MOTION|MINIBUF
+forwword	MOTION
 	"forward-word"			!FEWNAMES
 	"next-word"			!FEWNAMES
 	'W'
 	<move right by CNT \"big\" words>
-forwviword	MOTION|MINIBUF
+forwviword	MOTION
 	"forward-punctuated-word"	!FEWNAMES
 	"next-punctuated-word"		!FEWNAMES
 	'w'
 	<move right by CNT \"small\" words>
-forwendw	MOTION|MINIBUF
+forwendw	MOTION
 	"forward-word-end"		!FEWNAMES
 	"next-word-end"			!FEWNAMES
 	'E'
 	<move right to the end of CNT \"big\" words>
-forwviendw	MOTION|MINIBUF
+forwviendw	MOTION
 	"forward-punctuated-word-end"	!FEWNAMES
 	"next-punctuated-word-end"	!FEWNAMES
 	'e'
@@ -708,7 +708,7 @@ forwviendw	MOTION|MINIBUF
 forwhunt	ABSM|MOTION		!SMALLER
 	"hunt-forward"			!FEWNAMES
 	<search forward for previously entered pattern>
-forwsearch	ABSM|MOTION
+forwsearch	ABSM|MOTION|NOMINI
 	"search-forward"		!FEWNAMES
 	'/'
 	'FN-f'				KEY_Find
@@ -722,7 +722,7 @@ matchfenceback	ABSM|MOTION		OPT_CFENCE
 	'^X-%'
 	<find partner for previous (,),[,],{,} on line>
 globals		NONE
-	"oglobals"			VILE_NEVER
+	"oglobals"			NEVER
 
 # the gotdotplus() function is mostly for internal use only, for the
 # stuttered operator commands, but it corresponds to the real vi '_'
@@ -734,35 +734,35 @@ godotplus	MOTION|FL
 # this function is for internal use only, for ex commands
 gomark		MOTION|FL|(RANGE|ZERO)
 
-gotobop		ABSM|MOTION
+gotobop		ABSM|MOTION|NOMINI
 	"previous-paragraph"		!FEWNAMES
 	"back-paragraph"		!FEWNAMES
 	"up-paragraph"			!FEWNAMES
 	'{'
 	<move to the start of a paragraph>
-gotoeop		ABSM|MOTION
+gotoeop		ABSM|MOTION|NOMINI
 	"forward-paragraph"		!FEWNAMES
 	"next-paragraph"		!FEWNAMES
 	"down-paragraph"		!FEWNAMES
 	'}'
 	<move to the end of a paragraph>
-gotobob		ABSM|MOTION		!SMALLER
+gotobob		ABSM|MOTION|NOMINI	!SMALLER
 	"beginning-of-file"		!FEWNAMES
 	"goto-beginning-of-file"	!FEWNAMES
 	'FN-H'				KEY_Home
 	<move to the top of the buffer>
-gotoeob		ABSM|MOTION		!SMALLER
+gotoeob		ABSM|MOTION|NOMINI	!SMALLER
 	"goto-end-of-file"		!FEWNAMES
 	"end-of-file"			!FEWNAMES
 	'FN-E'				KEY_End
 	<move to the end of the buffer>
-gotobol		MOTION|MINIBUF
+gotobol		MOTION
 	"goto-bol"			!FEWNAMES
 	"beginning-of-line"		!FEWNAMES
 	"bol"				!FEWNAMES
 	'0'
 	<move to the very beginning of the line>
-gotoeol		GOAL|MOTION|MINIBUF
+gotoeol		GOAL|MOTION
 	"goto-eol"			!FEWNAMES
 	"end-of-line"			!FEWNAMES
 	"eol"				!FEWNAMES
@@ -783,13 +783,13 @@ gotoeos		ABSM|MOTION|FL
 	"end-of-screen"			!FEWNAMES
 	'L'
 	<move to the CNT'th line from the bottom of the screen>
-gotobosec	ABSM|MOTION	
+gotobosec	ABSM|MOTION|NOMINI
 	"previous-section"		!FEWNAMES
 	"back-section"			!FEWNAMES
 	"up-section"			!FEWNAMES
 	'['
 	<move to the previous start of a \"section\">
-gotoeosec	ABSM|MOTION	
+gotoeosec	ABSM|MOTION|NOMINI
 	"forward-section"		!FEWNAMES
 	"next-section"			!FEWNAMES
 	"down-section"			!FEWNAMES
@@ -817,7 +817,7 @@ gotochr		ABSM|MOTION|RANGE	!SMALLER
 	"goto-char"
 	'^X-G'
 	<go to the CNT'th character.  unspecified CNT means end of buffer>
-gotocol		MOTION|MINIBUF
+gotocol		MOTION
 	"goto-column"			!FEWNAMES
 	'|'
 	<go to the CNT'th column on the line>
@@ -833,11 +833,11 @@ golinenmmark	MOTION|FL
 #  single quote -- can't use '''
 	'\047'
 	<move to line containing the mark, at first non-white character>
-goexactnmmark	MOTION	
+goexactnmmark	MOTION|NOMINI
 	"goto-named-mark-exact"		!FEWNAMES
 	'`'
 	<move to the given mark>
-gorectnmmark	MOTION|VL_RECT	
+gorectnmmark	MOTION|VL_RECT|NOMINI
 	"goto-named-mark-rectangular"	!FEWNAMES
 	'\0134'
 	<move to the mark, implying a rectangle if used with an operator>
@@ -879,7 +879,7 @@ insfile		REDO|UNDO|GLOBOK|(FROM|ZERO|NAMEDF)
 	"read-file"			!FEWNAMES
 	'^R'
 	<read the given file into the current buffer at the current line>
-insspace	REDO|UNDO|MINIBUF	!SMALLER
+insspace	REDO|UNDO		!SMALLER
 	"insert-space"			!FEWNAMES
 	<insert a space character at the cursor>
 insstring	REDO|UNDO		!SMALLER
@@ -899,7 +899,7 @@ showlength	DFLALL|FROM|TO|NOMOVE
 	"buffer-length"			!FEWNAMES
 	"="
 	<report number of lines in current buffer>
-lastnonwhite	MOTION|MINIBUF		!SMALLER
+lastnonwhite	MOTION			!SMALLER
 	"last-nonwhite"			!FEWNAMES
 	<move to the last non-whitespace character on line>
 listbuffers	NONE
@@ -1063,7 +1063,7 @@ opendown_no_aindent	REDO|UNDO|(FROM|ZERO)
 	"open-line-below-no-autoindent"	!FEWNAMES
 	'^A-o'
 	<insert text in CNT fresh blank line(s), after current, no autoindent>
-operopenrect	OPER|REDO|UNDO|GLOBOK|(RANGE)
+operopenrect	OPER|REDO|UNDO|GLOBOK|UNDO|(RANGE)
 	"open-rectangle"
 	'^A-r'
 	<open blank rectangular area specified by given motion>
@@ -1073,13 +1073,8 @@ operattrbold	OPER|GLOBOK|RANGE	OPT_SELECTIONS
 	<display text as bold in the region>
 operattrcaseq	REDO|UNDO|OPER|GLOBOK|RANGE	OPT_SELECTIONS
 	"attribute-cntl_a-sequences-til"	!FEWNAMES
-	"decode-attributes-til"			!FEWNAMES
 	'^A-A'
 	<display text as given by ^A sequences in the region>
-operattrencode	REDO|UNDO|OPER|GLOBOK|RANGE	OPT_SELECTIONS
-	"encode-attributes-til"			!FEWNAMES
-	'^A-E'
-	<encode attributes in the region as ^A sequences>
 operattrdirect	OPER|GLOBOK|RANGE	OPT_SELECTIONS&&OPT_FILTER
 	"attribute-directly"			!FEWNAMES
 	'^A-D'
@@ -1220,11 +1215,8 @@ operrshift	OPER|REDO|UNDO|GLOBOK|(RANGE)
 opersubst	OPER|REDO|UNDO|GLOBOK|(RANGE|EXTRA)
 	"substitute-til"		!FEWNAMES
 	"s"
-	<perform a text substitution over the region>
-opersubstall	OPER|REDO|UNDO|GLOBOK|(RANGE|EXTRA)
-	"substitute-all-til"	!FEWNAMES
 	'^X-s'
-	<perform an all-occurrence text substitution over the region>
+	<perform a text substitution over the region>
 opertrim	REDO|UNDO|GLOBOK|UNDO|(RANGE)
 	"trim-lines-til"		!FEWNAMES
 	"trim"
@@ -1260,9 +1252,6 @@ operwrite	OPER|(RANGE|BANG|FILE1|DFLALL|NOMOVE)
 	"write-til"			!FEWNAMES
 	'^W'
 	<write from region to the given file.  whole buffer by default>
-oper_wrenc	OPER|(RANGE|BANG|FILE1|DFLALL|NOMOVE)		OPT_SELECTIONS
-	"write-encoded-til"
-	<write attributed text from region to file.  whole buffer by default>
 overwritechars	REDO|UNDO
 	"overwrite-chars"		!FEWNAMES
 	'R'
@@ -1358,11 +1347,11 @@ remove_scheme	NONE			OPT_COLOR_SCHEMES
 reposition	GOAL			!SMALLER
 	"redraw-display"
 	<redraw, cursor at center, or CNT'th line, or CNT'th from end if neg>
-rep_csrch	MOTION|MINIBUF
+rep_csrch	MOTION
 	"repeat-char-scan"		!FEWNAMES
 	';'
 	<repeat the last forward character scan>
-replacechar	REDO|UNDO|MINIBUF
+replacechar	REDO|UNDO
 	"replace-character"		!FEWNAMES
 	'r'
 	<replace CNT characters at the cursor with the given character>
@@ -1379,7 +1368,7 @@ restwnd		NONE			!SMALLER
 reset_majormode	NONE			OPT_MAJORMODE
 	"reset-majormode"
 	<recompute $majormode for the current buffer>
-rev_csrch	MOTION|MINIBUF
+rev_csrch	MOTION
 	"reverse-char-scan"		!FEWNAMES
 	','
 	<repeat the last backward character scan>
@@ -1387,7 +1376,7 @@ risearch	NONE			OPT_ISRCH
 	"reverse-incremental-search"	!FEWNAMES
 	'^X-R'
 	<search backwards for a pattern entered character by character>
-revsearch	ABSM|MOTION	
+revsearch	ABSM|MOTION|NOMINI
 	"reverse-search"		!FEWNAMES
 	'N'
 	<search for previous pattern in opposite direction from before>
@@ -1397,16 +1386,16 @@ sel_all		NONE			OPT_SELECTIONS&&OPT_SEL_YANK
 sel_clear	NONE			OPT_SELECTIONS
 	"selection-clear"	!FEWNAMES
 	<clear text selection's highlight attributes>
-sel_motion	ABSM|MOTION		OPT_SELECTIONS
+sel_motion	ABSM|MOTION|NOMINI	OPT_SELECTIONS
 	"selection"
 	'^S'
 	'^A-S'
 	<move to selection.  if used with operator, region is the selection>
-scrforwsearch	ABSM|MOTION	
+scrforwsearch	ABSM|MOTION|NOMINI
 	"screen-search-forward"		!FEWNAMES
 	'^X-/'
 	<search forwards for pattern (word) under cursor>
-scrbacksearch	ABSM|MOTION	
+scrbacksearch	ABSM|MOTION|NOMINI
 	"screen-search-reverse"		!FEWNAMES
 	'^X-?'
 	<search backwards for pattern (word) under cursor>
@@ -1470,19 +1459,19 @@ setfillcol	NONE
 	"set-fill-column"
 	'^X-f'
 	<set the fillcol setting to CNT.  same as \"set fillcol=NN\">
-set_envvar	NONE			OPT_SHELL&&defined(HAVE_PUTENV)
+set_envvar	NONE			OPT_SHELL&&HAVE_PUTENV
 	"setenv"
 	"set-environment-variable"
 	<set and export a process environment variable>
-multimotion	MOTION			OPT_SELECTIONS
+multimotion	MOTION|NOMINI		OPT_SELECTIONS
 	"quoted-motion"			!FEWNAMES
 	'q'
 	'FN-s'				KEY_Select
 	<start (and end) a selection using multiple motions, CNT is type (1) >
-multimotionfullline	MOTION		OPT_SELECTIONS
+multimotionfullline	MOTION|NOMINI	OPT_SELECTIONS
 	"quoted-fullline-motion"	!FEWNAMES
 	<start (and end) a full-line selection using multiple motions (2) >
-multimotionrectangle	MOTION		OPT_SELECTIONS
+multimotionrectangle	MOTION|NOMINI	OPT_SELECTIONS
 	"quoted-rectangular-motion"	!FEWNAMES
 	'^A-q'
 	<start (and end) a rectangular selection using multiple motions (3) >
@@ -1593,7 +1582,7 @@ togglelistbuffers	NONE
 	"toggle-buffer-list"		!FEWNAMES
 	'*'
 	<show or hide the buffer list. give CNT to force showing all>
-twiddle		REDO|UNDO|MINIBUF	!SMALLER
+twiddle		REDO|UNDO		!SMALLER
 	"transpose-characters"		!FEWNAMES
 	<exchange the two characters under and to the left of the cursor>
 unbindkey	NONE			OPT_REBIND
@@ -1659,10 +1648,6 @@ usebuffer	NONE
 	"buffer"
 	"select-buffer"			!FEWNAMES
 	<switch to the given buffer; will not look for a file by that name>
-edit_buffer	NONE
-	"B"
-	"edit-buffer"			!FEWNAMES
-	<make or switch to the given buffer; will not look for a file by that name>
 usekreg		REDO
 	"use-register"			!FEWNAMES
 	'"'
@@ -1674,7 +1659,7 @@ visual		NONE
 	"visual"
 	<switch from non-existent exile mode back to visual mode.  unimplemented>
 vglobals	NONE
-	"ovglobals"			VILE_NEVER
+	"ovglobals"			NEVER
 viewfile	NONE
 	"view-file"
 	<bring given file or existing buffer into window, mark it \"view-only\">

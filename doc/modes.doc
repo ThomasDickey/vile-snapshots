@@ -107,43 +107,12 @@ To avoid the tediousness of this syntax, use the ~with and ~endwidth
 keywords, like so:
 
 	define-majormode perl
-	~with define-submode perl
+	    ~with define-submode perl
 	    preamble "^#.*perl\\>"
 	    suffixes "\\.pl$"
 	    shiftwidth 4
 	~endwith
 
-You can define several regions using ~with and (after the first) ~elsewith
-blocks.  Each block specifies a set of tokens which are substituted at the
-beginning of each line.  Each ~elsewith block should have a group identifier
-to distinguish it from the others.  The reason for providing multiple
-blocks is to implement complex fence-matching for different language features.
-
-For example, in the definition of cshmode, the symbols "fence-XXX" give
-patterns which vile can use to move the cursor from one if/elif/else/fi
-marker to the next as you press "%".  The other settings such as "suf"
-in the first block are settings that apply to the majormode itself:
-
-	define-mode csh
-	~with define-submode csh
-	    suf '\.\(csh[^/]*\|login\|logout\)$'
-	    pre '^#!\s*\/.*csh\>\(\s*-[a-z]\+\)*\s*$'
-	    filtername	'vile-sh-filt -k csh'
-	    comment-prefix	'^\s*#'
-	    comments	'^\s*#\s*$'
-	    fence-if	'^\s*\<if\>.*\<then\>'
-	    fence-elif	'^\s*\<else\s*if\>'
-	    fence-else	'^\s*\<else\>'
-	    fence-fi	'^\s*\<endif\>'
-	~elsewith define-submode csh group 'case'
-	    fence-if	'^\s*\<switch\>\s*(.*)'
-	    fence-elif	'^\s*\<case\>.*:'
-	    fence-else	'^\s*\<default\>\s*:'
-	    fence-fi	'^\s*\<endsw\>'
-	~elsewith define-submode csh group 'loop'
-	    fence-if	'^\s*\<foreach\s\+.*\|while\>\s*(.*)'
-	    fence-fi	'^\s*\<end\>'
-	~endwith
 
 
 The "define-majormode" command
@@ -218,41 +187,6 @@ solely by the define-submode command:
 		Regular expression, matched against the beginning of a
 		file (the first line) used to trigger association with
 		a majormode (e.g., "^!#.*\/perl[^a-z]").
-
-	filtername
-		A shell command telling which filter to call, and how to do
-		that.  The form of the command is limited, since it is
-		interpreted for internal calls:
-
-			{filter} {options}
-
-		where {filter} is the filename for the filter, e.g.,
-
-			vile-c-filt
-
-		and options include:
-
-			-k mode
-				The keyword filename, omitting ".keywords". 
-				For instance, the C filter vile-c-filt is used
-				for C, C++, JavaScript and Java by changing the
-				keyword file.
-			-q
-				Quit after loading the keyword definitions.
-			-t tabs
-				Set the tabstops, used in the imake filter
-				to check for coincidental matches between a
-				tab and spaces that are the same number of
-				columns.
-			-v
-			-vv
-				Debug traces, mainly to show which keyword
-				files are loaded, and what information is
-				parsed from them.
-
-		Other options may be implemented that are specific to a filter
-		program.  For instance, vile-c-filt recognizes a -p option to
-		mark preprocessor lines with an error (used for Java).
 
 	before
 	after
@@ -347,5 +281,5 @@ Note that the following are equivalent once you have defined the majormode "c":
 	define-submode c tabstop=8
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.11 2002/10/22 23:52:39 tom Exp $
+$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.9 2001/03/22 22:39:09 tom Exp $
 -------------------------------

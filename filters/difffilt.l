@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/difffilt.l,v 1.6 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/difffilt.l,v 1.5 2000/08/09 23:51:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of diff output
  */
@@ -17,6 +17,27 @@ static char *Header_attr;
 static char *Insert_attr;
 static char *Delete_attr;
 static char *Modify_attr;
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *input)
+{
+    yyin = input;
+
+    Marker_attr = class_attr("Marker");
+    Header_attr = class_attr("Header");
+    Insert_attr = class_attr("Insert");
+    Delete_attr = class_attr("Delete");
+    Modify_attr = class_attr("Modify");
+
+    BEGIN(INITIAL);
+    while (yylex() > 0) {
+    }
+}
 
 %}
 
@@ -42,26 +63,3 @@ MARKED		[^\n]*\n
 
 {MODIFY}		{ ECHO; BEGIN(MODIFY); }
 <MODIFY>{MARKED}	{ WriteToken(Modify_attr); BEGIN(INITIAL); }
-
-%%
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *inputs)
-{
-    yyin = inputs;
-
-    Marker_attr = class_attr("Marker");
-    Header_attr = class_attr("Header");
-    Insert_attr = class_attr("Insert");
-    Delete_attr = class_attr("Delete");
-    Modify_attr = class_attr("Modify");
-
-    BEGIN(INITIAL);
-    while (yylex() > 0) {
-    }
-}

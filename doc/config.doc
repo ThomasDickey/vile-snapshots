@@ -133,16 +133,13 @@ Complex syntax coloring
 =======================
 vile also supports a mix of both internal and external filters, which
 facilitates configuration of the editor with as few or as many internal
-filters as desired.  But before describing how this is achieved, note the
-breadth of the following table of editor filter names and language
-mappings:
+filters as desired.  Why this might be useful is explained shortly.  But
+first, study this list of editor filter names and language mappings:
 
     Builtin      External
     Filter Name  Filter Name      Colors These Language(s)/Files
     ===========  ===========      ==============================
     ada          vile-ada-filt    ada
-    as           vile-as-filt     GNU assembler (x86)
-    asm          vile-asm-filt    Microsoft ASM (x86)
     awk          vile-awk-filt    awk
     basic        vile-basic-filt  basic and visual basic (vb)
     bat          vile-bat-filt    Windows .bat files
@@ -154,13 +151,11 @@ mappings:
     diff         vile-diff-filt   output of diff command
     ecl          vile-ecl-filt    Prolog/ECLiPSe
     esql         vile-esql-filt   embedded SQL with C/C++.
-    est          vile-est-filt    Enscript syntax-descriptions
     fdl          vile-fdl-filt    forms definition language
-    html         vile-html-filt   HTML
+    html         vile-html-filt   html and xml
     imake        vile-imake-filt  imake files
-    info         vile-info-filt   GNU info files
     key          vile-key-filt    vile .keyword files
-    latex        vile-latex-filt  LaTeX
+    latex        vile-latex-filt  latex
     lex          vile-lex-filt    flex and lex
     lisp         vile-lisp-filt   lisp
     m4           vile-m4-filt     autoconf and m4
@@ -169,18 +164,14 @@ mappings:
     mms          vile-mms-filt    VMS make files
     nr           vile-nr-filt     nroff/troff files
     pas          vile-pas-filt    Pascal
-    pl           vile-pl-filt     Perl
-    pot          vile-pot-filt    gettext (.po) files
-    ps           vile-ps-filt     PostScript
+    pl           vile-pl-filt     perl
     py           vile-py-filt     python
     rc           vile-rc-filt     Windows resource (.rc) files
     rcs          vile-rcs-filt    RCS archives
     rexx         vile-rexx-filt   REXX
-    rpm          vile-rpm-filt    RPM .spec files
-    ruby         vile-ruby-filt   Ruby
     sccs         vile-sccs-filt   SCCS files
     sed          vile-sed-filt    sed scripts
-    sh           vile-sh-filt     csh, sh
+    sh           vile-sh-filt     csh, sh, pot (gettext message libraries)
     sml          vile-sml-filt    SML input text
     spell        vile-spell-filt  highlight misspelled words using ispell
                                     or spell (see filters/spell.rc)
@@ -189,21 +180,18 @@ mappings:
     tbl          vile-tbl-filt    vile's modetbl and cmdtbl files
     tc           vile-tc-filt     termcap and printcap files
     tcl          vile-tcl-filt    tcl/tk scripts
-    tex          vile-latex-filt  TeX
-    texi         vile-texi-filt   texinfo
     ti           vile-ti-filt     terminfo files
     txt          vile-txt-filt    various flavors of text files
     vile         vile-vile-filt   vile and vim macros
     vlog         vile-vlog-filt   verilog
-    xml          vile-html-filt   XML
     xres         vile-xres-filt   X resource files
     xs           vile-xs-filt     Perl extension source files
     yacc         vile-yacc-filt   yacc and bison
 
-As you might expect, when the "--with-builtin-filters" option is selected,
-all of the internal filters listed above are bound into the editor.  "Hey,
-wait a minute", you say, "I'll never use some of those filters--not in a
-hundred years." In that case, use this configure syntax:
+So, if the "--with-builtin-filters" option is selected, all of the
+internal filters listed above are bound into the editor.  "Wait a minute",
+you say, "I'll never use some of those filters--not in a hundred years."
+In that case, use this configure syntax:
 
 	--with-builtin-filters="<filter_list>"
 
@@ -215,24 +203,17 @@ For example:
 	make
 	make install
 
-The above commands:
+The above commands compile all filters as external executables, link 21
+filters into the editor, and copy the editor and external executables to an
+install tree [1].  Assuming the editor's startup file initiates syntax
+coloring [2], then at vile run time, the macro file filters.rc
+preferentially selects and executes internal filters when coloring a
+supported language or file format.  If the desired internal filter is not
+available, filters.rc starts a pipe and applies color attributes via the
+corresponsing external filter listed in the table above.
 
-    + compile vile [1],
-    + compile and link 21 filters into the final editor image,
-    + create the remaining, non-builtin filters as external executable
-      images, and
-    + copy the editor and external filters to an to an install tree [2].
-
-Assuming the editor's startup file initiates syntax coloring [3], then at
-vile run time, the macro file filters/filters.rc preferentially selects and
-executes internal filters when coloring a supported language or file
-format.  If a required internal filter is not available, filters.rc
-starts a pipe and applies color attributes via the corresponsing external
-filter listed in the table above.
-
-[1] Or xvile if you prefer.  See next topic.
-[2] Described below in the topic "Installing x(vile)".
-[3] Refer to the topics "Color basics" and "Syntax coloring" in vile.hlp
+[1] Described below in the topic "Installing x(vile)".
+[2] Refer to the topics "Color basics" and "Syntax coloring" in vile.hlp
 
 
 Building xvile
@@ -455,5 +436,5 @@ without shell support, but perhaps not (ymmv).
 
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.14 2003/02/15 16:00:46 tom Exp $
+$Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.9 2002/06/30 20:47:52 tom Exp $
 ------------------------

@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.259 2003/06/21 14:59:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.246 2002/02/04 01:26:50 tom Exp $
  *
  */
 
@@ -49,8 +49,7 @@ static int token_ended_line;	/* did the last token end at end of line? */
 typedef struct locals {
     struct locals *next;
     char *name;
-    char *m_value;		/* malloc'd value */
-    const char *p_value;	/* pure value */
+    char *value;
 } LOCALS;
 
 typedef struct {
@@ -605,7 +604,7 @@ parse_linespec(const char *s, LINEPTR * markptr)
 	    if (status)
 		lp = DOT.l;
 	}
-#if VILE_MAYBE
+#if PATTERNS
 	else if (*s == '/' || *s == '?') {	/* slash means do a search */
 	    /* put a null at the end of the search pattern */
 	    t = parseptrn(s);
@@ -750,9 +749,6 @@ docmd(char *cline, int execflag, int f, int n)
     char *token;		/* next token off of command line */
     const CMDFUNC *cfp;
 
-    TRACE((T_CALLED "docmd(cline=%s, execflag=%d, f=%d, n=%d)\n",
-	   str_visible(cline), execflag, f, n));
-
     set_end_string(EOS);
     oldestr = execstr;		/* save ptr to starting command string to execute */
     execstr = cline;		/* and change execstr to the new one */
@@ -760,7 +756,7 @@ docmd(char *cline, int execflag, int f, int n)
     do {
 	if ((token = mac_tokval(&tok)) == 0) {	/* grab first token */
 	    execstr = oldestr;
-	    returnCode(FALSE);
+	    return FALSE;
 	}
 	if (*token == ':') {	/* allow leading ':' on line */
 	    register int j;
@@ -777,7 +773,7 @@ docmd(char *cline, int execflag, int f, int n)
 	/* and now get the command to execute */
 	if ((token = mac_tokval(&tok)) == 0) {
 	    execstr = oldestr;
-	    returnCode(FALSE);
+	    return FALSE;
 	}
     }
 
@@ -801,7 +797,7 @@ docmd(char *cline, int execflag, int f, int n)
 
     execstr = oldestr;
     tb_free(&tok);
-    returnCode(status);
+    return status;
 }
 
 /*
@@ -848,11 +844,8 @@ execute(const CMDFUNC * execfunc, int f, int n)
 #else
 	mlwarn("[Not a command]");	/* complain             */
 #endif
-	returnCode(FALSE);
+	return FALSE;
     }
-
-    TRACE((T_CALLED "execute(execfunc=%p(%s), f=%d, n=%d)\n",
-	   execfunc, execfunc->c_name ? execfunc->c_name : "?", f, n));
 
     flags = execfunc->c_flags;
 
@@ -868,11 +861,11 @@ execute(const CMDFUNC * execfunc, int f, int n)
 	    /* undoable command can't be permitted when read-only */
 	    if (!(flags & VIEWOK)) {
 		if (b_val(curbp, MDVIEW))
-		    returnCode(rdonly());
+		    return rdonly();
 #ifdef MDCHK_MODTIME
 		if (!b_is_changed(curbp) &&
 		    !ask_shouldchange(curbp))
-		    returnCode(FALSE);
+		    return FALSE;
 #endif
 	    }
 	    if (!kbd_replaying(FALSE))
@@ -916,7 +909,7 @@ execute(const CMDFUNC * execfunc, int f, int n)
 
     curwp->w_tentative_lastdot = DOT;
 
-    returnCode(status);
+    return status;
 }
 
 /*
@@ -1063,8 +1056,7 @@ get_token2(char *src, TBUFF ** tok, int eolchar, int *actual)
 	    chr = *src++;	/* record the character */
 	}
 	if (first && shell && chr == DQUOTE) {
-	    /* eat the leading quote if we're re-gluing a shell command */
-	    /* EMPTY */ ;
+	    ;			/* eat the leading quote if we're re-gluing a shell command */
 	} else {
 	    tb_append(tok, chr);
 	}
@@ -1161,10 +1153,10 @@ mac_tokval(TBUFF ** tok)
     if (mac_token(tok) != 0) {
 	/* evaluate the token */
 	(void) tb_scopy(tok, tokval(tb_values(*tok)));
-	return (tb_values(*tok));
+	return tb_values(*tok);
     }
     tb_free(tok);
-    return (0);
+    return 0;
 }
 
 /*
@@ -1190,7 +1182,6 @@ decode_parameter_info(TBUFF * tok, PARAM_INFO * result)
     char name[NSTRING];
     char text[NSTRING];
     char *s = vl_strncpy(name, tb_values(tok), sizeof(name));
-    int code;
 
     if ((s = strchr(s, '=')) != 0) {
 	vl_strncpy(text, tokval(s + 1), sizeof(text));
@@ -1201,9 +1192,8 @@ decode_parameter_info(TBUFF * tok, PARAM_INFO * result)
     if ((s = strchr(name, ':')) != 0)
 	*s++ = EOS;
 
-    code = choice_to_code(fsm_paramtypes_choices, name, strlen(name));
-    /* split-up to work around gcc bug */
-    result->pi_type = (PARAM_TYPES) code;
+    result->pi_type = choice_to_code(fsm_paramtypes_choices,
+				     name, strlen(name));
     if (result->pi_type >= 0) {
 	result->pi_text = *text ? strmalloc(text) : 0;
 #if OPT_ENUM_MODES
@@ -1228,6 +1218,9 @@ setup_macro_buffer(TBUFF * name, int flag)
 #endif
 #if OPT_ONLINEHELP
     TBUFF *helpstring = 0;	/* optional help string */
+#endif
+#if OPT_MAJORMODE
+    VALARGS args;
 #endif
     char bname[NBUFN];		/* name of buffer to use */
     BUFFER *bp;
@@ -1261,7 +1254,7 @@ setup_macro_buffer(TBUFF * name, int flag)
 	if (!cf)
 	    return no_memory("registering procedure name");
 
-#ifdef CC_CANNOT_INIT_UNIONS
+#if CC_CANNOT_INIT_UNIONS
 	cf->c_union = (void *) bp;
 #else
 	cf->cu.c_buff = bp;
@@ -1308,11 +1301,15 @@ setup_macro_buffer(TBUFF * name, int flag)
 
 	if (insert_namebst(tb_values(name), cf, FALSE) != TRUE)
 	    return FALSE;
-	tb_copy(&(bp->b_procname), name);
     }
 #endif /* OPT_NAMEBST */
 
-    set_vilemode(bp);
+#if OPT_MAJORMODE
+    if (find_mode(bp, "vilemode", FALSE, &args) == TRUE) {
+	(void) set_mode_value(bp, "vilemode", FALSE, TRUE, FALSE, &args,
+			      (char *) 0);
+    }
+#endif
 
     /* and set the macro store pointers to it */
     macrobuffer = bp;
@@ -1407,6 +1404,14 @@ execproc(int f, int n)
 
 #endif
 
+static char *
+skip_space_tab(char *src)
+{
+    while (isBlank(*src))
+	++src;
+    return src;
+}
+
 #if ! SMALLER
 /*
  * Execute the contents of a buffer of commands
@@ -1455,7 +1460,6 @@ free_all_whiles(WHLOOP * wp)
 #define DDIR_INCOMPLETE  1
 #define DDIR_FORCE       2
 #define DDIR_HIDDEN      3
-#define DDIR_QUIET	 4
 
 /*
  * When we get a "~local", we save the variable's name and its value.  Save the
@@ -1491,9 +1495,8 @@ push_variable(char *name)
     p = typealloc(LOCALS);
     p->next = ifstk.locals;
     p->name = strmalloc(name);
-    p->m_value = 0;
-    p->p_value = tokval(name);
-    if (p->p_value == error_val) {
+    p->value = tokval(name);
+    if (p->value == error_val) {
 	/* special case: so we can delete vars */
 	if (toktyp(name) != TOK_TEMPVAR) {
 	    free(p->name);
@@ -1503,15 +1506,14 @@ push_variable(char *name)
     } else {
 	/* FIXME: this won't handle embedded nulls */
 	if (find_mode(curbp, (*name == '$') ? (name + 1) : name, -TRUE, &args)
-	    && must_quote_token(p->p_value, strlen(p->p_value))) {
+	    && must_quote_token(p->value, strlen(p->value))) {
 	    TBUFF *tmp = 0;
-	    append_quoted_token(&tmp, p->p_value, strlen(p->p_value));
+	    append_quoted_token(&tmp, p->value, strlen(p->value));
 	    tb_append(&tmp, EOS);
-	    p->p_value = tb_values(tmp);
+	    p->value = tb_values(tmp);
 	    free(tmp);
 	} else {
-	    p->m_value = strmalloc(p->p_value);
-	    p->p_value = 0;
+	    p->value = strmalloc(p->value);
 	}
     }
 
@@ -1527,23 +1529,17 @@ static void
 pop_variable(void)
 {
     LOCALS *p = ifstk.locals;
-    const char *value = (p->p_value != 0) ? p->p_value : p->m_value;
-
-    TRACE((T_CALLED "pop_variable()\n"));
 
     ifstk.locals = p->next;
-    TPRINTF(("...pop_variable(%s) %s\n", p->name, value));
-    if (!strcmp(value, error_val)) {
+    TPRINTF(("...pop_variable(%s) %s\n", p->name, p->value));
+    if (!strcmp(p->value, error_val)) {
 	rmv_tempvar(p->name);
     } else {
-	set_state_variable(p->name, value);
-	if (p->m_value != 0)
-	    free(p->m_value);
+	set_state_variable(p->name, p->value);
+	free(p->value);
     }
     free(p->name);
     free((char *) p);
-
-    returnVoid();
 }
 
 static void
@@ -1577,32 +1573,21 @@ pop_buffer(IFSTK * save)
     with_prefix = ifstk.prefix;
 }
 
-/*
- * Lookup a directory name.
- *	*cmdp points to a command
- *	length is the nominal maximum length (*cmdp is null-terminated)
- */
 DIRECTIVE
-dname_to_dirnum(char **cmdpp, int length)
+dname_to_dirnum(const char *cmdp, size_t length)
 {
     DIRECTIVE dirnum = D_UNKNOWN;
-    int n;
-    int code;
-    const char *ptr = (*cmdpp);
 
     if ((--length > 0)
-	&& (*ptr++ == DIRECTIVE_CHAR)) {
+	&& (*cmdp++ == DIRECTIVE_CHAR)) {
+	size_t n;
 	for (n = 0; n < length; n++) {
-	    if (!isAlnum(ptr[n]))
+	    if (!isAlnum(cmdp[n]))
 		length = n;
 	}
-	code = choice_to_code(fsm_directive_choices, ptr, length);
-	/* split-up to work around gcc bug */
-	dirnum = (DIRECTIVE) code;
+	dirnum = choice_to_code(fsm_directive_choices, cmdp, length);
 	if (dirnum < 0)
 	    dirnum = D_UNKNOWN;
-	else
-	    *cmdpp += (1 + length);
     }
 
     return dirnum;
@@ -1635,12 +1620,6 @@ navigate_while(LINEPTR * lpp, WHLOOP * whlist)
     return FALSE;
 }
 
-/*
- * Do the bookkeeping to begin a directive.
- *	*cmdp points to the first token after the directive name
- *	dirnum is the number of the directive
- *	whlish is state/data for while/loops
- */
 static int
 begin_directive(char **const cmdpp,
 		DIRECTIVE dirnum,
@@ -1760,7 +1739,7 @@ begin_directive(char **const cmdpp,
 
 	    /* grab label to jump to */
 	    *cmdpp = (char *) get_token(*cmdpp, &label, EOS, (int *) 0);
-#if VILE_MAYBE
+#if MAYBE
 	    /* i think a simple re-eval would get us variant
 	     * targets, i.e. ~goto %somelabel.  */
 	    tb_scopy(label, tokval(tb_values(label)));
@@ -1788,10 +1767,6 @@ begin_directive(char **const cmdpp,
 
     case D_HIDDEN:
 	status = DDIR_HIDDEN;
-	break;
-
-    case D_QUIET:
-	status = DDIR_QUIET;
 	break;
 
     case D_ELSEWITH:
@@ -1877,7 +1852,7 @@ setup_dobuf(BUFFER *bp, WHLOOP ** result)
 	if (i <= 0)
 	    continue;
 
-	dirnum = dname_to_dirnum(&cmdp, i);
+	dirnum = dname_to_dirnum(cmdp, (size_t) i);
 	if (dirnum == D_WHILE ||
 	    dirnum == D_BREAK ||
 	    dirnum == D_ENDWHILE) {
@@ -1933,8 +1908,8 @@ setup_dobuf(BUFFER *bp, WHLOOP ** result)
     return status;
 }
 #else
-#define dname_to_dirnum(cmdpp,length) \
-		((*cmdpp)[0] == DIRECTIVE_CHAR && !strcmp((*cmdpp)+1, "endm") \
+#define dname_to_dirnum(cmdp,length) \
+		(cmdp[0] == DIRECTIVE_CHAR && !strcmp(cmdp+1, "endm") \
 		? D_ENDM \
 		: D_UNKNOWN)
 #define push_buffer(save)	/* nothing */
@@ -1943,10 +1918,10 @@ setup_dobuf(BUFFER *bp, WHLOOP ** result)
 
 #if OPT_TRACE && !SMALLER
 static const char *
-TraceIndent(int level, char *cmdp, int length)
+TraceIndent(int level, const char *cmdp, size_t length)
 {
     static const char indent[] = ".  .  .  .  .  .  .  .  ";
-    switch (dname_to_dirnum(&cmdp, length)) {
+    switch (dname_to_dirnum(cmdp, length)) {
     case D_ELSE:		/* FALLTHRU */
     case D_ELSEIF:		/* FALLTHRU */
     case D_ENDIF:
@@ -2000,7 +1975,7 @@ compute_indent(char *cmd, int length, int *indent, int *indstate)
 	int next = 0;
 
 	cmd = skip_blanks(cmd);
-	dirnum = dname_to_dirnum(&cmd, (length - (cmd - base)));
+	dirnum = dname_to_dirnum(cmd, (size_t) (length - (cmd - base)));
 	switch (dirnum) {
 	case D_IF:		/* FALLTHRU */
 	case D_WHILE:		/* FALLTHRU */
@@ -2064,14 +2039,10 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
     char *cmdp;			/* text to execute */
     int save_clhide = clhide;
     int save_no_errs = no_errs;
-    int save_quiet = quiet;
     int indent = 0;
     int indstate = 0;
 
     static BUFFER *dobuferrbp = 0;
-
-    TRACE((T_CALLED "perform_dobuf(bp=%p, whlist=%p) buffer '%s'\n",
-	   bp, whlist, bp->b_bname));
 
     bp->b_inuse++;
 
@@ -2120,9 +2091,8 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	    src = skip_space_tab(cmdp);
 	    dst = cmdp;
 	    /* compress out extra leading whitespace */
-	    while ((*dst++ = *src++) != EOS) {
-		;
-	    }
+	    while ((*dst++ = *src++) != EOS)
+		/* EMPTY */ ;
 	    linlen -= (size_t) (src - dst);
 	}
 	glue = 0;
@@ -2158,7 +2128,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	if (tracemacros) {
 	    mlforce("<<<%s:%d/%d:%s>>>", bp->b_bname,
 		    ifstk.level, ifstk.disabled,
-		    str_visible(cmdp));
+		    cmdp);
 	    (void) update(TRUE);
 
 	    /* and get the keystroke */
@@ -2175,12 +2145,12 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	       bp->b_bname, ifstk.level, ifstk.disabled,
 	       ifstk.fired ? '+' : ' ',
 	       TRACE_INDENT(ifstk.level, cmdp),
-	       str_visible(cmdp)));
+	       cmdp));
 #endif
 
 	if (*cmdp == DIRECTIVE_CHAR) {
 
-	    dirnum = dname_to_dirnum(&cmdp, (int) linlen);
+	    dirnum = dname_to_dirnum(cmdp, linlen);
 	    if (dirnum == D_UNKNOWN) {
 		mlforce("[Unknown directive \"%s\"]", cmdp);
 		status = FALSE;
@@ -2224,9 +2194,9 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	if (dirnum != D_UNKNOWN) {
 	    int code;
 
-	  next_directive:
 	    /* move past directive */
-	    cmdp = skip_space_tab(cmdp);
+	    while (*cmdp && !isBlank(*cmdp))
+		++cmdp;
 
 	    code = begin_directive(&cmdp, dirnum, whlist, bp, &lp);
 	    if (code == DDIR_FAILED) {
@@ -2238,26 +2208,10 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 		status = TRUE;	/* not exactly an error */
 		break;
 	    } else if (code == DDIR_FORCE) {
-		TRACE(("~force\n"));
 		no_errs = TRUE;
 	    } else if (code == DDIR_HIDDEN) {
-		TRACE(("~hidden\n"));
+		no_errs = TRUE;
 		clhide = TRUE;
-	    } else if (code == DDIR_QUIET) {
-		TRACE(("~quiet\n"));
-		quiet = TRUE;
-	    }
-
-	    /* check if next word is also a directive */
-	    cmdp = skip_space_tab(cmdp);
-	    if (*cmdp == DIRECTIVE_CHAR) {
-		dirnum = dname_to_dirnum(&cmdp, (int) linlen);
-		if (dirnum == D_UNKNOWN) {
-		    mlforce("[Unknown directive \"%s\"]", cmdp);
-		    status = FALSE;
-		    break;
-		}
-		goto next_directive;
 	    }
 	} else if (*cmdp != DIRECTIVE_CHAR) {
 	    /* prefix lines with "WITH" value, if any */
@@ -2282,7 +2236,6 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 
 	clhide = save_clhide;
 	no_errs = save_no_errs;
-	quiet = save_quiet;
 
 	if (status == TRUE) {
 	    dobuferrbp = NULL;
@@ -2314,7 +2267,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 
     if (--(bp->b_inuse) < 0)
 	bp->b_inuse = 0;
-    returnCode(status);
+    return status;
 }
 
 /*
@@ -2385,27 +2338,22 @@ dobuf(BUFFER *bp, int limit)
 int
 do_source(char *fname, int n, int optional)
 {
-    int status = TRUE;		/* return status of name query */
+    register int status;	/* return status of name query */
     char *fspec;		/* full file spec */
-
-    TRACE((T_CALLED "do_source(%s, %d, %d)\n", TRACE_NULL(fname), n, optional));
 
     /* look for the file in the configuration paths */
     fspec = cfg_locate(fname, LOCATE_SOURCE);
 
     /* nonexistant */
-    if (fspec == NULL) {
-	if (!optional)
-	    status = no_such_file(fname);
-    } else {
+    if (fspec == NULL)
+	return optional ? TRUE : no_such_file(fname);
 
-	/* do it */
-	while (n-- > 0)
-	    if ((status = dofile(fspec)) != TRUE)
-		break;
-    }
+    /* do it */
+    while (n-- > 0)
+	if ((status = dofile(fspec)) != TRUE)
+	    return status;
 
-    returnCode(status);
+    return TRUE;
 }
 
 #if ! SMALLER
@@ -2477,10 +2425,8 @@ dofile(char *fname)
     int clobber = FALSE;
     int original;
 
-    TRACE((T_CALLED "dofile(%s)\n", TRACE_NULL(fname)));
-
     if (fname == 0 || *fname == EOS)
-	returnCode(no_file_found());
+	return no_file_found();
 
     /*
      * Check first for the name, assuming it's a filename.  If we don't
@@ -2488,7 +2434,7 @@ dofile(char *fname)
      */
     if ((bp = find_b_file(fname)) == 0) {
 	if ((bp = make_bp(fname, 0)) == 0)
-	    returnCode(FALSE);
+	    return FALSE;
 	clobber = TRUE;
     }
 
@@ -2518,7 +2464,7 @@ dofile(char *fname)
 	else
 	    set_b_lineno(bp, original);
     }
-    returnCode(status);
+    return status;
 }
 
 /*

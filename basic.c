@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.119 2003/07/27 19:01:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.117 2002/02/03 23:25:02 tom Exp $
  *
  */
 
@@ -188,33 +188,29 @@ forwchar(int f, int n)
 int
 forwchar_to_eol(int f, int n)
 {
-    int rc = TRUE;
     int nwas = n;
     int lim;
-
     if (f == FALSE)
 	n = 1;
-    if (n < 0) {
-	rc = backchar_to_bol(f, -n);
-    } else if (n != 0) {
+    if (n < 0)
+	return backchar_to_bol(f, -n);
+    if (n == 0)
+	return TRUE;
 
-	/* normally, we're confined to the text on the line itself.  if
-	   we're doing an opcmd, then we're allowed to move to the newline
-	   as well, to take care of the internal cases:  's', 'x', and '~'. */
-	if (doingopcmd || insertmode)
-	    lim = llength(DOT.l);
+    /* normally, we're confined to the text on the line itself.  if
+       we're doing an opcmd, then we're allowed to move to the newline
+       as well, to take care of the internal cases:  's', 'x', and '~'. */
+    if (doingopcmd || insertmode)
+	lim = llength(DOT.l);
+    else
+	lim = llength(DOT.l) - 1;
+    do {
+	if (DOT.o >= lim)
+	    return n != nwas;	/* return ok if we moved at all */
 	else
-	    lim = llength(DOT.l) - 1;
-	do {
-	    if (DOT.o >= lim) {
-		rc = (n != nwas);	/* return ok if we moved at all */
-		break;
-	    } else {
-		DOT.o++;
-	    }
-	} while (--n != 0);
-    }
-    return rc;
+	    DOT.o++;
+    } while (--n != 0);
+    return TRUE;
 }
 
 /*
@@ -1169,7 +1165,7 @@ can_set_nmmark(int c)
 }
 
 static int
-get_nmmark(int c, MARK *markp)
+get_nmmark(int c, MARK * markp)
 {
     int result = TRUE;
 
@@ -1232,11 +1228,7 @@ setnmmark(int f GCC_UNUSED, int n GCC_UNUSED)
     }
 
     if (curbp->b_nmmarks == NULL) {
-
-	beginDisplay();
 	curbp->b_nmmarks = typeallocn(struct MARK, NMARKS);
-	endofDisplay();
-
 	if (curbp->b_nmmarks == NULL)
 	    return no_memory("named-marks");
 	for (i = 0; i < NMARKS; i++) {

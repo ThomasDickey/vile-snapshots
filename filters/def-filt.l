@@ -1,6 +1,6 @@
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/def-filt.l,v 1.3 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/def-filt.l,v 1.2 2001/12/26 20:49:13 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of M$ linker-definition
  * input text.
@@ -20,9 +20,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *inputs)
+do_filter(FILE *input)
 {
-    yyin = inputs;
+    yyin = input;
 
     Comment_attr = class_attr(NAME_COMMENT);
     Number_attr  = class_attr(NAME_NUMBER);

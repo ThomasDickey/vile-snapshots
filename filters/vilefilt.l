@@ -1,12 +1,9 @@
 %s NORMAL ACTION
 
-%o6000
-%a3000
-
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.26 2003/06/21 15:03:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.21 2002/07/04 20:56:32 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -24,9 +21,54 @@ static char *Keyword_attr;
 static char *Number_attr;
 static char *String_attr;
 
-static char * command_attr(char *text);
-static int is_funckey(const char *text);
-static int is_prepro(char *text, int len);
+static int
+is_prepro(char *text, int len)
+{
+    if (vile_keywords) {
+	char *next = skip_blanks(text);
+	int code = dname_to_dirnum(next, (size_t)(len - (next - text)));
+	return code >= 0;
+    }
+    return 1;
+}
+
+static char *
+command_attr(char *text)
+{
+    if (vile_keywords) {
+	return engl2fnc(text) != 0 ? Keyword_attr : "";
+    }
+    return keyword_attr(text);
+}
+
+static int
+is_funckey(char *text)
+{
+    return (!strncmp(text, "FN-", 3));
+}
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *input)
+{
+    yyin = input;
+
+    Action_attr  = class_attr(NAME_ACTION);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Error_attr   = class_attr(NAME_ERROR);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    Number_attr  = class_attr(NAME_NUMBER);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    BEGIN(NORMAL);
+    while (yylex() > 0) {
+    }
+}
 
 /*
  * With regard to the comment macros defined below, note that QUOTECMT1
@@ -96,57 +138,3 @@ SPACE		;
 {DSTRING}	{ WriteToken(String_attr); }
 
 {QUOTECMT2}	{ WriteToken(Comment_attr); }
-
-"!"[^\n]*	{ WriteToken(Action_attr); }
-
-%%
-
-static int
-is_prepro(char *text, int len)
-{
-    if (vile_keywords) {
-	char *next = skip_blanks(text);
-	int code = dname_to_dirnum(&next, (len - (next - text)));
-	return code >= 0;
-    }
-    return 1;
-}
-
-static char *
-command_attr(char *text)
-{
-    if (vile_keywords) {
-	static char none[] = "";
-	return engl2fnc(text) != 0 ? Keyword_attr : none;
-    }
-    return keyword_attr(text);
-}
-
-static int
-is_funckey(const char *text)
-{
-    return (!strncmp(text, "FN-", 3));
-}
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *inputs)
-{
-    yyin = inputs;
-
-    Action_attr  = class_attr(NAME_ACTION);
-    Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    BEGIN(NORMAL);
-    while (yylex() > 0) {
-    }
-}

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.4 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.3 2002/05/14 00:06:22 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VeriLog
  * program.
@@ -21,7 +21,43 @@ static char *Number_attr;
 static char *Preproc_attr;
 static char *String_attr;
 
-static void do_define(char *string);
+static void
+do_define(char *string)
+{
+    char *keydef = "`define";
+    int lendef = 7;
+
+    flt_puts(string, lendef, keyword_attr(keydef));
+    for (string += lendef; isspace(CharOf(*string)); string++)
+	flt_putc(*string);
+    string--;
+    *string = *keydef;
+    insert_keyword(string++, Ident2_attr, 0);
+    flt_puts(string, strlen(string), Ident2_attr);
+}
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *input)
+{
+    yyin = input;
+    Comment_attr = class_attr(NAME_COMMENT);
+    Error_attr   = class_attr(NAME_ERROR);
+    Ident_attr   = class_attr(NAME_IDENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    Number_attr  = class_attr(NAME_NUMBER);
+    Preproc_attr = class_attr(NAME_PREPROC);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    BEGIN(CODE);
+    while (yylex() > 0) {
+    }
+}
 
 %}
 
@@ -58,43 +94,3 @@ DSTRING		\"(\\.|[^"\\])*\"
 <COMMENT>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(CODE); }
 
 {DSTRING}		{ WriteToken(String_attr); }
-
-%%
-
-static void
-do_define(char *string)
-{
-    char *keydef = "`define";
-    int lendef = 7;
-
-    flt_puts(string, lendef, keyword_attr(keydef));
-    for (string += lendef; isspace(CharOf(*string)); string++)
-	flt_putc(*string);
-    string--;
-    *string = *keydef;
-    insert_keyword(string++, Ident2_attr, 0);
-    flt_puts(string, strlen(string), Ident2_attr);
-}
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *inputs)
-{
-    yyin = inputs;
-    Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident_attr   = class_attr(NAME_IDENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
-    Preproc_attr = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    BEGIN(CODE);
-    while (yylex() > 0) {
-    }
-}

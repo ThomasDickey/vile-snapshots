@@ -410,7 +410,6 @@ State Variables
 
 			athena      -> xvile built with Athena widgets
 			curses      -> editor uses curses terminal driver
-			locale      -> editor uses system's LC_CTYPE locale
 			motif       -> xvile built with Motif libraries
 			nextaw      -> xvile built with Athena widgets (NeXtaw)
 			noshell     -> shell commands are disabled
@@ -553,9 +552,7 @@ State Variables
 	$majormode      [READ ONLY] Current majormode, if any.
 
 	$majormode-hook	name of the hook to run when attempting to determine
-			the majormode for the current buffer.  If this is not
-			defined, vile uses the prefixes and suffixes values
-			to decide.
+			the majormode for the current buffer.
 
 	$match          [READ ONLY] After a successful search, contains
 			the text that matched the search pattern.
@@ -595,9 +592,6 @@ State Variables
 
 	$pathname       [READ ONLY] current "path-like" word, under the
 			cursor.
-
-	$pathname-separator separates levels of directory names in a path.
-			Usually this is '/', for Unix.
 
 	$pending        [READ ONLY]  Boolean which is true when the user
 			has "typed ahead", i.e. there are waiting keystrokes.
@@ -808,22 +802,12 @@ Functions
 	    &or	    "B1" "B2"	    Return logical OR of "B1" and "B2".
 
 	    &equal  "N1" "N2"	    Is "N1" numerically equal to "N2"?
-	    &geq    "N1" "N2"	    Is "N1" numerically not less than "N2"?
+	    &less   "N1" "N2"	    Is "N1" numerically less than "N2"?
 	    &greater "N1" "N2"	    Is "N1" numerically greater than "N2"?
-	    &gt	    "N1" "N2"	    (same as &greater)
-	    &leq    "N1" "N2"	    Is "N1" numerically not greater than "N2"?
-	    &lessthan "N1" "N2"     Is "N1" numerically less than "N2"?
-	    &lt	    "N1" "N2"	    (same as &lessthan)
-	    &neq    "N1" "N2"	    Is "N1" numerically not equal to "N2"?
 
 	    &sequal "S1" "S2"	    Is "S1" the same string as "S2"?
-	    &sgeq   "S1" "S2"	    Is "S1" lexically not less than "S2"?
-	    &sgreater "S1" "S2"     Is "S1" lexically greater than "S2"?
-	    &sgt    "S1" "S2"       (same as &slessthan)
-	    &sleq   "S1" "S2"       Is "S1" lexically not greater than "S2"?
-	    &slessthan "S1" "S2"    Is "S1" lexically less than "S2"?
-	    &slt    "S1" "S2"       (same as &slessthan)
-	    &sneq   "S1" "S2"       Is "S1" lexically not equal to "S2"?
+	    &sless  "S1" "S2"	    Is "S1" lexically less than "S2"?
+	    &sgreater "S1" "S2"     Is "S1" lexically greater or equal to "S2"?
 
 	    &readable "S"
 	    &rd	    "S"		    Is the named file "S" readable?
@@ -973,11 +957,6 @@ Directives
 	completion of the macro, after the current position has been restored
 	from the values saved with the ~local directive.
 
-    ~quiet
-    ------
-    	Rather than suppress all screen updates, you may suppress any messages
-	that are written as the command progresses.
-
     ~if, ~elseif, ~else, and ~endif
     ------------------------------
 	These control execution of macro commands in the expected manner.
@@ -1103,8 +1082,8 @@ Directives
 	variables and the state variables shown with show-variables.  Note
 	that setting certain variables, such as the cursor position, will
 	have side effects, i.e., modifying the display.  If these are
-	distracting, use ~hidden or ~quiet to suppress display updates until
-	the macro completes.
+	distracting, use ~hidden to suppress display updates until the
+	macro completes.
 
 	[1] Subject to the limitations described above for "Mode
 	variables".  Namely, "global values of the editor modes are not
@@ -1450,6 +1429,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.89 2003/05/05 21:56:12 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.84 2002/05/11 00:58:23 cmorgan Exp $
 -----------------------------------
 

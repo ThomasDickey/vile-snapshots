@@ -5,7 +5,7 @@
  *	included in main.c
  *
  *	Copyright (c) 1990 by Paul Fox
- *	Copyright (c) 1995-2003 by Paul Fox and Thomas Dickey
+ *	Copyright (c) 1995-2002 by Paul Fox and Thomas Dickey
  *
  *	See the file "cmdtbl" for input data formats, and "estruct.h" for
  *	the output structures.
@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.130 2003/05/27 00:54:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.123 2002/06/26 00:27:58 tom Exp $
  *
  */
 
@@ -32,6 +32,10 @@
 #undef DOALLOC			/* since we're not linking with trace.c */
 #else /* !defined(HAVE_CONFIG_H) */
 
+#ifndef SYS_VMS
+#define SYS_VMS 0
+#endif
+
 /* Note: VAX-C doesn't recognize continuation-line in ifdef lines */
 # ifdef vms
 #  define HAVE_STDLIB_H 1
@@ -42,11 +46,11 @@
 #  define HAVE_STDLIB_H 1
 # endif
 
+	/* unix-stuff */
+# if (defined(__GNUC__) && (defined(apollo) || defined(sun) || defined(__hpux) || defined(linux)))
+#  define HAVE_STDLIB_H 1
+# endif
 #endif /* !defined(HAVE_CONFIG_H) */
-
-#ifndef SYS_VMS
-#define SYS_VMS 0
-#endif
 
 #ifndef HAVE_STDLIB_H
 # define HAVE_STDLIB_H 0
@@ -55,10 +59,10 @@
 #if HAVE_STDLIB_H
 #include <stdlib.h>
 #else
-# if !defined(HAVE_CONFIG_H) || defined(MISSING_EXTERN_MALLOC)
+# if !defined(HAVE_CONFIG_H) || MISSING_EXTERN_MALLOC
 extern char *malloc(unsigned int len);
 # endif
-# if !defined(HAVE_CONFIG_H) || defined(MISSING_EXTERN_FREE)
+# if !defined(HAVE_CONFIG_H) || MISSING_EXTERN_FREE
 extern void free(char *ptr);
 # endif
 #endif
@@ -128,8 +132,8 @@ extern void free(char *ptr);
 #define	Fprintf	(void)fprintf
 #define	Sprintf	(void)sprintf
 
-#ifdef MISSING_EXTERN_FPRINTF
-extern int fprintf(FILE *fp, const char *fmt,...);
+#if MISSING_EXTERN_FPRINTF
+extern int fprintf(FILE * fp, const char *fmt,...);
 #endif
 
 #define	SaveEndif(head)	InsertOnEnd(&head, "#endif")
@@ -300,7 +304,7 @@ free_LIST(LIST ** p)
 
 /******************************************************************************/
 static void
-WriteLines(FILE *fp, const char *const *list, int count)
+WriteLines(FILE * fp, const char *const *list, int count)
 {
     while (count-- > 0)
 	Fprintf(fp, "%s\n", *list++);
@@ -394,7 +398,7 @@ formcond(const char *c1, const char *c2)
     static char cond[MAX_BUFFER];
 
     if (c1[0] && c2[0])
-	Sprintf(cond, "(%s) && (%s)", c1, c2);
+	Sprintf(cond, "(%s) & (%s)", c1, c2);
     else if (c1[0] || c2[0])
 	Sprintf(cond, "(%s%s)", c1, c2);
     else
@@ -543,7 +547,7 @@ BeginIf(void)
 }
 
 static void
-FlushIf(FILE *fp)
+FlushIf(FILE * fp)
 {
     if (lastIfdef != 0) {
 	Fprintf(fp, "#endif\n");
@@ -552,7 +556,7 @@ FlushIf(FILE *fp)
 }
 
 static void
-WriteIf(FILE *fp, const char *cond)
+WriteIf(FILE * fp, const char *cond)
 {
     if (cond == 0)
 	cond = "";
@@ -725,7 +729,7 @@ Name2Address(char *name, char *type)
 
 /* define Member_Offset macro, used in index-definitions */
 static void
-DefineOffset(FILE *fp)
+DefineOffset(FILE * fp)
 {
 #if USE_OFFSETS
     Fprintf(fp,
@@ -743,7 +747,7 @@ DefineOffset(FILE *fp)
 
 /* generate the index-struct (used for deriving ifdef-able index definitions) */
 static void
-WriteIndexStruct(FILE *fp, LIST * p, const char *ppref)
+WriteIndexStruct(FILE * fp, LIST * p, const char *ppref)
 {
 #if USE_OFFSETS
     char *s, temp[MAX_BUFFER], line[MAX_BUFFER], *vec[MAX_PARSE];
@@ -1580,7 +1584,7 @@ finish_fsms_h(void)
 
 /******************************************************************************/
 static void
-dump_execs(FILE *fp, int count)
+dump_execs(FILE * fp, int count)
 {
     int n;
 
@@ -1630,9 +1634,6 @@ save_funcs(
     s = append(s, "),\n\t");
     s = append(s, flags);
     s = append(s, "\n#if OPT_MACRO_ARGS\n\t\t,0\n#endif");
-    s = append(s, "\n#if OPT_TRACE\n\t\t,\"");
-    s = append(s, func);
-    s = append(s, "\"\n#endif");
     s = append(s, "\n#if OPT_ONLINEHELP\n\t\t,\"");
     s = append(s, help);
     (void) append(s, "\"\n#endif\n };");
@@ -1644,7 +1645,7 @@ save_funcs(
 }
 
 static void
-dump_funcs(FILE *fp, LIST * head)
+dump_funcs(FILE * fp, LIST * head)
 {
     LIST *p;
     for (p = head; p != 0; p = p->nst)
@@ -1737,15 +1738,9 @@ init_ufuncs(void)
 	"",
 	"/*\tlist of recognized macro language functions\t*/",
 	"",
-	"typedef enum {",
-    };
-    static const char *const middle[] =
-    {
-	"} UFuncCode;",
-	"",
 	"typedef struct UFUNC {",
 	"\tconst char *f_name;\t/* name of function */",
-	"\tUFuncCode f_code;",
+	"\tint f_code;",
 	"} UFUNC;",
 	"",
 	"#define NARGMASK	0x000f",
@@ -1760,20 +1755,9 @@ init_ufuncs(void)
 	"EXTERN_CONST UFUNC vl_ufuncs[] = {",
     };
     static int done;
-    LIST *p;
-    int count;
 
-    if (!done++) {
+    if (!done++)
 	write_lines(nevars, head);
-	for (p = all_ufuncs, count = 0; p != 0; p = p->nst) {
-	    if (!count++)
-		Fprintf(nevars, "\t UF%s = 0\n", p->Func);
-	    else
-		Fprintf(nevars, "\t,UF%s\n", p->Func);
-	}
-	Fprintf(nevars, "\n\t,NFUNCS /* %d */\n", count);
-	write_lines(nevars, middle);
-    }
 }
 
 static void
@@ -1792,6 +1776,8 @@ dump_ufuncs(void)
 	"extern const UFUNC vl_ufuncs[];",
 	"#endif",
 	"",
+	"/* \tand its preprocessor definitions\t\t*/",
+	"",
     };
     char temp[MAX_BUFFER];
     LIST *p;
@@ -1802,14 +1788,20 @@ dump_ufuncs(void)
 	    init_ufuncs();
 	Sprintf(temp, "\t{\"%s\",", p->Name);
 	(void) PadTo(15, temp);
-	Sprintf(temp + strlen(temp), "(UFuncCode)(%s)},", p->Data);
+	Sprintf(temp + strlen(temp), "%s},", p->Data);
 	if (p->Note[0]) {
 	    (void) PadTo(32, temp);
 	    Sprintf(temp + strlen(temp), "/* %s */", p->Note);
 	}
 	Fprintf(nevars, "%s\n", temp);
     }
-    write_lines(nevars, middle);
+    for (p = all_ufuncs, count = 0; p != 0; p = p->nst) {
+	if (!count)
+	    write_lines(nevars, middle);
+	Sprintf(temp, "#define\tUF%s", p->Func);
+	Fprintf(nevars, "%s%d\n", PadTo(24, temp), count++);
+    }
+    Fprintf(nevars, "\n#define\tNFUNCS\t\t%d\n", count);
 }
 
 /******************************************************************************/

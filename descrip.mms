@@ -5,7 +5,7 @@
 # estruct.h to make sure the correct one is #defined as "1", and the others
 # all as "0".
 #
-# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.44 2003/07/04 16:52:03 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.42 1999/12/03 03:04:29 tom Exp $
 
 # Editor Configuration Note
 # -------------------------
@@ -21,7 +21,7 @@
 SCREEN = x11
 TARGET = xvile.exe
 SCRDEF = "MOTIF_WIDGETS","XTOOLKIT","DISP_X11","scrn_chosen"
-MENUS  = menu.obj,x11menu.obj,
+MENUS  = menu.obj,
 
 .ELSE
 .IFDEF __XVILE__
@@ -190,7 +190,6 @@ CC_DEFS = ,HAVE_STRERROR
 nebind.h \
 nefkeys.h \
 nefunc.h \
-neproto.h \
 nename.h :	cmdtbl $(MKTBLS)
 	MKTBLS cmdtbl
 

@@ -3,7 +3,7 @@
  *
  * written for vile: Copyright (c) 1990, 1995-2001 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.84 2002/10/09 19:56:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.83 2002/04/30 11:56:38 tom Exp $
  *
  */
 
@@ -139,7 +139,7 @@ static short needundocleanup;
 static USHORT current_undo_cookie = 1;	/* see L_FLAG.cook */
 
 /* #define UNDOLOG 1 */
-#ifdef UNDOLOG
+#if UNDOLOG
 static void
 undolog(char *s, LINEPTR lp)
 {

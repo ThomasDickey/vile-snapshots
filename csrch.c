@@ -1,8 +1,8 @@
 /*
  * These functions perform vi's on-this-line character scanning functions.
- * written for vile: Copyright (c) 1990, 1995-2002 by Paul Fox
+ * written for vile: Copyright (c) 1990, 1995-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/csrch.c,v 1.31 2002/08/27 22:40:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/csrch.c,v 1.30 1999/10/31 23:25:07 tom Exp $
  *
 */
 
@@ -43,7 +43,7 @@ fscan(int f, int n, int c)
 		i++;
 	}
 
-	if ( i >= llength(DOT.l)) {
+	if ( i == llength(DOT.l)) {
 		return(FALSE);
 	}
 	if (doingopcmd && !doingsweep)

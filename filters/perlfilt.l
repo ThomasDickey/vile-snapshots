@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.39 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.36 2000/11/04 20:22:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PERL input
  * text.
@@ -27,92 +27,6 @@ static char *Number_attr;
 static char *here_tag;
 static unsigned here_len;
 static int here_exp;
-
-static int add_to_pattern(char *text);
-static void end_pattern(void);
-static void save_here(char *text, int length);
-
-%}
-
-BLANK		[ \t]*
-
-ESCAPED		\\
-SSTRING		\'(\\.|\\\n|[^'\\])*\'
-DSTRING		\"(\\.|\\\n|[^"\\])*\"
-STRINGS		({SSTRING}|{DSTRING})
-
-KEYWORD		[a-zA-Z_][a-zA-Z_0-9]*
-QIDENT		["'`]?[a-zA-Z_][a-zA-Z_0-9]+["'`]?
-
-NORMALVARS	[\$%@][a-zA-Z_0-9]+('[a-zA-Z0-9]+)?
-OTHERVARS	(\$[-_.\/,"\\#%=~|\$?&`'+*\[\];!@<>():])|(\$\^[@-\177]?)
-IDENT		{NORMALVARS}|{OTHERVARS}
-
-SIGN		[-+]
-DECIMAL		[0-9_]+
-OCTAL		0[0-7_]+
-BINARY		0b[01_]+
-HEXADECIMAL	0x[0-9a-fA-F_]+
-VERSION		v[0-9_]+(\.[0-9_]+)*
-REAL		[-+]?([0-9_]*\.[0-9][0-9_]*)([eE][+-]?[0-9_]+)?
-NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL}|{BINARY}|{VERSION})
-
-%%
-
-<CODE><<{QIDENT}	{
-			    BEGIN(HERE);
-			    save_here(yytext, yyleng);
-			    flt_bfr_append(yytext, yyleng);
-			}
-<HERE>{IDENT}		{
-			    if (here_exp) {
-				flt_bfr_finish();
-				WriteToken(Ident_attr);
-			    } else {
-				flt_bfr_append(yytext, yyleng);
-			    }
-			}
-<HERE>^{QIDENT}		{
-			    flt_bfr_append(yytext, yyleng);
-			    if (!strcmp(here_tag, yytext)) {
-				flt_bfr_finish();
-				BEGIN(CODE);
-			    }
-			}
-<HERE>\\.		|
-<HERE>[^\n]		{ flt_bfr_append(yytext, yyleng); }
-<HERE>\n		{ flt_bfr_append(yytext, yyleng); }
-
-<CODE>[!=]"~"{BLANK}	{ WriteToken(""); BEGIN(PATTERN); }
-<PATTERN>[^\n]		{ if (!add_to_pattern(yytext)) { end_pattern(); ECHO; } }
-<PATTERN>[\n]		{ end_pattern(); ECHO; }
-
-<CODE>^{BLANK}*#!.*$	{ WriteToken(Preproc_attr); }
-
-<CODE>{NUMBER}		{ WriteToken(Number_attr); }
-
-<CODE>-[a-zA-Z]		{ WriteToken(Keyword_attr); }
-
-<CODE>{KEYWORD}		{ WriteToken(keyword_attr(yytext)); if (!strcmp(yytext, "__END__")) { BEGIN(IGNORED); } }
-
-<CODE>{BLANK}*"#".*$	{ WriteToken(Comment_attr); }
-
-<CODE>{IDENT}		{ WriteToken(Ident_attr); }
-
-<CODE>{ESCAPED}		|
-<CODE>{STRINGS}		{ WriteToken(String_attr); }
-
-<IGNORED>[^\n]*		{ WriteToken(Comment_attr); }
-
-<CODE>\n\n=[a-z].*	{
-			    flt_puts("\n\n", 2, "");
-			    WriteToken2(Comment_attr,2);
-			    BEGIN(POD);
-			}
-<POD>^=cut{BLANK}\n	{ WriteToken(Comment_attr); BEGIN(CODE); }
-<POD>.*			{ WriteToken(Comment_attr); }
-
-%%
 
 static void
 save_here(char *text, int length)
@@ -186,9 +100,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *inputs)
+do_filter(FILE *input)
 {
-    yyin = inputs;
+    yyin = input;
 
     Comment_attr = class_attr(NAME_COMMENT);
     Preproc_attr = class_attr(NAME_PREPROC);
@@ -204,3 +118,80 @@ do_filter(FILE *inputs)
     }
     flt_bfr_error();
 }
+
+%}
+
+BLANK		[ \t]*
+
+ESCAPED		\\
+SSTRING		\'(\\.|\\\n|[^'\\])*\'
+DSTRING		\"(\\.|\\\n|[^"\\])*\"
+STRINGS		({SSTRING}|{DSTRING})
+
+KEYWORD		[a-zA-Z_][a-zA-Z_0-9]*
+QIDENT		["']?[a-zA-Z_][a-zA-Z_0-9]+["']?
+
+NORMALVARS	[\$%@][a-zA-Z_0-9]+('[a-zA-Z0-9]+)?
+OTHERVARS	(\$[-_.\/,"\\#%=~|\$?&`'+*\[\];!@<>():])|(\$\^[@-\177]?)
+IDENT		{NORMALVARS}|{OTHERVARS}
+
+SIGN		[-+]
+DECIMAL		[0-9_]+
+OCTAL		0[0-7_]+
+HEXADECIMAL	0x[0-9a-fA-F_]+
+REAL		[-+]?([0-9_]*\.[0-9][0-9_]*)([eE][+-]?[0-9_]+)?
+NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
+
+%%
+
+<CODE><<{BLANK}{QIDENT}	{
+			    BEGIN(HERE);
+			    save_here(yytext, yyleng);
+			    flt_bfr_append(yytext, yyleng);
+			}
+<HERE>{IDENT}		{
+			    if (here_exp) {
+				flt_bfr_finish();
+				WriteToken(Ident_attr);
+			    } else {
+				flt_bfr_append(yytext, yyleng);
+			    }
+			}
+<HERE>^{QIDENT}		{
+			    flt_bfr_append(yytext, yyleng);
+			    if (!strcmp(here_tag, yytext)) {
+				flt_bfr_finish();
+				BEGIN(CODE);
+			    }
+			}
+<HERE>\\.		|
+<HERE>[^\n]		{ flt_bfr_append(yytext, yyleng); }
+<HERE>\n		{ flt_bfr_append(yytext, yyleng); }
+
+<CODE>[!=]"~"{BLANK}	{ WriteToken(""); BEGIN(PATTERN); }
+<PATTERN>[^\n]		{ if (!add_to_pattern(yytext)) { end_pattern(); ECHO; } }
+<PATTERN>[\n]		{ end_pattern(); ECHO; }
+
+<CODE>^{BLANK}*#!.*$	{ WriteToken(Preproc_attr); }
+
+<CODE>-[a-zA-Z]		{ WriteToken(Keyword_attr); }
+<CODE>{KEYWORD}		{ WriteToken(keyword_attr(yytext)); if (!strcmp(yytext, "__END__")) { BEGIN(IGNORED); } }
+
+<CODE>{BLANK}*"#".*$	{ WriteToken(Comment_attr); }
+
+<CODE>{NUMBER}		{ WriteToken(Number_attr); }
+
+<CODE>{IDENT}		{ WriteToken(Ident_attr); }
+
+<CODE>{ESCAPED}		|
+<CODE>{STRINGS}		{ WriteToken(String_attr); }
+
+<IGNORED>[^\n]*		{ WriteToken(Comment_attr); }
+
+<CODE>\n\n=[a-z].*	{
+			    flt_puts("\n\n", 2, "");
+			    WriteToken2(Comment_attr,2);
+			    BEGIN(POD);
+			}
+<POD>^=cut{BLANK}\n	{ WriteToken(Comment_attr); BEGIN(CODE); }
+<POD>.*			{ WriteToken(Comment_attr); }

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.21 2003/05/24 00:49:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.15 2000/08/10 01:31:45 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
@@ -11,14 +11,7 @@
 
 DefineFilter("yacc");
 
-typedef enum {
-    RuleSection = 0
-    ,ActionSection
-    ,CodeSection
-} SECTIONS;
-
 static char *Comment_attr;
-static char *Error_attr;
 static char *Ident_attr;
 static char *Ident2_attr;
 static char *Keyword_attr;
@@ -28,13 +21,73 @@ static char *String_attr;
 
 static char *save_attr = "";
 
-static SECTIONS section = RuleSection;
+#define MAX_LEVEL 10
+
+static int oldstate = INITIAL;
+static int section = 0;
+static int state_level = 0;
 static int brace_level = 0;
 
-#include <fltstack.h>
+static int state_stack[MAX_LEVEL];
 
-static SECTIONS NextSection(SECTIONS);
-static void set_state(void);
+static void
+new_state(int code)
+{
+    oldstate = code;
+    BEGIN(code);
+}
+
+static void
+push_state(int code)
+{
+    state_stack[state_level++] = oldstate;
+    new_state(code);
+}
+
+static void
+pop_state(void)
+{
+    if (state_level > 0)
+	new_state(state_stack[--state_level]);
+}
+
+static void
+set_state(void)
+{
+    if (section >= 2) {
+	new_state(CODE);
+    } else if (section >= 1) {
+	new_state(ACTIONS);
+    } else {
+	new_state(RULES);
+    }
+}
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *input)
+{
+    yyin = input;
+    Comment_attr = class_attr(NAME_COMMENT);
+    Ident_attr   = class_attr(NAME_IDENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    Number_attr  = class_attr(NAME_NUMBER);
+    Preproc_attr = class_attr(NAME_PREPROC);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    section = 0;
+    state_level = 0;
+    brace_level = 0;
+
+    new_state(RULES);
+    while (yylex() > 0) {
+    }
+}
 
 %}
 
@@ -43,9 +96,9 @@ SPACE		[ \t]
 DIRECTIVE	^%[^ \t\n]+
 
 IDENT		[a-zA-Z_][a-zA-Z_0-9]*
-QIDENT		\$([0-9$]|\<{IDENT}\>)
+QIDENT		\$[0-9$]
 
-INTEGER		[-+]?([0-9]+|("0"[xX][0-9a-fA-Z]+))
+INTEGER		[-+]?([0-9]+)
 
 SSTRING		\'(\\.|[^'\\])*\'
 DSTRING		\"(\\.|[^"\\])*\"
@@ -57,17 +110,17 @@ PATTERN		(\\.|\[(\\.|.)*\]|[^ \t\n])+
 
 <INITIAL,RULES,ACTIONS,CODE>{DIRECTIVE}	{
 		    save_attr = "";
-		    WriteToken(keyword_attr(yytext));
+		    WriteToken(Keyword_attr);
 		    switch(yytext[1]) {
 		    case '%':
-		    	section = NextSection(section);
+		    	section++;
 			set_state();
 			break;
 		    case '{':
-		    	push_state(CODE);
+		    	new_state(CODE);
 			break;
 		    case '}':
-		    	pop_state();
+			set_state();
 			break;
 		    default:
 			if (!strcmp(yytext+1, "token")) {
@@ -91,77 +144,13 @@ PATTERN		(\\.|\[(\\.|.)*\]|[^ \t\n])+
 <CODE>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
 <CODE>{INTEGER}		{ WriteToken(Number_attr); }
 <CODE>\{		{ ECHO; brace_level++; }
-<CODE>\}		{ ECHO;
-			  if (--brace_level <= 0) {
-			      brace_level = 0;
-			      if (section == ActionSection)
-				  pop_state();
-			  }
-		        }
+<CODE>\}		{ ECHO; if (--brace_level <= 0) { brace_level = 0; pop_state(); } }
 
-"/*"			{ PushQuote(COMMENT, Comment_attr); }
-<COMMENT>[^*]*		{ flt_bfr_append(yytext, yyleng); }
-<COMMENT>"*"+[^*/]*	{ flt_bfr_append(yytext, yyleng); }
-<COMMENT>"*"+"/"	{ PopQuote(); }
+"/*"			{ WriteToken(Comment_attr); push_state(COMMENT); }
+<COMMENT>[^*]*		{ WriteToken(Comment_attr); }
+<COMMENT>"*"+[^*/]*	{ WriteToken(Comment_attr); }
+<COMMENT>"*"+"/"	{ WriteToken(Comment_attr); pop_state(); }
 
 ^{SPACE}*#{SPACE}*{IDENT}({SPACE}+(\<[^>]+\>|\"[^"]+\"))? { WriteToken(Preproc_attr); }
 {QIDENT}		{ WriteToken(Ident2_attr); }
 {STRINGS}		{ WriteToken(String_attr); }
-
-%%
-
-static SECTIONS
-NextSection(SECTIONS next)
-{
-    switch (next) {
-    case RuleSection:
-	next = ActionSection;
-	break;
-    case ActionSection:
-	next = CodeSection;
-	break;
-    case CodeSection:
-	break;
-    }
-    return next;
-}
-
-static void
-set_state(void)
-{
-    if (section >= CodeSection) {
-	new_state(CODE);
-    } else if (section >= ActionSection) {
-	new_state(ACTIONS);
-    } else {
-	new_state(RULES);
-    }
-}
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *inputs)
-{
-    yyin = inputs;
-    Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident_attr   = class_attr(NAME_IDENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
-    Preproc_attr = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    section = RuleSection;
-    brace_level = 0;
-    save_attr = Error_attr;
-
-    begin_state(RULES);
-    while (yylex() > 0) {
-    }
-    end_state();
-}
