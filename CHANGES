@@ -1,5 +1,31 @@
 Changes for vile 9.1 (released ??? ??? ??, 1999)
 
+ 20000104 (o)
+	> Kevin Buettner:
+	+ modify updattrs() and offs2col() to fix an extra highlighted
+	  character at the end of the line.
+	+ add a check to update() to ensure the current window is visible,
+	  fixes a case where autocoloring would pick up a buffer with negativa
+	  row value (reported by Clark Morgan).
+	> Brendan O'Dea:
+	+ uncomment line in directory.pm which keeps vile's $cwd variable
+	  updated, so hypertext links will work better.
+	+ remove doc/hilite.doc, since the corresponding script is gone.
+	> Clark Morgan:
+	+ miscellaneous updates to vile.hlp
+	> Tom Dickey:
+	+ fix a null-pointer reference in make_current() (reported by Clark
+	  Morgan).
+	+ modify autocolor() to refrain from coloring buffers that are not
+	  associated with a majormode, e.g., [Buffer List] (reported by
+	  Clark Morgan).
+	+ minor optimization of offs2col(), moved expressions out of loop.
+	+ set/clear 'reading_msg_line' in mlyesno() and mlquickask() to make
+	  them behave more like mlreply().  This prevents autocolor from wiping
+	  out the highlighting set by substitutions such as
+	  	:%s/pat/replacement/gc
+	  (reported by Kevin Buettner).
+
  20000102 (n)
 	> Kevin Buettner:
 	+ perl/shell.pm:  Better terminal emulation; several bugs fixed.

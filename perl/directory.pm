@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/directory.pm,v 1.3 2000/01/02 19:48:04 bod Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/directory.pm,v 1.5 2000/01/05 02:44:57 tom Exp $
 # (see dir.doc)
 
 package directory;
@@ -34,7 +34,7 @@ sub dir {
         0,
         0,
         1, # exe
-        9, # non existant symlink
+        9, # nonexistent symlink
     );
 
     $dir = Vile::mlreply_dir "Directory? ", "." if (! length($dir));
@@ -43,11 +43,9 @@ sub dir {
     $dir = scalar(Vile->get("&path full $dir"));
     chdir $dir || do { print "dir: $!\n"; Vile::working($work); return; };
 
-    #--------------------------------------------------------------------------
-    # Uncomment the following line if you would like the vile current directory
-    # to keep in sync with the directory the browser is displaying.
-    #--------------------------------------------------------------------------
-    # Vile->set("cwd", $dir);
+    # Keep the vile current directory in sync with the directory the browser is
+    # displaying.
+    Vile->set("cwd", $dir);
 
     opendir(DIR, $dir) || do {
       print "$dir: $!\n"; Vile::working($work); return; };
@@ -198,7 +196,7 @@ in  ghostview  by  simply clicking on it, and can view a .fm
 file  in  framereader by simply clicking on it, and ... :-)
 
 Lastly,  the  mime library utilized by the directory browser
-(and    provided    alongwith)   for   handling   the   mime
+(and    provided   along with)   for   handling   the   mime
 capabilities   is   plugin   aware  (and  you  thought  only
 netscape  can  have  plugins).  Which means that for certain
 file  types,  like  .gz and .tar, you dont need to take help
@@ -207,17 +205,17 @@ files.  And  the perl interface in vile makes it very simple
 to  write  new plugins :-)
 
 A   sample   plugin   script   for  .gz  files  is  provided
-alongwith.    For   more   information   on   mime   library
-capabilites,   please   refer  to  the  pod  documention  in
+along with.   For   more   information   on   mime   library
+capabilites,  please  refer  to  the  pod  documentation  in
 mime.pl.
 
-=head1 CAEVATS
+=head1 CAVEATS
 
 When  the  directory  browser  changes directory, it changes
 the   current   directory   as   pointed   to  by  the  perl
 environment  and  hence  the current directory as vile knows
 it  does  not  change. This may cause a little confusion. If
-you  want  to  change  the  vile current directory alongwith
+you  want  to change  the  vile current directory along with
 the  directory  browser,  please  uncomment  the appropriate
 line  in  the dir.pl file.
 

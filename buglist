@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.372 1999/12/24 00:32:53 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.373 2000/01/04 00:07:33 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1433,17 +1433,6 @@ shoulder to bump up to 18pt.) I frequently resize xvile via the window manager.
 
 -- 98-06-17 (Abigail <abigail@fnx.com>)
 
-first:
-I use c-mode all the time; but not for C coding.  I use it for Perl coding.
-However, in Perl '#' is the start of a comment, and not the beginning of a C
-pre-processor directive (if at the beginning of the line).
-
-I want '>>' to shift line starting with '#' as well, and don't want the cursor
-to jump to column 0 when typing '#' as the first non-whitespace char.  Hence, I
-always #ifdef out the relevant sections of the code that takes care of this
-special handling.
-
-another:
 If you just typed a line of indented text, and have autoindent on, and you hit
 return, the cursor goes to the next line, and is lined up with the previous
 line.  Just as it should be.  Now I use backspace because I want to stop
@@ -1487,11 +1476,6 @@ white with vile.exe
 [the number of colors increased to 16, making the palette too short.  we
 should repeat the palette to fill out the number of colors, or set $ncolors
 to match the palette - tom]
-
--- 98-08-18 (Kevin Buettner)
-
-(Note to Tom:  We still need to add necessary support to vile so that
-shell.pl will work.  At present, it only works with xvile.)
 
 -- 98-08-21 (tom)
 

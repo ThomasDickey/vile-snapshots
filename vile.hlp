@@ -1050,7 +1050,7 @@ Editor modes
 		vile will behave more like vi, in that buffers remain in a
 		fixed order, that in which they were edited. (U)
 
-	autocolor (ac) Automatic syntax coloring.  If set to zero, 
+	autocolor (ac) Automatic syntax coloring.  If set to zero,
 		automatic syntax coloring is disabled.  Otherwise, it
 		should be set to a small positive integer which represents
 		the number of milliseconds to wait before invoking the
@@ -2131,11 +2131,11 @@ Recorded macros
 Programmed procedures and macros
 --------------------------------
 
-	[ 
+	[
 	  Note 1:  the information presented in this section of the help file
 	  is a subset of "doc/macros.doc", which is supplied with the vile
 	  source code.  macros.doc is the authoritative reference manual
-	  for the editor's macro language. 
+	  for the editor's macro language.
 
 	  Note 2:  the language features/directives described below are not
 	  limited solely to use within macros.  These directives are often
@@ -3107,7 +3107,7 @@ Syntax coloring
 	your most recent modification and all subsequent activity
 	(keypresses) occuring less than two seconds apart.
 
-	    set autocolor=2
+	    set autocolor=2000
 	    set autocolor-hook HighlightFilter
 
 	Note that "autocolor" is a buffer mode and as such, you
@@ -3837,9 +3837,12 @@ Win32 specifics
 	standard ones:
 
 	-geometry <C>x<R>      Initial window dimensions in Columns and Rows
-				 (ex:  -geometry 80x30).  Note:  the specified
-				 geometry may not exceed the bounds of the
-				 current desktop screen.
+				 (ex:  -geometry 80x30).  Be aware that the
+				 specified geometry may not exceed the
+				 bounds of the current desktop screen.
+				 Note also that $pagelen and $pagewid may
+				 be used to change winvile's dimensions.
+
 	-fn       <fontspec>   Initial font (or -font).  The "Winvile Font"
 				 section below describes <fontspec> syntax.
 
@@ -4010,7 +4013,7 @@ Win32 specifics
 			unchanged.
 
 	winsave		Launches the Windows common save dialog box to save
-			the current buffer in a file of the user's choice. 
+			the current buffer in a file of the user's choice.
 			Note that if this dialog box saves a file outside
 			the editor's cwd, then Windows (and vile)
 			implicitly change the cwd to match that of the
@@ -4305,4 +4308,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.461 1999/12/31 12:36:20 kev Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.462 2000/01/05 02:27:04 cmorgan Exp $

@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.216 2000/01/02 22:59:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.217 2000/01/05 02:49:36 tom Exp $
  *
  */
 
@@ -789,7 +789,8 @@ make_current(BUFFER *nbp)
 			bp = bheadp;
 			while(bp != 0 && bp->b_bufp != nbp)
 				bp = bp->b_bufp;
-			bp->b_bufp = nbp->b_bufp;
+			if (bp != 0)
+				bp->b_bufp = nbp->b_bufp;
 
 			/* put it at the head */
 			nbp->b_bufp = bheadp;
