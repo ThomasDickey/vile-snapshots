@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.97 1998/05/19 17:42:07 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.98 1998/05/20 10:17:40 cmorgan Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -26,7 +26,7 @@ bool							# GMD prefix
 	"expand-path"	EXPAND_PATH	0		# true iff %/# don't substitute shortened-path
 	"ErrorBells"	ERRORBELLS	0		# audible/visible-bells
 	"flash"		FLASH		0		OPT_FLASH # visible-bell (flash)
-	"force-console"	GMDFORCE_CONSOLE	0	SYS_WINNT&&defined(DISP_NTWIN)
+	"force-console"	FORCE_CONSOLE	0		SYS_WINNT&&defined(DISP_NTWIN)
 	"glob"		GLOB		0		!OPT_GLOB_PIPE # enable/disable filename globbing
 	"HIstory"	HISTORY		0		OPT_HISTORY # command-history
 	"ImplyBuffer"	IMPLYBUFF 	0		# imply-buffer (vi-like)

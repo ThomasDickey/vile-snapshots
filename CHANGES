@@ -1,5 +1,8 @@
 Changes for vile 7.5/8.0 (released ??? ??? ?, 1998)
 
+ (tom) 980520 (i)
+	+ correct force-console entry in modetbl (patch by Clark Morgan)
+
  (tom) 980519 (h)
  	+ correct const-cast warnings for x_set_icon_name() and
 	  x_set_window_name().
