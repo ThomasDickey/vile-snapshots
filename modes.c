@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.257 2003/03/09 14:10:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.258 2003/05/24 00:49:25 tom Exp $
  *
  */
 
@@ -261,7 +261,7 @@ size_val(const struct VALNAMES *names, struct VAL *values)
 /*
  * Returns a mode-value formatted as a string
  */
-char *
+const char *
 string_mode_val(VALARGS * args)
 {
     register const struct VALNAMES *names = args->names;
@@ -1342,9 +1342,9 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 		TRACE(("...found class %d %s\n", mode_class, rp));
 #if OPT_MAJORMODE
 		if (mode_class == 3) {
-		    char *it = ((bp->majr != 0)
-				? bp->majr->name
-				: "?");
+		    const char *it = ((bp->majr != 0)
+				      ? bp->majr->name
+				      : "?");
 		    make_global_val(args->local, args->global, 0);
 		    if (global) {
 			MAJORMODE_LIST *ptr =
@@ -1842,7 +1842,7 @@ char *
 get_record_sep(BUFFER *bp)
 {
     char *s = "";
-    RECORD_SEP code = b_val(bp, VAL_RECORD_SEP);
+    RECORD_SEP code = (RECORD_SEP) b_val(bp, VAL_RECORD_SEP);
 
     if (code == RS_AUTO)
 	code = RS_DEFAULT;

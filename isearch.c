@@ -7,7 +7,7 @@
  *
  * original author: D. R. Banks 9-May-86
  *
- * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.57 2003/02/26 23:48:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.58 2003/05/25 23:34:52 tom Exp $
  *
  */
 
@@ -168,7 +168,6 @@ isearch(int f GCC_UNUSED, int n)
     /* ask the user for the text of a pattern */
     promptpattern("ISearch: ");
 
-    cpos = 0;			/* Start afresh */
     status = TRUE;		/* Assume everything's cool */
 
     /*
@@ -263,7 +262,6 @@ isearch(int f GCC_UNUSED, int n)
 	/* I guess we got something to search for, so search for it */
 
 	tb_append(&searchpat, c);	/* put the char in the buffer */
-	cpos = tb_length(searchpat);
 	echochar(c);		/* Echo the character */
 	if (!status) {		/* If we lost last time */
 	    kbd_alarm();	/* Feep again */

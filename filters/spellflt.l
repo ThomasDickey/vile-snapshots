@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.10 2002/10/17 22:57:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.11 2003/05/20 20:38:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -46,7 +46,7 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input GCC_UNUSED)
+do_filter(FILE *inputs GCC_UNUSED)
 {
 #ifdef SPELL_PIPE
 #ifdef filter_def
@@ -70,7 +70,7 @@ do_filter(FILE *input GCC_UNUSED)
 	ffputline(lp->l_text, llength(lp), "\n");
     }
 #else
-    while ((ch = fgetc(input)) != EOF && !feof(input))
+    while ((ch = fgetc(inputs)) != EOF && !feof(inputs))
 	fputc(ch, fp);
 #endif
     fclose(fp);

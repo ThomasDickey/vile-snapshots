@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.260 2003/03/17 23:25:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.261 2003/05/24 00:49:25 tom Exp $
  *
  */
 
@@ -2525,7 +2525,7 @@ void
 set_editor_title(void)
 {
     static TBUFF *title;
-    char *format;
+    const char *format;
 
     if (auto_set_title) {
 

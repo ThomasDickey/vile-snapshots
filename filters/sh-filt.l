@@ -5,7 +5,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.55 2003/05/03 00:03:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.56 2003/05/20 20:38:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -34,139 +34,18 @@ static STACK * stk_state;
 static int stk_limit;
 static int stk_level;
 
-static void
-pop_stk(void)
-{
-    int state = NORMAL;
-    if (--stk_level >= 0)
-	state = stk_state[stk_level].state;
-    BEGIN(state);
-}
-
-static void
-push_stk(int state)
-{
-    if (++stk_level >= stk_limit) {
-	unsigned have = sizeof(STACK) * stk_limit;
-	unsigned want = sizeof(STACK) * (stk_limit += (20 + stk_level));
-	stk_state = type_alloc(STACK,(void *)stk_state, want, &have);
-    }
-    stk_state[stk_level].state = state;
-    stk_state[stk_level].backtic = 0;
-    BEGIN(state);
-}
-
-static void
-handle_backtic(void)
-{
-    if (stk_state[stk_level].backtic) {
-	pop_stk();
-    } else {
-	flt_bfr_finish();
-	push_stk(NORMAL);
-	stk_state[stk_level].backtic = 1;
-    }
-}
-
 static int strip_tabs;
 static char *here_tag;
 static unsigned here_len;
 static int here_exp;
 
-static void
-save_here(char *text, int length)
-{
-    char *s = here_tag = do_alloc(here_tag, length, &here_len);
-
-    here_exp = 1;
-    while (length--) {
-	if (isQuote(*text)) {
-	    here_exp = 0;
-	} else if (strchr(" \t", *text) != 0) {
-	    if (s != here_tag)
-		break;
-	} else if (strchr("<->", *text) == 0) {
-	    *s++ = *text;
-	}
-	text++;
-    }
-    *s = 0;
-}
-
-static int
-embed_or_append(char *text, int length)
-{
-    if (here_exp) {
-	flt_bfr_embed(text, length, Ident_attr);
-    } else {
-	flt_bfr_append(text, length);
-    }
-    return here_exp;
-}
-
-static int
-got_here(char *text, int length)
-{
-    int pass, j, k;
-
-    for (pass = 0; pass < 2; pass++) {
-	for (j = k = 0; j < length; j++) {
-	    if (isQuote(text[j])) {
-		if (pass)
-		    flt_bfr_embed(text + j, 1, Error_attr);
-	    } else {
-		if (text[j] != here_tag[k++])
-		    return 0;
-		if (pass)
-		    flt_bfr_append(text + j, 1);
-	    }
-	}
-    }
-    return 1;
-}
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-/*
- * string passed to this routine is in the format:
- *
- *    [<white>]:
- */
-static void
-color_delimiter(char *text, int size, char *attr)
-{
-    char delim[2];
-
-    delim[0] = text[--size];       /* save the trailing delimiter */
-    delim[1] = text[size] = '\0';  /* chop the trailing delimiter */
-    if (size)
-	flt_puts(text, size , "");
-    flt_puts(delim, 1, attr);
-}
-
-static void
-do_filter(FILE *input)
-{
-    yyin = input;
-
-    Action_attr  = class_attr(NAME_ACTION);
-    Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident_attr   = class_attr(NAME_IDENT2);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    here_exp = 0;
-    stk_level = -1;
-    push_stk(NORMAL);
-
-    while (yylex() > 0) {
-    }
-    flt_bfr_error();
-}
+static int embed_or_append(char *text, int length);
+static int got_here(char *text, int length);
+static void color_delimiter(char *text, int size, char *attr);
+static void handle_backtic(void);
+static void pop_stk(void);
+static void push_stk(int state);
+static void save_here(char *text, int length);
 
 %}
 
@@ -285,3 +164,134 @@ IDENTX		\$[\*@#\?\$!-]
 <SUBST>{IDENT2R}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); pop_stk(); }
 <SUBST>\"		{ push_stk(QUOTED); BeginQuote(QUOTED, String_attr); }
 <SUBST>[^"}]+		{ flt_bfr_embed(yytext, yyleng, ""); }
+
+%%
+
+static void
+pop_stk(void)
+{
+    int state = NORMAL;
+    if (--stk_level >= 0)
+	state = stk_state[stk_level].state;
+    BEGIN(state);
+}
+
+static void
+push_stk(int state)
+{
+    if (++stk_level >= stk_limit) {
+	unsigned have = sizeof(STACK) * stk_limit;
+	unsigned want = sizeof(STACK) * (stk_limit += (20 + stk_level));
+	stk_state = type_alloc(STACK,(void *)stk_state, want, &have);
+    }
+    stk_state[stk_level].state = state;
+    stk_state[stk_level].backtic = 0;
+    BEGIN(state);
+}
+
+static void
+handle_backtic(void)
+{
+    if (stk_state[stk_level].backtic) {
+	pop_stk();
+    } else {
+	flt_bfr_finish();
+	push_stk(NORMAL);
+	stk_state[stk_level].backtic = 1;
+    }
+}
+
+static void
+save_here(char *text, int length)
+{
+    char *s = here_tag = do_alloc(here_tag, length, &here_len);
+
+    here_exp = 1;
+    while (length--) {
+	if (isQuote(*text)) {
+	    here_exp = 0;
+	} else if (strchr(" \t", *text) != 0) {
+	    if (s != here_tag)
+		break;
+	} else if (strchr("<->", *text) == 0) {
+	    *s++ = *text;
+	}
+	text++;
+    }
+    *s = 0;
+}
+
+static int
+embed_or_append(char *text, int length)
+{
+    if (here_exp) {
+	flt_bfr_embed(text, length, Ident_attr);
+    } else {
+	flt_bfr_append(text, length);
+    }
+    return here_exp;
+}
+
+static int
+got_here(char *text, int length)
+{
+    int pass, j, k;
+
+    for (pass = 0; pass < 2; pass++) {
+	for (j = k = 0; j < length; j++) {
+	    if (isQuote(text[j])) {
+		if (pass)
+		    flt_bfr_embed(text + j, 1, Error_attr);
+	    } else {
+		if (text[j] != here_tag[k++])
+		    return 0;
+		if (pass)
+		    flt_bfr_append(text + j, 1);
+	    }
+	}
+    }
+    return 1;
+}
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+/*
+ * string passed to this routine is in the format:
+ *
+ *    [<white>]:
+ */
+static void
+color_delimiter(char *text, int size, char *attr)
+{
+    char delim[2];
+
+    delim[0] = text[--size];       /* save the trailing delimiter */
+    delim[1] = text[size] = '\0';  /* chop the trailing delimiter */
+    if (size)
+	flt_puts(text, size , "");
+    flt_puts(delim, 1, attr);
+}
+
+static void
+do_filter(FILE *inputs)
+{
+    yyin = inputs;
+
+    Action_attr  = class_attr(NAME_ACTION);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Error_attr   = class_attr(NAME_ERROR);
+    Ident_attr   = class_attr(NAME_IDENT2);
+    Number_attr  = class_attr(NAME_NUMBER);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    here_exp = 0;
+    stk_level = -1;
+    push_stk(NORMAL);
+
+    while (yylex() > 0) {
+    }
+    flt_bfr_error();
+}

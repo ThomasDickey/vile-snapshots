@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.11 2002/06/30 19:38:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.12 2003/05/20 20:38:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to embedded SQL with C/C++.
  * - T.Dickey
@@ -25,6 +25,57 @@ static int my_state;
 static int exec_sql;
 static int in_execute;
 static int in_block;
+
+static void begin_sql(void);
+static void process_keyword(char *text, int len);
+static void reset_symbol_table(void);
+
+%}
+
+SPC		[ \t]
+BLANK		{SPC}*
+
+SSTRING		\'(\\.|[^'\\])*\'
+DSTRING		\"(\\.|[^"\\]|\\\n)*\"
+STRINGS		({SSTRING}|{DSTRING})
+
+INCLUDE		(<[^>]+>|\"[^"]+\")
+
+IDENT		[a-zA-Z_][a-zA-Z_0-9]*
+
+SIGN		[-+]
+DECIMAL		[0-9_]+
+OCTAL		0[0-7_]+
+HEXADECIMAL	0x[0-9a-fA-F_]+
+REAL		[-+]?([0-9_]*\.[0-9][0-9_]*)([eE][+-]?[0-9_]+)?
+NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
+
+%%
+
+<CODE,SQL>^{BLANK}#{BLANK}include{BLANK}{INCLUDE} |
+<CODE,SQL>^{BLANK}#{BLANK}{IDENT} { WriteToken(Preproc_attr); }
+
+<CODE>"EXEC"{SPC}+"SQL"	|
+<CODE>"exec"{SPC}+"sql"	{ WriteToken(Action_attr); begin_sql(); }
+
+<SQL>{IDENT}-{IDENT}	|
+<CODE,SQL>{IDENT}	{ process_keyword(yytext, yyleng); }
+<CODE,SQL>";"		{ ECHO; reset_symbol_table(); }
+
+<CODE,SQL>"/*"		{ WriteToken(Comment_attr); BEGIN(COMMENT); }
+<COMMENT>[^*]*		{ WriteToken(Comment_attr); }
+<COMMENT>"*"+[^*/]*	{ WriteToken(Comment_attr); }
+<COMMENT>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(my_state); }
+
+<CODE,SQL>"//"[^\n]*	{ WriteToken(Comment_attr); }
+
+<CODE,SQL>{STRINGS}	{ WriteToken(String_attr); }
+
+<CODE,SQL>{NUMBER}	{ WriteToken(Number_attr); }
+
+<SQL>":"{IDENT}		{ WriteToken(Ident2_attr); }
+
+%%
 
 static void
 default_state(int value)
@@ -116,9 +167,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input)
+do_filter(FILE *inputs)
 {
-    yyin = input;
+    yyin = inputs;
 
     Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
@@ -136,47 +187,3 @@ do_filter(FILE *input)
     while (yylex() > 0) {
     }
 }
-%}
-
-SPC		[ \t]
-BLANK		{SPC}*
-
-SSTRING		\'(\\.|[^'\\])*\'
-DSTRING		\"(\\.|[^"\\]|\\\n)*\"
-STRINGS		({SSTRING}|{DSTRING})
-
-INCLUDE		(<[^>]+>|\"[^"]+\")
-
-IDENT		[a-zA-Z_][a-zA-Z_0-9]*
-
-SIGN		[-+]
-DECIMAL		[0-9_]+
-OCTAL		0[0-7_]+
-HEXADECIMAL	0x[0-9a-fA-F_]+
-REAL		[-+]?([0-9_]*\.[0-9][0-9_]*)([eE][+-]?[0-9_]+)?
-NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
-
-%%
-
-<CODE,SQL>^{BLANK}#{BLANK}include{BLANK}{INCLUDE} |
-<CODE,SQL>^{BLANK}#{BLANK}{IDENT} { WriteToken(Preproc_attr); }
-
-<CODE>"EXEC"{SPC}+"SQL"	|
-<CODE>"exec"{SPC}+"sql"	{ WriteToken(Action_attr); begin_sql(); }
-
-<SQL>{IDENT}-{IDENT}	|
-<CODE,SQL>{IDENT}	{ process_keyword(yytext, yyleng); }
-<CODE,SQL>";"		{ ECHO; reset_symbol_table(); }
-
-<CODE,SQL>"/*"		{ WriteToken(Comment_attr); BEGIN(COMMENT); }
-<COMMENT>[^*]*		{ WriteToken(Comment_attr); }
-<COMMENT>"*"+[^*/]*	{ WriteToken(Comment_attr); }
-<COMMENT>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(my_state); }
-
-<CODE,SQL>"//"[^\n]*	{ WriteToken(Comment_attr); }
-
-<CODE,SQL>{STRINGS}	{ WriteToken(String_attr); }
-
-<CODE,SQL>{NUMBER}	{ WriteToken(Number_attr); }
-
-<SQL>":"{IDENT}		{ WriteToken(Ident2_attr); }

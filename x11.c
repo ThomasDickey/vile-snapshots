@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.267 2002/12/26 22:10:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.268 2003/05/24 00:49:25 tom Exp $
  *
  */
 
@@ -1850,7 +1850,7 @@ static XtResource resources[] =
 	sizeof(String *),
 	XtOffset(TextWindow, geometry),
 	XtRImmediate,
-	"80x36"
+	(XtPointer) "80x36"
     },
     {
 	XtNfont,
@@ -1859,7 +1859,7 @@ static XtResource resources[] =
 	sizeof(String *),
 	XtOffset(TextWindow, starting_fontname),
 	XtRImmediate,
-	XtDefaultFont		/* used to be FONTNAME */
+	(XtPointer) XtDefaultFont	/* used to be FONTNAME */
     },
     {
 	XtNforeground,
@@ -1869,9 +1869,9 @@ static XtResource resources[] =
 	XtOffset(TextWindow, fg),
 	XtRString,
 #if OLD_RESOURCES
-	XtDefaultForeground
+	(XtPointer) XtDefaultForeground
 #else
-	"#c71bc30bc71b"
+	(XtPointer) "#c71bc30bc71b"
 #endif				/* OLD_RESOURCES */
     },
     {
@@ -1882,9 +1882,9 @@ static XtResource resources[] =
 	XtOffset(TextWindow, bg),
 	XtRString,
 #if OLD_RESOURCES
-	XtDefaultBackground
+	(XtPointer) XtDefaultBackground
 #else
-	"#c71bc30bc71b"
+	(XtPointer) "#c71bc30bc71b"
 #endif
     },
     {
@@ -1921,7 +1921,7 @@ static XtResource resources[] =
 	sizeof(String *),
 	XtOffset(TextWindow, multi_click_char_class),
 	XtRImmediate,
-	NULL
+	(XtPointer) NULL
     },
     {
 	XtNscrollbarOnLeft,
@@ -1969,7 +1969,7 @@ static XtResource resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, menubar_fg),
 	XtRString,
-	XtDefaultForeground
+	(XtPointer) XtDefaultForeground
     },
     {
 	XtNmenuBackground,
@@ -1978,7 +1978,7 @@ static XtResource resources[] =
 	sizeof(Pixel),
 	XtOffset(TextWindow, menubar_bg),
 	XtRString,
-	XtDefaultBackground
+	(XtPointer) XtDefaultBackground
     },
 #endif
     {

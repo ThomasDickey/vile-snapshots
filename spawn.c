@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.177 2003/03/11 19:53:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.178 2003/05/25 20:21:34 tom Exp $
  *
  */
 
@@ -248,10 +248,6 @@ rtfrmshell(int ACTUAL_SIG_ARGS GCC_UNUSED)
     kbd_openup();
     ttunclean();
     sgarbf = TRUE;
-#  if SYS_APOLLO
-    (void) term.getch();	/* have to skip a character */
-    ttunclean();		/* ...so that I can finally suppress echo */
-#  endif
     setup_handler(SIGCONT, rtfrmshell);		/* suspend & restart */
     (void) update(TRUE);
 #endif

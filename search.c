@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.133 2003/03/09 18:33:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.134 2003/05/25 23:34:52 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -725,7 +725,7 @@ readpattern(
 	       int fromscreen)
 {
     char temp[NPAT];
-    int status = TRUE;
+    int status;
 
     TRACE((T_CALLED "readpattern(%s, %s, %p, %d, %d)\n",
 	   prompt ? prompt : "",

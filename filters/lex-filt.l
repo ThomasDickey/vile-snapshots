@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.21 2003/02/12 00:46:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.22 2003/05/20 20:38:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -22,64 +22,9 @@ static char *String_attr;
 static int section = 0;
 static int nesting = 0;
 
-static void
-set_state(void)
-{
-    if (section >= 2) {
-	new_state(CODE);
-    } else if (section >= 1) {
-	new_state(ACTIONS);
-    } else {
-	new_state(RULES);
-    }
-}
-
-static void
-set_rules(void)
-{
-    if (section >= 1)
-	set_state();
-}
-
-/* For some reason, I cannot get flex to yield the substrings for <STATES>
- * and {PATTERN}, so I merged the two in the actions and split them here.
- */
-static void
-write_states(char *text, int len)
-{
-    int n;
-    if (text[0] == '<') {	/* only happens if we have {STATES} */
-	n = 1 + strchr(text, '>') - text;
-	flt_puts(text, n, Keyword_attr);
-	text += n;
-	len -= n;
-    }
-    flt_puts(text, len, String_attr);
-}
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *input)
-{
-    yyin = input;
-    section = 0;
-    nesting = 0;
-    Comment_attr = class_attr(NAME_COMMENT);
-    Ident_attr   = class_attr(NAME_IDENT);
-    Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
-    Preproc_attr = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    begin_state(RULES);
-    while (yylex() > 0) {
-    }
-    end_state();
-}
+static void set_rules(void);
+static void set_state(void);
+static void write_states(char *text, int len);
 
 %}
 
@@ -140,3 +85,64 @@ MATCH		{STATES}?{PATTERN}
 <COMMENT>"*"+"/"	{ PopQuote(); }
 
 <CODE>^{SPACE}*#{SPACE}*{IDENT}({SPACE}+(\<[^>]+\>|\"[^"]+\"))? { WriteToken(Preproc_attr); }
+
+%%
+
+static void
+set_state(void)
+{
+    if (section >= 2) {
+	new_state(CODE);
+    } else if (section >= 1) {
+	new_state(ACTIONS);
+    } else {
+	new_state(RULES);
+    }
+}
+
+static void
+set_rules(void)
+{
+    if (section >= 1)
+	set_state();
+}
+
+/* For some reason, I cannot get flex to yield the substrings for <STATES>
+ * and {PATTERN}, so I merged the two in the actions and split them here.
+ */
+static void
+write_states(char *text, int len)
+{
+    int n;
+    if (text[0] == '<') {	/* only happens if we have {STATES} */
+	n = 1 + strchr(text, '>') - text;
+	flt_puts(text, n, Keyword_attr);
+	text += n;
+	len -= n;
+    }
+    flt_puts(text, len, String_attr);
+}
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *inputs)
+{
+    yyin = inputs;
+    section = 0;
+    nesting = 0;
+    Comment_attr = class_attr(NAME_COMMENT);
+    Ident_attr   = class_attr(NAME_IDENT);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    Number_attr  = class_attr(NAME_NUMBER);
+    Preproc_attr = class_attr(NAME_PREPROC);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    begin_state(RULES);
+    while (yylex() > 0) {
+    }
+    end_state();
+}

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/fltstack.h,v 1.6 2003/02/12 23:34:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/fltstack.h,v 1.7 2003/05/20 19:19:57 tom Exp $
  * A simple stack for lex states
  */
 typedef struct {
@@ -26,7 +26,11 @@ new_state(int code)
 static void
 pop_state(void)
 {
+#ifdef INITIAL
     int state = INITIAL;
+#else
+    int state = 0;	/* cater to broken "new" flex */
+#endif
     if (--stk_level >= 0 && stk_level < stk_limit)
 	state = FLT_STATE;
     new_state(state);

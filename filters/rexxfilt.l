@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rexxfilt.l,v 1.6 2001/08/21 21:19:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rexxfilt.l,v 1.7 2003/05/20 20:38:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of REXX source
  * - T.Dickey
@@ -18,25 +18,6 @@ static char *String_attr;
 
 static int my_state;
 
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *input)
-{
-    yyin = input;
-
-    Comment_attr = class_attr(NAME_COMMENT);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    my_state = CODE;
-    BEGIN(my_state);
-    while (yylex() > 0) {
-    }
-}
 %}
 
 SSTRING		\'([^'])*\'
@@ -64,3 +45,25 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 <CODE>{STRINGS}		{ WriteToken(String_attr); }
 
 <CODE>{NUMBER}		{ WriteToken(Number_attr); }
+
+%%
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *inputs)
+{
+    yyin = inputs;
+
+    Comment_attr = class_attr(NAME_COMMENT);
+    Number_attr  = class_attr(NAME_NUMBER);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    my_state = CODE;
+    BEGIN(my_state);
+    while (yylex() > 0) {
+    }
+}

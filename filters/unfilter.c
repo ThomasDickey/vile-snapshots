@@ -1,7 +1,7 @@
 /*
  * Parsing and I/O support for atr2text, etc.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/unfilter.c,v 1.3 2003/05/07 20:39:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/unfilter.c,v 1.4 2003/05/24 00:49:25 tom Exp $
  */
 #include <unfilter.h>
 
@@ -73,7 +73,7 @@ unfilter(FILE *src, FILE *dst)
 		markup_unfilter(dst, attrs);
 		if (my_length == 0) {
 		    my_length = 10;
-		    my_counts = calloc(my_length, sizeof(COUNTS));
+		    my_counts = (COUNTS *) calloc(my_length, sizeof(COUNTS));
 		}
 		for (n = 0; n < my_length; ++n) {
 		    if (my_counts[n].length == 0) {

@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.5 2002/10/20 19:13:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.6 2003/05/24 00:49:25 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -159,7 +159,7 @@ gui_add_menu_item(void *pm, char *nom, char *accel GCC_UNUSED, int the_class)
     xms_name = XmStringCreateSimple(nom);
     w = XtVaCreateManagedWidget("menuEntry",
 				wc,
-				pm,
+				(Widget) pm,
 				Nval(XmNacceleratorText, xms_accl),
 				Nval(XmNlabelString, xms_name),
 				NULL);
@@ -174,12 +174,12 @@ gui_add_menu_item(void *pm, char *nom, char *accel GCC_UNUSED, int the_class)
 				((the_class == 'B')
 				 ? smeBSBObjectClass
 				 : smeLineObjectClass),
-				pm,
+				(Widget) pm,
 				Nval(XtNlabel, nom),
 				NULL);
 
 #endif /* ATHENA_WIDGETS */
-    return w;
+    return (void *) w;
 }
 
 /************************************************************************/
@@ -309,8 +309,8 @@ post_buffer_list(Widget w GCC_UNUSED,
 	}
 
 	if (pm_buffer[nb_item_menu_list] == 0) {
-	    pm_buffer[nb_item_menu_list] = gui_add_menu_item(pm, string,
-							     temp, 'B');
+	    pm_buffer[nb_item_menu_list] = (Widget) gui_add_menu_item(pm, string,
+								      temp, 'B');
 	} else {
 #if MOTIF_WIDGETS
 	    XmString xms = XmStringCreateSimple(string);

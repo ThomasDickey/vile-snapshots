@@ -3429,6 +3429,7 @@ Mode line customization
 		%c	column number if "ruler" is set
 		%p	line number as percentage of number of lines if
 			"ruler" is set
+		%P	line number as percentage of number of lines
 		%S	rough position of window with respect to buffer (top,
 			bot, all, emp, mid) when ruler not set (or ruler is
 			set, but buffer is empty).
@@ -5767,6 +5768,6 @@ Problems
 	Requests to be put on the announcement list should go to
 		announce-request@vile.cx
 
-Copyright 1995-2002 by Paul Fox, Thomas Dickey, and Kevin Buettner
+Copyright 1995-2003 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.564 2003/05/05 21:54:15 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.566 2003/05/26 18:09:43 tom Exp $

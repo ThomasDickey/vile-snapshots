@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.320 2003/03/09 18:28:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.322 2003/05/25 23:34:52 tom Exp $
  *
  */
 
@@ -661,7 +661,7 @@ default_mode_value(TBUFF ** result, char *name)
 		break;
 	    }
 	    if ((mode_name = lookup_valnames(name, args.names)) >= 0) {
-		init_mode_value(&mode, mode_class, mode_name);
+		init_mode_value(&mode, (MODECLASS) mode_class, mode_name);
 		args.global = &mode;
 		args.local = args.global;
 		tb_scopy(result, string_mode_val(&args));
@@ -885,8 +885,8 @@ run_func(int fnum)
 	value = (strcmp(arg[0], arg[1]) >= 0);
 	break;
     case UFINDIRECT:
-	if ((cp = tokval(arg[0])) != error_val)
-	    tb_scopy(&result, cp);
+	if ((sp = tokval(arg[0])) != error_val)
+	    tb_scopy(&result, sp);
 	else
 	    is_error = TRUE;
 	break;
@@ -2093,14 +2093,14 @@ read_argument(TBUFF ** paramp, const PARAM_INFO * info)
 int
 save_arguments(BUFFER *bp)
 {
-    PROC_ARGS *p = 0;
+    PROC_ARGS *p;
     int num_args = 0;
     int max_args;
     char temp[NBUFN];
     const CMDFUNC *cmd = engl2fnc(strip_brackets(temp, bp->b_bname));
     int ok = TRUE;
     int status = FALSE;
-    char *cp;
+    const char *cp;
 
     if (cmd != 0 && cmd->c_args != 0) {
 	for (max_args = 0;
@@ -2237,14 +2237,14 @@ get_argument(const char *name)
 #if OPT_EVAL
 
 /* the argument simply represents itself */
-static char *
+static const char *
 simple_arg_eval(char *argp)
 {
     return argp;
 }
 
 /* the returned value is the user's response to the specified prompt */
-static char *
+static const char *
 query_arg_eval(char *argp)
 {
     argp = user_reply(tokval(argp + 1), error_val);
@@ -2252,7 +2252,7 @@ query_arg_eval(char *argp)
 }
 
 /* the returned value is the next line from the named buffer */
-static char *
+static const char *
 buffer_arg_eval(char *argp)
 {
     argp = next_buffer_line(tokval(argp + 1));
@@ -2260,7 +2260,7 @@ buffer_arg_eval(char *argp)
 }
 
 /* expand it as a temp variable */
-static char *
+static const char *
 tempvar_arg_eval(char *argp)
 {
     static TBUFF *tmp;
@@ -2278,11 +2278,11 @@ tempvar_arg_eval(char *argp)
 /* state variables are expanded.  if it's
  * not an statevar, perhaps it's a mode?
  */
-static char *
+static const char *
 statevar_arg_eval(char *argp)
 {
     int vnum;
-    char *result;
+    const char *result;
 
     if ((result = get_argument(++argp)) == error_val) {
 	vnum = lookup_statevar(argp);
@@ -2300,7 +2300,7 @@ statevar_arg_eval(char *argp)
 }
 
 /* run a function to evalute it */
-static char *
+static const char *
 function_arg_eval(char *argp)
 {
     int fnum = vl_lookup_func(argp);
@@ -2308,7 +2308,7 @@ function_arg_eval(char *argp)
 }
 
 /* goto targets evaluate to their line number in the buffer */
-static char *
+static const char *
 label_arg_eval(char *argp)
 {
     static TBUFF *label;
@@ -2321,13 +2321,13 @@ label_arg_eval(char *argp)
 }
 
 /* the value of a quoted string begins just past the leading quote */
-static char *
+static const char *
 qstring_arg_eval(char *argp)
 {
     return argp + 1;
 }
 
-static char *
+static const char *
 directive_arg_eval(char *argp)
 {
     static TBUFF *tkbuf;
@@ -2346,7 +2346,7 @@ directive_arg_eval(char *argp)
     return lengthen_path(strcpy(tb_values(tkbuf), argp));
 }
 
-typedef char *(ArgEvalFunc) (char *argp);
+typedef const char *(ArgEvalFunc) (char *argp);
 
 static ArgEvalFunc *eval_func[] =
 {
@@ -2365,10 +2365,10 @@ static ArgEvalFunc *eval_func[] =
 #endif /* OPT_EVAL */
 
 /* evaluate to the string-value of a token */
-char *
+const char *
 tokval(char *tokn)
 {
-    char *result;
+    const char *result;
 
 #if OPT_EVAL
     {
@@ -2578,7 +2578,7 @@ absol(int x)
  * when parsing.
  */
 int
-must_quote_token(char *values, unsigned last)
+must_quote_token(const char *values, unsigned last)
 {
     unsigned n;
 
@@ -2599,7 +2599,7 @@ must_quote_token(char *values, unsigned last)
  * Appends the buffer, with quotes
  */
 void
-append_quoted_token(TBUFF ** dst, char *values, unsigned last)
+append_quoted_token(TBUFF ** dst, const char *values, unsigned last)
 {
     unsigned n;
 

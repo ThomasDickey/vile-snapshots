@@ -4,7 +4,7 @@
  * "termio.c". It compiles into nothing if not an ANSI device.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.42 2002/12/06 23:32:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.44 2003/05/27 00:21:58 tom Exp $
  */
 
 #include	"estruct.h"
@@ -24,7 +24,12 @@
 #define SCROLL_REG 0
 #endif
 
-#if	defined(linux)
+#ifdef ANSI_RESIZE
+#define NROW    77
+#define NCOL    132
+#endif
+
+#if    !defined NROW && defined(linux)
 #define NROW	25			/* Screen size.			*/
 #define NCOL	80			/* Edit if you want to.		*/
 #endif
@@ -355,6 +360,18 @@ ansiopen(void)
 		already_open = TRUE;
 		strcpy(screen_desc, "NORMAL");
 		revexist = TRUE;
+#if ! SYS_MSDOS
+		/* Get screen size from system */
+		getscreensize(&term.cols, &term.rows);
+		if (term.rows <= 1)
+		    term.rows = 24;
+
+		if (term.cols <= 1)
+		    term.cols = 80;
+		/* we won't resize, but need the measured size */
+		term.maxrows = term.rows;
+		term.maxcols = term.cols;
+#endif
 		ttopen();
 	}
 }

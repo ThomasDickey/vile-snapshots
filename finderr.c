@@ -3,9 +3,9 @@
  * written for vile by paul fox.
  * rewritten to use regular expressions by T.Dickey
  *
- * Copyright (c) 1990-2002 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1990-2003 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.114 2003/02/23 17:22:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.117 2003/05/26 18:09:43 tom Exp $
  *
  */
 
@@ -90,9 +90,6 @@ char *const predefined[] =
 						 */
 #endif
 
-#if SYS_APOLLO
-    " Line %L of \"%[^\" \t]\"",	/* C compiler */
-#endif
 #if SYS_SUNOS && defined(SYSTEM_HAS_LINT_PROG)
     "%[^:( \t](%L):%T",		/* bsd lint) */
     "  ::  %[^( \t](%L)",	/* bsd lint) */
@@ -871,7 +868,8 @@ make_err_regex_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 		    } else {
 			bprintf(", ");
 		    }
-		    bprintf("%s=\\%d", get_token_name(k), exp_table[j].words[k]);
+		    bprintf("%s=\\%d", get_token_name((ErrTokens) k),
+			    exp_table[j].words[k]);
 		}
 	    }
 	    ++j;

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.13 2003/02/17 16:55:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.14 2003/05/20 20:38:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Cwebx input
  * text.  Also useful for Cweb
@@ -34,42 +34,6 @@ static char *Cweb_code_titre;
 static char *Cweb_code_autre;
 
 static int in_code;	/* FIXME: should implement a stack */
-
-static void
-init_filter(int before)
-{
-    if (before) {
-	insert_keyword(NAME_TeX_command, ATTR_KEYWORD, 1);
-	insert_keyword(NAME_TeX_comment, ATTR_COMMENT, 1);
-	insert_keyword(NAME_Cweb_module, ATTR_KEYWORD, 1);
-	insert_keyword(NAME_Cweb_title,  ATTR_IDENT2,  1);
-	insert_keyword(NAME_Cweb_other,  "",           1);
-    }
-}
-
-static void
-do_filter(FILE *input)
-{
-    yyin = input;
-
-    in_code = 0;
-    Comment_attr = class_attr(NAME_COMMENT);
-    Preproc_attr = class_attr(NAME_PREPROC);
-    Keyword_attr = class_attr(NAME_KEYWORD);
-    String_attr  = class_attr(NAME_LITERAL);
-    Number_attr  = class_attr(NAME_NUMBER);
-    Type_attr    = class_attr(NAME_TYPES);
-
-    TeX_mot_cle  = class_attr(NAME_TeX_command);
-    TeX_comment  = class_attr(NAME_TeX_comment);
-    Cweb_nom_module = class_attr(NAME_Cweb_module);
-    Cweb_code_titre = class_attr(NAME_Cweb_title);
-    Cweb_code_autre = class_attr(NAME_Cweb_other);
-
-    BEGIN(INITIAL);
-    while (yylex() > 0) {
-    }
-}
 
 %}
 
@@ -148,3 +112,39 @@ RC		\n
 ^"%".*$			{ WriteToken(TeX_comment); }
 
 %%
+
+static void
+init_filter(int before)
+{
+    if (before) {
+	insert_keyword(NAME_TeX_command, ATTR_KEYWORD, 1);
+	insert_keyword(NAME_TeX_comment, ATTR_COMMENT, 1);
+	insert_keyword(NAME_Cweb_module, ATTR_KEYWORD, 1);
+	insert_keyword(NAME_Cweb_title,  ATTR_IDENT2,  1);
+	insert_keyword(NAME_Cweb_other,  "",           1);
+    }
+}
+
+static void
+do_filter(FILE *inputs)
+{
+    yyin = inputs;
+
+    in_code = 0;
+    Comment_attr = class_attr(NAME_COMMENT);
+    Preproc_attr = class_attr(NAME_PREPROC);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    String_attr  = class_attr(NAME_LITERAL);
+    Number_attr  = class_attr(NAME_NUMBER);
+    Type_attr    = class_attr(NAME_TYPES);
+
+    TeX_mot_cle  = class_attr(NAME_TeX_command);
+    TeX_comment  = class_attr(NAME_TeX_comment);
+    Cweb_nom_module = class_attr(NAME_Cweb_module);
+    Cweb_code_titre = class_attr(NAME_Cweb_title);
+    Cweb_code_autre = class_attr(NAME_Cweb_other);
+
+    BEGIN(INITIAL);
+    while (yylex() > 0) {
+    }
+}

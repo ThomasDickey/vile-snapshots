@@ -1,9 +1,13 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.75 2003/02/10 11:31:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.78 2003/05/24 15:37:25 tom Exp $
  */
 
 #ifndef FILTERS_H
 #define FILTERS_H 1
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifndef _estruct_h
 
@@ -266,6 +270,32 @@ FILTER_DEF filter_def = { name, init_filter, do_filter, options }
 #define YY_STACK_USED 0
 #endif
 
+#ifndef yywrap
+extern int yywrap(void);
+#endif
+
+/*
+ * 2003/5/20 - "new" flex 2.5.31:
+ * workaround for "developers" who don't use compiler-warnings...
+ * perhaps by the time "new" flex merits the term "beta", they'll fix this:
+ */
+#if defined(FLEX_BETA)
+#define YY_NO_INPUT 1		/* get rid of 'input()' function */
+extern FILE *yyget_in (void);
+extern FILE *yyget_out (void);
+extern char *yyget_text (void);
+extern int yyget_debug (void);
+extern int yyget_leng (void);
+extern int yyget_lineno (void);
+extern int yylex_destroy (void);
+extern void yyset_debug (int bdebug);
+extern void yyset_in (FILE * in_str);
+extern void yyset_lineno (int line_number);
+extern void yyset_out (FILE * out_str);
+/* there's also warnings for unused 'yyunput()', but I don't see a fix */
+/* flex's skeleton includes <unistd.h> - no particular reason apparent */
+#endif
+
 /*
  * Declared in the filters.c file.
  */
@@ -278,6 +308,8 @@ extern int eqls_ch;
 extern int meta_ch;
 extern int vile_keywords;
 extern int flt_options[256];
+
+#define FltOptions(c) flt_options[CharOf(c)]
 
 extern KEYWORD *is_class(char *name);
 extern KEYWORD *is_keyword(char *name);
@@ -313,18 +345,18 @@ extern void parse_keyword(char *name, int classflag);
  * Declared in filterio.c and/or builtflt.c
  */
 extern char *flt_gets(char **ptr, unsigned *len);
-extern char *flt_name(void);
+extern const char *flt_name(void);
 extern char *flt_put_blanks(char *string);
 extern char *skip_blanks(char *src);
 extern int chop_newline(char *s);
 extern int flt_input(char *buffer, int max_size);
 extern int flt_lookup(char *name);
 extern int flt_start(char *name);
-extern void flt_echo(char *string, int length);
+extern void flt_echo(const char *string, int length);
 extern void flt_failed(const char *msg);
 extern void flt_finish(void);
 extern void flt_putc(int ch);
-extern void flt_puts(char *string, int length, char *attribute);
+extern void flt_puts(const char *string, int length, const char *attribute);
 extern void mlforce(const char *fmt, ...);
 
 #ifndef strmalloc
@@ -357,6 +389,10 @@ extern char *strmalloc(const char *src);
 
 #if NO_LEAKS
 #include <trace.h>
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* FILTERS_H */

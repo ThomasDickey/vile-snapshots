@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.13 2001/03/26 14:18:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.14 2003/05/20 20:38:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mail
  */
@@ -17,34 +17,7 @@ static char *Comment_attr;
 static char *Ident2_attr;
 static char *String_attr;
 
-static void
-write_label(char *text, int size)
-{
-    char *lname = lowercase_of(text);
-    lname[--size] = 0;
-    flt_puts(text, size, keyword_attr(lname));
-    flt_putc(':');
-}
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *input)
-{
-    yyin = input;
-
-    Action_attr  = class_attr(NAME_ACTION);
-    Comment_attr = class_attr(NAME_COMMENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    BEGIN(HEADER);
-    while (yylex() > 0) {
-    }
-}
+static void write_label(char *text, int size);
 
 %}
 
@@ -69,3 +42,34 @@ URL		[A-Za-z]+"://"[0-9a-zA-Z%/.~_#?=-]+
 
 {EMAIL}			{ WriteToken(Ident2_attr); }
 {URL}			{ WriteToken(Ident2_attr); }
+
+%%
+
+static void
+write_label(char *text, int size)
+{
+    char *lname = lowercase_of(text);
+    lname[--size] = 0;
+    flt_puts(text, size, keyword_attr(lname));
+    flt_putc(':');
+}
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *inputs)
+{
+    yyin = inputs;
+
+    Action_attr  = class_attr(NAME_ACTION);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    BEGIN(HEADER);
+    while (yylex() > 0) {
+    }
+}

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.19 2003/02/10 02:06:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.21 2003/05/24 00:49:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
@@ -33,45 +33,8 @@ static int brace_level = 0;
 
 #include <fltstack.h>
 
-static void
-set_state(void)
-{
-    if (section >= CodeSection) {
-	new_state(CODE);
-    } else if (section >= ActionSection) {
-	new_state(ACTIONS);
-    } else {
-	new_state(RULES);
-    }
-}
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *input)
-{
-    yyin = input;
-    Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident_attr   = class_attr(NAME_IDENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
-    Preproc_attr = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    section = RuleSection;
-    brace_level = 0;
-    save_attr = Error_attr;
-
-    begin_state(RULES);
-    while (yylex() > 0) {
-    }
-    end_state();
-}
+static SECTIONS NextSection(SECTIONS);
+static void set_state(void);
 
 %}
 
@@ -97,7 +60,7 @@ PATTERN		(\\.|\[(\\.|.)*\]|[^ \t\n])+
 		    WriteToken(keyword_attr(yytext));
 		    switch(yytext[1]) {
 		    case '%':
-		    	section++;
+		    	section = NextSection(section);
 			set_state();
 			break;
 		    case '{':
@@ -144,3 +107,61 @@ PATTERN		(\\.|\[(\\.|.)*\]|[^ \t\n])+
 ^{SPACE}*#{SPACE}*{IDENT}({SPACE}+(\<[^>]+\>|\"[^"]+\"))? { WriteToken(Preproc_attr); }
 {QIDENT}		{ WriteToken(Ident2_attr); }
 {STRINGS}		{ WriteToken(String_attr); }
+
+%%
+
+static SECTIONS
+NextSection(SECTIONS next)
+{
+    switch (next) {
+    case RuleSection:
+	next = ActionSection;
+	break;
+    case ActionSection:
+	next = CodeSection;
+	break;
+    case CodeSection:
+	break;
+    }
+    return next;
+}
+
+static void
+set_state(void)
+{
+    if (section >= CodeSection) {
+	new_state(CODE);
+    } else if (section >= ActionSection) {
+	new_state(ACTIONS);
+    } else {
+	new_state(RULES);
+    }
+}
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *inputs)
+{
+    yyin = inputs;
+    Comment_attr = class_attr(NAME_COMMENT);
+    Error_attr   = class_attr(NAME_ERROR);
+    Ident_attr   = class_attr(NAME_IDENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    Number_attr  = class_attr(NAME_NUMBER);
+    Preproc_attr = class_attr(NAME_PREPROC);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    section = RuleSection;
+    brace_level = 0;
+    save_attr = Error_attr;
+
+    begin_state(RULES);
+    while (yylex() > 0) {
+    }
+    end_state();
+}

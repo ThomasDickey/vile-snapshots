@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.73 2003/03/18 00:24:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.74 2003/05/24 00:49:25 tom Exp $
  */
 
 #include	"estruct.h"
@@ -36,8 +36,8 @@ static char *x_shellflags;	/* flags separating "$xshell" from command */
 static char *cdpath;		/* $CDPATH environment is "$cdpath" state variable. */
 #endif
 
-static char *
-DftEnv(char *name, char *dft)
+static const char *
+DftEnv(const char *name, const char *dft)
 {
 #if OPT_EVAL && OPT_SHELL
     name = vile_getenv(name);
@@ -191,8 +191,8 @@ any_HOOK(TBUFF ** rp, const char *vp, HOOK * hook)
 }
 #endif
 
-char *
-vile_getenv(char *s)
+const char *
+vile_getenv(const char *s)
 {
 #if OPT_EVAL && OPT_SHELL
     register char *v = getenv(s);

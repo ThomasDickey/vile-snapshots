@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rb-filt.l,v 1.7 2003/02/09 19:08:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rb-filt.l,v 1.8 2003/05/20 20:38:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a Ruby script
  * based on the Python filter.
@@ -37,74 +37,8 @@ static char *here_match;
 static unsigned here_len;
 static int in_here;
 
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *input)
-{
-    yyin = input;
-
-    Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident_attr   = class_attr(NAME_IDENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    begin_state(CODE);
-    while (yylex() > 0) {
-    }
-    flt_bfr_finish();
-    end_state();
-}
-
-static int
-save_here(char *text, int len)
-{
-    char *s = here_tag = do_alloc(here_tag, len, &here_len);
-
-    text += 2;		/* skip over "<<" */
-    if (*text == '-')
-	++text;
-    while (len-- > 0) {
-	if (isIdent(CharOf(*text))) {
-	    *s++ = *text;
-	} else if (*text == '\'' || *text == '\"') {
-	    ;
-	} else {
-	    break;
-	}
-	text++;
-    }
-    *s = 0;
-    return (s - here_tag) != 0;
-}
-
-/*
- * Replaces PopQuote().
- */
-static void
-pop_quote(char *text, int length)
-{
-    char *attr = 0;
-
-    flt_bfr_append(text, length);
-    flt_bfr_finish();
-    pop_state();
-    switch (stk_state[stk_level].state) {
-    case HERE:
-    case SSTRING:
-    case DSTRING:
-	attr = String_attr;
-	break;
-    }
-    if (attr != 0)
-	flt_bfr_begin(String_attr);
-}
+static int save_here(char *text, int len);
+static void pop_quote(char *text, int length);
 
 %}
 
@@ -205,3 +139,74 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL})[L]?|{REAL}
 
 <CODE>\\.		|
 <CODE>.			{ ECHO; }
+
+%%
+
+static int
+save_here(char *text, int len)
+{
+    char *s = here_tag = do_alloc(here_tag, len, &here_len);
+
+    text += 2;		/* skip over "<<" */
+    if (*text == '-')
+	++text;
+    while (len-- > 0) {
+	if (isIdent(CharOf(*text))) {
+	    *s++ = *text;
+	} else if (*text == '\'' || *text == '\"') {
+	    ;
+	} else {
+	    break;
+	}
+	text++;
+    }
+    *s = 0;
+    return (s - here_tag) != 0;
+}
+
+/*
+ * Replaces PopQuote().
+ */
+static void
+pop_quote(char *text, int length)
+{
+    char *attr = 0;
+
+    flt_bfr_append(text, length);
+    flt_bfr_finish();
+    pop_state();
+    switch (stk_state[stk_level].state) {
+    case HERE:
+    case SSTRING:
+    case DSTRING:
+	attr = String_attr;
+	break;
+    }
+    if (attr != 0)
+	flt_bfr_begin(String_attr);
+}
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *inputs)
+{
+    yyin = inputs;
+
+    Comment_attr = class_attr(NAME_COMMENT);
+    Error_attr   = class_attr(NAME_ERROR);
+    Ident_attr   = class_attr(NAME_IDENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    Number_attr  = class_attr(NAME_NUMBER);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    begin_state(CODE);
+    while (yylex() > 0) {
+    }
+    flt_bfr_finish();
+    end_state();
+}

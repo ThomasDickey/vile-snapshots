@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/est-filt.l,v 1.2 2002/10/11 16:44:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/est-filt.l,v 1.3 2003/05/20 20:38:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of enscript
  * syntax-description files.
@@ -17,29 +17,6 @@ static char *Ident_attr;
 static char *Keyword_attr;
 static char *Number_attr;
 static char *String_attr;
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *input)
-{
-    yyin = input;
-
-    Comment_attr = class_attr(NAME_COMMENT);
-    Ident_attr   = class_attr(NAME_IDENT);
-    Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    BEGIN(CODE);
-
-    while (yylex() > 0) {
-    }
-    flt_bfr_error();
-}
 
 %}
 
@@ -81,3 +58,28 @@ RANGE		"["(\\.|.)+"]"
 <EXP2>{RANGE}			{ flt_bfr_append(yytext, yyleng); }
 <EXP2>[^/]			{ flt_bfr_append(yytext, yyleng); }
 <EXP1,EXP2>"/"			{ FinishQuote(CODE); }
+
+%%
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *inputs)
+{
+    yyin = inputs;
+
+    Comment_attr = class_attr(NAME_COMMENT);
+    Ident_attr   = class_attr(NAME_IDENT);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    Number_attr  = class_attr(NAME_NUMBER);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    BEGIN(CODE);
+
+    while (yylex() > 0) {
+    }
+    flt_bfr_error();
+}

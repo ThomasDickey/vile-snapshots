@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.345 2003/03/17 23:23:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.350 2003/05/26 15:19:43 tom Exp $
  */
 
 #include "estruct.h"
@@ -1106,7 +1106,7 @@ explicit_dosmode(BUFFER *bp, RECORD_SEP record_sep)
  * Recompute the buffer size, redisplay the [Settings] buffer.
  */
 static int
-modified_record_sep(int record_sep)
+modified_record_sep(RECORD_SEP record_sep)
 {
     explicit_dosmode(curbp, record_sep);
     guess_dosmode(curbp);
@@ -1198,7 +1198,7 @@ guess_recordseparator(BUFFER *bp, UCHAR * buffer, B_COUNT length, L_NUM * lines)
     B_COUNT count_dos = 0;	/* CRLF's */
     B_COUNT count_unix = 0;	/* LF's w/o preceding CR */
     B_COUNT n;
-    RECORD_SEP result = RS_DEFAULT;
+    RECORD_SEP result;
 
     *lines = 0;
     for (n = 0; n < length; ++n) {
@@ -1296,8 +1296,8 @@ quickreadf(BUFFER *bp, int *nlinep)
     L_NUM lineno = 0;
     L_NUM nlines;
     RECORD_SEP rscode;
-    UCHAR *buffer = 0;
-    int rc = FIOSUC;
+    UCHAR *buffer;
+    int rc;
 
     TRACE((T_CALLED "quickreadf(buffer=%s, file=%s)\n", bp->b_bname, bp->b_fname));
 
@@ -1342,7 +1342,7 @@ quickreadf(BUFFER *bp, int *nlinep)
 
 	/* allocate all of the line structs we'll need */
 	if ((bp->b_LINEs = typeallocn(LINE, nlines)) == NULL) {
-	    FreeAndNull(buffer);
+	    free(buffer);
 	    ffrewind();
 	    rc = FIOMEM;
 	} else {
@@ -2422,15 +2422,11 @@ imdying(int ACTUAL_SIG_ARGS)
     BUFFER *bp;
     int bad_karma = FALSE;
 #if SYS_UNIX
-    char cmd[NFILEN + 250];
+    char cmd[(NFILEN * 2) + 250];
 #endif
     static int created = FALSE;
     char temp[NFILEN];
     char my_buffer[NSTRING];
-
-#if SYS_APOLLO
-    extern char *getlogin(void);
-#endif /* SYS_APOLLO */
 
 #if OPT_WORKING && defined(SIGALRM)
     setup_handler(SIGALRM, SIG_IGN);
@@ -2448,13 +2444,6 @@ imdying(int ACTUAL_SIG_ARGS)
     fflinelen = 0;
     ffp = 0;
     ffd = -1;
-
-#if SYS_APOLLO
-    (void) lsprintf(cmd,
-		    "(echo signal %d killed vile;/com/tb %d)| /bin/mail %s",
-		    signo, getpid(), getlogin());
-    (void) system(cmd);
-#endif /* SYS_APOLLO */
 
     /* write all modified buffers to the temp directory */
     set_global_g_val(GMDIMPLYBUFF, FALSE);	/* avoid side-effects! */
@@ -2482,9 +2471,18 @@ imdying(int ACTUAL_SIG_ARGS)
 	    wrote++;
 	}
     }
-#if SYS_UNIX			/* try and send mail */
+#if SYS_UNIX			/* try to send mail */
+    /*
+     * If VILE_ERROR_ABORT is defined, send mail even if there are no pieces
+     * to pick up.  It makes it simpler to find the core file, if any was
+     * forced, and ensures that we can distinguish an abnormal exit from
+     * accidentally typing 'Q'.
+     */
+#ifndef VILE_ERROR_ABORT
     /* if we wrote, or tried to */
-    if (wrote || bad_karma) {
+    if (wrote || bad_karma)
+#endif
+    {
 	const char **mailcmdp;
 	struct stat sb;
 	char *np;
@@ -2502,7 +2500,9 @@ imdying(int ACTUAL_SIG_ARGS)
 	    char *cp;
 	    cp = lsprintf(cmd, "( %s %s; %s; %s; %s %d;",
 			  "echo To:", np,
-			  "echo Subject: vile died, files saved",
+			  ((wrote || bad_karma)
+			   ? "echo Subject: vile died, files saved"
+			   : "echo Subject: vile died, no files saved"),
 			  "echo",
 			  "echo vile died due to signal", signo);
 
@@ -2516,19 +2516,22 @@ imdying(int ACTUAL_SIG_ARGS)
 			      "echo on host", hostname);
 	    }
 #endif
-	    cp = lsprintf(cp,
-			  "echo the following files were saved in directory %s;",
-			  dirnam);
+	    cp = lsprintf(cp, "echo current directory:;pwd;");
+	    if (wrote) {
+		cp = lsprintf(cp,
+			      "echo the following files were saved in directory %s;",
+			      dirnam);
 
-	    cp = lsprintf(cp, "%s%s%s;",
+		cp = lsprintf(cp, "%s%s%s;",
 #ifdef HAVE_MKDIR
-	    /* reverse sort so '.' comes last, in case it
-	     * terminates the mail message early */
-			  "ls -a ", dirnam, " | sort -r"
+		/* reverse sort so '.' comes last, in case it
+		 * terminates the mail message early */
+			      "ls -a ", dirnam, " | sort -r"
 #else
-			  "ls ", dirnam, "/V*"
+			      "ls ", dirnam, "/V*"
 #endif
-		);
+		    );
+	    }
 
 	    if (bad_karma)
 		cp = lsprintf(cp, "%s %s",
@@ -2543,7 +2546,11 @@ imdying(int ACTUAL_SIG_ARGS)
     term.cursorvis(TRUE);	/* ( this might work ;-) */
     if (signo != SIGHUP && signo != SIGINT) {
 	ttclean(FALSE);
+#ifdef VILE_ERROR_ABORT
+	ExitProgram(signo);
+#else
 	abort();
+#endif
     }
 #else
     if (wrote) {

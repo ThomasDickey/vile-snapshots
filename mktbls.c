@@ -5,7 +5,7 @@
  *	included in main.c
  *
  *	Copyright (c) 1990 by Paul Fox
- *	Copyright (c) 1995-2002 by Paul Fox and Thomas Dickey
+ *	Copyright (c) 1995-2003 by Paul Fox and Thomas Dickey
  *
  *	See the file "cmdtbl" for input data formats, and "estruct.h" for
  *	the output structures.
@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.127 2003/01/03 00:46:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.130 2003/05/27 00:54:48 tom Exp $
  *
  */
 
@@ -42,10 +42,6 @@
 #  define HAVE_STDLIB_H 1
 # endif
 
-	/* unix-stuff */
-# if (defined(__GNUC__) && (defined(apollo) || defined(sun) || defined(__hpux) || defined(linux)))
-#  define HAVE_STDLIB_H 1
-# endif
 #endif /* !defined(HAVE_CONFIG_H) */
 
 #ifndef SYS_VMS
@@ -133,7 +129,7 @@ extern void free(char *ptr);
 #define	Sprintf	(void)sprintf
 
 #ifdef MISSING_EXTERN_FPRINTF
-extern int fprintf(FILE * fp, const char *fmt,...);
+extern int fprintf(FILE *fp, const char *fmt,...);
 #endif
 
 #define	SaveEndif(head)	InsertOnEnd(&head, "#endif")
@@ -304,7 +300,7 @@ free_LIST(LIST ** p)
 
 /******************************************************************************/
 static void
-WriteLines(FILE * fp, const char *const *list, int count)
+WriteLines(FILE *fp, const char *const *list, int count)
 {
     while (count-- > 0)
 	Fprintf(fp, "%s\n", *list++);
@@ -547,7 +543,7 @@ BeginIf(void)
 }
 
 static void
-FlushIf(FILE * fp)
+FlushIf(FILE *fp)
 {
     if (lastIfdef != 0) {
 	Fprintf(fp, "#endif\n");
@@ -556,7 +552,7 @@ FlushIf(FILE * fp)
 }
 
 static void
-WriteIf(FILE * fp, const char *cond)
+WriteIf(FILE *fp, const char *cond)
 {
     if (cond == 0)
 	cond = "";
@@ -729,7 +725,7 @@ Name2Address(char *name, char *type)
 
 /* define Member_Offset macro, used in index-definitions */
 static void
-DefineOffset(FILE * fp)
+DefineOffset(FILE *fp)
 {
 #if USE_OFFSETS
     Fprintf(fp,
@@ -747,7 +743,7 @@ DefineOffset(FILE * fp)
 
 /* generate the index-struct (used for deriving ifdef-able index definitions) */
 static void
-WriteIndexStruct(FILE * fp, LIST * p, const char *ppref)
+WriteIndexStruct(FILE *fp, LIST * p, const char *ppref)
 {
 #if USE_OFFSETS
     char *s, temp[MAX_BUFFER], line[MAX_BUFFER], *vec[MAX_PARSE];
@@ -1584,7 +1580,7 @@ finish_fsms_h(void)
 
 /******************************************************************************/
 static void
-dump_execs(FILE * fp, int count)
+dump_execs(FILE *fp, int count)
 {
     int n;
 
@@ -1648,7 +1644,7 @@ save_funcs(
 }
 
 static void
-dump_funcs(FILE * fp, LIST * head)
+dump_funcs(FILE *fp, LIST * head)
 {
     LIST *p;
     for (p = head; p != 0; p = p->nst)
@@ -1806,7 +1802,7 @@ dump_ufuncs(void)
 	    init_ufuncs();
 	Sprintf(temp, "\t{\"%s\",", p->Name);
 	(void) PadTo(15, temp);
-	Sprintf(temp + strlen(temp), "%s},", p->Data);
+	Sprintf(temp + strlen(temp), "(UFuncCode)(%s)},", p->Data);
 	if (p->Note[0]) {
 	    (void) PadTo(32, temp);
 	    Sprintf(temp + strlen(temp), "/* %s */", p->Note);

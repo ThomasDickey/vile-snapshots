@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/asm-filt.l,v 1.1 2002/11/04 00:52:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/asm-filt.l,v 1.2 2003/05/20 20:38:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of M$ assembler files.
  */
@@ -21,32 +21,6 @@ static char *Number_attr;
 static char *Prepro_attr;
 static char *Quoted_attr;
 static char *String_attr;
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *input)
-{
-    yyin = input;
-
-    Action_attr  = class_attr(NAME_ACTION);
-    Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident_attr   = class_attr(NAME_IDENT2);
-    Number_attr  = class_attr(NAME_NUMBER);
-    Prepro_attr  = class_attr(NAME_PREPROC);
-    Quoted_attr  = class_attr(NAME_QUOTED);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    BEGIN(NORMAL);
-
-    while (yylex() > 0) {
-    }
-    flt_bfr_error();
-}
 
 %}
 
@@ -86,3 +60,31 @@ FORMAT		"%"[.*0-9l#+-]*[cdeEfFgGisuxX]
 
 <NORMAL>\\.		|
 <NORMAL>{STRING}	{ WriteToken(String_attr); }
+
+%%
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *inputs)
+{
+    yyin = inputs;
+
+    Action_attr  = class_attr(NAME_ACTION);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Error_attr   = class_attr(NAME_ERROR);
+    Ident_attr   = class_attr(NAME_IDENT2);
+    Number_attr  = class_attr(NAME_NUMBER);
+    Prepro_attr  = class_attr(NAME_PREPROC);
+    Quoted_attr  = class_attr(NAME_QUOTED);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    BEGIN(NORMAL);
+
+    while (yylex() > 0) {
+    }
+    flt_bfr_error();
+}

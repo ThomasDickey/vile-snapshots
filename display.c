@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.374 2003/05/05 20:11:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.377 2003/05/26 00:42:06 pgf Exp $
  *
  */
 
@@ -1755,10 +1755,12 @@ update_line_attrs(WINDOW *wp)
 {
     int row;
     LINEPTR lp;
-    int linewrap = 0;
+    int linewrap;
 
 #ifdef WMDLINEWRAP
     linewrap = w_val(wp, WMDLINEWRAP);
+#else
+    linewrap = 0;
 #endif
 
     row = TopRow(wp);
@@ -2401,9 +2403,9 @@ update_physical_screen(int force GCC_UNUSED)
  */
 #if OPT_MLFORMAT || OPT_POSFORMAT || OPT_TITLE
 static void
-mlfs_prefix(char **fsp, char **msp, int lchar)
+mlfs_prefix(const char **fsp, char **msp, int lchar)
 {
-    register char *fs = *fsp;
+    register const char *fs = *fsp;
     register char *ms = *msp;
     if (*fs == ':') {
 	fs++;
@@ -2438,7 +2440,7 @@ mlfs_prefix(char **fsp, char **msp, int lchar)
 }
 
 static void
-mlfs_suffix(char **fsp, char **msp, int lchar)
+mlfs_suffix(const char **fsp, char **msp, int lchar)
 {
     mlfs_prefix(fsp, msp, lchar);
     if (**fsp == ':')
@@ -2446,9 +2448,9 @@ mlfs_suffix(char **fsp, char **msp, int lchar)
 }
 
 static void
-mlfs_skipfix(char **fsp)
+mlfs_skipfix(const char **fsp)
 {
-    register char *fs = *fsp;
+    register const char *fs = *fsp;
     if (*fs == ':') {
 	for (fs++; *fs && *fs != ':'; fs++) ;
 	if (*fs == ':')
@@ -2634,11 +2636,11 @@ percentage(WINDOW *wp)
  * a number of special variables that we would like to output quickly.
  */
 void
-special_formatter(TBUFF ** result, char *fs, WINDOW *wp)
+special_formatter(TBUFF ** result, const char *fs, WINDOW *wp)
 {
     BUFFER *bp;
     char *ms;
-    char *save_fs;
+    const char *save_fs;
     char left_ms[NFILEN * 2];
     char right_ms[NFILEN * 2];
     char temp[NFILEN];
@@ -2711,7 +2713,7 @@ special_formatter(TBUFF ** result, char *fs, WINDOW *wp)
 
 		    if (bp->b_fname != 0) {
 			/*
-			 * when b_fname is a pipe cmd, it can be 
+			 * when b_fname is a pipe cmd, it can be
 			 * arbitrarily long
 			 */
 
@@ -2965,11 +2967,11 @@ update_modeline(WINDOW *wp)
     }
 #ifdef WMDRULER
     if (w_val(wp, WMDRULER))
-	(void) lsprintf(right_ms, " (%d,%d) %3p",
+	(void) lsprintf(right_ms, " (%d,%d) %3P",
 			wp->w_ruler_line, wp->w_ruler_col, lchar);
     else
 #endif
-	(void) lsprintf(right_ms, " %s %3p", rough_position(wp), lchar);
+	(void) lsprintf(right_ms, " %s %3P", rough_position(wp), lchar);
 
     *ms++ = EOS;
     right_len = strlen(right_ms);
@@ -3531,7 +3533,7 @@ mlsavec(int c)
 }
 
 /*
- * Do the real message-line work.  Keep track of the physical cursor position. 
+ * Do the real message-line work.  Keep track of the physical cursor position.
  * A small class of printf like format items is handled.  Set the "message
  * line" flag TRUE.
  */
@@ -3631,7 +3633,7 @@ mlmsg(const char *fmt, va_list * app)
 }
 
 /*
- * Format a string onto the message line, but only if it's appropriate. 
+ * Format a string onto the message line, but only if it's appropriate.
  * Keyboard macro replay, "dot" command replay, command buffer execution,
  * "terse" mode, and the user-accessible "discmd" state variable can all
  * suppress this.
@@ -3877,14 +3879,14 @@ newscreensize(int h, int w)
     } else {
 	chg_width = chg_height = 0;
 	if ((h > term.maxrows) || (w > term.maxcols)) {
-	    int or, oc;
-	    or = term.maxrows;
-	    oc = term.maxcols;
+	    int old_r, old_c;
+	    old_r = term.maxrows;
+	    old_c = term.maxcols;
 	    term.maxrows = h;
 	    term.maxcols = w;
 	    if (!vtinit()) {	/* allocation failure */
-		term.maxrows = or;
-		term.maxcols = oc;
+		term.maxrows = old_r;
+		term.maxcols = old_c;
 		return;
 	    }
 	}
