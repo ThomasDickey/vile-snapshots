@@ -1,5 +1,17 @@
 Changes for vile 6.3 (released ??? ??? ??, 1996)
 
+(tom)	961107 (e)
+	+ correct symbol conflict with shared library on OpenVMS 7.0 by
+	  renaming opendir, etc., and tempnam.  Also, remove redundant rule for
+	  vms_link.opt from descrip.mms (from logs by Sheldon E. Smith
+	  <ssmith@galina.ENET.dec.com>).
+	+ correct sign-extension in ntconio.c that prevented display of 8-bit
+	  characters (fix by Even Holen <evenh@pvv.ntnu.no>).
+	+ fix compiler warnings in borland.c (from logs by Jerry Alexandratos
+	  <alexandr@hawk.pearson.udel.edu>).
+	+ correction to logic for "~endif", macros weren't re-enabled after
+	  exiting an ~if/~endif (fix by Ian Jamison <ianj@quadrics.com>).
+
 (tom)	961105 (d)
 	+ apply Brendan O'Dea's <bod@tyndall.com.au> followup patch to ensure
 	  that "#", "%" and ":" substitions aren't made in search/replacement

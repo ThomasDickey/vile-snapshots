@@ -11,7 +11,7 @@
 # all as "0".  If you use tcap.c, you'll need libtermcap.a too.  If you use
 # x11.c, you'll need libX11.a too.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.31 1996/09/05 01:59:48 pgf Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.32 1996/11/07 02:00:25 tom Exp $
 
 # for building the X version, xvile, use these:
 #SCREEN = x11simp
@@ -249,9 +249,6 @@ $(MKTBLS) : mktbls.obj $(OPTFILE)
 
 $(TARGET) : $(OBJ), vms_link.opt, descrip.mms $(OPTFILE)
 	$(LINK) $(LINKFLAGS) main.obj, $(SCREEN).obj, vms_link/opt 
-
-vms_link.opt :
-	@vmsbuild vile.exe vms_link_opt
 
 vms_link.opt :
 	@vmsbuild vms_link_opt

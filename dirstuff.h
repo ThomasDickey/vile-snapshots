@@ -4,7 +4,7 @@
  *	Definitions to interface to unix-like DIRECTORY(3) procedures.
  *	Include this after "estruct.h"
  *
- * $Header: /users/source/archives/vile.vcs/RCS/dirstuff.h,v 1.22 1996/03/28 12:53:33 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/dirstuff.h,v 1.23 1996/11/07 02:00:25 tom Exp $
  *
  */
 
@@ -104,6 +104,11 @@ typedef	struct	{
 #endif
 
 #if SYS_WINNT && !CC_TURBO || SYS_VMS || USE_LS_FOR_DIRS
+	/* rename these, just in case there's a shared-library around */
+#define opendir  vile_opendir
+#define readdir  vile_readdir
+#define closedir vile_closedir
+
 extern	DIR *	opendir ( char *path );
 extern	DIRENT *readdir ( DIR *dp );
 extern	int	closedir ( DIR *dp );
