@@ -582,6 +582,8 @@ State Variables
 	$seed           The seed for the internal random number generator.
 
 	$shell          Name of the shell program for spawned commands.
+			For Unix, this corresponds to $SHELL, while DOS,
+			OS/2 and related systems use $COMSPEC.
 
 	$sres           Current screen size on a DOS PC (meaningless on a
 			Win32 host).  Values:
@@ -617,9 +619,12 @@ State Variables
 	$xdisplay       The value to set $DISPLAY when running $xshell.
 
 	$xshell         Name of the terminal program for spawned xvile
-			commands.
+			commands.  The default is "xterm", but may also
+			be set by the environment variable $XSHELL.
 
-	$xshell-flags   Command-line flags after $xshell, normally "-c"
+	$xshell-flags   Command-line flags after $xshell, normally "-e"
+			The $XSHELLFLAGS environment variable determines
+			the default value.
 
 
 Mode variables
@@ -1348,6 +1353,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.65 2000/11/04 21:10:10 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.66 2000/12/05 11:34:44 tom Exp $
 -----------------------------------
 

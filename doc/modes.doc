@@ -80,9 +80,9 @@ Example
 	; Specifies the filename suffixes which control whether a newly-loaded
 	; buffer is set to 'c' mode.
 
-	define-submode c tabstops=4
+	define-submode c tabstop=4
 	define-submode c shiftwidth=4
-	; Defines the 'c' tabstops and shiftwidth.  If no "define-submode"
+	; Defines the 'c' tabstop and shiftwidth.  If no "define-submode"
 	; command is given, no separate symbol is defined.
 
 As an example, to define a new major mode for perl programming, you might
@@ -129,7 +129,7 @@ mode:
 	; clear c mode (existing implementation)
 
 	unsetl cmode
-	; clear c mode (not currently implemented)
+	; clear c mode
 
 The restriction to a single majormode is because mode values are
 internally represented as structures with a pointer.  The pointer
@@ -271,5 +271,5 @@ Note that the following are equivalent once you have defined the majormode "c":
 	define-submode c tabstop=8
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.7 2000/01/09 22:58:35 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.8 2000/12/05 11:39:46 cmorgan Exp $
 -------------------------------

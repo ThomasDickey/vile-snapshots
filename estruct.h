@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.458 2000/11/15 11:27:42 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.459 2000/12/04 02:08:52 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1819,6 +1819,7 @@ typedef struct	BUFFER {
 	int	b_refcount;		/* counts levels of source'ing	*/
 	UINT	b_nwnd; 		/* Count of windows on buffer	*/
 	UINT	b_flag; 		/* Flags			*/
+	short	b_inuse;		/* nonzero if executing macro	*/
 	short	b_acount;		/* auto-save count		*/
 	char	*b_fname;		/* File name			*/
 	int	b_fnlen;		/* length of filename		*/

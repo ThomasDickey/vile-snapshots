@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.336 2000/11/15 11:28:08 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.337 2000/12/04 11:35:56 kev Exp $
  *
  */
 
@@ -1898,7 +1898,7 @@ updlineattrs(WINDOW *wp)
     linewrap = w_val(wp,WMDLINEWRAP);
 #endif
 
-    row = wp->w_toprow;
+    row = TopRow(wp);
     lp = wp->w_line.l;
     while (row < wp->w_toprow + wp->w_ntrows && lp != win_head(wp)) {
 	int save_offset = w_left_margin(wp);
@@ -1906,10 +1906,24 @@ updlineattrs(WINDOW *wp)
 	if (lp->l_attrs) {
 	    C_NUM start_col, end_col;
 	    int i, a;
+	    /* Attempt to set starting point intelligently.  */
 	    if (wp->w_line.o < 0)
 		i = col2offs(wp, lp, -(wp->w_line.o * term.cols));
-	    else
-		i = 0;
+	    else {
+		if (w_val(wp, WVAL_SIDEWAYS))
+		    i = col2offs(wp, lp, 0);
+		else
+		    i = 0;
+	    }
+	    /* If i > 0, make sure it indexes a valid attribute.  */
+	    if (i > 0) {
+		int ii;
+		for (ii = 0; ii < i; ii++)
+		    if (lp->l_attrs[ii] == 0)
+			break;
+		i = ii;
+	    }
+	    /* Scan attributes... */
 	    for (;;) {
 		if (lp->l_attrs[i] == 0)
 		    break;		/* get out if at end */
@@ -1925,16 +1939,20 @@ updlineattrs(WINDOW *wp)
 		if (start_col < w_left_margin(wp))
 		    start_col = w_left_margin(wp);
 		end_col = offs2col0(wp, lp, i, &save_offset, &save_column) - 1;
-	        if (!linewrap)
+	        if (!linewrap) {
+		    if (start_col > term.cols)
+			break;
 		    mergeattr(wp, row, start_col, end_col,
 			      line_attr_tbl[a].vattr);
+		    if (end_col > term.cols)
+			break;
+		}
 		else {
-		    int adjrow = row + start_col / term.cols + wp->w_line.o;
-		    if (adjrow < mode_row(wp))
-			mergeattr(wp, adjrow,
-				  start_col % term.cols,
-				  end_col % term.cols,
-				  line_attr_tbl[a].vattr);
+		    /* mergeattr() handles wrapping of attributes for us.  */
+		    mergeattr(wp, row, start_col, end_col,
+			      line_attr_tbl[a].vattr);
+		    if (row + end_col / term.cols >= mode_row(wp))
+			break;		/* Get out if no more to do.  */
 		}
 	    }
 	}
