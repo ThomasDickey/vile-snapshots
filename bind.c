@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.205 1999/09/10 21:52:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.207 1999/10/03 20:34:18 tom Exp $
  *
  */
 
@@ -385,7 +385,14 @@ rebind_key (
 register int	c,
 register const CMDFUNC *kcmd)
 {
-	static const CMDFUNC ignored = { INIT_UNION( unimpl ), 0, 0 },
+	static const CMDFUNC ignored = { INIT_UNION( unimpl ), 0
+#if OPT_MACRO_ARGS
+			,0
+#endif
+#if OPT_ONLINEHELP
+			,0
+#endif
+			},
 		*old = &ignored;
 	return install_bind (c, kcmd, &old);
 }
@@ -2698,6 +2705,35 @@ char *give_accelerator ( char *bname )
 	return NULL;
 }
 #endif /* OPT_MENUS */
+
+
+
+#if SYS_WINNT
+/*
+ * At least one user wants the ability to swap ALT+Insert and CTRL+Insert
+ * (mappings that copy info to the clipboard).
+ *
+ * If [win]vile ever gives end users the ability to map commands using
+ * ALT, CTRL, and SHIFT prefixes, then swapcbrdkeys() will likely be
+ * removed.
+ */
+int
+swapcbrdkeys(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    const CMDFUNC *cmd;
+    int           rc = FALSE;
+
+    if ((cmd = engl2fnc("copy-unnamed-reg-to-clipboard")) != NULL)
+        if (rebind_key(W32_KEY|VK_INSERT|W32_CTRL, cmd))
+            if ((cmd = engl2fnc("copy-to-clipboard-til")) != NULL)
+                if (rebind_key(W32_KEY|VK_INSERT|W32_ALT, cmd))
+                    rc = TRUE;
+
+    if (! rc)
+        mlforce("[swap failed]");
+    return (rc);
+}
+#endif
 
 #if NO_LEAKS
 void

@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.53 1999/09/14 01:39:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.54 1999/10/03 19:56:13 tom Exp $
  */
 
 /*#
@@ -2311,7 +2311,7 @@ register(name, ...)
 	    if (!isalnum(*p) && *p != '-' && *p != '_')
 		croak("invalid subroutine name");
 
-	if (!(cmd = typealloc(CMDFUNC)))
+	if (!(cmd = typecalloc(CMDFUNC)))
 	    croak("Can't allocate space");
 
 	cmd->cu.c_perl = av = newAV();

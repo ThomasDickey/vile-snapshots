@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.257 1999/09/22 21:32:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.259 1999/10/03 20:49:39 tom Exp $
  */
 
 #include	"estruct.h"
@@ -937,14 +937,12 @@ int	mflg)		/* print messages? */
 		grab_lck_file(bp,fname);
 #endif
 #if OPT_HOOKS
-	if (s <= FIOEOF) {
-	    if ((bp == curbp) && !b_is_temporary(bp)) {
-		int save = count_fline;	/* read-hook may run a filter - ignore */
-		count_fline = 0;
-		run_a_hook(&readhook);
-		count_fline = save;
-	    }
-	}
+	if (s <= FIOEOF && (bp == curbp))
+		run_readhook();
+#endif
+#ifdef GMDCD_ON_OPEN
+	if (global_g_val(GMDCD_ON_OPEN) > 0)
+	    set_directory_from_file(bp);
 #endif
 	b_match_attrs_dirty(bp);
 	return (s != FIOERR);

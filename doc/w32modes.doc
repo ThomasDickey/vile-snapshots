@@ -58,8 +58,8 @@ w32pipes must _not_ be set.  This means that pipe operations will be effected
 with temporary files.  Unfortunately, write pipes simply don't work via
 temporary file communication.  Note that some replacement shells (e.g.,
 Thompson Toolkit) don't exhibit anonymous pipe bugs and w32pipes may
-safely be set in that case (assuming, of course, that the environment
-variable COMSPEC has been modified to specify the replacement shell).
+safely be set in that case (assuming, of course, that the editor's $shell
+state variable specifies the path of the replacement shell).
 
 If using winvile, w32pipes and force-console _must_ be set for all shells
 and versions of Win95 tested to date.  If w32pipes is not set, _all_ pipe

@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.12 1999/09/02 22:46:18 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.13 1999/10/01 23:59:24 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -29,7 +29,9 @@ UTILS = \
 	vile-make-filt.exe \
 	vile-perl-filt.exe \
 	vile-tbl-filt.exe \
-	vile-vile-filt.exe
+	vile-txt-filt.exe \
+	vile-vile-filt.exe \
+	vile-xs-filt.exe
 SCRIPTS = \
 	filters.rc
 KEYS	= \
@@ -146,8 +148,14 @@ vile-perl-filt.exe : perlfilt.obj $(LF_DEPS)
 vile-tbl-filt.exe : tbl-filt.obj $(LF_DEPS)
 	$(link) -out:$@ $(CON_LDFLAGS) tbl-filt.obj $(LF_ARGS)
 
+vile-txt-filt.exe : txt-filt.obj $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) txt-filt.obj $(LF_ARGS)
+
 vile-vile-filt.exe : vilefilt.obj $(LF_DEPS)
 	$(link) -out:$@ $(CON_LDFLAGS) vilefilt.obj $(LF_ARGS)
+
+vile-xs-filt.exe : xs-filt.obj $(LF_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) xs-filt.obj $(LF_ARGS)
 
 clean:
 	del *.exe

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.387 1999/09/20 11:01:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.391 1999/10/03 22:13:38 tom Exp $
  *
  */
 
@@ -768,6 +768,7 @@ extern int liststuff (const char *name, int appendit, void (*)(LIST_ARGS), int i
 extern int restore_dot(MARK saved_dot);
 extern int set_directory (const char *dir);
 extern void ch_fname (BUFFER *bp, const char *fname);
+extern void set_directory_from_file(BUFFER *bp);
 extern void set_rdonly (BUFFER *bp, const char *name, int mode);
 
 #if OPT_EVAL
@@ -778,11 +779,13 @@ extern char * previous_directory (void);
 #endif
 
 #if OPT_HOOKS
-extern int run_a_hook(HOOK *hook);
+extern int run_a_hook (HOOK *hook);
+extern int run_readhook (void);
 #define DisableHook(hook) (hook)->latch += 1
 #define EnableHook(hook)  (hook)->latch -= 1
 #else
 #define run_a_hook(hook)  /*nothing*/
+#define run_readhook()    /*nothing*/
 #define DisableHook(hook) /*nothing*/
 #define EnableHook(hook)  /*nothing*/
 #endif
@@ -1000,7 +1003,12 @@ extern FILE *vms_rpipe (const char *cmd, int fd, const char *input_file);
 /* w32isms */
 #if SYS_WINNT
 
-#define W32_SYS_ERROR  NOERROR
+#define W32_SKIP_SHELL(cmd)  (strnicmp(cmd, \
+                                       W32_START_STR, \
+                                       W32_START_STR_LEN) == 0)
+#define W32_START_STR        "start "
+#define W32_START_STR_LEN    (sizeof(W32_START_STR) - 1)
+#define W32_SYS_ERROR        NOERROR
 
 typedef struct fontstr_options_struct
 {
@@ -1044,7 +1052,7 @@ extern int  w32_inout_popen(FILE **fr, FILE **fw, char *cmd);
 extern void w32_keybrd_reopen(int pressret);
 extern void w32_npclose(FILE *fp);
 extern int  w32_system(const char *cmd);
-extern int  w32_system_winvile(const char *cmd, int pressret);
+extern int  w32_system_winvile(const char *cmd, int *pressret);
 extern char *w32_wdw_title();
 extern void *winvile_hwnd(void);
 extern void winvile_start(void);

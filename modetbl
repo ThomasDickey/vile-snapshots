@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.154 1999/09/22 21:34:16 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.155 1999/09/30 20:13:24 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -22,6 +22,7 @@
 bool							# GMD prefix
 	"AllVersions"	ALL_VERSIONS	0		SYS_VMS # show all versions when globbing
 	"AutoBuffer"	ABUFF		chgd_autobuf	# auto-buffer (lru)
+	"cd-on-open"	CD_ON_OPEN	0		OPT_SHELL # set working directory to that containing each newly opened buffer
 	"dirc"		DIRC		0		COMPLETE_DIRS # directory-completion (slow!)
 	"Alt-TabPos"	ALTTABPOS	0		# emacs-style cursor positioning
 	"expand-path"	EXPAND_PATH	0		# true iff %/# don't substitute shortened-path

@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.97 1999/09/12 20:26:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.98 1999/10/01 23:35:20 tom Exp $
  *
  *
  */
@@ -303,17 +303,30 @@ pathcat (char *dst, const char *path, char *leaf)
 {
 	char	save_path[NFILEN];
 	char	save_leaf[NFILEN];
-	register char	*s = dst;
+	char	*s;
 
 	if (path == 0
-	 || *path == EOS
-	 || is_absolute_pathname(leaf))
+	 || *path == EOS)
+		return strcpy(dst, leaf);
+
+#if OPT_MSDOS_PATH
+	if (is_msdos_drive(strcpy(save_path, path)) != 0
+	 && is_msdos_drive(strcpy(save_leaf, leaf)) == 0) {
+		strcpy(dst, save_path);
+		s = dst + strlen(dst) - 1;
+		if (!is_slashc(*s))
+			*(++s) = SLASHC;
+		strcpy(++s, save_leaf);
+		return dst;
+	}
+#endif
+	if (is_absolute_pathname(leaf))
 		return strcpy(dst, leaf);
 
 	path = strcpy(save_path, path);		/* in case path is in dst */
 	leaf = strcpy(save_leaf, leaf);		/* in case leaf is in dst */
 
-	(void)strcpy(s, path);
+	(void)strcpy(s = dst, path);
 	s += strlen(s) - 1;
 
 #if OPT_VMS_PATH
@@ -376,6 +389,7 @@ save_user(const char *name, const char *path)
 	if (name != NULL
 	 && path != NULL
 	 && (q = typealloc(UPATH)) != NULL) {
+		TRACE(("save_user(name=%s, path=%s)\n", name, path))
 		if ((q->name = strmalloc(name)) != NULL
 		 && (q->path = strmalloc(path)) != NULL) {
 			q->next = user_paths;
@@ -427,8 +441,14 @@ find_user(const char *name)
 #endif
 		if (*name == EOS) {
 		    char *env = getenv("HOME");
-		    if (env != 0)
-			    return save_user(name, env);
+		    if (env != 0) {
+#if SYS_WINNT
+			char desktop[NFILEN];
+			char *drive = getenv("HOMEDRIVE");
+			env = pathcat(desktop, drive, env);
+#endif
+			return save_user(name, env);
+		    }
 		}
 	}
 #if SYS_UNIX && NEEDED
@@ -1485,9 +1505,9 @@ lengthen_path(char *path)
 
 #if SYS_UNIX || OPT_MSDOS_PATH || OPT_VMS_PATH
 #if OPT_MSDOS_PATH
-	if ((f = is_msdos_drive(path)) != 0)
+	if ((f = is_msdos_drive(path)) != 0) {
 		drive = *path;
-	else {
+	} else {
 		drive = EOS;
 		f = path;
 	}
@@ -1498,6 +1518,7 @@ lengthen_path(char *path)
 #if OPT_UNC_PATH
 		if ( drive == EOS ) {
 			GetCurrentDirectory(sizeof(temp), temp);
+			bsl_to_sl_inplace(temp);
 			cwd = temp;
 		}
 		else
@@ -1509,11 +1530,7 @@ lengthen_path(char *path)
 		if (!cwd) {
 			/* Drive will be unspecified with UNC Paths */
 			if ( (temp[0] = drive) != EOS ) {
-#if SYS_OS2_EMX
 				(void)strcpy(temp + 1, ":/");
-#else
-				(void)strcpy(temp + 1, ":\\");
-#endif
 			}
 			cwd = temp;
 		}

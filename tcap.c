@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.125 1999/09/26 17:16:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.127 1999/10/05 00:14:53 tom Exp $
  *
  */
 
@@ -24,7 +24,7 @@
 	static	char tcapbuf[TCAPSLEN];
 #endif
 
-static char *tc_CM, *tc_CE, *tc_CL, *tc_MR, *tc_SO, *tc_SE;
+static char *tc_CM, *tc_CE, *tc_CL, *tc_ME, *tc_MR, *tc_SO, *tc_SE;
 static char *tc_TI, *tc_TE, *tc_KS, *tc_KE;
 static char *tc_CS, *tc_dl, *tc_al, *tc_DL, *tc_AL, *tc_SF, *tc_SR;
 static char *tc_VI, *tc_VE;
@@ -32,7 +32,6 @@ static char *tc_VI, *tc_VE;
 #if OPT_VIDEO_ATTRS
 static char *tc_US;	/* underline-start */
 static char *tc_UE;	/* underline-end */
-static char *tc_ME;
 static char *tc_MD;
 static int   tc_NC;	/* no_color_video */
 #endif
@@ -331,7 +330,7 @@ tcapopen(void)
 	};
 
 	static char * fallback_arrows[] = {
-	    "\033",	/* VT52 */
+/*	    "\033",	** VT52 (type-ahead checks make this not useful) */
 	    "\033O",	/* SS3 */
 	    "\033[",	/* CSI */
 	    "\217",	/* SS3 */
@@ -432,12 +431,14 @@ tcapopen(void)
 	/* if start/end sequences are not consistent, ignore them */
 	if ((tc_SO != 0) ^ (tc_SE != 0))
 		tc_SO = tc_SE = 0;
+#if OPT_VIDEO_ATTRS
 	if ((tc_MD != 0) ^ (tc_ME != 0))
 		tc_MD = tc_ME = 0;
 	if ((tc_MR != 0) ^ (tc_ME != 0))
 		tc_MR = tc_ME = tc_MD = 0;
 	if ((tc_US != 0) ^ (tc_UE != 0))
 		tc_US = tc_UE = 0;
+#endif
 
 	if (tc_SO != 0 || tc_MR != 0)
 		revexist = TRUE;
@@ -1036,7 +1037,7 @@ static void
 tcaprev(		/* change reverse video status */
 UINT state)		/* FALSE = normal video, TRUE = reverse video */
 {
-	static int revstate = -1;
+	static UINT revstate = SORTOFTRUE;
 	if (state == revstate)
 		return;
 	revstate = state;

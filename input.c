@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.203 1999/09/04 15:16:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.205 1999/10/03 17:35:17 tom Exp $
  *
  */
 
@@ -531,17 +531,15 @@ tgetc(int quoted)
 	register int c;	/* fetched character */
 
 	if (tgetc_ungotcnt > 0) {
-	    tgetc_ungotcnt--;
-	    return itb_last(tgetc_ungottenchars);
-	}
-
-	if ((c = get_recorded_char(TRUE)) == -1) {
+		tgetc_ungotcnt--;
+		c = itb_last(tgetc_ungottenchars);
+	} else if ((c = get_recorded_char(TRUE)) == -1) {
 		/* fetch a character from the terminal driver */
 		not_interrupted();
 		if (setjmp(read_jmp_buf)) {
 			c = kcod2key(intrc);
 			TRACE(("setjmp/getc:%c (%#x)\n", c, c))
-#if defined(linux) && defined(DISP_TERMCAP)
+#if defined(BUG_LINUX_2_0_INTR) && defined(DISP_TERMCAP)
 			/*
 			 * Linux bug (observed with kernels 1.2.13 & 2.0.0):
 			 * when interrupted, the _next_ character that
@@ -565,6 +563,7 @@ tgetc(int quoted)
 	}
 
 	/* and finally give the char back */
+	TRACE(("tgetc(%s) = %c\n", quoted ? "quoted" : "unquoted", c))
 	return c;
 }
 
@@ -1380,8 +1379,6 @@ read_quoted(int count, int inscreen)
 	}
 
 	if (c > 0) {
-		if (ABORTED(c)) /* ESC gets us out painlessly */
-			return -1;
 		if (i == 0)	/* Did we start a number? */
 			return c;
 		else if (i < digs) /* any other character will be pushed back */

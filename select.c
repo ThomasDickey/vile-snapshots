@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.102 1999/09/26 21:46:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.103 1999/10/03 23:53:21 tom Exp $
  *
  */
 
@@ -1110,6 +1110,9 @@ attributeregion(void)
 		    L_NUM pls, ple;
 		    C_NUM pos, poe;
 
+		    if (interrupted())
+			return FALSE;
+
 		    q = p->ar_next;
 
 		    if (owner != 0 && owner != VOWNER(p->ar_vattr))
@@ -1180,18 +1183,6 @@ attributeregion(void)
 			    }
 			    p->ar_region.r_end.l = (region.r_orig.l);
 			    p->ar_region.r_end.o = (region.r_orig.o);
-			    /*
-			    if (p->ar_region.r_orig.o == 0 &&
-				p->ar_region.r_end.o
-				  == w_left_margin(curwp) ) {
-				p->ar_shape == FULLLINE;
-			    }
-			    if (n->ar_region.r_orig.o == 0 &&
-				n->ar_region.r_end.o
-				  == w_left_margin(curwp) ) {
-				n->ar_shape == FULLLINE;
-			    }
-			    */
 			    curwp->w_flag |= WFHARD;
 			    continue;
 			} else if ((rle < ple) || (rle == ple && roe < poe)) {
@@ -1562,6 +1553,8 @@ attribute_cntl_a_sequences(void)
 	return FALSE;
 
     while (DOT.l != pastline) {
+	if (interrupted())
+	    return FALSE;
 	while (DOT.o < llength(DOT.l)) {
 	    if (char_at(DOT) == CONTROL_A) {
 		offset = parse_attribute(DOT.l->l_text, llength(DOT.l), DOT.o, &count);
@@ -1601,14 +1594,20 @@ attribute_from_filter(void)
     int nbytes;
     int done;
     int n;
+    int result = TRUE;
 
-    if ((pastline = setup_region()) == 0)
-	return FALSE;
+    if ((pastline = setup_region()) == 0) {
+	result = FALSE;
 
-    if (open_region_filter() == TRUE) {
+    } else if (open_region_filter() == TRUE) {
 
 	free_attribs(curbp);
 	while (DOT.l != pastline) {
+
+	    if (interrupted()) {
+	        result = FALSE;
+		break;
+	    }
 
 	    if (ffgetline(&nbytes) > FIOSUC)
 		break;
@@ -1643,16 +1642,8 @@ attribute_from_filter(void)
 	}
 #endif
     }
-    return TRUE;
+    return result;
 }
 #endif /*  OPT_SHELL */
-
-int
-clear_any_attrs(int f, int n)
-{
-      opcmd = OPOTHER;
-      videoattribute = 0;
-      return vile_op(f,n,attributeregion,"Clear attributes");
-}
 
 #endif /* OPT_SELECTIONS */

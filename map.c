@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.87 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.88 1999/10/03 17:29:24 tom Exp $
  *
  */
 
@@ -568,7 +568,9 @@ sysmapped_c(void)
     if (itb_more(sysmappedchars))
 	return itb_last(sysmappedchars);
 
-    c = term.getch();
+    if ((c = term.getch()) == -1)
+	return c;	/* see comment in ttgetc */
+
     TRACE(("mapped/getc:%c (%#x)\n", c, c))
 
     save_keystroke(c);

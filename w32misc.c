@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.15 1999/05/17 02:14:52 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.16 1999/10/02 01:14:14 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -19,14 +19,14 @@
 #include "edef.h"
 #include "nefunc.h"
 
-#define CSHEXE      "csh.exe"
-#define CSHEXE_LEN  (sizeof(CSHEXE) - 1)
-#define HOST_95     0
-#define HOST_NT     1
-#define HOST_UNDEF  (-1)
-#define SHEXE       "sh.exe"
-#define SHEXE_LEN   (sizeof(SHEXE) - 1)
-#define SHELL_C_LEN (sizeof(" -c ") - 1)
+#define CSHEXE           "csh.exe"
+#define CSHEXE_LEN       (sizeof(CSHEXE) - 1)
+#define HOST_95          0
+#define HOST_NT          1
+#define HOST_UNDEF       (-1)
+#define SHEXE            "sh.exe"
+#define SHEXE_LEN        (sizeof(SHEXE) - 1)
+#define SHELL_C_LEN      (sizeof(" -c ") - 1)
 
 static int   host_type = HOST_UNDEF; /* nt or 95? */
 #ifndef DISP_NTWIN
@@ -173,39 +173,34 @@ is_win95(void)
 char *
 mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
 {
-    int         alloc_len;
-    static int  bourne_shell = 0; /* Boolean, T if user's shell has
+    int         alloc_len,
+                bourne_shell = 0, /* Boolean, T if user's shell has
                                    * appearances of a Unix lookalike
                                    * bourne shell (e.g., sh, ksh, bash).
                                    */
-    char        *out_str, *cp;
-    static char *shell = NULL, *shell_c = "/c";
+                len;
+    char        *out_str, *cp, *shell, *shell_c = "/c";
 
-    if (shell == NULL)
+    shell        = get_shell();
+    len          = strlen(shell);
+    bourne_shell = (len >= 2 &&
+                    tolower(shell[len - 2]) == 's' &&
+                    tolower(shell[len - 1]) == 'h')
+                           ||
+                   (len >= SHEXE_LEN &&
+                    stricmp(shell + len - SHEXE_LEN, SHEXE) == 0);
+    if (bourne_shell)
     {
-        int len;
+        shell_c = "-c";
 
-        shell        = get_shell();
-        len          = strlen(shell);
-        bourne_shell = (len >= 2 &&
-                        tolower(shell[len - 2]) == 's' &&
-                        tolower(shell[len - 1]) == 'h')
-                               ||
-                       (len >= SHEXE_LEN &&
-                        stricmp(shell + len - SHEXE_LEN, SHEXE) == 0);
-        if (bourne_shell)
-        {
-            shell_c = "-c";
-
-            /* Now check for csh lookalike. */
-            bourne_shell = ! (
-                               (len >= 3 &&
-                               tolower(shell[len - 3]) == 'c')
-                                        ||
-                               (len >= CSHEXE_LEN &&
-                                stricmp(shell + len - CSHEXE_LEN, CSHEXE) == 0)
-                             );
-        }
+        /* Now check for csh lookalike. */
+        bourne_shell = ! (
+                           (len >= 3 &&
+                           tolower(shell[len - 3]) == 'c')
+                                    ||
+                           (len >= CSHEXE_LEN &&
+                            stricmp(shell + len - CSHEXE_LEN, CSHEXE) == 0)
+                         );
     }
     if (! bourne_shell)
     {
@@ -287,110 +282,33 @@ mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
 
 
 /*
- * FUNCTION
- *   w32_system(const char *cmd)
- *
- *   cmd - command string to be be passed to a Win32 command interpreter.
- *
- * DESCRIPTION
- *   Executes a system() call, taking care to ensure that the user's
- *   command string is properly quoted if get_shell() points to a bourne
- *   shell clone.
- *
- * RETURNS
- *   If memory allocation fails, -1.
- *   Else, whatever system() returns.
+ * vile's homegrown WIN32 system command. Refer to the w32_system() 
+ * DESCRIPTION below for the rationale behind this function.
  */
 
-int
-w32_system(const char *cmd)
+static int
+internal_system(char *cmd, int no_shell)
 {
-    char *cmdstr;
-    int  freestr, rc;
-
-    if ((cmdstr = mk_shell_cmd_str((char *) cmd, &freestr, FALSE)) == NULL)
-    {
-        /* heap exhausted! */
-
-        (void) no_memory("w32_system()");
-        return (-1);
-    }
-    set_console_title(cmd);
-    rc = system(cmdstr);
-    if (freestr)
-        free(cmdstr);
-    restore_console_title();
-    return (rc);
-}
-
-
-
-#if DISP_NTWIN
-/*
- * FUNCTION
- *   w32_system_winvile(const char *cmd, int pressret)
- *
- *   cmd      - command string to be be passed to a Win32 command interpreter.
- *
- *   pressret - Boolean, T -> display prompt and wait for response
- *
- * DESCRIPTION
- *   Executes a system() call in the context of a Win32 GUI application,
- *   taking care to ensure that the user's command string is properly
- *   quoted if get_shell() points to a bourne shell clone.
- *
- *   "In the context of a Win32 GUI application" means that:
- *
- *   a) the GUI requires explicit console allocation prior to exec'ing
- *      "cmd", and
- *   b) said console stays "up" until explicitly dismissed by the user if
- *      "pressret" is TRUE.
- *
- * ACKNOWLEDGMENTS
- *   I had no idea a Win32 GUI app could exec a console command until I
- *   browsed the win32 gvim code.
- *
- * RETURNS
- *   If memory/console allocation fails, -1.
- *   Else whatever the executed command returns.
- */
-
-int
-w32_system_winvile(const char *cmd, int pressret)
-{
-#define PRESS_ANY_KEY "\n[Press any key to continue]"
-
-    char                 *cmdstr;
-    int                  freestr, rc = -1;
     PROCESS_INFORMATION  pi;
+    int                  rc = -1;
     STARTUPINFO          si;
 
-    if ((cmdstr = mk_shell_cmd_str((char *) cmd, &freestr, TRUE)) == NULL)
-    {
-        /* heap exhausted! */
-
-        (void) no_memory("w32_system_winvile()");
-        return (rc);
-    }
-    if (! AllocConsole())
-    {
-        if (freestr)
-            free(cmdstr);
-        mlforce("console creation failed");
-        return (rc);
-    }
-    SetConsoleTitle(cmd);
     memset(&si, 0, sizeof(si));
     si.cb          = sizeof(si);
-    si.dwFlags     = STARTF_USESTDHANDLES;
-    si.hStdInput   = GetStdHandle(STD_INPUT_HANDLE);
-    si.hStdOutput  = GetStdHandle(STD_OUTPUT_HANDLE);
-    si.hStdError   = GetStdHandle(STD_ERROR_HANDLE);
+    if (! no_shell)
+    {
+        /* command requires a shell, so hookup console I/O */
+
+        si.dwFlags    = STARTF_USESTDHANDLES;
+        si.hStdInput  = GetStdHandle(STD_INPUT_HANDLE);
+        si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+        si.hStdError  = GetStdHandle(STD_ERROR_HANDLE);
+    }
     if (CreateProcess(NULL,
-                      cmdstr,
+                      cmd,
                       NULL,
                       NULL,
-                      TRUE,       /* Inherit handles */
+                      ! no_shell,       /* Inherit handles */
                       0,
                       NULL,
                       NULL,
@@ -402,22 +320,211 @@ w32_system_winvile(const char *cmd, int pressret)
         DWORD        dummy;
         INPUT_RECORD ir;
 
-        (void) _cwait(&rc, (int) pi.hProcess, 0);
-        if (pressret)
+        if (! no_shell)
         {
-            (void) WriteFile(si.hStdOutput,
-                             PRESS_ANY_KEY,
-                             sizeof(PRESS_ANY_KEY) - 1,
-                             &dummy,
-                             NULL);
-            for (;;)
-            {
-                /* Wait for a single key of input from user. */
+            /* wait for shell process to exit */
 
-                if (! ReadConsoleInput(si.hStdInput, &ir, 1, &dummy))
-                    break;      /* What?? */
-                if (ir.EventType == KEY_EVENT && ir.Event.KeyEvent.bKeyDown)
-                    break;
+            (void) _cwait(&rc, (int) pi.hProcess, 0);
+        }
+        (void) CloseHandle(pi.hProcess);
+        (void) CloseHandle(pi.hThread);
+    }
+    else
+    {
+        /* Bummer */
+
+        mlforce("unable to create win32 process");
+    }
+    return (rc);
+}
+
+
+
+/*
+ * FUNCTION
+ *   w32_system(const char *cmd)
+ *
+ *   cmd - command string to be be passed to a Win32 command interpreter.
+ *
+ * DESCRIPTION
+ *   Executes our version of the system() call, taking care to ensure that
+ *   the user's command string is properly quoted if get_shell() points to a
+ *   bourne shell clone.  We use our version of system() rather than the
+ *   vendor's so that vile's users may redefine their shell via the editor's
+ *   $shell state variable.  If we didn't add this additional layer of 
+ *   indirection, users would be at the mercy of whatever env var the C 
+ *   compiler's runtime library chose to reference from within system()--in
+ *   the case of the MS CRT, that would be $COMSPEC.
+ *
+ *   As an additional feature, "cmd" may be executed without running
+ *   as a shell subprocess if the the first token of the command string
+ *   is "start " (useful for launching windows apps that don't need a shell).
+ *
+ * RETURNS
+ *   If memory allocation fails, -1.
+ *   Else, whatever system() returns.
+ */
+
+int
+w32_system(const char *cmd)
+{
+    char *cmdstr;
+    int  no_shell, freestr, rc;
+
+    no_shell = W32_SKIP_SHELL(cmd);
+    if (no_shell)
+    {
+        /* 
+         * Must strip off "start " prefix from command because this 
+         * idiom is supported by Win95, but not by WinNT.
+         */
+
+        if ((cmdstr = malloc(strlen(cmd) + 1)) == NULL)
+        {
+            (void) no_memory("w32_system()");
+            return (-1);
+        }
+        strcpy(cmdstr, cmd + W32_START_STR_LEN);
+        freestr = TRUE;
+    }
+    else
+    {
+        if ((cmdstr = mk_shell_cmd_str((char *) cmd, &freestr, TRUE)) == NULL)
+        {
+            /* heap exhausted! */
+
+            (void) no_memory("w32_system()");
+            return (-1);
+        }
+    }
+    set_console_title(cmd);
+    rc = internal_system(cmdstr, no_shell);
+    if (freestr)
+        free(cmdstr);
+    restore_console_title();
+    return (rc);
+}
+
+
+
+#if DISP_NTWIN
+/*
+ * FUNCTION
+ *   w32_system_winvile(const char *cmd, int *pressret)
+ *
+ *   cmd       - command string to be be passed to a Win32 command interpreter.
+ *
+ *   *pressret - Boolean, T -> display prompt and wait for response.  Value
+ *               usually read-only, but will be set if the user's command
+ *               is prefixed with W32_START_STR
+ *
+ * DESCRIPTION
+ *   Executes a system() call in the context of a Win32 GUI application,
+ *   taking care to ensure that the user's command string is properly
+ *   quoted if get_shell() points to a bourne shell clone.
+ *
+ *   "In the context of a Win32 GUI application" means that:
+ *
+ *   a) the GUI requires explicit console allocation prior to exec'ing
+ *      "cmd", and
+ *   b) said console stays "up" until explicitly dismissed by the user if
+ *      "*pressret" is TRUE.
+ *
+ * ACKNOWLEDGMENTS
+ *   I had no idea a Win32 GUI app could exec a console command until I
+ *   browsed the win32 gvim code.
+ *
+ * RETURNS
+ *   If memory/console allocation fails, -1.
+ *   Else whatever the executed command returns.
+ */
+
+int
+w32_system_winvile(const char *cmd, int *pressret)
+{
+#define PRESS_ANY_KEY "\n[Press any key to continue]"
+
+    char                 *cmdstr;
+    int                  no_shell, freestr, rc = -1;
+    PROCESS_INFORMATION  pi;
+    STARTUPINFO          si;
+
+    memset(&si, 0, sizeof(si));
+    si.cb    = sizeof(si);
+    no_shell = W32_SKIP_SHELL(cmd);
+    if (no_shell)
+    {
+        /* 
+         * Must strip off "start " prefix from command because this 
+         * idiom is supported by Win95, but not by WinNT.
+         */
+
+        if ((cmdstr = malloc(strlen(cmd) + 1)) == NULL)
+        {
+            (void) no_memory("w32_system_winvile()");
+            return (-1);
+        }
+        strcpy(cmdstr, cmd + W32_START_STR_LEN);
+        freestr   = TRUE;
+        *pressret = FALSE;  /* Not waiting for the launched cmd to exit. */
+    }
+    else
+    {
+        if ((cmdstr = mk_shell_cmd_str((char *) cmd, &freestr, TRUE)) == NULL)
+        {
+            /* heap exhausted! */
+
+            (void) no_memory("w32_system_winvile()");
+            return (rc);
+        }
+        if (! AllocConsole())
+        {
+            if (freestr)
+                free(cmdstr);
+            mlforce("console creation failed");
+            return (rc);
+        }
+        SetConsoleTitle(cmd);
+        si.dwFlags    = STARTF_USESTDHANDLES;
+        si.hStdInput  = GetStdHandle(STD_INPUT_HANDLE);
+        si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+        si.hStdError  = GetStdHandle(STD_ERROR_HANDLE);
+    }
+    if (CreateProcess(NULL,
+                      cmdstr,
+                      NULL,
+                      NULL,
+                      ! no_shell,       /* Inherit handles */
+                      0,
+                      NULL,
+                      NULL,
+                      &si,
+                      &pi))
+    {
+        /* Success */
+
+        DWORD        dummy;
+        INPUT_RECORD ir;
+
+        if (! no_shell)
+        {
+            (void) _cwait(&rc, (int) pi.hProcess, 0);
+            if (*pressret)
+            {
+                (void) WriteFile(si.hStdOutput,
+                                 PRESS_ANY_KEY,
+                                 sizeof(PRESS_ANY_KEY) - 1,
+                                 &dummy,
+                                 NULL);
+                for (;;)
+                {
+                    /* Wait for a single key of input from user. */
+
+                    if (! ReadConsoleInput(si.hStdInput, &ir, 1, &dummy))
+                        break;      /* What?? */
+                    if (ir.EventType == KEY_EVENT && ir.Event.KeyEvent.bKeyDown)
+                        break;
+                }
             }
         }
         (void) CloseHandle(pi.hProcess);
@@ -427,11 +534,12 @@ w32_system_winvile(const char *cmd, int pressret)
     {
         /* Bummer */
 
-        mlforce("unable to exec console command");
+        mlforce("unable to create Win32 process");
     }
     if (freestr)
         free(cmdstr);
-    FreeConsole();
+    if (! no_shell)
+        FreeConsole();
     return (rc);
 }
 #endif /* DISP_NTWIN */

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.57 1999/09/27 00:45:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.58 1999/09/30 20:36:32 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -2423,6 +2423,12 @@ static void repaint_window(HWND hWnd)
 	EndPaint(hWnd, &ps);
 }
 
+static int
+we_are_at_home(void)
+{
+	return TRUE;
+}
+
 static void
 receive_dropped_files(HDROP hDrop)
 {
@@ -2441,12 +2447,7 @@ receive_dropped_files(HDROP hDrop)
 	}
 	if (bp != 0) {
             if (swbuffer(bp)) {  /* editor switches to 1st buffer */
-	    	leaf = pathleaf(strcpy(name, bp->b_fname));
-		if (leaf != 0
-		 && leaf != name) {
-		    *leaf = EOS;
-		    set_directory(name);
-		}
+		set_directory_from_file(bp);
 	    }
 	    update(TRUE);
 	}
@@ -2785,7 +2786,7 @@ WinMain(
 		 || *ptr == ' ') {
 			delim = *ptr++;
 		}
-		TRACE(("argv%d:%s\n", argc, ptr))
+		TRACE(("argv[%d]:%s\n", argc, ptr))
 		argv[argc++] = ptr;
 		if (argc+1 >= maxargs) {
 			break;
@@ -2796,6 +2797,18 @@ WinMain(
 			*ptr++ = '\0';
 	}
 	fontstr = argv[argc] = 0;
+
+	/*
+	 * If our working directory is ${HOMEDRIVE}${HOME} and we're given a
+	 * filename, try to set the working directory based on the last one. 
+	 * Drag/drop would only do this for us if we registered for each file
+	 * type; otherwise it's useful when we have the window already open.
+	 */
+	if (argc >= 2
+	 && we_are_at_home()
+	 && ffaccess(argv[argc-1], FL_READABLE))
+		cd_on_open = -1;
+
 
 	SetCols(80);
 	SetRows(24);

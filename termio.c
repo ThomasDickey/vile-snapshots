@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.172 1999/09/20 23:15:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.174 1999/10/03 18:18:39 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -659,7 +659,12 @@ ttgetc(void)
 #ifdef linux
 		/*
 		 * The command "^X!vile -V" makes vile receive an EOF at this
-		 * point.
+		 * point.  In fact, I've seen as many as 20,000 to 35,000 EOF's
+		 * in a row at this point, presumably while the processes are
+		 * fighting over /dev/tty.  The corresponding errno is ESPIPE
+		 * (invalid seek).
+		 *
+		 * (tested with Linux 2.0.36 and 2.2.5-15)
 		 */
 		return -1;
 #else

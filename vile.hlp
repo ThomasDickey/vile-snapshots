@@ -3791,6 +3791,21 @@ Win32 specifics
 	vile may be forced to use native Win32 pipes by setting the global
 	mode "w32pipes" (e.g., "se w32pipes").
 
+	Shell
+	-----
+	When a filter, pipe, or explicit shell command requires execution
+	of an external process, vile invokes an instance of the shell
+	specified in the $COMSPEC environment variable.  This default may
+	be overridden by setting $shell from within vile.rc .  Example:
+
+		set-variable $shell "c:\\usr\\binw\\sh.exe"
+
+	As is true on other hosts, external processes are normally started
+	under the control of a shell.  To forego the shell entirely, prefix
+	the command string with "start ".  Example:
+
+		:!start calc           # start the windows calculator
+
 	Mouse (GUI and Console)
 	-----------------------
 	Selecting and dragging with the left mouse button yanks text to the
@@ -3832,6 +3847,9 @@ Win32 specifics
 		"a<CI>   ;copy register 'a' to clipboard
 		"b<CI>   ;copy register 'b' to clipboard
 		<CI>3w   ;copy 3 words to clipboard
+
+	The swap-clipboard-bindings command swaps the commands bound to 
+	Ctrl+Insert and Alt+Insert.
 
 	OLE Automation
 	--------------
@@ -3902,6 +3920,8 @@ Win32 specifics
 
 	Commands
 	--------
+	swap-clipboard-keys  See discussion of clipboard above.
+
 	winopen		Launches the Windows common open dialog box to open
 			one or more files within the editor.  Note that if
 			this dialog box opens files outside the editor's
@@ -4199,4 +4219,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.443 1999/09/27 00:43:34 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.445 1999/10/02 01:18:50 cmorgan Exp $

@@ -19,16 +19,16 @@ static char *String_attr;
 static int next_state;
 
 static void
-handle_keyword(void)
+handle_keyword(char *name)
 {
-    WriteString(keyword_attr(yytext));
+    write_string(yyout, name, strlen(name), keyword_attr(name));
     next_state = INITIAL;
-    if (!strcmp(yytext, "$rem")) {
+    if (!strcmp(name, "$rem")) {
 	BEGIN(NOTE);
-    } else if (!strcmp(yytext, "$text")) {
+    } else if (!strcmp(name, "$text")) {
 	BEGIN(PRETEXT);
 	next_state = TEXT;
-    } else if (!strcmp(yytext, "$endtext")) {
+    } else if (!strcmp(name, "$endtext")) {
 	BEGIN(PRETEXT);
     }
 }
@@ -66,7 +66,7 @@ KEYWORD		$[a-zA-Z_][a-zA-Z_0-9]*
 
 <INITIAL,TEXT>^{BLANK}	{ ECHO; }
 
-<INITIAL,TEXT>{KEYWORD}	{ handle_keyword(); }
+<INITIAL,TEXT>{KEYWORD}	{ handle_keyword(yytext); }
 <PRETEXT>{REMAINDER}	{ ECHO;
 			  if (next_state == TEXT) {
 				BEGIN(TEXT);

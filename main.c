@@ -23,7 +23,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.400 1999/09/19 20:19:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.403 1999/10/03 20:49:39 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -49,7 +49,6 @@
 
 #if SYS_VMS
 #include <processes.h>
-#include <rms.h>
 #endif
 
 extern char *exec_pathname;
@@ -561,8 +560,24 @@ MainProgram(int argc, char *argv[])
 	if (havebp && find_bp(havebp)) {
 		if (find_bp(bp) && is_empty_buf(bp) && !b_is_changed(bp))
 			b_set_scratch(bp);	/* remove the unnamed-buffer */
-		if (swbuffer(havebp) != TRUE)
+		if (swbuffer(havebp) == TRUE) {
+#if OPT_MAJORMODE && OPT_HOOKS
+			/*
+			 * Partial fix in case we edit .vilerc (vile.rc) or
+			 * filters.rc, or related files that initialize syntax
+			 * highlighting.
+			 */
+			VALARGS args;
+			setm_by_suffix(curbp);
+			setm_by_preamble(curbp);
+			if (find_mode(curbp, "vilemode", FALSE, &args) == TRUE)
+				run_readhook();
+#else
+			;
+#endif
+		} else {
 			startstat = FALSE;
+		}
 		if (havename)
 			set_last_file_edited(havename);
 		if (bp2any_wp(bp) && bp2any_wp(havebp))
@@ -647,6 +662,14 @@ begin:
 	}
 	if (global_g_val(GMDPOPUP_MSGS) == -TRUE)
 		set_global_g_val(GMDPOPUP_MSGS, FALSE);
+#endif
+
+#ifdef GMDCD_ON_OPEN
+	/* reset a one-shot, e.g., for winvile's drag/drop code */
+	if (global_g_val(GMDCD_ON_OPEN) < 0) {
+		set_directory_from_file(curbp);
+		set_global_g_val(GMDCD_ON_OPEN,FALSE);
+	}
 #endif
 
 	/* We won't always be able to show messages before the screen is
@@ -891,6 +914,9 @@ global_val_init(void)
 	set_global_g_val(GVAL_VTFLASH,	VTFLASH_OFF); /* hardwired flash off */
 # endif
 #endif
+#if OPT_SHELL
+	set_global_g_val(GMDCD_ON_OPEN,	cd_on_open);
+#endif
 #ifdef GMDW32PIPES
 	set_global_g_val(GMDW32PIPES,	is_winnt()); /* use native pipes? */
 #endif
@@ -1027,7 +1053,7 @@ global_val_init(void)
 	set_global_b_val(VAL_HILITEMATCH, 0);	/* no hilite */
 #endif
 	set_global_g_val(GVAL_MINI_HILITE, VAREV); /* reverse hilite */
-#if	OPT_UPBUFF
+#if OPT_UPBUFF
 	set_global_b_val(MDUPBUFF,	TRUE);	/* animated */
 #endif
 	set_global_b_val(MDVIEW,	FALSE); /* view-only */

@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.83 1999/09/12 20:20:31 tom Exp $
+; $Id: filters.rc,v 1.86 1999/10/03 23:37:10 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -329,7 +329,7 @@ define-mode tbl
 
 define-mode tc
 ~with define-submode tc
-	suf "\\(\\.tc\\|\\<termcap[^/]*\\)$"
+	suf "\\(\\.tc\\|\\.tcap\\|\\<termcap[^/]*\\)$"
 	comment-prefix	"^\\s*[:#]"
 	comments	"^\\s*[:#]\\s*$"
 ~endwith
@@ -344,7 +344,7 @@ define-mode tcl
 
 define-mode ti
 ~with define-submode ti
-	suf "\\(\\.ti\\|\\<terminfo[^/]*\\)$"
+	suf "\\(\\.ti\\|\\.tinfo\\|\\<terminfo[^/]*\\)$"
 	comment-prefix	"^\\s*[:#]"
 	comments	"^\\s*[:#]\\s*$"
 ~endwith
@@ -389,7 +389,7 @@ define-mode yacc
 	cindent
 ~endwith
 
-store-procedure HighlightFilter
+store-procedure HighlightFilter "Invoke syntax-highlighting filter on the current buffer"
     ~if &not &seq $majormode ""
 	~local $curcol $curline
 	~local %filtername %filterpath %filteropts
@@ -409,16 +409,16 @@ store-procedure HighlightFilter
 	~endif
     ~endif
 ~endm
-store-procedure HighlightFilterMsg
+store-procedure HighlightFilterMsg "Attach highlighting to the current buffer"
 	HighlightFilter
 	write-message "[Attaching attributes...]"
 ~endm
 bind-key HighlightFilterMsg ^X-q
 
-store-procedure HighlightClear
+store-procedure HighlightClear "Clear all highlighting from the current buffer"
 	~local $curcol $curline
 	~hidden goto-beginning-of-file
-	~hidden clear-attributes-til end-of-file
+	~hidden clear-attributes-til goto-char
 ~endm
 bind-key HighlightClear ^X-Q
 

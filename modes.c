@@ -7,17 +7,13 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.183 1999/09/23 01:41:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.184 1999/10/02 01:23:36 cmorgan Exp $
  *
  */
 
 #include	"estruct.h"
 #include	"edef.h"
 #include	"chgdfunc.h"
-
-#if SYS_VMS
-#include <rms.h>
-#endif
 
 #define	NonNull(s)	((s == 0) ? "" : s)
 #define	ONE_COL	(80/3)

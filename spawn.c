@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.145 1999/07/03 12:32:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.146 1999/10/02 01:14:14 cmorgan Exp $
  *
  */
 
@@ -390,8 +390,10 @@ spawn1(int rerun, int pressret)
 #endif
 #if SYS_WINNT
 # if DISP_NTWIN
-	w32_system_winvile(line, pressret);
+	w32_system_winvile(line, &pressret);
 # else
+	if W32_SKIP_SHELL(line)
+		pressret = FALSE;
 	w32_system(line);
 # endif
 	w32_keybrd_reopen(pressret);
